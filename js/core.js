@@ -1,0 +1,816 @@
+// ══════════════════════════════════════════════════════════════════════
+// core.js — Constants, state, and serialization (extracted from simulator.html)
+// ══════════════════════════════════════════════════════════════════════
+
+export const STATS = [
+  { key: 'physical',  label: 'PHY', name: 'Physical',  color: '#f97316', desc: 'Strength & speed challenges' },
+  { key: 'endurance', label: 'END', name: 'Endurance', color: '#fb923c', desc: 'Balance & stamina challenges' },
+  { key: 'mental',    label: 'MNT', name: 'Mental',    color: '#a78bfa', desc: 'Puzzle & memory challenges' },
+  { key: 'social',    label: 'SOC', name: 'Social',    color: '#3b82f6', desc: 'Alliance formation, bonds, jury management' },
+  { key: 'strategic', label: 'STR', name: 'Strategic', color: '#8b5cf6', desc: 'Game awareness, threat reads, vote decisions' },
+  { key: 'loyalty',   label: 'LOY', name: 'Loyalty',   color: '#10b981', desc: 'Follows alliance votes, does not flip' },
+  { key: 'boldness',    label: 'BLD', name: 'Boldness',    color: '#ef4444', desc: 'Big moves, idol plays, deviating when it matters' },
+  { key: 'intuition',  label: 'INT', name: 'Intuition',  color: '#ec4899', desc: 'Reads the room, finds idols, sees votes coming' },
+  { key: 'temperament',label: 'TMP', name: 'Temperament',color: '#06b6d4', desc: '1 = explosive & volatile. 10 = unshakeable calm. Drives who snaps, bonds, or melts down at camp.' },
+];
+
+export const ARCHETYPES = {
+  'mastermind':        { physical:5, endurance:5, mental:8, social:7, strategic:9, loyalty:5, boldness:6, intuition:8, temperament:6, desc:'Controls votes from the shadows. Composed. Gets cut at F4 when the mask slips.' },
+  'schemer':           { physical:5, endurance:5, mental:7, social:5, strategic:9, loyalty:2, boldness:9, intuition:7, temperament:3, desc:'Ruthless and disloyal. Burns bridges strategically. Jury rarely forgives them.' },
+  'hothead':           { physical:7, endurance:6, mental:5, social:4, strategic:5, loyalty:4, boldness:9, intuition:5, temperament:2, desc:'Explosive temper. Creates enemies unintentionally. Goes far on comp wins, not on trust.' },
+  'challenge-beast':   { physical:9, endurance:8, mental:5, social:5, strategic:5, loyalty:7, boldness:5, intuition:5, temperament:5, desc:'Dominates challenges. Jury rarely respects the game.' },
+  'social-butterfly':  { physical:4, endurance:5, mental:5, social:9, strategic:6, loyalty:6, boldness:5, intuition:6, temperament:8, desc:"Everyone's friend. Hard to vote out. Can lose for being too nice." },
+  'loyal-soldier':     { physical:7, endurance:8, mental:5, social:6, strategic:4, loyalty:9, boldness:3, intuition:5, temperament:7, desc:'Never flips. Gets dragged to F3 and loses 8-0.' },
+  'wildcard':          { physical:5, endurance:5, mental:4, social:4, strategic:4, loyalty:3, boldness:9, intuition:4, temperament:4, desc:'Genuinely unpredictable. Instinctive chaos. Nobody can game-plan around them.' },
+  'chaos-agent':       { physical:6, endurance:5, mental:6, social:6, strategic:6, loyalty:3, boldness:8, intuition:6, temperament:3, desc:'Deliberately stirs the pot. Survives by making drama useful. Gets cut when the tribe is exhausted.' },
+  'floater':           { physical:5, endurance:5, mental:6, social:6, strategic:5, loyalty:6, boldness:4, intuition:6, temperament:6, desc:'Stays off radar. Votes with the majority. Reaches F5 without anyone noticing.' },
+  'underdog':          { physical:4, endurance:5, mental:5, social:6, strategic:5, loyalty:8, boldness:5, intuition:6, temperament:7, desc:'Starts weak. Crowd favorite. Jury loves a comeback story.' },
+  'hero':              { physical:6, endurance:7, mental:5, social:7, strategic:5, loyalty:9, boldness:8, intuition:6, temperament:7, desc:'Principled leader. Stands up for the weak. Plays with a moral code that sometimes costs them the game. Jury magnet.' },
+  'villain':           { physical:7, endurance:5, mental:6, social:6, strategic:8, loyalty:2, boldness:9, intuition:7, temperament:4, desc:'Open aggression. Intimidation. Celebrates when enemies fall. Feared and targeted — but fiercely loyal to their inner circle.' },
+  'goat':              { physical:4, endurance:4, mental:4, social:4, strategic:3, loyalty:6, boldness:3, intuition:4, temperament:6, desc:'Non-threatening. Gets dragged to the end. Loses FTC in a landslide.' },
+  'perceptive-player': { physical:5, endurance:5, mental:7, social:8, strategic:6, loyalty:7, boldness:4, intuition:9, temperament:7, desc:'Reads deception. Detects betrayal early. Gets targeted for knowing too much.' },
+  'showmancer':        { physical:5, endurance:5, mental:5, social:9, strategic:5, loyalty:8, boldness:6, intuition:6, temperament:8, desc:'Builds the game around one person. Magnetic, warm, dangerously easy to underestimate. Gets to the end on love — or goes home because of it.' },
+};
+export const ARCHETYPE_NAMES = {
+  'mastermind': 'Mastermind', 'schemer': 'Schemer', 'hothead': 'Hothead',
+  'challenge-beast': 'Challenge Beast', 'social-butterfly': 'Social Butterfly',
+  'loyal-soldier': 'Loyal Soldier', 'hero': 'Hero', 'villain': 'Villain',
+  'wildcard': 'Wildcard', 'chaos-agent': 'Chaos Agent',
+  'floater': 'Floater', 'underdog': 'Underdog', 'goat': 'Goat', 'perceptive-player': 'Perceptive Player',
+  'showmancer': 'Showmancer',
+};
+export const THREAT_TIERS = [
+  { max: 3.0, label: 'Low', color: '#10b981' },
+  { max: 5.0, label: 'Medium', color: '#f59e0b' },
+  { max: 7.0, label: 'High', color: '#f97316' },
+  { max: 10,  label: 'Extreme', color: '#ef4444' },
+];
+export const REL_TYPES = {
+  hatred:      { label: 'Pure Hatred',     color: '#7f1d1d', bond:-10, bg: 'rgba(127,29,29,0.15)' },
+  nemesis:     { label: 'Nemesis',         color: '#dc2626', bond: -8, bg: 'rgba(220,38,38,0.12)' },
+  enemy:       { label: 'Enemy',           color: '#ef4444', bond: -5, bg: 'rgba(239,68,68,0.12)' },
+  rival:       { label: 'Rival',           color: '#f97316', bond: -3, bg: 'rgba(249,115,22,0.12)' },
+  cold:        { label: 'Cold',            color: '#a1a1aa', bond: -1, bg: 'rgba(161,161,170,0.12)' },
+  neutral:     { label: 'Neutral',         color: '#94a3b8', bond:  0, bg: 'rgba(148,163,184,0.12)' },
+  acquaintance:{ label: 'Acquaintance',    color: '#60a5fa', bond:  1, bg: 'rgba(96,165,250,0.12)' },
+  ally:        { label: 'Ally',            color: '#3b82f6', bond:  3, bg: 'rgba(59,130,246,0.12)' },
+  friend:      { label: 'Friend',          color: '#6366f1', bond:  5, bg: 'rgba(99,102,241,0.12)' },
+  rideordie:   { label: 'Ride or Die',     color: '#22c55e', bond:  8, bg: 'rgba(34,197,94,0.12)' },
+  unbreakable: { label: 'Unbreakable \u2605', color: '#10b981', bond: 10, bg: 'rgba(16,185,129,0.12)' },
+};
+export const ADVANTAGES = [
+  { key: 'idol',      label: 'Hidden Immunity Idol', default: 2, defaultSources: ['camp'] },
+  { key: 'beware',    label: 'Beware Advantage',     default: 0, defaultSources: ['camp'] },
+  { key: 'voteSteal', label: 'Vote Steal',           default: 1, defaultSources: ['camp','journey','auction','exile'] },
+  { key: 'extraVote', label: 'Extra Vote',            default: 1, defaultSources: ['camp','journey','auction','exile'] },
+  { key: 'kip',       label: 'Knowledge is Power',   default: 0, defaultSources: ['camp'] },
+  { key: 'legacy',    label: 'Legacy Advantage',     default: 0, defaultSources: ['camp'] },
+  { key: 'amulet',    label: 'Amulet Advantage',     default: 0, defaultSources: [] },
+  { key: 'secondLife', label: 'Second Life Amulet',  default: 0, defaultSources: ['camp','auction','exile'] },
+  { key: 'teamSwap',   label: 'Team Swap',            default: 0, defaultSources: ['camp'] },
+  { key: 'voteBlock',  label: 'Vote Block',           default: 0, defaultSources: ['camp','journey','auction','exile'] },
+  { key: 'safetyNoPower', label: 'Safety Without Power', default: 0, defaultSources: ['journey','auction','exile'] },
+  { key: 'soleVote', label: 'Sole Vote', default: 0, defaultSources: ['journey','auction','exile'] },
+];
+export const ADV_SOURCE_LABELS = { camp: '🏕️ Camp', journey: '🗺️ Journey', auction: '💰 Auction', exile: '🏝️ Exile' };
+
+export const TWIST_CATALOG = [
+  // Team Dynamics
+  { id:'tribe-swap',       emoji:'🔀', name:'Tribe Swap',           category:'team',       phase:'pre-merge',  desc:'All players redistributed between existing tribes.',                        engineType:'tribe-swap'      },
+  { id:'tribe-dissolve',   emoji:'💥', name:'Tribe Dissolve',       category:'team',       phase:'pre-merge',  desc:'Tribes reduced by one — all players reshuffled into fewer tribes.',         engineType:'tribe-dissolve'  },
+  { id:'tribe-expansion',  emoji:'📈', name:'Tribe Expansion',      category:'team',       phase:'pre-merge',  desc:'A new tribe is formed — all players reshuffled into N+1 groups.',           engineType:'tribe-expansion' },
+  { id:'mutiny',           emoji:'⚔️', name:'Mutiny',               category:'team',       phase:'pre-merge',  desc:'Players may voluntarily switch tribes during a challenge.',                  engineType:'mutiny'          },
+  { id:'schoolyard-pick',  emoji:'👆', name:'Schoolyard Pick',      category:'team',       phase:'pre-merge',  desc:'Two captains draft teams. Last picked = bottom of the pecking order. Odd count sends unpicked to exile.', engineType:'schoolyard-pick', incompatible:['no-tribal','elimination-swap'] },
+  { id:'abduction',        emoji:'🫳', name:'Abduction',            category:'team',       phase:'pre-merge',  desc:'Each tribe steals one player from a competing tribe.',                      engineType:'abduction'       },
+  { id:'kidnapping',       emoji:'🫳', name:'Kidnapping',           category:'team',       phase:'pre-merge',  desc:'Challenge winner tribe kidnaps one player from the losing tribe. That player skips tribal (safe) and bonds with their captors. Returns next episode.', engineType:'kidnapping' },
+  { id:'first-impressions',emoji:'👀', name:'First Impressions',    category:'team',       phase:'pre-merge',  desc:'Each tribe votes someone out on first impressions alone. The "eliminated" players swap tribes instead.', engineType:'first-impressions' },
+  // Immunity
+  { id:'shared-immunity',  emoji:'🛡️', name:'Shared Immunity',      category:'immunity',   phase:'post-merge', desc:'Immunity winner picks one other player to share the necklace with.',        engineType:'shared-immunity', incompatible:['double-safety','hero-duel'] },
+  { id:'double-safety',    emoji:'🛡️', name:'Double Safety',        category:'immunity',   phase:'post-merge', desc:'Two players win immunity — the challenge winner and the runner-up.',         engineType:'double-safety',  incompatible:['shared-immunity','hero-duel'] },
+  { id:'hero-duel',        emoji:'⚔️', name:'Hero Duel',            category:'immunity',   phase:'any',        desc:'Pre-merge: best vs worst on losing tribe duel for safety. Post-merge: 2nd place vs last place duel for immunity.', engineType:'hero-duel', incompatible:['shared-immunity','double-safety'] },
+  { id:'guardian-angel',   emoji:'😇', name:'Guardian Angel',       category:'immunity',   phase:'post-merge', desc:'Player with most jury support earns a safety advantage.',                   engineType:'guardian-angel'  },
+  { id:'endurance-test',   emoji:'⚡', name:'Endurance Marathon',   category:'immunity',   phase:'any',        desc:'Forces this episode\'s immunity to be an endurance challenge.',             engineType:'force-challenge-endurance' },
+  { id:'knowledge-test',   emoji:'🧠', name:'Knowledge Test',       category:'immunity',   phase:'any',        desc:'Forces this episode\'s immunity to be a puzzle/mental challenge.',           engineType:'force-challenge-puzzle' },
+  { id:'puzzle-immunity',  emoji:'🧩', name:'Puzzle Gauntlet',      category:'immunity',   phase:'any',        desc:'Forces this episode\'s immunity to be a puzzle challenge.',                  engineType:'force-challenge-puzzle' },
+  { id:'physical-test',    emoji:'💪', name:'Physical Showdown',    category:'immunity',   phase:'any',        desc:'Forces this episode\'s immunity to be a physical challenge.',                engineType:'force-challenge-physical' },
+  { id:'social-challenge', emoji:'🗣️', name:'Social Challenge',     category:'immunity',   phase:'any',        desc:'Forces this episode\'s immunity to be a social challenge.',                  engineType:'force-challenge-social' },
+  { id:'balance-test',     emoji:'⚖️', name:'Balance Challenge',    category:'immunity',   phase:'any',        desc:'Forces this episode\'s immunity to be a balance challenge.',                 engineType:'force-challenge-balance' },
+  { id:'no-tribal',        emoji:'🚫', name:'No Tribal Council',    category:'immunity',   phase:'any',        desc:'No elimination this episode. A reward is still possible.',                  engineType:'no-tribal'       },
+  // Elimination
+  { id:'double-elim',      emoji:'💀', name:'Double Elimination',   category:'elim',       phase:'post-merge', desc:'Two players are voted out this episode.',                                   engineType:'double-elim'     },
+  { id:'double-tribal',    emoji:'🏕️', name:'Double Tribal',        category:'elim',       phase:'pre-merge',  desc:'Challenge runs, winner is safe — losing tribes merge into one council and vote out one player. Requires 3+ tribes.',  engineType:'double-tribal', minTribes: 3 },
+  { id:'multi-tribal',     emoji:'🏕️', name:'Multi-Tribal',         category:'elim',       phase:'pre-merge',  desc:'Challenge runs, winner is safe — all other tribes each vote someone out independently. Requires 3+ tribes.',  engineType:'multi-tribal', minTribes: 3 },
+  { id:'double-boot',      emoji:'🥾', name:'Double Boot',          category:'elim',       phase:'any',        desc:'Two separate votes — one after the other — same episode.',                  engineType:'double-elim'     },
+  { id:'fire-making',      emoji:'🔥', name:'Second Life',          category:'elim',       phase:'any',        desc:'The voted-out player gets a second chance — they pick any non-immune player to challenge in a random duel (fire, puzzle, endurance, balance, or precision). Loser is eliminated.',        engineType:'fire-making'     },
+  { id:'penalty-vote',     emoji:'⚠️', name:'Penalty Vote',         category:'elim',       phase:'any',        desc:'A player receives a penalty vote against them at the next tribal.',         engineType:'penalty-vote'    },
+  // Challenge Replacements
+  { id:'sudden-death',     emoji:'💀', name:'Sudden Death',         category:'challenge',  phase:'post-merge', desc:'No tribal council. Last place in the challenge is auto-eliminated on the spot. Pure performance — no vote, no strategy, no safety net.',  engineType:'sudden-death',    incompatible:['slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture','lucky-hunt'] },
+  { id:'slasher-night',    emoji:'🔪', name:'Slasher Night',        category:'challenge',  phase:'post-merge', desc:'A slasher hunts the tribe. Players are picked off round by round. Last one standing wins immunity. Lowest scorer is eliminated. No tribal council.',  engineType:'slasher-night',   incompatible:['sudden-death','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture','lucky-hunt'] },
+  { id:'triple-dog-dare',  emoji:'🎯', name:'Triple Dog Dare',      category:'challenge',  phase:'post-merge', desc:'Eliminated players dare the tribe. Accept to earn freebies, redirect to spend them. Run out of freebies and fail a dare? You\'re out. No tribal council.', engineType:'triple-dog-dare', incompatible:['sudden-death','slasher-night','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture','lucky-hunt'] },
+  { id:'say-uncle', emoji:'💪', name:'Say Uncle', category:'challenge', phase:'post-merge', desc:'The Dungeon of Misfortune. 4-phase torture endurance: The Wheel, The Gauntlet, The Rack, The Final Sentence. Survive 10 seconds or say uncle. Dominate to pick the next victim — but if they pass, YOU go to the pillory. Last one standing wins immunity.', engineType:'say-uncle', incompatible:['sudden-death','slasher-night','triple-dog-dare','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture','lucky-hunt'] },
+  { id:'brunch-of-disgustingness', emoji:'🤮', name:'Brunch of Disgustingness', category:'challenge', phase:'post-merge', desc:'Boys vs girls eating challenge at merge. 9 courses of disgusting food — every member must eat or the team loses the course. Chain vomiting. Eat-off tiebreaker. Losing team goes to tribal.', engineType:'brunch-of-disgustingness', incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture','brunch-of-disgustingness','lucky-hunt'] },
+  { id:'phobia-factor', emoji:'😱', name:'Phobia Factor', category:'challenge', phase:'pre-merge', desc:'Each player faces their worst fear. Tribe with the best completion rate wins immunity. Worst tribe goes to tribal. Triple points clutch for losing tribe.', engineType:'phobia-factor', incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture'] },
+  { id:'cliff-dive', emoji:'🏔️', name:'Cliff Dive', category:'challenge', phase:'pre-merge', desc:'Three-phase tribe challenge: cliff jump (willingness), crate haul (physical), hot tub build (mental). Chickens get blame on losing tribe.', engineType:'cliff-dive', incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture'] },
+  { id:'awake-a-thon', emoji:'😴', name:'Awake-A-Thon', category:'challenge', phase:'pre-merge', desc:'Three-phase endurance: 20km run, feast trap, then stay awake. Last team standing wins. Mid-challenge social events fire between dropouts.', engineType:'awake-a-thon', incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture'] },
+  { id:'dodgebrawl', emoji:'🏐', name:'Dodgebrawl', category:'challenge', phase:'pre-merge', desc:'Multi-round dodgeball. All tribes on the court — first to 3 wins immunity. Highlights, heroics, and blame.', engineType:'dodgebrawl', minTribes:2, incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture'] },
+  { id:'talent-show', emoji:'🎭', name:'Talent Show', category:'challenge', phase:'pre-merge', desc:'Camp talent show. Each tribe auditions, captain picks 3 acts. Chef scores 0-9. Disasters, clutch moments, and villain sabotage.', engineType:'talent-show', minTribes:2, incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture'] },
+  { id:'sucky-outdoors', emoji:'🏕️', name:'The Sucky Outdoors', category:'challenge', phase:'pre-merge', desc:'Overnight survival in the woods. Five phases of drama. First tribe back in the morning wins. Getting lost can cost your team everything.', engineType:'sucky-outdoors', minTribes:2, incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture'] },
+  { id:'up-the-creek', emoji:'🛶', name:'Up the Creek', category:'challenge', phase:'pre-merge', desc:'Canoe race to Boney Island and back. Pick your partner. Portage through danger. Build a fire. Race home. Partner chemistry matters.', engineType:'up-the-creek', minTribes:2, incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture'] },
+  { id:'paintball-hunt', emoji:'🎯', name:'Paintball Deer Hunter', category:'challenge', phase:'pre-merge', desc:'Paintball hunt. Half your tribe are hunters, half are deer. Hunters track opposing deer. Last tribe with unpainted deer wins. Social chaos guaranteed.', engineType:'paintball-hunt', minTribes:2, incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','hells-kitchen','trust-challenge','basic-straining','x-treme-torture'] },
+  { id:'hells-kitchen', emoji:'🔥', name:"Hell's Kitchen", category:'challenge', phase:'pre-merge', desc:'Cooking challenge. Head chef leads the team through 3 courses. Kitchen chaos, sabotage, and food fights determine who serves the best meal.', engineType:'hells-kitchen', minTribes:2, incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','trust-challenge','basic-straining','x-treme-torture'] },
+  { id:'trust-challenge', emoji:'🤝', name:"Who Can You Trust?", category:'challenge', phase:'pre-merge', desc:'Three trust tests. Chris picks the worst pairs. Rock climb, fugu cooking, blind challenges. Trust is earned or destroyed.', engineType:'trust-challenge', minTribes:2, incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','basic-straining','x-treme-torture'] },
+  { id:'basic-straining', emoji:'🎖️', name:'Basic Straining', category:'challenge', phase:'any', desc:"Chef's military boot camp. 6 phases of escalating challenges. Players quit or get eliminated. Last team standing (pre-merge) or last player standing (post-merge) wins.", engineType:'basic-straining', incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture','lucky-hunt'] },
+  { id:'x-treme-torture', emoji:'🤸', name:'X-Treme Torture', category:'challenge', phase:'pre-merge', desc:'Three extreme sport events: Sofa Bed Skydiving, Rodeo Moose Riding, and Mud Skiing. One player per tribe per event. Injuries, sabotage, and social chaos. Opposing tribe drives your skier.', engineType:'x-treme-torture', minTribes:2, incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture'] },
+  { id:'lucky-hunt', emoji:'🗝️', name:'Lucky Hunt', category:'challenge', phase:'post-merge', desc:'Post-merge scavenger hunt. Every player searches for a key. One chest hides immunity — the others hold food, traps, and surprises. Hunt, help, steal, and scheme.', engineType:'lucky-hunt', incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','x-treme-torture','brunch-of-disgustingness'] },
+  { id:'cultural-reset',   emoji:'🔄', name:'Cultural Reset',       category:'elim',       phase:'any',        desc:'All alliances exposed publicly. Weak alliances dissolve, strong ones survive but become targets. Double-dippers are caught. The social game resets.',        engineType:'cultural-reset'  },
+  { id:'rock-draw',        emoji:'🪨', name:'Rock Draw',            category:'elim',       phase:'any',        desc:'No re-vote on a tie — non-immune, non-tied players draw rocks. Random exit.', engineType:'rock-draw'      },
+  { id:'open-vote',        emoji:'📢', name:'Open Vote',            category:'elim',       phase:'any',        desc:'Votes are public — cast one by one in an order chosen by the immunity winner. Cascade pressure builds. Everyone sees who said whose name.', engineType:'open-vote' },
+  { id:'ambassadors',     emoji:'🤝', name:'Ambassadors',          category:'elim',       phase:'any',       desc:'Schedule on the merge episode. Each tribe names an ambassador. They meet and must agree on one elimination — or one ambassador draws the wrong rock.',  engineType:'ambassadors' },
+  { id:'emissary-vote', emoji:'🕵️', name:'Emissary Vote', category:'elim', phase:'pre-merge', desc:'Winning tribe sends an emissary to losing tribe\'s tribal. After the normal vote, the emissary eliminates a second player.', engineType:'emissary-vote', incompatible:['ambassadors','double-tribal','multi-tribal','kidnapping','no-tribal'], minTribes:2 },
+  // Returns
+  { id:'returning-player', emoji:'🔁', name:'Returning Player',     category:'returns',    phase:'any',        desc:'1-3 previously eliminated players return, each for a chosen reason (unfinished business, entertainment, strategic threat, underdog, or random). One tribal still runs.',  engineType:'returning-player'},
+  { id:'spirit-island',    emoji:'👻', name:'Spirit Island',        category:'returns',    phase:'post-merge', desc:'A jury member returns to camp for one day as a temporary visitor. They observe, reconnect, and share what the jury thinks.',    engineType:'spirit-island'   },
+  // ri-duel removed — RI duels fire automatically when RI is enabled, not as a schedulable twist
+  { id:'second-chance',    emoji:'🎯', name:'Second Chance Vote',   category:'returns',    phase:'any',        desc:'Fans vote one eliminated player back. Tribal still runs — someone goes home. Net zero change. Incompatible with Redemption/Rescue Island.',  engineType:'second-chance'},
+  // Advantages
+  { id:'three-gifts',      emoji:'🎁', name:'The Summit',            category:'advantages', phase:'pre-merge',  desc:'One nominee per tribe travels to a private location and chooses: tribal survival kit, hidden idol clue, or Immunity Totem. Works with any number of tribes.', engineType:'three-gifts' },
+  { id:'tiebreaker-challenge', emoji:'🏅', name:'Challenge Tiebreaker (episode override)', category:'elim', phase:'any', desc:'Forces challenge tiebreaker this episode regardless of season tiebreaker mode.',              engineType:'tiebreaker-challenge' },
+  { id:'auction',          emoji:'🏷️', name:'Survivor Auction',      category:'advantages', phase:'post-merge', desc:'Players receive $500 each and bid on food, comfort, advantages, and a blind-bid immunity item.', engineType:'auction' },
+  { id:'elimination-swap', emoji:'🔀', name:'Elimination Swap',       category:'elim',       phase:'pre-merge',  desc:'The voted-out player is sent to another tribe instead. They pick one member of the new tribe to swap back in exchange.', engineType:'elimination-swap' },
+  { id:'exile-duel',       emoji:'⚔️', name:'Exile Duel',            category:'elim',       phase:'any',        desc:'Voted-out player goes to exile. Next boot faces them in a duel — loser is permanently eliminated.', engineType:'exile-duel', incompatible:['ri'] },
+  { id:'exile-island',     emoji:'🏝️', name:'Exile Island',         category:'advantages', phase:'any',        desc:'One player is exiled, missing tribal but getting an idol clue.',            engineType:'exile-island'    },
+  { id:'journey',          emoji:'🗺️', name:'Journey',              category:'advantages', phase:'any',        desc:'Select players go on a journey for a chance at an advantage.',              engineType:'journey'         },
+  // legacy-awakens removed — Legacy Advantage auto-activates at F13/F6
+  // amulet-activate removed — Amulet power scales automatically as holders are eliminated
+  { id:'idol-wager',       emoji:'🗿', name:'Idol Wager',           category:'advantages', phase:'any',        desc:'Players can wager their idol for a larger power — or lose it.',             engineType:'idol-wager'      },
+  // Social
+  { id:'loved-ones',       emoji:'❤️', name:'Loved Ones Visit',     category:'social',     phase:'post-merge', desc:"Loved ones visit before tribal. Bonds shift dramatically. Tribal still runs — someone goes home.",  engineType:'loved-ones'      },
+  { id:'the-feast',        emoji:'🍗', name:'The Feast',            category:'social',     phase:'pre-merge',  desc:'All tribes share a feast — bonds form across tribal lines. Strategic deals and emotional moments.',  engineType:'the-feast'       },
+  { id:'merge-reward',     emoji:'🎉', name:'Merge Feast',          category:'social',     phase:'post-merge', desc:'A feast marks the merge. Bonds shift as alliances reorder. Tribal still runs.',              engineType:'merge-reward'    },
+  { id:'reward-challenge', emoji:'🏅', name:'Reward Challenge',     category:'advantages', phase:'any',        desc:'A reward challenge runs before immunity. Winner picks who shares it. Tribal still runs.',     engineType:'reward-challenge'},
+  { id:'fan-vote-boot',    emoji:'📱', name:'Fan Vote Save',        category:'social',     phase:'post-merge', desc:'Fans vote to save the most popular player — pre-merge: tribal immunity; post-merge: Extra Vote.',  engineType:'fan-vote-boot'   },
+  { id:'jury-elimination', emoji:'⚖️', name:'Jury Elimination',     category:'elim',       phase:'post-merge', desc:'All eliminated players (jury) vote to boot one active player. Immunity winner is safe.',        engineType:'jury-elimination'},
+  { id:'aftermath',       emoji:'🎬', name:'Aftermath Show',       category:'social',     phase:'any',        desc:'Total Drama Aftermath: Chris interviews eliminated players, reveals secrets, shows unseen footage.', engineType:'aftermath' },
+  { id:'tied-destinies',  emoji:'🔗', name:'Tied Destinies',       category:'elim',       phase:'post-merge', desc:'Players randomly paired. Vote someone out and their partner goes too. Paired immunity challenge. Double elimination.', engineType:'tied-destinies', incompatible:['pre-merge'] },
+];
+
+// ── Triple Dog Dare — dare pools by category ──
+export const DARE_POOL = {
+  'gross-out': [
+    { title: 'The Armpit Lick', desc: 'Lick another player\'s armpit. Slowly. While they watch.' },
+    { title: 'Mystery Meat Slurry', desc: 'Drink a blended puree of camp mystery meat. Every last drop.' },
+    { title: 'Gum Archaeology', desc: 'Chew a piece of gum scraped from under the bench. For 60 seconds.' },
+    { title: 'Swamp Water Smoothie', desc: 'Fill a glass with swamp water. Drink it through a straw. No gagging.' },
+    { title: 'The Bug Buffet', desc: 'Eat a live bug. Chew thoroughly. Swallow. Smile.' },
+    { title: 'Sole Food', desc: 'Lick the bottom of someone else\'s shoe. Both shoes.' },
+    { title: 'Raw Egg Crunch', desc: 'Eat a raw egg. Shell and all. No water to wash it down.' },
+    { title: 'Fish Gut Chug', desc: 'Drink a cup of blended fish guts. In one go.' },
+    { title: 'Toenail Tartare', desc: 'Clip someone\'s toenail. Put it in your mouth. Chew slowly.' },
+    { title: 'Three-Day Surprise', desc: 'Eat a spoonful of camp leftovers from three days ago. Don\'t ask what it was.' },
+    { title: 'Belly Button Jelly', desc: 'Eat grape jelly out of another player\'s belly button. Nine spoonfuls.' },
+    { title: 'Toilet Punch', desc: 'Drink fruit punch mixed in the communal toilet. With a straw.' },
+    { title: 'Dog Food Deluxe', desc: 'Eat an entire can of dog food. Describe the flavor profile while you chew.' },
+    { title: 'Hair Sandwich', desc: 'Make a sandwich with hair clippings from the camp floor. Eat half.' },
+    { title: 'Nose Gummy', desc: 'Pick someone else\'s nose. Eat what you find. No napkins.' },
+    { title: 'Pond Scum Gargle', desc: 'Gargle a mouthful of pond water for 30 seconds. Swallow.' },
+    { title: 'Blended Camp Special', desc: 'Blend together rice, fish bait, and sunscreen. Drink the smoothie.' },
+    { title: 'The Toe Jam Lick', desc: 'Lick between someone\'s toes. All five gaps. Both feet.' },
+    { title: 'Crab Bait Chew', desc: 'Chew on a piece of old crab bait for 2 minutes. No spitting.' },
+    { title: 'Earwax Appetizer', desc: 'Q-tip someone\'s ear. Lick the Q-tip. Twice.' },
+  ],
+  'humiliation': [
+    { title: 'The Runway', desc: 'Put on the most ridiculous outfit camp has to offer. Walk the runway. Pose.' },
+    { title: 'Chicken Dance', desc: 'Do a full chicken dance in front of everyone for 60 seconds. Clucking included.' },
+    { title: 'Five Across the Face', desc: 'Slap yourself in the face. Hard. Five times. While everyone counts.' },
+    { title: 'Love Ballad', desc: 'Serenade the host with an improvised love song. Eye contact mandatory.' },
+    { title: 'Undying Love', desc: 'Get on one knee and declare your undying love to the player you like the least.' },
+    { title: 'Baby Time', desc: 'Wear a diaper. Crawl around camp. Cry for your bottle. Five minutes.' },
+    { title: 'Human Canvas', desc: 'Let the tribe draw whatever they want on your face with permanent marker.' },
+    { title: 'The Confession', desc: 'Stand up and give a dramatic monologue about your biggest weakness. Sell it.' },
+    { title: 'Interpretive Dance', desc: 'Perform an interpretive dance recapping your entire game so far. No words.' },
+    { title: 'On Your Knees', desc: 'Get on your knees and beg your biggest rival for forgiveness. Mean it. Or fake it.' },
+    { title: 'Sock Puppet Kiss', desc: 'Kiss a sweaty sock puppet. On the lips. For 10 seconds. In front of everyone.' },
+    { title: 'The Hula', desc: 'Do the hula in a grass skirt and coconut bra. For 2 full minutes. No stopping.' },
+    { title: 'Pig Squeal', desc: 'Get on all fours and squeal like a pig for 30 seconds. Make eye contact with someone.' },
+    { title: 'Wedgie Walk', desc: 'Give yourself a wedgie and walk the entire length of camp. Waving.' },
+    { title: 'Stand-Up Roast', desc: 'Do a 60-second stand-up comedy roast of yourself. Make the tribe laugh.' },
+    { title: 'Nickname Tattoo', desc: 'Let the tribe vote on a humiliating nickname. Wear it on a name tag all day.' },
+    { title: 'Fan Letter', desc: 'Write a fan letter to your biggest rival. Read it aloud. Be sincere.' },
+    { title: 'Victory Lap', desc: 'Run a victory lap around camp in your underwear. Arms raised. Screaming.' },
+    { title: 'The Bow', desc: 'Kneel before the person with the most freebies. Call them "Your Majesty." Kiss their hand.' },
+    { title: 'Camp Mascot', desc: 'Become the camp mascot for the next hour. Wear a costume. Do a cheer. Commit.' },
+  ],
+  'pain-fear': [
+    { title: 'Bear Nurple', desc: 'Walk into the woods. Find a sleeping bear. Give it a purple nurple. Run.' },
+    { title: 'Leech Bath', desc: 'Swim in a pool of leeches for 30 seconds. No screaming.' },
+    { title: 'Anthill Seat', desc: 'Sit on an active anthill for 60 seconds. No standing. No brushing them off.' },
+    { title: 'Hot Coal Walk', desc: 'Walk barefoot across a bed of hot coals. One direction. No stopping.' },
+    { title: 'Raccoon Wrestling', desc: 'Wrestle a raccoon. Pin it. Or at least survive the attempt.' },
+    { title: 'Scorpion Handshake', desc: 'Hold a live scorpion in your open palm for 30 seconds. Don\'t flinch.' },
+    { title: 'Bee Beard', desc: 'Wear a honey-covered shirt and stand in a swarm of bees. 30 seconds.' },
+    { title: 'Snake Scarf', desc: 'Let a snake wrap around your neck. Wear it like a scarf. Smile for the camera.' },
+    { title: 'Polar Plunge', desc: 'Jump into freezing water. Stay submerged for 2 full minutes.' },
+    { title: 'Fire Hose', desc: 'Stand still while you get blasted by a fire hose at close range. Don\'t fall.' },
+    { title: 'Cannon Fodder', desc: 'Get fired out of a cannon into a mud pit. Helmet optional.' },
+    { title: 'Jellyfish Pool', desc: 'Jump into a pool of jellyfish. Stay for 20 seconds. No crying.' },
+    { title: 'Electric Fence Grab', desc: 'Grab an electric fence wire. Hold on for 10 seconds. Teeth clenched.' },
+    { title: 'Pepper Roulette', desc: 'Eat a mystery pepper. Could be mild. Could be Carolina Reaper. No milk for 5 minutes.' },
+    { title: 'Cactus Hug', desc: 'Hug a cactus. Shirtless. For 5 seconds. Let go when you can.' },
+    { title: 'Ice Bucket Burial', desc: 'Get buried under 50 pounds of ice. Stay still for 90 seconds.' },
+    { title: 'Stingray Shuffle', desc: 'Walk blindfolded through shallow water known for stingrays. Slowly.' },
+    { title: 'Tarantula Necklace', desc: 'Let a tarantula crawl across your face. Mouth closed. Eyes open.' },
+    { title: 'The Gauntlet', desc: 'Run through a gauntlet of tribe members swinging wet towels. No dodging.' },
+    { title: 'Thunder Dome', desc: 'Sit inside a metal cage while they bang pots and pans around you for 60 seconds.' },
+  ],
+  'sacrifice': [
+    { title: 'The Shave', desc: 'Sit in the chair. Let the host shave your head. All of it.' },
+    { title: 'Luxury Destroyed', desc: 'Your one comfort item from home. Smash it. Burn it. Gone.' },
+    { title: 'Reward Forfeit', desc: 'Give up your next reward challenge win. The tribe eats. You don\'t.' },
+    { title: 'Barefoot for Life', desc: 'Burn your camp shoes. Walk barefoot for the rest of the game.' },
+    { title: 'Rice Sacrifice', desc: 'Eat the entire tribe\'s rice ration for tomorrow. In front of everyone.' },
+    { title: 'Name on Paper', desc: 'Write your closest ally\'s name on a piece of paper. Hand it to the host. That\'s your next vote.' },
+    { title: 'Sleep on the Ground', desc: 'Surrender your sleeping spot in the shelter. Sleep on the ground. Rest of the game.' },
+    { title: 'Smash the Gear', desc: 'Take the tribe\'s fishing gear. Smash it against a rock. No more fish.' },
+    { title: 'Personal Memento', desc: 'Hand your personal memento to the host. You won\'t get it back.' },
+    { title: 'The Sign', desc: 'Wear a sign around your neck that says "VOTE ME OUT" for the rest of the day.' },
+    { title: 'Burn the Shelter', desc: 'Set fire to one wall of the shelter. Watch it burn. Sleep in the rain.' },
+    { title: 'Secret Spill', desc: 'Tell the entire tribe your biggest secret in the game. Alliances, deals, everything.' },
+    { title: 'Idol Surrender', desc: 'If you have a hidden immunity idol, hand it to the host. If you don\'t, swear on your family you don\'t.' },
+    { title: 'Apology Tour', desc: 'Apologize — sincerely — to every person you\'ve wronged in this game. One by one. On camera.' },
+    { title: 'Torch Snuff', desc: 'Snuff your own torch. Relight it. Carry the memory of what that felt like.' },
+    { title: 'Last Meal', desc: 'Give away your next 3 meals to other players. You choose who eats. You don\'t.' },
+    { title: 'Public Diary', desc: 'Read your private journal entry from last night to the entire tribe. Unedited.' },
+    { title: 'Alliance Reveal', desc: 'Stand up and name every alliance you\'re in. Every deal. Every handshake. Right now.' },
+    { title: 'Comfort Surrender', desc: 'Give your buff to another player. Wear a plain shirt. You\'re not special anymore.' },
+    { title: 'The Kneel', desc: 'Kneel at tribal council instead of sitting. For the rest of the game. Every tribal.' },
+  ],
+};
+export const DARE_CATEGORIES = Object.keys(DARE_POOL);
+
+// ── Say Uncle — endurance dare pools (survive 10 seconds) ──
+export const SAY_UNCLE_POOL = {
+  'pain': [
+    { title: 'Turtle Puck Shots', desc: 'Stand in a hockey net while Chef fires angry snapping turtles at you.' },
+    { title: 'Electric Shock Chair', desc: 'Sit in the chair. Mild shocks every 2 seconds. Don\'t stand up.' },
+    { title: 'Ant Hill Sit', desc: 'Sit on an active anthill for 10 seconds. No brushing them off.' },
+    { title: 'Wooden Shorts', desc: 'Wear wooden shorts while a woodpecker goes to town.' },
+    { title: 'Spike Bed', desc: 'Lay down on a bed of blunt spikes. Stay flat. 10 seconds.' },
+    { title: 'Hot Coal Walk', desc: 'Walk barefoot across hot coals. One direction. No stopping.' },
+    { title: 'Ice Bucket Burial', desc: 'Get buried under 50 pounds of ice. Stay still.' },
+    { title: 'Water Balloon Headshots', desc: 'Stand still while Chef launches water balloons at your face.' },
+    { title: 'Yellow Jacket', desc: 'Have your front covered in bees. Don\'t swat.' },
+    { title: 'Grizzly Bear Log Roll', desc: 'Survive 10 seconds of log rolling against a grizzly bear.' },
+    { title: 'Cactus Shirt', desc: 'Wear a shirt lined with cactus needles. Hug yourself.' },
+    { title: 'Fire Ant Gloves', desc: 'Wear gloves full of fire ants. Keep them on.' },
+    { title: 'Rubber Band Barrage', desc: 'Stand still while the tribe snaps rubber bands at you. 10 seconds.' },
+    { title: 'Cattle Prod Poke', desc: 'One poke every 3 seconds. Four total. Don\'t move.' },
+    { title: 'Frozen Hands', desc: 'Grip two blocks of ice. Hold on for 10 seconds.' },
+    { title: 'Tar and Feather', desc: 'Get tarred and feathered. Stand there and take it.' },
+    { title: 'Pepper Spray Breeze', desc: 'Stand downwind of a pepper spray fan. Eyes open.' },
+    { title: 'Nail Bed Press', desc: 'Lay face-down on a bed of nails. Weight placed on your back.' },
+    { title: 'Thunder Clap Drums', desc: 'Sit between two massive drums being hammered. Don\'t cover your ears.' },
+    { title: 'Wrecking Ball Dodge', desc: 'Stand in a circle while a wrecking ball swings. Don\'t leave the circle.' },
+  ],
+  'fear': [
+    { title: 'Snake Box', desc: 'Step into a box full of snakes. Stay inside. 10 seconds.' },
+    { title: 'Sasquatchanakwa Crate', desc: 'Get inside a wooden crate with Sasquatchanakwa. Survive.' },
+    { title: 'Jellyfish Pool', desc: 'Jump into a pool of jellyfish. Stay submerged.' },
+    { title: 'Tarantula Face Walk', desc: 'Let a tarantula walk across your face. Mouth closed. Eyes open.' },
+    { title: 'Scorpion Pit', desc: 'Stand in a pit of scorpions. Don\'t move.' },
+    { title: 'Bat Cave Sit', desc: 'Sit in a dark cave full of bats. Don\'t run.' },
+    { title: 'Wolf Staredown', desc: 'Make eye contact with a wolf for 10 seconds. Don\'t look away.' },
+    { title: 'Shark Cage Dunk', desc: 'Get lowered into shark-infested water in a rusty cage.' },
+    { title: 'Cliff Edge Blindfold', desc: 'Stand blindfolded on the edge of a cliff. Don\'t step back.' },
+    { title: 'Coffin Close', desc: 'Lay in a coffin. Lid closes. 10 seconds in the dark.' },
+    { title: 'Croc Teeth Cleaning', desc: 'Put your hand in a crocodile\'s mouth. Clean a tooth.' },
+    { title: 'Dark Room', desc: 'Sit alone in a pitch-black room. Sounds play. Don\'t scream.' },
+    { title: 'Rat Swarm', desc: 'Stand still while rats climb over you.' },
+    { title: 'Piranha Pedicure', desc: 'Dip your feet in piranha water. They nibble. Don\'t pull out.' },
+    { title: 'Wasp Nest Poke', desc: 'Poke a wasp nest with a short stick. Stand your ground.' },
+    { title: 'Skunk Jump', desc: 'Jump over a line of skunks between rocks. Don\'t get sprayed.' },
+    { title: 'Bull Pen', desc: 'Stand in a bull pen. Don\'t run. Don\'t wave anything red.' },
+    { title: 'Bear Cave Nap', desc: 'Lay down at the entrance of a bear cave. Close your eyes.' },
+    { title: 'Quicksand Stand', desc: 'Stand in quicksand up to your waist. Don\'t panic. Don\'t struggle.' },
+    { title: 'Haunted Maze Sprint', desc: 'Sprint through a haunted maze. Finish in 10 seconds.' },
+  ],
+  'gross': [
+    { title: 'Lake Leeches Barrel', desc: 'Sit in a barrel full of water and lake leeches.' },
+    { title: 'Poison Ivy Spa', desc: 'Have your face wrapped in poison ivy. Don\'t scratch.' },
+    { title: 'Nose Hair Pull', desc: 'Have all your nose hairs pulled at once. Don\'t flinch.' },
+    { title: 'Manure Face Mask', desc: 'Get a face mask made of actual manure. Sit with it.' },
+    { title: 'Got Milk?', desc: 'Attempt to milk an angry goat. Whatever happens, happens.' },
+    { title: 'Goo Shoes', desc: 'Wear shoes filled with mystery goo. Walk 20 steps.' },
+    { title: 'Worm Bath Soak', desc: 'Lay in a bathtub full of worms. Submerge.' },
+    { title: 'Dumpster Dive Sit', desc: 'Sit inside a dumpster. Lid closes. Breathe through your mouth.' },
+    { title: 'Maggot Massage', desc: 'Lay still while maggots are spread across your back.' },
+    { title: 'Fish Scale Facial', desc: 'Get a facial made of fish scales and fish oil.' },
+    { title: 'Sewage Snorkel', desc: 'Snorkel in murky swamp water. Face down. 10 seconds.' },
+    { title: 'Slug Trail Necklace', desc: 'Wear a necklace of live slugs. They leave trails.' },
+    { title: 'Mystery Goo Helmet', desc: 'Wear a helmet filled with unknown slime. It drips down your face.' },
+    { title: 'Swamp Mud Burial', desc: 'Get buried in swamp mud up to your neck. Don\'t gag.' },
+    { title: 'Bird Dropping Shower', desc: 'Stand under a birdcage. Look up. 10 seconds.' },
+    { title: 'Catfish Kiss', desc: 'Kiss a live catfish. On the mouth. Hold it.' },
+    { title: 'Rotten Egg Sauna', desc: 'Sit in a sauna filled with rotten egg smell. Breathe normally.' },
+    { title: 'Cockroach Crown', desc: 'Wear a crown of live cockroaches on your head.' },
+    { title: 'Blister Beetle Bracelet', desc: 'Wear a bracelet of blister beetles. They secrete. Don\'t remove it.' },
+    { title: 'Roadkill Pillow', desc: 'Lay your head on a roadkill pillow. Close your eyes. 10 seconds.' },
+  ],
+  'humiliation': [
+    { title: 'Cow Costume Parade', desc: 'Wear a cow costume. Parade around camp. Moo on command.' },
+    { title: 'Wawanakwa Hair Salon', desc: 'Get a haircut from Chef. With a chainsaw.' },
+    { title: 'Baby Diaper Dance', desc: 'Wear a diaper. Do a baby dance. In front of everyone.' },
+    { title: 'Tickle Onslaught', desc: 'Endure one minute of constant tickling from two people.' },
+    { title: 'Voice to Self', desc: 'Listen to a recording of your own voice on repeat. Don\'t cringe.' },
+    { title: 'Marshmallow Waxing', desc: 'Get your face waxed using melted marshmallows.' },
+    { title: 'Wedgie Marathon', desc: 'Give yourself a wedgie. Walk the length of camp. Waving.' },
+    { title: 'Clown Makeover', desc: 'Full clown makeup. Nose. Wig. Do a routine.' },
+    { title: 'Public Love Letter', desc: 'Read a love letter you wrote (to no one) aloud to the tribe.' },
+    { title: 'Stand-Up About Yourself', desc: 'Do 60 seconds of stand-up comedy roasting yourself.' },
+    { title: 'Dunce Cap Walk', desc: 'Wear a dunce cap. Sit in the corner. Everyone watches.' },
+    { title: 'Sing Your Worst Moment', desc: 'Sing a song about your most embarrassing game moment.' },
+    { title: 'Kiss the Fish', desc: 'Kiss a dead fish on camera. Maintain eye contact with the tribe.' },
+    { title: 'Belly Flop Contest', desc: 'Do a belly flop off the dock. Maximum splash. Maximum pain.' },
+    { title: 'Dance Battle Solo', desc: 'Dance battle against nobody. No music. Full commitment.' },
+    { title: 'Serenade Your Enemy', desc: 'Serenade the person you like least. Be romantic.' },
+    { title: 'Wear Rival\'s Clothes', desc: 'Wear your rival\'s clothes for the rest of the day. Their style.' },
+    { title: 'Human Pinata', desc: 'Get hung up like a pinata. Tribe throws soft balls at you.' },
+    { title: 'Truth Serum', desc: 'Answer any question the tribe asks. Honestly. For 60 seconds.' },
+    { title: 'Walk of Shame Lap', desc: 'Walk a lap around camp while everyone slow-claps.' },
+  ],
+};
+export const SAY_UNCLE_CATEGORIES = Object.keys(SAY_UNCLE_POOL);
+
+// ══════════════════════════════════════════════════════════════════════
+// BRUNCH OF DISGUSTINGNESS — FOOD & REACTION POOLS
+// ══════════════════════════════════════════════════════════════════════
+export const BRUNCH_FOOD_POOL = {
+  'meat-gross': [
+    { name: 'Bovine Testicles', desc: 'Bull parts. Rubbery. Chewy. Exactly what you think they are.', category: 'meat-gross' },
+    { name: 'Mystery Meat Stew', desc: 'Nobody knows what animal this came from. Possibly several.', category: 'meat-gross' },
+    { name: 'Pig Snout Pâté', desc: 'Snout, ground into paste. Smells like a barn on a hot day.', category: 'meat-gross' },
+    { name: 'Tongue Tartare', desc: 'Raw cow tongue, diced. Still has taste buds on it.', category: 'meat-gross' },
+    { name: 'Tripe Tacos', desc: 'Stomach lining in a tortilla. The texture is the problem.', category: 'meat-gross' },
+    { name: 'Brain Fritters', desc: 'Deep-fried sheep brain. Creamy inside. Don\'t think about it.', category: 'meat-gross' },
+    { name: 'Sweetbread Sliders', desc: 'Thymus gland on a mini bun. "Sweetbread" is a lie.', category: 'meat-gross' },
+    { name: 'Head Cheese', desc: 'Not cheese. Jellied meat from a head. Every part of the head.', category: 'meat-gross' },
+    { name: 'Blood Sausage', desc: 'Cooked blood in a casing. Dark red, almost black. Metallic taste.', category: 'meat-gross' },
+    { name: 'Chicken Feet Soup', desc: 'Feet. In broth. The toenails are still on.', category: 'meat-gross' },
+    { name: 'Haggis', desc: 'Sheep organs minced inside a stomach lining. A Scottish tradition.', category: 'meat-gross' },
+    { name: 'Rocky Mountain Oysters', desc: 'Not oysters. Not from the ocean. From a bull.', category: 'meat-gross' },
+    { name: 'Liver Smoothie', desc: 'Blended raw liver with a splash of beet juice. Iron-rich.', category: 'meat-gross' },
+    { name: 'Oxtail Jelly', desc: 'Gelatinous oxtail in aspic. Wobbles on the plate.', category: 'meat-gross' },
+    { name: 'Meat Mystery Loaf', desc: 'Chef won\'t say what\'s in it. The texture changes every bite.', category: 'meat-gross' },
+  ],
+  'bug-gross': [
+    { name: 'Live Grasshopper Pizza', desc: 'Spicy jellyfish sauce, live anchovies, and grasshoppers that are still moving.', category: 'bug-gross' },
+    { name: 'Cockroach Crumble', desc: 'Baked cockroaches with a brown sugar crust. Crunchy.', category: 'bug-gross' },
+    { name: 'Beetle Bruschetta', desc: 'Toasted bread topped with sautéed beetles and garlic.', category: 'bug-gross' },
+    { name: 'Cricket Casserole', desc: 'Hundreds of crickets baked in cream sauce. They crunch.', category: 'bug-gross' },
+    { name: 'Mealworm Muffins', desc: 'Blueberry muffins but the blueberries are mealworms.', category: 'bug-gross' },
+    { name: 'Ant Egg Omelette', desc: 'Fluffy omelette filled with ant eggs. They pop in your mouth.', category: 'bug-gross' },
+    { name: 'Scorpion Skewers', desc: 'Skewered and deep-fried. The stinger is still attached.', category: 'bug-gross' },
+    { name: 'Tarantula Tempura', desc: 'Battered and fried whole. The legs stick out of the batter.', category: 'bug-gross' },
+    { name: 'Fly Larvae Risotto', desc: 'Creamy risotto. The rice has been replaced with maggots.', category: 'bug-gross' },
+    { name: 'Centipede Ceviche', desc: 'Raw centipede marinated in lime. Still curling.', category: 'bug-gross' },
+    { name: 'Wasp Crackers', desc: 'Rice crackers studded with whole wasps. Stingers removed. Probably.', category: 'bug-gross' },
+    { name: 'Locust Loaf', desc: 'Ground locust bread. Dense, nutty, and deeply wrong.', category: 'bug-gross' },
+    { name: 'Silk Worm Sushi', desc: 'Silk worm pupae on rice. They\'re boiled, not raw. Small comfort.', category: 'bug-gross' },
+    { name: 'Grub Goulash', desc: 'Fat white grubs in paprika sauce. They burst when you bite down.', category: 'bug-gross' },
+    { name: 'Mosquito Mousse', desc: 'Whipped chocolate mousse mixed with dried mosquitoes. Gritty.', category: 'bug-gross' },
+  ],
+  'texture-gross': [
+    { name: 'Earthworms in Snail Slime', desc: 'Live earthworms coated in actual snail mucus. With hairball garnish.', category: 'texture-gross' },
+    { name: 'Pre-Chewed Gum Platter', desc: 'Already chewed by Chef. Assorted flavours. All flat.', category: 'texture-gross' },
+    { name: 'Hairball Pasta', desc: 'Spaghetti made from actual hair. In a slime sauce.', category: 'texture-gross' },
+    { name: 'Slug Soufflé', desc: 'Whipped slug. Light, airy, and leaves a trail on the plate.', category: 'texture-gross' },
+    { name: 'Mucus Meringue', desc: 'Meringue made with... not egg whites. Stringy.', category: 'texture-gross' },
+    { name: 'Gelatin Eyeballs', desc: 'Gelatin moulded into eyeball shapes. They stare back.', category: 'texture-gross' },
+    { name: 'Fish Scale Flakes', desc: 'Dried fish scales served like cereal. In warm milk.', category: 'texture-gross' },
+    { name: 'Toenail Croutons', desc: 'Baked and seasoned toenail clippings on a salad.', category: 'texture-gross' },
+    { name: 'Skin Pudding', desc: 'A pudding with the texture of skin. Because it is.', category: 'texture-gross' },
+    { name: 'Blister Broth', desc: 'Broth made from boiled blisters. Salty. Warm. Wrong.', category: 'texture-gross' },
+    { name: 'Earwax Caramel', desc: 'Caramel with the colour and consistency of earwax. Tastes similar.', category: 'texture-gross' },
+    { name: 'Dandruff Dust Seasoning', desc: 'Your meal, seasoned with scalp flakes. Adds... crunch.', category: 'texture-gross' },
+    { name: 'Scab Brittle', desc: 'Peanut brittle but the peanuts have been replaced with scabs.', category: 'texture-gross' },
+    { name: 'Belly Button Lint Balls', desc: 'Rolled, compressed, and served on a stick. Fuzzy.', category: 'texture-gross' },
+    { name: 'Pus Pastry', desc: 'Cream puff. The cream is not cream. It\'s from a boil.', category: 'texture-gross' },
+  ],
+  'mystery-gross': [
+    { name: 'Painted Sandal', desc: 'A sandal painted with a happy face. You must eat the sandal.', category: 'mystery-gross' },
+    { name: 'Bunion Soup', desc: 'French bunion soup with hangnail crackers. Straight from Chef\'s bathroom floor.', category: 'mystery-gross' },
+    { name: 'Dumpster Juice Cocktail', desc: 'Liquid from the bottom of a dumpster. Strained. Garnished with a lemon.', category: 'mystery-gross' },
+    { name: 'Gym Sock Tea', desc: 'Steeped gym socks. One sugar. Served hot.', category: 'mystery-gross' },
+    { name: 'Armpit Sweat Lemonade', desc: 'Lemonade with an extra ingredient. Salty.', category: 'mystery-gross' },
+    { name: 'Banana Peel Soup', desc: 'Banana peels, fish heads, and soda cans. Boiled into a soup.', category: 'mystery-gross' },
+    { name: 'Drain Hair Dumplings', desc: 'Dumplings stuffed with shower drain hair. Chewy.', category: 'mystery-gross' },
+    { name: 'Floor Sweepings Pie', desc: 'Everything swept off the kitchen floor, baked in a pie crust.', category: 'mystery-gross' },
+    { name: 'Dust Bunny Donuts', desc: 'Donuts rolled in actual dust bunnies instead of powdered sugar.', category: 'mystery-gross' },
+    { name: 'Old Sponge Sashimi', desc: 'Sliced kitchen sponge. Aged. Served raw.', category: 'mystery-gross' },
+    { name: 'Lint Roller Lollipop', desc: 'A used lint roller sheet wrapped around a stick. Lick.', category: 'mystery-gross' },
+    { name: 'Mystery Can Roulette', desc: 'An unlabelled can. Could be anything. Probably bad.', category: 'mystery-gross' },
+    { name: 'Used Bandaid Bisque', desc: 'A creamy soup with used bandaids floating in it.', category: 'mystery-gross' },
+    { name: 'Toilet Seat Tartine', desc: 'Open-faced sandwich on a toilet seat-shaped bread. The bread touched a real one.', category: 'mystery-gross' },
+    { name: 'Belly Button Lint Soup', desc: 'A warm broth of collected belly button lint. Seasoned.', category: 'mystery-gross' },
+  ],
+  'morally-questionable': [
+    { name: 'Dolphin Wieners', desc: 'Hot dogs made from dolphin. They\'re your ocean friends.', category: 'morally-questionable' },
+    { name: 'Endangered Fish Sushi', desc: 'Made from a fish that\'s almost extinct. Rolls beautifully.', category: 'morally-questionable' },
+    { name: 'Baby Seal Jerky', desc: 'Dried baby seal meat. Those eyes will haunt you.', category: 'morally-questionable' },
+    { name: 'Panda Bear Pepperoni', desc: 'Black and white pepperoni. From what you think.', category: 'morally-questionable' },
+    { name: 'Whale Blubber Bites', desc: 'Cubed whale fat. Rubbery. The ethical implications are worse than the taste.', category: 'morally-questionable' },
+    { name: 'Horse Burger', desc: 'A burger. From a horse. Not a unicorn. That\'s next course.', category: 'morally-questionable' },
+    { name: 'Bald Eagle Eggs Benedict', desc: 'Poached eggs from a national symbol. With hollandaise.', category: 'morally-questionable' },
+    { name: 'Koala Kebab', desc: 'Skewered koala. They were so cute. Now they\'re on a stick.', category: 'morally-questionable' },
+    { name: 'Sea Turtle Soup', desc: 'An ancient creature, boiled. It lived 80 years for this.', category: 'morally-questionable' },
+    { name: 'Manatee Meatball', desc: 'The sea cow, balled up. Gentle giants. Gentle flavour.', category: 'morally-questionable' },
+    { name: 'Dodo Bird Drumstick', desc: 'They went extinct once. Chef found more. Somehow.', category: 'morally-questionable' },
+    { name: 'Puffin Poutine', desc: 'Fries, gravy, cheese curds, and shredded puffin.', category: 'morally-questionable' },
+    { name: 'Penguin Pot Pie', desc: 'Under the crust, a penguin. A whole one.', category: 'morally-questionable' },
+    { name: 'Albatross Alfredo', desc: 'Pasta in a creamy albatross sauce. Bad luck to eat one.', category: 'morally-questionable' },
+    { name: 'Narwhal Nuggets', desc: 'The unicorn of the sea, breaded and fried.', category: 'morally-questionable' },
+  ],
+};
+export const BRUNCH_FOOD_CATEGORIES = Object.keys(BRUNCH_FOOD_POOL);
+export const BRUNCH_EATOFF_DISH = { name: 'Cockroach Smoothie Shots', desc: 'Eight cockroaches blended into a chunky smoothie. Rich in vitamins. Fifteen shot glasses. Drink up.', category: 'eatoff' };
+
+// ── Brunch reaction text pools ──
+// Each reaction is a function: (playerName, pronounsObj, dishNameOrContext) => string
+export const BRUNCH_REACTIONS = {
+  eatSuccess: [
+    (p, pr, dish) => `${p} held ${pr.posAdj} nose and swallowed. Done. Don't ask how it tasted.`,
+    (p, pr, dish) => `${p} closed ${pr.posAdj} eyes, meditated for three seconds, and ate ${dish} like it was air.`,
+    (p, pr, dish) => `${p} poured it straight down ${pr.posAdj} throat, bypassing tongue and taste buds entirely.`,
+    (p, pr, dish) => `${p} chewed exactly once then swallowed whole. Speed over flavour.`,
+    (p, pr, dish) => `${p} covered it in hot sauce first. "Now it just tastes like hot sauce."`,
+    (p, pr, dish) => `${p} stared at the ceiling the entire time and refused to look down.`,
+    (p, pr, dish) => `${p} ate it so fast nobody could tell if it was bravery or panic.`,
+    (p, pr, dish) => `${p} put it between two crackers like that makes it a sandwich. It doesn't.`,
+  ],
+  eatArchetype: {
+    'villain':    [(p, pr, dish) => `${p} ate ${dish} with a smirk, then looked at the other team. "Your turn."`,
+                   (p, pr, dish) => `${p} finished the plate and licked ${pr.posAdj} fingers. A performance.`],
+    'schemer':    [(p, pr, dish) => `${p} watched everyone else struggle first, then ate ${dish} like it was nothing. Calculated.`,
+                   (p, pr, dish) => `${p} ate it quietly. No reaction. ${pr.Sub} ${pr.sub === 'they' ? 'want' : 'wants'} the other team to wonder.`],
+    'mastermind': [(p, pr, dish) => `"It's just protein." ${p} ate ${dish} with clinical detachment.`,
+                   (p, pr, dish) => `${p} analysed the dish, identified the least offensive bite, and worked systematically.`],
+    'hero':       [(p, pr, dish) => `${p} grimaced but powered through. For the team.`,
+                   (p, pr, dish) => `${p} ate it like a soldier eating rations. Not enjoyable. Not the point.`],
+    'loyal-soldier': [(p, pr, dish) => `${p} looked at ${pr.posAdj} teammates, nodded, and ate. That's loyalty.`,
+                      (p, pr, dish) => `${p} wasn't going to be the one to let the team down.`],
+    'chaos-agent':[(p, pr, dish) => `${p} asked for seconds. Actually asked for seconds. The table went silent.`,
+                   (p, pr, dish) => `${p} ate ${dish} and smiled. A real smile. That's the scary part.`],
+    'hothead':    [(p, pr, dish) => `${p} slammed the plate after finishing. "NEXT."`,
+                   (p, pr, dish) => `${p} angry-ate ${dish}. Every bite was a statement.`],
+    'wildcard':   [(p, pr, dish) => `${p} took one look at ${dish} and said "I've had worse." Nobody knows if that's true.`,
+                   (p, pr, dish) => `${p}'s reaction to ${dish} was... confusing. ${pr.Sub} hummed.`],
+    'underdog':   [(p, pr, dish) => `Nobody expected ${p} to handle ${dish}. ${pr.Sub} did. The table noticed.`,
+                   (p, pr, dish) => `${p} proved something today. ${pr.Sub} ate ${dish} without flinching.`],
+    'floater':    [(p, pr, dish) => `${p} ate it without fanfare. Just... did it. Quietly effective.`,
+                   (p, pr, dish) => `${p} finished before anyone noticed ${pr.sub} started.`],
+    'showmancer': [(p, pr, dish) => `${p} gagged dramatically, recovered dramatically, and finished dramatically. The crowd loved it.`,
+                   (p, pr, dish) => `${p} made eating ${dish} look like a performance. Horrified and glamorous at the same time.`],
+    'social-butterfly': [(p, pr, dish) => `${p} rallied the table while eating. "We can DO this!" Mouth full.`,
+                         (p, pr, dish) => `${p} turned eating ${dish} into a group moment. Everyone cheered ${pr.obj} on.`],
+  },
+  eatStruggle: [
+    (p, pr, dish) => `${p} gagged mid-bite. Jaw locked. Teammates talked ${pr.obj} through opening ${pr.posAdj} mouth again.`,
+    (p, pr, dish) => `${p} swallowed and couldn't speak for 30 seconds. Just... stared.`,
+    (p, pr, dish) => `Tears streaming. "I'm not crying, my eyes are watering." Nobody believed ${p}.`,
+    (p, pr, dish) => `${p} finished the plate then walked outside for a full minute.`,
+    (p, pr, dish) => `${p} technically ate it — held it in ${pr.posAdj} mouth for the full countdown then spit it out after the point was scored.`,
+    (p, pr, dish) => `${p}'s whole body shuddered. But ${pr.sub} kept it down. That counts.`,
+    (p, pr, dish) => `${p} made a sound that wasn't a word. But ${pr.sub} made it through.`,
+  ],
+  eatDominant: [
+    (p, pr, dish) => `${p} ate ${dish} and asked what's for dessert. The table couldn't believe it.`,
+    (p, pr, dish) => `${p} finished first. Looked around. "Was that supposed to be hard?"`,
+    (p, pr, dish) => `${p} ate ${dish} like it was gourmet. Either brave or broken.`,
+    (p, pr, dish) => `${p} didn't just eat it — ${pr.sub} savoured it. The other team lost their nerve watching.`,
+    (p, pr, dish) => `${p} cleaned the plate. Burped. Smiled. The power move of the day.`,
+  ],
+  eatFail: [
+    (p, pr, dish) => `${p} tried. You could see ${pr.obj} trying. But ${dish} won.`,
+    (p, pr, dish) => `${p} got it halfway to ${pr.posAdj} mouth and put it back down. "I can't."`,
+    (p, pr, dish) => `${p} took one bite, turned green, and it came back up. The team loses this course.`,
+    (p, pr, dish) => `${p} looked at ${dish} for ten seconds without moving. Then pushed the plate away.`,
+    (p, pr, dish) => `${p} gagged before it touched ${pr.posAdj} lips. The smell alone was enough.`,
+    (p, pr, dish) => `${p} held it in ${pr.posAdj} mouth for three seconds. Then lost the battle.`,
+    (p, pr, dish) => `"Nope." ${p} didn't even try. Plate untouched. Course lost.`,
+    (p, pr, dish) => `${p} put it in ${pr.posAdj} mouth. Chewed once. The texture was the end.`,
+  ],
+  refuseMoral: [
+    (p, pr, dish) => `${p} looked at ${dish} and said "I won't eat that. I don't care if we lose."`,
+    (p, pr, dish) => `"That's not food. That's an animal that trusts people." ${p} pushed the plate away.`,
+    (p, pr, dish) => `${p} stood up. "I'm not eating ${dish}. Vote me out if you want."`,
+  ],
+  refuseDisgust: [
+    (p, pr, dish) => `${p} physically can't. Opens mouth, gags, pushes plate away. The body said no.`,
+    (p, pr, dish) => `${p} picked it up, smelled it, put it back down, and said "I have made my decision."`,
+    (p, pr, dish) => `${p} looked at ${dish} so long the host asked if ${pr.sub} ${pr.sub === 'they' ? 'were' : 'was'} trying to kill it with ${pr.posAdj} eyes.`,
+  ],
+  refuseProtest: [
+    (p, pr, dish) => `"This isn't food. This is a war crime." ${p} folded ${pr.posAdj} arms.`,
+    (p, pr, dish) => `${p} tried to negotiate. "What if I eat half?" Host said no.`,
+    (p, pr, dish) => `"I'd rather go to tribal." ${p} knows what refusing costs. Doesn't care.`,
+  ],
+  refuseHalfway: [
+    (p, pr, dish) => `${p} started eating. Got halfway. The texture changed and ${pr.sub} couldn't finish. Team gets nothing.`,
+    (p, pr, dish) => `${p} was so close. Three bites left. But the body quit before the brain did.`,
+  ],
+  convinced: [
+    (p, pr, c) => `${c} put a hand on ${p}'s shoulder. "You can do this. For us." ${p} closed ${pr.posAdj} eyes and ate.`,
+    (p, pr, c) => `${c} stared at ${p}. "If I ate it, you can eat it." Peer pressure won.`,
+    (p, pr, c) => `${p} looked at ${c}, took a breath, and forced it down. Not gracefully. But done.`,
+    (p, pr, c) => `"Fine. FINE." ${p} ate it aggressively, glaring at ${c} the entire time.`,
+    (p, pr, c) => `${c} counted to three. ${p} ate on three. Teamwork, technically.`,
+  ],
+  convincedCrossTeam: [
+    (p, pr, partner) => `${partner} mouthed "you got this" from the other team. ${p} ate. The whole room noticed.`,
+    (p, pr, partner) => `${partner} gave ${p} a look that said everything. ${p} picked up the fork. The team behind ${partner} was not happy.`,
+    (p, pr, partner) => `${p} looked at ${partner} across the table. ${partner} nodded. ${p} ate. Both teams had feelings about it.`,
+  ],
+  chainVomitTrigger: [
+    (p, pr) => `${p} lost it. The sound alone was enough to start a chain reaction.`,
+    (p, pr) => `${p}'s whole body rejected the food. Violently. The table went quiet, then went green.`,
+    (p, pr) => `${p} didn't just fail — ${pr.sub} created a biohazard. What came out was worse than what went in.`,
+  ],
+  chainVomitAffected: [
+    (p, pr) => `${p} was fine until ${pr.sub} saw that. Now ${pr.sub} ${pr.sub === 'they' ? 'aren\'t' : 'isn\'t'} fine.`,
+    (p, pr) => `${p} tried to look away. Too late. The sympathy gag hit hard.`,
+    (p, pr) => `${p} held it together for three seconds after the chain started. Then lost it.`,
+  ],
+  chainVomitResisted: [
+    (p, pr) => `${p} somehow kept it together while everyone around ${pr.obj} lost it. Iron stomach.`,
+    (p, pr) => `${p} gripped the table, breathed through ${pr.posAdj} nose, and refused to join the cascade.`,
+  ],
+  spectatorImpressed: [
+    (p, pr, eater) => `Even ${p} had to respect what ${eater} just did.`,
+    (p, pr, eater) => `${p} watched ${eater} eat that and said nothing. But the expression said everything.`,
+  ],
+  spectatorDisgusted: [
+    (p, pr, eater) => `${p} turned away watching ${eater} eat. Couldn't handle it even as a spectator.`,
+    (p, pr, eater) => `${p} covered ${pr.posAdj} eyes. Watching the other team eat was almost as bad as eating.`,
+  ],
+  spectatorTaunting: [
+    (p, pr, eater) => `"That's it? We finished ours already." ${p} grinned at ${eater}.`,
+    (p, pr, eater) => `${p} slow-clapped from the other side. The sarcasm was audible.`,
+  ],
+  spectatorNervous: [
+    (p, pr, eater) => `${p} watched ${eater} succeed and went pale. They're next.`,
+    (p, pr, eater) => `${p}'s confidence dropped watching ${eater} dominate that dish.`,
+  ],
+  postEat: [
+    (p, pr) => `${p} sat very still and breathed through ${pr.posAdj} nose for a concerning amount of time.`,
+    (p, pr) => `${p} made a noise that wasn't a word.`,
+    (p, pr) => `${p} smiled. Nobody believed the smile.`,
+    (p, pr) => `${p} burped and the entire table flinched.`,
+    (p, pr) => `"Never speak of this again." ${p} pushed the empty plate away.`,
+    (p, pr) => `${p} stared at the empty plate like it owed ${pr.obj} money.`,
+  ],
+};
+
+// ── Phobia Factor — fear pools (face your phobia) ──
+export const PHOBIA_POOL = {
+  // Fears framed as real phobias — "I'm afraid of X" not "do this dare"
+  // The challenge is: face the thing you said you're scared of
+  'pain': [
+    { title: 'Bees', desc: 'Stand still in a swarm of bees. Don\'t swat. Don\'t run.' },
+    { title: 'Needles', desc: 'Get a (fake) injection. Sit still. Watch the needle go in.' },
+    { title: 'Ice', desc: 'Submerge your hands in ice water until the timer runs out.' },
+    { title: 'Fire', desc: 'Stand between two walls of flame. Stay centered. Don\'t flinch.' },
+    { title: 'Jellyfish', desc: 'Walk into water where jellyfish are swimming. Stay in.' },
+    { title: 'Ants', desc: 'Let fire ants crawl over your hands and arms. Don\'t shake them off.' },
+    { title: 'Hail', desc: 'Stand under pelting hail. Small but deadly. Don\'t move.' },
+    { title: 'Electric Eels', desc: 'Put your hand in a tank with electric eels. Keep it there.' },
+    { title: 'Wasps', desc: 'Stand next to a wasp nest. Stay calm. Stay still.' },
+    { title: 'Hot Sauce', desc: 'Eat a ghost pepper. Chew slowly. No water for 5 minutes.' },
+    { title: 'Thorns', desc: 'Walk barefoot through a patch of thorny bushes.' },
+    { title: 'Sunburn', desc: 'Sit in a heat box under intense UV lamps. Don\'t leave.' },
+    { title: 'Freezing Cold', desc: 'Stand outside in freezing conditions wearing only a swimsuit.' },
+    { title: 'Mosquitoes', desc: 'Sit in a mosquito-filled tent. No repellent. Don\'t scratch.' },
+    { title: 'Stinging Nettles', desc: 'Walk through a field of stinging nettles. Arms out.' },
+    { title: 'Boiling Water', desc: 'Hold your hand over a pot of boiling water. Steam rising. Don\'t pull away.' },
+    { title: 'Paper Cuts', desc: 'Shuffle a deck of cards bare-handed. Faster. Don\'t stop.' },
+    { title: 'Cactus', desc: 'Hug a cactus. Shirtless. 5 seconds.' },
+  ],
+  'fear': [
+    { title: 'Snakes', desc: 'Pick up a live snake. Let it wrap around your arm.' },
+    { title: 'Spiders', desc: 'Let a tarantula crawl across your hand and up your arm.' },
+    { title: 'Being Buried Alive', desc: 'Get sealed in a glass box under sand. 5 minutes.' },
+    { title: 'Heights', desc: 'Stand on the edge of a cliff and look straight down.' },
+    { title: 'The Dark', desc: 'Get locked in a pitch-black room. Alone. 60 seconds.' },
+    { title: 'Tight Spaces', desc: 'Crawl into a coffin-sized box. Lid closes. 10 seconds.' },
+    { title: 'Deep Water', desc: 'Get lowered into deep, dark water in a rusty cage.' },
+    { title: 'Rats', desc: 'Stand in a room while rats run around your feet.' },
+    { title: 'Bats', desc: 'Sit in a pitch-black cave full of bats. Don\'t run.' },
+    { title: 'Thunderstorms', desc: 'Sit through a simulated thunderstorm at deafening volume.' },
+    { title: 'Clowns', desc: 'Sit in a room with a silent clown staring at you. 60 seconds.' },
+    { title: 'Being Alone in the Woods', desc: 'Spend 6 hours alone in the forest. At night.' },
+    { title: 'Wolves', desc: 'Make eye contact with a wolf. Don\'t look away.' },
+    { title: 'Flying', desc: 'Ride in a rickety plane that shakes, dips, and nearly crashes.' },
+    { title: 'Sumo Wrestlers', desc: 'Face off against a sumo wrestler. In the ring. Alone.' },
+    { title: 'Mimes', desc: 'A mime follows you everywhere. Imitates everything you do. 10 minutes.' },
+    { title: 'Zombies', desc: 'Walk through a zombie obstacle course. They grab at you.' },
+    { title: 'Open Water', desc: 'Float in the middle of a lake. Can\'t see the bottom. Can\'t touch.' },
+    { title: 'Dolls', desc: 'Sit in a room full of porcelain dolls. They stare. You sit.' },
+    { title: 'The Dentist', desc: 'Sit in a dentist chair. Mouth open. Drill sounds. 60 seconds.' },
+  ],
+  'gross': [
+    { title: 'Worms', desc: 'Jump into a pool full of worms. Let them crawl on you.' },
+    { title: 'Leeches', desc: 'Sit in a barrel of water with leeches. They attach.' },
+    { title: 'Cockroaches', desc: 'Let cockroaches crawl across your face and neck.' },
+    { title: 'Vomit', desc: 'Watch the most disgusting compilation ever made. Don\'t gag.' },
+    { title: 'Rotten Eggs', desc: 'Sit in a sauna that smells like rotten eggs. Breathe normally.' },
+    { title: 'Maggots', desc: 'Let maggots crawl on your bare skin. Lay still.' },
+    { title: 'Raw Meat', desc: 'Stick your hands into a bucket of raw organs. Fish around.' },
+    { title: 'Slugs', desc: 'Let slugs crawl across your arms. They leave trails.' },
+    { title: 'Sewage', desc: 'Wade through knee-deep swamp water. Don\'t think about what\'s in it.' },
+    { title: 'Dumpsters', desc: 'Climb into a dumpster. Close the lid. Sit there.' },
+    { title: 'Mold', desc: 'Eat a piece of bread covered in mold. Chew slowly.' },
+    { title: 'Mud', desc: 'Get buried in thick mud up to your neck. Stay calm.' },
+    { title: 'Blood', desc: 'Watch a (fake) blood draw happening on your own arm. Don\'t look away.' },
+    { title: 'Bad Breath', desc: 'Let someone breathe directly in your face for 30 seconds.' },
+    { title: 'Dirty Water', desc: 'Gargle swamp water. 10 seconds. Don\'t spit.' },
+    { title: 'Fungus', desc: 'Walk barefoot through a mushroom-covered forest floor.' },
+    { title: 'Hair', desc: 'Eat a meal with someone else\'s hair in it. Every bite.' },
+    { title: 'Earwigs', desc: 'Let earwigs crawl on your ears. Stay perfectly still.' },
+  ],
+  'humiliation': [
+    { title: 'Green Jelly', desc: 'Dive into a pool of green jelly from a high diving board.' },
+    { title: 'Chickens', desc: 'Sit in a chicken pen for 3 minutes. They peck. They cluck. They judge.' },
+    { title: 'Singing in Public', desc: 'Sing a love song in front of everyone. Badly. Loudly.' },
+    { title: 'Bad Haircuts', desc: 'Let Chef cut your hair. With clippers. Whatever happens, happens.' },
+    { title: 'Being Laughed At', desc: 'Stand on stage while the entire tribe laughs at you. 60 seconds.' },
+    { title: 'Wearing a Costume', desc: 'Wear a ridiculous costume all day. Cow, chicken, baby — your choice.' },
+    { title: 'Public Crying', desc: 'Watch the saddest video ever made in front of everyone. Don\'t hide it.' },
+    { title: 'Dancing', desc: 'Dance alone in front of everyone. No music. Full commitment.' },
+    { title: 'Embarrassing Secrets', desc: 'Tell the tribe your most embarrassing secret. The real one.' },
+    { title: 'Nudity', desc: 'Strip down to your underwear and stand in front of everyone. 30 seconds.' },
+    { title: 'Being Ignored', desc: 'Talk to the tribe for 2 minutes while they all pretend you don\'t exist.' },
+    { title: 'Public Speaking', desc: 'Give a speech about yourself. 3 minutes. No notes. No stopping.' },
+    { title: 'Being a Baby', desc: 'Wear a diaper. Suck a pacifier. Crawl around camp. 5 minutes.' },
+    { title: 'Love Confessions', desc: 'Confess your love to the person you like least. Mean it. Or fake it convincingly.' },
+    { title: 'Looking Ugly', desc: 'Wear the ugliest wig and the worst outfit available. All day. No mirror.' },
+    { title: 'Being Vulnerable', desc: 'Tell the tribe what you\'re really afraid of losing. Not the game — in life.' },
+    { title: 'Rejection', desc: 'Ask every tribe member if they like you. Listen to the honest answers.' },
+    { title: 'Being the Joke', desc: 'Let the tribe roast you for 60 seconds. You can\'t respond.' },
+  ],
+};
+export const PHOBIA_CATEGORIES = Object.keys(PHOBIA_POOL);
+
+// S10 preset data
+export const S10_TRIBES = [
+  // CHAMPIONS
+  { name:'Bowie',     tribe:'Champions' },
+  { name:'Mickey',    tribe:'Champions' },
+  { name:'Scott',     tribe:'Champions' },
+  { name:'Zoey',      tribe:'Champions' },
+  { name:'Gwen',      tribe:'Champions' },
+  { name:'Cody',      tribe:'Champions' },
+  { name:'Carrie',    tribe:'Champions' },
+  { name:'Ryan',      tribe:'Champions' },
+  { name:'Sanders',   tribe:'Champions' },
+  // CONTENDERS
+  { name:'Priya',     tribe:'Contenders' },
+  { name:'Hicks',     tribe:'Contenders' },
+  { name:'Jasmine',   tribe:'Contenders' },
+  { name:'Josee',     tribe:'Contenders' },
+  { name:'Sam',       tribe:'Contenders' },
+  { name:'Brick',     tribe:'Contenders' },
+  { name:'Stephanie', tribe:'Contenders' },
+  { name:'Courtney',  tribe:'Contenders' },
+  { name:'Tyler',     tribe:'Contenders' },
+];
+export const S10_BONDS_PRESET = [
+  { a: 'Cody',  b: 'Carrie', type: 'unbreakable', note: 'S7 duo — built Lawa together, reached F3 as a pair' },
+  { a: 'Bowie', b: 'Priya',  type: 'rival',       note: 'Former Unbreakable Bond — Bowie betrayed Priya at F7 in S9' },
+  { a: 'Ryan',  b: 'Mickey', type: 'friend',      note: 'Ryan cast the S5 FTC tiebreaker that made Mickey champion. Mickey never repaid it.' },
+  { a: 'Scott', b: 'Zoey',   type: 'rival',       note: 'Scott voted Zoey out in both S3 and S4. She voted FOR him at S3 FTC anyway.' },
+];
+
+// S9 preset — tribe assignments only; stats/archetype pulled from FRANCHISE_ROSTER at load time
+export const S9_TRIBES = [
+  // YELLOW TRIBE
+  { name:'Bowie',      tribe:'Yellow' },
+  { name:'Chase',      tribe:'Yellow' },
+  { name:'Ripper',     tribe:'Yellow' },
+  { name:'Scary Girl', tribe:'Yellow' },
+  { name:'Nichelle',   tribe:'Yellow' },
+  { name:'Axel',       tribe:'Yellow' },
+  // RED TRIBE
+  { name:'Zee',        tribe:'Red'    },
+  { name:'Brightly',   tribe:'Red'    },
+  { name:'Hicks',      tribe:'Red'    },
+  { name:'Emmah',      tribe:'Red'    },
+  { name:'Millie',     tribe:'Red'    },
+  { name:'Caleb',      tribe:'Red'    },
+  // BLUE TRIBE
+  { name:'Wayne',      tribe:'Blue'   },
+  { name:'Raj',        tribe:'Blue'   },
+  { name:'Julia',      tribe:'Blue'   },
+  { name:'Priya',      tribe:'Blue'   },
+  { name:'MK',         tribe:'Blue'   },
+  { name:'Damien',     tribe:'Blue'   },
+];
+// S9 is all newbies — no pre-game relationships
+export const S9_BONDS_PRESET = [];
+
+// ══════════════════════════════════════════════════════════════════════
+// CONFIG FUNCTION (must come before state declarations)
+// ══════════════════════════════════════════════════════════════════════
+
+export function defaultConfig() {
+  return {
+    name: '', year: '', days: 39, gameMode: 'spectator',
+    teams: 2, mergeAt: 12, finaleSize: 3, finaleFormat: 'traditional', finaleAssistants: false, jurySize: 9,
+    ri: false, riReentryAt: 12, riFormat: 'redemption', riReturnPoints: 1, riSecondReturnAt: 5, journey: false, shotInDark: false,
+    firemaking: false, tiebreakerMode: 'survivor', qem: false, idolRehide: false,
+    advExpire: 4, foodWater: 'disabled', survivalDifficulty: 'casual',
+    mole: 'disabled', molePlayers: [], moleCoordination: 'independent',
+    romance: 'enabled',
+    aftermath: 'disabled',
+    fanVoteFrequency: 'disabled',
+    host: 'Chris',
+    advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, { enabled: a.default > 0, count: a.default }])),
+    twistSchedule: [],
+    tribes: [],  // [{ name, color }]
+    popularityEnabled: true,
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════
+
+export let players       = [];
+export let editingId     = null;
+export let activeTab     = 'cast';
+export let seasonConfig  = defaultConfig();
+export let relationships = [];
+export let editingRelId  = null;
+export let activeRelType = 'neutral';
+export let gs            = null;   // game state
+export let gsCheckpoints = {};     // { [epNum]: deep clone of gs before that episode ran }
+export let viewingEpNum  = null;   // which episode is displayed in run tab
+export let selectedEpisodes  = new Set();
+export let currentTwistFilter = 'all';
+
+// Setter functions for mutable state (used by window getters/setters in main.js)
+export function setPlayers(v) { players = v; }
+export function setEditingId(v) { editingId = v; }
+export function setActiveTab(v) { activeTab = v; }
+export function setSeasonConfig(v) { seasonConfig = v; }
+export function setRelationships(v) { relationships = v; }
+export function setEditingRelId(v) { editingRelId = v; }
+export function setActiveRelType(v) { activeRelType = v; }
+export function setGs(v) { gs = v; }
+export function setGsCheckpoints(v) { gsCheckpoints = v; }
+export function setViewingEpNum(v) { viewingEpNum = v; }
+export function setSelectedEpisodes(v) { selectedEpisodes = v; }
+export function setCurrentTwistFilter(v) { currentTwistFilter = v; }
+
+// ══════════════════════════════════════════════════════════════════════
+// SERIALIZATION
+// ══════════════════════════════════════════════════════════════════════
+
+// JSON.parse loses Sets (they become {}). Restore them after any gs load.
+export function repairGsSets(g) {
+  if (!g) return;
+  const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
+                      'knownAmuletHoldersThisEp', 'knownAmuletHoldersPersistent',
+                      'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
+                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders', 'shotInDarkUsed', '_volunteerExileUsed'];
+  SET_FIELDS.forEach(f => {
+    if (g[f] instanceof Set) return; // already a Set
+    if (Array.isArray(g[f])) { g[f] = new Set(g[f]); return; } // saved as array — restore
+    g[f] = new Set();
+  });
+}
+// Pre-save: convert Sets to arrays so JSON.stringify preserves them
+export function prepGsForSave(g) {
+  if (!g) return g;
+  const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
+                      'knownAmuletHoldersThisEp', 'knownAmuletHoldersPersistent',
+                      'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
+                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders', 'shotInDarkUsed', '_volunteerExileUsed'];
+  SET_FIELDS.forEach(f => { if (g[f] instanceof Set) g[f] = [...g[f]]; });
+  return g;
+}
+
+export function loadAll() {
+  try { const c = localStorage.getItem('simulator_cast'); if (c) players = JSON.parse(c); } catch(e) { players = []; }
+  try { const cfg = localStorage.getItem('simulator_config'); if (cfg) { const saved = JSON.parse(cfg); seasonConfig = { ...defaultConfig(), ...saved }; seasonConfig.advantages = { ...defaultConfig().advantages, ...(saved.advantages || {}) }; } } catch(e) {}
+  try { const r = localStorage.getItem('simulator_rels'); if (r) relationships = JSON.parse(r); } catch(e) { relationships = []; }
+  try { const g = localStorage.getItem('simulator_gs'); if (g) { gs = JSON.parse(g); repairGsSets(gs); } } catch(e) { gs = null; }
+  // Restore per-episode checkpoints
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('simulator_cp_')) {
+        const epNum = Number(key.replace('simulator_cp_', ''));
+        if (epNum) { gsCheckpoints[epNum] = JSON.parse(localStorage.getItem(key)); repairGsSets(gsCheckpoints[epNum]); }
+      }
+    }
+  } catch(e) {}
+}
+

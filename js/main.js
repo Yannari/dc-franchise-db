@@ -138,6 +138,7 @@ window._vpa = vpUiMod._vpa;
 window._alliancePermDesc = castUiMod._alliancePermDesc;
 window.TRIBE_PALETTE = castUiMod.TRIBE_PALETTE;
 window._hsReveal = hideAndBeSneakyMod._hsReveal;
+window._hsRevealAll = hideAndBeSneakyMod._hsRevealAll;
 
 // Mutable let variables — getters + explicit setter functions
 // ES module live bindings work for reads but not writes; use setter functions for writes

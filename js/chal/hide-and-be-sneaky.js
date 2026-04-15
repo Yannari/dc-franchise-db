@@ -1120,7 +1120,10 @@ export function rpBuildHideAndBeSneaky(ep) {
     html += `<div id="hs-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
   });
 
-  html += `<button class="nv-reveal-btn" id="hs-btn-${stateKey}" onclick="window._hsReveal('${stateKey}', ${steps.length})"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>▶ NEXT SCAN (${state.idx + 2}/${steps.length})</button>`;
+  html += `<div id="hs-controls-${stateKey}"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
+    <button class="nv-reveal-btn" id="hs-btn-${stateKey}" onclick="window._hsReveal('${stateKey}', ${steps.length})">▶ NEXT SCAN (${state.idx + 2}/${steps.length})</button>
+    <button onclick="window._hsRevealAll('${stateKey}', ${steps.length})" style="background:none;border:none;font-size:11px;color:#33ff66;cursor:pointer;padding:2px 0;letter-spacing:0.3px;opacity:0.7">Scan all &rsaquo;</button>
+  </div>`;
 
   html += `</div>`;
   return html;
@@ -1134,10 +1137,22 @@ export function _hsReveal(stateKey, totalSteps) {
   const el = document.getElementById(`hs-step-${stateKey}-${nextIdx}`);
   if (el) { el.style.display = ''; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   state.idx = nextIdx;
-  const btn = document.getElementById(`hs-btn-${stateKey}`);
   if (nextIdx >= totalSteps - 1) {
-    if (btn) btn.style.display = 'none';
+    const controls = document.getElementById(`hs-controls-${stateKey}`);
+    if (controls) controls.style.display = 'none';
   } else {
+    const btn = document.getElementById(`hs-btn-${stateKey}`);
     if (btn) btn.textContent = `▶ NEXT SCAN (${nextIdx + 2}/${totalSteps})`;
   }
+}
+
+export function _hsRevealAll(stateKey, totalSteps) {
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  for (let i = 0; i < totalSteps; i++) {
+    const el = document.getElementById(`hs-step-${stateKey}-${i}`);
+    if (el) el.style.display = '';
+  }
+  _tvState[stateKey].idx = totalSteps - 1;
+  const controls = document.getElementById(`hs-controls-${stateKey}`);
+  if (controls) controls.style.display = 'none';
 }

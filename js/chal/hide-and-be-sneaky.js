@@ -229,9 +229,9 @@ export function simulateHideAndBeSneaky(ep) {
   };
 
   // ── PHASE 2: HUNT ──
-  const totalRounds = Math.ceil(n * 0.8);
-  const baseDetection = 3.0;
-  const escalation = 0.8;
+  const totalRounds = Math.ceil(n * 0.75);
+  const baseDetection = 3.5;
+  const escalation = 0.7;
   let hidden = [...activePlayers];
   const caught = [];
   const escaped = [];
@@ -482,13 +482,13 @@ export function simulateHideAndBeSneaky(ep) {
         escBeats.push({ id: bt.id, text: bt.text(target, tPr, beatWin), win: beatWin });
       }
 
-      // Discovery text
-      const spotDesc = spot?.name || 'in hiding';
+      // Discovery text — always place spot name after "hiding" or in "was at" form
+      const spotDesc = spot?.name || 'somewhere nearby';
       const discoveryTexts = [
-        `Chef spotted ${target} hiding — ${tPr.sub} was ${spotDesc}!`,
-        `A noise from ${spotDesc} gave away ${target}'s position — Chef zeroed in!`,
-        `Chef found ${target} ${spotDesc} and raised the water cannon!`,
-        `${target}'s cover was blown — Chef caught ${tPr.obj} ${spotDesc}!`,
+        `Chef spotted ${target} — ${tPr.sub} was hiding ${spotDesc}!`,
+        `A noise gave away ${target}'s position. ${tPr.Sub} was ${spotDesc}!`,
+        `Chef zeroed in on ${spotDesc} and found ${target} hiding there!`,
+        `${target}'s cover was blown! ${tPr.Sub} had been hiding ${spotDesc} the whole time!`,
       ];
       const discoveryText = discoveryTexts[Math.floor(Math.random() * discoveryTexts.length)];
 
@@ -955,32 +955,33 @@ export function rpBuildHideAndBeSneaky(ep) {
     });
   });
 
-  // Phase 2: Hunt Rounds
+  // Phase 2: Hunt Rounds — each round header, each event, each discovery = separate step
+  const _toArr = v => !v ? [] : Array.isArray(v) ? v : [v];
   hs.phase2.rounds.forEach(round => {
-    let roundHtml = `<div class="nv-sector">SCANNING SECTOR ${round.num} &mdash; ${round.hiddenCount} OPERATIVES REMAIN</div>`;
+    // Round header as its own step
+    steps.push({ type: 'hunt-header', html: `<div class="nv-sector">SCANNING SECTOR ${round.num} &mdash; ${round.hiddenCount} OPERATIVES REMAIN</div>` });
 
+    // Each event as its own step
     round.events.forEach(evt => {
       if (!evt.text) return;
       const delta = evt.delta || 0;
       const deltaTag = delta > 0 ? `<span class="nv-delta-up">+${delta.toFixed(1)}</span>` :
                         delta < 0 ? `<span class="nv-delta-down">${delta.toFixed(1)}</span>` : '';
-      // Show portrait(s) for targeted events
       const targetPortraits = (evt.targets && evt.targets.length <= 2)
         ? evt.targets.map(t => rpPortrait(t, 'sm')).join('')
         : '';
       const evtBorder = evt.type === 'detection' ? 'border-color:rgba(255,100,50,0.2)' :
                          evt.type === 'evasion' ? 'border-color:rgba(0,255,65,0.2)' :
                          evt.type === 'social' ? 'border-color:rgba(56,189,248,0.2)' : '';
-      roundHtml += `
+      steps.push({ type: 'hunt-event', html: `
         <div class="nv-card" style="display:flex;align-items:center;gap:10px;${evtBorder}">
           ${targetPortraits}
           <div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div>
           ${deltaTag ? `<div>${deltaTag}</div>` : ''}
-        </div>`;
+        </div>` });
     });
 
-    // Discovery + escape attempt narratives
-    const _toArr = v => !v ? [] : Array.isArray(v) ? v : [v];
+    // Each discovery as its own step
     const allCaughtThisRound = [..._toArr(round.found), ..._toArr(round.escaped)];
     allCaughtThisRound.forEach(f => {
       const isEscape = f.escaped;
@@ -1004,17 +1005,15 @@ export function rpBuildHideAndBeSneaky(ep) {
       cardHtml += `
           <div style="margin-top:6px;text-align:right">${outcomeTag}</div>
         </div>`;
-      roundHtml += cardHtml;
+      steps.push({ type: 'hunt-discovery', html: cardHtml });
     });
-
-    steps.push({ type: 'hunt-round', html: roundHtml });
   });
 
-  // Phase 3: Intel Report
+  // Phase 3: Intel Report — header + each betrayal/loyal as separate step
   if (hs.phase3.betrayals.length || hs.phase3.loyals.length) {
-    let intelHtml = `<div class="nv-sector">INTEL REPORT — LOYALTY ASSESSMENT</div>`;
+    steps.push({ type: 'intel-header', html: `<div class="nv-sector">INTEL REPORT — LOYALTY ASSESSMENT</div>` });
     hs.phase3.betrayals.forEach(b => {
-      intelHtml += `
+      steps.push({ type: 'intel-betrayal', html: `
         <div class="nv-card" style="border-color:rgba(255,50,50,0.3);display:flex;align-items:center;gap:12px">
           ${rpPortrait(b.betrayer, 'sm')}
           <div style="flex:1;font-size:12px;color:#cdd9e5">
@@ -1022,28 +1021,32 @@ export function rpBuildHideAndBeSneaky(ep) {
             <div style="font-size:10px;color:#ff6432;margin-top:2px">Quality: ${b.intelQuality.toUpperCase()} &mdash; hiding penalty: -${b.penalty.toFixed(1)}</div>
           </div>
           <span class="nv-status nv-tracking">INTEL UPLOAD</span>
-        </div>`;
+        </div>` });
     });
-    hs.phase3.loyals.forEach(name => {
-      intelHtml += `
-        <div class="nv-card" style="border-color:rgba(0,200,100,0.3);display:flex;align-items:center;gap:12px">
-          ${rpPortrait(name, 'sm')}
-          <div style="flex:1;font-size:12px;color:#cdd9e5"><strong>${name}</strong> refused to betray anyone.</div>
-          <span class="nv-status nv-loyal">SIGNAL REFUSED</span>
-        </div>`;
-    });
-    steps.push({ type: 'intel', html: intelHtml });
+    // Group all loyals into one step
+    if (hs.phase3.loyals.length) {
+      let loyalHtml = '';
+      hs.phase3.loyals.forEach(name => {
+        loyalHtml += `
+          <div class="nv-card" style="border-color:rgba(0,200,100,0.3);display:flex;align-items:center;gap:12px">
+            ${rpPortrait(name, 'sm')}
+            <div style="flex:1;font-size:12px;color:#cdd9e5"><strong>${name}</strong> refused to betray anyone.</div>
+            <span class="nv-status nv-loyal">SIGNAL REFUSED</span>
+          </div>`;
+      });
+      steps.push({ type: 'intel-loyal', html: loyalHtml });
+    }
   }
 
-  // Phase 4: Perimeter Breach
+  // Phase 4: Perimeter Breach — each attempt as separate step
   if (hs.phase4.attempts.length) {
-    let breachHtml = `<div class="nv-sector">PERIMETER BREACH — FIGHT OR FLIGHT</div>`;
+    steps.push({ type: 'breach-header', html: `<div class="nv-sector">PERIMETER BREACH — FIGHT OR FLIGHT</div>` });
     hs.phase4.attempts.forEach(a => {
       const outcomeTag = a.success
         ? `<span class="nv-status ${a.decision === 'run' ? 'nv-immune' : 'nv-hidden'}">${a.decision === 'run' ? 'EXTRACTED' : 'STILL HIDDEN'}</span>`
         : `<span class="nv-status nv-soaked">COMPROMISED</span>`;
       let beatTexts = a.beats.map(b => `<div style="font-size:11px;color:#aaa;margin-top:4px;padding-left:12px;border-left:2px solid ${b.win ? 'rgba(0,255,65,0.3)' : 'rgba(255,100,50,0.3)'}">${b.text}</div>`).join('');
-      breachHtml += `
+      steps.push({ type: 'breach-attempt', html: `
         <div class="nv-card">
           <div style="display:flex;align-items:center;gap:12px">
             ${rpPortrait(a.name, 'sm')}
@@ -1053,20 +1056,19 @@ export function rpBuildHideAndBeSneaky(ep) {
             ${outcomeTag}
           </div>
           ${beatTexts}
-        </div>`;
+        </div>` });
     });
-    steps.push({ type: 'breach', html: breachHtml });
   }
 
-  // Phase 5: Final Pursuit
+  // Phase 5: Final Pursuit — header + each chase as separate step
   if (hs.phase5) {
-    let pursuitHtml = `<div class="nv-sector">FINAL PURSUIT — ALL OPERATIVES FLUSHED</div>`;
+    steps.push({ type: 'pursuit-header', html: `<div class="nv-sector">FINAL PURSUIT — ALL OPERATIVES FLUSHED</div>` });
     hs.phase5.ranking.forEach(({ name, score }) => {
       const beats = hs.phase5.beats[name] || [];
       const isWinner = name === hs.phase5.winner;
       const borderColor = isWinner ? 'rgba(255,215,0,0.4)' : 'rgba(0,255,65,0.15)';
       let beatTexts = beats.map(b => `<div style="font-size:11px;color:#aaa;margin-top:4px;padding-left:12px;border-left:2px solid ${b.win ? 'rgba(0,255,65,0.3)' : 'rgba(255,100,50,0.3)'}">${b.text}</div>`).join('');
-      pursuitHtml += `
+      steps.push({ type: 'pursuit-chase', html: `
         <div class="nv-card" style="border-color:${borderColor}${isWinner ? ';background:rgba(255,215,0,0.04)' : ''}">
           <div style="display:flex;align-items:center;gap:12px">
             ${rpPortrait(name, 'sm')}
@@ -1077,9 +1079,8 @@ export function rpBuildHideAndBeSneaky(ep) {
             ${isWinner ? '<span class="nv-status nv-immune">OPERATIVE EXTRACTED</span>' : '<span class="nv-status nv-soaked">CAUGHT</span>'}
           </div>
           ${beatTexts}
-        </div>`;
+        </div>` });
     });
-    steps.push({ type: 'pursuit', html: pursuitHtml });
   }
 
   // Debrief

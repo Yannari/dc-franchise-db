@@ -173,29 +173,32 @@ function calcBikeQuality(name) {
   const s = pStats(name);
   const arch = getArchetype(name);
   let q = s.mental * 0.3 + s.physical * 0.25 + s.intuition * 0.2 + s.strategic * 0.15 + s.boldness * 0.1;
-  q = (q - 5.0) * 1.5 + 5.0; // spread around 5
-  // Archetype bonuses
-  if (arch === 'challenge-beast') q += 1.5;
-  else if (arch === 'mastermind' || arch === 'schemer') q += 1.0;
+  q = (q - 5.0) * 1.2 + 5.0; // gentle spread: stats 3→2.6, stats 5→5, stats 7→7.4
+  // Archetype bonuses (smaller so top doesn't cluster at cap)
+  if (arch === 'challenge-beast') q += 1.0;
+  else if (arch === 'mastermind' || arch === 'schemer') q += 0.8;
   else if (arch === 'hothead') q -= 1.0;
-  else if (arch === 'goat') q -= 2.0;
-  else if (arch === 'wildcard' || arch === 'chaos-agent') q += (Math.random() * 4) - 2.0;
-  else if (arch === 'underdog') q += 0.5;
-  else if (arch === 'floater') q += 0.3;
-  else if (arch === 'perceptive-player') q += 0.5;
+  else if (arch === 'goat') q -= 1.5;
+  else if (arch === 'wildcard' || arch === 'chaos-agent') q += (Math.random() * 3) - 1.5;
+  else if (arch === 'underdog') q += 0.3;
+  else if (arch === 'floater') q += 0.2;
+  else if (arch === 'perceptive-player') q += 0.4;
   else if (arch === 'social-butterfly') q -= 0.5;
   else if (arch === 'showmancer') {
     const inShowmance = (gs.showmances || []).some(sh => sh.phase !== 'broken-up' && sh.players.includes(name));
     if (inShowmance) q -= 0.5;
   }
-  q += (Math.random() * 3) - 1.5;
-  return Math.max(1, Math.min(10, q));
+  q += (Math.random() * 2.5) - 1.25; // tighter noise
+  return Math.max(1, Math.min(9.5, q)); // cap at 9.5, not 10
 }
 
+const _usedBikeNames = new Set();
 function getBikeName(name) {
   const arch = getArchetype(name) || 'floater';
-  const pool = BIKE_NAMES[arch] || BIKE_NAMES['floater'];
-  return pool[Math.floor(Math.random() * pool.length)];
+  const pool = (BIKE_NAMES[arch] || BIKE_NAMES['floater']).filter(n => !_usedBikeNames.has(n));
+  const pick = pool.length ? pool[Math.floor(Math.random() * pool.length)] : `${name}'s Ride`;
+  _usedBikeNames.add(pick);
+  return pick;
 }
 
 // Generate a derangement (no one gets their own bike)

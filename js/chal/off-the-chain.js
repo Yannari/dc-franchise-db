@@ -1292,6 +1292,20 @@ export function rpBuildOffTheChain(ep) {
   // Each assignment revealed one at a time
   const assignments = br.phase2.riderAssignments || {};
   Object.entries(assignments).forEach(([rider, bikeOwner]) => {
+    const ownerIdx = br.activePlayers.indexOf(bikeOwner);
+    const totalRiders = br.activePlayers.length;
+    // Reel strip has 4 copies of the player list so the spin always has content in view.
+    // Each item is 28px tall; we target the chosen name in copy #4 (0-indexed: index 3).
+    const reelStripItems = Array(4).fill(br.activePlayers.map(n =>
+      `<div${n === bikeOwner ? ' style="color:#ffd700;font-weight:800"' : ''}>${n}</div>`
+    ).join('')).join('');
+    const reelFinal = -((3 * totalRiders + ownerIdx) * 28);
+    const reelStart = 0;
+
+    const quality = br.phase1.bikeQuality[bikeOwner] || 5;
+    const stampLabel = quality >= 7 ? 'LUCKY!' : quality >= 5 ? 'DECENT!' : quality >= 3 ? 'UH OH' : 'DOOMED!';
+    const stampColor = quality >= 7 ? '#00ff41' : quality >= 5 ? '#ffd700' : quality >= 3 ? '#ff6b00' : '#ff3333';
+
     steps.push({
       type: 'swap-assign',
       html: `
@@ -1299,12 +1313,14 @@ export function rpBuildOffTheChain(ep) {
           ${rpPortrait(rider, 'sm')}
           <div style="flex:1">
             <div style="font-size:13px;color:#cdd9e5;font-weight:600">${rider} draws...</div>
-            <div style="font-size:12px;color:#ff6b00;margin-top:4px">${bikeOwner}'s bike! <span style="color:#8b949e">("${br.phase1.bikeNames[bikeOwner] || '???'}")</span></div>
+            <div class="mx-reel" style="margin-top:6px">
+              <div class="mx-reel-window"></div>
+              <div class="mx-reel-strip" style="--reel-start:${reelStart}px;--reel-final:${reelFinal}px">${reelStripItems}</div>
+            </div>
+            <div style="font-size:10px;color:#8b949e;margin-top:4px">bike: "${br.phase1.bikeNames[bikeOwner] || '???'}"</div>
           </div>
           <div style="text-align:right">
-            <div style="font-size:10px;color:${(br.phase1.bikeQuality[bikeOwner] || 5) >= 5 ? '#00ff41' : '#ff3333'};letter-spacing:1px">
-              ${(br.phase1.bikeQuality[bikeOwner] || 5) >= 7 ? 'LUCKY' : (br.phase1.bikeQuality[bikeOwner] || 5) >= 5 ? 'DECENT' : (br.phase1.bikeQuality[bikeOwner] || 5) >= 3 ? 'UH OH' : 'DOOMED'}
-            </div>
+            <div class="mx-stamp" style="color:${stampColor};border-color:${stampColor};animation-delay:1s">${stampLabel}</div>
           </div>
         </div>
       `

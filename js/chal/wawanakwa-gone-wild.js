@@ -2607,6 +2607,9 @@ export function rpBuildWawanakwaGoneWild(ep) {
   let lastRound = -1;
 
   for (const evt of ww.timeline) {
+    // Skip legacy shadow events — they duplicate huntBeat data and render nothing
+    if (evt._shadow) continue;
+
     let huntingDelta = 0, capturedDelta = 0, failedDelta = 0, cameraShake = false;
 
     // Insert round separator tannoy with live census

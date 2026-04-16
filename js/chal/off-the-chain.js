@@ -504,10 +504,11 @@ export function simulateOffTheChain(ep) {
     else if (score >= 4) { damage = 5 + Math.floor(Math.random() * 8); timePenalty = 1; outcome = 'clipped'; }
     else { damage = 12 + Math.floor(Math.random() * 10); timePenalty = 3; outcome = 'hit'; }
     bikeHP[name] -= damage;
-    obstacleResults[name].obstacles.push({ id: 'mines', score, damage, timePenalty, outcome });
+    const mineDestroyed = bikeHP[name] <= 0 || (bikeHP[name] < 15 && Math.random() < 0.3);
+    if (mineDestroyed) bikeHP[name] = 0;
+    obstacleResults[name].obstacles.push({ id: 'mines', score, damage, timePenalty, outcome, hpAfter: bikeHP[name], destroyed: mineDestroyed });
     obstacleResults[name].totalPenalty += timePenalty;
-    // Catastrophic breakdown: only if HP drops to 0 or very low HP + bad luck
-    if (bikeHP[name] <= 0 || (bikeHP[name] < 15 && Math.random() < 0.3)) {
+    if (mineDestroyed) {
       bikeHP[name] = 0;
       obstacleResults[name].destroyed = true;
       destroyed.push(name);
@@ -543,11 +544,11 @@ export function simulateOffTheChain(ep) {
     else if (score >= 4) { damage = 8 + Math.floor(Math.random() * 8); timePenalty = 2; outcome = 'fishtail'; }
     else { damage = 15 + Math.floor(Math.random() * 10); timePenalty = 4; outcome = 'wipeout'; }
     bikeHP[name] -= damage;
-    obstacleResults[name].obstacles.push({ id: 'oil', score, damage, timePenalty, outcome });
+    const oilDestroyed = bikeHP[name] <= 0 || (bikeHP[name] < 15 && Math.random() < 0.4);
+    if (oilDestroyed) bikeHP[name] = 0;
+    obstacleResults[name].obstacles.push({ id: 'oil', score, damage, timePenalty, outcome, hpAfter: bikeHP[name], destroyed: oilDestroyed });
     obstacleResults[name].totalPenalty += timePenalty;
-    // Cascading failure: only if HP at 0 or very low + bad luck
-    if (bikeHP[name] <= 0 || (bikeHP[name] < 15 && Math.random() < 0.4)) {
-      bikeHP[name] = 0;
+    if (oilDestroyed) {
       obstacleResults[name].destroyed = true;
       destroyed.push(name);
       badges[name] = 'bikeRaceWreck';
@@ -582,10 +583,11 @@ export function simulateOffTheChain(ep) {
     else if (score >= 4) { damage = 8 + Math.floor(Math.random() * 8); timePenalty = 2; outcome = 'hard-landing'; }
     else { damage = 50 + Math.floor(Math.random() * 20); timePenalty = 0; outcome = 'piranha-splash'; } // likely destroyed but not guaranteed
     bikeHP[name] -= damage;
-    obstacleResults[name].obstacles.push({ id: 'piranhas', score, damage, timePenalty, outcome });
+    const piranhaDestroyed = bikeHP[name] <= 0;
+    if (piranhaDestroyed) bikeHP[name] = 0;
+    obstacleResults[name].obstacles.push({ id: 'piranhas', score, damage, timePenalty, outcome, hpAfter: bikeHP[name], destroyed: piranhaDestroyed });
     obstacleResults[name].totalPenalty += timePenalty;
-    if (bikeHP[name] <= 0) {
-      bikeHP[name] = 0;
+    if (piranhaDestroyed) {
       obstacleResults[name].destroyed = true;
       destroyed.push(name);
       badges[name] = 'bikeRaceWreck';
@@ -1095,9 +1097,9 @@ export function rpBuildOffTheChain(ep) {
       const data = obstacleResults[name];
       if (!data || !data.obstacles || !data.obstacles[oi]) return;
       const obs = data.obstacles[oi];
-      const wasDestroyed = obs.destroyed;
-      const damage = obs.damage || obs.penalty || 0;
-      const hpAfter = obs.hpAfter || ((data.bikeHPStart || 100) - (data.totalPenalty || 0));
+      const wasDestroyed = obs.destroyed || false;
+      const damage = obs.damage || 0;
+      const hpAfter = typeof obs.hpAfter === 'number' ? obs.hpAfter : 50;
       const hpMax = data.bikeHPStart || 100;
       const hpPct = Math.max(0, Math.round((hpAfter / hpMax) * 100));
       const hpColor = hpPct > 60 ? '#00ff41' : hpPct > 30 ? '#ffd700' : '#ff3333';
@@ -1108,8 +1110,8 @@ export function rpBuildOffTheChain(ep) {
           ${rpPortrait(name, 'sm')}
           <div style="flex:1">
             <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}</div>
-            ${damage ? `<div style="font-size:10px;color:#ff3333;margin-top:2px">Damage: -${typeof damage === 'number' ? damage.toFixed(0) : damage} HP</div>` : '<div style="font-size:10px;color:#00ff41;margin-top:2px">Clean pass!</div>'}
-            ${!wasDestroyed ? `<div class="mx-hp-bar"><div class="mx-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div>` : ''}
+            ${damage ? `<div style="font-size:10px;color:#ff3333;margin-top:2px">Damage: -${damage} HP</div>` : '<div style="font-size:10px;color:#00ff41;margin-top:2px">Clean pass!</div>'}
+            ${!wasDestroyed ? `<div style="display:flex;align-items:center;gap:6px;margin-top:3px"><div class="mx-hp-bar" style="flex:1"><div class="mx-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div><span style="font-size:9px;color:${hpColor};font-weight:700;min-width:35px">${hpAfter}/${hpMax}</span></div>` : ''}
           </div>
           <span class="mx-status ${wasDestroyed ? 'mx-wrecked' : 'mx-safe'}">${wasDestroyed ? 'DESTROYED' : 'RACING'}</span>
         </div>

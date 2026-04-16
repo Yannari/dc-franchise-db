@@ -2145,26 +2145,71 @@ function _renderWWResults(ww) {
   });
   html += `</tbody></table>`;
 
-  // Alliance summary
+  // Alliance evidence board
   const allianceEvents = (ww.timeline || []).filter(e => e.type === 'huntEvent' && (e.subtype === 'alliance-accepted' || e.subtype === 'alliance-rejected' || e.subtype === 'alliance-backfire'));
   if (allianceEvents.length) {
-    html += `<div style="margin-top:12px;padding:10px;border-radius:8px;background:rgba(212,160,23,0.06);border:1px solid rgba(212,160,23,0.15)">`;
-    html += `<div style="font-size:10px;font-weight:700;letter-spacing:1px;color:${GOLD};margin-bottom:6px">🤝 ALLIANCE ACTIVITY</div>`;
-    allianceEvents.forEach(ae => {
-      const icon = ae.subtype === 'alliance-accepted' ? '✅' : ae.subtype === 'alliance-backfire' ? '🗡️' : '🚫';
-      html += `<div style="font-size:11px;color:#d4c8a8;margin-bottom:3px">${icon} ${ae.players?.join(' & ') || '???'} — ${ae.subtype.replace(/-/g, ' ').toUpperCase()}</div>`;
+    const boardId = `ww-evidence-alliance-${ww.immunityWinner || 'ep'}`;
+    html += `<div class="ww-evidence-board" id="${boardId}" style="margin-top:12px">`;
+    html += `<div class="ww-evidence-board-title">🤝 ALLIANCE FILE</div>`;
+    html += `<div class="ww-evidence-pins">`;
+    allianceEvents.forEach((ae, i) => {
+      const pinA = ae.players?.[0];
+      const pinB = ae.players?.[1];
+      const subtypeColor = ae.subtype === 'alliance-accepted' ? GOLD : ae.subtype === 'alliance-backfire' ? RED : GREY;
+      const subtypeIcon = ae.subtype === 'alliance-accepted' ? '✅' : ae.subtype === 'alliance-backfire' ? '🗡️' : '🚫';
+      const pinIdA = `ww-pin-al-${boardId}-${i}-a`;
+      const pinIdB = `ww-pin-al-${boardId}-${i}-b`;
+      html += `<div class="ww-evidence-pin" id="${pinIdA}" data-line-to="${pinIdB}" data-line-class="ww-evidence-line--${ae.subtype === 'alliance-accepted' ? 'help' : 'rival'}" style="--pin-color:${subtypeColor}">`;
+      html += `<div class="ww-evidence-pin-portrait">${pinA ? rpPortrait(pinA, 'xs') : ''}</div>`;
+      html += `<div class="ww-evidence-pin-name">${pinA || '???'}</div>`;
+      html += `<div class="ww-evidence-pin-badge">${subtypeIcon}</div>`;
+      html += `</div>`;
+      if (pinB) {
+        html += `<div class="ww-evidence-pin" id="${pinIdB}" style="--pin-color:${subtypeColor}">`;
+        html += `<div class="ww-evidence-pin-portrait">${rpPortrait(pinB, 'xs')}</div>`;
+        html += `<div class="ww-evidence-pin-name">${pinB}</div>`;
+        html += `<div class="ww-evidence-pin-badge">${ae.subtype.replace(/-/g,' ').toUpperCase()}</div>`;
+        html += `</div>`;
+      }
     });
+    html += `</div>`;
+    html += `<script>setTimeout(function(){window._wwDrawEvidenceLines && window._wwDrawEvidenceLines('${boardId}')},50)<\/script>`;
     html += `</div>`;
   }
 
-  // Tranq incident report
+  // Tranq evidence board
   const tranqEvents = (ww.timeline || []).filter(e => e.type === 'tranqChaos');
   if (tranqEvents.length) {
-    html += `<div style="margin-top:12px;padding:10px;border-radius:8px;background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.15)">`;
-    html += `<div style="font-size:10px;font-weight:700;letter-spacing:1px;color:${RED};margin-bottom:6px">💉 TRANQUILIZER INCIDENT REPORT</div>`;
-    tranqEvents.forEach(te => {
-      html += `<div style="font-size:11px;color:#d4c8a8;margin-bottom:3px"><span class="ww-dart">💉</span> ${te.players?.join(' → ') || '???'} — ${(te.subtype || 'unknown').replace(/-/g, ' ').toUpperCase()}</div>`;
+    const boardId = `ww-evidence-tranq-${ww.immunityWinner || 'ep'}`;
+    html += `<div class="ww-evidence-board" id="${boardId}" style="margin-top:12px;border-color:rgba(248,81,73,0.25)">`;
+    html += `<div class="ww-evidence-board-title" style="color:${RED}">💉 INCIDENT REPORT — TRANQUILIZER GUN</div>`;
+    html += `<div class="ww-evidence-pins">`;
+    tranqEvents.forEach((te, i) => {
+      const shooter = te.players?.[0];
+      const victim = te.players?.[1];
+      const pinIdS = `ww-pin-tq-${boardId}-${i}-s`;
+      const pinIdV = `ww-pin-tq-${boardId}-${i}-v`;
+      html += `<div class="ww-evidence-pin" id="${pinIdS}" data-line-to="${pinIdV}" data-line-class="ww-evidence-line--tranq" style="--pin-color:${RED}">`;
+      html += `<div class="ww-evidence-pin-portrait">${shooter ? rpPortrait(shooter, 'xs') : '🔫'}</div>`;
+      html += `<div class="ww-evidence-pin-name">${shooter || 'Unknown'}</div>`;
+      html += `<div class="ww-evidence-pin-badge">SHOOTER</div>`;
+      html += `</div>`;
+      if (victim) {
+        html += `<div class="ww-evidence-pin" id="${pinIdV}" style="--pin-color:${RED}">`;
+        html += `<div class="ww-evidence-pin-portrait">${rpPortrait(victim, 'xs')}</div>`;
+        html += `<div class="ww-evidence-pin-name">${victim}</div>`;
+        html += `<div class="ww-evidence-pin-badge">VICTIM</div>`;
+        html += `</div>`;
+      } else {
+        html += `<div class="ww-evidence-pin" id="${pinIdV}" style="--pin-color:${GREY}">`;
+        html += `<div class="ww-evidence-pin-portrait">🎯</div>`;
+        html += `<div class="ww-evidence-pin-name">${(te.subtype || 'miss').replace(/-/g,' ').toUpperCase()}</div>`;
+        html += `<div class="ww-evidence-pin-badge">TARGET</div>`;
+        html += `</div>`;
+      }
     });
+    html += `</div>`;
+    html += `<script>setTimeout(function(){window._wwDrawEvidenceLines && window._wwDrawEvidenceLines('${boardId}')},50)<\/script>`;
     html += `</div>`;
   }
 

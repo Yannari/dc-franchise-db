@@ -821,7 +821,9 @@ export function simulateOffTheChain(ep) {
   const isSuddenDeath = ep.isSuddenDeath || (ep.twists || []).some(t => t.type === 'sudden-death');
   if (isSuddenDeath && lastPlace) {
     ep.eliminated = lastPlace;
+    ep.noTribal = true;
     ep.tribalPlayers = [];
+    ep.suddenDeathEliminated = lastPlace;
   } else {
     ep.tribalPlayers = activePlayers.filter(p => p !== immunityWinner && p !== gs.exileDuelPlayer);
     if (lastPlace) {

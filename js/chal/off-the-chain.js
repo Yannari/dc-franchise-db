@@ -461,8 +461,8 @@ export function simulateOffTheChain(ep) {
   // Part 1 wear damage on surviving bikes
   finishers.forEach(rider => {
     const owner = riderAssignments[rider];
-    const wear = Math.max(0, (10 - race1Scores[rider]) * 2);
-    bikeHP[owner] = Math.max(1, bikeHP[owner] - Math.round(wear));
+    const wear = Math.max(0, Math.min(15, (10 - race1Scores[rider]) * 1.5));
+    bikeHP[owner] = Math.max(10, bikeHP[owner] - Math.round(wear));
   });
 
   // Popularity: good bike = +1, bad bike = -1
@@ -501,13 +501,13 @@ export function simulateOffTheChain(ep) {
     const score = s.intuition * 0.35 + s.boldness * 0.25 + hpFactor * 0.2 + (Math.random() * 4 - 2) + familiarityBonus;
     let damage = 0, timePenalty = 0, outcome = '';
     if (score >= 7) { damage = 0; timePenalty = 0; outcome = 'clean'; }
-    else if (score >= 4) { damage = 10 + Math.floor(Math.random() * 11); timePenalty = 1; outcome = 'clipped'; }
-    else { damage = 25 + Math.floor(Math.random() * 11); timePenalty = 3; outcome = 'hit'; }
+    else if (score >= 4) { damage = 5 + Math.floor(Math.random() * 8); timePenalty = 1; outcome = 'clipped'; }
+    else { damage = 12 + Math.floor(Math.random() * 10); timePenalty = 3; outcome = 'hit'; }
     bikeHP[name] -= damage;
     obstacleResults[name].obstacles.push({ id: 'mines', score, damage, timePenalty, outcome });
     obstacleResults[name].totalPenalty += timePenalty;
-    // Catastrophic breakdown check
-    if (bikeHP[name] <= 0 || ((100 - bikeHP[name]) * 0.008 + Math.random() * 0.1 > 0.5 && bikeHP[name] < 50)) {
+    // Catastrophic breakdown: only if HP drops to 0 or very low HP + bad luck
+    if (bikeHP[name] <= 0 || (bikeHP[name] < 15 && Math.random() < 0.3)) {
       bikeHP[name] = 0;
       obstacleResults[name].destroyed = true;
       destroyed.push(name);
@@ -539,15 +539,14 @@ export function simulateOffTheChain(ep) {
     const hpFactor = bikeHP[name] / 100;
     const score = s.physical * 0.3 + s.endurance * 0.25 + hpFactor * 0.2 + (Math.random() * 4 - 2) + familiarityBonus;
     let damage = 0, timePenalty = 0, outcome = '';
-    if (score >= 7) { damage = Math.floor(Math.random() * 6); timePenalty = 0; outcome = 'power-through'; }
-    else if (score >= 4) { damage = 15 + Math.floor(Math.random() * 11); timePenalty = 2; outcome = 'fishtail'; }
-    else { damage = 30 + Math.floor(Math.random() * 11); timePenalty = 4; outcome = 'wipeout'; }
+    if (score >= 7) { damage = Math.floor(Math.random() * 4); timePenalty = 0; outcome = 'power-through'; }
+    else if (score >= 4) { damage = 8 + Math.floor(Math.random() * 8); timePenalty = 2; outcome = 'fishtail'; }
+    else { damage = 15 + Math.floor(Math.random() * 10); timePenalty = 4; outcome = 'wipeout'; }
     bikeHP[name] -= damage;
     obstacleResults[name].obstacles.push({ id: 'oil', score, damage, timePenalty, outcome });
     obstacleResults[name].totalPenalty += timePenalty;
-    // Cascading failure: doubled breakdown chance if HP < 40%
-    const breakdownMult = bikeHP[name] < 40 ? 2 : 1;
-    if (bikeHP[name] <= 0 || ((100 - bikeHP[name]) * 0.008 * breakdownMult + Math.random() * 0.1 > 0.5 && bikeHP[name] < 50)) {
+    // Cascading failure: only if HP at 0 or very low + bad luck
+    if (bikeHP[name] <= 0 || (bikeHP[name] < 15 && Math.random() < 0.4)) {
       bikeHP[name] = 0;
       obstacleResults[name].destroyed = true;
       destroyed.push(name);
@@ -579,9 +578,9 @@ export function simulateOffTheChain(ep) {
     const weightPenalty = (100 - bikeHP[name]) * 0.02;
     const score = s.physical * 0.3 + s.boldness * 0.35 + hpFactor * 0.2 + (Math.random() * 4 - 2) + familiarityBonus - weightPenalty;
     let damage = 0, timePenalty = 0, outcome = '';
-    if (score >= 7) { damage = Math.floor(Math.random() * 6); timePenalty = 0; outcome = 'clear'; }
-    else if (score >= 4) { damage = 15 + Math.floor(Math.random() * 11); timePenalty = 2; outcome = 'hard-landing'; }
-    else { damage = 100; timePenalty = 0; outcome = 'piranha-splash'; } // destroyed
+    if (score >= 7) { damage = Math.floor(Math.random() * 4); timePenalty = 0; outcome = 'clear'; }
+    else if (score >= 4) { damage = 8 + Math.floor(Math.random() * 8); timePenalty = 2; outcome = 'hard-landing'; }
+    else { damage = 50 + Math.floor(Math.random() * 20); timePenalty = 0; outcome = 'piranha-splash'; } // likely destroyed but not guaranteed
     bikeHP[name] -= damage;
     obstacleResults[name].obstacles.push({ id: 'piranhas', score, damage, timePenalty, outcome });
     obstacleResults[name].totalPenalty += timePenalty;
@@ -1002,11 +1001,14 @@ export function rpBuildOffTheChain(ep) {
         <div class="mx-card mx-speed-lines" style="display:flex;align-items:center;gap:12px;${!finished ? 'border-color:rgba(255,51,51,0.3);background:rgba(255,51,51,0.04)' : 'border-color:rgba(0,200,100,0.15)'}">
           ${rpPortrait(name, 'sm')}
           <div style="flex:1">
-            <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}</div>
+            <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name} <span style="font-size:10px;color:#8b949e;font-weight:400">riding ${br.phase2.riderAssignments[name]}'s bike</span></div>
             <div style="font-size:10px;color:#ff6b00;margin-top:2px">Score: ${score.toFixed ? score.toFixed(1) : score}</div>
             ${quip ? `<div style="font-size:10px;color:#8b949e;font-style:italic;margin-top:2px">${quip}</div>` : ''}
           </div>
-          <span class="mx-status ${finished ? 'mx-safe' : 'mx-dnf'}">${finished ? 'QUALIFIED' : 'DNF'}</span>
+          <div style="text-align:right">
+            <span class="mx-status ${finished ? 'mx-safe' : 'mx-dnf'}">${finished ? 'QUALIFIED' : 'DNF'}</span>
+            <div style="font-size:9px;color:${finished ? '#00ff41' : '#ff3333'};margin-top:2px">${finished ? `${br.phase2.riderAssignments[name]} advances` : `${br.phase2.riderAssignments[name]} eliminated`}</div>
+          </div>
         </div>
       `
     });

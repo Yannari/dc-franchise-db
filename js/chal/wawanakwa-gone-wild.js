@@ -1863,6 +1863,11 @@ export function rpBuildWawanakwaGoneWild(ep) {
 function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
   const GOLD = '#c8a84e', GREEN = '#6a9f3a', RED = '#c33', GREY = '#8b7750', ORANGE = '#c8a84e', PINK = '#d4789a', BLUE = '#7a9ec2', PURPLE = '#a05050';
 
+  function wrapTier(tier, inner) {
+    if (!tier) return inner;
+    return `<div class="ww-tier-bg ww-tier-bg--${tier}">${inner}</div>`;
+  }
+
   // ── ANIMAL DRAW: slot reel ──
   if (evt.type === 'animalDraw') {
     const tierColors = { easy: GREEN, medium: ORANGE, hard: RED, extreme: PURPLE };
@@ -1887,10 +1892,8 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     h += `<div class="ww-card-body" style="margin-top:6px">${evt.text}</div>`;
     h += `<div style="margin-top:6px"><span class="ww-stamp" style="color:${color}">${tierStamps[evt.tier] || evt.tier.toUpperCase()}</span></div>`;
     h += `</div>`;
-    return h;
+    return wrapTier(evt.tier, h);
   }
-
-  // ── GEAR GRAB ──
   if (evt.type === 'gearGrab') {
     const isArmed = (evt.gear || '').toLowerCase().includes('tranq');
     const cardClass = isArmed ? 'ww-gear-card ww-gear-card--armed' : 'ww-gear-card';
@@ -1925,7 +1928,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     h += `<div style="margin-top:6px"><span class="ww-stamp" style="color:${GREEN}">CAUGHT!</span></div>`;
     h += `<div class="ww-card-footer">Round ${(evt.round || 0) + 1}</div>`;
     h += `</div>`;
-    return h;
+    return wrapTier(ww.huntResults?.[evt.player]?.animalTier, h);
   }
 
   // ── HUNT ATTEMPT (fail) ──
@@ -1936,7 +1939,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     h += `<div class="ww-card-body">${evt.text}</div>`;
     h += `<div class="ww-card-footer">Round ${(evt.round || 0) + 1}</div>`;
     h += `</div>`;
-    return h;
+    return wrapTier(ww.huntResults?.[evt.player]?.animalTier, h);
   }
 
   // ── HUNT MISHAP ──
@@ -1964,7 +1967,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     h += `<div style="margin-top:6px"><span class="ww-stamp" style="color:${RED}">${stamp}</span></div>`;
     h += `<div class="ww-card-footer">Round ${(evt.round || 0) + 1}</div>`;
     h += `</div>`;
-    return h;
+    return wrapTier(mishapTier, h);
   }
 
   // ── HUNT FAIL (never caught) ──
@@ -1975,7 +1978,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     h += `<div class="ww-card-body">${evt.text}</div>`;
     h += `<div style="margin-top:6px"><span class="ww-stamp" style="color:${RED}">FAILED</span></div>`;
     h += `</div>`;
-    return h;
+    return wrapTier(ww.huntResults?.[evt.player]?.animalTier, h);
   }
 
   // ── TRANQ CHAOS ──

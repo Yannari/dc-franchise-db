@@ -757,3 +757,50 @@ export function simulateOffTheChain(ep) {
 
   ep.bikeRace = { phase1, phase2, phase3, phase4, badges, chrisQuips, activePlayers, isSuddenDeath };
 }
+
+// ══════════════════════════════════════════════════════════════
+// TEXT BACKLOG
+// ══════════════════════════════════════════════════════════════
+export function _textOffTheChain(ep, ln, sec) {
+  if (!ep.isOffTheChain || !ep.bikeRace) return;
+  const br = ep.bikeRace;
+
+  sec("THAT'S OFF THE CHAIN!");
+  ln(`${br.activePlayers.length} campers were tasked with building their own bikes — then racing them through a deadly obstacle course.`);
+
+  sec('The Build Phase');
+  ln(`${br.phase1.bestBuilder} built the best bike ("${br.phase1.bikeNames[br.phase1.bestBuilder]}") while ${br.phase1.worstBuilder} struggled.`);
+  br.phase1.buildEvents.forEach(e => { if (e.text) ln(e.text); });
+
+  sec('The Swap');
+  ln(`In a cruel twist, campers drew names and raced someone else's bike.`);
+  const escorted = br.phase2.finishers.map(r => `${r} crossed on ${br.phase2.riderAssignments[r]}'s bike`);
+  if (escorted.length) ln(escorted.slice(0, 3).join('. ') + '.');
+  ln(`${br.phase2.failures.length} riders failed to finish — their bike owners were eliminated from Part 2.`);
+
+  sec('The Obstacle Gauntlet');
+  const { finishRanking, destroyed } = br.phase3;
+  if (destroyed.length) {
+    ln(`${destroyed.join(', ')} had ${destroyed.length === 1 ? 'their bike' : 'their bikes'} destroyed — out of the race but safe from elimination.`);
+  }
+  br.phase3.obstacleEvents.forEach(e => { if (e.text) ln(e.text); });
+
+  sec('The Finish Line');
+  if (br.phase3.finishRanking.length) {
+    const winner = br.phase3.finishRanking[0];
+    ln(`${winner} crossed the finish line first and won immunity!`);
+    if (br.phase4.eliminatedPlayer) {
+      const last = br.phase4.eliminatedPlayer;
+      if (br.bikeRace?.isSuddenDeath) {
+        ln(`${last} finished last and was automatically eliminated.`);
+      } else {
+        ln(`${last} finished last — a target heading into tribal council.`);
+      }
+    }
+  }
+
+  if (br.phase4.eliminationReaction?.beats?.length) {
+    sec('The Aftermath');
+    br.phase4.eliminationReaction.beats.forEach(b => ln(b));
+  }
+}

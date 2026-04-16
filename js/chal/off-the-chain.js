@@ -1536,25 +1536,64 @@ export function rpBuildOffTheChain(ep) {
       html: `<div class="mx-sector">THE FINISH LINE</div>`
     });
 
-    // Winner
+    // Determine photo finish: compare top-2 finishers' last-obstacle HP
+    let photoFinish = false;
+    if (finishRanking.length >= 2) {
+      const top1 = finishRanking[0];
+      const top2 = finishRanking[1];
+      const top1Obs = (obstacleResults[top1]?.obstacles || []);
+      const top2Obs = (obstacleResults[top2]?.obstacles || []);
+      const hp1 = top1Obs[top1Obs.length - 1]?.hpAfter;
+      const hp2 = top2Obs[top2Obs.length - 1]?.hpAfter;
+      if (typeof hp1 === 'number' && typeof hp2 === 'number' && Math.abs(hp1 - hp2) <= 10) {
+        photoFinish = true;
+      }
+    }
+
+    // Step A: Curtain reveal
     steps.push({
-      type: 'finish-winner',
+      type: 'finish-curtain',
       finishedDelta: 1,
       immuneDelta: 1,
       racingDelta: -1,
       html: `
         ${winQuip}
-        <div class="mx-card mx-drop-in" style="border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.06);text-align:center;padding:20px">
-          <div style="margin-bottom:12px">${rpPortrait(winner, 'xl')}</div>
-          <div style="font-size:16px;color:#ffd700;font-weight:700;margin-bottom:6px">${winner} crosses the finish line FIRST!</div>
-          <div style="margin-top:10px"><span class="mx-status mx-immune" style="font-size:12px;padding:4px 14px">IMMUNITY WINNER</span></div>
+        <div class="mx-curtain-wrap">
+          <div class="mx-curtain-spotlight">
+            ${photoFinish ? '<div class="mx-photo-finish">📸 PHOTO FINISH 📸</div>' : ''}
+            ${rpPortrait(winner, 'xl')}
+            <div style="font-size:18px;color:#ffd700;font-weight:900;margin-top:10px;letter-spacing:2px">${winner}</div>
+            <div style="font-size:12px;color:#ff6b00;margin-top:4px;letter-spacing:3px">FIRST ACROSS THE LINE</div>
+            <div style="margin-top:10px"><span class="mx-status mx-immune" style="font-size:12px;padding:4px 14px">IMMUNITY WINNER</span></div>
+          </div>
         </div>
       `
     });
 
-    // Rest of ranking
-    finishRanking.slice(1).forEach((name, i) => {
-      const isLast = i === finishRanking.length - 2;
+    // Step B: Podium rise (top 3, or top 2 if only 2 finished, or skip if only 1)
+    if (finishRanking.length >= 2) {
+      const podiumSlots = [];
+      if (finishRanking[1]) podiumSlots.push({ rank: 2, name: finishRanking[1], medal: '🥈' });
+      if (finishRanking[0]) podiumSlots.push({ rank: 1, name: finishRanking[0], medal: '🥇' });
+      if (finishRanking[2]) podiumSlots.push({ rank: 3, name: finishRanking[2], medal: '🥉' });
+
+      const podiumHtml = podiumSlots.map(slot => `
+        <div class="mx-podium-plinth" data-rank="${slot.rank}">
+          <div style="margin-bottom:6px">${rpPortrait(slot.name, 'sm')}</div>
+          <div style="font-size:12px;color:#cdd9e5;font-weight:700;margin-bottom:4px">${slot.name}</div>
+          <div class="mx-podium-block">${slot.medal}</div>
+        </div>
+      `).join('');
+
+      steps.push({
+        type: 'finish-podium',
+        html: `<div class="mx-podium">${podiumHtml}</div>`
+      });
+    }
+
+    // Rest of ranking (#4+, since podium covers top 3)
+    finishRanking.slice(3).forEach((name, i) => {
+      const isLast = i === finishRanking.slice(3).length - 1 && name === finishRanking[finishRanking.length - 1];
       steps.push({
         type: 'finish-place',
         racingDelta: -1,
@@ -1564,9 +1603,9 @@ export function rpBuildOffTheChain(ep) {
             ${rpPortrait(name, 'sm')}
             <div style="flex:1">
               <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}</div>
-              <div style="font-size:10px;color:${isLast ? '#ff3333' : '#ff6b00'};margin-top:2px">${isLast ? 'LAST PLACE' : `Finished #${i + 2}`}</div>
+              <div style="font-size:10px;color:${isLast ? '#ff3333' : '#ff6b00'};margin-top:2px">${isLast ? 'LAST PLACE' : `Finished #${finishRanking.indexOf(name) + 1}`}</div>
             </div>
-            <span class="mx-status ${isLast ? 'mx-last' : 'mx-safe'}">${isLast ? 'LAST' : `#${i + 2}`}</span>
+            <span class="mx-status ${isLast ? 'mx-last' : 'mx-safe'}">${isLast ? 'LAST' : `#${finishRanking.indexOf(name) + 1}`}</span>
           </div>
         `
       });

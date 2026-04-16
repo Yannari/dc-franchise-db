@@ -1243,6 +1243,17 @@ export function rpBuildOffTheChain(ep) {
       return `<div style="font-size:11px;color:#cdd9e5;margin-top:6px;padding:6px 8px;border-left:2px solid ${evtBorder};background:rgba(0,0,0,0.2);border-radius:0 4px 4px 0;display:flex;align-items:center;gap:6px">${evtPortraits}<span>${evt.text}</span></div>`;
     }).join('');
 
+    // Pre-compute a random spark pattern per bike (4 sparks with random x/y offsets)
+    const sparks = [0,1,2,3].map(i => ({
+      x: (Math.random() * 60 - 30).toFixed(0),
+      y: (Math.random() * 30 - 15).toFixed(0),
+      delay: (150 + i * 150).toFixed(0),
+      left: (20 + Math.random() * 60).toFixed(0),
+    }));
+    const sparkHtml = sparks.map(s =>
+      `<div class="mx-weld-spark" style="left:${s.left}%;top:0;--sx:${s.x}px;--sy:${s.y}px;--spark-delay:${s.delay}ms"></div>`
+    ).join('');
+
     steps.push({
       type: 'grid-bike',
       html: `
@@ -1250,9 +1261,10 @@ export function rpBuildOffTheChain(ep) {
           ${rpPortrait(name, 'sm')}
           <div style="flex:1">
             <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}${tag}</div>
-            <div style="font-size:11px;color:#ff6b00;margin-top:2px">"${bikeName}"</div>
-            <div class="mx-quality-bar">
-              <div class="mx-quality-fill" style="width:${qPct}%;background:${qColor}"></div>
+            <div style="font-size:11px;color:#ff6b00;margin-top:2px"><span class="mx-stamp" style="font-size:10px;padding:2px 8px;color:#ff6b00;border-color:#ff6b00">${bikeName}</span></div>
+            <div class="mx-quality-bar" style="position:relative">
+              <div class="mx-quality-fill" style="width:${qPct}%;background:${qColor};transition:width 0.9s cubic-bezier(0.3,0.8,0.3,1)"></div>
+              <div class="mx-spark-field" style="position:absolute;top:-6px;left:0;right:0;height:0">${sparkHtml}</div>
             </div>
             <div style="font-size:9px;color:${qColor};margin-top:2px;letter-spacing:1px">${qLabel} (${q.toFixed(1)})</div>
             ${evtHtml}

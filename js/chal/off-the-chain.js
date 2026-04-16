@@ -1652,8 +1652,20 @@ export function rpBuildOffTheChain(ep) {
 
   // ── WRECKAGE REPORT ──
   steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">📋 WRECKAGE REPORT — FINAL STATUS</div>` });
+  // Identify sabotage pairs from build events for connecting lines
+  const sabotagePairs = [];
+  (br.phase1.buildEvents || []).forEach(evt => {
+    if (evt.id === 'sabotage' || evt.id === 'parts-theft') {
+      const actor = evt.players?.find(p => p !== evt.effect?.target);
+      const victim = evt.effect?.target;
+      if (actor && victim) sabotagePairs.push({ actor, victim });
+    }
+  });
+
   let debriefHtml = `<div class="mx-sector">WRECKAGE REPORT — FINAL STATUS</div>`;
-  debriefHtml += `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">`;
+  debriefHtml += `<div class="mx-evidence-board" id="mx-evidence-${stateKey}" data-sabotage-pairs='${JSON.stringify(sabotagePairs).replace(/'/g, "&#39;")}'>
+    <svg class="mx-evidence-svg" id="mx-evidence-svg-${stateKey}"></svg>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center">`;
   br.activePlayers.forEach(name => {
     const badge = br.badges[name];
     const isImmune = badge === 'bikeRaceImmune';
@@ -1662,7 +1674,7 @@ export function rpBuildOffTheChain(ep) {
     const statusClass = isImmune ? 'mx-immune' : isWrecked ? 'mx-wrecked' : isLast ? 'mx-last' : badge === 'bikeRaceBuilder' ? 'mx-safe' : badge === 'bikeRaceSaboteur' ? 'mx-wrecked' : badge === 'bikeRaceClutch' ? 'mx-safe' : 'mx-racing';
     const statusText = isImmune ? 'IMMUNE' : isWrecked ? 'WRECKED' : isLast ? 'LAST' : badge === 'bikeRaceBuilder' ? 'BEST BUILD' : badge === 'bikeRaceSaboteur' ? 'SABOTEUR' : badge === 'bikeRaceClutch' ? 'CLUTCH' : 'FINISHED';
     debriefHtml += `
-      <div style="text-align:center;width:80px">
+      <div class="mx-evidence-pin" data-player="${name}" style="text-align:center;width:80px;padding-top:8px">
         ${rpPortrait(name, 'sm')}
         <span class="mx-status ${statusClass}" style="margin-top:4px;display:block;font-size:9px">${statusText}</span>
       </div>`;
@@ -1670,10 +1682,12 @@ export function rpBuildOffTheChain(ep) {
   debriefHtml += `</div>`;
 
   if (finishRanking.length) {
-    debriefHtml += `<div class="mx-card" style="text-align:center;border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.05)">
-      <div style="font-size:14px;color:#ffd700;font-weight:700">${finishRanking[0]} wins immunity!</div>
+    debriefHtml += `<div style="text-align:center;margin-top:16px">
+      <span class="mx-stamp" style="color:#ffd700;border-color:#ffd700;animation-delay:0.8s">CASE CLOSED</span>
     </div>`;
   }
+
+  debriefHtml += `</div>`;
   steps.push({ type: 'debrief', html: debriefHtml });
 
   // ── BUILD FINAL HTML ──
@@ -1761,6 +1775,38 @@ export function _mxReveal(stateKey, totalSteps) {
       const line = el.dataset.tickerLine;
       tickerInner.textContent = line + '  •  ' + tickerInner.textContent;
     }
+  }
+  // Evidence-board line drawing (runs only when the revealed step is the debrief)
+  if (el && el.querySelector(`#mx-evidence-${stateKey}`)) {
+    requestAnimationFrame(() => {
+      const board = el.querySelector(`#mx-evidence-${stateKey}`);
+      const svg = el.querySelector(`#mx-evidence-svg-${stateKey}`);
+      if (!board || !svg) return;
+      let pairs = [];
+      try { pairs = JSON.parse(board.dataset.sabotagePairs || '[]'); } catch (e) {}
+      const boardRect = board.getBoundingClientRect();
+      svg.setAttribute('width', boardRect.width);
+      svg.setAttribute('height', boardRect.height);
+      svg.style.width = boardRect.width + 'px';
+      svg.style.height = boardRect.height + 'px';
+      svg.innerHTML = '';
+      pairs.forEach(({ actor, victim }) => {
+        const aEl = board.querySelector(`[data-player="${actor}"]`);
+        const vEl = board.querySelector(`[data-player="${victim}"]`);
+        if (!aEl || !vEl) return;
+        const aR = aEl.getBoundingClientRect();
+        const vR = vEl.getBoundingClientRect();
+        const ax = aR.left - boardRect.left + aR.width / 2;
+        const ay = aR.top - boardRect.top + 12;
+        const vx = vR.left - boardRect.left + vR.width / 2;
+        const vy = vR.top - boardRect.top + 12;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', ax); line.setAttribute('y1', ay);
+        line.setAttribute('x2', vx); line.setAttribute('y2', vy);
+        line.setAttribute('class', 'mx-evidence-line');
+        svg.appendChild(line);
+      });
+    });
   }
   // Update status tracker counts
   if (el) {

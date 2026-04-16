@@ -886,6 +886,9 @@ export function rpBuildOffTheChain(ep) {
     `
   });
 
+  // Phase 1 announcement
+  steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">🔧 PHASE 1: THE BUILD — CONSTRUCT YOUR RIDE</div>` });
+
   // Per-player bike cards
   br.activePlayers.forEach(name => {
     const q = br.phase1.bikeQuality[name];
@@ -934,6 +937,7 @@ export function rpBuildOffTheChain(ep) {
   });
 
   // ── THE SWAP ──
+  steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">🎲 THE TWIST — DRAW NAMES, SWAP BIKES!</div>` });
   const swapQuipKey = Object.keys(br.chrisQuips).find(k => k.startsWith('swap'));
   steps.push({
     type: 'swap-header',
@@ -969,6 +973,7 @@ export function rpBuildOffTheChain(ep) {
   });
 
   // ── PART 1: QUALIFYING ──
+  steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">🏁 PART 1: QUALIFYING LAP — RIDE SOMEONE ELSE'S BIKE!</div>` });
   steps.push({
     type: 'race1-header',
     html: `
@@ -1051,6 +1056,7 @@ export function rpBuildOffTheChain(ep) {
   });
 
   // ── PART 2: OBSTACLES ──
+  steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">💥 PART 2: THE OBSTACLE GAUNTLET — LAND MINES, OIL SLICK, PIRANHAS!</div>` });
   steps.push({
     type: 'obstacle-header',
     html: `
@@ -1149,6 +1155,7 @@ export function rpBuildOffTheChain(ep) {
   });
 
   // ── FINISH LINE ──
+  steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">🏆 THE FINISH LINE</div>` });
   const finishRanking = br.phase3.finishRanking || [];
   if (finishRanking.length) {
     const winner = finishRanking[0];
@@ -1216,6 +1223,7 @@ export function rpBuildOffTheChain(ep) {
   }
 
   // ── AFTERMATH ──
+  steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">💔 THE AFTERMATH</div>` });
   if (br.phase4.eliminationReaction?.beats?.length) {
     steps.push({
       type: 'aftermath-header',
@@ -1234,6 +1242,7 @@ export function rpBuildOffTheChain(ep) {
   }
 
   // ── WRECKAGE REPORT ──
+  steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">📋 WRECKAGE REPORT — FINAL STATUS</div>` });
   let debriefHtml = `<div class="mx-sector">WRECKAGE REPORT — FINAL STATUS</div>`;
   debriefHtml += `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">`;
   br.activePlayers.forEach(name => {

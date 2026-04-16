@@ -1640,8 +1640,10 @@ export function rpBuildOffTheChain(ep) {
       steps.push({
         type: 'aftermath-beat',
         html: `
-          <div class="mx-card" style="border-color:rgba(255,107,0,0.2)">
-            <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${beat}</div>
+          <div class="mx-debris-wrap">
+            <div class="mx-card" style="border-color:rgba(255,107,0,0.2);margin-bottom:0">
+              <div class="mx-field-mic" style="font-size:12px;color:#cdd9e5;line-height:1.6">${beat}</div>
+            </div>
           </div>
         `
       });

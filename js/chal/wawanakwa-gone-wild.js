@@ -1254,7 +1254,7 @@ export function rpBuildWawanakwaGoneWild(ep) {
 
   // ── Build HTML ──
   let html = `<style>${WW_STYLES}</style>`;
-  html += `<div class="ww-page">`;
+  html += `<div class="ww-page rp-page">`;
 
   // Header
   html += `<div class="ww-header"><div class="ww-title">🏕️ WAWANAKWA GONE WILD!</div>`;
@@ -1278,7 +1278,7 @@ export function rpBuildWawanakwaGoneWild(ep) {
     const fillPct = Math.min(100, Math.round((r.attemptsMade / maxAttempts) * 100));
     const fillColor = r.captured ? '#3fb950' : '#f85149';
     html += `<div class="ww-player-tile" style="--tile-tier-color:${tierColor}">`;
-    html += `<div style="font-weight:700;color:#e6edf3;margin-bottom:2px">${name}</div>`;
+    html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">${rpPortrait(name, 'xs')}<span style="font-weight:700;color:#e6edf3">${name}</span></div>`;
     html += `<div style="color:${tierColor}">${tierEmoji} ${r.animal} <span class="ww-tier ww-tier--${r.animalTier}">${r.animalTier.toUpperCase()}</span></div>`;
     html += `<div style="color:#6e7681">🎒 ${r.gear}</div>`;
     html += `<div>${statusIcon} ${r.captured ? `R${r.captureRound + 1}` : 'FAILED'} · ${r.attemptsMade} tries</div>`;
@@ -1348,6 +1348,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     let h = `<div class="ww-card" style="--ww-accent:${color}">`;
     h += `<div class="ww-card-label">🎲 ANIMAL DRAW</div>`;
     h += `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">`;
+    h += `${rpPortrait(evt.player, 'sm')}`;
     h += `<span style="font-weight:700;color:#e6edf3;font-size:13px">${evt.player}</span>`;
     h += `<div class="ww-reel" style="--reel-start:0px;--reel-final:${reelFinal}px"><div class="ww-reel-window"></div><div class="ww-reel-strip">`;
     reelNames.forEach(a => { h += `<div>${a}</div>`; });

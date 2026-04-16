@@ -1560,10 +1560,52 @@ function _wwReveal(stateKey, totalSteps) {
     el.style.display = '';
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-    // Camera shake
+    // Camera shake: scoped to el only (NOT .ww-page — transform breaks sticky tracker)
     if (el.dataset.cameraShake === '1') {
-      const page = el.closest('.ww-page');
-      if (page) { page.classList.add('ww-camera-shake'); setTimeout(() => page.classList.remove('ww-camera-shake'), 400); }
+      el.classList.add('ww-camera-shake');
+      setTimeout(() => el.classList.remove('ww-camera-shake'), 400);
+    }
+
+    // Walkie signal needle pulse on every reveal
+    const needle = document.getElementById(`ww-signal-needle-${stateKey}`);
+    if (needle) {
+      needle.classList.remove('ww-signal-rev');
+      void needle.offsetWidth;
+      needle.classList.add('ww-signal-rev');
+    }
+
+    // Dart trail: draw SVG line + impact emoji between shooter and victim portraits
+    const tranqPair = el.dataset.tranqPair;
+    if (tranqPair) {
+      const [shooterId, victimId] = tranqPair.split('|');
+      const shooterEl = el.querySelector(`[data-player-id="${CSS.escape(shooterId)}"]`);
+      const victimEl  = el.querySelector(`[data-player-id="${CSS.escape(victimId)}"]`);
+      if (shooterEl && victimEl) {
+        const elRect = el.getBoundingClientRect();
+        const sRect  = shooterEl.getBoundingClientRect();
+        const vRect  = victimEl.getBoundingClientRect();
+        const x1 = sRect.left - elRect.left + sRect.width  / 2;
+        const y1 = sRect.top  - elRect.top  + sRect.height / 2;
+        const x2 = vRect.left - elRect.left + vRect.width  / 2;
+        const y2 = vRect.top  - elRect.top  + vRect.height / 2;
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.className = 'ww-dart-canvas';
+        svg.setAttribute('viewBox', `0 0 ${el.offsetWidth} ${el.offsetHeight}`);
+        svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('class', 'ww-evidence-line--tranq');
+        line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+        svg.appendChild(line);
+        el.style.position = 'relative';
+        el.appendChild(svg);
+        const impact = document.createElement('div');
+        impact.className = 'ww-dart-impact';
+        impact.textContent = '💉';
+        impact.style.left = `${x2}px`;
+        impact.style.top  = `${y2}px`;
+        el.appendChild(impact);
+      }
     }
 
     // Update status tracker counters
@@ -1588,7 +1630,6 @@ function _wwReveal(stateKey, totalSteps) {
     if (st.idx >= totalSteps - 1) {
       const ctrl = document.getElementById(`ww-controls-${stateKey}`);
       if (ctrl) ctrl.style.display = 'none';
-      // Rebuild to show final results
       const ep = gs.episodeHistory.find(e => e.num === parseInt(stateKey.replace('ww_reveal_', ''), 10));
       if (ep) { buildVPScreens(ep); renderVPScreen(); }
     } else {
@@ -1617,6 +1658,39 @@ function _wwRevealAll(stateKey, totalSteps) {
   // Rebuild to show final results
   const ep = gs.episodeHistory.find(e => e.num === parseInt(stateKey.replace('ww_reveal_', ''), 10));
   if (ep) { buildVPScreens(ep); renderVPScreen(); }
+}
+
+// Draw SVG evidence lines between pinned cards on evidence boards (called via inline <script>)
+function _wwDrawEvidenceLines(boardId) {
+  const board = document.getElementById(boardId);
+  if (!board) return;
+  let svg = board.querySelector('.ww-evidence-svg');
+  if (!svg) {
+    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.className = 'ww-evidence-svg';
+    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    board.appendChild(svg);
+  }
+  svg.innerHTML = '';
+  const boardRect = board.getBoundingClientRect();
+  const pins = board.querySelectorAll('[data-line-to]');
+  pins.forEach(pin => {
+    const toId = pin.dataset.lineTo;
+    const lineClass = pin.dataset.lineClass || 'ww-evidence-line--help';
+    const toEl = document.getElementById(toId);
+    if (!toEl) return;
+    const pRect = pin.getBoundingClientRect();
+    const tRect = toEl.getBoundingClientRect();
+    const x1 = pRect.left - boardRect.left + pRect.width  / 2;
+    const y1 = pRect.top  - boardRect.top  + pRect.height / 2;
+    const x2 = tRect.left - boardRect.left + tRect.width  / 2;
+    const y2 = tRect.top  - boardRect.top  + tRect.height / 2;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('class', lineClass);
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    svg.appendChild(line);
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1651,7 +1725,12 @@ export function rpBuildWawanakwaGoneWild(ep) {
     if (evt.type === 'huntFail') { failedDelta = 1; huntingDelta = -1; }
     if (evt.type === 'tranqChaos' && evt.subtype === 'hitContestant') { cameraShake = true; }
 
-    steps.push({ html: _renderWWStep(evt, ww, ALL_ANIMAL_NAMES), huntingDelta, capturedDelta, failedDelta, cameraShake });
+    let tranqPair = null;
+    if (evt.type === 'tranqChaos' && evt.subtype === 'hitContestant' && (evt.players || []).length >= 2) {
+      tranqPair = `${evt.players[0]}|${evt.players[1]}`;
+    }
+
+    steps.push({ html: _renderWWStep(evt, ww, ALL_ANIMAL_NAMES), huntingDelta, capturedDelta, failedDelta, cameraShake, tranqPair });
   }
 
   const totalSteps = steps.length;
@@ -1704,6 +1783,7 @@ export function rpBuildWawanakwaGoneWild(ep) {
     if (step.capturedDelta) html += ` data-captured-delta="${step.capturedDelta}"`;
     if (step.failedDelta) html += ` data-failed-delta="${step.failedDelta}"`;
     if (step.cameraShake) html += ` data-camera-shake="1"`;
+    if (step.tranqPair) html += ` data-tranq-pair="${step.tranqPair.replace(/"/g,'&quot;')}"`;
     html += `>${step.html}</div>`;
   }
 
@@ -1717,6 +1797,7 @@ export function rpBuildWawanakwaGoneWild(ep) {
   // Expose reveal functions on window
   window._wwReveal = _wwReveal;
   window._wwRevealAll = _wwRevealAll;
+  window._wwDrawEvidenceLines = _wwDrawEvidenceLines;
 
   // ── Final results (only after full reveal) ──
   if (allRevealed) {

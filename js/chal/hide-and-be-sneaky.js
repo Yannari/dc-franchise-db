@@ -192,6 +192,34 @@ const STALKER_BEATS = [
   { id:'shadow',       text: (p, pr, win) => win ? `${p} slipped into Chef's literal shadow, moving in perfect sync. Inches away from the hunter.` : `${p} tried to walk in Chef's shadow but ${pr.posAdj} own shadow gave ${pr.obj} away on the wall.` },
 ];
 
+const MULTIBEAT_EVENTS = {
+  'animal-skunk': [
+    (p, pr) => `A family of skunks waddled toward ${p}'s hiding spot...`,
+    (p, pr) => `${p} held perfectly still, not daring to breathe...`,
+    (p, pr) => `The skunks sprayed. ${p} screamed. Chef heard everything.`,
+  ],
+  'shared-spot': [
+    (a, aPr, b) => `${a} crawled into position and came face-to-face with ${b}.`,
+    (a, aPr, b) => `They locked eyes. ${a} mouthed "MOVE." ${b} mouthed "YOU move."`,
+    (a, aPr, b) => `Their whispered argument got louder... and louder... Chef redirected.`,
+  ],
+  'bug-swarm': [
+    (p, pr) => `A cloud of gnats descended on ${p}'s position.`,
+    (p, pr) => `${pr.Sub} tried to stay still, but they were EVERYWHERE.`,
+    (p, pr) => `One landed in ${pr.posAdj} eye — ${pr.sub} swatted wildly, giving away the spot.`,
+  ],
+  'animal-squirrel': [
+    (p, pr) => `A squirrel landed on ${p}'s head.`,
+    (p, pr) => `${pr.Sub} tried to gently shoo it away... but it bit ${pr.posAdj} finger.`,
+    (p, pr) => `${p} yelped. Chef snapped to attention.`,
+  ],
+  'trip-wire': [
+    (p, pr) => `${p} shifted position and felt something catch ${pr.posAdj} ankle.`,
+    (p, pr) => `A wire. Connected to cans. Time slowed down.`,
+    (p, pr) => `CLANG CLANG CLANG. Every hider on the island held their breath.`,
+  ],
+};
+
 // ── HELPERS ──
 function wPick(arr) {
   const total = arr.reduce((s, e) => s + (e.weight || 1), 0);
@@ -565,6 +593,9 @@ export function simulateHideAndBeSneaky(ep) {
             roundBonuses[b] = (roundBonuses[b] || 0) + 2.0;
             addBond(a, b, 1);
           }
+          if (MULTIBEAT_EVENTS[template.id] && Math.random() < 0.3) {
+            evt.multibeat = MULTIBEAT_EVENTS[template.id].map(fn => fn(a, pronouns(a), b));
+          }
         } else {
           const target = hidden[Math.floor(Math.random() * hidden.length)];
           const tPr = pronouns(target);
@@ -584,7 +615,23 @@ export function simulateHideAndBeSneaky(ep) {
             } else delta = -1.0;
           } else {
             if (template.id === 'reposition') {
-              delta = pStats(target).intuition >= 5 ? 1.5 : 0.5;
+              if (pStats(target).intuition >= 5) {
+                const oldSpot = spotAssignments[target];
+                const newSpots = HIDING_SPOTS.filter(sp => sp.id !== oldSpot.id && sp.id !== 'stalker' && !Object.values(spotAssignments).some(s => s.id === sp.id));
+                if (newSpots.length) {
+                  const newSpot = newSpots[Math.floor(Math.random() * newSpots.length)];
+                  spotAssignments[target] = newSpot;
+                  const oldQ = hidingQuality[target];
+                  hidingQuality[target] = calcHidingQuality(target, newSpot) + 1.0;
+                  delta = hidingQuality[target] - oldQ;
+                  evt.text = `${target} sensed Chef approaching ${oldSpot.name}. Silently crept to ${newSpot.name}.`;
+                  evt.relocation = { from: oldSpot.name, to: newSpot.name };
+                } else {
+                  delta = 1.5;
+                }
+              } else {
+                delta = 0.5;
+              }
             } else if (template.id === 'camo-improve') {
               delta = pStats(target).mental >= 6 ? 1.5 : 0.5;
             } else if (template.id === 'perfect-still') {
@@ -602,6 +649,10 @@ export function simulateHideAndBeSneaky(ep) {
           hidingQuality[target] += delta;
           roundBonuses[target] = (roundBonuses[target] || 0) + delta;
           evt.delta = delta;
+          // Multi-beat expansion (30% chance for supported events)
+          if (MULTIBEAT_EVENTS[template.id] && Math.random() < 0.3) {
+            evt.multibeat = MULTIBEAT_EVENTS[template.id].map(fn => fn(target, tPr));
+          }
         }
       }
       roundData.events.push(evt);
@@ -1315,10 +1366,18 @@ export function rpBuildHideAndBeSneaky(ep) {
       const evtBorder = evt.type === 'detection' ? 'border-color:rgba(255,100,50,0.2)' :
                          evt.type === 'evasion' ? 'border-color:rgba(0,255,65,0.2)' :
                          evt.type === 'social' ? 'border-color:rgba(56,189,248,0.2)' : '';
+      const eventContent = evt.multibeat
+        ? evt.multibeat.map((line, li) => `<div style="font-size:12px;color:#cdd9e5;${li > 0 ? 'margin-top:4px;padding-left:8px;border-left:2px solid rgba(0,255,65,0.1)' : ''}">${line}</div>`).join('')
+        : `<div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div>`;
+      const relocHtml = evt.relocation ? `
+        <div style="font-size:10px;margin-top:4px">
+          <span style="text-decoration:line-through;color:#666">Was: ${evt.relocation.from}</span>
+          <span style="color:#00ff41;margin-left:8px">Now: ${evt.relocation.to}</span>
+        </div>` : '';
       steps.push({ type: 'hunt-event', html: `
         <div class="nv-card" style="display:flex;align-items:center;gap:10px;${evtBorder}">
           ${targetPortraits}
-          <div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div>
+          ${evt.multibeat ? `<div style="flex:1">${eventContent}${relocHtml}</div>` : `${eventContent}${relocHtml}`}
           ${deltaTag ? `<div>${deltaTag}</div>` : ''}
         </div>` });
     });

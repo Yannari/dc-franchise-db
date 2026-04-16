@@ -1141,6 +1141,12 @@ export function simulateWawanakwaGoneWild(ep) {
     popDelta(immunityWinner, 2);
   }
 
+  // Honor Roll podium — top 3 finishers
+  if (huntState.captureOrder.length >= 2) {
+    const top3 = finishOrder.slice(0, Math.min(3, finishOrder.length));
+    timeline.push({ type: 'honorPodium', players: top3 });
+  }
+
   if (punishmentTarget) {
     timeline.push({ type: 'punishmentReveal', player: punishmentTarget, text: _rp(CHRIS_HUNT_QUIPS.bathroomPunish) });
     popDelta(punishmentTarget, -2);
@@ -2027,6 +2033,35 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     h += foodHtml;
     h += `<div style="margin-top:10px"><span class="ww-stamp" style="color:${GOLD}">🏆 FEAST WINNER</span></div>`;
     h += `</div></div>`;
+    return h;
+  }
+
+  // ── HONOR ROLL PODIUM ──
+  if (evt.type === 'honorPodium') {
+    const podiumPlayers = evt.players || [];
+    const rankColors = ['#d4a017','#c0c0c0','#cd7f32'];
+    const rankLabels = ['1ST','2ND','3RD'];
+    const rankHeights = ['90px','74px','60px'];
+    let h = `<div class="ww-podium">`;
+    // Reorder: 2nd, 1st, 3rd for classic podium display
+    const displayOrder = [
+      podiumPlayers[1] ? 1 : null,
+      podiumPlayers[0] ? 0 : null,
+      podiumPlayers[2] ? 2 : null,
+    ].filter(i => i !== null && podiumPlayers[i]);
+    displayOrder.forEach(rankIdx => {
+      const name = podiumPlayers[rankIdx];
+      const col = rankColors[rankIdx] || GREY;
+      const r = ww.huntResults?.[name];
+      const statLine = r ? `${r.animal} · ${r.attemptsMade} tries` : '';
+      h += `<div class="ww-podium-plinth" data-rank="${rankIdx + 1}" style="--podium-color:${col};--podium-height:${rankHeights[rankIdx]}">`;
+      h += `<div class="ww-podium-portrait">${rpPortrait(name, 'sm')}</div>`;
+      h += `<div class="ww-podium-name">${name}</div>`;
+      if (statLine) h += `<div class="ww-podium-stat">${statLine}</div>`;
+      h += `<div class="ww-podium-block"><span class="ww-podium-rank">${rankLabels[rankIdx]}</span></div>`;
+      h += `</div>`;
+    });
+    h += `</div>`;
     return h;
   }
 

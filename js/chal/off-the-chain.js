@@ -128,22 +128,38 @@ const OBSTACLE_INTER_EVENTS = [
 // ── CHRIS COMMENTARY ──
 const CHRIS_BIKE_QUIPS = {
   buildJudge: [
-    `"Excellent aerodynamics!" — Chris McLean`,
-    `"Spooky, yet practical. Well done." — Chris McLean`,
-    `"Wicked Mad Max mobile, dude!" — Chris McLean`,
-    `"Dude, seriously? This is lame." — Chris McLean`,
-    `"I call that 'abstract'... and by abstract I mean terrible." — Chris McLean`,
+    `"Hmm, not terrible. Not great either." — Chris McLean`,
+    `"I've seen worse... barely." — Chris McLean`,
+    `"It's got... character. Sure, let's go with that." — Chris McLean`,
+    `"Functional. I think. Maybe don't go too fast." — Chris McLean`,
+    `"Could be worse, could be better." — Chris McLean`,
+    `"Points for effort. Not many, but some." — Chris McLean`,
+    `"That'll do. Probably." — Chris McLean`,
+    `"A solid C+ effort right there." — Chris McLean`,
+    `"It's a bike. Technically." — Chris McLean`,
     `"Not bad! I mean, it'll probably kill you, but not bad!" — Chris McLean`,
+    `"Average. Very, very average." — Chris McLean`,
+    `"Eh, I've seen better. I've also seen fires." — Chris McLean`,
   ],
   buildJudgeBad: [
     `"Is... is that even a bike?" — Chris McLean`,
     `"I've seen better engineering from a toddler with Legos." — Chris McLean`,
     `"Wow. Just... wow." — Chris McLean`,
+    `"That thing's not gonna make it past the starting line." — Chris McLean`,
+    `"Did you build this with your eyes closed?" — Chris McLean`,
+    `"Chef's motorcycle is crying right now." — Chris McLean`,
+    `"I'd wear a helmet. And full body armor." — Chris McLean`,
+    `"That's less 'bike' and more 'pile of regret.'" — Chris McLean`,
   ],
   buildJudgeGood: [
     `"Now THAT is a machine!" — Chris McLean`,
     `"Chef's gonna be jealous of this one." — Chris McLean`,
-    `"Somebody actually read the manual!" — Chris McLean`,
+    `"Wicked Mad Max mobile, dude!" — Chris McLean`,
+    `"Excellent aerodynamics!" — Chris McLean`,
+    `"Somebody knows their way around a wrench!" — Chris McLean`,
+    `"Spooky, yet practical. Well done." — Chris McLean`,
+    `"I almost want to ride that myself. Almost." — Chris McLean`,
+    `"That is a SERIOUS piece of hardware." — Chris McLean`,
   ],
   swapReveal: [
     `"Oh, this is gonna be GOOD." — Chris McLean`,
@@ -424,10 +440,15 @@ export function simulateOffTheChain(ep) {
   popDelta(bestBuilder, 1);
   popDelta(worstBuilder, -1);
 
+  // No-repeat quip selection
+  const usedJudgeQuips = new Set();
   activePlayers.forEach(name => {
     const q = bikeQuality[name];
     const pool = q >= 7 ? CHRIS_BIKE_QUIPS.buildJudgeGood : q <= 3 ? CHRIS_BIKE_QUIPS.buildJudgeBad : CHRIS_BIKE_QUIPS.buildJudge;
-    chrisQuips[`judge-${name}`] = pool[Math.floor(Math.random() * pool.length)];
+    const available = pool.filter(q => !usedJudgeQuips.has(q));
+    const pick = available.length ? available[Math.floor(Math.random() * available.length)] : pool[Math.floor(Math.random() * pool.length)];
+    usedJudgeQuips.add(pick);
+    chrisQuips[`judge-${name}`] = pick;
   });
 
   const phase1 = { bikeQuality: { ...bikeQuality }, bikeHP: { ...bikeHP }, bikeNames: { ...bikeNames }, buildEvents, bestBuilder, worstBuilder };
@@ -1010,10 +1031,21 @@ export function rpBuildOffTheChain(ep) {
   // Phase 1 announcement
   steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">🔧 PHASE 1: THE BUILD — CONSTRUCT YOUR RIDE</div>` });
 
-  // Per-player bike cards with build events interspersed
+  // Map build events to affected players
   const buildEvts = br.phase1.buildEvents || [];
-  let buildEvtIdx = 0;
-  br.activePlayers.forEach((name, pi) => {
+  const buildEvtsByPlayer = {};
+  buildEvts.forEach(evt => {
+    if (!evt.text) return;
+    // Map event to the most relevant player (target of sabotage/help, or first player)
+    const affectedPlayer = evt.effect?.target || evt.effect?.distracted || evt.effect?.reader || evt.effect?.player || (evt.players || [])[0];
+    if (affectedPlayer) {
+      if (!buildEvtsByPlayer[affectedPlayer]) buildEvtsByPlayer[affectedPlayer] = [];
+      buildEvtsByPlayer[affectedPlayer].push(evt);
+    }
+  });
+
+  // Per-player bike cards with build events inline
+  br.activePlayers.forEach(name => {
     const q = br.phase1.bikeQuality[name];
     const qPct = Math.round((q / 10) * 100);
     const qColor = q >= 7 ? '#00ff41' : q >= 5 ? '#ffd700' : q >= 3 ? '#ff6b00' : '#ff3333';
@@ -1023,10 +1055,20 @@ export function rpBuildOffTheChain(ep) {
     const isBest = name === br.phase1.bestBuilder;
     const isWorst = name === br.phase1.worstBuilder;
     const tag = isBest ? ' <span class="mx-status mx-safe">BEST BUILD</span>' : isWorst ? ' <span class="mx-status mx-wrecked">WORST BUILD</span>' : '';
+
+    // Build events affecting this player
+    const playerEvts = buildEvtsByPlayer[name] || [];
+    const evtHtml = playerEvts.map(evt => {
+      const isSab = evt.id === 'sabotage' || evt.id === 'parts-theft';
+      const evtColor = isSab ? '#ff3333' : evt.id === 'help' ? '#00ff41' : '#ff6b00';
+      const evtBorder = isSab ? 'rgba(255,51,51,0.3)' : evt.id === 'help' ? 'rgba(0,200,100,0.3)' : 'rgba(255,107,0,0.2)';
+      const evtPortraits = (evt.players || []).filter(p => p !== name).slice(0, 1).map(p => rpPortrait(p, 'sm')).join('');
+      return `<div style="font-size:11px;color:#cdd9e5;margin-top:6px;padding:6px 8px;border-left:2px solid ${evtBorder};background:rgba(0,0,0,0.2);border-radius:0 4px 4px 0;display:flex;align-items:center;gap:6px">${evtPortraits}<span>${evt.text}</span></div>`;
+    }).join('');
+
     steps.push({
       type: 'grid-bike',
       html: `
-        ${quip}
         <div class="mx-card" style="display:flex;align-items:center;gap:12px${isBest ? ';border-color:rgba(0,200,100,0.3)' : isWorst ? ';border-color:rgba(255,51,51,0.3)' : ''}">
           ${rpPortrait(name, 'sm')}
           <div style="flex:1">
@@ -1036,37 +1078,13 @@ export function rpBuildOffTheChain(ep) {
               <div class="mx-quality-fill" style="width:${qPct}%;background:${qColor}"></div>
             </div>
             <div style="font-size:9px;color:${qColor};margin-top:2px;letter-spacing:1px">${qLabel} (${q.toFixed(1)})</div>
+            ${evtHtml}
           </div>
         </div>
+        ${quip}
       `
     });
-    // Inject a build event after every 3-4 bike cards
-    if ((pi + 1) % 3 === 0 && buildEvtIdx < buildEvts.length) {
-      const evt = buildEvts[buildEvtIdx++];
-      if (evt.text) {
-        const portraits = (evt.players || []).slice(0, 2).map(p => rpPortrait(p, 'sm')).join('');
-        const isSab = evt.id === 'sabotage' || evt.id === 'parts-theft';
-        const borderStyle = isSab ? 'border-color:rgba(255,51,51,0.3)' : evt.id === 'help' ? 'border-color:rgba(0,200,100,0.3)' : '';
-        steps.push({
-          type: 'build-event',
-          html: `<div class="mx-card" style="display:flex;align-items:center;gap:10px;${borderStyle}">${portraits}<div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div></div>`
-        });
-      }
-    }
   });
-  // Remaining build events
-  while (buildEvtIdx < buildEvts.length) {
-    const evt = buildEvts[buildEvtIdx++];
-    if (evt.text) {
-      const portraits = (evt.players || []).slice(0, 2).map(p => rpPortrait(p, 'sm')).join('');
-      const isSab = evt.id === 'sabotage' || evt.id === 'parts-theft';
-      const borderStyle = isSab ? 'border-color:rgba(255,51,51,0.3)' : evt.id === 'help' ? 'border-color:rgba(0,200,100,0.3)' : '';
-      steps.push({
-        type: 'build-event',
-        html: `<div class="mx-card" style="display:flex;align-items:center;gap:10px;${borderStyle}">${portraits}<div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div></div>`
-      });
-    }
-  }
 
   // ── THE SWAP ──
   steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">🎲 THE TWIST — DRAW NAMES, SWAP BIKES!</div>` });
@@ -1114,59 +1132,58 @@ export function rpBuildOffTheChain(ep) {
     `
   });
 
-  // Per-rider results with race events interspersed
+  // Map race events to the rider they affect
   const sortedRiders = br.phase2.sortedRiders || [];
   const race1Evts = br.phase2.race1Events || [];
-  let race1EvtIdx = 0;
-  sortedRiders.forEach((name, ri) => {
+  const race1EvtsByRider = {};
+  race1Evts.forEach(evt => {
+    if (!evt.text) return;
+    const rider = (evt.players || [])[0];
+    if (rider) {
+      if (!race1EvtsByRider[rider]) race1EvtsByRider[rider] = [];
+      race1EvtsByRider[rider].push(evt);
+    }
+  });
+
+  // Per-rider results with race events inline
+  sortedRiders.forEach(name => {
     const score = (br.phase2.race1Scores || {})[name] || 0;
     const cutIdx = br.phase2.cutIndex || Math.ceil(sortedRiders.length / 2);
     const finished = sortedRiders.indexOf(name) < cutIdx;
     const quipKey = finished ? 'race1Finish' : 'race1Fail';
     const quipPool = CHRIS_BIKE_QUIPS[quipKey] || [];
     const quip = quipPool.length ? quipPool[Math.floor(Math.random() * quipPool.length)] : '';
+
+    // Race events affecting this rider
+    const riderEvts = race1EvtsByRider[name] || [];
+    const evtHtml = riderEvts.map(evt => {
+      const evtPortraits = (evt.players || []).filter(p => p !== name).slice(0, 1).map(p => rpPortrait(p, 'sm')).join('');
+      return `<div style="font-size:11px;color:#cdd9e5;margin-top:4px;padding:4px 8px;border-left:2px solid rgba(255,107,0,0.3);background:rgba(0,0,0,0.2);border-radius:0 4px 4px 0;display:flex;align-items:center;gap:6px">${evtPortraits}<span style="font-style:italic">${evt.text}</span></div>`;
+    }).join('');
+
     steps.push({
       type: 'race1-result',
       racingDelta: finished ? 0 : -1,
       wreckedDelta: finished ? 0 : 1,
       html: `
-        <div class="mx-card mx-speed-lines" style="display:flex;align-items:center;gap:12px;${!finished ? 'border-color:rgba(255,51,51,0.3);background:rgba(255,51,51,0.04)' : 'border-color:rgba(0,200,100,0.15)'}">
-          ${rpPortrait(name, 'sm')}
-          <div style="flex:1">
-            <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name} <span style="font-size:10px;color:#8b949e;font-weight:400">riding ${br.phase2.riderAssignments[name]}'s bike</span></div>
-            <div style="font-size:10px;color:#ff6b00;margin-top:2px">Score: ${score.toFixed ? score.toFixed(1) : score}</div>
-            ${quip ? `<div style="font-size:10px;color:#8b949e;font-style:italic;margin-top:2px">${quip}</div>` : ''}
+        <div class="mx-card mx-speed-lines" style="${!finished ? 'border-color:rgba(255,51,51,0.3);background:rgba(255,51,51,0.04)' : 'border-color:rgba(0,200,100,0.15)'}">
+          <div style="display:flex;align-items:center;gap:12px">
+            ${rpPortrait(name, 'sm')}
+            <div style="flex:1">
+              <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name} <span style="font-size:10px;color:#8b949e;font-weight:400">riding ${br.phase2.riderAssignments[name]}'s bike</span></div>
+              <div style="font-size:10px;color:#ff6b00;margin-top:2px">Score: ${score.toFixed ? score.toFixed(1) : score}</div>
+              ${quip ? `<div style="font-size:10px;color:#8b949e;font-style:italic;margin-top:2px">${quip}</div>` : ''}
+            </div>
+            <div style="text-align:right">
+              <span class="mx-status ${finished ? 'mx-safe' : 'mx-dnf'}">${finished ? 'QUALIFIED' : 'DNF'}</span>
+              <div style="font-size:9px;color:${finished ? '#00ff41' : '#ff3333'};margin-top:2px">${finished ? `${br.phase2.riderAssignments[name]} advances` : `${br.phase2.riderAssignments[name]} eliminated`}</div>
+            </div>
           </div>
-          <div style="text-align:right">
-            <span class="mx-status ${finished ? 'mx-safe' : 'mx-dnf'}">${finished ? 'QUALIFIED' : 'DNF'}</span>
-            <div style="font-size:9px;color:${finished ? '#00ff41' : '#ff3333'};margin-top:2px">${finished ? `${br.phase2.riderAssignments[name]} advances` : `${br.phase2.riderAssignments[name]} eliminated`}</div>
-          </div>
+          ${evtHtml}
         </div>
       `
     });
-    // Inject race event after every 3 riders
-    if ((ri + 1) % 3 === 0 && race1EvtIdx < race1Evts.length) {
-      const evt = race1Evts[race1EvtIdx++];
-      if (evt.text) {
-        const evtPortraits = (evt.players || []).slice(0, 2).map(p => rpPortrait(p, 'sm')).join('');
-        steps.push({
-          type: 'race1-event',
-          html: `<div class="mx-card" style="display:flex;align-items:center;gap:10px;border-color:rgba(255,107,0,0.2)">${evtPortraits}<div style="flex:1;font-size:12px;color:#cdd9e5;font-style:italic">${evt.text}</div></div>`
-        });
-      }
-    }
   });
-  // Remaining race events
-  while (race1EvtIdx < race1Evts.length) {
-    const evt = race1Evts[race1EvtIdx++];
-    if (evt.text) {
-      const evtPortraits = (evt.players || []).slice(0, 2).map(p => rpPortrait(p, 'sm')).join('');
-      steps.push({
-        type: 'race1-event',
-        html: `<div class="mx-card" style="display:flex;align-items:center;gap:10px;border-color:rgba(255,107,0,0.2)">${evtPortraits}<div style="flex:1;font-size:12px;color:#cdd9e5;font-style:italic">${evt.text}</div></div>`
-      });
-    }
-  }
 
   // ── THE CUT ──
   const advancingOwners = br.phase2.advancingOwners || [];

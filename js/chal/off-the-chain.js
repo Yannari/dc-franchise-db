@@ -1613,7 +1613,9 @@ export function rpBuildOffTheChain(ep) {
 
   steps.forEach((step, i) => {
     const visible = i <= state.idx;
-    html += `<div id="mx-step-${stateKey}-${i}" data-racing-delta="${step.racingDelta||0}" data-wrecked-delta="${step.wreckedDelta||0}" data-finished-delta="${step.finishedDelta||0}" data-immune-delta="${step.immuneDelta||0}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
+    const shakeAttr = step.cameraShake ? ' data-camera-shake="1"' : '';
+    const tickerAttr = step.tickerLine ? ` data-ticker-line="${String(step.tickerLine).replace(/"/g,'&quot;')}"` : '';
+    html += `<div id="mx-step-${stateKey}-${i}" data-racing-delta="${step.racingDelta||0}" data-wrecked-delta="${step.wreckedDelta||0}" data-finished-delta="${step.finishedDelta||0}" data-immune-delta="${step.immuneDelta||0}"${shakeAttr}${tickerAttr} style="${visible ? '' : 'display:none'}">${step.html}</div>`;
   });
 
   html += `<div id="mx-controls-${stateKey}"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
@@ -1633,6 +1635,30 @@ export function _mxReveal(stateKey, totalSteps) {
   const el = document.getElementById(`mx-step-${stateKey}-${nextIdx}`);
   if (el) { el.style.display = ''; el.classList.add('mx-scan-in'); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   state.idx = nextIdx;
+  // Overdrive hooks: RPM rev, camera shake, ticker push
+  const rpmNeedle = document.getElementById(`mx-rpm-needle-${stateKey}`);
+  if (rpmNeedle) {
+    rpmNeedle.classList.remove('mx-rpm-rev');
+    void rpmNeedle.offsetWidth;
+    rpmNeedle.classList.add('mx-rpm-rev');
+    setTimeout(() => rpmNeedle.classList.remove('mx-rpm-rev'), 850);
+  }
+  if (el?.dataset.cameraShake === '1') {
+    const page = el.closest('.mx-page');
+    if (page) {
+      page.classList.remove('mx-camera-shake');
+      void page.offsetWidth;
+      page.classList.add('mx-camera-shake');
+      setTimeout(() => page.classList.remove('mx-camera-shake'), 450);
+    }
+  }
+  if (el?.dataset.tickerLine) {
+    const tickerInner = document.getElementById(`mx-ticker-inner-${stateKey}`);
+    if (tickerInner) {
+      const line = el.dataset.tickerLine;
+      tickerInner.textContent = line + '  •  ' + tickerInner.textContent;
+    }
+  }
   // Update status tracker counts
   if (el) {
     const rd = parseInt(el.dataset.racingDelta || '0');

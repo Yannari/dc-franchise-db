@@ -1956,11 +1956,20 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
 
   // ── TRANQ CHAOS ──
   if (evt.type === 'tranqChaos') {
-    const tranqPortraits = (evt.players || []).map(p => rpPortrait(p, 'sm')).join('');
-    let h = `<div class="ww-card ww-card--tranq" style="--ww-accent:${RED}">`;
+    const [shooter, victim] = evt.players || [];
+    const shooterPortrait = shooter ? `<span data-player-id="${shooter.replace(/"/g,'&quot;')}">${rpPortrait(shooter, 'sm')}</span>` : '';
+    const victimPortrait  = victim  ? `<span data-player-id="${victim.replace(/"/g,'&quot;')}">${rpPortrait(victim, 'sm')}</span>` : '';
+    let h = `<div class="ww-card ww-card--tranq" style="--ww-accent:${RED};position:relative">`;
     h += `<div class="ww-card-label"><span class="ww-dart">💉</span> TRANQUILIZER CHAOS${evt.badgeText ? ' · ' + evt.badgeText : ''}</div>`;
-    h += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">${tranqPortraits}</div>`;
+    h += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">`;
+    if (shooter) { h += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">${shooterPortrait}<span style="font-family:'Courier New',monospace;font-size:9px;color:#8b7750">SHOOTER</span></div>`; }
+    if (victim)  { h += `<div style="font-size:18px;padding:0 6px;color:#c33">→</div>`;
+                   h += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">${victimPortrait}<span style="font-family:'Courier New',monospace;font-size:9px;color:#c33">TARGET</span></div>`; }
+    h += `</div>`;
     h += `<div class="ww-card-body">${evt.text}</div>`;
+    if (evt.subtype === 'hitContestant' && victim) {
+      h += `<div style="margin-top:4px"><span class="ww-stamp" style="color:${RED}">💉 TRANQ'D — ${victim.toUpperCase()}</span></div>`;
+    }
     h += `</div>`;
     return h;
   }

@@ -1449,7 +1449,7 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
         if (behavior) timeline.push(_buildAnimalReaction(animal, behavior, name, round, huntState, pr));
       }
       _applyStateChanges(ps, name, round, timeline, { stamina: -5, morale: -5 });
-      timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} lost the trail before getting close.` });
+      timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} lost the trail before getting close.`, _shadow: true });
       return;
     }
     timeline.push(_buildHuntBeat(name, round, animal, 'approach', 'pass',
@@ -1485,7 +1485,7 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
 
     if (!bonusBeat) {
       _applyStateChanges(ps, name, round, timeline, { morale: -15 });
-      timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} couldn't close the deal.` });
+      timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} couldn't close the deal.`, _shadow: true });
       return;
     }
   } else {
@@ -1501,7 +1501,7 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
       _applyStateChanges(ps, name, round, timeline, { stamina: -25, morale: -20 });
       timeline.push(_buildHuntBeat(name, round, animal, 'resolution', 'fail',
         `${name} freezes. The ${animal.name.toLowerCase()} circles once and vanishes. ${name} has nothing.`));
-      timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} couldn't finish the hunt.` });
+      timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} couldn't finish the hunt.`, _shadow: true });
       return;
     }
   }
@@ -1518,7 +1518,7 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
     huntState.captureOrder.push(name);
     const successText = _rp(animal.attemptSuccess)(name, pr);
     timeline.push(_buildHuntBeat(name, round, animal, 'resolution', 'pass', successText, { captured: true }));
-    timeline.push({ type: 'huntAttempt', player: name, round, success: true, animal: animal.name, text: successText });
+    timeline.push({ type: 'huntAttempt', player: name, round, success: true, animal: animal.name, text: successText, _shadow: true });
     _applyStateChanges(ps, name, round, timeline, { morale: +15 });
     if (animal.tier === 'extreme') popDelta(name, 2);
     else if (animal.tier === 'hard') popDelta(name, 1);
@@ -1531,13 +1531,13 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
       ps.mishaps.push(mishapText);
       ps.personalScore -= 2;
       timeline.push(_buildHuntBeat(name, round, animal, 'resolution', 'fail', mishapText, { mishap: true }));
-      timeline.push({ type: 'huntMishap', player: name, round, animal: animal.name, text: mishapText });
+      timeline.push({ type: 'huntMishap', player: name, round, animal: animal.name, text: mishapText, _shadow: true });
       _applyStateChanges(ps, name, round, timeline, { stamina: -20, morale: -20 });
       if (animal.tier === 'extreme' || animal.tier === 'hard') popDelta(name, -1);
     } else {
       const failText = _rp(animal.attemptFail)(name, pr);
       timeline.push(_buildHuntBeat(name, round, animal, 'resolution', 'fail', failText));
-      timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: failText });
+      timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: failText, _shadow: true });
       _applyStateChanges(ps, name, round, timeline, { morale: -15 });
     }
   }
@@ -2478,13 +2478,13 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     const cfg = beatConfig[evt.beat] || { color: GREY, emoji: '·', label: (evt.beat || '').toUpperCase() };
     const outcomeBadge = evt.outcome === 'abort' ? ' · ABORT' : evt.outcome === 'fail' ? ' · FAIL' : '';
     let h = `<div class="ww-card" style="--ww-accent:${cfg.color};padding:8px 12px;margin-bottom:3px">`;
-    h += `<div class="ww-card-label" style="font-size:8px">${cfg.emoji} ${cfg.label}${outcomeBadge} · ${(evt.animal || '').toUpperCase()}</div>`;
+    h += `<div class="ww-card-label">${cfg.emoji} ${cfg.label}${outcomeBadge} · ${(evt.animal || '').toUpperCase()}</div>`;
     h += `<div style="display:flex;align-items:center;gap:6px;margin-top:2px">`;
     if (evt.player) h += rpPortrait(evt.player, 'xs');
-    h += `<div class="ww-card-body" style="font-size:11px;line-height:1.45">${evt.text || ''}</div>`;
+    h += `<div class="ww-card-body">${evt.text || ''}</div>`;
     h += `</div>`;
-    if (evt.captured) h += `<div style="margin-top:4px"><span class="ww-stamp" style="color:${GREEN};font-size:10px;padding:2px 6px">CAPTURED!</span></div>`;
-    if (evt.mishap) h += `<div style="margin-top:4px"><span class="ww-stamp" style="color:${RED};font-size:10px;padding:2px 6px">MISHAP</span></div>`;
+    if (evt.captured) h += `<div style="margin-top:4px"><span class="ww-stamp" style="color:${GREEN}">CAPTURED!</span></div>`;
+    if (evt.mishap) h += `<div style="margin-top:4px"><span class="ww-stamp" style="color:${RED}">MISHAP</span></div>`;
     h += `</div>`;
     return h;
   }
@@ -2503,8 +2503,8 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     };
     const cfg = behaviorConfig[evt.behavior] || { color: GREY, emoji: '·', label: (evt.behavior || '').toUpperCase() };
     let h = `<div class="ww-card" style="--ww-accent:${cfg.color};padding:8px 12px;margin-bottom:3px;margin-left:16px">`;
-    h += `<div class="ww-card-label" style="font-size:8px">${cfg.emoji} ${(evt.animal || '').toUpperCase()} ${cfg.label}</div>`;
-    h += `<div class="ww-card-body" style="font-size:11px;line-height:1.45;font-style:italic">${evt.text || ''}</div>`;
+    h += `<div class="ww-card-label">${cfg.emoji} ${(evt.animal || '').toUpperCase()} ${cfg.label}</div>`;
+    h += `<div class="ww-card-body">${evt.text || ''}</div>`;
     if (evt.affectedPlayer) h += `<div class="ww-card-footer">Also affects: ${evt.affectedPlayer}</div>`;
     h += `</div>`;
     return h;
@@ -2514,8 +2514,8 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
   if (evt.type === 'stateChange') {
     const flavorColor = { exhausted: ORANGE, broken: RED, rallied: GREEN, restocked: GREEN, tapped: GREY }[evt.flavor] || GREY;
     const statEmoji = { stamina: '💪', morale: '🔥', supplies: '🎒' }[evt.stat] || '·';
-    let h = `<div style="display:flex;align-items:center;gap:6px;padding:4px 12px;margin:2px 0 4px 32px;font-size:10px;color:${flavorColor};font-style:italic;font-family:'Courier New',monospace;letter-spacing:0.5px">`;
-    h += `${statEmoji} ${evt.text || ''}`;
+    let h = `<div style="display:flex;align-items:center;gap:6px;padding:4px 12px;margin:2px 0 4px 32px">`;
+    h += `<span style="color:${flavorColor}">${statEmoji}</span><span class="ww-card-body" style="color:${flavorColor}">${evt.text || ''}</span>`;
     h += `</div>`;
     return h;
   }
@@ -2573,6 +2573,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
 
   // ── HUNT ATTEMPT (success) ──
   if (evt.type === 'huntAttempt' && evt.success) {
+    if (evt._shadow) return '';
     let h = `<div class="ww-card" style="--ww-accent:${GREEN}">`;
     h += `<div class="ww-card-label">✅ CAPTURE — ${(evt.animal || '').toUpperCase()}</div>`;
     h += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">${rpPortrait(evt.player, 'sm')}<span style="font-weight:700;color:#d4c8a8">${evt.player}</span></div>`;
@@ -2585,6 +2586,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
 
   // ── HUNT ATTEMPT (fail) ──
   if (evt.type === 'huntAttempt' && !evt.success) {
+    if (evt._shadow) return '';
     let h = `<div class="ww-card" style="--ww-accent:${ORANGE}">`;
     h += `<div class="ww-card-label">❌ FAILED ATTEMPT — ${(evt.animal || '').toUpperCase()}</div>`;
     h += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">${rpPortrait(evt.player, 'sm')}<span style="font-weight:700;color:#d4c8a8">${evt.player}</span></div>`;
@@ -2596,6 +2598,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
 
   // ── HUNT MISHAP ──
   if (evt.type === 'huntMishap') {
+    if (evt._shadow) return '';
     const mishapTier = (ww.huntResults?.[evt.player]?.animalTier) || 'medium';
     const mishapStamps = { easy: 'THWACK!', medium: 'OWWW!', hard: 'SPLAT!', extreme: 'CATASTROPHIC FAILURE' };
     const stamp = mishapStamps[mishapTier] || 'OWWW!';

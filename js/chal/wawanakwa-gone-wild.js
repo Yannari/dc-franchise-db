@@ -501,6 +501,30 @@ const ANIMALS = {
   ],
 };
 
+// ── RANGER FACTS (ticker content) ──
+const RANGER_FACTS = [
+  '🐻 BEARS CAN RUN 35 MPH — DO NOT RUN IN A STRAIGHT LINE',
+  '🦌 DEER HAVE 310° VISION — APPROACH FROM DOWNWIND',
+  '🦝 RACCOONS CAN OPEN LOCKS — CONSIDER DUCT TAPE',
+  '🐿️ CHIPMUNKS CAN STORE 165 ACORNS IN ONE TRIP — BRIBERY IS VIABLE',
+  '🐸 FROGS BREATHE THROUGH THEIR SKIN — DO NOT APPLY SUNSCREEN FIRST',
+  '🦫 BEAVER TEETH NEVER STOP GROWING — DO NOT LET THEM CHEW YOU',
+  '🐍 SNAKES SENSE HEAT — APPROACH AT NIGHT OR BE VERY COOL',
+  '🐰 RABBITS CAN LEAP 9 FEET — WIDEN YOUR STANCE',
+  '🦆 DUCKS HAVE THREE EYELIDS — THE THIRD ONE SEES YOU',
+  '🦢 GEESE HAVE NO NATURAL PREDATORS ON THIS ISLAND — ACT ACCORDINGLY',
+  '🦌 MOOSE CAN OUTSWIM MOST BOATS — DO NOT GET IN A BOAT',
+  '💉 TRANQUILIZER DARTS TAKE 4–10 SECONDS — AIM AHEAD',
+  '📡 SIGNAL: WAWANAKWA FIELD CAM BROADCASTING LIVE',
+  '⚠️ DISCLAIMER: PRODUCTION NOT RESPONSIBLE FOR BEAR-RELATED INJURIES',
+  '🏕️ WAWANAKWA ISLAND — ESTABLISHED 2007 — POPULATION: DWINDLING',
+  '🎯 CATCHING YOUR ANIMAL DOES NOT GUARANTEE SURVIVAL AT TRIBAL',
+  '🚽 COMMUNAL BATHROOMS LAST CLEANED: UNKNOWN',
+  '📋 SCORING: EARLIER IS BETTER. LAST PLACE IS WORSE.',
+  '🦝 FUN FACT: RACCOONS FORM STRATEGIC ALLIANCES',
+  '🐻 BEARS EAT 20,000 CALORIES/DAY — YOU HAVE NONE',
+];
+
 // ── GEAR POOL ──
 const GEAR_POOL = [
   { id:'net',        name:'fishing net',          tier:'useful',  captureBonus: 0.08, special: null },
@@ -1706,6 +1730,11 @@ export function rpBuildWawanakwaGoneWild(ep) {
 
   const ALL_ANIMAL_NAMES = ['Chipmunk','Frog','Rabbit','Duck','Raccoon','Goose','Beaver','Deer','Snake','Bear','Moose'];
 
+  // Ticker: shuffle facts, double for seamless loop
+  const shuffledFacts = [...RANGER_FACTS].sort(() => Math.random() - 0.5);
+  const tickerContent = shuffledFacts.join('  ·  ');
+  const tickerDoubled = `${tickerContent}  ·  ${tickerContent}`;
+
   // ── Pre-compute steps from timeline ──
   const steps = [];
   const huntingStart = Object.keys(ww.huntResults || {}).length;
@@ -1747,11 +1776,15 @@ export function rpBuildWawanakwaGoneWild(ep) {
   html += `<div class="ww-title">🏕️ WAWANAKWA GONE WILD!</div>`;
   html += `<div class="ww-subtitle">Catch your animal. First back wins a feast. Last back cleans the bathrooms.</div></div>`;
 
-  // Status tracker
-  html += `<div class="ww-tracker">`;
+  // Ticker marquee
+  html += `<div class="ww-ticker"><div class="ww-ticker-inner">${tickerDoubled}</div></div>`;
+
+  // Status tracker (with walkie signal gauge)
+  html += `<div class="ww-tracker" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">`;
   html += `<div class="ww-tracker-item ww-tracker-item--hunting">🎯 HUNTING: <span class="ww-count" id="ww-count-${stateKey}-hunting">${huntingStart}</span></div>`;
   html += `<div class="ww-tracker-item ww-tracker-item--captured">✅ CAPTURED: <span class="ww-count" id="ww-count-${stateKey}-captured">0</span></div>`;
   html += `<div class="ww-tracker-item ww-tracker-item--failed">❌ FAILED: <span class="ww-count" id="ww-count-${stateKey}-failed">0</span></div>`;
+  html += `<div class="ww-signal" title="Signal strength"><div class="ww-signal-arc"></div><div class="ww-signal-needle" id="ww-signal-needle-${stateKey}"></div><div class="ww-signal-label">SIGNAL</div></div>`;
   html += `</div>`;
 
   // Collapsible scoreboard

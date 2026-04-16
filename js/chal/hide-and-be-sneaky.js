@@ -1115,6 +1115,28 @@ export function simulateHideAndBeSneaky(ep) {
     showmanceMoments,
     coldOpen,
   };
+
+  // Inject badge camp events for VP rendering in camp life / tribal
+  const campKey = gs.mergeName || 'merge';
+  if (!ep.campEvents) ep.campEvents = {};
+  if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+  const badgeLabels = {
+    hideSeekImmune: { text: 'Won Hide & Seek', cls: 'win' },
+    hideSeekTracker: { text: 'Betrayed in Hide & Seek', cls: 'bad' },
+    hideSeekLoyal: { text: 'Stayed Loyal', cls: 'green' },
+    hideSeekStalker: { text: 'Stalked Chef', cls: 'gold' },
+    hideSeekFlush: { text: 'Embarrassing Catch', cls: '' },
+    hideSeekClutch: { text: 'Escaped to Home Base', cls: 'win' },
+  };
+  Object.entries(badges).forEach(([name, badge]) => {
+    const label = badgeLabels[badge];
+    if (label) {
+      ep.campEvents[campKey].post.push({
+        type: 'hide-seek-badge', text: `${name}: ${label.text}`,
+        players: [name], badgeText: label.text, badgeClass: label.cls,
+      });
+    }
+  });
 }
 
 // ══════════════════════════════════════════════════════════════

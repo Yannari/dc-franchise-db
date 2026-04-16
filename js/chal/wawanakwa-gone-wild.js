@@ -1743,10 +1743,16 @@ export function rpBuildWawanakwaGoneWild(ep) {
   for (const evt of ww.timeline) {
     let huntingDelta = 0, capturedDelta = 0, failedDelta = 0, cameraShake = false;
 
-    // Insert round separator
+    // Insert round separator tannoy with live census
     if (evt.round !== undefined && evt.round !== lastRound && (evt.type === 'huntAttempt' || evt.type === 'huntMishap' || evt.type === 'huntFail')) {
       const label = evt.round <= 3 ? `ROUND ${evt.round + 1}` : 'FINAL ROUND — LAST CHANCE';
-      steps.push({ html: `<div class="ww-section"><span class="ww-crosshair">🎯</span> ${label}</div>`, huntingDelta: 0, capturedDelta: 0, failedDelta: 0, cameraShake: false });
+      // Count captures/still hunting up to this point
+      let capturedSoFar = 0;
+      for (const s of steps) { capturedSoFar += s.capturedDelta || 0; }
+      const huntingSoFar = huntingStart - capturedSoFar;
+      const censusStr = `${capturedSoFar} CAPTURED · ${Math.max(0, huntingSoFar)} STILL HUNTING`;
+      const tannoyHtml = `<div class="ww-tannoy"><div class="ww-tannoy-badge">🎯 HUNT IN PROGRESS</div><div class="ww-tannoy-title">${label}</div><div class="ww-tannoy-census">STATUS: ${censusStr}</div></div>`;
+      steps.push({ html: tannoyHtml, huntingDelta: 0, capturedDelta: 0, failedDelta: 0, cameraShake: false, tranqPair: null });
       lastRound = evt.round;
     }
 

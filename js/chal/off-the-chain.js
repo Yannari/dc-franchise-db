@@ -791,7 +791,7 @@ export function _textOffTheChain(ep, ln, sec) {
     ln(`${winner} crossed the finish line first and won immunity!`);
     if (br.phase4.eliminatedPlayer) {
       const last = br.phase4.eliminatedPlayer;
-      if (br.bikeRace?.isSuddenDeath) {
+      if (br.isSuddenDeath) {
         ln(`${last} finished last and was automatically eliminated.`);
       } else {
         ln(`${last} finished last — a target heading into tribal council.`);

@@ -1531,7 +1531,8 @@ export function simulateEpisode() {
   }
 
   // ── SUDDEN DEATH — last place in challenge is auto-eliminated, no tribal ──
-  if (ep.isSuddenDeath) {
+  // Skip generic sudden death if a specific challenge twist handles elimination itself
+  if (ep.isSuddenDeath && !ep.isOffTheChain) {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
     generateCampEvents(ep, 'both');

@@ -1366,13 +1366,18 @@ export function rpBuildOffTheChain(ep) {
       return `<div style="font-size:11px;color:#cdd9e5;margin-top:4px;padding:4px 8px;border-left:2px solid rgba(255,107,0,0.3);background:rgba(0,0,0,0.2);border-radius:0 4px 4px 0;display:flex;align-items:center;gap:6px">${evtPortraits}<span style="font-style:italic">${evt.text}</span></div>`;
     }).join('');
 
+    const position = sortedRiders.indexOf(name) + 1;
+    const posColor = position === 1 ? '#ffd700' : position <= 3 ? '#00ff41' : '#ff6b00';
+    const posBadge = `<div style="position:absolute;top:8px;right:10px;font-family:'Impact','Arial Narrow',sans-serif;font-size:22px;font-weight:900;color:${posColor};letter-spacing:1px;text-shadow:0 0 8px ${posColor}55;z-index:3" class="mx-count-flash">#${position}</div>`;
+
     steps.push({
       type: 'race1-result',
       racingDelta: finished ? 0 : -1,
       wreckedDelta: finished ? 0 : 1,
       html: `
-        <div class="mx-card mx-speed-lines" style="${!finished ? 'border-color:rgba(255,51,51,0.3);background:rgba(255,51,51,0.04)' : 'border-color:rgba(0,200,100,0.15)'}">
-          <div style="display:flex;align-items:center;gap:12px">
+        <div class="mx-card mx-speed-lines" style="position:relative;${!finished ? 'border-color:rgba(255,51,51,0.3);background:rgba(255,51,51,0.04)' : 'border-color:rgba(0,200,100,0.15)'}">
+          ${posBadge}
+          <div style="display:flex;align-items:center;gap:12px;padding-right:32px">
             ${rpPortrait(name, 'sm')}
             <div style="flex:1">
               <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name} <span style="font-size:10px;color:#8b949e;font-weight:400">riding ${br.phase2.riderAssignments[name]}'s bike</span></div>

@@ -1133,6 +1133,64 @@ const RANGER_FACTS = [
   '🐻 BEARS EAT 20,000 CALORIES/DAY — YOU HAVE NONE',
 ];
 
+// ── Identity Pass: module-scope constants ──
+
+const WW_ANIMAL_EMOJI = {
+  Chipmunk:'🐿️', Frog:'🐸', Rabbit:'🐇', Squirrel:'🐿️', Seagull:'🐦',
+  Duck:'🦆', Raccoon:'🦝', Goose:'🦢', Skunk:'🦨', Porcupine:'🦔',
+  Beaver:'🦫', Deer:'🦌', Snake:'🐍', 'Wild Turkey':'🦃', Owl:'🦉',
+  Bear:'🐻', Moose:'🫎', Wolf:'🐺', Alligator:'🐊',
+};
+
+function _wwGearEmoji(gearName) {
+  const n = String(gearName || '').toLowerCase();
+  if (n.includes('tranq'))  return '💉';
+  if (n.includes('chainsaw')) return '🪚';
+  if (n.includes('net'))    return '🕸️';
+  if (n.includes('rope'))   return '🪢';
+  if (n.includes('sack') || n.includes('bag')) return '💼';
+  if (n.includes('hook'))   return '🎣';
+  if (n.includes('smoke'))  return '💣';
+  if (n.includes('float'))  return '🛟';
+  if (n.includes('paper towel')) return '🧻';
+  if (n.includes('flashlight') || n.includes('torch')) return '🔦';
+  if (n.includes('binocular')) return '🔭';
+  if (n.includes('compass')) return '🧭';
+  if (n.includes('knife'))  return '🔪';
+  if (n.includes('whistle')) return '🎺';
+  if (n.includes('hat') || n.includes('helmet')) return '🧢';
+  if (n.includes('fish'))   return '🎣';
+  if (n.includes('bait'))   return '🪱';
+  return '🎒';
+}
+
+const WW_TIER_LOCATIONS = {
+  easy:    ['CAMP PERIMETER', 'WEST CLEARING', 'STREAM BANK'],
+  medium:  ['NORTH TRAIL', 'DENSE WOODS', 'LAKE SHORE'],
+  hard:    ['CANOPY RIDGE', 'SOUTH SWAMP', 'DEEP BRUSH'],
+  extreme: ['BEAR COUNTRY', 'CLIFF BASE', 'LOST VALLEY'],
+};
+
+const WW_TANNOY_BADGE = [
+  '📢 HUNT IN PROGRESS',
+  '📢 HOUR TWO',
+  '📢 DUSK APPROACHES',
+  '📢 LAST LIGHT',
+];
+function _wwTannoyBadge(round) {
+  return WW_TANNOY_BADGE[Math.min(Math.max(0, round), WW_TANNOY_BADGE.length - 1)];
+}
+
+const WW_APPROACH_ABORT_FALLBACK = [
+  (n, animalName) => `${n} follows the trail for ten minutes, then realizes it's the wrong set of prints.`,
+  (n, animalName) => `${n} spots the ${animalName.toLowerCase()}, takes one step forward, and loses it in the undergrowth.`,
+  (n, animalName) => `${n} hears the ${animalName.toLowerCase()} but can't find it. Could be anywhere.`,
+  (n, animalName) => `${n} circles the same stand of pines three times. The ${animalName.toLowerCase()} is long gone.`,
+  (n, animalName) => `${n} doubles back after a crash in the brush. False alarm. Trail cold.`,
+  (n, animalName) => `${n} loses the trail at a stream crossing. The ${animalName.toLowerCase()} had better footing.`,
+  (n, animalName) => `${n} approaches what turns out to be a hollow log. The ${animalName.toLowerCase()} watched from somewhere else.`,
+];
+
 // ── GEAR POOL ──
 const GEAR_POOL = [
   { id:'net',        name:'fishing net',          tier:'useful',  captureBonus: 0.08, special: null },
@@ -1708,15 +1766,8 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
     const approachRoll = s.intuition + s.mental + _rand(-3, 3);
     const approachDiff = (animal.approachDifficulty || 10) + _staminaPenalty(ps.stamina);
     if (approachRoll < approachDiff) {
-      const _approachAbortFallback = [
-        () => `${name} loses the trail.`,
-        () => `${name} can't pick up the scent. The trail's gone cold.`,
-        () => `${name} circles the area twice and comes up empty.`,
-        () => `${pr.Sub} ${pr.sub==='they'?'search':'searches'} for twenty minutes. Nothing. The ${animal.name.toLowerCase()} was here and now it isn't.`,
-        () => `${name} doubles back. The approach window closed before ${pr.sub} ${pr.sub==='they'?'reach':'reaches'} it.`,
-      ];
       timeline.push(_stamped('approach', 'abort',
-        _rp(animal.approach || _approachAbortFallback)(name, pr)));
+        _rp(animal.approach || WW_APPROACH_ABORT_FALLBACK)(name, pr)));
       if (Math.random() < 0.50) {
         const behavior = animal.behaviors?.flee?.length ? 'flee' : _pickBehavior(animal);
         if (behavior) timeline.push(_buildAnimalReaction(animal, behavior, name, round, huntState, pr));
@@ -2130,6 +2181,14 @@ const WW_STYLES = `
   @keyframes ww-slide-in { 0%{opacity:0;transform:translateX(-12px)} 100%{opacity:1;transform:translateX(0)} }
   .ww-card-label { font-family:'Courier New',monospace; font-size:9px; font-weight:700;
     letter-spacing:1px; color:var(--ww-accent,#8b7750); margin-bottom:4px; text-transform:uppercase; }
+  /* Identity pass: timestamp + location inline with card label */
+  .ww-timestamp { font-family:'Courier New',monospace; font-size:9px; font-weight:700;
+    color:#c33; letter-spacing:1px; margin-right:4px; }
+  .ww-location { font-family:'Courier New',monospace; font-size:9px; font-weight:700;
+    color:#8b7750; letter-spacing:1.5px; margin-right:4px; }
+  .ww-label-divider { color:rgba(139,119,80,0.3); margin:0 3px; }
+  .ww-label-kind { font-family:'Courier New',monospace; font-size:9px; font-weight:700;
+    letter-spacing:1px; color:var(--ww-accent, #8b7750); }
   .ww-card-body { font-size:12px; color:#d4c8a8; line-height:1.55; }
   .ww-card-footer { font-family:'Courier New',monospace; font-size:9px; color:#8b7750; margin-top:4px; }
 
@@ -2354,11 +2413,19 @@ const WW_STYLES = `
   .ww-tier-bg--extreme::before {
     background:
       repeating-linear-gradient(0deg,
-        rgba(160,20,20,0.45) 0px, rgba(160,20,20,0.45) 1px,
-        transparent 1px, transparent 5px),
-      linear-gradient(180deg, rgba(100,5,5,0.55), rgba(60,0,0,0.75));
-    animation: ww-extreme-pulse 1.1s ease-in-out infinite; }
-  @keyframes ww-extreme-pulse { 0%,100%{opacity:0.5} 50%{opacity:1.0} }
+        rgba(204,51,51,0.22) 0px, rgba(204,51,51,0.22) 1px,
+        transparent 1px, transparent 4px),
+      radial-gradient(ellipse at 50% 50%, rgba(160,20,20,0.15) 0%, transparent 70%),
+      linear-gradient(135deg, rgba(40,10,15,0.3), rgba(20,5,10,0.4));
+    animation: ww-tv-flicker 0.9s steps(4, end) infinite; }
+  @keyframes ww-tv-flicker {
+    0%   { opacity:0.35; }
+    20%  { opacity:0.8; }
+    40%  { opacity:0.3; }
+    60%  { opacity:0.65; }
+    80%  { opacity:0.4; }
+    100% { opacity:0.35; }
+  }
 
   /* Feast food spread */
   .ww-food-spread { position:relative; height:140px; margin-top:-12px; pointer-events:none; }
@@ -2606,8 +2673,39 @@ export function rpBuildWawanakwaGoneWild(ep) {
   const huntingStart = Object.keys(ww.huntResults || {}).length;
   let lastRound = -1;
 
+  // Identity pass: annotation pre-pass (timestamp + location per event)
+  const _annHunterLocs = {};
+  Object.entries(ww.huntResults || {}).forEach(([name, r]) => {
+    const pool = WW_TIER_LOCATIONS[r?.animalTier] || WW_TIER_LOCATIONS.medium;
+    _annHunterLocs[name] = pool[Math.floor(Math.random() * pool.length)];
+  });
+  let _annClockMin = 7 * 60; // 07:00
+  const _annFmtTime = (mins) => {
+    const m = ((mins % (24 * 60)) + (24 * 60)) % (24 * 60);
+    return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+  };
+  const _annLocFor = (evt) => {
+    if (evt.type === 'animalDraw') return 'DOCK';
+    if (evt.type === 'gearGrab') return 'BOATHOUSE';
+    if (evt.type === 'chrisQuip') return 'RANGER STATION';
+    if (evt.type === 'feastReveal' || evt.type === 'honorPodium') return 'CAMP MESS';
+    if (evt.type === 'punishmentReveal') return 'LATRINE';
+    if (evt.type === 'tranqChaos') return 'INCIDENT ZONE';
+    if (evt.player && _annHunterLocs[evt.player]) return _annHunterLocs[evt.player];
+    return 'WAWANAKWA ISLAND';
+  };
+  const _annAdvances = (evt) =>
+    !(evt.type === 'stateChange' || evt.type === 'animalReaction' || evt.type === 'chrisQuip');
+  const annotations = ww.timeline.map(evt => {
+    if (_annAdvances(evt)) _annClockMin += 3 + Math.floor(Math.random() * 10);
+    return { time: _annFmtTime(_annClockMin), location: _annLocFor(evt) };
+  });
+
+  let timelineIdx = 0;
+
   for (const evt of ww.timeline) {
     // Skip legacy shadow events — they duplicate huntBeat data and render nothing
+    const ann = annotations[timelineIdx++];
     if (evt._shadow) continue;
 
     let huntingDelta = 0, capturedDelta = 0, failedDelta = 0, cameraShake = false;
@@ -2620,9 +2718,7 @@ export function rpBuildWawanakwaGoneWild(ep) {
       for (const s of steps) { capturedSoFar += s.capturedDelta || 0; }
       const huntingSoFar = huntingStart - capturedSoFar;
       const censusStr = `${capturedSoFar} CAPTURED · ${Math.max(0, huntingSoFar)} STILL HUNTING`;
-      const tannoyBadges = ['🎯 HUNT IN PROGRESS', '🕐 HOUR TWO', '🌅 DUSK APPROACHES', '⚠️ LAST LIGHT'];
-      const tannoyBadge = tannoyBadges[Math.min(evt.round, 3)];
-      const tannoyHtml = `<div class="ww-tannoy"><div class="ww-tannoy-badge">${tannoyBadge}</div><div class="ww-tannoy-title">${label}</div><div class="ww-tannoy-census">STATUS: ${censusStr}</div></div>`;
+      const tannoyHtml = `<div class="ww-tannoy"><div class="ww-tannoy-badge">${_wwTannoyBadge(evt.round)}</div><div class="ww-tannoy-title">${label}</div><div class="ww-tannoy-census">STATUS: ${censusStr}</div></div>`;
       steps.push({ html: tannoyHtml, huntingDelta: 0, capturedDelta: 0, failedDelta: 0, cameraShake: false, tranqPair: null });
       lastRound = evt.round;
     }
@@ -2637,7 +2733,7 @@ export function rpBuildWawanakwaGoneWild(ep) {
       tranqPair = `${evt.players[0]}|${evt.players[1]}`;
     }
 
-    steps.push({ html: _renderWWStep(evt, ww, ALL_ANIMAL_NAMES), huntingDelta, capturedDelta, failedDelta, cameraShake, tranqPair });
+    steps.push({ html: _renderWWStep(evt, ww, ALL_ANIMAL_NAMES, ann), huntingDelta, capturedDelta, failedDelta, cameraShake, tranqPair });
   }
 
   const totalSteps = steps.length;
@@ -2743,21 +2839,17 @@ export function rpBuildWawanakwaGoneWild(ep) {
 }
 
 // ── PER-EVENT CARD RENDERER ──
-function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
+function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES, annotation = null) {
   const GOLD = '#c8a84e', GREEN = '#6a9f3a', RED = '#c33', GREY = '#8b7750', ORANGE = '#c8a84e', PINK = '#d4789a', BLUE = '#7a9ec2', PURPLE = '#a05050';
-  const GEAR_EMOJI = {
-    'fishing net':'🕸️','rope with a hook':'🪢','animal bait':'🍖','burlap sack':'👜',
-    'wooden crate':'📦','small cage trap':'🔒','camo tarp':'🌿','deer antlers':'🦌',
-    'tranquilizer gun':'💉','smoke bomb':'💨','chainsaw':'🪚','megaphone':'📣',
-    'rubber chicken':'🐔','roll of paper towels':'🧻','lifeguard float':'🛟',
-    'broken oar':'🚣','shark jawbone':'🦷',
-  };
-  const ANIMAL_EMOJI = {
-    'Chipmunk':'🐿️','Frog':'🐸','Rabbit':'🐰','Squirrel':'🐿️','Seagull':'🐦',
-    'Duck':'🦆','Raccoon':'🦝','Goose':'🪿','Skunk':'🦨','Porcupine':'🦔',
-    'Beaver':'🦫','Deer':'🦌','Snake':'🐍','Wild Turkey':'🦃','Owl':'🦉',
-    'Bear':'🐻','Moose':'🫎','Wolf':'🐺','Alligator':'🐊',
-  };
+
+  // Identity pass: standardized label prefix (timestamp + location + kind)
+  function _wwLabel(ann, kindHtml) {
+    if (!ann) return kindHtml;
+    return `<span class="ww-timestamp">${ann.time}</span>` +
+           `<span class="ww-location">${ann.location}</span>` +
+           `<span class="ww-label-divider">·</span>` +
+           `<span class="ww-label-kind">${kindHtml}</span>`;
+  }
 
   function wrapTier(tier, inner) {
     if (!tier) return inner;
@@ -2773,18 +2865,17 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     };
     const cfg = beatConfig[evt.beat] || { color: GREY, emoji: '·', label: (evt.beat || '').toUpperCase() };
     const outcomeBadge = evt.outcome === 'abort' ? ' · ABORT' : evt.outcome === 'fail' ? ' · FAIL' : '';
-    const tsStr = evt._ts ? `${evt._ts} · ` : '';
-    const locStr = evt._loc ? `${evt._loc} · ` : '';
+    const animalEmoji = WW_ANIMAL_EMOJI[evt.animal] || '🐾';
     let h = `<div class="ww-card" style="--ww-accent:${cfg.color};padding:8px 12px;margin-bottom:3px">`;
-    h += `<div class="ww-card-label">${cfg.emoji} ${tsStr}${locStr}${cfg.label}${outcomeBadge}</div>`;
+    h += `<div class="ww-card-label">${_wwLabel(annotation, `${cfg.emoji} ${cfg.label}${outcomeBadge} · ${animalEmoji} ${(evt.animal || '').toUpperCase()}`)}</div>`;
     h += `<div style="display:flex;align-items:center;gap:6px;margin-top:2px">`;
     if (evt.player) h += rpPortrait(evt.player, 'xs');
     h += `<div class="ww-card-body">${evt.text || ''}</div>`;
     h += `</div>`;
     if (evt.captured) h += `<div style="margin-top:4px"><span class="ww-stamp" style="color:${GREEN}">CAPTURED!</span></div>`;
     if (evt.mishap) h += `<div style="margin-top:4px"><span class="ww-stamp" style="color:${RED}">MISHAP</span></div>`;
-    const animalEmoji = ANIMAL_EMOJI[evt.animal] || '';
-    if (evt.animal) h += `<div class="ww-card-footer">${animalEmoji} ${evt.animal}</div>`;
+    const _footerEmoji = WW_ANIMAL_EMOJI[evt.animal] || '';
+    if (evt.animal) h += `<div class="ww-card-footer">${_footerEmoji} ${evt.animal}</div>`;
     h += `</div>`;
     return h;
   }
@@ -2803,7 +2894,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     };
     const cfg = behaviorConfig[evt.behavior] || { color: GREY, emoji: '·', label: (evt.behavior || '').toUpperCase() };
     let h = `<div class="ww-card" style="--ww-accent:${cfg.color};padding:8px 12px;margin-bottom:3px;margin-left:16px">`;
-    h += `<div class="ww-card-label">${cfg.emoji} ${(evt.animal || '').toUpperCase()} ${cfg.label}</div>`;
+    h += `<div class="ww-card-label">${_wwLabel(annotation, `${cfg.emoji} ${(evt.animal || '').toUpperCase()} ${cfg.label}`)}</div>`;
     h += `<div class="ww-card-body">${evt.text || ''}</div>`;
     if (evt.affectedPlayer) h += `<div class="ww-card-footer">Also affects: ${evt.affectedPlayer}</div>`;
     h += `</div>`;
@@ -2832,16 +2923,16 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     const reelFinal = -((reelNames.length - 1) * stripHeight);
 
     let h = `<div class="ww-card" style="--ww-accent:${color}">`;
-    h += `<div class="ww-card-label">🎲 ANIMAL DRAW</div>`;
+    h += `<div class="ww-card-label">${_wwLabel(annotation, '🎲 ANIMAL DRAW')}</div>`;
     h += `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">`;
     h += `${rpPortrait(evt.player, 'sm')}`;
     h += `<span style="font-weight:700;color:#d4c8a8;font-size:13px">${evt.player}</span>`;
     h += `<div class="ww-reel" style="--reel-start:0px;--reel-final:${reelFinal}px"><div class="ww-reel-window"></div><div class="ww-reel-strip">`;
-    reelNames.forEach(a => { h += `<div>${a}</div>`; });
+    reelNames.forEach(a => { h += `<div>${WW_ANIMAL_EMOJI[a] || '🐾'} ${a}</div>`; });
     h += `</div></div>`;
     h += `<span class="ww-tier ww-tier--${evt.tier}">${evt.tier.toUpperCase()}</span>`;
     h += `</div>`;
-    const animalEm = ANIMAL_EMOJI[evt.animal] || '';
+    const animalEm = WW_ANIMAL_EMOJI[evt.animal] || '';
     h += `<div class="ww-card-body" style="margin-top:6px">${evt.text}</div>`;
     h += `<div style="margin-top:6px"><span class="ww-stamp" style="color:${color}">${animalEm} ${tierStamps[evt.tier] || evt.tier.toUpperCase()}: ${evt.animal.toUpperCase()}</span></div>`;
     h += `</div>`;
@@ -2849,10 +2940,10 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
   }
   if (evt.type === 'gearGrab') {
     const isArmed = (evt.gear || '').toLowerCase().includes('tranq');
-    const gearEmoji = GEAR_EMOJI[evt.gear] || '';
+    const gearEmoji = _wwGearEmoji(evt.gear);
     const cardClass = isArmed ? 'ww-gear-card ww-gear-card--armed' : 'ww-gear-card';
     let h = `<div class="ww-card" style="--ww-accent:${isArmed ? RED : '#8b5a2b'}">`;
-    h += `<div class="ww-card-label">🎒 GEAR GRAB</div>`;
+    h += `<div class="ww-card-label">${_wwLabel(annotation, '🎒 GEAR GRAB')}</div>`;
     h += `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">`;
     h += `${rpPortrait(evt.player, 'sm')}`;
     h += `<span style="font-weight:700;color:#d4c8a8">${evt.player}</span>`;
@@ -2867,7 +2958,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
   // ── CHRIS QUIP ──
   if (evt.type === 'chrisQuip') {
     let h = `<div class="ww-card" style="--ww-accent:${ORANGE}">`;
-    h += `<div class="ww-card-label">📢 CHRIS MCLEAN</div>`;
+    h += `<div class="ww-card-label">${_wwLabel(annotation, '📢 CHRIS MCLEAN')}</div>`;
     h += `<div class="ww-card-body" style="font-style:italic">${evt.text}</div>`;
     h += `</div>`;
     return h;
@@ -2877,7 +2968,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
   if (evt.type === 'huntAttempt' && evt.success) {
     if (evt._shadow) return '';
     let h = `<div class="ww-card" style="--ww-accent:${GREEN}">`;
-    h += `<div class="ww-card-label">✅ CAPTURE — ${(evt.animal || '').toUpperCase()}</div>`;
+    h += `<div class="ww-card-label">${_wwLabel(annotation, `✅ CAPTURE — ${(evt.animal || '').toUpperCase()}`)}</div>`;
     h += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">${rpPortrait(evt.player, 'sm')}<span style="font-weight:700;color:#d4c8a8">${evt.player}</span></div>`;
     h += `<div class="ww-card-body">${evt.text}</div>`;
     h += `<div style="margin-top:6px"><span class="ww-stamp" style="color:${GREEN}">CAUGHT!</span></div>`;
@@ -2890,7 +2981,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
   if (evt.type === 'huntAttempt' && !evt.success) {
     if (evt._shadow) return '';
     let h = `<div class="ww-card" style="--ww-accent:${ORANGE}">`;
-    h += `<div class="ww-card-label">❌ FAILED ATTEMPT — ${(evt.animal || '').toUpperCase()}</div>`;
+    h += `<div class="ww-card-label">${_wwLabel(annotation, `❌ FAILED ATTEMPT — ${(evt.animal || '').toUpperCase()}`)}</div>`;
     h += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">${rpPortrait(evt.player, 'sm')}<span style="font-weight:700;color:#d4c8a8">${evt.player}</span></div>`;
     h += `<div class="ww-card-body">${evt.text}</div>`;
     h += `<div class="ww-card-footer">Round ${(evt.round || 0) + 1}</div>`;
@@ -2918,7 +3009,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
       particleHtml += `<span class="ww-mishap-particle" style="--mx:${mx};--my:${my};--mrot:${rot};--mdelay:${delay}">${em}</span>`;
     }
     let h = `<div class="ww-card ww-card--mishap ww-mishap-stage" style="--ww-accent:${RED}">`;
-    h += `<div class="ww-card-label">💥 MISHAP — ${(evt.animal || '').toUpperCase()}</div>`;
+    h += `<div class="ww-card-label">${_wwLabel(annotation, `💥 MISHAP — ${(evt.animal || '').toUpperCase()}`)}</div>`;
     h += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;position:relative">${rpPortrait(evt.player, 'sm')}<span style="font-weight:700;color:#d4c8a8">${evt.player}</span>${particleHtml}</div>`;
     h += `<div class="ww-card-body">${evt.text}</div>`;
     h += `<div style="margin-top:6px"><span class="ww-stamp" style="color:${RED}">${stamp}</span></div>`;
@@ -2930,7 +3021,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
   // ── HUNT FAIL (never caught) ──
   if (evt.type === 'huntFail') {
     let h = `<div class="ww-card" style="--ww-accent:${RED}">`;
-    h += `<div class="ww-card-label">💀 NO CATCH — ${(evt.animal || '').toUpperCase()}</div>`;
+    h += `<div class="ww-card-label">${_wwLabel(annotation, `💀 NO CATCH — ${(evt.animal || '').toUpperCase()}`)}</div>`;
     h += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">${rpPortrait(evt.player, 'sm')}<span style="font-weight:700;color:#d4c8a8">${evt.player}</span></div>`;
     h += `<div class="ww-card-body">${evt.text}</div>`;
     h += `<div style="margin-top:6px"><span class="ww-stamp" style="color:${RED}">FAILED</span></div>`;
@@ -2944,7 +3035,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     const shooterPortrait = shooter ? `<span data-player-id="${shooter.replace(/"/g,'&quot;')}">${rpPortrait(shooter, 'sm')}</span>` : '';
     const victimPortrait  = victim  ? `<span data-player-id="${victim.replace(/"/g,'&quot;')}">${rpPortrait(victim, 'sm')}</span>` : '';
     let h = `<div class="ww-card ww-card--tranq" style="--ww-accent:${RED};position:relative">`;
-    h += `<div class="ww-card-label"><span class="ww-dart">💉</span> TRANQUILIZER CHAOS${evt.badgeText ? ' · ' + evt.badgeText : ''}</div>`;
+    h += `<div class="ww-card-label">${_wwLabel(annotation, `<span class="ww-dart">💉</span> TRANQUILIZER CHAOS${evt.badgeText ? ' · ' + evt.badgeText : ''}`)}</div>`;
     h += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">`;
     if (shooter) { h += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">${shooterPortrait}<span style="font-family:'Courier New',monospace;font-size:9px;color:#8b7750">SHOOTER</span></div>`; }
     if (victim)  { h += `<div style="font-size:18px;padding:0 6px;color:#c33">→</div>`;
@@ -3020,7 +3111,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
   if (evt.type === 'punishmentReveal') {
     const loser = evt.player || ww.punishmentTarget || '???';
     let h = `<div class="ww-card ww-card--punish" style="--ww-accent:${RED};animation:ww-scan-in 0.35s ease-out both,ww-pulse-red 0.6s 0.35s 2">`;
-    h += `<div class="ww-card-label">🚽 BATHROOM DUTY</div>`;
+    h += `<div class="ww-card-label">${_wwLabel(annotation, '🚽 BATHROOM DUTY')}</div>`;
     h += `<div style="display:flex;align-items:center;gap:10px;margin:4px 0">${rpPortrait(loser, 'sm')}<span style="font-family:var(--font-display,'Impact',sans-serif);font-size:18px;font-weight:700;color:${RED}">${loser}</span></div>`;
     h += `<div class="ww-card-body">${evt.text}</div>`;
     h += `<div style="margin-top:6px"><span class="ww-stamp" style="color:${RED}">BATHROOM DUTY</span></div>`;
@@ -3048,7 +3139,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     const cfg = subtypeConfig[evt.subtype] || { color: GREY, emoji: '⚡', label: (evt.subtype || 'EVENT').toUpperCase() };
     const evtPortraits = (evt.players || []).slice(0, 3).map(p => rpPortrait(p, 'sm')).join('');
     let h = `<div class="ww-card" style="--ww-accent:${cfg.color}">`;
-    h += `<div class="ww-card-label">${cfg.emoji} ${cfg.label}${evt.badgeText ? ' · ' + evt.badgeText : ''}</div>`;
+    h += `<div class="ww-card-label">${_wwLabel(annotation, `${cfg.emoji} ${cfg.label}${evt.badgeText ? ' · ' + evt.badgeText : ''}`)}</div>`;
     if (evtPortraits) h += `<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">${evtPortraits}</div>`;
     h += `<div class="ww-card-body">${evt.text}</div>`;
     h += `</div>`;
@@ -3057,7 +3148,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
 
   // ── FALLBACK ──
   let h = `<div class="ww-card" style="--ww-accent:${GREY}">`;
-  h += `<div class="ww-card-label">📋 ${(evt.type || 'EVENT').toUpperCase()}</div>`;
+  h += `<div class="ww-card-label">${_wwLabel(annotation, `📋 ${(evt.type || 'EVENT').toUpperCase()}`)}</div>`;
   h += `<div class="ww-card-body">${evt.text || ''}</div>`;
   h += `</div>`;
   return h;

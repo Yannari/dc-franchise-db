@@ -34,9 +34,35 @@ const ANIMALS = {
         (n, pr) => `${n} climbs the tree to reach the chipmunk. The branch snaps. ${pr.Sub} ${pr.sub==='they'?'fall':'falls'} ten feet and lands flat on ${pr.posAdj} back.`,
         (n, pr) => `The chipmunk bites ${pr.posAdj} nose. ${n} screams, stumbles backward into a bush, and startles a skunk.`,
       ],
+      approachDifficulty: 9,
+      engagementDifficulty: 11,
+      reactionChance: 0.50,
+      approach: [
+        (n, pr) => `${n} spots the chipmunk darting between tree roots. ${pr.Sub} ${pr.sub==='they'?'crouch':'crouches'} and moves in slow.`,
+        (n, pr) => `${n} follows a trail of bitten acorn caps to a hollow log. Something chitters inside.`,
+        (n, pr) => `${n} freezes when ${pr.posAdj} foot snaps a twig. The chipmunk's tail flicks up twenty feet ahead.`,
+      ],
+      engagementSuccess: [
+        (n, pr) => `${n} lunges low with the sack. Pins the chipmunk against a root. One flailing handful — secured.`,
+        (n, pr) => `${n} drops the hat trap right as the chipmunk crosses. ${pr.Sub} ${pr.sub==='they'?'scoop':'scoops'} it into the bag, bites and all.`,
+      ],
+      engagementFail: [
+        (n, pr) => `${n} swings the sack too wide. The chipmunk is under ${pr.posAdj} arm and gone.`,
+        (n, pr) => `${n} commits to the grab. Grabs air. The chipmunk is already on the next branch.`,
+      ],
+      behaviors: {
+        flee: [
+          (n, pr) => `The chipmunk dives into a crack between two boulders. ${n} can hear it laughing.`,
+          (n, pr) => `The chipmunk runs up a tree, screams once, and is gone.`,
+        ],
+        freeze: [
+          (n, pr) => `The chipmunk locks up mid-step, eyes huge. ${n} has a split-second window.`,
+          (n, pr) => `The chipmunk plays dead. Very unconvincingly. But it's not moving.`,
+        ],
+      },
     },
     {
-      id: 'frog', name: 'Frog', tier: 'easy',
+      id: 'frog',name: 'Frog', tier: 'easy',
       statWeights: { intuition: 0.04, mental: 0.03, endurance: 0.02 },
       mishapWeight: 0.30,
       draw: {
@@ -59,9 +85,36 @@ const ANIMALS = {
         (n, pr) => `${n} chases the frog into a puddle. The puddle is waist-deep. ${pr.Sub} ${pr.sub==='they'?'are':'is'} stuck.`,
         (n, pr) => `${n} slips on the muddy bank and slides into the pond. The frog watches from dry land.`,
       ],
+      approachDifficulty: 10,
+      engagementDifficulty: 12,
+      reactionChance: 0.45,
+      approach: [
+        (n, pr) => `${n} finds the frog perched on a lily pad at the edge of the pond. ${pr.Sub} ${pr.sub==='they'?'crouch':'crouches'} and eases forward through the reeds.`,
+        (n, pr) => `${n} follows a trail of splashes to a muddy bank. The frog is right there, fat and slow.`,
+        (n, pr) => `${n} spots the frog two feet away, completely still. ${pr.Sub} ${pr.sub==='they'?'hold':'holds'} ${pr.posAdj} breath and inches the bucket forward.`,
+      ],
+      engagementSuccess: [
+        (n, pr) => `${n} scoops the bucket under the frog in one clean motion. It squirms but it's in.`,
+        (n, pr) => `${n} drops the hat over the frog before it can jump. ${pr.Sub} ${pr.sub==='they'?'slide':'slides'} the bucket under to complete the trap.`,
+        (n, pr) => `${n} uses both hands, sweeping from behind. The frog lands in the bucket mid-jump. Lucky, but it counts.`,
+      ],
+      engagementFail: [
+        (n, pr) => `${n} swings the bucket too slow. The frog is already gone, three lily pads away.`,
+        (n, pr) => `${n} lunges. The frog's legs are stronger than expected. It clears ${pr.posAdj} hands by two feet.`,
+      ],
+      behaviors: {
+        flee: [
+          (n, pr) => `The frog leaps so hard it disappears into the water with a crack. ${n} is just staring at ripples.`,
+          (n, pr) => `The frog zigzags three times, then dives under the mud. ${n} has no idea where it went.`,
+        ],
+        freeze: [
+          (n, pr) => `The frog locks up completely. ${n} has maybe five seconds before it decides to move.`,
+          (n, pr) => `The frog plays dead. Perfectly still, legs splayed. ${n} isn't sure if this is a trap.`,
+        ],
+      },
     },
     {
-      id: 'rabbit', name: 'Rabbit', tier: 'easy',
+      id: 'rabbit',name: 'Rabbit', tier: 'easy',
       statWeights: { physical: 0.03, intuition: 0.04, mental: 0.02 },
       mishapWeight: 0.25,
       draw: {
@@ -83,9 +136,35 @@ const ANIMALS = {
       mishap: [
         (n, pr) => `${n} reaches into the burrow. Something bites — but it's not the rabbit. ${pr.Sub} ${pr.sub==='they'?'pull':'pulls'} out ${pr.posAdj} hand with a very angry gopher attached.`,
       ],
+      approachDifficulty: 10,
+      engagementDifficulty: 11,
+      reactionChance: 0.55,
+      approach: [
+        (n, pr) => `${n} spots the rabbit nibbling grass near the treeline. ${pr.Sub} ${pr.sub==='they'?'move':'moves'} upwind, staying low.`,
+        (n, pr) => `${n} finds the burrow entrance and sets up nearby. The rabbit comes out within minutes, nose twitching.`,
+        (n, pr) => `${n} traces the rabbit's route along the field edge. It's a creature of habit. ${pr.Sub} ${pr.sub==='they'?'wait':'waits'} at the spot.`,
+      ],
+      engagementSuccess: [
+        (n, pr) => `${n} pounces while the rabbit is mid-sniff. Both hands, quick and firm. It kicks, but it's in the bag.`,
+        (n, pr) => `${n} steers the rabbit into the corner of the snare with a gentle approach. It hops right in.`,
+      ],
+      engagementFail: [
+        (n, pr) => `${n} dives for the rabbit. It zigzags twice and is back in the burrow before ${pr.sub} ${pr.sub==='they'?'land':'lands'}.`,
+        (n, pr) => `${n} misses the timing. The rabbit bolts straight into the grass and is gone before ${pr.sub} ${pr.sub==='they'?'stand':'stands'} up.`,
+      ],
+      behaviors: {
+        flee: [
+          (n, pr) => `The rabbit bolts in a zigzag pattern so fast that ${n} can't track it. Gone.`,
+          (n, pr) => `The rabbit drops down the burrow. ${n} hears it thumping below. It's not coming back out.`,
+        ],
+        freeze: [
+          (n, pr) => `The rabbit holds absolutely still, nose going. It hasn't decided to run yet.`,
+          (n, pr) => `The rabbit flattens into the grass. ${n} almost loses it, then spots the ears.`,
+        ],
+      },
     },
     {
-      id: 'squirrel', name: 'Squirrel', tier: 'easy',
+      id: 'squirrel',name: 'Squirrel', tier: 'easy',
       statWeights: { physical: 0.04, intuition: 0.03, boldness: 0.02 },
       mishapWeight: 0.30,
       draw: {
@@ -161,9 +240,43 @@ const ANIMALS = {
         (n, pr) => `The duck leads ${n} on a three-mile chase around the entire island. ${pr.Sub} ${pr.sub==='they'?'come':'comes'} back soaked, muddy, and duckless.`,
         (n, pr) => `${n} corners the duck near the dock. The duck quacks once and flies away. ${n} didn't know it could fly.`,
       ],
+      approachDifficulty: 11,
+      engagementDifficulty: 13,
+      reactionChance: 0.55,
+      approach: [
+        (n, pr) => `${n} scatters a trail of bread crumbs and circles around to the duck from the other side.`,
+        (n, pr) => `${n} wades into the shallows, moving slow. The duck watches ${pr.obj} from ten feet away, unimpressed.`,
+        (n, pr) => `${n} crawls through the reeds for twenty minutes to get within range of the duck's usual feeding spot.`,
+      ],
+      engagementSuccess: [
+        (n, pr) => `${n} times the net toss perfectly — as the duck dips its head to eat. Clean catch.`,
+        (n, pr) => `${n} corners the duck against the dock post and drops the cage. The duck quacks like it's been personally offended.`,
+      ],
+      engagementFail: [
+        (n, pr) => `${n} throws the net. The duck walks under it and keeps going. Ducks are faster walking than they look.`,
+        (n, pr) => `${n} gets close enough to touch it. Then the duck sticks out its tongue and sprints. There is nothing to do.`,
+      ],
+      behaviors: {
+        flee: [
+          (n, pr) => `The duck turns and power-walks away faster than ${n} thought possible for a bird that size.`,
+          (n, pr) => `The duck takes off across the pond and lands fifty yards away. ${n} stares at the rings on the water.`,
+        ],
+        freeze: [
+          (n, pr) => `The duck stops. Tilts its head at ${n}. Doesn't move. This might actually be ${pr.posAdj} chance.`,
+          (n, pr) => `The duck preens, ignoring ${n} entirely. It's not fleeing — it just doesn't care.`,
+        ],
+        call: [
+          (n, pr) => `The duck quacks four times. Six more ducks arrive from across the water. ${n} is now outnumbered.`,
+          (n, pr) => `The duck calls for backup. Three drakes paddle over. ${n} quietly backs away from the situation.`,
+        ],
+        feint: [
+          (n, pr) => `The duck waddles toward ${n}, then abruptly turns and waddles away. ${n} is completely confused.`,
+          (n, pr) => `The duck charges ${n} with wings spread — then veers off at the last second. ${n} stumbled anyway.`,
+        ],
+      },
     },
     {
-      id: 'raccoon', name: 'Raccoon', tier: 'medium',
+      id: 'raccoon',name: 'Raccoon', tier: 'medium',
       statWeights: { boldness: 0.04, physical: 0.03, endurance: 0.02 },
       mishapWeight: 0.50,
       draw: {
@@ -187,9 +300,43 @@ const ANIMALS = {
         (n, pr) => `The raccoon climbs onto ${pr.posAdj} head and refuses to leave. ${n} can't get it off. The raccoon is winning.`,
         (n, pr) => `${n} tries to grab the raccoon. The raccoon grabs ${pr.posAdj} gear instead and bolts into the woods.`,
       ],
+      approachDifficulty: 12,
+      engagementDifficulty: 13,
+      reactionChance: 0.60,
+      approach: [
+        (n, pr) => `${n} follows the sound of rummaging to a trash pile near the treeline. The raccoon has its head buried in a bag.`,
+        (n, pr) => `${n} tracks the raccoon to a hollow log by the pawprints in the mud. It's in there. ${pr.Sub} ${pr.sub==='they'?'wait':'waits'}.`,
+        (n, pr) => `${n} sets out bait fifty feet from camp and backs off. The raccoon takes twenty minutes to show up, but it does.`,
+      ],
+      engagementSuccess: [
+        (n, pr) => `${n} drops the net while the raccoon is distracted eating. It fights the netting for a solid thirty seconds before giving up.`,
+        (n, pr) => `${n} corners it against the log and gets the bag over it from behind. It immediately starts trying to pick the knot.`,
+      ],
+      engagementFail: [
+        (n, pr) => `The raccoon sidesteps the net, grabs the bait anyway, and walks off. ${n} watches it go.`,
+        (n, pr) => `${n} grabs the raccoon. It twists in a way no mammal should be able to and escapes in under a second.`,
+      ],
+      behaviors: {
+        flee: [
+          (n, pr) => `The raccoon bolts for the nearest tree and is fifteen feet up before ${n} can blink.`,
+          (n, pr) => `The raccoon makes a sound like a tiny scream and sprints into the undergrowth.`,
+        ],
+        freeze: [
+          (n, pr) => `The raccoon freezes with food in both tiny hands, staring at ${n}. It has not decided what to do.`,
+          (n, pr) => `The raccoon stops. Looks at ${n}. Tilts its head. It's sizing ${pr.obj} up.`,
+        ],
+        call: [
+          (n, pr) => `The raccoon's chittering brings three more out of the dark. They form a loose circle around ${n}.`,
+          (n, pr) => `The raccoon calls and another appears from behind ${n}. The situation is no longer in ${pr.posAdj} favor.`,
+        ],
+        feint: [
+          (n, pr) => `The raccoon bolts left, stops, bolts right. ${n} can't get a bead on it.`,
+          (n, pr) => `The raccoon charges ${n}'s feet, veers off, and uses the confusion to escape.`,
+        ],
+      },
     },
     {
-      id: 'goose', name: 'Goose', tier: 'medium',
+      id: 'goose',name: 'Goose', tier: 'medium',
       statWeights: { boldness: 0.04, physical: 0.02, endurance: 0.03 },
       mishapWeight: 0.45,
       draw: {
@@ -212,9 +359,43 @@ const ANIMALS = {
         (n, pr) => `The goose chases ${n} across camp. ${pr.Sub} ${pr.sub==='they'?'are':'is'} screaming. Everyone is watching. Nobody helps.`,
         (n, pr) => `${n} tries to grab the goose from behind. It spins and bites ${pr.posAdj} ear. The honking echoes across the lake.`,
       ],
+      approachDifficulty: 11,
+      engagementDifficulty: 14,
+      reactionChance: 0.65,
+      approach: [
+        (n, pr) => `${n} approaches from the far side of the pond, bread in hand, trying to look non-threatening.`,
+        (n, pr) => `${n} finds the goose alone by the dock, separated from the flock. This might be the best opening ${pr.sub} ${pr.sub==='they'?'get':'gets'}.`,
+        (n, pr) => `${n} circles the goose slowly, watching for the moment it dips its head to drink.`,
+      ],
+      engagementSuccess: [
+        (n, pr) => `${n} gets the blanket over the goose from behind before it can turn. It honks through the entire trip back to camp.`,
+        (n, pr) => `${n} feeds it enough bread to make it sluggish, then moves fast. The goose is contained, furious, and full.`,
+      ],
+      engagementFail: [
+        (n, pr) => `${n} reaches for the goose. The goose attacks. ${n} is the one running now.`,
+        (n, pr) => `${n} tries to herd it. The goose herds ${pr.obj} instead. ${n} ends up in the reeds with no goose.`,
+      ],
+      behaviors: {
+        flee: [
+          (n, pr) => `The goose spreads its wings and runs, hissing, then takes off low over the water.`,
+          (n, pr) => `The goose retreats honking. It does not go far. It will be back.`,
+        ],
+        freeze: [
+          (n, pr) => `The goose plants itself and stares at ${n} with one eye. It's deciding whether ${pr.sub} ${pr.sub==='they'?'are':'is'} worth fighting.`,
+          (n, pr) => `The goose stops walking and holds its ground. It has decided. ${n} is the one who needs to make the next move.`,
+        ],
+        call: [
+          (n, pr) => `The goose unleashes a honk that carries across the whole island. The rest of the flock arrives in force.`,
+          (n, pr) => `The goose calls for the flock. Seven geese land in the water behind ${n}. ${pr.Sub} ${pr.sub==='they'?'are':'is'} surrounded on three sides.`,
+        ],
+        feint: [
+          (n, pr) => `The goose lunges with wings spread, stops dead, and watches ${n} stumble backward.`,
+          (n, pr) => `The goose fake-charges twice in a row. ${n} can't tell which lunge is going to be real.`,
+        ],
+      },
     },
     {
-      id: 'skunk', name: 'Skunk', tier: 'medium',
+      id: 'skunk',name: 'Skunk', tier: 'medium',
       statWeights: { mental: 0.04, intuition: 0.04, boldness: 0.02 },
       mishapWeight: 0.55,
       draw: {
@@ -290,9 +471,43 @@ const ANIMALS = {
         (n, pr) => `${n} enters the beaver lodge. The beavers are sitting at a dinner table. They hit ${pr.obj} with their tails until ${pr.sub} ${pr.sub==='they'?'leave':'leaves'}.`,
         (n, pr) => `${n} brings back the entire beaver dam. It weighs 200 pounds. ${pr.Sub} ${pr.sub==='they'?'are':'is'} exhausted and soaking wet.`,
       ],
+      approachDifficulty: 12,
+      engagementDifficulty: 13,
+      reactionChance: 0.50,
+      approach: [
+        (n, pr) => `${n} wades out to the dam at dawn, when beavers are most active. The lodge is right there in the water.`,
+        (n, pr) => `${n} spots the beaver hauling a branch toward the dam. ${pr.Sub} ${pr.sub==='they'?'follow':'follows'} at a distance, looking for an opening.`,
+        (n, pr) => `${n} finds a flat bank where the beaver comes ashore to drag timber. ${pr.Sub} ${pr.sub==='they'?'set':'sets'} up and wait.`,
+      ],
+      engagementSuccess: [
+        (n, pr) => `${n} scoops the beaver out of the shallows with the bag while it's distracted building. It tail-slaps ${pr.obj} twice. Still a catch.`,
+        (n, pr) => `${n} corners the beaver at the dam entrance and gets the net over it before it can dive. Wet but successful.`,
+      ],
+      engagementFail: [
+        (n, pr) => `${n} reaches for the beaver. It whips its tail against the water like a gunshot and slips under.`,
+        (n, pr) => `${n} dives under the dam and grabs nothing. The beaver was already gone.`,
+      ],
+      behaviors: {
+        flee: [
+          (n, pr) => `The beaver slaps its tail on the water — a sound like a gunshot — and dives. It doesn't come back up.`,
+          (n, pr) => `The beaver drops its branch and disappears underwater before ${n} can close the gap.`,
+        ],
+        freeze: [
+          (n, pr) => `The beaver stops at the waterline, looking at ${n}. It hasn't decided to dive yet.`,
+          (n, pr) => `The beaver sits up on its haunches and stares. It's reading the situation.`,
+        ],
+        call: [
+          (n, pr) => `The beaver tail-slaps three times in quick succession. Two more beavers surface from the lodge.`,
+          (n, pr) => `The alarm tail-slap echoes across the pond. The entire beaver family emerges from the dam entrance.`,
+        ],
+        feint: [
+          (n, pr) => `The beaver darts toward the water, stops, turns back toward ${n}. Mixed signals.`,
+          (n, pr) => `The beaver fakes a dive, waits for ${n} to commit, then bolts the other direction along the bank.`,
+        ],
+      },
     },
     {
-      id: 'deer', name: 'Deer', tier: 'hard',
+      id: 'deer',name: 'Deer', tier: 'hard',
       statWeights: { intuition: 0.04, endurance: 0.03, mental: 0.03 },
       mishapWeight: 0.35,
       draw: {
@@ -315,9 +530,44 @@ const ANIMALS = {
         (n, pr) => `${n} gets tangled in ${pr.posAdj} own rope while chasing the deer. The deer watches ${pr.obj} struggle from a safe distance.`,
         (n, pr) => `${n} follows deer tracks for 45 minutes. The tracks loop back to where ${pr.sub} started. The deer is smarter than ${pr.obj}.`,
       ],
+      approachDifficulty: 13,
+      engagementDifficulty: 15,
+      reactionChance: 0.55,
+      approach: [
+        (n, pr) => `${n} moves through the trees in a slow arc, staying downwind. The deer is grazing in a clearing fifty yards out.`,
+        (n, pr) => `${n} finds a game trail and positions ${pr.obj} at a narrow bend. This is where the deer will pass.`,
+        (n, pr) => `${n} spots the deer at a stream crossing. ${pr.Sub} ${pr.sub==='they'?'inch':'inches'} forward through the brush one careful step at a time.`,
+      ],
+      engagementSuccess: [
+        (n, pr) => `${n} times the approach perfectly — the deer has its head down. ${pr.Sub} ${pr.sub==='they'?'loop':'loops'} the rope around its neck before it can react.`,
+        (n, pr) => `${n} throws the net from ten feet. The deer bolts into it and the mesh catches around its legs.`,
+        (n, pr) => `${n} and the deer make eye contact. For one frozen second, neither moves. Then ${pr.sub} ${pr.sub==='they'?'dive':'dives'} and somehow ${pr.sub} ${pr.sub==='they'?'get':'gets'} hold.`,
+      ],
+      engagementFail: [
+        (n, pr) => `${n} steps on a branch. The deer's head snaps up. By the time ${pr.sub} ${pr.sub==='they'?'throw':'throws'} the net, it's already running.`,
+        (n, pr) => `${n} throws too wide. The deer leaps over the net and is gone in four strides.`,
+      ],
+      behaviors: {
+        flee: [
+          (n, pr) => `The deer bounds into the trees and is gone before ${n} can take a step. Deer are faster than they look.`,
+          (n, pr) => `The deer flags its tail white and launches into the forest. The crashing fades quickly.`,
+        ],
+        feint: [
+          (n, pr) => `The deer snorts and stomps once — then holds its ground. ${n} isn't sure if it's going to run or charge.`,
+          (n, pr) => `The deer fakes a bolt to the left, then cuts right and clears ${n}'s reach with a single leap.`,
+        ],
+        counter: [
+          (n, pr) => `The deer lowers its head and steps forward. ${n} is not the predator in this scenario anymore.`,
+          (n, pr) => `The deer charges instead of fleeing. ${n} dives sideways into the brush and comes up empty-handed.`,
+        ],
+        escape: [
+          (n, pr) => `The deer disappears into the dense brush where ${n} can't follow with the net. It's gone deep.`,
+          (n, pr) => `The deer makes it to the cliff edge and picks its way down the rocks. ${n} is not going down there.`,
+        ],
+      },
     },
     {
-      id: 'snake', name: 'Snake', tier: 'hard',
+      id: 'snake',name: 'Snake', tier: 'hard',
       statWeights: { boldness: 0.05, intuition: 0.03, mental: 0.02 },
       mishapWeight: 0.40,
       draw: {
@@ -340,9 +590,43 @@ const ANIMALS = {
         (n, pr) => `${n} grabs what ${pr.sub} ${pr.sub==='they'?'think':'thinks'} is the snake. It's a stick. The real snake is on ${pr.posAdj} boot.`,
         (n, pr) => `The snake wraps around ${pr.posAdj} arm. ${n} freezes. Everyone watching freezes. The snake eventually gets bored and leaves.`,
       ],
+      approachDifficulty: 14,
+      engagementDifficulty: 14,
+      reactionChance: 0.60,
+      approach: [
+        (n, pr) => `${n} finds the snake basking on a flat rock. ${pr.Sub} ${pr.sub==='they'?'approach':'approaches'} from the far side, forked stick in hand.`,
+        (n, pr) => `${n} follows the S-shaped track in the mud to a fallen log. The snake is coiled at the far end.`,
+        (n, pr) => `${n} waits by the sunny clearing where snakes warm up. Patience. Eventually one shows.`,
+      ],
+      engagementSuccess: [
+        (n, pr) => `${n} pins the snake behind the head with the stick and has it in the bag before it can coil.`,
+        (n, pr) => `${n} drops the bag over the snake from above and twists the opening shut. Fast and clean.`,
+      ],
+      engagementFail: [
+        (n, pr) => `${n} goes for the pin and misses. The snake whips around and ${n} drops the stick backing up.`,
+        (n, pr) => `${n} has the bag ready but hesitates. The snake does not hesitate. It's under the log and gone.`,
+      ],
+      behaviors: {
+        flee: [
+          (n, pr) => `The snake pours itself under the nearest rock in about two seconds flat. It's gone.`,
+          (n, pr) => `The snake stretches out full length and moves with alarming speed into the underbrush.`,
+        ],
+        feint: [
+          (n, pr) => `The snake rears back in strike position — then holds it. ${n} doesn't move. Neither does the snake.`,
+          (n, pr) => `The snake makes a short mock strike, pulling back at the last inch. ${n}'s heart is doing something alarming.`,
+        ],
+        counter: [
+          (n, pr) => `The snake strikes for real. ${n} jerks back and the fangs catch only air — barely.`,
+          (n, pr) => `The snake launches from coil to full extension in one motion. ${n} stumbles backward off the rock.`,
+        ],
+        escape: [
+          (n, pr) => `The snake pours itself through a crack in the rock wall that ${n} didn't even see. It's gone.`,
+          (n, pr) => `The snake slides into the water and vanishes. ${n} stares at the surface. No ripples.`,
+        ],
+      },
     },
     {
-      id: 'wild-turkey', name: 'Wild Turkey', tier: 'hard',
+      id: 'wild-turkey',name: 'Wild Turkey', tier: 'hard',
       statWeights: { physical: 0.04, endurance: 0.03, boldness: 0.03 },
       mishapWeight: 0.45,
       draw: {
@@ -420,9 +704,47 @@ const ANIMALS = {
         (n, pr) => `The bear chases ${n} up a tree. ${pr.Sub} ${pr.sub==='they'?'are':'is'} stuck there for twenty minutes before it loses interest.`,
         (n, pr) => `${n} tries the garbage trick. The bear eats the garbage, then looks at ${n}. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} wait to find out what happens next.`,
       ],
+      approachDifficulty: 15,
+      engagementDifficulty: 17,
+      reactionChance: 0.70,
+      approach: [
+        (n, pr) => `${n} finds claw marks on a pine. Fresh. ${pr.Sub} ${pr.sub==='they'?'swallow':'swallows'} and keeps going.`,
+        (n, pr) => `${n} tracks the bear by broken branches and the smell of fish. Every noise is too loud.`,
+        (n, pr) => `${n} sees the bear before the bear sees ${pr.obj}. Three hundred pounds, downwind, distracted. ${pr.Sub} ${pr.sub==='they'?'close':'closes'} the gap.`,
+      ],
+      engagementSuccess: [
+        (n, pr) => `${n} snaps the tranq-sack net over the bear's head just as it turns. For a horrible second nothing happens. Then it drops.`,
+        (n, pr) => `${n} lands the net clean. The bear thrashes once, twice, and sits down like it's had enough.`,
+      ],
+      engagementFail: [
+        (n, pr) => `${n} throws the net early. The bear bats it aside like a cobweb and keeps coming.`,
+        (n, pr) => `${n} hesitates for half a second. The bear does not hesitate at all.`,
+      ],
+      behaviors: {
+        feint: [
+          (n, pr) => `The bear charges, stops hard at ten feet, and woofs. ${n} freezes. The bear trots off at an angle, amused.`,
+          (n, pr) => `The bear fakes a lunge. ${n} falls backward into a bush. The bear is gone by the time ${pr.sub} ${pr.sub==='they'?'stand':'stands'} up.`,
+        ],
+        counter: [
+          (n, pr) => `The bear closes the gap before ${n} can react and swats ${pr.obj} clean off ${pr.posAdj} feet. ${pr.Sub} ${pr.sub==='they'?'land':'lands'} twenty feet away, breathless.`,
+          (n, pr) => `The bear charges. ${n} gets ONE arm up before it hits. ${pr.Sub} ${pr.sub==='they'?'take':'takes'} the full weight and go down hard.`,
+        ],
+        escape: [
+          (n, pr) => `The bear melts into the tree line and is gone. ${n} hears crashing for another minute, then nothing. It could be anywhere.`,
+          (n, pr) => `The bear lopes off toward the cliffs. ${n} is going to have to follow it into worse terrain.`,
+        ],
+        stalk: [
+          (n, pr) => `The bear circles behind ${n}. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} hear it until it's ten feet away. The hunt just inverted.`,
+          (n, pr) => `${n} realizes ${pr.sub} ${pr.sub==='they'?'are':'is'} the one being followed. The bear has been patient.`,
+        ],
+        summon: [
+          (n, pr) => `The bear roars. Somewhere across the island, another bear answers. This just became everyone's problem.`,
+          (n, pr) => `The bear huffs twice. A minute later, two cubs appear on the ridgeline. Mama bear just brought friends.`,
+        ],
+      },
     },
     {
-      id: 'moose', name: 'Moose', tier: 'extreme',
+      id: 'moose',name: 'Moose', tier: 'extreme',
       statWeights: { endurance: 0.04, boldness: 0.04, physical: 0.03 },
       mishapWeight: 0.55,
       draw: {
@@ -445,9 +767,47 @@ const ANIMALS = {
         (n, pr) => `The moose sits down. ${n} pushes. The moose does not move. ${n} pushes harder. The moose still does not move.`,
         (n, pr) => `${n} gets too close. The moose kicks. ${pr.Sub} ${pr.sub==='they'?'fly':'flies'} ten feet and lands in a bush.`,
       ],
+      approachDifficulty: 14,
+      engagementDifficulty: 18,
+      reactionChance: 0.70,
+      approach: [
+        (n, pr) => `${n} finds the moose at the lake edge, standing chest-deep in the water. It is enormous. ${pr.Sub} ${pr.sub==='they'?'inch':'inches'} closer.`,
+        (n, pr) => `${n} follows the trail of splintered saplings and torn bark. Whatever made this was not small.`,
+        (n, pr) => `${n} spots the moose in the open meadow and has to decide: approach now or wait. ${pr.Sub} ${pr.sub==='they'?'approach':'approaches'} now.`,
+      ],
+      engagementSuccess: [
+        (n, pr) => `${n} gets the rope around the moose's neck on the second try. It drags ${pr.obj} thirty yards before deciding to stop.`,
+        (n, pr) => `${n} somehow coaxes the moose toward camp by staying just ahead of it with food. It takes forty minutes. Nobody believed it was possible.`,
+      ],
+      engagementFail: [
+        (n, pr) => `The moose lowers its rack and takes one step forward. ${n} wisely reconsiders.`,
+        (n, pr) => `${n} throws the rope. The moose swings its head. The rope bounces off one antler and lands in the mud.`,
+      ],
+      behaviors: {
+        feint: [
+          (n, pr) => `The moose snaps its head toward ${n} and pops its ears forward. Then it goes back to eating. ${n} is still breathing hard.`,
+          (n, pr) => `The moose takes three rapid steps toward ${n}, stops. ${n} was absolutely certain that was a charge.`,
+        ],
+        counter: [
+          (n, pr) => `The moose charges for real. ${n} gets out of the way with about a foot to spare.`,
+          (n, pr) => `The moose turns and kicks with both rear legs. ${n} rolls into the ditch to avoid it. The impact with the ground is impressive.`,
+        ],
+        escape: [
+          (n, pr) => `The moose splashes back into the lake and wades to the far shore. ${n} is not swimming that.`,
+          (n, pr) => `The moose crashes into the tree line. The noise of it moving through the forest disappears within thirty seconds.`,
+        ],
+        stalk: [
+          (n, pr) => `${n} turns around to reset — and the moose is right behind ${pr.obj}. It has been following ${pr.obj} for at least five minutes.`,
+          (n, pr) => `${n} hears breathing from behind. The moose has looped around and is now between ${pr.obj} and camp.`,
+        ],
+        summon: [
+          (n, pr) => `The moose bellows. Deep and loud. Somewhere in the trees, something bellows back.`,
+          (n, pr) => `The moose lets out a long call that echoes across the whole island. ${n} decides this is no longer ${pr.posAdj} problem alone.`,
+        ],
+      },
     },
     {
-      id: 'wolf', name: 'Wolf', tier: 'extreme',
+      id: 'wolf',name: 'Wolf', tier: 'extreme',
       statWeights: { boldness: 0.05, strategic: 0.04, physical: 0.03 },
       mishapWeight: 0.65,
       draw: {

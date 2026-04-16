@@ -901,16 +901,20 @@ export function _textOffTheChain(ep, ln, sec) {
   br.phase3.obstacleEvents.forEach(e => { if (e.text) ln(e.text); });
 
   sec('The Finish Line');
-  if (br.phase3.finishRanking.length) {
+  if (br.phase3.finishRanking.length === 0) {
+    ln(`Every single bike was destroyed! No one crossed the finish line.`);
+    if (br.phase3.destroyed.length) ln(`${br.phase3.destroyed.join(', ')} are all safe — you can't finish last if you never finished.`);
+  } else if (br.phase3.finishRanking.length === 1) {
     const winner = br.phase3.finishRanking[0];
+    ln(`${winner} was the only one to finish the race — immunity by default!`);
+  } else {
+    const winner = br.phase3.finishRanking[0];
+    const last = br.phase3.finishRanking[br.phase3.finishRanking.length - 1];
     ln(`${winner} crossed the finish line first and won immunity!`);
-    if (br.phase4.eliminatedPlayer) {
-      const last = br.phase4.eliminatedPlayer;
-      if (br.isSuddenDeath) {
-        ln(`${last} finished last and was automatically eliminated.`);
-      } else {
-        ln(`${last} finished last — a target heading into tribal council.`);
-      }
+    if (br.isSuddenDeath) {
+      ln(`${last} finished last and was automatically eliminated. The Dock of Shame awaits.`);
+    } else {
+      ln(`${last} finished last — a major target heading into tribal council.`);
     }
   }
 

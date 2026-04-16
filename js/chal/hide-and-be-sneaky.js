@@ -1409,7 +1409,7 @@ export function rpBuildHideAndBeSneaky(ep) {
       cardHtml += `
           <div style="margin-top:6px;text-align:right">${outcomeTag}</div>
         </div>`;
-      steps.push({ type: 'hunt-discovery', html: chefTaunt + cardHtml + catchQuip });
+      steps.push({ type: 'hunt-discovery', hiddenDelta: -1, caughtDelta: isEscape ? 0 : 1, immuneDelta: isEscape ? 1 : 0, html: chefTaunt + cardHtml + catchQuip });
     });
 
     if (!allCaughtThisRound.length) {
@@ -1455,7 +1455,10 @@ export function rpBuildHideAndBeSneaky(ep) {
         ? `<span class="nv-status ${a.decision === 'run' ? 'nv-immune' : 'nv-hidden'}">${a.decision === 'run' ? 'EXTRACTED' : 'STILL HIDDEN'}</span>`
         : `<span class="nv-status nv-soaked">COMPROMISED</span>`;
       let beatTexts = a.beats.map(b => `<div style="font-size:11px;color:#aaa;margin-top:4px;padding-left:12px;border-left:2px solid ${b.win ? 'rgba(0,255,65,0.3)' : 'rgba(255,100,50,0.3)'}">${b.text}</div>`).join('');
-      steps.push({ type: 'breach-attempt', html: `
+      const breachHidden = (a.success && a.decision === 'run') ? -1 : (!a.success ? -1 : 0);
+      const breachCaught = !a.success ? 1 : 0;
+      const breachImmune = (a.success && a.decision === 'run') ? 1 : 0;
+      steps.push({ type: 'breach-attempt', hiddenDelta: breachHidden, caughtDelta: breachCaught, immuneDelta: breachImmune, html: `
         <div class="nv-card">
           <div style="display:flex;align-items:center;gap:12px">
             ${rpPortrait(a.name, 'sm')}
@@ -1477,7 +1480,7 @@ export function rpBuildHideAndBeSneaky(ep) {
       const isWinner = name === hs.phase5.winner;
       const borderColor = isWinner ? 'rgba(255,215,0,0.4)' : 'rgba(0,255,65,0.15)';
       let beatTexts = beats.map(b => `<div style="font-size:11px;color:#aaa;margin-top:4px;padding-left:12px;border-left:2px solid ${b.win ? 'rgba(0,255,65,0.3)' : 'rgba(255,100,50,0.3)'}">${b.text}</div>`).join('');
-      steps.push({ type: 'pursuit-chase', html: `
+      steps.push({ type: 'pursuit-chase', immuneDelta: isWinner ? 1 : 0, html: `
         <div class="nv-card" style="border-color:${borderColor}${isWinner ? ';background:rgba(255,215,0,0.04)' : ''}">
           <div style="display:flex;align-items:center;gap:12px">
             ${rpPortrait(name, 'sm')}
@@ -1498,7 +1501,7 @@ export function rpBuildHideAndBeSneaky(ep) {
     if (lastStanding) {
       const lsPr = pronouns(lastStanding);
       const lsSpot = hs.spotAssignments[lastStanding];
-      steps.push({ type: 'last-standing', html: `${_chrisQuip(hs.chrisQuips, 'lastStanding')}
+      steps.push({ type: 'last-standing', hiddenDelta: -1, immuneDelta: 1, html: `${_chrisQuip(hs.chrisQuips, 'lastStanding')}
         <div class="nv-sector">LAST OPERATIVE STANDING</div>
         <div class="nv-card nv-drop-in" style="border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.06);text-align:center;padding:20px">
           <div class="nv-gold-glow" style="margin-bottom:12px">${rpPortrait(lastStanding, 'xl')}</div>
@@ -1563,9 +1566,15 @@ export function rpBuildHideAndBeSneaky(ep) {
       <span style="margin-left:auto;font-size:10px;color:#33ff66;opacity:0.5">EP ${ep.num}</span>
     </div>`;
 
+  html += `<div class="nv-sidebar" style="display:flex;gap:16px;justify-content:center;font-size:12px;font-weight:700;letter-spacing:1px;position:sticky;top:0;z-index:3;padding:8px;margin-bottom:12px">
+    <span>HIDDEN: <span id="hs-hidden-${stateKey}" data-initial="${hs.activePlayers.length}" style="color:#00ff41">${hs.activePlayers.length}</span></span>
+    <span>CAUGHT: <span id="hs-caught-${stateKey}" style="color:#ff6432">0</span></span>
+    <span>IMMUNE: <span id="hs-immune-${stateKey}" style="color:#ffd700">0</span></span>
+  </div>`;
+
   steps.forEach((step, i) => {
     const visible = i <= state.idx;
-    html += `<div id="hs-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
+    html += `<div id="hs-step-${stateKey}-${i}" data-hidden-delta="${step.hiddenDelta||0}" data-caught-delta="${step.caughtDelta||0}" data-immune-delta="${step.immuneDelta||0}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
   });
 
   html += `<div id="hs-controls-${stateKey}"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
@@ -1585,6 +1594,20 @@ export function _hsReveal(stateKey, totalSteps) {
   const el = document.getElementById(`hs-step-${stateKey}-${nextIdx}`);
   if (el) { el.style.display = ''; el.classList.add('nv-scan-in'); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   state.idx = nextIdx;
+  // Update status tracker counts
+  if (el) {
+    const hd = parseInt(el.dataset.hiddenDelta || '0');
+    const cd = parseInt(el.dataset.caughtDelta || '0');
+    const id = parseInt(el.dataset.immuneDelta || '0');
+    if (hd || cd || id) {
+      const hEl = document.getElementById(`hs-hidden-${stateKey}`);
+      const cEl = document.getElementById(`hs-caught-${stateKey}`);
+      const iEl = document.getElementById(`hs-immune-${stateKey}`);
+      if (hEl && hd) { hEl.textContent = Math.max(0, parseInt(hEl.textContent) + hd); hEl.classList.remove('nv-count-flash'); void hEl.offsetWidth; hEl.classList.add('nv-count-flash'); }
+      if (cEl && cd) { cEl.textContent = parseInt(cEl.textContent) + cd; cEl.classList.remove('nv-count-flash'); void cEl.offsetWidth; cEl.classList.add('nv-count-flash'); }
+      if (iEl && id) { iEl.textContent = parseInt(iEl.textContent) + id; iEl.classList.remove('nv-count-flash'); void iEl.offsetWidth; iEl.classList.add('nv-count-flash'); }
+    }
+  }
   if (nextIdx >= totalSteps - 1) {
     const controls = document.getElementById(`hs-controls-${stateKey}`);
     if (controls) controls.style.display = 'none';
@@ -1603,4 +1626,17 @@ export function _hsRevealAll(stateKey, totalSteps) {
   _tvState[stateKey].idx = totalSteps - 1;
   const controls = document.getElementById(`hs-controls-${stateKey}`);
   if (controls) controls.style.display = 'none';
+  // Set final sidebar counts
+  const totalH = parseInt(document.getElementById(`hs-hidden-${stateKey}`)?.dataset.initial || '0');
+  let h = totalH, c = 0, im = 0;
+  for (let i = 0; i < totalSteps; i++) {
+    const stepEl = document.getElementById(`hs-step-${stateKey}-${i}`);
+    if (stepEl) { h += parseInt(stepEl.dataset.hiddenDelta || '0'); c += parseInt(stepEl.dataset.caughtDelta || '0'); im += parseInt(stepEl.dataset.immuneDelta || '0'); }
+  }
+  const hEl = document.getElementById(`hs-hidden-${stateKey}`);
+  const cEl = document.getElementById(`hs-caught-${stateKey}`);
+  const iEl = document.getElementById(`hs-immune-${stateKey}`);
+  if (hEl) hEl.textContent = Math.max(0, h);
+  if (cEl) cEl.textContent = c;
+  if (iEl) iEl.textContent = im;
 }

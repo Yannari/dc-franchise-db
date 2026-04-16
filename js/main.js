@@ -28,6 +28,7 @@ import * as sayUncleMod from './chal/say-uncle.js';
 import * as tripleDogDareMod from './chal/triple-dog-dare.js';
 import * as slasherNightMod from './chal/slasher-night.js';
 import * as hideAndBeSneakyMod from './chal/hide-and-be-sneaky.js';
+import * as offTheChainMod from './chal/off-the-chain.js';
 import * as socialManipMod from './social-manipulation.js';
 import * as campEventsMod from './camp-events.js';
 import * as twistsMod from './twists.js';
@@ -115,7 +116,7 @@ const extractedModules = [
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
-  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, hideAndBeSneakyMod,
+  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, hideAndBeSneakyMod, offTheChainMod,
   socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
@@ -139,6 +140,8 @@ window._alliancePermDesc = castUiMod._alliancePermDesc;
 window.TRIBE_PALETTE = castUiMod.TRIBE_PALETTE;
 window._hsReveal = hideAndBeSneakyMod._hsReveal;
 window._hsRevealAll = hideAndBeSneakyMod._hsRevealAll;
+window._mxReveal = offTheChainMod._mxReveal;
+window._mxRevealAll = offTheChainMod._mxRevealAll;
 
 // Mutable let variables — getters + explicit setter functions
 // ES module live bindings work for reads but not writes; use setter functions for writes
@@ -194,6 +197,7 @@ window.CHALLENGES = {
   'triple-dog-dare': { simulate: tripleDogDareMod.simulateTripleDogDare, rpBuild: tripleDogDareMod.rpBuildTripleDogDareAnnouncement, text: tripleDogDareMod._textTripleDogDare },
   'slasher-night': { simulate: slasherNightMod.simulateSlasherNight, rpBuild: slasherNightMod.rpBuildSlasherAnnouncement, text: slasherNightMod._textSlasherNight },
   'hide-and-be-sneaky': { simulate: hideAndBeSneakyMod.simulateHideAndBeSneaky, rpBuild: hideAndBeSneakyMod.rpBuildHideAndBeSneaky, text: hideAndBeSneakyMod._textHideAndBeSneaky },
+  'off-the-chain': { simulate: offTheChainMod.simulateOffTheChain, rpBuild: offTheChainMod.rpBuildOffTheChain, text: offTheChainMod._textOffTheChain },
 };
 
 // ══════════════════════════════════════════════════════════════════════

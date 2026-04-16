@@ -84,6 +84,57 @@ const ANIMALS = {
         (n, pr) => `${n} reaches into the burrow. Something bites — but it's not the rabbit. ${pr.Sub} ${pr.sub==='they'?'pull':'pulls'} out ${pr.posAdj} hand with a very angry gopher attached.`,
       ],
     },
+    {
+      id: 'squirrel', name: 'Squirrel', tier: 'easy',
+      statWeights: { physical: 0.04, intuition: 0.03, boldness: 0.02 },
+      mishapWeight: 0.30,
+      draw: {
+        happy: [
+          (n, pr) => `${n} draws Squirrel. "A squirrel? Okay. I can do a squirrel."`,
+          (n, pr) => `${n} grins at the slip. "It's basically a cat toy. How hard can it be?"`,
+        ],
+        nervous: [
+          (n, pr) => `"Squirrel." ${n} sighs. "Those things are basically chipmunks on espresso."`,
+        ],
+      },
+      attemptSuccess: [
+        (n, pr) => `${n} scatters a handful of nuts, waits perfectly still, and drops a bucket over the squirrel before it knows what happened.`,
+        (n, pr) => `${n} corners the squirrel against a tree and scoops it up in one quick motion. It screams the whole way back.`,
+      ],
+      attemptFail: [
+        (n, pr) => `The squirrel bolts straight up the tree. ${n} stares up at it. There is nothing to do but walk away.`,
+        (n, pr) => `${n} has it — for about half a second. Then it slips through ${pr.posAdj} fingers and is twenty feet up a pine tree.`,
+      ],
+      mishap: [
+        (n, pr) => `${n} shakes a bag of nuts at the squirrel. It grabs the whole bag and disappears into a hole. ${n} has no squirrel and no bait.`,
+        (n, pr) => `${n} climbs the tree. The squirrel moves to a different tree. ${n} climbs that tree. The squirrel moves again. This continues.`,
+      ],
+    },
+    {
+      id: 'seagull', name: 'Seagull', tier: 'easy',
+      statWeights: { intuition: 0.04, mental: 0.03, physical: 0.02 },
+      mishapWeight: 0.35,
+      draw: {
+        happy: [
+          (n, pr) => `${n} draws Seagull. "Oh come on, there are like a hundred of those at the dock. This is a freebie."`,
+        ],
+        nervous: [
+          (n, pr) => `"Seagull." ${n} frowns. "Those things are bold. Have you seen how they look at you?"`,
+        ],
+      },
+      attemptSuccess: [
+        (n, pr) => `${n} tosses chips near the dock and waits for the gulls to land. When one gets close, ${pr.sub} ${pr.sub==='they'?'pounce':'pounces'} and bags it.`,
+        (n, pr) => `${n} lures the seagull with a piece of food and nets it against a dock post. It shrieks all the way to camp.`,
+      ],
+      attemptFail: [
+        (n, pr) => `${n} grabs for the seagull. It dodges, snatches the food right out of ${pr.posAdj} hand, and flies off.`,
+        (n, pr) => `The seagull walks directly toward ${n} until ${pr.sub} ${pr.sub==='they'?'step':'steps'} back. It repeats this for five minutes. ${n} is being herded. By a bird.`,
+      ],
+      mishap: [
+        (n, pr) => `${n} holds out bait and the seagull lands on ${pr.posAdj} head instead of ${pr.posAdj} hand. It stays there. The rest of the flock arrives.`,
+        (n, pr) => `The seagull steals ${pr.posAdj} gear pouch and drops it into the lake. ${n} watches it sink.`,
+      ],
+    },
   ],
   medium: [
     {
@@ -160,6 +211,57 @@ const ANIMALS = {
       mishap: [
         (n, pr) => `The goose chases ${n} across camp. ${pr.Sub} ${pr.sub==='they'?'are':'is'} screaming. Everyone is watching. Nobody helps.`,
         (n, pr) => `${n} tries to grab the goose from behind. It spins and bites ${pr.posAdj} ear. The honking echoes across the lake.`,
+      ],
+    },
+    {
+      id: 'skunk', name: 'Skunk', tier: 'medium',
+      statWeights: { mental: 0.04, intuition: 0.04, boldness: 0.02 },
+      mishapWeight: 0.55,
+      draw: {
+        happy: [
+          (n, pr) => `${n} draws Skunk. "Okay, easy. Just... don't startle it."`,
+        ],
+        nervous: [
+          (n, pr) => `"Skunk." ${n} stares at the slip. "If I come back smelling like that, I'm voting myself off."`,
+        ],
+      },
+      attemptSuccess: [
+        (n, pr) => `${n} approaches the skunk from downwind, moves at a glacial pace, and guides it into a box without making a sound. A masterpiece of patience.`,
+        (n, pr) => `${n} uses a trail of food and extreme stillness. The skunk walks right into the sack. Not a drop of spray. ${pr.Sub} ${pr.sub==='they'?'look':'looks'} like ${pr.sub} ${pr.sub==='they'?'defused':'defused'} a bomb.`,
+      ],
+      attemptFail: [
+        (n, pr) => `${n} gets within reach and accidentally sneezes. The skunk raises its tail. ${n} runs before it fires — but barely.`,
+        (n, pr) => `${n} steps on a twig. The skunk spins. ${n} freezes. After a very long ten seconds, it walks away. No capture, but no spray either.`,
+      ],
+      mishap: [
+        (n, pr) => `${n} moves too fast. Direct hit. ${pr.Sub} ${pr.sub==='they'?'are':'is'} drenched. No one will come near ${pr.obj} for the rest of the day.`,
+        (n, pr) => `${n} tries to grab the skunk from behind. It was waiting for this. Camp can smell the aftermath from the other side of the island.`,
+        (n, pr) => `${n} nets the skunk. The skunk sprays through the net. ${n} has the skunk AND the smell. Chris refuses to let ${pr.obj} near the cage.`,
+      ],
+    },
+    {
+      id: 'porcupine', name: 'Porcupine', tier: 'medium',
+      statWeights: { mental: 0.05, intuition: 0.03, boldness: 0.02 },
+      mishapWeight: 0.50,
+      draw: {
+        happy: [
+          (n, pr) => `${n} draws Porcupine. "Okay, I know this one — just don't touch the spines."`,
+        ],
+        nervous: [
+          (n, pr) => `"Porcupine." ${n} squints at the paper. "So basically a walking cactus with attitude."`,
+        ],
+      },
+      attemptSuccess: [
+        (n, pr) => `${n} uses ${pr.posAdj} jacket as a thick glove, scoops the porcupine from beneath, and drops it in the bag without touching a single quill.`,
+        (n, pr) => `${n} maneuvers the porcupine into a corner using a stick and guides it — not grabs it — into the cage. Smart and uninjured.`,
+      ],
+      attemptFail: [
+        (n, pr) => `${n} goes to grab it. The porcupine rattles its quills. ${n} backs off. They stare at each other. Neither wins.`,
+        (n, pr) => `The porcupine curls into a ball. ${n} tries to roll it toward the cage. It doesn't roll. It just sits there, pointy.`,
+      ],
+      mishap: [
+        (n, pr) => `${n} grabs the porcupine without thinking. ${pr.Sub} ${pr.sub==='they'?'immediately':'immediately'} regrets it. ${pr.Sub} ${pr.sub==='they'?'spend':'spends'} the next twenty minutes pulling quills out of ${pr.posAdj} hand.`,
+        (n, pr) => `${n} trips while carrying the porcupine. ${pr.Sub} ${pr.sub==='they'?'reach':'reaches'} out to break ${pr.posAdj} fall and grabs the porcupine instead. There are quills in places quills should never be.`,
       ],
     },
   ],
@@ -239,6 +341,57 @@ const ANIMALS = {
         (n, pr) => `The snake wraps around ${pr.posAdj} arm. ${n} freezes. Everyone watching freezes. The snake eventually gets bored and leaves.`,
       ],
     },
+    {
+      id: 'wild-turkey', name: 'Wild Turkey', tier: 'hard',
+      statWeights: { physical: 0.04, endurance: 0.03, boldness: 0.03 },
+      mishapWeight: 0.45,
+      draw: {
+        happy: [
+          (n, pr) => `${n} draws Wild Turkey. "Okay. It's basically a chicken. A big angry chicken, but still."`,
+        ],
+        nervous: [
+          (n, pr) => `"Wild Turkey." ${n} frowns. "Those things have spurs. And a temper."`,
+        ],
+      },
+      attemptSuccess: [
+        (n, pr) => `${n} herds the turkey away from its flock using a long stick, corners it against a log, and drops the net. Got it.`,
+        (n, pr) => `${n} spots the turkey gobbling alone by the treeline and moves with it for ten minutes before getting the bag over it. Patience.`,
+      ],
+      attemptFail: [
+        (n, pr) => `The turkey puffs up to twice its size and charges. ${n} stumbles backward. When ${pr.sub} ${pr.sub==='they'?'get':'gets'} up, the turkey is gone.`,
+        (n, pr) => `${n} gets the net over the turkey. The turkey runs through it. It was not a good net.`,
+      ],
+      mishap: [
+        (n, pr) => `${n} spooked the turkey into the flock. All twelve turkeys charge at once. ${n} sprints for the nearest tree and doesn't come down for a while.`,
+        (n, pr) => `The turkey scratches ${pr.obj} with its spurs and takes off. ${pr.Sub} ${pr.sub==='they'?'are':'is'} bleeding slightly and turkeyless.`,
+        (n, pr) => `${n} grabs the turkey. The turkey takes off, wings beating, and briefly becomes airborne with ${n} still holding on before both crash into a bush.`,
+      ],
+    },
+    {
+      id: 'owl', name: 'Owl', tier: 'hard',
+      statWeights: { intuition: 0.05, mental: 0.04, strategic: 0.02 },
+      mishapWeight: 0.40,
+      draw: {
+        happy: [
+          (n, pr) => `${n} draws Owl. "Owls are wise. I'm wise. We'll understand each other."`,
+        ],
+        nervous: [
+          (n, pr) => `"Owl." ${n} squints at the slip. "Do those things... sleep during the day? Where even are they?"`,
+        ],
+      },
+      attemptSuccess: [
+        (n, pr) => `${n} tracks down a hollow log and waits. An hour later the owl emerges at dusk and ${pr.sub} ${pr.sub==='they'?'have':'has'} it.`,
+        (n, pr) => `${n} finds the owl roosting in a pine and uses a long-handled net to capture it before it can take flight. Clean.`,
+      ],
+      attemptFail: [
+        (n, pr) => `The owl watches ${n} approach from sixty feet away, then silently lifts off before ${pr.sub} ${pr.sub==='they'?'get':'gets'} within thirty. Invisible and gone.`,
+        (n, pr) => `${n} finds the perch. The owl isn't on it anymore. It moved. ${pr.Sub} ${pr.sub==='they'?'have':'has'} no idea when.`,
+      ],
+      mishap: [
+        (n, pr) => `${n} reaches toward the owl. It rotates its head 180 degrees and stares directly into ${pr.posAdj} soul. ${n} drops the net and backs away slowly.`,
+        (n, pr) => `${n} nets the owl. The owl grabs ${pr.posAdj} wrist with its talons. Both are now stuck. The owl is angrier about it.`,
+      ],
+    },
   ],
   extreme: [
     {
@@ -291,6 +444,58 @@ const ANIMALS = {
       mishap: [
         (n, pr) => `The moose sits down. ${n} pushes. The moose does not move. ${n} pushes harder. The moose still does not move.`,
         (n, pr) => `${n} gets too close. The moose kicks. ${pr.Sub} ${pr.sub==='they'?'fly':'flies'} ten feet and lands in a bush.`,
+      ],
+    },
+    {
+      id: 'wolf', name: 'Wolf', tier: 'extreme',
+      statWeights: { boldness: 0.05, strategic: 0.04, physical: 0.03 },
+      mishapWeight: 0.65,
+      draw: {
+        happy: [
+          (n, pr) => `${n} draws Wolf. ${pr.Sub} ${pr.sub==='they'?'go':'goes'} very still. "...Okay. Fine."`,
+        ],
+        nervous: [
+          (n, pr) => `"WOLF?!" ${n} looks at Chris. Chris shrugs. ${n} looks back at the slip. "There are wolves on this island?!"`,
+        ],
+      },
+      attemptSuccess: [
+        (n, pr) => `${n} spends an hour sitting motionless by the treeline, letting the wolf approach on its own terms. When it's close enough, ${pr.sub} ${pr.sub==='they'?'drop':'drops'} the net in one motion.`,
+        (n, pr) => `${n} tracks the lone wolf away from its pack and herds it toward a deadfall. The wolf is not happy about it, but it's contained.`,
+      ],
+      attemptFail: [
+        (n, pr) => `The wolf sniffs the air, locks eyes with ${n}, and melts silently back into the trees. ${n} didn't even see it go.`,
+        (n, pr) => `${n} approaches. The wolf shows its teeth. ${n} backs up slowly. The wolf does not follow. This time.`,
+      ],
+      mishap: [
+        (n, pr) => `${n} didn't realize the wolf had a pack. Five more emerge from the trees. ${n} runs. They don't chase, but they don't have to.`,
+        (n, pr) => `The wolf howls once. ${n} freezes. Far away, something howls back. ${n} decides this isn't worth it and retreats at speed.`,
+        (n, pr) => `${n} gets the net over the wolf. The wolf bites through the net in about four seconds flat. Then it looks at ${n}. ${n} runs.`,
+      ],
+    },
+    {
+      id: 'alligator', name: 'Alligator', tier: 'extreme',
+      statWeights: { boldness: 0.05, physical: 0.04, endurance: 0.03 },
+      mishapWeight: 0.70,
+      draw: {
+        happy: [
+          (n, pr) => `${n} draws Alligator. The room goes completely silent. ${pr.Sub} ${pr.sub==='they'?'look':'looks'} around. "Is everyone else as scared as I am right now?"`,
+        ],
+        nervous: [
+          (n, pr) => `"ALLIGATOR." ${n} holds up the slip. "I am not doing this." Chris stares. ${n} sighs. "...I'm doing this."`,
+        ],
+      },
+      attemptSuccess: [
+        (n, pr) => `${n} finds the alligator sunning on the bank, gets low, and creeps up from behind. One rope around the snout — it's over. ${pr.Sub} ${pr.sub==='they'?'are':'is'} shaking, but it's over.`,
+        (n, pr) => `${n} wades in from the far side and herds the gator toward the bank where the cage is waiting. A plan that required enormous nerve and even more luck.`,
+      ],
+      attemptFail: [
+        (n, pr) => `The alligator opens its mouth. ${n} has seen enough nature documentaries to know what that means. ${pr.Sub} ${pr.sub==='they'?'back':'backs'} away slowly.`,
+        (n, pr) => `${n} gets close. The alligator lunges twelve inches. ${n} doesn't stop running for about fifty meters.`,
+      ],
+      mishap: [
+        (n, pr) => `${n} trips on the muddy bank and slides within three feet of the alligator. The alligator opens its mouth. ${n} does not have a plan.`,
+        (n, pr) => `${n} gets the rope around the snout. The alligator rolls. ${n} goes into the water. The rope is gone. The alligator is free. ${n} swims for ${pr.posAdj} life.`,
+        (n, pr) => `${n} approaches from the water side. There's a second alligator underneath ${pr.obj}. ${n} discovers this when it surfaces.`,
       ],
     },
   ],
@@ -720,11 +925,17 @@ export function simulateWawanakwaGoneWild(ep) {
   const difficulties = assignAnimalDifficulties(n);
   const animalAssignments = {};
   const usedAnimals = new Set();
+  const TIER_ORDER = ['easy', 'medium', 'hard', 'extreme'];
 
   activePlayers.forEach((name, i) => {
     const tier = difficulties[i];
-    const pool = ANIMALS[tier].filter(a => !usedAnimals.has(a.id));
-    const animal = pool.length ? _rp(pool) : _rp(ANIMALS[tier]);
+    // Try assigned tier first, then adjacent tiers — never allow duplicates
+    let animal = null;
+    const searchOrder = [tier, ...TIER_ORDER.filter(t => t !== tier)];
+    for (const t of searchOrder) {
+      const pool = ANIMALS[t].filter(a => !usedAnimals.has(a.id));
+      if (pool.length) { animal = _rp(pool); break; }
+    }
     usedAnimals.add(animal.id);
     animalAssignments[name] = animal;
 

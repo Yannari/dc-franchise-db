@@ -1276,14 +1276,7 @@ export function rpBuildHideAndBeSneaky(ep) {
 
   const steps = [];
 
-  if (hs.coldOpen) {
-    steps.push({ type: 'cold-open', html: `
-      <div class="nv-card" style="text-align:center;border-color:rgba(255,215,0,0.2);background:rgba(0,0,0,0.5);padding:20px">
-        <div style="font-size:10px;color:#8b949e;letter-spacing:3px;margin-bottom:8px">PREVIOUSLY ON TOTAL DRAMA...</div>
-        ${rpPortrait(hs.coldOpen.player, 'sm')}
-        <div style="font-size:14px;color:#ffd700;font-style:italic;margin-top:8px">${hs.coldOpen.text}</div>
-      </div>` });
-  }
+  // Cold open is rendered in text backlog only — not in the VP challenge screen
 
   // Mission Briefing
   steps.push({

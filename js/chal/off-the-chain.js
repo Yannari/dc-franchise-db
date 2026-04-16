@@ -1008,8 +1008,10 @@ export function rpBuildOffTheChain(ep) {
   // Phase 1 announcement
   steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">🔧 PHASE 1: THE BUILD — CONSTRUCT YOUR RIDE</div>` });
 
-  // Per-player bike cards
-  br.activePlayers.forEach(name => {
+  // Per-player bike cards with build events interspersed
+  const buildEvts = br.phase1.buildEvents || [];
+  let buildEvtIdx = 0;
+  br.activePlayers.forEach((name, pi) => {
     const q = br.phase1.bikeQuality[name];
     const qPct = Math.round((q / 10) * 100);
     const qColor = q >= 7 ? '#00ff41' : q >= 5 ? '#ffd700' : q >= 3 ? '#ff6b00' : '#ff3333';
@@ -1036,24 +1038,33 @@ export function rpBuildOffTheChain(ep) {
         </div>
       `
     });
+    // Inject a build event after every 3-4 bike cards
+    if ((pi + 1) % 3 === 0 && buildEvtIdx < buildEvts.length) {
+      const evt = buildEvts[buildEvtIdx++];
+      if (evt.text) {
+        const portraits = (evt.players || []).slice(0, 2).map(p => rpPortrait(p, 'sm')).join('');
+        const isSab = evt.id === 'sabotage' || evt.id === 'parts-theft';
+        const borderStyle = isSab ? 'border-color:rgba(255,51,51,0.3)' : evt.id === 'help' ? 'border-color:rgba(0,200,100,0.3)' : '';
+        steps.push({
+          type: 'build-event',
+          html: `<div class="mx-card" style="display:flex;align-items:center;gap:10px;${borderStyle}">${portraits}<div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div></div>`
+        });
+      }
+    }
   });
-
-  // Build events as individual steps
-  br.phase1.buildEvents.forEach(evt => {
-    if (!evt.text) return;
-    const portraits = (evt.players || []).slice(0, 2).map(p => rpPortrait(p, 'sm')).join('');
-    const isSab = evt.id === 'sabotage' || evt.id === 'parts-theft';
-    const borderStyle = isSab ? 'border-color:rgba(255,51,51,0.3)' : evt.id === 'help' ? 'border-color:rgba(0,200,100,0.3)' : '';
-    steps.push({
-      type: 'build-event',
-      html: `
-        <div class="mx-card" style="display:flex;align-items:center;gap:10px;${borderStyle}">
-          ${portraits}
-          <div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div>
-        </div>
-      `
-    });
-  });
+  // Remaining build events
+  while (buildEvtIdx < buildEvts.length) {
+    const evt = buildEvts[buildEvtIdx++];
+    if (evt.text) {
+      const portraits = (evt.players || []).slice(0, 2).map(p => rpPortrait(p, 'sm')).join('');
+      const isSab = evt.id === 'sabotage' || evt.id === 'parts-theft';
+      const borderStyle = isSab ? 'border-color:rgba(255,51,51,0.3)' : evt.id === 'help' ? 'border-color:rgba(0,200,100,0.3)' : '';
+      steps.push({
+        type: 'build-event',
+        html: `<div class="mx-card" style="display:flex;align-items:center;gap:10px;${borderStyle}">${portraits}<div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div></div>`
+      });
+    }
+  }
 
   // ── THE SWAP ──
   steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">🎲 THE TWIST — DRAW NAMES, SWAP BIKES!</div>` });
@@ -1101,9 +1112,11 @@ export function rpBuildOffTheChain(ep) {
     `
   });
 
-  // Per-rider results
+  // Per-rider results with race events interspersed
   const sortedRiders = br.phase2.sortedRiders || [];
-  sortedRiders.forEach(name => {
+  const race1Evts = br.phase2.race1Events || [];
+  let race1EvtIdx = 0;
+  sortedRiders.forEach((name, ri) => {
     const score = (br.phase2.race1Scores || {})[name] || 0;
     const cutIdx = br.phase2.cutIndex || Math.ceil(sortedRiders.length / 2);
     const finished = sortedRiders.indexOf(name) < cutIdx;
@@ -1129,20 +1142,29 @@ export function rpBuildOffTheChain(ep) {
         </div>
       `
     });
+    // Inject race event after every 3 riders
+    if ((ri + 1) % 3 === 0 && race1EvtIdx < race1Evts.length) {
+      const evt = race1Evts[race1EvtIdx++];
+      if (evt.text) {
+        const evtPortraits = (evt.players || []).slice(0, 2).map(p => rpPortrait(p, 'sm')).join('');
+        steps.push({
+          type: 'race1-event',
+          html: `<div class="mx-card" style="display:flex;align-items:center;gap:10px;border-color:rgba(255,107,0,0.2)">${evtPortraits}<div style="flex:1;font-size:12px;color:#cdd9e5;font-style:italic">${evt.text}</div></div>`
+        });
+      }
+    }
   });
-
-  // Race1 events interspersed
-  (br.phase2.race1Events || []).forEach(evt => {
-    if (!evt.text) return;
-    steps.push({
-      type: 'race1-event',
-      html: `
-        <div class="mx-card" style="display:flex;align-items:center;gap:10px;border-color:rgba(255,107,0,0.2)">
-          <div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div>
-        </div>
-      `
-    });
-  });
+  // Remaining race events
+  while (race1EvtIdx < race1Evts.length) {
+    const evt = race1Evts[race1EvtIdx++];
+    if (evt.text) {
+      const evtPortraits = (evt.players || []).slice(0, 2).map(p => rpPortrait(p, 'sm')).join('');
+      steps.push({
+        type: 'race1-event',
+        html: `<div class="mx-card" style="display:flex;align-items:center;gap:10px;border-color:rgba(255,107,0,0.2)">${evtPortraits}<div style="flex:1;font-size:12px;color:#cdd9e5;font-style:italic">${evt.text}</div></div>`
+      });
+    }
+  }
 
   // ── THE CUT ──
   const advancingOwners = br.phase2.advancingOwners || [];

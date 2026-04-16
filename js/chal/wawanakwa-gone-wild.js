@@ -978,9 +978,8 @@ export function rpBuildWawanakwaGoneWild(ep) {
   if (!ww?.timeline?.length) return '';
 
   const stateKey = `ww_reveal_${ep.num}`;
-  if (!window._tvState) window._tvState = {};
-  if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };
-  const state = window._tvState[stateKey];
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
 
   const GOLD = '#d4a017';
   const GREEN = '#3fb950';
@@ -1016,7 +1015,7 @@ export function rpBuildWawanakwaGoneWild(ep) {
     if (!revealed && !isCurrent) continue;
 
     if (isCurrent) {
-      html += `<div onclick="window._tvState['${stateKey}'].idx=${i};document.querySelector('[data-vpscreen]')?.dispatchEvent(new Event('rebuild'))" style="cursor:pointer;padding:10px 14px;margin-bottom:5px;border-radius:8px;border:1px dashed rgba(212,160,23,0.3);background:rgba(212,160,23,0.05);text-align:center;font-size:11px;color:${GOLD}">▶ Click to reveal next</div>`;
+      html += `<div onclick="if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${i};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();}" style="cursor:pointer;padding:10px 14px;margin-bottom:5px;border-radius:8px;border:1px dashed rgba(212,160,23,0.3);background:rgba(212,160,23,0.05);text-align:center;font-size:11px;color:${GOLD}">▶ Click to reveal next</div>`;
       break;
     }
 

@@ -23,6 +23,7 @@ import { _textTripleDogDare } from './chal/triple-dog-dare.js';
 import { _textSlasherNight } from './chal/slasher-night.js';
 import { _textHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { _textOffTheChain } from './chal/off-the-chain.js';
+import { _textWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -1922,6 +1923,7 @@ export function generateSummaryText(ep) {
   _textTripleDogDare(ep, ln, sec);
   _textHideAndBeSneaky(ep, ln, sec);
   _textOffTheChain(ep, ln, sec);
+  _textWawanakwaGoneWild(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
   _textJuryLife(ep, ln, sec);

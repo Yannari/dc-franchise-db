@@ -29,6 +29,7 @@ import * as tripleDogDareMod from './chal/triple-dog-dare.js';
 import * as slasherNightMod from './chal/slasher-night.js';
 import * as hideAndBeSneakyMod from './chal/hide-and-be-sneaky.js';
 import * as offTheChainMod from './chal/off-the-chain.js';
+import * as wawanakwaGoneWildMod from './chal/wawanakwa-gone-wild.js';
 import * as socialManipMod from './social-manipulation.js';
 import * as campEventsMod from './camp-events.js';
 import * as twistsMod from './twists.js';
@@ -198,6 +199,7 @@ window.CHALLENGES = {
   'slasher-night': { simulate: slasherNightMod.simulateSlasherNight, rpBuild: slasherNightMod.rpBuildSlasherAnnouncement, text: slasherNightMod._textSlasherNight },
   'hide-and-be-sneaky': { simulate: hideAndBeSneakyMod.simulateHideAndBeSneaky, rpBuild: hideAndBeSneakyMod.rpBuildHideAndBeSneaky, text: hideAndBeSneakyMod._textHideAndBeSneaky },
   'off-the-chain': { simulate: offTheChainMod.simulateOffTheChain, rpBuild: offTheChainMod.rpBuildOffTheChain, text: offTheChainMod._textOffTheChain },
+  'wawanakwa-gone-wild': { simulate: wawanakwaGoneWildMod.simulateWawanakwaGoneWild, rpBuild: wawanakwaGoneWildMod.rpBuildWawanakwaGoneWild, text: wawanakwaGoneWildMod._textWawanakwaGoneWild },
 };
 
 // ══════════════════════════════════════════════════════════════════════

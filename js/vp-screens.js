@@ -4,6 +4,7 @@
 
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { rpBuildOffTheChain } from './chal/off-the-chain.js';
+import { rpBuildWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -608,6 +609,15 @@ export function rpBuildColdOpen(ep) {
         <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:var(--accent-gold);margin-bottom:6px">PHOBIA FACTOR</div>
         <div style="font-size:12px;margin-bottom:4px">${_pfData.winningTribe} won immunity (${_pfWinPct}% conquered their fears)</div>
         ${_pfData.clutch ? `<div style="font-size:11px;color:${_pfData.clutch.result === 'pass' ? 'var(--accent-gold)' : '#da3633'}">${_pfData.clutch.player} ${_pfData.clutch.result === 'pass' ? 'hit the clutch triple points!' : 'choked on triple points'}</div>` : ''}
+      </div>`;
+    }
+    if (prevEp.isWawanakwaGoneWild && prevEp.wawanakwaGoneWild) {
+      const _ww = prevEp.wawanakwaGoneWild;
+      const captureCount = Object.values(_ww.huntResults || {}).filter(r => r.captured).length;
+      const hasTranq = _ww.timeline?.some(e => e.type === 'tranqChaos');
+      html += `<div class="vp-card" style="border-color:rgba(212,160,23,0.15);margin-bottom:8px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#d4a017;margin-bottom:4px">WAWANAKWA GONE WILD!</div>
+        <div style="font-size:12px;color:#8b949e">${_ww.immunityWinner} won immunity + a feast. ${captureCount} animals captured.${_ww.punishmentTarget ? ` ${_ww.punishmentTarget} is on bathroom duty.` : ''}${hasTranq ? ' Someone used the tranq gun.' : ''}</div>
       </div>`;
     }
 
@@ -1972,7 +1982,7 @@ export function rpBuildDebug(ep) {
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
-      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain) ? _tabBtn('challenge', 'Challenge') : ''}
+      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -2670,7 +2680,7 @@ export function rpBuildDebug(ep) {
       });
     }
     const _chalLabel = ep.challengeLabel || 'Challenge';
-    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : ep.isBasicStraining ? 'Basic Straining' : ep.isXtremeTorture ? 'X-Treme Torture' : ep.isLuckyHunt ? 'Lucky Hunt' : ep.isHideAndBeSneaky ? 'Hide and Be Sneaky' : ep.isOffTheChain ? "That's Off the Chain!" : _chalLabel;
+    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : ep.isBasicStraining ? 'Basic Straining' : ep.isXtremeTorture ? 'X-Treme Torture' : ep.isLuckyHunt ? 'Lucky Hunt' : ep.isHideAndBeSneaky ? 'Hide and Be Sneaky' : ep.isOffTheChain ? "That's Off the Chain!" : ep.isWawanakwaGoneWild ? 'Wawanakwa Gone Wild!' : _chalLabel;
 
     html += `<div style="margin-bottom:12px">
       <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
@@ -2935,6 +2945,17 @@ export function rpBuildDebug(ep) {
         html += `<div style="font-size:9px;color:#484f58">[${evt.type}] ${(evt.text||'').substring(0,80)}</div>`;
       });
       html += `<div style="font-size:9px;color:#8b949e;margin-top:4px">Winner: ${_tc.winner} | Loser: ${_tc.loser}${_tc.mvp ? ' | MVP: ' + _tc.mvp : ''}</div>`;
+    }
+
+    if (ep.wawanakwaGoneWild?.huntResults) {
+      html += `<div style="font-family:var(--font-display);font-size:13px;color:#d4a017;margin:16px 0 8px">Wawanakwa Gone Wild! — Per Player</div>`;
+      Object.entries(ep.wawanakwaGoneWild.huntResults).forEach(([name, r]) => {
+        const statusBadge = r.captured ? '<span style="color:#3fb950">CAUGHT</span>' : '<span style="color:#f85149">FAILED</span>';
+        const mods = [r.helpedBy ? `helped:${r.helpedBy}` : '', r.sabotagedBy ? `sab:${r.sabotagedBy}` : '', r.tranqDarted ? "TRANQ'D" : ''].filter(Boolean).join(' ');
+        html += `<div style="font-size:9px;padding:1px 0;color:#6e7681">${name}: ${r.animal} (${r.animalTier}) · ${r.gear} · ${statusBadge} · R${(r.captureRound ?? '?') + 1} · Attempts: ${r.attemptsMade} · Score: ${(r.personalScore || 0).toFixed(1)}${mods ? ' · ' + mods : ''}</div>`;
+      });
+      html += `<div style="font-size:9px;color:#d4a017;padding:2px 0;margin-top:4px">Immunity: ${ep.wawanakwaGoneWild.immunityWinner || 'None'} · Punishment: ${ep.wawanakwaGoneWild.punishmentTarget || 'None'}</div>`;
+      html += `<div style="font-size:9px;color:#6e7681">Timeline events: ${ep.wawanakwaGoneWild.timeline?.length || 0}</div>`;
     }
 
     html += `</div>`;
@@ -10211,7 +10232,9 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'hide-seek', label:'Hide and Be Sneaky', html: rpBuildHideAndBeSneaky(ep) });
   } else if (ep.isOffTheChain && ep.bikeRace) {
     vpScreens.push({ id:'off-the-chain', label:"Off the Chain!", html: rpBuildOffTheChain(ep) });
-  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain) {
+  } else if (ep.isWawanakwaGoneWild && ep.wawanakwaGoneWild) {
+    vpScreens.push({ id:'wawanakwa-gone-wild', label:'Wawanakwa Gone Wild!', html: rpBuildWawanakwaGoneWild(ep) });
+  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
 

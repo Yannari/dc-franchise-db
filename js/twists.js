@@ -1301,6 +1301,14 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 6) return;
     ep.isOffTheChain = true;
 
+  } else if (engineType === 'wawanakwa-gone-wild') {
+    if (!gs.isMerged) {
+      const _wwMerging = gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
+      if (!_wwMerging) return;
+    }
+    if (gs.activePlayers.length < 6) return;
+    ep.isWawanakwaGoneWild = true;
+
   } else if (engineType === 'brunch-of-disgustingness') {
     if (!gs.isMerged && gs.activePlayers.length > (seasonConfig.mergeAt || 12)) return;
     if (gs.activePlayers.length < 4) return;

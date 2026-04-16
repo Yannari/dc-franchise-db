@@ -804,3 +804,540 @@ export function _textOffTheChain(ep, ln, sec) {
     br.phase4.eliminationReaction.beats.forEach(b => ln(b));
   }
 }
+
+// ══════════════════════════════════════════════════════════════
+// VP SCREEN — MOTOCROSS DEMOLITION DERBY THEME
+// ══════════════════════════════════════════════════════════════
+
+const MX_STYLES = `
+  .mx-page { background:#1a1008; color:#ff6b00; font-family:'Impact','Arial Narrow',sans-serif; position:relative; overflow:hidden; padding:24px; }
+  .mx-page::before { content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:
+    radial-gradient(ellipse at 20% 80%, rgba(101,67,33,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 20%, rgba(101,67,33,0.1) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, rgba(101,67,33,0.08) 0%, transparent 60%);
+    pointer-events:none; z-index:1; }
+  .mx-header { display:flex; align-items:center; gap:8px; margin-bottom:20px; position:relative; z-index:2;
+    background:repeating-conic-gradient(#1a1008 0% 25%, #ff6b00 0% 50%) 0 0 / 20px 20px;
+    padding:12px 16px; border-radius:4px; }
+  .mx-header-inner { background:#1a1008; padding:8px 16px; border-radius:3px; display:flex; align-items:center; gap:8px; width:100%; }
+  .mx-title { font-size:20px; font-weight:800; letter-spacing:4px; text-transform:uppercase; color:#ff6b00; text-shadow:0 0 10px rgba(255,107,0,0.5); }
+  .mx-card { background:rgba(255,107,0,0.05); border:1px solid rgba(255,107,0,0.15); border-radius:6px; padding:10px 14px; margin-bottom:8px; position:relative; z-index:2; }
+  .mx-status { display:inline-block; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:700; letter-spacing:1px; }
+  .mx-safe { background:rgba(0,200,100,0.2); color:#0c6; }
+  .mx-wrecked { background:rgba(255,51,51,0.2); color:#ff3333; }
+  .mx-immune { background:rgba(255,215,0,0.2); color:#ffd700; }
+  .mx-last { background:rgba(255,51,51,0.2); color:#ff3333; }
+  .mx-dnf { background:rgba(100,100,100,0.2); color:#666; }
+  .mx-racing { background:rgba(255,107,0,0.15); color:#ff6b00; }
+  .mx-sector { font-size:11px; font-weight:800; letter-spacing:3px; color:#ffd700; text-transform:uppercase; margin:20px 0 12px; border-top:1px solid rgba(255,107,0,0.15); padding-top:16px; }
+  .mx-reveal-btn { background:rgba(255,107,0,0.1); border:1px solid rgba(255,107,0,0.3); color:#ff6b00; padding:8px 20px; border-radius:4px; cursor:pointer; font-family:'Impact','Arial Narrow',sans-serif; font-size:12px; letter-spacing:2px; text-transform:uppercase; margin:12px 0; animation: mx-btn-pulse 2s infinite; }
+  .mx-reveal-btn:hover { background:rgba(255,107,0,0.2); }
+  .mx-quality-bar { height:6px; border-radius:3px; background:rgba(255,107,0,0.1); overflow:hidden; margin-top:4px; }
+  .mx-quality-fill { height:100%; border-radius:3px; transition:width 0.3s; }
+  .mx-hp-bar { height:8px; border-radius:4px; background:rgba(255,51,51,0.15); overflow:hidden; margin-top:4px; }
+  .mx-hp-fill { height:100%; border-radius:4px; transition:width 0.5s; }
+  .mx-hazard { background:repeating-linear-gradient(45deg, rgba(255,215,0,0.08), rgba(255,215,0,0.08) 10px, rgba(0,0,0,0.08) 10px, rgba(0,0,0,0.08) 20px); border:1px solid rgba(255,215,0,0.2); border-radius:4px; padding:8px 12px; margin-bottom:8px; }
+  .mx-speed-lines { position:relative; overflow:hidden; }
+  .mx-speed-lines::after { content:''; position:absolute; top:0; left:0; right:0; bottom:0;
+    background:repeating-linear-gradient(135deg, transparent, transparent 8px, rgba(255,107,0,0.03) 8px, rgba(255,107,0,0.03) 10px);
+    animation: mx-speed 1s linear infinite; pointer-events:none; }
+  @keyframes mx-speed { 0%{transform:translateX(0)} 100%{transform:translateX(-20px)} }
+  @keyframes mx-explosion { 0%{transform:scale(0.5);opacity:1} 40%{transform:scale(1.5);opacity:0.9} 70%{transform:scale(1.8);opacity:0.5} 100%{transform:scale(2);opacity:0} }
+  .mx-explosion { position:absolute; top:50%; left:50%; width:60px; height:60px; margin:-30px 0 0 -30px;
+    background:radial-gradient(circle,#ffd700 0%,#ff6b00 40%,#ff3333 70%,transparent 100%);
+    border-radius:50%; animation: mx-explosion 0.8s ease-out forwards; pointer-events:none; z-index:10; }
+  @keyframes mx-scan-in { 0% { opacity:0; clip-path:inset(0 100% 0 0); } 100% { opacity:1; clip-path:inset(0 0 0 0); } }
+  .mx-scan-in { animation: mx-scan-in 0.3s ease-out both; }
+  @keyframes mx-shake { 0%,100%{transform:translateX(0)} 15%,45%,75%{transform:translateX(-4px)} 30%,60%,90%{transform:translateX(4px)} }
+  .mx-shake { animation: mx-shake 0.4s; }
+  @keyframes mx-drop-in { 0%{opacity:0;transform:translateY(-40px)} 60%{transform:translateY(4px)} 100%{opacity:1;transform:translateY(0)} }
+  .mx-drop-in { animation: mx-drop-in 0.5s ease-out both; }
+  @keyframes mx-btn-pulse { 0%,100%{box-shadow:0 0 5px rgba(255,107,0,0.1)} 50%{box-shadow:0 0 15px rgba(255,107,0,0.3)} }
+  @keyframes mx-count-flash { 0%{color:#fff;transform:scale(1.3)} 100%{color:inherit;transform:scale(1)} }
+  .mx-count-flash { animation: mx-count-flash 0.3s ease-out; }
+`;
+
+function _mxChrisQuip(quips, key) {
+  const q = quips?.[key];
+  if (!q) return '';
+  return `<div style="font-size:11px;color:#8b949e;font-style:italic;margin-bottom:6px;padding-left:4px">${q}</div>`;
+}
+
+export function rpBuildOffTheChain(ep) {
+  const br = ep.bikeRace;
+  if (!br) return '';
+  const stateKey = String(ep.num) + '_offChain';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+
+  const steps = [];
+
+  // ── STARTING GRID ──
+  steps.push({
+    type: 'grid-header',
+    html: `
+      <div class="mx-card" style="text-align:center;max-width:500px;margin:0 auto 20px">
+        <div style="font-size:36px;margin-bottom:8px">🏍️</div>
+        <div class="mx-title" style="font-size:16px;margin-bottom:8px">THAT'S OFF THE CHAIN!</div>
+        <div style="font-size:12px;color:#ff6b00;line-height:1.8">
+          ${br.activePlayers.length} campers must build a bike, swap with someone else, and race through a deadly obstacle course.<br>
+          <strong style="color:#ffd700">First place wins immunity. Last place pays the price.</strong>
+        </div>
+      </div>
+    `
+  });
+
+  // Per-player bike cards
+  br.activePlayers.forEach(name => {
+    const q = br.phase1.bikeQuality[name];
+    const qPct = Math.round((q / 10) * 100);
+    const qColor = q >= 7 ? '#00ff41' : q >= 5 ? '#ffd700' : q >= 3 ? '#ff6b00' : '#ff3333';
+    const qLabel = q >= 7 ? 'EXCELLENT' : q >= 5 ? 'SOLID' : q >= 3 ? 'SHAKY' : 'JUNK';
+    const bikeName = br.phase1.bikeNames[name];
+    const quip = _mxChrisQuip(br.chrisQuips, `judge-${name}`);
+    const isBest = name === br.phase1.bestBuilder;
+    const isWorst = name === br.phase1.worstBuilder;
+    const tag = isBest ? ' <span class="mx-status mx-safe">BEST BUILD</span>' : isWorst ? ' <span class="mx-status mx-wrecked">WORST BUILD</span>' : '';
+    steps.push({
+      type: 'grid-bike',
+      html: `
+        ${quip}
+        <div class="mx-card" style="display:flex;align-items:center;gap:12px${isBest ? ';border-color:rgba(0,200,100,0.3)' : isWorst ? ';border-color:rgba(255,51,51,0.3)' : ''}">
+          ${rpPortrait(name, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}${tag}</div>
+            <div style="font-size:11px;color:#ff6b00;margin-top:2px">"${bikeName}"</div>
+            <div class="mx-quality-bar">
+              <div class="mx-quality-fill" style="width:${qPct}%;background:${qColor}"></div>
+            </div>
+            <div style="font-size:9px;color:${qColor};margin-top:2px;letter-spacing:1px">${qLabel} (${q.toFixed(1)})</div>
+          </div>
+        </div>
+      `
+    });
+  });
+
+  // Build events as individual steps
+  br.phase1.buildEvents.forEach(evt => {
+    if (!evt.text) return;
+    const portraits = (evt.players || []).slice(0, 2).map(p => rpPortrait(p, 'sm')).join('');
+    const isSab = evt.id === 'sabotage' || evt.id === 'parts-theft';
+    const borderStyle = isSab ? 'border-color:rgba(255,51,51,0.3)' : evt.id === 'help' ? 'border-color:rgba(0,200,100,0.3)' : '';
+    steps.push({
+      type: 'build-event',
+      html: `
+        <div class="mx-card" style="display:flex;align-items:center;gap:10px;${borderStyle}">
+          ${portraits}
+          <div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div>
+        </div>
+      `
+    });
+  });
+
+  // ── THE SWAP ──
+  const swapQuipKey = Object.keys(br.chrisQuips).find(k => k.startsWith('swap'));
+  steps.push({
+    type: 'swap-header',
+    html: `
+      ${_mxChrisQuip(br.chrisQuips, swapQuipKey || 'swapReveal')}
+      <div class="mx-sector">THE SWAP — RIDE SOMEONE ELSE'S BIKE!</div>
+      <div class="mx-hazard" style="text-align:center;font-size:12px;color:#ffd700">
+        Chris reveals: nobody rides their own bike. You race what someone else built!
+      </div>
+    `
+  });
+
+  // Each assignment revealed one at a time
+  const assignments = br.phase2.riderAssignments || {};
+  Object.entries(assignments).forEach(([rider, bikeOwner]) => {
+    steps.push({
+      type: 'swap-assign',
+      html: `
+        <div class="mx-card" style="display:flex;align-items:center;gap:12px">
+          ${rpPortrait(rider, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:13px;color:#cdd9e5;font-weight:600">${rider} draws...</div>
+            <div style="font-size:12px;color:#ff6b00;margin-top:4px">${bikeOwner}'s bike! <span style="color:#8b949e">("${br.phase1.bikeNames[bikeOwner] || '???'}")</span></div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;color:${(br.phase1.bikeQuality[bikeOwner] || 5) >= 5 ? '#00ff41' : '#ff3333'};letter-spacing:1px">
+              ${(br.phase1.bikeQuality[bikeOwner] || 5) >= 7 ? 'LUCKY' : (br.phase1.bikeQuality[bikeOwner] || 5) >= 5 ? 'DECENT' : (br.phase1.bikeQuality[bikeOwner] || 5) >= 3 ? 'UH OH' : 'DOOMED'}
+            </div>
+          </div>
+        </div>
+      `
+    });
+  });
+
+  // ── PART 1: QUALIFYING ──
+  steps.push({
+    type: 'race1-header',
+    html: `
+      ${_mxChrisQuip(br.chrisQuips, 'race1Start') || _mxChrisQuip(br.chrisQuips, 'race1-start')}
+      <div class="mx-sector">PART 1: QUALIFYING LAP</div>
+    `
+  });
+
+  // Per-rider results
+  const sortedRiders = br.phase2.sortedRiders || [];
+  sortedRiders.forEach(name => {
+    const score = (br.phase2.race1Scores || {})[name] || 0;
+    const cutIdx = br.phase2.cutIndex || Math.ceil(sortedRiders.length / 2);
+    const finished = sortedRiders.indexOf(name) < cutIdx;
+    const quipKey = finished ? 'race1Finish' : 'race1Fail';
+    const quipPool = CHRIS_BIKE_QUIPS[quipKey] || [];
+    const quip = quipPool.length ? quipPool[Math.floor(Math.random() * quipPool.length)] : '';
+    steps.push({
+      type: 'race1-result',
+      racingDelta: finished ? 0 : -1,
+      wreckedDelta: finished ? 0 : 1,
+      html: `
+        <div class="mx-card mx-speed-lines" style="display:flex;align-items:center;gap:12px;${!finished ? 'border-color:rgba(255,51,51,0.3);background:rgba(255,51,51,0.04)' : 'border-color:rgba(0,200,100,0.15)'}">
+          ${rpPortrait(name, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}</div>
+            <div style="font-size:10px;color:#ff6b00;margin-top:2px">Score: ${score.toFixed ? score.toFixed(1) : score}</div>
+            ${quip ? `<div style="font-size:10px;color:#8b949e;font-style:italic;margin-top:2px">${quip}</div>` : ''}
+          </div>
+          <span class="mx-status ${finished ? 'mx-safe' : 'mx-dnf'}">${finished ? 'QUALIFIED' : 'DNF'}</span>
+        </div>
+      `
+    });
+  });
+
+  // Race1 events interspersed
+  (br.phase2.race1Events || []).forEach(evt => {
+    if (!evt.text) return;
+    steps.push({
+      type: 'race1-event',
+      html: `
+        <div class="mx-card" style="display:flex;align-items:center;gap:10px;border-color:rgba(255,107,0,0.2)">
+          <div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div>
+        </div>
+      `
+    });
+  });
+
+  // ── THE CUT ──
+  const advancingOwners = br.phase2.advancingOwners || [];
+  const eliminatedOwners = br.phase2.eliminatedOwners || [];
+  steps.push({
+    type: 'cut-summary',
+    html: `
+      <div class="mx-sector">THE CUT — WHO ADVANCES?</div>
+      <div class="mx-card" style="padding:14px">
+        <div style="font-size:12px;color:#ffd700;margin-bottom:10px;font-weight:700">ADVANCING TO OBSTACLE GAUNTLET:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          ${advancingOwners.map(name => `
+            <div style="text-align:center;width:70px">
+              ${rpPortrait(name, 'sm')}
+              <div style="font-size:9px;color:#00ff41;margin-top:2px">SAFE</div>
+              <div class="mx-hp-bar"><div class="mx-hp-fill" style="width:${Math.round(((br.phase2.bikeHP || br.phase1.bikeHP || {})[name] || 50) / ((br.phase1.bikeHP || {})[name] || 100) * 100)}%;background:#00ff41"></div></div>
+            </div>
+          `).join('')}
+        </div>
+        ${eliminatedOwners.length ? `
+          <div style="font-size:12px;color:#ff3333;margin-bottom:8px;font-weight:700">ELIMINATED FROM PART 2:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${eliminatedOwners.map(name => `
+              <div style="text-align:center;width:70px">
+                ${rpPortrait(name, 'sm')}
+                <div style="font-size:9px;color:#ff3333;margin-top:2px">CUT</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `
+  });
+
+  // ── PART 2: OBSTACLES ──
+  steps.push({
+    type: 'obstacle-header',
+    html: `
+      ${_mxChrisQuip(br.chrisQuips, 'obstacleStart') || _mxChrisQuip(br.chrisQuips, 'obstacle-start')}
+      <div class="mx-sector">PART 2: THE OBSTACLE GAUNTLET</div>
+      <div class="mx-hazard" style="text-align:center;font-size:11px;color:#ffd700">
+        Land mines. Oil slicks. Piranhas. Only the strongest bikes survive.
+      </div>
+    `
+  });
+
+  // Per-obstacle, per-racer
+  const obstacleResults = br.phase3.obstacleResults || {};
+  const racers = br.phase3.racers || advancingOwners;
+  const maxObstacles = Math.max(...racers.map(n => (obstacleResults[n]?.obstacles || []).length), 0);
+  const emittedObstacleHeaders = new Set();
+  for (let oi = 0; oi < maxObstacles; oi++) {
+    // Obstacle header
+    const obsNameSample = racers.find(n => obstacleResults[n]?.obstacles?.[oi])
+      ? (obstacleResults[racers.find(n => obstacleResults[n]?.obstacles?.[oi])].obstacles[oi].name || `Obstacle ${oi + 1}`)
+      : `Obstacle ${oi + 1}`;
+    if (!emittedObstacleHeaders.has(oi)) {
+      emittedObstacleHeaders.add(oi);
+      steps.push({
+        type: 'obstacle-name',
+        html: `<div class="mx-hazard" style="font-size:12px;color:#ffd700;font-weight:700;letter-spacing:2px;text-align:center">⚠ ${obsNameSample.toUpperCase()} ⚠</div>`
+      });
+    }
+
+    racers.forEach(name => {
+      const data = obstacleResults[name];
+      if (!data || !data.obstacles || !data.obstacles[oi]) return;
+      const obs = data.obstacles[oi];
+      const wasDestroyed = obs.destroyed;
+      const damage = obs.damage || obs.penalty || 0;
+      const hpAfter = obs.hpAfter || ((data.bikeHPStart || 100) - (data.totalPenalty || 0));
+      const hpMax = data.bikeHPStart || 100;
+      const hpPct = Math.max(0, Math.round((hpAfter / hpMax) * 100));
+      const hpColor = hpPct > 60 ? '#00ff41' : hpPct > 30 ? '#ffd700' : '#ff3333';
+
+      let cardContent = `
+        <div class="mx-card${wasDestroyed ? ' mx-shake' : ' mx-speed-lines'}" style="display:flex;align-items:center;gap:12px;position:relative;${wasDestroyed ? 'border-color:rgba(255,51,51,0.5);background:rgba(255,51,51,0.08)' : ''}">
+          ${wasDestroyed ? '<div class="mx-explosion"></div>' : ''}
+          ${rpPortrait(name, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}</div>
+            ${damage ? `<div style="font-size:10px;color:#ff3333;margin-top:2px">Damage: -${typeof damage === 'number' ? damage.toFixed(0) : damage} HP</div>` : '<div style="font-size:10px;color:#00ff41;margin-top:2px">Clean pass!</div>'}
+            ${!wasDestroyed ? `<div class="mx-hp-bar"><div class="mx-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div>` : ''}
+          </div>
+          <span class="mx-status ${wasDestroyed ? 'mx-wrecked' : 'mx-safe'}">${wasDestroyed ? 'DESTROYED' : 'RACING'}</span>
+        </div>
+      `;
+      steps.push({
+        type: 'obstacle-result',
+        racingDelta: wasDestroyed ? -1 : 0,
+        wreckedDelta: wasDestroyed ? 1 : 0,
+        html: cardContent
+      });
+    });
+  }
+
+  // Obstacle events interspersed
+  (br.phase3.obstacleEvents || []).forEach(evt => {
+    if (!evt.text) return;
+    const portraits = (evt.players || []).slice(0, 2).map(p => rpPortrait(p, 'sm')).join('');
+    steps.push({
+      type: 'obstacle-event',
+      html: `
+        <div class="mx-card" style="display:flex;align-items:center;gap:10px;border-color:rgba(255,107,0,0.2)">
+          ${portraits}
+          <div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div>
+        </div>
+      `
+    });
+  });
+
+  // Bike destroyed quips
+  (br.phase3.destroyed || []).forEach(name => {
+    const quip = _mxChrisQuip(br.chrisQuips, `destroyed-${name}`) || _mxChrisQuip(br.chrisQuips, 'bikeDestroyed');
+    if (quip) {
+      steps.push({
+        type: 'destruction-quip',
+        html: `
+          <div class="mx-card mx-shake" style="border-color:rgba(255,51,51,0.4);background:rgba(255,51,51,0.06);display:flex;align-items:center;gap:12px;position:relative">
+            <div class="mx-explosion"></div>
+            ${rpPortrait(name, 'sm')}
+            <div style="flex:1">
+              <div style="font-size:13px;color:#ff3333;font-weight:700">${name}'s bike is DESTROYED!</div>
+              ${quip}
+            </div>
+            <span class="mx-status mx-wrecked">WRECKED</span>
+          </div>
+        `
+      });
+    }
+  });
+
+  // ── FINISH LINE ──
+  const finishRanking = br.phase3.finishRanking || [];
+  if (finishRanking.length) {
+    const winner = finishRanking[0];
+    const last = finishRanking[finishRanking.length - 1];
+    const winQuip = _mxChrisQuip(br.chrisQuips, 'immunityWin') || _mxChrisQuip(br.chrisQuips, `immunity-${winner}`);
+    const lastQuip = _mxChrisQuip(br.chrisQuips, 'lastPlace') || _mxChrisQuip(br.chrisQuips, `last-${last}`);
+
+    steps.push({
+      type: 'finish-header',
+      html: `<div class="mx-sector">THE FINISH LINE</div>`
+    });
+
+    // Winner
+    steps.push({
+      type: 'finish-winner',
+      finishedDelta: 1,
+      immuneDelta: 1,
+      racingDelta: -1,
+      html: `
+        ${winQuip}
+        <div class="mx-card mx-drop-in" style="border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.06);text-align:center;padding:20px">
+          <div style="margin-bottom:12px">${rpPortrait(winner, 'xl')}</div>
+          <div style="font-size:16px;color:#ffd700;font-weight:700;margin-bottom:6px">${winner} crosses the finish line FIRST!</div>
+          <div style="margin-top:10px"><span class="mx-status mx-immune" style="font-size:12px;padding:4px 14px">IMMUNITY WINNER</span></div>
+        </div>
+      `
+    });
+
+    // Rest of ranking
+    finishRanking.slice(1).forEach((name, i) => {
+      const isLast = i === finishRanking.length - 2;
+      steps.push({
+        type: 'finish-place',
+        racingDelta: -1,
+        finishedDelta: 1,
+        html: `
+          <div class="mx-card" style="display:flex;align-items:center;gap:12px;${isLast ? 'border-color:rgba(255,51,51,0.4);background:rgba(255,51,51,0.04)' : ''}">
+            ${rpPortrait(name, 'sm')}
+            <div style="flex:1">
+              <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}</div>
+              <div style="font-size:10px;color:${isLast ? '#ff3333' : '#ff6b00'};margin-top:2px">${isLast ? 'LAST PLACE' : `Finished #${i + 2}`}</div>
+            </div>
+            <span class="mx-status ${isLast ? 'mx-last' : 'mx-safe'}">${isLast ? 'LAST' : `#${i + 2}`}</span>
+          </div>
+        `
+      });
+    });
+
+    // Last place fate
+    if (br.phase4.eliminatedPlayer) {
+      const elim = br.phase4.eliminatedPlayer;
+      steps.push({
+        type: 'finish-fate',
+        html: `
+          ${lastQuip}
+          <div class="mx-card" style="border-color:rgba(255,51,51,0.4);background:rgba(255,51,51,0.06);text-align:center;padding:14px">
+            ${rpPortrait(elim, 'lg')}
+            <div style="font-size:14px;color:#ff3333;font-weight:700;margin-top:8px">
+              ${br.isSuddenDeath ? `${elim} finished last — AUTOMATICALLY ELIMINATED!` : `${elim} finished last — a massive target heading into tribal council.`}
+            </div>
+          </div>
+        `
+      });
+    }
+  }
+
+  // ── AFTERMATH ──
+  if (br.phase4.eliminationReaction?.beats?.length) {
+    steps.push({
+      type: 'aftermath-header',
+      html: `<div class="mx-sector">THE AFTERMATH</div>`
+    });
+    br.phase4.eliminationReaction.beats.forEach(beat => {
+      steps.push({
+        type: 'aftermath-beat',
+        html: `
+          <div class="mx-card" style="border-color:rgba(255,107,0,0.2)">
+            <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${beat}</div>
+          </div>
+        `
+      });
+    });
+  }
+
+  // ── WRECKAGE REPORT ──
+  let debriefHtml = `<div class="mx-sector">WRECKAGE REPORT — FINAL STATUS</div>`;
+  debriefHtml += `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">`;
+  br.activePlayers.forEach(name => {
+    const badge = br.badges[name];
+    const isImmune = badge === 'bikeRaceImmune';
+    const isWrecked = (br.phase3.destroyed || []).includes(name);
+    const isLast = badge === 'bikeRaceLast';
+    const statusClass = isImmune ? 'mx-immune' : isWrecked ? 'mx-wrecked' : isLast ? 'mx-last' : badge === 'bikeRaceBuilder' ? 'mx-safe' : badge === 'bikeRaceSaboteur' ? 'mx-wrecked' : badge === 'bikeRaceClutch' ? 'mx-safe' : 'mx-racing';
+    const statusText = isImmune ? 'IMMUNE' : isWrecked ? 'WRECKED' : isLast ? 'LAST' : badge === 'bikeRaceBuilder' ? 'BEST BUILD' : badge === 'bikeRaceSaboteur' ? 'SABOTEUR' : badge === 'bikeRaceClutch' ? 'CLUTCH' : 'FINISHED';
+    debriefHtml += `
+      <div style="text-align:center;width:80px">
+        ${rpPortrait(name, 'sm')}
+        <span class="mx-status ${statusClass}" style="margin-top:4px;display:block;font-size:9px">${statusText}</span>
+      </div>`;
+  });
+  debriefHtml += `</div>`;
+
+  if (finishRanking.length) {
+    debriefHtml += `<div class="mx-card" style="text-align:center;border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.05)">
+      <div style="font-size:14px;color:#ffd700;font-weight:700">${finishRanking[0]} wins immunity!</div>
+    </div>`;
+  }
+  steps.push({ type: 'debrief', html: debriefHtml });
+
+  // ── BUILD FINAL HTML ──
+  const state = _tvState[stateKey];
+  const initialRacing = br.activePlayers.length;
+  let html = `<style>${MX_STYLES}</style><div class="mx-page rp-page">
+    <div class="mx-header"><div class="mx-header-inner">
+      <span style="font-size:10px;letter-spacing:2px;color:#ff6b00">🏁 RACE FEED</span>
+      <span style="margin-left:auto;font-size:10px;color:#ff6b00;opacity:0.5">EP ${ep.num}</span>
+    </div></div>`;
+
+  html += `<div style="display:flex;gap:16px;justify-content:center;font-size:12px;font-weight:700;letter-spacing:1px;position:sticky;top:0;z-index:3;padding:8px;margin-bottom:12px;background:#1a1008">
+    <span style="color:#ff6b00">RACING: <span id="mx-racing-${stateKey}" data-initial="${initialRacing}" style="color:#ff6b00">${initialRacing}</span></span>
+    <span style="color:#ff3333">WRECKED: <span id="mx-wrecked-${stateKey}" style="color:#ff3333">0</span></span>
+    <span style="color:#ffd700">FINISHED: <span id="mx-finished-${stateKey}" style="color:#ffd700">0</span></span>
+  </div>`;
+
+  steps.forEach((step, i) => {
+    const visible = i <= state.idx;
+    html += `<div id="mx-step-${stateKey}-${i}" data-racing-delta="${step.racingDelta||0}" data-wrecked-delta="${step.wreckedDelta||0}" data-finished-delta="${step.finishedDelta||0}" data-immune-delta="${step.immuneDelta||0}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
+  });
+
+  html += `<div id="mx-controls-${stateKey}"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
+    <button class="mx-reveal-btn" id="mx-btn-${stateKey}" onclick="window._mxReveal('${stateKey}', ${steps.length})">▶ NEXT LAP (${state.idx + 2}/${steps.length})</button>
+    <button onclick="window._mxRevealAll('${stateKey}', ${steps.length})" style="background:none;border:none;font-size:11px;color:#ff6b00;cursor:pointer;padding:2px 0;letter-spacing:0.3px;opacity:0.7">Reveal all &rsaquo;</button>
+  </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+export function _mxReveal(stateKey, totalSteps) {
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const nextIdx = state.idx + 1;
+  if (nextIdx >= totalSteps) return;
+  const el = document.getElementById(`mx-step-${stateKey}-${nextIdx}`);
+  if (el) { el.style.display = ''; el.classList.add('mx-scan-in'); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  state.idx = nextIdx;
+  // Update status tracker counts
+  if (el) {
+    const rd = parseInt(el.dataset.racingDelta || '0');
+    const wd = parseInt(el.dataset.wreckedDelta || '0');
+    const fd = parseInt(el.dataset.finishedDelta || '0');
+    if (rd || wd || fd) {
+      const rEl = document.getElementById(`mx-racing-${stateKey}`);
+      const wEl = document.getElementById(`mx-wrecked-${stateKey}`);
+      const fEl = document.getElementById(`mx-finished-${stateKey}`);
+      if (rEl && rd) { rEl.textContent = Math.max(0, parseInt(rEl.textContent) + rd); rEl.classList.remove('mx-count-flash'); void rEl.offsetWidth; rEl.classList.add('mx-count-flash'); }
+      if (wEl && wd) { wEl.textContent = parseInt(wEl.textContent) + wd; wEl.classList.remove('mx-count-flash'); void wEl.offsetWidth; wEl.classList.add('mx-count-flash'); }
+      if (fEl && fd) { fEl.textContent = parseInt(fEl.textContent) + fd; fEl.classList.remove('mx-count-flash'); void fEl.offsetWidth; fEl.classList.add('mx-count-flash'); }
+    }
+  }
+  if (nextIdx >= totalSteps - 1) {
+    const controls = document.getElementById(`mx-controls-${stateKey}`);
+    if (controls) controls.style.display = 'none';
+  } else {
+    const btn = document.getElementById(`mx-btn-${stateKey}`);
+    if (btn) btn.textContent = `▶ NEXT LAP (${nextIdx + 2}/${totalSteps})`;
+  }
+}
+
+export function _mxRevealAll(stateKey, totalSteps) {
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  for (let i = 0; i < totalSteps; i++) {
+    const el = document.getElementById(`mx-step-${stateKey}-${i}`);
+    if (el) el.style.display = '';
+  }
+  _tvState[stateKey].idx = totalSteps - 1;
+  const controls = document.getElementById(`mx-controls-${stateKey}`);
+  if (controls) controls.style.display = 'none';
+  // Set final sidebar counts
+  const totalR = parseInt(document.getElementById(`mx-racing-${stateKey}`)?.dataset.initial || '0');
+  let r = totalR, w = 0, f = 0;
+  for (let i = 0; i < totalSteps; i++) {
+    const stepEl = document.getElementById(`mx-step-${stateKey}-${i}`);
+    if (stepEl) { r += parseInt(stepEl.dataset.racingDelta || '0'); w += parseInt(stepEl.dataset.wreckedDelta || '0'); f += parseInt(stepEl.dataset.finishedDelta || '0'); }
+  }
+  const rEl = document.getElementById(`mx-racing-${stateKey}`);
+  const wEl = document.getElementById(`mx-wrecked-${stateKey}`);
+  const fEl = document.getElementById(`mx-finished-${stateKey}`);
+  if (rEl) rEl.textContent = Math.max(0, r);
+  if (wEl) wEl.textContent = w;
+  if (fEl) fEl.textContent = f;
+}

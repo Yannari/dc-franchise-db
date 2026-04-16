@@ -1061,6 +1061,12 @@ const NV_STYLES = `
   .nv-count-flash { animation: nv-count-flash 0.3s ease-out; }
 `;
 
+function _chrisQuip(quips, key) {
+  const q = quips?.[key];
+  if (!q) return '';
+  return `<div style="font-size:11px;color:#8b949e;font-style:italic;margin-bottom:6px;padding-left:4px">${q}</div>`;
+}
+
 export function rpBuildHideAndBeSneaky(ep) {
   const hs = ep.hideAndBeSneaky;
   if (!hs) return '';
@@ -1118,7 +1124,7 @@ export function rpBuildHideAndBeSneaky(ep) {
   const _toArr = v => !v ? [] : Array.isArray(v) ? v : [v];
   hs.phase2.rounds.forEach(round => {
     // Round header as its own step
-    steps.push({ type: 'hunt-header', html: `<div class="nv-sector">SCANNING SECTOR ${round.num} &mdash; ${round.hiddenCount} OPERATIVES REMAIN</div>` });
+    steps.push({ type: 'hunt-header', html: `${_chrisQuip(hs.chrisQuips, 'round-' + round.num)}<div class="nv-sector">SCANNING SECTOR ${round.num} &mdash; ${round.hiddenCount} OPERATIVES REMAIN</div>` });
 
     // Each event as its own step
     round.events.forEach(evt => {
@@ -1146,6 +1152,8 @@ export function rpBuildHideAndBeSneaky(ep) {
       const isEscape = f.escaped;
       const borderColor = isEscape ? 'rgba(255,215,0,0.4)' : 'rgba(255,100,50,0.4)';
       const bgColor = isEscape ? 'rgba(255,215,0,0.06)' : 'rgba(255,100,50,0.06)';
+      const chefTaunt = _chrisQuip(hs.chrisQuips, 'chef-taunt-' + f.name);
+      const catchQuip = _chrisQuip(hs.chrisQuips, 'catch-' + f.name + '-' + round.num);
       let cardHtml = `
         <div class="nv-card${isEscape ? '' : ' nv-soaked-shake'}" style="border-color:${borderColor};background:${bgColor}">
           ${!isEscape ? `<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle,rgba(56,189,248,0.3),transparent 70%);border-radius:6px;pointer-events:none;animation:nv-splash 0.8s forwards"></div>` : ''}
@@ -1165,15 +1173,20 @@ export function rpBuildHideAndBeSneaky(ep) {
       cardHtml += `
           <div style="margin-top:6px;text-align:right">${outcomeTag}</div>
         </div>`;
-      steps.push({ type: 'hunt-discovery', html: cardHtml });
+      steps.push({ type: 'hunt-discovery', html: chefTaunt + cardHtml + catchQuip });
     });
+
+    if (!allCaughtThisRound.length) {
+      const frustration = _chrisQuip(hs.chrisQuips, 'frustration-' + round.num);
+      if (frustration) steps.push({ type: 'hunt-frustration', html: `<div class="nv-card" style="border-color:rgba(255,100,50,0.1)">${frustration}</div>` });
+    }
   });
 
   // Phase 3: Intel Report — header + each betrayal/loyal as separate step
   if (hs.phase3.betrayals.length || hs.phase3.loyals.length) {
     steps.push({ type: 'intel-header', html: `<div class="nv-sector">INTEL REPORT — LOYALTY ASSESSMENT</div>` });
     hs.phase3.betrayals.forEach(b => {
-      steps.push({ type: 'intel-betrayal', html: `
+      steps.push({ type: 'intel-betrayal', html: `${_chrisQuip(hs.chrisQuips, 'betrayal-' + b.betrayer)}
         <div class="nv-card" style="border-color:rgba(255,50,50,0.3);display:flex;align-items:center;gap:12px">
           ${rpPortrait(b.betrayer, 'sm')}
           <div style="flex:1;font-size:12px;color:#cdd9e5">
@@ -1194,7 +1207,7 @@ export function rpBuildHideAndBeSneaky(ep) {
             <span class="nv-status nv-loyal">SIGNAL REFUSED</span>
           </div>`;
       });
-      steps.push({ type: 'intel-loyal', html: loyalHtml });
+      steps.push({ type: 'intel-loyal', html: `${_chrisQuip(hs.chrisQuips, 'loyal')}${loyalHtml}` });
     }
   }
 
@@ -1222,7 +1235,7 @@ export function rpBuildHideAndBeSneaky(ep) {
 
   // Phase 5: Final Pursuit — header + each chase as separate step
   if (hs.phase5) {
-    steps.push({ type: 'pursuit-header', html: `<div class="nv-sector">FINAL PURSUIT — ALL OPERATIVES FLUSHED</div>` });
+    steps.push({ type: 'pursuit-header', html: `${_chrisQuip(hs.chrisQuips, 'showdown')}<div class="nv-sector">FINAL PURSUIT — ALL OPERATIVES FLUSHED</div>` });
     hs.phase5.ranking.forEach(({ name, score }) => {
       const beats = hs.phase5.beats[name] || [];
       const isWinner = name === hs.phase5.winner;
@@ -1249,7 +1262,7 @@ export function rpBuildHideAndBeSneaky(ep) {
     if (lastStanding) {
       const lsPr = pronouns(lastStanding);
       const lsSpot = hs.spotAssignments[lastStanding];
-      steps.push({ type: 'last-standing', html: `
+      steps.push({ type: 'last-standing', html: `${_chrisQuip(hs.chrisQuips, 'lastStanding')}
         <div class="nv-sector">LAST OPERATIVE STANDING</div>
         <div class="nv-card nv-drop-in" style="border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.06);text-align:center;padding:20px">
           <div class="nv-gold-glow" style="margin-bottom:12px">${rpPortrait(lastStanding, 'xl')}</div>

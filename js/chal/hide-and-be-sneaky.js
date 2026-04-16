@@ -913,7 +913,7 @@ export function _textHideAndBeSneaky(ep, ln, sec) {
 // ══════════════════════════════════════════════════════════════
 
 const NV_STYLES = `
-  .nv-page { background:#0a0f0a; color:#00ff41; font-family:'Courier New',monospace; position:relative; overflow:hidden; padding:24px; }
+  .nv-page { background:#0a0f0a; color:#00ff41; font-family:'Courier New',monospace; position:relative; overflow:hidden; padding:24px; animation: nv-flicker 4s infinite; }
   .nv-page::before { content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.03) 2px, rgba(0,255,65,0.03) 4px); pointer-events:none; z-index:1; }
   .nv-header { display:flex; align-items:center; gap:8px; margin-bottom:20px; position:relative; z-index:2; }
   .nv-rec { display:inline-block; width:8px; height:8px; border-radius:50%; background:#f00; animation:nv-blink 1.5s infinite; }
@@ -930,8 +930,25 @@ const NV_STYLES = `
   .nv-delta-up { color:#00ff41; font-weight:700; }
   .nv-delta-down { color:#ff6432; font-weight:700; }
   .nv-sector { font-size:11px; font-weight:800; letter-spacing:3px; color:#33ff66; text-transform:uppercase; margin:20px 0 12px; border-top:1px solid rgba(0,255,65,0.15); padding-top:16px; }
-  .nv-reveal-btn { background:rgba(0,255,65,0.1); border:1px solid rgba(0,255,65,0.3); color:#00ff41; padding:8px 20px; border-radius:4px; cursor:pointer; font-family:'Courier New',monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; margin:12px 0; }
+  .nv-reveal-btn { background:rgba(0,255,65,0.1); border:1px solid rgba(0,255,65,0.3); color:#00ff41; padding:8px 20px; border-radius:4px; cursor:pointer; font-family:'Courier New',monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; margin:12px 0; animation: nv-btn-pulse 2s infinite; }
   .nv-reveal-btn:hover { background:rgba(0,255,65,0.2); }
+  @keyframes nv-scan-in { 0% { opacity:0; clip-path:inset(0 100% 0 0); } 100% { opacity:1; clip-path:inset(0 0 0 0); } }
+  .nv-scan-in { animation: nv-scan-in 0.3s ease-out both; }
+  @keyframes nv-soaked { 0%,100%{transform:translateX(0)} 15%,45%,75%{transform:translateX(-4px)} 30%,60%,90%{transform:translateX(4px)} }
+  .nv-soaked-shake { animation: nv-soaked 0.4s; position:relative; overflow:hidden; }
+  @keyframes nv-splash { 0%{opacity:0.5;transform:scale(1)} 100%{opacity:0;transform:scale(1.5)} }
+  @keyframes nv-beat-in { 0%{opacity:0;transform:translateX(30px)} 100%{opacity:1;transform:translateX(0)} }
+  @keyframes nv-beat-jitter { 0%{opacity:0;transform:translateX(20px)} 25%{transform:translateX(-3px)} 50%{transform:translateX(3px)} 75%{transform:translateX(-2px)} 100%{opacity:1;transform:translateX(0)} }
+  @keyframes nv-found-pulse { 0%,100%{box-shadow:0 0 0 rgba(255,100,50,0)} 50%{box-shadow:0 0 12px rgba(255,100,50,0.6)} }
+  .nv-found-pulse { animation: nv-found-pulse 0.4s 3; }
+  @keyframes nv-drop-in { 0%{opacity:0;transform:translateY(-40px)} 60%{transform:translateY(4px)} 100%{opacity:1;transform:translateY(0)} }
+  .nv-drop-in { animation: nv-drop-in 0.5s ease-out both; }
+  @keyframes nv-gold-glow { 0%,100%{box-shadow:0 0 10px rgba(255,215,0,0.2)} 50%{box-shadow:0 0 25px rgba(255,215,0,0.5)} }
+  .nv-gold-glow { animation: nv-gold-glow 2s infinite; }
+  @keyframes nv-flicker { 0%,95%,100%{opacity:1} 96%{opacity:0.97} 97%{opacity:1} 98%{opacity:0.96} }
+  @keyframes nv-btn-pulse { 0%,100%{box-shadow:0 0 5px rgba(0,255,65,0.1)} 50%{box-shadow:0 0 15px rgba(0,255,65,0.3)} }
+  @keyframes nv-count-flash { 0%{color:#fff;transform:scale(1.3)} 100%{color:inherit;transform:scale(1)} }
+  .nv-count-flash { animation: nv-count-flash 0.3s ease-out; }
 `;
 
 export function rpBuildHideAndBeSneaky(ep) {
@@ -1020,11 +1037,12 @@ export function rpBuildHideAndBeSneaky(ep) {
       const borderColor = isEscape ? 'rgba(255,215,0,0.4)' : 'rgba(255,100,50,0.4)';
       const bgColor = isEscape ? 'rgba(255,215,0,0.06)' : 'rgba(255,100,50,0.06)';
       let cardHtml = `
-        <div class="nv-card" style="border-color:${borderColor};background:${bgColor}">
+        <div class="nv-card${isEscape ? '' : ' nv-soaked-shake'}" style="border-color:${borderColor};background:${bgColor}">
+          ${!isEscape ? `<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle,rgba(56,189,248,0.3),transparent 70%);border-radius:6px;pointer-events:none;animation:nv-splash 0.8s forwards"></div>` : ''}
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:${f.beats?.length ? '8px' : '0'}">
             ${rpPortrait(f.name, 'sm')}
             <div style="flex:1;font-size:12px;color:#cdd9e5">${f.discoveryText || f.name + ' was discovered by Chef!'}</div>
-            <span class="nv-status nv-found">FOUND</span>
+            <span class="nv-status nv-found nv-found-pulse">FOUND</span>
           </div>`;
       if (f.beats?.length) {
         f.beats.forEach(b => {
@@ -1123,8 +1141,8 @@ export function rpBuildHideAndBeSneaky(ep) {
       const lsSpot = hs.spotAssignments[lastStanding];
       steps.push({ type: 'last-standing', html: `
         <div class="nv-sector">LAST OPERATIVE STANDING</div>
-        <div class="nv-card" style="border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.06);text-align:center;padding:20px">
-          <div style="margin-bottom:12px">${rpPortrait(lastStanding, 'xl')}</div>
+        <div class="nv-card nv-drop-in" style="border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.06);text-align:center;padding:20px">
+          <div class="nv-gold-glow" style="margin-bottom:12px">${rpPortrait(lastStanding, 'xl')}</div>
           <div style="font-size:16px;color:#ffd700;font-weight:700;margin-bottom:6px">${lastStanding} outlasted them all!</div>
           <div style="font-size:12px;color:#33ff66;margin-bottom:4px">Hiding spot: ${lsSpot?.name || 'unknown'}</div>
           <div style="font-size:12px;color:#cdd9e5">${lsPr.Sub} was the last operative Chef couldn't find — ${lsPr.sub} wins immunity!</div>
@@ -1206,7 +1224,7 @@ export function _hsReveal(stateKey, totalSteps) {
   const nextIdx = state.idx + 1;
   if (nextIdx >= totalSteps) return;
   const el = document.getElementById(`hs-step-${stateKey}-${nextIdx}`);
-  if (el) { el.style.display = ''; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  if (el) { el.style.display = ''; el.classList.add('nv-scan-in'); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   state.idx = nextIdx;
   if (nextIdx >= totalSteps - 1) {
     const controls = document.getElementById(`hs-controls-${stateKey}`);

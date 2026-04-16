@@ -1031,7 +1031,9 @@ function wPick(arr) {
 function _rp(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 // ── CAPTURE CHANCE FORMULA ──
-function calcCaptureChance(name, animal, huntState) {
+// CALIBRATION: state-penalty coefficients tuned against 100-season baseline.
+// Do not modify without re-running the balance test (see docs/superpowers/plans/2026-04-16-wawanakwa-gone-wild-hunt-encounters.md Task 11).
+function calcCaptureChance(name, animal, huntState, round = 0) {
   const s = pStats(name);
   const tierBase = { easy: 0.35, medium: 0.20, hard: 0.10, extreme: 0.05 };
   let chance = tierBase[animal.tier];
@@ -1047,8 +1049,26 @@ function calcCaptureChance(name, animal, huntState) {
   if (ps.tranqDarted) chance -= 0.25;
   if (ps.attemptsMade > 0) chance += 0.04 * ps.attemptsMade;
   if (ps.allianceHelp) chance += 0.10;
-  chance += (Math.random() * 0.12) - 0.06;
 
+  // Spec 1: hunter state modifiers
+  if (ps.stamina < 20) chance -= 0.10;
+  else if (ps.stamina < 40) chance -= 0.05;
+  if (ps.morale >= 75) chance += 0.05;
+  else if (ps.morale < 20) chance -= 0.05;
+  if (ps.supplies === 0) chance -= 0.08;
+
+  // Consumed-once per-attempt modifiers from animal reactions
+  chance -= (ps._nextAttemptMalus || 0);
+  chance -= (ps._escapedMalus || 0);
+  ps._nextAttemptMalus = 0;
+  ps._escapedMalus = 0;
+
+  // Zone-wide threat from 'summon' (expires by round)
+  if (huntState._summonMalus && round <= huntState._summonMalus.expiresRound) {
+    chance -= huntState._summonMalus.amount;
+  }
+
+  chance += (Math.random() * 0.12) - 0.06;
   return Math.max(0.05, Math.min(0.90, chance));
 }
 
@@ -1297,6 +1317,233 @@ function _fireTranqChaos(shooter, activePlayers, huntState, ep) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// HUNT ENCOUNTER HELPERS (Spec 1)
+// ══════════════════════════════════════════════════════════════
+
+function _rand(lo, hi) {
+  return lo + Math.random() * (hi - lo);
+}
+
+function _staminaPenalty(stamina) {
+  if (stamina >= 50) return 0;
+  if (stamina >= 20) return 3;
+  return 6;
+}
+
+function _moralePenalty(morale) {
+  if (morale >= 40) return 0;
+  if (morale >= 20) return 2;
+  return 4;
+}
+
+function _applyStateChanges(ps, name, round, timeline, delta) {
+  const thresholds = [];
+  if (delta.stamina) {
+    const before = ps.stamina;
+    ps.stamina = Math.max(0, Math.min(100, before + delta.stamina));
+    if (before >= 40 && ps.stamina < 40) thresholds.push({ stat: 'stamina', from: before, to: ps.stamina, flavor: 'exhausted', text: `${name} slows to a walk, chest heaving.` });
+    if (before > 0 && ps.stamina === 0) thresholds.push({ stat: 'stamina', from: before, to: 0, flavor: 'broken', text: `${name} collapses. Done for the day.` });
+  }
+  if (delta.morale) {
+    const before = ps.morale;
+    ps.morale = Math.max(0, Math.min(100, before + delta.morale));
+    if (before < 75 && ps.morale >= 75) thresholds.push({ stat: 'morale', from: before, to: ps.morale, flavor: 'rallied', text: `${name} locks in. This one's going to work.` });
+    if (before >= 20 && ps.morale < 20) thresholds.push({ stat: 'morale', from: before, to: ps.morale, flavor: 'broken', text: `${name} looks wrecked. Whatever confidence ${name} had this morning — gone.` });
+  }
+  if (delta.supplies) {
+    const before = ps.supplies;
+    ps.supplies = Math.max(0, Math.min(3, before + delta.supplies));
+    if (before > 0 && ps.supplies === 0) thresholds.push({ stat: 'supplies', from: before, to: 0, flavor: 'tapped', text: `${name} checks their pockets. Nothing left. Barehanded from here.` });
+  }
+  thresholds.forEach(t => {
+    timeline.push({ type: 'stateChange', player: name, round, ...t });
+  });
+}
+
+const _TIER_BEHAVIOR_POOL = {
+  easy:    ['flee', 'freeze'],
+  medium:  ['flee', 'freeze', 'call', 'feint'],
+  hard:    ['flee', 'feint', 'counter', 'escape'],
+  extreme: ['feint', 'counter', 'escape', 'stalk', 'summon'],
+};
+
+function _pickBehavior(animal) {
+  const pool = _TIER_BEHAVIOR_POOL[animal.tier] || [];
+  const available = pool.filter(b => animal.behaviors?.[b]?.length);
+  if (!available.length) return null;
+  return available[Math.floor(Math.random() * available.length)];
+}
+
+function _behaviorText(animal, behavior, name, pr) {
+  const lines = animal.behaviors?.[behavior] || [];
+  if (!lines.length) return `${name}'s ${animal.name.toLowerCase()} reacts.`;
+  return _rp(lines)(name, pr);
+}
+
+function _buildAnimalReaction(animal, behavior, name, round, huntState, pr) {
+  const evt = {
+    type: 'animalReaction',
+    player: name,
+    round,
+    animal: animal.name,
+    animalTier: animal.tier,
+    behavior,
+    text: _behaviorText(animal, behavior, name, pr),
+  };
+  if (behavior === 'counter') evt.staminaLoss = 15;
+  if (behavior === 'freeze') evt.bonusBeat = true;
+  if (behavior === 'call') {
+    const others = Object.keys(huntState.players).filter(p => p !== name && !huntState.players[p].captured);
+    if (others.length) {
+      evt.affectedPlayer = others[Math.floor(Math.random() * others.length)];
+    }
+  }
+  return evt;
+}
+
+function _buildHuntBeat(name, round, animal, beat, outcome, text, extra = {}) {
+  return {
+    type: 'huntBeat',
+    player: name,
+    round,
+    animal: animal.name,
+    animalTier: animal.tier,
+    beat,
+    outcome,
+    text,
+    ...extra,
+  };
+}
+
+// ══════════════════════════════════════════════════════════════
+// HUNT ENCOUNTER (core per-attempt loop)
+// ══════════════════════════════════════════════════════════════
+function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
+  const ps = huntState.players[name];
+  const animal = ps.animal;
+  const s = pStats(name);
+  const pr = pronouns(name);
+
+  ps.attemptsMade++;
+
+  if (ps.stamina === 0) {
+    timeline.push(_buildHuntBeat(name, round, animal, 'approach', 'abort',
+      `${name} can barely stand. The hunt continues without ${pr.obj}.`));
+    timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} is too exhausted to attempt.` });
+    return;
+  }
+
+  // ── BEAT 1: APPROACH ──
+  if (ps._feintedLastRound) {
+    ps._feintedLastRound = false;
+    timeline.push(_buildHuntBeat(name, round, animal, 'approach', 'pass',
+      `${name} is still shaking off the last feint. ${pr.Sub} ${pr.sub==='they'?'push':'pushes'} forward anyway.`));
+  } else {
+    const approachRoll = s.intuition + s.mental + _rand(-3, 3);
+    const approachDiff = (animal.approachDifficulty || 10) + _staminaPenalty(ps.stamina);
+    if (approachRoll < approachDiff) {
+      timeline.push(_buildHuntBeat(name, round, animal, 'approach', 'abort',
+        _rp(animal.approach || [() => `${name} loses the trail.`])(name, pr)));
+      if (Math.random() < 0.50) {
+        const behavior = animal.behaviors?.flee?.length ? 'flee' : _pickBehavior(animal);
+        if (behavior) timeline.push(_buildAnimalReaction(animal, behavior, name, round, huntState, pr));
+      }
+      _applyStateChanges(ps, name, round, timeline, { stamina: -5, morale: -5 });
+      timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} lost the trail before getting close.` });
+      return;
+    }
+    timeline.push(_buildHuntBeat(name, round, animal, 'approach', 'pass',
+      _rp(animal.approach || [() => `${name} closes in.`])(name, pr)));
+  }
+
+  // ── BEAT 2: ENGAGEMENT ──
+  const engagementRoll = s.physical + s.boldness + Math.floor((ps.gear?.captureBonus || 0) * 10) + _rand(-3, 3);
+  let engagementDiff = (animal.engagementDifficulty || 12) + _moralePenalty(ps.morale);
+  if (ps.supplies === 0) engagementDiff += 3;
+  _applyStateChanges(ps, name, round, timeline, { stamina: -10, supplies: ps.supplies > 0 ? -1 : 0 });
+
+  let bonusBeat = false;
+  if (engagementRoll < engagementDiff) {
+    timeline.push(_buildHuntBeat(name, round, animal, 'engagement', 'fail',
+      _rp(animal.engagementFail || [() => `${name} misses the window.`])(name, pr)));
+
+    if (Math.random() < (animal.reactionChance || 0.5)) {
+      const behavior = _pickBehavior(animal);
+      if (behavior) {
+        const reactionEvt = _buildAnimalReaction(animal, behavior, name, round, huntState, pr);
+        timeline.push(reactionEvt);
+        if (behavior === 'freeze') { bonusBeat = true; _applyStateChanges(ps, name, round, timeline, { stamina: +10 }); }
+        if (behavior === 'counter') _applyStateChanges(ps, name, round, timeline, { stamina: -15 });
+        if (behavior === 'call' && reactionEvt.affectedPlayer) {
+          huntState.players[reactionEvt.affectedPlayer]._nextAttemptMalus = 0.05;
+        }
+        if (behavior === 'escape') ps._escapedMalus = 0.05;
+        if (behavior === 'feint') ps._feintedLastRound = true;
+        if (behavior === 'summon') huntState._summonMalus = { expiresRound: round + 1, amount: 0.03 };
+      }
+    }
+
+    if (!bonusBeat) {
+      _applyStateChanges(ps, name, round, timeline, { morale: -15 });
+      timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} couldn't close the deal.` });
+      return;
+    }
+  } else {
+    timeline.push(_buildHuntBeat(name, round, animal, 'engagement', 'pass',
+      _rp(animal.engagementSuccess || [() => `${name} gets within striking distance.`])(name, pr)));
+  }
+
+  // ── STALK PRE-RESOLUTION (extreme only) ──
+  if (animal.tier === 'extreme' && Math.random() < 0.25 && animal.behaviors?.stalk?.length) {
+    const stalkEvt = _buildAnimalReaction(animal, 'stalk', name, round, huntState, pr);
+    timeline.push(stalkEvt);
+    if (Math.random() < 0.40) {
+      _applyStateChanges(ps, name, round, timeline, { stamina: -25, morale: -20 });
+      timeline.push(_buildHuntBeat(name, round, animal, 'resolution', 'fail',
+        `${name} freezes. The ${animal.name.toLowerCase()} circles once and vanishes. ${name} has nothing.`));
+      timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} couldn't finish the hunt.` });
+      return;
+    }
+  }
+
+  // ── BEAT 3: RESOLUTION ──
+  let chance = calcCaptureChance(name, animal, huntState, round);
+  if (bonusBeat) chance += 0.05;
+  ps.personalScore += chance * 10;
+
+  const roll = Math.random();
+  if (roll < chance) {
+    ps.captured = true;
+    ps.captureRound = round;
+    huntState.captureOrder.push(name);
+    const successText = _rp(animal.attemptSuccess)(name, pr);
+    timeline.push(_buildHuntBeat(name, round, animal, 'resolution', 'pass', successText, { captured: true }));
+    timeline.push({ type: 'huntAttempt', player: name, round, success: true, animal: animal.name, text: successText });
+    _applyStateChanges(ps, name, round, timeline, { morale: +15 });
+    if (animal.tier === 'extreme') popDelta(name, 2);
+    else if (animal.tier === 'hard') popDelta(name, 1);
+    else if (huntState.captureOrder.length === 1) popDelta(name, 1);
+    if (huntState.captureOrder.length === 1) badges[name] = 'wildHuntFirst';
+  } else {
+    const mishapChance = calcMishapChance(name, animal);
+    if (Math.random() < mishapChance && animal.mishap?.length) {
+      const mishapText = _rp(animal.mishap)(name, pr);
+      ps.mishaps.push(mishapText);
+      ps.personalScore -= 2;
+      timeline.push(_buildHuntBeat(name, round, animal, 'resolution', 'fail', mishapText, { mishap: true }));
+      timeline.push({ type: 'huntMishap', player: name, round, animal: animal.name, text: mishapText });
+      _applyStateChanges(ps, name, round, timeline, { stamina: -20, morale: -20 });
+      if (animal.tier === 'extreme' || animal.tier === 'hard') popDelta(name, -1);
+    } else {
+      const failText = _rp(animal.attemptFail)(name, pr);
+      timeline.push(_buildHuntBeat(name, round, animal, 'resolution', 'fail', failText));
+      timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: failText });
+      _applyStateChanges(ps, name, round, timeline, { morale: -15 });
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
 // SIMULATE
 // ══════════════════════════════════════════════════════════════
 export function simulateWawanakwaGoneWild(ep) {
@@ -1389,6 +1636,13 @@ export function simulateWawanakwaGoneWild(ep) {
       allianceHelp: false,
       mishaps: [],
       personalScore: 0,
+      // Hunt-encounter state (Spec 1)
+      stamina: 100,
+      morale: 50,
+      supplies: 3,
+      _nextAttemptMalus: 0,
+      _feintedLastRound: false,
+      _escapedMalus: 0,
     };
   });
 
@@ -1428,42 +1682,9 @@ export function simulateWawanakwaGoneWild(ep) {
       }
     }
 
-    // --- Each uncaptured player makes one attempt ---
+    // --- Each uncaptured player makes one attempt (multi-beat encounter) ---
     uncaptured.forEach(name => {
-      const ps = huntState.players[name];
-      const animal = ps.animal;
-      const pr = pronouns(name);
-
-      const chance = calcCaptureChance(name, animal, huntState);
-      const roll = Math.random();
-      ps.attemptsMade++;
-      ps.personalScore += chance * 10;
-
-      if (roll < chance) {
-        ps.captured = true;
-        ps.captureRound = round;
-        huntState.captureOrder.push(name);
-        const successText = _rp(animal.attemptSuccess)(name, pr);
-        timeline.push({ type: 'huntAttempt', player: name, round, success: true, animal: animal.name, text: successText });
-
-        if (animal.tier === 'extreme') popDelta(name, 2);
-        else if (animal.tier === 'hard') popDelta(name, 1);
-        else if (huntState.captureOrder.length === 1) popDelta(name, 1);
-
-        if (huntState.captureOrder.length === 1) badges[name] = 'wildHuntFirst';
-      } else {
-        const mishapChance = calcMishapChance(name, animal);
-        if (Math.random() < mishapChance && animal.mishap?.length) {
-          const mishapText = _rp(animal.mishap)(name, pr);
-          ps.mishaps.push(mishapText);
-          ps.personalScore -= 2;
-          timeline.push({ type: 'huntMishap', player: name, round, animal: animal.name, text: mishapText });
-          if (animal.tier === 'extreme' || animal.tier === 'hard') popDelta(name, -1);
-        } else {
-          const failText = _rp(animal.attemptFail)(name, pr);
-          timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: failText });
-        }
-      }
+      _runHuntEncounter(name, round, huntState, ep, timeline, badges);
     });
   }
 
@@ -1551,6 +1772,7 @@ export function simulateWawanakwaGoneWild(ep) {
       captured: ps.captured, captureRound: ps.captureRound, attemptsMade: ps.attemptsMade,
       personalScore: ps.personalScore, helpedBy: ps.helpedBy, sabotagedBy: ps.sabotagedBy,
       tranqDarted: ps.tranqDarted, mishapCount: ps.mishaps.length,
+      finalStamina: ps.stamina, finalMorale: ps.morale, finalSupplies: ps.supplies,
     }])),
     badges,
   };
@@ -2110,7 +2332,7 @@ export function rpBuildWawanakwaGoneWild(ep) {
     let huntingDelta = 0, capturedDelta = 0, failedDelta = 0, cameraShake = false;
 
     // Insert round separator tannoy with live census
-    if (evt.round !== undefined && evt.round !== lastRound && (evt.type === 'huntAttempt' || evt.type === 'huntMishap' || evt.type === 'huntFail')) {
+    if (evt.round !== undefined && evt.round !== lastRound && (evt.type === 'huntAttempt' || evt.type === 'huntMishap' || evt.type === 'huntFail' || evt.type === 'huntBeat')) {
       const label = evt.round <= 3 ? `ROUND ${evt.round + 1}` : 'FINAL ROUND — LAST CHANCE';
       // Count captures/still hunting up to this point
       let capturedSoFar = 0;
@@ -2176,6 +2398,18 @@ export function rpBuildWawanakwaGoneWild(ep) {
     html += `<div style="color:#8b7750">🎒 ${r.gear}</div>`;
     html += `<div>${statusIcon} ${r.captured ? `R${r.captureRound + 1}` : 'FAILED'} · ${r.attemptsMade} tries</div>`;
     html += `<div class="ww-progress-bar"><div class="ww-progress-fill" style="--target-width:${fillPct}%;background:${fillColor}"></div></div>`;
+    // State bars (Spec 1)
+    const stam = typeof r.finalStamina === 'number' ? r.finalStamina : 100;
+    const mor = typeof r.finalMorale === 'number' ? r.finalMorale : 50;
+    const sup = typeof r.finalSupplies === 'number' ? r.finalSupplies : 3;
+    const stamColor = stam >= 50 ? '#6a9f3a' : stam >= 20 ? '#c8a84e' : '#c33';
+    const morColor = mor >= 60 ? '#6a9f3a' : mor >= 30 ? '#c8a84e' : '#c33';
+    const supColor = sup >= 2 ? '#6a9f3a' : sup === 1 ? '#c8a84e' : '#c33';
+    html += `<div style="display:grid;grid-template-columns:auto 1fr auto;gap:3px 6px;align-items:center;font-size:8px;color:#8b7750;margin-top:3px;font-family:'Courier New',monospace">`;
+    html += `<span>💪</span><div class="ww-progress-bar" style="height:3px;margin:0"><div class="ww-progress-fill" style="--target-width:${stam}%;background:${stamColor}"></div></div><span style="color:${stamColor};min-width:22px;text-align:right">${stam}</span>`;
+    html += `<span>🔥</span><div class="ww-progress-bar" style="height:3px;margin:0"><div class="ww-progress-fill" style="--target-width:${mor}%;background:${morColor}"></div></div><span style="color:${morColor};min-width:22px;text-align:right">${mor}</span>`;
+    html += `<span>🎒</span><div class="ww-progress-bar" style="height:3px;margin:0"><div class="ww-progress-fill" style="--target-width:${sup * 33.33}%;background:${supColor}"></div></div><span style="color:${supColor};min-width:22px;text-align:right">${sup}/3</span>`;
+    html += `</div>`;
     html += `</div>`;
   });
   html += `</div></details>`;
@@ -2232,6 +2466,58 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
   function wrapTier(tier, inner) {
     if (!tier) return inner;
     return `<div class="ww-tier-bg ww-tier-bg--${tier}">${inner}</div>`;
+  }
+
+  // ── HUNT BEAT (Spec 1 multi-beat encounter) ──
+  if (evt.type === 'huntBeat') {
+    const beatConfig = {
+      approach:   { color: BLUE,   emoji: '👣', label: 'APPROACH' },
+      engagement: { color: ORANGE, emoji: '⚔️', label: 'ENGAGEMENT' },
+      resolution: { color: evt.outcome === 'pass' ? GREEN : RED, emoji: evt.outcome === 'pass' ? '✅' : '❌', label: 'RESOLUTION' },
+    };
+    const cfg = beatConfig[evt.beat] || { color: GREY, emoji: '·', label: (evt.beat || '').toUpperCase() };
+    const outcomeBadge = evt.outcome === 'abort' ? ' · ABORT' : evt.outcome === 'fail' ? ' · FAIL' : '';
+    let h = `<div class="ww-card" style="--ww-accent:${cfg.color};padding:8px 12px;margin-bottom:3px">`;
+    h += `<div class="ww-card-label" style="font-size:8px">${cfg.emoji} ${cfg.label}${outcomeBadge} · ${(evt.animal || '').toUpperCase()}</div>`;
+    h += `<div style="display:flex;align-items:center;gap:6px;margin-top:2px">`;
+    if (evt.player) h += rpPortrait(evt.player, 'xs');
+    h += `<div class="ww-card-body" style="font-size:11px;line-height:1.45">${evt.text || ''}</div>`;
+    h += `</div>`;
+    if (evt.captured) h += `<div style="margin-top:4px"><span class="ww-stamp" style="color:${GREEN};font-size:10px;padding:2px 6px">CAPTURED!</span></div>`;
+    if (evt.mishap) h += `<div style="margin-top:4px"><span class="ww-stamp" style="color:${RED};font-size:10px;padding:2px 6px">MISHAP</span></div>`;
+    h += `</div>`;
+    return h;
+  }
+
+  // ── ANIMAL REACTION ──
+  if (evt.type === 'animalReaction') {
+    const behaviorConfig = {
+      flee:    { color: GREY,   emoji: '💨', label: 'FLEES' },
+      freeze:  { color: BLUE,   emoji: '🧊', label: 'FREEZES' },
+      call:    { color: ORANGE, emoji: '📢', label: 'CALLS FOR BACKUP' },
+      feint:   { color: PURPLE, emoji: '🎭', label: 'FEINTS' },
+      counter: { color: RED,    emoji: '💥', label: 'COUNTER-ATTACK' },
+      escape:  { color: ORANGE, emoji: '🏃', label: 'ESCAPES TO HARDER TERRAIN' },
+      stalk:   { color: RED,    emoji: '👁️', label: 'STALKS THE HUNTER' },
+      summon:  { color: PURPLE, emoji: '🐾', label: 'SUMMONS PACK' },
+    };
+    const cfg = behaviorConfig[evt.behavior] || { color: GREY, emoji: '·', label: (evt.behavior || '').toUpperCase() };
+    let h = `<div class="ww-card" style="--ww-accent:${cfg.color};padding:8px 12px;margin-bottom:3px;margin-left:16px">`;
+    h += `<div class="ww-card-label" style="font-size:8px">${cfg.emoji} ${(evt.animal || '').toUpperCase()} ${cfg.label}</div>`;
+    h += `<div class="ww-card-body" style="font-size:11px;line-height:1.45;font-style:italic">${evt.text || ''}</div>`;
+    if (evt.affectedPlayer) h += `<div class="ww-card-footer">Also affects: ${evt.affectedPlayer}</div>`;
+    h += `</div>`;
+    return h;
+  }
+
+  // ── STATE CHANGE (threshold callout) ──
+  if (evt.type === 'stateChange') {
+    const flavorColor = { exhausted: ORANGE, broken: RED, rallied: GREEN, restocked: GREEN, tapped: GREY }[evt.flavor] || GREY;
+    const statEmoji = { stamina: '💪', morale: '🔥', supplies: '🎒' }[evt.stat] || '·';
+    let h = `<div style="display:flex;align-items:center;gap:6px;padding:4px 12px;margin:2px 0 4px 32px;font-size:10px;color:${flavorColor};font-style:italic;font-family:'Courier New',monospace;letter-spacing:0.5px">`;
+    h += `${statEmoji} ${evt.text || ''}`;
+    h += `</div>`;
+    return h;
   }
 
   // ── ANIMAL DRAW: slot reel ──

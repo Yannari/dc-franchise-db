@@ -1662,7 +1662,7 @@ export function rpBuildOffTheChain(ep) {
     }
   });
 
-  let debriefHtml = `<div class="mx-sector">WRECKAGE REPORT — FINAL STATUS</div>`;
+  let debriefHtml = '';
   debriefHtml += `<div class="mx-evidence-board" id="mx-evidence-${stateKey}" data-sabotage-pairs='${JSON.stringify(sabotagePairs).replace(/'/g, "&#39;")}'>
     <svg class="mx-evidence-svg" id="mx-evidence-svg-${stateKey}"></svg>
     <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center">`;
@@ -1761,13 +1761,10 @@ export function _mxReveal(stateKey, totalSteps) {
     setTimeout(() => rpmNeedle.classList.remove('mx-rpm-rev'), 850);
   }
   if (el?.dataset.cameraShake === '1') {
-    const page = el.closest('.mx-page');
-    if (page) {
-      page.classList.remove('mx-camera-shake');
-      void page.offsetWidth;
-      page.classList.add('mx-camera-shake');
-      setTimeout(() => page.classList.remove('mx-camera-shake'), 450);
-    }
+    el.classList.remove('mx-camera-shake');
+    void el.offsetWidth;
+    el.classList.add('mx-camera-shake');
+    setTimeout(() => el.classList.remove('mx-camera-shake'), 450);
   }
   if (el?.dataset.tickerLine) {
     const tickerInner = document.getElementById(`mx-ticker-inner-${stateKey}`);

@@ -1024,6 +1024,30 @@ export function simulateHideAndBeSneaky(ep) {
   });
   ep.chalPlacements = Object.entries(ep.chalMemberScores).sort(([,a],[,b]) => b - a).map(([n]) => n);
 
+  // Cold open hook — pick most dramatic moment
+  let coldOpen = null;
+  const escapeWinner = escaped.find(e => typeof e.round === 'number');
+  if (escapeWinner) {
+    coldOpen = { type: 'escape', text: 'One player makes a desperate dash for home base — will they make it?', player: escapeWinner.name };
+  } else if (phase5?.winner) {
+    const flashBeat = (phase5.beats[phase5.winner] || []).find(b => b.win && ['combat', 'window', 'last-stand', 'stalker-combat'].includes(b.id));
+    if (flashBeat) coldOpen = { type: 'showdown', text: 'In a moment no one saw coming...', player: phase5.winner };
+  }
+  if (!coldOpen && betrayals.some(b => b.targetFound)) {
+    const b = betrayals.find(b => b.targetFound);
+    coldOpen = { type: 'betrayal', text: 'Trust is about to be shattered on Wawanakwa Island...', player: b.betrayer };
+  }
+  if (!coldOpen && Object.values(badges).includes('hideSeekFlush')) {
+    const p = Object.entries(badges).find(([,v]) => v === 'hideSeekFlush')?.[0];
+    if (p) coldOpen = { type: 'embarrassing', text: 'Things are about to get ugly for one camper...', player: p };
+  }
+  if (!coldOpen && immunityWinners.length === 1 && !phase5) {
+    coldOpen = { type: 'lastStanding', text: 'While everyone else falls, one player refuses to be found...', player: immunityWinners[0] };
+  }
+  if (!coldOpen && stalkerArc) {
+    coldOpen = { type: 'stalker', text: 'One player has a plan so crazy it just might work...', player: stalkerArc.player };
+  }
+
   ep.hideAndBeSneaky = {
     phase1,
     phase2,
@@ -1038,6 +1062,7 @@ export function simulateHideAndBeSneaky(ep) {
     hidingQuality,
     activePlayers,
     showmanceMoments,
+    coldOpen,
   };
 }
 
@@ -1047,6 +1072,11 @@ export function simulateHideAndBeSneaky(ep) {
 export function _textHideAndBeSneaky(ep, ln, sec) {
   if (!ep.isHideAndBeSneaky || !ep.hideAndBeSneaky) return;
   const hs = ep.hideAndBeSneaky;
+
+  if (hs.coldOpen) {
+    sec('COLD OPEN');
+    ln(hs.coldOpen.text);
+  }
 
   sec('HIDE AND BE SNEAKY');
   ln(`${hs.activePlayers.length} players scattered across Wawanakwa Island as Chef Hatchet loaded his water cannon.`);
@@ -1172,6 +1202,15 @@ export function rpBuildHideAndBeSneaky(ep) {
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
 
   const steps = [];
+
+  if (hs.coldOpen) {
+    steps.push({ type: 'cold-open', html: `
+      <div class="nv-card" style="text-align:center;border-color:rgba(255,215,0,0.2);background:rgba(0,0,0,0.5);padding:20px">
+        <div style="font-size:10px;color:#8b949e;letter-spacing:3px;margin-bottom:8px">PREVIOUSLY ON TOTAL DRAMA...</div>
+        ${rpPortrait(hs.coldOpen.player, 'sm')}
+        <div style="font-size:14px;color:#ffd700;font-style:italic;margin-top:8px">${hs.coldOpen.text}</div>
+      </div>` });
+  }
 
   // Mission Briefing
   steps.push({

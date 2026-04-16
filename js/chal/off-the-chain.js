@@ -1599,13 +1599,36 @@ export function rpBuildOffTheChain(ep) {
   // ── BUILD FINAL HTML ──
   const state = _tvState[stateKey];
   const initialRacing = br.activePlayers.length;
+
+  // Build ticker content: flatten all Chris quip pools, shuffle, join
+  const tickerLines = [];
+  Object.values(CHRIS_BIKE_QUIPS || {}).forEach(v => {
+    if (Array.isArray(v)) tickerLines.push(...v);
+    else if (typeof v === 'string') tickerLines.push(v);
+  });
+  for (let i = tickerLines.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [tickerLines[i], tickerLines[j]] = [tickerLines[j], tickerLines[i]];
+  }
+  const tickerText = tickerLines.slice(0, 20).join('  •  ');
+  const tickerDoubled = tickerText + '  •  ' + tickerText;
+
   let html = `<style>${MX_STYLES}</style><div class="mx-page rp-page">
     <div class="mx-header"><div class="mx-header-inner">
       <span style="font-size:10px;letter-spacing:2px;color:#ff6b00">🏁 RACE FEED</span>
       <span style="margin-left:auto;font-size:10px;color:#ff6b00;opacity:0.5">EP ${ep.num}</span>
     </div></div>`;
 
-  html += `<div style="display:flex;gap:16px;justify-content:center;font-size:12px;font-weight:700;letter-spacing:1px;position:sticky;top:0;z-index:3;padding:8px;margin-bottom:12px;background:#1a1008">
+  // Ticker strip
+  html += `<div class="mx-ticker"><div class="mx-ticker-inner" id="mx-ticker-inner-${stateKey}">${tickerDoubled}</div></div>`;
+
+  // Sticky status bar with RPM gauge
+  html += `<div style="display:flex;gap:16px;align-items:center;justify-content:center;font-size:12px;font-weight:700;letter-spacing:1px;position:sticky;top:0;z-index:3;padding:8px;margin-bottom:12px;background:#1a1008">
+    <div class="mx-rpm" title="RPM">
+      <div class="mx-rpm-dial"></div>
+      <div class="mx-rpm-needle" id="mx-rpm-needle-${stateKey}"></div>
+      <div class="mx-rpm-label">RPM</div>
+    </div>
     <span style="color:#ff6b00">RACING: <span id="mx-racing-${stateKey}" data-initial="${initialRacing}" style="color:#ff6b00">${initialRacing}</span></span>
     <span style="color:#ff3333">WRECKED: <span id="mx-wrecked-${stateKey}" style="color:#ff3333">0</span></span>
     <span style="color:#ffd700">FINISHED: <span id="mx-finished-${stateKey}" style="color:#ffd700">0</span></span>

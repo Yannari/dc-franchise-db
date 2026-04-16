@@ -53,6 +53,78 @@ const OBSTACLE_EVENTS = [
   { id:'spectacular-wipeout', weight:0.4 },
 ];
 
+// ── PER-RIDER OBSTACLE NARRATIVE BEATS ──
+const MINE_BEATS = {
+  clean: [
+    (p, pr) => `${p} weaved through the minefield like a pro — not a scratch!`,
+    (p, pr) => `${p} read the terrain perfectly, dodging every mine.`,
+    (p, pr) => `${pr.Sub} zigzagged through the mines without breaking a sweat.`,
+  ],
+  clipped: [
+    (p, pr) => `${p} clipped a mine — BANG! The bike rattled but held together.`,
+    (p, pr) => `A mine detonated near ${pr.posAdj} back wheel — ${p} swerved but took a hit.`,
+    (p, pr) => `${p} didn't see that last mine. The explosion rocked ${pr.posAdj} bike.`,
+    (p, pr) => `Shrapnel from a mine pinged off ${pr.posAdj} frame!`,
+  ],
+  hit: [
+    (p, pr) => `${p} rode STRAIGHT into a cluster of mines! BOOM BOOM BOOM!`,
+    (p, pr) => `Multiple mines went off under ${p}. The bike is smoking badly.`,
+    (p, pr) => `${p} couldn't see the mines through the dust — hit THREE of them.`,
+  ],
+};
+
+const OIL_BEATS = {
+  'power-through': [
+    (p, pr) => `${p} powered right through the oil slick — sheer momentum!`,
+    (p, pr) => `${pr.Sub} barely noticed the oil. Just plowed through.`,
+    (p, pr) => `${p} leaned into the slick and kept ${pr.posAdj} balance perfectly.`,
+  ],
+  fishtail: [
+    (p, pr) => `${p}'s back wheel kicked out on the oil — ${pr.sub} fishtailed wildly before recovering!`,
+    (p, pr) => `${p} hit the oil and the bike went sideways! ${pr.Sub} barely pulled it back.`,
+    (p, pr) => `The oil slick sent ${p} sliding — ${pr.sub} dragged a foot to stabilize.`,
+    (p, pr) => `${p} skidded across the oil, leaving a long streak. The bike groaned.`,
+  ],
+  wipeout: [
+    (p, pr) => `${p} hit the oil and went FLYING. Bike and rider separated mid-air!`,
+    (p, pr) => `WIPEOUT! ${p} slid across the oil slick face-first.`,
+    (p, pr) => `${p}'s tires lost all grip — the bike spun out completely!`,
+  ],
+};
+
+const PIRANHA_BEATS = {
+  clear: [
+    (p, pr) => `${p} hit the ramp and LAUNCHED over the piranha pool — perfect landing!`,
+    (p, pr) => `${pr.Sub} cleared the piranhas with room to spare. The crowd went wild.`,
+    (p, pr) => `${p} flew over the snapping piranhas and stuck the landing!`,
+  ],
+  'hard-landing': [
+    (p, pr) => `${p} cleared the pool but landed HARD — the bike buckled under the impact.`,
+    (p, pr) => `${pr.Sub} barely made it across! The back wheel dipped into the water.`,
+    (p, pr) => `${p} cleared the piranhas but the landing cracked something in the frame.`,
+    (p, pr) => `The jump was ugly but ${p} made it — piranhas snapping at ${pr.posAdj} tires.`,
+  ],
+  'piranha-splash': [
+    (p, pr) => `${p} didn't get enough speed — SPLASH! Right into the piranha pool!`,
+    (p, pr) => `The bike couldn't clear the jump. ${p} and the bike plunged into piranha-infested water!`,
+    (p, pr) => `NOT ENOUGH AIR! ${p} belly-flopped into the piranha pool!`,
+  ],
+};
+
+// ── INTER-RIDER OBSTACLE EVENTS (fire between riders in same obstacle) ──
+const OBSTACLE_INTER_EVENTS = [
+  { id:'neck-and-neck', text: (a, b) => `${a} and ${b} are neck and neck through the obstacle!` },
+  { id:'bike-smoking', text: (p, pr) => `${p}'s bike is trailing thick black smoke — it won't last much longer!` },
+  { id:'crowd-gasp', text: (p, pr) => `The spectators gasped as ${p}'s bike almost gave out mid-obstacle!` },
+  { id:'showmance-cheer', text: (p, partner) => `${partner} screamed from the sidelines: "COME ON ${p.toUpperCase()}!"` },
+  { id:'rivalry-edge', text: (a, b) => `${a} tried to edge ${b} toward the danger zone!` },
+  { id:'chris-play', text: (p, pr) => `"Oh this is gonna be CLOSE!" Chris leaned forward on his ATV.` },
+  { id:'chef-reaction', text: (p, pr) => `Chef Hatchet winced. "That's gonna leave a mark."` },
+  { id:'close-call', text: (p, pr) => `${p} dodged by INCHES — ${pr.posAdj} heart was pounding!` },
+  { id:'momentum', text: (p, pr) => `${p} built up speed and blasted through with pure momentum!` },
+  { id:'wobble', text: (p, pr) => `${p}'s handlebars started shaking — the damage is catching up!` },
+];
+
 // ── CHRIS COMMENTARY ──
 const CHRIS_BIKE_QUIPS = {
   buildJudge: [
@@ -506,7 +578,9 @@ export function simulateOffTheChain(ep) {
     bikeHP[name] -= damage;
     const mineDestroyed = bikeHP[name] <= 0 || (bikeHP[name] < 15 && Math.random() < 0.3);
     if (mineDestroyed) bikeHP[name] = 0;
-    obstacleResults[name].obstacles.push({ id: 'mines', score, damage, timePenalty, outcome, hpAfter: bikeHP[name], destroyed: mineDestroyed });
+    const mineBeats = MINE_BEATS[outcome] || MINE_BEATS.clipped;
+    const mineBeatText = mineBeats[Math.floor(Math.random() * mineBeats.length)](name, pronouns(name));
+    obstacleResults[name].obstacles.push({ id: 'mines', score, damage, timePenalty, outcome, hpAfter: bikeHP[name], destroyed: mineDestroyed, beats: [mineBeatText] });
     obstacleResults[name].totalPenalty += timePenalty;
     if (mineDestroyed) {
       bikeHP[name] = 0;
@@ -519,18 +593,27 @@ export function simulateOffTheChain(ep) {
   });
   stillRacing = stillRacing.filter(p => !destroyed.includes(p));
 
-  // 1-2 mine events
-  if (stillRacing.length >= 2) {
-    const evtTemplate = wPick(OBSTACLE_EVENTS);
-    const worst = [...stillRacing].sort((a, b) => bikeHP[a] - bikeHP[b])[0];
-    const best = [...stillRacing].sort((a, b) => bikeHP[b] - bikeHP[a])[0];
-    if (evtTemplate.id === 'close-call') {
-      obstacleEvents.push({ obstacle: 'mines', text: `${worst} swerved at the last second — a mine exploded inches behind ${pronouns(worst).obj}!`, players: [worst] });
-    } else if (evtTemplate.id === 'bike-smoking') {
-      const lowHP = stillRacing.find(p => bikeHP[p] < 40);
-      if (lowHP) obstacleEvents.push({ obstacle: 'mines', text: `${lowHP}'s bike is trailing smoke — it won't last much longer!`, players: [lowHP] });
-    } else {
-      obstacleEvents.push({ obstacle: 'mines', text: `${best} weaved through the mines like a pro!`, players: [best] });
+  // Inter-events for mines
+  {
+    const interCount = 2 + (Math.random() < 0.4 ? 1 : 0);
+    for (let ie = 0; ie < interCount && stillRacing.length >= 1; ie++) {
+      const pick = OBSTACLE_INTER_EVENTS[Math.floor(Math.random() * OBSTACLE_INTER_EVENTS.length)];
+      const rp = stillRacing[Math.floor(Math.random() * stillRacing.length)];
+      const pr = pronouns(rp);
+      let evtText = '';
+      if ((pick.id === 'neck-and-neck' || pick.id === 'rivalry-edge') && stillRacing.length >= 2) {
+        const other = stillRacing.filter(p => p !== rp)[Math.floor(Math.random() * (stillRacing.length - 1))];
+        evtText = pick.text(rp, other);
+      } else if (pick.id === 'showmance-cheer') {
+        const sh = (gs.showmances || []).find(s => s.phase !== 'broken-up' && s.players.includes(rp));
+        if (sh) { const partner = sh.players.find(p => p !== rp); evtText = pick.text(rp, partner); }
+      } else if ((pick.id === 'bike-smoking' || pick.id === 'wobble') && stillRacing.some(p => bikeHP[p] < 30)) {
+        const lowHP = stillRacing.find(p => bikeHP[p] < 30);
+        evtText = pick.text(lowHP, pronouns(lowHP));
+      } else if (pick.id !== 'neck-and-neck' && pick.id !== 'rivalry-edge' && pick.id !== 'showmance-cheer' && pick.id !== 'bike-smoking' && pick.id !== 'wobble') {
+        evtText = pick.text(rp, pr);
+      }
+      if (evtText) obstacleEvents.push({ obstacle: 'mines', text: evtText, players: [rp] });
     }
   }
 
@@ -546,7 +629,9 @@ export function simulateOffTheChain(ep) {
     bikeHP[name] -= damage;
     const oilDestroyed = bikeHP[name] <= 0 || (bikeHP[name] < 15 && Math.random() < 0.4);
     if (oilDestroyed) bikeHP[name] = 0;
-    obstacleResults[name].obstacles.push({ id: 'oil', score, damage, timePenalty, outcome, hpAfter: bikeHP[name], destroyed: oilDestroyed });
+    const oilBeats = OIL_BEATS[outcome] || OIL_BEATS.fishtail;
+    const oilBeatText = oilBeats[Math.floor(Math.random() * oilBeats.length)](name, pronouns(name));
+    obstacleResults[name].obstacles.push({ id: 'oil', score, damage, timePenalty, outcome, hpAfter: bikeHP[name], destroyed: oilDestroyed, beats: [oilBeatText] });
     obstacleResults[name].totalPenalty += timePenalty;
     if (oilDestroyed) {
       obstacleResults[name].destroyed = true;
@@ -558,17 +643,27 @@ export function simulateOffTheChain(ep) {
   });
   stillRacing = stillRacing.filter(p => !destroyed.includes(p));
 
-  // 1-2 oil events
-  if (stillRacing.length) {
-    const evtTemplate = wPick(OBSTACLE_EVENTS);
-    const target = stillRacing[Math.floor(Math.random() * stillRacing.length)];
-    if (evtTemplate.id === 'clutch-save') {
-      obstacleEvents.push({ obstacle: 'oil', text: `${target} fishtailed wildly but pulled off an incredible recovery!`, players: [target] });
-    } else if (evtTemplate.id === 'spectacular-wipeout') {
-      const wiped = stillRacing.find(p => obstacleResults[p].obstacles.find(o => o.id === 'oil' && o.outcome === 'wipeout'));
-      if (wiped) obstacleEvents.push({ obstacle: 'oil', text: `${wiped} hit the oil slick and went FLYING — bike and rider separated mid-air!`, players: [wiped] });
-    } else {
-      obstacleEvents.push({ obstacle: 'oil', text: `Bikes sliding everywhere on the oil slick — pure chaos!`, players: stillRacing.slice(0, 2) });
+  // Inter-events for oil
+  {
+    const interCount = 2 + (Math.random() < 0.4 ? 1 : 0);
+    for (let ie = 0; ie < interCount && stillRacing.length >= 1; ie++) {
+      const pick = OBSTACLE_INTER_EVENTS[Math.floor(Math.random() * OBSTACLE_INTER_EVENTS.length)];
+      const rp = stillRacing[Math.floor(Math.random() * stillRacing.length)];
+      const pr = pronouns(rp);
+      let evtText = '';
+      if ((pick.id === 'neck-and-neck' || pick.id === 'rivalry-edge') && stillRacing.length >= 2) {
+        const other = stillRacing.filter(p => p !== rp)[Math.floor(Math.random() * (stillRacing.length - 1))];
+        evtText = pick.text(rp, other);
+      } else if (pick.id === 'showmance-cheer') {
+        const sh = (gs.showmances || []).find(s => s.phase !== 'broken-up' && s.players.includes(rp));
+        if (sh) { const partner = sh.players.find(p => p !== rp); evtText = pick.text(rp, partner); }
+      } else if ((pick.id === 'bike-smoking' || pick.id === 'wobble') && stillRacing.some(p => bikeHP[p] < 30)) {
+        const lowHP = stillRacing.find(p => bikeHP[p] < 30);
+        evtText = pick.text(lowHP, pronouns(lowHP));
+      } else if (pick.id !== 'neck-and-neck' && pick.id !== 'rivalry-edge' && pick.id !== 'showmance-cheer' && pick.id !== 'bike-smoking' && pick.id !== 'wobble') {
+        evtText = pick.text(rp, pr);
+      }
+      if (evtText) obstacleEvents.push({ obstacle: 'oil', text: evtText, players: [rp] });
     }
   }
 
@@ -585,7 +680,9 @@ export function simulateOffTheChain(ep) {
     bikeHP[name] -= damage;
     const piranhaDestroyed = bikeHP[name] <= 0;
     if (piranhaDestroyed) bikeHP[name] = 0;
-    obstacleResults[name].obstacles.push({ id: 'piranhas', score, damage, timePenalty, outcome, hpAfter: bikeHP[name], destroyed: piranhaDestroyed });
+    const pirBeats = PIRANHA_BEATS[outcome] || PIRANHA_BEATS['hard-landing'];
+    const pirBeatText = pirBeats[Math.floor(Math.random() * pirBeats.length)](name, pronouns(name));
+    obstacleResults[name].obstacles.push({ id: 'piranhas', score, damage, timePenalty, outcome, hpAfter: bikeHP[name], destroyed: piranhaDestroyed, beats: [pirBeatText] });
     obstacleResults[name].totalPenalty += timePenalty;
     if (piranhaDestroyed) {
       obstacleResults[name].destroyed = true;
@@ -600,14 +697,28 @@ export function simulateOffTheChain(ep) {
   });
   stillRacing = stillRacing.filter(p => !destroyed.includes(p));
 
-  // Piranha events
-  if (destroyed.some(p => obstacleResults[p].obstacles.find(o => o.id === 'piranhas' && o.outcome === 'piranha-splash'))) {
-    const splashed = destroyed.find(p => obstacleResults[p].obstacles.find(o => o.id === 'piranhas' && o.outcome === 'piranha-splash'));
-    if (splashed) obstacleEvents.push({ obstacle: 'piranhas', text: `${splashed} didn't clear the jump — SPLASH! Right into the piranha pool!`, players: [splashed] });
-  }
-  if (stillRacing.length) {
-    const jumper = stillRacing.find(p => obstacleResults[p].obstacles.find(o => o.id === 'piranhas' && o.outcome === 'clear'));
-    if (jumper) obstacleEvents.push({ obstacle: 'piranhas', text: `${jumper} launched over the piranha pool with room to spare!`, players: [jumper] });
+  // Inter-events for piranhas
+  {
+    const interCount = 2 + (Math.random() < 0.4 ? 1 : 0);
+    for (let ie = 0; ie < interCount && stillRacing.length >= 1; ie++) {
+      const pick = OBSTACLE_INTER_EVENTS[Math.floor(Math.random() * OBSTACLE_INTER_EVENTS.length)];
+      const rp = stillRacing[Math.floor(Math.random() * stillRacing.length)];
+      const pr = pronouns(rp);
+      let evtText = '';
+      if ((pick.id === 'neck-and-neck' || pick.id === 'rivalry-edge') && stillRacing.length >= 2) {
+        const other = stillRacing.filter(p => p !== rp)[Math.floor(Math.random() * (stillRacing.length - 1))];
+        evtText = pick.text(rp, other);
+      } else if (pick.id === 'showmance-cheer') {
+        const sh = (gs.showmances || []).find(s => s.phase !== 'broken-up' && s.players.includes(rp));
+        if (sh) { const partner = sh.players.find(p => p !== rp); evtText = pick.text(rp, partner); }
+      } else if ((pick.id === 'bike-smoking' || pick.id === 'wobble') && stillRacing.some(p => bikeHP[p] < 30)) {
+        const lowHP = stillRacing.find(p => bikeHP[p] < 30);
+        evtText = pick.text(lowHP, pronouns(lowHP));
+      } else if (pick.id !== 'neck-and-neck' && pick.id !== 'rivalry-edge' && pick.id !== 'showmance-cheer' && pick.id !== 'bike-smoking' && pick.id !== 'wobble') {
+        evtText = pick.text(rp, pr);
+      }
+      if (evtText) obstacleEvents.push({ obstacle: 'piranhas', text: evtText, players: [rp] });
+    }
   }
 
   // Final ranking of finishers
@@ -1075,27 +1186,32 @@ export function rpBuildOffTheChain(ep) {
     `
   });
 
-  // Per-obstacle, per-racer
+  // Per-obstacle, per-racer with narrative beats interspersed
   const obstacleResults = br.phase3.obstacleResults || {};
   const racers = br.phase3.racers || advancingOwners;
   const maxObstacles = Math.max(...racers.map(n => (obstacleResults[n]?.obstacles || []).length), 0);
-  const emittedObstacleHeaders = new Set();
+  const obstacleNames = ['LAND MINES 💣', 'OIL SLICK 🛢️', 'PIRANHA POOL JUMP 🐟'];
+
   for (let oi = 0; oi < maxObstacles; oi++) {
     // Obstacle header
-    const obsNameSample = racers.find(n => obstacleResults[n]?.obstacles?.[oi])
-      ? (obstacleResults[racers.find(n => obstacleResults[n]?.obstacles?.[oi])].obstacles[oi].name || `Obstacle ${oi + 1}`)
-      : `Obstacle ${oi + 1}`;
-    if (!emittedObstacleHeaders.has(oi)) {
-      emittedObstacleHeaders.add(oi);
-      steps.push({
-        type: 'obstacle-name',
-        html: `<div class="mx-hazard" style="font-size:12px;color:#ffd700;font-weight:700;letter-spacing:2px;text-align:center">⚠ ${obsNameSample.toUpperCase()} ⚠</div>`
-      });
-    }
+    steps.push({
+      type: 'obstacle-name',
+      html: `<div class="mx-hazard" style="font-size:12px;color:#ffd700;font-weight:700;letter-spacing:2px;text-align:center;padding:8px 0">⚠ ${obstacleNames[oi] || 'OBSTACLE ' + (oi + 1)} ⚠</div>`
+    });
 
-    racers.forEach(name => {
+    // Get inter-events for this obstacle
+    const obsIds = ['mines', 'oil', 'piranhas'];
+    const interEvtsForObs = (br.phase3.obstacleEvents || []).filter(e => {
+      return e.obstacle === obsIds[oi] || e.obstacle === 'obstacle';
+    });
+    let interEvtIdx = 0;
+
+    racers.forEach((name, ri) => {
       const data = obstacleResults[name];
       if (!data || !data.obstacles || !data.obstacles[oi]) return;
+      // Skip if already destroyed in a previous obstacle
+      if (oi > 0 && data.obstacles[oi - 1]?.destroyed) return;
+
       const obs = data.obstacles[oi];
       const wasDestroyed = obs.destroyed || false;
       const damage = obs.damage || 0;
@@ -1104,62 +1220,46 @@ export function rpBuildOffTheChain(ep) {
       const hpPct = Math.max(0, Math.round((hpAfter / hpMax) * 100));
       const hpColor = hpPct > 60 ? '#00ff41' : hpPct > 30 ? '#ffd700' : '#ff3333';
 
+      // Narrative beats
+      const beats = obs.beats || [];
+      const beatHtml = beats.map(b => `<div style="font-size:11px;color:#cdd9e5;margin-top:4px;padding-left:10px;border-left:2px solid ${wasDestroyed ? 'rgba(255,51,51,0.3)' : 'rgba(255,107,0,0.2)'}">${b}</div>`).join('');
+
       let cardContent = `
-        <div class="mx-card${wasDestroyed ? ' mx-shake' : ' mx-speed-lines'}" style="display:flex;align-items:center;gap:12px;position:relative;${wasDestroyed ? 'border-color:rgba(255,51,51,0.5);background:rgba(255,51,51,0.08)' : ''}">
+        <div class="mx-card${wasDestroyed ? ' mx-shake' : ' mx-speed-lines'}" style="position:relative;${wasDestroyed ? 'border-color:rgba(255,51,51,0.5);background:rgba(255,51,51,0.08)' : ''}">
           ${wasDestroyed ? '<div class="mx-explosion"></div>' : ''}
-          ${rpPortrait(name, 'sm')}
-          <div style="flex:1">
-            <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}</div>
-            ${damage ? `<div style="font-size:10px;color:#ff3333;margin-top:2px">Damage: -${damage} HP</div>` : '<div style="font-size:10px;color:#00ff41;margin-top:2px">Clean pass!</div>'}
-            ${!wasDestroyed ? `<div style="display:flex;align-items:center;gap:6px;margin-top:3px"><div class="mx-hp-bar" style="flex:1"><div class="mx-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div><span style="font-size:9px;color:${hpColor};font-weight:700;min-width:35px">${hpAfter}/${hpMax}</span></div>` : ''}
+          <div style="display:flex;align-items:center;gap:12px">
+            ${rpPortrait(name, 'sm')}
+            <div style="flex:1">
+              <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}</div>
+              ${damage ? `<div style="font-size:10px;color:#ff3333;margin-top:2px">Damage: -${damage} HP</div>` : '<div style="font-size:10px;color:#00ff41;margin-top:2px">Clean pass!</div>'}
+              ${!wasDestroyed ? `<div style="display:flex;align-items:center;gap:6px;margin-top:3px"><div class="mx-hp-bar" style="flex:1"><div class="mx-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div><span style="font-size:9px;color:${hpColor};font-weight:700;min-width:35px">${hpAfter}/${hpMax}</span></div>` : ''}
+            </div>
+            <span class="mx-status ${wasDestroyed ? 'mx-wrecked' : 'mx-safe'}">${wasDestroyed ? 'DESTROYED' : 'RACING'}</span>
           </div>
-          <span class="mx-status ${wasDestroyed ? 'mx-wrecked' : 'mx-safe'}">${wasDestroyed ? 'DESTROYED' : 'RACING'}</span>
+          ${beatHtml}
         </div>
       `;
+
+      // Chris quip for destruction
+      const destroyQuip = wasDestroyed ? _mxChrisQuip(br.chrisQuips, `destroyed-${name}`) : '';
+
       steps.push({
         type: 'obstacle-result',
         racingDelta: wasDestroyed ? -1 : 0,
         wreckedDelta: wasDestroyed ? 1 : 0,
-        html: cardContent
+        html: cardContent + destroyQuip
       });
+
+      // Inject inter-rider event after every 2-3 riders
+      if ((ri + 1) % 2 === 0 && interEvtIdx < interEvtsForObs.length) {
+        const interEvt = interEvtsForObs[interEvtIdx++];
+        steps.push({
+          type: 'obstacle-inter-event',
+          html: `<div class="mx-card" style="border-color:rgba(255,107,0,0.2);font-size:12px;color:#cdd9e5;font-style:italic;padding:8px 12px">${interEvt.text}</div>`
+        });
+      }
     });
   }
-
-  // Obstacle events interspersed
-  (br.phase3.obstacleEvents || []).forEach(evt => {
-    if (!evt.text) return;
-    const portraits = (evt.players || []).slice(0, 2).map(p => rpPortrait(p, 'sm')).join('');
-    steps.push({
-      type: 'obstacle-event',
-      html: `
-        <div class="mx-card" style="display:flex;align-items:center;gap:10px;border-color:rgba(255,107,0,0.2)">
-          ${portraits}
-          <div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div>
-        </div>
-      `
-    });
-  });
-
-  // Bike destroyed quips
-  (br.phase3.destroyed || []).forEach(name => {
-    const quip = _mxChrisQuip(br.chrisQuips, `destroyed-${name}`) || _mxChrisQuip(br.chrisQuips, 'bikeDestroyed');
-    if (quip) {
-      steps.push({
-        type: 'destruction-quip',
-        html: `
-          <div class="mx-card mx-shake" style="border-color:rgba(255,51,51,0.4);background:rgba(255,51,51,0.06);display:flex;align-items:center;gap:12px;position:relative">
-            <div class="mx-explosion"></div>
-            ${rpPortrait(name, 'sm')}
-            <div style="flex:1">
-              <div style="font-size:13px;color:#ff3333;font-weight:700">${name}'s bike is DESTROYED!</div>
-              ${quip}
-            </div>
-            <span class="mx-status mx-wrecked">WRECKED</span>
-          </div>
-        `
-      });
-    }
-  });
 
   // ── FINISH LINE ──
   steps.push({ type: 'phase-header', html: `<div class="mx-sector" style="font-size:14px;text-align:center;padding:12px 0;border-top:2px solid rgba(255,107,0,0.3)">🏆 THE FINISH LINE</div>` });

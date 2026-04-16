@@ -475,3 +475,285 @@ export function simulateOffTheChain(ep) {
     sortedRiders, cutIndex, finishers, failures,
     advancingOwners, eliminatedOwners,
   };
+
+  // ══ PHASE 3: PART 2 — OBSTACLE GAUNTLET ══
+  const racers = [...advancingOwners]; // these players ride their own bikes
+  const familiarityBonus = 1.5;
+  const obstacleResults = {}; // { playerName: { mines:{}, oil:{}, piranhas:{}, destroyed:bool, finishTime:number } }
+  const destroyed = []; // players whose bikes were destroyed
+  const obstacleEvents = []; // per-obstacle events
+  let stillRacing = [...racers];
+
+  chrisQuips['obstacle-start'] = CHRIS_BIKE_QUIPS.obstacleStart[Math.floor(Math.random() * CHRIS_BIKE_QUIPS.obstacleStart.length)];
+
+  racers.forEach(name => {
+    obstacleResults[name] = { obstacles: [], destroyed: false, totalPenalty: 0, bikeHPStart: bikeHP[name] };
+  });
+
+  // --- Obstacle 1: Land Mines ---
+  const mineEvents = [];
+  stillRacing.forEach(name => {
+    const s = pStats(name);
+    const hpFactor = bikeHP[name] / 100;
+    const score = s.intuition * 0.35 + s.boldness * 0.25 + hpFactor * 0.2 + (Math.random() * 4 - 2) + familiarityBonus;
+    let damage = 0, timePenalty = 0, outcome = '';
+    if (score >= 7) { damage = 0; timePenalty = 0; outcome = 'clean'; }
+    else if (score >= 4) { damage = 10 + Math.floor(Math.random() * 11); timePenalty = 1; outcome = 'clipped'; }
+    else { damage = 25 + Math.floor(Math.random() * 11); timePenalty = 3; outcome = 'hit'; }
+    bikeHP[name] -= damage;
+    obstacleResults[name].obstacles.push({ id: 'mines', score, damage, timePenalty, outcome });
+    obstacleResults[name].totalPenalty += timePenalty;
+    // Catastrophic breakdown check
+    if (bikeHP[name] <= 0 || ((100 - bikeHP[name]) * 0.008 + Math.random() * 0.1 > 0.5 && bikeHP[name] < 50)) {
+      bikeHP[name] = 0;
+      obstacleResults[name].destroyed = true;
+      destroyed.push(name);
+      badges[name] = 'bikeRaceWreck';
+      popDelta(name, -1);
+      chrisQuips[`destroyed-${name}`] = CHRIS_BIKE_QUIPS.bikeDestroyed[Math.floor(Math.random() * CHRIS_BIKE_QUIPS.bikeDestroyed.length)];
+    }
+  });
+  stillRacing = stillRacing.filter(p => !destroyed.includes(p));
+
+  // 1-2 mine events
+  if (stillRacing.length >= 2) {
+    const evtTemplate = wPick(OBSTACLE_EVENTS);
+    const worst = [...stillRacing].sort((a, b) => bikeHP[a] - bikeHP[b])[0];
+    const best = [...stillRacing].sort((a, b) => bikeHP[b] - bikeHP[a])[0];
+    if (evtTemplate.id === 'close-call') {
+      obstacleEvents.push({ obstacle: 'mines', text: `${worst} swerved at the last second — a mine exploded inches behind ${pronouns(worst).obj}!`, players: [worst] });
+    } else if (evtTemplate.id === 'bike-smoking') {
+      const lowHP = stillRacing.find(p => bikeHP[p] < 40);
+      if (lowHP) obstacleEvents.push({ obstacle: 'mines', text: `${lowHP}'s bike is trailing smoke — it won't last much longer!`, players: [lowHP] });
+    } else {
+      obstacleEvents.push({ obstacle: 'mines', text: `${best} weaved through the mines like a pro!`, players: [best] });
+    }
+  }
+
+  // --- Obstacle 2: Oil Slick ---
+  stillRacing.forEach(name => {
+    const s = pStats(name);
+    const hpFactor = bikeHP[name] / 100;
+    const score = s.physical * 0.3 + s.endurance * 0.25 + hpFactor * 0.2 + (Math.random() * 4 - 2) + familiarityBonus;
+    let damage = 0, timePenalty = 0, outcome = '';
+    if (score >= 7) { damage = Math.floor(Math.random() * 6); timePenalty = 0; outcome = 'power-through'; }
+    else if (score >= 4) { damage = 15 + Math.floor(Math.random() * 11); timePenalty = 2; outcome = 'fishtail'; }
+    else { damage = 30 + Math.floor(Math.random() * 11); timePenalty = 4; outcome = 'wipeout'; }
+    bikeHP[name] -= damage;
+    obstacleResults[name].obstacles.push({ id: 'oil', score, damage, timePenalty, outcome });
+    obstacleResults[name].totalPenalty += timePenalty;
+    // Cascading failure: doubled breakdown chance if HP < 40%
+    const breakdownMult = bikeHP[name] < 40 ? 2 : 1;
+    if (bikeHP[name] <= 0 || ((100 - bikeHP[name]) * 0.008 * breakdownMult + Math.random() * 0.1 > 0.5 && bikeHP[name] < 50)) {
+      bikeHP[name] = 0;
+      obstacleResults[name].destroyed = true;
+      destroyed.push(name);
+      badges[name] = 'bikeRaceWreck';
+      popDelta(name, -1);
+      chrisQuips[`destroyed-${name}`] = CHRIS_BIKE_QUIPS.bikeDestroyed[Math.floor(Math.random() * CHRIS_BIKE_QUIPS.bikeDestroyed.length)];
+    }
+  });
+  stillRacing = stillRacing.filter(p => !destroyed.includes(p));
+
+  // 1-2 oil events
+  if (stillRacing.length) {
+    const evtTemplate = wPick(OBSTACLE_EVENTS);
+    const target = stillRacing[Math.floor(Math.random() * stillRacing.length)];
+    if (evtTemplate.id === 'clutch-save') {
+      obstacleEvents.push({ obstacle: 'oil', text: `${target} fishtailed wildly but pulled off an incredible recovery!`, players: [target] });
+    } else if (evtTemplate.id === 'spectacular-wipeout') {
+      const wiped = stillRacing.find(p => obstacleResults[p].obstacles.find(o => o.id === 'oil' && o.outcome === 'wipeout'));
+      if (wiped) obstacleEvents.push({ obstacle: 'oil', text: `${wiped} hit the oil slick and went FLYING — bike and rider separated mid-air!`, players: [wiped] });
+    } else {
+      obstacleEvents.push({ obstacle: 'oil', text: `Bikes sliding everywhere on the oil slick — pure chaos!`, players: stillRacing.slice(0, 2) });
+    }
+  }
+
+  // --- Obstacle 3: Piranha Pool Jump ---
+  stillRacing.forEach(name => {
+    const s = pStats(name);
+    const hpFactor = bikeHP[name] / 100;
+    const weightPenalty = (100 - bikeHP[name]) * 0.02;
+    const score = s.physical * 0.3 + s.boldness * 0.35 + hpFactor * 0.2 + (Math.random() * 4 - 2) + familiarityBonus - weightPenalty;
+    let damage = 0, timePenalty = 0, outcome = '';
+    if (score >= 7) { damage = Math.floor(Math.random() * 6); timePenalty = 0; outcome = 'clear'; }
+    else if (score >= 4) { damage = 15 + Math.floor(Math.random() * 11); timePenalty = 2; outcome = 'hard-landing'; }
+    else { damage = 100; timePenalty = 0; outcome = 'piranha-splash'; } // destroyed
+    bikeHP[name] -= damage;
+    obstacleResults[name].obstacles.push({ id: 'piranhas', score, damage, timePenalty, outcome });
+    obstacleResults[name].totalPenalty += timePenalty;
+    if (bikeHP[name] <= 0) {
+      bikeHP[name] = 0;
+      obstacleResults[name].destroyed = true;
+      destroyed.push(name);
+      badges[name] = 'bikeRaceWreck';
+      popDelta(name, -1);
+      chrisQuips[`destroyed-${name}`] = CHRIS_BIKE_QUIPS.bikeDestroyed[Math.floor(Math.random() * CHRIS_BIKE_QUIPS.bikeDestroyed.length)];
+    } else if (bikeHP[name] < 20 && !destroyed.includes(name)) {
+      badges[name] = badges[name] || 'bikeRaceClutch';
+      popDelta(name, 1);
+    }
+  });
+  stillRacing = stillRacing.filter(p => !destroyed.includes(p));
+
+  // Piranha events
+  if (destroyed.some(p => obstacleResults[p].obstacles.find(o => o.id === 'piranhas' && o.outcome === 'piranha-splash'))) {
+    const splashed = destroyed.find(p => obstacleResults[p].obstacles.find(o => o.id === 'piranhas' && o.outcome === 'piranha-splash'));
+    if (splashed) obstacleEvents.push({ obstacle: 'piranhas', text: `${splashed} didn't clear the jump — SPLASH! Right into the piranha pool!`, players: [splashed] });
+  }
+  if (stillRacing.length) {
+    const jumper = stillRacing.find(p => obstacleResults[p].obstacles.find(o => o.id === 'piranhas' && o.outcome === 'clear'));
+    if (jumper) obstacleEvents.push({ obstacle: 'piranhas', text: `${jumper} launched over the piranha pool with room to spare!`, players: [jumper] });
+  }
+
+  // Final ranking of finishers
+  const finishRanking = [...stillRacing].sort((a, b) => {
+    const aTime = -(pStats(a).physical * 0.2 + pStats(a).endurance * 0.2 + bikeHP[a] * 0.01 - obstacleResults[a].totalPenalty);
+    const bTime = -(pStats(b).physical * 0.2 + pStats(b).endurance * 0.2 + bikeHP[b] * 0.01 - obstacleResults[b].totalPenalty);
+    return aTime - bTime; // lower time = better
+  });
+
+  const immunityWinner = finishRanking[0] || null;
+  const lastPlace = finishRanking.length >= 2 ? finishRanking[finishRanking.length - 1] : null;
+
+  const phase3 = { racers, obstacleResults, destroyed, obstacleEvents, finishRanking, bikeHP: { ...bikeHP } };
+
+  // ══ PHASE 4: ELIMINATION REACTIONS ══
+  let eliminationReaction = null;
+  const eliminatedPlayer = lastPlace; // might be null if <= 1 finisher
+
+  if (eliminatedPlayer) {
+    const elimPr = pronouns(eliminatedPlayer);
+    const beats = [];
+
+    // Check for sabotage betrayal
+    const sabotageEvt = buildEvents.find(e => e.id === 'sabotage' && e.effect?.target === eliminatedPlayer && !e.effect.detected);
+    // Check for BFF betrayal (high bond with someone who hurt them)
+    const highBondBetrayer = activePlayers.find(p => p !== eliminatedPlayer && getBond(eliminatedPlayer, p) >= 6 &&
+      (buildEvents.some(e => e.id === 'sabotage' && e.effect?.saboteur === p && e.effect?.target === eliminatedPlayer) ||
+       (riderAssignments[p] === eliminatedPlayer && failures.includes(p)) // they rode eliminated player's bike badly
+      ));
+    // Check for showmance
+    const showmance = (gs.showmances || []).find(sh => sh.phase !== 'broken-up' && sh.players.includes(eliminatedPlayer) && sh.players.some(p => p !== eliminatedPlayer && activePlayers.includes(p)));
+
+    if (highBondBetrayer) {
+      // BFF Betrayal — Lindsay/Heather moment
+      eliminationReaction = { type: 'bff-betrayal', players: [eliminatedPlayer, highBondBetrayer], beats: [] };
+      const tmpl = REACTION_TEMPLATES;
+      eliminationReaction.beats.push(tmpl.bffExplosion[Math.floor(Math.random() * tmpl.bffExplosion.length)](eliminatedPlayer, highBondBetrayer));
+      eliminationReaction.beats.push(tmpl.bffCallout[Math.floor(Math.random() * tmpl.bffCallout.length)](eliminatedPlayer, highBondBetrayer));
+      eliminationReaction.beats.push(tmpl.crowdCheer[Math.floor(Math.random() * tmpl.crowdCheer.length)](eliminatedPlayer));
+      addBond(eliminatedPlayer, highBondBetrayer, -(getBond(eliminatedPlayer, highBondBetrayer) + 5)); // drop to -5
+      popDelta(eliminatedPlayer, 3);
+      popDelta(highBondBetrayer, -3);
+    } else if (sabotageEvt) {
+      // Sabotage confrontation
+      const saboteur = sabotageEvt.effect.saboteur;
+      eliminationReaction = { type: 'sabotage-confrontation', players: [eliminatedPlayer, saboteur], beats: [] };
+      const tmpl = REACTION_TEMPLATES;
+      eliminationReaction.beats.push(tmpl.betrayalCallout[Math.floor(Math.random() * tmpl.betrayalCallout.length)](eliminatedPlayer, saboteur));
+      if (isVillainArch(saboteur)) {
+        eliminationReaction.beats.push(tmpl.betrayerSmirk[Math.floor(Math.random() * tmpl.betrayerSmirk.length)](saboteur, pronouns(saboteur)));
+      } else {
+        eliminationReaction.beats.push(tmpl.betrayerGuilty[Math.floor(Math.random() * tmpl.betrayerGuilty.length)](saboteur, pronouns(saboteur)));
+      }
+      addBond(eliminatedPlayer, saboteur, -3);
+      popDelta(eliminatedPlayer, 2);
+      popDelta(saboteur, -2);
+    } else if (showmance) {
+      // Showmance heartbreak
+      const partner = showmance.players.find(p => p !== eliminatedPlayer);
+      eliminationReaction = { type: 'showmance-heartbreak', players: [eliminatedPlayer, partner], beats: [] };
+      const tmpl = REACTION_TEMPLATES;
+      eliminationReaction.beats.push(tmpl.showmanceGoodbye[Math.floor(Math.random() * tmpl.showmanceGoodbye.length)](eliminatedPlayer, partner, pronouns(partner)));
+      addBond(eliminatedPlayer, partner, 2);
+    } else {
+      // Graceful exit
+      eliminationReaction = { type: 'graceful-exit', players: [eliminatedPlayer], beats: [] };
+      const tmpl = REACTION_TEMPLATES;
+      eliminationReaction.beats.push(tmpl.gracefulExit[Math.floor(Math.random() * tmpl.gracefulExit.length)](eliminatedPlayer));
+      // Closest ally
+      const closestAlly = activePlayers.filter(p => p !== eliminatedPlayer).sort((a, b) => getBond(eliminatedPlayer, b) - getBond(eliminatedPlayer, a))[0];
+      if (closestAlly) {
+        addBond(eliminatedPlayer, closestAlly, 1);
+        eliminationReaction.beats.push(`${eliminatedPlayer} hugged ${closestAlly}. "I'll miss you the most."`);
+      }
+    }
+  }
+
+  const phase4 = { eliminatedPlayer, eliminationReaction };
+
+  // ══ RESULTS ══
+  if (immunityWinner) {
+    badges[immunityWinner] = 'bikeRaceImmune';
+    popDelta(immunityWinner, 2);
+    chrisQuips['immunity'] = CHRIS_BIKE_QUIPS.immunityWin[Math.floor(Math.random() * CHRIS_BIKE_QUIPS.immunityWin.length)];
+  }
+  if (lastPlace) {
+    badges[lastPlace] = badges[lastPlace] || 'bikeRaceLast';
+    popDelta(lastPlace, -2);
+    chrisQuips['lastPlace'] = CHRIS_BIKE_QUIPS.lastPlace[Math.floor(Math.random() * CHRIS_BIKE_QUIPS.lastPlace.length)];
+  }
+
+  // Set episode fields
+  ep.immunityWinner = immunityWinner;
+  ep.challengeType = 'individual';
+  ep.challengeLabel = "That's Off the Chain!";
+  ep.challengeCategory = 'mixed';
+  ep.challengeDesc = 'Build a bike, swap, race, survive obstacles. First place wins immunity. Last place pays the price.';
+
+  // Sudden death: auto-eliminate last place. Normal: tribal with heat.
+  const isSuddenDeath = ep.isSuddenDeath || (ep.twists || []).some(t => t.type === 'sudden-death');
+  if (isSuddenDeath && lastPlace) {
+    ep.eliminated = lastPlace;
+    ep.tribalPlayers = [];
+  } else {
+    ep.tribalPlayers = activePlayers.filter(p => p !== immunityWinner && p !== gs.exileDuelPlayer);
+    if (lastPlace) {
+      if (!gs._bikeRaceHeat) gs._bikeRaceHeat = {};
+      gs._bikeRaceHeat[lastPlace] = { target: lastPlace, amount: 3.0, expiresEp: (gs.episode || 0) + 4 };
+    }
+    destroyed.forEach(p => {
+      if (!gs._bikeRaceHeat) gs._bikeRaceHeat = {};
+      if (!gs._bikeRaceHeat[p]) gs._bikeRaceHeat[p] = { target: p, amount: 1.5, expiresEp: (gs.episode || 0) + 4 };
+    });
+  }
+
+  // Challenge record
+  if (immunityWinner) updateChalRecord(immunityWinner, 'win');
+  if (lastPlace) updateChalRecord(lastPlace, 'loss');
+
+  // chalMemberScores for debug
+  ep.chalMemberScores = {};
+  activePlayers.forEach(name => {
+    let score = bikeQuality[name] * 0.5;
+    if (advancingOwners.includes(name)) score += 3;
+    if (stillRacing.includes(name)) score += 3;
+    const rank = finishRanking.indexOf(name);
+    if (rank >= 0) score += (finishRanking.length - rank) * 2;
+    if (immunityWinner === name) score += 5;
+    ep.chalMemberScores[name] = score;
+  });
+  ep.chalPlacements = Object.entries(ep.chalMemberScores).sort(([,a],[,b]) => b - a).map(([n]) => n);
+
+  // Badge camp events
+  const campKey = gs.mergeName || 'merge';
+  if (!ep.campEvents) ep.campEvents = {};
+  if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+  const badgeLabels = {
+    bikeRaceImmune: { text: 'Won the Race', cls: 'win' },
+    bikeRaceBuilder: { text: 'Best Bike', cls: 'green' },
+    bikeRaceWreck: { text: 'Bike Destroyed', cls: '' },
+    bikeRaceLast: { text: 'Finished Last', cls: 'bad' },
+    bikeRaceSaboteur: { text: 'Sabotaged a Bike', cls: 'bad' },
+    bikeRaceClutch: { text: 'Survived on Fumes', cls: 'win' },
+  };
+  Object.entries(badges).forEach(([name, badge]) => {
+    const label = badgeLabels[badge];
+    if (label) {
+      ep.campEvents[campKey].post.push({ type: 'bike-race-badge', text: `${name}: ${label.text}`, players: [name], badgeText: label.text, badgeClass: label.cls });
+    }
+  });
+
+  ep.bikeRace = { phase1, phase2, phase3, phase4, badges, chrisQuips, activePlayers, isSuddenDeath };
+}

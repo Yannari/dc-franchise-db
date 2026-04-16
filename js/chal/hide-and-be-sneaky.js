@@ -1,6 +1,6 @@
 // js/chal/hide-and-be-sneaky.js — Hide and Be Sneaky challenge
 import { gs, players } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 
 // ── HIDING SPOT TEMPLATES ──
@@ -323,6 +323,24 @@ export function simulateHideAndBeSneaky(ep) {
     }
   });
 
+  // Showmance challenge moment — partners hiding nearby
+  const showmanceMoments = [];
+  if (gs.showmances?.length) {
+    (gs.showmances || []).forEach(sh => {
+      if (sh.phase === 'broken-up') return;
+      const [a, b] = sh.players;
+      if (!activePlayers.includes(a) || !activePlayers.includes(b)) return;
+      const aPr = pronouns(a);
+      hidingQuality[a] -= 0.5;
+      hidingQuality[b] -= 0.5;
+      addBond(a, b, 1);
+      showmanceMoments.push({
+        type: 'nearby', players: [a, b],
+        text: `${a} and ${b} found hiding spots close to each other. ${aPr.Sub} whispered reassurance to ${b} in the dark — risky, but comforting.`,
+      });
+    });
+  }
+
   const phase1 = {
     spots: { ...spotAssignments },
     initialQuality: { ...hidingQuality },
@@ -500,6 +518,16 @@ export function simulateHideAndBeSneaky(ep) {
             roundBonuses[a] = (roundBonuses[a] || 0) + 0.5;
             roundBonuses[b] = (roundBonuses[b] || 0) + 0.5;
             addBond(a, b, 1);
+            // Romance spark from shared hiding tension
+            if (typeof romanticCompat === 'function' && romanticCompat(a, b)) {
+              if (!(gs.romanticSparks || []).some(s => s.players.includes(a) && s.players.includes(b)) &&
+                  !(gs.showmances || []).some(s => s.players.includes(a) && s.players.includes(b))) {
+                if (!gs.romanticSparks) gs.romanticSparks = [];
+                gs.romanticSparks.push({ players: [a, b], intensity: 1, origin: 'hide-seek' });
+                showmanceMoments.push({ type: 'spark', players: [a, b],
+                  text: `The tension of hiding together sparked something between ${a} and ${b}...` });
+              }
+            }
           } else if (template.id === 'showmance') {
             hidingQuality[a] -= 0.5; hidingQuality[b] -= 0.5;
             roundBonuses[a] = (roundBonuses[a] || 0) - 0.5;
@@ -651,6 +679,19 @@ export function simulateHideAndBeSneaky(ep) {
         chrisQuips[`chef-taunt-${target}`] = CHRIS_QUIPS.chefTaunt[Math.floor(Math.random() * CHRIS_QUIPS.chefTaunt.length)];
       }
       hidden = hidden.filter(h => h !== target);
+
+      // Showmance discovery reaction
+      const shPartner = (gs.showmances || []).find(sh =>
+        sh.phase !== 'broken-up' && sh.players.includes(target) && sh.players.some(p => p !== target && hidden.includes(p))
+      );
+      if (shPartner) {
+        const partner = shPartner.players.find(p => p !== target);
+        hidingQuality[partner] -= 1.0;
+        addBond(partner, target, 1);
+        const pPr = pronouns(partner);
+        showmanceMoments.push({ type: 'reaction', players: [partner, target],
+          text: `${partner} watched helplessly as ${target} got soaked — ${pPr.sub} almost blew ${pPr.posAdj} own cover!` });
+      }
     }
     if (!caughtThisRound.length) {
       chrisQuips[`frustration-${r}`] = CHRIS_QUIPS.chefFrustration[Math.floor(Math.random() * CHRIS_QUIPS.chefFrustration.length)];
@@ -996,6 +1037,7 @@ export function simulateHideAndBeSneaky(ep) {
     spotAssignments,
     hidingQuality,
     activePlayers,
+    showmanceMoments,
   };
 }
 
@@ -1175,6 +1217,19 @@ export function rpBuildHideAndBeSneaky(ep) {
       `
     });
   });
+
+  // Showmance moments from Phase 1
+  if (hs.showmanceMoments?.length) {
+    hs.showmanceMoments.filter(m => m.type === 'nearby').forEach(m => {
+      steps.push({ type: 'showmance', html: `
+        <div class="nv-card" style="border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.04)">
+          <div style="display:flex;align-items:center;gap:10px">
+            ${m.players.map(p => rpPortrait(p, 'sm')).join('')}
+            <div style="flex:1;font-size:12px;color:#cdd9e5">${m.text}</div>
+          </div>
+        </div>` });
+    });
+  }
 
   // Phase 2: Hunt Rounds — each round header, each event, each discovery = separate step
   const _toArr = v => !v ? [] : Array.isArray(v) ? v : [v];

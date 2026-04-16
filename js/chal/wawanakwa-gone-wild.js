@@ -1753,6 +1753,7 @@ export function rpBuildWawanakwaGoneWild(ep) {
     if (evt.type === 'huntAttempt' && evt.success) { capturedDelta = 1; huntingDelta = -1; }
     if (evt.type === 'huntFail') { failedDelta = 1; huntingDelta = -1; }
     if (evt.type === 'tranqChaos' && evt.subtype === 'hitContestant') { cameraShake = true; }
+    if (evt.type === 'huntMishap') { cameraShake = true; }
 
     let tranqPair = null;
     if (evt.type === 'tranqChaos' && evt.subtype === 'hitContestant' && (evt.players || []).length >= 2) {
@@ -1934,10 +1935,27 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
 
   // ── HUNT MISHAP ──
   if (evt.type === 'huntMishap') {
-    let h = `<div class="ww-card ww-card--mishap" style="--ww-accent:${RED}">`;
+    const mishapTier = (ww.huntResults?.[evt.player]?.animalTier) || 'medium';
+    const mishapStamps = { easy: 'THWACK!', medium: 'OWWW!', hard: 'SPLAT!', extreme: 'CATASTROPHIC FAILURE' };
+    const stamp = mishapStamps[mishapTier] || 'OWWW!';
+    const particles = ['💥','⭐','🌀','💫','✨','❗'];
+    const particleCount = 6;
+    let particleHtml = '';
+    for (let pi = 0; pi < particleCount; pi++) {
+      const angle = (pi / particleCount) * 360;
+      const dist = 28 + Math.floor(Math.random() * 20);
+      const mx = `${Math.round(Math.cos((angle * Math.PI) / 180) * dist)}px`;
+      const my = `${Math.round(Math.sin((angle * Math.PI) / 180) * dist)}px`;
+      const rot = `${Math.floor(Math.random() * 360)}deg`;
+      const delay = `${pi * 60}ms`;
+      const em = particles[pi % particles.length];
+      particleHtml += `<span class="ww-mishap-particle" style="--mx:${mx};--my:${my};--mrot:${rot};--mdelay:${delay}">${em}</span>`;
+    }
+    let h = `<div class="ww-card ww-card--mishap ww-mishap-stage" style="--ww-accent:${RED}">`;
     h += `<div class="ww-card-label">💥 MISHAP — ${(evt.animal || '').toUpperCase()}</div>`;
-    h += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">${rpPortrait(evt.player, 'sm')}<span style="font-weight:700;color:#d4c8a8">${evt.player}</span></div>`;
+    h += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;position:relative">${rpPortrait(evt.player, 'sm')}<span style="font-weight:700;color:#d4c8a8">${evt.player}</span>${particleHtml}</div>`;
     h += `<div class="ww-card-body">${evt.text}</div>`;
+    h += `<div style="margin-top:6px"><span class="ww-stamp" style="color:${RED}">${stamp}</span></div>`;
     h += `<div class="ww-card-footer">Round ${(evt.round || 0) + 1}</div>`;
     h += `</div>`;
     return h;

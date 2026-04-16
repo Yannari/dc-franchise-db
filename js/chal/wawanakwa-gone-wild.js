@@ -1674,8 +1674,26 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
 
   ps.attemptsMade++;
 
+  // ── FIELD-CAM: per-round location + stamped-beat helper ──
+  if (huntState._timeMin === undefined) huntState._timeMin = 0;
+  const _FCL = {
+    easy:    ['CAMP PERIMETER','SOUTH TRAIL','CLEARING','DOCK AREA'],
+    medium:  ['NORTH WOODS','LAKE SHORE','DENSE UNDERGROWTH','HOLLOW LOG'],
+    hard:    ['RAVINE','RIDGELINE','EAST TREELINE','ROCKY OUTCROP'],
+    extreme: ['DEEP FOREST','CLIFF BASE','MARSHLAND','DANGER ZONE'],
+  };
+  const _fcLoc = (_FCL[animal.tier] || ['WOODS'])[Math.floor(Math.random() * 4)];
+  function _stamped(beat, outcome, text, extra) {
+    huntState._timeMin += _rand(4, 11);
+    const hh = String(9 + Math.floor(huntState._timeMin / 60)).padStart(2,'0');
+    const mm = String(huntState._timeMin % 60).padStart(2,'0');
+    const e = _buildHuntBeat(name, round, animal, beat, outcome, text, extra);
+    e._ts = `${hh}:${mm}`; e._loc = _fcLoc;
+    return e;
+  }
+
   if (ps.stamina === 0) {
-    timeline.push(_buildHuntBeat(name, round, animal, 'approach', 'abort',
+    timeline.push(_stamped('approach', 'abort',
       `${name} can barely stand. The hunt continues without ${pr.obj}.`));
     timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} is too exhausted to attempt.` });
     return;
@@ -1684,14 +1702,21 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
   // ── BEAT 1: APPROACH ──
   if (ps._feintedLastRound) {
     ps._feintedLastRound = false;
-    timeline.push(_buildHuntBeat(name, round, animal, 'approach', 'pass',
+    timeline.push(_stamped('approach', 'pass',
       `${name} is still shaking off the last feint. ${pr.Sub} ${pr.sub==='they'?'push':'pushes'} forward anyway.`));
   } else {
     const approachRoll = s.intuition + s.mental + _rand(-3, 3);
     const approachDiff = (animal.approachDifficulty || 10) + _staminaPenalty(ps.stamina);
     if (approachRoll < approachDiff) {
-      timeline.push(_buildHuntBeat(name, round, animal, 'approach', 'abort',
-        _rp(animal.approach || [() => `${name} loses the trail.`])(name, pr)));
+      const _approachAbortFallback = [
+        () => `${name} loses the trail.`,
+        () => `${name} can't pick up the scent. The trail's gone cold.`,
+        () => `${name} circles the area twice and comes up empty.`,
+        () => `${pr.Sub} ${pr.sub==='they'?'search':'searches'} for twenty minutes. Nothing. The ${animal.name.toLowerCase()} was here and now it isn't.`,
+        () => `${name} doubles back. The approach window closed before ${pr.sub} ${pr.sub==='they'?'reach':'reaches'} it.`,
+      ];
+      timeline.push(_stamped('approach', 'abort',
+        _rp(animal.approach || _approachAbortFallback)(name, pr)));
       if (Math.random() < 0.50) {
         const behavior = animal.behaviors?.flee?.length ? 'flee' : _pickBehavior(animal);
         if (behavior) timeline.push(_buildAnimalReaction(animal, behavior, name, round, huntState, pr));
@@ -1700,8 +1725,13 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
       timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} lost the trail before getting close.`, _shadow: true });
       return;
     }
-    timeline.push(_buildHuntBeat(name, round, animal, 'approach', 'pass',
-      _rp(animal.approach || [() => `${name} closes in.`])(name, pr)));
+    const _approachPassFallback = [
+      () => `${name} closes in.`,
+      () => `${name} gets within range. The ${animal.name.toLowerCase()} hasn't spotted ${pr.obj} yet.`,
+      () => `${name} narrows the gap, moving on instinct. This is going to work.`,
+    ];
+    timeline.push(_stamped('approach', 'pass',
+      _rp(animal.approach || _approachPassFallback)(name, pr)));
   }
 
   // ── BEAT 2: ENGAGEMENT ──
@@ -1712,7 +1742,7 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
 
   let bonusBeat = false;
   if (engagementRoll < engagementDiff) {
-    timeline.push(_buildHuntBeat(name, round, animal, 'engagement', 'fail',
+    timeline.push(_stamped('engagement', 'fail',
       _rp(animal.engagementFail || [() => `${name} misses the window.`])(name, pr)));
 
     if (Math.random() < (animal.reactionChance || 0.5)) {
@@ -1737,7 +1767,7 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
       return;
     }
   } else {
-    timeline.push(_buildHuntBeat(name, round, animal, 'engagement', 'pass',
+    timeline.push(_stamped('engagement', 'pass',
       _rp(animal.engagementSuccess || [() => `${name} gets within striking distance.`])(name, pr)));
   }
 
@@ -1747,7 +1777,7 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
     timeline.push(stalkEvt);
     if (Math.random() < 0.40) {
       _applyStateChanges(ps, name, round, timeline, { stamina: -25, morale: -20 });
-      timeline.push(_buildHuntBeat(name, round, animal, 'resolution', 'fail',
+      timeline.push(_stamped('resolution', 'fail',
         `${name} freezes. The ${animal.name.toLowerCase()} circles once and vanishes. ${name} has nothing.`));
       timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: `${name} couldn't finish the hunt.`, _shadow: true });
       return;
@@ -1765,7 +1795,7 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
     ps.captureRound = round;
     huntState.captureOrder.push(name);
     const successText = _rp(animal.attemptSuccess)(name, pr);
-    timeline.push(_buildHuntBeat(name, round, animal, 'resolution', 'pass', successText, { captured: true }));
+    timeline.push(_stamped('resolution', 'pass', successText, { captured: true }));
     timeline.push({ type: 'huntAttempt', player: name, round, success: true, animal: animal.name, text: successText, _shadow: true });
     _applyStateChanges(ps, name, round, timeline, { morale: +15 });
     if (animal.tier === 'extreme') popDelta(name, 2);
@@ -1778,13 +1808,13 @@ function _runHuntEncounter(name, round, huntState, ep, timeline, badges) {
       const mishapText = _rp(animal.mishap)(name, pr);
       ps.mishaps.push(mishapText);
       ps.personalScore -= 2;
-      timeline.push(_buildHuntBeat(name, round, animal, 'resolution', 'fail', mishapText, { mishap: true }));
+      timeline.push(_stamped('resolution', 'fail', mishapText, { mishap: true }));
       timeline.push({ type: 'huntMishap', player: name, round, animal: animal.name, text: mishapText, _shadow: true });
       _applyStateChanges(ps, name, round, timeline, { stamina: -20, morale: -20 });
       if (animal.tier === 'extreme' || animal.tier === 'hard') popDelta(name, -1);
     } else {
       const failText = _rp(animal.attemptFail)(name, pr);
-      timeline.push(_buildHuntBeat(name, round, animal, 'resolution', 'fail', failText));
+      timeline.push(_stamped('resolution', 'fail', failText));
       timeline.push({ type: 'huntAttempt', player: name, round, success: false, animal: animal.name, text: failText, _shadow: true });
       _applyStateChanges(ps, name, round, timeline, { morale: -15 });
     }
@@ -2298,37 +2328,37 @@ const WW_STYLES = `
 
   /* Animal-tier backdrops */
   .ww-tier-bg { position:relative; border-radius:6px; padding:0; margin-bottom:6px; overflow:hidden; }
-  .ww-tier-bg::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.2; }
+  .ww-tier-bg::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.4; }
   .ww-tier-bg > * { position:relative; z-index:2; }
   .ww-tier-bg--easy::before {
     background:
-      radial-gradient(ellipse 40px 22px at 15% 30%, rgba(106,159,58,0.5) 0%, transparent 70%),
-      radial-gradient(ellipse 50px 20px at 70% 60%, rgba(106,159,58,0.4) 0%, transparent 70%),
-      radial-gradient(ellipse 30px 18px at 40% 85%, rgba(106,159,58,0.4) 0%, transparent 70%);
+      radial-gradient(ellipse 40px 22px at 15% 30%, rgba(106,159,58,0.6) 0%, transparent 70%),
+      radial-gradient(ellipse 50px 20px at 70% 60%, rgba(106,159,58,0.5) 0%, transparent 70%),
+      radial-gradient(ellipse 30px 18px at 40% 85%, rgba(106,159,58,0.5) 0%, transparent 70%);
     animation: ww-rustle 4.5s ease-in-out infinite; }
   @keyframes ww-rustle { 0%,100%{transform:translateX(0)} 50%{transform:translateX(4px)} }
   .ww-tier-bg--medium::before {
     background:
-      radial-gradient(circle at 20% 30%, rgba(200,168,78,0.35) 0%, transparent 18%),
-      radial-gradient(circle at 65% 70%, rgba(200,168,78,0.3) 0%, transparent 18%),
-      radial-gradient(circle at 85% 20%, rgba(200,168,78,0.3) 0%, transparent 18%),
-      radial-gradient(circle at 45% 55%, rgba(200,168,78,0.25) 0%, transparent 18%);
+      radial-gradient(circle at 20% 30%, rgba(200,168,78,0.5) 0%, transparent 18%),
+      radial-gradient(circle at 65% 70%, rgba(200,168,78,0.45) 0%, transparent 18%),
+      radial-gradient(circle at 85% 20%, rgba(200,168,78,0.45) 0%, transparent 18%),
+      radial-gradient(circle at 45% 55%, rgba(200,168,78,0.4) 0%, transparent 18%);
     animation: ww-dapple 2.8s ease-in-out infinite; }
-  @keyframes ww-dapple { 0%,100%{opacity:0.15} 50%{opacity:0.35} }
+  @keyframes ww-dapple { 0%,100%{opacity:0.25} 50%{opacity:0.55} }
   .ww-tier-bg--hard::before {
     background:repeating-linear-gradient(135deg,
-      rgba(204,51,51,0.12) 0px, rgba(204,51,51,0.12) 8px,
+      rgba(204,51,51,0.22) 0px, rgba(204,51,51,0.22) 8px,
       transparent 8px, transparent 16px);
     animation: ww-heat-ripple 2s ease-in-out infinite; }
   @keyframes ww-heat-ripple { 0%,100%{transform:skewX(0deg)} 50%{transform:skewX(-1deg)} }
   .ww-tier-bg--extreme::before {
     background:
-      repeating-conic-gradient(from 0deg at 50% 50%,
-        rgba(160,50,50,0.25) 0deg 2deg,
-        transparent 2deg 8deg),
-      linear-gradient(135deg, rgba(50,20,30,0.4), rgba(20,10,15,0.5));
-    animation: ww-electric-crackle 0.6s steps(4, end) infinite; }
-  @keyframes ww-electric-crackle { 0%{opacity:0.35} 25%{opacity:0.7} 50%{opacity:0.2} 75%{opacity:0.6} 100%{opacity:0.35} }
+      repeating-linear-gradient(0deg,
+        rgba(160,20,20,0.45) 0px, rgba(160,20,20,0.45) 1px,
+        transparent 1px, transparent 5px),
+      linear-gradient(180deg, rgba(100,5,5,0.55), rgba(60,0,0,0.75));
+    animation: ww-extreme-pulse 1.1s ease-in-out infinite; }
+  @keyframes ww-extreme-pulse { 0%,100%{opacity:0.5} 50%{opacity:1.0} }
 
   /* Feast food spread */
   .ww-food-spread { position:relative; height:140px; margin-top:-12px; pointer-events:none; }
@@ -2587,7 +2617,9 @@ export function rpBuildWawanakwaGoneWild(ep) {
       for (const s of steps) { capturedSoFar += s.capturedDelta || 0; }
       const huntingSoFar = huntingStart - capturedSoFar;
       const censusStr = `${capturedSoFar} CAPTURED · ${Math.max(0, huntingSoFar)} STILL HUNTING`;
-      const tannoyHtml = `<div class="ww-tannoy"><div class="ww-tannoy-badge">🎯 HUNT IN PROGRESS</div><div class="ww-tannoy-title">${label}</div><div class="ww-tannoy-census">STATUS: ${censusStr}</div></div>`;
+      const tannoyBadges = ['🎯 HUNT IN PROGRESS', '🕐 HOUR TWO', '🌅 DUSK APPROACHES', '⚠️ LAST LIGHT'];
+      const tannoyBadge = tannoyBadges[Math.min(evt.round, 3)];
+      const tannoyHtml = `<div class="ww-tannoy"><div class="ww-tannoy-badge">${tannoyBadge}</div><div class="ww-tannoy-title">${label}</div><div class="ww-tannoy-census">STATUS: ${censusStr}</div></div>`;
       steps.push({ html: tannoyHtml, huntingDelta: 0, capturedDelta: 0, failedDelta: 0, cameraShake: false, tranqPair: null });
       lastRound = evt.round;
     }
@@ -2710,6 +2742,19 @@ export function rpBuildWawanakwaGoneWild(ep) {
 // ── PER-EVENT CARD RENDERER ──
 function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
   const GOLD = '#c8a84e', GREEN = '#6a9f3a', RED = '#c33', GREY = '#8b7750', ORANGE = '#c8a84e', PINK = '#d4789a', BLUE = '#7a9ec2', PURPLE = '#a05050';
+  const GEAR_EMOJI = {
+    'fishing net':'🕸️','rope with a hook':'🪢','animal bait':'🍖','burlap sack':'👜',
+    'wooden crate':'📦','small cage trap':'🔒','camo tarp':'🌿','deer antlers':'🦌',
+    'tranquilizer gun':'💉','smoke bomb':'💨','chainsaw':'🪚','megaphone':'📣',
+    'rubber chicken':'🐔','roll of paper towels':'🧻','lifeguard float':'🛟',
+    'broken oar':'🚣','shark jawbone':'🦷',
+  };
+  const ANIMAL_EMOJI = {
+    'Chipmunk':'🐿️','Frog':'🐸','Rabbit':'🐰','Squirrel':'🐿️','Seagull':'🐦',
+    'Duck':'🦆','Raccoon':'🦝','Goose':'🪿','Skunk':'🦨','Porcupine':'🦔',
+    'Beaver':'🦫','Deer':'🦌','Snake':'🐍','Wild Turkey':'🦃','Owl':'🦉',
+    'Bear':'🐻','Moose':'🫎','Wolf':'🐺','Alligator':'🐊',
+  };
 
   function wrapTier(tier, inner) {
     if (!tier) return inner;
@@ -2725,14 +2770,18 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     };
     const cfg = beatConfig[evt.beat] || { color: GREY, emoji: '·', label: (evt.beat || '').toUpperCase() };
     const outcomeBadge = evt.outcome === 'abort' ? ' · ABORT' : evt.outcome === 'fail' ? ' · FAIL' : '';
+    const tsStr = evt._ts ? `${evt._ts} · ` : '';
+    const locStr = evt._loc ? `${evt._loc} · ` : '';
     let h = `<div class="ww-card" style="--ww-accent:${cfg.color};padding:8px 12px;margin-bottom:3px">`;
-    h += `<div class="ww-card-label">${cfg.emoji} ${cfg.label}${outcomeBadge} · ${(evt.animal || '').toUpperCase()}</div>`;
+    h += `<div class="ww-card-label">${cfg.emoji} ${tsStr}${locStr}${cfg.label}${outcomeBadge}</div>`;
     h += `<div style="display:flex;align-items:center;gap:6px;margin-top:2px">`;
     if (evt.player) h += rpPortrait(evt.player, 'xs');
     h += `<div class="ww-card-body">${evt.text || ''}</div>`;
     h += `</div>`;
     if (evt.captured) h += `<div style="margin-top:4px"><span class="ww-stamp" style="color:${GREEN}">CAPTURED!</span></div>`;
     if (evt.mishap) h += `<div style="margin-top:4px"><span class="ww-stamp" style="color:${RED}">MISHAP</span></div>`;
+    const animalEmoji = ANIMAL_EMOJI[evt.animal] || '';
+    if (evt.animal) h += `<div class="ww-card-footer">${animalEmoji} ${evt.animal}</div>`;
     h += `</div>`;
     return h;
   }
@@ -2789,20 +2838,22 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     h += `</div></div>`;
     h += `<span class="ww-tier ww-tier--${evt.tier}">${evt.tier.toUpperCase()}</span>`;
     h += `</div>`;
+    const animalEm = ANIMAL_EMOJI[evt.animal] || '';
     h += `<div class="ww-card-body" style="margin-top:6px">${evt.text}</div>`;
-    h += `<div style="margin-top:6px"><span class="ww-stamp" style="color:${color}">${tierStamps[evt.tier] || evt.tier.toUpperCase()}</span></div>`;
+    h += `<div style="margin-top:6px"><span class="ww-stamp" style="color:${color}">${animalEm} ${tierStamps[evt.tier] || evt.tier.toUpperCase()}: ${evt.animal.toUpperCase()}</span></div>`;
     h += `</div>`;
     return wrapTier(evt.tier, h);
   }
   if (evt.type === 'gearGrab') {
     const isArmed = (evt.gear || '').toLowerCase().includes('tranq');
+    const gearEmoji = GEAR_EMOJI[evt.gear] || '';
     const cardClass = isArmed ? 'ww-gear-card ww-gear-card--armed' : 'ww-gear-card';
     let h = `<div class="ww-card" style="--ww-accent:${isArmed ? RED : '#8b5a2b'}">`;
     h += `<div class="ww-card-label">🎒 GEAR GRAB</div>`;
     h += `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">`;
     h += `${rpPortrait(evt.player, 'sm')}`;
     h += `<span style="font-weight:700;color:#d4c8a8">${evt.player}</span>`;
-    h += `<span class="${cardClass}">${isArmed ? '💉 ' : ''}${evt.gear} <span style="color:#8b7750;font-size:9px">(${evt.gearTier})</span></span>`;
+    h += `<span class="${cardClass}">${gearEmoji}${gearEmoji ? ' ' : ''}${evt.gear} <span style="color:#8b7750;font-size:9px">(${evt.gearTier})</span></span>`;
     h += `</div>`;
     h += `<div class="ww-card-body" style="margin-top:4px">${evt.text}</div>`;
     if (isArmed) h += `<div style="margin-top:4px"><span class="ww-stamp" style="color:${RED}">ARMED AND DANGEROUS</span></div>`;

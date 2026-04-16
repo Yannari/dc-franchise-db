@@ -1449,9 +1449,14 @@ export function rpBuildOffTheChain(ep) {
 
   for (let oi = 0; oi < maxObstacles; oi++) {
     // Obstacle header
+    const bgClass = oi === 0 ? 'mx-obstacle-bg--mines' : oi === 1 ? 'mx-obstacle-bg--oil' : 'mx-obstacle-bg--piranhas';
     steps.push({
       type: 'obstacle-name',
-      html: `<div class="mx-hazard" style="font-size:12px;color:#ffd700;font-weight:700;letter-spacing:2px;text-align:center;padding:8px 0">⚠ ${obstacleNames[oi] || 'OBSTACLE ' + (oi + 1)} ⚠</div>`
+      html: `<div class="mx-obstacle-bg ${bgClass}">
+        <div class="mx-hazard" style="font-size:12px;color:#ffd700;font-weight:700;letter-spacing:2px;text-align:center;padding:8px 0;margin:0;background:transparent;border:0">
+          ⚠ ${obstacleNames[oi] || 'OBSTACLE ' + (oi + 1)} ⚠
+        </div>
+      </div>`
     });
 
     // Get inter-events for this obstacle
@@ -1487,7 +1492,7 @@ export function rpBuildOffTheChain(ep) {
             <div style="flex:1">
               <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}</div>
               ${damage ? `<div style="font-size:10px;color:#ff3333;margin-top:2px">Damage: -${damage} HP</div>` : '<div style="font-size:10px;color:#00ff41;margin-top:2px">Clean pass!</div>'}
-              ${!wasDestroyed ? `<div style="display:flex;align-items:center;gap:6px;margin-top:3px"><div class="mx-hp-bar" style="flex:1"><div class="mx-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div><span style="font-size:9px;color:${hpColor};font-weight:700;min-width:35px">${hpAfter}/${hpMax}</span></div>` : ''}
+              ${!wasDestroyed ? `<div style="display:flex;align-items:center;gap:6px;margin-top:3px"><div class="mx-hp-bar" style="flex:1"><div class="mx-hp-fill" style="width:${hpPct}%;background:${hpColor};transition:width 0.6s ease-out"></div>${damage ? '<div class="mx-hp-drain-flash"></div>' : ''}</div><span style="font-size:9px;color:${hpColor};font-weight:700;min-width:35px">${hpAfter}/${hpMax}</span></div>` : ''}
             </div>
             <span class="mx-status ${wasDestroyed ? 'mx-wrecked' : 'mx-safe'}">${wasDestroyed ? 'DESTROYED' : 'RACING'}</span>
           </div>
@@ -1502,6 +1507,7 @@ export function rpBuildOffTheChain(ep) {
         type: 'obstacle-result',
         racingDelta: wasDestroyed ? -1 : 0,
         wreckedDelta: wasDestroyed ? 1 : 0,
+        cameraShake: wasDestroyed,
         html: cardContent + destroyQuip
       });
 

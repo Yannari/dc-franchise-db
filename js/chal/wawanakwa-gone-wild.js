@@ -2001,9 +2001,22 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     return h;
   }
 
-  // ── FEAST REVEAL (leaf curtain) ──
+  // ── FEAST REVEAL (food spread) ──
   if (evt.type === 'feastReveal') {
     const winner = evt.player || ww.immunityWinner || '???';
+    const FOODS = ['🍗','🍔','🍕','🥩','🍰','🥧','🍦','🍩','🌮','🥞','🍝','🍣'];
+    const foodItems = [...FOODS].sort(() => Math.random() - 0.5).slice(0, 8);
+    const positions = [
+      {x:'-105px',y:'30px'},{x:'-75px',y:'55px'},{x:'-40px',y:'75px'},{x:'-10px',y:'80px'},
+      {x:'20px',y:'80px'},{x:'50px',y:'75px'},{x:'85px',y:'55px'},{x:'115px',y:'30px'},
+    ];
+    let foodHtml = `<div class="ww-food-spread">`;
+    foodItems.forEach((food, fi) => {
+      const pos = positions[fi] || { x: `${(fi - 4) * 28}px`, y: '50px' };
+      foodHtml += `<span class="ww-food-item" style="--x:${pos.x};--y:${pos.y};--float-delay:${fi * 90}ms">${food}</span>`;
+    });
+    foodHtml += `</div>`;
+
     let h = `<div class="ww-curtain-wrap">`;
     h += `<div class="ww-spotlight">`;
     h += `<div class="ww-trophy-wrap">`;
@@ -2011,6 +2024,7 @@ function _renderWWStep(evt, ww, ALL_ANIMAL_NAMES) {
     h += `<div style="font-family:var(--font-display,'Impact',sans-serif);font-size:22px;font-weight:800;color:${GOLD};letter-spacing:2px;margin-top:8px">${winner}</div>`;
     h += `<div style="font-size:12px;color:#d4c8a8;margin-top:4px">IMMUNITY + FEAST OF ALL THEIR FAVORITES</div>`;
     h += `</div>`;
+    h += foodHtml;
     h += `<div style="margin-top:10px"><span class="ww-stamp" style="color:${GOLD}">🏆 FEAST WINNER</span></div>`;
     h += `</div></div>`;
     return h;

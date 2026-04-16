@@ -1115,6 +1115,45 @@ export function rpBuildHideAndBeSneaky(ep) {
     });
   }
 
+  // Last operative standing announcement (when no showdown — 1 hider survived)
+  if (!hs.phase5 && hs.immunityWinners.length) {
+    const lastStanding = hs.immunityWinners.find(w => !hs.phase2.escaped.some(e => (Array.isArray(e) ? e : [e]).some(x => x.name === w)));
+    if (lastStanding) {
+      const lsPr = pronouns(lastStanding);
+      const lsSpot = hs.spotAssignments[lastStanding];
+      steps.push({ type: 'last-standing', html: `
+        <div class="nv-sector">LAST OPERATIVE STANDING</div>
+        <div class="nv-card" style="border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.06);text-align:center;padding:20px">
+          <div style="margin-bottom:12px">${rpPortrait(lastStanding, 'xl')}</div>
+          <div style="font-size:16px;color:#ffd700;font-weight:700;margin-bottom:6px">${lastStanding} outlasted them all!</div>
+          <div style="font-size:12px;color:#33ff66;margin-bottom:4px">Hiding spot: ${lsSpot?.name || 'unknown'}</div>
+          <div style="font-size:12px;color:#cdd9e5">${lsPr.Sub} was the last operative Chef couldn't find — ${lsPr.sub} wins immunity!</div>
+          <div style="margin-top:10px"><span class="nv-status nv-immune" style="font-size:12px;padding:4px 14px">IMMUNITY WINNER</span></div>
+        </div>` });
+    }
+  }
+
+  // Home base escape announcements (when someone escaped during the hunt)
+  const homeBaseWinners = hs.immunityWinners.filter(w => {
+    const allEscaped = hs.phase2.escaped || [];
+    const flatEscaped = allEscaped.flatMap(e => Array.isArray(e) ? e : [e]);
+    return flatEscaped.some(x => x.name === w);
+  });
+  if (homeBaseWinners.length) {
+    homeBaseWinners.forEach(name => {
+      const pr = pronouns(name);
+      steps.push({ type: 'home-base-win', html: `
+        <div class="nv-card" style="border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.06);display:flex;align-items:center;gap:12px;padding:14px">
+          ${rpPortrait(name, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:13px;color:#ffd700;font-weight:600">${name} escaped to home base!</div>
+            <div style="font-size:11px;color:#cdd9e5">${pr.Sub} outran Chef's water cannon and earned immunity.</div>
+          </div>
+          <span class="nv-status nv-immune">IMMUNE</span>
+        </div>` });
+    });
+  }
+
   // Debrief
   let debriefHtml = `<div class="nv-sector">DEBRIEF — FINAL STATUS</div>`;
   debriefHtml += `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">`;

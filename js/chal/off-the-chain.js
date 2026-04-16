@@ -997,6 +997,183 @@ const MX_STYLES = `
   @keyframes mx-btn-pulse { 0%,100%{box-shadow:0 0 5px rgba(255,107,0,0.1)} 50%{box-shadow:0 0 15px rgba(255,107,0,0.3)} }
   @keyframes mx-count-flash { 0%{color:#fff;transform:scale(1.3)} 100%{color:inherit;transform:scale(1)} }
   .mx-count-flash { animation: mx-count-flash 0.3s ease-out; }
+
+  /* ── OVERDRIVE ADDITIONS ── */
+
+  /* Slot-machine reel */
+  .mx-reel { position:relative; width:180px; height:28px; overflow:hidden;
+    background:rgba(0,0,0,0.5); border:1px solid rgba(255,107,0,0.4); border-radius:4px; }
+  .mx-reel-window { position:absolute; top:0; left:0; right:0; bottom:0; z-index:2; pointer-events:none;
+    background:linear-gradient(to bottom, rgba(26,16,8,0.7) 0%, transparent 25%, transparent 75%, rgba(26,16,8,0.7) 100%); }
+  .mx-reel-strip { position:absolute; left:0; right:0; top:0; display:flex; flex-direction:column;
+    animation: mx-reel-spin 1.2s cubic-bezier(0.2,0.9,0.3,1) both; }
+  .mx-reel-strip > div { height:28px; line-height:28px; text-align:center; font-size:12px;
+    color:#cdd9e5; font-weight:600; }
+  @keyframes mx-reel-spin {
+    0%   { transform: translateY(var(--reel-start, 0px)); filter:blur(2px); }
+    70%  { filter:blur(1px); }
+    100% { transform: translateY(var(--reel-final, 0px)); filter:blur(0); }
+  }
+
+  /* Stamp slam (SWAP, CASE CLOSED, bike names) */
+  .mx-stamp { display:inline-block; padding:4px 12px; border:3px solid currentColor; border-radius:3px;
+    font-family:'Impact','Arial Narrow',sans-serif; font-size:14px; font-weight:900; letter-spacing:2px;
+    text-transform:uppercase; transform:rotate(-8deg) scale(1); transform-origin:center;
+    animation: mx-stamp-slam 0.55s ease-out both; }
+  @keyframes mx-stamp-slam {
+    0%   { transform: rotate(-8deg) scale(4); opacity:0; }
+    55%  { transform: rotate(-8deg) scale(0.85); opacity:1; }
+    75%  { transform: rotate(-8deg) scale(1.08); }
+    100% { transform: rotate(-8deg) scale(1); opacity:1; }
+  }
+
+  /* Weld sparks (build phase) */
+  .mx-spark-field { position:relative; height:0; }
+  .mx-weld-spark { position:absolute; width:4px; height:4px; border-radius:50%;
+    background: radial-gradient(circle, #fff 0%, #ffd700 45%, transparent 75%);
+    pointer-events:none;
+    animation: mx-weld-spark 0.7s ease-out forwards;
+    animation-delay: var(--spark-delay, 0ms); }
+  @keyframes mx-weld-spark {
+    0%   { transform: translate(0,0) scale(0.4); opacity:0; }
+    25%  { transform: translate(calc(var(--sx,0) * 0.4), calc(var(--sy,0) * 0.4)) scale(1.3); opacity:1; }
+    100% { transform: translate(var(--sx,0), calc(var(--sy,0) + 12px)) scale(0.2); opacity:0; }
+  }
+
+  /* Camera shake (catastrophic breakdown) */
+  .mx-camera-shake { animation: mx-camera-shake 0.4s; }
+  @keyframes mx-camera-shake {
+    0%,100% { transform: translate(0,0); }
+    15%  { transform: translate(-3px, 2px); }
+    30%  { transform: translate(3px,-2px); }
+    45%  { transform: translate(-2px,-3px); }
+    60%  { transform: translate(2px, 3px); }
+    75%  { transform: translate(-3px, 1px); }
+    90%  { transform: translate(3px,-1px); }
+  }
+
+  /* Checkered-flag curtain (finish line) */
+  .mx-curtain-wrap { position:relative; padding:24px 0; min-height:180px; overflow:hidden; }
+  .mx-curtain-wrap::before, .mx-curtain-wrap::after {
+    content:''; position:absolute; top:0; bottom:0; width:50%; z-index:5;
+    background:repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 0 0 / 24px 24px; }
+  .mx-curtain-wrap::before { left:0;  animation: mx-curtain-left  1s ease-in-out forwards; }
+  .mx-curtain-wrap::after  { right:0; animation: mx-curtain-right 1s ease-in-out forwards; }
+  @keyframes mx-curtain-left  { to { transform: translateX(-100%); } }
+  @keyframes mx-curtain-right { to { transform: translateX( 100%); } }
+  .mx-curtain-spotlight { position:relative; z-index:1; text-align:center; padding:16px;
+    background: radial-gradient(ellipse at center, rgba(255,215,0,0.25) 0%, transparent 65%); }
+
+  /* Photo finish label */
+  .mx-photo-finish { display:inline-block; font-size:13px; letter-spacing:4px; color:#ffd700;
+    background:rgba(255,215,0,0.12); border:2px dashed #ffd700; padding:6px 14px; border-radius:4px;
+    margin-bottom:10px; animation: mx-stamp-slam 0.55s ease-out both; font-weight:800; }
+
+  /* Podium */
+  .mx-podium { display:flex; align-items:flex-end; justify-content:center; gap:10px;
+    margin-top:18px; min-height:200px; }
+  .mx-podium-plinth { flex:0 0 auto; width:96px; display:flex; flex-direction:column; align-items:center;
+    animation: mx-drop-in 0.6s ease-out both; }
+  .mx-podium-plinth[data-rank="1"] { order:2; }
+  .mx-podium-plinth[data-rank="2"] { order:1; animation-delay:0.15s; }
+  .mx-podium-plinth[data-rank="3"] { order:3; animation-delay:0.3s; }
+  .mx-podium-block { width:100%; border-top:3px solid; display:flex; align-items:center;
+    justify-content:center; font-weight:900; font-size:22px; color:#1a1008;
+    background:linear-gradient(to top, rgba(255,107,0,0.9), rgba(255,107,0,0.4)); border-color:#ff6b00; }
+  .mx-podium-plinth[data-rank="1"] .mx-podium-block { height:130px;
+    background:linear-gradient(to top, rgba(255,215,0,1), rgba(255,215,0,0.5)); border-color:#ffd700; }
+  .mx-podium-plinth[data-rank="2"] .mx-podium-block { height:95px;
+    background:linear-gradient(to top, rgba(200,200,200,0.9), rgba(200,200,200,0.4)); border-color:#cccccc; }
+  .mx-podium-plinth[data-rank="3"] .mx-podium-block { height:70px;
+    background:linear-gradient(to top, rgba(205,127,50,1), rgba(205,127,50,0.4)); border-color:#cd7f32; }
+
+  /* HP drain overlay */
+  .mx-hp-bar { position:relative; }
+  .mx-hp-drain-flash { position:absolute; top:0; left:0; bottom:0; width:100%;
+    background:rgba(255,51,51,0.6); opacity:0; animation: mx-hp-drain-flash 0.6s ease-out both; pointer-events:none; }
+  @keyframes mx-hp-drain-flash { 0%{opacity:0} 25%{opacity:0.9} 100%{opacity:0} }
+
+  /* Obstacle backdrops */
+  .mx-obstacle-bg { position:relative; padding:12px; border-radius:6px; margin-bottom:10px; overflow:hidden; }
+  .mx-obstacle-bg::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; }
+  .mx-obstacle-bg > * { position:relative; z-index:1; }
+  .mx-obstacle-bg--mines::before {
+    background: radial-gradient(circle at 15% 30%, rgba(255,51,51,0.35) 0%, transparent 8%),
+                radial-gradient(circle at 70% 60%, rgba(255,51,51,0.35) 0%, transparent 8%),
+                radial-gradient(circle at 40% 80%, rgba(255,51,51,0.35) 0%, transparent 8%),
+                radial-gradient(circle at 85% 15%, rgba(255,51,51,0.35) 0%, transparent 8%),
+                radial-gradient(circle at 25% 55%, rgba(255,51,51,0.35) 0%, transparent 8%),
+                rgba(50,20,10,0.4);
+    animation: mx-mine-pulse 1.8s ease-in-out infinite; }
+  @keyframes mx-mine-pulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
+  .mx-obstacle-bg--oil::before {
+    background:repeating-linear-gradient(115deg,
+      rgba(60,80,180,0.25) 0px, rgba(180,60,180,0.25) 20px,
+      rgba(60,180,120,0.25) 40px, rgba(180,180,60,0.25) 60px, rgba(60,80,180,0.25) 80px);
+    animation: mx-oil-shift 3s linear infinite; }
+  @keyframes mx-oil-shift { to { background-position: 80px 0; } }
+  .mx-obstacle-bg--piranhas::before {
+    background:linear-gradient(to bottom, rgba(20,60,100,0.5) 0%, rgba(10,30,60,0.8) 100%); }
+  .mx-obstacle-bg--piranhas::after {
+    content:'▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲'; position:absolute; bottom:2px; left:0; right:0;
+    text-align:center; font-size:10px; color:rgba(255,255,255,0.6); letter-spacing:3px;
+    z-index:0; animation: mx-teeth-chomp 0.6s ease-in-out infinite; }
+  @keyframes mx-teeth-chomp { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+
+  /* Debris settle (aftermath) */
+  .mx-debris-wrap { position:relative; padding:8px; border-radius:6px;
+    background:linear-gradient(to bottom, rgba(255,107,0,0.04) 0%, rgba(255,107,0,0.08) 100%);
+    animation: mx-debris-settle 0.8s ease-out both; }
+  @keyframes mx-debris-settle {
+    0%   { opacity:0; transform:translateY(-6px); }
+    100% { opacity:1; transform:translateY(0); }
+  }
+  .mx-field-mic::before { content:'🎤 '; opacity:0.7; margin-right:4px; }
+
+  /* Evidence board (wreckage report) */
+  .mx-evidence-board { position:relative; padding:20px 12px; border-radius:6px;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(160,100,50,0.25) 0%, transparent 2%),
+      radial-gradient(circle at 70% 60%, rgba(160,100,50,0.2) 0%, transparent 2%),
+      radial-gradient(circle at 40% 80%, rgba(160,100,50,0.15) 0%, transparent 2%),
+      radial-gradient(circle at 85% 25%, rgba(160,100,50,0.2) 0%, transparent 2%),
+      linear-gradient(135deg, rgba(120,80,40,0.4), rgba(80,50,25,0.5));
+    border:2px solid rgba(160,100,50,0.5); }
+  .mx-evidence-pin { position:relative; }
+  .mx-evidence-pin::before {
+    content:''; position:absolute; top:-4px; left:50%; transform:translateX(-50%);
+    width:10px; height:10px; border-radius:50%;
+    background: radial-gradient(circle at 35% 35%, #ff6b00 0%, #aa3300 70%);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.5); z-index:3; }
+  .mx-evidence-svg { position:absolute; inset:0; pointer-events:none; z-index:2; }
+  .mx-evidence-line { stroke:#ff3333; stroke-width:2; stroke-dasharray:6 4; fill:none;
+    stroke-dashoffset:100; animation: mx-evidence-draw 1.2s ease-out forwards; }
+  @keyframes mx-evidence-draw { to { stroke-dashoffset:0; } }
+
+  /* Ticker marquee */
+  .mx-ticker { position:relative; overflow:hidden; height:22px; margin:0 0 12px 0;
+    background:linear-gradient(to right, rgba(255,107,0,0.15), rgba(255,107,0,0.05), rgba(255,107,0,0.15));
+    border-top:1px solid rgba(255,107,0,0.3); border-bottom:1px solid rgba(255,107,0,0.3); }
+  .mx-ticker-inner { position:absolute; white-space:nowrap; top:0; left:0; height:22px; line-height:22px;
+    font-size:11px; color:#ffd700; letter-spacing:1.5px;
+    animation: mx-ticker-scroll 32s linear infinite; }
+  @keyframes mx-ticker-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+  /* RPM gauge */
+  .mx-rpm { position:relative; width:64px; height:34px; overflow:hidden; display:inline-block; vertical-align:middle; }
+  .mx-rpm-dial { position:absolute; inset:0 0 -32px 0;
+    background: conic-gradient(from 270deg, #00ff41 0deg, #ffd700 60deg, #ff6b00 90deg, #ff3333 120deg, transparent 120deg);
+    border-radius:50%; opacity:0.35; }
+  .mx-rpm-needle { position:absolute; bottom:0; left:50%; width:2px; height:28px;
+    background:#ff3333; transform-origin:bottom center; transform:rotate(-60deg); }
+  .mx-rpm-needle.mx-rpm-rev { animation: mx-rpm-needle 0.8s cubic-bezier(0.2,0.8,0.3,1) both; }
+  @keyframes mx-rpm-needle {
+    0%   { transform: rotate(-60deg); }
+    30%  { transform: rotate(55deg); }
+    100% { transform: rotate(-60deg); }
+  }
+  .mx-rpm-label { position:absolute; bottom:-2px; left:0; right:0; text-align:center;
+    font-size:8px; letter-spacing:1px; color:#ff6b00; }
 `;
 
 function _mxChrisQuip(quips, key) {

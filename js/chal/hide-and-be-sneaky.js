@@ -89,6 +89,100 @@ const CHASE_BEATS = [
   { id:'window',    text: (p, pr, win) => win ? `${p} leapt through a window and landed in a perfect roll!` : `${p} jumped through a window and landed face-first in mud!` },
 ];
 
+// ── CHRIS McLEAN COMMENTARY ──
+const CHRIS_QUIPS = {
+  roundEarly: [
+    `"This is almost too easy." — Chris McLean`,
+    `"Chef's barely trying and they're already panicking." — Chris McLean`,
+    `"Ten bucks says someone sneezes in the first five minutes." — Chris McLean`,
+    `"I love this part. The false sense of security." — Chris McLean`,
+    `"Places, everyone! Chef is LOCKED and LOADED." — Chris McLean`,
+  ],
+  roundMid: [
+    `"Now we're getting somewhere!" — Chris McLean`,
+    `"The herd is thinning, folks." — Chris McLean`,
+    `"Chef's getting warmer..." — Chris McLean`,
+    `"I can practically taste the drama." — Chris McLean`,
+    `"This is better than cable." — Chris McLean`,
+  ],
+  roundLate: [
+    `"Down to the final few..." — Chris McLean`,
+    `"Chef can smell the fear." — Chris McLean`,
+    `"Who's gonna crack next?" — Chris McLean`,
+    `"This is what I live for." — Chris McLean`,
+    `"The suspense is KILLING me. Well, not me. Them." — Chris McLean`,
+  ],
+  catchEmbarrassing: [
+    `"That was just sad." — Chris McLean`,
+    `"Did they even TRY to hide?" — Chris McLean`,
+    `"I've seen better hiding from a toddler." — Chris McLean`,
+    `"That's going in the highlight reel." — Chris McLean`,
+  ],
+  catchClose: [
+    `"Ooh, SO close!" — Chris McLean`,
+    `"Almost had it! Almost." — Chris McLean`,
+    `"Inches away from freedom. Inches." — Chris McLean`,
+    `"That's gotta sting." — Chris McLean`,
+  ],
+  catchNormal: [
+    `"Another one bites the dust." — Chris McLean`,
+    `"And just like that — soaked." — Chris McLean`,
+    `"Better luck never." — Chris McLean`,
+    `"Don't feel bad. Actually, do. It's funnier." — Chris McLean`,
+  ],
+  escapeSuccess: [
+    `"NO WAY!" — Chris McLean`,
+    `"Chef is NOT gonna be happy about that one." — Chris McLean`,
+    `"Did that just happen?!" — Chris McLean`,
+    `"HOME BASE! Unbelievable!" — Chris McLean`,
+  ],
+  betrayal: [
+    `"And THAT'S why you don't trust anyone on this island." — Chris McLean`,
+    `"Cold. Ice cold." — Chris McLean`,
+    `"I knew they had it in them." — Chris McLean`,
+    `"Ooh, the betrayal! Chef, are you getting this?" — Chris McLean`,
+  ],
+  loyal: [
+    `"How noble. How boring." — Chris McLean`,
+    `"Loyalty doesn't win you immunity, people." — Chris McLean`,
+    `"Respect... I guess." — Chris McLean`,
+  ],
+  showdown: [
+    `"Time to run." — Chris McLean`,
+    `"Last ones standing — but not for long." — Chris McLean`,
+    `"This is the final hunt." — Chris McLean`,
+    `"Smoke 'em out, Chef!" — Chris McLean`,
+  ],
+  lastStanding: [
+    `"Well played. Chef searched EVERYWHERE." — Chris McLean`,
+    `"I'm actually impressed. Don't tell anyone I said that." — Chris McLean`,
+    `"The last operative standing. Immunity is yours." — Chris McLean`,
+  ],
+  chefFrustration: [
+    `Chef kicked a trash can in frustration.`,
+    `Chef muttered something unprintable under his breath.`,
+    `Chef punched a tree. The tree won.`,
+    `"THEY CAN'T HAVE JUST DISAPPEARED!" — Chef Hatchet`,
+    `Chef angrily pumped his water gun, scanning every shadow.`,
+  ],
+  chefTaunt: [
+    `"There you are." — Chef Hatchet`,
+    `"Did you REALLY think that would work?" — Chef Hatchet`,
+    `"Too easy." — Chef Hatchet`,
+    `"I can hear you breathing." — Chef Hatchet`,
+    `"You call that hiding? My GRANDMOTHER hides better." — Chef Hatchet`,
+    `"End of the line." — Chef Hatchet`,
+  ],
+  stalkerCaught: [
+    `"Wait — were they following Chef THIS WHOLE TIME?!" — Chris McLean`,
+    `"That is either the bravest or dumbest strategy I've ever seen." — Chris McLean`,
+  ],
+  stalkerSurvived: [
+    `"They literally followed Chef around and he NEVER noticed?! Legendary." — Chris McLean`,
+    `"Izzy would be proud." — Chris McLean`,
+  ],
+};
+
 // ── HELPERS ──
 function wPick(arr) {
   const total = arr.reduce((s, e) => s + (e.weight || 1), 0);
@@ -238,11 +332,14 @@ export function simulateHideAndBeSneaky(ep) {
   const rounds = [];
   const persistingEffects = { rain:false, fog:false, sunset:false };
   const badges = {};
+  const chrisQuips = {};
 
   for (let r = 1; r <= totalRounds; r++) {
     if (hidden.length <= 1) break;
     const chefDetection = baseDetection + r * escalation;
     const roundData = { num: r, events: [], found: null, escaped: null, hiddenCount: hidden.length };
+    const quipPool = r <= totalRounds * 0.33 ? CHRIS_QUIPS.roundEarly : r <= totalRounds * 0.66 ? CHRIS_QUIPS.roundMid : CHRIS_QUIPS.roundLate;
+    chrisQuips[`round-${r}`] = quipPool[Math.floor(Math.random() * quipPool.length)];
 
     const eventCount = 3 + (Math.random() < 0.5 ? 1 : 0);
     const roundBonuses = {};
@@ -500,6 +597,7 @@ export function simulateHideAndBeSneaky(ep) {
         caughtThisRound.push({ name: target, escaped: true, escapeScore: escScore, beats: escBeats, discoveryText });
         badges[target] = 'hideSeekClutch';
         popDelta(target, 2);
+        chrisQuips[`catch-${target}-${r}`] = CHRIS_QUIPS.escapeSuccess[Math.floor(Math.random() * CHRIS_QUIPS.escapeSuccess.length)];
       } else {
         caught.push({ name: target, round: r, method: 'found', escapeAttempted: true });
         caughtThisRound.push({ name: target, escaped: false, beats: escBeats, discoveryText });
@@ -508,8 +606,15 @@ export function simulateHideAndBeSneaky(ep) {
           badges[target] = 'hideSeekFlush';
           popDelta(target, -1);
         }
+        const quipCatchPool = badges[target] === 'hideSeekFlush' ? CHRIS_QUIPS.catchEmbarrassing :
+                     escBeats.some(b => b.win) ? CHRIS_QUIPS.catchClose : CHRIS_QUIPS.catchNormal;
+        chrisQuips[`catch-${target}-${r}`] = quipCatchPool[Math.floor(Math.random() * quipCatchPool.length)];
+        chrisQuips[`chef-taunt-${target}`] = CHRIS_QUIPS.chefTaunt[Math.floor(Math.random() * CHRIS_QUIPS.chefTaunt.length)];
       }
       hidden = hidden.filter(h => h !== target);
+    }
+    if (!caughtThisRound.length) {
+      chrisQuips[`frustration-${r}`] = CHRIS_QUIPS.chefFrustration[Math.floor(Math.random() * CHRIS_QUIPS.chefFrustration.length)];
     }
     roundData.found = caughtThisRound.filter(c => !c.escaped);
     roundData.escaped = caughtThisRound.filter(c => c.escaped);
@@ -565,6 +670,7 @@ export function simulateHideAndBeSneaky(ep) {
       });
 
       badges[name] = 'hideSeekTracker';
+      chrisQuips[`betrayal-${name}`] = CHRIS_QUIPS.betrayal[Math.floor(Math.random() * CHRIS_QUIPS.betrayal.length)];
 
       hidden.forEach(h => {
         if (h === target) return;
@@ -580,6 +686,7 @@ export function simulateHideAndBeSneaky(ep) {
     hidden.forEach(h => { addBond(l, h, 1); });
     badges[l] = badges[l] || 'hideSeekLoyal';
   });
+  if (loyals.length) chrisQuips['loyal'] = CHRIS_QUIPS.loyal[Math.floor(Math.random() * CHRIS_QUIPS.loyal.length)];
 
   const phase3 = { betrayals: [...betrayals], loyals: [...loyals] };
 
@@ -661,7 +768,9 @@ export function simulateHideAndBeSneaky(ep) {
     immunityWinners.push(hidden[0]);
     badges[hidden[0]] = 'hideSeekImmune';
     popDelta(hidden[0], 2);
+    chrisQuips['lastStanding'] = CHRIS_QUIPS.lastStanding[Math.floor(Math.random() * CHRIS_QUIPS.lastStanding.length)];
   } else if (hidden.length >= 2) {
+    chrisQuips['showdown'] = CHRIS_QUIPS.showdown[Math.floor(Math.random() * CHRIS_QUIPS.showdown.length)];
     const chaseResults = {};
     const showdownBeats = {};
 
@@ -827,6 +936,7 @@ export function simulateHideAndBeSneaky(ep) {
     phase5,
     immunityWinners,
     badges,
+    chrisQuips,
     spotAssignments,
     hidingQuality,
     activePlayers,

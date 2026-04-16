@@ -183,6 +183,15 @@ const CHRIS_QUIPS = {
   ],
 };
 
+const STALKER_BEATS = [
+  { id:'close-call',   text: (p, pr, win) => win ? `Chef turned suddenly — ${p} froze mid-step, inches away. Chef shrugged and kept walking.` : `Chef turned and squinted. ${p} pressed flat against a tree, but Chef's eyes lingered too long...` },
+  { id:'mimicry',      text: (p, pr, win) => win ? `${p} matched Chef's footsteps perfectly — left, right, left, right. A shadow within a shadow.` : `${p} tried to match Chef's pace but stumbled. Chef paused... then kept moving.` },
+  { id:'near-blown',   text: (p, pr, win) => win ? `Chef sniffed the air. "${pr.Sub} could SWEAR someone was behind ${pr.obj}." ${p} held ${pr.posAdj} breath.` : `Chef sniffed the air and slowly turned. ${p}'s heart pounded — barely ducked behind a bush in time.` },
+  { id:'aggressive',   text: (p, pr, win) => win ? `${p} got cocky, following barely two steps behind Chef. The thrill was addictive.` : `${p} got too close. Chef's ear twitched. Had to dive behind a rock.` },
+  { id:'intel',        text: (p, pr, win) => win ? `${p} overheard Chef mumble ${pr.posAdj} next search location. Valuable intel.` : `${p} leaned in to hear Chef's plan — and a twig snapped under ${pr.posAdj} foot.` },
+  { id:'shadow',       text: (p, pr, win) => win ? `${p} slipped into Chef's literal shadow, moving in perfect sync. Inches away from the hunter.` : `${p} tried to walk in Chef's shadow but ${pr.posAdj} own shadow gave ${pr.obj} away on the wall.` },
+];
+
 // ── HELPERS ──
 function wPick(arr) {
   const total = arr.reduce((s, e) => s + (e.weight || 1), 0);
@@ -268,13 +277,10 @@ export function simulateHideAndBeSneaky(ep) {
       const stalkerSpot = HIDING_SPOTS.find(sp => sp.id === 'stalker');
       spotAssignments[name] = stalkerSpot;
       hidingQuality[name] = calcHidingQuality(name, stalkerSpot);
-      const stalkerCheck = s.boldness * 0.4 + s.intuition * 0.3 + s.physical * 0.3 + (Math.random() * 2 - 1);
-      if (stalkerCheck < 6) {
-        hidingQuality[name] -= 3;
-      } else {
-        hidingQuality[name] += 2;
-      }
+      // Start with moderate quality — will be adjusted per round
+      hidingQuality[name] = 5.0 + s.boldness * 0.2 + s.intuition * 0.15;
       usedSpots.add('stalker');
+      stalkerArc = { player: name, beats: [], suspicion: 0, outcome: null };
       return;
     }
 
@@ -333,9 +339,42 @@ export function simulateHideAndBeSneaky(ep) {
   const persistingEffects = { rain:false, fog:false, sunset:false };
   const badges = {};
   const chrisQuips = {};
+  let stalkerArc = null;
 
   for (let r = 1; r <= totalRounds; r++) {
     if (hidden.length <= 1) break;
+
+    // Stalker per-round beat
+    if (stalkerArc && !stalkerArc.outcome && hidden.includes(stalkerArc.player)) {
+      const sp = pStats(stalkerArc.player);
+      const stalkerCheck = sp.boldness * 0.4 + sp.intuition * 0.3 + sp.physical * 0.3 + (Math.random() * 2 - 1);
+      const beat = STALKER_BEATS[Math.floor(Math.random() * STALKER_BEATS.length)];
+      const pass = stalkerCheck >= 5.5;
+      const pr = pronouns(stalkerArc.player);
+      stalkerArc.beats.push({ round: r, id: beat.id, text: beat.text(stalkerArc.player, pr, pass), pass });
+      if (pass) {
+        hidingQuality[stalkerArc.player] += 0.5;
+        if (beat.id === 'intel') hidingQuality[stalkerArc.player] += 0.5;
+      } else {
+        hidingQuality[stalkerArc.player] -= 0.5;
+        stalkerArc.suspicion++;
+      }
+      if (stalkerArc.suspicion >= 3) {
+        stalkerArc.outcome = 'caught';
+        const escScore = calcEscapeScore(stalkerArc.player);
+        if (escScore > 7) {
+          escaped.push({ name: stalkerArc.player, round: r });
+          badges[stalkerArc.player] = 'hideSeekStalker';
+          popDelta(stalkerArc.player, 2);
+          stalkerArc.outcome = 'escaped';
+        } else {
+          caught.push({ name: stalkerArc.player, round: r, method: 'stalker-caught', escapeAttempted: true });
+        }
+        chrisQuips['stalker'] = CHRIS_QUIPS.stalkerCaught[Math.floor(Math.random() * CHRIS_QUIPS.stalkerCaught.length)];
+        hidden = hidden.filter(h => h !== stalkerArc.player);
+      }
+    }
+
     const chefDetection = baseDetection + r * escalation;
     const roundData = { num: r, events: [], found: null, escaped: null, hiddenCount: hidden.length };
     const quipPool = r <= totalRounds * 0.33 ? CHRIS_QUIPS.roundEarly : r <= totalRounds * 0.66 ? CHRIS_QUIPS.roundMid : CHRIS_QUIPS.roundLate;
@@ -625,6 +664,14 @@ export function simulateHideAndBeSneaky(ep) {
 
   const phase2 = { rounds, caught: [...caught], escaped: [...escaped] };
 
+  // Stalker survived all rounds
+  if (stalkerArc && !stalkerArc.outcome && hidden.includes(stalkerArc.player)) {
+    stalkerArc.outcome = 'survived';
+    badges[stalkerArc.player] = 'hideSeekStalker';
+    popDelta(stalkerArc.player, 2);
+    chrisQuips['stalker'] = CHRIS_QUIPS.stalkerSurvived[Math.floor(Math.random() * CHRIS_QUIPS.stalkerSurvived.length)];
+  }
+
   // ── PHASE 3: BETRAYAL ──
   const betrayals = [];
   const loyals = [];
@@ -797,6 +844,14 @@ export function simulateHideAndBeSneaky(ep) {
         beats.push({ id: bt.id, text: bt.text(name, pr, beatWin), win: beatWin, score: beatScore });
       }
 
+      // Stalker showdown bonus
+      if (stalkerArc?.player === name && stalkerArc.outcome === 'survived') {
+        totalScore += 3;
+        popDelta(name, 2);
+        const pr = pronouns(name);
+        beats.push({ id:'stalker-combat', text: `${name} went FULL IZZY on Chef — ${pr.sub} had been stalking ${pr.obj} the entire game and now ${pr.sub} struck!`, win: true, score: 3 });
+      }
+
       caught.forEach(({ name: caughtP }) => {
         const bond = getBond(caughtP, name);
         if (bond >= 3 && Math.random() < 0.3) {
@@ -934,6 +989,7 @@ export function simulateHideAndBeSneaky(ep) {
     phase3,
     phase4,
     phase5,
+    stalkerArc,
     immunityWinners,
     badges,
     chrisQuips,
@@ -1125,6 +1181,33 @@ export function rpBuildHideAndBeSneaky(ep) {
   hs.phase2.rounds.forEach(round => {
     // Round header as its own step
     steps.push({ type: 'hunt-header', html: `${_chrisQuip(hs.chrisQuips, 'round-' + round.num)}<div class="nv-sector">SCANNING SECTOR ${round.num} &mdash; ${round.hiddenCount} OPERATIVES REMAIN</div>` });
+
+    // Stalker beat for this round
+    if (hs.stalkerArc) {
+      const stalkerBeat = hs.stalkerArc.beats.find(b => b.round === round.num);
+      if (stalkerBeat) {
+        const suspicionSoFar = hs.stalkerArc.beats.filter(b => !b.pass && b.round <= round.num).length;
+        steps.push({ type: 'stalker-beat', html: `
+          <div class="nv-card" style="border-color:rgba(139,92,246,0.3);background:rgba(139,92,246,0.05)">
+            <div style="font-size:9px;color:#8b5cf6;letter-spacing:2px;font-weight:700;margin-bottom:4px">👁 STALKER FEED</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              ${rpPortrait(hs.stalkerArc.player, 'sm')}
+              <div style="flex:1;font-size:12px;color:#cdd9e5">${stalkerBeat.text}</div>
+              <span class="nv-status" style="background:rgba(139,92,246,0.15);color:${stalkerBeat.pass ? '#8b5cf6' : '#f85149'}">${stalkerBeat.pass ? 'UNDETECTED' : 'SUSPICION +1'}</span>
+            </div>
+            ${suspicionSoFar > 0 ? `<div style="margin-top:4px;font-size:10px;color:#8b5cf6">Suspicion: ${'🔴'.repeat(suspicionSoFar)}${'⚫'.repeat(3 - suspicionSoFar)}</div>` : ''}
+          </div>` });
+      }
+    }
+
+    // Stalker caught this round?
+    if (hs.stalkerArc?.outcome === 'caught' || hs.stalkerArc?.outcome === 'escaped') {
+      const lastBeat = hs.stalkerArc.beats[hs.stalkerArc.beats.length - 1];
+      if (lastBeat?.round === round.num && hs.stalkerArc.suspicion >= 3) {
+        const quip = _chrisQuip(hs.chrisQuips, 'stalker');
+        if (quip) steps.push({ type: 'stalker-reveal', html: quip });
+      }
+    }
 
     // Each event as its own step
     round.events.forEach(evt => {

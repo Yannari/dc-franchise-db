@@ -134,6 +134,8 @@ export function patchEpisodeHistory(ep) {
   if (!h.bikeRace && ep.bikeRace) h.bikeRace = ep.bikeRace;
   if (ep.isWawanakwaGoneWild) h.isWawanakwaGoneWild = true;
   if (!h.wawanakwaGoneWild && ep.wawanakwaGoneWild) h.wawanakwaGoneWild = ep.wawanakwaGoneWild;
+  if (ep.isTriArmedTriathlon) h.isTriArmedTriathlon = true;
+  if (!h.triArmedTriathlon && ep.triArmedTriathlon) h.triArmedTriathlon = ep.triArmedTriathlon;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
   if (ep.fanVoteReturnee) h.fanVoteReturnee = ep.fanVoteReturnee;

@@ -1572,12 +1572,18 @@ function _renderTDDStep(evt, tdd) {
 
   if (type === 'dareElimination' || type === 'elimination') {
     const por = _tddPortrait(evt.player, 'lg');
+    const dareBlock = (evt.dareTitle || evt.dareDesc)
+      ? `<div style="margin-top:12px;padding:10px 14px;background:rgba(255,255,255,0.06);border-radius:6px;text-align:left">
+          ${evt.dareTitle ? `<div style="font-size:13px;font-weight:700;color:#ffd447;margin-bottom:4px">${_htmlEscapeTDD(evt.dareTitle)}</div>` : ''}
+          ${evt.dareDesc  ? `<div style="font-size:11px;font-style:italic;color:#d4c8b0">${_htmlEscapeTDD(evt.dareDesc)}</div>` : ''}
+        </div>` : '';
     return `<div class="tdd-elim">
       ${por ? `<div style="display:flex;justify-content:center;margin-bottom:8px">${por}</div>` : ''}
       <div class="tdd-elim-name">
         ${_htmlEscapeTDD(evt.player || '?')}
         <span class="tdd-elim-slash"></span>
       </div>
+      ${dareBlock}
       <div class="tdd-elim-caption">${_htmlEscapeTDD(evt.text || evt.reaction || 'Chickens out. Eliminated.')}</div>
     </div>`;
   }
@@ -1651,6 +1657,23 @@ export function rpBuildTripleDogDare(ep) {
       }
     }
   });
+
+  // Inject dramatic elimination card as the final reveal step
+  if (tdd.eliminated) {
+    const pr = pronouns(tdd.eliminated);
+    const dareTitle = tdd.eliminatedDare?.title || '';
+    const dareDesc  = tdd.eliminatedDare?.text  || '';
+    const cat       = tdd.eliminatedDare?.category || '';
+    const reason    = cat && cat !== 'fallback'
+      ? `Couldn't do "${dareTitle}" (${cat}) — Round ${tdd.eliminatedRound}`
+      : `Ran out of freebies — couldn't take the dare`;
+    steps.push({ evt: {
+      type: 'dareElimination', player: tdd.eliminated,
+      dareTitle, dareDesc, category: cat,
+      text: reason,
+      reaction: `${tdd.eliminated} chickens out for the last time. ${pr.Sub} ${pr.sub === 'they' ? 'are' : 'is'} out of the game.`
+    }});
+  }
 
   const renderedSteps = steps.map((s, i) => {
     const html = _renderTDDStep(s.evt, tdd);

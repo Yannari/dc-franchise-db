@@ -6,7 +6,7 @@ import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { rpBuildOffTheChain } from './chal/off-the-chain.js';
 import { rpBuildWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 import { rpBuildTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
-import { rpBuildTripleDogDare } from './chal/triple-dog-dare.js';
+import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/triple-dog-dare.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10484,6 +10484,9 @@ export function buildVPScreens(epRecord) {
   // ── Triple Dog Dare — replaces challenge + tribal + votes ──
   if (ep.isTripleDogDare && ep.tripleDogDare) {
     vpScreens.push({ id: 'tdd', label: 'Triple Dog Dare', html: rpBuildTripleDogDare(ep) });
+    if (ep.tripleDogDare.eliminated) {
+      vpScreens.push({ id: 'tdd-elim', label: 'Eliminated', html: rpBuildTripleDogDareElimination(ep) });
+    }
     // RI/Rescue screens
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _tddRiLife = rpBuildRILife(ep);

@@ -1591,32 +1591,6 @@ export function rpBuildCampCastaways(ep) {
   return html;
 }
 
-function isSchemeEligible(name) {
-  if (isVillainArch(name)) return true;
-  const s = pStats(name);
-  return !isNiceArch(name) && s.strategic >= 6 && s.loyalty <= 4;
-}
-function getBreakdownName(arch, obj) { return obj.names[arch] || obj.names.default; }
-function formGroups(playerList) {
-  const shuffled = [...playerList].sort(() => Math.random() - 0.5);
-  const groups = [];
-  let i = 0;
-  while (i < shuffled.length) {
-    const remaining = shuffled.length - i;
-    let size;
-    if (remaining <= 3)       { size = remaining; }
-    else if (remaining === 4) { size = 2; }
-    else                      { size = Math.random() < 0.6 ? 2 : (Math.random() < 0.5 ? 3 : 1); }
-    if (size === 1 && remaining > 3 && Math.random() < 0.7) size = 2;
-    groups.push(shuffled.slice(i, i + size));
-    i += size;
-  }
-  return groups;
-}
-function _tryPortrait(name) {
-  try { return typeof rpPortrait === 'function' ? rpPortrait(name, 'xs') : ''; } catch (e) { return ''; }
-}
-
 // ── _fireWildlifeEvent ────────────────────────────────────────────────────────
 function _fireWildlifeEvent(wId, group, label, timeline, personalScores, cameraFlags, isSolo) {
   const pr_of = n => pronouns(n);

@@ -1314,6 +1314,14 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 4) return;
     ep.isTriArmedTriathlon = true;
 
+  } else if (engineType === 'camp-castaways') {
+    if (!gs.isMerged) {
+      const _ccMerging = gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
+      if (!_ccMerging) return;
+    }
+    if (gs.activePlayers.length < 4) return;
+    ep.isCampCastaways = true;
+
   } else if (engineType === 'brunch-of-disgustingness') {
     if (!gs.isMerged && gs.activePlayers.length > (seasonConfig.mergeAt || 12)) return;
     if (gs.activePlayers.length < 4) return;

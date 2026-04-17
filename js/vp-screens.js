@@ -6,6 +6,7 @@ import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { rpBuildOffTheChain } from './chal/off-the-chain.js';
 import { rpBuildWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 import { rpBuildTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
+import { rpBuildCampCastaways } from './chal/camp-castaways.js';
 import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/triple-dog-dare.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -628,6 +629,14 @@ export function rpBuildColdOpen(ep) {
       html += `<div class="vp-card" style="border-color:rgba(200,100,30,0.2);margin-bottom:8px">
         <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#c8641e;margin-bottom:4px">⛓️ TRI-ARMED TRIATHLON</div>
         <div style="font-size:12px;color:#8b949e">${immStr}.${_tri.spectator ? ` ${_tri.spectator} watched from the sidelines.` : ''}</div>
+      </div>`;
+    }
+    if (prevEp.isCampCastaways && prevEp.campCastaways) {
+      const _cc = prevEp.campCastaways;
+      const breakdownStr = (_cc.breakdowns || []).length ? ` ${_cc.breakdowns[0].player} broke down and bonded with ${_cc.breakdowns[0].objectName}.` : '';
+      html += `<div class="vp-card" style="border-color:rgba(0,255,65,0.15);margin-bottom:8px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#00ff41;margin-bottom:4px">🏝️ CAMP CASTAWAYS</div>
+        <div style="font-size:12px;color:#8b949e">${_cc.immunityWinner || 'Unknown'} survived best and won immunity.${breakdownStr}</div>
       </div>`;
     }
 
@@ -1992,7 +2001,7 @@ export function rpBuildDebug(ep) {
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
-      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon) ? _tabBtn('challenge', 'Challenge') : ''}
+      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isCampCastaways) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -2690,7 +2699,7 @@ export function rpBuildDebug(ep) {
       });
     }
     const _chalLabel = ep.challengeLabel || 'Challenge';
-    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : ep.isBasicStraining ? 'Basic Straining' : ep.isXtremeTorture ? 'X-Treme Torture' : ep.isLuckyHunt ? 'Lucky Hunt' : ep.isHideAndBeSneaky ? 'Hide and Be Sneaky' : ep.isOffTheChain ? "That's Off the Chain!" : ep.isWawanakwaGoneWild ? 'Wawanakwa Gone Wild!' : ep.isTriArmedTriathlon ? 'Trial by Tri-Armed Triathlon' : _chalLabel;
+    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : ep.isBasicStraining ? 'Basic Straining' : ep.isXtremeTorture ? 'X-Treme Torture' : ep.isLuckyHunt ? 'Lucky Hunt' : ep.isHideAndBeSneaky ? 'Hide and Be Sneaky' : ep.isOffTheChain ? "That's Off the Chain!" : ep.isWawanakwaGoneWild ? 'Wawanakwa Gone Wild!' : ep.isTriArmedTriathlon ? 'Trial by Tri-Armed Triathlon' : ep.isCampCastaways ? 'Camp Castaways' : _chalLabel;
 
     html += `<div style="margin-bottom:12px">
       <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
@@ -2977,6 +2986,16 @@ export function rpBuildDebug(ep) {
       });
       const immLine = _ta.tripleTie ? '<span style="color:#f85149">TRIPLE-TIE — no immunity</span>' : `Immune: <span style="color:#c8641e">${(_ta.immune||[]).join(' + ')}</span>`;
       html += `<div style="font-size:9px;color:#c8641e;padding:2px 0;margin-top:4px">${immLine}${_ta.spectator ? ` · Spectator: ${_ta.spectator}` : ''}</div>`;
+    }
+
+    if (ep.campCastaways?.personalScores) {
+      const _cc = ep.campCastaways;
+      html += `<div style="font-family:var(--font-display);font-size:13px;color:#00ff41;margin:16px 0 8px">🏝️ Camp Castaways — Survival Scores</div>`;
+      Object.entries(_cc.personalScores || {}).sort(([,a],[,b]) => b-a).forEach(([name, score]) => {
+        const isBD = (_cc.breakdowns || []).some(b => b.player === name);
+        html += `<div style="font-size:9px;padding:1px 0;color:#6e7681">${name}: ${score.toFixed(1)}${isBD ? ' <span style="color:#f85149">[BREAKDOWN]</span>' : ''}</div>`;
+      });
+      html += `<div style="font-size:9px;color:#00ff41;padding:2px 0;margin-top:4px">Immunity: ${_cc.immunityWinner || 'None'} · Events: ${_cc.timeline?.length || 0}</div>`;
     }
 
     html += `</div>`;
@@ -10257,7 +10276,9 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'wawanakwa-gone-wild', label:'Wawanakwa Gone Wild!', html: rpBuildWawanakwaGoneWild(ep) });
   } else if (ep.isTriArmedTriathlon && ep.triArmedTriathlon) {
     vpScreens.push({ id:'tri-armed-triathlon', label:'Tri-Armed Triathlon', html: rpBuildTriArmedTriathlon(ep) });
-  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon) {
+  } else if (ep.isCampCastaways && ep.campCastaways) {
+    vpScreens.push({ id:'camp-castaways', label:'Camp Castaways', html: rpBuildCampCastaways(ep) });
+  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
 

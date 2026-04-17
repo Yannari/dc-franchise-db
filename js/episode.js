@@ -40,6 +40,7 @@ import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 import { simulateTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
+import { simulateCampCastaways } from './chal/camp-castaways.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   patchEpisodeHistory, saveGameState, snapshotGameState, buildCrashout
@@ -2043,6 +2044,10 @@ export function simulateEpisode() {
     // ── TRI-ARMED TRIATHLON: handcuffed pair triathlon ──
     simulateTriArmedTriathlon(ep);
     ep.tribalPlayers = gs.activePlayers.filter(p => !(ep.extraImmune || []).includes(p) && p !== ep.immunityWinner && p !== gs.exileDuelPlayer);
+  } else if (ep.isCampCastaways) {
+    // ── CAMP CASTAWAYS: flood survival scoring ──
+    simulateCampCastaways(ep);
+    ep.tribalPlayers = gs.activePlayers.filter(p => p !== ep.immunityWinner && !(ep.extraImmune || []).includes(p) && p !== gs.exileDuelPlayer);
   } else {
     // ── TIED DESTINIES: paired immunity challenge ──
     const _tdTwist = ep.tiedDestinies;
@@ -2239,7 +2244,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways) {
     updateChalRecord(ep);
   }
 

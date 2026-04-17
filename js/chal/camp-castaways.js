@@ -1591,12 +1591,6 @@ export function rpBuildCampCastaways(ep) {
   return html;
 }
 
-// ── HELPERS ──────────────────────────────────────────────────────────────────
-function _rp(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function popDelta(name, delta) { if (!gs.popularity) gs.popularity = {}; gs.popularity[name] = (gs.popularity[name] || 0) + delta; }
-function getArchetype(name) { return players.find(p => p.name === name)?.archetype || ''; }
-function isVillainArch(name) { return VILLAIN_ARCHETYPES.includes(getArchetype(name)); }
-function isNiceArch(name) { return NICE_ARCHETYPES.includes(getArchetype(name)); }
 function isSchemeEligible(name) {
   if (isVillainArch(name)) return true;
   const s = pStats(name);

@@ -39,6 +39,7 @@ import { simulateSlasherNight } from './chal/slasher-night.js';
 import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
+import { simulateTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   patchEpisodeHistory, saveGameState, snapshotGameState, buildCrashout
@@ -1955,6 +1956,82 @@ export function simulateEpisode() {
   } else if (ep.isOffTheChain) {
     // ── OFF THE CHAIN: post-merge bike-building and racing ──
     simulateOffTheChain(ep);
+
+    // Sudden-death branch: simulateOffTheChain set ep.suddenDeathEliminated / ep.noTribal,
+    // but state mutation (active/eliminated/jury/advantages) has to happen here — and we
+    // must short-circuit the downstream noTribal handler that would null out ep.eliminated.
+    if (ep.isSuddenDeath && ep.suddenDeathEliminated) {
+      const _sdLastPlace = ep.suddenDeathEliminated;
+      handleAdvantageInheritance(_sdLastPlace, ep);
+      gs.activePlayers = gs.activePlayers.filter(p => p !== _sdLastPlace);
+      gs.eliminated.push(_sdLastPlace);
+      if (gs.isMerged) gs.jury.push(_sdLastPlace);
+      gs.advantages = gs.advantages.filter(a => a.holder !== _sdLastPlace);
+
+      // Provider tracking (parallels generic sudden-death branch)
+      if (seasonConfig.foodWater === 'enabled' && gs.currentProviders?.includes(_sdLastPlace)) {
+        const _sdTribe = gs.isMerged ? (gs.mergeName || 'merge') : '';
+        gs.providerVotedOutLastEp = { name: _sdLastPlace, tribeName: _sdTribe };
+      }
+
+      // Black vote (parallels generic sudden-death branch)
+      if (seasonConfig.blackVote && seasonConfig.blackVote !== 'off' && gs.activePlayers.length > 4) {
+        const _sdPool = gs.activePlayers.filter(p => p !== _sdLastPlace);
+        if (_sdPool.length) {
+          if (seasonConfig.blackVote === 'classic') {
+            const _sdBvTarget = [..._sdPool].sort((a, b) => getBond(_sdLastPlace, a) - getBond(_sdLastPlace, b))[0];
+            if (_sdBvTarget) {
+              if (!gs.blackVotes) gs.blackVotes = [];
+              gs.blackVotes.push({ from: _sdLastPlace, target: _sdBvTarget, ep: epNum, type: 'classic', reason: getBond(_sdLastPlace, _sdBvTarget) <= -2 ? `grudge — ${_sdLastPlace} and ${_sdBvTarget} had bad blood` : `${_sdLastPlace} wants ${_sdBvTarget} gone — lowest bond of anyone left` });
+              ep.blackVote = { from: _sdLastPlace, target: _sdBvTarget, type: 'classic', reason: getBond(_sdLastPlace, _sdBvTarget) <= -2 ? `grudge` : `lowest bond` };
+            }
+          } else if (seasonConfig.blackVote === 'modern') {
+            const _sdBvRecip = [..._sdPool].sort((a, b) => getBond(_sdLastPlace, b) - getBond(_sdLastPlace, a))[0];
+            if (_sdBvRecip) {
+              gs.advantages.push({ holder: _sdBvRecip, type: 'extraVote', foundEp: epNum, fromBlackVote: true, giftedBy: _sdLastPlace });
+              ep.blackVote = { from: _sdLastPlace, recipient: _sdBvRecip, type: 'modern', reason: `closest ally` };
+            }
+          }
+        }
+      }
+
+      // Challenge record + camp events + post-tribal bookkeeping
+      updateChalRecord(ep);
+      generateCampEvents(ep, 'post');
+      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+      updateSurvival(ep);
+      gs.episode = epNum;
+      if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
+
+      gs.episodeHistory.push({
+        num: epNum, eliminated: ep.eliminated || _sdLastPlace, riChoice: null,
+        immunityWinner: ep.immunityWinner || null,
+        challengeType: ep.challengeType || 'individual',
+        challengeLabel: ep.challengeLabel,
+        challengeCategory: ep.challengeCategory,
+        challengeDesc: ep.challengeDesc,
+        chalPlacements: ep.chalPlacements || [],
+        chalMemberScores: ep.chalMemberScores || {},
+        isMerge: ep.isMerge, isSuddenDeath: true, noTribal: true,
+        suddenDeathEliminated: _sdLastPlace,
+        votes: {}, alliances: [],
+        twists: (ep.twists || []).map(t => ({...t})),
+        tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
+        campEvents: ep.campEvents || null,
+        journey: ep.journey || null,
+        idolFinds: ep.idolFinds || [],
+        advantagesPreTribal: ep.advantagesPreTribal || null,
+        summaryText: '',
+        gsSnapshot: window.snapshotGameState(),
+      });
+      const stOCSD = generateSummaryText(ep);
+      gs.episodeHistory[gs.episodeHistory.length - 1].summaryText = stOCSD;
+      ep.summaryText = stOCSD;
+      window.patchEpisodeHistory(ep);
+      window.saveGameState();
+      return ep;
+    }
+
     if (!ep.tribalPlayers) {
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== ep.immunityWinner && !(ep.extraImmune || []).includes(p) && p !== gs.exileDuelPlayer);
     }
@@ -1962,6 +2039,10 @@ export function simulateEpisode() {
     // ── WAWANAKWA GONE WILD: post-merge animal hunt ──
     simulateWawanakwaGoneWild(ep);
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== ep.immunityWinner && !(ep.extraImmune || []).includes(p) && p !== gs.exileDuelPlayer);
+  } else if (ep.isTriArmedTriathlon) {
+    // ── TRI-ARMED TRIATHLON: handcuffed pair triathlon ──
+    simulateTriArmedTriathlon(ep);
+    ep.tribalPlayers = gs.activePlayers.filter(p => !(ep.extraImmune || []).includes(p) && p !== ep.immunityWinner && p !== gs.exileDuelPlayer);
   } else {
     // ── TIED DESTINIES: paired immunity challenge ──
     const _tdTwist = ep.tiedDestinies;
@@ -2158,7 +2239,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon) {
     updateChalRecord(ep);
   }
 

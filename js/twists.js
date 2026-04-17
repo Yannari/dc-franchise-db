@@ -1309,6 +1309,11 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 6) return;
     ep.isWawanakwaGoneWild = true;
 
+  } else if (engineType === 'tri-armed-triathlon') {
+    if (!gs.isMerged && gs.activePlayers.length > (seasonConfig.mergeAt || 12)) return;
+    if (gs.activePlayers.length < 4) return;
+    ep.isTriArmedTriathlon = true;
+
   } else if (engineType === 'brunch-of-disgustingness') {
     if (!gs.isMerged && gs.activePlayers.length > (seasonConfig.mergeAt || 12)) return;
     if (gs.activePlayers.length < 4) return;

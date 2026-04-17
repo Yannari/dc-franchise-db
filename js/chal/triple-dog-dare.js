@@ -4,6 +4,33 @@ import { pStats, pronouns, updateChalRecord } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { wRandom, computeHeat } from '../alliances.js';
 
+// ── Archetype × Category willingness modifiers ──
+const TDD_ARCHETYPE_BIAS = {
+  'hothead':            { gross:  0.00, physical:  0.15, truth: -0.10, public:  0.05 },
+  'challenge-beast':    { gross: -0.05, physical:  0.20, truth: -0.05, public:  0.00 },
+  'villain':            { gross:  0.00, physical:  0.00, truth:  0.12, public: -0.08 },
+  'mastermind':         { gross: -0.05, physical: -0.05, truth:  0.12, public: -0.05 },
+  'schemer':            { gross: -0.05, physical: -0.05, truth:  0.10, public: -0.05 },
+  'social-butterfly':   { gross: -0.05, physical:  0.00, truth:  0.05, public:  0.15 },
+  'showmancer':         { gross: -0.05, physical:  0.00, truth:  0.05, public:  0.15 },
+  'hero':               { gross:  0.05, physical:  0.05, truth:  0.05, public:  0.05 },
+  'loyal-soldier':      { gross:  0.05, physical:  0.05, truth:  0.05, public:  0.05 },
+  'underdog':           { gross:  0.10, physical:  0.10, truth:  0.00, public:  0.00 },
+  'goat':               { gross:  0.15, physical:  0.05, truth:  0.00, public:  0.10 },
+  'perceptive-player':  { gross: -0.05, physical: -0.05, truth:  0.10, public: -0.05 },
+  'wildcard':           { gross:  0.10, physical:  0.10, truth:  0.05, public:  0.10 },
+  'chaos-agent':        { gross:  0.15, physical:  0.10, truth:  0.00, public:  0.10 },
+  'floater':            { gross: -0.05, physical: -0.05, truth: -0.05, public: -0.05 },
+};
+
+function _tddArchBias(playerName, category) {
+  const p = players.find(pp => pp.name === playerName);
+  const arch = p?.archetype || '';
+  const row = TDD_ARCHETYPE_BIAS[arch];
+  if (!row) return 0;
+  return row[category] || 0;
+}
+
 export function simulateTripleDogDare(ep) {
   const activePlayers = [...gs.activePlayers];
   const eliminated = [...gs.eliminated];
@@ -19,9 +46,67 @@ export function simulateTripleDogDare(ep) {
   const betrayals = [];   // { player, target, type:'redirect'|'refusal', round }
   const completions = {}; // { playerName: count }
   activePlayers.forEach(p => completions[p] = 0);
+  const chickenStreak = {};
+  activePlayers.forEach(p => chickenStreak[p] = 0);
+  const chickenStreakAnnounced = {};
+  activePlayers.forEach(p => chickenStreakAnnounced[p] = false);
+  const dareFatigue = {};
+  activePlayers.forEach(p => dareFatigue[p] = 0);
   let eliminatedPlayer = null;
   let eliminatedRound = null;
   let eliminatedDare = null;
+
+  const _applyDareConsequence = (player, category, dareObj, chain, roundNum) => {
+    if (category === 'gross') {
+      if (Math.random() < 0.25) {
+        if (freebies[player] > 0) freebies[player]--;
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[player] = (gs.popularity[player] || 0) - 1;
+        const mishapTexts = [
+          `${player} tries to comply. Their body has other ideas.`,
+          `${player} commits fully. The audience wishes they hadn't.`,
+          `${player} gets halfway through and loses it. Completely.`,
+        ];
+        chain.push({ type: 'dareMishap', player, category, round: roundNum,
+          text: mishapTexts[Math.floor(Math.random() * mishapTexts.length)],
+          badgeText: 'MISHAP', badgeClass: 'red' });
+      } else {
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[player] = (gs.popularity[player] || 0) + 1;
+        chain.push({ type: 'dareConsequence', player, category, round: roundNum,
+          text: `${player} pulls it off without flinching. Grudging respect from the tribe.` });
+      }
+    } else if (category === 'physical') {
+      dareFatigue[player] = 2;
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[player] = (gs.popularity[player] || 0) + 2;
+      chain.push({ type: 'dareConsequence', player, category, round: roundNum,
+        text: `${player} is drained. Two rounds of recovery needed, but the crowd loves it.` });
+    } else if (category === 'truth') {
+      const namedTarget = dareObj._resolvedTarget || null;
+      if (namedTarget) {
+        const bondDelta = dareObj.severity === 'harsh' ? -3 : -2;
+        addBond(player, namedTarget, bondDelta);
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[namedTarget] = (gs.popularity[namedTarget] || 0) - 1;
+        gs.popularity[player] = (gs.popularity[player] || 0) + 1;
+        chain.push({ type: 'dareConsequence', player, namedTarget, category, round: roundNum,
+          text: `${player} tells the truth about ${namedTarget}. The silence that follows says everything.`,
+          bondDelta, players: [player, namedTarget] });
+      } else {
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[player] = (gs.popularity[player] || 0) + 1;
+        chain.push({ type: 'dareConsequence', player, category, round: roundNum,
+          text: `${player} reveals something nobody knew. The game just shifted.` });
+      }
+    } else if (category === 'public') {
+      const swing = dareObj.severity === 'harsh' ? 3 : 2;
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[player] = (gs.popularity[player] || 0) + swing;
+      chain.push({ type: 'dareConsequence', player, category, round: roundNum,
+        text: `${player} commits completely. The entire camp stops to watch.`, popDelta: swing });
+    }
+  };
 
   // ── Helper: get alliance + pact partners ──
   const _getPactPartners = (player) => {
@@ -34,34 +119,24 @@ export function simulateTripleDogDare(ep) {
   };
 
   // ── Helper: willingness to accept a dare ──
-  // Returns true if the player is willing to do it, false if they'd rather redirect
-  // When forced (0 freebies), a second roll determines if they can actually do it
   const _willingness = (player, category, roundNum, forced = false) => {
     const s = pStats(player);
-    // Fatigue ramps up — early rounds feel brave, late rounds get desperate
-    // Round 1-3: negligible. Round 5-7: noticeable. Round 10+: heavy. Round 15+: brutal.
-    // No cap — eventually even boldness 10 cracks.
     const fatigue = Math.pow(roundNum, 1.5) * 0.006;
+    const physicalFatigue = (dareFatigue[player] || 0) > 0 ? 0.05 * dareFatigue[player] : 0;
+    const streakPressure = (chickenStreak[player] || 0) >= 3 ? 0.03 * chickenStreak[player] : 0;
     let secondary = 0;
-    if (category === 'humiliation') secondary = (10 - s.social) * 0.03;
-    else if (category === 'pain-fear') secondary = s.physical * 0.03;
-    else if (category === 'sacrifice') secondary = (10 - s.loyalty) * 0.03;
-    // Freebie awareness: players know their freebie count and act accordingly
-    // 0 freebies = accept (no choice anyway, might as well commit)
-    // 1 freebie = clutch it, redirect if possible
-    // 2+ freebies = comfortable, more willing to accept
-    // 4+ freebies = very secure, almost always accept
+    if (category === 'public') secondary = (10 - s.social) * 0.03;
+    else if (category === 'physical') secondary = s.physical * 0.03;
+    else if (category === 'truth') secondary = (10 - s.loyalty) * 0.03;
     const myFreebies = freebies[player] || 0;
-    const freebieComfort = myFreebies === 0 ? 0.15   // no freebies = commit (can't redirect anyway)
-      : myFreebies === 1 ? -0.12  // 1 freebie = protect it, redirect
-      : myFreebies === 2 ? 0.0    // 2 freebies = neutral
-      : myFreebies === 3 ? 0.08   // 3 freebies = comfortable
-      : 0.15;                      // 4+ = very secure, accept freely
-    // Early round safety: first 3 rounds nobody should go home — the game needs buildup
+    const freebieComfort = myFreebies === 0 ? 0.15
+      : myFreebies === 1 ? -0.12
+      : myFreebies === 2 ? 0.0
+      : myFreebies === 3 ? 0.08
+      : 0.15;
     const earlyBoost = roundNum <= 2 ? 0.25 : roundNum <= 4 ? 0.10 : 0;
-    const chance = s.boldness * 0.07 + secondary - fatigue + freebieComfort + earlyBoost;
-    // When choosing freely: moderate bar — lean toward accepting early
-    // When forced (0 freebies): lower bar — desperation helps
+    const chance = s.boldness * 0.07 + secondary - fatigue + freebieComfort + earlyBoost
+      + _tddArchBias(player, category) + streakPressure - physicalFatigue;
     const threshold = forced ? 0.15 : 0.35;
     return Math.random() < (chance - threshold + 0.5);
   };
@@ -276,32 +351,70 @@ export function simulateTripleDogDare(ep) {
     // Wheel lands on eliminated player (who wrote the dare)
     const wheelLanding = eliminated.length ? _rp(eliminated) : 'The Host';
     const category = _rp(DARE_CATEGORIES);
-    const dareObj = _rp(DARE_POOL[category]);
+    let darePool = DARE_POOL[category] || [];
+    if ((chickenStreak[activeSpinner] || 0) >= 5) {
+      const harsh = darePool.filter(d => d.severity === 'harsh');
+      if (harsh.length >= 3) darePool = harsh;
+    }
+    let dareObj = darePool[Math.floor(Math.random() * darePool.length)] || { title: '', desc: '', severity: 'mild' };
     const dareTitle = dareObj.title;
-    const dareText = dareObj.desc;
+    let dareText = dareObj.desc;
+    let dareTarget = null;
+    if (dareText && dareText.includes('{target}')) {
+      const candidates = remaining.filter(p => p !== activeSpinner);
+      dareTarget = candidates[Math.floor(Math.random() * candidates.length)];
+      if (dareTarget) dareText = dareText.replace(/\{target\}/g, dareTarget);
+      dareObj = { ...dareObj, _resolvedTarget: dareTarget, desc: dareText };
+    }
 
     const chain = [];
+
+    // Spinner land + dare reveal events
+    const _spinnerIdx = activePlayers.indexOf(activeSpinner);
+    const _spinnerWedge = 360 / Math.max(1, remaining.length);
+    const _spinnerAngle = _spinnerIdx >= 0 ? _spinnerIdx * _spinnerWedge + _spinnerWedge / 2 : Math.random() * 360;
+    chain.push({ type: 'spinnerLand', player: activeSpinner, round: roundNum, _spinnerAngle });
+    chain.push({ type: 'dareReveal', player: activeSpinner, category, text: dareText, round: roundNum });
 
     // Step 1: Spinner decides -- accept own dare or pass?
     const spinnerWilling = _willingness(activeSpinner, category, roundNum, false);
 
     if (spinnerWilling) {
+      if ((chickenStreak[activeSpinner] || 0) >= 3) {
+        chain.push({ type: 'chickenStreakBroken', player: activeSpinner, priorStreak: chickenStreak[activeSpinner], round: roundNum,
+          text: `${activeSpinner} finally steps up. After ${chickenStreak[activeSpinner]} passes, the streak is broken.` });
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[activeSpinner] = (gs.popularity[activeSpinner] || 0) + 1;
+      }
+      chickenStreak[activeSpinner] = 0;
+      chickenStreakAnnounced[activeSpinner] = false;
       // Spinner accepts their own dare -> earns +1 freebie
       chain.push({ player: activeSpinner, action: 'accept', completed: true, freebieEarned: true,
         isSpinner: true, reaction: _acceptReaction(activeSpinner, category, dareTitle) });
       freebies[activeSpinner]++;
       completions[activeSpinner]++;
+      _applyDareConsequence(activeSpinner, category, dareObj, chain, roundNum);
     } else {
       // Spinner passes the dare to someone else
       const redirectResult = _pickRedirectTarget(activeSpinner, remaining);
       if (!redirectResult || !redirectResult.target) {
         // No valid targets (solo?) -- spinner must accept
+        if ((chickenStreak[activeSpinner] || 0) >= 3) {
+          chain.push({ type: 'chickenStreakBroken', player: activeSpinner, priorStreak: chickenStreak[activeSpinner], round: roundNum,
+            text: `${activeSpinner} finally steps up. After ${chickenStreak[activeSpinner]} passes, the streak is broken.` });
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[activeSpinner] = (gs.popularity[activeSpinner] || 0) + 1;
+        }
+        chickenStreak[activeSpinner] = 0;
+        chickenStreakAnnounced[activeSpinner] = false;
         chain.push({ player: activeSpinner, action: 'accept', completed: true, freebieEarned: true,
           isSpinner: true, reaction: _acceptReaction(activeSpinner, category, dareTitle) });
         freebies[activeSpinner]++;
         completions[activeSpinner]++;
+        _applyDareConsequence(activeSpinner, category, dareObj, chain, roundNum);
       } else {
         const target = redirectResult.target;
+        chickenStreak[activeSpinner] = (chickenStreak[activeSpinner] || 0) + 1;
         const _rdBond = getBond(activeSpinner, target);
         chain.push({
           player: activeSpinner, action: 'pass', to: target, isSpinner: true,
@@ -324,11 +437,21 @@ export function simulateTripleDogDare(ep) {
           // Has freebies -- will they use one or push through?
           const targetWilling = _willingness(target, category, roundNum, false);
           if (targetWilling) {
+            if ((chickenStreak[target] || 0) >= 3) {
+              chain.push({ type: 'chickenStreakBroken', player: target, priorStreak: chickenStreak[target], round: roundNum,
+                text: `${target} finally steps up. After ${chickenStreak[target]} passes, the streak is broken.` });
+              if (!gs.popularity) gs.popularity = {};
+              gs.popularity[target] = (gs.popularity[target] || 0) + 1;
+            }
+            chickenStreak[target] = 0;
+            chickenStreakAnnounced[target] = false;
             // Target pushes through (no freebie earned -- only spinners earn)
             chain.push({ player: target, action: 'accept', completed: true, freebieEarned: false,
               isSpinner: false, reaction: _acceptReaction(target, category, dareTitle) });
             completions[target]++;
+            _applyDareConsequence(target, category, dareObj, chain, roundNum);
           } else {
+            chickenStreak[target] = (chickenStreak[target] || 0) + 1;
             // Target uses a freebie to skip
             freebies[target]--;
             const pr = pronouns(target);
@@ -339,10 +462,19 @@ export function simulateTripleDogDare(ep) {
           // 0 freebies -- MUST face the dare. Willingness determines fate.
           const canDoIt = _willingness(target, category, roundNum, true);
           if (canDoIt) {
+            if ((chickenStreak[target] || 0) >= 3) {
+              chain.push({ type: 'chickenStreakBroken', player: target, priorStreak: chickenStreak[target], round: roundNum,
+                text: `${target} finally steps up. After ${chickenStreak[target]} passes, the streak is broken.` });
+              if (!gs.popularity) gs.popularity = {};
+              gs.popularity[target] = (gs.popularity[target] || 0) + 1;
+            }
+            chickenStreak[target] = 0;
+            chickenStreakAnnounced[target] = false;
             // Pushes through despite having no safety net
             chain.push({ player: target, action: 'accept', completed: true, freebieEarned: false,
               isSpinner: false, reaction: _acceptReaction(target, category, dareTitle) });
             completions[target]++;
+            _applyDareConsequence(target, category, dareObj, chain, roundNum);
           } else {
             // Can't do it, no freebie to save them -- ELIMINATED
             chain.push({ player: target, action: 'refuse', completed: false,
@@ -354,6 +486,67 @@ export function simulateTripleDogDare(ep) {
         }
       }
     }
+
+    // ── Public reactions (max 2 per round) ──
+    const roundReactions = [];
+    const grossMishap = chain.find(e => e.type === 'dareMishap' && e.category === 'gross');
+    if (grossMishap) {
+      roundReactions.push({ type: 'publicReaction', subtype: 'disgust', round: roundNum,
+        players: [grossMishap.player],
+        text: `The crowd GAGS. ${grossMishap.player} just lost a bit of respect.` });
+    }
+    const physConseq = chain.find(e => e.type === 'dareConsequence' && e.category === 'physical');
+    if (physConseq) {
+      roundReactions.push({ type: 'publicReaction', subtype: 'cheer', round: roundNum,
+        players: [physConseq.player],
+        text: `The crowd WHOOPS for ${physConseq.player}. That was earned.` });
+    }
+    const pubConseq = chain.find(e => e.type === 'dareConsequence' && e.category === 'public');
+    if (pubConseq) {
+      roundReactions.push({ type: 'publicReaction', subtype: 'spotlight', round: roundNum,
+        players: [pubConseq.player],
+        text: `${pubConseq.player} has the whole camp watching. Eyes do not blink.` });
+    }
+    const truthConseq = chain.find(e => e.type === 'dareConsequence' && e.category === 'truth');
+    if (truthConseq && truthConseq.namedTarget) {
+      roundReactions.push({ type: 'publicReaction', subtype: 'tension', round: roundNum,
+        players: [truthConseq.player, truthConseq.namedTarget],
+        text: `${truthConseq.namedTarget} didn't see that coming. The game just changed.` });
+    }
+    const chickenAt3 = remaining.filter(p => (chickenStreak[p] || 0) >= 3);
+    if (chickenAt3.length) {
+      const worst = [...chickenAt3].sort((a, b) => (chickenStreak[b] || 0) - (chickenStreak[a] || 0))[0];
+      roundReactions.push({ type: 'publicReaction', subtype: 'turning', round: roundNum,
+        players: [worst],
+        text: `The crowd is starting to turn on ${worst}. Every pass makes it worse.` });
+    }
+    roundReactions.slice(0, 2).forEach(r => chain.push(r));
+
+    // ── Chicken-streak events (one escalate max per round) ──
+    let escalateEmitted = false;
+    activePlayers.filter(p => remaining.includes(p)).forEach(p => {
+      const streak = chickenStreak[p] || 0;
+      if (streak >= 3 && !chickenStreakAnnounced[p]) {
+        chain.push({ type: 'chickenStreakStart', player: p, streak, round: roundNum,
+          text: `${p} has passed ${streak} times in a row. The chicken meter is rising.`,
+          badgeText: 'CHICKEN!', badgeClass: 'yellow' });
+        chickenStreakAnnounced[p] = true;
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[p] = (gs.popularity[p] || 0) - 0.5;
+      } else if (streak >= 4 && chickenStreakAnnounced[p] && !escalateEmitted) {
+        chain.push({ type: 'chickenStreakEscalate', player: p, streak, round: roundNum,
+          text: `${p} passes again. That's ${streak} in a row.`,
+          badgeText: 'CHICKEN METER', badgeClass: 'yellow' });
+        escalateEmitted = true;
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[p] = (gs.popularity[p] || 0) - 0.5;
+      }
+    });
+
+    // ── Decrement fatigue ──
+    activePlayers.filter(p => remaining.includes(p)).forEach(p => {
+      if (dareFatigue[p] > 0) dareFatigue[p]--;
+    });
 
     rounds.push({ roundNum, activeSpinner, wheelLanding, dareCategory: category, dareTitle, dareText, initialTarget: chain[0]?.player, chain });
   }
@@ -373,9 +566,12 @@ export function simulateTripleDogDare(ep) {
   // Set results on ep
   ep.tripleDogDare = {
     rounds, freebieGifts, pacts, betrayals,
-    freebiesAtEnd: { ...freebies }, completions: { ...completions },
+    freebiesAtEnd: { ...freebies },
+    finalChickens: { ...chickenStreak },
+    completions: { ...completions },
     eliminated: eliminatedPlayer, eliminatedRound, eliminatedDare,
     mostDares, playerCount: activePlayers.length,
+    activePlayers: [...activePlayers],
   };
   ep.eliminated = eliminatedPlayer;
   ep.challengeType = 'triple-dog-dare';
@@ -449,57 +645,67 @@ export function simulateTripleDogDare(ep) {
 export function _textTripleDogDare(ep, ln, sec) {
   const tdd = ep.tripleDogDare;
   if (!tdd) return;
-  sec('TRIPLE DOG DARE');
-  ln(`${tdd.playerCount} players. ${tdd.rounds.length} rounds. Sudden-death elimination.`);
+
+  sec('I TRIPLE DOG DARE YOU!');
+  ln(`${tdd.playerCount} players · ${(tdd.rounds || []).length} rounds · Sudden-death elimination`);
   ln('');
 
   if (tdd.pacts?.length) {
-    ln('PACTS:');
-    tdd.pacts.forEach(p => ln(`- ${p.initiator} + ${p.partner} → targeting ${p.target} (formed round ${p.formedRound})`));
+    sec('PACTS');
+    tdd.pacts.forEach(p => ln(`  ${p.initiator} + ${p.partner} → target: ${p.target} (round ${p.formedRound})`));
     ln('');
   }
 
-  tdd.rounds.forEach(round => {
-    ln(`Round ${round.roundNum}: [${round.dareCategory.toUpperCase()}] ${round.eliminatedSpinner} dares: "${round.dareText}"`);
-    round.chain.forEach(step => {
-      if (step.action === 'accept' && step.freebieEarned) {
-        ln(`  ${step.player} ACCEPTS — earns a freebie.`);
-      } else if (step.action === 'accept') {
-        ln(`  ${step.player} PUSHES THROUGH — no freebie (passed dare).`);
-      } else if (step.action === 'pass') {
-        ln(`  ${step.player} PASSES to ${step.to}${step.isBetrayal ? ' [BETRAYAL]' : ''}`);
-      } else if (step.action === 'freebie-skip') {
-        ln(`  ${step.player} USES A FREEBIE to skip.`);
-      } else if (step.action === 'refuse') {
-        ln(`  ${step.player} REFUSES — no freebies left. ELIMINATED.`);
-      } else if (step.action === 'redirect') {
-        ln(`  ${step.player} REDIRECTED to ${step.to} (-1 freebie)${step.isBetrayal ? ' [BETRAYAL]' : ''}`);
-      }
+  let curRound = null;
+  (tdd.rounds || []).forEach(round => {
+    if (round.roundNum !== curRound) {
+      curRound = round.roundNum;
+      ln('');
+      sec(`ROUND ${curRound}`);
+    }
+    ln(`  [DARE · ${(round.dareCategory || '').toUpperCase()}] "${round.dareText || round.dareTitle || ''}"`);
+    (round.chain || []).forEach(step => {
+      const type = step.type || step.action || '';
+      if (step.action === 'accept' && step.freebieEarned) ln(`    ${step.player} ACCEPTS — earns a freebie`);
+      else if (step.action === 'accept' && !step.freebieEarned && step.completed !== false) ln(`    ${step.player} PUSHES THROUGH`);
+      else if (step.action === 'pass') ln(`    ${step.player} PASSES → ${step.to}${step.isBetrayal ? ' [BETRAYAL]' : ''}`);
+      else if (step.action === 'freebie-skip') ln(`    ${step.player} USES FREEBIE to skip`);
+      else if (step.action === 'refuse' || (step.action === 'accept' && step.completed === false)) ln(`    ${step.player} REFUSES — ELIMINATED`);
+      else if (type === 'dareMishap') ln(`    [MISHAP] ${step.player}: ${step.text || ''}`);
+      else if (type === 'dareConsequence') ln(`    [CONSEQUENCE · ${(step.category || '').toUpperCase()}] ${step.text || ''}`);
+      else if (type === 'chickenStreakStart') ln(`    [CHICKEN STREAK] ${step.player} at ${step.streak} passes`);
+      else if (type === 'chickenStreakEscalate') ln(`    [CHICKEN ESCALATES] ${step.player} at ${step.streak} passes`);
+      else if (type === 'chickenStreakBroken') ln(`    [STREAK BROKEN] ${step.player} after ${step.priorStreak} passes`);
+      else if (type === 'publicReaction') ln(`    [CROWD · ${step.subtype || '?'}] ${step.text || ''}`);
+      else if (type === 'freebieGift') ln(`    [GIFT] ${step.from || step.donor} → ${step.to || step.requester}`);
     });
   });
-  ln('');
 
+  ln('');
   if (tdd.freebieGifts?.length) {
-    ln('FREEBIE GIFTS:');
-    tdd.freebieGifts.forEach(g => ln(`- Round ${g.round}: ${g.from} → ${g.to}`));
+    sec('FREEBIE GIFTS');
+    tdd.freebieGifts.forEach(g => ln(`  Round ${g.round}: ${g.from} → ${g.to}`));
     ln('');
   }
-
   if (tdd.betrayals?.length) {
-    ln('BETRAYALS:');
-    tdd.betrayals.forEach(b => ln(`- Round ${b.round}: ${b.player} ${b.type === 'redirect' ? 'redirected to' : 'refused to share with'} ${b.target}`));
+    sec('BETRAYALS');
+    tdd.betrayals.forEach(b => ln(`  Round ${b.round}: ${b.player} → ${b.target} [${b.type}]`));
     ln('');
   }
-
-  ln('FINAL FREEBIE COUNTS:');
-  Object.entries(tdd.freebiesAtEnd || {}).sort(([,a],[,b]) => b - a).forEach(([name, count]) => {
-    ln(`  ${name}: ${count}`);
-  });
+  sec('FINAL FREEBIE COUNTS');
+  Object.entries(tdd.freebiesAtEnd || {}).sort(([,a],[,b]) => b - a)
+    .forEach(([name, count]) => ln(`  ${name}: ${count}`));
   ln('');
-
-  ln(`ELIMINATED: ${tdd.eliminated} (round ${tdd.eliminatedRound})`);
-  if (tdd.eliminatedDare?.text) ln(`  Dare: "${tdd.eliminatedDare.text}" [${tdd.eliminatedDare.category}]`);
-  if (tdd.mostDares) ln(`DAREDEVIL: ${tdd.mostDares} (${tdd.completions?.[tdd.mostDares] || 0} dares completed)`);
+  if (tdd.eliminated) {
+    sec('ELIMINATION');
+    ln(`  ${tdd.eliminated} — round ${tdd.eliminatedRound}`);
+    if (tdd.eliminatedDare?.text) ln(`  Dare: "${tdd.eliminatedDare.text}" [${tdd.eliminatedDare.category}]`);
+  }
+  if (tdd.mostDares) {
+    ln('');
+    sec('DAREDEVIL');
+    ln(`  ${tdd.mostDares} (${tdd.completions?.[tdd.mostDares] || 0} completions)`);
+  }
 }
 
 export function rpBuildTripleDogDareAnnouncement(ep) {
@@ -579,7 +785,7 @@ export function rpBuildTripleDogDareRounds(ep) {
   const prevSnap = prevEp?.gsSnapshot || {};
   const _tribesMembersR = ep.tribesAtStart?.flatMap(t => t.members);
   const activePlayers = (_tribesMembersR?.length ? _tribesMembersR : null) || prevSnap.activePlayers || snap.activePlayers || [];
-  const _catColor = { 'gross-out': '#3fb950', 'humiliation': '#db61a2', 'pain-fear': '#da3633', 'sacrifice': '#e3b341', 'fallback': '#8b949e' };
+  const _catColor = { 'gross': '#ff2d87', 'public': '#3aff7a', 'physical': '#ffe83a', 'truth': '#3ef0ff', 'gross-out': '#3fb950', 'humiliation': '#db61a2', 'pain-fear': '#da3633', 'sacrifice': '#e3b341', 'fallback': '#8b949e' };
   const uid = 'tdd-' + ep.num;
 
   // Build the ordered reveal sequence: each item is { type, html, freebieDeltas }
@@ -744,7 +950,7 @@ export function rpBuildTripleDogDareElimination(ep) {
   const p = players.find(x => x.name === elimName);
   const arch = p?.archetype || 'player';
   const archLabel = arch.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  const catColor = { 'gross-out': '#3fb950', 'humiliation': '#db61a2', 'pain-fear': '#da3633', 'sacrifice': '#e3b341', 'fallback': '#8b949e' }[tdd.eliminatedDare?.category] || '#8b949e';
+  const catColor = { 'gross': '#ff2d87', 'public': '#3aff7a', 'physical': '#ffe83a', 'truth': '#3ef0ff', 'gross-out': '#3fb950', 'humiliation': '#db61a2', 'pain-fear': '#da3633', 'sacrifice': '#e3b341', 'fallback': '#8b949e' }[tdd.eliminatedDare?.category] || '#8b949e';
 
   const quotes = [
     `"I knew it was coming. I just didn't think it would end like this."`,
@@ -800,3 +1006,587 @@ export function rpBuildTripleDogDareElimination(ep) {
   return html;
 }
 
+// ════════════════════════════════════════════════════════════════════════
+//  PLAYGROUND CHAOS — CSS + VP Identity
+// ════════════════════════════════════════════════════════════════════════
+
+const TDD_STYLES = `
+  .tdd-page {
+    background:#2a2a2a;
+    color:#f0ece2;
+    font-family:'Kalam','Patrick Hand','Chalkboard SE','Comic Sans MS',cursive;
+    position:relative; overflow:hidden; padding:30px 20px; min-height:600px;
+  }
+  .tdd-page::before {
+    content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(circle at 15% 25%, rgba(240,236,226,0.08) 0%, transparent 8%),
+      radial-gradient(circle at 75% 40%, rgba(240,236,226,0.05) 0%, transparent 10%),
+      radial-gradient(circle at 45% 70%, rgba(240,236,226,0.07) 0%, transparent 9%),
+      radial-gradient(circle at 85% 85%, rgba(240,236,226,0.04) 0%, transparent 7%);
+    animation: tdd-chalk-dust-drift 12s ease-in-out infinite alternate;
+  }
+  @keyframes tdd-chalk-dust-drift {
+    0%,100% { transform:translate(0,0) }
+    50% { transform:translate(3px,-4px) }
+  }
+  .tdd-page > * { position:relative; z-index:2; }
+  .tdd-header {
+    text-align:center; padding:20px 12px 16px;
+    border-bottom:3px dashed rgba(240,236,226,0.25);
+    margin-bottom:16px;
+  }
+  .tdd-title {
+    font-family:'Permanent Marker','Kalam',cursive;
+    font-size:36px; font-weight:900; letter-spacing:2px;
+    color:#f0ece2; text-transform:uppercase;
+    text-shadow:2px 3px 0 rgba(0,0,0,0.4);
+    transform:rotate(-1.5deg); display:inline-block;
+  }
+  .tdd-subtitle {
+    font-size:13px; color:#ffd447; letter-spacing:1px;
+    margin-top:10px; font-family:'Kalam',cursive;
+  }
+  .tdd-chalk-stars { font-size:18px; color:#ffd447; letter-spacing:8px; margin-top:6px; opacity:0.7; }
+  .tdd-scoreboard {
+    margin-bottom:20px; padding:14px 18px; border-radius:6px;
+    background:rgba(0,0,0,0.25); border:2px dashed rgba(240,236,226,0.25);
+  }
+  .tdd-scoreboard-title {
+    font-family:'Permanent Marker',cursive; font-size:14px; letter-spacing:2px;
+    color:#f0ece2; text-transform:uppercase; margin-bottom:10px;
+    transform:rotate(-0.5deg); display:inline-block;
+  }
+  .tdd-scoreboard-row {
+    display:flex; align-items:center; gap:10px;
+    padding:6px 4px; font-family:'Kalam',cursive; font-size:15px;
+    border-bottom:1px dotted rgba(240,236,226,0.15);
+  }
+  .tdd-scoreboard-row:last-child { border-bottom:none; }
+  .tdd-scoreboard-name { flex:1; color:#f0ece2; }
+  .tdd-scoreboard-name--elim { text-decoration:line-through; text-decoration-color:#d92424; text-decoration-thickness:3px; opacity:0.6; }
+  .tdd-bracelet-stack { display:inline-flex; gap:2px; }
+  .tdd-bracelet {
+    width:8px; height:16px; border-radius:3px;
+    background:repeating-linear-gradient(90deg, var(--ba,#ff2d87) 0 2px, var(--bb,#3ef0ff) 2px 4px);
+    border:1px solid rgba(0,0,0,0.3);
+  }
+  .tdd-bracelet:nth-child(1) { --ba:#ff2d87; --bb:#ffe83a; }
+  .tdd-bracelet:nth-child(2) { --ba:#3ef0ff; --bb:#3aff7a; }
+  .tdd-bracelet:nth-child(3) { --ba:#ffd447; --bb:#ff2d87; }
+  .tdd-bracelet:nth-child(4) { --ba:#3aff7a; --bb:#3ef0ff; }
+  .tdd-bracelet:nth-child(5) { --ba:#ff2d87; --bb:#3ef0ff; }
+  .tdd-bracelet:nth-child(6) { --ba:#ffe83a; --bb:#3aff7a; }
+  .tdd-chicken { display:inline-block; font-size:18px; margin-left:4px; transition:transform 0.3s cubic-bezier(0.2,1.5,0.5,1); }
+  .tdd-chicken[data-streak="3"] { transform:scale(1.0); }
+  .tdd-chicken[data-streak="4"] { transform:scale(1.35); }
+  .tdd-chicken[data-streak="5"] { transform:scale(1.7); }
+  .tdd-chicken[data-streak="6"] { transform:scale(2.0); }
+  .tdd-card {
+    margin-bottom:10px; padding:14px 18px; border-radius:4px;
+    font-family:'Kalam',cursive; font-size:14px; line-height:1.5;
+    animation: tdd-card-fade 0.5s ease-out both;
+  }
+  @keyframes tdd-card-fade { 0%{opacity:0;transform:translateY(8px)} 100%{opacity:1;transform:translateY(0)} }
+  .tdd-card--chalk { background:rgba(0,0,0,0.3); color:#f0ece2; border:2px dashed rgba(240,236,226,0.2); }
+  .tdd-card--paper {
+    background:#f4e8c8; color:#1a1a1a;
+    border:1px solid rgba(139,90,43,0.3); box-shadow:2px 3px 6px rgba(0,0,0,0.35);
+    position:relative; overflow:hidden;
+  }
+  .tdd-card--paper::before {
+    content:''; position:absolute; inset:10px 16px;
+    background:repeating-linear-gradient(to bottom, transparent 0 24px, rgba(100,120,150,0.12) 24px 25px);
+    pointer-events:none;
+  }
+  .tdd-card--paper > * { position:relative; z-index:1; }
+  .tdd-card--chris { background:rgba(40,40,40,0.6); border-left:4px solid #ffd447; }
+  .tdd-card--mishap { background:rgba(40,0,0,0.4); border:2px solid #d92424; }
+  .tdd-cat { display:inline-block; padding:2px 8px; border-radius:3px;
+    font-family:'Permanent Marker',cursive; font-size:11px; letter-spacing:2px;
+    text-transform:uppercase; font-weight:700; transform:rotate(-2deg); }
+  .tdd-cat--gross    { background:#ff2d87; color:#f0ece2; }
+  .tdd-cat--physical { background:#ffe83a; color:#1a1a1a; }
+  .tdd-cat--truth    { background:#3ef0ff; color:#1a1a1a; }
+  .tdd-cat--public   { background:#3aff7a; color:#1a1a1a; }
+  .tdd-dare-text {
+    font-family:'Permanent Marker','Kalam',cursive;
+    font-size:21px; line-height:1.35; color:#1a1a1a;
+    transform:rotate(-0.3deg); margin:10px 0;
+    overflow:hidden; white-space:pre-wrap;
+  }
+  .tdd-spinner-wrap {
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    padding:20px 0; margin:10px auto;
+  }
+  .tdd-spinner-svg { width:200px; height:200px; overflow:visible; }
+  .tdd-spinner-circle {
+    fill:none; stroke:#f0ece2; stroke-width:4;
+    stroke-dasharray:5 3 7 4 6 2 9 3; stroke-linecap:round;
+  }
+  .tdd-spinner-arrow {
+    stroke:#1a1a1a; stroke-width:5; stroke-linecap:round; fill:none;
+    transform-origin:100px 100px;
+  }
+  .tdd-spinner-result {
+    font-family:'Permanent Marker',cursive; font-size:24px;
+    color:#ffd447; letter-spacing:2px; transform:rotate(-2deg);
+    opacity:0; transition:opacity 0.4s ease-out 0.2s;
+  }
+  .tdd-spinner-result--visible { opacity:1; }
+  .tdd-burst-wrap { position:relative; display:inline-block; }
+  .tdd-burst { position:absolute; top:50%; left:50%; width:2px; height:14px;
+    background:#f0ece2; transform-origin:center bottom;
+    animation: tdd-burst 0.4s ease-out forwards;
+  }
+  @keyframes tdd-burst {
+    0% { opacity:0; transform:translate(-50%,-50%) rotate(var(--a,0deg)) scaleY(0); }
+    30% { opacity:1; transform:translate(-50%,-50%) rotate(var(--a,0deg)) scaleY(1); }
+    100% { opacity:0; transform:translate(-50%,-50%) rotate(var(--a,0deg)) scaleY(1.5) translateY(-8px); }
+  }
+  .tdd-chicken-setpiece {
+    text-align:center; padding:26px;
+    background:radial-gradient(ellipse at center, rgba(255,212,71,0.12) 0%, rgba(0,0,0,0.3) 70%);
+    border-radius:6px; margin:12px 0;
+  }
+  .tdd-chicken-big {
+    font-size:64px; line-height:1; display:inline-block;
+    animation: tdd-chicken-grow 0.6s cubic-bezier(0.2,1.5,0.5,1) both;
+  }
+  @keyframes tdd-chicken-grow {
+    0% { transform:scale(0.2) rotate(-10deg); opacity:0; }
+    70% { transform:scale(1.2) rotate(4deg); opacity:1; }
+    100% { transform:scale(1) rotate(0deg); }
+  }
+  .tdd-chicken-caption {
+    font-family:'Permanent Marker',cursive; font-size:17px;
+    color:#ffd447; letter-spacing:2px; margin-top:10px; text-transform:uppercase;
+  }
+  .tdd-crowd-figures {
+    font-size:22px; letter-spacing:10px; color:#f0ece2;
+    opacity:0.5; margin-top:12px;
+    animation: tdd-crowd-fade 0.8s ease-out 0.4s both;
+  }
+  @keyframes tdd-crowd-fade { 0%{opacity:0} 100%{opacity:0.5} }
+  .tdd-gift-card {
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    padding:14px; border-radius:6px;
+    background:rgba(62,240,255,0.08); border:2px dashed rgba(62,240,255,0.35);
+    margin-bottom:10px;
+  }
+  .tdd-gift-from, .tdd-gift-to { flex:0 0 auto; text-align:center; min-width:48px; }
+  .tdd-gift-pass {
+    flex:1; text-align:center;
+    font-family:'Permanent Marker',cursive; font-size:13px;
+    color:#3ef0ff; letter-spacing:3px;
+  }
+  .tdd-gift-bracelet {
+    display:inline-block; width:30px; height:10px; border-radius:4px;
+    background:repeating-linear-gradient(90deg, #ff2d87 0 3px, #3ef0ff 3px 6px, #3aff7a 6px 9px);
+    animation: tdd-bracelet-slide 0.8s cubic-bezier(0.4,0.1,0.3,1) both;
+  }
+  @keyframes tdd-bracelet-slide {
+    0% { transform:translateX(-50px); opacity:0; }
+    50% { opacity:1; }
+    100% { transform:translateX(50px); opacity:1; }
+  }
+  .tdd-reaction {
+    padding:12px 16px; margin:8px 0;
+    background:rgba(0,0,0,0.25); border-left:3px solid #ffd447;
+    font-style:italic; font-size:13px; color:#f0ece2;
+  }
+  .tdd-reaction-crowd { font-size:18px; letter-spacing:8px; color:#f0ece2; opacity:0.4; margin-top:6px; }
+  .tdd-elim {
+    text-align:center; padding:32px 20px; margin:20px 0;
+    background:repeating-linear-gradient(45deg, rgba(217,36,36,0.1) 0 30px, rgba(0,0,0,0.4) 30px 60px);
+    border:3px solid #d92424; border-radius:6px;
+  }
+  .tdd-elim-name {
+    font-family:'Permanent Marker',cursive; font-size:40px;
+    color:#f0ece2; letter-spacing:3px; transform:rotate(-2deg);
+    display:inline-block; position:relative; padding:0 10px;
+  }
+  .tdd-elim-slash {
+    position:absolute; top:50%; left:-6%; right:-6%; height:6px;
+    background:#d92424; transform-origin:left center;
+    animation: tdd-slash 0.8s cubic-bezier(0.6,0.1,0.3,1) 0.3s both;
+  }
+  @keyframes tdd-slash {
+    0% { transform:rotate(-6deg) scaleX(0); }
+    100% { transform:rotate(-6deg) scaleX(1); }
+  }
+  .tdd-elim-caption { margin-top:18px; font-family:'Kalam',cursive; font-size:16px; color:#f4e8c8; font-style:italic; }
+  .tdd-btn-reveal {
+    display:block; margin:20px auto; padding:10px 28px;
+    background:transparent; border:3px dashed #ffd447; color:#ffd447;
+    font-family:'Permanent Marker',cursive; font-size:14px;
+    letter-spacing:3px; text-transform:uppercase; cursor:pointer; border-radius:4px;
+    transition:transform 0.2s;
+  }
+  .tdd-btn-reveal:hover { transform:rotate(-1deg) scale(1.03); }
+  .tdd-btn-reveal-all {
+    display:block; text-align:center; font-family:'Kalam',cursive;
+    font-size:12px; color:#ffd447; opacity:0.6;
+    cursor:pointer; text-decoration:underline; margin-top:4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tdd-page::before, .tdd-card, .tdd-chicken-big, .tdd-crowd-figures,
+    .tdd-gift-bracelet, .tdd-elim, .tdd-elim-slash, .tdd-burst,
+    .tdd-chicken { animation:none !important; transition:none !important; }
+    .tdd-spinner-result--visible { opacity:1 !important; }
+    .tdd-elim-slash { transform:rotate(-6deg) scaleX(1) !important; }
+  }
+`;
+
+// ── Reveal state + engine ──
+const _tvStateTDD = {};
+
+function _tddReveal(stateKey, totalSteps) {
+  if (!_tvStateTDD[stateKey]) _tvStateTDD[stateKey] = { idx: -1 };
+  const st = _tvStateTDD[stateKey];
+  if (st.idx >= totalSteps - 1) return;
+  st.idx++;
+  const el = document.getElementById(`tdd-step-${stateKey}-${st.idx}`);
+  if (el) {
+    el.style.display = '';
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (el.dataset.typewriter === '1') {
+      const target = el.querySelector('.tdd-dare-text');
+      if (target) {
+        const fullText = target.dataset.fullText || target.textContent;
+        target.dataset.fullText = fullText;
+        target.textContent = '';
+        const speed = fullText.length > 60 ? 30 : 50;
+        let i = 0;
+        const tick = () => {
+          if (i > fullText.length) return;
+          target.textContent = fullText.slice(0, i);
+          i++;
+          if (i <= fullText.length) setTimeout(tick, speed);
+        };
+        tick();
+      }
+    }
+    if (el.dataset.spinnerTarget) {
+      const arrow = el.querySelector('.tdd-spinner-arrow');
+      const resultLabel = el.querySelector('.tdd-spinner-result');
+      const targetAngle = parseFloat(el.dataset.spinnerTarget);
+      if (arrow) {
+        const start = performance.now();
+        const dur = 1400;
+        const total = 360 * 3 + targetAngle;
+        const spin = (now) => {
+          const t = Math.min(1, (now - start) / dur);
+          const eased = 1 - Math.pow(1 - t, 3);
+          arrow.style.transform = `rotate(${total * eased}deg)`;
+          if (t < 1) {
+            requestAnimationFrame(spin);
+          } else {
+            let osc = 0;
+            const settle = () => {
+              const jitter = (osc % 2 === 0 ? 4 : -3) - osc * 0.8;
+              arrow.style.transform = `rotate(${total + jitter}deg)`;
+              osc++;
+              if (osc < 4) setTimeout(settle, 100);
+              else {
+                arrow.style.transform = `rotate(${total}deg)`;
+                if (resultLabel) resultLabel.classList.add('tdd-spinner-result--visible');
+              }
+            };
+            setTimeout(settle, 80);
+          }
+        };
+        requestAnimationFrame(spin);
+      }
+    }
+  }
+  const btn = document.getElementById(`tdd-btn-${stateKey}`);
+  if (btn) {
+    if (st.idx >= totalSteps - 1) {
+      const ctrl = document.getElementById(`tdd-controls-${stateKey}`);
+      if (ctrl) ctrl.style.display = 'none';
+    } else {
+      btn.textContent = `\u25B6 NEXT DARE (${st.idx + 2}/${totalSteps})`;
+    }
+  }
+}
+
+function _tddRevealAll(stateKey, totalSteps) {
+  if (!_tvStateTDD[stateKey]) _tvStateTDD[stateKey] = { idx: -1 };
+  _tvStateTDD[stateKey].idx = totalSteps - 1;
+  for (let i = 0; i < totalSteps; i++) {
+    const el = document.getElementById(`tdd-step-${stateKey}-${i}`);
+    if (el) {
+      el.style.display = '';
+      if (el.dataset.typewriter === '1') {
+        const tgt = el.querySelector('.tdd-dare-text');
+        if (tgt && tgt.dataset.fullText) tgt.textContent = tgt.dataset.fullText;
+      }
+      if (el.dataset.spinnerTarget) {
+        const arrow = el.querySelector('.tdd-spinner-arrow');
+        const resultLabel = el.querySelector('.tdd-spinner-result');
+        if (arrow) arrow.style.transform = `rotate(${parseFloat(el.dataset.spinnerTarget)}deg)`;
+        if (resultLabel) resultLabel.classList.add('tdd-spinner-result--visible');
+      }
+    }
+  }
+  const ctrl = document.getElementById(`tdd-controls-${stateKey}`);
+  if (ctrl) ctrl.style.display = 'none';
+}
+
+function _htmlEscapeTDD(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function _renderTDDScoreboard(tdd) {
+  const pList = tdd.activePlayers || Object.keys(tdd.freebiesAtEnd || {});
+  const freebies = tdd.freebiesAtEnd || {};
+  const chickens = tdd.finalChickens || {};
+  const eliminated = tdd.eliminated || null;
+  let html = `<div class="tdd-scoreboard"><div class="tdd-scoreboard-title">\u00b7 THE RECESS WALL \u00b7</div>`;
+  pList.forEach(p => {
+    const n = Math.min(6, freebies[p] || 0);
+    const bracelets = Array.from({ length: n }, () => `<span class="tdd-bracelet"></span>`).join('');
+    const streak = chickens[p] || 0;
+    const chicken = streak >= 3 ? `<span class="tdd-chicken" data-streak="${Math.min(streak,6)}">\uD83D\uDC14</span>` : '';
+    const elimCls = p === eliminated ? ' tdd-scoreboard-name--elim' : '';
+    html += `<div class="tdd-scoreboard-row">
+      <span class="tdd-scoreboard-name${elimCls}">${_htmlEscapeTDD(p)}</span>
+      <span class="tdd-bracelet-stack">${bracelets}</span>${chicken}
+    </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function _renderTDDStep(evt, tdd) {
+  const type = evt.type || evt.action || '';
+
+  if (type === 'tddIntro') {
+    return `<div class="tdd-card tdd-card--chris">
+      <span style="font-size:10px;font-weight:700;letter-spacing:2px;color:#ffd447">\uD83D\uDCE2 CHRIS</span>
+      <div style="margin-top:6px">${_htmlEscapeTDD(evt.text || '')}</div>
+    </div>`;
+  }
+
+  if (type === 'spinnerLand') {
+    return `<div class="tdd-spinner-wrap">
+      <svg class="tdd-spinner-svg" viewBox="0 0 200 200">
+        <circle class="tdd-spinner-circle" cx="100" cy="100" r="88"/>
+        <path class="tdd-spinner-arrow" d="M100,100 L100,15"/>
+      </svg>
+      <div class="tdd-spinner-result">\u25b8 ${_htmlEscapeTDD(evt.player || '?')}</div>
+    </div>`;
+  }
+
+  if (type === 'dareReveal') {
+    const category = evt.category || 'gross';
+    const dareText = evt.text || evt.dareText || '';
+    return `<div class="tdd-card tdd-card--paper" data-typewriter="1">
+      <span class="tdd-cat tdd-cat--${category}">${category}</span>
+      <div class="tdd-dare-text" data-full-text="${_htmlEscapeTDD(dareText)}">${_htmlEscapeTDD(dareText)}</div>
+      <div style="font-family:'Kalam',cursive;font-size:11px;color:#8b5a2b;letter-spacing:1px;margin-top:6px">\u2014 for ${_htmlEscapeTDD(evt.player || '?')} \u2014</div>
+    </div>`;
+  }
+
+  if (type === 'accept' || evt.action === 'accept') {
+    const burst = [0,45,90,135,180,225,270,315].map(a =>
+      `<div class="tdd-burst" style="--a:${a}deg"></div>`
+    ).join('');
+    return `<div class="tdd-card tdd-card--chalk">
+      <div class="tdd-burst-wrap">${burst}<strong>${_htmlEscapeTDD(evt.player || '?')}</strong></div>
+      <span style="margin-left:8px">accepts. ${_htmlEscapeTDD(evt.reaction || evt.text || '')}</span>
+      ${evt.freebieEarned ? '<div style="font-size:10px;color:#ffd447;margin-top:4px">+1 freebie earned</div>' : ''}
+    </div>`;
+  }
+
+  if (type === 'pass' || evt.action === 'pass') {
+    const betrayalTag = evt.isBetrayal ? '<span style="color:#d92424;font-weight:700;font-size:11px;margin-left:4px">BETRAYAL</span>' : '';
+    return `<div class="tdd-card tdd-card--chalk">
+      <strong>${_htmlEscapeTDD(evt.player || '?')}</strong> chickens \u2014 redirects to <strong>${_htmlEscapeTDD(evt.to || evt.target || '?')}</strong>${betrayalTag}
+      <div style="margin-top:4px;font-size:12px;font-style:italic">${_htmlEscapeTDD(evt.reaction || evt.text || '')}</div>
+    </div>`;
+  }
+
+  if (type === 'freebie-skip' || evt.action === 'freebie-skip') {
+    return `<div class="tdd-card tdd-card--chalk" style="border-color:#ffd447">
+      <strong>${_htmlEscapeTDD(evt.player || '?')}</strong> burns a freebie to skip.
+      <div style="font-size:10px;color:#ffd447;margin-top:2px">\u22121 freebie</div>
+      <div style="margin-top:4px;font-size:12px;font-style:italic">${_htmlEscapeTDD(evt.reaction || '')}</div>
+    </div>`;
+  }
+
+  if (type === 'refuse' || evt.action === 'refuse') {
+    return `<div class="tdd-card tdd-card--chalk" style="border-color:#d92424">
+      <strong>${_htmlEscapeTDD(evt.player || '?')}</strong> <span style="color:#d92424;font-weight:700">REFUSES</span> \u2014 no freebies left.
+      <div style="margin-top:4px;font-size:12px">${_htmlEscapeTDD(evt.reaction || '')}</div>
+    </div>`;
+  }
+
+  if (type === 'freebieGift') {
+    return `<div class="tdd-gift-card">
+      <div class="tdd-gift-from"><strong>${_htmlEscapeTDD(evt.from || evt.donor || '?')}</strong></div>
+      <div class="tdd-gift-pass">
+        <div>PASS \u2192</div>
+        <div><span class="tdd-gift-bracelet"></span></div>
+      </div>
+      <div class="tdd-gift-to"><strong>${_htmlEscapeTDD(evt.to || evt.requester || '?')}</strong></div>
+      <div style="flex-basis:100%;text-align:center;font-size:12px;color:#f0ece2;margin-top:6px">${_htmlEscapeTDD(evt.text || '')}</div>
+    </div>`;
+  }
+
+  if (type === 'dareMishap') {
+    return `<div class="tdd-card tdd-card--mishap">
+      <span class="tdd-cat tdd-cat--gross">MISHAP</span>
+      <div style="margin-top:6px"><strong>${_htmlEscapeTDD(evt.player || '?')}</strong> \u2014 ${_htmlEscapeTDD(evt.text || '')}</div>
+    </div>`;
+  }
+
+  if (type === 'dareConsequence') {
+    const category = evt.category || 'gross';
+    return `<div class="tdd-card tdd-card--chalk">
+      <span class="tdd-cat tdd-cat--${category}">${category} result</span>
+      <div style="margin-top:6px">${_htmlEscapeTDD(evt.text || '')}</div>
+    </div>`;
+  }
+
+  if (type === 'chickenStreakStart' || type === 'chickenStreakEscalate') {
+    const streak = evt.streak || 3;
+    const chicken = streak <= 3 ? '\uD83D\uDC23' : streak === 4 ? '\uD83D\uDC14' : '\uD83D\uDC13';
+    const crowd = '\uD83E\uDDD1'.repeat(Math.min(8, 2 + (streak - 3))).split('').join(' ');
+    return `<div class="tdd-chicken-setpiece">
+      <div class="tdd-chicken-big">${chicken}</div>
+      <div class="tdd-chicken-caption">CHICKEN METER \u00b7 ${_htmlEscapeTDD(evt.player || '?')} \u00b7 ${streak} passes</div>
+      <div class="tdd-crowd-figures">${crowd}</div>
+    </div>`;
+  }
+
+  if (type === 'chickenStreakBroken') {
+    return `<div class="tdd-card tdd-card--chalk" style="border-color:#3aff7a">
+      <strong>${_htmlEscapeTDD(evt.player || '?')}</strong> finally accepts after ${evt.priorStreak || '?'} passes.
+      <span style="color:#3aff7a;margin-left:4px">Streak broken.</span>
+    </div>`;
+  }
+
+  if (type === 'publicReaction') {
+    return `<div class="tdd-reaction">
+      <div>${_htmlEscapeTDD(evt.text || '')}</div>
+      <div class="tdd-reaction-crowd">\uD83E\uDDD1 \uD83E\uDDD1 \uD83E\uDDD1 \uD83E\uDDD1 \uD83E\uDDD1</div>
+    </div>`;
+  }
+
+  if (type === 'dareElimination' || type === 'elimination') {
+    return `<div class="tdd-elim">
+      <div class="tdd-elim-name">
+        ${_htmlEscapeTDD(evt.player || '?')}
+        <span class="tdd-elim-slash"></span>
+      </div>
+      <div class="tdd-elim-caption">${_htmlEscapeTDD(evt.text || evt.reaction || 'Chickens out. Eliminated.')}</div>
+    </div>`;
+  }
+
+  const text = evt.reaction || evt.text || '';
+  const player = evt.player || '';
+  if (text || player) {
+    return `<div class="tdd-card tdd-card--chalk"><strong>${_htmlEscapeTDD(player)}</strong>${text ? ' ' + _htmlEscapeTDD(text) : ''}</div>`;
+  }
+  return '';
+}
+
+function _tddStepDataAttrs(evt) {
+  const attrs = [];
+  if (evt.type === 'dareReveal') attrs.push('data-typewriter="1"');
+  if (evt.type === 'spinnerLand' && evt._spinnerAngle != null) {
+    attrs.push(`data-spinner-target="${evt._spinnerAngle}"`);
+  }
+  return attrs.length ? ' ' + attrs.join(' ') : '';
+}
+
+export function rpBuildTripleDogDare(ep) {
+  const tdd = ep.tripleDogDare;
+  if (!tdd) return '';
+
+  window._tddReveal = _tddReveal;
+  window._tddRevealAll = _tddRevealAll;
+
+  const stateKey = `tdd_${ep.num}`;
+  if (!_tvStateTDD[stateKey]) _tvStateTDD[stateKey] = { idx: -1 };
+  const state = _tvStateTDD[stateKey];
+
+  const steps = [];
+
+  steps.push({
+    evt: { type: 'tddIntro', text: '"Last one standing wins immunity. First to chicken out goes home. Let\'s spin."', player: '' }
+  });
+
+  (tdd.rounds || []).forEach(round => {
+    const roundGifts = (tdd.freebieGifts || []).filter(g => g.round === round.roundNum);
+    roundGifts.forEach(g => {
+      steps.push({ evt: { type: 'freebieGift', from: g.from, to: g.to, text: g.text, round: round.roundNum } });
+    });
+
+    const spinnerIdx = (tdd.activePlayers || []).indexOf(round.activeSpinner);
+    const wedge = 360 / Math.max(1, (tdd.activePlayers || []).length);
+    const spinAngle = spinnerIdx >= 0 ? spinnerIdx * wedge + wedge / 2 : Math.random() * 360;
+
+    (round.chain || []).forEach(step => {
+      if (step.type === 'spinnerLand') {
+        steps.push({ evt: { ...step, _spinnerAngle: step._spinnerAngle ?? spinAngle } });
+      } else if (step.type === 'dareReveal') {
+        steps.push({ evt: step });
+      } else {
+        steps.push({ evt: { ...step, round: round.roundNum } });
+      }
+    });
+
+    if (!(round.chain || []).some(s => s.type === 'spinnerLand')) {
+      steps.splice(steps.length - (round.chain || []).length, 0,
+        { evt: { type: 'spinnerLand', player: round.activeSpinner, round: round.roundNum, _spinnerAngle: spinAngle } }
+      );
+    }
+    if (!(round.chain || []).some(s => s.type === 'dareReveal')) {
+      const dareRevealIdx = steps.findIndex((s, i) => i >= steps.length - (round.chain || []).length && s.evt.type === 'spinnerLand');
+      if (dareRevealIdx >= 0) {
+        steps.splice(dareRevealIdx + 1, 0,
+          { evt: { type: 'dareReveal', player: round.activeSpinner, category: round.dareCategory,
+            text: round.dareText || round.dareTitle || '', round: round.roundNum } }
+        );
+      }
+    }
+  });
+
+  const renderedSteps = steps.map((s, i) => {
+    const html = _renderTDDStep(s.evt, tdd);
+    if (!html) return null;
+    return { html, evt: s.evt, i };
+  }).filter(Boolean);
+
+  let out = `<style>${TDD_STYLES}</style><div class="tdd-page rp-page">`;
+
+  out += `<div class="tdd-header">
+    <div class="tdd-title">I Triple Dog Dare You!</div>
+    <div class="tdd-chalk-stars">\u2605 \u2605 \u2605</div>
+    <div class="tdd-subtitle">The last one standing wins immunity \u00b7 The first one to chicken out goes home</div>
+  </div>`;
+
+  out += _renderTDDScoreboard(tdd);
+
+  renderedSteps.forEach((s, idx) => {
+    const visible = idx <= state.idx;
+    const dataAttrs = _tddStepDataAttrs(s.evt);
+    out += `<div id="tdd-step-${stateKey}-${idx}" style="${visible ? '' : 'display:none'}"${dataAttrs}>${s.html}</div>`;
+  });
+
+  const total = renderedSteps.length;
+  const allRevealed = state.idx >= total - 1;
+  const nextLabel = state.idx + 2 <= total ? `${state.idx + 2}/${total}` : `${total}/${total}`;
+  out += `<div id="tdd-controls-${stateKey}" style="${allRevealed ? 'display:none' : 'text-align:center;margin-top:20px'}">
+    <button class="tdd-btn-reveal" id="tdd-btn-${stateKey}" onclick="window._tddReveal('${stateKey}',${total})">\u25B6 NEXT DARE (${nextLabel})</button>
+    <span class="tdd-btn-reveal-all" onclick="window._tddRevealAll('${stateKey}',${total})">reveal all</span>
+  </div>`;
+
+  out += `</div>`;
+  return out;
+}

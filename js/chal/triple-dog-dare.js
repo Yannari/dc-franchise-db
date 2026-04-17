@@ -31,6 +31,12 @@ function _tddArchBias(playerName, category) {
   return row[category] || 0;
 }
 
+const TDD_CAT_ICONS = { gross: '🪱', physical: '💪', truth: '🤥', public: '📣' };
+
+function _tddPortrait(name, cls) {
+  try { return (typeof rpPortrait === 'function') ? rpPortrait(name, cls || 'sm') : ''; } catch(e) { return ''; }
+}
+
 export function simulateTripleDogDare(ep) {
   const activePlayers = [...gs.activePlayers];
   const eliminated = [...gs.eliminated];
@@ -1125,7 +1131,6 @@ const TDD_STYLES = `
     stroke-dasharray:5 3 7 4 6 2 9 3; stroke-linecap:round;
   }
   .tdd-spinner-arrow {
-    stroke:#1a1a1a; stroke-width:5; stroke-linecap:round; fill:none;
     transform-origin:100px 100px;
   }
   .tdd-spinner-result {
@@ -1246,6 +1251,7 @@ function _tddReveal(stateKey, totalSteps) {
   const st = _tvStateTDD[stateKey];
   if (st.idx >= totalSteps - 1) return;
   st.idx++;
+  _tddSyncScoreboard(stateKey);
   const el = document.getElementById(`tdd-step-${stateKey}-${st.idx}`);
   if (el) {
     el.style.display = '';
@@ -1332,6 +1338,7 @@ function _tddRevealAll(stateKey, totalSteps) {
   }
   const ctrl = document.getElementById(`tdd-controls-${stateKey}`);
   if (ctrl) ctrl.style.display = 'none';
+  _tddSyncScoreboard(stateKey);
 }
 
 function _htmlEscapeTDD(s) {
@@ -1340,21 +1347,66 @@ function _htmlEscapeTDD(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-function _renderTDDScoreboard(tdd) {
-  const pList = tdd.activePlayers || Object.keys(tdd.freebiesAtEnd || {});
-  const freebies = tdd.freebiesAtEnd || {};
-  const chickens = tdd.finalChickens || {};
-  const eliminated = tdd.eliminated || null;
-  let html = `<div class="tdd-scoreboard"><div class="tdd-scoreboard-title">\u00b7 THE RECESS WALL \u00b7</div>`;
-  pList.forEach(p => {
+function _tddRecomputeScoreboardState(steps, upToIdx, activePlayers) {
+  const freebies = {}, chickens = {};
+  let eliminated = null;
+  (activePlayers || []).forEach(p => { freebies[p] = 0; chickens[p] = 0; });
+  for (let i = 0; i <= upToIdx; i++) {
+    const evt = steps[i]?.evt;
+    if (!evt) continue;
+    const type = evt.type || evt.action || '';
+    if ((type === 'accept' || evt.action === 'accept') && evt.freebieEarned)
+      freebies[evt.player] = (freebies[evt.player] || 0) + 1;
+    if (type === 'freebie-skip' || evt.action === 'freebie-skip')
+      freebies[evt.player] = Math.max(0, (freebies[evt.player] || 0) - 1);
+    if (type === 'freebieGift') {
+      const from = evt.from || evt.donor, to = evt.to || evt.requester;
+      if (from) freebies[from] = Math.max(0, (freebies[from] || 0) - 1);
+      if (to)   freebies[to]   = (freebies[to]   || 0) + 1;
+    }
+    if (type === 'chickenStreakStart' || type === 'chickenStreakEscalate') chickens[evt.player] = evt.streak || 3;
+    if (type === 'chickenStreakBroken') chickens[evt.player] = 0;
+    if (type === 'refuse' || evt.action === 'refuse') eliminated = evt.player;
+  }
+  return { freebies, chickens, eliminated };
+}
+
+function _tddSyncScoreboard(stateKey) {
+  const st = _tvStateTDD[stateKey];
+  if (!st || !st.steps || !st.activePlayers) return;
+  const { freebies, chickens, eliminated } = _tddRecomputeScoreboardState(st.steps, st.idx, st.activePlayers);
+  st.activePlayers.forEach((p, i) => {
+    const row = document.getElementById(`tdd-sb-row-${stateKey}-${i}`);
+    if (!row) return;
+    const nameEl = row.querySelector('.tdd-scoreboard-name');
+    if (nameEl) {
+      if (p === eliminated) nameEl.classList.add('tdd-scoreboard-name--elim');
+      else nameEl.classList.remove('tdd-scoreboard-name--elim');
+    }
+    const bEl = document.getElementById(`tdd-sb-bracelets-${stateKey}-${i}`);
+    if (bEl) bEl.innerHTML = Array.from({ length: Math.min(6, freebies[p] || 0) }, () => `<span class="tdd-bracelet"></span>`).join('');
+    const cEl = document.getElementById(`tdd-sb-chicken-${stateKey}-${i}`);
+    if (cEl) {
+      const streak = chickens[p] || 0;
+      cEl.innerHTML = streak >= 3 ? `<span class="tdd-chicken" data-streak="${Math.min(streak,6)}">🐔</span>` : '';
+    }
+  });
+}
+
+function _renderTDDScoreboard(pList, stateKey, initialState) {
+  const freebies  = initialState?.freebies  || {};
+  const chickens  = initialState?.chickens  || {};
+  const eliminated = initialState?.eliminated || null;
+  let html = `<div class="tdd-scoreboard" id="tdd-sb-${stateKey}"><div class="tdd-scoreboard-title">\u00b7 THE RECESS WALL \u00b7</div>`;
+  (pList || []).forEach((p, i) => {
     const n = Math.min(6, freebies[p] || 0);
     const bracelets = Array.from({ length: n }, () => `<span class="tdd-bracelet"></span>`).join('');
     const streak = chickens[p] || 0;
     const chicken = streak >= 3 ? `<span class="tdd-chicken" data-streak="${Math.min(streak,6)}">\uD83D\uDC14</span>` : '';
     const elimCls = p === eliminated ? ' tdd-scoreboard-name--elim' : '';
-    html += `<div class="tdd-scoreboard-row">
+    html += `<div class="tdd-scoreboard-row" id="tdd-sb-row-${stateKey}-${i}">
       <span class="tdd-scoreboard-name${elimCls}">${_htmlEscapeTDD(p)}</span>
-      <span class="tdd-bracelet-stack">${bracelets}</span>${chicken}
+      <span class="tdd-bracelet-stack" id="tdd-sb-bracelets-${stateKey}-${i}">${bracelets}</span><span id="tdd-sb-chicken-${stateKey}-${i}">${chicken}</span>
     </div>`;
   });
   html += `</div>`;
@@ -1372,22 +1424,48 @@ function _renderTDDStep(evt, tdd) {
   }
 
   if (type === 'spinnerLand') {
+    const allPlayers = tdd.activePlayers || [evt.player];
+    const n = allPlayers.length || 1;
+    const wedgeDeg = 360 / n;
+    let wedgeSvg = '';
+    allPlayers.forEach((p, i) => {
+      const divAngleRad = (i * wedgeDeg - 90) * Math.PI / 180;
+      const dx = (Math.cos(divAngleRad) * 85).toFixed(1), dy = (Math.sin(divAngleRad) * 85).toFixed(1);
+      wedgeSvg += `<line x1="100" y1="100" x2="${100+parseFloat(dx)}" y2="${100+parseFloat(dy)}" stroke="rgba(240,236,226,0.22)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+      const midRad = ((i + 0.5) * wedgeDeg - 90) * Math.PI / 180;
+      const lx = (100 + Math.cos(midRad) * 62).toFixed(1), ly = (100 + Math.sin(midRad) * 62).toFixed(1);
+      const rot = ((i + 0.5) * wedgeDeg - 90).toFixed(1);
+      const fs = n > 9 ? 7 : n > 6 ? 9 : 11;
+      const label = p.length > 7 ? p.slice(0, 6) + '\u2026' : p;
+      const isLanded = p === evt.player;
+      const fill = isLanded ? '#ffd447' : 'rgba(240,236,226,0.75)';
+      const fw = isLanded ? 'bold' : 'normal';
+      wedgeSvg += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="${fill}" font-weight="${fw}" font-size="${fs}" font-family="Kalam,cursive" transform="rotate(${rot},${lx},${ly})">${_htmlEscapeTDD(label)}</text>`;
+    });
+    const por = _tddPortrait(evt.player, 'sm');
     return `<div class="tdd-spinner-wrap">
       <svg class="tdd-spinner-svg" viewBox="0 0 200 200">
         <circle class="tdd-spinner-circle" cx="100" cy="100" r="88"/>
-        <path class="tdd-spinner-arrow" d="M100,100 L100,15"/>
+        ${wedgeSvg}
+        <g class="tdd-spinner-arrow" style="transform-origin:100px 100px">
+          <line x1="100" y1="100" x2="100" y2="22" stroke="#ffd447" stroke-width="3" stroke-linecap="round"/>
+          <polygon points="100,14 93,27 107,27" fill="#ffd447" stroke="none"/>
+        </g>
+        <circle cx="100" cy="100" r="6" fill="#1a1a1a" stroke="#ffd447" stroke-width="2"/>
       </svg>
-      <div class="tdd-spinner-result">\u25b8 ${_htmlEscapeTDD(evt.player || '?')}</div>
+      <div class="tdd-spinner-result">${por} \u25b8 ${_htmlEscapeTDD(evt.player || '?')}</div>
     </div>`;
   }
 
   if (type === 'dareReveal') {
     const category = evt.category || 'gross';
     const dareText = evt.text || evt.dareText || '';
+    const icon = TDD_CAT_ICONS[category] || '';
+    const por = _tddPortrait(evt.player, 'sm');
     return `<div class="tdd-card tdd-card--paper" data-typewriter="1">
-      <span class="tdd-cat tdd-cat--${category}">${category}</span>
+      <span class="tdd-cat tdd-cat--${category}">${icon} ${category}</span>
       <div class="tdd-dare-text" data-full-text="${_htmlEscapeTDD(dareText)}">${_htmlEscapeTDD(dareText)}</div>
-      <div style="font-family:'Kalam',cursive;font-size:11px;color:#8b5a2b;letter-spacing:1px;margin-top:6px">\u2014 for ${_htmlEscapeTDD(evt.player || '?')} \u2014</div>
+      <div style="font-family:'Kalam',cursive;font-size:11px;color:#8b5a2b;letter-spacing:1px;margin-top:6px;display:flex;align-items:center;gap:6px">${por}<span>\u2014 for ${_htmlEscapeTDD(evt.player || '?')} \u2014</span></div>
     </div>`;
   }
 
@@ -1395,90 +1473,107 @@ function _renderTDDStep(evt, tdd) {
     const burst = [0,45,90,135,180,225,270,315].map(a =>
       `<div class="tdd-burst" style="--a:${a}deg"></div>`
     ).join('');
+    const por = _tddPortrait(evt.player, 'sm');
     return `<div class="tdd-card tdd-card--chalk">
-      <div class="tdd-burst-wrap">${burst}<strong>${_htmlEscapeTDD(evt.player || '?')}</strong></div>
-      <span style="margin-left:8px">accepts. ${_htmlEscapeTDD(evt.reaction || evt.text || '')}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${por}<div class="tdd-burst-wrap">${burst}<strong>${_htmlEscapeTDD(evt.player || '?')}</strong></div>
+        <span>accepts. ${_htmlEscapeTDD(evt.reaction || evt.text || '')}</span>
+      </div>
       ${evt.freebieEarned ? '<div style="font-size:10px;color:#ffd447;margin-top:4px">+1 freebie earned</div>' : ''}
     </div>`;
   }
 
   if (type === 'pass' || evt.action === 'pass') {
     const betrayalTag = evt.isBetrayal ? '<span style="color:#d92424;font-weight:700;font-size:11px;margin-left:4px">BETRAYAL</span>' : '';
+    const por1 = _tddPortrait(evt.player, 'xs');
+    const por2 = _tddPortrait(evt.to || evt.target, 'xs');
     return `<div class="tdd-card tdd-card--chalk">
-      <strong>${_htmlEscapeTDD(evt.player || '?')}</strong> chickens \u2014 redirects to <strong>${_htmlEscapeTDD(evt.to || evt.target || '?')}</strong>${betrayalTag}
+      <div style="display:flex;align-items:center;gap:6px">${por1}<strong>${_htmlEscapeTDD(evt.player || '?')}</strong> chickens \u2014 redirects to ${por2}<strong>${_htmlEscapeTDD(evt.to || evt.target || '?')}</strong>${betrayalTag}</div>
       <div style="margin-top:4px;font-size:12px;font-style:italic">${_htmlEscapeTDD(evt.reaction || evt.text || '')}</div>
     </div>`;
   }
 
   if (type === 'freebie-skip' || evt.action === 'freebie-skip') {
+    const por = _tddPortrait(evt.player, 'xs');
     return `<div class="tdd-card tdd-card--chalk" style="border-color:#ffd447">
-      <strong>${_htmlEscapeTDD(evt.player || '?')}</strong> burns a freebie to skip.
+      <div style="display:flex;align-items:center;gap:6px">${por}<strong>${_htmlEscapeTDD(evt.player || '?')}</strong> burns a freebie to skip.</div>
       <div style="font-size:10px;color:#ffd447;margin-top:2px">\u22121 freebie</div>
       <div style="margin-top:4px;font-size:12px;font-style:italic">${_htmlEscapeTDD(evt.reaction || '')}</div>
     </div>`;
   }
 
   if (type === 'refuse' || evt.action === 'refuse') {
+    const por = _tddPortrait(evt.player, 'sm');
     return `<div class="tdd-card tdd-card--chalk" style="border-color:#d92424">
-      <strong>${_htmlEscapeTDD(evt.player || '?')}</strong> <span style="color:#d92424;font-weight:700">REFUSES</span> \u2014 no freebies left.
+      <div style="display:flex;align-items:center;gap:6px">${por}<strong>${_htmlEscapeTDD(evt.player || '?')}</strong> <span style="color:#d92424;font-weight:700">REFUSES</span> \u2014 no freebies left.</div>
       <div style="margin-top:4px;font-size:12px">${_htmlEscapeTDD(evt.reaction || '')}</div>
     </div>`;
   }
 
   if (type === 'freebieGift') {
+    const porFrom = _tddPortrait(evt.from || evt.donor, 'sm');
+    const porTo = _tddPortrait(evt.to || evt.requester, 'sm');
     return `<div class="tdd-gift-card">
-      <div class="tdd-gift-from"><strong>${_htmlEscapeTDD(evt.from || evt.donor || '?')}</strong></div>
+      <div class="tdd-gift-from">${porFrom}<strong>${_htmlEscapeTDD(evt.from || evt.donor || '?')}</strong></div>
       <div class="tdd-gift-pass">
         <div>PASS \u2192</div>
         <div><span class="tdd-gift-bracelet"></span></div>
       </div>
-      <div class="tdd-gift-to"><strong>${_htmlEscapeTDD(evt.to || evt.requester || '?')}</strong></div>
+      <div class="tdd-gift-to">${porTo}<strong>${_htmlEscapeTDD(evt.to || evt.requester || '?')}</strong></div>
       <div style="flex-basis:100%;text-align:center;font-size:12px;color:#f0ece2;margin-top:6px">${_htmlEscapeTDD(evt.text || '')}</div>
     </div>`;
   }
 
   if (type === 'dareMishap') {
+    const por = _tddPortrait(evt.player, 'xs');
     return `<div class="tdd-card tdd-card--mishap">
-      <span class="tdd-cat tdd-cat--gross">MISHAP</span>
-      <div style="margin-top:6px"><strong>${_htmlEscapeTDD(evt.player || '?')}</strong> \u2014 ${_htmlEscapeTDD(evt.text || '')}</div>
+      <span class="tdd-cat tdd-cat--gross">💥 MISHAP</span>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:6px">${por}<strong>${_htmlEscapeTDD(evt.player || '?')}</strong> \u2014 ${_htmlEscapeTDD(evt.text || '')}</div>
     </div>`;
   }
 
   if (type === 'dareConsequence') {
     const category = evt.category || 'gross';
+    const icon = TDD_CAT_ICONS[category] || '';
+    const por = _tddPortrait(evt.player, 'xs');
     return `<div class="tdd-card tdd-card--chalk">
-      <span class="tdd-cat tdd-cat--${category}">${category} result</span>
-      <div style="margin-top:6px">${_htmlEscapeTDD(evt.text || '')}</div>
+      <span class="tdd-cat tdd-cat--${category}">${icon} ${category} result</span>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:6px">${por} ${_htmlEscapeTDD(evt.text || '')}</div>
     </div>`;
   }
 
   if (type === 'chickenStreakStart' || type === 'chickenStreakEscalate') {
     const streak = evt.streak || 3;
     const chicken = streak <= 3 ? '\uD83D\uDC23' : streak === 4 ? '\uD83D\uDC14' : '\uD83D\uDC13';
-    const crowd = '\uD83E\uDDD1'.repeat(Math.min(8, 2 + (streak - 3))).split('').join(' ');
+    const crowd = Array.from({ length: Math.min(8, 2 + (streak - 3)) }, () => '🧍').join(' ');
+    const por = _tddPortrait(evt.player, 'md');
     return `<div class="tdd-chicken-setpiece">
-      <div class="tdd-chicken-big">${chicken}</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px">${por}<div class="tdd-chicken-big">${chicken}</div></div>
       <div class="tdd-chicken-caption">CHICKEN METER \u00b7 ${_htmlEscapeTDD(evt.player || '?')} \u00b7 ${streak} passes</div>
       <div class="tdd-crowd-figures">${crowd}</div>
     </div>`;
   }
 
   if (type === 'chickenStreakBroken') {
+    const por = _tddPortrait(evt.player, 'xs');
     return `<div class="tdd-card tdd-card--chalk" style="border-color:#3aff7a">
-      <strong>${_htmlEscapeTDD(evt.player || '?')}</strong> finally accepts after ${evt.priorStreak || '?'} passes.
+      <div style="display:flex;align-items:center;gap:6px">${por}<strong>${_htmlEscapeTDD(evt.player || '?')}</strong> finally accepts after ${evt.priorStreak || '?'} passes.</div>
       <span style="color:#3aff7a;margin-left:4px">Streak broken.</span>
     </div>`;
   }
 
   if (type === 'publicReaction') {
+    const crowd = Array.from({ length: 5 }, () => '🧍').join(' ');
     return `<div class="tdd-reaction">
       <div>${_htmlEscapeTDD(evt.text || '')}</div>
-      <div class="tdd-reaction-crowd">\uD83E\uDDD1 \uD83E\uDDD1 \uD83E\uDDD1 \uD83E\uDDD1 \uD83E\uDDD1</div>
+      <div class="tdd-reaction-crowd">${crowd}</div>
     </div>`;
   }
 
   if (type === 'dareElimination' || type === 'elimination') {
+    const por = _tddPortrait(evt.player, 'lg');
     return `<div class="tdd-elim">
+      ${por ? `<div style="display:flex;justify-content:center;margin-bottom:8px">${por}</div>` : ''}
       <div class="tdd-elim-name">
         ${_htmlEscapeTDD(evt.player || '?')}
         <span class="tdd-elim-slash"></span>
@@ -1563,6 +1658,15 @@ export function rpBuildTripleDogDare(ep) {
     return { html, evt: s.evt, i };
   }).filter(Boolean);
 
+  // Store steps + activePlayers in state for reactive scoreboard
+  state.steps = renderedSteps;
+  state.activePlayers = tdd.activePlayers || [];
+
+  // Compute initial scoreboard state based on current reveal position
+  const sbInitialState = state.idx >= 0
+    ? _tddRecomputeScoreboardState(renderedSteps, state.idx, state.activePlayers)
+    : null;
+
   let out = `<style>${TDD_STYLES}</style><div class="tdd-page rp-page">`;
 
   out += `<div class="tdd-header">
@@ -1571,7 +1675,7 @@ export function rpBuildTripleDogDare(ep) {
     <div class="tdd-subtitle">The last one standing wins immunity \u00b7 The first one to chicken out goes home</div>
   </div>`;
 
-  out += _renderTDDScoreboard(tdd);
+  out += _renderTDDScoreboard(state.activePlayers, stateKey, sbInitialState);
 
   renderedSteps.forEach((s, idx) => {
     const visible = idx <= state.idx;

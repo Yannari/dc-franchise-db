@@ -772,8 +772,12 @@ export function renderTwistCatalog() {
       const epInfo = epMap.find(e => e.ep === epN);
       return epInfo && epInfo.active % 2 !== 0;
     });
-    const blocked = phaseBlocked || incompBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked || _tdEvenBlocked;
-    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist' : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : _tdEvenBlocked ? ' ⚠️ needs even player count' : '';
+    const _taOddBlocked = canAssign && t.id === 'tri-armed-triathlon' && _selEpNums.some(epN => {
+      const epInfo = epMap.find(e => e.ep === epN);
+      return epInfo && epInfo.active % 2 !== 0;
+    });
+    const blocked = phaseBlocked || incompBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked || _tdEvenBlocked || _taOddBlocked;
+    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist' : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : _tdEvenBlocked ? ' ⚠️ needs even player count' : _taOddBlocked ? ' ⚠️ needs even player count' : '';
     return `
     <div class="twist-card ${canAssign && !blocked ? 'assignable' : ''} ${blocked ? 'phase-blocked' : ''}" onclick="${blocked ? '' : `assignTwist('${t.id}')`}">
       <div class="twist-card-top">

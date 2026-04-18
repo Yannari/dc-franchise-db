@@ -1838,7 +1838,7 @@ const CC_SHORE_STYLES = `
 .cc-shore-scene { position:relative; min-height:100vh; overflow-x:hidden;
   background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 30%, var(--ocean) 50%,
     var(--ocean-foam) 55%, var(--wet-sand) 60%, var(--sand) 75%, var(--sand-deep) 100%);
-  transition: background 0.8s ease; }
+  transition: background 0.8s ease; padding-bottom:2rem; }
 
 /* Ocean wave animation */
 .cc-shore-scene::before { content:''; position:absolute; top:48%; left:0; right:0; height:8%;
@@ -1854,17 +1854,6 @@ const CC_SHORE_STYLES = `
   animation: cc-sand-drift 6s ease-in-out infinite alternate; pointer-events:none; }
 
 @keyframes cc-sand-drift { 0%{opacity:0.6} 100%{opacity:1} }
-
-/* ── Driftwood nav ── */
-.cc-driftwood-nav { display:flex; gap:0.5rem; padding:1rem; justify-content:center;
-  position:relative; z-index:2; }
-.cc-driftwood-nav .cc-stick { padding:0.4rem 1rem; background:var(--driftwood);
-  color:#FFF8E7; border:none; border-radius:12px 4px 12px 4px; cursor:pointer;
-  font-family:inherit; font-size:0.85rem; box-shadow:2px 2px 4px rgba(0,0,0,0.3);
-  transition:transform 0.2s, box-shadow 0.2s; }
-.cc-driftwood-nav .cc-stick:hover { transform:translateY(-2px); box-shadow:3px 4px 6px rgba(0,0,0,0.35); }
-.cc-driftwood-nav .cc-stick.active { background:var(--driftwood-light); font-weight:bold;
-  box-shadow:0 0 8px rgba(139,105,20,0.5); }
 
 /* ── Torn-paper artifact (diary / surveillance / general) ── */
 .cc-artifact { position:relative; z-index:1; background:var(--artifact-bg);
@@ -1895,8 +1884,6 @@ const CC_SHORE_STYLES = `
   font-family:'Courier New',monospace; border:2px solid #228B22;
   border-radius:8px; padding:1rem 1.2rem; margin:0.8rem auto; max-width:600px;
   box-shadow:0 0 12px rgba(34,139,34,0.3); }
-.cc-palm-cam::before { content:'\uD83C\uDF3F'; position:absolute; top:-12px; left:12px;
-  font-size:20px; }
 .cc-palm-cam .cc-cam-header { display:flex; justify-content:space-between; align-items:center;
   font-size:0.75rem; opacity:0.7; margin-bottom:0.5rem; border-bottom:1px solid #228B22;
   padding-bottom:0.3rem; }
@@ -1912,8 +1899,6 @@ const CC_SHORE_STYLES = `
 .cc-coconut-card .cc-coconut-says { font-style:italic; color:var(--coconut-face);
   font-size:0.95rem; line-height:1.4; position:relative; padding:0.8rem;
   background:rgba(255,255,255,0.6); border-radius:8px; margin-top:0.5rem; }
-.cc-coconut-card .cc-coconut-says::before { content:'\u201C'; font-size:2rem;
-  position:absolute; top:-5px; left:5px; color:var(--coconut-brown); opacity:0.4; }
 
 /* ── Signal / broadcast card ── */
 .cc-signal-card { position:relative; z-index:1; background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -1923,18 +1908,22 @@ const CC_SHORE_STYLES = `
 .cc-signal-card .cc-signal-header { display:flex; align-items:center; gap:0.5rem;
   font-size:0.8rem; color:#E94560; font-weight:bold; margin-bottom:0.5rem;
   border-bottom:1px solid #0F3460; padding-bottom:0.3rem; }
-.cc-signal-card .cc-signal-header::before { content:'\uD83D\uDCE1'; font-size:14px; }
 .cc-signal-card .cc-signal-body { font-size:0.9rem; line-height:1.5; }
 .cc-signal-card .cc-signal-body p { margin:0.3rem 0; }
 
-/* ── Conch shell button ── */
-.cc-conch-btn { display:inline-flex; align-items:center; gap:0.4rem;
+/* ── Conch shell next/reveal buttons ── */
+.cc-conch-next { display:inline-flex; align-items:center; gap:0.4rem; cursor:pointer;
   background:linear-gradient(135deg, var(--conch) 0%, var(--conch-dark) 100%);
-  color:#FFF; border:none; border-radius:20px; padding:0.6rem 1.4rem;
-  cursor:pointer; font-family:inherit; font-size:0.9rem; font-weight:bold;
-  box-shadow:2px 3px 6px rgba(0,0,0,0.25); transition:transform 0.2s, box-shadow 0.2s; }
-.cc-conch-btn:hover { transform:scale(1.05); box-shadow:3px 4px 8px rgba(0,0,0,0.3); }
-.cc-conch-btn::before { content:'\uD83D\uDC1A'; font-size:16px; }
+  color:#FFF; border:none; border-radius:20px; padding:0.5rem 1.2rem;
+  font-family:inherit; font-size:0.85rem; font-weight:bold;
+  box-shadow:2px 3px 6px rgba(0,0,0,0.25); transition:transform 0.2s, box-shadow 0.2s;
+  margin:0.6rem auto; }
+.cc-conch-next:hover { transform:scale(1.05); box-shadow:3px 4px 8px rgba(0,0,0,0.3); }
+
+.cc-conch-reveal-all { display:block; text-align:center; cursor:pointer;
+  font-size:0.7rem; color:#8B7355; letter-spacing:1px; padding:0.3rem 0.8rem;
+  margin:0.2rem auto 0.6rem; opacity:0.6; transition:opacity 0.2s; }
+.cc-conch-reveal-all:hover { opacity:1; color:var(--conch-dark); }
 
 /* ── Sand-write immunity ── */
 .cc-sand-write { position:relative; z-index:1; text-align:center; padding:2rem;
@@ -1964,15 +1953,14 @@ const CC_SHORE_STYLES = `
   border:3px solid #FFF; box-shadow:2px 2px 6px rgba(0,0,0,0.2); transform:rotate(-2deg);
   background:#FFF; padding:3px; }
 
-/* ── Reveal interactivity ── */
-.cc-shore [data-reveal] { cursor:pointer; }
-.cc-shore [data-reveal]:not(.revealed) .cc-reveal-content { filter:blur(6px); transition:filter 0.4s ease; }
-.cc-shore [data-reveal].revealed .cc-reveal-content { filter:none; }
-
 /* ── Section header on sand ── */
 .cc-shore-header { position:relative; z-index:1; text-align:center; padding:0.8rem;
   font-size:1.2rem; font-weight:bold; color:var(--driftwood);
   text-shadow:1px 1px 2px rgba(255,248,231,0.8); }
+
+/* ── All-revealed footer ── */
+.cc-shore-done { position:relative; z-index:1; text-align:center; padding:1rem;
+  font-style:italic; color:var(--driftwood); opacity:0.7; font-size:0.85rem; }
 
 /* ── Responsive ── */
 @media(max-width:640px) {
@@ -1987,9 +1975,9 @@ const CC_SHORE_STYLES = `
   .cc-shore-scene::before, .cc-shore-scene::after { animation:none !important; }
   .cc-night-stars .cc-star { animation:none !important; opacity:0.6; }
   .cc-lightning-overlay { animation:none !important; }
-  .cc-shore [data-reveal]:not(.revealed) .cc-reveal-content { filter:none; opacity:0.3; }
-  .cc-shore [data-reveal].revealed .cc-reveal-content { opacity:1; transition:opacity 0.1s; }
-  .cc-artifact, .cc-conch-btn, .cc-driftwood-nav .cc-stick { transition:none !important; }
+  .cc-sand-write .cc-sand-name.reveal-pending { filter:none; opacity:0.3; }
+  .cc-sand-write .cc-sand-name.revealed { opacity:1; transition:opacity 0.1s; }
+  .cc-artifact, .cc-conch-next { transition:none !important; }
 }
 </style>`;
 
@@ -2008,122 +1996,134 @@ function _nightStars(count = 30) {
   return `<div class="cc-night-stars">${stars}</div>`;
 }
 
-/** Driftwood nav bar */
-function _driftwoodNav(phases, activeIdx) {
-  const sticks = phases.map((p, i) =>
-    `<button class="cc-stick${i === activeIdx ? ' active' : ''}" onclick="window._ccNavTo && window._ccNavTo(${i})">${p.label}</button>`
-  ).join('');
-  return `<div class="cc-driftwood-nav">${sticks}</div>`;
-}
-
-/** Torn-paper artifact card (diary-style) */
+/** Torn-paper artifact card */
 function _shoreArtifact(title, bodyHtml, opts = {}) {
   const tilt = opts.tilt ?? (Math.random() * 4 - 2).toFixed(1);
   const tapeNum = opts.tapeNum ? `<div class="cc-tape-num">Tape ${opts.tapeNum}</div>` : '';
   const seal = opts.seal ? `<div class="cc-wax-seal">${opts.seal}</div>` : '';
-  const revealAttr = opts.revealKey ? ` data-reveal="${opts.revealKey}"` : '';
-  const revealWrap = opts.revealKey ? 'cc-reveal-content' : '';
-  return `<div class="cc-artifact" style="--tilt:${tilt}"${revealAttr}>
+  return `<div class="cc-artifact" style="--tilt:${tilt}">
     ${seal}${tapeNum}
     <div class="cc-artifact-title">${title}</div>
-    <div class="cc-artifact-body ${revealWrap}">${bodyHtml}</div>
+    <div class="cc-artifact-body">${bodyHtml}</div>
   </div>`;
 }
 
 /** Coconut breakdown card */
-function _shoreBreakdown(faceEmoji, dialogue, opts = {}) {
-  const revealAttr = opts.revealKey ? ` data-reveal="${opts.revealKey}"` : '';
-  const revealWrap = opts.revealKey ? 'cc-reveal-content' : '';
-  return `<div class="cc-coconut-card"${revealAttr}>
-    <div class="cc-coconut-face">${faceEmoji || '\uD83E\uDD65'}</div>
-    <div class="cc-coconut-says ${revealWrap}">${dialogue}</div>
+function _shoreBreakdown(faceEmoji, dialogue) {
+  return `<div class="cc-coconut-card">
+    <div class="cc-coconut-face">${faceEmoji || '\u{1F965}'}</div>
+    <div class="cc-coconut-says">${dialogue}</div>
   </div>`;
 }
 
 /** Palm-cam surveillance card */
-function _shoreSurveillance(headerLeft, headerRight, bodyHtml, opts = {}) {
-  const revealAttr = opts.revealKey ? ` data-reveal="${opts.revealKey}"` : '';
-  const revealWrap = opts.revealKey ? 'cc-reveal-content' : '';
-  return `<div class="cc-palm-cam"${revealAttr}>
+function _shoreSurveillance(headerLeft, headerRight, bodyHtml) {
+  return `<div class="cc-palm-cam">
     <div class="cc-cam-header"><span>${headerLeft}</span><span>${headerRight}</span></div>
-    <div class="cc-cam-body ${revealWrap}">${bodyHtml}</div>
+    <div class="cc-cam-body">${bodyHtml}</div>
   </div>`;
 }
 
 /** Signal broadcast card */
-function _shoreBroadcast(headerText, bodyHtml, opts = {}) {
-  const revealAttr = opts.revealKey ? ` data-reveal="${opts.revealKey}"` : '';
-  const revealWrap = opts.revealKey ? 'cc-reveal-content' : '';
-  return `<div class="cc-signal-card"${revealAttr}>
+function _shoreBroadcast(headerText, bodyHtml) {
+  return `<div class="cc-signal-card">
     <div class="cc-signal-header">${headerText}</div>
-    <div class="cc-signal-body ${revealWrap}">${bodyHtml}</div>
+    <div class="cc-signal-body">${bodyHtml}</div>
   </div>`;
 }
 
-/* ---------- Inline reveal (unchanged logic) ---------- */
-function _ccInlineReveal(el) {
-  if (!el || el.classList.contains('revealed')) return;
-  el.classList.add('revealed');
-  const key = el.getAttribute('data-reveal');
-  if (key) {
-    const ts = window._tvState;
-    if (ts && ts[key]) ts[key].idx = (ts[key].idx ?? -1) + 1;
-  }
-  /* rebuild VP screens to persist reveal state */
-  if (typeof buildVPScreens === 'function') {
-    const scrollY = document.querySelector('.rp-page')?.scrollTop ?? 0;
-    const curId = window.vpCurrentScreen;
-    buildVPScreens();
-    if (curId != null) {
-      const screens = window.vpScreens || [];
-      const idx = screens.findIndex(s => s.id === curId);
-      if (idx >= 0) {
-        window.vpCurrentScreen = curId;
-        if (typeof renderVPScreen === 'function') renderVPScreen(idx);
-      }
-    }
-    const page = document.querySelector('.rp-page');
-    if (page) page.scrollTop = scrollY;
-  }
-}
-window._ccInlineReveal = _ccInlineReveal;
-
-/** Flood timestamp helper (unchanged) */
+/** Flood timestamp helper */
 function _floodTs(min) {
   const h = Math.floor(min / 60);
   const m = min % 60;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
+// ── CLICK-TO-REVEAL — inline onclick (Lucky Hunt pattern) ──
+function _ccInlineReveal(stateKey, targetIdx, screenId, epNum) {
+  return `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};` +
+    `_tvState['${stateKey}'].idx=${targetIdx};` +
+    `(function(){` +
+      `var sc=document.querySelector('.rp-main');var st=sc?sc.scrollTop:0;` +
+      `buildVPScreens();` +
+      `var ss=window.vpScreens||[];var si=ss.findIndex(function(s){return s.id==='${screenId}'});` +
+      `if(si>=0){window.vpCurrentScreen=si;renderVPScreen();}` +
+      `var sc2=document.querySelector('.rp-main');if(sc2)sc2.scrollTop=st;` +
+    `})()`;
+}
+
+/** Conch-themed next + reveal-all buttons */
+function _shoreNextBtns(stateKey, nextIdx, totalLen, screenId, epNum) {
+  let html = '';
+  html += `<div style="text-align:center;position:relative;z-index:1">`;
+  html += `<div class="cc-conch-next" onclick="${_ccInlineReveal(stateKey, nextIdx, screenId, epNum)}">\u{1F41A} Next</div>`;
+  html += `<div class="cc-conch-reveal-all" onclick="${_ccInlineReveal(stateKey, totalLen - 1, screenId, epNum)}">\u{1F50E} Reveal all</div>`;
+  html += `</div>`;
+  return html;
+}
+
 /* ---------- Screen Builders ---------- */
 
-function _buildColdOpen(ep) {
+function _buildColdOpen(ep, stateKey, screenId) {
   const cc = ep.campCastaways;
   if (!cc) return '';
   const nGroups = cc.groups?.length || 0;
   const tapeTotal = 5 + nGroups;
+  const epNum = ep.num || 0;
 
-  let html = '';
-  /* Flood overview */
-  html += _shoreArtifact(
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const st = _tvState[stateKey];
+
+  // Collect all revealable items
+  const items = [];
+
+  // Flood overview
+  items.push(_shoreArtifact(
     '\u{1F30A} The Flood',
     `<p>${cc.floodNarrative || 'The waters rose without warning...'}</p>`,
     { tapeNum: `1/${tapeTotal}`, seal: '\u{1F30A}', tilt: -1.5 }
-  );
+  ));
 
-  /* Castaways list */
+  // Castaways list
   if (cc.castaways && cc.castaways.length) {
     let list = cc.castaways.map(c => {
       const port = typeof rpPortrait === 'function' ? rpPortrait(c.name, 40) : '';
       return `<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px">${port}<b>${c.name}</b></span>`;
     }).join('');
-    html += _shoreArtifact('Castaways', `<p>${list}</p>`, { tilt: 1 });
+    items.push(_shoreArtifact('Castaways', `<p>${list}</p>`, { tilt: 1 }));
+  }
+
+  // Flood events
+  if (cc.floodEvents && cc.floodEvents.length) {
+    cc.floodEvents.forEach(evt => {
+      items.push(_shoreSurveillance(
+        'CAM-00', _floodTs(evt.time || 0),
+        `<p>${evt.text || ''}</p>`
+      ));
+    });
+  }
+
+  let html = '';
+  items.forEach((card, i) => {
+    if (i > st.idx + 1) return;
+    if (i <= st.idx) {
+      html += card;
+    } else if (i === st.idx + 1) {
+      html += card;
+      if (i < items.length - 1) {
+        html += _shoreNextBtns(stateKey, i + 1, items.length, screenId, epNum);
+      }
+    }
+  });
+
+  if (st.idx >= items.length - 1 && items.length > 0) {
+    html += `<div class="cc-shore-done">\u{1F30A} All flood logs recovered.</div>`;
   }
 
   return html;
 }
 
-function _buildGroupScreen(ep, groupIdx) {
+function _buildGroupScreen(ep, groupIdx, stateKey, screenId) {
   const cc = ep.campCastaways;
   if (!cc || !cc.groups || !cc.groups[groupIdx]) return '';
   const grp = cc.groups[groupIdx];
@@ -2131,250 +2131,285 @@ function _buildGroupScreen(ep, groupIdx) {
   const tapeTotal = 5 + nGroups;
   const tapeNum = 2 + groupIdx;
   const label = grp.label || grp.name || `Group ${groupIdx + 1}`;
+  const epNum = ep.num || 0;
 
-  const ts = window._tvState || {};
-  const stateKey = `cc-group-${groupIdx}`;
-  if (!ts[stateKey]) ts[stateKey] = { idx: -1 };
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const st = _tvState[stateKey];
 
-  let html = '';
+  const items = [];
 
-  /* Group header */
-  html += `<div class="cc-shore-header">\u{1F334} ${label}</div>`;
-
-  /* Members */
+  // Members card (always visible, not counted as reveal step)
+  let membersCard = '';
   if (grp.members && grp.members.length) {
     const mHtml = grp.members.map(m => {
       const port = typeof rpPortrait === 'function' ? rpPortrait(m, 36) : '';
       return `<span style="display:inline-flex;align-items:center;gap:3px;margin:2px 4px">${port}${m}</span>`;
     }).join('');
-    html += _shoreArtifact(`${label} — Members`, mHtml, { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: 0.8 });
+    membersCard = _shoreArtifact(`${label} \u2014 Members`, mHtml, { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: 0.8 });
   }
 
-  /* Events */
+  // Events
   if (grp.events && grp.events.length) {
-    grp.events.forEach((evt, i) => {
-      const revealKey = `${stateKey}-evt-${i}`;
-      if (!ts[revealKey]) ts[revealKey] = { idx: -1 };
-      const isRevealed = ts[revealKey].idx >= 0;
-
+    grp.events.forEach(evt => {
       if (evt.type === 'surveillance' || evt.type === 'challenge') {
-        html += _shoreSurveillance(
-          evt.label || 'Palm Cam',
-          evt.timestamp || '',
-          `<p>${evt.text || ''}</p>`,
-          { revealKey: isRevealed ? null : revealKey }
-        );
+        items.push(_shoreSurveillance(evt.label || 'Palm Cam', evt.timestamp || '', `<p>${evt.text || ''}</p>`));
       } else if (evt.type === 'breakdown' || evt.type === 'coconut') {
-        html += _shoreBreakdown(
-          '\u{1F965}',
-          evt.text || 'Mr. Coconut stares into the void...',
-          { revealKey: isRevealed ? null : revealKey }
-        );
+        items.push(_shoreBreakdown('\u{1F965}', evt.text || 'Mr. Coconut stares into the void...'));
       } else if (evt.type === 'broadcast' || evt.type === 'signal') {
-        html += _shoreBroadcast(
-          evt.label || 'SIGNAL INTERCEPT',
-          `<p>${evt.text || ''}</p>`,
-          { revealKey: isRevealed ? null : revealKey }
-        );
+        items.push(_shoreBroadcast(evt.label || 'SIGNAL INTERCEPT', `<p>${evt.text || ''}</p>`));
       } else {
-        /* Default: diary artifact */
-        html += _shoreArtifact(
-          evt.label || 'Shore Log',
-          `<p>${evt.text || ''}</p>`,
-          { tilt: (Math.random() * 3 - 1.5).toFixed(1), revealKey: isRevealed ? null : revealKey }
-        );
+        items.push(_shoreArtifact(evt.label || 'Shore Log', `<p>${evt.text || ''}</p>`,
+          { tilt: (Math.random() * 3 - 1.5).toFixed(1) }));
       }
     });
   }
 
-  /* Confessionals */
+  // Confessionals
   if (grp.confessionals && grp.confessionals.length) {
-    grp.confessionals.forEach((conf, i) => {
-      const revealKey = `${stateKey}-conf-${i}`;
-      if (!ts[revealKey]) ts[revealKey] = { idx: -1 };
-      const isRevealed = ts[revealKey].idx >= 0;
-
+    grp.confessionals.forEach(conf => {
       const port = typeof rpPortrait === 'function' ? rpPortrait(conf.name, 48) : '';
-      html += _shoreArtifact(
+      items.push(_shoreArtifact(
         `\u{1F4DD} ${conf.name}'s Journal`,
         `<div style="display:flex;gap:0.8rem;align-items:flex-start">${port}<div><p>${conf.text || ''}</p></div></div>`,
-        { seal: '\u2709', tilt: (Math.random() * 3 - 1.5).toFixed(1), revealKey: isRevealed ? null : revealKey }
-      );
+        { seal: '\u2709', tilt: (Math.random() * 3 - 1.5).toFixed(1) }
+      ));
     });
+  }
+
+  let html = '';
+  html += `<div class="cc-shore-header">\u{1F334} ${label}</div>`;
+  html += membersCard;
+
+  items.forEach((card, i) => {
+    if (i > st.idx + 1) return;
+    if (i <= st.idx) {
+      html += card;
+    } else if (i === st.idx + 1) {
+      html += card;
+      if (i < items.length - 1) {
+        html += _shoreNextBtns(stateKey, i + 1, items.length, screenId, epNum);
+      }
+    }
+  });
+
+  if (st.idx >= items.length - 1 && items.length > 0) {
+    html += `<div class="cc-shore-done">\u{1F334} All group logs recovered.</div>`;
   }
 
   return html;
 }
 
-function _buildNightScreen(ep) {
+function _buildNightScreen(ep, stateKey, screenId) {
   const cc = ep.campCastaways;
   if (!cc) return '';
   const nGroups = cc.groups?.length || 0;
   const tapeTotal = 5 + nGroups;
   const tapeNum = 2 + nGroups;
+  const epNum = ep.num || 0;
 
-  const ts = window._tvState || {};
-  if (!ts['cc-night']) ts['cc-night'] = { idx: -1 };
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const st = _tvState[stateKey];
+
+  const items = [];
+
+  if (cc.nightEvents && cc.nightEvents.length) {
+    cc.nightEvents.forEach(evt => {
+      if (evt.type === 'surveillance' || evt.type === 'nightvision') {
+        items.push(_shoreSurveillance('\u{1F4F7} Night Vision', evt.timestamp || '', `<p>${evt.text || ''}</p>`));
+      } else if (evt.type === 'breakdown' || evt.type === 'coconut') {
+        items.push(_shoreBreakdown('\u{1F965}', evt.text || ''));
+      } else {
+        items.push(_shoreArtifact(evt.label || '\u{1F319} Night Log', `<p>${evt.text || ''}</p>`,
+          { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: (Math.random() * 2 - 1).toFixed(1) }));
+      }
+    });
+  } else if (cc.nightNarrative) {
+    items.push(_shoreArtifact('\u{1F319} Night Log', `<p>${cc.nightNarrative}</p>`,
+      { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: -0.5 }));
+  }
 
   let html = '';
   html += _nightStars(35);
   html += `<div class="cc-shore-header">\u{1F319} Night Falls</div>`;
 
-  if (cc.nightEvents && cc.nightEvents.length) {
-    cc.nightEvents.forEach((evt, i) => {
-      const revealKey = `cc-night-evt-${i}`;
-      if (!ts[revealKey]) ts[revealKey] = { idx: -1 };
-      const isRevealed = ts[revealKey].idx >= 0;
-
-      if (evt.type === 'surveillance' || evt.type === 'nightvision') {
-        html += _shoreSurveillance(
-          '\u{1F4F7} Night Vision',
-          evt.timestamp || '',
-          `<p>${evt.text || ''}</p>`,
-          { revealKey: isRevealed ? null : revealKey }
-        );
-      } else if (evt.type === 'breakdown' || evt.type === 'coconut') {
-        html += _shoreBreakdown(
-          '\u{1F965}',
-          evt.text || '',
-          { revealKey: isRevealed ? null : revealKey }
-        );
-      } else {
-        html += _shoreArtifact(
-          evt.label || '\u{1F319} Night Log',
-          `<p>${evt.text || ''}</p>`,
-          { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: (Math.random() * 2 - 1).toFixed(1),
-            revealKey: isRevealed ? null : revealKey }
-        );
+  items.forEach((card, i) => {
+    if (i > st.idx + 1) return;
+    if (i <= st.idx) {
+      html += card;
+    } else if (i === st.idx + 1) {
+      html += card;
+      if (i < items.length - 1) {
+        html += _shoreNextBtns(stateKey, i + 1, items.length, screenId, epNum);
       }
-    });
-  } else if (cc.nightNarrative) {
-    html += _shoreArtifact(
-      '\u{1F319} Night Log',
-      `<p>${cc.nightNarrative}</p>`,
-      { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: -0.5 }
-    );
+    }
+  });
+
+  if (st.idx >= items.length - 1 && items.length > 0) {
+    html += `<div class="cc-shore-done">\u{1F319} The night passes.</div>`;
   }
 
   return html;
 }
 
-function _buildRegroupScreen(ep) {
+function _buildRegroupScreen(ep, stateKey, screenId) {
   const cc = ep.campCastaways;
   if (!cc) return '';
   const nGroups = cc.groups?.length || 0;
   const tapeTotal = 5 + nGroups;
   const tapeNum = 3 + nGroups;
+  const epNum = ep.num || 0;
 
-  const ts = window._tvState || {};
-  if (!ts['cc-regroup']) ts['cc-regroup'] = { idx: -1 };
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const st = _tvState[stateKey];
+
+  const items = [];
+
+  if (cc.regroupEvents && cc.regroupEvents.length) {
+    cc.regroupEvents.forEach(evt => {
+      items.push(_shoreArtifact(evt.label || 'Dawn Report', `<p>${evt.text || ''}</p>`,
+        { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: (Math.random() * 3 - 1.5).toFixed(1) }));
+    });
+  } else if (cc.regroupNarrative) {
+    items.push(_shoreArtifact('\u{1F305} Dawn Report', `<p>${cc.regroupNarrative}</p>`,
+      { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: 0.5 }));
+  }
 
   let html = '';
   html += `<div class="cc-shore-header">\u{1F305} Regroup at Dawn</div>`;
 
-  if (cc.regroupEvents && cc.regroupEvents.length) {
-    cc.regroupEvents.forEach((evt, i) => {
-      const revealKey = `cc-regroup-evt-${i}`;
-      if (!ts[revealKey]) ts[revealKey] = { idx: -1 };
-      const isRevealed = ts[revealKey].idx >= 0;
+  items.forEach((card, i) => {
+    if (i > st.idx + 1) return;
+    if (i <= st.idx) {
+      html += card;
+    } else if (i === st.idx + 1) {
+      html += card;
+      if (i < items.length - 1) {
+        html += _shoreNextBtns(stateKey, i + 1, items.length, screenId, epNum);
+      }
+    }
+  });
 
-      html += _shoreArtifact(
-        evt.label || 'Dawn Report',
-        `<p>${evt.text || ''}</p>`,
-        { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: (Math.random() * 3 - 1.5).toFixed(1),
-          revealKey: isRevealed ? null : revealKey }
-      );
-    });
-  } else if (cc.regroupNarrative) {
-    html += _shoreArtifact(
-      '\u{1F305} Dawn Report',
-      `<p>${cc.regroupNarrative}</p>`,
-      { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: 0.5 }
-    );
+  if (st.idx >= items.length - 1 && items.length > 0) {
+    html += `<div class="cc-shore-done">\u{1F305} Camp reassembled.</div>`;
   }
 
   return html;
 }
 
-function _buildStormScreen(ep) {
+function _buildStormScreen(ep, stateKey, screenId) {
   const cc = ep.campCastaways;
   if (!cc) return '';
   const nGroups = cc.groups?.length || 0;
   const tapeTotal = 5 + nGroups;
   const tapeNum = 4 + nGroups;
+  const epNum = ep.num || 0;
 
-  const ts = window._tvState || {};
-  if (!ts['cc-storm']) ts['cc-storm'] = { idx: -1 };
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const st = _tvState[stateKey];
+
+  const items = [];
+
+  if (cc.stormEvents && cc.stormEvents.length) {
+    cc.stormEvents.forEach(evt => {
+      if (evt.type === 'broadcast' || evt.type === 'signal' || evt.type === 'emergency') {
+        items.push(_shoreBroadcast(evt.label || '\u26A1 EMERGENCY SIGNAL', `<p>${evt.text || ''}</p>`));
+      } else {
+        items.push(_shoreArtifact(evt.label || '\u26A1 Storm Log', `<p>${evt.text || ''}</p>`,
+          { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: (Math.random() * 4 - 2).toFixed(1) }));
+      }
+    });
+  } else if (cc.stormNarrative) {
+    items.push(_shoreArtifact('\u26A1 Storm Log', `<p>${cc.stormNarrative}</p>`,
+      { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: -2 }));
+  }
 
   let html = '';
   html += `<div class="cc-lightning-overlay"></div>`;
   html += `<div class="cc-shore-header">\u26A1 The Storm</div>`;
 
-  if (cc.stormEvents && cc.stormEvents.length) {
-    cc.stormEvents.forEach((evt, i) => {
-      const revealKey = `cc-storm-evt-${i}`;
-      if (!ts[revealKey]) ts[revealKey] = { idx: -1 };
-      const isRevealed = ts[revealKey].idx >= 0;
-
-      if (evt.type === 'broadcast' || evt.type === 'signal' || evt.type === 'emergency') {
-        html += _shoreBroadcast(
-          evt.label || '\u26A1 EMERGENCY SIGNAL',
-          `<p>${evt.text || ''}</p>`,
-          { revealKey: isRevealed ? null : revealKey }
-        );
-      } else {
-        html += _shoreArtifact(
-          evt.label || '\u26A1 Storm Log',
-          `<p>${evt.text || ''}</p>`,
-          { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: (Math.random() * 4 - 2).toFixed(1),
-            revealKey: isRevealed ? null : revealKey }
-        );
+  items.forEach((card, i) => {
+    if (i > st.idx + 1) return;
+    if (i <= st.idx) {
+      html += card;
+    } else if (i === st.idx + 1) {
+      html += card;
+      if (i < items.length - 1) {
+        html += _shoreNextBtns(stateKey, i + 1, items.length, screenId, epNum);
       }
-    });
-  } else if (cc.stormNarrative) {
-    html += _shoreArtifact(
-      '\u26A1 Storm Log',
-      `<p>${cc.stormNarrative}</p>`,
-      { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: -2 }
-    );
+    }
+  });
+
+  if (st.idx >= items.length - 1 && items.length > 0) {
+    html += `<div class="cc-shore-done">\u26A1 The storm passes.</div>`;
   }
 
   return html;
 }
 
-function _buildImmunityScreen(ep) {
+function _buildImmunityScreen(ep, stateKey, screenId) {
   const cc = ep.campCastaways;
   if (!cc) return '';
   const nGroups = cc.groups?.length || 0;
   const tapeTotal = 5 + nGroups;
   const tapeNum = 5 + nGroups;
+  const epNum = ep.num || 0;
 
-  const ts = window._tvState || {};
-  const winnerKey = 'cc-immunity-winner';
-  if (!ts[winnerKey]) ts[winnerKey] = { idx: -1 };
-  const winnerRevealed = ts[winnerKey].idx >= 0;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const st = _tvState[stateKey];
+
+  const items = [];
+
+  // Score entries (sorted ascending — worst to best)
+  if (cc.immunityScores && cc.immunityScores.length) {
+    const sortedAsc = [...cc.immunityScores].sort((a, b) => a.score - b.score);
+    sortedAsc.forEach(entry => {
+      const port = typeof rpPortrait === 'function' ? rpPortrait(entry.name, 48) : '';
+      const isWinner = entry.isWinner || (entry.name === (cc.immunityWinner || cc.winner));
+      const title = isWinner ? `\u{1F3C6} ${entry.name} \u2014 IMMUNITY` : `${entry.name}`;
+      items.push(_shoreArtifact(title,
+        `<div style="display:flex;gap:0.8rem;align-items:center">${port}<div>` +
+        `<p><b>Score:</b> ${entry.score}</p>` +
+        (entry.text ? `<p>${entry.text}</p>` : '') +
+        `</div></div>`,
+        { seal: isWinner ? '\u{1F3C6}' : null, tilt: isWinner ? 0 : (Math.random() * 2 - 1).toFixed(1) }
+      ));
+    });
+  }
+
+  // If no score entries, add summary + winner as items
+  if (items.length === 0) {
+    if (cc.immunitySummary) {
+      items.push(_shoreArtifact('Final Standing', `<p>${cc.immunitySummary}</p>`,
+        { tapeNum: `${tapeNum}/${tapeTotal}`, seal: '\u{1F3C6}', tilt: 0 }));
+    }
+    const winner = cc.immunityWinner || cc.winner;
+    if (winner) {
+      const port = typeof rpPortrait === 'function' ? rpPortrait(winner, 64) : '';
+      items.push(`<div class="cc-sand-write">
+        <div class="cc-sos-rocks">S \u00B7 O \u00B7 S</div>
+        ${port}
+        <div class="cc-sand-name revealed">${winner}</div>
+      </div>`);
+    }
+  }
 
   let html = '';
   html += `<div class="cc-shore-header">\u{1F3C6} Immunity</div>`;
 
-  /* Summary */
-  if (cc.immunitySummary) {
-    html += _shoreArtifact(
-      'Final Standing',
-      `<p>${cc.immunitySummary}</p>`,
-      { tapeNum: `${tapeNum}/${tapeTotal}`, seal: '\u{1F3C6}', tilt: 0 }
-    );
-  }
+  items.forEach((card, i) => {
+    if (i > st.idx + 1) return;
+    if (i <= st.idx) {
+      html += card;
+    } else if (i === st.idx + 1) {
+      html += card;
+      if (i < items.length - 1) {
+        html += _shoreNextBtns(stateKey, i + 1, items.length, screenId, epNum);
+      }
+    }
+  });
 
-  /* Winner reveal — SOS rocks + sand write */
-  const winner = cc.immunityWinner || cc.winner;
-  if (winner) {
-    const port = (winnerRevealed && typeof rpPortrait === 'function') ? rpPortrait(winner, 64) : '';
-    html += `<div class="cc-sand-write"${!winnerRevealed ? ` data-reveal="${winnerKey}" onclick="_ccInlineReveal(this)"` : ''}>
-      <div class="cc-sos-rocks">S \u00B7 O \u00B7 S</div>
-      ${port}
-      <div class="cc-sand-name ${winnerRevealed ? 'revealed' : 'reveal-pending'}">${winner}</div>
-    </div>`;
+  if (st.idx >= items.length - 1 && items.length > 0) {
+    html += `<div class="cc-shore-done">\u{1F3C6} Immunity decided.</div>`;
   }
 
   return html;
@@ -2385,7 +2420,10 @@ function _buildImmunityScreen(ep) {
 function rpBuildCCFlood(ep) {
   const cc = ep.campCastaways;
   if (!cc) return null;
-  const inner = _buildColdOpen(ep);
+  const epNum = ep.num || 0;
+  const stateKey = `cc_cold_${epNum}`;
+  const screenId = 'cc-flood';
+  const inner = _buildColdOpen(ep, stateKey, screenId);
   if (!inner) return null;
   return CC_SHORE_STYLES + `<div class="cc-shore" data-phase="flood"><div class="cc-shore-scene">${inner}</div></div>`;
 }
@@ -2397,7 +2435,10 @@ function rpBuildCCGroup(ep, groupObj) {
   if (groupIdx < 0) return null;
   const grp = groupObj;
   const label = grp.label || grp.name || `Group ${groupIdx + 1}`;
-  const inner = _buildGroupScreen(ep, groupIdx);
+  const epNum = ep.num || 0;
+  const screenId = `cc-group-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+  const stateKey = `cc_group_${groupIdx}_${epNum}`;
+  const inner = _buildGroupScreen(ep, groupIdx, stateKey, screenId);
   if (!inner) return null;
   return CC_SHORE_STYLES + `<div class="cc-shore" data-phase="group"><div class="cc-shore-scene">${inner}</div></div>`;
 }
@@ -2405,7 +2446,10 @@ function rpBuildCCGroup(ep, groupObj) {
 function rpBuildCCNight(ep) {
   const cc = ep.campCastaways;
   if (!cc) return null;
-  const inner = _buildNightScreen(ep);
+  const epNum = ep.num || 0;
+  const stateKey = `cc_night_${epNum}`;
+  const screenId = 'cc-night';
+  const inner = _buildNightScreen(ep, stateKey, screenId);
   if (!inner) return null;
   return CC_SHORE_STYLES + `<div class="cc-shore" data-phase="night"><div class="cc-shore-scene">${inner}</div></div>`;
 }
@@ -2413,7 +2457,10 @@ function rpBuildCCNight(ep) {
 function rpBuildCCRegroup(ep) {
   const cc = ep.campCastaways;
   if (!cc) return null;
-  const inner = _buildRegroupScreen(ep);
+  const epNum = ep.num || 0;
+  const stateKey = `cc_regroup_${epNum}`;
+  const screenId = 'cc-regroup';
+  const inner = _buildRegroupScreen(ep, stateKey, screenId);
   if (!inner) return null;
   return CC_SHORE_STYLES + `<div class="cc-shore" data-phase="regroup"><div class="cc-shore-scene">${inner}</div></div>`;
 }
@@ -2421,7 +2468,10 @@ function rpBuildCCRegroup(ep) {
 function rpBuildCCStorm(ep) {
   const cc = ep.campCastaways;
   if (!cc) return null;
-  const inner = _buildStormScreen(ep);
+  const epNum = ep.num || 0;
+  const stateKey = `cc_storm_${epNum}`;
+  const screenId = 'cc-storm';
+  const inner = _buildStormScreen(ep, stateKey, screenId);
   if (!inner) return null;
   return CC_SHORE_STYLES + `<div class="cc-shore" data-phase="storm"><div class="cc-shore-scene">${inner}</div></div>`;
 }
@@ -2429,7 +2479,10 @@ function rpBuildCCStorm(ep) {
 function rpBuildCCImmunity(ep) {
   const cc = ep.campCastaways;
   if (!cc) return null;
-  const inner = _buildImmunityScreen(ep);
+  const epNum = ep.num || 0;
+  const stateKey = `cc_immunity_${epNum}`;
+  const screenId = 'cc-immunity';
+  const inner = _buildImmunityScreen(ep, stateKey, screenId);
   if (!inner) return null;
   return CC_SHORE_STYLES + `<div class="cc-shore" data-phase="immunity"><div class="cc-shore-scene">${inner}</div></div>`;
 }

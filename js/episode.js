@@ -1545,7 +1545,10 @@ export function simulateEpisode() {
 
   // ── SUDDEN DEATH — last place in challenge is auto-eliminated, no tribal ──
   // Skip generic sudden death if a specific challenge twist handles elimination itself
-  if (ep.isSuddenDeath && !ep.isOffTheChain) {
+  const _hasTwistChallenge = ep.isCampCastaways || ep.isLuckyHunt || ep.isHideAndBeSneaky
+    || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isSayUncle
+    || ep.isBrunchOfDisgustingness || ep.isBasicStraining;
+  if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
     generateCampEvents(ep, 'both');
@@ -2170,6 +2173,95 @@ export function simulateEpisode() {
           : `${second} earned safety as the next-best performer.`;
         ep.secondImmune = second;
       }
+    }
+  }
+
+  // ── SUDDEN DEATH + TWIST CHALLENGE: eliminate last place from challenge results ──
+  // When SD co-fires with a twist challenge, the twist ran above and populated its data.
+  // We read chalPlacements (or derive from chalMemberScores) to find last place.
+  if (ep.isSuddenDeath && _hasTwistChallenge) {
+    if (!ep.chalPlacements?.length && ep.chalMemberScores && Object.keys(ep.chalMemberScores).length) {
+      ep.chalPlacements = Object.entries(ep.chalMemberScores)
+        .sort(([,a],[,b]) => b - a).map(([n]) => n);
+    }
+
+    const _sdLastPlace = ep.chalPlacements?.length
+      ? ep.chalPlacements[ep.chalPlacements.length - 1]
+      : null;
+
+    if (_sdLastPlace) {
+      ep.eliminated = _sdLastPlace;
+      ep.suddenDeathEliminated = _sdLastPlace;
+      ep.noTribal = true;
+      handleAdvantageInheritance(_sdLastPlace, ep);
+      gs.activePlayers = gs.activePlayers.filter(p => p !== _sdLastPlace);
+      gs.eliminated.push(_sdLastPlace);
+      if (gs.isMerged) gs.jury.push(_sdLastPlace);
+      gs.advantages = gs.advantages.filter(a => a.holder !== _sdLastPlace);
+
+      // Provider tracking
+      if (seasonConfig.foodWater === 'enabled' && gs.currentProviders?.includes(_sdLastPlace)) {
+        const _sdTribe = gs.isMerged ? (gs.mergeName || 'merge') : '';
+        gs.providerVotedOutLastEp = { name: _sdLastPlace, tribeName: _sdTribe };
+      }
+
+      // Black vote
+      if (seasonConfig.blackVote && seasonConfig.blackVote !== 'off' && gs.activePlayers.length > 4) {
+        const _sdPool = gs.activePlayers.filter(p => p !== _sdLastPlace);
+        if (_sdPool.length) {
+          if (seasonConfig.blackVote === 'classic') {
+            const _sdBvTarget = [..._sdPool].sort((a, b) => getBond(_sdLastPlace, a) - getBond(_sdLastPlace, b))[0];
+            if (_sdBvTarget) {
+              if (!gs.blackVotes) gs.blackVotes = [];
+              gs.blackVotes.push({ from: _sdLastPlace, target: _sdBvTarget, ep: epNum, type: 'classic', reason: getBond(_sdLastPlace, _sdBvTarget) <= -2 ? `grudge — ${_sdLastPlace} and ${_sdBvTarget} had bad blood` : `${_sdLastPlace} wants ${_sdBvTarget} gone — lowest bond of anyone left` });
+              ep.blackVote = { from: _sdLastPlace, target: _sdBvTarget, type: 'classic', reason: getBond(_sdLastPlace, _sdBvTarget) <= -2 ? `grudge` : `lowest bond` };
+            }
+          } else if (seasonConfig.blackVote === 'modern') {
+            const _sdBvRecip = [..._sdPool].sort((a, b) => getBond(_sdLastPlace, b) - getBond(_sdLastPlace, a))[0];
+            if (_sdBvRecip) {
+              gs.advantages.push({ holder: _sdBvRecip, type: 'extraVote', foundEp: epNum, fromBlackVote: true, giftedBy: _sdLastPlace });
+              ep.blackVote = { from: _sdLastPlace, recipient: _sdBvRecip, type: 'modern', reason: `closest ally` };
+            }
+          }
+        }
+      }
+
+      // Post-elimination bookkeeping
+      updateChalRecord(ep);
+      if (ep.challengeThrows?.length) ep.challengeThrowData = ep.challengeThrows;
+      generateCampEvents(ep, 'post');
+      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+      updateSurvival(ep);
+      gs.episode = epNum;
+      if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
+
+      gs.episodeHistory.push({
+        num: epNum, eliminated: _sdLastPlace, riChoice: null,
+        immunityWinner: ep.immunityWinner || null,
+        challengeType: ep.challengeType || 'individual',
+        challengeLabel: ep.challengeLabel,
+        challengeCategory: ep.challengeCategory,
+        challengeDesc: ep.challengeDesc,
+        chalPlacements: ep.chalPlacements || [],
+        chalMemberScores: ep.chalMemberScores || {},
+        isMerge: ep.isMerge, isSuddenDeath: true, noTribal: true,
+        suddenDeathEliminated: _sdLastPlace,
+        votes: {}, alliances: [],
+        twists: (ep.twists || []).map(t => ({...t})),
+        tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
+        campEvents: ep.campEvents || null,
+        journey: ep.journey || null,
+        idolFinds: ep.idolFinds || [],
+        advantagesPreTribal: ep.advantagesPreTribal || null,
+        summaryText: '',
+        gsSnapshot: window.snapshotGameState(),
+      });
+      const stTwistSD = generateSummaryText(ep);
+      gs.episodeHistory[gs.episodeHistory.length - 1].summaryText = stTwistSD;
+      ep.summaryText = stTwistSD;
+      window.patchEpisodeHistory(ep);
+      window.saveGameState();
+      return ep;
     }
   }
 

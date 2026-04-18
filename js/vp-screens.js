@@ -6,7 +6,7 @@ import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { rpBuildOffTheChain } from './chal/off-the-chain.js';
 import { rpBuildWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 import { rpBuildTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
-import { rpBuildCampCastaways } from './chal/camp-castaways.js';
+import { rpBuildCampCastaways, rpBuildCCFlood, rpBuildCCGroup, rpBuildCCNight, rpBuildCCRegroup, rpBuildCCStorm, rpBuildCCImmunity } from './chal/camp-castaways.js';
 import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/triple-dog-dare.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -10277,7 +10277,14 @@ export function buildVPScreens(epRecord) {
   } else if (ep.isTriArmedTriathlon && ep.triArmedTriathlon) {
     vpScreens.push({ id:'tri-armed-triathlon', label:'Tri-Armed Triathlon', html: rpBuildTriArmedTriathlon(ep) });
   } else if (ep.isCampCastaways && ep.campCastaways) {
-    vpScreens.push({ id:'camp-castaways', label:'Camp Castaways', html: rpBuildCampCastaways(ep) });
+    vpScreens.push({ id:'cc-flood',  label:'The Flood',       html: rpBuildCCFlood(ep) });
+    (ep.campCastaways.groups || []).forEach(g => {
+      vpScreens.push({ id:`cc-group-${g.label}`, label:`Group ${g.label}`, html: rpBuildCCGroup(ep, g) });
+    });
+    vpScreens.push({ id:'cc-night',   label:'The Night',      html: rpBuildCCNight(ep) });
+    vpScreens.push({ id:'cc-regroup', label:'Regrouping',     html: rpBuildCCRegroup(ep) });
+    vpScreens.push({ id:'cc-storm',   label:'Storming Camp',  html: rpBuildCCStorm(ep) });
+    vpScreens.push({ id:'cc-immunity',label:'Immunity',       html: rpBuildCCImmunity(ep) });
   } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }

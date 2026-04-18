@@ -132,6 +132,74 @@ const LOST_TEXTS = [
   (n, pr) => `The trees all look the same to ${n}. All of them. Every single tree on this island is identical. ${pr.Sub} ${pr.sub==='they'?'are':'is'} completely lost.`,
 ];
 
+const WATER_TEXTS = [
+  (n, pr) => `${n} follows the terrain downhill and finds a freshwater spring. ${pr.Sub} ${pr.sub==='they'?'return':'returns'} with water cupped in broad leaves — enough for everyone.`,
+  (n, pr) => `"Water first," ${n} says, and vanishes into the trees. ${pr.Sub} ${pr.sub==='they'?'come':'comes'} back twenty minutes later. Nobody asks how ${pr.sub} ${pr.sub==='they'?'found':'found'} it.`,
+  (n, pr) => `${n} finds a rain-collected pool in the rocks and clears the surface debris. Clean water. ${pr.Sub} ${pr.sub==='they'?'drink':'drinks'} first, then signals the others.`,
+  (n, pr) => `The stream ${n} locates is narrow and fast-moving. Close enough to clean. ${pr.Sub} ${pr.sub==='they'?'collect':'collects'} what ${pr.sub} ${pr.sub==='they'?'can':'can'} in a coconut shell and starts back.`,
+];
+
+const CONFESSIONAL_TEXTS = {
+  villain: [
+    (n, pr) => `Confessional — ${n}: "I already know who I'm voting out next. I decided before I hit the water. Everything since has been confirmation."`,
+    (n, pr) => `${n} finds a quiet patch of shoreline. From a distance, ${pr.sub} ${pr.sub==='they'?'look':'looks'} meditative. ${pr.Sub} ${pr.sub==='they'?'are':'is'} running threat assessments.`,
+  ],
+  mastermind: [
+    (n, pr) => `Confessional — ${n}: "They think this is a survival test. It's a targeting window. I've been watching who panics, who leads, who's dispensable."`,
+    (n, pr) => `${n} takes inventory: group dynamics, who bonded with whom, supply locations. ${pr.Sub} ${pr.sub==='they'?'are':'is'} already building a map to tribal council.`,
+  ],
+  hothead: [
+    (n, pr) => `${n} has been doing things all day and is too busy to have feelings about it. The crab situation was not fine. Everything else is fine.`,
+    (n, pr) => `Confessional — ${n}: "I found food, fixed the fire, and chased off a raccoon. Nobody said thank you. I don't need it. But I noticed."`,
+  ],
+  social: [
+    (n, pr) => `${n} has checked in with everyone at least twice. Not for strategy — ${pr.sub} ${pr.sub==='they'?'just':'just'} ${pr.sub==='they'?'want':'wants'} to know how everyone is holding up.`,
+    (n, pr) => `Confessional — ${n}: "Social maintenance: complete. I know exactly where everyone stands. Now I just need to not die from dehydration."`,
+  ],
+  hero: [
+    (n, pr) => `${n} spent the last hour helping people ${pr.sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} even need to impress. That's not the game. That's just ${pr.obj}.`,
+    (n, pr) => `Confessional — ${n}: "I know I'm supposed to be thinking about strategy. I can't stop thinking about whether everyone has enough water."`,
+  ],
+  loyal: [
+    (n, pr) => `${n} thinks about ${pr.posAdj} alliance. Not where they rank in it — just whether they're okay. ${pr.Sub} ${pr.sub==='they'?'feel':'feels'} the distance.`,
+    (n, pr) => `Confessional — ${n}: "I don't care about the score. I care about finding my people and making sure they made it through the night."`,
+  ],
+  challenge: [
+    (n, pr) => `This is, technically, a challenge. ${n} treats it as one. ${pr.Sub} ${pr.sub==='they'?'log':'logs'} terrain, distance, variables. ${pr.Sub} ${pr.sub==='they'?'have':'has'} trained in worse.`,
+    (n, pr) => `Confessional — ${n}: "The flood was inconvenient. The jungle is manageable. I've done harder warmups than this."`,
+  ],
+  wildcard: [
+    (n, pr) => `Nobody knows what ${n} has been doing for the last two hours. The look on ${pr.posAdj} face suggests ${pr.sub} ${pr.sub==='they'?'prefer':'prefers'} it that way.`,
+    (n, pr) => `Confessional — ${n}: "I found something in the tree line. I'm not saying what. But I found it. And I'm keeping it."`,
+  ],
+  floater: [
+    (n, pr) => `${n} has been quietly watching everything. ${pr.Sub} ${pr.sub==='they'?'know':'knows'} more about this group's dynamics than some people inside the alliances do.`,
+    (n, pr) => `Confessional — ${n}: "I don't need to win today. I need to still exist tomorrow. That is the entire strategy."`,
+  ],
+  default: [
+    (n, pr) => `${n} finds a quiet moment. Something has clarified out here — why ${pr.sub} ${pr.sub==='they'?'came':'came'} and what ${pr.sub} ${pr.sub==='they'?'want':'wants'} from it. It's not what ${pr.sub} ${pr.sub==='they'?'expected':'expected'}.`,
+    (n, pr) => `Confessional — ${n}: "This is the most uncomfortable I've ever been. And I'm still here. That means something."`,
+  ],
+};
+
+const PAIR_BOND_TEXTS = [
+  (a, b) => `${a} and ${b} work the same stretch of jungle for an hour without talking. By the end, they've established something efficient and wordless.`,
+  (a, b) => `"You've done something like this before," ${b} says to ${a}. Not a question. ${a} doesn't confirm or deny — but ${pronouns(a).sub} ${pronouns(a).sub==='they'?'don\'t':'doesn\'t'} deny it either.`,
+  (a, b) => `${a} and ${b} bicker about the best approach, discover they're both wrong, and arrive at the right answer together. Neither acknowledges this.`,
+  (a, b) => `${b} is struggling with something physical. ${a} notices without being asked and offers a quiet, specific assist. Neither of them makes it a big deal.`,
+];
+
+const PHASE3_INTEL_TEXTS = [
+  (n, pr) => `${n} catches the group up: what the terrain looked like, what ${pr.sub} ${pr.sub==='they'?'found':'found'}, who did what. Everyone listens. The information starts shifting threat readings.`,
+  (n, pr) => `"Our group found water and built a lean-to." ${n} gives a short, efficient debrief. Several people are taking mental notes.`,
+  (n, pr) => `${n} reports in like it's a briefing: what worked, what didn't, what ${pr.sub} ${pr.sub==='they'?'observed':'observed'}. Free information — for now.`,
+];
+
+const PHASE3_STRATEGY_TEXTS = [
+  (n, pr) => `The island is behind ${n}. The game is ahead. ${pr.Sub} ${pr.sub==='they'?'start':'starts'} counting votes before ${pr.sub} ${pr.sub==='they'?'have':'has'} even cleaned off the mud.`,
+  (n, pr) => `${n} pulls someone close and says something quiet. Whatever it was, the listener nods slowly and looks across camp at someone who doesn't know they're being watched.`,
+];
+
 // ── NIGHT EVENT TEXT POOLS ──
 const NIGHT_COMEDY = {
   sleepTalk: [
@@ -274,9 +342,9 @@ function _fireBreakdown(name, groups, timeline, cameraFlags, personalScores) {
   const obj = _rp(BREAKDOWN_OBJECTS);
   const archKey = VILLAIN_ARCHETYPES.includes(arch) ? 'villain'
     : arch === 'hero' ? 'hero'
-    : ['underdog', 'goat', 'floater'].includes(arch) ? 'underdog'
+    : ['underdog', 'floater'].includes(arch) ? 'underdog'
     : ['hothead', 'chaos-agent'].includes(arch) ? 'hothead'
-    : arch === 'wildcard' ? 'wildcard' : 'default';
+    : arch === 'wildcard' ? 'wildcard' : 'default'; // goat intentionally falls to 'default'
   const assignedName = obj.namePool[archKey] || obj.namePool.default;
 
   // Beat 1 — Breaking Point
@@ -365,8 +433,60 @@ export function simulateCampCastaways(ep) {
 
   groups.forEach((group, gi) => {
     const label = groupLabels[gi];
-    const eventCount = Math.max(3, group.length + 1 + (Math.random() < 0.3 ? 1 : 0));
+    const eventCount = Math.max(10, group.length * 2 + 4);
     let fired = 0;
+
+    // ── Individual Confessionals (always fire — no fired guard) ──
+    group.forEach(name => {
+      const arch = getArchetype(name);
+      const pr = pronouns(name);
+      const bucket = VILLAIN_ARCHETYPES.includes(arch) ? 'villain'
+        : arch === 'mastermind' ? 'mastermind'
+        : ['hothead', 'chaos-agent'].includes(arch) ? 'hothead'
+        : ['social-butterfly', 'showmancer'].includes(arch) ? 'social'
+        : ['hero', 'loyal-soldier'].includes(arch) ? 'hero'
+        : arch === 'wildcard' ? 'wildcard'
+        : arch === 'floater' ? 'floater'
+        : ['challenge-beast'].includes(arch) ? 'challenge'
+        : 'default';
+      const text = _rp(CONFESSIONAL_TEXTS[bucket] || CONFESSIONAL_TEXTS.default)(name, pr);
+      timeline.push({ type: 'confessional', phase: 1, group: label, player: name, players: [name], text, badgeText: 'CONFESSIONAL', badgeClass: 'grey' });
+    });
+
+    // ── Survival Activities (always fire — no fired guard) ──
+    group.forEach(name => {
+      const pr = pronouns(name);
+      const s = pStats(name);
+      let text, badge, bClass = 'grey';
+      if (s.physical >= 7 && s.boldness >= 6) {
+        text = _rp([
+          `${name} scales a coconut palm barefoot and clears the top in under two minutes. Nobody is surprised. Everyone is watching.`,
+          `${name} builds a rope harness from vines in about thirty seconds. Doesn't say how ${pr.sub} ${pr.sub==='they'?'know':'knows'} how to do that. Just does it.`,
+        ]); badge = 'PHYSICAL FEAT'; bClass = 'gold'; personalScores[name] += 0.5;
+      } else if (s.mental >= 7) {
+        text = _rp([
+          `${name} assesses the terrain in under two minutes and has already formed three opinions about the optimal path forward.`,
+          `${name} identifies the edible plants in a twenty-foot radius with unsettling confidence. Maybe from a book. Maybe not.`,
+        ]); badge = 'ASSESSMENT'; bClass = 'blue'; personalScores[name] += 0.3;
+      } else if (s.social >= 7) {
+        text = _rp([
+          `${name} is keeping group morale up through sheer force of personality. It is working, somewhat. The group is less miserable than it was.`,
+          `${name} checks in with each group member with a specific, personalized comment. It lands differently for each of them.`,
+        ]); badge = 'MORALE BOOST'; bClass = 'green';
+        group.filter(p => p !== name).forEach(p => addBond(p, name, 0.1));
+      } else if (s.endurance >= 7) {
+        text = _rp([
+          `${name} hasn't stopped moving since the flood started. The others rest. ${pr.Sub} ${pr.sub==='they'?'keep':'keeps'} going.`,
+          `${name}'s pace hasn't wavered. Four hours in, ${pr.sub} ${pr.sub==='they'?'look':'looks'} exactly the same as hour one.`,
+        ]); badge = 'RELENTLESS'; bClass = 'green'; personalScores[name] += 0.3;
+      } else {
+        text = _rp([
+          `${name} is managing. Not thriving, not falling apart — managing, which in these conditions might actually be the right call.`,
+          `${name} finds ${pr.posAdj} rhythm eventually. Slower than some. Still moving. Still here.`,
+        ]); badge = 'SURVIVING'; personalScores[name] += 0.1;
+      }
+      timeline.push({ type: 'survivalActivity', phase: 1, group: label, player: name, players: [name], text, badgeText: badge, badgeClass: bClass });
+    });
 
     // ── Food Finding (~60%) ──
     if (Math.random() < 0.60 && fired < eventCount) {
@@ -475,7 +595,6 @@ export function simulateCampCastaways(ep) {
           wText = `The raccoon makes off with half the group's food. ${defender} is left looking at an empty coconut shell.`;
           personalScores[defender] -= 1.0; wBadge = 'RACCOON RAID'; wBadgeClass = 'red';
         }
-        subject !== defender && (wText = wText); // use defender as subject for display
       } else if (wildlife.id === 'mosquito') {
         const victim = group.slice().sort((a, b) => pStats(a).endurance - pStats(b).endurance)[0];
         wText = `The mosquito swarm finds ${victim} with unerring precision. ${pronouns(victim).Sub} ${pronouns(victim).sub==='they'?'suffer':'suffers'} considerably while everyone else suffers moderately.`;
@@ -535,6 +654,35 @@ export function simulateCampCastaways(ep) {
       personalScores[victim] -= 1.5; popDelta(victim, -1);
       timeline.push({ type: 'gettingLost', phase: 1, group: label, player: victim, players: [victim], text, badgeText: 'LOST', badgeClass: 'red' });
       cameraFlags.push({ player: victim, type: 'lost', text: `${victim} has been walking in circles.`, reactionType: 'entertained' });
+    }
+
+    // ── Water Gathering (~70%) ──
+    if (Math.random() < 0.70 && fired < eventCount) {
+      fired++;
+      const scout = group.slice().sort((a, b) => {
+        const sa = pStats(a), sb = pStats(b);
+        return (sb.intuition * 0.05 + sb.endurance * 0.03) - (sa.intuition * 0.05 + sa.endurance * 0.03);
+      })[0];
+      const sPr = pronouns(scout);
+      const text = _rp(WATER_TEXTS)(scout, sPr);
+      personalScores[scout] += 1.0;
+      group.forEach(p => { if (p !== scout) personalScores[p] += 0.2; });
+      timeline.push({ type: 'waterGathering', phase: 1, group: label, player: scout, players: group, text, badgeText: 'WATER FOUND', badgeClass: 'blue' });
+    }
+
+    // ── Pair Bonding (~45% per eligible pair, max 2 per group) ──
+    let pairBondFired = 0;
+    for (let pi = 0; pi < group.length && pairBondFired < 2 && fired < eventCount; pi++) {
+      for (let pj = pi + 1; pj < group.length && pairBondFired < 2 && fired < eventCount; pj++) {
+        const a = group[pi], b = group[pj];
+        if (getBond(a, b) > -2 && Math.random() < 0.45) {
+          fired++; pairBondFired++;
+          const text = _rp(PAIR_BOND_TEXTS)(a, b);
+          addBond(a, b, 0.3);
+          personalScores[a] += 0.2; personalScores[b] += 0.2;
+          timeline.push({ type: 'pairBonding', phase: 1, group: label, players: [a, b], text, badgeText: 'PAIR MOMENT', badgeClass: 'blue' });
+        }
+      }
     }
 
     // ── Social Events ──
@@ -615,9 +763,11 @@ export function simulateCampCastaways(ep) {
         const sText = _rp(NIGHT_COMEDY.sleepTalk)(sleeper, pronouns(sleeper));
         const isStrategic = pStats(sleeper).strategic >= 7 && Math.random() < 0.5;
         if (isStrategic) {
+          // Sleeper exposed a groupmate — that person now has a target on their back
+          const named = group.find(p => p !== sleeper) || sleeper;
           personalScores[sleeper] -= 1.0;
           gs._castawaysHeat = gs._castawaysHeat || [];
-          gs._castawaysHeat.push({ target: sleeper, amount: 1.0, expiresEp: (gs.episode || 1) + 2 });
+          gs._castawaysHeat.push({ target: named, amount: 1.0, expiresEp: (gs.episode || 1) + 2 });
         }
         group.forEach(p => { if (p !== sleeper) addBond(p, sleeper, 0.2); });
         timeline.push({ type: 'nightEvent', subtype: 'sleepTalk', phase: 2, group: label, player: sleeper, players: group, text: sText, badgeText: isStrategic ? 'EXPOSED!' : 'SLEEP TALKING', badgeClass: isStrategic ? 'red' : 'yellow' });
@@ -730,22 +880,105 @@ export function simulateCampCastaways(ep) {
         }
       }
     }
-  });
 
-  // ══ MR. COCONUT BREAKDOWN ══
-  const candidates = activePlayers.map(n => ({ name: n, score: pStats(n).mental + pStats(n).temperament }))
+    // Second comedy pass — snoring or paranoia (distinct from first pass)
+    if (Math.random() < 0.45) {
+      const snorer = group.slice().sort((a, b) => pStats(a).endurance - pStats(b).endurance)[0];
+      const snorerPr = pronouns(snorer);
+      const snoreTexts = [
+        `${snorer} is snoring. Loudly. Rhythmically. With the energy of someone who has been doing this for years and has never once been told about it.`,
+        `The sound ${snorer} makes while sleeping is a conversation-stopper even in sleep. The others give ${snorerPr.obj} more and more space over the course of the night.`,
+      ];
+      const text = _rp(snoreTexts);
+      group.filter(p => p !== snorer).forEach(p => addBond(p, snorer, -0.1));
+      timeline.push({ type: 'nightEvent', subtype: 'snoring', phase: 2, group: label, player: snorer, players: group, text, badgeText: 'SNORING', badgeClass: 'yellow' });
+    }
+
+    // Second heartfelt pass — quiet moment / homesick
+    if (group.length >= 2 && Math.random() < 0.40) {
+      const thinker = _rp(group);
+      const tPr = pronouns(thinker);
+      const quietTexts = [
+        `${thinker} goes quiet for a long time. Not scared — just absent in a way that reads like homesickness. The others leave ${tPr.obj} to it.`,
+        `${thinker} stares up through the tree canopy. Whatever ${tPr.sub} ${tPr.sub==='they'?'are':'is'} thinking about, ${tPr.sub} ${tPr.sub==='they'?'keep':'keeps'} it to ${tPr.ref}. The game can wait.`,
+      ];
+      personalScores[thinker] += 0.2;
+      timeline.push({ type: 'nightEvent', subtype: 'quietMoment', phase: 2, group: label, player: thinker, players: group, text: _rp(quietTexts), badgeText: 'QUIET MOMENT', badgeClass: 'blue' });
+    }
+
+    // Late night strategy whisper
+    const strategizers = group.filter(p => pStats(p).strategic >= 6);
+    if (strategizers.length >= 2 && Math.random() < 0.55) {
+      const [pl1, pl2] = strategizers.slice(0, 2);
+      const text = `The others are asleep. ${pl1} and ${pl2} aren't. Something is being decided in the dark — what exactly, the cameras can see but the others can't hear.`;
+      personalScores[pl1] += 0.3; personalScores[pl2] += 0.3;
+      addBond(pl1, pl2, 0.4);
+      timeline.push({ type: 'nightEvent', subtype: 'strategyWhisper', phase: 2, group: label, players: [pl1, pl2], text, badgeText: 'LATE NIGHT SCHEMING', badgeClass: 'purple' });
+    } else if (strategizers.length === 1 && Math.random() < 0.50) {
+      const lone = strategizers[0];
+      const lonePr = pronouns(lone);
+      const text = `${lone} lies awake running scenarios. ${lonePr.Sub} ${lonePr.sub==='they'?'go':'goes'} through names, numbers, loyalties. The island sleeps. ${lonePr.Sub} ${lonePr.sub==='they'?'don\'t':'doesn\'t'}.`;
+      personalScores[lone] += 0.3;
+      timeline.push({ type: 'nightEvent', subtype: 'soloStrategy', phase: 2, group: label, player: lone, players: [lone], text, badgeText: 'LONE STRATEGIST', badgeClass: 'purple' });
+    }
+
+    // Night sounds / fright — low endurance player startles (~40%)
+    if (Math.random() < 0.40) {
+      const startled = group.slice().sort((a, b) => pStats(a).endurance - pStats(b).endurance)[0];
+      const sPr = pronouns(startled);
+      const frightTexts = [
+        `Something moves in the trees near camp. ${startled} is the only one who hears it, and ${sPr.sub} ${sPr.sub==='they'?'don\'t':'doesn\'t'} sleep again for an hour.`,
+        `A branch cracks. ${startled} sits bolt upright. The group cycles through alarm, then sleepy irritation, then silence. Nothing was there.`,
+      ];
+      timeline.push({ type: 'nightEvent', subtype: 'nightFright', phase: 2, group: label, player: startled, players: group, text: _rp(frightTexts), badgeText: 'NIGHT FRIGHT', badgeClass: 'yellow' });
+      personalScores[startled] -= 0.2;
+    }
+
+    // Conspiracy theory — mental player starts processing the challenge setup (~45%)
+    if (Math.random() < 0.45) {
+      const theorist = group.slice().sort((a, b) => pStats(b).mental + pStats(b).strategic - pStats(a).mental - pStats(a).strategic)[0];
+      const tPr = pronouns(theorist);
+      const theoryTexts = [
+        `${theorist} lies awake working through the logistics. "Production flooded the cabins on purpose. There's no way that was random." ${tPr.Sub} ${tPr.sub==='they'?'have':'has'} seventeen supporting points. The group listens for four minutes, then goes to sleep.`,
+        `${theorist} has a theory about why this happened, what it means for tomorrow, and how it connects to three things that happened on day one. ${tPr.Sub} ${tPr.sub==='they'?'share':'shares'} the whole thing. None of it is wrong.`,
+      ];
+      timeline.push({ type: 'nightEvent', subtype: 'conspiracy', phase: 2, group: label, player: theorist, players: group, text: _rp(theoryTexts), badgeText: 'CONSPIRACY THEORY', badgeClass: 'purple' });
+      personalScores[theorist] += 0.2;
+    }
+
+    // Dawn watch — endurance player keeps the fire alive
+    if (Math.random() < 0.50) {
+      const dawner = group.slice().sort((a, b) => pStats(b).endurance - pStats(a).endurance)[0];
+      const dawnerPr = pronouns(dawner);
+      const dawnTexts = [
+        `${dawner} is up before the light is. ${dawnerPr.Sub} ${dawnerPr.sub==='they'?'keep':'keeps'} the fire alive and watches the island wake up. Something resolves in the quiet that couldn't resolve in the noise.`,
+        `While the group sleeps, ${dawner} does a quiet perimeter check. The island is loud at dawn. ${dawnerPr.Sub} ${dawnerPr.sub==='they'?'note':'notes'} three things and ${dawnerPr.sub==='they'?'tell':'tells'} nobody.`,
+      ];
+      personalScores[dawner] += 0.4;
+      timeline.push({ type: 'nightEvent', subtype: 'dawnWatch', phase: 2, group: label, player: dawner, players: [dawner], text: _rp(dawnTexts), badgeText: 'DAWN WATCH', badgeClass: 'green' });
+    }
+  });
+  // Cooldown: skip players who broke down within the last 2 episodes
+  if (!gs._lastCoconutEp) gs._lastCoconutEp = {};
+  const currentEp = gs.episode || 1;
+  const candidates = activePlayers
+    .filter(n => !gs._lastCoconutEp[n] || currentEp - gs._lastCoconutEp[n] >= 2)
+    .map(n => ({ name: n, score: pStats(n).mental + pStats(n).temperament }))
     .sort((a, b) => a.score - b.score);
   const breakdowns = [];
-  if (Math.random() < 0.30) {
+  if (candidates.length > 0 && Math.random() < 0.30) {
     const bd = _fireBreakdown(candidates[0].name, groups, timeline, cameraFlags, personalScores);
-    if (bd) breakdowns.push(bd);
+    if (bd) { breakdowns.push(bd); gs._lastCoconutEp[candidates[0].name] = currentEp; }
   }
   if (candidates.length > 1 && Math.random() < 0.15) {
     const bd = _fireBreakdown(candidates[1].name, groups, timeline, cameraFlags, personalScores);
-    if (bd) breakdowns.push(bd);
+    if (bd) { breakdowns.push(bd); gs._lastCoconutEp[candidates[1].name] = currentEp; }
   }
 
   // ══ PHASE 3 — REGROUPING ══
+  // Pre-compute discoverer (Phase 4) here so Phase 3 war-paint can exclude them
+  const _discovererScore = n => pStats(n).boldness * 0.4 + pStats(n).intuition * 0.3 + pStats(n).strategic * 0.3;
+  const discoverer = activePlayers.slice().sort((a, b) => _discovererScore(b) - _discovererScore(a))[0];
   const regroupedPairs = new Set();
 
   // Emotional/Tense reunions
@@ -758,13 +991,13 @@ export function simulateCampCastaways(ep) {
       const groupA = groups.findIndex(g => g.includes(a));
       const groupB = groups.findIndex(g => g.includes(b));
       if (groupA === groupB || regroupedPairs.has(pairKey)) continue;
-      if (bond >= 3 && Math.random() < 0.70) {
+      if (bond >= 1.5 && Math.random() < 0.70) {
         regroupedPairs.add(pairKey);
         const text = _rp(REUNION_TEXTS.emotional)(a, b, pronouns(a), pronouns(b));
         personalScores[a] += 0.5; personalScores[b] += 0.5; addBond(a, b, 0.3);
         if (bond >= 4) { popDelta(a, 1); popDelta(b, 1); }
         timeline.push({ type: 'reunion', subtype: 'emotional', phase: 3, players: [a, b], text, badgeText: 'REUNION', badgeClass: 'green' });
-      } else if (bond <= -1 && Math.random() < 0.60) {
+      } else if (bond <= -0.5 && Math.random() < 0.60) {
         regroupedPairs.add(pairKey);
         const text = _rp(REUNION_TEXTS.tense)(a, b, pronouns(a), pronouns(b));
         personalScores[a] -= 0.3; personalScores[b] -= 0.3; addBond(a, b, -0.2);
@@ -779,18 +1012,69 @@ export function simulateCampCastaways(ep) {
     const rPr = pronouns(rafter);
     const text = _rp(REUNION_TEXTS.raftCircles)(rafter, rPr);
     personalScores[rafter] -= 0.5;
-    const nearby = activePlayers.filter(p => p !== rafter).slice(0, 3);
+    const rafterGroup = groups.find(g => g.includes(rafter)) || [];
+    const nearby = rafterGroup.filter(p => p !== rafter);
     nearby.forEach(p => addBond(p, rafter, 0.3));
     timeline.push({ type: 'reunion', subtype: 'raftCircles', phase: 3, player: rafter, players: [rafter, ...nearby], text, badgeText: 'RAFT CIRCLES BACK', badgeClass: 'yellow' });
     cameraFlags.push({ player: rafter, type: 'raftCircles', text: `${rafter}'s heroic raft returns to exactly where it started.`, reactionType: 'entertained' });
   }
 
-  // War paint preparation (boldness ≥ 7)
+  // Intel share — one reporter per group catches the full cast up on what happened
+  groups.forEach((group, gi) => {
+    const reporter = group.slice().sort((a, b) =>
+      (pStats(b).social * 0.6 + pStats(b).strategic * 0.4) - (pStats(a).social * 0.6 + pStats(a).strategic * 0.4)
+    )[0];
+    const rPr = pronouns(reporter);
+    const text = _rp(PHASE3_INTEL_TEXTS)(reporter, rPr);
+    personalScores[reporter] += 0.4;
+    timeline.push({ type: 'reunion', subtype: 'intelShare', phase: 3, player: reporter, players: group, text, badgeText: 'INTEL SHARE', badgeClass: 'blue' });
+  });
+
+  // Shared suffering — cross-group pairs commiserate (~25% per pair, cap 2)
+  let sharedSufferingFired = 0;
+  for (let i = 0; i < activePlayers.length && sharedSufferingFired < 2; i++) {
+    for (let j = i + 1; j < activePlayers.length && sharedSufferingFired < 2; j++) {
+      const a = activePlayers[i], b = activePlayers[j];
+      const pairKey = [a, b].sort().join('__');
+      const groupA = groups.findIndex(g => g.includes(a));
+      const groupB = groups.findIndex(g => g.includes(b));
+      if (groupA !== groupB && !regroupedPairs.has(pairKey) && Math.random() < 0.25) {
+        sharedSufferingFired++;
+        regroupedPairs.add(pairKey);
+        const text = _rp(REUNION_TEXTS.sharedSuffering)(a, b, pronouns(a), pronouns(b));
+        addBond(a, b, 0.3); personalScores[a] += 0.2; personalScores[b] += 0.2;
+        timeline.push({ type: 'reunion', subtype: 'sharedSuffering', phase: 3, players: [a, b], text, badgeText: 'SHARED SUFFERING', badgeClass: 'green' });
+      }
+    }
+  }
+
+  // Strategy consolidation — strategic ≥ 6 players refocus on the game (~65%)
+  const strategicPlayers = activePlayers.filter(p => pStats(p).strategic >= 6);
+  if (strategicPlayers.length > 0 && Math.random() < 0.65) {
+    const pivot = _rp(strategicPlayers);
+    const pivotPr = pronouns(pivot);
+    const text = _rp(PHASE3_STRATEGY_TEXTS)(pivot, pivotPr);
+    personalScores[pivot] += 0.5;
+    timeline.push({ type: 'reunion', subtype: 'strategyConsolidation', phase: 3, player: pivot, players: [pivot], text, badgeText: 'STRATEGY MODE', badgeClass: 'purple' });
+  }
+
+  // War paint preparation (boldness ≥ 7) — fires ~55%; excludes discoverer to prevent double-dip
   const warPainters = activePlayers.filter(p => pStats(p).boldness >= 7);
-  if (warPainters.length > 0) {
-    warPainters.forEach(p => { personalScores[p] += 1.0; });
-    activePlayers.filter(p => !warPainters.includes(p)).forEach(p => { personalScores[p] += 0.2; });
-    timeline.push({ type: 'reunion', subtype: 'warPaint', phase: 3, players: warPainters, text: _rp(REUNION_TEXTS.warPaint)(warPainters), badgeText: 'WAR PARTY', badgeClass: 'red' });
+  if (warPainters.length > 0 && Math.random() < 0.55) {
+    const painters = warPainters.filter(p => p !== discoverer);
+    const actualPainters = painters.length > 0 ? painters : warPainters;
+    actualPainters.forEach(p => { personalScores[p] += 1.0; });
+    activePlayers.filter(p => !actualPainters.includes(p)).forEach(p => { personalScores[p] += 0.2; });
+    timeline.push({ type: 'reunion', subtype: 'warPaint', phase: 3, players: actualPainters, text: _rp(REUNION_TEXTS.warPaint)(actualPainters), badgeText: 'WAR PARTY', badgeClass: 'red' });
+  } else {
+    // Stealth approach — rewards intuition players when war party doesn't fire
+    const stealthers = activePlayers.filter(p => pStats(p).intuition >= 6);
+    if (stealthers.length > 0) {
+      const stealthLeader = stealthers.slice().sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
+      personalScores[stealthLeader] += 0.8;
+      stealthers.forEach(p => { if (p !== stealthLeader) personalScores[p] += 0.3; });
+      timeline.push({ type: 'reunion', subtype: 'stealthApproach', phase: 3, player: stealthLeader, players: stealthers, text: `${stealthLeader} signals the group to move quietly. No paint, no war cry — just angles and patience. They arrive at the camp perimeter before anyone knows they're there.`, badgeText: 'STEALTH APPROACH', badgeClass: 'blue' });
+    }
   }
 
   // "Called It" — high strategic/intuition predicted the challenge
@@ -817,18 +1101,35 @@ export function simulateCampCastaways(ep) {
 
   // ══ PHASE 4 — STORMING THE CAMP ══
 
-  // Discovery beat
-  const discoverer = activePlayers.slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness)[0];
+  // Discovery beat — multi-stat composite (boldness + intuition + strategic); discoverer pre-computed in Phase 3
   const discText = _rp(STORM_TEXTS.discovery)(discoverer, pronouns(discoverer));
-  personalScores[discoverer] += 1.0;
+  personalScores[discoverer] += 0.7;
   cameraFlags.push({ player: discoverer, type: 'discovery', text: `${discoverer} spots the smoke first.`, reactionType: 'impressed' });
   timeline.push({ type: 'stormEvent', subtype: 'discovery', phase: 4, player: discoverer, players: [discoverer], text: discText, badgeText: 'SMOKE SPOTTED', badgeClass: 'gold' });
 
-  // The Charge
+  // Navigator — high-intuition player routes the war party (not the discoverer)
+  const navCandidates = activePlayers.filter(p => p !== discoverer && pStats(p).intuition >= 7);
+  if (navCandidates.length > 0) {
+    const nav = navCandidates.slice().sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
+    const navPr = pronouns(nav);
+    personalScores[nav] += 1.0; popDelta(nav, 1);
+    timeline.push({ type: 'stormEvent', subtype: 'navigator', phase: 4, player: nav, players: [nav], text: `${nav} studies the terrain and routes the group through the blind spot in Chef's sightlines. ${navPr.Sub} ${navPr.sub==='they'?'have':'has'} been mapping this island since day one.`, badgeText: 'NAVIGATOR', badgeClass: 'blue' });
+  }
+
+  // Tactician — strategic player anticipated the whole thing
+  const tacCandidates = activePlayers.filter(p => pStats(p).strategic >= 7);
+  if (tacCandidates.length > 0 && Math.random() < 0.65) {
+    const tac = _rp(tacCandidates);
+    const tacPr = pronouns(tac);
+    personalScores[tac] += 1.0;
+    timeline.push({ type: 'stormEvent', subtype: 'tactician', phase: 4, player: tac, players: [tac], text: `${tac} had already figured out this was a challenge. The flood was too convenient. ${tacPr.Sub} ${tacPr.sub==='they'?'arrive':'arrives'} at the camp perimeter with a plan already in ${tacPr.posAdj} head.`, badgeText: 'TACTICIAN', badgeClass: 'purple' });
+  }
+
+  // The Charge — capped at +1.5 (was +2.0) to reduce boldness dominance
   activePlayers.forEach(name => {
     const s = pStats(name);
     if (s.boldness >= 7) {
-      personalScores[name] += 2.0; popDelta(name, 1);
+      personalScores[name] += 1.5; popDelta(name, 1);
     } else if (s.boldness >= 4) {
       personalScores[name] += 0.5;
     }
@@ -836,6 +1137,15 @@ export function simulateCampCastaways(ep) {
   const chargeLeaders = activePlayers.filter(p => pStats(p).boldness >= 7);
   if (chargeLeaders.length > 0) {
     timeline.push({ type: 'stormEvent', subtype: 'charge', phase: 4, players: chargeLeaders, text: `${chargeLeaders.join(', ')} ${chargeLeaders.length === 1 ? 'leads' : 'lead'} the charge through the jungle. The war paint was a good call.`, badgeText: 'THE CHARGE', badgeClass: 'red' });
+  }
+
+  // Negotiator — social player talks Chef down
+  const negCandidates = activePlayers.filter(p => pStats(p).social >= 7);
+  if (negCandidates.length > 0 && Math.random() < 0.60) {
+    const neg = _rp(negCandidates);
+    const negPr = pronouns(neg);
+    personalScores[neg] += 1.0; popDelta(neg, 1);
+    timeline.push({ type: 'stormEvent', subtype: 'negotiator', phase: 4, player: neg, players: [neg], text: `${neg} steps forward when Chef raises the spatula. "Hey. Let's talk about this." Chef lowers it. Everyone is surprised, especially ${neg}.`, badgeText: 'NEGOTIATOR', badgeClass: 'green' });
   }
 
   // Chef Scared
@@ -862,39 +1172,47 @@ export function simulateCampCastaways(ep) {
   // Surveillance Playback (2-3 events from cameraFlags)
   const playbackCount = Math.min(cameraFlags.length, 2 + (Math.random() < 0.5 ? 1 : 0));
   const playbackFlags = [...cameraFlags].sort(() => Math.random() - 0.5).slice(0, playbackCount);
-  // Prioritize breakdown playback
+  // Prioritize breakdown — unshift instead of clobber slot-0
   const breakdownFlag = cameraFlags.find(f => f.type === 'breakdown');
   if (breakdownFlag && !playbackFlags.includes(breakdownFlag)) {
-    playbackFlags[0] = breakdownFlag;
+    playbackFlags.unshift(breakdownFlag);
+    if (playbackFlags.length > playbackCount + 1) playbackFlags.pop();
   }
   playbackFlags.forEach(flag => {
     const subject = flag.player;
     const sPr = pronouns(subject);
     const playText = _rp(STORM_TEXTS.playback)(subject, sPr, flag.text);
-    personalScores[subject] -= 0.5; // embarrassing
-    if (flag.type === 'breakdown') personalScores[subject] -= 0.5; // extra penalty
+    personalScores[subject] -= 0.5;
+    if (flag.type === 'breakdown') personalScores[subject] -= 0.5;
     if (['wildlifeBrave', 'foodSuccess', 'treehouse', 'calledIt'].includes(flag.type)) {
-      personalScores[subject] += 0.5; // pride, net neutral
+      personalScores[subject] += 0.5;
     }
-    timeline.push({ type: 'stormEvent', subtype: 'playback', phase: 4, player: subject, players: [subject], text: playText + ` [PLAYBACK: ${flag.text}]`, badgeText: '▶ PLAYBACK', badgeClass: 'purple', isPlayback: true, flagType: flag.type, reactionType: flag.reactionType });
+    // Store original event ref for VHS replay panel in VP
+    const origEvent = flag.type === 'breakdown'
+      ? timeline.find(e => e.type === 'breakdown' && e.player === subject)
+      : timeline.find(e => (e.player === subject || (e.players && e.players.includes(subject))) && e.phase < 4);
+    timeline.push({ type: 'stormEvent', subtype: 'playback', phase: 4, player: subject, players: [subject], text: playText, badgeText: '▶ PLAYBACK', badgeClass: 'purple', isPlayback: true, flagType: flag.type, reactionType: flag.reactionType, origEventText: origEvent?.text || flag.text });
     timeline.push({ type: 'chrisReaction', phase: 4, reactionType: flag.reactionType, text: _rp(CHRIS_REACTIONS[flag.reactionType] || CHRIS_REACTIONS.entertained) });
   });
 
-  // The Reveal
+  // The Reveal — Skeptic bonus: mental ≥ 7 gets expanded reward; intuition ≥ 7 gets partial
   const revealText = _rp(STORM_TEXTS.reveal);
   timeline.push({ type: 'stormEvent', subtype: 'reveal', phase: 4, players: activePlayers, text: revealText, badgeText: 'THE REVEAL', badgeClass: 'gold' });
   activePlayers.forEach(name => {
-    if (pStats(name).intuition >= 7) {
+    const s = pStats(name);
+    if (s.mental >= 7) {
+      personalScores[name] += 1.0; popDelta(name, 1);
+    } else if (s.intuition >= 7) {
       personalScores[name] += 0.5;
     } else {
       personalScores[name] -= 0.3;
     }
   });
 
-  // Endurance Bonus
+  // Finisher — endurance ≥ 7 (gated on stat, not raw accumulated score)
   activePlayers.forEach(name => {
-    if (personalScores[name] >= 5.0) {
-      personalScores[name] += 1.0;
+    if (pStats(name).endurance >= 7) {
+      personalScores[name] += 0.8;
       timeline.push({ type: 'stormEvent', subtype: 'enduranceBonus', phase: 4, player: name, players: [name], text: `Chris grudgingly notes ${name}'s consistent performance. "Fine. You earned it."`, badgeText: 'ENDURANCE BONUS', badgeClass: 'green' });
     }
   });
@@ -1046,7 +1364,9 @@ export function _textCampCastaways(ep, ln, sec) {
 // VP SCREEN BUILDER
 // ══════════════════════════════════════════════════════
 
-const _tvState = {};
+// _tvState is shared with vp-screens.js via window._tvState (set by main.js)
+// Each builder accesses it as a local alias: const _tvState = window._tvState;
+// DO NOT declare a module-scoped _tvState here — it would shadow the shared one.
 
 // ── COLOUR PALETTE ──
 const SV_BG = '#0a0e0a';        // Surveillance background
@@ -1238,6 +1558,61 @@ const CC_STYLES = `
     letter-spacing:4px; color:#00ff41; opacity:0.6; }
   .cc-glitch-line { position:absolute; left:0; right:0; height:1px; background:#00ff41; opacity:0.3; }
   .cc-glitch-line--top { top:0; } .cc-glitch-line--bot { bottom:0; }
+
+  /* ── MONITOR WALL FRAME (persistent across all CC screens) ── */
+  .cc-monitor-frame { display:flex; align-items:center; justify-content:space-between;
+    padding:4px 8px; margin-bottom:8px; border-bottom:1px solid currentColor;
+    font-family:'Courier New',monospace; font-size:8px; letter-spacing:1px; }
+  .cc-monitor-frame--sv  { color:#00a028; opacity:0.75; }
+  .cc-monitor-frame--diary { color:#7a5230; border-bottom-color:#7a523055; }
+  .cc-monitor-frame--bc  { color:#00cfff; opacity:0.85; }
+  .cc-monitor-mode { font-weight:700; }
+  .cc-monitor-tape { opacity:0.7; }
+  .cc-monitor-clock { animation:cc-ts-pulse 2s ease-in-out infinite; }
+
+  /* ── MODE ENTRY ANIMATIONS ── */
+  .cc-sv  { animation:cc-sv-enter 0.45s ease-out both; }
+  @keyframes cc-sv-enter {
+    0%  { opacity:0; filter:brightness(3) saturate(0); }
+    30% { filter:brightness(1.5) saturate(0.2); }
+    100%{ opacity:1; filter:none; }
+  }
+  .cc-diary { animation:cc-diary-enter 0.5s ease-out both; }
+  @keyframes cc-diary-enter {
+    0%  { opacity:0; transform:translateY(18px) rotate(-0.4deg); }
+    65% { transform:translateY(-2px) rotate(0.15deg); }
+    100%{ opacity:1; transform:translateY(0) rotate(0); }
+  }
+  .cc-bc { animation:cc-bc-enter 0.6s ease-out both; }
+  @keyframes cc-bc-enter {
+    0%  { opacity:0; filter:brightness(6) saturate(0); }
+    20% { opacity:1; filter:brightness(2); }
+    100%{ opacity:1; filter:none; }
+  }
+
+  /* ── VHS REPLAY PANEL (Phase 4 playback cites earlier diary moment) ── */
+  .cc-vhs-replay { position:relative; margin:6px 0; padding:8px 10px;
+    background:#d8eedd; border:2px solid #a78bfa44; border-left:3px solid #a78bfa;
+    filter:sepia(0.3) hue-rotate(70deg) saturate(0.55) brightness(0.92); overflow:hidden; }
+  .cc-vhs-replay::before { content:''; position:absolute; inset:0;
+    background:repeating-linear-gradient(0deg,rgba(0,255,65,0.06) 0px,transparent 3px);
+    pointer-events:none; z-index:0; }
+  .cc-vhs-replay-tag { font-family:'Courier New',monospace; font-size:8px; color:#6a50cc;
+    letter-spacing:2px; margin-bottom:4px; position:relative; z-index:1; }
+  .cc-vhs-tracking { position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,transparent,#a78bfa88,transparent);
+    animation:cc-vhs-track 1.8s ease-in-out infinite; }
+  @keyframes cc-vhs-track { 0%,100%{opacity:0.3;transform:translateX(-30%)} 50%{opacity:1;transform:translateX(30%)} }
+  .cc-vhs-replay-body { font-size:11px; color:#1a2e1a; line-height:1.5; position:relative; z-index:1; font-family:Georgia,serif; }
+
+  /* ── STEALTH APPROACH badge uses blue ── */
+  .cc-sv-badge--blue span { border-color:#4fa3e0; color:#4fa3e0; }
+
+  /* ── prefers-reduced-motion: collapse all mode animations ── */
+  @media (prefers-reduced-motion: reduce) {
+    .cc-sv, .cc-diary, .cc-bc, .cc-sv-card, .cc-diary-panel,
+    .cc-vhs-replay, .cc-glitch-wrap { animation-duration:0.01ms !important; }
+  }
 `;
 
 // ── MODE TRANSITION GLITCH ──
@@ -1321,19 +1696,40 @@ function _bcCard(evt) {
   return html;
 }
 
-// ── CLICK-TO-REVEAL HELPERS ──
-function _revealBtn(stateKey, step, total) {
-  return `<div class="cc-sv-reveal-btn" onclick="window._ccReveal('${stateKey}',${step},${total})">▶ NEXT ENTRY</div>`;
+// ── CLICK-TO-REVEAL — inline onclick (Lucky Hunt pattern) ──
+function _ccInlineReveal(stateKey, targetIdx, screenId, epNum) {
+  return `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};` +
+    `_tvState['${stateKey}'].idx=${targetIdx};` +
+    `const _cep=gs.episodeHistory.find(e=>e.num===${epNum});` +
+    `if(_cep){const _cm=document.querySelector('.rp-main');const _cs=_cm?_cm.scrollTop:0;` +
+    `buildVPScreens(_cep);const _ci=vpScreens.findIndex(s=>s.id==='${screenId}');` +
+    `if(_ci>=0)vpCurrentScreen=_ci;renderVPScreen();if(_cm)_cm.scrollTop=_cs;}`;
+}
+
+// ── MONITOR WALL FRAME ──
+function _monitorWall(mode, phaseLabel, tapeNum, tapeTotal) {
+  const cls = mode === 'sv' ? 'cc-monitor-frame--sv' : mode === 'diary' ? 'cc-monitor-frame--diary' : 'cc-monitor-frame--bc';
+  const modeLabel = mode === 'sv' ? '📡 SURVEILLANCE' : mode === 'diary' ? '📓 CASTAWAY DIARY' : '📻 EMERGENCY BROADCAST';
+  return `<div class="cc-monitor-frame ${cls}"><span class="cc-monitor-mode">${modeLabel}</span><span>${phaseLabel}</span><span class="cc-monitor-tape">TAPE ${tapeNum}/${tapeTotal}</span></div>`;
 }
 
 // ══ SECTION BUILDERS ══
 
-function _buildColdOpen(cc, ep, stateKey) {
+// ── Proper phase-0 timestamp: 30s spacing, starts at 00:02:00 ──
+function _floodTs(i) {
+  const secs = 120 + i * 30;
+  return `00:${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
+}
+
+function _buildColdOpen(cc, ep, stateKey, screenId) {
+  const _tvState = window._tvState;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const st = _tvState[stateKey];
   const events = cc.timeline.filter(e => e.phase === 0);
+  const epNum = ep.num || 0;
 
   let html = `<div class="cc-sv cc-sv--nv">`;
+  html += _monitorWall('sv', 'PHASE 0 — THE FLOOD', 1, 6);
   html += `<div class="cc-sv-cam">`;
   html += `<span class="cc-sv-camid"><span class="cc-rec"></span>CAM-00 · CAMP WAWANAKWA OVERVIEW</span>`;
   html += `<span class="cc-sv-ts">00:00:00 ▶ LIVE</span>`;
@@ -1343,8 +1739,13 @@ function _buildColdOpen(cc, ep, stateKey) {
 
   events.forEach((evt, i) => {
     if (i > st.idx + 1) return;
-    if (i <= st.idx) { html += _svCard(evt, 'CAM-00', `00:${String(i * 4).padStart(2, '0')}:${String(i * 7 % 60).padStart(2, '0')}`); }
-    else if (i === st.idx + 1) { html += _revealBtn(stateKey, i, events.length - 1); }
+    if (i <= st.idx) { html += _svCard(evt, 'CAM-00', _floodTs(i)); }
+    else if (i === st.idx + 1) {
+      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
+      html += `<div class="cc-sv-reveal-btn" onclick="${_ccInlineReveal(stateKey, i, screenId, epNum)}">▶ NEXT ENTRY</div>`;
+      html += `<div class="cc-sv-reveal-btn" style="opacity:0.55;font-size:9px;padding:6px 12px;letter-spacing:1px" onclick="${_ccInlineReveal(stateKey, events.length - 1, screenId, epNum)}">⏩ REVEAL ALL</div>`;
+      html += `</div>`;
+    }
   });
 
   if (st.idx >= events.length - 1 && events.length > 0) {
@@ -1354,12 +1755,15 @@ function _buildColdOpen(cc, ep, stateKey) {
   return html;
 }
 
-function _buildGroupScreen(cc, groupObj, ep, stateKey) {
+function _buildGroupScreen(cc, groupObj, ep, stateKey, screenId, tapeNum, tapeTotal) {
+  const _tvState = window._tvState;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const st = _tvState[stateKey];
   const events = cc.timeline.filter(e => e.phase === 1 && e.group === groupObj.label);
+  const epNum = ep.num || 0;
 
   let html = `<div class="cc-diary">`;
+  html += _monitorWall('diary', `PHASE 1 — GROUP ${groupObj.label}`, tapeNum, tapeTotal);
   html += `<div class="cc-diary-header">📓 GROUP ${groupObj.label}</div>`;
   html += `<div class="cc-diary-sub">PHASE 1 — SCATTERED</div>`;
   html += `<div class="cc-diary-members">`;
@@ -1373,7 +1777,12 @@ function _buildGroupScreen(cc, groupObj, ep, stateKey) {
   events.forEach((evt, i) => {
     if (i > st.idx + 1) return;
     if (i <= st.idx) { html += _diaryPanel(evt, panelIdx++); }
-    else if (i === st.idx + 1) { html += `<div class="cc-pageturn" onclick="window._ccReveal('${stateKey}',${i},${events.length - 1})">▷ Turn the page</div>`; }
+    else if (i === st.idx + 1) {
+      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
+      html += `<div class="cc-pageturn" onclick="${_ccInlineReveal(stateKey, i, screenId, epNum)}">▷ Turn the page</div>`;
+      html += `<div class="cc-pageturn" style="opacity:0.55;font-size:10px;padding:5px 10px" onclick="${_ccInlineReveal(stateKey, events.length - 1, screenId, epNum)}">⏩ Reveal all</div>`;
+      html += `</div>`;
+    }
   });
 
   if (st.idx >= events.length - 1 && events.length > 0) {
@@ -1383,12 +1792,15 @@ function _buildGroupScreen(cc, groupObj, ep, stateKey) {
   return html;
 }
 
-function _buildNightScreen(cc, ep, stateKey) {
+function _buildNightScreen(cc, ep, stateKey, screenId, tapeNum, tapeTotal) {
+  const _tvState = window._tvState;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const st = _tvState[stateKey];
   const events = cc.timeline.filter(e => e.phase === 2);
+  const epNum = ep.num || 0;
 
   let html = `<div class="cc-diary">`;
+  html += _monitorWall('diary', 'PHASE 2 — THE NIGHT', tapeNum, tapeTotal);
   html += `<div class="cc-diary-header">🌙 THE NIGHT</div>`;
   html += `<div class="cc-diary-sub">PHASE 2 — DARKNESS, HUNGER, TRUTH</div>`;
 
@@ -1411,7 +1823,10 @@ function _buildNightScreen(cc, ep, stateKey) {
         html += _diaryPanel(evt, panelIdx++);
       }
     } else if (i === st.idx + 1) {
-      html += `<div class="cc-pageturn" onclick="window._ccReveal('${stateKey}',${i},${events.length - 1})">▷ Turn the page</div>`;
+      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
+      html += `<div class="cc-pageturn" onclick="${_ccInlineReveal(stateKey, i, screenId, epNum)}">▷ Turn the page</div>`;
+      html += `<div class="cc-pageturn" style="opacity:0.55;font-size:10px;padding:5px 10px" onclick="${_ccInlineReveal(stateKey, events.length - 1, screenId, epNum)}">⏩ Reveal all</div>`;
+      html += `</div>`;
     }
   });
 
@@ -1422,12 +1837,15 @@ function _buildNightScreen(cc, ep, stateKey) {
   return html;
 }
 
-function _buildRegroupScreen(cc, ep, stateKey) {
+function _buildRegroupScreen(cc, ep, stateKey, screenId, tapeNum, tapeTotal) {
+  const _tvState = window._tvState;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const st = _tvState[stateKey];
   const events = cc.timeline.filter(e => e.phase === 3);
+  const epNum = ep.num || 0;
 
   let html = `<div class="cc-diary">`;
+  html += _monitorWall('diary', 'PHASE 3 — REGROUPING', tapeNum, tapeTotal);
   html += `<div class="cc-diary-header">🧭 REGROUPING</div>`;
   html += `<div class="cc-diary-sub">PHASE 3 — FINDING EACH OTHER</div>`;
 
@@ -1439,19 +1857,25 @@ function _buildRegroupScreen(cc, ep, stateKey) {
         html += `<div class="cc-sv-interrupt"><span class="cc-sv-interrupt-label">◉ SURVEILLANCE FLASH</span>${evt.text}</div>`;
       } else { html += _diaryPanel(evt, panelIdx++); }
     } else if (i === st.idx + 1) {
-      html += `<div class="cc-pageturn" onclick="window._ccReveal('${stateKey}',${i},${events.length - 1})">▷ Turn the page</div>`;
+      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
+      html += `<div class="cc-pageturn" onclick="${_ccInlineReveal(stateKey, i, screenId, epNum)}">▷ Turn the page</div>`;
+      html += `<div class="cc-pageturn" style="opacity:0.55;font-size:10px;padding:5px 10px" onclick="${_ccInlineReveal(stateKey, events.length - 1, screenId, epNum)}">⏩ Reveal all</div>`;
+      html += `</div>`;
     }
   });
   html += `</div>`;
   return html;
 }
 
-function _buildStormScreen(cc, ep, stateKey) {
+function _buildStormScreen(cc, ep, stateKey, screenId, tapeNum, tapeTotal) {
+  const _tvState = window._tvState;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const st = _tvState[stateKey];
   const events = cc.timeline.filter(e => e.phase === 4);
+  const epNum = ep.num || 0;
 
   let html = `<div class="cc-sv">`;
+  html += _monitorWall('sv', 'PHASE 4 — STORMING THE CAMP', tapeNum, tapeTotal);
   html += `<div class="cc-sv-cam">`;
   html += `<span class="cc-sv-camid"><span class="cc-rec"></span>CAM-04 · CHRIS'S CAMP</span>`;
   html += `<span class="cc-sv-ts">DAYLIGHT ▶ RECORDING</span>`;
@@ -1464,12 +1888,25 @@ function _buildStormScreen(cc, ep, stateKey) {
     if (i > st.idx + 1) return;
     if (i <= st.idx) {
       const camId = camIds[i % camIds.length];
-      const ts = `0${Math.floor(8 + i * 0.3)}:${String(i * 7 % 60).padStart(2, '0')}:${String(i * 11 % 60).padStart(2, '0')}`;
-      html += evt.isPlayback
-        ? `<div class="cc-vhs-label">⏪ PLAYBACK — ${evt.callbackType?.toUpperCase() || 'FOOTAGE'}</div>` + _svCard(evt, camId, ts)
-        : _svCard(evt, camId, ts);
+      const secBase = 8 * 3600;
+      const s = secBase + i * 37;
+      const ts = `${String(Math.floor(s / 3600) % 24).padStart(2, '0')}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+      if (evt.isPlayback && evt.origEventText) {
+        // VHS replay panel cites the original diary moment, tinted surveillance-green
+        html += `<div class="cc-vhs-replay">`;
+        html += `<div class="cc-vhs-tracking"></div>`;
+        html += `<div class="cc-vhs-replay-tag">⏪ VHS RECALL — ${(evt.callbackType || 'FOOTAGE').toUpperCase()}</div>`;
+        html += `<div class="cc-vhs-replay-body">${evt.origEventText}</div>`;
+        html += `</div>`;
+      } else if (evt.isPlayback) {
+        html += `<div class="cc-vhs-replay"><div class="cc-vhs-tracking"></div><div class="cc-vhs-replay-tag">⏪ PLAYBACK — ${(evt.callbackType || 'FOOTAGE').toUpperCase()}</div></div>`;
+      }
+      html += _svCard(evt, camId, ts);
     } else if (i === st.idx + 1) {
-      html += _revealBtn(stateKey, i, events.length - 1);
+      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
+      html += `<div class="cc-sv-reveal-btn" onclick="${_ccInlineReveal(stateKey, i, screenId, epNum)}">▶ NEXT ENTRY</div>`;
+      html += `<div class="cc-sv-reveal-btn" style="opacity:0.55;font-size:9px;padding:6px 12px;letter-spacing:1px" onclick="${_ccInlineReveal(stateKey, events.length - 1, screenId, epNum)}">⏩ REVEAL ALL</div>`;
+      html += `</div>`;
     }
   });
 
@@ -1480,9 +1917,11 @@ function _buildStormScreen(cc, ep, stateKey) {
   return html;
 }
 
-function _buildImmunityScreen(cc, ep, stateKey) {
+function _buildImmunityScreen(cc, ep, stateKey, screenId, tapeNum, tapeTotal) {
+  const _tvState = window._tvState;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const st = _tvState[stateKey];
+  const epNum = ep.num || 0;
 
   const sortedAsc = Object.entries(cc.personalScores)
     .sort(([, a], [, b]) => a - b)
@@ -1491,6 +1930,7 @@ function _buildImmunityScreen(cc, ep, stateKey) {
   const tickerItems = sortedAsc.map(e => `${e.name} — ${e.score.toFixed(1)}`).join('  ·  ');
 
   let html = `<div class="cc-bc">`;
+  html += _monitorWall('bc', 'PHASE 5 — IMMUNITY RESULTS', tapeNum, tapeTotal);
   html += `<div class="cc-bc-signal-bar"></div>`;
   html += `<div class="cc-bc-header-label">▲ SIGNAL FOUND — EMERGENCY BROADCAST</div>`;
   html += `<div class="cc-bc-header-title">📡 IMMUNITY RESULTS</div>`;
@@ -1504,7 +1944,10 @@ function _buildImmunityScreen(cc, ep, stateKey) {
         badgeText: entry.isWinner ? '🏆 IMMUNE' : `RANK #${sortedAsc.length - i}`, badgeClass: entry.isWinner ? 'gold' : '' };
       html += _bcCard(evt);
     } else if (i === st.idx + 1) {
-      html += `<div class="cc-bc-reveal-btn" onclick="window._ccReveal('${stateKey}',${i},${sortedAsc.length - 1})">▶ NEXT TRANSMISSION</div>`;
+      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
+      html += `<div class="cc-bc-reveal-btn" onclick="${_ccInlineReveal(stateKey, i, screenId, epNum)}">▶ NEXT TRANSMISSION</div>`;
+      html += `<div class="cc-bc-reveal-btn" style="opacity:0.55;font-size:9px;padding:6px 12px;letter-spacing:1px" onclick="${_ccInlineReveal(stateKey, sortedAsc.length - 1, screenId, epNum)}">⏩ REVEAL ALL</div>`;
+      html += `</div>`;
     }
   });
 
@@ -1516,204 +1959,75 @@ function _buildImmunityScreen(cc, ep, stateKey) {
   return html;
 }
 
-// ── MASTER BUILDER ──
-export function rpBuildCampCastaways(ep) {
+// ── PER-SCREEN EXPORTS (consumed by vp-screens.js) ──
+
+export function rpBuildCCFlood(ep) {
   const cc = ep.campCastaways;
   if (!cc?.timeline?.length) return '';
-
   const epNum = ep.num || 0;
-  const keys = {
-    coldOpen: `cc_cold_${epNum}`,
-    groups: cc.groups.map((g, i) => `cc_grp_${g.label}_${epNum}`),
-    night: `cc_night_${epNum}`,
-    regroup: `cc_regroup_${epNum}`,
-    storm: `cc_storm_${epNum}`,
-    immunity: `cc_imm_${epNum}`,
-  };
-
-  // Initialize all states
-  [keys.coldOpen, ...keys.groups, keys.night, keys.regroup, keys.storm, keys.immunity].forEach(k => {
-    if (!_tvState[k]) _tvState[k] = { idx: -1 };
-  });
-
-  let html = `<style>${CC_STYLES}</style><div class="cc-wrap" style="display:flex;flex-direction:column;gap:4px">`;
-
-  // Screen 1: Flood Cold Open (Surveillance)
-  html += _buildColdOpen(cc, ep, keys.coldOpen);
-  html += _glitchTransition('SWITCHING TO FIELD NOTES');
-
-  // Screens 2-N: Scattered Groups (Diary)
-  cc.groups.forEach((group, i) => {
-    html += _buildGroupScreen(cc, group, ep, keys.groups[i]);
-    if (i < cc.groups.length - 1) html += `<div style="height:4px;background:${DI_BG};margin:2px 0"></div>`;
-  });
-  html += _glitchTransition('SWITCHING TO NIGHT LOG');
-
-  // Screen: The Night (Diary + Surveillance interrupts)
-  html += _buildNightScreen(cc, ep, keys.night);
-  html += _glitchTransition('SWITCHING TO FIELD NOTES');
-
-  // Screen: Regrouping (Diary → Surveillance blend)
-  html += _buildRegroupScreen(cc, ep, keys.regroup);
-  html += _glitchTransition('SWITCHING TO SURVEILLANCE FEED');
-
-  // Screen: Storming the Camp (Surveillance)
-  html += _buildStormScreen(cc, ep, keys.storm);
-  html += _glitchTransition('SIGNAL FOUND — EMERGENCY BROADCAST');
-
-  // Screen: Immunity Results (Broadcast)
-  html += _buildImmunityScreen(cc, ep, keys.immunity);
-
-  html += `</div>`;
-
-  // Expose reveal handler
-  window._ccReveal = function (stateKey, idx, total) {
-    const scrollEl = document.querySelector('.vp-content') || document.querySelector('.episode-vp') || window;
-    const scrollTop = scrollEl?.scrollTop || 0;
-    _tvState[stateKey] = _tvState[stateKey] || { idx: -1 };
-    _tvState[stateKey].idx = idx;
-    if (typeof buildVPScreens === 'function') {
-      buildVPScreens(ep);
-      const screens = document.querySelectorAll('[data-vp-screen-id]');
-      screens.forEach((el, i) => { if (el.dataset.vpScreenId && el.dataset.vpScreenId.includes('camp-castaways')) { if (typeof setVPScreen === 'function') setVPScreen(i); } });
-    }
-    if (scrollEl && scrollEl !== window) scrollEl.scrollTop = scrollTop;
-  };
-
-  window._ccRevealAll = function (epN) {
-    Object.keys(_tvState).filter(k => k.includes(`_${epN}`)).forEach(k => {
-      const evts = cc.timeline;
-      _tvState[k].idx = evts.length;
-    });
-    if (typeof buildVPScreens === 'function') buildVPScreens(ep);
-  };
-
-  return html;
+  const stateKey = `cc_cold_${epNum}`;
+  const tapeTotal = 3 + (cc.groups?.length || 2);
+  return `<style>${CC_STYLES}</style><div class="rp-page">` + _buildColdOpen(cc, ep, stateKey, 'cc-flood', tapeTotal) + `</div>`;
 }
 
-// ── _fireWildlifeEvent ────────────────────────────────────────────────────────
-function _fireWildlifeEvent(wId, group, label, timeline, personalScores, cameraFlags, isSolo) {
-  const pr_of = n => pronouns(n);
-  const s_of  = n => pStats(n);
-
-  if (wId === 'shark') {
-    const participant = group[Math.floor(Math.random() * group.length)];
-    const s = s_of(participant); const pr = pr_of(participant);
-    const isBrave = Math.random() < s.boldness * 0.06;
-    if (isBrave) {
-      personalScores[participant] = (personalScores[participant] || 0) + 2.0;
-      popDelta(participant, 2);
-      const text = _rp(WILDLIFE.shark.brave)(participant, pr);
-      cameraFlags.push({ player: participant, type: 'wildlife_brave', text: "That was either genius or suicidal. I'll check the footage.", reactionType: 'impressed' });
-      timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [participant], text, result: 'brave', badgeText: '🦈 BRAVE', badgeClass: 'gold' });
-    } else {
-      personalScores[participant] = (personalScores[participant] || 0) - 1.5;
-      const text = _rp(WILDLIFE.shark.panic)(participant, pr);
-      cameraFlags.push({ player: participant, type: 'wildlife_panic', text: "Textbook shark panic. We'll use this in the intro.", reactionType: 'entertained' });
-      timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [participant], text, result: 'panic', badgeText: '🦈 PANIC', badgeClass: 'red' });
-    }
-  } else if (wId === 'trexSkull') {
-    const smartest = group.slice().sort((a, b) => s_of(b).mental - s_of(a).mental)[0];
-    const pr = pr_of(smartest); const s = s_of(smartest);
-    const detected = Math.random() < s.mental * 0.07;
-    if (detected) {
-      personalScores[smartest] = (personalScores[smartest] || 0) + 0.5;
-      const text = _rp(WILDLIFE.trexSkull.smart)(smartest, pr);
-      timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [smartest], text, result: 'smart', badgeText: '🦕 CALLED IT', badgeClass: 'gold' });
-    } else {
-      personalScores[smartest] = (personalScores[smartest] || 0) - 0.5;
-      const text = _rp(WILDLIFE.trexSkull.scared)(smartest, pr);
-      cameraFlags.push({ player: smartest, type: 'wildlife_scared', text: "It's a PROP. It says \"PROP\" on the back.", reactionType: 'entertained' });
-      timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [smartest], text, result: 'scared', badgeText: '🦕 TERRIFIED', badgeClass: 'red' });
-    }
-  } else if (wId === 'pterodactyl') {
-    const carried = group[Math.floor(Math.random() * group.length)];
-    const pr = pr_of(carried); const s = s_of(carried);
-    const isBrave = Math.random() < s.boldness * 0.06;
-    if (isBrave) {
-      personalScores[carried] = (personalScores[carried] || 0) + 1.0;
-      const text = _rp(WILDLIFE.pterodactyl.brave)(carried, pr);
-      cameraFlags.push({ player: carried, type: 'pterodactyl_brave', text: "We didn't plan the pterodactyl. The pterodactyl planned us.", reactionType: 'impressed' });
-      timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [carried], text, result: 'brave', badgeText: '🦅 AIRBORNE!', badgeClass: 'gold' });
-    } else {
-      personalScores[carried] = (personalScores[carried] || 0) - 1.0;
-      const text = _rp(WILDLIFE.pterodactyl.panic)(carried, pr);
-      cameraFlags.push({ player: carried, type: 'pterodactyl_panic', text: 'Add to clip reel. Add to EVERY clip reel.', reactionType: 'entertained' });
-      timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [carried], text, result: 'panic', badgeText: '🦅 CARRIED OFF', badgeClass: 'red' });
-    }
-    if (group.length > 1) {
-      const rescuer = group.filter(n => n !== carried)[0];
-      addBond(rescuer, carried, 0.4);
-      personalScores[rescuer] = (personalScores[rescuer] || 0) + 1.5;
-      timeline.push({ type: 'wildlifeRescue', phase: 1, group: label, players: [rescuer, carried], text: `${rescuer} grabs ${carried} by the ankle and ties ${pr.obj} to a tree root before the pterodactyl clears the canopy. ${pr.Sub} ${pr.sub === 'they' ? 'are' : 'is'} down, unhurt, owing ${rescuer} one.`, badgeText: '🦸 RESCUE', badgeClass: 'gold' });
-    }
-  } else if (wId === 'python') {
-    const bravest = group.slice().sort((a, b) => s_of(b).boldness - s_of(a).boldness)[0];
-    const pr = pr_of(bravest); const s = s_of(bravest);
-    const isBrave = Math.random() < s.boldness * 0.07;
-    if (isBrave) {
-      personalScores[bravest] = (personalScores[bravest] || 0) + 1.5;
-      popDelta(bravest, 1);
-      const text = _rp(WILDLIFE.python.brave)(bravest, pr);
-      cameraFlags.push({ player: bravest, type: 'python_brave', text: 'Genuinely did not expect that. Intern, note: find more pythons.', reactionType: 'impressed' });
-      timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [bravest], text, result: 'brave', badgeText: '🐍 FEARLESS', badgeClass: 'gold' });
-    } else {
-      personalScores[bravest] = (personalScores[bravest] || 0) - 1.0;
-      const text = _rp(WILDLIFE.python.panic)(bravest, pr);
-      timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [bravest], text, result: 'panic', badgeText: '🐍 FLED', badgeClass: 'red' });
-    }
-  } else if (wId === 'raccoon') {
-    const defender = group.slice().sort((a, b) => s_of(b).intuition - s_of(a).intuition)[0];
-    const pr = pr_of(defender); const s = s_of(defender);
-    const defended = Math.random() < s.intuition * 0.07;
-    if (defended) {
-      const text = _rp(WILDLIFE.raccoon.defended)(defender, pr);
-      timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [defender], text, result: 'defended', badgeText: '🦝 DEFENDED', badgeClass: 'gold' });
-    } else {
-      personalScores[defender] = (personalScores[defender] || 0) - 1.0;
-      const text = _rp(WILDLIFE.raccoon.failed)(defender, pr);
-      cameraFlags.push({ player: defender, type: 'raccoon_loss', text: 'The raccoon was more prepared than the contestant. This tracks.', reactionType: 'entertained' });
-      timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [defender], text, result: 'failed', badgeText: '🦝 RAIDED', badgeClass: 'red' });
-    }
-  } else if (wId === 'mosquito') {
-    const victim = group.slice().sort((a, b) => s_of(a).endurance - s_of(b).endurance)[0];
-    const pr = pr_of(victim);
-    personalScores[victim] = (personalScores[victim] || 0) - 0.5;
-    const text = _rp(WILDLIFE.mosquito)(victim, pr);
-    cameraFlags.push({ player: victim, type: 'mosquito', text: "Nature's most reliable production assistant.", reactionType: 'entertained' });
-    timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [victim], text, result: 'suffered', badgeText: '🦟 SWARMED', badgeClass: 'red' });
-  } else if (wId === 'crab') {
-    const victim = group[Math.floor(Math.random() * group.length)];
-    const pr = pr_of(victim);
-    personalScores[victim] = (personalScores[victim] || 0) - 0.5;
-    group.forEach(m => { if (m !== victim) addBond(m, victim, 0.3); });
-    const text = _rp(WILDLIFE.crab)(victim, pr);
-    cameraFlags.push({ player: victim, type: 'crab', text: 'We should put more crabs out there. Just saying.', reactionType: 'entertained' });
-    timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: group, text, result: 'chaos', badgeText: '🦀 CHASED', badgeClass: 'red' });
-  } else if (wId === 'boar' && isSolo) {
-    const player = group[0];
-    const pr = pr_of(player); const s = s_of(player);
-    const success = Math.random() < (s.physical * 0.04 + s.boldness * 0.03);
-    if (success) {
-      personalScores[player] = (personalScores[player] || 0) + 2.0;
-      popDelta(player, 2);
-      const text = _rp(WILDLIFE.boar.success)(player, pr);
-      cameraFlags.push({ player, type: 'boar_success', text: 'That was either heroic or deeply unhinged. Either way, it worked.', reactionType: 'impressed' });
-      timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [player], text, result: 'success', badgeText: '🐗 HERO MOMENT', badgeClass: 'gold' });
-    } else {
-      personalScores[player] = (personalScores[player] || 0) - 1.0;
-      popDelta(player, -1);
-      const text = _rp(WILDLIFE.boar.fail)(player, pr);
-      cameraFlags.push({ player, type: 'boar_fail', text: 'The boar won. The boar always wins.', reactionType: 'entertained' });
-      timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [player], text, result: 'fail', badgeText: '🐗 CHASED', badgeClass: 'red' });
-    }
-  } else if (wId === 'seagull') {
-    const victim = group[Math.floor(Math.random() * group.length)];
-    const pr = pr_of(victim);
-    personalScores[victim] = (personalScores[victim] || 0) - 0.5;
-    const text = _rp(WILDLIFE.seagull)(victim, pr);
-    cameraFlags.push({ player: victim, type: 'seagull', text: 'The seagull is, statistically, our most effective producer.', reactionType: 'entertained' });
-    timeline.push({ type: 'wildlife', phase: 1, group: label, wildlife: wId, players: [victim], text, result: 'stolen', badgeText: '🐦 STOLEN', badgeClass: 'red' });
-  }
+export function rpBuildCCGroup(ep, groupObj) {
+  const cc = ep.campCastaways;
+  if (!cc?.timeline?.length) return '';
+  const epNum = ep.num || 0;
+  const gLabel = groupObj.label;
+  const stateKey = `cc_grp_${gLabel}_${epNum}`;
+  const groupIdx = (cc.groups || []).findIndex(g => g.label === gLabel);
+  const tapeNum = 2 + groupIdx;
+  const tapeTotal = 3 + (cc.groups?.length || 2);
+  const screenId = `cc-group-${gLabel}`;
+  return `<style>${CC_STYLES}</style><div class="rp-page">` + _buildGroupScreen(cc, groupObj, ep, stateKey, screenId, tapeNum, tapeTotal) + `</div>`;
 }
-
+
+export function rpBuildCCNight(ep) {
+  const cc = ep.campCastaways;
+  if (!cc?.timeline?.length) return '';
+  const epNum = ep.num || 0;
+  const stateKey = `cc_night_${epNum}`;
+  const nGroups = cc.groups?.length || 2;
+  const tapeNum = 2 + nGroups;
+  const tapeTotal = 3 + nGroups;
+  return `<style>${CC_STYLES}</style><div class="rp-page">` + _buildNightScreen(cc, ep, stateKey, 'cc-night', tapeNum, tapeTotal) + `</div>`;
+}
+
+export function rpBuildCCRegroup(ep) {
+  const cc = ep.campCastaways;
+  if (!cc?.timeline?.length) return '';
+  const epNum = ep.num || 0;
+  const stateKey = `cc_regroup_${epNum}`;
+  const nGroups = cc.groups?.length || 2;
+  const tapeNum = 3 + nGroups;
+  const tapeTotal = 3 + nGroups;
+  return `<style>${CC_STYLES}</style><div class="rp-page">` + _buildRegroupScreen(cc, ep, stateKey, 'cc-regroup', tapeNum, tapeTotal) + `</div>`;
+}
+
+export function rpBuildCCStorm(ep) {
+  const cc = ep.campCastaways;
+  if (!cc?.timeline?.length) return '';
+  const epNum = ep.num || 0;
+  const stateKey = `cc_storm_${epNum}`;
+  const nGroups = cc.groups?.length || 2;
+  const tapeNum = 4 + nGroups;
+  const tapeTotal = 5 + nGroups;
+  return `<style>${CC_STYLES}</style><div class="rp-page">` + _buildStormScreen(cc, ep, stateKey, 'cc-storm', tapeNum, tapeTotal) + `</div>`;
+}
+
+export function rpBuildCCImmunity(ep) {
+  const cc = ep.campCastaways;
+  if (!cc?.timeline?.length) return '';
+  const epNum = ep.num || 0;
+  const stateKey = `cc_imm_${epNum}`;
+  const nGroups = cc.groups?.length || 2;
+  const tapeNum = 5 + nGroups;
+  const tapeTotal = 5 + nGroups;
+  return `<style>${CC_STYLES}</style><div class="rp-page">` + _buildImmunityScreen(cc, ep, stateKey, 'cc-immunity', tapeNum, tapeTotal) + `</div>`;
+}
+
+// Legacy single-screen export kept for backward compat
+export function rpBuildCampCastaways(ep) {
+  return rpBuildCCFlood(ep);
+}

@@ -1422,7 +1422,7 @@ export function simulateBasicStraining(ep) {
   if (isMerged) {
     ep.challengeType = 'individual';
     ep.immunityWinner = immunityWinner;
-    ep.tribalPlayers = gs.activePlayers.filter(p => p !== immunityWinner);
+    ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
   } else {
     ep.challengeType = 'tribe';
     ep.winner = winnerTribe;

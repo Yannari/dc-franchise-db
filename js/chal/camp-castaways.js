@@ -1684,7 +1684,7 @@ export function simulateCampCastaways(ep) {
   ep.challengeDesc = 'Survive the night on a deserted island. Best survivor wins immunity.';
   ep.isCampCastaways = true;
   ep.immunityWinner = immunityWinner;
-  ep.tribalPlayers = gs.activePlayers.filter(p => p !== immunityWinner && !(ep.extraImmune || []).includes(p) && p !== gs.exileDuelPlayer);
+  ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
 
   ep.chalMemberScores = { ...personalScores };
   updateChalRecord(ep);

@@ -1050,7 +1050,7 @@ export function simulateHideAndBeSneaky(ep) {
   ep.challengeLabel = 'Hide and Be Sneaky';
   ep.challengeCategory = 'mixed';
   ep.challengeDesc = 'An extreme hide-and-seek game with a water gun-wielding Chef Hatchet.';
-  ep.tribalPlayers = gs.activePlayers.filter(p => !immunityWinners.includes(p) && p !== gs.exileDuelPlayer);
+  ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
 
   immunityWinners.forEach(w => updateChalRecord(w, 'win'));
   if (caught.length) {

@@ -1957,12 +1957,12 @@ export function simulateEpisode() {
   } else if (ep.isLuckyHunt) {
     // ── LUCKY HUNT: post-merge scavenger hunt replaces immunity ──
     simulateLuckyHunt(ep);
-    ep.tribalPlayers = gs.activePlayers.filter(p => p !== ep.immunityWinner && p !== gs.exileDuelPlayer);
+    ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
   } else if (ep.isHideAndBeSneaky) {
     // ── HIDE AND BE SNEAKY: post-merge hide-and-seek manhunt ──
     simulateHideAndBeSneaky(ep);
     if (!ep.tribalPlayers) {
-      ep.tribalPlayers = gs.activePlayers.filter(p => p !== ep.immunityWinner && !(ep.extraImmune || []).includes(p) && p !== gs.exileDuelPlayer);
+      ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     }
   } else if (ep.isOffTheChain) {
     // ── OFF THE CHAIN: post-merge bike-building and racing ──
@@ -2044,20 +2044,20 @@ export function simulateEpisode() {
     }
 
     if (!ep.tribalPlayers) {
-      ep.tribalPlayers = gs.activePlayers.filter(p => p !== ep.immunityWinner && !(ep.extraImmune || []).includes(p) && p !== gs.exileDuelPlayer);
+      ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     }
   } else if (ep.isWawanakwaGoneWild) {
     // ── WAWANAKWA GONE WILD: post-merge animal hunt ──
     simulateWawanakwaGoneWild(ep);
-    ep.tribalPlayers = gs.activePlayers.filter(p => p !== ep.immunityWinner && !(ep.extraImmune || []).includes(p) && p !== gs.exileDuelPlayer);
+    ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
   } else if (ep.isTriArmedTriathlon) {
     // ── TRI-ARMED TRIATHLON: handcuffed pair triathlon ──
     simulateTriArmedTriathlon(ep);
-    ep.tribalPlayers = gs.activePlayers.filter(p => !(ep.extraImmune || []).includes(p) && p !== ep.immunityWinner && p !== gs.exileDuelPlayer);
+    ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
   } else if (ep.isCampCastaways) {
     // ── CAMP CASTAWAYS: flood survival scoring ──
     simulateCampCastaways(ep);
-    ep.tribalPlayers = gs.activePlayers.filter(p => p !== ep.immunityWinner && !(ep.extraImmune || []).includes(p) && p !== gs.exileDuelPlayer);
+    ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
   } else {
     // ── TIED DESTINIES: paired immunity challenge ──
     const _tdTwist = ep.tiedDestinies;

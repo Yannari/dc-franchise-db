@@ -1866,7 +1866,7 @@ export function simulateLuckyHunt(ep) {
   ep.challengeCategory = 'mixed';
   ep.challengeDesc = 'Scavenger hunt for keys — one chest has immunity.';
   ep.immunityWinner = immunityWinner;
-  ep.tribalPlayers = gs.activePlayers.filter(p => p !== immunityWinner);
+  ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
   ep.chalMemberScores = personalScores;
 
   // ── 9. STORE ──

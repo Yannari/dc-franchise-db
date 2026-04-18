@@ -846,7 +846,7 @@ export function simulateOffTheChain(ep) {
     ep.tribalPlayers = [];
     ep.suddenDeathEliminated = lastPlace;
   } else {
-    ep.tribalPlayers = activePlayers.filter(p => p !== immunityWinner && p !== gs.exileDuelPlayer);
+    ep.tribalPlayers = activePlayers.filter(p => p !== gs.exileDuelPlayer);
     if (lastPlace) {
       if (!gs._bikeRaceHeat) gs._bikeRaceHeat = {};
       gs._bikeRaceHeat[lastPlace] = { target: lastPlace, amount: 3.0, expiresEp: (gs.episode || 0) + 4 };

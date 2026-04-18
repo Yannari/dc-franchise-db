@@ -2067,7 +2067,7 @@ export function simulateWawanakwaGoneWild(ep) {
   ep.immunityWinner = immunityWinner;
   ep.challengeType = 'individual';
   ep.challengeLabel = 'Wawanakwa Gone Wild!';
-  ep.tribalPlayers = gs.activePlayers.filter(p => p !== immunityWinner && !(ep.extraImmune || []).includes(p) && p !== gs.exileDuelPlayer);
+  ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
 
   ep.chalMemberScores = {};
   activePlayers.forEach(name => {

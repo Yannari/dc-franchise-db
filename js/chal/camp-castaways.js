@@ -55,35 +55,89 @@ const WILDLIFE = [
   { id: 'trex-skull',  name: 'T-Rex Skull',           nearWater: false },
 ];
 
+// ── FLOOD OPEN / CHAOS / SEPARATION TEXT POOLS ──
+const FLOOD_OPEN_TEXTS = [
+  `It started at 3 AM. The island's drainage system — such as it was — gave up sometime after midnight. By 4 AM, half the camp was underwater. Production insists this was a natural event. The insurance waiver everyone signed last Tuesday suggests otherwise.`,
+  `The flood hit Wawanakwa fast. By the time the first camper woke up, the lower cabins were already gone. Chris was already in a helicopter. The interns were already filming. Production had been monitoring the dam controls since 2 AM. Nobody said anything.`,
+  `Nobody saw the flood coming. Well — someone saw it coming. The dam upstream had been "mildly compromised" since episode one. Chris described it to his assistant as "a content opportunity." His assistant forwarded that email directly to legal.`,
+  `Camp Wawanakwa's lowest point is six feet below its highest point. In a flood, this matters. The sleeping arrangements had put the newest, most exhausted players in the lowest cabins. Production called this "serendipity."`,
+];
+const FLOOD_CHAOS_TEXTS = [
+  (n, pr) => `${n} was first. ${pr.Sub} ${pr.sub==='they'?'woke':'woke'} up with ${pr.posAdj} face six inches above the waterline and ${pr.posAdj} bag already floating toward the door. ${pr.Sub} ${pr.sub==='they'?'had':'had'} about two seconds before ${pr.sub} ${pr.sub==='they'?'started':'started'} screaming. ${pr.Sub} ${pr.sub==='they'?'used':'used'} them well.`,
+  (n, pr) => `${n} was the first one awake — ${pr.posAdj} shoes were floating past ${pr.posAdj} face before ${pr.sub} ${pr.sub==='they'?'opened':'opened'} ${pr.posAdj} eyes. ${pr.Sub} ${pr.sub==='they'?'had':'had'} about three seconds to process this before the current started moving everyone.`,
+  (n, pr) => `A crab landed on ${n}'s face. Not the flood — the crab. The flood was secondary. By the time ${pr.sub} ${pr.sub==='they'?'processed':'processed'} the flood, half the camp was already in motion.`,
+  (n, pr) => `The first sound was ${n}'s voice cutting through the dark: "WATER — WATER — EVERYONE UP." The second sound was everyone waking up. The third sound was chaos.`,
+];
+const FLOOD_SWEEP_TEXTS = [
+  (names, loc) => `${names} — carried by the same current — washed up at ${loc} before dawn. The flood chose their group for them. Whatever alliances they'd planned: restart.`,
+  (names, loc) => `${names} made landfall at ${loc} together. Shared terror is the world's worst icebreaker. It is also, occasionally, the world's most effective one.`,
+  (names, loc) => `The water swept ${names} toward ${loc}. Three seconds of chaos decided who they'd be living with for the next forty-eight hours.`,
+  (names, loc) => `${names} washed up at ${loc} — confused, soaked, and oddly intact. The flood doesn't care about strategy. It just picks people and throws them together.`,
+  (names, loc) => `${names} surfaced at ${loc}. The current had carried them here without consulting anyone. This is their group now. They have opinions about that.`,
+];
+const FLOOD_LOCATIONS = [
+  'the eastern shore', 'the northern ridge', 'the old docks', 'the mangrove flats',
+  'the waterfall basin', 'the rocky plateau', 'the south beach', 'the jungle clearing',
+  'the tidal pools', 'the cliff base', 'the palm grove', 'the ravine mouth',
+];
+
 // ── FLOOD REACTIONS (Phase 0) ──
 const FLOOD_REACTIONS = {
   villain: [
     (n, pr) => `${n} sits up in the water, completely calm. "This is a challenge. Has to be." ${pr.Sub} ${pr.sub==='they'?'start':'starts'} calculating immediately.`,
     (n, pr) => `The flood barely registers on ${n}'s face. "Interesting." ${pr.Sub} ${pr.sub==='they'?'look':'looks'} around to see how the others are reacting. Information is power, even now.`,
+    (n, pr) => `${n} doesn't panic. ${pr.Sub} ${pr.sub==='they'?'catalogue':'catalogues'} the chaos around ${pr.obj} with the quiet focus of someone who already knew this was coming.`,
+    (n, pr) => `"Flood." ${n} says it like a news report. Not scared. Just noting a fact. ${pr.Sub} ${pr.sub==='they'?'are':'is'} already three moves ahead.`,
+    (n, pr) => `${n} wades to higher ground methodically, assessing who looks scared, who looks capable. Information flows toward ${pr.obj} even when the island floods.`,
   ],
   hothead: [
     (n, pr) => `"FINALLY something interesting!" ${n} shouts from the floating bed. ${pr.Sub} ${pr.sub==='they'?'sound':'sounds'} almost excited.`,
     (n, pr) => `${n} punches the water with both fists. "LET'S GO." This might be the best day of ${pr.posAdj} life.`,
+    (n, pr) => `${n} doesn't run from the flood. ${pr.Sub} ${pr.sub==='they'?'charge':'charges'} it headfirst.`,
+    (n, pr) => `"THAT'S WHAT I'M TALKING ABOUT!" ${n} screams to no one in particular. Everyone near ${pr.obj} edges away slightly.`,
+    (n, pr) => `${n} has been complaining this game wasn't exciting enough. ${pr.Sub} ${pr.sub==='they'?'have':'has'} gone very, very quiet.`,
   ],
   social: [
     (n, pr) => `"MY HAIR." ${n}'s first words. ${pr.Sub} ${pr.sub==='they'?'look':'looks'} around wildly. "WHO is going to be in my group?!"`,
     (n, pr) => `${n} gasps when the cold water hits. "Okay. OKAY. We can work with this." ${pr.Sub} ${pr.sub==='they'?'are':'is'} already thinking about who to partner with.`,
+    (n, pr) => `${n}'s priority isn't survival. It's making sure ${pr.sub} ${pr.sub==='they'?'end':'ends'} up in the right group. ${pr.Sub} ${pr.sub==='they'?'are':'is'} scanning the chaos for ${pr.posAdj} people.`,
+    (n, pr) => `The flood separated ${n} from ${pr.posAdj} allies. ${pr.Sub} ${pr.sub==='they'?'look':'looks'} genuinely more upset about that than the flood itself.`,
+    (n, pr) => `${n} immediately starts calling names into the darkness. Not distress calls. Alliance maintenance.`,
   ],
   hero: [
-    (n, pr) => `${n}'s first instinct is to check on the others. "${pr.Sub} ${pr.sub==='they'?'look':'looks'} around. "Is everyone okay?!" The answer is not great, but ${pr.sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} stop moving.`,
+    (n, pr) => `${n}'s first instinct is to check on the others. ${pr.Sub} ${pr.sub==='they'?'look':'looks'} around. "Is everyone okay?!" The answer is not great, but ${pr.sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} stop moving.`,
     (n, pr) => `"Everyone stay calm!" ${n} yells. Nobody is staying calm. But ${pr.sub} ${pr.sub==='they'?'try':'tries'}.`,
+    (n, pr) => `${n} doesn't think. ${pr.Sub} ${pr.sub==='they'?'move':'moves'} toward the sound of someone panicking before ${pr.sub} ${pr.sub==='they'?'are':'is'} even fully awake.`,
+    (n, pr) => `${n} finds the person who's most scared and stays with ${pr.obj}. It costs ${n} time. ${n} doesn't care.`,
+    (n, pr) => `"LEAVE EVERYTHING, JUST MOVE!" That's ${n}. ${pr.Sub} ${pr.sub==='they'?'help':'helps'} three people reach dry ground before ${pr.sub} ${pr.sub==='they'?'find':'finds'} any for ${pr.ref}.`,
+  ],
+  loyal: [
+    (n, pr) => `${n} thinks about ${pr.posAdj} alliance. Not where they rank in it — just whether they're okay. ${pr.Sub} ${pr.sub==='they'?'feel':'feels'} the distance.`,
+    (n, pr) => `${n}'s first words in the flood are someone else's name. ${pr.Sub} ${pr.sub==='they'?'are':'is'} looking for ${pr.posAdj} people before anything else.`,
+    (n, pr) => `${n} swims toward the voice ${pr.sub} ${pr.sub==='they'?'recognize':'recognizes'}, not the shore ${pr.sub} ${pr.sub==='they'?'can':'can'} see. That's ${n}.`,
+    (n, pr) => `The chaos separates ${n} from half the people ${pr.sub} ${pr.sub==='they'?'trust':'trust'}. The flood is bad. That part is worse.`,
+    (n, pr) => `${n} gets to higher ground and immediately turns around to see who's still in the water.`,
   ],
   underdog: [
     (n, pr) => `${n} takes a breath. Looks at the sky. "Okay," ${pr.sub} ${pr.sub==='they'?'say':'says'} quietly. Quiet determination. This won't break ${pr.obj}.`,
     (n, pr) => `${n} floats for a moment, staring up. "I've had worse mornings." ${pr.Sub} ${pr.sub==='they'?'paddle':'paddles'} toward the nearest tree and hold on.`,
+    (n, pr) => `Everyone else is panicking. ${n} has been in worse situations. Not recently — but ${pr.posAdj} face is calm.`,
+    (n, pr) => `${n} gets knocked over twice by the current. Gets up twice. No commentary. Just gets up.`,
+    (n, pr) => `"Okay," ${n} says quietly, to no one. That one word carries a lot. ${pr.Sub} ${pr.sub==='they'?'start':'starts'} moving.`,
   ],
   wildcard: [
     (n, pr) => `${n} immediately begins to sing. Nobody asks why. This is just who ${pr.sub} ${pr.sub==='they'?'are':'is'}.`,
     (n, pr) => `${n} ducks under the surface for a full ten seconds, comes back up, wipes ${pr.posAdj} face, and announces: "The water speaks to me." ${pr.Sub} ${pr.sub==='they'?'paddle':'paddles'} away.`,
+    (n, pr) => `${n} seems genuinely delighted by the flood. This is concerning to observe.`,
+    (n, pr) => `Nobody can account for ${n}'s whereabouts during the initial chaos. ${pr.Sub} ${pr.sub==='they'?'reappear':'reappears'} twenty minutes later with something ${pr.sub} ${pr.sub==='they'?'refuse':'refuses'} to explain.`,
+    (n, pr) => `${n} floats past three terrified contestants, completely serene. "This is actually really nice," ${pr.sub} ${pr.sub==='they'?'say':'says'}. Nobody agrees with ${pr.obj}.`,
   ],
   default: [
     (n, pr) => `${n} wakes up floating and takes a moment to process this information. "...Sure," ${pr.sub} ${pr.sub==='they'?'say':'says'}, and ${pr.sub} ${pr.sub==='they'?'start':'starts'} swimming.`,
     (n, pr) => `${n} blinks at the flooded cabin. Looks down. Looks up. "I hate this island," ${pr.sub} ${pr.sub==='they'?'say':'says'}, and ${pr.sub} ${pr.sub==='they'?'mean':'means'} it.`,
+    (n, pr) => `${n} moves with the current instead of against it. Not graceful, but practical.`,
+    (n, pr) => `"Nope," ${n} says, and starts swimming. Not a panic reaction — just a quiet, firm refusal of the situation.`,
+    (n, pr) => `${n} grabs the two most useful things they can find — their bag and someone's elbow — and pulls toward dry land.`,
   ],
 };
 
@@ -193,6 +247,9 @@ const PHASE3_INTEL_TEXTS = [
   (n, pr) => `${n} catches the group up: what the terrain looked like, what ${pr.sub} ${pr.sub==='they'?'found':'found'}, who did what. Everyone listens. The information starts shifting threat readings.`,
   (n, pr) => `"Our group found water and built a lean-to." ${n} gives a short, efficient debrief. Several people are taking mental notes.`,
   (n, pr) => `${n} reports in like it's a briefing: what worked, what didn't, what ${pr.sub} ${pr.sub==='they'?'observed':'observed'}. Free information — for now.`,
+  (n, pr) => `${n} keeps the debrief short: who panicked, who stepped up, where the resources are. ${pr.Sub} ${pr.sub==='they'?'leave':'leaves'} out the part about ${pr.posAdj} own breakdown.`,
+  (n, pr) => `"We almost died three times," ${n} says flatly. "But we found coconuts." The group processes this in silence.`,
+  (n, pr) => `${n} lays out the survival highlights: shelter location, water source, wildlife threats. It's the most useful sixty seconds of the entire regrouping.`,
 ];
 
 const PHASE3_STRATEGY_TEXTS = [
@@ -267,6 +324,86 @@ const BREAKDOWN_TEXTS = {
   reactConcerned: (watcher, n, wPr) => `${watcher} sits up and watches ${n} quietly. After a moment, ${wPr.sub} ${wPr.sub==='they'?'move':'moves'} closer. "Hey. You okay?" ${n} looks up. Something in ${n}'s expression makes ${watcher} stay.`,
   reactJudging:  (watcher, n, wPr) => `${watcher} raises an eyebrow. Files this under "game information" and goes back to sleep. ${n} doesn't notice.`,
   reactJoining:  (joiner, n, jPr) => `${joiner} watches ${n} for a moment. Then, slowly, picks up a nearby stick. "I'm going to call mine Gerald," ${jPr.sub} ${jPr.sub==='they'?'announce':'announces'}.`,
+};
+
+// ── ESCAPE ATTEMPT TEXT POOLS (Phase 1 — per group) ──
+const ESCAPE_TEXTS = {
+  raftCircle: [
+    (n, pr) => `${n} paddles heroically in what ${pr.sub} ${pr.sub==='they'?'are':'is'} absolutely certain is the right direction. It is not. ${pr.Sub} ${pr.sub==='they'?'return':'returns'} to the same stretch of shore forty-five minutes later. The crab that witnessed ${pr.posAdj} departure is still there.`,
+    (n, pr) => `${n}'s raft completes a perfect arc and deposits ${pr.obj} exactly where it started. The current is indifferent to ${pr.posAdj} feelings about this. ${pr.Sub} ${pr.sub==='they'?'sit':'sits'} in it for a moment before getting out.`,
+    (n, pr) => `Against all odds ${n} constructs a raft. With the current, it goes sideways, then backwards, and comes to rest eight feet from where ${pr.sub} ${pr.sub==='they'?'launched':'launched'}. Progress, technically.`,
+  ],
+  raftNearMiss: [
+    (n, pr, other) => `${n}'s raft drifts close enough to ${other}'s shoreline that they can hear each other shouting — but the current pulls ${pr.obj} away before they can reach each other. The smoke from ${other}'s fire is visible, though. That's a direction.`,
+    (n, pr, other) => `${n} spots a figure on a distant shore that might be ${other}. Too far to reach, but ${pr.sub} ${pr.sub==='they'?'know':'knows'} now — the island isn't empty. ${pr.Sub} ${pr.sub==='they'?'start':'starts'} paddling toward the nearest landmass.`,
+  ],
+  climbSpot: [
+    (n, pr) => `${n} climbs the tallest tree on this stretch of shore. From up there, ${pr.sub} ${pr.sub==='they'?'can':'can'} see smoke rising from at least two other parts of the island. Nobody's lost — they're just scattered. ${pr.Sub} ${pr.sub==='they'?'mark':'marks'} the directions and come down. "That way."`,
+    (n, pr) => `${n} shinnies up a palm tree and gets a sightline. Smoke to the northeast. What might be a campfire further in. ${pr.Sub} ${pr.sub==='they'?'memorize':'memorizes'} the layout, then climb down. "I know where they are."`,
+  ],
+  climbFail: [
+    (n, pr) => `${n} attempts to climb a coconut palm to get a sightline. ${pr.Sub} ${pr.sub==='they'?'make':'makes'} it halfway before reconsidering gravity. The landing is not graceful. The coconut that falls after is also not graceful.`,
+    (n, pr) => `${n} makes a genuine effort to climb the tallest available tree. The tree has other opinions. They negotiate briefly and reach a settlement: halfway up, directly back down.`,
+  ],
+  signalFire: [
+    (n, pr) => `${n} disassembles part of the shelter to build a signal fire. The smoke column is enormous and visible from half the island. ${pr.Sub} ${pr.sub==='they'?'have':'has'} no regrets about any of this.`,
+    (n, pr) => `${n} stacks the driest wood ${pr.sub==='they'?'they':'they'} can find and gets it blazing within minutes. The smoke is visible for miles. Whether this brings help or Chef with a hose, ${pr.sub} ${pr.sub==='they'?'are':'is'} willing to find out.`,
+  ],
+  trackFollow: [
+    (n, pr) => `${n} follows a set of tracks through the jungle expecting food. What ${pr.sub} ${pr.sub==='they'?'find':'finds'} instead is the edge of another part of the island — and footprints that aren't animal. Someone else was here recently.`,
+    (n, pr) => `${n} trails a set of prints through the undergrowth. The trail splits. ${pr.Sub} ${pr.sub==='they'?'follow':'follows'} the one that looks more recent. It leads to a different inlet. Not lost — somewhere new, and clearly not alone.`,
+  ],
+};
+
+// ── CROSS-GROUP ENCOUNTER TEXT POOLS (Phase 1.5) ──
+const CROSS_ENCOUNTER_TEXTS = {
+  shouting: [
+    (a, b) => `${a} hears ${b} before seeing ${pronouns(b).obj}. The shouting is mutual, the relief is enormous, and a lot of it is being said at the same time.`,
+    (a, b) => `"${a}?!" and "${b}?!" — both at once, from opposite sides of a thicket. A pause. Then: "YOU'RE ALIVE." It comes from both of them simultaneously.`,
+    (a, b) => `${a}'s group hears voices in the undergrowth. Nobody moves. Then ${a} shouts a name. ${b}'s voice comes back. The distance between them closes fast.`,
+  ],
+  signalFound: [
+    (a, b) => `${b}'s smoke column draws ${a}'s group like a lighthouse. They arrive to find ${b} completely prepared to lecture everyone about fire safety. Nobody minds.`,
+    (a, b) => `The fire ${b} built pulls ${a}'s group toward it for the better part of an hour. "I knew someone would build one," ${a} says. "I didn't know it'd be you, but still."`,
+  ],
+  pterodactylDelivery: [
+    (carried, finder) => `The pterodactyl deposits ${carried} unceremoniously in the clearing where ${finder}'s group has been sheltering. Everyone stares. ${carried} stands up slowly. "I'm fine." A beat. "Pterodactyl." ${finder} nods. The island is what it is.`,
+    (carried, finder) => `${carried} lands in a tangle of branches ten feet from ${finder} with a thud that communicates a lot about the last twenty minutes. The bird is already gone. "Where did you come from?" ${carried} points upward.`,
+  ],
+  lostPlayerFound: [
+    (lost, finder) => `${lost} has been walking confidently in the wrong direction for an hour when ${finder}'s group's campfire comes into view. ${lost} doesn't mention the hour. Nobody asks.`,
+    (lost, finder) => `${finder} hears movement in the undergrowth and nearly panics before recognizing ${lost}. "You have no idea where you are, do you." It's not a question. ${lost} sits down without answering.`,
+  ],
+  accidental: [
+    (a, b) => `${a} and ${b} round the same ridge from opposite sides and nearly collide. Neither was looking for the other. Both are glad they found each other.`,
+    (a, b) => `${a}'s group and ${b}'s group have been circling the same hill from opposite directions for an hour. They meet at the top. The moment is anticlimactic and completely welcome.`,
+    (a, b) => `Two groups, two sets of footprints, one muddy trail. ${a} and ${b} arrive at the same clearing from opposite ends at almost exactly the same moment and just stare at each other.`,
+  ],
+};
+
+// ── FINAL ASSEMBLY TEXT POOLS (Phase 3 opening) ──
+const FINAL_ASSEMBLY_TEXTS = [
+  (names) => `And then all at once, they're all here. The clearing fills with mud-caked, exhausted, slightly sunburned people who survived the night on this island. Someone does a headcount. Everyone made it.`,
+  (names) => `One by one, then all at once. ${names[0]} does a count. Correct. Somehow, after everything, correct. For a moment nobody moves. Then everyone starts talking at the same time.`,
+  (names) => `The last group emerges from the treeline. The clearing goes quiet. Then someone laughs — for no specific reason, just because they're here and alive and together. Then everyone does.`,
+];
+
+// ── CONFESSION CIRCLE TEXT POOLS (Phase 3) ──
+const CONFESSION_CIRCLE_TEXTS = {
+  prompt: [
+    (n, pr) => `${n} suggests they say one honest thing before the group moves on. "Clear the air. Before we go back to trying to vote each other out." The clearing goes quiet.`,
+    (n, pr) => `"Before we go back to the game," ${n} says, "I want to know who everyone actually is. One true thing." Nobody has a good reason to refuse.`,
+    (n, pr) => `${n} looks around at the exhausted, mud-covered group and something about the absurdity cuts through the strategy. "Tell us something real," ${pr.sub} ${pr.sub==='they'?'say':'says'}. "Just one thing."`,
+  ],
+  confession: [
+    (n, pr) => `${n} pauses for a long time, then says something ${pr.posAdj} alliance would not want shared here. ${pr.Sub} ${pr.sub==='they'?'say':'says'} it anyway.`,
+    (n, pr) => `${n}'s confession is brief and completely unexpected. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} elaborate. It lands differently for every person in the circle.`,
+    (n, pr) => `What ${n} admits here is the kind of thing that would have changed tribal. Instead it's just true, shared in the open, and received without comment.`,
+    (n, pr) => `${n} talks about home. Not strategy, not the game — just what ${pr.sub} ${pr.sub==='they'?'miss':'misses'}. The specific detail ${pr.sub} ${pr.sub==='they'?'choose':'chooses'} hits harder than any of them expected.`,
+    (n, pr) => `${n} says something that makes two people look at each other. Whatever it was, it rearranged something in the group's understanding of ${pr.obj}.`,
+    (n, pr) => `${n} goes last and keeps it short. Three sentences. The third one is the one that matters. Nobody moves for a few seconds after.`,
+    (n, pr) => `"I almost quit on day three," ${n} says. The group is quiet. ${pr.Sub} ${pr.sub==='they'?'didn\'t':'didn\'t'} quit. That's the point.`,
+  ],
 };
 
 // ── REUNION TEXT POOLS ──
@@ -407,44 +544,90 @@ export function simulateCampCastaways(ep) {
   activePlayers.forEach(n => { personalScores[n] = 0; });
 
   const timeline = [];
-  const badges = {};
   const cameraFlags = [];
 
-  // ══ PHASE 0 — THE FLOOD ══
-  timeline.push({ type: 'chrisAnnounce', phase: 0, text: `"Good morning, campers! Production had absolutely nothing to do with last night's flood. That's our story and we're sticking to it." — Chris McLean` });
-
-  activePlayers.forEach(name => {
-    const arch = getArchetype(name);
-    const pr = pronouns(name);
-    const bucket = VILLAIN_ARCHETYPES.includes(arch) ? 'villain'
-      : ['hothead', 'chaos-agent'].includes(arch) ? 'hothead'
-      : ['social-butterfly', 'showmancer'].includes(arch) ? 'social'
-      : ['hero', 'loyal-soldier'].includes(arch) ? 'hero'
-      : ['underdog', 'floater', 'goat'].includes(arch) ? 'underdog'
-      : arch === 'wildcard' ? 'wildcard' : 'default';
-    const text = _rp(FLOOD_REACTIONS[bucket])(name, pr);
-    timeline.push({ type: 'floodReaction', phase: 0, player: name, archBucket: bucket, text, badgeText: 'REACTION', badgeClass: 'grey' });
-  });
-
-  // ══ PHASE 1 — SCATTERED ══
+  // ══ GROUP FORMATION (needed before Phase 0 so separation events know who's together) ══
   const groups = formGroups(activePlayers);
   const groupLabels = groups.map((_, i) => String.fromCharCode(65 + i));
   const usedWildlife = new Set();
 
+  // ══ PHASE 0 — THE FLOOD ══
+
+  // Opening narration — atmospheric, no player
+  timeline.push({ type: 'floodNarrative', phase: 0, players: [],
+    text: _rp(FLOOD_OPEN_TEXTS), badgeText: '● NIGHT CAM', badgeClass: 'grey' });
+
+  // Chaos beat — one player first awake
+  const chaosFirst = _rp(activePlayers);
+  const chaosPr = pronouns(chaosFirst);
+  timeline.push({ type: 'floodNarrative', phase: 0, player: chaosFirst, players: [chaosFirst],
+    text: _rp(FLOOD_CHAOS_TEXTS)(chaosFirst, chaosPr), badgeText: '⚠ CHAOS', badgeClass: 'red' });
+
+  // Chris from helicopter
+  const CHRIS_FLOOD_QUIPS = [
+    `"Good morning, campers! Production had absolutely nothing to do with last night's flood. That's our story and we're sticking to it." — Chris McLean`,
+    `"Beautiful. This is genuinely beautiful television. Interns — are you getting this? GET THIS." — Chris McLean, from a helicopter`,
+    `"For legal reasons I cannot confirm or deny whether the dam was 'managed.' What I CAN confirm is that this is great content." — Chris McLean`,
+    `"The good news: everyone survived. The better news: I got it all on camera." — Chris McLean`,
+  ];
+  timeline.push({ type: 'chrisAnnounce', phase: 0, players: [],
+    text: _rp(CHRIS_FLOOD_QUIPS), badgeText: 'CHRIS', badgeClass: 'red' });
+
+  // Per-group wash-up / separation events
+  const usedLocations = new Set();
+  groups.forEach((group, gi) => {
+    const loc = _rp(FLOOD_LOCATIONS.filter(l => !usedLocations.has(l)));
+    usedLocations.add(loc);
+    const label = groupLabels[gi];
+    const nameList = group.length === 1 ? group[0]
+      : group.length === 2 ? group.join(' and ')
+      : group.slice(0, -1).join(', ') + ' and ' + group[group.length - 1];
+    const text = _rp(FLOOD_SWEEP_TEXTS)(nameList, loc);
+    timeline.push({ type: 'groupLands', phase: 0, group: label, players: [...group], location: loc,
+      text, badgeText: `▲ GROUP ${label} · ${loc.toUpperCase()}`, badgeClass: 'green' });
+  });
+
+  // Per-player reactions — deduped per bucket
+  const usedReactionIdx = {};
+  activePlayers.forEach(name => {
+    const arch = getArchetype(name);
+    const pr = pronouns(name);
+    const bucket = arch === 'mastermind' ? 'villain'
+      : VILLAIN_ARCHETYPES.includes(arch) ? 'villain'
+      : ['hothead', 'chaos-agent'].includes(arch) ? 'hothead'
+      : ['social-butterfly', 'showmancer'].includes(arch) ? 'social'
+      : arch === 'loyal-soldier' ? 'loyal'
+      : arch === 'hero' ? 'hero'
+      : ['underdog', 'floater', 'goat'].includes(arch) ? 'underdog'
+      : arch === 'wildcard' ? 'wildcard' : 'default';
+    const pool = FLOOD_REACTIONS[bucket] || FLOOD_REACTIONS.default;
+    if (!usedReactionIdx[bucket]) usedReactionIdx[bucket] = new Set();
+    let idx = Math.floor(Math.random() * pool.length);
+    for (let t = 0; t < pool.length; t++) {
+      if (!usedReactionIdx[bucket].has(idx)) break;
+      idx = (idx + 1) % pool.length;
+    }
+    usedReactionIdx[bucket].add(idx);
+    const text = pool[idx](name, pr);
+    timeline.push({ type: 'floodReaction', phase: 0, player: name, archBucket: bucket,
+      text, badgeText: 'REACTION', badgeClass: 'grey' });
+  });
+
+  const escapeAttempts = []; // tracks per-group escape events for cross-encounter logic
+
   groups.forEach((group, gi) => {
     const label = groupLabels[gi];
-    const eventCount = Math.max(10, group.length * 2 + 4);
-    let fired = 0;
 
     // ── Individual Confessionals (always fire — no fired guard) ──
     group.forEach(name => {
       const arch = getArchetype(name);
       const pr = pronouns(name);
-      const bucket = VILLAIN_ARCHETYPES.includes(arch) ? 'villain'
-        : arch === 'mastermind' ? 'mastermind'
+      const bucket = arch === 'mastermind' ? 'mastermind'
+        : VILLAIN_ARCHETYPES.includes(arch) ? 'villain'
         : ['hothead', 'chaos-agent'].includes(arch) ? 'hothead'
         : ['social-butterfly', 'showmancer'].includes(arch) ? 'social'
-        : ['hero', 'loyal-soldier'].includes(arch) ? 'hero'
+        : arch === 'loyal-soldier' ? 'loyal'
+        : ['hero'].includes(arch) ? 'hero'
         : arch === 'wildcard' ? 'wildcard'
         : arch === 'floater' ? 'floater'
         : ['challenge-beast'].includes(arch) ? 'challenge'
@@ -489,8 +672,7 @@ export function simulateCampCastaways(ep) {
     });
 
     // ── Food Finding (~60%) ──
-    if (Math.random() < 0.60 && fired < eventCount) {
-      fired++;
+    if (Math.random() < 0.60) {
       const forager = group.slice().sort((a, b) => {
         const sa = pStats(a), sb = pStats(b);
         return (sb.intuition * 0.04 + sb.mental * 0.03 + sb.endurance * 0.02) - (sa.intuition * 0.04 + sa.mental * 0.03 + sa.endurance * 0.02);
@@ -516,8 +698,7 @@ export function simulateCampCastaways(ep) {
     }
 
     // ── Shelter Building (~50%, groups ≥ 2) ──
-    if (group.length >= 2 && Math.random() < 0.50 && fired < eventCount) {
-      fired++;
+    if (group.length >= 2 && Math.random() < 0.50) {
       const builder = group.slice().sort((a, b) => (pStats(b).endurance * 0.05 + pStats(b).mental * 0.04) - (pStats(a).endurance * 0.05 + pStats(a).mental * 0.04))[0];
       const pr = pronouns(builder);
       const buildScore = pStats(builder).endurance * 0.05 + pStats(builder).mental * 0.04 + Math.random() * 0.3;
@@ -544,10 +725,9 @@ export function simulateCampCastaways(ep) {
 
     // ── Wildlife Encounter (1-2 per group) ──
     const wildCount = Math.min(2, 1 + (Math.random() < 0.4 ? 1 : 0));
-    for (let w = 0; w < wildCount && fired < eventCount; w++) {
+    for (let w = 0; w < wildCount; w++) {
       const available = WILDLIFE.filter(wi => !usedWildlife.has(wi.id) && (wi.soloOnly ? group.length === 1 : true));
       if (!available.length) break;
-      fired++;
       const wildlife = _rp(available);
       usedWildlife.add(wildlife.id);
       const subject = _rp(group);
@@ -630,9 +810,8 @@ export function simulateCampCastaways(ep) {
     }
 
     // ── Fire Starting (~40%) ──
-    if (Math.random() < 0.40 && fired < eventCount) {
-      fired++;
-      const expert = group.slice().sort((a, b) => pStats(a).mental - pStats(b).mental)[0]; // worst mental tries first
+    if (Math.random() < 0.40) {
+      const expert = group.slice().sort((a, b) => pStats(a).mental - pStats(b).mental)[0];// worst mental tries first
       const fixer = group.find(p => p !== expert && pStats(p).mental + pStats(p).endurance >= 12);
       const ePr = pronouns(expert);
       const text = _rp(FIRE_TEXTS)(expert, ePr);
@@ -646,8 +825,7 @@ export function simulateCampCastaways(ep) {
     }
 
     // ── Getting Lost (~25%) ──
-    if (Math.random() < 0.25 && fired < eventCount) {
-      fired++;
+    if (Math.random() < 0.25) {
       const victim = group.slice().sort((a, b) => pStats(a).intuition - pStats(b).intuition)[0];
       const vPr = pronouns(victim);
       const text = _rp(LOST_TEXTS)(victim, vPr);
@@ -657,8 +835,7 @@ export function simulateCampCastaways(ep) {
     }
 
     // ── Water Gathering (~70%) ──
-    if (Math.random() < 0.70 && fired < eventCount) {
-      fired++;
+    if (Math.random() < 0.70) {
       const scout = group.slice().sort((a, b) => {
         const sa = pStats(a), sb = pStats(b);
         return (sb.intuition * 0.05 + sb.endurance * 0.03) - (sa.intuition * 0.05 + sa.endurance * 0.03);
@@ -672,11 +849,11 @@ export function simulateCampCastaways(ep) {
 
     // ── Pair Bonding (~45% per eligible pair, max 2 per group) ──
     let pairBondFired = 0;
-    for (let pi = 0; pi < group.length && pairBondFired < 2 && fired < eventCount; pi++) {
-      for (let pj = pi + 1; pj < group.length && pairBondFired < 2 && fired < eventCount; pj++) {
+    for (let pi = 0; pi < group.length && pairBondFired < 2; pi++) {
+      for (let pj = pi + 1; pj < group.length && pairBondFired < 2; pj++) {
         const a = group[pi], b = group[pj];
         if (getBond(a, b) > -2 && Math.random() < 0.45) {
-          fired++; pairBondFired++;
+          pairBondFired++;
           const text = _rp(PAIR_BOND_TEXTS)(a, b);
           addBond(a, b, 0.3);
           personalScores[a] += 0.2; personalScores[b] += 0.2;
@@ -706,10 +883,9 @@ export function simulateCampCastaways(ep) {
     }
 
     // Unexpected Alliance (~50% if both strategic ≥ 6)
-    if (group.length >= 2 && fired < eventCount) {
+    if (group.length >= 2) {
       const strategists = group.filter(p => pStats(p).strategic >= 6);
       if (strategists.length >= 2 && Math.random() < 0.50) {
-        fired++;
         const [a, b] = strategists.slice(0, 2);
         const text = `${a} and ${b} are quiet for a while. Then, without ceremony: "We should talk." Four words that change the shape of the next tribal council.`;
         personalScores[a] += 0.5; personalScores[b] += 0.5;
@@ -719,8 +895,7 @@ export function simulateCampCastaways(ep) {
     }
 
     // Vulnerability Confession (highest temperament player)
-    if (fired < eventCount && Math.random() < 0.45) {
-      fired++;
+    if (Math.random() < 0.45) {
       const confessor = group.slice().sort((a, b) => pStats(b).temperament - pStats(a).temperament)[0];
       const cPr = pronouns(confessor);
       const listener = group.find(p => p !== confessor);
@@ -745,9 +920,217 @@ export function simulateCampCastaways(ep) {
       }
       cameraFlags.push({ player: confessor, type: 'confession', text: `${confessor} opens up about something real.`, reactionType: 'confused' });
     }
+
+    // ── Small Group Density Floor (groups ≤ 2 get guaranteed extra events) ──
+    if (group.length === 1) {
+      const solo = group[0]; const soloPr = pronouns(solo); const soloS = pStats(solo);
+      // Solo monologue — always fires
+      const soloTexts = [
+        `${solo} talks to ${soloPr.ref}. Out loud. Full sentences. It's therapeutic until it isn't.`,
+        `${solo} has been narrating ${soloPr.posAdj} own survival like a nature documentary for the last twenty minutes. The island does not care. ${solo} presses on.`,
+        `${solo} sits down, takes a breath, and says: "Okay. I'm alone. This is fine." The second sentence is debatable.`,
+        `"Day one, I find food. Day two, I find people. Day three, I find a way home," ${solo} announces to nobody. Step one goes poorly.`,
+      ];
+      timeline.push({ type: 'soloMonologue', phase: 1, group: label, player: solo, players: [solo], text: _rp(soloTexts), badgeText: 'SOLO', badgeClass: 'grey' });
+      // Solo resource gamble — always fires
+      const gambleSuccess = soloS.intuition * 0.05 + soloS.mental * 0.04 + Math.random() * 0.3 > 0.4;
+      if (gambleSuccess) {
+        const text = `${solo} makes a risky call: ${soloPr.sub} ${soloPr.sub==='they'?'wade':'wades'} into unfamiliar territory alone, following a hunch. The hunch pays off — fresh water, dry ground, and a vantage point.`;
+        personalScores[solo] += 1.0; popDelta(solo, 1);
+        timeline.push({ type: 'soloGamble', phase: 1, group: label, player: solo, players: [solo], text, badgeText: 'HUNCH PAID OFF', badgeClass: 'gold' });
+      } else {
+        const text = `${solo} follows ${soloPr.posAdj} gut into the interior. The gut was wrong. ${soloPr.Sub} ${soloPr.sub==='they'?'end':'ends'} up in a dead-end ravine and ${soloPr.sub==='they'?'have':'has'} to backtrack everything.`;
+        personalScores[solo] -= 0.8;
+        timeline.push({ type: 'soloGamble', phase: 1, group: label, player: solo, players: [solo], text, badgeText: 'DEAD END', badgeClass: 'red' });
+      }
+      // Solo determination beat
+      const detTexts = [
+        `${solo} hasn't spoken to another human in hours. ${soloPr.Sub} ${soloPr.sub==='they'?'are':'is'} getting sharper, not duller. Something about total isolation is clarifying.`,
+        `Night is coming and ${solo} is still alone. ${soloPr.Sub} ${soloPr.sub==='they'?'build':'builds'} a fire that's bigger than it needs to be. Not for warmth. For visibility. Someone will see it.`,
+      ];
+      personalScores[solo] += 0.3;
+      timeline.push({ type: 'soloDetermination', phase: 1, group: label, player: solo, players: [solo], text: _rp(detTexts), badgeText: 'DETERMINATION', badgeClass: 'green' });
+    } else if (group.length === 2) {
+      const [p1, p2] = group;
+      const bond = getBond(p1, p2);
+      // Duo argument or duo teamwork — always fires
+      if (bond <= 0) {
+        const argTexts = [
+          `${p1} and ${p2} disagree about which direction to go. The argument lasts fifteen minutes. Neither of them is right. They compromise on a third direction, which is also wrong, but at least they're wrong together.`,
+          `${p1} wants to stay put. ${p2} wants to move. The resulting negotiation involves raised voices, pointed silences, and eventually a coin flip with a flat rock. The rock lands on its edge.`,
+          `"You're not listening." "I'm listening — I just don't agree." ${p1} and ${p2} have this exchange four times with minor variations. Each time it gets slightly more personal.`,
+        ];
+        personalScores[p1] -= 0.3; personalScores[p2] -= 0.3; addBond(p1, p2, -0.2);
+        timeline.push({ type: 'duoArgument', phase: 1, group: label, players: [p1, p2], text: _rp(argTexts), badgeText: 'FRICTION', badgeClass: 'red' });
+      } else {
+        const teamTexts = [
+          `${p1} and ${p2} fall into a rhythm without discussing it. One gathers, one builds. One scouts, one secures. It's efficient in a way that surprises both of them.`,
+          `There's no strategy meeting. ${p1} and ${p2} just start working. ${p1} handles the structure; ${p2} handles the perimeter. By the end of the hour, they've got more done than groups three times their size.`,
+          `${p1} and ${p2} develop a shorthand over the course of the afternoon. By sundown, a head nod means "check that," a shrug means "not worth it," and a pointed look means "we need to talk about this later."`,
+        ];
+        personalScores[p1] += 0.4; personalScores[p2] += 0.4; addBond(p1, p2, 0.3);
+        timeline.push({ type: 'duoTeamwork', phase: 1, group: label, players: [p1, p2], text: _rp(teamTexts), badgeText: 'DUO SYNERGY', badgeClass: 'green' });
+      }
+      // Resource competition or cooperation — always fires
+      const compTexts = [
+        `${p1} finds a coconut. ${p2} also finds a coconut. They stare at each other's coconuts for a moment. "Mine's bigger," ${p1} says. It isn't. Both of them know.`,
+        `${p2} discovers a freshwater stream. ${p1} discovers a fruit tree. They negotiate a trade without ever using the word "trade." Diplomacy in its purest form.`,
+        `With only two people, every resource decision is a negotiation. ${p1} and ${p2} work out a system: finder gets first pick, other gets second. It works until someone finds something actually good.`,
+      ];
+      timeline.push({ type: 'duoResource', phase: 1, group: label, players: [p1, p2], text: _rp(compTexts), badgeText: 'RESOURCE SPLIT', badgeClass: 'grey' });
+    }
+
+    // ── Escape Attempt (~85%) — each group tries something to find help or escape ──
+    if (Math.random() < 0.85) {
+      const escaper = group.slice().sort((a, b) =>
+        (pStats(b).boldness * 0.4 + pStats(b).physical * 0.3) - (pStats(a).boldness * 0.4 + pStats(a).physical * 0.3)
+      )[0];
+      const ePr = pronouns(escaper);
+      const eS = pStats(escaper);
+      // Type selection weighted by stats
+      const typeRoll = Math.random();
+      const attemptType = eS.mental >= 7 ? (typeRoll < 0.45 ? 'climb' : 'tracks')
+        : eS.boldness >= 7 ? (typeRoll < 0.45 ? 'raft' : 'signalFire')
+        : ['raft', 'climb', 'signalFire', 'tracks'][Math.floor(typeRoll * 4)];
+      let eText = '', eBadge = '', eBadgeClass = 'grey', eOutcome = 'fail';
+
+      if (attemptType === 'raft') {
+        const successChance = eS.physical * 0.05 + eS.endurance * 0.03 + Math.random() * 0.3;
+        if (successChance > 0.7 && groups.length > 1) {
+          const otherGroupOptions = groups.filter((_, i) => i !== gi);
+          const targetGrp = _rp(otherGroupOptions);
+          const otherPlayer = _rp(targetGrp);
+          eText = _rp(ESCAPE_TEXTS.raftNearMiss)(escaper, ePr, otherPlayer);
+          eOutcome = 'raftNearMiss'; eBadge = 'RAFT: NEAR MISS'; eBadgeClass = 'yellow';
+          escapeAttempts.push({ player: escaper, group: gi, outcome: 'raftNearMiss', targetPlayer: otherPlayer, targetGroup: groups.indexOf(targetGrp) });
+          personalScores[escaper] -= 0.3;
+        } else {
+          eText = _rp(ESCAPE_TEXTS.raftCircle)(escaper, ePr);
+          eOutcome = 'raftCircle'; eBadge = 'RAFT CIRCLES BACK'; eBadgeClass = 'yellow';
+          escapeAttempts.push({ player: escaper, group: gi, outcome: 'raftCircle' });
+          personalScores[escaper] -= 0.5;
+          cameraFlags.push({ player: escaper, type: 'raftCircles', text: `${escaper}'s raft returns to exactly where it started.`, reactionType: 'entertained' });
+        }
+      } else if (attemptType === 'climb') {
+        const climbChance = eS.physical * 0.06 + eS.boldness * 0.03 + Math.random() * 0.2;
+        if (climbChance > 0.5) {
+          eText = _rp(ESCAPE_TEXTS.climbSpot)(escaper, ePr);
+          eOutcome = 'climbSpot'; eBadge = 'SMOKE SPOTTED'; eBadgeClass = 'green';
+          personalScores[escaper] += 0.7;
+          cameraFlags.push({ player: escaper, type: 'climbSpot', text: `${escaper} climbs a tree and spots other groups' smoke.`, reactionType: 'impressed' });
+        } else {
+          eText = _rp(ESCAPE_TEXTS.climbFail)(escaper, ePr);
+          eOutcome = 'climbFail'; eBadge = 'CLIMB FAIL'; eBadgeClass = 'grey';
+          personalScores[escaper] -= 0.3;
+        }
+        escapeAttempts.push({ player: escaper, group: gi, outcome: eOutcome });
+      } else if (attemptType === 'signalFire') {
+        eText = _rp(ESCAPE_TEXTS.signalFire)(escaper, ePr);
+        eOutcome = 'signalFire'; eBadge = 'SIGNAL FIRE'; eBadgeClass = 'orange';
+        escapeAttempts.push({ player: escaper, group: gi, outcome: 'signalFire' });
+        personalScores[escaper] += 0.5;
+      } else {
+        // tracks
+        eText = _rp(ESCAPE_TEXTS.trackFollow)(escaper, ePr);
+        eOutcome = 'trackFollow'; eBadge = 'TRACKS FOUND'; eBadgeClass = 'blue';
+        escapeAttempts.push({ player: escaper, group: gi, outcome: 'trackFollow' });
+        personalScores[escaper] += 0.4;
+      }
+      if (eText) timeline.push({ type: 'escapeAttempt', subtype: attemptType, phase: 1, group: label, player: escaper, players: [escaper], text: eText, badgeText: eBadge, badgeClass: eBadgeClass });
+    }
   });
 
-  // ══ PHASE 2 — THE NIGHT ══
+  // ══ CROSS-GROUP ENCOUNTERS (Phase 1.5) ══
+  // Groups find each other through escape misadventures — 1-3 encounters max
+  const usedEncounterPairs = new Set();
+  let encounterCount = 0;
+
+  // Pterodactyl cross-delivery — if ptero wildlife fired, bird drops player near another group
+  const pteroEvt = timeline.find(e => e.type === 'wildlife' && e.wildlife === 'Pterodactyl' && e.phase === 1);
+  if (pteroEvt && groups.length > 1 && Math.random() < 0.60) {
+    const carried = pteroEvt.player;
+    const carriedGi = groups.findIndex(g => g.includes(carried));
+    const targetGrp = _rp(groups.filter((_, i) => i !== carriedGi));
+    const finder = _rp(targetGrp);
+    const pairKey = [carried, finder].sort().join('__');
+    usedEncounterPairs.add(pairKey);
+    encounterCount++;
+    const text = _rp(CROSS_ENCOUNTER_TEXTS.pterodactylDelivery)(carried, finder);
+    addBond(carried, finder, 0.4); personalScores[carried] += 0.5; personalScores[finder] += 0.3;
+    timeline.push({ type: 'crossEncounter', subtype: 'pterodactylDelivery', phase: 1, players: [carried, finder], text, badgeText: 'DELIVERED BY PTERODACTYL', badgeClass: 'yellow' });
+    cameraFlags.push({ player: carried, type: 'pterodactylDelivered', text: `${carried} arrives via pterodactyl at ${finder}'s camp.`, reactionType: 'entertained' });
+  }
+
+  // Signal fire draws a nearby group
+  const sigAttempt = escapeAttempts.find(e => e.outcome === 'signalFire');
+  if (sigAttempt && groups.length > 1 && encounterCount < 2 && Math.random() < 0.65) {
+    const sigPlayer = sigAttempt.player;
+    const otherGrp = _rp(groups.filter((_, i) => i !== sigAttempt.group));
+    const drawPlayer = _rp(otherGrp);
+    const pairKey = [sigPlayer, drawPlayer].sort().join('__');
+    if (!usedEncounterPairs.has(pairKey)) {
+      usedEncounterPairs.add(pairKey); encounterCount++;
+      const text = _rp(CROSS_ENCOUNTER_TEXTS.signalFound)(drawPlayer, sigPlayer);
+      addBond(sigPlayer, drawPlayer, 0.3); personalScores[sigPlayer] += 0.5; personalScores[drawPlayer] += 0.3;
+      timeline.push({ type: 'crossEncounter', subtype: 'signalFound', phase: 1, players: [drawPlayer, sigPlayer], text, badgeText: 'SIGNAL FIRE FOUND', badgeClass: 'green' });
+    }
+  }
+
+  // Raft near-miss: player shouted back and forth, knows direction
+  const nearMissAttempt = escapeAttempts.find(e => e.outcome === 'raftNearMiss' && e.targetPlayer);
+  if (nearMissAttempt && encounterCount < 2 && Math.random() < 0.70) {
+    const a = nearMissAttempt.player, b = nearMissAttempt.targetPlayer;
+    const pairKey = [a, b].sort().join('__');
+    if (!usedEncounterPairs.has(pairKey)) {
+      usedEncounterPairs.add(pairKey); encounterCount++;
+      const text = _rp(CROSS_ENCOUNTER_TEXTS.shouting)(a, b);
+      addBond(a, b, 0.3); personalScores[a] += 0.3; personalScores[b] += 0.3;
+      timeline.push({ type: 'crossEncounter', subtype: 'shouting', phase: 1, players: [a, b], text, badgeText: 'CONTACT!', badgeClass: 'blue' });
+    }
+  }
+
+  // Track-follower wanders into another group's camp
+  const trackAttempt = escapeAttempts.find(e => e.outcome === 'trackFollow');
+  if (trackAttempt && groups.length > 1 && encounterCount < 3 && Math.random() < 0.55) {
+    const tracker = trackAttempt.player;
+    const otherGrp = _rp(groups.filter((_, i) => i !== trackAttempt.group));
+    const foundPlayer = _rp(otherGrp);
+    const pairKey = [tracker, foundPlayer].sort().join('__');
+    if (!usedEncounterPairs.has(pairKey)) {
+      usedEncounterPairs.add(pairKey); encounterCount++;
+      const text = _rp(CROSS_ENCOUNTER_TEXTS.lostPlayerFound)(tracker, foundPlayer);
+      addBond(tracker, foundPlayer, 0.2); personalScores[tracker] += 0.2;
+      timeline.push({ type: 'crossEncounter', subtype: 'lostPlayerFound', phase: 1, players: [tracker, foundPlayer], text, badgeText: 'FOUND CAMP', badgeClass: 'blue' });
+    }
+  }
+
+  // Random accidental meeting (~25% chance per cross-group pair, cap at 2 total)
+  if (groups.length > 1 && encounterCount < 2 && Math.random() < 0.25) {
+    for (let gi2 = 0; gi2 < groups.length && encounterCount < 2; gi2++) {
+      for (let gj2 = gi2 + 1; gj2 < groups.length && encounterCount < 2; gj2++) {
+        const a2 = _rp(groups[gi2]), b2 = _rp(groups[gj2]);
+        const pairKey2 = [a2, b2].sort().join('__');
+        if (!usedEncounterPairs.has(pairKey2) && Math.random() < 0.30) {
+          usedEncounterPairs.add(pairKey2); encounterCount++;
+          const text = _rp(CROSS_ENCOUNTER_TEXTS.accidental)(a2, b2);
+          addBond(a2, b2, 0.2); personalScores[a2] += 0.2; personalScores[b2] += 0.2;
+          timeline.push({ type: 'crossEncounter', subtype: 'accidental', phase: 1, players: [a2, b2], text, badgeText: 'ACCIDENTAL MEETING', badgeClass: 'grey' });
+        }
+      }
+    }
+  }
+
+  // Guarantee at least one cross-encounter if multiple groups exist
+  if (groups.length > 1 && encounterCount === 0) {
+    const gi0 = 0, gj0 = 1;
+    const a0 = _rp(groups[gi0]), b0 = _rp(groups[gj0]);
+    usedEncounterPairs.add([a0, b0].sort().join('__')); encounterCount++;
+    const text = _rp(CROSS_ENCOUNTER_TEXTS.accidental)(a0, b0);
+    addBond(a0, b0, 0.2); personalScores[a0] += 0.2; personalScores[b0] += 0.2;
+    timeline.push({ type: 'crossEncounter', subtype: 'accidental', phase: 1, players: [a0, b0], text, badgeText: 'ACCIDENTAL MEETING', badgeClass: 'grey' });
+  }
+
+
   const usedNightBuckets = {}; // { groupLabel: Set<bucket> }
   groups.forEach((group, gi) => {
     const label = groupLabels[gi];
@@ -981,6 +1364,11 @@ export function simulateCampCastaways(ep) {
   const discoverer = activePlayers.slice().sort((a, b) => _discovererScore(b) - _discovererScore(a))[0];
   const regroupedPairs = new Set();
 
+  // Final Assembly — the moment everyone is together; opens the regroup screen
+  timeline.push({ type: 'finalAssembly', phase: 3, players: [...activePlayers],
+    text: FINAL_ASSEMBLY_TEXTS[Math.floor(Math.random() * FINAL_ASSEMBLY_TEXTS.length)](activePlayers),
+    badgeText: '✓ ALL ACCOUNTED FOR', badgeClass: 'green' });
+
   // Emotional/Tense reunions
   for (let i = 0; i < activePlayers.length; i++) {
     for (let j = i + 1; j < activePlayers.length; j++) {
@@ -1020,12 +1408,20 @@ export function simulateCampCastaways(ep) {
   }
 
   // Intel share — one reporter per group catches the full cast up on what happened
+  const usedIntelIdx = new Set();
   groups.forEach((group, gi) => {
     const reporter = group.slice().sort((a, b) =>
       (pStats(b).social * 0.6 + pStats(b).strategic * 0.4) - (pStats(a).social * 0.6 + pStats(a).strategic * 0.4)
     )[0];
     const rPr = pronouns(reporter);
-    const text = _rp(PHASE3_INTEL_TEXTS)(reporter, rPr);
+    // Dedup: pick an unused text index
+    let idx = Math.floor(Math.random() * PHASE3_INTEL_TEXTS.length);
+    for (let t = 0; t < PHASE3_INTEL_TEXTS.length; t++) {
+      if (!usedIntelIdx.has(idx)) break;
+      idx = (idx + 1) % PHASE3_INTEL_TEXTS.length;
+    }
+    usedIntelIdx.add(idx);
+    const text = PHASE3_INTEL_TEXTS[idx](reporter, rPr);
     personalScores[reporter] += 0.4;
     timeline.push({ type: 'reunion', subtype: 'intelShare', phase: 3, player: reporter, players: group, text, badgeText: 'INTEL SHARE', badgeClass: 'blue' });
   });
@@ -1048,7 +1444,32 @@ export function simulateCampCastaways(ep) {
     }
   }
 
-  // Strategy consolidation — strategic ≥ 6 players refocus on the game (~65%)
+  // Confession circle (~50%) — the TDI "confess sins" moment
+  if (Math.random() < 0.50 && activePlayers.length >= 3) {
+    const prompter = activePlayers.slice().sort((a, b) =>
+      (pStats(b).social * 0.5 + pStats(b).temperament * 0.5) - (pStats(a).social * 0.5 + pStats(a).temperament * 0.5)
+    )[0];
+    const pPr = pronouns(prompter);
+    timeline.push({ type: 'reunion', subtype: 'confessionPrompt', phase: 3, player: prompter, players: [prompter],
+      text: _rp(CONFESSION_CIRCLE_TEXTS.prompt)(prompter, pPr), badgeText: 'ONE TRUE THING', badgeClass: 'blue' });
+    const confessors = activePlayers.filter(p => p !== prompter).sort(() => Math.random() - 0.5).slice(0, Math.min(3, activePlayers.length - 1));
+    const usedConfessionIdx = new Set();
+    confessors.forEach(confessor => {
+      const cPr = pronouns(confessor);
+      personalScores[confessor] += 0.3; addBond(confessor, prompter, 0.2);
+      // Dedup confession text
+      let cIdx = Math.floor(Math.random() * CONFESSION_CIRCLE_TEXTS.confession.length);
+      for (let t = 0; t < CONFESSION_CIRCLE_TEXTS.confession.length; t++) {
+        if (!usedConfessionIdx.has(cIdx)) break;
+        cIdx = (cIdx + 1) % CONFESSION_CIRCLE_TEXTS.confession.length;
+      }
+      usedConfessionIdx.add(cIdx);
+      timeline.push({ type: 'reunion', subtype: 'confession', phase: 3, player: confessor, players: [confessor, prompter],
+        text: CONFESSION_CIRCLE_TEXTS.confession[cIdx](confessor, cPr), badgeText: 'CONFESSION', badgeClass: 'blue' });
+    });
+  }
+
+  // Strategy consolidation— strategic ≥ 6 players refocus on the game (~65%)
   const strategicPlayers = activePlayers.filter(p => pStats(p).strategic >= 6);
   if (strategicPlayers.length > 0 && Math.random() < 0.65) {
     const pivot = _rp(strategicPlayers);
@@ -1059,6 +1480,7 @@ export function simulateCampCastaways(ep) {
   }
 
   // War paint preparation (boldness ≥ 7) — fires ~55%; excludes discoverer to prevent double-dip
+  let warPaintFired = false;
   const warPainters = activePlayers.filter(p => pStats(p).boldness >= 7);
   if (warPainters.length > 0 && Math.random() < 0.55) {
     const painters = warPainters.filter(p => p !== discoverer);
@@ -1066,6 +1488,7 @@ export function simulateCampCastaways(ep) {
     actualPainters.forEach(p => { personalScores[p] += 1.0; });
     activePlayers.filter(p => !actualPainters.includes(p)).forEach(p => { personalScores[p] += 0.2; });
     timeline.push({ type: 'reunion', subtype: 'warPaint', phase: 3, players: actualPainters, text: _rp(REUNION_TEXTS.warPaint)(actualPainters), badgeText: 'WAR PARTY', badgeClass: 'red' });
+    warPaintFired = true;
   } else {
     // Stealth approach — rewards intuition players when war party doesn't fire
     const stealthers = activePlayers.filter(p => pStats(p).intuition >= 6);
@@ -1136,7 +1559,10 @@ export function simulateCampCastaways(ep) {
   });
   const chargeLeaders = activePlayers.filter(p => pStats(p).boldness >= 7);
   if (chargeLeaders.length > 0) {
-    timeline.push({ type: 'stormEvent', subtype: 'charge', phase: 4, players: chargeLeaders, text: `${chargeLeaders.join(', ')} ${chargeLeaders.length === 1 ? 'leads' : 'lead'} the charge through the jungle. The war paint was a good call.`, badgeText: 'THE CHARGE', badgeClass: 'red' });
+    const chargeText = warPaintFired
+      ? `${chargeLeaders.join(', ')} ${chargeLeaders.length === 1 ? 'leads' : 'lead'} the charge through the jungle. The war paint was a good call.`
+      : `${chargeLeaders.join(', ')} ${chargeLeaders.length === 1 ? 'leads' : 'lead'} the charge through the jungle — no paint, no warning, just speed and intent.`;
+    timeline.push({ type: 'stormEvent', subtype: 'charge', phase: 4, players: chargeLeaders, text: chargeText, badgeText: 'THE CHARGE', badgeClass: 'red' });
   }
 
   // Negotiator — social player talks Chef down
@@ -1187,11 +1613,24 @@ export function simulateCampCastaways(ep) {
     if (['wildlifeBrave', 'foodSuccess', 'treehouse', 'calledIt'].includes(flag.type)) {
       personalScores[subject] += 0.5;
     }
-    // Store original event ref for VHS replay panel in VP
+    // Store original event ref for VHS replay panel in VP — match by flag type
+    const _flagTypeMap = {
+      foodSuccess: 'foodFinding', foodMishap: 'foodFinding',
+      treehouse: 'shelterBuild', shelterCollapse: 'shelterBuild',
+      lost: 'gettingLost', raftCircles: 'escapeAttempt',
+      wildlifeBrave: 'wildlife', wildlifePanic: 'wildlife',
+      skullPanic: 'wildlife', mosquitoSuffering: 'wildlife',
+      sleepTalkExposed: 'nightEvent', am2Breakfast: 'nightEvent', seagullChaos: 'nightEvent',
+      confession: 'vulnerabilityConfession', climbSpot: 'escapeAttempt',
+      pterodactylDelivered: 'crossEncounter',
+      enemyProximity: 'forcedProximity',
+      breakdown: 'breakdown',
+    };
+    const _matchType = _flagTypeMap[flag.type] || flag.type;
     const origEvent = flag.type === 'breakdown'
       ? timeline.find(e => e.type === 'breakdown' && e.player === subject)
-      : timeline.find(e => (e.player === subject || (e.players && e.players.includes(subject))) && e.phase < 4);
-    timeline.push({ type: 'stormEvent', subtype: 'playback', phase: 4, player: subject, players: [subject], text: playText, badgeText: '▶ PLAYBACK', badgeClass: 'purple', isPlayback: true, flagType: flag.type, reactionType: flag.reactionType, origEventText: origEvent?.text || flag.text });
+      : timeline.find(e => e.type === _matchType && (e.player === subject || (e.players && e.players.includes(subject))) && e.phase < 4);
+    timeline.push({ type: 'stormEvent', subtype: 'playback', phase: 4, player: subject, players: [subject], text: playText, badgeText: '▶ PLAYBACK', badgeClass: 'purple', isPlayback: true, flagType: flag.type, callbackType: flag.type, reactionType: flag.reactionType, origEventText: origEvent?.text || flag.text });
     timeline.push({ type: 'chrisReaction', phase: 4, reactionType: flag.reactionType, text: _rp(CHRIS_REACTIONS[flag.reactionType] || CHRIS_REACTIONS.entertained) });
   });
 
@@ -1209,13 +1648,15 @@ export function simulateCampCastaways(ep) {
     }
   });
 
-  // Finisher — endurance ≥ 7 (gated on stat, not raw accumulated score)
-  activePlayers.forEach(name => {
-    if (pStats(name).endurance >= 7) {
-      personalScores[name] += 0.8;
-      timeline.push({ type: 'stormEvent', subtype: 'enduranceBonus', phase: 4, player: name, players: [name], text: `Chris grudgingly notes ${name}'s consistent performance. "Fine. You earned it."`, badgeText: 'ENDURANCE BONUS', badgeClass: 'green' });
-    }
-  });
+  // Finisher — endurance ≥ 7; aggregate all qualifying players into one card
+  const finishers = activePlayers.filter(n => pStats(n).endurance >= 7);
+  finishers.forEach(name => { personalScores[name] += 0.8; });
+  if (finishers.length === 1) {
+    timeline.push({ type: 'stormEvent', subtype: 'enduranceBonus', phase: 4, player: finishers[0], players: finishers, text: `Chris grudgingly notes ${finishers[0]}'s consistent performance. "Fine. You earned it."`, badgeText: 'ENDURANCE BONUS', badgeClass: 'green' });
+  } else if (finishers.length > 1) {
+    const names = finishers.length === 2 ? finishers.join(' and ') : finishers.slice(0, -1).join(', ') + ', and ' + finishers[finishers.length - 1];
+    timeline.push({ type: 'stormEvent', subtype: 'enduranceBonus', phase: 4, players: finishers, text: `Chris reluctantly nods at ${names}. "You kept pace. All of you. Don't make it weird."`, badgeText: 'ENDURANCE BONUS', badgeClass: 'green' });
+  }
 
   // ══ RESOLUTION ══
   const sorted = [...activePlayers].sort((a, b) => {
@@ -1230,7 +1671,8 @@ export function simulateCampCastaways(ep) {
   const lowestScorer = sorted[sorted.length - 1];
 
   popDelta(immunityWinner, 2);
-  timeline.push({ type: 'immunityReveal', phase: 4, player: immunityWinner, score: personalScores[immunityWinner], players: activePlayers, text: `${immunityWinner} outlasted, outsmarted, and out-survived them all. Individual immunity goes to ${immunityWinner}.`, badgeText: '🏆 IMMUNITY', badgeClass: 'gold' });
+  // phase: 5 keeps this out of _buildStormScreen (phase===4 filter) — Immunity screen reads it directly
+  timeline.push({ type: 'immunityReveal', phase: 5, player: immunityWinner, score: personalScores[immunityWinner], players: activePlayers, text: `${immunityWinner} outlasted, outsmarted, and out-survived them all. Individual immunity goes to ${immunityWinner}.`, badgeText: '🏆 IMMUNITY', badgeClass: 'gold' });
 
   // ══ EP FIELDS ══
   ep.challengeType = 'individual';
@@ -1254,7 +1696,6 @@ export function simulateCampCastaways(ep) {
     lowestScorer,
     breakdowns: breakdowns.filter(Boolean),
     cameraFlags: [...cameraFlags],
-    badges,
   };
   ep.castawaysGroups = groups.map((g, i) => ({ label: groupLabels[i], members: [...g] }));
   ep.castawaysBreakdowns = breakdowns.filter(Boolean);
@@ -1368,666 +1809,633 @@ export function _textCampCastaways(ep, ln, sec) {
 // Each builder accesses it as a local alias: const _tvState = window._tvState;
 // DO NOT declare a module-scoped _tvState here — it would shadow the shared one.
 
-// ── COLOUR PALETTE ──
-const SV_BG = '#0a0e0a';        // Surveillance background
-const SV_GREEN = '#00ff41';     // NV green
-const SV_DIM = '#00a028';       // Dim green
-const SV_TEXT = '#c8ffd8';      // Text
-const DI_BG = '#f5e6c8';        // Diary background
-const DI_INK = '#2d1a0e';       // Ink
-const DI_STAMP = '#8b1a1a';     // Stamp red
-const DI_BORDER = '#7a5230';    // Border
-const BC_BG = '#0a0f1e';        // Broadcast background
-const BC_SIGNAL = '#00cfff';    // Signal blue
-const BC_TEXT = '#e8f4ff';      // Broadcast text
-const BC_ALERT = '#ff4444';     // Alert red
+// ══ CAMP CASTAWAYS — DRIFTWOOD SHORE VP ══
 
-// ══ CAMP CASTAWAYS — INJECTED STYLESHEET ══
-const CC_STYLES = `
-  /* ═══ CAMP CASTAWAYS · THREE-MODE VP ═══
-     Mode 1 Surveillance  — night-vision green / CRT / dark
-     Mode 2 Castaway Diary — aged paper / ink stamp / rotated panels
-     Mode 3 Emergency Broadcast — navy / signal pulse / ticker
-  */
+/* ---------- CSS: Driftwood Shore theme ---------- */
+const CC_SHORE_STYLES = `
+<style>
+/* ── Phase sky palettes ── */
+.cc-shore { --sky-top:#87CEEB; --sky-mid:#B0E0E6; --ocean:#1E90FF; --ocean-foam:#E0F7FA;
+  --wet-sand:#C2B280; --sand:#D2B48C; --sand-deep:#A0855B;
+  --artifact-bg:#FFF8E7; --artifact-border:#8B7355; --artifact-shadow:rgba(0,0,0,.18);
+  --driftwood:#6B4226; --driftwood-light:#8B6914; --palm:#228B22;
+  --coconut-brown:#5C3317; --coconut-face:#2F1A0A; --shell-pink:#FFB6C1;
+  --conch:#E8A87C; --conch-dark:#C4764E; --sos-red:#DC143C;
+  --night-sky:#0B1026; --night-mid:#1A1A3E; --star:#FFD700;
+  --storm-sky:#2C2C54; --storm-mid:#3D3D6B; --lightning:#FFF44F;
+  font-family: 'Georgia', 'Times New Roman', serif; font-display: swap; }
 
-  /* ── SURVEILLANCE ── */
-  .cc-sv { background:#0a0e0a; color:#c8ffd8; font-family:'Courier New',monospace; position:relative; overflow:hidden; padding:14px 12px; }
-  .cc-sv::before { content:''; position:absolute; inset:0;
-    background:repeating-linear-gradient(0deg,rgba(0,255,65,0.025) 0px,transparent 2px);
-    animation:cc-scan 6s linear infinite; pointer-events:none; z-index:0; }
-  @keyframes cc-scan { 0%{background-position:0 0} 100%{background-position:0 20px} }
-  .cc-sv--nv { filter:brightness(1.08) saturate(0.5) hue-rotate(75deg); }
+.cc-shore[data-phase="flood"]  { --sky-top:#4A90D9; --sky-mid:#6BB3E0; }
+.cc-shore[data-phase="group"]  { --sky-top:#87CEEB; --sky-mid:#B0E0E6; }
+.cc-shore[data-phase="night"]  { --sky-top:var(--night-sky); --sky-mid:var(--night-mid);
+  --ocean:#0A1628; --ocean-foam:#1A2A4A; --sand:#3A3520; --wet-sand:#2A2818; }
+.cc-shore[data-phase="regroup"]{ --sky-top:#FFA07A; --sky-mid:#FFD700; --ocean:#2980B9; }
+.cc-shore[data-phase="storm"]  { --sky-top:var(--storm-sky); --sky-mid:var(--storm-mid);
+  --ocean:#1A1A3E; --ocean-foam:#2C2C54; }
+.cc-shore[data-phase="immunity"]{ --sky-top:#FF6347; --sky-mid:#FF8C00; --ocean:#FF4500; --ocean-foam:#FFB347; }
 
-  .cc-sv-cam { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; position:relative; z-index:2; }
-  .cc-sv-camid { font-size:9px; color:#00a028; letter-spacing:2px; }
-  .cc-sv-ts { font-size:9px; color:#00a028; letter-spacing:1px; animation:cc-ts-pulse 2s ease-in-out infinite; }
-  @keyframes cc-ts-pulse { 0%,100%{opacity:1} 50%{opacity:0.55} }
-  .cc-rec { display:inline-block; width:7px; height:7px; border-radius:50%; background:#c33;
-    margin-right:5px; animation:cc-rec-blink 1.2s step-end infinite; vertical-align:middle; }
-  @keyframes cc-rec-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+/* ── Beach scene ── */
+.cc-shore-scene { position:relative; min-height:100vh; overflow-x:hidden;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 30%, var(--ocean) 50%,
+    var(--ocean-foam) 55%, var(--wet-sand) 60%, var(--sand) 75%, var(--sand-deep) 100%);
+  transition: background 0.8s ease; }
 
-  .cc-sv-card { position:relative; z-index:2; margin-bottom:5px; padding:8px 10px;
-    background:#0a0e0a; border:1px solid #00a02833; border-left:2px solid #00a028;
-    animation:cc-sv-slide 0.4s ease-out both; }
-  @keyframes cc-sv-slide { 0%{opacity:0;transform:translateX(-14px)} 100%{opacity:1;transform:translateX(0)} }
-  .cc-sv-card--playback { border-color:#a78bfa44; border-left-color:#a78bfa; }
-  .cc-sv-card--chris { border-left-color:#c33; background:#c3300608; }
-  .cc-sv-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
-  .cc-sv-card-cam  { font-size:8px; color:#00a028; letter-spacing:1px; }
-  .cc-sv-card-time { font-size:8px; color:#00a028; letter-spacing:1px; }
-  .cc-sv-playback-label { display:inline-block; padding:1px 6px; background:#a78bfa22;
-    border:1px solid #a78bfa; font-size:7px; letter-spacing:2px; color:#a78bfa; margin-bottom:4px; }
-  .cc-sv-player { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
-  .cc-sv-player-name { font-size:9px; color:#00ff41; font-weight:700; }
-  .cc-sv-card-body { font-size:11px; color:#c8ffd8; line-height:1.5; position:relative; z-index:1; }
-  .cc-sv-badge span { font-size:8px; padding:1px 5px; border:1px solid #00a028; color:#00a028; letter-spacing:1px; }
+/* Ocean wave animation */
+.cc-shore-scene::before { content:''; position:absolute; top:48%; left:0; right:0; height:8%;
+  background: repeating-linear-gradient(90deg, transparent 0%, var(--ocean-foam) 25%,
+    transparent 50%); opacity:0.4; animation: cc-wave 4s ease-in-out infinite; }
 
-  .cc-vhs-label { margin:4px 0; padding:5px 8px; background:#000; border-left:3px solid #c33;
-    font-family:'Courier New',monospace; font-size:10px; color:#fff; letter-spacing:0.5px;
-    animation:cc-vhs-in 0.35s ease-out both; }
-  @keyframes cc-vhs-in { 0%{opacity:0;transform:translateY(10px)} 100%{opacity:1;transform:translateY(0)} }
+@keyframes cc-wave { 0%,100%{transform:translateX(-5%)} 50%{transform:translateX(5%)} }
 
-  .cc-sv-reveal-btn { cursor:pointer; padding:8px 14px; margin-bottom:5px; border-radius:4px;
-    border:1px dashed #00ff4144; background:#00ff4108; text-align:center;
-    font-family:'Courier New',monospace; font-size:10px; color:#00a028; transition:background 0.2s; }
-  .cc-sv-reveal-btn:hover { background:#00ff4114; }
-  .cc-sv-phase-end { text-align:center; font-family:'Courier New',monospace; font-size:9px;
-    color:#00a028; padding:6px; letter-spacing:1px; position:relative; z-index:2; }
+/* Sand drift */
+.cc-shore-scene::after { content:''; position:absolute; bottom:0; left:0; right:0; height:25%;
+  background: radial-gradient(ellipse at 30% 80%, rgba(210,180,140,0.3) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 90%, rgba(210,180,140,0.2) 0%, transparent 50%);
+  animation: cc-sand-drift 6s ease-in-out infinite alternate; pointer-events:none; }
 
-  /* ── CASTAWAY DIARY ── */
-  .cc-diary { background:#f5e6c8; color:#2d1a0e; font-family:Georgia,'Times New Roman',serif;
-    position:relative; overflow:hidden; padding:14px 12px; border:2px solid #7a5230; }
-  .cc-diary::before { content:''; position:absolute; inset:0;
-    background:radial-gradient(ellipse at 20% 80%,rgba(139,82,48,0.07) 0%,transparent 70%);
-    pointer-events:none; z-index:0; }
-  .cc-diary-header { font-size:14px; font-weight:700; color:#2d1a0e; margin-bottom:2px; position:relative; z-index:2; }
-  .cc-diary-sub { font-family:'Courier New',monospace; font-size:9px; color:#7a5230;
-    letter-spacing:1px; margin-bottom:10px; position:relative; z-index:2; }
-  .cc-diary-members { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; padding:6px;
-    background:#f5e6c8; border:1px solid #7a523022; position:relative; z-index:2; }
-  .cc-diary-member { display:flex; flex-direction:column; align-items:center; gap:2px; }
-  .cc-diary-member-name { font-family:Georgia,serif; font-size:9px; color:#2d1a0e; }
+@keyframes cc-sand-drift { 0%{opacity:0.6} 100%{opacity:1} }
 
-  .cc-diary-panel { position:relative; z-index:2; margin:6px 4px; padding:10px 12px;
-    background:#f5e6c8; border:2px solid #7a5230; box-shadow:2px 2px 4px rgba(0,0,0,0.2);
-    transform:var(--p-rot,rotate(0deg));
-    animation:cc-panel-drop 0.5s ease-out both; }
-  .cc-diary-panel::before { content:''; position:absolute; inset:0;
-    background:repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(0,0,0,0.018) 4px,rgba(0,0,0,0.018) 5px);
-    pointer-events:none; }
-  @keyframes cc-panel-drop {
-    0%   { opacity:0; transform:var(--p-rot-from,rotate(-4deg)) translateY(-18px); }
-    60%  { transform:var(--p-rot-over,rotate(0.8deg)) translateY(2px); }
-    100% { opacity:1; transform:var(--p-rot,rotate(0deg)) translateY(0); }
+/* ── Driftwood nav ── */
+.cc-driftwood-nav { display:flex; gap:0.5rem; padding:1rem; justify-content:center;
+  position:relative; z-index:2; }
+.cc-driftwood-nav .cc-stick { padding:0.4rem 1rem; background:var(--driftwood);
+  color:#FFF8E7; border:none; border-radius:12px 4px 12px 4px; cursor:pointer;
+  font-family:inherit; font-size:0.85rem; box-shadow:2px 2px 4px rgba(0,0,0,0.3);
+  transition:transform 0.2s, box-shadow 0.2s; }
+.cc-driftwood-nav .cc-stick:hover { transform:translateY(-2px); box-shadow:3px 4px 6px rgba(0,0,0,0.35); }
+.cc-driftwood-nav .cc-stick.active { background:var(--driftwood-light); font-weight:bold;
+  box-shadow:0 0 8px rgba(139,105,20,0.5); }
+
+/* ── Torn-paper artifact (diary / surveillance / general) ── */
+.cc-artifact { position:relative; z-index:1; background:var(--artifact-bg);
+  border:1px solid var(--artifact-border); border-radius:2px;
+  padding:1.2rem 1.4rem; margin:0.8rem auto; max-width:600px;
+  box-shadow:3px 4px 8px var(--artifact-shadow);
+  transform:rotate(calc(var(--tilt,0) * 1deg)); transition:transform 0.3s ease; }
+.cc-artifact::before { content:''; position:absolute; top:-4px; left:10%; right:15%;
+  height:6px; background:linear-gradient(90deg, transparent 0%, var(--artifact-bg) 20%,
+    var(--artifact-bg) 80%, transparent 100%);
+  clip-path:polygon(0 100%, 5% 0, 12% 100%, 18% 20%, 25% 100%, 33% 0, 40% 100%,
+    48% 30%, 55% 100%, 62% 0, 70% 100%, 78% 20%, 85% 100%, 92% 0, 100% 100%); }
+
+.cc-artifact .cc-wax-seal { position:absolute; top:-10px; right:16px; width:32px; height:32px;
+  background:radial-gradient(circle, #8B0000 60%, #5C0000 100%); border-radius:50%;
+  display:flex; align-items:center; justify-content:center; color:#FFD700; font-size:14px;
+  font-weight:bold; box-shadow:1px 2px 4px rgba(0,0,0,0.3); }
+
+.cc-artifact .cc-tape-num { font-size:0.75rem; color:#8B7355; font-style:italic;
+  margin-bottom:0.3rem; }
+.cc-artifact .cc-artifact-title { font-size:1rem; font-weight:bold; margin-bottom:0.6rem;
+  border-bottom:1px dashed #8B7355; padding-bottom:0.3rem; }
+.cc-artifact .cc-artifact-body { font-size:0.9rem; line-height:1.5; color:#3E2723; }
+.cc-artifact .cc-artifact-body p { margin:0.4rem 0; }
+
+/* ── Palm-cam surveillance card ── */
+.cc-palm-cam { position:relative; z-index:1; background:rgba(0,0,0,0.85); color:#00FF41;
+  font-family:'Courier New',monospace; border:2px solid #228B22;
+  border-radius:8px; padding:1rem 1.2rem; margin:0.8rem auto; max-width:600px;
+  box-shadow:0 0 12px rgba(34,139,34,0.3); }
+.cc-palm-cam::before { content:'\uD83C\uDF3F'; position:absolute; top:-12px; left:12px;
+  font-size:20px; }
+.cc-palm-cam .cc-cam-header { display:flex; justify-content:space-between; align-items:center;
+  font-size:0.75rem; opacity:0.7; margin-bottom:0.5rem; border-bottom:1px solid #228B22;
+  padding-bottom:0.3rem; }
+.cc-palm-cam .cc-cam-body { font-size:0.85rem; line-height:1.5; }
+.cc-palm-cam .cc-cam-body p { margin:0.3rem 0; }
+
+/* ── Coconut breakdown card ── */
+.cc-coconut-card { position:relative; z-index:1; background:var(--sand);
+  border:3px solid var(--coconut-brown); border-radius:50% 50% 8px 8px;
+  padding:2rem 1.4rem 1.2rem; margin:1rem auto; max-width:500px; text-align:center;
+  box-shadow:4px 6px 12px rgba(0,0,0,0.25); }
+.cc-coconut-card .cc-coconut-face { font-size:2.5rem; margin-bottom:0.5rem; }
+.cc-coconut-card .cc-coconut-says { font-style:italic; color:var(--coconut-face);
+  font-size:0.95rem; line-height:1.4; position:relative; padding:0.8rem;
+  background:rgba(255,255,255,0.6); border-radius:8px; margin-top:0.5rem; }
+.cc-coconut-card .cc-coconut-says::before { content:'\u201C'; font-size:2rem;
+  position:absolute; top:-5px; left:5px; color:var(--coconut-brown); opacity:0.4; }
+
+/* ── Signal / broadcast card ── */
+.cc-signal-card { position:relative; z-index:1; background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color:#E0E0E0; border:2px solid #0F3460; border-radius:4px;
+  padding:1rem 1.2rem; margin:0.8rem auto; max-width:600px;
+  box-shadow:0 0 8px rgba(15,52,96,0.4); }
+.cc-signal-card .cc-signal-header { display:flex; align-items:center; gap:0.5rem;
+  font-size:0.8rem; color:#E94560; font-weight:bold; margin-bottom:0.5rem;
+  border-bottom:1px solid #0F3460; padding-bottom:0.3rem; }
+.cc-signal-card .cc-signal-header::before { content:'\uD83D\uDCE1'; font-size:14px; }
+.cc-signal-card .cc-signal-body { font-size:0.9rem; line-height:1.5; }
+.cc-signal-card .cc-signal-body p { margin:0.3rem 0; }
+
+/* ── Conch shell button ── */
+.cc-conch-btn { display:inline-flex; align-items:center; gap:0.4rem;
+  background:linear-gradient(135deg, var(--conch) 0%, var(--conch-dark) 100%);
+  color:#FFF; border:none; border-radius:20px; padding:0.6rem 1.4rem;
+  cursor:pointer; font-family:inherit; font-size:0.9rem; font-weight:bold;
+  box-shadow:2px 3px 6px rgba(0,0,0,0.25); transition:transform 0.2s, box-shadow 0.2s; }
+.cc-conch-btn:hover { transform:scale(1.05); box-shadow:3px 4px 8px rgba(0,0,0,0.3); }
+.cc-conch-btn::before { content:'\uD83D\uDC1A'; font-size:16px; }
+
+/* ── Sand-write immunity ── */
+.cc-sand-write { position:relative; z-index:1; text-align:center; padding:2rem;
+  margin:1rem auto; max-width:600px; }
+.cc-sand-write .cc-sos-rocks { font-size:2rem; font-weight:bold; color:var(--sos-red);
+  text-shadow:2px 2px 4px rgba(0,0,0,0.3); letter-spacing:0.5rem; margin-bottom:1rem; }
+.cc-sand-write .cc-sand-name { font-size:1.8rem; font-style:italic;
+  color:var(--sand-deep); text-shadow:1px 1px 2px rgba(0,0,0,0.2);
+  font-family:'Georgia',serif; }
+.cc-sand-write .cc-sand-name.reveal-pending { filter:blur(8px); cursor:pointer;
+  transition:filter 0.5s ease; }
+.cc-sand-write .cc-sand-name.revealed { filter:none; }
+
+/* ── Night stars ── */
+.cc-night-stars { position:absolute; top:0; left:0; right:0; height:50%; z-index:0; pointer-events:none; }
+.cc-night-stars .cc-star { position:absolute; width:3px; height:3px; background:var(--star);
+  border-radius:50%; animation:cc-twinkle 2s ease-in-out infinite; }
+@keyframes cc-twinkle { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+/* ── Storm lightning ── */
+.cc-lightning-overlay { position:absolute; inset:0; z-index:0; pointer-events:none;
+  animation:cc-lightning 5s ease-in-out infinite; }
+@keyframes cc-lightning { 0%,90%,100%{background:transparent} 92%{background:rgba(255,244,79,0.15)} 94%{background:transparent} 96%{background:rgba(255,244,79,0.1)} }
+
+/* ── Portrait in artifact ── */
+.cc-artifact .rp-portrait-wrap { display:inline-block; margin:0.3rem 0.5rem 0.3rem 0;
+  border:3px solid #FFF; box-shadow:2px 2px 6px rgba(0,0,0,0.2); transform:rotate(-2deg);
+  background:#FFF; padding:3px; }
+
+/* ── Reveal interactivity ── */
+.cc-shore [data-reveal] { cursor:pointer; }
+.cc-shore [data-reveal]:not(.revealed) .cc-reveal-content { filter:blur(6px); transition:filter 0.4s ease; }
+.cc-shore [data-reveal].revealed .cc-reveal-content { filter:none; }
+
+/* ── Section header on sand ── */
+.cc-shore-header { position:relative; z-index:1; text-align:center; padding:0.8rem;
+  font-size:1.2rem; font-weight:bold; color:var(--driftwood);
+  text-shadow:1px 1px 2px rgba(255,248,231,0.8); }
+
+/* ── Responsive ── */
+@media(max-width:640px) {
+  .cc-artifact, .cc-palm-cam, .cc-coconut-card, .cc-signal-card { margin:0.5rem 0.3rem; padding:0.8rem; }
+  .cc-shore-header { font-size:1rem; }
+  .cc-sand-write .cc-sos-rocks { font-size:1.4rem; }
+  .cc-sand-write .cc-sand-name { font-size:1.3rem; }
+}
+
+/* ── Reduced motion ── */
+@media(prefers-reduced-motion:reduce) {
+  .cc-shore-scene::before, .cc-shore-scene::after { animation:none !important; }
+  .cc-night-stars .cc-star { animation:none !important; opacity:0.6; }
+  .cc-lightning-overlay { animation:none !important; }
+  .cc-shore [data-reveal]:not(.revealed) .cc-reveal-content { filter:none; opacity:0.3; }
+  .cc-shore [data-reveal].revealed .cc-reveal-content { opacity:1; transition:opacity 0.1s; }
+  .cc-artifact, .cc-conch-btn, .cc-driftwood-nav .cc-stick { transition:none !important; }
+}
+</style>`;
+
+/* ---------- Helpers ---------- */
+
+/** Night stars (absolute positioned in scene) */
+function _nightStars(count = 30) {
+  let stars = '';
+  for (let i = 0; i < count; i++) {
+    const x = Math.random() * 100;
+    const y = Math.random() * 45;
+    const delay = (Math.random() * 3).toFixed(1);
+    const size = 2 + Math.random() * 2;
+    stars += `<div class="cc-star" style="left:${x}%;top:${y}%;width:${size}px;height:${size}px;animation-delay:${delay}s"></div>`;
   }
-  .cc-diary-player { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
-  .cc-diary-player-name { font-family:Georgia,serif; font-size:10px; font-weight:700; color:#2d1a0e; }
-  .cc-diary-body { font-family:Georgia,serif; font-size:12px; color:#2d1a0e; line-height:1.6; position:relative; z-index:1; }
+  return `<div class="cc-night-stars">${stars}</div>`;
+}
 
-  .cc-stamp { position:absolute; top:6px; right:6px;
-    font-family:'Courier New',monospace; font-size:7px; font-weight:700; letter-spacing:1px;
-    border:1px solid currentColor; padding:1px 4px; opacity:0.85;
-    transform:var(--stamp-rot,rotate(5deg));
-    animation:cc-stamp-slam 0.45s ease-out both; }
-  @keyframes cc-stamp-slam {
-    0%  { transform:var(--stamp-rot,rotate(5deg)) scale(2.8); opacity:0; }
-    55% { transform:var(--stamp-rot,rotate(5deg)) scale(0.92); opacity:1; }
-    80% { transform:var(--stamp-rot,rotate(5deg)) scale(1.04); }
-    100%{ transform:var(--stamp-rot,rotate(5deg)) scale(1); opacity:0.85; }
-  }
+/** Driftwood nav bar */
+function _driftwoodNav(phases, activeIdx) {
+  const sticks = phases.map((p, i) =>
+    `<button class="cc-stick${i === activeIdx ? ' active' : ''}" onclick="window._ccNavTo && window._ccNavTo(${i})">${p.label}</button>`
+  ).join('');
+  return `<div class="cc-driftwood-nav">${sticks}</div>`;
+}
 
-  .cc-breakdown { position:relative; z-index:2; margin:8px 4px; padding:12px;
-    background:#f5e6c8; border:3px solid #8b1a1a; box-shadow:3px 3px 8px rgba(139,26,26,0.25);
-    animation:cc-panel-drop 0.5s ease-out both, cc-breakdown-pulse 3s ease-in-out 0.5s infinite; }
-  @keyframes cc-breakdown-pulse {
-    0%,100%{ box-shadow:3px 3px 8px rgba(139,26,26,0.25); }
-    50%    { box-shadow:3px 3px 20px rgba(139,26,26,0.55); }
-  }
-  .cc-breakdown-badge { position:absolute; top:4px; right:6px;
-    font-family:'Courier New',monospace; font-size:8px; color:#8b1a1a; letter-spacing:2px; font-weight:700; }
-  .cc-breakdown-player { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
-  .cc-breakdown-name { font-family:Georgia,serif; font-size:11px; font-weight:700; color:#8b1a1a; }
-  .cc-breakdown-body { font-family:Georgia,serif; font-size:12px; color:#2d1a0e; line-height:1.6; }
-  .cc-breakdown-obj  { margin-top:4px; font-family:Georgia,serif; font-size:9px; color:#8b1a1a; font-style:italic; }
-
-  .cc-pageturn { cursor:pointer; padding:8px 12px; border:1px dashed #7a5230;
-    background:rgba(45,26,14,0.04); text-align:center;
-    font-family:Georgia,serif; font-size:10px; color:#7a5230; margin:4px;
-    transition:background 0.2s; position:relative; z-index:2; }
-  .cc-pageturn:hover { background:rgba(45,26,14,0.1); }
-  .cc-sv-interrupt { margin:6px 0; padding:6px 10px; background:#0a0e0a;
-    border-left:2px solid #00a028; font-family:'Courier New',monospace; font-size:10px; color:#00a028;
-    animation:cc-sv-slide 0.3s ease-out both; position:relative; z-index:2; }
-  .cc-sv-interrupt-label { color:#00ff41; font-size:8px; letter-spacing:1px; display:block; margin-bottom:2px; }
-  .cc-diary-phase-end { text-align:right; font-family:Georgia,serif; font-size:8px;
-    color:#7a5230; margin-top:6px; font-style:italic; position:relative; z-index:2; }
-
-  /* ── EMERGENCY BROADCAST ── */
-  .cc-bc { background:#0a0f1e; color:#e8f4ff; font-family:'Courier New',monospace;
-    position:relative; overflow:hidden; padding:14px 12px; border:1px solid #00cfff33; }
-  .cc-bc-signal-bar { height:4px; background:linear-gradient(90deg,#ff4444 0%,#00cfff 100%);
-    margin-bottom:10px; animation:cc-signal-pulse 2s ease-in-out infinite; }
-  @keyframes cc-signal-pulse { 0%,100%{opacity:1;filter:brightness(1)} 50%{opacity:0.65;filter:brightness(1.5)} }
-  .cc-bc-header-label { font-size:9px; color:#00cfff; letter-spacing:2px; margin-bottom:4px; }
-  .cc-bc-header-title { font-size:14px; font-weight:700; color:#e8f4ff; letter-spacing:2px; margin-bottom:2px; }
-  .cc-bc-header-sub   { font-size:9px; color:#00cfff; margin-bottom:10px; }
-  .cc-bc-card { margin-bottom:5px; padding:8px 12px; background:#0a0f1e;
-    border:1px solid #00cfff22; border-left:2px solid #00cfff;
-    animation:cc-sv-slide 0.35s ease-out both; }
-  .cc-bc-card--winner { border-left-color:#00cfff; background:#00cfff0a;
-    animation:cc-sv-slide 0.35s ease-out both, cc-winner-glow 2.5s ease-in-out 0.4s infinite; }
-  @keyframes cc-winner-glow {
-    0%,100%{ box-shadow:0 0 4px rgba(0,207,255,0.1); }
-    50%    { box-shadow:0 0 22px rgba(0,207,255,0.4); }
-  }
-  .cc-bc-transmission-label { font-size:8px; letter-spacing:2px; color:#00cfff; margin-bottom:3px; }
-  .cc-bc-player { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
-  .cc-bc-player-name { font-size:10px; font-weight:700; color:#e8f4ff; }
-  .cc-bc-player-name--winner { color:#00cfff; }
-  .cc-bc-card-body { font-size:12px; color:#e8f4ff; line-height:1.5; }
-  .cc-bc-score-bar-wrap { margin-top:5px; height:4px; background:#ffffff11; border-radius:2px; overflow:hidden; }
-  .cc-bc-score-bar { height:100%; background:#00cfff; border-radius:2px; animation:cc-fill-bar 0.8s ease-out both; }
-  @keyframes cc-fill-bar { 0%{width:0%} 100%{width:var(--bar-pct,0%)} }
-  .cc-bc-badge { margin-top:3px; font-size:8px; color:#00cfff; letter-spacing:1px; }
-  .cc-bc-reveal-btn { cursor:pointer; padding:8px 12px; border:1px solid #00cfff33;
-    background:#00cfff08; text-align:center; font-family:'Courier New',monospace;
-    font-size:10px; color:#00cfff; margin-bottom:4px; transition:background 0.2s; }
-  .cc-bc-reveal-btn:hover { background:#00cfff16; }
-  .cc-ticker-wrap { overflow:hidden; background:#000; border-top:1px solid #00cfff33;
-    padding:3px 0; margin-top:10px; white-space:nowrap; }
-  .cc-ticker { display:inline-block; padding-left:100%;
-    animation:cc-ticker-scroll 22s linear infinite;
-    font-family:'Courier New',monospace; font-size:9px; color:#00cfff99; letter-spacing:1px; }
-  @keyframes cc-ticker-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-100%)} }
-  .cc-bc-phase-end { text-align:center; font-family:'Courier New',monospace;
-    font-size:9px; color:#00cfff; padding:6px; letter-spacing:1px; }
-
-  /* ── GLITCH TRANSITION ── */
-  .cc-glitch-wrap { position:relative; height:22px; overflow:hidden; margin:6px 0;
-    background:#0a0e0a; animation:cc-glitch-play 0.5s ease-out both; }
-  @keyframes cc-glitch-play {
-    0%  { opacity:0; }
-    12% { opacity:1; filter:invert(1) brightness(4); }
-    24% { filter:invert(0) brightness(1); clip-path:inset(30% 0 35% 0); }
-    36% { clip-path:inset(0 0 0 0); filter:hue-rotate(180deg) brightness(1.5); }
-    50% { filter:none; }
-    100%{ opacity:1; }
-  }
-  .cc-glitch-label { position:absolute; inset:0; display:flex; align-items:center;
-    justify-content:center; font-family:'Courier New',monospace; font-size:9px;
-    letter-spacing:4px; color:#00ff41; opacity:0.6; }
-  .cc-glitch-line { position:absolute; left:0; right:0; height:1px; background:#00ff41; opacity:0.3; }
-  .cc-glitch-line--top { top:0; } .cc-glitch-line--bot { bottom:0; }
-
-  /* ── MONITOR WALL FRAME (persistent across all CC screens) ── */
-  .cc-monitor-frame { display:flex; align-items:center; justify-content:space-between;
-    padding:4px 8px; margin-bottom:8px; border-bottom:1px solid currentColor;
-    font-family:'Courier New',monospace; font-size:8px; letter-spacing:1px; }
-  .cc-monitor-frame--sv  { color:#00a028; opacity:0.75; }
-  .cc-monitor-frame--diary { color:#7a5230; border-bottom-color:#7a523055; }
-  .cc-monitor-frame--bc  { color:#00cfff; opacity:0.85; }
-  .cc-monitor-mode { font-weight:700; }
-  .cc-monitor-tape { opacity:0.7; }
-  .cc-monitor-clock { animation:cc-ts-pulse 2s ease-in-out infinite; }
-
-  /* ── MODE ENTRY ANIMATIONS ── */
-  .cc-sv  { animation:cc-sv-enter 0.45s ease-out both; }
-  @keyframes cc-sv-enter {
-    0%  { opacity:0; filter:brightness(3) saturate(0); }
-    30% { filter:brightness(1.5) saturate(0.2); }
-    100%{ opacity:1; filter:none; }
-  }
-  .cc-diary { animation:cc-diary-enter 0.5s ease-out both; }
-  @keyframes cc-diary-enter {
-    0%  { opacity:0; transform:translateY(18px) rotate(-0.4deg); }
-    65% { transform:translateY(-2px) rotate(0.15deg); }
-    100%{ opacity:1; transform:translateY(0) rotate(0); }
-  }
-  .cc-bc { animation:cc-bc-enter 0.6s ease-out both; }
-  @keyframes cc-bc-enter {
-    0%  { opacity:0; filter:brightness(6) saturate(0); }
-    20% { opacity:1; filter:brightness(2); }
-    100%{ opacity:1; filter:none; }
-  }
-
-  /* ── VHS REPLAY PANEL (Phase 4 playback cites earlier diary moment) ── */
-  .cc-vhs-replay { position:relative; margin:6px 0; padding:8px 10px;
-    background:#d8eedd; border:2px solid #a78bfa44; border-left:3px solid #a78bfa;
-    filter:sepia(0.3) hue-rotate(70deg) saturate(0.55) brightness(0.92); overflow:hidden; }
-  .cc-vhs-replay::before { content:''; position:absolute; inset:0;
-    background:repeating-linear-gradient(0deg,rgba(0,255,65,0.06) 0px,transparent 3px);
-    pointer-events:none; z-index:0; }
-  .cc-vhs-replay-tag { font-family:'Courier New',monospace; font-size:8px; color:#6a50cc;
-    letter-spacing:2px; margin-bottom:4px; position:relative; z-index:1; }
-  .cc-vhs-tracking { position:absolute; top:0; left:0; right:0; height:3px;
-    background:linear-gradient(90deg,transparent,#a78bfa88,transparent);
-    animation:cc-vhs-track 1.8s ease-in-out infinite; }
-  @keyframes cc-vhs-track { 0%,100%{opacity:0.3;transform:translateX(-30%)} 50%{opacity:1;transform:translateX(30%)} }
-  .cc-vhs-replay-body { font-size:11px; color:#1a2e1a; line-height:1.5; position:relative; z-index:1; font-family:Georgia,serif; }
-
-  /* ── STEALTH APPROACH badge uses blue ── */
-  .cc-sv-badge--blue span { border-color:#4fa3e0; color:#4fa3e0; }
-
-  /* ── prefers-reduced-motion: collapse all mode animations ── */
-  @media (prefers-reduced-motion: reduce) {
-    .cc-sv, .cc-diary, .cc-bc, .cc-sv-card, .cc-diary-panel,
-    .cc-vhs-replay, .cc-glitch-wrap { animation-duration:0.01ms !important; }
-  }
-`;
-
-// ── MODE TRANSITION GLITCH ──
-function _glitchTransition(label) {
-  return `<div class="cc-glitch-wrap">
-    <div class="cc-glitch-label">▓▒░ ${label} ░▒▓</div>
-    <div class="cc-glitch-line cc-glitch-line--top"></div>
-    <div class="cc-glitch-line cc-glitch-line--bot"></div>
+/** Torn-paper artifact card (diary-style) */
+function _shoreArtifact(title, bodyHtml, opts = {}) {
+  const tilt = opts.tilt ?? (Math.random() * 4 - 2).toFixed(1);
+  const tapeNum = opts.tapeNum ? `<div class="cc-tape-num">Tape ${opts.tapeNum}</div>` : '';
+  const seal = opts.seal ? `<div class="cc-wax-seal">${opts.seal}</div>` : '';
+  const revealAttr = opts.revealKey ? ` data-reveal="${opts.revealKey}"` : '';
+  const revealWrap = opts.revealKey ? 'cc-reveal-content' : '';
+  return `<div class="cc-artifact" style="--tilt:${tilt}"${revealAttr}>
+    ${seal}${tapeNum}
+    <div class="cc-artifact-title">${title}</div>
+    <div class="cc-artifact-body ${revealWrap}">${bodyHtml}</div>
   </div>`;
 }
 
-// ── SURVEILLANCE CARD ──
-function _svCard(evt, camId, ts) {
-  const isPlayback = evt.isPlayback;
-  const wrapCls = `cc-sv-card${isPlayback ? ' cc-sv-card--playback' : ''}${evt.type === 'chrisReaction' ? ' cc-sv-card--chris' : ''}`;
-  let html = `<div class="${wrapCls}">`;
-  html += `<div class="cc-sv-card-header">`;
-  html += `<span class="cc-sv-card-cam">${camId || 'CAM-01 · ISLAND EAST'}</span>`;
-  html += `<span class="cc-sv-card-time">${ts || '00:00:00'}</span>`;
-  html += `</div>`;
-  if (isPlayback) html += `<div class="cc-sv-playback-label">▶ PLAYBACK</div>`;
-  const pName = evt.player || (evt.players?.length === 1 ? evt.players[0] : null);
-  if (pName) {
-    const port = (typeof rpPortrait === 'function') ? rpPortrait(pName, 'xs') : '';
-    html += `<div class="cc-sv-player">${port}<span class="cc-sv-player-name">${pName}</span></div>`;
-  } else if (evt.players?.length > 1) {
-    const ports = evt.players.map(p => (typeof rpPortrait === 'function') ? rpPortrait(p, 'xs') : '').join('');
-    html += `<div class="cc-sv-player">${ports}<span class="cc-sv-player-name">${evt.players.join(', ')}</span></div>`;
+/** Coconut breakdown card */
+function _shoreBreakdown(faceEmoji, dialogue, opts = {}) {
+  const revealAttr = opts.revealKey ? ` data-reveal="${opts.revealKey}"` : '';
+  const revealWrap = opts.revealKey ? 'cc-reveal-content' : '';
+  return `<div class="cc-coconut-card"${revealAttr}>
+    <div class="cc-coconut-face">${faceEmoji || '\uD83E\uDD65'}</div>
+    <div class="cc-coconut-says ${revealWrap}">${dialogue}</div>
+  </div>`;
+}
+
+/** Palm-cam surveillance card */
+function _shoreSurveillance(headerLeft, headerRight, bodyHtml, opts = {}) {
+  const revealAttr = opts.revealKey ? ` data-reveal="${opts.revealKey}"` : '';
+  const revealWrap = opts.revealKey ? 'cc-reveal-content' : '';
+  return `<div class="cc-palm-cam"${revealAttr}>
+    <div class="cc-cam-header"><span>${headerLeft}</span><span>${headerRight}</span></div>
+    <div class="cc-cam-body ${revealWrap}">${bodyHtml}</div>
+  </div>`;
+}
+
+/** Signal broadcast card */
+function _shoreBroadcast(headerText, bodyHtml, opts = {}) {
+  const revealAttr = opts.revealKey ? ` data-reveal="${opts.revealKey}"` : '';
+  const revealWrap = opts.revealKey ? 'cc-reveal-content' : '';
+  return `<div class="cc-signal-card"${revealAttr}>
+    <div class="cc-signal-header">${headerText}</div>
+    <div class="cc-signal-body ${revealWrap}">${bodyHtml}</div>
+  </div>`;
+}
+
+/* ---------- Inline reveal (unchanged logic) ---------- */
+function _ccInlineReveal(el) {
+  if (!el || el.classList.contains('revealed')) return;
+  el.classList.add('revealed');
+  const key = el.getAttribute('data-reveal');
+  if (key) {
+    const ts = window._tvState;
+    if (ts && ts[key]) ts[key].idx = (ts[key].idx ?? -1) + 1;
   }
-  html += `<div class="cc-sv-card-body">${evt.text || ''}</div>`;
-  if (evt.badgeText) html += `<div class="cc-sv-badge"><span>${evt.badgeText}</span></div>`;
-  html += `</div>`;
-  return html;
-}
-
-// ── DIARY PANEL ──
-function _diaryPanel(evt, rotIdx) {
-  const rots     = [-2, 1.5, -1, 2, -0.5, 1, -1.5, 0.5];
-  const rotsFrom = [-5, 3,   -3, 4, -2,   2, -3,    1.5];
-  const rotsOver = [-1.5, 1, -0.5, 1.5, -0.2, 0.6, -0.8, 0.3];
-  const ri = rotIdx % rots.length;
-  const rot = rots[ri]; const rotFrom = rotsFrom[ri]; const rotOver = rotsOver[ri];
-  const badgeColors = { green:'#3a5a00', red:'#8b1a1a', yellow:'#7a5200', blue:'#1a3a7a', gold:'#6a4a00', pink:'#6a1a3a', grey:'#4a4a4a', purple:'#3a1a6a' };
-  const badgeColor = badgeColors[evt.badgeClass || 'grey'] || '#4a4a4a';
-  const stampRot = -rot * 2;
-  let html = `<div class="cc-diary-panel" style="--p-rot:rotate(${rot}deg);--p-rot-from:rotate(${rotFrom}deg);--p-rot-over:rotate(${rotOver}deg)">`;
-  if (evt.badgeText) {
-    html += `<div class="cc-stamp" style="color:${badgeColor};--stamp-rot:rotate(${stampRot}deg)">${evt.badgeText}</div>`;
-  }
-  const pName = evt.player || (evt.players?.length === 1 ? evt.players[0] : null);
-  if (pName) {
-    const port = (typeof rpPortrait === 'function') ? rpPortrait(pName, 'xs') : '';
-    html += `<div class="cc-diary-player">${port}<span class="cc-diary-player-name">${pName}</span></div>`;
-  } else if (evt.players?.length > 1) {
-    const ports = evt.players.map(p => (typeof rpPortrait === 'function') ? rpPortrait(p, 'xs') : '').join('');
-    html += `<div class="cc-diary-player">${ports}<span class="cc-diary-player-name">${evt.players.join(', ')}</span></div>`;
-  }
-  html += `<div class="cc-diary-body">${evt.text || ''}</div>`;
-  html += `</div>`;
-  return html;
-}
-
-// ── BROADCAST CARD ──
-function _bcCard(evt) {
-  const isSignal = evt.subtype === 'immunityReveal';
-  const isWinner = evt.badgeClass === 'gold' || isSignal;
-  let html = `<div class="cc-bc-card${isWinner ? ' cc-bc-card--winner' : ''}">`;
-  html += `<div class="cc-bc-transmission-label">${isSignal ? '▲ SIGNAL FOUND' : '● TRANSMISSION'}</div>`;
-  const pName = evt.player || (evt.players?.length === 1 ? evt.players[0] : null);
-  if (pName) {
-    const port = (typeof rpPortrait === 'function') ? rpPortrait(pName, 'xs') : '';
-    html += `<div class="cc-bc-player">${port}<span class="cc-bc-player-name${isWinner ? ' cc-bc-player-name--winner' : ''}">${pName}</span></div>`;
-  }
-  html += `<div class="cc-bc-card-body">${evt.text || ''}</div>`;
-  if (evt.score !== undefined) {
-    const barPct = Math.max(5, Math.min(100, ((evt.score + 5) / 20) * 100));
-    html += `<div class="cc-bc-score-bar-wrap"><div class="cc-bc-score-bar" style="--bar-pct:${barPct}%"></div></div>`;
-  }
-  if (evt.badgeText) html += `<div class="cc-bc-badge">[ ${evt.badgeText} ]</div>`;
-  html += `</div>`;
-  return html;
-}
-
-// ── CLICK-TO-REVEAL — inline onclick (Lucky Hunt pattern) ──
-function _ccInlineReveal(stateKey, targetIdx, screenId, epNum) {
-  return `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};` +
-    `_tvState['${stateKey}'].idx=${targetIdx};` +
-    `const _cep=gs.episodeHistory.find(e=>e.num===${epNum});` +
-    `if(_cep){const _cm=document.querySelector('.rp-main');const _cs=_cm?_cm.scrollTop:0;` +
-    `buildVPScreens(_cep);const _ci=vpScreens.findIndex(s=>s.id==='${screenId}');` +
-    `if(_ci>=0)vpCurrentScreen=_ci;renderVPScreen();if(_cm)_cm.scrollTop=_cs;}`;
-}
-
-// ── MONITOR WALL FRAME ──
-function _monitorWall(mode, phaseLabel, tapeNum, tapeTotal) {
-  const cls = mode === 'sv' ? 'cc-monitor-frame--sv' : mode === 'diary' ? 'cc-monitor-frame--diary' : 'cc-monitor-frame--bc';
-  const modeLabel = mode === 'sv' ? '📡 SURVEILLANCE' : mode === 'diary' ? '📓 CASTAWAY DIARY' : '📻 EMERGENCY BROADCAST';
-  return `<div class="cc-monitor-frame ${cls}"><span class="cc-monitor-mode">${modeLabel}</span><span>${phaseLabel}</span><span class="cc-monitor-tape">TAPE ${tapeNum}/${tapeTotal}</span></div>`;
-}
-
-// ══ SECTION BUILDERS ══
-
-// ── Proper phase-0 timestamp: 30s spacing, starts at 00:02:00 ──
-function _floodTs(i) {
-  const secs = 120 + i * 30;
-  return `00:${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
-}
-
-function _buildColdOpen(cc, ep, stateKey, screenId) {
-  const _tvState = window._tvState;
-  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
-  const st = _tvState[stateKey];
-  const events = cc.timeline.filter(e => e.phase === 0);
-  const epNum = ep.num || 0;
-
-  let html = `<div class="cc-sv cc-sv--nv">`;
-  html += _monitorWall('sv', 'PHASE 0 — THE FLOOD', 1, 6);
-  html += `<div class="cc-sv-cam">`;
-  html += `<span class="cc-sv-camid"><span class="cc-rec"></span>CAM-00 · CAMP WAWANAKWA OVERVIEW</span>`;
-  html += `<span class="cc-sv-ts">00:00:00 ▶ LIVE</span>`;
-  html += `</div>`;
-  html += `<div style="font-family:'Courier New',monospace;font-size:14px;font-weight:700;color:#00ff41;letter-spacing:3px;margin-bottom:2px;position:relative;z-index:2">📡 CAMP CASTAWAYS</div>`;
-  html += `<div style="font-family:'Courier New',monospace;font-size:9px;color:#00a028;letter-spacing:1px;margin-bottom:10px;position:relative;z-index:2">PHASE 0 — THE FLOOD</div>`;
-
-  events.forEach((evt, i) => {
-    if (i > st.idx + 1) return;
-    if (i <= st.idx) { html += _svCard(evt, 'CAM-00', _floodTs(i)); }
-    else if (i === st.idx + 1) {
-      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
-      html += `<div class="cc-sv-reveal-btn" onclick="${_ccInlineReveal(stateKey, i, screenId, epNum)}">▶ NEXT ENTRY</div>`;
-      html += `<div class="cc-sv-reveal-btn" style="opacity:0.55;font-size:9px;padding:6px 12px;letter-spacing:1px" onclick="${_ccInlineReveal(stateKey, events.length - 1, screenId, epNum)}">⏩ REVEAL ALL</div>`;
-      html += `</div>`;
-    }
-  });
-
-  if (st.idx >= events.length - 1 && events.length > 0) {
-    html += `<div class="cc-sv-phase-end">▼ END PHASE 0 — GROUPS FORMING</div>`;
-  }
-  html += `</div>`;
-  return html;
-}
-
-function _buildGroupScreen(cc, groupObj, ep, stateKey, screenId, tapeNum, tapeTotal) {
-  const _tvState = window._tvState;
-  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
-  const st = _tvState[stateKey];
-  const events = cc.timeline.filter(e => e.phase === 1 && e.group === groupObj.label);
-  const epNum = ep.num || 0;
-
-  let html = `<div class="cc-diary">`;
-  html += _monitorWall('diary', `PHASE 1 — GROUP ${groupObj.label}`, tapeNum, tapeTotal);
-  html += `<div class="cc-diary-header">📓 GROUP ${groupObj.label}</div>`;
-  html += `<div class="cc-diary-sub">PHASE 1 — SCATTERED</div>`;
-  html += `<div class="cc-diary-members">`;
-  groupObj.members.forEach(m => {
-    const port = (typeof rpPortrait === 'function') ? rpPortrait(m, 'sm') : '';
-    html += `<div class="cc-diary-member">${port}<span class="cc-diary-member-name">${m}</span></div>`;
-  });
-  html += `</div>`;
-
-  let panelIdx = 0;
-  events.forEach((evt, i) => {
-    if (i > st.idx + 1) return;
-    if (i <= st.idx) { html += _diaryPanel(evt, panelIdx++); }
-    else if (i === st.idx + 1) {
-      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
-      html += `<div class="cc-pageturn" onclick="${_ccInlineReveal(stateKey, i, screenId, epNum)}">▷ Turn the page</div>`;
-      html += `<div class="cc-pageturn" style="opacity:0.55;font-size:10px;padding:5px 10px" onclick="${_ccInlineReveal(stateKey, events.length - 1, screenId, epNum)}">⏩ Reveal all</div>`;
-      html += `</div>`;
-    }
-  });
-
-  if (st.idx >= events.length - 1 && events.length > 0) {
-    html += `<div class="cc-diary-phase-end">— Night falls on Group ${groupObj.label} —</div>`;
-  }
-  html += `</div>`;
-  return html;
-}
-
-function _buildNightScreen(cc, ep, stateKey, screenId, tapeNum, tapeTotal) {
-  const _tvState = window._tvState;
-  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
-  const st = _tvState[stateKey];
-  const events = cc.timeline.filter(e => e.phase === 2);
-  const epNum = ep.num || 0;
-
-  let html = `<div class="cc-diary">`;
-  html += _monitorWall('diary', 'PHASE 2 — THE NIGHT', tapeNum, tapeTotal);
-  html += `<div class="cc-diary-header">🌙 THE NIGHT</div>`;
-  html += `<div class="cc-diary-sub">PHASE 2 — DARKNESS, HUNGER, TRUTH</div>`;
-
-  let panelIdx = 0;
-  events.forEach((evt, i) => {
-    if (i > st.idx + 1) return;
-    if (i <= st.idx) {
-      if (evt.type === 'chrisReaction') {
-        html += `<div class="cc-sv-interrupt"><span class="cc-sv-interrupt-label">◉ CAM INTERRUPTS · SURVEILLANCE</span>${evt.text}</div>`;
-      } else if (evt.type === 'breakdown') {
-        const pName = evt.player;
-        const port = pName && typeof rpPortrait === 'function' ? rpPortrait(pName, 'sm') : '';
-        html += `<div class="cc-breakdown">`;
-        html += `<div class="cc-breakdown-badge">${evt.badgeText || 'BREAKDOWN'}</div>`;
-        if (pName) html += `<div class="cc-breakdown-player">${port}<span class="cc-breakdown-name">${pName}</span></div>`;
-        html += `<div class="cc-breakdown-body">${evt.text || ''}</div>`;
-        if (evt.objectName) html += `<div class="cc-breakdown-obj">"${evt.objectName}"</div>`;
-        html += `</div>`;
-      } else {
-        html += _diaryPanel(evt, panelIdx++);
+  /* rebuild VP screens to persist reveal state */
+  if (typeof buildVPScreens === 'function') {
+    const scrollY = document.querySelector('.rp-page')?.scrollTop ?? 0;
+    const curId = window.vpCurrentScreen;
+    buildVPScreens();
+    if (curId != null) {
+      const screens = window.vpScreens || [];
+      const idx = screens.findIndex(s => s.id === curId);
+      if (idx >= 0) {
+        window.vpCurrentScreen = curId;
+        if (typeof renderVPScreen === 'function') renderVPScreen(idx);
       }
-    } else if (i === st.idx + 1) {
-      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
-      html += `<div class="cc-pageturn" onclick="${_ccInlineReveal(stateKey, i, screenId, epNum)}">▷ Turn the page</div>`;
-      html += `<div class="cc-pageturn" style="opacity:0.55;font-size:10px;padding:5px 10px" onclick="${_ccInlineReveal(stateKey, events.length - 1, screenId, epNum)}">⏩ Reveal all</div>`;
-      html += `</div>`;
     }
-  });
-
-  if (st.idx >= events.length - 1 && events.length > 0) {
-    html += `<div class="cc-diary-phase-end">— Dawn approaches —</div>`;
+    const page = document.querySelector('.rp-page');
+    if (page) page.scrollTop = scrollY;
   }
-  html += `</div>`;
-  return html;
+}
+window._ccInlineReveal = _ccInlineReveal;
+
+/** Flood timestamp helper (unchanged) */
+function _floodTs(min) {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
-function _buildRegroupScreen(cc, ep, stateKey, screenId, tapeNum, tapeTotal) {
-  const _tvState = window._tvState;
-  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
-  const st = _tvState[stateKey];
-  const events = cc.timeline.filter(e => e.phase === 3);
-  const epNum = ep.num || 0;
+/* ---------- Screen Builders ---------- */
 
-  let html = `<div class="cc-diary">`;
-  html += _monitorWall('diary', 'PHASE 3 — REGROUPING', tapeNum, tapeTotal);
-  html += `<div class="cc-diary-header">🧭 REGROUPING</div>`;
-  html += `<div class="cc-diary-sub">PHASE 3 — FINDING EACH OTHER</div>`;
-
-  let panelIdx = 0;
-  events.forEach((evt, i) => {
-    if (i > st.idx + 1) return;
-    if (i <= st.idx) {
-      if (evt.type === 'chrisReaction') {
-        html += `<div class="cc-sv-interrupt"><span class="cc-sv-interrupt-label">◉ SURVEILLANCE FLASH</span>${evt.text}</div>`;
-      } else { html += _diaryPanel(evt, panelIdx++); }
-    } else if (i === st.idx + 1) {
-      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
-      html += `<div class="cc-pageturn" onclick="${_ccInlineReveal(stateKey, i, screenId, epNum)}">▷ Turn the page</div>`;
-      html += `<div class="cc-pageturn" style="opacity:0.55;font-size:10px;padding:5px 10px" onclick="${_ccInlineReveal(stateKey, events.length - 1, screenId, epNum)}">⏩ Reveal all</div>`;
-      html += `</div>`;
-    }
-  });
-  html += `</div>`;
-  return html;
-}
-
-function _buildStormScreen(cc, ep, stateKey, screenId, tapeNum, tapeTotal) {
-  const _tvState = window._tvState;
-  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
-  const st = _tvState[stateKey];
-  const events = cc.timeline.filter(e => e.phase === 4);
-  const epNum = ep.num || 0;
-
-  let html = `<div class="cc-sv">`;
-  html += _monitorWall('sv', 'PHASE 4 — STORMING THE CAMP', tapeNum, tapeTotal);
-  html += `<div class="cc-sv-cam">`;
-  html += `<span class="cc-sv-camid"><span class="cc-rec"></span>CAM-04 · CHRIS'S CAMP</span>`;
-  html += `<span class="cc-sv-ts">DAYLIGHT ▶ RECORDING</span>`;
-  html += `</div>`;
-  html += `<div style="font-family:'Courier New',monospace;font-size:14px;font-weight:700;color:#00ff41;letter-spacing:3px;margin-bottom:2px;position:relative;z-index:2">⚡ STORMING THE CAMP</div>`;
-  html += `<div style="font-family:'Courier New',monospace;font-size:9px;color:#00a028;letter-spacing:1px;margin-bottom:10px;position:relative;z-index:2">PHASE 4 — CLIMAX</div>`;
-
-  const camIds = ['CAM-04', 'CAM-05', 'CAM-06', 'CAM-07', 'CAM-08', 'CAM-09'];
-  events.forEach((evt, i) => {
-    if (i > st.idx + 1) return;
-    if (i <= st.idx) {
-      const camId = camIds[i % camIds.length];
-      const secBase = 8 * 3600;
-      const s = secBase + i * 37;
-      const ts = `${String(Math.floor(s / 3600) % 24).padStart(2, '0')}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
-      if (evt.isPlayback && evt.origEventText) {
-        // VHS replay panel cites the original diary moment, tinted surveillance-green
-        html += `<div class="cc-vhs-replay">`;
-        html += `<div class="cc-vhs-tracking"></div>`;
-        html += `<div class="cc-vhs-replay-tag">⏪ VHS RECALL — ${(evt.callbackType || 'FOOTAGE').toUpperCase()}</div>`;
-        html += `<div class="cc-vhs-replay-body">${evt.origEventText}</div>`;
-        html += `</div>`;
-      } else if (evt.isPlayback) {
-        html += `<div class="cc-vhs-replay"><div class="cc-vhs-tracking"></div><div class="cc-vhs-replay-tag">⏪ PLAYBACK — ${(evt.callbackType || 'FOOTAGE').toUpperCase()}</div></div>`;
-      }
-      html += _svCard(evt, camId, ts);
-    } else if (i === st.idx + 1) {
-      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
-      html += `<div class="cc-sv-reveal-btn" onclick="${_ccInlineReveal(stateKey, i, screenId, epNum)}">▶ NEXT ENTRY</div>`;
-      html += `<div class="cc-sv-reveal-btn" style="opacity:0.55;font-size:9px;padding:6px 12px;letter-spacing:1px" onclick="${_ccInlineReveal(stateKey, events.length - 1, screenId, epNum)}">⏩ REVEAL ALL</div>`;
-      html += `</div>`;
-    }
-  });
-
-  if (st.idx >= events.length - 1 && events.length > 0) {
-    html += `<div class="cc-sv-phase-end">▼ TRANSMISSION COMPLETE</div>`;
-  }
-  html += `</div>`;
-  return html;
-}
-
-function _buildImmunityScreen(cc, ep, stateKey, screenId, tapeNum, tapeTotal) {
-  const _tvState = window._tvState;
-  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
-  const st = _tvState[stateKey];
-  const epNum = ep.num || 0;
-
-  const sortedAsc = Object.entries(cc.personalScores)
-    .sort(([, a], [, b]) => a - b)
-    .map(([name, score]) => ({ name, score, isWinner: name === cc.immunityWinner }));
-
-  const tickerItems = sortedAsc.map(e => `${e.name} — ${e.score.toFixed(1)}`).join('  ·  ');
-
-  let html = `<div class="cc-bc">`;
-  html += _monitorWall('bc', 'PHASE 5 — IMMUNITY RESULTS', tapeNum, tapeTotal);
-  html += `<div class="cc-bc-signal-bar"></div>`;
-  html += `<div class="cc-bc-header-label">▲ SIGNAL FOUND — EMERGENCY BROADCAST</div>`;
-  html += `<div class="cc-bc-header-title">📡 IMMUNITY RESULTS</div>`;
-  html += `<div class="cc-bc-header-sub">SCORES TRANSMITTED SECURELY</div>`;
-
-  sortedAsc.forEach((entry, i) => {
-    if (i > st.idx + 1) return;
-    if (i <= st.idx) {
-      const evt = { type: 'immunityScore', subtype: entry.isWinner ? 'immunityReveal' : 'score', player: entry.name, score: entry.score,
-        text: entry.isWinner ? `${entry.name} — TOP SCORE: ${entry.score.toFixed(1)} — IMMUNITY WINNER` : `${entry.name} — ${entry.score.toFixed(1)}`,
-        badgeText: entry.isWinner ? '🏆 IMMUNE' : `RANK #${sortedAsc.length - i}`, badgeClass: entry.isWinner ? 'gold' : '' };
-      html += _bcCard(evt);
-    } else if (i === st.idx + 1) {
-      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
-      html += `<div class="cc-bc-reveal-btn" onclick="${_ccInlineReveal(stateKey, i, screenId, epNum)}">▶ NEXT TRANSMISSION</div>`;
-      html += `<div class="cc-bc-reveal-btn" style="opacity:0.55;font-size:9px;padding:6px 12px;letter-spacing:1px" onclick="${_ccInlineReveal(stateKey, sortedAsc.length - 1, screenId, epNum)}">⏩ REVEAL ALL</div>`;
-      html += `</div>`;
-    }
-  });
-
-  if (st.idx >= sortedAsc.length - 1 && sortedAsc.length > 0) {
-    html += `<div class="cc-bc-phase-end">▲ END TRANSMISSION — TRIBAL COUNCIL FOLLOWS</div>`;
-    html += `<div class="cc-ticker-wrap"><div class="cc-ticker">${tickerItems}  ·  ${tickerItems}</div></div>`;
-  }
-  html += `</div>`;
-  return html;
-}
-
-// ── PER-SCREEN EXPORTS (consumed by vp-screens.js) ──
-
-export function rpBuildCCFlood(ep) {
+function _buildColdOpen(ep) {
   const cc = ep.campCastaways;
-  if (!cc?.timeline?.length) return '';
-  const epNum = ep.num || 0;
-  const stateKey = `cc_cold_${epNum}`;
-  const tapeTotal = 3 + (cc.groups?.length || 2);
-  return `<style>${CC_STYLES}</style><div class="rp-page">` + _buildColdOpen(cc, ep, stateKey, 'cc-flood', tapeTotal) + `</div>`;
+  if (!cc) return '';
+  const nGroups = cc.groups?.length || 0;
+  const tapeTotal = 5 + nGroups;
+
+  let html = '';
+  /* Flood overview */
+  html += _shoreArtifact(
+    '\u{1F30A} The Flood',
+    `<p>${cc.floodNarrative || 'The waters rose without warning...'}</p>`,
+    { tapeNum: `1/${tapeTotal}`, seal: '\u{1F30A}', tilt: -1.5 }
+  );
+
+  /* Castaways list */
+  if (cc.castaways && cc.castaways.length) {
+    let list = cc.castaways.map(c => {
+      const port = typeof rpPortrait === 'function' ? rpPortrait(c.name, 40) : '';
+      return `<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px">${port}<b>${c.name}</b></span>`;
+    }).join('');
+    html += _shoreArtifact('Castaways', `<p>${list}</p>`, { tilt: 1 });
+  }
+
+  return html;
 }
 
-export function rpBuildCCGroup(ep, groupObj) {
+function _buildGroupScreen(ep, groupIdx) {
   const cc = ep.campCastaways;
-  if (!cc?.timeline?.length) return '';
-  const epNum = ep.num || 0;
-  const gLabel = groupObj.label;
-  const stateKey = `cc_grp_${gLabel}_${epNum}`;
-  const groupIdx = (cc.groups || []).findIndex(g => g.label === gLabel);
+  if (!cc || !cc.groups || !cc.groups[groupIdx]) return '';
+  const grp = cc.groups[groupIdx];
+  const nGroups = cc.groups.length;
+  const tapeTotal = 5 + nGroups;
   const tapeNum = 2 + groupIdx;
-  const tapeTotal = 3 + (cc.groups?.length || 2);
-  const screenId = `cc-group-${gLabel}`;
-  return `<style>${CC_STYLES}</style><div class="rp-page">` + _buildGroupScreen(cc, groupObj, ep, stateKey, screenId, tapeNum, tapeTotal) + `</div>`;
+  const label = grp.label || grp.name || `Group ${groupIdx + 1}`;
+
+  const ts = window._tvState || {};
+  const stateKey = `cc-group-${groupIdx}`;
+  if (!ts[stateKey]) ts[stateKey] = { idx: -1 };
+
+  let html = '';
+
+  /* Group header */
+  html += `<div class="cc-shore-header">\u{1F334} ${label}</div>`;
+
+  /* Members */
+  if (grp.members && grp.members.length) {
+    const mHtml = grp.members.map(m => {
+      const port = typeof rpPortrait === 'function' ? rpPortrait(m, 36) : '';
+      return `<span style="display:inline-flex;align-items:center;gap:3px;margin:2px 4px">${port}${m}</span>`;
+    }).join('');
+    html += _shoreArtifact(`${label} — Members`, mHtml, { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: 0.8 });
+  }
+
+  /* Events */
+  if (grp.events && grp.events.length) {
+    grp.events.forEach((evt, i) => {
+      const revealKey = `${stateKey}-evt-${i}`;
+      if (!ts[revealKey]) ts[revealKey] = { idx: -1 };
+      const isRevealed = ts[revealKey].idx >= 0;
+
+      if (evt.type === 'surveillance' || evt.type === 'challenge') {
+        html += _shoreSurveillance(
+          evt.label || 'Palm Cam',
+          evt.timestamp || '',
+          `<p>${evt.text || ''}</p>`,
+          { revealKey: isRevealed ? null : revealKey }
+        );
+      } else if (evt.type === 'breakdown' || evt.type === 'coconut') {
+        html += _shoreBreakdown(
+          '\u{1F965}',
+          evt.text || 'Mr. Coconut stares into the void...',
+          { revealKey: isRevealed ? null : revealKey }
+        );
+      } else if (evt.type === 'broadcast' || evt.type === 'signal') {
+        html += _shoreBroadcast(
+          evt.label || 'SIGNAL INTERCEPT',
+          `<p>${evt.text || ''}</p>`,
+          { revealKey: isRevealed ? null : revealKey }
+        );
+      } else {
+        /* Default: diary artifact */
+        html += _shoreArtifact(
+          evt.label || 'Shore Log',
+          `<p>${evt.text || ''}</p>`,
+          { tilt: (Math.random() * 3 - 1.5).toFixed(1), revealKey: isRevealed ? null : revealKey }
+        );
+      }
+    });
+  }
+
+  /* Confessionals */
+  if (grp.confessionals && grp.confessionals.length) {
+    grp.confessionals.forEach((conf, i) => {
+      const revealKey = `${stateKey}-conf-${i}`;
+      if (!ts[revealKey]) ts[revealKey] = { idx: -1 };
+      const isRevealed = ts[revealKey].idx >= 0;
+
+      const port = typeof rpPortrait === 'function' ? rpPortrait(conf.name, 48) : '';
+      html += _shoreArtifact(
+        `\u{1F4DD} ${conf.name}'s Journal`,
+        `<div style="display:flex;gap:0.8rem;align-items:flex-start">${port}<div><p>${conf.text || ''}</p></div></div>`,
+        { seal: '\u2709', tilt: (Math.random() * 3 - 1.5).toFixed(1), revealKey: isRevealed ? null : revealKey }
+      );
+    });
+  }
+
+  return html;
 }
 
-export function rpBuildCCNight(ep) {
+function _buildNightScreen(ep) {
   const cc = ep.campCastaways;
-  if (!cc?.timeline?.length) return '';
-  const epNum = ep.num || 0;
-  const stateKey = `cc_night_${epNum}`;
-  const nGroups = cc.groups?.length || 2;
+  if (!cc) return '';
+  const nGroups = cc.groups?.length || 0;
+  const tapeTotal = 5 + nGroups;
   const tapeNum = 2 + nGroups;
-  const tapeTotal = 3 + nGroups;
-  return `<style>${CC_STYLES}</style><div class="rp-page">` + _buildNightScreen(cc, ep, stateKey, 'cc-night', tapeNum, tapeTotal) + `</div>`;
+
+  const ts = window._tvState || {};
+  if (!ts['cc-night']) ts['cc-night'] = { idx: -1 };
+
+  let html = '';
+  html += _nightStars(35);
+  html += `<div class="cc-shore-header">\u{1F319} Night Falls</div>`;
+
+  if (cc.nightEvents && cc.nightEvents.length) {
+    cc.nightEvents.forEach((evt, i) => {
+      const revealKey = `cc-night-evt-${i}`;
+      if (!ts[revealKey]) ts[revealKey] = { idx: -1 };
+      const isRevealed = ts[revealKey].idx >= 0;
+
+      if (evt.type === 'surveillance' || evt.type === 'nightvision') {
+        html += _shoreSurveillance(
+          '\u{1F4F7} Night Vision',
+          evt.timestamp || '',
+          `<p>${evt.text || ''}</p>`,
+          { revealKey: isRevealed ? null : revealKey }
+        );
+      } else if (evt.type === 'breakdown' || evt.type === 'coconut') {
+        html += _shoreBreakdown(
+          '\u{1F965}',
+          evt.text || '',
+          { revealKey: isRevealed ? null : revealKey }
+        );
+      } else {
+        html += _shoreArtifact(
+          evt.label || '\u{1F319} Night Log',
+          `<p>${evt.text || ''}</p>`,
+          { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: (Math.random() * 2 - 1).toFixed(1),
+            revealKey: isRevealed ? null : revealKey }
+        );
+      }
+    });
+  } else if (cc.nightNarrative) {
+    html += _shoreArtifact(
+      '\u{1F319} Night Log',
+      `<p>${cc.nightNarrative}</p>`,
+      { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: -0.5 }
+    );
+  }
+
+  return html;
 }
 
-export function rpBuildCCRegroup(ep) {
+function _buildRegroupScreen(ep) {
   const cc = ep.campCastaways;
-  if (!cc?.timeline?.length) return '';
-  const epNum = ep.num || 0;
-  const stateKey = `cc_regroup_${epNum}`;
-  const nGroups = cc.groups?.length || 2;
+  if (!cc) return '';
+  const nGroups = cc.groups?.length || 0;
+  const tapeTotal = 5 + nGroups;
   const tapeNum = 3 + nGroups;
-  const tapeTotal = 3 + nGroups;
-  return `<style>${CC_STYLES}</style><div class="rp-page">` + _buildRegroupScreen(cc, ep, stateKey, 'cc-regroup', tapeNum, tapeTotal) + `</div>`;
+
+  const ts = window._tvState || {};
+  if (!ts['cc-regroup']) ts['cc-regroup'] = { idx: -1 };
+
+  let html = '';
+  html += `<div class="cc-shore-header">\u{1F305} Regroup at Dawn</div>`;
+
+  if (cc.regroupEvents && cc.regroupEvents.length) {
+    cc.regroupEvents.forEach((evt, i) => {
+      const revealKey = `cc-regroup-evt-${i}`;
+      if (!ts[revealKey]) ts[revealKey] = { idx: -1 };
+      const isRevealed = ts[revealKey].idx >= 0;
+
+      html += _shoreArtifact(
+        evt.label || 'Dawn Report',
+        `<p>${evt.text || ''}</p>`,
+        { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: (Math.random() * 3 - 1.5).toFixed(1),
+          revealKey: isRevealed ? null : revealKey }
+      );
+    });
+  } else if (cc.regroupNarrative) {
+    html += _shoreArtifact(
+      '\u{1F305} Dawn Report',
+      `<p>${cc.regroupNarrative}</p>`,
+      { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: 0.5 }
+    );
+  }
+
+  return html;
 }
 
-export function rpBuildCCStorm(ep) {
+function _buildStormScreen(ep) {
   const cc = ep.campCastaways;
-  if (!cc?.timeline?.length) return '';
-  const epNum = ep.num || 0;
-  const stateKey = `cc_storm_${epNum}`;
-  const nGroups = cc.groups?.length || 2;
+  if (!cc) return '';
+  const nGroups = cc.groups?.length || 0;
+  const tapeTotal = 5 + nGroups;
   const tapeNum = 4 + nGroups;
-  const tapeTotal = 5 + nGroups;
-  return `<style>${CC_STYLES}</style><div class="rp-page">` + _buildStormScreen(cc, ep, stateKey, 'cc-storm', tapeNum, tapeTotal) + `</div>`;
+
+  const ts = window._tvState || {};
+  if (!ts['cc-storm']) ts['cc-storm'] = { idx: -1 };
+
+  let html = '';
+  html += `<div class="cc-lightning-overlay"></div>`;
+  html += `<div class="cc-shore-header">\u26A1 The Storm</div>`;
+
+  if (cc.stormEvents && cc.stormEvents.length) {
+    cc.stormEvents.forEach((evt, i) => {
+      const revealKey = `cc-storm-evt-${i}`;
+      if (!ts[revealKey]) ts[revealKey] = { idx: -1 };
+      const isRevealed = ts[revealKey].idx >= 0;
+
+      if (evt.type === 'broadcast' || evt.type === 'signal' || evt.type === 'emergency') {
+        html += _shoreBroadcast(
+          evt.label || '\u26A1 EMERGENCY SIGNAL',
+          `<p>${evt.text || ''}</p>`,
+          { revealKey: isRevealed ? null : revealKey }
+        );
+      } else {
+        html += _shoreArtifact(
+          evt.label || '\u26A1 Storm Log',
+          `<p>${evt.text || ''}</p>`,
+          { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: (Math.random() * 4 - 2).toFixed(1),
+            revealKey: isRevealed ? null : revealKey }
+        );
+      }
+    });
+  } else if (cc.stormNarrative) {
+    html += _shoreArtifact(
+      '\u26A1 Storm Log',
+      `<p>${cc.stormNarrative}</p>`,
+      { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: -2 }
+    );
+  }
+
+  return html;
 }
 
-export function rpBuildCCImmunity(ep) {
+function _buildImmunityScreen(ep) {
   const cc = ep.campCastaways;
-  if (!cc?.timeline?.length) return '';
-  const epNum = ep.num || 0;
-  const stateKey = `cc_imm_${epNum}`;
-  const nGroups = cc.groups?.length || 2;
-  const tapeNum = 5 + nGroups;
+  if (!cc) return '';
+  const nGroups = cc.groups?.length || 0;
   const tapeTotal = 5 + nGroups;
-  return `<style>${CC_STYLES}</style><div class="rp-page">` + _buildImmunityScreen(cc, ep, stateKey, 'cc-immunity', tapeNum, tapeTotal) + `</div>`;
+  const tapeNum = 5 + nGroups;
+
+  const ts = window._tvState || {};
+  const winnerKey = 'cc-immunity-winner';
+  if (!ts[winnerKey]) ts[winnerKey] = { idx: -1 };
+  const winnerRevealed = ts[winnerKey].idx >= 0;
+
+  let html = '';
+  html += `<div class="cc-shore-header">\u{1F3C6} Immunity</div>`;
+
+  /* Summary */
+  if (cc.immunitySummary) {
+    html += _shoreArtifact(
+      'Final Standing',
+      `<p>${cc.immunitySummary}</p>`,
+      { tapeNum: `${tapeNum}/${tapeTotal}`, seal: '\u{1F3C6}', tilt: 0 }
+    );
+  }
+
+  /* Winner reveal — SOS rocks + sand write */
+  const winner = cc.immunityWinner || cc.winner;
+  if (winner) {
+    const port = (winnerRevealed && typeof rpPortrait === 'function') ? rpPortrait(winner, 64) : '';
+    html += `<div class="cc-sand-write"${!winnerRevealed ? ` data-reveal="${winnerKey}" onclick="_ccInlineReveal(this)"` : ''}>
+      <div class="cc-sos-rocks">S \u00B7 O \u00B7 S</div>
+      ${port}
+      <div class="cc-sand-name ${winnerRevealed ? 'revealed' : 'reveal-pending'}">${winner}</div>
+    </div>`;
+  }
+
+  return html;
 }
 
-// Legacy single-screen export kept for backward compat
-export function rpBuildCampCastaways(ep) {
+/* ---------- Exports (rpBuildCC*) ---------- */
+
+function rpBuildCCFlood(ep) {
+  const cc = ep.campCastaways;
+  if (!cc) return null;
+  const inner = _buildColdOpen(ep);
+  if (!inner) return null;
+  return CC_SHORE_STYLES + `<div class="cc-shore" data-phase="flood"><div class="cc-shore-scene">${inner}</div></div>`;
+}
+
+function rpBuildCCGroup(ep, groupObj) {
+  const cc = ep.campCastaways;
+  if (!cc || !cc.groups) return null;
+  const groupIdx = cc.groups.indexOf(groupObj);
+  if (groupIdx < 0) return null;
+  const grp = groupObj;
+  const label = grp.label || grp.name || `Group ${groupIdx + 1}`;
+  const inner = _buildGroupScreen(ep, groupIdx);
+  if (!inner) return null;
+  return CC_SHORE_STYLES + `<div class="cc-shore" data-phase="group"><div class="cc-shore-scene">${inner}</div></div>`;
+}
+
+function rpBuildCCNight(ep) {
+  const cc = ep.campCastaways;
+  if (!cc) return null;
+  const inner = _buildNightScreen(ep);
+  if (!inner) return null;
+  return CC_SHORE_STYLES + `<div class="cc-shore" data-phase="night"><div class="cc-shore-scene">${inner}</div></div>`;
+}
+
+function rpBuildCCRegroup(ep) {
+  const cc = ep.campCastaways;
+  if (!cc) return null;
+  const inner = _buildRegroupScreen(ep);
+  if (!inner) return null;
+  return CC_SHORE_STYLES + `<div class="cc-shore" data-phase="regroup"><div class="cc-shore-scene">${inner}</div></div>`;
+}
+
+function rpBuildCCStorm(ep) {
+  const cc = ep.campCastaways;
+  if (!cc) return null;
+  const inner = _buildStormScreen(ep);
+  if (!inner) return null;
+  return CC_SHORE_STYLES + `<div class="cc-shore" data-phase="storm"><div class="cc-shore-scene">${inner}</div></div>`;
+}
+
+function rpBuildCCImmunity(ep) {
+  const cc = ep.campCastaways;
+  if (!cc) return null;
+  const inner = _buildImmunityScreen(ep);
+  if (!inner) return null;
+  return CC_SHORE_STYLES + `<div class="cc-shore" data-phase="immunity"><div class="cc-shore-scene">${inner}</div></div>`;
+}
+
+function rpBuildCampCastaways(ep) {
   return rpBuildCCFlood(ep);
 }
+
+export { rpBuildCCFlood, rpBuildCCGroup, rpBuildCCNight, rpBuildCCRegroup, rpBuildCCStorm, rpBuildCCImmunity, rpBuildCampCastaways };

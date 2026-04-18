@@ -673,12 +673,13 @@ export function simulateCampCastaways(ep) {
 
     // ── Food Finding (~60%) ──
     if (Math.random() < 0.60) {
-      const forager = group.slice().sort((a, b) => {
-        const sa = pStats(a), sb = pStats(b);
-        return (sb.intuition * 0.04 + sb.mental * 0.03 + sb.endurance * 0.02) - (sa.intuition * 0.04 + sa.mental * 0.03 + sa.endurance * 0.02);
-      })[0];
+      // Weighted-random: intuition + endurance + physical (survival instincts, not book smarts)
+      const _foragW = n => { const s = pStats(n); return Math.max(0.01, s.intuition * 0.04 + s.endurance * 0.03 + s.physical * 0.02); };
+      const _foragTotal = group.reduce((t, n) => t + _foragW(n), 0);
+      let _foragR = Math.random() * _foragTotal;
+      const forager = group.find(n => { _foragR -= _foragW(n); return _foragR <= 0; }) || group[group.length - 1];
       const pr = pronouns(forager);
-      const successChance = pStats(forager).intuition * 0.04 + pStats(forager).mental * 0.03 + pStats(forager).endurance * 0.02 + Math.random() * 0.2;
+      const successChance = pStats(forager).intuition * 0.04 + pStats(forager).endurance * 0.03 + pStats(forager).physical * 0.02 + Math.random() * 0.2;
       if (successChance >= 0.35) {
         const text = _rp(FOOD_TEXTS.success)(forager, pr);
         personalScores[forager] += 1.5;
@@ -699,9 +700,13 @@ export function simulateCampCastaways(ep) {
 
     // ── Shelter Building (~50%, groups ≥ 2) ──
     if (group.length >= 2 && Math.random() < 0.50) {
-      const builder = group.slice().sort((a, b) => (pStats(b).endurance * 0.05 + pStats(b).mental * 0.04) - (pStats(a).endurance * 0.05 + pStats(a).mental * 0.04))[0];
+      // Weighted-random: physical + endurance (manual labor, no mental)
+      const _buildW = n => { const s = pStats(n); return Math.max(0.01, s.physical * 0.04 + s.endurance * 0.05); };
+      const _buildTotal = group.reduce((t, n) => t + _buildW(n), 0);
+      let _buildR = Math.random() * _buildTotal;
+      const builder = group.find(n => { _buildR -= _buildW(n); return _buildR <= 0; }) || group[group.length - 1];
       const pr = pronouns(builder);
-      const buildScore = pStats(builder).endurance * 0.05 + pStats(builder).mental * 0.04 + Math.random() * 0.3;
+      const buildScore = pStats(builder).physical * 0.04 + pStats(builder).endurance * 0.05 + Math.random() * 0.3;
       // Check for treehouse (first group to roll it)
       const treehouseAvail = !timeline.some(e => e.type === 'shelterBuild' && e.outcome === 'treehouse');
       if (treehouseAvail && Math.random() < 0.15) {

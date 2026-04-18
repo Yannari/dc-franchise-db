@@ -2044,11 +2044,12 @@ function _ccInlineReveal(stateKey, targetIdx, screenId, epNum) {
   return `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};` +
     `_tvState['${stateKey}'].idx=${targetIdx};` +
     `(function(){` +
-      `var sc=document.querySelector('.rp-main');var st=sc?sc.scrollTop:0;` +
-      `buildVPScreens();` +
-      `var ss=window.vpScreens||[];var si=ss.findIndex(function(s){return s.id==='${screenId}'});` +
-      `if(si>=0){window.vpCurrentScreen=si;renderVPScreen();}` +
-      `var sc2=document.querySelector('.rp-main');if(sc2)sc2.scrollTop=st;` +
+      `var ep=gs.episodeHistory.find(function(e){return e.num===${epNum}});` +
+      `if(ep){var m=document.querySelector('.rp-main');var st=m?m.scrollTop:0;` +
+      `buildVPScreens(ep);` +
+      `var ss=vpScreens||[];var si=ss.findIndex(function(s){return s.id==='${screenId}'});` +
+      `if(si>=0){vpCurrentScreen=si;}renderVPScreen();` +
+      `var m2=document.querySelector('.rp-main');if(m2)m2.scrollTop=st;}` +
     `})()`;
 }
 
@@ -2064,46 +2065,51 @@ function _shoreNextBtns(stateKey, nextIdx, totalLen, screenId, epNum) {
 
 /* ---------- Screen Builders ---------- */
 
-function _buildColdOpen(ep, stateKey, screenId) {
-  const _tvState = window._tvState;
-  const cc = ep.campCastaways;
-  if (!cc) return '';
-  const nGroups = cc.groups?.length || 0;
-  const tapeTotal = 5 + nGroups;
-  const epNum = ep.num || 0;
+/** Map a timeline event to a shore-themed card */
+function _eventToCard(evt, opts = {}) {
+  const badge = evt.badgeText ? `<span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:0.75rem;font-weight:bold;background:${
+    evt.badgeClass === 'gold' ? '#FFD700' : evt.badgeClass === 'green' ? '#4CAF50' :
+    evt.badgeClass === 'red' ? '#E53935' : evt.badgeClass === 'blue' ? '#2196F3' :
+    evt.badgeClass === 'purple' ? '#9C27B0' : evt.badgeClass === 'yellow' ? '#FFC107' : '#888'
+  };color:${evt.badgeClass === 'gold' || evt.badgeClass === 'yellow' ? '#333' : '#fff'};margin-bottom:6px">${evt.badgeText}</span>` : '';
 
-  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
-  const st = _tvState[stateKey];
+  const portrait = evt.player && typeof window.rpPortrait === 'function' ? window.rpPortrait(evt.player, 40) : '';
+  const body = `${badge}<div style="display:flex;gap:0.6rem;align-items:flex-start;margin-top:4px">${portrait}<div><p>${evt.text || ''}</p></div></div>`;
 
-  // Collect all revealable items
-  const items = [];
-
-  // Flood overview
-  items.push(_shoreArtifact(
-    '\u{1F30A} The Flood',
-    `<p>${cc.floodNarrative || 'The waters rose without warning...'}</p>`,
-    { tapeNum: `1/${tapeTotal}`, seal: '\u{1F30A}', tilt: -1.5 }
-  ));
-
-  // Castaways list
-  if (cc.castaways && cc.castaways.length) {
-    let list = cc.castaways.map(c => {
-      const port = typeof window.rpPortrait === 'function' ? window.rpPortrait(c.name, 40) : '';
-      return `<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px">${port}<b>${c.name}</b></span>`;
-    }).join('');
-    items.push(_shoreArtifact('Castaways', `<p>${list}</p>`, { tilt: 1 }));
+  // Chris quotes → surveillance card
+  if (evt.type === 'chrisAnnounce' || evt.type === 'chrisReaction') {
+    return _shoreSurveillance('PALM CAM \u2014 CHRIS', opts.timestamp || '', body);
   }
-
-  // Flood events
-  if (cc.floodEvents && cc.floodEvents.length) {
-    cc.floodEvents.forEach(evt => {
-      items.push(_shoreSurveillance(
-        'CAM-00', _floodTs(evt.time || 0),
-        `<p>${evt.text || ''}</p>`
-      ));
-    });
+  // Breakdowns → coconut card
+  if (evt.type === 'breakdown') {
+    const face = evt.subtype === 'breakingPoint' ? '\u{1F62D}' :
+                 evt.subtype === 'introduction' ? '\u{1F965}' :
+                 evt.subtype === 'conversation' ? '\u{1F917}' : '\u{1F440}';
+    return _shoreBreakdown(face, `${badge}<p>${evt.text || ''}</p>`);
   }
+  // Confessionals → journal artifact
+  if (evt.type === 'confessional') {
+    return _shoreArtifact(
+      `\u{1F4DD} ${evt.player || 'Unknown'}'s Journal`,
+      body,
+      { seal: '\u2709', tilt: (Math.random() * 3 - 1.5).toFixed(1) }
+    );
+  }
+  // Camera playback → surveillance
+  if (evt.isPlayback) {
+    return _shoreSurveillance('PALM CAM \u2014 PLAYBACK', opts.timestamp || '', body);
+  }
+  // Immunity reveal → broadcast
+  if (evt.type === 'immunityReveal') {
+    return _shoreBroadcast('\u{1F3C6} IMMUNITY WINNER', body);
+  }
+  // Default → torn-paper artifact
+  const title = evt.badgeText || opts.title || 'Shore Log';
+  return _shoreArtifact(title, body, { tilt: (Math.random() * 4 - 2).toFixed(1), ...opts });
+}
 
+/** Standard reveal loop: items array + _tvState gate */
+function _revealLoop(items, st, stateKey, screenId, epNum) {
   let html = '';
   items.forEach((card, i) => {
     if (i > st.idx + 1) return;
@@ -2116,11 +2122,25 @@ function _buildColdOpen(ep, stateKey, screenId) {
       }
     }
   });
+  return html;
+}
+
+function _buildColdOpen(ep, stateKey, screenId) {
+  const _tvState = window._tvState;
+  const cc = ep.campCastaways;
+  if (!cc || !cc.timeline) return '';
+  const epNum = ep.num || 0;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const st = _tvState[stateKey];
+
+  const events = cc.timeline.filter(e => e.phase === 0);
+  const items = events.map((evt, i) => _eventToCard(evt, { timestamp: _floodTs(i * 3) }));
+
+  let html = _revealLoop(items, st, stateKey, screenId, epNum);
 
   if (st.idx >= items.length - 1 && items.length > 0) {
     html += `<div class="cc-shore-done">\u{1F30A} All flood logs recovered.</div>`;
   }
-
   return html;
 }
 
@@ -2129,75 +2149,31 @@ function _buildGroupScreen(ep, groupIdx, stateKey, screenId) {
   const cc = ep.campCastaways;
   if (!cc || !cc.groups || !cc.groups[groupIdx]) return '';
   const grp = cc.groups[groupIdx];
-  const nGroups = cc.groups.length;
-  const tapeTotal = 5 + nGroups;
-  const tapeNum = 2 + groupIdx;
-  const label = grp.label || grp.name || `Group ${groupIdx + 1}`;
+  const label = grp.label || `Group ${groupIdx + 1}`;
   const epNum = ep.num || 0;
-
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const st = _tvState[stateKey];
 
-  const items = [];
-
-  // Members card (always visible, not counted as reveal step)
+  // Members card (always visible)
   let membersCard = '';
   if (grp.members && grp.members.length) {
     const mHtml = grp.members.map(m => {
       const port = typeof window.rpPortrait === 'function' ? window.rpPortrait(m, 36) : '';
       return `<span style="display:inline-flex;align-items:center;gap:3px;margin:2px 4px">${port}${m}</span>`;
     }).join('');
-    membersCard = _shoreArtifact(`${label} \u2014 Members`, mHtml, { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: 0.8 });
+    membersCard = _shoreArtifact(`${label} \u2014 Members`, mHtml, { tilt: 0.8 });
   }
 
-  // Events
-  if (grp.events && grp.events.length) {
-    grp.events.forEach(evt => {
-      if (evt.type === 'surveillance' || evt.type === 'challenge') {
-        items.push(_shoreSurveillance(evt.label || 'Palm Cam', evt.timestamp || '', `<p>${evt.text || ''}</p>`));
-      } else if (evt.type === 'breakdown' || evt.type === 'coconut') {
-        items.push(_shoreBreakdown('\u{1F965}', evt.text || 'Mr. Coconut stares into the void...'));
-      } else if (evt.type === 'broadcast' || evt.type === 'signal') {
-        items.push(_shoreBroadcast(evt.label || 'SIGNAL INTERCEPT', `<p>${evt.text || ''}</p>`));
-      } else {
-        items.push(_shoreArtifact(evt.label || 'Shore Log', `<p>${evt.text || ''}</p>`,
-          { tilt: (Math.random() * 3 - 1.5).toFixed(1) }));
-      }
-    });
-  }
+  const events = (cc.timeline || []).filter(e => e.phase === 1 && e.group === label);
+  const items = events.map(evt => _eventToCard(evt));
 
-  // Confessionals
-  if (grp.confessionals && grp.confessionals.length) {
-    grp.confessionals.forEach(conf => {
-      const port = typeof window.rpPortrait === 'function' ? window.rpPortrait(conf.name, 48) : '';
-      items.push(_shoreArtifact(
-        `\u{1F4DD} ${conf.name}'s Journal`,
-        `<div style="display:flex;gap:0.8rem;align-items:flex-start">${port}<div><p>${conf.text || ''}</p></div></div>`,
-        { seal: '\u2709', tilt: (Math.random() * 3 - 1.5).toFixed(1) }
-      ));
-    });
-  }
-
-  let html = '';
-  html += `<div class="cc-shore-header">\u{1F334} ${label}</div>`;
+  let html = `<div class="cc-shore-header">\u{1F334} ${label}</div>`;
   html += membersCard;
-
-  items.forEach((card, i) => {
-    if (i > st.idx + 1) return;
-    if (i <= st.idx) {
-      html += card;
-    } else if (i === st.idx + 1) {
-      html += card;
-      if (i < items.length - 1) {
-        html += _shoreNextBtns(stateKey, i + 1, items.length, screenId, epNum);
-      }
-    }
-  });
+  html += _revealLoop(items, st, stateKey, screenId, epNum);
 
   if (st.idx >= items.length - 1 && items.length > 0) {
     html += `<div class="cc-shore-done">\u{1F334} All group logs recovered.</div>`;
   }
-
   return html;
 }
 
@@ -2205,52 +2181,20 @@ function _buildNightScreen(ep, stateKey, screenId) {
   const _tvState = window._tvState;
   const cc = ep.campCastaways;
   if (!cc) return '';
-  const nGroups = cc.groups?.length || 0;
-  const tapeTotal = 5 + nGroups;
-  const tapeNum = 2 + nGroups;
   const epNum = ep.num || 0;
-
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const st = _tvState[stateKey];
 
-  const items = [];
+  const events = (cc.timeline || []).filter(e => e.phase === 2);
+  const items = events.map(evt => _eventToCard(evt));
 
-  if (cc.nightEvents && cc.nightEvents.length) {
-    cc.nightEvents.forEach(evt => {
-      if (evt.type === 'surveillance' || evt.type === 'nightvision') {
-        items.push(_shoreSurveillance('\u{1F4F7} Night Vision', evt.timestamp || '', `<p>${evt.text || ''}</p>`));
-      } else if (evt.type === 'breakdown' || evt.type === 'coconut') {
-        items.push(_shoreBreakdown('\u{1F965}', evt.text || ''));
-      } else {
-        items.push(_shoreArtifact(evt.label || '\u{1F319} Night Log', `<p>${evt.text || ''}</p>`,
-          { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: (Math.random() * 2 - 1).toFixed(1) }));
-      }
-    });
-  } else if (cc.nightNarrative) {
-    items.push(_shoreArtifact('\u{1F319} Night Log', `<p>${cc.nightNarrative}</p>`,
-      { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: -0.5 }));
-  }
-
-  let html = '';
-  html += _nightStars(35);
+  let html = _nightStars(35);
   html += `<div class="cc-shore-header">\u{1F319} Night Falls</div>`;
-
-  items.forEach((card, i) => {
-    if (i > st.idx + 1) return;
-    if (i <= st.idx) {
-      html += card;
-    } else if (i === st.idx + 1) {
-      html += card;
-      if (i < items.length - 1) {
-        html += _shoreNextBtns(stateKey, i + 1, items.length, screenId, epNum);
-      }
-    }
-  });
+  html += _revealLoop(items, st, stateKey, screenId, epNum);
 
   if (st.idx >= items.length - 1 && items.length > 0) {
     html += `<div class="cc-shore-done">\u{1F319} The night passes.</div>`;
   }
-
   return html;
 }
 
@@ -2258,45 +2202,19 @@ function _buildRegroupScreen(ep, stateKey, screenId) {
   const _tvState = window._tvState;
   const cc = ep.campCastaways;
   if (!cc) return '';
-  const nGroups = cc.groups?.length || 0;
-  const tapeTotal = 5 + nGroups;
-  const tapeNum = 3 + nGroups;
   const epNum = ep.num || 0;
-
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const st = _tvState[stateKey];
 
-  const items = [];
+  const events = (cc.timeline || []).filter(e => e.phase === 3);
+  const items = events.map(evt => _eventToCard(evt));
 
-  if (cc.regroupEvents && cc.regroupEvents.length) {
-    cc.regroupEvents.forEach(evt => {
-      items.push(_shoreArtifact(evt.label || 'Dawn Report', `<p>${evt.text || ''}</p>`,
-        { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: (Math.random() * 3 - 1.5).toFixed(1) }));
-    });
-  } else if (cc.regroupNarrative) {
-    items.push(_shoreArtifact('\u{1F305} Dawn Report', `<p>${cc.regroupNarrative}</p>`,
-      { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: 0.5 }));
-  }
-
-  let html = '';
-  html += `<div class="cc-shore-header">\u{1F305} Regroup at Dawn</div>`;
-
-  items.forEach((card, i) => {
-    if (i > st.idx + 1) return;
-    if (i <= st.idx) {
-      html += card;
-    } else if (i === st.idx + 1) {
-      html += card;
-      if (i < items.length - 1) {
-        html += _shoreNextBtns(stateKey, i + 1, items.length, screenId, epNum);
-      }
-    }
-  });
+  let html = `<div class="cc-shore-header">\u{1F305} Regroup at Dawn</div>`;
+  html += _revealLoop(items, st, stateKey, screenId, epNum);
 
   if (st.idx >= items.length - 1 && items.length > 0) {
     html += `<div class="cc-shore-done">\u{1F305} Camp reassembled.</div>`;
   }
-
   return html;
 }
 
@@ -2304,50 +2222,20 @@ function _buildStormScreen(ep, stateKey, screenId) {
   const _tvState = window._tvState;
   const cc = ep.campCastaways;
   if (!cc) return '';
-  const nGroups = cc.groups?.length || 0;
-  const tapeTotal = 5 + nGroups;
-  const tapeNum = 4 + nGroups;
   const epNum = ep.num || 0;
-
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const st = _tvState[stateKey];
 
-  const items = [];
+  const events = (cc.timeline || []).filter(e => e.phase === 4 && e.type !== 'immunityReveal');
+  const items = events.map(evt => _eventToCard(evt));
 
-  if (cc.stormEvents && cc.stormEvents.length) {
-    cc.stormEvents.forEach(evt => {
-      if (evt.type === 'broadcast' || evt.type === 'signal' || evt.type === 'emergency') {
-        items.push(_shoreBroadcast(evt.label || '\u26A1 EMERGENCY SIGNAL', `<p>${evt.text || ''}</p>`));
-      } else {
-        items.push(_shoreArtifact(evt.label || '\u26A1 Storm Log', `<p>${evt.text || ''}</p>`,
-          { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: (Math.random() * 4 - 2).toFixed(1) }));
-      }
-    });
-  } else if (cc.stormNarrative) {
-    items.push(_shoreArtifact('\u26A1 Storm Log', `<p>${cc.stormNarrative}</p>`,
-      { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: -2 }));
-  }
-
-  let html = '';
-  html += `<div class="cc-lightning-overlay"></div>`;
+  let html = `<div class="cc-lightning-overlay"></div>`;
   html += `<div class="cc-shore-header">\u26A1 The Storm</div>`;
-
-  items.forEach((card, i) => {
-    if (i > st.idx + 1) return;
-    if (i <= st.idx) {
-      html += card;
-    } else if (i === st.idx + 1) {
-      html += card;
-      if (i < items.length - 1) {
-        html += _shoreNextBtns(stateKey, i + 1, items.length, screenId, epNum);
-      }
-    }
-  });
+  html += _revealLoop(items, st, stateKey, screenId, epNum);
 
   if (st.idx >= items.length - 1 && items.length > 0) {
     html += `<div class="cc-shore-done">\u26A1 The storm passes.</div>`;
   }
-
   return html;
 }
 
@@ -2355,69 +2243,54 @@ function _buildImmunityScreen(ep, stateKey, screenId) {
   const _tvState = window._tvState;
   const cc = ep.campCastaways;
   if (!cc) return '';
-  const nGroups = cc.groups?.length || 0;
-  const tapeTotal = 5 + nGroups;
-  const tapeNum = 5 + nGroups;
   const epNum = ep.num || 0;
-
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const st = _tvState[stateKey];
 
   const items = [];
 
-  // Score entries (sorted ascending — worst to best)
-  if (cc.immunityScores && cc.immunityScores.length) {
-    const sortedAsc = [...cc.immunityScores].sort((a, b) => a.score - b.score);
-    sortedAsc.forEach(entry => {
+  // Build score entries from personalScores (sorted ascending — worst to best)
+  if (cc.personalScores) {
+    const sorted = Object.entries(cc.personalScores)
+      .map(([name, score]) => ({ name, score, isWinner: name === cc.immunityWinner }))
+      .sort((a, b) => a.score - b.score);
+    sorted.forEach((entry, i) => {
       const port = typeof window.rpPortrait === 'function' ? window.rpPortrait(entry.name, 48) : '';
-      const isWinner = entry.isWinner || (entry.name === (cc.immunityWinner || cc.winner));
-      const title = isWinner ? `\u{1F3C6} ${entry.name} \u2014 IMMUNITY` : `${entry.name}`;
+      const badge = entry.isWinner
+        ? `<span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:0.75rem;font-weight:bold;background:#FFD700;color:#333;margin-bottom:6px">\u{1F3C6} IMMUNE</span>`
+        : `<span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:0.75rem;font-weight:bold;background:#888;color:#fff;margin-bottom:6px">RANK #${sorted.length - i}</span>`;
+      const title = entry.isWinner ? `\u{1F3C6} ${entry.name} \u2014 IMMUNITY` : entry.name;
       items.push(_shoreArtifact(title,
-        `<div style="display:flex;gap:0.8rem;align-items:center">${port}<div>` +
-        `<p><b>Score:</b> ${entry.score}</p>` +
-        (entry.text ? `<p>${entry.text}</p>` : '') +
+        `${badge}<div style="display:flex;gap:0.8rem;align-items:center;margin-top:4px">${port}<div>` +
+        `<p><b>Score:</b> ${typeof entry.score === 'number' ? entry.score.toFixed(1) : entry.score}</p>` +
         `</div></div>`,
-        { seal: isWinner ? '\u{1F3C6}' : null, tilt: isWinner ? 0 : (Math.random() * 2 - 1).toFixed(1) }
+        { seal: entry.isWinner ? '\u{1F3C6}' : null, tilt: entry.isWinner ? 0 : (Math.random() * 2 - 1).toFixed(1) }
       ));
     });
   }
 
-  // If no score entries, add summary + winner as items
-  if (items.length === 0) {
-    if (cc.immunitySummary) {
-      items.push(_shoreArtifact('Final Standing', `<p>${cc.immunitySummary}</p>`,
-        { tapeNum: `${tapeNum}/${tapeTotal}`, seal: '\u{1F3C6}', tilt: 0 }));
-    }
-    const winner = cc.immunityWinner || cc.winner;
-    if (winner) {
-      const port = typeof window.rpPortrait === 'function' ? window.rpPortrait(winner, 64) : '';
-      items.push(`<div class="cc-sand-write">
-        <div class="cc-sos-rocks">S \u00B7 O \u00B7 S</div>
-        ${port}
-        <div class="cc-sand-name revealed">${winner}</div>
-      </div>`);
-    }
+  // Immunity reveal event from timeline (if present)
+  const revealEvt = (cc.timeline || []).find(e => e.type === 'immunityReveal');
+  if (revealEvt) {
+    items.push(_eventToCard(revealEvt));
   }
 
-  let html = '';
-  html += `<div class="cc-shore-header">\u{1F3C6} Immunity</div>`;
+  // Fallback: just show winner as SOS rocks
+  if (items.length === 0 && cc.immunityWinner) {
+    const port = typeof window.rpPortrait === 'function' ? window.rpPortrait(cc.immunityWinner, 64) : '';
+    items.push(`<div class="cc-sand-write">
+      <div class="cc-sos-rocks">S \u00B7 O \u00B7 S</div>
+      ${port}
+      <div class="cc-sand-name revealed">${cc.immunityWinner}</div>
+    </div>`);
+  }
 
-  items.forEach((card, i) => {
-    if (i > st.idx + 1) return;
-    if (i <= st.idx) {
-      html += card;
-    } else if (i === st.idx + 1) {
-      html += card;
-      if (i < items.length - 1) {
-        html += _shoreNextBtns(stateKey, i + 1, items.length, screenId, epNum);
-      }
-    }
-  });
+  let html = `<div class="cc-shore-header">\u{1F3C6} Immunity</div>`;
+  html += _revealLoop(items, st, stateKey, screenId, epNum);
 
   if (st.idx >= items.length - 1 && items.length > 0) {
     html += `<div class="cc-shore-done">\u{1F3C6} Immunity decided.</div>`;
   }
-
   return html;
 }
 
@@ -2442,7 +2315,7 @@ function rpBuildCCGroup(ep, groupObj) {
   const grp = groupObj;
   const label = grp.label || grp.name || `Group ${groupIdx + 1}`;
   const epNum = ep.num || 0;
-  const screenId = `cc-group-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+  const screenId = `cc-group-${label}`;
   const stateKey = `cc_group_${groupIdx}_${epNum}`;
   const inner = _buildGroupScreen(ep, groupIdx, stateKey, screenId);
   if (!inner) return null;

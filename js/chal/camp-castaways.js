@@ -640,17 +640,20 @@ export function simulateCampCastaways(ep) {
     group.forEach(name => {
       const pr = pronouns(name);
       const s = pStats(name);
+      // Proportional score — physical feat + courage + awareness + stamina
+      personalScores[name] += s.physical * 0.04 + s.boldness * 0.02 + s.mental * 0.02 + s.endurance * 0.02;
+      // Text selection: thresholds OK for narrative only
       let text, badge, bClass = 'grey';
       if (s.physical >= 7 && s.boldness >= 6) {
         text = _rp([
           `${name} scales a coconut palm barefoot and clears the top in under two minutes. Nobody is surprised. Everyone is watching.`,
           `${name} builds a rope harness from vines in about thirty seconds. Doesn't say how ${pr.sub} ${pr.sub==='they'?'know':'knows'} how to do that. Just does it.`,
-        ]); badge = 'PHYSICAL FEAT'; bClass = 'gold'; personalScores[name] += 0.5;
+        ]); badge = 'PHYSICAL FEAT'; bClass = 'gold';
       } else if (s.mental >= 7) {
         text = _rp([
           `${name} assesses the terrain in under two minutes and has already formed three opinions about the optimal path forward.`,
           `${name} identifies the edible plants in a twenty-foot radius with unsettling confidence. Maybe from a book. Maybe not.`,
-        ]); badge = 'ASSESSMENT'; bClass = 'blue'; personalScores[name] += 0.3;
+        ]); badge = 'ASSESSMENT'; bClass = 'blue';
       } else if (s.social >= 7) {
         text = _rp([
           `${name} is keeping group morale up through sheer force of personality. It is working, somewhat. The group is less miserable than it was.`,
@@ -661,12 +664,12 @@ export function simulateCampCastaways(ep) {
         text = _rp([
           `${name} hasn't stopped moving since the flood started. The others rest. ${pr.Sub} ${pr.sub==='they'?'keep':'keeps'} going.`,
           `${name}'s pace hasn't wavered. Four hours in, ${pr.sub} ${pr.sub==='they'?'look':'looks'} exactly the same as hour one.`,
-        ]); badge = 'RELENTLESS'; bClass = 'green'; personalScores[name] += 0.3;
+        ]); badge = 'RELENTLESS'; bClass = 'green';
       } else {
         text = _rp([
           `${name} is managing. Not thriving, not falling apart — managing, which in these conditions might actually be the right call.`,
           `${name} finds ${pr.posAdj} rhythm eventually. Slower than some. Still moving. Still here.`,
-        ]); badge = 'SURVIVING'; personalScores[name] += 0.1;
+        ]); badge = 'SURVIVING';
       }
       timeline.push({ type: 'survivalActivity', phase: 1, group: label, player: name, players: [name], text, badgeText: badge, badgeClass: bClass });
     });
@@ -1639,23 +1642,18 @@ export function simulateCampCastaways(ep) {
     timeline.push({ type: 'chrisReaction', phase: 4, reactionType: flag.reactionType, text: _rp(CHRIS_REACTIONS[flag.reactionType] || CHRIS_REACTIONS.entertained) });
   });
 
-  // The Reveal — Skeptic bonus: mental ≥ 7 gets expanded reward; intuition ≥ 7 gets partial
+  // The Reveal — proportional: mental drives perception, intuition drives read speed; pop boost for high-mental (narrative only)
   const revealText = _rp(STORM_TEXTS.reveal);
   timeline.push({ type: 'stormEvent', subtype: 'reveal', phase: 4, players: activePlayers, text: revealText, badgeText: 'THE REVEAL', badgeClass: 'gold' });
   activePlayers.forEach(name => {
     const s = pStats(name);
-    if (s.mental >= 7) {
-      personalScores[name] += 1.0; popDelta(name, 1);
-    } else if (s.intuition >= 7) {
-      personalScores[name] += 0.5;
-    } else {
-      personalScores[name] -= 0.3;
-    }
+    personalScores[name] += s.mental * 0.10 + s.intuition * 0.03;
+    if (s.mental >= 7) popDelta(name, 1);
   });
 
-  // Finisher — endurance ≥ 7; aggregate all qualifying players into one card
+  // Finisher — proportional endurance bonus for all; narrative card for notable finishers (threshold OK for text)
+  activePlayers.forEach(name => { personalScores[name] += pStats(name).endurance * 0.08; });
   const finishers = activePlayers.filter(n => pStats(n).endurance >= 7);
-  finishers.forEach(name => { personalScores[name] += 0.8; });
   if (finishers.length === 1) {
     timeline.push({ type: 'stormEvent', subtype: 'enduranceBonus', phase: 4, player: finishers[0], players: finishers, text: `Chris grudgingly notes ${finishers[0]}'s consistent performance. "Fine. You earned it."`, badgeText: 'ENDURANCE BONUS', badgeClass: 'green' });
   } else if (finishers.length > 1) {

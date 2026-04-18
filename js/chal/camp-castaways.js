@@ -2065,6 +2065,7 @@ function _shoreNextBtns(stateKey, nextIdx, totalLen, screenId, epNum) {
 /* ---------- Screen Builders ---------- */
 
 function _buildColdOpen(ep, stateKey, screenId) {
+  const _tvState = window._tvState;
   const cc = ep.campCastaways;
   if (!cc) return '';
   const nGroups = cc.groups?.length || 0;
@@ -2087,7 +2088,7 @@ function _buildColdOpen(ep, stateKey, screenId) {
   // Castaways list
   if (cc.castaways && cc.castaways.length) {
     let list = cc.castaways.map(c => {
-      const port = typeof rpPortrait === 'function' ? rpPortrait(c.name, 40) : '';
+      const port = typeof window.rpPortrait === 'function' ? window.rpPortrait(c.name, 40) : '';
       return `<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px">${port}<b>${c.name}</b></span>`;
     }).join('');
     items.push(_shoreArtifact('Castaways', `<p>${list}</p>`, { tilt: 1 }));
@@ -2124,6 +2125,7 @@ function _buildColdOpen(ep, stateKey, screenId) {
 }
 
 function _buildGroupScreen(ep, groupIdx, stateKey, screenId) {
+  const _tvState = window._tvState;
   const cc = ep.campCastaways;
   if (!cc || !cc.groups || !cc.groups[groupIdx]) return '';
   const grp = cc.groups[groupIdx];
@@ -2142,7 +2144,7 @@ function _buildGroupScreen(ep, groupIdx, stateKey, screenId) {
   let membersCard = '';
   if (grp.members && grp.members.length) {
     const mHtml = grp.members.map(m => {
-      const port = typeof rpPortrait === 'function' ? rpPortrait(m, 36) : '';
+      const port = typeof window.rpPortrait === 'function' ? window.rpPortrait(m, 36) : '';
       return `<span style="display:inline-flex;align-items:center;gap:3px;margin:2px 4px">${port}${m}</span>`;
     }).join('');
     membersCard = _shoreArtifact(`${label} \u2014 Members`, mHtml, { tapeNum: `${tapeNum}/${tapeTotal}`, tilt: 0.8 });
@@ -2167,7 +2169,7 @@ function _buildGroupScreen(ep, groupIdx, stateKey, screenId) {
   // Confessionals
   if (grp.confessionals && grp.confessionals.length) {
     grp.confessionals.forEach(conf => {
-      const port = typeof rpPortrait === 'function' ? rpPortrait(conf.name, 48) : '';
+      const port = typeof window.rpPortrait === 'function' ? window.rpPortrait(conf.name, 48) : '';
       items.push(_shoreArtifact(
         `\u{1F4DD} ${conf.name}'s Journal`,
         `<div style="display:flex;gap:0.8rem;align-items:flex-start">${port}<div><p>${conf.text || ''}</p></div></div>`,
@@ -2200,6 +2202,7 @@ function _buildGroupScreen(ep, groupIdx, stateKey, screenId) {
 }
 
 function _buildNightScreen(ep, stateKey, screenId) {
+  const _tvState = window._tvState;
   const cc = ep.campCastaways;
   if (!cc) return '';
   const nGroups = cc.groups?.length || 0;
@@ -2252,6 +2255,7 @@ function _buildNightScreen(ep, stateKey, screenId) {
 }
 
 function _buildRegroupScreen(ep, stateKey, screenId) {
+  const _tvState = window._tvState;
   const cc = ep.campCastaways;
   if (!cc) return '';
   const nGroups = cc.groups?.length || 0;
@@ -2297,6 +2301,7 @@ function _buildRegroupScreen(ep, stateKey, screenId) {
 }
 
 function _buildStormScreen(ep, stateKey, screenId) {
+  const _tvState = window._tvState;
   const cc = ep.campCastaways;
   if (!cc) return '';
   const nGroups = cc.groups?.length || 0;
@@ -2347,6 +2352,7 @@ function _buildStormScreen(ep, stateKey, screenId) {
 }
 
 function _buildImmunityScreen(ep, stateKey, screenId) {
+  const _tvState = window._tvState;
   const cc = ep.campCastaways;
   if (!cc) return '';
   const nGroups = cc.groups?.length || 0;
@@ -2363,7 +2369,7 @@ function _buildImmunityScreen(ep, stateKey, screenId) {
   if (cc.immunityScores && cc.immunityScores.length) {
     const sortedAsc = [...cc.immunityScores].sort((a, b) => a.score - b.score);
     sortedAsc.forEach(entry => {
-      const port = typeof rpPortrait === 'function' ? rpPortrait(entry.name, 48) : '';
+      const port = typeof window.rpPortrait === 'function' ? window.rpPortrait(entry.name, 48) : '';
       const isWinner = entry.isWinner || (entry.name === (cc.immunityWinner || cc.winner));
       const title = isWinner ? `\u{1F3C6} ${entry.name} \u2014 IMMUNITY` : `${entry.name}`;
       items.push(_shoreArtifact(title,
@@ -2384,7 +2390,7 @@ function _buildImmunityScreen(ep, stateKey, screenId) {
     }
     const winner = cc.immunityWinner || cc.winner;
     if (winner) {
-      const port = typeof rpPortrait === 'function' ? rpPortrait(winner, 64) : '';
+      const port = typeof window.rpPortrait === 'function' ? window.rpPortrait(winner, 64) : '';
       items.push(`<div class="cc-sand-write">
         <div class="cc-sos-rocks">S \u00B7 O \u00B7 S</div>
         ${port}

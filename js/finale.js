@@ -1,5 +1,5 @@
 // js/finale.js - Finale simulation: final challenge, jury vote, fan campaign, fan vote
-import { gs, seasonConfig, players } from './core.js';
+import { gs, gsCheckpoints, seasonConfig, players, repairGsSets } from './core.js';
 import { pStats, pronouns } from './players.js';
 import { getBond, addBond } from './bonds.js';
 import { handleAdvantageInheritance } from './advantages.js';
@@ -121,6 +121,19 @@ export function simulateFinale() {
   if ((cfg.firemaking || cfg.finaleFormat === 'fire-making' || cfg.finaleFormat === 'koh-lanta') && cfg.finaleSize < 4) cfg.finaleSize = 4;
   const epNum = gs.episode + 1;
   const players = [...gs.activePlayers];
+  // Save checkpoint before finale so it can be replayed
+  gsCheckpoints[epNum] = JSON.parse(JSON.stringify(gs));
+  repairGsSets(gsCheckpoints[epNum]);
+  try {
+    localStorage.setItem('simulator_cp_' + epNum, JSON.stringify(gsCheckpoints[epNum]));
+  } catch(e) {
+    const _pruneKeys = Object.keys(localStorage)
+      .filter(k => k.startsWith('simulator_cp_') && k !== 'simulator_cp_' + epNum)
+      .sort((a, b) => parseInt(a.replace('simulator_cp_', '')) - parseInt(b.replace('simulator_cp_', '')));
+    const _pruneCount = Math.max(1, Math.ceil(_pruneKeys.length / 2));
+    _pruneKeys.slice(0, _pruneCount).forEach(k => { localStorage.removeItem(k); delete gsCheckpoints[parseInt(k.replace('simulator_cp_', ''))]; });
+    try { localStorage.setItem('simulator_cp_' + epNum, JSON.stringify(gsCheckpoints[epNum])); } catch(e2) {}
+  }
 
   const ep = {
     num: epNum, isFinale: true, challengeType: 'individual',

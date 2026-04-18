@@ -1027,7 +1027,17 @@ export function simulateEpisode() {
   const _cpNum = gs.episode + 1;
   gsCheckpoints[_cpNum] = JSON.parse(JSON.stringify(gs));
   repairGsSets(gsCheckpoints[_cpNum]);
-  try { localStorage.setItem('simulator_cp_' + _cpNum, JSON.stringify(gsCheckpoints[_cpNum])); } catch(e) {}
+  try {
+    localStorage.setItem('simulator_cp_' + _cpNum, JSON.stringify(gsCheckpoints[_cpNum]));
+  } catch(e) {
+    // Quota exceeded — prune old checkpoints (keep this one) and retry
+    const _pruneKeys = Object.keys(localStorage)
+      .filter(k => k.startsWith('simulator_cp_') && k !== 'simulator_cp_' + _cpNum)
+      .sort((a, b) => parseInt(a.replace('simulator_cp_', '')) - parseInt(b.replace('simulator_cp_', '')));
+    const _pruneCount = Math.max(1, Math.ceil(_pruneKeys.length / 2));
+    _pruneKeys.slice(0, _pruneCount).forEach(k => { localStorage.removeItem(k); delete gsCheckpoints[parseInt(k.replace('simulator_cp_', ''))]; });
+    try { localStorage.setItem('simulator_cp_' + _cpNum, JSON.stringify(gsCheckpoints[_cpNum])); } catch(e2) {}
+  }
   const cfg = seasonConfig;
   // Fire-making / Koh-Lanta force F4 finale — override every episode start
   if ((cfg.firemaking || cfg.finaleFormat === 'fire-making' || cfg.finaleFormat === 'koh-lanta') && cfg.finaleSize < 4) cfg.finaleSize = 4;

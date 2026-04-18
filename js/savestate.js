@@ -14,9 +14,11 @@ export function saveGameState() {
   } catch (e) {
     // localStorage full — prune old checkpoints and retry
     console.warn('localStorage quota exceeded — pruning checkpoints...');
-    const cpKeys = Object.keys(localStorage).filter(k => k.startsWith('simulator_cp_')).sort();
-    // Remove oldest half of checkpoints
-    const removeCount = Math.max(1, Math.ceil(cpKeys.length / 2));
+    const cpKeys = Object.keys(localStorage)
+      .filter(k => k.startsWith('simulator_cp_'))
+      .sort((a, b) => parseInt(a.replace('simulator_cp_', '')) - parseInt(b.replace('simulator_cp_', '')));
+    // Remove oldest half, always keep the most recent checkpoint
+    const removeCount = Math.min(Math.max(1, Math.ceil(cpKeys.length / 2)), Math.max(0, cpKeys.length - 1));
     cpKeys.slice(0, removeCount).forEach(k => { localStorage.removeItem(k); delete gsCheckpoints[parseInt(k.replace('simulator_cp_', ''))]; });
     try { localStorage.setItem('simulator_gs', JSON.stringify(gs)); }
     catch (e2) { console.error('Still over quota after pruning. Season data may be too large.', e2); }

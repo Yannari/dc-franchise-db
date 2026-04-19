@@ -2435,29 +2435,9 @@ export function slasherRevealAllScenes(stateKey, totalScenes, prefix) {
   }
   if (_tvState[stateKey]) _tvState[stateKey].revealed = totalScenes - 1;
 }
-    <div style="text-align:center;margin:30px 0 10px">
-      <div class="slasher-pulse" style="display:inline-block;border-radius:50%;padding:4px">
-        <img src="assets/avatars/slasher.png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
-             style="width:120px;height:120px;border-radius:50%;border:3px solid #da3633">
-        <div style="display:none;width:120px;height:120px;border-radius:50%;background:#1c2128;border:3px solid #da3633;font-size:48px;line-height:120px;text-align:center">🔪</div>
-      </div>
-    </div>
-    <div class="rp-title" style="color:#da3633;text-shadow:0 0 20px rgba(218,54,51,0.5)">Slasher Night</div>
-    <div style="font-size:14px;color:#8b949e;text-align:center;margin-bottom:20px;font-style:italic">Night falls. Something is out there.</div>
-    <div class="vp-card" style="text-align:center;margin:20px auto;max-width:480px;border-color:rgba(218,54,51,0.3);background:rgba(218,54,51,0.05)">
-      <div style="font-size:13px;color:#cdd9e5;line-height:1.8">
-        A slasher is loose at camp. Players will be hunted round by round.<br>
-        <strong style="color:#3fb950">Last one standing wins immunity.</strong><br>
-        <strong style="color:#da3633">Lowest scorer is eliminated.</strong><br>
-        <span style="color:#484f58">No tribal council tonight.</span>
-      </div>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:24px">
-      ${allPlayers.map(n => rpPortrait(n)).join('')}
-    </div>
-  </div>`;
-  return html;
-}
+
+// Legacy backward-compat alias (old saves without actBreaks)
+export function rpBuildSlasherAnnouncement(ep) { return rpBuildSlasherTitleCard(ep); }
 
 export function rpBuildSlasherRounds(ep) {
   const sn = ep.slasherNight;

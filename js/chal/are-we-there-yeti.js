@@ -515,11 +515,7 @@ const YETI_STYLES = `
 .yeti-score-fill{height:6px;border-radius:3px;background:var(--amber);transition:width 0.3s}
 
 /* ── STICKY REVEAL BUTTONS ── */
-.yeti-sticky-btns{position:fixed;bottom:16px;left:172px;right:0;z-index:20;text-align:center;padding:20px 0 12px;background:linear-gradient(transparent 0%,rgba(10,15,10,0.97) 40%);pointer-events:none}
-.yeti-sticky-btns .yeti-reveal-main,.yeti-sticky-btns .yeti-reveal-all{pointer-events:auto}
-.yeti-forest[data-phase="3"] .yeti-sticky-btns{background:linear-gradient(transparent 0%,rgba(5,5,8,0.97) 40%)}
-.yeti-forest[data-phase="4"] .yeti-sticky-btns{background:linear-gradient(transparent 0%,rgba(30,28,20,0.97) 40%)}
-.yeti-forest[data-phase="5"] .yeti-sticky-btns{background:linear-gradient(transparent 0%,rgba(42,40,24,0.97) 40%)}
+.yeti-sticky-btns{text-align:center;padding:20px 0 12px;position:relative;z-index:20}
 
 /* ── UTILITIES ── */
 .yeti-hidden{display:none}
@@ -1707,11 +1703,7 @@ function _cardStamp(evt) {
 }
 
 function _eventCard(evt, stateKey, i, epNum, revealed) {
-  if (!revealed) {
-    return `<div class="yeti-card" style="opacity:0.12;cursor:pointer;min-height:56px;justify-content:center;border-left-color:rgba(200,208,220,0.04)" onclick="${_ytRevealFn(stateKey, i, epNum)}">
-      <span style="font-size:12px;color:rgba(200,208,220,0.2);letter-spacing:3px">🐾</span>
-    </div>`;
-  }
+  if (!revealed) return '';
   const cls = _cardClass(evt);
   const stamp = _cardStamp(evt);
   const portraitHtml = evt.players?.length
@@ -1976,11 +1968,7 @@ export function rpBuildYetiNight(ep) {
     ? `<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 10%,rgba(255,200,100,0.12) 0%,transparent 50%);pointer-events:none;z-index:0"></div>` : '';
 
   const items = events.map((evt, i) => {
-    if (i > state.idx) {
-      return `<div class="yeti-card" style="opacity:0.12;cursor:pointer;min-height:56px;justify-content:center;border-left-color:rgba(200,208,220,0.04);background:rgba(0,0,0,0.2)" onclick="${_ytRevealFn(stateKey, i, ep.num)}">
-        <span style="font-size:12px;color:rgba(200,208,220,0.2);letter-spacing:3px">🔥</span>
-      </div>`;
-    }
+    if (i > state.idx) return '';
     const cls = _cardClass(evt);
     const stamp = _cardStamp(evt);
     const portraitHtml = evt.players?.length
@@ -2195,13 +2183,7 @@ export function rpBuildYetiVerdict(ep) {
   // Unrevealed beats
   const nextIdx = state.idx + 1;
   let unrevealedHtml = '';
-  if (nextIdx < beats.length) {
-    for (let i = nextIdx; i < beats.length; i++) {
-      unrevealedHtml += `<div class="yeti-verdict-beat" style="opacity:0.1;cursor:pointer;min-height:40px;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(200,208,220,0.08);border-radius:6px;margin-bottom:12px" onclick="${_ytRevealFn(stateKey, i, ep.num)}">
-        <span style="font-size:10px;color:rgba(200,208,220,0.25);letter-spacing:2px">⚖</span>
-      </div>`;
-    }
-  }
+  // Unrevealed beats hidden — "Keep moving" button handles reveals
 
   const firstGrudgeIdx = beats.findIndex(b => b.type === 'grudge');
   const showGrudgeHeader = firstGrudgeIdx >= 0 && state.idx >= firstGrudgeIdx;

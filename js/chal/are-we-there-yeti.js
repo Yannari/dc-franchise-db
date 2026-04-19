@@ -4,6 +4,9 @@ import { getBond, addBond, getPerceivedBond } from '../bonds.js';
 import { computeHeat } from '../alliances.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
+// Safety guard: _tvState may not be initialized yet if this module loads before main.js
+if (typeof window !== 'undefined' && !window._tvState) window._tvState = {};
+
 // ══════════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════════
@@ -347,7 +350,7 @@ const VERDICT_TEXTS = {
 const YETI_STYLES = `
 <style>
 /* ── BASE FOREST CONTAINER ── */
-.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);padding:24px 16px;font-family:Georgia,'Times New Roman',serif;position:relative;overflow:hidden}
+.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);padding:24px 16px;font-family:Georgia,'Times New Roman',serif;position:relative;overflow:hidden;min-height:400px;padding-bottom:40px}
 
 /* ── FOREST DEPTH LAYERS ── */
 .yeti-forest::before,.yeti-forest::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;transition:background 0.6s}
@@ -400,7 +403,7 @@ const YETI_STYLES = `
 .yeti-trail-dest{position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:12px}
 
 /* ── SASQUATCH ── */
-.sasquatch-presence{position:absolute;z-index:1;transition:all 0.8s ease}
+.sasquatch-presence{position:absolute;z-index:1;transition:all 0.8s ease;pointer-events:none}
 .sasquatch-presence .sq-body{background:rgba(20,15,10,0.9);border-radius:40% 40% 30% 30%;position:relative}
 .sasquatch-presence .sq-eye{position:absolute;width:4px;height:4px;border-radius:50%;background:#ff4d00;box-shadow:0 0 6px #ff4d00}
 .sasquatch-presence .sq-eye.left{top:25%;left:30%}
@@ -1646,6 +1649,11 @@ export function _textAreWeThereYeti(ep, ln, sec) {
 
 // ── Shared helpers ──
 
+function _yetiStylesOnce() {
+  if (document.getElementById('yeti-vp-styles')) return '';
+  return YETI_STYLES.replace('<style>', '<style id="yeti-vp-styles">');
+}
+
 function _portrait(name, size) {
   return typeof window.rpPortrait === 'function' ? window.rpPortrait(name, size) : `<span style="color:var(--moon)">${name}</span>`;
 }
@@ -1693,8 +1701,8 @@ function _cardStamp(evt) {
 
 function _eventCard(evt, stateKey, i, epNum, revealed) {
   if (!revealed) {
-    return `<div class="yeti-card" style="opacity:0.12;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center;clip-path:none;border-left:4px solid rgba(200,208,220,0.06)" onclick="${_ytRevealFn(stateKey, i, epNum)}">
-      <span style="font-size:10px;color:rgba(200,208,220,0.3);letter-spacing:2px">🐾</span>
+    return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:60px;display:flex;align-items:center;justify-content:center" onclick="${_ytRevealFn(stateKey, i, epNum)}">
+      <span style="font-size:12px;color:rgba(200,208,220,0.25);letter-spacing:3px">🐾</span>
     </div>`;
   }
   const cls = _cardClass(evt);
@@ -1797,10 +1805,19 @@ export function rpBuildYetiDropOff(ep) {
     <div style="font-size:10px;color:rgba(200,208,220,0.5);margin-top:4px">${p.members.join(' & ')}</div>
   </div>`).join('');
 
-  return YETI_STYLES + `<div class="rp-page"><div class="yeti-forest" data-phase="0">
+  const sceneIntro = `<div class="yeti-card" style="border-color:rgba(212,133,10,0.15);margin-bottom:16px">
+    <div class="yeti-text" style="font-style:italic;text-align:center;line-height:1.8">
+      The helicopter banks hard over black pines. Below, a clearing — torches, supply crates, Chef Hatchet waiting with crossed arms.
+      The wilderness stretches in every direction. No roads. No signal. Just forest.
+      <br><br>"Welcome to <strong>Are We There Yeti?</strong>" Chef grins. "You're not."
+    </div>
+  </div>`;
+
+  return _yetiStylesOnce() + `<div class="rp-page"><div class="yeti-forest" data-phase="0">
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Drop Off</div>
     <div class="yeti-sub">Chef Hatchet takes command. Helicopter clearing. Twilight.</div>
+    ${sceneIntro}
     ${mapHtml}
     <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;position:relative;z-index:2">${pairCards}</div>
     ${items}${btns}
@@ -1829,9 +1846,9 @@ export function rpBuildYetiTrail(ep, pair) {
   const landmarks = [];
   events.forEach((evt, i) => {
     if (i > state.idx) return;
-    if (evt.type === 'quicksand' || evt.type === 'cliff') landmarks.push({ type: 'cliff', pair: pair.label, pct: 5 + ((i + 1) / events.length) * 35 });
-    if (evt.type === 'river' || evt.type === 'waterCrossing') landmarks.push({ type: 'river', pair: pair.label, pct: 5 + ((i + 1) / events.length) * 35 });
-    if (evt.subtype?.startsWith('sasquatch')) landmarks.push({ type: 'sasquatch', pair: pair.label, pct: 5 + ((i + 1) / events.length) * 35 });
+    if (evt.subtype === 'quicksand' || evt.subtype === 'cliffClimb') landmarks.push({ type: 'cliff', pair: pair.label, pct: 5 + ((i + 1) / events.length) * 35 });
+    if (evt.subtype === 'riverCross' || evt.subtype === 'waterCrossing') landmarks.push({ type: 'river', pair: pair.label, pct: 5 + ((i + 1) / events.length) * 35 });
+    if (evt.type?.includes('sasquatch') || evt.subtype?.includes('sasquatch')) landmarks.push({ type: 'sasquatch', pair: pair.label, pct: 5 + ((i + 1) / events.length) * 35 });
   });
   landmarks.push({ type: 'totem', pct: 98 });
 
@@ -1844,7 +1861,7 @@ export function rpBuildYetiTrail(ep, pair) {
   const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return YETI_STYLES + `<div class="rp-page"><div class="yeti-forest" data-phase="1">
+  return _yetiStylesOnce() + `<div class="rp-page"><div class="yeti-forest" data-phase="1">
     ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Trail — Pair ${pair.label}</div>
@@ -1872,7 +1889,7 @@ export function rpBuildYetiTraps(ep) {
     // Advance based on revealed events
     yt.pairs.forEach(p => {
       const pEvts = events.filter(e => e.group === p.label || e.players?.some(n => p.members.includes(n)));
-      progress[p.label] = 40 + Math.min(15, (pEvts.filter((_, i) => i <= state.idx).length / Math.max(1, pEvts.length)) * 15);
+    progress[p.label] = 40 + Math.min(20, (pEvts.filter((_, i) => i <= state.idx).length / Math.max(1, pEvts.length)) * 20);
     });
   }
   const landmarks = [];
@@ -1891,7 +1908,7 @@ export function rpBuildYetiTraps(ep) {
   const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return YETI_STYLES + `<div class="rp-page"><div class="yeti-forest" data-phase="2">
+  return _yetiStylesOnce() + `<div class="rp-page"><div class="yeti-forest" data-phase="2">
     ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Traps & Tricks</div>
@@ -1914,16 +1931,22 @@ export function rpBuildYetiNight(ep) {
 
   // Determine scene state from revealed events
   let fireState = '';
-  let sqProximity = 'eyes';
+  let sqProximity = 'far';
   let lastRevealedType = '';
+  let sqEventCount = 0;
   events.forEach((evt, i) => {
     if (i > state.idx) return;
     lastRevealedType = evt.type;
     if (evt.type === 'campfireStory' || evt.type === 'vulnerability' || evt.type === 'showmanceMoment') fireState = 'bright';
     else if (evt.type === 'theft' && evt.success) fireState = 'dim';
     else if (evt.type === 'morningWake' || evt.type === 'dawn') fireState = 'embers';
-    if (evt.type?.includes('sasquatch') || evt.type === 'caveConvergence') sqProximity = 'close';
-    if (evt.type === 'sasquatchChase') sqProximity = 'close';
+    // Sasquatch proximity progression: far → mid → close → eyes
+    if (evt.type?.includes('sasquatch') || evt.type === 'caveConvergence') {
+      sqEventCount++;
+      if (sqEventCount >= 3) sqProximity = 'eyes';
+      else if (sqEventCount >= 2) sqProximity = 'close';
+      else sqProximity = 'mid';
+    }
   });
   const isMorning = lastRevealedType === 'morningWake' || lastRevealedType === 'dawn';
   if (isMorning) sqProximity = 'gone';
@@ -1945,8 +1968,8 @@ export function rpBuildYetiNight(ep) {
 
   const items = events.map((evt, i) => {
     if (i > state.idx) {
-      return `<div class="yeti-card" style="opacity:0.08;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center;clip-path:none;border-left:4px solid rgba(200,208,220,0.04);background:rgba(0,0,0,0.2)" onclick="${_ytRevealFn(stateKey, i, ep.num)}">
-        <span style="font-size:10px;color:rgba(200,208,220,0.2);letter-spacing:2px">🔥</span>
+      return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:60px;display:flex;align-items:center;justify-content:center" onclick="${_ytRevealFn(stateKey, i, ep.num)}">
+        <span style="font-size:12px;color:rgba(200,208,220,0.25);letter-spacing:3px">🔥</span>
       </div>`;
     }
     const cls = _cardClass(evt);
@@ -1964,7 +1987,7 @@ export function rpBuildYetiNight(ep) {
 
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return YETI_STYLES + `<div class="rp-page"><div class="yeti-forest" data-phase="3">
+  return _yetiStylesOnce() + `<div class="rp-page"><div class="yeti-forest" data-phase="3">
     <div class="yeti-cave">
       <div class="yeti-cave-walls"></div>
       <div class="yeti-cave-mouth">
@@ -1972,7 +1995,7 @@ export function rpBuildYetiNight(ep) {
         ${caveEyes}
         ${morningGlow}
       </div>
-      <div style="position:relative;z-index:2;padding-top:38%">
+      <div style="position:relative;z-index:2;padding-top:min(38%, 240px)">
         <div class="yeti-eyebrow">Episode ${ep.num}</div>
         <div class="yeti-title">The Night</div>
         <div class="yeti-sub">Cave mouth. Sasquatchanakwa is out there. What happens here stays on camera.</div>
@@ -2000,7 +2023,7 @@ export function rpBuildYetiSprint(ep) {
   yt.pairs.forEach(p => {
     const pEvts = events.filter(e => e.group === p.label || e.players?.some(n => p.members.includes(n)));
     const revealed = pEvts.filter((_, i) => i <= state.idx).length;
-    progress[p.label] = 65 + Math.min(33, (revealed / Math.max(1, pEvts.length)) * 33);
+    progress[p.label] = 60 + Math.min(38, (revealed / Math.max(1, pEvts.length)) * 38);
   });
   const mapHtml = _trailMap(yt.pairs, progress, [], true);
 
@@ -2024,7 +2047,7 @@ export function rpBuildYetiSprint(ep) {
   const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return YETI_STYLES + `<div class="rp-page"><div class="yeti-forest" data-phase="4">
+  return _yetiStylesOnce() + `<div class="rp-page"><div class="yeti-forest" data-phase="4">
     ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Sprint</div>
@@ -2145,11 +2168,17 @@ export function rpBuildYetiVerdict(ep) {
         </div>
       </div>`;
     } else if (beat.type === 'torchSnuff') {
-      const snuff = typeof window.torchSnuffFx === 'function' ? window.torchSnuffFx() : '';
       beatHtml += `<div class="yeti-verdict-beat" style="text-align:center">
-        ${snuff}
+        <div id="yeti-torch-snuff-${ep.num}" style="min-height:120px">
+          <div class="torch-snuffed">${_portrait(elimName, 64)}</div>
+        </div>
         <div style="font-size:13px;font-style:italic;color:rgba(200,208,220,0.5);margin-top:12px;letter-spacing:1px">Chef has spoken.</div>
       </div>`;
+      // Fire after DOM insert
+      setTimeout(() => {
+        const snuffEl = document.querySelector('#yeti-torch-snuff-' + ep.num + ' .torch-snuffed');
+        if (snuffEl && typeof window.torchSnuffFx === 'function') window.torchSnuffFx(snuffEl);
+      }, 600);
     }
   });
 
@@ -2164,15 +2193,18 @@ export function rpBuildYetiVerdict(ep) {
     }
   }
 
+  const firstGrudgeIdx = beats.findIndex(b => b.type === 'grudge');
+  const showGrudgeHeader = firstGrudgeIdx >= 0 && state.idx >= firstGrudgeIdx;
+
   const btns = _revealBtns(stateKey, nextIdx, beats.length, ep.num);
 
-  return YETI_STYLES + `<div class="rp-page"><div class="yeti-forest" data-phase="5">
+  return _yetiStylesOnce() + `<div class="rp-page"><div class="yeti-forest" data-phase="5">
     ${_totemHtml(state.idx >= 0)}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Chef's Verdict</div>
     <div class="yeti-sub">Dawn. No tribal council. No vote. Chef decides.</div>
     <div style="position:relative;z-index:2">
-      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#f85149;margin-bottom:12px;text-align:center">CHEF'S GRUDGE METER</div>
+      ${showGrudgeHeader ? '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#f85149;margin-bottom:12px;text-align:center">CHEF\'S GRUDGE METER</div>' : ''}
       ${beatHtml}
       ${unrevealedHtml}
       ${btns}

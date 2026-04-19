@@ -208,6 +208,46 @@
       .vhs-timecode .rec-dot { animation:none !important; }
     }
 
+    /* Horror beat interstitials */
+    .slasher-beat-card {
+      text-align:center; padding:16px 24px; margin:8px 0;
+      font-style:italic; font-size:13px; color:rgba(218,54,51,0.7);
+      background:rgba(0,0,0,0.4); border-left:2px solid rgba(218,54,51,0.3);
+      font-family:var(--font-mono); letter-spacing:0.5px; line-height:1.6;
+    }
+
+    /* Scary catch card */
+    .slasher-catch-card {
+      background: linear-gradient(135deg, rgba(139,0,0,0.3), rgba(218,54,51,0.15)) !important;
+      border: 1px solid rgba(218,54,51,0.6) !important;
+      animation: catchPulse 2s ease-in-out infinite;
+      position: relative;
+    }
+    .slasher-catch-card::after {
+      content: 'SIGNAL LOST';
+      position:absolute; top:4px; right:8px;
+      font-family:var(--font-mono); font-size:8px; letter-spacing:2px;
+      color:rgba(218,54,51,0.5); text-transform:uppercase;
+    }
+    @keyframes catchPulse {
+      0%, 100% { border-color: rgba(218,54,51,0.6); }
+      50% { border-color: rgba(218,54,51,0.2); }
+    }
+    @media (prefers-reduced-motion: reduce) { .slasher-catch-card { animation:none !important; } }
+
+    /* Next button horror style */
+    .slasher-next-btn {
+      display:block; width:100%; margin:12px 0; padding:14px;
+      font-family:var(--font-mono); font-size:13px; letter-spacing:2px;
+      color:#da3633; background:rgba(218,54,51,0.06);
+      border:1px solid rgba(218,54,51,0.3); border-radius:6px;
+      cursor:pointer; text-align:center; transition:all 0.2s;
+    }
+    .slasher-next-btn:hover {
+      background:rgba(218,54,51,0.12); border-color:rgba(218,54,51,0.5);
+      text-shadow:0 0 8px rgba(218,54,51,0.5);
+    }
+
     /* ── VP: Animations ── */
     @keyframes torchFlicker {
       0%,100% { opacity: 0.10; }

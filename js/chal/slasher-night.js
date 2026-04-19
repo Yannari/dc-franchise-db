@@ -44,6 +44,123 @@ const SLASHER_ENVIRONMENTS = [
   { id: 'chainsaw', text: 'The slasher\'s chainsaw revs in the distance. Closer than last time.', catchMod: 0, hidingBonus: 0, soloMod: 0 },
 ];
 
+const SLASHER_HORROR_BEATS = {
+  rain: [
+    "The rain hammers the roof. Something moves between the cabins.",
+    "Water pools at the doorstep. The footprints aren't from anyone still inside.",
+    "Lightning turns the camp white for half a second. Something was standing in the treeline.",
+    "The downpour drowns out everything. A perfect cover for the wrong kind of movement.",
+    "Rainwater drips through the ceiling. Each drop sounds like a countdown.",
+    "The storm drain gurgles. Like something is trying to breathe."
+  ],
+  'lights-die': [
+    "The last light dies. Darkness. Complete.",
+    "Someone fumbles for a lighter. The spark shows nothing. Then everything.",
+    "Shadows used to be just shadows. Not anymore.",
+    "A flashlight beam sweeps the hall. For a second, two reflections stare back.",
+    "The dark is patient. It has all night.",
+    "Eyes adjust. Shapes emerge. Not all of them are furniture."
+  ],
+  'generator-out': [
+    "The hum that was always there is gone. The silence it left behind is worse.",
+    "Without the generator, the camp sounds different. You can hear everything. Everything can hear you.",
+    "Someone whispers: 'Did the generator just—' They don't finish the sentence.",
+    "The emergency lights flicker once and quit. Backup power was never part of the plan.",
+    "In the sudden quiet, someone's heartbeat is audible from across the room.",
+    "The generator room door hangs open. The fuel line has been cut."
+  ],
+  fog: [
+    "A shadow moves through the fog. Too tall. Too slow.",
+    "The fog swallows the path. There is no path.",
+    "Visibility drops to arm's length. Everything beyond that is theory.",
+    "The fog makes sounds travel wrong. Footsteps seem to come from everywhere.",
+    "Something brushes past in the mist. Gone before anyone can turn.",
+    "The fog thins for a moment. What's revealed is worse than what was hidden."
+  ],
+  moonlight: [
+    "The moon breaks through. Every shadow has a sharp edge now.",
+    "Moonlight floods the clearing. Nowhere to hide. Nowhere at all.",
+    "The silver light turns the camp into a stage. Someone is watching the performance.",
+    "Moonlight catches something metallic in the bushes. It moves.",
+    "Under the full moon, even breathing feels exposed.",
+    "The moon is bright enough to read by. Bright enough to be seen by."
+  ],
+  wind: [
+    "The wind carries a sound that shouldn't exist this far from anywhere.",
+    "A gust slams a cabin door. The silence after is absolute.",
+    "The wind changes direction. Something in the air smells wrong.",
+    "Tree branches scrape the roof like fingernails on a coffin lid.",
+    "The wind dies. In the stillness, a single footstep. Then nothing.",
+    "A low moan through the trees. Just the wind. Probably just the wind."
+  ],
+  silence: [
+    "A board creaks. Everyone freezes.",
+    "Someone's breathing. It isn't anyone in the room.",
+    "The silence is so thick it has texture. Something moves through it.",
+    "Nobody speaks. Nobody breathes. The quiet stretches until it breaks.",
+    "A drip. A creak. A breath that isn't yours. That's the whole soundtrack now.",
+    "In the silence, someone swallows. It echoes."
+  ],
+  chainsaw: [
+    "The chainsaw revs somewhere in the dark. Closer than before.",
+    "Metal teeth on wood. The sound stops. The sound was closer than the wood.",
+    "The chainsaw idles. A patient predator. It has all the time in the world.",
+    "The buzz rises and falls like breathing. Mechanical breathing.",
+    "A tree falls somewhere. The chainsaw didn't need it. That was a message.",
+    "The chainsaw goes quiet. That's worse. That means it's close enough to whisper."
+  ],
+  forest: [
+    "Branches snap in the treeline. Too heavy for an animal.",
+    "The path forks. Both directions look wrong.",
+    "Something howls in the distance. Then something closer answers.",
+    "The forest floor crunches underfoot. Impossible to move silently.",
+    "A clearing opens up ahead. The moonlight makes it feel like a trap.",
+    "The trees grow closer together here. Like they're trying to keep something in."
+  ],
+  shower: [
+    "Water drips from the showerhead. Nobody turned it on.",
+    "The curtain moves. Just the draft. Probably.",
+    "Steam fogs the mirror. A shape takes form in the condensation.",
+    "The drain gurgles. Water swirls pink. Old rust. Has to be old rust.",
+    "A towel drops from its hook. The bathroom has been empty for hours.",
+    "Hot water runs in the next stall. The faucet is turned all the way."
+  ],
+  cabin: [
+    "The cabin door swings open on its own. The hinges don't make a sound.",
+    "Under the bed, something breathes.",
+    "A drawer slides open in the next room. Slowly. Deliberately.",
+    "The cabin window fogs from the outside. Something warm is pressed against the glass.",
+    "Floorboards creak in a rhythm. Footsteps. Moving toward the closet.",
+    "The cabin smells different now. Like copper and something sweet."
+  ],
+  cantina: [
+    "A plate shatters in the kitchen. The kitchen is supposed to be empty.",
+    "The walk-in freezer door clicks shut. Someone is inside.",
+    "A knife is missing from the magnetic strip. It was there five minutes ago.",
+    "The serving window is open. On the counter: a handprint in flour.",
+    "Something drips from the ceiling fan. It's not water.",
+    "The cantina radio crackles to life. Static. Then a voice: 'Found you.'"
+  ],
+  dock: [
+    "The dock boards groan. Weight shifting. Coming closer.",
+    "Something surfaces in the lake. Just a log. Probably.",
+    "A rope tightens on the dock cleat. The boats are supposed to be secured.",
+    "The water laps at the pilings in an uneven rhythm. Something is displacing it.",
+    "A canoe drifts into view. Empty. Its paddle is broken in half.",
+    "The dock light flickers. In the strobe, a silhouette at the end of the pier."
+  ],
+  generic: [
+    "A door creaks open down the hall. Nobody went that way.",
+    "Footsteps. Then nothing. Then footsteps again, closer.",
+    "The shadows shift. Something is in the room.",
+    "A hand covers someone's mouth from behind. 'Shh. Don't move.'",
+    "Something scrapes along the wall outside. Slow. Deliberate. Testing.",
+    "A walkie-talkie crackles: static, then a scream, then static again.",
+    "The floor plan doesn't add up. There's a room that shouldn't be there.",
+    "Someone wrote HELP on the mirror. The letters are still wet."
+  ]
+};
+
 const SLASHER_EVENTS = {
   positive: [
     {
@@ -1630,6 +1747,23 @@ export function simulateSlasherNight(ep) {
     else if (tensionScore >= 7) chrisLine = _pickChrisLine('highTension');
     else chrisLine = _pickChrisLine('generic');
 
+    // ── Horror Beats (atmospheric interstitials for VP) ──
+    const _envBeats = SLASHER_HORROR_BEATS[env.id] || [];
+    const _genBeats = SLASHER_HORROR_BEATS.generic || [];
+    const _beatPool = [..._envBeats, ..._genBeats];
+    const _roundBeats = [];
+    if (_beatPool.length) {
+      const numBeats = 1 + (Math.random() < 0.5 ? 1 : 0); // 1-2 beats
+      const _used = new Set();
+      for (let _bi = 0; _bi < numBeats && _bi < _beatPool.length; _bi++) {
+        let pick;
+        let attempts = 0;
+        do { pick = _beatPool[Math.floor(Math.random() * _beatPool.length)]; attempts++; }
+        while (_used.has(pick) && attempts < 20);
+        if (!_used.has(pick)) { _roundBeats.push(pick); _used.add(pick); }
+      }
+    }
+
     rounds.push({
       num: roundNum,
       events: roundEvents,
@@ -1648,7 +1782,8 @@ export function simulateSlasherNight(ep) {
       tensionScore,
       slasherProximity,
       chrisLine,
-      environmentId: env.id
+      environmentId: env.id,
+      horrorBeats: _roundBeats
     });
 
     // Update pairings: remove caught players
@@ -2107,6 +2242,118 @@ function _slasherPortrait(name, sn, roundIdx, options = {}) {
   return `<span class="${classes.trim()}" style="display:inline-block;position:relative">${rpPortrait(name, 'sm')}${povHtml}</span>`;
 }
 
+function _generateCinematicText(evt, povPlayer) {
+  if (!povPlayer || !evt) return evt?.text || '';
+  const pr = pronouns(povPlayer);
+  const name = povPlayer;
+  const eid = evt.eventId || '';
+  
+  const cinematicMap = {
+    'find-hiding-spot': [
+      `${name} drops low behind the boathouse wall. Presses flat. Doesn't breathe.`,
+      `${name} slides under the cabin porch. The gap is barely wide enough. Footsteps pass three inches above.`,
+      `${name}'s hand finds a gap in the floorboards. ${pr.Sub} squeezes through. The dark swallows ${pr.obj} whole.`
+    ],
+    'caught': [
+      `${name} turns the corner. The slasher is already there. It's over before ${pr.sub} can scream.`,
+      `A hand clamps down on ${name}'s shoulder. ${pr.Sub} doesn't even get to run.`,
+      `The camera finds ${name} backed against the wall. Nowhere left to go.`
+    ],
+    'protect-someone': [
+      `${name} steps between the slasher and the others. 'Run. I've got this.'`,
+      `${name} grabs a chair and holds it like a shield. ${pr.Sub} isn't going anywhere.`,
+      `${name} shoves the others behind ${pr.obj} and faces the dark alone.`
+    ],
+    'abandon-ally': [
+      `${name} bolts. Doesn't look back. The screaming behind ${pr.obj} fades to nothing.`,
+      `${name}'s eyes go wide. ${pr.Sub} mouths 'sorry' and disappears into the dark.`,
+      `Self-preservation wins. ${name} runs and doesn't stop until the screaming stops.`
+    ],
+    'push-someone': [
+      `${name} shoves someone toward the sound. A distraction. A sacrifice.`,
+      `${name}'s hand shoots out. Someone stumbles forward into the path. ${name} doesn't watch what happens next.`
+    ],
+    'panic-scream': [
+      `${name} screams. The sound rips through the camp like a siren.`,
+      `${name}'s nerve breaks. The scream gives away everything — position, direction, fear.`,
+      `A shriek from ${name}. Raw. Primal. Every head turns.`
+    ],
+    'stand-and-fight': [
+      `${name}'s hand closes around something heavy. ${pr.Sub} swings before thinking. Contact. The slasher staggers.`,
+      `Something in ${name} snaps. No more running. ${pr.Sub} picks up the rock and waits.`,
+      `${name} squares up. No weapon, just fists and fury. The slasher actually hesitates.`
+    ],
+    'set-a-trap': [
+      `${name} rigs the tripwire in the dark. Hands shaking. The knot holds. Footsteps approaching.`,
+      `${name} pours the cooking oil. Backs away. Waits. The crash is immensely satisfying.`,
+      `${name}'s trap clicks into place. A thin smile. 'Your turn to be scared.'`
+    ],
+    'find-weapon': [
+      `${name}'s hand finds the machete. Cold metal. A weapon. Everything changes.`,
+      `${name} pulls the fire axe from the wall mount. The weight feels like power.`,
+      `${name} wraps ${pr.pos} fist around a pipe wrench. Now it's a fair fight.`
+    ],
+    'noise-distraction': [
+      `${name} hurls a rock through the far window. Glass explodes. The slasher's head snaps toward the sound.`,
+      `${name} kicks the trash cans over. The clatter echoes through camp. 'Over here, ugly.'`,
+      `${name} throws the torch into the dark. The slasher's head snaps toward the light.`
+    ],
+    'run-for-it': [
+      `${name} breaks into a sprint. Branches whip ${pr.pos} face. Doesn't matter. Just run.`,
+      `${name} launches from cover. Full speed. The treeline is thirty yards away. Maybe.`,
+      `${name} runs. Not gracefully. Not strategically. Just pure animal flight.`
+    ],
+    'confession': [
+      `${name} grabs someone's hand in the dark. 'If we don't make it—' ${pr.Sub} doesn't finish.`,
+      `${name}'s voice cracks: 'I need you to know something.' The timing is terrible. The honesty isn't.`,
+      `Pressed together in the crawlspace, ${name} whispers something meant for only one person.`
+    ],
+    'barricade': [
+      `${name} drags the dresser against the door. Then the table. Then everything else.`,
+      `${name} hammers boards across the window. Each nail buys seconds. Maybe.`,
+      `${name} jams the chair under the doorknob. Old trick. ${pr.Sub}'s betting ${pr.pos} life on it.`
+    ],
+    'distraction': [
+      `${name} steps into the open. Arms wide. 'HEY! OVER HERE!' The others scatter.`,
+      `${name} runs the opposite direction, making as much noise as possible. The slasher follows.`,
+      `${name} draws the danger toward ${pr.obj}self. Brave. Possibly stupid. Definitely both.`
+    ],
+    'warn-others': [
+      `${name} sprints between cabins, banging on doors: 'MOVE! It's coming!'`,
+      `${name} screams a warning into the dark. Some hear it. Some don't.`,
+      `${name} finds the others and ${pr.pos} face says everything before ${pr.sub} can speak.`
+    ],
+    'rally': [
+      `${name} pulls them together. 'We're not dying out here. Not tonight.'`,
+      `${name}'s voice cuts through the panic: 'Together. We move together.'`,
+      `${name} grabs shoulders, makes eye contact. 'Focus. We're getting out of this.'`
+    ],
+    'calm-others': [
+      `${name} keeps ${pr.pos} voice low and steady. 'Breathe. We've got time. We've got each other.'`,
+      `${name} puts a hand on someone's arm. No words needed. The trembling stops.`,
+      `${name} is the reason nobody screams. The calm in ${pr.obj} is contagious.`
+    ],
+    'rooftop-escape': [
+      `${name} pulls ${pr.obj}self onto the roof. Shingles crack. The whole camp spreads below.`,
+      `${name} reaches the rooftop. Up here, the moonlight is merciless. But so is the vantage point.`
+    ],
+    'sabotage': [
+      `${name} loosens the bolt on the barricade. Quietly. Nobody notices. That's the point.`,
+      `${name} 'accidentally' kicks the lantern over. In the chaos, ${pr.sub} slips away smiling.`,
+      `${name} cuts the rope. The escape route collapses. ${pr.Sub} was never on their side.`
+    ],
+    'scheme': [
+      `${name} leans in close: 'I know a way out. But not for everyone.'`,
+      `${name}'s eyes calculate. Every person is a variable. Every exit, a negotiation.`,
+      `${name} whispers to the right person at the wrong time. The alliance fractures.`
+    ]
+  };
+  
+  const variants = cinematicMap[eid];
+  if (!variants || !variants.length) return evt.text || '';
+  return variants[Math.floor(Math.random() * variants.length)];
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // VP SCREENS — VHS Three-Act Film
 // ═══════════════════════════════════════════════════════════════════
@@ -2145,58 +2392,127 @@ export function rpBuildSlasherTitleCard(ep) {
   return _slasherVHSShell(inner, 'title', 0, ep.num);
 }
 
+// ── Helper: Build flat scene items array from rounds ──
+function _buildSceneItems(actRounds, sn, startRoundOffset) {
+  const items = [];
+  actRounds.forEach((round, ri) => {
+    // Round header
+    items.push({
+      type: 'round-header',
+      text: `Round ${round.num} — ${(round.remaining?.length || 0)} remain`,
+      atmosphere: round.atmosphere || ''
+    });
+
+    const events = round.events || [];
+    let evtsSinceLastBeat = 0;
+    const beats = [...(round.horrorBeats || [])];
+    let beatIdx = 0;
+
+    events.forEach((evt, ei) => {
+      // Interleave horror beats every 2-3 events
+      evtsSinceLastBeat++;
+      const beatThreshold = 2 + (Math.random() < 0.4 ? 1 : 0);
+      if (evtsSinceLastBeat >= beatThreshold && beatIdx < beats.length) {
+        items.push({ type: 'horror-beat', text: beats[beatIdx] });
+        beatIdx++;
+        evtsSinceLastBeat = 0;
+      }
+
+      // Find matching caught entry for jumpscare level
+      const caughtEntry = (round.caught || []).find(c => c.name === evt.player);
+      const isPov = round.povPlayer === evt.player;
+      const prox = round.slasherProximity?.[evt.player] || 'far';
+
+      // Use cinematic text for POV player
+      let displayText = evt.text;
+      if (isPov) {
+        displayText = _generateCinematicText(evt, round.povPlayer);
+      }
+
+      items.push({
+        type: 'event',
+        player: evt.player,
+        text: displayText,
+        points: evt.points || 0,
+        eventType: evt.type || 'positive',
+        eventId: evt.eventId || '',
+        isCaught: evt.type === 'caught',
+        jumpscareLevel: (evt.type === 'caught' && caughtEntry) ? (caughtEntry.jumpscareLevel || 0) : 0,
+        proximity: prox,
+        isPov,
+        roundIdx: startRoundOffset + ri,
+        sn
+      });
+    });
+
+    // Inject remaining beats after events
+    while (beatIdx < beats.length) {
+      items.push({ type: 'horror-beat', text: beats[beatIdx] });
+      beatIdx++;
+    }
+
+    // Chris line
+    if (round.chrisLine) {
+      items.push({ type: 'chris', text: round.chrisLine });
+    }
+  });
+  return items;
+}
+
+// ── Helper: Render scene items to HTML ──
+function _renderSceneItems(items, stateKey, sn) {
+  let html = `<div data-total-items="${items.length}">`;
+  items.forEach((item, i) => {
+    const hidden = i > 0 ? ' style="display:none"' : '';
+    const id = `sl-item-${stateKey}-${i}`;
+
+    if (item.type === 'round-header') {
+      html += `<div id="${id}" class="slasher-round-header" style="color:#da3633${i > 0 ? ';display:none' : ''}" data-evttype="round-header">
+        ${item.text}
+        ${item.atmosphere ? `<div class="vhs-osd">${item.atmosphere}</div>` : ''}
+      </div>`;
+    } else if (item.type === 'horror-beat') {
+      html += `<div id="${id}" class="slasher-beat-card"${hidden} data-evttype="horror-beat">${item.text}</div>`;
+    } else if (item.type === 'chris') {
+      html += `<div id="${id}" class="vhs-chris-line"${hidden} data-evttype="chris">${item.text}</div>`;
+    } else if (item.type === 'event') {
+      const pts = item.points;
+      const ptColor = pts >= 0 ? '#3fb950' : '#f85149';
+      const catchClass = item.isCaught ? ' slasher-catch-card' : '';
+      const jsAttr = item.jumpscareLevel > 0 ? ` data-jumpscare="${item.jumpscareLevel}"` : '';
+
+      html += `<div id="${id}" class="slasher-event-card${catchClass}"${hidden} data-evttype="${item.isCaught ? 'caught' : 'event'}"${jsAttr}>
+        ${_slasherPortrait(item.player, item.sn, item.roundIdx, { isPov: item.isPov, isCaught: item.isCaught, proximity: item.proximity })}
+        <div class="slasher-event-text" ${item.isPov ? 'style="color:#e6edf3;font-style:italic"' : ''}>${item.text}</div>
+        ${!item.isCaught
+          ? `<span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;background:${pts >= 0 ? 'rgba(63,185,80,0.12)' : 'rgba(218,54,51,0.12)'};color:${ptColor};white-space:nowrap">${pts >= 0 ? '+' : ''}${pts}</span>`
+          : '<span class="slasher-score-neg" style="font-size:10px;font-family:var(--font-mono);letter-spacing:2px">⛌ CAUGHT</span>'}
+      </div>`;
+    }
+  });
+  html += `</div>`;
+
+  // Next button
+  html += `<button id="sl-next-${stateKey}" class="slasher-next-btn" onclick="slasherRevealNext('${stateKey}')">▶ WHAT HAPPENS NEXT...</button>`;
+
+  return html;
+}
+
 export function rpBuildSlasherActI(ep) {
   const sn = ep.slasherNight;
   if (!sn || !sn.rounds?.length) return '';
   const stateKey = String(ep.num) + '_slasher_act1';
   if (!_tvState[stateKey]) _tvState[stateKey] = { revealed: 0 };
 
-  // Act I rounds: start through first catch (or all if no act breaks)
   const endIdx = sn.actBreaks ? sn.actBreaks[0] : Math.min(2, sn.rounds.length - 1);
   const actRounds = sn.rounds.slice(0, endIdx + 1);
+  const items = _buildSceneItems(actRounds, sn, 0);
 
   let inner = `<div class="rp-page" style="background:#0a0a0a;padding:20px">
-    <div class="vhs-act-card"><h2>ACT I</h2><p>First Blood</p></div>`;
+    <div class="vhs-act-card"><h2>ACT I</h2><p>First Blood</p></div>
+    ${_renderSceneItems(items, stateKey, sn)}
+  </div>`;
 
-  actRounds.forEach((round, ri) => {
-    const isHidden = ri > 0 ? 'style="display:none"' : '';
-    const caught = new Set((round.caught || []).map(c => c.name));
-    inner += `<div class="sl-act1-round" id="sl-a1-${stateKey}-${ri}" ${isHidden}>
-      <div class="slasher-round-header" style="color:#da3633">Round ${round.num} — ${(round.remaining?.length || 0)} remain</div>`;
-
-    // Environment OSD
-    if (round.atmosphere) inner += `<div class="vhs-osd">${round.atmosphere}</div>`;
-
-    // Events
-    (round.events || []).forEach(evt => {
-      const isPov = round.povPlayer === evt.player;
-      const displayText = isPov && round.povEvents?.find(pe => pe.eventId === evt.eventId)?.povText
-        ? round.povEvents.find(pe => pe.eventId === evt.eventId).povText
-        : evt.text;
-      const pts = evt.points || 0;
-      const ptColor = pts >= 0 ? '#3fb950' : '#f85149';
-      const prox = round.slasherProximity?.[evt.player] || 'far';
-
-      inner += `<div class="slasher-event-card" ${evt.type === 'caught' ? 'style="border-color:rgba(218,54,51,0.4);background:rgba(218,54,51,0.06)"' : ''}>
-        ${_slasherPortrait(evt.player, sn, ri, { isPov, isCaught: evt.type === 'caught', proximity: prox })}
-        <div class="slasher-event-text" ${isPov ? 'style="color:#e6edf3;font-style:italic"' : ''}>${displayText}</div>
-        ${evt.type !== 'caught' ? `<span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;background:${pts >= 0 ? 'rgba(63,185,80,0.12)' : 'rgba(218,54,51,0.12)'};color:${ptColor};white-space:nowrap">${pts >= 0 ? '+' : ''}${pts}</span>` : '<span class="slasher-score-neg" style="font-size:10px">CAUGHT</span>'}
-      </div>`;
-    });
-
-    if (round.chrisLine) inner += `<div class="vhs-chris-line">${round.chrisLine}</div>`;
-    inner += `</div>`;
-  });
-
-  // Reveal button
-  if (actRounds.length > 1) {
-    inner += `<div style="text-align:center;margin:16px 0">
-      <button class="vp-reveal-btn" onclick="slasherRevealNextScene('${stateKey}', ${actRounds.length}, 'sl-a1-')" style="font-family:var(--font-mono);font-size:11px;color:#da3633;background:rgba(218,54,51,0.08);border:1px solid rgba(218,54,51,0.3);padding:6px 16px;border-radius:4px;cursor:pointer;letter-spacing:1px">▶▶ FAST FORWARD</button>
-      <button class="vp-reveal-btn" onclick="slasherRevealAllScenes('${stateKey}', ${actRounds.length}, 'sl-a1-')" style="font-family:var(--font-mono);font-size:10px;color:#484f58;background:none;border:1px solid #21262d;padding:4px 12px;border-radius:4px;cursor:pointer;margin-left:8px">SHOW ALL</button>
-    </div>`;
-  }
-
-  inner += `</div>`;
   return _slasherVHSShell(inner, 1, actRounds[actRounds.length - 1]?.tensionScore || 2, ep.num);
 }
 
@@ -2208,61 +2524,30 @@ export function rpBuildSlasherActII(ep) {
 
   const startIdx = sn.actBreaks ? sn.actBreaks[0] + 1 : 3;
   const endIdx = sn.actBreaks ? sn.actBreaks[1] - 1 : sn.rounds.length - 2;
-  if (startIdx > endIdx || startIdx >= sn.rounds.length) return ''; // No Act II
+  if (startIdx > endIdx || startIdx >= sn.rounds.length) return '';
   const actRounds = sn.rounds.slice(startIdx, endIdx + 1);
   const caughtSoFar = _caughtByRound(sn, startIdx - 1);
   const totalPlayers = sn.rounds[0]?.remaining?.length || sn.leaderboard?.length || 0;
 
+  const items = _buildSceneItems(actRounds, sn, startIdx);
+
+  // Track caught for body count sidebar
+  actRounds.forEach(r => (r.caught || []).forEach(c => caughtSoFar.add(c.name)));
+
   let inner = `<div class="rp-page" style="background:#0a0a0a;padding:20px">
     <div class="vhs-act-card"><h2>ACT II</h2><p>The Long Night</p></div>
     <div style="display:flex;gap:16px;flex-wrap:wrap">
-    <div style="flex:1;min-width:300px">`;
-
-  actRounds.forEach((round, ri) => {
-    const isHidden = ri > 0 ? 'style="display:none"' : '';
-    inner += `<div class="sl-act2-round" id="sl-a2-${stateKey}-${ri}" ${isHidden}>
-      <div class="slasher-round-header" style="color:#da3633">Round ${round.num} — ${(round.remaining?.length || 0)} remain</div>`;
-    if (round.atmosphere) inner += `<div class="vhs-osd">${round.atmosphere}</div>`;
-
-    (round.events || []).forEach(evt => {
-      const isPov = round.povPlayer === evt.player;
-      const displayText = isPov && round.povEvents?.find(pe => pe.eventId === evt.eventId)?.povText
-        ? round.povEvents.find(pe => pe.eventId === evt.eventId).povText
-        : evt.text;
-      const pts = evt.points || 0;
-      const prox = round.slasherProximity?.[evt.player] || 'far';
-
-      inner += `<div class="slasher-event-card" ${evt.type === 'caught' ? 'style="border-color:rgba(218,54,51,0.4);background:rgba(218,54,51,0.06)"' : ''}>
-        ${_slasherPortrait(evt.player, sn, startIdx + ri, { isPov, isCaught: evt.type === 'caught', proximity: prox })}
-        <div class="slasher-event-text" ${isPov ? 'style="color:#e6edf3;font-style:italic"' : ''}>${displayText}</div>
-        ${evt.type !== 'caught' ? `<span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;background:${pts >= 0 ? 'rgba(63,185,80,0.12)' : 'rgba(218,54,51,0.12)'};color:${pts >= 0 ? '#3fb950' : '#f85149'};white-space:nowrap">${pts >= 0 ? '+' : ''}${pts}</span>` : '<span class="slasher-score-neg" style="font-size:10px">CAUGHT</span>'}
-      </div>`;
-    });
-
-    // Update caught tracker
-    (round.caught || []).forEach(c => caughtSoFar.add(c.name));
-    if (round.chrisLine) inner += `<div class="vhs-chris-line">${round.chrisLine}</div>`;
-    inner += `</div>`;
-  });
-
-  // Reveal buttons
-  if (actRounds.length > 1) {
-    inner += `<div style="text-align:center;margin:16px 0">
-      <button class="vp-reveal-btn" onclick="slasherRevealNextScene('${stateKey}', ${actRounds.length}, 'sl-a2-')" style="font-family:var(--font-mono);font-size:11px;color:#da3633;background:rgba(218,54,51,0.08);border:1px solid rgba(218,54,51,0.3);padding:6px 16px;border-radius:4px;cursor:pointer;letter-spacing:1px">▶▶ FAST FORWARD</button>
-      <button class="vp-reveal-btn" onclick="slasherRevealAllScenes('${stateKey}', ${actRounds.length}, 'sl-a2-')" style="font-family:var(--font-mono);font-size:10px;color:#484f58;background:none;border:1px solid #21262d;padding:4px 12px;border-radius:4px;cursor:pointer;margin-left:8px">SHOW ALL</button>
-    </div>`;
-  }
-
-  inner += `</div>`; // end main column
-
-  // Body count sidebar
-  inner += `<div style="width:140px;flex-shrink:0">
-    <div class="vhs-body-count">
-      <div style="font-weight:800;margin-bottom:6px">BODY COUNT: ${caughtSoFar.size}/${totalPlayers}</div>`;
-  caughtSoFar.forEach(name => {
-    inner += `<div class="vhs-body-count-entry"><span class="vhs-body-count-x">✕</span>${rpPortrait(name, 'xs')}<span style="font-size:9px;color:#484f58">${name.split(' ')[0]}</span></div>`;
-  });
-  inner += `</div></div></div></div>`; // close sidebar, flex, page
+    <div style="flex:1;min-width:300px">
+      ${_renderSceneItems(items, stateKey, sn)}
+    </div>
+    <div style="width:140px;flex-shrink:0">
+      <div class="vhs-body-count">
+        <div style="font-weight:800;margin-bottom:6px">BODY COUNT: ${caughtSoFar.size}/${totalPlayers}</div>
+        ${[...caughtSoFar].map(name => `<div class="vhs-body-count-entry"><span class="vhs-body-count-x">✕</span>${rpPortrait(name, 'xs')}<span style="font-size:9px;color:#484f58">${name.split(' ')[0]}</span></div>`).join('')}
+      </div>
+    </div>
+    </div>
+  </div>`;
 
   return _slasherVHSShell(inner, 2, actRounds[actRounds.length - 1]?.tensionScore || 5, ep.num);
 }
@@ -2271,7 +2556,7 @@ export function rpBuildSlasherActIII(ep) {
   const sn = ep.slasherNight;
   if (!sn) return '';
   const stateKey = String(ep.num) + '_slasher_act3';
-  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  if (!_tvState[stateKey]) _tvState[stateKey] = { revealed: 0 };
 
   const startIdx = sn.actBreaks ? sn.actBreaks[1] : Math.max(0, sn.rounds.length - 1);
   const actRounds = sn.rounds.slice(startIdx);
@@ -2279,33 +2564,70 @@ export function rpBuildSlasherActIII(ep) {
   const winner = sn.immunityWinner;
 
   const subtitle = winner ? `${winner} STANDS ALONE` : 'THE FINAL HUNT';
+  const items = _buildSceneItems(actRounds, sn, startIdx);
+
+  // Add final showdown and winner reveal as extra items
+  const extraItems = [];
+  if (fs && fs.loser) {
+    extraItems.push({
+      type: 'showdown',
+      winner: fs.winner,
+      loser: fs.loser,
+      winText: fs.winText || '',
+      loseText: fs.loseText || ''
+    });
+  }
+  if (winner) {
+    extraItems.push({
+      type: 'winner-reveal',
+      winner,
+      pr: pronouns(winner)
+    });
+  }
+
   let inner = `<div class="rp-page" style="background:#0a0a0a;padding:20px">
     <div class="vhs-act-card"><h2>ACT III</h2><p>${subtitle}</p></div>`;
 
-  // Final rounds (usually 1-2)
-  actRounds.forEach(round => {
-    inner += `<div style="margin-bottom:16px">
-      <div class="slasher-round-header" style="color:#da3633">Round ${round.num} — ${(round.remaining?.length || 0)} remain</div>`;
-    if (round.atmosphere) inner += `<div class="vhs-osd">${round.atmosphere}</div>`;
-    (round.events || []).forEach(evt => {
-      const isPov = round.povPlayer === evt.player;
-      const displayText = isPov && round.povEvents?.find(pe => pe.eventId === evt.eventId)?.povText
-        ? round.povEvents.find(pe => pe.eventId === evt.eventId).povText : evt.text;
-      const pts = evt.points || 0;
-      const prox = round.slasherProximity?.[evt.player] || 'far';
-      inner += `<div class="slasher-event-card" ${evt.type === 'caught' ? 'style="border-color:rgba(218,54,51,0.4);background:rgba(218,54,51,0.06)"' : ''}>
-        ${_slasherPortrait(evt.player, sn, startIdx, { isPov, isCaught: evt.type === 'caught', proximity: prox })}
-        <div class="slasher-event-text" ${isPov ? 'style="color:#e6edf3;font-style:italic"' : ''}>${displayText}</div>
-        ${evt.type !== 'caught' ? `<span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;background:${pts >= 0 ? 'rgba(63,185,80,0.12)' : 'rgba(218,54,51,0.12)'};color:${pts >= 0 ? '#3fb950' : '#f85149'};white-space:nowrap">${pts >= 0 ? '+' : ''}${pts}</span>` : '<span class="slasher-score-neg" style="font-size:10px">CAUGHT</span>'}
+  // Render main scene items
+  const allItems = [...items];
+  const mainCount = allItems.length;
+
+  inner += `<div data-total-items="${mainCount + extraItems.length}">`;
+
+  // Main gameplay items
+  allItems.forEach((item, i) => {
+    const hidden = i > 0 ? ' style="display:none"' : '';
+    const id = `sl-item-${stateKey}-${i}`;
+
+    if (item.type === 'round-header') {
+      inner += `<div id="${id}" class="slasher-round-header" style="color:#da3633${i > 0 ? ';display:none' : ''}" data-evttype="round-header">
+        ${item.text}
+        ${item.atmosphere ? `<div class="vhs-osd">${item.atmosphere}</div>` : ''}
       </div>`;
-    });
-    if (round.chrisLine) inner += `<div class="vhs-chris-line">${round.chrisLine}</div>`;
-    inner += `</div>`;
+    } else if (item.type === 'horror-beat') {
+      inner += `<div id="${id}" class="slasher-beat-card"${hidden} data-evttype="horror-beat">${item.text}</div>`;
+    } else if (item.type === 'chris') {
+      inner += `<div id="${id}" class="vhs-chris-line"${hidden} data-evttype="chris">${item.text}</div>`;
+    } else if (item.type === 'event') {
+      const pts = item.points;
+      const ptColor = pts >= 0 ? '#3fb950' : '#f85149';
+      const catchClass = item.isCaught ? ' slasher-catch-card' : '';
+      const jsAttr = item.jumpscareLevel > 0 ? ` data-jumpscare="${item.jumpscareLevel}"` : '';
+
+      inner += `<div id="${id}" class="slasher-event-card${catchClass}"${hidden} data-evttype="${item.isCaught ? 'caught' : 'event'}"${jsAttr}>
+        ${_slasherPortrait(item.player, item.sn, item.roundIdx, { isPov: item.isPov, isCaught: item.isCaught, proximity: item.proximity })}
+        <div class="slasher-event-text" ${item.isPov ? 'style="color:#e6edf3;font-style:italic"' : ''}>${item.text}</div>
+        ${!item.isCaught
+          ? `<span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;background:${pts >= 0 ? 'rgba(63,185,80,0.12)' : 'rgba(218,54,51,0.12)'};color:${ptColor};white-space:nowrap">${pts >= 0 ? '+' : ''}${pts}</span>`
+          : '<span class="slasher-score-neg" style="font-size:10px;font-family:var(--font-mono);letter-spacing:2px">⛌ CAUGHT</span>'}
+      </div>`;
+    }
   });
 
-  // Final Showdown
+  // Showdown item
+  let extraIdx = mainCount;
   if (fs && fs.loser) {
-    inner += `<div style="text-align:center;padding:30px 0;border-top:1px solid rgba(218,54,51,0.2)">
+    inner += `<div id="sl-item-${stateKey}-${extraIdx}" style="display:none;text-align:center;padding:30px 0;border-top:1px solid rgba(218,54,51,0.2)" data-evttype="event">
       <div style="font-family:var(--font-mono);font-size:10px;color:rgba(218,54,51,0.6);letter-spacing:3px;margin-bottom:16px">FINAL SHOWDOWN</div>
       <div style="display:flex;align-items:center;justify-content:center;gap:24px">
         ${rpPortrait(fs.winner)}
@@ -2317,21 +2639,25 @@ export function rpBuildSlasherActIII(ep) {
         <div class="slasher-event-text" style="color:#f85149">${fs.loseText || ''}</div>
       </div>
     </div>`;
+    extraIdx++;
   }
 
-  // Winner reveal
+  // Winner reveal item
   if (winner) {
-    inner += `<div id="sl-a3-reveal-${stateKey}" style="display:none;text-align:center;padding:20px 0;border-top:1px solid rgba(63,185,80,0.2)">
+    const pr = pronouns(winner);
+    inner += `<div id="sl-item-${stateKey}-${extraIdx}" style="display:none;text-align:center;padding:20px 0;border-top:1px solid rgba(63,185,80,0.2)" data-evttype="event">
       <div style="font-family:var(--font-mono);font-size:10px;color:#3fb950;letter-spacing:3px;margin-bottom:12px">IMMUNITY WINNER</div>
       <div style="display:inline-block;border:3px solid rgba(240,192,64,0.6);border-radius:50%;padding:4px">${rpPortrait(winner)}</div>
       <div style="font-size:16px;font-weight:700;color:#e6edf3;margin-top:8px">${winner}</div>
-      <div style="font-size:11px;color:#8b949e">Survived the night. The final ${pronouns(winner).sub === 'they' ? 'survivor' : (pronouns(winner).sub === 'she' ? 'girl' : 'guy')}.
-      </div>
-    </div>
-    <div style="text-align:center;margin:16px 0">
-      <button class="vp-reveal-btn" onclick="document.getElementById('sl-a3-reveal-${stateKey}').style.display='block';this.style.display='none';_slasherAudioFireStatic()" style="font-family:var(--font-mono);font-size:11px;color:#3fb950;background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.3);padding:6px 16px;border-radius:4px;cursor:pointer;letter-spacing:1px">▶ REVEAL SURVIVOR</button>
+      <div style="font-size:11px;color:#8b949e">Survived the night. The final ${pr.sub === 'they' ? 'survivor' : (pr.sub === 'she' ? 'girl' : 'guy')}.</div>
     </div>`;
+    extraIdx++;
   }
+
+  inner += `</div>`; // close items container
+
+  // Next button
+  inner += `<button id="sl-next-${stateKey}" class="slasher-next-btn" onclick="slasherRevealNext('${stateKey}')">▶ KEEP WATCHING...</button>`;
 
   inner += `</div>`;
   return _slasherVHSShell(inner, 3, 9, ep.num);
@@ -2414,7 +2740,39 @@ export function rpBuildSlasherCredits(ep) {
   return _slasherVHSShell(inner, 'credits', 0, ep.num);
 }
 
-// Scene reveal helpers (updated for act-based navigation)
+// ── Per-event reveal function ──
+export function slasherRevealNext(stateKey) {
+  if (!_tvState[stateKey]) _tvState[stateKey] = { revealed: 0 };
+  const next = _tvState[stateKey].revealed + 1;
+  const el = document.getElementById(`sl-item-${stateKey}-${next}`);
+  if (!el) {
+    // All revealed — update button
+    const btn = document.getElementById(`sl-next-${stateKey}`);
+    if (btn) { btn.textContent = '✓ ALL REVEALED'; btn.disabled = true; btn.style.opacity = '0.4'; }
+    return;
+  }
+  el.style.display = '';
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  _tvState[stateKey].revealed = next;
+
+  // Check if this is a catch with jumpscare
+  const jsLevel = parseInt(el.dataset.jumpscare || '0');
+  if (jsLevel > 0) _fireJumpscare(jsLevel, el.id);
+
+  // Fire audio based on event type
+  const evtType = el.dataset.evttype || '';
+  if (evtType === 'caught') _slasherAudioFireStatic();
+  else if (evtType === 'horror-beat') _slasherAudioFireChainsaw();
+
+  // Check if next item exists — if not, update button
+  const nextNext = document.getElementById(`sl-item-${stateKey}-${next + 1}`);
+  if (!nextNext) {
+    const btn = document.getElementById(`sl-next-${stateKey}`);
+    if (btn) btn.textContent = '→ CONTINUE';
+  }
+}
+
+// Keep old scene-level reveal functions for backward compat
 export function slasherRevealNextScene(stateKey, totalScenes, prefix) {
   if (!_tvState[stateKey]) _tvState[stateKey] = { revealed: 0 };
   const next = _tvState[stateKey].revealed + 1;

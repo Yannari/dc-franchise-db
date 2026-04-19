@@ -1275,6 +1275,12 @@ export function simulateSlasherNight(ep) {
   const eventHistory = {}; // { [name]: [eventId, eventId, ...] }
   activePlayers.forEach(n => { scores[n] = 0; eventHistory[n] = []; });
 
+  // ── FILM METADATA ──
+  const filmTitle = _generateFilmTitle();
+  const chrisOpener = `"Ladies and gentlemen... CHRIS McLEAN PRESENTS... ${filmTitle}. Viewer discretion is advised. Actually, no. Watch every second."`;
+  const povOrder = [];
+  const povUsed = new Set();
+
   // ── INITIAL PAIRINGS ──
   // Based on bonds: bond >= 3 → paired, showmances always paired
   const pairings = {}; // { [name]: [nearby allies] }

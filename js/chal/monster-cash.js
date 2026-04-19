@@ -257,7 +257,7 @@ export function simulateMonsterCash(ep) {
         }
         if (ev.heat && ev.target) {
           if (!gs._monsterCashHeat) gs._monsterCashHeat = {};
-          gs._monsterCashHeat[ev.target] = { target: ev.target, amount: (gs._monsterCashHeat[ev.target]?.amount || 0) + ev.heat, expiresEp: (gs.episode || 0) + 3 };
+          gs._monsterCashHeat[ev.target] = { target: ev.player, amount: (gs._monsterCashHeat[ev.target]?.amount || 0) + ev.heat, expiresEp: (gs.episode || 0) + 3 };
         }
         if (ev.type === 'heroic' && ev.target) {
           const reduction = ev.id === 'sacrifice-cover' ? -1.5 : -1.0;
@@ -282,7 +282,7 @@ export function simulateMonsterCash(ep) {
 
     if (seasonConfig.romance) {
       for (const sm of (gs.showmances || [])) {
-        if (survivors.includes(sm.pair[0]) && survivors.includes(sm.pair[1])) {
+        if (sm.pair && survivors.includes(sm.pair[0]) && survivors.includes(sm.pair[1])) {
           _checkShowmanceChalMoment(sm.pair[0], sm.pair[1], ep);
         }
       }

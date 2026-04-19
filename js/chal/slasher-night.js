@@ -2066,7 +2066,7 @@ export function _slasherAudioSetAct(actNum, tension) {
 }
 
 export function _slasherAudioFireStinger(level) {
-  if (!_slasherAudioCtx || _tvState.slasherAudioMuted !== false) return;
+  if (!_slasherAudioCtx || _tvState.slasherAudioMuted === true) return;
   const t = _slasherAudioCtx.currentTime;
   const gain = level === 2 ? 0.7 : 0.4;
   const dur = level === 2 ? 0.5 : 0.3;
@@ -2093,7 +2093,7 @@ export function _slasherAudioFireStinger(level) {
 }
 
 export function _slasherAudioFireChainsaw() {
-  if (!_slasherAudioCtx || _tvState.slasherAudioMuted !== false) return;
+  if (!_slasherAudioCtx || _tvState.slasherAudioMuted === true) return;
   const t = _slasherAudioCtx.currentTime;
   const osc = _slasherAudioCtx.createOscillator();
   osc.type = 'sawtooth';
@@ -2110,7 +2110,7 @@ export function _slasherAudioFireChainsaw() {
 }
 
 export function _slasherAudioFireStatic() {
-  if (!_slasherAudioCtx || _tvState.slasherAudioMuted !== false) return;
+  if (!_slasherAudioCtx || _tvState.slasherAudioMuted === true) return;
   const t = _slasherAudioCtx.currentTime;
   const len = _slasherAudioCtx.sampleRate * 0.2;
   const buf = _slasherAudioCtx.createBuffer(1, len, _slasherAudioCtx.sampleRate);
@@ -2126,7 +2126,7 @@ export function _slasherAudioFireStatic() {
 }
 
 export function _slasherAudioFireRewind() {
-  if (!_slasherAudioCtx || _tvState.slasherAudioMuted !== false) return;
+  if (!_slasherAudioCtx || _tvState.slasherAudioMuted === true) return;
   const t = _slasherAudioCtx.currentTime;
   const len = _slasherAudioCtx.sampleRate * 0.5;
   const buf = _slasherAudioCtx.createBuffer(1, len, _slasherAudioCtx.sampleRate);
@@ -2143,6 +2143,79 @@ export function _slasherAudioFireRewind() {
   g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
   src.connect(bpf); bpf.connect(g); g.connect(_slasherAudioCtx.destination);
   src.start(t);
+}
+
+// Scream SFX — sharp rising shriek on catch reveals
+export function _slasherAudioFireScream() {
+  if (!_slasherAudioCtx || _tvState.slasherAudioMuted === true) return;
+  const t = _slasherAudioCtx.currentTime;
+  // High-pitched shriek: fast rising square wave with distortion
+  const osc = _slasherAudioCtx.createOscillator();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(400, t);
+  osc.frequency.exponentialRampToValueAtTime(1800, t + 0.15);
+  osc.frequency.exponentialRampToValueAtTime(600, t + 0.6);
+  const dist = _slasherAudioCtx.createWaveShaper();
+  const curve = new Float32Array(256);
+  for (let i = 0; i < 256; i++) { const x = (i * 2) / 256 - 1; curve[i] = (Math.PI + 10) * x / (Math.PI + 10 * Math.abs(x)); }
+  dist.curve = curve;
+  const g = _slasherAudioCtx.createGain();
+  g.gain.setValueAtTime(0.35, t);
+  g.gain.linearRampToValueAtTime(0.5, t + 0.1);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+  osc.connect(dist); dist.connect(g); g.connect(_slasherAudioCtx.destination);
+  osc.start(t); osc.stop(t + 0.7);
+}
+
+// Creak SFX — low tonal groan for horror beats
+export function _slasherAudioFireCreak() {
+  if (!_slasherAudioCtx || _tvState.slasherAudioMuted === true) return;
+  const t = _slasherAudioCtx.currentTime;
+  const osc = _slasherAudioCtx.createOscillator();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(60 + Math.random() * 40, t);
+  osc.frequency.linearRampToValueAtTime(30 + Math.random() * 20, t + 0.8);
+  const bpf = _slasherAudioCtx.createBiquadFilter();
+  bpf.type = 'bandpass'; bpf.frequency.value = 120; bpf.Q.value = 8;
+  const g = _slasherAudioCtx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.2, t + 0.1);
+  g.gain.linearRampToValueAtTime(0.15, t + 0.5);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+  osc.connect(bpf); bpf.connect(g); g.connect(_slasherAudioCtx.destination);
+  osc.start(t); osc.stop(t + 0.9);
+}
+
+// Heartbeat spike — quick thump-thump for negative events
+export function _slasherAudioFireHeartbeat() {
+  if (!_slasherAudioCtx || _tvState.slasherAudioMuted === true) return;
+  const t = _slasherAudioCtx.currentTime;
+  [0, 0.25].forEach(offset => {
+    const osc = _slasherAudioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(50, t + offset);
+    osc.frequency.exponentialRampToValueAtTime(30, t + offset + 0.15);
+    const g = _slasherAudioCtx.createGain();
+    g.gain.setValueAtTime(0.4, t + offset);
+    g.gain.exponentialRampToValueAtTime(0.001, t + offset + 0.18);
+    osc.connect(g); g.connect(_slasherAudioCtx.destination);
+    osc.start(t + offset); osc.stop(t + offset + 0.2);
+  });
+}
+
+// Tension sting — brief dissonant hit for positive events (suspense)
+export function _slasherAudioFireTension() {
+  if (!_slasherAudioCtx || _tvState.slasherAudioMuted === true) return;
+  const t = _slasherAudioCtx.currentTime;
+  const osc = _slasherAudioCtx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(150 + Math.random() * 50, t);
+  osc.frequency.linearRampToValueAtTime(100, t + 0.4);
+  const g = _slasherAudioCtx.createGain();
+  g.gain.setValueAtTime(0.08, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+  osc.connect(g); g.connect(_slasherAudioCtx.destination);
+  osc.start(t); osc.stop(t + 0.4);
 }
 
 // Jumpscare visual system
@@ -2200,7 +2273,7 @@ function _slasherVHSShell(innerHtml, act, tensionScore, epNum) {
     <div class="vhs-grain"></div>
     <div class="vhs-timecode"><span class="rec-dot"></span>REC ${tc}</div>
     <div class="vhs-tape-counter">▶ PLAY ${counter}</div>
-    <button class="vhs-mute-btn" onclick="_slasherToggleMute(this)" title="Toggle audio">🔇</button>
+    <button class="vhs-mute-btn" onclick="_slasherToggleMute(this)" title="Toggle audio">🔊</button>
     <div class="vhs-content">
       ${innerHtml}
     </div>
@@ -2208,7 +2281,7 @@ function _slasherVHSShell(innerHtml, act, tensionScore, epNum) {
 }
 
 export function _slasherToggleMute(btn) {
-  const wasMuted = _tvState.slasherAudioMuted !== false;
+  const wasMuted = _tvState.slasherAudioMuted === true;
   _tvState.slasherAudioMuted = !wasMuted;
   btn.textContent = wasMuted ? '🔊' : '🔇';
   if (!wasMuted) {
@@ -2481,7 +2554,7 @@ function _renderSceneItems(items, stateKey, sn) {
       const catchClass = item.isCaught ? ' slasher-catch-card' : '';
       const jsAttr = item.jumpscareLevel > 0 ? ` data-jumpscare="${item.jumpscareLevel}"` : '';
 
-      html += `<div id="${id}" class="slasher-event-card${catchClass}"${hidden} data-evttype="${item.isCaught ? 'caught' : 'event'}"${jsAttr}>
+      html += `<div id="${id}" class="slasher-event-card${catchClass}"${hidden} data-evttype="${item.isCaught ? 'caught' : 'event'}" data-points="${pts}"${jsAttr}>
         ${_slasherPortrait(item.player, item.sn, item.roundIdx, { isPov: item.isPov, isCaught: item.isCaught, proximity: item.proximity })}
         <div class="slasher-event-text" ${item.isPov ? 'style="color:#e6edf3;font-style:italic"' : ''}>${item.text}</div>
         ${!item.isCaught
@@ -2751,18 +2824,34 @@ export function slasherRevealNext(stateKey) {
     if (btn) { btn.textContent = '✓ ALL REVEALED'; btn.disabled = true; btn.style.opacity = '0.4'; }
     return;
   }
+  // Auto-init audio on first reveal click (needs user gesture)
+  if (!_slasherAudioCtx && _tvState.slasherAudioMuted !== true) _slasherAudioInit();
+
   el.style.display = '';
   el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   _tvState[stateKey].revealed = next;
 
   // Check if this is a catch with jumpscare
   const jsLevel = parseInt(el.dataset.jumpscare || '0');
-  if (jsLevel > 0) _fireJumpscare(jsLevel, el.id);
+  if (jsLevel > 0) {
+    _fireJumpscare(jsLevel, el.id);
+    _slasherAudioFireScream();
+    if (jsLevel >= 2) _slasherAudioFireStinger(2);
+  }
 
   // Fire audio based on event type
   const evtType = el.dataset.evttype || '';
-  if (evtType === 'caught') _slasherAudioFireStatic();
-  else if (evtType === 'horror-beat') _slasherAudioFireChainsaw();
+  if (evtType === 'caught' && jsLevel === 0) {
+    _slasherAudioFireStatic();
+    _slasherAudioFireHeartbeat();
+  } else if (evtType === 'horror-beat') {
+    if (Math.random() < 0.5) _slasherAudioFireCreak();
+    else _slasherAudioFireChainsaw();
+  } else if (evtType === 'event') {
+    const pts = parseInt(el.dataset.points || '0');
+    if (pts < 0) _slasherAudioFireHeartbeat();
+    else if (pts > 0 && Math.random() < 0.3) _slasherAudioFireTension();
+  }
 
   // Check if next item exists — if not, update button
   const nextNext = document.getElementById(`sl-item-${stateKey}-${next + 1}`);

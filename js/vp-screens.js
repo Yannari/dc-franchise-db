@@ -10296,7 +10296,7 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'yeti-traps', label:'Traps & Tricks', html: rpBuildYetiTraps(ep) });
     vpScreens.push({ id:'yeti-night', label:'The Night', html: rpBuildYetiNight(ep) });
     vpScreens.push({ id:'yeti-sprint', label:'The Sprint', html: rpBuildYetiSprint(ep) });
-    vpScreens.push({ id:'yeti-verdict', label:"Chef's Verdict", html: rpBuildYetiVerdict(ep) });
+    // Verdict pushed AFTER camp events (see yeti block below noTribal)
   } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
@@ -10516,7 +10516,7 @@ export function buildVPScreens(epRecord) {
     const _isMergeCampPost = tribe.name === 'merge' || tribe.name === (gs.mergeName||'merged');
     vpScreens.push({
       id: `camp-post-${tribe.name}`,
-      label: `${_dotPost}${_isMergeCampPost ? 'Camp — After TC' : `${tribe.name} — After TC`}`,
+      label: `${_dotPost}${_isMergeCampPost ? (ep.isAreWeThereYeti ? 'Camp — After Challenge' : 'Camp — After TC') : (ep.isAreWeThereYeti ? `${tribe.name} — After Challenge` : `${tribe.name} — After TC`)}`,
       html: rpBuildCampTribe(ep, tribe.name, postMembers, 'post'),
     });
   });
@@ -10654,6 +10654,33 @@ export function buildVPScreens(epRecord) {
   if (ep.feastEvents?.length) {
     const _feastHtml = rpBuildFeast(ep);
     if (_feastHtml) vpScreens.push({ id:'feast', label:'The Feast', html: _feastHtml });
+  }
+
+  // ── Are We There Yeti: verdict AFTER camp events, no "No Tribal" screen ──
+  if (ep.noTribal && ep.isAreWeThereYeti) {
+    vpScreens.push({ id:'yeti-verdict', label:"Chef's Verdict", html: rpBuildYetiVerdict(ep) });
+    // RI/Rescue Island screens
+    if (ep.riLifeEvents?.length || ep.riDuel) {
+      const _ytRiLife = rpBuildRILife(ep);
+      if (_ytRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _ytRiLife });
+    }
+    if (ep.riDuel) {
+      const _ytRiDuel = rpBuildRIDuel(ep);
+      if (_ytRiDuel) vpScreens.push({ id:'ri-duel', label:'RI Duel', html: _ytRiDuel });
+    }
+    if (ep.rescueIslandEvents?.length) {
+      const _ytRescLife = rpBuildRescueIslandLife(ep);
+      if (_ytRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _ytRescLife });
+    }
+    // Camp Overview + Aftermath
+    const _ytRelHtml = rpBuildRelationships(ep);
+    if (_ytRelHtml) vpScreens.push({ id:'relationships', label:'Camp Overview', html: _ytRelHtml });
+    vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });
+    if (localStorage.getItem('vp_debug') === 'true') {
+      const _debugHtml = rpBuildDebug(ep);
+      if (_debugHtml) vpScreens.push({ id:'debug', label:'Debug', html: _debugHtml });
+    }
+    return;
   }
 
   // ── No Tribal Council — show announcement screen instead of voting/tribal ──

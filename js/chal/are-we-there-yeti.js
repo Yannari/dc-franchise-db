@@ -1475,11 +1475,14 @@ function _phaseSprint(pairs, activePlayers, timeline, personalScores, chefGrudge
     }
   };
 
-  // Always fire for the weakest-willed
-  _fireTemptation(willScores[0].name);
-  // 25% chance for second player
-  if (willScores.length > 1 && Math.random() < 0.25) {
-    _fireTemptation(willScores[1].name);
+  // 35% base chance per player, proportionally higher for low mental/intuition
+  for (const { name: n } of willScores) {
+    const s = pStats(n);
+    // mental 5 + intuition 5 → multiplier ~1.0; mental 1 → ~1.8; mental 10 → ~0.4
+    const mentalFactor = 1.5 - s.mental * 0.1;
+    const intuitionFactor = 1.3 - s.intuition * 0.06;
+    const chance = 0.35 * mentalFactor * intuitionFactor;
+    if (Math.random() < chance) _fireTemptation(n);
   }
 
   // Chef sprint interject — calls out the player he hates most

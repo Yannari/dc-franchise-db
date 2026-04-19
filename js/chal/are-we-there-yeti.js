@@ -346,20 +346,97 @@ const VERDICT_TEXTS = {
 // ══════════════════════════════════════════════════════
 const YETI_STYLES = `
 <style>
-.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;background:linear-gradient(180deg,var(--shadow) 0%,var(--forest-deep) 40%,#0f1f0f 100%);color:var(--moon);padding:24px 16px;min-height:100vh;font-family:Georgia,'Times New Roman',serif;position:relative;overflow:hidden}
-.yeti-forest::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 20%,rgba(200,208,220,0.06) 0%,transparent 60%);pointer-events:none}
-.yeti-forest[data-phase="0"],.yeti-forest[data-phase="1"]{--sky:rgba(30,60,90,0.15)}
-.yeti-forest[data-phase="2"]{--sky:rgba(50,30,70,0.15)}
-.yeti-forest[data-phase="3"]{--sky:rgba(0,0,0,0.3)}
-.yeti-forest[data-phase="4"]{--sky:rgba(80,60,20,0.1)}
-.yeti-eyebrow{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:8px;text-align:center}
-.yeti-title{font-size:24px;text-align:center;color:var(--moon);margin-bottom:4px;letter-spacing:1px;text-shadow:0 0 20px rgba(200,208,220,0.1)}
-.yeti-sub{font-size:11px;color:rgba(200,208,220,0.5);text-align:center;margin-bottom:20px}
-.yeti-card{background:rgba(200,208,220,0.03);border:1px solid rgba(200,208,220,0.08);border-radius:8px;padding:14px;margin-bottom:12px;position:relative}
-.yeti-card.sasquatch{border-color:rgba(255,77,0,0.3);animation:yeti-pulse 2s ease-in-out infinite}
-.yeti-card.grudge{border-color:rgba(255,60,60,0.3)}
-.yeti-card.brave{border-color:rgba(212,133,10,0.3)}
-.yeti-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:3px;margin-bottom:8px}
+/* ── BASE FOREST CONTAINER ── */
+.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);padding:24px 16px;min-height:100vh;font-family:Georgia,'Times New Roman',serif;position:relative;overflow:hidden}
+
+/* ── FOREST DEPTH LAYERS ── */
+.yeti-forest::before,.yeti-forest::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;transition:background 0.6s}
+/* Phase 0: Twilight clearing */
+.yeti-forest[data-phase="0"]{background:linear-gradient(180deg,#1e3c50 0%,#2a4a3a 30%,#1a3a28 60%,#2a4a2a 100%)}
+.yeti-forest[data-phase="0"]::before{background:radial-gradient(ellipse at 50% 15%,rgba(140,180,200,0.12) 0%,transparent 50%),linear-gradient(180deg,transparent 70%,rgba(60,120,60,0.08) 100%)}
+.yeti-forest[data-phase="0"]::after{background:repeating-linear-gradient(90deg,transparent 0px,transparent 80px,rgba(30,60,30,0.06) 82px,transparent 84px)}
+/* Phase 1: Forest entry */
+.yeti-forest[data-phase="1"]{background:linear-gradient(180deg,#1a2e3a 0%,#1e3828 25%,#142a18 60%,#1a2e1a 100%)}
+.yeti-forest[data-phase="1"]::before{background:linear-gradient(180deg,rgba(180,100,40,0.06) 0%,transparent 30%),radial-gradient(ellipse at 50% 100%,rgba(80,60,30,0.08) 0%,transparent 40%)}
+.yeti-forest[data-phase="1"]::after{background:repeating-linear-gradient(90deg,transparent 0px,transparent 40px,rgba(20,40,20,0.1) 42px,transparent 44px),repeating-linear-gradient(90deg,transparent 0px,transparent 60px,rgba(15,30,15,0.08) 62px,transparent 66px)}
+/* Phase 2: Deep woods */
+.yeti-forest[data-phase="2"]{background:linear-gradient(180deg,#1a1a30 0%,#141e28 20%,#0f1a14 55%,#0a120a 100%)}
+.yeti-forest[data-phase="2"]::before{background:radial-gradient(circle at 30% 8%,rgba(200,200,255,0.04) 0%,transparent 3%),radial-gradient(circle at 70% 5%,rgba(200,200,255,0.03) 0%,transparent 2%),radial-gradient(circle at 50% 12%,rgba(200,200,255,0.03) 0%,transparent 2%)}
+.yeti-forest[data-phase="2"]::after{background:repeating-linear-gradient(90deg,transparent 0px,transparent 25px,rgba(10,20,10,0.15) 27px,transparent 30px),repeating-linear-gradient(90deg,transparent 0px,transparent 50px,rgba(8,16,8,0.12) 52px,transparent 56px),linear-gradient(180deg,transparent 80%,rgba(20,40,15,0.1) 100%)}
+/* Phase 3: Cave mouth */
+.yeti-forest[data-phase="3"]{background:linear-gradient(180deg,#050508 0%,#0a0a10 20%,#080810 100%)}
+.yeti-forest[data-phase="3"]::before{background:radial-gradient(ellipse at 50% 10%,rgba(200,208,220,0.06) 0%,transparent 25%)}
+.yeti-forest[data-phase="3"]::after{background:linear-gradient(90deg,rgba(40,30,25,0.7) 0%,transparent 20%,transparent 80%,rgba(40,30,25,0.7) 100%)}
+/* Phase 4: Dawn breaking */
+.yeti-forest[data-phase="4"]{background:linear-gradient(180deg,#2a2040 0%,#3a3050 15%,#504838 35%,#2a3a20 70%,#1e3018 100%)}
+.yeti-forest[data-phase="4"]::before{background:radial-gradient(ellipse at 80% 20%,rgba(255,180,80,0.1) 0%,transparent 40%),radial-gradient(ellipse at 60% 10%,rgba(255,140,160,0.06) 0%,transparent 30%)}
+.yeti-forest[data-phase="4"]::after{background:repeating-linear-gradient(90deg,transparent 0px,transparent 50px,rgba(30,50,25,0.06) 52px,transparent 54px)}
+/* Phase 5: Full dawn */
+.yeti-forest[data-phase="5"]{background:linear-gradient(180deg,#4a3828 0%,#5a4830 20%,#3a4a28 50%,#2a3a1e 100%)}
+.yeti-forest[data-phase="5"]::before{background:radial-gradient(ellipse at 50% 25%,rgba(255,200,100,0.12) 0%,transparent 50%)}
+.yeti-forest[data-phase="5"]::after{background:none}
+
+/* ── TYPOGRAPHY ── */
+.yeti-eyebrow{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:8px;text-align:center;position:relative;z-index:2}
+.yeti-title{font-size:24px;text-align:center;color:var(--moon);margin-bottom:4px;letter-spacing:1px;text-shadow:0 0 20px rgba(200,208,220,0.1);position:relative;z-index:2}
+.yeti-sub{font-size:11px;color:rgba(200,208,220,0.5);text-align:center;margin-bottom:20px;position:relative;z-index:2}
+.yeti-text{font-size:12px;line-height:1.6;color:rgba(200,208,220,0.85)}
+.yeti-pair-header{font-size:14px;font-weight:700;color:var(--amber);margin:20px 0 8px;letter-spacing:1px}
+
+/* ── TRAIL MAP ── */
+.yeti-trail-map{position:relative;height:120px;background:rgba(245,235,220,0.03);border:1px solid rgba(245,235,220,0.08);border-radius:8px;margin-bottom:20px;overflow:hidden;z-index:2}
+.yeti-trail-track{position:absolute;top:0;left:40px;right:40px;height:100%;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.yeti-trail-line{position:relative;height:4px;border-radius:2px;background:rgba(200,208,220,0.06)}
+.yeti-trail-fill{position:absolute;top:0;left:0;height:100%;border-radius:2px;transition:width 0.5s ease}
+.yeti-trail-fill.amber{background:linear-gradient(90deg,var(--amber),#e8a020)}
+.yeti-trail-fill.silver{background:linear-gradient(90deg,#8899aa,#aabbcc)}
+.yeti-trail-fill.green{background:linear-gradient(90deg,#3a8a4a,#5cb870)}
+.yeti-trail-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;border:2px solid var(--moon);z-index:3;transition:left 0.5s ease}
+.yeti-trail-dot.amber{background:var(--amber)}
+.yeti-trail-dot.silver{background:#8899aa}
+.yeti-trail-dot.green{background:#3a8a4a}
+.yeti-trail-landmark{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:10px;z-index:2;opacity:0.7}
+.yeti-trail-label{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:9px;font-weight:700;letter-spacing:1px;color:var(--amber);width:36px;text-align:right}
+.yeti-trail-dest{position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:12px}
+
+/* ── SASQUATCH ── */
+.sasquatch-presence{position:absolute;z-index:1;transition:all 0.8s ease}
+.sasquatch-presence .sq-body{background:rgba(20,15,10,0.9);border-radius:40% 40% 30% 30%;position:relative}
+.sasquatch-presence .sq-eye{position:absolute;width:4px;height:4px;border-radius:50%;background:#ff4d00;box-shadow:0 0 6px #ff4d00}
+.sasquatch-presence .sq-eye.left{top:25%;left:30%}
+.sasquatch-presence .sq-eye.right{top:25%;right:30%}
+.sasquatch-presence[data-proximity="far"]{right:10%;top:15%;opacity:0.3;animation:sq-flicker 3s ease-in-out infinite}
+.sasquatch-presence[data-proximity="far"] .sq-body{width:30px;height:40px}
+.sasquatch-presence[data-proximity="mid"]{right:8%;top:12%;opacity:0.6}
+.sasquatch-presence[data-proximity="mid"] .sq-body{width:60px;height:80px}
+.sasquatch-presence[data-proximity="mid"] .sq-eye{box-shadow:0 0 10px #ff4d00,0 0 20px rgba(255,77,0,0.3)}
+.sasquatch-presence[data-proximity="close"]{right:5%;top:8%;opacity:1}
+.sasquatch-presence[data-proximity="close"] .sq-body{width:120px;height:160px}
+.sasquatch-presence[data-proximity="eyes"]{left:50%;top:5%;transform:translateX(-50%);opacity:0.8}
+.sasquatch-presence[data-proximity="eyes"] .sq-body{width:0;height:0;background:none}
+.sasquatch-presence[data-proximity="eyes"] .sq-eye{width:8px;height:8px;position:relative;display:inline-block;animation:sq-pulse 2s ease-in-out infinite;box-shadow:0 0 12px #ff4d00,0 0 24px rgba(255,77,0,0.4)}
+.sasquatch-presence[data-proximity="eyes"] .sq-eye.left{margin-right:20px}
+.sasquatch-presence[data-proximity="chasing"]{right:15%;top:20%;opacity:0.8;animation:sq-chase 2s ease-in-out infinite}
+.sasquatch-presence[data-proximity="chasing"] .sq-body{width:60px;height:80px}
+.sasquatch-presence[data-proximity="gone"]{display:none}
+@keyframes sq-flicker{0%,100%{opacity:0.3}30%{opacity:0}60%{opacity:0.35}80%{opacity:0}}
+@keyframes sq-pulse{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.2)}}
+@keyframes sq-chase{0%{transform:translateX(0)}50%{transform:translateX(-30px)}100%{transform:translateX(0)}}
+@keyframes sq-drift{0%{transform:translateX(-15px)}50%{transform:translateX(15px)}100%{transform:translateX(-15px)}}
+
+/* ── EVENT CARDS (torn notebook) ── */
+.yeti-card{background:var(--parchment);border:1px solid rgba(200,208,220,0.08);border-left:4px solid rgba(200,208,220,0.12);padding:14px 14px 14px 18px;margin-bottom:12px;position:relative;z-index:2;clip-path:polygon(0 0,2% 4%,0 8%,1% 12%,0 18%,2% 24%,0 30%,1% 38%,0 44%,2% 50%,0 56%,1% 62%,0 70%,2% 76%,0 84%,1% 90%,0 96%,0 100%,100% 100%,100% 0);animation:yeti-card-in 0.3s ease-out}
+.yeti-card.sasquatch{border-left-color:#ff4d00;animation:yeti-card-in 0.3s ease-out,yeti-shake 0.4s 0.1s ease-out}
+.yeti-card.grudge{border-left-color:rgba(255,60,60,0.5)}
+.yeti-card.brave{border-left-color:var(--amber);box-shadow:0 0 12px rgba(212,133,10,0.08)}
+.yeti-card.theft{text-decoration:line-through;text-decoration-color:rgba(255,60,60,0.3)}
+.yeti-card .card-portrait{float:left;margin-right:12px;margin-bottom:4px}
+.yeti-card::after{content:'';position:absolute;top:0;right:0;width:12px;height:12px;background:linear-gradient(135deg,transparent 50%,rgba(0,0,0,0.1) 50%)}
+@keyframes yeti-card-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes yeti-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-3px)}40%{transform:translateX(3px)}60%{transform:translateX(-2px)}80%{transform:translateX(1px)}}
+
+/* ── BADGES (ink stamps) ── */
+.yeti-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border-radius:3px;margin-bottom:8px;transform:rotate(-3deg);transform-origin:left center}
 .yeti-badge.gold{background:rgba(212,133,10,0.15);color:var(--amber)}
 .yeti-badge.red{background:rgba(255,60,60,0.12);color:#f85149}
 .yeti-badge.green{background:rgba(63,185,80,0.12);color:#3fb950}
@@ -367,14 +444,75 @@ const YETI_STYLES = `
 .yeti-badge.yellow{background:rgba(210,153,34,0.12);color:#d29922}
 .yeti-badge.grey{background:rgba(200,208,220,0.08);color:rgba(200,208,220,0.5)}
 .yeti-badge.pink{background:rgba(219,112,147,0.12);color:#db7093}
-.yeti-grudge-stamp{position:absolute;top:8px;right:12px;font-size:10px;font-weight:900;color:rgba(255,60,60,0.4);transform:rotate(-8deg);letter-spacing:2px;font-family:'Courier New',monospace}
-.yeti-text{font-size:12px;line-height:1.6;color:rgba(200,208,220,0.85)}
-.yeti-pair-header{font-size:14px;font-weight:700;color:var(--amber);margin:20px 0 8px;letter-spacing:1px}
-@keyframes yeti-pulse{0%,100%{box-shadow:0 0 0 rgba(255,77,0,0)}50%{box-shadow:0 0 15px rgba(255,77,0,0.1)}}
-.yeti-reveal-btn{display:inline-block;padding:6px 16px;background:rgba(212,133,10,0.12);color:var(--amber);border:1px solid rgba(212,133,10,0.25);border-radius:6px;cursor:pointer;font-size:11px;margin:4px}
-.yeti-reveal-btn:hover{background:rgba(212,133,10,0.2)}
+.yeti-grudge-stamp{position:absolute;top:8px;right:16px;font-size:11px;font-weight:900;color:rgba(255,60,60,0.5);transform:rotate(-8deg);letter-spacing:3px;font-family:'Courier New',monospace;text-transform:uppercase;z-index:3}
+
+/* ── FOOTSTEP REVEAL ── */
+.yeti-reveal-main{display:inline-block;padding:8px 24px;background:rgba(92,58,30,0.25);color:var(--amber);border:2px solid rgba(92,58,30,0.5);border-radius:4px;cursor:pointer;font-size:12px;font-family:Georgia,serif;letter-spacing:1px;transform:rotate(-1deg);transition:background 0.2s,transform 0.15s}
+.yeti-reveal-main:hover{background:rgba(92,58,30,0.4);transform:rotate(0deg) scale(1.02)}
+.yeti-reveal-all{display:inline-block;padding:4px 14px;background:rgba(200,208,220,0.04);color:rgba(200,208,220,0.4);border:1px solid rgba(200,208,220,0.08);border-radius:4px;cursor:pointer;font-size:10px;margin-top:6px;transition:color 0.2s}
+.yeti-reveal-all:hover{color:rgba(200,208,220,0.7)}
+
+/* ── CAVE MOUTH SCENE ── */
+.yeti-cave{position:relative;min-height:80vh;overflow:hidden}
+.yeti-cave-walls{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1}
+.yeti-cave-walls::before{content:'';position:absolute;top:0;left:0;width:25%;height:100%;background:linear-gradient(90deg,rgba(40,30,20,0.95) 0%,rgba(30,25,18,0.6) 60%,transparent 100%)}
+.yeti-cave-walls::after{content:'';position:absolute;top:0;right:0;width:25%;height:100%;background:linear-gradient(270deg,rgba(40,30,20,0.95) 0%,rgba(30,25,18,0.6) 60%,transparent 100%)}
+.yeti-cave-mouth{position:absolute;top:0;left:30%;width:40%;height:35%;background:radial-gradient(ellipse at 50% 60%,rgba(15,20,35,0.9) 0%,rgba(5,5,10,0.95) 100%);border-radius:0 0 50% 50%;z-index:0;overflow:hidden}
+.yeti-cave-moon{position:absolute;top:15%;left:60%;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle,rgba(200,208,220,0.9) 0%,rgba(200,208,220,0.4) 60%,transparent 100%);box-shadow:0 0 15px rgba(200,208,220,0.2)}
+.yeti-cave-eyes{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;gap:24px;z-index:2;animation:sq-drift 4s ease-in-out infinite}
+.yeti-cave-eye{width:8px;height:8px;border-radius:50%;background:#ff4d00;box-shadow:0 0 12px #ff4d00,0 0 24px rgba(255,77,0,0.4);animation:sq-pulse 2s ease-in-out infinite}
+
+/* ── CAMPFIRE ── */
+.yeti-campfire{position:relative;width:60px;height:50px;margin:0 auto}
+.yeti-campfire-base{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:40px;height:8px;background:rgba(60,30,10,0.8);border-radius:50%;box-shadow:0 0 30px rgba(212,133,10,0.15)}
+.yeti-flame{position:absolute;bottom:6px;left:50%;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;animation:flame-flicker 0.8s ease-in-out infinite alternate}
+.yeti-flame.f1{width:16px;height:28px;background:rgba(255,120,20,0.8);transform:translateX(-50%);z-index:3}
+.yeti-flame.f2{width:22px;height:22px;background:rgba(255,80,10,0.5);transform:translateX(-55%);z-index:2;animation-delay:0.15s}
+.yeti-flame.f3{width:12px;height:18px;background:rgba(255,200,60,0.7);transform:translateX(-45%);z-index:4;animation-delay:0.3s}
+.yeti-campfire.dim .yeti-flame{opacity:0.3;height:12px !important;transition:all 0.5s}
+.yeti-campfire.bright .yeti-flame{opacity:1;transform:translateX(-50%) scale(1.3);transition:all 0.5s}
+.yeti-campfire.embers .yeti-flame{opacity:0.15;height:6px !important;transition:all 0.8s}
+.yeti-campfire-glow{position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:120px;height:60px;background:radial-gradient(ellipse,rgba(212,133,10,0.1) 0%,transparent 70%);pointer-events:none}
+@keyframes flame-flicker{0%{transform:translateX(-50%) scaleY(1) scaleX(1)}50%{transform:translateX(-50%) scaleY(1.15) scaleX(0.9)}100%{transform:translateX(-50%) scaleY(0.95) scaleX(1.05)}}
+
+/* ── CAMPFIRE CIRCLE ── */
+.yeti-fire-circle{display:flex;justify-content:center;gap:16px;margin:12px 0;flex-wrap:wrap}
+.yeti-fire-seat{text-align:center;position:relative}
+.yeti-fire-seat.active{filter:drop-shadow(0 0 6px rgba(212,133,10,0.3))}
+
+/* ── TOTEM POLE ── */
+.yeti-totem{position:relative;width:40px;margin:0 auto 20px;z-index:2}
+.yeti-totem-seg{width:40px;height:18px;border-radius:4px;border:1px solid rgba(92,58,30,0.4);position:relative}
+.yeti-totem-seg:nth-child(1){background:linear-gradient(180deg,#6b3a20,#5a3018)}
+.yeti-totem-seg:nth-child(2){background:linear-gradient(180deg,#7a4828,#6b3a20)}
+.yeti-totem-seg:nth-child(3){background:linear-gradient(180deg,#8a5a30,#7a4828)}
+.yeti-totem-seg:nth-child(4){background:linear-gradient(180deg,#7a4828,#6b3a20)}
+.yeti-totem-face{width:40px;height:24px;background:linear-gradient(180deg,#5a3018,#4a2810);border-radius:6px 6px 2px 2px;border:1px solid rgba(92,58,30,0.5);position:relative}
+.yeti-totem-face::before{content:'◉ ◉';position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--amber);letter-spacing:6px}
+.yeti-totem-face::after{content:'▽';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:7px;color:var(--amber)}
+.yeti-totem.glow{animation:totem-glow 1.5s ease-in-out infinite}
+@keyframes totem-glow{0%,100%{filter:drop-shadow(0 0 4px rgba(212,133,10,0.2))}50%{filter:drop-shadow(0 0 12px rgba(212,133,10,0.5))}}
+
+/* ── VERDICT SPECIFICS ── */
+.yeti-verdict-beat{position:relative;z-index:2;margin-bottom:16px;animation:yeti-card-in 0.4s ease-out}
+.yeti-grudge-bar{display:flex;align-items:center;gap:8px;margin:6px 0}
+.yeti-grudge-bar-fill{height:8px;border-radius:4px;background:linear-gradient(90deg,#d29922,#f85149);transition:width 0.8s ease-out;min-width:2px}
+.yeti-grudge-bar-track{flex:1;height:8px;background:rgba(200,208,220,0.06);border-radius:4px;overflow:hidden}
+.yeti-grudge-sources{font-size:9px;color:rgba(200,208,220,0.4);margin-top:2px;padding-left:68px}
+.yeti-heli{position:absolute;top:10px;right:-60px;font-size:28px;z-index:3;animation:heli-descend 1.5s ease-out forwards}
+@keyframes heli-descend{from{top:-40px;right:-60px;opacity:0}to{top:10px;right:20px;opacity:1}}
+.yeti-elim-portrait{filter:grayscale(100%);transition:filter 1s ease}
+.yeti-elim-stamp{font-size:10px;font-weight:900;letter-spacing:3px;color:#f85149;text-transform:uppercase;font-family:'Courier New',monospace;animation:stamp-in 0.3s ease-out}
+@keyframes stamp-in{from{transform:scale(2);opacity:0}to{transform:scale(1);opacity:1}}
+.yeti-golden-ring{box-shadow:0 0 0 3px rgba(212,133,10,0.5),0 0 12px rgba(212,133,10,0.2);border-radius:50%}
+
+/* ── SCORE BAR ── */
 .yeti-score-bar{display:flex;align-items:center;gap:8px;margin:4px 0}
 .yeti-score-fill{height:6px;border-radius:3px;background:var(--amber);transition:width 0.3s}
+
+/* ── UTILITIES ── */
+.yeti-hidden{display:none}
+.yeti-z2{position:relative;z-index:2}
 </style>`;
 
 // ══════════════════════════════════════════════════════
@@ -1367,7 +1505,7 @@ export function simulateAreWeThereYeti(ep) {
   const elimCandidates = activePlayers.filter(n => !winPair.members.includes(n));
   const elimScored = elimCandidates.map(n => ({
     name: n,
-    score: personalScores[n] * 0.4 - chefGrudge[n] * 0.6 + _noise(-0.5, 0.5),
+    score: personalScores[n] * 0.4 - chefGrudge[n] * 0.6 + _noise(-1.0, 1.0),
   })).sort((a, b) => a.score - b.score);
 
   const chefPick = elimScored[0].name;
@@ -1506,6 +1644,135 @@ export function _textAreWeThereYeti(ep, ln, sec) {
 // VP SCREEN BUILDERS
 // ══════════════════════════════════════════════════════
 
+// ── Shared helpers ──
+
+function _portrait(name, size) {
+  return typeof window.rpPortrait === 'function' ? window.rpPortrait(name, size) : `<span style="color:var(--moon)">${name}</span>`;
+}
+
+function _ytRevealFn(stateKey, idx, epNum) {
+  return `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${idx};const ep=gs.episodeHistory.find(e=>e.num===${epNum});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+}
+
+function _ytRevealAllFn(stateKey, total, epNum) {
+  return `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${total - 1};const ep=gs.episodeHistory.find(e=>e.num===${epNum});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+}
+
+function _revealBtns(stateKey, nextIdx, total, epNum) {
+  if (nextIdx >= total) return '';
+  return `<div style="text-align:center;margin:20px 0 8px">
+    <div class="yeti-reveal-main" onclick="${_ytRevealFn(stateKey, nextIdx, epNum)}">Keep moving →</div>
+    <br><div class="yeti-reveal-all" onclick="${_ytRevealAllFn(stateKey, total, epNum)}">Run to the end ▸▸</div>
+  </div>`;
+}
+
+function _sasquatchHtml(proximity) {
+  if (proximity === 'gone') return '';
+  if (proximity === 'eyes') {
+    return `<div class="sasquatch-presence" data-proximity="eyes"><div class="sq-body"><div class="sq-eye left"></div><div class="sq-eye right" style="display:inline-block;margin-left:20px"></div></div></div>`;
+  }
+  return `<div class="sasquatch-presence" data-proximity="${proximity}"><div class="sq-body"><div class="sq-eye left"></div><div class="sq-eye right"></div></div></div>`;
+}
+
+function _cardClass(evt) {
+  if (evt.subtype?.startsWith('sasquatch') || evt.type?.includes('sasquatch') || evt.type === 'caveConvergence') return 'sasquatch';
+  if (evt.grudgeType || evt.type === 'theft' || evt.type === 'confrontation') return 'grudge';
+  if (evt.type === 'theft' && evt.success) return 'grudge theft';
+  if (evt.badgeClass === 'gold' || evt.type === 'showmanceMoment') return 'brave';
+  return '';
+}
+
+function _cardStamp(evt) {
+  if (evt.grudgeDelta > 0 || (evt.type === 'theft' && evt.success)) {
+    const stamps = ['NOTED.', 'STRIKE.', 'UNACCEPTABLE.'];
+    const s = evt.grudgeDelta >= 1.5 ? stamps[2] : evt.grudgeDelta >= 0.5 ? stamps[1] : stamps[0];
+    return `<div class="yeti-grudge-stamp">${s}</div>`;
+  }
+  return '';
+}
+
+function _eventCard(evt, stateKey, i, epNum, revealed) {
+  if (!revealed) {
+    return `<div class="yeti-card" style="opacity:0.12;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center;clip-path:none;border-left:4px solid rgba(200,208,220,0.06)" onclick="${_ytRevealFn(stateKey, i, epNum)}">
+      <span style="font-size:10px;color:rgba(200,208,220,0.3);letter-spacing:2px">🐾</span>
+    </div>`;
+  }
+  const cls = _cardClass(evt);
+  const stamp = _cardStamp(evt);
+  const portraitHtml = evt.players?.length
+    ? `<div class="card-portrait" style="display:flex;gap:4px;margin-top:8px">${evt.players.map(p => _portrait(p, 32)).join('')}</div>`
+    : evt.player ? `<div class="card-portrait" style="margin-top:8px">${_portrait(evt.player, 32)}</div>` : '';
+  return `<div class="yeti-card ${cls}">
+    ${stamp}
+    <div class="yeti-badge ${evt.badgeClass || 'grey'}">${evt.badgeText || ''}</div>
+    <div class="yeti-text">${evt.text}</div>
+    ${portraitHtml}
+  </div>`;
+}
+
+function _trailMap(pairs, progress, landmarks, singleLine) {
+  const pairColors = { A: 'amber', B: 'silver', C: 'green', D: 'amber', E: 'silver' };
+  if (singleLine) {
+    // Sprint: single race line
+    const lines = pairs.map(p => {
+      const clr = pairColors[p.label] || 'amber';
+      const pct = Math.min(100, (progress[p.label] || 0));
+      return `<div style="position:relative;height:20px;margin:6px 0">
+        <div class="yeti-trail-label">PAIR ${p.label}</div>
+        <div class="yeti-trail-line" style="position:absolute;left:40px;right:40px;top:8px">
+          <div class="yeti-trail-fill ${clr}" style="width:${pct}%"></div>
+          <div class="yeti-trail-dot ${clr}" style="left:${pct}%"></div>
+        </div>
+        <div class="yeti-trail-dest">🗿</div>
+      </div>`;
+    }).join('');
+    return `<div class="yeti-trail-map" style="height:${40 + pairs.length * 32}px">${lines}</div>`;
+  }
+  // Multi-line trail map with landmarks
+  const lmkIcons = { cliff: '⛰', river: '🌊', trap: '✕', sasquatch: '🐾', cave: '◖', totem: '🗿', start: '🚁' };
+  const lines = pairs.map(p => {
+    const clr = pairColors[p.label] || 'amber';
+    const pct = Math.min(100, (progress[p.label] || 0));
+    const lmHtml = (landmarks || []).filter(l => l.pair === p.label || !l.pair).map(l => {
+      const lPct = Math.min(100, l.pct || 50);
+      return `<div class="yeti-trail-landmark" style="left:${lPct}%">${lmkIcons[l.type] || '•'}</div>`;
+    }).join('');
+    return `<div style="position:relative;height:24px;margin:4px 0">
+      <div class="yeti-trail-label">PAIR ${p.label}</div>
+      <div class="yeti-trail-line" style="position:absolute;left:40px;right:40px;top:10px">
+        <div class="yeti-trail-fill ${clr}" style="width:${pct}%;border-top:2px dashed rgba(200,208,220,0.15)"></div>
+        <div class="yeti-trail-dot ${clr}" style="left:${pct}%"></div>
+        ${lmHtml}
+      </div>
+      <div class="yeti-trail-dest">🗿</div>
+    </div>`;
+  }).join('');
+  return `<div class="yeti-trail-map">${lines}</div>`;
+}
+
+function _campfireHtml(state) {
+  const cls = state === 'bright' ? 'bright' : state === 'dim' ? 'dim' : state === 'embers' ? 'embers' : '';
+  return `<div class="yeti-campfire ${cls}">
+    <div class="yeti-flame f1"></div>
+    <div class="yeti-flame f2"></div>
+    <div class="yeti-flame f3"></div>
+    <div class="yeti-campfire-base"></div>
+    <div class="yeti-campfire-glow"></div>
+  </div>`;
+}
+
+function _totemHtml(glow) {
+  return `<div class="yeti-totem ${glow ? 'glow' : ''}">
+    <div class="yeti-totem-face"></div>
+    <div class="yeti-totem-seg"></div>
+    <div class="yeti-totem-seg"></div>
+    <div class="yeti-totem-seg"></div>
+    <div class="yeti-totem-seg"></div>
+  </div>`;
+}
+
+// ── Phase 0: Drop Off ──
+
 export function rpBuildYetiDropOff(ep) {
   if (!ep.areWeThereYeti) return '';
   const yt = ep.areWeThereYeti;
@@ -1514,39 +1781,33 @@ export function rpBuildYetiDropOff(ep) {
   const stateKey = `yeti_dropoff_${ep.num}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
-  const _ytReveal = (ti) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${ti};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
 
-  let items = events.map((evt, i) => {
-    if (i > state.idx) return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center" onclick="${_ytReveal(i)}"><span style="font-size:11px;color:var(--moon);letter-spacing:1px">▶ REVEAL</span></div>`;
-    const cardClass = evt.grudgeType ? 'grudge' : '';
-    const stamp = evt.grudgeDelta > 0 ? `<div class="yeti-grudge-stamp">NOTED.</div>` : '';
-    return `<div class="yeti-card ${cardClass}">
-      ${stamp}
-      <div class="yeti-badge ${evt.badgeClass || 'grey'}">${evt.badgeText || ''}</div>
-      <div class="yeti-text">${evt.text}</div>
-      ${evt.players?.length ? `<div style="display:flex;gap:4px;margin-top:8px">${evt.players.map(p => typeof window.rpPortrait === 'function' ? window.rpPortrait(p, 32) : `<span>${p}</span>`).join('')}</div>` : ''}
-    </div>`;
-  }).join('');
+  // Trail map: all pairs at start
+  const progress = {};
+  yt.pairs.forEach(p => { progress[p.label] = 0; });
+  const mapHtml = _trailMap(yt.pairs, progress, [{ type: 'start', pct: 0 }, { type: 'totem', pct: 98 }]);
 
-  const nextIdx = state.idx + 1;
-  const nextBtn = nextIdx < events.length
-    ? `<div style="text-align:center;margin:20px 0 8px"><button class="rp-btn" onclick="${_ytReveal(nextIdx)}" style="padding:8px 24px;font-size:12px;letter-spacing:1px">▶ WHAT HAPPENS NEXT</button></div>`
-    : '';
+  const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
+  const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
+
+  // Pair assignment cards
+  const pairCards = yt.pairs.map(p => `<div style="text-align:center;padding:10px 14px;background:rgba(200,208,220,0.04);border-radius:6px;border:1px solid rgba(200,208,220,0.08)">
+    <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--amber)">PAIR ${p.label}</div>
+    <div style="display:flex;gap:4px;margin-top:6px;justify-content:center">${p.members.map(n => _portrait(n, 40)).join('')}</div>
+    <div style="font-size:10px;color:rgba(200,208,220,0.5);margin-top:4px">${p.members.join(' & ')}</div>
+  </div>`).join('');
 
   return YETI_STYLES + `<div class="yeti-forest" data-phase="0">
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Drop Off</div>
-    <div class="yeti-sub">Chef Hatchet takes command.</div>
-    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px">
-      ${yt.pairs.map(p => `<div style="text-align:center;padding:8px 12px;background:rgba(200,208,220,0.04);border-radius:6px;border:1px solid rgba(200,208,220,0.08)">
-        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--amber)">PAIR ${p.label}</div>
-        <div style="display:flex;gap:4px;margin-top:6px">${p.members.map(n => typeof window.rpPortrait === 'function' ? window.rpPortrait(n, 40) : `<span style="color:var(--moon)">${n}</span>`).join('')}</div>
-        <div style="font-size:10px;color:rgba(200,208,220,0.5);margin-top:4px">${p.members.join(' & ')}</div>
-      </div>`).join('')}
-    </div>
-    ${items}${nextBtn}
+    <div class="yeti-sub">Chef Hatchet takes command. Helicopter clearing. Twilight.</div>
+    ${mapHtml}
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;position:relative;z-index:2">${pairCards}</div>
+    ${items}${btns}
   </div>`;
 }
+
+// ── Phase 1: Trail (per pair) ──
 
 export function rpBuildYetiTrail(ep, pair) {
   if (!ep.areWeThereYeti) return '';
@@ -1556,32 +1817,44 @@ export function rpBuildYetiTrail(ep, pair) {
   const stateKey = `yeti_trail_${pair.label}_${ep.num}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
-  const _ytReveal = (ti) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${ti};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
 
-  const items = events.map((evt, i) => {
-    if (i > state.idx) return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center" onclick="${_ytReveal(i)}"><span style="font-size:11px;color:var(--moon);letter-spacing:1px">▶ REVEAL</span></div>`;
-    const cardClass = evt.subtype?.startsWith('sasquatch') ? 'sasquatch' : evt.grudgeType ? 'grudge' : evt.badgeClass === 'gold' ? 'brave' : '';
-    const stamp = evt.grudgeDelta > 0 ? `<div class="yeti-grudge-stamp">STRIKE.</div>` : '';
-    return `<div class="yeti-card ${cardClass}">
-      ${stamp}
-      <div class="yeti-badge ${evt.badgeClass || 'grey'}">${evt.badgeText || ''}</div>
-      <div class="yeti-text">${evt.text}</div>
-      ${evt.player ? `<div style="display:flex;gap:4px;margin-top:8px">${typeof window.rpPortrait === 'function' ? window.rpPortrait(evt.player, 32) : evt.player}</div>` : ''}
-    </div>`;
-  }).join('');
+  // Trail progress: advance per revealed event
+  const progress = {};
+  yt.pairs.forEach(p => { progress[p.label] = 5; });
+  if (events.length > 0 && state.idx >= 0) {
+    progress[pair.label] = 5 + Math.min(((state.idx + 1) / events.length) * 35, 35);
+  }
 
-  const nextIdx = state.idx + 1;
-  const nextBtn = nextIdx < events.length
-    ? `<div style="text-align:center;margin:20px 0 8px"><button class="rp-btn" onclick="${_ytReveal(nextIdx)}" style="padding:8px 24px;font-size:12px;letter-spacing:1px">▶ WHAT HAPPENS NEXT</button></div>`
-    : '';
+  // Landmarks from revealed events
+  const landmarks = [];
+  events.forEach((evt, i) => {
+    if (i > state.idx) return;
+    if (evt.type === 'quicksand' || evt.type === 'cliff') landmarks.push({ type: 'cliff', pair: pair.label, pct: 5 + ((i + 1) / events.length) * 35 });
+    if (evt.type === 'river' || evt.type === 'waterCrossing') landmarks.push({ type: 'river', pair: pair.label, pct: 5 + ((i + 1) / events.length) * 35 });
+    if (evt.subtype?.startsWith('sasquatch')) landmarks.push({ type: 'sasquatch', pair: pair.label, pct: 5 + ((i + 1) / events.length) * 35 });
+  });
+  landmarks.push({ type: 'totem', pct: 98 });
+
+  const mapHtml = _trailMap([{ label: pair.label, members: pair.members }], progress, landmarks);
+
+  // Sasquatch: far background, appears on sasquatch events
+  const hasSasquatch = events.some((e, i) => i <= state.idx && (e.subtype?.startsWith('sasquatch') || e.type?.includes('sasquatch')));
+  const sqHtml = hasSasquatch ? _sasquatchHtml('far') : '';
+
+  const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
+  const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
   return YETI_STYLES + `<div class="yeti-forest" data-phase="1">
+    ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Trail — Pair ${pair.label}</div>
-    <div class="yeti-sub">${pair.members.join(' & ')} navigate the forest.</div>
-    ${items}${nextBtn}
+    <div class="yeti-sub">${pair.members.join(' & ')} navigate the darkening forest.</div>
+    ${mapHtml}
+    ${items}${btns}
   </div>`;
 }
+
+// ── Phase 2: Traps ──
 
 export function rpBuildYetiTraps(ep) {
   if (!ep.areWeThereYeti) return '';
@@ -1591,31 +1864,44 @@ export function rpBuildYetiTraps(ep) {
   const stateKey = `yeti_traps_${ep.num}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
-  const _ytReveal = (ti) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${ti};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
 
-  const items = events.map((evt, i) => {
-    if (i > state.idx) return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center" onclick="${_ytReveal(i)}"><span style="font-size:11px;color:var(--moon);letter-spacing:1px">▶ REVEAL</span></div>`;
-    const cardClass = evt.type.includes('sasquatch') ? 'sasquatch' : evt.grudgeType ? 'grudge' : '';
-    const stamp = evt.grudgeDelta > 0 ? `<div class="yeti-grudge-stamp">UNACCEPTABLE.</div>` : '';
-    return `<div class="yeti-card ${cardClass}">
-      ${stamp}
-      <div class="yeti-badge ${evt.badgeClass || 'grey'}">${evt.badgeText || ''}</div>
-      <div class="yeti-text">${evt.text}</div>
-    </div>`;
-  }).join('');
+  // Trail map: all pairs in mid progress, trap markers appear
+  const progress = {};
+  yt.pairs.forEach(p => { progress[p.label] = 40; });
+  if (events.length > 0 && state.idx >= 0) {
+    // Advance based on revealed events
+    yt.pairs.forEach(p => {
+      const pEvts = events.filter(e => e.group === p.label || e.players?.some(n => p.members.includes(n)));
+      progress[p.label] = 40 + Math.min(15, (pEvts.filter((_, i) => i <= state.idx).length / Math.max(1, pEvts.length)) * 15);
+    });
+  }
+  const landmarks = [];
+  events.forEach((evt, i) => {
+    if (i > state.idx) return;
+    if (evt.type === 'trap') landmarks.push({ type: 'trap', pct: 40 + ((i + 1) / events.length) * 15 });
+    if (evt.type?.includes('sasquatch')) landmarks.push({ type: 'sasquatch', pct: 40 + ((i + 1) / events.length) * 15 });
+  });
+  landmarks.push({ type: 'cave', pct: 60 }, { type: 'totem', pct: 98 });
+  const mapHtml = _trailMap(yt.pairs, progress, landmarks);
 
-  const nextIdx = state.idx + 1;
-  const nextBtn = nextIdx < events.length
-    ? `<div style="text-align:center;margin:20px 0 8px"><button class="rp-btn" onclick="${_ytReveal(nextIdx)}" style="padding:8px 24px;font-size:12px;letter-spacing:1px">▶ WHAT HAPPENS NEXT</button></div>`
-    : '';
+  // Sasquatch: mid-ground
+  const hasSasquatch = events.some((e, i) => i <= state.idx && e.type?.includes('sasquatch'));
+  const sqHtml = hasSasquatch ? _sasquatchHtml('mid') : _sasquatchHtml('far');
+
+  const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
+  const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
   return YETI_STYLES + `<div class="yeti-forest" data-phase="2">
+    ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Traps & Tricks</div>
-    <div class="yeti-sub">The pairs become aware of each other.</div>
-    ${items}${nextBtn}
+    <div class="yeti-sub">Deep woods. Purple dusk. First stars appear through the canopy.</div>
+    ${mapHtml}
+    ${items}${btns}
   </div>`;
 }
+
+// ── Phase 3: The Night — Cave Mouth POV ──
 
 export function rpBuildYetiNight(ep) {
   if (!ep.areWeThereYeti) return '';
@@ -1625,34 +1911,80 @@ export function rpBuildYetiNight(ep) {
   const stateKey = `yeti_night_${ep.num}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
-  const _ytReveal = (ti) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${ti};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  // Determine scene state from revealed events
+  let fireState = '';
+  let sqProximity = 'eyes';
+  let lastRevealedType = '';
+  events.forEach((evt, i) => {
+    if (i > state.idx) return;
+    lastRevealedType = evt.type;
+    if (evt.type === 'campfireStory' || evt.type === 'vulnerability' || evt.type === 'showmanceMoment') fireState = 'bright';
+    else if (evt.type === 'theft' && evt.success) fireState = 'dim';
+    else if (evt.type === 'morningWake' || evt.type === 'dawn') fireState = 'embers';
+    if (evt.type?.includes('sasquatch') || evt.type === 'caveConvergence') sqProximity = 'close';
+    if (evt.type === 'sasquatchChase') sqProximity = 'close';
+  });
+  const isMorning = lastRevealedType === 'morningWake' || lastRevealedType === 'dawn';
+  if (isMorning) sqProximity = 'gone';
+
+  // Player portraits in semicircle around fire
+  const activePlayers = yt.pairs.flatMap(p => p.members);
+  const fireCircle = activePlayers.map(name => {
+    const isActive = events.some((e, i) => i === state.idx && (e.player === name || e.players?.includes(name)));
+    return `<div class="yeti-fire-seat ${isActive ? 'active' : ''}">${_portrait(name, 36)}</div>`;
+  }).join('');
+
+  // Cave mouth with eyes
+  const caveEyes = sqProximity !== 'gone'
+    ? `<div class="yeti-cave-eyes"><div class="yeti-cave-eye"></div><div class="yeti-cave-eye"></div></div>` : '';
+  const moonEl = !isMorning
+    ? `<div class="yeti-cave-moon"></div>` : '';
+  const morningGlow = isMorning
+    ? `<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 10%,rgba(255,200,100,0.12) 0%,transparent 50%);pointer-events:none;z-index:0"></div>` : '';
 
   const items = events.map((evt, i) => {
-    if (i > state.idx) return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center" onclick="${_ytReveal(i)}"><span style="font-size:11px;color:var(--moon);letter-spacing:1px">▶ REVEAL</span></div>`;
-    const cardClass = evt.type.includes('sasquatch') || evt.type === 'caveConvergence' ? 'sasquatch'
-      : evt.type === 'theft' || evt.type === 'confrontation' ? 'grudge'
-      : evt.type === 'showmanceMoment' ? 'brave' : '';
-    const stamp = evt.type === 'theft' && evt.success ? `<div class="yeti-grudge-stamp">NOTED.</div>` : '';
-    return `<div class="yeti-card ${cardClass}">
+    if (i > state.idx) {
+      return `<div class="yeti-card" style="opacity:0.08;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center;clip-path:none;border-left:4px solid rgba(200,208,220,0.04);background:rgba(0,0,0,0.2)" onclick="${_ytRevealFn(stateKey, i, ep.num)}">
+        <span style="font-size:10px;color:rgba(200,208,220,0.2);letter-spacing:2px">🔥</span>
+      </div>`;
+    }
+    const cls = _cardClass(evt);
+    const stamp = _cardStamp(evt);
+    const portraitHtml = evt.players?.length
+      ? `<div style="display:flex;gap:4px;margin-top:8px">${evt.players.map(p => _portrait(p, 28)).join('')}</div>` : '';
+    // Translucent overlay so cave stays visible
+    return `<div class="yeti-card ${cls}" style="background:rgba(10,10,15,0.5);backdrop-filter:blur(1px)">
       ${stamp}
       <div class="yeti-badge ${evt.badgeClass || 'grey'}">${evt.badgeText || ''}</div>
       <div class="yeti-text">${evt.text}</div>
-      ${evt.players?.length ? `<div style="display:flex;gap:4px;margin-top:8px">${evt.players.map(p => typeof window.rpPortrait === 'function' ? window.rpPortrait(p, 28) : p).join('')}</div>` : ''}
+      ${portraitHtml}
     </div>`;
   }).join('');
 
-  const nextIdx = state.idx + 1;
-  const nextBtn = nextIdx < events.length
-    ? `<div style="text-align:center;margin:20px 0 8px"><button class="rp-btn" onclick="${_ytReveal(nextIdx)}" style="padding:8px 24px;font-size:12px;letter-spacing:1px">▶ WHAT HAPPENS NEXT</button></div>`
-    : '';
+  const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
   return YETI_STYLES + `<div class="yeti-forest" data-phase="3">
-    <div class="yeti-eyebrow">Episode ${ep.num}</div>
-    <div class="yeti-title">The Night</div>
-    <div class="yeti-sub">Sasquatchanakwa drives them together. What happens in the cave stays on camera.</div>
-    ${items}${nextBtn}
+    <div class="yeti-cave">
+      <div class="yeti-cave-walls"></div>
+      <div class="yeti-cave-mouth">
+        ${moonEl}
+        ${caveEyes}
+        ${morningGlow}
+      </div>
+      <div style="position:relative;z-index:2;padding-top:38%">
+        <div class="yeti-eyebrow">Episode ${ep.num}</div>
+        <div class="yeti-title">The Night</div>
+        <div class="yeti-sub">Cave mouth. Sasquatchanakwa is out there. What happens here stays on camera.</div>
+        ${_campfireHtml(fireState)}
+        <div class="yeti-fire-circle" style="margin:16px 0">${fireCircle}</div>
+        ${items}${btns}
+      </div>
+    </div>
   </div>`;
 }
+
+// ── Phase 4: Sprint ──
 
 export function rpBuildYetiSprint(ep) {
   if (!ep.areWeThereYeti) return '';
@@ -1662,104 +1994,188 @@ export function rpBuildYetiSprint(ep) {
   const stateKey = `yeti_sprint_${ep.num}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
-  const _ytReveal = (ti) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${ti};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
 
-  const items = events.map((evt, i) => {
-    if (i > state.idx) return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center" onclick="${_ytReveal(i)}"><span style="font-size:11px;color:var(--moon);letter-spacing:1px">▶ REVEAL</span></div>`;
-    const cardClass = evt.type.includes('sasquatch') ? 'sasquatch'
-      : evt.type === 'foodTemptation' && evt.badgeClass === 'red' ? 'grudge'
-      : evt.badgeClass === 'gold' ? 'brave' : '';
-    return `<div class="yeti-card ${cardClass}">
-      <div class="yeti-badge ${evt.badgeClass || 'grey'}">${evt.badgeText || ''}</div>
-      <div class="yeti-text">${evt.text}</div>
-    </div>`;
-  }).join('');
+  // Trail map: single race line, cave to totem
+  const progress = {};
+  yt.pairs.forEach(p => {
+    const pEvts = events.filter(e => e.group === p.label || e.players?.some(n => p.members.includes(n)));
+    const revealed = pEvts.filter((_, i) => i <= state.idx).length;
+    progress[p.label] = 65 + Math.min(33, (revealed / Math.max(1, pEvts.length)) * 33);
+  });
+  const mapHtml = _trailMap(yt.pairs, progress, [], true);
 
-  const nextIdx = state.idx + 1;
-  const nextBtn = nextIdx < events.length
-    ? `<div style="text-align:center;margin:20px 0 8px"><button class="rp-btn" onclick="${_ytReveal(nextIdx)}" style="padding:8px 24px;font-size:12px;letter-spacing:1px">▶ WHAT HAPPENS NEXT</button></div>`
-    : '';
+  // Sasquatch behind stragglers
+  const hasSqEvent = events.some((e, i) => i <= state.idx && e.type?.includes('sasquatch'));
+  const sqHtml = hasSqEvent ? _sasquatchHtml('chasing') : _sasquatchHtml('far');
 
-  // Supply status for each pair
+  // Supply status
   const supplyHtml = yt.pairs.map(p => {
     const s = yt.supplies[p.label];
-    return `<div style="margin-bottom:12px;padding:8px;background:rgba(200,208,220,0.03);border-radius:6px">
-      <div style="font-size:10px;font-weight:700;color:var(--amber);letter-spacing:1px">PAIR ${p.label} SUPPLIES</div>
-      <div style="font-size:11px;color:var(--moon);margin-top:4px">
-        Map: ${s.map ? '✓' : '✗'} | Compass: ${s.compass ? '✓' : '✗'} | Binoculars: ${s.binoculars ? '✓' : '✗'}
-      </div>
+    const items = [
+      s.map ? '📍 Map' : '<s style="opacity:0.3">📍 Map</s>',
+      s.compass ? '🧭 Compass' : '<s style="opacity:0.3">🧭 Compass</s>',
+      s.binoculars ? '🔭 Binos' : '<s style="opacity:0.3">🔭 Binos</s>',
+    ].join(' · ');
+    return `<div style="margin-bottom:8px;padding:6px 10px;background:rgba(200,208,220,0.03);border-radius:4px;font-size:10px;position:relative;z-index:2">
+      <span style="font-weight:700;color:var(--amber);letter-spacing:1px">PAIR ${p.label}</span> ${items}
     </div>`;
   }).join('');
 
+  const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
+  const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
+
   return YETI_STYLES + `<div class="yeti-forest" data-phase="4">
+    ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Sprint</div>
-    <div class="yeti-sub">Race to the totem pole. Everything comes down to this.</div>
+    <div class="yeti-sub">Dawn breaks. Golden light. Race to the totem pole.</div>
+    ${mapHtml}
     ${supplyHtml}
-    ${items}${nextBtn}
+    ${items}${btns}
   </div>`;
 }
+
+// ── Phase 5: Chef's Verdict — Dawn at Totem Pole ──
 
 export function rpBuildYetiVerdict(ep) {
   if (!ep.areWeThereYeti) return '';
   const yt = ep.areWeThereYeti;
-  const events = yt.timeline.filter(e => e.phase === 5);
-
-  // Immunity pair
-  const winPair = yt.pairs.find(p => p.label === yt.immunityPair);
   const elimName = yt.chefEliminated;
   const elimPr = pronouns(elimName);
+  const winPair = yt.pairs.find(p => p.label === yt.immunityPair);
 
-  // Grudge meter visualization
+  // Build verdict beats for click-to-reveal
   const grudgeEntries = Object.entries(yt.chefGrudge)
     .filter(([n]) => !yt.immunityWinners.includes(n))
     .sort(([, a], [, b]) => b - a);
   const maxGrudge = Math.max(...grudgeEntries.map(([, g]) => Math.abs(g)), 1);
 
-  const grudgeHtml = grudgeEntries.map(([name, grudge]) => {
-    const width = Math.min(100, Math.abs(grudge) / maxGrudge * 100);
-    const color = grudge > 1 ? '#f85149' : grudge > 0 ? '#d29922' : '#3fb950';
-    return `<div class="yeti-score-bar">
-      <div style="width:60px;font-size:11px;color:var(--moon)">${name}</div>
-      <div style="flex:1;height:6px;background:rgba(200,208,220,0.06);border-radius:3px">
-        <div class="yeti-score-fill" style="width:${width}%;background:${color}"></div>
-      </div>
-      <div style="width:40px;text-align:right;font-size:10px;color:${color}">${grudge > 0 ? '+' : ''}${grudge.toFixed(1)}</div>
-    </div>`;
-  }).join('');
+  // Beats: immunity, grudge bars (one per player), helicopter, chef points, reaction, torch snuff
+  const beats = [];
+  // Beat 0: Winning pair arrives
+  beats.push({ type: 'immunity' });
+  // Beat 1-N: Grudge bars
+  grudgeEntries.forEach(([name, grudge]) => { beats.push({ type: 'grudge', name, grudge }); });
+  // Helicopter
+  beats.push({ type: 'helicopter' });
+  // Chef points
+  beats.push({ type: 'elimination' });
+  // Reaction
+  beats.push({ type: 'reaction' });
+  // Torch snuff
+  beats.push({ type: 'torchSnuff' });
 
-  let html = YETI_STYLES + `<div class="yeti-forest" data-phase="3">
+  const stateKey = `yeti_verdict_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  // Determine grudge sources per player from timeline
+  const grudgeSources = {};
+  yt.timeline.forEach(e => {
+    if (!e.player && !e.players?.length) return;
+    const names = e.player ? [e.player] : (e.players || []);
+    names.forEach(n => {
+      if (!grudgeSources[n]) grudgeSources[n] = [];
+      if (e.grudgeType) grudgeSources[n].push(`${e.grudgeType} +${(e.grudgeDelta || 0).toFixed(1)}`);
+    });
+  });
+
+  let beatHtml = '';
+  beats.forEach((beat, i) => {
+    if (i > state.idx) return;
+    if (beat.type === 'immunity') {
+      beatHtml += `<div class="yeti-verdict-beat">
+        <div class="yeti-card brave" style="text-align:center">
+          <div class="yeti-badge gold">🏆 PAIR IMMUNITY</div>
+          <div style="display:flex;justify-content:center;gap:16px;margin:12px 0">
+            ${winPair.members.map(n => `<div style="text-align:center">
+              <div class="yeti-golden-ring" style="display:inline-block">${_portrait(n, 56)}</div>
+              <div style="font-size:11px;color:var(--amber);margin-top:6px">${n}</div>
+            </div>`).join('')}
+          </div>
+          <div class="yeti-text">First pair to tag the totem pole. Both safe tonight.</div>
+        </div>
+      </div>`;
+    } else if (beat.type === 'grudge') {
+      const width = Math.min(100, Math.abs(beat.grudge) / maxGrudge * 100);
+      const isElim = beat.name === elimName;
+      const sources = (grudgeSources[beat.name] || []).join(' | ') || 'baseline';
+      beatHtml += `<div class="yeti-verdict-beat">
+        <div class="yeti-grudge-bar">
+          <div style="width:60px;font-size:11px;color:${isElim ? '#f85149' : 'var(--moon)'};font-weight:${isElim ? '700' : '400'}">${beat.name}</div>
+          <div class="yeti-grudge-bar-track">
+            <div class="yeti-grudge-bar-fill" style="width:${width}%"></div>
+          </div>
+          <div style="width:45px;text-align:right;font-size:10px;color:${beat.grudge > 1 ? '#f85149' : beat.grudge > 0 ? '#d29922' : '#3fb950'}">${beat.grudge > 0 ? '+' : ''}${beat.grudge.toFixed(1)}</div>
+        </div>
+        <div class="yeti-grudge-sources">${sources}</div>
+      </div>`;
+    } else if (beat.type === 'helicopter') {
+      beatHtml += `<div class="yeti-verdict-beat" style="position:relative;min-height:50px;overflow:hidden">
+        <div class="yeti-heli">🚁</div>
+        <div class="yeti-card" style="background:rgba(0,0,0,0.3);border-color:rgba(255,60,60,0.15);text-align:center">
+          <div style="font-size:14px;font-weight:900;letter-spacing:3px;color:var(--moon);font-family:'Courier New',monospace">"Listen up."</div>
+        </div>
+      </div>`;
+    } else if (beat.type === 'elimination') {
+      beatHtml += `<div class="yeti-verdict-beat">
+        <div class="yeti-card grudge" style="border-left-color:#f85149;text-align:center;padding:20px">
+          <div style="display:inline-block" class="yeti-elim-portrait">${_portrait(elimName, 72)}</div>
+          <div style="font-size:18px;color:#f85149;margin-top:10px;font-weight:700">${elimName}</div>
+          <div class="yeti-elim-stamp" style="margin-top:6px">ELIMINATED BY CHEF</div>
+          <div class="yeti-text" style="text-align:center;font-style:italic;margin-top:10px">${yt.chefReason}</div>
+        </div>
+      </div>`;
+    } else if (beat.type === 'reaction') {
+      const arch = _archOf(elimName);
+      const finalScore = yt.personalScores[elimName] || 0;
+      // Find an elimination event confessional from timeline
+      const elimEvt = yt.timeline.find(e => e.type === 'chefElimination' && e.player === elimName);
+      const quote = elimEvt?.text || `${elimName} has been eliminated by Chef Hatchet.`;
+      beatHtml += `<div class="yeti-verdict-beat">
+        <div class="yeti-card" style="background:rgba(200,208,220,0.03);border-left-color:rgba(200,208,220,0.15)">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="filter:grayscale(100%);opacity:0.7">${_portrait(elimName, 48)}</div>
+            <div>
+              <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(200,208,220,0.4);text-transform:uppercase">${arch}</div>
+              <div class="yeti-text" style="font-style:italic;margin-top:4px">${quote}</div>
+              <div style="font-size:10px;color:rgba(200,208,220,0.4);margin-top:6px">Final Score: ${finalScore.toFixed(1)}</div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    } else if (beat.type === 'torchSnuff') {
+      const snuff = typeof window.torchSnuffFx === 'function' ? window.torchSnuffFx() : '';
+      beatHtml += `<div class="yeti-verdict-beat" style="text-align:center">
+        ${snuff}
+        <div style="font-size:13px;font-style:italic;color:rgba(200,208,220,0.5);margin-top:12px;letter-spacing:1px">Chef has spoken.</div>
+      </div>`;
+    }
+  });
+
+  // Unrevealed beats
+  const nextIdx = state.idx + 1;
+  let unrevealedHtml = '';
+  if (nextIdx < beats.length) {
+    for (let i = nextIdx; i < beats.length; i++) {
+      unrevealedHtml += `<div class="yeti-verdict-beat" style="opacity:0.1;cursor:pointer;min-height:40px;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(200,208,220,0.08);border-radius:6px;margin-bottom:12px" onclick="${_ytRevealFn(stateKey, i, ep.num)}">
+        <span style="font-size:10px;color:rgba(200,208,220,0.25);letter-spacing:2px">⚖</span>
+      </div>`;
+    }
+  }
+
+  const btns = _revealBtns(stateKey, nextIdx, beats.length, ep.num);
+
+  return YETI_STYLES + `<div class="yeti-forest" data-phase="5">
+    ${_totemHtml(state.idx >= 0)}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Chef's Verdict</div>
-    <div class="yeti-sub">No tribal. No vote. Chef decides.</div>
-
-    <div class="yeti-card brave">
-      <div class="yeti-badge gold">🏆 PAIR IMMUNITY</div>
-      <div style="display:flex;justify-content:center;gap:12px;margin:8px 0">
-        ${winPair.members.map(n => `<div style="text-align:center">
-          ${typeof window.rpPortrait === 'function' ? window.rpPortrait(n, 56) : n}
-          <div style="font-size:11px;color:var(--amber);margin-top:4px">${n}</div>
-        </div>`).join('')}
-      </div>
-      <div class="yeti-text" style="text-align:center">First pair to tag the totem pole. Both safe tonight.</div>
-    </div>
-
-    <div style="margin:20px 0 12px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#f85149;margin-bottom:8px">CHEF'S GRUDGE METER</div>
-      ${grudgeHtml}
-    </div>
-
-    <div class="yeti-card grudge" style="border-color:rgba(255,60,60,0.4)">
-      <div class="yeti-grudge-stamp">ELIMINATED.</div>
-      <div class="yeti-badge red">CHEF'S CHOICE</div>
-      <div style="text-align:center;margin:8px 0">
-        ${typeof window.rpPortrait === 'function' ? window.rpPortrait(elimName, 64) : elimName}
-        <div style="font-size:16px;color:#f85149;margin-top:8px">${elimName}</div>
-        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f85149;margin-top:2px">ELIMINATED BY CHEF</div>
-      </div>
-      <div class="yeti-text" style="text-align:center;font-style:italic;margin-top:8px">${yt.chefReason}</div>
+    <div class="yeti-sub">Dawn. No tribal council. No vote. Chef decides.</div>
+    <div style="position:relative;z-index:2">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#f85149;margin-bottom:12px;text-align:center">CHEF'S GRUDGE METER</div>
+      ${beatHtml}
+      ${unrevealedHtml}
+      ${btns}
     </div>
   </div>`;
-
-  return html;
 }

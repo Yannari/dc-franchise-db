@@ -1,5 +1,8 @@
-import { gs, pStats, pronouns, getBond, addBond, getPerceivedBond, updateChalRecord } from '../core.js';
+import { gs, players } from '../core.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { getBond, addBond, getPerceivedBond } from '../bonds.js';
 import { computeHeat } from '../alliances.js';
+import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
 // ══════════════════════════════════════════════════════
 // HELPERS
@@ -13,11 +16,11 @@ function popDelta(name, delta) {
 
 // Archetype classification (per CLAUDE.md rules)
 function _isVillain(name) {
-  const arch = (window.players || []).find(p => p.name === name)?.archetype;
+  const arch = (players || []).find(p => p.name === name)?.archetype;
   return ['villain', 'mastermind', 'schemer'].includes(arch);
 }
 function _isNice(name) {
-  const arch = (window.players || []).find(p => p.name === name)?.archetype;
+  const arch = (players || []).find(p => p.name === name)?.archetype;
   return ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(arch);
 }
 function _isNeutral(name) { return !_isVillain(name) && !_isNice(name); }
@@ -28,7 +31,7 @@ function _canScheme(name) {
   return s.strategic >= 6 && s.loyalty <= 4;
 }
 function _archOf(name) {
-  return (window.players || []).find(p => p.name === name)?.archetype || 'floater';
+  return (players || []).find(p => p.name === name)?.archetype || 'floater';
 }
 function _noise(lo, hi) { return lo + Math.random() * (hi - lo); }
 
@@ -485,15 +488,12 @@ function _phaseNavigation(pairs, activePlayers, timeline, personalScores, chefGr
     }
     eventsFired++;
 
-    // Event pool — draw without replacement, cross-pair distinct
-    const otherPairLabel = pairs.find(p => p.label !== label).label;
-    const otherPairEvents = firedEvents[otherPairLabel];
-
+    // Event pool — draw without replacement (per-pair only)
     const eventPool = [
       'riverCross', 'cliffClimb', 'quicksand', 'animalEncounter',
       'supplyFind', 'pairArgument', 'compassMalfunction', 'landmark',
       'partnerInjury', 'forage',
-    ].filter(e => !eventsForPair.has(e) && !otherPairEvents.has(e));
+    ].filter(e => !eventsForPair.has(e));
 
     // Shuffle and pick
     const shuffledEvents = eventPool.sort(() => Math.random() - 0.5);
@@ -751,20 +751,45 @@ function _phaseTrapsTheft(pairs, activePlayers, timeline, personalScores, chefGr
         eventsFired++;
       } else if (_isNice(name)) {
         // Defensive measure
-        const defTypes = ['tripWire', 'guard'].filter(t => !eventsForPair.has('def_' + t));
+        const defTypes = ['tripWire', 'guard', 'encourage'].filter(t => !eventsForPair.has('def_' + t));
         if (defTypes.length === 0) return;
         const defType = _rp(defTypes);
         eventsForPair.add('def_' + defType);
         personalScores[name] += 0.3;
 
-        const defText = TRAP_TEXTS[defType]?.set
+        let defText;
+        if (defType === 'encourage') {
+          const partner = group.find(n => n !== name) || name;
+          addBond(partner, name, 0.3);
+          personalScores[partner] += 0.2;
+          defText = `${name} puts a hand on ${partner}'s shoulder. "We got this." It's not strategy. It's genuine.`;
+        } else {
+          defText = TRAP_TEXTS[defType]?.set
           ? _rp(TRAP_TEXTS[defType].set)(name, pronouns(name))
           : TRAP_TEXTS[defType]?.active
             ? _rp(TRAP_TEXTS[defType].active)(name, pronouns(name))
             : `${name} sets up a defensive perimeter. Nobody's sneaking past.`;
+        }
         timeline.push({ type: 'defense', subtype: defType, phase: 2, group: label, player: name, players: [name],
-          text: defText, badgeText: 'DEFENSE SET', badgeClass: 'blue' });
+          text: defText, badgeText: defType === 'encourage' ? 'ENCOURAGED' : 'DEFENSE SET', badgeClass: 'blue' });
         eventsFired++;
+      } else if (_isNeutral(name)) {
+        // Neutral: scout for intel
+        if (!eventsForPair.has('scout') && eventsFired < targetEventsPerPair) {
+          eventsForPair.add('scout');
+          const scoutRoll = s.intuition * 0.1 + s.mental * 0.08 + _noise(-0.5, 0.5);
+          if (scoutRoll > 0.7) {
+            personalScores[name] += 0.5; chefGrudge[name] -= 0.2;
+            timeline.push({ type: 'scout', phase: 2, group: label, player: name, players: [name],
+              text: `${name} climbs a tree and spots the rival pair's position. Intel acquired.`,
+              badgeText: 'SCOUTED', badgeClass: 'blue' });
+          } else {
+            timeline.push({ type: 'scout', phase: 2, group: label, player: name, players: [name],
+              text: `${name} tries to spot the other pair but the canopy is too thick. Wasted effort.`,
+              badgeText: 'SCOUT FAIL', badgeClass: 'grey' });
+          }
+          eventsFired++;
+        }
       }
     });
 
@@ -814,8 +839,8 @@ function _phaseTrapsTheft(pairs, activePlayers, timeline, personalScores, chefGr
   });
 
   // Sasquatchanakwa stalking — one pair gets proximity event
-  const targetPairIdx = sasquatch.lastTarget === pairs[0].label ? 1 : 0;
-  const targetPair = pairs[targetPairIdx];
+  const eligibleTargetPairs = pairs.filter(p => p.label !== sasquatch.lastTarget);
+  const targetPair = _rp(eligibleTargetPairs);
   sasquatch.lastTarget = targetPair.label;
   firedEvents.sasquatchTypes.add('shadow');
 
@@ -926,11 +951,15 @@ function _phaseOvernight(pairs, activePlayers, timeline, personalScores, chefGru
   const schemers = activePlayers.filter(n => _canScheme(n));
   const guards = activePlayers.filter(n => _isNice(n) && pStats(n).loyalty >= 6);
 
-  if (schemers.length > 0) {
-    const thief = schemers[0]; // primary schemer attempts
+  // Allow up to 2 schemers to attempt theft
+  const thiefCandidates = schemers.slice(0, 2);
+
+  if (thiefCandidates.length > 0) {
+    thiefCandidates.forEach(thief => {
     // Pick target from rival pair
     const thiefPair = pairs.find(p => p.members.includes(thief));
-    const rivalPair = pairs.find(p => !p.members.includes(thief));
+    const rivalPairs = pairs.filter(p => !p.members.includes(thief));
+    const rivalPair = _rp(rivalPairs);
     const target = rivalPair.members.reduce((worst, n) =>
       !worst || pStats(n).intuition < pStats(worst).intuition ? n : worst, null);
 
@@ -1000,11 +1029,27 @@ function _phaseOvernight(pairs, activePlayers, timeline, personalScores, chefGru
           badgeText: 'CAUGHT!', badgeClass: 'red' });
       }
     }
+    }); // end thiefCandidates.forEach
+  } else {
+    // No schemers — fallback cave events
+    const tensePair = activePlayers.filter(n => activePlayers.some(o => o !== n && getBond(n, o) < 0));
+    if (tensePair.length >= 2) {
+      const a = tensePair[0], b = activePlayers.find(o => o !== a && getBond(a, o) < 0) || tensePair[1];
+      timeline.push({ type: 'caveTension', phase: 3, players: [a, b],
+        text: `${a} and ${b} share a wall of the cave. The silence between them could crush stone.`,
+        badgeText: 'TENSION', badgeClass: 'yellow' });
+    } else if (activePlayers.length >= 2) {
+      const [a, b] = activePlayers.slice(0, 2);
+      addBond(a, b, 0.2);
+      timeline.push({ type: 'caveChat', phase: 3, players: [a, b],
+        text: `${a} and ${b} stay up talking. No strategy. Just two people in a cave, waiting for sunrise.`,
+        badgeText: 'LATE NIGHT CHAT', badgeClass: 'green' });
+    }
   }
 
   // ── Beat 4: Sleep watch ──
   activePlayers.forEach(name => {
-    if (firedEvents.A.has('watch_' + name) || firedEvents.B.has('watch_' + name)) return;
+    if (pairs.some(p => firedEvents[p.label]?.has('watch_' + name))) return;
     const s = pStats(name);
     if (s.loyalty * 0.08 + _noise(-0.3, 0.3) > 0.5) {
       personalScores[name] += 0.3; chefGrudge[name] -= 0.3;
@@ -1076,22 +1121,25 @@ function _phaseOvernight(pairs, activePlayers, timeline, personalScores, chefGru
   // Showmance moment — if any showmance pair is in the cave together
   if (gs.showmances?.length) {
     gs.showmances.forEach(sm => {
-      if (activePlayers.includes(sm.a) && activePlayers.includes(sm.b)) {
-        addBond(sm.a, sm.b, 0.3);
-        timeline.push({ type: 'showmanceMoment', phase: 3, players: [sm.a, sm.b],
-          text: `In the firelight, ${sm.a} and ${sm.b} share a quiet look. The cave feels smaller. Warmer.`,
-          badgeText: 'SHOWMANCE', badgeClass: 'pink' });
+      const [smA, smB] = sm.players || [];
+      if (smA && smB && activePlayers.includes(smA) && activePlayers.includes(smB)) {
+        if (sm.phase === 'broken-up') return;
+        if (!romanticCompat(smA, smB)) return;
+        addBond(smA, smB, 0.3);
+        timeline.push({ type: 'showmanceMoment', phase: 3, players: [smA, smB],
+          text: `In the firelight, ${smA} and ${smB} share a quiet look. The cave feels smaller. Warmer.`,
+          badgeText: '💕 SHOWMANCE', badgeClass: 'pink' });
       }
     });
   }
 }
 
 function _phaseSprint(pairs, activePlayers, timeline, personalScores, chefGrudge, sasquatch, supplies, firedEvents) {
-  // Base sprint score
+  // Base sprint score (delta only — added to personalScores at end)
   const sprintScores = {};
   activePlayers.forEach(name => {
     const s = pStats(name);
-    let sprint = personalScores[name] + s.physical * 0.1 + s.endurance * 0.08 + _noise(-1.0, 1.0);
+    let sprint = s.physical * 0.1 + s.endurance * 0.08 + _noise(-1.0, 1.0);
 
     // Supply advantages
     const myPair = pairs.find(p => p.members.includes(name));
@@ -1116,7 +1164,8 @@ function _phaseSprint(pairs, activePlayers, timeline, personalScores, chefGrudge
           badgeText: 'RESISTED', badgeClass: 'green' });
       } else {
         sprintScores[name] -= 2.0; chefGrudge[name] += 2.0; popDelta(name, -1);
-        firedEvents.A.add('foodTemptation_' + name);
+        const myPairLabel = pairs.find(p => p.members.includes(name))?.label;
+        if (myPairLabel) firedEvents[myPairLabel].add('foodTemptation_' + name);
         timeline.push({ type: 'foodTemptation', phase: 4, player: name, players: [name],
           text: _rp(SPRINT_TEXTS.foodTemptation.fail)(name, pronouns(name)),
           badgeText: 'ATE CHEF\'S FOOD', badgeClass: 'red', grudgeType: 'foodTheft' });
@@ -1217,9 +1266,9 @@ function _phaseSprint(pairs, activePlayers, timeline, personalScores, chefGrudge
       badgeText: 'REMEMBERED', badgeClass: 'gold' });
   }
 
-  // Final dash — update personalScores from sprint
+  // Final dash — merge sprint deltas into personalScores
   activePlayers.forEach(name => {
-    personalScores[name] = sprintScores[name];
+    personalScores[name] += sprintScores[name];
   });
 
   // Final dash beat for last 2
@@ -1250,7 +1299,6 @@ export function simulateAreWeThereYeti(ep) {
   activePlayers.forEach(n => { personalScores[n] = 0; chefGrudge[n] = 0; });
 
   const timeline = [];
-  const firedEvents = { A: new Set(), B: new Set(), sasquatchTypes: new Set(), confessionalBuckets: new Set() };
 
   // Supply tracking per pair
   const supplies = {};
@@ -1258,21 +1306,26 @@ export function simulateAreWeThereYeti(ep) {
   // Sasquatchanakwa state
   const sasquatch = { aggression: 0, lastTarget: null, chasesTriggered: 0, isProvoked: false, provokedBy: null };
 
-  // ── PAIR FORMATION ──
+  // ── PAIR FORMATION ── (pairs of 2; one trio if odd count)
   const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
   const pairs = [];
-  const pairLabels = ['A', 'B'];
-  if (shuffled.length % 2 === 0) {
-    pairs.push({ label: 'A', members: shuffled.slice(0, shuffled.length / 2) });
-    pairs.push({ label: 'B', members: shuffled.slice(shuffled.length / 2) });
-  } else {
-    // Odd: first group is trio, second is pair
-    const mid = Math.ceil(shuffled.length / 2);
-    pairs.push({ label: 'A', members: shuffled.slice(0, mid) });
-    pairs.push({ label: 'B', members: shuffled.slice(mid) });
+  const pairLabels = 'ABCDEFGH'.split('');
+  let pi = 0;
+  for (let i = 0; i < shuffled.length; i += 2) {
+    if (i + 2 < shuffled.length) {
+      pairs.push({ label: pairLabels[pi++], members: shuffled.slice(i, i + 2) });
+    } else if (i + 1 === shuffled.length) {
+      // Odd player out — merge into last pair to form trio
+      pairs[pairs.length - 1].members.push(shuffled[i]);
+    } else {
+      pairs.push({ label: pairLabels[pi++], members: shuffled.slice(i, i + 2) });
+    }
   }
-  // Init supplies per pair
+
+  // Init firedEvents + supplies per pair (AFTER pair formation)
+  const firedEvents = { sasquatchTypes: new Set(), confessionalBuckets: new Set() };
   pairs.forEach(p => {
+    firedEvents[p.label] = new Set();
     supplies[p.label] = { map: true, compass: true, binoculars: true, bugSpray: true, sleepingBag: true, extras: [] };
   });
 
@@ -1284,6 +1337,9 @@ export function simulateAreWeThereYeti(ep) {
   _phaseSprint(pairs, activePlayers, timeline, personalScores, chefGrudge, sasquatch, supplies, firedEvents);
 
   // ── RESOLUTION ──
+  // Clamp grudge floor at -2 to prevent gaming
+  activePlayers.forEach(n => { if (chefGrudge[n] < -2) chefGrudge[n] = -2; });
+
   // Pair with highest avg personalScore wins immunity
   const pairScores = pairs.map(p => ({
     label: p.label,
@@ -1318,7 +1374,7 @@ export function simulateAreWeThereYeti(ep) {
 
   // Determine Chef's reason — highest single grudge category
   const grudgeCategories = {
-    foodTheft: chefGrudge[chefPick] >= 2.0 && firedEvents.A.has('foodTemptation_' + chefPick) ? 3 : 0,
+    foodTheft: chefGrudge[chefPick] >= 2.0 && pairs.some(p => firedEvents[p.label]?.has('foodTemptation_' + chefPick)) ? 3 : 0,
     cowardice: 0, weakness: 0, abandonment: 0, lowScore: 0, multiple: 0,
   };
   // Check timeline for grudge-specific events
@@ -1338,6 +1394,28 @@ export function simulateAreWeThereYeti(ep) {
   timeline.push({ type: 'chefElimination', phase: 5, player: chefPick, players: elimCandidates,
     text: _rp(VERDICT_TEXTS.elimAnnounce)(chefPick, chefReason),
     badgeText: 'CHEF\'S CHOICE', badgeClass: 'red', chefReason });
+
+  // ── ROMANCE INTEGRATION ──
+  // Fire sparks for bonding moments: quicksand rescue, partner injury help, vulnerability
+  const sparkEvents = timeline.filter(e =>
+    (e.type === 'quicksand' || e.type === 'partnerInjury') && e.players?.length >= 2);
+  sparkEvents.forEach(evt => {
+    const [a, b] = evt.players;
+    if (a && b && romanticCompat(a, b)) {
+      _challengeRomanceSpark(a, b, ep, null, null, personalScores, 'danger');
+    }
+  });
+  // Vulnerability confession → spark
+  const vulnEvents = timeline.filter(e => e.type === 'vulnerability' && e.players?.length >= 2);
+  vulnEvents.forEach(evt => {
+    const [a, b] = evt.players;
+    if (a && b && romanticCompat(a, b)) {
+      _challengeRomanceSpark(a, b, ep, null, null, personalScores, 'emotional');
+    }
+  });
+  // Check existing showmances for advancement
+  _checkShowmanceChalMoment(ep, 'yeti', null, personalScores, 'danger',
+    [{ name: gs.mergeName || 'merge', members: activePlayers }]);
 
   // ── EP FIELDS ──
   ep.challengeType = 'individual';
@@ -1433,7 +1511,13 @@ export function rpBuildYetiDropOff(ep) {
   const yt = ep.areWeThereYeti;
   const events = yt.timeline.filter(e => e.phase === 0);
 
-  let items = events.map(evt => {
+  const stateKey = `yeti_dropoff_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const _ytReveal = (ti) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${ti};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  let items = events.map((evt, i) => {
+    if (i > state.idx) return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center" onclick="${_ytReveal(i)}"><span style="font-size:11px;color:var(--moon);letter-spacing:1px">▶ REVEAL</span></div>`;
     const cardClass = evt.grudgeType ? 'grudge' : '';
     const stamp = evt.grudgeDelta > 0 ? `<div class="yeti-grudge-stamp">NOTED.</div>` : '';
     return `<div class="yeti-card ${cardClass}">
@@ -1444,8 +1528,11 @@ export function rpBuildYetiDropOff(ep) {
     </div>`;
   }).join('');
 
-  const stateKey = `yeti_dropoff_${ep.num}`;
-  const screenId = 'yeti-dropoff';
+  const nextIdx = state.idx + 1;
+  const nextBtn = nextIdx < events.length
+    ? `<div style="text-align:center;margin:20px 0 8px"><button class="rp-btn" onclick="${_ytReveal(nextIdx)}" style="padding:8px 24px;font-size:12px;letter-spacing:1px">▶ WHAT HAPPENS NEXT</button></div>`
+    : '';
+
   return YETI_STYLES + `<div class="yeti-forest" data-phase="0">
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Drop Off</div>
@@ -1457,7 +1544,7 @@ export function rpBuildYetiDropOff(ep) {
         <div style="font-size:10px;color:rgba(200,208,220,0.5);margin-top:4px">${p.members.join(' & ')}</div>
       </div>`).join('')}
     </div>
-    ${items}
+    ${items}${nextBtn}
   </div>`;
 }
 
@@ -1466,7 +1553,13 @@ export function rpBuildYetiTrail(ep, pair) {
   const yt = ep.areWeThereYeti;
   const events = yt.timeline.filter(e => e.phase === 1 && e.group === pair.label);
 
-  const items = events.map(evt => {
+  const stateKey = `yeti_trail_${pair.label}_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const _ytReveal = (ti) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${ti};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  const items = events.map((evt, i) => {
+    if (i > state.idx) return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center" onclick="${_ytReveal(i)}"><span style="font-size:11px;color:var(--moon);letter-spacing:1px">▶ REVEAL</span></div>`;
     const cardClass = evt.subtype?.startsWith('sasquatch') ? 'sasquatch' : evt.grudgeType ? 'grudge' : evt.badgeClass === 'gold' ? 'brave' : '';
     const stamp = evt.grudgeDelta > 0 ? `<div class="yeti-grudge-stamp">STRIKE.</div>` : '';
     return `<div class="yeti-card ${cardClass}">
@@ -1477,11 +1570,16 @@ export function rpBuildYetiTrail(ep, pair) {
     </div>`;
   }).join('');
 
+  const nextIdx = state.idx + 1;
+  const nextBtn = nextIdx < events.length
+    ? `<div style="text-align:center;margin:20px 0 8px"><button class="rp-btn" onclick="${_ytReveal(nextIdx)}" style="padding:8px 24px;font-size:12px;letter-spacing:1px">▶ WHAT HAPPENS NEXT</button></div>`
+    : '';
+
   return YETI_STYLES + `<div class="yeti-forest" data-phase="1">
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Trail — Pair ${pair.label}</div>
     <div class="yeti-sub">${pair.members.join(' & ')} navigate the forest.</div>
-    ${items}
+    ${items}${nextBtn}
   </div>`;
 }
 
@@ -1490,7 +1588,13 @@ export function rpBuildYetiTraps(ep) {
   const yt = ep.areWeThereYeti;
   const events = yt.timeline.filter(e => e.phase === 2);
 
-  const items = events.map(evt => {
+  const stateKey = `yeti_traps_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const _ytReveal = (ti) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${ti};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  const items = events.map((evt, i) => {
+    if (i > state.idx) return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center" onclick="${_ytReveal(i)}"><span style="font-size:11px;color:var(--moon);letter-spacing:1px">▶ REVEAL</span></div>`;
     const cardClass = evt.type.includes('sasquatch') ? 'sasquatch' : evt.grudgeType ? 'grudge' : '';
     const stamp = evt.grudgeDelta > 0 ? `<div class="yeti-grudge-stamp">UNACCEPTABLE.</div>` : '';
     return `<div class="yeti-card ${cardClass}">
@@ -1500,11 +1604,16 @@ export function rpBuildYetiTraps(ep) {
     </div>`;
   }).join('');
 
+  const nextIdx = state.idx + 1;
+  const nextBtn = nextIdx < events.length
+    ? `<div style="text-align:center;margin:20px 0 8px"><button class="rp-btn" onclick="${_ytReveal(nextIdx)}" style="padding:8px 24px;font-size:12px;letter-spacing:1px">▶ WHAT HAPPENS NEXT</button></div>`
+    : '';
+
   return YETI_STYLES + `<div class="yeti-forest" data-phase="2">
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Traps & Tricks</div>
     <div class="yeti-sub">The pairs become aware of each other.</div>
-    ${items}
+    ${items}${nextBtn}
   </div>`;
 }
 
@@ -1513,7 +1622,13 @@ export function rpBuildYetiNight(ep) {
   const yt = ep.areWeThereYeti;
   const events = yt.timeline.filter(e => e.phase === 3);
 
-  const items = events.map(evt => {
+  const stateKey = `yeti_night_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const _ytReveal = (ti) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${ti};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  const items = events.map((evt, i) => {
+    if (i > state.idx) return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center" onclick="${_ytReveal(i)}"><span style="font-size:11px;color:var(--moon);letter-spacing:1px">▶ REVEAL</span></div>`;
     const cardClass = evt.type.includes('sasquatch') || evt.type === 'caveConvergence' ? 'sasquatch'
       : evt.type === 'theft' || evt.type === 'confrontation' ? 'grudge'
       : evt.type === 'showmanceMoment' ? 'brave' : '';
@@ -1526,11 +1641,16 @@ export function rpBuildYetiNight(ep) {
     </div>`;
   }).join('');
 
+  const nextIdx = state.idx + 1;
+  const nextBtn = nextIdx < events.length
+    ? `<div style="text-align:center;margin:20px 0 8px"><button class="rp-btn" onclick="${_ytReveal(nextIdx)}" style="padding:8px 24px;font-size:12px;letter-spacing:1px">▶ WHAT HAPPENS NEXT</button></div>`
+    : '';
+
   return YETI_STYLES + `<div class="yeti-forest" data-phase="3">
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Night</div>
     <div class="yeti-sub">Sasquatchanakwa drives them together. What happens in the cave stays on camera.</div>
-    ${items}
+    ${items}${nextBtn}
   </div>`;
 }
 
@@ -1539,7 +1659,13 @@ export function rpBuildYetiSprint(ep) {
   const yt = ep.areWeThereYeti;
   const events = yt.timeline.filter(e => e.phase === 4);
 
-  const items = events.map(evt => {
+  const stateKey = `yeti_sprint_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const _ytReveal = (ti) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${ti};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  const items = events.map((evt, i) => {
+    if (i > state.idx) return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center" onclick="${_ytReveal(i)}"><span style="font-size:11px;color:var(--moon);letter-spacing:1px">▶ REVEAL</span></div>`;
     const cardClass = evt.type.includes('sasquatch') ? 'sasquatch'
       : evt.type === 'foodTemptation' && evt.badgeClass === 'red' ? 'grudge'
       : evt.badgeClass === 'gold' ? 'brave' : '';
@@ -1548,6 +1674,11 @@ export function rpBuildYetiSprint(ep) {
       <div class="yeti-text">${evt.text}</div>
     </div>`;
   }).join('');
+
+  const nextIdx = state.idx + 1;
+  const nextBtn = nextIdx < events.length
+    ? `<div style="text-align:center;margin:20px 0 8px"><button class="rp-btn" onclick="${_ytReveal(nextIdx)}" style="padding:8px 24px;font-size:12px;letter-spacing:1px">▶ WHAT HAPPENS NEXT</button></div>`
+    : '';
 
   // Supply status for each pair
   const supplyHtml = yt.pairs.map(p => {
@@ -1565,7 +1696,7 @@ export function rpBuildYetiSprint(ep) {
     <div class="yeti-title">The Sprint</div>
     <div class="yeti-sub">Race to the totem pole. Everything comes down to this.</div>
     ${supplyHtml}
-    ${items}
+    ${items}${nextBtn}
   </div>`;
 }
 

@@ -7,6 +7,7 @@ import { rpBuildOffTheChain } from './chal/off-the-chain.js';
 import { rpBuildWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 import { rpBuildTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
 import { rpBuildCampCastaways, rpBuildCCFlood, rpBuildCCGroup, rpBuildCCNight, rpBuildCCRegroup, rpBuildCCStorm, rpBuildCCImmunity } from './chal/camp-castaways.js';
+import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict } from './chal/are-we-there-yeti.js';
 import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/triple-dog-dare.js';
 import { rpBuildSlasherTitleCard, rpBuildSlasherActI, rpBuildSlasherActII, rpBuildSlasherActIII, rpBuildSlasherCredits, rpBuildSlasherAnnouncement, rpBuildSlasherRounds, rpBuildSlasherShowdown, rpBuildSlasherImmunity, rpBuildSlasherElimination, rpBuildSlasherLeaderboard, slasherRevealNextRound, slasherRevealAllRounds, slasherRevealNextScene, slasherRevealAllScenes } from './chal/slasher-night.js';
 
@@ -1062,6 +1063,7 @@ export function buildTwistDesc(tw) {
     case 'guardian-angel':     if (tw.guardianAngel) L.push(`${tw.guardianAngel} earned automatic immunity through the strength of their bonds.`); break;
     case 'sudden-death':       L.push('Sudden Death. No tribal council tonight. Last place in the challenge is auto-eliminated on the spot. No vote. No strategy. Pure performance.'); break;
     case 'slasher-night':      { const _snTitle = tw.filmTitle || ep?.slasherNight?.filmTitle; L.push(`${_snTitle ? `"${_snTitle}" — ` : ''}A slasher is loose. Survive the night. Last standing wins immunity. Lowest scorer is eliminated.`); break; }
+    case 'are-we-there-yeti':  L.push('Are We There Yeti? Chef drops the players in the woods. Race back to camp in pairs. Watch out for the Sasquatchanakwa.'); break;
     case 'cultural-reset':     L.push('All active alliances publicly revealed.'); if (tw.revealedAlliances?.length) L.push(`Exposed: ${tw.revealedAlliances.join(', ')}.`); break;
     case 'spirit-island':      if (tw.spiritVisitor) L.push(`Jury member ${tw.spiritVisitor} returns to camp for one day.`); break;
     case 'loved-ones':         L.push('Players\' loved ones visit camp. Tribal council still runs tonight.'); break;
@@ -2700,7 +2702,7 @@ export function rpBuildDebug(ep) {
       });
     }
     const _chalLabel = ep.challengeLabel || 'Challenge';
-    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : ep.isBasicStraining ? 'Basic Straining' : ep.isXtremeTorture ? 'X-Treme Torture' : ep.isLuckyHunt ? 'Lucky Hunt' : ep.isHideAndBeSneaky ? 'Hide and Be Sneaky' : ep.isOffTheChain ? "That's Off the Chain!" : ep.isWawanakwaGoneWild ? 'Wawanakwa Gone Wild!' : ep.isTriArmedTriathlon ? 'Trial by Tri-Armed Triathlon' : ep.isCampCastaways ? 'Camp Castaways' : _chalLabel;
+    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : ep.isBasicStraining ? 'Basic Straining' : ep.isXtremeTorture ? 'X-Treme Torture' : ep.isLuckyHunt ? 'Lucky Hunt' : ep.isHideAndBeSneaky ? 'Hide and Be Sneaky' : ep.isOffTheChain ? "That's Off the Chain!" : ep.isWawanakwaGoneWild ? 'Wawanakwa Gone Wild!' : ep.isTriArmedTriathlon ? 'Trial by Tri-Armed Triathlon' : ep.isCampCastaways ? 'Camp Castaways' : ep.isAreWeThereYeti ? 'Are We There Yeti?' : _chalLabel;
 
     html += `<div style="margin-bottom:12px">
       <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
@@ -10286,7 +10288,16 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'cc-regroup', label:'Regrouping',     html: rpBuildCCRegroup(ep) });
     vpScreens.push({ id:'cc-storm',   label:'Storming Camp',  html: rpBuildCCStorm(ep) });
     vpScreens.push({ id:'cc-immunity',label:'Immunity',       html: rpBuildCCImmunity(ep) });
-  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways) {
+  } else if (ep.isAreWeThereYeti && ep.areWeThereYeti) {
+    vpScreens.push({ id:'yeti-dropoff', label:'The Drop Off', html: rpBuildYetiDropOff(ep) });
+    (ep.areWeThereYeti.pairs || []).forEach(p => {
+      vpScreens.push({ id:`yeti-trail-${p.label}`, label:`Trail: Pair ${p.label}`, html: rpBuildYetiTrail(ep, p) });
+    });
+    vpScreens.push({ id:'yeti-traps', label:'Traps & Tricks', html: rpBuildYetiTraps(ep) });
+    vpScreens.push({ id:'yeti-night', label:'The Night', html: rpBuildYetiNight(ep) });
+    vpScreens.push({ id:'yeti-sprint', label:'The Sprint', html: rpBuildYetiSprint(ep) });
+    vpScreens.push({ id:'yeti-verdict', label:"Chef's Verdict", html: rpBuildYetiVerdict(ep) });
+  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
 

@@ -32,6 +32,7 @@ import * as offTheChainMod from './chal/off-the-chain.js';
 import * as wawanakwaGoneWildMod from './chal/wawanakwa-gone-wild.js';
 import * as triArmedTriathlonMod from './chal/tri-armed-triathlon.js';
 import * as campCastawaysMod from './chal/camp-castaways.js';
+import * as areWeThereYetiMod from './chal/are-we-there-yeti.js';
 import * as socialManipMod from './social-manipulation.js';
 import * as campEventsMod from './camp-events.js';
 import * as twistsMod from './twists.js';
@@ -204,6 +205,7 @@ window.CHALLENGES = {
   'wawanakwa-gone-wild': { simulate: wawanakwaGoneWildMod.simulateWawanakwaGoneWild, rpBuild: wawanakwaGoneWildMod.rpBuildWawanakwaGoneWild, text: wawanakwaGoneWildMod._textWawanakwaGoneWild },
   'tri-armed-triathlon': { simulate: triArmedTriathlonMod.simulateTriArmedTriathlon, rpBuild: triArmedTriathlonMod.rpBuildTriArmedTriathlon, text: triArmedTriathlonMod._textTriArmedTriathlon },
   'camp-castaways': { simulate: campCastawaysMod.simulateCampCastaways, rpBuild: campCastawaysMod.rpBuildCampCastaways, text: campCastawaysMod._textCampCastaways },
+  'are-we-there-yeti': { simulate: areWeThereYetiMod.simulateAreWeThereYeti, rpBuild: areWeThereYetiMod.rpBuildYetiDropOff, text: areWeThereYetiMod._textAreWeThereYeti },
 };
 
 // ══════════════════════════════════════════════════════════════════════

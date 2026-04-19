@@ -41,6 +41,7 @@ import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 import { simulateTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
 import { simulateCampCastaways } from './chal/camp-castaways.js';
+import { simulateAreWeThereYeti } from './chal/are-we-there-yeti.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   patchEpisodeHistory, saveGameState, snapshotGameState, buildCrashout
@@ -1545,7 +1546,7 @@ export function simulateEpisode() {
 
   // ── SUDDEN DEATH — last place in challenge is auto-eliminated, no tribal ──
   // Skip generic sudden death if a specific challenge twist handles elimination itself
-  const _hasTwistChallenge = ep.isCampCastaways || ep.isLuckyHunt || ep.isHideAndBeSneaky
+  const _hasTwistChallenge = ep.isCampCastaways || ep.isAreWeThereYeti || ep.isLuckyHunt || ep.isHideAndBeSneaky
     || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isSayUncle
     || ep.isBrunchOfDisgustingness || ep.isBasicStraining;
   if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
@@ -2061,6 +2062,58 @@ export function simulateEpisode() {
     // ── CAMP CASTAWAYS: flood survival scoring ──
     simulateCampCastaways(ep);
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
+  } else if (ep.isAreWeThereYeti) {
+    // ── ARE WE THERE YETI: forest nav race, Chef eliminates ──
+    simulateAreWeThereYeti(ep);
+
+    const _ytElim = ep.chefEliminated;
+    if (_ytElim) {
+      handleAdvantageInheritance(_ytElim, ep);
+      gs.activePlayers = gs.activePlayers.filter(p => p !== _ytElim);
+      gs.eliminated.push(_ytElim);
+      if (gs.isMerged) gs.jury.push(_ytElim);
+      gs.advantages = gs.advantages.filter(a => a.holder !== _ytElim);
+
+      if (seasonConfig.foodWater === 'enabled' && gs.currentProviders?.includes(_ytElim)) {
+        const _ytTribe = gs.isMerged ? (gs.mergeName || 'merge') : '';
+        gs.providerVotedOutLastEp = { name: _ytElim, tribeName: _ytTribe };
+      }
+    }
+
+    updateChalRecord(ep);
+    generateCampEvents(ep, 'post');
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updateSurvival(ep);
+    gs.episode = epNum;
+    if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
+
+    gs.episodeHistory.push({
+      num: epNum, eliminated: _ytElim || null, riChoice: null,
+      immunityWinner: ep.immunityWinner || null,
+      challengeType: ep.challengeType || 'individual',
+      challengeLabel: ep.challengeLabel,
+      challengeCategory: ep.challengeCategory,
+      challengeDesc: ep.challengeDesc,
+      chalPlacements: ep.challengePlacements || [],
+      chalMemberScores: ep.chalMemberScores || {},
+      isMerge: ep.isMerge, isAreWeThereYeti: true, noTribal: true,
+      chefEliminated: _ytElim,
+      votes: {}, alliances: [],
+      twists: (ep.twists || []).map(t => ({...t})),
+      tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
+      campEvents: ep.campEvents || null,
+      journey: ep.journey || null,
+      idolFinds: ep.idolFinds || [],
+      advantagesPreTribal: ep.advantagesPreTribal || null,
+      areWeThereYeti: ep.areWeThereYeti || null,
+      summaryText: '', gsSnapshot: window.snapshotGameState(),
+    });
+    const stYT = generateSummaryText(ep);
+    gs.episodeHistory[gs.episodeHistory.length - 1].summaryText = stYT;
+    ep.summaryText = stYT;
+    window.patchEpisodeHistory(ep);
+    window.saveGameState();
+    return ep;
   } else {
     // ── TIED DESTINIES: paired immunity challenge ──
     const _tdTwist = ep.tiedDestinies;
@@ -2346,7 +2399,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti) {
     updateChalRecord(ep);
   }
 

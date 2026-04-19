@@ -253,6 +253,7 @@ export function renderEpisodeHistory() {
     const wwTag = ep.isWawanakwaGoneWild ? `<span class="ep-hist-tag" style="background:rgba(212,160,23,0.15);color:#d4a017">Gone Wild!</span>` : '';
     const taTag = ep.isTriArmedTriathlon ? `<span class="ep-hist-tag" style="background:rgba(200,100,30,0.12);color:#c8641e">Tri-Armed</span>` : '';
     const ccTag = ep.isCampCastaways ? `<span class="ep-hist-tag" style="background:rgba(0,255,65,0.10);color:#00ff41">Camp Castaways</span>` : '';
+    const ytTag = ep.isAreWeThereYeti ? `<span class="ep-hist-tag" style="background:rgba(212,133,10,0.10);color:#d4850a">Are We There Yeti?</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -260,7 +261,7 @@ export function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}</div>
     </div>`;
   }).join('');
 }

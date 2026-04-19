@@ -347,7 +347,7 @@ const VERDICT_TEXTS = {
 const YETI_STYLES = `
 <style>
 /* ── BASE FOREST CONTAINER ── */
-.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);padding:24px 16px;min-height:100vh;font-family:Georgia,'Times New Roman',serif;position:relative;overflow:hidden}
+.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);padding:24px 16px;font-family:Georgia,'Times New Roman',serif;position:relative;overflow:hidden}
 
 /* ── FOREST DEPTH LAYERS ── */
 .yeti-forest::before,.yeti-forest::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;transition:background 0.6s}

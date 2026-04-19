@@ -512,7 +512,7 @@ export function simulateFinale() {
 
   // If 3 remain and need to cut to F2: finaleSize===2 (always cut), OR winner's-cut format with finaleSize===3 (winner decides who to cut)
   const _needsF3Cut = (cfg.finaleSize === 2) || (cfg.finaleFormat === 'jury-cut' && cfg.finaleSize === 3) || (cfg.finaleFormat === 'fan-vote' && cfg.finaleSize === 3);
-  if (!ep.firemaking && !ep.klChoice && _needsF3Cut && players.length === 3 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'koh-lanta') {
+  if (!ep.firemaking && !ep.klChoice && _needsF3Cut && players.length === 3 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'olympic-relay' && cfg.finaleFormat !== 'koh-lanta') {
     const others = players.filter(p => p !== ep.immunityWinner);
     let brought, cut;
     // Smart decision: immunity winner projects jury votes for each possible F2 pairing
@@ -553,7 +553,7 @@ export function simulateFinale() {
   }
 
   // If finaleSize === 4: immunity winner cuts 1, top 3 go to FTC
-  if (!ep.firemaking && !ep.klChoice && cfg.finaleSize === 4 && players.length === 4 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'koh-lanta') {
+  if (!ep.firemaking && !ep.klChoice && cfg.finaleSize === 4 && players.length === 4 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'olympic-relay' && cfg.finaleFormat !== 'koh-lanta') {
     const others4 = players.filter(p => p !== ep.immunityWinner);
     // Smart decision: project jury votes for each possible F3 trio
     const immWinner4 = ep.immunityWinner;
@@ -615,7 +615,7 @@ export function simulateFinale() {
   }
 
   // Bench selection: eliminated players pick sides (final-challenge format ONLY — jury formats don't have benches)
-  const hasFinaleChallenge = cfg.finaleFormat === 'final-challenge';
+  const hasFinaleChallenge = cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay';
   if (hasFinaleChallenge && (gs.eliminated.length > 0 || (gs.jury || []).length > 0)) {
     const benchResult = generateBenchAssignments(finalists);
     ep.benchAssignments = benchResult.assignments;
@@ -623,16 +623,16 @@ export function simulateFinale() {
   }
 
   // Assistant selection: final-challenge format only, when setting enabled
-  if (cfg.finaleFormat === 'final-challenge' && cfg.finaleAssistants && ep.benchAssignments) {
+  if ((cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay') && cfg.finaleAssistants && ep.benchAssignments) {
     ep.assistants = selectAssistants(finalists, ep.benchAssignments);
   }
 
   // Generate final challenge reenactment stages (used by VP viewer)
   ep.finalChallengeStages = generateFinalChallengeStages(finalists, ep.immunityWinner);
 
-  if (cfg.finaleFormat === 'final-challenge') {
+  if (cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay') {
     let chalResult;
-    if (cfg.finaleRelay) {
+    if (cfg.finaleFormat === 'olympic-relay') {
       // Rejected Olympic Relay — TDI-style finale
       const preRace = generateRelayPreRace(finalists, ep.benchAssignments || {});
       ep.benchAssignments = preRace.benchAssignments; // may have flips
@@ -896,7 +896,7 @@ export function generateFinaleSummaryText(ep) {
     }
 
     return L.join('\n');
-  } else if (cfg.finaleFormat === 'final-challenge') {
+  } else if (cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay') {
     sec('FINAL CHALLENGE');
     ln(`No jury. The winner is decided by a final challenge among all finalists.`);
     ln('');
@@ -1293,7 +1293,7 @@ export function generateFinalChallengeStages(finalists, winner) {
 // Eliminated players pick which finalist's bench to sit on
 export function generateBenchAssignments(finalists) {
   // Pool: jury for jury formats, all eliminated for final-challenge
-  const pool = seasonConfig.finaleFormat === 'final-challenge' ? [...gs.eliminated] : [...(gs.jury || [])];
+  const pool = (seasonConfig.finaleFormat === 'final-challenge' || seasonConfig.finaleFormat === 'olympic-relay') ? [...gs.eliminated] : [...(gs.jury || [])];
   const assignments = Object.fromEntries(finalists.map(f => [f, []]));
   const reasons = {};
 

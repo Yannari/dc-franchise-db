@@ -704,6 +704,7 @@ export function saveConfig() {
     finaleSize:  parseInt(g('cfg-finale')?.value) || 3,
     finaleFormat: g('cfg-finale-format')?.value || 'traditional',
     finaleAssistants: g('cfg-finale-assistants')?.checked || false,
+    finaleRelay: g('cfg-finale-relay')?.checked || false,
     jurySize:    parseInt(g('cfg-jury')?.value) || 9,
     ri:          g('cfg-ri')?.checked || false,
     riReentryAt: parseInt(g('cfg-ri-reentry')?.value) || 12,
@@ -779,6 +780,7 @@ export function renderConfig() {
   set('cfg-finale',  seasonConfig.finaleSize);
   set('cfg-finale-format', seasonConfig.finaleFormat || 'traditional');
   if (g('cfg-finale-assistants')) g('cfg-finale-assistants').checked = !!seasonConfig.finaleAssistants;
+  if (g('cfg-finale-relay')) g('cfg-finale-relay').checked = !!seasonConfig.finaleRelay;
   set('cfg-jury',    seasonConfig.jurySize || 9);
   chk('cfg-ri',        seasonConfig.ri);
   set('cfg-ri-reentry', seasonConfig.riReentryAt);

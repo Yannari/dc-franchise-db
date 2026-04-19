@@ -768,7 +768,7 @@ export const S9_BONDS_PRESET = [];
 export function defaultConfig() {
   return {
     name: '', year: '', days: 39, gameMode: 'spectator',
-    teams: 2, mergeAt: 12, finaleSize: 3, finaleFormat: 'traditional', finaleAssistants: false, jurySize: 9,
+    teams: 2, mergeAt: 12, finaleSize: 3, finaleFormat: 'traditional', finaleAssistants: false, finaleRelay: false, jurySize: 9,
     ri: false, riReentryAt: 12, riFormat: 'redemption', riReturnPoints: 1, riSecondReturnAt: 5, journey: false, shotInDark: false,
     firemaking: false, tiebreakerMode: 'survivor', qem: false, idolRehide: false,
     advExpire: 4, foodWater: 'disabled', survivalDifficulty: 'casual',

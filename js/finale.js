@@ -631,8 +631,18 @@ export function simulateFinale() {
   ep.finalChallengeStages = generateFinalChallengeStages(finalists, ep.immunityWinner);
 
   if (cfg.finaleFormat === 'final-challenge') {
-    // Multi-stage finale challenge
-    const chalResult = simulateFinaleChallenge(finalists, ep.assistants || null);
+    let chalResult;
+    if (cfg.finaleRelay) {
+      // Rejected Olympic Relay — TDI-style finale
+      const preRace = generateRelayPreRace(finalists, ep.benchAssignments || {});
+      ep.benchAssignments = preRace.benchAssignments; // may have flips
+      ep.relayPreRace = { pitches: preRace.pitches, confessionals: preRace.confessionals, benchFlips: preRace.benchFlips };
+      chalResult = simulateRejectedOlympicRelay(finalists, ep.assistants || null, ep.benchAssignments || {}, preRace);
+      ep.relayData = chalResult.relayData;
+    } else {
+      // Generic 3-stage finale challenge
+      chalResult = simulateFinaleChallenge(finalists, ep.assistants || null);
+    }
     ep.finaleChallengeStages = chalResult.stages;
     ep.finaleChallengeScores = chalResult.totalScores;
     ep.finaleChallengeWinner = chalResult.winner;
@@ -1494,6 +1504,497 @@ export function simulateFinaleChallenge(finalists, assistants) {
     placements: sorted.map(([name]) => name),
     sabotageEvents,
   };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// REJECTED OLYMPIC RELAY — TDI-style finale challenge
+// ══════════════════════════════════════════════════════════════════════
+
+// Pre-race phase: pitches, confessionals, sabotage planting
+export function generateRelayPreRace(finalists, benchAssignments) {
+  const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+(gs.episode||0)*7)%arr.length];
+  const confessionals = [];
+  const benchFlips = [];
+  let plantedSabotage = null;
+  let plantedSabotage2 = null;
+
+  // ── Finalist pitches ──
+  const pitches = {};
+  finalists.forEach(f => {
+    const s = pStats(f);
+    const pr = pronouns(f);
+    const p = players.find(pl => pl.name === f);
+    const arch = p?.archetype || 'floater';
+    let pitchType, pitchText, pitchQuality;
+
+    if (s.boldness >= 7 && s.social >= 6) {
+      pitchType = 'yacht-party';
+      pitchQuality = s.social * 0.4 + s.boldness * 0.3 + Math.random() * 2;
+      pitchText = _pick([
+        `${f} steps up: "If I win, we're ALL celebrating. Yacht party. Everyone's invited. That's a promise."`,
+        `${f} grins at the bench: "I didn't get here alone. You all know that. Win or lose, we eat tonight."`,
+        `"Look — I know what you want to hear. So here it is: I will throw the biggest party this island has EVER seen." ${f} winks.`,
+      ], f + 'pitch');
+    } else if (s.loyalty >= 7 && ['hero','loyal-soldier','social-butterfly','underdog'].includes(arch)) {
+      pitchType = 'split-winnings';
+      pitchQuality = s.loyalty * 0.4 + s.social * 0.3 + Math.random() * 2;
+      pitchText = _pick([
+        `${f} looks each supporter in the eye: "I meant every alliance. Every promise. If I win this, the people who had my back get taken care of."`,
+        `"I'm not here to showboat." ${f} pauses. "I'm here because of you. And I don't forget that."`,
+        `${f} keeps it simple: "You stuck with me. I'll stick with you. That's the deal."`,
+      ], f + 'pitch');
+    } else if (s.strategic >= 7 && ['villain','mastermind','schemer'].includes(arch)) {
+      pitchType = 'earned-this';
+      pitchQuality = s.strategic * 0.4 + s.boldness * 0.3 + Math.random() * 2;
+      pitchText = _pick([
+        `${f} doesn't apologize: "I played the hardest game out here. Every move, every blindside — that was me. I earned this spot."`,
+        `"You don't have to like how I played." ${f} stares down the bench. "But you have to respect it."`,
+        `${f} smirks: "I'm not gonna beg. I'm gonna win. And deep down, you all know I deserve to."`,
+      ], f + 'pitch');
+    } else {
+      pitchType = 'underdog';
+      pitchQuality = s.social * 0.3 + s.temperament * 0.3 + Math.random() * 2;
+      pitchText = _pick([
+        `${f} takes a breath: "Nobody expected me here. I didn't expect me here. But I'm not leaving without a fight."`,
+        `"I know I'm not the loudest. I know I'm not the strongest." ${f} sets ${pr.posAdj} jaw. "But I'm still here. That has to count for something."`,
+        `${f} stumbles on ${pr.posAdj} words, then steadies: "I just want to prove that the quiet ones can win too."`,
+      ], f + 'pitch');
+    }
+
+    pitches[f] = { type: pitchType, text: pitchText, quality: pitchQuality };
+  });
+
+  // ── Bench flips from pitches ──
+  finalists.forEach(pitcher => {
+    const pitch = pitches[pitcher];
+    const otherFinalists = finalists.filter(f => f !== pitcher);
+    otherFinalists.forEach(rival => {
+      const rivalBench = benchAssignments[rival] || [];
+      rivalBench.forEach(supporter => {
+        const currentBond = getBond(supporter, rival);
+        const pitcherBond = getBond(supporter, pitcher);
+        const flipRoll = pitch.quality * 0.03 - currentBond * 0.02 + pitcherBond * 0.01 + (Math.random() * 0.3 - 0.15);
+        if (flipRoll > 0.35 && currentBond < 3) {
+          benchFlips.push({ supporter, from: rival, to: pitcher, reason: pitch.type });
+          // Move supporter
+          benchAssignments[rival] = benchAssignments[rival].filter(s => s !== supporter);
+          if (!benchAssignments[pitcher]) benchAssignments[pitcher] = [];
+          benchAssignments[pitcher].push(supporter);
+        }
+      });
+    });
+  });
+
+  // ── Confessionals ──
+  finalists.forEach(f => {
+    const s = pStats(f);
+    const pr = pronouns(f);
+    const p = players.find(pl => pl.name === f);
+    const arch = p?.archetype || 'floater';
+    const benchSize = (benchAssignments[f] || []).length;
+
+    const pool = [];
+    if (['villain','mastermind','schemer'].includes(arch))
+      pool.push(`*Confessional — ${f}:* "They can cheer all they want. I know exactly how this ends. I've known since day one."`);
+    if (['hero','loyal-soldier'].includes(arch))
+      pool.push(`*Confessional — ${f}:* "I can hear them cheering for me. That means more than the money. …Okay, the money too."`);
+    if (s.boldness >= 8)
+      pool.push(`*Confessional — ${f}:* "I've been waiting for this my ENTIRE life. Let's GO!"`);
+    if (benchSize <= 2)
+      pool.push(`*Confessional — ${f}:* "Not a lot of people on my bench. That's fine. I don't need a crowd. I need a finish line."`);
+    if (benchSize >= 5)
+      pool.push(`*Confessional — ${f}:* "Look at that bench. Every single one of those people believed in me enough to sit there. I can't let them down."`);
+    if (['underdog','goat'].includes(arch))
+      pool.push(`*Confessional — ${f}:* "Everyone counted me out. I counted me out. But here I am. In the finale. What even IS this game?"`);
+    pool.push(`*Confessional — ${f}:* "Deep breath. This is it. Everything comes down to right now."`);
+
+    confessionals.push({ player: f, text: _pick(pool, f + 'conf') });
+  });
+
+  // Chef confessional
+  confessionals.push({
+    player: 'Chef',
+    text: _pick([
+      `*Confessional — Chef Hatchet:* "I built that obstacle course with my own two hands. If neither of these maggots can finish it, I'm keeping the prize money myself."`,
+      `*Confessional — Chef Hatchet:* "Been watching these two all season. One of 'em might actually deserve to win. The other one? Heh. We'll see."`,
+      `*Confessional — Chef Hatchet:* "Chris told me to make it fair. I told Chris to mind his business. This is MY course."`,
+    ], 'chef-conf'),
+  });
+
+  // ── Sabotage planting ──
+  finalists.forEach(f => {
+    const bench = benchAssignments[f] || [];
+    const otherFinalist = finalists.find(o => o !== f);
+    if (!otherFinalist) return;
+
+    bench.forEach(supporter => {
+      const p = players.find(pl => pl.name === supporter);
+      const arch = p?.archetype || 'floater';
+      const s = pStats(supporter);
+      const isVillain = ['villain','mastermind','schemer'].includes(arch);
+      const isNeutralSchemer = !isVillain && !['hero','loyal-soldier','social-butterfly','showmancer','underdog','goat'].includes(arch) && s.strategic >= 6 && s.loyalty <= 4;
+
+      if (!isVillain && !isNeutralSchemer) return;
+      if (plantedSabotage && plantedSabotage.targetFinalist === otherFinalist) return; // max 1 per side
+
+      const plantChance = isVillain ? 0.5 : 0.25;
+      if (Math.random() > plantChance) return;
+
+      const sabType = !plantedSabotage ? 'cupcake' : !plantedSabotage2 ? 'grease' : null;
+      if (!sabType) return;
+
+      const sab = { planter: supporter, onBehalfOf: f, targetFinalist: otherFinalist, type: sabType };
+      if (sabType === 'cupcake') plantedSabotage = sab;
+      else plantedSabotage2 = sab;
+    });
+  });
+
+  return { pitches, confessionals, benchFlips, plantedSabotage, plantedSabotage2, benchAssignments };
+}
+
+// Main relay simulation — 3 phases: flagpole, beam, sprint
+export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignments, preRaceData) {
+  const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+(gs.episode||0)*7)%arr.length];
+  const plantedSabotage = preRaceData?.plantedSabotage || null;
+  const plantedSabotage2 = preRaceData?.plantedSabotage2 || null;
+  const timeline = [];
+  const scores = Object.fromEntries(finalists.map(f => [f, 0]));
+  const stageResults = [];
+  const sabotageEvents = [];
+
+  // ════════ PHASE 1: FLAGPOLE ════════
+  const flagpoleScores = {};
+  const flagpoleEvents = [];
+
+  // Hat assignment (comedy)
+  finalists.forEach(f => {
+    const p = players.find(pl => pl.name === f);
+    const arch = p?.archetype || 'floater';
+    const hat = _pick([
+      'a chef\'s hat three sizes too big',
+      'a rubber chicken helmet',
+      'a tiara made of sporks',
+      'a raccoon-shaped headband',
+      'an "I ♥ Chef" baseball cap',
+    ], f + 'hat');
+    flagpoleEvents.push({ type: 'hatAssign', player: f, hat, text: `${f} is handed ${hat}. "${f === finalists[0] ? 'You\'re kidding.' : 'This is a JOKE, right?'}"` });
+  });
+
+  finalists.forEach(f => {
+    const s = pStats(f);
+    let base = s.physical * 0.3 + s.endurance * 0.2 + s.boldness * 0.1 + (Math.random() * 3 - 1.5);
+
+    // Grease sabotage
+    if (plantedSabotage2 && plantedSabotage2.targetFinalist === f) {
+      let penalty = -1.5;
+      // Detection by perceptive supporter
+      const bench = benchAssignments[f] || [];
+      const detector = bench.find(s2 => pStats(s2).intuition * 0.12 > 0.7);
+      if (detector) {
+        penalty *= 0.5;
+        flagpoleEvents.push({ type: 'flagpoleSabotageDetect', player: detector, target: f, text: `${detector} spots the grease on the pole. "HEY! That pole's been tampered with!" The penalty is halved.` });
+      }
+      base += penalty;
+      flagpoleEvents.push({ type: 'flagpoleSabotage', player: f, planter: plantedSabotage2.planter, penalty, text: `${f}'s hands slip — the pole is greased! ${plantedSabotage2.planter}'s handiwork from earlier.` });
+      sabotageEvents.push({ phase: 0, type: 'grease', target: f, planter: plantedSabotage2.planter });
+    }
+
+    // Supporter boost
+    const bench = benchAssignments[f] || [];
+    const booster = bench.find(s2 => {
+      const p2 = players.find(pl => pl.name === s2);
+      const arch2 = p2?.archetype || 'floater';
+      return ['villain','mastermind','schemer','challenge-beast','hero'].includes(arch2);
+    });
+    if (booster) {
+      const bS = pStats(booster);
+      const p2 = players.find(pl => pl.name === booster);
+      const arch2 = p2?.archetype || 'floater';
+      let boost = 0;
+      if (['villain','mastermind','schemer'].includes(arch2)) boost = bS.physical * 0.05;
+      else if (arch2 === 'hero') boost = bS.social * 0.03;
+      else if (arch2 === 'challenge-beast') boost = bS.physical * 0.06;
+      base += boost;
+      flagpoleEvents.push({ type: 'flagpoleBoost', player: f, booster, boost, text: `${booster} pushes ${f} from below — "CLIMB! Don't look down!"` });
+    }
+
+    flagpoleScores[f] = Math.max(0, base);
+    scores[f] += flagpoleScores[f];
+  });
+
+  const flagSorted = Object.entries(flagpoleScores).sort(([,a],[,b]) => b - a);
+  const flagWinner = flagSorted[0][0];
+  const flagCarryover = 1.0;
+  scores[flagWinner] += flagCarryover;
+
+  flagpoleEvents.push({ type: 'flagpoleWin', player: flagWinner, text: `${flagWinner} grabs the flag first! A ${flagCarryover.toFixed(1)}-point lead heading into the beam.` });
+  timeline.push(...flagpoleEvents);
+
+  stageResults.push({
+    name: 'The Flagpole',
+    desc: 'Climb the greased flagpole, grab the flag, slide down. First one back wins the lead.',
+    scores: { ...flagpoleScores },
+    winner: flagWinner,
+    phase: 0,
+  });
+
+  // ════════ PHASE 2: BALANCE BEAM ════════
+  const beamScores = {};
+  const beamEvents = [];
+  const showmancePair = (gs.showmances || []).find(sh => {
+    const [smA, smB] = sh.players || [];
+    return finalists.includes(smA) && finalists.includes(smB);
+  });
+
+  finalists.forEach(f => {
+    const s = pStats(f);
+    let base = s.endurance * 0.25 + s.mental * 0.2 + s.temperament * 0.15 + (Math.random() * 3 - 1.5);
+
+    // Eagle attack
+    const eagleRoll = s.physical * 0.15 + s.boldness * 0.1;
+    if (Math.random() < 0.6) {
+      if (eagleRoll > 0.9) {
+        beamEvents.push({ type: 'eagleAttack', player: f, result: 'fend', text: `An eagle dive-bombs ${f} mid-crossing! ${f} ducks, swings ${pronouns(f).posAdj} hat — the bird veers off. Close call.` });
+      } else {
+        const penalty = -1.0;
+        base += penalty;
+        beamEvents.push({ type: 'eagleAttack', player: f, result: 'hit', text: `An eagle clips ${f} across the beam! ${f} stumbles, arms windmilling. Barely holds on.` });
+      }
+    }
+
+    // Justin distraction (high-social supporter strips)
+    const distractorBench = benchAssignments[finalists.find(o => o !== f)] || [];
+    const distractor = distractorBench.find(s2 => pStats(s2).social >= 8);
+    if (distractor && Math.random() < 0.4) {
+      const dS = pStats(distractor);
+      const penalty = -(s.mental * 0.08 - dS.social * 0.06);
+      if (penalty < -0.2) {
+        base += penalty;
+        beamEvents.push({ type: 'justinDistraction', player: f, distractor, text: `${distractor} flexes from the sideline. ${f} glances over — and wobbles. "Eyes FORWARD!" Chef barks from below.` });
+      }
+    }
+
+    // Wobble mechanic
+    let wobbles = 0;
+    if (base < 4.0) {
+      wobbles++;
+      beamEvents.push({ type: 'beamWobble', player: f, text: `${f} wobbles dangerously on the beam. Arms out. Deep breath. Steady…` });
+    }
+    if (base < 2.5) {
+      wobbles++;
+      base -= 2.0;
+      beamEvents.push({ type: 'beamFall', player: f, text: `${f} FALLS! Splash! The sharks circle — ${f} scrambles back up soaking wet. Massive time penalty.` });
+    }
+
+    // Cupcake flashback confessional (reveal planted, effect later)
+    if (plantedSabotage && plantedSabotage.targetFinalist === f) {
+      beamEvents.push({ type: 'cupcakeFlashback', player: f, planter: plantedSabotage.planter, text: `*Flashback:* Earlier, ${plantedSabotage.planter} offered ${f} a "congratulations cupcake." ${f} didn't think twice about eating it. That was a mistake.` });
+    }
+
+    if (showmancePair) {
+      const [smA, smB] = showmancePair.players || [];
+      const partner = smA === f ? smB : smB === f ? smA : null;
+      if (partner && finalists.includes(partner)) {
+        const comedyBeat = Math.random() < 0.5;
+        if (comedyBeat) {
+          beamEvents.push({ type: 'showmanceEncouragement', player: f, partner, text: `"I love you!" ${partner} shouts from across the gorge. "${f === finalists[0] ? 'NOT NOW!' : 'Can we TALK about this LATER?!'}" ${f} shrieks back.` });
+        } else {
+          base += 0.3;
+          beamEvents.push({ type: 'showmanceEncouragement', player: f, partner, text: `${partner} locks eyes with ${f} across the beam. A nod. ${f} steadies. Love is a performance enhancer, apparently.` });
+        }
+      }
+    }
+
+    beamScores[f] = Math.max(0, base);
+    scores[f] += beamScores[f];
+  });
+
+  const beamSorted = Object.entries(beamScores).sort(([,a],[,b]) => b - a);
+  const beamWinner = beamSorted[0][0];
+  beamEvents.push({ type: 'beamCross', player: beamWinner, text: `${beamWinner} reaches the other side first! The gap is ${Math.abs(beamScores[finalists[0]] - beamScores[finalists[1] || finalists[0]]).toFixed(1)} points.` });
+  timeline.push(...beamEvents);
+
+  stageResults.push({
+    name: 'The Gorge',
+    desc: 'Cross the balance beam over shark-infested waters. Eagles overhead. Don\'t look down.',
+    scores: { ...beamScores },
+    winner: beamWinner,
+    phase: 1,
+  });
+
+  // ════════ PHASE 3: SPRINT ════════
+  const sprintScores = {};
+  const sprintEvents = [];
+
+  // Determine losing pair for desperation/false finish
+  const midScores = { ...scores };
+  const midSorted = Object.entries(midScores).sort(([,a],[,b]) => b - a);
+  const leader = midSorted[0][0];
+  const trailer = midSorted.length > 1 ? midSorted[midSorted.length - 1][0] : midSorted[0][0];
+
+  // False finish (trailer without a map mistakes a landmark)
+  if (finalists.length >= 2 && Math.random() < 0.65) {
+    sprintEvents.push({ type: 'falseFinish', player: trailer, text: `${trailer} sees a clearing ahead — "THERE! I SEE IT!" — and sprints. It's… a porta-potty. Not the finish line. ${trailer}'s face falls. ${leader} passes ${pronouns(trailer).obj} during the confusion.` });
+  }
+
+  finalists.forEach(f => {
+    const s = pStats(f);
+    let base = s.physical * 0.2 + s.endurance * 0.25 + s.boldness * 0.1 + (Math.random() * 3 - 1.5);
+
+    // Carryover
+    base += scores[f] * 0.1;
+
+    // Laxative cupcake fires
+    if (plantedSabotage && plantedSabotage.targetFinalist === f) {
+      const ateIt = s.temperament * 0.1 + s.endurance * 0.05 < 0.8;
+      if (ateIt) {
+        // Check misfire: shared food with someone else
+        const misfireChance = s.loyalty * 0.08 + s.social * 0.06;
+        if (misfireChance > 0.7 && Math.random() < 0.4) {
+          sprintEvents.push({ type: 'laxativeMisfire', player: f, text: `${f} actually shared that cupcake with a camera operator. The wrong person is running for the bathroom. ${plantedSabotage.planter}'s plan backfired spectacularly.` });
+        } else {
+          base -= 2.0;
+          sprintEvents.push({ type: 'laxativeFires', player: f, planter: plantedSabotage.planter, text: `${f} doubles over mid-sprint. The cupcake. THE CUPCAKE. ${f} stumbles behind a bush. Lost time: catastrophic.` });
+          sabotageEvents.push({ phase: 2, type: 'cupcake', target: f, planter: plantedSabotage.planter });
+        }
+      } else {
+        sprintEvents.push({ type: 'cupcakeResist', player: f, text: `${f}'s stomach gurgles ominously... but holds. Iron constitution. ${plantedSabotage.planter} watches in disbelief from the sideline.` });
+      }
+    }
+
+    // Brownie temptation (guaranteed — lowest mental faces it)
+    const mentalRank = [...finalists].sort((a, b) => pStats(a).mental - pStats(b).mental);
+    if (f === mentalRank[0]) {
+      const resistRoll = s.mental * 0.3 + s.strategic * 0.2;
+      if (resistRoll > 3.5) {
+        base += 0.5;
+        sprintEvents.push({ type: 'brownieResist', player: f, text: `A table of fresh brownies appears on the trail. ${f} hesitates — stares — then SPRINTS past. "NOT TODAY!" Heroic self-control.` });
+      } else {
+        base -= 2.5;
+        sprintEvents.push({ type: 'brownieTemptation', player: f, text: `A table of fresh brownies appears on the trail. ${f} stops. Sits down. Takes a bite. Then another. "${f}! THE RACE!" "Five more minutes…" Chef face-palms.` });
+      }
+    }
+
+    // Fan backfire
+    if (Math.random() < 0.3) {
+      const operatorMental = 3 + Math.random() * 4;
+      if (operatorMental * 0.05 < 0.3) {
+        sprintEvents.push({ type: 'fanBackfire', player: f, text: `An intern turns on the industrial fan — backwards. ${f} gets blasted with a 60mph headwind. Papers, leaves, and somebody's wig go flying.` });
+        base -= 0.8;
+      }
+    }
+
+    // Showmance boulder gesture
+    if (showmancePair) {
+      const [smA2, smB2] = showmancePair.players || [];
+      const partner = smA2 === f ? smB2 : smB2 === f ? smA2 : null;
+      if (partner && finalists.includes(partner)) {
+        const gestureRoll = s.physical * 0.1 + s.loyalty * 0.08;
+        if (gestureRoll > 1.2 && Math.random() < 0.4) {
+          base += 0.4;
+          sprintEvents.push({ type: 'boulderGesture', player: f, partner, text: `${partner} runs alongside ${f} from the sideline, pushing a boulder out of the path. "GO! I've got this!" The bond fuels the sprint.` });
+        }
+      }
+    }
+
+    // Supporter accompaniment (top 2-3 run alongside)
+    const bench = benchAssignments[f] || [];
+    const topSupporters = [...bench]
+      .sort((a, b) => pStats(b).physical + pStats(b).endurance - pStats(a).physical - pStats(a).endurance)
+      .slice(0, Math.min(3, bench.length));
+    if (topSupporters.length > 0) {
+      const supportStr = topSupporters.reduce((sum, s2) => sum + (pStats(s2).physical + pStats(s2).endurance) * 0.01, 0);
+      base += supportStr;
+      const names = topSupporters.length === 1 ? topSupporters[0] : topSupporters.slice(0, -1).join(', ') + ' and ' + topSupporters[topSupporters.length - 1];
+      sprintEvents.push({ type: 'supporterSprint', player: f, supporters: topSupporters, text: `${names} sprint${topSupporters.length === 1 ? 's' : ''} alongside ${f}, screaming encouragement. The bench is ALL IN.` });
+    }
+
+    sprintScores[f] = Math.max(0, base);
+    scores[f] += sprintScores[f];
+  });
+
+  // Photo finish
+  const sprintSorted = Object.entries(sprintScores).sort(([,a],[,b]) => b - a);
+  const finalGap = Math.abs(scores[finalists[0]] - scores[finalists[1] || finalists[0]]);
+  if (finalGap < 0.5 && finalists.length >= 2) {
+    sprintEvents.push({ type: 'photoFinish', text: `It's a photo finish! Both finalists lunge for the line — Chef squints at the instant replay. "That was close. REAL close."` });
+  }
+
+  const totalSorted = Object.entries(scores).sort(([,a],[,b]) => b - a);
+  const winner = totalSorted[0][0];
+  sprintEvents.push({ type: 'relayWinner', player: winner, text: `${winner} CROSSES THE FINISH LINE! The bench erupts. Confetti — wait, that's just Chef throwing his hat. ${winner} wins the Rejected Olympic Relay!` });
+  timeline.push(...sprintEvents);
+
+  stageResults.push({
+    name: 'The Sprint',
+    desc: 'Final dash to the finish. Brownies, fans, sabotage, and pure willpower.',
+    scores: { ...sprintScores },
+    winner: sprintSorted[0][0],
+    phase: 2,
+  });
+
+  return {
+    stages: stageResults,
+    totalScores: scores,
+    winner,
+    placements: totalSorted.map(([name]) => name),
+    sabotageEvents,
+    relayData: {
+      benchFlips: preRaceData?.benchFlips || [],
+      confessionals: preRaceData?.confessionals || [],
+      pitches: preRaceData?.pitches || {},
+      plantedSabotage,
+      plantedSabotage2,
+      timeline,
+      showmancePair: showmancePair || null,
+    },
+  };
+}
+
+// Text backlog for relay
+export function generateRelayTextBacklog(ep) {
+  const rd = ep.relayData;
+  if (!rd) return '';
+  const lines = [];
+  const winner = ep.finaleChallengeWinner || ep.winner;
+  const finalists = ep.finaleFinalists || [];
+
+  lines.push('=== REJECTED OLYMPIC RELAY ===');
+  lines.push('');
+
+  // Pitches
+  if (rd.pitches) {
+    lines.push('— PRE-RACE PITCHES —');
+    Object.entries(rd.pitches).forEach(([f, p]) => lines.push(`${f} (${p.type}): ${p.text}`));
+    lines.push('');
+  }
+
+  // Bench flips
+  if (rd.benchFlips?.length) {
+    lines.push('— BENCH FLIPS —');
+    rd.benchFlips.forEach(flip => lines.push(`${flip.supporter} flipped from ${flip.from}'s bench to ${flip.to}'s bench (${flip.reason})`));
+    lines.push('');
+  }
+
+  // Sabotage plants
+  if (rd.plantedSabotage) lines.push(`SABOTAGE: ${rd.plantedSabotage.planter} planted a laxative cupcake targeting ${rd.plantedSabotage.targetFinalist}`);
+  if (rd.plantedSabotage2) lines.push(`SABOTAGE: ${rd.plantedSabotage2.planter} greased the flagpole targeting ${rd.plantedSabotage2.targetFinalist}`);
+
+  // Timeline
+  if (rd.timeline?.length) {
+    lines.push('');
+    lines.push('— RELAY TIMELINE —');
+    rd.timeline.forEach(ev => lines.push(`[${ev.type}] ${ev.text}`));
+  }
+
+  // Scores
+  lines.push('');
+  lines.push('— FINAL SCORES —');
+  const sorted = Object.entries(ep.finaleChallengeScores || {}).sort(([,a],[,b]) => b - a);
+  sorted.forEach(([name, score], i) => lines.push(`${i + 1}. ${name}: ${score.toFixed(1)}`));
+  lines.push(`WINNER: ${winner}`);
+
+  return lines.join('\n');
 }
 
 // FTC swing votes: hesitating jurors can change their vote based on FTC performance

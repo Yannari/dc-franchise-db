@@ -10893,8 +10893,19 @@ export function buildVPScreens(epRecord) {
       if (_jeV) vpScreens.push({ id:'jury-votes', label:'Jury Votes', html: _jeV });
     }
 
-    // Grand Challenge (final-challenge format only)
-    if (ep.finaleChallengeStages?.length) {
+    // Grand Challenge / Rejected Olympic Relay (final-challenge format only)
+    if (ep.finaleChallengeStages?.length && ep.relayData) {
+      const _rpHtml = rpBuildRelayPitch(ep);
+      if (_rpHtml) vpScreens.push({ id:'relay-pitch', label:'The Pitch', html: _rpHtml });
+      const _rfHtml = rpBuildRelayFlagpole(ep);
+      if (_rfHtml) vpScreens.push({ id:'relay-flagpole', label:'The Flagpole', html: _rfHtml });
+      const _rbHtml = rpBuildRelayBeam(ep);
+      if (_rbHtml) vpScreens.push({ id:'relay-beam', label:'The Gorge', html: _rbHtml });
+      const _rsHtml = rpBuildRelaySprint(ep);
+      if (_rsHtml) vpScreens.push({ id:'relay-sprint', label:'The Sprint', html: _rsHtml });
+      const _rlHtml = rpBuildRelayFinish(ep);
+      if (_rlHtml) vpScreens.push({ id:'relay-finish', label:'The Finish', html: _rlHtml });
+    } else if (ep.finaleChallengeStages?.length) {
       const _gcHtml = rpBuildFinaleGrandChallenge(ep);
       if (_gcHtml) vpScreens.push({ id:'grand-challenge', label:'The Final Challenge', html: _gcHtml });
     }

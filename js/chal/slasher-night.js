@@ -2224,43 +2224,29 @@ export function _fireJumpscare(level, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  // Create overlay
-  const overlay = document.createElement('div');
-  overlay.className = 'vhs-jumpscare-overlay';
-  overlay.style.display = 'flex';
-  document.body.appendChild(overlay);
-
   if (level === 2) {
-    // Full jumpscare: blackout → slasher face → tear → fade
+    // Full jumpscare: blackout → red flash → fade
+    const overlay = document.createElement('div');
+    overlay.className = 'vhs-jumpscare-overlay';
+    overlay.style.display = 'flex';
+    document.body.appendChild(overlay);
+
     setTimeout(() => {
       const face = document.createElement('div');
       face.className = 'vhs-jumpscare-face';
       overlay.appendChild(face);
       overlay.style.background = 'radial-gradient(circle, #1a0000, #000)';
-      _slasherAudioFireStinger(2);
     }, 200);
     setTimeout(() => {
       overlay.style.background = '#000';
       overlay.innerHTML = '';
-      _slasherAudioFireStatic();
     }, 500);
-    setTimeout(() => {
-      overlay.remove();
-    }, 800);
+    setTimeout(() => overlay.remove(), 800);
   } else {
-    // Minor scare: flicker 3x + brief static
-    let flicks = 0;
-    const flickInterval = setInterval(() => {
-      overlay.style.opacity = overlay.style.opacity === '0' ? '1' : '0';
-      flicks++;
-      if (flicks >= 6) {
-        clearInterval(flickInterval);
-        overlay.style.opacity = '1';
-        _slasherAudioFireStatic();
-        setTimeout(() => overlay.remove(), 100);
-      }
-    }, 50);
-    _slasherAudioFireStinger(1);
+    // Level 1: brief red border flash on the card itself (no overlay)
+    container.style.boxShadow = '0 0 20px rgba(218,54,51,0.8), inset 0 0 10px rgba(218,54,51,0.3)';
+    container.style.transition = 'box-shadow 0.3s';
+    setTimeout(() => { container.style.boxShadow = ''; }, 600);
   }
 }
 

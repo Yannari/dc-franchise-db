@@ -1587,7 +1587,7 @@ export function simulateSlasherNight(ep) {
         // ── Romance sparks during intense moments ──
         if ((ev.event.id === 'confession-under-pressure' || ev.event.id === 'protect-someone' || ev.event.id === 'warn-ally') && ev.ally) {
           if (romanticCompat(player, ev.ally)) {
-            _challengeRomanceSpark(player, ev.ally, ep, 'slasherNight', ['round' + roundNum], scores, { roundNum, event: ev.event.id });
+            _challengeRomanceSpark(player, ev.ally, ep, 'hunt', { hunt: roundEvents }, scores, { roundNum, event: ev.event.id });
           }
         }
 

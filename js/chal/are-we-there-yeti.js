@@ -350,7 +350,7 @@ const VERDICT_TEXTS = {
 const YETI_STYLES = `
 <style>
 /* ── BASE FOREST CONTAINER ── */
-.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);padding:24px 16px;font-family:Georgia,'Times New Roman',serif;position:relative;overflow:hidden;min-height:400px;padding-bottom:40px}
+.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);padding:40px 28px 60px;max-width:760px;margin:0 auto;font-family:Georgia,'Times New Roman',serif;position:relative;overflow:hidden;min-height:400px}
 
 /* ── FOREST DEPTH LAYERS ── */
 .yeti-forest::before,.yeti-forest::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;transition:background 0.6s}
@@ -1650,8 +1650,7 @@ export function _textAreWeThereYeti(ep, ln, sec) {
 // ── Shared helpers ──
 
 function _yetiStylesOnce() {
-  if (document.getElementById('yeti-vp-styles')) return '';
-  return YETI_STYLES.replace('<style>', '<style id="yeti-vp-styles">');
+  return YETI_STYLES;
 }
 
 function _portrait(name, size) {
@@ -1813,7 +1812,7 @@ export function rpBuildYetiDropOff(ep) {
     </div>
   </div>`;
 
-  return _yetiStylesOnce() + `<div class="rp-page"><div class="yeti-forest" data-phase="0">
+  return _yetiStylesOnce() + `<div class="yeti-forest" data-phase="0">
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Drop Off</div>
     <div class="yeti-sub">Chef Hatchet takes command. Helicopter clearing. Twilight.</div>
@@ -1821,7 +1820,7 @@ export function rpBuildYetiDropOff(ep) {
     ${mapHtml}
     <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;position:relative;z-index:2">${pairCards}</div>
     ${items}${btns}
-  </div></div>`;
+  </div>`;
 }
 
 // ── Phase 1: Trail (per pair) ──
@@ -1861,14 +1860,14 @@ export function rpBuildYetiTrail(ep, pair) {
   const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return _yetiStylesOnce() + `<div class="rp-page"><div class="yeti-forest" data-phase="1">
+  return _yetiStylesOnce() + `<div class="yeti-forest" data-phase="1">
     ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Trail — Pair ${pair.label}</div>
     <div class="yeti-sub">${pair.members.join(' & ')} navigate the darkening forest.</div>
     ${mapHtml}
     ${items}${btns}
-  </div></div>`;
+  </div>`;
 }
 
 // ── Phase 2: Traps ──
@@ -1908,14 +1907,14 @@ export function rpBuildYetiTraps(ep) {
   const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return _yetiStylesOnce() + `<div class="rp-page"><div class="yeti-forest" data-phase="2">
+  return _yetiStylesOnce() + `<div class="yeti-forest" data-phase="2">
     ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Traps & Tricks</div>
     <div class="yeti-sub">Deep woods. Purple dusk. First stars appear through the canopy.</div>
     ${mapHtml}
     ${items}${btns}
-  </div></div>`;
+  </div>`;
 }
 
 // ── Phase 3: The Night — Cave Mouth POV ──
@@ -1987,7 +1986,7 @@ export function rpBuildYetiNight(ep) {
 
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return _yetiStylesOnce() + `<div class="rp-page"><div class="yeti-forest" data-phase="3">
+  return _yetiStylesOnce() + `<div class="yeti-forest" data-phase="3">
     <div class="yeti-cave">
       <div class="yeti-cave-walls"></div>
       <div class="yeti-cave-mouth">
@@ -2004,7 +2003,7 @@ export function rpBuildYetiNight(ep) {
         ${items}${btns}
       </div>
     </div>
-  </div></div>`;
+  </div>`;
 }
 
 // ── Phase 4: Sprint ──
@@ -2047,7 +2046,7 @@ export function rpBuildYetiSprint(ep) {
   const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return _yetiStylesOnce() + `<div class="rp-page"><div class="yeti-forest" data-phase="4">
+  return _yetiStylesOnce() + `<div class="yeti-forest" data-phase="4">
     ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Sprint</div>
@@ -2055,7 +2054,7 @@ export function rpBuildYetiSprint(ep) {
     ${mapHtml}
     ${supplyHtml}
     ${items}${btns}
-  </div></div>`;
+  </div>`;
 }
 
 // ── Phase 5: Chef's Verdict — Dawn at Totem Pole ──
@@ -2198,7 +2197,7 @@ export function rpBuildYetiVerdict(ep) {
 
   const btns = _revealBtns(stateKey, nextIdx, beats.length, ep.num);
 
-  return _yetiStylesOnce() + `<div class="rp-page"><div class="yeti-forest" data-phase="5">
+  return _yetiStylesOnce() + `<div class="yeti-forest" data-phase="5">
     ${_totemHtml(state.idx >= 0)}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Chef's Verdict</div>
@@ -2209,5 +2208,5 @@ export function rpBuildYetiVerdict(ep) {
       ${unrevealedHtml}
       ${btns}
     </div>
-  </div></div>`;
+  </div>`;
 }

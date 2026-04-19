@@ -10540,6 +10540,8 @@ export function buildVPScreens(epRecord) {
       const _a2 = rpBuildSlasherActII(ep);
       if (_a2) vpScreens.push({ id:'slasher-act2', label:'Act II', html: _a2 });
       vpScreens.push({ id:'slasher-act3', label:'Act III', html: rpBuildSlasherActIII(ep) });
+      vpScreens.push({ id:'slasher-immunity', label:'Immunity', html: rpBuildSlasherImmunity(ep) });
+      vpScreens.push({ id:'slasher-elimination', label:'Eliminated', html: rpBuildSlasherElimination(ep) });
       vpScreens.push({ id:'slasher-credits', label:'Credits', html: rpBuildSlasherCredits(ep) });
     } else {
       // Legacy layout for old saves without actBreaks

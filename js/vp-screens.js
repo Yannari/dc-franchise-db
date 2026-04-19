@@ -8,6 +8,7 @@ import { rpBuildWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 import { rpBuildTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
 import { rpBuildCampCastaways, rpBuildCCFlood, rpBuildCCGroup, rpBuildCCNight, rpBuildCCRegroup, rpBuildCCStorm, rpBuildCCImmunity } from './chal/camp-castaways.js';
 import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/triple-dog-dare.js';
+import { rpBuildSlasherTitleCard, rpBuildSlasherActI, rpBuildSlasherActII, rpBuildSlasherActIII, rpBuildSlasherCredits, rpBuildSlasherAnnouncement, rpBuildSlasherRounds, rpBuildSlasherShowdown, rpBuildSlasherImmunity, rpBuildSlasherElimination, rpBuildSlasherLeaderboard, slasherRevealNextRound, slasherRevealAllRounds, slasherRevealNextScene, slasherRevealAllScenes } from './chal/slasher-night.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════

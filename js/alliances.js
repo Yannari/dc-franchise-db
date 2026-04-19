@@ -294,6 +294,12 @@ export function computeHeat(name, tribalPlayers, alliances) {
       if (data.target === name && tribalPlayers.includes(victim) && ((gs.episode || 0) + 1) < data.expiresEp) heat += data.amount;
     });
   }
+  // Slasher Night: sabotage victims target perpetrators
+  if (gs._slasherHeat) {
+    Object.entries(gs._slasherHeat).forEach(([victim, data]) => {
+      if (data.target === name && tribalPlayers.includes(victim) && ((gs.episode || 0) + 1) < data.expiresEp) heat += data.amount;
+    });
+  }
   // Off the Chain: bike race sabotage/rivalry heat
   if (gs._bikeRaceHeat?.[name] && ((gs.episode || 0) + 1) < gs._bikeRaceHeat[name].expiresEp) heat += gs._bikeRaceHeat[name].amount;
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──

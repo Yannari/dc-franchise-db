@@ -2,6 +2,8 @@
 import { gs, players } from '../core.js';
 import { pStats, pronouns, updateChalRecord } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
+import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
+import { romanticCompat } from '../players.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // SLASHER NIGHT — Event Pool & Scoring Constants
@@ -11,6 +13,35 @@ const SLASHER_ROUND_SURVIVAL_BONUS = 2;
 const SLASHER_DIMINISHING_RETURNS = { 1: 0, 2: -1, 3: -2 };
 const SLASHER_OVERCONFIDENCE_CHANCE = 0.20;
 const SLASHER_GROUP_CATCH_MOD = { solo: 2, pair: 0, group: -1 };
+
+const _VILLAIN_ARCHETYPES = new Set(['villain', 'mastermind', 'schemer']);
+const _NICE_ARCHETYPES = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+
+function _canSabotage(name) {
+  const arch = players.find(p => p.name === name)?.archetype || '';
+  if (_VILLAIN_ARCHETYPES.has(arch)) return true;
+  if (_NICE_ARCHETYPES.has(arch)) return false;
+  // Neutral: needs strategic >= 6 AND loyalty <= 4
+  const s = pStats(name);
+  return s.strategic >= 6 && s.loyalty <= 4;
+}
+
+function _popDelta(name, delta) {
+  if (!gs.popularity) gs.popularity = {};
+  gs.popularity[name] = (gs.popularity[name] || 0) + delta;
+}
+
+// Environmental effects that mechanically alter gameplay each round
+const SLASHER_ENVIRONMENTS = [
+  { id: 'rain', text: 'The rain starts. Visibility drops to nothing.', catchMod: -1, hidingBonus: 0, soloMod: 0 },
+  { id: 'lights-die', text: 'The camp lights flicker and die. Pure dark from here.', catchMod: 0, hidingBonus: 1, soloMod: 0 },
+  { id: 'generator-out', text: 'The generator cuts out. The hum that everyone ignored is suddenly the loudest absence in the world.', catchMod: 0, hidingBonus: 0, soloMod: 2 },
+  { id: 'fog', text: 'A wall of fog rolls in from the lake. Nobody can see more than ten feet.', catchMod: -1, hidingBonus: 1, soloMod: 0 },
+  { id: 'moonlight', text: 'The clouds break. Moonlight floods the camp. Nowhere to hide.', catchMod: 1, hidingBonus: -1, soloMod: 0 },
+  { id: 'wind', text: 'The wind shifts and carries a sound that shouldn\'t be there.', catchMod: 0, hidingBonus: 0, soloMod: 0 },
+  { id: 'silence', text: 'The remaining players can hear each other\'s breathing. The slasher can too.', catchMod: 0, hidingBonus: 0, soloMod: 1 },
+  { id: 'chainsaw', text: 'The slasher\'s chainsaw revs in the distance. Closer than last time.', catchMod: 0, hidingBonus: 0, soloMod: 0 },
+];
 
 const SLASHER_EVENTS = {
   positive: [
@@ -260,7 +291,7 @@ const SLASHER_EVENTS = {
     {
       id: 'abandon-ally', points: -4, type: 'negative',
       statCheck: s => s.loyalty <= 4,
-      requiresAlly: true,
+      requiresAlly: true, requiresSabotage: true,
       bondEffect: { target: 'ally', delta: -2.0 },
       textVariants: [
         `{name} hears {ally} yell for help. {pr.Sub} calculate{pr.sub==='they'?'':'s'} the odds and keeps running.`,
@@ -271,7 +302,7 @@ const SLASHER_EVENTS = {
     {
       id: 'push-toward-slasher', points: -5, type: 'negative',
       statCheck: s => s.loyalty <= 3 && s.strategic >= 6,
-      requiresEnemy: true, requiresBond: -1,
+      requiresEnemy: true, requiresBond: -1, requiresSabotage: true,
       bondEffect: { target: 'victim', delta: -3.0 },
       flags: { victimCaught: true },
       textVariants: [
@@ -382,7 +413,7 @@ const SLASHER_EVENTS = {
     {
       id: 'scare-teammate-on-purpose', points: -1, type: 'negative',
       statCheck: s => s.boldness >= 7,
-      requiresVictimNearby: true,
+      requiresVictimNearby: true, requiresSabotage: true,
       bondEffect: { target: 'victim', delta: -1.0 },
       flags: { justScreamed: true, victimPoints: -3 },
       textVariants: [
@@ -431,7 +462,7 @@ const SLASHER_EVENTS = {
     {
       id: 'alliance-fracture', points: -2, type: 'negative',
       statCheck: s => true,
-      requiresAllyWithLowLoyalty: 4,
+      requiresAllyWithLowLoyalty: 4, requiresSabotage: true,
       requiresNamedAlliance: true,
       bondEffect: { target: 'ally', delta: -2.5 },
       textVariants: [
@@ -450,6 +481,17 @@ const SLASHER_EVENTS = {
         `{name} asks 'Did you hear that?' — the last useful question anyone asks tonight.`,
         `{name} suggests they split up. That is never the answer.`,
         `{name} opens the basement door. There's no reason to open the basement door.`
+      ]
+    },
+    {
+      id: 'stalked', points: -1, type: 'negative',
+      statCheck: s => s.intuition <= 5,
+      bondEffect: null,
+      flags: { stalked: true },
+      textVariants: [
+        `{name} feels it before seeing it. Footsteps matching {pr.pos}. The slasher has picked a target.`,
+        `Every time {name} looks back, the shadow is still there. Following. Patient.`,
+        `{name} hears breathing behind {pr.obj}. Not close enough to catch. Close enough to follow.`
       ]
     }
   ]
@@ -755,6 +797,9 @@ function _slasherPickEvents(player, survivors, context) {
     // Stat check
     if (!evt.statCheck(stats)) return null;
 
+    // Archetype gating: sabotage events require villain/schemer or neutral with strategic>=6+loyalty<=4
+    if (evt.requiresSabotage && !_canSabotage(player)) return null;
+
     // Social requirements
     if (evt.requiresAlly && !bestAlly) return null;
     if (evt.requiresAlly && evt.requiresBond !== undefined && bestAllyBond < evt.requiresBond) return null;
@@ -863,7 +908,7 @@ function _slasherPickEvents(player, survivors, context) {
 }
 
 function _slasherCatchTargeting(survivors, roundNum, context) {
-  const { flags, scores, pairings, totalRounds } = context;
+  const { flags, scores, pairings, totalRounds, env } = context;
 
   // Never catch below 2 — those go to final showdown
   if (survivors.length <= 2) return [];
@@ -896,6 +941,13 @@ function _slasherCatchTargeting(survivors, roundNum, context) {
           + (pFlags.decoyCatchBoost || 0)
           - (pFlags.isHiding ? 3 : 0)
           - (pFlags.isBarricaded ? 2 : 0);
+
+    // Environment modifiers
+    if (env) {
+      w += (env.catchMod || 0);
+      if (pFlags.isHiding) w -= (env.hidingBonus || 0);
+      if (isAlone) w += (env.soloMod || 0);
+    }
 
     // Immune from catch this round (fake-out)
     if (pFlags.immuneFromCatch) w = 0;
@@ -1061,6 +1113,9 @@ export function simulateSlasherNight(ep) {
     survivors.forEach(n => { roundFlags[n] = {}; });
     const caughtThisRound = new Set();
 
+    // ── Environment selection (mechanical effects per round) ──
+    const env = SLASHER_ENVIRONMENTS[Math.floor(Math.random() * SLASHER_ENVIRONMENTS.length)];
+
     // Survival bonus deferred to after catch targeting (only survivors who aren't caught get it)
 
     // ── Alliance coordination bonus ──
@@ -1114,6 +1169,19 @@ export function simulateSlasherNight(ep) {
     });
 
     // ── Pick events per surviving player ──
+    // Carry stalked flag from previous round: +3 catch weight unless cleared by positive event
+    const _prevRound = rounds[rounds.length - 1];
+    if (_prevRound) {
+      survivors.forEach(n => {
+        const prevFlags = _prevRound.events.filter(e => e.player === n && e.type !== 'caught');
+        const wasStalked = prevFlags.some(e => e.eventId === 'stalked');
+        if (wasStalked) {
+          roundFlags[n].stalkedCarryOver = true;
+          roundFlags[n].catchBoost = (roundFlags[n].catchBoost || 0) + 3;
+        }
+      });
+    }
+
     for (const player of survivors) {
       const events = _slasherPickEvents(player, survivors, {
         roundNum, pairings, scores, eventHistory, caughtThisRound
@@ -1122,6 +1190,12 @@ export function simulateSlasherNight(ep) {
       events.forEach(ev => {
         scores[player] += ev.points;
         eventHistory[player].push(ev.event.id);
+
+        // If stalked carry-over and got a positive event, clear the catch boost
+        if (roundFlags[player].stalkedCarryOver && ev.event.type === 'positive') {
+          roundFlags[player].catchBoost = Math.max(0, (roundFlags[player].catchBoost || 0) - 3);
+          roundFlags[player].stalkedCarryOver = false;
+        }
 
         // Merge flags into round flags
         if (ev.flags) {
@@ -1162,6 +1236,33 @@ export function simulateSlasherNight(ep) {
         // Apply bond changes
         ev.bondChanges.forEach(bc => addBond(bc.a, bc.b, bc.delta));
 
+        // ── Popularity tracking ──
+        const _heroicEvents = new Set(['stand-and-fight', 'protect-someone', 'the-decoy', 'heroic-stand', 'accidental-hero', 'partner-rescue-attempt']);
+        const _cowardEvents = new Set(['abandon-ally', 'push-toward-slasher']);
+        if (_heroicEvents.has(ev.event.id)) _popDelta(player, 1);
+        if (_cowardEvents.has(ev.event.id)) _popDelta(player, -1);
+
+        // ── Heat tracking for sabotage events ──
+        if ((ev.event.id === 'push-toward-slasher' || ev.event.id === 'abandon-ally') && ev.victim) {
+          if (!gs._slasherHeat) gs._slasherHeat = {};
+          gs._slasherHeat[ev.victim] = { target: player, amount: 1.5, expiresEp: (gs.episode || 1) + 2 };
+        }
+        if (ev.event.id === 'scare-teammate-on-purpose' && ev.victim) {
+          if (!gs._slasherHeat) gs._slasherHeat = {};
+          gs._slasherHeat[ev.victim] = { target: player, amount: 1.0, expiresEp: (gs.episode || 1) + 2 };
+        }
+        if (ev.event.id === 'alliance-fracture' && ev.ally) {
+          if (!gs._slasherHeat) gs._slasherHeat = {};
+          gs._slasherHeat[ev.ally] = { target: player, amount: 2.0, expiresEp: (gs.episode || 1) + 2 };
+        }
+
+        // ── Romance sparks during intense moments ──
+        if ((ev.event.id === 'confession-under-pressure' || ev.event.id === 'protect-someone' || ev.event.id === 'warn-ally') && ev.ally) {
+          if (romanticCompat(player, ev.ally)) {
+            _challengeRomanceSpark(player, ev.ally, ep, 'slasherNight', ['round' + roundNum], scores, { roundNum, event: ev.event.id });
+          }
+        }
+
         roundEvents.push({
           player, eventId: ev.event.id, points: ev.points, text: ev.text,
           type: ev.event.type, bondChanges: ev.bondChanges.map(bc => ({...bc})),
@@ -1194,7 +1295,7 @@ export function simulateSlasherNight(ep) {
     const caughtNames = _slasherCatchTargeting(
       survivors.filter(n => !caughtThisRound.has(n)),
       roundNum,
-      { flags: roundFlags, scores, pairings, totalRounds }
+      { flags: roundFlags, scores, pairings, totalRounds, env }
     );
 
     // Process caught players
@@ -1258,8 +1359,8 @@ export function simulateSlasherNight(ep) {
     // Remove caught from survivors
     survivors = survivors.filter(n => !caughtThisRound.has(n));
 
-    // Atmosphere text
-    const atmosphere = SLASHER_ATMOSPHERE[Math.floor(Math.random() * SLASHER_ATMOSPHERE.length)];
+    // Environment text (replaces old flavor-only atmosphere)
+    const atmosphere = env.text;
 
     rounds.push({
       num: roundNum,
@@ -1287,6 +1388,13 @@ export function simulateSlasherNight(ep) {
 
     // Apply bond changes from showdown
     finalShowdown.bondChanges.forEach(bc => addBond(bc.a, bc.b, bc.delta));
+
+    // Showdown popularity: heroic wins get +1, shield-push gets -1
+    if (finalShowdown.winMethod === 'fights-the-slasher' || finalShowdown.winMethod === 'talks-down') {
+      _popDelta(finalShowdown.winner, 1);
+    } else if (finalShowdown.winMethod === 'uses-shield') {
+      _popDelta(finalShowdown.winner, -1);
+    }
 
     // Award survival bonus to showdown participants
     scores[finalShowdown.winner] += SLASHER_ROUND_SURVIVAL_BONUS;
@@ -1358,8 +1466,11 @@ export function simulateSlasherNight(ep) {
 
   // Popularity: last survivor gets hero edit, weakest link gets soft target edit
   if (!gs.popularity) gs.popularity = {};
-  if (immunityWinner) gs.popularity[immunityWinner] = (gs.popularity[immunityWinner] || 0) + 2; // survived slasher night = fan favourite
-  if (eliminated) gs.popularity[eliminated] = (gs.popularity[eliminated] || 0) - 1; // slasher night's weakest = easy target
+  if (immunityWinner) gs.popularity[immunityWinner] = (gs.popularity[immunityWinner] || 0) + 2;
+  if (eliminated) gs.popularity[eliminated] = (gs.popularity[eliminated] || 0) - 1;
+
+  // Showmance moments during the hunt
+  _checkShowmanceChalMoment(ep, 'slasherNight', ['hunt', 'showdown'], scores, 'survival', activePlayers);
 
   updateChalRecord(ep);
 }
@@ -1385,6 +1496,11 @@ export function _textSlasherNight(ep, ln, sec) {
   ln('');
   (sn.rounds || []).forEach(r => {
     ln(`Round ${r.num} — ${r.survivorCount + (r.caught?.length || 0)} remaining:`);
+    if (r.atmosphere) ln(`  ${r.atmosphere}`);
+    // Top moment: highest-scoring positive event this round
+    const topPositive = r.events.filter(e => e.type === 'positive' && e.points > 0)
+      .sort((a, b) => b.points - a.points)[0];
+    if (topPositive) ln(`  ★ ${topPositive.text}`);
     if (r.caught?.length) r.caught.forEach(c => ln(`  Caught: ${c.name} (score: ${c.score})`));
     else ln('  No one caught.');
   });

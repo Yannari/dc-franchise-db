@@ -350,7 +350,7 @@ const VERDICT_TEXTS = {
 const YETI_STYLES = `
 <style>
 /* ── BASE FOREST CONTAINER ── */
-.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);font-family:Georgia,'Times New Roman',serif;position:relative;min-height:400px}
+.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);padding:24px 16px 40px;font-family:Georgia,'Times New Roman',serif;position:relative;min-height:100vh;overflow:hidden}
 
 /* ── FOREST DEPTH LAYERS ── */
 .yeti-forest::before,.yeti-forest::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;transition:background 0.6s}
@@ -428,12 +428,13 @@ const YETI_STYLES = `
 @keyframes sq-drift{0%{transform:translateX(-15px)}50%{transform:translateX(15px)}100%{transform:translateX(-15px)}}
 
 /* ── EVENT CARDS (torn notebook) ── */
-.yeti-card{background:var(--parchment);border:1px solid rgba(200,208,220,0.08);border-left:4px solid rgba(200,208,220,0.12);padding:14px 14px 14px 18px;margin-bottom:12px;position:relative;z-index:2;clip-path:polygon(0 0,2% 4%,0 8%,1% 12%,0 18%,2% 24%,0 30%,1% 38%,0 44%,2% 50%,0 56%,1% 62%,0 70%,2% 76%,0 84%,1% 90%,0 96%,0 100%,100% 100%,100% 0);animation:yeti-card-in 0.3s ease-out}
+.yeti-card{background:var(--parchment);border:1px solid rgba(200,208,220,0.08);border-left:4px solid rgba(200,208,220,0.12);padding:14px;margin-bottom:12px;position:relative;z-index:2;border-radius:2px 6px 6px 2px;display:flex;gap:12px;align-items:flex-start;animation:yeti-card-in 0.3s ease-out}
 .yeti-card.sasquatch{border-left-color:#ff4d00;animation:yeti-card-in 0.3s ease-out,yeti-shake 0.4s 0.1s ease-out}
 .yeti-card.grudge{border-left-color:rgba(255,60,60,0.5)}
 .yeti-card.brave{border-left-color:var(--amber);box-shadow:0 0 12px rgba(212,133,10,0.08)}
-.yeti-card.theft{text-decoration:line-through;text-decoration-color:rgba(255,60,60,0.3)}
-.yeti-card .card-portrait{float:left;margin-right:12px;margin-bottom:4px}
+.yeti-card.theft .yeti-text{text-decoration:line-through;text-decoration-color:rgba(255,60,60,0.3)}
+.yeti-card .card-portrait{flex-shrink:0}
+.yeti-card .card-content{flex:1;min-width:0}
 .yeti-card::after{content:'';position:absolute;top:0;right:0;width:12px;height:12px;background:linear-gradient(135deg,transparent 50%,rgba(0,0,0,0.1) 50%)}
 @keyframes yeti-card-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes yeti-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-3px)}40%{transform:translateX(3px)}60%{transform:translateX(-2px)}80%{transform:translateX(1px)}}
@@ -512,6 +513,13 @@ const YETI_STYLES = `
 /* ── SCORE BAR ── */
 .yeti-score-bar{display:flex;align-items:center;gap:8px;margin:4px 0}
 .yeti-score-fill{height:6px;border-radius:3px;background:var(--amber);transition:width 0.3s}
+
+/* ── STICKY REVEAL BUTTONS ── */
+.yeti-sticky-btns{position:fixed;bottom:16px;left:172px;right:0;z-index:20;text-align:center;padding:20px 0 12px;background:linear-gradient(transparent 0%,rgba(10,15,10,0.97) 40%);pointer-events:none}
+.yeti-sticky-btns .yeti-reveal-main,.yeti-sticky-btns .yeti-reveal-all{pointer-events:auto}
+.yeti-forest[data-phase="3"] .yeti-sticky-btns{background:linear-gradient(transparent 0%,rgba(5,5,8,0.97) 40%)}
+.yeti-forest[data-phase="4"] .yeti-sticky-btns{background:linear-gradient(transparent 0%,rgba(30,28,20,0.97) 40%)}
+.yeti-forest[data-phase="5"] .yeti-sticky-btns{background:linear-gradient(transparent 0%,rgba(42,40,24,0.97) 40%)}
 
 /* ── UTILITIES ── */
 .yeti-hidden{display:none}
@@ -1667,9 +1675,9 @@ function _ytRevealAllFn(stateKey, total, epNum) {
 
 function _revealBtns(stateKey, nextIdx, total, epNum) {
   if (nextIdx >= total) return '';
-  return `<div style="position:sticky;bottom:0;z-index:10;text-align:center;padding:16px 0 8px;background:linear-gradient(transparent,rgba(10,15,10,0.95) 30%)">
-    <div class="yeti-reveal-main" onclick="${_ytRevealFn(stateKey, nextIdx, epNum)}">Keep moving →</div>
-    <br><div class="yeti-reveal-all" onclick="${_ytRevealAllFn(stateKey, total, epNum)}">Run to the end ▸▸</div>
+  return `<div class="yeti-sticky-btns">
+    <div class="yeti-reveal-main" onclick="${_ytRevealFn(stateKey, nextIdx, epNum)}">Keep moving → <span style="font-size:9px;opacity:0.6;margin-left:4px">${nextIdx + 1}/${total}</span></div>
+    <div class="yeti-reveal-all" onclick="${_ytRevealAllFn(stateKey, total, epNum)}" style="margin-top:6px">Run to the end ▸▸</div>
   </div>`;
 }
 
@@ -1700,20 +1708,22 @@ function _cardStamp(evt) {
 
 function _eventCard(evt, stateKey, i, epNum, revealed) {
   if (!revealed) {
-    return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:60px;display:flex;align-items:center;justify-content:center" onclick="${_ytRevealFn(stateKey, i, epNum)}">
-      <span style="font-size:12px;color:rgba(200,208,220,0.25);letter-spacing:3px">🐾</span>
+    return `<div class="yeti-card" style="opacity:0.12;cursor:pointer;min-height:56px;justify-content:center;border-left-color:rgba(200,208,220,0.04)" onclick="${_ytRevealFn(stateKey, i, epNum)}">
+      <span style="font-size:12px;color:rgba(200,208,220,0.2);letter-spacing:3px">🐾</span>
     </div>`;
   }
   const cls = _cardClass(evt);
   const stamp = _cardStamp(evt);
   const portraitHtml = evt.players?.length
-    ? `<div class="card-portrait" style="display:flex;gap:4px;margin-top:8px">${evt.players.map(p => _portrait(p, 32)).join('')}</div>`
-    : evt.player ? `<div class="card-portrait" style="margin-top:8px">${_portrait(evt.player, 32)}</div>` : '';
+    ? `<div class="card-portrait" style="display:flex;gap:4px">${evt.players.map(p => _portrait(p, 32)).join('')}</div>`
+    : evt.player ? `<div class="card-portrait">${_portrait(evt.player, 32)}</div>` : '';
   return `<div class="yeti-card ${cls}">
-    ${stamp}
-    <div class="yeti-badge ${evt.badgeClass || 'grey'}">${evt.badgeText || ''}</div>
-    <div class="yeti-text">${evt.text}</div>
     ${portraitHtml}
+    <div class="card-content">
+      ${stamp}
+      <div class="yeti-badge ${evt.badgeClass || 'grey'}">${evt.badgeText || ''}</div>
+      <div class="yeti-text">${evt.text}</div>
+    </div>
   </div>`;
 }
 
@@ -1967,20 +1977,21 @@ export function rpBuildYetiNight(ep) {
 
   const items = events.map((evt, i) => {
     if (i > state.idx) {
-      return `<div class="yeti-card" style="opacity:0.15;cursor:pointer;min-height:60px;display:flex;align-items:center;justify-content:center" onclick="${_ytRevealFn(stateKey, i, ep.num)}">
-        <span style="font-size:12px;color:rgba(200,208,220,0.25);letter-spacing:3px">🔥</span>
+      return `<div class="yeti-card" style="opacity:0.12;cursor:pointer;min-height:56px;justify-content:center;border-left-color:rgba(200,208,220,0.04);background:rgba(0,0,0,0.2)" onclick="${_ytRevealFn(stateKey, i, ep.num)}">
+        <span style="font-size:12px;color:rgba(200,208,220,0.2);letter-spacing:3px">🔥</span>
       </div>`;
     }
     const cls = _cardClass(evt);
     const stamp = _cardStamp(evt);
     const portraitHtml = evt.players?.length
-      ? `<div style="display:flex;gap:4px;margin-top:8px">${evt.players.map(p => _portrait(p, 28)).join('')}</div>` : '';
-    // Translucent overlay so cave stays visible
+      ? `<div class="card-portrait" style="display:flex;gap:4px">${evt.players.map(p => _portrait(p, 28)).join('')}</div>` : '';
     return `<div class="yeti-card ${cls}" style="background:rgba(10,10,15,0.5);backdrop-filter:blur(1px)">
-      ${stamp}
-      <div class="yeti-badge ${evt.badgeClass || 'grey'}">${evt.badgeText || ''}</div>
-      <div class="yeti-text">${evt.text}</div>
       ${portraitHtml}
+      <div class="card-content">
+        ${stamp}
+        <div class="yeti-badge ${evt.badgeClass || 'grey'}">${evt.badgeText || ''}</div>
+        <div class="yeti-text">${evt.text}</div>
+      </div>
     </div>`;
   }).join('');
 

@@ -419,7 +419,13 @@ export function _checkShowmanceChalMoment(ep, phaseKey, phases, personalScores, 
     }
 
     if (moment) {
-      phases[phaseKey].push({ ...moment, phase: phaseKey });
+      if (phases && phases[phaseKey]) {
+        phases[phaseKey].push({ ...moment, phase: phaseKey });
+      } else {
+        // No phases object (e.g. yeti) — attach to ep timeline
+        if (!ep.chalTimeline) ep.chalTimeline = [];
+        ep.chalTimeline.push({ ...moment, phase: phaseKey });
+      }
       fired = true;
     }
   });

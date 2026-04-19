@@ -567,6 +567,140 @@ const YETI_STYLES = `
 .yeti-status-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(200,208,220,0.04);border:1px solid rgba(200,208,220,0.08);border-radius:6px;margin-bottom:16px;font-size:10px;position:relative;z-index:2;flex-wrap:wrap;gap:6px}
 .yeti-hidden{display:none}
 .yeti-z2{position:relative;z-index:2}
+
+/* ── TREE CANOPY LAYER ── */
+.yeti-canopy{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1;overflow:hidden}
+.yeti-canopy::before,.yeti-canopy::after{content:'';position:absolute;top:0;bottom:0;pointer-events:none;transition:width 0.6s,opacity 0.6s}
+.yeti-canopy::before{left:0}
+.yeti-canopy::after{right:0}
+/* Phase 0: Wide clearing — canopy pulled back, faint trunk hints */
+[data-phase="0"] .yeti-canopy::before,[data-phase="0"] .yeti-canopy::after{width:8%;opacity:0.4;
+  background:linear-gradient(0deg,rgba(10,20,10,0.9) 0%,rgba(15,30,12,0.7) 40%,rgba(10,25,10,0.4) 70%,transparent 100%),
+  repeating-linear-gradient(175deg,transparent 0px,transparent 12px,rgba(8,16,6,0.6) 13px,transparent 15px)}
+/* Phase 1: Trees close in ~30% */
+[data-phase="1"] .yeti-canopy::before,[data-phase="1"] .yeti-canopy::after{width:15%;opacity:0.7;
+  background:linear-gradient(0deg,rgba(8,16,8,0.95) 0%,rgba(12,24,10,0.85) 50%,rgba(8,20,8,0.5) 80%,transparent 100%),
+  repeating-linear-gradient(177deg,transparent 0px,transparent 8px,rgba(6,14,6,0.7) 9px,rgba(6,14,6,0.5) 10px,transparent 12px),
+  repeating-linear-gradient(183deg,transparent 0px,transparent 14px,rgba(5,12,5,0.6) 15px,rgba(5,12,5,0.4) 16px,transparent 19px)}
+[data-phase="1"] .yeti-canopy::after{background:linear-gradient(0deg,rgba(8,16,8,0.95) 0%,rgba(12,24,10,0.85) 50%,rgba(8,20,8,0.5) 80%,transparent 100%),
+  repeating-linear-gradient(176deg,transparent 0px,transparent 10px,rgba(6,14,6,0.7) 11px,rgba(6,14,6,0.5) 12px,transparent 14px),
+  repeating-linear-gradient(184deg,transparent 0px,transparent 16px,rgba(5,12,5,0.6) 17px,transparent 20px)}
+/* Dappled light for phase 1 */
+[data-phase="1"] .yeti-canopy .yeti-dappled{position:absolute;top:0;left:15%;right:15%;bottom:0;
+  background:radial-gradient(circle at 25% 20%,rgba(180,200,120,0.03) 0%,transparent 4%),
+  radial-gradient(circle at 60% 35%,rgba(180,200,120,0.025) 0%,transparent 3%),
+  radial-gradient(circle at 40% 55%,rgba(180,200,120,0.02) 0%,transparent 5%),
+  radial-gradient(circle at 75% 15%,rgba(180,200,120,0.03) 0%,transparent 3%),
+  radial-gradient(circle at 55% 70%,rgba(180,200,120,0.02) 0%,transparent 4%);pointer-events:none}
+/* Phase 2: Dense ~45%, almost no sky */
+[data-phase="2"] .yeti-canopy::before,[data-phase="2"] .yeti-canopy::after{width:22%;opacity:0.85;
+  background:linear-gradient(0deg,rgba(5,10,5,0.98) 0%,rgba(8,16,6,0.95) 40%,rgba(6,14,6,0.8) 70%,rgba(4,10,4,0.5) 90%,transparent 100%),
+  repeating-linear-gradient(178deg,transparent 0px,transparent 6px,rgba(4,10,4,0.8) 7px,rgba(4,10,4,0.6) 8px,transparent 10px),
+  repeating-linear-gradient(182deg,transparent 0px,transparent 10px,rgba(3,8,3,0.7) 11px,transparent 13px),
+  repeating-linear-gradient(176deg,transparent 0px,transparent 16px,rgba(3,8,3,0.5) 17px,transparent 19px)}
+/* Phase 4: Dawn — canopy thins, warm light leaks */
+[data-phase="4"] .yeti-canopy::before,[data-phase="4"] .yeti-canopy::after{width:10%;opacity:0.5;
+  background:linear-gradient(0deg,rgba(20,30,15,0.7) 0%,rgba(25,40,18,0.4) 50%,transparent 100%),
+  repeating-linear-gradient(177deg,transparent 0px,transparent 12px,rgba(15,25,10,0.4) 13px,transparent 15px)}
+/* Phase 5: Dawn clearing at totem */
+[data-phase="5"] .yeti-canopy::before,[data-phase="5"] .yeti-canopy::after{width:6%;opacity:0.3;
+  background:linear-gradient(0deg,rgba(30,40,20,0.5) 0%,transparent 60%)}
+
+/* ── AMBIENT PARTICLES ── */
+.yeti-particles{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1;overflow:hidden}
+/* Phase 0: Helicopter dust motes drifting down */
+.yeti-particles[data-particles="dust"] .yp{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(200,208,220,0.4);animation:yp-dust 3s linear infinite}
+.yeti-particles[data-particles="dust"] .yp:nth-child(1){left:15%;animation-delay:0s;animation-duration:2.8s}
+.yeti-particles[data-particles="dust"] .yp:nth-child(2){left:35%;animation-delay:0.4s;animation-duration:3.2s}
+.yeti-particles[data-particles="dust"] .yp:nth-child(3){left:55%;animation-delay:0.8s;animation-duration:2.5s}
+.yeti-particles[data-particles="dust"] .yp:nth-child(4){left:72%;animation-delay:1.2s;animation-duration:3.5s}
+.yeti-particles[data-particles="dust"] .yp:nth-child(5){left:88%;animation-delay:0.2s;animation-duration:2.9s}
+.yeti-particles[data-particles="dust"] .yp:nth-child(6){left:25%;animation-delay:1.6s;animation-duration:3.1s}
+.yeti-particles[data-particles="dust"] .yp:nth-child(7){left:60%;animation-delay:2.0s;animation-duration:2.6s}
+.yeti-particles[data-particles="dust"] .yp:nth-child(8){left:45%;animation-delay:0.6s;animation-duration:3.4s}
+@keyframes yp-dust{0%{top:-4px;opacity:0.6}100%{top:100%;opacity:0}}
+/* Phase 1: Fireflies — amber pulse */
+.yeti-particles[data-particles="fireflies"] .yp{position:absolute;width:3px;height:3px;border-radius:50%;background:#d4850a;box-shadow:0 0 4px rgba(212,133,10,0.6);animation:yp-firefly 4s ease-in-out infinite}
+.yeti-particles[data-particles="fireflies"] .yp:nth-child(1){left:20%;top:30%;animation-delay:0s}
+.yeti-particles[data-particles="fireflies"] .yp:nth-child(2){left:65%;top:45%;animation-delay:1.2s}
+.yeti-particles[data-particles="fireflies"] .yp:nth-child(3){left:40%;top:60%;animation-delay:0.5s;animation-duration:3.5s}
+.yeti-particles[data-particles="fireflies"] .yp:nth-child(4){left:80%;top:25%;animation-delay:2.0s;animation-duration:4.5s}
+.yeti-particles[data-particles="fireflies"] .yp:nth-child(5){left:12%;top:70%;animation-delay:0.8s}
+.yeti-particles[data-particles="fireflies"] .yp:nth-child(6){left:50%;top:15%;animation-delay:1.8s;animation-duration:3.8s}
+.yeti-particles[data-particles="fireflies"] .yp:nth-child(7){left:75%;top:55%;animation-delay:2.5s}
+.yeti-particles[data-particles="fireflies"] .yp:nth-child(8){left:30%;top:80%;animation-delay:0.3s;animation-duration:4.2s}
+@keyframes yp-firefly{0%,100%{opacity:0;transform:translate(0,0)}15%{opacity:0.8}50%{opacity:0.3;transform:translate(8px,-12px)}85%{opacity:0.7}100%{opacity:0;transform:translate(-4px,8px)}}
+/* Phase 2: No particles — silence */
+/* Phase 3: Ember sparks rising */
+.yeti-particles[data-particles="embers"] .yp{position:absolute;width:2px;height:2px;border-radius:50%;background:#ff8040;box-shadow:0 0 3px rgba(255,128,64,0.5);animation:yp-ember 2.5s ease-out infinite}
+.yeti-particles[data-particles="embers"] .yp:nth-child(1){left:45%;animation-delay:0s}
+.yeti-particles[data-particles="embers"] .yp:nth-child(2){left:50%;animation-delay:0.4s;animation-duration:2.8s}
+.yeti-particles[data-particles="embers"] .yp:nth-child(3){left:48%;animation-delay:0.9s;animation-duration:2.2s}
+.yeti-particles[data-particles="embers"] .yp:nth-child(4){left:52%;animation-delay:1.3s}
+.yeti-particles[data-particles="embers"] .yp:nth-child(5){left:46%;animation-delay:1.8s;animation-duration:3.0s}
+.yeti-particles[data-particles="embers"] .yp:nth-child(6){left:54%;animation-delay:0.6s;animation-duration:2.3s}
+@keyframes yp-ember{0%{bottom:35%;opacity:0.8;transform:translateX(0)}50%{opacity:0.5;transform:translateX(6px)}100%{bottom:80%;opacity:0;transform:translateX(-4px)}}
+/* Phase 4: Morning mist wisps */
+.yeti-particles[data-particles="mist"] .yp{position:absolute;bottom:10%;height:2px;border-radius:50%;background:rgba(200,208,220,0.08);animation:yp-mist 8s linear infinite}
+.yeti-particles[data-particles="mist"] .yp:nth-child(1){width:80px;bottom:8%;animation-delay:0s}
+.yeti-particles[data-particles="mist"] .yp:nth-child(2){width:120px;bottom:12%;animation-delay:2s;animation-duration:10s}
+.yeti-particles[data-particles="mist"] .yp:nth-child(3){width:60px;bottom:6%;animation-delay:4s;animation-duration:7s}
+.yeti-particles[data-particles="mist"] .yp:nth-child(4){width:100px;bottom:15%;animation-delay:1s;animation-duration:9s}
+.yeti-particles[data-particles="mist"] .yp:nth-child(5){width:70px;bottom:20%;animation-delay:3s;animation-duration:11s}
+.yeti-particles[data-particles="mist"] .yp:nth-child(6){width:90px;bottom:4%;animation-delay:5s}
+@keyframes yp-mist{0%{left:-120px;opacity:0}10%{opacity:0.08}90%{opacity:0.06}100%{left:110%;opacity:0}}
+
+/* ── SASQUATCH ENVIRONMENTAL EFFECTS ── */
+/* Far: edge flicker — something passed between camera and treeline */
+.yeti-forest .yeti-sq-flicker{position:absolute;top:0;bottom:0;width:30px;pointer-events:none;z-index:1;opacity:0;animation:sq-edge-flicker 8s ease-in-out infinite}
+.yeti-forest .yeti-sq-flicker.left{left:0;background:linear-gradient(90deg,rgba(5,5,5,0.6),transparent)}
+.yeti-forest .yeti-sq-flicker.right{right:0;background:linear-gradient(270deg,rgba(5,5,5,0.6),transparent);animation-delay:4s}
+@keyframes sq-edge-flicker{0%,92%,100%{opacity:0}94%{opacity:0.7}96%{opacity:0}}
+/* Mid: claw marks on sasquatch cards */
+.yeti-card.sasquatch.sq-clawed::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;
+  background:repeating-linear-gradient(135deg,transparent 0px,transparent 6px,rgba(255,77,0,0.06) 7px,transparent 8px);z-index:0;border-radius:inherit}
+/* Close: cave breathing pulse */
+.yeti-cave-breathing .yeti-cave-walls::before,.yeti-cave-breathing .yeti-cave-walls::after{animation:cave-breathe 4s ease-in-out infinite}
+@keyframes cave-breathe{0%,100%{opacity:1}50%{opacity:0.97}}
+/* Eyes: blink every 6-8s */
+.yeti-cave-eye.blink{animation:sq-pulse 2s ease-in-out infinite,sq-blink 7s step-end infinite}
+@keyframes sq-blink{0%,96%,100%{opacity:1}97%{opacity:0}}
+/* Chasing: red vignette closing in */
+.yeti-forest .yeti-sq-vignette{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1;
+  box-shadow:inset 0 0 80px rgba(255,40,20,0.08),inset 0 0 160px rgba(255,40,20,0.04);animation:sq-vignette-pulse 3s ease-in-out infinite}
+.yeti-forest .yeti-sq-vignette.intense{box-shadow:inset 0 0 100px rgba(255,40,20,0.15),inset 0 0 200px rgba(255,40,20,0.08)}
+@keyframes sq-vignette-pulse{0%,100%{opacity:0.7}50%{opacity:1}}
+
+/* ── CARD RHYTHM VARIANTS ── */
+/* Confessional: talking-head — centered, portrait above text, camera-lens vignette */
+.yeti-card.confessional{flex-direction:column;align-items:center;text-align:center;border-left:1px solid rgba(200,208,220,0.08);border:1px solid rgba(200,208,220,0.1);
+  background:radial-gradient(ellipse at 50% 50%,rgba(245,235,220,0.06) 0%,rgba(0,0,0,0.2) 100%);padding:18px 16px}
+.yeti-card.confessional .card-portrait{margin-bottom:8px}
+.yeti-card.confessional .card-content{text-align:center}
+.yeti-card.confessional .yeti-text{font-style:italic}
+/* Sasquatch torn bottom edge */
+.yeti-card.sasquatch-torn{clip-path:polygon(0 0,100% 0,100% calc(100% - 8px),95% 100%,90% calc(100% - 5px),85% 100%,78% calc(100% - 6px),72% 100%,65% calc(100% - 4px),58% 100%,50% calc(100% - 7px),42% 100%,35% calc(100% - 5px),28% 100%,20% calc(100% - 6px),12% 100%,5% calc(100% - 4px),0 100%)}
+.yeti-card.sasquatch-torn{padding-bottom:20px}
+/* Verdict climax: full-width centered, no side portrait */
+.yeti-card.verdict-climax{flex-direction:column;align-items:center;text-align:center;padding:24px 20px;border-left-width:0;border:2px solid rgba(200,208,220,0.1);background:rgba(0,0,0,0.3)}
+.yeti-card.verdict-climax .card-portrait{margin-bottom:10px}
+.yeti-card.verdict-climax .card-content{text-align:center}
+.yeti-card.verdict-climax .yeti-badge{font-size:11px;letter-spacing:2px}
+.yeti-card.verdict-climax .yeti-text{font-size:14px;line-height:1.8}
+
+/* ── TRAIL CROSS-SECTION SVG ── */
+.yeti-trail-svg{position:relative;width:100%;margin-bottom:20px;z-index:2;background:rgba(245,235,220,0.03);border:1px solid rgba(245,235,220,0.08);border-radius:8px;overflow:hidden;padding:8px 0}
+.yeti-trail-svg svg{display:block;width:100%;height:auto}
+.yeti-trail-svg .trail-terrain{fill:none;stroke:rgba(200,208,220,0.15);stroke-width:2}
+.yeti-trail-svg .trail-walked{fill:none;stroke-width:2.5;stroke-linecap:round}
+.yeti-trail-svg .trail-walked.amber{stroke:var(--amber)}
+.yeti-trail-svg .trail-walked.silver{stroke:#8899aa}
+.yeti-trail-svg .trail-walked.green{stroke:#3a8a4a}
+.yeti-trail-svg .trail-dot{transition:all 0.5s ease}
+.yeti-trail-svg .trail-landmark{font-size:10px;fill:rgba(200,208,220,0.5);dominant-baseline:auto;text-anchor:middle}
+.yeti-trail-svg .trail-landmark.revealed{fill:rgba(200,208,220,0.8)}
+.yeti-trail-svg .trail-label{font-size:8px;fill:var(--amber);font-weight:700;letter-spacing:1px;font-family:sans-serif}
+.yeti-trail-svg .trail-faded{opacity:0.25;transition:opacity 0.5s}
 </style>`;
 
 // ══════════════════════════════════════════════════════
@@ -1986,7 +2120,8 @@ export function _textAreWeThereYeti(ep, ln, sec) {
 // ── Shared helpers ──
 
 function _yetiStylesOnce() {
-  return YETI_STYLES;
+  if (typeof document !== 'undefined' && document.querySelector('#yeti-styles')) return '';
+  return YETI_STYLES.replace('<style>', '<style id="yeti-styles">');
 }
 
 function _portrait(name, size) {
@@ -2012,17 +2147,43 @@ function _revealBtns(stateKey, nextIdx, total, epNum) {
 function _sasquatchHtml(proximity) {
   if (proximity === 'gone') return '';
   if (proximity === 'eyes') {
-    return `<div class="sasquatch-presence" data-proximity="eyes"><div class="sq-body"><div class="sq-eye left"></div><div class="sq-eye right" style="display:inline-block;margin-left:20px"></div></div></div>`;
+    return `<div class="sasquatch-presence" data-proximity="eyes"><div class="sq-body"><div class="sq-eye left blink"></div><div class="sq-eye right blink" style="display:inline-block;margin-left:20px"></div></div></div>`;
   }
   return `<div class="sasquatch-presence" data-proximity="${proximity}"><div class="sq-body"><div class="sq-eye left"></div><div class="sq-eye right"></div></div></div>`;
+}
+
+function _canopyHtml(phase) {
+  const dappled = (phase === 1) ? '<div class="yeti-dappled"></div>' : '';
+  return `<div class="yeti-canopy">${dappled}</div>`;
+}
+
+function _particlesHtml(phase) {
+  const types = { 0: 'dust', 1: 'fireflies', 3: 'embers', 4: 'mist' };
+  const type = types[phase];
+  if (!type) return '';
+  const count = type === 'embers' ? 6 : 8;
+  const dots = Array.from({ length: count }, () => '<div class="yp"></div>').join('');
+  return `<div class="yeti-particles" data-particles="${type}">${dots}</div>`;
+}
+
+function _sqEnvironmentHtml(proximity) {
+  if (proximity === 'far') {
+    return `<div class="yeti-sq-flicker left"></div><div class="yeti-sq-flicker right"></div>`;
+  }
+  if (proximity === 'chasing') {
+    return `<div class="yeti-sq-vignette"></div>`;
+  }
+  return '';
 }
 
 function _cardClass(evt) {
   if (evt.type === 'foodTemptation') return 'food-temptation';
   if (evt.type === 'chefInterject') return 'chef-radio';
-  if (evt.type === 'sasquatchReveal') return 'sasquatch-reveal';
+  if (evt.type === 'sasquatchReveal') return 'sasquatch-reveal sasquatch-torn';
   if (evt.type === 'desperationPlay') return 'desperation';
-  if (evt.subtype?.startsWith('sasquatch') || evt.type?.includes('sasquatch') || evt.type === 'caveConvergence') return 'sasquatch';
+  if (evt.type === 'confessional' || evt.subtype === 'confessional') return 'confessional';
+  if (evt.type === 'immunity' || evt.type === 'chefVerdictFinal' || evt.type === 'eliminated') return 'verdict-climax';
+  if (evt.subtype?.startsWith('sasquatch') || evt.type?.includes('sasquatch') || evt.type === 'caveConvergence') return 'sasquatch sq-clawed';
   if (evt.grudgeType || evt.type === 'theft' || evt.type === 'confrontation') return 'grudge';
   if (evt.type === 'theft' && evt.success) return 'grudge theft';
   if (evt.badgeClass === 'gold' || evt.type === 'showmanceMoment') return 'brave';
@@ -2056,43 +2217,99 @@ function _eventCard(evt, stateKey, i, epNum, revealed) {
 }
 
 function _trailMap(pairs, progress, landmarks, singleLine) {
+  // SVG terrain cross-section
   const pairColors = { A: 'amber', B: 'silver', C: 'green', D: 'amber', E: 'silver' };
+  const w = 400, h = singleLine ? 60 : 90;
+  const pad = { l: 30, r: 30, t: 10, b: 20 };
+  // Terrain path: helicopter → valley → river → cliff peak → dip → cave → steep climb → totem
+  const terrainPts = [
+    [0, 0.4], [0.08, 0.45], [0.15, 0.55], [0.2, 0.6],  // descent to valley
+    [0.28, 0.5], [0.32, 0.55],                            // river crossing
+    [0.4, 0.35], [0.48, 0.2], [0.52, 0.25],              // cliff peak
+    [0.58, 0.45], [0.62, 0.5],                            // dip to cave
+    [0.68, 0.45], [0.75, 0.3], [0.82, 0.2],              // steep climb
+    [0.9, 0.15], [0.95, 0.12], [1, 0.1]                  // totem plateau
+  ];
+
+  const toSvg = ([xPct, yPct]) => {
+    const x = pad.l + xPct * (w - pad.l - pad.r);
+    const y = pad.t + yPct * (h - pad.t - pad.b);
+    return [x, y];
+  };
+  const pts = terrainPts.map(toSvg);
+  const terrainPath = `M ${pts.map(p => p.join(',')).join(' L ')}`;
+
+  // Landmarks
+  const lmkDefs = [
+    { icon: '🚁', xPct: 0, label: '' },
+    { icon: '🌊', xPct: 0.3, label: '' },
+    { icon: '⛰', xPct: 0.48, label: '' },
+    { icon: '◖', xPct: 0.62, label: 'cave' },
+    { icon: '🗿', xPct: 1, label: 'totem' }
+  ];
   if (singleLine) {
-    // Sprint: single race line
-    const lines = pairs.map(p => {
-      const clr = pairColors[p.label] || 'amber';
-      const pct = Math.min(100, (progress[p.label] || 0));
-      return `<div style="position:relative;height:20px;margin:6px 0">
-        <div class="yeti-trail-label">PAIR ${p.label}</div>
-        <div class="yeti-trail-line" style="position:absolute;left:40px;right:40px;top:8px">
-          <div class="yeti-trail-fill ${clr}" style="width:${pct}%"></div>
-          <div class="yeti-trail-dot ${clr}" style="left:${pct}%"></div>
-        </div>
-        <div class="yeti-trail-dest">🗿</div>
-      </div>`;
-    }).join('');
-    return `<div class="yeti-trail-map" style="height:${40 + pairs.length * 32}px">${lines}</div>`;
+    lmkDefs.splice(1, 2); // just start, cave, totem for sprint
   }
-  // Multi-line trail map with landmarks
-  const lmkIcons = { cliff: '⛰', river: '🌊', trap: '✕', sasquatch: '🐾', cave: '◖', totem: '🗿', start: '🚁' };
-  const lines = pairs.map(p => {
-    const clr = pairColors[p.label] || 'amber';
-    const pct = Math.min(100, (progress[p.label] || 0));
-    const lmHtml = (landmarks || []).filter(l => l.pair === p.label || !l.pair).map(l => {
-      const lPct = Math.min(100, l.pct || 50);
-      return `<div class="yeti-trail-landmark" style="left:${lPct}%">${lmkIcons[l.type] || '•'}</div>`;
-    }).join('');
-    return `<div style="position:relative;height:24px;margin:4px 0">
-      <div class="yeti-trail-label">PAIR ${p.label}</div>
-      <div class="yeti-trail-line" style="position:absolute;left:40px;right:40px;top:10px">
-        <div class="yeti-trail-fill ${clr}" style="width:${pct}%;border-top:2px dashed rgba(200,208,220,0.15)"></div>
-        <div class="yeti-trail-dot ${clr}" style="left:${pct}%"></div>
-        ${lmHtml}
-      </div>
-      <div class="yeti-trail-dest">🗿</div>
-    </div>`;
+
+  // Interpolate Y position at given xPct along terrain
+  function yAtPct(xPct) {
+    for (let i = 0; i < terrainPts.length - 1; i++) {
+      const [x0, y0] = terrainPts[i];
+      const [x1, y1] = terrainPts[i + 1];
+      if (xPct >= x0 && xPct <= x1) {
+        const t = (xPct - x0) / (x1 - x0);
+        return y0 + t * (y1 - y0);
+      }
+    }
+    return terrainPts[terrainPts.length - 1][1];
+  }
+
+  // faded region behind current positions for singleLine (sprint — can't go back)
+  const minProgress = Math.min(...pairs.map(p => (progress[p.label] || 0)));
+  const fadeEnd = singleLine ? minProgress / 100 : 0;
+
+  // Build landmark elements
+  const lmkSvg = lmkDefs.map(lm => {
+    const [x, y] = toSvg([lm.xPct, yAtPct(lm.xPct)]);
+    const anyRevealed = pairs.some(p => (progress[p.label] || 0) / 100 >= lm.xPct);
+    const cls = anyRevealed ? 'trail-landmark revealed' : 'trail-landmark';
+    return `<text x="${x}" y="${y - 8}" class="${cls}">${lm.icon}</text>`;
   }).join('');
-  return `<div class="yeti-trail-map">${lines}</div>`;
+
+  // Build pair dots + walked paths
+  const pairSvg = pairs.map((p, pi) => {
+    const pct = Math.min(100, progress[p.label] || 0) / 100;
+    const [dotX, dotY] = toSvg([pct, yAtPct(pct)]);
+    const clr = pairColors[p.label] || 'amber';
+    // walked path: subset of terrain up to current pct
+    const walkedPts = [];
+    for (const tp of terrainPts) {
+      if (tp[0] > pct) break;
+      walkedPts.push(toSvg(tp));
+    }
+    walkedPts.push(toSvg([pct, yAtPct(pct)]));
+    const walkedPath = `M ${walkedPts.map(pt => pt.join(',')).join(' L ')}`;
+    const labelY = pi % 2 === 0 ? dotY - 12 : dotY + 14;
+    return `<path class="trail-walked ${clr}" d="${walkedPath}" />
+      <circle class="trail-dot" cx="${dotX}" cy="${dotY}" r="4" fill="${clr === 'amber' ? '#d4850a' : clr === 'silver' ? '#8899aa' : '#3a8a4a'}" stroke="#fff" stroke-width="1" />
+      <text class="trail-label" x="${dotX}" y="${labelY}">${p.label}</text>`;
+  }).join('');
+
+  // Faded region SVG
+  let fadeSvg = '';
+  if (fadeEnd > 0.05) {
+    const [fadeX] = toSvg([fadeEnd, 0]);
+    fadeSvg = `<rect class="trail-faded" x="${pad.l}" y="0" width="${fadeX - pad.l}" height="${h}" fill="rgba(0,0,0,0.4)" />`;
+  }
+
+  return `<div class="yeti-trail-svg">
+    <svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+      <path class="trail-terrain" d="${terrainPath}" />
+      ${fadeSvg}
+      ${lmkSvg}
+      ${pairSvg}
+    </svg>
+  </div>`;
 }
 
 function _campfireHtml(state) {
@@ -2166,6 +2383,8 @@ export function rpBuildYetiDropOff(ep) {
   </div>`;
 
   return _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="0">
+    ${_canopyHtml(0)}
+    ${_particlesHtml(0)}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Drop Off</div>
     <div class="yeti-sub">Chef Hatchet takes command. Helicopter clearing. Twilight.</div>
@@ -2215,7 +2434,10 @@ export function rpBuildYetiTrail(ep, pair) {
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
   return _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="1">
+    ${_canopyHtml(1)}
+    ${_particlesHtml(1)}
     ${sqHtml}
+    ${_sqEnvironmentHtml(hasSasquatch ? 'far' : '')}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Trail — Pair ${pair.label}</div>
     <div class="yeti-sub">${pair.members.join(' & ')} navigate the darkening forest.</div>
@@ -2263,7 +2485,9 @@ export function rpBuildYetiTraps(ep) {
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
   return _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="2">
+    ${_canopyHtml(2)}
     ${sqHtml}
+    ${_sqEnvironmentHtml(hasSasquatch ? 'mid' : 'far')}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Traps & Tricks</div>
     <div class="yeti-sub">Deep woods. Purple dusk. First stars appear through the canopy.</div>
@@ -2314,8 +2538,10 @@ export function rpBuildYetiNight(ep) {
   }).join('');
 
   // Cave mouth with eyes
+  const eyeBlink = (sqProximity === 'eyes' || sqProximity === 'close') ? ' blink' : '';
   const caveEyes = sqProximity !== 'gone'
-    ? `<div class="yeti-cave-eyes"><div class="yeti-cave-eye"></div><div class="yeti-cave-eye"></div></div>` : '';
+    ? `<div class="yeti-cave-eyes"><div class="yeti-cave-eye${eyeBlink}"></div><div class="yeti-cave-eye${eyeBlink}"></div></div>` : '';
+  const caveBreathing = (sqProximity === 'close' || sqProximity === 'eyes') ? ' yeti-cave-breathing' : '';
   const moonEl = !isMorning
     ? `<div class="yeti-cave-moon"></div>` : '';
   const morningGlow = isMorning
@@ -2340,7 +2566,8 @@ export function rpBuildYetiNight(ep) {
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
   return _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="3">
-    <div class="yeti-cave">
+    ${_particlesHtml(3)}
+    <div class="yeti-cave${caveBreathing}">
       <div class="yeti-cave-walls"></div>
       <div class="yeti-cave-mouth">
         ${moonEl}
@@ -2401,7 +2628,10 @@ export function rpBuildYetiSprint(ep) {
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
   return _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="4">
+    ${_canopyHtml(4)}
+    ${_particlesHtml(4)}
     ${sqHtml}
+    ${_sqEnvironmentHtml(hasSqEvent ? 'chasing' : 'far')}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Sprint</div>
     <div class="yeti-sub">Dawn breaks. Golden light. Race to the totem pole.</div>
@@ -2558,6 +2788,7 @@ export function rpBuildYetiVerdict(ep) {
   const btns = _revealBtns(stateKey, nextIdx, beats.length, ep.num);
 
   return _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="5">
+    ${_canopyHtml(5)}
     ${_totemHtml(state.idx >= 0)}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Chef's Verdict</div>

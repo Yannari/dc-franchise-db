@@ -513,6 +513,7 @@ function _mcShell(content, ep, threatLevel) {
   ).join('');
 
   return `
+    <div class="rp-page" style="background:#0a0a0a;padding:0;">
     <div class="mc-shell">
       <div class="mc-film-grain"></div>
       <div class="mc-monster-silhouette ${threatClass}">🦎</div>
@@ -523,6 +524,7 @@ function _mcShell(content, ep, threatLevel) {
       <div class="mc-rubble-pile">${rubble}</div>
       <div class="mc-ticker"><span class="mc-ticker-text">/// EMERGENCY BROADCAST /// ${ticker} ///</span></div>
       <div class="mc-screen-crack ${threatLevel >= 4 ? 'active' : ''}" style="background:url('data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><line x1="180" y1="0" x2="200" y2="200" stroke="rgba(255,255,255,0.15)" stroke-width="1"/><line x1="200" y1="200" x2="220" y2="400" stroke="rgba(255,255,255,0.1)" stroke-width="1"/><line x1="200" y1="200" x2="280" y2="300" stroke="rgba(255,255,255,0.08)" stroke-width="1"/></svg>`)}') center/cover no-repeat;"></div>
+    </div>
     </div>`;
 }
 

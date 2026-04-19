@@ -5379,6 +5379,8 @@ function simulateJuryRoundtable(ep) {
     hellsKitchen:       ep.hellsKitchen        || null,
     isTrustChallenge:   ep.isTrustChallenge   || false,
     trustChallenge:     ep.trustChallenge      || null,
+    isMonsterCash:      ep.isMonsterCash      || false,
+    monsterCash:        ep.monsterCash        || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,

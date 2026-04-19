@@ -2418,6 +2418,13 @@ export function rpBuildYetiVerdict(ep) {
   if (!ep.areWeThereYeti) return '';
   const yt = ep.areWeThereYeti;
   const elimName = yt.chefEliminated;
+  if (!elimName) {
+    return `<div class="rp-page yeti-forest" data-phase="5">
+      <div class="yeti-eyebrow">Episode ${ep.num}</div>
+      <div class="yeti-title">Chef's Verdict</div>
+      <div class="yeti-sub" style="color:#f85149">Error: No elimination was resolved. Try re-running the episode.</div>
+    </div>`;
+  }
   const elimPr = pronouns(elimName);
   const winPair = yt.pairs.find(p => p.label === yt.immunityPair);
 
@@ -2564,4 +2571,126 @@ export function rpBuildYetiVerdict(ep) {
     </div>
     <img src="" onerror="if(window._yetiPostRender){window._yetiPostRender();delete window._yetiPostRender;}" style="display:none">
   </div>`;
+}
+
+// ── Elimination Card — standalone screen after verdict ──
+
+const CHEF_REASON_LABELS = {
+  foodTheft: 'Stole Chef\'s Food',
+  cowardice: 'Cowardice in the Woods',
+  weakness: 'Too Weak to Survive',
+  abandonment: 'Abandoned Their Partner',
+  lowScore: 'Dead Last',
+  multiple: 'Multiple Offenses',
+};
+
+export function rpBuildYetiElimination(ep) {
+  const yt = ep.areWeThereYeti;
+  if (!yt) return '';
+  const elim = yt.chefEliminated;
+  if (!elim) return '';
+
+  const pr = pronouns(elim);
+  const quote = typeof window.vpGenerateQuote === 'function'
+    ? window.vpGenerateQuote(elim, ep, 'eliminated')
+    : `I didn't think it would end like this.`;
+  const archLabel = typeof window.vpArchLabel === 'function'
+    ? window.vpArchLabel(elim) : '';
+  const portrait = typeof window.rpPortrait === 'function'
+    ? window.rpPortrait(elim, 'xl elim') : `<span style="color:var(--moon);font-size:18px">${elim}</span>`;
+  const portraitSm = typeof window.rpPortrait === 'function'
+    ? window.rpPortrait(elim, 'elim') : '';
+
+  const placement = ep.gsSnapshot?.activePlayers
+    ? ep.gsSnapshot.activePlayers.length + 1
+    : '?';
+  const ordFn = typeof window.ordinal === 'function' ? window.ordinal : (n) => n + (n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th');
+
+  const reasonLabel = CHEF_REASON_LABELS[yt.chefReasonKey] || 'Chef\'s Decision';
+  const chefQuote = yt.chefReason || '"Pack your bags."';
+  const finalScore = (yt.personalScores?.[elim] || 0).toFixed(1);
+  const grudgeVal = (yt.chefGrudge?.[elim] || 0).toFixed(1);
+
+  // Collect negative timeline events for this player
+  const whyBullets = [];
+  (yt.timeline || []).forEach(e => {
+    if (e.player !== elim) return;
+    if (e.grudgeType) {
+      const label = e.grudgeType.charAt(0).toUpperCase() + e.grudgeType.slice(1);
+      whyBullets.push(`${label}: ${e.text || e.badgeText || 'penalty'} <span style="color:#f85149;font-weight:700">(+${(e.grudgeDelta || 0).toFixed(1)} grudge)</span>`);
+    }
+  });
+  if (!whyBullets.length) {
+    whyBullets.push(`Lowest overall performance. Chef saw nothing worth saving.`);
+  }
+  whyBullets.push(`Final trail score: <span style="color:#f85149;font-weight:700">${finalScore}</span> · Chef grudge: <span style="color:#f85149;font-weight:700">+${grudgeVal}</span>`);
+
+  // Partner info
+  const pair = (yt.pairs || []).find(p => p.members.includes(elim));
+  const partner = pair ? pair.members.find(m => m !== elim) : null;
+
+  let html = _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="5" style="--page-accent:#f85149">
+    <div class="yeti-eyebrow">Episode ${ep.num}</div>
+    <div class="yeti-title" style="color:#f85149">Eliminated</div>
+    <div style="text-align:center;margin:24px 0">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(200,208,220,0.4);margin-bottom:12px">Chef's Decision &mdash; ${ordFn(placement)} place</div>
+      ${portrait}
+      <div style="font-size:22px;font-weight:700;color:#f85149;margin-top:12px">${elim}</div>
+      <div style="font-size:11px;color:rgba(200,208,220,0.5);margin-top:4px">${archLabel}</div>
+      <div style="font-style:italic;color:var(--moon);margin-top:14px;font-size:13px;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.7">"${quote}"</div>
+      <div style="font-size:10px;color:rgba(200,208,220,0.35);margin-top:8px">Eliminated &mdash; Episode ${ep.num}</div>
+    </div>`;
+
+  // Chef's reason callout
+  html += `<div class="yeti-card grudge" style="border-left-color:#f85149;margin:20px 0;padding:16px">
+    <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#f85149;margin-bottom:10px">🍳 CHEF'S REASON: ${reasonLabel.toUpperCase()}</div>
+    <div style="font-style:italic;color:var(--moon);font-size:13px;line-height:1.7">${chefQuote}</div>
+  </div>`;
+
+  // WHY section
+  html += `<div style="margin-top:24px;border-top:1px solid rgba(200,208,220,0.08);padding-top:18px">
+    <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:rgba(200,208,220,0.3);margin-bottom:14px">=== WHY CHEF CUT THEM ===</div>
+    <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px">
+      ${portraitSm}
+      <div style="flex:1">
+        ${whyBullets.map(b => `<div style="font-size:12px;color:#cdd9e5;line-height:1.7;margin-bottom:5px;display:flex;gap:8px;align-items:flex-start"><span style="color:rgba(200,208,220,0.25);flex-shrink:0;margin-top:1px">&#x2014;</span><span>${b}</span></div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+
+  // Partner reaction
+  if (partner) {
+    const partnerBond = typeof window.getBond === 'function' ? window.getBond(elim, partner) : 0;
+    const reaction = partnerBond > 3 ? `${partner} watches in silence. They went through the woods together. This one stings.`
+      : partnerBond > 0 ? `${partner} gives a small nod. They survived the trail as a team, even if it wasn't enough.`
+      : partnerBond < -2 ? `${partner} doesn't look surprised. The cracks showed early on the trail.`
+      : `${partner} takes it in. The forest doesn't care about feelings.`;
+    html += `<div class="yeti-card" style="background:rgba(200,208,220,0.03);border-left-color:rgba(200,208,220,0.1);margin-top:16px;padding:14px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(200,208,220,0.3);margin-bottom:8px">PARTNER'S REACTION</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        ${_portrait(partner, 40)}
+        <div style="font-size:12px;color:rgba(200,208,220,0.7);font-style:italic;line-height:1.6">${reaction}</div>
+      </div>
+    </div>`;
+  }
+
+  // Torch snuff
+  html += `<div id="yeti-elim-snuff-${ep.num}" style="text-align:center;margin-top:28px">
+    <div class="torch-snuffed">${_portrait(elim, 64)}</div>
+    <div style="font-size:14px;font-style:italic;color:rgba(200,208,220,0.4);margin-top:14px;letter-spacing:1px">Chef has spoken.</div>
+  </div>`;
+
+  html += `</div>`;
+
+  // Post-render torch snuff
+  if (typeof window !== 'undefined') {
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        const snuffEl = document.querySelector('#yeti-elim-snuff-' + ep.num + ' .torch-snuffed');
+        if (snuffEl && typeof window.torchSnuffFx === 'function') window.torchSnuffFx(snuffEl);
+      });
+    }, 600);
+  }
+
+  return html;
 }

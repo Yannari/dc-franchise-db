@@ -7,7 +7,7 @@ import { rpBuildOffTheChain } from './chal/off-the-chain.js';
 import { rpBuildWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 import { rpBuildTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
 import { rpBuildCampCastaways, rpBuildCCFlood, rpBuildCCGroup, rpBuildCCNight, rpBuildCCRegroup, rpBuildCCStorm, rpBuildCCImmunity } from './chal/camp-castaways.js';
-import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict } from './chal/are-we-there-yeti.js';
+import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict, rpBuildYetiElimination } from './chal/are-we-there-yeti.js';
 import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/triple-dog-dare.js';
 import { rpBuildSlasherTitleCard, rpBuildSlasherActI, rpBuildSlasherActII, rpBuildSlasherActIII, rpBuildSlasherCredits, rpBuildSlasherAnnouncement, rpBuildSlasherRounds, rpBuildSlasherShowdown, rpBuildSlasherImmunity, rpBuildSlasherElimination, rpBuildSlasherLeaderboard, slasherRevealNextRound, slasherRevealAllRounds, slasherRevealNextScene, slasherRevealAllScenes } from './chal/slasher-night.js';
 
@@ -5290,6 +5290,16 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'allianceBlindspot'         ? (evt.badgeText || 'ONE-SIDED')
                      : evt.type === 'betrayalDenial'            ? (evt.badgeText || 'ONE-SIDED')
                      : evt.type === 'firstImpressionsSwap'      ? (evt.badgeText || 'SWAPPED')
+                     : evt.type === 'yetiWinBond'          ? (evt.badgeText || 'PAIR BOND')
+                     : evt.type === 'yetiBlame'            ? (evt.badgeText || 'BLAME')
+                     : evt.type === 'yetiLoserStress'      ? (evt.badgeText || 'POST-YETI STRESS')
+                     : evt.type === 'yetiTheftConfrontation' ? (evt.badgeText || 'CONFRONTATION')
+                     : evt.type === 'yetiTheftSuspicion'   ? (evt.badgeText || 'SUSPICIOUS')
+                     : evt.type === 'yetiSasquatchStory'   ? (evt.badgeText || 'SHARED FEAR')
+                     : evt.type === 'yetiChefWatch'        ? (evt.badgeText || 'CHEF\'S EYES')
+                     : evt.type === 'yetiWinnerGuilt'      ? (evt.badgeText || 'SURVIVOR\'S GUILT')
+                     : evt.type === 'yetiWinnerSmug'       ? (evt.badgeText || 'SMUG')
+                     : evt.type === 'yetiGratitude'        ? (evt.badgeText || 'GRATITUDE')
                      : evt.type === 'paranoiaSpiral'       ? '⚠ Paranoia Spiral'
                      : evt.type === 'firstMove'            ? (evt.badgeText || 'FIRST MOVE')
                      : evt.type === 'showmanceProtective'  ? (evt.badgeText || 'PROTECTIVE')
@@ -5428,6 +5438,10 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'loyaltyTestFailed' || evt.type === 'loyaltyTestCaught' || evt.type === 'conflictingDeals' || evt.type === 'perceptionRealization' || evt.type === 'falseInfoBlowup' || evt.type === 'votePitchFailed' ? 'red'
                      : evt.type === 'villainManipulation' || evt.type === 'goatKeeping' || evt.type === 'swapLoyaltyAssumption' || evt.type === 'providerEntitlement' || evt.type === 'showmanceBlindspot' || evt.type === 'allianceBlindspot' || evt.type === 'betrayalDenial' || evt.type === 'firstImpressionsSwap' ? 'gold'
                      : evt.type === 'paranoiaSpiral' ? 'red'
+                     : evt.type === 'yetiWinBond' || evt.type === 'yetiSasquatchStory' || evt.type === 'yetiGratitude' ? (evt.badgeClass || 'green')
+                     : evt.type === 'yetiBlame' || evt.type === 'yetiTheftConfrontation' ? (evt.badgeClass || 'red')
+                     : evt.type === 'yetiLoserStress' || evt.type === 'yetiTheftSuspicion' || evt.type === 'yetiChefWatch' || evt.type === 'yetiWinnerSmug' ? (evt.badgeClass || 'grey')
+                     : evt.type === 'yetiWinnerGuilt' ? (evt.badgeClass || 'blue')
                      : isTriangleNeg ? 'red'
                      : isTriangleGold ? 'gold'
                      : isTriangleRes ? (evt.type === 'triangleLonely' ? 'red' : 'gold')
@@ -10659,6 +10673,9 @@ export function buildVPScreens(epRecord) {
   // ── Are We There Yeti: verdict AFTER camp events, no "No Tribal" screen ──
   if (ep.noTribal && ep.isAreWeThereYeti) {
     vpScreens.push({ id:'yeti-verdict', label:"Chef's Verdict", html: rpBuildYetiVerdict(ep) });
+    if (ep.areWeThereYeti?.chefEliminated) {
+      vpScreens.push({ id:'yeti-elimination', label:'Eliminated', html: rpBuildYetiElimination(ep) });
+    }
     // RI/Rescue Island screens
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _ytRiLife = rpBuildRILife(ep);

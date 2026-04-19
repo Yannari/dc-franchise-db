@@ -776,6 +776,8 @@ export function simulateFinale() {
     finaleChallengeWinner: ep.finaleChallengeWinner || null,
     finalChallengePlacements: ep.finalChallengePlacements || null,
     finaleSabotageEvents: ep.finaleSabotageEvents || [],
+    relayData: ep.relayData || null,
+    relayPreRace: ep.relayPreRace || null,
     campEvents: ep.campEvents || null,
     // Fire-making finale
     firemaking: ep.firemaking || false,

@@ -1797,14 +1797,14 @@ export function rpBuildYetiDropOff(ep) {
     <div style="font-size:10px;color:rgba(200,208,220,0.5);margin-top:4px">${p.members.join(' & ')}</div>
   </div>`).join('');
 
-  return YETI_STYLES + `<div class="yeti-forest" data-phase="0">
+  return YETI_STYLES + `<div class="rp-page"><div class="yeti-forest" data-phase="0">
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Drop Off</div>
     <div class="yeti-sub">Chef Hatchet takes command. Helicopter clearing. Twilight.</div>
     ${mapHtml}
     <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;position:relative;z-index:2">${pairCards}</div>
     ${items}${btns}
-  </div>`;
+  </div></div>`;
 }
 
 // ── Phase 1: Trail (per pair) ──
@@ -1844,14 +1844,14 @@ export function rpBuildYetiTrail(ep, pair) {
   const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return YETI_STYLES + `<div class="yeti-forest" data-phase="1">
+  return YETI_STYLES + `<div class="rp-page"><div class="yeti-forest" data-phase="1">
     ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Trail — Pair ${pair.label}</div>
     <div class="yeti-sub">${pair.members.join(' & ')} navigate the darkening forest.</div>
     ${mapHtml}
     ${items}${btns}
-  </div>`;
+  </div></div>`;
 }
 
 // ── Phase 2: Traps ──
@@ -1891,14 +1891,14 @@ export function rpBuildYetiTraps(ep) {
   const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return YETI_STYLES + `<div class="yeti-forest" data-phase="2">
+  return YETI_STYLES + `<div class="rp-page"><div class="yeti-forest" data-phase="2">
     ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Traps & Tricks</div>
     <div class="yeti-sub">Deep woods. Purple dusk. First stars appear through the canopy.</div>
     ${mapHtml}
     ${items}${btns}
-  </div>`;
+  </div></div>`;
 }
 
 // ── Phase 3: The Night — Cave Mouth POV ──
@@ -1964,7 +1964,7 @@ export function rpBuildYetiNight(ep) {
 
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return YETI_STYLES + `<div class="yeti-forest" data-phase="3">
+  return YETI_STYLES + `<div class="rp-page"><div class="yeti-forest" data-phase="3">
     <div class="yeti-cave">
       <div class="yeti-cave-walls"></div>
       <div class="yeti-cave-mouth">
@@ -1981,7 +1981,7 @@ export function rpBuildYetiNight(ep) {
         ${items}${btns}
       </div>
     </div>
-  </div>`;
+  </div></div>`;
 }
 
 // ── Phase 4: Sprint ──
@@ -2024,7 +2024,7 @@ export function rpBuildYetiSprint(ep) {
   const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return YETI_STYLES + `<div class="yeti-forest" data-phase="4">
+  return YETI_STYLES + `<div class="rp-page"><div class="yeti-forest" data-phase="4">
     ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Sprint</div>
@@ -2032,7 +2032,7 @@ export function rpBuildYetiSprint(ep) {
     ${mapHtml}
     ${supplyHtml}
     ${items}${btns}
-  </div>`;
+  </div></div>`;
 }
 
 // ── Phase 5: Chef's Verdict — Dawn at Totem Pole ──
@@ -2166,7 +2166,7 @@ export function rpBuildYetiVerdict(ep) {
 
   const btns = _revealBtns(stateKey, nextIdx, beats.length, ep.num);
 
-  return YETI_STYLES + `<div class="yeti-forest" data-phase="5">
+  return YETI_STYLES + `<div class="rp-page"><div class="yeti-forest" data-phase="5">
     ${_totemHtml(state.idx >= 0)}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Chef's Verdict</div>
@@ -2177,5 +2177,5 @@ export function rpBuildYetiVerdict(ep) {
       ${unrevealedHtml}
       ${btns}
     </div>
-  </div>`;
+  </div></div>`;
 }

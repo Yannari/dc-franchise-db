@@ -41,7 +41,7 @@ import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 import { simulateTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
 import { simulateCampCastaways } from './chal/camp-castaways.js';
-import { simulateAreWeThereYeti } from './chal/are-we-there-yeti.js';
+import { simulateAreWeThereYeti, resolveChefVerdict } from './chal/are-we-there-yeti.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   patchEpisodeHistory, saveGameState, snapshotGameState, buildCrashout
@@ -2063,8 +2063,14 @@ export function simulateEpisode() {
     simulateCampCastaways(ep);
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
   } else if (ep.isAreWeThereYeti) {
-    // ── ARE WE THERE YETI: forest nav race, Chef eliminates ──
+    // ── ARE WE THERE YETI: forest nav race, Chef eliminates AFTER camp events ──
     simulateAreWeThereYeti(ep);
+
+    // Camp events fire first — yeti-specific reactions injected by generateCampEvents
+    generateCampEvents(ep, 'post');
+
+    // NOW Chef decides — camp drama can shift grudge
+    resolveChefVerdict(ep);
 
     const _ytElim = ep.chefEliminated;
     if (_ytElim) {
@@ -2080,8 +2086,6 @@ export function simulateEpisode() {
       }
     }
 
-    updateChalRecord(ep);
-    generateCampEvents(ep, 'post');
     updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
     updateSurvival(ep);
     gs.episode = epNum;

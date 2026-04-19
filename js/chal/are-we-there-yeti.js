@@ -462,6 +462,10 @@ const YETI_STYLES = `
 .yeti-card.grudge{border-left-color:rgba(255,60,60,0.5)}
 .yeti-card.brave{border-left-color:var(--amber);box-shadow:0 0 12px rgba(212,133,10,0.08)}
 .yeti-card.theft .yeti-text{text-decoration:line-through;text-decoration-color:rgba(255,60,60,0.3)}
+.yeti-card.food-temptation{border-left-color:#d29922;background:rgba(210,153,34,0.06)}
+.yeti-card.chef-radio{border-left-color:#f85149;background:rgba(255,60,60,0.04);border-left-style:dashed}
+.yeti-card.sasquatch-reveal{border-left-color:#ff4d00;box-shadow:0 0 16px rgba(255,77,0,0.1);animation:yeti-card-in 0.3s ease-out,yeti-shake 0.6s 0.1s ease-out}
+.yeti-card.desperation{border-left-color:#d29922;border-left-width:6px}
 .yeti-card .card-portrait{flex-shrink:0}
 .yeti-card .card-content{flex:1;min-width:0}
 .yeti-card::after{content:'';position:absolute;top:0;right:0;width:12px;height:12px;background:linear-gradient(135deg,transparent 50%,rgba(0,0,0,0.1) 50%)}
@@ -560,6 +564,7 @@ const YETI_STYLES = `
 .yeti-status-bar{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;margin-bottom:12px;background:rgba(0,0,0,0.25);border-radius:6px;font-size:10px;position:relative;z-index:2;border:1px solid rgba(200,208,220,0.06)}
 
 /* ── UTILITIES ── */
+.yeti-status-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(200,208,220,0.04);border:1px solid rgba(200,208,220,0.08);border-radius:6px;margin-bottom:16px;font-size:10px;position:relative;z-index:2;flex-wrap:wrap;gap:6px}
 .yeti-hidden{display:none}
 .yeti-z2{position:relative;z-index:2}
 </style>`;
@@ -1786,7 +1791,6 @@ export function simulateAreWeThereYeti(ep) {
   });
 
   const winPair = pairScores[0];
-  const losePair = pairScores[1];
 
   // Both winners immune
   winPair.members.forEach(n => popDelta(n, 2));
@@ -1794,8 +1798,75 @@ export function simulateAreWeThereYeti(ep) {
     text: _rp(VERDICT_TEXTS.immuneAnnounce)(winPair.members),
     badgeText: '🏆 PAIR IMMUNITY', badgeClass: 'gold' });
 
-  // Chef picks elimination from non-immune
-  const elimCandidates = activePlayers.filter(n => !winPair.members.includes(n));
+  // ── ROMANCE INTEGRATION ──
+  const sparkEvents = timeline.filter(e =>
+    (e.subtype === 'quicksand' || e.subtype === 'partnerInjury' ||
+     e.type === 'quicksand' || e.type === 'partnerInjury') && e.players?.length >= 2);
+  sparkEvents.forEach(evt => {
+    const [a, b] = evt.players;
+    if (a && b && romanticCompat(a, b)) {
+      _challengeRomanceSpark(a, b, ep, null, null, personalScores, 'danger');
+    }
+  });
+  const vulnEvents = timeline.filter(e => e.type === 'vulnerability' && e.players?.length >= 2);
+  vulnEvents.forEach(evt => {
+    const [a, b] = evt.players;
+    if (a && b && romanticCompat(a, b)) {
+      _challengeRomanceSpark(a, b, ep, null, null, personalScores, 'emotional');
+    }
+  });
+  _checkShowmanceChalMoment(ep, 'yeti', null, personalScores, 'danger',
+    [{ name: gs.mergeName || 'merge', members: activePlayers }]);
+
+  // ── EP FIELDS (no elimination yet — Chef decides after camp events) ──
+  ep.challengeType = 'individual';
+  ep.challengeLabel = 'Are We There Yeti?';
+  ep.challengeCategory = 'survival';
+  ep.challengeDesc = 'Navigate the forest in pairs. First pair to tag the totem pole wins immunity. Chef eliminates one player.';
+  ep.isAreWeThereYeti = true;
+  ep.noTribal = true;
+  ep.immunityWinner = winPair.members[0];
+  ep.immunityWinners = [...winPair.members];
+  ep.extraImmune = [...winPair.members];
+
+  ep.chalMemberScores = { ...personalScores };
+  updateChalRecord(ep);
+
+  ep.challengePlacements = [...activePlayers]
+    .sort((a, b) => personalScores[b] - personalScores[a])
+    .map((name, i) => ({ name, place: i + 1, score: personalScores[name] }));
+
+  // Store all data for post-camp-events verdict
+  const firedEventsData = {};
+  pairs.forEach(p => { firedEventsData[p.label] = [...firedEvents[p.label]]; });
+
+  ep.areWeThereYeti = {
+    timeline,
+    pairs: pairs.map(p => ({ label: p.label, members: [...p.members] })),
+    personalScores: { ...personalScores },
+    chefGrudge: { ...chefGrudge },
+    sasquatch: { ...sasquatch },
+    supplies: JSON.parse(JSON.stringify(supplies)),
+    immunityPair: winPair.label,
+    immunityWinners: [...winPair.members],
+    firedEventsData,
+    losingPair: pairScores.length > 1 ? pairScores[pairScores.length - 1].label : null,
+    stolenItems: timeline.filter(e => e.type === 'theft' && e.success).map(e => ({ thief: e.thief, victim: e.victim, item: e.item, phase: e.phase })),
+    trapsSet: timeline.filter(e => e.type === 'trap').map(e => ({ setter: e.setter, trapType: e.trapType, target: e.target, result: e.result, phase: e.phase })),
+  };
+}
+
+// Called AFTER camp events — camp drama can shift grudge before Chef picks
+export function resolveChefVerdict(ep) {
+  const yt = ep.areWeThereYeti;
+  if (!yt) return;
+  const { personalScores, chefGrudge, timeline, immunityWinners, firedEventsData, pairs } = yt;
+  const activePlayers = Object.keys(personalScores);
+
+  // Camp events may have added grudge via ep.areWeThereYeti.chefGrudge adjustments
+  activePlayers.forEach(n => { if (chefGrudge[n] < -2) chefGrudge[n] = -2; });
+
+  const elimCandidates = activePlayers.filter(n => !immunityWinners.includes(n));
   const elimScored = elimCandidates.map(n => ({
     name: n,
     score: personalScores[n] * 0.4 - chefGrudge[n] * 0.6 + _noise(-1.0, 1.0),
@@ -1803,12 +1874,11 @@ export function simulateAreWeThereYeti(ep) {
 
   const chefPick = elimScored[0].name;
 
-  // Determine Chef's reason — highest single grudge category
+  // Determine Chef's reason
   const grudgeCategories = {
-    foodTheft: chefGrudge[chefPick] >= 2.0 && pairs.some(p => firedEvents[p.label]?.has('foodTemptation_' + chefPick)) ? 3 : 0,
+    foodTheft: chefGrudge[chefPick] >= 2.0 && (pairs || []).some(p => firedEventsData[p.label]?.includes('foodTemptation_' + chefPick)) ? 3 : 0,
     cowardice: 0, weakness: 0, abandonment: 0, lowScore: 0, multiple: 0,
   };
-  // Check timeline for grudge-specific events
   timeline.forEach(e => {
     if (e.player !== chefPick) return;
     if (e.grudgeType === 'cowardice') grudgeCategories.cowardice++;
@@ -1826,65 +1896,12 @@ export function simulateAreWeThereYeti(ep) {
     text: _rp(VERDICT_TEXTS.elimAnnounce)(chefPick, chefReason),
     badgeText: 'CHEF\'S CHOICE', badgeClass: 'red', chefReason });
 
-  // ── ROMANCE INTEGRATION ──
-  // Fire sparks for bonding moments: quicksand rescue, partner injury help, vulnerability
-  const sparkEvents = timeline.filter(e =>
-    (e.subtype === 'quicksand' || e.subtype === 'partnerInjury' ||
-     e.type === 'quicksand' || e.type === 'partnerInjury') && e.players?.length >= 2);
-  sparkEvents.forEach(evt => {
-    const [a, b] = evt.players;
-    if (a && b && romanticCompat(a, b)) {
-      _challengeRomanceSpark(a, b, ep, null, null, personalScores, 'danger');
-    }
-  });
-  // Vulnerability confession → spark
-  const vulnEvents = timeline.filter(e => e.type === 'vulnerability' && e.players?.length >= 2);
-  vulnEvents.forEach(evt => {
-    const [a, b] = evt.players;
-    if (a && b && romanticCompat(a, b)) {
-      _challengeRomanceSpark(a, b, ep, null, null, personalScores, 'emotional');
-    }
-  });
-  // Check existing showmances for advancement
-  _checkShowmanceChalMoment(ep, 'yeti', null, personalScores, 'danger',
-    [{ name: gs.mergeName || 'merge', members: activePlayers }]);
-
-  // ── EP FIELDS ──
-  ep.challengeType = 'individual';
-  ep.challengeLabel = 'Are We There Yeti?';
-  ep.challengeCategory = 'survival';
-  ep.challengeDesc = 'Navigate the forest in pairs. First pair to tag the totem pole wins immunity. Chef eliminates one player.';
-  ep.isAreWeThereYeti = true;
-  ep.noTribal = true;
-  ep.immunityWinner = winPair.members[0]; // Primary for compatibility
-  ep.immunityWinners = [...winPair.members];
-  ep.extraImmune = [...winPair.members];
   ep.eliminated = chefPick;
   ep.chefEliminated = chefPick;
-
-  ep.chalMemberScores = { ...personalScores };
-  updateChalRecord(ep);
-
-  ep.challengePlacements = [...activePlayers]
-    .sort((a, b) => personalScores[b] - personalScores[a])
-    .map((name, i) => ({ name, place: i + 1, score: personalScores[name] }));
-
-  ep.areWeThereYeti = {
-    timeline,
-    pairs: pairs.map(p => ({ label: p.label, members: [...p.members] })),
-    personalScores: { ...personalScores },
-    chefGrudge: { ...chefGrudge },
-    sasquatch: { ...sasquatch },
-    supplies: JSON.parse(JSON.stringify(supplies)),
-    immunityPair: winPair.label,
-    immunityWinners: [...winPair.members],
-    chefEliminated: chefPick,
-    chefReason,
-    chefReasonKey,
-    lowestScorer: elimScored[0].name,
-    stolenItems: timeline.filter(e => e.type === 'theft' && e.success).map(e => ({ thief: e.thief, victim: e.victim, item: e.item, phase: e.phase })),
-    trapsSet: timeline.filter(e => e.type === 'trap').map(e => ({ setter: e.setter, trapType: e.trapType, target: e.target, result: e.result, phase: e.phase })),
-  };
+  yt.chefEliminated = chefPick;
+  yt.chefReason = chefReason;
+  yt.chefReasonKey = chefReasonKey;
+  yt.lowestScorer = elimScored[0].name;
 }
 
 // ══════════════════════════════════════════════════════
@@ -1968,11 +1985,7 @@ export function _textAreWeThereYeti(ep, ln, sec) {
 
 // ── Shared helpers ──
 
-let _stylesInjectedForRender = false;
 function _yetiStylesOnce() {
-  if (_stylesInjectedForRender) return '';
-  _stylesInjectedForRender = true;
-  setTimeout(() => { _stylesInjectedForRender = false; }, 0);
   return YETI_STYLES;
 }
 

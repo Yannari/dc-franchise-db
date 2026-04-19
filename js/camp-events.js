@@ -6530,6 +6530,179 @@ export function generateCampEvents(ep, phase = 'both') {
       }
     }
 
+    // ── ARE WE THERE YETI post-challenge camp reactions ──
+    if (ep.isAreWeThereYeti && ep.areWeThereYeti) {
+      const yt = ep.areWeThereYeti;
+      const camp = Object.keys(ep.campEvents)[0];
+      if (camp) {
+        if (!ep.campEvents[camp]) ep.campEvents[camp] = { pre: [], post: [] };
+        const ytEvents = [];
+        const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+
+        // Winning pair celebration + bond boost
+        const winMembers = yt.immunityWinners || [];
+        if (winMembers.length >= 2) {
+          const [w1, w2] = winMembers;
+          const pr1 = pronouns(w1);
+          addBond(w1, w2, 1.5);
+          ytEvents.push({ type: 'yetiWinBond', players: [w1, w2],
+            badgeText: 'PAIR BOND', badgeClass: 'green',
+            text: _rp([
+              `${w1} and ${w2} can't stop grinning. They ran that forest together and survived. That kind of trust doesn't just disappear.`,
+              `Back at camp, ${w1} bumps ${w2}'s fist without a word. The forest changed something between them.`,
+              `${w2} tells anyone who'll listen how ${w1} kept them going when the trail went dark. ${pr1.Sub} just shrugs, but ${pr1.sub === 'they' ? 'they\'re' : pr1.sub + '\'s'} smiling.`,
+              `${w1} and ${w2} sit apart from the others, still running on adrenaline. The forest forged something that camp politics can't easily break.`,
+            ]) });
+        }
+
+        // Losing pair stress + blame dynamics
+        const losePairLabel = yt.losingPair;
+        const losePair = yt.pairs?.find(p => p.label === losePairLabel);
+        if (losePair?.members?.length >= 2) {
+          const [l1, l2] = losePair.members;
+          const l1Score = yt.personalScores?.[l1] || 0;
+          const l2Score = yt.personalScores?.[l2] || 0;
+          const weaker = l1Score < l2Score ? l1 : l2;
+          const stronger = weaker === l1 ? l2 : l1;
+          const prW = pronouns(weaker);
+          const prS = pronouns(stronger);
+
+          // Blame event — stronger player frustrated at weaker
+          const strongerTemp = pStats(stronger).temperament;
+          const blameChance = strongerTemp * 0.08 + 0.1;
+          if (Math.random() < blameChance) {
+            addBond(stronger, weaker, -1.0);
+            yt.chefGrudge[weaker] = (yt.chefGrudge[weaker] || 0) + 0.4;
+            ytEvents.push({ type: 'yetiBlame', players: [stronger, weaker],
+              badgeText: 'BLAME', badgeClass: 'red',
+              text: _rp([
+                `${stronger} won't say it directly, but ${prS.posAdj} body language screams it: ${weaker} cost them the challenge. ${prW.Sub} ${prW.sub === 'they' ? 'know' : 'knows'} it too.`,
+                `"We would've had it if—" ${stronger} catches ${prS.ref} mid-sentence. The damage is done. ${weaker} heard enough.`,
+                `${stronger} vents to the group about the challenge. ${prS.Sub} never says ${weaker}'s name, but everyone knows who ${prS.sub === 'they' ? 'they mean' : prS.sub + ' means'}.`,
+                `${weaker} sits alone by the fire. ${stronger} hasn't said a word to ${prW.obj} since they got back. The silence says everything.`,
+              ]) });
+          }
+
+          // Loser pair sadness/stress
+          ytEvents.push({ type: 'yetiLoserStress', players: losePair.members,
+            badgeText: 'POST-YETI STRESS', badgeClass: 'grey',
+            text: _rp([
+              `The losing pair comes back to camp exhausted and quiet. ${l1} and ${l2} can barely look at each other. The forest took something out of them.`,
+              `${weaker} keeps replaying the race in ${prW.posAdj} head. Every wrong turn. Every hesitation. Chef saw all of it.`,
+              `${l1} and ${l2} sit on opposite sides of the shelter. Neither wants to talk about what happened out there.`,
+              `The others give ${l1} and ${l2} space. You can see it on their faces — they know Chef is watching, and one of them is going home.`,
+            ]) });
+        }
+
+        // Stolen supply confrontation — thief gets called out
+        const stolenItems = yt.stolenItems || [];
+        if (stolenItems.length > 0) {
+          const theft = _rp(stolenItems);
+          const prT = pronouns(theft.thief);
+          if (gs.activePlayers.includes(theft.thief) && gs.activePlayers.includes(theft.victim)) {
+            const victimIntuition = pStats(theft.victim).intuition;
+            const discoveryChance = victimIntuition * 0.08 + 0.15;
+            if (Math.random() < discoveryChance) {
+              addBond(theft.victim, theft.thief, -1.5);
+              yt.chefGrudge[theft.thief] = (yt.chefGrudge[theft.thief] || 0) + 0.5;
+              ytEvents.push({ type: 'yetiTheftConfrontation', players: [theft.victim, theft.thief],
+                badgeText: 'CONFRONTATION', badgeClass: 'red',
+                text: _rp([
+                  `${theft.victim} finds ${prT.posAdj} ${theft.item} in ${theft.thief}'s bag. The confrontation is loud enough for Chef to hear from across camp.`,
+                  `"Where's my ${theft.item}?" ${theft.victim} asks quietly. ${theft.thief} doesn't have a good answer. The whole tribe is watching now.`,
+                  `${theft.victim} doesn't accuse ${theft.thief} directly — just pointedly asks the group if anyone's seen a ${theft.item}. ${theft.thief}'s face says it all.`,
+                ]) });
+            } else {
+              ytEvents.push({ type: 'yetiTheftSuspicion', players: [theft.victim],
+                badgeText: 'SUSPICIOUS', badgeClass: 'grey',
+                text: `${theft.victim} can't find ${pronouns(theft.victim).posAdj} ${theft.item}. Keeps looking. Keeps wondering.` });
+            }
+          }
+        }
+
+        // Sasquatch stories — bonding over shared terror
+        if (yt.sasquatch?.aggression >= 2) {
+          const storytellers = gs.activePlayers.filter(n => !winMembers.includes(n));
+          if (storytellers.length >= 2) {
+            const [s1, s2] = storytellers.sort(() => Math.random() - 0.5).slice(0, 2);
+            addBond(s1, s2, 0.8);
+            ytEvents.push({ type: 'yetiSasquatchStory', players: [s1, s2],
+              badgeText: 'SHARED FEAR', badgeClass: 'blue',
+              text: _rp([
+                `${s1} and ${s2} trade Sasquatchanakwa stories by the fire. Somehow surviving something terrifying together makes everything else feel smaller.`,
+                `"Did you see how close it got?" ${s1} asks. ${s2} nods. They both laugh — the kind of laugh that comes out when you're still processing fear.`,
+                `Nobody else believes what ${s1} and ${s2} saw in those woods. That's fine. They know. And that shared secret becomes its own kind of alliance.`,
+              ]) });
+          }
+        }
+
+        // Chef watching — players feel his eyes, paranoia builds
+        const chefGrudgeEntries = Object.entries(yt.chefGrudge || {}).filter(([, v]) => v > 1.0).sort(([, a], [, b]) => b - a);
+        if (chefGrudgeEntries.length > 0) {
+          const [target] = chefGrudgeEntries[0];
+          const prTgt = pronouns(target);
+          if (gs.activePlayers.includes(target)) {
+            ytEvents.push({ type: 'yetiChefWatch', players: [target],
+              badgeText: 'CHEF\'S EYES', badgeClass: 'grey',
+              text: _rp([
+                `${target} catches Chef staring from across camp. No expression. Just... evaluating. ${prTgt.Sub} can't shake the feeling that the decision is already made.`,
+                `Chef walks past ${target} without a word. Somehow that's worse than yelling. ${prTgt.Sub} ${prTgt.sub === 'they' ? 'start' : 'starts'} calculating what went wrong.`,
+                `Everyone's laughing about something, but ${target} keeps glancing at Chef. ${prTgt.Sub} ${prTgt.sub === 'they' ? 'know' : 'knows'} ${prTgt.sub === 'they' ? 'they\'re' : prTgt.sub + '\'s'} on the chopping block. The forest doesn't lie.`,
+              ]) });
+          }
+        }
+
+        // Immunity winners' guilt or cockiness (archetype-driven)
+        if (winMembers.length >= 1 && Math.random() < 0.5) {
+          const winner = _rp(winMembers);
+          const arch = players.find(p => p.name === winner)?.archetype;
+          const prWin = pronouns(winner);
+          if (arch === 'hero' || arch === 'loyal-soldier' || arch === 'social-butterfly') {
+            const guiltTarget = gs.activePlayers.filter(n => !winMembers.includes(n))[0];
+            if (guiltTarget) {
+              addBond(winner, guiltTarget, 0.5);
+              ytEvents.push({ type: 'yetiWinnerGuilt', players: [winner, guiltTarget],
+                badgeText: 'SURVIVOR\'S GUILT', badgeClass: 'blue',
+                text: _rp([
+                  `${winner} pulls ${guiltTarget} aside. "I wish I could share immunity." ${prWin.Sub} ${prWin.sub === 'they' ? 'mean' : 'means'} it. That counts for something.`,
+                  `${winner} can't enjoy the win. Not when ${prWin.sub} ${prWin.sub === 'they' ? 'know' : 'knows'} one of ${prWin.posAdj} friends is going home because Chef says so.`,
+                ]) });
+            }
+          } else if (arch === 'villain' || arch === 'mastermind' || arch === 'schemer') {
+            ytEvents.push({ type: 'yetiWinnerSmug', players: [winner],
+              badgeText: 'SMUG', badgeClass: 'grey',
+              text: _rp([
+                `${winner} stretches out at camp with the confidence of someone who doesn't have to worry tonight. ${prWin.Sub} ${prWin.sub === 'they' ? 'make' : 'makes'} sure everyone notices.`,
+                `"Chef can't touch me." ${winner} says it under ${prWin.posAdj} breath, but loud enough. The losers are not amused.`,
+              ]) });
+          }
+        }
+
+        // Partner who carried vs partner who was deadweight — bond shift
+        const carryEvents = yt.timeline?.filter(e => e.type === 'partnerCarryChoice');
+        if (carryEvents?.length) {
+          const carry = _rp(carryEvents);
+          if (carry.players?.length >= 2) {
+            const [carrier, carried] = carry.players;
+            if (gs.activePlayers.includes(carrier) && gs.activePlayers.includes(carried)) {
+              addBond(carried, carrier, 1.0);
+              const prC = pronouns(carried);
+              ytEvents.push({ type: 'yetiGratitude', players: [carried, carrier],
+                badgeText: 'GRATITUDE', badgeClass: 'green',
+                text: _rp([
+                  `${carried} finds ${carrier} after the challenge. "I know you carried me out there. I won't forget that." ${prC.Sub} ${prC.sub === 'they' ? 'won\'t' : 'won\'t'}.`,
+                  `${carried} doesn't say much to ${carrier}. Just hands ${pronouns(carrier).obj} the best spot by the fire. Some debts don't need words.`,
+                ]) });
+            }
+          }
+        }
+
+        // Shuffle and add to camp events
+        ytEvents.sort(() => Math.random() - 0.5);
+        ep.campEvents[camp].post.push(...ytEvents);
+      }
+    }
+
     // Survival events — provider/slacker/food crisis
     generateSurvivalEvents(ep);
     // Paranoia spiral — fires before social bomb (bond hits stack)

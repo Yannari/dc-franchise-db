@@ -54,6 +54,10 @@ const SLASHER_EVENTS = {
         `{name} picks up a rock the size of {pr.pos} head. The slasher reconsiders.`,
         `{name} squares up. No weapon, just fists. The slasher takes a step back.`,
         `{name} rips a branch off a tree and holds it like a bat. 'Come on then.'`
+      ],
+      povVariants: [
+        "Your hand closes around the paddle. You swing before you think. Contact. The slasher staggers.",
+        "Something in you snaps. You pick up the rock. You're not running anymore."
       ]
     },
     {
@@ -65,6 +69,10 @@ const SLASHER_EVENTS = {
         `{name} leaves a trail leading to a pit. It works.`,
         `{name} sets up chairs in a maze pattern near the shelter. The slasher gets tangled.`,
         `{name} pours cooking oil across the mess hall floor. The slasher slides into the wall.`
+      ],
+      povVariants: [
+        "You string the fishing line across the path. Your hands are shaking but the knot holds. Footsteps approaching.",
+        "The oil goes down. You back away. The slasher steps in. Perfect."
       ]
     },
     {
@@ -77,6 +85,10 @@ const SLASHER_EVENTS = {
         `{name} finds a hollow tree trunk. The slasher walks right past.`,
         `{name} slips behind the waterfall. Invisible.`,
         `{name} climbs inside the supply crate. Darkness. Silence. Safety.`
+      ],
+      povVariants: [
+        "You press yourself flat under the cabin. The wood is cold. Footsteps pass three inches above your head.",
+        "You fit inside the crate. Darkness. Your own breathing is the loudest thing in the world."
       ]
     },
     {
@@ -88,6 +100,10 @@ const SLASHER_EVENTS = {
         `{name} spots the slasher heading toward {ally}. One whistle — their signal. {ally} vanishes.`,
         `{name} grabs {ally}'s arm and pulls {pr.obj} into the bush. Just in time.`,
         `{name} throws a pebble at {ally}'s foot. {ally} looks up, sees the shadow, and moves.`
+      ],
+      povVariants: [
+        "You see the shadow moving toward them. One whistle. Your signal. They vanish.",
+        "You grab their arm and pull. No time to explain. Just move."
       ]
     },
     {
@@ -99,6 +115,10 @@ const SLASHER_EVENTS = {
         `{name} stands between {ally} and the slasher. {pr.Sub} {pr.sub==='they'?'are':'is'} not moving.`,
         `{name} shoves {ally} behind {pr.obj}. 'Run. I got this.'`,
         `{name} throws {pr.ref} in the slasher's path so {ally} can escape.`
+      ],
+      povVariants: [
+        "You step forward. Between them and the dark. Whatever comes, it comes through you first.",
+        "You shove them behind you. 'Run.' You don't look back to see if they do."
       ]
     },
     {
@@ -109,6 +129,10 @@ const SLASHER_EVENTS = {
         `{name} breathes. Counts to ten. Moves quietly. The panic doesn't touch {pr.obj}.`,
         `Everyone around {name} is losing it. {pr.Sub} {pr.sub==='they'?'are':'is'} steady. Focused. Still here.`,
         `{name} finds a corner, closes {pr.pos} eyes, and waits. When {pr.sub} open{pr.sub==='they'?'':'s'} them, the slasher has moved on.`
+      ],
+      povVariants: [
+        "Breathe. Count to ten. The panic is there but you don't let it win. Not tonight.",
+        "Everyone around you is falling apart. You're not. You move when it's time to move."
       ]
     },
     {
@@ -121,6 +145,10 @@ const SLASHER_EVENTS = {
         `{name} takes charge. 'Everyone — behind the mess hall. Now. Stay together.' They listen.`,
         `{name} grabs {ally}'s shoulder. 'We're not dying tonight. Follow me.' The group falls in line.`,
         `{name} organizes the group into a formation. It shouldn't work. It does.`
+      ],
+      povVariants: [
+        "'Everyone — behind the mess hall. Now.' They listen. You don't know why. You sounded sure.",
+        "'We're not dying tonight. Follow me.' They follow. You better be right."
       ]
     },
     {
@@ -132,6 +160,10 @@ const SLASHER_EVENTS = {
         `{name} shoves a table against the door and stacks everything heavy on top. It holds.`,
         `{name} blocks the cabin entrance with supply crates. The slasher pushes. Doesn't get through.`,
         `{name} rips the cabin door off its hinges and wedges it against the window. Improvised. Effective.`
+      ],
+      povVariants: [
+        "The table goes against the door. Then the crates. Then everything else. It holds. You hope.",
+        "You wedge the door shut and press your back against it. The pushing starts. It stops. For now."
       ]
     },
     {
@@ -142,6 +174,10 @@ const SLASHER_EVENTS = {
         `{name} throws a torch down the far trail. The slasher follows it. Bought everyone a round.`,
         `{name} tips over a barrel and lets it roll downhill. The noise draws the slasher away.`,
         `{name} triggers a tripwire on the far side of camp. The slasher's head snaps toward it. Time to move.`
+      ],
+      povVariants: [
+        "You throw the torch. It arcs through the dark. The slasher's head turns. Go. GO.",
+        "The barrel rolls downhill and crashes. Every eye follows it. Including the mask. Now's your chance."
       ]
     },
     {
@@ -152,6 +188,10 @@ const SLASHER_EVENTS = {
         `{name} finds a machete near the fire pit. {pr.Sub} feel{pr.sub==='they'?'':'s'} a lot braver now.`,
         `{name} grabs a metal pipe from the tool shed. Not ideal, but better than nothing.`,
         `{name} picks up a cast-iron pan. It's heavy. It'll do.`
+      ],
+      povVariants: [
+        "Your hand finds the machete in the dark. Cold metal. You feel braver already. Maybe that's stupid.",
+        "The pipe is heavy. Not ideal. But your hands have something to hold now and that changes everything."
       ]
     },
     {
@@ -162,6 +202,10 @@ const SLASHER_EVENTS = {
         `{name} scrambles onto the cabin roof. The slasher circles below but can't follow.`,
         `{name} pulls {pr.ref} up the side of the mess hall. From the roof, {pr.sub} can see everything.`,
         `{name} leaps from the porch railing to the overhang and hauls {pr.ref} up. Out of reach.`
+      ],
+      povVariants: [
+        "You haul yourself up. Splinters in your palms. From the roof you can see everything. Including the thing that's hunting you.",
+        "Your feet leave the ground. The railing, the overhang, the roof. Out of reach. Your arms are screaming."
       ]
     },
     {
@@ -172,6 +216,10 @@ const SLASHER_EVENTS = {
         `{name} maps the slasher's patrol in {pr.pos} head. Left, right, left, pause. {pr.Sub} move{pr.sub==='they'?'':'s'} during the pause.`,
         `{name} realizes the slasher always checks the cabins first. {pr.Sub} head{pr.sub==='they'?'':'s'} for the beach.`,
         `{name} watches the flashlight pattern. Every twelve seconds it sweeps left. That's the window.`
+      ],
+      povVariants: [
+        "Left, right, left, pause. You map it in your head. You move during the pause. It works.",
+        "The flashlight sweeps left every twelve seconds. You count. Eleven. Twelve. You run."
       ]
     },
     {
@@ -182,6 +230,10 @@ const SLASHER_EVENTS = {
         `{name} trips and falls into the slasher, knocking them both down. Everyone escapes. {name} has no idea what just happened.`,
         `{name} stumbles backward into a shelf. The shelf falls on the slasher. Pure accident. {name} is a hero and has no idea why.`,
         `{name} throws a coconut in panic. It hits the slasher square in the mask. The slasher drops. Nobody is more surprised than {name}.`
+      ],
+      povVariants: [
+        "You trip. You actually trip and fall into the slasher. You're both on the ground. Everyone runs. You have no idea what just happened.",
+        "Something falls. On the slasher. Because you bumped it. You're a hero and you have absolutely no idea why."
       ]
     },
     {
@@ -195,6 +247,10 @@ const SLASHER_EVENTS = {
         `{ally} finds {name} curled up behind the cabin, shaking. {ally} sits next to {pr.obj}. 'Hey. We're getting out of this.' {name} nods. They move together.`,
         `{ally} puts a hand on {name}'s shoulder. 'Breathe. I'm right here.' {name} stops shaking. They both make it through this round.`,
         `{name} is hyperventilating behind the mess hall. {ally} crouches down. Doesn't say anything. Just stays. That's enough.`
+      ],
+      povVariants: [
+        "Someone is shaking next to you. You sit down. 'Hey. We're getting out of this.' You don't know if that's true.",
+        "You put your hand on their shoulder. You don't say anything. You just stay."
       ]
     },
     {
@@ -207,6 +263,10 @@ const SLASHER_EVENTS = {
         `{name} runs out into the open, waving and yelling. The slasher turns. The group behind the cabin escapes. {name} barely makes it back.`,
         `{name} throws a lit torch down the trail and sprints the other way. The slasher follows the light. The alliance owes {name} their game tonight.`,
         `{name} starts banging pots together near the kitchen. Every head turns — including the slasher's. The group behind {name} disappears into the dark.`
+      ],
+      povVariants: [
+        "You run into the open. Waving. Yelling. The slasher turns toward you. Behind you, everyone escapes. Now you need to escape too.",
+        "The torch goes down the trail. You sprint the other way. Your heart is trying to leave your chest."
       ]
     },
     {
@@ -218,6 +278,10 @@ const SLASHER_EVENTS = {
         `{name} plays dead. Face down in the dirt. The slasher walks past. When the footsteps fade, {name} gets up and runs.`,
         `{name} goes completely limp behind a bush. The slasher looks right at {pr.obj}. Keeps walking. {name} doesn't exhale for another thirty seconds.`,
         `{name} collapses dramatically in the open. The slasher prods {pr.obj} with a boot. {name} doesn't flinch. The slasher moves on. Performance of a lifetime.`
+      ],
+      povVariants: [
+        "Face down. Don't breathe. Don't move. The footsteps stop next to you. A boot nudges your ribs. You don't flinch. The footsteps resume.",
+        "You go limp. Completely limp. The slasher looks right at you. Keeps walking. You don't exhale for thirty seconds."
       ]
     },
     {
@@ -230,6 +294,10 @@ const SLASHER_EVENTS = {
         `Hiding in the dark, {name} tells {ally} something real. Not strategy — something personal. The kind of thing you only say when you think you might not make it.`,
         `{name} and {ally} are pressed against the same wall, breathing hard. {name} says 'If we don't make it — I want you to know I had your back the whole time.' The silence after is different.`,
         `The fear strips everything else away. {name} tells {ally} the truth about how {pr.sub} feel{pr.sub==='they'?'':'s'} about this game, about the alliances, about what matters. {ally} listens.`
+      ],
+      povVariants: [
+        "The words come out before you can stop them. Real words. Not strategy. Something you only say when you think you might not make it.",
+        "Your back is against the wall. Theirs too. You tell them the truth. The fear strips everything else away."
       ]
     },
     {
@@ -240,6 +308,10 @@ const SLASHER_EVENTS = {
         `{name} is in the kitchen making a sandwich. The slasher walks past the window. {name} doesn't notice. Somehow this works.`,
         `While everyone else is running for their lives, {name} finds leftover rice in the pot and eats it. Standing in the kitchen. In the dark. Completely fine.`,
         `{name} opens the fridge. The light illuminates the whole kitchen. The slasher is outside. {name} grabs a mango and closes it. Oblivious and alive.`
+      ],
+      povVariants: [
+        "You're making a sandwich. The slasher walks past the window. You don't notice. You have a sandwich.",
+        "The fridge light illuminates everything. You grab the mango. Close the door. Oblivious and alive."
       ]
     },
     {
@@ -251,6 +323,10 @@ const SLASHER_EVENTS = {
         `{name} puts {pr.ref} between {ally} and the darkness. Whatever comes, it goes through {name} first.`,
         `{name} doesn't run. {pr.Sub} plant{pr.sub==='they'?'':'s'} {pr.pos} feet and stare{pr.sub==='they'?'':'s'} into the dark. {ally} escapes behind {pr.obj}.`,
         `{name} grabs a stick and faces the sound. 'Go,' {pr.sub} tell{pr.sub==='they'?'':'s'} {ally}. {ally} goes.`
+      ],
+      povVariants: [
+        "You don't run. Your feet plant. Your eyes find the dark. Whatever comes, it goes through you.",
+        "You grab the stick. 'Go,' you tell them. They go. Now it's just you and the dark."
       ]
     }
   ],
@@ -265,6 +341,10 @@ const SLASHER_EVENTS = {
         `{name} sees a shadow and screams. The entire camp knows where {pr.sub} {pr.sub==='they'?'are':'is'} now.`,
         `{name} hears a branch snap and lets out a sound that echoes off the mountains.`,
         `{name} tries to hold it in. {pr.Sub} can't. The scream comes out strangled and worse.`
+      ],
+      povVariants: [
+        "You see it. The shadow. The scream comes out before you can stop it. Everyone knows where you are now.",
+        "A branch snaps. You scream. The echo comes back to you from the mountains. So does the slasher."
       ]
     },
     {
@@ -276,6 +356,10 @@ const SLASHER_EVENTS = {
         `{name} bolts into the jungle with no plan. Branches whip {pr.pos} face. {pr.Sub} {pr.sub==='they'?'have':'has'} no idea where {pr.sub} {pr.sub==='they'?'are':'is'}.`,
         `{name} runs. No direction, no destination. Just away. It costs {pr.obj} position.`,
         `{name} sprints into the dark and trips over a root. Gets up. Runs again. Wrong direction.`
+      ],
+      povVariants: [
+        "You bolt. No plan. Branches whip your face. You have no idea where you are.",
+        "You run. Wrong direction. You know it's wrong. You can't stop."
       ]
     },
     {
@@ -286,6 +370,10 @@ const SLASHER_EVENTS = {
         `{name} freezes. Legs won't move. The slasher is getting closer and {pr.sub} can't do anything.`,
         `{name} sees the mask and every muscle locks. By the time {pr.sub} can move again, the advantage is gone.`,
         `{name}'s brain says run. {pr.Sub} {pr.sub==='they'?'don\'t':'doesn\'t'}. The fear wins.`
+      ],
+      povVariants: [
+        "Your legs won't move. The mask is getting closer. Your brain says run. You don't.",
+        "Every muscle locks. By the time you can move again, the advantage is gone."
       ]
     },
     {
@@ -297,6 +385,10 @@ const SLASHER_EVENTS = {
         `{name} hears {ally} yell for help. {pr.Sub} calculate{pr.sub==='they'?'':'s'} the odds and keeps running.`,
         `{name} sees {ally} cornered and decides that's not {pr.pos} problem.`,
         `{name} whispers 'sorry' and disappears into the dark. {ally} heard it.`
+      ],
+      povVariants: [
+        "You hear them yell for help. You calculate the odds. You keep running.",
+        "You see them cornered. That's not your problem. You keep moving."
       ]
     },
     {
@@ -309,6 +401,10 @@ const SLASHER_EVENTS = {
         `{name} shoves {victim} into the slasher's path and disappears.`,
         `{name} redirects the slasher by pointing at {victim}'s hiding spot.`,
         `{name} trips {victim} and uses the head start to escape.`
+      ],
+      povVariants: [
+        "You shove them. Hard. Into the slasher's path. You disappear into the dark.",
+        "You point at their hiding spot. The slasher turns. You're already gone."
       ]
     },
     {
@@ -319,6 +415,10 @@ const SLASHER_EVENTS = {
         `{name} trips over a root and goes face-first into the dirt. The slasher's footsteps pause.`,
         `{name} catches {pr.pos} foot on a vine and stumbles hard. Lost ground.`,
         `{name} slips on wet rock and goes down. Gets up slower than {pr.sub} should.`
+      ],
+      povVariants: [
+        "Your foot catches the root. You go down face-first. Lost ground.",
+        "You slip. Wet rock. Your knee hits hard. You get up slower than you should."
       ]
     },
     {
@@ -330,6 +430,10 @@ const SLASHER_EVENTS = {
         `{name} ditches the group and heads into the jungle alone. Nobody follows.`,
         `{name} decides {pr.sub} {pr.sub==='they'?'are':'is'} better off alone. {pr.Sub} {pr.sub==='they'?'aren\'t':'isn\'t'}.`,
         `{name} slips away without telling anyone. Solo in the dark.`
+      ],
+      povVariants: [
+        "You leave the group. Nobody follows. The dark closes around you.",
+        "You slip away without telling anyone. Solo in the dark. This was a mistake."
       ]
     },
     {
@@ -342,6 +446,10 @@ const SLASHER_EVENTS = {
         `{name} and {ally} disagree on which way to go. The whispered argument gets louder. The slasher doesn't need a map.`,
         `{name} snaps at {ally} in the dark. 'This is YOUR fault.' The timing could not be worse.`,
         `{name} and {ally} are fighting over who made a noise. Meanwhile, the actual threat is ten feet away.`
+      ],
+      povVariants: [
+        "'This is YOUR fault.' The words come out louder than you meant. The slasher doesn't need a map now.",
+        "You're arguing. You can't stop. The timing could not be worse."
       ]
     },
     {
@@ -352,6 +460,10 @@ const SLASHER_EVENTS = {
         `{name} hears something and goes to investigate. That's never the right call.`,
         `{name} peeks around the corner. The slasher peeks back.`,
         `{name} follows the sound. It leads exactly where {pr.sub} shouldn't be.`
+      ],
+      povVariants: [
+        "You hear something. You go look. That's never the right call. You go anyway.",
+        "You peek around the corner. Something peeks back."
       ]
     },
     {
@@ -363,6 +475,10 @@ const SLASHER_EVENTS = {
         `{name} gets cocky. 'I think we lost them.' {pr.Sub} didn't.`,
         `{name} relaxes too early. Drops {pr.pos} guard. The slasher was waiting for exactly that.`,
         `{name} starts walking instead of running. Confidence is not the same as safety.`
+      ],
+      povVariants: [
+        "'I think we lost them.' You didn't.",
+        "You relax. Drop your guard. One second too long. The slasher was waiting for exactly that."
       ]
     },
     {
@@ -374,6 +490,10 @@ const SLASHER_EVENTS = {
         `{name} and {ally} are too focused on each other to notice the slasher. Classic.`,
         `{name} stops running to check on {ally}. Sweet. Also stupid.`,
         `{name} and {ally} are holding hands while hiding. It slows them both down.`
+      ],
+      povVariants: [
+        "You're too focused on them to notice. The footsteps behind you. Classic.",
+        "You stop running to check on them. Sweet. Also stupid."
       ]
     },
     {
@@ -384,6 +504,10 @@ const SLASHER_EVENTS = {
         `{name} opens a door that should stay closed. The creak echoes.`,
         `{name} pushes open the supply shed. Something inside moves. {pr.Sub} slam{pr.sub==='they'?'':'s'} it shut.`,
         `{name} checks the bathroom. The mirror shows something behind {pr.obj}. Too late.`
+      ],
+      povVariants: [
+        "You open the door. The creak echoes. Something inside moves.",
+        "The bathroom mirror shows something behind you. Too late."
       ]
     },
     {
@@ -394,6 +518,10 @@ const SLASHER_EVENTS = {
         `{name}'s flashlight flickers and dies. Darkness. Complete.`,
         `The batteries in {name}'s torch give out. {pr.Sub} {pr.sub==='they'?'are':'is'} blind now.`,
         `{name}'s light source dies at the worst possible moment. The dark swallows everything.`
+      ],
+      povVariants: [
+        "Your flashlight flickers. Dies. Darkness. Complete.",
+        "The batteries give out. You're blind now. The dark swallows everything."
       ]
     },
     {
@@ -408,6 +536,10 @@ const SLASHER_EVENTS = {
         `{ally} is wearing a towel over {pr.pos} head. {name} sees the silhouette and bolts. By the time {name} stops running, {pr.sub} {pr.sub==='they'?'are':'is'} three hundred feet from camp.`,
         `{name} walks into the bathroom and sees {ally}'s shadow in the mirror. The scream is loud enough to echo. {ally} just stands there, confused.`,
         `{name} and {ally} walk toward each other in the dark. Neither sees the other. They collide. Both scream. The slasher now knows exactly where they are.`
+      ],
+      povVariants: [
+        "You round the corner. A face in the dark. You scream before you see who it is.",
+        "Someone grabs your shoulder. You swing. It's your ally. Half the camp heard that."
       ]
     },
     {
@@ -421,6 +553,10 @@ const SLASHER_EVENTS = {
         `{name} sneaks up behind {victim} and grabs {pr.pos} shoulders. {victim} nearly passes out. {name} thinks it's the funniest thing that's happened all night.`,
         `{name} puts on a mask they found in the supply shed and walks toward {victim}. {victim} doesn't recognize {name} for a full five seconds. Those five seconds cost both of them.`,
         `{name} whispers {victim}'s name from behind a bush in a low voice. {victim} freezes, then runs. {name} can't stop laughing. The slasher can't stop listening.`
+      ],
+      povVariants: [
+        "You hide behind the tree. They walk past. You grab their shoulders. The scream is amazing.",
+        "You put on the mask. You walk toward them. Five seconds of pure terror. Worth it. Maybe."
       ]
     },
     {
@@ -433,6 +569,10 @@ const SLASHER_EVENTS = {
         `While hiding in the supply shed, {name} finds a note {ally} wrote. It has {name}'s name on it. The trust dies right there in the dark.`,
         `{name} overhears {ally} whispering to someone else: 'We get rid of {name} next.' Hiding two feet away. Hearing every word.`,
         `In the panic, {ally}'s bag spills open. {name} sees the vote parchment. {pr.Sub} read{pr.sub==='they'?'':'s'} {pr.pos} own name. The look {name} gives {ally} says everything.`
+      ],
+      povVariants: [
+        "The note has your name on it. Their handwriting. The trust dies right there in the dark.",
+        "You overhear it. Your name. Their voice. 'We get rid of them next.' Two feet away."
       ]
     },
     {
@@ -445,6 +585,10 @@ const SLASHER_EVENTS = {
         `{name} and {enemy} end up in the same hiding spot. Neither will leave. The whispered argument escalates. The slasher doesn't even need to look.`,
         `{name} sees {enemy} hiding behind the same rock. 'Are you serious.' The mutual disgust is louder than either of them intended.`,
         `{name} and {enemy} are forced to share a cabin. They'd rather face the slasher. Almost do.`
+      ],
+      povVariants: [
+        "Same hiding spot. Neither of you will leave. The whispered argument escalates. The slasher can hear both of you.",
+        "You see their face. 'Are you serious.' The disgust is louder than you meant."
       ]
     },
     {
@@ -457,6 +601,10 @@ const SLASHER_EVENTS = {
         `{name} hasn't slept in two days. {pr.Sub} sit{pr.sub==='they'?'':'s'} down behind the cabin for 'just a second.' The next thing {pr.sub} know{pr.sub==='they'?'':'s'}, the slasher is standing over {pr.obj}.`,
         `The adrenaline crash hits {name} like a wall. Eyes close. Just for a moment. When they open, the mask is three feet away.`,
         `{name} leans against a tree and the exhaustion wins. {pr.Sub} wake{pr.sub==='they'?'':'s'} up to a hand on {pr.pos} shoulder. It's not a friend.`
+      ],
+      povVariants: [
+        "You sit down for 'just a second.' Your eyes close. When they open, the mask is three feet away.",
+        "The adrenaline crash hits like a wall. Everything goes dark. Then — a hand on your shoulder. Not a friend's."
       ]
     },
     {
@@ -469,6 +617,10 @@ const SLASHER_EVENTS = {
         `{name} calls out for {ally}. {ally} is right there. {ally} does nothing. The alliance dies in that silence.`,
         `{name} reaches for {ally}'s hand. {ally} pulls away. Turns. Runs. {name} stands there for a second too long.`,
         `The slasher is closing in. {name} looks at {ally} — 'Help me.' {ally} looks back. Then {ally} looks away. That's the answer.`
+      ],
+      povVariants: [
+        "You call out. They're right there. They do nothing. The alliance dies in that silence.",
+        "You reach for their hand. They pull away. Turn. Run. That's the answer."
       ]
     },
     {
@@ -481,6 +633,10 @@ const SLASHER_EVENTS = {
         `{name} asks 'Did you hear that?' — the last useful question anyone asks tonight.`,
         `{name} suggests they split up. That is never the answer.`,
         `{name} opens the basement door. There's no reason to open the basement door.`
+      ],
+      povVariants: [
+        "'I think we're safe now.' You actually said that. Nobody should ever say that.",
+        "'I'll be right back.' You won't."
       ]
     },
     {
@@ -492,6 +648,10 @@ const SLASHER_EVENTS = {
         `{name} feels it before seeing it. Footsteps matching {pr.pos}. The slasher has picked a target.`,
         `Every time {name} looks back, the shadow is still there. Following. Patient.`,
         `{name} hears breathing behind {pr.obj}. Not close enough to catch. Close enough to follow.`
+      ],
+      povVariants: [
+        "You feel it before you see it. Footsteps matching yours. The slasher has picked a target. You.",
+        "Every time you look back, the shadow is still there. Following. Patient. Matching your pace."
       ]
     }
   ]
@@ -1062,6 +1222,52 @@ function _slasherFinalShowdown(p1, p2, scores) {
   };
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// FILM TITLE GENERATOR & CHRIS COMMENTARY
+// ═══════════════════════════════════════════════════════════════════
+
+const _FILM_ADJECTIVES = ['Silent', 'Crimson', 'Last', 'Endless', 'Bleeding', 'Forgotten', 'Final'];
+const _FILM_NOUNS = ['Night', 'Scream', 'Shadow', 'Campfire', 'Darkness', 'Silence', 'Hour'];
+const _FILM_LOCATIONS = ['Camp Wawanakwa', 'Skull Island', "Dead Man's Cove", 'The Dock', 'Cabin 13'];
+
+function _generateFilmTitle() {
+  const adj = _FILM_ADJECTIVES[Math.floor(Math.random() * _FILM_ADJECTIVES.length)];
+  const noun = _FILM_NOUNS[Math.floor(Math.random() * _FILM_NOUNS.length)];
+  const loc = _FILM_LOCATIONS[Math.floor(Math.random() * _FILM_LOCATIONS.length)];
+  return Math.random() < 0.5
+    ? `${adj} ${noun} at ${loc}`
+    : `The ${adj} ${noun}`;
+}
+
+const _CHRIS_ROUND_LINES = {
+  firstRound: [`"Opening scene. Establish the setting. Let the audience get comfortable. ...That's long enough."`],
+  firstCatch: [`"FIRST BLOOD! And we're only in Act One. This is going to be GREAT television."`],
+  highTension: [
+    `"The pacing is perfect. The audience can feel it. Something bad is about to happen."`,
+    `"I love this part. The quiet before the kill."`,
+    `"You can feel the camera tightening, can't you?"`
+  ],
+  envShift: [
+    `"Love what the atmosphere is doing for the shot. Very Carpenter."`,
+    `"The production value on this is insane. I didn't even have to ask for it."`
+  ],
+  final3: [`"Act Three. This is where careers are made, people."`, `"Three left. Two too many."`],
+  finalShowdown: [`"Two left. One walks away. The other... doesn't. Roll camera."`, `"This is the money shot. Nobody blink."`],
+  doubleCatch: [`"A DOUBLE FEATURE! I didn't even plan that. Actually I might have."`, `"Two for one! The audience is going to LOSE it."`],
+  generic: [
+    `"Keep rolling. Keep rolling."`,
+    `"Nobody cut. Nobody CUT."`,
+    `"This is why I do what I do."`,
+    `"Cinema."`,
+    `"Beautiful. Terrifying. Same thing."`
+  ]
+};
+
+function _pickChrisLine(pool) {
+  const lines = _CHRIS_ROUND_LINES[pool] || _CHRIS_ROUND_LINES.generic;
+  return lines[Math.floor(Math.random() * lines.length)];
+}
+
 export function simulateSlasherNight(ep) {
   const activePlayers = [...gs.activePlayers];
   // Max rounds: enough to catch everyone down to 2 (each round catches 1-2)
@@ -1362,17 +1568,82 @@ export function simulateSlasherNight(ep) {
     // Environment text (replaces old flavor-only atmosphere)
     const atmosphere = env.text;
 
+    // ── POV Selection ──
+    const povScores = survivors.map(n => {
+      const evtPoints = roundEvents.filter(e => e.player === n).reduce((s, e) => s + Math.abs(e.points), 0);
+      const wasCaught = caughtThisRound.has(n);
+      const hadBigPositive = roundEvents.filter(e => e.player === n && e.points >= 3).length;
+      const hadNeg = roundEvents.some(e => e.player === n && e.points < 0);
+      return {
+        name: n,
+        score: evtPoints * 2 + (wasCaught ? 10 : 0) + (hadBigPositive ? 3 : 0) + (hadNeg ? 2 : 0) + (Math.random() * 2 - 1)
+      };
+    });
+    // No repeat POV until all used
+    const povCandidates = povScores.filter(p => !povUsed.has(p.name));
+    const povPool = povCandidates.length ? povCandidates : povScores;
+    povPool.sort((a, b) => b.score - a.score);
+    const povPlayer = povPool[0]?.name || survivors[0];
+    povUsed.add(povPlayer);
+    povOrder.push(povPlayer);
+
+    // ── POV Text for POV player events ──
+    const povEvents = roundEvents.filter(e => e.player === povPlayer).map(e => {
+      // Find the event definition to get povVariants
+      const evtDef = [...SLASHER_EVENTS.positive, ...SLASHER_EVENTS.negative].find(ev => ev.id === e.eventId);
+      const povText = evtDef?.povVariants?.length
+        ? evtDef.povVariants[Math.floor(Math.random() * evtDef.povVariants.length)]
+        : null;
+      return { ...e, povText };
+    });
+
+    // ── Tension Score ──
+    const tensionScore = Math.min(10,
+      roundNum * 1.2
+      + caughtThisRound.size * 2
+      + (env.id === 'silence' ? 1 : 0)
+      + (survivors.length <= 3 ? 2 : 0)
+      + (survivors.length <= 2 ? 3 : 0)
+    );
+
+    // ── Slasher Proximity ──
+    const slasherProximity = {};
+    survivors.forEach(n => {
+      if (caughtThisRound.has(n)) slasherProximity[n] = 'here';
+      else if (roundFlags[n]?.stalkedCarryOver || roundFlags[n]?.catchBoost >= 3) slasherProximity[n] = 'closing';
+      else if (roundEvents.some(e => e.player === n && e.points < 0)) slasherProximity[n] = 'near';
+      else slasherProximity[n] = 'far';
+    });
+
+    // ── Chris Commentary ──
+    let chrisLine;
+    if (roundNum === 1) chrisLine = _pickChrisLine('firstRound');
+    else if (caughtThisRound.size > 0 && !rounds.some(r => r.caught?.length)) chrisLine = _pickChrisLine('firstCatch');
+    else if (caughtThisRound.size >= 2) chrisLine = _pickChrisLine('doubleCatch');
+    else if (survivors.length <= 3 && survivors.length > 2) chrisLine = _pickChrisLine('final3');
+    else if (survivors.length <= 2) chrisLine = _pickChrisLine('finalShowdown');
+    else if (tensionScore >= 7) chrisLine = _pickChrisLine('highTension');
+    else chrisLine = _pickChrisLine('generic');
+
     rounds.push({
       num: roundNum,
       events: roundEvents,
       caught: [...caughtThisRound].map(n => ({
         name: n,
         score: scores[n],
-        scene: roundEvents.find(e => e.player === n && e.type === 'caught')?.text || ''
+        scene: roundEvents.find(e => e.player === n && e.type === 'caught')?.text || '',
+        jumpscareLevel: 0  // placeholder — assigned after all rounds
       })),
       atmosphere,
       remaining: _remainingBeforeCatch,
-      survivorCount: survivors.length
+      survivorCount: survivors.length,
+      // Overdrive fields
+      povPlayer,
+      povEvents,
+      tensionScore,
+      slasherProximity,
+      chrisLine,
+      environmentId: env.id
     });
 
     // Update pairings: remove caught players
@@ -1381,10 +1652,41 @@ export function simulateSlasherNight(ep) {
     });
   }
 
+  // ── ACT BREAKS ──
+  const actBreaks = [0, rounds.length - 1]; // default
+  const firstCatchRound = rounds.findIndex(r => r.caught?.length > 0);
+  if (firstCatchRound >= 0) actBreaks[0] = firstCatchRound;
+  const final3Round = rounds.findIndex(r => r.survivorCount <= 3);
+  if (final3Round >= 0) actBreaks[1] = final3Round;
+  // Ensure act breaks are ordered and valid
+  if (actBreaks[1] <= actBreaks[0]) actBreaks[1] = Math.min(actBreaks[0] + 1, rounds.length - 1);
+
+  // ── JUMPSCARE ASSIGNMENT ──
+  const jumpscareRounds = [];
+  // First catch: level 2
+  if (firstCatchRound >= 0 && rounds[firstCatchRound]?.caught?.length) {
+    rounds[firstCatchRound].caught[0].jumpscareLevel = 2;
+    jumpscareRounds.push(firstCatchRound);
+  }
+  // One random mid-game catch: level 1
+  const midCatchRounds = rounds
+    .map((r, i) => ({ idx: i, caught: r.caught }))
+    .filter(r => r.caught?.length && r.idx !== firstCatchRound && r.idx < rounds.length - 1);
+  if (midCatchRounds.length) {
+    const midPick = midCatchRounds[Math.floor(Math.random() * midCatchRounds.length)];
+    midPick.caught[0].jumpscareLevel = 1;
+    jumpscareRounds.push(midPick.idx);
+  }
+
   // ── FINAL SHOWDOWN ──
   let finalShowdown = null;
   if (survivors.length === 2) {
     finalShowdown = _slasherFinalShowdown(survivors[0], survivors[1], scores);
+
+    // Final showdown loser gets level 2 jumpscare
+    if (finalShowdown.loser) {
+      finalShowdown.jumpscareLevel = 2;
+    }
 
     // Apply bond changes from showdown
     finalShowdown.bondChanges.forEach(bc => addBond(bc.a, bc.b, bc.delta));
@@ -1452,6 +1754,109 @@ export function simulateSlasherNight(ep) {
     }
   }
 
+  // ── VHS OVERDRIVE DATA ──
+  const filmTitle = _generateFilmTitle();
+
+  // Act breaks: [endOfAct1RoundIdx, startOfAct3RoundIdx]
+  const firstCatchRound = caughtOrder.length > 0 ? Math.min(...caughtOrder.map(c => c.round)) : 1;
+  const actBreaks = [
+    Math.max(0, firstCatchRound - 1),
+    Math.max(firstCatchRound, rounds.length - 1)
+  ];
+
+  // Chris commentary
+  const _chrisOpeners = [
+    `Welcome to "${filmTitle}." ${activePlayers.length} campers, one slasher, zero mercy. Roll tape.`,
+    `Tonight's feature: "${filmTitle}." I've seen the dailies. Not everyone makes it.`,
+    `Ladies and gentlemen... CHRIS McLEAN PRESENTS... "${filmTitle}." Viewer discretion is advised. Actually, no. Watch every second.`,
+    `Ladies and gentlemen... tonight, this island becomes a movie set. And the slasher? Already here.`
+  ];
+  const _chrisClosers = [
+    `And... that's a wrap on "${filmTitle}." The slasher claims another victim.`,
+    `Cut! Print! Someone call ${eliminated}'s agent.`,
+    `Every horror movie needs a sequel. See you next episode.`,
+    `The tape runs out. But the nightmares? Those are just beginning.`
+  ];
+  const chrisOpener = _chrisOpeners[Math.floor(Math.random() * _chrisOpeners.length)];
+  const chrisCloser = _chrisClosers[Math.floor(Math.random() * _chrisClosers.length)];
+
+  // POV system: each round picks most dramatic player
+  const povUsed = new Set();
+  const povOrder = [];
+
+  rounds.forEach((round, ri) => {
+    // Pick POV: player with most event weight + not yet used
+    const eventCounts = {};
+    round.events.forEach(e => { eventCounts[e.player] = (eventCounts[e.player] || 0) + Math.abs(e.points || 1); });
+    const candidates = (round.remaining || []).filter(n => !povUsed.has(n));
+    const eligible = candidates.length > 0 ? candidates : (round.remaining || []);
+    eligible.sort((a, b) => (eventCounts[b] || 0) - (eventCounts[a] || 0));
+    const povPlayer = eligible[0] || null;
+    if (povPlayer) { povUsed.add(povPlayer); povOrder.push(povPlayer); }
+    round.povPlayer = povPlayer;
+
+    // POV variants for events involving the POV player
+    round.povEvents = round.events
+      .filter(e => e.player === povPlayer)
+      .map(e => ({ eventId: e.eventId, povText: _generatePovText(e, povPlayer) }));
+
+    // Tension score (0-10)
+    const catchesSoFar = caughtOrder.filter(c => c.round <= round.num).length;
+    round.tensionScore = Math.min(10, Math.round((ri / rounds.length) * 5 + catchesSoFar * 1.5 + (round.caught?.length ? 2 : 0)));
+
+    // Slasher proximity per player
+    round.slasherProximity = {};
+    (round.remaining || []).forEach(name => {
+      const playerEvents = round.events.filter(e => e.player === name);
+      const hasNegative = playerEvents.some(e => e.points < 0);
+      const wasCaught = (round.caught || []).some(c => c.name === name);
+      if (wasCaught) round.slasherProximity[name] = 'caught';
+      else if (hasNegative) round.slasherProximity[name] = 'closing';
+      else if (round.num >= rounds.length - 1) round.slasherProximity[name] = 'near';
+      else round.slasherProximity[name] = 'far';
+    });
+
+    // Chris line — use contextual pool
+    const isFirst = ri === 0;
+    const isFirstCatch = round.caught?.length > 0 && caughtOrder.filter(c => c.round < round.num).length === 0;
+    const isDoubleCatch = (round.caught?.length || 0) >= 2;
+    const isFinal3 = (round.remaining?.length || 99) <= 3;
+    const isShowdownRound = ri === rounds.length - 1;
+    let pool = 'generic';
+    if (isFirst) pool = 'firstRound';
+    else if (isFirstCatch) pool = 'firstCatch';
+    else if (isDoubleCatch) pool = 'doubleCatch';
+    else if (isShowdownRound) pool = 'finalShowdown';
+    else if (isFinal3) pool = 'final3';
+    else if (round.tensionScore >= 6) pool = 'highTension';
+    else if (round.atmosphere) pool = 'envShift';
+    round.chrisLine = _pickChrisLine(pool);
+  });
+
+  // Jumpscare assignment: first catch=2, final showdown loser=2, one random mid=1
+  const jumpscareRounds = [];
+  if (caughtOrder.length > 0) {
+    const firstCatchIdx = caughtOrder[0].round - 1;
+    if (rounds[firstCatchIdx]) {
+      const caughtEntry = rounds[firstCatchIdx].caught?.[0];
+      if (caughtEntry) { caughtEntry.jumpscareLevel = 2; jumpscareRounds.push({ round: firstCatchIdx, level: 2 }); }
+    }
+    // Random mid-game catch gets level 1
+    const midCatches = caughtOrder.filter((c, i) => i > 0 && i < caughtOrder.length - 1);
+    if (midCatches.length > 0) {
+      const pick = midCatches[Math.floor(Math.random() * midCatches.length)];
+      const midIdx = pick.round - 1;
+      if (rounds[midIdx]?.caught?.length) {
+        const mc = rounds[midIdx].caught.find(c => c.name === pick.name);
+        if (mc) { mc.jumpscareLevel = 1; jumpscareRounds.push({ round: midIdx, level: 1 }); }
+      }
+    }
+  }
+  // Final showdown loser gets level 2
+  if (finalShowdown?.loser) {
+    jumpscareRounds.push({ round: rounds.length - 1, level: 2, target: 'showdown-loser' });
+  }
+
   // ── SET RESULTS ON EP ──
   ep.slasherNight = {
     rounds,
@@ -1461,7 +1866,13 @@ export function simulateSlasherNight(ep) {
     finalShowdown,
     immunityWinner,
     eliminated,
-    leaderboard
+    leaderboard,
+    filmTitle,
+    actBreaks,
+    chrisOpener,
+    chrisCloser,
+    povOrder,
+    jumpscareRounds
   };
 
   // Popularity: last survivor gets hero edit, weakest link gets soft target edit
@@ -1489,20 +1900,30 @@ export function _textSlasherNight(ep, ln, sec) {
   if (!ep.isSlasherNight || !ep.slasherNight) return;
   const sn = ep.slasherNight;
   sec('SLASHER NIGHT');
+  if (sn.filmTitle) ln(`"${sn.filmTitle}"`);
+  if (sn.chrisOpener) ln(`Chris: "${sn.chrisOpener}"`);
+  ln('');
+  ln(`Players: ${(sn.rounds?.[0]?.remaining || []).join(', ')}`);
   if (sn.finalShowdown) {
     if (sn.finalShowdown.winMethod === 'last-standing') ln(`IMMUNITY WINNER: ${sn.immunityWinner} — last one standing.`);
     else ln(`IMMUNITY WINNER: ${sn.immunityWinner} — won the final showdown (${sn.finalShowdown.winMethod}).`);
   } else ln(`IMMUNITY WINNER: ${sn.immunityWinner}`);
   ln('');
   (sn.rounds || []).forEach(r => {
-    ln(`Round ${r.num} — ${r.survivorCount + (r.caught?.length || 0)} remaining:`);
-    if (r.atmosphere) ln(`  ${r.atmosphere}`);
-    // Top moment: highest-scoring positive event this round
+    const actLabel = sn.actBreaks ? (r.num <= sn.actBreaks[0] + 1 ? 'I' : r.num <= sn.actBreaks[1] ? 'II' : 'III') : '';
+    ln(`Round ${r.num}${actLabel ? ` (Act ${actLabel})` : ''} — ${r.survivorCount + (r.caught?.length || 0)} remaining:`);
+    if (r.atmosphere) ln(`  [${r.atmosphere}]`);
+    if (r.povPlayer) ln(`  📹 POV: ${r.povPlayer}`);
     const topPositive = r.events.filter(e => e.type === 'positive' && e.points > 0)
       .sort((a, b) => b.points - a.points)[0];
     if (topPositive) ln(`  ★ ${topPositive.text}`);
+    if (r.povEvents?.length) {
+      const povMoment = r.povEvents.find(pe => pe.povText);
+      if (povMoment) ln(`  📹 "${povMoment.povText}"`);
+    }
     if (r.caught?.length) r.caught.forEach(c => ln(`  Caught: ${c.name} (score: ${c.score})`));
     else ln('  No one caught.');
+    if (r.chrisLine) ln(`  Chris: "${r.chrisLine}"`);
   });
   ln('');
   if (sn.finalShowdown?.loser) {
@@ -1510,6 +1931,7 @@ export function _textSlasherNight(ep, ln, sec) {
     if (sn.finalShowdown.winText) ln(`  ${sn.finalShowdown.winText}`);
     if (sn.finalShowdown.loseText) ln(`  ${sn.finalShowdown.loseText}`);
   }
+  if (sn.chrisCloser) ln(`Chris: "${sn.chrisCloser}"`);
   ln('');
   ln(`ELIMINATED: ${sn.eliminated} (score: ${sn.scores[sn.eliminated]})`);
   ln('');
@@ -1521,12 +1943,595 @@ export function _textSlasherNight(ep, ln, sec) {
   ln(`  Final score: ${sn.scores[sn.eliminated]}`);
 }
 
-export function rpBuildSlasherAnnouncement(ep) {
+// ═══════════════════════════════════════════════════════════════════
+// VHS TAPE SHELL — Wraps VP content in degrading VHS playback
+// ═══════════════════════════════════════════════════════════════════
+
+let _slasherAudioCtx = null;
+let _slasherAudioNodes = {};
+
+export function _slasherAudioInit() {
+  if (_slasherAudioCtx) return;
+  try {
+    _slasherAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const master = _slasherAudioCtx.createGain();
+    master.gain.value = 0;
+    master.connect(_slasherAudioCtx.destination);
+
+    // Ambient drone: two detuned sine oscillators
+    const osc1 = _slasherAudioCtx.createOscillator();
+    osc1.type = 'sine'; osc1.frequency.value = 55;
+    const osc2 = _slasherAudioCtx.createOscillator();
+    osc2.type = 'sine'; osc2.frequency.value = 57;
+    const droneGain = _slasherAudioCtx.createGain();
+    droneGain.gain.value = 0.03;
+    osc1.connect(droneGain); osc2.connect(droneGain);
+    droneGain.connect(master);
+    osc1.start(); osc2.start();
+
+    // Brown noise for underlying texture
+    const noiseLen = _slasherAudioCtx.sampleRate * 2;
+    const noiseBuf = _slasherAudioCtx.createBuffer(1, noiseLen, _slasherAudioCtx.sampleRate);
+    const noiseData = noiseBuf.getChannelData(0);
+    let lastOut = 0;
+    for (let i = 0; i < noiseLen; i++) {
+      const white = Math.random() * 2 - 1;
+      lastOut = (lastOut + (0.02 * white)) / 1.02;
+      noiseData[i] = lastOut * 3.5;
+    }
+    const noiseNode = _slasherAudioCtx.createBufferSource();
+    noiseNode.buffer = noiseBuf; noiseNode.loop = true;
+    const noiseLPF = _slasherAudioCtx.createBiquadFilter();
+    noiseLPF.type = 'lowpass'; noiseLPF.frequency.value = 200;
+    const noiseGain = _slasherAudioCtx.createGain();
+    noiseGain.gain.value = 0.02;
+    noiseNode.connect(noiseLPF); noiseLPF.connect(noiseGain); noiseGain.connect(master);
+    noiseNode.start();
+
+    // Heartbeat oscillator (Act III only, started on demand)
+    const hbOsc = _slasherAudioCtx.createOscillator();
+    hbOsc.type = 'sine'; hbOsc.frequency.value = 40;
+    const hbGain = _slasherAudioCtx.createGain();
+    hbGain.gain.value = 0;
+    hbOsc.connect(hbGain); hbGain.connect(master);
+    hbOsc.start();
+
+    _slasherAudioNodes = { master, droneGain, noiseGain, hbGain, osc1, osc2, noiseNode, hbOsc };
+  } catch (e) { /* Web Audio not available */ }
+}
+
+export function _slasherAudioDestroy() {
+  if (!_slasherAudioCtx) return;
+  try {
+    _slasherAudioNodes.osc1?.stop();
+    _slasherAudioNodes.osc2?.stop();
+    _slasherAudioNodes.noiseNode?.stop();
+    _slasherAudioNodes.hbOsc?.stop();
+    _slasherAudioCtx.close();
+  } catch (e) { /* ignore */ }
+  _slasherAudioCtx = null;
+  _slasherAudioNodes = {};
+}
+
+export function _slasherAudioSetAct(actNum, tension) {
+  if (!_slasherAudioCtx || !_slasherAudioNodes.master) return;
+  const isMuted = _tvState.slasherAudioMuted !== false; // default muted
+  const t = _slasherAudioCtx.currentTime;
+  const baseGain = isMuted ? 0 : 1;
+  _slasherAudioNodes.master.gain.linearRampToValueAtTime(baseGain, t + 0.3);
+  // Drone gain scales with act
+  const droneLevel = actNum === 1 ? 0.03 : actNum === 2 ? 0.06 : 0.10;
+  _slasherAudioNodes.droneGain.gain.linearRampToValueAtTime(droneLevel, t + 1);
+  // Heartbeat in Act III
+  const hbLevel = actNum >= 3 ? Math.min(0.15, tension * 0.015) : 0;
+  _slasherAudioNodes.hbGain.gain.linearRampToValueAtTime(hbLevel, t + 0.5);
+}
+
+export function _slasherAudioFireStinger(level) {
+  if (!_slasherAudioCtx || _tvState.slasherAudioMuted !== false) return;
+  const t = _slasherAudioCtx.currentTime;
+  const gain = level === 2 ? 0.7 : 0.4;
+  const dur = level === 2 ? 0.5 : 0.3;
+  // Dissonant chord
+  [200, 283, 337].forEach(freq => {
+    const osc = _slasherAudioCtx.createOscillator();
+    osc.type = 'square'; osc.frequency.value = freq;
+    const g = _slasherAudioCtx.createGain();
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.connect(g); g.connect(_slasherAudioCtx.destination);
+    osc.start(t); osc.stop(t + dur);
+  });
+  if (level === 2) {
+    // Sub thud
+    const sub = _slasherAudioCtx.createOscillator();
+    sub.type = 'sine'; sub.frequency.value = 30;
+    const sg = _slasherAudioCtx.createGain();
+    sg.gain.setValueAtTime(0.5, t);
+    sg.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    sub.connect(sg); sg.connect(_slasherAudioCtx.destination);
+    sub.start(t); sub.stop(t + 0.4);
+  }
+}
+
+export function _slasherAudioFireChainsaw() {
+  if (!_slasherAudioCtx || _tvState.slasherAudioMuted !== false) return;
+  const t = _slasherAudioCtx.currentTime;
+  const osc = _slasherAudioCtx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(80, t);
+  osc.frequency.linearRampToValueAtTime(400, t + 0.5);
+  osc.frequency.linearRampToValueAtTime(200, t + 1.5);
+  const bpf = _slasherAudioCtx.createBiquadFilter();
+  bpf.type = 'bandpass'; bpf.frequency.value = 300; bpf.Q.value = 5;
+  const g = _slasherAudioCtx.createGain();
+  g.gain.setValueAtTime(0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+  osc.connect(bpf); bpf.connect(g); g.connect(_slasherAudioCtx.destination);
+  osc.start(t); osc.stop(t + 1.5);
+}
+
+export function _slasherAudioFireStatic() {
+  if (!_slasherAudioCtx || _tvState.slasherAudioMuted !== false) return;
+  const t = _slasherAudioCtx.currentTime;
+  const len = _slasherAudioCtx.sampleRate * 0.2;
+  const buf = _slasherAudioCtx.createBuffer(1, len, _slasherAudioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  const src = _slasherAudioCtx.createBufferSource();
+  src.buffer = buf;
+  const g = _slasherAudioCtx.createGain();
+  g.gain.setValueAtTime(0.2, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+  src.connect(g); g.connect(_slasherAudioCtx.destination);
+  src.start(t);
+}
+
+export function _slasherAudioFireRewind() {
+  if (!_slasherAudioCtx || _tvState.slasherAudioMuted !== false) return;
+  const t = _slasherAudioCtx.currentTime;
+  const len = _slasherAudioCtx.sampleRate * 0.5;
+  const buf = _slasherAudioCtx.createBuffer(1, len, _slasherAudioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  const src = _slasherAudioCtx.createBufferSource();
+  src.buffer = buf;
+  const bpf = _slasherAudioCtx.createBiquadFilter();
+  bpf.type = 'bandpass';
+  bpf.frequency.setValueAtTime(4000, t);
+  bpf.frequency.exponentialRampToValueAtTime(200, t + 0.5);
+  const g = _slasherAudioCtx.createGain();
+  g.gain.setValueAtTime(0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+  src.connect(bpf); bpf.connect(g); g.connect(_slasherAudioCtx.destination);
+  src.start(t);
+}
+
+// Jumpscare visual system
+export function _fireJumpscare(level, containerId) {
+  if (level === 0) return;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'vhs-jumpscare-overlay';
+  overlay.style.display = 'flex';
+  document.body.appendChild(overlay);
+
+  if (level === 2) {
+    // Full jumpscare: blackout → slasher face → tear → fade
+    setTimeout(() => {
+      const face = document.createElement('div');
+      face.className = 'vhs-jumpscare-face';
+      overlay.appendChild(face);
+      overlay.style.background = 'radial-gradient(circle, #1a0000, #000)';
+      _slasherAudioFireStinger(2);
+    }, 200);
+    setTimeout(() => {
+      overlay.style.background = '#000';
+      overlay.innerHTML = '';
+      _slasherAudioFireStatic();
+    }, 500);
+    setTimeout(() => {
+      overlay.remove();
+    }, 800);
+  } else {
+    // Minor scare: flicker 3x + brief static
+    let flicks = 0;
+    const flickInterval = setInterval(() => {
+      overlay.style.opacity = overlay.style.opacity === '0' ? '1' : '0';
+      flicks++;
+      if (flicks >= 6) {
+        clearInterval(flickInterval);
+        overlay.style.opacity = '1';
+        _slasherAudioFireStatic();
+        setTimeout(() => overlay.remove(), 100);
+      }
+    }, 50);
+    _slasherAudioFireStinger(1);
+  }
+}
+
+// VHS Shell wrapper
+function _slasherVHSShell(innerHtml, act, tensionScore, epNum) {
+  const tc = `${String(Math.floor(tensionScore * 6)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:${String(Math.floor(Math.random() * 30)).padStart(2, '0')}`;
+  const counter = String(Math.floor(Math.random() * 9000) + 1000);
+  return `<div class="vhs-shell" data-act="${act}">
+    <div class="vhs-tracking"></div>
+    <div class="vhs-grain"></div>
+    <div class="vhs-timecode"><span class="rec-dot"></span>REC ${tc}</div>
+    <div class="vhs-tape-counter">▶ PLAY ${counter}</div>
+    <button class="vhs-mute-btn" onclick="_slasherToggleMute(this)" title="Toggle audio">🔇</button>
+    <div class="vhs-content">
+      ${innerHtml}
+    </div>
+  </div>`;
+}
+
+export function _slasherToggleMute(btn) {
+  const wasMuted = _tvState.slasherAudioMuted !== false;
+  _tvState.slasherAudioMuted = !wasMuted;
+  btn.textContent = wasMuted ? '🔊' : '🔇';
+  if (!wasMuted) {
+    // Muting
+    if (_slasherAudioNodes.master) {
+      _slasherAudioNodes.master.gain.linearRampToValueAtTime(0, (_slasherAudioCtx?.currentTime || 0) + 0.3);
+    }
+  } else {
+    // Unmuting — init if needed
+    _slasherAudioInit();
+    if (_slasherAudioNodes.master) {
+      _slasherAudioNodes.master.gain.linearRampToValueAtTime(1, (_slasherAudioCtx?.currentTime || 0) + 0.3);
+    }
+  }
+}
+
+// Portrait helper with proximity/POV/signal-lost classes
+function _slasherPortrait(name, sn, roundIdx, options = {}) {
+  const { isPov, isCaught, proximity } = options;
+  let classes = '';
+  if (isCaught) classes += ' vhs-signal-lost';
+  else if (proximity === 'closing') classes += ' vhs-proximity-closing';
+  else if (proximity === 'near') classes += ' vhs-proximity-near';
+
+  let povHtml = '';
+  if (isPov) {
+    classes += ' vhs-pov-frame';
+    povHtml = '<span class="vhs-pov-rec"><span class="rec-dot" style="width:5px;height:5px;display:inline-block;border-radius:50%;background:#da3633;margin-right:2px;vertical-align:middle"></span>REC</span>';
+  }
+
+  return `<span class="${classes.trim()}" style="display:inline-block;position:relative">${rpPortrait(name, 'sm')}${povHtml}</span>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VP SCREENS — VHS Three-Act Film
+// ═══════════════════════════════════════════════════════════════════
+
+// Determine which players are caught by a given round
+function _caughtByRound(sn, upToRoundIdx) {
+  const caught = new Set();
+  for (let i = 0; i <= upToRoundIdx && i < sn.rounds.length; i++) {
+    (sn.rounds[i].caught || []).forEach(c => caught.add(c.name));
+  }
+  return caught;
+}
+
+export function rpBuildSlasherTitleCard(ep) {
   const sn = ep.slasherNight;
   if (!sn) return '';
   const allPlayers = sn.rounds?.[0]?.remaining || sn.leaderboard?.map(e => e.name) || [];
-  let html = `<div class="rp-page tod-deepnight">
-    <div class="rp-eyebrow">Episode ${ep.num}</div>
+  const title = sn.filmTitle || 'Slasher Night';
+  const opener = sn.chrisOpener || '';
+
+  const inner = `<div class="rp-page" style="background:#0a0a0a;padding:40px 20px">
+    <div style="text-align:center;margin:20px 0 30px">
+      <div style="font-family:var(--font-mono);font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:4px;text-transform:uppercase;margin-bottom:20px">CHRIS McLEAN PRESENTS</div>
+      <div style="font-family:var(--font-display);font-size:36px;color:#da3633;letter-spacing:2px;text-shadow:0 0 30px rgba(218,54,51,0.5);line-height:1.2;margin-bottom:12px">${title}</div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:rgba(218,54,51,0.6);letter-spacing:3px;text-transform:uppercase">VIEWER DISCRETION IS ADVISED</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:24px 0;filter:sepia(0.3) saturate(0.7) brightness(0.85)">
+      ${allPlayers.map((n, i) => `<span style="transform:rotate(${(i % 2 ? 2 : -2) + Math.random() * 2}deg)">${rpPortrait(n)}</span>`).join('')}
+    </div>
+    ${opener ? `<div class="vhs-chris-line">${opener}</div>` : ''}
+    <div style="text-align:center;margin-top:24px">
+      <div style="font-family:var(--font-mono);font-size:18px;color:rgba(255,255,255,0.4);letter-spacing:2px">▶ PLAY</div>
+    </div>
+  </div>`;
+
+  return _slasherVHSShell(inner, 'title', 0, ep.num);
+}
+
+export function rpBuildSlasherActI(ep) {
+  const sn = ep.slasherNight;
+  if (!sn || !sn.rounds?.length) return '';
+  const stateKey = String(ep.num) + '_slasher_act1';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { revealed: 0 };
+
+  // Act I rounds: start through first catch (or all if no act breaks)
+  const endIdx = sn.actBreaks ? sn.actBreaks[0] : Math.min(2, sn.rounds.length - 1);
+  const actRounds = sn.rounds.slice(0, endIdx + 1);
+
+  let inner = `<div class="rp-page" style="background:#0a0a0a;padding:20px">
+    <div class="vhs-act-card"><h2>ACT I</h2><p>First Blood</p></div>`;
+
+  actRounds.forEach((round, ri) => {
+    const isHidden = ri > 0 ? 'style="display:none"' : '';
+    const caught = new Set((round.caught || []).map(c => c.name));
+    inner += `<div class="sl-act1-round" id="sl-a1-${stateKey}-${ri}" ${isHidden}>
+      <div class="slasher-round-header" style="color:#da3633">Round ${round.num} — ${(round.remaining?.length || 0)} remain</div>`;
+
+    // Environment OSD
+    if (round.atmosphere) inner += `<div class="vhs-osd">${round.atmosphere}</div>`;
+
+    // Events
+    (round.events || []).forEach(evt => {
+      const isPov = round.povPlayer === evt.player;
+      const displayText = isPov && round.povEvents?.find(pe => pe.eventId === evt.eventId)?.povText
+        ? round.povEvents.find(pe => pe.eventId === evt.eventId).povText
+        : evt.text;
+      const pts = evt.points || 0;
+      const ptColor = pts >= 0 ? '#3fb950' : '#f85149';
+      const prox = round.slasherProximity?.[evt.player] || 'far';
+
+      inner += `<div class="slasher-event-card" ${evt.type === 'caught' ? 'style="border-color:rgba(218,54,51,0.4);background:rgba(218,54,51,0.06)"' : ''}>
+        ${_slasherPortrait(evt.player, sn, ri, { isPov, isCaught: evt.type === 'caught', proximity: prox })}
+        <div class="slasher-event-text" ${isPov ? 'style="color:#e6edf3;font-style:italic"' : ''}>${displayText}</div>
+        ${evt.type !== 'caught' ? `<span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;background:${pts >= 0 ? 'rgba(63,185,80,0.12)' : 'rgba(218,54,51,0.12)'};color:${ptColor};white-space:nowrap">${pts >= 0 ? '+' : ''}${pts}</span>` : '<span class="slasher-score-neg" style="font-size:10px">CAUGHT</span>'}
+      </div>`;
+    });
+
+    if (round.chrisLine) inner += `<div class="vhs-chris-line">${round.chrisLine}</div>`;
+    inner += `</div>`;
+  });
+
+  // Reveal button
+  if (actRounds.length > 1) {
+    inner += `<div style="text-align:center;margin:16px 0">
+      <button class="vp-reveal-btn" onclick="slasherRevealNextScene('${stateKey}', ${actRounds.length}, 'sl-a1-')" style="font-family:var(--font-mono);font-size:11px;color:#da3633;background:rgba(218,54,51,0.08);border:1px solid rgba(218,54,51,0.3);padding:6px 16px;border-radius:4px;cursor:pointer;letter-spacing:1px">▶▶ FAST FORWARD</button>
+      <button class="vp-reveal-btn" onclick="slasherRevealAllScenes('${stateKey}', ${actRounds.length}, 'sl-a1-')" style="font-family:var(--font-mono);font-size:10px;color:#484f58;background:none;border:1px solid #21262d;padding:4px 12px;border-radius:4px;cursor:pointer;margin-left:8px">SHOW ALL</button>
+    </div>`;
+  }
+
+  inner += `</div>`;
+  return _slasherVHSShell(inner, 1, actRounds[actRounds.length - 1]?.tensionScore || 2, ep.num);
+}
+
+export function rpBuildSlasherActII(ep) {
+  const sn = ep.slasherNight;
+  if (!sn || !sn.rounds?.length) return '';
+  const stateKey = String(ep.num) + '_slasher_act2';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { revealed: 0 };
+
+  const startIdx = sn.actBreaks ? sn.actBreaks[0] + 1 : 3;
+  const endIdx = sn.actBreaks ? sn.actBreaks[1] - 1 : sn.rounds.length - 2;
+  if (startIdx > endIdx || startIdx >= sn.rounds.length) return ''; // No Act II
+  const actRounds = sn.rounds.slice(startIdx, endIdx + 1);
+  const caughtSoFar = _caughtByRound(sn, startIdx - 1);
+  const totalPlayers = sn.rounds[0]?.remaining?.length || sn.leaderboard?.length || 0;
+
+  let inner = `<div class="rp-page" style="background:#0a0a0a;padding:20px">
+    <div class="vhs-act-card"><h2>ACT II</h2><p>The Long Night</p></div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:300px">`;
+
+  actRounds.forEach((round, ri) => {
+    const isHidden = ri > 0 ? 'style="display:none"' : '';
+    inner += `<div class="sl-act2-round" id="sl-a2-${stateKey}-${ri}" ${isHidden}>
+      <div class="slasher-round-header" style="color:#da3633">Round ${round.num} — ${(round.remaining?.length || 0)} remain</div>`;
+    if (round.atmosphere) inner += `<div class="vhs-osd">${round.atmosphere}</div>`;
+
+    (round.events || []).forEach(evt => {
+      const isPov = round.povPlayer === evt.player;
+      const displayText = isPov && round.povEvents?.find(pe => pe.eventId === evt.eventId)?.povText
+        ? round.povEvents.find(pe => pe.eventId === evt.eventId).povText
+        : evt.text;
+      const pts = evt.points || 0;
+      const prox = round.slasherProximity?.[evt.player] || 'far';
+
+      inner += `<div class="slasher-event-card" ${evt.type === 'caught' ? 'style="border-color:rgba(218,54,51,0.4);background:rgba(218,54,51,0.06)"' : ''}>
+        ${_slasherPortrait(evt.player, sn, startIdx + ri, { isPov, isCaught: evt.type === 'caught', proximity: prox })}
+        <div class="slasher-event-text" ${isPov ? 'style="color:#e6edf3;font-style:italic"' : ''}>${displayText}</div>
+        ${evt.type !== 'caught' ? `<span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;background:${pts >= 0 ? 'rgba(63,185,80,0.12)' : 'rgba(218,54,51,0.12)'};color:${pts >= 0 ? '#3fb950' : '#f85149'};white-space:nowrap">${pts >= 0 ? '+' : ''}${pts}</span>` : '<span class="slasher-score-neg" style="font-size:10px">CAUGHT</span>'}
+      </div>`;
+    });
+
+    // Update caught tracker
+    (round.caught || []).forEach(c => caughtSoFar.add(c.name));
+    if (round.chrisLine) inner += `<div class="vhs-chris-line">${round.chrisLine}</div>`;
+    inner += `</div>`;
+  });
+
+  // Reveal buttons
+  if (actRounds.length > 1) {
+    inner += `<div style="text-align:center;margin:16px 0">
+      <button class="vp-reveal-btn" onclick="slasherRevealNextScene('${stateKey}', ${actRounds.length}, 'sl-a2-')" style="font-family:var(--font-mono);font-size:11px;color:#da3633;background:rgba(218,54,51,0.08);border:1px solid rgba(218,54,51,0.3);padding:6px 16px;border-radius:4px;cursor:pointer;letter-spacing:1px">▶▶ FAST FORWARD</button>
+      <button class="vp-reveal-btn" onclick="slasherRevealAllScenes('${stateKey}', ${actRounds.length}, 'sl-a2-')" style="font-family:var(--font-mono);font-size:10px;color:#484f58;background:none;border:1px solid #21262d;padding:4px 12px;border-radius:4px;cursor:pointer;margin-left:8px">SHOW ALL</button>
+    </div>`;
+  }
+
+  inner += `</div>`; // end main column
+
+  // Body count sidebar
+  inner += `<div style="width:140px;flex-shrink:0">
+    <div class="vhs-body-count">
+      <div style="font-weight:800;margin-bottom:6px">BODY COUNT: ${caughtSoFar.size}/${totalPlayers}</div>`;
+  caughtSoFar.forEach(name => {
+    inner += `<div class="vhs-body-count-entry"><span class="vhs-body-count-x">✕</span>${rpPortrait(name, 'xs')}<span style="font-size:9px;color:#484f58">${name.split(' ')[0]}</span></div>`;
+  });
+  inner += `</div></div></div></div>`; // close sidebar, flex, page
+
+  return _slasherVHSShell(inner, 2, actRounds[actRounds.length - 1]?.tensionScore || 5, ep.num);
+}
+
+export function rpBuildSlasherActIII(ep) {
+  const sn = ep.slasherNight;
+  if (!sn) return '';
+  const stateKey = String(ep.num) + '_slasher_act3';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+
+  const startIdx = sn.actBreaks ? sn.actBreaks[1] : Math.max(0, sn.rounds.length - 1);
+  const actRounds = sn.rounds.slice(startIdx);
+  const fs = sn.finalShowdown;
+  const winner = sn.immunityWinner;
+
+  const subtitle = winner ? `${winner} STANDS ALONE` : 'THE FINAL HUNT';
+  let inner = `<div class="rp-page" style="background:#0a0a0a;padding:20px">
+    <div class="vhs-act-card"><h2>ACT III</h2><p>${subtitle}</p></div>`;
+
+  // Final rounds (usually 1-2)
+  actRounds.forEach(round => {
+    inner += `<div style="margin-bottom:16px">
+      <div class="slasher-round-header" style="color:#da3633">Round ${round.num} — ${(round.remaining?.length || 0)} remain</div>`;
+    if (round.atmosphere) inner += `<div class="vhs-osd">${round.atmosphere}</div>`;
+    (round.events || []).forEach(evt => {
+      const isPov = round.povPlayer === evt.player;
+      const displayText = isPov && round.povEvents?.find(pe => pe.eventId === evt.eventId)?.povText
+        ? round.povEvents.find(pe => pe.eventId === evt.eventId).povText : evt.text;
+      const pts = evt.points || 0;
+      const prox = round.slasherProximity?.[evt.player] || 'far';
+      inner += `<div class="slasher-event-card" ${evt.type === 'caught' ? 'style="border-color:rgba(218,54,51,0.4);background:rgba(218,54,51,0.06)"' : ''}>
+        ${_slasherPortrait(evt.player, sn, startIdx, { isPov, isCaught: evt.type === 'caught', proximity: prox })}
+        <div class="slasher-event-text" ${isPov ? 'style="color:#e6edf3;font-style:italic"' : ''}>${displayText}</div>
+        ${evt.type !== 'caught' ? `<span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;background:${pts >= 0 ? 'rgba(63,185,80,0.12)' : 'rgba(218,54,51,0.12)'};color:${pts >= 0 ? '#3fb950' : '#f85149'};white-space:nowrap">${pts >= 0 ? '+' : ''}${pts}</span>` : '<span class="slasher-score-neg" style="font-size:10px">CAUGHT</span>'}
+      </div>`;
+    });
+    if (round.chrisLine) inner += `<div class="vhs-chris-line">${round.chrisLine}</div>`;
+    inner += `</div>`;
+  });
+
+  // Final Showdown
+  if (fs && fs.loser) {
+    inner += `<div style="text-align:center;padding:30px 0;border-top:1px solid rgba(218,54,51,0.2)">
+      <div style="font-family:var(--font-mono);font-size:10px;color:rgba(218,54,51,0.6);letter-spacing:3px;margin-bottom:16px">FINAL SHOWDOWN</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:24px">
+        ${rpPortrait(fs.winner)}
+        <div class="slasher-showdown-vs">VS</div>
+        ${rpPortrait(fs.loser)}
+      </div>
+      <div style="margin-top:16px">
+        <div class="slasher-event-text" style="color:#3fb950;margin-bottom:6px">${fs.winText || ''}</div>
+        <div class="slasher-event-text" style="color:#f85149">${fs.loseText || ''}</div>
+      </div>
+    </div>`;
+  }
+
+  // Winner reveal
+  if (winner) {
+    inner += `<div id="sl-a3-reveal-${stateKey}" style="display:none;text-align:center;padding:20px 0;border-top:1px solid rgba(63,185,80,0.2)">
+      <div style="font-family:var(--font-mono);font-size:10px;color:#3fb950;letter-spacing:3px;margin-bottom:12px">IMMUNITY WINNER</div>
+      <div style="display:inline-block;border:3px solid rgba(240,192,64,0.6);border-radius:50%;padding:4px">${rpPortrait(winner)}</div>
+      <div style="font-size:16px;font-weight:700;color:#e6edf3;margin-top:8px">${winner}</div>
+      <div style="font-size:11px;color:#8b949e">Survived the night. The final ${pronouns(winner).sub === 'they' ? 'survivor' : (pronouns(winner).sub === 'she' ? 'girl' : 'guy')}.
+      </div>
+    </div>
+    <div style="text-align:center;margin:16px 0">
+      <button class="vp-reveal-btn" onclick="document.getElementById('sl-a3-reveal-${stateKey}').style.display='block';this.style.display='none';_slasherAudioFireStatic()" style="font-family:var(--font-mono);font-size:11px;color:#3fb950;background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.3);padding:6px 16px;border-radius:4px;cursor:pointer;letter-spacing:1px">▶ REVEAL SURVIVOR</button>
+    </div>`;
+  }
+
+  inner += `</div>`;
+  return _slasherVHSShell(inner, 3, 9, ep.num);
+}
+
+export function rpBuildSlasherCredits(ep) {
+  const sn = ep.slasherNight;
+  if (!sn) return '';
+  const winner = sn.immunityWinner;
+  const eliminated = sn.eliminated;
+  const title = sn.filmTitle || 'Slasher Night';
+  const closer = sn.chrisCloser || '';
+  const pr = winner ? pronouns(winner) : { sub: 'they' };
+  const finalRole = pr.sub === 'they' ? 'THE FINAL SURVIVOR' : (pr.sub === 'she' ? 'THE FINAL GIRL' : 'THE FINAL GUY');
+
+  let inner = `<div class="rp-page" style="background:#0a0a0a;padding:30px 20px">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-family:var(--font-display);font-size:28px;color:#e6edf3;letter-spacing:2px;margin-bottom:4px">CUT.</div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:#484f58;letter-spacing:3px;margin-top:12px">DIRECTED BY CHRIS McLEAN</div>
+    </div>
+
+    <div class="vhs-credits" style="margin:24px 0">`;
+
+  // Winner starring
+  if (winner) {
+    inner += `<div class="vhs-credits-starring">STARRING</div>
+      <div style="display:inline-block;border:3px solid rgba(240,192,64,0.5);border-radius:50%;padding:4px;margin:8px 0">${rpPortrait(winner)}</div>
+      <div class="vhs-credits-name">${winner}</div>
+      <div class="vhs-credits-role">as ${finalRole}</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:4px">Score: ${sn.scores[winner] || 0} pts</div>`;
+  }
+
+  // Eliminated
+  if (eliminated) {
+    inner += `<div class="vhs-credits-starring" style="margin-top:20px">ALSO STARRING</div>
+      <div class="vhs-signal-lost" style="display:inline-block;margin:8px 0">${rpPortrait(eliminated)}</div>
+      <div class="vhs-credits-name">${eliminated}</div>
+      <div class="vhs-credits-role" style="color:#da3633">Didn't make the sequel</div>`;
+
+    // Why they lost
+    const elimEvents = (sn.rounds || []).flatMap(r => r.events.filter(e => e.player === eliminated));
+    const negEvents = elimEvents.filter(e => e.points < 0 || e.type === 'caught');
+    if (negEvents.length) {
+      inner += `<div style="margin:8px auto;max-width:400px;text-align:left">`;
+      negEvents.slice(0, 3).forEach(e => {
+        inner += `<div style="font-size:11px;color:#8b949e;padding:2px 0">• ${e.text || e.eventId} <span style="color:#f85149">(${e.points >= 0 ? '+' : ''}${e.points})</span></div>`;
+      });
+      inner += `</div>`;
+    }
+    inner += `<div style="font-size:11px;color:#484f58;margin-top:4px">Final score: ${sn.scores[eliminated] || 0} pts</div>`;
+  }
+
+  // Full cast as rolling credits
+  inner += `<div style="margin-top:24px;border-top:1px solid #21262d;padding-top:16px">
+    <div class="vhs-credits-starring">FULL CAST</div>`;
+  (sn.leaderboard || []).forEach(entry => {
+    const caughtText = entry.caughtRound ? `Caught Rd ${entry.caughtRound}` : 'Survived';
+    const icon = entry.isWinner ? '👑' : entry.isEliminated ? '💀' : '';
+    inner += `<div class="vhs-credits-row">
+      <span>${icon} ${entry.name}</span>
+      <span class="vhs-credits-dots"></span>
+      <span>${entry.score} pts — ${caughtText}</span>
+    </div>`;
+  });
+  inner += `</div>`;
+
+  // Chris closer + THE END
+  if (closer) inner += `<div class="vhs-chris-line" style="margin-top:20px">${closer}</div>`;
+  inner += `<div style="text-align:center;margin-top:30px">
+    <div style="font-family:var(--font-display);font-size:24px;color:#484f58;letter-spacing:4px">THE END</div>
+    <div style="font-size:11px;color:#21262d;margin-top:8px;font-style:italic">...or is it?</div>
+  </div>`;
+
+  // Rewind button
+  inner += `<div style="text-align:center;margin-top:16px">
+    <button class="vp-reveal-btn" onclick="vpSetScreen(vpScreens.findIndex(s=>s.id==='slasher-title'));_slasherAudioFireRewind()" style="font-family:var(--font-mono);font-size:10px;color:#484f58;background:none;border:1px solid #21262d;padding:4px 12px;border-radius:4px;cursor:pointer">◀◀ REWIND</button>
+  </div>`;
+
+  inner += `</div></div>`;
+  return _slasherVHSShell(inner, 'credits', 0, ep.num);
+}
+
+// Scene reveal helpers (updated for act-based navigation)
+export function slasherRevealNextScene(stateKey, totalScenes, prefix) {
+  if (!_tvState[stateKey]) _tvState[stateKey] = { revealed: 0 };
+  const next = _tvState[stateKey].revealed + 1;
+  if (next >= totalScenes) return;
+  const el = document.getElementById(`${prefix}${stateKey}-${next}`);
+  if (el) {
+    el.style.display = '';
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    _slasherAudioFireRewind();
+  }
+  _tvState[stateKey].revealed = next;
+}
+
+export function slasherRevealAllScenes(stateKey, totalScenes, prefix) {
+  for (let i = 0; i < totalScenes; i++) {
+    const el = document.getElementById(`${prefix}${stateKey}-${i}`);
+    if (el) el.style.display = '';
+  }
+  if (_tvState[stateKey]) _tvState[stateKey].revealed = totalScenes - 1;
+}
     <div style="text-align:center;margin:30px 0 10px">
       <div class="slasher-pulse" style="display:inline-block;border-radius:50%;padding:4px">
         <img src="assets/avatars/slasher.png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"

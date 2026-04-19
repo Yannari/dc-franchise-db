@@ -1060,7 +1060,7 @@ export function buildTwistDesc(tw) {
     case 'fire-making':        L.push('The person voted out picks an opponent for a random duel. Loser is eliminated.'); break;
     case 'guardian-angel':     if (tw.guardianAngel) L.push(`${tw.guardianAngel} earned automatic immunity through the strength of their bonds.`); break;
     case 'sudden-death':       L.push('Sudden Death. No tribal council tonight. Last place in the challenge is auto-eliminated on the spot. No vote. No strategy. Pure performance.'); break;
-    case 'slasher-night':      L.push('A slasher is loose. Survive the night. Last standing wins immunity. Lowest scorer is eliminated.'); break;
+    case 'slasher-night':      { const _snTitle = tw.filmTitle || ep?.slasherNight?.filmTitle; L.push(`${_snTitle ? `"${_snTitle}" — ` : ''}A slasher is loose. Survive the night. Last standing wins immunity. Lowest scorer is eliminated.`); break; }
     case 'cultural-reset':     L.push('All active alliances publicly revealed.'); if (tw.revealedAlliances?.length) L.push(`Exposed: ${tw.revealedAlliances.join(', ')}.`); break;
     case 'spirit-island':      if (tw.spiritVisitor) L.push(`Jury member ${tw.spiritVisitor} returns to camp for one day.`); break;
     case 'loved-ones':         L.push('Players\' loved ones visit camp. Tribal council still runs tonight.'); break;
@@ -10528,14 +10528,27 @@ export function buildVPScreens(epRecord) {
     }
   }
 
-  // ── Slasher Night — replaces challenge + tribal + votes ──
+  // ── Slasher Night — VHS three-act film (or legacy 6-screen layout for old saves) ──
   if (ep.isSlasherNight && ep.slasherNight) {
-    vpScreens.push({ id:'slasher-announce', label:'Slasher Night', html: rpBuildSlasherAnnouncement(ep) });
-    vpScreens.push({ id:'slasher-rounds', label:'The Hunt', html: rpBuildSlasherRounds(ep) });
-    vpScreens.push({ id:'slasher-showdown', label:'Final Showdown', html: rpBuildSlasherShowdown(ep) });
-    vpScreens.push({ id:'slasher-immunity', label:'Immunity', html: rpBuildSlasherImmunity(ep) });
-    vpScreens.push({ id:'slasher-elimination', label:'Eliminated', html: rpBuildSlasherElimination(ep) });
-    vpScreens.push({ id:'slasher-leaderboard', label:'Leaderboard', html: rpBuildSlasherLeaderboard(ep) });
+    const _snHasActs = !!ep.slasherNight.actBreaks;
+    if (_snHasActs) {
+      // New VHS three-act VP
+      vpScreens.push({ id:'slasher-title', label:'🎬 Title Card', html: rpBuildSlasherTitleCard(ep) });
+      const _a1 = rpBuildSlasherActI(ep);
+      if (_a1) vpScreens.push({ id:'slasher-act1', label:'Act I', html: _a1 });
+      const _a2 = rpBuildSlasherActII(ep);
+      if (_a2) vpScreens.push({ id:'slasher-act2', label:'Act II', html: _a2 });
+      vpScreens.push({ id:'slasher-act3', label:'Act III', html: rpBuildSlasherActIII(ep) });
+      vpScreens.push({ id:'slasher-credits', label:'Credits', html: rpBuildSlasherCredits(ep) });
+    } else {
+      // Legacy layout for old saves without actBreaks
+      vpScreens.push({ id:'slasher-announce', label:'Slasher Night', html: rpBuildSlasherAnnouncement(ep) });
+      vpScreens.push({ id:'slasher-rounds', label:'The Hunt', html: rpBuildSlasherRounds(ep) });
+      vpScreens.push({ id:'slasher-showdown', label:'Final Showdown', html: rpBuildSlasherShowdown(ep) });
+      vpScreens.push({ id:'slasher-immunity', label:'Immunity', html: rpBuildSlasherImmunity(ep) });
+      vpScreens.push({ id:'slasher-elimination', label:'Eliminated', html: rpBuildSlasherElimination(ep) });
+      vpScreens.push({ id:'slasher-leaderboard', label:'Leaderboard', html: rpBuildSlasherLeaderboard(ep) });
+    }
     // RI/Rescue Island screens
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _slRiLife = rpBuildRILife(ep);

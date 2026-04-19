@@ -198,7 +198,7 @@ window.CHALLENGES = {
   'lucky-hunt': { simulate: luckyHuntMod.simulateLuckyHunt, rpBuild: luckyHuntMod.rpBuildLuckyHunt, text: luckyHuntMod._textLuckyHunt },
   'say-uncle': { simulate: sayUncleMod.simulateSayUncle, rpBuild: sayUncleMod.rpBuildSayUncleAnnouncement, text: sayUncleMod._textSayUncle },
   'triple-dog-dare': { simulate: tripleDogDareMod.simulateTripleDogDare, rpBuild: tripleDogDareMod.rpBuildTripleDogDareAnnouncement, text: tripleDogDareMod._textTripleDogDare },
-  'slasher-night': { simulate: slasherNightMod.simulateSlasherNight, rpBuild: slasherNightMod.rpBuildSlasherAnnouncement, text: slasherNightMod._textSlasherNight },
+  'slasher-night': { simulate: slasherNightMod.simulateSlasherNight, rpBuild: slasherNightMod.rpBuildSlasherTitleCard, text: slasherNightMod._textSlasherNight },
   'hide-and-be-sneaky': { simulate: hideAndBeSneakyMod.simulateHideAndBeSneaky, rpBuild: hideAndBeSneakyMod.rpBuildHideAndBeSneaky, text: hideAndBeSneakyMod._textHideAndBeSneaky },
   'off-the-chain': { simulate: offTheChainMod.simulateOffTheChain, rpBuild: offTheChainMod.rpBuildOffTheChain, text: offTheChainMod._textOffTheChain },
   'wawanakwa-gone-wild': { simulate: wawanakwaGoneWildMod.simulateWawanakwaGoneWild, rpBuild: wawanakwaGoneWildMod.rpBuildWawanakwaGoneWild, text: wawanakwaGoneWildMod._textWawanakwaGoneWild },

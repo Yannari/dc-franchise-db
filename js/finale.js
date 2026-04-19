@@ -898,7 +898,104 @@ export function generateFinaleSummaryText(ep) {
     }
 
     return L.join('\n');
-  } else if (cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay') {
+  } else if (cfg.finaleFormat === 'olympic-relay') {
+    // ── Rejected Olympic Relay text backlog ──
+    const rd = ep.relayData;
+    const winner = ep.finaleChallengeWinner || ep.winner;
+
+    sec('REJECTED OLYMPIC RELAY');
+    ln(`No jury. The winner is decided by the Rejected Olympic Relay.`);
+    ln('');
+
+    // Pre-race pitches
+    if (rd?.pitches && Object.keys(rd.pitches).length) {
+      ln('PRE-RACE PITCHES:');
+      Object.entries(rd.pitches).forEach(([f, p]) => ln(`  ${f} (${p.type}): ${p.text}`));
+      ln('');
+    }
+
+    // Bench assignments
+    if (ep.benchAssignments && Object.keys(ep.benchAssignments).length) {
+      ln('BENCH ASSIGNMENTS:');
+      finalists.forEach(f => {
+        const supporters = Object.entries(ep.benchAssignments)
+          .filter(([, side]) => side === f).map(([name]) => name);
+        if (supporters.length) ln(`  Team ${f}: ${supporters.join(', ')}`);
+      });
+      ln('');
+    }
+
+    // Bench flips
+    if (rd?.benchFlips?.length) {
+      ln('BENCH FLIPS:');
+      rd.benchFlips.forEach(flip => ln(`  ${flip.supporter} flipped from ${flip.from} to ${flip.to} (${flip.reason})`));
+      ln('');
+    }
+
+    // Confessionals
+    if (rd?.confessionals?.length) {
+      ln('PRE-RACE CONFESSIONALS:');
+      rd.confessionals.forEach(c => ln(`  ${c.player}: "${c.text}"`));
+      ln('');
+    }
+
+    // Assistants
+    if (ep.assistants && Object.keys(ep.assistants).length) {
+      ln('ASSISTANTS:');
+      Object.entries(ep.assistants).forEach(([f, a]) => ln(`  ${f} chose ${a}`));
+      ln('');
+    }
+
+    // Sabotage plants
+    if (rd?.plantedSabotage) ln(`SABOTAGE: ${rd.plantedSabotage.planter} planted a laxative cupcake targeting ${rd.plantedSabotage.targetFinalist}`);
+    if (rd?.plantedSabotage2) ln(`SABOTAGE: ${rd.plantedSabotage2.planter} greased the flagpole targeting ${rd.plantedSabotage2.targetFinalist}`);
+    if (rd?.plantedSabotage || rd?.plantedSabotage2) ln('');
+
+    // Stage-by-stage results
+    if (ep.finaleChallengeStages?.length) {
+      ep.finaleChallengeStages.forEach(stage => {
+        ln(`--- ${stage.name} ---`);
+        if (stage.desc) ln(`  ${stage.desc}`);
+        if (stage.scores) {
+          const sorted = Object.entries(stage.scores).sort(([,a],[,b]) => b - a);
+          sorted.forEach(([name, score]) => ln(`  ${name}: ${typeof score === 'number' ? score.toFixed(1) : score}`));
+        }
+        if (stage.winner) ln(`  Stage winner: ${stage.winner}`);
+      });
+      ln('');
+    }
+
+    // Timeline events
+    if (rd?.timeline?.length) {
+      ln('RELAY TIMELINE:');
+      rd.timeline.forEach(ev => ln(`  [${ev.type}] ${ev.text}`));
+      ln('');
+    }
+
+    // Final scores + placements
+    if (ep.finaleChallengeScores) {
+      ln('FINAL SCORES:');
+      const sorted = Object.entries(ep.finaleChallengeScores).sort(([,a],[,b]) => b - a);
+      sorted.forEach(([name, score], i) => ln(`  ${i + 1}. ${name}: ${score.toFixed(1)}`));
+    }
+
+    // Sabotage summary
+    if (ep.finaleSabotageEvents?.length) {
+      ln('');
+      ln('SABOTAGE EVENTS:');
+      ep.finaleSabotageEvents.forEach(s => ln(`  ${s.text || `${s.saboteur} sabotaged ${s.victim}`}`));
+    }
+
+    sec('WINNER');
+    const ws = pStats(winner);
+    ln(`${winner} wins the Rejected Olympic Relay and takes the season!`);
+    ln('');
+    if (ws.physical >= 8 || ws.endurance >= 8) ln(`${winner} powered through every obstacle — a physical force from start to finish.`);
+    else if (ws.mental >= 8) ln(`${winner} outlasted every mental obstacle thrown at them. The relay was just one more puzzle to solve.`);
+    else if (ws.social >= 8) ln(`${winner} rode the crowd energy and bench support all the way to the finish line.`);
+    else ln(`${winner} dug deep and won the only race that counted — the Rejected Olympic Relay.`);
+
+  } else if (cfg.finaleFormat === 'final-challenge') {
     sec('FINAL CHALLENGE');
     ln(`No jury. The winner is decided by a final challenge among all finalists.`);
     ln('');

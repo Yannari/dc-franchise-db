@@ -2053,7 +2053,7 @@ export function _slasherAudioDestroy() {
 
 export function _slasherAudioSetAct(actNum, tension) {
   if (!_slasherAudioCtx || !_slasherAudioNodes.master) return;
-  const isMuted = _tvState.slasherAudioMuted !== false; // default muted
+  const isMuted = _tvState.slasherAudioMuted === true;
   const t = _slasherAudioCtx.currentTime;
   const baseGain = isMuted ? 0 : 1;
   _slasherAudioNodes.master.gain.linearRampToValueAtTime(baseGain, t + 0.3);

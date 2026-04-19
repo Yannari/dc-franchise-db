@@ -735,6 +735,8 @@ document.addEventListener('keydown', e => {
 
 export function closeVisualPlayer() {
   vpStopParticles();
+  // Stop slasher audio if running
+  if (typeof window._slasherAudioDestroy === 'function') window._slasherAudioDestroy();
   document.getElementById('visual-player').style.display = 'none';
   document.body.style.overflow = '';
 }

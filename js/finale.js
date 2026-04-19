@@ -1587,6 +1587,19 @@ export function generateRelayPreRace(finalists, benchAssignments) {
     });
   });
 
+  // ── Chris Intro ──
+  const finalistList = finalists.length === 2
+    ? `${finalists[0]} and ${finalists[1]}`
+    : finalists.join(', ');
+  confessionals.push({
+    player: 'Chris',
+    text: _pick([
+      `Chris grins at the camera: "Welcome to the FINALE of Total Drama Island! After weeks of backstabbing, alliances, and questionable hygiene — it all comes down to THIS. ${finalistList}. One obstacle course. One winner. One. Hundred. Thousand. DOLLARS. Let's do this."`,
+      `"Ladies and gentlemen — and you, Chef — it's FINALE TIME!" Chris spreads his arms. "The Rejected Olympic Relay! Three phases. Two finalists. ${finalistList} have clawed their way here, and only ONE walks away a hundred grand richer. I literally cannot WAIT."`,
+      `Chris adjusts his hair one final time. "This is it, people. The big one. ${finalistList} are about to face the most grueling, humiliating, and frankly hilarious obstacle course I've ever designed. Which is saying something. Chef, start the dramatic music!" Chef glares. There is no music.`,
+    ], 'chrisIntro'),
+  });
+
   // ── Confessionals ──
   finalists.forEach(f => {
     const s = pStats(f);
@@ -1594,26 +1607,56 @@ export function generateRelayPreRace(finalists, benchAssignments) {
     const p = players.find(pl => pl.name === f);
     const arch = p?.archetype || 'floater';
     const benchSize = (benchAssignments[f] || []).length;
+    const rival = finalists.find(o => o !== f);
+    const rivalBond = rival ? getBond(f, rival) : 0;
 
     const pool = [];
-    if (['villain','mastermind','schemer'].includes(arch))
+    if (['villain','mastermind','schemer'].includes(arch)) {
       pool.push(`*Confessional — ${f}:* "They can cheer all they want. I know exactly how this ends. I've known since day one."`);
-    if (['hero','loyal-soldier'].includes(arch))
+      pool.push(`*Confessional — ${f}:* "Every person I eliminated? A stepping stone. And now there's one stone left." ${f} cracks ${pr.posAdj} knuckles.`);
+      pool.push(`*Confessional — ${f}:* "The best villain doesn't just win. The best villain makes everyone WATCH ${pr.obj} win. That's the real prize."`);
+    }
+    if (['hero','loyal-soldier'].includes(arch)) {
       pool.push(`*Confessional — ${f}:* "I can hear them cheering for me. That means more than the money. …Okay, the money too."`);
+      pool.push(`*Confessional — ${f}:* "My mom is watching this. My whole FAMILY is watching this. I'm not losing in front of them. No way."`);
+      pool.push(`*Confessional — ${f}:* "Win or lose, I played this game the right way. But between you and me? I'd rather win."`);
+    }
+    if (['social-butterfly','showmancer'].includes(arch)) {
+      pool.push(`*Confessional — ${f}:* "Everyone said I was just here to make friends. Well look who's in the FINALE, Janet." ${f} snaps ${pr.posAdj} fingers.`);
+      pool.push(`*Confessional — ${f}:* "I talked my way here. Now I just gotta... run my way to the end? That's... less ideal. But I'll figure it out."`);
+    }
+    if (['challenge-beast'].includes(arch)) {
+      pool.push(`*Confessional — ${f}:* "This whole game I've been winning when it counts. Finale's no different. This is MY arena."`);
+      pool.push(`*Confessional — ${f}:* "An obstacle course? Finally. Something that rewards ACTUAL skill. Let's go."`);
+    }
+    if (['wildcard','chaos-agent'].includes(arch)) {
+      pool.push(`*Confessional — ${f}:* "Honestly? I have NO idea how I got here. But I'm here. And that's terrifying for everyone else."`);
+      pool.push(`*Confessional — ${f}:* "Plan? What plan? The plan is CHAOS. Same as every other episode."`);
+    }
     if (s.boldness >= 8)
       pool.push(`*Confessional — ${f}:* "I've been waiting for this my ENTIRE life. Let's GO!"`);
+    if (s.boldness <= 3)
+      pool.push(`*Confessional — ${f}:* "I think I'm gonna throw up. Is that normal? Is that a finale thing? Someone tell me that's normal."`);
     if (benchSize <= 2)
       pool.push(`*Confessional — ${f}:* "Not a lot of people on my bench. That's fine. I don't need a crowd. I need a finish line."`);
     if (benchSize >= 5)
       pool.push(`*Confessional — ${f}:* "Look at that bench. Every single one of those people believed in me enough to sit there. I can't let them down."`);
-    if (['underdog','goat'].includes(arch))
+    if (['underdog','goat'].includes(arch)) {
       pool.push(`*Confessional — ${f}:* "Everyone counted me out. I counted me out. But here I am. In the finale. What even IS this game?"`);
+      pool.push(`*Confessional — ${f}:* "If I win this… I don't even know what I'd do. Cry? Probably cry. Definitely cry."`);
+    }
+    if (['floater','perceptive-player'].includes(arch))
+      pool.push(`*Confessional — ${f}:* "I flew under the radar all season. Nobody thought I was a threat. And now I'm HERE. The invisibility cloak WORKED."`);
+    if (rival && rivalBond <= -3)
+      pool.push(`*Confessional — ${f}:* "Of all people to face in the finale, it's ${rival}. The ONE person I cannot STAND losing to. So I won't."`);
+    if (rival && rivalBond >= 5)
+      pool.push(`*Confessional — ${f}:* "Yeah, ${rival}'s my friend. Yeah, I want ${pronouns(rival).obj} to be happy. But a hundred thousand dollars is a hundred thousand dollars. Friendship has a LIMIT."`);
     pool.push(`*Confessional — ${f}:* "Deep breath. This is it. Everything comes down to right now."`);
 
     confessionals.push({ player: f, text: _pick(pool, f + 'conf') });
   });
 
-  // Chef confessional
+  // Chef confessionals (2-3 lines)
   confessionals.push({
     player: 'Chef',
     text: _pick([
@@ -1621,6 +1664,14 @@ export function generateRelayPreRace(finalists, benchAssignments) {
       `*Confessional — Chef Hatchet:* "Been watching these two all season. One of 'em might actually deserve to win. The other one? Heh. We'll see."`,
       `*Confessional — Chef Hatchet:* "Chris told me to make it fair. I told Chris to mind his business. This is MY course."`,
     ], 'chef-conf'),
+  });
+  confessionals.push({
+    player: 'Chef',
+    text: _pick([
+      `*Confessional — Chef Hatchet:* "I put extra grease on that flagpole myself. Not sabotage — maintenance. Very different. Very legal."`,
+      `*Confessional — Chef Hatchet:* "The sharks in that gorge? Fed 'em this morning. …Mostly. One of 'em looked at me funny so I cut his breakfast short."`,
+      `*Confessional — Chef Hatchet:* "If BOTH of 'em fall off the beam, do I get the money? Asking for me."`,
+    ], 'chef-conf2'),
   });
 
   // ── Sabotage planting ──
@@ -1668,23 +1719,83 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
   const flagpoleScores = {};
   const flagpoleEvents = [];
 
-  // Hat assignment (comedy)
+  // Chris commentary — phase start
+  flagpoleEvents.push({
+    type: 'chrisCommentary', phase: 0, player: 'Chris',
+    players: finalists.slice(),
+    text: _pick([
+      `Chris cups his hands: "Phase ONE! The Flagpole of SHAME! Climb up, grab your flag, slide down. First one back gets a lead. Oh, and we greased it. Obviously."`,
+      `"Alright, campers—" Chris catches himself. "Sorry, finalists. Phase one: the greased flagpole. It's exactly as miserable as it sounds. On your marks!"`,
+      `Chris leans into his megaphone: "THE FLAGPOLE! Fifty feet of slippery, humiliating glory! Who wants it more?! CLIMB!"`,
+    ], 'chrisFlagpole'),
+    badgeText: 'HOST', badgeClass: 'yellow',
+  });
+
+  // Hat assignment (archetype-specific comedy)
   finalists.forEach(f => {
     const p = players.find(pl => pl.name === f);
     const arch = p?.archetype || 'floater';
-    const hat = _pick([
-      'a chef\'s hat three sizes too big',
-      'a rubber chicken helmet',
-      'a tiara made of sporks',
-      'a raccoon-shaped headband',
-      'an "I ♥ Chef" baseball cap',
-    ], f + 'hat');
-    flagpoleEvents.push({ type: 'hatAssign', player: f, hat, text: `${f} is handed ${hat}. "${f === finalists[0] ? 'You\'re kidding.' : 'This is a JOKE, right?'}"` });
+    const pr = pronouns(f);
+    let hat, reaction;
+    if (['villain','mastermind','schemer'].includes(arch)) {
+      hat = _pick(['a pair of devil horns glued to a bicycle helmet', 'a cape made from a garbage bag and a "VILLAIN" sash', 'a headband with tiny pitchforks sticking out'], f + 'hat');
+      reaction = _pick([`"You think this is funny, McLean?"`, `${f} puts it on with zero hesitation. "I've worn worse."`, `${f} glares at it, then at Chris, then puts it on with murderous calm.`], f + 'hatR');
+    } else if (['hero','loyal-soldier'].includes(arch)) {
+      hat = _pick(['a halo made of duct tape and coat hangers', 'a cardboard crown spray-painted gold', 'a "HERO" headband with a cape made of paper towels'], f + 'hat');
+      reaction = _pick([`${f} actually smiles. "I've always wanted a halo."`, `"Is this... supposed to be inspiring?" ${f} adjusts the tape. "Because it's working."`, `${f} strikes a heroic pose. The bench cheers.`], f + 'hatR');
+    } else if (['challenge-beast'].includes(arch)) {
+      hat = _pick(['a bull horn headband with "BEAST MODE" written in marker', 'a gladiator helmet made of cardboard and tinfoil', 'a sweatband with a cartoon muscle arm on it'], f + 'hat');
+      reaction = _pick([`${f} punches the air. "LET'S GO!"`, `"I look ridiculous." ${f} grins. "But I look ridiculous in the FINALE."`, `${f} flexes. The horns fall off. ${pr.Sub} puts them back on.`], f + 'hatR');
+    } else if (['social-butterfly','showmancer'].includes(arch)) {
+      hat = _pick(['a tiara made of sporks and sparkly pipe cleaners', 'a flower crown that smells suspiciously like Chef\'s kitchen', 'a bedazzled visor that says "POPULAR"'], f + 'hat');
+      reaction = _pick([`"Okay, this is actually cute?" ${f} adjusts it like a real crown.`, `${f} takes a selfie. "Content FIRST, competition second."`, `"I will win this looking FABULOUS." ${f} strikes a pose.`], f + 'hatR');
+    } else if (['underdog','goat'].includes(arch)) {
+      hat = _pick(['a dunce cap with "SURPRISE FINALIST" written on it', 'a paper bag with eye holes and a smiley face drawn on', 'an oversized baseball cap that keeps falling over ${pr.posAdj} eyes'], f + 'hat');
+      reaction = _pick([`${f} stares at it. "…Yeah, that tracks."`, `"At least it matches my expectations." ${f} sighs and puts it on.`, `${f} puts it on backwards. "There. Now it says TSILANIF ESIRPRUS. Much better."`], f + 'hatR');
+    } else if (['wildcard','chaos-agent'].includes(arch)) {
+      hat = _pick(['a propeller beanie that actually spins', 'a rubber chicken strapped to a headband', 'a raccoon-shaped headband with glowing LED eyes'], f + 'hat');
+      reaction = _pick([`${f} LOVES it. Spins around. The bench is concerned.`, `"BEST. HAT. EVER." ${f} will NOT be taking it off after the race.`, `${f} puts it on upside down. On purpose? Maybe.`], f + 'hatR');
+    } else {
+      hat = _pick(['a chef\'s hat three sizes too big', 'an "I ♥ Chef" baseball cap', 'a rubber chicken helmet with feathers falling off'], f + 'hat');
+      reaction = _pick([`"You're kidding." ${f} puts it on anyway.`, `${f} looks at it like it personally offended ${pr.obj}.`, `"This is a JOKE, right?" ${f} turns to Chris. Chris is already laughing.`], f + 'hatR');
+    }
+    flagpoleEvents.push({ type: 'hatAssign', phase: 0, player: f, players: [f], hat, text: `${f} is handed ${hat}. ${reaction}`, badgeText: 'HAT', badgeClass: 'yellow' });
   });
 
   finalists.forEach(f => {
     const s = pStats(f);
+    const pr = pronouns(f);
+    const p = players.find(pl => pl.name === f);
+    const arch = p?.archetype || 'floater';
     let base = s.physical * 0.3 + s.endurance * 0.2 + s.boldness * 0.1 + (Math.random() * 3 - 1.5);
+
+    // Climbing narration — stat-driven opening beat
+    const climbRating = s.physical * 0.4 + s.endurance * 0.3 + s.boldness * 0.3;
+    if (climbRating >= 7) {
+      flagpoleEvents.push({ type: 'flagpoleStruggle', phase: 0, player: f, players: [f],
+        text: _pick([
+          `${f} attacks the pole like ${pr.sub}'s done this before. Hand over hand, feet locked, steady rhythm. ${pr.Sub} doesn't even look down.`,
+          `${f} LAUNCHES up the pole. Pure power. ${pr.Sub}'s halfway up before the bench finishes gasping.`,
+          `${f} grips the pole and climbs with terrifying efficiency. No wasted motion. No hesitation. The bench goes quiet — this looks like a winner.`,
+        ], f + 'climb'),
+        badgeText: 'CLIMBING', badgeClass: 'green' });
+    } else if (climbRating >= 4) {
+      flagpoleEvents.push({ type: 'flagpoleStruggle', phase: 0, player: f, players: [f],
+        text: _pick([
+          `${f} starts climbing. Slips. Tries again. Gets a grip. Slips again. "Come ON!" The progress is real, but ugly.`,
+          `${f} makes it a quarter of the way up, hugging the pole for dear life. Deep breath. Another lunge upward. Slow but determined.`,
+          `${f}'s technique is… creative. Part climbing, part hugging, part threatening the pole with bodily harm. It's working. Barely.`,
+        ], f + 'climb'),
+        badgeText: 'STRUGGLING', badgeClass: 'yellow' });
+    } else {
+      flagpoleEvents.push({ type: 'flagpoleStruggle', phase: 0, player: f, players: [f],
+        text: _pick([
+          `${f} jumps at the pole. Slides back down immediately. Jumps again. Slides down. ${pr.Sub} looks up at it like it's personally insulted ${pr.obj}.`,
+          `${f} wraps ${pr.posAdj} arms around the pole and just… hangs there. Not climbing. Not falling. Just existing vertically.`,
+          `${f} makes it two feet off the ground before gravity has a word. And another word. And another. This is going to take a while.`,
+        ], f + 'climb'),
+        badgeText: 'FLAILING', badgeClass: 'red' });
+    }
 
     // Grease sabotage
     if (plantedSabotage2 && plantedSabotage2.targetFinalist === f) {
@@ -1694,10 +1805,10 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
       const detector = bench.find(s2 => pStats(s2).intuition * 0.12 > 0.7);
       if (detector) {
         penalty *= 0.5;
-        flagpoleEvents.push({ type: 'flagpoleSabotageDetect', player: detector, target: f, text: `${detector} spots the grease on the pole. "HEY! That pole's been tampered with!" The penalty is halved.` });
+        flagpoleEvents.push({ type: 'flagpoleSabotageDetect', phase: 0, player: detector, target: f, players: [detector, f], text: `${detector} spots the grease on the pole. "HEY! That pole's been tampered with!" The penalty is halved.`, badgeText: 'DETECTED', badgeClass: 'green' });
       }
       base += penalty;
-      flagpoleEvents.push({ type: 'flagpoleSabotage', player: f, planter: plantedSabotage2.planter, penalty, text: `${f}'s hands slip — the pole is greased! ${plantedSabotage2.planter}'s handiwork from earlier.` });
+      flagpoleEvents.push({ type: 'flagpoleSabotage', phase: 0, player: f, planter: plantedSabotage2.planter, players: [f, plantedSabotage2.planter], penalty, text: `${f}'s hands slip — the pole is greased! ${plantedSabotage2.planter}'s handiwork from earlier.`, badgeText: 'SABOTAGE', badgeClass: 'red' });
       sabotageEvents.push({ phase: 0, type: 'grease', target: f, planter: plantedSabotage2.planter });
     }
 
@@ -1717,7 +1828,34 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
       else if (arch2 === 'hero') boost = bS.social * 0.03;
       else if (arch2 === 'challenge-beast') boost = bS.physical * 0.06;
       base += boost;
-      flagpoleEvents.push({ type: 'flagpoleBoost', player: f, booster, boost, text: `${booster} pushes ${f} from below — "CLIMB! Don't look down!"` });
+      flagpoleEvents.push({ type: 'flagpoleBoost', phase: 0, player: f, booster, players: [f, booster], boost, text: `${booster} pushes ${f} from below — "CLIMB! Don't look down!"`, badgeText: 'BOOST', badgeClass: 'blue' });
+    }
+
+    // Assistant contribution — Phase 1
+    const asst = assistants?.[f];
+    if (asst?.name) {
+      const aS = asst.stats || pStats(asst.name);
+      const asstBoost = (aS.physical * 0.08 + aS.endurance * 0.04);
+      const sabChance = asst.bond < 0 ? Math.min(0.45, Math.abs(asst.bond) * 0.05) : 0;
+      if (sabChance > 0 && Math.random() < sabChance) {
+        base -= asstBoost * 1.5;
+        sabotageEvents.push({ phase: 0, type: 'assistant-sabotage', target: f, planter: asst.name });
+        flagpoleEvents.push({ type: 'assistantSabotage', phase: 0, player: asst.name, players: [asst.name, f],
+          text: _pick([
+            `${asst.name} is supposed to be helping ${f} climb. Instead, ${pronouns(asst.name).sub} ${pronouns(asst.name).sub === 'they' ? '"accidentally" step' : '"accidentally" steps'} on ${f}'s foot. Hard.`,
+            `${asst.name} holds the pole "steady" — and gives it a twist at the worst possible moment. ${f} slips back three feet.`,
+          ], asst.name + 'asstSab1'),
+          badgeText: 'ASSISTANT SABOTAGE', badgeClass: 'red' });
+      } else {
+        base += asstBoost;
+        flagpoleEvents.push({ type: 'assistantHelp', phase: 0, player: asst.name, players: [asst.name, f],
+          text: _pick([
+            `${asst.name} braces the pole from below, giving ${f} a stable base. "Go! I've got you!"`,
+            `${asst.name} interlocks ${pronouns(asst.name).posAdj} hands into a step. ${f} launches upward. Teamwork.`,
+            `${asst.name} wipes down the pole ahead of ${f}'s grip. Every inch counts.`,
+          ], asst.name + 'asstHelp1'),
+          badgeText: 'ASSISTANT', badgeClass: 'blue' });
+      }
     }
 
     flagpoleScores[f] = Math.max(0, base);
@@ -1726,10 +1864,64 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
 
   const flagSorted = Object.entries(flagpoleScores).sort(([,a],[,b]) => b - a);
   const flagWinner = flagSorted[0][0];
+  const flagLoser = flagSorted.length > 1 ? flagSorted[flagSorted.length - 1][0] : flagWinner;
   const flagCarryover = 1.0;
   scores[flagWinner] += flagCarryover;
 
-  flagpoleEvents.push({ type: 'flagpoleWin', player: flagWinner, text: `${flagWinner} grabs the flag first! A ${flagCarryover.toFixed(1)}-point lead heading into the beam.` });
+  // Taunt — if finalists have negative bond, the leader taunts from above
+  if (finalists.length >= 2 && getBond(flagWinner, flagLoser) <= -2) {
+    const winArch = players.find(pl => pl.name === flagWinner)?.archetype || 'floater';
+    const winPr = pronouns(flagWinner);
+    const tauntText = ['villain','mastermind','schemer'].includes(winArch)
+      ? _pick([
+        `${flagWinner} looks DOWN at ${flagLoser} from the top and laughs. "Take your time! I'll wait!" ${flagLoser}'s face goes red.`,
+        `${flagWinner} grabs the flag and waves it at ${flagLoser}. "Looking for THIS?" The bench gasps.`,
+        `"Hey ${flagLoser}!" ${flagWinner} calls from the top. "The view up here is AMAZING. Shame you'll never see it."`,
+      ], flagWinner + 'taunt')
+      : _pick([
+        `${flagWinner} can't resist a look down. "${flagLoser}. SERIOUSLY?" It's not trash talk. It's worse — it's disappointment.`,
+        `${flagWinner} reaches the top first and mutters just loud enough for the mic to catch: "Knew it." ${flagLoser} hears every word.`,
+      ], flagWinner + 'taunt');
+    flagpoleEvents.push({ type: 'flagpoleTaunt', phase: 0, player: flagWinner, players: [flagWinner, flagLoser], text: tauntText, badgeText: 'TAUNT', badgeClass: 'red' });
+  }
+
+  flagpoleEvents.push({ type: 'flagpoleWin', phase: 0, player: flagWinner, players: [flagWinner], text: `${flagWinner} grabs the flag first! A ${flagCarryover.toFixed(1)}-point lead heading into the beam.`, badgeText: 'PHASE 1 WIN', badgeClass: 'gold' });
+
+  // Bench reaction to flagpole result
+  {
+    const winnerBench = benchAssignments[flagWinner] || [];
+    const loserBench = benchAssignments[flagLoser] || [];
+    if (winnerBench.length > 0) {
+      const reactor = _pick(winnerBench, 'flagBenchW');
+      const reactPr = pronouns(reactor);
+      flagpoleEvents.push({ type: 'flagpoleBenchReaction', phase: 0, player: reactor, players: [reactor, flagWinner],
+        text: _pick([
+          `${reactor} leaps off the bench: "THAT'S MY PLAYER! LET'S GO!" ${reactPr.Sub} high-fives the air.`,
+          `${reactor} pumps ${reactPr.posAdj} fist and screams at an octave that shouldn't be physically possible.`,
+          `${reactor} grabs the person next to ${reactPr.obj}: "DID YOU SEE THAT?! DID YOU SEE?!" They did. Everyone did.`,
+        ], reactor + 'flagBenchR'),
+        badgeText: 'BENCH', badgeClass: 'blue' });
+    }
+    if (loserBench.length > 0) {
+      const reactor = _pick(loserBench, 'flagBenchL');
+      flagpoleEvents.push({ type: 'flagpoleBenchReaction', phase: 0, player: reactor, players: [reactor, flagLoser],
+        text: _pick([
+          `${reactor} winces from ${flagLoser}'s bench. "It's okay! It's only phase one! You've GOT this!" The confidence is… thin.`,
+          `${reactor} buries ${pronouns(reactor).posAdj} face in ${pronouns(reactor).posAdj} hands. "Come on, come on, come on…"`,
+          `${reactor} forces a smile and claps. The clapping gets faster. More desperate. "You're FINE! YOU'RE FINE!"`,
+        ], reactor + 'flagBenchR'),
+        badgeText: 'BENCH', badgeClass: 'grey' });
+    }
+  }
+
+  // Chris commentary — phase end
+  flagpoleEvents.push({ type: 'chrisCommentary', phase: 0, player: 'Chris', players: [flagWinner, flagLoser],
+    text: _pick([
+      `Chris grins: "Phase one to ${flagWinner}! That was BRUTAL. And we're just getting started."`,
+      `"${flagWinner} takes phase one!" Chris turns to the camera. "If you thought THAT was messy, wait until the balance beam. It's above sharks. Real sharks. I checked."`,
+      `Chris makes a note on his clipboard. "Flagpole: done. ${flagLoser}, you're gonna need to pick it up. Like, a LOT."`,
+    ], 'chrisFlagEnd'),
+    badgeText: 'HOST', badgeClass: 'yellow' });
   timeline.push(...flagpoleEvents);
 
   stageResults.push({
@@ -1748,19 +1940,79 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
     return finalists.includes(smA) && finalists.includes(smB);
   });
 
+  // Chris commentary — phase start
+  beamEvents.push({ type: 'chrisCommentary', phase: 1, player: 'Chris', players: finalists.slice(),
+    text: _pick([
+      `Chris gestures to the gorge: "Phase TWO! The Balance Beam of DOOM! Cross the gorge, don't drop the egg, don't feed the sharks. Simple! …For me. I'm not doing it."`,
+      `"Alright, finalists — see those beams?" Chris points. "Hundred-foot drop. Shark-infested water. Oh, and you're each carrying a bald eagle egg. Mama eagle is NOT happy about it. Have fun!"`,
+      `Chris peers over the edge. "Yep, the sharks are still down there. Phase two: the gorge crossing. Try not to die — the paperwork is TERRIBLE."`,
+    ], 'chrisBeam'),
+    badgeText: 'HOST', badgeClass: 'yellow' });
+
   finalists.forEach(f => {
     const s = pStats(f);
+    const pr = pronouns(f);
+    const fArch = players.find(pl => pl.name === f)?.archetype || 'floater';
     let base = s.endurance * 0.25 + s.mental * 0.2 + s.temperament * 0.15 + (Math.random() * 3 - 1.5);
 
-    // Eagle attack
+    // Beam narration — per-finalist crossing opening beat
+    const balanceRating = s.endurance * 0.3 + s.mental * 0.3 + s.temperament * 0.4;
+    if (balanceRating >= 7) {
+      beamEvents.push({ type: 'beamNarration', phase: 1, player: f, players: [f],
+        text: _pick([
+          `${f} steps onto the beam with unsettling calm. One foot. Then the other. Arms steady. ${pr.Sub} moves like ${pr.sub}'s done this a thousand times.`,
+          `${f} takes a breath, locks ${pr.posAdj} eyes on the far side, and walks. Not fast. Not slow. Just relentless. The bench watches in silence.`,
+          `${f} crosses like it's a sidewalk. No wobble. No hesitation. Just pure focus. Chris mutters: "Well that's boring. Where's the drama?"`,
+        ], f + 'beamNar'),
+        badgeText: 'STEADY', badgeClass: 'green' });
+    } else if (balanceRating >= 4) {
+      beamEvents.push({ type: 'beamNarration', phase: 1, player: f, players: [f],
+        text: _pick([
+          `${f} inches onto the beam. Arms out wide. Eyes fixed ahead. Every step is a negotiation with gravity.`,
+          `${f} starts crossing — steady enough, but the wind picks up and ${pr.sub} freezes. Deep breath. Another step. Another. Progress.`,
+          `"Don't look down. Don't look down." ${f} is DEFINITELY looking down. ${pr.Sub} corrects, refocuses, and shuffles forward.`,
+        ], f + 'beamNar'),
+        badgeText: 'CROSSING', badgeClass: 'yellow' });
+    } else {
+      beamEvents.push({ type: 'beamNarration', phase: 1, player: f, players: [f],
+        text: _pick([
+          `${f} puts one foot on the beam and immediately sits down. ${pr.Sub}'s going to scoot. ${pr.Sub}'s scooting across the entire gorge. This is happening.`,
+          `${f} grabs the beam with both hands and crawls. Dignity left the chat three seconds ago. But at least ${pr.sub}'s moving.`,
+          `${f}'s legs are shaking before ${pr.sub} even starts. "I can't do this." Beat. "I'm doing it. I HATE it. But I'm doing it."`,
+        ], f + 'beamNar'),
+        badgeText: 'PANICKING', badgeClass: 'red' });
+    }
+
+    // Eagle nest — dramatic multi-beat eagle encounter
     const eagleRoll = s.physical * 0.15 + s.boldness * 0.1;
     if (Math.random() < 0.6) {
+      // The egg has a parent
+      beamEvents.push({ type: 'eagleNest', phase: 1, player: f, players: [f],
+        text: _pick([
+          `A shadow passes overhead. ${f} looks up — a MASSIVE bald eagle is circling. It saw the egg. It knows. "Oh no. Oh no no no no no—"`,
+          `The mama eagle appears on a thermal, eyes locked on the egg in ${f}'s hands. ${f} clutches it tighter. The eagle screams. ${f} screams back.`,
+          `${f} hears it before ${pr.sub} sees it — the shriek of a very angry, very large bird. The eagle dive-bombs from nowhere.`,
+        ], f + 'eagleNest'),
+        badgeText: 'EAGLE', badgeClass: 'red' });
+
       if (eagleRoll > 0.9) {
-        beamEvents.push({ type: 'eagleAttack', player: f, result: 'fend', text: `An eagle dive-bombs ${f} mid-crossing! ${f} ducks, swings ${pronouns(f).posAdj} hat — the bird veers off. Close call.` });
+        beamEvents.push({ type: 'eagleAttack', phase: 1, player: f, players: [f], result: 'fend',
+          text: _pick([
+            `${f} ducks, swings ${pr.posAdj} hat at the eagle — the bird veers off with an indignant screech. ${f} straightens up on the beam, heart pounding. Still standing.`,
+            `${f} holds the egg up like a shield. The eagle pulls up at the last second, talons inches from ${pr.posAdj} face. "THAT'S RIGHT! BACK OFF!" The bench cheers.`,
+            `The eagle swoops — ${f} rolls ${pr.posAdj} shoulder and the talons rake nothing but air. Incredible reflexes. The eagle circles for another pass but thinks better of it.`,
+          ], f + 'eagleFend'),
+          badgeText: 'FENDED OFF', badgeClass: 'green' });
       } else {
         const penalty = -1.0;
         base += penalty;
-        beamEvents.push({ type: 'eagleAttack', player: f, result: 'hit', text: `An eagle clips ${f} across the beam! ${f} stumbles, arms windmilling. Barely holds on.` });
+        beamEvents.push({ type: 'eagleAttack', phase: 1, player: f, players: [f], result: 'hit',
+          text: _pick([
+            `The eagle clips ${f} across the shoulder! ${f} staggers sideways, arms windmilling over the gorge. The egg nearly slips. Barely — BARELY — holds on.`,
+            `WHAM — talons rake across ${f}'s back. ${f} yelps, drops to one knee on the beam, the egg rolling in ${pr.posAdj} grip. The sharks below sense opportunity.`,
+            `The eagle gets a piece of ${f}'s hat. ${f} jerks sideways — too far — and has to throw ${pr.posAdj} whole body back onto the beam. Lost seconds. Lost dignity.`,
+          ], f + 'eagleHit'),
+          badgeText: 'HIT', badgeClass: 'red' });
       }
     }
 
@@ -1772,7 +2024,7 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
       const penalty = -(s.mental * 0.08 - dS.social * 0.06);
       if (penalty < -0.2) {
         base += penalty;
-        beamEvents.push({ type: 'justinDistraction', player: f, distractor, text: `${distractor} flexes from the sideline. ${f} glances over — and wobbles. "Eyes FORWARD!" Chef barks from below.` });
+        beamEvents.push({ type: 'justinDistraction', phase: 1, player: f, distractor, players: [f, distractor], text: `${distractor} flexes from the sideline. ${f} glances over — and wobbles. "Eyes FORWARD!" Chef barks from below.`, badgeText: 'DISTRACTED', badgeClass: 'pink' });
       }
     }
 
@@ -1780,17 +2032,35 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
     let wobbles = 0;
     if (base < 4.0) {
       wobbles++;
-      beamEvents.push({ type: 'beamWobble', player: f, text: `${f} wobbles dangerously on the beam. Arms out. Deep breath. Steady…` });
+      beamEvents.push({ type: 'beamWobble', phase: 1, player: f, players: [f], text: `${f} wobbles dangerously on the beam. Arms out. Deep breath. Steady…`, badgeText: 'WOBBLE', badgeClass: 'yellow' });
+
+      // Shark reaction to wobble
+      beamEvents.push({ type: 'sharkReaction', phase: 1, player: f, players: [f],
+        text: _pick([
+          `Below, a dorsal fin cuts the water. Then another. The sharks can smell the fear. Or maybe the eagle egg. Either way, they're circling.`,
+          `${f} glances down — mistake. Three fins. Circling. Waiting. ${f} snaps ${pronouns(f).posAdj} eyes back up. "Nope. NOPE."`,
+          `A shark breaches the surface with a lazy roll, like it's stretching before a meal. ${f}'s knuckles go white on the beam.`,
+        ], f + 'sharkW'),
+        badgeText: 'SHARKS', badgeClass: 'grey' });
     }
     if (base < 2.5) {
       wobbles++;
       base -= 2.0;
-      beamEvents.push({ type: 'beamFall', player: f, text: `${f} FALLS! Splash! The sharks circle — ${f} scrambles back up soaking wet. Massive time penalty.` });
+      beamEvents.push({ type: 'beamFall', phase: 1, player: f, players: [f], text: `${f} FALLS! Splash! The sharks circle — ${f} scrambles back up soaking wet. Massive time penalty.`, badgeText: 'FALL', badgeClass: 'red' });
+
+      // Shark reaction to fall
+      beamEvents.push({ type: 'sharkReaction', phase: 1, player: f, players: [f],
+        text: _pick([
+          `The sharks CONVERGE. ${f} has never swum so fast in ${pronouns(f).posAdj} life. Hands slapping water, legs kicking — ${pronouns(f).sub} grabs the beam ladder and pulls ${pronouns(f).ref} up, dripping and gasping.`,
+          `A shark bumps ${f}'s leg. ${f} SCREAMS. The bench SCREAMS. Chef does NOT scream but does reach for the emergency flare. ${f} somehow launches ${pronouns(f).ref} back onto the beam through pure adrenaline.`,
+          `${f} hits the water and immediately regrets every life decision. The sharks circle. ${f} grabs a support rope, hauls ${pronouns(f).ref} up, and collapses on the beam. "I HATE THIS SHOW."`,
+        ], f + 'sharkF'),
+        badgeText: 'SHARK ATTACK', badgeClass: 'red' });
     }
 
     // Cupcake flashback confessional (reveal planted, effect later)
     if (plantedSabotage && plantedSabotage.targetFinalist === f) {
-      beamEvents.push({ type: 'cupcakeFlashback', player: f, planter: plantedSabotage.planter, text: `*Flashback:* Earlier, ${plantedSabotage.planter} offered ${f} a "congratulations cupcake." ${f} didn't think twice about eating it. That was a mistake.` });
+      beamEvents.push({ type: 'cupcakeFlashback', phase: 1, player: f, planter: plantedSabotage.planter, players: [f, plantedSabotage.planter], text: `*Flashback:* Earlier, ${plantedSabotage.planter} offered ${f} a "congratulations cupcake." ${f} didn't think twice about eating it. That was a mistake.`, badgeText: 'FLASHBACK', badgeClass: 'grey' });
     }
 
     if (showmancePair) {
@@ -1799,11 +2069,38 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
       if (partner && finalists.includes(partner)) {
         const comedyBeat = Math.random() < 0.5;
         if (comedyBeat) {
-          beamEvents.push({ type: 'showmanceEncouragement', player: f, partner, text: `"I love you!" ${partner} shouts from across the gorge. "${f === finalists[0] ? 'NOT NOW!' : 'Can we TALK about this LATER?!'}" ${f} shrieks back.` });
+          beamEvents.push({ type: 'showmanceEncouragement', phase: 1, player: f, partner, players: [f, partner], text: `"I love you!" ${partner} shouts from across the gorge. "${f === finalists[0] ? 'NOT NOW!' : 'Can we TALK about this LATER?!'}" ${f} shrieks back.`, badgeText: 'SHOWMANCE', badgeClass: 'pink' });
         } else {
           base += 0.3;
-          beamEvents.push({ type: 'showmanceEncouragement', player: f, partner, text: `${partner} locks eyes with ${f} across the beam. A nod. ${f} steadies. Love is a performance enhancer, apparently.` });
+          beamEvents.push({ type: 'showmanceEncouragement', phase: 1, player: f, partner, players: [f, partner], text: `${partner} locks eyes with ${f} across the beam. A nod. ${f} steadies. Love is a performance enhancer, apparently.`, badgeText: 'SHOWMANCE', badgeClass: 'pink' });
         }
+      }
+    }
+
+    // Assistant contribution — Phase 2 (verbal guidance from the other side)
+    const asstBeam = assistants?.[f];
+    if (asstBeam?.name) {
+      const abS = asstBeam.stats || pStats(asstBeam.name);
+      const asstBoost = abS.mental * 0.05 + abS.social * 0.03;
+      const sabChance = asstBeam.bond < 0 ? Math.min(0.45, Math.abs(asstBeam.bond) * 0.05) : 0;
+      if (sabChance > 0 && Math.random() < sabChance) {
+        base -= asstBoost * 1.2;
+        sabotageEvents.push({ phase: 1, type: 'assistant-sabotage', target: f, planter: asstBeam.name });
+        beamEvents.push({ type: 'assistantSabotage', phase: 1, player: asstBeam.name, players: [asstBeam.name, f],
+          text: _pick([
+            `${asstBeam.name} shouts directions from the other side. Wrong directions. ${f} wobbles.`,
+            `"JUMP LEFT!" ${asstBeam.name} yells. There is no left. ${f} nearly goes over the edge.`,
+          ], asstBeam.name + 'asstSab2'),
+          badgeText: 'ASSISTANT SABOTAGE', badgeClass: 'red' });
+      } else {
+        base += asstBoost;
+        beamEvents.push({ type: 'assistantHelp', phase: 1, player: asstBeam.name, players: [asstBeam.name, f],
+          text: _pick([
+            `${asstBeam.name} calls from the far side: "Don't look down. Eyes on me. One step at a time." ${f} steadies.`,
+            `${asstBeam.name} talks ${f} through every step. Calm. Measured. The beam feels narrower but ${f}'s feet feel surer.`,
+            `"You're halfway! The hard part is behind you!" ${asstBeam.name} lies. ${f} believes it. That's enough.`,
+          ], asstBeam.name + 'asstHelp2'),
+          badgeText: 'ASSISTANT', badgeClass: 'blue' });
       }
     }
 
@@ -1811,9 +2108,86 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
     scores[f] += beamScores[f];
   });
 
+  // Beam rivalry — finalists on parallel beams, eye contact / psych-out
+  if (finalists.length >= 2) {
+    const [fA, fB] = finalists;
+    const bondAB = getBond(fA, fB);
+    const archA = players.find(pl => pl.name === fA)?.archetype || 'floater';
+    const archB = players.find(pl => pl.name === fB)?.archetype || 'floater';
+    if (bondAB <= -2) {
+      const aggressor = ['villain','mastermind','schemer'].includes(archA) ? fA : ['villain','mastermind','schemer'].includes(archB) ? fB : (Math.random() < 0.5 ? fA : fB);
+      const target = aggressor === fA ? fB : fA;
+      beamEvents.push({ type: 'beamRivalry', phase: 1, player: aggressor, players: [aggressor, target],
+        text: _pick([
+          `${aggressor} and ${target} are on parallel beams. ${aggressor} makes eye contact. Holds it. Then mouths: "You're DONE." ${target} nearly loses ${pronouns(target).posAdj} footing.`,
+          `${aggressor} spits into the gorge in ${target}'s direction. "That's what I think of your chances." ${target} grits ${pronouns(target).posAdj} teeth and walks FASTER.`,
+          `${aggressor} starts whistling casually on the beam — staring right at ${target}. The message is clear: this is EASY for me. You should be scared.`,
+        ], aggressor + 'beamRiv'),
+        badgeText: 'RIVALRY', badgeClass: 'red' });
+    } else if (bondAB >= 3) {
+      beamEvents.push({ type: 'beamRivalry', phase: 1, player: fA, players: [fA, fB],
+        text: _pick([
+          `${fA} and ${fB} catch each other's eye mid-crossing. A nod of respect. They're friends. But only one wins. The nod says everything: no hard feelings.`,
+          `"Race you!" ${fA} calls across the gap. ${fB} laughs despite ${pronouns(fB).ref}. For one second, it's not a finale — it's just two friends on a dumb obstacle course.`,
+        ], fA + 'beamRiv'),
+        badgeText: 'RESPECT', badgeClass: 'blue' });
+    }
+  }
+
   const beamSorted = Object.entries(beamScores).sort(([,a],[,b]) => b - a);
   const beamWinner = beamSorted[0][0];
-  beamEvents.push({ type: 'beamCross', player: beamWinner, text: `${beamWinner} reaches the other side first! The gap is ${Math.abs(beamScores[finalists[0]] - beamScores[finalists[1] || finalists[0]]).toFixed(1)} points.` });
+  const beamLoser = beamSorted.length > 1 ? beamSorted[beamSorted.length - 1][0] : beamWinner;
+
+  // Momentum shift — if the beam result flips the overall leader
+  const preBeamLeader = flagWinner;
+  const postBeamSorted = Object.entries(scores).sort(([,a],[,b]) => b - a);
+  const postBeamLeader = postBeamSorted[0][0];
+  if (preBeamLeader !== postBeamLeader) {
+    beamEvents.push({ type: 'beamMomentumShift', phase: 1, player: postBeamLeader, players: [postBeamLeader, preBeamLeader],
+      text: _pick([
+        `Wait — ${postBeamLeader} has pulled AHEAD! ${preBeamLeader} led after the flagpole, but the gorge crossing changed everything. This race is WIDE open.`,
+        `The scoreboard flips! ${postBeamLeader} takes the overall lead! ${preBeamLeader}'s flagpole advantage — gone. The bench is on its feet.`,
+        `"MOMENTUM SHIFT!" Chris screams into his megaphone. ${postBeamLeader} came from behind and NOW leads the relay! ${preBeamLeader} looks shaken.`,
+      ], 'beamMomentum'),
+      badgeText: 'LEAD CHANGE', badgeClass: 'gold' });
+  }
+
+  beamEvents.push({ type: 'beamCross', phase: 1, player: beamWinner, players: [beamWinner], text: `${beamWinner} reaches the other side first! The gap is ${Math.abs(beamScores[finalists[0]] - beamScores[finalists[1] || finalists[0]]).toFixed(1)} points.`, badgeText: 'PHASE 2 WIN', badgeClass: 'gold' });
+
+  // Bench reaction to beam
+  {
+    const winBench = benchAssignments[beamWinner] || [];
+    const loseBench = benchAssignments[beamLoser] || [];
+    if (winBench.length > 0) {
+      const reactor = _pick(winBench, 'beamBenchW');
+      beamEvents.push({ type: 'beamBenchReaction', phase: 1, player: reactor, players: [reactor, beamWinner],
+        text: _pick([
+          `${reactor} is SCREAMING from the bench. Incomprehensible. Just pure emotion and volume.`,
+          `${reactor} grabs two other supporters and shakes them. "WE'RE WINNING! WE'RE ACTUALLY WINNING!" (They might not be. But the energy is there.)`,
+          `${reactor} has tears in ${pronouns(reactor).posAdj} eyes. Actual tears. Over a balance beam. This game does things to people.`,
+        ], reactor + 'beamBenchR'),
+        badgeText: 'BENCH', badgeClass: 'blue' });
+    }
+    if (loseBench.length > 0) {
+      const reactor = _pick(loseBench, 'beamBenchL');
+      beamEvents.push({ type: 'beamBenchReaction', phase: 1, player: reactor, players: [reactor, beamLoser],
+        text: _pick([
+          `${reactor} looks like ${pronouns(reactor).sub}'s watching a horror movie. Hands over ${pronouns(reactor).posAdj} mouth. Peeking through fingers.`,
+          `"It's not over." ${reactor} says it to the bench. Then louder: "IT'S NOT OVER!" The bench nods. They need to believe it.`,
+          `${reactor} starts pacing behind the bench. Can't sit. Can't watch. Can't NOT watch.`,
+        ], reactor + 'beamBenchR'),
+        badgeText: 'BENCH', badgeClass: 'grey' });
+    }
+  }
+
+  // Chris commentary — phase end
+  beamEvents.push({ type: 'chrisCommentary', phase: 1, player: 'Chris', players: [beamWinner, beamLoser],
+    text: _pick([
+      `Chris: "Phase two is DONE! ${beamWinner} crosses first. Into the final sprint — this is where it gets REAL."`,
+      `"The gorge has been conquered!" Chris raises his coffee. "One phase left. One sprint. A hundred thousand dollars. I am LIVING for this."`,
+      `Chris leans to Chef: "That was good TV, right?" Chef: "That was animal cruelty." Chris: "…Good TV."`,
+    ], 'chrisBeamEnd'),
+    badgeText: 'HOST', badgeClass: 'yellow' });
   timeline.push(...beamEvents);
 
   stageResults.push({
@@ -1834,17 +2208,57 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
   const leader = midSorted[0][0];
   const trailer = midSorted.length > 1 ? midSorted[midSorted.length - 1][0] : midSorted[0][0];
 
+  // Chris commentary — phase start
+  sprintEvents.push({ type: 'chrisCommentary', phase: 2, player: 'Chris', players: finalists.slice(),
+    text: _pick([
+      `Chris is RUNNING alongside the course now: "FINAL PHASE! The sprint! Everything you've done — the flagpole, the gorge, the sharks — it all comes down to THIS! RUN!"`,
+      `"Phase THREE!" Chris's voice cracks with excitement. "The finish line is RIGHT THERE! A hundred thousand dollars! WHO WANTS IT?!"`,
+      `Chris drops all pretense of professionalism: "SPRINT! SPRINT SPRINT SPRINT! This is the best finale we've EVER had and it's not even CLOSE!"`,
+    ], 'chrisSprint'),
+    badgeText: 'HOST', badgeClass: 'yellow' });
+
   // False finish (trailer without a map mistakes a landmark)
   if (finalists.length >= 2 && Math.random() < 0.65) {
-    sprintEvents.push({ type: 'falseFinish', player: trailer, text: `${trailer} sees a clearing ahead — "THERE! I SEE IT!" — and sprints. It's… a porta-potty. Not the finish line. ${trailer}'s face falls. ${leader} passes ${pronouns(trailer).obj} during the confusion.` });
+    sprintEvents.push({ type: 'falseFinish', phase: 2, player: trailer, players: [trailer, leader], text: `${trailer} sees a clearing ahead — "THERE! I SEE IT!" — and sprints. It's… a porta-potty. Not the finish line. ${trailer}'s face falls. ${leader} passes ${pronouns(trailer).obj} during the confusion.`, badgeText: 'FALSE FINISH', badgeClass: 'red' });
   }
 
   finalists.forEach(f => {
     const s = pStats(f);
+    const pr = pronouns(f);
+    const fP = players.find(pl => pl.name === f);
+    const fArch = fP?.archetype || 'floater';
     let base = s.physical * 0.2 + s.endurance * 0.25 + s.boldness * 0.1 + (Math.random() * 3 - 1.5);
 
     // Carryover
     base += scores[f] * 0.1;
+
+    // Sprint narration — opening beat per finalist
+    const sprintRating = s.physical * 0.4 + s.endurance * 0.3 + s.boldness * 0.3;
+    if (sprintRating >= 7) {
+      sprintEvents.push({ type: 'sprintNarration', phase: 2, player: f, players: [f],
+        text: _pick([
+          `${f} EXPLODES off the line. Legs pumping, arms driving, hat flying off — pure, unbridled speed.`,
+          `${f} runs like something is chasing ${pr.obj}. (Technically the other finalist is, but still.) Every stride eats ground.`,
+          `${f} hits the trail at a dead sprint. This is what ${pr.sub} trained for. Every morning run, every pushup — this is the moment.`,
+        ], f + 'sprintNar'),
+        badgeText: 'SPRINTING', badgeClass: 'green' });
+    } else if (sprintRating >= 4) {
+      sprintEvents.push({ type: 'sprintNarration', phase: 2, player: f, players: [f],
+        text: _pick([
+          `${f} takes off at a solid pace — not the fastest, but ${pr.sub}'s got endurance. This is a marathon, not a sprint. Well, it IS a sprint. But ${pr.sub}'s treating it like a marathon.`,
+          `${f} runs. Not pretty, not fast, but determined. One foot in front of the other. The finish line is somewhere ahead. Probably.`,
+          `${f} pushes off — stumbles — recovers — and finds a rhythm. Not graceful. But functional.`,
+        ], f + 'sprintNar'),
+        badgeText: 'RUNNING', badgeClass: 'yellow' });
+    } else {
+      sprintEvents.push({ type: 'sprintNarration', phase: 2, player: f, players: [f],
+        text: _pick([
+          `${f} tries to sprint but ${pr.posAdj} legs have filed a formal complaint after the beam phase. The "sprint" is more of an aggressive walk.`,
+          `${f} is running on pure willpower. The body said no three obstacles ago. The brain overruled it. For now.`,
+          `${f} starts strong for exactly four seconds, then the exhaustion from the first two phases catches up. The pace drops. The bench winces.`,
+        ], f + 'sprintNar'),
+        badgeText: 'STRUGGLING', badgeClass: 'red' });
+    }
 
     // Laxative cupcake fires
     if (plantedSabotage && plantedSabotage.targetFinalist === f) {
@@ -1853,27 +2267,50 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
         // Check misfire: shared food with someone else
         const misfireChance = s.loyalty * 0.08 + s.social * 0.06;
         if (misfireChance > 0.7 && Math.random() < 0.4) {
-          sprintEvents.push({ type: 'laxativeMisfire', player: f, text: `${f} actually shared that cupcake with a camera operator. The wrong person is running for the bathroom. ${plantedSabotage.planter}'s plan backfired spectacularly.` });
+          sprintEvents.push({ type: 'laxativeMisfire', phase: 2, player: f, players: [f, plantedSabotage.planter], text: `${f} actually shared that cupcake with a camera operator. The wrong person is running for the bathroom. ${plantedSabotage.planter}'s plan backfired spectacularly.`, badgeText: 'MISFIRE', badgeClass: 'yellow' });
         } else {
           base -= 2.0;
-          sprintEvents.push({ type: 'laxativeFires', player: f, planter: plantedSabotage.planter, text: `${f} doubles over mid-sprint. The cupcake. THE CUPCAKE. ${f} stumbles behind a bush. Lost time: catastrophic.` });
+          sprintEvents.push({ type: 'laxativeFires', phase: 2, player: f, planter: plantedSabotage.planter, players: [f, plantedSabotage.planter], text: `${f} doubles over mid-sprint. The cupcake. THE CUPCAKE. ${f} stumbles behind a bush. Lost time: catastrophic.`, badgeText: 'SABOTAGE', badgeClass: 'red' });
           sabotageEvents.push({ phase: 2, type: 'cupcake', target: f, planter: plantedSabotage.planter });
         }
       } else {
-        sprintEvents.push({ type: 'cupcakeResist', player: f, text: `${f}'s stomach gurgles ominously... but holds. Iron constitution. ${plantedSabotage.planter} watches in disbelief from the sideline.` });
+        sprintEvents.push({ type: 'cupcakeResist', phase: 2, player: f, players: [f, plantedSabotage.planter], text: `${f}'s stomach gurgles ominously... but holds. Iron constitution. ${plantedSabotage.planter} watches in disbelief from the sideline.`, badgeText: 'RESISTED', badgeClass: 'green' });
       }
     }
 
-    // Brownie temptation (guaranteed — lowest mental faces it)
-    const mentalRank = [...finalists].sort((a, b) => pStats(a).mental - pStats(b).mental);
-    if (f === mentalRank[0]) {
-      const resistRoll = s.mental * 0.3 + s.strategic * 0.2;
-      if (resistRoll > 3.5) {
+    // Brownie temptation (universal — everyone faces it, different resist thresholds)
+    {
+      const resistRoll = s.mental * 0.3 + s.strategic * 0.2 + s.endurance * 0.1;
+      if (resistRoll > 5.0) {
+        // Strong willpower — runs right past
+        sprintEvents.push({ type: 'brownieResist', phase: 2, player: f, players: [f],
+          text: _pick([
+            `A table of fresh brownies appears on the trail. ${f} doesn't even slow down. "NICE TRY, MCLEAN!" Heroic self-control.`,
+            `${f} spots the brownie trap. Sniffs the air. Keeps running. "I'm on a DIET." (${pr.Sub} is not on a diet. That was pure willpower.)`,
+            `The brownies are RIGHT THERE. Warm. Gooey. ${f} locks eyes with them, then looks away. "After. AFTER the race." ${pr.Sub} sprints harder to get away from temptation.`,
+          ], f + 'brownieR'),
+          badgeText: 'WILLPOWER', badgeClass: 'green' });
         base += 0.5;
-        sprintEvents.push({ type: 'brownieResist', player: f, text: `A table of fresh brownies appears on the trail. ${f} hesitates — stares — then SPRINTS past. "NOT TODAY!" Heroic self-control.` });
+      } else if (resistRoll > 3.0) {
+        // Moderate — hesitates but pushes through
+        sprintEvents.push({ type: 'brownieHesitate', phase: 2, player: f, players: [f],
+          text: _pick([
+            `${f} slows at the brownie table. Reaches out. Hand hovering. "No. NO." Pulls back. Runs. But the hesitation cost precious seconds.`,
+            `A brownie table. ${f} stops. Picks one up. Stares at it. Puts it back down. "I hate this game." Starts running again — time lost, dignity intact.`,
+            `${f} literally grabs a brownie, takes one sniff, then THROWS it into the woods and keeps running. "THAT WAS THE HARDEST THING I'VE EVER DONE."`,
+          ], f + 'brownieH'),
+          badgeText: 'TEMPTED', badgeClass: 'yellow' });
+        base -= 0.5;
       } else {
+        // Low willpower — brownie break
+        sprintEvents.push({ type: 'brownieTemptation', phase: 2, player: f, players: [f],
+          text: _pick([
+            `A table of fresh brownies appears on the trail. ${f} stops. Sits down. Takes a bite. Then another. "${f}! THE RACE!" "Five more minutes…" Chef face-palms.`,
+            `${f} sees brownies. The race ceases to exist. ${pr.Sub} sits cross-legged in the dirt, eating with both hands. "${f}, WHAT ARE YOU DOING?!" "Living my BEST LIFE."`,
+            `The brownies. ${f} was doing so well. But the brownies. ${pr.Sub} eats three before anyone can stop ${pr.obj}. "WORTH IT." (Narrator: It was not worth it.)`,
+          ], f + 'brownieT'),
+          badgeText: 'BROWNIE BREAK', badgeClass: 'red' });
         base -= 2.5;
-        sprintEvents.push({ type: 'brownieTemptation', player: f, text: `A table of fresh brownies appears on the trail. ${f} stops. Sits down. Takes a bite. Then another. "${f}! THE RACE!" "Five more minutes…" Chef face-palms.` });
       }
     }
 
@@ -1881,7 +2318,7 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
     if (Math.random() < 0.3) {
       const operatorMental = 3 + Math.random() * 4;
       if (operatorMental * 0.05 < 0.3) {
-        sprintEvents.push({ type: 'fanBackfire', player: f, text: `An intern turns on the industrial fan — backwards. ${f} gets blasted with a 60mph headwind. Papers, leaves, and somebody's wig go flying.` });
+        sprintEvents.push({ type: 'fanBackfire', phase: 2, player: f, players: [f], text: `An intern turns on the industrial fan — backwards. ${f} gets blasted with a 60mph headwind. Papers, leaves, and somebody's wig go flying.`, badgeText: 'FAN FAIL', badgeClass: 'yellow' });
         base -= 0.8;
       }
     }
@@ -1894,7 +2331,7 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
         const gestureRoll = s.physical * 0.1 + s.loyalty * 0.08;
         if (gestureRoll > 1.2 && Math.random() < 0.4) {
           base += 0.4;
-          sprintEvents.push({ type: 'boulderGesture', player: f, partner, text: `${partner} runs alongside ${f} from the sideline, pushing a boulder out of the path. "GO! I've got this!" The bond fuels the sprint.` });
+          sprintEvents.push({ type: 'boulderGesture', phase: 2, player: f, partner, players: [f, partner], text: `${partner} runs alongside ${f} from the sideline, pushing a boulder out of the path. "GO! I've got this!" The bond fuels the sprint.`, badgeText: 'SHOWMANCE', badgeClass: 'pink' });
         }
       }
     }
@@ -1908,23 +2345,277 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
       const supportStr = topSupporters.reduce((sum, s2) => sum + (pStats(s2).physical + pStats(s2).endurance) * 0.01, 0);
       base += supportStr;
       const names = topSupporters.length === 1 ? topSupporters[0] : topSupporters.slice(0, -1).join(', ') + ' and ' + topSupporters[topSupporters.length - 1];
-      sprintEvents.push({ type: 'supporterSprint', player: f, supporters: topSupporters, text: `${names} sprint${topSupporters.length === 1 ? 's' : ''} alongside ${f}, screaming encouragement. The bench is ALL IN.` });
+      sprintEvents.push({ type: 'supporterSprint', phase: 2, player: f, supporters: topSupporters, players: [f, ...topSupporters], text: `${names} sprint${topSupporters.length === 1 ? 's' : ''} alongside ${f}, screaming encouragement. The bench is ALL IN.`, badgeText: 'SUPPORT', badgeClass: 'blue' });
+    }
+
+    // Supporter intervention — a supporter does something dramatic to help/hinder
+    if (bench.length > 0 && Math.random() < 0.45) {
+      const intervener = _pick(bench, f + 'intervene');
+      const intS = pStats(intervener);
+      const intP = players.find(pl => pl.name === intervener);
+      const intArch = intP?.archetype || 'floater';
+      const rival = finalists.find(o => o !== f);
+      if (rival) {
+        const isVillain = ['villain','mastermind','schemer'].includes(intArch);
+        const isNice = ['hero','loyal-soldier','social-butterfly','showmancer','underdog','goat'].includes(intArch);
+        if (isVillain) {
+          // Villain supporter sabotages the rival
+          sprintEvents.push({ type: 'supporterIntervention', phase: 2, player: intervener, players: [intervener, rival, f],
+            text: _pick([
+              `${intervener} "accidentally" steps into ${rival}'s path. ${rival} has to dodge, losing a full stride. "Oops." The smirk says it all.`,
+              `${intervener} kicks a branch onto the trail right as ${rival} approaches. ${rival} stumbles. ${intervener} is already looking the other way, whistling.`,
+              `${intervener} screams fake directions: "${rival}! WRONG WAY! THE FINISH IS LEFT!" ${rival} hesitates for ONE critical second before realizing it's a trick.`,
+            ], intervener + 'sabInt'),
+            badgeText: 'DIRTY PLAY', badgeClass: 'red' });
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[intervener] = (gs.popularity[intervener] || 0) - 2;
+        } else if (isNice) {
+          // Nice supporter gives an encouraging boost
+          base += intS.social * 0.02;
+          sprintEvents.push({ type: 'supporterIntervention', phase: 2, player: intervener, players: [intervener, f],
+            text: _pick([
+              `${intervener} sprints to the edge of the trail: "YOU'RE SO CLOSE! DON'T STOP! I BELIEVE IN YOU!" ${f} finds a gear ${pr.sub} didn't know ${pr.sub} had.`,
+              `${intervener} holds up a sign — wait, where did ${pronouns(intervener).sub} GET a sign? It reads: "RUN LIKE CHEF IS COOKING DINNER." ${f} runs VERY fast.`,
+              `${intervener} runs alongside for a few strides, matching pace: "Remember why you're here. Remember what you told me on Day 3. FINISH THIS." ${f} nods and PUSHES.`,
+            ], intervener + 'niceInt'),
+            badgeText: 'INSPIRATION', badgeClass: 'green' });
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[intervener] = (gs.popularity[intervener] || 0) + 1;
+        }
+      }
+    }
+
+    // Assistant contribution — Phase 3 (pacing alongside)
+    const asstSprint = assistants?.[f];
+    if (asstSprint?.name) {
+      const aspS = asstSprint.stats || pStats(asstSprint.name);
+      const asstBoost = aspS.physical * 0.04 + aspS.endurance * 0.04;
+      const sabChance = asstSprint.bond < 0 ? Math.min(0.45, Math.abs(asstSprint.bond) * 0.05) : 0;
+      if (sabChance > 0 && Math.random() < sabChance) {
+        base -= asstBoost * 1.5;
+        sabotageEvents.push({ phase: 2, type: 'assistant-sabotage', target: f, planter: asstSprint.name });
+        sprintEvents.push({ type: 'assistantSabotage', phase: 2, player: asstSprint.name, players: [asstSprint.name, f],
+          text: _pick([
+            `${asstSprint.name} "trips" right in front of ${f}. ${f} goes down hard. "Oh no! Are you okay?" The smile says everything.`,
+            `${asstSprint.name} points ${f} toward what looks like a shortcut. It's a dead end. By the time ${f} backtracks, the gap is wider.`,
+          ], asstSprint.name + 'asstSab3'),
+          badgeText: 'ASSISTANT SABOTAGE', badgeClass: 'red' });
+      } else {
+        base += asstBoost;
+        sprintEvents.push({ type: 'assistantHelp', phase: 2, player: asstSprint.name, players: [asstSprint.name, f],
+          text: _pick([
+            `${asstSprint.name} runs stride for stride with ${f}. "Match my pace! We've got this!" The finish line is getting closer.`,
+            `${asstSprint.name} pulls ahead slightly, creating a slipstream. ${f} tucks in behind. Every second counts.`,
+            `"Don't slow down! I can see the line!" ${asstSprint.name} sprints alongside ${f}, both of them giving everything left.`,
+          ], asstSprint.name + 'asstHelp3'),
+          badgeText: 'ASSISTANT', badgeClass: 'blue' });
+      }
     }
 
     sprintScores[f] = Math.max(0, base);
     scores[f] += sprintScores[f];
   });
 
+  // Sprint rivalry — neck and neck moment
+  if (finalists.length >= 2) {
+    const [fA, fB] = finalists;
+    const gapAfterSprint = Math.abs(scores[fA] - scores[fB]);
+    if (gapAfterSprint < 2.0) {
+      sprintEvents.push({ type: 'sprintRivalry', phase: 2, player: fA, players: [fA, fB],
+        text: _pick([
+          `They're SHOULDER TO SHOULDER! ${fA} and ${fB}, stride for stride, neither giving an inch. The bench is LOSING ITS MIND.`,
+          `${fA} pulls even with ${fB}. Eyes locked. Teeth gritted. Neither looks away. This is it — the race within the race.`,
+          `For thirty agonizing seconds, ${fA} and ${fB} run in perfect lockstep. The only sound is their breathing and the bench screaming.`,
+        ], 'sprintRivalry'),
+        badgeText: 'NECK AND NECK', badgeClass: 'gold' });
+    }
+
+    // Desperation — the trailer does something desperate
+    const finalTrailer = scores[fA] < scores[fB] ? fA : fB;
+    const finalLeader = finalTrailer === fA ? fB : fA;
+    const trArch = players.find(pl => pl.name === finalTrailer)?.archetype || 'floater';
+    const trPr = pronouns(finalTrailer);
+    if (scores[finalLeader] - scores[finalTrailer] > 0.5) {
+      if (['villain','mastermind','schemer'].includes(trArch)) {
+        sprintEvents.push({ type: 'sprintDesperation', phase: 2, player: finalTrailer, players: [finalTrailer, finalLeader],
+          text: _pick([
+            `${finalTrailer} is losing. And ${trPr.sub} KNOWS it. ${trPr.Sub} grabs a branch off the ground and HURLS it at ${finalLeader}'s feet. "IF I'M GOING DOWN, I'M TAKING YOU WITH ME!"`,
+            `Desperation. ${finalTrailer} cuts across the trail, trying to body-check ${finalLeader}. It's blatant. It's ugly. The bench boos. ${finalTrailer} doesn't care.`,
+            `${finalTrailer}'s eyes go wild. ${trPr.Sub} scoops a handful of dirt and throws it backwards. "EAT DUST!" It doesn't help ${trPr.posAdj} time at all, but it feels good.`,
+          ], finalTrailer + 'desp'),
+          badgeText: 'DESPERATE', badgeClass: 'red' });
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[finalTrailer] = (gs.popularity[finalTrailer] || 0) - 2;
+      } else if (['hero','underdog','loyal-soldier'].includes(trArch)) {
+        sprintEvents.push({ type: 'sprintDesperation', phase: 2, player: finalTrailer, players: [finalTrailer],
+          text: _pick([
+            `${finalTrailer} is behind. And something shifts in ${trPr.posAdj} eyes. Not anger — something quieter. Something fiercer. ${trPr.Sub} puts ${trPr.posAdj} head down and RUNS. Harder than ${trPr.sub}'s run all day.`,
+            `"I didn't come this far to lose." ${finalTrailer} says it out loud. To no one. To everyone. And ${trPr.sub} finds one more gear.`,
+            `The bench is screaming ${finalTrailer}'s name. ${trPr.Sub} hears every voice. And ${trPr.sub} runs like the answer to every person who ever counted ${trPr.obj} out.`,
+          ], finalTrailer + 'desp'),
+          badgeText: 'DIG DEEP', badgeClass: 'green' });
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[finalTrailer] = (gs.popularity[finalTrailer] || 0) + 2;
+      } else if (['wildcard','chaos-agent'].includes(trArch)) {
+        sprintEvents.push({ type: 'sprintDesperation', phase: 2, player: finalTrailer, players: [finalTrailer, finalLeader],
+          text: _pick([
+            `${finalTrailer} does something UNHINGED — ${trPr.sub} veers off the trail entirely, crashing through underbrush on a "shortcut." Is it shorter? NOBODY knows. Not even ${finalTrailer}.`,
+            `${finalTrailer} screams something incomprehensible and starts ZIGZAGGING. It's chaos. It's insanity. But somehow — SOMEHOW — ${trPr.sub}'s closing ground?`,
+          ], finalTrailer + 'desp'),
+          badgeText: 'CHAOS', badgeClass: 'yellow' });
+      } else {
+        sprintEvents.push({ type: 'sprintDesperation', phase: 2, player: finalTrailer, players: [finalTrailer],
+          text: _pick([
+            `${finalTrailer} is falling behind. ${trPr.Sub} grits ${trPr.posAdj} teeth and pushes everything left into one final burst.`,
+            `"Not like this." ${finalTrailer} refuses to accept it. The legs are screaming. The lungs are burning. But ${trPr.sub} keeps going.`,
+          ], finalTrailer + 'desp'),
+          badgeText: 'PUSH', badgeClass: 'yellow' });
+      }
+    }
+  }
+
+  // Sprint bench reaction — crowd goes wild as finish approaches
+  if (finalists.length >= 2) {
+    const allBench = [...new Set([...(benchAssignments[finalists[0]] || []), ...(benchAssignments[finalists[1]] || [])])];
+    if (allBench.length >= 2) {
+      const reactor1 = _pick(allBench, 'sprintBench1');
+      const reactor2 = allBench.find(b => b !== reactor1) || reactor1;
+      sprintEvents.push({ type: 'sprintBenchReaction', phase: 2, player: reactor1, players: [reactor1, reactor2],
+        text: _pick([
+          `The benches are in CHAOS. ${reactor1} is standing on ${pronouns(reactor1).posAdj} seat screaming. ${reactor2} is grabbing strangers. Camera operators are ducking flying hats.`,
+          `${reactor1} and ${reactor2} are both on their feet — on OPPOSITE benches — screaming at each other across the gap. This isn't about strategy anymore. This is war.`,
+          `${reactor1} has completely lost ${pronouns(reactor1).posAdj} voice but is still screaming. It's just air. ${reactor2} is crying. The interns are crying. EVERYONE is crying.`,
+        ], 'sprintBench'),
+        badgeText: 'PANDEMONIUM', badgeClass: 'blue' });
+    }
+  }
+
+  // Chris building suspense
+  sprintEvents.push({ type: 'chrisCommentary', phase: 2, player: 'Chris', players: finalists.slice(),
+    text: _pick([
+      `Chris is sprinting alongside the course, megaphone bouncing: "THEY'RE APPROACHING THE FINISH! I CAN'T TELL WHO'S AHEAD! THIS IS INCREDIBLE!"`,
+      `"COME ON COME ON COME ON!" Chris is no longer hosting. Chris is WATCHING. Even he's been pulled in.`,
+      `Chris grabs a cameraman: "TELL ME YOU'RE GETTING THIS! ZOOM IN! THIS IS TELEVISION GOLD!"`,
+    ], 'chrisFinish'),
+    badgeText: 'HOST', badgeClass: 'yellow' });
+
   // Photo finish
   const sprintSorted = Object.entries(sprintScores).sort(([,a],[,b]) => b - a);
   const finalGap = Math.abs(scores[finalists[0]] - scores[finalists[1] || finalists[0]]);
   if (finalGap < 0.5 && finalists.length >= 2) {
-    sprintEvents.push({ type: 'photoFinish', text: `It's a photo finish! Both finalists lunge for the line — Chef squints at the instant replay. "That was close. REAL close."` });
+    sprintEvents.push({ type: 'photoFinish', phase: 2, players: finalists.slice(), text: `It's a photo finish! Both finalists lunge for the line — Chef squints at the instant replay. "That was close. REAL close."`, badgeText: 'PHOTO FINISH', badgeClass: 'gold' });
   }
 
   const totalSorted = Object.entries(scores).sort(([,a],[,b]) => b - a);
   const winner = totalSorted[0][0];
-  sprintEvents.push({ type: 'relayWinner', player: winner, text: `${winner} CROSSES THE FINISH LINE! The bench erupts. Confetti — wait, that's just Chef throwing his hat. ${winner} wins the Rejected Olympic Relay!` });
+  const loser = totalSorted.length > 1 ? totalSorted[totalSorted.length - 1][0] : winner;
+  const winPr = pronouns(winner);
+  const winArch = players.find(pl => pl.name === winner)?.archetype || 'floater';
+  const losePr = pronouns(loser);
+  const loseArch = players.find(pl => pl.name === loser)?.archetype || 'floater';
+
+  // Finish line lunge — phase 3 (post-race, shown on Finish screen only)
+  sprintEvents.push({ type: 'finishLineLunge', phase: 3, player: winner, players: finalists.slice(),
+    text: _pick([
+      `${winner} DIVES for the line — hands outstretched, body horizontal, crashing into the dirt. ${winPr.Sub} slides across the finish in a cloud of dust. It's over.`,
+      `${winner} lunges, stumbles, catches ${winPr.ref}, and crosses the line at a full sprint. Legs give out immediately after — ${winPr.sub} collapses into the dirt, gasping.`,
+      `${winner} throws ${winPr.ref} across the finish line like ${winPr.posAdj} life depends on it. Because a hundred thousand dollars of it does.`,
+    ], winner + 'lunge'),
+    badgeText: 'FINISH', badgeClass: 'gold' });
+
+  // Winner reaction — archetype-driven
+  {
+    let winText;
+    if (['villain','mastermind','schemer'].includes(winArch)) {
+      winText = _pick([
+        `${winner} stands up, dusts ${winPr.ref} off, and turns to the bench with a grin that could curdle milk. "I TOLD you. I told ALL of you." Not humble. Never humble.`,
+        `${winner} raises both arms. Not joy — triumph. The villain won. And ${winPr.sub} wants every single person to LOOK at ${winPr.obj}.`,
+        `${winner} laughs. Just laughs. Standing at the finish line, dirt-covered, victorious, laughing at every person who ever underestimated ${winPr.obj}.`,
+      ], winner + 'winReact');
+    } else if (['hero','loyal-soldier'].includes(winArch)) {
+      winText = _pick([
+        `${winner} drops to ${winPr.posAdj} knees. Tears. Actual tears. ${winPr.Sub} points to ${winPr.posAdj} bench: "THAT'S for you. ALL of you."`,
+        `${winner} crosses the line and immediately turns to find ${winPr.posAdj} supporters. The hug is instant. And long. And loud.`,
+        `${winner} wins and ${winPr.posAdj} first reaction is to look for the people who believed in ${winPr.obj}. That tells you everything about how ${winPr.sub} played this game.`,
+      ], winner + 'winReact');
+    } else if (['underdog','goat'].includes(winArch)) {
+      winText = _pick([
+        `${winner} stares at the finish line like ${winPr.sub} can't believe ${winPr.sub}'s actually on the right side of it. "I won? I WON?!" The disbelief is heartbreaking and beautiful.`,
+        `${winner} collapses. Not from exhaustion — from shock. The underdog won. The person nobody picked. The person ${winPr.sub} didn't even pick. WON.`,
+      ], winner + 'winReact');
+    } else if (['challenge-beast'].includes(winArch)) {
+      winText = _pick([
+        `${winner} crosses the line and ROARS. Not a word — a sound. Pure animal triumph. The challenge beast just won the biggest challenge of ${winPr.posAdj} life.`,
+        `${winner} pumps ${winPr.posAdj} fist so hard ${winPr.sub} almost dislocates ${winPr.posAdj} shoulder. "THAT'S how you FINISH!"`,
+      ], winner + 'winReact');
+    } else {
+      winText = _pick([
+        `${winner} crosses the line and stops. Blinks. Looks around. "Did I… did I just win?" The reality hasn't hit yet. It will.`,
+        `${winner} finishes and just… stands there. Breathing. Then the smile comes. Slowly, then all at once.`,
+      ], winner + 'winReact');
+    }
+    sprintEvents.push({ type: 'winnerReaction', phase: 3, player: winner, players: [winner], text: winText, badgeText: 'WINNER', badgeClass: 'gold' });
+    if (!gs.popularity) gs.popularity = {};
+    gs.popularity[winner] = (gs.popularity[winner] || 0) + 3;
+  }
+
+  // Loser reaction — archetype-driven
+  if (loser !== winner) {
+    let loseText;
+    if (['villain','mastermind','schemer'].includes(loseArch)) {
+      loseText = _pick([
+        `${loser} stops running. Stares at the finish line ${losePr.sub} didn't reach first. ${losePr.Sub} doesn't cry. Doesn't scream. ${losePr.Sub} just goes very, very still. That's scarier.`,
+        `${loser}'s face cycles through fury, disbelief, and something that might be respect — then settles back on fury. "This isn't over." (It is.)`,
+        `${loser} kicks the dirt. Then kicks it again. Then turns away from the cameras entirely. The villain lost. And ${losePr.sub} will NEVER forgive this moment.`,
+      ], loser + 'loseReact');
+    } else if (['hero','loyal-soldier','underdog'].includes(loseArch)) {
+      loseText = _pick([
+        `${loser} crosses the line second and takes a long, shaky breath. Then walks to ${winner}: "You earned it." The handshake is genuine. The eyes are wet.`,
+        `${loser} sits down in the dirt, head in ${losePr.posAdj} hands. Not angry. Just spent. Everything ${losePr.sub} had, and it wasn't quite enough.`,
+        `${loser} finishes and immediately hugs ${losePr.posAdj} supporters. "Thank you. I mean it. Thank you." The loss hurts. The love helps.`,
+      ], loser + 'loseReact');
+    } else if (['wildcard','chaos-agent'].includes(loseArch)) {
+      loseText = _pick([
+        `${loser} finishes second and… shrugs? "Eh. I made it to the finale. That's pretty sick." The bench can't tell if ${losePr.sub}'s coping or genuinely unbothered.`,
+        `${loser} takes the loss with a laugh. "Dude, I just ran an obstacle course over SHARKS. Win or lose, that's a STORY."`,
+      ], loser + 'loseReact');
+    } else {
+      loseText = _pick([
+        `${loser} finishes and nods slowly. Processing. "Okay. Okay." A supporter puts a hand on ${losePr.posAdj} shoulder. That's when the composure cracks.`,
+        `${loser} walks past the finish line in silence. Doesn't stop. Doesn't look at anyone. Needs a minute. Or several.`,
+      ], loser + 'loseReact');
+    }
+    sprintEvents.push({ type: 'loserReaction', phase: 3, player: loser, players: [loser], text: loseText, badgeText: 'RUNNER-UP', badgeClass: 'grey' });
+  }
+
+  // Crowd storm — bench empties, everyone rushes
+  {
+    const winBench = benchAssignments[winner] || [];
+    const loseBench = loser !== winner ? (benchAssignments[loser] || []) : [];
+    const allPlayers = [...new Set([...winBench, ...loseBench, ...finalists])];
+    if (winBench.length > 0) {
+      const stormer = _pick(winBench, 'crowdStorm');
+      sprintEvents.push({ type: 'crowdStorm', phase: 3, player: stormer, players: allPlayers.slice(0, 6),
+        text: _pick([
+          `The bench EMPTIES. ${stormer} leads the charge — ${winBench.length > 1 ? 'they' : pronouns(stormer).sub} PILE onto ${winner}. It's a dogpile of tears and screaming and someone's hat getting crushed. Beautiful chaos.`,
+          `${stormer} vaults over the bench railing and TACKLES ${winner} in celebration. Others follow. Within seconds it's a pile of bodies and joy and ugly-crying.`,
+          `The supporters swarm the finish line. ${stormer} reaches ${winner} first, grabbing ${winPr.obj} by the shoulders: "YOU DID IT! YOU ACTUALLY DID IT!" The celebration is deafening.`,
+        ], 'crowdStormW'),
+        badgeText: 'CELEBRATION', badgeClass: 'gold' });
+    }
+    if (loseBench.length > 0 && loser !== winner) {
+      const consoler = _pick(loseBench, 'crowdConsole');
+      sprintEvents.push({ type: 'crowdStorm', phase: 3, player: consoler, players: [consoler, loser],
+        text: _pick([
+          `On the other side, ${consoler} walks to ${loser}. No words. Just a hand on ${losePr.posAdj} shoulder. Then a hug. The bench follows. They lost together.`,
+          `${consoler} sits down next to ${loser} in the dirt. "You were incredible." ${loser} nods. Can't talk yet. But the presence helps.`,
+          `${loser}'s bench gathers quietly. No celebration, but no collapse either. ${consoler} breaks the silence: "Second place in the entire game. That's not nothing." ${loser} almost smiles.`,
+        ], 'crowdStormL'),
+        badgeText: 'CONSOLATION', badgeClass: 'blue' });
+    }
+  }
+
+  sprintEvents.push({ type: 'relayWinner', phase: 3, player: winner, players: [winner], text: `${winner} WINS the Rejected Olympic Relay! A hundred thousand dollars. One obstacle course. Zero regrets.`, badgeText: 'CHAMPION', badgeClass: 'gold' });
   timeline.push(...sprintEvents);
 
   stageResults.push({

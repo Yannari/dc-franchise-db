@@ -2,6 +2,8 @@
 // vp-finale.js — Finale VP screens, jury, reunion, season stats, debug
 // ══════════════════════════════════════════════════════════════════════
 
+if (typeof window !== 'undefined' && !window._tvState) window._tvState = {};
+
 export function rpBuildFinaleCampLife(ep) {
   // Show ALL players who entered the finale (before fire-making/koh-lanta eliminations)
   // finaleEntrants is snapshotted at the very start of simulateFinale, before any cuts
@@ -2133,33 +2135,106 @@ export function gcRevealAll(key, totalStages) {
 // REJECTED OLYMPIC RELAY — VP SCREENS
 // ══════════════════════════════════════════════════════════════════════
 
+const RELAY_STYLES = `<style>
+.relay-arena{--relay-gold:#e3b341;--relay-red:#f85149;--relay-blue:#388bfd;--relay-green:#3fb950;--relay-muted:#8b949e;color:#c9d1d9;font-family:var(--font-body,system-ui);padding:24px 16px 40px;position:relative;min-height:100vh}
+.relay-arena.phase-pitch{background:linear-gradient(180deg,#0d1117 0%,#161b22 40%,#1a1e2a 100%)}
+.relay-arena.phase-flagpole{background:linear-gradient(180deg,#0d1117 0%,#141820 30%,#1a2030 100%)}
+.relay-arena.phase-beam{background:linear-gradient(180deg,#0a0e18 0%,#0d1520 40%,#0a1a2a 100%)}
+.relay-arena.phase-sprint{background:linear-gradient(180deg,#1a1810 0%,#1e2010 30%,#1a2518 100%)}
+.relay-arena.phase-finish{background:linear-gradient(180deg,#1a1508 0%,#201a0a 40%,#1a1508 100%)}
+.relay-eyebrow{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--relay-gold);text-align:center;margin-bottom:6px}
+.relay-title{font-size:24px;text-align:center;letter-spacing:2px;margin-bottom:4px;font-family:var(--font-display,Georgia,serif);text-transform:uppercase}
+.relay-title.gold{color:var(--relay-gold);text-shadow:0 0 20px rgba(227,179,65,0.2)}
+.relay-title.blue{color:var(--relay-blue);text-shadow:0 0 20px rgba(56,139,253,0.15)}
+.relay-title.green{color:var(--relay-green);text-shadow:0 0 20px rgba(63,185,80,0.15)}
+.relay-sub{font-size:11px;color:var(--relay-muted);text-align:center;margin-bottom:20px;font-style:italic}
+.relay-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-left:4px solid rgba(255,255,255,0.1);padding:12px 14px;margin-bottom:10px;border-radius:2px 8px 8px 2px;display:flex;gap:10px;align-items:flex-start;animation:relay-in 0.3s ease-out;position:relative}
+.relay-card.sabotage{border-left-color:var(--relay-red);background:rgba(248,81,73,0.04)}
+.relay-card.victory{border-left-color:var(--relay-gold);background:rgba(227,179,65,0.04)}
+.relay-card.comedy{border-left-color:#d29922;background:rgba(210,153,34,0.03)}
+.relay-card.romance{border-left-color:#db7093;background:rgba(219,112,147,0.04)}
+.relay-card.chris{border-left-color:#a371f7;background:rgba(163,113,247,0.03);border-left-style:dashed}
+.relay-card.bench{border-left-color:var(--relay-muted);background:rgba(139,148,158,0.03)}
+.relay-card.danger{border-left-color:#f0883e;background:rgba(240,136,62,0.03)}
+.relay-card .card-portrait{flex-shrink:0;display:flex;gap:4px}
+.relay-card .card-body{flex:1;min-width:0}
+@keyframes relay-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.relay-badge{display:inline-block;font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border-radius:3px;margin-bottom:6px}
+.relay-badge.gold{background:rgba(227,179,65,0.15);color:var(--relay-gold)}
+.relay-badge.red{background:rgba(248,81,73,0.12);color:var(--relay-red)}
+.relay-badge.green{background:rgba(63,185,80,0.12);color:var(--relay-green)}
+.relay-badge.blue{background:rgba(56,139,253,0.12);color:var(--relay-blue)}
+.relay-badge.yellow{background:rgba(210,153,34,0.12);color:#d29922}
+.relay-badge.grey{background:rgba(139,148,158,0.08);color:var(--relay-muted)}
+.relay-badge.pink{background:rgba(219,112,147,0.12);color:#db7093}
+.relay-badge.purple{background:rgba(163,113,247,0.12);color:#a371f7}
+.relay-bench{display:flex;gap:12px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.relay-bench-side{text-align:center;padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;min-width:160px;flex:1;max-width:280px}
+.relay-bench-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--relay-gold);margin-bottom:8px}
+.relay-bench-portraits{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.relay-vs{display:flex;justify-content:center;align-items:center;gap:24px;margin:20px 0}
+.relay-vs-player{text-align:center}
+.relay-vs-divider{font-size:20px;font-weight:900;color:var(--relay-gold);letter-spacing:2px;font-family:var(--font-display,Georgia,serif)}
+.relay-score-bar{display:flex;align-items:center;gap:8px;margin:4px 0}
+.relay-score-fill{height:6px;border-radius:3px;transition:width 0.5s}
+.relay-score-track{flex:1;height:6px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden}
+.relay-reveal-btn{display:inline-block;padding:8px 24px;background:rgba(227,179,65,0.12);color:var(--relay-gold);border:1px solid rgba(227,179,65,0.3);border-radius:6px;cursor:pointer;font-size:12px;letter-spacing:1px;transition:background 0.2s}
+.relay-reveal-btn:hover{background:rgba(227,179,65,0.2)}
+.relay-reveal-all{display:inline-block;padding:4px 14px;background:rgba(255,255,255,0.03);color:var(--relay-muted);border:1px solid rgba(255,255,255,0.06);border-radius:4px;cursor:pointer;font-size:10px;margin-top:6px;transition:color 0.2s}
+.relay-reveal-all:hover{color:#c9d1d9}
+.relay-sticky-btns{text-align:center;padding:16px 0 8px;position:relative;z-index:10}
+.relay-winner-splash{text-align:center;padding:24px;background:linear-gradient(135deg,rgba(227,179,65,0.12) 0%,rgba(227,179,65,0.03) 100%);border:2px solid rgba(227,179,65,0.4);border-radius:16px;max-width:340px;margin:20px auto;box-shadow:0 0 40px rgba(227,179,65,0.08)}
+.relay-winner-name{font-size:28px;font-weight:700;color:var(--relay-gold);margin-top:10px;font-family:var(--font-display,Georgia,serif);letter-spacing:2px}
+.relay-confessional{border-left-color:#a371f7;background:rgba(163,113,247,0.04);font-style:italic}
+.relay-flip{border-left-color:var(--relay-red);animation:relay-in 0.3s ease-out,relay-shake 0.4s 0.1s ease-out}
+@keyframes relay-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+</style>`;
+
+function _relayStyles() { return RELAY_STYLES; }
+
+function _relayRevealFn(stateKey, idx, epNum) {
+  return `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${idx};const ep=gs.episodeHistory.find(e=>e.num===${epNum});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+}
+function _relayRevealAllFn(stateKey, total, epNum) {
+  return `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${total-1};const ep=gs.episodeHistory.find(e=>e.num===${epNum});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+}
+function _relayBtns(stateKey, nextIdx, total, epNum) {
+  if (nextIdx >= total) return '';
+  return `<div class="relay-sticky-btns">
+    <div class="relay-reveal-btn" onclick="${_relayRevealFn(stateKey, nextIdx, epNum)}">Next ▸ <span style="font-size:9px;opacity:0.6;margin-left:4px">${nextIdx+1}/${total}</span></div>
+    <div class="relay-reveal-all" onclick="${_relayRevealAllFn(stateKey, total, epNum)}" style="margin-top:6px">Show all ▸▸</div>
+  </div>`;
+}
+
+function _relayCardClass(evt) {
+  if (evt.type?.includes('sabotage') || evt.type?.includes('Sabotage') || evt.type === 'laxativeFires' || evt.type === 'laxativeMisfire' || evt.type === 'flagpoleSabotage') return 'sabotage';
+  if (evt.type?.includes('Win') || evt.type === 'flagpoleWin' || evt.type === 'beamCross' || evt.type === 'relayWinner' || evt.type === 'finishLineLunge') return 'victory';
+  if (evt.type === 'brownieTemptation' || evt.type === 'hatAssign' || evt.type === 'fanBackfire' || evt.type === 'falseFinish') return 'comedy';
+  if (evt.type?.includes('showmance') || evt.type === 'boulderGesture') return 'romance';
+  if (evt.type?.includes('chris') || evt.type === 'chrisCommentary' || evt.type === 'chrisIntro') return 'chris';
+  if (evt.type?.includes('bench') || evt.type?.includes('Bench') || evt.type === 'crowdStorm') return 'bench';
+  if (evt.type === 'beamFall' || evt.type === 'beamWobble' || evt.type === 'eagleAttack' || evt.type === 'eagleNest' || evt.type === 'sharkReaction') return 'danger';
+  return '';
+}
+
+function _relayEventCard(evt, stateKey, i, epNum, revealed) {
+  if (!revealed) return '';
+  const cls = _relayCardClass(evt);
+  const portraits = (evt.players || []).map(p => rpPortrait(p, 'sm')).join('');
+  const badge = evt.badgeText ? `<div class="relay-badge ${evt.badgeClass || 'grey'}">${evt.badgeText}</div>` : '';
+  return `<div class="relay-card ${cls}">
+    ${portraits ? `<div class="card-portrait">${portraits}</div>` : ''}
+    <div class="card-body">
+      ${badge}
+      <div style="font-size:12px;line-height:1.6">${evt.text}</div>
+    </div>
+  </div>`;
+}
+
+// Legacy exports for backward compat
 export let _relayRevealed = {};
-
-export function relayRevealNext(key, totalSteps) {
-  const first = document.getElementById(`relay-step-${key}-0`);
-  if (first && first.style.display === 'none' && (_relayRevealed[key] || 0) > 0) _relayRevealed[key] = 0;
-  if (!_relayRevealed[key]) _relayRevealed[key] = 0;
-  if (_relayRevealed[key] < totalSteps) {
-    const el = document.getElementById(`relay-step-${key}-${_relayRevealed[key]}`);
-    if (el) { el.style.display = 'block'; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-    _relayRevealed[key]++;
-  }
-  const btn = document.getElementById(`relay-btn-${key}`);
-  if (btn) {
-    if (_relayRevealed[key] >= totalSteps) btn.style.display = 'none';
-    else btn.textContent = `Reveal Next ▶`;
-  }
-}
-
-export function relayRevealAll(key, totalSteps) {
-  for (let i = 0; i < totalSteps; i++) {
-    const el = document.getElementById(`relay-step-${key}-${i}`);
-    if (el) el.style.display = 'block';
-  }
-  _relayRevealed[key] = totalSteps;
-  const btn = document.getElementById(`relay-btn-${key}`);
-  if (btn) btn.style.display = 'none';
-}
+export function relayRevealNext() {}
+export function relayRevealAll() {}
 
 // ── Screen 1: Pre-Race Pitches + Confessionals ──
 export function rpBuildRelayPitch(ep) {
@@ -2168,86 +2243,72 @@ export function rpBuildRelayPitch(ep) {
   if (!rd || !preRace) return null;
   const finalists = ep.finaleFinalists || [];
   const epNum = ep.num;
-  const benchAssignments = ep.benchAssignments || {};
+  const bench = ep.benchAssignments || {};
 
-  let html = `<div class="rp-page tod-arena">`;
-  html += `<div class="rp-header">🏟️ REJECTED OLYMPIC RELAY</div>`;
-  html += `<div class="rp-subheader" style="color:#f0c040;font-style:italic">Pre-Race — The Pitch</div>`;
+  const stateKey = `relay_pitch_${epNum}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
 
-  // Bleachers: show bench on each side
-  html += `<div style="display:flex;gap:20px;justify-content:center;margin:10px 0;flex-wrap:wrap">`;
-  finalists.forEach(f => {
-    const bench = benchAssignments[f] || [];
-    html += `<div style="text-align:center;padding:8px;background:rgba(255,255,255,0.05);border-radius:8px;min-width:140px">`;
-    html += `<div style="font-weight:bold;color:#f0c040;margin-bottom:6px">Team ${f}</div>`;
-    html += `<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center">`;
-    bench.forEach(s => { html += rpPortrait(s, 'rp-sm', ''); });
-    html += `</div></div>`;
-  });
-  html += `</div>`;
+  const items = [];
 
-  // Pitches
-  const steps = [];
+  // Chris intro event (if exists in timeline)
+  const chrisIntro = rd.timeline?.find(e => e.type === 'chrisIntro');
+  if (chrisIntro) items.push(chrisIntro);
+
+  // Pitches as events
   if (preRace.pitches) {
     Object.entries(preRace.pitches).forEach(([f, p]) => {
-      let card = `<div class="rp-card" style="border-left:3px solid #f0c040;padding:10px">`;
-      card += rpPortrait(f, 'rp-sm', p.type.toUpperCase());
-      card += `<div style="margin-top:6px">${p.text}</div>`;
-      card += `</div>`;
-      steps.push(card);
+      items.push({ type: 'pitch', player: f, players: [f], text: p.text, badgeText: p.type?.toUpperCase() || 'PITCH', badgeClass: 'gold' });
     });
   }
 
   // Bench flips
-  if (preRace.benchFlips?.length) {
-    let card = `<div class="rp-card" style="border-left:3px solid #ff4444;padding:10px">`;
-    card += `<div style="font-weight:bold;color:#ff4444;margin-bottom:6px">⚡ BENCH FLIPS</div>`;
-    preRace.benchFlips.forEach(flip => {
-      card += `<div style="margin:4px 0">${rpPortrait(flip.supporter, 'rp-xs', '')} <b>${flip.supporter}</b> flips from ${flip.from} → ${flip.to} <span style="color:#888">(${flip.reason})</span></div>`;
-    });
-    card += `</div>`;
-    steps.push(card);
-  }
+  (preRace.benchFlips || []).forEach(flip => {
+    items.push({ type: 'benchFlip', player: flip.supporter, players: [flip.supporter, flip.from, flip.to],
+      text: `${flip.supporter} stands up from ${flip.from}'s bench. Walks across. Sits down on ${flip.to}'s side. The crowd murmurs.`,
+      badgeText: 'BENCH FLIP', badgeClass: 'red' });
+  });
 
   // Confessionals
-  if (preRace.confessionals?.length) {
-    preRace.confessionals.forEach(conf => {
-      let card = `<div class="rp-card" style="border-left:3px solid #8844cc;padding:10px;font-style:italic">`;
-      if (conf.player !== 'Chef') card += rpPortrait(conf.player, 'rp-sm', 'CONFESSIONAL');
-      else card += `<div style="font-weight:bold;color:#ff6600">🎬 CHEF HATCHET</div>`;
-      card += `<div style="margin-top:6px">${conf.text}</div></div>`;
-      steps.push(card);
-    });
-  }
+  (preRace.confessionals || []).forEach(conf => {
+    items.push({ type: 'confessional', player: conf.player, players: conf.player === 'Chef' ? [] : [conf.player],
+      text: conf.text, badgeText: conf.player === 'Chef' ? 'CHEF HATCHET' : 'CONFESSIONAL', badgeClass: 'purple' });
+  });
 
-  // Sabotage planting
+  // Sabotage plants
   if (rd.plantedSabotage) {
-    let card = `<div class="rp-card" style="border-left:3px solid #cc0000;padding:10px;background:rgba(200,0,0,0.08)">`;
-    card += `<div style="font-weight:bold;color:#cc0000">🧁 SABOTAGE PLANTED</div>`;
-    card += `<div style="margin-top:4px">${rd.plantedSabotage.planter} slips a special cupcake onto ${rd.plantedSabotage.targetFinalist}'s side…</div>`;
-    card += `</div>`;
-    steps.push(card);
+    items.push({ type: 'sabotagePlant', player: rd.plantedSabotage.planter, players: [rd.plantedSabotage.planter],
+      text: `${rd.plantedSabotage.planter} slips something onto ${rd.plantedSabotage.targetFinalist}'s side. A cupcake. With a note: "Congratulations!" It's not congratulations.`,
+      badgeText: 'SABOTAGE PLANTED', badgeClass: 'red' });
   }
   if (rd.plantedSabotage2) {
-    let card = `<div class="rp-card" style="border-left:3px solid #cc0000;padding:10px;background:rgba(200,0,0,0.08)">`;
-    card += `<div style="font-weight:bold;color:#cc0000">🛢️ GREASE JOB</div>`;
-    card += `<div style="margin-top:4px">${rd.plantedSabotage2.planter} sneaks up to the flagpole with a bucket of grease…</div>`;
-    card += `</div>`;
-    steps.push(card);
+    items.push({ type: 'sabotagePlant', player: rd.plantedSabotage2.planter, players: [rd.plantedSabotage2.planter],
+      text: `${rd.plantedSabotage2.planter} sneaks up to the flagpole. A bucket of grease. Quick hands. Gone before anyone notices.`,
+      badgeText: 'GREASE JOB', badgeClass: 'red' });
   }
 
-  // Render with reveal
-  const key = epNum + '_relay_pitch';
-  steps.forEach((s, i) => { html += `<div id="relay-step-${key}-${i}" style="display:${i === 0 ? 'block' : 'none'};margin:8px 0">${s}</div>`; });
-  if (steps.length > 1) {
-    html += `<div style="text-align:center;margin:12px 0">`;
-    html += `<button id="relay-btn-${key}" class="rp-btn" onclick="relayRevealNext('${key}',${steps.length})">Reveal Next ▶</button> `;
-    html += `<button class="rp-btn" style="opacity:0.7" onclick="relayRevealAll('${key}',${steps.length})">Show All</button>`;
-    html += `</div>`;
-  }
+  const revealed = items.map((evt, i) => _relayEventCard(evt, stateKey, i, epNum, i <= state.idx)).join('');
+  const btns = _relayBtns(stateKey, state.idx + 1, items.length, epNum);
 
-  html += `</div>`;
-  return html;
+  // Bleacher display
+  const benchHtml = finalists.map(f => {
+    const members = bench[f] || [];
+    return `<div class="relay-bench-side">
+      <div class="relay-bench-label">TEAM ${f.toUpperCase()}</div>
+      <div style="margin-bottom:6px">${rpPortrait(f, 'lg')}</div>
+      <div style="font-size:11px;color:#c9d1d9;margin-bottom:6px">${f}</div>
+      <div class="relay-bench-portraits">${members.map(s => rpPortrait(s, 'sm')).join('')}</div>
+      <div style="font-size:10px;color:var(--relay-muted);margin-top:4px">${members.length} supporter${members.length !== 1 ? 's' : ''}</div>
+    </div>`;
+  }).join(`<div style="display:flex;align-items:center;font-size:18px;font-weight:900;color:var(--relay-gold);letter-spacing:2px">VS</div>`);
+
+  return _relayStyles() + `<div class="rp-page relay-arena phase-pitch">
+    <div class="relay-eyebrow">Episode ${epNum} — Finale</div>
+    <div class="relay-title gold">The Rejected Olympic Relay</div>
+    <div class="relay-sub">The eliminated campers pick sides. The finalists make their case. Then the race begins.</div>
+    <div class="relay-bench">${benchHtml}</div>
+    ${revealed}${btns}
+  </div>`;
 }
 
 // ── Screen 2: Flagpole Phase ──
@@ -2260,41 +2321,41 @@ export function rpBuildRelayFlagpole(ep) {
   const finalists = ep.finaleFinalists || [];
   const epNum = ep.num;
 
-  let html = `<div class="rp-page tod-arena">`;
-  html += `<div class="rp-header">🏁 THE FLAGPOLE</div>`;
-  html += `<div class="rp-subheader" style="color:#66ccff">${flagStage.desc}</div>`;
+  const stateKey = `relay_flag_${epNum}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
 
-  // Score display
-  html += `<div style="display:flex;gap:20px;justify-content:center;margin:12px 0">`;
-  finalists.forEach(f => {
-    const score = flagStage.scores[f] || 0;
-    const isWinner = f === flagStage.winner;
-    html += `<div style="text-align:center;padding:10px;background:${isWinner ? 'rgba(240,192,64,0.15)' : 'rgba(255,255,255,0.05)'};border-radius:8px;border:${isWinner ? '2px solid #f0c040' : '1px solid #333'}">`;
-    html += rpPortrait(f, 'rp-md', isWinner ? '🏆 FIRST' : '');
-    html += `<div style="font-size:18px;font-weight:bold;margin-top:6px">${score.toFixed(1)}</div>`;
-    html += `</div>`;
-  });
-  html += `</div>`;
+  const events = rd.timeline.filter(ev => ev.phase === 0);
 
-  // Timeline events
-  const flagEvents = rd.timeline.filter(ev => ['hatAssign','flagpoleSabotage','flagpoleSabotageDetect','flagpoleBoost','flagpoleWin'].includes(ev.type));
-  const key = epNum + '_relay_flag';
-  flagEvents.forEach((ev, i) => {
-    let cls = '';
-    if (ev.type === 'flagpoleSabotage') cls = 'style="border-left:3px solid #cc0000;background:rgba(200,0,0,0.06)"';
-    else if (ev.type === 'flagpoleWin') cls = 'style="border-left:3px solid #f0c040;background:rgba(240,192,64,0.08)"';
-    else if (ev.type === 'hatAssign') cls = 'style="border-left:3px solid #66ccff"';
-    html += `<div id="relay-step-${key}-${i}" class="rp-card" ${cls} style="display:${i === 0 ? 'block' : 'none'};margin:6px 0;padding:8px">${ev.text}</div>`;
-  });
-  if (flagEvents.length > 1) {
-    html += `<div style="text-align:center;margin:12px 0">`;
-    html += `<button id="relay-btn-${key}" class="rp-btn" onclick="relayRevealNext('${key}',${flagEvents.length})">Reveal Next ▶</button> `;
-    html += `<button class="rp-btn" style="opacity:0.7" onclick="relayRevealAll('${key}',${flagEvents.length})">Show All</button>`;
-    html += `</div>`;
-  }
+  // VS header — show score bars only after all revealed
+  const allRevealed = state.idx >= events.length - 1;
+  const maxScore = Math.max(...Object.values(flagStage.scores), 1);
+  const vsHtml = `<div class="relay-vs">
+    ${finalists.map(f => {
+      const score = flagStage.scores[f] || 0;
+      const pct = Math.round((score / maxScore) * 100);
+      const isWin = f === flagStage.winner;
+      return `<div class="relay-vs-player">
+        ${rpPortrait(f, 'lg')}
+        <div style="font-size:13px;margin-top:6px;${isWin && allRevealed ? 'color:var(--relay-gold);font-weight:700' : ''}">${f}</div>
+        ${allRevealed ? `<div class="relay-score-bar" style="width:120px;margin-top:4px">
+          <div class="relay-score-track"><div class="relay-score-fill" style="width:${pct}%;background:${isWin ? 'var(--relay-gold)' : '#484f58'}"></div></div>
+        </div>
+        <div style="font-size:10px;color:${isWin ? 'var(--relay-gold)' : 'var(--relay-muted)'};margin-top:2px">${isWin ? 'FIRST TO THE FLAG' : ''}</div>` : ''}
+      </div>`;
+    }).join('<div class="relay-vs-divider">VS</div>')}
+  </div>`;
 
-  html += `</div>`;
-  return html;
+  const revealed = events.map((evt, i) => _relayEventCard(evt, stateKey, i, epNum, i <= state.idx)).join('');
+  const btns = _relayBtns(stateKey, state.idx + 1, events.length, epNum);
+
+  return _relayStyles() + `<div class="rp-page relay-arena phase-flagpole">
+    <div class="relay-eyebrow">Episode ${epNum} — Phase 1</div>
+    <div class="relay-title blue">The Flagpole</div>
+    <div class="relay-sub">${flagStage.desc}</div>
+    ${vsHtml}
+    ${revealed}${btns}
+  </div>`;
 }
 
 // ── Screen 3: Balance Beam (The Gorge) ──
@@ -2307,45 +2368,48 @@ export function rpBuildRelayBeam(ep) {
   const finalists = ep.finaleFinalists || [];
   const epNum = ep.num;
 
-  let html = `<div class="rp-page tod-arena">`;
-  html += `<div class="rp-header">🦈 THE GORGE</div>`;
-  html += `<div class="rp-subheader" style="color:#4488cc">${beamStage.desc}</div>`;
+  const stateKey = `relay_beam_${epNum}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
 
-  // Shark silhouettes decoration
-  html += `<div style="text-align:center;color:#335;font-size:28px;letter-spacing:8px;margin:6px 0;opacity:0.4">🦈🦈🦈</div>`;
+  const events = rd.timeline.filter(ev => ev.phase === 1);
+  const allRevealed = state.idx >= events.length - 1;
+  const maxScore = Math.max(...Object.values(beamStage.scores), 1);
 
-  // Score display
-  html += `<div style="display:flex;gap:20px;justify-content:center;margin:12px 0">`;
-  finalists.forEach(f => {
-    const score = beamStage.scores[f] || 0;
-    const isWinner = f === beamStage.winner;
-    html += `<div style="text-align:center;padding:10px;background:${isWinner ? 'rgba(68,136,204,0.15)' : 'rgba(255,255,255,0.05)'};border-radius:8px;border:${isWinner ? '2px solid #4488cc' : '1px solid #333'}">`;
-    html += rpPortrait(f, 'rp-md', isWinner ? '🏆 FIRST' : '');
-    html += `<div style="font-size:18px;font-weight:bold;margin-top:6px">${score.toFixed(1)}</div>`;
-    html += `</div>`;
-  });
-  html += `</div>`;
+  // Gorge scene — shark silhouettes as atmosphere
+  const gorgeScene = `<div style="position:relative;text-align:center;margin:12px 0;padding:16px 0">
+    <div style="height:4px;background:linear-gradient(90deg,transparent 0%,rgba(56,139,253,0.3) 20%,rgba(56,139,253,0.3) 80%,transparent 100%);margin:0 40px;border-radius:2px"></div>
+    <div style="font-size:9px;letter-spacing:3px;color:rgba(56,139,253,0.3);margin-top:4px">BALANCE BEAM — 300 METERS</div>
+    <div style="margin-top:8px;font-size:20px;letter-spacing:12px;opacity:0.15;filter:blur(0.5px)">🦈 🦈 🦈</div>
+  </div>`;
 
-  // Timeline events
-  const beamEvents = rd.timeline.filter(ev => ['eagleAttack','justinDistraction','beamWobble','beamFall','cupcakeFlashback','showmanceEncouragement','beamCross'].includes(ev.type));
-  const key = epNum + '_relay_beam';
-  beamEvents.forEach((ev, i) => {
-    let borderColor = '#4488cc';
-    if (ev.type === 'beamFall') borderColor = '#cc4444';
-    else if (ev.type === 'cupcakeFlashback') borderColor = '#cc8800';
-    else if (ev.type === 'showmanceEncouragement') borderColor = '#cc44aa';
-    else if (ev.type === 'eagleAttack') borderColor = '#886600';
-    html += `<div id="relay-step-${key}-${i}" class="rp-card" style="display:${i === 0 ? 'block' : 'none'};margin:6px 0;padding:8px;border-left:3px solid ${borderColor}">${ev.text}</div>`;
-  });
-  if (beamEvents.length > 1) {
-    html += `<div style="text-align:center;margin:12px 0">`;
-    html += `<button id="relay-btn-${key}" class="rp-btn" onclick="relayRevealNext('${key}',${beamEvents.length})">Reveal Next ▶</button> `;
-    html += `<button class="rp-btn" style="opacity:0.7" onclick="relayRevealAll('${key}',${beamEvents.length})">Show All</button>`;
-    html += `</div>`;
-  }
+  const vsHtml = `<div class="relay-vs">
+    ${finalists.map(f => {
+      const score = beamStage.scores[f] || 0;
+      const pct = Math.round((score / maxScore) * 100);
+      const isWin = f === beamStage.winner;
+      return `<div class="relay-vs-player">
+        ${rpPortrait(f, 'lg')}
+        <div style="font-size:13px;margin-top:6px;${isWin && allRevealed ? 'color:var(--relay-blue);font-weight:700' : ''}">${f}</div>
+        ${allRevealed ? `<div class="relay-score-bar" style="width:120px;margin-top:4px">
+          <div class="relay-score-track"><div class="relay-score-fill" style="width:${pct}%;background:${isWin ? 'var(--relay-blue)' : '#484f58'}"></div></div>
+        </div>
+        <div style="font-size:10px;color:${isWin ? 'var(--relay-blue)' : 'var(--relay-muted)'};margin-top:2px">${isWin ? 'CROSSED FIRST' : ''}</div>` : ''}
+      </div>`;
+    }).join('<div class="relay-vs-divider">VS</div>')}
+  </div>`;
 
-  html += `</div>`;
-  return html;
+  const revealed = events.map((evt, i) => _relayEventCard(evt, stateKey, i, epNum, i <= state.idx)).join('');
+  const btns = _relayBtns(stateKey, state.idx + 1, events.length, epNum);
+
+  return _relayStyles() + `<div class="rp-page relay-arena phase-beam">
+    <div class="relay-eyebrow">Episode ${epNum} — Phase 2</div>
+    <div class="relay-title blue">The Gorge</div>
+    <div class="relay-sub">${beamStage.desc}</div>
+    ${gorgeScene}
+    ${vsHtml}
+    ${revealed}${btns}
+  </div>`;
 }
 
 // ── Screen 4: The Sprint ──
@@ -2357,47 +2421,44 @@ export function rpBuildRelaySprint(ep) {
   if (!sprintStage) return null;
   const finalists = ep.finaleFinalists || [];
   const epNum = ep.num;
+
+  const stateKey = `relay_sprint_${epNum}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  // Sprint gets ALL remaining timeline events (phase 2 + finish events like relayWinner, winnerReaction, etc.)
+  const events = rd.timeline.filter(ev => ev.phase === 2);
+  const allRevealed = state.idx >= events.length - 1;
+
+  // Race progress bar — shows relative position, no raw numbers
   const totalScores = ep.finaleChallengeScores || {};
+  const maxTotal = Math.max(...Object.values(totalScores), 1);
+  const raceBar = `<div style="position:relative;margin:16px 0;padding:0 20px">
+    <div style="height:3px;background:rgba(63,185,80,0.15);border-radius:2px;position:relative">
+      <div style="position:absolute;right:0;top:-8px;font-size:10px;color:var(--relay-muted)">FINISH</div>
+    </div>
+    ${finalists.map((f, fi) => {
+      const pct = allRevealed ? Math.min(98, Math.round((totalScores[f] / maxTotal) * 95)) : 30 + fi * 5;
+      const color = fi === 0 ? 'var(--relay-gold)' : 'var(--relay-blue)';
+      return `<div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+        <div style="width:60px;font-size:10px;color:${color};font-weight:700">${f}</div>
+        <div style="flex:1;height:8px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;position:relative">
+          <div style="height:100%;width:${pct}%;background:${color};border-radius:4px;transition:width 0.5s"></div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
 
-  let html = `<div class="rp-page tod-arena">`;
-  html += `<div class="rp-header">🏃 THE SPRINT</div>`;
-  html += `<div class="rp-subheader" style="color:#44cc66">${sprintStage.desc}</div>`;
+  const revealed = events.map((evt, i) => _relayEventCard(evt, stateKey, i, epNum, i <= state.idx)).join('');
+  const btns = _relayBtns(stateKey, state.idx + 1, events.length, epNum);
 
-  // Running total scores
-  html += `<div style="display:flex;gap:20px;justify-content:center;margin:12px 0">`;
-  finalists.forEach(f => {
-    const stageScore = sprintStage.scores[f] || 0;
-    const total = totalScores[f] || 0;
-    html += `<div style="text-align:center;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px;border:1px solid #333">`;
-    html += rpPortrait(f, 'rp-md', '');
-    html += `<div style="margin-top:6px">Sprint: <b>${stageScore.toFixed(1)}</b></div>`;
-    html += `<div style="font-size:12px;color:#888">Total: ${total.toFixed(1)}</div>`;
-    html += `</div>`;
-  });
-  html += `</div>`;
-
-  // Timeline events
-  const sprintEvents = rd.timeline.filter(ev => ['falseFinish','laxativeFires','laxativeMisfire','cupcakeResist','brownieTemptation','brownieResist','fanBackfire','boulderGesture','supporterSprint','photoFinish'].includes(ev.type));
-  const key = epNum + '_relay_sprint';
-  sprintEvents.forEach((ev, i) => {
-    let borderColor = '#44cc66';
-    if (ev.type === 'laxativeFires') borderColor = '#cc4444';
-    else if (ev.type === 'brownieTemptation') borderColor = '#cc8844';
-    else if (ev.type === 'brownieResist') borderColor = '#44cc44';
-    else if (ev.type === 'falseFinish') borderColor = '#cccc44';
-    else if (ev.type === 'fanBackfire') borderColor = '#8888cc';
-    else if (ev.type === 'photoFinish') borderColor = '#f0c040';
-    html += `<div id="relay-step-${key}-${i}" class="rp-card" style="display:${i === 0 ? 'block' : 'none'};margin:6px 0;padding:8px;border-left:3px solid ${borderColor}">${ev.text}</div>`;
-  });
-  if (sprintEvents.length > 1) {
-    html += `<div style="text-align:center;margin:12px 0">`;
-    html += `<button id="relay-btn-${key}" class="rp-btn" onclick="relayRevealNext('${key}',${sprintEvents.length})">Reveal Next ▶</button> `;
-    html += `<button class="rp-btn" style="opacity:0.7" onclick="relayRevealAll('${key}',${sprintEvents.length})">Show All</button>`;
-    html += `</div>`;
-  }
-
-  html += `</div>`;
-  return html;
+  return _relayStyles() + `<div class="rp-page relay-arena phase-sprint">
+    <div class="relay-eyebrow">Episode ${epNum} — Phase 3</div>
+    <div class="relay-title green">The Sprint</div>
+    <div class="relay-sub">${sprintStage.desc}</div>
+    ${raceBar}
+    ${revealed}${btns}
+  </div>`;
 }
 
 // ── Screen 5: The Finish Line ──
@@ -2405,52 +2466,107 @@ export function rpBuildRelayFinish(ep) {
   const rd = ep.relayData;
   if (!rd) return null;
   const winner = ep.finaleChallengeWinner || ep.winner;
+  const loser = (ep.finaleFinalists || []).find(f => f !== winner) || '';
   const finalists = ep.finaleFinalists || [];
   const totalScores = ep.finaleChallengeScores || {};
   const sabotageEvents = ep.finaleSabotageEvents || [];
+  const epNum = ep.num;
+  const bench = ep.benchAssignments || {};
 
-  let html = `<div class="rp-page tod-arena" style="text-align:center">`;
-  html += `<div class="rp-header" style="font-size:24px">🏆 THE FINISH LINE</div>`;
+  const stateKey = `relay_finish_${epNum}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
 
-  // Winner splash
-  html += `<div style="margin:20px auto;padding:20px;background:linear-gradient(135deg,rgba(240,192,64,0.2),rgba(240,192,64,0.05));border:2px solid #f0c040;border-radius:16px;max-width:300px">`;
-  html += rpPortrait(winner, 'rp-lg', '🏆 WINNER');
-  html += `<div style="font-size:24px;font-weight:bold;color:#f0c040;margin-top:10px">${winner}</div>`;
-  html += `<div style="color:#888;margin-top:4px">wins the Rejected Olympic Relay!</div>`;
-  html += `</div>`;
+  // Build finish beats for click-to-reveal
+  const beats = [];
 
-  // Final scoreboard
-  html += `<div style="margin:16px auto;max-width:400px">`;
-  html += `<div style="font-weight:bold;color:#ccc;margin-bottom:8px">FINAL SCORES</div>`;
-  const sorted = Object.entries(totalScores).sort(([,a],[,b]) => b - a);
-  sorted.forEach(([name, score], i) => {
-    const isWinner = name === winner;
-    html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin:4px 0;background:${isWinner ? 'rgba(240,192,64,0.1)' : 'rgba(255,255,255,0.03)'};border-radius:6px">`;
-    html += rpPortrait(name, 'rp-sm', '');
-    html += `<span style="flex:1;text-align:left;font-weight:${isWinner ? 'bold' : 'normal'}">${name}</span>`;
-    html += `<span style="font-weight:bold;color:${isWinner ? '#f0c040' : '#888'}">${score.toFixed(1)}</span>`;
-    html += `</div>`;
-  });
-  html += `</div>`;
+  // Beat 0: The finish line moment
+  const finishEvt = rd.timeline.find(ev => ev.type === 'finishLineLunge' || ev.type === 'relayWinner');
+  if (finishEvt) beats.push(finishEvt);
 
-  // Sabotage recap
+  // Beat 1: Winner reaction
+  const winReact = rd.timeline.find(ev => ev.type === 'winnerReaction');
+  if (winReact) beats.push(winReact);
+
+  // Beat 2: Loser reaction
+  const loseReact = rd.timeline.find(ev => ev.type === 'loserReaction');
+  if (loseReact) beats.push(loseReact);
+
+  // Beat 3: Crowd storm
+  const crowd = rd.timeline.filter(ev => ev.type === 'crowdStorm');
+  crowd.forEach(c => beats.push(c));
+
+  // Beat 4: Winner splash (synthetic)
+  beats.push({ type: '_winnerSplash', player: winner, players: [winner], text: '', badgeText: 'WINNER', badgeClass: 'gold' });
+
+  // Beat 5: Sabotage recap (if any)
   if (sabotageEvents.length > 0) {
-    html += `<div style="margin:16px auto;max-width:400px;padding:10px;background:rgba(200,0,0,0.06);border:1px solid #cc000044;border-radius:8px">`;
-    html += `<div style="font-weight:bold;color:#cc4444;margin-bottom:6px">SABOTAGE REPORT</div>`;
-    sabotageEvents.forEach(sab => {
-      html += `<div style="margin:4px 0;font-size:13px">${sab.planter} used <b>${sab.type}</b> on ${sab.target} (Phase ${sab.phase + 1})</div>`;
-    });
-    html += `</div>`;
+    beats.push({ type: '_sabotageRecap', players: sabotageEvents.map(s => s.planter), text: '', badgeText: 'SABOTAGE REPORT', badgeClass: 'red' });
   }
 
-  // Winner confessional from relay timeline
-  const winEvent = rd.timeline.find(ev => ev.type === 'relayWinner');
-  if (winEvent) {
-    html += `<div class="rp-card" style="margin:16px auto;max-width:500px;border-left:3px solid #f0c040;padding:10px;font-style:italic">${winEvent.text}</div>`;
-  }
+  let beatHtml = '';
+  beats.forEach((beat, i) => {
+    if (i > state.idx) return;
 
-  html += `</div>`;
-  return html;
+    if (beat.type === '_winnerSplash') {
+      const maxTotal = Math.max(...Object.values(totalScores), 1);
+      const sorted = Object.entries(totalScores).sort(([,a],[,b]) => b - a);
+      beatHtml += `<div style="animation:relay-in 0.4s ease-out">
+        <div class="relay-winner-splash">
+          ${rpPortrait(winner, 'xl')}
+          <div class="relay-winner-name">${winner}</div>
+          <div style="font-size:12px;color:var(--relay-muted);margin-top:4px">wins the Rejected Olympic Relay</div>
+        </div>
+        <div style="max-width:360px;margin:16px auto">
+          ${sorted.map(([name, score]) => {
+            const pct = Math.round((score / maxTotal) * 100);
+            const isW = name === winner;
+            return `<div style="display:flex;align-items:center;gap:8px;margin:6px 0">
+              ${rpPortrait(name, 'sm')}
+              <div style="flex:1">
+                <div style="font-size:11px;${isW ? 'color:var(--relay-gold);font-weight:700' : ''}">${name}</div>
+                <div class="relay-score-bar"><div class="relay-score-track"><div class="relay-score-fill" style="width:${pct}%;background:${isW ? 'var(--relay-gold)' : '#484f58'}"></div></div></div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    } else if (beat.type === '_sabotageRecap') {
+      beatHtml += `<div style="max-width:400px;margin:16px auto;padding:12px;background:rgba(248,81,73,0.04);border:1px solid rgba(248,81,73,0.15);border-radius:8px;animation:relay-in 0.3s ease-out">
+        <div class="relay-badge red" style="margin-bottom:8px">SABOTAGE REPORT</div>
+        ${sabotageEvents.map(sab => `<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          ${rpPortrait(sab.planter, 'sm')}
+          <div style="font-size:12px">${sab.planter} used <strong>${sab.type}</strong> on ${sab.target} (Phase ${sab.phase + 1})</div>
+        </div>`).join('')}
+      </div>`;
+    } else {
+      beatHtml += _relayEventCard(beat, stateKey, i, epNum, true);
+    }
+  });
+
+  const btns = _relayBtns(stateKey, state.idx + 1, beats.length, epNum);
+
+  // Winner's bench celebration header
+  const winBench = bench[winner] || [];
+  const loseBench = bench[loser] || [];
+  const benchHeader = state.idx >= 0 ? `<div style="display:flex;justify-content:center;gap:20px;margin:16px 0;flex-wrap:wrap">
+    <div style="text-align:center">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--relay-gold);margin-bottom:6px">WINNER'S BENCH</div>
+      <div style="display:flex;gap:3px;justify-content:center;flex-wrap:wrap">${winBench.map(s => rpPortrait(s, 'sm')).join('')}</div>
+    </div>
+    <div style="text-align:center;opacity:0.5">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--relay-muted);margin-bottom:6px">CONSOLATION</div>
+      <div style="display:flex;gap:3px;justify-content:center;flex-wrap:wrap">${loseBench.map(s => rpPortrait(s, 'sm')).join('')}</div>
+    </div>
+  </div>` : '';
+
+  return _relayStyles() + `<div class="rp-page relay-arena phase-finish">
+    <div class="relay-eyebrow">Episode ${epNum} — Finale</div>
+    <div class="relay-title gold">The Finish Line</div>
+    <div class="relay-sub">One winner. One check. It all ends here.</div>
+    ${benchHeader}
+    ${beatHtml}${btns}
+  </div>`;
 }
 
 export function rpBuildReunion(ep) {

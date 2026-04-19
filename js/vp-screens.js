@@ -10340,8 +10340,6 @@ export function buildVPScreens(epRecord) {
     }
     const _mcRelHtml = rpBuildRelationships(ep);
     if (_mcRelHtml) vpScreens.push({ id:'relationships', label:'Relationships', html: _mcRelHtml });
-    const _mcCampHtml = rpBuildCampOverview(ep);
-    if (_mcCampHtml) vpScreens.push({ id:'camp-overview', label:'Camp', html: _mcCampHtml });
     return vpScreens;
   } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });

@@ -983,7 +983,7 @@ export function generateFinaleSummaryText(ep) {
     if (ep.finaleSabotageEvents?.length) {
       ln('');
       ln('SABOTAGE EVENTS:');
-      ep.finaleSabotageEvents.forEach(s => ln(`  ${s.text || `${s.saboteur} sabotaged ${s.victim}`}`));
+      ep.finaleSabotageEvents.forEach(s => ln(`  ${s.text || `${s.planter || s.saboteur} sabotaged ${s.target || s.victim} (${s.type || 'unknown'})`}`));
     }
 
     sec('WINNER');

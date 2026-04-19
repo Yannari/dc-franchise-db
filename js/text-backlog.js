@@ -1529,7 +1529,7 @@ export function _textOlympicRelay(ep, ln, sec) {
   // Sabotage summary
   if (ep.finaleSabotageEvents?.length) {
     ln('SABOTAGE EVENTS:');
-    ep.finaleSabotageEvents.forEach(s => ln(`  ${s.text || `${s.saboteur} sabotaged ${s.victim}`}`));
+    ep.finaleSabotageEvents.forEach(s => ln(`  ${s.text || `${s.planter || s.saboteur} sabotaged ${s.target || s.victim} (${s.type || 'unknown'})`}`));
   }
 }
 

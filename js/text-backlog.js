@@ -1451,6 +1451,88 @@ export function _textAftermathStrategic(ep, ln, sec) {
   buildStorylines(ep).forEach(s => ln(`- ${s}`));
 }
 
+// ── FINALE: REJECTED OLYMPIC RELAY ──
+export function _textOlympicRelay(ep, ln, sec) {
+  const rd = ep.relayData;
+  if (!rd) return;
+  sec('REJECTED OLYMPIC RELAY');
+
+  const winner = ep.finaleChallengeWinner || ep.winner;
+  const finalists = ep.finaleFinalists || [];
+
+  // Pre-race pitches
+  if (rd.pitches && Object.keys(rd.pitches).length) {
+    ln('PRE-RACE PITCHES:');
+    Object.entries(rd.pitches).forEach(([f, p]) => ln(`  ${f} (${p.type}): ${p.text}`));
+  }
+
+  // Bench assignments
+  if (ep.benchAssignments && Object.keys(ep.benchAssignments).length) {
+    ln('BENCH ASSIGNMENTS:');
+    finalists.forEach(f => {
+      const supporters = Object.entries(ep.benchAssignments)
+        .filter(([, side]) => side === f).map(([name]) => name);
+      if (supporters.length) ln(`  Team ${f}: ${supporters.join(', ')}`);
+    });
+  }
+
+  // Bench flips
+  if (rd.benchFlips?.length) {
+    ln('BENCH FLIPS:');
+    rd.benchFlips.forEach(flip => ln(`  ${flip.supporter} flipped from ${flip.from} to ${flip.to} (${flip.reason})`));
+  }
+
+  // Confessionals
+  if (rd.confessionals?.length) {
+    ln('PRE-RACE CONFESSIONALS:');
+    rd.confessionals.forEach(c => ln(`  ${c.player}: "${c.text}"`));
+  }
+
+  // Assistants
+  if (ep.assistants && Object.keys(ep.assistants).length) {
+    ln('ASSISTANTS:');
+    Object.entries(ep.assistants).forEach(([f, a]) => ln(`  ${f} chose ${a}`));
+  }
+
+  // Sabotage plants
+  if (rd.plantedSabotage) ln(`SABOTAGE: ${rd.plantedSabotage.planter} planted a laxative cupcake targeting ${rd.plantedSabotage.targetFinalist}`);
+  if (rd.plantedSabotage2) ln(`SABOTAGE: ${rd.plantedSabotage2.planter} greased the flagpole targeting ${rd.plantedSabotage2.targetFinalist}`);
+
+  // Stage results
+  if (ep.finaleChallengeStages?.length) {
+    ep.finaleChallengeStages.forEach(stage => {
+      ln(`--- ${stage.name} ---`);
+      if (stage.desc) ln(`  ${stage.desc}`);
+      if (stage.scores) {
+        const sorted = Object.entries(stage.scores).sort(([,a],[,b]) => b - a);
+        sorted.forEach(([name, score]) => ln(`  ${name}: ${typeof score === 'number' ? score.toFixed(1) : score}`));
+      }
+      if (stage.winner) ln(`  Stage winner: ${stage.winner}`);
+    });
+  }
+
+  // Timeline events
+  if (rd.timeline?.length) {
+    ln('RELAY TIMELINE:');
+    rd.timeline.forEach(ev => ln(`  [${ev.type}] ${ev.text}`));
+  }
+
+  // Final scores + placements
+  if (ep.finaleChallengeScores) {
+    ln('FINAL SCORES:');
+    const sorted = Object.entries(ep.finaleChallengeScores).sort(([,a],[,b]) => b - a);
+    sorted.forEach(([name, score], i) => ln(`  ${i + 1}. ${name}: ${score.toFixed(1)}`));
+  }
+
+  if (winner) ln(`WINNER: ${winner}`);
+
+  // Sabotage summary
+  if (ep.finaleSabotageEvents?.length) {
+    ln('SABOTAGE EVENTS:');
+    ep.finaleSabotageEvents.forEach(s => ln(`  ${s.text || `${s.saboteur} sabotaged ${s.victim}`}`));
+  }
+}
+
 // ── FINALE: GRAND CHALLENGE ──
 export function _textGrandChallenge(ep, ln, sec) {
   if (!ep.grandChallenge) return;
@@ -1935,6 +2017,7 @@ export function generateSummaryText(ep) {
   _textAftermath(ep, ln, sec);
 
   // Finale screens
+  _textOlympicRelay(ep, ln, sec);
   _textGrandChallenge(ep, ln, sec);
   _textFinalCut(ep, ln, sec);
   _textFTCQA(ep, ln, sec);

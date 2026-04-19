@@ -350,7 +350,7 @@ const VERDICT_TEXTS = {
 const YETI_STYLES = `
 <style>
 /* ── BASE FOREST CONTAINER ── */
-.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);font-family:Georgia,'Times New Roman',serif;position:relative;overflow:hidden;min-height:400px}
+.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);font-family:Georgia,'Times New Roman',serif;position:relative;min-height:400px}
 
 /* ── FOREST DEPTH LAYERS ── */
 .yeti-forest::before,.yeti-forest::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;transition:background 0.6s}
@@ -1667,7 +1667,7 @@ function _ytRevealAllFn(stateKey, total, epNum) {
 
 function _revealBtns(stateKey, nextIdx, total, epNum) {
   if (nextIdx >= total) return '';
-  return `<div style="text-align:center;margin:20px 0 8px">
+  return `<div style="position:sticky;bottom:0;z-index:10;text-align:center;padding:16px 0 8px;background:linear-gradient(transparent,rgba(10,15,10,0.95) 30%)">
     <div class="yeti-reveal-main" onclick="${_ytRevealFn(stateKey, nextIdx, epNum)}">Keep moving →</div>
     <br><div class="yeti-reveal-all" onclick="${_ytRevealAllFn(stateKey, total, epNum)}">Run to the end ▸▸</div>
   </div>`;

@@ -2120,8 +2120,7 @@ export function _textAreWeThereYeti(ep, ln, sec) {
 // ── Shared helpers ──
 
 function _yetiStylesOnce() {
-  if (typeof document !== 'undefined' && document.querySelector('#yeti-styles')) return '';
-  return YETI_STYLES.replace('<style>', '<style id="yeti-styles">');
+  return YETI_STYLES;
 }
 
 function _portrait(name, size) {
@@ -2699,8 +2698,8 @@ export function rpBuildYetiVerdict(ep) {
     if (i > state.idx) return;
     if (beat.type === 'immunity') {
       beatHtml += `<div class="yeti-verdict-beat">
-        <div class="yeti-card brave" style="text-align:center">
-          <div class="yeti-badge gold">🏆 PAIR IMMUNITY</div>
+        <div class="yeti-card brave" style="text-align:center;flex-direction:column;align-items:center">
+          <div class="yeti-badge gold" style="transform:none">🏆 PAIR IMMUNITY</div>
           <div style="display:flex;justify-content:center;gap:16px;margin:12px 0">
             ${winPair.members.map(n => `<div style="text-align:center">
               <div class="yeti-golden-ring" style="display:inline-block">${_portrait(n, 56)}</div>
@@ -2733,7 +2732,7 @@ export function rpBuildYetiVerdict(ep) {
       </div>`;
     } else if (beat.type === 'elimination') {
       beatHtml += `<div class="yeti-verdict-beat">
-        <div class="yeti-card grudge" style="border-left-color:#f85149;text-align:center;padding:20px">
+        <div class="yeti-card grudge" style="border-left-color:#f85149;text-align:center;padding:20px;flex-direction:column;align-items:center">
           <div style="display:inline-block" class="yeti-elim-portrait">${_portrait(elimName, 72)}</div>
           <div style="font-size:18px;color:#f85149;margin-top:10px;font-weight:700">${elimName}</div>
           <div class="yeti-elim-stamp" style="margin-top:6px">ELIMINATED BY CHEF</div>

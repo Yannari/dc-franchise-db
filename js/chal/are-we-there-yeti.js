@@ -350,7 +350,7 @@ const VERDICT_TEXTS = {
 const YETI_STYLES = `
 <style>
 /* ── BASE FOREST CONTAINER ── */
-.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);padding:40px 28px 60px;max-width:760px;margin:0 auto;font-family:Georgia,'Times New Roman',serif;position:relative;overflow:hidden;min-height:400px}
+.yeti-forest{--forest-deep:#1a2e1a;--amber:#d4850a;--moon:#c8d0dc;--shadow:#0d1117;--yeti-glow:#ff4d00;--bark:#5c3a1e;--parchment:rgba(245,235,220,0.06);color:var(--moon);font-family:Georgia,'Times New Roman',serif;position:relative;overflow:hidden;min-height:400px}
 
 /* ── FOREST DEPTH LAYERS ── */
 .yeti-forest::before,.yeti-forest::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;transition:background 0.6s}
@@ -1812,7 +1812,7 @@ export function rpBuildYetiDropOff(ep) {
     </div>
   </div>`;
 
-  return _yetiStylesOnce() + `<div class="yeti-forest" data-phase="0">
+  return _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="0">
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Drop Off</div>
     <div class="yeti-sub">Chef Hatchet takes command. Helicopter clearing. Twilight.</div>
@@ -1860,7 +1860,7 @@ export function rpBuildYetiTrail(ep, pair) {
   const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return _yetiStylesOnce() + `<div class="yeti-forest" data-phase="1">
+  return _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="1">
     ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Trail — Pair ${pair.label}</div>
@@ -1907,7 +1907,7 @@ export function rpBuildYetiTraps(ep) {
   const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return _yetiStylesOnce() + `<div class="yeti-forest" data-phase="2">
+  return _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="2">
     ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Traps & Tricks</div>
@@ -1986,7 +1986,7 @@ export function rpBuildYetiNight(ep) {
 
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return _yetiStylesOnce() + `<div class="yeti-forest" data-phase="3">
+  return _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="3">
     <div class="yeti-cave">
       <div class="yeti-cave-walls"></div>
       <div class="yeti-cave-mouth">
@@ -2046,7 +2046,7 @@ export function rpBuildYetiSprint(ep) {
   const items = events.map((evt, i) => _eventCard(evt, stateKey, i, ep.num, i <= state.idx)).join('');
   const btns = _revealBtns(stateKey, state.idx + 1, events.length, ep.num);
 
-  return _yetiStylesOnce() + `<div class="yeti-forest" data-phase="4">
+  return _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="4">
     ${sqHtml}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">The Sprint</div>
@@ -2197,7 +2197,7 @@ export function rpBuildYetiVerdict(ep) {
 
   const btns = _revealBtns(stateKey, nextIdx, beats.length, ep.num);
 
-  return _yetiStylesOnce() + `<div class="yeti-forest" data-phase="5">
+  return _yetiStylesOnce() + `<div class="rp-page yeti-forest" data-phase="5">
     ${_totemHtml(state.idx >= 0)}
     <div class="yeti-eyebrow">Episode ${ep.num}</div>
     <div class="yeti-title">Chef's Verdict</div>

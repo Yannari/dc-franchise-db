@@ -27,6 +27,7 @@ import * as luckyHuntMod from './chal/lucky-hunt.js';
 import * as sayUncleMod from './chal/say-uncle.js';
 import * as tripleDogDareMod from './chal/triple-dog-dare.js';
 import * as slasherNightMod from './chal/slasher-night.js';
+import * as monsterCashMod from './chal/monster-cash.js';
 import * as hideAndBeSneakyMod from './chal/hide-and-be-sneaky.js';
 import * as offTheChainMod from './chal/off-the-chain.js';
 import * as wawanakwaGoneWildMod from './chal/wawanakwa-gone-wild.js';
@@ -120,7 +121,7 @@ const extractedModules = [
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
-  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, hideAndBeSneakyMod, offTheChainMod,
+  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, hideAndBeSneakyMod, offTheChainMod,
   socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
@@ -200,6 +201,7 @@ window.CHALLENGES = {
   'say-uncle': { simulate: sayUncleMod.simulateSayUncle, rpBuild: sayUncleMod.rpBuildSayUncleAnnouncement, text: sayUncleMod._textSayUncle },
   'triple-dog-dare': { simulate: tripleDogDareMod.simulateTripleDogDare, rpBuild: tripleDogDareMod.rpBuildTripleDogDareAnnouncement, text: tripleDogDareMod._textTripleDogDare },
   'slasher-night': { simulate: slasherNightMod.simulateSlasherNight, rpBuild: slasherNightMod.rpBuildSlasherTitleCard, text: slasherNightMod._textSlasherNight },
+  'monster-cash': { simulate: monsterCashMod.simulateMonsterCash, rpBuild: monsterCashMod.rpBuildMonsterCashTitleCard, text: monsterCashMod._textMonsterCash },
   'hide-and-be-sneaky': { simulate: hideAndBeSneakyMod.simulateHideAndBeSneaky, rpBuild: hideAndBeSneakyMod.rpBuildHideAndBeSneaky, text: hideAndBeSneakyMod._textHideAndBeSneaky },
   'off-the-chain': { simulate: offTheChainMod.simulateOffTheChain, rpBuild: offTheChainMod.rpBuildOffTheChain, text: offTheChainMod._textOffTheChain },
   'wawanakwa-gone-wild': { simulate: wawanakwaGoneWildMod.simulateWawanakwaGoneWild, rpBuild: wawanakwaGoneWildMod.rpBuildWawanakwaGoneWild, text: wawanakwaGoneWildMod._textWawanakwaGoneWild },

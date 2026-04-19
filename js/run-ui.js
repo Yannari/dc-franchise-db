@@ -231,6 +231,7 @@ export function renderEpisodeHistory() {
     const mergeTag = ep.isMerge ? `<span class="ep-hist-tag" style="background:rgba(16,185,129,0.15);color:var(--accent)">MERGE</span>` : '';
     const finaleTag = ep.isFinale ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">FINALE</span>` : '';
     const slasherTag = ep.isSlasherNight ? `<span class="ep-hist-tag" style="background:rgba(218,54,51,0.15);color:#da3633">Slasher Night</span>` : '';
+    const mcTag = ep.isMonsterCash ? `<span class="ep-hist-tag" style="background:rgba(76,175,80,0.15);color:#4caf50">Monster Cash</span>` : '';
     const tddTag = ep.isTripleDogDare ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Triple Dog Dare</span>` : '';
     const suTag = ep.isSayUncle ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Say Uncle</span>` : '';
     const brunchTag = ep.isBrunchOfDisgustingness ? `<span class="ep-hist-tag" style="background:rgba(74,222,128,0.15);color:#4ade80">Brunch</span>` : '';
@@ -261,7 +262,7 @@ export function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}</div>
     </div>`;
   }).join('');
 }
@@ -564,6 +565,7 @@ export function buildEpisodeMap() {
     if (_allTypes.includes('double-elim')) elims = Math.max(elims, 2);
     if (_allTypes.includes('multi-tribal') && !merged) elims = Math.max(elims, Math.max(2, (seasonConfig.teams || 2) - 1));
     if (_allTypes.includes('slasher-night')) elims = Math.max(elims, 1);
+    if (_allTypes.includes('monster-cash')) elims = Math.max(elims, 1);
     if (_allTypes.includes('sudden-death')) elims = Math.max(elims, 1);
     if (_allTypes.includes('ambassadors')) elims = Math.max(elims, 2);
     if (_allTypes.includes('tied-destinies')) elims = Math.max(elims, 2);

@@ -36,6 +36,7 @@ import { simulateLuckyHunt } from './chal/lucky-hunt.js';
 import { simulateSayUncle } from './chal/say-uncle.js';
 import { simulateTripleDogDare } from './chal/triple-dog-dare.js';
 import { simulateSlasherNight } from './chal/slasher-night.js';
+import { simulateMonsterCash } from './chal/monster-cash.js';
 import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
@@ -969,7 +970,7 @@ export function handleExileFormat(ep) {
   if (phase === 'pre' && gs.isMerged) return;
   if (phase === 'post' && !gs.isMerged) return;
   // Don't fire on special episode types
-  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare) return;
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
   // Don't double up with schoolyard pick exile (unpicked player already on exile)
@@ -1443,6 +1444,81 @@ export function simulateEpisode() {
     window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
   }
 
+  // ── MONSTER CASH — round-by-round monster hunt, replaces immunity + tribal (post-merge) ──
+  if (ep.isMonsterCash && gs.isMerged) {
+    simulateJourney(ep); findAdvantages(ep);
+    if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
+    generateCampEvents(ep, 'pre');
+    checkMoleSabotage(ep);
+    updatePerceivedBonds(ep);
+
+    simulateMonsterCash(ep);
+
+    ep.eliminated = ep.monsterCash.eliminated;
+    ep.immunityWinner = ep.monsterCash.immunityWinner;
+    ep.challengeType = 'monster-cash';
+
+    generateCampEvents(ep, 'post');
+
+    // Handle elimination — with RI check
+    if (ep.eliminated) {
+      if (isRIStillActive()) {
+        if (cfg.riFormat === 'rescue') {
+          ep.riChoice = 'RESCUE ISLAND';
+          gs.riPlayers.push(ep.eliminated);
+          if (!gs.riArrivalEp) gs.riArrivalEp = {};
+          gs.riArrivalEp[ep.eliminated] = epNum;
+        } else {
+          const _mcRiC = simulateRIChoice(ep.eliminated);
+          ep.riChoice = _mcRiC;
+          if (_mcRiC === 'REDEMPTION ISLAND') gs.riPlayers.push(ep.eliminated);
+          else { gs.eliminated.push(ep.eliminated); if (gs.isMerged) gs.jury.push(ep.eliminated); }
+        }
+      } else {
+        gs.eliminated.push(ep.eliminated);
+        if (gs.isMerged) gs.jury.push(ep.eliminated);
+      }
+      gs.activePlayers = gs.activePlayers.filter(p => p !== ep.eliminated);
+      gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== ep.eliminated)}));
+      handleAdvantageInheritance(ep.eliminated, ep);
+      gs.advantages = gs.advantages.filter(a => a.holder !== ep.eliminated);
+    }
+
+    ep.bondChanges = updateBonds([], ep.eliminated, []);
+    detectBetrayals(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updateSurvival(ep);
+    gs.episode = epNum;
+    if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
+
+    gs.episodeHistory.push({
+      num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
+      immunityWinner: ep.immunityWinner || null,
+      challengeType: 'monster-cash', isMerge: ep.isMerge,
+      isMonsterCash: true,
+      votes: {}, alliances: [],
+      twists: (ep.twists || []).map(t => ({...t})),
+      tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
+      campEvents: ep.campEvents || null,
+      monsterCash: ep.monsterCash,
+      journey: ep.journey || null,
+      idolFinds: ep.idolFinds || [],
+      bewareLostVotes: ep.bewareLostVotes || [],
+      riDuel: ep.riDuel || null,
+      riPlayersPreDuel: ep.riPlayersPreDuel || null,
+      riLifeEvents: ep.riLifeEvents || [],
+      riReentry: ep.riReentry || null,
+      rescueIslandEvents: ep.rescueIslandEvents || [],
+      rescueReturnChallenge: ep.rescueReturnChallenge || null,
+      riArrival: ep.riArrival || null,
+      riQuit: ep.riQuit || null,
+      advantagesPreTribal: ep.advantagesPreTribal || null, summaryText: '', gsSnapshot: window.snapshotGameState()
+    });
+    const stMC = generateSummaryText(ep);
+    gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stMC; ep.summaryText = stMC;
+    window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
+  }
+
   // ── TRIPLE DOG DARE — dare challenge replaces immunity + tribal ──
   if (ep.isTripleDogDare) {
     // Pre-challenge: journey, advantages, camp events fire normally
@@ -1548,7 +1624,7 @@ export function simulateEpisode() {
   // Skip generic sudden death if a specific challenge twist handles elimination itself
   const _hasTwistChallenge = ep.isCampCastaways || ep.isAreWeThereYeti || ep.isLuckyHunt || ep.isHideAndBeSneaky
     || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isSayUncle
-    || ep.isBrunchOfDisgustingness || ep.isBasicStraining;
+    || ep.isBrunchOfDisgustingness || ep.isBasicStraining || ep.isMonsterCash;
   if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
@@ -1810,6 +1886,9 @@ export function simulateEpisode() {
   } else if (ep.isTrustChallenge && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateTrustChallenge(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateTrustChallenge
+  } else if (ep.isMonsterCash && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateMonsterCash(ep);
+    // winner, loser, challengeType, tribalPlayers already set by simulateMonsterCash
   } else if (ep.isBasicStraining && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateBasicStraining(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateBasicStraining
@@ -2403,7 +2482,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash) {
     updateChalRecord(ep);
   }
 

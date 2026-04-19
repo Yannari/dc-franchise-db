@@ -95,7 +95,7 @@ Tribe scores: averages per member, NEVER raw sums.
 - `getPerceivedBond(a,b)` — for votes/alliances/heat decisions
 - `gs.advantages[]`, `gs.namedAlliances[]`, `gs.showmances[]`, `gs.romanticSparks[]`
 - `gs.popularity` — per-player popularity tracking, affects fan perception
-- Temporary heat: `gs._emissaryHeat`, `gs._dodgebrawlHeat`, `gs._talentShowHeat`, `gs._suckyOutdoorsHeat`, `gs._upTheCreekHeat`, `gs._paintballHeat`, `gs._cookingHeat`, `gs._trustHeat` (`{ amount, expiresEp }`), `gs._basicStrainingHeat` (`{ target, amount, expiresEp }`), `gs._cliffDiveBlame`, `gs._luckyHuntHeat`, `gs._schemeHeat`, `gs._hideSeekHeat` (`{ target, amount, expiresEp }`), `gs._bikeRaceHeat` (`{ amount, expiresEp }`)
+- Temporary heat: `gs._emissaryHeat`, `gs._dodgebrawlHeat`, `gs._talentShowHeat`, `gs._suckyOutdoorsHeat`, `gs._upTheCreekHeat`, `gs._paintballHeat`, `gs._cookingHeat`, `gs._trustHeat` (`{ amount, expiresEp }`), `gs._basicStrainingHeat` (`{ target, amount, expiresEp }`), `gs._cliffDiveBlame`, `gs._luckyHuntHeat`, `gs._schemeHeat`, `gs._hideSeekHeat` (`{ target, amount, expiresEp }`), `gs._bikeRaceHeat` (`{ amount, expiresEp }`), `gs._monsterCashHeat` (`{ target, amount, expiresEp }`)
 
 ## Scope Gotchas
 - `ep` NOT available in: `generateCampEventsForGroup` (camp-events.js), `simulateIndividualChallenge`/`simulateTribeChallenge` (challenges-core.js), `computeHeat` (alliances.js)
@@ -140,6 +140,7 @@ Tribe scores: averages per member, NEVER raw sums.
 | ID | Name | Key Mechanic |
 |---|---|---|
 | `basic-straining` | Basic Straining | Pre: first tribe to zero loses. Post: last standing wins immunity. |
+| `monster-cash` | Monster Cash | Monster movie hunt. Chef's animatronic prowls the film lot. Monster escalates through 5 threat levels (Awakening→Final Form). Capture events, rescues, sabotage. Pre-merge: tribe immunity by avg survival. Post-merge: last standing wins, lowest scorer auto-eliminated. |
 
 ## Social Manipulation Camp Events (Standalone)
 Fires in ANY episode (not tied to a challenge). Rate: ~15% per eligible schemer per episode, boosted to ~40% during Lucky Hunt.

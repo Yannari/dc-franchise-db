@@ -10,6 +10,7 @@ import { rpBuildCampCastaways, rpBuildCCFlood, rpBuildCCGroup, rpBuildCCNight, r
 import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict, rpBuildYetiElimination } from './chal/are-we-there-yeti.js';
 import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/triple-dog-dare.js';
 import { rpBuildSlasherTitleCard, rpBuildSlasherActI, rpBuildSlasherActII, rpBuildSlasherActIII, rpBuildSlasherCredits, rpBuildSlasherAnnouncement, rpBuildSlasherRounds, rpBuildSlasherShowdown, rpBuildSlasherImmunity, rpBuildSlasherElimination, rpBuildSlasherLeaderboard, slasherRevealNextRound, slasherRevealAllRounds, slasherRevealNextScene, slasherRevealAllScenes } from './chal/slasher-night.js';
+import { rpBuildMonsterCashTitleCard, rpBuildMonsterCashRounds, rpBuildMonsterCashShowdown, rpBuildMonsterCashImmunity, rpBuildMonsterCashElimination, rpBuildMonsterCashLeaderboard, monsterCashRevealNext, monsterCashRevealAll } from './chal/monster-cash.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10311,7 +10312,38 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'yeti-night', label:'The Night', html: rpBuildYetiNight(ep) });
     vpScreens.push({ id:'yeti-sprint', label:'The Sprint', html: rpBuildYetiSprint(ep) });
     // Verdict pushed AFTER camp events (see yeti block below noTribal)
-  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti) {
+  } else if (ep.isMonsterCash && ep.monsterCash) {
+    vpScreens.push({ id:'mc-title', label:'🦎 Monster Cash', html: rpBuildMonsterCashTitleCard(ep) });
+    vpScreens.push({ id:'mc-rounds', label:'The Hunt', html: rpBuildMonsterCashRounds(ep) });
+    if (ep.monsterCash.finalShowdown) {
+      vpScreens.push({ id:'mc-showdown', label:'Final Showdown', html: rpBuildMonsterCashShowdown(ep) });
+    }
+    if (ep.monsterCash.immunityWinner) {
+      vpScreens.push({ id:'mc-immunity', label:'Immunity', html: rpBuildMonsterCashImmunity(ep) });
+    }
+    if (ep.monsterCash.eliminated) {
+      vpScreens.push({ id:'mc-elimination', label:'Eliminated', html: rpBuildMonsterCashElimination(ep) });
+    }
+    vpScreens.push({ id:'mc-leaderboard', label:'Credits', html: rpBuildMonsterCashLeaderboard(ep) });
+    // RI screens
+    if (ep.riLifeEvents?.length || ep.riDuel) {
+      const _mcRiLife = rpBuildRILife(ep);
+      if (_mcRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _mcRiLife });
+    }
+    if (ep.riDuel) {
+      const _mcRiDuel = rpBuildRIDuel(ep);
+      if (_mcRiDuel) vpScreens.push({ id:'ri-duel', label:'RI Duel', html: _mcRiDuel });
+    }
+    if (ep.rescueIslandEvents?.length) {
+      const _mcRescLife = rpBuildRescueIslandLife(ep);
+      if (_mcRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _mcRescLife });
+    }
+    const _mcRelHtml = rpBuildRelationships(ep);
+    if (_mcRelHtml) vpScreens.push({ id:'relationships', label:'Relationships', html: _mcRelHtml });
+    const _mcCampHtml = rpBuildCampOverview(ep);
+    if (_mcCampHtml) vpScreens.push({ id:'camp-overview', label:'Camp', html: _mcCampHtml });
+    return vpScreens;
+  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
 

@@ -1411,6 +1411,12 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 4) return;
     ep.isBasicStraining = true;
 
+  } else if (engineType === 'monster-cash') {
+    // Both phases: pre-merge = tribe immunity, post-merge = individual auto-elimination
+    if (!gs.isMerged && gs.tribes.length < 2) return;
+    if (gs.activePlayers.length < 4) return;
+    ep.isMonsterCash = true;
+
   } else if (engineType === 'x-treme-torture') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     if ((gs.episode || 0) + 1 < 2) return;
@@ -3954,6 +3960,17 @@ export function generateTwistScenes(ep) {
         sc.push({ text: 'Night falls. A slasher is loose at camp. Survive — or don\'t.', players: _slAll.length ? _slAll : active });
         sc.push({ text: 'Players will be hunted round by round. Last one standing wins immunity. The player who handles the fear worst is eliminated on the spot. No tribal council tonight.', players: [] });
         result.push({ label:'Slasher Night', type:tw.type, scenes:sc }); break;
+      }
+
+      case 'monster-cash': {
+        const _mcAll = gs.activePlayers;
+        sc.push({ text: 'A mechanical roar echoes across the film lot. Chef\'s animatronic monster is loose — and it\'s hunting.', players: _mcAll });
+        if (gs.isMerged) {
+          sc.push({ text: 'Survive round by round as the monster escalates. Last one standing wins immunity. The weakest performer is eliminated on the spot. No tribal council tonight.', players: [] });
+        } else {
+          sc.push({ text: 'All tribes scatter across the film lot. The tribe with the best survival average wins immunity. The losers go to tribal council.', players: [] });
+        }
+        result.push({ label:'Monster Cash', type:tw.type, scenes:sc }); break;
       }
 
       case 'cultural-reset': {

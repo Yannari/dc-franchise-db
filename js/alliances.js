@@ -300,6 +300,14 @@ export function computeHeat(name, tribalPlayers, alliances) {
       if (data.target === name && tribalPlayers.includes(victim) && ((gs.episode || 0) + 1) < data.expiresEp) heat += data.amount;
     });
   }
+  // Monster Cash heat
+  if (gs._monsterCashHeat) {
+    for (const [victim, data] of Object.entries(gs._monsterCashHeat)) {
+      if (data.expiresEp <= (gs.episode || 0)) { delete gs._monsterCashHeat[victim]; continue; }
+      if (victim === voterName) continue;
+      heat[victim] = (heat[victim] || 0) + (data.amount || 0);
+    }
+  }
   // Off the Chain: bike race sabotage/rivalry heat
   if (gs._bikeRaceHeat?.[name] && ((gs.episode || 0) + 1) < gs._bikeRaceHeat[name].expiresEp) heat += gs._bikeRaceHeat[name].amount;
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──

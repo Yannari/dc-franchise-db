@@ -917,6 +917,68 @@
       .db-championship { animation: none; opacity: 1; transform: scale(1); }
     }
 
+    /* ── Monster Cash ── */
+    .mc-shell { position:relative; background:#0a0a0a; border:2px solid #2d2d2d; border-radius:8px; overflow:hidden; min-height:400px; }
+    .mc-cityscape { position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent, rgba(20,20,20,0.9)); pointer-events:none; z-index:1; }
+    .mc-cityscape-svg { position:absolute; bottom:0; left:0; right:0; opacity:0.3; }
+    .mc-monster-silhouette { position:absolute; top:10px; right:10px; opacity:0.08; font-size:80px; z-index:0; transition:opacity 0.5s, font-size 0.5s; }
+    .mc-monster-silhouette.threat-3 { opacity:0.15; font-size:100px; }
+    .mc-monster-silhouette.threat-4 { opacity:0.25; font-size:120px; }
+    .mc-monster-silhouette.threat-5 { opacity:0.4; font-size:150px; top:0; }
+    .mc-ticker { position:absolute; bottom:0; left:0; right:0; background:rgba(200,0,0,0.85); color:#fff; font-size:11px; font-family:'Courier New',monospace; padding:3px 0; z-index:2; overflow:hidden; white-space:nowrap; }
+    .mc-ticker-text { display:inline-block; animation:mcTickerScroll 20s linear infinite; }
+    @keyframes mcTickerScroll { 0% { transform:translateX(100%); } 100% { transform:translateX(-100%); } }
+    .mc-rubble-pile { position:absolute; bottom:25px; right:10px; display:flex; flex-wrap:wrap; gap:2px; max-width:80px; z-index:2; }
+    .mc-rubble-portrait { width:24px; height:24px; border-radius:50%; border:1px solid #555; opacity:0.6; filter:grayscale(1); position:relative; }
+    .mc-rubble-portrait::after { content:'✕'; position:absolute; top:-2px; right:-2px; font-size:10px; color:#f44; }
+    .mc-title-card { text-align:center; padding:40px 20px; position:relative; z-index:3; }
+    .mc-film-title { font-size:28px; font-weight:900; color:#e8e8e8; text-transform:uppercase; letter-spacing:3px; text-shadow:0 0 20px rgba(255,60,60,0.5), 2px 2px 0 #333; font-family:'Impact','Arial Black',sans-serif; }
+    .mc-now-playing { font-size:11px; color:#888; letter-spacing:4px; text-transform:uppercase; margin-bottom:8px; }
+    .mc-film-grain { position:absolute; top:0; left:0; right:0; bottom:0; opacity:0.03; background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); pointer-events:none; z-index:4; }
+    .mc-threat-bar { display:flex; align-items:center; gap:6px; margin:8px 0; }
+    .mc-threat-label { font-size:10px; color:#aaa; text-transform:uppercase; letter-spacing:1px; min-width:70px; }
+    .mc-threat-fill { height:6px; border-radius:3px; transition:width 0.5s, background 0.5s; }
+    .mc-threat-1 { width:20%; background:#4caf50; }
+    .mc-threat-2 { width:40%; background:#ff9800; }
+    .mc-threat-3 { width:60%; background:#ff5722; }
+    .mc-threat-4 { width:80%; background:#f44336; }
+    .mc-threat-5 { width:100%; background:#b71c1c; box-shadow:0 0 8px rgba(183,28,28,0.5); }
+    .mc-location-header { font-size:12px; color:#ff9800; text-transform:uppercase; letter-spacing:2px; border-bottom:1px solid rgba(255,152,0,0.2); padding-bottom:4px; margin:12px 0 8px; }
+    .mc-event-card { display:flex; align-items:center; gap:8px; padding:6px 8px; margin:4px 0; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); }
+    .mc-event-portrait { width:32px; height:32px; border-radius:50%; border:2px solid #444; }
+    .mc-event-text { flex:1; font-size:12px; color:#ccc; }
+    .mc-event-pts { font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px; font-family:'Courier New',monospace; }
+    .mc-pts-pos { color:#4caf50; background:rgba(76,175,80,0.12); }
+    .mc-pts-neg { color:#f44336; background:rgba(244,67,54,0.12); }
+    .mc-capture-card { border:2px solid rgba(244,67,54,0.4); background:rgba(244,67,54,0.08); padding:10px; border-radius:8px; margin:8px 0; text-align:center; }
+    .mc-captured-label { font-size:14px; font-weight:900; color:#f44336; letter-spacing:3px; text-transform:uppercase; }
+    .mc-survivors-count { font-size:13px; color:#ff9800; font-weight:700; text-align:center; margin:8px 0; }
+    .mc-chris-line { font-size:11px; color:#888; font-style:italic; padding:4px 8px; border-left:2px solid #555; margin:6px 0; }
+    @keyframes mcShakeLight { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-2px); } 75% { transform:translateX(2px); } }
+    @keyframes mcShakeMedium { 0%,100% { transform:translateX(0); } 20% { transform:translate(-4px,-2px); } 40% { transform:translate(3px,1px); } 60% { transform:translate(-3px,2px); } 80% { transform:translate(4px,-1px); } }
+    @keyframes mcShakeHeavy { 0%,100% { transform:translate(0); } 10% { transform:translate(-6px,-3px); } 20% { transform:translate(5px,2px); } 30% { transform:translate(-4px,4px); } 40% { transform:translate(6px,-2px); } 50% { transform:translate(-5px,3px); } 60% { transform:translate(4px,-4px); } 70% { transform:translate(-3px,5px); } 80% { transform:translate(6px,-1px); } 90% { transform:translate(-2px,3px); } }
+    .mc-capture-comedy { animation:mcShakeLight 0.4s ease-out; }
+    .mc-capture-tense { animation:mcShakeMedium 0.5s ease-out; }
+    .mc-capture-terror { animation:mcShakeHeavy 0.6s ease-out; }
+    @keyframes mcStampWobble { 0% { transform:scale(3) rotate(-15deg); opacity:0; } 50% { transform:scale(1.2) rotate(5deg); opacity:1; } 100% { transform:scale(1) rotate(-2deg); opacity:1; } }
+    .mc-stamp-comedy .mc-captured-label { animation:mcStampWobble 0.6s ease-out; }
+    @keyframes mcCrack { 0% { clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%); } 100% { clip-path:polygon(0 0, 48% 0, 50% 45%, 52% 0, 100% 0, 100% 100%, 55% 100%, 50% 55%, 45% 100%, 0 100%); } }
+    .mc-portrait-cracked { animation:mcCrack 0.3s ease-out forwards; }
+    @keyframes mcShatter { 0% { transform:scale(1); opacity:1; filter:brightness(1); } 30% { transform:scale(1.1); filter:brightness(2); } 100% { transform:scale(0.8); opacity:0; filter:brightness(0.3); } }
+    .mc-portrait-shatter { animation:mcShatter 0.8s ease-out forwards; }
+    @keyframes mcShadowGrow { 0% { transform:scaleY(0); opacity:0; } 100% { transform:scaleY(1); opacity:0.6; } }
+    .mc-shadow-overlay { position:absolute; bottom:0; left:0; right:0; height:100%; background:linear-gradient(transparent 30%, rgba(0,0,0,0.8)); animation:mcShadowGrow 1s ease-out forwards; pointer-events:none; }
+    @keyframes mcRubbleFall { 0% { transform:translateY(-20px); opacity:0; } 100% { transform:translateY(0); opacity:0.4; } }
+    .mc-rubble-particle { position:absolute; width:4px; height:4px; background:#666; border-radius:1px; animation:mcRubbleFall 0.8s ease-out forwards; }
+    .mc-screen-crack { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index:5; opacity:0; transition:opacity 0.3s; }
+    .mc-screen-crack.active { opacity:1; }
+    .mc-emergency-flash { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(255,0,0,0.1); pointer-events:none; z-index:3; animation:mcEmergencyPulse 2s ease-in-out infinite; }
+    @keyframes mcEmergencyPulse { 0%,100% { opacity:0; } 50% { opacity:1; } }
+    .mc-clapperboard { text-align:center; padding:12px; background:#1a1a1a; border:2px solid #333; margin:8px 0; border-radius:4px; font-family:'Courier New',monospace; font-size:11px; color:#aaa; letter-spacing:2px; text-transform:uppercase; }
+    .mc-credits-scroll { max-height:300px; overflow-y:auto; text-align:center; }
+    .mc-credit-line { font-size:12px; color:#888; margin:3px 0; }
+    .mc-credit-name { color:#e8e8e8; font-weight:700; }
+
     /* ── Lucky Hunt Overdrive (Dark Pirate Treasure Map) ── */
     @keyframes lhSlideIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
     @keyframes lhKeyGlow { 0%,100% { box-shadow:0 0 8px rgba(63,185,80,0.15); } 50% { box-shadow:0 0 20px rgba(63,185,80,0.4); } }

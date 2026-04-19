@@ -4,6 +4,7 @@ import { pStats, pronouns, updateChalRecord } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 import { romanticCompat } from '../players.js';
+import { wRandom } from '../alliances.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // SLASHER NIGHT — Event Pool & Scoring Constants
@@ -869,8 +870,6 @@ const SLASHER_FINAL_LOSE = [
     ]
   }
 ];
-
-import { wRandom } from '../alliances.js';
 
 function _slasherResolveText(template, ctx) {
   if (!template) return '';
@@ -1754,109 +1753,6 @@ export function simulateSlasherNight(ep) {
     }
   }
 
-  // ── VHS OVERDRIVE DATA ──
-  const filmTitle = _generateFilmTitle();
-
-  // Act breaks: [endOfAct1RoundIdx, startOfAct3RoundIdx]
-  const firstCatchRound = caughtOrder.length > 0 ? Math.min(...caughtOrder.map(c => c.round)) : 1;
-  const actBreaks = [
-    Math.max(0, firstCatchRound - 1),
-    Math.max(firstCatchRound, rounds.length - 1)
-  ];
-
-  // Chris commentary
-  const _chrisOpeners = [
-    `Welcome to "${filmTitle}." ${activePlayers.length} campers, one slasher, zero mercy. Roll tape.`,
-    `Tonight's feature: "${filmTitle}." I've seen the dailies. Not everyone makes it.`,
-    `Ladies and gentlemen... CHRIS McLEAN PRESENTS... "${filmTitle}." Viewer discretion is advised. Actually, no. Watch every second.`,
-    `Ladies and gentlemen... tonight, this island becomes a movie set. And the slasher? Already here.`
-  ];
-  const _chrisClosers = [
-    `And... that's a wrap on "${filmTitle}." The slasher claims another victim.`,
-    `Cut! Print! Someone call ${eliminated}'s agent.`,
-    `Every horror movie needs a sequel. See you next episode.`,
-    `The tape runs out. But the nightmares? Those are just beginning.`
-  ];
-  const chrisOpener = _chrisOpeners[Math.floor(Math.random() * _chrisOpeners.length)];
-  const chrisCloser = _chrisClosers[Math.floor(Math.random() * _chrisClosers.length)];
-
-  // POV system: each round picks most dramatic player
-  const povUsed = new Set();
-  const povOrder = [];
-
-  rounds.forEach((round, ri) => {
-    // Pick POV: player with most event weight + not yet used
-    const eventCounts = {};
-    round.events.forEach(e => { eventCounts[e.player] = (eventCounts[e.player] || 0) + Math.abs(e.points || 1); });
-    const candidates = (round.remaining || []).filter(n => !povUsed.has(n));
-    const eligible = candidates.length > 0 ? candidates : (round.remaining || []);
-    eligible.sort((a, b) => (eventCounts[b] || 0) - (eventCounts[a] || 0));
-    const povPlayer = eligible[0] || null;
-    if (povPlayer) { povUsed.add(povPlayer); povOrder.push(povPlayer); }
-    round.povPlayer = povPlayer;
-
-    // POV variants for events involving the POV player
-    round.povEvents = round.events
-      .filter(e => e.player === povPlayer)
-      .map(e => ({ eventId: e.eventId, povText: _generatePovText(e, povPlayer) }));
-
-    // Tension score (0-10)
-    const catchesSoFar = caughtOrder.filter(c => c.round <= round.num).length;
-    round.tensionScore = Math.min(10, Math.round((ri / rounds.length) * 5 + catchesSoFar * 1.5 + (round.caught?.length ? 2 : 0)));
-
-    // Slasher proximity per player
-    round.slasherProximity = {};
-    (round.remaining || []).forEach(name => {
-      const playerEvents = round.events.filter(e => e.player === name);
-      const hasNegative = playerEvents.some(e => e.points < 0);
-      const wasCaught = (round.caught || []).some(c => c.name === name);
-      if (wasCaught) round.slasherProximity[name] = 'caught';
-      else if (hasNegative) round.slasherProximity[name] = 'closing';
-      else if (round.num >= rounds.length - 1) round.slasherProximity[name] = 'near';
-      else round.slasherProximity[name] = 'far';
-    });
-
-    // Chris line — use contextual pool
-    const isFirst = ri === 0;
-    const isFirstCatch = round.caught?.length > 0 && caughtOrder.filter(c => c.round < round.num).length === 0;
-    const isDoubleCatch = (round.caught?.length || 0) >= 2;
-    const isFinal3 = (round.remaining?.length || 99) <= 3;
-    const isShowdownRound = ri === rounds.length - 1;
-    let pool = 'generic';
-    if (isFirst) pool = 'firstRound';
-    else if (isFirstCatch) pool = 'firstCatch';
-    else if (isDoubleCatch) pool = 'doubleCatch';
-    else if (isShowdownRound) pool = 'finalShowdown';
-    else if (isFinal3) pool = 'final3';
-    else if (round.tensionScore >= 6) pool = 'highTension';
-    else if (round.atmosphere) pool = 'envShift';
-    round.chrisLine = _pickChrisLine(pool);
-  });
-
-  // Jumpscare assignment: first catch=2, final showdown loser=2, one random mid=1
-  const jumpscareRounds = [];
-  if (caughtOrder.length > 0) {
-    const firstCatchIdx = caughtOrder[0].round - 1;
-    if (rounds[firstCatchIdx]) {
-      const caughtEntry = rounds[firstCatchIdx].caught?.[0];
-      if (caughtEntry) { caughtEntry.jumpscareLevel = 2; jumpscareRounds.push({ round: firstCatchIdx, level: 2 }); }
-    }
-    // Random mid-game catch gets level 1
-    const midCatches = caughtOrder.filter((c, i) => i > 0 && i < caughtOrder.length - 1);
-    if (midCatches.length > 0) {
-      const pick = midCatches[Math.floor(Math.random() * midCatches.length)];
-      const midIdx = pick.round - 1;
-      if (rounds[midIdx]?.caught?.length) {
-        const mc = rounds[midIdx].caught.find(c => c.name === pick.name);
-        if (mc) { mc.jumpscareLevel = 1; jumpscareRounds.push({ round: midIdx, level: 1 }); }
-      }
-    }
-  }
-  // Final showdown loser gets level 2
-  if (finalShowdown?.loser) {
-    jumpscareRounds.push({ round: rounds.length - 1, level: 2, target: 'showdown-loser' });
-  }
-
   // ── SET RESULTS ON EP ──
   ep.slasherNight = {
     rounds,
@@ -1867,12 +1763,13 @@ export function simulateSlasherNight(ep) {
     immunityWinner,
     eliminated,
     leaderboard,
+    // Overdrive fields
     filmTitle,
     actBreaks,
-    chrisOpener,
-    chrisCloser,
+    jumpscareRounds,
     povOrder,
-    jumpscareRounds
+    chrisOpener,
+    chrisCloser: `"And... CUT. That's a wrap on ${filmTitle}. ${immunityWinner} — you earned that final ${pronouns(immunityWinner).sub === 'they' ? 'survivor' : (pronouns(immunityWinner).sub === 'she' ? 'girl' : 'guy')} moment. ${eliminated} — you were my favorite kill. See you at the premiere."`
   };
 
   // Popularity: last survivor gets hero edit, weakest link gets soft target edit

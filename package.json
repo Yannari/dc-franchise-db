@@ -1,0 +1,29 @@
+{
+  "name": "dc-franchise-db",
+  "version": "1.0.0",
+  "description": "A fan-made Total Drama franchise database tracking 9 seasons, 102 unique players, and 128 episodes. Includes player profiles, season history, voting analytics, rankings, and AI-powered episode/season generation.",
+  "main": "config.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yannari/dc-franchise-db.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Yannari/dc-franchise-db/issues"
+  },
+  "homepage": "https://github.com/Yannari/dc-franchise-db#readme",
+  "devDependencies": {
+    "jsdom": "^29.0.2",
+    "vitest": "^4.1.4"
+  }
+}

@@ -10,5 +10,8 @@
 # Playwright test artifacts
 .playwright-mcp/
 
+# Dependencies
+node_modules/
+
 # Test screenshots
 *-test-*.png

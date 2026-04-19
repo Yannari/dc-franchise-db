@@ -1,5 +1,5 @@
 // js/players.js - Player stats, pronouns, threat scoring, challenge records
-import { gs, players, STATS, THREAT_TIERS, ARCHETYPES, seasonConfig } from './core.js';
+import { gs, players, STATS, THREAT_TIERS, ARCHETYPES, DEFAULT_STATS, seasonConfig } from './core.js';
 
 export function overall(stats) { return (STATS.reduce((t,s) => t+(stats[s.key]||0),0)/STATS.length).toFixed(1); }
 

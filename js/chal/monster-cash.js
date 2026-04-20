@@ -1691,12 +1691,16 @@ export function rpBuildMonsterCashLeaderboard(ep) {
   const mc = ep.monsterCash;
   if (!mc) return '';
   let rows = '';
+  const tribes = ep.tribesAtStart || gs.tribes || [];
   mc.leaderboard.forEach((entry, i) => {
     const isWinner = entry.name === mc.immunityWinner;
-    const capturedText = entry.capturedRound ? `Rd ${entry.capturedRound}` : '—';
+    const capturedText = entry.capturedRound ? `Rd ${entry.capturedRound}` : 'Survived';
+    const capturedColor = entry.capturedRound ? '#888' : '#4caf50';
     const statusIcon = isWinner ? '🛡️' : '';
     const rowColor = isWinner ? 'rgba(76,175,80,0.1)' : 'transparent';
-    rows += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:${rowColor};border-radius:6px;margin:3px 0;"><span style="font-size:11px;color:#666;width:20px;text-align:right;">${i + 1}.</span>${_mcPortrait(entry.name, 36)}<span style="flex:1;font-size:13px;color:#ccc;font-weight:${isWinner ? '700' : '400'};">${entry.name} ${statusIcon}</span><span style="font-size:12px;color:#888;width:50px;text-align:center;">${capturedText}</span><span style="font-size:12px;font-weight:700;color:${entry.score >= 0 ? '#4caf50' : '#f44336'};width:50px;text-align:right;">${entry.score.toFixed(1)}</span></div>`;
+    const tribe = tribes.find(t => t.members?.includes(entry.name));
+    const tribeDot = tribe ? `<span style="width:8px;height:8px;border-radius:50%;background:var(--tribe-${tribe.name?.toLowerCase()?.replace(/\s+/g,'-')}, #666);flex-shrink:0;" title="${tribe.name}"></span>` : '';
+    rows += `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:${rowColor};border-radius:6px;margin:3px 0;"><span style="font-size:11px;color:#666;width:20px;text-align:right;">${i + 1}.</span>${tribeDot}${_mcPortrait(entry.name, 36)}<span style="flex:1;font-size:13px;color:#ccc;font-weight:${isWinner ? '700' : '400'};">${entry.name} ${statusIcon}</span><span style="font-size:12px;color:${capturedColor};width:60px;text-align:center;">${capturedText}</span><span style="font-size:12px;font-weight:700;color:${entry.score >= 0 ? '#4caf50' : '#f44336'};width:50px;text-align:right;">${entry.score.toFixed(1)}</span></div>`;
   });
   let tribeSection = '';
   if (mc.tribeScores) {

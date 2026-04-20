@@ -1444,79 +1444,12 @@ export function simulateEpisode() {
     window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
   }
 
-  // ── MONSTER CASH — round-by-round monster hunt, replaces immunity + tribal (post-merge) ──
+  // ── MONSTER CASH (post-merge) — monster hunt determines immunity, normal tribal follows ──
   if (ep.isMonsterCash && gs.isMerged) {
-    simulateJourney(ep); findAdvantages(ep);
-    if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
-    generateCampEvents(ep, 'pre');
-    checkMoleSabotage(ep);
-    updatePerceivedBonds(ep);
-
     simulateMonsterCash(ep);
-
-    ep.eliminated = ep.monsterCash.eliminated;
     ep.immunityWinner = ep.monsterCash.immunityWinner;
     ep.challengeType = 'monster-cash';
-
-    generateCampEvents(ep, 'post');
-
-    // Handle elimination — with RI check
-    if (ep.eliminated) {
-      if (isRIStillActive()) {
-        if (cfg.riFormat === 'rescue') {
-          ep.riChoice = 'RESCUE ISLAND';
-          gs.riPlayers.push(ep.eliminated);
-          if (!gs.riArrivalEp) gs.riArrivalEp = {};
-          gs.riArrivalEp[ep.eliminated] = epNum;
-        } else {
-          const _mcRiC = simulateRIChoice(ep.eliminated);
-          ep.riChoice = _mcRiC;
-          if (_mcRiC === 'REDEMPTION ISLAND') gs.riPlayers.push(ep.eliminated);
-          else { gs.eliminated.push(ep.eliminated); if (gs.isMerged) gs.jury.push(ep.eliminated); }
-        }
-      } else {
-        gs.eliminated.push(ep.eliminated);
-        if (gs.isMerged) gs.jury.push(ep.eliminated);
-      }
-      gs.activePlayers = gs.activePlayers.filter(p => p !== ep.eliminated);
-      gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== ep.eliminated)}));
-      handleAdvantageInheritance(ep.eliminated, ep);
-      gs.advantages = gs.advantages.filter(a => a.holder !== ep.eliminated);
-    }
-
-    ep.bondChanges = updateBonds([], ep.eliminated, []);
-    detectBetrayals(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
-    updateSurvival(ep);
-    gs.episode = epNum;
-    if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
-
-    gs.episodeHistory.push({
-      num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
-      immunityWinner: ep.immunityWinner || null,
-      challengeType: 'monster-cash', isMerge: ep.isMerge,
-      isMonsterCash: true,
-      votes: {}, alliances: [],
-      twists: (ep.twists || []).map(t => ({...t})),
-      tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
-      campEvents: ep.campEvents || null,
-      monsterCash: ep.monsterCash,
-      journey: ep.journey || null,
-      idolFinds: ep.idolFinds || [],
-      bewareLostVotes: ep.bewareLostVotes || [],
-      riDuel: ep.riDuel || null,
-      riPlayersPreDuel: ep.riPlayersPreDuel || null,
-      riLifeEvents: ep.riLifeEvents || [],
-      riReentry: ep.riReentry || null,
-      rescueIslandEvents: ep.rescueIslandEvents || [],
-      rescueReturnChallenge: ep.rescueReturnChallenge || null,
-      riArrival: ep.riArrival || null,
-      riQuit: ep.riQuit || null,
-      advantagesPreTribal: ep.advantagesPreTribal || null, summaryText: '', gsSnapshot: window.snapshotGameState()
-    });
-    const stMC = generateSummaryText(ep);
-    gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stMC; ep.summaryText = stMC;
-    window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
+    // Fall through to normal tribal flow — no auto-elimination, no early return
   }
 
   // ── TRIPLE DOG DARE — dare challenge replaces immunity + tribal ──
@@ -1624,7 +1557,7 @@ export function simulateEpisode() {
   // Skip generic sudden death if a specific challenge twist handles elimination itself
   const _hasTwistChallenge = ep.isCampCastaways || ep.isAreWeThereYeti || ep.isLuckyHunt || ep.isHideAndBeSneaky
     || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isSayUncle
-    || ep.isBrunchOfDisgustingness || ep.isBasicStraining || ep.isMonsterCash;
+    || ep.isBrunchOfDisgustingness || ep.isBasicStraining;
   if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };

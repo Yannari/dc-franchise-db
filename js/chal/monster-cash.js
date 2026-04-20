@@ -1368,11 +1368,10 @@ export function _textMonsterCash(ep, ln, sec) {
 
 // ══════════════════════════════════════════════════════════════════════
 // VP SCREENS — EMERGENCY BROADCAST / SURVEILLANCE THEME
+// Step-by-step reveal (each event = one click), like Hide and Be Sneaky
 // ══════════════════════════════════════════════════════════════════════
 
-const _mcState = {};
-
-function _mcPortrait(name, size = 32) {
+function _mcPortrait(name, size = 48) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
   return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;border:2px solid #444;" onerror="this.style.display='none'">`;
 }
@@ -1431,103 +1430,156 @@ export function rpBuildMonsterCashTitleCard(ep) {
   return _mcShell(content, ep, 1);
 }
 
-function _mcBuildEventCard(ev) {
-  const portrait = _mcPortrait(ev.player);
-  const ptsClass = ev.negative ? 'mc-pts-neg' : 'mc-pts-pos';
-  const ptsLabel = ev.negative ? `${ev.points}` : `+${ev.points}`;
-  const typeClass = ev.type === 'heroic' ? 'mc-heroic' : (ev.type === 'sabotage' || ev.type === 'scheming') ? 'mc-sabotage' : ev.type === 'comedy' ? 'mc-comedy' : ev.type === 'showmance' ? 'mc-showmance' : '';
-  return `
-    <div class="mc-event-card ${typeClass}">
-      ${portrait}
-      <div class="mc-event-narrative">${ev.text}</div>
-      ${ev.points !== 0 ? `<span class="mc-event-pts ${ptsClass}">${ptsLabel}</span>` : ''}
-    </div>`;
-}
-
-function _mcBuildCaptureCard(round) {
-  const name = round.captured;
-  const cs = round.captureSequence;
-  if (!name || !cs) return '';
-  const portrait = _mcPortrait(name, 48);
-  const shakeClass = cs.tier === 'comedy' ? 'mc-capture-comedy' : cs.tier === 'tense' ? 'mc-capture-tense' : 'mc-capture-terror';
-  const portraitClass = cs.tier === 'comedy' ? '' : cs.tier === 'tense' ? 'mc-portrait-cracked' : 'mc-portrait-shatter';
-  return `
-    <div class="mc-capture-card ${shakeClass}">
-      <div class="mc-captured-label">CAPTURED</div>
-      <div style="text-align:center;margin:8px 0;" class="${portraitClass}">${portrait}</div>
-      <div style="text-align:center;font-size:14px;color:#e8e8e8;font-weight:700;margin-bottom:8px;">${name}</div>
-      <div class="mc-capture-beat">${cs.approach}</div>
-      <div class="mc-capture-beat">${cs.reaction}</div>
-      <div class="mc-capture-beat">${cs.grab}</div>
-      <div class="mc-capture-beat" style="border-color:rgba(255,255,255,0.1);color:#999;font-style:italic;">${cs.aftermath}</div>
-    </div>`;
-}
-
-function _mcBuildRound(round) {
-  let html = '';
-  html += `<div class="mc-cam-label"><span class="mc-cam-dot"></span> CAM ${String(round.roundNum).padStart(2, '0')} — ${round.location.toUpperCase()}</div>`;
-  html += _mcThreatBar(round.threatLevel);
-  html += `<div class="mc-prowl-text">${round.monsterProwl}</div>`;
-  if (round.environmentalEvents?.length) { for (const env of round.environmentalEvents) html += `<div class="mc-env-text">${env.text}</div>`; }
-  for (const ev of round.events) html += _mcBuildEventCard(ev);
-  if (round.lastChance) {
-    const lc = round.lastChance;
-    const color = lc.escaped ? '#ff9800' : '#f44336';
-    html += `<div class="mc-last-chance" style="border-color:${color}40;"><div style="font-size:10px;color:${color};font-weight:700;letter-spacing:2px;margin-bottom:4px;">LAST CHANCE</div>${lc.text}</div>`;
-  }
-  if (round.rescueSequence) {
-    const rs = round.rescueSequence;
-    const color = rs.success ? '#4caf50' : '#f44336';
-    html += `<div class="mc-rescue-card" style="border-color:${color}30;"><div style="font-size:10px;color:${color};font-weight:700;letter-spacing:2px;margin-bottom:4px;">RESCUE ${rs.success ? 'SUCCESS' : 'FAILED'}</div><div class="mc-rescue-beat">${rs.approach}</div><div class="mc-rescue-beat">${rs.action}</div></div>`;
-  }
-  if (round.captured) html += _mcBuildCaptureCard(round);
-  html += `<div class="mc-survivors-count">${round.survivors.length} ACTIVE FEEDS REMAINING</div>`;
-  html += `<div class="mc-chris-line">${round.chrisLine}</div>`;
-  return html;
-}
+// ── Step-by-step VP builder (each event = one reveal click) ──
 
 export function rpBuildMonsterCashRounds(ep) {
   const mc = ep.monsterCash;
   if (!mc) return '';
+  const _tvState = window._tvState || (window._tvState = {});
   const stateKey = String(ep.num || 0) + '_mc';
-  if (!_mcState[stateKey]) _mcState[stateKey] = { idx: -1 };
-  let html = '<div class="mc-clapperboard">SURVEILLANCE FEED — CLICK TO ADVANCE</div>';
-  for (let i = 0; i < mc.rounds.length; i++) {
-    const round = mc.rounds[i];
-    const isRevealed = i <= _mcState[stateKey].idx;
-    const isActBreak = mc.actBreaks.includes(i) && i > 0;
-    if (isActBreak) html += `<div class="mc-clapperboard" style="margin-top:16px;border-color:#f44;">— THREAT LEVEL INCREASING —</div>`;
-    html += `<div id="mc-round-${i}" style="display:${isRevealed ? 'block' : 'none'};"><div style="font-size:11px;color:#666;margin-top:12px;letter-spacing:1px;">ROUND ${round.roundNum}</div>`;
-    html += _mcBuildRound(round);
-    html += '</div>';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+
+  const steps = [];
+
+  for (const round of mc.rounds) {
+    const isActBreak = mc.actBreaks.includes(round.roundNum - 1) && round.roundNum > 1;
+    if (isActBreak) {
+      steps.push({ html: `<div class="mc-clapperboard" style="border-color:#f44;">— THREAT LEVEL INCREASING —</div>` });
+    }
+
+    steps.push({ html: `
+      <div class="mc-cam-label"><span class="mc-cam-dot"></span> CAM ${String(round.roundNum).padStart(2, '0')} — ${round.location.toUpperCase()}</div>
+      ${_mcThreatBar(round.threatLevel)}
+      <div class="mc-prowl-text">${round.monsterProwl}</div>
+    ` });
+
+    if (round.environmentalEvents?.length) {
+      for (const env of round.environmentalEvents) {
+        steps.push({ html: `<div class="mc-env-text">${env.text}</div>` });
+      }
+    }
+
+    for (const ev of round.events) {
+      const portrait = _mcPortrait(ev.player);
+      const ptsClass = ev.negative ? 'mc-pts-neg' : 'mc-pts-pos';
+      const ptsLabel = ev.negative ? `${ev.points}` : `+${ev.points}`;
+      const typeClass = ev.type === 'heroic' ? 'mc-heroic' : (ev.type === 'sabotage' || ev.type === 'scheming') ? 'mc-sabotage' : ev.type === 'comedy' ? 'mc-comedy' : ev.type === 'showmance' ? 'mc-showmance' : '';
+      const targetPortrait = ev.target ? _mcPortrait(ev.target) : '';
+      steps.push({ html: `
+        <div class="mc-event-card ${typeClass}">
+          ${portrait}${targetPortrait}
+          <div class="mc-event-narrative">${ev.text}</div>
+          ${ev.points !== 0 ? `<span class="mc-event-pts ${ptsClass}">${ptsLabel}</span>` : ''}
+        </div>
+      ` });
+    }
+
+    if (round.lastChance) {
+      const lc = round.lastChance;
+      const color = lc.escaped ? '#ff9800' : '#f44336';
+      steps.push({ html: `<div class="mc-last-chance" style="border-color:${color}40;"><div style="font-size:10px;color:${color};font-weight:700;letter-spacing:2px;margin-bottom:4px;">LAST CHANCE — ${lc.escaped ? 'ESCAPED!' : 'FAILED'}</div>${lc.text}</div>` });
+    }
+
+    if (round.rescueSequence) {
+      const rs = round.rescueSequence;
+      const color = rs.success ? '#4caf50' : '#f44336';
+      steps.push({ html: `
+        <div class="mc-rescue-card" style="border-color:${color}30;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">${_mcPortrait(rs.rescuer)}${_mcPortrait(rs.target)}<div style="font-size:10px;color:${color};font-weight:700;letter-spacing:2px;">RESCUE ${rs.success ? 'SUCCESS' : 'FAILED'}</div></div>
+          <div class="mc-rescue-beat">${rs.approach}</div>
+          <div class="mc-rescue-beat">${rs.action}</div>
+        </div>` });
+    }
+
+    if (round.captured && round.captureSequence) {
+      const cs = round.captureSequence;
+      const name = round.captured;
+      const shakeClass = cs.tier === 'comedy' ? 'mc-capture-comedy' : cs.tier === 'tense' ? 'mc-capture-tense' : 'mc-capture-terror';
+      const portraitClass = cs.tier === 'comedy' ? '' : cs.tier === 'tense' ? 'mc-portrait-cracked' : 'mc-portrait-shatter';
+      steps.push({ captured: true, html: `
+        <div class="mc-capture-card ${shakeClass}">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="${portraitClass}">${_mcPortrait(name, 56)}</div>
+            <div style="flex:1;">
+              <div class="mc-captured-label" style="text-align:left;margin-bottom:4px;">CAPTURED — ${name}</div>
+              <div style="font-size:12px;color:#ccc;line-height:1.5;">${cs.approach} ${cs.grab}</div>
+            </div>
+          </div>
+        </div>` });
+    }
+
+    steps.push({ html: `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:8px 0;">
+        <div class="mc-survivors-count" style="margin:0;">${round.survivors.length} REMAIN</div>
+        <div class="mc-chris-line" style="margin:0;flex:1;margin-left:12px;">${round.chrisLine}</div>
+      </div>` });
   }
-  html += `<div id="mc-reveal-btn" style="text-align:center;margin-top:16px;"><button onclick="window.monsterCashRevealNext()" style="padding:8px 24px;background:#ff5722;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;letter-spacing:1px;">NEXT FEED ▶</button><button onclick="window.monsterCashRevealAll()" style="padding:8px 16px;background:#333;color:#aaa;border:1px solid #555;border-radius:6px;cursor:pointer;margin-left:8px;font-size:11px;">Reveal All</button></div>`;
+
+  const state = _tvState[stateKey];
   const maxThreat = mc.rounds.reduce((max, r) => Math.max(max, r.threatLevel), 1);
-  return _mcShell(html, ep, maxThreat);
+
+  let inner = `<div class="mc-cam-label"><span class="mc-cam-dot"></span> SURVEILLANCE FEED — CLICK TO ADVANCE</div>`;
+  inner += `<div style="display:flex;gap:16px;justify-content:center;font-size:12px;font-weight:700;letter-spacing:1px;margin:8px 0 12px;color:#aaa;">
+    <span>ALIVE: <span id="mc-alive-${stateKey}" style="color:#4caf50">${mc.capturedOrder.length + (mc.immunityWinner ? mc.leaderboard.length - mc.capturedOrder.length : 0)}</span></span>
+    <span>CAPTURED: <span id="mc-caught-${stateKey}" style="color:#f44336">0</span></span>
+  </div>`;
+
+  steps.forEach((step, i) => {
+    const visible = i <= state.idx;
+    const capturedDelta = step.captured ? 1 : 0;
+    inner += `<div id="mc-step-${stateKey}-${i}" data-captured="${capturedDelta}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
+  });
+
+  inner += `<div id="mc-controls-${stateKey}"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
+    <button id="mc-btn-${stateKey}" onclick="window.monsterCashRevealNext('${stateKey}', ${steps.length})" style="padding:8px 24px;background:#ff5722;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;letter-spacing:1px;">NEXT ▶ (${state.idx + 2}/${steps.length})</button>
+    <button onclick="window.monsterCashRevealAll('${stateKey}', ${steps.length})" style="padding:8px 16px;background:#333;color:#aaa;border:1px solid #555;border-radius:6px;cursor:pointer;margin-left:8px;font-size:11px;">Reveal All</button>
+  </div>`;
+
+  return _mcShell(inner, ep, maxThreat);
 }
 
-export function monsterCashRevealNext() {
-  const mc = gs.episodeHistory[gs.episodeHistory.length - 1]?.monsterCash;
-  if (!mc) return;
-  const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
-  const stateKey = String(ep.num || 0) + '_mc';
-  if (!_mcState[stateKey]) _mcState[stateKey] = { idx: -1 };
-  _mcState[stateKey].idx++;
-  const el = document.getElementById(`mc-round-${_mcState[stateKey].idx}`);
-  if (el) { el.style.display = 'block'; el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
-  if (_mcState[stateKey].idx >= mc.rounds.length - 1) { const btn = document.getElementById('mc-reveal-btn'); if (btn) btn.style.display = 'none'; }
+export function monsterCashRevealNext(stateKey, totalSteps) {
+  const _tvState = window._tvState || (window._tvState = {});
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const nextIdx = state.idx + 1;
+  if (nextIdx >= totalSteps) return;
+  const el = document.getElementById(`mc-step-${stateKey}-${nextIdx}`);
+  if (el) { el.style.display = ''; el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  state.idx = nextIdx;
+  if (el) {
+    const cap = parseInt(el.dataset.captured || '0');
+    if (cap) {
+      const cEl = document.getElementById(`mc-caught-${stateKey}`);
+      const aEl = document.getElementById(`mc-alive-${stateKey}`);
+      if (cEl) cEl.textContent = parseInt(cEl.textContent) + 1;
+      if (aEl) aEl.textContent = Math.max(0, parseInt(aEl.textContent) - 1);
+    }
+  }
+  if (nextIdx >= totalSteps - 1) {
+    const controls = document.getElementById(`mc-controls-${stateKey}`);
+    if (controls) controls.style.display = 'none';
+  } else {
+    const btn = document.getElementById(`mc-btn-${stateKey}`);
+    if (btn) btn.textContent = `NEXT ▶ (${nextIdx + 2}/${totalSteps})`;
+  }
 }
 
-export function monsterCashRevealAll() {
-  const mc = gs.episodeHistory[gs.episodeHistory.length - 1]?.monsterCash;
-  if (!mc) return;
-  const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
-  const stateKey = String(ep.num || 0) + '_mc';
-  if (!_mcState[stateKey]) _mcState[stateKey] = { idx: -1 };
-  for (let i = 0; i < mc.rounds.length; i++) { const el = document.getElementById(`mc-round-${i}`); if (el) el.style.display = 'block'; }
-  _mcState[stateKey].idx = mc.rounds.length - 1;
-  const btn = document.getElementById('mc-reveal-btn');
-  if (btn) btn.style.display = 'none';
+export function monsterCashRevealAll(stateKey, totalSteps) {
+  const _tvState = window._tvState || (window._tvState = {});
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  let captured = 0;
+  for (let i = 0; i < totalSteps; i++) {
+    const el = document.getElementById(`mc-step-${stateKey}-${i}`);
+    if (el) { el.style.display = ''; captured += parseInt(el.dataset.captured || '0'); }
+  }
+  _tvState[stateKey].idx = totalSteps - 1;
+  const controls = document.getElementById(`mc-controls-${stateKey}`);
+  if (controls) controls.style.display = 'none';
+  const cEl = document.getElementById(`mc-caught-${stateKey}`);
+  const aEl = document.getElementById(`mc-alive-${stateKey}`);
+  if (cEl) cEl.textContent = captured;
+  if (aEl) aEl.textContent = Math.max(0, parseInt(aEl.dataset?.initial || aEl.textContent) - captured);
 }
 
 export function rpBuildMonsterCashShowdown(ep) {

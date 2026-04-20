@@ -66,6 +66,7 @@ const stateVars = {
   'viewingEpNum':       'setViewingEpNum',
   'selectedEpisodes':   'setSelectedEpisodes',
   'currentTwistFilter': 'setCurrentTwistFilter',
+  'currentChalSeries':  'setCurrentChalSeries',
   'preGameAlliances':   'setPreGameAlliances',
   'editingAllianceId':  'setEditingAllianceId',
   'alliancePerm':       'setAlliancePerm',
@@ -104,7 +105,7 @@ const functions = [
   'setPlayers', 'setEditingId', 'setActiveTab', 'setSeasonConfig',
   'setRelationships', 'setEditingRelId', 'setActiveRelType',
   'setGs', 'setGsCheckpoints', 'setViewingEpNum',
-  'setSelectedEpisodes', 'setCurrentTwistFilter',
+  'setSelectedEpisodes', 'setCurrentTwistFilter', 'setCurrentChalSeries',
   'setPreGameAlliances', 'setEditingAllianceId', 'setAlliancePerm',
 ];
 

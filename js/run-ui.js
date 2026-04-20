@@ -722,7 +722,20 @@ export function updateSelectedCount() {
 
 export function setTwistFilter(filter) {
   currentTwistFilter = filter;
-  document.querySelectorAll('.fd-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+  document.querySelectorAll('.fd-filter-btn[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+  // Show/hide challenge series sub-filter row
+  const subRow = document.getElementById('fd-chal-subfilters');
+  if (subRow) subRow.style.display = filter === 'challenge' ? 'flex' : 'none';
+  if (filter !== 'challenge') {
+    currentChalSeries = 'all';
+    document.querySelectorAll('.fd-filter-btn[data-chal-series]').forEach(b => b.classList.toggle('active', b.dataset.chalSeries === 'all'));
+  }
+  renderTwistCatalog();
+}
+
+export function setChalSeries(series) {
+  currentChalSeries = series;
+  document.querySelectorAll('.fd-filter-btn[data-chal-series]').forEach(b => b.classList.toggle('active', b.dataset.chalSeries === series));
   renderTwistCatalog();
 }
 
@@ -732,7 +745,7 @@ export function renderTwistCatalog() {
   const search = (document.getElementById('fd-search')?.value || '').toLowerCase();
   const cats   = ['team','immunity','challenge','elim','returns','advantages','social'];
 
-  // Update counts
+  // Update category counts
   cats.forEach(cat => {
     const el = document.getElementById('fd-count-' + cat);
     if (el) el.textContent = TWIST_CATALOG.filter(t => t.category === cat).length;
@@ -740,8 +753,24 @@ export function renderTwistCatalog() {
   const allEl = document.getElementById('fd-count-all');
   if (allEl) allEl.textContent = TWIST_CATALOG.length;
 
+  // Update challenge series sub-filter counts
+  const chalSeries = ['island','action','world-tour'];
+  chalSeries.forEach(s => {
+    const el = document.getElementById('fd-chal-count-' + s);
+    if (el) el.textContent = TWIST_CATALOG.filter(t => t.category === 'challenge' && t.chalSeries === s).length;
+  });
+  const chalAllEl = document.getElementById('fd-chal-count-all');
+  if (chalAllEl) chalAllEl.textContent = TWIST_CATALOG.filter(t => t.category === 'challenge').length;
+
+  // Sync sub-filter row visibility
+  const subRow = document.getElementById('fd-chal-subfilters');
+  if (subRow) subRow.style.display = currentTwistFilter === 'challenge' ? 'flex' : 'none';
+
   let filtered = TWIST_CATALOG;
   if (currentTwistFilter !== 'all') filtered = filtered.filter(t => t.category === currentTwistFilter);
+  if (currentTwistFilter === 'challenge' && currentChalSeries !== 'all') {
+    filtered = filtered.filter(t => t.chalSeries === currentChalSeries);
+  }
   if (search) filtered = filtered.filter(t => t.name.toLowerCase().includes(search) || t.desc.toLowerCase().includes(search));
 
   if (!filtered.length) {
@@ -788,7 +817,7 @@ export function renderTwistCatalog() {
         <span class="twist-card-emoji">${t.emoji}</span>
         <div class="twist-card-info">
           <span class="twist-card-name">${t.name}</span>
-          <span class="twist-phase">${t.phase}${blockReason}</span>
+          <span class="twist-phase">${t.phase}${t.chalSeries ? ` · ${t.chalSeries === 'island' ? '🏝️ Island' : t.chalSeries === 'action' ? '🎬 Action' : t.chalSeries === 'world-tour' ? '✈️ World Tour' : t.chalSeries}` : ''}${blockReason}</span>
         </div>
         <button class="twist-add-btn" ${canAssign && !blocked ? '' : 'disabled'} onclick="event.stopPropagation();${blocked ? '' : `assignTwist('${t.id}')`}">+</button>
       </div>

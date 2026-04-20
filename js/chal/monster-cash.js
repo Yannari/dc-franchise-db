@@ -1392,9 +1392,48 @@ function _mcPortrait(name, size = 48) {
   return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;border:2px solid #444;" onerror="this.style.display='none'">`;
 }
 
-function _mcShell(content, ep, threatLevel) {
+function _mcSkyline(stateKey) {
+  const bldgs = [18,45,28,60,35,22,72,30,50,20,40,55,25,48,32,65,24,38,58,20];
+  const widths = [10,14,12,16,11,10,18,13,15,10,12,14,10,13,11,16,10,12,15,10];
+  const buildings = bldgs.map((h, i) =>
+    `<div class="mc-building" id="mc-bldg-${stateKey}-${i}" style="width:${widths[i]}px;height:${h}px;"></div>`
+  );
+  buildings.splice(14, 0, `<div class="mc-skyline-kaiju"><svg viewBox="0 0 40 80" fill="#1a1a1a" style="width:40px;height:80px;display:block;"><path d="M22 0 L24 3 L22 5 L24 7 L20 9 L18 5 L16 8 L20 12 L14 14 L16 20 L14 24 L12 22 L10 26 L12 32 L10 38 L8 44 L6 52 L4 60 L2 68 L0 76 L0 80 L8 80 L10 76 L14 78 L18 80 L24 80 L28 78 L32 76 L34 80 L40 80 L38 72 L36 64 L34 56 L32 48 L30 40 L28 34 L30 28 L28 22 L26 16 L28 10 L26 6 L24 2 Z"/></svg></div>`);
+  return `<div class="mc-skyline" id="mc-skyline-${stateKey}">${buildings.join('')}</div>`;
+}
+
+function _mcDestroyBuilding(stateKey, captureIndex) {
+  const tallFirst = [6, 3, 11, 8, 15, 1, 13, 9, 4, 17, 7, 14, 2, 10, 18, 5, 0, 12, 16, 19];
+  const bldgIdx = tallFirst[captureIndex % tallFirst.length];
+  const bldg = document.getElementById(`mc-bldg-${stateKey}-${bldgIdx}`);
+  if (bldg && !bldg.classList.contains('destroyed')) {
+    bldg.classList.add('destroyed');
+  } else {
+    const skyline = document.getElementById(`mc-skyline-${stateKey}`);
+    if (!skyline) return;
+    const standing = skyline.querySelector('.mc-building:not(.destroyed)');
+    if (standing) standing.classList.add('destroyed');
+  }
+}
+
+function _mcSeismograph(threat) {
+  const amp = threat <= 2 ? 3 : threat <= 3 ? 5 : threat <= 4 ? 8 : 12;
+  const freq = threat <= 2 ? 0.08 : threat <= 3 ? 0.12 : 0.18;
+  const mid = 14;
+  let d = `M0,${mid}`;
+  for (let x = 1; x <= 400; x++) {
+    const noise = Math.sin(x * 0.37) * 1.5 + Math.sin(x * 0.73) * 1;
+    const y = mid + Math.sin(x * freq) * amp + noise;
+    d += ` L${x},${Math.max(1, Math.min(27, y))}`;
+  }
+  const color = threat <= 2 ? '#4caf50' : threat <= 3 ? '#ff9800' : '#f44336';
+  return `<div class="mc-seismograph"><div class="mc-seismo-line"><svg viewBox="0 0 400 28" preserveAspectRatio="none" width="100%" height="100%"><path d="${d}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.7"/></svg></div></div>`;
+}
+
+function _mcShell(content, ep, threatLevel, stateKey) {
   const mc = ep.monsterCash;
   const threatClass = `threat-${Math.min(threatLevel || 1, 5)}`;
+  const defcon = 6 - Math.min(threatLevel || 1, 5);
   const tickerMessages = threatLevel <= 2 ? [
     'MONSTER SIGHTED IN SECTOR 7', 'ALL CONTESTANTS PROCEED TO SHELTER', 'SITUATION UNDER CONTROL',
   ] : threatLevel <= 3 ? [
@@ -1402,23 +1441,30 @@ function _mcShell(content, ep, threatLevel) {
   ] : [
     'CHEF HAS LOST CONTROL', 'THIS IS NOT A DRILL', 'ALL SECTORS COMPROMISED', 'EVACUATE IMMEDIATELY',
   ];
-  const ticker = tickerMessages.sort(() => Math.random() - 0.5).slice(0, 3).join('  ///  ');
+  const ticker = tickerMessages.sort(() => Math.random() - 0.5).slice(0, 3).join('  \u2022  ');
+
+  const sirenClass = threatLevel >= 4 ? 'mc-siren mc-siren-high' : threatLevel >= 3 ? 'mc-siren mc-siren-low' : '';
 
   return `
     <div class="rp-page" style="background:#0a0a0a;padding:0;">
     <div class="mc-shell">
-      <div class="mc-monster-silhouette ${threatClass}">🦎</div>
+      <div class="mc-monster-silhouette ${threatClass}"><div class="mc-kaiju"><svg viewBox="0 0 100 140" fill="currentColor" style="color:#ff3333;"><path d="M55 0 L60 5 L58 8 L62 10 L56 12 L54 8 L50 6 L48 10 L52 14 L46 16 L44 12 L42 8 L40 12 L44 18 L38 20 L42 26 L40 30 L36 28 L34 32 L38 38 L36 42 L34 38 L30 40 L32 46 L28 50 L26 46 L24 50 L26 56 L24 62 L22 58 L20 64 L22 72 L20 78 L18 82 L20 88 L18 94 L16 100 L14 108 L12 116 L10 124 L8 130 L4 134 L0 136 L0 140 L16 140 L18 136 L22 132 L26 130 L30 132 L34 134 L38 140 L48 140 L50 136 L52 130 L56 128 L60 130 L64 134 L68 140 L80 140 L82 136 L84 130 L86 124 L88 118 L86 110 L84 104 L82 98 L80 92 L78 86 L76 80 L74 74 L72 68 L70 62 L68 56 L66 50 L68 44 L70 40 L66 36 L68 30 L72 26 L70 22 L66 18 L64 14 L68 10 L66 6 L62 4 L58 2 Z M30 120 L26 124 L22 120 L26 116 Z M60 118 L56 122 L52 118 L56 114 Z"/><path d="M44 20 L46 24 L42 26 Z M36 30 L38 34 L34 32 Z" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.5"/></svg></div></div>
+      ${sirenClass ? `<div class="${sirenClass}"></div>` : ''}
       ${threatLevel >= 4 ? '<div class="mc-emergency-flash"></div>' : ''}
-      <div style="position:relative;z-index:3;padding:20px 16px 32px;">
+      <div style="position:relative;z-index:3;padding:4px 16px 36px;">
+        <div class="mc-ebs-bar"></div>
         ${content}
       </div>
-      <div class="mc-ticker"><span class="mc-ticker-text">/// ${ticker} ///</span></div>
+      ${stateKey ? _mcSkyline(stateKey) : ''}
+      <div class="mc-news-chyron"><div class="mc-chyron-bar"><span class="mc-chyron-label">ALERT</span><span class="mc-chyron-text">${ticker}  \u2022  ${ticker}</span></div></div>
     </div>
     </div>`;
 }
 
 function _mcThreatBar(level) {
-  return `<div class="mc-threat-bar"><span class="mc-threat-label">Threat: ${THREAT_NAMES[level - 1]}</span><div style="flex:1;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;"><div class="mc-threat-fill mc-threat-${level}"></div></div></div>`;
+  const defcon = 6 - Math.min(level, 5);
+  const pips = Array.from({ length: 5 }, (_, i) => `<div class="mc-defcon-pip"></div>`).join('');
+  return `<div class="mc-defcon mc-defcon-${defcon}"><span class="mc-defcon-label">DEFCON ${defcon}</span><div class="mc-defcon-pips">${pips}</div><span style="font-size:9px;color:#666;font-family:'Courier New',monospace;letter-spacing:1px;">${THREAT_NAMES[level - 1].toUpperCase()}</span></div>`;
 }
 
 export function rpBuildMonsterCashTitleCard(ep) {
@@ -1426,15 +1472,17 @@ export function rpBuildMonsterCashTitleCard(ep) {
   if (!mc) return '';
   const totalPlayers = mc.leaderboard.length;
   const content = `
+    <div class="mc-ebs-header">\u26a0 EMERGENCY BROADCAST SYSTEM \u2014 THIS IS NOT A DRILL \u26a0</div>
     <div class="mc-title-card">
       <div class="mc-film-title" style="margin-bottom:12px;">${mc.filmTitle}</div>
       <div style="font-size:12px;color:#aaa;max-width:420px;margin:0 auto;line-height:1.6;">
-        Chef's animatronic monster is loose on the film lot. ${totalPlayers} contestants must survive round by round as the monster escalates from clumsy to unstoppable. Last one standing wins immunity.
+        A creature of unknown origin is loose on the film lot. ${totalPlayers} civilians are in the impact zone. Threat level is escalating. All emergency personnel have been deployed.
       </div>
       <div style="margin-top:16px;font-size:12px;color:#ff5722;font-weight:700;">"${mc.chrisOpener}"</div>
-      <div style="margin-top:16px;display:flex;justify-content:center;gap:16px;font-size:11px;color:#666;">
-        <span>${mc.rounds.length} Rounds</span><span>${totalPlayers} Contestants</span><span>5 Threat Levels</span>
+      <div style="margin-top:16px;display:flex;justify-content:center;gap:16px;font-size:10px;color:#666;font-family:'Courier New',monospace;letter-spacing:1px;">
+        <span>${mc.rounds.length} SECTORS</span><span>${totalPlayers} CIVILIANS</span><span>5 DEFCON LEVELS</span>
       </div>
+      <div class="mc-damage-counter">CITY DAMAGE: 0%</div>
     </div>`;
   return _mcShell(content, ep, 1);
 }
@@ -1450,10 +1498,25 @@ export function rpBuildMonsterCashRounds(ep) {
 
   const steps = [];
 
+  let structuralCount = 0;
+  for (const rd of mc.rounds) {
+    structuralCount += 1;
+    if (mc.actBreaks.includes(rd.roundNum - 1) && rd.roundNum > 1) structuralCount += 1;
+    if (rd.environmentalEvents?.length) structuralCount += 1;
+    if (rd.lastChance) structuralCount += 1;
+    if (rd.rescueSequence) structuralCount += 1;
+    structuralCount += (rd.captures?.length || 0);
+    structuralCount += 1;
+  }
+  const targetTotal = 75;
+  const eventBudget = Math.max(mc.rounds.length * 3, targetTotal - structuralCount);
+  const eventsPerRound = Math.max(3, Math.min(10, Math.round(eventBudget / mc.rounds.length)));
+
   for (const round of mc.rounds) {
     const isActBreak = mc.actBreaks.includes(round.roundNum - 1) && round.roundNum > 1;
     if (isActBreak) {
-      steps.push({ html: `<div class="mc-clapperboard" style="border-color:#f44;">— THREAT LEVEL INCREASING —</div>` });
+      const newDefcon = 6 - Math.min(round.threatLevel, 5);
+      steps.push({ html: `<div class="mc-threat-escalation"><div class="mc-threat-escalation-label">\u26a0 DEFCON ${newDefcon} \u2014 THREAT ESCALATION \u26a0</div><div style="font-size:10px;color:#888;margin-top:4px;font-family:'Courier New',monospace;">Monster entering ${THREAT_NAMES[round.threatLevel - 1]} phase</div></div>` });
     }
 
     steps.push({ html: `
@@ -1473,19 +1536,17 @@ export function rpBuildMonsterCashRounds(ep) {
       if (aPri !== bPri) return aPri - bPri;
       return Math.abs(b.points) - Math.abs(a.points);
     });
-    const highlights = sorted.slice(0, 4);
+    const highlights = sorted.slice(0, eventsPerRound);
 
     for (const ev of highlights) {
-      const portrait = _mcPortrait(ev.player, 40);
-      const ptsClass = ev.negative ? 'mc-pts-neg' : 'mc-pts-pos';
-      const ptsLabel = ev.negative ? `${ev.points}` : `+${ev.points}`;
+      const portrait = _mcPortrait(ev.player, 48);
       const typeClass = ev.type === 'heroic' ? 'mc-heroic' : (ev.type === 'sabotage' || ev.type === 'scheming') ? 'mc-sabotage' : ev.type === 'comedy' ? 'mc-comedy' : ev.type === 'showmance' ? 'mc-showmance' : '';
-      const targetPortrait = ev.target ? _mcPortrait(ev.target, 40) : '';
+      const targetPortrait = ev.target ? _mcPortrait(ev.target, 48) : '';
+      const multiClass = ev.target ? 'mc-event-multi' : '';
       steps.push({ html: `
-        <div class="mc-event-card ${typeClass}">
-          ${portrait}${targetPortrait}
+        <div class="mc-event-card ${typeClass} ${multiClass}">
+          <div class="mc-event-portraits">${portrait}${targetPortrait}</div>
           <div class="mc-event-narrative">${ev.text}</div>
-          ${ev.points !== 0 ? `<span class="mc-event-pts ${ptsClass}">${ptsLabel}</span>` : ''}
         </div>
       ` });
     }
@@ -1501,7 +1562,7 @@ export function rpBuildMonsterCashRounds(ep) {
       const color = rs.success ? '#4caf50' : '#f44336';
       steps.push({ html: `
         <div class="mc-rescue-card" style="border-color:${color}30;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">${_mcPortrait(rs.rescuer)}${_mcPortrait(rs.target)}<div style="font-size:10px;color:${color};font-weight:700;letter-spacing:2px;">RESCUE ${rs.success ? 'SUCCESS' : 'FAILED'}</div></div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">${_mcPortrait(rs.rescuer, 48)}${_mcPortrait(rs.target, 48)}<div style="font-size:13px;color:${color};font-weight:700;letter-spacing:2px;">RESCUE ${rs.success ? 'SUCCESS' : 'FAILED'}</div></div>
           <div class="mc-rescue-beat">${rs.approach}</div>
           <div class="mc-rescue-beat">${rs.action}</div>
         </div>` });
@@ -1514,12 +1575,12 @@ export function rpBuildMonsterCashRounds(ep) {
         const shakeClass = cs.tier === 'comedy' ? 'mc-capture-comedy' : cs.tier === 'tense' ? 'mc-capture-tense' : 'mc-capture-terror';
         const portraitClass = cs.tier === 'comedy' ? '' : cs.tier === 'tense' ? 'mc-portrait-cracked' : 'mc-portrait-shatter';
         steps.push({ captured: true, html: `
-          <div class="mc-capture-card ${shakeClass}">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div class="${portraitClass}">${_mcPortrait(name, 56)}</div>
+          <div class="mc-capture-card ${shakeClass} mc-shockwave">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div class="${portraitClass}">${_mcPortrait(name, 64)}</div>
               <div style="flex:1;">
-                <div class="mc-captured-label" style="text-align:left;margin-bottom:4px;">CAPTURED — ${name}</div>
-                <div style="font-size:12px;color:#ccc;line-height:1.5;">${cs.approach} ${cs.grab}</div>
+                <div class="mc-captured-label" style="text-align:left;margin-bottom:6px;">CAPTURED \u2014 ${name}</div>
+                <div style="font-size:14px;color:#ccc;line-height:1.6;">${cs.approach} ${cs.grab}</div>
               </div>
             </div>
           </div>` });
@@ -1536,12 +1597,16 @@ export function rpBuildMonsterCashRounds(ep) {
   const state = _tvState[stateKey];
   const maxThreat = mc.rounds.reduce((max, r) => Math.max(max, r.threatLevel), 1);
 
-  let inner = `<div class="mc-cam-label"><span class="mc-cam-dot"></span> SURVEILLANCE FEED — CLICK TO ADVANCE</div>`;
+  let inner = `<div class="mc-ebs-header">\u26a0 EMERGENCY BROADCAST \u2014 LIVE SURVEILLANCE FEED \u26a0</div>`;
+  inner += `<div class="mc-cam-label"><span class="mc-cam-dot"></span> CLICK TO ADVANCE FEED</div>`;
   const totalPlayers = mc.leaderboard.length;
-  inner += `<div style="display:flex;gap:16px;justify-content:center;font-size:12px;font-weight:700;letter-spacing:1px;margin:8px 0 12px;color:#aaa;">
+  const totalCaptures = mc.leaderboard.filter(e => e.capturedRound).length;
+  inner += `<div style="display:flex;gap:12px;justify-content:center;font-size:11px;font-weight:700;letter-spacing:1px;margin:8px 0 4px;color:#aaa;font-family:'Courier New',monospace;">
     <span>ALIVE: <span id="mc-alive-${stateKey}" data-initial="${totalPlayers}" style="color:#4caf50">${totalPlayers}</span></span>
     <span>CAPTURED: <span id="mc-caught-${stateKey}" style="color:#f44336">0</span></span>
+    <span>DAMAGE: <span id="mc-dmg-${stateKey}" style="color:#ff5722">0%</span></span>
   </div>`;
+  inner += _mcSeismograph(maxThreat);
 
   steps.forEach((step, i) => {
     const visible = i <= state.idx;
@@ -1554,7 +1619,7 @@ export function rpBuildMonsterCashRounds(ep) {
     <button onclick="window.monsterCashRevealAll('${stateKey}', ${steps.length})" style="padding:8px 16px;background:#333;color:#aaa;border:1px solid #555;border-radius:6px;cursor:pointer;margin-left:8px;font-size:11px;">Reveal All</button>
   </div>`;
 
-  return _mcShell(inner, ep, maxThreat);
+  return _mcShell(inner, ep, maxThreat, stateKey);
 }
 
 export function monsterCashRevealNext(stateKey, totalSteps) {
@@ -1571,8 +1636,13 @@ export function monsterCashRevealNext(stateKey, totalSteps) {
     if (cap) {
       const cEl = document.getElementById(`mc-caught-${stateKey}`);
       const aEl = document.getElementById(`mc-alive-${stateKey}`);
-      if (cEl) cEl.textContent = parseInt(cEl.textContent) + 1;
-      if (aEl) aEl.textContent = Math.max(0, parseInt(aEl.textContent) - 1);
+      const caught = cEl ? parseInt(cEl.textContent) + 1 : 1;
+      const initial = aEl ? parseInt(aEl.dataset?.initial || aEl.textContent) : 1;
+      if (cEl) cEl.textContent = caught;
+      if (aEl) aEl.textContent = Math.max(0, initial - caught);
+      const dmgEl = document.getElementById(`mc-dmg-${stateKey}`);
+      if (dmgEl) dmgEl.textContent = Math.round((caught / Math.max(initial, 1)) * 100) + '%';
+      _mcDestroyBuilding(stateKey, caught - 1);
     }
   }
   if (nextIdx >= totalSteps - 1) {
@@ -1598,7 +1668,11 @@ export function monsterCashRevealAll(stateKey, totalSteps) {
   const cEl = document.getElementById(`mc-caught-${stateKey}`);
   const aEl = document.getElementById(`mc-alive-${stateKey}`);
   if (cEl) cEl.textContent = captured;
-  if (aEl) aEl.textContent = Math.max(0, parseInt(aEl.dataset?.initial || aEl.textContent) - captured);
+  const initial = aEl ? parseInt(aEl.dataset?.initial || aEl.textContent) : 1;
+  if (aEl) aEl.textContent = Math.max(0, initial - captured);
+  const dmgEl = document.getElementById(`mc-dmg-${stateKey}`);
+  if (dmgEl) dmgEl.textContent = Math.round((captured / Math.max(initial, 1)) * 100) + '%';
+  for (let b = 0; b < captured; b++) _mcDestroyBuilding(stateKey, b);
 }
 
 export function rpBuildMonsterCashShowdown(ep) {
@@ -1618,21 +1692,23 @@ export function rpBuildMonsterCashShowdown(ep) {
   else winNarrative = `The monster can only catch one. It goes for ${loser}. ${winner} runs. Doesn't look back. Doesn't stop until the sirens go silent.`;
 
   const content = `
+    <div class="mc-ebs-header">\u26a0 DEFCON 1 \u2014 FINAL CONFRONTATION \u26a0</div>
     <div style="text-align:center;padding:24px;">
-      <div style="font-size:11px;color:#f44336;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;">FINAL SHOWDOWN</div>
+      <div style="font-size:11px;color:#f44336;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;font-family:'Courier New',monospace;">LAST TWO STANDING</div>
+      <div style="font-size:9px;color:#666;letter-spacing:2px;margin-bottom:16px;font-family:'Courier New',monospace;">ALL OTHER CIVILIANS CAPTURED</div>
       <div style="display:flex;justify-content:center;align-items:center;gap:24px;margin:20px 0;">
         <div style="text-align:center;">${_mcPortrait(fs.survivor1, 80)}<div style="font-size:14px;color:#e8e8e8;margin-top:8px;font-weight:700;">${fs.survivor1}</div></div>
         <div style="font-size:28px;color:#ff5722;font-weight:900;">VS</div>
         <div style="text-align:center;">${_mcPortrait(fs.survivor2, 80)}<div style="font-size:14px;color:#e8e8e8;margin-top:8px;font-weight:700;">${fs.survivor2}</div></div>
       </div>
       <div style="font-size:13px;color:#ccc;margin:16px auto;max-width:420px;line-height:1.6;text-align:left;padding:12px;border-left:3px solid #ff5722;background:rgba(255,87,34,0.05);border-radius:0 6px 6px 0;">
-        The monster rounds the final corner. Two survivors. One monster. No more hiding spots. No more tricks. This ends now.
+        The creature rounds the final corner. Two survivors. One monster. The city is in ruins. No more hiding spots. No more tricks. This ends now.
       </div>
       <div style="font-size:13px;color:#aaa;margin:12px auto;max-width:420px;line-height:1.6;text-align:left;">
         ${winNarrative}
       </div>
       <div style="margin-top:16px;padding:12px;background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);border-radius:8px;">
-        <div style="font-size:11px;color:#4caf50;letter-spacing:2px;margin-bottom:4px;">IMMUNITY WINNER</div>
+        <div style="font-size:11px;color:#4caf50;letter-spacing:2px;margin-bottom:4px;font-family:'Courier New',monospace;">SOLE SURVIVOR CONFIRMED</div>
         <div style="font-size:18px;color:#e8e8e8;font-weight:900;">${winner}</div>
       </div>
     </div>`;
@@ -1655,10 +1731,11 @@ export function rpBuildMonsterCashImmunity(ep) {
 
   const content = `
     <div style="text-align:center;padding:30px;">
+      <div class="mc-ebs-header" style="border-color:rgba(76,175,80,0.3);color:#4caf50;background:rgba(76,175,80,0.06);">ALL CLEAR \u2014 THREAT NEUTRALIZED</div>
       <div class="mc-cam-label" style="justify-content:center;"><span class="mc-cam-dot" style="background:#4caf50;"></span> SURVIVOR CONFIRMED</div>
-      <div style="display:inline-block;position:relative;margin-top:12px;">${_mcPortrait(winner, 96)}<div style="position:absolute;bottom:-4px;right:-4px;background:#4caf50;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;">🛡️</div></div>
+      <div style="display:inline-block;position:relative;margin-top:12px;">${_mcPortrait(winner, 96)}<div style="position:absolute;bottom:-4px;right:-4px;background:#4caf50;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;">\ud83d\udee1\ufe0f</div></div>
       <div style="font-size:20px;color:#e8e8e8;font-weight:900;margin-top:12px;">${winner}</div>
-      <div style="font-size:12px;color:#888;margin-top:4px;">Score: ${(mc.scores[winner] || 0).toFixed(1)}</div>
+      <div style="font-size:12px;color:#888;margin-top:4px;font-family:'Courier New',monospace;">Survival Rating: ${(mc.scores[winner] || 0).toFixed(1)}</div>
       <div style="font-size:13px;color:#aaa;margin-top:16px;max-width:400px;margin-left:auto;margin-right:auto;">${flavorText}</div>
     </div>`;
   return _mcShell(content, ep, 1);
@@ -1679,7 +1756,7 @@ export function rpBuildMonsterCashTribeResults(ep) {
     const isWin = i === 0;
     const isLose = i === sorted.length - 1;
     const color = isWin ? '#4caf50' : isLose ? '#f44336' : '#ff9800';
-    const label = isWin ? 'WINS IMMUNITY' : isLose ? 'TRIBAL COUNCIL' : 'SAFE';
+    const label = isWin ? 'SECTOR SECURE' : isLose ? 'SECTOR LOST' : 'EVACUATED';
     const tribe = gs.tribes?.find(t => t.name === name);
     const members = tribe?.members || [];
     const portraits = members.slice(0, 8).map(m => _mcPortrait(m, 36)).join('');
@@ -1689,16 +1766,17 @@ export function rpBuildMonsterCashTribeResults(ep) {
           <div style="font-size:15px;color:#e8e8e8;font-weight:700;">${name}</div>
           <div style="font-size:11px;color:${color};font-weight:700;letter-spacing:1px;">${label}</div>
         </div>
-        <div style="font-size:12px;color:#888;margin-bottom:8px;">Avg survival: ${score.toFixed(1)} rounds</div>
+        <div style="font-size:12px;color:#888;margin-bottom:8px;font-family:'Courier New',monospace;">Avg survival rating: ${score.toFixed(1)}</div>
         <div style="display:flex;flex-wrap:wrap;gap:4px;">${portraits}</div>
       </div>`;
   });
 
   const content = `
     <div style="padding:20px;">
+      <div class="mc-ebs-header">\u26a0 DAMAGE ASSESSMENT REPORT \u26a0</div>
       <div style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:11px;color:#ff9800;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">MONSTER HUNT RESULTS</div>
-        <div style="font-size:14px;color:#ccc;">The tribe that survived the longest wins immunity.</div>
+        <div style="font-size:11px;color:#ff9800;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;font-family:'Courier New',monospace;">SECTOR SURVIVAL ANALYSIS</div>
+        <div style="font-size:13px;color:#ccc;">The sector with highest survival rating receives immunity clearance.</div>
       </div>
       ${tribesHtml}
     </div>`;
@@ -1712,7 +1790,7 @@ export function rpBuildMonsterCashLeaderboard(ep) {
   const tribes = ep.tribesAtStart || gs.tribes || [];
   mc.leaderboard.forEach((entry, i) => {
     const isWinner = entry.name === mc.immunityWinner;
-    const capturedText = entry.capturedRound ? `Rd ${entry.capturedRound}` : 'Survived';
+    const capturedText = entry.capturedRound ? `SEC ${entry.capturedRound}` : 'SURVIVED';
     const capturedColor = entry.capturedRound ? '#888' : '#4caf50';
     const statusIcon = isWinner ? '🛡️' : '';
     const rowColor = isWinner ? 'rgba(76,175,80,0.1)' : 'transparent';
@@ -1729,10 +1807,14 @@ export function rpBuildMonsterCashLeaderboard(ep) {
     });
     tribeSection += '</div>';
   }
+  const totalCaptured = mc.leaderboard.filter(e => e.capturedRound).length;
+  const totalPop = mc.leaderboard.length;
+  const dmgPct = Math.round((totalCaptured / Math.max(totalPop, 1)) * 100);
   const content = `
     <div style="padding:16px;">
-      <div class="mc-clapperboard" style="margin-bottom:12px;">INCIDENT REPORT — SURVIVAL LOG</div>
-      <div style="display:flex;align-items:center;gap:8px;padding:4px 8px;font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px;"><span style="width:20px;"></span><span style="width:32px;"></span><span style="flex:1;">Operative</span><span style="width:50px;text-align:center;">Caught</span><span style="width:50px;text-align:right;">Rating</span></div>
+      <div class="mc-ebs-header">INCIDENT REPORT \u2014 CLASSIFIED</div>
+      <div class="mc-damage-counter" style="margin-bottom:12px;">TOTAL CITY DAMAGE: ${dmgPct}% \u2014 ${totalCaptured} CASUALTIES / ${totalPop} CIVILIANS</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 8px;font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px;font-family:'Courier New',monospace;"><span style="width:20px;"></span><span style="width:32px;"></span><span style="flex:1;">Civilian</span><span style="width:50px;text-align:center;">Sector</span><span style="width:50px;text-align:right;">Rating</span></div>
       ${rows}
       ${tribeSection}
       <div style="text-align:center;margin-top:20px;font-size:11px;color:#555;font-style:italic;">"${mc.chrisCloser}"</div>

@@ -919,10 +919,12 @@
 
     /* ── Monster Cash — Emergency Broadcast / Surveillance ── */
     .mc-shell { position:relative; background:#0a0a0a; border:2px solid #2d2d2d; border-radius:8px; overflow:hidden; min-height:400px; }
-    .mc-monster-silhouette { position:absolute; top:10px; right:10px; opacity:0.08; font-size:80px; z-index:0; transition:opacity 0.5s, font-size 0.5s; }
-    .mc-monster-silhouette.threat-3 { opacity:0.15; font-size:100px; }
-    .mc-monster-silhouette.threat-4 { opacity:0.25; font-size:120px; }
-    .mc-monster-silhouette.threat-5 { opacity:0.4; font-size:150px; top:0; }
+    .mc-monster-silhouette { position:absolute; top:0; right:0; bottom:22px; left:0; z-index:0; pointer-events:none; overflow:hidden; }
+    .mc-kaiju { position:absolute; bottom:0; right:10px; width:120px; height:160px; opacity:0.06; transition:opacity 0.8s, width 0.8s, height 0.8s; }
+    .mc-monster-silhouette.threat-3 .mc-kaiju { opacity:0.1; width:160px; height:200px; }
+    .mc-monster-silhouette.threat-4 .mc-kaiju { opacity:0.18; width:200px; height:250px; }
+    .mc-monster-silhouette.threat-5 .mc-kaiju { opacity:0.3; width:260px; height:320px; }
+    .mc-kaiju svg { width:100%; height:100%; }
     .mc-film-grain { position:absolute; top:0; left:0; right:0; bottom:0; opacity:0.03; background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); pointer-events:none; z-index:4; }
     .mc-ticker { position:absolute; bottom:0; left:0; right:0; background:rgba(200,0,0,0.85); color:#fff; font-size:11px; font-family:'Courier New',monospace; padding:3px 0; z-index:2; overflow:hidden; white-space:nowrap; }
     .mc-ticker-text { display:inline-block; animation:mcTickerScroll 20s linear infinite; }
@@ -931,9 +933,9 @@
     .mc-rubble-portrait { width:24px; height:24px; border-radius:50%; border:1px solid #555; opacity:0.6; filter:grayscale(1); position:relative; }
     .mc-rubble-portrait::after { content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(255,0,0,0.3); border-radius:50%; }
     .mc-title-card { text-align:center; padding:40px 20px; position:relative; z-index:3; }
-    .mc-film-title { font-size:28px; font-weight:900; color:#e8e8e8; text-transform:uppercase; letter-spacing:3px; text-shadow:0 0 20px rgba(255,60,60,0.5), 2px 2px 0 #333; font-family:'Impact','Arial Black',sans-serif; }
+    .mc-film-title { font-size:32px; font-weight:900; color:#e8e8e8; text-transform:uppercase; letter-spacing:4px; text-shadow:0 0 30px rgba(255,60,60,0.6), 0 0 60px rgba(255,30,30,0.2), 3px 3px 0 #333; font-family:'Impact','Arial Black',sans-serif; line-height:1.2; }
     .mc-now-playing { font-size:11px; color:#888; letter-spacing:4px; text-transform:uppercase; margin-bottom:8px; }
-    .mc-cam-label { font-size:10px; color:#ff3333; font-family:'Courier New',monospace; letter-spacing:2px; display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+    .mc-cam-label { font-size:13px; color:#ff3333; font-family:'Courier New',monospace; letter-spacing:2px; display:flex; align-items:center; gap:8px; margin-bottom:6px; }
     .mc-cam-dot { width:8px; height:8px; border-radius:50%; background:#f00; animation:mcCamBlink 1.5s infinite; }
     @keyframes mcCamBlink { 0%,100%{opacity:1} 50%{opacity:0.2} }
     .mc-threat-bar { display:flex; align-items:center; gap:6px; margin:8px 0; }
@@ -945,25 +947,29 @@
     .mc-threat-4 { width:80%; background:#f44336; }
     .mc-threat-5 { width:100%; background:#b71c1c; box-shadow:0 0 8px rgba(183,28,28,0.5); }
     .mc-location-header { font-size:12px; color:#ff9800; text-transform:uppercase; letter-spacing:2px; border-bottom:1px solid rgba(255,152,0,0.2); padding-bottom:4px; margin:12px 0 8px; }
-    .mc-prowl-text { font-size:12px; color:#999; font-style:italic; padding:6px 8px; margin:6px 0; border-left:3px solid rgba(255,60,60,0.3); background:rgba(255,60,60,0.03); border-radius:0 4px 4px 0; }
-    .mc-env-text { font-size:12px; color:#888; padding:4px 8px; margin:4px 0; border-left:2px solid rgba(255,152,0,0.3); }
-    .mc-event-card { display:flex; align-items:flex-start; gap:8px; padding:8px; margin:4px 0; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); }
+    .mc-prowl-text { font-size:14px; color:#999; font-style:italic; padding:8px 12px; margin:8px 0; border-left:3px solid rgba(255,60,60,0.3); background:rgba(255,60,60,0.03); border-radius:0 4px 4px 0; line-height:1.6; }
+    .mc-env-text { font-size:14px; color:#888; padding:6px 12px; margin:6px 0; border-left:2px solid rgba(255,152,0,0.3); line-height:1.5; }
+    .mc-event-card { display:flex; align-items:flex-start; gap:12px; padding:12px 14px; margin:6px 0; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); }
     .mc-event-card.mc-heroic { border-color:rgba(76,175,80,0.2); background:rgba(76,175,80,0.04); }
     .mc-event-card.mc-sabotage { border-color:rgba(244,67,54,0.2); background:rgba(244,67,54,0.04); }
     .mc-event-card.mc-comedy { border-color:rgba(255,193,7,0.2); background:rgba(255,193,7,0.04); }
     .mc-event-card.mc-showmance { border-color:rgba(233,30,99,0.2); background:rgba(233,30,99,0.04); }
-    .mc-event-narrative { flex:1; font-size:12px; color:#ccc; line-height:1.5; }
-    .mc-event-pts { font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px; font-family:'Courier New',monospace; white-space:nowrap; }
+    .mc-event-portraits { display:flex; gap:6px; flex-shrink:0; align-items:center; }
+    .mc-event-multi { padding:14px 16px; }
+    .mc-event-multi .mc-event-portraits { flex-direction:column; gap:4px; }
+    .mc-event-narrative { flex:1; font-size:14px; color:#ccc; line-height:1.6; }
+    .mc-event-pts { font-size:13px; font-weight:700; padding:3px 8px; border-radius:4px; font-family:'Courier New',monospace; white-space:nowrap; }
     .mc-pts-pos { color:#4caf50; background:rgba(76,175,80,0.12); }
     .mc-pts-neg { color:#f44336; background:rgba(244,67,54,0.12); }
-    .mc-capture-card { border:2px solid rgba(244,67,54,0.4); background:rgba(244,67,54,0.08); padding:12px; border-radius:8px; margin:10px 0; }
-    .mc-capture-beat { font-size:12px; color:#ccc; line-height:1.6; margin:4px 0; padding-left:12px; border-left:2px solid rgba(244,67,54,0.3); }
-    .mc-captured-label { font-size:14px; font-weight:900; color:#f44336; letter-spacing:3px; text-transform:uppercase; text-align:center; margin-bottom:8px; }
-    .mc-survivors-count { font-size:13px; color:#ff9800; font-weight:700; text-align:center; margin:8px 0; }
-    .mc-chris-line { font-size:11px; color:#888; font-style:italic; padding:4px 8px; border-left:2px solid #555; margin:6px 0; }
-    .mc-rescue-card { border:2px solid rgba(76,175,80,0.3); background:rgba(76,175,80,0.05); padding:10px; border-radius:8px; margin:8px 0; }
-    .mc-rescue-beat { font-size:12px; color:#ccc; line-height:1.6; margin:3px 0; }
-    .mc-last-chance { border:2px solid rgba(255,152,0,0.3); background:rgba(255,152,0,0.05); padding:8px; border-radius:8px; margin:8px 0; font-size:12px; color:#ccc; }
+    .mc-capture-card { border:2px solid rgba(244,67,54,0.4); background:rgba(244,67,54,0.08); padding:16px; border-radius:10px; margin:12px 0; position:relative; overflow:hidden; }
+    .mc-capture-card::after { content:''; position:absolute; top:-10px; right:10px; width:60px; height:120%; opacity:0.08; background:repeating-linear-gradient(135deg, transparent 0px, transparent 8px, #f44336 8px, #f44336 10px, transparent 10px, transparent 20px); pointer-events:none; }
+    .mc-capture-beat { font-size:14px; color:#ccc; line-height:1.6; margin:5px 0; padding-left:14px; border-left:2px solid rgba(244,67,54,0.3); }
+    .mc-captured-label { font-size:15px; font-weight:900; color:#f44336; letter-spacing:3px; text-transform:uppercase; text-align:center; margin-bottom:8px; }
+    .mc-survivors-count { font-size:15px; color:#ff9800; font-weight:700; text-align:center; margin:10px 0; }
+    .mc-chris-line { font-size:13px; color:#888; font-style:italic; padding:6px 10px; border-left:2px solid #555; margin:8px 0; line-height:1.5; }
+    .mc-rescue-card { border:2px solid rgba(76,175,80,0.3); background:rgba(76,175,80,0.05); padding:14px; border-radius:10px; margin:10px 0; }
+    .mc-rescue-beat { font-size:14px; color:#ccc; line-height:1.6; margin:4px 0; }
+    .mc-last-chance { border:2px solid rgba(255,152,0,0.3); background:rgba(255,152,0,0.05); padding:12px 14px; border-radius:8px; margin:10px 0; font-size:14px; color:#ccc; line-height:1.6; }
     @keyframes mcShakeLight { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-2px); } 75% { transform:translateX(2px); } }
     @keyframes mcShakeMedium { 0%,100% { transform:translateX(0); } 20% { transform:translate(-4px,-2px); } 40% { transform:translate(3px,1px); } 60% { transform:translate(-3px,2px); } 80% { transform:translate(4px,-1px); } }
     @keyframes mcShakeHeavy { 0%,100% { transform:translate(0); } 10% { transform:translate(-6px,-3px); } 20% { transform:translate(5px,2px); } 30% { transform:translate(-4px,4px); } 40% { transform:translate(6px,-2px); } 50% { transform:translate(-5px,3px); } 60% { transform:translate(4px,-4px); } 70% { transform:translate(-3px,5px); } 80% { transform:translate(6px,-1px); } 90% { transform:translate(-2px,3px); } }
@@ -981,12 +987,82 @@
     .mc-vhs-distortion { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index:5; opacity:0; background:repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.01) 3px, rgba(255,255,255,0.01) 4px); }
     .mc-vhs-distortion.active { opacity:1; animation:mcVhsFlicker 3s infinite; }
     @keyframes mcVhsFlicker { 0%,94%,100%{opacity:0.3} 95%{opacity:0.6} 97%{opacity:0.2} }
-    .mc-clapperboard { text-align:center; padding:12px; background:#1a1a1a; border:2px solid #333; margin:8px 0; border-radius:4px; font-family:'Courier New',monospace; font-size:11px; color:#aaa; letter-spacing:2px; text-transform:uppercase; }
+    .mc-clapperboard { text-align:center; padding:14px; background:#1a1a1a; border:2px solid #333; margin:10px 0; border-radius:4px; font-family:'Courier New',monospace; font-size:13px; color:#aaa; letter-spacing:2px; text-transform:uppercase; }
     @keyframes mcScanIn { 0% { opacity:0; transform:translateY(12px); } 100% { opacity:1; transform:translateY(0); } }
     .mc-scan-in { animation: mcScanIn 0.35s ease-out both; }
     @keyframes mcCaptureFlash { 0% { box-shadow:0 0 0 0 rgba(244,67,54,0.6); } 50% { box-shadow:0 0 20px 4px rgba(244,67,54,0.4); } 100% { box-shadow:0 0 0 0 rgba(244,67,54,0); } }
     .mc-capture-flash { animation: mcCaptureFlash 0.6s ease-out; }
     .mc-controls-sticky { position:sticky; bottom:0; z-index:10; padding:12px 0 8px; background:linear-gradient(transparent, #0a0a0a 30%); text-align:center; }
+
+    /* ── Monster Cash: Kaiju Destruction Overdrive ── */
+    .mc-skyline { position:absolute; bottom:22px; left:0; right:0; height:80px; z-index:1; display:flex; align-items:flex-end; justify-content:space-between; padding:0 2px; pointer-events:none; overflow:hidden; }
+    .mc-building { background:#151515; border:1px solid #252525; border-bottom:none; position:relative; transition:transform 1.2s cubic-bezier(.36,.07,.19,.97), opacity 0.8s; transform-origin:bottom center; flex-shrink:0; }
+    .mc-building.destroyed { transform:rotate(var(--fall-dir, 8deg)) translateY(10px); opacity:0.35; }
+    .mc-building.destroyed::after { content:''; position:absolute; top:-8px; left:50%; transform:translateX(-50%); width:12px; height:12px; background:radial-gradient(circle, #ff6600 0%, #ff3300 50%, transparent 70%); border-radius:50%; animation:mcFireFlicker 0.8s infinite alternate; }
+    @keyframes mcFireFlicker { 0% { opacity:0.6; transform:translateX(-50%) scale(1); } 100% { opacity:1; transform:translateX(-50%) scale(1.4); } }
+    .mc-building:nth-child(odd).destroyed { --fall-dir:-11deg; }
+    .mc-building:nth-child(even).destroyed { --fall-dir:9deg; }
+    .mc-building:nth-child(3n).destroyed { --fall-dir:-5deg; }
+    .mc-building:nth-child(5n).destroyed { --fall-dir:14deg; }
+    .mc-skyline-kaiju { flex-shrink:0; opacity:0.7; position:relative; bottom:0; }
+
+    .mc-defcon { display:flex; align-items:center; gap:8px; margin:8px 0; padding:6px 10px; background:rgba(255,0,0,0.04); border:1px solid rgba(255,0,0,0.12); border-radius:4px; }
+    .mc-defcon-label { font-size:11px; font-weight:900; font-family:'Courier New',monospace; letter-spacing:2px; text-transform:uppercase; min-width:90px; }
+    .mc-defcon-1 .mc-defcon-label { color:#b71c1c; animation:mcDefconPulse 0.8s infinite; }
+    .mc-defcon-2 .mc-defcon-label { color:#f44336; animation:mcDefconPulse 1.2s infinite; }
+    .mc-defcon-3 .mc-defcon-label { color:#ff5722; }
+    .mc-defcon-4 .mc-defcon-label { color:#ff9800; }
+    .mc-defcon-5 .mc-defcon-label { color:#4caf50; }
+    .mc-defcon-pips { display:flex; gap:3px; flex:1; }
+    .mc-defcon-pip { height:8px; flex:1; border-radius:2px; background:rgba(255,255,255,0.06); transition:background 0.5s, box-shadow 0.5s; }
+    .mc-defcon-1 .mc-defcon-pip { background:#b71c1c; box-shadow:0 0 6px rgba(183,28,28,0.5); }
+    .mc-defcon-2 .mc-defcon-pip:nth-child(-n+4) { background:#f44336; box-shadow:0 0 4px rgba(244,67,54,0.3); }
+    .mc-defcon-3 .mc-defcon-pip:nth-child(-n+3) { background:#ff5722; }
+    .mc-defcon-4 .mc-defcon-pip:nth-child(-n+2) { background:#ff9800; }
+    .mc-defcon-5 .mc-defcon-pip:nth-child(1) { background:#4caf50; }
+    @keyframes mcDefconPulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+    .mc-seismograph { height:28px; margin:6px 0; position:relative; overflow:hidden; border:1px solid rgba(76,175,80,0.12); border-radius:3px; background:rgba(0,0,0,0.3); }
+    .mc-seismo-line { position:absolute; top:0; left:0; width:200%; height:100%; animation:mcSeismoScroll 4s linear infinite; }
+    .mc-seismo-spike .mc-seismo-line { animation-duration:1.5s; }
+    .mc-seismo-spike { border-color:rgba(244,67,54,0.4); }
+    @keyframes mcSeismoScroll { 0% { transform:translateX(0); } 100% { transform:translateX(-50%); } }
+
+    .mc-shockwave { position:relative; overflow:visible; }
+    .mc-shockwave::before { content:''; position:absolute; top:50%; left:50%; width:0; height:0; border-radius:50%; border:2px solid rgba(244,67,54,0.5); transform:translate(-50%,-50%); animation:mcShockwaveRipple 0.8s ease-out forwards; pointer-events:none; z-index:10; }
+    @keyframes mcShockwaveRipple { 0% { width:0; height:0; opacity:1; } 100% { width:250px; height:250px; opacity:0; } }
+
+    .mc-ebs-bar { background:repeating-linear-gradient(90deg, #c00 0 8%, #ff0 8% 16%, #0a0 16% 24%, #06f 24% 32%, #c00 32% 40%, #ff0 40% 48%, #0a0 48% 56%, #06f 56% 64%, #c00 64% 72%, #ff0 72% 80%, #0a0 80% 88%, #06f 88% 100%); height:5px; border-radius:2px; }
+    .mc-ebs-header { font-size:10px; font-weight:900; font-family:'Courier New',monospace; color:#ff3333; letter-spacing:3px; text-align:center; padding:6px; border:1px solid rgba(255,51,51,0.25); background:rgba(255,0,0,0.06); margin:4px 0 8px; animation:mcEbsPulse 3s infinite; }
+    @keyframes mcEbsPulse { 0%,90%,100% { opacity:1; } 93% { opacity:0.2; } 96% { opacity:1; } }
+
+    .mc-siren { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index:2; }
+    .mc-siren-low { animation:mcSirenSlow 3s infinite; }
+    .mc-siren-high { animation:mcSirenFast 1.2s infinite; }
+    @keyframes mcSirenSlow { 0%,100% { box-shadow:inset 0 0 40px rgba(255,0,0,0.06); } 50% { box-shadow:inset 0 0 40px rgba(0,30,255,0.04); } }
+    @keyframes mcSirenFast { 0%,100% { box-shadow:inset 0 0 50px rgba(255,0,0,0.1); } 50% { box-shadow:inset 0 0 50px rgba(0,30,255,0.07); } }
+
+    .mc-damage-counter { font-size:10px; font-family:'Courier New',monospace; color:#ff5722; letter-spacing:1px; text-align:center; margin:4px 0; font-weight:700; }
+
+    .mc-news-chyron { position:absolute; bottom:0; left:0; right:0; z-index:2; }
+    .mc-chyron-bar { background:linear-gradient(90deg, #6b0000 0%, #b00 30%, #b00 70%, #6b0000 100%); padding:3px 0; display:flex; align-items:center; overflow:hidden; }
+    .mc-chyron-label { display:inline-block; background:#fff; color:#b00; font-size:9px; font-weight:900; padding:2px 8px; margin:0 8px; letter-spacing:1px; flex-shrink:0; }
+    .mc-chyron-text { color:#fff; font-size:11px; font-family:'Courier New',monospace; white-space:nowrap; animation:mcTickerScroll 22s linear infinite; }
+
+    .mc-threat-escalation { text-align:center; padding:16px; background:rgba(255,0,0,0.06); border:2px solid rgba(255,0,0,0.25); margin:12px 0; border-radius:4px; position:relative; overflow:hidden; }
+    .mc-threat-escalation::before { content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:repeating-linear-gradient(45deg, transparent 0, transparent 10px, rgba(255,0,0,0.03) 10px, rgba(255,0,0,0.03) 12px); pointer-events:none; }
+    .mc-threat-escalation-label { font-size:14px; font-weight:900; font-family:'Courier New',monospace; color:#f44336; letter-spacing:3px; animation:mcDefconPulse 1s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mc-building.destroyed { transition:opacity 0.3s; transform:none; }
+      .mc-building.destroyed::after { animation:none; }
+      .mc-seismo-line { animation:none; }
+      .mc-siren, .mc-siren-low, .mc-siren-high { animation:none; }
+      .mc-shockwave::before { animation:none; display:none; }
+      .mc-ebs-header { animation:none; }
+      .mc-defcon-1 .mc-defcon-label, .mc-defcon-2 .mc-defcon-label { animation:none; }
+      .mc-chyron-text { animation:none; }
+    }
 
     /* ── Lucky Hunt Overdrive (Dark Pirate Treasure Map) ── */
     @keyframes lhSlideIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
@@ -2737,6 +2813,13 @@
               <button class="fd-filter-btn" data-filter="returns" onclick="setTwistFilter('returns')">Returns <span id="fd-count-returns"></span></button>
               <button class="fd-filter-btn" data-filter="advantages" onclick="setTwistFilter('advantages')">Advantages <span id="fd-count-advantages"></span></button>
               <button class="fd-filter-btn" data-filter="social" onclick="setTwistFilter('social')">Social <span id="fd-count-social"></span></button>
+            </div>
+            <div id="fd-chal-subfilters" class="fd-filters" style="display:none; padding-top:5px; background: color-mix(in srgb, var(--surface) 60%, var(--bg)); border-top: none;">
+              <span style="font-size:10px;color:var(--muted);align-self:center;margin-right:2px;font-weight:600;letter-spacing:.5px">SERIES</span>
+              <button class="fd-filter-btn active" data-chal-series="all" onclick="setChalSeries('all')">All <span id="fd-chal-count-all"></span></button>
+              <button class="fd-filter-btn" data-chal-series="island" onclick="setChalSeries('island')">🏝️ Island <span id="fd-chal-count-island"></span></button>
+              <button class="fd-filter-btn" data-chal-series="action" onclick="setChalSeries('action')">🎬 Action <span id="fd-chal-count-action"></span></button>
+              <button class="fd-filter-btn" data-chal-series="world-tour" onclick="setChalSeries('world-tour')">✈️ World Tour <span id="fd-chal-count-world-tour"></span></button>
             </div>
             <div class="fd-twist-instructions" id="fd-instructions">Click episodes to select them, then choose twists to apply.</div>
             <div id="fd-catalog" class="fd-catalog"></div>

@@ -82,6 +82,7 @@ Every challenge event that's heroic, villainous, cowardly, or selfless must affe
 - Skip main `updateChalRecord` (add to skip list)
 - Showmance moments if challenge has downtime/partner interaction/danger
 - Popularity changes for heroic/villain/coward moments
+- `chalSeries` in TWIST_CATALOG entry — every challenge from a specific show MUST have an origin series (`'island'`, `'action'`, `'world-tour'`, `'revenge'`, `'all-stars'`, `'pahkitew'`, `'ridonculous'`, `'dc1'`–`'dc5'`). If a challenge is an original mechanic with no show origin, omit `chalSeries`.
 
 ### Scoring Balance
 Tribe scores: averages per member, NEVER raw sums.

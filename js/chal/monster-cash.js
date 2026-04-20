@@ -998,6 +998,12 @@ function _buildPool(name, survivors, threatLevel, location, capturedPool, usedId
   addPool(COMEDY_ENCOUNTERS, 'comedy');
   addPool(PANIC_ENCOUNTERS, 'panic');
 
+  // Boost negative event weights so they fire more often
+  for (const p of pool) {
+    if (p.type === 'panic' || p.type === 'comedy') p.weight *= 2.0;
+    if (p.type === 'sabotage' || p.type === 'scheming') p.weight *= 1.5;
+  }
+
   return pool;
 }
 
@@ -1007,7 +1013,7 @@ function _selectEncounters(name, survivors, threatLevel, location, capturedPool,
   const pool = _buildPool(name, survivors, threatLevel, location, capturedPool, roundUsedIds);
   if (pool.length === 0) return [];
 
-  const eventCount = 2 + (Math.random() < 0.3 ? 1 : 0);
+  const eventCount = 1 + (Math.random() < 0.4 ? 1 : 0);
   const events = [];
 
   for (let i = 0; i < eventCount; i++) {
@@ -1109,7 +1115,7 @@ function _selectEnvironmentalEvents(threatLevel, roundNum) {
 export function simulateMonsterCash(ep) {
   const active = [...gs.activePlayers];
   const isMerged = gs.isMerged;
-  const totalRounds = Math.max(3, active.length - 2);
+  const totalRounds = Math.min(10, Math.max(3, active.length - 2));
   const minSurvivors = isMerged ? 2 : 1;
 
   const filmTitle = _pickText(FILM_TITLES, ep.num + active.join(''));
@@ -1183,12 +1189,13 @@ export function simulateMonsterCash(ep) {
     }
 
     // ── Capture resolution with last-chance beat ──
-    let captured = null;
-    let captureSequence = null;
+    const captures = [];
     let rescueSequence = null;
     let lastChance = null;
 
-    if (survivors.length > minSurvivors) {
+    const capturesThisRound = threatLevel <= 2 ? 1 : threatLevel <= 3 ? (Math.random() < 0.4 ? 2 : 1) : threatLevel === 4 ? 2 : (Math.random() < 0.5 ? 3 : 2);
+
+    for (let ci = 0; ci < capturesThisRound && survivors.length > minSurvivors; ci++) {
       const catchScores = {};
       for (const name of survivors) {
         const roundScore = roundEvents.filter(e => e.player === name && !e.negative).reduce((s, e) => s + e.points, 0);
@@ -1204,56 +1211,57 @@ export function simulateMonsterCash(ep) {
 
       let target = sorted[0];
 
-      const ts = pStats(target);
-      const tp = pronouns(target);
-      let lastChanceStat = null;
-      let lastChanceChance = 0;
-      if (ts.physical >= 7) { lastChanceStat = 'physical'; lastChanceChance = ts.physical * 0.08; }
-      else if (ts.mental >= 7) { lastChanceStat = 'mental'; lastChanceChance = ts.mental * 0.06; }
-      else if (ts.boldness >= 7) { lastChanceStat = 'boldness'; lastChanceChance = ts.boldness * 0.05; }
+      if (ci === 0) {
+        const ts = pStats(target);
+        const tp = pronouns(target);
+        let lastChanceStat = null;
+        let lastChanceChance = 0;
+        if (ts.physical >= 7) { lastChanceStat = 'physical'; lastChanceChance = ts.physical * 0.08; }
+        else if (ts.mental >= 7) { lastChanceStat = 'mental'; lastChanceChance = ts.mental * 0.06; }
+        else if (ts.boldness >= 7) { lastChanceStat = 'boldness'; lastChanceChance = ts.boldness * 0.05; }
 
-      if (lastChanceStat && threatLevel < 5) {
-        const escaped = Math.random() < lastChanceChance;
-        const beatPool = LAST_CHANCE_BEATS[lastChanceStat];
-        const beatText = _pickText(beatPool, target)(target, tp, escaped);
-        lastChance = { player: target, stat: lastChanceStat, escaped, text: beatText };
-        if (escaped) { scores[target] = (scores[target] || 0) + 2; target = sorted[1] || null; }
+        if (lastChanceStat && threatLevel < 5) {
+          const escaped = Math.random() < lastChanceChance;
+          const beatPool = LAST_CHANCE_BEATS[lastChanceStat];
+          const beatText = _pickText(beatPool, target)(target, tp, escaped);
+          lastChance = { player: target, stat: lastChanceStat, escaped, text: beatText };
+          if (escaped) { scores[target] = (scores[target] || 0) + 2; target = sorted[1] || null; }
+        }
+      }
+
+      if (target && ci === 0 && threatLevel < 5) {
+        const potentialRescuers = survivors.filter(p => {
+          if (p === target) return false;
+          const s = pStats(p);
+          return s.loyalty >= 5 && getBond(p, target) >= 3;
+        });
+        if (potentialRescuers.length > 0 && Math.random() < 0.4) {
+          const rescuer = potentialRescuers[Math.floor(Math.random() * potentialRescuers.length)];
+          const rs = pStats(rescuer);
+          const rescueChance = rs.loyalty * 0.08 + getBond(rescuer, target) * 0.05;
+          const success = Math.random() < rescueChance;
+          rescueSequence = _buildRescueSequence(rescuer, target, success);
+          if (success) { scores[rescuer] = (scores[rescuer] || 0) - 2; addBond(rescuer, target, 3); if (!gs.popularity) gs.popularity = {}; gs.popularity[rescuer] = (gs.popularity[rescuer] || 0) + 2; target = null; }
+        }
       }
 
       if (target) {
-        if (threatLevel < 5) {
-          const potentialRescuers = survivors.filter(p => {
-            if (p === target) return false;
-            const s = pStats(p);
-            return s.loyalty >= 5 && getBond(p, target) >= 3;
-          });
-          if (potentialRescuers.length > 0 && Math.random() < 0.4) {
-            const rescuer = potentialRescuers[Math.floor(Math.random() * potentialRescuers.length)];
-            const rs = pStats(rescuer);
-            const rescueChance = rs.loyalty * 0.08 + getBond(rescuer, target) * 0.05;
-            const success = Math.random() < rescueChance;
-            rescueSequence = _buildRescueSequence(rescuer, target, success);
-            if (success) { scores[rescuer] = (scores[rescuer] || 0) - 2; addBond(rescuer, target, 3); if (!gs.popularity) gs.popularity = {}; gs.popularity[rescuer] = (gs.popularity[rescuer] || 0) + 2; target = null; }
-          }
-        }
-        if (target) {
-          captured = target;
-          captureSequence = _buildCaptureSequence(target, threatLevel);
-          survivors = survivors.filter(p => p !== captured);
-          capturedOrder.push(captured);
-          catchBoosts[captured] = 0;
-        }
+        const captureSeq = _buildCaptureSequence(target, threatLevel);
+        captures.push({ name: target, captureSequence: captureSeq });
+        survivors = survivors.filter(p => p !== target);
+        capturedOrder.push(target);
+        catchBoosts[target] = 0;
       }
     }
 
-    if (capturedOrder.length === 1 && !actBreaks.includes(r)) actBreaks.push(r);
-    if (survivors.length === 3 && !actBreaks.some(a => typeof a === 'number' && a > 0)) actBreaks.push(r);
+    if (capturedOrder.length >= 1 && capturedOrder.length <= 2 && !actBreaks.includes(r)) actBreaks.push(r);
+    if (survivors.length <= 4 && !actBreaks.some(a => typeof a === 'number' && a > 0)) actBreaks.push(r);
 
     rounds.push({
       roundNum: r + 1, threatLevel, threatName: THREAT_NAMES[threatLevel - 1],
       location: location.name, locationId: location.id,
       monsterProwl, environmentalEvents,
-      events: roundEvents, captured, captureSequence, rescueSequence, lastChance,
+      events: roundEvents, captures, rescueSequence, lastChance,
       survivors: [...survivors], chrisLine,
     });
   }
@@ -1347,9 +1355,11 @@ export function _textMonsterCash(ep, ln, sec) {
     ln('');
     if (round.lastChance) { ln(`LAST CHANCE: ${round.lastChance.text}`); ln(''); }
     if (round.rescueSequence) { const rs = round.rescueSequence; ln(`RESCUE ATTEMPT:`); ln(rs.approach); ln(rs.action); ln(''); }
-    if (round.captured && round.captureSequence) {
-      const cs = round.captureSequence;
-      ln(`CAPTURED: ${round.captured}`); ln(cs.approach); ln(cs.reaction); ln(cs.grab); ln(cs.aftermath); ln('');
+    if (round.captures?.length) {
+      for (const cap of round.captures) {
+        const cs = cap.captureSequence;
+        ln(`CAPTURED: ${cap.name}`); ln(cs.approach); ln(cs.grab); ln('');
+      }
     }
     ln(round.chrisLine);
     ln(`Survivors: ${round.survivors.join(', ')}`);
@@ -1491,21 +1501,23 @@ export function rpBuildMonsterCashRounds(ep) {
         </div>` });
     }
 
-    if (round.captured && round.captureSequence) {
-      const cs = round.captureSequence;
-      const name = round.captured;
-      const shakeClass = cs.tier === 'comedy' ? 'mc-capture-comedy' : cs.tier === 'tense' ? 'mc-capture-tense' : 'mc-capture-terror';
-      const portraitClass = cs.tier === 'comedy' ? '' : cs.tier === 'tense' ? 'mc-portrait-cracked' : 'mc-portrait-shatter';
-      steps.push({ captured: true, html: `
-        <div class="mc-capture-card ${shakeClass}">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <div class="${portraitClass}">${_mcPortrait(name, 56)}</div>
-            <div style="flex:1;">
-              <div class="mc-captured-label" style="text-align:left;margin-bottom:4px;">CAPTURED — ${name}</div>
-              <div style="font-size:12px;color:#ccc;line-height:1.5;">${cs.approach} ${cs.grab}</div>
+    if (round.captures?.length) {
+      for (const cap of round.captures) {
+        const cs = cap.captureSequence;
+        const name = cap.name;
+        const shakeClass = cs.tier === 'comedy' ? 'mc-capture-comedy' : cs.tier === 'tense' ? 'mc-capture-tense' : 'mc-capture-terror';
+        const portraitClass = cs.tier === 'comedy' ? '' : cs.tier === 'tense' ? 'mc-portrait-cracked' : 'mc-portrait-shatter';
+        steps.push({ captured: true, html: `
+          <div class="mc-capture-card ${shakeClass}">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="${portraitClass}">${_mcPortrait(name, 56)}</div>
+              <div style="flex:1;">
+                <div class="mc-captured-label" style="text-align:left;margin-bottom:4px;">CAPTURED — ${name}</div>
+                <div style="font-size:12px;color:#ccc;line-height:1.5;">${cs.approach} ${cs.grab}</div>
+              </div>
             </div>
-          </div>
-        </div>` });
+          </div>` });
+      }
     }
 
     steps.push({ html: `

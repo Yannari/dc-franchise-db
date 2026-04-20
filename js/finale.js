@@ -1864,7 +1864,7 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
     const pr = pronouns(f);
     const p = players.find(pl => pl.name === f);
     const arch = p?.archetype || 'floater';
-    let base = s.physical * 0.3 + s.endurance * 0.2 + s.boldness * 0.1 + (Math.random() * 3 - 1.5);
+    let base = s.physical * 0.20 + s.endurance * 0.15 + s.boldness * 0.08 + (Math.random() * 5 - 2.5);
 
     // Climbing narration — stat-driven opening beat
     const climbRating = s.physical * 0.4 + s.endurance * 0.3 + s.boldness * 0.3;
@@ -1932,7 +1932,7 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
     const asst = assistants?.[f];
     if (asst?.name) {
       const aS = asst.stats || pStats(asst.name);
-      const asstBoost = (aS.physical * 0.08 + aS.endurance * 0.04);
+      const asstBoost = (aS.physical * 0.18 + aS.endurance * 0.10);
       const sabChance = asst.bond < 0 ? Math.min(0.45, Math.abs(asst.bond) * 0.05) : 0;
       if (sabChance > 0 && Math.random() < sabChance) {
         base -= asstBoost * 1.5;
@@ -1962,7 +1962,7 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
   const flagSorted = Object.entries(flagpoleScores).sort(([,a],[,b]) => b - a);
   const flagWinner = flagSorted[0][0];
   const flagLoser = flagSorted.length > 1 ? flagSorted[flagSorted.length - 1][0] : flagWinner;
-  const flagCarryover = 1.0;
+  const flagCarryover = 0.5;
   scores[flagWinner] += flagCarryover;
 
   // Taunt — if finalists have negative bond, the leader taunts from above
@@ -2050,7 +2050,7 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
     const s = pStats(f);
     const pr = pronouns(f);
     const fArch = players.find(pl => pl.name === f)?.archetype || 'floater';
-    let base = s.endurance * 0.25 + s.mental * 0.2 + s.temperament * 0.15 + (Math.random() * 3 - 1.5);
+    let base = s.endurance * 0.18 + s.mental * 0.15 + s.temperament * 0.10 + (Math.random() * 5 - 2.5);
 
     // Beam narration — per-finalist crossing opening beat
     const balanceRating = s.endurance * 0.3 + s.mental * 0.3 + s.temperament * 0.4;
@@ -2178,7 +2178,7 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
     const asstBeam = assistants?.[f];
     if (asstBeam?.name) {
       const abS = asstBeam.stats || pStats(asstBeam.name);
-      const asstBoost = abS.mental * 0.05 + abS.social * 0.03;
+      const asstBoost = abS.mental * 0.12 + abS.social * 0.08;
       const sabChance = asstBeam.bond < 0 ? Math.min(0.45, Math.abs(asstBeam.bond) * 0.05) : 0;
       if (sabChance > 0 && Math.random() < sabChance) {
         base -= asstBoost * 1.2;
@@ -2324,10 +2324,10 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
     const pr = pronouns(f);
     const fP = players.find(pl => pl.name === f);
     const fArch = fP?.archetype || 'floater';
-    let base = s.physical * 0.2 + s.endurance * 0.25 + s.boldness * 0.1 + (Math.random() * 3 - 1.5);
+    let base = s.physical * 0.15 + s.endurance * 0.18 + s.boldness * 0.08 + (Math.random() * 5 - 2.5);
 
     // Carryover
-    base += scores[f] * 0.1;
+    base += scores[f] * 0.03;
 
     // Sprint narration — opening beat per finalist
     const sprintRating = s.physical * 0.4 + s.endurance * 0.3 + s.boldness * 0.3;
@@ -2486,7 +2486,7 @@ export function simulateRejectedOlympicRelay(finalists, assistants, benchAssignm
     const asstSprint = assistants?.[f];
     if (asstSprint?.name) {
       const aspS = asstSprint.stats || pStats(asstSprint.name);
-      const asstBoost = aspS.physical * 0.04 + aspS.endurance * 0.04;
+      const asstBoost = aspS.physical * 0.12 + aspS.endurance * 0.10;
       const sabChance = asstSprint.bond < 0 ? Math.min(0.45, Math.abs(asstSprint.bond) * 0.05) : 0;
       if (sabChance > 0 && Math.random() < sabChance) {
         base -= asstBoost * 1.5;

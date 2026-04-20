@@ -140,7 +140,7 @@ Tribe scores: averages per member, NEVER raw sums.
 | ID | Name | Key Mechanic |
 |---|---|---|
 | `basic-straining` | Basic Straining | Pre: first tribe to zero loses. Post: last standing wins immunity. |
-| `monster-cash` | Monster Cash | Monster movie hunt. Chef's animatronic prowls the film lot. Monster escalates through 5 threat levels (Awakening→Final Form). Capture events, rescues, sabotage. Pre-merge: tribe immunity by avg survival. Post-merge: last standing wins, lowest scorer auto-eliminated. |
+| `monster-cash` | Monster Cash | Monster movie hunt. Chef's animatronic prowls the film lot. Monster escalates through 5 threat levels (Awakening→Final Form). Capture events, rescues, sabotage. Pre-merge: tribe immunity by avg survival. Post-merge: last standing wins, normal tribal council follows. |
 
 ## Social Manipulation Camp Events (Standalone)
 Fires in ANY episode (not tied to a challenge). Rate: ~15% per eligible schemer per episode, boosted to ~40% during Lucky Hunt.

@@ -1408,14 +1408,16 @@ function _mcThreatBar(level) {
 export function rpBuildMonsterCashTitleCard(ep) {
   const mc = ep.monsterCash;
   if (!mc) return '';
+  const totalPlayers = mc.leaderboard.length;
   const content = `
     <div class="mc-title-card">
-      <div class="mc-cam-label"><span class="mc-cam-dot"></span> ALERT — CONTAINMENT BREACH</div>
-      <div class="mc-film-title">${mc.filmTitle}</div>
-      <div style="margin:16px 0;font-size:12px;color:#666;">A Chris McLean Production</div>
-      <div style="font-size:12px;color:#aaa;max-width:400px;margin:0 auto;">"${mc.chrisOpener}"</div>
-      <div style="margin-top:20px;font-size:11px;color:#555;letter-spacing:1.5px;text-transform:uppercase;">
-        ${mc.rounds.length} Rounds &middot; ${(gs.activePlayers?.length || 0) + mc.capturedOrder.length} Contestants &middot; 1 Monster
+      <div class="mc-film-title" style="margin-bottom:12px;">${mc.filmTitle}</div>
+      <div style="font-size:12px;color:#aaa;max-width:420px;margin:0 auto;line-height:1.6;">
+        Chef's animatronic monster is loose on the film lot. ${totalPlayers} contestants must survive round by round as the monster escalates from clumsy to unstoppable. Last one standing wins immunity.
+      </div>
+      <div style="margin-top:16px;font-size:12px;color:#ff5722;font-weight:700;">"${mc.chrisOpener}"</div>
+      <div style="margin-top:16px;display:flex;justify-content:center;gap:16px;font-size:11px;color:#666;">
+        <span>${mc.rounds.length} Rounds</span><span>${totalPlayers} Contestants</span><span>5 Threat Levels</span>
       </div>
     </div>`;
   return _mcShell(content, ep, 1);
@@ -1445,17 +1447,24 @@ export function rpBuildMonsterCashRounds(ep) {
     ` });
 
     if (round.environmentalEvents?.length) {
-      for (const env of round.environmentalEvents) {
-        steps.push({ html: `<div class="mc-env-text">${env.text}</div>` });
-      }
+      steps.push({ html: round.environmentalEvents.map(env => `<div class="mc-env-text">${env.text}</div>`).join('') });
     }
 
-    for (const ev of round.events) {
-      const portrait = _mcPortrait(ev.player);
+    const priorityOrder = ['sabotage', 'scheming', 'heroic', 'showmance', 'comedy', 'confrontation', 'alliance', 'panic'];
+    const sorted = [...round.events].sort((a, b) => {
+      const ai = priorityOrder.indexOf(a.type); const bi = priorityOrder.indexOf(b.type);
+      const aPri = ai === -1 ? 99 : ai; const bPri = bi === -1 ? 99 : bi;
+      if (aPri !== bPri) return aPri - bPri;
+      return Math.abs(b.points) - Math.abs(a.points);
+    });
+    const highlights = sorted.slice(0, 4);
+
+    for (const ev of highlights) {
+      const portrait = _mcPortrait(ev.player, 40);
       const ptsClass = ev.negative ? 'mc-pts-neg' : 'mc-pts-pos';
       const ptsLabel = ev.negative ? `${ev.points}` : `+${ev.points}`;
       const typeClass = ev.type === 'heroic' ? 'mc-heroic' : (ev.type === 'sabotage' || ev.type === 'scheming') ? 'mc-sabotage' : ev.type === 'comedy' ? 'mc-comedy' : ev.type === 'showmance' ? 'mc-showmance' : '';
-      const targetPortrait = ev.target ? _mcPortrait(ev.target) : '';
+      const targetPortrait = ev.target ? _mcPortrait(ev.target, 40) : '';
       steps.push({ html: `
         <div class="mc-event-card ${typeClass}">
           ${portrait}${targetPortrait}
@@ -1510,8 +1519,9 @@ export function rpBuildMonsterCashRounds(ep) {
   const maxThreat = mc.rounds.reduce((max, r) => Math.max(max, r.threatLevel), 1);
 
   let inner = `<div class="mc-cam-label"><span class="mc-cam-dot"></span> SURVEILLANCE FEED — CLICK TO ADVANCE</div>`;
+  const totalPlayers = mc.leaderboard.length;
   inner += `<div style="display:flex;gap:16px;justify-content:center;font-size:12px;font-weight:700;letter-spacing:1px;margin:8px 0 12px;color:#aaa;">
-    <span>ALIVE: <span id="mc-alive-${stateKey}" style="color:#4caf50">${mc.capturedOrder.length + (mc.immunityWinner ? mc.leaderboard.length - mc.capturedOrder.length : 0)}</span></span>
+    <span>ALIVE: <span id="mc-alive-${stateKey}" data-initial="${totalPlayers}" style="color:#4caf50">${totalPlayers}</span></span>
     <span>CAPTURED: <span id="mc-caught-${stateKey}" style="color:#f44336">0</span></span>
   </div>`;
 
@@ -1577,16 +1587,36 @@ export function rpBuildMonsterCashShowdown(ep) {
   const mc = ep.monsterCash;
   if (!mc?.finalShowdown) return '';
   const fs = mc.finalShowdown;
+  const winner = fs.winner;
+  const loser = fs.winner === fs.survivor1 ? fs.survivor2 : fs.survivor1;
+  const wp = pronouns(winner);
+  const lp = pronouns(loser);
+
+  const winnerStats = pStats(winner);
+  let winNarrative = '';
+  if (winnerStats.physical >= 7) winNarrative = `${winner} is faster. ${wp.Sub} always ${wp.sub === 'they' ? 'were' : 'was'}. While ${loser} stumbles through debris, ${winner} vaults it clean and disappears into the lot.`;
+  else if (winnerStats.mental >= 7) winNarrative = `The monster charges them both. ${winner} feints left, goes right. ${loser} follows the feint. The monster follows ${loser}. ${winner} is gone.`;
+  else if (winnerStats.strategic >= 7) winNarrative = `${winner} planned for this. A pre-rigged distraction, a hidden escape route. When the monster came, ${wp.sub} ${wp.sub === 'they' ? 'were' : 'was'} already three steps ahead.`;
+  else winNarrative = `The monster can only catch one. It goes for ${loser}. ${winner} runs. Doesn't look back. Doesn't stop until the sirens go silent.`;
+
   const content = `
-    <div style="text-align:center;padding:20px;">
-      <div class="mc-cam-label" style="justify-content:center;"><span class="mc-cam-dot"></span> LAST TWO FEEDS ACTIVE</div>
-      <div style="display:flex;justify-content:center;align-items:center;gap:20px;margin:20px 0;">
-        <div style="text-align:center;">${_mcPortrait(fs.survivor1, 80)}<div style="font-size:14px;color:#e8e8e8;margin-top:8px;font-weight:700;">${fs.survivor1}</div><div style="font-size:11px;color:#888;">Score: ${(mc.scores[fs.survivor1] || 0).toFixed(1)}</div></div>
+    <div style="text-align:center;padding:24px;">
+      <div style="font-size:11px;color:#f44336;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;">FINAL SHOWDOWN</div>
+      <div style="display:flex;justify-content:center;align-items:center;gap:24px;margin:20px 0;">
+        <div style="text-align:center;">${_mcPortrait(fs.survivor1, 80)}<div style="font-size:14px;color:#e8e8e8;margin-top:8px;font-weight:700;">${fs.survivor1}</div></div>
         <div style="font-size:28px;color:#ff5722;font-weight:900;">VS</div>
-        <div style="text-align:center;">${_mcPortrait(fs.survivor2, 80)}<div style="font-size:14px;color:#e8e8e8;margin-top:8px;font-weight:700;">${fs.survivor2}</div><div style="font-size:11px;color:#888;">Score: ${(mc.scores[fs.survivor2] || 0).toFixed(1)}</div></div>
+        <div style="text-align:center;">${_mcPortrait(fs.survivor2, 80)}<div style="font-size:14px;color:#e8e8e8;margin-top:8px;font-weight:700;">${fs.survivor2}</div></div>
       </div>
-      <div style="font-size:13px;color:#ccc;margin-top:12px;max-width:400px;margin-left:auto;margin-right:auto;">The monster bears down on the last two survivors. Only one can escape.</div>
-      <div style="font-size:14px;color:#ff9800;margin-top:16px;font-weight:700;">${fs.method}</div>
+      <div style="font-size:13px;color:#ccc;margin:16px auto;max-width:420px;line-height:1.6;text-align:left;padding:12px;border-left:3px solid #ff5722;background:rgba(255,87,34,0.05);border-radius:0 6px 6px 0;">
+        The monster rounds the final corner. Two survivors. One monster. No more hiding spots. No more tricks. This ends now.
+      </div>
+      <div style="font-size:13px;color:#aaa;margin:12px auto;max-width:420px;line-height:1.6;text-align:left;">
+        ${winNarrative}
+      </div>
+      <div style="margin-top:16px;padding:12px;background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);border-radius:8px;">
+        <div style="font-size:11px;color:#4caf50;letter-spacing:2px;margin-bottom:4px;">IMMUNITY WINNER</div>
+        <div style="font-size:18px;color:#e8e8e8;font-weight:900;">${winner}</div>
+      </div>
     </div>`;
   return _mcShell(content, ep, 5);
 }

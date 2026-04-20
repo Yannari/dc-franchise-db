@@ -982,6 +982,11 @@
     .mc-vhs-distortion.active { opacity:1; animation:mcVhsFlicker 3s infinite; }
     @keyframes mcVhsFlicker { 0%,94%,100%{opacity:0.3} 95%{opacity:0.6} 97%{opacity:0.2} }
     .mc-clapperboard { text-align:center; padding:12px; background:#1a1a1a; border:2px solid #333; margin:8px 0; border-radius:4px; font-family:'Courier New',monospace; font-size:11px; color:#aaa; letter-spacing:2px; text-transform:uppercase; }
+    @keyframes mcScanIn { 0% { opacity:0; transform:translateY(12px); } 100% { opacity:1; transform:translateY(0); } }
+    .mc-scan-in { animation: mcScanIn 0.35s ease-out both; }
+    @keyframes mcCaptureFlash { 0% { box-shadow:0 0 0 0 rgba(244,67,54,0.6); } 50% { box-shadow:0 0 20px 4px rgba(244,67,54,0.4); } 100% { box-shadow:0 0 0 0 rgba(244,67,54,0); } }
+    .mc-capture-flash { animation: mcCaptureFlash 0.6s ease-out; }
+    .mc-controls-sticky { position:sticky; bottom:0; z-index:10; padding:12px 0 8px; background:linear-gradient(transparent, #0a0a0a 30%); text-align:center; }
 
     /* ── Lucky Hunt Overdrive (Dark Pirate Treasure Map) ── */
     @keyframes lhSlideIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }

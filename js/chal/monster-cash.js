@@ -1381,31 +1381,22 @@ function _mcShell(content, ep, threatLevel) {
   const threatClass = `threat-${Math.min(threatLevel || 1, 5)}`;
   const tickerMessages = threatLevel <= 2 ? [
     'MONSTER SIGHTED IN SECTOR 7', 'ALL CONTESTANTS PROCEED TO SHELTER', 'SITUATION UNDER CONTROL',
-    'ANIMATRONIC CONTAINMENT ACTIVE', 'CHEF REPORTS MINOR TECHNICAL DIFFICULTIES',
   ] : threatLevel <= 3 ? [
-    'EVACUATION ROUTE BLOCKED', 'STRUCTURAL DAMAGE REPORTED ON STAGE 5', 'SITUATION ESCALATING',
-    'MONSTER HEADING TOWARD BACK LOT', 'EMERGENCY BROADCAST — STAY HIDDEN', 'PROP WAREHOUSE COMPROMISED',
+    'EVACUATION ROUTE BLOCKED', 'STRUCTURAL DAMAGE ON STAGE 5', 'MONSTER HEADING TOWARD BACK LOT',
   ] : [
-    'CHEF HAS LOST CONTROL OF THE ANIMATRONIC', 'THIS IS NOT A DRILL — REPEAT — NOT A DRILL',
-    'ALL SECTORS COMPROMISED', 'SIGNAL DEGRADING', 'CONTAINMENT FAILURE — TOTAL STRUCTURAL COLLAPSE',
-    'EMERGENCY SERVICES HAVE BEEN CONTACTED', 'EVACUATE IMMEDIATELY',
+    'CHEF HAS LOST CONTROL', 'THIS IS NOT A DRILL', 'ALL SECTORS COMPROMISED', 'EVACUATE IMMEDIATELY',
   ];
-  const ticker = tickerMessages.sort(() => Math.random() - 0.5).slice(0, 4).join('  ///  ');
-  const rubble = (mc?.capturedOrder || []).map(name => `<div class="mc-rubble-portrait">${_mcPortrait(name, 24)}</div>`).join('');
+  const ticker = tickerMessages.sort(() => Math.random() - 0.5).slice(0, 3).join('  ///  ');
 
   return `
     <div class="rp-page" style="background:#0a0a0a;padding:0;">
     <div class="mc-shell">
-      <div class="mc-film-grain"></div>
       <div class="mc-monster-silhouette ${threatClass}">🦎</div>
       ${threatLevel >= 4 ? '<div class="mc-emergency-flash"></div>' : ''}
-      ${threatLevel >= 3 ? `<div class="mc-vhs-distortion ${threatLevel >= 4 ? 'active' : ''}"></div>` : ''}
-      <div style="position:relative;z-index:3;padding:16px;">
+      <div style="position:relative;z-index:3;padding:20px 16px 32px;">
         ${content}
       </div>
-      <div class="mc-rubble-pile">${rubble}</div>
-      <div class="mc-ticker"><span class="mc-ticker-text">/// EMERGENCY BROADCAST /// ${ticker} ///</span></div>
-      <div class="mc-screen-crack ${threatLevel >= 4 ? 'active' : ''}" style="background:url('data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><line x1="180" y1="0" x2="200" y2="200" stroke="rgba(255,255,255,0.15)" stroke-width="1"/><line x1="200" y1="200" x2="220" y2="400" stroke="rgba(255,255,255,0.1)" stroke-width="1"/><line x1="200" y1="200" x2="280" y2="300" stroke="rgba(255,255,255,0.08)" stroke-width="1"/></svg>`)}') center/cover no-repeat;"></div>
+      <div class="mc-ticker"><span class="mc-ticker-text">/// ${ticker} ///</span></div>
     </div>
     </div>`;
 }
@@ -1530,8 +1521,8 @@ export function rpBuildMonsterCashRounds(ep) {
     inner += `<div id="mc-step-${stateKey}-${i}" data-captured="${capturedDelta}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
   });
 
-  inner += `<div id="mc-controls-${stateKey}"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
-    <button id="mc-btn-${stateKey}" onclick="window.monsterCashRevealNext('${stateKey}', ${steps.length})" style="padding:8px 24px;background:#ff5722;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;letter-spacing:1px;">NEXT ▶ (${state.idx + 2}/${steps.length})</button>
+  inner += `<div id="mc-controls-${stateKey}" class="mc-controls-sticky"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
+    <button id="mc-btn-${stateKey}" onclick="window.monsterCashRevealNext('${stateKey}', ${steps.length})" style="padding:10px 28px;background:#ff5722;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;letter-spacing:1px;font-size:13px;">NEXT ▶ (${state.idx + 2}/${steps.length})</button>
     <button onclick="window.monsterCashRevealAll('${stateKey}', ${steps.length})" style="padding:8px 16px;background:#333;color:#aaa;border:1px solid #555;border-radius:6px;cursor:pointer;margin-left:8px;font-size:11px;">Reveal All</button>
   </div>`;
 
@@ -1545,7 +1536,7 @@ export function monsterCashRevealNext(stateKey, totalSteps) {
   const nextIdx = state.idx + 1;
   if (nextIdx >= totalSteps) return;
   const el = document.getElementById(`mc-step-${stateKey}-${nextIdx}`);
-  if (el) { el.style.display = ''; el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  if (el) { el.style.display = ''; el.classList.add('mc-scan-in'); if (el.dataset.captured === '1') el.classList.add('mc-capture-flash'); el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
   state.idx = nextIdx;
   if (el) {
     const cap = parseInt(el.dataset.captured || '0');
@@ -1590,9 +1581,9 @@ export function rpBuildMonsterCashShowdown(ep) {
     <div style="text-align:center;padding:20px;">
       <div class="mc-cam-label" style="justify-content:center;"><span class="mc-cam-dot"></span> LAST TWO FEEDS ACTIVE</div>
       <div style="display:flex;justify-content:center;align-items:center;gap:20px;margin:20px 0;">
-        <div style="text-align:center;">${_mcPortrait(fs.survivor1, 64)}<div style="font-size:13px;color:#e8e8e8;margin-top:6px;font-weight:700;">${fs.survivor1}</div><div style="font-size:11px;color:#888;">Score: ${(mc.scores[fs.survivor1] || 0).toFixed(1)}</div></div>
-        <div style="font-size:24px;color:#ff5722;font-weight:900;">VS</div>
-        <div style="text-align:center;">${_mcPortrait(fs.survivor2, 64)}<div style="font-size:13px;color:#e8e8e8;margin-top:6px;font-weight:700;">${fs.survivor2}</div><div style="font-size:11px;color:#888;">Score: ${(mc.scores[fs.survivor2] || 0).toFixed(1)}</div></div>
+        <div style="text-align:center;">${_mcPortrait(fs.survivor1, 80)}<div style="font-size:14px;color:#e8e8e8;margin-top:8px;font-weight:700;">${fs.survivor1}</div><div style="font-size:11px;color:#888;">Score: ${(mc.scores[fs.survivor1] || 0).toFixed(1)}</div></div>
+        <div style="font-size:28px;color:#ff5722;font-weight:900;">VS</div>
+        <div style="text-align:center;">${_mcPortrait(fs.survivor2, 80)}<div style="font-size:14px;color:#e8e8e8;margin-top:8px;font-weight:700;">${fs.survivor2}</div><div style="font-size:11px;color:#888;">Score: ${(mc.scores[fs.survivor2] || 0).toFixed(1)}</div></div>
       </div>
       <div style="font-size:13px;color:#ccc;margin-top:12px;max-width:400px;margin-left:auto;margin-right:auto;">The monster bears down on the last two survivors. Only one can escape.</div>
       <div style="font-size:14px;color:#ff9800;margin-top:16px;font-weight:700;">${fs.method}</div>
@@ -1617,7 +1608,7 @@ export function rpBuildMonsterCashImmunity(ep) {
   const content = `
     <div style="text-align:center;padding:30px;">
       <div class="mc-cam-label" style="justify-content:center;"><span class="mc-cam-dot" style="background:#4caf50;"></span> SURVIVOR CONFIRMED</div>
-      <div style="display:inline-block;position:relative;margin-top:12px;">${_mcPortrait(winner, 80)}<div style="position:absolute;bottom:-4px;right:-4px;background:#4caf50;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:14px;">🛡️</div></div>
+      <div style="display:inline-block;position:relative;margin-top:12px;">${_mcPortrait(winner, 96)}<div style="position:absolute;bottom:-4px;right:-4px;background:#4caf50;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;">🛡️</div></div>
       <div style="font-size:20px;color:#e8e8e8;font-weight:900;margin-top:12px;">${winner}</div>
       <div style="font-size:12px;color:#888;margin-top:4px;">Score: ${(mc.scores[winner] || 0).toFixed(1)}</div>
       <div style="font-size:13px;color:#aaa;margin-top:16px;max-width:400px;margin-left:auto;margin-right:auto;">${flavorText}</div>
@@ -1634,7 +1625,7 @@ export function rpBuildMonsterCashLeaderboard(ep) {
     const capturedText = entry.capturedRound ? `Rd ${entry.capturedRound}` : '—';
     const statusIcon = isWinner ? '🛡️' : '';
     const rowColor = isWinner ? 'rgba(76,175,80,0.1)' : 'transparent';
-    rows += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:${rowColor};border-radius:4px;margin:2px 0;"><span style="font-size:11px;color:#666;width:20px;text-align:right;">${i + 1}.</span>${_mcPortrait(entry.name, 28)}<span style="flex:1;font-size:13px;color:#ccc;font-weight:${isWinner ? '700' : '400'};">${entry.name} ${statusIcon}</span><span style="font-size:12px;color:#888;width:50px;text-align:center;">${capturedText}</span><span style="font-size:12px;font-weight:700;color:${entry.score >= 0 ? '#4caf50' : '#f44336'};width:50px;text-align:right;">${entry.score.toFixed(1)}</span></div>`;
+    rows += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:${rowColor};border-radius:6px;margin:3px 0;"><span style="font-size:11px;color:#666;width:20px;text-align:right;">${i + 1}.</span>${_mcPortrait(entry.name, 36)}<span style="flex:1;font-size:13px;color:#ccc;font-weight:${isWinner ? '700' : '400'};">${entry.name} ${statusIcon}</span><span style="font-size:12px;color:#888;width:50px;text-align:center;">${capturedText}</span><span style="font-size:12px;font-weight:700;color:${entry.score >= 0 ? '#4caf50' : '#f44336'};width:50px;text-align:right;">${entry.score.toFixed(1)}</span></div>`;
   });
   let tribeSection = '';
   if (mc.tribeScores) {

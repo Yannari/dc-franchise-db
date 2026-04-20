@@ -1028,7 +1028,8 @@ function _selectEncounters(name, survivors, threatLevel, location, capturedPool,
       pts = chosen.basePoints;
     } else {
       const statVal = s[chosen.stat] || 5;
-      pts = chosen.basePoints + Math.floor((statVal / 10) * ((chosen.maxPoints || chosen.basePoints) - chosen.basePoints));
+      const range = Math.min(1, (chosen.maxPoints || chosen.basePoints) - chosen.basePoints);
+      pts = chosen.basePoints + Math.floor((statVal / 10) * range + Math.random() * 0.5);
     }
 
     let target = null;
@@ -1130,7 +1131,8 @@ export function simulateMonsterCash(ep) {
   const monsterLevels = [];
   let survivors = [...active];
   const catchBoosts = {};
-  active.forEach(p => { catchBoosts[p] = 0; });
+  const fatigue = {};
+  active.forEach(p => { catchBoosts[p] = 0; fatigue[p] = 0; });
   const actBreaks = [];
 
   for (let r = 0; r < totalRounds && survivors.length > minSurvivors; r++) {
@@ -1178,7 +1180,11 @@ export function simulateMonsterCash(ep) {
       }
     }
 
-    for (const name of survivors) scores[name] = (scores[name] || 0) + 2;
+    for (const name of survivors) {
+      scores[name] = (scores[name] || 0) + 2;
+      const playerEventCount = roundEvents.filter(e => e.player === name).length;
+      fatigue[name] = (fatigue[name] || 0) + 0.05 + playerEventCount * 0.03;
+    }
 
     if (seasonConfig.romance) {
       for (const sm of (gs.showmances || [])) {
@@ -1199,7 +1205,7 @@ export function simulateMonsterCash(ep) {
       const catchScores = {};
       for (const name of survivors) {
         const roundScore = roundEvents.filter(e => e.player === name && !e.negative).reduce((s, e) => s + e.points, 0);
-        catchScores[name] = threat.baseCatch - (roundScore * 0.1) + (catchBoosts[name] || 0);
+        catchScores[name] = threat.baseCatch - Math.min(0.3, roundScore * 0.08) + (catchBoosts[name] || 0) + (fatigue[name] || 0) + Math.random() * 0.3;
       }
       const sorted = [...survivors].sort((a, b) => {
         if (catchScores[b] !== catchScores[a]) return catchScores[b] - catchScores[a];

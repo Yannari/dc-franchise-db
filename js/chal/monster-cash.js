@@ -1646,6 +1646,47 @@ export function rpBuildMonsterCashImmunity(ep) {
   return _mcShell(content, ep, 1);
 }
 
+export function rpBuildMonsterCashTribeResults(ep) {
+  const mc = ep.monsterCash;
+  if (!mc?.tribeScores) return '';
+  const sorted = Object.entries(mc.tribeScores).sort(([,a],[,b]) => b - a);
+  if (sorted.length < 2) return '';
+  const winnerName = sorted[0][0];
+  const loserName = sorted[sorted.length - 1][0];
+  const winnerTribe = gs.tribes?.find(t => t.name === winnerName) || ep.winner;
+  const loserTribe = gs.tribes?.find(t => t.name === loserName) || ep.loser;
+
+  let tribesHtml = '';
+  sorted.forEach(([name, score], i) => {
+    const isWin = i === 0;
+    const isLose = i === sorted.length - 1;
+    const color = isWin ? '#4caf50' : isLose ? '#f44336' : '#ff9800';
+    const label = isWin ? 'WINS IMMUNITY' : isLose ? 'TRIBAL COUNCIL' : 'SAFE';
+    const tribe = gs.tribes?.find(t => t.name === name);
+    const members = tribe?.members || [];
+    const portraits = members.slice(0, 8).map(m => _mcPortrait(m, 36)).join('');
+    tribesHtml += `
+      <div style="padding:14px;margin:8px 0;border:2px solid ${color}40;background:${color}08;border-radius:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:15px;color:#e8e8e8;font-weight:700;">${name}</div>
+          <div style="font-size:11px;color:${color};font-weight:700;letter-spacing:1px;">${label}</div>
+        </div>
+        <div style="font-size:12px;color:#888;margin-bottom:8px;">Avg survival: ${score.toFixed(1)} rounds</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;">${portraits}</div>
+      </div>`;
+  });
+
+  const content = `
+    <div style="padding:20px;">
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:11px;color:#ff9800;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">MONSTER HUNT RESULTS</div>
+        <div style="font-size:14px;color:#ccc;">The tribe that survived the longest wins immunity.</div>
+      </div>
+      ${tribesHtml}
+    </div>`;
+  return _mcShell(content, ep, 1);
+}
+
 export function rpBuildMonsterCashLeaderboard(ep) {
   const mc = ep.monsterCash;
   if (!mc) return '';

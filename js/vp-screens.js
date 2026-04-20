@@ -10,7 +10,7 @@ import { rpBuildCampCastaways, rpBuildCCFlood, rpBuildCCGroup, rpBuildCCNight, r
 import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict, rpBuildYetiElimination } from './chal/are-we-there-yeti.js';
 import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/triple-dog-dare.js';
 import { rpBuildSlasherTitleCard, rpBuildSlasherActI, rpBuildSlasherActII, rpBuildSlasherActIII, rpBuildSlasherCredits, rpBuildSlasherAnnouncement, rpBuildSlasherRounds, rpBuildSlasherShowdown, rpBuildSlasherImmunity, rpBuildSlasherElimination, rpBuildSlasherLeaderboard, slasherRevealNextRound, slasherRevealAllRounds, slasherRevealNextScene, slasherRevealAllScenes } from './chal/slasher-night.js';
-import { rpBuildMonsterCashTitleCard, rpBuildMonsterCashRounds, rpBuildMonsterCashShowdown, rpBuildMonsterCashImmunity, rpBuildMonsterCashLeaderboard, monsterCashRevealNext, monsterCashRevealAll } from './chal/monster-cash.js';
+import { rpBuildMonsterCashTitleCard, rpBuildMonsterCashRounds, rpBuildMonsterCashShowdown, rpBuildMonsterCashImmunity, rpBuildMonsterCashTribeResults, rpBuildMonsterCashLeaderboard, monsterCashRevealNext, monsterCashRevealAll } from './chal/monster-cash.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10320,6 +10320,9 @@ export function buildVPScreens(epRecord) {
     }
     if (ep.monsterCash.immunityWinner) {
       vpScreens.push({ id:'mc-immunity', label:'Immunity', html: rpBuildMonsterCashImmunity(ep) });
+    }
+    if (ep.monsterCash.tribeScores) {
+      vpScreens.push({ id:'mc-tribes', label:'Tribe Results', html: rpBuildMonsterCashTribeResults(ep) });
     }
     vpScreens.push({ id:'mc-leaderboard', label:'Incident Report', html: rpBuildMonsterCashLeaderboard(ep) });
     // RI screens

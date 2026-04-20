@@ -11,6 +11,7 @@ import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNigh
 import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/triple-dog-dare.js';
 import { rpBuildSlasherTitleCard, rpBuildSlasherActI, rpBuildSlasherActII, rpBuildSlasherActIII, rpBuildSlasherCredits, rpBuildSlasherAnnouncement, rpBuildSlasherRounds, rpBuildSlasherShowdown, rpBuildSlasherImmunity, rpBuildSlasherElimination, rpBuildSlasherLeaderboard, slasherRevealNextRound, slasherRevealAllRounds, slasherRevealNextScene, slasherRevealAllScenes } from './chal/slasher-night.js';
 import { rpBuildMonsterCashTitleCard, rpBuildMonsterCashRounds, rpBuildMonsterCashShowdown, rpBuildMonsterCashImmunity, rpBuildMonsterCashTribeResults, rpBuildMonsterCashLeaderboard, monsterCashRevealNext, monsterCashRevealAll } from './chal/monster-cash.js';
+import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard, alienEggRevealNext, alienEggRevealAll } from './chal/alien-egg.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10325,10 +10326,20 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'mc-tribes', label:'Tribe Results', html: rpBuildMonsterCashTribeResults(ep) });
     }
     vpScreens.push({ id:'mc-leaderboard', label:'Incident Report', html: rpBuildMonsterCashLeaderboard(ep) });
+  } else if (ep.isAlienEgg && ep.alienEgg) {
+    vpScreens.push({ id:'ae-title', label:'👽 Alien Resurr-eggtion', html: rpBuildAlienEggTitleCard(ep) });
+    vpScreens.push({ id:'ae-rounds', label:'The Egg Hunt', html: rpBuildAlienEggRounds(ep) });
+    if (ep.alienEgg.immunityWinner) {
+      vpScreens.push({ id:'ae-immunity', label:'Immunity', html: rpBuildAlienEggImmunity(ep) });
+    }
+    if (ep.alienEgg.tribeScores) {
+      vpScreens.push({ id:'ae-tribes', label:'Tribe Results', html: rpBuildAlienEggTribeResults(ep) });
+    }
+    vpScreens.push({ id:'ae-leaderboard', label:'Incident Report', html: rpBuildAlienEggLeaderboard(ep) });
     // RI screens
     if (ep.riLifeEvents?.length || ep.riDuel) {
-      const _mcRiLife = rpBuildRILife(ep);
-      if (_mcRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _mcRiLife });
+      const _aeRiLife = rpBuildRILife(ep);
+      if (_aeRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _aeRiLife });
     }
     if (ep.riDuel) {
       const _mcRiDuel = rpBuildRIDuel(ep);

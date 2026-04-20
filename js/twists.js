@@ -1417,6 +1417,12 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 4) return;
     ep.isMonsterCash = true;
 
+  } else if (engineType === 'alien-egg') {
+    // Both phases: pre-merge = tribe egg count, post-merge = individual egg count
+    if (!gs.isMerged && gs.tribes.length < 2) return;
+    if (gs.activePlayers.length < 4) return;
+    ep.isAlienEgg = true;
+
   } else if (engineType === 'x-treme-torture') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     if ((gs.episode || 0) + 1 < 2) return;
@@ -3971,6 +3977,21 @@ export function generateTwistScenes(ep) {
           sc.push({ text: 'All tribes scatter across the film lot. The tribe with the best survival average wins immunity. The losers go to tribal council.', players: [] });
         }
         result.push({ label:'Monster Cash', type:tw.type, scenes:sc }); break;
+      }
+
+      case 'alien-egg': {
+        if (gs.isMerged) {
+          sc.push({ text: 'The sci-fi set lights up. Chef emerges in a Mama Alien costume, paintball gun loaded with green slime. Alien eggs are hidden across the set.', players: gs.activePlayers });
+          sc.push({ text: 'Find eggs and deliver them to the extraction zone without getting slimed. The player who delivers the most eggs wins immunity. Get hit and you\'re out for good.', players: [] });
+        } else {
+          sc.push({ text: 'The sci-fi set lights up. Chef emerges in a Mama Alien costume, paintball gun loaded with green slime. Alien eggs are hidden across the set.', players: [] });
+          for (const tribe of (gs.tribes || [])) {
+            const members = (tribe.members || []).filter(m => gs.activePlayers.includes(m));
+            if (members.length) sc.push({ text: `${tribe.name} enters the set.`, players: members });
+          }
+          sc.push({ text: 'All tribes scatter into the set. The tribe that delivers the most eggs wins immunity. Get slimed and you\'re done — your tribe loses a collector.', players: [] });
+        }
+        result.push({ label:'Alien Resurr-eggtion', type:tw.type, scenes:sc }); break;
       }
 
       case 'cultural-reset': {

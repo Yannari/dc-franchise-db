@@ -34,6 +34,7 @@ import * as wawanakwaGoneWildMod from './chal/wawanakwa-gone-wild.js';
 import * as triArmedTriathlonMod from './chal/tri-armed-triathlon.js';
 import * as campCastawaysMod from './chal/camp-castaways.js';
 import * as areWeThereYetiMod from './chal/are-we-there-yeti.js';
+import * as alienEggMod from './chal/alien-egg.js';
 import * as socialManipMod from './social-manipulation.js';
 import * as campEventsMod from './camp-events.js';
 import * as twistsMod from './twists.js';
@@ -122,7 +123,7 @@ const extractedModules = [
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
-  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, hideAndBeSneakyMod, offTheChainMod,
+  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod,
   socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
@@ -209,6 +210,7 @@ window.CHALLENGES = {
   'tri-armed-triathlon': { simulate: triArmedTriathlonMod.simulateTriArmedTriathlon, rpBuild: triArmedTriathlonMod.rpBuildTriArmedTriathlon, text: triArmedTriathlonMod._textTriArmedTriathlon },
   'camp-castaways': { simulate: campCastawaysMod.simulateCampCastaways, rpBuild: campCastawaysMod.rpBuildCampCastaways, text: campCastawaysMod._textCampCastaways },
   'are-we-there-yeti': { simulate: areWeThereYetiMod.simulateAreWeThereYeti, rpBuild: areWeThereYetiMod.rpBuildYetiDropOff, text: areWeThereYetiMod._textAreWeThereYeti },
+  'alien-egg': { simulate: alienEggMod.simulateAlienEgg, rpBuild: alienEggMod.rpBuildAlienEggTitleCard, text: alienEggMod._textAlienEgg },
 };
 
 // ══════════════════════════════════════════════════════════════════════

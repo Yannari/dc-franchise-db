@@ -37,6 +37,7 @@ import { simulateSayUncle } from './chal/say-uncle.js';
 import { simulateTripleDogDare } from './chal/triple-dog-dare.js';
 import { simulateSlasherNight } from './chal/slasher-night.js';
 import { simulateMonsterCash } from './chal/monster-cash.js';
+import { simulateAlienEgg } from './chal/alien-egg.js';
 import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
@@ -970,7 +971,7 @@ export function handleExileFormat(ep) {
   if (phase === 'pre' && gs.isMerged) return;
   if (phase === 'post' && !gs.isMerged) return;
   // Don't fire on special episode types
-  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash) return;
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isAlienEgg) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
   // Don't double up with schoolyard pick exile (unpicked player already on exile)
@@ -1452,6 +1453,14 @@ export function simulateEpisode() {
     // Fall through to normal tribal flow — no auto-elimination, no early return
   }
 
+  // ── ALIEN EGG (post-merge) — egg hunt determines immunity, normal tribal follows ──
+  if (ep.isAlienEgg && gs.isMerged) {
+    simulateAlienEgg(ep);
+    ep.immunityWinner = ep.alienEgg.immunityWinner;
+    ep.challengeType = 'alien-egg';
+    // Fall through to normal tribal flow
+  }
+
   // ── TRIPLE DOG DARE — dare challenge replaces immunity + tribal ──
   if (ep.isTripleDogDare) {
     // Pre-challenge: journey, advantages, camp events fire normally
@@ -1822,6 +1831,9 @@ export function simulateEpisode() {
   } else if (ep.isMonsterCash && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateMonsterCash(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateMonsterCash
+  } else if (ep.isAlienEgg && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateAlienEgg(ep);
+    // winner, loser, challengeType, tribalPlayers already set by simulateAlienEgg
   } else if (ep.isBasicStraining && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateBasicStraining(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateBasicStraining
@@ -2415,7 +2427,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isAlienEgg) {
     updateChalRecord(ep);
   }
 
@@ -5314,6 +5326,8 @@ function simulateJuryRoundtable(ep) {
     trustChallenge:     ep.trustChallenge      || null,
     isMonsterCash:      ep.isMonsterCash      || false,
     monsterCash:        ep.monsterCash        || null,
+    isAlienEgg:         ep.isAlienEgg         || false,
+    alienEgg:           ep.alienEgg           || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,

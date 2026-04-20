@@ -1,0 +1,549 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+  body { background: #060d0a !important; }
+  .frame-header { display: none !important; }
+
+  .alien-shell {
+    font-family: 'Share Tech Mono', monospace;
+    color: #4aff4a;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .section-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #4aff4a55;
+    border-bottom: 1px solid #4aff4a15;
+    padding-bottom: 4px;
+    margin: 24px 0 16px;
+    text-transform: uppercase;
+  }
+
+  /* ═══════════════════════════════════════════════
+     SLIMED CARD — fully drenched in green goo
+     ═══════════════════════════════════════════════ */
+  .slime-card {
+    position: relative;
+    background: linear-gradient(180deg, #0b2a10 0%, #0a1610 30%, #0a1610 100%);
+    border: 2px solid #39ff1444;
+    padding: 24px 20px 20px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+
+  /* ── Drips from top edge ── */
+  .slime-drips {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 80px;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 2;
+  }
+  .drip {
+    position: absolute;
+    top: -2px;
+    width: var(--w, 18px);
+    background: linear-gradient(180deg, #39ff14cc, #2ecc40aa, #39ff1466, transparent);
+    border-radius: 0 0 50% 50%;
+    animation: drip-down var(--dur, 4s) ease-in infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0.85;
+    filter: blur(0.5px);
+  }
+  @keyframes drip-down {
+    0% { height: var(--h1, 30px); }
+    60% { height: var(--h2, 60px); }
+    80% { height: var(--h2, 60px); }
+    100% { height: var(--h1, 30px); }
+  }
+
+  /* Goo pool at top of card */
+  .slime-pool-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(180deg, #39ff14aa, #39ff1444);
+    z-index: 3;
+    border-radius: 0 0 2px 2px;
+  }
+
+  /* ── Splatter blobs scattered on card ── */
+  .splatter {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, #39ff1444, #39ff1422, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .splatter.s1 { width: 100px; height: 60px; top: 15px; right: 20px; transform: rotate(-15deg); }
+  .splatter.s2 { width: 70px; height: 45px; bottom: 30px; left: 10px; transform: rotate(25deg); }
+  .splatter.s3 { width: 50px; height: 35px; top: 50px; left: 40%; transform: rotate(-5deg); }
+  .splatter.s4 { width: 40px; height: 30px; bottom: 10px; right: 40%; transform: rotate(40deg); }
+
+  /* Streak marks from paintball impact */
+  .slime-streak {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .slime-streak.streak1 {
+    top: 20px; right: 60px;
+    width: 80px; height: 3px;
+    background: linear-gradient(90deg, #39ff1455, transparent);
+    transform: rotate(-8deg);
+  }
+  .slime-streak.streak2 {
+    top: 45px; right: 30px;
+    width: 50px; height: 2px;
+    background: linear-gradient(90deg, #39ff1433, transparent);
+    transform: rotate(5deg);
+  }
+  .slime-streak.streak3 {
+    bottom: 40px; left: 50px;
+    width: 60px; height: 2px;
+    background: linear-gradient(270deg, #39ff1433, transparent);
+    transform: rotate(-3deg);
+  }
+
+  /* Impact point — where the paintball hit */
+  .impact-point {
+    position: absolute;
+    top: 20px; right: 80px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #39ff1488, #39ff1444 40%, transparent 70%);
+    z-index: 2;
+    box-shadow: 0 0 15px #39ff1444;
+  }
+  .impact-point::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 10px; height: 10px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: #39ff14aa;
+    box-shadow: 0 0 8px #39ff14;
+  }
+
+  /* ── Card content (z-index above splatters) ── */
+  .slime-content {
+    position: relative;
+    z-index: 5;
+  }
+
+  .slime-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .slime-portrait {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: #39ff1415;
+    border: 2px solid #39ff14;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    position: relative;
+    box-shadow: 0 0 20px #39ff1444;
+    overflow: visible;
+  }
+  /* Mini drips off portrait */
+  .portrait-drip {
+    position: absolute;
+    width: 4px;
+    background: linear-gradient(180deg, #39ff14aa, #39ff1444, transparent);
+    border-radius: 0 0 50% 50%;
+  }
+  .portrait-drip.pd1 { bottom: -12px; left: 12px; height: 12px; }
+  .portrait-drip.pd2 { bottom: -18px; left: 28px; height: 18px; animation: drip-down 3s ease-in infinite; --h1: 14px; --h2: 22px; }
+  .portrait-drip.pd3 { bottom: -8px; right: 14px; height: 8px; }
+
+  .slime-label-group { flex: 1; }
+  .slime-main-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: #39ff14;
+    text-shadow: 0 0 15px #39ff1466, 0 0 30px #39ff1422;
+  }
+  .slime-sublabel {
+    font-size: 10px;
+    color: #39ff1488;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  .slime-approach {
+    font-size: 12px;
+    line-height: 1.7;
+    color: #7aaa7a;
+    padding: 8px 14px;
+    border-left: 2px solid #39ff1433;
+    margin-bottom: 10px;
+    background: #39ff1406;
+  }
+  .slime-narrative {
+    font-size: 13px;
+    line-height: 1.8;
+    color: #c8dcc8;
+    margin-bottom: 10px;
+  }
+  .slime-aftermath {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #6a886a;
+    font-style: italic;
+    padding-top: 8px;
+    border-top: 1px solid #39ff1418;
+  }
+
+  /* ═══════════════════════════════════════════════
+     CREW ENTRY — slimed version
+     ═══════════════════════════════════════════════ */
+  .crew-entry {
+    background: #0a1610;
+    border: 1px solid #4aff4a15;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    position: relative;
+    margin-bottom: 6px;
+    border-radius: 3px;
+  }
+  .crew-entry.slimed {
+    border-color: #39ff1433;
+    background: #0a1610;
+    overflow: hidden;
+    position: relative;
+  }
+  /* Slime wash over the whole entry */
+  .crew-entry.slimed::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, #39ff1410, #39ff1408, transparent 60%, #39ff140a);
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* Mini drips on crew entries */
+  .crew-entry.slimed::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 20%;
+    width: 8px;
+    height: 14px;
+    background: linear-gradient(180deg, #39ff1455, transparent);
+    border-radius: 0 0 50% 50%;
+    z-index: 1;
+  }
+  .crew-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #4aff4a11;
+    border: 1px solid #4aff4a33;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+  }
+  .crew-entry.slimed .crew-avatar {
+    border-color: #39ff1466;
+    background: #39ff1418;
+    box-shadow: 0 0 8px #39ff1422;
+  }
+  .crew-info { flex: 1; position: relative; z-index: 2; }
+  .crew-name { color: #4aff4acc; font-size: 12px; }
+  .crew-entry.slimed .crew-name {
+    color: #39ff1488;
+    text-decoration: line-through;
+  }
+  .crew-eggs { font-size: 9px; color: #ffd74a77; margin-top: 1px; }
+  .crew-status-badge {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 7px;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    position: relative;
+    z-index: 2;
+  }
+  .badge-active { background: #4aff4a15; color: #4aff4a88; }
+  .badge-carrying { background: #ffd74a15; color: #ffd74a; }
+  .badge-slimed { background: #39ff1425; color: #39ff14; text-shadow: 0 0 4px #39ff1444; }
+
+  /* Extra slime drips on crew entries */
+  .crew-drip-container {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 1;
+  }
+  .crew-mini-drip {
+    position: absolute;
+    top: 0;
+    width: var(--w, 6px);
+    background: linear-gradient(180deg, #39ff1444, #39ff1422, transparent);
+    border-radius: 0 0 50% 50%;
+    height: var(--h, 10px);
+  }
+
+  /* ═══════════════════════════════════════════════
+     Comparison section: normal card vs slimed
+     ═══════════════════════════════════════════════ */
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .compare-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #4aff4a44;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  /* Normal event card for comparison */
+  .event-card {
+    background: #0a1610;
+    border: 1px solid #4aff4a1a;
+    border-left: 3px solid #29b6f644;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .event-portrait {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: #4aff4a11;
+    border: 2px solid #29b6f644;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .event-body { flex: 1; }
+  .event-type-badge {
+    display: inline-block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px;
+    letter-spacing: 2px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-bottom: 6px;
+    background: #29b6f622;
+    color: #29b6f6;
+  }
+  .event-narrative {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #c8dcc8;
+  }
+  .event-points {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    margin-top: 6px;
+    letter-spacing: 1px;
+    color: #29b6f6;
+  }
+</style>
+
+<div class="alien-shell">
+
+  <div class="section-label">SLIME CARD — FULL ELIMINATION MOMENT</div>
+  <p style="font-size: 11px; color: #4aff4a66; margin-bottom: 16px; line-height: 1.6;">The card is drenched — drips ooze from the top edge, splatter marks from the paintball impact, slime wash across the whole surface. This is what getting hit by Mama Alien looks like.</p>
+
+  <!-- ═══ THE SLIME CARD ═══ -->
+  <div class="slime-card">
+    <!-- Goo pool along top -->
+    <div class="slime-pool-top"></div>
+
+    <!-- Drips from top -->
+    <div class="slime-drips">
+      <div class="drip" style="left: 8%; --w: 14px; --h1: 25px; --h2: 55px; --dur: 5s; --delay: 0s;"></div>
+      <div class="drip" style="left: 18%; --w: 10px; --h1: 35px; --h2: 70px; --dur: 4.5s; --delay: 0.8s;"></div>
+      <div class="drip" style="left: 32%; --w: 16px; --h1: 20px; --h2: 45px; --dur: 6s; --delay: 1.5s;"></div>
+      <div class="drip" style="left: 48%; --w: 8px; --h1: 40px; --h2: 80px; --dur: 4s; --delay: 0.3s;"></div>
+      <div class="drip" style="left: 62%; --w: 12px; --h1: 30px; --h2: 65px; --dur: 5.5s; --delay: 2s;"></div>
+      <div class="drip" style="left: 75%; --w: 18px; --h1: 22px; --h2: 50px; --dur: 4.8s; --delay: 1s;"></div>
+      <div class="drip" style="left: 88%; --w: 10px; --h1: 28px; --h2: 55px; --dur: 5.2s; --delay: 0.5s;"></div>
+    </div>
+
+    <!-- Splatter blobs -->
+    <div class="splatter s1"></div>
+    <div class="splatter s2"></div>
+    <div class="splatter s3"></div>
+    <div class="splatter s4"></div>
+
+    <!-- Streak marks from paintball -->
+    <div class="slime-streak streak1"></div>
+    <div class="slime-streak streak2"></div>
+    <div class="slime-streak streak3"></div>
+
+    <!-- Impact point -->
+    <div class="impact-point"></div>
+
+    <!-- Content -->
+    <div class="slime-content">
+      <div class="slime-header">
+        <div class="slime-portrait">
+          😱
+          <div class="portrait-drip pd1"></div>
+          <div class="portrait-drip pd2"></div>
+          <div class="portrait-drip pd3"></div>
+        </div>
+        <div class="slime-label-group">
+          <div class="slime-main-label">☠ SLIMED — ZEE</div>
+          <div class="slime-sublabel">ELIMINATED FROM CHALLENGE • EGG DESTROYED • ROUND 3</div>
+        </div>
+      </div>
+
+      <div class="slime-approach">Chef rounds the corner in full Mama Alien regalia — the rubber suit squeaking with every step. He hoists the gatling paintball gun. His eyes lock on through the costume's mouth-hole. He doesn't aim. He doesn't need to.</div>
+
+      <div class="slime-narrative">Green paint explodes across Zee's chest. The impact sends her stumbling backward into a prop console. Her egg flies out of her hands, hits the grated floor, and shatters into a mess of foam and slime. She's absolutely covered — hair, clothes, face. Dripping. Chris's voice crackles over the intercom: <em>"BULLSEYE! Chef, you beautiful green menace!"</em></div>
+
+      <div class="slime-aftermath">Zee trudges to the slime bench, leaving a green trail on the floor. The other eliminated players slow-clap. She sits down. Drips. Stares at the ceiling. "I had one job." Drip. "One." Drip.</div>
+    </div>
+  </div>
+
+  <!-- ═══ COMPARISON: Normal vs Slimed crew entries ═══ -->
+  <div class="section-label">CREW ENTRIES — ACTIVE vs SLIMED</div>
+  <p style="font-size: 11px; color: #4aff4a66; margin-bottom: 16px; line-height: 1.6;">Slimed entries get a green wash, drips from the top edge, glowing avatar, and strikethrough name.</p>
+
+  <div class="compare-row">
+    <div>
+      <div class="compare-label">ACTIVE PLAYER</div>
+      <div class="crew-entry">
+        <div class="crew-avatar">👤</div>
+        <div class="crew-info">
+          <div class="crew-name">Axel</div>
+          <div class="crew-eggs">🥚 2 banked • carrying 1</div>
+        </div>
+        <span class="crew-status-badge badge-carrying">CARRYING</span>
+      </div>
+    </div>
+    <div>
+      <div class="compare-label">SLIMED PLAYER</div>
+      <div class="crew-entry slimed">
+        <div class="crew-drip-container">
+          <div class="crew-mini-drip" style="left: 15%; --w: 5px; --h: 12px;"></div>
+          <div class="crew-mini-drip" style="left: 45%; --w: 7px; --h: 16px;"></div>
+          <div class="crew-mini-drip" style="left: 72%; --w: 4px; --h: 9px;"></div>
+        </div>
+        <div class="crew-avatar">👤</div>
+        <div class="crew-info">
+          <div class="crew-name">Zee</div>
+          <div class="crew-eggs">🥚 0 banked</div>
+        </div>
+        <span class="crew-status-badge badge-slimed">SLIMED</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MORE SLIMED ENTRIES showing variation ═══ -->
+  <div class="section-label">SLIME BENCH — ALL ELIMINATED</div>
+  <div class="crew-entry slimed" style="margin-bottom: 6px;">
+    <div class="crew-drip-container">
+      <div class="crew-mini-drip" style="left: 10%; --w: 6px; --h: 14px;"></div>
+      <div class="crew-mini-drip" style="left: 55%; --w: 5px; --h: 10px;"></div>
+      <div class="crew-mini-drip" style="left: 80%; --w: 7px; --h: 18px;"></div>
+    </div>
+    <div class="crew-avatar">👤</div>
+    <div class="crew-info">
+      <div class="crew-name">Caleb</div>
+      <div class="crew-eggs">🥚 0 banked — triggered booby trap</div>
+    </div>
+    <span class="crew-status-badge badge-slimed">SLIMED</span>
+  </div>
+  <div class="crew-entry slimed" style="margin-bottom: 6px;">
+    <div class="crew-drip-container">
+      <div class="crew-mini-drip" style="left: 22%; --w: 4px; --h: 8px;"></div>
+      <div class="crew-mini-drip" style="left: 40%; --w: 8px; --h: 20px;"></div>
+      <div class="crew-mini-drip" style="left: 65%; --w: 5px; --h: 12px;"></div>
+    </div>
+    <div class="crew-avatar">👤</div>
+    <div class="crew-info">
+      <div class="crew-name">Raj</div>
+      <div class="crew-eggs">🥚 1 banked — caught making out</div>
+    </div>
+    <span class="crew-status-badge badge-slimed">SLIMED</span>
+  </div>
+  <div class="crew-entry slimed" style="margin-bottom: 6px;">
+    <div class="crew-drip-container">
+      <div class="crew-mini-drip" style="left: 30%; --w: 6px; --h: 15px;"></div>
+      <div class="crew-mini-drip" style="left: 50%; --w: 4px; --h: 11px;"></div>
+      <div class="crew-mini-drip" style="left: 90%; --w: 5px; --h: 13px;"></div>
+    </div>
+    <div class="crew-avatar">👤</div>
+    <div class="crew-info">
+      <div class="crew-name">Scary Girl</div>
+      <div class="crew-eggs">🥚 1 banked — smiled at the monster</div>
+    </div>
+    <span class="crew-status-badge badge-slimed">SLIMED</span>
+  </div>
+
+  <!-- ═══ Side-by-side: Heroic card vs Slime card ═══ -->
+  <div class="section-label">CARD CONTRAST — NORMAL EVENT vs SLIMED ELIMINATION</div>
+  <p style="font-size: 11px; color: #4aff4a66; margin-bottom: 16px; line-height: 1.6;">Normal events are clean cards. Slime eliminations are messy, dripping, chaotic. The contrast makes eliminations feel like a gut punch.</p>
+
+  <div class="event-card" style="margin-bottom: 12px;">
+    <div class="event-portrait">🛡️</div>
+    <div class="event-body">
+      <div class="event-type-badge">HEROIC</div>
+      <div class="event-narrative">Wayne spots MK pinned down behind a crumbling set piece, Mama Alien closing fast. He grabs a fire extinguisher and blasts a cloud of white fog across the corridor. "GO! I'll hold this!" MK sprints through the smoke with her egg.</div>
+      <div class="event-points">+3 HEROIC • BOND +2 (Wayne → MK)</div>
+    </div>
+  </div>
+
+  <div class="slime-card">
+    <div class="slime-pool-top"></div>
+    <div class="slime-drips">
+      <div class="drip" style="left: 12%; --w: 12px; --h1: 20px; --h2: 50px; --dur: 5s; --delay: 0.2s;"></div>
+      <div class="drip" style="left: 35%; --w: 16px; --h1: 30px; --h2: 65px; --dur: 4.2s; --delay: 1s;"></div>
+      <div class="drip" style="left: 55%; --w: 10px; --h1: 25px; --h2: 55px; --dur: 5.5s; --delay: 0.6s;"></div>
+      <div class="drip" style="left: 78%; --w: 14px; --h1: 28px; --h2: 60px; --dur: 4.7s; --delay: 1.5s;"></div>
+      <div class="drip" style="left: 92%; --w: 8px; --h1: 22px; --h2: 48px; --dur: 5.8s; --delay: 0.3s;"></div>
+    </div>
+    <div class="splatter s1"></div>
+    <div class="splatter s2"></div>
+    <div class="splatter s3"></div>
+    <div class="slime-streak streak1"></div>
+    <div class="slime-streak streak2"></div>
+    <div class="impact-point"></div>
+
+    <div class="slime-content">
+      <div class="slime-header">
+        <div class="slime-portrait">
+          😵
+          <div class="portrait-drip pd1"></div>
+          <div class="portrait-drip pd2"></div>
+          <div class="portrait-drip pd3"></div>
+        </div>
+        <div class="slime-label-group">
+          <div class="slime-main-label">☠ SLIMED — WAYNE</div>
+          <div class="slime-sublabel">THE HERO FALLS • 1 EGG BANKED • ROUND 5</div>
+        </div>
+      </div>
+      <div class="slime-approach">Wayne's fog trick worked once. Mama Alien remembers. This time Chef comes from above — dropping from a catwalk. The paintball gun fires point-blank.</div>
+      <div class="slime-narrative">Three shots. Chest, shoulder, back of the head. Wayne goes down in a spray of green. His empty hands reach for an egg that isn't there — he'd already delivered it. Small mercy. MK watches from behind a pillar. She doesn't move. She can't.</div>
+      <div class="slime-aftermath">Wayne walks to the slime bench like a soldier leaving the field. Green paint in his hair. In his ears. He sits down next to Zee. Nods once. She nods back. Respect.</div>
+    </div>
+  </div>
+
+</div>

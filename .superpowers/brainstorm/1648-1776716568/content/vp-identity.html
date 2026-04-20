@@ -1,0 +1,508 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap');
+
+  body { background: #0a0f14 !important; }
+  .frame-header { display: none !important; }
+
+  .alien-shell {
+    font-family: 'Share Tech Mono', monospace;
+    color: #4aff4a;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  /* ── Header ── */
+  .hive-header {
+    border: 1px solid #4aff4a33;
+    background: linear-gradient(180deg, #0d1a12 0%, #0a0f14 100%);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hive-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #4aff4a, transparent);
+    animation: scanline 3s linear infinite;
+  }
+  @keyframes scanline {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { opacity: 0.3; }
+  }
+  .hive-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #4aff4a;
+    text-shadow: 0 0 10px #4aff4a55;
+  }
+  .hive-subtitle {
+    font-size: 11px;
+    color: #4aff4a88;
+    margin-top: 4px;
+    letter-spacing: 2px;
+  }
+  .hive-corner {
+    position: absolute;
+    width: 12px; height: 12px;
+    border-color: #4aff4a44;
+    border-style: solid;
+  }
+  .hive-corner.tl { top: 4px; left: 4px; border-width: 2px 0 0 2px; }
+  .hive-corner.tr { top: 4px; right: 4px; border-width: 2px 2px 0 0; }
+  .hive-corner.bl { bottom: 4px; left: 4px; border-width: 0 0 2px 2px; }
+  .hive-corner.br { bottom: 4px; right: 4px; border-width: 0 2px 2px 0; }
+
+  /* ── Sections ── */
+  .section-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #4aff4a66;
+    border-bottom: 1px solid #4aff4a22;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  /* ── Motion Tracker ── */
+  .tracker-panel {
+    background: #0d1a1266;
+    border: 1px solid #4aff4a22;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .radar-container {
+    width: 220px; height: 220px;
+    margin: 0 auto 16px;
+    position: relative;
+    border-radius: 50%;
+    border: 1px solid #4aff4a33;
+    background: radial-gradient(circle, #0d1a1200 0%, #0d1a12 70%);
+    overflow: hidden;
+  }
+  .radar-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid #4aff4a15;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .radar-ring.r1 { width: 60px; height: 60px; }
+  .radar-ring.r2 { width: 120px; height: 120px; }
+  .radar-ring.r3 { width: 180px; height: 180px; }
+  .radar-cross {
+    position: absolute;
+    background: #4aff4a11;
+  }
+  .radar-cross.h { top: 50%; left: 0; width: 100%; height: 1px; }
+  .radar-cross.v { left: 50%; top: 0; width: 1px; height: 100%; }
+  .radar-sweep {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 50%; height: 2px;
+    transform-origin: left center;
+    background: linear-gradient(90deg, #4aff4a88, transparent);
+    animation: sweep 4s linear infinite;
+  }
+  @keyframes sweep {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .radar-blip {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #4aff4a;
+    box-shadow: 0 0 6px #4aff4a;
+    animation: blink 2s ease-in-out infinite;
+  }
+  .radar-blip.chef {
+    width: 10px; height: 10px;
+    background: #ff4a4a;
+    box-shadow: 0 0 8px #ff4a4a;
+    animation: blink-red 1.5s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+  @keyframes blink-red { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  .tracker-alert {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #ff4a4a;
+    animation: alert-flash 1s ease-in-out infinite;
+    margin-top: 8px;
+  }
+  @keyframes alert-flash { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  /* ── Crew Manifest (Biosigns) ── */
+  .crew-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .crew-entry {
+    background: #0d1a1266;
+    border: 1px solid #4aff4a22;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    position: relative;
+  }
+  .crew-entry.eliminated {
+    border-color: #ff4a4a33;
+    opacity: 0.5;
+  }
+  .crew-entry.eliminated::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, transparent 40%, #4aff4a08 41%, #4aff4a08 59%, transparent 60%);
+    pointer-events: none;
+  }
+  .crew-entry.carrying {
+    border-color: #ffd74a55;
+  }
+  .crew-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #4aff4a22;
+    border: 1px solid #4aff4a44;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .crew-entry.eliminated .crew-avatar {
+    border-color: #ff4a4a44;
+    background: #ff4a4a11;
+  }
+  .crew-name { flex: 1; color: #4aff4acc; }
+  .crew-entry.eliminated .crew-name {
+    color: #ff4a4a88;
+    text-decoration: line-through;
+  }
+  .crew-status {
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+  .status-active { background: #4aff4a22; color: #4aff4a; }
+  .status-carrying { background: #ffd74a22; color: #ffd74a; }
+  .status-eliminated { background: #ff4a4a22; color: #ff4a4a; }
+
+  /* ── Slime splatter on eliminated ── */
+  .slime-splat {
+    position: absolute;
+    right: 8px; top: -4px;
+    font-size: 18px;
+    opacity: 0.6;
+    transform: rotate(-15deg);
+    filter: hue-rotate(0deg);
+  }
+
+  /* ── Egg Containment ── */
+  .egg-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .egg-pod {
+    background: #0d1a1288;
+    border: 1px solid #4aff4a22;
+    padding: 10px 6px;
+    text-align: center;
+    position: relative;
+  }
+  .egg-pod::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: #4aff4a22;
+  }
+  .egg-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+  .egg-label {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  .egg-pod.gold { border-color: #ffd74a33; }
+  .egg-pod.gold .egg-label { color: #ffd74a; }
+  .egg-pod.trapped { border-color: #ff4a4a33; }
+  .egg-pod.trapped .egg-label { color: #ff4a4a; }
+  .egg-pod.empty { opacity: 0.4; }
+  .egg-pod.collected { background: #4aff4a11; border-color: #4aff4a55; }
+  .egg-pod.collected .egg-label { color: #4aff4a; }
+
+  /* ── Event Feed ── */
+  .event-feed {
+    background: #0d1a1266;
+    border: 1px solid #4aff4a22;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+  .event-line {
+    font-size: 11px;
+    padding: 4px 0;
+    border-bottom: 1px solid #4aff4a0a;
+    line-height: 1.5;
+  }
+  .event-line .timestamp {
+    color: #4aff4a44;
+    margin-right: 8px;
+  }
+  .event-line .alert-text { color: #ff4a4a; }
+  .event-line .gold-text { color: #ffd74a; }
+  .event-line .safe-text { color: #4aff4a; }
+
+  /* ── Score Bar ── */
+  .score-bar {
+    display: flex;
+    gap: 16px;
+    background: #0d1a1266;
+    border: 1px solid #4aff4a22;
+    padding: 12px 16px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .score-item {
+    text-align: center;
+  }
+  .score-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #4aff4a;
+    text-shadow: 0 0 8px #4aff4a44;
+  }
+  .score-label {
+    font-size: 9px;
+    color: #4aff4a66;
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+  .score-item.danger .score-value { color: #ff4a4a; text-shadow: 0 0 8px #ff4a4a44; }
+  .score-item.gold .score-value { color: #ffd74a; text-shadow: 0 0 8px #ffd74a44; }
+
+  /* ── Metal texture ── */
+  .metal-border {
+    border-image: repeating-linear-gradient(90deg, #4aff4a22, #4aff4a22 8px, transparent 8px, transparent 12px) 1;
+  }
+</style>
+
+<div class="alien-shell">
+
+  <!-- HEADER -->
+  <div class="hive-header">
+    <div class="hive-corner tl"></div>
+    <div class="hive-corner tr"></div>
+    <div class="hive-corner bl"></div>
+    <div class="hive-corner br"></div>
+    <div class="hive-title">ALIEN RESURR-EGGTION</div>
+    <div class="hive-subtitle">SCI-FI SET // MAMA ALIEN ACTIVE // SPECIMEN RETRIEVAL IN PROGRESS</div>
+  </div>
+
+  <!-- SCORE BAR -->
+  <div class="score-bar">
+    <div class="score-item">
+      <div class="score-value">R3</div>
+      <div class="score-label">ROUND</div>
+    </div>
+    <div class="score-item">
+      <div class="score-value">6</div>
+      <div class="score-label">ACTIVE</div>
+    </div>
+    <div class="score-item danger">
+      <div class="score-value">4</div>
+      <div class="score-label">SLIMED</div>
+    </div>
+    <div class="score-item gold">
+      <div class="score-value">7</div>
+      <div class="score-label">EGGS BANKED</div>
+    </div>
+    <div class="score-item">
+      <div class="score-value">13</div>
+      <div class="score-label">REMAINING</div>
+    </div>
+  </div>
+
+  <!-- MOTION TRACKER -->
+  <div class="tracker-panel">
+    <div class="section-label">MOTION TRACKER — SECTOR 3</div>
+    <div class="radar-container">
+      <div class="radar-ring r1"></div>
+      <div class="radar-ring r2"></div>
+      <div class="radar-ring r3"></div>
+      <div class="radar-cross h"></div>
+      <div class="radar-cross v"></div>
+      <div class="radar-sweep"></div>
+      <!-- Player blips -->
+      <div class="radar-blip" style="top: 35%; left: 62%;"></div>
+      <div class="radar-blip" style="top: 55%; left: 28%;"></div>
+      <div class="radar-blip" style="top: 70%; left: 72%;"></div>
+      <div class="radar-blip" style="top: 25%; left: 45%;"></div>
+      <div class="radar-blip" style="top: 60%; left: 55%;"></div>
+      <div class="radar-blip" style="top: 42%; left: 38%;"></div>
+      <!-- Chef -->
+      <div class="radar-blip chef" style="top: 48%; left: 50%;"></div>
+    </div>
+    <div class="tracker-alert">⚠ MOVEMENT DETECTED — HOSTILE CLOSING ON SECTOR 3 ⚠</div>
+  </div>
+
+  <!-- CREW MANIFEST -->
+  <div class="section-label">CREW BIOSIGNS</div>
+  <div class="crew-grid">
+    <div class="crew-entry carrying">
+      <div class="crew-avatar">AX</div>
+      <div class="crew-name">Axel</div>
+      <span class="crew-status status-carrying">CARRYING</span>
+    </div>
+    <div class="crew-entry">
+      <div class="crew-avatar">MK</div>
+      <div class="crew-name">MK</div>
+      <span class="crew-status status-active">ACTIVE</span>
+    </div>
+    <div class="crew-entry carrying">
+      <div class="crew-avatar">BW</div>
+      <div class="crew-name">Bowie</div>
+      <span class="crew-status status-carrying">🥚 CARRYING</span>
+    </div>
+    <div class="crew-entry">
+      <div class="crew-avatar">PR</div>
+      <div class="crew-name">Priya</div>
+      <span class="crew-status status-active">ACTIVE</span>
+    </div>
+    <div class="crew-entry">
+      <div class="crew-avatar">WY</div>
+      <div class="crew-name">Wayne</div>
+      <span class="crew-status status-active">ACTIVE</span>
+    </div>
+    <div class="crew-entry">
+      <div class="crew-avatar">JL</div>
+      <div class="crew-name">Julia</div>
+      <span class="crew-status status-active">ACTIVE</span>
+    </div>
+    <div class="crew-entry eliminated">
+      <div class="crew-avatar">ZE</div>
+      <div class="crew-name">Zee</div>
+      <span class="crew-status status-eliminated">SLIMED</span>
+      <span class="slime-splat">💚</span>
+    </div>
+    <div class="crew-entry eliminated">
+      <div class="crew-avatar">CL</div>
+      <div class="crew-name">Caleb</div>
+      <span class="crew-status status-eliminated">SLIMED</span>
+      <span class="slime-splat">💚</span>
+    </div>
+    <div class="crew-entry eliminated">
+      <div class="crew-avatar">RJ</div>
+      <div class="crew-name">Raj</div>
+      <span class="crew-status status-eliminated">SLIMED</span>
+      <span class="slime-splat">💚</span>
+    </div>
+    <div class="crew-entry eliminated">
+      <div class="crew-avatar">SC</div>
+      <div class="crew-name">Scary Girl</div>
+      <span class="crew-status status-eliminated">SLIMED</span>
+      <span class="slime-splat">💚</span>
+    </div>
+  </div>
+
+  <!-- EGG CONTAINMENT -->
+  <div class="section-label">SPECIMEN CONTAINMENT — EGG STATUS</div>
+  <div class="egg-grid">
+    <div class="egg-pod collected">
+      <div class="egg-icon">🥚</div>
+      <div class="egg-label">BANKED</div>
+    </div>
+    <div class="egg-pod collected">
+      <div class="egg-icon">🥚</div>
+      <div class="egg-label">BANKED</div>
+    </div>
+    <div class="egg-pod gold collected">
+      <div class="egg-icon">🪙</div>
+      <div class="egg-label">GOLD — BANKED</div>
+    </div>
+    <div class="egg-pod collected">
+      <div class="egg-icon">🥚</div>
+      <div class="egg-label">BANKED</div>
+    </div>
+    <div class="egg-pod collected">
+      <div class="egg-icon">🥚</div>
+      <div class="egg-label">BANKED</div>
+    </div>
+    <div class="egg-pod">
+      <div class="egg-icon" style="opacity:0.4">🥚</div>
+      <div class="egg-label">IN FIELD</div>
+    </div>
+    <div class="egg-pod gold">
+      <div class="egg-icon" style="opacity:0.4">🪙</div>
+      <div class="egg-label">GOLD — HIDDEN</div>
+    </div>
+    <div class="egg-pod trapped">
+      <div class="egg-icon">💥</div>
+      <div class="egg-label">BOOBY TRAP</div>
+    </div>
+    <div class="egg-pod empty">
+      <div class="egg-icon">💨</div>
+      <div class="egg-label">EMPTY</div>
+    </div>
+    <div class="egg-pod">
+      <div class="egg-icon" style="opacity:0.4">🥚</div>
+      <div class="egg-label">IN FIELD</div>
+    </div>
+  </div>
+
+  <!-- EVENT FEED -->
+  <div class="section-label">ACTIVITY LOG</div>
+  <div class="event-feed">
+    <div class="event-line">
+      <span class="timestamp">[03:42]</span>
+      <span class="safe-text">Axel picks up a specimen from Corridor B-7. CARRYING.</span>
+    </div>
+    <div class="event-line">
+      <span class="timestamp">[03:38]</span>
+      <span class="alert-text">⚠ MAMA ALIEN targets Sector 3 — suppression fire!</span>
+    </div>
+    <div class="event-line">
+      <span class="timestamp">[03:35]</span>
+      <span>Bowie delivers egg to extraction zone. <span class="safe-text">+1 BANKED</span></span>
+    </div>
+    <div class="event-line">
+      <span class="timestamp">[03:31]</span>
+      <span class="alert-text">Zee caught in crossfire — SLIMED. Egg destroyed.</span>
+    </div>
+    <div class="event-line">
+      <span class="timestamp">[03:28]</span>
+      <span class="gold-text">★ MK discovers a GOLD EGG in Ventilation Shaft C!</span>
+    </div>
+    <div class="event-line">
+      <span class="timestamp">[03:24]</span>
+      <span>Wayne and Julia regroup — moving as a pair through Lab Wing.</span>
+    </div>
+    <div class="event-line">
+      <span class="timestamp">[03:20]</span>
+      <span>Caleb picks up a specimen... <span class="alert-text">BOOBY TRAP! Alarm triggered!</span></span>
+    </div>
+    <div class="event-line">
+      <span class="timestamp">[03:17]</span>
+      <span>Priya breaks from group — going solo toward Deep Storage.</span>
+    </div>
+  </div>
+
+</div>

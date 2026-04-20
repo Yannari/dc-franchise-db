@@ -1,0 +1,870 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+  body { background: #060d0a !important; }
+  .frame-header { display: none !important; }
+
+  .alien-shell {
+    font-family: 'Share Tech Mono', monospace;
+    color: #4aff4a;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+  }
+
+  /* ── Scanline overlay ── */
+  .alien-shell::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 0, 0.015) 2px,
+      rgba(0, 255, 0, 0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ── Header ── */
+  .hive-header {
+    border: 1px solid #4aff4a33;
+    background: linear-gradient(180deg, #0d1a12 0%, #060d0a 100%);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hive-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #4aff4a, transparent);
+    animation: scanline 3s linear infinite;
+  }
+  @keyframes scanline {
+    0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; }
+  }
+  .hive-corner {
+    position: absolute;
+    width: 14px; height: 14px;
+    border-color: #4aff4a55;
+    border-style: solid;
+  }
+  .hive-corner.tl { top: 4px; left: 4px; border-width: 2px 0 0 2px; }
+  .hive-corner.tr { top: 4px; right: 4px; border-width: 2px 2px 0 0; }
+  .hive-corner.bl { bottom: 4px; left: 4px; border-width: 0 0 2px 2px; }
+  .hive-corner.br { bottom: 4px; right: 4px; border-width: 0 2px 2px 0; }
+  .hive-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #4aff4a;
+    text-shadow: 0 0 20px #4aff4a44, 0 0 40px #4aff4a22;
+  }
+  .hive-subtitle {
+    font-size: 11px;
+    color: #4aff4a66;
+    margin-top: 6px;
+    letter-spacing: 2px;
+  }
+
+  /* ── Section Labels ── */
+  .section-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #4aff4a55;
+    border-bottom: 1px solid #4aff4a15;
+    padding-bottom: 4px;
+    margin: 20px 0 12px;
+    text-transform: uppercase;
+  }
+
+  /* ── Score HUD ── */
+  .score-hud {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 16px;
+  }
+  .hud-cell {
+    flex: 1;
+    background: #0a1610;
+    border: 1px solid #4aff4a1a;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .hud-cell:first-child { border-radius: 4px 0 0 4px; }
+  .hud-cell:last-child { border-radius: 0 4px 4px 0; }
+  .hud-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    text-shadow: 0 0 8px currentColor;
+  }
+  .hud-label {
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: #4aff4a55;
+    margin-top: 4px;
+  }
+  .hud-cell.active .hud-value { color: #4aff4a; }
+  .hud-cell.slimed .hud-value { color: #39ff14; }
+  .hud-cell.eggs .hud-value { color: #ffd74a; }
+  .hud-cell.danger .hud-value { color: #ff4a4a; }
+
+  /* ── Motion Tracker ── */
+  .tracker-panel {
+    background: #0a161066;
+    border: 1px solid #4aff4a1a;
+    padding: 20px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .radar-container {
+    width: 180px; height: 180px;
+    position: relative;
+    border-radius: 50%;
+    border: 1px solid #4aff4a33;
+    background: radial-gradient(circle, #0d1a1200 0%, #060d0a 80%);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .radar-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid #4aff4a12;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .radar-ring.r1 { width: 50px; height: 50px; }
+  .radar-ring.r2 { width: 100px; height: 100px; }
+  .radar-ring.r3 { width: 150px; height: 150px; }
+  .radar-cross { position: absolute; background: #4aff4a0a; }
+  .radar-cross.h { top: 50%; left: 0; width: 100%; height: 1px; }
+  .radar-cross.v { left: 50%; top: 0; width: 1px; height: 100%; }
+  .radar-sweep {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 50%; height: 2px;
+    transform-origin: left center;
+    background: linear-gradient(90deg, #4aff4a88, transparent);
+    animation: sweep 4s linear infinite;
+    box-shadow: 0 0 15px 5px #4aff4a22;
+  }
+  .radar-sweep::before {
+    content: '';
+    position: absolute;
+    top: -30px; left: 0;
+    width: 100%; height: 60px;
+    background: conic-gradient(from 0deg at 0% 50%, #4aff4a22, transparent 30deg);
+    transform-origin: left center;
+  }
+  @keyframes sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .radar-blip {
+    position: absolute;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #4aff4a;
+    box-shadow: 0 0 6px #4aff4a;
+    animation: blink 2s ease-in-out infinite;
+  }
+  .radar-blip.chef {
+    width: 10px; height: 10px;
+    background: #ff4a4a;
+    box-shadow: 0 0 12px #ff4a4a, 0 0 24px #ff4a4a44;
+    animation: blink-red 1s ease-in-out infinite;
+  }
+  .radar-blip.carrying {
+    background: #ffd74a;
+    box-shadow: 0 0 6px #ffd74a;
+    animation: blink-gold 1.5s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+  @keyframes blink-red { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+  @keyframes blink-gold { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  .tracker-alerts {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .tracker-alert-line {
+    font-size: 11px;
+    padding: 6px 10px;
+    border-left: 2px solid;
+    line-height: 1.5;
+  }
+  .alert-movement { border-color: #ff4a4a; color: #ff4a4a; background: #ff4a4a08; }
+  .alert-egg { border-color: #ffd74a; color: #ffd74a; background: #ffd74a08; }
+  .alert-safe { border-color: #4aff4a; color: #4aff4a; background: #4aff4a08; }
+  .alert-icon { margin-right: 6px; }
+
+  /* ── Narrative Event Cards ── */
+  .event-card {
+    background: #0a1610;
+    border: 1px solid #4aff4a1a;
+    border-left: 3px solid #4aff4a44;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .event-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, #4aff4a05, transparent);
+    pointer-events: none;
+  }
+  .event-portrait {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #4aff4a11;
+    border: 2px solid #4aff4a33;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .event-body { flex: 1; }
+  .event-type-badge {
+    display: inline-block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px;
+    letter-spacing: 2px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .event-narrative {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #c8dcc8;
+  }
+  .event-points {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* Card types */
+  .event-card.survival { border-left-color: #4aff4a; }
+  .event-card.survival .event-type-badge { background: #4aff4a22; color: #4aff4a; }
+  .event-card.heroic { border-left-color: #29b6f6; }
+  .event-card.heroic .event-type-badge { background: #29b6f622; color: #29b6f6; }
+  .event-card.heroic .event-portrait { border-color: #29b6f644; }
+  .event-card.sabotage { border-left-color: #ff4a4a; }
+  .event-card.sabotage .event-type-badge { background: #ff4a4a22; color: #ff4a4a; }
+  .event-card.sabotage .event-portrait { border-color: #ff4a4a44; }
+  .event-card.comedy { border-left-color: #ffd74a; }
+  .event-card.comedy .event-type-badge { background: #ffd74a22; color: #ffd74a; }
+  .event-card.comedy .event-portrait { border-color: #ffd74a44; }
+  .event-card.showmance { border-left-color: #f06292; }
+  .event-card.showmance .event-type-badge { background: #f0629222; color: #f06292; }
+  .event-card.showmance .event-portrait { border-color: #f06292; }
+  .event-card.egg-event { border-left-color: #ffd74a; }
+  .event-card.egg-event .event-type-badge { background: #ffd74a22; color: #ffd74a; }
+
+  /* ── SLIME CARD — the big wow ── */
+  .slime-card {
+    background: linear-gradient(135deg, #0a1610 0%, #0d2010 50%, #0a1610 100%);
+    border: 2px solid #39ff1444;
+    padding: 16px;
+    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+    animation: slime-pulse 2s ease-in-out infinite;
+  }
+  @keyframes slime-pulse {
+    0%, 100% { border-color: #39ff1433; box-shadow: 0 0 0 #39ff1400; }
+    50% { border-color: #39ff1466; box-shadow: 0 0 20px #39ff1411; }
+  }
+  .slime-card::before {
+    content: '';
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, #39ff1418, transparent 70%);
+    pointer-events: none;
+  }
+  .slime-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+  .slime-portrait {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: #39ff1411;
+    border: 2px solid #39ff14;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    position: relative;
+    box-shadow: 0 0 15px #39ff1433;
+  }
+  .slime-drip {
+    position: absolute;
+    font-size: 14px;
+  }
+  .slime-drip.d1 { top: -8px; right: -4px; transform: rotate(15deg); }
+  .slime-drip.d2 { bottom: -6px; left: 2px; transform: rotate(-20deg); }
+  .slime-drip.d3 { top: 2px; left: -10px; transform: rotate(-40deg); }
+  .slime-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #39ff14;
+    text-shadow: 0 0 10px #39ff1444;
+  }
+  .slime-sublabel {
+    font-size: 10px;
+    color: #39ff1488;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+  .slime-narrative {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #c8dcc8;
+    margin-bottom: 8px;
+  }
+  .slime-approach {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #88aa88;
+    padding-left: 12px;
+    border-left: 2px solid #39ff1433;
+    margin-bottom: 8px;
+  }
+  /* Slime splatter background decoration */
+  .slime-splatter {
+    position: absolute;
+    opacity: 0.08;
+    pointer-events: none;
+  }
+  .slime-splatter svg { fill: #39ff14; }
+
+  /* ── Egg Pickup Card ── */
+  .egg-pickup-card {
+    background: #0a1610;
+    border: 1px solid #ffd74a33;
+    border-left: 3px solid #ffd74a;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .egg-icon-big {
+    font-size: 36px;
+    flex-shrink: 0;
+  }
+  .egg-pickup-body { flex: 1; }
+  .egg-pickup-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .egg-normal .egg-pickup-label { color: #4aff4a; }
+  .egg-gold .egg-pickup-label { color: #ffd74a; }
+  .egg-trap .egg-pickup-label { color: #ff4a4a; }
+  .egg-empty .egg-pickup-label { color: #888; }
+
+  /* ── Booby Trap Card ── */
+  .trap-card {
+    background: linear-gradient(135deg, #1a0a0a 0%, #0a1610 100%);
+    border: 2px solid #ff4a4a33;
+    padding: 16px;
+    margin-bottom: 8px;
+    position: relative;
+    animation: trap-flash 0.5s ease-out;
+  }
+  @keyframes trap-flash {
+    0% { background: #ff4a4a22; } 100% { background: linear-gradient(135deg, #1a0a0a 0%, #0a1610 100%); }
+  }
+  .trap-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: #ff4a4a;
+    text-shadow: 0 0 10px #ff4a4a44;
+    margin-bottom: 6px;
+  }
+
+  /* ── Crew Manifest ── */
+  .crew-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .crew-entry {
+    background: #0a1610;
+    border: 1px solid #4aff4a15;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    position: relative;
+    transition: all 0.3s;
+  }
+  .crew-entry.eliminated {
+    border-color: #39ff1422;
+    background: linear-gradient(135deg, #0a1610 0%, #0d1a0d 100%);
+  }
+  .crew-entry.carrying { border-color: #ffd74a33; }
+  .crew-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: #4aff4a11;
+    border: 1px solid #4aff4a33;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .crew-entry.eliminated .crew-avatar {
+    border-color: #39ff1444;
+    background: #39ff1411;
+    box-shadow: 0 0 8px #39ff1422;
+  }
+  .crew-info { flex: 1; min-width: 0; }
+  .crew-name { color: #4aff4acc; font-size: 12px; }
+  .crew-entry.eliminated .crew-name {
+    color: #39ff1477;
+    text-decoration: line-through;
+  }
+  .crew-eggs {
+    font-size: 9px;
+    color: #ffd74a88;
+    margin-top: 1px;
+  }
+  .crew-status-badge {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 7px;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+  .badge-active { background: #4aff4a15; color: #4aff4a88; }
+  .badge-carrying { background: #ffd74a15; color: #ffd74a; }
+  .badge-slimed { background: #39ff1422; color: #39ff14; }
+
+  /* Slime drip on eliminated entries */
+  .crew-slime {
+    position: absolute;
+    top: -2px; right: 8px;
+    font-size: 14px;
+    opacity: 0.7;
+  }
+
+  /* ── Egg Specimen Grid ── */
+  .specimen-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .specimen-pod {
+    background: #0a1610;
+    border: 1px solid #4aff4a15;
+    padding: 10px 4px;
+    text-align: center;
+    position: relative;
+  }
+  .specimen-icon { font-size: 22px; margin-bottom: 4px; }
+  .specimen-label { font-size: 8px; letter-spacing: 1px; color: #4aff4a55; }
+  .specimen-pod.banked { border-color: #4aff4a33; background: #4aff4a08; }
+  .specimen-pod.banked .specimen-label { color: #4aff4a; }
+  .specimen-pod.gold { border-color: #ffd74a22; }
+  .specimen-pod.gold .specimen-label { color: #ffd74a; }
+  .specimen-pod.trap { border-color: #ff4a4a22; }
+  .specimen-pod.trap .specimen-label { color: #ff4a4a; }
+  .specimen-pod.dud { opacity: 0.35; }
+
+  /* ── Round header ── */
+  .round-header {
+    background: #0a1610;
+    border: 1px solid #4aff4a22;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .round-cam {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cam-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ff4a4a;
+    box-shadow: 0 0 6px #ff4a4a;
+    animation: blink-red 1s ease-in-out infinite;
+  }
+  .cam-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #4aff4a88;
+  }
+  .round-survivors {
+    font-size: 11px;
+    color: #4aff4a66;
+  }
+
+  /* ── Chris commentary ── */
+  .chris-line {
+    font-size: 12px;
+    font-style: italic;
+    color: #888;
+    padding: 6px 12px;
+    border-left: 2px solid #88888833;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+
+  /* ── Controls ── */
+  .controls-bar {
+    position: sticky;
+    bottom: 0;
+    background: #060d0aee;
+    border-top: 1px solid #4aff4a22;
+    padding: 12px 0;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    margin-top: 16px;
+  }
+  .btn-next {
+    padding: 12px 32px;
+    background: #39ff14;
+    color: #060d0a;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 2px;
+    box-shadow: 0 0 20px #39ff1433;
+    transition: all 0.2s;
+  }
+  .btn-next:hover { box-shadow: 0 0 30px #39ff1466; transform: scale(1.02); }
+  .btn-reveal-all {
+    padding: 8px 16px;
+    background: transparent;
+    color: #4aff4a55;
+    border: 1px solid #4aff4a22;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    margin-left: 10px;
+  }
+</style>
+
+<div class="alien-shell">
+
+  <!-- HEADER -->
+  <div class="hive-header">
+    <div class="hive-corner tl"></div>
+    <div class="hive-corner tr"></div>
+    <div class="hive-corner bl"></div>
+    <div class="hive-corner br"></div>
+    <div class="hive-title">👽 ALIEN RESURR-EGGTION</div>
+    <div class="hive-subtitle">FILM LOT — SCI-FI SET // MAMA ALIEN ACTIVE // SPECIMEN RETRIEVAL IN PROGRESS</div>
+  </div>
+
+  <!-- SCORE HUD -->
+  <div class="score-hud">
+    <div class="hud-cell active">
+      <div class="hud-value">R3</div>
+      <div class="hud-label">ROUND</div>
+    </div>
+    <div class="hud-cell active">
+      <div class="hud-value">6</div>
+      <div class="hud-label">ACTIVE</div>
+    </div>
+    <div class="hud-cell slimed">
+      <div class="hud-value">4</div>
+      <div class="hud-label">SLIMED</div>
+    </div>
+    <div class="hud-cell eggs">
+      <div class="hud-value">7</div>
+      <div class="hud-label">BANKED</div>
+    </div>
+    <div class="hud-cell danger">
+      <div class="hud-value">LV3</div>
+      <div class="hud-label">MAMA ALIEN</div>
+    </div>
+  </div>
+
+  <!-- MOTION TRACKER + ALERTS -->
+  <div class="tracker-panel">
+    <div class="radar-container">
+      <div class="radar-ring r1"></div>
+      <div class="radar-ring r2"></div>
+      <div class="radar-ring r3"></div>
+      <div class="radar-cross h"></div>
+      <div class="radar-cross v"></div>
+      <div class="radar-sweep"></div>
+      <div class="radar-blip" style="top: 35%; left: 62%;"></div>
+      <div class="radar-blip carrying" style="top: 55%; left: 28%;"></div>
+      <div class="radar-blip" style="top: 70%; left: 72%;"></div>
+      <div class="radar-blip" style="top: 25%; left: 45%;"></div>
+      <div class="radar-blip carrying" style="top: 60%; left: 55%;"></div>
+      <div class="radar-blip" style="top: 42%; left: 38%;"></div>
+      <div class="radar-blip chef" style="top: 48%; left: 50%;"></div>
+    </div>
+    <div class="tracker-alerts">
+      <div class="tracker-alert-line alert-movement">
+        <span class="alert-icon">⚠</span> MOVEMENT DETECTED — Mama Alien closing on Corridor B-7
+      </div>
+      <div class="tracker-alert-line alert-egg">
+        <span class="alert-icon">🥚</span> Specimen acquired — Axel carrying from Lab Wing
+      </div>
+      <div class="tracker-alert-line alert-safe">
+        <span class="alert-icon">✓</span> Bowie delivered specimen to extraction zone
+      </div>
+      <div class="tracker-alert-line alert-movement">
+        <span class="alert-icon">💀</span> Caleb triggered booby trap — position compromised!
+      </div>
+    </div>
+  </div>
+
+  <!-- ROUND HEADER -->
+  <div class="section-label">SURVEILLANCE FEED — ROUND 3</div>
+  <div class="round-header">
+    <div class="round-cam">
+      <div class="cam-dot"></div>
+      <span class="cam-text">CAM 03 — VENTILATION SHAFTS</span>
+    </div>
+    <div class="round-survivors">6 remain • 13 eggs in field</div>
+  </div>
+
+  <!-- NARRATIVE EVENT CARDS -->
+
+  <!-- Survival card -->
+  <div class="event-card survival">
+    <div class="event-portrait">🏃</div>
+    <div class="event-body">
+      <div class="event-type-badge">EVASION</div>
+      <div class="event-narrative">Axel hears the hiss of Mama Alien's paintball gun cycling behind the wall. She drops flat behind a prop console, the green targeting laser sweeping inches above her head. The shadow passes. She doesn't breathe until the footsteps fade.</div>
+      <div class="event-points" style="color: #4aff4a;">+2 SURVIVAL</div>
+    </div>
+  </div>
+
+  <!-- Heroic card -->
+  <div class="event-card heroic">
+    <div class="event-portrait">🛡️</div>
+    <div class="event-body">
+      <div class="event-type-badge">HEROIC</div>
+      <div class="event-narrative">Wayne spots MK pinned down behind a crumbling set piece, Mama Alien closing fast. He grabs a fire extinguisher and blasts a cloud of white fog across the corridor. "GO! I'll hold this!" MK sprints through the smoke with her egg.</div>
+      <div class="event-points" style="color: #29b6f6;">+3 HEROIC • BOND +2 (Wayne → MK)</div>
+    </div>
+  </div>
+
+  <!-- Egg Pickup -->
+  <div class="egg-pickup-card egg-gold">
+    <div class="egg-icon-big">🪙</div>
+    <div class="egg-pickup-body">
+      <div class="egg-pickup-label">★ GOLD SPECIMEN ACQUIRED</div>
+      <div class="event-narrative">Priya finds it wedged behind a broken cryopod in Deep Storage. It's heavier than the others — and it's glowing. Worth double. Now she just has to get it out alive.</div>
+    </div>
+  </div>
+
+  <!-- Sabotage card -->
+  <div class="event-card sabotage">
+    <div class="event-portrait">🗡️</div>
+    <div class="event-body">
+      <div class="event-type-badge">SABOTAGE</div>
+      <div class="event-narrative">Julia "accidentally" kicks a pipe as she passes Priya's hiding spot. The clang echoes through the ventilation shaft. Mama Alien's head whips around. Julia is already gone. Priya's golden egg suddenly feels very heavy.</div>
+      <div class="event-points" style="color: #ff4a4a;">SABOTAGE • BOND −2 (Julia → Priya)</div>
+    </div>
+  </div>
+
+  <!-- Comedy card -->
+  <div class="event-card comedy">
+    <div class="event-portrait">😂</div>
+    <div class="event-body">
+      <div class="event-type-badge">COMEDY</div>
+      <div class="event-narrative">Bowie rounds a corner and comes face-to-face with an alien mannequin. He screams. The mannequin doesn't. Three other players hear him from two corridors away. Mama Alien starts moving. Bowie: "That did NOT just happen."</div>
+      <div class="event-points" style="color: #ffd74a;">−1 POSITION COMPROMISED</div>
+    </div>
+  </div>
+
+  <!-- Showmance moment -->
+  <div class="event-card showmance">
+    <div class="event-portrait">💕</div>
+    <div class="event-body">
+      <div class="event-type-badge">SHOWMANCE</div>
+      <div class="event-narrative">Bowie and Raj are supposed to be searching for eggs. They are not searching for eggs. They're hiding in a prop spaceship, whispering and laughing. Three minutes of airtime burned. Zero eggs found. Duncan would have kicked them out of the group by now.</div>
+      <div class="event-points" style="color: #f06292;">SHOWMANCE MOMENT • −1 PRODUCTIVITY</div>
+    </div>
+  </div>
+
+  <!-- BOOBY TRAP -->
+  <div class="trap-card">
+    <div class="trap-label">⚡ BOOBY TRAP TRIGGERED ⚡</div>
+    <div class="slime-header">
+      <div class="event-portrait" style="border-color: #ff4a4a;">💥</div>
+      <div>
+        <div style="color: #ff4a4a; font-size: 13px; font-weight: 700;">Caleb picks up a specimen...</div>
+        <div style="color: #ff4a4a88; font-size: 11px; margin-top: 2px;">ALARM TRIGGERED — POSITION BROADCAST TO MAMA ALIEN</div>
+      </div>
+    </div>
+    <div class="event-narrative">The egg feels wrong. Too light. Caleb turns it over — a red light blinks inside. Then the siren starts. Speakers blast his location across the entire set. Every camera swivels toward him. Mama Alien's eyes lock on from three corridors away.</div>
+  </div>
+
+  <!-- ═══════════ THE BIG ONE — SLIME CARD ═══════════ -->
+  <div class="slime-card">
+    <div class="slime-header">
+      <div class="slime-portrait">
+        😱
+        <span class="slime-drip d1">💚</span>
+        <span class="slime-drip d2">💚</span>
+        <span class="slime-drip d3">💚</span>
+      </div>
+      <div>
+        <div class="slime-label">💀 SLIMED — ZEE 💀</div>
+        <div class="slime-sublabel">ELIMINATED FROM CHALLENGE • EGG DESTROYED</div>
+      </div>
+    </div>
+    <div class="slime-approach">Chef rounds the corner in full Mama Alien regalia — the rubber suit squeaking with every step. He's carrying the gatling paintball gun. He doesn't even aim properly. He just opens fire.</div>
+    <div class="slime-narrative">Green paint explodes across Zee's chest. Her egg flies out of her hands, hits the floor, and shatters. Slime everywhere. Zee stands there, dripping, staring at the ceiling. "I had ONE job." From somewhere off-set, Chris cackles into his megaphone.</div>
+    <div class="slime-approach">Zee trudges to the slime bench. The other eliminated players slow-clap. She sits down. Drips. "Don't."</div>
+  </div>
+
+  <!-- Chris commentary -->
+  <div class="chris-line">"The herd is thinning, and Mama Alien hasn't even switched to the GATLING yet. This is GREAT television." — Chris McLean</div>
+
+  <!-- CREW MANIFEST -->
+  <div class="section-label">CREW BIOSIGNS</div>
+  <div class="crew-grid">
+    <div class="crew-entry carrying">
+      <div class="crew-avatar">🥚</div>
+      <div class="crew-info">
+        <div class="crew-name">Axel</div>
+        <div class="crew-eggs">🥚 1 banked • carrying 1</div>
+      </div>
+      <span class="crew-status-badge badge-carrying">CARRYING</span>
+    </div>
+    <div class="crew-entry">
+      <div class="crew-avatar">👤</div>
+      <div class="crew-info">
+        <div class="crew-name">MK</div>
+        <div class="crew-eggs">🥚 2 banked</div>
+      </div>
+      <span class="crew-status-badge badge-active">ACTIVE</span>
+    </div>
+    <div class="crew-entry">
+      <div class="crew-avatar">👤</div>
+      <div class="crew-info">
+        <div class="crew-name">Wayne</div>
+        <div class="crew-eggs">🥚 1 banked</div>
+      </div>
+      <span class="crew-status-badge badge-active">ACTIVE</span>
+    </div>
+    <div class="crew-entry carrying">
+      <div class="crew-avatar">🪙</div>
+      <div class="crew-info">
+        <div class="crew-name">Priya</div>
+        <div class="crew-eggs">🥚 1 banked • carrying GOLD</div>
+      </div>
+      <span class="crew-status-badge badge-carrying">CARRYING</span>
+    </div>
+    <div class="crew-entry">
+      <div class="crew-avatar">👤</div>
+      <div class="crew-info">
+        <div class="crew-name">Bowie</div>
+        <div class="crew-eggs">🥚 1 banked</div>
+      </div>
+      <span class="crew-status-badge badge-active">ACTIVE</span>
+    </div>
+    <div class="crew-entry">
+      <div class="crew-avatar">👤</div>
+      <div class="crew-info">
+        <div class="crew-name">Julia</div>
+        <div class="crew-eggs">🥚 1 banked</div>
+      </div>
+      <span class="crew-status-badge badge-active">ACTIVE</span>
+    </div>
+    <div class="crew-entry eliminated">
+      <div class="crew-avatar">💚</div>
+      <div class="crew-info">
+        <div class="crew-name">Zee</div>
+        <div class="crew-eggs">🥚 0 banked</div>
+      </div>
+      <span class="crew-status-badge badge-slimed">SLIMED</span>
+      <span class="crew-slime">💚💚</span>
+    </div>
+    <div class="crew-entry eliminated">
+      <div class="crew-avatar">💚</div>
+      <div class="crew-info">
+        <div class="crew-name">Caleb</div>
+        <div class="crew-eggs">🥚 0 banked</div>
+      </div>
+      <span class="crew-status-badge badge-slimed">SLIMED</span>
+      <span class="crew-slime">💚💚</span>
+    </div>
+    <div class="crew-entry eliminated">
+      <div class="crew-avatar">💚</div>
+      <div class="crew-info">
+        <div class="crew-name">Raj</div>
+        <div class="crew-eggs">🥚 0 banked</div>
+      </div>
+      <span class="crew-status-badge badge-slimed">SLIMED</span>
+      <span class="crew-slime">💚</span>
+    </div>
+    <div class="crew-entry eliminated">
+      <div class="crew-avatar">💚</div>
+      <div class="crew-info">
+        <div class="crew-name">Scary Girl</div>
+        <div class="crew-eggs">🥚 1 banked</div>
+      </div>
+      <span class="crew-status-badge badge-slimed">SLIMED</span>
+      <span class="crew-slime">💚💚💚</span>
+    </div>
+  </div>
+
+  <!-- SPECIMEN GRID -->
+  <div class="section-label">SPECIMEN CONTAINMENT</div>
+  <div class="specimen-grid">
+    <div class="specimen-pod banked"><div class="specimen-icon">🥚</div><div class="specimen-label">BANKED</div></div>
+    <div class="specimen-pod banked"><div class="specimen-icon">🥚</div><div class="specimen-label">BANKED</div></div>
+    <div class="specimen-pod gold banked"><div class="specimen-icon">🪙</div><div class="specimen-label">GOLD ✓</div></div>
+    <div class="specimen-pod banked"><div class="specimen-icon">🥚</div><div class="specimen-label">BANKED</div></div>
+    <div class="specimen-pod banked"><div class="specimen-icon">🥚</div><div class="specimen-label">BANKED</div></div>
+    <div class="specimen-pod"><div class="specimen-icon" style="opacity:0.3">🥚</div><div class="specimen-label">IN FIELD</div></div>
+    <div class="specimen-pod gold"><div class="specimen-icon" style="opacity:0.3">🪙</div><div class="specimen-label">GOLD — DEEP</div></div>
+    <div class="specimen-pod trap"><div class="specimen-icon">💥</div><div class="specimen-label">TRAP!</div></div>
+    <div class="specimen-pod dud"><div class="specimen-icon">💨</div><div class="specimen-label">EMPTY</div></div>
+    <div class="specimen-pod"><div class="specimen-icon" style="opacity:0.3">🥚</div><div class="specimen-label">IN FIELD</div></div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls-bar">
+    <button class="btn-next">NEXT ▶ (8/42)</button>
+    <button class="btn-reveal-all">Reveal All</button>
+  </div>
+
+</div>

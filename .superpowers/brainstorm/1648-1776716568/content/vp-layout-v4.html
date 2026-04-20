@@ -1,0 +1,1074 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+  body { background: #060d0a !important; }
+  .frame-header { display: none !important; }
+
+  * { box-sizing: border-box; }
+
+  .alien-shell {
+    font-family: 'Share Tech Mono', monospace;
+    color: #4aff4a;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+  .alien-shell::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,0,0.012) 2px, rgba(0,255,0,0.012) 4px);
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ── Header ── */
+  .hive-header {
+    border: 1px solid #4aff4a33;
+    background: linear-gradient(180deg, #0d1a12 0%, #060d0a 100%);
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .hive-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #4aff4a, transparent);
+    animation: scanline 3s linear infinite;
+  }
+  @keyframes scanline { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+  .hive-corner { position: absolute; width: 12px; height: 12px; border-color: #4aff4a44; border-style: solid; }
+  .hive-corner.tl { top: 4px; left: 4px; border-width: 2px 0 0 2px; }
+  .hive-corner.tr { top: 4px; right: 4px; border-width: 2px 2px 0 0; }
+  .hive-corner.bl { bottom: 4px; left: 4px; border-width: 0 0 2px 2px; }
+  .hive-corner.br { bottom: 4px; right: 4px; border-width: 0 2px 2px 0; }
+  .hive-title { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 900; letter-spacing: 4px; color: #4aff4a; text-shadow: 0 0 15px #4aff4a44; }
+  .hive-subtitle { font-size: 10px; color: #4aff4a55; margin-top: 4px; letter-spacing: 2px; }
+
+  /* ── Score HUD ── */
+  .score-hud { display: flex; gap: 2px; margin-bottom: 12px; }
+  .hud-cell { flex: 1; background: #0a1610; border: 1px solid #4aff4a15; padding: 8px 4px; text-align: center; }
+  .hud-cell:first-child { border-radius: 4px 0 0 4px; }
+  .hud-cell:last-child { border-radius: 0 4px 4px 0; }
+  .hud-value { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 700; text-shadow: 0 0 8px currentColor; }
+  .hud-label { font-size: 7px; letter-spacing: 2px; color: #4aff4a44; margin-top: 2px; }
+  .hud-cell.active .hud-value { color: #4aff4a; }
+  .hud-cell.slimed .hud-value { color: #39ff14; }
+  .hud-cell.eggs .hud-value { color: #ffd74a; }
+  .hud-cell.danger .hud-value { color: #ff4a4a; }
+
+  /* ═══ TWO-COLUMN LAYOUT ═══ */
+  .main-layout {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  /* ── Left: Event Feed ── */
+  .event-feed {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* ── Right: Sticky Sidebar ── */
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 12px;
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #4aff4a22 transparent;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: #4aff4a22; border-radius: 2px; }
+
+  /* ── Section Labels ── */
+  .section-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #4aff4a44;
+    border-bottom: 1px solid #4aff4a10;
+    padding-bottom: 3px;
+    margin: 12px 0 8px;
+    text-transform: uppercase;
+  }
+  .feed-section-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #4aff4a44;
+    border-bottom: 1px solid #4aff4a10;
+    padding-bottom: 3px;
+    margin: 16px 0 10px;
+  }
+
+  /* ═══ SIDEBAR: Crew Biosigns ═══ */
+  .crew-entry {
+    background: #0a1610;
+    border: 1px solid #4aff4a12;
+    padding: 5px 7px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    margin-bottom: 3px;
+    border-radius: 2px;
+    position: relative;
+    transition: all 0.4s;
+  }
+  .crew-avatar {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #4aff4a0a;
+    border: 1px solid #4aff4a22;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    flex-shrink: 0;
+  }
+  .crew-info { flex: 1; min-width: 0; }
+  .crew-name { color: #4aff4acc; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .crew-eggs { font-size: 8px; color: #ffd74a66; margin-top: 1px; }
+  .crew-status-badge {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 6px;
+    letter-spacing: 1px;
+    padding: 1px 4px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .badge-active { background: #4aff4a10; color: #4aff4a66; }
+  .badge-carrying { background: #ffd74a15; color: #ffd74a; }
+  .badge-slimed { background: #39ff1420; color: #39ff14; }
+  .crew-entry.carrying { border-color: #ffd74a22; }
+  .crew-entry.slimed {
+    border-color: #39ff1425;
+    overflow: hidden;
+  }
+  .crew-entry.slimed::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, #39ff140d, transparent 60%);
+    pointer-events: none;
+  }
+  .crew-entry.slimed .crew-avatar { border-color: #39ff1444; background: #39ff1412; box-shadow: 0 0 4px #39ff1422; }
+  .crew-entry.slimed .crew-name { color: #39ff1466; text-decoration: line-through; }
+  .crew-mini-drip {
+    position: absolute;
+    top: 0;
+    width: var(--w, 4px);
+    height: var(--h, 8px);
+    background: linear-gradient(180deg, #39ff1440, transparent);
+    border-radius: 0 0 50% 50%;
+    pointer-events: none;
+  }
+
+  /* ═══ SIDEBAR: Specimen Grid ═══ */
+  .specimen-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 3px;
+  }
+  .specimen-pod {
+    background: #0a1610;
+    border: 1px solid #4aff4a10;
+    padding: 5px 2px;
+    text-align: center;
+    border-radius: 2px;
+    transition: all 0.4s;
+  }
+  .specimen-icon { font-size: 14px; }
+  .specimen-label { font-size: 6px; letter-spacing: 1px; color: #4aff4a44; margin-top: 2px; }
+  .specimen-pod.banked { border-color: #4aff4a22; background: #4aff4a06; }
+  .specimen-pod.banked .specimen-label { color: #4aff4a88; }
+  .specimen-pod.gold { border-color: #ffd74a18; }
+  .specimen-pod.gold .specimen-label { color: #ffd74a88; }
+  .specimen-pod.trap { border-color: #ff4a4a18; }
+  .specimen-pod.trap .specimen-label { color: #ff4a4a; }
+  .specimen-pod.dud { opacity: 0.3; }
+  .specimen-pod.destroyed { border-color: #39ff1422; background: #39ff1408; }
+  .specimen-pod.destroyed .specimen-label { color: #39ff14; }
+
+  /* ═══ SIDEBAR: Motion Tracker (compact) ═══ */
+  .radar-mini {
+    width: 100%; aspect-ratio: 1;
+    max-width: 230px;
+    margin: 0 auto 8px;
+    position: relative;
+    border-radius: 50%;
+    border: 1px solid #4aff4a22;
+    background: radial-gradient(circle, #0d1a1200 0%, #060d0a 80%);
+    overflow: hidden;
+  }
+  .radar-ring { position: absolute; border-radius: 50%; border: 1px solid #4aff4a0d; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+  .radar-ring.r1 { width: 33%; height: 33%; }
+  .radar-ring.r2 { width: 66%; height: 66%; }
+  .radar-cross { position: absolute; background: #4aff4a08; }
+  .radar-cross.h { top: 50%; left: 0; width: 100%; height: 1px; }
+  .radar-cross.v { left: 50%; top: 0; width: 1px; height: 100%; }
+  .radar-sweep {
+    position: absolute; top: 50%; left: 50%;
+    width: 50%; height: 2px;
+    transform-origin: left center;
+    background: linear-gradient(90deg, #4aff4a88, transparent);
+    animation: sweep 4s linear infinite;
+    box-shadow: 0 0 12px 4px #4aff4a18;
+  }
+  @keyframes sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .radar-blip {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: #4aff4a;
+    box-shadow: 0 0 4px #4aff4a;
+    animation: blink 2s ease-in-out infinite;
+  }
+  .radar-blip.chef { width: 8px; height: 8px; background: #ff4a4a; box-shadow: 0 0 8px #ff4a4a; animation: blink-red 1s ease-in-out infinite; }
+  .radar-blip.carrying { background: #ffd74a; box-shadow: 0 0 4px #ffd74a; }
+  @keyframes blink { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+  @keyframes blink-red { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  .tracker-tag {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: #ff4a4a88;
+    text-align: center;
+    animation: alert-flash 1.5s ease-in-out infinite;
+  }
+  @keyframes alert-flash { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  /* ═══ EVENT FEED CARDS ═══ */
+  .round-header {
+    background: #0a1610;
+    border: 1px solid #4aff4a18;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    border-radius: 2px;
+  }
+  .round-cam { display: flex; align-items: center; gap: 6px; }
+  .cam-dot { width: 6px; height: 6px; border-radius: 50%; background: #ff4a4a; box-shadow: 0 0 4px #ff4a4a; animation: blink-red 1s ease-in-out infinite; }
+  .cam-text { font-family: 'Orbitron', sans-serif; font-size: 10px; letter-spacing: 2px; color: #4aff4a77; }
+  .round-survivors { font-size: 10px; color: #4aff4a44; }
+
+  /* Event cards */
+  .ev-card {
+    background: #0a1610;
+    border: 1px solid #4aff4a12;
+    border-left: 3px solid #4aff4a33;
+    padding: 10px 12px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-radius: 2px;
+    position: relative;
+  }
+  .ev-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(90deg, var(--glow, #4aff4a05), transparent);
+    pointer-events: none;
+  }
+  .ev-portrait {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: #4aff4a0a;
+    border: 1px solid var(--accent, #4aff4a33);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .ev-body { flex: 1; min-width: 0; }
+  .ev-badge {
+    display: inline-block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 7px;
+    letter-spacing: 2px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin-bottom: 4px;
+  }
+  .ev-text { font-size: 12px; line-height: 1.6; color: #b8ccb8; }
+  .ev-impact {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    margin-top: 4px;
+    letter-spacing: 1px;
+    color: var(--accent, #4aff4a88);
+  }
+
+  /* Card types */
+  .ev-card.survival { border-left-color: #4aff4a55; --accent: #4aff4a; --glow: #4aff4a05; }
+  .ev-card.survival .ev-badge { background: #4aff4a15; color: #4aff4a; }
+  .ev-card.heroic { border-left-color: #29b6f6; --accent: #29b6f6; --glow: #29b6f605; }
+  .ev-card.heroic .ev-badge { background: #29b6f615; color: #29b6f6; }
+  .ev-card.sabotage { border-left-color: #ff4a4a; --accent: #ff4a4a; --glow: #ff4a4a05; }
+  .ev-card.sabotage .ev-badge { background: #ff4a4a15; color: #ff4a4a; }
+  .ev-card.comedy { border-left-color: #ffd74a; --accent: #ffd74a; --glow: #ffd74a05; }
+  .ev-card.comedy .ev-badge { background: #ffd74a15; color: #ffd74a; }
+  .ev-card.showmance { border-left-color: #f06292; --accent: #f06292; --glow: #f0629205; }
+  .ev-card.showmance .ev-badge { background: #f0629215; color: #f06292; }
+  .ev-card.alliance { border-left-color: #ab47bc; --accent: #ab47bc; --glow: #ab47bc05; }
+  .ev-card.alliance .ev-badge { background: #ab47bc15; color: #ab47bc; }
+  .ev-card.confrontation { border-left-color: #ff7043; --accent: #ff7043; --glow: #ff704305; }
+  .ev-card.confrontation .ev-badge { background: #ff704315; color: #ff7043; }
+  .ev-card.egg { border-left-color: #ffd74a; --accent: #ffd74a; --glow: #ffd74a08; }
+  .ev-card.egg .ev-badge { background: #ffd74a15; color: #ffd74a; }
+  .ev-card.group { border-left-color: #66bb6a; --accent: #66bb6a; --glow: #66bb6a05; }
+  .ev-card.group .ev-badge { background: #66bb6a15; color: #66bb6a; }
+  .ev-card.panic { border-left-color: #ff8a65; --accent: #ff8a65; --glow: #ff8a6505; }
+  .ev-card.panic .ev-badge { background: #ff8a6515; color: #ff8a65; }
+  .ev-card.environmental { border-left-color: #4aff4a22; --accent: #4aff4a66; }
+  .ev-card.environmental .ev-badge { background: #4aff4a10; color: #4aff4a66; }
+
+  /* Trap card */
+  .trap-card {
+    background: linear-gradient(135deg, #1a0a0a 0%, #0a1610 100%);
+    border: 1px solid #ff4a4a33;
+    border-left: 3px solid #ff4a4a;
+    padding: 12px 14px;
+    margin-bottom: 5px;
+    border-radius: 2px;
+  }
+  .trap-label { font-family: 'Orbitron', sans-serif; font-size: 10px; letter-spacing: 2px; color: #ff4a4a; margin-bottom: 4px; }
+  .trap-text { font-size: 12px; line-height: 1.6; color: #b8ccb8; }
+
+  /* Slime card */
+  .slime-card {
+    position: relative;
+    background: linear-gradient(180deg, #0b2a10 0%, #0a1610 25%);
+    border: 2px solid #39ff1444;
+    padding: 20px 16px 14px;
+    margin-bottom: 5px;
+    overflow: hidden;
+    border-radius: 3px;
+  }
+  .slime-pool-top { position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(180deg, #39ff14aa, #39ff1433); z-index: 3; }
+  .slime-drips { position: absolute; top: 0; left: 0; right: 0; height: 70px; pointer-events: none; overflow: visible; z-index: 2; }
+  .drip {
+    position: absolute; top: -2px;
+    width: var(--w, 14px);
+    background: linear-gradient(180deg, #39ff14bb, #39ff1466, transparent);
+    border-radius: 0 0 50% 50%;
+    animation: drip-down var(--dur, 4s) ease-in infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0.8;
+  }
+  @keyframes drip-down { 0% { height: var(--h1, 25px); } 60% { height: var(--h2, 55px); } 80% { height: var(--h2, 55px); } 100% { height: var(--h1, 25px); } }
+  .splatter { position: absolute; border-radius: 50%; background: radial-gradient(ellipse, #39ff1433, #39ff1418, transparent 70%); pointer-events: none; z-index: 1; }
+  .splatter.s1 { width: 80px; height: 50px; top: 12px; right: 15px; transform: rotate(-12deg); }
+  .splatter.s2 { width: 60px; height: 40px; bottom: 20px; left: 8px; transform: rotate(20deg); }
+  .impact-point { position: absolute; top: 18px; right: 70px; width: 24px; height: 24px; border-radius: 50%; background: radial-gradient(circle, #39ff1477, #39ff1433 40%, transparent 70%); z-index: 2; box-shadow: 0 0 12px #39ff1433; }
+  .slime-content { position: relative; z-index: 5; }
+  .slime-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .slime-portrait {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #39ff1412;
+    border: 2px solid #39ff14;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 0 15px #39ff1433;
+    position: relative;
+  }
+  .portrait-drip { position: absolute; width: 3px; background: linear-gradient(180deg, #39ff14aa, transparent); border-radius: 0 0 50% 50%; }
+  .portrait-drip.pd1 { bottom: -10px; left: 10px; height: 10px; }
+  .portrait-drip.pd2 { bottom: -16px; left: 24px; height: 16px; }
+  .portrait-drip.pd3 { bottom: -7px; right: 12px; height: 7px; }
+  .slime-main-label { font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 900; letter-spacing: 3px; color: #39ff14; text-shadow: 0 0 12px #39ff1444; }
+  .slime-sublabel { font-size: 9px; color: #39ff1477; letter-spacing: 1px; margin-top: 2px; }
+  .slime-approach { font-size: 11px; line-height: 1.7; color: #6a886a; padding: 6px 12px; border-left: 2px solid #39ff1433; margin-bottom: 8px; background: #39ff1404; }
+  .slime-narrative { font-size: 12px; line-height: 1.7; color: #b8ccb8; margin-bottom: 6px; }
+  .slime-aftermath { font-size: 11px; line-height: 1.5; color: #5a785a; font-style: italic; padding-top: 6px; border-top: 1px solid #39ff1415; }
+
+  /* Chris line */
+  .chris-line { font-size: 11px; font-style: italic; color: #666; padding: 4px 10px; border-left: 2px solid #66666633; margin: 6px 0; line-height: 1.5; }
+
+  /* Escalation banner */
+  .escalation-banner {
+    background: linear-gradient(90deg, #ff4a4a08, #ff4a4a15, #ff4a4a08);
+    border: 1px solid #ff4a4a22;
+    padding: 8px 14px;
+    text-align: center;
+    margin: 10px 0 6px;
+    border-radius: 2px;
+  }
+  .escalation-text { font-family: 'Orbitron', sans-serif; font-size: 10px; letter-spacing: 3px; color: #ff4a4a; }
+  .escalation-sub { font-size: 9px; color: #ff4a4a66; margin-top: 2px; }
+
+  /* Egg delivery card */
+  .delivery-card {
+    background: #0a1610;
+    border: 1px solid #ffd74a22;
+    border-left: 3px solid #4aff4a;
+    padding: 10px 12px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 2px;
+  }
+  .delivery-icon { font-size: 24px; flex-shrink: 0; }
+  .delivery-body { flex: 1; }
+  .delivery-label { font-family: 'Orbitron', sans-serif; font-size: 8px; letter-spacing: 2px; color: #4aff4a; margin-bottom: 3px; }
+  .delivery-text { font-size: 11px; line-height: 1.5; color: #b8ccb8; }
+
+  /* Controls */
+  .controls-bar {
+    position: sticky;
+    bottom: 0;
+    background: #060d0aee;
+    border-top: 1px solid #4aff4a18;
+    padding: 10px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    margin-top: 12px;
+    z-index: 10;
+  }
+  .btn-next {
+    padding: 10px 28px;
+    background: #39ff14;
+    color: #060d0a;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 2px;
+    box-shadow: 0 0 16px #39ff1433;
+  }
+  .btn-reveal-all {
+    padding: 6px 14px;
+    background: transparent;
+    color: #4aff4a44;
+    border: 1px solid #4aff4a18;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 10px;
+    margin-left: 8px;
+  }
+</style>
+
+<div class="alien-shell">
+
+  <!-- HEADER -->
+  <div class="hive-header">
+    <div class="hive-corner tl"></div><div class="hive-corner tr"></div><div class="hive-corner bl"></div><div class="hive-corner br"></div>
+    <div class="hive-title">👽 ALIEN RESURR-EGGTION</div>
+    <div class="hive-subtitle">FILM LOT — SCI-FI SET // MAMA ALIEN ACTIVE // SPECIMEN RETRIEVAL IN PROGRESS</div>
+  </div>
+
+  <!-- SCORE HUD -->
+  <div class="score-hud">
+    <div class="hud-cell active"><div class="hud-value">R5</div><div class="hud-label">ROUND</div></div>
+    <div class="hud-cell active"><div class="hud-value">6</div><div class="hud-label">ACTIVE</div></div>
+    <div class="hud-cell slimed"><div class="hud-value">4</div><div class="hud-label">SLIMED</div></div>
+    <div class="hud-cell eggs"><div class="hud-value">9</div><div class="hud-label">BANKED</div></div>
+    <div class="hud-cell danger"><div class="hud-value">LV3</div><div class="hud-label">MAMA ALIEN</div></div>
+  </div>
+
+  <!-- ═══ TWO-COLUMN LAYOUT ═══ -->
+  <div class="main-layout">
+
+    <!-- ═══ LEFT: EVENT FEED ═══ -->
+    <div class="event-feed">
+
+      <!-- ══ ROUND 1 ══ -->
+      <div class="feed-section-label">ROUND 1 — SCATTER PHASE</div>
+      <div class="round-header">
+        <div class="round-cam"><div class="cam-dot"></div><span class="cam-text">CAM 01 — MAIN CORRIDOR</span></div>
+        <div class="round-survivors">10 active • 20 eggs in field</div>
+      </div>
+
+      <div class="ev-card environmental">
+        <div class="ev-portrait">🏚️</div>
+        <div class="ev-body">
+          <div class="ev-badge">ATMOSPHERE</div>
+          <div class="ev-text">The sci-fi set stretches in every direction — fake corridors, prop alien pods, dangling wires. Emergency lights cast everything in blue-grey. Somewhere deep in the set, a mechanical growl echoes. Chef is warming up.</div>
+        </div>
+      </div>
+
+      <div class="ev-card group">
+        <div class="ev-portrait">👥</div>
+        <div class="ev-body">
+          <div class="ev-badge">GROUP FORMED</div>
+          <div class="ev-text">Axel, MK, and Wayne cluster together at the entrance. Axel takes point. MK watches the flanks. Wayne looks nervous but stays close. Strength in numbers — at least until the shooting starts.</div>
+          <div class="ev-impact" style="color: #66bb6a;">GROUP: Axel + MK + Wayne</div>
+        </div>
+      </div>
+
+      <div class="ev-card group">
+        <div class="ev-portrait">👥</div>
+        <div class="ev-body">
+          <div class="ev-badge">GROUP FORMED</div>
+          <div class="ev-text">Bowie and Raj immediately pair off. Julia rolls her eyes and joins Priya. "At least WE'LL actually look for eggs," Julia mutters.</div>
+          <div class="ev-impact" style="color: #66bb6a;">PAIRS: Bowie+Raj, Julia+Priya</div>
+        </div>
+      </div>
+
+      <div class="ev-card survival">
+        <div class="ev-portrait">🔍</div>
+        <div class="ev-body">
+          <div class="ev-badge">SEARCH</div>
+          <div class="ev-text">Axel's group moves fast through Corridor A. She checks behind every prop console, under every fake panel. Nothing yet. The mechanical growl is getting closer.</div>
+        </div>
+      </div>
+
+      <div class="ev-card egg">
+        <div class="ev-portrait">🥚</div>
+        <div class="ev-body">
+          <div class="ev-badge">SPECIMEN FOUND</div>
+          <div class="ev-text">MK spots it first — an egg wedged behind a ventilation grate. She reaches in, fingers close around it. Warm. Heavier than expected. She tucks it under her arm. "Got one."</div>
+          <div class="ev-impact" style="color: #ffd74a;">MK — EGG ACQUIRED</div>
+        </div>
+      </div>
+
+      <div class="ev-card comedy">
+        <div class="ev-portrait">😂</div>
+        <div class="ev-body">
+          <div class="ev-badge">COMEDY</div>
+          <div class="ev-text">Zee walks face-first into a hanging alien prop. Screams. It's rubber. She punches it. It swings back and hits her again. Caleb watches the whole thing from behind a pillar, trying not to laugh.</div>
+          <div class="ev-impact" style="color: #ffd74a;">−1 POSITION COMPROMISED</div>
+        </div>
+      </div>
+
+      <div class="ev-card showmance">
+        <div class="ev-portrait">💕</div>
+        <div class="ev-body">
+          <div class="ev-badge">SHOWMANCE</div>
+          <div class="ev-text">Bowie and Raj have found a prop spaceship cockpit. They are not searching it for eggs. They're sitting in the captain's chairs, making up alien dialogue. "Captain, I'm detecting... feelings." "Shut up and kiss me, ensign."</div>
+          <div class="ev-impact" style="color: #f06292;">SHOWMANCE MOMENT • 0 EGGS FOUND • BOND +1</div>
+        </div>
+      </div>
+
+      <div class="ev-card survival">
+        <div class="ev-portrait">👂</div>
+        <div class="ev-body">
+          <div class="ev-badge">EVASION</div>
+          <div class="ev-text">Julia hears the hiss of hydraulics three corridors over. She flattens against a wall and signals Priya to freeze. The shadow of Mama Alien passes across the far intersection. Neither of them breathes until it's gone.</div>
+          <div class="ev-impact" style="color: #4aff4a;">+2 EVASION</div>
+        </div>
+      </div>
+
+      <div class="ev-card egg">
+        <div class="ev-portrait">🥚</div>
+        <div class="ev-body">
+          <div class="ev-badge">SPECIMEN FOUND</div>
+          <div class="ev-text">Scary Girl finds an egg sitting in a fake alien nest. She picks it up and inspects it with scientific detachment. "Interesting. The prop department actually made these quite well." She pockets it like it's a rock sample.</div>
+          <div class="ev-impact" style="color: #ffd74a;">SCARY GIRL — EGG ACQUIRED</div>
+        </div>
+      </div>
+
+      <div class="chris-line">"Ten eggs hidden across the set. Chef's got the paintball gun loaded. I give it three minutes before someone cries." — Chris McLean</div>
+
+      <!-- ══ ROUND 2 ══ -->
+      <div class="feed-section-label">ROUND 2 — MAMA ALIEN HUNTS</div>
+      <div class="round-header">
+        <div class="round-cam"><div class="cam-dot"></div><span class="cam-text">CAM 02 — LAB WING</span></div>
+        <div class="round-survivors">10 active • 16 eggs in field</div>
+      </div>
+
+      <div class="ev-card environmental">
+        <div class="ev-portrait">👾</div>
+        <div class="ev-body">
+          <div class="ev-badge">MAMA ALIEN</div>
+          <div class="ev-text">Chef's figured out the targeting system. The paintball gun hums. Mama Alien stalks through the Lab Wing with purpose now — checking behind consoles, kicking open prop doors. The rubber suit squeaks with every step. Chef doesn't care.</div>
+        </div>
+      </div>
+
+      <div class="ev-card heroic">
+        <div class="ev-portrait">🛡️</div>
+        <div class="ev-body">
+          <div class="ev-badge">HEROIC</div>
+          <div class="ev-text">Wayne spots MK pinned down behind a crumbling set piece, Mama Alien rounding the corner. He grabs a fire extinguisher off the wall and blasts a cloud of white fog across the corridor. "GO! NOW!" MK sprints through the smoke with her egg.</div>
+          <div class="ev-impact" style="color: #29b6f6;">+3 HEROIC • BOND +2 (Wayne → MK) • POPULARITY +1</div>
+        </div>
+      </div>
+
+      <div class="ev-card sabotage">
+        <div class="ev-portrait">🗡️</div>
+        <div class="ev-body">
+          <div class="ev-badge">SABOTAGE</div>
+          <div class="ev-text">Julia "accidentally" kicks a pipe as she passes Priya's position. The clang echoes down the ventilation shaft. Mama Alien's head snaps around. Julia is already three corridors away, smirking. Priya clutches her egg tighter.</div>
+          <div class="ev-impact" style="color: #ff4a4a;">SABOTAGE • BOND −2 (Julia → Priya) • HEAT +1</div>
+        </div>
+      </div>
+
+      <div class="delivery-card">
+        <div class="delivery-icon">📦</div>
+        <div class="delivery-body">
+          <div class="delivery-label">✓ SPECIMEN DELIVERED — MK</div>
+          <div class="delivery-text">MK reaches the extraction zone, slides the egg into the containment crate. Safe. She's breathing hard. That's one banked. She looks back toward the set. Goes back in.</div>
+        </div>
+      </div>
+
+      <div class="ev-card confrontation">
+        <div class="ev-portrait">💥</div>
+        <div class="ev-body">
+          <div class="ev-badge">CONFRONTATION</div>
+          <div class="ev-text">Priya catches up to Julia two corridors later. "Did you just KICK that pipe?" Julia: "I don't know what you're talking about." Priya: "I heard you laughing." They stare at each other. Neither blinks. Somewhere, Chef reloads.</div>
+          <div class="ev-impact" style="color: #ff7043;">CONFRONTATION • BOND −1 (Priya → Julia) • RIVALRY FORMING</div>
+        </div>
+      </div>
+
+      <div class="ev-card alliance">
+        <div class="ev-portrait">🤝</div>
+        <div class="ev-body">
+          <div class="ev-badge">ALLIANCE</div>
+          <div class="ev-text">Axel pulls Wayne aside. "You and me — we take turns carrying. One carries, one watches for Chef. Switch every corridor." Wayne nods. They shake on it. An alliance forged in alien slime.</div>
+          <div class="ev-impact" style="color: #ab47bc;">ALLIANCE FORMED: Axel + Wayne • "Egg Runners"</div>
+        </div>
+      </div>
+
+      <div class="trap-card">
+        <div class="trap-label">⚡ BOOBY TRAP ⚡</div>
+        <div class="trap-text">Caleb picks up an egg from under a console. It clicks. A siren blasts from inside the egg. Red lights flash. His position is broadcast across the entire set. Mama Alien pivots. Chef's grin is visible through the costume's teeth.</div>
+        <div class="ev-impact" style="color: #ff4a4a; margin-top: 6px;">POSITION EXPOSED • MAMA ALIEN TARGETING CALEB</div>
+      </div>
+
+      <!-- SLIME CARD -->
+      <div class="slime-card">
+        <div class="slime-pool-top"></div>
+        <div class="slime-drips">
+          <div class="drip" style="left: 8%; --w: 12px; --h1: 22px; --h2: 50px; --dur: 5s; --delay: 0s;"></div>
+          <div class="drip" style="left: 22%; --w: 16px; --h1: 30px; --h2: 65px; --dur: 4.5s; --delay: 0.8s;"></div>
+          <div class="drip" style="left: 40%; --w: 10px; --h1: 35px; --h2: 70px; --dur: 4s; --delay: 1.5s;"></div>
+          <div class="drip" style="left: 58%; --w: 14px; --h1: 25px; --h2: 55px; --dur: 5.5s; --delay: 0.3s;"></div>
+          <div class="drip" style="left: 75%; --w: 8px; --h1: 28px; --h2: 48px; --dur: 5.2s; --delay: 1s;"></div>
+          <div class="drip" style="left: 90%; --w: 12px; --h1: 20px; --h2: 45px; --dur: 4.8s; --delay: 2s;"></div>
+        </div>
+        <div class="splatter s1"></div><div class="splatter s2"></div>
+        <div class="impact-point"></div>
+        <div class="slime-content">
+          <div class="slime-header">
+            <div class="slime-portrait">😱<div class="portrait-drip pd1"></div><div class="portrait-drip pd2"></div><div class="portrait-drip pd3"></div></div>
+            <div>
+              <div class="slime-main-label">☠ SLIMED — CALEB</div>
+              <div class="slime-sublabel">BOOBY TRAP → ELIMINATION • 0 EGGS BANKED</div>
+            </div>
+          </div>
+          <div class="slime-approach">The alarm did its job. Chef doesn't need to hunt — he walks straight to the blinking red light. Caleb is still holding the screaming egg when Mama Alien rounds the corner. Point blank.</div>
+          <div class="slime-narrative">Three paintball rounds hit Caleb in rapid succession. Chest. Arm. Forehead. He goes down in a shower of green. The booby-trapped egg clatters away, still beeping. Caleb lies on the grated floor, covered in slime, staring at the industrial ceiling.</div>
+          <div class="slime-aftermath">He picks himself up. Green dripping from everywhere. Walks to the slime bench without a word. Sits down. The bench squelches.</div>
+        </div>
+      </div>
+
+      <div class="chris-line">"AND THAT is why you check the merchandise before you pick it up! BOOBY TRAP into SLIME — that's a combo meal of failure!" — Chris McLean</div>
+
+      <div class="ev-card panic">
+        <div class="ev-portrait">😰</div>
+        <div class="ev-body">
+          <div class="ev-badge">PANIC</div>
+          <div class="ev-text">Zee saw the whole Caleb elimination from ten feet away. She freezes. Her legs won't move. The egg in her hands is shaking — no, that's her hands shaking. Mama Alien is reloading. She needs to run. She is not running.</div>
+          <div class="ev-impact" style="color: #ff8a65;">PANIC FREEZE • −2 POSITION</div>
+        </div>
+      </div>
+
+      <div class="ev-card egg">
+        <div class="ev-portrait">🪙</div>
+        <div class="ev-body">
+          <div class="ev-badge">★ GOLD SPECIMEN</div>
+          <div class="ev-text">Priya finds it in Deep Storage — behind a locked prop cage that she shoulder-checks open. The egg is heavier. Warmer. It's got a faint golden shimmer. Worth double. Now she's a walking target with a glowing prize.</div>
+          <div class="ev-impact" style="color: #ffd74a;">PRIYA — GOLD EGG ACQUIRED (WORTH 2)</div>
+        </div>
+      </div>
+
+      <!-- ══ ROUND 3 — ESCALATION ══ -->
+      <div class="escalation-banner">
+        <div class="escalation-text">⚠ THREAT ESCALATION ⚠</div>
+        <div class="escalation-sub">Mama Alien entering PROWLING phase — Chef switches to gatling mode</div>
+      </div>
+
+      <div class="feed-section-label">ROUND 3 — THE HUNT INTENSIFIES</div>
+      <div class="round-header">
+        <div class="round-cam"><div class="cam-dot"></div><span class="cam-text">CAM 03 — VENTILATION SHAFTS</span></div>
+        <div class="round-survivors">9 active • 12 eggs in field</div>
+      </div>
+
+      <div class="ev-card environmental">
+        <div class="ev-portrait">🔴</div>
+        <div class="ev-body">
+          <div class="ev-badge">ATMOSPHERE</div>
+          <div class="ev-text">Emergency lights kick in. Everything shifts to red. The ventilation shafts hum louder. Somewhere, a prop alien pod opens by itself — pneumatic hiss, then nothing. The set is turning against them.</div>
+        </div>
+      </div>
+
+      <div class="ev-card survival">
+        <div class="ev-portrait">🏃</div>
+        <div class="ev-body">
+          <div class="ev-badge">EVASION</div>
+          <div class="ev-text">Axel hears the gatling spin up. She drops behind a console. The green paintball barrage shreds the wall above her head. Slime rains down on her hair but doesn't count — you have to take a direct hit. She army-crawls to the next corridor.</div>
+          <div class="ev-impact" style="color: #4aff4a;">+3 EVASION • CLOSE CALL</div>
+        </div>
+      </div>
+
+      <div class="ev-card heroic">
+        <div class="ev-portrait">🦸</div>
+        <div class="ev-body">
+          <div class="ev-badge">HEROIC — RESCUE</div>
+          <div class="ev-text">Scary Girl sees Zee frozen in the open. Mama Alien is closing. Without hesitation, Scary Girl sprints across the gap, grabs Zee by the collar, and hauls her behind a bulkhead. "MOVE or you're PAINT." Zee moves.</div>
+          <div class="ev-impact" style="color: #29b6f6;">+3 HEROIC • BOND +3 (Scary Girl → Zee) • POPULARITY +2</div>
+        </div>
+      </div>
+
+      <div class="ev-card showmance">
+        <div class="ev-portrait">💋</div>
+        <div class="ev-body">
+          <div class="ev-badge">SHOWMANCE — RISK</div>
+          <div class="ev-text">Bowie hears Chef coming. He grabs Raj's hand. "We need to move NOW." They run together through the corridors, hands clasped, eggs bouncing. It would be romantic if they weren't both screaming.</div>
+          <div class="ev-impact" style="color: #f06292;">SHOWMANCE MOMENT • BOND +1 • POSITION EXPOSED</div>
+        </div>
+      </div>
+
+      <div class="delivery-card">
+        <div class="delivery-icon">📦</div>
+        <div class="delivery-body">
+          <div class="delivery-label">✓ SPECIMEN DELIVERED — AXEL</div>
+          <div class="delivery-text">Axel slides into the extraction zone on her knees, egg held above her head. Safe. She's covered in near-miss splatter but technically clean. That's two banked. She's not going back in. ...She's going back in.</div>
+        </div>
+      </div>
+
+      <div class="ev-card sabotage">
+        <div class="ev-portrait">🐍</div>
+        <div class="ev-body">
+          <div class="ev-badge">SABOTAGE — ALLIANCE BREAK</div>
+          <div class="ev-text">Julia sees Bowie and Raj running with eggs. She tips over a shelf in their path. Bowie trips, his egg goes flying — Raj catches it mid-air with one hand. Julia: "Oops." Bowie: "You're DEAD to me." The alliance between Julia and Bowie shatters.</div>
+          <div class="ev-impact" style="color: #ff4a4a;">ALLIANCE BROKEN: Julia ✕ Bowie • BOND −3 • HEAT +2</div>
+        </div>
+      </div>
+
+      <!-- SLIME -->
+      <div class="slime-card">
+        <div class="slime-pool-top"></div>
+        <div class="slime-drips">
+          <div class="drip" style="left: 10%; --w: 14px; --h1: 25px; --h2: 55px; --dur: 4.5s; --delay: 0.2s;"></div>
+          <div class="drip" style="left: 30%; --w: 10px; --h1: 20px; --h2: 48px; --dur: 5s; --delay: 1s;"></div>
+          <div class="drip" style="left: 50%; --w: 16px; --h1: 30px; --h2: 60px; --dur: 4.2s; --delay: 0.5s;"></div>
+          <div class="drip" style="left: 70%; --w: 12px; --h1: 22px; --h2: 52px; --dur: 5.5s; --delay: 1.5s;"></div>
+          <div class="drip" style="left: 88%; --w: 8px; --h1: 18px; --h2: 42px; --dur: 4.8s; --delay: 0.8s;"></div>
+        </div>
+        <div class="splatter s1"></div><div class="splatter s2"></div>
+        <div class="impact-point"></div>
+        <div class="slime-content">
+          <div class="slime-header">
+            <div class="slime-portrait">😵<div class="portrait-drip pd1"></div><div class="portrait-drip pd2"></div><div class="portrait-drip pd3"></div></div>
+            <div>
+              <div class="slime-main-label">☠ SLIMED — ZEE</div>
+              <div class="slime-sublabel">FROZEN IN THE OPEN • 0 EGGS BANKED</div>
+            </div>
+          </div>
+          <div class="slime-approach">Scary Girl saved her once. Nobody saves her twice. Zee's still shaking from the Caleb elimination. She takes one step into the corridor. Chef is already there. Waiting.</div>
+          <div class="slime-narrative">The paintball hits her in the shoulder. She spins. A second one catches her square in the back. Green everywhere. Her egg — she drops it. It rolls across the grated floor and stops at Chef's feet. He looks down at it. Back at her. Fires one more for good measure.</div>
+          <div class="slime-aftermath">"That was unnecessary," Zee says, dripping. Chef shrugs inside the costume. It squeaks.</div>
+        </div>
+      </div>
+
+      <div class="ev-card comedy">
+        <div class="ev-portrait">🐀</div>
+        <div class="ev-body">
+          <div class="ev-badge">COMEDY</div>
+          <div class="ev-text">Raj dives into a ventilation shaft to hide. It's already occupied — by a raccoon. They stare at each other. The raccoon hisses. Raj hisses back. The raccoon blinks. A truce is formed. Raj and the raccoon now share the shaft.</div>
+          <div class="ev-impact" style="color: #ffd74a;">SAFE — UNCONVENTIONAL HIDING SPOT</div>
+        </div>
+      </div>
+
+      <div class="chris-line">"That's THREE down and Mama Alien hasn't even gone to FULL POWER yet. This is what I call entertainment, people!" — Chris</div>
+
+      <div class="ev-card survival">
+        <div class="ev-portrait">🤫</div>
+        <div class="ev-body">
+          <div class="ev-badge">EVASION — GROUP</div>
+          <div class="ev-text">Axel's group — now just Axel and Wayne — press into an alcove as Mama Alien stomps past. Wayne's holding his breath so hard his face is turning red. Axel puts a hand on his shoulder. Holds. The footsteps fade. They move.</div>
+          <div class="ev-impact" style="color: #4aff4a;">+2 EVASION • GROUP BOND +1</div>
+        </div>
+      </div>
+
+      <div class="ev-card egg">
+        <div class="ev-portrait">💨</div>
+        <div class="ev-body">
+          <div class="ev-badge">EMPTY EGG</div>
+          <div class="ev-text">Wayne finds an egg under a console. Carries it all the way back to the extraction zone. Opens it. Empty. Foam core. He stares at it for a full five seconds. Sets it down gently. Turns around. Goes back into the set. Doesn't speak.</div>
+          <div class="ev-impact" style="color: #888;">EMPTY — 0 POINTS • WASTED RUN</div>
+        </div>
+      </div>
+
+      <div class="ev-card alliance">
+        <div class="ev-portrait">🤝</div>
+        <div class="ev-body">
+          <div class="ev-badge">ALLIANCE — INTEL</div>
+          <div class="ev-text">Scary Girl shares intel with MK: "Gold egg. Deep Storage. Prop cage on the left." MK: "What's the catch?" Scary Girl: "You owe me at tribal." They nod. Information for loyalty. Classic trade.</div>
+          <div class="ev-impact" style="color: #ab47bc;">INTEL TRADE • BOND +1 (Scary Girl ↔ MK) • ALLIANCE DEBT</div>
+        </div>
+      </div>
+
+      <div class="delivery-card">
+        <div class="delivery-icon">🪙</div>
+        <div class="delivery-body">
+          <div class="delivery-label">★ GOLD SPECIMEN DELIVERED — PRIYA</div>
+          <div class="delivery-text">Priya bursts out of the set at full sprint, gold egg clutched to her chest. She slides it into containment. Worth double. The scoreboard updates. She doesn't celebrate — she's too busy catching her breath.</div>
+        </div>
+      </div>
+
+      <!-- ══ ROUND 4 ══ -->
+      <div class="escalation-banner">
+        <div class="escalation-text">⚠ DEFCON 2 — RAMPAGING ⚠</div>
+        <div class="escalation-sub">Mama Alien no longer checks corners — she walks through walls</div>
+      </div>
+
+      <div class="feed-section-label">ROUND 4 — RAMPAGING</div>
+      <div class="round-header">
+        <div class="round-cam"><div class="cam-dot"></div><span class="cam-text">CAM 04 — DEEP STORAGE</span></div>
+        <div class="round-survivors">7 active • 9 eggs in field</div>
+      </div>
+
+      <div class="ev-card environmental">
+        <div class="ev-portrait">💥</div>
+        <div class="ev-body">
+          <div class="ev-badge">DESTRUCTION</div>
+          <div class="ev-text">Mama Alien doesn't bother with doors anymore. She walks through a prop wall. Plywood splinters. Fake wiring rains down. Chef's voice crackles over the walkie: "I'm coming through whether there's a wall or not."</div>
+        </div>
+      </div>
+
+      <div class="ev-card survival">
+        <div class="ev-portrait">🧗</div>
+        <div class="ev-body">
+          <div class="ev-badge">EVASION — CLIMB</div>
+          <div class="ev-text">MK scales a fake reactor tower — hand over hand up the scaffolding. Mama Alien can't follow. She watches from twenty feet up as Chef circles below, paintball gun aimed upward. They make eye contact through the costume. Neither blinks.</div>
+          <div class="ev-impact" style="color: #4aff4a;">+3 EVASION • HOLDING POSITION</div>
+        </div>
+      </div>
+
+      <div class="ev-card panic">
+        <div class="ev-portrait">😰</div>
+        <div class="ev-body">
+          <div class="ev-badge">PANIC — FUMBLE</div>
+          <div class="ev-text">Raj drops his egg. It bounces. Once. Twice. Rolls toward Mama Alien. He watches it go in slow motion. The egg stops at Chef's boot. Chef looks down. Looks at Raj. Raj waves. Chef raises the paintball gun.</div>
+          <div class="ev-impact" style="color: #ff8a65;">EGG LOST • POSITION EXPOSED</div>
+        </div>
+      </div>
+
+      <div class="slime-card">
+        <div class="slime-pool-top"></div>
+        <div class="slime-drips">
+          <div class="drip" style="left: 15%; --w: 14px; --h1: 22px; --h2: 50px; --dur: 4.5s; --delay: 0.3s;"></div>
+          <div class="drip" style="left: 35%; --w: 10px; --h1: 28px; --h2: 58px; --dur: 5.2s; --delay: 1.2s;"></div>
+          <div class="drip" style="left: 55%; --w: 16px; --h1: 20px; --h2: 48px; --dur: 4s; --delay: 0.7s;"></div>
+          <div class="drip" style="left: 80%; --w: 12px; --h1: 24px; --h2: 52px; --dur: 5.5s; --delay: 1.8s;"></div>
+        </div>
+        <div class="splatter s1"></div><div class="splatter s2"></div>
+        <div class="impact-point"></div>
+        <div class="slime-content">
+          <div class="slime-header">
+            <div class="slime-portrait">🫣<div class="portrait-drip pd1"></div><div class="portrait-drip pd2"></div><div class="portrait-drip pd3"></div></div>
+            <div>
+              <div class="slime-main-label">☠ SLIMED — RAJ</div>
+              <div class="slime-sublabel">FUMBLED EGG → POINT BLANK • 0 EGGS BANKED</div>
+            </div>
+          </div>
+          <div class="slime-approach">Raj's egg rolled right to Chef's feet. There's no escape from this. Chef doesn't even need to aim. He just... points downward.</div>
+          <div class="slime-narrative">One shot. Center mass. Raj folds like a lawn chair. Green paint splashes across his shirt, his face, the wall behind him. Bowie, watching from the next corridor, gasps. His hand goes to his mouth. Their eyes meet through the slime. Raj mouths: "Win this."</div>
+          <div class="slime-aftermath">Bowie stands alone in the corridor. The showmance partner is gone. He picks up the egg Raj dropped. It's cracked but intact. He holds it like it matters now.</div>
+        </div>
+      </div>
+
+      <div class="ev-card showmance">
+        <div class="ev-portrait">💔</div>
+        <div class="ev-body">
+          <div class="ev-badge">SHOWMANCE — SEPARATION</div>
+          <div class="ev-text">Bowie watches Raj walk to the slime bench. Green footprints trail behind him. Bowie's jaw is tight. He looks at the cracked egg in his hands. His eyes narrow. This isn't a game anymore. He's going to deliver this egg if it kills him.</div>
+          <div class="ev-impact" style="color: #f06292;">SHOWMANCE MOTIVATION • +2 DETERMINATION • BOND TESTED</div>
+        </div>
+      </div>
+
+      <div class="ev-card confrontation">
+        <div class="ev-portrait">🔥</div>
+        <div class="ev-body">
+          <div class="ev-badge">CONFRONTATION — HEAT</div>
+          <div class="ev-text">Bowie spots Julia. Remembers the shelf she tipped. Remembers Raj getting caught. "Was that FUNNY to you?" Julia: "I didn't do anything." Bowie: "You tripped us. Raj got caught because of YOU." The corridor crackles.</div>
+          <div class="ev-impact" style="color: #ff7043;">CONFRONTATION • BOND −3 (Bowie → Julia) • HEAT +3 (Julia)</div>
+        </div>
+      </div>
+
+      <div class="ev-card heroic">
+        <div class="ev-portrait">🏃</div>
+        <div class="ev-body">
+          <div class="ev-badge">HEROIC — DECOY</div>
+          <div class="ev-text">Wayne runs into the open, waving his arms. "HEY! OVER HERE, CHEF!" Mama Alien turns. Wayne sprints the opposite direction. Behind him, Axel slips through with two eggs. The oldest trick in the book. It works.</div>
+          <div class="ev-impact" style="color: #29b6f6;">+4 HEROIC • BOND +2 (Wayne → Axel) • POPULARITY +2</div>
+        </div>
+      </div>
+
+      <div class="delivery-card">
+        <div class="delivery-icon">📦📦</div>
+        <div class="delivery-body">
+          <div class="delivery-label">✓ DOUBLE DELIVERY — AXEL</div>
+          <div class="delivery-text">Two eggs in one run. Axel dumps them both into containment. Three total banked. She's soaked in sweat, covered in near-miss splatter. "Wayne's buying dinner after this."</div>
+        </div>
+      </div>
+
+      <div class="slime-card">
+        <div class="slime-pool-top"></div>
+        <div class="slime-drips">
+          <div class="drip" style="left: 5%; --w: 10px; --h1: 18px; --h2: 45px; --dur: 5s; --delay: 0s;"></div>
+          <div class="drip" style="left: 25%; --w: 14px; --h1: 25px; --h2: 55px; --dur: 4.5s; --delay: 0.5s;"></div>
+          <div class="drip" style="left: 45%; --w: 12px; --h1: 22px; --h2: 48px; --dur: 5.2s; --delay: 1.2s;"></div>
+          <div class="drip" style="left: 65%; --w: 16px; --h1: 28px; --h2: 60px; --dur: 4.2s; --delay: 0.8s;"></div>
+          <div class="drip" style="left: 85%; --w: 8px; --h1: 20px; --h2: 42px; --dur: 4.8s; --delay: 1.5s;"></div>
+        </div>
+        <div class="splatter s1"></div><div class="splatter s2"></div>
+        <div class="impact-point" style="right: 40px; top: 25px;"></div>
+        <div class="slime-content">
+          <div class="slime-header">
+            <div class="slime-portrait">😤<div class="portrait-drip pd1"></div><div class="portrait-drip pd2"></div><div class="portrait-drip pd3"></div></div>
+            <div>
+              <div class="slime-main-label">☠ SLIMED — SCARY GIRL</div>
+              <div class="slime-sublabel">STOOD HER GROUND • 1 EGG BANKED</div>
+            </div>
+          </div>
+          <div class="slime-approach">Scary Girl doesn't run. She watches Mama Alien approach with clinical interest. "Fascinating. The hydraulics in the right arm are slightly off-center." Chef: "STOP ANALYZING ME."</div>
+          <div class="slime-narrative">Chef fires. Scary Girl takes the hit standing up. Green paint explodes across her face. She doesn't flinch. She looks down at the slime on her hands, then back at Chef. "Interesting viscosity." Chef fires again out of pure frustration.</div>
+          <div class="slime-aftermath">She walks to the slime bench with the posture of someone leaving a mildly interesting museum exhibit. Sits down next to Zee. "The paintball velocity was approximately 280 feet per second. In case anyone was wondering." Nobody was.</div>
+        </div>
+      </div>
+
+      <div class="chris-line">"I'm starting to think Scary Girl WANTED to get hit. That's either bravery or something I'm not qualified to diagnose." — Chris McLean</div>
+
+      <!-- CONTROLS -->
+      <div class="controls-bar">
+        <button class="btn-next">NEXT ▶ (28/58)</button>
+        <button class="btn-reveal-all">Reveal All</button>
+      </div>
+
+    </div><!-- end event feed -->
+
+    <!-- ═══ RIGHT: STICKY SIDEBAR ═══ -->
+    <div class="sidebar">
+
+      <!-- Motion Tracker -->
+      <div class="section-label">MOTION TRACKER</div>
+      <div class="radar-mini">
+        <div class="radar-ring r1"></div>
+        <div class="radar-ring r2"></div>
+        <div class="radar-cross h"></div>
+        <div class="radar-cross v"></div>
+        <div class="radar-sweep"></div>
+        <div class="radar-blip" style="top: 32%; left: 60%;"></div>
+        <div class="radar-blip carrying" style="top: 58%; left: 30%;"></div>
+        <div class="radar-blip" style="top: 68%; left: 70%;"></div>
+        <div class="radar-blip" style="top: 25%; left: 42%;"></div>
+        <div class="radar-blip carrying" style="top: 55%; left: 55%;"></div>
+        <div class="radar-blip" style="top: 40%; left: 35%;"></div>
+        <div class="radar-blip chef" style="top: 48%; left: 50%;"></div>
+      </div>
+      <div class="tracker-tag">⚠ HOSTILE ACTIVE — SECTOR 4</div>
+
+      <!-- Crew Biosigns -->
+      <div class="section-label">CREW BIOSIGNS</div>
+
+      <div class="crew-entry carrying">
+        <div class="crew-avatar">🥚</div>
+        <div class="crew-info"><div class="crew-name">Axel</div><div class="crew-eggs">🥚🥚🥚 3 banked</div></div>
+        <span class="crew-status-badge badge-active">ACTIVE</span>
+      </div>
+      <div class="crew-entry">
+        <div class="crew-avatar">👤</div>
+        <div class="crew-info"><div class="crew-name">MK</div><div class="crew-eggs">🥚🥚 2 banked</div></div>
+        <span class="crew-status-badge badge-active">ACTIVE</span>
+      </div>
+      <div class="crew-entry">
+        <div class="crew-avatar">👤</div>
+        <div class="crew-info"><div class="crew-name">Wayne</div><div class="crew-eggs">🥚 1 banked</div></div>
+        <span class="crew-status-badge badge-active">ACTIVE</span>
+      </div>
+      <div class="crew-entry">
+        <div class="crew-avatar">👤</div>
+        <div class="crew-info"><div class="crew-name">Priya</div><div class="crew-eggs">🥚🪙 1+1g banked</div></div>
+        <span class="crew-status-badge badge-active">ACTIVE</span>
+      </div>
+      <div class="crew-entry carrying">
+        <div class="crew-avatar">🥚</div>
+        <div class="crew-info"><div class="crew-name">Bowie</div><div class="crew-eggs">carrying Raj's egg</div></div>
+        <span class="crew-status-badge badge-carrying">CARRYING</span>
+      </div>
+      <div class="crew-entry">
+        <div class="crew-avatar">👤</div>
+        <div class="crew-info"><div class="crew-name">Julia</div><div class="crew-eggs">🥚 1 banked</div></div>
+        <span class="crew-status-badge badge-active">ACTIVE</span>
+      </div>
+
+      <!-- Slimed -->
+      <div class="section-label" style="color: #39ff1444; border-color: #39ff1415;">SLIME BENCH</div>
+
+      <div class="crew-entry slimed">
+        <div class="crew-mini-drip" style="left: 18%; --w: 4px; --h: 10px;"></div>
+        <div class="crew-mini-drip" style="left: 55%; --w: 5px; --h: 13px;"></div>
+        <div class="crew-avatar">💀</div>
+        <div class="crew-info"><div class="crew-name">Caleb</div><div class="crew-eggs">R2 — booby trap</div></div>
+        <span class="crew-status-badge badge-slimed">SLIMED</span>
+      </div>
+      <div class="crew-entry slimed">
+        <div class="crew-mini-drip" style="left: 12%; --w: 3px; --h: 8px;"></div>
+        <div class="crew-mini-drip" style="left: 42%; --w: 5px; --h: 14px;"></div>
+        <div class="crew-mini-drip" style="left: 78%; --w: 4px; --h: 10px;"></div>
+        <div class="crew-avatar">💀</div>
+        <div class="crew-info"><div class="crew-name">Zee</div><div class="crew-eggs">R3 — panic freeze</div></div>
+        <span class="crew-status-badge badge-slimed">SLIMED</span>
+      </div>
+      <div class="crew-entry slimed">
+        <div class="crew-mini-drip" style="left: 25%; --w: 4px; --h: 12px;"></div>
+        <div class="crew-mini-drip" style="left: 60%; --w: 6px; --h: 15px;"></div>
+        <div class="crew-avatar">💀</div>
+        <div class="crew-info"><div class="crew-name">Raj</div><div class="crew-eggs">R4 — egg fumble</div></div>
+        <span class="crew-status-badge badge-slimed">SLIMED</span>
+      </div>
+      <div class="crew-entry slimed">
+        <div class="crew-mini-drip" style="left: 15%; --w: 5px; --h: 11px;"></div>
+        <div class="crew-mini-drip" style="left: 50%; --w: 4px; --h: 9px;"></div>
+        <div class="crew-mini-drip" style="left: 82%; --w: 6px; --h: 14px;"></div>
+        <div class="crew-avatar">💀</div>
+        <div class="crew-info"><div class="crew-name">Scary Girl</div><div class="crew-eggs">R4 — stood her ground</div></div>
+        <span class="crew-status-badge badge-slimed">SLIMED</span>
+      </div>
+
+      <!-- Specimen Grid -->
+      <div class="section-label">SPECIMEN STATUS</div>
+      <div class="specimen-grid">
+        <div class="specimen-pod banked"><div class="specimen-icon">🥚</div><div class="specimen-label">BANKED</div></div>
+        <div class="specimen-pod banked"><div class="specimen-icon">🥚</div><div class="specimen-label">BANKED</div></div>
+        <div class="specimen-pod banked"><div class="specimen-icon">🥚</div><div class="specimen-label">BANKED</div></div>
+        <div class="specimen-pod banked"><div class="specimen-icon">🥚</div><div class="specimen-label">BANKED</div></div>
+        <div class="specimen-pod gold banked"><div class="specimen-icon">🪙</div><div class="specimen-label">GOLD✓</div></div>
+        <div class="specimen-pod banked"><div class="specimen-icon">🥚</div><div class="specimen-label">BANKED</div></div>
+        <div class="specimen-pod banked"><div class="specimen-icon">🥚</div><div class="specimen-label">BANKED</div></div>
+        <div class="specimen-pod banked"><div class="specimen-icon">🥚</div><div class="specimen-label">BANKED</div></div>
+        <div class="specimen-pod banked"><div class="specimen-icon">🥚</div><div class="specimen-label">BANKED</div></div>
+        <div class="specimen-pod destroyed"><div class="specimen-icon">💔</div><div class="specimen-label">LOST</div></div>
+        <div class="specimen-pod destroyed"><div class="specimen-icon">💔</div><div class="specimen-label">LOST</div></div>
+        <div class="specimen-pod"><div class="specimen-icon" style="opacity:0.3">🥚</div><div class="specimen-label">FIELD</div></div>
+        <div class="specimen-pod"><div class="specimen-icon" style="opacity:0.3">🥚</div><div class="specimen-label">FIELD</div></div>
+        <div class="specimen-pod gold"><div class="specimen-icon" style="opacity:0.3">🪙</div><div class="specimen-label">GOLD</div></div>
+        <div class="specimen-pod trap"><div class="specimen-icon">💥</div><div class="specimen-label">TRAP</div></div>
+        <div class="specimen-pod dud"><div class="specimen-icon">💨</div><div class="specimen-label">DUD</div></div>
+        <div class="specimen-pod"><div class="specimen-icon" style="opacity:0.3">🥚</div><div class="specimen-label">FIELD</div></div>
+        <div class="specimen-pod"><div class="specimen-icon" style="opacity:0.3">🥚</div><div class="specimen-label">FIELD</div></div>
+        <div class="specimen-pod dud"><div class="specimen-icon">💨</div><div class="specimen-label">DUD</div></div>
+        <div class="specimen-pod"><div class="specimen-icon" style="opacity:0.3">🥚</div><div class="specimen-label">FIELD</div></div>
+      </div>
+
+    </div><!-- end sidebar -->
+
+  </div><!-- end main-layout -->
+
+</div>

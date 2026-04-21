@@ -1946,6 +1946,64 @@ function _bbbShell(content, ep) {
 @keyframes bbb-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(1.05)}}
 @keyframes bbb-grain{0%{transform:translate(0,0)}20%{transform:translate(-2px,1px)}40%{transform:translate(1px,-1px)}60%{transform:translate(-1px,2px)}80%{transform:translate(2px,-1px)}100%{transform:translate(0,0)}}
 @keyframes bbb-splash{0%{transform:scale(0);opacity:0.8}100%{transform:scale(1);opacity:0}}
+
+/* ═══ Sandcastle Screen ═══ */
+.bbb-castle-arena{display:flex;gap:24px;justify-content:center;padding:20px 10px;position:relative;z-index:6;flex-wrap:wrap}
+.bbb-castle-col{flex:1;min-width:220px;max-width:360px;text-align:center}
+.bbb-castle-tribe-hdr{font-family:'Bowlby One SC',sans-serif;font-size:13px;letter-spacing:2px;
+  color:rgba(255,255,255,0.85);margin-bottom:4px}
+.bbb-castle-captain{font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:1px;margin-bottom:10px}
+
+/* Material pips */
+.bbb-mat-row{display:flex;align-items:center;gap:6px;margin:3px 0;justify-content:center}
+.bbb-mat-label{font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;width:64px;text-align:right}
+.bbb-mat-pips{display:flex;gap:3px;align-items:center}
+.bbb-mat-pip{width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.15)}
+.bbb-mat-pip.shell{background:linear-gradient(135deg,#f5e6ca,#e8cfa0);border-color:rgba(232,207,160,0.4)}
+.bbb-mat-pip.driftwood{background:linear-gradient(135deg,#a08060,#7a5c3c);border-color:rgba(122,92,60,0.5);border-radius:3px}
+.bbb-mat-pip.rock{background:linear-gradient(135deg,#8a8a8a,#5c5c5c);border-color:rgba(140,140,140,0.5);border-radius:2px}
+.bbb-mat-pip.empty{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.06)}
+
+/* Castle SVG wrapper */
+.bbb-castle-svg-wrap{position:relative;width:100%;height:240px;margin:8px auto}
+.bbb-castle-svg-wrap svg{width:100%;height:100%}
+.bbb-castle-layer{opacity:0;transition:opacity 0.6s ease-out}
+.bbb-castle-layer.revealed{opacity:1}
+
+/* Crumble particles */
+.bbb-crumble{position:absolute;width:4px;height:4px;background:var(--bbb-sand);border-radius:50%;opacity:0;
+  animation:bbb-crumble 2.5s ease-in infinite}
+@keyframes bbb-crumble{0%{opacity:0.7;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--cx,8px),var(--cy,20px))}}
+
+/* Flag flutter */
+.bbb-flag{transform-origin:bottom left;animation:bbb-flutter 1.8s ease-in-out infinite alternate}
+@keyframes bbb-flutter{0%{transform:skewX(0deg)}50%{transform:skewX(-6deg)}100%{transform:skewX(4deg)}}
+
+/* Castle glow for high quality */
+.bbb-castle-glow{filter:drop-shadow(0 0 12px rgba(212,160,32,0.35))}
+
+/* Judge bar */
+.bbb-judge-section{position:relative;z-index:6;padding:16px 20px}
+.bbb-judge-bar-row{display:flex;align-items:center;gap:10px;margin:6px 0}
+.bbb-judge-bar-label{font-family:'Bowlby One SC',sans-serif;font-size:10px;letter-spacing:1px;
+  color:rgba(255,255,255,0.7);width:100px;text-align:right;flex-shrink:0}
+.bbb-judge-bar-track{flex:1;height:20px;background:rgba(0,0,0,0.25);border-radius:3px;overflow:hidden;position:relative}
+.bbb-judge-bar-fill{height:100%;border-radius:3px;transition:width 0.8s ease-out;display:flex;
+  align-items:center;justify-content:flex-end;padding-right:6px;font-family:'Bowlby One SC',sans-serif;
+  font-size:9px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.4)}
+.bbb-judge-bar-fill.winner{background:linear-gradient(90deg,var(--bbb-gold),#e6b422)}
+.bbb-judge-bar-fill.loser{background:linear-gradient(90deg,rgba(255,255,255,0.15),rgba(255,255,255,0.25))}
+.bbb-winner-banner{font-family:'Bowlby One SC',sans-serif;font-size:18px;letter-spacing:3px;
+  color:var(--bbb-gold);text-shadow:0 0 15px rgba(212,160,32,0.4);text-align:center;margin-top:12px}
+
+/* Sand bg for sandcastle screen */
+.bbb-sand-bg{background:linear-gradient(180deg,#87CEEB 0%,#b0e0f0 18%,#f5deb3 45%,#deb887 65%,#c4a265 100%)}
+.bbb-sand-bg .bbb-shell{background:transparent}
+
+/* Build stage header */
+.bbb-build-stage{font-family:'Bowlby One SC',sans-serif;font-size:10px;letter-spacing:3px;
+  color:rgba(255,255,255,0.4);text-transform:uppercase;text-align:center;margin:14px 0 6px;
+  border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:4px}
 </style>
 <div class="bbb-shell">
   <div class="bbb-header">
@@ -2428,4 +2486,389 @@ export function beachBogusRevealAll(stateKey, totalSteps) {
   const ctrl = document.getElementById(`bbb-controls-${stateKey}`);
   if (ctrl) ctrl.style.display = 'none';
   _bbbUpdateSidebar(stateKey, totalSteps - 1);
+}
+
+/* ═══════════════════════════════════════════════════════
+   VP — Sandcastle Phase (click-to-reveal)
+   ═══════════════════════════════════════════════════════ */
+
+function _castleSVG(tribeName, score, allScores, quality) {
+  // quality: 'low' | 'mid' | 'high'
+  const W = 280, H = 220;
+
+  // Color palettes per quality tier
+  const palettes = {
+    low:  { base: '#a09080', wall: '#8a7a6a', tower: '#7a6a5a', accent: '#6a5a4a', door: '#5a4a3a', window: '#4a3a2a', crack: '#3a2a1a', flag: '#665544' },
+    mid:  { base: '#d4b896', wall: '#c4a87a', tower: '#b89870', accent: '#a88860', door: '#6a4e3a', window: '#5a3e2a', crack: 'none', flag: '#e85d3a' },
+    high: { base: '#e8d0a0', wall: '#dcc088', tower: '#d4b878', accent: '#c8a860', door: '#5a3a2a', window: '#4a2a1a', crack: 'none', flag: '#e85d3a' },
+  };
+  const p = palettes[quality];
+
+  // Glow class for high quality
+  const wrapClass = quality === 'high' ? 'bbb-castle-glow' : '';
+
+  let svg = `<div class="${wrapClass}"><svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">`;
+
+  // Defs: gradient for golden sand, shadow filter
+  svg += `<defs>`;
+  if (quality === 'high') {
+    svg += `<linearGradient id="gld-${tribeName}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0d890"/><stop offset="100%" stop-color="#c8a050"/>
+    </linearGradient>`;
+    svg += `<filter id="glw-${tribeName}"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  }
+  svg += `</defs>`;
+
+  // ── Layer 1: Foundation ──
+  const foundY = 180, foundH = 30;
+  svg += `<g class="bbb-castle-layer" data-layer="1">`;
+  svg += `<rect x="30" y="${foundY}" width="220" height="${foundH}" rx="4" fill="${p.base}" stroke="${p.wall}" stroke-width="1"/>`;
+  // Sand texture lines
+  for (let i = 0; i < 5; i++) {
+    const lx = 45 + i * 42;
+    svg += `<line x1="${lx}" y1="${foundY + 8}" x2="${lx + 20}" y2="${foundY + 8}" stroke="${p.accent}" stroke-width="0.5" opacity="0.5"/>`;
+  }
+  svg += `</g>`;
+
+  // ── Layer 2: Walls ──
+  const wallY = quality === 'low' ? 140 : 120, wallH = foundY - wallY;
+  svg += `<g class="bbb-castle-layer" data-layer="2">`;
+  svg += `<rect x="60" y="${wallY}" width="160" height="${wallH}" rx="3" fill="${p.wall}" stroke="${p.accent}" stroke-width="0.8"/>`;
+  // Battlements on top of wall
+  const bCount = 7;
+  for (let i = 0; i < bCount; i++) {
+    const bx = 64 + i * 22;
+    svg += `<rect x="${bx}" y="${wallY - 8}" width="14" height="10" rx="1" fill="${p.wall}" stroke="${p.accent}" stroke-width="0.5"/>`;
+  }
+  // Cracks for low quality
+  if (quality === 'low') {
+    svg += `<line x1="100" y1="${wallY + 10}" x2="120" y2="${wallY + 40}" stroke="${p.crack}" stroke-width="1.2" opacity="0.6"/>`;
+    svg += `<line x1="118" y1="${wallY + 30}" x2="130" y2="${wallY + 25}" stroke="${p.crack}" stroke-width="0.8" opacity="0.5"/>`;
+    svg += `<line x1="170" y1="${wallY + 5}" x2="160" y2="${wallY + 35}" stroke="${p.crack}" stroke-width="1" opacity="0.55"/>`;
+    svg += `<line x1="162" y1="${wallY + 28}" x2="175" y2="${wallY + 32}" stroke="${p.crack}" stroke-width="0.7" opacity="0.45"/>`;
+  }
+  svg += `</g>`;
+
+  // ── Layer 3: Towers ──
+  svg += `<g class="bbb-castle-layer" data-layer="3">`;
+  const towers = quality === 'high' ? [
+    { x: 40, w: 40, h: 90, pointed: true },
+    { x: 120, w: 36, h: 105, pointed: true },  // central tall
+    { x: 200, w: 40, h: 90, pointed: true },
+  ] : quality === 'mid' ? [
+    { x: 48, w: 36, h: 70, pointed: false },
+    { x: 196, w: 36, h: 70, pointed: false },
+  ] : [
+    { x: 48, w: 34, h: 50, pointed: false, tilt: -5 },
+    { x: 198, w: 34, h: 40, pointed: false, tilt: 8 }, // collapsed shorter + tilted
+  ];
+
+  for (const t of towers) {
+    const ty = foundY - t.h;
+    const tiltAttr = t.tilt ? ` transform="rotate(${t.tilt} ${t.x + t.w / 2} ${foundY})"` : '';
+    svg += `<g${tiltAttr}>`;
+    // Tower body — rounded rectangle (cylindrical look)
+    svg += `<rect x="${t.x}" y="${ty}" width="${t.w}" height="${t.h}" rx="${t.w * 0.15}" fill="${p.tower}" stroke="${p.accent}" stroke-width="0.8"/>`;
+    // Tower top
+    if (t.pointed && quality === 'high') {
+      // Pointed conical roof
+      const cx = t.x + t.w / 2;
+      svg += `<polygon points="${t.x - 2},${ty} ${cx},${ty - 22} ${t.x + t.w + 2},${ty}" fill="${p.accent}" stroke="${p.door}" stroke-width="0.5"/>`;
+    } else {
+      // Flat battlements on tower
+      const bw = t.w / 3;
+      for (let b = 0; b < 3; b++) {
+        svg += `<rect x="${t.x + b * bw + 1}" y="${ty - 6}" width="${bw - 2}" height="7" rx="1" fill="${p.tower}" stroke="${p.accent}" stroke-width="0.4"/>`;
+      }
+    }
+    // Tower window (slit)
+    if (quality !== 'low' || !t.tilt) {
+      const wx = t.x + t.w / 2 - 3;
+      const wy = ty + t.h * 0.35;
+      svg += `<rect x="${wx}" y="${wy}" width="6" height="14" rx="3" fill="${p.window}" opacity="0.7"/>`;
+    }
+    svg += `</g>`;
+  }
+  svg += `</g>`;
+
+  // ── Layer 4: Details — arch doorway, windows ──
+  if (quality !== 'low') {
+    svg += `<g class="bbb-castle-layer" data-layer="4">`;
+    // Arched doorway (center of wall)
+    const doorCx = 140, doorW = 22, doorH = 32;
+    const doorY = foundY - doorH;
+    svg += `<path d="M${doorCx - doorW / 2},${foundY} L${doorCx - doorW / 2},${doorY + 10} Q${doorCx - doorW / 2},${doorY} ${doorCx},${doorY} Q${doorCx + doorW / 2},${doorY} ${doorCx + doorW / 2},${doorY + 10} L${doorCx + doorW / 2},${foundY}" fill="${p.door}" stroke="${p.accent}" stroke-width="0.6"/>`;
+    // Wall windows (rectangular with arched top)
+    const windowPositions = quality === 'high' ? [95, 115, 165, 185] : [100, 180];
+    for (const wx of windowPositions) {
+      const wy = wallY + 20;
+      svg += `<rect x="${wx - 4}" y="${wy}" width="8" height="12" rx="4" fill="${p.window}" opacity="0.65"/>`;
+    }
+    svg += `</g>`;
+  }
+
+  // ── Layer 5: Decorations — flags, shell patterns, glow ──
+  if (quality === 'mid' || quality === 'high') {
+    svg += `<g class="bbb-castle-layer" data-layer="5">`;
+    // Flags on towers
+    const flagTowers = quality === 'high' ? towers : [towers[0]];
+    for (const t of flagTowers) {
+      const fx = t.x + t.w / 2;
+      const fy = t.pointed ? (foundY - t.h - 22) : (foundY - t.h - 6);
+      const poleTop = fy - 18;
+      svg += `<line x1="${fx}" y1="${fy}" x2="${fx}" y2="${poleTop}" stroke="${p.accent}" stroke-width="1.2"/>`;
+      svg += `<g class="bbb-flag"><polygon points="${fx},${poleTop} ${fx + 14},${poleTop + 5} ${fx},${poleTop + 10}" fill="${p.flag}" opacity="0.9"/></g>`;
+    }
+    // Shell decorations on walls (high only)
+    if (quality === 'high') {
+      const shellPositions = [80, 108, 140, 172, 200];
+      for (const sx of shellPositions) {
+        const sy = wallY + (foundY - wallY) * 0.6;
+        svg += `<circle cx="${sx}" cy="${sy}" r="3.5" fill="${p.base}" stroke="rgba(255,255,255,0.3)" stroke-width="0.6" opacity="0.8"/>`;
+        svg += `<path d="M${sx - 2.5},${sy} Q${sx},${sy - 3} ${sx + 2.5},${sy}" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>`;
+      }
+      // Golden glow overlay
+      svg += `<rect x="55" y="${wallY - 10}" width="170" height="${foundY - wallY + 40}" rx="6" fill="url(#gld-${tribeName})" opacity="0.08" filter="url(#glw-${tribeName})"/>`;
+    }
+    svg += `</g>`;
+  }
+
+  // Crumble particles for low quality
+  if (quality === 'low') {
+    svg += `<g class="bbb-castle-layer" data-layer="2">`;
+    for (let i = 0; i < 6; i++) {
+      const px = 70 + Math.random() * 140;
+      const py = wallY + Math.random() * 20;
+      svg += `<circle cx="${px}" cy="${py}" r="1.5" fill="${p.base}" opacity="0.5">
+        <animate attributeName="cy" values="${py};${py + 25}" dur="${1.5 + Math.random() * 2}s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.6;0" dur="${1.5 + Math.random() * 2}s" repeatCount="indefinite"/>
+      </circle>`;
+    }
+    svg += `</g>`;
+  }
+
+  // Sandy beach base
+  svg += `<ellipse cx="${W / 2}" cy="${foundY + foundH}" rx="130" ry="8" fill="${p.base}" opacity="0.3"/>`;
+
+  svg += `</svg></div>`;
+  return svg;
+}
+
+export function rpBuildBeachBlanketBogusSandcastle(ep) {
+  const bbb = ep.beachBlanketBogus;
+  if (!bbb || !bbb.sandcastleData) return '';
+  const sand = bbb.sandcastleData;
+  const _tvState = window._tvState || (window._tvState = {});
+  const stateKey = String(ep.num || 0) + '_bbbSand';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+
+  const tribeMembers = gs.tribes ? gs.tribes.map(t => ({ name: t.name, members: [...t.members] })) : [];
+  const tribeNames = tribeMembers.map(t => t.name);
+
+  const steps = [];
+  function pushStep(html) { steps.push({ html }); }
+
+  // ─── Determine quality tiers ───
+  const scores = Object.entries(sand.buildScores);
+  const scoreVals = scores.map(s => s[1]);
+  const minScore = Math.min(...scoreVals);
+  const maxScore = Math.max(...scoreVals);
+  const range = maxScore - minScore || 0.01;
+
+  function qualityTier(score) {
+    // Absolute baseline: if score is objectively low, show crumbling castle
+    // If range is tiny (close scores), use absolute thresholds
+    if (range < 0.02) {
+      // Scores nearly identical — both mid
+      return score >= 0.5 ? 'high' : score >= 0.3 ? 'mid' : 'low';
+    }
+    const pct = (score - minScore) / range;
+    if (pct >= 0.6) return 'high';
+    if (pct >= 0.3) return 'mid';
+    return 'low';
+  }
+
+  // ─── Section A: Opening ───
+  pushStep(`<div class="bbb-ev round-header">
+    <div class="bbb-ev-port" style="font-size:22px;border-color:rgba(212,160,32,0.3);">&#x1F3F0;</div>
+    <div style="flex:1"><div class="bbb-ev-badge gold">SANDCASTLE PHASE</div>
+    <div class="bbb-ev-text">"Time to build! Grab your materials and construct the most EPIC sandcastle this beach has ever seen!"</div></div>
+  </div>`);
+
+  // ─── Section A: Per-tribe material inventory ───
+  for (const tName of tribeNames) {
+    const mats = sand.tribeMats[tName] || { shells: 0, driftwood: 0, rocks: 0 };
+    const captain = sand.captains[tName] || '?';
+    const maxPips = 8;
+
+    function pipRow(label, count, cls) {
+      let pips = '';
+      const filled = Math.min(count, maxPips);
+      for (let i = 0; i < filled; i++) pips += `<div class="bbb-mat-pip ${cls}"></div>`;
+      for (let i = filled; i < maxPips; i++) pips += `<div class="bbb-mat-pip empty"></div>`;
+      return `<div class="bbb-mat-row">
+        <span class="bbb-mat-label">${label}</span>
+        <div class="bbb-mat-pips">${pips}</div>
+        <span style="font-size:10px;color:rgba(255,255,255,0.5);width:20px;text-align:left;">${count}</span>
+      </div>`;
+    }
+
+    pushStep(`<div class="bbb-ev">
+      <div style="flex:1">
+        <div class="bbb-ev-badge teal">MATERIALS &mdash; ${tName.toUpperCase()}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin:2px 0 8px;">Build Captain: <strong style="color:rgba(255,255,255,0.85);">${captain}</strong></div>
+        ${pipRow('Shells', mats.shells, 'shell')}
+        ${pipRow('Driftwood', mats.driftwood, 'driftwood')}
+        ${pipRow('Rocks', mats.rocks, 'rock')}
+      </div>
+    </div>`);
+  }
+
+  // ─── Section A: Scavenge encounters ───
+  for (const enc of sand.scavengeEncounters) {
+    const badgeCls = enc.badgeClass || '';
+    const mainPlayer = enc.finder || enc.thief || enc.victim || enc.helper || enc.klutz || enc.accuser || enc.inventor || '';
+    pushStep(`<div class="bbb-ev ${badgeCls === 'red' ? 'negative' : badgeCls === 'gold' ? 'positive' : ''}">
+      ${mainPlayer ? `<div class="bbb-ev-port">${_bbbPortrait(mainPlayer, 44)}</div>` : ''}
+      <div style="flex:1"><div class="bbb-ev-badge ${badgeCls}">${enc.badge || enc.eventId || 'SCAVENGE'}</div>
+      <div class="bbb-ev-text">${enc.text}</div></div>
+    </div>`);
+  }
+
+  // ─── Section B: Castle Construction header ───
+  pushStep(`<div class="bbb-build-stage">CONSTRUCTION BEGINS</div>
+    <div class="bbb-castle-arena">
+    ${tribeNames.map(tName => {
+      const q = qualityTier(sand.buildScores[tName]);
+      return `<div class="bbb-castle-col">
+        <div class="bbb-castle-tribe-hdr">${tName.toUpperCase()}</div>
+        <div class="bbb-castle-captain">Captain: ${sand.captains[tName] || '?'}</div>
+        <div class="bbb-castle-svg-wrap" id="bbb-castle-${stateKey}-${tName}">
+          ${_castleSVG(tName, sand.buildScores[tName], sand.buildScores, q)}
+        </div>
+        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.4);margin-top:4px;">
+          ${q === 'high' ? 'MASTERPIECE' : q === 'mid' ? 'SOLID BUILD' : 'CRUMBLING MESS'}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`);
+
+  // ─── Section B: Build events ───
+  // Group by tribe for interleaved display
+  for (const evt of sand.buildEvents) {
+    const badgeCls = evt.badgeClass || '';
+    const mainPlayer = evt.klutz || evt.helper || evt.accuser || evt.accused || evt.inventor || '';
+    const evtType = badgeCls === 'red' ? 'negative' : badgeCls === 'gold' ? 'positive' : '';
+    pushStep(`<div class="bbb-ev ${evtType}">
+      ${mainPlayer ? `<div class="bbb-ev-port">${_bbbPortrait(mainPlayer, 44)}</div>` : ''}
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="bbb-ev-badge ${badgeCls}">${evt.badge || evt.eventId || 'BUILD'}</div>
+          ${evt.tribe ? `<span style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px;">${evt.tribe.toUpperCase()}</span>` : ''}
+        </div>
+        <div class="bbb-ev-text">${evt.text}</div>
+      </div>
+    </div>`);
+  }
+
+  // ─── Section C: Judging ───
+  pushStep(`<div class="bbb-ev round-header">
+    <div class="bbb-ev-port" style="font-size:22px;border-color:rgba(212,160,32,0.3);">&#x1F3AC;</div>
+    <div style="flex:1"><div class="bbb-ev-badge gold">JUDGING</div>
+    <div class="bbb-ev-text">Chris strolls between the castles, chin in hand. He kicks one wall. Pokes a tower. Sniffs a seashell. "Hmm. Hmmmmmm. HMMMMMM."</div></div>
+  </div>`);
+
+  // Score comparison bars
+  const maxScoreVal = Math.max(...scoreVals, 0.01);
+  const barCards = tribeNames.map(tName => {
+    const sc = sand.buildScores[tName] || 0;
+    const pct = Math.round((sc / maxScoreVal) * 100);
+    const isWinner = tName === sand.winner;
+    return `<div class="bbb-judge-bar-row">
+      <div class="bbb-judge-bar-label">${tName.toUpperCase()}</div>
+      <div class="bbb-judge-bar-track">
+        <div class="bbb-judge-bar-fill ${isWinner ? 'winner' : 'loser'}" style="width:${pct}%">${sc.toFixed(2)}</div>
+      </div>
+      ${isWinner ? `<span style="font-family:'Bowlby One SC',sans-serif;font-size:9px;color:var(--bbb-gold);letter-spacing:2px;">WINNER</span>` : '<span style="width:50px"></span>'}
+    </div>`;
+  }).join('');
+
+  pushStep(`<div class="bbb-judge-section">
+    <div style="font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.4);text-transform:uppercase;text-align:center;margin-bottom:10px;">CHRIS'S SCORES</div>
+    ${barCards}
+    <div class="bbb-winner-banner">${sand.winner.toUpperCase()} WINS THE SANDCASTLE PHASE!</div>
+  </div>`);
+
+  // ── Build the screen ──
+  const state = _tvState[stateKey];
+
+  let feedHtml = `<div class="bbb-side-sec" style="color:rgba(255,255,255,0.35);">SANDCASTLE FEED</div>`;
+  feedHtml += `<div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:8px;">CLICK TO ADVANCE</div>`;
+
+  steps.forEach((step, i) => {
+    const visible = i <= state.idx;
+    feedHtml += `<div id="bbb-step-${stateKey}-${i}" data-state-idx="${i}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
+  });
+
+  feedHtml += `<div id="bbb-controls-${stateKey}" class="bbb-controls"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
+    <button id="bbb-btn-${stateKey}" class="bbb-btn-next" onclick="window.beachBogusRevealNext('${stateKey}', ${steps.length})">NEXT &#x25B6; (${state.idx + 2}/${steps.length})</button>
+    <button class="bbb-btn-all" onclick="window.beachBogusRevealAll('${stateKey}', ${steps.length})">Reveal All</button>
+  </div>`;
+
+  // Sidebar: materials summary + scores
+  let sideHtml = '';
+  sideHtml += `<div class="bbb-side-sec">MATERIALS</div>`;
+  for (const tName of tribeNames) {
+    const mats = sand.tribeMats[tName] || { shells: 0, driftwood: 0, rocks: 0 };
+    const total = mats.shells + mats.driftwood + mats.rocks;
+    sideHtml += `<div class="bbb-side-tribe">${tName.toUpperCase()}</div>`;
+    sideHtml += `<div style="padding:4px 8px;font-size:11px;color:rgba(255,255,255,0.7);">
+      <span style="margin-right:8px;"><span class="bbb-mat-pip shell" style="display:inline-block;vertical-align:middle;margin-right:2px;"></span>${mats.shells}</span>
+      <span style="margin-right:8px;"><span class="bbb-mat-pip driftwood" style="display:inline-block;vertical-align:middle;margin-right:2px;"></span>${mats.driftwood}</span>
+      <span><span class="bbb-mat-pip rock" style="display:inline-block;vertical-align:middle;margin-right:2px;"></span>${mats.rocks}</span>
+      <span style="float:right;font-size:9px;color:rgba(255,255,255,0.4);">${total} total</span>
+    </div>`;
+  }
+  sideHtml += `<div class="bbb-side-sec">BUILD CAPTAINS</div>`;
+  for (const tName of tribeNames) {
+    const captain = sand.captains[tName];
+    if (captain) {
+      sideHtml += `<div class="bbb-surfer">
+        ${_bbbPortrait(captain, 24)}
+        <div style="flex:1;min-width:0;">
+          <div class="bbb-surfer-name">${captain}</div>
+          <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">${tName.toUpperCase()}</div>
+        </div>
+      </div>`;
+    }
+  }
+  sideHtml += `<div class="bbb-side-sec">BUILD SCORES</div>`;
+  for (const tName of tribeNames) {
+    const sc = (sand.buildScores[tName] || 0).toFixed(2);
+    const isWinner = tName === sand.winner;
+    sideHtml += `<div class="bbb-side-score" style="${isWinner ? 'border-color:rgba(212,160,32,0.3);' : ''}">
+      <div class="bbb-side-score-name">${tName}</div>
+      <div class="bbb-side-score-val" style="${isWinner ? 'color:var(--bbb-gold);' : ''}">${sc}</div>
+    </div>`;
+  }
+  if (sand.winner) {
+    sideHtml += `<div style="text-align:center;margin-top:8px;font-family:'Bowlby One SC',sans-serif;font-size:10px;letter-spacing:2px;color:var(--bbb-gold);">WINNER: ${sand.winner.toUpperCase()}</div>`;
+  }
+
+  return _bbbShell(`
+    <div class="bbb-hud">
+      <div class="bbb-hud-cell"><div class="bbb-hud-val" style="color:var(--bbb-gold)">&#x1F3F0;</div><div class="bbb-hud-lbl">SANDCASTLE</div></div>
+      ${tribeNames.map(tName => {
+        const q = qualityTier(sand.buildScores[tName]);
+        const qLabel = q === 'high' ? 'MASTERPIECE' : q === 'mid' ? 'SOLID' : 'CRUMBLING';
+        const qColor = q === 'high' ? 'var(--bbb-gold)' : q === 'mid' ? '#4dd0e1' : 'var(--bbb-coral)';
+        return `<div class="bbb-hud-cell"><div class="bbb-hud-val" style="color:${qColor}">${(sand.buildScores[tName] || 0).toFixed(1)}</div><div class="bbb-hud-lbl">${tName.toUpperCase()}</div></div>`;
+      }).join('')}
+      <div class="bbb-hud-cell"><div class="bbb-hud-val" style="color:var(--bbb-gold)">${sand.winner ? sand.winner.toUpperCase().slice(0, 8) : '?'}</div><div class="bbb-hud-lbl">WINNER</div></div>
+    </div>
+    <div class="bbb-layout">
+      <div class="bbb-feed">${feedHtml}</div>
+      <div class="bbb-sidebar">${sideHtml}</div>
+    </div>
+  `, ep);
 }

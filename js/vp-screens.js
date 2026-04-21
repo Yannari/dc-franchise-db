@@ -13,7 +13,7 @@ import { rpBuildSlasherTitleCard, rpBuildSlasherActI, rpBuildSlasherActII, rpBui
 import { rpBuildMonsterCashTitleCard, rpBuildMonsterCashRounds, rpBuildMonsterCashShowdown, rpBuildMonsterCashImmunity, rpBuildMonsterCashTribeResults, rpBuildMonsterCashLeaderboard, monsterCashRevealNext, monsterCashRevealAll } from './chal/monster-cash.js';
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard, alienEggRevealNext, alienEggRevealAll } from './chal/alien-egg.js';
 import { rpBuildBeachBlanketBogusTitleCard, rpBuildBeachBlanketBogusSurf, rpBuildBeachBlanketBogusSandcastle, rpBuildBeachBlanketBogusHalftime, rpBuildBeachBlanketBogusDanceOff, rpBuildBeachBlanketBogusResults, beachBogusRevealNext, beachBogusRevealAll } from './chal/beach-blanket-bogus.js';
-import { rpBuildCrazytownTitleCard, crazytownRevealNext, crazytownRevealAll } from './chal/crazytown.js';
+import { rpBuildCrazytownTitleCard, rpBuildCrazytownHorseDive, rpBuildCrazytownStandoff, rpBuildCrazytownRoundup, rpBuildCrazytownDramaBreak, rpBuildCrazytownResults, crazytownRevealNext, crazytownRevealAll } from './chal/crazytown.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10358,6 +10358,22 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'bbb-results', label:'Results', html: rpBuildBeachBlanketBogusResults(ep) });
   } else if (ep.isCrazytown && ep.crazytown) {
     vpScreens.push({ id:'ct-title', label:'🤠 3:10 to Crazytown', html: rpBuildCrazytownTitleCard(ep) });
+    if (ep.crazytown.horseDive) {
+      vpScreens.push({ id:'ct-dive', label:'🐴 Horse Dive', html: rpBuildCrazytownHorseDive(ep) });
+    }
+    if (ep.crazytown.breakEvents1?.length) {
+      vpScreens.push({ id:'ct-break1', label:'⏳ Intermission', html: rpBuildCrazytownDramaBreak(ep, 1) });
+    }
+    if (ep.crazytown.standoff) {
+      vpScreens.push({ id:'ct-standoff', label:'🔫 The Standoff', html: rpBuildCrazytownStandoff(ep) });
+    }
+    if (ep.crazytown.breakEvents2?.length) {
+      vpScreens.push({ id:'ct-break2', label:'⚡ Rising Tension', html: rpBuildCrazytownDramaBreak(ep, 2) });
+    }
+    if (ep.crazytown.roundup) {
+      vpScreens.push({ id:'ct-roundup', label:'🤠 The Roundup', html: rpBuildCrazytownRoundup(ep) });
+    }
+    vpScreens.push({ id:'ct-results', label:'⚖️ Final Verdict', html: rpBuildCrazytownResults(ep) });
     // RI screens
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _aeRiLife = rpBuildRILife(ep);

@@ -1819,5 +1819,549 @@ export function rpBuildCrazytownTitleCard(ep) {
   `, ep);
 }
 
-export function crazytownRevealNext() {}
-export function crazytownRevealAll() {}
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Horse Dive
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function rpBuildCrazytownHorseDive(ep) {
+  const ct = ep.crazytown;
+  if (!ct?.horseDive) return '';
+  const hd = ct.horseDive;
+
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState['ct-dive']) window._tvState['ct-dive'] = { idx: -1 };
+  const revIdx = window._tvState['ct-dive'].idx;
+
+  // Build interleaved steps from all tribe reactions
+  const steps = [];
+  const maxLen = Math.max(...hd.tribeResults.map(t => t.reactions.length));
+  for (let i = 0; i < maxLen; i++) {
+    for (const tr of hd.tribeResults) {
+      if (i < tr.reactions.length) {
+        steps.push({ ...tr.reactions[i], tribe: tr.tribe });
+      }
+    }
+  }
+
+  // Sidebar
+  let sidebar = '';
+  for (const tr of hd.tribeResults) {
+    const jumpers = tr.reactions.filter(r => r.jumped);
+    const chickens = tr.reactions.filter(r => !r.jumped);
+    sidebar += `<div class="ct-side-sec">${tr.tribe}</div>`;
+    for (const r of tr.reactions) {
+      const slug = players.find(p => p.name === r.name)?.slug || r.name.toLowerCase().replace(/\s+/g, '-');
+      const icon = r.jumped ? '&#9989;' : '&#128020;';
+      const scoreHtml = r.jumped && r.landingScore != null ? ` ${_ctChalkNum(r.landingScore)}` : '';
+      const intBadge = r.intervention ? `<span style="font-size:8px;color:var(--ct-sepia);margin-left:4px">${r.intervention.type === 'convince' ? 'TALKED' : 'PUSHED'}</span>` : '';
+      sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,0.8)">
+        <img src="assets/avatars/${slug}.png" width="32" height="32" style="border-radius:2px;border:1px solid var(--ct-leather);filter:sepia(0.2)" onerror="this.style.display='none'">
+        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.name}</span>
+        <span>${icon}</span>${scoreHtml}${intBadge}
+      </div>`;
+    }
+    sidebar += `<div style="text-align:right;padding:4px 0;border-top:1px solid rgba(218,165,32,0.1);margin-top:4px">
+      <span style="font-size:9px;color:rgba(255,255,255,0.4)">TRIBE SCORE</span> ${_ctChalkNum(tr.tribeScore)}
+    </div>`;
+  }
+
+  // Feed — poker card reveals
+  let feed = '';
+  for (let i = 0; i < steps.length; i++) {
+    if (i > revIdx) break;
+    const s = steps[i];
+    const slug = players.find(p => p.name === s.name)?.slug || s.name.toLowerCase().replace(/\s+/g, '-');
+    const cardContent = s.jumped
+      ? `<img src="assets/avatars/${slug}.png" width="40" height="40" style="border-radius:2px;filter:sepia(0.2);margin-bottom:4px" onerror="this.style.display='none'"><div style="font-family:'Rye',serif;font-size:8px;color:var(--ct-blood)">${s.landingQuality || 'JUMPED'}</div><div style="font-family:'Rye',serif;font-size:14px;color:var(--ct-ink)">${s.landingScore ?? ''}</div>`
+      : `<img src="assets/avatars/${slug}.png" width="40" height="40" style="border-radius:2px;filter:sepia(0.4) saturate(0.5);margin-bottom:4px" onerror="this.style.display='none'"><div style="font-family:'Rye',serif;font-size:10px;color:var(--ct-gold)">CHICKEN</div>`;
+
+    feed += `<div class="ct-ev ${s.jumped ? 'positive' : 'negative'}" style="animation-delay:${i * 0.05}s">
+      <div class="ct-ev-port"><img src="assets/avatars/${slug}.png" onerror="this.style.display='none'"></div>
+      <div style="flex:1;min-width:0">
+        <div class="ct-ev-badge ${s.jumped ? 'gold' : 'red'}">${s.tribe} &mdash; ${s.jumped ? 'JUMPED' : 'CHICKEN'}</div>
+        <div class="ct-ev-text">${s.text || ''}</div>
+        ${s.jumped && s.landingScore != null ? `<div style="margin-top:4px">${_ctNeonBadge('SCORE: ' + s.landingScore, 'gold')}</div>` : ''}
+      </div>
+      <div style="flex-shrink:0">${_ctPokerCard(cardContent, 'dive-' + i, false)}</div>
+    </div>`;
+
+    // Intervention card
+    if (s.intervention) {
+      const iv = s.intervention;
+      const ivSlug = players.find(p => p.name === iv.by)?.slug || iv.by.toLowerCase().replace(/\s+/g, '-');
+      feed += `<div class="ct-ev ${iv.success ? 'positive' : 'negative'}">
+        <div class="ct-ev-port"><img src="assets/avatars/${ivSlug}.png" onerror="this.style.display='none'"></div>
+        <div style="flex:1;min-width:0">
+          <div class="ct-ev-badge ${iv.success ? 'teal' : 'orange'}">${iv.type === 'convince' ? 'PEP TALK' : 'SHOVE'} &mdash; ${iv.success ? 'SUCCESS' : 'FAILED'}</div>
+          <div class="ct-ev-text">${iv.text || `${iv.by} ${iv.type === 'convince' ? 'tried to talk' : 'tried to push'} ${s.name} off the platform.`}</div>
+          ${iv.hostLine ? `<div style="margin-top:4px;font-style:italic;font-size:11px;color:var(--ct-sepia)">${iv.hostLine}</div>` : ''}
+        </div>
+      </div>`;
+    }
+  }
+
+  // HUD
+  const hudCells = hd.tribeResults.map(tr => {
+    const j = tr.reactions.filter(r => r.jumped).length;
+    const c = tr.reactions.filter(r => !r.jumped).length;
+    return `<div class="ct-hud-cell">
+      <div class="ct-hud-val">${_ctChalkNum(tr.tribeScore)}</div>
+      <div class="ct-hud-lbl">${tr.tribe}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px">${j}J / ${c}C</div>
+    </div>`;
+  }).join('');
+
+  const pending = revIdx < steps.length - 1;
+  const controls = `<div class="ct-controls">
+    ${pending ? `<button class="ct-btn-next" onclick="crazytownRevealNext('ct-dive')">NEXT JUMP</button>` : ''}
+    ${pending ? `<button class="ct-btn-all" onclick="crazytownRevealAll('ct-dive')">Reveal All</button>` : ''}
+    ${!pending && steps.length ? `<div>${_ctNeonBadge(hd.winner ? hd.winner + ' WINS THE DIVE' : 'PHASE COMPLETE', 'gold')}</div>` : ''}
+  </div>`;
+
+  return _ctShell(`
+    <div class="ct-hud">${hudCells}</div>
+    <div class="ct-layout">
+      <div class="ct-feed">${feed}${controls}</div>
+      <div class="ct-sidebar">${sidebar}</div>
+    </div>
+  `, ep);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Standoff
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function rpBuildCrazytownStandoff(ep) {
+  const ct = ep.crazytown;
+  if (!ct?.standoff) return '';
+  const so = ct.standoff;
+
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState['ct-standoff']) window._tvState['ct-standoff'] = { idx: -1 };
+  const revIdx = window._tvState['ct-standoff'].idx;
+
+  const allNames = Object.keys(so.standings || {});
+  const gunslingerSet = new Set(so.gunslingers || []);
+
+  // Sidebar — player roster with status
+  let sidebar = `<div class="ct-side-sec">COMBATANTS</div>`;
+  for (const name of allNames) {
+    const status = so.standings[name];
+    const isDead = status === 'eliminated';
+    const isGun = gunslingerSet.has(name);
+    const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+    // Count hits taken
+    let hits = 0;
+    for (const r of (so.rounds || [])) {
+      for (const s of (r.shots || [])) {
+        if (s.target === name && s.hit) hits++;
+      }
+    }
+    const pips = Array.from({ length: 3 }, (_, i) => `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 1px;background:${i < hits ? 'var(--ct-neon-red)' : 'rgba(255,255,255,0.1)'};box-shadow:${i < hits ? '0 0 4px var(--ct-neon-red)' : 'none'}"></span>`).join('');
+
+    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${isDead ? '0.35' : '0.8'})">
+      <div class="ct-portrait ${isDead ? 'dead' : ''}" style="width:36px;padding:3px 2px 2px">
+        <img src="assets/avatars/${slug}.png" width="32" height="32" style="display:block;border-radius:2px;border:1px solid var(--ct-leather)">
+        <div class="ct-portrait-name" style="font-size:6px">${name}</div>
+      </div>
+      <div style="flex:1">
+        <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+        <div>${pips}</div>
+      </div>
+      ${isGun ? `<span style="flex-shrink:0">${_ctNeonBadge('GUN', 'gunslinger')}</span>` : ''}
+    </div>`;
+  }
+
+  // Count standing per tribe
+  const tribeStanding = {};
+  if (gs.tribes) {
+    for (const t of gs.tribes) {
+      const alive = t.members.filter(m => so.standings[m] === 'standing').length;
+      tribeStanding[t.name] = alive;
+    }
+  }
+
+  // Feed — round-by-round reveals
+  let feed = '';
+  const rounds = so.rounds || [];
+  for (let ri = 0; ri < rounds.length; ri++) {
+    if (ri > revIdx) break;
+    const r = rounds[ri];
+
+    // Splitcam intro — pick 3-4 shooters from this round
+    const camNames = (r.shots || []).slice(0, 4).map(s => s.shooter);
+    let splitcam = `<div class="ct-splitcam" style="display:flex;gap:2px;margin:8px 0;overflow:hidden;border-radius:4px;border:2px solid var(--ct-iron)">`;
+    camNames.forEach((n, ci) => {
+      const sl = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
+      splitcam += `<div style="flex:1;height:80px;overflow:hidden;position:relative">
+        <img src="assets/avatars/${sl}.png" style="width:100%;height:200%;object-fit:cover;object-position:center 30%;animation:ct-eyes-narrow 1.5s ease-in-out ${ci * 0.2}s forwards" onerror="this.style.display='none'">
+      </div>`;
+    });
+    splitcam += `</div>`;
+
+    // Round header
+    feed += `<div class="ct-ev round-header">
+      <div style="flex:1;text-align:center">
+        <div style="font-family:'Rye',serif;font-size:16px;color:var(--ct-gold);letter-spacing:4px">ROUND ${r.num}</div>
+      </div>
+    </div>`;
+    feed += splitcam;
+
+    // Countdown
+    feed += `<div style="text-align:center;padding:6px 0;font-family:'Rye',serif;font-size:14px;color:var(--ct-sepia);letter-spacing:6px;animation:ct-countdown 1s ease-out">3&hellip; 2&hellip; 1&hellip; <span style="color:var(--ct-neon-gold);text-shadow:0 0 10px var(--ct-neon-gold)">DRAW!</span></div>`;
+
+    // Shot results
+    for (const s of (r.shots || [])) {
+      const sSlug = players.find(p => p.name === s.shooter)?.slug || s.shooter.toLowerCase().replace(/\s+/g, '-');
+      const tSlug = players.find(p => p.name === s.target)?.slug || s.target.toLowerCase().replace(/\s+/g, '-');
+      feed += `<div class="ct-ev ${s.hit ? 'negative' : ''}">
+        <div class="ct-ev-port"><img src="assets/avatars/${sSlug}.png" onerror="this.style.display='none'"></div>
+        <div style="flex:1;min-width:0">
+          <div class="ct-ev-badge ${s.hit ? 'red' : 'gray'}">${s.hit ? 'HIT' : 'MISS'}</div>
+          <div class="ct-ev-text"><strong>${s.shooter}</strong> fires at <strong>${s.target}</strong> &mdash; ${s.hit ? '<span style="color:var(--ct-neon-red)">DIRECT HIT!</span>' : '<span style="color:rgba(255,255,255,0.4)">Wide.</span>'}</div>
+        </div>
+        <div class="ct-ev-port"><img src="assets/avatars/${tSlug}.png" onerror="this.style.display='none'" style="${s.hit ? 'filter:grayscale(0.6) sepia(0.3)' : ''}"></div>
+      </div>`;
+    }
+
+    // Events
+    for (const evt of (r.events || [])) {
+      feed += `<div class="ct-ev ${evt.type === 'betrayal' ? 'negative' : evt.type === 'shield' ? 'positive' : ''}">
+        <div style="flex:1;min-width:0">
+          <div class="ct-ev-badge ${evt.type === 'betrayal' ? 'red' : evt.type === 'shield' ? 'teal' : 'purple'}">${(evt.type || evt.id || 'EVENT').toUpperCase()}</div>
+          <div class="ct-ev-text">${evt.text || ''}</div>
+        </div>
+      </div>`;
+    }
+
+    // Eliminations
+    for (const elim of (r.eliminations || [])) {
+      const eSlug = players.find(p => p.name === elim)?.slug || elim.toLowerCase().replace(/\s+/g, '-');
+      feed += `<div class="ct-ev negative">
+        <div class="ct-portrait dead" style="width:48px;padding:4px 3px 2px">
+          <img src="assets/avatars/${eSlug}.png" width="44" height="44" style="display:block;border-radius:2px;border:1px solid var(--ct-leather)">
+          <div class="ct-portrait-name" style="font-size:7px">${elim}</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div class="ct-ev-badge red">ELIMINATED</div>
+          <div class="ct-ev-text"><strong>${elim}</strong> is out of the standoff.</div>
+        </div>
+      </div>`;
+    }
+  }
+
+  // HUD
+  const hudCells = Object.entries(tribeStanding).map(([t, c]) =>
+    `<div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(c)}</div><div class="ct-hud-lbl">${t} STANDING</div></div>`
+  ).join('') + `<div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(Math.min(revIdx + 1, rounds.length))}/${_ctChalkNum(rounds.length)}</div><div class="ct-hud-lbl">ROUND</div></div>`;
+
+  const pending = revIdx < rounds.length - 1;
+  const controls = `<div class="ct-controls">
+    ${pending ? `<button class="ct-btn-next" onclick="crazytownRevealNext('ct-standoff')">NEXT ROUND</button>` : ''}
+    ${pending ? `<button class="ct-btn-all" onclick="crazytownRevealAll('ct-standoff')">Reveal All</button>` : ''}
+    ${!pending && rounds.length ? `<div>${_ctNeonBadge(so.winner ? so.winner + ' WINS THE STANDOFF' : 'STANDOFF COMPLETE', 'gold')}</div>` : ''}
+  </div>`;
+
+  return _ctShell(`
+    <div class="ct-hud">${hudCells}</div>
+    <div class="ct-layout">
+      <div class="ct-feed">${feed}${controls}</div>
+      <div class="ct-sidebar">${sidebar}</div>
+    </div>
+  `, ep);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Roundup
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function rpBuildCrazytownRoundup(ep) {
+  const ct = ep.crazytown;
+  if (!ct?.roundup) return '';
+  const ru = ct.roundup;
+
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState['ct-roundup']) window._tvState['ct-roundup'] = { idx: -1 };
+  const revIdx = window._tvState['ct-roundup'].idx;
+
+  const capturedSet = new Set(ru.captures || []);
+  const dodgeCounts = ru.dodgeCounts || {};
+
+  // Sidebar
+  let sidebar = `<div class="ct-side-sec">&#129312; COWBOYS &mdash; ${ru.cowboys}</div>`;
+  for (const name of (ru.cowboyMembers || [])) {
+    const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+    let captures = 0;
+    for (const r of (ru.rounds || [])) for (const l of (r.lassos || [])) if (l.cowboy === name && l.captured) captures++;
+    const isSheriff = ru.sheriff === name;
+    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,0.8)">
+      <img src="assets/avatars/${slug}.png" width="32" height="32" style="border-radius:2px;border:1px solid var(--ct-leather);filter:sepia(0.2)" onerror="this.style.display='none'">
+      <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
+      <span style="font-size:9px;color:var(--ct-gold)">${captures} &#127935;</span>
+      ${isSheriff ? `<span style="flex-shrink:0">${_ctNeonBadge('SHERIFF', 'sheriff')}</span>` : ''}
+    </div>`;
+  }
+  sidebar += `<div class="ct-side-sec">&#128004; CATTLE &mdash; ${ru.cattle}</div>`;
+  for (const name of (ru.cattleMembers || [])) {
+    const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+    const caught = capturedSet.has(name);
+    const dodges = dodgeCounts[name] || 0;
+    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${caught ? '0.35' : '0.8'})">
+      <img src="assets/avatars/${slug}.png" width="32" height="32" style="border-radius:2px;border:1px solid var(--ct-leather);filter:${caught ? 'grayscale(0.8) sepia(0.2)' : 'sepia(0.2)'}" onerror="this.style.display='none'">
+      <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
+      ${caught ? `<span style="font-size:9px;color:var(--ct-neon-red)">ROPED</span>` : `<span style="font-size:9px;color:var(--ct-neon-green)">${dodges} dodges</span>`}
+    </div>`;
+  }
+
+  // Feed — round reveals
+  let feed = '';
+  const rounds = ru.rounds || [];
+  for (let ri = 0; ri < rounds.length; ri++) {
+    if (ri > revIdx) break;
+    const r = rounds[ri];
+
+    feed += `<div class="ct-ev round-header">
+      <div style="flex:1;text-align:center">
+        <div style="font-family:'Rye',serif;font-size:16px;color:var(--ct-gold);letter-spacing:4px">ROUND ${r.num}</div>
+        <div style="font-size:9px;color:var(--ct-sepia);letter-spacing:2px">COWBOYS vs CATTLE</div>
+      </div>
+    </div>`;
+
+    // Lasso attempts
+    for (const l of (r.lassos || [])) {
+      const cSlug = players.find(p => p.name === l.cowboy)?.slug || l.cowboy.toLowerCase().replace(/\s+/g, '-');
+      const tSlug = players.find(p => p.name === l.target)?.slug || l.target.toLowerCase().replace(/\s+/g, '-');
+      feed += `<div class="ct-ev ${l.captured ? 'positive' : ''}">
+        <div class="ct-ev-port"><img src="assets/avatars/${cSlug}.png" onerror="this.style.display='none'"></div>
+        <div style="flex:1;min-width:0;position:relative">
+          <svg width="100%" height="20" style="display:block;margin:4px 0"><line x1="0" y1="10" x2="100%" y2="10" stroke="${l.captured ? 'var(--ct-gold)' : 'var(--ct-iron)'}" stroke-width="2" stroke-dasharray="${l.captured ? '0' : '8,4'}" ${l.captured ? 'style="animation:ct-lasso 0.6s ease-out forwards;stroke-dasharray:300;stroke-dashoffset:300"' : ''}/></svg>
+          <div class="ct-ev-badge ${l.captured ? 'gold' : 'gray'}">${l.captured ? 'CAPTURED!' : 'DODGED'}</div>
+          <div class="ct-ev-text"><strong>${l.cowboy}</strong> throws at <strong>${l.target}</strong> &mdash; ${l.captured ? `<span style="color:var(--ct-neon-gold);animation:ct-brand-sizzle 0.8s ease-out">ROPED!</span>` : `<span style="color:rgba(255,255,255,0.4)">Slipped away.</span>`}</div>
+        </div>
+        <div class="ct-ev-port" style="${!l.captured ? 'animation:ct-fade-up 0.3s ease-out' : ''}"><img src="assets/avatars/${tSlug}.png" onerror="this.style.display='none'" style="${l.captured ? 'filter:grayscale(0.6) sepia(0.3)' : ''}"></div>
+      </div>`;
+    }
+
+    // Events
+    for (const evt of (r.events || [])) {
+      feed += `<div class="ct-ev">
+        <div style="flex:1;min-width:0">
+          <div class="ct-ev-badge orange">${(evt.id || evt.type || 'EVENT').toUpperCase()}</div>
+          <div class="ct-ev-text">${evt.text || ''}</div>
+        </div>
+      </div>`;
+    }
+  }
+
+  // Tables turned
+  if (ru.tablesTurned && revIdx >= rounds.length - 1) {
+    feed += `<div class="ct-ev positive" style="border-left-color:var(--ct-neon-green)">
+      <div style="flex:1;text-align:center;padding:8px 0">
+        ${_ctNeonBadge('TABLES TURNED', 'sheriff')}
+        <div class="ct-ev-text" style="margin-top:8px">The cattle broke free and turned the tide! Roles reversed in the final push.</div>
+      </div>
+    </div>`;
+  }
+
+  // HUD
+  const capturedCount = capturedSet.size;
+  const freeCount = (ru.cattleMembers || []).length - capturedCount;
+  const hudCells = `<div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(capturedCount)}</div><div class="ct-hud-lbl">CAPTURED</div></div>
+    <div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(freeCount)}</div><div class="ct-hud-lbl">FREE</div></div>
+    <div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(Math.min(revIdx + 1, rounds.length))}/${_ctChalkNum(rounds.length)}</div><div class="ct-hud-lbl">ROUND</div></div>`;
+
+  const pending = revIdx < rounds.length - 1;
+  const controls = `<div class="ct-controls">
+    ${pending ? `<button class="ct-btn-next" onclick="crazytownRevealNext('ct-roundup')">NEXT ROUND</button>` : ''}
+    ${pending ? `<button class="ct-btn-all" onclick="crazytownRevealAll('ct-roundup')">Reveal All</button>` : ''}
+    ${!pending && rounds.length ? `<div>${_ctNeonBadge(ru.winner ? ru.winner + ' WINS THE ROUNDUP' : 'ROUNDUP COMPLETE', 'gold')}</div>` : ''}
+  </div>`;
+
+  return _ctShell(`
+    <div class="ct-hud">${hudCells}</div>
+    <div class="ct-layout">
+      <div class="ct-feed">${feed}${controls}</div>
+      <div class="ct-sidebar">${sidebar}</div>
+    </div>
+  `, ep);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Drama Break (intermission)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function rpBuildCrazytownDramaBreak(ep, breakNum) {
+  const ct = ep.crazytown;
+  if (!ct) return '';
+  const events = breakNum === 1 ? ct.breakEvents1 : ct.breakEvents2;
+  if (!events?.length) return '';
+
+  let feed = '';
+  for (const evt of events) {
+    const firstPlayer = (evt.players || [])[0];
+    const slug = firstPlayer ? (players.find(p => p.name === firstPlayer)?.slug || firstPlayer.toLowerCase().replace(/\s+/g, '-')) : null;
+    feed += `<div class="ct-ev ${evt.badgeClass || ''}">
+      ${slug ? `<div class="ct-ev-port"><img src="assets/avatars/${slug}.png" onerror="this.style.display='none'"></div>` : ''}
+      <div style="flex:1;min-width:0">
+        <div class="ct-ev-badge ${evt.badgeClass || 'gray'}">${evt.badge || evt.badgeText || 'INTERMISSION'}</div>
+        <div class="ct-ev-text">${evt.text || ''}</div>
+        ${(evt.players || []).length > 1 ? `<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">${evt.players.slice(1).map(n => {
+          const s = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
+          return `<img src="assets/avatars/${s}.png" width="24" height="24" style="border-radius:2px;border:1px solid var(--ct-leather);filter:sepia(0.2)" title="${n}" onerror="this.style.display='none'">`;
+        }).join('')}</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  return _ctShell(`
+    <div style="padding:12px 14px;position:relative;z-index:6">
+      <div style="text-align:center;font-family:'Rye',serif;font-size:14px;color:var(--ct-sepia);letter-spacing:4px;margin-bottom:12px">${breakNum === 1 ? 'INTERMISSION' : 'RISING TENSION'}</div>
+      ${feed}
+    </div>
+    <div class="ct-tumbleweed" style="top:30%">&#127806;</div>
+    <div class="ct-dust-mote" style="left:20%;top:40%;--dx:3px;--dy:-18px"></div>
+    <div class="ct-dust-mote" style="left:70%;top:60%;--dx:-2px;--dy:-14px;animation-delay:-2s"></div>
+  `, ep);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Results (Final Verdict)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function rpBuildCrazytownResults(ep) {
+  const ct = ep.crazytown;
+  if (!ct) return '';
+
+  const tribeScores = ct.tribeScores || {};
+  const sorted = Object.entries(tribeScores).sort((a, b) => b[1] - a[1]);
+  const winnerTribe = sorted[0]?.[0] || '???';
+
+  // Phase scoreboard
+  const phaseData = [
+    { label: 'HORSE DIVE', data: ct.horseDive },
+    { label: 'STANDOFF', data: ct.standoff },
+    { label: 'ROUNDUP', data: ct.roundup },
+  ];
+  const tribeNames = Object.keys(tribeScores);
+
+  let chalkRows = phaseData.map(ph => {
+    const cells = tribeNames.map(t => {
+      let score = '—';
+      if (ph.data?.winner === t) score = 'W';
+      else if (ph.data?.winner) score = 'L';
+      // Try to get actual tribe score from phase
+      if (ph.data?.tribeResults) {
+        const tr = ph.data.tribeResults.find(r => r.tribe === t);
+        if (tr) score = tr.tribeScore ?? score;
+      }
+      return `<td style="padding:6px 12px;text-align:center">${_ctChalkNum(score)}</td>`;
+    }).join('');
+    return `<tr><td style="padding:6px 12px;text-align:left;font-family:'Rye',serif;font-size:10px;letter-spacing:2px;color:var(--ct-sepia)">${ph.label}</td>${cells}</tr>`;
+  }).join('');
+
+  const headerCells = tribeNames.map(t =>
+    `<th style="padding:6px 12px;text-align:center;font-family:'Rye',serif;font-size:9px;letter-spacing:2px;color:var(--ct-gold)">${t}</th>`
+  ).join('');
+
+  // Total row
+  const totalCells = tribeNames.map(t =>
+    `<td style="padding:8px 12px;text-align:center;border-top:2px solid rgba(218,165,32,0.3)">${_ctChalkNum(tribeScores[t])}</td>`
+  ).join('');
+
+  let chalkBoard = `<div class="ct-chalk-board" style="margin:12px 14px">
+    <table style="width:100%;border-collapse:collapse;color:var(--ct-chalk)">
+      <thead><tr><th></th>${headerCells}</tr></thead>
+      <tbody>${chalkRows}
+        <tr><td style="padding:8px 12px;font-family:'Rye',serif;font-size:10px;letter-spacing:2px;color:var(--ct-gold);border-top:2px solid rgba(218,165,32,0.3)">TOTAL</td>${totalCells}</tr>
+      </tbody>
+    </table>
+  </div>`;
+
+  // Tiebreaker
+  let tiebreakerHtml = '';
+  if (ct.tiebreaker) {
+    const tb = ct.tiebreaker;
+    tiebreakerHtml = `<div class="ct-ev positive" style="margin:0 14px 8px">
+      <div style="flex:1;text-align:center">
+        ${_ctNeonBadge('TIEBREAKER DUEL', 'outlaw')}
+        <div class="ct-ev-text" style="margin-top:6px"><strong>${tb.duelists.join('</strong> vs <strong>')}</strong> &mdash; Quick-draw showdown!</div>
+        <div style="margin-top:6px">${_ctNeonBadge(tb.winner + ' WINS', 'gold')}</div>
+      </div>
+    </div>`;
+  }
+
+  // Standouts
+  let standouts = '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:8px 14px">';
+  if (ct.standoff?.gunslingers?.length) {
+    standouts += ct.standoff.gunslingers.map(n =>
+      `<div style="text-align:center">${_ctPortrait(n, 48)}<div style="margin-top:4px">${_ctNeonBadge('GUNSLINGER', 'gunslinger')}</div></div>`
+    ).join('');
+  }
+  if (ct.roundup?.sheriff) {
+    standouts += `<div style="text-align:center">${_ctPortrait(ct.roundup.sheriff, 48)}<div style="margin-top:4px">${_ctNeonBadge('SHERIFF', 'sheriff')}</div></div>`;
+  }
+  standouts += '</div>';
+
+  // Winner banner
+  const winnerBanner = `<div style="text-align:center;padding:20px 0;position:relative;z-index:6">
+    <div style="font-family:'Rye',serif;font-size:32px;color:var(--ct-neon-gold);letter-spacing:4px;text-shadow:0 0 20px var(--ct-neon-gold),0 0 40px rgba(255,215,0,0.4),3px 3px 0 var(--ct-blood);animation:ct-neon-glow 2s ease-in-out infinite">${winnerTribe}</div>
+    <div style="font-family:'Rye',serif;font-size:12px;letter-spacing:6px;color:var(--ct-sepia);margin-top:4px">WINS THE SHOWDOWN</div>
+  </div>`;
+
+  // Player leaderboard
+  const scores = Object.entries(ep.chalMemberScores || {}).sort((a, b) => b[1] - a[1]);
+  let leaderboard = '<div style="padding:0 14px 16px">';
+  leaderboard += '<div class="ct-side-sec" style="text-align:center">BOUNTY BOARD</div>';
+  leaderboard += '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">';
+  for (const [name, score] of scores) {
+    leaderboard += `<div class="ct-portrait" style="width:64px" data-bounty="${score}">
+      <img src="assets/avatars/${(players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'))}.png" width="56" height="56" style="display:block;border-radius:2px;border:2px solid var(--ct-leather)">
+      <div class="ct-portrait-name">${name}</div>
+    </div>`;
+  }
+  leaderboard += '</div></div>';
+
+  return _ctShell(`
+    ${winnerBanner}
+    ${chalkBoard}
+    ${tiebreakerHtml}
+    ${standouts}
+    ${leaderboard}
+    <div class="ct-tumbleweed" style="top:15%">&#127806;</div>
+    <div class="ct-tumbleweed" style="top:55%;animation-delay:-6s;animation-duration:16s">&#127806;</div>
+    <div class="ct-dust-mote" style="left:25%;top:35%;--dx:3px;--dy:-20px"></div>
+    <div class="ct-dust-mote" style="left:65%;top:50%;--dx:-2px;--dy:-15px;animation-delay:-3s"></div>
+  `, ep);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Reveal functions
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function crazytownRevealNext(screenKey) {
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState[screenKey]) window._tvState[screenKey] = { idx: -1 };
+  window._tvState[screenKey].idx++;
+  const ep = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+  if (!ep) return;
+  if (window.buildVPScreens) {
+    const screens = window.buildVPScreens(ep);
+    const idx = screens.findIndex(s => s.id === screenKey);
+    if (idx >= 0) window.vpCurrentScreen = idx;
+  }
+  if (window.renderVPScreen) window.renderVPScreen();
+}
+
+export function crazytownRevealAll(screenKey) {
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState[screenKey]) window._tvState[screenKey] = { idx: -1 };
+  window._tvState[screenKey].idx = 9999;
+  const ep = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+  if (!ep) return;
+  if (window.buildVPScreens) {
+    const screens = window.buildVPScreens(ep);
+    const idx = screens.findIndex(s => s.id === screenKey);
+    if (idx >= 0) window.vpCurrentScreen = idx;
+  }
+  if (window.renderVPScreen) window.renderVPScreen();
+}

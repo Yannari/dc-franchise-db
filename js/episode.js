@@ -39,6 +39,7 @@ import { simulateSlasherNight } from './chal/slasher-night.js';
 import { simulateMonsterCash } from './chal/monster-cash.js';
 import { simulateAlienEgg } from './chal/alien-egg.js';
 import { simulateBeachBlanketBogus } from './chal/beach-blanket-bogus.js';
+import { simulateCrazytown } from './chal/crazytown.js';
 import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
@@ -972,7 +973,7 @@ export function handleExileFormat(ep) {
   if (phase === 'pre' && gs.isMerged) return;
   if (phase === 'post' && !gs.isMerged) return;
   // Don't fire on special episode types
-  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isAlienEgg || ep.isBeachBlanketBogus) return;
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
   // Don't double up with schoolyard pick exile (unpicked player already on exile)
@@ -1838,6 +1839,8 @@ export function simulateEpisode() {
   } else if (ep.isBeachBlanketBogus && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateBeachBlanketBogus(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateBeachBlanketBogus
+  } else if (ep.isCrazytown && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateCrazytown(ep);
   } else if (ep.isBasicStraining && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateBasicStraining(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateBasicStraining
@@ -2434,7 +2437,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isAlienEgg) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isAlienEgg && !ep.isCrazytown) {
     updateChalRecord(ep);
   }
 
@@ -5337,6 +5340,8 @@ function simulateJuryRoundtable(ep) {
     alienEgg:           ep.alienEgg           || null,
     isBeachBlanketBogus: ep.isBeachBlanketBogus || false,
     beachBlanketBogus:   ep.beachBlanketBogus   || null,
+    isCrazytown:      ep.isCrazytown      || false,
+    crazytown:        ep.crazytown         || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,

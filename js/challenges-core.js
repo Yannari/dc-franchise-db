@@ -196,23 +196,12 @@ export function simulateIndividualChallenge(pool, immune) {
   // Consecutive-win fatigue: repeat winners face increasing pressure/fatigue
   const _streaks = gs.challengeWinStreak || {};
 
-  // ── Challenge throw check (post-merge only, not when immunity is critical) ──
-  const _throwers = new Set();
-  const _throwDisabled = candidates.length <= (seasonConfig.finaleSize || 3) || gs.activePlayers.length <= 4; // F3/F4 — every immunity matters, never throw when 4 or fewer players remain
-  if (gs.isMerged && !_throwDisabled) {
-    candidates.forEach(name => {
-      const s = pStats(name);
-      const streak = _streaks[name] || 0;
-      const heat = computeHeat(name, candidates, gs.namedAlliances || []);
-      // Motivation: proportional — higher heat + streak = more reason to lay low
-      // Roll: strategic players recognize when to throw, bold players resist (want to win)
-      if (heat < 2) return;
-      const throwChance = heat * (s.strategic * 0.007) + streak * 0.08 - s.boldness * 0.012;
-      if (throwChance > 0 && Math.random() < throwChance) {
-        _throwers.add(name);
-      }
-    });
-  }
+  // ── Challenge throw check ──
+  const _throwDisabled = candidates.length <= (seasonConfig.finaleSize || 3) || gs.activePlayers.length <= 4;
+  const _throwResult = _throwDisabled
+    ? { throwers: new Set(), reasons: {} }
+    : checkChallengeThrows(candidates, { phase: 'post-merge' });
+  const _throwers = _throwResult.throwers;
 
   // Score every candidate so we can produce a full ranking
   const scored = candidates
@@ -278,41 +267,159 @@ export function simulateIndividualChallenge(pool, immune) {
   scored.forEach(s => { chalMemberScores[s.name] = s.score; });
 
   // ── Challenge throw detection + consequences ──
-  const _throwData = [];
-  _throwers.forEach(thrower => {
-    const tS = pStats(thrower);
-    const tPr = pronouns(thrower);
-    // Track throw count for escalating detection
-    if (!gs.challengeThrowCount) gs.challengeThrowCount = {};
-    gs.challengeThrowCount[thrower] = (gs.challengeThrowCount[thrower] || 0) + 1;
-    const _throwCount = gs.challengeThrowCount[thrower];
-    // Detection: each other player rolls intuition to notice
-    // Lower base rate — throwing is subtle. Escalates with repeat throws.
-    const _detectors = [];
-    candidates.filter(p => p !== thrower).forEach(p => {
-      const _detectChance = pStats(p).intuition * 0.015 + (_throwCount - 1) * 0.04;
-      if (Math.random() < _detectChance) _detectors.push(p);
-    });
-    if (_detectors.length) {
-      // Caught — consequences
-      _detectors.forEach(d => addBond(d, thrower, -0.5));
-      // Heat bump for being deceptive
-      if (!gs.challengeThrowHeat) gs.challengeThrowHeat = {};
-      gs.challengeThrowHeat[thrower] = (gs.episode || 0) + 1;
-      // Reset throw count — suspicion is confirmed and out in the open
-      gs.challengeThrowCount[thrower] = 0;
-    }
-    // Heat reduction for successful throw (whether caught or not — you DID place lower)
-    // But if caught, the heat reduction is cancelled by the suspicion
-    if (!_detectors.length) {
-      if (!gs.challengeThrowHeatReduction) gs.challengeThrowHeatReduction = {};
-      gs.challengeThrowHeatReduction[thrower] = (gs.episode || 0) + 1;
-    }
-    _throwData.push({ thrower, detectedBy: _detectors, caught: _detectors.length > 0 });
-  });
+  const _throwData = processChallengeThrows(_throwResult, candidates);
 
   return { name: winner, challengeLabel: chal.name, challengeCategory: chal.category, challengeDesc: chal.desc,
     challengeThrows: _throwData.length ? _throwData : null,
            chalPlacements: scored.map(s => s.name), chalMemberScores };
 }
 
+// ═══════════════════════════════════════════════════════
+//   SHARED CHALLENGE THROW SYSTEM
+//   Identifies players who throw + processes detection/consequences.
+//   Usable by generic AND twist challenges.
+// ═══════════════════════════════════════════════════════
+
+export function checkChallengeThrows(candidates, opts = {}) {
+  const { phase, tribes } = opts;
+  const throwers = new Set();
+  const reasons = {};
+
+  const isPostMerge = phase === 'post-merge' || gs.isMerged;
+  const isPreMerge = phase === 'pre-merge' || (!gs.isMerged && gs.tribes?.length >= 2);
+  const _streaks = gs.challengeWinStreak || {};
+
+  // ── POST-MERGE: Heat floating (existing logic) ──
+  const _throwDisabled = candidates.length <= (seasonConfig.finaleSize || 3) || gs.activePlayers.length <= 4;
+  if (isPostMerge && !_throwDisabled) {
+    candidates.forEach(name => {
+      const s = pStats(name);
+      const streak = _streaks[name] || 0;
+      const heat = computeHeat(name, candidates, gs.namedAlliances || []);
+      if (heat < 2) return;
+      const throwChance = heat * (s.strategic * 0.007) + streak * 0.08 - s.boldness * 0.012;
+      if (throwChance > 0 && Math.random() < throwChance) {
+        throwers.add(name);
+        reasons[name] = { reason: 'heat-floating', heat, streak };
+      }
+    });
+  }
+
+  // ── PRE-MERGE: Showmance protection ──
+  // Player with active showmance/spark on opposing tribe deliberately underperforms
+  // to prevent their crush's tribe from losing → going to tribal
+  if (isPreMerge && seasonConfig.romance !== false) {
+    const _tribes = tribes || gs.tribes || [];
+    candidates.forEach(name => {
+      if (throwers.has(name)) return;
+      const s = pStats(name);
+      const myTribe = _tribes.find(t => t.members.includes(name));
+      if (!myTribe) return;
+      // Check showmances
+      const crossShowmance = (gs.showmances || []).find(sm => {
+        const partner = sm.a === name ? sm.b : sm.b === name ? sm.a : null;
+        if (!partner) return false;
+        return !myTribe.members.includes(partner) && gs.activePlayers?.includes(partner);
+      });
+      // Check romantic sparks
+      const crossSpark = !crossShowmance && (gs.romanticSparks || []).find(sp => {
+        const partner = sp.a === name ? sp.b : sp.b === name ? sp.a : null;
+        if (!partner) return false;
+        return !myTribe.members.includes(partner) && gs.activePlayers?.includes(partner);
+      });
+      const romantic = crossShowmance || crossSpark;
+      if (!romantic) return;
+      const partner = romantic.a === name ? romantic.b : romantic.a;
+      const intensity = crossShowmance ? (romantic.intensity || 5) * 0.12 : 0.15;
+      // Showmance = higher throw chance. Sparks = lower.
+      // Bold players resist (they want to win). Strategic players recognize the play.
+      // Loyalty INVERSELY correlates — low loyalty to tribe = more willing to betray them
+      const throwChance = intensity + s.strategic * 0.008 - s.boldness * 0.015 - s.loyalty * 0.01;
+      if (throwChance > 0 && Math.random() < throwChance) {
+        throwers.add(name);
+        reasons[name] = { reason: 'showmance-protection', beneficiary: partner, isShowmance: !!crossShowmance };
+      }
+    });
+  }
+
+  // ── PRE-MERGE: Strong bond protection ──
+  // Player with bond ≥ 5 to someone on opposing tribe + strategic ≥ 5 throws to protect them
+  if (isPreMerge) {
+    const _tribes = tribes || gs.tribes || [];
+    candidates.forEach(name => {
+      if (throwers.has(name)) return;
+      const s = pStats(name);
+      if (s.strategic < 5) return;
+      const myTribe = _tribes.find(t => t.members.includes(name));
+      if (!myTribe) return;
+      const otherPlayers = _tribes
+        .filter(t => t !== myTribe)
+        .flatMap(t => t.members)
+        .filter(p => gs.activePlayers?.includes(p));
+      let bestBond = null;
+      let bestBondVal = 0;
+      for (const p of otherPlayers) {
+        const b = getBond(name, p);
+        if (b >= 5 && b > bestBondVal) { bestBond = p; bestBondVal = b; }
+      }
+      if (!bestBond) return;
+      // Higher bond = higher chance. Strategic required. Bold and loyal resist.
+      const throwChance = (bestBondVal - 4) * 0.06 + s.strategic * 0.005 - s.boldness * 0.012 - s.loyalty * 0.015;
+      if (throwChance > 0 && Math.random() < throwChance) {
+        throwers.add(name);
+        reasons[name] = { reason: 'bond-protection', beneficiary: bestBond, bondStrength: bestBondVal };
+      }
+    });
+  }
+
+  return { throwers, reasons };
+}
+
+export function processChallengeThrows(throwResult, witnesses) {
+  const { throwers, reasons } = throwResult;
+  const throwData = [];
+  throwers.forEach(thrower => {
+    if (!gs.challengeThrowCount) gs.challengeThrowCount = {};
+    gs.challengeThrowCount[thrower] = (gs.challengeThrowCount[thrower] || 0) + 1;
+    const _throwCount = gs.challengeThrowCount[thrower];
+    const reason = reasons[thrower] || { reason: 'unknown' };
+    const isPreMerge = !gs.isMerged;
+
+    // Detection: witnesses roll intuition. Pre-merge teammates are more suspicious.
+    const detectors = [];
+    witnesses.filter(p => p !== thrower).forEach(p => {
+      let detectChance = pStats(p).intuition * 0.015 + (_throwCount - 1) * 0.04;
+      // Pre-merge: teammates are watching closely — higher base detection
+      if (isPreMerge) {
+        const sameTribe = gs.tribes?.some(t => t.members.includes(thrower) && t.members.includes(p));
+        if (sameTribe) detectChance += 0.06;
+      }
+      // Showmance throws are more obvious — people notice you going easy on the other team
+      if (reason.reason === 'showmance-protection') detectChance += 0.03;
+      if (Math.random() < detectChance) detectors.push(p);
+    });
+
+    if (detectors.length) {
+      // Pre-merge: harsher consequences — you betrayed your tribe
+      const bondPenalty = isPreMerge ? -0.8 : -0.5;
+      detectors.forEach(d => addBond(d, thrower, bondPenalty));
+      if (!gs.challengeThrowHeat) gs.challengeThrowHeat = {};
+      gs.challengeThrowHeat[thrower] = (gs.episode || 0) + 1;
+      gs.challengeThrowCount[thrower] = 0;
+    }
+    // Uncaught throw: heat reduction (post-merge) or no extra consequence (pre-merge)
+    if (!detectors.length && !isPreMerge) {
+      if (!gs.challengeThrowHeatReduction) gs.challengeThrowHeatReduction = {};
+      gs.challengeThrowHeatReduction[thrower] = (gs.episode || 0) + 1;
+    }
+
+    throwData.push({
+      thrower,
+      reason: reason.reason,
+      beneficiary: reason.beneficiary || null,
+      detectedBy: detectors,
+      caught: detectors.length > 0,
+    });
+  });
+  return throwData;
+}

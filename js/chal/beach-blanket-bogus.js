@@ -884,6 +884,15 @@ function _simulateSandcastle(ep, tribeMembers, result) {
     buildScores[t.name] = score;
   }
 
+  // Apply pending injury penalty from halftime (unhealed wipeout injury)
+  if (result._pendingInjuryPenalty) {
+    const { player, modifier } = result._pendingInjuryPenalty;
+    const injuredTribe = tribeMembers.find(t => t.members.includes(player));
+    if (injuredTribe && buildScores[injuredTribe.name]) {
+      buildScores[injuredTribe.name] *= modifier;
+    }
+  }
+
   // Winner = higher build score
   const sorted = Object.entries(buildScores).sort((a, b) => b[1] - a[1]);
   const winner = sorted[0][0];
@@ -1300,13 +1309,9 @@ function _simulateHalftime(ep, tribeMembers, result) {
     data.badge = evt.badge;
     data.badgeClass = evt.badgeClass;
 
-    // Apply sandcastle penalty for unhealed injury
-    if (evt.id === 'injury-check' && data.sandcastlePenalty && result.sandcastleData) {
-      const injured = data.injured;
-      const tribe = tribeMembers.find(t => t.members.includes(injured));
-      if (tribe && result.sandcastleData.buildScores[tribe.name]) {
-        result.sandcastleData.buildScores[tribe.name] *= 0.85;
-      }
+    // Store pending sandcastle penalty for unhealed injury (applied in _simulateSandcastle)
+    if (evt.id === 'injury-check' && data.sandcastlePenalty) {
+      result._pendingInjuryPenalty = { player: data.injured, modifier: 0.85 };
     }
 
     events.push(data);
@@ -1752,30 +1757,35 @@ export function simulateBeachBlanketBogus(ep) {
     }
   }
 
-  // --- Heat: track detected saboteurs from all phases ---
-  if (!gs._beachBogusHeat) gs._beachBogusHeat = [];
+  // --- Heat: track detected saboteurs from all phases (victim-keyed) ---
+  if (!gs._beachBogusHeat) gs._beachBogusHeat = {};
   const expiresEp = (gs.episode || 1) + 2;
 
-  // Surf sabotage
+  // Surf sabotage — victim wants the splasher gone
   if (result.surfData) {
     for (const round of result.surfData.rounds) {
       for (const evt of round.events) {
-        if (evt.eventId === 'sabotage-splash' && evt.splasher) {
-          gs._beachBogusHeat.push({ target: evt.splasher, amount: 1.0, expiresEp });
+        if (evt.eventId === 'sabotage-splash' && evt.splasher && evt.target) {
+          gs._beachBogusHeat[evt.target] = { target: evt.splasher, amount: 1.0, expiresEp };
         }
       }
     }
   }
-  // Sandcastle sabotage
+  // Sandcastle sabotage — victim/tribe members want the saboteur gone
   if (result.sandcastleData) {
     for (const evt of result.sandcastleData.scavengeEncounters) {
-      if (evt.eventId === 'steal-material' && evt.detected && evt.thief) {
-        gs._beachBogusHeat.push({ target: evt.thief, amount: 0.8, expiresEp });
+      if (evt.eventId === 'steal-material' && evt.detected && evt.thief && evt.victim) {
+        gs._beachBogusHeat[evt.victim] = { target: evt.thief, amount: 0.8, expiresEp };
       }
     }
     for (const evt of result.sandcastleData.buildEvents) {
       if (evt.eventId === 'sabotage-kick' && evt.detected && evt.saboteur) {
-        gs._beachBogusHeat.push({ target: evt.saboteur, amount: 1.0, expiresEp });
+        const victimTribe = tribeMembers.find(t => !t.members.includes(evt.saboteur));
+        if (victimTribe) {
+          for (const m of victimTribe.members) {
+            gs._beachBogusHeat[m] = { target: evt.saboteur, amount: 1.0, expiresEp };
+          }
+        }
       }
     }
   }
@@ -1855,7 +1865,7 @@ export function simulateBeachBlanketBogus(ep) {
     buildScores: result.sandcastleData?.buildScores,
     materials: result.sandcastleData?.materials,
     wipeoutOrder: result.surfData?.wipeoutOrder,
-    heatGenerated: (gs._beachBogusHeat || []).length,
+    heatGenerated: Object.keys(gs._beachBogusHeat || {}).length,
   };
 }
 

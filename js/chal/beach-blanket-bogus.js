@@ -2004,6 +2004,175 @@ function _bbbShell(content, ep) {
 .bbb-build-stage{font-family:'Bowlby One SC',sans-serif;font-size:10px;letter-spacing:3px;
   color:rgba(255,255,255,0.4);text-transform:uppercase;text-align:center;margin:14px 0 6px;
   border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:4px}
+
+/* ═══ Halftime Screen ═══ */
+.bbb-halftime-bg{background:linear-gradient(180deg,#ff6b35 0%,#e85d3a 15%,#d4a020 35%,#c77dba 60%,#6a4c93 80%,#2d1b4e 100%)}
+.bbb-halftime-hdr{font-family:'Bowlby One SC',sans-serif;font-size:28px;color:#fff;
+  text-shadow:2px 2px 0 rgba(0,0,0,0.3),0 0 20px rgba(255,165,0,0.4);
+  letter-spacing:4px;text-align:center;padding:24px 0 12px;position:relative;z-index:6}
+.bbb-halftime-sub{font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:4px;text-transform:uppercase;
+  text-align:center;margin-bottom:16px}
+.bbb-half-ev{background:rgba(0,0,0,0.25);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,0.1);border-left:3px solid var(--bbb-gold);
+  padding:14px 16px;margin-bottom:6px;display:flex;align-items:flex-start;gap:12px;border-radius:4px;
+  animation:bbb-fade-up 0.4s ease-out}
+.bbb-half-ev.confrontation{border-left-color:#e53935}
+.bbb-half-ev.alliance{border-left-color:var(--bbb-gold)}
+.bbb-half-ev.showmance{border-left-color:#e91e9c}
+.bbb-half-ev.injury{border-left-color:#ff9800}
+.bbb-half-ev.strategy{border-left-color:var(--bbb-teal)}
+.bbb-half-ev.taunt{border-left-color:#e53935}
+.bbb-half-impact{font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;margin-top:6px;font-style:italic}
+
+/* ═══ Dance-Off Night Scene ═══ */
+.bbb-night-bg{background:linear-gradient(180deg,#0a0a2e 0%,#141452 20%,#1b1b6b 40%,#1a1a4a 70%,#0d0d2a 100%)}
+.bbb-stars{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;
+  background-image:radial-gradient(1px 1px at 10% 15%,rgba(255,255,255,0.7),transparent),
+    radial-gradient(1px 1px at 25% 8%,rgba(255,255,255,0.5),transparent),
+    radial-gradient(1.5px 1.5px at 40% 22%,rgba(255,255,255,0.8),transparent),
+    radial-gradient(1px 1px at 55% 5%,rgba(255,255,255,0.4),transparent),
+    radial-gradient(1px 1px at 70% 18%,rgba(255,255,255,0.6),transparent),
+    radial-gradient(1.5px 1.5px at 85% 12%,rgba(255,255,255,0.7),transparent),
+    radial-gradient(1px 1px at 15% 30%,rgba(255,255,255,0.3),transparent),
+    radial-gradient(1px 1px at 60% 28%,rgba(255,255,255,0.5),transparent),
+    radial-gradient(1.5px 1.5px at 90% 25%,rgba(255,255,255,0.6),transparent),
+    radial-gradient(1px 1px at 35% 35%,rgba(255,255,255,0.4),transparent),
+    radial-gradient(1px 1px at 78% 32%,rgba(255,255,255,0.5),transparent),
+    radial-gradient(1px 1px at 5% 20%,rgba(255,255,255,0.3),transparent);
+  animation:bbb-twinkle 4s ease-in-out infinite alternate}
+@keyframes bbb-twinkle{0%{opacity:0.7}50%{opacity:1}100%{opacity:0.8}}
+
+/* Tiki torches */
+.bbb-tiki-wrap{position:absolute;z-index:3;pointer-events:none}
+.bbb-tiki-wrap.left{left:12px;top:80px}
+.bbb-tiki-wrap.right{right:12px;top:80px}
+.bbb-tiki{width:8px;height:120px;background:linear-gradient(180deg,#5c3a1a,#3a2210);border-radius:2px;margin:0 auto}
+.bbb-tiki-flame{width:22px;height:32px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+  background:radial-gradient(ellipse at 50% 80%,#fff7a0 0%,#ffb833 30%,#ff6b00 60%,#cc3300 85%,transparent 100%);
+  margin:-8px auto 0;filter:blur(0.5px);animation:bbb-tiki-flicker 1.5s ease-in-out infinite;
+  box-shadow:0 0 12px 4px rgba(255,150,0,0.5),0 0 30px 8px rgba(255,100,0,0.25)}
+@keyframes bbb-tiki-flicker{
+  0%{transform:scaleY(1) scaleX(1);opacity:1;filter:blur(0.5px)}
+  25%{transform:scaleY(1.15) scaleX(0.9);opacity:0.9;filter:blur(0.8px)}
+  50%{transform:scaleY(0.85) scaleX(1.1);opacity:1;filter:blur(0.5px)}
+  75%{transform:scaleY(1.1) scaleX(0.85);opacity:0.85;filter:blur(1px)}
+  100%{transform:scaleY(1) scaleX(1);opacity:1;filter:blur(0.5px)}}
+.bbb-tiki-flame-sm{width:16px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+  background:radial-gradient(ellipse at 50% 80%,#fff7a0 0%,#ffb833 35%,#ff6b00 70%,transparent 100%);
+  margin:-4px auto 0;animation:bbb-tiki-flicker 1.8s ease-in-out infinite 0.3s;
+  box-shadow:0 0 8px 3px rgba(255,150,0,0.35)}
+
+/* Spotlight sweep */
+.bbb-spotlight{position:absolute;z-index:2;pointer-events:none;width:200px;height:600px;
+  background:linear-gradient(180deg,rgba(255,220,100,0.08) 0%,transparent 100%);
+  transform-origin:top center;animation:bbb-spotlight-sweep 6s ease-in-out infinite;top:-20px}
+.bbb-spotlight.left{left:30%}
+.bbb-spotlight.right{right:30%;animation-delay:-3s;animation-direction:reverse}
+@keyframes bbb-spotlight-sweep{
+  0%{transform:rotate(-15deg)}50%{transform:rotate(15deg)}100%{transform:rotate(-15deg)}}
+
+/* Dance-off title */
+.bbb-danceoff-title{font-family:'Bowlby One SC',sans-serif;font-size:36px;color:#fff;
+  text-shadow:0 0 20px rgba(255,100,0,0.6),2px 2px 0 rgba(0,0,0,0.5);
+  letter-spacing:6px;text-align:center;padding:28px 0 8px;position:relative;z-index:6;
+  animation:bbb-dance-entrance 0.8s ease-out}
+@keyframes bbb-dance-entrance{0%{opacity:0;transform:scale(0.5) translateY(-30px)}
+  60%{transform:scale(1.1) translateY(0)}100%{opacity:1;transform:scale(1) translateY(0)}}
+
+/* VS layout */
+.bbb-vs-layout{display:flex;align-items:center;justify-content:center;gap:20px;
+  padding:16px 20px;position:relative;z-index:6;flex-wrap:wrap}
+.bbb-dancer{background:rgba(0,0,0,0.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  border:2px solid rgba(255,255,255,0.12);border-radius:8px;padding:16px 20px;text-align:center;
+  min-width:180px;flex:1;max-width:280px;transition:border-color 0.6s,box-shadow 0.6s}
+.bbb-dancer.active{border-color:rgba(255,180,50,0.4);box-shadow:0 0 20px rgba(255,150,0,0.2);
+  animation:bbb-dancer-pulse 1.2s ease-in-out infinite}
+.bbb-dancer.winner{border-color:var(--bbb-gold);box-shadow:0 0 25px rgba(212,160,32,0.4)}
+@keyframes bbb-dancer-pulse{0%,100%{box-shadow:0 0 20px rgba(255,150,0,0.2)}
+  50%{box-shadow:0 0 30px rgba(255,150,0,0.4)}}
+.bbb-dancer-portrait{width:72px;height:72px;border-radius:50%;object-fit:cover;
+  border:3px solid rgba(255,255,255,0.2);margin:0 auto 8px}
+.bbb-dancer-name{font-family:'Bowlby One SC',sans-serif;font-size:14px;color:#fff;letter-spacing:2px}
+.bbb-dancer-tribe{font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.bbb-dancer-stats{font-size:10px;color:rgba(255,255,255,0.5);margin-top:6px}
+.bbb-vs{font-family:'Bowlby One SC',sans-serif;font-size:28px;color:var(--bbb-coral);
+  text-shadow:0 0 15px rgba(232,93,58,0.5);letter-spacing:3px;flex-shrink:0}
+.bbb-winner-crown{font-family:'Bowlby One SC',sans-serif;font-size:10px;letter-spacing:2px;
+  color:var(--bbb-gold);margin-top:8px;text-shadow:0 0 8px rgba(212,160,32,0.4)}
+
+/* Score tracker */
+.bbb-score-tracker{position:relative;z-index:6;padding:12px 20px}
+.bbb-score-tracker-label{font-family:'Bowlby One SC',sans-serif;font-size:8px;letter-spacing:3px;
+  color:rgba(255,255,255,0.35);text-transform:uppercase;text-align:center;margin-bottom:8px}
+.bbb-score-row{display:flex;align-items:center;gap:10px;margin:5px 0}
+.bbb-score-name{font-family:'Bowlby One SC',sans-serif;font-size:10px;letter-spacing:1px;
+  color:rgba(255,255,255,0.7);width:90px;text-align:right;flex-shrink:0}
+.bbb-score-bar-track{flex:1;height:22px;background:rgba(0,0,0,0.3);border-radius:4px;overflow:hidden;position:relative}
+.bbb-score-bar{height:100%;border-radius:4px;transition:width 0.8s ease-out;display:flex;
+  align-items:center;justify-content:flex-end;padding-right:8px;font-family:'Bowlby One SC',sans-serif;
+  font-size:10px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.5);min-width:0}
+.bbb-score-bar.coral{background:linear-gradient(90deg,#e85d3a,#ff7b4f);box-shadow:0 0 8px rgba(232,93,58,0.3)}
+.bbb-score-bar.teal{background:linear-gradient(90deg,#1a7a7a,#2aa5a5);box-shadow:0 0 8px rgba(26,122,122,0.3)}
+.bbb-score-val{font-family:'Bowlby One SC',sans-serif;font-size:12px;color:rgba(255,255,255,0.6);
+  width:50px;text-align:left;flex-shrink:0}
+
+/* Dance beat card */
+.bbb-dance-beat{background:rgba(0,0,0,0.25);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,0.1);border-left:3px solid rgba(255,180,50,0.4);
+  padding:12px 14px;margin-bottom:5px;display:flex;align-items:flex-start;gap:12px;border-radius:4px;
+  animation:bbb-fade-up 0.4s ease-out;position:relative;z-index:6}
+.bbb-dance-beat.good{border-left-color:var(--bbb-gold)}
+.bbb-dance-beat.bad{border-left-color:#e53935}
+.bbb-dance-beat.neutral{border-left-color:rgba(255,255,255,0.2)}
+
+/* ═══ Results Screen ═══ */
+.bbb-results-bg{background:linear-gradient(180deg,#ff6b35 0%,#f7931e 15%,#ffd700 30%,#87CEEB 55%,#0d6986 80%,#0a3d5c 100%)}
+.bbb-results-hdr{font-family:'Bowlby One SC',sans-serif;font-size:24px;color:#fff;
+  text-shadow:2px 2px 0 rgba(0,0,0,0.3);letter-spacing:4px;text-align:center;
+  padding:20px 0 8px;position:relative;z-index:6}
+.bbb-phase-row{display:flex;align-items:center;gap:12px;padding:8px 14px;
+  background:rgba(0,0,0,0.2);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,0.08);border-radius:4px;margin-bottom:4px;position:relative;z-index:6}
+.bbb-phase-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1)}
+.bbb-phase-name{font-family:'Bowlby One SC',sans-serif;font-size:11px;letter-spacing:2px;
+  color:rgba(255,255,255,0.8);flex:1}
+.bbb-phase-winner{font-family:'Bowlby One SC',sans-serif;font-size:10px;letter-spacing:1px;padding:3px 10px;
+  border-radius:12px;flex-shrink:0}
+.bbb-phase-winner.won{background:rgba(212,160,32,0.2);color:var(--bbb-gold)}
+.bbb-phase-winner.lost{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)}
+
+/* Celebration banner */
+.bbb-celebration{text-align:center;padding:20px;position:relative;z-index:6}
+.bbb-celebration-tribe{font-family:'Bowlby One SC',sans-serif;font-size:26px;color:var(--bbb-gold);
+  text-shadow:0 0 20px rgba(212,160,32,0.4),2px 2px 0 rgba(0,0,0,0.3);letter-spacing:4px;
+  animation:bbb-bob 2s ease-in-out infinite}
+.bbb-celebration-sub{font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:3px;
+  text-transform:uppercase;margin-top:6px}
+.bbb-losers-text{font-size:12px;color:rgba(255,255,255,0.5);text-align:center;
+  padding:10px 20px;position:relative;z-index:6;font-style:italic}
+
+/* Standout callouts */
+.bbb-standout{display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:rgba(0,0,0,0.2);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,0.08);border-left:3px solid var(--bbb-gold);
+  border-radius:4px;margin-bottom:4px;position:relative;z-index:6;animation:bbb-fade-up 0.4s ease-out}
+.bbb-standout-label{font-family:'Bowlby One SC',sans-serif;font-size:8px;letter-spacing:2px;
+  color:var(--bbb-gold);text-transform:uppercase}
+.bbb-standout-name{font-size:12px;color:rgba(255,255,255,0.9);font-weight:700}
+.bbb-standout-desc{font-size:10px;color:rgba(255,255,255,0.5)}
+
+/* Leaderboard */
+.bbb-leaderboard{position:relative;z-index:6;padding:0 14px 16px}
+.bbb-lb-row{display:flex;align-items:center;gap:8px;padding:6px 10px;
+  background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.05);border-radius:3px;margin-bottom:2px}
+.bbb-lb-row.top-3{background:rgba(212,160,32,0.1);border-color:rgba(212,160,32,0.15)}
+.bbb-lb-rank{font-family:'Bowlby One SC',sans-serif;font-size:12px;color:rgba(255,255,255,0.5);width:24px;text-align:center}
+.bbb-lb-row.top-3 .bbb-lb-rank{color:var(--bbb-gold)}
+.bbb-lb-name{font-size:11px;color:rgba(255,255,255,0.85);font-weight:600;flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bbb-lb-score{font-family:'Bowlby One SC',sans-serif;font-size:11px;color:rgba(255,255,255,0.5)}
+.bbb-lb-row.top-3 .bbb-lb-score{color:var(--bbb-gold)}
 </style>
 <div class="bbb-shell">
   <div class="bbb-header">
@@ -2869,6 +3038,538 @@ export function rpBuildBeachBlanketBogusSandcastle(ep) {
     <div class="bbb-layout">
       <div class="bbb-feed">${feedHtml}</div>
       <div class="bbb-sidebar">${sideHtml}</div>
+    </div>
+  `, ep);
+}
+
+/* ═══════════════════════════════════════════════════════
+   VP — Halftime Drama (golden hour sunset)
+   ═══════════════════════════════════════════════════════ */
+
+export function rpBuildBeachBlanketBogusHalftime(ep) {
+  const bbb = ep.beachBlanketBogus;
+  if (!bbb || !bbb.halftimeEvents) return '';
+  const events = bbb.halftimeEvents;
+  const _tvState = window._tvState || (window._tvState = {});
+  const stateKey = String(ep.num || 0) + '_bbbHalf';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const steps = [];
+
+  // Opening card
+  steps.push(`<div class="bbb-half-ev strategy" style="text-align:center;justify-content:center;">
+    <div style="flex:1"><div class="bbb-ev-badge gold">BEACH BREAK</div>
+    <div class="bbb-ev-text">"Take five, campers! Hydrate, strategize, scheme... you know the drill."</div></div>
+  </div>`);
+
+  // Each halftime event
+  for (const evt of events) {
+    const evtId = evt.eventId || '';
+    const cardClass = evtId === 'cross-tribe-taunt' ? 'taunt'
+      : evtId === 'cross-tribe-deal' ? 'alliance'
+      : evtId === 'showmance-moment' ? 'showmance'
+      : evtId === 'injury-check' ? 'injury'
+      : evtId === 'strategy-huddle' ? 'strategy'
+      : evtId === 'rival-confrontation' ? 'confrontation'
+      : '';
+
+    const mainPlayer = evt.pitcher || evt.taunter || evt.strategist || evt.lover1 || evt.injured || '';
+    const secondPlayer = evt.target || evt.lover2 || evt.healer || '';
+    const portraits = [];
+    if (mainPlayer) portraits.push(_bbbPortrait(mainPlayer, 44));
+    if (secondPlayer && secondPlayer !== mainPlayer) portraits.push(_bbbPortrait(secondPlayer, 36));
+
+    // Bond impact text
+    let impactText = '';
+    if (evtId === 'cross-tribe-deal') {
+      impactText = evt.accepted ? 'New cross-tribe bond formed' : 'Deal rejected — trust damaged';
+    } else if (evtId === 'showmance-moment') {
+      impactText = evt.existing ? 'Showmance bond deepened' : 'Romantic tension rising';
+    } else if (evtId === 'injury-check') {
+      impactText = evt.healer ? `${evt.healer} earned loyalty through care` : 'Injury will slow sandcastle performance';
+    } else if (evtId === 'strategy-huddle') {
+      impactText = evt.success ? 'Tribe cohesion strengthened' : 'Failed rally — morale dipped';
+    } else if (evtId === 'cross-tribe-taunt') {
+      impactText = 'Cross-tribe hostility increased';
+    }
+
+    steps.push(`<div class="bbb-half-ev ${cardClass}">
+      ${portraits.length > 0 ? `<div style="display:flex;gap:4px;flex-shrink:0;">${portraits.map(p => `<div class="bbb-ev-port">${p}</div>`).join('')}</div>` : ''}
+      <div style="flex:1">
+        <div class="bbb-ev-badge ${evt.badgeClass || ''}">${evt.badge || 'HALFTIME'}</div>
+        <div class="bbb-ev-text">${evt.text}</div>
+        ${impactText ? `<div class="bbb-half-impact">${impactText}</div>` : ''}
+      </div>
+    </div>`);
+  }
+
+  // Build feed with reveal
+  let feedHtml = `<div class="bbb-side-sec" style="color:rgba(255,255,255,0.35);">HALFTIME EVENTS</div>`;
+  feedHtml += `<div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:8px;">CLICK TO ADVANCE</div>`;
+
+  steps.forEach((html, i) => {
+    const visible = i <= state.idx;
+    feedHtml += `<div id="bbb-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">${html}</div>`;
+  });
+
+  feedHtml += `<div id="bbb-controls-${stateKey}" class="bbb-controls"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
+    <button id="bbb-btn-${stateKey}" class="bbb-btn-next" onclick="window.beachBogusRevealNext('${stateKey}', ${steps.length})">NEXT &#x25B6; (${state.idx + 2}/${steps.length})</button>
+    <button class="bbb-btn-all" onclick="window.beachBogusRevealAll('${stateKey}', ${steps.length})">Reveal All</button>
+  </div>`;
+
+  // Sidebar: surf result recap + tribe scores
+  const tribeNames = Object.keys(bbb.tribeScores || {});
+  let sideHtml = `<div class="bbb-side-sec">SERIES SCORE</div>`;
+  for (const tName of tribeNames) {
+    const surfWin = bbb.surfData?.winner === tName;
+    sideHtml += `<div class="bbb-side-score">
+      <div class="bbb-side-score-name">${tName}</div>
+      <div class="bbb-side-score-val">${surfWin ? '1' : '0'}</div>
+    </div>`;
+  }
+  sideHtml += `<div class="bbb-side-sec">SURF WINNER</div>`;
+  sideHtml += `<div style="padding:4px 8px;font-size:11px;color:var(--bbb-gold);font-weight:600;">${bbb.surfData?.winner || '?'}</div>`;
+  sideHtml += `<div class="bbb-side-sec">UP NEXT</div>`;
+  sideHtml += `<div style="padding:4px 8px;font-size:11px;color:rgba(255,255,255,0.6);">Sandcastle Phase</div>`;
+
+  return _bbbShell(`
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;
+      background:linear-gradient(180deg,#ff6b35 0%,#e85d3a 15%,#d4a020 35%,#c77dba 60%,#6a4c93 80%,#2d1b4e 100%);
+      z-index:0;pointer-events:none;"></div>
+    <div class="bbb-halftime-hdr">BEACH BREAK</div>
+    <div class="bbb-halftime-sub">The sun dips low. Alliances shift in the golden light.</div>
+    <div class="bbb-layout">
+      <div class="bbb-feed">${feedHtml}</div>
+      <div class="bbb-sidebar">${sideHtml}</div>
+    </div>
+  `, ep);
+}
+
+/* ═══════════════════════════════════════════════════════
+   VP — Dance-Off (tiki torch night scene)
+   ═══════════════════════════════════════════════════════ */
+
+export function rpBuildBeachBlanketBogusDanceOff(ep) {
+  const bbb = ep.beachBlanketBogus;
+  if (!bbb || !bbb.danceOff) return '';
+  const dance = bbb.danceOff;
+  const _tvState = window._tvState || (window._tvState = {});
+  const stateKey = String(ep.num || 0) + '_bbbDance';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const tribeNames = Object.keys(dance.dancers);
+
+  // Compute max possible score for bar scaling
+  const allScoreVals = Object.values(dance.scores);
+  const maxScore = Math.max(...allScoreVals, 0.01);
+
+  // Build steps for reveal sequence
+  const steps = [];
+
+  // Running score state per step (for live tracker)
+  const runningScores = {};
+  tribeNames.forEach(t => { runningScores[t] = dance.scores[t]; }); // start at base
+
+  // We need cumulative scores through the beats
+  // Actually, beats modify the score via scoreMod applied during simulation
+  // The final score is already computed. We'll simulate the progression.
+  // Start with a base score (before beats), then apply beat mods cumulatively.
+
+  // Estimate base scores by reversing beat mods
+  const baseScores = {};
+  for (const tName of tribeNames) {
+    let score = dance.scores[tName];
+    const beats = dance.beats[tName] || [];
+    // Reverse mods (applied as score *= (1 + mod))
+    for (let i = beats.length - 1; i >= 0; i--) {
+      if (beats[i].scoreMod) score /= (1 + beats[i].scoreMod);
+    }
+    baseScores[tName] = score;
+  }
+
+  // Track cumulative scores through beats for the live bar
+  function scoreAtBeat(tName, beatIdx) {
+    let score = baseScores[tName];
+    const beats = dance.beats[tName] || [];
+    for (let i = 0; i <= beatIdx; i++) {
+      if (beats[i]?.scoreMod) score *= (1 + beats[i].scoreMod);
+    }
+    return score;
+  }
+
+  function scoreBarHtml(scores, highlight) {
+    return `<div class="bbb-score-tracker">
+      <div class="bbb-score-tracker-label">LIVE SCORE</div>
+      ${tribeNames.map((tName, ti) => {
+        const sc = scores[tName] || 0;
+        const pct = Math.min(100, Math.round((sc / maxScore) * 85) + 5);
+        const barCls = ti === 0 ? 'coral' : 'teal';
+        const isHighlight = highlight === tName;
+        return `<div class="bbb-score-row">
+          <div class="bbb-score-name">${tName.toUpperCase()}</div>
+          <div class="bbb-score-bar-track">
+            <div class="bbb-score-bar ${barCls}" style="width:${pct}%;${isHighlight ? 'box-shadow:0 0 15px rgba(255,180,50,0.5);' : ''}">${sc.toFixed(2)}</div>
+          </div>
+          <div class="bbb-score-val">${sc.toFixed(2)}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  // Step 1: "DANCE-OFF" title entrance
+  steps.push(`<div style="text-align:center;padding:10px 0;position:relative;z-index:6;">
+    <div class="bbb-danceoff-title">DANCE-OFF!</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:4px;text-transform:uppercase;margin-top:4px;">
+      IT'S ALL TIED UP &mdash; ONE DANCE TO DECIDE IT ALL</div>
+  </div>`);
+
+  // Step 2: Champion selections
+  let selHtml = `<div style="position:relative;z-index:6;padding:8px 14px;">
+    <div class="bbb-ev-badge gold" style="display:block;text-align:center;margin-bottom:10px;">CHAMPION SELECTION</div>`;
+  for (const tName of tribeNames) {
+    const sel = dance.selections[tName];
+    selHtml += `<div class="bbb-half-ev strategy" style="margin-bottom:6px;">
+      <div style="flex:1">
+        <div style="font-family:'Bowlby One SC',sans-serif;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.5);margin-bottom:4px;">${tName.toUpperCase()}</div>
+        <div class="bbb-ev-text">${sel?.text || 'A champion is selected.'}</div>
+      </div>
+    </div>`;
+  }
+  selHtml += `</div>`;
+  steps.push(selHtml);
+
+  // Step 3: VS layout — two dancer cards
+  const dancerStats = {};
+  for (const tName of tribeNames) {
+    const d = dance.dancers[tName];
+    const s = pStats(d);
+    dancerStats[tName] = { social: s.social, physical: s.physical, boldness: s.boldness };
+  }
+
+  let vsHtml = `<div class="bbb-vs-layout">`;
+  tribeNames.forEach((tName, ti) => {
+    const d = dance.dancers[tName];
+    const ds = dancerStats[tName];
+    if (ti > 0) vsHtml += `<div class="bbb-vs">VS</div>`;
+    vsHtml += `<div class="bbb-dancer" id="bbb-dancer-${stateKey}-${tName}">
+      <div class="bbb-dancer-portrait">${_bbbPortrait(d, 72)}</div>
+      <div class="bbb-dancer-name">${d}</div>
+      <div class="bbb-dancer-tribe">${tName}</div>
+      <div class="bbb-dancer-stats">SOC ${ds.social} / PHY ${ds.physical} / BLD ${ds.boldness}</div>
+    </div>`;
+  });
+  vsHtml += `</div>`;
+  // Show initial score bars
+  vsHtml += scoreBarHtml(baseScores, null);
+  steps.push(vsHtml);
+
+  // Steps 4+: Dance beats — interleave tribes
+  // Flatten all beats with tribe info, interleaved
+  const maxBeats = Math.max(...tribeNames.map(t => (dance.beats[t] || []).length));
+  for (let bi = 0; bi < maxBeats; bi++) {
+    for (const tName of tribeNames) {
+      const beats = dance.beats[tName] || [];
+      if (bi >= beats.length) continue;
+      const beat = beats[bi];
+      const dancer = dance.dancers[tName];
+      const beatCls = beat.scoreMod > 0 ? 'good' : beat.scoreMod < 0 ? 'bad' : 'neutral';
+      const beatBadge = beat.beatId === 'crowd-erupts' ? 'CROWD ERUPTS'
+        : beat.beatId === 'choke' ? 'CHOKE'
+        : beat.beatId === 'showmance-audience' ? 'SHOWMANCE MOMENT'
+        : beat.beatId === 'rival-heckle' ? 'HECKLED'
+        : beat.beatId === 'signature-move' ? 'SIGNATURE MOVE'
+        : beat.beatId === 'trip-stumble' ? (beat.recovers ? 'RECOVERY' : 'STUMBLE')
+        : beat.beatId?.toUpperCase() || 'BEAT';
+      const beatBadgeCls = beat.scoreMod > 0 ? 'gold' : beat.scoreMod < 0 ? 'red' : '';
+
+      // Calculate scores at this beat
+      const currentScores = {};
+      for (const t of tribeNames) {
+        currentScores[t] = scoreAtBeat(t, t === tName ? bi : Math.min(bi, (dance.beats[t] || []).length - 1));
+      }
+
+      let beatHtml = `<div class="bbb-dance-beat ${beatCls}">
+        <div class="bbb-ev-port">${_bbbPortrait(dancer, 44)}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="bbb-ev-badge ${beatBadgeCls}">${beatBadge}</div>
+            <span style="font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:1px;">${tName.toUpperCase()}</span>
+          </div>
+          <div class="bbb-ev-text">${beat.text}</div>
+          ${beat.scoreMod ? `<div style="font-size:10px;color:${beat.scoreMod > 0 ? 'var(--bbb-gold)' : 'var(--bbb-coral)'};margin-top:4px;">${beat.scoreMod > 0 ? '+' : ''}${(beat.scoreMod * 100).toFixed(0)}% score modifier</div>` : ''}
+        </div>
+      </div>`;
+      beatHtml += scoreBarHtml(currentScores, tName);
+      steps.push(beatHtml);
+    }
+  }
+
+  // Final step: score reveal + winner announcement
+  const finalScores = {};
+  tribeNames.forEach(t => { finalScores[t] = dance.scores[t]; });
+
+  let finalHtml = `<div style="position:relative;z-index:6;padding:16px;">`;
+  finalHtml += `<div class="bbb-ev-badge gold" style="display:block;text-align:center;margin-bottom:12px;">FINAL SCORES</div>`;
+  finalHtml += scoreBarHtml(finalScores, dance.winner);
+  finalHtml += `<div style="text-align:center;margin-top:16px;">`;
+  finalHtml += `<div style="font-family:'Bowlby One SC',sans-serif;font-size:22px;color:var(--bbb-gold);text-shadow:0 0 15px rgba(212,160,32,0.4);letter-spacing:3px;">
+    ${dance.dancers[dance.winner]} WINS THE DANCE-OFF!</div>`;
+  finalHtml += `<div class="bbb-winner-crown">CHAMPION DANCER</div>`;
+  finalHtml += `<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;">${dance.winner} takes the final point!</div>`;
+  finalHtml += `</div></div>`;
+  steps.push(finalHtml);
+
+  // Build feed
+  let feedHtml = `<div class="bbb-side-sec" style="color:rgba(255,255,255,0.35);">DANCE-OFF FEED</div>`;
+  feedHtml += `<div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:8px;">CLICK TO ADVANCE</div>`;
+
+  steps.forEach((html, i) => {
+    const visible = i <= state.idx;
+    feedHtml += `<div id="bbb-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">${html}</div>`;
+  });
+
+  feedHtml += `<div id="bbb-controls-${stateKey}" class="bbb-controls"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
+    <button id="bbb-btn-${stateKey}" class="bbb-btn-next" onclick="window.beachBogusRevealNext('${stateKey}', ${steps.length})">NEXT &#x25B6; (${state.idx + 2}/${steps.length})</button>
+    <button class="bbb-btn-all" onclick="window.beachBogusRevealAll('${stateKey}', ${steps.length})">Reveal All</button>
+  </div>`;
+
+  // Sidebar
+  let sideHtml = `<div class="bbb-side-sec">DANCERS</div>`;
+  for (const tName of tribeNames) {
+    const d = dance.dancers[tName];
+    const isWinner = tName === dance.winner;
+    sideHtml += `<div class="bbb-surfer${isWinner ? '' : ''}">
+      ${_bbbPortrait(d, 28)}
+      <div style="flex:1;min-width:0;">
+        <div class="bbb-surfer-name">${d}</div>
+        <div style="font-size:8px;color:${isWinner ? 'var(--bbb-gold)' : 'rgba(255,255,255,0.4)'};letter-spacing:1px;">${tName.toUpperCase()}${isWinner ? ' — WINNER' : ''}</div>
+      </div>
+    </div>`;
+  }
+  sideHtml += `<div class="bbb-side-sec">SCORES</div>`;
+  for (const tName of tribeNames) {
+    const sc = (dance.scores[tName] || 0).toFixed(2);
+    const isWinner = tName === dance.winner;
+    sideHtml += `<div class="bbb-side-score" style="${isWinner ? 'border-color:rgba(212,160,32,0.3);' : ''}">
+      <div class="bbb-side-score-name">${tName}</div>
+      <div class="bbb-side-score-val" style="${isWinner ? 'color:var(--bbb-gold);' : ''}">${sc}</div>
+    </div>`;
+  }
+  sideHtml += `<div class="bbb-side-sec">SERIES</div>`;
+  for (const tName of tribeNames) {
+    sideHtml += `<div class="bbb-side-score">
+      <div class="bbb-side-score-name">${tName}</div>
+      <div class="bbb-side-score-val">${bbb.tribeScores[tName] || 0}</div>
+    </div>`;
+  }
+
+  return _bbbShell(`
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;
+      background:linear-gradient(180deg,#0a0a2e 0%,#141452 20%,#1b1b6b 40%,#1a1a4a 70%,#0d0d2a 100%);
+      z-index:0;pointer-events:none;"></div>
+    <div class="bbb-stars"></div>
+    <!-- Spotlights -->
+    <div class="bbb-spotlight left"></div>
+    <div class="bbb-spotlight right"></div>
+    <!-- Tiki torches left -->
+    <div class="bbb-tiki-wrap left">
+      <div class="bbb-tiki-flame"></div>
+      <div class="bbb-tiki"></div>
+    </div>
+    <div class="bbb-tiki-wrap left" style="top:220px;">
+      <div class="bbb-tiki-flame-sm"></div>
+      <div class="bbb-tiki" style="height:80px;"></div>
+    </div>
+    <!-- Tiki torches right -->
+    <div class="bbb-tiki-wrap right">
+      <div class="bbb-tiki-flame"></div>
+      <div class="bbb-tiki"></div>
+    </div>
+    <div class="bbb-tiki-wrap right" style="top:220px;">
+      <div class="bbb-tiki-flame-sm"></div>
+      <div class="bbb-tiki" style="height:80px;"></div>
+    </div>
+    <div class="bbb-layout">
+      <div class="bbb-feed">${feedHtml}</div>
+      <div class="bbb-sidebar">${sideHtml}</div>
+    </div>
+  `, ep);
+}
+
+/* ═══════════════════════════════════════════════════════
+   VP — Results Screen (final scores + standouts + leaderboard)
+   ═══════════════════════════════════════════════════════ */
+
+export function rpBuildBeachBlanketBogusResults(ep) {
+  const bbb = ep.beachBlanketBogus;
+  if (!bbb) return '';
+
+  const tribeNames = Object.keys(bbb.tribeScores || {});
+  const tribeMembers = gs.tribes ? gs.tribes.map(t => ({ name: t.name, members: [...t.members] })) : [];
+
+  // Determine overall winner
+  const sorted = Object.entries(bbb.tribeScores).sort((a, b) => b[1] - a[1]);
+  const winnerTribe = sorted[0]?.[0] || '?';
+  const loserTribe = sorted[1]?.[0] || '?';
+  const finalScore = `${sorted[0]?.[1] || 0}-${sorted[1]?.[1] || 0}`;
+
+  // Phase results
+  const phases = [];
+  if (bbb.surfData) {
+    phases.push({ icon: '&#x1F3C4;', name: 'Surf Phase', winner: bbb.surfData.winner });
+  }
+  if (bbb.sandcastleData) {
+    phases.push({ icon: '&#x1F3F0;', name: 'Sandcastle Phase', winner: bbb.sandcastleData.winner });
+  }
+  if (bbb.danceOff) {
+    phases.push({ icon: '&#x1F57A;', name: 'Dance-Off', winner: bbb.danceOff.winner });
+  }
+
+  let phasesHtml = `<div style="position:relative;z-index:6;padding:0 14px;">
+    <div class="bbb-side-sec" style="color:rgba(255,255,255,0.35);text-align:center;">PHASE BREAKDOWN</div>`;
+  for (const phase of phases) {
+    const phaseCards = tribeNames.map(tName => {
+      const isWinner = tName === phase.winner;
+      return `<span class="bbb-phase-winner ${isWinner ? 'won' : 'lost'}">${tName.toUpperCase()}${isWinner ? ' &#x2713;' : ''}</span>`;
+    }).join('');
+    phasesHtml += `<div class="bbb-phase-row">
+      <div class="bbb-phase-icon">${phase.icon}</div>
+      <div class="bbb-phase-name">${phase.name}</div>
+      ${phaseCards}
+    </div>`;
+  }
+  phasesHtml += `</div>`;
+
+  // Celebration
+  let celebHtml = `<div class="bbb-celebration">
+    <div class="bbb-celebration-tribe">${winnerTribe.toUpperCase()} WINS!</div>
+    <div class="bbb-celebration-sub">Final Score: ${finalScore}</div>
+  </div>`;
+  celebHtml += `<div class="bbb-losers-text">${loserTribe} heads to tribal council tonight.</div>`;
+
+  // Individual standouts
+  let standoutsHtml = `<div style="position:relative;z-index:6;padding:0 14px;">
+    <div class="bbb-side-sec" style="color:rgba(255,255,255,0.35);text-align:center;">STANDOUT PERFORMERS</div>`;
+
+  // Surf: last surfer standing (most rounds survived)
+  if (bbb.surfData?.rounds) {
+    const surfRounds = bbb.surfData.rounds;
+    const allSurfers = tribeMembers.flatMap(t => t.members);
+    const roundsSurvived = {};
+    allSurfers.forEach(n => { roundsSurvived[n] = 0; });
+    for (const round of surfRounds) {
+      for (const r of round.results) {
+        if (r.status !== 'wipeout') roundsSurvived[r.name] = (roundsSurvived[r.name] || 0) + 1;
+      }
+    }
+    const bestSurfer = Object.entries(roundsSurvived).sort((a, b) => b[1] - a[1])[0];
+    if (bestSurfer) {
+      standoutsHtml += `<div class="bbb-standout">
+        <div class="bbb-ev-port">${_bbbPortrait(bestSurfer[0], 40)}</div>
+        <div style="flex:1">
+          <div class="bbb-standout-label">SURF LEGEND</div>
+          <div class="bbb-standout-name">${bestSurfer[0]}</div>
+          <div class="bbb-standout-desc">Survived ${bestSurfer[1]} of ${surfRounds.length} rounds</div>
+        </div>
+      </div>`;
+    }
+  }
+
+  // Sandcastle: best builder
+  if (bbb.sandcastleData?.buildScores) {
+    // Find per-player contribution from chalMemberScores (sandcastle contributes there)
+    const sand = bbb.sandcastleData;
+    const captains = Object.values(sand.captains || {});
+    if (captains.length > 0) {
+      // Use the captain from the winning tribe as standout
+      const winCaptain = sand.captains[sand.winner];
+      if (winCaptain) {
+        standoutsHtml += `<div class="bbb-standout">
+          <div class="bbb-ev-port">${_bbbPortrait(winCaptain, 40)}</div>
+          <div style="flex:1">
+            <div class="bbb-standout-label">MASTER BUILDER</div>
+            <div class="bbb-standout-name">${winCaptain}</div>
+            <div class="bbb-standout-desc">Led ${sand.winner}'s winning sandcastle</div>
+          </div>
+        </div>`;
+      }
+    }
+  }
+
+  // Dance-off hero
+  if (bbb.danceOff) {
+    const winDancer = bbb.danceOff.dancers[bbb.danceOff.winner];
+    if (winDancer) {
+      standoutsHtml += `<div class="bbb-standout" style="border-left-color:#e91e9c;">
+        <div class="bbb-ev-port">${_bbbPortrait(winDancer, 40)}</div>
+        <div style="flex:1">
+          <div class="bbb-standout-label" style="color:#e91e9c;">DANCE-OFF HERO</div>
+          <div class="bbb-standout-name">${winDancer}</div>
+          <div class="bbb-standout-desc">Won the tiebreaker for ${bbb.danceOff.winner}</div>
+        </div>
+      </div>`;
+    }
+  }
+  standoutsHtml += `</div>`;
+
+  // Leaderboard: all players ranked by chalMemberScores
+  const allPlayers = tribeMembers.flatMap(t => t.members);
+  const scored = allPlayers.map(name => ({
+    name,
+    score: ep.chalMemberScores?.[name] || 0,
+  })).sort((a, b) => b.score - a.score);
+
+  let lbHtml = `<div class="bbb-leaderboard">
+    <div class="bbb-side-sec" style="color:rgba(255,255,255,0.35);text-align:center;">LEADERBOARD</div>`;
+  scored.forEach((entry, i) => {
+    const rank = i + 1;
+    const isTop = rank <= 3;
+    lbHtml += `<div class="bbb-lb-row${isTop ? ' top-3' : ''}">
+      <div class="bbb-lb-rank">${rank <= 3 ? ['&#x1F947;', '&#x1F948;', '&#x1F949;'][rank - 1] : rank}</div>
+      ${_bbbPortrait(entry.name, 22)}
+      <div class="bbb-lb-name">${entry.name}</div>
+      <div class="bbb-lb-score">${entry.score.toFixed(1)}</div>
+    </div>`;
+  });
+  lbHtml += `</div>`;
+
+  // Sidebar: final tribe scores
+  let sideHtml = `<div class="bbb-side-sec">FINAL SCORE</div>`;
+  for (const tName of tribeNames) {
+    const isWinner = tName === winnerTribe;
+    sideHtml += `<div class="bbb-side-score" style="${isWinner ? 'border-color:rgba(212,160,32,0.3);' : ''}">
+      <div class="bbb-side-score-name">${tName}</div>
+      <div class="bbb-side-score-val" style="${isWinner ? 'color:var(--bbb-gold);' : ''}">${bbb.tribeScores[tName] || 0}</div>
+    </div>`;
+  }
+  if (winnerTribe !== '?') {
+    sideHtml += `<div style="text-align:center;margin-top:10px;font-family:'Bowlby One SC',sans-serif;font-size:10px;letter-spacing:2px;color:var(--bbb-gold);">WINNER: ${winnerTribe.toUpperCase()}</div>`;
+  }
+  sideHtml += `<div class="bbb-side-sec">PHASES WON</div>`;
+  for (const tName of tribeNames) {
+    const phasesWon = phases.filter(p => p.winner === tName).length;
+    sideHtml += `<div style="padding:4px 8px;font-size:11px;color:rgba(255,255,255,0.6);">${tName}: ${phasesWon}/${phases.length}</div>`;
+  }
+
+  return _bbbShell(`
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;
+      background:linear-gradient(180deg,#ff6b35 0%,#f7931e 15%,#ffd700 30%,#87CEEB 55%,#0d6986 80%,#0a3d5c 100%);
+      z-index:0;pointer-events:none;"></div>
+    <div class="bbb-waves">
+      <div class="bbb-wave bbb-wave-3"></div>
+      <div class="bbb-wave bbb-wave-2"></div>
+      <div class="bbb-wave bbb-wave-1"></div>
+    </div>
+    <div class="bbb-results-hdr">BEACH BLANKET BOGUS &mdash; RESULTS</div>
+    ${phasesHtml}
+    ${celebHtml}
+    ${standoutsHtml}
+    ${lbHtml}
+    <div class="bbb-layout" style="padding-top:0;">
+      <div class="bbb-feed" style="display:none;"></div>
+      <div class="bbb-sidebar" style="position:relative;width:100%;max-width:300px;margin:0 auto;">${sideHtml}</div>
     </div>
   `, ep);
 }

@@ -1423,6 +1423,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 4) return;
     ep.isAlienEgg = true;
 
+  } else if (engineType === 'beach-blanket-bogus') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isBeachBlanketBogus = true;
+
   } else if (engineType === 'x-treme-torture') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     if ((gs.episode || 0) + 1 < 2) return;

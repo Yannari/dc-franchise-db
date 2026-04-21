@@ -12,6 +12,7 @@ import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/tr
 import { rpBuildSlasherTitleCard, rpBuildSlasherActI, rpBuildSlasherActII, rpBuildSlasherActIII, rpBuildSlasherCredits, rpBuildSlasherAnnouncement, rpBuildSlasherRounds, rpBuildSlasherShowdown, rpBuildSlasherImmunity, rpBuildSlasherElimination, rpBuildSlasherLeaderboard, slasherRevealNextRound, slasherRevealAllRounds, slasherRevealNextScene, slasherRevealAllScenes } from './chal/slasher-night.js';
 import { rpBuildMonsterCashTitleCard, rpBuildMonsterCashRounds, rpBuildMonsterCashShowdown, rpBuildMonsterCashImmunity, rpBuildMonsterCashTribeResults, rpBuildMonsterCashLeaderboard, monsterCashRevealNext, monsterCashRevealAll } from './chal/monster-cash.js';
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard, alienEggRevealNext, alienEggRevealAll } from './chal/alien-egg.js';
+import { rpBuildBeachBlanketBogusTitleCard, beachBogusRevealNext, beachBogusRevealAll } from './chal/beach-blanket-bogus.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10336,6 +10337,8 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'ae-tribes', label:'Tribe Results', html: rpBuildAlienEggTribeResults(ep) });
     }
     vpScreens.push({ id:'ae-leaderboard', label:'Incident Report', html: rpBuildAlienEggLeaderboard(ep) });
+  } else if (ep.isBeachBlanketBogus && ep.beachBlanketBogus) {
+    vpScreens.push({ id:'bbb-title', label:'🏖️ Beach Blanket Bogus', html: rpBuildBeachBlanketBogusTitleCard(ep) });
     // RI screens
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _aeRiLife = rpBuildRILife(ep);

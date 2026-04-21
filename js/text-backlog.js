@@ -27,6 +27,7 @@ import { _textOffTheChain } from './chal/off-the-chain.js';
 import { _textWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 import { _textTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
 import { _textCampCastaways } from './chal/camp-castaways.js';
+import { _textBeachBlanketBogus } from './chal/beach-blanket-bogus.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -2012,6 +2013,7 @@ export function generateSummaryText(ep) {
   _textWawanakwaGoneWild(ep, ln, sec);
   _textTriArmedTriathlon(ep, ln, sec);
   _textCampCastaways(ep, ln, sec);
+  _textBeachBlanketBogus(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
   _textJuryLife(ep, ln, sec);

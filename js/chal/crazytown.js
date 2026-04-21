@@ -1434,6 +1434,51 @@ export function simulateCrazytown(ep) {
     tag: 'challenge',
   });
 
+  // ── Showmance challenge moments (cross-tribe only)
+  if (seasonConfig.romance !== false && gs.showmances?.length) {
+    for (const sm of gs.showmances) {
+      const { a, b } = sm;
+      const aInGame = tribeMembers.some(t => t.members.includes(a));
+      const bInGame = tribeMembers.some(t => t.members.includes(b));
+      if (!aInGame || !bInGame) continue;
+      const crossTribe = !tribeMembers.some(t => t.members.includes(a) && t.members.includes(b));
+      if (!crossTribe) continue;
+      if (!romanticCompat(a, b)) continue;
+      if (Math.random() < 0.4) {
+        const pr = pronouns(a);
+        ep.campEvents[campKey].post.push({
+          type: 'crazytown-showmance',
+          text: `After the dust settles, ${a} catches ${b}'s eye across the set. A quick nod — something unspoken passes between them. ${pr.Sub} turns away before anyone notices.`,
+          players: [a, b],
+          badgeText: 'Western Romance', badgeClass: 'gold',
+        });
+        addBond(a, b, 0.3);
+        break;
+      }
+    }
+  }
+
+  // ── Cold open: pick most dramatic moment
+  let coldOpen = null;
+  if (result.horseDive?.throws?.some(t => t.caught)) {
+    const caught = result.horseDive.throws.find(t => t.caught);
+    coldOpen = { type: 'throw-caught', text: 'Someone is about to get caught throwing the challenge...', player: caught.thrower };
+  } else if (result.standoff?.gunslingers?.length) {
+    coldOpen = { type: 'gunslinger', text: 'One player is about to dominate the standoff like never before...', player: result.standoff.gunslingers[0] };
+  } else if (result.roundup?.tablesTurned) {
+    coldOpen = { type: 'tables-turned', text: 'The tables are about to turn in spectacular fashion...', player: null };
+  } else if (result.standoff?.rounds?.some(r => r.events?.some(e => e.id === 'betrayal-shot' || e.type === 'betrayal'))) {
+    const betrayalRound = result.standoff.rounds.find(r => r.events?.some(e => e.id === 'betrayal-shot' || e.type === 'betrayal'));
+    const betrayalEvt = betrayalRound?.events?.find(e => e.id === 'betrayal-shot' || e.type === 'betrayal');
+    coldOpen = { type: 'betrayal', text: 'Trust is about to be shattered in the standoff circle...', player: betrayalEvt?.actor || null };
+  } else if (result.horseDive) {
+    const allChickens = result.horseDive.tribeResults.flatMap(tr => tr.chickens);
+    if (allChickens.length >= 3) {
+      coldOpen = { type: 'chicken-cascade', text: 'Fear is about to spread like wildfire on the platform...', player: allChickens[0] };
+    }
+  }
+  result.coldOpen = coldOpen;
+
   ep._debugCrazytown = {
     tribeScores: { ...result.tribeScores },
     phases: [...result.phases],
@@ -1444,6 +1489,7 @@ export function simulateCrazytown(ep) {
     sheriff: result.roundup?.sheriff,
     tablesTurned: result.roundup?.tablesTurned || false,
     tiebreaker: result.tiebreaker || null,
+    coldOpen: coldOpen?.type || null,
     heatGenerated: Object.keys(gs._crazytownHeat || {}).length,
   };
 }
@@ -1451,8 +1497,163 @@ export function simulateCrazytown(ep) {
 export function _textCrazytown(ep, ln, sec) {
   const ct = ep.crazytown;
   if (!ct) return;
+  const host = seasonConfig.host || 'Chris';
+
+  // ── Cold open
+  if (ct.coldOpen) {
+    const co = ct.coldOpen;
+    if (co.player) {
+      ln(`[COLD OPEN] ${co.player}: "${co.text}"`);
+    } else {
+      ln(`[COLD OPEN] ${co.text}`);
+    }
+  }
+
+  // ── Title
   sec('3:10 to Crazytown');
-  ln('The teams saddle up for a rootin\'-tootin\' Western showdown.');
+  ln(`${host} struts onto the Western film set in a cowboy hat and spurs. "Welcome to 3:10 to Crazytown! Three challenges. One tribe walks away safe. The other? Tribal council."`);
+
+  // ── Phase 1: Horse Dive
+  if (ct.horseDive) {
+    sec('Phase 1: The Horse Dive');
+    ln(`${host}: "Your first challenge — jump off a 100-foot platform onto a moving horse. Simple!"`);
+
+    for (const tr of ct.horseDive.tribeResults) {
+      ln(`\n— ${tr.tribe} —`);
+      for (const r of tr.reactions) {
+        if (r.text) ln(r.text);
+        if (r.intervention) {
+          if (r.intervention.text) ln(r.intervention.text);
+          if (r.intervention.hostLine) ln(r.intervention.hostLine);
+        }
+        if (r.jumped && r.landingQuality) {
+          const q = r.landingQuality;
+          if (q === 'perfect') ln(`Perfect landing! The crowd goes wild.`);
+          else if (q === 'rough') ln(`A rough landing — but it counts.`);
+          else if (q === 'bellyflop') ln(`That's going to leave a mark.`);
+          else if (q === 'miss') ln(`Complete miss. Zero points.`);
+        }
+      }
+      const sc = typeof tr.tribeScore === 'number' ? tr.tribeScore.toFixed(1) : tr.tribeScore;
+      ln(`${tr.tribe} Horse Dive score: ${sc}`);
+    }
+
+    if (ct.horseDive.winner) {
+      ln(`${host}: "${ct.horseDive.winner} takes Phase 1!"`);
+    }
+
+    if (ct.horseDive.throws?.length) {
+      for (const t of ct.horseDive.throws) {
+        if (t.caught) {
+          const suspectList = t.detectedBy?.join(', ') || 'someone';
+          const reasonLine = t.reason === 'showmance-protection'
+            ? `Was ${t.thrower} throwing to protect ${t.beneficiary}?`
+            : `Something about ${t.thrower}'s performance doesn't add up.`;
+          ln(`${suspectList} noticed something off. ${reasonLine} Suspicion is brewing.`);
+        }
+      }
+    }
+  }
+
+  // ── Drama Break 1
+  if (ct.breakEvents1?.length) {
+    sec('Between Phases');
+    for (const evt of ct.breakEvents1) {
+      if (evt.text) ln(evt.text);
+    }
+  }
+
+  // ── Phase 2: Mexican Standoff
+  if (ct.standoff) {
+    sec('Phase 2: The Mexican Standoff');
+    ln(`${host}: "Everybody into the circle. Water guns loaded. Last tribe standing wins the phase."`);
+    ln(`${ct.standoff.participantCount || 'All'} players step into the standoff circle.`);
+
+    for (const round of ct.standoff.rounds) {
+      ln(`\n— Round ${round.num} —`);
+      const hits = (round.shots || []).filter(s => s.hit);
+      const misses = (round.shots || []).filter(s => !s.hit);
+      for (const s of hits) {
+        ln(`${s.shooter} nails ${s.target}!`);
+      }
+      if (misses.length > 2) {
+        ln(`${misses.length} shots go wide.`);
+      } else {
+        for (const s of misses) {
+          ln(`${s.shooter} misses ${s.target}.`);
+        }
+      }
+      for (const evt of (round.events || [])) {
+        if (evt.text) ln(evt.text);
+      }
+      for (const elim of (round.eliminations || [])) {
+        const elimName = typeof elim === 'string' ? elim : elim.name;
+        ln(`${elimName} takes their second hit — OUT of the standoff!`);
+      }
+    }
+
+    if (ct.standoff.gunslingers?.length) {
+      ln(`\n${ct.standoff.gunslingers.join(' & ')} earned the GUNSLINGER badge with 3+ eliminations!`);
+    }
+    if (ct.standoff.winner) {
+      ln(`${host}: "${ct.standoff.winner} wins the standoff!"`);
+    }
+  }
+
+  // ── Drama Break 2
+  if (ct.breakEvents2?.length) {
+    sec('Rising Tension');
+    for (const evt of ct.breakEvents2) {
+      if (evt.text) ln(evt.text);
+    }
+  }
+
+  // ── Phase 3: Cattle Roundup
+  if (ct.roundup) {
+    sec('Phase 3: The Cattle Roundup');
+    ln(`${host}: "${ct.roundup.cowboys} — you're the cowboys. ${ct.roundup.cattle} — you're the cattle. Cowboys, rope 'em. Cattle, run."`);
+
+    for (const round of ct.roundup.rounds) {
+      ln(`\n— Round ${round.num} —`);
+      for (const l of (round.lassos || [])) {
+        if (l.captured) {
+          ln(`${l.cowboy} ropes ${l.target}! Captured!`);
+        } else {
+          ln(`${l.cowboy} throws the lasso at ${l.target} — and misses!`);
+        }
+      }
+      for (const evt of (round.events || [])) {
+        if (evt.text) ln(evt.text);
+      }
+    }
+
+    if (ct.roundup.tablesTurned) {
+      ln(`\nTABLES TURNED! The cattle found loose rope and counter-roped the cowboys!`);
+    }
+    if (ct.roundup.sheriff) {
+      ln(`${ct.roundup.sheriff} earns the SHERIFF badge for most captures!`);
+    }
+    if (ct.roundup.winner) {
+      ln(`${host}: "${ct.roundup.winner} wins the roundup!"`);
+    }
+  }
+
+  // ── Final Result
+  sec('The Verdict');
+  const scores = ct.tribeScores || {};
+  const scoreStr = Object.entries(scores).map(([t, s]) => `${t}: ${s}`).join(' | ');
+  ln(`Final scores: ${scoreStr}`);
+
+  if (ct.tiebreaker) {
+    const duelStr = ct.tiebreaker.duelists?.join(' vs ') || 'two players';
+    ln(`It's tied! ${duelStr} face off in a sudden-death quick-draw!`);
+    ln(`${ct.tiebreaker.winner} wins the tiebreaker!`);
+  }
+
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  if (sorted.length >= 2) {
+    ln(`${host}: "${sorted[0][0]} rides into the sunset with immunity! ${sorted[sorted.length - 1][0]}... I'll see you at tribal council."`);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

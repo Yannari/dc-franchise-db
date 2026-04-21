@@ -597,12 +597,20 @@ function _simulateHorseDive(ep, tribeMembers, result) {
       for (const teammate of tribe.members) {
         if (teammate !== chicken) addBond(teammate, chicken, -0.1);
       }
+      // Heat: chickening hurts your team in TWO phases (dive score + standoff numbers)
+      if (!gs._crazytownHeat) gs._crazytownHeat = {};
+      const chickenTribemates = tribe.members.filter(m => m !== chicken);
+      for (const tm of chickenTribemates) {
+        const existing = gs._crazytownHeat[tm];
+        if (!existing || existing.amount < 0.8) {
+          gs._crazytownHeat[tm] = { target: chicken, amount: 0.8, expiresEp: (gs.episode || 1) + 2 };
+        }
+      }
     }
 
-    // Scoring
-    const tribeScore = jumpers.length > 0
-      ? jumpers.reduce((sum, j) => sum + j.landingPoints, 0) / jumpers.length
-      : 0;
+    // Scoring: divide by ALL members, not just jumpers. Chickens drag the average down.
+    const totalPoints = jumpers.reduce((sum, j) => sum + j.landingPoints, 0);
+    const tribeScore = members.length > 0 ? totalPoints / members.length : 0;
 
     tribeResults.push({ tribe: tribe.name, jumpers, chickens, reactions, interventions, tribeScore });
   }
@@ -887,22 +895,28 @@ function _simulateStandoff(ep, tribeMembers, result) {
       eliminations: [],
     };
 
-    // Target selection
+    // Target selection — enemies only, anti-pile-on, never same tribe
     const targets = {};
-    for (const shooter of standing) {
-      const candidates = [...standing].filter(c => c !== shooter);
-      let bestTarget = null;
-      let bestWeight = -Infinity;
-      for (const candidate of candidates) {
-        const crossBonus = playerTribe[candidate] !== playerTribe[shooter] ? 0.5 : 0;
-        const enemyFactor = Math.max(0, -getBond(shooter, candidate)) * 0.3;
+    const targetCounts = {};
+    const shooterList = [...standing].sort(() => Math.random() - 0.5);
+    const maxPerTarget = Math.max(2, Math.ceil(standing.size / 4));
+    for (const shooter of shooterList) {
+      const myTribe = playerTribe[shooter];
+      const enemies = [...standing].filter(c => c !== shooter && playerTribe[c] !== myTribe);
+      if (!enemies.length) { targets[shooter] = null; continue; }
+      // Score all enemies
+      const scored = enemies.map(candidate => {
+        const enemyFactor = Math.max(0, -getBond(shooter, candidate)) * 0.2;
         const st = pStats(candidate);
-        const threatFactor = (st.physical * 0.05 + st.strategic * 0.05) * 0.2;
-        const noise = Math.random() * 0.3;
-        const weight = crossBonus + enemyFactor + threatFactor + noise;
-        if (weight > bestWeight) { bestWeight = weight; bestTarget = candidate; }
-      }
-      targets[shooter] = bestTarget;
+        const threatFactor = (st.physical * 0.03 + st.strategic * 0.03);
+        const finishBonus = hits[candidate] === 1 ? 0.25 : 0;
+        const pileOnPenalty = (targetCounts[candidate] || 0) >= maxPerTarget ? -2 : 0;
+        const noise = Math.random() * 0.5;
+        return { name: candidate, weight: enemyFactor + threatFactor + finishBonus + pileOnPenalty + noise };
+      }).sort((a, b) => b.weight - a.weight);
+      const pick = scored[0].name;
+      targets[shooter] = pick;
+      targetCounts[pick] = (targetCounts[pick] || 0) + 1;
     }
 
     // Check events before shots
@@ -939,28 +953,37 @@ function _simulateStandoff(ep, tribeMembers, result) {
       }
     }
 
-    // Betrayal shot (8% chance)
-    if (Math.random() < 0.08) {
+    // Betrayal shot (5% chance — rare and consequential)
+    if (Math.random() < 0.05) {
       const betrayerCandidates = [...standing].filter(p => {
         const arch = players.find(x => x.name === p)?.archetype;
-        const st = pStats(p);
-        return ['villain','mastermind','schemer'].includes(arch) && st.strategic >= 6;
+        return ['villain','mastermind','schemer'].includes(arch) && pStats(p).strategic >= 6;
       });
       if (betrayerCandidates.length > 0) {
         const betrayer = betrayerCandidates[Math.floor(Math.random() * betrayerCandidates.length)];
         const sameTribers = [...standing].filter(p => p !== betrayer && playerTribe[p] === playerTribe[betrayer]);
         if (sameTribers.length > 0) {
           const victim = sameTribers[Math.floor(Math.random() * sameTribers.length)];
-          // Override target to own teammate
           targets[betrayer] = victim;
-          // Everyone loses bond with betrayer
-          [...standing].filter(w => w !== betrayer).forEach(w => addBond(w, betrayer, -1.0));
+          // Massive bond penalty from ENTIRE tribe, not just witnesses
+          const betrayerTribe = playerTribe[betrayer];
+          tribeMembers.forEach(t => {
+            if (t.name === betrayerTribe) {
+              t.members.filter(m => m !== betrayer).forEach(m => addBond(m, betrayer, -1.5));
+            }
+          });
+          // Cross-tribe witnesses also lose respect
+          [...standing].filter(w => w !== betrayer && playerTribe[w] !== betrayerTribe).forEach(w => addBond(w, betrayer, -0.5));
           if (!gs.popularity) gs.popularity = {};
-          gs.popularity[betrayer] = (gs.popularity[betrayer] || 0) - 2;
+          gs.popularity[betrayer] = (gs.popularity[betrayer] || 0) - 3;
+          // Heat: betrayal victim wants revenge
+          if (!gs._crazytownHeat) gs._crazytownHeat = {};
+          gs._crazytownHeat[victim] = { target: betrayer, amount: 2.0, expiresEp: (gs.episode || 1) + 3 };
           const bPr = pronouns(betrayer);
           const vPr = pronouns(victim);
           roundData.events.push({
             type: 'betrayal',
+            shooter: betrayer,
             actor: betrayer,
             target: victim,
             text: _rp(STANDOFF_SHOT.betrayal)(betrayer, victim, bPr, vPr),
@@ -997,6 +1020,100 @@ function _simulateStandoff(ep, tribeMembers, result) {
       }
     }
 
+    // Sabotage — villain tampers with enemy's gun (12% chance, more likely when outnumbered)
+    if (Math.random() < 0.12) {
+      const saboteurPool = [...standing].filter(p => {
+        const arch = players.find(x => x.name === p)?.archetype;
+        return ['villain','mastermind','schemer'].includes(arch);
+      });
+      if (saboteurPool.length) {
+        const saboteur = saboteurPool[Math.floor(Math.random() * saboteurPool.length)];
+        const sabTribe = playerTribe[saboteur];
+        // More desperate = more likely: check if tribe is outnumbered
+        const myCount = [...standing].filter(p => playerTribe[p] === sabTribe).length;
+        const totalOthers = standing.size - myCount;
+        const desperate = totalOthers > myCount * 1.5;
+        if (desperate || Math.random() < 0.5) {
+          const enemyShooters = [...standing].filter(p => playerTribe[p] !== sabTribe && p !== saboteur);
+          if (enemyShooters.length) {
+            const victim = enemyShooters[Math.floor(Math.random() * enemyShooters.length)];
+            targets[victim] = null; // gun jammed — forced miss
+            addBond(victim, saboteur, -0.6);
+            if (!gs.popularity) gs.popularity = {};
+            gs.popularity[saboteur] = (gs.popularity[saboteur] || 0) - 1;
+            const sPr = pronouns(saboteur);
+            const vPr = pronouns(victim);
+            roundData.events.push({
+              type: 'sabotage',
+              actor: saboteur, target: victim,
+              text: `${saboteur} slips behind ${victim} and does something to ${vPr.posAdj} water gun. When ${victim} pulls the trigger — nothing. The gun's been tampered with. ${sPr.Sub} plays dumb.`,
+              players: [saboteur, victim],
+              badgeText: 'SABOTAGE', badgeClass: 'red',
+            });
+          }
+        }
+      }
+    }
+
+    // Cross-tribe truce — two players from different tribes agree not to shoot each other (10% chance)
+    if (Math.random() < 0.10 && i < MAX_ROUNDS - 1) {
+      const truceCandidates = [...standing].filter(p => {
+        const crossBonds = [...standing].filter(c => c !== p && playerTribe[c] !== playerTribe[p] && getBond(p, c) >= 3);
+        return crossBonds.length > 0;
+      });
+      if (truceCandidates.length) {
+        const initiator = truceCandidates[Math.floor(Math.random() * truceCandidates.length)];
+        const crossFriends = [...standing].filter(c => c !== initiator && playerTribe[c] !== playerTribe[initiator] && getBond(initiator, c) >= 3);
+        if (crossFriends.length) {
+          const partner = crossFriends.reduce((best, c) => getBond(initiator, c) > getBond(initiator, best) ? c : best, crossFriends[0]);
+          // Neither targets the other this round
+          if (targets[initiator] === partner) {
+            const altTargets = [...standing].filter(c => c !== initiator && c !== partner && playerTribe[c] !== playerTribe[initiator]);
+            targets[initiator] = altTargets.length ? altTargets[Math.floor(Math.random() * altTargets.length)] : null;
+          }
+          if (targets[partner] === initiator) {
+            const altTargets = [...standing].filter(c => c !== partner && c !== initiator && playerTribe[c] !== playerTribe[partner]);
+            targets[partner] = altTargets.length ? altTargets[Math.floor(Math.random() * altTargets.length)] : null;
+          }
+          addBond(initiator, partner, 0.3);
+          const iPr = pronouns(initiator);
+          const pPr = pronouns(partner);
+          roundData.events.push({
+            type: 'truce',
+            actor: initiator, target: partner,
+            text: `${initiator} and ${partner} lock eyes across the circle — a silent nod. Neither points at the other. An unspoken truce holds for now.`,
+            players: [initiator, partner],
+            badgeText: 'TRUCE', badgeClass: 'teal',
+          });
+        }
+      }
+    }
+
+    // Taunt — bold player taunts enemy to draw fire (8% chance)
+    if (Math.random() < 0.08) {
+      const taunters = [...standing].filter(p => pStats(p).boldness >= 6);
+      if (taunters.length) {
+        const taunter = taunters[Math.floor(Math.random() * taunters.length)];
+        const taunterTribe = playerTribe[taunter];
+        // Taunt redirects 1-2 enemy shooters to target the taunter instead
+        const enemyShooters = [...standing].filter(p => playerTribe[p] !== taunterTribe && targets[p] && targets[p] !== taunter);
+        const redirected = enemyShooters.slice(0, Math.min(2, enemyShooters.length));
+        for (const rs of redirected) targets[rs] = taunter;
+        if (redirected.length) {
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[taunter] = (gs.popularity[taunter] || 0) + 1;
+          const tPr = pronouns(taunter);
+          roundData.events.push({
+            type: 'taunt',
+            actor: taunter, target: redirected[0],
+            text: `${taunter} steps forward and beats ${tPr.posAdj} chest. "You want some?! COME GET SOME!" ${redirected.length > 1 ? `${redirected.join(' and ')} both swing their guns toward ${taunter}.` : `${redirected[0]} can't resist — gun swings toward ${taunter}.`}`,
+            players: [taunter, ...redirected],
+            badgeText: 'TAUNT', badgeClass: 'orange',
+          });
+        }
+      }
+    }
+
     // Resolve shots
     for (const shooter of standing) {
       const target = targets[shooter];
@@ -1008,7 +1125,8 @@ function _simulateStandoff(ep, tribeMembers, result) {
       const tPr = pronouns(target);
       const shotText = hit ? _rp(STANDOFF_SHOT.hit)(shooter, target, sPr, tPr)
                            : _rp(STANDOFF_SHOT.miss)(shooter, target, sPr, tPr);
-      roundData.shots.push({ shooter, target, hit, text: shotText });
+      const isBetrayal = playerTribe[shooter] === playerTribe[target];
+      roundData.shots.push({ shooter, target, hit, text: shotText, betrayal: isBetrayal });
       if (hit) {
         hits[target] = (hits[target] || 0) + 1;
         if (killCount[shooter]) killCount[shooter].add(target);
@@ -1044,12 +1162,12 @@ function _simulateStandoff(ep, tribeMembers, result) {
 
     rounds.push(roundData);
 
-    // Early exit: one tribe has no standing members
+    // Early exit: only one tribe has standing members left
     const tribeCounts = {};
     tribeMembers.forEach(t => { tribeCounts[t.name] = 0; });
     for (const p of standing) { tribeCounts[playerTribe[p]]++; }
-    const extinctTribes = Object.entries(tribeCounts).filter(([, c]) => c === 0);
-    if (extinctTribes.length > 0) break;
+    const aliveTribes = Object.entries(tribeCounts).filter(([, c]) => c > 0);
+    if (aliveTribes.length <= 1) break;
   }
 
   // Determine winner
@@ -1087,10 +1205,14 @@ function _simulateStandoff(ep, tribeMembers, result) {
     gs.popularity[g] = (gs.popularity[g] || 0) + 3;
   }
 
-  // Final standings map
+  // Final standings map — distinguish sat-out chickens from eliminated combatants
+  const participantSet = new Set();
+  horseDive.tribeResults.forEach(tr => tr.jumpers.forEach(j => participantSet.add(j.name)));
   const standings = {};
   tribeMembers.flatMap(t => t.members).forEach(p => {
-    standings[p] = standing.has(p) ? 'standing' : 'eliminated';
+    if (!participantSet.has(p)) standings[p] = 'sat-out';
+    else if (standing.has(p)) standings[p] = 'standing';
+    else standings[p] = 'eliminated';
   });
 
   result.standoff = {
@@ -1676,17 +1798,17 @@ function _ctShell(content, ep) {
   font-family:'Inter',sans-serif;color:var(--ct-ink);
   background:linear-gradient(180deg,#d4a574 0%,#a0724a 20%,#654321 50%,#2d1810 85%,#1a0e08 100%);
   padding:0;max-width:1100px;margin:0 auto;position:relative;min-height:400px;
-  overflow:hidden;border:3px solid #3d200b;box-shadow:inset 0 0 60px rgba(0,0,0,0.4),0 0 30px rgba(0,0,0,0.5);
+  overflow:clip;border:3px solid #3d200b;box-shadow:inset 0 0 60px rgba(0,0,0,0.4),0 0 30px rgba(0,0,0,0.5);
 }
 
 /* ── Film grain overlay ── */
-.ct-shell::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+.ct-shell::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;clip-path:inset(0);
   background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
   opacity:.06;pointer-events:none;z-index:5;animation:ct-grain 0.5s steps(6) infinite;
   mix-blend-mode:overlay;filter:sepia(0.3)}
 
 /* ── Projector flicker ── */
-.ct-shell::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+.ct-shell::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;clip-path:inset(0);
   background:transparent;pointer-events:none;z-index:4;animation:ct-flicker 4s linear infinite}
 
 /* ── Header — weathered wood plank ── */
@@ -1701,7 +1823,7 @@ function _ctShell(content, ep) {
 /* ── Layout ── */
 .ct-layout{display:flex;gap:14px;align-items:flex-start;padding:14px;position:relative;z-index:6}
 .ct-feed{flex:1;min-width:0}
-.ct-sidebar{width:260px;flex-shrink:0;position:sticky;top:60px;max-height:calc(100vh - 80px);overflow-y:auto;align-self:flex-start;
+.ct-sidebar{width:260px;flex-shrink:0;position:sticky;top:0;max-height:100vh;overflow-y:auto;align-self:flex-start;
   scrollbar-width:thin;scrollbar-color:rgba(218,165,32,0.25) transparent;
   background:linear-gradient(180deg,rgba(59,27,10,0.85),rgba(30,15,5,0.9));
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
@@ -2113,13 +2235,21 @@ export function rpBuildCrazytownHorseDive(ep) {
       </div>`;
     }
 
-    feed += `<div id="ct-step-dive-${i}" class="ct-ev ${s.jumped ? 'positive' : 'negative'}" style="${visible ? '' : 'display:none'}">
+    const wasConvinced = s.intervention?.success;
+    const initiallyChickened = !!s.intervention;
+    const finalBadge = s.jumped
+      ? (wasConvinced ? 'CONVINCED → JUMPED' : 'JUMPED')
+      : 'CHICKEN';
+    const badgeColor = s.jumped ? 'gold' : 'red';
+    const evColor = s.jumped ? 'positive' : 'negative';
+
+    feed += `<div id="ct-step-dive-${i}" class="ct-ev ${evColor}" style="${visible ? '' : 'display:none'}">
       ${_ctSmallPortrait(s.name, 44)}
       <div style="flex:1;min-width:0">
-        <div class="ct-ev-badge ${s.jumped ? 'gold' : 'red'}">${s.tribe} &mdash; ${s.jumped ? 'JUMPED' : 'CHICKEN'}</div>
+        <div class="ct-ev-badge ${badgeColor}">${s.tribe} &mdash; ${finalBadge}</div>
         <div class="ct-ev-text">${s.text || ''}</div>
-        ${s.jumped && s.landingScore != null ? `<div style="margin-top:4px">${_ctNeonBadge('SCORE: ' + s.landingScore, 'gold')}</div>` : ''}
         ${interventionHtml}
+        ${s.jumped && s.landingScore != null ? `<div style="margin-top:4px">${_ctNeonBadge('SCORE: ' + s.landingScore, 'gold')}</div>` : ''}
       </div>
     </div>`;
   }
@@ -2203,81 +2333,116 @@ export function rpBuildCrazytownStandoff(ep) {
   const allNames = Object.keys(so.standings || {});
   const gunslingerSet = new Set(so.gunslingers || []);
 
-  // Sidebar — player roster, only show status for revealed rounds
-  const revealedRounds = (so.rounds || []).slice(0, revIdx + 1);
-  let sidebar = `<div class="ct-side-sec">COMBATANTS</div>`;
-  for (const name of allNames) {
-    const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-    // Count hits only from revealed rounds
-    let hits = 0;
-    for (const r of revealedRounds) {
-      for (const s of (r.shots || [])) {
-        if (s.target === name && s.hit) hits++;
-      }
-    }
-    const isDead = hits >= 2;
-    const isGun = revIdx >= (so.rounds || []).length - 1 && gunslingerSet.has(name);
-    const pips = Array.from({ length: 3 }, (_, i) => `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 1px;background:${i < hits ? 'var(--ct-neon-red)' : 'rgba(255,255,255,0.1)'};box-shadow:${i < hits ? '0 0 4px var(--ct-neon-red)' : 'none'}"></span>`).join('');
+  // Tribe lookup for color-coding — build from horse dive tribe data (stable across VP replay)
+  const _ctTribes = ct.horseDive?.tribeResults?.map(tr => ({ name: tr.tribe, members: tr.reactions.map(r => r.name) })) || gs.tribes || [];
+  const _tribePlayerMap = {};
+  _ctTribes.forEach(t => (t.members || []).forEach(m => { _tribePlayerMap[m] = t.name; }));
+  const _tribeNames = _ctTribes.map(t => t.name);
+  const _tribeOf = n => _tribePlayerMap[n] || '?';
+  const _tribeColor = n => {
+    const idx = _tribeNames.indexOf(_tribePlayerMap[n]);
+    return ['#e6c44d','#e85d3a','#38bdf8','#4ade80','#c084fc'][idx] || '#888';
+  };
 
-    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;color:rgba(255,255,255,${isDead ? '0.35' : '0.8'})">
-      ${_ctSidePortrait(name, 32, isDead ? 'dead' : '')}
-      <div style="flex:1;min-width:0">
-        <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
-        <div>${pips}</div>
-      </div>
-      ${isGun ? `<span style="flex-shrink:0">${_ctNeonBadge('GUN', 'gunslinger')}</span>` : ''}
-    </div>`;
-  }
-
-  // Count standing per tribe
-  const tribeStanding = {};
-  if (gs.tribes) {
-    for (const t of gs.tribes) {
-      const alive = t.members.filter(m => so.standings[m] === 'standing').length;
-      tribeStanding[t.name] = alive;
-    }
-  }
+  // Build sidebar — extracted for live updates
+  const sidebar = _ctBuildStandoffSidebar(so, revIdx, _ctTribes, gunslingerSet);
 
   // Feed — round-by-round reveals
+  // Track cumulative hits across rounds for "1st hit / 2nd hit — OUT!" context
+  const cumulativeHits = {};
+  allNames.forEach(n => { cumulativeHits[n] = 0; });
+
   let feed = '';
   const rounds = so.rounds || [];
+
+  // Rules intro
+  feed += `<div style="background:rgba(0,0,0,0.3);border:1px solid rgba(218,165,32,0.2);border-radius:6px;padding:12px 16px;margin-bottom:10px;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.6">
+    <span style="font-family:'Rye',serif;font-size:12px;color:var(--ct-gold);letter-spacing:2px">THE RULES</span><br>
+    All players stand in a circle with water guns. Each round, everyone picks a target and fires. <strong style="color:var(--ct-neon-red)">2 hits = eliminated.</strong> Last tribe with players standing wins.
+  </div>`;
+
   for (let ri = 0; ri < rounds.length; ri++) {
     const visible = ri <= revIdx;
     const r = rounds[ri];
 
     let roundHtml = '';
-    // Splitcam intro
-    const camNames = (r.shots || []).slice(0, 4).map(s => s.shooter);
-    roundHtml += `<div style="display:flex;gap:2px;margin:8px 0;overflow:hidden;border-radius:4px;border:2px solid var(--ct-iron)">`;
-    camNames.forEach((n, ci) => {
-      const sl = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
-      roundHtml += `<div style="flex:1;height:80px;overflow:hidden;position:relative">
-        <img src="assets/avatars/${sl}.png" style="width:100%;height:200%;object-fit:cover;object-position:center 30%;animation:ct-eyes-narrow 1.5s ease-in-out ${ci * 0.2}s forwards" onerror="this.style.display='none'">
-      </div>`;
-    });
-    roundHtml += `</div>`;
 
-    roundHtml += `<div class="ct-ev round-header"><div style="flex:1;text-align:center"><div style="font-family:'Rye',serif;font-size:16px;color:var(--ct-gold);letter-spacing:4px">ROUND ${r.num}</div></div></div>`;
-    roundHtml += `<div style="text-align:center;padding:6px 0;font-family:'Rye',serif;font-size:14px;color:var(--ct-sepia);letter-spacing:6px;animation:ct-countdown 1s ease-out">3&hellip; 2&hellip; 1&hellip; <span style="color:var(--ct-neon-gold);text-shadow:0 0 10px var(--ct-neon-gold)">DRAW!</span></div>`;
+    // Western standoff banner — portraits in a dusty panoramic strip
+    const roundShooters = (r.shots || []).map(s => s.shooter).filter((v, i, a) => a.indexOf(v) === i).slice(0, 6);
+    roundHtml += `<div style="display:flex;gap:0;margin:8px 0;overflow:hidden;border-radius:4px;border:2px solid var(--ct-leather);background:linear-gradient(180deg,#2d1810 0%,#654321 40%,#d4a574 70%,#e6c44d 100%);position:relative;height:120px">
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.15);pointer-events:none"></div>
+      ${roundShooters.map((n, ci) => {
+        const sl = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
+        const tc = _tribeColor(n);
+        return `<div style="flex:1;position:relative;overflow:hidden;border-right:1px solid rgba(0,0,0,0.3)">
+          <img src="assets/avatars/${sl}.png" style="width:100%;height:140%;object-fit:cover;object-position:center 20%;filter:contrast(1.2) sepia(0.3);opacity:0.85" onerror="this.style.display='none'">
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:4px 4px;background:linear-gradient(transparent,rgba(0,0,0,0.8));font-size:9px;color:${tc};letter-spacing:1px;text-align:center;font-family:'Rye',serif;text-shadow:0 1px 3px rgba(0,0,0,0.8)">${n.split(' ')[0]}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+    roundHtml += `<div class="ct-ev round-header"><div style="flex:1;text-align:center"><div style="font-family:'Rye',serif;font-size:18px;color:var(--ct-gold);letter-spacing:4px">ROUND ${r.num}</div><div style="font-size:10px;color:var(--ct-sepia);margin-top:2px">3&hellip; 2&hellip; 1&hellip; <span style="color:var(--ct-neon-gold);text-shadow:0 0 6px var(--ct-neon-gold)">DRAW!</span></div></div></div>`;
 
     for (const s of (r.shots || [])) {
-      roundHtml += `<div class="ct-ev ${s.hit ? 'negative' : ''}">${_ctSmallPortrait(s.shooter, 40)}<div style="flex:1;min-width:0"><div class="ct-ev-badge ${s.hit ? 'red' : 'gray'}">${s.hit ? 'HIT' : 'MISS'}</div><div class="ct-ev-text"><strong>${s.shooter}</strong> fires at <strong>${s.target}</strong> &mdash; ${s.hit ? '<span style="color:var(--ct-neon-red)">DIRECT HIT!</span>' : '<span style="color:rgba(255,255,255,0.4)">Wide.</span>'}</div></div>${_ctSmallPortrait(s.target, 40)}</div>`;
+      const shooterTribe = _tribeOf(s.shooter);
+      const targetTribe = _tribeOf(s.target);
+      const shooterColor = _tribeColor(s.shooter);
+      const targetColor = _tribeColor(s.target);
+      let hitContext = '';
+      if (s.hit) {
+        cumulativeHits[s.target] = (cumulativeHits[s.target] || 0) + 1;
+        const totalHits = cumulativeHits[s.target];
+        hitContext = totalHits >= 2 ? ' <span style="color:var(--ct-neon-red);font-weight:700;animation:ct-stamp 0.3s ease-out">2nd HIT — OUT!</span>' : ` (${totalHits}/2)`;
+      }
+      const isBetrayal = s.betrayal || shooterTribe === targetTribe;
+      roundHtml += `<div class="ct-ev ${s.hit ? 'negative' : ''}" style="border-left-color:${isBetrayal ? 'var(--ct-neon-red)' : shooterColor}${isBetrayal ? ';background:rgba(139,0,0,0.15)' : ''}">
+        ${_ctSmallPortrait(s.shooter, 36)}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:8px;font-weight:700;color:${shooterColor};letter-spacing:1px">${shooterTribe}</span>
+            <span style="font-size:7px;color:${isBetrayal ? 'var(--ct-neon-red)' : 'rgba(255,255,255,0.3)'}">${isBetrayal ? '⚠ BETRAYAL ⚠' : '→'}</span>
+            <span style="font-size:8px;font-weight:700;color:${targetColor};letter-spacing:1px">${targetTribe}</span>
+          </div>
+          <div class="ct-ev-text" style="font-size:12px"><strong>${s.shooter}</strong> fires at <strong>${s.target}</strong> &mdash; ${s.hit ? `<span style="color:var(--ct-neon-red)">HIT!</span>${hitContext}` : '<span style="color:rgba(255,255,255,0.3)">miss</span>'}</div>
+        </div>
+        ${_ctSmallPortrait(s.target, 36)}
+      </div>`;
     }
+
     for (const evt of (r.events || [])) {
       roundHtml += `<div class="ct-ev ${evt.type === 'betrayal' ? 'negative' : evt.type === 'shield' ? 'positive' : ''}"><div style="flex:1;min-width:0"><div class="ct-ev-badge ${evt.type === 'betrayal' ? 'red' : evt.type === 'shield' ? 'teal' : 'purple'}">${(evt.type || evt.id || 'EVENT').toUpperCase()}</div><div class="ct-ev-text">${evt.text || ''}</div></div></div>`;
     }
+
     for (const elim of (r.eliminations || [])) {
       const elimName = typeof elim === 'string' ? elim : elim.name || '';
-      roundHtml += `<div class="ct-ev negative">${_ctSmallPortrait(elimName, 44)}<div style="flex:1;min-width:0"><div class="ct-ev-badge red">ELIMINATED</div><div class="ct-ev-text"><strong>${elimName}</strong> is out of the standoff.</div></div></div>`;
+      const elimTribe = _tribeOf(elimName);
+      const elimColor = _tribeColor(elimName);
+      roundHtml += `<div class="ct-ev negative" style="border-left-color:${elimColor}">
+        ${_ctSmallPortrait(elimName, 44)}
+        <div style="flex:1;min-width:0">
+          <div class="ct-ev-badge red">ELIMINATED</div>
+          <div class="ct-ev-text"><strong>${elimName}</strong> <span style="color:${elimColor}">(${elimTribe})</span> takes ${pronouns(elimName).posAdj} second hit and is OUT of the standoff!</div>
+        </div>
+      </div>`;
     }
     feed += `<div id="ct-step-standoff-${ri}" style="${visible ? '' : 'display:none'}">${roundHtml}</div>`;
   }
 
-  // HUD
+  // HUD — tribe standing counts based on revealed rounds only
+  const revealedHits = {};
+  allNames.forEach(n => { revealedHits[n] = 0; });
+  for (let ri = 0; ri <= Math.min(revIdx, rounds.length - 1); ri++) {
+    for (const s of (rounds[ri]?.shots || [])) if (s.hit) revealedHits[s.target]++;
+  }
+  const tribeStanding = {};
+  for (const t of _ctTribes) {
+    tribeStanding[t.name] = (t.members || []).filter(m => so.standings[m] && revealedHits[m] < 2).length;
+  }
   const revealedRoundCount = Math.min(revIdx + 1, rounds.length);
-  const hudCells = Object.entries(tribeStanding).map(([t, c]) =>
-    `<div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(c)}</div><div class="ct-hud-lbl">${t} STANDING</div></div>`
-  ).join('') + `<div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(revealedRoundCount)}/${_ctChalkNum(rounds.length)}</div><div class="ct-hud-lbl">ROUND</div></div>`;
+  const hudCells = Object.entries(tribeStanding).map(([t, c]) => {
+    const color = _tribeColor((_ctTribes.find(tr => tr.name === t)?.members || [])[0] || '');
+    return `<div class="ct-hud-cell"><div class="ct-hud-val" style="color:${color}">${_ctChalkNum(c)}</div><div class="ct-hud-lbl">${t}</div></div>`;
+  }).join('') + `<div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(revealedRoundCount)}/${_ctChalkNum(rounds.length)}</div><div class="ct-hud-lbl">ROUND</div></div>`;
 
   const pending = revIdx < rounds.length - 1;
   const controls = `<div id="ct-controls-standoff" class="ct-controls" ${!pending && rounds.length ? 'style="display:none"' : ''}>
@@ -2285,16 +2450,65 @@ export function rpBuildCrazytownStandoff(ep) {
     <button class="ct-btn-all" onclick="crazytownRevealAll('ct-standoff',${rounds.length})">Reveal All</button>
   </div>
   <div id="ct-done-standoff" style="${pending || !rounds.length ? 'display:none' : 'text-align:center;padding:12px 0'}">
-    ${_ctNeonBadge(so.winner ? so.winner + ' WINS THE STANDOFF' : 'STANDOFF COMPLETE', 'gold')}
+    ${so.winner
+      ? _ctNeonBadge(so.winner + ' WINS THE STANDOFF!', 'gold')
+      : `${_ctNeonBadge('STANDOFF DRAW', 'gold')}<div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:6px">Multiple tribes survived — each gets a point!</div>`}
   </div>`;
 
   return _ctShell(`
     <div class="ct-hud">${hudCells}</div>
     <div class="ct-layout">
       <div class="ct-feed">${feed}${controls}</div>
-      <div class="ct-sidebar">${sidebar}</div>
+      <div class="ct-sidebar" id="ct-sidebar-standoff">${sidebar}</div>
     </div>
   `, ep);
+}
+
+function _ctBuildStandoffSidebar(so, revIdx, tribes, gunslingerSet) {
+  const allNames = Object.keys(so.standings || {});
+  const rounds = so.rounds || [];
+  const revealedRounds = rounds.slice(0, revIdx + 1);
+  const hitCounts = {};
+  allNames.forEach(n => { hitCounts[n] = 0; });
+  for (const r of revealedRounds) {
+    for (const s of (r.shots || [])) if (s.hit) hitCounts[s.target]++;
+  }
+  const allRevealed = revIdx >= rounds.length - 1;
+
+  let sidebar = '';
+  for (const t of tribes) {
+    const tribeColor = ['#e6c44d','#e85d3a','#38bdf8','#4ade80','#c084fc'][tribes.indexOf(t)] || '#888';
+    const tribeMembers = t.members.filter(m => so.standings[m]);
+    if (!tribeMembers.length) continue;
+    const combatants = tribeMembers.filter(m => so.standings[m] !== 'sat-out');
+    const satOut = tribeMembers.filter(m => so.standings[m] === 'sat-out');
+    const alive = combatants.filter(m => hitCounts[m] < 2).length;
+    sidebar += `<div class="ct-side-sec" style="color:${tribeColor}">${t.name} <span style="font-size:7px;color:rgba(255,255,255,0.4)">(${alive} standing)</span></div>`;
+    for (const name of combatants) {
+      const hits = hitCounts[name];
+      const isDead = hits >= 2;
+      const isGun = allRevealed && gunslingerSet.has(name);
+      const pips = Array.from({ length: 2 }, (_, i) => `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 2px;background:${i < hits ? 'var(--ct-neon-red)' : 'rgba(255,255,255,0.12)'};box-shadow:${i < hits ? '0 0 5px var(--ct-neon-red)' : 'none'};border:1px solid ${i < hits ? 'var(--ct-neon-red)' : 'rgba(255,255,255,0.15)'}"></span>`).join('');
+      sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;color:rgba(255,255,255,${isDead ? '0.35' : '0.8'})">
+        ${_ctSidePortrait(name, 28, isDead ? 'dead' : '')}
+        <div style="flex:1;min-width:0">
+          <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+          <div style="margin-top:2px">${pips} ${isDead ? '<span style="font-size:8px;color:var(--ct-neon-red);letter-spacing:1px">OUT</span>' : ''}</div>
+        </div>
+        ${isGun ? `<span style="flex-shrink:0">${_ctNeonBadge('GUN', 'gunslinger')}</span>` : ''}
+      </div>`;
+    }
+    if (satOut.length) {
+      for (const name of satOut) {
+        sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;color:rgba(255,255,255,0.25);font-style:italic">
+          ${_ctSidePortrait(name, 24, 'chicken')}
+          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+          <span style="font-size:7px;letter-spacing:1px;color:var(--ct-gold)">CHICKEN</span>
+        </div>`;
+      }
+    }
+  }
+  return sidebar;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2601,5 +2815,10 @@ function _ctUpdateSidebar(screenKey, revIdx) {
   if (screenKey === 'ct-dive' && ct.horseDive) {
     const sideEl = document.getElementById('ct-sidebar-dive');
     if (sideEl) sideEl.innerHTML = _ctBuildDiveSidebar(ct.horseDive, revIdx);
+  }
+  if (screenKey === 'ct-standoff' && ct.standoff) {
+    const sideEl = document.getElementById('ct-sidebar-standoff');
+    const ctTribes = ct.horseDive?.tribeResults?.map(tr => ({ name: tr.tribe, members: tr.reactions.map(r => r.name) })) || gs.tribes || [];
+    if (sideEl) sideEl.innerHTML = _ctBuildStandoffSidebar(ct.standoff, revIdx, ctTribes, new Set(ct.standoff.gunslingers || []));
   }
 }

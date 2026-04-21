@@ -2245,18 +2245,55 @@ export function _aePlaySlime() {
   if (!_aeAudioCtx || window._tvState?.aeAudioMuted) return;
   try {
     const t = _aeAudioCtx.currentTime;
-    const buf = _aeAudioCtx.createBuffer(1, _aeAudioCtx.sampleRate * 0.4, _aeAudioCtx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (data.length * 0.15));
-    const src = _aeAudioCtx.createBufferSource();
-    src.buffer = buf;
-    const lpf = _aeAudioCtx.createBiquadFilter();
-    lpf.type = 'lowpass'; lpf.frequency.value = 600;
-    const gain = _aeAudioCtx.createGain();
-    gain.gain.setValueAtTime(0.15, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-    src.connect(lpf); lpf.connect(gain); gain.connect(_aeAudioNodes.master || _aeAudioCtx.destination);
-    src.start(t);
+    const dest = _aeAudioNodes.master || _aeAudioCtx.destination;
+
+    // Impact thud — low sine burst
+    const thud = _aeAudioCtx.createOscillator();
+    thud.type = 'sine'; thud.frequency.setValueAtTime(80, t);
+    thud.frequency.exponentialRampToValueAtTime(30, t + 0.15);
+    const thudGain = _aeAudioCtx.createGain();
+    thudGain.gain.setValueAtTime(0.2, t);
+    thudGain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+    thud.connect(thudGain); thudGain.connect(dest);
+    thud.start(t); thud.stop(t + 0.2);
+
+    // Wet splatter — filtered noise with pitch sweep
+    const splatLen = _aeAudioCtx.sampleRate * 0.5;
+    const splatBuf = _aeAudioCtx.createBuffer(1, splatLen, _aeAudioCtx.sampleRate);
+    const splatData = splatBuf.getChannelData(0);
+    for (let i = 0; i < splatLen; i++) {
+      const env = Math.exp(-i / (splatLen * 0.12));
+      splatData[i] = (Math.random() * 2 - 1) * env * (1 + Math.sin(i * 0.01) * 0.5);
+    }
+    const splatSrc = _aeAudioCtx.createBufferSource();
+    splatSrc.buffer = splatBuf;
+    const splatLPF = _aeAudioCtx.createBiquadFilter();
+    splatLPF.type = 'lowpass';
+    splatLPF.frequency.setValueAtTime(1200, t + 0.02);
+    splatLPF.frequency.exponentialRampToValueAtTime(200, t + 0.3);
+    splatLPF.Q.value = 2;
+    const splatGain = _aeAudioCtx.createGain();
+    splatGain.gain.setValueAtTime(0.18, t + 0.02);
+    splatGain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+    splatSrc.connect(splatLPF); splatLPF.connect(splatGain); splatGain.connect(dest);
+    splatSrc.start(t + 0.02);
+
+    // Drip tail — quieter delayed splashes
+    for (let d = 0; d < 3; d++) {
+      const dt = t + 0.25 + d * 0.12 + Math.random() * 0.05;
+      const dripBuf = _aeAudioCtx.createBuffer(1, _aeAudioCtx.sampleRate * 0.08, _aeAudioCtx.sampleRate);
+      const dripData = dripBuf.getChannelData(0);
+      for (let i = 0; i < dripData.length; i++) dripData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (dripData.length * 0.3));
+      const dripSrc = _aeAudioCtx.createBufferSource();
+      dripSrc.buffer = dripBuf;
+      const dripLPF = _aeAudioCtx.createBiquadFilter();
+      dripLPF.type = 'lowpass'; dripLPF.frequency.value = 800 - d * 200;
+      const dripGain = _aeAudioCtx.createGain();
+      dripGain.gain.setValueAtTime(0.06 - d * 0.015, dt);
+      dripGain.gain.exponentialRampToValueAtTime(0.001, dt + 0.1);
+      dripSrc.connect(dripLPF); dripLPF.connect(dripGain); dripGain.connect(dest);
+      dripSrc.start(dt);
+    }
   } catch (e) { /* ignore */ }
 }
 

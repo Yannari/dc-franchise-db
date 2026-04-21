@@ -668,6 +668,177 @@ function _simulateDramaBreak(ep, tribeMembers, result, breakNum) {
   else result.breakEvents2 = firedEvents;
 }
 
+// ── Roundup text pools ────────────────────────────────────────────────────────
+
+const ROUNDUP_HOST = {
+  intro: [
+    (host, cowboys, cattle) => `${host} fires a shot into the air: "Phase Three — the CATTLE ROUNDUP! ${cowboys}, you're the cowboys. ${cattle}, you're the cattle. Cowboys, rope 'em up. Cattle, don't get caught. Let's ride!"`,
+    (host, cowboys, cattle) => `"Alright, partners!" ${host} bellows. "${cowboys} won the dive — which means ${cattle} better start running! Cowboys rope the cattle, cattle survive the rounds. Move it!"`,
+    (host, cowboys, cattle) => `${host} grins wide: "You earned the lasso, ${cowboys}. Now use it. ${cattle} — I hope you've been practicing your footwork. The roundup starts NOW!"`,
+  ],
+  roundStart: [
+    (host, roundNum) => `${host} fires the starting pistol: "Round ${roundNum}! Cowboys, pick your targets. Cattle, don't make it easy!"`,
+    (host, roundNum) => `"Round ${roundNum}!" ${host} calls out. "Every head they catch is a point. Every dodge is survival. Ride hard!"`,
+    (host, roundNum) => `${host} tips ${host === 'Chris' ? 'his' : 'their'} hat: "Round ${roundNum} — the herd's getting thinner. Make your lassos count."`,
+  ],
+  capture: [
+    (host, captured) => `${host} points from the booth: "${captured} is roped! That's a mark for the cowboys — good lasso work!"`,
+    (host, captured) => `"GOT ONE!" ${host} shouts. "${captured} is caught! Head count goes up!"`,
+    (host, captured) => `${host} grins: "${captured} tried to run but the rope found ${host === 'Chris' ? 'them' : 'them'} anyway. Roped and recorded!"`,
+  ],
+  dodge: [
+    (host, dodger) => `${host} leans forward: "${dodger} slips the lasso! That cow knows how to move!"`,
+    (host, dodger) => `"${dodger} dodges!" ${host} calls out. "Still free range — for now."`,
+    (host, dodger) => `${host} whistles: "${dodger} with the sidestep! The cowboys need better aim."`,
+  ],
+  finale: [
+    (host, winner) => `${host} spreads ${host === 'Chris' ? 'his' : 'their'} arms: "And THAT is how you run a cattle drive! ${winner} takes the Roundup!"`,
+    (host, winner) => `"Round up's done!" ${host} announces. "${winner} clears Phase Three — this Wild West showdown is settled!"`,
+    (host, winner) => `${host} fires a celebratory shot: "Hats off to ${winner}! The best cowboys on the lot today!"`,
+  ],
+};
+
+const ROUNDUP_LASSO = {
+  hit: [
+    (cowboy, target, cPr, tPr) => `${cowboy} swings the lasso wide and catches ${target} clean around the middle. ${tPr.Sub} yelps and gets tagged.`,
+    (cowboy, target, cPr, tPr) => `${cowboy} reads ${target}'s movement and throws ahead of ${tPr.obj} — the rope lands true. Got 'em.`,
+    (cowboy, target, cPr, tPr) => `${cowboy}'s lasso snaps out and finds ${target}. ${tPr.Sub} hits the rope and it's over.`,
+  ],
+  miss: [
+    (cowboy, target, cPr, tPr) => `${cowboy} throws wide — the rope skips past ${target}, who barely changes pace.`,
+    (cowboy, target, cPr, tPr) => `${cowboy}'s lasso arcs through the air and misses ${target} by a foot. ${tPr.Sub} doesn't look back.`,
+    (cowboy, target, cPr, tPr) => `${cowboy} lets the rope fly and it lands in the dust. ${target} is already three steps ahead.`,
+  ],
+  tangle: [
+    (cowboy, target, cPr, tPr) => `${cowboy} winds up and somehow catches ${target} — the wrong person entirely. Both of them stare at the rope in confusion.`,
+    (cowboy, target, cPr, tPr) => `${cowboy}'s lasso goes wild and snags ${target}, who was nowhere near the intended target. The whole lot goes quiet, then erupts.`,
+    (cowboy, target, cPr, tPr) => `${cowboy} throws the rope and it finds ${target} instead — comedy of errors. Neither of them is quite sure what just happened.`,
+  ],
+  teamwork: [
+    (cowboy, target, cPr, tPr) => `${cowboy} and a teammate converge on ${target} from two angles — nowhere to run. The rope lands clean.`,
+    (cowboy, target, cPr, tPr) => `${cowboy} coordinates the herd, cuts off ${target}'s escape route, and drops the lasso with precision.`,
+    (cowboy, target, cPr, tPr) => `${cowboy} and ${cPr.posAdj} partner move in sync, boxing ${target} in before the lasso seals the deal.`,
+  ],
+};
+
+const ROUNDUP_DODGE = {
+  success: [
+    (cattle, pr) => `${cattle} reads the lasso and ducks under it with a sharp pivot. Still free.`,
+    (cattle, pr) => `${cattle} breaks left at the last second — the rope hits the ground where ${pr.sub} was standing a heartbeat ago.`,
+    (cattle, pr) => `${cattle} spots the throw coming and sidesteps hard. The lasso finds nothing but air.`,
+  ],
+  fail: [
+    (cattle, pr) => `${cattle} tries to juke right but the rope anticipates ${pr.obj}. Got.`,
+    (cattle, pr) => `${cattle} stumbles mid-dodge and the lasso finds ${pr.obj} anyway. The crowd groans.`,
+    (cattle, pr) => `${cattle} runs hard but the cowboy has the angle. The rope drops around ${pr.posAdj} shoulders. Caught.`,
+  ],
+};
+
+const ROUNDUP_EVENTS = [
+  {
+    id: 'stampede',
+    check(cattle, uncaptured) {
+      return uncaptured.filter(c => Math.random() < pStats(c).physical * 0.08)[0] || null;
+    },
+    apply(leader, cowboyDebuffRef) {
+      const pr = pronouns(leader);
+      cowboyDebuffRef.value = 0.10;
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[leader] = (gs.popularity[leader] || 0) + 1;
+      const lines = [
+        `${leader} rallies the remaining cattle with a shout — the whole herd surges at once, throwing the cowboys off their rhythm. Debuff incoming.`,
+        `${leader} charges forward instead of running, scattering the cowboy formation. The lasso arms don't know where to aim.`,
+        `${leader} leads a break — cattle scatter in every direction. The cowboys lose a step heading into the next round.`,
+      ];
+      return {
+        text: lines[Math.floor(Math.random() * lines.length)],
+        players: [leader],
+        badgeText: 'STAMPEDE', badgeClass: 'orange',
+        leader,
+      };
+    },
+  },
+  {
+    id: 'showmance-standoff',
+    check(cowboys, cattleNames) {
+      if (!seasonConfig.romance) return null;
+      for (const cowboy of cowboys) {
+        for (const sm of (gs.showmances || [])) {
+          const partner = sm.a === cowboy ? sm.b : sm.b === cowboy ? sm.a : null;
+          if (partner && cattleNames.includes(partner) && romanticCompat(cowboy, partner) >= 0.3) {
+            return { cowboy, partner };
+          }
+        }
+      }
+      return null;
+    },
+    apply({ cowboy, partner }, wastedRef) {
+      const cPr = pronouns(cowboy);
+      const pPr = pronouns(partner);
+      wastedRef.add(cowboy);
+      const lines = [
+        `${cowboy} winds up the lasso — then sees ${partner} in the herd. ${cPr.Sub} can't bring ${cPr.obj}self to throw it. Wasted round.`,
+        `${cowboy} has a clear shot at ${partner} but hesitates, arm dropping. Heart over competition, at least this round.`,
+        `${cowboy} and ${partner} lock eyes across the lot. The lasso stays coiled. Nobody moves.`,
+      ];
+      return {
+        text: lines[Math.floor(Math.random() * lines.length)],
+        players: [cowboy, partner],
+        badgeText: 'SHOWMANCE', badgeClass: 'pink',
+        cowboy, partner,
+      };
+    },
+  },
+  {
+    id: 'rope-tangle',
+    check(cowboys) {
+      if (cowboys.length === 0) return null;
+      return cowboys[Math.floor(Math.random() * cowboys.length)];
+    },
+    apply(cowboy, wastedRef) {
+      const pr = pronouns(cowboy);
+      wastedRef.add(cowboy);
+      const lines = [
+        `${cowboy}'s lasso gets wrapped around ${pr.posAdj} own boots — ${pr.sub}'s fighting the rope more than the cattle. Completely wasted round.`,
+        `${cowboy} tosses the lasso and it tangles mid-air, landing in a useless knot. ${pr.Sub} stares at it. The cattle stare at ${pr.obj}.`,
+        `${cowboy} whirls the rope overhead and it catches on ${pr.posAdj} hat. By the time ${pr.sub} gets untangled, the window's gone.`,
+      ];
+      return {
+        text: lines[Math.floor(Math.random() * lines.length)],
+        players: [cowboy],
+        badgeText: 'ROPE TANGLE', badgeClass: 'gray',
+        cowboy,
+      };
+    },
+  },
+  {
+    id: 'lasso-teamwork',
+    check(cowboys, uncaptured) {
+      if (cowboys.length < 2 || uncaptured.length === 0) return null;
+      return true;
+    },
+    apply(cowboys, uncaptured, capturedSet) {
+      // strongest uncaptured by physical
+      const strongest = uncaptured.reduce((best, c) => pStats(c).physical > pStats(best).physical ? c : best, uncaptured[0]);
+      const [c1, c2] = cowboys.slice(0, 2);
+      addBond(c1, c2, 0.3);
+      capturedSet.add(strongest);
+      const cPr = pronouns(c1);
+      const lines = [
+        `${c1} and ${c2} work the herd together — they flush ${strongest} out and the rope lands clean. Guaranteed.`,
+        `${c1} signals to ${c2}, who cuts off the escape. ${strongest} has nowhere to go and the lasso finds ${pronouns(strongest).obj}.`,
+        `${c1} and ${c2} coordinate without a word — flanking ${strongest} from both sides. The capture is clean and clinical.`,
+      ];
+      return {
+        text: lines[Math.floor(Math.random() * lines.length)],
+        players: [c1, c2, strongest],
+        badgeText: 'TEAMWORK', badgeClass: 'blue',
+        cowboys: [c1, c2], target: strongest,
+      };
+    },
+  },
+];
+
 // ── Phase 2: Mexican Standoff ─────────────────────────────────────────────────
 
 function _simulateStandoff(ep, tribeMembers, result) {
@@ -932,6 +1103,251 @@ function _simulateStandoff(ep, tribeMembers, result) {
   };
 }
 
+// ── Phase 3: Cattle Roundup ───────────────────────────────────────────────────
+
+function _simulateRoundup(ep, tribeMembers, result) {
+  const host = seasonConfig.host || 'Chris';
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  // Role assignment
+  const p1Winner = result.horseDive?.winner;
+  let cowboyTribeData, cattleTribeData;
+  if (p1Winner) {
+    cowboyTribeData = tribeMembers.find(t => t.name === p1Winner);
+    cattleTribeData = tribeMembers.find(t => t.name !== p1Winner);
+  } else {
+    const shuffled = [...tribeMembers].sort(() => Math.random() - 0.5);
+    cowboyTribeData = shuffled[0];
+    cattleTribeData = shuffled[1];
+  }
+
+  const cowboys = [...cowboyTribeData.members];
+  const cattle = [...cattleTribeData.members];
+  const captured = new Set();
+  const dodgeCounts = {};
+  cattle.forEach(c => { dodgeCounts[c] = 0; });
+
+  const rounds = [];
+  const campKey = gs.tribes[0]?.name || 'merge';
+
+  const hostIntroLine = _rp(ROUNDUP_HOST.intro)(host, cowboyTribeData.name, cattleTribeData.name);
+
+  for (let i = 0; i < 3; i++) {
+    const roundData = { num: i + 1, lassos: [], events: [], captures: [] };
+    const cowboyDebuffRef = { value: 0 };
+    const wastedCowboys = new Set();
+
+    const uncaptured = cattle.filter(c => !captured.has(c));
+    if (uncaptured.length === 0) break;
+
+    // ── Events ──────────────────────────────────────────────────────────────
+
+    // Lasso teamwork (12%)
+    if (Math.random() < 0.12 && uncaptured.length > 0) {
+      const twEvt = ROUNDUP_EVENTS.find(e => e.id === 'lasso-teamwork');
+      if (twEvt.check(cowboys, uncaptured)) {
+        const outcome = twEvt.apply(cowboys, uncaptured, captured);
+        if (outcome) {
+          roundData.events.push(outcome);
+          roundData.captures.push(outcome.target);
+          ep.campEvents[campKey].post.push({
+            text: outcome.text, players: outcome.players,
+            badgeText: outcome.badgeText, badgeClass: outcome.badgeClass, tag: 'challenge',
+          });
+          wastedCowboys.add(cowboys[0]);
+          wastedCowboys.add(cowboys[1]);
+        }
+      }
+    }
+
+    // Stampede (10%)
+    if (Math.random() < 0.10) {
+      const stEvt = ROUNDUP_EVENTS.find(e => e.id === 'stampede');
+      const leader = stEvt.check(cattle, uncaptured.filter(c => !captured.has(c)));
+      if (leader) {
+        const outcome = stEvt.apply(leader, cowboyDebuffRef);
+        roundData.events.push(outcome);
+        ep.campEvents[campKey].post.push({
+          text: outcome.text, players: outcome.players,
+          badgeText: outcome.badgeText, badgeClass: outcome.badgeClass, tag: 'challenge',
+        });
+      }
+    }
+
+    // Rope tangle (10%)
+    if (Math.random() < 0.10) {
+      const rtEvt = ROUNDUP_EVENTS.find(e => e.id === 'rope-tangle');
+      const availCowboys = cowboys.filter(c => !wastedCowboys.has(c));
+      const candidate = rtEvt.check(availCowboys);
+      if (candidate) {
+        const outcome = rtEvt.apply(candidate, wastedCowboys);
+        roundData.events.push(outcome);
+        ep.campEvents[campKey].post.push({
+          text: outcome.text, players: outcome.players,
+          badgeText: outcome.badgeText, badgeClass: outcome.badgeClass, tag: 'challenge',
+        });
+      }
+    }
+
+    // Showmance standoff (8%)
+    if (Math.random() < 0.08 && seasonConfig.romance) {
+      const ssEvt = ROUNDUP_EVENTS.find(e => e.id === 'showmance-standoff');
+      const ssCtx = ssEvt.check(cowboys.filter(c => !wastedCowboys.has(c)), uncaptured);
+      if (ssCtx) {
+        const outcome = ssEvt.apply(ssCtx, wastedCowboys);
+        roundData.events.push(outcome);
+        ep.campEvents[campKey].post.push({
+          text: outcome.text, players: outcome.players,
+          badgeText: outcome.badgeText, badgeClass: outcome.badgeClass, tag: 'challenge',
+        });
+      }
+    }
+
+    // ── Rope checks ──────────────────────────────────────────────────────────
+
+    for (const cowboy of cowboys) {
+      if (wastedCowboys.has(cowboy)) continue;
+      const currentUncaptured = cattle.filter(c => !captured.has(c));
+      if (currentUncaptured.length === 0) break;
+
+      const cSt = pStats(cowboy);
+
+      // Target: prefer enemies, then strongest
+      let bestTarget = null;
+      let bestWeight = -Infinity;
+      for (const target of currentUncaptured) {
+        const tSt = pStats(target);
+        const weight = Math.max(0, -getBond(cowboy, target)) * 0.3 + tSt.physical * 0.05 + Math.random() * 0.25;
+        if (weight > bestWeight) { bestWeight = weight; bestTarget = target; }
+      }
+      if (!bestTarget) continue;
+
+      const target = bestTarget;
+      const tSt = pStats(target);
+      const tPr = pronouns(target);
+      const cPr = pronouns(cowboy);
+      const gunslingerBuff = result.standoff?.gunslingers?.includes(cowboy) ? 0.08 : 0;
+
+      const cowboyRoll = (cSt.physical * 0.06 + cSt.strategic * 0.04) * (1 + gunslingerBuff) * (1 - cowboyDebuffRef.value) + Math.random() * 0.3;
+      const cattleRoll = tSt.physical * 0.05 + tSt.boldness * 0.04 + Math.random() * 0.3;
+
+      if (cowboyRoll > cattleRoll) {
+        // Capture
+        captured.add(target);
+        roundData.captures.push(target);
+        const lassoText = _rp(ROUNDUP_LASSO.hit)(cowboy, target, cPr, tPr);
+        const hostLine = _rp(ROUNDUP_HOST.capture)(host, target);
+        roundData.lassos.push({ cowboy, target, success: true, text: lassoText, hostLine });
+        ep.campEvents[campKey].post.push({
+          text: lassoText, players: [cowboy, target],
+          badgeText: 'LASSO HIT', badgeClass: 'gold', tag: 'challenge',
+        });
+      } else {
+        // Dodge
+        dodgeCounts[target] = (dodgeCounts[target] || 0) + 1;
+        const dodgeText = _rp(ROUNDUP_DODGE.success)(target, tPr);
+        const lassoText = _rp(ROUNDUP_LASSO.miss)(cowboy, target, cPr, tPr);
+        const hostLine = _rp(ROUNDUP_HOST.dodge)(host, target);
+        roundData.lassos.push({ cowboy, target, success: false, text: lassoText + ' ' + dodgeText, hostLine });
+        ep.campEvents[campKey].post.push({
+          text: dodgeText, players: [target],
+          badgeText: 'DODGE', badgeClass: 'green', tag: 'challenge',
+        });
+      }
+    }
+
+    // ── Tables Turned (round 3 counter-rope if cattle tribe leads 2-0) ──────
+
+    if (i === 2) {
+      const scores = Object.entries(result.tribeScores);
+      const cowboyScore = result.tribeScores[cowboyTribeData.name] || 0;
+      const cattleScore = result.tribeScores[cattleTribeData.name] || 0;
+      if (cattleScore >= cowboyScore + 2) {
+        const counterCaptures = [];
+        const stillFree = cattle.filter(c => !captured.has(c));
+        for (const cattler of stillFree) {
+          const cSt = pStats(cattler);
+          const targetCowboy = cowboys[Math.floor(Math.random() * cowboys.length)];
+          const tSt = pStats(targetCowboy);
+          if (cSt.physical * 0.05 + cSt.boldness * 0.04 + Math.random() * 0.2 > tSt.physical * 0.05 + Math.random() * 0.2) {
+            counterCaptures.push({ cattle: cattler, cowboy: targetCowboy });
+            result.tribeScores[cowboyTribeData.name] = Math.max(0, (result.tribeScores[cowboyTribeData.name] || 0) - 2);
+            const pr = pronouns(cattler);
+            const cpPr = pronouns(targetCowboy);
+            const line = `${cattler} finds a loose rope on the ground — and turns the tables, lassoing ${targetCowboy} instead. The crowd goes wild.`;
+            ep.campEvents[campKey].post.push({
+              text: line, players: [cattler, targetCowboy],
+              badgeText: 'TABLES TURNED', badgeClass: 'red', tag: 'challenge',
+            });
+            roundData.events.push({ id: 'tables-turned', text: line, players: [cattler, targetCowboy], badgeText: 'TABLES TURNED', badgeClass: 'red' });
+          }
+        }
+        if (counterCaptures.length > 0) {
+          result.roundup = result.roundup || {};
+          result.roundup.tablesTurned = true;
+          result.roundup.tablesTurnedDetails = counterCaptures;
+        }
+      }
+    }
+
+    rounds.push(roundData);
+  }
+
+  // ── Scoring ──────────────────────────────────────────────────────────────────
+
+  const cowboyPoints = captured.size;
+  const cattlePoints = (cattle.length - captured.size) * 0.5;
+  const roundupWinner = cowboyPoints >= cattlePoints ? cowboyTribeData.name : cattleTribeData.name;
+  result.tribeScores[roundupWinner] = (result.tribeScores[roundupWinner] || 0) + 1;
+
+  // chalMemberScores
+  const cowboyCaptures = {};
+  for (const rnd of rounds) {
+    for (const lasso of rnd.lassos) {
+      if (lasso.success) {
+        cowboyCaptures[lasso.cowboy] = (cowboyCaptures[lasso.cowboy] || 0) + 1;
+      }
+    }
+  }
+  for (const cowboy of cowboys) {
+    const caps = cowboyCaptures[cowboy] || 0;
+    ep.chalMemberScores[cowboy] = (ep.chalMemberScores[cowboy] || 0) + caps * 4;
+  }
+  for (const c of cattle) {
+    ep.chalMemberScores[c] = (ep.chalMemberScores[c] || 0) + (dodgeCounts[c] || 0) * 3;
+  }
+
+  // Sheriff: most captures
+  let sheriff = null, maxCaps = 0;
+  for (const [name, caps] of Object.entries(cowboyCaptures)) {
+    if (caps > maxCaps) { maxCaps = caps; sheriff = name; }
+  }
+  if (sheriff) {
+    if (!gs.popularity) gs.popularity = {};
+    gs.popularity[sheriff] = (gs.popularity[sheriff] || 0) + 2;
+  }
+
+  // Stampede leader popularity already applied in event
+
+  const hostFinale = _rp(ROUNDUP_HOST.finale)(host, roundupWinner);
+
+  result.roundup = {
+    ...(result.roundup || {}),
+    cowboys: cowboyTribeData.name,
+    cattle: cattleTribeData.name,
+    cowboyMembers: cowboys,
+    cattleMembers: cattle,
+    rounds,
+    captures: [...captured],
+    dodgeCounts,
+    sheriff,
+    tablesTurned: result.roundup?.tablesTurned || false,
+    winner: roundupWinner,
+    hostIntro: hostIntroLine,
+    hostFinale,
+  };
+}
+
 export function simulateCrazytown(ep) {
   const tribes = gs.tribes;
   if (!tribes || tribes.length < 2) return;
@@ -967,10 +1383,39 @@ export function simulateCrazytown(ep) {
   result.phases.push('standoff');
   _simulateDramaBreak(ep, tribeMembers, result, 2);
 
-  // Winner/loser — ensure there's always a distinct winner (horse dive score already applied)
-  const tNames = Object.keys(result.tribeScores);
-  const allZero = tNames.every(n => result.tribeScores[n] === 0);
-  if (allZero) result.tribeScores[tNames[Math.random() < 0.5 ? 0 : 1]] += 1;
+  _simulateRoundup(ep, tribeMembers, result);
+  result.phases.push('roundup');
+
+  // Heat: betrayal shots from standoff (victim-keyed)
+  if (!gs._crazytownHeat) gs._crazytownHeat = {};
+  const heatExpiresEp = (gs.episode || 1) + 2;
+  if (result.standoff) {
+    for (const round of (result.standoff.rounds || [])) {
+      for (const evt of (round.events || [])) {
+        if (evt.type === 'betrayal' && evt.actor && evt.target) {
+          gs._crazytownHeat[evt.target] = { target: evt.actor, amount: 1.5, expiresEp: heatExpiresEp };
+        }
+      }
+    }
+  }
+
+  // Tiebreaker: sudden-death quick-draw
+  {
+    const scores = Object.entries(result.tribeScores);
+    const topScore = Math.max(...scores.map(s => s[1]));
+    const tied = scores.filter(s => s[1] === topScore);
+    if (tied.length >= 2) {
+      const duelists = tied.map(([tribeName]) => {
+        const members = tribeMembers.find(t => t.name === tribeName).members;
+        return members.reduce((best, m) => pStats(m).mental > pStats(best).mental ? m : best, members[0]);
+      });
+      const score0 = pStats(duelists[0]).mental * 0.08 + pStats(duelists[0]).boldness * 0.05 + Math.random() * 0.2;
+      const score1 = pStats(duelists[1]).mental * 0.08 + pStats(duelists[1]).boldness * 0.05 + Math.random() * 0.2;
+      const tbWinner = score0 >= score1 ? tied[0][0] : tied[1][0];
+      result.tribeScores[tbWinner] += 1;
+      result.tiebreaker = { duelists, winner: tbWinner };
+    }
+  }
 
   const sorted = Object.entries(result.tribeScores).sort((a, b) => b[1] - a[1]);
   const winnerName = sorted[0][0];
@@ -992,6 +1437,14 @@ export function simulateCrazytown(ep) {
   ep._debugCrazytown = {
     tribeScores: { ...result.tribeScores },
     phases: [...result.phases],
+    horseDiveWinner: result.horseDive?.winner,
+    standoffWinner: result.standoff?.winner,
+    roundupWinner: result.roundup?.winner,
+    gunslingers: result.standoff?.gunslingers || [],
+    sheriff: result.roundup?.sheriff,
+    tablesTurned: result.roundup?.tablesTurned || false,
+    tiebreaker: result.tiebreaker || null,
+    heatGenerated: Object.keys(gs._crazytownHeat || {}).length,
   };
 }
 

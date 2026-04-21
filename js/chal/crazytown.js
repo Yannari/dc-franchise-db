@@ -7,22 +7,22 @@ import { addBond, getBond } from '../bonds.js';
 
 const HORSE_DIVE_JUMPED = {
   high: [
-    (name, pr) => `${name} charges down the platform like ${pr.posAdj} boots are on fire, launching off the edge without so much as a flinch.`,
-    (name, pr) => `${name} lets out a war whoop and goes airborne — ${pr.sub}'s in the saddle and the water's just the next stop on the trail.`,
-    (name, pr) => `${name} tips ${pr.posAdj} hat to the crowd and steps off the edge like it's a sidewalk. Pure outlaw confidence.`,
-    (name, pr) => `With a grin that'd scare a rattlesnake, ${name} blasts off the platform and drops into the tank below.`,
+    (name, pr) => `${name} charges down the platform like ${pr.posAdj} boots are on fire and launches off — landing square on the horse's back. Not even a wobble.`,
+    (name, pr) => `${name} lets out a war whoop and goes airborne — dropping a hundred feet and sticking the saddle like a born rodeo rider.`,
+    (name, pr) => `${name} tips an imaginary hat to the crowd and leaps. A hundred feet later, ${pr.sub} ${pr.sub === 'they' ? 'land' : 'lands'} on the horse like it was nothing.`,
+    (name, pr) => `With a grin that'd scare a rattlesnake, ${name} blasts off the platform and drops onto the horse below.`,
   ],
   mid: [
-    (name, pr) => `${name} takes a breath, steadies ${pr.posAdj} nerve, and commits — off the edge and into the unknown.`,
-    (name, pr) => `${name} mutters something under ${pr.posAdj} breath, then steps off the platform with grim determination.`,
-    (name, pr) => `After a beat of hesitation, ${name} decides the water's better than the shame. ${pr.Sub} jumps.`,
-    (name, pr) => `${name} plants both feet and goes — not pretty, not flashy, but the deed is done.`,
+    (name, pr) => `${name} takes a breath, steadies ${pr.posAdj} nerve, and jumps — landing on the horse rough but holding on.`,
+    (name, pr) => `${name} mutters something under ${pr.posAdj} breath, then leaps off the platform and catches the saddle with grim determination.`,
+    (name, pr) => `After a beat of hesitation, ${name} decides the horse is better than the shame. ${name} jumps.`,
+    (name, pr) => `${name} plants both feet and goes — not pretty, not flashy, but the horse is mounted and the deed is done.`,
   ],
   low: [
-    (name, pr) => `${name} shakes visibly at the edge before finally tipping forward, a yelp trailing ${pr.obj} all the way down.`,
-    (name, pr) => `With closed eyes and a prayer, ${name} pushes off the platform — barely a jump, more of a controlled fall.`,
-    (name, pr) => `${name} nearly turns back twice before ${pr.sub} pitches off the edge, arms flailing like a tumbleweed in a twister.`,
-    (name, pr) => `${name} squeaks out a tiny "okay" and stumbles off the platform, splashing into the tank below with zero grace.`,
+    (name, pr) => `${name} shakes visibly at the edge before finally tipping forward, a yelp trailing ${pr.obj} all the way down to the horse.`,
+    (name, pr) => `With closed eyes and a prayer, ${name} pushes off the platform — barely a jump, more of a controlled fall toward the horse.`,
+    (name, pr) => `${name} nearly turns back twice before pitching off the edge, arms flailing like a tumbleweed in a twister. Somehow the horse catches ${pr.obj}.`,
+    (name, pr) => `${name} squeaks out a tiny "okay" and stumbles off the platform, crashing onto the horse below with zero grace.`,
   ],
 };
 
@@ -34,7 +34,7 @@ const HORSE_DIVE_CHICKEN = {
     (name, pr) => `For all ${pr.posAdj} swagger, ${name} stops dead at the platform edge — the canyon's too wide, and ${pr.sub} knows it.`,
   ],
   mid: [
-    (name, pr) => `${name} backs away from the platform, spurs scraping the planks — ${pr.sub} mutters something about the water looking "awful dark."`,
+    (name, pr) => `${name} backs away from the platform, spurs scraping the planks — mutters something about the horse looking "awful small from up here."`,
     (name, pr) => `${name} creeps to the edge, peers down, and retreats. No fanfare, just a quiet step back and a long sigh.`,
     (name, pr) => `${name} stands at the platform's lip for ten full seconds before ${pr.posAdj} nerve deserts ${pr.obj} entirely.`,
     (name, pr) => `The jump looks easy from the ground. Up here, ${name} decides it's a different story and backs off the platform.`,
@@ -42,31 +42,31 @@ const HORSE_DIVE_CHICKEN = {
   low: [
     (name, pr) => `${name} gets two steps from the edge and freezes — boots glued to the planks, face white as a ghost town.`,
     (name, pr) => `${name} shuffles toward the platform edge, spots the drop, and retreats with an audible "nope," spurs clicking against the wood.`,
-    (name, pr) => `One look at the water and ${name} is done. ${pr.Sub} spins around so fast ${pr.posAdj} hat nearly flies off.`,
+    (name, pr) => `One look at that hundred-foot drop and ${name} is done. Spins around so fast ${pr.posAdj} hat nearly flies off.`,
     (name, pr) => `${name} makes it exactly one step onto the platform before backing away, mumbling about a "bad feeling in ${pr.posAdj} boots."`,
   ],
 };
 
 const HORSE_DIVE_LANDING = {
   perfect: [
-    (name, pr) => `${name} slices into the water clean as a whistle — the crowd sees the spray and the smile says it all.`,
-    (name, pr) => `${name} hits the tank feet-first, picture-perfect. Even the judges in their rocking chairs have to tip their hats.`,
-    (name, pr) => `A textbook entry. ${name} surfaces to a chorus of whoops — that's how you ride the bronco into the deep end.`,
+    (name, pr) => `${name} drops onto the saddle clean as a whistle — feet in the stirrups, hands on the reins, horse barely flinches. Perfect mount.`,
+    (name, pr) => `${name} lands on the horse like a natural-born cowpoke. Even the judges in their rocking chairs have to tip their hats.`,
+    (name, pr) => `A textbook mount. ${name} sticks the saddle to a chorus of whoops — that's how you ride in the Wild West.`,
   ],
   rough: [
-    (name, pr) => `${name} makes it in but it's no oil painting — legs splayed, arms windmilling, landing in a tangle of limbs and splash.`,
-    (name, pr) => `${name} hits the water sideways. ${pr.Sub} survives. The dignity doesn't fully recover, but ${pr.sub}'s in.`,
-    (name, pr) => `It ain't pretty, but ${name} goes in and that's the point. The tribe takes the point and tries not to wince.`,
+    (name, pr) => `${name} catches the horse but it's ugly — arms flailing, one foot in the stirrup, clinging to the mane for dear life. But mounted is mounted.`,
+    (name, pr) => `${name} hits the saddle sideways and almost slides off, but grabs the horn at the last second. Rough, but it counts.`,
+    (name, pr) => `It ain't pretty, but ${name} is on the horse and that's the point. The tribe takes the point and tries not to wince.`,
   ],
   bellyflop: [
-    (name, pr) => `${name} goes flat as a pancake against the surface — the SLAP echoes across the lot. ${pr.Sub} bobs up red-faced.`,
-    (name, pr) => `A full bellyflop from ${name}. Chris winces. The tribe winces. The water wins.`,
-    (name, pr) => `${name} catches all the air on the way down and none of the angle — belly-first, maximum splash, minimum dignity.`,
+    (name, pr) => `${name} lands stomach-first across the horse's back — the THUD echoes across the lot. The horse looks annoyed.`,
+    (name, pr) => `${name} misses the saddle entirely and drapes across the horse like a sack of flour. Chris winces. The tribe winces. The horse wins.`,
+    (name, pr) => `${name} catches all the air on the way down and none of the angle — belly-first onto the horse, maximum impact, minimum dignity.`,
   ],
   miss: [
-    (name, pr) => `${name} clips the edge of the tank and tumbles in sideways — technically in, but the judges call it a miss. Zero points.`,
-    (name, pr) => `${name} overcorrects mid-air and barely grazes the water outside the zone. The whistle blows. No score.`,
-    (name, pr) => `A noble attempt from ${name}, but the landing is off the mark. Zero points, and a very long walk back to the tribe.`,
+    (name, pr) => `${name} clips the horse's flank and tumbles into the dirt — technically an attempt, but the judges call it a miss. Zero points.`,
+    (name, pr) => `${name} overcorrects mid-air and sails right past the horse, eating dirt. The whistle blows. No score.`,
+    (name, pr) => `A noble attempt from ${name}, but the horse moves at the last second. Complete miss. Zero points, and a very dusty walk back to the tribe.`,
   ],
 };
 
@@ -1366,6 +1366,7 @@ export function simulateCrazytown(ep) {
 
   ep.crazytown = result;
   ep.challengeType = 'crazytown';
+  ep.challengeLabel = '3:10 to Crazytown';
 
   if (!ep.campEvents) ep.campEvents = {};
   const campKey = gs.tribes[0]?.name || 'merge';
@@ -1781,6 +1782,14 @@ function _ctShell(content, ep) {
   animation:ct-stamp 0.4s ease-out both;pointer-events:none;z-index:2;
   border:3px solid rgba(218,165,32,0.6);padding:2px 6px;border-radius:3px}
 
+/* Compact sidebar variant */
+.ct-portrait.sm{padding:3px 2px 2px;border-width:2px}
+.ct-portrait.sm::before{font-size:5px;letter-spacing:2px;margin-bottom:1px}
+.ct-portrait.sm .ct-portrait-name{font-size:6px;letter-spacing:0.5px}
+.ct-portrait.sm[data-bounty]::after{font-size:5px}
+.ct-portrait.sm.dead::after{font-size:10px;letter-spacing:2px;border-width:2px;padding:1px 4px}
+.ct-portrait.sm.chicken::after{font-size:8px;letter-spacing:2px;border-width:2px;padding:1px 4px}
+
 /* ═══ NEON BADGES — the wow factor ═══ */
 .ct-badge-neon{display:inline-block;font-family:'Rye',serif;font-size:9px;letter-spacing:3px;
   text-transform:uppercase;padding:4px 12px;border-radius:4px;position:relative;
@@ -1957,6 +1966,21 @@ function _ctPortrait(name, size = 64) {
   </div>`;
 }
 
+function _ctSidePortrait(name, size = 32, extraClass = '') {
+  const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  return `<div class="ct-portrait sm ${extraClass}" style="width:${size + 8}px;flex-shrink:0">
+    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;border-radius:2px" onerror="this.style.display='none'">
+    <div class="ct-portrait-name">${name}</div>
+  </div>`;
+}
+
+function _ctSmallPortrait(name, size = 44) {
+  const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  return `<div style="width:${size}px;height:${size}px;flex-shrink:0;border-radius:4px;overflow:hidden;border:2px solid var(--ct-leather);box-shadow:0 2px 6px rgba(0,0,0,0.4)">
+    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;object-fit:cover;filter:sepia(0.15)" onerror="this.style.display='none'">
+  </div>`;
+}
+
 function _ctNeonBadge(text, type = 'gold') {
   return `<span class="ct-badge-neon ${type}">${text}</span>`;
 }
@@ -2044,88 +2068,123 @@ export function rpBuildCrazytownHorseDive(ep) {
     }
   }
 
-  // Sidebar
+  // Sidebar — only show players revealed so far
+  const revealedNames = new Set(steps.slice(0, revIdx + 1).map(s => s.name));
   let sidebar = '';
   for (const tr of hd.tribeResults) {
-    const jumpers = tr.reactions.filter(r => r.jumped);
-    const chickens = tr.reactions.filter(r => !r.jumped);
     sidebar += `<div class="ct-side-sec">${tr.tribe}</div>`;
     for (const r of tr.reactions) {
       const slug = players.find(p => p.name === r.name)?.slug || r.name.toLowerCase().replace(/\s+/g, '-');
-      const icon = r.jumped ? '&#9989;' : '&#128020;';
-      const scoreHtml = r.jumped && r.landingScore != null ? ` ${_ctChalkNum(r.landingScore)}` : '';
-      const intBadge = r.intervention ? `<span style="font-size:8px;color:var(--ct-sepia);margin-left:4px">${r.intervention.type === 'convince' ? 'TALKED' : 'PUSHED'}</span>` : '';
-      sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,0.8)">
-        <img src="assets/avatars/${slug}.png" width="32" height="32" style="border-radius:2px;border:1px solid var(--ct-leather);filter:sepia(0.2)" onerror="this.style.display='none'">
+      const revealed = revealedNames.has(r.name);
+      const icon = !revealed ? '&#10067;' : r.jumped ? '&#9989;' : '&#128020;';
+      const scoreHtml = revealed && r.jumped && r.landingScore != null ? ` ${_ctChalkNum(r.landingScore)}` : '';
+      const intBadge = revealed && r.intervention ? `<span style="font-size:8px;color:var(--ct-sepia);margin-left:4px">${(r.intervention.path || r.intervention.type) === 'convince' ? 'TALKED' : 'PUSHED'}</span>` : '';
+      sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${revealed ? 0.8 : 0.3});opacity:${revealed ? 1 : 0.4}">
+        ${_ctSidePortrait(r.name, 28)}
         <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.name}</span>
         <span>${icon}</span>${scoreHtml}${intBadge}
       </div>`;
     }
+    const revealedCount = tr.reactions.filter(r => revealedNames.has(r.name)).length;
+    const shownScore = revealedCount === tr.reactions.length ? (typeof tr.tribeScore === 'number' ? tr.tribeScore.toFixed(1) : tr.tribeScore) : '?';
     sidebar += `<div style="text-align:right;padding:4px 0;border-top:1px solid rgba(218,165,32,0.1);margin-top:4px">
-      <span style="font-size:9px;color:rgba(255,255,255,0.4)">TRIBE SCORE</span> ${_ctChalkNum(tr.tribeScore)}
+      <span style="font-size:9px;color:rgba(255,255,255,0.4)">TRIBE SCORE</span> ${_ctChalkNum(shownScore)}
     </div>`;
   }
 
-  // Feed — poker card reveals
+  // Feed — all steps pre-rendered, hidden until revealed. Intervention merged into same card.
   let feed = '';
   for (let i = 0; i < steps.length; i++) {
-    if (i > revIdx) break;
     const s = steps[i];
-    const slug = players.find(p => p.name === s.name)?.slug || s.name.toLowerCase().replace(/\s+/g, '-');
-    const cardContent = s.jumped
-      ? `<img src="assets/avatars/${slug}.png" width="40" height="40" style="border-radius:2px;filter:sepia(0.2);margin-bottom:4px" onerror="this.style.display='none'"><div style="font-family:'Rye',serif;font-size:8px;color:var(--ct-blood)">${s.landingQuality || 'JUMPED'}</div><div style="font-family:'Rye',serif;font-size:14px;color:var(--ct-ink)">${s.landingScore ?? ''}</div>`
-      : `<img src="assets/avatars/${slug}.png" width="40" height="40" style="border-radius:2px;filter:sepia(0.4) saturate(0.5);margin-bottom:4px" onerror="this.style.display='none'"><div style="font-family:'Rye',serif;font-size:10px;color:var(--ct-gold)">CHICKEN</div>`;
+    const visible = i <= revIdx;
 
-    feed += `<div class="ct-ev ${s.jumped ? 'positive' : 'negative'}" style="animation-delay:${i * 0.05}s">
-      <div class="ct-ev-port"><img src="assets/avatars/${slug}.png" onerror="this.style.display='none'"></div>
+    let interventionHtml = '';
+    if (s.intervention) {
+      const iv = s.intervention;
+      const ivActor = iv.actor || iv.by || '';
+      const ivPath = iv.path || iv.type || '';
+      interventionHtml = `<div style="display:flex;gap:8px;align-items:flex-start;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(218,165,32,0.2)">
+        ${_ctSmallPortrait(ivActor, 32)}
+        <div style="flex:1;min-width:0">
+          <div class="ct-ev-badge ${iv.success ? 'teal' : 'orange'}">${ivPath === 'convince' ? 'PEP TALK' : 'SHOVE'} &mdash; ${iv.success ? 'SUCCESS' : 'FAILED'}</div>
+          <div class="ct-ev-text" style="font-size:12px">${iv.text || `${ivActor} ${ivPath === 'convince' ? 'tried to talk' : 'tried to push'} ${s.name}.`}</div>
+          ${iv.hostLine ? `<div style="margin-top:3px;font-style:italic;font-size:10px;color:var(--ct-sepia)">${iv.hostLine}</div>` : ''}
+        </div>
+      </div>`;
+    }
+
+    feed += `<div id="ct-step-dive-${i}" class="ct-ev ${s.jumped ? 'positive' : 'negative'}" style="${visible ? '' : 'display:none'}">
+      ${_ctSmallPortrait(s.name, 44)}
       <div style="flex:1;min-width:0">
         <div class="ct-ev-badge ${s.jumped ? 'gold' : 'red'}">${s.tribe} &mdash; ${s.jumped ? 'JUMPED' : 'CHICKEN'}</div>
         <div class="ct-ev-text">${s.text || ''}</div>
         ${s.jumped && s.landingScore != null ? `<div style="margin-top:4px">${_ctNeonBadge('SCORE: ' + s.landingScore, 'gold')}</div>` : ''}
+        ${interventionHtml}
       </div>
-      <div style="flex-shrink:0">${_ctPokerCard(cardContent, 'dive-' + i, false)}</div>
     </div>`;
-
-    // Intervention card
-    if (s.intervention) {
-      const iv = s.intervention;
-      const ivSlug = players.find(p => p.name === iv.by)?.slug || iv.by.toLowerCase().replace(/\s+/g, '-');
-      feed += `<div class="ct-ev ${iv.success ? 'positive' : 'negative'}">
-        <div class="ct-ev-port"><img src="assets/avatars/${ivSlug}.png" onerror="this.style.display='none'"></div>
-        <div style="flex:1;min-width:0">
-          <div class="ct-ev-badge ${iv.success ? 'teal' : 'orange'}">${iv.type === 'convince' ? 'PEP TALK' : 'SHOVE'} &mdash; ${iv.success ? 'SUCCESS' : 'FAILED'}</div>
-          <div class="ct-ev-text">${iv.text || `${iv.by} ${iv.type === 'convince' ? 'tried to talk' : 'tried to push'} ${s.name} off the platform.`}</div>
-          ${iv.hostLine ? `<div style="margin-top:4px;font-style:italic;font-size:11px;color:var(--ct-sepia)">${iv.hostLine}</div>` : ''}
-        </div>
-      </div>`;
-    }
   }
+  const totalDiveSteps = steps.length;
 
   // HUD
   const hudCells = hd.tribeResults.map(tr => {
     const j = tr.reactions.filter(r => r.jumped).length;
     const c = tr.reactions.filter(r => !r.jumped).length;
     return `<div class="ct-hud-cell">
-      <div class="ct-hud-val">${_ctChalkNum(tr.tribeScore)}</div>
+      <div class="ct-hud-val">${_ctChalkNum(typeof tr.tribeScore === 'number' ? tr.tribeScore.toFixed(1) : tr.tribeScore)}</div>
       <div class="ct-hud-lbl">${tr.tribe}</div>
       <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px">${j}J / ${c}C</div>
     </div>`;
   }).join('');
 
-  const pending = revIdx < steps.length - 1;
-  const controls = `<div class="ct-controls">
-    ${pending ? `<button class="ct-btn-next" onclick="crazytownRevealNext('ct-dive')">NEXT JUMP</button>` : ''}
-    ${pending ? `<button class="ct-btn-all" onclick="crazytownRevealAll('ct-dive')">Reveal All</button>` : ''}
-    ${!pending && steps.length ? `<div>${_ctNeonBadge(hd.winner ? hd.winner + ' WINS THE DIVE' : 'PHASE COMPLETE', 'gold')}</div>` : ''}
+  const pending = revIdx < totalDiveSteps - 1;
+  const controls = `<div id="ct-controls-dive" class="ct-controls" ${!pending && totalDiveSteps ? 'style="display:none"' : ''}>
+    <button class="ct-btn-next" onclick="crazytownRevealNext('ct-dive',${totalDiveSteps})">NEXT JUMP</button>
+    <button class="ct-btn-all" onclick="crazytownRevealAll('ct-dive',${totalDiveSteps})">Reveal All</button>
+  </div>
+  <div id="ct-done-dive" style="${pending || !totalDiveSteps ? 'display:none' : 'text-align:center;padding:12px 0'}">
+    ${_ctNeonBadge(hd.winner ? hd.winner + ' WINS THE DIVE' : 'PHASE COMPLETE', 'gold')}
   </div>`;
 
   return _ctShell(`
     <div class="ct-hud">${hudCells}</div>
     <div class="ct-layout">
       <div class="ct-feed">${feed}${controls}</div>
-      <div class="ct-sidebar">${sidebar}</div>
+      <div class="ct-sidebar" id="ct-sidebar-dive">${sidebar}</div>
     </div>
   `, ep);
+}
+
+function _ctBuildDiveSidebar(hd, revIdx) {
+  const steps = [];
+  const maxLen = Math.max(...hd.tribeResults.map(t => t.reactions.length));
+  for (let i = 0; i < maxLen; i++) {
+    for (const tr of hd.tribeResults) {
+      if (i < tr.reactions.length) steps.push({ ...tr.reactions[i], tribe: tr.tribe });
+    }
+  }
+  const revealedNames = new Set(steps.slice(0, revIdx + 1).map(s => s.name));
+  let sidebar = '';
+  for (const tr of hd.tribeResults) {
+    sidebar += `<div class="ct-side-sec">${tr.tribe}</div>`;
+    for (const r of tr.reactions) {
+      const slug = players.find(p => p.name === r.name)?.slug || r.name.toLowerCase().replace(/\s+/g, '-');
+      const revealed = revealedNames.has(r.name);
+      const icon = !revealed ? '&#10067;' : r.jumped ? '&#9989;' : '&#128020;';
+      const scoreHtml = revealed && r.jumped && r.landingScore != null ? ` ${_ctChalkNum(r.landingScore)}` : '';
+      const intBadge = revealed && r.intervention ? `<span style="font-size:8px;color:var(--ct-sepia);margin-left:4px">${(r.intervention.path || r.intervention.type) === 'convince' ? 'TALKED' : 'PUSHED'}</span>` : '';
+      sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${revealed ? 0.8 : 0.3});opacity:${revealed ? 1 : 0.4}">
+        ${_ctSidePortrait(r.name, 28)}
+        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.name}</span>
+        <span>${icon}</span>${scoreHtml}${intBadge}
+      </div>`;
+    }
+    const revealedCount = tr.reactions.filter(r => revealedNames.has(r.name)).length;
+    const score = revealedCount === tr.reactions.length ? (typeof tr.tribeScore === 'number' ? tr.tribeScore.toFixed(1) : tr.tribeScore) : '?';
+    sidebar += `<div style="text-align:right;padding:4px 0;border-top:1px solid rgba(218,165,32,0.1);margin-top:4px">
+      <span style="font-size:9px;color:rgba(255,255,255,0.4)">TRIBE SCORE</span> ${_ctChalkNum(score)}
+    </div>`;
+  }
+  return sidebar;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2144,28 +2203,25 @@ export function rpBuildCrazytownStandoff(ep) {
   const allNames = Object.keys(so.standings || {});
   const gunslingerSet = new Set(so.gunslingers || []);
 
-  // Sidebar — player roster with status
+  // Sidebar — player roster, only show status for revealed rounds
+  const revealedRounds = (so.rounds || []).slice(0, revIdx + 1);
   let sidebar = `<div class="ct-side-sec">COMBATANTS</div>`;
   for (const name of allNames) {
-    const status = so.standings[name];
-    const isDead = status === 'eliminated';
-    const isGun = gunslingerSet.has(name);
     const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-    // Count hits taken
+    // Count hits only from revealed rounds
     let hits = 0;
-    for (const r of (so.rounds || [])) {
+    for (const r of revealedRounds) {
       for (const s of (r.shots || [])) {
         if (s.target === name && s.hit) hits++;
       }
     }
+    const isDead = hits >= 2;
+    const isGun = revIdx >= (so.rounds || []).length - 1 && gunslingerSet.has(name);
     const pips = Array.from({ length: 3 }, (_, i) => `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 1px;background:${i < hits ? 'var(--ct-neon-red)' : 'rgba(255,255,255,0.1)'};box-shadow:${i < hits ? '0 0 4px var(--ct-neon-red)' : 'none'}"></span>`).join('');
 
-    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${isDead ? '0.35' : '0.8'})">
-      <div class="ct-portrait ${isDead ? 'dead' : ''}" style="width:36px;padding:3px 2px 2px">
-        <img src="assets/avatars/${slug}.png" width="32" height="32" style="display:block;border-radius:2px;border:1px solid var(--ct-leather)">
-        <div class="ct-portrait-name" style="font-size:6px">${name}</div>
-      </div>
-      <div style="flex:1">
+    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;color:rgba(255,255,255,${isDead ? '0.35' : '0.8'})">
+      ${_ctSidePortrait(name, 32, isDead ? 'dead' : '')}
+      <div style="flex:1;min-width:0">
         <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
         <div>${pips}</div>
       </div>
@@ -2186,81 +2242,50 @@ export function rpBuildCrazytownStandoff(ep) {
   let feed = '';
   const rounds = so.rounds || [];
   for (let ri = 0; ri < rounds.length; ri++) {
-    if (ri > revIdx) break;
+    const visible = ri <= revIdx;
     const r = rounds[ri];
 
-    // Splitcam intro — pick 3-4 shooters from this round
+    let roundHtml = '';
+    // Splitcam intro
     const camNames = (r.shots || []).slice(0, 4).map(s => s.shooter);
-    let splitcam = `<div class="ct-splitcam" style="display:flex;gap:2px;margin:8px 0;overflow:hidden;border-radius:4px;border:2px solid var(--ct-iron)">`;
+    roundHtml += `<div style="display:flex;gap:2px;margin:8px 0;overflow:hidden;border-radius:4px;border:2px solid var(--ct-iron)">`;
     camNames.forEach((n, ci) => {
       const sl = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
-      splitcam += `<div style="flex:1;height:80px;overflow:hidden;position:relative">
+      roundHtml += `<div style="flex:1;height:80px;overflow:hidden;position:relative">
         <img src="assets/avatars/${sl}.png" style="width:100%;height:200%;object-fit:cover;object-position:center 30%;animation:ct-eyes-narrow 1.5s ease-in-out ${ci * 0.2}s forwards" onerror="this.style.display='none'">
       </div>`;
     });
-    splitcam += `</div>`;
+    roundHtml += `</div>`;
 
-    // Round header
-    feed += `<div class="ct-ev round-header">
-      <div style="flex:1;text-align:center">
-        <div style="font-family:'Rye',serif;font-size:16px;color:var(--ct-gold);letter-spacing:4px">ROUND ${r.num}</div>
-      </div>
-    </div>`;
-    feed += splitcam;
+    roundHtml += `<div class="ct-ev round-header"><div style="flex:1;text-align:center"><div style="font-family:'Rye',serif;font-size:16px;color:var(--ct-gold);letter-spacing:4px">ROUND ${r.num}</div></div></div>`;
+    roundHtml += `<div style="text-align:center;padding:6px 0;font-family:'Rye',serif;font-size:14px;color:var(--ct-sepia);letter-spacing:6px;animation:ct-countdown 1s ease-out">3&hellip; 2&hellip; 1&hellip; <span style="color:var(--ct-neon-gold);text-shadow:0 0 10px var(--ct-neon-gold)">DRAW!</span></div>`;
 
-    // Countdown
-    feed += `<div style="text-align:center;padding:6px 0;font-family:'Rye',serif;font-size:14px;color:var(--ct-sepia);letter-spacing:6px;animation:ct-countdown 1s ease-out">3&hellip; 2&hellip; 1&hellip; <span style="color:var(--ct-neon-gold);text-shadow:0 0 10px var(--ct-neon-gold)">DRAW!</span></div>`;
-
-    // Shot results
     for (const s of (r.shots || [])) {
-      const sSlug = players.find(p => p.name === s.shooter)?.slug || s.shooter.toLowerCase().replace(/\s+/g, '-');
-      const tSlug = players.find(p => p.name === s.target)?.slug || s.target.toLowerCase().replace(/\s+/g, '-');
-      feed += `<div class="ct-ev ${s.hit ? 'negative' : ''}">
-        <div class="ct-ev-port"><img src="assets/avatars/${sSlug}.png" onerror="this.style.display='none'"></div>
-        <div style="flex:1;min-width:0">
-          <div class="ct-ev-badge ${s.hit ? 'red' : 'gray'}">${s.hit ? 'HIT' : 'MISS'}</div>
-          <div class="ct-ev-text"><strong>${s.shooter}</strong> fires at <strong>${s.target}</strong> &mdash; ${s.hit ? '<span style="color:var(--ct-neon-red)">DIRECT HIT!</span>' : '<span style="color:rgba(255,255,255,0.4)">Wide.</span>'}</div>
-        </div>
-        <div class="ct-ev-port"><img src="assets/avatars/${tSlug}.png" onerror="this.style.display='none'" style="${s.hit ? 'filter:grayscale(0.6) sepia(0.3)' : ''}"></div>
-      </div>`;
+      roundHtml += `<div class="ct-ev ${s.hit ? 'negative' : ''}">${_ctSmallPortrait(s.shooter, 40)}<div style="flex:1;min-width:0"><div class="ct-ev-badge ${s.hit ? 'red' : 'gray'}">${s.hit ? 'HIT' : 'MISS'}</div><div class="ct-ev-text"><strong>${s.shooter}</strong> fires at <strong>${s.target}</strong> &mdash; ${s.hit ? '<span style="color:var(--ct-neon-red)">DIRECT HIT!</span>' : '<span style="color:rgba(255,255,255,0.4)">Wide.</span>'}</div></div>${_ctSmallPortrait(s.target, 40)}</div>`;
     }
-
-    // Events
     for (const evt of (r.events || [])) {
-      feed += `<div class="ct-ev ${evt.type === 'betrayal' ? 'negative' : evt.type === 'shield' ? 'positive' : ''}">
-        <div style="flex:1;min-width:0">
-          <div class="ct-ev-badge ${evt.type === 'betrayal' ? 'red' : evt.type === 'shield' ? 'teal' : 'purple'}">${(evt.type || evt.id || 'EVENT').toUpperCase()}</div>
-          <div class="ct-ev-text">${evt.text || ''}</div>
-        </div>
-      </div>`;
+      roundHtml += `<div class="ct-ev ${evt.type === 'betrayal' ? 'negative' : evt.type === 'shield' ? 'positive' : ''}"><div style="flex:1;min-width:0"><div class="ct-ev-badge ${evt.type === 'betrayal' ? 'red' : evt.type === 'shield' ? 'teal' : 'purple'}">${(evt.type || evt.id || 'EVENT').toUpperCase()}</div><div class="ct-ev-text">${evt.text || ''}</div></div></div>`;
     }
-
-    // Eliminations
     for (const elim of (r.eliminations || [])) {
-      const eSlug = players.find(p => p.name === elim)?.slug || elim.toLowerCase().replace(/\s+/g, '-');
-      feed += `<div class="ct-ev negative">
-        <div class="ct-portrait dead" style="width:48px;padding:4px 3px 2px">
-          <img src="assets/avatars/${eSlug}.png" width="44" height="44" style="display:block;border-radius:2px;border:1px solid var(--ct-leather)">
-          <div class="ct-portrait-name" style="font-size:7px">${elim}</div>
-        </div>
-        <div style="flex:1;min-width:0">
-          <div class="ct-ev-badge red">ELIMINATED</div>
-          <div class="ct-ev-text"><strong>${elim}</strong> is out of the standoff.</div>
-        </div>
-      </div>`;
+      const elimName = typeof elim === 'string' ? elim : elim.name || '';
+      roundHtml += `<div class="ct-ev negative">${_ctSmallPortrait(elimName, 44)}<div style="flex:1;min-width:0"><div class="ct-ev-badge red">ELIMINATED</div><div class="ct-ev-text"><strong>${elimName}</strong> is out of the standoff.</div></div></div>`;
     }
+    feed += `<div id="ct-step-standoff-${ri}" style="${visible ? '' : 'display:none'}">${roundHtml}</div>`;
   }
 
   // HUD
+  const revealedRoundCount = Math.min(revIdx + 1, rounds.length);
   const hudCells = Object.entries(tribeStanding).map(([t, c]) =>
     `<div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(c)}</div><div class="ct-hud-lbl">${t} STANDING</div></div>`
-  ).join('') + `<div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(Math.min(revIdx + 1, rounds.length))}/${_ctChalkNum(rounds.length)}</div><div class="ct-hud-lbl">ROUND</div></div>`;
+  ).join('') + `<div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(revealedRoundCount)}/${_ctChalkNum(rounds.length)}</div><div class="ct-hud-lbl">ROUND</div></div>`;
 
   const pending = revIdx < rounds.length - 1;
-  const controls = `<div class="ct-controls">
-    ${pending ? `<button class="ct-btn-next" onclick="crazytownRevealNext('ct-standoff')">NEXT ROUND</button>` : ''}
-    ${pending ? `<button class="ct-btn-all" onclick="crazytownRevealAll('ct-standoff')">Reveal All</button>` : ''}
-    ${!pending && rounds.length ? `<div>${_ctNeonBadge(so.winner ? so.winner + ' WINS THE STANDOFF' : 'STANDOFF COMPLETE', 'gold')}</div>` : ''}
+  const controls = `<div id="ct-controls-standoff" class="ct-controls" ${!pending && rounds.length ? 'style="display:none"' : ''}>
+    <button class="ct-btn-next" onclick="crazytownRevealNext('ct-standoff',${rounds.length})">NEXT ROUND</button>
+    <button class="ct-btn-all" onclick="crazytownRevealAll('ct-standoff',${rounds.length})">Reveal All</button>
+  </div>
+  <div id="ct-done-standoff" style="${pending || !rounds.length ? 'display:none' : 'text-align:center;padding:12px 0'}">
+    ${_ctNeonBadge(so.winner ? so.winner + ' WINS THE STANDOFF' : 'STANDOFF COMPLETE', 'gold')}
   </div>`;
 
   return _ctShell(`
@@ -2288,15 +2313,26 @@ export function rpBuildCrazytownRoundup(ep) {
   const capturedSet = new Set(ru.captures || []);
   const dodgeCounts = ru.dodgeCounts || {};
 
-  // Sidebar
+  // Sidebar — only show results from revealed rounds
+  const revealedRounds = (ru.rounds || []).slice(0, revIdx + 1);
+  const revCaptured = new Set();
+  const revDodges = {};
+  const revCowboyCaptures = {};
+  for (const r of revealedRounds) {
+    for (const l of (r.lassos || [])) {
+      if (l.captured) { revCaptured.add(l.target); revCowboyCaptures[l.cowboy] = (revCowboyCaptures[l.cowboy] || 0) + 1; }
+      else { revDodges[l.target] = (revDodges[l.target] || 0) + 1; }
+    }
+  }
+  const allRevealed = revIdx >= (ru.rounds || []).length - 1;
+
   let sidebar = `<div class="ct-side-sec">&#129312; COWBOYS &mdash; ${ru.cowboys}</div>`;
   for (const name of (ru.cowboyMembers || [])) {
     const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-    let captures = 0;
-    for (const r of (ru.rounds || [])) for (const l of (r.lassos || [])) if (l.cowboy === name && l.captured) captures++;
-    const isSheriff = ru.sheriff === name;
+    const captures = revCowboyCaptures[name] || 0;
+    const isSheriff = allRevealed && ru.sheriff === name;
     sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,0.8)">
-      <img src="assets/avatars/${slug}.png" width="32" height="32" style="border-radius:2px;border:1px solid var(--ct-leather);filter:sepia(0.2)" onerror="this.style.display='none'">
+      ${_ctSidePortrait(name, 28)}
       <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
       <span style="font-size:9px;color:var(--ct-gold)">${captures} &#127935;</span>
       ${isSheriff ? `<span style="flex-shrink:0">${_ctNeonBadge('SHERIFF', 'sheriff')}</span>` : ''}
@@ -2305,10 +2341,10 @@ export function rpBuildCrazytownRoundup(ep) {
   sidebar += `<div class="ct-side-sec">&#128004; CATTLE &mdash; ${ru.cattle}</div>`;
   for (const name of (ru.cattleMembers || [])) {
     const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-    const caught = capturedSet.has(name);
-    const dodges = dodgeCounts[name] || 0;
+    const caught = revCaptured.has(name);
+    const dodges = revDodges[name] || 0;
     sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${caught ? '0.35' : '0.8'})">
-      <img src="assets/avatars/${slug}.png" width="32" height="32" style="border-radius:2px;border:1px solid var(--ct-leather);filter:${caught ? 'grayscale(0.8) sepia(0.2)' : 'sepia(0.2)'}" onerror="this.style.display='none'">
+      ${_ctSidePortrait(name, 28, caught ? 'dead' : '')}
       <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
       ${caught ? `<span style="font-size:9px;color:var(--ct-neon-red)">ROPED</span>` : `<span style="font-size:9px;color:var(--ct-neon-green)">${dodges} dodges</span>`}
     </div>`;
@@ -2318,64 +2354,44 @@ export function rpBuildCrazytownRoundup(ep) {
   let feed = '';
   const rounds = ru.rounds || [];
   for (let ri = 0; ri < rounds.length; ri++) {
-    if (ri > revIdx) break;
+    const visible = ri <= revIdx;
     const r = rounds[ri];
+    let roundHtml = '';
 
-    feed += `<div class="ct-ev round-header">
-      <div style="flex:1;text-align:center">
-        <div style="font-family:'Rye',serif;font-size:16px;color:var(--ct-gold);letter-spacing:4px">ROUND ${r.num}</div>
-        <div style="font-size:9px;color:var(--ct-sepia);letter-spacing:2px">COWBOYS vs CATTLE</div>
-      </div>
-    </div>`;
+    roundHtml += `<div class="ct-ev round-header"><div style="flex:1;text-align:center"><div style="font-family:'Rye',serif;font-size:16px;color:var(--ct-gold);letter-spacing:4px">ROUND ${r.num}</div><div style="font-size:9px;color:var(--ct-sepia);letter-spacing:2px">COWBOYS vs CATTLE</div></div></div>`;
 
-    // Lasso attempts
     for (const l of (r.lassos || [])) {
-      const cSlug = players.find(p => p.name === l.cowboy)?.slug || l.cowboy.toLowerCase().replace(/\s+/g, '-');
-      const tSlug = players.find(p => p.name === l.target)?.slug || l.target.toLowerCase().replace(/\s+/g, '-');
-      feed += `<div class="ct-ev ${l.captured ? 'positive' : ''}">
-        <div class="ct-ev-port"><img src="assets/avatars/${cSlug}.png" onerror="this.style.display='none'"></div>
-        <div style="flex:1;min-width:0;position:relative">
-          <svg width="100%" height="20" style="display:block;margin:4px 0"><line x1="0" y1="10" x2="100%" y2="10" stroke="${l.captured ? 'var(--ct-gold)' : 'var(--ct-iron)'}" stroke-width="2" stroke-dasharray="${l.captured ? '0' : '8,4'}" ${l.captured ? 'style="animation:ct-lasso 0.6s ease-out forwards;stroke-dasharray:300;stroke-dashoffset:300"' : ''}/></svg>
-          <div class="ct-ev-badge ${l.captured ? 'gold' : 'gray'}">${l.captured ? 'CAPTURED!' : 'DODGED'}</div>
-          <div class="ct-ev-text"><strong>${l.cowboy}</strong> throws at <strong>${l.target}</strong> &mdash; ${l.captured ? `<span style="color:var(--ct-neon-gold);animation:ct-brand-sizzle 0.8s ease-out">ROPED!</span>` : `<span style="color:rgba(255,255,255,0.4)">Slipped away.</span>`}</div>
-        </div>
-        <div class="ct-ev-port" style="${!l.captured ? 'animation:ct-fade-up 0.3s ease-out' : ''}"><img src="assets/avatars/${tSlug}.png" onerror="this.style.display='none'" style="${l.captured ? 'filter:grayscale(0.6) sepia(0.3)' : ''}"></div>
-      </div>`;
+      roundHtml += `<div class="ct-ev ${l.captured ? 'positive' : ''}">${_ctSmallPortrait(l.cowboy, 40)}<div style="flex:1;min-width:0"><div class="ct-ev-badge ${l.captured ? 'gold' : 'gray'}">${l.captured ? 'CAPTURED!' : 'DODGED'}</div><div class="ct-ev-text"><strong>${l.cowboy}</strong> throws at <strong>${l.target}</strong> &mdash; ${l.captured ? `<span style="color:var(--ct-neon-gold)">ROPED!</span>` : `<span style="color:rgba(255,255,255,0.4)">Slipped away.</span>`}</div></div>${_ctSmallPortrait(l.target, 40)}</div>`;
     }
-
-    // Events
     for (const evt of (r.events || [])) {
-      feed += `<div class="ct-ev">
-        <div style="flex:1;min-width:0">
-          <div class="ct-ev-badge orange">${(evt.id || evt.type || 'EVENT').toUpperCase()}</div>
-          <div class="ct-ev-text">${evt.text || ''}</div>
-        </div>
-      </div>`;
+      roundHtml += `<div class="ct-ev"><div style="flex:1;min-width:0"><div class="ct-ev-badge orange">${(evt.id || evt.type || 'EVENT').toUpperCase()}</div><div class="ct-ev-text">${evt.text || ''}</div></div></div>`;
     }
+    feed += `<div id="ct-step-roundup-${ri}" style="${visible ? '' : 'display:none'}">${roundHtml}</div>`;
   }
 
-  // Tables turned
-  if (ru.tablesTurned && revIdx >= rounds.length - 1) {
-    feed += `<div class="ct-ev positive" style="border-left-color:var(--ct-neon-green)">
-      <div style="flex:1;text-align:center;padding:8px 0">
-        ${_ctNeonBadge('TABLES TURNED', 'sheriff')}
-        <div class="ct-ev-text" style="margin-top:8px">The cattle broke free and turned the tide! Roles reversed in the final push.</div>
-      </div>
-    </div>`;
+  // Tables turned — shown after last round
+  if (ru.tablesTurned) {
+    feed += `<div id="ct-step-roundup-tt" style="${revIdx >= rounds.length - 1 ? '' : 'display:none'}"><div class="ct-ev positive" style="border-left-color:var(--ct-neon-green)"><div style="flex:1;text-align:center;padding:8px 0">${_ctNeonBadge('TABLES TURNED', 'sheriff')}<div class="ct-ev-text" style="margin-top:8px">The cattle broke free and turned the tide! Roles reversed in the final push.</div></div></div></div>`;
   }
 
   // HUD
-  const capturedCount = capturedSet.size;
+  const revealedCaptured = new Set();
+  for (let ri = 0; ri <= Math.min(revIdx, rounds.length - 1); ri++) {
+    for (const l of (rounds[ri]?.lassos || [])) if (l.captured) revealedCaptured.add(l.target);
+  }
+  const capturedCount = revealedCaptured.size;
   const freeCount = (ru.cattleMembers || []).length - capturedCount;
   const hudCells = `<div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(capturedCount)}</div><div class="ct-hud-lbl">CAPTURED</div></div>
     <div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(freeCount)}</div><div class="ct-hud-lbl">FREE</div></div>
     <div class="ct-hud-cell"><div class="ct-hud-val">${_ctChalkNum(Math.min(revIdx + 1, rounds.length))}/${_ctChalkNum(rounds.length)}</div><div class="ct-hud-lbl">ROUND</div></div>`;
 
   const pending = revIdx < rounds.length - 1;
-  const controls = `<div class="ct-controls">
-    ${pending ? `<button class="ct-btn-next" onclick="crazytownRevealNext('ct-roundup')">NEXT ROUND</button>` : ''}
-    ${pending ? `<button class="ct-btn-all" onclick="crazytownRevealAll('ct-roundup')">Reveal All</button>` : ''}
-    ${!pending && rounds.length ? `<div>${_ctNeonBadge(ru.winner ? ru.winner + ' WINS THE ROUNDUP' : 'ROUNDUP COMPLETE', 'gold')}</div>` : ''}
+  const controls = `<div id="ct-controls-roundup" class="ct-controls" ${!pending && rounds.length ? 'style="display:none"' : ''}>
+    <button class="ct-btn-next" onclick="crazytownRevealNext('ct-roundup',${rounds.length})">NEXT ROUND</button>
+    <button class="ct-btn-all" onclick="crazytownRevealAll('ct-roundup',${rounds.length})">Reveal All</button>
+  </div>
+  <div id="ct-done-roundup" style="${pending || !rounds.length ? 'display:none' : 'text-align:center;padding:12px 0'}">
+    ${_ctNeonBadge(ru.winner ? ru.winner + ' WINS THE ROUNDUP' : 'ROUNDUP COMPLETE', 'gold')}
   </div>`;
 
   return _ctShell(`
@@ -2402,7 +2418,7 @@ export function rpBuildCrazytownDramaBreak(ep, breakNum) {
     const firstPlayer = (evt.players || [])[0];
     const slug = firstPlayer ? (players.find(p => p.name === firstPlayer)?.slug || firstPlayer.toLowerCase().replace(/\s+/g, '-')) : null;
     feed += `<div class="ct-ev ${evt.badgeClass || ''}">
-      ${slug ? `<div class="ct-ev-port"><img src="assets/avatars/${slug}.png" onerror="this.style.display='none'"></div>` : ''}
+      ${firstPlayer ? `${_ctSmallPortrait(firstPlayer, 44)}` : ''}
       <div style="flex:1;min-width:0">
         <div class="ct-ev-badge ${evt.badgeClass || 'gray'}">${evt.badge || evt.badgeText || 'INTERMISSION'}</div>
         <div class="ct-ev-text">${evt.text || ''}</div>
@@ -2539,30 +2555,51 @@ export function rpBuildCrazytownResults(ep) {
 // VP — Reveal functions
 // ═══════════════════════════════════════════════════════════════════════════
 
-export function crazytownRevealNext(screenKey) {
+export function crazytownRevealNext(screenKey, totalSteps) {
   if (!window._tvState) window._tvState = {};
   if (!window._tvState[screenKey]) window._tvState[screenKey] = { idx: -1 };
-  window._tvState[screenKey].idx++;
-  const ep = gs.episodeHistory?.[gs.episodeHistory.length - 1];
-  if (!ep) return;
-  if (window.buildVPScreens) {
-    const screens = window.buildVPScreens(ep);
-    const idx = screens.findIndex(s => s.id === screenKey);
-    if (idx >= 0) window.vpCurrentScreen = idx;
+  const state = window._tvState[screenKey];
+  if (state.idx >= totalSteps - 1) return;
+  state.idx++;
+  const suffix = screenKey.replace('ct-', '');
+  const el = document.getElementById(`ct-step-${suffix}-${state.idx}`);
+  if (el) {
+    el.style.display = '';
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
-  if (window.renderVPScreen) window.renderVPScreen();
+  if (state.idx >= totalSteps - 1) {
+    const controls = document.getElementById(`ct-controls-${suffix}`);
+    const done = document.getElementById(`ct-done-${suffix}`);
+    if (controls) controls.style.display = 'none';
+    if (done) done.style.display = '';
+  }
+  _ctUpdateSidebar(screenKey, state.idx);
 }
 
-export function crazytownRevealAll(screenKey) {
+export function crazytownRevealAll(screenKey, totalSteps) {
   if (!window._tvState) window._tvState = {};
   if (!window._tvState[screenKey]) window._tvState[screenKey] = { idx: -1 };
-  window._tvState[screenKey].idx = 9999;
-  const ep = gs.episodeHistory?.[gs.episodeHistory.length - 1];
-  if (!ep) return;
-  if (window.buildVPScreens) {
-    const screens = window.buildVPScreens(ep);
-    const idx = screens.findIndex(s => s.id === screenKey);
-    if (idx >= 0) window.vpCurrentScreen = idx;
+  const state = window._tvState[screenKey];
+  for (let i = state.idx + 1; i < totalSteps; i++) {
+    const el = document.getElementById(`ct-step-${screenKey.replace('ct-', '')}-${i}`);
+    if (el) el.style.display = '';
   }
-  if (window.renderVPScreen) window.renderVPScreen();
+  state.idx = totalSteps - 1;
+  const controls = document.getElementById(`ct-controls-${screenKey.replace('ct-', '')}`);
+  const done = document.getElementById(`ct-done-${screenKey.replace('ct-', '')}`);
+  if (controls) controls.style.display = 'none';
+  if (done) done.style.display = '';
+  const last = document.getElementById(`ct-step-${screenKey.replace('ct-', '')}-${totalSteps - 1}`);
+  if (last) last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  _ctUpdateSidebar(screenKey, totalSteps - 1);
+}
+
+function _ctUpdateSidebar(screenKey, revIdx) {
+  const ep = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+  if (!ep?.crazytown) return;
+  const ct = ep.crazytown;
+  if (screenKey === 'ct-dive' && ct.horseDive) {
+    const sideEl = document.getElementById('ct-sidebar-dive');
+    if (sideEl) sideEl.innerHTML = _ctBuildDiveSidebar(ct.horseDive, revIdx);
+  }
 }

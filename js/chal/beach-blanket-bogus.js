@@ -1776,31 +1776,182 @@ export function _textBeachBlanketBogus(ep, ln, sec) {
   sec();
 }
 
-export function rpBuildBeachBlanketBogusTitleCard(ep) {
-  const bbb = ep.beachBlanketBogus;
-  if (!bbb) return '';
-  return _bbbShell(`
-    <div style="text-align:center;padding:40px 20px;">
-      <div style="font-size:32px;font-weight:900;letter-spacing:3px;color:#fff;text-shadow:3px 3px 0 #c4421a;">BEACH BLANKET BOGUS</div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:8px;">${bbb.chrisOpener}</div>
-    </div>
-  `, ep);
+/* ═══════════════════════════════════════════════════════
+   VP — Portrait helper
+   ═══════════════════════════════════════════════════════ */
+
+function _bbbPortrait(name, size = 40) {
+  const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.2);" onerror="this.style.display='none'">`;
 }
+
+/* ═══════════════════════════════════════════════════════
+   VP — Shell (comprehensive CSS for all BBB screens)
+   ═══════════════════════════════════════════════════════ */
 
 function _bbbShell(content, ep) {
   return `
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bowlby+One+SC&family=Inter:wght@400;600;700;900&display=swap');
-.bbb-shell{font-family:'Inter',sans-serif;color:#1b2838;background:linear-gradient(180deg,#ff6b35 0%,#f7931e 15%,#ffd700 30%,#87CEEB 50%,#0d6986 75%,#0a3d5c 100%);padding:0;max-width:1100px;margin:0 auto;position:relative;min-height:400px}
-.bbb-header{background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid rgba(255,255,255,0.15)}
-.bbb-title{font-family:'Bowlby One SC',sans-serif;font-size:18px;color:#fff;text-shadow:2px 2px 0 #c4421a;letter-spacing:2px}
+
+/* ── Theme tokens ── */
+.bbb-shell{
+  --bbb-ivory:#faf3e0;--bbb-sand:#e8d5b7;--bbb-coral:#e85d3a;
+  --bbb-burnt:#c4421a;--bbb-teal:#1a7a7a;--bbb-deep-teal:#0d4f4f;
+  --bbb-navy:#1b2838;--bbb-gold:#d4a020;--bbb-cream:#fff8e7;
+  font-family:'Inter',sans-serif;color:var(--bbb-navy);
+  background:linear-gradient(180deg,#ff6b35 0%,#f7931e 12%,#ffd700 26%,#87CEEB 48%,#0d6986 72%,#0a3d5c 100%);
+  padding:0;max-width:1100px;margin:0 auto;position:relative;min-height:400px;overflow:hidden;
+}
+
+/* ── Film grain overlay ── */
+.bbb-shell::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:.04;pointer-events:none;z-index:5;animation:bbb-grain 0.5s steps(6) infinite;mix-blend-mode:overlay}
+
+/* ── Header ── */
+.bbb-header{background:rgba(0,0,0,0.35);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  padding:16px 20px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:2px solid rgba(255,255,255,0.15);position:relative;z-index:6}
+.bbb-title{font-family:'Bowlby One SC',sans-serif;font-size:18px;color:#fff;text-shadow:2px 2px 0 var(--bbb-burnt);letter-spacing:2px}
 .bbb-subtitle{font-size:10px;color:rgba(255,255,255,0.6);letter-spacing:3px;text-transform:uppercase}
+
+/* ── Layout: feed + sidebar ── */
+.bbb-layout{display:flex;gap:14px;align-items:flex-start;padding:14px;position:relative;z-index:6}
+.bbb-feed{flex:1;min-width:0}
+.bbb-sidebar{width:260px;flex-shrink:0;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.15) transparent;
+  background:rgba(0,0,0,0.25);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:12px}
+
+/* ── HUD bar ── */
+.bbb-hud{display:flex;gap:2px;margin:0 14px 2px;position:relative;z-index:6}
+.bbb-hud-cell{flex:1;background:rgba(0,0,0,0.3);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,0.08);padding:8px 4px;text-align:center}
+.bbb-hud-cell:first-child{border-radius:4px 0 0 4px}.bbb-hud-cell:last-child{border-radius:0 4px 4px 0}
+.bbb-hud-val{font-family:'Bowlby One SC',sans-serif;font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 8px currentColor}
+.bbb-hud-lbl{font-size:7px;letter-spacing:2px;color:rgba(255,255,255,0.4);margin-top:2px;text-transform:uppercase}
+
+/* ── Event card ── */
+.bbb-ev{background:rgba(0,0,0,0.2);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,0.08);border-left:3px solid var(--bbb-teal);
+  padding:12px 14px;margin-bottom:5px;display:flex;align-items:flex-start;gap:12px;border-radius:3px;
+  animation:bbb-fade-up 0.4s ease-out}
+.bbb-ev.wipeout{border-left-color:var(--bbb-coral)}
+.bbb-ev.positive{border-left-color:var(--bbb-gold)}
+.bbb-ev.negative{border-left-color:#e53935}
+.bbb-ev.round-header{border-left-color:var(--bbb-deep-teal);background:rgba(13,79,79,0.25)}
+.bbb-ev-badge{display:inline-block;font-family:'Bowlby One SC',sans-serif;font-size:7px;letter-spacing:2px;
+  padding:2px 8px;border-radius:2px;margin-bottom:4px;text-transform:uppercase;
+  background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8)}
+.bbb-ev-badge.gold{background:rgba(212,160,32,0.2);color:var(--bbb-gold)}
+.bbb-ev-badge.red{background:rgba(232,93,58,0.2);color:var(--bbb-coral)}
+.bbb-ev-badge.orange{background:rgba(247,147,30,0.2);color:#f7931e}
+.bbb-ev-badge.teal{background:rgba(26,122,122,0.2);color:var(--bbb-teal)}
+.bbb-ev-badge.threat-low{background:rgba(26,122,122,0.2);color:#4dd0e1}
+.bbb-ev-badge.threat-medium{background:rgba(212,160,32,0.2);color:var(--bbb-gold)}
+.bbb-ev-badge.threat-high{background:rgba(232,93,58,0.2);color:var(--bbb-coral)}
+.bbb-ev-badge.threat-extreme{background:rgba(183,28,28,0.3);color:#ff5252;animation:bbb-pulse 1.2s ease-in-out infinite}
+.bbb-ev-text{font-size:13px;line-height:1.7;color:rgba(255,255,255,0.85)}
+.bbb-ev-port{width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.15)}
+.bbb-ev-port img{width:44px;height:44px;border-radius:50%;object-fit:cover}
+
+/* ── Surfer card (sidebar) ── */
+.bbb-surfer{display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:3px;
+  border-radius:4px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06);transition:opacity 0.3s}
+.bbb-surfer.eliminated{opacity:0.35;filter:grayscale(0.8)}
+.bbb-surfer-name{font-size:11px;color:rgba(255,255,255,0.85);font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── Balance bar ── */
+.bbb-balance-bar{width:100%;height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden;margin-top:3px}
+.bbb-balance-fill{height:100%;border-radius:3px;transition:width 0.4s ease-out;
+  box-shadow:0 0 6px currentColor}
+.bbb-balance-fill.high{background:var(--bbb-teal);color:var(--bbb-teal)}
+.bbb-balance-fill.mid{background:var(--bbb-gold);color:var(--bbb-gold)}
+.bbb-balance-fill.low{background:var(--bbb-coral);color:var(--bbb-coral)}
+
+/* ── Wipeout splash card ── */
+.bbb-wipeout{background:rgba(232,93,58,0.15);border:1px solid rgba(232,93,58,0.3);border-left:4px solid var(--bbb-coral);
+  padding:14px;margin-bottom:6px;border-radius:4px;position:relative;overflow:hidden;animation:bbb-fade-up 0.4s ease-out}
+.bbb-wipeout::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:radial-gradient(circle,rgba(232,93,58,0.15) 0%,transparent 60%);
+  animation:bbb-splash 0.8s ease-out;pointer-events:none}
+.bbb-wipeout-name{font-family:'Bowlby One SC',sans-serif;font-size:14px;color:var(--bbb-coral);
+  letter-spacing:2px;text-shadow:0 0 10px rgba(232,93,58,0.3)}
+
+/* ── Round header ── */
+.bbb-round{background:rgba(13,79,79,0.3);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1px solid rgba(26,122,122,0.25);padding:10px 14px;display:flex;align-items:center;
+  justify-content:space-between;margin-bottom:6px;border-radius:4px;animation:bbb-fade-up 0.4s ease-out}
+.bbb-round-name{font-family:'Bowlby One SC',sans-serif;font-size:13px;color:rgba(255,255,255,0.9);letter-spacing:1px}
+.bbb-threat{font-family:'Bowlby One SC',sans-serif;font-size:9px;letter-spacing:2px;
+  padding:3px 10px;border-radius:12px;text-transform:uppercase}
+.bbb-threat.low{background:rgba(77,208,225,0.15);color:#4dd0e1}
+.bbb-threat.medium{background:rgba(212,160,32,0.15);color:var(--bbb-gold)}
+.bbb-threat.high{background:rgba(232,93,58,0.15);color:var(--bbb-coral);animation:bbb-pulse 2s ease-in-out infinite}
+.bbb-threat.extreme{background:rgba(183,28,28,0.25);color:#ff5252;animation:bbb-pulse 0.8s ease-in-out infinite}
+
+/* ── Controls ── */
+.bbb-controls{display:flex;gap:8px;justify-content:center;padding:16px 0;position:relative;z-index:6}
+.bbb-btn-next{padding:10px 28px;background:linear-gradient(135deg,var(--bbb-teal),var(--bbb-deep-teal));
+  color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:'Bowlby One SC',sans-serif;
+  font-size:12px;letter-spacing:2px;box-shadow:0 4px 15px rgba(13,79,79,0.4);transition:transform 0.15s,box-shadow 0.15s}
+.bbb-btn-next:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(13,79,79,0.5)}
+.bbb-btn-all{padding:8px 18px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);
+  border:1px solid rgba(255,255,255,0.15);border-radius:6px;cursor:pointer;font-size:11px;
+  transition:background 0.15s}
+.bbb-btn-all:hover{background:rgba(255,255,255,0.18);color:rgba(255,255,255,0.85)}
+
+/* ── Portrait (circular) ── */
+.bbb-portrait{border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.2)}
+
+/* ── Sidebar sections ── */
+.bbb-side-sec{font-family:'Bowlby One SC',sans-serif;font-size:8px;letter-spacing:3px;
+  color:rgba(255,255,255,0.35);border-bottom:1px solid rgba(255,255,255,0.08);
+  padding-bottom:3px;margin:12px 0 6px;text-transform:uppercase}
+.bbb-side-tribe{font-family:'Bowlby One SC',sans-serif;font-size:10px;letter-spacing:2px;
+  color:rgba(255,255,255,0.6);margin:8px 0 4px;padding:4px 8px;
+  background:rgba(255,255,255,0.05);border-radius:3px}
+.bbb-side-score{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;
+  margin-bottom:4px;border-radius:4px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06)}
+.bbb-side-score-name{font-size:11px;color:rgba(255,255,255,0.7);font-weight:600}
+.bbb-side-score-val{font-family:'Bowlby One SC',sans-serif;font-size:14px;color:var(--bbb-gold)}
+
+/* ── Wave layers ── */
+.bbb-waves{position:absolute;bottom:0;left:0;right:0;height:80px;overflow:hidden;z-index:2;pointer-events:none}
+.bbb-wave{position:absolute;bottom:0;width:200%;height:40px;
+  background:repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(255,255,255,0.05) 40px,rgba(255,255,255,0.05) 80px);
+  border-radius:50% 50% 0 0;opacity:0.6}
+.bbb-wave-1{animation:bbb-wave 8s linear infinite;bottom:0;height:35px;background:rgba(13,105,134,0.4)}
+.bbb-wave-2{animation:bbb-wave 6s linear infinite reverse;bottom:10px;height:28px;background:rgba(10,61,92,0.35)}
+.bbb-wave-3{animation:bbb-wave 10s linear infinite;bottom:18px;height:22px;background:rgba(26,122,122,0.2)}
+
+/* ── Shark fin animation ── */
+.bbb-shark{position:absolute;z-index:3;pointer-events:none;font-size:24px;bottom:20px;animation:bbb-shark 12s linear infinite}
+.bbb-shark-2{animation-delay:-5s;animation-duration:15s;bottom:35px;font-size:18px}
+
+/* ── Seagull animation ── */
+.bbb-seagull{position:absolute;z-index:4;pointer-events:none;font-size:16px;animation:bbb-seagull 9s linear infinite}
+.bbb-seagull-2{animation-delay:-3s;animation-duration:11s;font-size:12px}
+.bbb-seagull-3{animation-delay:-7s;animation-duration:14s;font-size:14px;top:15%}
+
+/* ── Keyframe animations ── */
+@keyframes bbb-wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes bbb-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes bbb-fade-up{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes bbb-shark{0%{left:-60px;opacity:0}8%{opacity:1}85%{opacity:1}100%{left:calc(100% + 60px);opacity:0}}
+@keyframes bbb-seagull{0%{right:-40px;top:10%;opacity:0}10%{opacity:1}50%{top:6%}90%{opacity:1}100%{right:calc(100% + 40px);top:12%;opacity:0}}
+@keyframes bbb-wobble{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+@keyframes bbb-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(1.05)}}
+@keyframes bbb-grain{0%{transform:translate(0,0)}20%{transform:translate(-2px,1px)}40%{transform:translate(1px,-1px)}60%{transform:translate(-1px,2px)}80%{transform:translate(2px,-1px)}100%{transform:translate(0,0)}}
+@keyframes bbb-splash{0%{transform:scale(0);opacity:0.8}100%{transform:scale(1);opacity:0}}
 </style>
 <div class="bbb-shell">
   <div class="bbb-header">
     <div>
       <div class="bbb-title">BEACH BLANKET BOGUS</div>
-      <div class="bbb-subtitle">Surf · Build · Dance</div>
+      <div class="bbb-subtitle">Surf &middot; Build &middot; Dance</div>
     </div>
     <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;">EPISODE ${ep.num || '?'}</div>
   </div>
@@ -1808,5 +1959,473 @@ function _bbbShell(content, ep) {
 </div>`;
 }
 
-export function beachBogusRevealNext(stateKey, totalSteps) {}
-export function beachBogusRevealAll(stateKey, totalSteps) {}
+/* ═══════════════════════════════════════════════════════
+   VP — Title Card (animated beach movie poster)
+   ═══════════════════════════════════════════════════════ */
+
+export function rpBuildBeachBlanketBogusTitleCard(ep) {
+  const bbb = ep.beachBlanketBogus;
+  if (!bbb) return '';
+
+  const tribeNames = Object.keys(bbb.tribeScores || {});
+  const allPlayers = gs.tribes ? gs.tribes.flatMap(t => t.members) : [];
+  const phaseList = (bbb.phases || []).map(p => {
+    if (p === 'surf') return 'Surf';
+    if (p === 'sandcastle') return 'Sandcastle';
+    if (p === 'halftime') return 'Halftime';
+    if (p === 'danceOff') return 'Dance-Off';
+    return p;
+  }).join(' / ');
+
+  return _bbbShell(`
+    <!-- Animated wave layers -->
+    <div class="bbb-waves">
+      <div class="bbb-wave bbb-wave-3"></div>
+      <div class="bbb-wave bbb-wave-2"></div>
+      <div class="bbb-wave bbb-wave-1"></div>
+    </div>
+    <!-- Shark fins -->
+    <div class="bbb-shark">&#x1F9C8;</div>
+    <div class="bbb-shark bbb-shark-2">&#x1F9C8;</div>
+    <!-- Seagulls -->
+    <div class="bbb-seagull" style="top:8%">&#x1F426;</div>
+    <div class="bbb-seagull bbb-seagull-2" style="top:12%">&#x1F426;</div>
+
+    <div style="text-align:center;padding:50px 20px 80px;position:relative;z-index:6;">
+      <!-- Presenter line -->
+      <div style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:4px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:12px;">Chris McLean Presents</div>
+
+      <!-- Main title -->
+      <div style="font-family:'Bowlby One SC',sans-serif;font-size:42px;color:#fff;text-shadow:3px 3px 0 var(--bbb-burnt),6px 6px 0 rgba(0,0,0,0.15);letter-spacing:4px;line-height:1.1;margin-bottom:6px;animation:bbb-bob 3s ease-in-out infinite;">BEACH BLANKET<br>BOGUS</div>
+
+      <!-- Tagline -->
+      <div style="font-family:'Bowlby One SC',sans-serif;font-size:14px;letter-spacing:6px;color:var(--bbb-gold);text-shadow:1px 1px 0 rgba(0,0,0,0.3);margin-bottom:20px;">SURF &middot; BUILD &middot; DANCE</div>
+
+      <!-- Phase breakdown -->
+      <div style="display:inline-block;background:rgba(0,0,0,0.25);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:14px 24px;margin-bottom:20px;">
+        <div style="font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:8px;">Today's Phases</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.9);font-weight:700;">${phaseList || 'Surf / Sandcastle'}</div>
+      </div>
+
+      <!-- Chris opener -->
+      <div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.8;max-width:560px;margin:0 auto 24px;font-style:italic;">${bbb.chrisOpener}</div>
+
+      <!-- Footer stats -->
+      <div style="display:flex;gap:20px;justify-content:center;font-size:11px;color:rgba(255,255,255,0.5);flex-wrap:wrap;">
+        <span>&#x1F3C4; ${allPlayers.length} Surfers</span>
+        <span>&#x1F9C8; 5 Hazard Rounds</span>
+        ${tribeNames.map(t => `<span>&#x1F6A9; ${t}</span>`).join('')}
+      </div>
+
+      <!-- Sound toggle -->
+      <div style="margin-top:20px;">
+        <button onclick="if(!window._tvState)window._tvState={};window._tvState.bbbAudioMuted=!window._tvState.bbbAudioMuted;this.textContent=window._tvState.bbbAudioMuted?'&#x1F507; Sound Off':'&#x1F50A; Sound On';" style="padding:6px 16px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);border-radius:4px;cursor:pointer;font-size:11px;">&#x1F507; Sound Off</button>
+      </div>
+    </div>
+  `, ep);
+}
+
+/* ═══════════════════════════════════════════════════════
+   VP — Surf Phase (click-to-reveal)
+   ═══════════════════════════════════════════════════════ */
+
+export function rpBuildBeachBlanketBogusSurf(ep) {
+  const bbb = ep.beachBlanketBogus;
+  if (!bbb || !bbb.surfData) return '';
+  const surf = bbb.surfData;
+  const _tvState = window._tvState || (window._tvState = {});
+  const stateKey = String(ep.num || 0) + '_bbbSurf';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+
+  const tribeMembers = gs.tribes ? gs.tribes.map(t => ({ name: t.name, members: [...t.members] })) : [];
+  const allSurfers = tribeMembers.flatMap(t => t.members);
+
+  const steps = [];
+
+  // Live state tracking for sidebar snapshots
+  const liveState = {
+    balances: {},
+    activeSurfers: [...allSurfers],
+    wipedOut: [],
+    tribeScores: {},
+    roundNum: 0,
+    currentHazard: '',
+    threatLevel: '',
+  };
+  allSurfers.forEach(n => { liveState.balances[n] = 100; });
+  tribeMembers.forEach(t => { liveState.tribeScores[t.name] = 0; });
+
+  function snap() {
+    return JSON.stringify({
+      balances: { ...liveState.balances },
+      activeSurfers: [...liveState.activeSurfers],
+      wipedOut: [...liveState.wipedOut],
+      tribeScores: { ...liveState.tribeScores },
+      roundNum: liveState.roundNum,
+      currentHazard: liveState.currentHazard,
+      threatLevel: liveState.threatLevel,
+    });
+  }
+
+  function pushStep(obj) {
+    steps.push({ ...obj, stateJson: snap() });
+  }
+
+  // Opening step
+  pushStep({ html: `<div class="bbb-ev round-header">
+    <div class="bbb-ev-port" style="font-size:22px;border-color:rgba(26,122,122,0.3);">&#x1F3AC;</div>
+    <div style="flex:1"><div class="bbb-ev-badge teal">SURF PHASE</div>
+    <div class="bbb-ev-text">"First up: EXTREME SURFING! Last one standing wins the point!"</div></div>
+  </div>` });
+
+  // Process each round
+  for (let ri = 0; ri < surf.rounds.length; ri++) {
+    const round = surf.rounds[ri];
+    liveState.roundNum = ri + 1;
+    liveState.currentHazard = round.name;
+    liveState.threatLevel = round.threat;
+
+    const threatCls = round.threat === 'LOW' ? 'low' : round.threat === 'MEDIUM' ? 'medium' :
+      round.threat === 'HIGH' ? 'high' : 'extreme';
+
+    // Round header step
+    pushStep({ html: `<div class="bbb-round">
+      <div>
+        <div class="bbb-round-name">Round ${ri + 1}: ${round.name}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px;max-width:500px;">${round.desc}</div>
+      </div>
+      <div class="bbb-threat ${threatCls}">${round.threat}</div>
+    </div>` });
+
+    // Per-surfer results
+    const wipeouts = round.results.filter(r => r.status === 'wipeout');
+    const struggles = round.results.filter(r => r.status === 'struggle');
+    const survivors = round.results.filter(r => r.status === 'survive');
+
+    // Update live state balances from round results
+    for (const r of round.results) {
+      liveState.balances[r.name] = r.balance;
+      if (r.status === 'wipeout') {
+        liveState.activeSurfers = liveState.activeSurfers.filter(n => n !== r.name);
+        liveState.wipedOut.push(r.name);
+      }
+    }
+
+    // Survivors group step
+    if (survivors.length > 0) {
+      const survivorCards = survivors.map(r => {
+        const balPct = Math.round(r.balance);
+        const balCls = balPct > 50 ? 'high' : balPct > 25 ? 'mid' : 'low';
+        return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
+          ${_bbbPortrait(r.name, 28)}
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.85);font-weight:600;">${r.name}</div>
+            <div class="bbb-balance-bar"><div class="bbb-balance-fill ${balCls}" style="width:${balPct}%"></div></div>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);">${balPct}%</div>
+        </div>`;
+      }).join('');
+      pushStep({ html: `<div class="bbb-ev positive">
+        <div style="flex:1"><div class="bbb-ev-badge gold">POWERING THROUGH</div>
+        <div class="bbb-ev-text">${survivors.map(r => r.name).join(', ')} ${survivors.length === 1 ? 'handles' : 'handle'} the ${round.name.toLowerCase()} without missing a beat.</div>
+        <div style="margin-top:8px;">${survivorCards}</div></div>
+      </div>` });
+    }
+
+    // Struggle steps
+    for (const r of struggles) {
+      const balPct = Math.round(r.balance);
+      const balCls = balPct > 50 ? 'high' : balPct > 25 ? 'mid' : 'low';
+      pushStep({ html: `<div class="bbb-ev">
+        <div class="bbb-ev-port">${_bbbPortrait(r.name, 44)}</div>
+        <div style="flex:1"><div class="bbb-ev-badge orange">STRUGGLING</div>
+        <div class="bbb-ev-text">${r.text}</div>
+        <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+          <div class="bbb-balance-bar" style="flex:1"><div class="bbb-balance-fill ${balCls}" style="width:${balPct}%"></div></div>
+          <span style="font-size:10px;color:rgba(255,255,255,0.5);">${balPct}%</span>
+        </div></div>
+      </div>` });
+    }
+
+    // Wipeout steps (splash card)
+    for (const r of wipeouts) {
+      pushStep({ html: `<div class="bbb-wipeout">
+        <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:1;">
+          <div class="bbb-ev-port">${_bbbPortrait(r.name, 52)}</div>
+          <div>
+            <div class="bbb-wipeout-name">&#x1F4A5; WIPEOUT &mdash; ${r.name.toUpperCase()}</div>
+            <div class="bbb-ev-text" style="margin-top:4px;">${r.text}</div>
+          </div>
+        </div>
+      </div>` });
+    }
+
+    // Mid-surf events
+    for (const evt of round.events) {
+      const evtType = evt.eventId === 'clutch-save' || evt.eventId === 'encouraging-shout' || evt.eventId === 'shield-move' ? 'positive' :
+        evt.eventId === 'trash-talk' || evt.eventId === 'sabotage-splash' || evt.eventId === 'taunt-after-wipeout' ? 'negative' : '';
+      const badgeCls = evt.badgeClass || '';
+
+      // Apply balance effects to live state
+      if (evt.balanceBoost && evt.surfer && liveState.balances[evt.surfer] !== undefined) {
+        liveState.balances[evt.surfer] = Math.min(100, liveState.balances[evt.surfer] + evt.balanceBoost);
+      }
+      if (evt.balanceCost && evt.savior && liveState.balances[evt.savior] !== undefined) {
+        liveState.balances[evt.savior] = Math.max(0, liveState.balances[evt.savior] - evt.balanceCost);
+      }
+      if (evt.balanceDrain && evt.target && liveState.balances[evt.target] !== undefined) {
+        liveState.balances[evt.target] = Math.max(0, liveState.balances[evt.target] - evt.balanceDrain);
+      }
+
+      const mainPlayer = evt.actor || evt.hero || evt.surfer || evt.taunter || evt.splasher || evt.savior || evt.victim || '';
+      pushStep({ html: `<div class="bbb-ev ${evtType}">
+        ${mainPlayer ? `<div class="bbb-ev-port">${_bbbPortrait(mainPlayer, 44)}</div>` : ''}
+        <div style="flex:1"><div class="bbb-ev-badge ${badgeCls}">${evt.badge || evt.eventId}</div>
+        <div class="bbb-ev-text">${evt.text}</div></div>
+      </div>` });
+    }
+  }
+
+  // Calculate final tribe averages for display
+  const finalTribeAvgs = {};
+  for (const t of tribeMembers) {
+    const total = t.members.reduce((sum, m) => sum + (surf.surfScores[m] || 0), 0);
+    finalTribeAvgs[t.name] = (total / t.members.length).toFixed(1);
+  }
+  liveState.tribeScores = { ...finalTribeAvgs };
+
+  // Final result step
+  const tribeScoreCards = tribeMembers.map(t => {
+    const avg = finalTribeAvgs[t.name];
+    const isWinner = t.name === surf.winner;
+    const color = isWinner ? 'var(--bbb-gold)' : 'rgba(255,255,255,0.5)';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid ${isWinner ? 'rgba(212,160,32,0.3)' : 'rgba(255,255,255,0.06)'};">
+      <span style="font-family:'Bowlby One SC',sans-serif;font-size:12px;color:${color};letter-spacing:1px;">${t.name.toUpperCase()}</span>
+      <span style="font-family:'Bowlby One SC',sans-serif;font-size:16px;color:${color};">${avg}</span>
+    </div>`;
+  }).join('');
+
+  pushStep({ html: `<div class="bbb-ev round-header">
+    <div style="flex:1;text-align:center;">
+      <div class="bbb-ev-badge gold">SURF RESULTS</div>
+      <div style="font-family:'Bowlby One SC',sans-serif;font-size:16px;color:var(--bbb-gold);margin:8px 0;">${surf.winner} WINS THE SURF PHASE!</div>
+      <div style="display:flex;gap:8px;margin-top:8px;">${tribeScoreCards}</div>
+    </div>
+  </div>` });
+
+  // Store step states on bbb for the reveal function
+  bbb._surfStepStates = steps.map(s => s.stateJson);
+
+  const state = _tvState[stateKey];
+
+  // Build initial sidebar state
+  const initialState = {
+    balances: {},
+    activeSurfers: [...allSurfers],
+    wipedOut: [],
+    tribeScores: {},
+    roundNum: 0,
+    currentHazard: 'Waiting...',
+    threatLevel: '',
+  };
+  allSurfers.forEach(n => { initialState.balances[n] = 100; });
+  tribeMembers.forEach(t => { initialState.tribeScores[t.name] = '0.0'; });
+
+  const currentState = state.idx >= 0 && bbb._surfStepStates[state.idx]
+    ? JSON.parse(bbb._surfStepStates[state.idx]) : initialState;
+  const sidebarHtml = _bbbSurfSidebarFromState(currentState, tribeMembers);
+
+  // HUD values
+  const hudRound = currentState.roundNum || 0;
+  const hudActive = currentState.activeSurfers.length;
+  const hudThreat = currentState.threatLevel || '--';
+  const hudThreatCls = hudThreat === 'LOW' ? 'color:#4dd0e1' : hudThreat === 'MEDIUM' ? 'color:var(--bbb-gold)' :
+    hudThreat === 'HIGH' ? 'color:var(--bbb-coral)' : hudThreat === 'EXTREME' ? 'color:#ff5252' : 'color:rgba(255,255,255,0.4)';
+
+  // Build feed
+  let feedHtml = `<div class="bbb-side-sec" style="color:rgba(255,255,255,0.35);">SURF FEED</div>`;
+  feedHtml += `<div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:8px;">CLICK TO ADVANCE</div>`;
+
+  steps.forEach((step, i) => {
+    const visible = i <= state.idx;
+    feedHtml += `<div id="bbb-step-${stateKey}-${i}" data-state-idx="${i}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
+  });
+
+  feedHtml += `<div id="bbb-controls-${stateKey}" class="bbb-controls"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
+    <button id="bbb-btn-${stateKey}" class="bbb-btn-next" onclick="window.beachBogusRevealNext('${stateKey}', ${steps.length})">NEXT &#x25B6; (${state.idx + 2}/${steps.length})</button>
+    <button class="bbb-btn-all" onclick="window.beachBogusRevealAll('${stateKey}', ${steps.length})">Reveal All</button>
+  </div>`;
+
+  // Environmental animations per hazard
+  const hazardAnims = (currentState.currentHazard || '').toLowerCase().includes('shark')
+    ? `<div class="bbb-shark">&#x1F9C8;</div><div class="bbb-shark bbb-shark-2">&#x1F9C8;</div>`
+    : (currentState.currentHazard || '').toLowerCase().includes('seagull')
+    ? `<div class="bbb-seagull" style="top:8%">&#x1F426;</div><div class="bbb-seagull bbb-seagull-2" style="top:14%">&#x1F426;</div><div class="bbb-seagull bbb-seagull-3">&#x1F426;</div>`
+    : '';
+
+  return _bbbShell(`
+    ${hazardAnims}
+    <div class="bbb-waves">
+      <div class="bbb-wave bbb-wave-3"></div>
+      <div class="bbb-wave bbb-wave-2"></div>
+      <div class="bbb-wave bbb-wave-1"></div>
+    </div>
+    <div class="bbb-hud">
+      <div class="bbb-hud-cell"><div class="bbb-hud-val" style="color:var(--bbb-teal)" id="bbb-hud-round-${stateKey}">R${hudRound}</div><div class="bbb-hud-lbl">ROUND</div></div>
+      <div class="bbb-hud-cell"><div class="bbb-hud-val" style="color:#fff" id="bbb-hud-active-${stateKey}">${hudActive}</div><div class="bbb-hud-lbl">SURFERS</div></div>
+      <div class="bbb-hud-cell"><div class="bbb-hud-val" style="${hudThreatCls}" id="bbb-hud-threat-${stateKey}">${hudThreat || '--'}</div><div class="bbb-hud-lbl">HAZARD</div></div>
+      ${tribeMembers.map(t => {
+        const score = currentState.tribeScores[t.name] || '0.0';
+        return `<div class="bbb-hud-cell"><div class="bbb-hud-val" style="color:var(--bbb-gold)" id="bbb-hud-tribe-${stateKey}-${t.name}">${score}</div><div class="bbb-hud-lbl">${t.name.toUpperCase()}</div></div>`;
+      }).join('')}
+    </div>
+    <div class="bbb-layout">
+      <div class="bbb-feed">${feedHtml}</div>
+      <div class="bbb-sidebar" id="bbb-sidebar-${stateKey}">${sidebarHtml}</div>
+    </div>
+  `, ep);
+}
+
+/* ═══════════════════════════════════════════════════════
+   VP — Surf sidebar builder (from state snapshot)
+   ═══════════════════════════════════════════════════════ */
+
+function _bbbSurfSidebarFromState(state, tribeMembers) {
+  let html = '';
+
+  // Active surfers by tribe
+  html += `<div class="bbb-side-sec">ACTIVE SURFERS</div>`;
+  for (const t of tribeMembers) {
+    const tribeActive = t.members.filter(n => state.activeSurfers.includes(n));
+    if (tribeActive.length === 0 && !t.members.some(n => state.wipedOut.includes(n))) continue;
+    html += `<div class="bbb-side-tribe">${t.name.toUpperCase()}</div>`;
+    for (const name of t.members) {
+      const isActive = state.activeSurfers.includes(name);
+      const bal = Math.round(state.balances[name] || 0);
+      const balCls = bal > 50 ? 'high' : bal > 25 ? 'mid' : 'low';
+      html += `<div class="bbb-surfer${isActive ? '' : ' eliminated'}">
+        ${_bbbPortrait(name, 24)}
+        <div style="flex:1;min-width:0;">
+          <div class="bbb-surfer-name">${name}</div>
+          ${isActive ? `<div class="bbb-balance-bar"><div class="bbb-balance-fill ${balCls}" style="width:${bal}%"></div></div>` : `<div style="font-size:8px;color:rgba(232,93,58,0.7);letter-spacing:1px;">WIPED OUT</div>`}
+        </div>
+        ${isActive ? `<div style="font-size:9px;color:rgba(255,255,255,0.4);">${bal}%</div>` : ''}
+      </div>`;
+    }
+  }
+
+  // Wiped out list
+  if (state.wipedOut.length > 0) {
+    html += `<div class="bbb-side-sec" style="color:rgba(232,93,58,0.4);">WIPED OUT (${state.wipedOut.length})</div>`;
+    for (const name of state.wipedOut) {
+      html += `<div class="bbb-surfer eliminated">
+        ${_bbbPortrait(name, 20)}
+        <div class="bbb-surfer-name">${name}</div>
+      </div>`;
+    }
+  }
+
+  // Tribe scores
+  html += `<div class="bbb-side-sec">TRIBE AVERAGES</div>`;
+  for (const t of tribeMembers) {
+    const score = state.tribeScores[t.name] || '0.0';
+    html += `<div class="bbb-side-score">
+      <div class="bbb-side-score-name">${t.name}</div>
+      <div class="bbb-side-score-val">${score}</div>
+    </div>`;
+  }
+
+  // Current hazard
+  if (state.currentHazard) {
+    html += `<div class="bbb-side-sec">CURRENT HAZARD</div>`;
+    const threatCls = state.threatLevel === 'LOW' ? 'low' : state.threatLevel === 'MEDIUM' ? 'medium' :
+      state.threatLevel === 'HIGH' ? 'high' : state.threatLevel === 'EXTREME' ? 'extreme' : '';
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;">
+      <span style="font-size:13px;color:rgba(255,255,255,0.8);">${state.currentHazard}</span>
+      ${threatCls ? `<span class="bbb-threat ${threatCls}">${state.threatLevel}</span>` : ''}
+    </div>`;
+  }
+
+  return html;
+}
+
+/* ═══════════════════════════════════════════════════════
+   VP — Update sidebar + HUD from step state
+   ═══════════════════════════════════════════════════════ */
+
+function _bbbUpdateSidebar(stateKey, stepIdx) {
+  const epHistory = gs.episodeHistory || [];
+  let bbb = null;
+  for (const ep of epHistory) {
+    if (ep.beachBlanketBogus && String(ep.num || 0) + '_bbbSurf' === stateKey) {
+      bbb = ep.beachBlanketBogus;
+      break;
+    }
+  }
+  if (!bbb || !bbb._surfStepStates || !bbb._surfStepStates[stepIdx]) return;
+
+  const state = JSON.parse(bbb._surfStepStates[stepIdx]);
+  const tribeMembers = gs.tribes ? gs.tribes.map(t => ({ name: t.name, members: [...t.members] })) : [];
+
+  // Update sidebar
+  const sidebar = document.getElementById(`bbb-sidebar-${stateKey}`);
+  if (sidebar) sidebar.innerHTML = _bbbSurfSidebarFromState(state, tribeMembers);
+
+  // Update HUD
+  const hudRound = document.getElementById(`bbb-hud-round-${stateKey}`);
+  const hudActive = document.getElementById(`bbb-hud-active-${stateKey}`);
+  const hudThreat = document.getElementById(`bbb-hud-threat-${stateKey}`);
+  if (hudRound) hudRound.textContent = `R${state.roundNum || 0}`;
+  if (hudActive) hudActive.textContent = state.activeSurfers.length;
+  if (hudThreat) {
+    hudThreat.textContent = state.threatLevel || '--';
+    const tCls = state.threatLevel === 'LOW' ? '#4dd0e1' : state.threatLevel === 'MEDIUM' ? 'var(--bbb-gold)' :
+      state.threatLevel === 'HIGH' ? 'var(--bbb-coral)' : state.threatLevel === 'EXTREME' ? '#ff5252' : 'rgba(255,255,255,0.4)';
+    hudThreat.style.color = tCls;
+  }
+
+  // Update tribe score HUD cells
+  for (const t of tribeMembers) {
+    const hudTribe = document.getElementById(`bbb-hud-tribe-${stateKey}-${t.name}`);
+    if (hudTribe) hudTribe.textContent = state.tribeScores[t.name] || '0.0';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   VP — Reveal handlers
+   ═══════════════════════════════════════════════════════ */
+
+export function beachBogusRevealNext(stateKey, totalSteps) {
+  const _tvState = window._tvState || (window._tvState = {});
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  if (state.idx >= totalSteps - 1) return;
+  state.idx++;
+  const el = document.getElementById(`bbb-step-${stateKey}-${state.idx}`);
+  if (el) {
+    el.style.display = '';
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  // Update button text
+  const btn = document.getElementById(`bbb-btn-${stateKey}`);
+  if (btn) btn.textContent = `NEXT \u25B6 (${state.idx + 2}/${totalSteps})`;
+  if (state.idx >= totalSteps - 1) {
+    const ctrl = document.getElementById(`bbb-controls-${stateKey}`);
+    if (ctrl) ctrl.style.display = 'none';
+  }
+  // Update sidebar + HUD
+  _bbbUpdateSidebar(stateKey, state.idx);
+}
+
+export function beachBogusRevealAll(stateKey, totalSteps) {
+  const _tvState = window._tvState || (window._tvState = {});
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  _tvState[stateKey].idx = totalSteps - 1;
+  for (let i = 0; i < totalSteps; i++) {
+    const el = document.getElementById(`bbb-step-${stateKey}-${i}`);
+    if (el) el.style.display = '';
+  }
+  const ctrl = document.getElementById(`bbb-controls-${stateKey}`);
+  if (ctrl) ctrl.style.display = 'none';
+  _bbbUpdateSidebar(stateKey, totalSteps - 1);
+}

@@ -1645,6 +1645,28 @@ export function simulateBeachBlanketBogus(ep) {
       }
     }
   }
+
+  // --- Timeline tag: main challenge event ---
+  ep.campEvents[campKey].post.push({
+    text: `Beach Blanket Bogus: ${winnerName} ${result.danceOff ? 'wins in a tiebreaker dance-off' : 'sweeps 2-0'}. ${loserName} heads to tribal council.`,
+    players: tribeMembers.flatMap(t => t.members),
+    badgeText: 'BEACH BLANKET BOGUS', badgeClass: 'gold',
+    tag: 'challenge',
+  });
+
+  // --- Debug data ---
+  ep._debugBeachBogus = {
+    surfWinner: result.surfData?.winner,
+    sandWinner: result.sandcastleData?.winner,
+    danceOffFired: !!result.danceOff,
+    danceWinner: result.danceOff?.winner || null,
+    finalScores: result.tribeScores,
+    surfAvgs: result.surfData?.tribeAvgs,
+    buildScores: result.sandcastleData?.buildScores,
+    materials: result.sandcastleData?.materials,
+    wipeoutOrder: result.surfData?.wipeoutOrder,
+    heatGenerated: (gs._beachBogusHeat || []).length,
+  };
 }
 
 export function _textBeachBlanketBogus(ep, ln, sec) {
@@ -2316,7 +2338,7 @@ export function rpBuildBeachBlanketBogusSurf(ep) {
       round.threat === 'HIGH' ? 'high' : 'extreme';
 
     // Round header step
-    pushStep({ html: `<div class="bbb-round">
+    pushStep({ sfx: round.id === 'seagull-swarm' ? 'seagull' : null, html: `<div class="bbb-round">
       <div>
         <div class="bbb-round-name">Round ${ri + 1}: ${round.name}</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px;max-width:500px;">${round.desc}</div>
@@ -2376,7 +2398,7 @@ export function rpBuildBeachBlanketBogusSurf(ep) {
 
     // Wipeout steps (splash card)
     for (const r of wipeouts) {
-      pushStep({ html: `<div class="bbb-wipeout">
+      pushStep({ sfx: 'splash', html: `<div class="bbb-wipeout">
         <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:1;">
           <div class="bbb-ev-port">${_bbbPortrait(r.name, 52)}</div>
           <div>
@@ -2475,7 +2497,7 @@ export function rpBuildBeachBlanketBogusSurf(ep) {
 
   steps.forEach((step, i) => {
     const visible = i <= state.idx;
-    feedHtml += `<div id="bbb-step-${stateKey}-${i}" data-state-idx="${i}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
+    feedHtml += `<div id="bbb-step-${stateKey}-${i}" data-state-idx="${i}"${step.sfx ? ` data-sfx="${step.sfx}"` : ''} style="${visible ? '' : 'display:none'}">${step.html}</div>`;
   });
 
   feedHtml += `<div id="bbb-controls-${stateKey}" class="bbb-controls"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
@@ -2632,6 +2654,14 @@ export function beachBogusRevealNext(stateKey, totalSteps) {
   if (el) {
     el.style.display = '';
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Play sound based on data-sfx attribute
+    if (!window._tvState?.bbbAudioMuted) {
+      const sfx = el.dataset.sfx;
+      if (sfx === 'splash') _bbbPlaySplash();
+      else if (sfx === 'seagull') _bbbPlaySeagull();
+      else if (sfx === 'sand') _bbbPlaySandCrumble();
+      else if (sfx === 'beat') _bbbPlayBeatDrop();
+    }
   }
   // Update button text
   const btn = document.getElementById(`bbb-btn-${stateKey}`);
@@ -2835,7 +2865,7 @@ export function rpBuildBeachBlanketBogusSandcastle(ep) {
   const tribeNames = tribeMembers.map(t => t.name);
 
   const steps = [];
-  function pushStep(html) { steps.push({ html }); }
+  function pushStep(html, sfx) { steps.push({ html, sfx: sfx || null }); }
 
   // ─── Determine quality tiers ───
   const scores = Object.entries(sand.buildScores);
@@ -2928,6 +2958,7 @@ export function rpBuildBeachBlanketBogusSandcastle(ep) {
     const badgeCls = evt.badgeClass || '';
     const mainPlayer = evt.klutz || evt.helper || evt.accuser || evt.accused || evt.inventor || '';
     const evtType = badgeCls === 'red' ? 'negative' : badgeCls === 'gold' ? 'positive' : '';
+    const sandSfx = (evt.eventId === 'sabotage-kick' || evt.eventId === 'collapse-setback') ? 'sand' : null;
     pushStep(`<div class="bbb-ev ${evtType}">
       ${mainPlayer ? `<div class="bbb-ev-port">${_bbbPortrait(mainPlayer, 44)}</div>` : ''}
       <div style="flex:1">
@@ -2937,7 +2968,7 @@ export function rpBuildBeachBlanketBogusSandcastle(ep) {
         </div>
         <div class="bbb-ev-text">${evt.text}</div>
       </div>
-    </div>`);
+    </div>`, sandSfx);
   }
 
   // ─── Section C: Judging ───
@@ -2976,7 +3007,7 @@ export function rpBuildBeachBlanketBogusSandcastle(ep) {
 
   steps.forEach((step, i) => {
     const visible = i <= state.idx;
-    feedHtml += `<div id="bbb-step-${stateKey}-${i}" data-state-idx="${i}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
+    feedHtml += `<div id="bbb-step-${stateKey}-${i}" data-state-idx="${i}"${step.sfx ? ` data-sfx="${step.sfx}"` : ''} style="${visible ? '' : 'display:none'}">${step.html}</div>`;
   });
 
   feedHtml += `<div id="bbb-controls-${stateKey}" class="bbb-controls"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
@@ -3327,7 +3358,8 @@ export function rpBuildBeachBlanketBogusDanceOff(ep) {
 
   steps.forEach((html, i) => {
     const visible = i <= state.idx;
-    feedHtml += `<div id="bbb-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">${html}</div>`;
+    const sfx = html.includes('bbb-dance-beat') ? 'beat' : null;
+    feedHtml += `<div id="bbb-step-${stateKey}-${i}"${sfx ? ` data-sfx="${sfx}"` : ''} style="${visible ? '' : 'display:none'}">${html}</div>`;
   });
 
   feedHtml += `<div id="bbb-controls-${stateKey}" class="bbb-controls"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>
@@ -3572,4 +3604,89 @@ export function rpBuildBeachBlanketBogusResults(ep) {
       <div class="bbb-sidebar" style="position:relative;width:100%;max-width:300px;margin:0 auto;">${sideHtml}</div>
     </div>
   `, ep);
+}
+
+/* ═══════════════════════════════════════════════════════
+   AUDIO — procedural beach SFX via Web Audio API
+   ═══════════════════════════════════════════════════════ */
+
+function _bbbPlaySplash() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const t = ctx.currentTime;
+    // White noise burst through lowpass filter — exponential decay
+    const len = ctx.sampleRate * 0.3;
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (len * 0.15));
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const lpf = ctx.createBiquadFilter();
+    lpf.type = 'lowpass'; lpf.frequency.value = 800;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.3, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    src.connect(lpf); lpf.connect(gain); gain.connect(ctx.destination);
+    src.start(t);
+    src.onended = () => ctx.close();
+  } catch (e) { /* Web Audio not available */ }
+}
+
+function _bbbPlaySeagull() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const t = ctx.currentTime;
+    // Sawtooth oscillator with frequency sweep 2000→3000→1500
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(2000, t);
+    osc.frequency.linearRampToValueAtTime(3000, t + 0.1);
+    osc.frequency.linearRampToValueAtTime(1500, t + 0.25);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.08, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(t); osc.stop(t + 0.25);
+    osc.onended = () => ctx.close();
+  } catch (e) { /* Web Audio not available */ }
+}
+
+function _bbbPlaySandCrumble() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const t = ctx.currentTime;
+    // White noise through bandpass filter — slow decay
+    const len = ctx.sampleRate * 0.4;
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (len * 0.3));
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const bpf = ctx.createBiquadFilter();
+    bpf.type = 'bandpass'; bpf.frequency.value = 2000; bpf.Q.value = 0.5;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.15, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    src.connect(bpf); bpf.connect(gain); gain.connect(ctx.destination);
+    src.start(t);
+    src.onended = () => ctx.close();
+  } catch (e) { /* Web Audio not available */ }
+}
+
+function _bbbPlayBeatDrop() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const t = ctx.currentTime;
+    // Sine oscillator 120Hz→60Hz sweep — quick decay
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(120, t);
+    osc.frequency.exponentialRampToValueAtTime(60, t + 0.15);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.2, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(t); osc.stop(t + 0.15);
+    osc.onended = () => ctx.close();
+  } catch (e) { /* Web Audio not available */ }
 }

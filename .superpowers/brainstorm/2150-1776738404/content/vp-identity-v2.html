@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Beach Blanket Bogus — VP Identity v2</title>
+<style>
+  :root {
+    --ivory: #faf3e0;
+    --sand: #e8d5b7;
+    --coral: #e85d3a;
+    --burnt: #c4421a;
+    --teal: #1a7a7a;
+    --deep-teal: #0d4f4f;
+    --navy: #1b2838;
+    --gold: #d4a020;
+    --cream: #fff8e7;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--navy);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--navy);
+    padding: 32px;
+    min-height: 100vh;
+  }
+
+  .page-title {
+    text-align: center;
+    color: var(--ivory);
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    opacity: 0.6;
+  }
+
+  .screen {
+    margin-bottom: 48px;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .screen-label {
+    background: var(--deep-teal);
+    color: var(--sand);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-bottom: 2px solid var(--teal);
+  }
+
+  /* ═══ TITLE CARD ═══ */
+  .title-card {
+    background: var(--ivory);
+    position: relative;
+    padding: 0;
+  }
+
+  .title-card .poster-border {
+    border: 3px solid var(--burnt);
+    margin: 16px;
+    padding: 32px 24px;
+    position: relative;
+  }
+
+  .title-card .poster-border::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid var(--coral);
+    pointer-events: none;
+  }
+
+  /* Halftone texture */
+  .halftone {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, var(--coral) 0.5px, transparent 0.5px);
+    background-size: 8px 8px;
+    opacity: 0.04;
+    pointer-events: none;
+  }
+
+  .title-card .presents {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 12px;
+  }
+
+  .title-card h1 {
+    text-align: center;
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: var(--coral);
+    line-height: 0.9;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .title-card .subtitle-line {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    color: var(--deep-teal);
+    margin-bottom: 20px;
+  }
+
+  .title-card .wave-divider {
+    text-align: center;
+    color: var(--teal);
+    font-size: 18px;
+    letter-spacing: 6px;
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+
+  .title-card .phase-label {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+
+  .title-card .tagline {
+    text-align: center;
+    font-size: 12px;
+    color: var(--burnt);
+    font-style: italic;
+    max-width: 320px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  .title-card .corner-mark {
+    position: absolute;
+    font-size: 9px;
+    color: var(--teal);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .title-card .corner-mark.tl { top: 8px; left: 10px; }
+  .title-card .corner-mark.br { bottom: 8px; right: 10px; }
+
+  /* ═══ SURF PHASE ═══ */
+  .surf-phase {
+    background: linear-gradient(180deg, var(--navy) 0%, var(--deep-teal) 60%, var(--teal) 100%);
+    padding: 24px;
+    position: relative;
+  }
+
+  .surf-phase::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 12px 12px;
+    pointer-events: none;
+  }
+
+  .round-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .round-header .round-name {
+    color: var(--ivory);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .round-header .threat-badge {
+    background: var(--coral);
+    color: var(--cream);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+  }
+
+  .surfer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    position: relative;
+  }
+
+  .surfer-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 3px;
+    padding: 12px;
+  }
+
+  .surfer-card.eliminated {
+    opacity: 0.4;
+    border-color: rgba(232,93,58,0.3);
+  }
+
+  .surfer-card .name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ivory);
+    margin-bottom: 6px;
+  }
+
+  .surfer-card .action {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .balance-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 3px;
+  }
+
+  .balance-bar .fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  .balance-bar .fill.high { background: var(--teal); }
+  .balance-bar .fill.mid { background: var(--gold); }
+  .balance-bar .fill.low { background: var(--coral); }
+  .balance-bar .fill.dead { background: var(--burnt); width: 0% !important; }
+
+  .balance-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .wipeout-event {
+    margin-top: 14px;
+    background: rgba(232,93,58,0.08);
+    border-left: 3px solid var(--coral);
+    padding: 10px 12px;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .wipeout-event .label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--coral);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .wipeout-event .text {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.4;
+  }
+
+  /* ═══ SANDCASTLE PHASE ═══ */
+  .sandcastle-phase {
+    background: var(--ivory);
+    position: relative;
+    padding: 24px;
+  }
+
+  .sandcastle-phase .phase-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--sand);
+  }
+
+  .sandcastle-phase .phase-header h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+  }
+
+  .sandcastle-phase .phase-header .sub {
+    font-size: 10px;
+    color: var(--teal);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  .tribe-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .tribe-panel {
+    border: 2px solid var(--sand);
+    border-radius: 4px;
+    padding: 14px;
+    position: relative;
+  }
+
+  .tribe-panel .tribe-name {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--sand);
+  }
+
+  .tribe-panel.team-a .tribe-name { color: var(--coral); }
+  .tribe-panel.team-b .tribe-name { color: var(--teal); }
+
+  .material-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .material-pip {
+    width: 20px;
+    height: 20px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    border: 1px solid var(--sand);
+    background: var(--cream);
+  }
+
+  .build-progress {
+    margin-bottom: 8px;
+  }
+
+  .build-progress .bar-bg {
+    height: 6px;
+    background: var(--sand);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .build-progress .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+
+  .build-progress .bar-fill.team-a { background: var(--coral); }
+  .build-progress .bar-fill.team-b { background: var(--teal); }
+
+  .build-progress .pct {
+    font-size: 9px;
+    color: var(--navy);
+    opacity: 0.5;
+    margin-top: 2px;
+    letter-spacing: 1px;
+  }
+
+  .tribe-panel .flavor {
+    font-size: 11px;
+    color: var(--navy);
+    opacity: 0.6;
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  .sand-event {
+    background: var(--cream);
+    border: 1px solid var(--sand);
+    border-left: 3px solid var(--burnt);
+    padding: 10px 12px;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .sand-event .label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--burnt);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .sand-event .text {
+    font-size: 11px;
+    color: var(--navy);
+    opacity: 0.7;
+    line-height: 1.4;
+  }
+
+  /* ═══ DANCE-OFF ═══ */
+  .danceoff-phase {
+    background: var(--navy);
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .danceoff-phase::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg at 50% 50%,
+      transparent 0deg,
+      rgba(26,122,122,0.03) 30deg,
+      transparent 60deg,
+      rgba(232,93,58,0.03) 90deg,
+      transparent 120deg,
+      rgba(26,122,122,0.03) 150deg,
+      transparent 180deg,
+      rgba(232,93,58,0.03) 210deg,
+      transparent 240deg,
+      rgba(26,122,122,0.03) 270deg,
+      transparent 300deg,
+      rgba(232,93,58,0.03) 330deg,
+      transparent 360deg
+    );
+    pointer-events: none;
+  }
+
+  .danceoff-phase .header {
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  .danceoff-phase .header h2 {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--ivory);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 4px;
+  }
+
+  .danceoff-phase .header .sub {
+    font-size: 9px;
+    color: var(--coral);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  .vs-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  .dancer-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    padding: 20px;
+    width: 140px;
+  }
+
+  .dancer-card .silhouette {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .dancer-card.left .silhouette { background: rgba(232,93,58,0.15); border: 2px solid var(--coral); }
+  .dancer-card.right .silhouette { background: rgba(26,122,122,0.15); border: 2px solid var(--teal); }
+
+  .dancer-card .name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ivory);
+    margin-bottom: 4px;
+  }
+
+  .dancer-card .stats {
+    font-size: 9px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .dancer-card .quote {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    font-style: italic;
+  }
+
+  .vs-divider {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 2px;
+  }
+
+  .danceoff-result {
+    position: relative;
+    background: rgba(26,122,122,0.08);
+    border: 1px solid rgba(26,122,122,0.3);
+    border-radius: 3px;
+    padding: 10px 16px;
+    display: inline-block;
+  }
+
+  .danceoff-result .text {
+    font-size: 12px;
+    color: var(--ivory);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+  <div class="page-title">Beach Blanket Bogus — VP Identity Concept</div>
+
+  <!-- ═══ SCREEN 1: TITLE CARD ═══ -->
+  <div class="screen">
+    <div class="screen-label">Phase Title Card</div>
+    <div class="title-card">
+      <div class="halftone"></div>
+      <div class="poster-border">
+        <span class="corner-mark tl">Season 2 • Ep 4</span>
+        <span class="corner-mark br">Film Lot Beach Set</span>
+        <div class="presents">Chris McLean Presents</div>
+        <h1>Beach Blanket<br>Bogus</h1>
+        <div class="subtitle-line">Surf • Build • Dance</div>
+        <div class="wave-divider">~ ~ ~ ~ ~ ~ ~ ~ ~ ~</div>
+        <div class="phase-label">Phase One: Surf's Up</div>
+        <div class="tagline">Stay on the board. Dodge the sharks. Survive the seagulls. Last one standing wins.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN 2: SURF HAZARD ROUND ═══ -->
+  <div class="screen">
+    <div class="screen-label">Surf Phase — Hazard Round</div>
+    <div class="surf-phase">
+      <div class="round-header">
+        <span class="round-name">Round 3 — Seagull Swarm</span>
+        <span class="threat-badge">Threat: High</span>
+      </div>
+
+      <div class="surfer-grid">
+        <div class="surfer-card">
+          <div class="name">Duncan</div>
+          <div class="action">Dodges the first bird. Punches the second mid-air. Board barely moves.</div>
+          <div class="balance-bar"><div class="fill high" style="width: 85%"></div></div>
+          <div class="balance-label">Balance 85%</div>
+        </div>
+        <div class="surfer-card">
+          <div class="name">Lindsay</div>
+          <div class="action">Seagull lands on her head. Shrieks. Board tilts dangerously.</div>
+          <div class="balance-bar"><div class="fill low" style="width: 30%"></div></div>
+          <div class="balance-label">Balance 30%</div>
+        </div>
+        <div class="surfer-card">
+          <div class="name">Gwen</div>
+          <div class="action">Ducks flat. Birds pass overhead. Stands back up. Steady.</div>
+          <div class="balance-bar"><div class="fill high" style="width: 72%"></div></div>
+          <div class="balance-label">Balance 72%</div>
+        </div>
+        <div class="surfer-card eliminated">
+          <div class="name">Owen</div>
+          <div class="action">Broke the board on contact. Fell Round 1.</div>
+          <div class="balance-bar"><div class="fill dead" style="width: 0%"></div></div>
+          <div class="balance-label">Eliminated</div>
+        </div>
+      </div>
+
+      <div class="wipeout-event">
+        <div class="label">Wipeout</div>
+        <div class="text">Beth tried surfing hands-free to impress Justin. A shark high-fived her on the way down.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN 3: SANDCASTLE BUILD ═══ -->
+  <div class="screen">
+    <div class="screen-label">Sandcastle Phase — Build Progress</div>
+    <div class="sandcastle-phase">
+      <div class="phase-header">
+        <h2>Castle Construction</h2>
+        <div class="sub">Scavenge → Build → Judge</div>
+      </div>
+
+      <div class="tribe-row">
+        <div class="tribe-panel team-a">
+          <div class="tribe-name">Screaming Gaffers</div>
+          <div class="material-row">
+            <div class="material-pip">🐚</div>
+            <div class="material-pip">🐚</div>
+            <div class="material-pip">🐚</div>
+            <div class="material-pip">🪵</div>
+            <div class="material-pip">🪵</div>
+            <div class="material-pip">🪨</div>
+          </div>
+          <div class="build-progress">
+            <div class="bar-bg"><div class="bar-fill team-a" style="width: 80%"></div></div>
+            <div class="pct">80% complete</div>
+          </div>
+          <div class="flavor">Duncan found driftwood. Gwen engineering the support tower.</div>
+        </div>
+        <div class="tribe-panel team-b">
+          <div class="tribe-name">Killer Grips</div>
+          <div class="material-row">
+            <div class="material-pip">🐚</div>
+            <div class="material-pip">🪵</div>
+            <div class="material-pip">🪨</div>
+            <div class="material-pip">🪨</div>
+            <div class="material-pip">🪨</div>
+            <div class="material-pip">🪨</div>
+          </div>
+          <div class="build-progress">
+            <div class="bar-bg"><div class="bar-fill team-b" style="width: 55%"></div></div>
+            <div class="pct">55% complete</div>
+          </div>
+          <div class="flavor">Trent insists on nine towers. Team losing patience.</div>
+        </div>
+      </div>
+
+      <div class="sand-event">
+        <div class="label">Sabotage</div>
+        <div class="text">Heather kicks sand into the Grips' foundation. "Oops." Nobody believes her. -2 build score.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN 4: DANCE-OFF ═══ -->
+  <div class="screen">
+    <div class="screen-label">Dance-Off Tiebreaker</div>
+    <div class="danceoff-phase">
+      <div class="header">
+        <h2>Dance-Off</h2>
+        <div class="sub">Tiebreaker — Winner Takes All</div>
+      </div>
+
+      <div class="vs-container">
+        <div class="dancer-card left">
+          <div class="silhouette">L</div>
+          <div class="name">Leshawna</div>
+          <div class="stats">SOC 8 • PHY 6</div>
+          <div class="quote">"Le-shaken-it."</div>
+        </div>
+        <div class="vs-divider">VS</div>
+        <div class="dancer-card right">
+          <div class="silhouette">T</div>
+          <div class="name">Trent</div>
+          <div class="stats">SOC 7 • PHY 7</div>
+          <div class="quote">"Nine steps. Always nine."</div>
+        </div>
+      </div>
+
+      <div class="danceoff-result">
+        <div class="text">Leshawna wins — Trent tripped on a branch. Gaffers take immunity.</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

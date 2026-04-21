@@ -1149,19 +1149,55 @@ export function simulateTalentShow(ep) {
     }
   }
 
-  // ── The Show: perform acts (interleaved) ──
+  // ── Captain Order Picking ──
+  // Smart captains save their best for last (crowd energy bonus). Bad captains waste the closer slot.
+  const captainOrders = {};
+  tribeMembers.forEach(t => {
+    const captain = captains[t.name];
+    const selected = (auditions[t.name] || []).filter(r => r.selected);
+    if (selected.length <= 1) { captainOrders[t.name] = selected.map(s => s.name); return; }
+
+    const capS = pStats(captain);
+    const stratScore = capS.strategic + capS.mental * 0.5 + Math.random() * 3;
+
+    if (stratScore >= 12) {
+      // Smart: weakest opens (crowd warms up), middle act next, best closes (max energy bonus)
+      const sorted = [...selected].sort((a, b) => a.auditionScore - b.auditionScore);
+      captainOrders[t.name] = sorted.map(s => s.name);
+    } else if (stratScore >= 8) {
+      // Decent: best in the middle (safe), others around
+      const sorted = [...selected].sort((a, b) => b.auditionScore - a.auditionScore);
+      if (sorted.length >= 3) {
+        captainOrders[t.name] = [sorted[1].name, sorted[0].name, sorted[2].name];
+      } else {
+        captainOrders[t.name] = sorted.map(s => s.name);
+      }
+    } else {
+      // Bad: best goes first (wastes the energy buildup), weakest closes
+      const sorted = [...selected].sort((a, b) => b.auditionScore - a.auditionScore);
+      captainOrders[t.name] = sorted.map(s => s.name);
+    }
+  });
+
+  // ── The Show: perform acts (interleaved by captain's chosen order) ──
   const performances = [];
+  let crowdEnergy = 0; // accumulates across all acts
   const maxActs = Math.max(...Object.values(auditions).map(a => a.filter(r => r.selected).length));
   for (let actIdx = 0; actIdx < maxActs; actIdx++) {
     tribeMembers.forEach(t => {
+      const order = captainOrders[t.name] || [];
       const selected = (auditions[t.name] || []).filter(r => r.selected);
-      if (actIdx >= selected.length) return;
-      const performer = selected[actIdx];
+      if (actIdx >= order.length) return;
+      const performerName = order[actIdx];
+      const performer = selected.find(s => s.name === performerName) || selected[actIdx];
+      if (!performer) return;
       const name = performer.name;
       const pr = pronouns(name);
       const s = pStats(name);
 
       let rawScore = showScore(name, performer);
+      // Crowd energy bonus: later acts benefit from accumulated energy
+      rawScore += crowdEnergy * 0.15;
       let outcome = 'normal';
 
       // Backstage modifiers
@@ -1297,17 +1333,25 @@ export function simulateTalentShow(ep) {
         return { name: r, text: fn(r) };
       });
 
+      // Update crowd energy based on outcome
+      const energyDelta = outcome === 'disaster' ? -2 : outcome === 'clutch' ? 3 : outcome === 'saboteurReplace' ? -1 : chef >= 7 ? 2 : chef >= 4 ? 1 : chef <= 1 ? -1 : 0;
+      crowdEnergy = Math.max(-3, Math.min(8, crowdEnergy + energyDelta));
+
+      // Chef emoji reaction
+      const chefReaction = chef >= 8 ? '🤩' : chef >= 6 ? '😮' : chef >= 4 ? '🤨' : chef >= 2 ? '😐' : '😤';
+
       performances.push({
         name, tribe: t.name, talent: performer.talentName, talentId: performer.talentId,
         category: performer.category,
         auditionScore: performer.auditionScore,
         showScore: rawScore, chefScore: chef, outcome,
+        crowdEnergy, chefReaction,
+        actPosition: actIdx, // 0=opener, 1=middle, 2=closer
         performanceBeats: outcome === 'saboteurReplace'
           ? [`${name} was supposed to perform ${performer.talentName}. Instead, ${pronouns(name).sub} ${pronouns(name).sub === 'they' ? 'walk' : 'walks'} to the mic with something else in mind.`,
              sabotage.stageText,
              `Chef marks a 0. No talent was performed. But the damage is done.`]
           : performanceBeats,
-        // Sabotage card: on TARGET's act (including replace type). Never on saboteur's own act.
         sabotageText: isSabotaged ? sabotage.text : null,
         sabotageStageText: isSabotaged ? (sabotage.type === 'replace'
           ? `${sabotage.saboteur} used ${pronouns(sabotage.saboteur).posAdj} stage time to publicly attack ${name}. The fallout is still landing.`
@@ -1439,13 +1483,103 @@ export function simulateTalentShow(ep) {
     }
   });
 
+  // ── POST-SHOW CONSEQUENCES (fires for all tribes) ──
+  const showMvp = performances.slice().sort((a, b) => b.chefScore - a.chefScore)[0];
+
+  // MVP: highest chef score gets popularity + tribe bond boost
+  if (showMvp && showMvp.chefScore >= 6) {
+    if (!gs.popularity) gs.popularity = {};
+    gs.popularity[showMvp.name] = (gs.popularity[showMvp.name] || 0) + 2;
+    const mvpTribe = tribeMembers.find(t => t.members.includes(showMvp.name));
+    if (mvpTribe) mvpTribe.members.filter(m => m !== showMvp.name).forEach(m => addBond(m, showMvp.name, 0.5));
+  }
+
+  // Captain blame: if losing tribe captain made bad order choices
+  const losingCaptain = captains[loserName];
+  if (losingCaptain) {
+    const loserOrder = captainOrders[loserName] || [];
+    const loserSelected = (auditions[loserName] || []).filter(r => r.selected);
+    const bestPerformer = loserSelected.slice().sort((a, b) => b.auditionScore - a.auditionScore)[0];
+    // Bad captain: put best performer first (index 0) instead of last
+    if (bestPerformer && loserOrder[0] === bestPerformer.name && loserOrder.length >= 3) {
+      const loserTribe = tribeMembers.find(t => t.name === loserName);
+      if (loserTribe) {
+        const campKey = loserName;
+        if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+        ep.campEvents[campKey].post.push({
+          type: 'captainBlame', players: [losingCaptain, bestPerformer.name],
+          text: `"Why did you put ${bestPerformer.name} FIRST?" The losing tribe turns on ${losingCaptain}. ${bestPerformer.name} opened cold — no crowd energy, no momentum. The captain's call cost them.`,
+          badgeText: 'CAPTAIN BLAMED', badgeClass: 'red'
+        });
+        loserTribe.members.filter(m => m !== losingCaptain).forEach(m => addBond(m, losingCaptain, -0.5));
+        if (!gs._talentShowHeat) gs._talentShowHeat = {};
+        gs._talentShowHeat[losingCaptain] = { amount: 1.0, expiresEp: ((gs.episode || 0) + 1) + 2 };
+      }
+    }
+  }
+
+  // Sabotage exposure: high-intuition players might catch the saboteur
+  if (sabotage) {
+    const detectors = gs.activePlayers.filter(p => p !== sabotage.saboteur && pStats(p).intuition >= 6);
+    const detectChance = detectors.length > 0 ? Math.max(...detectors.map(d => pStats(d).intuition * 0.08)) : 0;
+    if (Math.random() < detectChance && detectors.length) {
+      const detector = detectors.sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
+      sabotage.exposed = true;
+      sabotage.exposedBy = detector;
+      addBond(detector, sabotage.saboteur, -1);
+      gs.activePlayers.filter(p => p !== sabotage.saboteur).forEach(p => addBond(p, sabotage.saboteur, -0.3));
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[sabotage.saboteur] = (gs.popularity[sabotage.saboteur] || 0) - 2;
+      gs.popularity[detector] = (gs.popularity[detector] || 0) + 1;
+      const campKey = tribeMembers.find(t => t.members.includes(detector))?.name || loserName;
+      if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+      ep.campEvents[campKey].post.push({
+        type: 'sabotageExposed', players: [detector, sabotage.saboteur],
+        text: `${detector} noticed something off during the show. Props that shouldn't have failed. A whisper campaign. ${detector} puts it together: "${sabotage.saboteur} sabotaged ${sabotage.target}." The tribe erupts.`,
+        badgeText: 'EXPOSED', badgeClass: 'red'
+      });
+    }
+  }
+
+  // Stage fright redemption/shame
+  const stageFrightEvents = backstageEvents.filter(e => e.type === 'stageFright');
+  for (const sfe of stageFrightEvents) {
+    const scaredName = sfe.players[0];
+    const scaredPerf = performances.find(p => p.name === scaredName);
+    if (!scaredPerf) continue;
+    const scaredTribe = tribeMembers.find(t => t.members.includes(scaredName));
+    if (!scaredTribe) continue;
+    const campKey = scaredTribe.name;
+    if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+    if (scaredPerf.chefScore >= 5) {
+      // Redemption: overcame stage fright
+      ep.campEvents[campKey].post.push({
+        type: 'stageFrightRedemption', players: [scaredName],
+        text: `${scaredName} was shaking backstage. Almost didn't go on. Then ${pronouns(scaredName).sub} walked out there and scored a ${scaredPerf.chefScore}. The tribe went from worried to proud.`,
+        badgeText: 'OVERCAME FEAR', badgeClass: 'gold'
+      });
+      scaredTribe.members.filter(m => m !== scaredName).forEach(m => addBond(m, scaredName, 0.4));
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[scaredName] = (gs.popularity[scaredName] || 0) + 2;
+    } else {
+      // Shame: stage fright was visible
+      ep.campEvents[campKey].post.push({
+        type: 'stageFrightShame', players: [scaredName],
+        text: `Everyone saw ${scaredName} freeze up there. The stage fright was written on ${pronouns(scaredName).posAdj} face. Chef gave a ${scaredPerf.chefScore}. The tribe remembers.`,
+        badgeText: 'FROZE ON STAGE', badgeClass: 'red'
+      });
+      if (!gs._talentShowHeat) gs._talentShowHeat = {};
+      gs._talentShowHeat[scaredName] = { amount: 0.5, expiresEp: ((gs.episode || 0) + 1) + 1 };
+    }
+  }
+
   // ── Store data ──
   ep.talentShow = {
-    auditions, performances, captains, sabotage,
+    auditions, performances, captains, captainOrders, sabotage,
     auditionDrama, backstageEvents,
-    tribeScores,
+    tribeScores, crowdEnergy,
     winner: winnerName, loser: loserName,
-    mvp: performances.slice().sort((a, b) => b.showScore - a.showScore)[0]?.name || null,
+    mvp: showMvp?.name || null,
   };
 }
 
@@ -1645,7 +1779,7 @@ export function rpBuildTalentShowStage(ep) {
   let html = `<div class="rp-page" style="
     background:
       linear-gradient(180deg, #2a0a0a 0%, #1a0505 4%, #0d0915 12%, #08060f 30%, #0a0710 70%, #1a1008 92%, #2a1a0c 100%);
-    position:relative;overflow:hidden;
+    position:relative;overflow:visible;
   ">`;
 
   // Curtain drapes (CSS pseudo-elements via inline divs)
@@ -1680,21 +1814,49 @@ export function rpBuildTalentShowStage(ep) {
     <div style="text-align:center;font-size:11px;color:#8b7060;margin-bottom:16px;letter-spacing:1px">
       CHEF SCORES EACH ACT 0–9 &nbsp;·&nbsp; HIGHEST TOTAL WINS IMMUNITY</div>`;
 
-  // ═══ SCOREBOARD (gilded frame look) ═══
-  html += `<div style="display:flex;justify-content:center;gap:20px;margin:0 auto 20px;padding:12px 20px;
-    border-radius:8px;border:1px solid rgba(240,165,0,0.15);
+  // ═══ TUG-OF-WAR SCORE BAR + APPLAUSE (sticky) ═══
+  const tribeNames = Object.keys(revealedScores);
+  const totalRevealed = Object.values(revealedScores).reduce((s, v) => s + v, 0);
+  html += `<div style="position:sticky;top:0;z-index:10;margin:0 auto 16px;padding:10px 16px;border-radius:0 0 8px 8px;border:1px solid rgba(240,165,0,0.15);border-top:none;
+    background:linear-gradient(180deg,#0d0915ee,#08060fdd);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
     background:linear-gradient(135deg,rgba(240,165,0,0.04) 0%,rgba(0,0,0,0.3) 100%);
     box-shadow:inset 0 1px 0 rgba(240,165,0,0.1),0 4px 20px rgba(0,0,0,0.4)">`;
-  Object.entries(revealedScores).forEach(([tribe, score], i, arr) => {
+  // Score numbers
+  html += `<div style="display:flex;justify-content:space-between;margin-bottom:6px">`;
+  tribeNames.forEach(tribe => {
     const tc = tribeColor(tribe);
     const isWinner = allRevealed && tribe === ts.winner;
-    html += `<div style="text-align:center;${isWinner ? 'text-shadow:0 0 15px ' + tc + ',0 0 30px ' + tc : ''}">
-      <div style="font-family:var(--font-display);font-size:${isWinner ? '32' : '24'}px;color:${tc};font-weight:700;
-        ${isWinner ? 'animation:scrollDrop 0.4s var(--ease-broadcast) both' : ''}">${score}</div>
-      <div style="font-size:9px;color:${tc};opacity:0.7;letter-spacing:1px;text-transform:uppercase">${tribe}</div>
+    html += `<div style="text-align:center;${isWinner ? 'text-shadow:0 0 15px ' + tc : ''}">
+      <div style="font-family:var(--font-display);font-size:${isWinner ? '28' : '20'}px;color:${tc};font-weight:700">${revealedScores[tribe]}</div>
+      <div style="font-size:8px;color:${tc};opacity:0.7;letter-spacing:1px;text-transform:uppercase">${tribe}</div>
     </div>`;
-    if (i < arr.length - 1) html += `<div style="font-size:18px;color:#3d2b1a;align-self:center">·</div>`;
   });
+  html += `</div>`;
+  // Tug-of-war bar
+  if (tribeNames.length >= 2 && totalRevealed > 0) {
+    html += `<div style="display:flex;height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,0.05)">`;
+    tribeNames.forEach(tribe => {
+      const tc = tribeColor(tribe);
+      const pct = Math.max(5, (revealedScores[tribe] / totalRevealed) * 100);
+      html += `<div style="width:${pct}%;background:${tc};transition:width 0.5s ease;box-shadow:0 0 8px ${tc}40"></div>`;
+    });
+    html += `</div>`;
+  } else {
+    html += `<div style="height:8px;border-radius:4px;background:rgba(255,255,255,0.05)"></div>`;
+  }
+  // ═══ APPLAUSE-O-METER (inside sticky bar) ═══
+  const revealedEnergy = state.idx >= 0 && state.idx < ts.performances.length
+    ? ts.performances[state.idx].crowdEnergy || 0 : 0;
+  const energyPct = Math.max(0, Math.min(100, (revealedEnergy + 3) / 11 * 100));
+  const energyColor = energyPct > 70 ? '#f0a500' : energyPct > 40 ? '#3fb950' : '#8b949e';
+  const energyLabel = energyPct > 80 ? 'ELECTRIC' : energyPct > 60 ? 'HYPED' : energyPct > 40 ? 'WARM' : energyPct > 20 ? 'QUIET' : 'COLD';
+  html += `<div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+    <div style="font-size:7px;font-weight:700;letter-spacing:1.5px;color:${energyColor};text-transform:uppercase;white-space:nowrap">CROWD</div>
+    <div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.06);overflow:hidden">
+      <div style="width:${energyPct}%;height:100%;border-radius:3px;background:${energyColor};box-shadow:0 0 8px ${energyColor}40;transition:width 0.5s ease"></div>
+    </div>
+    <div style="font-size:7px;font-weight:700;letter-spacing:1px;color:${energyColor};white-space:nowrap">${energyLabel}</div>
+  </div>`;
   html += `</div>`;
 
   // ═══ PER-ACT CARDS ═══
@@ -1715,12 +1877,14 @@ export function rpBuildTalentShowStage(ep) {
     const isSabotaged = perf.outcome === 'sabotaged' || !!perf.sabotageText || !!perf.sabotageType;
     const spotlightColor = isDisaster ? '#f85149' : isClutch ? '#f0a500' : isSabotaged ? '#da3633' : tc;
 
-    // Act card with spotlight cone
+    // Act card with breathing spotlight cone
+    const spotIntensity = perf.chefScore >= 7 ? '25' : perf.chefScore >= 4 ? '18' : '10';
+    const spotGlow = perf.chefScore >= 7 ? '20' : perf.chefScore >= 4 ? '10' : '04';
     html += `<div style="position:relative;margin-bottom:12px;padding:20px;border-radius:12px;
-      background:radial-gradient(ellipse 70% 120% at 50% -10%, ${spotlightColor}18 0%, transparent 70%),
+      background:radial-gradient(ellipse 70% 120% at 50% -10%, ${spotlightColor}${spotIntensity} 0%, transparent 70%),
         linear-gradient(180deg,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0.4) 100%);
       border:1px solid ${spotlightColor}22;
-      box-shadow:0 0 40px ${spotlightColor}08,inset 0 1px 0 rgba(255,255,255,0.03);
+      box-shadow:0 0 60px ${spotlightColor}${spotGlow},inset 0 1px 0 rgba(255,255,255,0.03);
       animation:scrollDrop 0.4s var(--ease-broadcast) both">`;
 
     // Sabotage pre-card
@@ -1790,26 +1954,52 @@ export function rpBuildTalentShowStage(ep) {
         animation:scrollDrop 0.3s var(--ease-broadcast) both;animation-delay:${delay}s">${beat}</div>`;
     });
 
-    // ═══ CHEF-O-METER (spoon-style, bigger, bouncier) ═══
+    // ═══ CHEF JUDGE DESK (spoon gauge + emoji reaction) ═══
     const scoreColor = perf.chefScore >= 7 ? '#3fb950' : perf.chefScore >= 4 ? '#f0a500' : '#f85149';
-    html += `<div style="display:flex;align-items:center;justify-content:center;gap:10px;
-      margin-bottom:12px;padding:10px;border-radius:8px;
-      background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05)">
-      <div style="font-size:28px;filter:drop-shadow(0 0 8px rgba(240,165,0,0.3))">👨‍🍳</div>
-      <div style="display:flex;gap:3px;align-items:center">`;
+    const chefEmoji = perf.chefReaction || (perf.chefScore >= 8 ? '🤩' : perf.chefScore >= 6 ? '😮' : perf.chefScore >= 4 ? '🤨' : perf.chefScore >= 2 ? '😐' : '😤');
+    html += `<div style="display:flex;align-items:center;justify-content:center;gap:12px;
+      margin-bottom:12px;padding:12px;border-radius:10px;
+      background:linear-gradient(135deg,rgba(0,0,0,0.4),rgba(42,26,12,0.3));border:1px solid rgba(240,165,0,0.1);
+      box-shadow:0 2px 12px rgba(0,0,0,0.3)">
+      <div style="text-align:center">
+        <div style="font-size:32px;filter:drop-shadow(0 0 8px rgba(240,165,0,0.3));
+          ${perf.chefScore >= 8 ? 'animation:scrollDrop 0.3s var(--ease-broadcast) both' : ''}">${chefEmoji}</div>
+        <div style="font-size:7px;font-weight:700;letter-spacing:1px;color:#8b7060;margin-top:2px">CHEF</div>
+      </div>
+      <div style="flex:1;max-width:200px">
+        <div style="display:flex;gap:2px;align-items:center;margin-bottom:4px">`;
     for (let seg = 0; seg < 9; seg++) {
       const filled = seg < perf.chefScore;
       const segBg = filled ? scoreColor : 'rgba(255,255,255,0.06)';
-      const delay = filled ? seg * 0.08 : 0;
-      html += `<div style="width:22px;height:18px;border-radius:3px;
-        background:${segBg};
-        ${filled ? `box-shadow:0 0 6px ${scoreColor}40;animation:scrollDrop 0.3s var(--ease-broadcast) both;animation-delay:${delay}s` : ''}
+      const segH = filled ? 20 + (seg < perf.chefScore - 1 ? 0 : 4) : 14;
+      const delay = filled ? seg * 0.06 : 0;
+      html += `<div style="flex:1;height:${segH}px;border-radius:3px;
+        background:${segBg};transition:height 0.2s;
+        ${filled ? `box-shadow:0 0 6px ${scoreColor}40;animation:scrollDrop 0.2s var(--ease-broadcast) both;animation-delay:${delay}s` : ''}
       "></div>`;
     }
     html += `</div>
-      <div style="font-family:var(--font-display);font-size:24px;font-weight:800;
-        color:${scoreColor};text-shadow:0 0 12px ${scoreColor}40;min-width:28px;text-align:center">${perf.chefScore}</div>
+        <div style="text-align:center;font-size:7px;color:#6e5540;letter-spacing:1px">CHEF-O-METER</div>
+      </div>
+      <div style="font-family:var(--font-display);font-size:28px;font-weight:900;
+        color:${scoreColor};text-shadow:0 0 15px ${scoreColor}60;min-width:32px;text-align:center;
+        ${perf.chefScore >= 7 ? 'animation:scrollDrop 0.3s var(--ease-broadcast) both;animation-delay:0.5s' : ''}">${perf.chefScore}</div>
     </div>`;
+
+    // ═══ CONFETTI BURST (clutch performances or high scores) ═══
+    if (isClutch || perf.chefScore >= 8) {
+      html += `<div style="text-align:center;margin-bottom:8px;font-size:20px;animation:scrollDrop 0.4s var(--ease-broadcast) both;animation-delay:0.6s">🎉✨🎊</div>`;
+    }
+
+    // ═══ CROWD ENERGY SHIFT ═══
+    if (perf.crowdEnergy !== undefined) {
+      const eColor = perf.crowdEnergy >= 4 ? '#f0a500' : perf.crowdEnergy >= 1 ? '#3fb950' : '#8b949e';
+      const eDelta = i > 0 ? perf.crowdEnergy - (ts.performances[i - 1]?.crowdEnergy || 0) : perf.crowdEnergy;
+      const eArrow = eDelta > 0 ? '↑' : eDelta < 0 ? '↓' : '→';
+      const eLabel = perf.crowdEnergy >= 5 ? 'ELECTRIC' : perf.crowdEnergy >= 3 ? 'HYPED' : perf.crowdEnergy >= 1 ? 'WARM' : perf.crowdEnergy >= -1 ? 'QUIET' : 'DEAD';
+      html += `<div style="text-align:center;margin-bottom:8px;font-size:9px;color:${eColor};letter-spacing:1px;font-weight:700">
+        ${eArrow} CROWD: ${eLabel}</div>`;
+    }
 
     // ═══ AUDIENCE REACTIONS (speech bubbles that pop in) ═══
     if (perf.reactions?.length) {
@@ -1843,9 +2033,10 @@ export function rpBuildTalentShowStage(ep) {
         linear-gradient(180deg,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0.4) 100%);
       box-shadow:0 0 40px ${wTC}15;
       text-align:center;animation:scrollDrop 0.5s var(--ease-broadcast) both">
+      <div style="font-size:24px;margin-bottom:8px;animation:scrollDrop 0.3s var(--ease-broadcast) both">🎉🎊✨🎉🎊</div>
       <div style="font-family:var(--font-display);font-size:22px;letter-spacing:3px;
         color:${wTC};text-shadow:0 0 20px ${wTC},0 0 40px ${wTC}80;
-        margin-bottom:6px">${ts.winner.toUpperCase()} WINS</div>
+        margin-bottom:6px;animation:scrollDrop 0.4s var(--ease-broadcast) both;animation-delay:0.2s">${ts.winner.toUpperCase()} WINS</div>
       <div style="font-size:12px;color:#8b949e;margin-bottom:8px">${ts.loser} goes to tribal council.</div>
       <div style="font-size:11px;color:#6e7681;margin-bottom:10px">
         Final: ${Object.entries(revealedScores).map(([t, s]) => {

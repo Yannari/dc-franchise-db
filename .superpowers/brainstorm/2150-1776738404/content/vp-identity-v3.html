@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Beach Blanket Bogus — VP Identity v3</title>
+<style>
+  :root {
+    --ivory: #faf3e0;
+    --sand: #e8d5b7;
+    --coral: #e85d3a;
+    --burnt: #c4421a;
+    --teal: #1a7a7a;
+    --deep-teal: #0d4f4f;
+    --navy: #1b2838;
+    --gold: #d4a020;
+    --cream: #fff8e7;
+    --sunset-top: #ff6b35;
+    --sunset-mid: #f7931e;
+    --ocean-deep: #0a3d5c;
+    --ocean-mid: #0d6986;
+    --ocean-surf: #15a0b0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--navy);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--navy);
+    padding: 32px;
+    min-height: 100vh;
+  }
+
+  .page-title {
+    text-align: center;
+    color: var(--ivory);
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    opacity: 0.6;
+  }
+
+  .screen {
+    margin-bottom: 48px;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+
+  .screen-label {
+    background: var(--deep-teal);
+    color: var(--sand);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-bottom: 2px solid var(--teal);
+  }
+
+  /* ═══ KEYFRAMES ══��� */
+  @keyframes waveRoll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @keyframes waveRoll2 {
+    0% { transform: translateX(-25%); }
+    100% { transform: translateX(-75%); }
+  }
+
+  @keyframes bobFloat {
+    0%, 100% { transform: translateY(0) rotate(-1deg); }
+    50% { transform: translateY(-6px) rotate(1deg); }
+  }
+
+  @keyframes sharkFin {
+    0% { transform: translateX(-40px) rotate(-5deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateX(300px) rotate(5deg); opacity: 0; }
+  }
+
+  @keyframes seagullFly {
+    0% { transform: translate(0, 0) scaleX(1); }
+    25% { transform: translate(80px, -20px) scaleX(1); }
+    50% { transform: translate(160px, 5px) scaleX(-1); }
+    75% { transform: translate(240px, -15px) scaleX(-1); }
+    100% { transform: translate(320px, 0) scaleX(1); }
+  }
+
+  @keyframes boardWobble {
+    0%, 100% { transform: rotate(-2deg); }
+    25% { transform: rotate(1deg); }
+    50% { transform: rotate(-1deg); }
+    75% { transform: rotate(2deg); }
+  }
+
+  @keyframes dangerPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes sandBuild {
+    0% { height: 0; }
+    100% { height: 100%; }
+  }
+
+  @keyframes spotlightSweep {
+    0% { transform: rotate(-15deg); }
+    50% { transform: rotate(15deg); }
+    100% { transform: rotate(-15deg); }
+  }
+
+  @keyframes discoPulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
+  }
+
+  @keyframes filmGrain {
+    0% { transform: translate(0, 0); }
+    10% { transform: translate(-2px, 1px); }
+    20% { transform: translate(1px, -1px); }
+    30% { transform: translate(-1px, 2px); }
+    40% { transform: translate(2px, -2px); }
+    50% { transform: translate(-2px, 0); }
+    60% { transform: translate(1px, 1px); }
+    70% { transform: translate(0, -1px); }
+    80% { transform: translate(-1px, 2px); }
+    90% { transform: translate(2px, 0); }
+    100% { transform: translate(0, 0); }
+  }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes splashDrop {
+    0% { transform: translateY(-20px) scale(0.5); opacity: 0; }
+    60% { transform: translateY(4px) scale(1.1); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  @keyframes balanceDrain {
+    from { width: var(--from-w); }
+    to { width: var(--to-w); }
+  }
+
+  /* ═══ TITLE CARD ═══ */
+  .title-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg,
+      #ff6b35 0%,
+      #f7931e 20%,
+      #ffd700 35%,
+      #87CEEB 50%,
+      var(--ocean-mid) 70%,
+      var(--ocean-deep) 100%
+    );
+    padding: 0;
+    min-height: 380px;
+  }
+
+  .title-card .grain {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E");
+    animation: filmGrain 0.5s steps(4) infinite;
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  .title-card .waves-bg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 60%;
+    pointer-events: none;
+  }
+
+  .title-card .wave-layer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+  }
+
+  .title-card .wave-layer.w1 {
+    background: repeating-linear-gradient(90deg,
+      transparent 0px,
+      rgba(13,105,134,0.15) 40px,
+      transparent 80px
+    );
+    animation: waveRoll 8s linear infinite;
+  }
+
+  .title-card .wave-layer.w2 {
+    background: repeating-linear-gradient(90deg,
+      transparent 0px,
+      rgba(21,160,176,0.1) 60px,
+      transparent 120px
+    );
+    animation: waveRoll2 12s linear infinite;
+  }
+
+  .title-card .shark {
+    position: absolute;
+    bottom: 25%;
+    left: -40px;
+    font-size: 24px;
+    animation: sharkFin 8s ease-in-out infinite;
+    animation-delay: 2s;
+    opacity: 0;
+  }
+
+  .title-card .shark:nth-child(2) {
+    bottom: 15%;
+    animation-delay: 5s;
+    animation-duration: 10s;
+    font-size: 18px;
+  }
+
+  .title-card .poster-content {
+    position: relative;
+    z-index: 2;
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .title-card .presents {
+    font-size: 10px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.8);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    margin-bottom: 16px;
+    animation: fadeSlideUp 1s ease-out;
+  }
+
+  .title-card h1 {
+    font-size: 56px;
+    font-weight: 900;
+    color: #fff;
+    text-transform: uppercase;
+    line-height: 0.9;
+    text-shadow:
+      3px 3px 0 var(--burnt),
+      6px 6px 0 rgba(0,0,0,0.2);
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+    animation: fadeSlideUp 1s ease-out 0.2s both;
+  }
+
+  .title-card .subtitle-line {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 10px;
+    text-transform: uppercase;
+    color: var(--cream);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    margin-bottom: 24px;
+    animation: fadeSlideUp 1s ease-out 0.4s both;
+  }
+
+  .title-card .phase-banner {
+    display: inline-block;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    padding: 12px 28px;
+    animation: fadeSlideUp 1s ease-out 0.6s both;
+  }
+
+  .title-card .phase-banner .label {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+  }
+
+  .title-card .phase-banner .tagline {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  .title-card .corner-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--coral);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    z-index: 3;
+  }
+
+  /* ═══ SURF PHASE ══��� */
+  .surf-phase {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg,
+      #1a2a4a 0%,
+      var(--ocean-deep) 30%,
+      var(--ocean-mid) 60%,
+      var(--ocean-surf) 100%
+    );
+    padding: 24px;
+    min-height: 400px;
+  }
+
+  .surf-phase .water-fx {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .surf-phase .water-fx .ripple {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.06);
+    animation: discoPulse 4s ease-in-out infinite;
+  }
+
+  .surf-phase .water-fx .ripple:nth-child(1) { width: 200px; height: 100px; top: 20%; left: 10%; animation-delay: 0s; }
+  .surf-phase .water-fx .ripple:nth-child(2) { width: 150px; height: 75px; top: 50%; right: 15%; animation-delay: 1.5s; }
+  .surf-phase .water-fx .ripple:nth-child(3) { width: 180px; height: 90px; bottom: 20%; left: 40%; animation-delay: 3s; }
+
+  .surf-phase .seagull {
+    position: absolute;
+    top: 8%;
+    left: -30px;
+    font-size: 16px;
+    animation: seagullFly 6s linear infinite;
+    opacity: 0.7;
+  }
+
+  .surf-phase .seagull:nth-child(2) { top: 15%; animation-delay: 2s; animation-duration: 7s; font-size: 12px; }
+  .surf-phase .seagull:nth-child(3) { top: 5%; animation-delay: 4s; animation-duration: 5s; }
+
+  .round-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    position: relative;
+    z-index: 2;
+  }
+
+  .round-header .round-name {
+    color: var(--ivory);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .round-header .threat-badge {
+    background: var(--coral);
+    color: var(--cream);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 2px;
+    animation: dangerPulse 2s ease-in-out infinite;
+  }
+
+  .surfer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .surfer-card {
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    padding: 14px;
+    animation: fadeSlideUp 0.6s ease-out both;
+  }
+
+  .surfer-card:nth-child(1) { animation-delay: 0.1s; }
+  .surfer-card:nth-child(2) { animation-delay: 0.2s; }
+  .surfer-card:nth-child(3) { animation-delay: 0.3s; }
+  .surfer-card:nth-child(4) { animation-delay: 0.4s; }
+
+  .surfer-card.eliminated {
+    opacity: 0.35;
+    border-color: rgba(232,93,58,0.2);
+  }
+
+  .surfer-card .board-icon {
+    display: inline-block;
+    font-size: 18px;
+    margin-right: 6px;
+    animation: boardWobble 3s ease-in-out infinite;
+  }
+
+  .surfer-card.eliminated .board-icon {
+    animation: none;
+    opacity: 0.4;
+  }
+
+  .surfer-card .name {
+    display: inline;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ivory);
+  }
+
+  .surfer-card .action {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.5;
+    margin: 8px 0;
+  }
+
+  .balance-bar {
+    height: 5px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .balance-bar .fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 6px currentColor;
+  }
+
+  .balance-bar .fill.high { background: var(--ocean-surf); color: var(--ocean-surf); }
+  .balance-bar .fill.mid { background: var(--gold); color: var(--gold); }
+  .balance-bar .fill.low { background: var(--coral); color: var(--coral); }
+
+  .balance-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .wipeout-event {
+    margin-top: 16px;
+    background: rgba(232,93,58,0.1);
+    backdrop-filter: blur(4px);
+    border-left: 3px solid var(--coral);
+    padding: 12px 14px;
+    border-radius: 0 6px 6px 0;
+    position: relative;
+    z-index: 2;
+    animation: splashDrop 0.5s ease-out;
+  }
+
+  .wipeout-event .splash {
+    position: absolute;
+    top: -8px;
+    right: 16px;
+    font-size: 22px;
+    animation: splashDrop 0.8s ease-out;
+  }
+
+  .wipeout-event .label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--coral);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .wipeout-event .text {
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.5;
+  }
+
+  /* ═══ SANDCASTLE PHASE ═══ */
+  .sandcastle-phase {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg,
+      #87CEEB 0%,
+      #b0e0e6 20%,
+      var(--sand) 40%,
+      #c2a772 80%,
+      #a08050 100%
+    );
+    padding: 28px;
+    min-height: 350px;
+  }
+
+  .sandcastle-phase .sun {
+    position: absolute;
+    top: 20px;
+    right: 40px;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, #ffd700 30%, #f7931e 70%, transparent 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 40px rgba(255,215,0,0.4), 0 0 80px rgba(247,147,30,0.2);
+    animation: discoPulse 6s ease-in-out infinite;
+  }
+
+  .sandcastle-phase .phase-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid rgba(139,69,19,0.2);
+    position: relative;
+    z-index: 2;
+  }
+
+  .sandcastle-phase .phase-header h2 {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+  }
+
+  .sandcastle-phase .phase-header .sub {
+    font-size: 10px;
+    color: #654321;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .tribe-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .tribe-panel {
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(4px);
+    border: 2px solid rgba(139,69,19,0.2);
+    border-radius: 8px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tribe-panel .castle-silhouette {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 80px;
+    height: 60px;
+    opacity: 0.08;
+    font-size: 50px;
+    line-height: 1;
+    text-align: right;
+    pointer-events: none;
+  }
+
+  .tribe-panel .tribe-name {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .tribe-panel.team-a .tribe-name { color: var(--coral); }
+  .tribe-panel.team-b .tribe-name { color: var(--teal); }
+
+  .material-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .material-pip {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    background: rgba(255,255,255,0.8);
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .build-progress {
+    margin-bottom: 10px;
+  }
+
+  .build-progress .bar-bg {
+    height: 8px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .build-progress .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 2s ease-out;
+  }
+
+  .build-progress .bar-fill.team-a {
+    background: linear-gradient(90deg, var(--coral), var(--sunset-top));
+    box-shadow: 0 0 8px rgba(232,93,58,0.3);
+  }
+  .build-progress .bar-fill.team-b {
+    background: linear-gradient(90deg, var(--deep-teal), var(--teal));
+    box-shadow: 0 0 8px rgba(26,122,122,0.3);
+  }
+
+  .build-progress .pct {
+    font-size: 9px;
+    color: var(--navy);
+    opacity: 0.5;
+    margin-top: 3px;
+    letter-spacing: 1px;
+  }
+
+  .tribe-panel .flavor {
+    font-size: 11px;
+    color: var(--navy);
+    opacity: 0.65;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .sand-event {
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(196,66,26,0.2);
+    border-left: 3px solid var(--burnt);
+    padding: 12px 14px;
+    border-radius: 0 6px 6px 0;
+    position: relative;
+    z-index: 2;
+    animation: fadeSlideUp 0.5s ease-out;
+  }
+
+  .sand-event .label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--burnt);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .sand-event .text {
+    font-size: 11px;
+    color: var(--navy);
+    opacity: 0.75;
+    line-height: 1.5;
+  }
+
+  /* ═══ DANCE-OFF ═══ */
+  .danceoff-phase {
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 30%, #2d1b4e 0%, #1a1a2e 50%, #0d0d1a 100%);
+    padding: 36px 24px;
+    text-align: center;
+    min-height: 320px;
+  }
+
+  .danceoff-phase .spotlight {
+    position: absolute;
+    top: -60%;
+    left: 50%;
+    width: 200px;
+    height: 400px;
+    background: linear-gradient(180deg, rgba(255,215,0,0.08) 0%, transparent 100%);
+    transform-origin: top center;
+    animation: spotlightSweep 6s ease-in-out infinite;
+    pointer-events: none;
+    clip-path: polygon(40% 0%, 60% 0%, 100% 100%, 0% 100%);
+  }
+
+  .danceoff-phase .spotlight:nth-child(2) {
+    left: 30%;
+    animation-delay: -2s;
+    background: linear-gradient(180deg, rgba(232,93,58,0.05) 0%, transparent 100%);
+  }
+
+  .danceoff-phase .spotlight:nth-child(3) {
+    left: 70%;
+    animation-delay: -4s;
+    background: linear-gradient(180deg, rgba(26,122,122,0.05) 0%, transparent 100%);
+  }
+
+  .danceoff-phase .floor-tiles {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background:
+      linear-gradient(90deg, rgba(232,93,58,0.04) 25%, transparent 25%, transparent 75%, rgba(26,122,122,0.04) 75%),
+      linear-gradient(0deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 50% 100%, 40px 40px, 40px 40px;
+    perspective: 400px;
+    transform: rotateX(60deg);
+    transform-origin: bottom;
+    pointer-events: none;
+  }
+
+  .danceoff-phase .header {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 28px;
+  }
+
+  .danceoff-phase .header h2 {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--ivory);
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    text-shadow: 0 0 20px rgba(255,215,0,0.2);
+    animation: fadeSlideUp 0.8s ease-out;
+  }
+
+  .danceoff-phase .header .sub {
+    font-size: 9px;
+    color: var(--coral);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 6px;
+    animation: dangerPulse 3s ease-in-out infinite;
+  }
+
+  .vs-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 36px;
+    position: relative;
+    z-index: 2;
+    margin-bottom: 28px;
+  }
+
+  .dancer-card {
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 24px 20px;
+    width: 150px;
+    animation: fadeSlideUp 0.8s ease-out both;
+  }
+
+  .dancer-card.left { animation-delay: 0.2s; border-color: rgba(232,93,58,0.3); }
+  .dancer-card.right { animation-delay: 0.4s; border-color: rgba(26,122,122,0.3); }
+
+  .dancer-card .silhouette {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 900;
+    color: #fff;
+  }
+
+  .dancer-card.left .silhouette {
+    background: linear-gradient(135deg, var(--coral), var(--burnt));
+    box-shadow: 0 4px 16px rgba(232,93,58,0.3);
+  }
+  .dancer-card.right .silhouette {
+    background: linear-gradient(135deg, var(--teal), var(--deep-teal));
+    box-shadow: 0 4px 16px rgba(26,122,122,0.3);
+  }
+
+  .dancer-card .name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ivory);
+    margin-bottom: 4px;
+  }
+
+  .dancer-card .stats {
+    font-size: 9px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .dancer-card .quote {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  .vs-divider {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 12px rgba(212,160,32,0.4);
+    letter-spacing: 3px;
+    animation: fadeSlideUp 0.8s ease-out 0.3s both;
+  }
+
+  .danceoff-result {
+    position: relative;
+    z-index: 2;
+    background: rgba(26,122,122,0.12);
+    border: 1px solid rgba(26,122,122,0.4);
+    border-radius: 4px;
+    padding: 12px 20px;
+    display: inline-block;
+    animation: fadeSlideUp 0.8s ease-out 0.6s both;
+  }
+
+  .danceoff-result .text {
+    font-size: 12px;
+    color: var(--ivory);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  /* ═══ HALFTIME DRAMA ═══ */
+  .halftime-phase {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg,
+      var(--sunset-top) 0%,
+      var(--sunset-mid) 40%,
+      #e8d5b7 70%,
+      var(--sand) 100%
+    );
+    padding: 28px;
+  }
+
+  .halftime-phase .header {
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .halftime-phase .header h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .halftime-phase .header .sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.8);
+    letter-spacing: 3px;
+    margin-top: 4px;
+  }
+
+  .drama-feed {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .drama-card {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(4px);
+    border-radius: 6px;
+    padding: 12px 14px;
+    border-left: 3px solid;
+    animation: fadeSlideUp 0.6s ease-out both;
+  }
+
+  .drama-card:nth-child(1) { animation-delay: 0.1s; border-color: var(--coral); }
+  .drama-card:nth-child(2) { animation-delay: 0.3s; border-color: var(--teal); }
+  .drama-card:nth-child(3) { animation-delay: 0.5s; border-color: var(--gold); }
+
+  .drama-card .badge {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .drama-card:nth-child(1) .badge { color: var(--coral); }
+  .drama-card:nth-child(2) .badge { color: var(--teal); }
+  .drama-card:nth-child(3) .badge { color: var(--gold); }
+
+  .drama-card .text {
+    font-size: 11px;
+    color: var(--navy);
+    line-height: 1.5;
+    opacity: 0.8;
+  }
+
+  .drama-card .impact {
+    font-size: 9px;
+    color: var(--navy);
+    opacity: 0.5;
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+  <div class="page-title">Beach Blanket Bogus — VP Identity v3</div>
+
+  <!-- ═══ SCREEN 1: TITLE CARD ═══ -->
+  <div class="screen">
+    <div class="screen-label">Phase Title Card — Animated Poster</div>
+    <div class="title-card">
+      <div class="grain"></div>
+      <div class="waves-bg">
+        <div class="wave-layer w1"></div>
+        <div class="wave-layer w2"></div>
+      </div>
+      <div class="shark">🦈</div>
+      <div class="shark">🦈</div>
+      <div class="corner-badge">PRE-MERGE</div>
+      <div class="poster-content">
+        <div class="presents">Chris McLean Presents</div>
+        <h1>Beach Blanket<br>Bogus</h1>
+        <div class="subtitle-line">Surf · Build · Dance</div>
+        <div class="phase-banner">
+          <div class="label">Phase One: Surf's Up</div>
+          <div class="tagline">Stay on the board. Dodge the sharks. Survive the seagulls.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN 2: SURF HAZARD ROUND ═══ -->
+  <div class="screen">
+    <div class="screen-label">Surf Phase — Hazard Round (Animated)</div>
+    <div class="surf-phase">
+      <div class="water-fx">
+        <div class="ripple"></div>
+        <div class="ripple"></div>
+        <div class="ripple"></div>
+      </div>
+      <div class="seagull">🐦</div>
+      <div class="seagull">🐦</div>
+      <div class="seagull">🐦</div>
+
+      <div class="round-header">
+        <span class="round-name">Round 3 — Seagull Swarm</span>
+        <span class="threat-badge">Threat: High</span>
+      </div>
+
+      <div class="surfer-grid">
+        <div class="surfer-card">
+          <div><span class="board-icon">🏄</span><span class="name">Duncan</span></div>
+          <div class="action">Dodges the first bird. Punches the second mid-air. Board barely moves.</div>
+          <div class="balance-bar"><div class="fill high" style="width: 85%"></div></div>
+          <div class="balance-label">Balance 85%</div>
+        </div>
+        <div class="surfer-card">
+          <div><span class="board-icon">🏄</span><span class="name">Lindsay</span></div>
+          <div class="action">Seagull lands in her hair. Shrieks. Board tilts hard left.</div>
+          <div class="balance-bar"><div class="fill low" style="width: 30%"></div></div>
+          <div class="balance-label">Balance 30% ⚠</div>
+        </div>
+        <div class="surfer-card">
+          <div><span class="board-icon">🏄</span><span class="name">Gwen</span></div>
+          <div class="action">Ducks flat against the board. Birds pass over. Stands back up. Steady.</div>
+          <div class="balance-bar"><div class="fill high" style="width: 72%"></div></div>
+          <div class="balance-label">Balance 72%</div>
+        </div>
+        <div class="surfer-card eliminated">
+          <div><span class="board-icon">🏄</span><span class="name">Owen</span></div>
+          <div class="action">Broke the board on contact. Splashed the sharks out of the pool. Round 1.</div>
+          <div class="balance-bar"><div class="fill low" style="width: 0%"></div></div>
+          <div class="balance-label">Eliminated</div>
+        </div>
+      </div>
+
+      <div class="wipeout-event">
+        <span class="splash">💦</span>
+        <div class="label">Wipeout</div>
+        <div class="text">Beth tried surfing hands-free to impress Justin. Board slid sideways. A shark high-fived her on the way into the water.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN 3: HALFTIME DRAMA ═══ -->
+  <div class="screen">
+    <div class="screen-label">Halftime — Drama Interlude</div>
+    <div class="halftime-phase">
+      <div class="header">
+        <h2>Beach Break</h2>
+        <div class="sub">Between Phases · Drama Window</div>
+      </div>
+
+      <div class="drama-feed">
+        <div class="drama-card">
+          <div class="badge">Rivalry Confrontation</div>
+          <div class="text">Heather spots Leshawna near the tide pools. "Nice surfing out there. Very… splash." Leshawna turns slowly. "Say that louder. I dare you."</div>
+          <div class="impact">Bond: Heather ↔ Leshawna −0.4</div>
+        </div>
+        <div class="drama-card">
+          <div class="badge">Alliance Whisper</div>
+          <div class="text">Justin pulls Beth aside by the umbrella stand. "You know, I never got a friendship bracelet." Beth's eyes go wide. The hook is set.</div>
+          <div class="impact">Alliance forming: Justin + Beth</div>
+        </div>
+        <div class="drama-card">
+          <div class="badge">Showmance Moment</div>
+          <div class="text">Trent finds Gwen at the edge of the beach. "Nine shells." He holds them out. She stares. "Why nine?" He doesn't know how to answer that.</div>
+          <div class="impact">Showmance intensity +1 · Gwen concern flag</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN 4: SANDCASTLE BUILD ═══ -->
+  <div class="screen">
+    <div class="screen-label">Sandcastle Phase — Build Progress</div>
+    <div class="sandcastle-phase">
+      <div class="sun"></div>
+      <div class="phase-header">
+        <h2>Castle Construction</h2>
+        <div class="sub">Scavenge → Build → Judge</div>
+      </div>
+
+      <div class="tribe-row">
+        <div class="tribe-panel team-a">
+          <div class="castle-silhouette">🏰</div>
+          <div class="tribe-name">Screaming Gaffers</div>
+          <div class="material-row">
+            <div class="material-pip">🐚</div>
+            <div class="material-pip">🐚</div>
+            <div class="material-pip">🐚</div>
+            <div class="material-pip">🪵</div>
+            <div class="material-pip">🪵</div>
+            <div class="material-pip">🪨</div>
+          </div>
+          <div class="build-progress">
+            <div class="bar-bg"><div class="bar-fill team-a" style="width: 80%"></div></div>
+            <div class="pct">80% complete</div>
+          </div>
+          <div class="flavor">Duncan found driftwood in the treeline. Gwen engineering the support tower — she's got a plan and nobody's arguing.</div>
+        </div>
+        <div class="tribe-panel team-b">
+          <div class="castle-silhouette">🏰</div>
+          <div class="tribe-name">Killer Grips</div>
+          <div class="material-row">
+            <div class="material-pip">🐚</div>
+            <div class="material-pip">🪵</div>
+            <div class="material-pip">🪨</div>
+            <div class="material-pip">🪨</div>
+            <div class="material-pip">🪨</div>
+            <div class="material-pip">🪨</div>
+          </div>
+          <div class="build-progress">
+            <div class="bar-bg"><div class="bar-fill team-b" style="width: 55%"></div></div>
+            <div class="pct">55% complete</div>
+          </div>
+          <div class="flavor">Trent keeps adding a ninth tower. Owen ate some of the paper-mâché. It's going about as well as expected.</div>
+        </div>
+      </div>
+
+      <div class="sand-event">
+        <div class="label">Sabotage</div>
+        <div class="text">Heather kicks a wave of sand across the Grips' moat. "Oh no, the wind!" There is no wind. −2 build score.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN 5: DANCE-OFF ═══ -->
+  <div class="screen">
+    <div class="screen-label">Dance-Off Tiebreaker</div>
+    <div class="danceoff-phase">
+      <div class="spotlight"></div>
+      <div class="spotlight"></div>
+      <div class="spotlight"></div>
+      <div class="floor-tiles"></div>
+
+      <div class="header">
+        <h2>Dance-Off</h2>
+        <div class="sub">Tiebreaker · Winner Takes All</div>
+      </div>
+
+      <div class="vs-container">
+        <div class="dancer-card left">
+          <div class="silhouette">L</div>
+          <div class="name">Leshawna</div>
+          <div class="stats">SOC 8 · PHY 6</div>
+          <div class="quote">"They call me Le-shaken-it back home for a reason."</div>
+        </div>
+        <div class="vs-divider">VS</div>
+        <div class="dancer-card right">
+          <div class="silhouette">T</div>
+          <div class="name">Trent</div>
+          <div class="stats">SOC 7 · PHY 7</div>
+          <div class="quote">"Nine steps. Always nine steps."</div>
+        </div>
+      </div>
+
+      <div class="danceoff-result">
+        <div class="text">Leshawna wins — Trent tripped on a branch. Gaffers take immunity.</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -10342,11 +10342,14 @@ export function buildVPScreens(epRecord) {
     if (ep.beachBlanketBogus.surfData) {
       vpScreens.push({ id:'bbb-surf', label:'Surf\'s Up', html: rpBuildBeachBlanketBogusSurf(ep) });
     }
+    if (ep.beachBlanketBogus.beachBreakEvents?.length) {
+      vpScreens.push({ id:'bbb-beachbreak', label:'Beach Break', html: rpBuildBeachBlanketBogusHalftime(ep, 'beachBreak') });
+    }
     if (ep.beachBlanketBogus.sandcastleData) {
       vpScreens.push({ id:'bbb-sandcastle', label:'Castle Construction', html: rpBuildBeachBlanketBogusSandcastle(ep) });
     }
-    if (ep.beachBlanketBogus.halftimeEvents) {
-      vpScreens.push({ id:'bbb-halftime', label:'Beach Break', html: rpBuildBeachBlanketBogusHalftime(ep) });
+    if (ep.beachBlanketBogus.halftimeEvents?.length) {
+      vpScreens.push({ id:'bbb-halftime', label:'Pre-Dance Tension', html: rpBuildBeachBlanketBogusHalftime(ep, 'halftime') });
     }
     if (ep.beachBlanketBogus.danceOff) {
       vpScreens.push({ id:'bbb-danceoff', label:'Dance-Off', html: rpBuildBeachBlanketBogusDanceOff(ep) });

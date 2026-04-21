@@ -136,11 +136,11 @@ const SURF_EVENTS = [
       }
       return null;
     },
-    apply(victim) {
+    apply(victim, _, match, balances) {
       if (!gs.popularity) gs.popularity = {};
       gs.popularity[victim] = (gs.popularity[victim] || 0) + 1;
       const pr = pronouns(victim);
-      return { victim, pr };
+      return { victim, pr, balanceLoss: 999 };
     },
     text(data) {
       return `${data.victim} goes for a HUGE power move on the board, gets way too much air, and belly-smacks the water so hard it echoes. Painful to watch. Amazing TV.`;
@@ -269,16 +269,25 @@ function _simulateSurf(ep, tribeMembers, result) {
 
   allSurfers.forEach(name => { balances[name] = 100; surfScores[name] = 0; });
 
-  for (let ri = 0; ri < HAZARD_ROUNDS.length; ri++) {
-    const hazard = HAZARD_ROUNDS[ri];
+  // Run rounds until 0-1 surfers remain (or max 8 rounds). Cycles through hazard types.
+  const maxRounds = 8;
+  for (let ri = 0; ri < maxRounds; ri++) {
     const activeSurfers = allSurfers.filter(n => balances[n] > 0);
-    const roundLog = { id: hazard.id, name: hazard.name, threat: hazard.threat, desc: hazard.desc, results: [], events: [] };
+    if (activeSurfers.length <= 1) break;
 
-    // --- Hazard drain ---
+    const hazard = HAZARD_ROUNDS[ri % HAZARD_ROUNDS.length];
+    const roundLabel = ri < HAZARD_ROUNDS.length ? hazard.name : `${hazard.name} (Overtime ${ri - HAZARD_ROUNDS.length + 1})`;
+    const roundLog = { id: hazard.id, name: roundLabel, threat: ri >= 4 ? 'EXTREME' : hazard.threat, desc: hazard.desc, results: [], events: [] };
+
+    // --- Hazard drain — per-player random spread ensures staggered wipeouts ---
     for (const name of activeSurfers) {
       const s = pStats(name);
-      const check = Math.min(1, hazard.statCheck(s));
-      const drain = (1 - check) * (25 + Math.random() * 15);
+      const check = Math.min(0.85, hazard.statCheck(s));
+      // Each player gets a personal luck roll (wide spread: 0.3 to 1.7)
+      const luck = 0.3 + Math.random() * 1.4;
+      // Base drain escalates: R0=10, R1=16, R2=22, R3=28, R4=34, R5+=40+
+      const baseDrain = 10 + ri * 6;
+      const drain = baseDrain * (1 - check * 0.4) * luck;
       balances[name] = Math.max(0, balances[name] - drain);
 
       const pr = pronouns(name);
@@ -289,7 +298,7 @@ function _simulateSurf(ep, tribeMembers, result) {
         if (!gs.popularity) gs.popularity = {};
         gs.popularity[name] = (gs.popularity[name] || 0) - 1;
         roundLog.results.push({ name, status: 'wipeout', text: hazard.wipeout(name, pr), balance: 0 });
-      } else if (balances[name] < 40) {
+      } else if (balances[name] < 60) {
         roundLog.results.push({ name, status: 'struggle', text: hazard.struggle(name, pr), balance: balances[name] });
       } else {
         roundLog.results.push({ name, status: 'survive', text: hazard.survive(name, pr), balance: balances[name] });
@@ -300,10 +309,10 @@ function _simulateSurf(ep, tribeMembers, result) {
     const shuffled = [...SURF_EVENTS].sort(() => Math.random() - 0.5);
     let eventsFired = 0;
     const maxEvents = Math.random() < 0.5 ? 1 : 2;
-    const activeAfterHazard = allSurfers.filter(n => balances[n] > 0);
 
     for (const evt of shuffled) {
       if (eventsFired >= maxEvents) break;
+      const activeAfterHazard = allSurfers.filter(n => balances[n] > 0);
       const match = evt.check(activeAfterHazard, tribeMembers, balances, wipeoutOrder);
       if (!match) continue;
 
@@ -323,6 +332,13 @@ function _simulateSurf(ep, tribeMembers, result) {
       }
       if (data.balanceDrain && data.target) {
         balances[data.target] = Math.max(0, balances[data.target] - data.balanceDrain);
+      }
+      if (data.balanceLoss && data.victim) {
+        balances[data.victim] = Math.max(0, balances[data.victim] - data.balanceLoss);
+        if (balances[data.victim] <= 0 && !wipeoutOrder.includes(data.victim)) {
+          wipeoutOrder.push(data.victim);
+          surfScores[data.victim] = (ri + 1) * 10;
+        }
       }
 
       // Witness bond effects for trash-talk
@@ -389,26 +405,26 @@ function _simulateSurf(ep, tribeMembers, result) {
   }
 
   // --- Final scoring: survivors get round bonus + remaining balance ---
+  const totalRounds = rounds.length;
   for (const name of allSurfers) {
     if (balances[name] > 0) {
-      surfScores[name] = HAZARD_ROUNDS.length * 10 + balances[name];
+      surfScores[name] = (totalRounds + 1) * 10 + balances[name];
     }
   }
 
-  // --- Tribe scoring: AVERAGE per member ---
-  const tribeAvgs = {};
+  // --- Tribe scoring: last member standing wins (best individual score per tribe) ---
+  const tribeBest = {};
   for (const t of tribeMembers) {
-    const total = t.members.reduce((sum, m) => sum + surfScores[m], 0);
-    tribeAvgs[t.name] = total / t.members.length;
+    tribeBest[t.name] = Math.max(...t.members.map(m => surfScores[m]));
   }
 
-  // Winner = higher average
-  const sorted = Object.entries(tribeAvgs).sort((a, b) => b[1] - a[1]);
+  // Winner = tribe whose last surfer survived longest
+  const sorted = Object.entries(tribeBest).sort((a, b) => b[1] - a[1]);
   const winner = sorted[0][0];
   result.tribeScores[winner] = (result.tribeScores[winner] || 0) + 1;
 
   // Store surf data
-  result.surfData = { rounds, balances: { ...balances }, surfScores: { ...surfScores }, wipeoutOrder: [...wipeoutOrder], tribeAvgs, winner };
+  result.surfData = { rounds, balances: { ...balances }, surfScores: { ...surfScores }, wipeoutOrder: [...wipeoutOrder], tribeBest, winner };
 
   // Update chalMemberScores
   for (const name of allSurfers) {
@@ -897,13 +913,12 @@ const HALFTIME_EVENTS = [
     id: 'rivalry-confrontation',
     badge: 'Confrontation', badgeClass: 'red',
     check(tribeMembers) {
-      if (Math.random() > 0.30) return null;
       const all = tribeMembers.flatMap(t => t.members);
       for (const a of all) {
         for (const b of all) {
           if (a === b) continue;
           const sameTribe = tribeMembers.some(t => t.members.includes(a) && t.members.includes(b));
-          if (!sameTribe && getBond(a, b) <= -2) return { fighter1: a, fighter2: b };
+          if (!sameTribe && getBond(a, b) <= -1 && Math.random() < 0.5) return { fighter1: a, fighter2: b };
         }
       }
       return null;
@@ -933,7 +948,6 @@ const HALFTIME_EVENTS = [
     id: 'alliance-pitch',
     badge: 'Alliance Pitch', badgeClass: 'orange',
     check(tribeMembers) {
-      if (Math.random() > 0.25) return null;
       const all = tribeMembers.flatMap(t => t.members);
       for (const pitcher of all) {
         const s = pStats(pitcher);
@@ -973,7 +987,6 @@ const HALFTIME_EVENTS = [
     id: 'showmance-moment',
     badge: 'Showmance Spark', badgeClass: 'gold',
     check(tribeMembers) {
-      if (Math.random() > 0.40) return null;
       const all = tribeMembers.flatMap(t => t.members);
       // Check active showmances first
       if (gs.showmances) {
@@ -1015,7 +1028,6 @@ const HALFTIME_EVENTS = [
     id: 'injury-check',
     badge: 'Injury Check', badgeClass: 'orange',
     check(tribeMembers, result) {
-      if (Math.random() > 0.30) return null;
       if (!result.surfData?.wipeoutOrder?.length) return null;
       const injured = result.surfData.wipeoutOrder[result.surfData.wipeoutOrder.length - 1];
       return { injured };
@@ -1051,7 +1063,6 @@ const HALFTIME_EVENTS = [
     id: 'strategy-huddle',
     badge: 'Strategy Huddle', badgeClass: 'orange',
     check(tribeMembers) {
-      if (Math.random() > 0.25) return null;
       let bestStrat = null, bestVal = 0;
       const all = tribeMembers.flatMap(t => t.members);
       for (const n of all) {
@@ -1091,7 +1102,6 @@ const HALFTIME_EVENTS = [
     id: 'cross-tribe-taunt',
     badge: 'Beach Taunt', badgeClass: 'red',
     check(tribeMembers, result) {
-      if (Math.random() > 0.30) return null;
       if (!result.surfData?.winner) return null;
       const winTribe = tribeMembers.find(t => t.name === result.surfData.winner);
       if (!winTribe) return null;
@@ -1123,6 +1133,137 @@ const HALFTIME_EVENTS = [
       };
     },
   },
+  {
+    id: 'beach-bonding',
+    badge: 'Beach Bond', badgeClass: 'gold',
+    check(tribeMembers) {
+      const all = tribeMembers.flatMap(t => t.members);
+      for (const a of all) {
+        for (const b of all) {
+          if (a >= b) continue;
+          const sameTribe = tribeMembers.some(t => t.members.includes(a) && t.members.includes(b));
+          if (sameTribe && getBond(a, b) >= 1) return { player1: a, player2: b };
+        }
+      }
+      return null;
+    },
+    apply({ player1, player2 }) {
+      addBond(player1, player2, 0.3);
+      addBond(player2, player1, 0.3);
+      const texts = [
+        `${player1} and ${player2} skip rocks across the pool. ${player1} gets five skips. ${player2} gets seven. A rivalry is born — the friendly kind.`,
+        `${player1} and ${player2} sit at the water's edge, feet dangling. The conversation isn't about strategy for once. It's about home.`,
+        `${player1} teaches ${player2} a card trick with soggy cards. It takes four tries. They're both laughing by the end.`,
+      ];
+      return { player1, player2, players: [player1, player2], text: texts[Math.floor(Math.random() * texts.length)] };
+    },
+  },
+  {
+    id: 'paranoia-spiral',
+    badge: 'Paranoia', badgeClass: 'red',
+    check(tribeMembers) {
+      const all = tribeMembers.flatMap(t => t.members);
+      for (const name of all) {
+        const s = pStats(name);
+        if (s.intuition * 0.1 + Math.random() * 0.2 > 0.6 && s.temperament <= 6) return { paranoid: name };
+      }
+      return null;
+    },
+    apply({ paranoid }, tribeMembers) {
+      const tribe = tribeMembers.find(t => t.members.includes(paranoid));
+      const tribemates = tribe ? tribe.members.filter(m => m !== paranoid) : [];
+      tribemates.forEach(m => addBond(m, paranoid, -0.15));
+      const pr = pronouns(paranoid);
+      const target = tribemates[Math.floor(Math.random() * tribemates.length)] || 'someone';
+      return { paranoid, target, pr, players: [paranoid, ...(typeof target === 'string' && tribemates.includes(target) ? [target] : [])],
+        text: `${paranoid} catches ${target} whispering during the break. Were they talking about ${pr.obj}? ${pr.Sub} can't tell. But now ${pr.sub} can't stop watching. The paranoia is setting in.` };
+    },
+  },
+  {
+    id: 'food-steal',
+    badge: 'Snack Theft', badgeClass: 'red',
+    check(tribeMembers) {
+      const all = tribeMembers.flatMap(t => t.members);
+      for (const name of all) {
+        const s = pStats(name);
+        if (s.boldness * 0.08 + Math.random() * 0.2 > 0.5) return { thief: name };
+      }
+      return null;
+    },
+    apply({ thief }, tribeMembers) {
+      const tribe = tribeMembers.find(t => t.members.includes(thief));
+      const witness = tribe ? tribe.members.find(m => m !== thief && pStats(m).intuition >= 5) : null;
+      if (witness) addBond(witness, thief, -0.3);
+      const pr = pronouns(thief);
+      return { thief, witness, pr, players: [thief, ...(witness ? [witness] : [])],
+        text: witness
+          ? `${thief} sneaks an extra sandwich from the craft table. ${witness} watches the whole thing. "I saw that." ${thief}: "Saw what?" The tension is palpable.`
+          : `${thief} pockets three sandwiches during the break. ${pr.Sub} ${pr.sub === 'they' ? 'aren\'t' : 'isn\'t'} sorry. "It's a survival game. I'm surviving."` };
+    },
+  },
+  {
+    id: 'pep-talk',
+    badge: 'Pep Talk', badgeClass: 'gold',
+    check(tribeMembers) {
+      const all = tribeMembers.flatMap(t => t.members);
+      for (const name of all) {
+        const s = pStats(name);
+        if (s.social * 0.1 + Math.random() * 0.15 > 0.6) {
+          const tribe = tribeMembers.find(t => t.members.includes(name));
+          const target = tribe?.members.find(m => m !== name && pStats(m).temperament <= 5);
+          if (target) return { talker: name, target };
+        }
+      }
+      return null;
+    },
+    apply({ talker, target }) {
+      addBond(target, talker, 0.4);
+      const pr = pronouns(talker);
+      return { talker, target, pr, players: [talker, target],
+        text: `${talker} finds ${target} sitting alone, staring at the water. "Hey. You were solid out there. Don't let anyone tell you different." ${target} doesn't say anything. But ${pronouns(target).sub} sits up a little straighter.` };
+    },
+  },
+  {
+    id: 'challenge-replay',
+    badge: 'Replay Drama', badgeClass: 'orange',
+    check(tribeMembers, result) {
+      if (!result.surfData?.wipeoutOrder?.length) return null;
+      const all = tribeMembers.flatMap(t => t.members);
+      const blamer = all.find(n => pStats(n).temperament <= 5 || pStats(n).strategic >= 7);
+      const victim = result.surfData.wipeoutOrder[0];
+      if (blamer && victim && blamer !== victim) return { blamer, victim };
+      return null;
+    },
+    apply({ blamer, victim }) {
+      addBond(blamer, victim, -0.3);
+      addBond(victim, blamer, -0.3);
+      const pr = pronouns(blamer);
+      return { blamer, victim, pr, players: [blamer, victim],
+        text: `${blamer} replays the surf phase out loud. "You KNOW who cost us that round, right?" ${pr.Sub} looks directly at ${victim}. ${victim} looks at the ground. The tribe pretends not to hear.` };
+    },
+  },
+  {
+    id: 'confessional-moment',
+    badge: 'Confessional', badgeClass: 'orange',
+    check(tribeMembers) {
+      const all = tribeMembers.flatMap(t => t.members);
+      const candidate = all[Math.floor(Math.random() * all.length)];
+      return { player: candidate };
+    },
+    apply({ player }) {
+      const s = pStats(player);
+      const arch = players.find(p => p.name === player)?.archetype || '';
+      const pr = pronouns(player);
+      const confessionals = [
+        `${player} in confessional: "Everyone thinks I'm just here to have fun. I'm not. I'm here to win. And if that means getting sand in my eyes for three hours? So be it."`,
+        `${player} in confessional: "I'm watching everyone during this break. Who talks to who. Who avoids who. This is when the REAL game happens."`,
+        `${player} in confessional: "That surfing round almost killed me. But I'm still here. And now they all know I don't quit easy."`,
+        `${player} in confessional: "${pr.Sub} ${pr.sub === 'they' ? 'think' : 'thinks'} ${pr.sub === 'they' ? 'they\'re' : 'I\'m'} safe right now? Nobody is safe. I've got a plan and it involves exactly zero of these people."`,
+        `${player} in confessional: "The beach is nice. The water is warm. The people are terrible. Standard day in paradise."`,
+      ];
+      return { player, pr, players: [player], text: confessionals[Math.floor(Math.random() * confessionals.length)] };
+    },
+  },
 ];
 
 function _simulateHalftime(ep, tribeMembers, result) {
@@ -1132,16 +1273,23 @@ function _simulateHalftime(ep, tribeMembers, result) {
   if (!ep.campEvents[campKey].post) ep.campEvents[campKey].post = [];
 
   const events = [];
-  const shuffled = [...HALFTIME_EVENTS].sort(() => Math.random() - 0.5);
-  const count = 2 + (Math.random() < 0.4 ? 1 : 0);
+  const count = 5 + Math.floor(Math.random() * 4);
   let fired = 0;
+  const usedPlayers = new Set();
 
-  for (const evt of shuffled) {
-    if (fired >= count) break;
-    const match = evt.check(tribeMembers, result);
-    if (!match) continue;
-    const data = evt.apply(match, tribeMembers);
-    if (!data) continue;
+  // Multiple passes through the event pool until we hit the target count
+  for (let pass = 0; pass < 4 && fired < count; pass++) {
+    const shuffled = [...HALFTIME_EVENTS].sort(() => Math.random() - 0.5);
+    for (const evt of shuffled) {
+      if (fired >= count) break;
+      const match = evt.check(tribeMembers, result);
+      if (!match) continue;
+      // Avoid same player starring in consecutive events
+      const matchPlayers = Object.values(match).filter(v => typeof v === 'string' && gs.activePlayers?.includes(v));
+      if (matchPlayers.length && matchPlayers.every(p => usedPlayers.has(p))) continue;
+      const data = evt.apply(match, tribeMembers);
+      if (!data) continue;
+      matchPlayers.forEach(p => usedPlayers.add(p));
     data.eventId = evt.id;
     data.badge = evt.badge;
     data.badgeClass = evt.badgeClass;
@@ -1167,6 +1315,7 @@ function _simulateHalftime(ep, tribeMembers, result) {
     });
 
     fired++;
+    }
   }
 
   result.halftimeEvents = events;
@@ -1515,11 +1664,17 @@ export function simulateBeachBlanketBogus(ep) {
   _simulateSurf(ep, tribeMembers, result);
   result.phases.push('surf');
 
+  // --- BEACH BREAK (always fires between surf and sandcastle, 6-8 events) ---
+  _simulateHalftime(ep, tribeMembers, result);
+  result.beachBreakEvents = result.halftimeEvents;
+  result.halftimeEvents = null;
+  result.phases.push('beachBreak');
+
   // --- SANDCASTLE PHASE ---
   _simulateSandcastle(ep, tribeMembers, result);
   result.phases.push('sandcastle');
 
-  // --- Check for tie at top → halftime + dance-off between tied leaders ---
+  // --- Check for tie at top → pre-danceoff drama + dance-off between tied leaders ---
   const sortedScores = Object.entries(result.tribeScores).sort((a, b) => b[1] - a[1]);
   const topScore = sortedScores[0][1];
   const tiedAtTop = sortedScores.filter(([_, s]) => s === topScore);
@@ -1662,7 +1817,7 @@ export function simulateBeachBlanketBogus(ep) {
     danceOffFired: !!result.danceOff,
     danceWinner: result.danceOff?.winner || null,
     finalScores: result.tribeScores,
-    surfAvgs: result.surfData?.tribeAvgs,
+    surfBest: result.surfData?.tribeBest,
     buildScores: result.sandcastleData?.buildScores,
     materials: result.sandcastleData?.materials,
     wipeoutOrder: result.surfData?.wipeoutOrder,
@@ -1703,6 +1858,13 @@ export function _textBeachBlanketBogus(ep, ln, sec) {
     ln(`${surfWinner} takes the surf phase!`);
   }
 
+  // --- BEACH BREAK (always fires between surf and sandcastle) ---
+  if (bbb.beachBreakEvents && bbb.beachBreakEvents.length > 0) {
+    sec('BEACH BREAK');
+    ln('"Take five, people! Chris heads to the snack table while the tribes regroup."');
+    for (const evt of bbb.beachBreakEvents) ln(evt.text);
+  }
+
   // --- SANDCASTLE PHASE ---
   if (bbb.sandcastleData) {
     sec('PHASE 2 — CASTLE CONSTRUCTION');
@@ -1725,10 +1887,10 @@ export function _textBeachBlanketBogus(ep, ln, sec) {
     ln(`Chris inspects the castles... "${castleWinner}'s castle is CLEARLY superior! Point to ${castleWinner}!"`);
   }
 
-  // --- HALFTIME DRAMA ---
+  // --- PRE-DANCEOFF DRAMA (only fires on tie) ---
   if (bbb.halftimeEvents && bbb.halftimeEvents.length > 0) {
-    sec('HALFTIME — BEACH BREAK');
-    ln('"We\'re tied up! Take a breather, people. Halftime!"');
+    sec('HALFTIME — TIEBREAKER TENSION');
+    ln('"We\'re tied up! The tension is THICK. One more challenge to settle this!"');
     for (const evt of bbb.halftimeEvents) ln(evt.text);
   }
 
@@ -1787,7 +1949,7 @@ function _bbbShell(content, ep) {
   --bbb-navy:#1b2838;--bbb-gold:#d4a020;--bbb-cream:#fff8e7;
   font-family:'Inter',sans-serif;color:var(--bbb-navy);
   background:linear-gradient(180deg,#ff6b35 0%,#f7931e 12%,#ffd700 26%,#87CEEB 48%,#0d6986 72%,#0a3d5c 100%);
-  padding:0;max-width:1100px;margin:0 auto;position:relative;min-height:400px;overflow:hidden;
+  padding:0;max-width:1100px;margin:0 auto;position:relative;min-height:400px;
 }
 
 /* ── Film grain overlay ── */
@@ -1805,7 +1967,7 @@ function _bbbShell(content, ep) {
 /* ── Layout: feed + sidebar ── */
 .bbb-layout{display:flex;gap:14px;align-items:flex-start;padding:14px;position:relative;z-index:6}
 .bbb-feed{flex:1;min-width:0}
-.bbb-sidebar{width:260px;flex-shrink:0;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow-y:auto;
+.bbb-sidebar{width:260px;flex-shrink:0;position:sticky;top:60px;max-height:calc(100vh - 80px);overflow-y:auto;align-self:flex-start;
   scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.15) transparent;
   background:rgba(0,0,0,0.25);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:12px}
@@ -2324,51 +2486,37 @@ export function rpBuildBeachBlanketBogusSurf(ep) {
       }
     }
 
-    // Survivors group step
-    if (survivors.length > 0) {
-      const survivorCards = survivors.map(r => {
+    // Per-tribe surfer results — grouped by tribe, each surfer gets individual narrative
+    for (const tribe of tribeMembers) {
+      const tribeResults = round.results.filter(r => tribe.members.includes(r.name));
+      if (!tribeResults.length) continue;
+      const tribeCards = tribeResults.map(r => {
         const balPct = Math.round(r.balance);
         const balCls = balPct > 50 ? 'high' : balPct > 25 ? 'mid' : 'low';
-        return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
-          ${_bbbPortrait(r.name, 28)}
+        const statusBadge = r.status === 'wipeout' ? `<span style="color:#e85d3a;font-weight:700;font-size:9px;letter-spacing:1px;">WIPEOUT</span>`
+          : r.status === 'struggle' ? `<span style="color:#d4a020;font-weight:700;font-size:9px;letter-spacing:1px;">STRUGGLING</span>`
+          : `<span style="color:#4ade80;font-weight:700;font-size:9px;letter-spacing:1px;">STEADY</span>`;
+        return `<div style="display:flex;align-items:flex-start;gap:8px;margin:6px 0;${r.status === 'wipeout' ? 'opacity:0.5;' : ''}">
+          ${_bbbPortrait(r.name, 32)}
           <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;color:rgba(255,255,255,0.85);font-weight:600;">${r.name}</div>
-            <div class="bbb-balance-bar"><div class="bbb-balance-fill ${balCls}" style="width:${balPct}%"></div></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+              <span style="font-size:12px;color:rgba(255,255,255,0.9);font-weight:600;">${r.name}</span>
+              ${statusBadge}
+            </div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.55);line-height:1.4;margin-bottom:4px;">${r.text}</div>
+            ${r.status !== 'wipeout' ? `<div style="display:flex;align-items:center;gap:6px;">
+              <div class="bbb-balance-bar" style="flex:1"><div class="bbb-balance-fill ${balCls}" style="width:${balPct}%"></div></div>
+              <span style="font-size:9px;color:rgba(255,255,255,0.4);">${balPct}%</span>
+            </div>` : ''}
           </div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.5);">${balPct}%</div>
         </div>`;
       }).join('');
-      pushStep({ html: `<div class="bbb-ev positive">
-        <div style="flex:1"><div class="bbb-ev-badge gold">POWERING THROUGH</div>
-        <div class="bbb-ev-text">${survivors.map(r => r.name).join(', ')} ${survivors.length === 1 ? 'handles' : 'handle'} the ${round.name.toLowerCase()} without missing a beat.</div>
-        <div style="margin-top:8px;">${survivorCards}</div></div>
-      </div>` });
-    }
-
-    // Struggle steps
-    for (const r of struggles) {
-      const balPct = Math.round(r.balance);
-      const balCls = balPct > 50 ? 'high' : balPct > 25 ? 'mid' : 'low';
-      pushStep({ html: `<div class="bbb-ev">
-        <div class="bbb-ev-port">${_bbbPortrait(r.name, 44)}</div>
-        <div style="flex:1"><div class="bbb-ev-badge orange">STRUGGLING</div>
-        <div class="bbb-ev-text">${r.text}</div>
-        <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
-          <div class="bbb-balance-bar" style="flex:1"><div class="bbb-balance-fill ${balCls}" style="width:${balPct}%"></div></div>
-          <span style="font-size:10px;color:rgba(255,255,255,0.5);">${balPct}%</span>
-        </div></div>
-      </div>` });
-    }
-
-    // Wipeout steps (splash card)
-    for (const r of wipeouts) {
-      pushStep({ sfx: 'splash', html: `<div class="bbb-wipeout">
-        <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:1;">
-          <div class="bbb-ev-port">${_bbbPortrait(r.name, 52)}</div>
-          <div>
-            <div class="bbb-wipeout-name">&#x1F4A5; WIPEOUT &mdash; ${r.name.toUpperCase()}</div>
-            <div class="bbb-ev-text" style="margin-top:4px;">${r.text}</div>
-          </div>
+      const tribeWipeouts = tribeResults.filter(r => r.status === 'wipeout');
+      const sfx = tribeWipeouts.length > 0 ? 'splash' : undefined;
+      pushStep({ sfx, html: `<div class="bbb-ev" style="border-left-color:${tribe === tribeMembers[0] ? 'var(--bbb-coral)' : tribe === tribeMembers[1] ? 'var(--bbb-teal)' : 'var(--bbb-gold)'};">
+        <div style="flex:1">
+          <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;">${tribe.name}</div>
+          ${tribeCards}
         </div>
       </div>` });
     }
@@ -2388,6 +2536,16 @@ export function rpBuildBeachBlanketBogusSurf(ep) {
       }
       if (evt.balanceDrain && evt.target && liveState.balances[evt.target] !== undefined) {
         liveState.balances[evt.target] = Math.max(0, liveState.balances[evt.target] - evt.balanceDrain);
+      }
+      if (evt.balanceLoss && evt.victim && liveState.balances[evt.victim] !== undefined) {
+        liveState.balances[evt.victim] = Math.max(0, liveState.balances[evt.victim] - evt.balanceLoss);
+      }
+      // If any player's balance hit 0 from an event, move them to wipedOut
+      for (const pName of [...liveState.activeSurfers]) {
+        if (liveState.balances[pName] <= 0 && !liveState.wipedOut.includes(pName)) {
+          liveState.activeSurfers = liveState.activeSurfers.filter(n => n !== pName);
+          liveState.wipedOut.push(pName);
+        }
       }
 
       const mainPlayer = evt.actor || evt.hero || evt.surfer || evt.taunter || evt.splasher || evt.savior || evt.victim || '';
@@ -2428,6 +2586,8 @@ export function rpBuildBeachBlanketBogusSurf(ep) {
 
   // Store step states on bbb for the reveal function
   bbb._surfStepStates = steps.map(s => s.stateJson);
+  if (!window._bbbCache) window._bbbCache = {};
+  window._bbbCache[stateKey] = { stepStates: bbb._surfStepStates, tribeMembers };
 
   const state = _tvState[stateKey];
 
@@ -2567,18 +2727,24 @@ function _bbbSurfSidebarFromState(state, tribeMembers) {
    ═══════════════════════════════════════════════════════ */
 
 function _bbbUpdateSidebar(stateKey, stepIdx) {
-  const epHistory = gs.episodeHistory || [];
-  let bbb = null;
-  for (const ep of epHistory) {
-    if (ep.beachBlanketBogus && String(ep.num || 0) + '_bbbSurf' === stateKey) {
-      bbb = ep.beachBlanketBogus;
-      break;
+  // Try window cache first (set during rpBuild), then fall back to episodeHistory
+  const cache = window._bbbCache?.[stateKey];
+  let stepStates = cache?.stepStates;
+  let tribeMembers = cache?.tribeMembers;
+
+  if (!stepStates) {
+    const epHistory = gs.episodeHistory || [];
+    for (const ep of epHistory) {
+      if (ep.beachBlanketBogus && String(ep.num || 0) + '_bbbSurf' === stateKey) {
+        stepStates = ep.beachBlanketBogus._surfStepStates;
+        break;
+      }
     }
   }
-  if (!bbb || !bbb._surfStepStates || !bbb._surfStepStates[stepIdx]) return;
+  if (!stepStates || !stepStates[stepIdx]) return;
+  if (!tribeMembers) tribeMembers = gs.tribes ? gs.tribes.map(t => ({ name: t.name, members: [...t.members] })) : [];
 
-  const state = JSON.parse(bbb._surfStepStates[stepIdx]);
-  const tribeMembers = gs.tribes ? gs.tribes.map(t => ({ name: t.name, members: [...t.members] })) : [];
+  const state = JSON.parse(stepStates[stepIdx]);
 
   // Update sidebar
   const sidebar = document.getElementById(`bbb-sidebar-${stateKey}`);
@@ -3041,21 +3207,27 @@ export function rpBuildBeachBlanketBogusSandcastle(ep) {
    VP — Halftime Drama (golden hour sunset)
    ═══════════════════════════════════════════════════════ */
 
-export function rpBuildBeachBlanketBogusHalftime(ep) {
+export function rpBuildBeachBlanketBogusHalftime(ep, mode = 'halftime') {
   const bbb = ep.beachBlanketBogus;
-  if (!bbb || !bbb.halftimeEvents) return '';
-  const events = bbb.halftimeEvents;
+  const events = mode === 'beachBreak' ? bbb?.beachBreakEvents : bbb?.halftimeEvents;
+  if (!events?.length) return '';
   const _tvState = window._tvState || (window._tvState = {});
-  const stateKey = String(ep.num || 0) + '_bbbHalf';
+  const stateKey = String(ep.num || 0) + '_bbb' + (mode === 'beachBreak' ? 'Break' : 'Half');
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
+
+  const isBreak = mode === 'beachBreak';
+  const title = isBreak ? 'BEACH BREAK' : 'TIEBREAKER TENSION';
+  const subtitle = isBreak
+    ? '"Take five, campers! Hydrate, strategize, scheme... you know the drill."'
+    : '"We\'re TIED! Things are about to get heated. One more challenge decides it ALL!"';
 
   const steps = [];
 
   // Opening card
   steps.push(`<div class="bbb-half-ev strategy" style="text-align:center;justify-content:center;">
-    <div style="flex:1"><div class="bbb-ev-badge gold">BEACH BREAK</div>
-    <div class="bbb-ev-text">"Take five, campers! Hydrate, strategize, scheme... you know the drill."</div></div>
+    <div style="flex:1"><div class="bbb-ev-badge gold">${title}</div>
+    <div class="bbb-ev-text">${subtitle}</div></div>
   </div>`);
 
   // Each halftime event

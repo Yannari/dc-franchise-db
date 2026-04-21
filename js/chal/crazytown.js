@@ -1455,9 +1455,368 @@ export function _textCrazytown(ep, ln, sec) {
   ln('The teams saddle up for a rootin\'-tootin\' Western showdown.');
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// VP SHELL — Spaghetti Western CSS + helpers
+// ═══════════════════════════════════════════════════════════════════════════
+
+function _ctShell(content, ep) {
+  return `
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;600;700;900&display=swap');
+
+/* ── Theme tokens ── */
+.ct-shell{
+  --ct-sepia:#d4a574;--ct-leather:#8b4513;--ct-dust:#c4a882;
+  --ct-blood:#8b0000;--ct-gold:#daa520;--ct-iron:#4a4a4a;
+  --ct-wanted:#f5e6c8;--ct-chalk:#e8e8e8;--ct-wood:#654321;
+  --ct-neon-green:#39ff14;--ct-neon-red:#ff073a;--ct-neon-gold:#ffd700;
+  --ct-parchment:#f4e4c1;--ct-ink:#2b1810;
+  font-family:'Inter',sans-serif;color:var(--ct-ink);
+  background:linear-gradient(180deg,#d4a574 0%,#a0724a 20%,#654321 50%,#2d1810 85%,#1a0e08 100%);
+  padding:0;max-width:1100px;margin:0 auto;position:relative;min-height:400px;
+  overflow:hidden;border:3px solid #3d200b;box-shadow:inset 0 0 60px rgba(0,0,0,0.4),0 0 30px rgba(0,0,0,0.5);
+}
+
+/* ── Film grain overlay ── */
+.ct-shell::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity:.06;pointer-events:none;z-index:5;animation:ct-grain 0.5s steps(6) infinite;
+  mix-blend-mode:overlay;filter:sepia(0.3)}
+
+/* ── Projector flicker ── */
+.ct-shell::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:transparent;pointer-events:none;z-index:4;animation:ct-flicker 4s linear infinite}
+
+/* ── Header — weathered wood plank ── */
+.ct-header{background:linear-gradient(180deg,#3d200b 0%,#2a1508 50%,#1e0f05 100%);
+  padding:16px 20px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:3px solid var(--ct-gold);position:relative;z-index:6;
+  box-shadow:inset 0 -2px 8px rgba(0,0,0,0.5),0 2px 10px rgba(0,0,0,0.4)}
+.ct-title{font-family:'Rye',serif;font-size:18px;color:var(--ct-gold);
+  text-shadow:2px 2px 0 var(--ct-blood),4px 4px 0 rgba(0,0,0,0.4);letter-spacing:3px}
+.ct-subtitle{font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:4px;text-transform:uppercase;margin-top:2px}
+
+/* ── Layout ── */
+.ct-layout{display:flex;gap:14px;align-items:flex-start;padding:14px;position:relative;z-index:6}
+.ct-feed{flex:1;min-width:0}
+.ct-sidebar{width:260px;flex-shrink:0;position:sticky;top:60px;max-height:calc(100vh - 80px);overflow-y:auto;align-self:flex-start;
+  scrollbar-width:thin;scrollbar-color:rgba(218,165,32,0.25) transparent;
+  background:linear-gradient(180deg,rgba(59,27,10,0.85),rgba(30,15,5,0.9));
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(218,165,32,0.15);border-radius:4px;padding:12px;
+  box-shadow:inset 0 0 20px rgba(0,0,0,0.3)}
+
+/* ── HUD — chalk scoreboard ── */
+.ct-hud{display:flex;gap:2px;margin:0 14px 2px;position:relative;z-index:6}
+.ct-hud-cell{flex:1;background:rgba(0,0,0,0.45);border:1px solid rgba(218,165,32,0.12);
+  padding:8px 4px;text-align:center}
+.ct-hud-cell:first-child{border-radius:4px 0 0 4px}.ct-hud-cell:last-child{border-radius:0 4px 4px 0}
+.ct-hud-val{font-family:'Rye',serif;font-size:18px;font-weight:700;color:var(--ct-chalk);
+  text-shadow:0 0 8px rgba(232,232,232,0.3),0 0 20px rgba(232,232,232,0.1)}
+.ct-hud-lbl{font-size:7px;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-top:2px;text-transform:uppercase}
+
+/* ── Event cards — parchment with torn edges ── */
+.ct-ev{background:linear-gradient(135deg,rgba(244,228,193,0.12),rgba(196,168,130,0.08));
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1px solid rgba(218,165,32,0.1);border-left:3px solid var(--ct-gold);
+  padding:12px 14px;margin-bottom:5px;display:flex;align-items:flex-start;gap:12px;
+  border-radius:3px;animation:ct-fade-up 0.4s ease-out;position:relative}
+.ct-ev::after{content:'';position:absolute;top:0;right:0;bottom:0;width:6px;
+  background:linear-gradient(180deg,transparent 0%,rgba(139,69,19,0.1) 15%,transparent 30%,
+  rgba(139,69,19,0.08) 50%,transparent 65%,rgba(139,69,19,0.12) 80%,transparent 100%);
+  pointer-events:none}
+.ct-ev.negative{border-left-color:var(--ct-blood)}
+.ct-ev.positive{border-left-color:var(--ct-gold)}
+.ct-ev.showmance{border-left-color:#c2185b}
+.ct-ev.round-header{border-left-color:var(--ct-leather);
+  background:linear-gradient(135deg,rgba(139,69,19,0.2),rgba(101,67,33,0.15));
+  font-family:'Rye',serif}
+.ct-ev-badge{display:inline-block;font-family:'Rye',serif;font-size:7px;letter-spacing:2px;
+  padding:2px 8px;border-radius:2px;margin-bottom:4px;text-transform:uppercase;
+  background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7)}
+.ct-ev-badge.gold{background:rgba(218,165,32,0.2);color:var(--ct-gold)}
+.ct-ev-badge.red{background:rgba(139,0,0,0.25);color:#e53935}
+.ct-ev-badge.teal{background:rgba(57,255,20,0.1);color:var(--ct-neon-green)}
+.ct-ev-badge.blue{background:rgba(33,150,243,0.15);color:#64b5f6}
+.ct-ev-badge.orange{background:rgba(255,152,0,0.15);color:#ffb74d}
+.ct-ev-badge.pink{background:rgba(194,24,91,0.15);color:#f48fb1}
+.ct-ev-badge.gray{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4)}
+.ct-ev-badge.purple{background:rgba(156,39,176,0.15);color:#ce93d8}
+.ct-ev-badge.green{background:rgba(57,255,20,0.1);color:#81c784}
+.ct-ev-text{font-size:13px;line-height:1.7;color:rgba(255,255,255,0.85)}
+.ct-ev-port{width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;border:2px solid rgba(139,69,19,0.5)}
+.ct-ev-port img{width:44px;height:44px;border-radius:50%;object-fit:cover;filter:sepia(0.2)}
+
+/* ═══ WANTED POSTER PORTRAITS ═══ */
+.ct-portrait{display:inline-block;text-align:center;position:relative;
+  background:linear-gradient(135deg,var(--ct-wanted),#e8d5a8);
+  border:4px solid var(--ct-wood);border-radius:2px;padding:8px 6px 4px;
+  box-shadow:3px 3px 10px rgba(0,0,0,0.5),inset 0 0 15px rgba(139,69,19,0.15)}
+.ct-portrait::before{content:'WANTED';display:block;font-family:'Rye',serif;font-size:8px;
+  letter-spacing:4px;color:var(--ct-blood);margin-bottom:4px;text-align:center;
+  text-shadow:0 1px 0 rgba(0,0,0,0.1)}
+.ct-portrait img{display:block;margin:0 auto 4px;border-radius:2px;
+  border:2px solid var(--ct-leather);filter:sepia(0.35) contrast(1.1);
+  box-shadow:inset 0 0 8px rgba(0,0,0,0.3)}
+.ct-portrait-name{font-family:'Rye',serif;font-size:8px;letter-spacing:1px;color:var(--ct-ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.ct-portrait[data-bounty]::after{content:'$' attr(data-bounty);display:block;font-family:'Rye',serif;
+  font-size:7px;color:var(--ct-blood);letter-spacing:1px;margin-top:2px}
+
+/* DEAD stamp */
+.ct-portrait.dead img{filter:grayscale(1) sepia(0.2) contrast(0.8)}
+.ct-portrait.dead::after{content:'DEAD';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) rotate(-15deg);font-family:'Rye',serif;font-size:18px;
+  letter-spacing:4px;color:rgba(139,0,0,0.8);text-shadow:0 0 4px rgba(139,0,0,0.3);
+  animation:ct-stamp 0.4s ease-out both;pointer-events:none;z-index:2;
+  border:3px solid rgba(139,0,0,0.6);padding:2px 8px;border-radius:3px}
+
+/* CHICKEN stamp */
+.ct-portrait.chicken img{filter:sepia(0.4) saturate(0.7)}
+.ct-portrait.chicken::after{content:'CHICKEN';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) rotate(-12deg);font-family:'Rye',serif;font-size:14px;
+  letter-spacing:3px;color:rgba(218,165,32,0.9);text-shadow:0 0 4px rgba(218,165,32,0.3);
+  animation:ct-stamp 0.4s ease-out both;pointer-events:none;z-index:2;
+  border:3px solid rgba(218,165,32,0.6);padding:2px 6px;border-radius:3px}
+
+/* ═══ NEON BADGES — the wow factor ═══ */
+.ct-badge-neon{display:inline-block;font-family:'Rye',serif;font-size:9px;letter-spacing:3px;
+  text-transform:uppercase;padding:4px 12px;border-radius:4px;position:relative;
+  background:rgba(0,0,0,0.6);border:1px solid currentColor;
+  animation:ct-neon-flicker 4s ease-in-out infinite}
+.ct-badge-neon.gold{color:var(--ct-neon-gold);
+  text-shadow:0 0 7px var(--ct-neon-gold),0 0 15px var(--ct-neon-gold),0 0 30px var(--ct-neon-gold),0 0 50px rgba(255,215,0,0.4);
+  box-shadow:inset 0 0 10px rgba(255,215,0,0.1),0 0 15px rgba(255,215,0,0.2)}
+.ct-badge-neon.chicken,.ct-badge-neon.red{color:var(--ct-neon-red);
+  text-shadow:0 0 7px var(--ct-neon-red),0 0 15px var(--ct-neon-red),0 0 30px var(--ct-neon-red),0 0 50px rgba(255,7,58,0.4);
+  box-shadow:inset 0 0 10px rgba(255,7,58,0.1),0 0 15px rgba(255,7,58,0.2)}
+.ct-badge-neon.gunslinger{color:var(--ct-neon-gold);
+  text-shadow:0 0 7px var(--ct-neon-gold),0 0 15px var(--ct-neon-gold),0 0 30px var(--ct-neon-gold),0 0 60px rgba(255,215,0,0.5);
+  box-shadow:inset 0 0 12px rgba(255,215,0,0.15),0 0 20px rgba(255,215,0,0.3);
+  animation:ct-neon-flicker 4s ease-in-out infinite,ct-neon-glow 2s ease-in-out infinite}
+.ct-badge-neon.sheriff{color:var(--ct-neon-green);
+  text-shadow:0 0 7px var(--ct-neon-green),0 0 15px var(--ct-neon-green),0 0 30px var(--ct-neon-green),0 0 50px rgba(57,255,20,0.4);
+  box-shadow:inset 0 0 10px rgba(57,255,20,0.1),0 0 15px rgba(57,255,20,0.2)}
+.ct-badge-neon.outlaw{color:var(--ct-neon-red);
+  text-shadow:0 0 7px var(--ct-neon-red),0 0 15px var(--ct-neon-red),0 0 40px var(--ct-neon-red),0 0 60px rgba(255,7,58,0.5);
+  box-shadow:inset 0 0 14px rgba(255,7,58,0.15),0 0 20px rgba(255,7,58,0.3);
+  animation:ct-neon-flicker 2s ease-in-out infinite}
+
+/* ═══ SALOON DOORS ═══ */
+.ct-saloon-door{perspective:800px;display:flex;width:100%;overflow:hidden;position:relative;min-height:60px}
+.ct-saloon-door .ct-door-left,.ct-saloon-door .ct-door-right{
+  width:50%;background:linear-gradient(180deg,#5c3310,#3d200b);
+  border:2px solid #7a4a1e;position:relative;z-index:2;
+  box-shadow:inset 0 0 20px rgba(0,0,0,0.4);transform-origin:left center;
+  transition:transform 0.8s cubic-bezier(0.34,1.56,0.64,1)}
+.ct-saloon-door .ct-door-right{transform-origin:right center}
+.ct-saloon-door .ct-door-left::after,.ct-saloon-door .ct-door-right::after{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:12px;height:12px;border-radius:50%;background:var(--ct-gold);
+  box-shadow:0 0 8px rgba(218,165,32,0.4)}
+.ct-saloon-door.open .ct-door-left{transform:rotateY(-85deg)}
+.ct-saloon-door.open .ct-door-right{transform:rotateY(85deg)}
+.ct-saloon-reveal{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1;
+  display:flex;align-items:center;justify-content:center;padding:12px}
+
+/* ═══ POKER CARDS ═══ */
+.ct-poker-card{width:80px;height:112px;position:relative;perspective:600px;cursor:pointer;
+  display:inline-block;margin:4px;transition:transform 0.3s}
+.ct-poker-card:hover{transform:translateY(-4px)}
+.ct-poker-card .ct-card-inner{position:relative;width:100%;height:100%;
+  transition:transform 0.6s cubic-bezier(0.4,0,0.2,1);transform-style:preserve-3d}
+.ct-poker-card.flipped .ct-card-inner{transform:rotateY(180deg)}
+.ct-poker-card .ct-card-front,.ct-poker-card .ct-card-back{
+  position:absolute;top:0;left:0;width:100%;height:100%;backface-visibility:hidden;
+  border-radius:6px;overflow:hidden;border:2px solid rgba(218,165,32,0.3)}
+.ct-poker-card .ct-card-back{background:linear-gradient(135deg,#5c3310,#3d200b);
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+  box-shadow:inset 0 0 15px rgba(0,0,0,0.4),0 2px 8px rgba(0,0,0,0.3)}
+.ct-poker-card .ct-card-back::before{content:'';position:absolute;top:6px;left:6px;right:6px;bottom:6px;
+  border:1px solid rgba(218,165,32,0.2);border-radius:3px;
+  background:repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(218,165,32,0.05) 4px,rgba(218,165,32,0.05) 8px)}
+.ct-poker-card .ct-card-front{background:var(--ct-parchment);transform:rotateY(180deg);
+  padding:6px;font-size:10px;color:var(--ct-ink);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  box-shadow:inset 0 0 10px rgba(139,69,19,0.1),0 2px 8px rgba(0,0,0,0.3)}
+.ct-poker-card.dealing{animation:ct-card-deal 0.5s ease-out both}
+
+/* ═══ CHALK SCOREBOARD ═══ */
+.ct-chalk-board{background:linear-gradient(135deg,#1a2a1a,#0d1a0d,#1a2a1a);
+  border:3px solid #3d200b;border-radius:4px;padding:12px;position:relative;
+  box-shadow:inset 0 0 30px rgba(0,0,0,0.5)}
+.ct-chalk-board::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+  opacity:.03;pointer-events:none;mix-blend-mode:overlay;border-radius:2px}
+.ct-chalk-num{display:inline-block;font-family:'Rye',serif;font-size:24px;color:var(--ct-chalk);
+  text-shadow:0 0 6px rgba(232,232,232,0.2);padding:0 3px;
+  animation:ct-chalk-flip 0.4s ease-out}
+
+/* ═══ AMBIENT — tumbleweed ═══ */
+.ct-tumbleweed{position:absolute;z-index:3;pointer-events:none;font-size:20px;
+  animation:ct-tumbleweed 14s linear infinite;opacity:0.5}
+
+/* ═══ AMBIENT — dust motes ═══ */
+.ct-dust-mote{position:absolute;width:3px;height:3px;border-radius:50%;
+  background:rgba(212,165,116,0.4);z-index:3;pointer-events:none;
+  animation:ct-dust-float 6s ease-in-out infinite}
+
+/* ═══ CONTROLS ═══ */
+.ct-btn-next{padding:10px 28px;
+  background:linear-gradient(135deg,var(--ct-leather),var(--ct-wood));
+  color:var(--ct-gold);border:2px solid rgba(218,165,32,0.3);border-radius:4px;cursor:pointer;
+  font-family:'Rye',serif;font-size:12px;letter-spacing:3px;
+  box-shadow:0 4px 15px rgba(101,67,33,0.5),inset 0 1px 0 rgba(255,255,255,0.1);
+  transition:transform 0.15s,box-shadow 0.15s;text-transform:uppercase}
+.ct-btn-next:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(101,67,33,0.6),inset 0 1px 0 rgba(255,255,255,0.15)}
+.ct-btn-all{padding:8px 18px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.45);
+  border:1px solid rgba(255,255,255,0.1);border-radius:4px;cursor:pointer;font-size:11px;
+  transition:background 0.15s}
+.ct-btn-all:hover{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7)}
+.ct-controls{display:flex;gap:8px;justify-content:center;padding:16px 0;position:relative;z-index:6}
+
+/* ── Sidebar sections ── */
+.ct-side-sec{font-family:'Rye',serif;font-size:8px;letter-spacing:3px;
+  color:rgba(218,165,32,0.4);border-bottom:1px solid rgba(218,165,32,0.1);
+  padding-bottom:3px;margin:12px 0 6px;text-transform:uppercase}
+
+/* ═══ KEYFRAMES ═══ */
+@keyframes ct-grain{
+  0%{transform:translate(0,0)}16%{transform:translate(-2px,1px)}
+  33%{transform:translate(1px,-1px)}50%{transform:translate(-1px,2px)}
+  66%{transform:translate(2px,-1px)}83%{transform:translate(-2px,-1px)}
+  100%{transform:translate(0,0)}}
+@keyframes ct-flicker{
+  0%{opacity:1}25%{opacity:0.97}50%{opacity:1}75%{opacity:0.96}100%{opacity:1}}
+@keyframes ct-neon-flicker{
+  0%{opacity:1}5%{opacity:0.8}10%{opacity:1}15%{opacity:0.9}20%{opacity:1}100%{opacity:1}}
+@keyframes ct-neon-glow{
+  0%,100%{filter:brightness(1)}50%{filter:brightness(1.3)}}
+@keyframes ct-tumbleweed{
+  0%{left:-60px;opacity:0;transform:rotate(0deg)}
+  8%{opacity:0.5}85%{opacity:0.5}
+  100%{left:calc(100% + 60px);opacity:0;transform:rotate(720deg)}}
+@keyframes ct-dust-float{
+  0%{opacity:0;transform:translate(0,0)}
+  20%{opacity:0.6}50%{opacity:0.4;transform:translate(var(--dx,2px),var(--dy,-15px))}
+  80%{opacity:0.2}100%{opacity:0;transform:translate(calc(var(--dx,2px)*2),calc(var(--dy,-15px)*1.5))}}
+@keyframes ct-saloon-swing{
+  0%{transform:rotateY(90deg)}40%{transform:rotateY(-10deg)}70%{transform:rotateY(5deg)}100%{transform:rotateY(0deg)}}
+@keyframes ct-card-deal{
+  0%{transform:translateY(-80px) rotate(-5deg);opacity:0}
+  60%{transform:translateY(4px) rotate(1deg);opacity:1}
+  100%{transform:translateY(0) rotate(0deg);opacity:1}}
+@keyframes ct-card-flip{0%{transform:rotateY(0deg)}100%{transform:rotateY(180deg)}}
+@keyframes ct-fade-up{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes ct-stamp{
+  0%{transform:translate(-50%,-50%) rotate(-15deg) scale(3);opacity:0}
+  70%{transform:translate(-50%,-50%) rotate(-15deg) scale(0.95);opacity:1}
+  100%{transform:translate(-50%,-50%) rotate(-15deg) scale(1);opacity:1}}
+@keyframes ct-chalk-flip{
+  0%{transform:rotateX(0deg)}50%{transform:rotateX(-90deg)}100%{transform:rotateX(0deg)}}
+@keyframes ct-countdown{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
+@keyframes ct-eyes-narrow{0%{clip-path:inset(0)}100%{clip-path:inset(35% 0)}}
+@keyframes ct-heartbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes ct-lasso{0%{stroke-dashoffset:300}100%{stroke-dashoffset:0}}
+@keyframes ct-brand-sizzle{
+  0%{filter:brightness(1);box-shadow:none}
+  50%{filter:brightness(1.5);box-shadow:0 0 15px rgba(139,0,0,0.6)}
+  100%{filter:brightness(1);box-shadow:none}}
+
+/* ═══ prefers-reduced-motion ═══ */
+@media (prefers-reduced-motion:reduce){
+  .ct-shell::before,.ct-shell::after,.ct-tumbleweed,.ct-dust-mote{animation:none !important}
+  .ct-ev,.ct-poker-card,.ct-poker-card .ct-card-inner,.ct-badge-neon,
+  .ct-saloon-door .ct-door-left,.ct-saloon-door .ct-door-right,
+  .ct-chalk-num,.ct-portrait.dead::after,.ct-portrait.chicken::after{
+    animation:none !important;transition:none !important}
+  .ct-tumbleweed,.ct-dust-mote{display:none}
+}
+</style>
+<div class="ct-shell">
+  <div class="ct-header">
+    <div>
+      <div class="ct-title">3:10 TO CRAZYTOWN</div>
+      <div class="ct-subtitle">Dive &middot; Draw &middot; Rope</div>
+    </div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:2px;font-family:'Rye',serif;">EPISODE ${ep?.num || '?'}</div>
+  </div>
+  ${content}
+</div>`;
+}
+
+// ── VP helpers ─────────────────────────────────────────────────────────────
+
+function _ctPortrait(name, size = 64) {
+  const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  return `<div class="ct-portrait" style="width:${size}px">
+    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;border-radius:2px;">
+    <div class="ct-portrait-name">${name}</div>
+  </div>`;
+}
+
+function _ctNeonBadge(text, type = 'gold') {
+  return `<span class="ct-badge-neon ${type}">${text}</span>`;
+}
+
+function _ctChalkNum(num) {
+  return `<span class="ct-chalk-num">${num}</span>`;
+}
+
+function _ctPokerCard(content, id, faceDown = true) {
+  return `<div class="ct-poker-card ${faceDown ? '' : 'flipped'} dealing" data-card-id="${id}">
+    <div class="ct-card-inner">
+      <div class="ct-card-back"></div>
+      <div class="ct-card-front">${content}</div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Title Card
+// ═══════════════════════════════════════════════════════════════════════════
+
 export function rpBuildCrazytownTitleCard(ep) {
-  if (!ep.crazytown) return '';
-  return '<div style="padding:40px;text-align:center;color:#d4a574;font-family:serif;"><h1>🤠 3:10 TO CRAZYTOWN</h1><p>Title Card — Full VP coming soon</p></div>';
+  const ct = ep.crazytown;
+  if (!ct) return '';
+  const tribeNames = Object.keys(ct.tribeScores || {});
+  const allPlayers = gs.tribes ? gs.tribes.flatMap(t => t.members) : [];
+  const host = seasonConfig.host || 'Chris';
+
+  return _ctShell(`
+    <!-- Tumbleweed layer -->
+    <div class="ct-tumbleweed" style="top:20%">&#127806;</div>
+    <div class="ct-tumbleweed" style="top:60%;animation-delay:-5s;animation-duration:15s">&#127806;</div>
+    <div class="ct-tumbleweed" style="top:40%;animation-delay:-8s;animation-duration:18s;font-size:14px">&#127806;</div>
+
+    <!-- Dust motes -->
+    <div class="ct-dust-mote" style="left:15%;top:30%;--dx:3px;--dy:-20px"></div>
+    <div class="ct-dust-mote" style="left:45%;top:50%;--dx:-2px;--dy:-15px;animation-delay:-2s"></div>
+    <div class="ct-dust-mote" style="left:75%;top:25%;--dx:4px;--dy:-25px;animation-delay:-4s"></div>
+    <div class="ct-dust-mote" style="left:60%;top:70%;--dx:-3px;--dy:-18px;animation-delay:-1s"></div>
+    <div class="ct-dust-mote" style="left:30%;top:55%;--dx:2px;--dy:-22px;animation-delay:-3s"></div>
+    <div class="ct-dust-mote" style="left:85%;top:45%;--dx:-4px;--dy:-16px;animation-delay:-5s"></div>
+
+    <div style="text-align:center;padding:50px 20px 80px;position:relative;z-index:6;">
+      <div style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:4px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:12px;">${host} Presents</div>
+
+      <div style="font-family:'Rye',serif;font-size:42px;color:var(--ct-gold);text-shadow:3px 3px 0 var(--ct-blood),6px 6px 0 rgba(0,0,0,0.3);letter-spacing:4px;line-height:1.1;margin-bottom:6px;">3:10 TO<br>CRAZYTOWN</div>
+
+      <div style="font-family:'Rye',serif;font-size:14px;letter-spacing:6px;color:var(--ct-sepia);text-shadow:1px 1px 0 rgba(0,0,0,0.3);margin-bottom:20px;">DIVE &middot; DRAW &middot; ROPE</div>
+
+      <div style="display:inline-block;background:rgba(0,0,0,0.4);backdrop-filter:blur(8px);border:1px solid rgba(218,165,32,0.15);border-radius:8px;padding:14px 24px;margin-bottom:20px;">
+        <div style="font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:8px;">Today's Showdown</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.9);font-weight:700;">Horse Dive / Standoff / Roundup</div>
+      </div>
+
+      <div style="display:flex;gap:20px;justify-content:center;font-size:11px;color:rgba(255,255,255,0.5);flex-wrap:wrap;">
+        <span>&#129312; ${allPlayers.length} Contestants</span>
+        <span>&#128052; 3 Phases</span>
+        ${tribeNames.map(t => `<span>&#128681; ${t}</span>`).join('')}
+      </div>
+    </div>
+  `, ep);
 }
 
 export function crazytownRevealNext() {}

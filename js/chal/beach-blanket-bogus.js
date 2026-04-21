@@ -85,10 +85,9 @@ const SURF_EVENTS = [
     check(activeSurfers, tribeMembers) {
       if (!gs.showmances) return null;
       for (const sm of gs.showmances) {
-        const a = sm.pair[0], b = sm.pair[1];
-        if (!activeSurfers.includes(a) || !activeSurfers.includes(b)) continue;
-        const sameTribe = tribeMembers.some(t => t.members.includes(a) && t.members.includes(b));
-        if (!sameTribe) return { surfer: a, partner: b };
+        if (!activeSurfers.includes(sm.a) || !activeSurfers.includes(sm.b)) continue;
+        const sameTribe = tribeMembers.some(t => t.members.includes(sm.a) && t.members.includes(sm.b));
+        if (!sameTribe) return { surfer: sm.a, partner: sm.b };
       }
       return null;
     },
@@ -979,16 +978,16 @@ const HALFTIME_EVENTS = [
       // Check active showmances first
       if (gs.showmances) {
         for (const sm of gs.showmances) {
-          if (all.includes(sm.pair[0]) && all.includes(sm.pair[1]) && romanticCompat(sm.pair[0], sm.pair[1])) {
-            return { lover1: sm.pair[0], lover2: sm.pair[1], existing: true };
+          if (all.includes(sm.players[0]) && all.includes(sm.players[1]) && romanticCompat(sm.players[0], sm.players[1])) {
+            return { lover1: sm.players[0], lover2: sm.players[1], existing: true };
           }
         }
       }
       // Check sparks
       if (gs.romanticSparks) {
         for (const sp of gs.romanticSparks) {
-          if (all.includes(sp.pair[0]) && all.includes(sp.pair[1]) && romanticCompat(sp.pair[0], sp.pair[1])) {
-            return { lover1: sp.pair[0], lover2: sp.pair[1], existing: false };
+          if (all.includes(sp.players[0]) && all.includes(sp.players[1]) && romanticCompat(sp.players[0], sp.players[1])) {
+            return { lover1: sp.players[0], lover2: sp.players[1], existing: false };
           }
         }
       }
@@ -1309,12 +1308,12 @@ const DANCE_BEATS = [
     id: 'showmance-audience',
     check(score, range, dancer) {
       if (!gs.showmances) return false;
-      return gs.showmances.some(sm => sm.pair.includes(dancer));
+      return gs.showmances.some(sm => sm.players.includes(dancer));
     },
     apply(dancer, tribeMembers) {
-      const sm = gs.showmances.find(s => s.pair.includes(dancer));
+      const sm = gs.showmances.find(s => s.players.includes(dancer));
       if (!sm) return null;
-      const partner = sm.pair[0] === dancer ? sm.pair[1] : sm.pair[0];
+      const partner = sm.players[0] === dancer ? sm.players[1] : sm.players[0];
       addBond(partner, dancer, 0.4);
       return {
         scoreMod: 0, partner,
@@ -1520,14 +1519,16 @@ export function simulateBeachBlanketBogus(ep) {
   _simulateSandcastle(ep, tribeMembers, result);
   result.phases.push('sandcastle');
 
-  // --- Check for tie (1-1) → halftime + dance-off ---
-  const scoreVals = Object.values(result.tribeScores);
-  const allEqual = scoreVals.every(v => v === scoreVals[0]);
-  if (allEqual) {
-    _simulateHalftime(ep, tribeMembers, result);
+  // --- Check for tie at top → halftime + dance-off between tied leaders ---
+  const sortedScores = Object.entries(result.tribeScores).sort((a, b) => b[1] - a[1]);
+  const topScore = sortedScores[0][1];
+  const tiedAtTop = sortedScores.filter(([_, s]) => s === topScore);
+  if (tiedAtTop.length >= 2) {
+    const tiedTribeMembers = tribeMembers.filter(t => tiedAtTop.some(([name]) => name === t.name));
+    _simulateHalftime(ep, tiedTribeMembers, result);
     result.phases.push('halftime');
 
-    _simulateDanceOff(ep, tribeMembers, result);
+    _simulateDanceOff(ep, tiedTribeMembers, result);
     result.phases.push('danceOff');
   }
 
@@ -1627,7 +1628,7 @@ export function simulateBeachBlanketBogus(ep) {
   if (gs.showmances && Math.random() < 0.30) {
     const allNames = tribeMembers.flatMap(t => t.members);
     for (const sm of gs.showmances) {
-      const a = sm.pair[0], b = sm.pair[1];
+      const a = sm.players[0], b = sm.players[1];
       if (!allNames.includes(a) || !allNames.includes(b)) continue;
       if (!romanticCompat(a, b)) continue;
       const sameTribe = tribeMembers.some(t => t.members.includes(a) && t.members.includes(b));
@@ -1674,13 +1675,13 @@ export function _textBeachBlanketBogus(ep, ln, sec) {
   if (!bbb) return;
 
   // --- Chris opener ---
+  sec('BEACH BLANKET BOGUS');
   ln(bbb.chrisOpener);
-  sec();
 
   // --- SURF PHASE ---
   if (bbb.surfData) {
+    sec('PHASE 1 — SURF\'S UP');
     ln('"First up: EXTREME SURFING! Last one standing on their board wins the point for their tribe!"');
-    sec();
     for (const round of bbb.surfData.rounds) {
       ln(`Chris grins as the next hazard drops: ${round.name}. ${round.desc}`);
       const wipeouts = round.results.filter(r => r.status === 'wipeout');
@@ -1689,113 +1690,76 @@ export function _textBeachBlanketBogus(ep, ln, sec) {
       if (survivors.length > 0) {
         ln(`${survivors.map(r => r.name).join(', ')} ${survivors.length === 1 ? 'powers' : 'power'} through without breaking a sweat.`);
       }
-      if (struggles.length > 0) {
-        for (const s of struggles) ln(s.text);
-      }
-      if (wipeouts.length > 0) {
-        for (const w of wipeouts) ln(w.text);
-      }
-      // Round events
-      for (const evt of round.events) {
-        ln(evt.text);
-      }
-      sec();
+      for (const s of struggles) ln(s.text);
+      for (const w of wipeouts) ln(w.text);
+      for (const evt of round.events) ln(evt.text);
     }
-    // Surf results
     const surfWinner = bbb.surfData.winner;
     const allSurf = Object.entries(bbb.surfData.surfScores).sort((a, b) => b[1] - a[1]);
     const lastStanding = allSurf.filter(([n]) => bbb.surfData.balances[n] > 0);
     if (lastStanding.length > 0) {
       ln(`When the dust settles, ${lastStanding.map(([n]) => n).join(' and ')} ${lastStanding.length === 1 ? 'is' : 'are'} still standing on ${lastStanding.length === 1 ? 'their board' : 'their boards'}!`);
     }
-    ln(`${surfWinner} takes the surf phase! The score is 1-0.`);
-    sec();
+    ln(`${surfWinner} takes the surf phase!`);
   }
 
   // --- SANDCASTLE PHASE ---
   if (bbb.sandcastleData) {
+    sec('PHASE 2 — CASTLE CONSTRUCTION');
     ln('"Phase two: SANDCASTLE SHOWDOWN! Scavenge materials, build a castle, and pray Chris likes it!"');
-    sec();
 
-    // Scavenge encounters
     if (bbb.sandcastleData.scavengeEncounters.length > 0) {
       ln('The tribes scatter across the beach, hunting for materials.');
-      for (const enc of bbb.sandcastleData.scavengeEncounters) {
-        ln(enc.text);
-      }
-      sec();
+      for (const enc of bbb.sandcastleData.scavengeEncounters) ln(enc.text);
     }
 
-    // Build phase
     ln('Build time! The tribes race to construct their masterpieces.');
-    for (const evt of bbb.sandcastleData.buildEvents) {
-      ln(evt.text);
-    }
-    const castleWinner = bbb.sandcastleData.winner;
+    for (const evt of bbb.sandcastleData.buildEvents) ln(evt.text);
     const captains = bbb.sandcastleData.captains;
     if (captains) {
-      const capEntries = Object.entries(captains);
-      for (const [tribe, cap] of capEntries) {
+      for (const [tribe, cap] of Object.entries(captains)) {
         ln(`${cap} takes charge as ${tribe}'s build captain, directing the design.`);
       }
     }
-    ln(`Chris inspects both castles... "${castleWinner}'s castle is CLEARLY superior! Point to ${castleWinner}!"`);
-    sec();
+    const castleWinner = bbb.sandcastleData.winner;
+    ln(`Chris inspects the castles... "${castleWinner}'s castle is CLEARLY superior! Point to ${castleWinner}!"`);
   }
 
   // --- HALFTIME DRAMA ---
   if (bbb.halftimeEvents && bbb.halftimeEvents.length > 0) {
+    sec('HALFTIME — BEACH BREAK');
     ln('"We\'re tied up! Take a breather, people. Halftime!"');
-    sec();
-    for (const evt of bbb.halftimeEvents) {
-      ln(evt.text);
-    }
-    sec();
+    for (const evt of bbb.halftimeEvents) ln(evt.text);
   }
 
   // --- DANCE-OFF ---
   if (bbb.danceOff) {
+    sec('TIEBREAKER — DANCE-OFF');
     ln('"It\'s TIED! You know what that means — DANCE-OFF! Each tribe picks a champion!"');
-    sec();
 
-    // Selection narratives
     for (const tribe of Object.keys(bbb.danceOff.selections)) {
       const sel = bbb.danceOff.selections[tribe];
-      const dancer = bbb.danceOff.dancers[tribe];
       ln(`${tribe}: ${sel.text}`);
     }
-    sec();
 
-    // Dance beats per tribe
     for (const tribe of Object.keys(bbb.danceOff.dancers)) {
       const dancer = bbb.danceOff.dancers[tribe];
       ln(`${dancer} steps onto the dance floor for ${tribe}. The music drops.`);
       const tribeBeats = bbb.danceOff.beats[tribe] || [];
-      for (const beat of tribeBeats) {
-        ln(beat.text);
-      }
-      const score = bbb.danceOff.scores[tribe];
-      ln(`Final dance score for ${tribe}: ${score.toFixed(2)}!`);
-      sec();
+      for (const beat of tribeBeats) ln(beat.text);
+      ln(`Final dance score for ${tribe}: ${bbb.danceOff.scores[tribe].toFixed(2)}!`);
     }
 
-    // Winner
     const danceWinner = bbb.danceOff.winner;
-    const winDancer = bbb.danceOff.dancers[danceWinner];
-    ln(`${winDancer} TAKES IT! ${danceWinner} wins the tiebreaker dance-off!`);
-    sec();
+    ln(`${bbb.danceOff.dancers[danceWinner]} TAKES IT! ${danceWinner} wins the tiebreaker dance-off!`);
   }
 
-  // --- Chris closer ---
-  if (bbb.chrisCloser) {
-    ln(bbb.chrisCloser);
-  }
-
-  // Final score summary
+  // --- Closer + score ---
+  sec('BEACH BLANKET BOGUS — RESULTS');
+  if (bbb.chrisCloser) ln(bbb.chrisCloser);
   const scores = bbb.tribeScores;
   const scoreStr = Object.entries(scores).map(([t, s]) => `${t}: ${s}`).join(' | ');
   ln(`Final score — ${scoreStr}.`);
-  sec();
 }
 
 /* ═══════════════════════════════════════════════════════

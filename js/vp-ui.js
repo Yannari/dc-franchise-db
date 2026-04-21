@@ -597,6 +597,15 @@ export function renderVPScreen() {
   content.innerHTML = cur.html;
   document.querySelector('.rp-main').scrollTop = 0;
   vpUpdateParticleProfile();
+  // Beach Blanket Bogus ambient audio switching
+  if (cur.id?.startsWith('bbb-')) {
+    const ambientMap = { 'bbb-surf': 'waves', 'bbb-beachbreak': 'hawaii', 'bbb-sandcastle': 'hawaii', 'bbb-halftime': 'hawaii', 'bbb-danceoff': 'hawaii-bass' };
+    const mode = ambientMap[cur.id];
+    if (mode && window._bbbAmbientStart) window._bbbAmbientStart(mode);
+    else if (window._bbbAmbientStop) window._bbbAmbientStop();
+  } else if (window._bbbAmbientStop) {
+    window._bbbAmbientStop();
+  }
   if (cur.id === 'votes' || cur.id?.startsWith('votes-')) {
     vpAnimateTallies('tv-results-' + vpEpNum);
   }

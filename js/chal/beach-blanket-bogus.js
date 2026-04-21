@@ -312,7 +312,7 @@ function _simulateSurf(ep, tribeMembers, result) {
 
     for (const evt of shuffled) {
       if (eventsFired >= maxEvents) break;
-      const activeAfterHazard = allSurfers.filter(n => balances[n] > 0);
+      const activeAfterHazard = allSurfers.filter(n => balances[n] > 0).sort(() => Math.random() - 0.5);
       const match = evt.check(activeAfterHazard, tribeMembers, balances, wipeoutOrder);
       if (!match) continue;
 
@@ -791,6 +791,7 @@ function _simulateSandcastle(ep, tribeMembers, result) {
 
   const scavengeEncounters = [];
   const buildEvents = [];
+  const usedSaboteurs = new Set();
   const captains = {};
 
   /* ── Sub-phase A: Scavenge ── */
@@ -865,12 +866,17 @@ function _simulateSandcastle(ep, tribeMembers, result) {
       if (evtFired >= evtCount) break;
       const match = evt.check(t.members, tribeMembers);
       if (!match) continue;
+      // Prevent same saboteur hitting multiple tribes
+      if (evt.id === 'sabotage-kick' && match.saboteur && usedSaboteurs.has(match.saboteur)) continue;
       const data = evt.apply(match);
       data.eventId = evt.id;
-      data.badge = evt.badge;
-      data.badgeClass = evt.badgeClass;
+      data.type = evt.id;
+      data.badge = typeof evt.badge === 'function' ? evt.badge(data) : evt.badge;
+      data.badgeClass = typeof evt.badgeClass === 'function' ? evt.badgeClass(data) : evt.badgeClass;
       data.tribe = t.name;
+      data.players = Object.values(match).filter(v => typeof v === 'string' && gs.activePlayers?.includes(v));
       if (data.scoreMod) score *= (1 + data.scoreMod);
+      if (evt.id === 'sabotage-kick' && match.saboteur) usedSaboteurs.add(match.saboteur);
       buildEvents.push(data);
       evtFired++;
     }
@@ -1418,8 +1424,22 @@ const DANCE_SELECTION = [
 
 const DANCE_BEATS = [
   {
+    id: 'opening-move',
+    check() { return true; },
+    apply(dancer) {
+      const pr = pronouns(dancer);
+      const texts = [
+        `${dancer} steps into the light. Cracks ${pr.posAdj} neck. The music hasn't started yet but the whole beach is already watching.`,
+        `${dancer} rolls ${pr.posAdj} shoulders, sizes up the dance floor. Exhales. "Let's do this." The beat drops.`,
+        `The spotlight hits ${dancer}. ${pr.Sub} doesn't move for three whole seconds. Then — BOOM. First move hits HARD.`,
+        `${dancer} starts slow. Too slow? No. Building. Every step is deliberate. The crowd leans in.`,
+      ];
+      return { scoreMod: 0.03, text: texts[Math.floor(Math.random() * texts.length)] };
+    },
+  },
+  {
     id: 'crowd-erupts',
-    check(score, range) { return score >= range[0] + (range[1] - range[0]) * 0.75; },
+    check(score, range) { return score >= range[0] + (range[1] - range[0]) * 0.5; },
     apply(dancer, tribeMembers, tribeNames) {
       for (const m of tribeNames) {
         if (m !== dancer) addBond(m, dancer, 0.5);
@@ -1433,14 +1453,14 @@ const DANCE_BEATS = [
       gs.popularity[dancer] = (gs.popularity[dancer] || 0) + 2;
       const pr = pronouns(dancer);
       return {
-        scoreMod: 0,
+        scoreMod: 0.08,
         text: `${dancer} NAILS it — the crowd goes absolutely FERAL. Even the rival tribe is applauding. ${pr.Sub} moonwalks back to ${pr.posAdj} spot. Mic. Drop.`,
       };
     },
   },
   {
     id: 'choke',
-    check(score, range) { return score <= range[0] + (range[1] - range[0]) * 0.25; },
+    check(score, range) { return score <= range[0] + (range[1] - range[0]) * 0.4; },
     apply(dancer, tribeMembers, tribeNames) {
       for (const m of tribeNames) {
         if (m !== dancer) addBond(m, dancer, -0.3);
@@ -1448,7 +1468,7 @@ const DANCE_BEATS = [
       if (!gs.popularity) gs.popularity = {};
       gs.popularity[dancer] = (gs.popularity[dancer] || 0) - 1;
       return {
-        scoreMod: 0,
+        scoreMod: -0.08,
         text: `${dancer} freezes up. The music plays but nothing happens. "...Dance? DANCE!" Chris yells. ${dancer} does a half-hearted shimmy. The tribe buries their faces in their hands.`,
       };
     },
@@ -1465,7 +1485,7 @@ const DANCE_BEATS = [
       const partner = sm.players[0] === dancer ? sm.players[1] : sm.players[0];
       addBond(partner, dancer, 0.4);
       return {
-        scoreMod: 0, partner,
+        scoreMod: 0.04, partner,
         text: `${partner} watches from the sideline, hands clasped. Every move ${dancer} makes — ${partner}'s eyes follow. "GO BABY!" The crowd awws. Chris pretends to wipe a tear.`,
       };
     },
@@ -1473,14 +1493,14 @@ const DANCE_BEATS = [
   {
     id: 'rival-heckle',
     check(score, range, dancer, tribeMembers) {
-      if (Math.random() > 0.25) return false;
+      if (Math.random() > 0.4) return false;
       const rivalTribe = tribeMembers.find(t => !t.members.includes(dancer));
       if (!rivalTribe) return false;
-      return rivalTribe.members.some(m => getBond(m, dancer) <= -3);
+      return rivalTribe.members.some(m => getBond(m, dancer) <= -1);
     },
     apply(dancer, tribeMembers) {
       const rivalTribe = tribeMembers.find(t => !t.members.includes(dancer));
-      const heckler = rivalTribe?.members.find(m => getBond(m, dancer) <= -3);
+      const heckler = rivalTribe?.members.find(m => getBond(m, dancer) <= -1);
       if (!heckler) return null;
       addBond(heckler, dancer, -0.2);
       const dancerTribe = tribeMembers.find(t => t.members.includes(dancer));
@@ -1496,8 +1516,8 @@ const DANCE_BEATS = [
   {
     id: 'signature-move',
     check(score, range, dancer) {
-      if (Math.random() > 0.30) return false;
-      return pStats(dancer).boldness * 0.1 + Math.random() * 0.1 >= 0.8;
+      if (Math.random() > 0.5) return false;
+      return pStats(dancer).boldness * 0.1 + Math.random() * 0.2 >= 0.6;
     },
     apply(dancer, tribeMembers) {
       const all = tribeMembers.flatMap(t => t.members);
@@ -1516,8 +1536,8 @@ const DANCE_BEATS = [
   {
     id: 'trip-stumble',
     check(score, range, dancer) {
-      if (Math.random() > 0.20) return false;
-      return pStats(dancer).temperament * 0.1 + Math.random() * 0.1 <= 0.4;
+      if (Math.random() > 0.4) return false;
+      return pStats(dancer).temperament * 0.1 + Math.random() * 0.15 <= 0.55;
     },
     apply(dancer, tribeMembers, tribeNames) {
       const s = pStats(dancer);
@@ -1528,7 +1548,7 @@ const DANCE_BEATS = [
         }
         const pr = pronouns(dancer);
         return {
-          scoreMod: 0, recovers,
+          scoreMod: 0.04, recovers,
           text: `${dancer} TRIPS mid-routine — face-plants into the sand — and somehow turns it into a BREAKDANCE MOVE?! ${pr.Sub} spins on ${pr.posAdj} back and pops up grinning. "MEANT to do that!" The tribe ROARS.`,
         };
       } else {
@@ -1540,6 +1560,20 @@ const DANCE_BEATS = [
           text: `${dancer} catches a foot on a seashell and goes DOWN. Hard. The music keeps playing over the carnage. ${pronouns(dancer).Sub} doesn't get back up for a solid five seconds. Devastating.`,
         };
       }
+    },
+  },
+  {
+    id: 'finishing-flourish',
+    check() { return true; },
+    apply(dancer) {
+      const pr = pronouns(dancer);
+      const texts = [
+        `${dancer} hits the final pose — arms out, head back, breathing hard. The beach ERUPTS. Whatever happens now, that was a PERFORMANCE.`,
+        `The music fades. ${dancer} stands there, chest heaving, drenched in sweat. ${pr.Sub} gave everything. The tribe chants ${pr.posAdj} name.`,
+        `${dancer} finishes with a spin and drops to one knee. Silence — then the loudest cheer of the night. Chris actually stands up.`,
+        `Last move. ${dancer} locks eyes with the rival dancer and SMIRKS. Walks off the floor without looking back. Stone. Cold.`,
+      ];
+      return { scoreMod: 0.02, text: texts[Math.floor(Math.random() * texts.length)] };
     },
   },
 ];
@@ -1590,8 +1624,8 @@ function _simulateDanceOff(ep, tribeMembers, result) {
 
     ranges[tribe.name] = [lo, hi];
 
-    // --- Fire 2-3 dance beats ---
-    const beatCount = 2 + (Math.random() < 0.4 ? 1 : 0);
+    // --- Fire 3-5 dance beats per dancer ---
+    const beatCount = 3 + Math.floor(Math.random() * 3);
     const shuffled = [...DANCE_BEATS].sort(() => Math.random() - 0.5);
     const firedBeats = [];
     let firedCount = 0;
@@ -2096,7 +2130,7 @@ function _bbbShell(content, ep) {
 @keyframes bbb-splash{0%{transform:scale(0);opacity:0.8}100%{transform:scale(1);opacity:0}}
 
 /* ═══ Sandcastle Screen ═══ */
-.bbb-castle-arena{display:flex;gap:24px;justify-content:center;padding:20px 10px;position:relative;z-index:6;flex-wrap:wrap}
+.bbb-castle-arena{display:flex;gap:24px;justify-content:center;padding:20px 10px;position:relative;z-index:6;flex-wrap:wrap;background:linear-gradient(180deg,#87CEEB 0%,#b0d4e6 30%,#e8d5b7 60%,#d4b896 100%);border-radius:8px;margin:8px 0}
 .bbb-castle-col{flex:1;min-width:220px;max-width:360px;text-align:center}
 .bbb-castle-tribe-hdr{font-family:'Bowlby One SC',sans-serif;font-size:13px;letter-spacing:2px;
   color:rgba(255,255,255,0.85);margin-bottom:4px}
@@ -2115,8 +2149,12 @@ function _bbbShell(content, ep) {
 /* Castle SVG wrapper */
 .bbb-castle-svg-wrap{position:relative;width:100%;height:240px;margin:8px auto}
 .bbb-castle-svg-wrap svg{width:100%;height:100%}
-.bbb-castle-layer{opacity:0;transition:opacity 0.6s ease-out}
-.bbb-castle-layer.revealed{opacity:1}
+.bbb-castle-layer{opacity:1;animation:bbb-fade-up 0.8s ease-out both}
+.bbb-castle-layer[data-layer="1"]{animation-delay:0.1s}
+.bbb-castle-layer[data-layer="2"]{animation-delay:0.4s}
+.bbb-castle-layer[data-layer="3"]{animation-delay:0.7s}
+.bbb-castle-layer[data-layer="4"]{animation-delay:1.0s}
+.bbb-castle-layer[data-layer="5"]{animation-delay:1.3s}
 
 /* Crumble particles */
 .bbb-crumble{position:absolute;width:4px;height:4px;background:var(--bbb-sand);border-radius:50%;opacity:0;
@@ -2394,7 +2432,7 @@ export function rpBuildBeachBlanketBogusTitleCard(ep) {
 
       <!-- Sound toggle -->
       <div style="margin-top:20px;">
-        <button onclick="if(!window._tvState)window._tvState={};window._tvState.bbbAudioMuted=!window._tvState.bbbAudioMuted;this.textContent=window._tvState.bbbAudioMuted?'&#x1F507; Sound Off':'&#x1F50A; Sound On';" style="padding:6px 16px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);border-radius:4px;cursor:pointer;font-size:11px;">&#x1F507; Sound Off</button>
+        <button onclick="window._bbbMuted=!window._bbbMuted;this.textContent=window._bbbMuted?'&#x1F50A; Turn Sound On':'&#x1F507; Turn Sound Off';if(window._bbbMuted){if(window._bbbAmbientStop)window._bbbAmbientStop();}else{if(window._bbbAmbientStart)window._bbbAmbientStart('waves');}" style="padding:6px 16px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);border-radius:4px;cursor:pointer;font-size:11px;">&#x1F507; Turn Sound Off</button>
       </div>
     </div>
   `, ep);
@@ -2770,6 +2808,29 @@ function _bbbUpdateSidebar(stateKey, stepIdx) {
   }
 }
 
+function _bbbUpdateDanceSidebar(stateKey, stepIdx) {
+  const cache = window._bbbCache?.[stateKey];
+  if (!cache?.danceStepScores) return;
+  const scores = cache.danceStepScores[stepIdx];
+  if (!scores) return;
+  const isFinal = !!scores._winner;
+  for (const tName of cache.tribeNames) {
+    const el = document.getElementById(`bbb-dance-score-${stateKey}-${tName}`);
+    if (el) {
+      const sc = scores[tName];
+      if (sc !== undefined) {
+        el.textContent = sc.toFixed(2);
+        el.style.color = isFinal && tName === scores._winner ? 'var(--bbb-gold)' : 'rgba(255,255,255,0.85)';
+      }
+    }
+  }
+  const resultEl = document.getElementById(`bbb-dance-result-${stateKey}`);
+  if (resultEl && isFinal) {
+    const winDancer = cache.dancers[scores._winner];
+    resultEl.innerHTML = `<span style="color:var(--bbb-gold);font-weight:700;">${winDancer} wins!</span> ${scores._winner} takes the point!`;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════
    VP — Reveal handlers
    ═══════════════════════════════════════════════════════ */
@@ -2785,7 +2846,7 @@ export function beachBogusRevealNext(stateKey, totalSteps) {
     el.style.display = '';
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     // Play sound based on data-sfx attribute
-    if (!window._tvState?.bbbAudioMuted) {
+    if (!window._bbbMuted) {
       const sfx = el.dataset.sfx;
       if (sfx === 'splash') _bbbPlaySplash();
       else if (sfx === 'seagull') _bbbPlaySeagull();
@@ -2801,7 +2862,11 @@ export function beachBogusRevealNext(stateKey, totalSteps) {
     if (ctrl) ctrl.style.display = 'none';
   }
   // Update sidebar + HUD
-  _bbbUpdateSidebar(stateKey, state.idx);
+  if (stateKey.includes('Dance')) {
+    _bbbUpdateDanceSidebar(stateKey, state.idx);
+  } else {
+    _bbbUpdateSidebar(stateKey, state.idx);
+  }
 }
 
 export function beachBogusRevealAll(stateKey, totalSteps) {
@@ -2814,7 +2879,11 @@ export function beachBogusRevealAll(stateKey, totalSteps) {
   }
   const ctrl = document.getElementById(`bbb-controls-${stateKey}`);
   if (ctrl) ctrl.style.display = 'none';
-  _bbbUpdateSidebar(stateKey, totalSteps - 1);
+  if (stateKey.includes('Dance')) {
+    _bbbUpdateDanceSidebar(stateKey, totalSteps - 1);
+  } else {
+    _bbbUpdateSidebar(stateKey, totalSteps - 1);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -3042,9 +3111,18 @@ export function rpBuildBeachBlanketBogusSandcastle(ep) {
       </div>`;
     }
 
+    const tribe = tribeMembers.find(t => t.name === tName);
+    const memberPortraits = tribe ? tribe.members.map(m =>
+      `<div style="display:inline-flex;align-items:center;gap:3px;margin:2px 4px 2px 0;">
+        ${_bbbPortrait(m, 22)}
+        <span style="font-size:10px;color:rgba(255,255,255,0.7);">${m}</span>
+      </div>`
+    ).join('') : '';
+
     pushStep(`<div class="bbb-ev">
       <div style="flex:1">
-        <div class="bbb-ev-badge teal">MATERIALS &mdash; ${tName.toUpperCase()}</div>
+        <div class="bbb-ev-badge teal">MATERIALS — ${tName.toUpperCase()}</div>
+        <div style="display:flex;flex-wrap:wrap;margin:4px 0 8px;">${memberPortraits}</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.5);margin:2px 0 8px;">Build Captain: <strong style="color:rgba(255,255,255,0.85);">${captain}</strong></div>
         ${pipRow('Shells', mats.shells, 'shell')}
         ${pipRow('Driftwood', mats.driftwood, 'driftwood')}
@@ -3056,10 +3134,10 @@ export function rpBuildBeachBlanketBogusSandcastle(ep) {
   // ─── Section A: Scavenge encounters ───
   for (const enc of sand.scavengeEncounters) {
     const badgeCls = enc.badgeClass || '';
-    const mainPlayer = enc.finder || enc.thief || enc.victim || enc.helper || enc.klutz || enc.accuser || enc.inventor || '';
+    const mainPlayer = (enc.players && enc.players[0]) || '';
     pushStep(`<div class="bbb-ev ${badgeCls === 'red' ? 'negative' : badgeCls === 'gold' ? 'positive' : ''}">
       ${mainPlayer ? `<div class="bbb-ev-port">${_bbbPortrait(mainPlayer, 44)}</div>` : ''}
-      <div style="flex:1"><div class="bbb-ev-badge ${badgeCls}">${enc.badge || enc.eventId || 'SCAVENGE'}</div>
+      <div style="flex:1"><div class="bbb-ev-badge ${badgeCls}">${enc.badge || enc.type || 'SCAVENGE'}</div>
       <div class="bbb-ev-text">${enc.text}</div></div>
     </div>`);
   }
@@ -3083,20 +3161,24 @@ export function rpBuildBeachBlanketBogusSandcastle(ep) {
   </div>`);
 
   // ─── Section B: Build events ───
-  // Group by tribe for interleaved display
   for (const evt of sand.buildEvents) {
     const badgeCls = evt.badgeClass || '';
-    const mainPlayer = evt.klutz || evt.helper || evt.accuser || evt.accused || evt.inventor || '';
+    // Extract main player from the event's players array or data
+    const mainPlayer = (evt.players && evt.players[0]) || '';
     const evtType = badgeCls === 'red' ? 'negative' : badgeCls === 'gold' ? 'positive' : '';
-    const sandSfx = (evt.eventId === 'sabotage-kick' || evt.eventId === 'collapse-setback') ? 'sand' : null;
+    const sandSfx = (evt.type === 'sabotage-kick' || evt.type === 'collapse-setback') ? 'sand' : null;
+    // Show score impact if available
+    const scoreMod = evt.data?.scoreMod;
+    const impactText = scoreMod ? `<div style="font-size:9px;margin-top:4px;color:${scoreMod > 0 ? '#4ade80' : '#e85d3a'};">${scoreMod > 0 ? '+' : ''}${scoreMod}% build score</div>` : '';
     pushStep(`<div class="bbb-ev ${evtType}">
       ${mainPlayer ? `<div class="bbb-ev-port">${_bbbPortrait(mainPlayer, 44)}</div>` : ''}
       <div style="flex:1">
         <div style="display:flex;align-items:center;gap:8px;">
-          <div class="bbb-ev-badge ${badgeCls}">${evt.badge || evt.eventId || 'BUILD'}</div>
+          <div class="bbb-ev-badge ${badgeCls}">${evt.badge || evt.type || 'BUILD'}</div>
           ${evt.tribe ? `<span style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px;">${evt.tribe.toUpperCase()}</span>` : ''}
         </div>
         <div class="bbb-ev-text">${evt.text}</div>
+        ${impactText}
       </div>
     </div>`, sandSfx);
   }
@@ -3234,22 +3316,27 @@ export function rpBuildBeachBlanketBogusHalftime(ep, mode = 'halftime') {
   for (const evt of events) {
     const evtId = evt.eventId || '';
     const cardClass = evtId === 'cross-tribe-taunt' ? 'taunt'
-      : evtId === 'cross-tribe-deal' ? 'alliance'
+      : evtId === 'alliance-pitch' ? 'alliance'
       : evtId === 'showmance-moment' ? 'showmance'
       : evtId === 'injury-check' ? 'injury'
       : evtId === 'strategy-huddle' ? 'strategy'
-      : evtId === 'rival-confrontation' ? 'confrontation'
+      : evtId === 'rivalry-confrontation' ? 'confrontation'
+      : evtId === 'beach-bonding' || evtId === 'pep-talk' ? 'alliance'
+      : evtId === 'paranoia-spiral' || evtId === 'food-steal' || evtId === 'challenge-replay' ? 'confrontation'
+      : evtId === 'confessional-moment' ? 'strategy'
       : '';
 
-    const mainPlayer = evt.pitcher || evt.taunter || evt.strategist || evt.lover1 || evt.injured || '';
-    const secondPlayer = evt.target || evt.lover2 || evt.healer || '';
+    // Extract portraits from players array (universal) or known keys
+    const evtPlayers = evt.players || [];
+    const mainPlayer = evtPlayers[0] || evt.pitcher || evt.taunter || evt.strategist || evt.lover1 || evt.injured || evt.player || evt.player1 || evt.paranoid || evt.thief || evt.talker || evt.blamer || evt.fighter1 || '';
+    const secondPlayer = evtPlayers[1] || evt.target || evt.lover2 || evt.healer || evt.player2 || evt.victim || evt.fighter2 || '';
     const portraits = [];
     if (mainPlayer) portraits.push(_bbbPortrait(mainPlayer, 44));
     if (secondPlayer && secondPlayer !== mainPlayer) portraits.push(_bbbPortrait(secondPlayer, 36));
 
     // Bond impact text
     let impactText = '';
-    if (evtId === 'cross-tribe-deal') {
+    if (evtId === 'alliance-pitch') {
       impactText = evt.accepted ? 'New cross-tribe bond formed' : 'Deal rejected — trust damaged';
     } else if (evtId === 'showmance-moment') {
       impactText = evt.existing ? 'Showmance bond deepened' : 'Romantic tension rising';
@@ -3259,6 +3346,20 @@ export function rpBuildBeachBlanketBogusHalftime(ep, mode = 'halftime') {
       impactText = evt.success ? 'Tribe cohesion strengthened' : 'Failed rally — morale dipped';
     } else if (evtId === 'cross-tribe-taunt') {
       impactText = 'Cross-tribe hostility increased';
+    } else if (evtId === 'rivalry-confrontation') {
+      impactText = 'Both sides entrenched — witnesses picked sides';
+    } else if (evtId === 'beach-bonding') {
+      impactText = 'Bond strengthened between tribemates';
+    } else if (evtId === 'paranoia-spiral') {
+      impactText = 'Trust eroding — paranoia spreading';
+    } else if (evtId === 'food-steal') {
+      impactText = evt.witness ? `${evt.witness} caught the theft` : 'Got away with it';
+    } else if (evtId === 'pep-talk') {
+      impactText = `${mainPlayer} earned loyalty through encouragement`;
+    } else if (evtId === 'challenge-replay') {
+      impactText = 'Blame assigned — tension rising';
+    } else if (evtId === 'confessional-moment') {
+      impactText = 'Inner game revealed';
     }
 
     steps.push(`<div class="bbb-half-ev ${cardClass}">
@@ -3428,8 +3529,22 @@ export function rpBuildBeachBlanketBogusDanceOff(ep) {
     </div>`;
   });
   vsHtml += `</div>`;
-  // Show initial score bars
-  vsHtml += scoreBarHtml(baseScores, null);
+  // Show hidden score bars (no numbers until beats reveal)
+  const hiddenScores = {};
+  tribeNames.forEach(t => { hiddenScores[t] = 0; });
+  vsHtml += `<div class="bbb-score-tracker">
+    <div class="bbb-score-tracker-label">LIVE SCORE</div>
+    ${tribeNames.map((tName, ti) => {
+      const barCls = ti === 0 ? 'coral' : 'teal';
+      return `<div class="bbb-score-row">
+        <div class="bbb-score-name">${tName.toUpperCase()}</div>
+        <div class="bbb-score-bar-track">
+          <div class="bbb-score-bar ${barCls}" style="width:5%;">???</div>
+        </div>
+        <div class="bbb-score-val">???</div>
+      </div>`;
+    }).join('')}
+  </div>`;
   steps.push(vsHtml);
 
   // Steps 4+: Dance beats — interleave tribes
@@ -3488,6 +3603,31 @@ export function rpBuildBeachBlanketBogusDanceOff(ep) {
   finalHtml += `</div></div>`;
   steps.push(finalHtml);
 
+  // Store per-step score snapshots for sidebar updates
+  // Steps: 0=title, 1=selection, 2=VS, then beat steps, then final
+  const danceStepScores = [];
+  let stepIdx = 0;
+  // Title, selection, VS — no scores yet
+  danceStepScores.push(null); // title
+  danceStepScores.push(null); // selection
+  danceStepScores.push(null); // VS
+  stepIdx = 3;
+  // Beat steps
+  for (let bi = 0; bi < maxBeats; bi++) {
+    for (const tName of tribeNames) {
+      if (bi >= (dance.beats[tName] || []).length) continue;
+      const sc = {};
+      for (const t of tribeNames) sc[t] = scoreAtBeat(t, Math.min(bi, (dance.beats[t] || []).length - 1));
+      danceStepScores.push(sc);
+      stepIdx++;
+    }
+  }
+  // Final step — show final scores + winner
+  danceStepScores.push({ ...dance.scores, _winner: dance.winner });
+
+  if (!window._bbbCache) window._bbbCache = {};
+  window._bbbCache[stateKey] = { danceStepScores, tribeNames, winner: dance.winner, dancers: dance.dancers };
+
   // Build feed
   let feedHtml = `<div class="bbb-side-sec" style="color:rgba(255,255,255,0.35);">DANCE-OFF FEED</div>`;
   feedHtml += `<div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:8px;">CLICK TO ADVANCE</div>`;
@@ -3507,31 +3647,23 @@ export function rpBuildBeachBlanketBogusDanceOff(ep) {
   let sideHtml = `<div class="bbb-side-sec">DANCERS</div>`;
   for (const tName of tribeNames) {
     const d = dance.dancers[tName];
-    const isWinner = tName === dance.winner;
-    sideHtml += `<div class="bbb-surfer${isWinner ? '' : ''}">
+    sideHtml += `<div class="bbb-surfer">
       ${_bbbPortrait(d, 28)}
       <div style="flex:1;min-width:0;">
         <div class="bbb-surfer-name">${d}</div>
-        <div style="font-size:8px;color:${isWinner ? 'var(--bbb-gold)' : 'rgba(255,255,255,0.4)'};letter-spacing:1px;">${tName.toUpperCase()}${isWinner ? ' — WINNER' : ''}</div>
+        <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:1px;">${tName.toUpperCase()}</div>
       </div>
     </div>`;
   }
   sideHtml += `<div class="bbb-side-sec">SCORES</div>`;
   for (const tName of tribeNames) {
-    const sc = (dance.scores[tName] || 0).toFixed(2);
-    const isWinner = tName === dance.winner;
-    sideHtml += `<div class="bbb-side-score" style="${isWinner ? 'border-color:rgba(212,160,32,0.3);' : ''}">
-      <div class="bbb-side-score-name">${tName}</div>
-      <div class="bbb-side-score-val" style="${isWinner ? 'color:var(--bbb-gold);' : ''}">${sc}</div>
-    </div>`;
-  }
-  sideHtml += `<div class="bbb-side-sec">SERIES</div>`;
-  for (const tName of tribeNames) {
     sideHtml += `<div class="bbb-side-score">
       <div class="bbb-side-score-name">${tName}</div>
-      <div class="bbb-side-score-val">${bbb.tribeScores[tName] || 0}</div>
+      <div class="bbb-side-score-val" id="bbb-dance-score-${stateKey}-${tName}" style="color:rgba(255,255,255,0.3);">???</div>
     </div>`;
   }
+  sideHtml += `<div class="bbb-side-sec">RESULT</div>`;
+  sideHtml += `<div id="bbb-dance-result-${stateKey}" style="font-size:11px;color:rgba(255,255,255,0.5);padding:4px 8px;">Tiebreaker in progress...</div>`;
 
   return _bbbShell(`
     <div style="position:absolute;top:0;left:0;right:0;bottom:0;
@@ -3813,7 +3945,6 @@ function _bbbPlayBeatDrop() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const t = ctx.currentTime;
-    // Sine oscillator 120Hz→60Hz sweep — quick decay
     const osc = ctx.createOscillator();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(120, t);
@@ -3824,5 +3955,177 @@ function _bbbPlayBeatDrop() {
     osc.connect(gain); gain.connect(ctx.destination);
     osc.start(t); osc.stop(t + 0.15);
     osc.onended = () => ctx.close();
-  } catch (e) { /* Web Audio not available */ }
+  } catch (e) {}
+}
+
+/* ═══════════════════════════════════════════════════════
+   AMBIENT AUDIO — persistent background per phase
+   Waves (surf), Hawaii ukulele (sandcastle), Hawaii + bass (dance-off)
+   ═══════════════════════════════════════════════════════ */
+
+let _bbbAmbientCtx = null;
+let _bbbAmbientNodes = {};
+let _bbbAmbientMode = null;
+let _bbbUkeInterval = null;
+
+export function _bbbAmbientStart(mode) {
+  if (window._bbbMuted) return;
+  if (_bbbAmbientMode === mode && _bbbAmbientCtx) return;
+  _bbbAmbientStop();
+  _bbbAmbientMode = mode;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    _bbbAmbientCtx = ctx;
+    const master = ctx.createGain();
+    master.gain.value = 0;
+    master.gain.linearRampToValueAtTime(1, ctx.currentTime + 1);
+    master.connect(ctx.destination);
+
+    if (mode === 'waves') {
+      // Ocean waves: layered filtered noise with LFO volume modulation
+      const len = ctx.sampleRate * 4;
+      const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+      for (let ch = 0; ch < 2; ch++) {
+        const d = buf.getChannelData(ch);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buf; noise.loop = true;
+      // Low rumble layer
+      const lpf = ctx.createBiquadFilter();
+      lpf.type = 'lowpass'; lpf.frequency.value = 300;
+      const rumbleGain = ctx.createGain();
+      rumbleGain.gain.value = 0.06;
+      noise.connect(lpf); lpf.connect(rumbleGain); rumbleGain.connect(master);
+      // Wash/foam layer (higher, rhythmic)
+      const noise2 = ctx.createBufferSource();
+      noise2.buffer = buf; noise2.loop = true;
+      const bpf = ctx.createBiquadFilter();
+      bpf.type = 'bandpass'; bpf.frequency.value = 800; bpf.Q.value = 0.3;
+      const washGain = ctx.createGain();
+      washGain.gain.value = 0.03;
+      // LFO for wave rhythm (0.1Hz = every 10 seconds)
+      const lfo = ctx.createOscillator();
+      lfo.type = 'sine'; lfo.frequency.value = 0.1;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = 0.025;
+      lfo.connect(lfoGain); lfoGain.connect(washGain.gain);
+      noise2.connect(bpf); bpf.connect(washGain); washGain.connect(master);
+      noise.start(); noise2.start(); lfo.start();
+      _bbbAmbientNodes = { master, noise, noise2, lfo, lpf };
+
+    } else if (mode === 'hawaii' || mode === 'hawaii-bass') {
+      // Ukulele-ish plucked string simulation using Karplus-Strong-lite
+      // Pentatonic scale in C major: C4, D4, E4, G4, A4
+      const notes = [261.6, 293.7, 329.6, 392.0, 440.0];
+      const ukeGain = ctx.createGain();
+      ukeGain.gain.value = 0.07;
+      ukeGain.connect(master);
+
+      // Light noise bed (beach ambience)
+      const ambLen = ctx.sampleRate * 3;
+      const ambBuf = ctx.createBuffer(1, ambLen, ctx.sampleRate);
+      const ambData = ambBuf.getChannelData(0);
+      for (let i = 0; i < ambLen; i++) ambData[i] = Math.random() * 2 - 1;
+      const ambNoise = ctx.createBufferSource();
+      ambNoise.buffer = ambBuf; ambNoise.loop = true;
+      const ambLpf = ctx.createBiquadFilter();
+      ambLpf.type = 'lowpass'; ambLpf.frequency.value = 200;
+      const ambGain = ctx.createGain();
+      ambGain.gain.value = 0.02;
+      ambNoise.connect(ambLpf); ambLpf.connect(ambGain); ambGain.connect(master);
+      ambNoise.start();
+
+      // Pluck a note every ~0.4s in pentatonic pattern
+      let noteIdx = 0;
+      function pluck() {
+        if (!_bbbAmbientCtx) return;
+        const freq = notes[noteIdx % notes.length];
+        // Alternate between root and a higher octave for melody feel
+        const octave = (noteIdx % 8 < 5) ? 1 : 2;
+        const actualFreq = freq * octave;
+        noteIdx++;
+        try {
+          const t = ctx.currentTime;
+          // Plucked string: short noise burst → comb filter (delay feedback)
+          const pluckLen = ctx.sampleRate * 0.02;
+          const pluckBuf = ctx.createBuffer(1, pluckLen, ctx.sampleRate);
+          const pd = pluckBuf.getChannelData(0);
+          for (let i = 0; i < pluckLen; i++) pd[i] = Math.random() * 2 - 1;
+          const pluckSrc = ctx.createBufferSource();
+          pluckSrc.buffer = pluckBuf;
+          // Simple tone using oscillator (more reliable than Karplus-Strong)
+          const osc = ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.value = actualFreq;
+          const env = ctx.createGain();
+          env.gain.setValueAtTime(0.12, t);
+          env.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+          osc.connect(env); env.connect(ukeGain);
+          osc.start(t); osc.stop(t + 0.4);
+        } catch (e) {}
+      }
+      // Start playing with slight randomness in timing
+      _bbbUkeInterval = setInterval(() => {
+        pluck();
+        // Occasionally double-strum (two quick notes)
+        if (Math.random() < 0.3) setTimeout(pluck, 80);
+      }, 350 + Math.random() * 100);
+      pluck();
+
+      // Bass layer for dance-off mode
+      if (mode === 'hawaii-bass') {
+        const bassOsc = ctx.createOscillator();
+        bassOsc.type = 'sine'; bassOsc.frequency.value = 55;
+        const bassGain = ctx.createGain();
+        bassGain.gain.value = 0.08;
+        // Pulsing bass (4-on-the-floor feel)
+        const bassLfo = ctx.createOscillator();
+        bassLfo.type = 'square'; bassLfo.frequency.value = 2;
+        const bassLfoGain = ctx.createGain();
+        bassLfoGain.gain.value = 0.06;
+        bassLfo.connect(bassLfoGain); bassLfoGain.connect(bassGain.gain);
+        bassOsc.connect(bassGain); bassGain.connect(master);
+        bassOsc.start(); bassLfo.start();
+        // Kick drum pulse
+        const kickOsc = ctx.createOscillator();
+        kickOsc.type = 'sine'; kickOsc.frequency.value = 80;
+        const kickGain = ctx.createGain();
+        kickGain.gain.value = 0;
+        kickOsc.connect(kickGain); kickGain.connect(master);
+        kickOsc.start();
+        // Trigger kick every 0.5s
+        let kickInterval = setInterval(() => {
+          if (!_bbbAmbientCtx) { clearInterval(kickInterval); return; }
+          const kt = ctx.currentTime;
+          kickGain.gain.setValueAtTime(0.12, kt);
+          kickGain.gain.exponentialRampToValueAtTime(0.001, kt + 0.1);
+          kickOsc.frequency.setValueAtTime(80, kt);
+          kickOsc.frequency.exponentialRampToValueAtTime(40, kt + 0.08);
+        }, 500);
+        _bbbAmbientNodes = { master, ukeGain, ambNoise, bassOsc, bassLfo, kickOsc, kickInterval };
+      } else {
+        _bbbAmbientNodes = { master, ukeGain, ambNoise };
+      }
+    }
+  } catch (e) {}
+}
+
+export function _bbbAmbientStop() {
+  if (_bbbUkeInterval) { clearInterval(_bbbUkeInterval); _bbbUkeInterval = null; }
+  if (_bbbAmbientNodes.kickInterval) { clearInterval(_bbbAmbientNodes.kickInterval); _bbbAmbientNodes.kickInterval = null; }
+  if (!_bbbAmbientCtx) return;
+  try {
+    if (_bbbAmbientNodes.noise) _bbbAmbientNodes.noise.stop();
+    if (_bbbAmbientNodes.noise2) _bbbAmbientNodes.noise2.stop();
+    if (_bbbAmbientNodes.lfo) _bbbAmbientNodes.lfo.stop();
+    if (_bbbAmbientNodes.ambNoise) _bbbAmbientNodes.ambNoise.stop();
+    if (_bbbAmbientNodes.bassOsc) _bbbAmbientNodes.bassOsc.stop();
+    if (_bbbAmbientNodes.bassLfo) _bbbAmbientNodes.bassLfo.stop();
+    if (_bbbAmbientNodes.kickOsc) _bbbAmbientNodes.kickOsc.stop();
+    _bbbAmbientCtx.close();
+  } catch (e) {}
+  _bbbAmbientCtx = null;
+  _bbbAmbientNodes = {};
+  _bbbAmbientMode = null;
 }

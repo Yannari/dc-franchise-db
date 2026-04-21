@@ -153,7 +153,8 @@ export function updateChalRecord(ep) {
 
   // Post-merge individual: immunity winner counts as a win
   const immWinner = ep.immunityWinner;
-  if (immWinner && gs.chalRecord[immWinner]) {
+  if (immWinner) {
+    if (!gs.chalRecord[immWinner]) gs.chalRecord[immWinner] = { wins: 0, podiums: 0, bombs: 0 };
     gs.chalRecord[immWinner].wins++;
   }
 

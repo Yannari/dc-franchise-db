@@ -645,6 +645,13 @@ export function simulateTripleDogDare(ep) {
     gs.popularity[eliminatedPlayer] = (gs.popularity[eliminatedPlayer] || 0) - 1; // ran out of freebies = exposed as weakest
   }
 
+  // Set challenge scores for debug + threat tracking
+  const chalMemberScores = {};
+  activePlayers.forEach(n => {
+    chalMemberScores[n] = (completions[n] || 0) * 5 + (freebies[n] || 0) * 2 + (n === eliminatedPlayer ? -10 : 5);
+  });
+  ep.chalMemberScores = chalMemberScores;
+  // No immunity winner in TDD (elimination-only format)
   updateChalRecord(ep);
 }
 

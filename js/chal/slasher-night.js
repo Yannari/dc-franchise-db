@@ -1921,6 +1921,12 @@ export function simulateSlasherNight(ep) {
   // Showmance moments during the hunt
   _checkShowmanceChalMoment(ep, 'slasherNight', ['hunt', 'showdown'], scores, 'survival', activePlayers);
 
+  // Set challenge scores + immunity winner for updateChalRecord
+  const chalMemberScores = {};
+  activePlayers.forEach(n => { chalMemberScores[n] = scores[n] || 0; });
+  ep.chalMemberScores = chalMemberScores;
+  ep.immunityWinner = immunityWinner;
+  ep.challengeType = 'slasher-night';
   updateChalRecord(ep);
 }
 

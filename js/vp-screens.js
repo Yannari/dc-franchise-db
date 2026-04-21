@@ -2006,7 +2006,7 @@ export function rpBuildDebug(ep) {
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
-      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isCampCastaways) ? _tabBtn('challenge', 'Challenge') : ''}
+      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isCampCastaways || ep.isSlasherNight || ep.isMonsterCash || ep.isAlienEgg) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -10632,6 +10632,10 @@ export function buildVPScreens(epRecord) {
     const _slRelHtml = rpBuildRelationships(ep);
     if (_slRelHtml) vpScreens.push({ id:'relationships', label:'Camp Overview', html: _slRelHtml });
     vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });
+    if (localStorage.getItem('vp_debug') === 'true') {
+      const _slDebugHtml = rpBuildDebug(ep);
+      if (_slDebugHtml) vpScreens.push({ id:'debug', label:'Debug', html: _slDebugHtml });
+    }
     return;
   }
 
@@ -10686,6 +10690,10 @@ export function buildVPScreens(epRecord) {
     const _sdRelHtml = rpBuildRelationships(ep);
     if (_sdRelHtml) vpScreens.push({ id:'relationships', label:'Camp Overview', html: _sdRelHtml });
     vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });
+    if (localStorage.getItem('vp_debug') === 'true') {
+      const _sdDebugHtml = rpBuildDebug(ep);
+      if (_sdDebugHtml) vpScreens.push({ id:'debug', label:'Debug', html: _sdDebugHtml });
+    }
     return;
   }
 

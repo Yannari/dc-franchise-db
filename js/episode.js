@@ -2166,6 +2166,9 @@ export function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
+    } else if (ep.isMonsterCash || ep.isAlienEgg) {
+    // Special challenge already ran and set immunityWinner + chalMemberScores — skip generic challenge
+    ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
     const _chalPool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     const immResult = simulateIndividualChallenge(_chalPool, null);

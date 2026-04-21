@@ -4,7 +4,7 @@
 // Pre-merge: tribe immunity. Post-merge: individual immunity, normal tribal.
 // ══════════════════════════════════════════════════════════════════════
 import { gs, seasonConfig, players } from '../core.js';
-import { pStats, pronouns, romanticCompat } from '../players.js';
+import { pStats, pronouns, romanticCompat, updateChalRecord } from '../players.js';
 import { getBond, addBond } from '../bonds.js';
 import { _checkShowmanceChalMoment } from '../romance.js';
 
@@ -1181,7 +1181,7 @@ export function simulateMonsterCash(ep) {
     }
 
     for (const name of survivors) {
-      scores[name] = (scores[name] || 0) + 2;
+      scores[name] = (scores[name] || 0) + threatLevel + 2;
       const playerEventCount = roundEvents.filter(e => e.player === name).length;
       fatigue[name] = (fatigue[name] || 0) + 0.05 + playerEventCount * 0.03;
     }
@@ -1286,6 +1286,10 @@ export function simulateMonsterCash(ep) {
     finalShowdown = { survivor1: s1, survivor2: s2, winner: immunityWinner, method: `${immunityWinner} ${_pickText(methods, immunityWinner)} ${loser} in the final showdown` };
   } else if (isMerged && survivors.length === 1) {
     immunityWinner = survivors[0];
+  } else if (isMerged && survivors.length > 2) {
+    // Multiple survivors — highest score wins
+    const sortedSurvivors = [...survivors].sort((a, b) => scores[b] - scores[a]);
+    immunityWinner = sortedSurvivors[0];
   } else if (!isMerged) {
     const tribeScores = {};
     for (const tribe of gs.tribes) {
@@ -1311,6 +1315,8 @@ export function simulateMonsterCash(ep) {
   const chalMemberScores = {};
   active.forEach(name => { chalMemberScores[name] = scores[name] || 0; });
   ep.chalMemberScores = chalMemberScores;
+  if (isMerged && immunityWinner) ep.immunityWinner = immunityWinner;
+  updateChalRecord(ep);
 
   const leaderboard = active.map(name => ({
     name, score: scores[name] || 0,

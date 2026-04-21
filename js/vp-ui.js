@@ -570,7 +570,9 @@ export function renderVPScreen() {
   const nextBtn  = document.getElementById('vp-next-btn');
   const epLabel  = document.getElementById('vp-nav-ep-label');
   const sidebar  = document.getElementById('vp-sidebar');
+  if (vpCurrentScreen >= vpScreens.length) window.vpCurrentScreen = 0;
   const cur = vpScreens[vpCurrentScreen];
+  if (!cur) return;
 
   // Nav bar
   prevBtn.disabled = vpCurrentScreen === 0;
@@ -735,8 +737,9 @@ document.addEventListener('keydown', e => {
 
 export function closeVisualPlayer() {
   vpStopParticles();
-  // Stop slasher audio if running
+  // Stop challenge audio if running
   if (typeof window._slasherAudioDestroy === 'function') window._slasherAudioDestroy();
+  if (typeof window._aeAudioDestroy === 'function') window._aeAudioDestroy();
   document.getElementById('visual-player').style.display = 'none';
   document.body.style.overflow = '';
 }

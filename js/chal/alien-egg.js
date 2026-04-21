@@ -6,7 +6,7 @@
 // most eggs win immunity. Slimed = eliminated from challenge.
 // ══════════════════════════════════════════════════════════════════════
 import { gs, seasonConfig, players } from '../core.js';
-import { pStats, pronouns, romanticCompat } from '../players.js';
+import { pStats, pronouns, romanticCompat, updateChalRecord } from '../players.js';
 import { getBond, addBond } from '../bonds.js';
 import { _checkShowmanceChalMoment } from '../romance.js';
 
@@ -960,7 +960,10 @@ export function simulateAlienEgg(ep) {
         scores[name] = (scores[name] || 0) + ev.points;
       }
 
-      if (ev.type === 'heroic' && ev.target) addBond(name, ev.target, 2);
+      if (ev.type === 'heroic' && ev.target) {
+        addBond(name, ev.target, 2);
+        playerState[name].catchBoost += 0.08;
+      }
       if (ev.type === 'sabotage' && ev.target) {
         addBond(name, ev.target, -2);
         playerState[ev.target].sabotagedBy = name;
@@ -987,10 +990,10 @@ export function simulateAlienEgg(ep) {
       if (ev.type === 'trap') scores[name] = (scores[name] || 0) - 2;
     }
 
-    // Fatigue + survival bonus
+    // Fatigue + escalating survival bonus (later rounds = more dangerous = more points)
     for (const name of survivors) {
       playerState[name].fatigue += 0.03 + [...roundEvents, ...eggEvents].filter(e => e.player === name).length * 0.02;
-      scores[name] = (scores[name] || 0) + 1;
+      scores[name] = (scores[name] || 0) + mamaLevel + 1;
     }
 
     // Showmance moments
@@ -1034,8 +1037,19 @@ export function simulateAlienEgg(ep) {
       : mamaLevel === 3 ? Math.max(2, survivorPressure + 1)
       : Math.max(3, survivorPressure + 1);
 
+    // Track which tribes got slimed this round to spread kills
+    const slimedTribesThisRound = new Set();
+
     for (let ci = 0; ci < slimesThisRound && survivors.length > minSurvivors; ci++) {
       const hitScores = {};
+      // Count survivors per tribe to find which tribe has the most — Chef targets the largest tribe
+      const tribeCounts = {};
+      for (const name of survivors) {
+        const t = tribeMap[name]?.name || '_merged';
+        tribeCounts[t] = (tribeCounts[t] || 0) + 1;
+      }
+      const maxTribeCount = Math.max(...Object.values(tribeCounts));
+
       for (const name of survivors) {
         const s = pStats(name);
         let score = mama.baseHit;
@@ -1046,6 +1060,11 @@ export function simulateAlienEgg(ep) {
         score += (playerState[name].catchBoost || 0) + (playerState[name].fatigue || 0);
         score -= ((s.physical || 5) * 0.02 + (s.mental || 5) * 0.015 + (s.endurance || 5) * 0.01);
         score += Math.random() * 0.25;
+        // Tribe balancing: prefer targeting tribes that haven't lost someone this round yet
+        const pTribe = tribeMap[name]?.name || '_merged';
+        if (slimedTribesThisRound.has(pTribe) && Object.keys(tribeCounts).length > 1) score -= 0.15;
+        // Slightly prefer targeting the largest remaining tribe
+        if (tribeCounts[pTribe] === maxTribeCount && Object.keys(tribeCounts).length > 1) score += 0.08;
         hitScores[name] = score;
       }
 
@@ -1068,6 +1087,7 @@ export function simulateAlienEgg(ep) {
         slimes.push({ name: target, slimeSequence: slimeSeq, eggDestroyed: !!carriedEgg, eggsBanked: bankedEggs[target] || 0, round: r + 1 });
         survivors = survivors.filter(p => p !== target);
         slimedOrder.push(target);
+        slimedTribesThisRound.add(tribeMap[target]?.name || '_merged');
         for (const grp of groups) { const idx = grp.indexOf(target); if (idx !== -1) grp.splice(idx, 1); }
       }
     }
@@ -1153,6 +1173,8 @@ export function simulateAlienEgg(ep) {
   const chalMemberScores = {};
   active.forEach(name => { chalMemberScores[name] = (bankedEggs[name] || 0) * 10 + (scores[name] || 0); });
   ep.chalMemberScores = chalMemberScores;
+  if (isMerged && immunityWinner) ep.immunityWinner = immunityWinner;
+  updateChalRecord(ep);
 
   // Popularity
   if (!gs.popularity) gs.popularity = {};
@@ -1557,6 +1579,7 @@ function _aeEventCard(ev) {
   if (ev.type === 'heroic' && ev.target) {
     impactParts.push(`BOND +2 (${ev.player} → ${ev.target})`);
     impactParts.push('POPULARITY +2');
+    impactParts.push(`CHEF NOTICED ${ev.player.toUpperCase()} • CATCH CHANCE ↑`);
   } else if (ev.type === 'sabotage' && ev.target) {
     impactParts.push(`BOND −2 (${ev.player} → ${ev.target})`);
     impactParts.push(`CHEF ALERTED TO ${ev.target.toUpperCase()}'S POSITION`);
@@ -1608,6 +1631,9 @@ export function rpBuildAlienEggTitleCard(ep) {
         <span>👾 Chef as Mama Alien</span>
         <span>👥 ${ae.leaderboard.length} contestants</span>
       </div>
+      <div style="margin-top:20px;">
+        <button onclick="if(!window._tvState)window._tvState={};window._tvState.aeAudioMuted=!window._tvState.aeAudioMuted;this.textContent=window._tvState.aeAudioMuted?'🔇 Sound Off':'🔊 Sound On';if(window._tvState.aeAudioMuted&&window._aeAudioDestroy)window._aeAudioDestroy();else if(!window._tvState.aeAudioMuted&&window._aeAudioInit){window._aeAudioInit();window._aeAudioSetLevel(1);}" style="padding:6px 16px;background:#4aff4a15;color:#4aff4a88;border:1px solid #4aff4a22;border-radius:4px;cursor:pointer;font-size:11px;">🔇 Sound Off</button>
+      </div>
     </div>
   `, ep);
 }
@@ -1617,6 +1643,7 @@ export function rpBuildAlienEggRounds(ep) {
   const ae = ep.alienEgg;
   if (!ae) return '';
   const _tvState = window._tvState || (window._tvState = {});
+  if (_tvState.aeAudioMuted === undefined) _tvState.aeAudioMuted = true;
   const stateKey = String(ep.num || 0) + '_ae';
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
 
@@ -1951,6 +1978,8 @@ function _aeUpdateSidebar(stateKey, stepIdx) {
   if (hudBanked) hudBanked.textContent = Object.values(state.banked).reduce((s, v) => s + v, 0);
   const hudMama = document.getElementById(`ae-hud-mama-${stateKey}`);
   if (hudMama) hudMama.textContent = `LV${state.mamaLevel || 1}`;
+  // Update audio drone level
+  _aeAudioSetLevel(state.mamaLevel || 1);
 }
 
 // ── Reveal handlers ──
@@ -1959,9 +1988,21 @@ export function alienEggRevealNext(stateKey, totalSteps) {
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
   if (state.idx >= totalSteps - 1) return;
+  // Init audio on first click (only if not muted)
+  if (state.idx === -1 && !window._tvState?.aeAudioMuted) { _aeAudioInit(); _aeAudioSetLevel(1); }
   state.idx++;
   const el = document.getElementById(`ae-step-${stateKey}-${state.idx}`);
-  if (el) { el.style.display = ''; el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  if (el) {
+    el.style.display = '';
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Play SFX based on event type
+    const isSlimed = el.dataset.slimed === '1';
+    const html = el.innerHTML;
+    if (isSlimed) _aePlaySlime();
+    else if (html.includes('BOOBY TRAP')) _aePlayTrap();
+    else if (html.includes('GOLD SPECIMEN DELIVERED') || html.includes('SPECIMEN DELIVERED')) _aePlayDelivery();
+    else if (html.includes('GOLD SPECIMEN ACQUIRED')) _aePlayGold();
+  }
   const btn = document.getElementById(`ae-btn-${stateKey}`);
   if (btn) btn.textContent = `NEXT ▶ (${state.idx + 2}/${totalSteps})`;
   if (state.idx >= totalSteps - 1) {
@@ -2097,4 +2138,176 @@ export function rpBuildAlienEggLeaderboard(ep) {
 
   html += `</div>`;
   return _aeShell(html, ep);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// AUDIO — procedural sci-fi soundscape via Web Audio API
+// ══════════════════════════════════════════════════════════════════════
+
+let _aeAudioCtx = null;
+let _aeAudioNodes = {};
+let _aeRadarInterval = null;
+
+export function _aeAudioInit() {
+  if (_aeAudioCtx) return;
+  try {
+    _aeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const master = _aeAudioCtx.createGain();
+    master.gain.value = 0;
+    master.connect(_aeAudioCtx.destination);
+
+    // Spaceship hum: two detuned saw oscillators, heavily filtered
+    const osc1 = _aeAudioCtx.createOscillator();
+    osc1.type = 'sawtooth'; osc1.frequency.value = 40;
+    const osc2 = _aeAudioCtx.createOscillator();
+    osc2.type = 'sawtooth'; osc2.frequency.value = 42;
+    const droneLPF = _aeAudioCtx.createBiquadFilter();
+    droneLPF.type = 'lowpass'; droneLPF.frequency.value = 120;
+    const droneGain = _aeAudioCtx.createGain();
+    droneGain.gain.value = 0.04;
+    osc1.connect(droneLPF); osc2.connect(droneLPF);
+    droneLPF.connect(droneGain); droneGain.connect(master);
+    osc1.start(); osc2.start();
+
+    // Ventilation noise: filtered white noise
+    const noiseLen = _aeAudioCtx.sampleRate * 2;
+    const noiseBuf = _aeAudioCtx.createBuffer(1, noiseLen, _aeAudioCtx.sampleRate);
+    const noiseData = noiseBuf.getChannelData(0);
+    for (let i = 0; i < noiseLen; i++) noiseData[i] = Math.random() * 2 - 1;
+    const noiseNode = _aeAudioCtx.createBufferSource();
+    noiseNode.buffer = noiseBuf; noiseNode.loop = true;
+    const noiseBPF = _aeAudioCtx.createBiquadFilter();
+    noiseBPF.type = 'bandpass'; noiseBPF.frequency.value = 400; noiseBPF.Q.value = 0.5;
+    const noiseGain = _aeAudioCtx.createGain();
+    noiseGain.gain.value = 0.015;
+    noiseNode.connect(noiseBPF); noiseBPF.connect(noiseGain); noiseGain.connect(master);
+    noiseNode.start();
+
+    // Sub-bass pulse for tension (activated at high mama levels)
+    const subOsc = _aeAudioCtx.createOscillator();
+    subOsc.type = 'sine'; subOsc.frequency.value = 30;
+    const subGain = _aeAudioCtx.createGain();
+    subGain.gain.value = 0;
+    subOsc.connect(subGain); subGain.connect(master);
+    subOsc.start();
+
+    _aeAudioNodes = { master, droneGain, droneLPF, noiseGain, subGain, osc1, osc2, noiseNode, subOsc };
+
+    // Radar ping loop
+    _aeRadarInterval = setInterval(() => _aeRadarPing(), 4000);
+  } catch (e) { /* Web Audio not available */ }
+}
+
+export function _aeAudioDestroy() {
+  if (_aeRadarInterval) { clearInterval(_aeRadarInterval); _aeRadarInterval = null; }
+  if (!_aeAudioCtx) return;
+  try {
+    _aeAudioNodes.osc1?.stop();
+    _aeAudioNodes.osc2?.stop();
+    _aeAudioNodes.noiseNode?.stop();
+    _aeAudioNodes.subOsc?.stop();
+    _aeAudioCtx.close();
+  } catch (e) { /* ignore */ }
+  _aeAudioCtx = null;
+  _aeAudioNodes = {};
+}
+
+export function _aeAudioSetLevel(mamaLevel) {
+  if (!_aeAudioCtx || !_aeAudioNodes.master) return;
+  const muted = window._tvState?.aeAudioMuted === true;
+  const t = _aeAudioCtx.currentTime;
+  _aeAudioNodes.master.gain.linearRampToValueAtTime(muted ? 0 : 1, t + 0.3);
+  const droneLevel = 0.03 + mamaLevel * 0.015;
+  const filterFreq = 100 + mamaLevel * 40;
+  _aeAudioNodes.droneGain.gain.linearRampToValueAtTime(droneLevel, t + 1);
+  _aeAudioNodes.droneLPF.frequency.linearRampToValueAtTime(filterFreq, t + 1);
+  const subLevel = mamaLevel >= 3 ? 0.04 + (mamaLevel - 3) * 0.02 : 0;
+  _aeAudioNodes.subGain.gain.linearRampToValueAtTime(subLevel, t + 0.5);
+  _aeAudioNodes.noiseGain.gain.linearRampToValueAtTime(0.01 + mamaLevel * 0.005, t + 1);
+}
+
+function _aeRadarPing() {
+  if (!_aeAudioCtx || window._tvState?.aeAudioMuted) return;
+  try {
+    const t = _aeAudioCtx.currentTime;
+    const osc = _aeAudioCtx.createOscillator();
+    osc.type = 'sine'; osc.frequency.value = 1200;
+    osc.frequency.exponentialRampToValueAtTime(800, t + 0.15);
+    const gain = _aeAudioCtx.createGain();
+    gain.gain.setValueAtTime(0.06, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    osc.connect(gain); gain.connect(_aeAudioNodes.master || _aeAudioCtx.destination);
+    osc.start(t); osc.stop(t + 0.3);
+  } catch (e) { /* ignore */ }
+}
+
+export function _aePlaySlime() {
+  if (!_aeAudioCtx || window._tvState?.aeAudioMuted) return;
+  try {
+    const t = _aeAudioCtx.currentTime;
+    const buf = _aeAudioCtx.createBuffer(1, _aeAudioCtx.sampleRate * 0.4, _aeAudioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (data.length * 0.15));
+    const src = _aeAudioCtx.createBufferSource();
+    src.buffer = buf;
+    const lpf = _aeAudioCtx.createBiquadFilter();
+    lpf.type = 'lowpass'; lpf.frequency.value = 600;
+    const gain = _aeAudioCtx.createGain();
+    gain.gain.setValueAtTime(0.15, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    src.connect(lpf); lpf.connect(gain); gain.connect(_aeAudioNodes.master || _aeAudioCtx.destination);
+    src.start(t);
+  } catch (e) { /* ignore */ }
+}
+
+export function _aePlayTrap() {
+  if (!_aeAudioCtx || window._tvState?.aeAudioMuted) return;
+  try {
+    const t = _aeAudioCtx.currentTime;
+    const osc = _aeAudioCtx.createOscillator();
+    osc.type = 'square'; osc.frequency.value = 880;
+    osc.frequency.setValueAtTime(880, t);
+    osc.frequency.setValueAtTime(660, t + 0.1);
+    osc.frequency.setValueAtTime(880, t + 0.2);
+    osc.frequency.setValueAtTime(660, t + 0.3);
+    const gain = _aeAudioCtx.createGain();
+    gain.gain.setValueAtTime(0.08, t);
+    gain.gain.linearRampToValueAtTime(0.08, t + 0.35);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+    osc.connect(gain); gain.connect(_aeAudioNodes.master || _aeAudioCtx.destination);
+    osc.start(t); osc.stop(t + 0.5);
+  } catch (e) { /* ignore */ }
+}
+
+export function _aePlayDelivery() {
+  if (!_aeAudioCtx || window._tvState?.aeAudioMuted) return;
+  try {
+    const t = _aeAudioCtx.currentTime;
+    const osc = _aeAudioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600, t);
+    osc.frequency.setValueAtTime(900, t + 0.1);
+    const gain = _aeAudioCtx.createGain();
+    gain.gain.setValueAtTime(0.07, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+    osc.connect(gain); gain.connect(_aeAudioNodes.master || _aeAudioCtx.destination);
+    osc.start(t); osc.stop(t + 0.25);
+  } catch (e) { /* ignore */ }
+}
+
+export function _aePlayGold() {
+  if (!_aeAudioCtx || window._tvState?.aeAudioMuted) return;
+  try {
+    const t = _aeAudioCtx.currentTime;
+    [600, 800, 1200].forEach((freq, i) => {
+      const osc = _aeAudioCtx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      const gain = _aeAudioCtx.createGain();
+      gain.gain.setValueAtTime(0, t + i * 0.08);
+      gain.gain.linearRampToValueAtTime(0.06, t + i * 0.08 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.08 + 0.4);
+      osc.connect(gain); gain.connect(_aeAudioNodes.master || _aeAudioCtx.destination);
+      osc.start(t + i * 0.08); osc.stop(t + i * 0.08 + 0.4);
+    });
+  } catch (e) { /* ignore */ }
 }

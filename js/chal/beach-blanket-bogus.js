@@ -417,6 +417,478 @@ function _simulateSurf(ep, tribeMembers, result) {
   }
 }
 
+/* ═══════════════════════════════════════════════════════
+   SANDCASTLE PHASE — scavenge materials + build competition
+   ═══════════════════════════════════════════════════════ */
+
+const MATERIALS = [
+  { id: 'shells',    label: 'Shells',    statCheck: s => s.intuition * 0.08 + s.mental * 0.04,    flavor: 'decorative' },
+  { id: 'driftwood', label: 'Driftwood', statCheck: s => s.physical * 0.08 + s.intuition * 0.04,  flavor: 'structural' },
+  { id: 'rocks',     label: 'Rocks',     statCheck: s => s.physical * 0.06 + s.temperament * 0.06, flavor: 'foundation' },
+];
+
+const SCAVENGE_ENCOUNTERS = [
+  {
+    id: 'race-for-material',
+    badge: 'Material Race', badgeClass: 'orange',
+    check(allNames, tribeMembers) {
+      if (Math.random() > 0.35) return null;
+      for (const a of allNames) {
+        for (const b of allNames) {
+          if (a === b) continue;
+          const sameTribe = tribeMembers.some(t => t.members.includes(a) && t.members.includes(b));
+          if (!sameTribe) return { racer1: a, racer2: b };
+        }
+      }
+      return null;
+    },
+    apply({ racer1, racer2 }, materials) {
+      const s1 = pStats(racer1), s2 = pStats(racer2);
+      const r1 = s1.physical * 0.07 + s1.boldness * 0.05 + Math.random() * 0.3;
+      const r2 = s2.physical * 0.07 + s2.boldness * 0.05 + Math.random() * 0.3;
+      const winner = r1 >= r2 ? racer1 : racer2;
+      const loser = winner === racer1 ? racer2 : racer1;
+      addBond(loser, winner, -0.3);
+      const mat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)].id;
+      materials[winner][mat] = (materials[winner][mat] || 0) + 1;
+      const pr = pronouns(winner);
+      return {
+        winner, loser, mat, pr,
+        text: `${racer1} and ${racer2} both spot the same ${mat === 'shells' ? 'pile of pristine shells' : mat === 'driftwood' ? 'chunk of driftwood' : 'perfect flat rock'} — and SPRINT for it. ${winner} gets there first, snatching it right under ${pronouns(loser).posAdj} nose. "${pronouns(loser).Sub === 'He' ? 'Dude' : 'Girl'}, that was MINE!" ${loser} fumes.`,
+      };
+    },
+  },
+  {
+    id: 'help-rival',
+    badge: 'Helped a Rival', badgeClass: 'gold',
+    check(allNames, tribeMembers) {
+      if (Math.random() > 0.15) return null;
+      for (const a of allNames) {
+        for (const b of allNames) {
+          if (a === b) continue;
+          const sameTribe = tribeMembers.some(t => t.members.includes(a) && t.members.includes(b));
+          if (!sameTribe && getBond(a, b) >= 2) return { helper: a, rival: b };
+        }
+      }
+      return null;
+    },
+    apply({ helper, rival }, materials, tribeMembers) {
+      addBond(helper, rival, 0.5);
+      const helperTribe = tribeMembers.find(t => t.members.includes(helper));
+      if (helperTribe) {
+        for (const m of helperTribe.members) {
+          if (m !== helper) addBond(m, helper, -0.3);
+        }
+      }
+      const mat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)].id;
+      materials[rival][mat] = (materials[rival][mat] || 0) + 1;
+      const pr = pronouns(helper);
+      return {
+        helper, rival, pr,
+        text: `${helper} spots ${rival} struggling to pry loose some ${mat} and — wait — actually HELPS ${pronouns(rival).obj}? "We're on different tribes!" ${pr.posAdj} teammates hiss. ${helper} shrugs. "Good sportsmanship, people."`,
+      };
+    },
+  },
+  {
+    id: 'steal-material',
+    badge: 'Material Theft', badgeClass: 'red',
+    check(allNames, tribeMembers) {
+      for (const a of allNames) {
+        const arch = players.find(p => p.name === a)?.archetype || '';
+        if (!['villain', 'mastermind', 'schemer'].includes(arch)) continue;
+        const st = pStats(a);
+        if (st.strategic * 0.1 + Math.random() * 0.3 > 0.5) {
+          for (const b of allNames) {
+            if (a === b) continue;
+            const sameTribe = tribeMembers.some(t => t.members.includes(a) && t.members.includes(b));
+            if (!sameTribe) return { thief: a, victim: b };
+          }
+        }
+      }
+      return null;
+    },
+    apply({ thief, victim }, materials, tribeMembers) {
+      const mat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)].id;
+      const stolen = Math.min(materials[victim][mat] || 0, 1);
+      materials[victim][mat] = (materials[victim][mat] || 0) - stolen;
+      materials[thief][mat] = (materials[thief][mat] || 0) + stolen;
+
+      const prT = pronouns(thief);
+      let detected = false;
+      // Detection by high-intuition witnesses
+      const allActive = tribeMembers.flatMap(t => t.members);
+      for (const w of allActive) {
+        if (w === thief || w === victim) continue;
+        if (pStats(w).intuition * 0.1 + Math.random() * 0.15 > 0.55) {
+          addBond(w, thief, -0.5);
+          detected = true;
+        }
+      }
+      if (detected) {
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[thief] = (gs.popularity[thief] || 0) - 1;
+      }
+
+      const caughtText = detected
+        ? ` But eagle-eyed witnesses clock the whole thing. "YOU STOLE THAT!" The heat is ON.`
+        : ` Nobody notices. ${prT.Sub} smirks and walks away clean.`;
+      return {
+        thief, victim, mat, stolen, detected, prT,
+        text: `${thief} sidles up to ${victim}'s material stash and pockets ${stolen ? `a ${mat === 'shells' ? 'handful of shells' : mat === 'driftwood' ? 'piece of driftwood' : 'rock'}` : 'nothing — the pile is empty!'}.${caughtText}`,
+      };
+    },
+  },
+  {
+    id: 'hidden-cache',
+    badge: 'Hidden Cache', badgeClass: 'gold',
+    check(allNames) {
+      for (const a of allNames) {
+        const s = pStats(a);
+        if (s.intuition * 0.02 + Math.random() * 0.01 > 0.12) return { finder: a };
+      }
+      return null;
+    },
+    apply({ finder }, materials, tribeMembers) {
+      const mat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)].id;
+      materials[finder][mat] = (materials[finder][mat] || 0) + 2;
+      const finderTribe = tribeMembers.find(t => t.members.includes(finder));
+      if (finderTribe) {
+        for (const m of finderTribe.members) {
+          if (m !== finder) addBond(m, finder, 0.3);
+        }
+      }
+      const pr = pronouns(finder);
+      return {
+        finder, mat, pr,
+        text: `${finder} kicks over a sand dune and — JACKPOT! A stash of premium ${mat}! ${pr.Sub} hauls it back to the tribe like a conquering hero. "I TOLD you I had a sixth sense!"`,
+      };
+    },
+  },
+  {
+    id: 'territorial-standoff',
+    badge: 'Standoff', badgeClass: 'orange',
+    check(allNames, tribeMembers) {
+      if (Math.random() > 0.20) return null;
+      if (tribeMembers.length < 2) return null;
+      const t1 = tribeMembers[0], t2 = tribeMembers[1];
+      const a = t1.members[Math.floor(Math.random() * t1.members.length)];
+      const b = t2.members[Math.floor(Math.random() * t2.members.length)];
+      return { challenger: a, defender: b };
+    },
+    apply({ challenger, defender }, materials, tribeMembers) {
+      const sC = pStats(challenger), sD = pStats(defender);
+      const cRoll = sC.boldness * 0.08 + sC.physical * 0.04 + Math.random() * 0.3;
+      const dRoll = sD.boldness * 0.08 + sD.physical * 0.04 + Math.random() * 0.3;
+      const winner = cRoll >= dRoll ? challenger : defender;
+      const loser = winner === challenger ? defender : challenger;
+      const loserTribe = tribeMembers.find(t => t.members.includes(loser));
+      if (loserTribe) {
+        for (const m of loserTribe.members) {
+          if (m !== loser) addBond(m, loser, -0.2);
+        }
+      }
+      const prW = pronouns(winner);
+      return {
+        winner, loser, prW,
+        text: `${challenger} and ${defender} both claim the same stretch of beach. It's a stare-down. ${winner} puffs up ${prW.posAdj} chest and holds ground — ${loser} backs off, muttering. ${pronouns(loser).posAdj} tribe is NOT impressed.`,
+      };
+    },
+  },
+];
+
+const BUILD_EVENTS = [
+  {
+    id: 'creative-disagreement',
+    badge: 'Creative Clash', badgeClass: 'orange',
+    check(tribeNames) {
+      const smart = tribeNames.filter(n => pStats(n).mental * 0.1 + Math.random() * 0.1 > 0.55);
+      if (smart.length >= 2) return { debater1: smart[0], debater2: smart[1] };
+      return null;
+    },
+    apply({ debater1, debater2 }) {
+      const avg = (pStats(debater1).social + pStats(debater2).social) / 2;
+      const resolved = avg * 0.08 + Math.random() * 0.3 > 0.45;
+      if (resolved) {
+        addBond(debater1, debater2, 0.2);
+        addBond(debater2, debater1, 0.2);
+      } else {
+        addBond(debater1, debater2, -0.3);
+        addBond(debater2, debater1, -0.3);
+      }
+      const scoreMod = resolved ? 0.03 : -0.02;
+      return {
+        debater1, debater2, resolved, scoreMod,
+        text: resolved
+          ? `${debater1} and ${debater2} nearly come to blows over the turret placement — "It needs to lean LEFT!" "RIGHT!" — but eventually merge ideas into something even better. Teamwork, people!`
+          : `${debater1} wants gothic spires. ${debater2} wants a moat. They argue for five minutes straight and accomplish NOTHING. The castle pays the price.`,
+      };
+    },
+  },
+  {
+    id: 'sabotage-kick',
+    badge: 'Castle Sabotage', badgeClass: 'red',
+    check(tribeNames, allTribeMembers) {
+      for (const name of allTribeMembers.flatMap(t => t.members)) {
+        const arch = players.find(p => p.name === name)?.archetype || '';
+        if (!['villain', 'mastermind', 'schemer'].includes(arch)) continue;
+        if (!tribeNames.includes(name)) {
+          const st = pStats(name);
+          if (st.strategic * 0.1 + Math.random() * 0.3 > 0.5) return { saboteur: name, targetTribe: tribeNames };
+        }
+      }
+      return null;
+    },
+    apply({ saboteur, targetTribe }) {
+      let detected = false;
+      for (const m of targetTribe) {
+        if (pStats(m).intuition * 0.1 + Math.random() * 0.2 > 0.55) {
+          addBond(m, saboteur, -0.4);
+          detected = true;
+        }
+      }
+      if (detected) {
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[saboteur] = (gs.popularity[saboteur] || 0) - 1;
+      }
+      const pr = pronouns(saboteur);
+      const scoreMod = -0.02;
+      return {
+        saboteur, detected, pr, scoreMod,
+        text: detected
+          ? `${saboteur} "trips" and kicks a hole in the rival castle's wall. ${pr.Sub} plays innocent — "Oops, my bad!" — but ${targetTribe[0]} saw EVERYTHING. "You did that on PURPOSE!"`
+          : `${saboteur} strolls past the rival castle and gives it a subtle kick. A whole section crumbles. ${pr.Sub} whistles and walks away. Devious.`,
+      };
+    },
+  },
+  {
+    id: 'teamwork-moment',
+    badge: 'Teamwork', badgeClass: 'gold',
+    check(tribeNames) {
+      for (let i = 0; i < tribeNames.length; i++) {
+        for (let j = i + 1; j < tribeNames.length; j++) {
+          if (getBond(tribeNames[i], tribeNames[j]) >= 3) return { builder1: tribeNames[i], builder2: tribeNames[j] };
+        }
+      }
+      return null;
+    },
+    apply({ builder1, builder2 }) {
+      addBond(builder1, builder2, 0.3);
+      addBond(builder2, builder1, 0.3);
+      const scoreMod = 0.02;
+      return {
+        builder1, builder2, scoreMod,
+        text: `${builder1} and ${builder2} move in perfect sync — one packs the sand, the other sculpts. It's like watching a buddy-cop castle-building montage. Beautiful.`,
+      };
+    },
+  },
+  {
+    id: 'collapse-setback',
+    badge: 'Castle Collapse', badgeClass: 'red',
+    check(tribeNames) {
+      // Proportional: lowest temperament triggers it more often
+      let lowest = null, lowestVal = Infinity;
+      for (const n of tribeNames) {
+        const t = pStats(n).temperament;
+        if (t < lowestVal) { lowestVal = t; lowest = n; }
+      }
+      if (lowest && (1 - lowestVal * 0.1) * Math.random() > 0.4) return { klutz: lowest, tribe: tribeNames };
+      return null;
+    },
+    apply({ klutz, tribe }) {
+      // Check for helper
+      let helper = null;
+      for (const m of tribe) {
+        if (m === klutz) continue;
+        if (pStats(m).social * 0.1 + Math.random() * 0.2 > 0.5) { helper = m; break; }
+      }
+      let scoreMod;
+      if (helper) {
+        addBond(klutz, helper, 0.4);
+        scoreMod = -0.01;
+        const pr = pronouns(helper);
+        return {
+          klutz, helper, scoreMod,
+          text: `${klutz} leans on the main tower and — WHOMP — the whole thing pancakes. ${helper} dives in and starts rebuilding before the dust even settles. "It's fine, it's FINE!" ${pr.Sub} salvages most of it.`,
+        };
+      } else {
+        for (const m of tribe) {
+          if (m !== klutz) addBond(m, klutz, -0.2);
+        }
+        scoreMod = -0.03;
+        return {
+          klutz, helper: null, scoreMod,
+          text: `${klutz} bumps the castle and the ENTIRE east wing collapses into a sad sand pile. ${pronouns(klutz).posAdj} tribe stares in disbelief. "...Oops?"`,
+        };
+      }
+    },
+  },
+  {
+    id: 'copycat-accusation',
+    badge: 'Copycat!', badgeClass: 'orange',
+    check(tribeNames, allTribeMembers) {
+      if (Math.random() > 0.15) return null;
+      if (allTribeMembers.length < 2) return null;
+      const accuser = tribeNames[Math.floor(Math.random() * tribeNames.length)];
+      const otherTribe = allTribeMembers.find(t => !t.members.includes(accuser));
+      if (!otherTribe) return null;
+      const accused = otherTribe.members[Math.floor(Math.random() * otherTribe.members.length)];
+      return { accuser, accused };
+    },
+    apply({ accuser, accused }) {
+      addBond(accuser, accused, -0.3);
+      addBond(accused, accuser, -0.3);
+      const pr = pronouns(accuser);
+      return {
+        accuser, accused, pr, scoreMod: 0,
+        text: `${accuser} storms over to the other tribe's castle. "You STOLE our design! That turret is IDENTICAL!" ${accused} fires back: "It's a SANDCASTLE. They ALL have turrets!" Chris munches popcorn.`,
+      };
+    },
+  },
+  {
+    id: 'paper-mache-trick',
+    badge: 'Genius Trick', badgeClass: 'gold',
+    check(tribeNames) {
+      for (const n of tribeNames) {
+        if (pStats(n).mental * 0.1 + Math.random() * 0.1 > 0.65) return { inventor: n, tribe: tribeNames };
+      }
+      return null;
+    },
+    apply({ inventor, tribe }) {
+      for (const m of tribe) {
+        if (m !== inventor) addBond(m, inventor, 0.3);
+      }
+      const pr = pronouns(inventor);
+      const scoreMod = 0.05;
+      return {
+        inventor, pr, scoreMod,
+        text: `${inventor} mixes wet sand with seaweed and — is that PAPIER-MÂCHÉ? ${pr.Sub} reinforces the castle walls with the goop. It hardens like concrete. "That's not in the rules!" "There ARE no rules, Chris said so!" Genius.`,
+      };
+    },
+  },
+];
+
+function _simulateSandcastle(ep, tribeMembers, result) {
+  const allNames = tribeMembers.flatMap(t => t.members);
+
+  // Per-player material inventories
+  const materials = {};
+  allNames.forEach(n => { materials[n] = { shells: 0, driftwood: 0, rocks: 0 }; });
+
+  const scavengeEncounters = [];
+  const buildEvents = [];
+  const captains = {};
+
+  /* ── Sub-phase A: Scavenge ── */
+  for (const name of allNames) {
+    const s = pStats(name);
+    for (const mat of MATERIALS) {
+      const roll = mat.statCheck(s) + Math.random() * 0.3;
+      if (roll >= 0.7) materials[name][mat.id] += 2;
+      else if (roll >= 0.45) materials[name][mat.id] += 1;
+    }
+  }
+
+  // Fire 1-2 scavenge encounters
+  const shuffledScav = [...SCAVENGE_ENCOUNTERS].sort(() => Math.random() - 0.5);
+  const scavCount = Math.random() < 0.5 ? 1 : 2;
+  let scavFired = 0;
+  for (const enc of shuffledScav) {
+    if (scavFired >= scavCount) break;
+    const match = enc.check(allNames, tribeMembers);
+    if (!match) continue;
+    const data = enc.apply(match, materials, tribeMembers);
+    data.eventId = enc.id;
+    data.badge = enc.badge;
+    data.badgeClass = enc.badgeClass;
+    scavengeEncounters.push(data);
+    scavFired++;
+  }
+
+  /* ── Sub-phase B: Build ── */
+  // Aggregate materials per tribe
+  const tribeMats = {};
+  for (const t of tribeMembers) {
+    tribeMats[t.name] = { shells: 0, driftwood: 0, rocks: 0 };
+    for (const m of t.members) {
+      tribeMats[t.name].shells += materials[m].shells;
+      tribeMats[t.name].driftwood += materials[m].driftwood;
+      tribeMats[t.name].rocks += materials[m].rocks;
+    }
+  }
+
+  const buildScores = {};
+  for (const t of tribeMembers) {
+    // Base score: average across members
+    let memberTotal = 0;
+    for (const m of t.members) {
+      const s = pStats(m);
+      memberTotal += (s.mental * 0.06 + s.social * 0.05 + s.temperament * 0.04) * (0.8 + Math.random() * 0.4);
+    }
+    let score = memberTotal / t.members.length;
+
+    // Material bonuses
+    const tm = tribeMats[t.name];
+    if (tm.shells >= 3) score *= 1.08;
+    if (tm.driftwood >= 3) score *= 1.08;
+    if (tm.rocks >= 3) score *= 1.08;
+    if (tm.shells > 0 && tm.driftwood > 0 && tm.rocks > 0) score *= 1.05;
+
+    // Build captain = highest mental
+    let captain = t.members[0], captainMental = 0;
+    for (const m of t.members) {
+      const mental = pStats(m).mental;
+      if (mental > captainMental) { captainMental = mental; captain = m; }
+    }
+    captains[t.name] = captain;
+    score += pStats(captain).strategic * 0.03;
+
+    // Fire 1-3 build events
+    const evtCount = 1 + Math.floor(Math.random() * 3);
+    const shuffledBuild = [...BUILD_EVENTS].sort(() => Math.random() - 0.5);
+    let evtFired = 0;
+    for (const evt of shuffledBuild) {
+      if (evtFired >= evtCount) break;
+      const match = evt.check(t.members, tribeMembers);
+      if (!match) continue;
+      const data = evt.apply(match);
+      data.eventId = evt.id;
+      data.badge = evt.badge;
+      data.badgeClass = evt.badgeClass;
+      data.tribe = t.name;
+      if (data.scoreMod) score *= (1 + data.scoreMod);
+      buildEvents.push(data);
+      evtFired++;
+    }
+
+    buildScores[t.name] = score;
+  }
+
+  // Winner = higher build score
+  const sorted = Object.entries(buildScores).sort((a, b) => b[1] - a[1]);
+  const winner = sorted[0][0];
+  result.tribeScores[winner] = (result.tribeScores[winner] || 0) + 1;
+
+  // Store sandcastle data
+  result.sandcastleData = {
+    materials: JSON.parse(JSON.stringify(materials)),
+    tribeMats,
+    buildScores,
+    scavengeEncounters,
+    buildEvents,
+    captains,
+    winner,
+  };
+
+  // Update chalMemberScores with build contributions
+  for (const t of tribeMembers) {
+    for (const m of t.members) {
+      const s = pStats(m);
+      const contribution = (s.mental * 0.06 + s.social * 0.05 + s.temperament * 0.04);
+      ep.chalMemberScores[m] = (ep.chalMemberScores[m] || 0) + contribution * 10;
+    }
+  }
+}
+
 export function simulateBeachBlanketBogus(ep) {
   const tribes = gs.tribes;
   if (!tribes || tribes.length < 2) return;
@@ -445,6 +917,11 @@ export function simulateBeachBlanketBogus(ep) {
 
   // --- SURF PHASE ---
   _simulateSurf(ep, tribeMembers, result);
+  result.phases.push('surf');
+
+  // --- SANDCASTLE PHASE ---
+  _simulateSandcastle(ep, tribeMembers, result);
+  result.phases.push('sandcastle');
 
   // Winner/loser determination from tribeScores
   const sortedTribes = Object.entries(result.tribeScores).sort((a, b) => b[1] - a[1]);

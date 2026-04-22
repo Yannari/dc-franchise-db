@@ -497,11 +497,13 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
   // Host intro
   pushEvent(_rp(PRISON_FOOD_HOST.intro)(host), tribeMembers.flatMap(t => t.members), 'PRISON FOOD', 'purple');
 
-  // ── 1. VICTIM DRAFT ──
+  // ── 1. VICTIM DRAFT — circular targeting so each tribe picks from a different enemy ──
   const victims = {};
-  for (const tribe of tribeMembers) {
-    const enemies = tribeMembers.filter(t => t.name !== tribe.name).flatMap(t => t.members);
-    const scored = enemies.map(name => {
+  // Circular: tribe[0] targets tribe[1], tribe[1] targets tribe[2], tribe[2] targets tribe[0]
+  for (let ti = 0; ti < tribeMembers.length; ti++) {
+    const tribe = tribeMembers[ti];
+    const targetTribe = tribeMembers[(ti + 1) % tribeMembers.length];
+    const scored = targetTribe.members.map(name => {
       const s = pStats(name);
       return { name, w: (10 - s.endurance) * 0.04 + (10 - s.boldness) * 0.03 + Math.random() * 0.5 };
     });
@@ -509,9 +511,8 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
     const victimName = scored[0].name;
     victims[tribe.name] = victimName;
     result.prisonFood.victims[tribe.name] = victimName;
-    const victimTribe = tribeMembers.find(t => t.members.includes(victimName));
     pushEvent(
-      _rp(PRISON_FOOD_HOST.victimPicked)(host, victimName, victimTribe?.name || ''),
+      _rp(PRISON_FOOD_HOST.victimPicked)(host, victimName, targetTribe.name),
       [victimName], 'VICTIM PICKED', 'red'
     );
   }
@@ -672,19 +673,19 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
 
   const roundEscalation = [0.4, 0.55, 0.7, 0.85, 1.0];
   const numRounds = 4 + Math.floor(Math.random() * 2); // 4-5
-  let duelLoser = null;
+  const eliminatedVictims = new Set();
   let vomitRound = null;
 
   const duelRounds = [];
 
   for (let r = 0; r < numRounds; r++) {
-    const roundData = { round: r + 1, events: [], vomited: null };
+    const roundData = { round: r + 1, events: [], vomited: null, biteResults: [] };
     const escFactor = roundEscalation[r] || 1.3;
 
     pushEvent(_rp(PRISON_FOOD_HOST.roundStart)(host, r + 1), Object.values(duelVictims), `ROUND ${r + 1}`, 'purple');
 
     // Collect this round's victims with their stats
-    const activeDuelTribes = tribeNames.filter(tName => !duelLoser || duelVictims[tName] !== duelLoser);
+    const activeDuelTribes = tribeNames.filter(tName => duelVictims[tName] && !eliminatedVictims.has(duelVictims[tName]));
 
     // Build event pool for this round
     const eventPool = [];
@@ -796,26 +797,37 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
       }
     }
 
-    // Check for vomit — add per-round noise so it's not deterministic
+    // Each victim takes a bite — show status for ALL still-eating victims
+    roundData.biteResults = [];
     for (const tName of tribeNames) {
       const v = duelVictims[tName];
-      if (!v || duelLoser) continue;
+      if (!v || eliminatedVictims.has(v)) continue;
       const resist = (victimResists[v] || 0) + Math.random() * 0.15;
       const disgust = (result.prisonFood.cooking[tName]?.disgustScore || 0) * escFactor;
-      if (resist < disgust) {
-        duelLoser = v;
-        vomitRound = r + 1;
-        roundData.vomited = v;
+      const survived = resist >= disgust;
+      const margin = resist - disgust;
+      roundData.biteResults.push({ victim: v, tribe: tName, survived, margin: margin.toFixed(2) });
+      if (!survived) {
+        eliminatedVictims.add(v);
+        if (!vomitRound) vomitRound = r + 1;
+        roundData.vomited = roundData.vomited || [];
+        if (typeof roundData.vomited === 'string') roundData.vomited = [roundData.vomited];
+        roundData.vomited.push(v);
         pushEvent(_rp(PRISON_FOOD_HOST.vomit)(host, v), [v], 'VOMIT', 'red');
-        break;
       }
     }
 
     duelRounds.push(roundData);
-    if (duelLoser) break;
+
+    // End check: 2 tribes = first vomit ends it. 3+ = continue until 1 remains
+    const stillEating = tribeNames.filter(t => duelVictims[t] && !eliminatedVictims.has(duelVictims[t]));
+    if (stillEating.length <= 1) break;
+    if (tribeNames.length === 2 && eliminatedVictims.size > 0) break;
   }
 
-  // Tiebreak: lowest cumulative margin loses
+  // Determine loser: last to vomit, or tiebreak by lowest margin
+  const vomitedList = [...eliminatedVictims];
+  let duelLoser = vomitedList.length ? vomitedList[0] : null;
   if (!duelLoser && tribeNames.length >= 2) {
     const sortedMargins = tribeNames
       .map(tName => ({ tName, v: duelVictims[tName], m: victimMargins[duelVictims[tName]] || 0 }))
@@ -2001,12 +2013,18 @@ export function rpBuildChefshankPrisonFood(ep) {
     const victim = pf.victims?.[tName];
     if (!victim) continue;
     const vSt = pStats(victim);
-    const enemyTribe = tribeNames.find(t => t !== tName);
+    const targetTribeName = tribeNames[(tribeNames.indexOf(tName) + 1) % tribeNames.length] || '?';
+    const weakStomach = vSt.endurance <= 4;
+    const nervous = vSt.boldness <= 4;
+    const reason = weakStomach && nervous ? `Known for a weak stomach AND shaky nerves — easy target.`
+      : weakStomach ? `Not exactly known for keeping things down under pressure.`
+      : nervous ? `Looks tough, but nerves might get the best of ${pronouns(victim).obj}.`
+      : `A gamble — no obvious weakness, but ${tName} likes their odds.`;
     draftHtml += `<div class="cs-ev">
       ${_csSmallPortrait(victim, 44)}
       <div style="flex:1;min-width:0">
-        <div class="cs-ev-badge orange">${tName} SELECTS</div>
-        <div class="cs-ev-text"><strong>${victim}</strong> has been chosen to eat <strong>${enemyTribe || 'enemy'}</strong>'s prison slop. Endurance: ${vSt.endurance}/10. Boldness: ${vSt.boldness}/10.</div>
+        <div class="cs-ev-badge orange">${tName} → ${targetTribeName}</div>
+        <div class="cs-ev-text"><strong>${victim}</strong> from <strong>${targetTribeName}</strong> will eat ${tName}'s cooking. ${reason}</div>
       </div>
       ${_csStamp('CHOSEN', 'rust')}
     </div>`;
@@ -2038,24 +2056,42 @@ export function rpBuildChefshankPrisonFood(ep) {
     const rd = duelRounds[i];
     let roundHtml = `<div class="cs-ev round-header"><div style="flex:1;text-align:center"><div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--cs-rust);letter-spacing:3px">ROUND ${rd.round}</div></div></div>`;
 
-    for (const evt of (rd.events || [])) {
-      const evtClass = evt.resistDelta > 0 ? 'positive' : evt.resistDelta < 0 ? 'negative' : '';
-      roundHtml += `<div class="cs-ev ${evtClass}">
-        ${_csSmallPortrait(evt.victim, 40)}
+    // Bite status for each victim this round
+    for (const bite of (rd.biteResults || [])) {
+      const statusColor = bite.survived ? '#86efac' : '#fca5a5';
+      const statusText = bite.survived ? `takes a bite and holds it down. (margin: ${bite.margin})` : `can't keep it down!`;
+      roundHtml += `<div class="cs-ev ${bite.survived ? '' : 'vomit'}" style="border-left-color:${bite.survived ? 'var(--cs-mold)' : 'var(--cs-blood)'}">
+        ${_csSmallPortrait(bite.victim, 36)}
         <div style="flex:1;min-width:0">
-          <div class="cs-ev-badge ${evt.resistDelta > 0 ? 'green' : evt.resistDelta < 0 ? 'red' : 'gray'}">${(evt.type || '').replace(/([A-Z])/g, ' $1').toUpperCase().trim()}</div>
-          <div class="cs-ev-text">${evt.text || ''}</div>
-          ${evt.resistDelta ? `<div style="font-size:10px;color:${evt.resistDelta > 0 ? '#86efac' : '#fca5a5'};margin-top:3px">Resistance ${evt.resistDelta > 0 ? '+' : ''}${evt.resistDelta.toFixed(2)}</div>` : ''}
+          <div class="cs-ev-badge ${bite.survived ? 'green' : 'red'}">${bite.tribe} — ${bite.victim}</div>
+          <div class="cs-ev-text"><strong>${bite.victim}</strong> ${statusText}</div>
         </div>
       </div>`;
     }
 
-    if (rd.vomited) {
+    // Events within this round
+    for (const evt of (rd.events || [])) {
+      const evtColor = evt.resistDelta > 0 ? '#2d6a4f' : evt.resistDelta < 0 ? '#991b1b' : '#4b5563';
+      const evtIcon = evt.resistDelta > 0 ? '💪' : evt.resistDelta < 0 ? '🤢' : '😐';
+      roundHtml += `<div style="background:${evtColor}22;border:1px solid ${evtColor}44;border-left:4px solid ${evtColor};border-radius:4px;padding:8px 12px;margin:4px 0;display:flex;align-items:flex-start;gap:8px">
+        <span style="font-size:16px;flex-shrink:0">${evtIcon}</span>
+        ${_csSmallPortrait(evt.victim, 32)}
+        <div style="flex:1;min-width:0">
+          <div class="cs-ev-badge ${evt.resistDelta > 0 ? 'green' : evt.resistDelta < 0 ? 'red' : 'gray'}">${(evt.type || '').replace(/([A-Z])/g, ' $1').toUpperCase().trim()}</div>
+          <div class="cs-ev-text" style="font-size:12px">${evt.text || ''}</div>
+          ${evt.resistDelta ? `<div style="font-size:10px;color:${evt.resistDelta > 0 ? '#86efac' : '#fca5a5'};margin-top:2px">Resistance ${evt.resistDelta > 0 ? '+' : ''}${evt.resistDelta.toFixed(2)}</div>` : ''}
+        </div>
+      </div>`;
+    }
+
+    // Vomit stamps
+    const vomitList = Array.isArray(rd.vomited) ? rd.vomited : rd.vomited ? [rd.vomited] : [];
+    for (const v of vomitList) {
       roundHtml += `<div class="cs-ev vomit">
-        ${_csSmallPortrait(rd.vomited, 44)}
+        ${_csSmallPortrait(v, 44)}
         <div style="flex:1;text-align:center">
           ${_csStamp('ELIMINATED', 'green')}
-          <div class="cs-ev-text" style="margin-top:8px"><strong>${rd.vomited}</strong> can't keep it down. Phase 1 is over.</div>
+          <div class="cs-ev-text" style="margin-top:8px"><strong>${v}</strong> loses it. Out of the eating duel.</div>
         </div>
       </div>`;
     }

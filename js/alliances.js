@@ -324,6 +324,12 @@ export function computeHeat(name, tribalPlayers, alliances) {
       if (data.target === name && tribalPlayers.includes(victim) && ((gs.episode || 0) + 1) < data.expiresEp) heat += data.amount;
     });
   }
+  // One Flu Over the Cuckoos: rivalry prank + refusal-to-help heat
+  if (gs._fluHeat) {
+    Object.entries(gs._fluHeat).forEach(([victim, data]) => {
+      if (data.target === name && tribalPlayers.includes(victim) && ((gs.episode || 0) + 1) < data.expiresEp) heat += data.amount;
+    });
+  }
   // Off the Chain: bike race sabotage/rivalry heat
   if (gs._bikeRaceHeat?.[name] && ((gs.episode || 0) + 1) < gs._bikeRaceHeat[name].expiresEp) heat += gs._bikeRaceHeat[name].amount;
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──

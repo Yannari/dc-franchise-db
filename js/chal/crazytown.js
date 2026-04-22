@@ -7,22 +7,22 @@ import { addBond, getBond } from '../bonds.js';
 
 const HORSE_DIVE_JUMPED = {
   high: [
-    (name, pr) => `${name} charges down the platform like ${pr.posAdj} boots are on fire and launches off — landing square on the horse's back. Not even a wobble.`,
-    (name, pr) => `${name} lets out a war whoop and goes airborne — dropping a hundred feet and sticking the saddle like a born rodeo rider.`,
-    (name, pr) => `${name} tips an imaginary hat to the crowd and leaps. A hundred feet later, ${pr.sub} ${pr.sub === 'they' ? 'land' : 'lands'} on the horse like it was nothing.`,
-    (name, pr) => `With a grin that'd scare a rattlesnake, ${name} blasts off the platform and drops onto the horse below.`,
+    (name, pr) => `${name} charges down the platform like ${pr.posAdj} boots are on fire and launches off the edge without a flinch.`,
+    (name, pr) => `${name} lets out a war whoop and goes airborne — a hundred feet of free fall with a grin on ${pr.posAdj} face.`,
+    (name, pr) => `${name} tips an imaginary hat to the crowd and leaps. No hesitation. Pure outlaw confidence.`,
+    (name, pr) => `With a grin that'd scare a rattlesnake, ${name} blasts off the platform and plummets toward the horse below.`,
   ],
   mid: [
-    (name, pr) => `${name} takes a breath, steadies ${pr.posAdj} nerve, and jumps — landing on the horse rough but holding on.`,
-    (name, pr) => `${name} mutters something under ${pr.posAdj} breath, then leaps off the platform and catches the saddle with grim determination.`,
+    (name, pr) => `${name} takes a breath, steadies ${pr.posAdj} nerve, and commits — off the edge and into the air.`,
+    (name, pr) => `${name} mutters something under ${pr.posAdj} breath, then leaps off the platform with grim determination.`,
     (name, pr) => `After a beat of hesitation, ${name} decides the horse is better than the shame. ${name} jumps.`,
-    (name, pr) => `${name} plants both feet and goes — not pretty, not flashy, but the horse is mounted and the deed is done.`,
+    (name, pr) => `${name} plants both feet and goes — not pretty, not flashy, but the leap is made.`,
   ],
   low: [
-    (name, pr) => `${name} shakes visibly at the edge before finally tipping forward, a yelp trailing ${pr.obj} all the way down to the horse.`,
-    (name, pr) => `With closed eyes and a prayer, ${name} pushes off the platform — barely a jump, more of a controlled fall toward the horse.`,
-    (name, pr) => `${name} nearly turns back twice before pitching off the edge, arms flailing like a tumbleweed in a twister. Somehow the horse catches ${pr.obj}.`,
-    (name, pr) => `${name} squeaks out a tiny "okay" and stumbles off the platform, crashing onto the horse below with zero grace.`,
+    (name, pr) => `${name} shakes visibly at the edge before finally tipping forward, a yelp trailing ${pr.obj} all the way down.`,
+    (name, pr) => `With closed eyes and a prayer, ${name} pushes off the platform — barely a jump, more of a controlled fall.`,
+    (name, pr) => `${name} nearly turns back twice before pitching off the edge, arms flailing like a tumbleweed in a twister.`,
+    (name, pr) => `${name} squeaks out a tiny "okay" and stumbles off the platform, screaming the whole way down.`,
   ],
 };
 
@@ -181,9 +181,9 @@ const STANDOFF_SHOT = {
     (shooter, target, sPr, tPr) => `${shooter} pulls the trigger but nerves get the better of ${sPr.obj}. ${target} ducks and the round goes nowhere useful.`,
   ],
   shield: [
-    (shooter, target, sPr, tPr) => `Before the shot lands on ${target}, a teammate steps into the line of fire — taking the hit to protect ${tPr.obj}.`,
-    (shooter, target, sPr, tPr) => `A loyal hand throws ${target === 'Chris' ? 'himself' : 'themselves'} in front of ${target} — the bullet's theirs now. ${target} owes them one.`,
-    (shooter, target, sPr, tPr) => `${target} would've taken that hit — but a loyal teammate absorbs it instead, staggering back with grim resolve.`,
+    (shielder, protected_, sPr, tPr) => `Before the shot lands on ${protected_}, ${shielder} leaps into the line of fire — taking the hit instead. ${sPr.Sub} staggers but holds ${sPr.posAdj} ground. Bond earned.`,
+    (shielder, protected_, sPr, tPr) => `${shielder} throws ${sPr.ref} in front of ${protected_}. The shot catches ${shielder} square in the chest. ${protected_} is safe — ${shielder} is not.`,
+    (shielder, protected_, sPr, tPr) => `${protected_} would've taken that hit — but ${shielder} absorbs it instead, stepping in with grim resolve. That's loyalty. (${shielder} takes +1 hit, ${protected_} saved)`,
   ],
   betrayal: [
     (shooter, target, sPr, tPr) => `${shooter} pivots — and fires directly at ${target}, ${sPr.posAdj} own ally. The circle goes quiet.`,
@@ -540,9 +540,8 @@ function _simulateHorseDive(ep, tribeMembers, result) {
           if (idx !== -1) chickens.splice(idx, 1);
           jumpers.push({ name: chicken, landingPoints: 1 });
           ep.chalMemberScores[chicken] = (ep.chalMemberScores[chicken] || 0) + 3;
-          // Update reaction
           const rx = reactions.find(r => r.name === chicken);
-          if (rx) { rx.jumped = true; rx.intervention = { actor: bestTalker.name, path, success, text: convText, hostLine }; }
+          if (rx) { rx.jumped = true; rx.landingKey = 'bellyflop'; rx.landingPoints = 1; rx.intervention = { actor: bestTalker.name, path, success, text: convText, hostLine }; }
         } else {
           addBond(bestTalker.name, chicken, -0.1);
           const rx = reactions.find(r => r.name === chicken);
@@ -571,7 +570,7 @@ function _simulateHorseDive(ep, tribeMembers, result) {
           jumpers.push({ name: chicken, landingPoints: 1 });
           ep.chalMemberScores[chicken] = (ep.chalMemberScores[chicken] || 0) + 3;
           const rx = reactions.find(r => r.name === chicken);
-          if (rx) { rx.jumped = true; rx.intervention = { actor: bestTalker.name, path, success, text: forceText, hostLine }; }
+          if (rx) { rx.jumped = true; rx.landingKey = 'bellyflop'; rx.landingPoints = 1; rx.intervention = { actor: bestTalker.name, path, success, text: forceText, hostLine }; }
         } else {
           addBond(bestTalker.name, chicken, -0.2);
           const rx = reactions.find(r => r.name === chicken);
@@ -610,7 +609,7 @@ function _simulateHorseDive(ep, tribeMembers, result) {
 
     // Scoring: divide by ALL members, not just jumpers. Chickens drag the average down.
     const totalPoints = jumpers.reduce((sum, j) => sum + j.landingPoints, 0);
-    const tribeScore = members.length > 0 ? totalPoints / members.length : 0;
+    const tribeScore = tribe.members.length > 0 ? totalPoints / tribe.members.length : 0;
 
     tribeResults.push({ tribe: tribe.name, jumpers, chickens, reactions, interventions, tribeScore });
   }
@@ -636,40 +635,44 @@ function _simulateDramaBreak(ep, tribeMembers, result, breakNum) {
   const campKey = gs.tribes[0]?.name || 'merge';
   const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
 
-  const shuffled = [...DRAMA_BREAK_EVENTS].sort(() => Math.random() - 0.5);
   const firedEvents = [];
   const usedPlayers = new Set();
+  const minCount = 4;
   const targetCount = 4 + Math.floor(Math.random() * 3); // 4–6
 
-  for (const evt of shuffled) {
-    if (firedEvents.length >= targetCount) break;
-    const ctx = evt.check(tribeMembers, result);
-    if (!ctx) continue;
+  // Two passes: first with used-player blocking, second without if under minimum
+  for (let pass = 0; pass < 2; pass++) {
+    if (pass === 1 && firedEvents.length >= minCount) break;
+    if (pass === 1) usedPlayers.clear();
+    const shuffled = [...DRAMA_BREAK_EVENTS].sort(() => Math.random() - 0.5);
+    for (const evt of shuffled) {
+      if (firedEvents.length >= targetCount) break;
+      const ctx = evt.check(tribeMembers, result);
+      if (!ctx) continue;
 
-    // Avoid same player starring in consecutive events
-    const starring = [ctx.actor, ctx.target].filter(Boolean);
-    if (starring.some(p => usedPlayers.has(p))) continue;
+      const starring = [ctx.actor, ctx.target].filter(Boolean);
+      if (pass === 0 && starring.some(p => usedPlayers.has(p))) continue;
 
-    const outcome = evt.apply(ctx);
-    if (!outcome) continue;
+      const outcome = evt.apply(ctx);
+      if (!outcome) continue;
+      // Don't fire same event type twice
+      if (firedEvents.some(e => e.id === evt.id)) continue;
 
-    firedEvents.push({ id: evt.id, badge: evt.badge, badgeClass: evt.badgeClass, ...outcome });
+      firedEvents.push({ id: evt.id, badge: evt.badge, badgeClass: evt.badgeClass, ...outcome });
 
-    // Camp event
-    if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
-    if (!ep.campEvents[campKey].post) ep.campEvents[campKey].post = [];
-    ep.campEvents[campKey].post.push({
-      text: outcome.text,
-      players: outcome.players || [],
-      badgeText: evt.badge.toUpperCase(),
-      badgeClass: evt.badgeClass,
-      tag: 'challenge',
-    });
+      if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+      if (!ep.campEvents[campKey].post) ep.campEvents[campKey].post = [];
+      ep.campEvents[campKey].post.push({
+        text: outcome.text,
+        players: outcome.players || [],
+        badgeText: evt.badge.toUpperCase(),
+        badgeClass: evt.badgeClass,
+        tag: 'challenge',
+      });
 
-    // Track used players (only block for next iteration)
-    starring.forEach(p => usedPlayers.add(p));
-    // Reset after each event so only consecutive is blocked
-    if (firedEvents.length % 2 === 0) usedPlayers.clear();
+      starring.forEach(p => usedPlayers.add(p));
+      if (firedEvents.length % 2 === 0) usedPlayers.clear();
+    }
   }
 
   if (breakNum === 1) result.breakEvents1 = firedEvents;
@@ -919,199 +922,149 @@ function _simulateStandoff(ep, tribeMembers, result) {
       targetCounts[pick] = (targetCounts[pick] || 0) + 1;
     }
 
-    // Check events before shots
-    const hitOverrides = {}; // target -> forced miss
-    const extraHits = {}; // target -> extra hit from events
+    // ── EVENT POOL: guaranteed 1-2 events per round, proportional weights ──
+    const hitOverrides = {};
+    const extraHits = {};
+    const eventPool = [];
+    const usedActors = new Set();
 
-    // Shield move (15% chance)
-    if (Math.random() < 0.15) {
-      const loyalCandidates = [...standing].filter(p => pStats(p).loyalty >= 7);
-      if (loyalCandidates.length > 0) {
-        const shielder = loyalCandidates[Math.floor(Math.random() * loyalCandidates.length)];
-        const shielderTribe = playerTribe[shielder];
-        // Find a teammate who's being targeted
-        const protectedTeammate = [...standing].find(p =>
-          p !== shielder && playerTribe[p] === shielderTribe &&
-          Object.values(targets).includes(p)
-        );
-        if (protectedTeammate) {
-          // shielder absorbs one hit meant for protectedTeammate
-          extraHits[shielder] = (extraHits[shielder] || 0) + 1;
-          hitOverrides[protectedTeammate] = (hitOverrides[protectedTeammate] || 0) + 1;
-          addBond(shielder, protectedTeammate, 0.4);
-          const sPr = pronouns(shielder);
-          const tPr = pronouns(protectedTeammate);
-          roundData.events.push({
-            type: 'shield',
-            actor: shielder,
-            target: protectedTeammate,
-            text: _rp(STANDOFF_SHOT.shield)(shielder, protectedTeammate, sPr, tPr),
-            players: [shielder, protectedTeammate],
-            badgeText: 'SHIELD MOVE', badgeClass: 'blue',
-          });
+    // Build candidate events — all weights normalized to ~0.3-0.6 range so no type dominates
+    // Each type adds ONE best candidate to the pool (not every eligible player)
+    const _bestCandidate = (arr, scoreFn) => arr.length ? arr.reduce((best, p) => { const s = scoreFn(p); return s > best.s ? { p, s } : best; }, { p: arr[0], s: scoreFn(arr[0]) }) : null;
+
+    // Shield: best loyalty player who has a targeted teammate
+    const shieldCandidates = [...standing].filter(p => {
+      const sTribe = playerTribe[p];
+      return pStats(p).loyalty * 0.1 > 0.3 && [...standing].some(t => t !== p && playerTribe[t] === sTribe && Object.values(targets).includes(t));
+    });
+    if (shieldCandidates.length) {
+      const best = _bestCandidate(shieldCandidates, p => pStats(p).loyalty * 0.04 + Math.random() * 0.3);
+      const sTribe = playerTribe[best.p];
+      const teammate = [...standing].find(t => t !== best.p && playerTribe[t] === sTribe && Object.values(targets).includes(t));
+      if (teammate) eventPool.push({ type: 'shield', weight: 0.35 + Math.random() * 0.2, actor: best.p, target: teammate });
+    }
+    // Sabotage: best villain/schemer/chaos/wildcard
+    const sabCandidates = [...standing].filter(p => {
+      const arch = players.find(x => x.name === p)?.archetype;
+      return ['villain','mastermind','schemer','chaos-agent','wildcard'].includes(arch);
+    });
+    if (sabCandidates.length) {
+      const myCount = [...standing].filter(x => playerTribe[x] === playerTribe[sabCandidates[0]]).length;
+      const desperate = (standing.size - myCount) > myCount * 1.5 ? 0.15 : 0;
+      const best = _bestCandidate(sabCandidates, p => pStats(p).strategic * 0.03 + Math.random() * 0.3);
+      eventPool.push({ type: 'sabotage', weight: 0.35 + desperate + Math.random() * 0.2, actor: best.p });
+    }
+    // Truce: best strategic pair across tribes
+    if (i < MAX_ROUNDS - 1) {
+      const trucePairs = [];
+      for (const p of [...standing]) {
+        const crossAllies = [...standing].filter(c => c !== p && playerTribe[c] !== playerTribe[p] &&
+          (getBond(p, c) >= 3 || (pStats(p).strategic >= 6 && pStats(c).strategic >= 6)));
+        if (crossAllies.length) {
+          const best = crossAllies.reduce((b, c) => getBond(p, c) > getBond(p, b) ? c : b, crossAllies[0]);
+          trucePairs.push({ actor: p, target: best, score: pStats(p).strategic * 0.03 + Math.max(0, getBond(p, best)) * 0.05 });
         }
       }
-    }
-
-    // Betrayal shot (5% chance — rare and consequential)
-    if (Math.random() < 0.05) {
-      const betrayerCandidates = [...standing].filter(p => {
-        const arch = players.find(x => x.name === p)?.archetype;
-        return ['villain','mastermind','schemer'].includes(arch) && pStats(p).strategic >= 6;
-      });
-      if (betrayerCandidates.length > 0) {
-        const betrayer = betrayerCandidates[Math.floor(Math.random() * betrayerCandidates.length)];
-        const sameTribers = [...standing].filter(p => p !== betrayer && playerTribe[p] === playerTribe[betrayer]);
-        if (sameTribers.length > 0) {
-          const victim = sameTribers[Math.floor(Math.random() * sameTribers.length)];
-          targets[betrayer] = victim;
-          // Massive bond penalty from ENTIRE tribe, not just witnesses
-          const betrayerTribe = playerTribe[betrayer];
-          tribeMembers.forEach(t => {
-            if (t.name === betrayerTribe) {
-              t.members.filter(m => m !== betrayer).forEach(m => addBond(m, betrayer, -1.5));
-            }
-          });
-          // Cross-tribe witnesses also lose respect
-          [...standing].filter(w => w !== betrayer && playerTribe[w] !== betrayerTribe).forEach(w => addBond(w, betrayer, -0.5));
-          if (!gs.popularity) gs.popularity = {};
-          gs.popularity[betrayer] = (gs.popularity[betrayer] || 0) - 3;
-          // Heat: betrayal victim wants revenge
-          if (!gs._crazytownHeat) gs._crazytownHeat = {};
-          gs._crazytownHeat[victim] = { target: betrayer, amount: 2.0, expiresEp: (gs.episode || 1) + 3 };
-          const bPr = pronouns(betrayer);
-          const vPr = pronouns(victim);
-          roundData.events.push({
-            type: 'betrayal',
-            shooter: betrayer,
-            actor: betrayer,
-            target: victim,
-            text: _rp(STANDOFF_SHOT.betrayal)(betrayer, victim, bPr, vPr),
-            players: [betrayer, victim],
-            badgeText: 'BETRAYAL', badgeClass: 'red',
-          });
-        }
+      if (trucePairs.length) {
+        const best = trucePairs.sort((a, b) => b.score - a.score)[0];
+        eventPool.push({ type: 'truce', weight: 0.35 + Math.random() * 0.2, actor: best.actor, target: best.target });
       }
     }
-
-    // Showmance hesitation (10% chance)
-    if (Math.random() < 0.10 && seasonConfig.romance) {
+    // Taunt: reckless move — chaos-agent, wildcard, hothead archetypes only
+    const tauntCandidates = [...standing].filter(p => {
+      const arch = players.find(x => x.name === p)?.archetype;
+      return ['chaos-agent','wildcard','hothead'].includes(arch) && pStats(p).boldness >= 5;
+    });
+    if (tauntCandidates.length) {
+      const best = _bestCandidate(tauntCandidates, p => pStats(p).boldness * 0.03 + Math.random() * 0.3);
+      eventPool.push({ type: 'taunt', weight: 0.3 + Math.random() * 0.15, actor: best.p });
+    }
+    // Hide: best strategic/intuition wounded player
+    const hideCandidates = [...standing].filter(p => hits[p] >= 1 && (pStats(p).strategic >= 5 || pStats(p).intuition >= 5));
+    if (hideCandidates.length) {
+      const best = _bestCandidate(hideCandidates, p => (pStats(p).strategic + pStats(p).intuition) * 0.02 + Math.random() * 0.3);
+      eventPool.push({ type: 'hide', weight: 0.35 + Math.random() * 0.2, actor: best.p });
+    }
+    // Hesitation: showmance cross-tribe
+    if (seasonConfig.romance !== false) {
       for (const sm of (gs.showmances || [])) {
-        if (standing.has(sm.a) && standing.has(sm.b) && playerTribe[sm.a] !== playerTribe[sm.b]) {
-          if (romanticCompat(sm.a, sm.b) >= 0.3) {
-            // One of them wastes their shot
-            const hesitator = Math.random() < 0.5 ? sm.a : sm.b;
-            const partner = hesitator === sm.a ? sm.b : sm.a;
-            hitOverrides[targets[hesitator]] = (hitOverrides[targets[hesitator]] || 0) + 1; // cancel the shot
-            targets[hesitator] = null; // forced miss
-            const hPr = pronouns(hesitator);
-            const pPr = pronouns(partner);
-            roundData.events.push({
-              type: 'hesitation',
-              actor: hesitator,
-              target: partner,
-              text: _rp(STANDOFF_SHOT.hesitation)(hesitator, partner, hPr, pPr),
-              players: [hesitator, partner],
-              badgeText: 'HESITATION', badgeClass: 'pink',
-            });
-            break;
-          }
+        if (standing.has(sm.a) && standing.has(sm.b) && playerTribe[sm.a] !== playerTribe[sm.b] && romanticCompat(sm.a, sm.b) >= 0.3) {
+          const hesitator = Math.random() < 0.5 ? sm.a : sm.b;
+          eventPool.push({ type: 'hesitation', weight: 0.4 + Math.random() * 0.2, actor: hesitator, target: hesitator === sm.a ? sm.b : sm.a });
+          break;
         }
       }
     }
-
-    // Sabotage — villain tampers with enemy's gun (12% chance, more likely when outnumbered)
-    if (Math.random() < 0.12) {
-      const saboteurPool = [...standing].filter(p => {
-        const arch = players.find(x => x.name === p)?.archetype;
-        return ['villain','mastermind','schemer'].includes(arch);
-      });
-      if (saboteurPool.length) {
-        const saboteur = saboteurPool[Math.floor(Math.random() * saboteurPool.length)];
-        const sabTribe = playerTribe[saboteur];
-        // More desperate = more likely: check if tribe is outnumbered
-        const myCount = [...standing].filter(p => playerTribe[p] === sabTribe).length;
-        const totalOthers = standing.size - myCount;
-        const desperate = totalOthers > myCount * 1.5;
-        if (desperate || Math.random() < 0.5) {
-          const enemyShooters = [...standing].filter(p => playerTribe[p] !== sabTribe && p !== saboteur);
-          if (enemyShooters.length) {
-            const victim = enemyShooters[Math.floor(Math.random() * enemyShooters.length)];
-            targets[victim] = null; // gun jammed — forced miss
-            addBond(victim, saboteur, -0.6);
-            if (!gs.popularity) gs.popularity = {};
-            gs.popularity[saboteur] = (gs.popularity[saboteur] || 0) - 1;
-            const sPr = pronouns(saboteur);
-            const vPr = pronouns(victim);
-            roundData.events.push({
-              type: 'sabotage',
-              actor: saboteur, target: victim,
-              text: `${saboteur} slips behind ${victim} and does something to ${vPr.posAdj} water gun. When ${victim} pulls the trigger — nothing. The gun's been tampered with. ${sPr.Sub} plays dumb.`,
-              players: [saboteur, victim],
-              badgeText: 'SABOTAGE', badgeClass: 'red',
-            });
-          }
-        }
+    // Betrayal: rare — only if villain with strategic ≥ 6
+    for (const p of [...standing]) {
+      const arch = players.find(x => x.name === p)?.archetype;
+      if (['villain','mastermind','schemer'].includes(arch) && pStats(p).strategic >= 6) {
+        const sameTribers = [...standing].filter(x => x !== p && playerTribe[x] === playerTribe[p]);
+        if (sameTribers.length) { eventPool.push({ type: 'betrayal', weight: 0.15 + Math.random() * 0.1, actor: p, target: sameTribers[Math.floor(Math.random() * sameTribers.length)] }); break; }
       }
     }
 
-    // Cross-tribe truce — two players from different tribes agree not to shoot each other (10% chance)
-    if (Math.random() < 0.10 && i < MAX_ROUNDS - 1) {
-      const truceCandidates = [...standing].filter(p => {
-        const crossBonds = [...standing].filter(c => c !== p && playerTribe[c] !== playerTribe[p] && getBond(p, c) >= 3);
-        return crossBonds.length > 0;
-      });
-      if (truceCandidates.length) {
-        const initiator = truceCandidates[Math.floor(Math.random() * truceCandidates.length)];
-        const crossFriends = [...standing].filter(c => c !== initiator && playerTribe[c] !== playerTribe[initiator] && getBond(initiator, c) >= 3);
-        if (crossFriends.length) {
-          const partner = crossFriends.reduce((best, c) => getBond(initiator, c) > getBond(initiator, best) ? c : best, crossFriends[0]);
-          // Neither targets the other this round
-          if (targets[initiator] === partner) {
-            const altTargets = [...standing].filter(c => c !== initiator && c !== partner && playerTribe[c] !== playerTribe[initiator]);
-            targets[initiator] = altTargets.length ? altTargets[Math.floor(Math.random() * altTargets.length)] : null;
-          }
-          if (targets[partner] === initiator) {
-            const altTargets = [...standing].filter(c => c !== partner && c !== initiator && playerTribe[c] !== playerTribe[partner]);
-            targets[partner] = altTargets.length ? altTargets[Math.floor(Math.random() * altTargets.length)] : null;
-          }
-          addBond(initiator, partner, 0.3);
-          const iPr = pronouns(initiator);
-          const pPr = pronouns(partner);
-          roundData.events.push({
-            type: 'truce',
-            actor: initiator, target: partner,
-            text: `${initiator} and ${partner} lock eyes across the circle — a silent nod. Neither points at the other. An unspoken truce holds for now.`,
-            players: [initiator, partner],
-            badgeText: 'TRUCE', badgeClass: 'teal',
-          });
-        }
-      }
-    }
+    // Pick 1-2 events from pool (no actor overlap)
+    const shuffledPool = eventPool.sort((a, b) => (b.weight + Math.random() * 0.2) - (a.weight + Math.random() * 0.2));
+    const eventCount = standing.size >= 6 ? 2 : 1;
+    let eventsFired = 0;
+    for (const evt of shuffledPool) {
+      if (eventsFired >= eventCount) break;
+      if (usedActors.has(evt.actor)) continue;
+      if (evt.target && usedActors.has(evt.target)) continue;
+      usedActors.add(evt.actor);
+      if (evt.target) usedActors.add(evt.target);
 
-    // Taunt — bold player taunts enemy to draw fire (8% chance)
-    if (Math.random() < 0.08) {
-      const taunters = [...standing].filter(p => pStats(p).boldness >= 6);
-      if (taunters.length) {
-        const taunter = taunters[Math.floor(Math.random() * taunters.length)];
-        const taunterTribe = playerTribe[taunter];
-        // Taunt redirects 1-2 enemy shooters to target the taunter instead
-        const enemyShooters = [...standing].filter(p => playerTribe[p] !== taunterTribe && targets[p] && targets[p] !== taunter);
-        const redirected = enemyShooters.slice(0, Math.min(2, enemyShooters.length));
-        for (const rs of redirected) targets[rs] = taunter;
-        if (redirected.length) {
-          if (!gs.popularity) gs.popularity = {};
-          gs.popularity[taunter] = (gs.popularity[taunter] || 0) + 1;
-          const tPr = pronouns(taunter);
-          roundData.events.push({
-            type: 'taunt',
-            actor: taunter, target: redirected[0],
-            text: `${taunter} steps forward and beats ${tPr.posAdj} chest. "You want some?! COME GET SOME!" ${redirected.length > 1 ? `${redirected.join(' and ')} both swing their guns toward ${taunter}.` : `${redirected[0]} can't resist — gun swings toward ${taunter}.`}`,
-            players: [taunter, ...redirected],
-            badgeText: 'TAUNT', badgeClass: 'orange',
-          });
-        }
+      if (evt.type === 'shield') {
+        extraHits[evt.actor] = (extraHits[evt.actor] || 0) + 1;
+        hitOverrides[evt.target] = (hitOverrides[evt.target] || 0) + 1;
+        addBond(evt.actor, evt.target, 0.4);
+        const sPr = pronouns(evt.actor); const tPr = pronouns(evt.target);
+        roundData.events.push({ type: 'shield', actor: evt.actor, target: evt.target, shielderHit: evt.actor, shieldedPlayer: evt.target, text: _rp(STANDOFF_SHOT.shield)(evt.actor, evt.target, sPr, tPr), players: [evt.actor, evt.target], badgeText: 'SHIELD', badgeClass: 'blue' });
+      } else if (evt.type === 'sabotage') {
+        const enemies = [...standing].filter(p => playerTribe[p] !== playerTribe[evt.actor] && !usedActors.has(p));
+        const victim = enemies.length ? enemies[Math.floor(Math.random() * enemies.length)] : null;
+        if (!victim) continue;
+        targets[victim] = null;
+        addBond(victim, evt.actor, -0.6);
+        if (!gs.popularity) gs.popularity = {}; gs.popularity[evt.actor] = (gs.popularity[evt.actor] || 0) - 1;
+        const sPr = pronouns(evt.actor); const vPr = pronouns(victim);
+        roundData.events.push({ type: 'sabotage', actor: evt.actor, target: victim, text: `${evt.actor} slips behind ${victim} and tampers with ${vPr.posAdj} water gun. When ${victim} pulls the trigger — nothing. Jammed. ${sPr.Sub} plays dumb.`, players: [evt.actor, victim], badgeText: 'SABOTAGE', badgeClass: 'red' });
+      } else if (evt.type === 'truce') {
+        if (targets[evt.actor] === evt.target) { const alt = [...standing].filter(c => c !== evt.actor && c !== evt.target && playerTribe[c] !== playerTribe[evt.actor]); targets[evt.actor] = alt.length ? alt[Math.floor(Math.random() * alt.length)] : null; }
+        if (targets[evt.target] === evt.actor) { const alt = [...standing].filter(c => c !== evt.target && c !== evt.actor && playerTribe[c] !== playerTribe[evt.target]); targets[evt.target] = alt.length ? alt[Math.floor(Math.random() * alt.length)] : null; }
+        addBond(evt.actor, evt.target, 0.3);
+        roundData.events.push({ type: 'truce', actor: evt.actor, target: evt.target, text: `${evt.actor} and ${evt.target} lock eyes across the circle — a silent nod. Neither points at the other. An unspoken truce.`, players: [evt.actor, evt.target], badgeText: 'TRUCE', badgeClass: 'teal' });
+      } else if (evt.type === 'taunt') {
+        const tTribe = playerTribe[evt.actor];
+        const enemies = [...standing].filter(p => playerTribe[p] !== tTribe && targets[p] && targets[p] !== evt.actor && !usedActors.has(p));
+        const redirected = enemies.slice(0, Math.min(2, enemies.length));
+        if (!redirected.length) continue;
+        for (const rs of redirected) targets[rs] = evt.actor;
+        if (!gs.popularity) gs.popularity = {}; gs.popularity[evt.actor] = (gs.popularity[evt.actor] || 0) + 1;
+        const tPr = pronouns(evt.actor);
+        roundData.events.push({ type: 'taunt', actor: evt.actor, target: redirected[0], text: `${evt.actor} steps into the open and beats ${tPr.posAdj} chest. "You want some?! COME GET SOME!" ${redirected.map(r => r).join(' and ')} ${redirected.length > 1 ? 'swing their guns' : 'swings'} toward ${evt.actor}.`, players: [evt.actor, ...redirected], badgeText: 'TAUNT', badgeClass: 'orange' });
+      } else if (evt.type === 'hide') {
+        for (const shooter of [...standing]) { if (targets[shooter] === evt.actor) hitOverrides[evt.actor] = (hitOverrides[evt.actor] || 0) + 1; }
+        const hPr = pronouns(evt.actor);
+        roundData.events.push({ type: 'hide', actor: evt.actor, text: `${evt.actor} reads the room — too many guns ${hPr.posAdj} way. ${hPr.Sub} ${hPr.sub === 'they' ? 'drop' : 'drops'} behind a barrel. Every shot aimed at ${hPr.obj} misses.`, players: [evt.actor], badgeText: 'TAKE COVER', badgeClass: 'teal' });
+      } else if (evt.type === 'hesitation') {
+        if (targets[evt.actor]) hitOverrides[targets[evt.actor]] = (hitOverrides[targets[evt.actor]] || 0) + 1;
+        targets[evt.actor] = null;
+        const hPr = pronouns(evt.actor); const pPr = pronouns(evt.target);
+        roundData.events.push({ type: 'hesitation', actor: evt.actor, target: evt.target, text: _rp(STANDOFF_SHOT.hesitation)(evt.actor, evt.target, hPr, pPr), players: [evt.actor, evt.target], badgeText: 'HESITATION', badgeClass: 'pink' });
+      } else if (evt.type === 'betrayal') {
+        targets[evt.actor] = evt.target;
+        const bTribe = playerTribe[evt.actor];
+        tribeMembers.forEach(t => { if (t.name === bTribe) t.members.filter(m => m !== evt.actor).forEach(m => addBond(m, evt.actor, -1.5)); });
+        [...standing].filter(w => w !== evt.actor && playerTribe[w] !== bTribe).forEach(w => addBond(w, evt.actor, -0.5));
+        if (!gs.popularity) gs.popularity = {}; gs.popularity[evt.actor] = (gs.popularity[evt.actor] || 0) - 3;
+        if (!gs._crazytownHeat) gs._crazytownHeat = {};
+        gs._crazytownHeat[evt.target] = { target: evt.actor, amount: 2.0, expiresEp: (gs.episode || 1) + 3 };
+        const bPr = pronouns(evt.actor); const vPr = pronouns(evt.target);
+        roundData.events.push({ type: 'betrayal', shooter: evt.actor, actor: evt.actor, target: evt.target, text: _rp(STANDOFF_SHOT.betrayal)(evt.actor, evt.target, bPr, vPr), players: [evt.actor, evt.target], badgeText: 'BETRAYAL', badgeClass: 'red' });
       }
+      eventsFired++;
     }
 
     // Resolve shots
@@ -1119,7 +1072,7 @@ function _simulateStandoff(ep, tribeMembers, result) {
       const target = targets[shooter];
       if (!target) continue; // forced miss / no target
       const st = pStats(shooter);
-      const hitChance = st.mental * 0.06 + st.boldness * 0.04 + Math.random() * 0.3;
+      const hitChance = st.mental * 0.035 + st.intuition * 0.035 + st.boldness * 0.015 + Math.random() * 0.35;
       const hit = hitChance > 0.5;
       const sPr = pronouns(shooter);
       const tPr = pronouns(target);
@@ -1231,17 +1184,16 @@ function _simulateRoundup(ep, tribeMembers, result) {
   const host = seasonConfig.host || 'Chris';
   const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
 
-  // Role assignment
+  // Role assignment — winner = cowboys, ALL other tribes = cattle
   const p1Winner = result.horseDive?.winner;
-  let cowboyTribeData, cattleTribeData;
+  let cowboyTribeData;
   if (p1Winner) {
     cowboyTribeData = tribeMembers.find(t => t.name === p1Winner);
-    cattleTribeData = tribeMembers.find(t => t.name !== p1Winner);
   } else {
-    const shuffled = [...tribeMembers].sort(() => Math.random() - 0.5);
-    cowboyTribeData = shuffled[0];
-    cattleTribeData = shuffled[1];
+    cowboyTribeData = tribeMembers[Math.floor(Math.random() * tribeMembers.length)];
   }
+  const cattleTribes = tribeMembers.filter(t => t.name !== cowboyTribeData.name);
+  const cattleTribeData = { name: cattleTribes.map(t => t.name).join(' & '), members: cattleTribes.flatMap(t => t.members) };
 
   const cowboys = [...cowboyTribeData.members];
   const cattle = [...cattleTribeData.members];
@@ -1350,8 +1302,10 @@ function _simulateRoundup(ep, tribeMembers, result) {
       const cPr = pronouns(cowboy);
       const gunslingerBuff = result.standoff?.gunslingers?.includes(cowboy) ? 0.08 : 0;
 
-      const cowboyRoll = (cSt.physical * 0.06 + cSt.strategic * 0.04) * (1 + gunslingerBuff) * (1 - cowboyDebuffRef.value) + Math.random() * 0.3;
-      const cattleRoll = tSt.physical * 0.05 + tSt.boldness * 0.04 + Math.random() * 0.3;
+      // Cowboys get advantage when outnumbered — roping is their job
+      const outnumberBonus = Math.max(0, (cattle.length - cowboys.length) * 0.02);
+      const cowboyRoll = (cSt.physical * 0.07 + cSt.strategic * 0.04) * (1 + gunslingerBuff) * (1 - cowboyDebuffRef.value) + outnumberBonus + Math.random() * 0.25;
+      const cattleRoll = tSt.physical * 0.04 + tSt.boldness * 0.03 + Math.random() * 0.3;
 
       if (cowboyRoll > cattleRoll) {
         // Capture
@@ -1419,8 +1373,15 @@ function _simulateRoundup(ep, tribeMembers, result) {
 
   const cowboyPoints = captured.size;
   const cattlePoints = (cattle.length - captured.size) * 0.5;
-  const roundupWinner = cowboyPoints >= cattlePoints ? cowboyTribeData.name : cattleTribeData.name;
-  result.tribeScores[roundupWinner] = (result.tribeScores[roundupWinner] || 0) + 1;
+  const cowboysWon = cowboyPoints >= cattlePoints;
+  if (cowboysWon) {
+    result.tribeScores[cowboyTribeData.name] = (result.tribeScores[cowboyTribeData.name] || 0) + 1;
+  } else {
+    for (const ct of cattleTribes) {
+      result.tribeScores[ct.name] = (result.tribeScores[ct.name] || 0) + 1;
+    }
+  }
+  const roundupWinner = cowboysWon ? cowboyTribeData.name : cattleTribeData.name;
 
   // chalMemberScores
   const cowboyCaptures = {};
@@ -2199,7 +2160,7 @@ export function rpBuildCrazytownHorseDive(ep) {
       const slug = players.find(p => p.name === r.name)?.slug || r.name.toLowerCase().replace(/\s+/g, '-');
       const revealed = revealedNames.has(r.name);
       const icon = !revealed ? '&#10067;' : r.jumped ? '&#9989;' : '&#128020;';
-      const scoreHtml = revealed && r.jumped && r.landingScore != null ? ` ${_ctChalkNum(r.landingScore)}` : '';
+      const scoreHtml = revealed && r.jumped && r.landingPoints != null ? ` ${_ctChalkNum(r.landingPoints)}` : '';
       const intBadge = revealed && r.intervention ? `<span style="font-size:8px;color:var(--ct-sepia);margin-left:4px">${(r.intervention.path || r.intervention.type) === 'convince' ? 'TALKED' : 'PUSHED'}</span>` : '';
       sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${revealed ? 0.8 : 0.3});opacity:${revealed ? 1 : 0.4}">
         ${_ctSidePortrait(r.name, 28)}
@@ -2249,7 +2210,7 @@ export function rpBuildCrazytownHorseDive(ep) {
         <div class="ct-ev-badge ${badgeColor}">${s.tribe} &mdash; ${finalBadge}</div>
         <div class="ct-ev-text">${s.text || ''}</div>
         ${interventionHtml}
-        ${s.jumped && s.landingScore != null ? `<div style="margin-top:4px">${_ctNeonBadge('SCORE: ' + s.landingScore, 'gold')}</div>` : ''}
+        ${s.jumped && s.landingPoints != null ? `<div style="margin-top:4px">${_ctNeonBadge('SCORE: ' + s.landingPoints, 'gold')}</div>` : ''}
       </div>
     </div>`;
   }
@@ -2300,7 +2261,7 @@ function _ctBuildDiveSidebar(hd, revIdx) {
       const slug = players.find(p => p.name === r.name)?.slug || r.name.toLowerCase().replace(/\s+/g, '-');
       const revealed = revealedNames.has(r.name);
       const icon = !revealed ? '&#10067;' : r.jumped ? '&#9989;' : '&#128020;';
-      const scoreHtml = revealed && r.jumped && r.landingScore != null ? ` ${_ctChalkNum(r.landingScore)}` : '';
+      const scoreHtml = revealed && r.jumped && r.landingPoints != null ? ` ${_ctChalkNum(r.landingPoints)}` : '';
       const intBadge = revealed && r.intervention ? `<span style="font-size:8px;color:var(--ct-sepia);margin-left:4px">${(r.intervention.path || r.intervention.type) === 'convince' ? 'TALKED' : 'PUSHED'}</span>` : '';
       sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${revealed ? 0.8 : 0.3});opacity:${revealed ? 1 : 0.4}">
         ${_ctSidePortrait(r.name, 28)}
@@ -2383,19 +2344,46 @@ export function rpBuildCrazytownStandoff(ep) {
 
     roundHtml += `<div class="ct-ev round-header"><div style="flex:1;text-align:center"><div style="font-family:'Rye',serif;font-size:18px;color:var(--ct-gold);letter-spacing:4px">ROUND ${r.num}</div><div style="font-size:10px;color:var(--ct-sepia);margin-top:2px">3&hellip; 2&hellip; 1&hellip; <span style="color:var(--ct-neon-gold);text-shadow:0 0 6px var(--ct-neon-gold)">DRAW!</span></div></div></div>`;
 
+    // Events FIRST (they modify targeting/hits before shots resolve)
+    for (const evt of (r.events || [])) {
+      const evtColor = evt.type === 'betrayal' ? '#8b0000' : evt.type === 'sabotage' ? '#c44' : evt.type === 'shield' ? '#1a7a7a' : evt.type === 'truce' ? '#2d6a4f' : evt.type === 'taunt' ? '#d4850a' : evt.type === 'hide' ? '#4a7a8a' : evt.type === 'hesitation' ? '#c77dba' : '#666';
+      const evtBadgeCls = evt.type === 'betrayal' || evt.type === 'sabotage' ? 'red' : evt.type === 'shield' || evt.type === 'truce' || evt.type === 'hide' ? 'teal' : evt.type === 'taunt' ? 'orange' : 'purple';
+      const evtIcon = evt.type === 'shield' ? '🛡️' : evt.type === 'betrayal' ? '🗡️' : evt.type === 'sabotage' ? '🔧' : evt.type === 'truce' ? '🤝' : evt.type === 'taunt' ? '📢' : evt.type === 'hide' ? '🪨' : evt.type === 'hesitation' ? '💔' : '⚡';
+      roundHtml += `<div style="background:${evtColor}22;border:1px solid ${evtColor}44;border-left:4px solid ${evtColor};border-radius:4px;padding:10px 14px;margin:6px 0;display:flex;align-items:flex-start;gap:10px">
+        <span style="font-size:20px;flex-shrink:0">${evtIcon}</span>
+        <div style="flex:1;min-width:0">
+          <div class="ct-ev-badge ${evtBadgeCls}">${evt.badgeText || (evt.type || 'EVENT').toUpperCase()}</div>
+          <div class="ct-ev-text">${evt.text || ''}</div>
+        </div>
+      </div>`;
+    }
+
+    // Compute shield/hide overrides for accurate hit display
+    const roundShielded = new Set();
+    const roundHidden = new Set();
+    for (const evt of (r.events || [])) {
+      if (evt.type === 'shield' && evt.shieldedPlayer) roundShielded.add(evt.shieldedPlayer);
+      if (evt.type === 'hide') roundHidden.add(evt.actor);
+    }
+
+    // Shots AFTER events
     for (const s of (r.shots || [])) {
       const shooterTribe = _tribeOf(s.shooter);
       const targetTribe = _tribeOf(s.target);
       const shooterColor = _tribeColor(s.shooter);
       const targetColor = _tribeColor(s.target);
+      // Actual hit accounting: shield cancels one hit, hide cancels all
+      const wasSaved = s.hit && (roundShielded.has(s.target) || roundHidden.has(s.target));
       let hitContext = '';
-      if (s.hit) {
+      if (s.hit && !wasSaved) {
         cumulativeHits[s.target] = (cumulativeHits[s.target] || 0) + 1;
         const totalHits = cumulativeHits[s.target];
-        hitContext = totalHits >= 2 ? ' <span style="color:var(--ct-neon-red);font-weight:700;animation:ct-stamp 0.3s ease-out">2nd HIT — OUT!</span>' : ` (${totalHits}/2)`;
+        hitContext = totalHits >= 2 ? ' <span style="color:var(--ct-neon-red);font-weight:700">2nd HIT — OUT!</span>' : ` (${totalHits}/2)`;
+      } else if (wasSaved) {
+        hitContext = ` <span style="color:var(--ct-neon-green);font-size:10px">(saved by ${roundShielded.has(s.target) ? 'shield' : 'cover'})</span>`;
       }
       const isBetrayal = s.betrayal || shooterTribe === targetTribe;
-      roundHtml += `<div class="ct-ev ${s.hit ? 'negative' : ''}" style="border-left-color:${isBetrayal ? 'var(--ct-neon-red)' : shooterColor}${isBetrayal ? ';background:rgba(139,0,0,0.15)' : ''}">
+      roundHtml += `<div class="ct-ev ${s.hit && !wasSaved ? 'negative' : ''}" style="border-left-color:${isBetrayal ? 'var(--ct-neon-red)' : shooterColor}${isBetrayal ? ';background:rgba(139,0,0,0.15)' : ''}">
         ${_ctSmallPortrait(s.shooter, 36)}
         <div style="flex:1;min-width:0">
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -2403,14 +2391,12 @@ export function rpBuildCrazytownStandoff(ep) {
             <span style="font-size:7px;color:${isBetrayal ? 'var(--ct-neon-red)' : 'rgba(255,255,255,0.3)'}">${isBetrayal ? '⚠ BETRAYAL ⚠' : '→'}</span>
             <span style="font-size:8px;font-weight:700;color:${targetColor};letter-spacing:1px">${targetTribe}</span>
           </div>
-          <div class="ct-ev-text" style="font-size:12px"><strong>${s.shooter}</strong> fires at <strong>${s.target}</strong> &mdash; ${s.hit ? `<span style="color:var(--ct-neon-red)">HIT!</span>${hitContext}` : '<span style="color:rgba(255,255,255,0.3)">miss</span>'}</div>
+          <div class="ct-ev-text" style="font-size:12px"><strong>${s.shooter}</strong> fires at <strong>${s.target}</strong> &mdash; ${s.hit ? (wasSaved ? `<span style="color:var(--ct-gold)">HIT — SAVED!</span>${hitContext}` : `<span style="color:var(--ct-neon-red)">HIT!</span>${hitContext}`) : '<span style="color:rgba(255,255,255,0.3)">miss</span>'}</div>
         </div>
         ${_ctSmallPortrait(s.target, 36)}
       </div>`;
-    }
-
-    for (const evt of (r.events || [])) {
-      roundHtml += `<div class="ct-ev ${evt.type === 'betrayal' ? 'negative' : evt.type === 'shield' ? 'positive' : ''}"><div style="flex:1;min-width:0"><div class="ct-ev-badge ${evt.type === 'betrayal' ? 'red' : evt.type === 'shield' ? 'teal' : 'purple'}">${(evt.type || evt.id || 'EVENT').toUpperCase()}</div><div class="ct-ev-text">${evt.text || ''}</div></div></div>`;
+      // Shield only cancels ONE hit per round per target
+      if (s.hit && roundShielded.has(s.target)) roundShielded.delete(s.target);
     }
 
     for (const elim of (r.eliminations || [])) {
@@ -2432,7 +2418,21 @@ export function rpBuildCrazytownStandoff(ep) {
   const revealedHits = {};
   allNames.forEach(n => { revealedHits[n] = 0; });
   for (let ri = 0; ri <= Math.min(revIdx, rounds.length - 1); ri++) {
-    for (const s of (rounds[ri]?.shots || [])) if (s.hit) revealedHits[s.target]++;
+    const rShielded = new Set();
+    const rHidden = new Set();
+    for (const evt of (rounds[ri]?.events || [])) {
+      if (evt.type === 'shield' && evt.shielderHit) {
+        revealedHits[evt.shielderHit] = (revealedHits[evt.shielderHit] || 0) + 1;
+        if (evt.shieldedPlayer) rShielded.add(evt.shieldedPlayer);
+      }
+      if (evt.type === 'hide' && evt.actor) rHidden.add(evt.actor);
+    }
+    for (const s of (rounds[ri]?.shots || [])) {
+      if (!s.hit) continue;
+      if (rShielded.has(s.target)) { rShielded.delete(s.target); continue; }
+      if (rHidden.has(s.target)) continue;
+      revealedHits[s.target]++;
+    }
   }
   const tribeStanding = {};
   for (const t of _ctTribes) {
@@ -2471,7 +2471,24 @@ function _ctBuildStandoffSidebar(so, revIdx, tribes, gunslingerSet) {
   const hitCounts = {};
   allNames.forEach(n => { hitCounts[n] = 0; });
   for (const r of revealedRounds) {
-    for (const s of (r.shots || [])) if (s.hit) hitCounts[s.target]++;
+    // Identify saved players this round
+    const shielded = new Set();
+    const hidden = new Set();
+    for (const evt of (r.events || [])) {
+      if (evt.type === 'shield' && evt.shielderHit) {
+        hitCounts[evt.shielderHit] = (hitCounts[evt.shielderHit] || 0) + 1;
+        if (evt.shieldedPlayer) shielded.add(evt.shieldedPlayer);
+      }
+      if (evt.type === 'hide' && evt.actor) hidden.add(evt.actor);
+    }
+    for (const s of (r.shots || [])) {
+      if (!s.hit) continue;
+      // Shield cancels first hit on shielded target
+      if (shielded.has(s.target)) { shielded.delete(s.target); continue; }
+      // Hide cancels all hits on hidden target
+      if (hidden.has(s.target)) continue;
+      hitCounts[s.target]++;
+    }
   }
   const allRevealed = revIdx >= rounds.length - 1;
 
@@ -2566,6 +2583,10 @@ export function rpBuildCrazytownRoundup(ep) {
 
   // Feed — round reveals
   let feed = '';
+  feed += `<div style="background:rgba(0,0,0,0.3);border:1px solid rgba(218,165,32,0.2);border-radius:6px;padding:12px 16px;margin-bottom:10px;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.6">
+    <span style="font-family:'Rye',serif;font-size:12px;color:var(--ct-gold);letter-spacing:2px">THE RULES</span><br>
+    <strong style="color:var(--ct-gold)">${ru.cowboys}</strong> are the cowboys — they lasso the cattle. <strong style="color:var(--ct-sepia)">${ru.cattle}</strong> are the cattle — they dodge. Cowboys rope one target per round over 3 rounds. <strong>More captures = cowboys win. More dodges = cattle win.</strong>${cowboys.length < cattle.length ? ` <span style="color:var(--ct-neon-green)">Cowboys are outnumbered ${cowboys.length} vs ${cattle.length} — they get a roping bonus.</span>` : ''}
+  </div>`;
   const rounds = ru.rounds || [];
   for (let ri = 0; ri < rounds.length; ri++) {
     const visible = ri <= revIdx;

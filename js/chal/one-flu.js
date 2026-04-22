@@ -131,7 +131,7 @@ const FLU_DISEASE_EVENTS = {
   ],
   comfortEvent: [
     (helper, patient, hPr, pPr) => `${helper} puts a hand on ${patient}'s shoulder. "You're going to be okay." ${patient} nods, marginally less panicked.`,
-    (helper, patient, hPr, pPr) => `${patient} grabs ${helper}'s arm in terror. ${helper} doesn't pull away. The contact helps — somehow.`,
+    (helper, patient, hPr, pPr) => `${helper} sits down next to ${patient} and stays. No medicine — just presence. It helps more than either expected.`,
     (helper, patient, hPr, pPr) => `${helper} talks ${patient} through the symptoms in a calm voice. ${patient}'s breathing slows. Small miracle.`,
   ],
 };
@@ -931,7 +931,7 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
         const pr = pronouns(name);
         const txt = FLU_DISEASE_EVENTS.chaosEvent[0](name, pr);
         roundData.rollMod -= 0.03;
-        return { id: 'bubblePanic', text: txt, players: [name], badgeText: 'BUBBLE PANIC', badgeClass: 'orange' };
+        return { id: 'bubblePanic', text: txt, players: [name], badgeText: 'BUBBLE PANIC', badgeClass: 'orange', impact: '-0.03 all cure rolls' };
       },
     },
     {
@@ -959,7 +959,7 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
         const pr = pronouns(name);
         roundData.incapacitated.add(name);
         const txt = `${name} makes urgent eye contact with no one in particular and power-walks off the field. ${pr.Sub} will not be available for treatment this round.`;
-        return { id: 'bathroomRush', text: txt, players: [name], badgeText: 'BATHROOM RUSH', badgeClass: 'red' };
+        return { id: 'bathroomRush', text: txt, players: [name], badgeText: 'BATHROOM RUSH', badgeClass: 'red', impact: name + ' can\'t be treated this round' };
       },
     },
     {
@@ -975,7 +975,9 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
         const txt = FLU_DISEASE_EVENTS.comfortEvent[Math.floor(Math.random() * FLU_DISEASE_EVENTS.comfortEvent.length)](helper.name, patient, hPr, pPr);
         addBond(helper.name, patient, 0.4);
         roundData.comfortUsed.add(helper.name);
-        return { id: 'panicAttack', text: txt, players: [helper.name, patient], badgeText: 'COMFORT MOMENT', badgeClass: 'blue' };
+        if (!roundData.comfortedPatients) roundData.comfortedPatients = new Set();
+        roundData.comfortedPatients.add(patient);
+        return { id: 'panicAttack', text: txt, players: [helper.name, patient], badgeText: 'COMFORT MOMENT', badgeClass: 'blue', impact: `${patient}'s symptoms easier to cure + costs ${helper.name} 1 attempt` };
       },
     },
     {
@@ -986,17 +988,100 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
         const pr = pronouns(name);
         roundData.rollMod -= 0.05;
         const txt = `${name} goes completely limp and slides to the floor. Everyone panics. ${pr.Sub} opens one eye. ${pr.Sub} is fine. The chaos costs everyone focus.`;
-        return { id: 'fakeCollapse', text: txt, players: [name], badgeText: 'FAKE COLLAPSE', badgeClass: 'orange' };
+        return { id: 'fakeCollapse', text: txt, players: [name], badgeText: 'FAKE COLLAPSE', badgeClass: 'orange', impact: '-0.05 all cure rolls' };
       },
     },
     {
       id: 'pizzaDiscovery',
       apply(ep, roundData) {
         const name = tribeMembers.flatMap(t => t.members)[Math.floor(Math.random() * tribeMembers.flatMap(t => t.members).length)];
-        const pr = pronouns(name);
         roundData.nextRoundBonus = (roundData.nextRoundBonus || 0) + 0.1;
-        const txt = `${name} digs through the equipment crate and pulls out a half-eaten slice of pizza — labeled 'PATIENT ZERO EVIDENCE'. Suddenly the cure protocol makes sense. Next round gets a boost.`;
-        return { id: 'pizzaDiscovery', text: txt, players: [name], badgeText: 'PIZZA DISCOVERY', badgeClass: 'gold' };
+        const txt = `${name} digs through the equipment crate and pulls out a half-eaten slice of pizza — labeled 'PATIENT ZERO EVIDENCE'. Next round gets a boost.`;
+        return { id: 'pizzaDiscovery', text: txt, players: [name], badgeText: 'PIZZA DISCOVERY', badgeClass: 'gold', impact: '+0.1 all rolls next round' };
+      },
+    },
+    // ── NEW HELPFUL EVENTS ──
+    {
+      id: 'medicalInsight',
+      apply(ep, roundData) {
+        const docs = sleepers.filter(s => !roundData.incapacitated.has(s.name));
+        if (!docs.length) return null;
+        const doc = docs[Math.floor(Math.random() * docs.length)];
+        const patients = Object.keys(infected);
+        const patient = patients[Math.floor(Math.random() * patients.length)];
+        const uncured = infected[patient].filter(s => !s.cured);
+        if (!uncured.length) return null;
+        if (!roundData.insightBonus) roundData.insightBonus = {};
+        roundData.insightBonus[patient] = 0.15;
+        const pr = pronouns(doc.name);
+        const txt = `${doc.name} studies ${patient}'s chart closely — ${pr.sub} spots something the others missed. Next cure attempt on ${patient} gets a major boost.`;
+        return { id: 'medicalInsight', text: txt, players: [doc.name, patient], badgeText: 'MEDICAL INSIGHT', badgeClass: 'teal', impact: '+0.15 next cure on ' + patient };
+      },
+    },
+    {
+      id: 'teamRally',
+      apply(ep, roundData) {
+        const docs = sleepers.filter(s => !roundData.incapacitated.has(s.name) && pStats(s.name).social * 0.08 > 0.3 + Math.random() * 0.3);
+        if (!docs.length) return null;
+        const doc = docs[Math.floor(Math.random() * docs.length)];
+        roundData.rollMod += 0.05;
+        const pr = pronouns(doc.name);
+        const txt = `${doc.name} claps ${pr.posAdj} hands together: "Focus, people! We can do this!" The whole medical bay straightens up.`;
+        return { id: 'teamRally', text: txt, players: [doc.name], badgeText: 'TEAM RALLY', badgeClass: 'green', impact: '+0.05 all rolls this round' };
+      },
+    },
+    {
+      id: 'symptomChain',
+      apply(ep, roundData) {
+        // Check if any easy symptom was cured this round or last — chain reaction
+        const recentCures = Object.entries(infected).flatMap(([p, syms]) =>
+          syms.filter(s => s.cured && s.tier === 'easy').map(s => ({ patient: p, sym: s }))
+        );
+        if (!recentCures.length) return null;
+        const pick = recentCures[Math.floor(Math.random() * recentCures.length)];
+        const adjacent = infected[pick.patient].find(s => !s.cured);
+        if (!adjacent) return null;
+        if (Math.random() < 0.3) {
+          adjacent.cured = true;
+          adjacent.curedBy = 'chain reaction';
+          const txt = `Curing ${pick.patient}'s ${_ofSymptomName(pick.sym.id)} triggers a cascade — the ${_ofSymptomName(adjacent.id)} clears on its own. Chain reaction!`;
+          return { id: 'symptomChain', text: txt, players: [pick.patient], badgeText: 'CHAIN CURE', badgeClass: 'green', impact: 'Free cure — ' + _ofSymptomName(adjacent.id) };
+        }
+        return null;
+      },
+    },
+    // ── NEW HARMFUL EVENTS ──
+    {
+      id: 'contaminationSpread',
+      apply(ep, roundData) {
+        const healthyDocs = sleepers.filter(s => !roundData.incapacitated.has(s.name) && !infected[s.name]);
+        if (!healthyDocs.length) return null;
+        const doc = healthyDocs[Math.floor(Math.random() * healthyDocs.length)];
+        const pr = pronouns(doc.name);
+        // Doctor gets a temporary symptom — can't cure until someone cures them
+        if (!roundData.contaminatedDocs) roundData.contaminatedDocs = new Set();
+        roundData.contaminatedDocs.add(doc.name);
+        const txt = `${doc.name} gets too close to a patient and starts showing symptoms ${pr.ref}. ${pr.Sub} stumbles back, suddenly dizzy. Loses 2 cure attempts this round.`;
+        return { id: 'contaminationSpread', text: txt, players: [doc.name], badgeText: 'CONTAMINATED', badgeClass: 'red', impact: doc.name + ' loses 2 attempts' };
+      },
+    },
+    {
+      id: 'equipmentFailure',
+      apply(ep, roundData) {
+        roundData.autoFailCount = (roundData.autoFailCount || 0) + 1;
+        const txt = `A tray of medical instruments crashes to the floor. Syringes scatter. The next cure attempt this round automatically fails.`;
+        return { id: 'equipmentFailure', text: txt, players: [], badgeText: 'EQUIPMENT FAILURE', badgeClass: 'red', impact: '1 cure attempt auto-fails' };
+      },
+    },
+    {
+      id: 'massPanic',
+      apply(ep, roundData) {
+        const sickCount = Object.keys(infected).filter(n => infected[n].some(s => !s.cured)).length;
+        if (sickCount < 3) return null;
+        roundData.rollMod -= 0.08;
+        const names = Object.keys(infected).sort(() => Math.random() - 0.5).slice(0, 2);
+        const txt = `${names[0]} and ${names[1]} both start screaming at the same time. The entire medical bay descends into chaos. All cure rolls take a major hit.`;
+        return { id: 'massPanic', text: txt, players: names, badgeText: 'MASS PANIC', badgeClass: 'red', impact: '-0.08 all rolls this round' };
       },
     },
   ];
@@ -1015,8 +1100,8 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
     const roundData = { rollMod: carryBonus, incapacitated: new Set(), comfortUsed: new Set(), nextRoundBonus: 0 };
     carryBonus = 0;
 
-    // 1-2 chaos events
-    const numChaos = Math.random() < 0.5 ? 1 : 2;
+    // 3-4 chaos events per round
+    const numChaos = 3 + (Math.random() < 0.4 ? 1 : 0);
     const chaosPool = [...CHAOS_POOL].sort(() => Math.random() - 0.5);
     const chaosEvents = [];
     for (const ce of chaosPool) {
@@ -1038,19 +1123,45 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
       });
     }
 
+    let autoFailsLeft = roundData.autoFailCount || 0;
+
     for (const doc of sleepers) {
-      if (roundData.comfortUsed.has(doc.name)) continue;
-      const solBonus = soloSleeper ? 0.1 : 0;
+      if (roundData.incapacitated.has(doc.name)) continue; // contaminated doctor
+      const comfortCost = roundData.comfortUsed.has(doc.name) ? 1 : 0;
+      // Contamination spread costs 2 attempts (challenge-changing)
+      const contaminationCost = roundData.contaminatedDocs?.has(doc.name) ? 2 : 0;
+      const docTribe = tribeMembers.find(t => t.members.includes(doc.name))?.name;
+      const tribeSleepers = sleepers.filter(s => tribeMembers.find(t => t.members.includes(s.name))?.name === docTribe);
+      const isSoloDoc = tribeSleepers.length === 1;
+      const solBonus = isSoloDoc ? 0.1 : 0;
       const st = pStats(doc.name);
 
-      for (let attempt = 0; attempt < 2; attempt++) {
+      const attemptsForDoc = Math.max(0, (isSoloDoc ? 2 : 1) - comfortCost - contaminationCost);
+      for (let attempt = 0; attempt < attemptsForDoc; attempt++) {
         if (!uncuredSymptoms.length) break;
+
+        // Equipment failure auto-fails
+        if (autoFailsLeft > 0) {
+          autoFailsLeft--;
+          const targetIdx = Math.floor(Math.random() * uncuredSymptoms.length);
+          const { patient, sym } = uncuredSymptoms[targetIdx];
+          cureAttempts.push({ doctor: doc.name, patient, symptom: sym.id, success: false, text: `${doc.name} reaches for the treatment — but the equipment is broken. Auto-fail.`, autoFail: true });
+          continue;
+        }
+
         const targetIdx = Math.floor(Math.random() * uncuredSymptoms.length);
         const { patient, idx: symIdx, sym } = uncuredSymptoms[targetIdx];
 
-        const roll = st.mental * 0.05 + st.intuition * 0.05 + st.social * 0.03
-          + solBonus + roundData.rollMod + (Math.random() - 0.5) * 0.2;
-        const success = roll > sym.threshold;
+        // Insight bonus from medicalInsight event
+        const insightBonus = roundData.insightBonus?.[patient] || 0;
+        if (insightBonus > 0 && roundData.insightBonus) roundData.insightBonus[patient] = 0; // one-time use
+
+        // Comfort makes symptoms 1 tier easier (threshold reduction)
+        const comfortedReduction = roundData.comfortedPatients?.has(patient) ? 0.1 : 0;
+
+        const roll = st.mental * 0.04 + st.intuition * 0.04 + st.social * 0.02
+          + solBonus + insightBonus + roundData.rollMod + (Math.random() - 0.5) * 0.25;
+        const success = roll > (sym.threshold - comfortedReduction);
 
         if (success) {
           infected[patient][symIdx].cured = true;
@@ -2437,11 +2548,13 @@ export function rpBuildOneFluDisease(ep) {
 
     // Chaos events first
     for (const ce of (rd.chaosEvents || [])) {
-      roundHtml += `<div class="of-ev chaos">
+      const impactColor = ce.badgeClass === 'green' || ce.badgeClass === 'teal' || ce.badgeClass === 'gold' ? '#4ade80' : ce.badgeClass === 'red' ? '#fca5a5' : '#fde68a';
+      roundHtml += `<div class="of-ev chaos" style="border-left-color:${ce.badgeClass === 'red' ? 'var(--of-red)' : ce.badgeClass === 'green' || ce.badgeClass === 'teal' ? 'var(--of-teal)' : 'var(--of-biohazard)'}">
         ${(ce.players?.[0]) ? _ofSmallPortrait(ce.players[0], 36) : ''}
         <div style="flex:1;min-width:0">
           <div class="of-ev-badge ${ce.badgeClass || 'orange'}">${ce.badgeText || ce.id?.toUpperCase() || 'CHAOS'}</div>
           <div class="of-ev-text">${ce.text || ''}</div>
+          ${ce.impact ? `<div style="font-size:10px;color:${impactColor};margin-top:4px">⚡ ${ce.impact}</div>` : ''}
         </div>
       </div>`;
     }

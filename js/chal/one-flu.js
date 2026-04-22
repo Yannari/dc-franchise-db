@@ -506,8 +506,7 @@ function _simulateMedicalQuiz(ep, tribeMembers, result) {
 
   function addScore(name, delta) {
     ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + delta;
-    result.tribeScores[tribeMembers.find(t => t.members.includes(name))?.name] =
-      (result.tribeScores[tribeMembers.find(t => t.members.includes(name))?.name] || 0) + delta;
+    // tribeScores computed at end from assembly + cures (50/50)
   }
 
   for (let r = 0; r < 10; r++) {
@@ -732,8 +731,6 @@ function _simulateAssembly(ep, tribeMembers, result) {
 
   function addScore(name, delta) {
     ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + delta;
-    const tribe = tribeMembers.find(t => t.members.includes(name));
-    if (tribe) result.tribeScores[tribe.name] = (result.tribeScores[tribe.name] || 0) + delta;
   }
 
   for (const tribe of tribeMembers) {
@@ -1068,9 +1065,14 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
     {
       id: 'equipmentFailure',
       apply(ep, roundData) {
-        roundData.autoFailCount = (roundData.autoFailCount || 0) + 1;
-        const txt = `A tray of medical instruments crashes to the floor. Syringes scatter. The next cure attempt this round automatically fails.`;
-        return { id: 'equipmentFailure', text: txt, players: [], badgeText: 'EQUIPMENT FAILURE', badgeClass: 'red', impact: '1 cure attempt auto-fails' };
+        const docs = sleepers.filter(s => !roundData.incapacitated.has(s.name));
+        if (!docs.length) return null;
+        const victim = docs[Math.floor(Math.random() * docs.length)];
+        if (!roundData.autoFailDocs) roundData.autoFailDocs = new Set();
+        roundData.autoFailDocs.add(victim.name);
+        const pr = pronouns(victim.name);
+        const txt = `${victim.name}'s medical tray crashes to the floor. Syringes scatter everywhere. ${pr.Sub} scrambles to recover — ${pr.posAdj} next cure attempt this round automatically fails.`;
+        return { id: 'equipmentFailure', text: txt, players: [victim.name], badgeText: 'EQUIPMENT FAILURE', badgeClass: 'red', impact: `${victim.name}'s next attempt auto-fails` };
       },
     },
     {
@@ -1100,8 +1102,8 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
     const roundData = { rollMod: carryBonus, incapacitated: new Set(), comfortUsed: new Set(), nextRoundBonus: 0 };
     carryBonus = 0;
 
-    // 3-4 chaos events per round
-    const numChaos = 3 + (Math.random() < 0.4 ? 1 : 0);
+    // 2-3 chaos events per round
+    const numChaos = 2 + (Math.random() < 0.4 ? 1 : 0);
     const chaosPool = [...CHAOS_POOL].sort(() => Math.random() - 0.5);
     const chaosEvents = [];
     for (const ce of chaosPool) {
@@ -1123,8 +1125,6 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
       });
     }
 
-    let autoFailsLeft = roundData.autoFailCount || 0;
-
     for (const doc of sleepers) {
       if (roundData.incapacitated.has(doc.name)) continue; // contaminated doctor
       const comfortCost = roundData.comfortUsed.has(doc.name) ? 1 : 0;
@@ -1140,12 +1140,14 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
       for (let attempt = 0; attempt < attemptsForDoc; attempt++) {
         if (!uncuredSymptoms.length) break;
 
-        // Equipment failure auto-fails
-        if (autoFailsLeft > 0) {
-          autoFailsLeft--;
+        // Equipment failure auto-fails this specific doctor's first attempt
+        if (roundData.autoFailDocs?.has(doc.name) && attempt === 0) {
+          roundData.autoFailDocs.delete(doc.name);
           const targetIdx = Math.floor(Math.random() * uncuredSymptoms.length);
-          const { patient, sym } = uncuredSymptoms[targetIdx];
-          cureAttempts.push({ doctor: doc.name, patient, symptom: sym.id, success: false, text: `${doc.name} reaches for the treatment — but the equipment is broken. Auto-fail.`, autoFail: true });
+          if (targetIdx < uncuredSymptoms.length) {
+            const { patient, sym } = uncuredSymptoms[targetIdx];
+            cureAttempts.push({ doctor: doc.name, patient, symptom: sym.id, success: false, text: `${doc.name} reaches for the treatment — but ${pronouns(doc.name).posAdj} equipment is broken. Auto-fail.`, autoFail: true });
+          }
           continue;
         }
 
@@ -1209,11 +1211,7 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
     result.rewardWinner = bestDoctor;
   }
 
-  // Disease scores feed directly into tribe scores — each cure = +2 tribe points
-  // This makes the disease phase as impactful as quiz/assembly
-  for (const [tribe, cures] of Object.entries(cureScores)) {
-    result.tribeScores[tribe] = (result.tribeScores[tribe] || 0) + cures * 2;
-  }
+  // cureScores tracked separately — final tribeScores computed in simulateOneFlu
 
   result.diseaseOutbreak = {
     infected,
@@ -1259,6 +1257,23 @@ export function simulateOneFlu(ep) {
   _simulateAssembly(ep, tribeMembers, result);
   _simulateFluDramaBreak(ep, tribeMembers, result);
   _simulateDiseaseOutbreak(ep, tribeMembers, result);
+
+  // Final scoring: 50% assembly + 50% disease cures (normalized)
+  // Assembly totals from result.assembly.tribes[].total
+  // Cure totals from result.diseaseOutbreak.cureScores
+  const asmTribes = result.assembly?.tribes || [];
+  const maxAsm = Math.max(...asmTribes.map(t => t.total || 0), 0.01);
+  const cureScoresData = result.diseaseOutbreak?.cureScores || {};
+  const maxCure = Math.max(...Object.values(cureScoresData), 0.01);
+
+  // Reset tribeScores and compute 50/50
+  tribeMembers.forEach(t => { result.tribeScores[t.name] = 0; });
+  for (const t of tribeMembers) {
+    const asmData = asmTribes.find(a => a.tribe === t.name);
+    const asmNorm = ((asmData?.total || 0) / maxAsm) * 50;
+    const cureNorm = ((cureScoresData[t.name] || 0) / maxCure) * 50;
+    result.tribeScores[t.name] = Math.round(asmNorm + cureNorm);
+  }
 
   const sorted = Object.entries(result.tribeScores).sort((a, b) => b[1] - a[1]);
   const winnerName = sorted[0][0];

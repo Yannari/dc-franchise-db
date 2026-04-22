@@ -42,9 +42,9 @@ const FLU_HOST = {
     `"Victory from the tank! That's guts — literally — and a point for the tribe!"`,
   ],
   diveFailShock: [
-    `"Shocking! Too many jolts — that diver had to bail empty-handed!"`,
-    `"The eels win this round! Three shocks — no part for that tribe today."`,
-    `"Three strikes from the eels! That diver's done. The body part stays in the tank!"`,
+    `"Shocking! The eel got them — that diver had to bail empty-handed!"`,
+    `"The eels win this round! Zapped and done — no part for that tribe today."`,
+    `"That's a shock! The diver's out. The body part stays in the tank!"`,
   ],
   diveFailMiss: [
     `"So close! The part slipped right through their fingers. Better luck next dive!"`,
@@ -503,7 +503,7 @@ function _simulateMedicalQuiz(ep, tribeMembers, result) {
       (result.tribeScores[tribeMembers.find(t => t.members.includes(name))?.name] || 0) + delta;
   }
 
-  for (let r = 0; r < 5; r++) {
+  for (let r = 0; r < 7; r++) {
     const round = { number: r + 1, answers: {}, winnerTribe: null, diver: null, partRetrieved: false, events: [] };
 
     // Each tribe picks an answerer
@@ -633,8 +633,8 @@ function _simulateMedicalQuiz(ep, tribeMembers, result) {
     const diverPr = pronouns(diver);
     const diverSt = pStats(diver);
 
-    // Shock system
-    const shockChance = Math.max(0.05, 0.3 - diverSt.endurance * 0.02);
+    // Shock system — 1 shock attempt, 2 shocks = out
+    const shockChance = Math.max(0.1, 0.35 - diverSt.endurance * 0.025);
     let shocks = 0;
     let partRetrieved = false;
 
@@ -659,13 +659,11 @@ function _simulateMedicalQuiz(ep, tribeMembers, result) {
       shocks += 1;
     }
 
-    // Normal shock accumulation
-    for (let i = 0; i < 3; i++) {
-      if (Math.random() < shockChance) shocks++;
-    }
+    // Single shock roll — get zapped or don't
+    if (Math.random() < shockChance) shocks++;
     shocks = Math.max(0, shocks);
 
-    if (shocks < 3) {
+    if (shocks < 2) {
       const diveRoll = diverSt.physical * 0.05 + diverSt.boldness * 0.04 + (Math.random() - 0.5) * 0.2;
       if (diveRoll > 0.4) {
         partRetrieved = true;
@@ -1357,7 +1355,7 @@ export function _textOneFlu(ep, ln, sec) {
         if (round.diver) {
           const diverPr = pronouns(round.diver);
           if (round.shocks >= 3) {
-            const failPool = rd.shocks >= 3 ? FLU_HOST.diveFailShock : FLU_HOST.diveFailMiss;
+            const failPool = rd.shocks >= 2 ? FLU_HOST.diveFailShock : FLU_HOST.diveFailMiss;
             ln(failPool[Math.floor(Math.random() * failPool.length)]);
             const shockLine = [
               `${round.diver} surfaces gasping — ${diverPr.sub} took all three jolts and came up empty.`,
@@ -1940,11 +1938,11 @@ export function rpBuildOneFluQuiz(ep) {
   // Rules box
   let feed = `<div style="background:rgba(0,0,0,0.5);border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:12px 16px;margin-bottom:12px">
     <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:rgba(59,130,246,0.5);margin-bottom:6px">PHASE RULES</div>
-    <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">Answer medical questions to earn body parts for your FrankenChris. Winner of each round dives into the eel tank to retrieve a part. 3 eel shocks = failed dive. More parts = better assembly score.</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">Answer medical questions to earn body parts for your FrankenChris. Winner of each round dives into the eel tank to retrieve a part. 2 eel shocks = failed dive. More parts = better assembly score.</div>
     <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-      <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.15)">5 ROUNDS</span>
+      <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.15)">7 ROUNDS</span>
       <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(20,184,166,0.1);color:#5eead4;border:1px solid rgba(20,184,166,0.15)">EEL TANK DIVES</span>
-      <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.15)">3 SHOCKS = FAIL</span>
+      <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.15)">2 SHOCKS = FAIL</span>
     </div>
   </div>`;
 
@@ -2037,14 +2035,14 @@ export function rpBuildOneFluQuiz(ep) {
         // Dive result with host reaction
         const shockIcons = rd.shocks > 0 ? ' ' + Array(Math.min(rd.shocks, 3)).fill('&#9889;').join('') : '';
         const diveClass = rd.partRetrieved ? 'positive' : 'negative';
-        const hostDive = rd.partRetrieved ? _rp(FLU_HOST.diveSuccess) : _rp(rd.shocks >= 3 ? FLU_HOST.diveFailShock : FLU_HOST.diveFailMiss);
+        const hostDive = rd.partRetrieved ? _rp(FLU_HOST.diveSuccess) : _rp(rd.shocks >= 2 ? FLU_HOST.diveFailShock : FLU_HOST.diveFailMiss);
         roundHtml += `<div class="of-ev ${diveClass}">
           ${_ofSmallPortrait(rd.diver, 36)}
           <div style="flex:1;min-width:0">
-            <div class="of-ev-badge ${rd.partRetrieved ? 'teal' : 'red'}">${rd.partRetrieved ? 'DIVE SUCCESS' : rd.shocks >= 3 ? 'SHOCKED OUT' : 'MISSED GRAB'}${shockIcons}</div>
+            <div class="of-ev-badge ${rd.partRetrieved ? 'teal' : 'red'}">${rd.partRetrieved ? 'DIVE SUCCESS' : rd.shocks >= 2 ? 'SHOCKED OUT' : 'MISSED GRAB'}${shockIcons}</div>
             <div class="of-ev-text"><strong>${rd.diver}</strong> ${rd.partRetrieved
               ? 'retrieves a body part from the eel tank!'
-              : rd.shocks >= 3 ? `takes ${rd.shocks} shocks — too many jolts, forced out empty-handed!`
+              : rd.shocks >= 2 ? `takes ${rd.shocks} shocks — too many jolts, forced out empty-handed!`
               : 'dives in but can\'t get a grip on the part — comes up empty.'} (${rd.shocks} shock${rd.shocks !== 1 ? 's' : ''})</div>
             <div style="font-size:11px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:4px">${host}: ${hostDive}</div>
           </div>

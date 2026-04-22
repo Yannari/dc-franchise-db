@@ -675,7 +675,7 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
   }
 
   const roundEscalation = [0.3, 0.4, 0.55, 0.7, 0.85];
-  const numRounds = 4 + Math.floor(Math.random() * 2); // 4-5
+  let numRounds = 4 + Math.floor(Math.random() * 2); // 4-5
   const eliminatedVictims = new Set();
   let vomitRound = null;
 
@@ -2160,22 +2160,23 @@ export function rpBuildChefshankPrisonFood(ep) {
     stepIdx++;
   }
 
-  // Final step: survivor victory card
+  // Final step: survivor victory card (or tiebreak if all vomited)
   if (pf.duel?.winner) {
     const winnerTribe = pf.duel.winner;
-    const survivorName = Object.entries(pf.victims || {}).find(([t, v]) => {
-      const vList = [];
-      for (const rd of duelRounds) {
-        const vl = Array.isArray(rd.vomited) ? rd.vomited : rd.vomited ? [rd.vomited] : [];
-        vl.forEach(x => vList.push(x));
-      }
-      return !vList.includes(v);
-    })?.[1] || '?';
+    const allVomited = [];
+    for (const rd of duelRounds) {
+      const vl = Array.isArray(rd.vomited) ? rd.vomited : rd.vomited ? [rd.vomited] : [];
+      vl.forEach(x => allVomited.push(x));
+    }
+    const survivorEntry = Object.entries(pf.victims || {}).find(([t, v]) => !allVomited.includes(v));
+    const survivorName = survivorEntry?.[1] || null;
+    const allWentDown = !survivorName;
+
     feed += `<div id="cs-step-food-${stepIdx}" style="${stepIdx <= revIdx ? '' : 'display:none'}">
       <div class="cs-ev positive" style="border-left-color:var(--cs-rust);background:rgba(180,83,9,0.15);padding:16px;text-align:center">
-        ${_csSmallPortrait(survivorName, 56)}
-        <div style="font-family:'Black Ops One',sans-serif;font-size:18px;color:var(--cs-rust);letter-spacing:3px;margin-top:8px">${survivorName} SURVIVES</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px">${winnerTribe} wins Phase 1! The last one still eating.</div>
+        ${survivorName ? _csSmallPortrait(survivorName, 56) : ''}
+        <div style="font-family:'Black Ops One',sans-serif;font-size:18px;color:var(--cs-rust);letter-spacing:3px;margin-top:8px">${allWentDown ? 'EVERYONE WENT DOWN' : survivorName + ' SURVIVES'}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px">${allWentDown ? `All eaters vomited! ${winnerTribe} held out the longest — they win by a stomach.` : `${winnerTribe} wins Phase 1! The last one still eating.`}</div>
       </div>
     </div>`;
     stepIdx++;
@@ -2203,8 +2204,8 @@ export function rpBuildChefshankPrisonFood(ep) {
   </div>
   <div id="cs-done-food" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:24px 16px;margin-top:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(180,83,9,0.2);border-radius:6px'}">
     ${pf.duel?.winner
-      ? `<div style="font-family:'Black Ops One',sans-serif;font-size:22px;color:#f59e0b;letter-spacing:3px;text-shadow:0 0 15px rgba(245,158,11,0.4);margin-bottom:10px">${pf.duel.winner} WINS PHASE 1</div>
-         <div style="font-size:15px;color:var(--cs-rust);font-family:'Black Ops One',sans-serif;letter-spacing:2px">🏆 GOLDEN SHOVEL → ${pf.duel.winner}</div>
+      ? `${_csStamp(pf.duel.winner + ' WINS PHASE 1', 'gold')}
+         <div style="margin-top:12px;font-size:15px;color:var(--cs-rust);font-family:'Black Ops One',sans-serif;letter-spacing:2px">🏆 GOLDEN SHOVEL → ${pf.duel.winner}</div>
          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px">${pf.duel.winner}'s eater held it down the longest. They earn the shovel advantage for the dig.</div>`
       : _csStamp('PHASE COMPLETE', 'gold')}
   </div>`;

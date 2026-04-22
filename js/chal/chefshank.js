@@ -2489,21 +2489,24 @@ export function rpBuildChefshankPrisonBreak(ep) {
         const passed = (td.obstacles || []).filter(o => o.passed).length;
         const failed = 4 - passed;
         const isShovel = pb.shovelTeam === td.tribe;
-        const baseRounds = 5;
-        const penaltyRounds = failed;
-        const bonusRounds = isShovel ? 2 : 0;
+        const speedMod = (passed - failed) * 10;
+        const shovelBonus = isShovel ? 30 : 0;
+        const totalSpeed = 100 + speedMod + shovelBonus;
+        const speedColor = totalSpeed > 100 ? '#4ade80' : totalSpeed < 100 ? '#f87171' : 'rgba(255,255,255,0.6)';
         setupCards += `<div style="background:rgba(120,53,15,0.12);border:1px solid rgba(180,83,9,0.2);border-radius:4px;padding:10px 14px;margin:6px 0">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
             <span style="font-family:'Black Ops One',cursive;font-size:11px;color:var(--cs-chain)">${td.tribe}</span>
-            ${isShovel ? '<span style="font-size:14px" title="Golden Shovel">\u{26CF}\u{FE0F}</span>' : ''}
+            ${isShovel ? '<span style="font-size:14px" title="Golden Shovel">⛏️</span>' : ''}
           </div>
           <div style="font-size:11px;color:rgba(255,255,255,0.7);line-height:1.6">
-            Base rounds: <strong>${baseRounds}</strong>
-            ${penaltyRounds > 0 ? ` \u2014 <span style="color:#f87171">${penaltyRounds} penalty${penaltyRounds > 1 ? '' : ''}</span>` : ''}
-            ${bonusRounds > 0 ? ` + <span style="color:#facc15">${bonusRounds} Golden Shovel bonus</span>` : ''}
-            = <strong style="color:var(--cs-chain)">${td.digRounds || 0} rounds</strong>
+            ${td.pusher} cleared <strong>${passed}/4</strong> obstacles → <span style="color:${speedMod >= 0 ? '#4ade80' : '#f87171'}">${speedMod >= 0 ? '+' : ''}${speedMod}% dig speed</span>
+            ${isShovel ? ` + <span style="color:#facc15">+${shovelBonus}% Golden Shovel</span>` : ''}
           </div>
-          <div style="display:flex;gap:4px;margin-top:6px">${(td.obstacles || []).map(o => `<span style="font-size:13px">${o.passed ? '\u2705' : '\u274C'}</span>`).join('')}</div>
+          <div style="font-size:12px;color:${speedColor};font-family:'Black Ops One',cursive;letter-spacing:1px;margin-top:4px">
+            Total dig speed: ${totalSpeed}%
+          </div>
+          <div style="display:flex;gap:4px;margin-top:6px">${(td.obstacles || []).map(o => `<span style="font-size:13px">${o.passed ? '✅' : '❌'}</span>`).join('')}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:2px">5 rounds · everyone digs equally</div>
         </div>`;
       }
       feed += `<div id="cs-step-break-${i}" style="${vis}">

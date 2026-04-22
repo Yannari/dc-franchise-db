@@ -1378,9 +1378,12 @@ export function simulateChefshank(ep) {
   _simulatePrisonDramaBreak(ep, tribeMembers, result);
   _simulatePrisonBreak(ep, tribeMembers, result);
 
-  const sorted = Object.entries(result.tribeScores).sort((a, b) => b[1] - a[1]);
-  const winnerName = sorted[0][0];
-  const loserName = sorted[sorted.length - 1][0];
+  // Phase 2 (Prison Break) determines immunity. Loser of Phase 2 goes to tribal.
+  // Phase 1 only gives the shovel advantage.
+  const _pbData = result.prisonBreak;
+  const pbSorted = [...(_pbData?.tribes || [])].sort((a, b) => b.totalDistance - a.totalDistance);
+  const winnerName = pbSorted[0]?.tribe || Object.keys(result.tribeScores)[0];
+  const loserName = pbSorted[pbSorted.length - 1]?.tribe || Object.keys(result.tribeScores)[1];
   ep.winner = tribes.find(t => t.name === winnerName);
   ep.loser = tribes.find(t => t.name === loserName);
   ep.tribalPlayers = [...ep.loser.members];
@@ -2144,17 +2147,37 @@ export function rpBuildChefshankPrisonFood(ep) {
     // Vomit stamps
     const vomitList = Array.isArray(rd.vomited) ? rd.vomited : rd.vomited ? [rd.vomited] : [];
     for (const v of vomitList) {
-      const cookingTribe = tribeNames.find(t => pf.victims?.[t] === v) || '?';
       roundHtml += `<div class="cs-ev vomit">
         ${_csSmallPortrait(v, 44)}
         <div style="flex:1;text-align:center">
           ${_csStamp('ELIMINATED', 'green')}
-          <div class="cs-ev-text" style="margin-top:8px"><strong>${v}</strong> couldn't handle <strong>${cookingTribe}</strong>'s cooking. ${cookingTribe}'s dish wins!</div>
+          <div class="cs-ev-text" style="margin-top:8px"><strong>${v}</strong> can't hold it down. Out of the eating duel!</div>
         </div>
       </div>`;
     }
 
     feed += `<div id="cs-step-food-${stepIdx}" style="${stepIdx <= revIdx ? '' : 'display:none'}">${roundHtml}</div>`;
+    stepIdx++;
+  }
+
+  // Final step: survivor victory card
+  if (pf.duel?.winner) {
+    const winnerTribe = pf.duel.winner;
+    const survivorName = Object.entries(pf.victims || {}).find(([t, v]) => {
+      const vList = [];
+      for (const rd of duelRounds) {
+        const vl = Array.isArray(rd.vomited) ? rd.vomited : rd.vomited ? [rd.vomited] : [];
+        vl.forEach(x => vList.push(x));
+      }
+      return !vList.includes(v);
+    })?.[1] || '?';
+    feed += `<div id="cs-step-food-${stepIdx}" style="${stepIdx <= revIdx ? '' : 'display:none'}">
+      <div class="cs-ev positive" style="border-left-color:var(--cs-rust);background:rgba(180,83,9,0.15);padding:16px;text-align:center">
+        ${_csSmallPortrait(survivorName, 56)}
+        <div style="font-family:'Black Ops One',sans-serif;font-size:18px;color:var(--cs-rust);letter-spacing:3px;margin-top:8px">${survivorName} SURVIVES</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px">${winnerTribe} wins Phase 1! The last one still eating.</div>
+      </div>
+    </div>`;
     stepIdx++;
   }
 
@@ -2180,7 +2203,9 @@ export function rpBuildChefshankPrisonFood(ep) {
   </div>
   <div id="cs-done-food" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:24px 16px;margin-top:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(180,83,9,0.2);border-radius:6px'}">
     ${pf.duel?.winner
-      ? `${_csStamp(pf.duel.winner + ' WINS PHASE 1', 'gold')}<div style="margin-top:8px;font-size:13px;color:var(--cs-rust);font-family:'Black Ops One',sans-serif;letter-spacing:2px">🏆 GOLDEN SHOVEL → ${pf.duel.winner}</div><div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">${pf.duel.winner}'s eater held it down the longest. They earn the shovel advantage for the dig.</div>`
+      ? `<div style="font-family:'Black Ops One',sans-serif;font-size:22px;color:#f59e0b;letter-spacing:3px;text-shadow:0 0 15px rgba(245,158,11,0.4);margin-bottom:10px">${pf.duel.winner} WINS PHASE 1</div>
+         <div style="font-size:15px;color:var(--cs-rust);font-family:'Black Ops One',sans-serif;letter-spacing:2px">🏆 GOLDEN SHOVEL → ${pf.duel.winner}</div>
+         <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px">${pf.duel.winner}'s eater held it down the longest. They earn the shovel advantage for the dig.</div>`
       : _csStamp('PHASE COMPLETE', 'gold')}
   </div>`;
 
@@ -2246,7 +2271,9 @@ function _csBuildFoodSidebar(pf, revIdx, tribeNames, totalSteps, ep) {
           <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${victim}</div>
           <div style="font-size:8px;color:rgba(255,255,255,0.4)">Eating ${tName}'s food</div>
         </div>
-        ${vomitHappened ? `<span style="font-size:8px;color:#ef4444">VOMITED</span>` : eatingRevealed ? `<span style="font-size:8px;color:rgba(255,255,255,0.3)">holding...</span>` : ''}
+        ${vomitHappened ? `<span style="font-size:8px;color:#ef4444">VOMITED</span>`
+          : (revIdx >= totalSteps - 1 && !vomitHappened) ? `<span style="font-size:8px;color:#4ade80;font-weight:700">✅ SURVIVED</span>`
+          : eatingRevealed ? `<span style="font-size:8px;color:rgba(255,255,255,0.3)">holding...</span>` : ''}
       </div>`;
     }
   } else {
@@ -2482,7 +2509,7 @@ export function rpBuildChefshankPrisonBreak(ep) {
         if (!pt.hasRound) {
           roundCards += `<div style="background:rgba(100,100,100,0.08);border:1px solid rgba(100,100,100,0.15);border-left:4px solid #6b7280;border-radius:4px;padding:8px 12px;margin:6px 0;opacity:0.5">
             <span style="font-family:'Black Ops One',cursive;font-size:9px;letter-spacing:1px;color:#6b7280">${pt.tribe}</span>
-            <span style="font-size:10px;color:rgba(255,255,255,0.35);margin-left:8px">No dig round \u2014 penalty cost</span>
+            <span style="font-size:10px;color:rgba(255,255,255,0.35);margin-left:8px">Done digging \u2014 out of rounds</span>
           </div>`;
           continue;
         }

@@ -1431,6 +1431,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isCrazytown = true;
 
+  } else if (engineType === 'chefshank') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isChefshank = true;
+
   } else if (engineType === 'x-treme-torture') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     if ((gs.episode || 0) + 1 < 2) return;

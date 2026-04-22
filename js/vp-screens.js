@@ -14,6 +14,7 @@ import { rpBuildMonsterCashTitleCard, rpBuildMonsterCashRounds, rpBuildMonsterCa
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard, alienEggRevealNext, alienEggRevealAll } from './chal/alien-egg.js';
 import { rpBuildBeachBlanketBogusTitleCard, rpBuildBeachBlanketBogusSurf, rpBuildBeachBlanketBogusSandcastle, rpBuildBeachBlanketBogusHalftime, rpBuildBeachBlanketBogusDanceOff, rpBuildBeachBlanketBogusResults, beachBogusRevealNext, beachBogusRevealAll } from './chal/beach-blanket-bogus.js';
 import { rpBuildCrazytownTitleCard, rpBuildCrazytownHorseDive, rpBuildCrazytownStandoff, rpBuildCrazytownRoundup, rpBuildCrazytownDramaBreak, rpBuildCrazytownResults, crazytownRevealNext, crazytownRevealAll } from './chal/crazytown.js';
+import { rpBuildChefshankTitleCard, chefshankRevealNext, chefshankRevealAll } from './chal/chefshank.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10374,6 +10375,8 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'ct-roundup', label:'🤠 The Roundup', html: rpBuildCrazytownRoundup(ep) });
     }
     vpScreens.push({ id:'ct-results', label:'⚖️ Final Verdict', html: rpBuildCrazytownResults(ep) });
+  } else if (ep.isChefshank && ep.chefshank) {
+    vpScreens.push({ id:'cs-title', label:'⛓️ The Chefshank Redemption', html: rpBuildChefshankTitleCard(ep) });
     // RI screens
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _aeRiLife = rpBuildRILife(ep);

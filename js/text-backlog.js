@@ -29,6 +29,7 @@ import { _textTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
 import { _textCampCastaways } from './chal/camp-castaways.js';
 import { _textBeachBlanketBogus } from './chal/beach-blanket-bogus.js';
 import { _textCrazytown } from './chal/crazytown.js';
+import { _textChefshank } from './chal/chefshank.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -2016,6 +2017,7 @@ export function generateSummaryText(ep) {
   _textCampCastaways(ep, ln, sec);
   _textBeachBlanketBogus(ep, ln, sec);
   _textCrazytown(ep, ln, sec);
+  _textChefshank(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
   _textJuryLife(ep, ln, sec);

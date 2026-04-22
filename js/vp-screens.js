@@ -15,7 +15,7 @@ import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunit
 import { rpBuildBeachBlanketBogusTitleCard, rpBuildBeachBlanketBogusSurf, rpBuildBeachBlanketBogusSandcastle, rpBuildBeachBlanketBogusHalftime, rpBuildBeachBlanketBogusDanceOff, rpBuildBeachBlanketBogusResults, beachBogusRevealNext, beachBogusRevealAll } from './chal/beach-blanket-bogus.js';
 import { rpBuildCrazytownTitleCard, rpBuildCrazytownHorseDive, rpBuildCrazytownStandoff, rpBuildCrazytownRoundup, rpBuildCrazytownDramaBreak, rpBuildCrazytownResults, crazytownRevealNext, crazytownRevealAll } from './chal/crazytown.js';
 import { rpBuildChefshankTitleCard, rpBuildChefshankPrisonFood, rpBuildChefshankPrisonBreak, rpBuildChefshankDramaBreak, rpBuildChefshankResults, chefshankRevealNext, chefshankRevealAll } from './chal/chefshank.js';
-import { rpBuildOneFluTitleCard, oneFluRevealNext, oneFluRevealAll } from './chal/one-flu.js';
+import { rpBuildOneFluTitleCard, rpBuildOneFluStudySleep, rpBuildOneFluQuiz, rpBuildOneFluAssembly, rpBuildOneFluDramaBreak, rpBuildOneFluDisease, rpBuildOneFluResults, oneFluRevealNext, oneFluRevealAll } from './chal/one-flu.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10403,6 +10403,22 @@ export function buildVPScreens(epRecord) {
     }
   } else if (ep.isOneFlu && ep.oneFlu) {
     vpScreens.push({ id:'of-title', label:'🏥 One Flu Over the Cuckoos', html: rpBuildOneFluTitleCard(ep) });
+    if (ep.oneFlu.studySleep) {
+      vpScreens.push({ id:'of-study', label:'📖 Study or Sleep', html: rpBuildOneFluStudySleep(ep) });
+    }
+    if (ep.oneFlu.medicalQuiz) {
+      vpScreens.push({ id:'of-quiz', label:'⚡ Medical Quiz', html: rpBuildOneFluQuiz(ep) });
+    }
+    if (ep.oneFlu.assembly) {
+      vpScreens.push({ id:'of-assembly', label:'🔩 FrankenChris Assembly', html: rpBuildOneFluAssembly(ep) });
+    }
+    if (ep.oneFlu.breakEvents?.length) {
+      vpScreens.push({ id:'of-drama', label:'⏳ Phase Break', html: rpBuildOneFluDramaBreak(ep) });
+    }
+    if (ep.oneFlu.diseaseOutbreak) {
+      vpScreens.push({ id:'of-disease', label:'☣️ Disease Outbreak', html: rpBuildOneFluDisease(ep) });
+    }
+    vpScreens.push({ id:'of-results', label:'⚖️ Final Verdict', html: rpBuildOneFluResults(ep) });
     // RI screens
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _ofRiLife = rpBuildRILife(ep);

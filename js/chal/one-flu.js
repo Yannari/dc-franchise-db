@@ -2078,8 +2078,19 @@ export function rpBuildOneFluQuiz(ep) {
     stepIdx++;
   }
 
-  // Summary step
-  const partSummary = Object.entries(mq.partsByTribe || {}).map(([t, c]) => `<strong>${t}</strong>: ${c}`).join(' &middot; ');
+  // Summary step — recount from round data for accuracy
+  const _recountParts = {};
+  tribeNames.forEach(t => { _recountParts[t] = 0; });
+  for (const rd of rounds) {
+    if (rd.winnerTribe && rd.partRetrieved) _recountParts[rd.winnerTribe]++;
+    for (const evt of (rd.events || [])) {
+      if (evt.type === 'partTheft') {
+        if (evt.villainTribe) _recountParts[evt.villainTribe] = (_recountParts[evt.villainTribe] || 0) + 1;
+        if (evt.victimTribeName) _recountParts[evt.victimTribeName] = Math.max(0, (_recountParts[evt.victimTribeName] || 0) - 1);
+      }
+    }
+  }
+  const partSummary = Object.entries(_recountParts).map(([t, c]) => `<strong>${t}</strong>: ${c}`).join(' &middot; ');
   const hostAssembly = _rp(FLU_HOST.assemblyStart);
   feed += `<div id="of-step-quiz-${stepIdx}" style="${stepIdx <= revIdx ? '' : 'display:none'}">
     <div class="of-ev positive" style="border-left-color:var(--of-teal);padding:16px;text-align:center">
@@ -2207,18 +2218,37 @@ export function rpBuildOneFluAssembly(ep) {
     </div>
   </div>`;
 
-  for (const td of (asm.tribes || [])) {
+  // Sort tribes by total score for reveal order (worst first, winner last for suspense)
+  const sortedTribes = [...(asm.tribes || [])].sort((a, b) => (a.total || 0) - (b.total || 0));
+  const maxTotal = Math.max(...sortedTribes.map(t => t.total || 0), 1);
+
+  for (const td of sortedTribes) {
     const isWinner = td.tribe === asm.winner;
     const tribeParts = mq?.partsByTribe?.[td.tribe] || 0;
-    feed += `<div class="of-ev round-header"><div style="flex:1;text-align:center">
-      <div style="font-family:'Orbitron',sans-serif;font-size:14px;color:${isWinner ? 'var(--of-teal)' : 'var(--of-blue)'};letter-spacing:3px">${td.tribe} ${isWinner ? '&#10003;' : ''}</div>
-      <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px">${tribeParts} body parts &middot; Assembly: ${td.assemblyScore?.toFixed(2) || '?'} &middot; Hoist: ${td.hoistScore?.toFixed(2) || '?'}</div>
+    const pctScore = Math.round(((td.total || 0) / maxTotal) * 100);
+
+    feed += `<div class="of-ev round-header" style="${isWinner ? 'border-left:4px solid var(--of-teal);background:rgba(20,184,166,0.1)' : ''}"><div style="flex:1">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-family:'Orbitron',sans-serif;font-size:14px;color:${isWinner ? 'var(--of-teal)' : 'var(--of-blue)'};letter-spacing:3px">${td.tribe}</div>
+        ${isWinner ? `<span style="font-size:10px;color:var(--of-teal)">⚡ FIRST TO REANIMATE</span>` : ''}
+      </div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px">${tribeParts} body parts collected</div>
+      <div style="display:flex;gap:12px;margin-top:6px">
+        <div style="flex:1">
+          <div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-bottom:2px">ASSEMBLY</div>
+          ${_ofEkgBar(Math.min(100, (td.assemblyScore || 0) / Math.max(...sortedTribes.map(t => t.assemblyScore || 0), 1) * 100))}
+        </div>
+        <div style="flex:1">
+          <div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-bottom:2px">HOIST</div>
+          ${_ofEkgBar(Math.min(100, (td.hoistScore || 0) / Math.max(...sortedTribes.map(t => t.hoistScore || 0), 1) * 100))}
+        </div>
+      </div>
     </div></div>`;
 
     if (!(td.events || []).length) {
       feed += `<div class="of-ev">
         <div style="flex:1;min-width:0">
-          <div class="of-ev-text" style="color:rgba(255,255,255,0.5)">The tribe works steadily &mdash; no drama, no heroics. Just efficient medical assembly.</div>
+          <div class="of-ev-text" style="color:rgba(255,255,255,0.5)">The tribe works steadily — no drama, no heroics. Just efficient medical assembly.</div>
         </div>
       </div>`;
     }
@@ -2256,6 +2286,10 @@ export function rpBuildOneFluAssembly(ep) {
         <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px">Build the patient. Hoist the body. Win the phase.</div>
       </div>
       ${feed}
+      ${asm.winner ? `<div style="text-align:center;padding:16px;margin-top:8px;background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);border-radius:6px">
+        <div style="font-family:'Orbitron',sans-serif;font-size:18px;color:var(--of-teal);letter-spacing:3px">⚡ ${asm.winner} REANIMATES FIRST</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px">Lightning strikes! ${asm.winner}'s FrankenChris jolts to life. Phase 2 goes to ${asm.winner}.</div>
+      </div>` : ''}
     </div>
   `, ep);
 }

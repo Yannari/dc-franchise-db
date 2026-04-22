@@ -670,7 +670,7 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
     }
   }
 
-  const roundEscalation = [0.7, 0.85, 1.0, 1.15, 1.3];
+  const roundEscalation = [0.4, 0.55, 0.7, 0.85, 1.0];
   const numRounds = 4 + Math.floor(Math.random() * 2); // 4-5
   let duelLoser = null;
   let vomitRound = null;
@@ -796,11 +796,11 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
       }
     }
 
-    // Check for vomit
+    // Check for vomit — add per-round noise so it's not deterministic
     for (const tName of tribeNames) {
       const v = duelVictims[tName];
       if (!v || duelLoser) continue;
-      const resist = victimResists[v] || 0;
+      const resist = (victimResists[v] || 0) + Math.random() * 0.15;
       const disgust = (result.prisonFood.cooking[tName]?.disgustScore || 0) * escFactor;
       if (resist < disgust) {
         duelLoser = v;

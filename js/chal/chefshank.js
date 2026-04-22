@@ -2908,20 +2908,48 @@ export function rpBuildChefshankResults(ep) {
   }
   standouts += '</div>';
 
-  // Winner banner
-  const winnerBanner = `<div style="text-align:center;padding:20px 0;position:relative;z-index:6">
-    <div style="font-family:'Black Ops One',cursive;font-size:30px;color:var(--cs-chain);letter-spacing:4px;text-shadow:0 0 20px rgba(168,162,158,0.3),3px 3px 0 rgba(0,0,0,0.6)">${winnerTribe}</div>
+  // Winner banner with team portraits
+  const pbTribes = cs.prisonBreak?.tribes || [];
+  const pbSorted = [...pbTribes].sort((a, b) => (b.totalDistance || 0) - (a.totalDistance || 0));
+  const immuneTribe = pbSorted[0]?.tribe || winnerTribe;
+  const tribalTribe = pbSorted[pbSorted.length - 1]?.tribe || '';
+  const safeTribes = pbSorted.slice(1, -1).map(t => t.tribe);
+  const immuneMembers = pbSorted[0]?.members || [];
+  const tribalMembers = pbSorted[pbSorted.length - 1]?.members || [];
+
+  const winnerBanner = `<div style="text-align:center;padding:20px 14px;position:relative;z-index:6">
+    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:12px">
+      ${immuneMembers.map(m => _csSmallPortrait(m, 40)).join('')}
+    </div>
+    <div style="font-family:'Black Ops One',cursive;font-size:30px;color:var(--cs-chain);letter-spacing:4px;text-shadow:0 0 20px rgba(168,162,158,0.3),3px 3px 0 rgba(0,0,0,0.6)">${immuneTribe}</div>
     <div style="font-family:'Black Ops One',cursive;font-size:11px;letter-spacing:6px;color:var(--cs-rust);margin-top:4px">BREAKS FREE</div>
     <div style="margin-top:10px">${_csStamp('IMMUNITY', 'gold')}</div>
+    ${safeTribes.length ? `<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1)">
+      <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;margin-bottom:6px">SAFE</div>
+      ${safeTribes.map(st => {
+        const sd = pbTribes.find(t => t.tribe === st);
+        return `<div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-bottom:4px">
+          ${(sd?.members || []).map(m => _csSmallPortrait(m, 28)).join('')}
+        </div><div style="font-size:9px;color:rgba(255,255,255,0.4)">${st}</div>`;
+      }).join('')}
+    </div>` : ''}
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1)">
+      <div style="font-size:10px;color:#ef4444;letter-spacing:2px;margin-bottom:6px">TRIBAL COUNCIL</div>
+      <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-bottom:4px">
+        ${tribalMembers.map(m => `<div style="opacity:0.6">${_csSmallPortrait(m, 28)}</div>`).join('')}
+      </div>
+      <div style="font-size:10px;color:#ef4444">${tribalTribe} — someone's going home tonight.</div>
+    </div>
   </div>`;
 
-  // Player leaderboard
+  // Player leaderboard with rounded scores
   const scores = Object.entries(ep.chalMemberScores || {}).sort((a, b) => b[1] - a[1]);
   let leaderboard = '<div style="padding:0 14px 16px">';
   leaderboard += '<div class="cs-side-sec" style="text-align:center">INMATE RECORD</div>';
   leaderboard += '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">';
   for (const [name, score] of scores) {
-    leaderboard += `<div style="text-align:center">${_csMugshot(name, 56)}<div style="margin-top:4px;font-size:10px;color:var(--cs-chain)">${_csTally(score)}</div></div>`;
+    const roundedScore = typeof score === 'number' ? Math.round(score) : score;
+    leaderboard += `<div style="text-align:center">${_csMugshot(name, 56)}<div style="margin-top:4px;font-size:10px;color:var(--cs-chain)">${_csTally(roundedScore)}</div></div>`;
   }
   leaderboard += '</div></div>';
 

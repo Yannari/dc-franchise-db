@@ -1350,13 +1350,326 @@ export function simulateChefshank(ep) {
     } : null,
     dramaBreak: result.breakEvents ? result.breakEvents.map(e => e.id) : [],
   };
+
+  // ── Showmance moment (cross-tribe, 40% chance) ────────────────────────────
+  if (seasonConfig.romance !== false && Math.random() < 0.4) {
+    const allNames = tribeMembers.flatMap(t => t.members);
+    const crossPairs = [];
+    for (let i = 0; i < tribeMembers.length; i++) {
+      for (let j = i + 1; j < tribeMembers.length; j++) {
+        for (const a of tribeMembers[i].members) {
+          for (const b of tribeMembers[j].members) {
+            const rc = romanticCompat(a, b);
+            if (rc >= 0.4) crossPairs.push({ a, b, rc });
+          }
+        }
+      }
+    }
+    if (crossPairs.length) {
+      crossPairs.sort((x, y) => y.rc - x.rc);
+      const { a, b } = crossPairs[0];
+      const aPr = pronouns(a);
+      const bPr = pronouns(b);
+      addBond(a, b, 0.4);
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[a] = (gs.popularity[a] || 0) + 1;
+      gs.popularity[b] = (gs.popularity[b] || 0) + 1;
+      const smTexts = [
+        `Between phases, ${a} and ${b} slip away from their tribes. Nobody says anything — but everyone notices.`,
+        `${a} catches ${b}'s eye during the yard break. The next moment ${aPr.sub} spends with ${aPr.posAdj} own tribe, ${aPr.sub}'s distracted.`,
+        `${a} lingers near ${b} during the break — too long for strategy, too deliberate for accident. ${bPr.Sub} doesn't move away.`,
+        `The challenge brings out something unexpected: ${a} and ${b} find each other in the chaos. ${aPr.Sub} can't explain it. ${bPr.Sub} doesn't try.`,
+      ];
+      const smText = smTexts[Math.floor(Math.random() * smTexts.length)];
+      ep.campEvents[campKey].post.push({
+        text: smText,
+        players: [a, b],
+        badgeText: 'PRISON ROMANCE',
+        badgeClass: 'purple',
+        tag: 'challenge',
+      });
+      result.showmanceMoment = { a, b };
+    }
+  }
+
+  // ── Cold open — pick most dramatic moment ─────────────────────────────────
+  let coldOpen = null;
+  const pf = result.prisonFood;
+  const pb = result.prisonBreak;
+
+  // Priority 1: vomit on round 1 (early upset)
+  if (!coldOpen && pf?.duel?.vomitRound === 1 && pf?.duel?.loser) {
+    const loserTribe = pf.duel.loser;
+    const loserVictim = Object.entries(pf.victims || {}).find(([t]) => t === loserTribe)?.[1];
+    if (loserVictim) {
+      coldOpen = `${loserVictim} didn't even make it past round one. One bowl. That's all it took.`;
+    }
+  }
+
+  // Priority 2: all obstacles failed by one tribe
+  if (!coldOpen && pb?.tribes) {
+    const shutout = pb.tribes.find(t => t.obstacles && t.obstacles.length && t.obstacles.every(o => !o.passed));
+    if (shutout) {
+      coldOpen = `${shutout.pusher} couldn't clear a single obstacle. ${shutout.tribe} entered the tunnel with nothing.`;
+    }
+  }
+
+  // Priority 3: rival sabotage in dig (from breakEvents or dig text)
+  if (!coldOpen && result.breakEvents?.some(e => e.id === 'shiv-threat')) {
+    const threat = result.breakEvents.find(e => e.id === 'shiv-threat');
+    coldOpen = `Before the tunnel even opened, ${threat.actor} had already made a threat. This challenge got personal fast.`;
+  }
+
+  // Priority 4: accidental improvement caught
+  if (!coldOpen && pf) {
+    for (const [tName, cookData] of Object.entries(pf.cooking || {})) {
+      const caught = cookData.events?.find(e => e.type === 'accidentalImprovement');
+      if (caught) {
+        coldOpen = `${caught.actor} accidentally made the slop edible — and their tribe was not happy about it.`;
+        break;
+      }
+    }
+  }
+
+  // Priority 5: dramatic final round duel (vomit on last round or max round)
+  if (!coldOpen && pf?.duel?.vomitRound && pf.duel.vomitRound >= 4) {
+    const victim = pf.duel.vomitVictim || Object.entries(pf.victims || {})?.[0]?.[1];
+    if (victim) {
+      coldOpen = `${victim} made it to round ${pf.duel.vomitRound} before tapping out. This duel went to the wire.`;
+    }
+  }
+
+  // Fallback
+  if (!coldOpen) {
+    const winnerTribe = pb?.winner || winnerName;
+    coldOpen = `${winnerTribe} executed the Prison Break flawlessly. Their rivals never had a chance.`;
+  }
+
+  result.coldOpen = coldOpen;
 }
 
 export function _textChefshank(ep, ln, sec) {
   const cs = ep.chefshank;
   if (!cs) return;
+  const host = seasonConfig.host || 'Chris';
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+
   sec('The Chefshank Redemption');
-  ln('The teams face a prison-themed challenge — cook disgusting food, then dig their way to freedom.');
+
+  const introLines = [
+    `${host} unveils the prison set with visible glee — concrete walls, rusted bars, and a kitchen that looks like it's never been cleaned. "Two phases," he says. "Cook the slop. Eat the slop. Then dig your way out. Welcome to The Chefshank Redemption."`,
+    `The tribes arrive to find a full prison mock-up erected overnight. ${host} is already in costume — warden's cap, clipboard. "Phase 1: Prison Food. Phase 2: Prison Break. Win both and you're free. Lose and it's tribal council — still in chains."`,
+    `${host} leans against a rusty cell door and grins. "Today's challenge is a Total Drama classic. You cook the worst thing imaginable. The enemy eats it. Then everyone grabs a shovel. Last tribe standing walks free."`,
+  ];
+  ln(_rp(introLines));
+
+  // ── Phase 1: Prison Food ──────────────────────────────────────────────────
+  if (cs.prisonFood) {
+    const pf = cs.prisonFood;
+
+    sec('Phase 1: Prison Food');
+
+    // Victim draft
+    const tribeNames = Object.keys(pf.victims || {});
+    for (const tName of tribeNames) {
+      const victim = pf.victims[tName];
+      if (!victim) continue;
+      const vPr = pronouns(victim);
+      const victimDraftLines = [
+        `${tName} nominates ${victim} to eat whatever their rivals cook up. ${vPr.Sub} accepts — not gracefully.`,
+        `The choice falls on ${victim}. ${tName} picks ${vPr.obj} to stomach the enemy's cooking. ${vPr.Sub} doesn't argue.`,
+        `${victim} is the designated eater for ${tName}. ${vPr.Sub} cracks ${vPr.posAdj} knuckles and takes a seat.`,
+      ];
+      ln(_rp(victimDraftLines));
+    }
+
+    // Cooking highlights
+    for (const [tName, cookData] of Object.entries(pf.cooking || {})) {
+      if (!cookData?.events?.length) continue;
+      for (const evt of cookData.events) {
+        if (evt.text) ln(evt.text);
+      }
+    }
+
+    // Duel narration
+    const duel = pf.duel;
+    if (duel?.rounds?.length) {
+      const roundIntros = [
+        r => `Round ${r}: ${host} slides another bowl forward. The eating continues.`,
+        r => `Round ${r} arrives and neither eater looks particularly confident.`,
+        r => `${host} announces round ${r}. The bowls keep coming.`,
+      ];
+      for (const round of duel.rounds) {
+        ln(_rp(roundIntros)(round.round));
+        for (const evt of (round.events || [])) {
+          if (evt.text) ln(evt.text);
+        }
+        if (round.vomited) {
+          const vomitLines = [
+            `${round.vomited} reaches ${round.round} rounds before tapping out — hard.`,
+            `Down goes ${round.vomited}. Round ${round.round} is the end of the line.`,
+            `${round.vomited} can't hold it. ${host} blows the whistle. "That's it. We have a casualty."`,
+          ];
+          ln(_rp(vomitLines));
+        }
+      }
+
+      // Final result
+      if (duel.winner && duel.loser) {
+        const survivor = pf.victims[duel.winner];
+        const vomitVictim = pf.victims[duel.loser];
+        if (duel.vomitRound) {
+          const surviveLines = [
+            `${survivor} survives all ${duel.rounds.length} rounds. ${pronouns(survivor).Sub} doesn't celebrate — just sets the bowl down and stares straight ahead.`,
+            `After ${duel.rounds.length} rounds, ${survivor} finishes clean. ${vomitVictim || 'the other eater'} didn't make it. The Golden Shovel goes to ${duel.winner}.`,
+            `${duel.winner} wins the duel. ${survivor} took every bowl they were handed and held it down. The Golden Shovel is theirs.`,
+          ];
+          ln(_rp(surviveLines));
+        } else {
+          // Tiebreak
+          ln(`Neither eater vomited — ${host} judges by margin. ${duel.winner} holds the edge. Golden Shovel awarded.`);
+        }
+      }
+    }
+
+    // Golden Shovel
+    if (cs.goldenShovel) {
+      const shovelLines = [
+        `${host} raises the Golden Shovel. "${cs.goldenShovel} — your Phase 2 advantage. Two extra dig rounds. Don't waste them."`,
+        `The Golden Shovel goes to ${cs.goldenShovel}. Two bonus rounds in the tunnel. That could be everything.`,
+        `${cs.goldenShovel} walks away with the Golden Shovel and a two-round advantage heading into Phase 2.`,
+      ];
+      ln(_rp(shovelLines));
+    }
+  }
+
+  // ── Yard Time ─────────────────────────────────────────────────────────────
+  if (cs.breakEvents?.length) {
+    sec('Yard Time');
+    for (const evt of cs.breakEvents) {
+      if (evt.text) ln(evt.text);
+    }
+  }
+
+  // ── Phase 2: Prison Break ─────────────────────────────────────────────────
+  if (cs.prisonBreak) {
+    const pb = cs.prisonBreak;
+    sec('Phase 2: Prison Break');
+
+    // Pusher selection
+    for (const td of pb.tribes) {
+      const pPr = pronouns(td.pusher);
+      const pusherLines = [
+        `${td.tribe} sends ${td.pusher} through the obstacle gauntlet. ${pPr.Sub}'s the strongest option and everyone knows it.`,
+        `${td.pusher} volunteers to run the obstacles for ${td.tribe}. Nobody argues.`,
+        `The choice for ${td.tribe} is obvious: ${td.pusher}. ${pPr.Sub} steps up without being asked.`,
+      ];
+      ln(_rp(pusherLines));
+    }
+
+    // Obstacle results
+    for (const td of pb.tribes) {
+      const pPr = pronouns(td.pusher);
+      const cleared = td.obstacles.filter(o => o.passed).length;
+      const total = td.obstacles.length;
+      for (const obs of (td.obstacles || [])) {
+        const obsName = obs.name.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
+        if (obs.passed) {
+          const passLines = [
+            `${td.pusher} clears the ${obsName}. ${pPr.Sub} keeps the tribe's dig rounds intact.`,
+            `Through the ${obsName} — clean. ${td.tribe} doesn't lose ground.`,
+            `${td.pusher} takes the ${obsName} without hesitation. Clear.`,
+          ];
+          ln(_rp(passLines));
+        } else {
+          const failLines = [
+            `${td.pusher} trips up on the ${obsName}. That's a dig round gone.`,
+            `The ${obsName} costs ${td.tribe} a round in the tunnel. ${td.pusher} picks ${pPr.obj}self up and moves on.`,
+            `${td.pusher} doesn't make it through the ${obsName} clean. ${td.tribe} pays for it.`,
+          ];
+          ln(_rp(failLines));
+        }
+      }
+      if (cleared === total) {
+        ln(`${td.pusher} goes clean through every obstacle. ${td.tribe} enters the tunnel with a full complement of dig rounds.`);
+      } else if (cleared === 0) {
+        ln(`${td.tribe} starts the tunnel phase at a severe disadvantage — every obstacle cost them.`);
+      }
+    }
+
+    // Shovel advantage
+    if (pb.shovelTeam) {
+      ln(`The Golden Shovel delivers: ${pb.shovelTeam} gets two extra rounds in the tunnel. That edge is real.`);
+    }
+
+    // Dig narration — round by round per tribe
+    for (const td of pb.tribes) {
+      if (!td.roundDistances?.length) continue;
+      const digIntros = [
+        `${td.tribe} hits the tunnel. Shovels go in. The race is on.`,
+        `${td.tribe} drops into the dig with ${td.digRounds} rounds on the clock.`,
+        `The ${td.tribe} tunnel: ${td.digRounds} rounds, one way out.`,
+      ];
+      ln(_rp(digIntros));
+
+      td.roundDistances.forEach((dist, i) => {
+        const r = i + 1;
+        const distPct = Math.round(dist * 100);
+        if (distPct > 25) {
+          const goodRounds = [
+            `Round ${r}: ${td.tribe} gains ground — a solid advance.`,
+            `Round ${r} in the tunnel: ${td.tribe} makes real progress.`,
+            `${td.tribe} — round ${r}. The dirt gives way and they push through.`,
+          ];
+          ln(_rp(goodRounds));
+        } else {
+          const poorRounds = [
+            `Round ${r}: ${td.tribe} struggles. Something is slowing them down.`,
+            `Round ${r} goes badly for ${td.tribe}. The tunnel doesn't cooperate.`,
+            `${td.tribe} barely moves the needle in round ${r}.`,
+          ];
+          ln(_rp(poorRounds));
+        }
+      });
+    }
+
+    // Winner declared
+    if (pb.winner) {
+      const winLines = [
+        `${pb.winner}'s fist punches through the wall first. Daylight floods in. ${host} grabs the airhorn — "${pb.winner} BREAKS FREE! Immunity is yours!"`,
+        `The breakthrough: ${pb.winner} clears the final barrier and emerges. ${host}: "${pb.winner} — you're out. Everyone else, start thinking about tribal."`,
+        `${pb.winner} wins Phase 2 and the challenge overall. The other tribe heads to tribal tonight.`,
+      ];
+      ln(_rp(winLines));
+    }
+  }
+
+  // ── The Verdict ───────────────────────────────────────────────────────────
+  sec('The Verdict');
+
+  if (cs.tribeScores) {
+    const sorted = Object.entries(cs.tribeScores).sort((a, b) => b[1] - a[1]);
+    for (const [tribe, score] of sorted) {
+      ln(`${tribe}: ${score} point${score !== 1 ? 's' : ''}.`);
+    }
+  }
+
+  const winner = ep.winner?.name;
+  const loser = ep.loser?.name;
+  if (winner && loser) {
+    const verdictLines = [
+      `${winner} walks free. ${loser} is headed to tribal council — and someone won't be coming back.`,
+      `Final score: ${winner} earns immunity. ${loser} faces the vote tonight.`,
+      `${host} hands over immunity to ${winner}. ${loser} has a long night ahead.`,
+    ];
+    ln(_rp(verdictLines));
+  }
+
+  // Showmance moment addendum
+  if (cs.showmanceMoment) {
+    const { a, b } = cs.showmanceMoment;
+    ln(`Away from the result ceremony, ${a} and ${b} have their own moment — the challenge brought them closer in a way they didn't expect.`);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

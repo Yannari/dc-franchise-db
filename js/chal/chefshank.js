@@ -687,16 +687,15 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
     // Collect this round's victims with their stats
     const activeDuelTribes = tribeNames.filter(tName => duelVictims[tName] && !eliminatedVictims.has(duelVictims[tName]));
 
-    // Build event pool for this round
+    // Build event pool for this round — only active (non-eliminated) victims
     const eventPool = [];
-    const allVictims = tribeNames.map(tName => duelVictims[tName]).filter(Boolean);
+    const allVictims = activeDuelTribes.map(tName => duelVictims[tName]).filter(Boolean);
 
-    // Helper: pick 2-3 events from pool
     const addPoolEvent = (type, victim, opponent, weight) => {
       eventPool.push({ type, victim, opponent, weight });
     };
 
-    for (const tName of tribeNames) {
+    for (const tName of activeDuelTribes) {
       const v = duelVictims[tName];
       if (!v) continue;
       const vs = pStats(v);
@@ -797,9 +796,9 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
       }
     }
 
-    // Each victim takes a bite — show status for ALL still-eating victims
+    // Each victim takes a bite — only still-eating victims
     roundData.biteResults = [];
-    for (const tName of tribeNames) {
+    for (const tName of activeDuelTribes) {
       const v = duelVictims[tName];
       if (!v || eliminatedVictims.has(v)) continue;
       const resist = (victimResists[v] || 0) + Math.random() * 0.15;
@@ -2137,7 +2136,9 @@ export function rpBuildChefshankPrisonFood(ep) {
     <button class="cs-btn-all" onclick="chefshankRevealAll('cs-food',${totalSteps})">Reveal All</button>
   </div>
   <div id="cs-done-food" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:12px 0'}">
-    ${_csStamp(pf.duel?.winner ? pf.duel.winner + ' WINS PHASE 1 — GOLDEN SHOVEL EARNED' : 'PHASE COMPLETE', 'gold')}
+    ${pf.duel?.winner
+      ? `${_csStamp(pf.duel.winner + ' WINS PHASE 1', 'gold')}<div style="margin-top:8px;font-size:13px;color:var(--cs-rust);font-family:'Black Ops One',sans-serif;letter-spacing:2px">🏆 GOLDEN SHOVEL → ${pf.duel.winner}</div><div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">${pf.duel.winner}'s cooking made the enemy crack. They earn the shovel advantage for the dig.</div>`
+      : _csStamp('PHASE COMPLETE', 'gold')}
   </div>`;
 
   return _csShell(`

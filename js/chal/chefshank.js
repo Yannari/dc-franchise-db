@@ -835,9 +835,14 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
     duelLoser = sortedMargins[0].v;
   }
 
-  // Determine winner tribe + loser tribe
-  const loserTribeName = tribeNames.find(tName => duelVictims[tName] === duelLoser) || null;
-  const winnerTribeName = tribeNames.find(tName => tName !== loserTribeName) || null;
+  // Winner/loser logic:
+  // duelVictims[tribeA] = enemy player eating tribeA's food
+  // If that enemy vomits → tribeA's food was gross enough → tribeA WINS
+  // The LAST tribe whose victim is still eating LOSES (their food was weakest)
+  const winningTribes = tribeNames.filter(t => duelVictims[t] && eliminatedVictims.has(duelVictims[t]));
+  const losingTribes = tribeNames.filter(t => duelVictims[t] && !eliminatedVictims.has(duelVictims[t]));
+  const winnerTribeName = winningTribes[0] || null;
+  const loserTribeName = losingTribes[losingTribes.length - 1] || null;
 
   result.prisonFood.duel.rounds = duelRounds;
   result.prisonFood.duel.winner = winnerTribeName;
@@ -913,11 +918,12 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
 
     for (const obs of obstacles) {
       const passed = isThrowingPusher ? false : obs.check(pusherStats);
-      td.obstacleResults.push({ name: obs.name, passed });
 
       const pool = PRISON_BREAK_OBSTACLES[obs.name];
-      const text = _rp(passed ? pool.pass : pool.fail)(td.pusher, pusherPr);
-      pushEvent(text, [td.pusher], obs.name.toUpperCase().replace(/([A-Z])/g, ' $1').trim(), passed ? 'green' : 'red');
+      const obsText = _rp(passed ? pool.pass : pool.fail)(td.pusher, pusherPr);
+      td.obstacleResults.push({ name: obs.name, passed, text: obsText });
+
+      pushEvent(obsText, [td.pusher], obs.name.toUpperCase().replace(/([A-Z])/g, ' $1').trim(), passed ? 'green' : 'red');
 
       const hostLine = _rp(passed ? PRISON_BREAK_HOST.obstaclePass : PRISON_BREAK_HOST.obstacleFail)(host, td.pusher);
       pushEvent(hostLine, [td.pusher], passed ? 'CLEAR' : 'PENALTY', passed ? 'green' : 'orange');
@@ -946,6 +952,7 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
   for (const td of tribeData) {
     td.roundDistances = [];
     td.totalDistance = 0;
+    td.digEvents = []; // per-round event arrays for VP
 
     const hasShovel = shovelTeam === td.tribe;
     let shovelBroken = false;
@@ -1178,6 +1185,9 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
         if (text) {
           const involvedPlayers = evt.name2 ? [evt.name, evt.name2] : [evt.name];
           pushEvent(text, involvedPlayers, evt.type.replace(/([A-Z])/g, ' $1').toUpperCase().trim(), 'blue');
+          // Store for VP
+          if (!td._roundEvts) td._roundEvts = [];
+          td._roundEvts.push({ type: evt.type, actor: evt.name, actor2: evt.name2 || null, text });
         }
 
         // chalMemberScores for diggers
@@ -1195,6 +1205,8 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
       const roundDist = avgContrib * roundMultiplier * (1 + roundTribeMod);
       td.roundDistances.push(roundDist);
       td.totalDistance += roundDist;
+      td.digEvents.push(td._roundEvts || []);
+      td._roundEvts = [];
     }
 
     // Shovel team bonus score
@@ -1218,10 +1230,12 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
     tribes: tribeData.map(td => ({
       tribe: td.tribe,
       pusher: td.pusher,
+      members: td.members,
       obstacles: td.obstacleResults,
       digRounds: td.digRounds,
       roundDistances: td.roundDistances,
       totalDistance: td.totalDistance,
+      digEvents: td.digEvents || [],
     })),
     shovelTeam,
     winner: winnerTd.tribe,
@@ -2059,7 +2073,9 @@ export function rpBuildChefshankPrisonFood(ep) {
     // Bite status for each victim this round
     for (const bite of (rd.biteResults || [])) {
       const statusColor = bite.survived ? '#86efac' : '#fca5a5';
-      const statusText = bite.survived ? `takes a bite and holds it down. (margin: ${bite.margin})` : `can't keep it down!`;
+      const m = parseFloat(bite.margin);
+      const flavorText = m > 0.2 ? 'chews steadily — no sign of trouble.' : m > 0.1 ? 'swallows hard but keeps composure.' : m > 0 ? 'barely holds it together — eyes watering.' : 'can\'t keep it down!';
+      const statusText = bite.survived ? `takes a bite and ${flavorText}` : flavorText;
       roundHtml += `<div class="cs-ev ${bite.survived ? '' : 'vomit'}" style="border-left-color:${bite.survived ? 'var(--cs-mold)' : 'var(--cs-blood)'}">
         ${_csSmallPortrait(bite.victim, 36)}
         <div style="flex:1;min-width:0">
@@ -2202,84 +2218,289 @@ export function rpBuildChefshankPrisonBreak(ep) {
   const cs = ep.chefshank;
   if (!cs?.prisonBreak) return '';
   const pb = cs.prisonBreak;
+  const host = seasonConfig.host || 'Chris';
 
   if (!window._tvState) window._tvState = {};
   if (!window._tvState['cs-break']) window._tvState['cs-break'] = { idx: -1 };
   const revIdx = window._tvState['cs-break'].idx;
 
   const tribes = pb.tribes || [];
-  const tribeNames = tribes.map(t => t.tribe);
+  const obstacleLabels = { mudPit: 'Mud Pit', barbedWire: 'Barbed Wire', guardTower: 'Guard Tower', wallClimb: 'Wall Climb' };
+  const obstacleEmoji = { mudPit: '\u{1F4A7}', barbedWire: '\u{1FAA4}', guardTower: '\u{1F4A1}', wallClimb: '\u{1F9D7}' };
 
-  // Build steps: first obstacles (interleaved per tribe), then dig rounds
+  // ── Build step manifest ──
+  // pusher (1 per tribe) + obstacle (4) + dig-setup (1) + dig-round (maxRounds) + result (1)
   const steps = [];
 
-  // Obstacles: 4 obstacles, interleaved across tribes
-  const obstacleNames = ['mudPit', 'barbedWire', 'guardTower', 'wallClimb'];
-  const obstacleLabels = { mudPit: 'Mud Pit', barbedWire: 'Barbed Wire', guardTower: 'Guard Tower', wallClimb: 'Wall Climb' };
-  for (let oi = 0; oi < obstacleNames.length; oi++) {
-    for (const td of tribes) {
-      const obs = (td.obstacles || [])[oi];
-      if (obs) steps.push({ type: 'obstacle', tribe: td.tribe, pusher: td.pusher, obstacle: obstacleLabels[obs.name] || obs.name, passed: obs.passed });
-    }
+  // 1. Pusher selection — one step per tribe
+  for (const td of tribes) {
+    steps.push({ type: 'pusher', tribe: td.tribe, pusher: td.pusher });
   }
 
-  // Dig rounds: interleaved by tribe
-  const maxDigRounds = Math.max(...tribes.map(t => t.digRounds || 0));
-  for (let di = 0; di < maxDigRounds; di++) {
-    for (const td of tribes) {
-      if (di < (td.digRounds || 0)) {
-        const dist = (td.roundDistances || [])[di];
-        steps.push({ type: 'dig', tribe: td.tribe, round: di + 1, distance: dist, totalSoFar: (td.roundDistances || []).slice(0, di + 1).reduce((s, v) => s + v, 0) });
-      }
-    }
+  // 2. Obstacles — one step per obstacle (all tribes shown per step)
+  for (let oi = 0; oi < 4; oi++) {
+    const perTribe = tribes.map(td => {
+      const obs = (td.obstacles || [])[oi];
+      return { tribe: td.tribe, pusher: td.pusher, obs };
+    });
+    steps.push({ type: 'obstacle', obstacleIdx: oi, perTribe });
   }
+
+  // 3. Dig setup
+  steps.push({ type: 'dig-setup' });
+
+  // 4. Dig rounds — one step per round (all tribes shown)
+  const maxDigRounds = Math.max(...tribes.map(t => t.digRounds || 0), 0);
+  for (let di = 0; di < maxDigRounds; di++) {
+    const perTribe = tribes.map(td => {
+      const dist = (td.roundDistances || [])[di];
+      const cumDist = (td.roundDistances || []).slice(0, di + 1).reduce((s, v) => s + v, 0);
+      const events = (td.digEvents || [])[di] || [];
+      const hasRound = di < (td.digRounds || 0);
+      return { tribe: td.tribe, dist, cumDist, events, hasRound };
+    });
+    steps.push({ type: 'dig', round: di + 1, perTribe });
+  }
+
+  // 5. Result
+  steps.push({ type: 'result' });
 
   const totalSteps = steps.length;
 
-  // Feed
+  // ── Dig event styling ──
+  const _evtStyle = (type) => {
+    const positive = ['findContraband','shortcut','motivationalSpeech','digFrenzy','looseSoil',
+      'findOldTunnel','overachiever','rallyCarrier','proveThemWrong','undergroundEcho'];
+    const negative = ['hitRock','caveInScare','claustrophobia','wormNest','tunnelFlood',
+      'oxygenThin','teammateClash','vanitySlacker','lazyExcuse','brokenShovel'];
+    if (positive.includes(type)) return { color: '#4ade80', icon: '\u{2B06}\u{FE0F}' };
+    if (negative.includes(type)) return { color: '#f87171', icon: '\u{2B07}\u{FE0F}' };
+    if (type === 'rivalSabotage') return { color: '#a855f7', icon: '\u{1F5E1}\u{FE0F}' };
+    if (type === 'strategicCoasting') return { color: '#facc15', icon: '\u{1F440}' };
+    return { color: '#94a3b8', icon: '\u{26CF}\u{FE0F}' };
+  };
+
+  const _evtIcon = (type) => {
+    const icons = {
+      hitRock: '\u{1FAA8}', findContraband: '\u{1F4E6}', caveInScare: '\u{26A0}\u{FE0F}', shortcut: '\u{1F4A1}',
+      claustrophobia: '\u{1F630}', wormNest: '\u{1FAB1}', rivalSabotage: '\u{1F5E1}\u{FE0F}',
+      motivationalSpeech: '\u{1F4E3}', tunnelFlood: '\u{1F4A7}', brokenShovel: '\u{1F6A8}',
+      undergroundEcho: '\u{1F442}', digFrenzy: '\u{1F525}', looseSoil: '\u{2728}', oxygenThin: '\u{1F4A8}',
+      findOldTunnel: '\u{1F573}\u{FE0F}', teammateClash: '\u{26A1}', vanitySlacker: '\u{1F485}',
+      overachiever: '\u{1F4AA}', strategicCoasting: '\u{1F440}', rallyCarrier: '\u{1F3C3}',
+      lazyExcuse: '\u{1F634}', proveThemWrong: '\u{1F4A5}'
+    };
+    return icons[type] || '\u{26CF}\u{FE0F}';
+  };
+
+  const _evtBadge = (type) => {
+    return type.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase()).trim();
+  };
+
+  const _distFlavor = (d) => {
+    if (d > 0.7) return 'Massive progress \u2014 breaking through fast!';
+    if (d > 0.5) return 'Solid digging \u2014 ground gives way steadily.';
+    if (d > 0.3) return 'Slow going \u2014 the earth fights back.';
+    return 'Barely scratching the surface.';
+  };
+
+  const _distClass = (d) => {
+    if (d > 0.7) return '#4ade80';
+    if (d > 0.5) return '#facc15';
+    if (d > 0.3) return '#fb923c';
+    return '#f87171';
+  };
+
+  // ── Pusher narration ──
+  const _pusherText = (name, tribe) => {
+    const st = pStats(name);
+    const pr = pronouns(name);
+    const physScore = st.physical * 0.6 + st.endurance * 0.4;
+    if (physScore >= 7) return `${name} steps up to push \u2014 the strongest back on ${tribe}. Nobody argues. ${pr.Sub} cracks ${pr.posAdj} knuckles and takes position.`;
+    if (physScore >= 5) return `${name} volunteers to push for ${tribe}. Not the biggest, but ${pr.sub} has grit. The tribe nods.`;
+    return `${name} draws the short straw for ${tribe}'s push. ${pr.Sub} doesn't look thrilled, but ${pr.sub} squares up anyway.`;
+  };
+
+  // ── Build feed ──
   let feed = '';
   for (let i = 0; i < totalSteps; i++) {
     const s = steps[i];
     const visible = i <= revIdx;
+    const vis = visible ? '' : 'display:none';
 
-    if (s.type === 'obstacle') {
-      const evClass = s.passed ? 'positive obstacle' : 'negative obstacle';
-      feed += `<div id="cs-step-break-${i}" class="cs-ev ${evClass}" style="${visible ? '' : 'display:none'}">
+    if (s.type === 'pusher') {
+      feed += `<div id="cs-step-break-${i}" class="cs-ev" style="${vis}">
         ${_csSmallPortrait(s.pusher, 44)}
         <div style="flex:1;min-width:0">
-          <div class="cs-ev-badge ${s.passed ? 'green' : 'red'}">${s.tribe} &mdash; ${s.obstacle}</div>
-          <div class="cs-ev-text"><strong>${s.pusher}</strong> ${s.passed ? 'clears' : 'fails'} the ${s.obstacle.toLowerCase()}.</div>
-          <div style="margin-top:4px">${s.passed ? _csStamp('CLEAR', 'green') : _csStamp('PENALTY', 'red')}</div>
+          <div class="cs-ev-badge gold">${s.tribe} \u2014 PUSHER SELECTED</div>
+          <div class="cs-ev-text">${_pusherText(s.pusher, s.tribe)}</div>
+          <div style="margin-top:4px">${_csStamp(s.pusher.toUpperCase(), 'rust')}</div>
         </div>
       </div>`;
-    } else {
-      feed += `<div id="cs-step-break-${i}" class="cs-ev tunnel" style="${visible ? '' : 'display:none'}">
-        <div style="flex:1;min-width:0">
-          <div class="cs-ev-badge gold">${s.tribe} &mdash; DIG ROUND ${s.round}</div>
-          <div class="cs-ev-text">Distance this round: <strong>${(s.distance || 0).toFixed(3)}</strong> &mdash; Total: ${(s.totalSoFar || 0).toFixed(3)}</div>
-          <div class="cs-dig-bar" style="margin-top:6px"><div class="cs-dig-fill" style="width:${Math.min(100, ((s.totalSoFar || 0) / Math.max(...tribes.map(t => t.totalDistance || 1))) * 100)}%"></div></div>
+
+    } else if (s.type === 'obstacle') {
+      const obsName = (s.perTribe[0]?.obs?.name) || '';
+      const label = obstacleLabels[obsName] || `Obstacle ${s.obstacleIdx + 1}`;
+      const emoji = obstacleEmoji[obsName] || '\u{1F6A7}';
+      let cards = '';
+      for (const pt of s.perTribe) {
+        if (!pt.obs) continue;
+        const passed = pt.obs.passed;
+        const borderColor = passed ? '#4ade80' : '#f87171';
+        const bgColor = passed ? 'rgba(74,222,128,0.08)' : 'rgba(248,113,113,0.08)';
+        const narrativeText = pt.obs.text || `${pt.pusher} ${passed ? 'clears' : 'fails'} the obstacle.`;
+        cards += `<div style="background:${bgColor};border:1px solid ${borderColor}33;border-left:4px solid ${borderColor};border-radius:4px;padding:10px 14px;margin:6px 0;display:flex;align-items:flex-start;gap:10px">
+          ${_csSmallPortrait(pt.pusher, 40)}
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+              <span style="font-family:'Black Ops One',cursive;font-size:9px;letter-spacing:1px;color:${borderColor}">${pt.tribe}</span>
+              ${passed ? _csStamp('CLEAR', 'green') : _csStamp('PENALTY \u2014 DIG ROUND LOST', 'red')}
+            </div>
+            <div class="cs-ev-text">${narrativeText}</div>
+          </div>
+        </div>`;
+      }
+      feed += `<div id="cs-step-break-${i}" style="${vis}">
+        <div class="cs-ev obstacle" style="flex-direction:column">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:20px">${emoji}</span>
+            <div>
+              <div class="cs-ev-badge gold">OBSTACLE ${s.obstacleIdx + 1}/4 \u2014 ${label.toUpperCase()}</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px">All pushers attempt simultaneously</div>
+            </div>
+          </div>
+          ${cards}
+        </div>
+      </div>`;
+
+    } else if (s.type === 'dig-setup') {
+      let setupCards = '';
+      for (const td of tribes) {
+        const passed = (td.obstacles || []).filter(o => o.passed).length;
+        const failed = 4 - passed;
+        const isShovel = pb.shovelTeam === td.tribe;
+        const baseRounds = 5;
+        const penaltyRounds = failed;
+        const bonusRounds = isShovel ? 2 : 0;
+        setupCards += `<div style="background:rgba(120,53,15,0.12);border:1px solid rgba(180,83,9,0.2);border-radius:4px;padding:10px 14px;margin:6px 0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-family:'Black Ops One',cursive;font-size:11px;color:var(--cs-chain)">${td.tribe}</span>
+            ${isShovel ? '<span style="font-size:14px" title="Golden Shovel">\u{26CF}\u{FE0F}</span>' : ''}
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.7);line-height:1.6">
+            Base rounds: <strong>${baseRounds}</strong>
+            ${penaltyRounds > 0 ? ` \u2014 <span style="color:#f87171">${penaltyRounds} penalty${penaltyRounds > 1 ? '' : ''}</span>` : ''}
+            ${bonusRounds > 0 ? ` + <span style="color:#facc15">${bonusRounds} Golden Shovel bonus</span>` : ''}
+            = <strong style="color:var(--cs-chain)">${td.digRounds || 0} rounds</strong>
+          </div>
+          <div style="display:flex;gap:4px;margin-top:6px">${(td.obstacles || []).map(o => `<span style="font-size:13px">${o.passed ? '\u2705' : '\u274C'}</span>`).join('')}</div>
+        </div>`;
+      }
+      feed += `<div id="cs-step-break-${i}" style="${vis}">
+        <div class="cs-ev tunnel" style="flex-direction:column">
+          <div class="cs-ev-badge gold">\u{26CF}\u{FE0F} DIG PHASE \u2014 TUNNELS OPEN</div>
+          <div class="cs-ev-text" style="margin-bottom:6px">${host} fires the starting pistol. Both tribes hit their tunnels.</div>
+          ${setupCards}
+        </div>
+      </div>`;
+
+    } else if (s.type === 'dig') {
+      let roundCards = '';
+      for (const pt of s.perTribe) {
+        if (!pt.hasRound) {
+          roundCards += `<div style="background:rgba(100,100,100,0.08);border:1px solid rgba(100,100,100,0.15);border-left:4px solid #6b7280;border-radius:4px;padding:8px 12px;margin:6px 0;opacity:0.5">
+            <span style="font-family:'Black Ops One',cursive;font-size:9px;letter-spacing:1px;color:#6b7280">${pt.tribe}</span>
+            <span style="font-size:10px;color:rgba(255,255,255,0.35);margin-left:8px">No dig round \u2014 penalty cost</span>
+          </div>`;
+          continue;
+        }
+        const dist = pt.dist || 0;
+        const cum = pt.cumDist || 0;
+        const maxDist = Math.max(...tribes.map(t => t.totalDistance || 1));
+        const pct = Math.min(100, (cum / maxDist) * 100);
+        const dColor = _distClass(dist);
+
+        let eventCards = '';
+        for (const evt of pt.events) {
+          const style = _evtStyle(evt.type);
+          const icon = _evtIcon(evt.type);
+          eventCards += `<div style="background:${style.color}11;border:1px solid ${style.color}33;border-left:4px solid ${style.color};border-radius:4px;padding:8px 12px;margin:4px 0;display:flex;align-items:flex-start;gap:8px">
+            <span style="font-size:16px">${icon}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:8px;letter-spacing:1px;color:${style.color};font-family:'Black Ops One',cursive;margin-bottom:2px">${_evtBadge(evt.type)}</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.75);line-height:1.5">${evt.text}</div>
+            </div>
+          </div>`;
+        }
+
+        roundCards += `<div style="background:rgba(120,53,15,0.10);border:1px solid rgba(180,83,9,0.15);border-radius:4px;padding:10px 14px;margin:6px 0">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span style="font-family:'Black Ops One',cursive;font-size:10px;color:var(--cs-chain);letter-spacing:1px">${pt.tribe}</span>
+            <span style="font-size:10px;color:${dColor};font-style:italic">${_distFlavor(dist)}</span>
+          </div>
+          ${eventCards}
+          <div style="margin-top:8px">
+            <div class="cs-dig-bar"><div class="cs-dig-fill" style="width:${pct}%;background:linear-gradient(90deg,${dColor}88,${dColor})"></div></div>
+            <div style="font-size:8px;color:rgba(255,255,255,0.35);margin-top:3px;display:flex;justify-content:space-between">
+              <span>Progress</span>
+              <span>${pct.toFixed(0)}%</span>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      feed += `<div id="cs-step-break-${i}" style="${vis}">
+        <div class="cs-ev tunnel" style="flex-direction:column">
+          <div class="cs-ev-badge gold">\u{26CF}\u{FE0F} DIG ROUND ${s.round}/${maxDigRounds}</div>
+          ${roundCards}
+        </div>
+      </div>`;
+
+    } else if (s.type === 'result') {
+      const winTribe = pb.winner;
+      feed += `<div id="cs-step-break-${i}" style="${vis}">
+        <div class="cs-ev" style="flex-direction:column;text-align:center;padding:20px;border-left-color:var(--cs-rust)">
+          <div style="font-family:'Black Ops One',cursive;font-size:22px;color:var(--cs-chain);letter-spacing:3px;text-shadow:2px 2px 0 rgba(0,0,0,0.5);margin-bottom:8px">${winTribe ? winTribe.toUpperCase() : '???'}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:4px;margin-bottom:12px">BREAKS FREE</div>
+          ${_csStamp(winTribe ? winTribe + ' WINS PHASE 2 \u2014 IMMUNITY' : 'PHASE COMPLETE', 'gold')}
+          <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.6;max-width:400px;margin-left:auto;margin-right:auto">
+            ${winTribe ? `The wall gives way and daylight floods the tunnel. ${winTribe} claws through first \u2014 filthy, exhausted, free.` : 'Phase complete.'}
+          </div>
         </div>
       </div>`;
     }
   }
 
-  // Sidebar
+  // ── Sidebar ──
   const sidebar = _csBuildBreakSidebar(pb, revIdx, steps);
 
-  // HUD
-  const hudCells = tribes.map(td => {
-    const cleared = (td.obstacles || []).filter(o => o.passed).length;
-    return `<div class="cs-hud-cell">
-      <div class="cs-hud-val">${_csTally(td.totalDistance?.toFixed(1) || '0')}</div>
-      <div class="cs-hud-lbl">${td.tribe}</div>
-      <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px">${cleared}/4 obs &middot; ${td.digRounds || 0}R</div>
-    </div>`;
-  }).join('');
-  const shovelCell = `<div class="cs-hud-cell">
-    <div class="cs-hud-val" style="font-size:14px">&#9935;</div>
-    <div class="cs-hud-lbl">GOLDEN SHOVEL</div>
-    <div style="font-size:9px;color:var(--cs-rust);margin-top:2px">${pb.shovelTeam || 'None'}</div>
+  // ── HUD ── (no spoilers — shows phase tracker, not totals)
+  const _hudPhase = (idx) => {
+    if (idx < 0) return { label: 'AWAITING START', detail: '' };
+    const s = steps[Math.min(idx, totalSteps - 1)];
+    if (s.type === 'pusher') return { label: 'PUSHER SELECTION', detail: s.tribe };
+    if (s.type === 'obstacle') return { label: `OBSTACLE ${s.obstacleIdx + 1}/4`, detail: obstacleLabels[(s.perTribe[0]?.obs?.name)] || '' };
+    if (s.type === 'dig-setup') return { label: 'DIG SETUP', detail: 'Rounds assigned' };
+    if (s.type === 'dig') return { label: `DIG ROUND ${s.round}/${maxDigRounds}`, detail: '' };
+    if (s.type === 'result') return { label: 'RESULT', detail: '' };
+    return { label: '...', detail: '' };
+  };
+  const phase = _hudPhase(revIdx);
+
+  const hudCells = `<div class="cs-hud-cell" style="flex:2">
+    <div class="cs-hud-val" style="font-size:13px;letter-spacing:2px">${phase.label}</div>
+    <div class="cs-hud-lbl">CURRENT PHASE</div>
+    ${phase.detail ? `<div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px">${phase.detail}</div>` : ''}
   </div>`;
+  const shovelCell = pb.shovelTeam ? `<div class="cs-hud-cell">
+    <div class="cs-hud-val" style="font-size:14px">\u{26CF}\u{FE0F}</div>
+    <div class="cs-hud-lbl">GOLDEN SHOVEL</div>
+    <div style="font-size:9px;color:var(--cs-rust);margin-top:2px">${pb.shovelTeam}</div>
+  </div>` : '';
+  const tribeHudCells = tribes.map(td => `<div class="cs-hud-cell">
+    <div class="cs-hud-val" style="font-size:13px">${_csTally(td.tribe.charAt(0))}</div>
+    <div class="cs-hud-lbl">${td.tribe}</div>
+  </div>`).join('');
 
   const pending = revIdx < totalSteps - 1;
   const controls = `<div id="cs-controls-break" class="cs-controls" ${!pending && totalSteps ? 'style="display:none"' : ''}>
@@ -2287,11 +2508,11 @@ export function rpBuildChefshankPrisonBreak(ep) {
     <button class="cs-btn-all" onclick="chefshankRevealAll('cs-break',${totalSteps})">Reveal All</button>
   </div>
   <div id="cs-done-break" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:12px 0'}">
-    ${_csStamp(pb.winner ? pb.winner + ' BREAKS FREE' : 'PHASE COMPLETE', 'gold')}
+    ${_csStamp(pb.winner ? pb.winner + ' BREAKS FREE \u2014 IMMUNITY' : 'PHASE COMPLETE', 'gold')}
   </div>`;
 
   return _csShell(`
-    <div class="cs-hud">${hudCells}${shovelCell}</div>
+    <div class="cs-hud">${tribeHudCells}${hudCells}${shovelCell}</div>
     <div class="cs-layout">
       <div class="cs-feed">${feed}${controls}</div>
       <div class="cs-sidebar" id="cs-sidebar-break">${sidebar}</div>
@@ -2304,38 +2525,105 @@ function _csBuildBreakSidebar(pb, revIdx, steps) {
   const revealedSteps = steps ? steps.slice(0, revIdx + 1) : [];
   let sidebar = '';
 
+  // Determine what's been revealed
+  const pusherRevealed = (tribe) => revealedSteps.some(s => s.type === 'pusher' && s.tribe === tribe);
+  const obstacleCount = (tribe) => {
+    let count = 0;
+    for (const s of revealedSteps) {
+      if (s.type !== 'obstacle') continue;
+      for (const pt of s.perTribe) { if (pt.tribe === tribe && pt.obs) count++; }
+    }
+    return count;
+  };
+  const obstacleResult = (tribe, idx) => {
+    let seen = 0;
+    for (const s of revealedSteps) {
+      if (s.type !== 'obstacle') continue;
+      for (const pt of s.perTribe) {
+        if (pt.tribe === tribe && pt.obs) {
+          if (seen === idx) return pt.obs.passed;
+          seen++;
+        }
+      }
+    }
+    return null;
+  };
+  const digSetupRevealed = revealedSteps.some(s => s.type === 'dig-setup');
+  const revealedDigRounds = (tribe) => {
+    let count = 0;
+    for (const s of revealedSteps) {
+      if (s.type !== 'dig') continue;
+      for (const pt of s.perTribe) { if (pt.tribe === tribe && pt.hasRound) count++; }
+    }
+    return count;
+  };
+  const latestDigCum = (tribe) => {
+    let cum = 0;
+    for (const s of revealedSteps) {
+      if (s.type !== 'dig') continue;
+      for (const pt of s.perTribe) { if (pt.tribe === tribe && pt.hasRound) cum = pt.cumDist || 0; }
+    }
+    return cum;
+  };
+
   for (const td of tribes) {
     const isShovel = pb.shovelTeam === td.tribe;
-    sidebar += `<div class="cs-side-sec">${td.tribe}${isShovel ? ' &#9935;' : ''}</div>`;
 
-    // Pusher
-    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;margin-bottom:6px">
-      ${_csSideMugshot(td.pusher, 28)}
-      <div style="flex:1;min-width:0">
-        <div style="font-size:10px;color:rgba(255,255,255,0.8)">${td.pusher}</div>
-        <div style="font-size:8px;color:var(--cs-rust);letter-spacing:1px">PUSHER</div>
-      </div>
+    // Tribe header
+    sidebar += `<div class="cs-side-sec" style="display:flex;align-items:center;gap:6px">
+      <span>${td.tribe}</span>
+      ${isShovel ? '<span style="font-size:12px" title="Golden Shovel">\u{26CF}\u{FE0F}</span>' : ''}
     </div>`;
 
+    // Pusher
+    if (pusherRevealed(td.tribe)) {
+      sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;margin-bottom:6px">
+        ${_csSideMugshot(td.pusher, 28)}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:10px;color:rgba(255,255,255,0.8)">${td.pusher}</div>
+          <div style="font-size:8px;color:var(--cs-rust);letter-spacing:1px;font-family:'Black Ops One',cursive">PUSHER</div>
+        </div>
+      </div>`;
+    } else {
+      sidebar += `<div style="font-size:10px;color:rgba(255,255,255,0.3);font-style:italic;padding:4px 0;margin-bottom:6px">Pusher TBD...</div>`;
+    }
+
     // Obstacle icons
-    const revealedObstacles = revealedSteps.filter(s => s.type === 'obstacle' && s.tribe === td.tribe);
-    sidebar += `<div style="display:flex;gap:4px;margin-bottom:6px">`;
+    const revObs = obstacleCount(td.tribe);
+    sidebar += `<div style="display:flex;gap:6px;margin-bottom:8px;align-items:center">
+      <span style="font-size:8px;color:rgba(255,255,255,0.35);letter-spacing:1px;font-family:'Black Ops One',cursive;min-width:52px">OBSTACLES</span>`;
     for (let oi = 0; oi < 4; oi++) {
-      const revObs = revealedObstacles[oi];
-      const icon = revObs == null ? '&#10067;' : revObs.passed ? '&#9989;' : '&#10060;';
-      sidebar += `<span style="font-size:14px">${icon}</span>`;
+      if (oi < revObs) {
+        const passed = obstacleResult(td.tribe, oi);
+        sidebar += `<span style="font-size:14px;${passed ? '' : 'filter:hue-rotate(0deg)'}">${passed ? '\u2705' : '\u274C'}</span>`;
+      } else {
+        sidebar += `<span style="font-size:12px;opacity:0.3">\u2753</span>`;
+      }
     }
     sidebar += `</div>`;
 
-    // Dig progress
-    const revealedDigs = revealedSteps.filter(s => s.type === 'dig' && s.tribe === td.tribe);
-    const revealedDist = revealedDigs.length > 0 ? revealedDigs[revealedDigs.length - 1].totalSoFar || 0 : 0;
-    const maxDist = Math.max(...tribes.map(t => t.totalDistance || 1));
-    const pct = Math.min(100, (revealedDist / maxDist) * 100);
+    // Dig progress — only after dig-setup revealed
+    if (digSetupRevealed) {
+      const digsDone = revealedDigRounds(td.tribe);
+      const totalRounds = td.digRounds || 0;
+      const cum = latestDigCum(td.tribe);
+      const maxDist = Math.max(...tribes.map(t => t.totalDistance || 1));
+      const pct = Math.min(100, (cum / maxDist) * 100);
 
-    sidebar += `<div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:2px">Dig: ${revealedDist.toFixed(2)} / ${(td.totalDistance || 0).toFixed(2)}</div>`;
-    sidebar += `<div class="cs-dig-bar"><div class="cs-dig-fill" style="width:${pct}%"></div></div>`;
-    sidebar += `<div style="font-size:8px;color:rgba(255,255,255,0.3);margin-top:2px">${revealedDigs.length}/${td.digRounds || 0} rounds dug</div>`;
+      sidebar += `<div style="font-size:8px;color:rgba(255,255,255,0.35);letter-spacing:1px;font-family:'Black Ops One',cursive;margin-bottom:4px">TUNNEL PROGRESS</div>`;
+      sidebar += `<div class="cs-dig-bar"><div class="cs-dig-fill" style="width:${pct}%"></div></div>`;
+      sidebar += `<div style="font-size:8px;color:rgba(255,255,255,0.3);margin-top:3px;display:flex;justify-content:space-between">
+        <span>${digsDone}/${totalRounds} rounds</span>
+        <span>${pct.toFixed(0)}%</span>
+      </div>`;
+      if (isShovel) {
+        sidebar += `<div style="font-size:8px;color:#facc15;margin-top:2px">\u{26CF}\u{FE0F} +2 bonus rounds</div>`;
+      }
+    } else {
+      sidebar += `<div style="font-size:9px;color:rgba(255,255,255,0.25);font-style:italic;margin-bottom:4px">Dig phase pending...</div>`;
+    }
+
+    sidebar += `<div style="height:8px"></div>`;
   }
 
   return sidebar;
@@ -2561,24 +2849,36 @@ function _csUpdateSidebar(screenKey, revIdx) {
   }
   if (screenKey === 'cs-break' && cs.prisonBreak) {
     const sideEl = document.getElementById('cs-sidebar-break');
-    // Rebuild steps for sidebar calculation
-    const tribes = cs.prisonBreak.tribes || [];
+    // Rebuild step manifest matching rpBuildChefshankPrisonBreak
+    const pb = cs.prisonBreak;
+    const tribes = pb.tribes || [];
     const steps = [];
-    const obstacleNames = ['mudPit', 'barbedWire', 'guardTower', 'wallClimb'];
-    for (let oi = 0; oi < obstacleNames.length; oi++) {
-      for (const td of tribes) {
+    // Pusher steps
+    for (const td of tribes) steps.push({ type: 'pusher', tribe: td.tribe, pusher: td.pusher });
+    // Obstacle steps
+    for (let oi = 0; oi < 4; oi++) {
+      const perTribe = tribes.map(td => {
         const obs = (td.obstacles || [])[oi];
-        if (obs) steps.push({ type: 'obstacle', tribe: td.tribe, pusher: td.pusher, passed: obs.passed });
-      }
+        return { tribe: td.tribe, pusher: td.pusher, obs };
+      });
+      steps.push({ type: 'obstacle', obstacleIdx: oi, perTribe });
     }
-    const maxDigRounds = Math.max(...tribes.map(t => t.digRounds || 0));
+    // Dig setup
+    steps.push({ type: 'dig-setup' });
+    // Dig rounds
+    const maxDigRounds = Math.max(...tribes.map(t => t.digRounds || 0), 0);
     for (let di = 0; di < maxDigRounds; di++) {
-      for (const td of tribes) {
-        if (di < (td.digRounds || 0)) {
-          steps.push({ type: 'dig', tribe: td.tribe, round: di + 1, distance: (td.roundDistances || [])[di], totalSoFar: (td.roundDistances || []).slice(0, di + 1).reduce((s, v) => s + v, 0) });
-        }
-      }
+      const perTribe = tribes.map(td => {
+        const dist = (td.roundDistances || [])[di];
+        const cumDist = (td.roundDistances || []).slice(0, di + 1).reduce((s, v) => s + v, 0);
+        const events = (td.digEvents || [])[di] || [];
+        const hasRound = di < (td.digRounds || 0);
+        return { tribe: td.tribe, dist, cumDist, events, hasRound };
+      });
+      steps.push({ type: 'dig', round: di + 1, perTribe });
     }
-    if (sideEl) sideEl.innerHTML = _csBuildBreakSidebar(cs.prisonBreak, revIdx, steps);
+    // Result
+    steps.push({ type: 'result' });
+    if (sideEl) sideEl.innerHTML = _csBuildBreakSidebar(pb, revIdx, steps);
   }
 }

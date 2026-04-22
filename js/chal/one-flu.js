@@ -2198,98 +2198,91 @@ export function rpBuildOneFluAssembly(ep) {
   const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
   const mq = of.medicalQuiz;
 
-  // Rules box
-  let feed = `<div style="background:rgba(0,0,0,0.5);border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:12px 16px;margin-bottom:12px">
-    <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:rgba(59,130,246,0.5);margin-bottom:6px">PHASE RULES</div>
-    <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">Assemble your FrankenChris from the parts you collected, then hoist it to the roof for lightning. More parts = faster assembly. First tribe to reanimate wins Phase 2.</div>
-    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-      ${tribeNames.map(t => {
-        const parts = mq?.partsByTribe?.[t] || 0;
-        return `<span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(20,184,166,0.1);color:#5eead4;border:1px solid rgba(20,184,166,0.15)">${t}: ${parts} PARTS</span>`;
-      }).join('')}
-    </div>
-  </div>`;
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState['of-assembly']) window._tvState['of-assembly'] = { idx: -1 };
+  const revIdx = window._tvState['of-assembly'].idx;
 
-  // Host intro
-  feed += `<div class="of-ev" style="border-left-color:var(--of-teal)">
-    <div style="flex:1;min-width:0">
-      <div class="of-ev-badge teal">HOST</div>
-      <div class="of-ev-text" style="font-style:italic">${host}: ${_rp(FLU_HOST.assemblyStart)}</div>
-    </div>
-  </div>`;
-
-  // Sort tribes by total score for reveal order (worst first, winner last for suspense)
+  // Sort tribes worst-first, winner last for suspense
   const sortedTribes = [...(asm.tribes || [])].sort((a, b) => (a.total || 0) - (b.total || 0));
   const maxTotal = Math.max(...sortedTribes.map(t => t.total || 0), 1);
 
-  for (const td of sortedTribes) {
+  // Rules box (always visible)
+  let feed = `<div style="background:rgba(0,0,0,0.5);border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:12px 16px;margin-bottom:12px">
+    <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:rgba(59,130,246,0.5);margin-bottom:6px">PHASE RULES</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">Assemble your FrankenChris from the parts you collected, then hoist it to the roof for lightning. More parts = faster assembly. Highest combined score wins.</div>
+  </div>`;
+
+  feed += `<div class="of-ev" style="border-left-color:var(--of-teal)"><div style="flex:1;min-width:0"><div class="of-ev-badge teal">HOST</div><div class="of-ev-text" style="font-style:italic">${host}: ${_rp(FLU_HOST.assemblyStart)}</div></div></div>`;
+
+  // Steps: one per tribe + winner reveal
+  let stepIdx = 0;
+  for (let ti = 0; ti < sortedTribes.length; ti++) {
+    const td = sortedTribes[ti];
     const isWinner = td.tribe === asm.winner;
     const tribeParts = mq?.partsByTribe?.[td.tribe] || 0;
-    const pctScore = Math.round(((td.total || 0) / maxTotal) * 100);
+    const pctTotal = Math.round(((td.total || 0) / maxTotal) * 100);
+    const visible = stepIdx <= revIdx;
 
-    feed += `<div class="of-ev round-header" style="${isWinner ? 'border-left:4px solid var(--of-teal);background:rgba(20,184,166,0.1)' : ''}"><div style="flex:1">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-family:'Orbitron',sans-serif;font-size:14px;color:${isWinner ? 'var(--of-teal)' : 'var(--of-blue)'};letter-spacing:3px">${td.tribe}</div>
-        ${isWinner ? `<span style="font-size:10px;color:var(--of-teal)">⚡ FIRST TO REANIMATE</span>` : ''}
-      </div>
-      <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px">${tribeParts} body parts collected</div>
+    let stepHtml = '';
+    stepHtml += `<div class="of-ev round-header" style="${isWinner ? 'border-left:4px solid var(--of-teal);background:rgba(20,184,166,0.1)' : ''}"><div style="flex:1">
+      <div style="font-family:'Orbitron',sans-serif;font-size:14px;color:${isWinner ? 'var(--of-teal)' : 'var(--of-blue)'};letter-spacing:3px">${td.tribe}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px">${tribeParts} body parts · Score: ${pctTotal}%</div>
       <div style="display:flex;gap:12px;margin-top:6px">
-        <div style="flex:1">
-          <div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-bottom:2px">ASSEMBLY</div>
-          ${_ofEkgBar(Math.min(100, (td.assemblyScore || 0) / Math.max(...sortedTribes.map(t => t.assemblyScore || 0), 1) * 100))}
-        </div>
-        <div style="flex:1">
-          <div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-bottom:2px">HOIST</div>
-          ${_ofEkgBar(Math.min(100, (td.hoistScore || 0) / Math.max(...sortedTribes.map(t => t.hoistScore || 0), 1) * 100))}
-        </div>
+        <div style="flex:1"><div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-bottom:2px">ASSEMBLY</div>${_ofEkgBar(Math.min(100, (td.assemblyScore || 0) / Math.max(...sortedTribes.map(t => t.assemblyScore || 0), 1) * 100))}</div>
+        <div style="flex:1"><div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-bottom:2px">HOIST</div>${_ofEkgBar(Math.min(100, (td.hoistScore || 0) / Math.max(...sortedTribes.map(t => t.hoistScore || 0), 1) * 100))}</div>
       </div>
     </div></div>`;
-
-    if (!(td.events || []).length) {
-      feed += `<div class="of-ev">
-        <div style="flex:1;min-width:0">
-          <div class="of-ev-text" style="color:rgba(255,255,255,0.5)">The tribe works steadily — no drama, no heroics. Just efficient medical assembly.</div>
-        </div>
-      </div>`;
-    }
 
     for (const evt of (td.events || [])) {
       const evtClass = evt.type === 'teamworkSurge' || evt.type === 'lightning' ? 'positive' : evt.type === 'partDoesntFit' || evt.type === 'hoistStruggle' || evt.type === 'pantsPull' ? 'negative' : '';
       const badgeColor = evt.type === 'teamworkSurge' ? 'green' : evt.type === 'lightning' ? 'gold' : evt.type === 'partDoesntFit' ? 'red' : evt.type === 'hoistStruggle' ? 'orange' : evt.type === 'pantsPull' ? 'red' : 'gray';
       const badgeLabel = evt.type === 'teamworkSurge' ? 'TEAMWORK' : evt.type === 'lightning' ? 'LIGHTNING BUILD' : evt.type === 'partDoesntFit' ? 'PART FAIL' : evt.type === 'hoistStruggle' ? 'HOIST STRUGGLE' : evt.type === 'pantsPull' ? 'PANTS PULL' : evt.type.toUpperCase();
       const portrait = evt.player ? _ofSmallPortrait(evt.player, 36) : (evt.players?.[0] ? _ofSmallPortrait(evt.players[0], 36) : '');
-      feed += `<div class="of-ev ${evtClass}">
-        ${portrait}
-        <div style="flex:1;min-width:0">
-          <div class="of-ev-badge ${badgeColor}">${badgeLabel}</div>
-          <div class="of-ev-text">${evt.text || ''}</div>
-        </div>
-      </div>`;
+      stepHtml += `<div class="of-ev ${evtClass}">${portrait}<div style="flex:1;min-width:0"><div class="of-ev-badge ${badgeColor}">${badgeLabel}</div><div class="of-ev-text">${evt.text || ''}</div></div></div>`;
     }
+    if (!(td.events || []).length) {
+      stepHtml += `<div class="of-ev"><div style="flex:1"><div class="of-ev-text" style="color:rgba(255,255,255,0.5)">The tribe works steadily — no drama, no heroics. Just efficient assembly.</div></div></div>`;
+    }
+
+    feed += `<div id="of-step-assembly-${stepIdx}" style="${visible ? '' : 'display:none'}">${stepHtml}</div>`;
+    stepIdx++;
   }
 
-  // Winner with host commentary
-  const winCommentary = [
-    `${host} walks the line, inspects each patient, and points at ${asm.winner}'s assembly. "That's a winner."`,
-    `${host} pokes ${asm.winner}'s FrankenChris. It doesn't fall over. He nods. "Congratulations. You've created life. Sort of."`,
-    `"And ${asm.winner} has done it!" ${host} announces. "Their FrankenChris is standing, assembled, and only slightly terrifying."`,
-  ];
-  feed += `<div style="text-align:center;padding:16px;margin-top:8px">
-    ${_ofStamp(asm.winner + ' WINS ASSEMBLY', 'teal')}
-    <div style="font-size:11px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:10px;max-width:500px;margin-left:auto;margin-right:auto">${_rp(winCommentary)}</div>
+  // Winner reveal step
+  const winVisible = stepIdx <= revIdx;
+  feed += `<div id="of-step-assembly-${stepIdx}" style="${winVisible ? '' : 'display:none'}">
+    <div style="text-align:center;padding:16px;margin-top:8px;background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);border-radius:6px">
+      <div style="font-family:'Orbitron',sans-serif;font-size:18px;color:var(--of-teal);letter-spacing:3px">⚡ ${asm.winner || '???'} REANIMATES FIRST</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px">Lightning strikes! ${asm.winner}'s FrankenChris jolts to life. Phase 2 goes to ${asm.winner}.</div>
+    </div>
+  </div>`;
+  stepIdx++;
+  const totalSteps = stepIdx;
+
+  // HUD: running scoreboard (only show revealed tribes)
+  let hudCells = '';
+  for (let ti = 0; ti < sortedTribes.length; ti++) {
+    const td = sortedTribes[ti];
+    const revealed = ti <= revIdx;
+    const pct = revealed ? Math.round(((td.total || 0) / maxTotal) * 100) : '?';
+    hudCells += `<div class="of-hud-cell"><div class="of-hud-val" style="color:${td.tribe === asm.winner && revealed ? 'var(--of-teal)' : ''}">${pct}${revealed ? '%' : ''}</div><div class="of-hud-lbl">${td.tribe}</div></div>`;
+  }
+
+  const pending = revIdx < totalSteps - 1;
+  const controls = `<div id="of-controls-assembly" class="of-controls" ${!pending && totalSteps ? 'style="display:none"' : ''}>
+    <button class="of-btn-next" onclick="oneFluRevealNext('of-assembly',${totalSteps})">NEXT TRIBE</button>
+    <button class="of-btn-all" onclick="oneFluRevealAll('of-assembly',${totalSteps})">Reveal All</button>
   </div>`;
 
   return _ofShell(`
+    <div class="of-hud">${hudCells}</div>
     <div style="padding:12px 14px;position:relative;z-index:6">
       <div style="text-align:center;margin-bottom:12px">
         <div style="font-family:'Orbitron',sans-serif;font-size:13px;color:var(--of-blue);letter-spacing:4px">FRANKENCHRIS ASSEMBLY</div>
         <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px">Build the patient. Hoist the body. Win the phase.</div>
       </div>
       ${feed}
-      ${asm.winner ? `<div style="text-align:center;padding:16px;margin-top:8px;background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);border-radius:6px">
-        <div style="font-family:'Orbitron',sans-serif;font-size:18px;color:var(--of-teal);letter-spacing:3px">⚡ ${asm.winner} REANIMATES FIRST</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px">Lightning strikes! ${asm.winner}'s FrankenChris jolts to life. Phase 2 goes to ${asm.winner}.</div>
-      </div>` : ''}
+      ${controls}
     </div>
   `, ep);
 }

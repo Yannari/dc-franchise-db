@@ -674,7 +674,7 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
     }
   }
 
-  const roundEscalation = [0.4, 0.55, 0.7, 0.85, 1.0];
+  const roundEscalation = [0.3, 0.4, 0.55, 0.7, 0.85];
   const numRounds = 4 + Math.floor(Math.random() * 2); // 4-5
   const eliminatedVictims = new Set();
   let vomitRound = null;
@@ -764,9 +764,9 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
       if (type === 'gagReflex')              { text = PRISON_FOOD_EATING.gagReflex(victim, vPr); }
       else if (type === 'taunt')             { resistDelta = -0.05; text = PRISON_FOOD_EATING.taunt(victim, opponent, vPr, oPr); }
       else if (type === 'encouragement')     { resistDelta = +0.05; text = PRISON_FOOD_EATING.encouragement(victim, opponent, vPr, oPr); }
-      else if (type === 'foreignObjectDiscovery') { resistDelta = -0.15; text = PRISON_FOOD_EATING.foreignObjectDiscovery(victim, vPr); }
+      else if (type === 'foreignObjectDiscovery') { resistDelta = -0.08; text = PRISON_FOOD_EATING.foreignObjectDiscovery(victim, vPr); }
       else if (type === 'secondWind')        { resistDelta = +0.1;  text = PRISON_FOOD_EATING.secondWind(victim, vPr); }
-      else if (type === 'smellHits')         { resistDelta = -0.08; text = PRISON_FOOD_EATING.smellHits(victim, vPr); }
+      else if (type === 'smellHits')         { resistDelta = -0.05; text = PRISON_FOOD_EATING.smellHits(victim, vPr); }
       else if (type === 'sympathyGag')       {
         // affect opponent
         if (opponent && victimResists[opponent] !== undefined) victimResists[opponent] -= 0.05;
@@ -778,9 +778,9 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
         if (opponent && victimResists[opponent] !== undefined) victimResists[opponent] -= 0.03;
         text = PRISON_FOOD_EATING.pokerFace(victim, opponent, vPr, oPr);
       }
-      else if (type === 'textureSurprise')   { resistDelta = -0.1;  text = PRISON_FOOD_EATING.textureSurprise(victim, vPr); }
+      else if (type === 'textureSurprise')   { resistDelta = -0.06; text = PRISON_FOOD_EATING.textureSurprise(victim, vPr); }
       else if (type === 'spiteBite')         { resistDelta = +0.08; text = PRISON_FOOD_EATING.spiteBite(victim, vPr); }
-      else if (type === 'nostrilFlare')      { resistDelta = -0.07; text = PRISON_FOOD_EATING.nostrilFlare(victim, vPr); }
+      else if (type === 'nostrilFlare')      { resistDelta = -0.04; text = PRISON_FOOD_EATING.nostrilFlare(victim, vPr); }
       else if (type === 'powerStare')        {
         resistDelta = +0.06;
         if (opponent && victimResists[opponent] !== undefined) victimResists[opponent] -= 0.03;
@@ -824,7 +824,9 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
     // End check: 2 tribes = first vomit ends it. 3+ = continue until 1 remains
     const stillEating = tribeNames.filter(t => duelVictims[t] && !eliminatedVictims.has(duelVictims[t]));
     if (stillEating.length <= 1) break;
-    if (tribeNames.length === 2 && eliminatedVictims.size > 0) break;
+    if (tribeNames.length <= 2 && eliminatedVictims.size > 0) break;
+    // If someone just vomited but others still eating, extend rounds so they can duel it out
+    if (eliminatedVictims.size > 0 && r >= numRounds - 1) numRounds = Math.min(numRounds + 2, 8);
   }
 
   // Determine loser: last to vomit, or tiebreak by lowest margin
@@ -2176,9 +2178,9 @@ export function rpBuildChefshankPrisonFood(ep) {
     <button class="cs-btn-next" onclick="chefshankRevealNext('cs-food',${totalSteps})">NEXT</button>
     <button class="cs-btn-all" onclick="chefshankRevealAll('cs-food',${totalSteps})">Reveal All</button>
   </div>
-  <div id="cs-done-food" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:12px 0'}">
+  <div id="cs-done-food" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:24px 16px;margin-top:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(180,83,9,0.2);border-radius:6px'}">
     ${pf.duel?.winner
-      ? `${_csStamp(pf.duel.winner + ' WINS PHASE 1', 'gold')}<div style="margin-top:8px;font-size:13px;color:var(--cs-rust);font-family:'Black Ops One',sans-serif;letter-spacing:2px">🏆 GOLDEN SHOVEL → ${pf.duel.winner}</div><div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">${pf.duel.winner}'s cooking made the enemy crack. They earn the shovel advantage for the dig.</div>`
+      ? `${_csStamp(pf.duel.winner + ' WINS PHASE 1', 'gold')}<div style="margin-top:8px;font-size:13px;color:var(--cs-rust);font-family:'Black Ops One',sans-serif;letter-spacing:2px">🏆 GOLDEN SHOVEL → ${pf.duel.winner}</div><div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">${pf.duel.winner}'s eater held it down the longest. They earn the shovel advantage for the dig.</div>`
       : _csStamp('PHASE COMPLETE', 'gold')}
   </div>`;
 

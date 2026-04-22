@@ -1971,11 +1971,15 @@ export function rpBuildOneFluQuiz(ep) {
       </div>
     </div>`;
 
-    // Events (studyFlex, sleepFumble, wrongAnswer, etc.)
-    for (const evt of (rd.events || [])) {
+    // Split events: quiz events (studyFlex, sleepFumble, wrongAnswer, partTheft) show before answer
+    // Dive events (eelDodge, ropeSnap) show after dive starts
+    const quizEvents = (rd.events || []).filter(e => ['studyFlex','sleepFumble','wrongAnswer','partTheft'].includes(e.type));
+    const diveEvents = (rd.events || []).filter(e => ['eelDodge','ropeSnap'].includes(e.type));
+
+    for (const evt of quizEvents) {
       const evtClass = evt.type === 'studyFlex' ? 'positive' : evt.type === 'partTheft' ? 'negative' : '';
-      const badgeColor = evt.type === 'studyFlex' ? 'green' : evt.type === 'eelDodge' ? 'teal' : evt.type === 'wrongAnswer' ? 'red' : evt.type === 'sleepFumble' ? 'orange' : evt.type === 'ropeSnap' ? 'red' : evt.type === 'partTheft' ? 'purple' : 'gray';
-      const badgeLabel = evt.type === 'studyFlex' ? 'STUDY FLEX' : evt.type === 'eelDodge' ? 'EEL DODGE' : evt.type === 'wrongAnswer' ? 'WRONG ANSWER' : evt.type === 'sleepFumble' ? 'SLEEP FUMBLE' : evt.type === 'ropeSnap' ? 'ROPE SNAP' : evt.type === 'partTheft' ? 'PART THEFT' : evt.type.toUpperCase();
+      const badgeColor = evt.type === 'studyFlex' ? 'green' : evt.type === 'wrongAnswer' ? 'red' : evt.type === 'sleepFumble' ? 'orange' : evt.type === 'partTheft' ? 'purple' : 'gray';
+      const badgeLabel = evt.type === 'studyFlex' ? 'STUDY FLEX' : evt.type === 'wrongAnswer' ? 'WRONG ANSWER' : evt.type === 'sleepFumble' ? 'SLEEP FUMBLE' : evt.type === 'partTheft' ? 'PART THEFT' : evt.type.toUpperCase();
       const portrait = evt.player ? _ofSmallPortrait(evt.player, 36) : evt.villain ? _ofSmallPortrait(evt.villain, 36) : '';
       roundHtml += `<div class="of-ev ${evtClass}">
         ${portrait}
@@ -2008,6 +2012,22 @@ export function rpBuildOneFluQuiz(ep) {
             <div class="of-ev-text" style="font-style:italic">${host}: ${eelWarning}</div>
           </div>
         </div>`;
+
+        // Dive events (eel dodge, rope snap) — happen during the dive
+        for (const evt of diveEvents) {
+          const badgeColor = evt.type === 'eelDodge' ? 'teal' : 'red';
+          const badgeLabel = evt.type === 'eelDodge' ? 'EEL DODGE' : 'ROPE SNAP';
+          const icon = evt.type === 'eelDodge' ? '⚡' : '🪢';
+          const portrait = evt.player ? _ofSmallPortrait(evt.player, 32) : '';
+          roundHtml += `<div style="background:${evt.type === 'eelDodge' ? 'rgba(20,184,166,0.1)' : 'rgba(239,68,68,0.1)'};border:1px solid ${evt.type === 'eelDodge' ? 'rgba(20,184,166,0.2)' : 'rgba(239,68,68,0.2)'};border-left:4px solid ${evt.type === 'eelDodge' ? 'var(--of-teal)' : 'var(--of-red)'};border-radius:4px;padding:8px 12px;margin:4px 0;display:flex;align-items:flex-start;gap:8px">
+            <span style="font-size:16px">${icon}</span>
+            ${portrait}
+            <div style="flex:1;min-width:0">
+              <div class="of-ev-badge ${badgeColor}">${badgeLabel}</div>
+              <div class="of-ev-text" style="font-size:12px">${evt.text || ''}</div>
+            </div>
+          </div>`;
+        }
 
         // Dive result with host reaction
         const shockIcons = rd.shocks > 0 ? ' ' + Array(Math.min(rd.shocks, 3)).fill('&#9889;').join('') : '';

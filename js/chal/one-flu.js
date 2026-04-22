@@ -2112,13 +2112,25 @@ export function rpBuildOneFluQuiz(ep) {
 
 function _ofBuildQuizSidebar(mq, revIdx, tribeNames, of) {
   const ss = of?.studySleep?.tribes || {};
+  const rounds = mq.rounds || [];
   let sidebar = '';
 
-  // Parts per tribe
+  // Parts per tribe — only count revealed rounds
   sidebar += `<div class="of-side-sec">BODY PARTS</div>`;
   for (const t of tribeNames) {
-    const parts = revIdx >= 0 ? (mq.partsByTribe?.[t] || 0) : '?';
-    const maxParts = 5;
+    let parts = 0;
+    for (let ri = 0; ri <= Math.min(revIdx, rounds.length - 1); ri++) {
+      const rd = rounds[ri];
+      if (rd.winnerTribe === t && rd.partRetrieved) parts++;
+      // Part theft adjustments from events
+      for (const evt of (rd.events || [])) {
+        if (evt.type === 'partTheft' && evt.villainTribe === t) parts++;
+        if (evt.type === 'partTheft' && evt.victimTribeName === t) parts--;
+      }
+    }
+    parts = Math.max(0, parts);
+    if (revIdx < 0) parts = '?';
+    const maxParts = 7;
     const pct = typeof parts === 'number' ? (parts / maxParts) * 100 : 0;
     sidebar += `<div style="margin-bottom:6px">
       <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.6)">
@@ -2470,24 +2482,47 @@ export function rpBuildOneFluDisease(ep) {
 
 function _ofBuildDiseaseSidebar(dis, revIdx, tribeNames, of) {
   const ss = of?.studySleep?.tribes || {};
+  const rounds = dis.rounds || [];
+  // Track which symptoms have been cured in revealed rounds
+  const revealedCures = new Set();
+  const revealedScores = {};
+  tribeNames.forEach(t => { revealedScores[t] = 0; });
+  // Step 0 = patient intro, steps 1+ = cure rounds
+  for (let ri = 0; ri < Math.min(revIdx, rounds.length); ri++) {
+    for (const attempt of (rounds[ri].cureAttempts || [])) {
+      if (attempt.success && attempt.symptomId && attempt.patient) {
+        revealedCures.add(`${attempt.patient}:${attempt.symptomId}`);
+      }
+      if (attempt.success && attempt.doctorTribe) {
+        revealedScores[attempt.doctorTribe] = (revealedScores[attempt.doctorTribe] || 0) + 1;
+      }
+    }
+    // Also check curePoints if available
+    if (rounds[ri].curePoints) {
+      for (const [t, pts] of Object.entries(rounds[ri].curePoints)) {
+        revealedScores[t] = (revealedScores[t] || 0) + (pts || 0);
+      }
+    }
+  }
+
   let sidebar = '';
 
-  // Patient tracker
+  // Patient tracker — only show cured status for revealed cures
   sidebar += `<div class="of-side-sec" style="color:rgba(132,204,22,0.5);border-color:rgba(132,204,22,0.12)">PATIENT TRACKER</div>`;
   for (const [patient, symptoms] of Object.entries(dis.infected || {})) {
-    const allCured = symptoms.every(s => s.cured);
+    const curedCount = symptoms.filter(s => revealedCures.has(`${patient}:${s.id || s.symptomId}`)).length;
+    const allCured = curedCount === symptoms.length && revIdx > 0;
     const statusClass = allCured ? 'cured' : 'infected';
     sidebar += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
       ${_ofSideWristband(patient, 24, statusClass, allCured ? 'OK' : 'ILL')}
       <div style="flex:1;min-width:0">`;
     for (const sym of symptoms) {
-      const label = sym.id?.replace(/([A-Z])/g, ' $1').trim() || sym.id;
-      const color = sym.cured ? 'rgba(34,197,94,0.8)' : 'rgba(239,68,68,0.8)';
-      const icon = sym.cured ? '&#10003;' : '&#10007;';
-      // Only show cured status if revealed
-      const showStatus = revIdx >= 0;
-      sidebar += `<div style="font-size:9px;color:${showStatus ? color : 'rgba(255,255,255,0.3)'};display:flex;align-items:center;gap:3px">
-        <span>${showStatus ? icon : '?'}</span> ${label} <span style="color:rgba(255,255,255,0.2);font-size:7px">${sym.tier}</span>
+      const label = (sym.id || sym.symptomId || '').replace(/([A-Z])/g, ' $1').trim();
+      const isCured = revealedCures.has(`${patient}:${sym.id || sym.symptomId}`);
+      const color = revIdx <= 0 ? 'rgba(255,255,255,0.3)' : isCured ? 'rgba(34,197,94,0.8)' : 'rgba(239,68,68,0.8)';
+      const icon = revIdx <= 0 ? '?' : isCured ? '✓' : '✗';
+      sidebar += `<div style="font-size:9px;color:${color};display:flex;align-items:center;gap:3px">
+        <span>${icon}</span> ${label} <span style="color:rgba(255,255,255,0.2);font-size:7px">${sym.tier}</span>
       </div>`;
     }
     sidebar += `</div></div>`;
@@ -2504,13 +2539,13 @@ function _ofBuildDiseaseSidebar(dis, revIdx, tribeNames, of) {
     }
   }
 
-  // Cure scores per tribe
-  if (revIdx >= 0) {
+  // Cure scores — only revealed rounds
+  if (revIdx > 0) {
     sidebar += `<div class="of-side-sec" style="color:rgba(132,204,22,0.5);border-color:rgba(132,204,22,0.12)">CURE SCORES</div>`;
     for (const t of tribeNames) {
-      const score = dis.cureScores?.[t] || 0;
+      const score = revealedScores[t] || 0;
       sidebar += `<div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.6);margin-bottom:4px">
-        <span>${t}</span><span style="font-family:'Orbitron',sans-serif;color:var(--of-toxic)">${Math.round(score)}</span>
+        <span>${t}</span><span style="font-family:'Orbitron',sans-serif;color:var(--of-toxic)">${score}</span>
       </div>`;
     }
   }

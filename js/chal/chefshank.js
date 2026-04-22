@@ -1610,7 +1610,7 @@ export function _textChefshank(ep, ln, sec) {
     if (cs.goldenShovel) {
       const shovelLines = [
         `${host} raises the Golden Shovel. "${cs.goldenShovel} — your Phase 2 advantage. Two extra dig rounds. Don't waste them."`,
-        `The Golden Shovel goes to ${cs.goldenShovel}. Two bonus rounds in the tunnel. That could be everything.`,
+        `The Golden Shovel goes to ${cs.goldenShovel}. Thirty percent faster digging in the tunnel. That could be everything.`,
         `${cs.goldenShovel} walks away with the Golden Shovel and a two-round advantage heading into Phase 2.`,
       ];
       ln(_rp(shovelLines));
@@ -2584,35 +2584,6 @@ export function rpBuildChefshankPrisonBreak(ep) {
           <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.6;max-width:400px;margin-left:auto;margin-right:auto">
             ${winTribe ? `The wall gives way and daylight floods the tunnel. ${winTribe} claws through first \u2014 filthy, exhausted, free.` : 'Phase complete.'}
           </div>
-          ${(() => {
-            const _sorted = [...tribes].sort((a, b) => (b.totalDistance || 0) - (a.totalDistance || 0));
-            const loseTribe = _sorted[_sorted.length - 1]?.tribe;
-            const loseData = _sorted[_sorted.length - 1];
-            const loseMembers = loseData?.members || [];
-            const safeTribes = _sorted.slice(1, -1).map(t => t.tribe);
-            let html = '';
-            if (safeTribes.length) {
-              html += `<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1)">
-                <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;margin-bottom:6px">SAFE</div>
-                ${safeTribes.map(st => {
-                  const sd = tribes.find(t => t.tribe === st);
-                  return `<div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-bottom:4px">
-                    ${(sd?.members || []).map(m => _csSmallPortrait(m, 28)).join('')}
-                  </div><div style="font-size:9px;color:rgba(255,255,255,0.4)">${st}</div>`;
-                }).join('')}
-              </div>`;
-            }
-            if (loseTribe) {
-              html += `<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1)">
-                <div style="font-size:10px;color:#ef4444;letter-spacing:2px;margin-bottom:6px">TRIBAL COUNCIL</div>
-                <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-bottom:4px">
-                  ${loseMembers.map(m => `<div style="opacity:0.6">${_csSmallPortrait(m, 28)}</div>`).join('')}
-                </div>
-                <div style="font-size:10px;color:#ef4444">${loseTribe} \u2014 someone's going home tonight.</div>
-              </div>`;
-            }
-            return html;
-          })()}
         </div>
       </div>`;
     }
@@ -2777,7 +2748,7 @@ function _csBuildBreakSidebar(pb, revIdx, steps) {
         <span>${pct.toFixed(0)}%</span>
       </div>`;
       if (isShovel) {
-        sidebar += `<div style="font-size:8px;color:#facc15;margin-top:2px">\u{26CF}\u{FE0F} +2 bonus rounds</div>`;
+        sidebar += `<div style="font-size:8px;color:#facc15;margin-top:2px">⛏️ +30% dig speed</div>`;
       }
     } else {
       sidebar += `<div style="font-size:9px;color:rgba(255,255,255,0.25);font-style:italic;margin-bottom:4px">Dig phase pending...</div>`;
@@ -2799,15 +2770,28 @@ export function rpBuildChefshankDramaBreak(ep) {
   const events = cs.breakEvents;
   if (!events?.length) return '';
 
+  const impactMap = {
+    'guard-bribe': { icon: '💰', impact: 'Popularity boost', color: '#4ade80' },
+    'cellmate-bond': { icon: '🤝', impact: 'Bond strengthened', color: '#60a5fa' },
+    'contraband-trade': { icon: '📦', impact: 'Bond + popularity boost', color: '#fb923c' },
+    'shiv-threat': { icon: '🔪', impact: 'Bond damaged · Heat generated', color: '#ef4444' },
+    'yard-gossip': { icon: '🗣️', impact: 'Trust eroded', color: '#c084fc' },
+    'solitary-fear': { icon: '😶', impact: 'Popularity dip — isolated', color: '#6b7280' },
+    'wardens-pet': { icon: '🐀', impact: 'Accused — trust damaged', color: '#22c55e' },
+    'tunnel-rumor': { icon: '🕳️', impact: 'Morale shaken', color: '#f59e0b' },
+  };
+
   let feed = '';
   for (const evt of events) {
     const firstPlayer = (evt.players || [])[0];
-    feed += `<div class="cs-ev ${evt.badgeClass || ''}">
+    const imp = impactMap[evt.id] || { icon: '⚡', impact: '', color: '#6b7280' };
+    feed += `<div class="cs-ev ${evt.badgeClass || ''}" style="border-left-color:${imp.color}">
       ${firstPlayer ? _csSmallPortrait(firstPlayer, 44) : ''}
       <div style="flex:1;min-width:0">
         <div class="cs-ev-badge ${evt.badgeClass || 'gray'}">${evt.badge || 'YARD TIME'}</div>
         <div class="cs-ev-text">${evt.text || ''}</div>
-        ${(evt.players || []).length > 1 ? `<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">${evt.players.slice(1).map(n => {
+        ${imp.impact ? `<div style="display:flex;align-items:center;gap:4px;margin-top:6px;font-size:10px;color:${imp.color}"><span>${imp.icon}</span> ${imp.impact}</div>` : ''}
+        ${(evt.players || []).length > 1 ? `<div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">${evt.players.slice(1).map(n => {
           const s = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
           return `<img src="assets/avatars/${s}.png" width="24" height="24" style="border-radius:2px;border:1px solid var(--cs-bar);filter:contrast(1.05) brightness(0.95)" title="${n}" onerror="this.style.display='none'">`;
         }).join('')}</div>` : ''}

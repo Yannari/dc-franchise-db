@@ -527,7 +527,10 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
     const s = tribe.members.map(n => pStats(n));
     const avgMental = s.reduce((a, m) => a + m.mental, 0) / s.length;
     const avgStrat = s.reduce((a, m) => a + m.strategic, 0) / s.length;
-    let disgustScore = avgMental * 0.04 + avgStrat * 0.03;
+    // Smaller tribes cook with more desperation — underdog bonus
+    const maxSize = Math.max(...tribeMembers.map(t => t.members.length));
+    const cookUnderdogBonus = tribe.members.length < maxSize ? (maxSize - tribe.members.length) * 0.04 : 0;
+    let disgustScore = avgMental * 0.04 + avgStrat * 0.03 + cookUnderdogBonus;
 
     const cookingEvents = [];
     const usedActors = new Set();
@@ -1073,7 +1076,7 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
         let text = '';
 
         if (evt.type === 'hitRock') {
-          contributions[evt.name] = 0;
+          contributions[evt.name] = td.members.length <= 4 ? (contributions[evt.name] || 0) * 0.3 : 0;
           text = _rp(PRISON_BREAK_DIG_EVENTS.hitRock)(evt.name, pr);
 
         } else if (evt.type === 'findContraband') {
@@ -1082,7 +1085,7 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
 
         } else if (evt.type === 'caveInScare') {
           const panicCheck = st.temperament * 0.08 > 0.4 + Math.random() * 0.4;
-          if (!panicCheck) contributions[evt.name] = 0;
+          if (!panicCheck) contributions[evt.name] = td.members.length <= 4 ? (contributions[evt.name] || 0) * 0.3 : 0;
           text = _rp(PRISON_BREAK_DIG_EVENTS.caveInScare)(evt.name, pr);
 
         } else if (evt.type === 'shortcut') {
@@ -1090,11 +1093,11 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
           text = _rp(PRISON_BREAK_DIG_EVENTS.shortcut)(evt.name, pr);
 
         } else if (evt.type === 'claustrophobia') {
-          contributions[evt.name] = 0;
+          contributions[evt.name] = td.members.length <= 4 ? (contributions[evt.name] || 0) * 0.3 : 0;
           text = _rp(PRISON_BREAK_DIG_EVENTS.claustrophobia)(evt.name, pr);
 
         } else if (evt.type === 'wormNest') {
-          contributions[evt.name] = 0;
+          contributions[evt.name] = td.members.length <= 4 ? (contributions[evt.name] || 0) * 0.3 : 0;
           text = _rp(PRISON_BREAK_DIG_EVENTS.wormNest)(evt.name, pr);
 
         } else if (evt.type === 'rivalSabotage') {
@@ -1140,14 +1143,14 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
           text = _rp(PRISON_BREAK_DIG_EVENTS.findOldTunnel)(evt.name, pr);
 
         } else if (evt.type === 'teammateClash') {
-          contributions[evt.name] = 0;
+          contributions[evt.name] = td.members.length <= 4 ? (contributions[evt.name] || 0) * 0.3 : 0;
           if (evt.name2) contributions[evt.name2] = 0;
           const pr2 = pronouns(evt.name2);
           text = _rp(PRISON_BREAK_DIG_EVENTS.teammateClash)(evt.name, evt.name2, pr, pr2);
           addBond(evt.name, evt.name2, -0.3);
 
         } else if (evt.type === 'vanitySlacker') {
-          contributions[evt.name] = 0;
+          contributions[evt.name] = td.members.length <= 4 ? (contributions[evt.name] || 0) * 0.3 : 0;
           text = _rp(PRISON_BREAK_DIG_EVENTS.vanitySlacker)(evt.name, pr);
           if (!gs.popularity) gs.popularity = {};
           gs.popularity[evt.name] = (gs.popularity[evt.name] || 0) - 1;
@@ -1170,7 +1173,7 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
           text = _rp(PRISON_BREAK_DIG_EVENTS.rallyCarrier)(evt.name, pr);
 
         } else if (evt.type === 'lazyExcuse') {
-          contributions[evt.name] = 0;
+          contributions[evt.name] = td.members.length <= 4 ? (contributions[evt.name] || 0) * 0.3 : 0;
           text = _rp(PRISON_BREAK_DIG_EVENTS.lazyExcuse)(evt.name, pr);
           for (const tm of td.members) { if (tm !== evt.name) addBond(tm, evt.name, -0.2); }
           if (!gs.popularity) gs.popularity = {};
@@ -1200,8 +1203,12 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
       }
 
       // Compute round distance = avg contribution * roundMultiplier * (1 + mod)
+      // Underdog bonus: smaller tribes dig with significantly more urgency
+      // Each missing member = +8% dig speed to compensate for fewer hands + higher event vulnerability
+      const maxTribeSize = Math.max(...tribeMembers.map(t => t.members.length));
+      const underdogBonus = td.members.length < maxTribeSize ? (maxTribeSize - td.members.length) * 0.08 : 0;
       const avgContrib = Object.values(contributions).reduce((s, v) => s + v, 0) / td.members.length;
-      const roundDist = avgContrib * roundMultiplier * (1 + roundTribeMod);
+      const roundDist = avgContrib * roundMultiplier * (1 + roundTribeMod + underdogBonus);
       td.roundDistances.push(roundDist);
       td.totalDistance += roundDist;
       td.digEvents.push(td._roundEvts || []);
@@ -2118,7 +2125,7 @@ export function rpBuildChefshankPrisonFood(ep) {
   const totalSteps = stepIdx;
 
   // Sidebar — only show revealed info
-  const sidebar = _csBuildFoodSidebar(pf, revIdx, tribeNames, totalSteps);
+  const sidebar = _csBuildFoodSidebar(pf, revIdx, tribeNames, totalSteps, ep);
 
   // HUD — minimal, no spoilers
   const revealedEnough = revIdx >= 1; // after draft
@@ -2150,19 +2157,43 @@ export function rpBuildChefshankPrisonFood(ep) {
   `, ep);
 }
 
-function _csBuildFoodSidebar(pf, revIdx, tribeNames, totalSteps) {
+function _csBuildFoodSidebar(pf, revIdx, tribeNames, totalSteps, ep) {
   // Steps layout: [0: draft] [1..N: cooking per tribe] [N+1..: eating rounds]
   const numTribes = tribeNames.length;
   const draftRevealed = revIdx >= 0;
   const cookingStartIdx = 1;
   const eatingStartIdx = cookingStartIdx + numTribes;
   const duelRounds = pf.duel?.rounds || [];
+  // Use challenge data for tribe rosters, not live gs.tribes (which may be stale)
+  const pbTribes = ep?.chefshank?.prisonBreak?.tribes || [];
+  const tribeRosters = {};
+  for (const td of pbTribes) { tribeRosters[td.tribe] = td.members || []; }
+  // Fallback to gs.tribes if no pb data
+  if (!pbTribes.length) { for (const t of (gs.tribes || [])) { tribeRosters[t.name] = t.members; } }
 
   let sidebar = '';
 
-  // Victims — only after draft revealed
+  // Tribe rosters — horizontal compact grid with bigger icons
+  for (const tName of tribeNames) {
+    const members = tribeRosters[tName] || [];
+    if (!members.length) continue;
+    const victim = draftRevealed ? pf.victims?.[tName] : null;
+    sidebar += `<div class="cs-side-sec">${tName.toUpperCase()} (${members.length})</div>`;
+    sidebar += `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">`;
+    for (const m of members) {
+      const isVictim = victim && m === victim;
+      sidebar += `<div style="text-align:center;width:42px;opacity:${isVictim ? '1' : '0.6'}">
+        ${_csSideMugshot(m, 28, isVictim ? 'vomited' : '')}
+        <div style="font-size:7px;color:rgba(255,255,255,${isVictim ? '0.9' : '0.4'});overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.split(' ')[0]}</div>
+        ${isVictim ? `<div style="font-size:6px;color:var(--cs-rust);letter-spacing:0.5px">VICTIM</div>` : ''}
+      </div>`;
+    }
+    sidebar += `</div>`;
+  }
+
+  // Victims detail — only after draft revealed
   if (draftRevealed) {
-    sidebar += `<div class="cs-side-sec">&#127860; VICTIMS</div>`;
+    sidebar += `<div class="cs-side-sec">&#127860; EATING DUEL</div>`;
     for (const tName of tribeNames) {
       const victim = pf.victims?.[tName];
       if (!victim) continue;
@@ -2569,20 +2600,33 @@ function _csBuildBreakSidebar(pb, revIdx, steps) {
 
   for (const td of tribes) {
     const isShovel = pb.shovelTeam === td.tribe;
+    const tribeMembers = td.members || [];
 
     // Tribe header
     sidebar += `<div class="cs-side-sec" style="display:flex;align-items:center;gap:6px">
-      <span>${td.tribe}</span>
-      ${isShovel ? '<span style="font-size:12px" title="Golden Shovel">\u{26CF}\u{FE0F}</span>' : ''}
+      <span>${td.tribe} (${tribeMembers.length})</span>
+      ${isShovel ? '<span style="font-size:12px" title="Golden Shovel">⛏️</span>' : ''}
     </div>`;
 
-    // Pusher
+    // Team roster — horizontal compact grid
+    sidebar += `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">`;
+    for (const m of tribeMembers) {
+      const isPusher = pusherRevealed(td.tribe) && m === td.pusher;
+      sidebar += `<div style="text-align:center;width:42px;opacity:${isPusher ? '1' : '0.5'}">
+        ${_csSideMugshot(m, 28)}
+        <div style="font-size:7px;color:rgba(255,255,255,${isPusher ? '0.9' : '0.4'});overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.split(' ')[0]}</div>
+        ${isPusher ? `<div style="font-size:6px;color:var(--cs-rust);letter-spacing:0.5px">PUSHER</div>` : ''}
+        </div>`;
+    }
+    sidebar += `</div>`;
+
+    // Pusher detail
     if (pusherRevealed(td.tribe)) {
-      sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;margin-bottom:6px">
+      sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;margin:4px 0 6px;border-top:1px solid rgba(180,83,9,0.1)">
         ${_csSideMugshot(td.pusher, 28)}
         <div style="flex:1;min-width:0">
           <div style="font-size:10px;color:rgba(255,255,255,0.8)">${td.pusher}</div>
-          <div style="font-size:8px;color:var(--cs-rust);letter-spacing:1px;font-family:'Black Ops One',cursive">PUSHER</div>
+          <div style="font-size:8px;color:var(--cs-rust);letter-spacing:1px;font-family:'Black Ops One',cursive">CART PUSHER</div>
         </div>
       </div>`;
     } else {
@@ -2846,7 +2890,7 @@ function _csUpdateSidebar(screenKey, revIdx) {
 
   if (screenKey === 'cs-food' && cs.prisonFood) {
     const sideEl = document.getElementById('cs-sidebar-food');
-    if (sideEl) sideEl.innerHTML = _csBuildFoodSidebar(cs.prisonFood, revIdx, tribeNames);
+    if (sideEl) sideEl.innerHTML = _csBuildFoodSidebar(cs.prisonFood, revIdx, tribeNames, 999, ep);
   }
   if (screenKey === 'cs-break' && cs.prisonBreak) {
     const sideEl = document.getElementById('cs-sidebar-break');

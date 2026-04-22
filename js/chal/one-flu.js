@@ -211,7 +211,10 @@ const FLU_DRAMA_EVENTS = [
   {
     id: 'rivalryPrank',
     check(ep, all) {
+      const niceArchetypes = ['hero','loyal-soldier','social-butterfly','showmancer','underdog','goat'];
       for (const a of all) {
+        const arch = players.find(p => p.name === a)?.archetype;
+        if (niceArchetypes.includes(arch)) continue;
         for (const b of all) {
           if (a !== b && getBond(a, b) <= -2) return true;
         }
@@ -219,12 +222,16 @@ const FLU_DRAMA_EVENTS = [
       return false;
     },
     apply(ep, all) {
+      const niceArchetypes = ['hero','loyal-soldier','social-butterfly','showmancer','underdog','goat'];
       let prankPairs = [];
       for (const a of all) {
+        const arch = players.find(p => p.name === a)?.archetype;
+        if (niceArchetypes.includes(arch)) continue;
         for (const b of all) {
           if (a !== b && getBond(a, b) <= -2) prankPairs.push([a, b]);
         }
       }
+      if (!prankPairs.length) return null;
       const [pranker, victim] = prankPairs[Math.floor(Math.random() * prankPairs.length)];
       const pPr = pronouns(pranker);
       const texts = [
@@ -503,7 +510,7 @@ function _simulateMedicalQuiz(ep, tribeMembers, result) {
       (result.tribeScores[tribeMembers.find(t => t.members.includes(name))?.name] || 0) + delta;
   }
 
-  for (let r = 0; r < 7; r++) {
+  for (let r = 0; r < 10; r++) {
     const round = { number: r + 1, answers: {}, winnerTribe: null, diver: null, partRetrieved: false, events: [] };
 
     // Each tribe picks an answerer
@@ -765,10 +772,13 @@ function _simulateAssembly(ep, tribeMembers, result) {
       ep.campEvents[campKey].post.push({ text: txt, players: [name], badgeText: 'PART FAIL', badgeClass: 'red', tag: 'challenge' });
     }
 
-    // pantsPull — cross-tribe rivalry
+    // pantsPull — cross-tribe rivalry (nice archetypes never prank)
+    const _niceArch = ['hero','loyal-soldier','social-butterfly','showmancer','underdog','goat'];
     for (const other of tribeMembers) {
       if (other.name === tribe.name) continue;
       for (const a of members) {
+        const aArch = players.find(p => p.name === a)?.archetype;
+        if (_niceArch.includes(aArch)) continue;
         for (const b of other.members) {
           if (getBond(a, b) <= -2 && Math.random() < 0.2) {
             const aPr = pronouns(a);
@@ -1088,10 +1098,10 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
     result.rewardWinner = bestDoctor;
   }
 
-  // Winner tribe
-  const winnerEntry = Object.entries(cureScores).sort((a, b) => b[1] - a[1])[0];
-  if (winnerEntry) {
-    result.tribeScores[winnerEntry[0]] = (result.tribeScores[winnerEntry[0]] || 0) + 1;
+  // Disease scores feed directly into tribe scores — each cure = +2 tribe points
+  // This makes the disease phase as impactful as quiz/assembly
+  for (const [tribe, cures] of Object.entries(cureScores)) {
+    result.tribeScores[tribe] = (result.tribeScores[tribe] || 0) + cures * 2;
   }
 
   result.diseaseOutbreak = {
@@ -1292,6 +1302,11 @@ export function _textOneFlu(ep, ln, sec) {
   const of = ep.oneFlu;
   if (!of) return;
   const host = seasonConfig.host || 'Chris';
+
+  // ── Cold open ────────────────────────────────────────────────────────────
+  if (of.coldOpen?.text) {
+    ln(of.coldOpen.text);
+  }
 
   // ── Challenge intro ────────────────────────────────────────────────────────
   sec('One Flu Over the Cuckoos');
@@ -1940,7 +1955,7 @@ export function rpBuildOneFluQuiz(ep) {
     <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:rgba(59,130,246,0.5);margin-bottom:6px">PHASE RULES</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">Answer medical questions to earn body parts for your FrankenChris. Winner of each round dives into the eel tank to retrieve a part. 2 eel shocks = failed dive. More parts = better assembly score.</div>
     <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-      <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.15)">7 ROUNDS</span>
+      <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.15)">10 ROUNDS</span>
       <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(20,184,166,0.1);color:#5eead4;border:1px solid rgba(20,184,166,0.15)">EEL TANK DIVES</span>
       <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.15)">2 SHOCKS = FAIL</span>
     </div>

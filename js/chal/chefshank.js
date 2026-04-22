@@ -983,7 +983,7 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
     const failCount = td.obstacleResults.filter(o => !o.passed).length;
     td.obstacleSpeedMod = (passCount - failCount) * 0.10;
     // Everyone digs 5 rounds. Shovel = speed boost, not extra rounds.
-    td.digRounds = 5;
+    td.digRounds = 7;
   }
 
   pushEvent(_rp(PRISON_BREAK_HOST.digStart)(host), tribeMembers.flatMap(t => t.members), 'DIG START', 'gold');
@@ -2506,7 +2506,7 @@ export function rpBuildChefshankPrisonBreak(ep) {
             Total dig speed: ${totalSpeed}%
           </div>
           <div style="display:flex;gap:4px;margin-top:6px">${(td.obstacles || []).map(o => `<span style="font-size:13px">${o.passed ? '✅' : '❌'}</span>`).join('')}</div>
-          <div style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:2px">5 rounds · everyone digs equally</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:2px">7 rounds · everyone digs equally</div>
         </div>`;
       }
       feed += `<div id="cs-step-break-${i}" style="${vis}">
@@ -2571,14 +2571,48 @@ export function rpBuildChefshankPrisonBreak(ep) {
 
     } else if (s.type === 'result') {
       const winTribe = pb.winner;
+      const winTribeData = tribes.find(t => t.tribe === winTribe);
+      const winMembers = winTribeData?.members || [];
       feed += `<div id="cs-step-break-${i}" style="${vis}">
         <div class="cs-ev" style="flex-direction:column;text-align:center;padding:20px;border-left-color:var(--cs-rust)">
+          <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:12px">
+            ${winMembers.map(m => _csSmallPortrait(m, 40)).join('')}
+          </div>
           <div style="font-family:'Black Ops One',cursive;font-size:22px;color:var(--cs-chain);letter-spacing:3px;text-shadow:2px 2px 0 rgba(0,0,0,0.5);margin-bottom:8px">${winTribe ? winTribe.toUpperCase() : '???'}</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:4px;margin-bottom:12px">BREAKS FREE</div>
           ${_csStamp(winTribe ? winTribe + ' WINS PHASE 2 \u2014 IMMUNITY' : 'PHASE COMPLETE', 'gold')}
           <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.6;max-width:400px;margin-left:auto;margin-right:auto">
             ${winTribe ? `The wall gives way and daylight floods the tunnel. ${winTribe} claws through first \u2014 filthy, exhausted, free.` : 'Phase complete.'}
           </div>
+          ${(() => {
+            const _sorted = [...tribes].sort((a, b) => (b.totalDistance || 0) - (a.totalDistance || 0));
+            const loseTribe = _sorted[_sorted.length - 1]?.tribe;
+            const loseData = _sorted[_sorted.length - 1];
+            const loseMembers = loseData?.members || [];
+            const safeTribes = _sorted.slice(1, -1).map(t => t.tribe);
+            let html = '';
+            if (safeTribes.length) {
+              html += `<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1)">
+                <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;margin-bottom:6px">SAFE</div>
+                ${safeTribes.map(st => {
+                  const sd = tribes.find(t => t.tribe === st);
+                  return `<div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-bottom:4px">
+                    ${(sd?.members || []).map(m => _csSmallPortrait(m, 28)).join('')}
+                  </div><div style="font-size:9px;color:rgba(255,255,255,0.4)">${st}</div>`;
+                }).join('')}
+              </div>`;
+            }
+            if (loseTribe) {
+              html += `<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1)">
+                <div style="font-size:10px;color:#ef4444;letter-spacing:2px;margin-bottom:6px">TRIBAL COUNCIL</div>
+                <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-bottom:4px">
+                  ${loseMembers.map(m => `<div style="opacity:0.6">${_csSmallPortrait(m, 28)}</div>`).join('')}
+                </div>
+                <div style="font-size:10px;color:#ef4444">${loseTribe} \u2014 someone's going home tonight.</div>
+              </div>`;
+            }
+            return html;
+          })()}
         </div>
       </div>`;
     }

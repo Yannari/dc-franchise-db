@@ -14,7 +14,7 @@ import { rpBuildMonsterCashTitleCard, rpBuildMonsterCashRounds, rpBuildMonsterCa
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard, alienEggRevealNext, alienEggRevealAll } from './chal/alien-egg.js';
 import { rpBuildBeachBlanketBogusTitleCard, rpBuildBeachBlanketBogusSurf, rpBuildBeachBlanketBogusSandcastle, rpBuildBeachBlanketBogusHalftime, rpBuildBeachBlanketBogusDanceOff, rpBuildBeachBlanketBogusResults, beachBogusRevealNext, beachBogusRevealAll } from './chal/beach-blanket-bogus.js';
 import { rpBuildCrazytownTitleCard, rpBuildCrazytownHorseDive, rpBuildCrazytownStandoff, rpBuildCrazytownRoundup, rpBuildCrazytownDramaBreak, rpBuildCrazytownResults, crazytownRevealNext, crazytownRevealAll } from './chal/crazytown.js';
-import { rpBuildChefshankTitleCard, chefshankRevealNext, chefshankRevealAll } from './chal/chefshank.js';
+import { rpBuildChefshankTitleCard, rpBuildChefshankPrisonFood, rpBuildChefshankPrisonBreak, rpBuildChefshankDramaBreak, rpBuildChefshankResults, chefshankRevealNext, chefshankRevealAll } from './chal/chefshank.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10377,6 +10377,16 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'ct-results', label:'⚖️ Final Verdict', html: rpBuildCrazytownResults(ep) });
   } else if (ep.isChefshank && ep.chefshank) {
     vpScreens.push({ id:'cs-title', label:'⛓️ The Chefshank Redemption', html: rpBuildChefshankTitleCard(ep) });
+    if (ep.chefshank.prisonFood) {
+      vpScreens.push({ id:'cs-food', label:'🍽️ Prison Food', html: rpBuildChefshankPrisonFood(ep) });
+    }
+    if (ep.chefshank.breakEvents?.length) {
+      vpScreens.push({ id:'cs-drama', label:'⏳ Yard Time', html: rpBuildChefshankDramaBreak(ep) });
+    }
+    if (ep.chefshank.prisonBreak) {
+      vpScreens.push({ id:'cs-break', label:'🔓 Prison Break', html: rpBuildChefshankPrisonBreak(ep) });
+    }
+    vpScreens.push({ id:'cs-results', label:'⚖️ The Verdict', html: rpBuildChefshankResults(ep) });
     // RI screens
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _aeRiLife = rpBuildRILife(ep);

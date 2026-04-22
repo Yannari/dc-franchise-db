@@ -1359,10 +1359,831 @@ export function _textChefshank(ep, ln, sec) {
   ln('The teams face a prison-themed challenge — cook disgusting food, then dig their way to freedom.');
 }
 
-export function rpBuildChefshankTitleCard(ep) {
-  if (!ep.chefshank) return '';
-  return '<div style="padding:40px;text-align:center;color:#6b7280;font-family:serif;"><h1>⛓️ THE CHEFSHANK REDEMPTION</h1><p>Title Card — Full VP coming soon</p></div>';
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Shell + CSS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function _csShell(content, ep) {
+  return `
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;600;700;900&display=swap');
+
+/* ── Theme tokens ── */
+.cs-shell{
+  --cs-concrete:#4b5563;--cs-rust:#b45309;--cs-bar:#374151;
+  --cs-jumpsuit:#ea580c;--cs-fluorescent:#e0f2fe;--cs-blood:#991b1b;
+  --cs-mold:#4d7c0f;--cs-ink:#1e1b4b;--cs-metal:#6b7280;
+  --cs-grime:#78716c;--cs-chain:#a8a29e;
+  font-family:'Inter',sans-serif;color:#e2e8f0;
+  background:linear-gradient(180deg,#374151 0%,#1f2937 20%,#111827 50%,#0f172a 85%,#020617 100%);
+  padding:0;max-width:1100px;margin:0 auto;position:relative;min-height:400px;
+  overflow:clip;border:3px solid #1e293b;box-shadow:inset 0 0 60px rgba(0,0,0,0.6),0 0 30px rgba(0,0,0,0.5);
 }
 
-export function chefshankRevealNext() {}
-export function chefshankRevealAll() {}
+/* ── Crack texture overlay ── */
+.cs-shell::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;clip-path:inset(0);
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+  opacity:.04;pointer-events:none;z-index:5;mix-blend-mode:overlay;animation:cs-crack 8s linear infinite}
+
+/* ── Fluorescent light ── */
+.cs-fluorescent{position:absolute;top:0;left:10%;right:10%;height:3px;z-index:7;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(224,242,254,0.5),rgba(224,242,254,0.7),rgba(224,242,254,0.5),transparent);
+  box-shadow:0 0 20px rgba(224,242,254,0.15),0 0 60px rgba(224,242,254,0.08);
+  animation:cs-flicker 6s linear infinite}
+
+/* ── Cell bars top border ── */
+.cs-bar-top{height:8px;
+  background:repeating-linear-gradient(90deg,#374151 0px,#374151 6px,transparent 6px,transparent 18px);
+  box-shadow:0 2px 6px rgba(0,0,0,0.5);position:relative;z-index:8}
+
+/* ── Header ── */
+.cs-header{background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%);
+  padding:14px 20px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:2px solid var(--cs-rust);position:relative;z-index:6;
+  box-shadow:inset 0 -2px 8px rgba(0,0,0,0.5),0 2px 10px rgba(0,0,0,0.4)}
+.cs-title{font-family:'Black Ops One',cursive;font-size:16px;color:var(--cs-chain);
+  text-shadow:2px 2px 0 rgba(0,0,0,0.6);letter-spacing:3px}
+.cs-subtitle{font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:4px;text-transform:uppercase;margin-top:2px}
+
+/* ── Layout ── */
+.cs-layout{display:flex;gap:14px;align-items:flex-start;padding:14px;position:relative;z-index:6}
+.cs-feed{flex:1;min-width:0}
+.cs-sidebar{width:260px;flex-shrink:0;position:sticky;top:0;max-height:100vh;overflow-y:auto;align-self:flex-start;
+  scrollbar-width:thin;scrollbar-color:rgba(180,83,9,0.25) transparent;
+  background:linear-gradient(180deg,rgba(30,41,59,0.9),rgba(15,23,42,0.95));
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(180,83,9,0.15);border-radius:4px;padding:12px;
+  box-shadow:inset 0 0 20px rgba(0,0,0,0.4)}
+
+/* ── HUD ── */
+.cs-hud{display:flex;gap:2px;margin:0 14px 2px;position:relative;z-index:6}
+.cs-hud-cell{flex:1;background:rgba(0,0,0,0.5);border:1px solid rgba(180,83,9,0.12);
+  padding:8px 4px;text-align:center}
+.cs-hud-cell:first-child{border-radius:4px 0 0 4px}.cs-hud-cell:last-child{border-radius:0 4px 4px 0}
+.cs-hud-val{font-family:'Black Ops One',cursive;font-size:18px;font-weight:700;color:var(--cs-chain);
+  text-shadow:0 0 8px rgba(168,162,158,0.3)}
+.cs-hud-lbl{font-size:7px;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-top:2px;text-transform:uppercase}
+
+/* ── Event cards — metal tray (Phase 1) ── */
+.cs-ev{background:linear-gradient(135deg,rgba(107,114,128,0.15),rgba(75,85,99,0.1));
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1px solid rgba(107,114,128,0.15);border-left:3px solid var(--cs-metal);
+  padding:12px 14px;margin-bottom:5px;display:flex;align-items:flex-start;gap:12px;
+  border-radius:3px;animation:cs-fade-up 0.4s ease-out;position:relative}
+.cs-ev.negative{border-left-color:var(--cs-blood)}
+.cs-ev.positive{border-left-color:var(--cs-mold)}
+.cs-ev.vomit{border-left-color:#16a34a;background:linear-gradient(135deg,rgba(77,124,15,0.15),rgba(22,163,74,0.08))}
+.cs-ev.round-header{border-left-color:var(--cs-rust);
+  background:linear-gradient(135deg,rgba(180,83,9,0.2),rgba(120,113,108,0.12));
+  font-family:'Black Ops One',cursive}
+/* Dirt/tunnel style for Phase 2 */
+.cs-ev.tunnel{border-left-color:#92400e;
+  background:linear-gradient(135deg,rgba(120,53,15,0.15),rgba(69,26,3,0.1))}
+.cs-ev.obstacle{border-left-color:var(--cs-bar)}
+
+/* ── Badges — red ink stamp ── */
+.cs-ev-badge{display:inline-block;font-family:'Black Ops One',cursive;font-size:8px;letter-spacing:2px;
+  padding:2px 8px;border-radius:2px;margin-bottom:4px;text-transform:uppercase;
+  background:rgba(153,27,27,0.2);color:#fca5a5;border:1px solid rgba(153,27,27,0.3);
+  transform:rotate(-1deg)}
+.cs-ev-badge.gold{background:rgba(180,83,9,0.25);color:#fbbf24;border-color:rgba(180,83,9,0.3)}
+.cs-ev-badge.red{background:rgba(153,27,27,0.3);color:#fca5a5;border-color:rgba(153,27,27,0.4)}
+.cs-ev-badge.green{background:rgba(77,124,15,0.2);color:#86efac;border-color:rgba(77,124,15,0.3)}
+.cs-ev-badge.blue{background:rgba(30,58,138,0.2);color:#93c5fd;border-color:rgba(30,58,138,0.3)}
+.cs-ev-badge.orange{background:rgba(180,83,9,0.2);color:#fdba74;border-color:rgba(180,83,9,0.3)}
+.cs-ev-badge.purple{background:rgba(88,28,135,0.2);color:#d8b4fe;border-color:rgba(88,28,135,0.3)}
+.cs-ev-badge.gray{background:rgba(107,114,128,0.15);color:rgba(255,255,255,0.5);border-color:rgba(107,114,128,0.2)}
+.cs-ev-badge.yellow{background:rgba(161,98,7,0.2);color:#fde68a;border-color:rgba(161,98,7,0.3)}
+.cs-ev-text{font-size:13px;line-height:1.7;color:rgba(255,255,255,0.85)}
+
+/* ═══ MUGSHOT PORTRAITS ═══ */
+.cs-mugshot{display:inline-block;text-align:center;position:relative;
+  background:linear-gradient(180deg,rgba(31,41,55,0.9),rgba(17,24,39,0.95));
+  border:3px solid var(--cs-bar);border-radius:2px;padding:6px 6px 4px;
+  box-shadow:3px 3px 10px rgba(0,0,0,0.5),inset 0 0 15px rgba(0,0,0,0.3)}
+/* Height marker lines */
+.cs-mugshot::before{content:'';position:absolute;top:4px;left:4px;right:4px;bottom:20px;
+  background:repeating-linear-gradient(0deg,transparent 0px,transparent 8px,rgba(255,255,255,0.04) 8px,rgba(255,255,255,0.04) 9px);
+  pointer-events:none;z-index:0}
+.cs-mugshot img{display:block;margin:0 auto 4px;border-radius:1px;
+  border:2px solid var(--cs-metal);position:relative;z-index:1;
+  filter:contrast(1.1) brightness(0.95);
+  box-shadow:inset 0 0 8px rgba(0,0,0,0.4)}
+.cs-mugshot-name{font-family:'Black Ops One',cursive;font-size:7px;letter-spacing:1px;color:var(--cs-chain);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.cs-mugshot-id{font-family:'Black Ops One',cursive;font-size:6px;letter-spacing:2px;color:rgba(255,255,255,0.3);
+  margin-top:1px}
+.cs-mugshot.vomited img{filter:contrast(1.1) brightness(0.8) hue-rotate(80deg) saturate(1.5)}
+.cs-mugshot.vomited::after{content:'SOLITARY';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) rotate(-12deg);font-family:'Black Ops One',cursive;font-size:14px;
+  letter-spacing:3px;color:rgba(22,163,74,0.85);text-shadow:0 0 4px rgba(22,163,74,0.3);
+  animation:cs-stamp-in 0.4s ease-out both;pointer-events:none;z-index:3;
+  border:3px solid rgba(22,163,74,0.6);padding:2px 6px;border-radius:2px}
+
+/* Compact sidebar variant */
+.cs-mugshot.sm{padding:3px 2px 2px;border-width:2px}
+.cs-mugshot.sm::before{display:none}
+.cs-mugshot.sm .cs-mugshot-name{font-size:6px;letter-spacing:0.5px}
+.cs-mugshot.sm .cs-mugshot-id{display:none}
+.cs-mugshot.sm.vomited::after{font-size:8px;letter-spacing:1px;border-width:2px;padding:1px 3px}
+
+/* ═══ INK STAMPS ═══ */
+.cs-stamp{display:inline-block;font-family:'Black Ops One',cursive;font-size:10px;letter-spacing:3px;
+  text-transform:uppercase;padding:4px 14px;border-radius:3px;position:relative;
+  border:2px solid currentColor;transform:rotate(-2deg);
+  animation:cs-stamp-in 0.5s ease-out both}
+.cs-stamp.red{color:#ef4444;background:rgba(239,68,68,0.1);
+  text-shadow:0 0 8px rgba(239,68,68,0.3);box-shadow:0 0 12px rgba(239,68,68,0.15)}
+.cs-stamp.green{color:#22c55e;background:rgba(34,197,94,0.1);
+  text-shadow:0 0 8px rgba(34,197,94,0.3);box-shadow:0 0 12px rgba(34,197,94,0.15)}
+.cs-stamp.gold{color:#f59e0b;background:rgba(245,158,11,0.1);
+  text-shadow:0 0 8px rgba(245,158,11,0.3);box-shadow:0 0 12px rgba(245,158,11,0.15)}
+.cs-stamp.rust{color:var(--cs-rust);background:rgba(180,83,9,0.1);
+  text-shadow:0 0 8px rgba(180,83,9,0.3)}
+
+/* ═══ TALLY MARKS ═══ */
+.cs-tally{display:inline-block;font-family:'Black Ops One',cursive;font-size:22px;color:var(--cs-chain);
+  text-shadow:0 0 6px rgba(168,162,158,0.2);padding:0 3px;
+  animation:cs-tally-scratch 0.4s ease-out}
+
+/* ═══ CONTROLS ═══ */
+.cs-btn-next{padding:10px 28px;
+  background:linear-gradient(135deg,#374151,#1f2937);
+  color:var(--cs-chain);border:2px solid rgba(168,162,158,0.3);border-radius:4px;cursor:pointer;
+  font-family:'Black Ops One',cursive;font-size:11px;letter-spacing:3px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.05);
+  transition:transform 0.15s,box-shadow 0.15s;text-transform:uppercase;position:relative}
+/* Rivet details */
+.cs-btn-next::before,.cs-btn-next::after{content:'';position:absolute;width:6px;height:6px;
+  border-radius:50%;background:radial-gradient(circle,#6b7280,#374151);
+  border:1px solid rgba(255,255,255,0.1);top:50%;transform:translateY(-50%)}
+.cs-btn-next::before{left:6px}.cs-btn-next::after{right:6px}
+.cs-btn-next:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.08)}
+.cs-btn-all{padding:8px 18px;background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.35);
+  border:1px solid rgba(255,255,255,0.08);border-radius:4px;cursor:pointer;font-size:11px;
+  transition:background 0.15s}
+.cs-btn-all:hover{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6)}
+.cs-controls{display:flex;gap:8px;justify-content:center;padding:16px 0;position:relative;z-index:6}
+
+/* ── Sidebar sections ── */
+.cs-side-sec{font-family:'Black Ops One',cursive;font-size:8px;letter-spacing:3px;
+  color:rgba(180,83,9,0.5);border-bottom:1px solid rgba(180,83,9,0.12);
+  padding-bottom:3px;margin:12px 0 6px;text-transform:uppercase}
+
+/* ── Resistance meter ── */
+.cs-resist-bar{height:6px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden;margin-top:3px}
+.cs-resist-fill{height:100%;border-radius:3px;transition:width 0.3s ease}
+
+/* ── Progress bar (dig) ── */
+.cs-dig-bar{height:8px;border-radius:4px;background:rgba(255,255,255,0.06);overflow:hidden;margin-top:3px;
+  border:1px solid rgba(180,83,9,0.15)}
+.cs-dig-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#92400e,#b45309);transition:width 0.3s ease}
+
+/* ── Rust stain corners ── */
+.cs-shell::after{content:'';position:absolute;top:0;right:0;width:80px;height:80px;clip-path:inset(0);
+  background:radial-gradient(ellipse at top right,rgba(180,83,9,0.08),transparent 70%);
+  pointer-events:none;z-index:4}
+
+/* ═══ KEYFRAMES ═══ */
+@keyframes cs-flicker{
+  0%{opacity:0.7}5%{opacity:0.4}10%{opacity:0.75}15%{opacity:0.6}20%{opacity:0.8}
+  50%{opacity:0.75}55%{opacity:0.5}60%{opacity:0.78}80%{opacity:0.72}100%{opacity:0.7}}
+@keyframes cs-stamp-in{
+  0%{transform:translate(-50%,-50%) rotate(-12deg) scale(2.5);opacity:0}
+  70%{transform:translate(-50%,-50%) rotate(-12deg) scale(0.95);opacity:1}
+  100%{transform:translate(-50%,-50%) rotate(-12deg) scale(1);opacity:1}}
+@keyframes cs-fade-up{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes cs-crack{0%{background-position:0 0}100%{background-position:100px 100px}}
+@keyframes cs-tally-scratch{0%{clip-path:inset(0 100% 0 0)}100%{clip-path:inset(0 0 0 0)}}
+
+/* ═══ prefers-reduced-motion ═══ */
+@media (prefers-reduced-motion:reduce){
+  .cs-shell::before,.cs-fluorescent{animation:none !important}
+  .cs-ev,.cs-stamp,.cs-tally,.cs-mugshot.vomited::after{animation:none !important;transition:none !important}
+}
+</style>
+<div class="cs-shell">
+  <div class="cs-bar-top"></div>
+  <div class="cs-fluorescent"></div>
+  <div class="cs-header">
+    <div>
+      <div class="cs-title">THE CHEFSHANK REDEMPTION</div>
+      <div class="cs-subtitle">Cook &middot; Eat &middot; Dig</div>
+    </div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:2px;font-family:'Black Ops One',cursive">EPISODE ${ep?.num || '?'}</div>
+  </div>
+  ${content}
+</div>`;
+}
+
+// ── VP helpers ─────────────────────────────────────────────────────────────
+
+function _csMugshot(name, size = 64) {
+  const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  const outerWidth = size + 16;
+  const idx = name.charCodeAt(0) % 99 + 1;
+  return `<div class="cs-mugshot" style="width:${outerWidth}px">
+    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;border-radius:1px" onerror="this.style.display='none'">
+    <div class="cs-mugshot-name" style="max-width:${size}px">${name}</div>
+    <div class="cs-mugshot-id">INMATE #${String(idx).padStart(2, '0')}</div>
+  </div>`;
+}
+
+function _csSideMugshot(name, size = 32, extraClass = '') {
+  const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  return `<div class="cs-mugshot sm ${extraClass}" style="width:${size + 8}px;flex-shrink:0">
+    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;border-radius:1px" onerror="this.style.display='none'">
+    <div class="cs-mugshot-name">${name}</div>
+  </div>`;
+}
+
+function _csSmallPortrait(name, size = 44) {
+  const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  return `<div style="width:${size}px;height:${size}px;flex-shrink:0;border-radius:2px;overflow:hidden;border:2px solid var(--cs-bar);box-shadow:0 2px 6px rgba(0,0,0,0.5)">
+    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;object-fit:cover;filter:contrast(1.05) brightness(0.95)" onerror="this.style.display='none'">
+  </div>`;
+}
+
+function _csStamp(text, color = 'red') {
+  return `<span class="cs-stamp ${color}">${text}</span>`;
+}
+
+function _csTally(num) {
+  return `<span class="cs-tally">${num}</span>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Title Card
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function rpBuildChefshankTitleCard(ep) {
+  const cs = ep.chefshank;
+  if (!cs) return '';
+  const tribeNames = Object.keys(cs.tribeScores || {});
+  const host = seasonConfig.host || 'Chris';
+
+  const quotes = [
+    `"Welcome to the toughest challenge in Total Drama history. Today, you eat what they cook — and you dig for your freedom."`,
+    `"Two phases. Phase 1: Prison Food — cook the slop, force the enemy to eat it. Phase 2: Prison Break — four obstacles and a tunnel. First tribe out wins."`,
+    `"You're all inmates now. Cook. Eat. Dig. Or don't — and face tribal council."`,
+  ];
+  const quote = quotes[(ep.num || 0) % quotes.length];
+
+  return _csShell(`
+    <div style="text-align:center;padding:50px 20px 80px;position:relative;z-index:6;">
+      <div style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:4px;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:12px;">${host} Presents</div>
+
+      <div style="font-family:'Black Ops One',cursive;font-size:38px;color:var(--cs-chain);text-shadow:3px 3px 0 rgba(0,0,0,0.6);letter-spacing:4px;line-height:1.1;margin-bottom:6px;">THE CHEFSHANK<br>REDEMPTION</div>
+
+      <div style="font-family:'Black Ops One',cursive;font-size:13px;letter-spacing:6px;color:var(--cs-rust);text-shadow:1px 1px 0 rgba(0,0,0,0.4);margin-bottom:20px;">COOK &middot; EAT &middot; DIG</div>
+
+      <div style="display:inline-block;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);border:1px solid rgba(180,83,9,0.15);border-radius:8px;padding:14px 24px;margin-bottom:20px;">
+        <div style="font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:8px;">Warden's Briefing</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.7;font-style:italic;max-width:500px">${host}: ${quote}</div>
+      </div>
+
+      <div style="display:flex;gap:16px;justify-content:center;margin-bottom:16px;flex-wrap:wrap">
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(180,83,9,0.1);border-radius:6px;padding:10px 16px;text-align:center">
+          <div style="font-family:'Black Ops One',cursive;font-size:9px;letter-spacing:2px;color:var(--cs-rust)">PHASE 1</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px">Prison Food</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(180,83,9,0.1);border-radius:6px;padding:10px 16px;text-align:center">
+          <div style="font-family:'Black Ops One',cursive;font-size:9px;letter-spacing:2px;color:var(--cs-rust)">PHASE 2</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px">Prison Break</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:20px;justify-content:center;font-size:11px;color:rgba(255,255,255,0.4);flex-wrap:wrap;">
+        ${tribeNames.map(t => `<span>&#128681; ${t}</span>`).join('')}
+        <span>&#9939; 2 Phases</span>
+        ${cs.goldenShovel ? `<span>&#11088; Golden Shovel</span>` : ''}
+      </div>
+    </div>
+  `, ep);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Prison Food (eating duel)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function rpBuildChefshankPrisonFood(ep) {
+  const cs = ep.chefshank;
+  if (!cs?.prisonFood) return '';
+  const pf = cs.prisonFood;
+
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState['cs-food']) window._tvState['cs-food'] = { idx: -1 };
+  const revIdx = window._tvState['cs-food'].idx;
+
+  const tribeNames = Object.keys(cs.tribeScores || {});
+  const duelRounds = pf.duel?.rounds || [];
+
+  // Build feed steps: one per round
+  let feed = '';
+  const totalSteps = duelRounds.length;
+
+  for (let i = 0; i < totalSteps; i++) {
+    const rd = duelRounds[i];
+    const visible = i <= revIdx;
+
+    let roundHtml = `<div class="cs-ev round-header" style="${visible ? '' : 'display:none'}" id="cs-step-food-${i}">
+      <div style="flex:1;text-align:center">
+        <div class="cs-ev-badge gold">ROUND ${rd.round}</div>
+      </div>
+    </div>`;
+
+    // Events within this round
+    for (const evt of (rd.events || [])) {
+      const evtClass = evt.resistDelta > 0 ? 'positive' : evt.resistDelta < 0 ? 'negative' : '';
+      roundHtml += `<div class="cs-ev ${evtClass}" style="${visible ? '' : 'display:none'}" id="cs-step-food-${i}-evt">
+        ${_csSmallPortrait(evt.victim, 40)}
+        <div style="flex:1;min-width:0">
+          <div class="cs-ev-badge ${evt.resistDelta > 0 ? 'green' : evt.resistDelta < 0 ? 'red' : 'gray'}">${(evt.type || '').replace(/([A-Z])/g, ' $1').toUpperCase().trim()}</div>
+          <div class="cs-ev-text">${evt.text || ''}</div>
+          ${evt.resistDelta ? `<div style="font-size:10px;color:${evt.resistDelta > 0 ? '#86efac' : '#fca5a5'};margin-top:3px">Resistance ${evt.resistDelta > 0 ? '+' : ''}${evt.resistDelta.toFixed(2)}</div>` : ''}
+        </div>
+      </div>`;
+    }
+
+    // Vomit event
+    if (rd.vomited) {
+      roundHtml += `<div class="cs-ev vomit" style="${visible ? '' : 'display:none'}">
+        ${_csSmallPortrait(rd.vomited, 44)}
+        <div style="flex:1;text-align:center">
+          ${_csStamp('ELIMINATED', 'green')}
+          <div class="cs-ev-text" style="margin-top:8px"><strong>${rd.vomited}</strong> can't keep it down. Phase 1 is over.</div>
+        </div>
+      </div>`;
+    }
+
+    feed += roundHtml;
+  }
+
+  // Sidebar
+  const sidebar = _csBuildFoodSidebar(pf, revIdx, tribeNames);
+
+  // HUD
+  const hudCells = tribeNames.map(t => {
+    const victim = pf.victims?.[t] || '?';
+    const disgust = pf.cooking?.[t]?.disgustScore;
+    return `<div class="cs-hud-cell">
+      <div class="cs-hud-val">${_csTally(disgust != null ? disgust.toFixed(1) : '?')}</div>
+      <div class="cs-hud-lbl">${t} DISGUST</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px">Victim: ${victim}</div>
+    </div>`;
+  }).join('');
+
+  const pending = revIdx < totalSteps - 1;
+  const controls = `<div id="cs-controls-food" class="cs-controls" ${!pending && totalSteps ? 'style="display:none"' : ''}>
+    <button class="cs-btn-next" onclick="chefshankRevealNext('cs-food',${totalSteps})">NEXT ROUND</button>
+    <button class="cs-btn-all" onclick="chefshankRevealAll('cs-food',${totalSteps})">Reveal All</button>
+  </div>
+  <div id="cs-done-food" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:12px 0'}">
+    ${_csStamp(pf.duel?.winner ? pf.duel.winner + ' WINS PHASE 1' : 'PHASE COMPLETE', 'gold')}
+  </div>`;
+
+  return _csShell(`
+    <div class="cs-hud">${hudCells}</div>
+    <div class="cs-layout">
+      <div class="cs-feed">${feed}${controls}</div>
+      <div class="cs-sidebar" id="cs-sidebar-food">${sidebar}</div>
+    </div>
+  `, ep);
+}
+
+function _csBuildFoodSidebar(pf, revIdx, tribeNames) {
+  const duelRounds = pf.duel?.rounds || [];
+  const revealedRounds = duelRounds.slice(0, revIdx + 1);
+  let sidebar = '';
+
+  // Victims section
+  sidebar += `<div class="cs-side-sec">&#127860; EATING DUEL</div>`;
+  for (const tName of tribeNames) {
+    const victim = pf.victims?.[tName];
+    if (!victim) continue;
+    const disgust = pf.cooking?.[tName]?.disgustScore;
+    const isLoser = pf.duel?.loser === tName;
+    const vomitHappened = revealedRounds.some(r => r.vomited === victim);
+    sidebar += `<div style="margin-bottom:10px;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(180,83,9,0.1)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        ${_csSideMugshot(victim, 32, vomitHappened ? 'vomited' : '')}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;color:rgba(255,255,255,0.85);font-weight:600">${victim}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.4)">Eating for ${tName}</div>
+        </div>
+      </div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:2px">Disgust Level: ${disgust != null ? disgust.toFixed(2) : '?'}</div>
+      <div class="cs-resist-bar"><div class="cs-resist-fill" style="width:${Math.min(100, Math.max(5, (disgust || 0) * 100))}%;background:${(disgust || 0) > 0.5 ? '#ef4444' : '#f59e0b'}"></div></div>
+      ${vomitHappened ? `<div style="margin-top:4px">${_csStamp('SOLITARY', 'green')}</div>` : ''}
+    </div>`;
+  }
+
+  // Cooking events
+  sidebar += `<div class="cs-side-sec">&#127859; COOKING INTEL</div>`;
+  for (const tName of tribeNames) {
+    const cooking = pf.cooking?.[tName];
+    if (!cooking) continue;
+    sidebar += `<div style="font-size:10px;color:rgba(255,255,255,0.6);margin-bottom:4px"><strong>${tName}</strong> cooked: ${cooking.disgustScore?.toFixed(2) || '?'} disgust</div>`;
+    for (const evt of (cooking.events || [])) {
+      sidebar += `<div style="font-size:9px;color:rgba(255,255,255,0.4);padding-left:8px;margin-bottom:2px">&#8226; ${evt.actor}: ${(evt.type || '').replace(/([A-Z])/g, ' $1').trim()}</div>`;
+    }
+  }
+
+  // Round summary
+  sidebar += `<div class="cs-side-sec">&#128203; ROUND LOG</div>`;
+  for (const rd of revealedRounds) {
+    const evtCount = (rd.events || []).length;
+    sidebar += `<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:2px">R${rd.round}: ${evtCount} events${rd.vomited ? ` — ${rd.vomited} VOMITED` : ''}</div>`;
+  }
+
+  return sidebar;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Prison Break (obstacles + dig)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function rpBuildChefshankPrisonBreak(ep) {
+  const cs = ep.chefshank;
+  if (!cs?.prisonBreak) return '';
+  const pb = cs.prisonBreak;
+
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState['cs-break']) window._tvState['cs-break'] = { idx: -1 };
+  const revIdx = window._tvState['cs-break'].idx;
+
+  const tribes = pb.tribes || [];
+  const tribeNames = tribes.map(t => t.tribe);
+
+  // Build steps: first obstacles (interleaved per tribe), then dig rounds
+  const steps = [];
+
+  // Obstacles: 4 obstacles, interleaved across tribes
+  const obstacleNames = ['mudPit', 'barbedWire', 'guardTower', 'wallClimb'];
+  const obstacleLabels = { mudPit: 'Mud Pit', barbedWire: 'Barbed Wire', guardTower: 'Guard Tower', wallClimb: 'Wall Climb' };
+  for (let oi = 0; oi < obstacleNames.length; oi++) {
+    for (const td of tribes) {
+      const obs = (td.obstacles || [])[oi];
+      if (obs) steps.push({ type: 'obstacle', tribe: td.tribe, pusher: td.pusher, obstacle: obstacleLabels[obs.name] || obs.name, passed: obs.passed });
+    }
+  }
+
+  // Dig rounds: interleaved by tribe
+  const maxDigRounds = Math.max(...tribes.map(t => t.digRounds || 0));
+  for (let di = 0; di < maxDigRounds; di++) {
+    for (const td of tribes) {
+      if (di < (td.digRounds || 0)) {
+        const dist = (td.roundDistances || [])[di];
+        steps.push({ type: 'dig', tribe: td.tribe, round: di + 1, distance: dist, totalSoFar: (td.roundDistances || []).slice(0, di + 1).reduce((s, v) => s + v, 0) });
+      }
+    }
+  }
+
+  const totalSteps = steps.length;
+
+  // Feed
+  let feed = '';
+  for (let i = 0; i < totalSteps; i++) {
+    const s = steps[i];
+    const visible = i <= revIdx;
+
+    if (s.type === 'obstacle') {
+      const evClass = s.passed ? 'positive obstacle' : 'negative obstacle';
+      feed += `<div id="cs-step-break-${i}" class="cs-ev ${evClass}" style="${visible ? '' : 'display:none'}">
+        ${_csSmallPortrait(s.pusher, 44)}
+        <div style="flex:1;min-width:0">
+          <div class="cs-ev-badge ${s.passed ? 'green' : 'red'}">${s.tribe} &mdash; ${s.obstacle}</div>
+          <div class="cs-ev-text"><strong>${s.pusher}</strong> ${s.passed ? 'clears' : 'fails'} the ${s.obstacle.toLowerCase()}.</div>
+          <div style="margin-top:4px">${s.passed ? _csStamp('CLEAR', 'green') : _csStamp('PENALTY', 'red')}</div>
+        </div>
+      </div>`;
+    } else {
+      feed += `<div id="cs-step-break-${i}" class="cs-ev tunnel" style="${visible ? '' : 'display:none'}">
+        <div style="flex:1;min-width:0">
+          <div class="cs-ev-badge gold">${s.tribe} &mdash; DIG ROUND ${s.round}</div>
+          <div class="cs-ev-text">Distance this round: <strong>${(s.distance || 0).toFixed(3)}</strong> &mdash; Total: ${(s.totalSoFar || 0).toFixed(3)}</div>
+          <div class="cs-dig-bar" style="margin-top:6px"><div class="cs-dig-fill" style="width:${Math.min(100, ((s.totalSoFar || 0) / Math.max(...tribes.map(t => t.totalDistance || 1))) * 100)}%"></div></div>
+        </div>
+      </div>`;
+    }
+  }
+
+  // Sidebar
+  const sidebar = _csBuildBreakSidebar(pb, revIdx, steps);
+
+  // HUD
+  const hudCells = tribes.map(td => {
+    const cleared = (td.obstacles || []).filter(o => o.passed).length;
+    return `<div class="cs-hud-cell">
+      <div class="cs-hud-val">${_csTally(td.totalDistance?.toFixed(1) || '0')}</div>
+      <div class="cs-hud-lbl">${td.tribe}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px">${cleared}/4 obs &middot; ${td.digRounds || 0}R</div>
+    </div>`;
+  }).join('');
+  const shovelCell = `<div class="cs-hud-cell">
+    <div class="cs-hud-val" style="font-size:14px">&#9935;</div>
+    <div class="cs-hud-lbl">GOLDEN SHOVEL</div>
+    <div style="font-size:9px;color:var(--cs-rust);margin-top:2px">${pb.shovelTeam || 'None'}</div>
+  </div>`;
+
+  const pending = revIdx < totalSteps - 1;
+  const controls = `<div id="cs-controls-break" class="cs-controls" ${!pending && totalSteps ? 'style="display:none"' : ''}>
+    <button class="cs-btn-next" onclick="chefshankRevealNext('cs-break',${totalSteps})">NEXT STEP</button>
+    <button class="cs-btn-all" onclick="chefshankRevealAll('cs-break',${totalSteps})">Reveal All</button>
+  </div>
+  <div id="cs-done-break" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:12px 0'}">
+    ${_csStamp(pb.winner ? pb.winner + ' BREAKS FREE' : 'PHASE COMPLETE', 'gold')}
+  </div>`;
+
+  return _csShell(`
+    <div class="cs-hud">${hudCells}${shovelCell}</div>
+    <div class="cs-layout">
+      <div class="cs-feed">${feed}${controls}</div>
+      <div class="cs-sidebar" id="cs-sidebar-break">${sidebar}</div>
+    </div>
+  `, ep);
+}
+
+function _csBuildBreakSidebar(pb, revIdx, steps) {
+  const tribes = pb.tribes || [];
+  const revealedSteps = steps ? steps.slice(0, revIdx + 1) : [];
+  let sidebar = '';
+
+  for (const td of tribes) {
+    const isShovel = pb.shovelTeam === td.tribe;
+    sidebar += `<div class="cs-side-sec">${td.tribe}${isShovel ? ' &#9935;' : ''}</div>`;
+
+    // Pusher
+    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;margin-bottom:6px">
+      ${_csSideMugshot(td.pusher, 28)}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;color:rgba(255,255,255,0.8)">${td.pusher}</div>
+        <div style="font-size:8px;color:var(--cs-rust);letter-spacing:1px">PUSHER</div>
+      </div>
+    </div>`;
+
+    // Obstacle icons
+    const revealedObstacles = revealedSteps.filter(s => s.type === 'obstacle' && s.tribe === td.tribe);
+    sidebar += `<div style="display:flex;gap:4px;margin-bottom:6px">`;
+    for (let oi = 0; oi < 4; oi++) {
+      const revObs = revealedObstacles[oi];
+      const icon = revObs == null ? '&#10067;' : revObs.passed ? '&#9989;' : '&#10060;';
+      sidebar += `<span style="font-size:14px">${icon}</span>`;
+    }
+    sidebar += `</div>`;
+
+    // Dig progress
+    const revealedDigs = revealedSteps.filter(s => s.type === 'dig' && s.tribe === td.tribe);
+    const revealedDist = revealedDigs.length > 0 ? revealedDigs[revealedDigs.length - 1].totalSoFar || 0 : 0;
+    const maxDist = Math.max(...tribes.map(t => t.totalDistance || 1));
+    const pct = Math.min(100, (revealedDist / maxDist) * 100);
+
+    sidebar += `<div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:2px">Dig: ${revealedDist.toFixed(2)} / ${(td.totalDistance || 0).toFixed(2)}</div>`;
+    sidebar += `<div class="cs-dig-bar"><div class="cs-dig-fill" style="width:${pct}%"></div></div>`;
+    sidebar += `<div style="font-size:8px;color:rgba(255,255,255,0.3);margin-top:2px">${revealedDigs.length}/${td.digRounds || 0} rounds dug</div>`;
+  }
+
+  return sidebar;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Drama Break (Yard Time)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function rpBuildChefshankDramaBreak(ep) {
+  const cs = ep.chefshank;
+  if (!cs) return '';
+  const events = cs.breakEvents;
+  if (!events?.length) return '';
+
+  let feed = '';
+  for (const evt of events) {
+    const firstPlayer = (evt.players || [])[0];
+    feed += `<div class="cs-ev ${evt.badgeClass || ''}">
+      ${firstPlayer ? _csSmallPortrait(firstPlayer, 44) : ''}
+      <div style="flex:1;min-width:0">
+        <div class="cs-ev-badge ${evt.badgeClass || 'gray'}">${evt.badge || 'YARD TIME'}</div>
+        <div class="cs-ev-text">${evt.text || ''}</div>
+        ${(evt.players || []).length > 1 ? `<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">${evt.players.slice(1).map(n => {
+          const s = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
+          return `<img src="assets/avatars/${s}.png" width="24" height="24" style="border-radius:2px;border:1px solid var(--cs-bar);filter:contrast(1.05) brightness(0.95)" title="${n}" onerror="this.style.display='none'">`;
+        }).join('')}</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  return _csShell(`
+    <div style="padding:12px 14px;position:relative;z-index:6">
+      <div style="text-align:center;font-family:'Black Ops One',cursive;font-size:13px;color:var(--cs-rust);letter-spacing:4px;margin-bottom:12px">YARD TIME</div>
+      ${feed}
+    </div>
+  `, ep);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Results (The Verdict)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function rpBuildChefshankResults(ep) {
+  const cs = ep.chefshank;
+  if (!cs) return '';
+
+  const tribeScores = cs.tribeScores || {};
+  const sorted = Object.entries(tribeScores).sort((a, b) => b[1] - a[1]);
+  const winnerTribe = sorted[0]?.[0] || '???';
+  const tribeNames = Object.keys(tribeScores);
+
+  // Phase scoreboard
+  const phaseData = [
+    { label: 'PRISON FOOD', winner: cs.prisonFood?.duel?.winner },
+    { label: 'PRISON BREAK', winner: cs.prisonBreak?.winner },
+  ];
+
+  let chalkRows = phaseData.map(ph => {
+    const cells = tribeNames.map(t => {
+      const isWinner = ph.winner === t;
+      return `<td style="padding:6px 12px;text-align:center">${_csTally(isWinner ? 'W' : 'L')}</td>`;
+    }).join('');
+    return `<tr><td style="padding:6px 12px;text-align:left;font-family:'Black Ops One',cursive;font-size:9px;letter-spacing:2px;color:var(--cs-rust)">${ph.label}</td>${cells}</tr>`;
+  }).join('');
+
+  const headerCells = tribeNames.map(t =>
+    `<th style="padding:6px 12px;text-align:center;font-family:'Black Ops One',cursive;font-size:9px;letter-spacing:2px;color:var(--cs-chain)">${t}</th>`
+  ).join('');
+
+  const totalCells = tribeNames.map(t =>
+    `<td style="padding:8px 12px;text-align:center;border-top:2px solid rgba(180,83,9,0.3)">${_csTally(tribeScores[t])}</td>`
+  ).join('');
+
+  const scoreboard = `<div style="background:linear-gradient(135deg,rgba(15,23,42,0.9),rgba(30,41,59,0.8));border:2px solid var(--cs-bar);border-radius:4px;padding:12px;margin:12px 14px;box-shadow:inset 0 0 20px rgba(0,0,0,0.4)">
+    <table style="width:100%;border-collapse:collapse;color:var(--cs-chain)">
+      <thead><tr><th></th>${headerCells}</tr></thead>
+      <tbody>${chalkRows}
+        <tr><td style="padding:8px 12px;font-family:'Black Ops One',cursive;font-size:9px;letter-spacing:2px;color:var(--cs-chain);border-top:2px solid rgba(180,83,9,0.3)">TOTAL</td>${totalCells}</tr>
+      </tbody>
+    </table>
+  </div>`;
+
+  // Dig distance comparison
+  let digCompare = '';
+  if (cs.prisonBreak?.tribes) {
+    digCompare = `<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:0 14px 12px">`;
+    for (const td of cs.prisonBreak.tribes) {
+      const pct = Math.min(100, (td.totalDistance / Math.max(...cs.prisonBreak.tribes.map(t => t.totalDistance || 1))) * 100);
+      const isWinner = cs.prisonBreak.winner === td.tribe;
+      digCompare += `<div style="flex:1;min-width:120px;max-width:250px;background:rgba(0,0,0,0.3);border:1px solid ${isWinner ? 'rgba(180,83,9,0.3)' : 'rgba(107,114,128,0.15)'};border-radius:6px;padding:10px;text-align:center">
+        <div style="font-family:'Black Ops One',cursive;font-size:10px;color:${isWinner ? 'var(--cs-rust)' : 'rgba(255,255,255,0.4)'};letter-spacing:2px;margin-bottom:4px">${td.tribe}</div>
+        <div style="font-size:20px;font-weight:900;color:${isWinner ? 'var(--cs-chain)' : 'rgba(255,255,255,0.5)'}">${td.totalDistance.toFixed(2)}</div>
+        <div class="cs-dig-bar" style="margin-top:6px"><div class="cs-dig-fill" style="width:${pct}%"></div></div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:4px">${(td.obstacles || []).filter(o => o.passed).length}/4 obstacles &middot; ${td.digRounds}R</div>
+      </div>`;
+    }
+    digCompare += `</div>`;
+  }
+
+  // Standout mugshots
+  let standouts = '<div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;padding:8px 14px">';
+  // Golden shovel
+  if (cs.goldenShovel) {
+    standouts += `<div style="text-align:center"><div style="font-size:9px;color:var(--cs-rust);letter-spacing:2px;font-family:'Black Ops One',cursive;margin-bottom:4px">GOLDEN SHOVEL</div>${_csStamp(cs.goldenShovel, 'gold')}</div>`;
+  }
+  // Phase 1 survivor
+  if (cs.prisonFood?.duel?.winner) {
+    const winTribe = cs.prisonFood.duel.winner;
+    const survivor = cs.prisonFood.victims?.[winTribe];
+    if (survivor) {
+      standouts += `<div style="text-align:center">${_csMugshot(survivor, 56)}<div style="margin-top:4px">${_csStamp('SURVIVED', 'green')}</div></div>`;
+    }
+  }
+  // Phase 1 casualty
+  if (cs.prisonFood?.duel?.loser) {
+    const loseTribe = cs.prisonFood.duel.loser;
+    const casualty = cs.prisonFood.victims?.[loseTribe];
+    if (casualty) {
+      standouts += `<div style="text-align:center">${_csMugshot(casualty, 56)}<div style="margin-top:4px">${_csStamp('SOLITARY', 'red')}</div></div>`;
+    }
+  }
+  standouts += '</div>';
+
+  // Winner banner
+  const winnerBanner = `<div style="text-align:center;padding:20px 0;position:relative;z-index:6">
+    <div style="font-family:'Black Ops One',cursive;font-size:30px;color:var(--cs-chain);letter-spacing:4px;text-shadow:0 0 20px rgba(168,162,158,0.3),3px 3px 0 rgba(0,0,0,0.6)">${winnerTribe}</div>
+    <div style="font-family:'Black Ops One',cursive;font-size:11px;letter-spacing:6px;color:var(--cs-rust);margin-top:4px">BREAKS FREE</div>
+    <div style="margin-top:10px">${_csStamp('IMMUNITY', 'gold')}</div>
+  </div>`;
+
+  // Player leaderboard
+  const scores = Object.entries(ep.chalMemberScores || {}).sort((a, b) => b[1] - a[1]);
+  let leaderboard = '<div style="padding:0 14px 16px">';
+  leaderboard += '<div class="cs-side-sec" style="text-align:center">INMATE RECORD</div>';
+  leaderboard += '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">';
+  for (const [name, score] of scores) {
+    leaderboard += `<div style="text-align:center">${_csMugshot(name, 56)}<div style="margin-top:4px;font-size:10px;color:var(--cs-chain)">${_csTally(score)}</div></div>`;
+  }
+  leaderboard += '</div></div>';
+
+  return _csShell(`
+    ${winnerBanner}
+    ${scoreboard}
+    ${digCompare}
+    ${standouts}
+    ${leaderboard}
+  `, ep);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VP — Reveal functions
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function chefshankRevealNext(screenKey, totalSteps) {
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState[screenKey]) window._tvState[screenKey] = { idx: -1 };
+  const state = window._tvState[screenKey];
+  if (state.idx >= totalSteps - 1) return;
+  state.idx++;
+  const suffix = screenKey.replace('cs-', '');
+  const el = document.getElementById(`cs-step-${suffix}-${state.idx}`);
+  if (el) {
+    el.style.display = '';
+    // Also show child event cards for food rounds
+    let sib = el.nextElementSibling;
+    while (sib && sib.id && sib.id.startsWith(`cs-step-${suffix}-${state.idx}-`)) {
+      sib.style.display = '';
+      sib = sib.nextElementSibling;
+    }
+    // For food: also show non-indexed event/vomit cards in this round block
+    if (suffix === 'food') {
+      sib = el.nextElementSibling;
+      while (sib && !sib.id?.match(/^cs-step-food-\d+$/)) {
+        sib.style.display = '';
+        sib = sib.nextElementSibling;
+      }
+    }
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  if (state.idx >= totalSteps - 1) {
+    const controls = document.getElementById(`cs-controls-${suffix}`);
+    const done = document.getElementById(`cs-done-${suffix}`);
+    if (controls) controls.style.display = 'none';
+    if (done) done.style.display = '';
+  }
+  _csUpdateSidebar(screenKey, state.idx);
+}
+
+export function chefshankRevealAll(screenKey, totalSteps) {
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState[screenKey]) window._tvState[screenKey] = { idx: -1 };
+  const state = window._tvState[screenKey];
+  const suffix = screenKey.replace('cs-', '');
+  for (let i = state.idx + 1; i < totalSteps; i++) {
+    const el = document.getElementById(`cs-step-${suffix}-${i}`);
+    if (el) el.style.display = '';
+  }
+  // Show all hidden children too
+  const feed = document.querySelector('.cs-feed');
+  if (feed) {
+    feed.querySelectorAll('[style*="display:none"], [style*="display: none"]').forEach(el => { el.style.display = ''; });
+  }
+  state.idx = totalSteps - 1;
+  const controls = document.getElementById(`cs-controls-${suffix}`);
+  const done = document.getElementById(`cs-done-${suffix}`);
+  if (controls) controls.style.display = 'none';
+  if (done) done.style.display = '';
+  const last = document.getElementById(`cs-step-${suffix}-${totalSteps - 1}`);
+  if (last) last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  _csUpdateSidebar(screenKey, totalSteps - 1);
+}
+
+function _csUpdateSidebar(screenKey, revIdx) {
+  const ep = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+  if (!ep?.chefshank) return;
+  const cs = ep.chefshank;
+  const tribeNames = Object.keys(cs.tribeScores || {});
+
+  if (screenKey === 'cs-food' && cs.prisonFood) {
+    const sideEl = document.getElementById('cs-sidebar-food');
+    if (sideEl) sideEl.innerHTML = _csBuildFoodSidebar(cs.prisonFood, revIdx, tribeNames);
+  }
+  if (screenKey === 'cs-break' && cs.prisonBreak) {
+    const sideEl = document.getElementById('cs-sidebar-break');
+    // Rebuild steps for sidebar calculation
+    const tribes = cs.prisonBreak.tribes || [];
+    const steps = [];
+    const obstacleNames = ['mudPit', 'barbedWire', 'guardTower', 'wallClimb'];
+    for (let oi = 0; oi < obstacleNames.length; oi++) {
+      for (const td of tribes) {
+        const obs = (td.obstacles || [])[oi];
+        if (obs) steps.push({ type: 'obstacle', tribe: td.tribe, pusher: td.pusher, passed: obs.passed });
+      }
+    }
+    const maxDigRounds = Math.max(...tribes.map(t => t.digRounds || 0));
+    for (let di = 0; di < maxDigRounds; di++) {
+      for (const td of tribes) {
+        if (di < (td.digRounds || 0)) {
+          steps.push({ type: 'dig', tribe: td.tribe, round: di + 1, distance: (td.roundDistances || [])[di], totalSoFar: (td.roundDistances || []).slice(0, di + 1).reduce((s, v) => s + v, 0) });
+        }
+      }
+    }
+    if (sideEl) sideEl.innerHTML = _csBuildBreakSidebar(cs.prisonBreak, revIdx, steps);
+  }
+}

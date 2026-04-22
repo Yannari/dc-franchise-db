@@ -1991,24 +1991,56 @@ export function rpBuildChefshankPrisonFood(ep) {
   const tribeNames = Object.keys(cs.tribeScores || {});
   const duelRounds = pf.duel?.rounds || [];
 
-  // Build feed steps: one per round
+  // Steps: [victim draft per tribe] + [cooking per tribe] + [eating rounds]
   let feed = '';
-  const totalSteps = duelRounds.length;
+  let stepIdx = 0;
 
-  for (let i = 0; i < totalSteps; i++) {
-    const rd = duelRounds[i];
-    const visible = i <= revIdx;
-
-    let roundHtml = `<div class="cs-ev round-header" style="${visible ? '' : 'display:none'}" id="cs-step-food-${i}">
-      <div style="flex:1;text-align:center">
-        <div class="cs-ev-badge gold">ROUND ${rd.round}</div>
+  // Step 0: Victim Draft — who each tribe picked to eat and why
+  let draftHtml = `<div class="cs-ev round-header"><div style="flex:1;text-align:center"><div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--cs-rust);letter-spacing:3px">VICTIM SELECTION</div><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px">Each tribe picks an enemy to eat their cooking</div></div></div>`;
+  for (const tName of tribeNames) {
+    const victim = pf.victims?.[tName];
+    if (!victim) continue;
+    const vSt = pStats(victim);
+    const enemyTribe = tribeNames.find(t => t !== tName);
+    draftHtml += `<div class="cs-ev">
+      ${_csSmallPortrait(victim, 44)}
+      <div style="flex:1;min-width:0">
+        <div class="cs-ev-badge orange">${tName} SELECTS</div>
+        <div class="cs-ev-text"><strong>${victim}</strong> has been chosen to eat <strong>${enemyTribe || 'enemy'}</strong>'s prison slop. Endurance: ${vSt.endurance}/10. Boldness: ${vSt.boldness}/10.</div>
       </div>
+      ${_csStamp('CHOSEN', 'rust')}
     </div>`;
+  }
+  feed += `<div id="cs-step-food-${stepIdx}" style="${stepIdx <= revIdx ? '' : 'display:none'}">${draftHtml}</div>`;
+  stepIdx++;
 
-    // Events within this round
+  // Step 1: Cooking Phase — what each tribe cooked + events
+  for (const tName of tribeNames) {
+    const cooking = pf.cooking?.[tName];
+    if (!cooking) continue;
+    let cookHtml = `<div class="cs-ev round-header"><div style="flex:1;text-align:center"><div class="cs-ev-badge gold">${tName}'s KITCHEN</div><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px">Disgust Score: ${cooking.disgustScore?.toFixed(2) || '?'}</div></div></div>`;
+    for (const evt of (cooking.events || [])) {
+      const evtClass = evt.type === 'sabotageIngredient' ? 'negative' : evt.type === 'accidentalImprovement' ? 'positive' : '';
+      cookHtml += `<div class="cs-ev ${evtClass}">
+        ${evt.actor ? _csSmallPortrait(evt.actor, 36) : ''}
+        <div style="flex:1;min-width:0">
+          <div class="cs-ev-badge ${evt.type === 'sabotageIngredient' ? 'red' : evt.type === 'accidentalImprovement' ? 'green' : 'orange'}">${(evt.type || '').replace(/([A-Z])/g, ' $1').toUpperCase().trim()}</div>
+          <div class="cs-ev-text">${evt.text || ''}</div>
+        </div>
+      </div>`;
+    }
+    feed += `<div id="cs-step-food-${stepIdx}" style="${stepIdx <= revIdx ? '' : 'display:none'}">${cookHtml}</div>`;
+    stepIdx++;
+  }
+
+  // Steps 2+: Eating rounds
+  for (let i = 0; i < duelRounds.length; i++) {
+    const rd = duelRounds[i];
+    let roundHtml = `<div class="cs-ev round-header"><div style="flex:1;text-align:center"><div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--cs-rust);letter-spacing:3px">ROUND ${rd.round}</div></div></div>`;
+
     for (const evt of (rd.events || [])) {
       const evtClass = evt.resistDelta > 0 ? 'positive' : evt.resistDelta < 0 ? 'negative' : '';
-      roundHtml += `<div class="cs-ev ${evtClass}" style="${visible ? '' : 'display:none'}" id="cs-step-food-${i}-evt">
+      roundHtml += `<div class="cs-ev ${evtClass}">
         ${_csSmallPortrait(evt.victim, 40)}
         <div style="flex:1;min-width:0">
           <div class="cs-ev-badge ${evt.resistDelta > 0 ? 'green' : evt.resistDelta < 0 ? 'red' : 'gray'}">${(evt.type || '').replace(/([A-Z])/g, ' $1').toUpperCase().trim()}</div>
@@ -2018,9 +2050,8 @@ export function rpBuildChefshankPrisonFood(ep) {
       </div>`;
     }
 
-    // Vomit event
     if (rd.vomited) {
-      roundHtml += `<div class="cs-ev vomit" style="${visible ? '' : 'display:none'}">
+      roundHtml += `<div class="cs-ev vomit">
         ${_csSmallPortrait(rd.vomited, 44)}
         <div style="flex:1;text-align:center">
           ${_csStamp('ELIMINATED', 'green')}
@@ -2029,30 +2060,32 @@ export function rpBuildChefshankPrisonFood(ep) {
       </div>`;
     }
 
-    feed += roundHtml;
+    feed += `<div id="cs-step-food-${stepIdx}" style="${stepIdx <= revIdx ? '' : 'display:none'}">${roundHtml}</div>`;
+    stepIdx++;
   }
 
-  // Sidebar
-  const sidebar = _csBuildFoodSidebar(pf, revIdx, tribeNames);
+  const totalSteps = stepIdx;
 
-  // HUD
+  // Sidebar — only show revealed info
+  const sidebar = _csBuildFoodSidebar(pf, revIdx, tribeNames, totalSteps);
+
+  // HUD — minimal, no spoilers
+  const revealedEnough = revIdx >= 1; // after draft
   const hudCells = tribeNames.map(t => {
-    const victim = pf.victims?.[t] || '?';
-    const disgust = pf.cooking?.[t]?.disgustScore;
+    const victim = revIdx >= 0 ? (pf.victims?.[t] || '?') : '?';
     return `<div class="cs-hud-cell">
-      <div class="cs-hud-val">${_csTally(disgust != null ? disgust.toFixed(1) : '?')}</div>
-      <div class="cs-hud-lbl">${t} DISGUST</div>
-      <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px">Victim: ${victim}</div>
+      <div class="cs-hud-val">${_csTally(victim === '?' ? '?' : victim.split(' ')[0])}</div>
+      <div class="cs-hud-lbl">${t}</div>
     </div>`;
   }).join('');
 
   const pending = revIdx < totalSteps - 1;
   const controls = `<div id="cs-controls-food" class="cs-controls" ${!pending && totalSteps ? 'style="display:none"' : ''}>
-    <button class="cs-btn-next" onclick="chefshankRevealNext('cs-food',${totalSteps})">NEXT ROUND</button>
+    <button class="cs-btn-next" onclick="chefshankRevealNext('cs-food',${totalSteps})">NEXT</button>
     <button class="cs-btn-all" onclick="chefshankRevealAll('cs-food',${totalSteps})">Reveal All</button>
   </div>
   <div id="cs-done-food" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:12px 0'}">
-    ${_csStamp(pf.duel?.winner ? pf.duel.winner + ' WINS PHASE 1' : 'PHASE COMPLETE', 'gold')}
+    ${_csStamp(pf.duel?.winner ? pf.duel.winner + ' WINS PHASE 1 — GOLDEN SHOVEL EARNED' : 'PHASE COMPLETE', 'gold')}
   </div>`;
 
   return _csShell(`
@@ -2064,49 +2097,62 @@ export function rpBuildChefshankPrisonFood(ep) {
   `, ep);
 }
 
-function _csBuildFoodSidebar(pf, revIdx, tribeNames) {
+function _csBuildFoodSidebar(pf, revIdx, tribeNames, totalSteps) {
+  // Steps layout: [0: draft] [1..N: cooking per tribe] [N+1..: eating rounds]
+  const numTribes = tribeNames.length;
+  const draftRevealed = revIdx >= 0;
+  const cookingStartIdx = 1;
+  const eatingStartIdx = cookingStartIdx + numTribes;
   const duelRounds = pf.duel?.rounds || [];
-  const revealedRounds = duelRounds.slice(0, revIdx + 1);
+
   let sidebar = '';
 
-  // Victims section
-  sidebar += `<div class="cs-side-sec">&#127860; EATING DUEL</div>`;
-  for (const tName of tribeNames) {
-    const victim = pf.victims?.[tName];
-    if (!victim) continue;
-    const disgust = pf.cooking?.[tName]?.disgustScore;
-    const isLoser = pf.duel?.loser === tName;
-    const vomitHappened = revealedRounds.some(r => r.vomited === victim);
-    sidebar += `<div style="margin-bottom:10px;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(180,83,9,0.1)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        ${_csSideMugshot(victim, 32, vomitHappened ? 'vomited' : '')}
+  // Victims — only after draft revealed
+  if (draftRevealed) {
+    sidebar += `<div class="cs-side-sec">&#127860; VICTIMS</div>`;
+    for (const tName of tribeNames) {
+      const victim = pf.victims?.[tName];
+      if (!victim) continue;
+      const cookingRevealed = revIdx >= cookingStartIdx + tribeNames.indexOf(tName);
+      const eatingRevealed = revIdx >= eatingStartIdx;
+      const revealedEatingRounds = eatingRevealed ? duelRounds.slice(0, revIdx - eatingStartIdx + 1) : [];
+      const vomitHappened = revealedEatingRounds.some(r => r.vomited === victim);
+      sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;color:rgba(255,255,255,0.8)">
+        ${_csSideMugshot(victim, 28, vomitHappened ? 'vomited' : '')}
         <div style="flex:1;min-width:0">
-          <div style="font-size:11px;color:rgba(255,255,255,0.85);font-weight:600">${victim}</div>
-          <div style="font-size:9px;color:rgba(255,255,255,0.4)">Eating for ${tName}</div>
+          <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${victim}</div>
+          <div style="font-size:8px;color:rgba(255,255,255,0.4)">Eating for ${tName}</div>
         </div>
-      </div>
-      <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:2px">Disgust Level: ${disgust != null ? disgust.toFixed(2) : '?'}</div>
-      <div class="cs-resist-bar"><div class="cs-resist-fill" style="width:${Math.min(100, Math.max(5, (disgust || 0) * 100))}%;background:${(disgust || 0) > 0.5 ? '#ef4444' : '#f59e0b'}"></div></div>
-      ${vomitHappened ? `<div style="margin-top:4px">${_csStamp('SOLITARY', 'green')}</div>` : ''}
-    </div>`;
+        ${vomitHappened ? `<span style="font-size:8px;color:#4ade80">VOMITED</span>` : eatingRevealed ? `<span style="font-size:8px;color:rgba(255,255,255,0.3)">holding...</span>` : ''}
+      </div>`;
+    }
+  } else {
+    sidebar += `<div class="cs-side-sec">&#127860; VICTIMS</div>`;
+    sidebar += `<div style="font-size:10px;color:rgba(255,255,255,0.3);font-style:italic;padding:4px 0">Awaiting selection...</div>`;
   }
 
-  // Cooking events
-  sidebar += `<div class="cs-side-sec">&#127859; COOKING INTEL</div>`;
-  for (const tName of tribeNames) {
+  // Cooking intel — only after cooking steps revealed
+  for (let ti = 0; ti < tribeNames.length; ti++) {
+    const tName = tribeNames[ti];
+    if (revIdx < cookingStartIdx + ti) continue;
     const cooking = pf.cooking?.[tName];
     if (!cooking) continue;
-    sidebar += `<div style="font-size:10px;color:rgba(255,255,255,0.6);margin-bottom:4px"><strong>${tName}</strong> cooked: ${cooking.disgustScore?.toFixed(2) || '?'} disgust</div>`;
+    sidebar += `<div class="cs-side-sec">&#127859; ${tName.toUpperCase()}'S KITCHEN</div>`;
+    sidebar += `<div style="font-size:9px;color:rgba(255,255,255,0.5);margin-bottom:4px">Disgust: ${cooking.disgustScore?.toFixed(2)}</div>`;
     for (const evt of (cooking.events || [])) {
-      sidebar += `<div style="font-size:9px;color:rgba(255,255,255,0.4);padding-left:8px;margin-bottom:2px">&#8226; ${evt.actor}: ${(evt.type || '').replace(/([A-Z])/g, ' $1').trim()}</div>`;
+      const icon = evt.type === 'sabotageIngredient' ? '☠️' : evt.type === 'accidentalImprovement' ? '🧂' : evt.type === 'foreignObject' ? '🦷' : '🤫';
+      sidebar += `<div style="font-size:9px;color:rgba(255,255,255,0.4);padding-left:4px;margin-bottom:2px">${icon} ${evt.actor || '?'}</div>`;
     }
   }
 
-  // Round summary
-  sidebar += `<div class="cs-side-sec">&#128203; ROUND LOG</div>`;
-  for (const rd of revealedRounds) {
-    const evtCount = (rd.events || []).length;
-    sidebar += `<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:2px">R${rd.round}: ${evtCount} events${rd.vomited ? ` — ${rd.vomited} VOMITED` : ''}</div>`;
+  // Round log — only revealed eating rounds
+  if (revIdx >= eatingStartIdx) {
+    sidebar += `<div class="cs-side-sec">&#128203; ROUND LOG</div>`;
+    const revealedEatingRounds = duelRounds.slice(0, revIdx - eatingStartIdx + 1);
+    for (const rd of revealedEatingRounds) {
+      const evtCount = (rd.events || []).length;
+      sidebar += `<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:2px">R${rd.round}: ${evtCount} events${rd.vomited ? ` — ${rd.vomited} VOMITED` : ''}</div>`;
+    }
   }
 
   return sidebar;

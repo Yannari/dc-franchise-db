@@ -1826,8 +1826,35 @@ export function rpBuildOneFluStudySleep(ep) {
   if (!of?.studySleep) return '';
   const ss = of.studySleep.tribes || {};
   const tribeNames = Object.keys(of.tribeScores || {});
+  const host = seasonConfig.host || 'Chris';
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
 
-  let feed = '';
+  const hostQuote = _rp(FLU_HOST.studyIntro);
+
+  // Rules box
+  let feed = `<div style="background:rgba(0,0,0,0.5);border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:12px 16px;margin-bottom:12px">
+    <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:rgba(59,130,246,0.5);margin-bottom:6px">PHASE RULES</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">The night before the challenge, ${host} hands out medical textbooks. Study all night for a quiz bonus &mdash; or sleep and be rested for what comes later. Your choice determines your role in the outbreak.</div>
+    <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:140px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);border-radius:4px;padding:8px 10px">
+        <div style="font-size:11px;color:#93c5fd;margin-bottom:3px">&#128218; STUDY</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:1.5">+20% quiz accuracy tomorrow<br>&#129298; Will get &lsquo;sick&rsquo; during the outbreak</div>
+      </div>
+      <div style="flex:1;min-width:140px;background:rgba(107,114,128,0.08);border:1px solid rgba(107,114,128,0.15);border-radius:4px;padding:8px 10px">
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:3px">&#128564; SLEEP</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:1.5">-20% quiz accuracy tomorrow<br>&#129657; Becomes a doctor during outbreak</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Host intro
+  feed += `<div class="of-ev" style="border-left-color:var(--of-teal)">
+    <div style="flex:1;min-width:0">
+      <div class="of-ev-badge teal">HOST</div>
+      <div class="of-ev-text" style="font-style:italic">${host}: ${hostQuote}</div>
+    </div>
+  </div>`;
+
   for (const tName of tribeNames) {
     const data = ss[tName];
     if (!data) continue;
@@ -1836,28 +1863,30 @@ export function rpBuildOneFluStudySleep(ep) {
       <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px">${data.studiers.length} studied &middot; ${data.sleepers.length} slept</div>
     </div></div>`;
 
-    // Studiers
-    if (data.studiers.length) {
+    // Studiers — individual narrative cards
+    for (const name of (data.studiers || [])) {
+      const pr = pronouns(name);
+      const narrative = _rp(FLU_STUDY.studied)(name, pr);
       feed += `<div class="of-ev positive">
+        ${_ofSmallPortrait(name, 44)}
         <div style="flex:1;min-width:0">
           <div class="of-ev-badge blue">STUDYING</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-            ${data.studiers.map(n => _ofWristband(n, 52, 'studying', 'STUDYING')).join('')}
-          </div>
-          <div class="of-ev-text" style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.5)">Exhausted but prepared. +Quiz bonus tomorrow.</div>
+          <div class="of-ev-text">${narrative}</div>
+          <div style="font-size:10px;color:rgba(147,197,253,0.6);margin-top:4px">&#128218; +20% quiz accuracy &middot; &#129298; Will get sick later</div>
         </div>
       </div>`;
     }
 
-    // Sleepers
-    if (data.sleepers.length) {
+    // Sleepers — individual narrative cards
+    for (const name of (data.sleepers || [])) {
+      const pr = pronouns(name);
+      const narrative = _rp(FLU_STUDY.slept)(name, pr);
       feed += `<div class="of-ev">
+        ${_ofSmallPortrait(name, 44)}
         <div style="flex:1;min-width:0">
           <div class="of-ev-badge gray">SLEEPING</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-            ${data.sleepers.map(n => _ofWristband(n, 52, 'sleeping', 'SLEEPING')).join('')}
-          </div>
-          <div class="of-ev-text" style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.5)">Rested but unprepared. Better doctors later.</div>
+          <div class="of-ev-text">${narrative}</div>
+          <div style="font-size:10px;color:rgba(148,163,184,0.6);margin-top:4px">&#128564; -20% quiz accuracy &middot; &#129657; Can be a doctor later</div>
         </div>
       </div>`;
     }
@@ -1884,21 +1913,65 @@ export function rpBuildOneFluQuiz(ep) {
   const mq = of.medicalQuiz;
   const rounds = mq.rounds || [];
   const tribeNames = Object.keys(of.tribeScores || {});
+  const host = seasonConfig.host || 'Chris';
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
 
   if (!window._tvState) window._tvState = {};
   if (!window._tvState['of-quiz']) window._tvState['of-quiz'] = { idx: -1 };
   const revIdx = window._tvState['of-quiz'].idx;
 
-  let feed = '';
+  // Comedy medical questions for flavor text per round
+  const quizQuestions = [
+    `"A patient presents with a rash shaped like the host's face. What is the diagnosis?"`,
+    `"If a contestant eats fourteen marshmallows in one sitting, which organ fails first?"`,
+    `"Name the bone most commonly broken during a reality TV challenge. Hint: it's not the funny bone."`,
+    `"A camper claims their left arm fell off. It didn't. What psychosomatic condition is this?"`,
+    `"Describe the correct treatment for 'spontaneous eel phobia.' You have ten seconds."`,
+    `"What is the medical term for screaming when you see Chef Hatchet's cooking?"`,
+    `"A patient insists they can hear colors. Is this a symptom or a superpower?"`,
+    `"If someone's entire body turns green after eating camp food, is it the food or the fear?"`,
+  ];
+
+  // Rules box
+  let feed = `<div style="background:rgba(0,0,0,0.5);border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:12px 16px;margin-bottom:12px">
+    <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:rgba(59,130,246,0.5);margin-bottom:6px">PHASE RULES</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">Answer medical questions to earn body parts for your FrankenChris. Winner of each round dives into the eel tank to retrieve a part. 3 eel shocks = failed dive. More parts = better assembly score.</div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.15)">5 ROUNDS</span>
+      <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(20,184,166,0.1);color:#5eead4;border:1px solid rgba(20,184,166,0.15)">EEL TANK DIVES</span>
+      <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.15)">3 SHOCKS = FAIL</span>
+    </div>
+  </div>`;
+
+  // Host intro
+  feed += `<div class="of-ev" style="border-left-color:var(--of-teal)">
+    <div style="flex:1;min-width:0">
+      <div class="of-ev-badge teal">HOST</div>
+      <div class="of-ev-text" style="font-style:italic">${host}: ${_rp(FLU_HOST.quizIntro)}</div>
+    </div>
+  </div>`;
+
   let stepIdx = 0;
 
   for (let i = 0; i < rounds.length; i++) {
     const rd = rounds[i];
+    const question = quizQuestions[(i + (ep.num || 0)) % quizQuestions.length];
+
+    // Round header with question
     let roundHtml = `<div class="of-ev round-header"><div style="flex:1;text-align:center">
       <div style="font-family:'Orbitron',sans-serif;font-size:14px;color:var(--of-blue);letter-spacing:3px">ROUND ${rd.number}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:6px;font-style:italic;line-height:1.5">${host}: ${question}</div>
     </div></div>`;
 
-    // Events first (studyFlex, sleepFumble, wrongAnswer)
+    // Host question commentary
+    roundHtml += `<div class="of-ev" style="border-left-color:var(--of-teal)">
+      <div style="flex:1;min-width:0">
+        <div class="of-ev-badge teal">HOST</div>
+        <div class="of-ev-text" style="font-style:italic">${_rp(FLU_HOST.quizQuestion)}</div>
+      </div>
+    </div>`;
+
+    // Events (studyFlex, sleepFumble, wrongAnswer, etc.)
     for (const evt of (rd.events || [])) {
       const evtClass = evt.type === 'studyFlex' ? 'positive' : evt.type === 'partTheft' ? 'negative' : '';
       const badgeColor = evt.type === 'studyFlex' ? 'green' : evt.type === 'eelDodge' ? 'teal' : evt.type === 'wrongAnswer' ? 'red' : evt.type === 'sleepFumble' ? 'orange' : evt.type === 'ropeSnap' ? 'red' : evt.type === 'partTheft' ? 'purple' : 'gray';
@@ -1913,34 +1986,49 @@ export function rpBuildOneFluQuiz(ep) {
       </div>`;
     }
 
-    // Answerer result
+    // Answerer result with host commentary
     if (rd.winnerTribe) {
       const answerer = rd.answererCorrect || '?';
+      const hostCorrect = _rp(FLU_HOST.correctAnswer);
       roundHtml += `<div class="of-ev positive">
         ${_ofSmallPortrait(answerer, 36)}
         <div style="flex:1;min-width:0">
           <div class="of-ev-badge green">${rd.winnerTribe} CORRECT</div>
           <div class="of-ev-text"><strong>${answerer}</strong> answers correctly for ${rd.winnerTribe}!</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:4px">${host}: ${hostCorrect}</div>
         </div>
       </div>`;
 
-      // Dive result
+      // Eel warning before dive
       if (rd.diver) {
+        const eelWarning = _rp(FLU_HOST.eelWarning);
+        roundHtml += `<div class="of-ev" style="border-left-color:var(--of-teal)">
+          <div style="flex:1;min-width:0">
+            <div class="of-ev-badge teal">EEL TANK</div>
+            <div class="of-ev-text" style="font-style:italic">${host}: ${eelWarning}</div>
+          </div>
+        </div>`;
+
+        // Dive result with host reaction
         const shockIcons = rd.shocks > 0 ? ' ' + Array(Math.min(rd.shocks, 3)).fill('&#9889;').join('') : '';
         const diveClass = rd.partRetrieved ? 'positive' : 'negative';
+        const hostDive = rd.partRetrieved ? _rp(FLU_HOST.diveSuccess) : _rp(FLU_HOST.diveFail);
         roundHtml += `<div class="of-ev ${diveClass}">
           ${_ofSmallPortrait(rd.diver, 36)}
           <div style="flex:1;min-width:0">
             <div class="of-ev-badge ${rd.partRetrieved ? 'teal' : 'red'}">${rd.partRetrieved ? 'DIVE SUCCESS' : 'DIVE FAILED'}${shockIcons}</div>
-            <div class="of-ev-text"><strong>${rd.diver}</strong> ${rd.partRetrieved ? 'retrieves a body part from the eel tank!' : 'takes too many shocks — no part retrieved.'} (${rd.shocks} shock${rd.shocks !== 1 ? 's' : ''})</div>
+            <div class="of-ev-text"><strong>${rd.diver}</strong> ${rd.partRetrieved ? 'retrieves a body part from the eel tank!' : 'takes too many shocks &mdash; no part retrieved.'} (${rd.shocks} shock${rd.shocks !== 1 ? 's' : ''})</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:4px">${host}: ${hostDive}</div>
           </div>
         </div>`;
       }
     } else {
+      const hostWrong = _rp(FLU_HOST.wrongAnswer);
       roundHtml += `<div class="of-ev negative">
         <div style="flex:1;min-width:0">
           <div class="of-ev-badge red">NO WINNER</div>
           <div class="of-ev-text">All tribes answer incorrectly. No dive this round.</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:4px">${host}: ${hostWrong}</div>
         </div>
       </div>`;
     }
@@ -1951,10 +2039,12 @@ export function rpBuildOneFluQuiz(ep) {
 
   // Summary step
   const partSummary = Object.entries(mq.partsByTribe || {}).map(([t, c]) => `<strong>${t}</strong>: ${c}`).join(' &middot; ');
+  const hostAssembly = _rp(FLU_HOST.assemblyStart);
   feed += `<div id="of-step-quiz-${stepIdx}" style="${stepIdx <= revIdx ? '' : 'display:none'}">
     <div class="of-ev positive" style="border-left-color:var(--of-teal);padding:16px;text-align:center">
       <div style="font-family:'Orbitron',sans-serif;font-size:14px;color:var(--of-teal);letter-spacing:3px;margin-bottom:6px">QUIZ COMPLETE</div>
       <div class="of-ev-text">Parts retrieved: ${partSummary}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:8px">${host}: ${hostAssembly}</div>
     </div>
   </div>`;
   stepIdx++;
@@ -2040,15 +2130,45 @@ export function rpBuildOneFluAssembly(ep) {
   if (!of?.assembly) return '';
   const asm = of.assembly;
   const tribeNames = Object.keys(of.tribeScores || {});
+  const host = seasonConfig.host || 'Chris';
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+  const mq = of.medicalQuiz;
 
-  let feed = '';
+  // Rules box
+  let feed = `<div style="background:rgba(0,0,0,0.5);border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:12px 16px;margin-bottom:12px">
+    <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:rgba(59,130,246,0.5);margin-bottom:6px">PHASE RULES</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">Assemble your FrankenChris from the parts you collected, then hoist it to the roof for lightning. More parts = faster assembly. First tribe to reanimate wins Phase 2.</div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      ${tribeNames.map(t => {
+        const parts = mq?.partsByTribe?.[t] || 0;
+        return `<span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(20,184,166,0.1);color:#5eead4;border:1px solid rgba(20,184,166,0.15)">${t}: ${parts} PARTS</span>`;
+      }).join('')}
+    </div>
+  </div>`;
+
+  // Host intro
+  feed += `<div class="of-ev" style="border-left-color:var(--of-teal)">
+    <div style="flex:1;min-width:0">
+      <div class="of-ev-badge teal">HOST</div>
+      <div class="of-ev-text" style="font-style:italic">${host}: ${_rp(FLU_HOST.assemblyStart)}</div>
+    </div>
+  </div>`;
 
   for (const td of (asm.tribes || [])) {
     const isWinner = td.tribe === asm.winner;
+    const tribeParts = mq?.partsByTribe?.[td.tribe] || 0;
     feed += `<div class="of-ev round-header"><div style="flex:1;text-align:center">
       <div style="font-family:'Orbitron',sans-serif;font-size:14px;color:${isWinner ? 'var(--of-teal)' : 'var(--of-blue)'};letter-spacing:3px">${td.tribe} ${isWinner ? '&#10003;' : ''}</div>
-      <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px">Assembly: ${td.assemblyScore?.toFixed(2) || '?'} &middot; Hoist: ${td.hoistScore?.toFixed(2) || '?'} &middot; Total: ${td.total?.toFixed(2) || '?'}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px">${tribeParts} body parts &middot; Assembly: ${td.assemblyScore?.toFixed(2) || '?'} &middot; Hoist: ${td.hoistScore?.toFixed(2) || '?'}</div>
     </div></div>`;
+
+    if (!(td.events || []).length) {
+      feed += `<div class="of-ev">
+        <div style="flex:1;min-width:0">
+          <div class="of-ev-text" style="color:rgba(255,255,255,0.5)">The tribe works steadily &mdash; no drama, no heroics. Just efficient medical assembly.</div>
+        </div>
+      </div>`;
+    }
 
     for (const evt of (td.events || [])) {
       const evtClass = evt.type === 'teamworkSurge' || evt.type === 'lightning' ? 'positive' : evt.type === 'partDoesntFit' || evt.type === 'hoistStruggle' || evt.type === 'pantsPull' ? 'negative' : '';
@@ -2065,9 +2185,15 @@ export function rpBuildOneFluAssembly(ep) {
     }
   }
 
-  // Winner
+  // Winner with host commentary
+  const winCommentary = [
+    `${host} walks the line, inspects each patient, and points at ${asm.winner}'s assembly. "That's a winner."`,
+    `${host} pokes ${asm.winner}'s FrankenChris. It doesn't fall over. He nods. "Congratulations. You've created life. Sort of."`,
+    `"And ${asm.winner} has done it!" ${host} announces. "Their FrankenChris is standing, assembled, and only slightly terrifying."`,
+  ];
   feed += `<div style="text-align:center;padding:16px;margin-top:8px">
     ${_ofStamp(asm.winner + ' WINS ASSEMBLY', 'teal')}
+    <div style="font-size:11px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:10px;max-width:500px;margin-left:auto;margin-right:auto">${_rp(winCommentary)}</div>
   </div>`;
 
   return _ofShell(`
@@ -2120,9 +2246,18 @@ export function rpBuildOneFluDramaBreak(ep) {
     </div>`;
   }
 
+  const host = seasonConfig.host || 'Chris';
+
+  // Intro context
+  const breakIntro = `<div style="background:rgba(0,0,0,0.5);border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:12px 16px;margin-bottom:12px">
+    <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:rgba(59,130,246,0.5);margin-bottom:6px">BETWEEN PHASES</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">While ${host} resets the challenge area for the outbreak phase, the contestants have downtime. Alliances shift. Regrets surface. Someone always does something stupid.</div>
+  </div>`;
+
   return _ofShell(`
     <div style="padding:12px 14px;position:relative;z-index:6">
       <div style="text-align:center;font-family:'Orbitron',sans-serif;font-size:13px;color:var(--of-blue);letter-spacing:4px;margin-bottom:12px">PHASE BREAK</div>
+      ${breakIntro}
       ${feed}
     </div>
   `, ep);
@@ -2144,19 +2279,67 @@ export function rpBuildOneFluDisease(ep) {
   if (!window._tvState['of-disease']) window._tvState['of-disease'] = { idx: -1 };
   const revIdx = window._tvState['of-disease'].idx;
 
-  // Intro step
-  let feed = '';
+  const host = seasonConfig.host || 'Chris';
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  // Rules box (always visible)
+  let feed = `<div style="background:rgba(132,204,22,0.05);border:1px solid rgba(132,204,22,0.2);border-radius:6px;padding:12px 16px;margin-bottom:12px">
+    <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:rgba(132,204,22,0.5);margin-bottom:6px">PHASE RULES</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">OUTBREAK! Everyone who studied last night is now &lsquo;infected&rsquo; with psychosomatic symptoms from the fake textbooks. Only the sleepers &mdash; the ones who DIDN&rsquo;T study &mdash; can cure them. Each round, doctors attempt to cure symptoms. Cure ANY player (even from another tribe) = +1 point for your team. Most cures = Best Doctor award.</div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.15)">STUDIERS = INFECTED</span>
+      <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.15)">SLEEPERS = DOCTORS</span>
+      <span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(234,179,8,0.1);color:#fde68a;border:1px solid rgba(234,179,8,0.15)">4 CURE ROUNDS</span>
+    </div>
+  </div>`;
+
   let stepIdx = 0;
 
-  // Patient status intro
+  // Patient status intro with symptom details
   const infectedNames = Object.keys(dis.infected || {});
+  const doctorsList = Object.values(ss).flatMap(t => t.sleepers || []);
+
   let introHtml = `<div class="of-ev quarantine" style="border-left-color:var(--of-quarantine)"><div style="flex:1;min-width:0">
     <div class="of-ev-badge toxic">QUARANTINE ACTIVATED</div>
-    <div class="of-ev-text">The studiers have fallen ill. The sleepers must cure them.</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-      ${infectedNames.map(n => _ofWristband(n, 48, 'infected', 'INFECTED')).join('')}
-    </div>
+    <div class="of-ev-text" style="font-style:italic">${host}: "Congratulations &mdash; you studied, so now you're sick. The sleepers are your only hope. Try not to die."</div>
   </div></div>`;
+
+  // Individual patient cards with symptom descriptions
+  for (const name of infectedNames) {
+    const symptoms = dis.infected[name] || [];
+    const symptomCards = symptoms.map(sym => {
+      const label = sym.id?.replace(/([A-Z])/g, ' $1').trim() || sym.id;
+      const desc = FLU_SYMPTOMS[sym.id] || '';
+      const tierColor = sym.tier === 'critical' ? '#ef4444' : sym.tier === 'hard' ? '#f97316' : sym.tier === 'medium' ? '#eab308' : '#22c55e';
+      return `<div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:4px;padding:6px 10px;margin-top:4px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:10px;color:#fca5a5;font-family:'Orbitron',sans-serif;letter-spacing:1px">${label.toUpperCase()}</span>
+          <span style="font-size:8px;padding:1px 6px;border-radius:2px;background:rgba(0,0,0,0.3);color:${tierColor};border:1px solid ${tierColor}40">${sym.tier.toUpperCase()}</span>
+        </div>
+        ${desc ? `<div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:3px;line-height:1.5">${desc}</div>` : ''}
+      </div>`;
+    }).join('');
+
+    introHtml += `<div class="of-ev quarantine">
+      ${_ofSmallPortrait(name, 44)}
+      <div style="flex:1;min-width:0">
+        <div class="of-ev-badge red">PATIENT: ${name.toUpperCase()}</div>
+        ${symptomCards}
+      </div>
+    </div>`;
+  }
+
+  // Doctor roster
+  if (doctorsList.length) {
+    introHtml += `<div class="of-ev quarantine" style="border-left-color:var(--of-sick-green)"><div style="flex:1;min-width:0">
+      <div class="of-ev-badge green">DOCTORS ON DUTY</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+        ${doctorsList.map(n => _ofWristband(n, 48, 'clean', 'DOCTOR')).join('')}
+      </div>
+      <div class="of-ev-text" style="margin-top:6px;font-size:11px;color:rgba(255,255,255,0.5)">These players slept last night. They're rested, healthy, and the only ones who can cure the infected.</div>
+    </div></div>`;
+  }
+
   feed += `<div id="of-step-disease-${stepIdx}" style="${stepIdx <= revIdx ? '' : 'display:none'}">${introHtml}</div>`;
   stepIdx++;
 
@@ -2182,12 +2365,19 @@ export function rpBuildOneFluDisease(ep) {
     for (const att of (rd.cureAttempts || [])) {
       const evClass = att.success ? 'cure-success' : 'cure-fail';
       const symptomLabel = att.symptom?.replace(/([A-Z])/g, ' $1').trim() || att.symptom;
+      const symptomDesc = FLU_SYMPTOMS[att.symptom] || '';
       roundHtml += `<div class="of-ev ${evClass} quarantine">
         ${_ofSmallPortrait(att.doctor, 32)}
         <div style="flex:1;min-width:0">
           <div class="of-ev-badge ${att.success ? 'green' : 'red'}">${att.success ? 'CURE SUCCESS' : 'CURE FAILED'}</div>
           <div class="of-ev-text">${att.text || ''}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px">Symptom: ${symptomLabel} &middot; Patient: ${att.patient}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px;font-size:10px;color:rgba(255,255,255,0.4)">
+            <span style="color:${att.success ? '#86efac' : '#fca5a5'}">${att.success ? '&#10003;' : '&#10007;'}</span>
+            <span>${symptomLabel}</span>
+            <span>&middot;</span>
+            <span>Patient: ${att.patient}</span>
+          </div>
+          ${symptomDesc && !att.success ? `<div style="font-size:10px;color:rgba(255,255,255,0.35);font-style:italic;margin-top:2px">${symptomDesc}</div>` : ''}
         </div>
       </div>`;
     }
@@ -2200,10 +2390,19 @@ export function rpBuildOneFluDisease(ep) {
     stepIdx++;
   }
 
-  // Best doctor step
+  // Best doctor step — full narrative
+  const totalCures = rounds.reduce((sum, r) => sum + (r.cureAttempts?.filter(a => a.success).length || 0), 0);
+  const totalAttempts = rounds.reduce((sum, r) => sum + (r.cureAttempts?.length || 0), 0);
+  const bestDoctorCommentary = dis.bestDoctor ? [
+    `"Best Doctor goes to..." ${host} pauses for drama. "...${dis.bestDoctor}." The tribe groans. The doctor nods.`,
+    `${host} pins a plastic stethoscope on ${dis.bestDoctor}. "You've earned this. Try not to let it go to your head."`,
+    `When the quarantine lifts, ${dis.bestDoctor} stands with the most cures. ${host} claps slowly. It might be sarcastic.`,
+  ] : [];
   let doctorHtml = `<div class="of-ev quarantine" style="border-left-color:var(--of-sick-green);padding:16px;text-align:center">
     ${dis.bestDoctor ? _ofWristband(dis.bestDoctor, 64, 'cured', 'BEST DOCTOR') : ''}
     <div style="font-family:'Orbitron',sans-serif;font-size:14px;color:var(--of-sick-green);letter-spacing:3px;margin-top:8px">BEST DOCTOR: ${dis.bestDoctor || '???'}</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px">${totalCures} of ${totalAttempts} cure attempts successful across ${rounds.length} rounds.</div>
+    ${dis.bestDoctor && bestDoctorCommentary.length ? `<div style="font-size:11px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:8px;max-width:500px;margin-left:auto;margin-right:auto">${_rp(bestDoctorCommentary)}</div>` : ''}
   </div>`;
   feed += `<div id="of-step-disease-${stepIdx}" style="${stepIdx <= revIdx ? '' : 'display:none'}">${doctorHtml}</div>`;
   stepIdx++;
@@ -2353,20 +2552,70 @@ export function rpBuildOneFluResults(ep) {
     </table>
   </div>`;
 
-  // Winner spotlight
+  const host = seasonConfig.host || 'Chris';
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  // Winner tribe portraits
+  const winnerMembers = ep.winner?.members || [];
+  const loserTribe = sorted[sorted.length - 1]?.[0] || '???';
+  const loserMembers = ep.loser?.members || [];
+  const safeTribes = (ep.safeTribes || []);
+
+  const verdictCommentary = [
+    `${host} hangs the immunity idol around ${winnerTribe}'s tribal banner. "${winnerTribe} &mdash; you're safe. ${loserTribe} &mdash; I'll see you tonight."`,
+    `"${winnerTribe} wins immunity!" ${host} declares. He turns to ${loserTribe}. "Tribal council. Tonight. Someone's going home."`,
+    `The medical challenge is over. ${winnerTribe} celebrated with their FrankenChris. ${loserTribe} starts whispering about votes before they even leave the field.`,
+  ];
+
+  // Winner spotlight with portraits
   const winnerSpotlight = `<div style="text-align:center;padding:20px 14px;position:relative;z-index:6">
     ${_ofStamp(winnerTribe + ' WINS', 'teal')}
-    <div style="margin-top:12px;font-size:13px;color:rgba(255,255,255,0.6)">${winnerTribe} wins the medical challenge and earns immunity!</div>
+    <div style="margin-top:12px;font-size:13px;color:rgba(255,255,255,0.6);font-style:italic;max-width:500px;margin-left:auto;margin-right:auto">${_rp(verdictCommentary)}</div>
+    ${winnerMembers.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:12px">
+      ${winnerMembers.map(n => _ofWristband(n, 48, 'cured', 'IMMUNE')).join('')}
+    </div>` : ''}
   </div>`;
+
+  // Safe tribes (if 3+ tribes)
+  let safeSec = '';
+  if (safeTribes.length) {
+    safeSec = `<div style="text-align:center;padding:12px 14px;margin:0 14px 12px;background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.15);border-radius:8px">
+      <div style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:3px;color:var(--of-blue);margin-bottom:8px">ALSO SAFE</div>
+      ${safeTribes.map(t => `<div style="margin-bottom:8px">
+        <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px">${t.name}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">
+          ${(t.members || []).map(n => _ofWristband(n, 40, 'clean', 'SAFE')).join('')}
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  // Tribal council team
+  let tribalSec = '';
+  if (loserMembers.length) {
+    tribalSec = `<div style="text-align:center;padding:12px 14px;margin:0 14px 12px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-radius:8px">
+      <div style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:3px;color:#fca5a5;margin-bottom:8px">TRIBAL COUNCIL</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:6px">${loserTribe}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+        ${loserMembers.map(n => _ofWristband(n, 48, 'infected', 'VOTING')).join('')}
+      </div>
+    </div>`;
+  }
 
   // Best doctor spotlight
   let doctorSpot = '';
   if (of.diseaseOutbreak?.bestDoctor) {
     const doc = of.diseaseOutbreak.bestDoctor;
+    const drPr = pronouns(doc);
+    const doctorCommentary = [
+      `${doc} treated more patients than anyone else and barely broke a sweat. ${drPr.Sub} looks quietly, infuriatingly satisfied.`,
+      `When the smoke cleared, ${doc} had the most cures. ${host} pins a plastic stethoscope to ${drPr.posAdj} shirt.`,
+      `${doc} emerges from the outbreak as the clear MVP. ${host} almost sounds impressed. Almost.`,
+    ];
     doctorSpot = `<div style="text-align:center;padding:16px 14px;margin:0 14px;background:rgba(132,204,22,0.05);border:1px solid rgba(132,204,22,0.15);border-radius:8px">
       ${_ofWristband(doc, 56, 'cured', 'BEST DOCTOR')}
       <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--of-sick-green);letter-spacing:3px;margin-top:8px">BEST DOCTOR AWARD</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">${doc} treated the most patients during the outbreak.</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;font-style:italic">${_rp(doctorCommentary)}</div>
     </div>`;
   }
 
@@ -2396,6 +2645,8 @@ export function rpBuildOneFluResults(ep) {
       </div>
       ${scoreboard}
       ${winnerSpotlight}
+      ${safeSec}
+      ${tribalSec}
       ${doctorSpot}
       ${leaderboard}
     </div>

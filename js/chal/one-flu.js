@@ -2036,8 +2036,11 @@ export function rpBuildOneFluQuiz(ep) {
         roundHtml += `<div class="of-ev ${diveClass}">
           ${_ofSmallPortrait(rd.diver, 36)}
           <div style="flex:1;min-width:0">
-            <div class="of-ev-badge ${rd.partRetrieved ? 'teal' : 'red'}">${rd.partRetrieved ? 'DIVE SUCCESS' : 'DIVE FAILED'}${shockIcons}</div>
-            <div class="of-ev-text"><strong>${rd.diver}</strong> ${rd.partRetrieved ? 'retrieves a body part from the eel tank!' : 'takes too many shocks &mdash; no part retrieved.'} (${rd.shocks} shock${rd.shocks !== 1 ? 's' : ''})</div>
+            <div class="of-ev-badge ${rd.partRetrieved ? 'teal' : 'red'}">${rd.partRetrieved ? 'DIVE SUCCESS' : rd.shocks >= 3 ? 'SHOCKED OUT' : 'MISSED GRAB'}${shockIcons}</div>
+            <div class="of-ev-text"><strong>${rd.diver}</strong> ${rd.partRetrieved
+              ? 'retrieves a body part from the eel tank!'
+              : rd.shocks >= 3 ? `takes ${rd.shocks} shocks — too many jolts, forced out empty-handed!`
+              : 'dives in but can\'t get a grip on the part — comes up empty.'} (${rd.shocks} shock${rd.shocks !== 1 ? 's' : ''})</div>
             <div style="font-size:11px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:4px">${host}: ${hostDive}</div>
           </div>
         </div>`;

@@ -840,11 +840,29 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
   // Winner/loser logic:
   // duelVictims[tribeA] = enemy player eating tribeA's food
   // If that enemy vomits → tribeA's food was gross enough → tribeA WINS
-  // The LAST tribe whose victim is still eating LOSES (their food was weakest)
-  const winningTribes = tribeNames.filter(t => duelVictims[t] && eliminatedVictims.has(duelVictims[t]));
-  const losingTribes = tribeNames.filter(t => duelVictims[t] && !eliminatedVictims.has(duelVictims[t]));
-  const winnerTribeName = winningTribes[0] || null;
-  const loserTribeName = losingTribes[losingTribes.length - 1] || null;
+  // If multiple tribes' victims vomited: winner = whose victim vomited EARLIEST (most effective food)
+  // Loser = tribe whose food DIDN'T make anyone vomit (weakest cooking)
+  const vomitOrder = []; // track order of elimination
+  for (const rd of duelRounds) {
+    const vList = Array.isArray(rd.vomited) ? rd.vomited : rd.vomited ? [rd.vomited] : [];
+    for (const v of vList) {
+      const cookingTribe = tribeNames.find(t => duelVictims[t] === v);
+      if (cookingTribe && !vomitOrder.some(e => e.tribe === cookingTribe)) {
+        vomitOrder.push({ tribe: cookingTribe, round: rd.round, victim: v });
+      }
+    }
+  }
+  // Winner = tribe whose victim vomited first (their food was most effective)
+  // If nobody vomited (all survived): tiebreak by lowest margin
+  const winnerTribeName = vomitOrder.length ? vomitOrder[0].tribe
+    : tribeNames.reduce((best, t) => {
+        const m = victimMargins[duelVictims[t]] || 0;
+        return m < (victimMargins[duelVictims[best]] || 0) ? t : best;
+      }, tribeNames[0]);
+  // Loser = tribe whose food didn't make anyone vomit, OR last to make someone vomit
+  const losingTribes = tribeNames.filter(t => !vomitOrder.some(e => e.tribe === t));
+  const loserTribeName = losingTribes.length ? losingTribes[0]
+    : vomitOrder.length > 1 ? vomitOrder[vomitOrder.length - 1].tribe : null;
 
   result.prisonFood.duel.rounds = duelRounds;
   result.prisonFood.duel.winner = winnerTribeName;
@@ -2109,11 +2127,12 @@ export function rpBuildChefshankPrisonFood(ep) {
     // Vomit stamps
     const vomitList = Array.isArray(rd.vomited) ? rd.vomited : rd.vomited ? [rd.vomited] : [];
     for (const v of vomitList) {
+      const cookingTribe = tribeNames.find(t => pf.victims?.[t] === v) || '?';
       roundHtml += `<div class="cs-ev vomit">
         ${_csSmallPortrait(v, 44)}
         <div style="flex:1;text-align:center">
           ${_csStamp('ELIMINATED', 'green')}
-          <div class="cs-ev-text" style="margin-top:8px"><strong>${v}</strong> loses it. Out of the eating duel.</div>
+          <div class="cs-ev-text" style="margin-top:8px"><strong>${v}</strong> couldn't handle <strong>${cookingTribe}</strong>'s cooking. ${cookingTribe}'s dish wins!</div>
         </div>
       </div>`;
     }
@@ -2200,14 +2219,17 @@ function _csBuildFoodSidebar(pf, revIdx, tribeNames, totalSteps, ep) {
       const cookingRevealed = revIdx >= cookingStartIdx + tribeNames.indexOf(tName);
       const eatingRevealed = revIdx >= eatingStartIdx;
       const revealedEatingRounds = eatingRevealed ? duelRounds.slice(0, revIdx - eatingStartIdx + 1) : [];
-      const vomitHappened = revealedEatingRounds.some(r => r.vomited === victim);
+      const vomitHappened = revealedEatingRounds.some(r => {
+        const vList = Array.isArray(r.vomited) ? r.vomited : r.vomited ? [r.vomited] : [];
+        return vList.includes(victim);
+      });
       sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;color:rgba(255,255,255,0.8)">
         ${_csSideMugshot(victim, 28, vomitHappened ? 'vomited' : '')}
         <div style="flex:1;min-width:0">
           <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${victim}</div>
-          <div style="font-size:8px;color:rgba(255,255,255,0.4)">Eating for ${tName}</div>
+          <div style="font-size:8px;color:rgba(255,255,255,0.4)">Eating ${tName}'s food</div>
         </div>
-        ${vomitHappened ? `<span style="font-size:8px;color:#4ade80">VOMITED</span>` : eatingRevealed ? `<span style="font-size:8px;color:rgba(255,255,255,0.3)">holding...</span>` : ''}
+        ${vomitHappened ? `<span style="font-size:8px;color:#ef4444">VOMITED</span>` : eatingRevealed ? `<span style="font-size:8px;color:rgba(255,255,255,0.3)">holding...</span>` : ''}
       </div>`;
     }
   } else {
@@ -2235,7 +2257,8 @@ function _csBuildFoodSidebar(pf, revIdx, tribeNames, totalSteps, ep) {
     const revealedEatingRounds = duelRounds.slice(0, revIdx - eatingStartIdx + 1);
     for (const rd of revealedEatingRounds) {
       const evtCount = (rd.events || []).length;
-      sidebar += `<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:2px">R${rd.round}: ${evtCount} events${rd.vomited ? ` — ${rd.vomited} VOMITED` : ''}</div>`;
+      const vList = Array.isArray(rd.vomited) ? rd.vomited : rd.vomited ? [rd.vomited] : [];
+      sidebar += `<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:2px">R${rd.round}: ${evtCount} events${vList.length ? ` — ${vList.join(', ')} VOMITED` : ''}</div>`;
     }
   }
 

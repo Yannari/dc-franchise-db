@@ -838,31 +838,46 @@ function _simulatePrisonFood(ep, tribeMembers, result) {
   }
 
   // Winner/loser logic:
-  // duelVictims[tribeA] = enemy player eating tribeA's food
-  // If that enemy vomits → tribeA's food was gross enough → tribeA WINS
-  // If multiple tribes' victims vomited: winner = whose victim vomited EARLIEST (most effective food)
-  // Loser = tribe whose food DIDN'T make anyone vomit (weakest cooking)
-  const vomitOrder = []; // track order of elimination
+  // The SURVIVOR wins. The victim who lasted the longest = their tribe wins.
+  // duelVictims[tribeA] = enemy from a different tribe eating tribeA's food
+  // We need to find which tribe the surviving victim BELONGS TO.
+  // Build: who survived? → which tribe are they from? → that tribe wins.
+  const survivingVictims = Object.entries(duelVictims)
+    .filter(([, v]) => v && !eliminatedVictims.has(v))
+    .map(([cookTribe, v]) => v);
+  // Find the tribe the survivor belongs to (not the cooking tribe)
+  const _victimHomeTribe = v => {
+    for (const t of tribeMembers) { if (t.members.includes(v)) return t.name; }
+    return null;
+  };
+  let winnerTribeName = null;
+  let loserTribeName = null;
+  if (survivingVictims.length === 1) {
+    // One survivor → their home tribe wins
+    winnerTribeName = _victimHomeTribe(survivingVictims[0]);
+  } else if (survivingVictims.length === 0) {
+    // All vomited → last to vomit wins (they held out longest). Check vomit round order.
+    const vomitRounds = {};
+    for (const rd of duelRounds) {
+      const vList = Array.isArray(rd.vomited) ? rd.vomited : rd.vomited ? [rd.vomited] : [];
+      for (const v of vList) { if (!vomitRounds[v]) vomitRounds[v] = rd.round; }
+    }
+    const lastVomit = Object.entries(vomitRounds).sort((a, b) => b[1] - a[1])[0];
+    winnerTribeName = lastVomit ? _victimHomeTribe(lastVomit[0]) : tribeNames[0];
+  } else {
+    // Multiple survivors → highest cumulative margin wins
+    const bestSurvivor = survivingVictims.reduce((best, v) =>
+      (victimMargins[v] || 0) > (victimMargins[best] || 0) ? v : best, survivingVictims[0]);
+    winnerTribeName = _victimHomeTribe(bestSurvivor);
+  }
+  // Loser = first tribe whose victim vomited (earliest failure)
+  const vomitedEntries = [];
   for (const rd of duelRounds) {
     const vList = Array.isArray(rd.vomited) ? rd.vomited : rd.vomited ? [rd.vomited] : [];
-    for (const v of vList) {
-      const cookingTribe = tribeNames.find(t => duelVictims[t] === v);
-      if (cookingTribe && !vomitOrder.some(e => e.tribe === cookingTribe)) {
-        vomitOrder.push({ tribe: cookingTribe, round: rd.round, victim: v });
-      }
-    }
+    for (const v of vList) vomitedEntries.push({ v, round: rd.round, tribe: _victimHomeTribe(v) });
   }
-  // Winner = tribe whose victim vomited first (their food was most effective)
-  // If nobody vomited (all survived): tiebreak by lowest margin
-  const winnerTribeName = vomitOrder.length ? vomitOrder[0].tribe
-    : tribeNames.reduce((best, t) => {
-        const m = victimMargins[duelVictims[t]] || 0;
-        return m < (victimMargins[duelVictims[best]] || 0) ? t : best;
-      }, tribeNames[0]);
-  // Loser = tribe whose food didn't make anyone vomit, OR last to make someone vomit
-  const losingTribes = tribeNames.filter(t => !vomitOrder.some(e => e.tribe === t));
-  const loserTribeName = losingTribes.length ? losingTribes[0]
-    : vomitOrder.length > 1 ? vomitOrder[vomitOrder.length - 1].tribe : null;
+  loserTribeName = vomitedEntries.length ? vomitedEntries[0].tribe
+    : tribeNames.find(t => t !== winnerTribeName) || null;
 
   result.prisonFood.duel.rounds = duelRounds;
   result.prisonFood.duel.winner = winnerTribeName;

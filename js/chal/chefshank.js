@@ -965,7 +965,7 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
       const hostLine = _rp(passed ? PRISON_BREAK_HOST.obstaclePass : PRISON_BREAK_HOST.obstacleFail)(host, td.pusher);
       pushEvent(hostLine, [td.pusher], passed ? 'CLEAR' : 'PENALTY', passed ? 'green' : 'orange');
 
-      if (!passed) digRounds = Math.max(2, digRounds - 1);
+      // Failed obstacles = speed penalty (not fewer rounds)
 
       if (!ep.chalMemberScores) ep.chalMemberScores = {};
       if (passed) ep.chalMemberScores[td.pusher] = (ep.chalMemberScores[td.pusher] || 0) + 5;
@@ -978,9 +978,12 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
       gs.popularity[td.pusher] = (gs.popularity[td.pusher] || 0) + 3;
     }
 
-    // Golden Shovel bonus rounds
-    if (shovelTeam === td.tribe) digRounds += 2;
-    td.digRounds = digRounds;
+    // Speed multiplier from obstacles: each pass = +10% speed, each fail = -10%
+    const passCount = td.obstacleResults.filter(o => o.passed).length;
+    const failCount = td.obstacleResults.filter(o => !o.passed).length;
+    td.obstacleSpeedMod = (passCount - failCount) * 0.10;
+    // Everyone digs 5 rounds. Shovel = speed boost, not extra rounds.
+    td.digRounds = 5;
   }
 
   pushEvent(_rp(PRISON_BREAK_HOST.digStart)(host), tribeMembers.flatMap(t => t.members), 'DIG START', 'gold');
@@ -989,9 +992,11 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
   for (const td of tribeData) {
     td.roundDistances = [];
     td.totalDistance = 0;
-    td.digEvents = []; // per-round event arrays for VP
+    td.digEvents = [];
 
     const hasShovel = shovelTeam === td.tribe;
+    // Shovel = 1.3x speed. Obstacles modify speed. Combined.
+    const shovelMult = hasShovel ? 1.3 : 1.0;
     let shovelBroken = false;
 
     for (let round = 0; round < td.digRounds; round++) {
@@ -1004,8 +1009,7 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
         contributions[name] = contrib;
       }
 
-      let roundMultiplier = 1.0;
-      if (hasShovel && !shovelBroken) roundMultiplier = 1.25;
+      let roundMultiplier = (1.0 + td.obstacleSpeedMod) * (hasShovel && !shovelBroken ? shovelMult : 1.0);
 
       // Build event pool
       const eventPool = [];
@@ -1152,7 +1156,7 @@ function _simulatePrisonBreak(ep, tribeMembers, result) {
 
         } else if (evt.type === 'brokenShovel') {
           shovelBroken = true;
-          roundMultiplier = 1.0;
+          roundMultiplier = 1.0 + td.obstacleSpeedMod;
           text = _rp(PRISON_BREAK_DIG_EVENTS.brokenShovel)(evt.name, pr);
 
         } else if (evt.type === 'undergroundEcho') {
@@ -1873,8 +1877,8 @@ function _csShell(content, ep) {
 /* ═══ INK STAMPS ═══ */
 .cs-stamp{display:inline-block;font-family:'Black Ops One',cursive;font-size:10px;letter-spacing:3px;
   text-transform:uppercase;padding:4px 14px;border-radius:3px;position:relative;
-  border:2px solid currentColor;transform:rotate(-2deg);
-  animation:cs-stamp-in 0.5s ease-out both}
+  border:2px solid currentColor;
+  animation:cs-stamp-inline 0.4s ease-out both}
 .cs-stamp.red{color:#ef4444;background:rgba(239,68,68,0.1);
   text-shadow:0 0 8px rgba(239,68,68,0.3);box-shadow:0 0 12px rgba(239,68,68,0.15)}
 .cs-stamp.green{color:#22c55e;background:rgba(34,197,94,0.1);
@@ -1935,6 +1939,10 @@ function _csShell(content, ep) {
   0%{transform:translate(-50%,-50%) rotate(-12deg) scale(2.5);opacity:0}
   70%{transform:translate(-50%,-50%) rotate(-12deg) scale(0.95);opacity:1}
   100%{transform:translate(-50%,-50%) rotate(-12deg) scale(1);opacity:1}}
+@keyframes cs-stamp-inline{
+  0%{transform:scale(1.5);opacity:0}
+  70%{transform:scale(0.97);opacity:1}
+  100%{transform:scale(1);opacity:1}}
 @keyframes cs-fade-up{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
 @keyframes cs-crack{0%{background-position:0 0}100%{background-position:100px 100px}}
 @keyframes cs-tally-scratch{0%{clip-path:inset(0 100% 0 0)}100%{clip-path:inset(0 0 0 0)}}
@@ -2201,11 +2209,12 @@ export function rpBuildChefshankPrisonFood(ep) {
   const controls = `<div id="cs-controls-food" class="cs-controls" ${!pending && totalSteps ? 'style="display:none"' : ''}>
     <button class="cs-btn-next" onclick="chefshankRevealNext('cs-food',${totalSteps})">NEXT</button>
     <button class="cs-btn-all" onclick="chefshankRevealAll('cs-food',${totalSteps})">Reveal All</button>
-  </div>
-  <div id="cs-done-food" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:24px 16px;margin-top:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(180,83,9,0.2);border-radius:6px'}">
+  </div>`;
+
+  const doneBox = `<div id="cs-done-food" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:24px 20px;margin:12px 14px;background:rgba(0,0,0,0.3);border:2px solid rgba(245,158,11,0.3);border-radius:8px;position:relative;z-index:6;overflow:visible'}">
     ${pf.duel?.winner
       ? `${_csStamp(pf.duel.winner + ' WINS PHASE 1', 'gold')}
-         <div style="margin-top:12px;font-size:15px;color:var(--cs-rust);font-family:'Black Ops One',sans-serif;letter-spacing:2px">🏆 GOLDEN SHOVEL → ${pf.duel.winner}</div>
+         <div style="margin-top:14px;font-size:15px;color:var(--cs-rust);font-family:'Black Ops One',sans-serif;letter-spacing:2px">🏆 GOLDEN SHOVEL → ${pf.duel.winner}</div>
          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px">${pf.duel.winner}'s eater held it down the longest. They earn the shovel advantage for the dig.</div>`
       : _csStamp('PHASE COMPLETE', 'gold')}
   </div>`;
@@ -2216,6 +2225,7 @@ export function rpBuildChefshankPrisonFood(ep) {
       <div class="cs-feed">${feed}${controls}</div>
       <div class="cs-sidebar" id="cs-sidebar-food">${sidebar}</div>
     </div>
+    ${doneBox}
   `, ep);
 }
 

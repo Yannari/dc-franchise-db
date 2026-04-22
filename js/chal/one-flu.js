@@ -1068,11 +1068,11 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
             gs.popularity[doc.name] = (gs.popularity[doc.name] || 0) + 1;
           }
 
-          const txt = FLU_DISEASE_EVENTS.cureSuccess[Math.floor(Math.random() * FLU_DISEASE_EVENTS.cureSuccess.length)](doc.name, patient, sym.id);
+          const txt = FLU_DISEASE_EVENTS.cureSuccess[Math.floor(Math.random() * FLU_DISEASE_EVENTS.cureSuccess.length)](doc.name, patient, _ofSymptomName(sym.id));
           cureAttempts.push({ doctor: doc.name, patient, symptom: sym.id, success: true, text: txt });
           ep.campEvents[campKey].post.push({ text: txt, players: [doc.name, patient], badgeText: 'CURE SUCCESS', badgeClass: 'green', tag: 'disease' });
         } else {
-          const txt = FLU_DISEASE_EVENTS.cureFail[Math.floor(Math.random() * FLU_DISEASE_EVENTS.cureFail.length)](doc.name, patient, sym.id);
+          const txt = FLU_DISEASE_EVENTS.cureFail[Math.floor(Math.random() * FLU_DISEASE_EVENTS.cureFail.length)](doc.name, patient, _ofSymptomName(sym.id));
           cureAttempts.push({ doctor: doc.name, patient, symptom: sym.id, success: false, text: txt });
         }
       }
@@ -1761,6 +1761,11 @@ function _ofSideWristband(name, size = 32, statusClass = '', statusText = '') {
   </div>`;
 }
 
+function _ofSymptomName(id) {
+  if (!id) return '?';
+  return id.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
+}
+
 function _ofSmallPortrait(name, size = 44) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
   return `<div style="width:${size}px;height:${size}px;flex-shrink:0;border-radius:2px;overflow:hidden;border:2px solid #334155;box-shadow:0 2px 6px rgba(0,0,0,0.5)">
@@ -2388,7 +2393,7 @@ export function rpBuildOneFluDisease(ep) {
   for (const name of infectedNames) {
     const symptoms = dis.infected[name] || [];
     const symptomCards = symptoms.map(sym => {
-      const label = sym.id?.replace(/([A-Z])/g, ' $1').trim() || sym.id;
+      const label = sym.id?.replace(/([A-Z])/g, ' $1').toLowerCase().trim() || sym.id;
       const desc = FLU_SYMPTOMS[sym.id] || '';
       const tierColor = sym.tier === 'critical' ? '#ef4444' : sym.tier === 'hard' ? '#f97316' : sym.tier === 'medium' ? '#eab308' : '#22c55e';
       return `<div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:4px;padding:6px 10px;margin-top:4px">
@@ -2444,7 +2449,7 @@ export function rpBuildOneFluDisease(ep) {
     // Cure attempts
     for (const att of (rd.cureAttempts || [])) {
       const evClass = att.success ? 'cure-success' : 'cure-fail';
-      const symptomLabel = att.symptom?.replace(/([A-Z])/g, ' $1').trim() || att.symptom;
+      const symptomLabel = att.symptom?.replace(/([A-Z])/g, ' $1').toLowerCase().trim() || att.symptom;
       const symptomDesc = FLU_SYMPTOMS[att.symptom] || '';
       roundHtml += `<div class="of-ev ${evClass} quarantine">
         ${_ofSmallPortrait(att.doctor, 32)}
@@ -2559,7 +2564,7 @@ function _ofBuildDiseaseSidebar(dis, revIdx, tribeNames, of) {
       ${_ofSideWristband(patient, 24, statusClass, allCured ? 'OK' : 'ILL')}
       <div style="flex:1;min-width:0">`;
     for (const sym of symptoms) {
-      const label = (sym.id || sym.symptomId || '').replace(/([A-Z])/g, ' $1').trim();
+      const label = (sym.id || sym.symptomId || '').replace(/([A-Z])/g, ' $1').toLowerCase().trim();
       const isCured = revealedCures.has(`${patient}:${sym.id || sym.symptomId}`);
       const color = revIdx <= 0 ? 'rgba(255,255,255,0.3)' : isCured ? 'rgba(34,197,94,0.8)' : 'rgba(239,68,68,0.8)';
       const icon = revIdx <= 0 ? '?' : isCured ? '✓' : '✗';

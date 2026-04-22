@@ -1302,18 +1302,20 @@ function _simulateRoundup(ep, tribeMembers, result) {
       const cPr = pronouns(cowboy);
       const gunslingerBuff = result.standoff?.gunslingers?.includes(cowboy) ? 0.08 : 0;
 
-      // Cowboys get advantage when outnumbered — roping is their job
-      const outnumberBonus = Math.max(0, (cattle.length - cowboys.length) * 0.02);
-      const cowboyRoll = (cSt.physical * 0.07 + cSt.strategic * 0.04) * (1 + gunslingerBuff) * (1 - cowboyDebuffRef.value) + outnumberBonus + Math.random() * 0.25;
-      const cattleRoll = tSt.physical * 0.04 + tSt.boldness * 0.03 + Math.random() * 0.3;
+      // Capture chance: ~45% base for avg stats, proportional both ways
+      const outnumberBonus = Math.max(0, (cattle.length - cowboys.length)) * 0.012;
+      const captureBase = 0.36 + cSt.physical * 0.02 + cSt.strategic * 0.01 + gunslingerBuff + outnumberBonus;
+      const dodgeBonus = tSt.physical * 0.02 + tSt.boldness * 0.015;
+      const debuffPenalty = cowboyDebuffRef.value * 0.15;
+      const captureChance = Math.min(0.75, Math.max(0.15, captureBase - dodgeBonus - debuffPenalty));
 
-      if (cowboyRoll > cattleRoll) {
+      if (Math.random() < captureChance) {
         // Capture
         captured.add(target);
         roundData.captures.push(target);
         const lassoText = _rp(ROUNDUP_LASSO.hit)(cowboy, target, cPr, tPr);
         const hostLine = _rp(ROUNDUP_HOST.capture)(host, target);
-        roundData.lassos.push({ cowboy, target, success: true, text: lassoText, hostLine });
+        roundData.lassos.push({ cowboy, target, captured: true, success: true, text: lassoText, hostLine });
         ep.campEvents[campKey].post.push({
           text: lassoText, players: [cowboy, target],
           badgeText: 'LASSO HIT', badgeClass: 'gold', tag: 'challenge',
@@ -1324,7 +1326,7 @@ function _simulateRoundup(ep, tribeMembers, result) {
         const dodgeText = _rp(ROUNDUP_DODGE.success)(target, tPr);
         const lassoText = _rp(ROUNDUP_LASSO.miss)(cowboy, target, cPr, tPr);
         const hostLine = _rp(ROUNDUP_HOST.dodge)(host, target);
-        roundData.lassos.push({ cowboy, target, success: false, text: lassoText + ' ' + dodgeText, hostLine });
+        roundData.lassos.push({ cowboy, target, captured: false, success: false, text: lassoText + ' ' + dodgeText, hostLine });
         ep.campEvents[campKey].post.push({
           text: dodgeText, players: [target],
           badgeText: 'DODGE', badgeClass: 'green', tag: 'challenge',
@@ -1371,9 +1373,10 @@ function _simulateRoundup(ep, tribeMembers, result) {
 
   // ── Scoring ──────────────────────────────────────────────────────────────────
 
-  const cowboyPoints = captured.size;
-  const cattlePoints = (cattle.length - captured.size) * 0.5;
-  const cowboysWon = cowboyPoints >= cattlePoints;
+  // Scoring: capture ratio vs dodge ratio. Cowboys get capture%, cattle get dodge%.
+  // Whoever has the higher % wins. Equal split (50/50) goes to cattle (home advantage).
+  const capturePercent = cattle.length > 0 ? captured.size / cattle.length : 0;
+  const cowboysWon = capturePercent > 0.45;
   if (cowboysWon) {
     result.tribeScores[cowboyTribeData.name] = (result.tribeScores[cowboyTribeData.name] || 0) + 1;
   } else {
@@ -1387,7 +1390,7 @@ function _simulateRoundup(ep, tribeMembers, result) {
   const cowboyCaptures = {};
   for (const rnd of rounds) {
     for (const lasso of rnd.lassos) {
-      if (lasso.success) {
+      if (lasso.captured) {
         cowboyCaptures[lasso.cowboy] = (cowboyCaptures[lasso.cowboy] || 0) + 1;
       }
     }
@@ -2043,9 +2046,10 @@ function _ctShell(content, ep) {
 
 function _ctPortrait(name, size = 64) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<div class="ct-portrait" style="width:${size}px">
-    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;border-radius:2px;">
-    <div class="ct-portrait-name">${name}</div>
+  const outerWidth = size + 20;
+  return `<div class="ct-portrait" style="width:${outerWidth}px">
+    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;border-radius:2px;" onerror="this.style.display='none'">
+    <div class="ct-portrait-name" style="max-width:${size}px">${name}</div>
   </div>`;
 }
 
@@ -2544,48 +2548,13 @@ export function rpBuildCrazytownRoundup(ep) {
   const capturedSet = new Set(ru.captures || []);
   const dodgeCounts = ru.dodgeCounts || {};
 
-  // Sidebar — only show results from revealed rounds
-  const revealedRounds = (ru.rounds || []).slice(0, revIdx + 1);
-  const revCaptured = new Set();
-  const revDodges = {};
-  const revCowboyCaptures = {};
-  for (const r of revealedRounds) {
-    for (const l of (r.lassos || [])) {
-      if (l.captured) { revCaptured.add(l.target); revCowboyCaptures[l.cowboy] = (revCowboyCaptures[l.cowboy] || 0) + 1; }
-      else { revDodges[l.target] = (revDodges[l.target] || 0) + 1; }
-    }
-  }
-  const allRevealed = revIdx >= (ru.rounds || []).length - 1;
-
-  let sidebar = `<div class="ct-side-sec">&#129312; COWBOYS &mdash; ${ru.cowboys}</div>`;
-  for (const name of (ru.cowboyMembers || [])) {
-    const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-    const captures = revCowboyCaptures[name] || 0;
-    const isSheriff = allRevealed && ru.sheriff === name;
-    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,0.8)">
-      ${_ctSidePortrait(name, 28)}
-      <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
-      <span style="font-size:9px;color:var(--ct-gold)">${captures} &#127935;</span>
-      ${isSheriff ? `<span style="flex-shrink:0">${_ctNeonBadge('SHERIFF', 'sheriff')}</span>` : ''}
-    </div>`;
-  }
-  sidebar += `<div class="ct-side-sec">&#128004; CATTLE &mdash; ${ru.cattle}</div>`;
-  for (const name of (ru.cattleMembers || [])) {
-    const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-    const caught = revCaptured.has(name);
-    const dodges = revDodges[name] || 0;
-    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${caught ? '0.35' : '0.8'})">
-      ${_ctSidePortrait(name, 28, caught ? 'dead' : '')}
-      <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
-      ${caught ? `<span style="font-size:9px;color:var(--ct-neon-red)">ROPED</span>` : `<span style="font-size:9px;color:var(--ct-neon-green)">${dodges} dodges</span>`}
-    </div>`;
-  }
+  const sidebar = _ctBuildRoundupSidebar(ru, revIdx);
 
   // Feed — round reveals
   let feed = '';
   feed += `<div style="background:rgba(0,0,0,0.3);border:1px solid rgba(218,165,32,0.2);border-radius:6px;padding:12px 16px;margin-bottom:10px;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.6">
     <span style="font-family:'Rye',serif;font-size:12px;color:var(--ct-gold);letter-spacing:2px">THE RULES</span><br>
-    <strong style="color:var(--ct-gold)">${ru.cowboys}</strong> are the cowboys — they lasso the cattle. <strong style="color:var(--ct-sepia)">${ru.cattle}</strong> are the cattle — they dodge. Cowboys rope one target per round over 3 rounds. <strong>More captures = cowboys win. More dodges = cattle win.</strong>${cowboys.length < cattle.length ? ` <span style="color:var(--ct-neon-green)">Cowboys are outnumbered ${cowboys.length} vs ${cattle.length} — they get a roping bonus.</span>` : ''}
+    <strong style="color:var(--ct-gold)">${ru.cowboys}</strong> are the cowboys — they lasso the cattle. <strong style="color:var(--ct-sepia)">${ru.cattle}</strong> are the cattle — they dodge. Cowboys rope one target per round over 3 rounds. <strong>Cowboys win if they rope nearly half or more. Cattle win if most dodge.</strong>${(ru.cowboyMembers||[]).length < (ru.cattleMembers||[]).length ? ` <span style="color:var(--ct-neon-green)">Cowboys are outnumbered ${(ru.cowboyMembers||[]).length} vs ${(ru.cattleMembers||[]).length} — they get a roping bonus.</span>` : ''}
   </div>`;
   const rounds = ru.rounds || [];
   for (let ri = 0; ri < rounds.length; ri++) {
@@ -2633,7 +2602,7 @@ export function rpBuildCrazytownRoundup(ep) {
     <div class="ct-hud">${hudCells}</div>
     <div class="ct-layout">
       <div class="ct-feed">${feed}${controls}</div>
-      <div class="ct-sidebar">${sidebar}</div>
+      <div class="ct-sidebar" id="ct-sidebar-roundup">${sidebar}</div>
     </div>
   `, ep);
 }
@@ -2704,7 +2673,7 @@ export function rpBuildCrazytownResults(ep) {
       // Try to get actual tribe score from phase
       if (ph.data?.tribeResults) {
         const tr = ph.data.tribeResults.find(r => r.tribe === t);
-        if (tr) score = tr.tribeScore ?? score;
+        if (tr) score = typeof tr.tribeScore === 'number' ? tr.tribeScore.toFixed(1) : (tr.tribeScore ?? score);
       }
       return `<td style="padding:6px 12px;text-align:center">${_ctChalkNum(score)}</td>`;
     }).join('');
@@ -2743,14 +2712,14 @@ export function rpBuildCrazytownResults(ep) {
   }
 
   // Standouts
-  let standouts = '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:8px 14px">';
+  let standouts = '<div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;padding:8px 14px">';
   if (ct.standoff?.gunslingers?.length) {
     standouts += ct.standoff.gunslingers.map(n =>
-      `<div style="text-align:center">${_ctPortrait(n, 48)}<div style="margin-top:4px">${_ctNeonBadge('GUNSLINGER', 'gunslinger')}</div></div>`
+      `<div style="text-align:center">${_ctPortrait(n, 56)}<div style="margin-top:4px">${_ctNeonBadge('GUNSLINGER', 'gunslinger')}</div></div>`
     ).join('');
   }
   if (ct.roundup?.sheriff) {
-    standouts += `<div style="text-align:center">${_ctPortrait(ct.roundup.sheriff, 48)}<div style="margin-top:4px">${_ctNeonBadge('SHERIFF', 'sheriff')}</div></div>`;
+    standouts += `<div style="text-align:center">${_ctPortrait(ct.roundup.sheriff, 56)}<div style="margin-top:4px">${_ctNeonBadge('SHERIFF', 'sheriff')}</div></div>`;
   }
   standouts += '</div>';
 
@@ -2764,11 +2733,12 @@ export function rpBuildCrazytownResults(ep) {
   const scores = Object.entries(ep.chalMemberScores || {}).sort((a, b) => b[1] - a[1]);
   let leaderboard = '<div style="padding:0 14px 16px">';
   leaderboard += '<div class="ct-side-sec" style="text-align:center">BOUNTY BOARD</div>';
-  leaderboard += '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">';
+  leaderboard += '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">';
   for (const [name, score] of scores) {
-    leaderboard += `<div class="ct-portrait" style="width:64px" data-bounty="${score}">
-      <img src="assets/avatars/${(players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'))}.png" width="56" height="56" style="display:block;border-radius:2px;border:2px solid var(--ct-leather)">
-      <div class="ct-portrait-name">${name}</div>
+    const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+    leaderboard += `<div class="ct-portrait" style="width:80px" data-bounty="$${score}">
+      <img src="assets/avatars/${slug}.png" width="64" height="64" style="display:block;border-radius:2px" onerror="this.style.display='none'">
+      <div class="ct-portrait-name" style="font-size:7px;max-width:68px">${name}</div>
     </div>`;
   }
   leaderboard += '</div></div>';
@@ -2842,4 +2812,44 @@ function _ctUpdateSidebar(screenKey, revIdx) {
     const ctTribes = ct.horseDive?.tribeResults?.map(tr => ({ name: tr.tribe, members: tr.reactions.map(r => r.name) })) || gs.tribes || [];
     if (sideEl) sideEl.innerHTML = _ctBuildStandoffSidebar(ct.standoff, revIdx, ctTribes, new Set(ct.standoff.gunslingers || []));
   }
+  if (screenKey === 'ct-roundup' && ct.roundup) {
+    const sideEl = document.getElementById('ct-sidebar-roundup');
+    if (sideEl) sideEl.innerHTML = _ctBuildRoundupSidebar(ct.roundup, revIdx);
+  }
+}
+
+function _ctBuildRoundupSidebar(ru, revIdx) {
+  const revealedRounds = (ru.rounds || []).slice(0, revIdx + 1);
+  const revCaptured = new Set();
+  const revDodges = {};
+  const revCowboyCaptures = {};
+  for (const r of revealedRounds) {
+    for (const l of (r.lassos || [])) {
+      if (l.captured) { revCaptured.add(l.target); revCowboyCaptures[l.cowboy] = (revCowboyCaptures[l.cowboy] || 0) + 1; }
+      else { revDodges[l.target] = (revDodges[l.target] || 0) + 1; }
+    }
+  }
+  const allRevealed = revIdx >= (ru.rounds || []).length - 1;
+  let sidebar = `<div class="ct-side-sec">&#129312; COWBOYS &mdash; ${ru.cowboys}</div>`;
+  for (const name of (ru.cowboyMembers || [])) {
+    const captures = revCowboyCaptures[name] || 0;
+    const isSheriff = allRevealed && ru.sheriff === name;
+    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,0.8)">
+      ${_ctSidePortrait(name, 28)}
+      <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
+      <span style="font-size:9px;color:var(--ct-gold)">${captures} &#127935;</span>
+      ${isSheriff ? `<span style="flex-shrink:0">${_ctNeonBadge('SHERIFF', 'sheriff')}</span>` : ''}
+    </div>`;
+  }
+  sidebar += `<div class="ct-side-sec">&#128004; CATTLE &mdash; ${ru.cattle}</div>`;
+  for (const name of (ru.cattleMembers || [])) {
+    const caught = revCaptured.has(name);
+    const dodges = revDodges[name] || 0;
+    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${caught ? '0.35' : '0.8'})">
+      ${_ctSidePortrait(name, 28, caught ? 'dead' : '')}
+      <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
+      ${caught ? `<span style="font-size:9px;color:var(--ct-neon-red)">ROPED</span>` : `<span style="font-size:9px;color:var(--ct-neon-green)">${dodges} dodges</span>`}
+    </div>`;
+  }
+  return sidebar;
 }

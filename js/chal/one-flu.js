@@ -41,10 +41,15 @@ const FLU_HOST = {
     `"Part secured! That diver just earned their tribe a massive advantage at the assembly table!"`,
     `"Victory from the tank! That's guts — literally — and a point for the tribe!"`,
   ],
-  diveFail: [
-    `"Shocking! Too many jolts — that diver had to bail empty-handed. The body part stays in the tank!"`,
-    `"The eels win this round! Too many shocks — no part for that tribe today."`,
-    `"And they come up empty! Three shocks is the limit and they hit all three. Back to the bench!"`,
+  diveFailShock: [
+    `"Shocking! Too many jolts — that diver had to bail empty-handed!"`,
+    `"The eels win this round! Three shocks — no part for that tribe today."`,
+    `"Three strikes from the eels! That diver's done. The body part stays in the tank!"`,
+  ],
+  diveFailMiss: [
+    `"So close! The part slipped right through their fingers. Better luck next dive!"`,
+    `"They got past the eels but couldn't grab the part. Sometimes the tank just wins."`,
+    `"In and out, but empty-handed. The grab just wasn't there this time."`,
   ],
   assemblyStart: [
     `"With all the parts collected, it's time for the medical assembly! First tribe to build their patient correctly wins immunity!"`,
@@ -1352,7 +1357,7 @@ export function _textOneFlu(ep, ln, sec) {
         if (round.diver) {
           const diverPr = pronouns(round.diver);
           if (round.shocks >= 3) {
-            const failPool = FLU_HOST.diveFail;
+            const failPool = rd.shocks >= 3 ? FLU_HOST.diveFailShock : FLU_HOST.diveFailMiss;
             ln(failPool[Math.floor(Math.random() * failPool.length)]);
             const shockLine = [
               `${round.diver} surfaces gasping — ${diverPr.sub} took all three jolts and came up empty.`,
@@ -2032,7 +2037,7 @@ export function rpBuildOneFluQuiz(ep) {
         // Dive result with host reaction
         const shockIcons = rd.shocks > 0 ? ' ' + Array(Math.min(rd.shocks, 3)).fill('&#9889;').join('') : '';
         const diveClass = rd.partRetrieved ? 'positive' : 'negative';
-        const hostDive = rd.partRetrieved ? _rp(FLU_HOST.diveSuccess) : _rp(FLU_HOST.diveFail);
+        const hostDive = rd.partRetrieved ? _rp(FLU_HOST.diveSuccess) : _rp(rd.shocks >= 3 ? FLU_HOST.diveFailShock : FLU_HOST.diveFailMiss);
         roundHtml += `<div class="of-ev ${diveClass}">
           ${_ofSmallPortrait(rd.diver, 36)}
           <div style="flex:1;min-width:0">

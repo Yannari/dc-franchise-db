@@ -479,7 +479,8 @@ function _simulateSubmarine(ep, tribeMembers, result) {
   const pState = {};
   tribeMembers.forEach(t => {
     t.members.forEach(name => {
-      pState[name] = { tribe: t.name, submerged: false, skipCheck: false, breathExtend: false };
+      // status: 'surviving' (100%), 'snorkel' (50%), 'submerged' (20%)
+      pState[name] = { tribe: t.name, status: 'surviving', skipCheck: false, submerged: false };
     });
   });
 
@@ -510,7 +511,7 @@ function _simulateSubmarine(ep, tribeMembers, result) {
     const stageData = { num: si + 1, waterPct: stage.waterPct, tribeStates: [] };
 
     for (const t of tribeMembers) {
-      const tribeEscapeProg = { tribe: t.name, surviving: [], submerged: [], escapeProgress: 0, events: [] };
+      const tribeEscapeProg = { tribe: t.name, surviving: [], submerged: [], snorkel: [], escapeProgress: 0, events: [] };
 
       // Submerge checks per player
       const thresholds = [0.2, 0.35, 0.48, 0.6];
@@ -524,16 +525,12 @@ function _simulateSubmarine(ep, tribeMembers, result) {
 
       for (const name of t.members) {
         const ps = pState[name];
-        if (ps.submerged) {
-          // Breath extend: survives one more stage submerged
-          if (ps.breathExtend) {
-            ps.breathExtend = false;
-            tribeEscapeProg.submerged.push(name);
-          } else {
-            tribeEscapeProg.submerged.push(name);
-          }
+        // Already submerged or snorkel — don't re-check
+        if (ps.status === 'submerged' || ps.status === 'snorkel') {
+          tribeEscapeProg.submerged.push(name);
           continue;
         }
+        // Skip check (from leak plug)
         if (ps.skipCheck) {
           ps.skipCheck = false;
           tribeEscapeProg.surviving.push(name);
@@ -542,10 +539,10 @@ function _simulateSubmarine(ep, tribeMembers, result) {
 
         const st = pStats(name);
         let roll = statFns[si](st) + noise(0.2);
-        // Earthquake injury penalty
         if (gs.lingeringInjuries?.[name]) roll -= 0.1;
 
         if (roll <= threshold) {
+          ps.status = 'submerged';
           ps.submerged = true;
           rp.push({ type: 'submerged', player: name, tribe: t.name,
             text: pick(SUBMARINE_HOST.playerSubmerged)(host, name) });
@@ -563,8 +560,17 @@ function _simulateSubmarine(ep, tribeMembers, result) {
       for (let ei = 0; ei < numEvents; ei++) {
         const candidates = eventKeys.filter(k => {
           if (usedEventsThisStage.has(k)) return false;
-          // Straw snorkel: only fire once per player across entire submarine
-          if (k === 'strawSnorkel' && (!tribeEscapeProg.submerged.length || snorkelUsed.has(t.name))) return false;
+          // Straw snorkel: once per tribe, needs someone submerged (not already snorkel)
+          if (k === 'strawSnorkel') {
+            const hasFullySub = t.members.some(m => pState[m]?.status === 'submerged');
+            if (!hasFullySub || snorkelUsed.has(t.name)) return false;
+          }
+          // Air pocket: once per tribe, needs surviving player + submerged player
+          if (k === 'airPocket') {
+            const hasSurvivor = tribeEscapeProg.surviving.length > 0;
+            const hasFullySub = t.members.some(m => pState[m]?.status === 'submerged');
+            if (!hasSurvivor || !hasFullySub || airPocketUsed.has(t.name)) return false;
+          }
           // Panic drowning: needs 2+ survivors to drag
           if (k === 'panicDrowning' && tribeEscapeProg.surviving.length < 2) return false;
           // Dropped code: only works if this tribe is Phase 1 winner
@@ -619,15 +625,14 @@ function _simulateSubmarine(ep, tribeMembers, result) {
             if (t.name === phases1Winner) progressDelta = -escapeCode * 0.5;
             break;
           case 'strawSnorkel': {
-            // submerged player can contribute
-            const sub = pickPlayer(submerged);
-            if (sub && pState[sub]) {
-              const subSt = pStats(sub);
-              const snorkelRoll = subSt.mental * 0.08 + noise(0.2);
-              if (snorkelRoll > 0.5) {
-                progressDelta = 0.1;
-                ep.chalMemberScores[sub] = (ep.chalMemberScores[sub] || 0) + 7;
-                gs.popularity[sub] = (gs.popularity[sub] || 0) + 3;
+            // Any player can build a snorkel — upgrades submerged→snorkel (50%)
+            // If already surviving, no change needed
+            const snorkelTarget = actor;
+            if (pState[snorkelTarget]) {
+              if (pState[snorkelTarget].status === 'submerged') {
+                pState[snorkelTarget].status = 'snorkel';
+                ep.chalMemberScores[snorkelTarget] = (ep.chalMemberScores[snorkelTarget] || 0) + 7;
+                gs.popularity[snorkelTarget] = (gs.popularity[snorkelTarget] || 0) + 3;
               }
             }
             break;
@@ -660,21 +665,22 @@ function _simulateSubmarine(ep, tribeMembers, result) {
             break;
           }
           case 'airPocket': {
-            // un-submerge one player
-            if (submerged.length > 0) {
-              const rescued = submerged[Math.floor(Math.random() * submerged.length)];
+            // Surviving player rescues a submerged player → snorkel status (50%)
+            const fullySubmerged = submerged.filter(n => pState[n]?.status === 'submerged');
+            if (fullySubmerged.length > 0 && surviving.length > 0) {
+              const rescued = fullySubmerged[Math.floor(Math.random() * fullySubmerged.length)];
               if (pState[rescued]) {
-                pState[rescued].submerged = false;
-                tribeEscapeProg.submerged.splice(tribeEscapeProg.submerged.indexOf(rescued), 1);
-                tribeEscapeProg.surviving.push(rescued);
+                pState[rescued].status = 'snorkel';
               }
             }
             break;
           }
           case 'lockBreakthrough': {
+            // Requires surviving or snorkel player — can't crack the code while fully drowning
+            if (pState[actor]?.status === 'submerged') break;
             const lockRoll = st.mental * 0.08 + noise(0.2);
             if (lockRoll > 0.5) {
-              progressDelta = escapeProgress[t.name] * 0.3; // +30% of current
+              progressDelta = escapeProgress[t.name] * 0.3;
               ep.chalMemberScores[actor] = (ep.chalMemberScores[actor] || 0) + 7;
               gs.popularity[actor] = (gs.popularity[actor] || 0) + 2;
             }
@@ -725,13 +731,20 @@ function _simulateSubmarine(ep, tribeMembers, result) {
         rp.push({ type: 'event', eventType: evKey, tribe: t.name, player: actor, text: evText });
       }
 
-      // Compute escape progress for this stage
+      // Build snorkel list for this stage (players who were submerged but now have snorkel status)
+      tribeEscapeProg.snorkel = t.members.filter(m => pState[m]?.status === 'snorkel');
+      // Update submerged list to only include fully submerged (not snorkel)
+      tribeEscapeProg.submerged = t.members.filter(m => pState[m]?.status === 'submerged');
+
+      // Compute escape progress — three tiers: surviving 100%, snorkel 50%, submerged 20%
       let stageProg = 0;
-      for (const name of tribeEscapeProg.surviving) {
+      for (const name of t.members) {
+        const ps = pState[name];
         const st = pStats(name);
-        stageProg += (st.mental * 0.04 + st.strategic * 0.03 + noise(0.15));
+        const baseContrib = st.mental * 0.04 + st.strategic * 0.03 + noise(0.15);
+        const multiplier = ps.status === 'surviving' ? 1.0 : ps.status === 'snorkel' ? 0.5 : 0.2;
+        stageProg += baseContrib * multiplier;
       }
-      // Average by tribe member count (fairness for small tribes)
       if (t.members.length > 0) stageProg /= t.members.length;
 
       // Phase 1 winner bonus
@@ -743,10 +756,12 @@ function _simulateSubmarine(ep, tribeMembers, result) {
       escapeProgress[t.name] += stageProg;
       tribeEscapeProg.escapeProgress = +stageProg.toFixed(3);
 
-      // chalMemberScores: +4 per stage survived, +6 for escape contribution
-      for (const name of tribeEscapeProg.surviving) {
-        ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + 4;
-        if (stageProg > 0) ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + 6;
+      // chalMemberScores: surviving +4, snorkel +2, submerged +1
+      for (const name of t.members) {
+        const ps = pState[name];
+        const scoreBonus = ps.status === 'surviving' ? 4 : ps.status === 'snorkel' ? 2 : 1;
+        ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + scoreBonus;
+        if (stageProg > 0) ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + (ps.status === 'surviving' ? 6 : ps.status === 'snorkel' ? 3 : 0);
       }
 
       stageData.tribeStates.push(tribeEscapeProg);
@@ -1910,23 +1925,35 @@ function _mdBuildSubmarineSidebar(sub, revIdx, tribeNames, ep) {
       <div class="md-side-bar"><div class="md-side-fill" style="width:${progPct}%;background:${prog >= maxEsc ? '#22c55e' : '#0ea5e9'}"></div></div>
     </div>`;
 
-    // Surviving
+    const snork = ts?.snorkel || [];
+
+    // Surviving (100%)
     if (surv.length) {
-      html += `<div style="font-size:9px;color:rgba(255,255,255,0.35);margin-bottom:3px">SURVIVING (${surv.length})</div>`;
+      html += `<div style="font-size:9px;color:#5eead4;margin-bottom:3px">SURVIVING (${surv.length}) — 100%</div>`;
       html += `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px">`;
       for (const name of surv) {
         const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-        html += `<img src="assets/avatars/${slug}.png" width="24" height="24" title="${name}" style="border-radius:2px;border:1px solid rgba(34,211,238,0.3)" onerror="this.style.display='none'">`;
+        html += `<img src="assets/avatars/${slug}.png" width="24" height="24" title="${name} — surviving" style="border-radius:2px;border:1px solid rgba(34,211,238,0.3)" onerror="this.style.display='none'">`;
       }
       html += `</div>`;
     }
-    // Submerged
+    // Snorkel (50%)
+    if (snork.length) {
+      html += `<div style="font-size:9px;color:#93c5fd;margin-bottom:3px">🤿 SNORKEL (${snork.length}) — 50%</div>`;
+      html += `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px">`;
+      for (const name of snork) {
+        const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+        html += `<img src="assets/avatars/${slug}.png" width="24" height="24" title="${name} — snorkel" style="border-radius:2px;border:1px solid rgba(147,197,253,0.4);opacity:0.75" onerror="this.style.display='none'">`;
+      }
+      html += `</div>`;
+    }
+    // Submerged (20%)
     if (sub_list.length) {
-      html += `<div style="font-size:9px;color:#fca5a5;margin-bottom:3px">SUBMERGED (${sub_list.length})</div>`;
+      html += `<div style="font-size:9px;color:#fca5a5;margin-bottom:3px">SUBMERGED (${sub_list.length}) — 20%</div>`;
       html += `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px">`;
       for (const name of sub_list) {
         const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-        html += `<img src="assets/avatars/${slug}.png" width="24" height="24" title="${name}" style="border-radius:2px;border:1px solid rgba(239,68,68,0.3);opacity:0.5;filter:saturate(0.4)" onerror="this.style.display='none'">`;
+        html += `<img src="assets/avatars/${slug}.png" width="24" height="24" title="${name} — submerged" style="border-radius:2px;border:1px solid rgba(239,68,68,0.3);opacity:0.4;filter:saturate(0.3)" onerror="this.style.display='none'">`;
       }
       html += `</div>`;
     }

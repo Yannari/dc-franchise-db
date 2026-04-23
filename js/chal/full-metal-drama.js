@@ -316,9 +316,9 @@ function _simulatePlaneJump(ep, tribeMembers, result) {
     for (const name of tribe.members) {
       const s = pStats(name);
       const pr = pronouns(name);
-      const jumpCheck = s.boldness * 0.06 + s.endurance * 0.03 + noise(0.25);
+      const jumpCheck = s.boldness * 0.06 + s.endurance * 0.03 + noise(0.2);
 
-      if (jumpCheck > 0.35) {
+      if (jumpCheck > 0.45) {
         jumpers.push(name);
         // Heroic dive?
         if (s.boldness >= 7 && Math.random() < 0.4) {
@@ -374,7 +374,18 @@ function _simulatePlaneJump(ep, tribeMembers, result) {
     jumpOrder[tribe.name] = [...jumpers, ...refusers];
   }
 
-  result.planeJump = { jumpOrder, events };
+  // Collect all refusers across tribes — they sit out Phase 2
+  const allRefusers = new Set();
+  for (const tribe of tribeMembers) {
+    const jumpers = jumpOrder[tribe.name] || [];
+    for (const name of tribe.members) {
+      if (!jumpers.includes(name) || events.some(e => e.type === 'panicRefusal' && e.player === name)) {
+        allRefusers.add(name);
+      }
+    }
+  }
+
+  result.planeJump = { jumpOrder, events, jumpers: allPlayers.filter(n => !allRefusers.has(n)), refusers: [...allRefusers] };
   result.phases.push('planeJump');
 }
 
@@ -386,19 +397,22 @@ function _simulatePaintBomb(ep, tribeMembers, result) {
   const tribeResults = [];
   let bestScore = -Infinity, winnerTribe = null;
 
+  const refuserSet = new Set(result.planeJump?.refusers || []);
+
   for (const tribe of tribeMembers) {
     const members = tribe.members;
-    const jumpers = new Set(jumpOrder[tribe.name]?.slice(0, Math.ceil(members.length * 0.6)) || []);
+    const activeMembers = members.filter(m => !refuserSet.has(m));
+    const jumperSet = new Set(jumpOrder[tribe.name] || []);
     let quality = 0, spectacle = 0;
     const contributions = {};
     const events = [];
 
-    // Each member contributes
-    for (const name of members) {
+    // Only jumpers contribute — refusers sit out
+    for (const name of activeMembers) {
       const s = pStats(name);
       let q = s.mental * 0.04 + s.strategic * 0.03 + noise(0.2);
       let sp = s.boldness * 0.03;
-      if (jumpers.has(name)) q += 0.05; // jumper bonus
+      if (jumperSet.has(name)) q += 0.05;
       contributions[name] = { quality: q, spectacle: sp };
       quality += q;
       spectacle += sp;
@@ -406,7 +420,7 @@ function _simulatePaintBomb(ep, tribeMembers, result) {
     }
 
     // Control threshold
-    const avgControl = members.reduce((s, n) => s + (pStats(n).mental + pStats(n).temperament), 0) / members.length;
+    const avgControl = activeMembers.length > 0 ? activeMembers.reduce((s, n) => s + (pStats(n).mental + pStats(n).temperament), 0) / activeMembers.length : 5;
     let control = avgControl * 0.05;
     const avgQuality = quality / members.length;
 

@@ -227,6 +227,42 @@ const SUBMARINE_EVENTS = {
     (p, pr) => `"I can still DO this!" — ${p} dives hard and reaches the lock panel from below. Heroic, desperate, and it WORKS.`,
     (p, pr) => `${p} isn't done yet. Submerged or not, ${pr.sub} kicks to the panel and drives the escape progress forward.`,
   ],
+  // ── Narrative-only events (no mechanical effect, add atmosphere) ──
+  lightFlicker: [
+    (p, pr) => `The emergency lights flicker and die. For three seconds, the submarine is pitch black. ${p} grabs the nearest wall and holds on.`,
+    (p, pr) => `A power surge kills the lights. ${p} feels the water rising in the dark. When the lights come back, everyone's moved.`,
+    (p, pr) => `The bulb above ${p} explodes. Glass in the water. Nobody's hurt, but the mood drops another notch.`,
+  ],
+  metalGroan: [
+    (p, pr) => `The hull GROANS — a deep, structural sound that makes everyone freeze. Is the sub breaking apart?`,
+    (p, pr) => `A metallic screech echoes through the chamber. ${p} looks at the ceiling. Something shifted up there.`,
+    (p, pr) => `The pressure outside pushes in. The walls creak. ${p} mutters something nobody wants to hear repeated.`,
+  ],
+  confessionMoment: [
+    (p, pr) => `"If we don't make it out —" ${p} starts, then stops. The tribe goes quiet. ${pr.Sub} doesn't finish the sentence.`,
+    (p, pr) => `${p} turns to ${pr.posAdj} tribemate and says something only they can hear. Whatever it is, it lands hard.`,
+    (p, pr) => `"I never told anyone this, but—" ${p} catches ${pr.ref}. "${pr.Sub} trails off. The water keeps rising.`,
+  ],
+  chrisOnIntercom: [
+    (p, pr) => `Chris's voice crackles through the intercom: "Just checking in! How's everyone doing? Great? Great." The intercom clicks off.`,
+    (p, pr) => `"Fun fact!" Chris announces through a speaker. "This submarine was decommissioned for safety reasons! Anyway, good luck!"`,
+    (p, pr) => `The intercom buzzes: "Chef, can you— wait, is this thing on? ...We should probably get them out soon." Chris sounds nervous.`,
+  ],
+  chefDoesntCare: [
+    (p, pr) => `Chef's voice booms through a pipe: "Y'all still alive in there? ...Good. I'm on break." The pipe goes quiet.`,
+    (p, pr) => `Someone bangs on the hull from outside. Chef yells back: "I HEARD you! I'm BUSY!" Silence.`,
+    (p, pr) => `Through the wall, the tribe hears Chef humming. He's playing cards. He is not coming.`,
+  ],
+  waterTemperature: [
+    (p, pr) => `The water is getting colder. ${p} can feel ${pr.posAdj} fingers going numb. Focus is harder now.`,
+    (p, pr) => `"Is it just me or is this water FREEZING?" ${p} shivers. It's not just ${pr.obj}.`,
+    (p, pr) => `${p}'s teeth chatter so loud the tribe can hear it over the rushing water.`,
+  ],
+  floatingDebris: [
+    (p, pr) => `A toolbox floats past ${p}'s face. Then a chair. Then something that looks disturbingly organic.`,
+    (p, pr) => `${p} pushes aside a floating clipboard. It reads "EMERGENCY PROCEDURES." Page one is blank.`,
+    (p, pr) => `A rubber duck surfaces next to ${p}. Nobody knows where it came from. Nobody asks.`,
+  ],
 };
 
 // ─── Drama Break ──────────────────────────────────────────────────────────────
@@ -674,6 +710,15 @@ function _simulateSubmarine(ep, tribeMembers, result) {
             }
             break;
           }
+          // Narrative events — atmosphere only, no mechanical effect
+          case 'lightFlicker':
+          case 'metalGroan':
+          case 'confessionMoment':
+          case 'chrisOnIntercom':
+          case 'chefDoesntCare':
+          case 'waterTemperature':
+          case 'floatingDebris':
+            break;
         }
 
         tribeEscapeProg.events.push({ type: evKey, actor, text: evText, progressDelta });

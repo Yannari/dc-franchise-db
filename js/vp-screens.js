@@ -16,7 +16,7 @@ import { rpBuildBeachBlanketBogusTitleCard, rpBuildBeachBlanketBogusSurf, rpBuil
 import { rpBuildCrazytownTitleCard, rpBuildCrazytownHorseDive, rpBuildCrazytownStandoff, rpBuildCrazytownRoundup, rpBuildCrazytownDramaBreak, rpBuildCrazytownResults, crazytownRevealNext, crazytownRevealAll } from './chal/crazytown.js';
 import { rpBuildChefshankTitleCard, rpBuildChefshankPrisonFood, rpBuildChefshankPrisonBreak, rpBuildChefshankDramaBreak, rpBuildChefshankResults, chefshankRevealNext, chefshankRevealAll } from './chal/chefshank.js';
 import { rpBuildOneFluTitleCard, rpBuildOneFluStudySleep, rpBuildOneFluQuiz, rpBuildOneFluAssembly, rpBuildOneFluDramaBreak, rpBuildOneFluDisease, rpBuildOneFluResults, oneFluRevealNext, oneFluRevealAll } from './chal/one-flu.js';
-import { rpBuildMastersOfDisastersTitleCard, mastersOfDisastersRevealNext, mastersOfDisastersRevealAll } from './chal/masters-of-disasters.js';
+import { rpBuildMastersOfDisastersTitleCard, rpBuildMastersOfDisastersEarthquake, rpBuildMastersOfDisastersDramaBreak, rpBuildMastersOfDisastersSubmarine, rpBuildMastersOfDisastersResults, mastersOfDisastersRevealNext, mastersOfDisastersRevealAll } from './chal/masters-of-disasters.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10435,6 +10435,16 @@ export function buildVPScreens(epRecord) {
     }
   } else if (ep.isMastersOfDisasters && ep.mastersOfDisasters) {
     vpScreens.push({ id:'mod-title', label:'🌋 Masters of Disasters', html: rpBuildMastersOfDisastersTitleCard(ep) });
+    if (ep.mastersOfDisasters.earthquake) {
+      vpScreens.push({ id:'mod-eq', label:'🔥 Earthquake', html: rpBuildMastersOfDisastersEarthquake(ep) });
+    }
+    if (ep.mastersOfDisasters.breakEvents?.length) {
+      vpScreens.push({ id:'mod-drama', label:'🎭 Drama Break', html: rpBuildMastersOfDisastersDramaBreak(ep) });
+    }
+    if (ep.mastersOfDisasters.submarine) {
+      vpScreens.push({ id:'mod-sub', label:'🌊 Submarine', html: rpBuildMastersOfDisastersSubmarine(ep) });
+    }
+    vpScreens.push({ id:'mod-results', label:'⚖️ Final Verdict', html: rpBuildMastersOfDisastersResults(ep) });
     // RI screens
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _modRiLife = rpBuildRILife(ep);

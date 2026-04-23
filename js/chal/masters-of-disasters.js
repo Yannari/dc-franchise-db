@@ -770,8 +770,8 @@ function _simulateEarthquake(ep, tribeMembers, result) {
       const tribe = s.tribe;
       const tribemates = tribeMembers.find(t => t.name === tribe)?.members.filter(m => m !== name) || [];
 
-      // Base fatigue
-      s.fatigue += 1.0;
+      // Base fatigue — 0.6 per round so endurance 3 stops ~round 5, endurance 5 survives
+      s.fatigue += 0.6;
 
       // Events selection
       const eventsThisRound = [];
@@ -995,13 +995,15 @@ function _simulateEarthquake(ep, tribeMembers, result) {
     if (phaseWinner) break;
   }
 
-  // Fallback: tribe with most total stages
+  // Fallback: tribe with highest stage PERCENTAGE (fair for uneven sizes)
   if (!phaseWinner) {
-    const tribeStages = {};
+    const tribeStagesPct = {};
     tribeMembers.forEach(t => {
-      tribeStages[t.name] = t.members.reduce((sum, m) => sum + (stateMap[m]?.stage || 0), 0);
+      const totalStages = t.members.reduce((sum, m) => sum + (stateMap[m]?.stage || 0), 0);
+      const maxPossible = t.members.length * 5;
+      tribeStagesPct[t.name] = maxPossible > 0 ? totalStages / maxPossible : 0;
     });
-    const sorted = Object.entries(tribeStages).sort((a, b) => b[1] - a[1]);
+    const sorted = Object.entries(tribeStagesPct).sort((a, b) => b[1] - a[1]);
     phaseWinner = sorted[0][0];
   }
 
@@ -1973,7 +1975,7 @@ export function rpBuildMastersOfDisastersEarthquake(ep) {
           <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
             ${ps.advanced ? `<span style="font-size:9px;color:#86efac;border:1px solid rgba(34,197,94,0.2);padding:1px 6px;border-radius:3px">ADVANCED to Stage ${ps.stage}</span>` : `<span style="font-size:9px;color:rgba(255,255,255,0.35)">Stage ${ps.stage}/5</span>`}
             <div style="display:flex;align-items:center;gap:4px;flex:1;min-width:80px">
-              <span style="font-size:8px;color:${fatPct > 75 ? '#fca5a5' : 'rgba(255,255,255,0.3)'}">FAT</span>
+              <span style="font-size:8px;color:${fatPct > 75 ? '#fca5a5' : 'rgba(255,255,255,0.3)'}">FATIGUE</span>
               <div class="md-fat-bar" style="flex:1"><div class="md-fat-fill" style="width:${fatPct}%;background:${fatPct > 75 ? '#ef4444' : fatPct > 50 ? '#f97316' : '#fbbf24'}"></div></div>
             </div>
             ${ps.stopped ? '<span class="md-stamp-stopped">STOPPED</span>' : ''}

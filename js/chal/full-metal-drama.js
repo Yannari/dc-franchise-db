@@ -1101,7 +1101,25 @@ function _fmdShell(content, ep) {
 .fmd-ev.negative{border-left-color:var(--wd-blood)}
 .fmd-ev.positive{border-left-color:var(--wd-khaki)}
 .fmd-ev.heroic{border-left-color:#84cc16}
-.fmd-ev.explosive{border-left-color:var(--wd-explosion)}
+.fmd-ev.explosive{border-left-color:var(--wd-explosion);position:relative;overflow:hidden}
+.fmd-ev.explosive::before{content:'';position:absolute;top:50%;left:30%;width:0;height:0;
+  border-radius:50%;background:radial-gradient(circle,var(--wd-explosion) 0%,rgba(249,115,22,0.3) 40%,transparent 70%);
+  animation:fmd-paint-burst 0.8s ease-out forwards;pointer-events:none;z-index:0}
+.fmd-ev.explosive.score-high::before{width:200%;height:200%;top:-50%;left:-50%;
+  background:radial-gradient(circle,var(--wd-paint-red) 0%,var(--wd-explosion) 20%,rgba(234,179,8,0.3) 45%,transparent 70%)}
+.fmd-ev.explosive.score-mid::before{width:150%;height:150%;top:-25%;left:-10%;
+  background:radial-gradient(circle,var(--wd-explosion) 0%,rgba(234,179,8,0.3) 40%,transparent 65%)}
+.fmd-ev.explosive.score-low::before{width:80%;height:80%;top:10%;left:20%;
+  background:radial-gradient(circle,rgba(249,115,22,0.4) 0%,transparent 60%)}
+.fmd-ev.explosive.uncontrolled::before{width:300%;height:300%;top:-100%;left:-100%;
+  background:radial-gradient(circle,#ef4444 0%,var(--wd-explosion) 15%,#eab308 30%,rgba(239,68,68,0.2) 50%,transparent 70%);
+  animation:fmd-paint-burst 1.2s ease-out forwards}
+.fmd-ev.explosive .fmd-ev-content{position:relative;z-index:1}
+
+/* Paint splatter spots */
+.fmd-splat{position:absolute;border-radius:50%;pointer-events:none;z-index:0;animation:fmd-splat-in 0.5s ease-out both}
+@keyframes fmd-paint-burst{0%{transform:scale(0);opacity:0.9}60%{opacity:0.5}100%{transform:scale(1);opacity:0.15}}
+@keyframes fmd-splat-in{0%{transform:scale(0) rotate(0deg);opacity:0}50%{opacity:0.6}100%{transform:scale(1) rotate(var(--rot,15deg));opacity:0.3}}
 .fmd-ev.round-header{border-left-color:var(--wd-mud);
   background:linear-gradient(135deg,rgba(92,64,51,0.2),rgba(61,79,47,0.15));
   font-family:'Black Ops One',sans-serif}
@@ -1382,8 +1400,22 @@ export function rpBuildFullMetalDramaPaintBomb(ep) {
     const active = tribeData.members.filter(m => !refuserSet.has(m));
     const sittingOut = tribeData.members.filter(m => refuserSet.has(m));
 
-    let tribeHtml = `<div class="fmd-ev explosive" style="border-left-color:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'}">
-      <div style="flex:1;min-width:0">
+    const scoreClass = !tr.controlled ? 'uncontrolled' : tr.score > 0.4 ? 'score-high' : tr.score > 0.25 ? 'score-mid' : 'score-low';
+    const paintColors = ['var(--wd-paint-red)', 'var(--wd-paint-blue)', 'var(--wd-paint-yellow)', '#84cc16', '#c084fc'];
+    const numSplats = !tr.controlled ? 8 : tr.score > 0.4 ? 5 : tr.score > 0.25 ? 3 : 1;
+    const splatHtml = Array.from({ length: numSplats }, (_, si) => {
+      const size = 10 + Math.floor(Math.random() * 30);
+      const left = Math.floor(Math.random() * 90);
+      const top = Math.floor(Math.random() * 80);
+      const color = paintColors[si % paintColors.length];
+      const delay = si * 0.1;
+      const rot = -30 + Math.floor(Math.random() * 60);
+      return `<div class="fmd-splat" style="width:${size}px;height:${size}px;left:${left}%;top:${top}%;background:${color};animation-delay:${delay}s;--rot:${rot}deg"></div>`;
+    }).join('');
+
+    let tribeHtml = `<div class="fmd-ev explosive ${scoreClass}" style="border-left-color:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'}">
+      ${splatHtml}
+      <div class="fmd-ev-content" style="flex:1;min-width:0">
         <div class="fmd-ev-badge ${tr.controlled ? 'green' : 'red'}">${tr.tribe} &mdash; ${tr.controlled ? 'CONTROLLED DETONATION' : '💥 UNCONTROLLED BLAST'}</div>`;
 
     // Show who's working on the bomb
@@ -1425,7 +1457,7 @@ export function rpBuildFullMetalDramaPaintBomb(ep) {
       ${!tr.controlled ? '<div style="font-size:9px;color:var(--wd-paint-red);margin-top:3px">⚠️ Uncontrolled — 70% score penalty</div>' : ''}
     </div>`;
 
-    tribeHtml += `</div></div>`;
+    tribeHtml += `</div></div>`;  // close fmd-ev-content + fmd-ev
     steps.push({ type: 'tribe', tribe: tr.tribe, html: tribeHtml });
   }
 

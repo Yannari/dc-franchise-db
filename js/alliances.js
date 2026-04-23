@@ -338,6 +338,12 @@ export function computeHeat(name, tribalPlayers, alliances) {
   }
   // Off the Chain: bike race sabotage/rivalry heat
   if (gs._bikeRaceHeat?.[name] && ((gs.episode || 0) + 1) < gs._bikeRaceHeat[name].expiresEp) heat += gs._bikeRaceHeat[name].amount;
+  // Full Metal Drama: friendly fire, sabotage, desertion heat
+  if (gs._warHeat) {
+    Object.entries(gs._warHeat).forEach(([victim, data]) => {
+      if (data.target === name && tribalPlayers.includes(victim) && ((gs.episode || 0) + 1) < data.expiresEp) heat += data.amount;
+    });
+  }
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──
   if (gs._volunteerDuelHeat?.[name] === ((gs.episode || 0) + 1)) heat += 8.0;
   // Volunteer duel winner returns with reduced heat

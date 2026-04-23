@@ -1375,25 +1375,56 @@ export function rpBuildFullMetalDramaPaintBomb(ep) {
     <div class="fmd-ev-text">${pick(WAR_HOST.paintBombIntro)(host())}</div></div>
   </div>` });
 
+  const refuserSet = new Set(fm.planeJump?.refusers || []);
+
   for (const tr of pb.tribes) {
-    // Each tribe's events
-    let tribeHtml = `<div class="fmd-ev explosive">
+    const tribeData = gs.tribes?.find(t => t.name === tr.tribe) || { members: [] };
+    const active = tribeData.members.filter(m => !refuserSet.has(m));
+    const sittingOut = tribeData.members.filter(m => refuserSet.has(m));
+
+    let tribeHtml = `<div class="fmd-ev explosive" style="border-left-color:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'}">
       <div style="flex:1;min-width:0">
-        <div class="fmd-ev-badge ${tr.controlled ? 'green' : 'red'}">${tr.tribe} &mdash; ${tr.controlled ? 'CONTROLLED DETONATION' : 'UNCONTROLLED BLAST'}</div>`;
+        <div class="fmd-ev-badge ${tr.controlled ? 'green' : 'red'}">${tr.tribe} &mdash; ${tr.controlled ? 'CONTROLLED DETONATION' : '💥 UNCONTROLLED BLAST'}</div>`;
+
+    // Show who's working on the bomb
+    tribeHtml += `<div style="display:flex;gap:4px;flex-wrap:wrap;margin:6px 0">`;
+    for (const m of active) {
+      tribeHtml += `<div style="text-align:center;width:36px">${_fmdPortrait(m, 28)}<div style="font-size:7px;color:rgba(255,255,255,0.5)">${m.split(' ')[0]}</div></div>`;
+    }
+    tribeHtml += `</div>`;
+
+    // Show who sat out
+    if (sittingOut.length) {
+      tribeHtml += `<div style="font-size:10px;color:#fca5a5;margin-bottom:6px">🚫 Sat out (refused to jump): ${sittingOut.join(', ')}</div>`;
+    }
+
+    // Events during bomb building
     for (const evt of (tr.events || [])) {
       const actorName = evt.player || (evt.players ? evt.players[0] : '');
-      tribeHtml += `<div style="display:flex;gap:8px;align-items:flex-start;margin-top:6px">
-        ${actorName ? `<div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;overflow:hidden">${_fmdPortrait(actorName, 28)}</div>` : ''}
+      const evtColor = evt.type === 'sabotageIngredient' ? '#ef4444' : evt.type === 'accidentalMasterpiece' ? '#22c55e' : evt.type === 'chainReaction' ? '#f97316' : evt.type === 'explosivoMoment' ? '#ef4444' : evt.type === 'artisticTouch' ? '#60a5fa' : '#a8a29e';
+      tribeHtml += `<div style="display:flex;gap:8px;align-items:flex-start;margin-top:6px;padding:4px 6px;background:${evtColor}11;border-left:3px solid ${evtColor};border-radius:2px">
+        ${actorName ? _fmdPortrait(actorName, 24) : ''}
         <div class="fmd-ev-text" style="font-size:12px">${evt.text || ''}</div>
       </div>`;
     }
+
+    // Host judge
     if (tr.hostJudge) {
       tribeHtml += `<div style="margin-top:8px;padding-top:6px;border-top:1px dashed rgba(196,167,119,0.15);font-style:italic;font-size:12px;color:var(--wd-khaki)">${tr.hostJudge}</div>`;
     }
-    tribeHtml += `<div style="margin-top:6px;display:flex;gap:12px;font-size:11px">
-      <span style="color:rgba(255,255,255,0.5)">Quality: ${tr.quality.toFixed(2)}</span>
-      <span style="color:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'}">Score: ${tr.score.toFixed(2)}</span>
+
+    // Score as percentage bar instead of raw decimal
+    const scorePct = Math.min(100, Math.round(tr.score * 100));
+    tribeHtml += `<div style="margin-top:8px">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,0.4)">
+        <span>DETONATION SCORE</span><span>${scorePct}%</span>
+      </div>
+      <div style="height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden;margin-top:2px">
+        <div style="height:100%;width:${scorePct}%;background:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'};border-radius:3px"></div>
+      </div>
+      ${!tr.controlled ? '<div style="font-size:9px;color:var(--wd-paint-red);margin-top:3px">⚠️ Uncontrolled — 70% score penalty</div>' : ''}
     </div>`;
+
     tribeHtml += `</div></div>`;
     steps.push({ type: 'tribe', tribe: tr.tribe, html: tribeHtml });
   }
@@ -1413,11 +1444,18 @@ export function rpBuildFullMetalDramaPaintBomb(ep) {
     let sb = `<div class="fmd-side-sec">DETONATION STATUS</div>`;
     for (let i = 0; i < pb.tribes.length; i++) {
       const tr = pb.tribes[i];
-      const tribeStepIdx = i + 1; // +1 for intro
+      const tribeStepIdx = i + 1;
       const shown = tribeStepIdx < revealCount;
-      sb += `<div style="padding:8px 6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;border-left:3px solid ${shown ? (tr.controlled ? '#84cc16' : 'var(--wd-paint-red)') : 'rgba(255,255,255,0.1)'};opacity:${shown ? 1 : 0.4}">
-        <div style="font-family:'Black Ops One',sans-serif;font-size:10px;color:rgba(255,255,255,${shown ? 0.8 : 0.3});letter-spacing:1px">${tr.tribe}</div>
-        ${shown ? `<div style="font-size:9px;color:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'};margin-top:2px">${tr.controlled ? 'CONTROLLED' : 'UNCONTROLLED'} &middot; ${tr.score.toFixed(2)} pts</div>` : '<div style="font-size:9px;color:rgba(255,255,255,0.2);margin-top:2px">PENDING</div>'}
+      const tribeData = gs.tribes?.find(t => t.name === tr.tribe) || { members: [] };
+      const active = tribeData.members.filter(m => !refuserSet.has(m));
+      const sittingOut = tribeData.members.filter(m => refuserSet.has(m));
+      const scorePct = Math.min(100, Math.round(tr.score * 100));
+
+      sb += `<div style="padding:8px 6px;margin-bottom:6px;background:rgba(0,0,0,0.15);border-radius:4px;border-left:3px solid ${shown ? (tr.controlled ? '#84cc16' : 'var(--wd-paint-red)') : 'rgba(255,255,255,0.1)'}">
+        <div style="font-family:'Black Ops One',sans-serif;font-size:10px;color:rgba(255,255,255,${shown ? 0.8 : 0.3});letter-spacing:1px">${tr.tribe} (${active.length}/${tribeData.members.length})</div>
+        <div style="display:flex;gap:2px;flex-wrap:wrap;margin:4px 0">${active.map(m => _fmdPortrait(m, 20)).join('')}</div>
+        ${sittingOut.length ? `<div style="font-size:8px;color:#fca5a5;margin-bottom:2px">🚫 ${sittingOut.join(', ')}</div>` : ''}
+        ${shown ? `<div style="font-size:9px;color:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'};margin-top:2px">${tr.controlled ? 'CONTROLLED' : 'UNCONTROLLED'} · ${scorePct}%</div>` : '<div style="font-size:9px;color:rgba(255,255,255,0.2);margin-top:2px">PENDING</div>'}
       </div>`;
     }
     const winnerShown = revealCount >= totalSteps;

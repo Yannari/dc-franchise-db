@@ -750,13 +750,15 @@ function _simulateEarthquake(ep, tribeMembers, result) {
   // Intro
   rp.push({ type: 'host', text: pick(DISASTER_HOST.earthquakeIntro)(host) });
 
-  for (let r = 1; r <= 5; r++) {
-    const hazard = DISASTER_HAZARDS[r - 1];
+  const MAX_ROUNDS = 8;
+  for (let r = 1; r <= MAX_ROUNDS; r++) {
+    // Use hazard from list, or repeat last hazard for extra rounds
+    const hazard = DISASTER_HAZARDS[Math.min(r - 1, DISASTER_HAZARDS.length - 1)];
     rp.push({ type: 'roundStart', text: pick(DISASTER_HOST.roundStart)(host, r, hazard) });
 
-    // Escalating threshold
+    // Escalating threshold (caps at round 5 difficulty for extra rounds)
     const thresholds = [0.35, 0.38, 0.42, 0.48, 0.52];
-    const threshold = thresholds[r - 1];
+    const threshold = thresholds[Math.min(r - 1, thresholds.length - 1)];
 
     const roundData = { num: r, hazard: hazard.id, playerStates: [] };
 
@@ -770,8 +772,9 @@ function _simulateEarthquake(ep, tribeMembers, result) {
       const tribe = s.tribe;
       const tribemates = tribeMembers.find(t => t.name === tribe)?.members.filter(m => m !== name) || [];
 
-      // Base fatigue — 0.6 per round so endurance 3 stops ~round 5, endurance 5 survives
-      s.fatigue += 0.6;
+      // Base fatigue — 0.4 per round. Events add the real fatigue.
+      // 5 rounds * 0.4 = 2.0 base. Endurance 3 survives base but events push over.
+      s.fatigue += 0.4;
 
       // Events selection
       const eventsThisRound = [];
@@ -821,12 +824,15 @@ function _simulateEarthquake(ep, tribeMembers, result) {
       const totalW = deduped.reduce((a, c) => a + c.w, 0);
       const numPick = Math.random() < 0.5 ? 1 : 2;
 
-      for (let pick_i = 0; pick_i < numPick && deduped.length > 0; pick_i++) {
-        let rw = Math.random() * totalW;
-        for (const cand of deduped) {
-          rw -= cand.w;
+      const remaining = [...deduped];
+      for (let pick_i = 0; pick_i < numPick && remaining.length > 0; pick_i++) {
+        const remW = remaining.reduce((a, c) => a + c.w, 0);
+        let rw = Math.random() * remW;
+        for (let ci = 0; ci < remaining.length; ci++) {
+          rw -= remaining[ci].w;
           if (rw <= 0) {
-            eventsThisRound.push(cand);
+            eventsThisRound.push(remaining[ci]);
+            remaining.splice(ci, 1);
             break;
           }
         }
@@ -853,11 +859,11 @@ function _simulateEarthquake(ep, tribeMembers, result) {
             s.fatigue -= 0.5;
             break;
           case 'lavaBurn':
-            s.fatigue += 1.0;
+            s.fatigue += 0.5;
             movementBonus -= 0.1;
             break;
           case 'rockTrip':
-            s.fatigue += 1.0;
+            s.fatigue += 0.5;
             stuck = true;
             break;
           case 'debrisDodge':
@@ -865,11 +871,11 @@ function _simulateEarthquake(ep, tribeMembers, result) {
             gs.popularity[name] = (gs.popularity[name] || 0) + 1;
             break;
           case 'golfBallHit':
-            s.fatigue += 1.5;
+            s.fatigue += 0.5;
             movementBonus -= 0.15;
             break;
           case 'shieldTeammate':
-            s.fatigue += 1.0;
+            s.fatigue += 0.5;
             if (tm) addBond(name, tm, 0.4);
             gs.popularity[name] = (gs.popularity[name] || 0) + 1;
             break;
@@ -895,11 +901,11 @@ function _simulateEarthquake(ep, tribeMembers, result) {
             break;
           case 'heroicSprint':
             movementBonus += 0.2;
-            s.fatigue += 1.0;
+            s.fatigue += 0.5;
             gs.popularity[name] = (gs.popularity[name] || 0) + 1;
             break;
           case 'carryInjured':
-            s.fatigue += 1.5;
+            s.fatigue += 0.5;
             if (tm && stateMap[tm]) {
               stateMap[tm].stage = Math.min(5, stateMap[tm].stage + 1);
               stateMap[tm].stopped = false; // briefly helped forward
@@ -993,6 +999,9 @@ function _simulateEarthquake(ep, tribeMembers, result) {
       }
     }
     if (phaseWinner) break;
+    // Stop if ALL remaining runners are stopped (no more progress possible)
+    const anyoneRunning = tribeMembers.some(t => t.members.some(m => !stateMap[m].stopped && stateMap[m].stage < 5));
+    if (!anyoneRunning) break;
   }
 
   // Fallback: tribe with highest stage PERCENTAGE (fair for uneven sizes)

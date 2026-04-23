@@ -253,6 +253,10 @@ export function simulateOceansHeist(ep, tribes) {
   const loserName = sorted[sorted.length - 1][0];
   ep.winner = tribes.find(t => t.name === winnerName);
   ep.loser = tribes.find(t => t.name === loserName);
+  ep.safeTribes = tribes.filter(t => t.name !== loserName && t.name !== winnerName);
+  ep.tribalPlayers = ep.loser ? [...ep.loser.members] : [];
+  ep.challengeLabel = "Ocean's Eight—or Nine";
+  ep.challengeCategory = 'mixed';
 
   result.winner = winnerName;
   result.loser = loserName;

@@ -32,6 +32,7 @@ import { _textCrazytown } from './chal/crazytown.js';
 import { _textChefshank } from './chal/chefshank.js';
 import { _textOneFlu } from './chal/one-flu.js';
 import { _textMastersOfDisasters } from './chal/masters-of-disasters.js';
+import { _textFullMetalDrama } from './chal/full-metal-drama.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -2022,6 +2023,7 @@ export function generateSummaryText(ep) {
   _textChefshank(ep, ln, sec);
   _textOneFlu(ep, ln, sec);
   _textMastersOfDisasters(ep, ln, sec);
+  _textFullMetalDrama(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
   _textJuryLife(ep, ln, sec);

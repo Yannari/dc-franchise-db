@@ -17,6 +17,7 @@ import { rpBuildCrazytownTitleCard, rpBuildCrazytownHorseDive, rpBuildCrazytownS
 import { rpBuildChefshankTitleCard, rpBuildChefshankPrisonFood, rpBuildChefshankPrisonBreak, rpBuildChefshankDramaBreak, rpBuildChefshankResults, chefshankRevealNext, chefshankRevealAll } from './chal/chefshank.js';
 import { rpBuildOneFluTitleCard, rpBuildOneFluStudySleep, rpBuildOneFluQuiz, rpBuildOneFluAssembly, rpBuildOneFluDramaBreak, rpBuildOneFluDisease, rpBuildOneFluResults, oneFluRevealNext, oneFluRevealAll } from './chal/one-flu.js';
 import { rpBuildMastersOfDisastersTitleCard, rpBuildMastersOfDisastersEarthquake, rpBuildMastersOfDisastersDramaBreak, rpBuildMastersOfDisastersSubmarine, rpBuildMastersOfDisastersResults, mastersOfDisastersRevealNext, mastersOfDisastersRevealAll } from './chal/masters-of-disasters.js';
+import { rpBuildFullMetalDramaTitleCard, fullMetalDramaRevealNext, fullMetalDramaRevealAll } from './chal/full-metal-drama.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10457,6 +10458,21 @@ export function buildVPScreens(epRecord) {
     if (ep.rescueIslandEvents?.length) {
       const _modRescLife = rpBuildRescueIslandLife(ep);
       if (_modRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _modRescLife });
+    }
+  } else if (ep.isFullMetalDrama && ep.fullMetalDrama) {
+    vpScreens.push({ id:'fmd-title', label:'⚔️ Full Metal Drama', html: rpBuildFullMetalDramaTitleCard(ep) });
+    // RI screens
+    if (ep.riLifeEvents?.length || ep.riDuel) {
+      const _fmdRiLife = rpBuildRILife(ep);
+      if (_fmdRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _fmdRiLife });
+    }
+    if (ep.riDuel) {
+      const _fmdRiDuel = rpBuildRIDuel(ep);
+      if (_fmdRiDuel) vpScreens.push({ id:'ri-duel', label:'RI Duel', html: _fmdRiDuel });
+    }
+    if (ep.rescueIslandEvents?.length) {
+      const _fmdRescLife = rpBuildRescueIslandLife(ep);
+      if (_fmdRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _fmdRescLife });
     }
   } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });

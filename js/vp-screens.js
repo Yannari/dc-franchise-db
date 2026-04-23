@@ -10460,7 +10460,7 @@ export function buildVPScreens(epRecord) {
       const _modRescLife = rpBuildRescueIslandLife(ep);
       if (_modRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _modRescLife });
     }
-  } else if (ep.isOceansHeist && ep.oceansHeist) {
+  } else if ((ep.isOceansHeist || ep.challengeType === 'oceans-heist') && ep.oceansHeist) {
     if (ep.oceansHeist.vaultCrack) vpScreens.push({ id:'oh-vault', label:'Vault Crack', html: rpBuildOceansHeistVault(ep) });
     if (ep.oceansHeist.heist) vpScreens.push({ id:'oh-heist', label:'The Heist', html: rpBuildOceansHeistHeist(ep) });
     if (ep.oceansHeist.getaway) vpScreens.push({ id:'oh-getaway', label:'Getaway', html: rpBuildOceansHeistGetaway(ep) });

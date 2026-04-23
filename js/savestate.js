@@ -59,6 +59,11 @@ export function patchEpisodeHistory(ep) {
   if (!h.votePitches && ep.votePitches) h.votePitches = ep.votePitches;
   if (!h._debugScramble && ep._debugScramble) h._debugScramble = ep._debugScramble;
   if (!h.challengeThrows && ep.challengeThrows?.length) h.challengeThrows = ep.challengeThrows;
+  // Challenge-specific data
+  if (!h.oceansHeist && ep.oceansHeist) h.oceansHeist = ep.oceansHeist;
+  if (!h.fullMetalDrama && ep.fullMetalDrama) h.fullMetalDrama = ep.fullMetalDrama;
+  if (!h.isOceansHeist && ep.isOceansHeist) h.isOceansHeist = true;
+  if (!h.isFullMetalDrama && ep.isFullMetalDrama) h.isFullMetalDrama = true;
   if (!h.bewareLostVotes && ep.bewareLostVotes) h.bewareLostVotes = ep.bewareLostVotes;
   if (!h.journey && ep.journey) h.journey = ep.journey;
   if (!h.extraImmune && ep.extraImmune) h.extraImmune = ep.extraImmune;

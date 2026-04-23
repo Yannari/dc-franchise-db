@@ -460,6 +460,8 @@ function _simulateSubmarine(ep, tribeMembers, result) {
   rp.push({ type: 'host', text: pick(SUBMARINE_HOST.intro)(host) });
 
   const ESCAPE_THRESHOLD = 1.5;
+  const snorkelUsed = new Set();
+  const fireAboveUsed = new Set();
 
   for (let si = 0; si < SUBMARINE_STAGES.length; si++) {
     const stage = SUBMARINE_STAGES[si];
@@ -514,16 +516,29 @@ function _simulateSubmarine(ep, tribeMembers, result) {
         }
       }
 
-      // Events: 2-3 per tribe per stage
+      // Events: 2-3 per tribe per stage — no repeat types within same stage
       const numEvents = 2 + (Math.random() < 0.33 ? 1 : 0);
       const eventKeys = Object.keys(SUBMARINE_EVENTS);
-      const usedEvents = new Set();
+      const usedEventsThisStage = new Set();
 
       for (let ei = 0; ei < numEvents; ei++) {
-        const candidates = eventKeys.filter(k => !usedEvents.has(k));
+        const candidates = eventKeys.filter(k => {
+          if (usedEventsThisStage.has(k)) return false;
+          // Straw snorkel: only fire once per player across entire submarine
+          if (k === 'strawSnorkel' && (!tribeEscapeProg.submerged.length || snorkelUsed.has(t.name))) return false;
+          // Panic drowning: needs 2+ survivors to drag
+          if (k === 'panicDrowning' && tribeEscapeProg.surviving.length < 2) return false;
+          // Dropped code: only works if this tribe is Phase 1 winner
+          if (k === 'droppedCode' && t.name !== phases1Winner) return false;
+          // Limit fire above to once per challenge
+          if (k === 'fireAbove' && fireAboveUsed.has(t.name)) return false;
+          return true;
+        });
         if (!candidates.length) break;
         const evKey = candidates[Math.floor(Math.random() * candidates.length)];
-        usedEvents.add(evKey);
+        usedEventsThisStage.add(evKey);
+        if (evKey === 'fireAbove') fireAboveUsed.add(t.name);
+        if (evKey === 'strawSnorkel') snorkelUsed.add(t.name);
 
         const surviving = tribeEscapeProg.surviving;
         const submerged = tribeEscapeProg.submerged;
@@ -568,7 +583,9 @@ function _simulateSubmarine(ep, tribeMembers, result) {
             break;
           }
           case 'panicDrowning': {
-            // temperament check — drags teammate
+            // temperament check — drags teammate. Only if 2+ survivors.
+            const panicSurvivors = tribeEscapeProg.surviving.filter(n => n !== actor);
+            if (panicSurvivors.length < 1) break;
             const panicRoll = st.temperament * 0.08 + noise(0.1);
             if (panicRoll < 0.3) {
               pState[actor].submerged = true;
@@ -577,8 +594,7 @@ function _simulateSubmarine(ep, tribeMembers, result) {
                 const idx = tribeEscapeProg.surviving.indexOf(actor);
                 if (idx !== -1) tribeEscapeProg.surviving.splice(idx, 1);
               }
-              // drag a tribemate
-              const dragged = pickPlayer(surviving.filter(n => n !== actor));
+              const dragged = panicSurvivors[Math.floor(Math.random() * panicSurvivors.length)];
               if (dragged && pState[dragged]) {
                 pState[dragged].submerged = true;
                 tribeEscapeProg.submerged.push(dragged);
@@ -763,7 +779,7 @@ function _simulateEarthquake(ep, tribeMembers, result) {
     const roundData = { num: r, hazard: hazard.id, playerStates: [] };
 
     // Collect all active players in a random order for event interactions
-    const allActive = Object.entries(stateMap).filter(([, s]) => !s.stopped).map(([n]) => n);
+    const allActive = Object.entries(stateMap).filter(([, s]) => !s.stopped && s.stage < 5).map(([n]) => n);
 
     for (const name of allActive) {
       const s = stateMap[name];
@@ -973,7 +989,8 @@ function _simulateEarthquake(ep, tribeMembers, result) {
 
       // chalMemberScores
       if (advanced) ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + 3;
-      if (s.stage >= 5) ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + 5;
+      if (s.stage >= 5) ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + 8;
+      if (s.stopped) ep.chalMemberScores[name] = Math.max(0, (ep.chalMemberScores[name] || 0) - 3);
       const heroicEvents = ['heroicSprint', 'shieldTeammate', 'carryInjured'];
       if (eventsThisRound.some(e => heroicEvents.includes(e.type))) {
         ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + 2;
@@ -1004,15 +1021,40 @@ function _simulateEarthquake(ep, tribeMembers, result) {
     if (!anyoneRunning) break;
   }
 
-  // Fallback: tribe with highest stage PERCENTAGE (fair for uneven sizes)
+  // Timeout: anyone still running after max rounds gets STOPPED
+  const timedOutPlayers = [];
+  for (const [name, s] of Object.entries(stateMap)) {
+    if (!s.stopped && s.stage < 5) {
+      s.stopped = true;
+      s.timedOut = true;
+      gs.lingeringInjuries = gs.lingeringInjuries || {};
+      gs.lingeringInjuries[name] = { ep: (gs.episode || 0) + 1, duration: 2, penalty: 0.15 };
+      ep.chalMemberScores[name] = Math.max(0, (ep.chalMemberScores[name] || 0) - 3);
+      timedOutPlayers.push({ name, tribe: s.tribe, stage: s.stage });
+      rp.push({ type: 'stopped', text: `${name} couldn't make it across in time. The course collapses around ${pronouns(name).obj}. Timed out at stage ${s.stage}.` });
+    }
+  }
+  // Add timeout data to last round so VP can show it
+  if (timedOutPlayers.length && rounds.length) {
+    const lastRound = rounds[rounds.length - 1];
+    lastRound.timedOut = timedOutPlayers;
+  }
+
+  // Fallback: most FINISHERS first, then stage percentage as tiebreak
   if (!phaseWinner) {
-    const tribeStagesPct = {};
+    const tribeStats = {};
     tribeMembers.forEach(t => {
+      const finishers = t.members.filter(m => stateMap[m]?.stage >= 5).length;
+      const finishPct = t.members.length > 0 ? finishers / t.members.length : 0;
       const totalStages = t.members.reduce((sum, m) => sum + (stateMap[m]?.stage || 0), 0);
-      const maxPossible = t.members.length * 5;
-      tribeStagesPct[t.name] = maxPossible > 0 ? totalStages / maxPossible : 0;
+      const stagePct = t.members.length > 0 ? totalStages / (t.members.length * 5) : 0;
+      tribeStats[t.name] = { finishers, finishPct, stagePct };
     });
-    const sorted = Object.entries(tribeStagesPct).sort((a, b) => b[1] - a[1]);
+    // Sort: finisher % first, then stage % as tiebreak
+    const sorted = Object.entries(tribeStats).sort((a, b) => {
+      if (b[1].finishPct !== a[1].finishPct) return b[1].finishPct - a[1].finishPct;
+      return b[1].stagePct - a[1].stagePct;
+    });
     phaseWinner = sorted[0][0];
   }
 
@@ -1720,6 +1762,15 @@ function _mdBuildEarthquakeSidebar(eq, revIdx, tribeNames, ep) {
     for (const ps of (rd.playerStates || [])) {
       playerState[ps.name] = ps;
     }
+    // Apply timeout data from last visible round
+    if (rd.timedOut) {
+      for (const to of rd.timedOut) {
+        if (playerState[to.name]) {
+          playerState[to.name].stopped = true;
+          playerState[to.name].timedOut = true;
+        }
+      }
+    }
   }
 
   let html = '';
@@ -1741,7 +1792,7 @@ function _mdBuildEarthquakeSidebar(eq, revIdx, tribeNames, ep) {
         <div style="flex:1;min-width:0">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <span style="font-size:10px;color:${s.stopped ? '#fca5a5' : 'rgba(255,255,255,0.8)'}${s.stopped ? ';text-decoration:line-through' : ''}">${name}</span>
-            ${s.stopped ? '<span style="font-size:8px;color:#ef4444;letter-spacing:1px">STOPPED</span>' : ''}
+            ${s.stage >= 5 ? '<span style="font-size:8px;color:#fbbf24;letter-spacing:1px">🏁 FINISHED</span>' : s.timedOut ? '<span style="font-size:8px;color:#f97316;letter-spacing:1px">⏱️ TIMED OUT</span>' : s.stopped ? '<span style="font-size:8px;color:#ef4444;letter-spacing:1px">STOPPED</span>' : ''}
           </div>
           <div class="md-stage-bar">${stagePips}</div>
           <div class="md-fat-bar"><div class="md-fat-fill" style="width:${100 - fatPct}%;background:${fatPct > 75 ? '#ef4444' : fatPct > 50 ? '#f97316' : '#22c55e'}"></div></div>
@@ -1982,7 +2033,10 @@ export function rpBuildMastersOfDisastersEarthquake(ep) {
           </div>
           ${roundRp.map(r => `<div class="md-ev-text" style="margin-bottom:2px">${r.text}</div>`).join('')}
           <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
-            ${ps.advanced ? `<span style="font-size:9px;color:#86efac;border:1px solid rgba(34,197,94,0.2);padding:1px 6px;border-radius:3px">ADVANCED to Stage ${ps.stage}</span>` : `<span style="font-size:9px;color:rgba(255,255,255,0.35)">Stage ${ps.stage}/5</span>`}
+            ${ps.stage >= 5
+              ? `<span style="font-size:9px;color:#fbbf24;border:1px solid rgba(251,191,36,0.3);padding:1px 6px;border-radius:3px;font-weight:700">🏁 FINISHED</span>`
+              : ps.advanced ? `<span style="font-size:9px;color:#86efac;border:1px solid rgba(34,197,94,0.2);padding:1px 6px;border-radius:3px">ADVANCED to Stage ${ps.stage}</span>`
+              : `<span style="font-size:9px;color:rgba(255,255,255,0.35)">Stage ${ps.stage}/5</span>`}
             <div style="display:flex;align-items:center;gap:4px;flex:1;min-width:80px">
               <span style="font-size:8px;color:${fatPct > 75 ? '#fca5a5' : 'rgba(255,255,255,0.3)'}">FATIGUE</span>
               <div class="md-fat-bar" style="flex:1"><div class="md-fat-fill" style="width:${fatPct}%;background:${fatPct > 75 ? '#ef4444' : fatPct > 50 ? '#f97316' : '#fbbf24'}"></div></div>
@@ -1991,6 +2045,20 @@ export function rpBuildMastersOfDisastersEarthquake(ep) {
           </div>
         </div>
       </div>`;
+    }
+
+    // Timeout cards — show on last round
+    if (rd.timedOut?.length) {
+      for (const to of rd.timedOut) {
+        const slug = players.find(p => p.name === to.name)?.slug || to.name.toLowerCase().replace(/\s+/g, '-');
+        roundHtml += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin:4px 0;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-left:4px solid var(--md-danger);border-radius:4px">
+          <img src="assets/avatars/${slug}.png" width="36" height="36" style="border-radius:2px;border:2px solid var(--md-danger);filter:grayscale(0.5)" onerror="this.style.display='none'">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:9px;color:#fca5a5;letter-spacing:1px;font-family:'Bebas Neue',sans-serif">⏱️ TIMED OUT</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.7)">${to.name} couldn't make it across in time. Stopped at stage ${to.stage}/5.</div>
+          </div>
+        </div>`;
+      }
     }
 
     // Lava drips and debris (round-dependent)

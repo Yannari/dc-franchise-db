@@ -1137,6 +1137,9 @@ function _simulateDiseaseOutbreak(ep, tribeMembers, result) {
       const st = pStats(doc.name);
 
       const attemptsForDoc = Math.max(0, (isSoloDoc ? 2 : 1) - comfortCost - contaminationCost);
+      if (attemptsForDoc > 0 && !uncuredSymptoms.length) {
+        cureAttempts.push({ doctor: doc.name, patient: null, symptom: null, success: false, text: `${doc.name} looks around — all symptoms are already handled. Nothing left to cure.`, nothingLeft: true });
+      }
       for (let attempt = 0; attempt < attemptsForDoc; attempt++) {
         if (!uncuredSymptoms.length) break;
 
@@ -2714,11 +2717,16 @@ function _ofBuildDiseaseSidebar(dis, revIdx, tribeNames, of) {
   // Step 0 = patient intro, steps 1+ = cure rounds
   for (let ri = 0; ri < Math.min(revIdx, rounds.length); ri++) {
     for (const attempt of (rounds[ri].cureAttempts || [])) {
-      if (attempt.success && attempt.symptomId && attempt.patient) {
-        revealedCures.add(`${attempt.patient}:${attempt.symptomId}`);
+      const symKey = attempt.symptom || attempt.symptomId;
+      if (attempt.success && symKey && attempt.patient) {
+        revealedCures.add(`${attempt.patient}:${symKey}`);
       }
-      if (attempt.success && attempt.doctorTribe) {
-        revealedScores[attempt.doctorTribe] = (revealedScores[attempt.doctorTribe] || 0) + 1;
+      if (attempt.success) {
+        const docTribe = attempt.doctorTribe || tribeNames.find(t => {
+          const td = of?.studySleep?.tribes?.[t];
+          return td?.sleepers?.includes(attempt.doctor);
+        });
+        if (docTribe) revealedScores[docTribe] = (revealedScores[docTribe] || 0) + 1;
       }
     }
     // Also check curePoints if available
@@ -2742,7 +2750,8 @@ function _ofBuildDiseaseSidebar(dis, revIdx, tribeNames, of) {
       <div style="flex:1;min-width:0">`;
     for (const sym of symptoms) {
       const label = (sym.id || sym.symptomId || '').replace(/([A-Z])/g, ' $1').toLowerCase().trim();
-      const isCured = revealedCures.has(`${patient}:${sym.id || sym.symptomId}`);
+      const symKey = sym.id || sym.symptomId || '';
+      const isCured = revealedCures.has(`${patient}:${symKey}`);
       const color = revIdx <= 0 ? 'rgba(255,255,255,0.3)' : isCured ? 'rgba(34,197,94,0.8)' : 'rgba(239,68,68,0.8)';
       const icon = revIdx <= 0 ? '?' : isCured ? '✓' : '✗';
       sidebar += `<div style="font-size:9px;color:${color};display:flex;align-items:center;gap:3px">

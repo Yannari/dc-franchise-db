@@ -513,7 +513,7 @@ function _simulateSubmarine(ep, tribeMembers, result) {
       const tribeEscapeProg = { tribe: t.name, surviving: [], submerged: [], escapeProgress: 0, events: [] };
 
       // Submerge checks per player
-      const thresholds = [0.35, 0.45, 0.55, 0.65];
+      const thresholds = [0.2, 0.35, 0.48, 0.6];
       const threshold = thresholds[si];
       const statFns = [
         st => st.temperament * 0.06 + st.mental * 0.03,
@@ -754,25 +754,12 @@ function _simulateSubmarine(ep, tribeMembers, result) {
 
     stages.push(stageData);
 
-    // Escape only possible on final stage — first tribe past threshold wins
-    if (si === SUBMARINE_STAGES.length - 1) {
-      for (const t of tribeMembers) {
-        if (escapeProgress[t.name] >= ESCAPE_THRESHOLD && !escapedTribe) {
-          escapedTribe = t.name;
-          rp.push({ type: 'escape', tribe: t.name, text: pick(SUBMARINE_HOST.escape)(host, t.name) });
-          break;
-        }
-      }
-    }
   }
 
-  // If nobody hit threshold after all stages, highest progress wins
-  if (!escapedTribe) {
-    const sorted = Object.entries(escapeProgress).sort((a, b) => b[1] - a[1]);
-    escapedTribe = sorted[0][0];
-    rp.push({ type: 'escape', tribe: escapedTribe,
-      text: pick(SUBMARINE_HOST.escape)(host, escapedTribe) });
-  }
+  // After all 4 stages: highest escape progress wins (regardless of threshold)
+  const progressSorted = Object.entries(escapeProgress).sort((a, b) => b[1] - a[1]);
+  escapedTribe = progressSorted[0][0];
+  rp.push({ type: 'escape', tribe: escapedTribe, text: pick(SUBMARINE_HOST.escape)(host, escapedTribe) });
 
   result.submarine = {
     stages,

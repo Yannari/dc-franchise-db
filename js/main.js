@@ -39,6 +39,7 @@ import * as beachBlanketBogusMod from './chal/beach-blanket-bogus.js';
 import * as crazytownMod from './chal/crazytown.js';
 import * as chefshankMod from './chal/chefshank.js';
 import * as oneFluMod from './chal/one-flu.js';
+import * as mastersOfDisastersMod from './chal/masters-of-disasters.js';
 import * as socialManipMod from './social-manipulation.js';
 import * as campEventsMod from './camp-events.js';
 import * as twistsMod from './twists.js';
@@ -127,7 +128,7 @@ const extractedModules = [
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
-  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod,
+  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod,
   socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,

@@ -1883,15 +1883,24 @@ function _fmdBuildPaintSidebarFromEp(ep, revIdx) {
   const fm = ep.fullMetalDrama;
   if (!fm || !fm.paintBomb) return '';
   const pb = fm.paintBomb;
-  const totalSteps = pb.tribes.length + 2; // intro + tribes + winner
+  const refuserSet = new Set(fm.planeJump?.refusers || []);
+  const totalSteps = pb.tribes.length + 2;
+  const tribesList = gs.tribes || [];
 
   let sb = `<div class="fmd-side-sec">DETONATION STATUS</div>`;
   for (let i = 0; i < pb.tribes.length; i++) {
     const tr = pb.tribes[i];
     const shown = (i + 1) <= revIdx;
-    sb += `<div style="padding:8px 6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;border-left:3px solid ${shown ? (tr.controlled ? '#84cc16' : 'var(--wd-paint-red)') : 'rgba(255,255,255,0.1)'};opacity:${shown ? 1 : 0.4}">
-      <div style="font-family:'Black Ops One',sans-serif;font-size:10px;color:rgba(255,255,255,${shown ? 0.8 : 0.3});letter-spacing:1px">${tr.tribe}</div>
-      ${shown ? `<div style="font-size:9px;color:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'};margin-top:2px">${tr.controlled ? 'CONTROLLED' : 'UNCONTROLLED'} &middot; ${tr.score.toFixed(2)} pts</div>` : '<div style="font-size:9px;color:rgba(255,255,255,0.2);margin-top:2px">PENDING</div>'}
+    const tribeData = tribesList.find(t => t.name === tr.tribe) || { members: [] };
+    const active = tribeData.members.filter(m => !refuserSet.has(m));
+    const sittingOut = tribeData.members.filter(m => refuserSet.has(m));
+    const scorePct = Math.min(100, Math.round(tr.score * 100));
+
+    sb += `<div style="padding:8px 6px;margin-bottom:6px;background:rgba(0,0,0,0.15);border-radius:4px;border-left:3px solid ${shown ? (tr.controlled ? '#84cc16' : 'var(--wd-paint-red)') : 'rgba(255,255,255,0.1)'}">
+      <div style="font-family:'Black Ops One',sans-serif;font-size:10px;color:rgba(255,255,255,${shown ? 0.8 : 0.3});letter-spacing:1px">${tr.tribe} (${active.length}/${tribeData.members.length})</div>
+      <div style="display:flex;gap:2px;flex-wrap:wrap;margin:4px 0">${active.map(m => _fmdPortrait(m, 20)).join('')}</div>
+      ${sittingOut.length ? `<div style="font-size:8px;color:#fca5a5;margin-bottom:2px">🚫 ${sittingOut.map(n => n.split(' ')[0]).join(', ')}</div>` : ''}
+      ${shown ? `<div style="font-size:9px;color:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'};margin-top:2px">${tr.controlled ? 'CONTROLLED' : 'UNCONTROLLED'} · ${scorePct}%</div>` : '<div style="font-size:9px;color:rgba(255,255,255,0.2);margin-top:2px">PENDING</div>'}
     </div>`;
   }
   const winnerShown = revIdx >= totalSteps - 1;

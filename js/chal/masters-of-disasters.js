@@ -404,6 +404,96 @@ const DISASTER_DRAMA_EVENTS = {
         badgeText: 'PANIC BONDING', badgeClass: 'blue', tag: 'challenge' });
     },
   },
+  survivorGuilt: {
+    check: (a, b, ep) => !!(gs.lingeringInjuries?.[b] && !gs.lingeringInjuries?.[a]),
+    apply: (a, b, ep, rp) => {
+      const prA = pronouns(a);
+      const pool = [
+        `${a} made it through the earthquake unscathed. ${b} didn't. ${a} keeps glancing over, the guilt written across ${prA.posAdj} face.`,
+        `"I should've helped you in Round 3." ${a} says it quietly, but ${b} hears. The guilt hangs between them.`,
+        `${a} watches ${b} wrap ${pronouns(b).posAdj} injured arm and feels something twist in ${prA.posAdj} gut. ${prA.Sub} got lucky. ${b} didn't.`,
+      ];
+      addBond(a, b, 0.4);
+      rp.push({ type: 'drama', eventType: 'survivorGuilt', players: [a, b], text: pool[Math.floor(Math.random() * pool.length)],
+        badgeText: 'SURVIVOR GUILT', badgeClass: 'gray', tag: 'challenge' });
+    },
+  },
+  strategyPivot: {
+    check: (a, b, ep) => pStats(a).strategic >= 6,
+    apply: (a, b, ep, rp) => {
+      const prA = pronouns(a);
+      const pool = [
+        `${a} pulls ${b} aside. "Phase 2 is a mental game. Forget the earthquake — we need to think our way out of the submarine."`,
+        `${a} draws a diagram in the dirt between phases. "Here's the escape panel. Here's the lock. Here's our strategy." ${b} listens.`,
+        `"We can't brute force the submarine," ${a} tells the tribe. "We need our smartest people at the front." ${prA.Sub} looks at ${b}.`,
+      ];
+      addBond(a, b, 0.3);
+      rp.push({ type: 'drama', eventType: 'strategyPivot', players: [a, b], text: pool[Math.floor(Math.random() * pool.length)],
+        badgeText: 'STRATEGY PIVOT', badgeClass: 'teal', tag: 'challenge' });
+    },
+  },
+  equipmentScavenge: {
+    check: (a, b, ep) => pStats(a).intuition >= 5,
+    apply: (a, b, ep, rp) => {
+      const prA = pronouns(a);
+      const pool = [
+        `${a} rummages through the earthquake debris and finds a bent metal straw. "This could be useful in the submarine," ${prA.sub} mutters.`,
+        `While everyone else rests, ${a} is collecting debris — rubber tubing, a sealed container, anything waterproof. ${b} watches, impressed.`,
+        `${a} pockets three bendy straws from the craft services tent wreckage. "Harold taught me that," ${prA.sub} says to nobody.`,
+      ];
+      rp.push({ type: 'drama', eventType: 'equipmentScavenge', players: [a, b], text: pool[Math.floor(Math.random() * pool.length)],
+        badgeText: 'SCAVENGING', badgeClass: 'gold', tag: 'challenge' });
+    },
+  },
+  rivalryEscalation: {
+    check: (a, b, ep) => getBond(a, b) <= -3,
+    apply: (a, b, ep, rp) => {
+      const pool = [
+        `${a} and ${b} haven't spoken since the earthquake. The silence between them is louder than the challenge was.`,
+        `"You LEFT me back there." ${a}'s accusation hangs in the air. ${b} doesn't deny it. The rivalry just got personal.`,
+        `${a} blames ${b} for their earthquake performance. ${b} blames ${a} right back. The tribe watches the fallout.`,
+      ];
+      addBond(a, b, -0.5);
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[a] = (gs.popularity[a] || 0) - 1;
+      rp.push({ type: 'drama', eventType: 'rivalryEscalation', players: [a, b], text: pool[Math.floor(Math.random() * pool.length)],
+        badgeText: 'RIVALRY ESCALATION', badgeClass: 'red', tag: 'challenge' });
+    },
+  },
+  crossTribeRespect: {
+    check: (a, b, ep) => {
+      const tA = tribeMembers.find(t => t.members.includes(a))?.name;
+      const tB = tribeMembers.find(t => t.members.includes(b))?.name;
+      return tA !== tB && getBond(a, b) >= 0;
+    },
+    apply: (a, b, ep, rp) => {
+      const pool = [
+        `${a} catches ${b}'s eye across the break area. A nod of respect — enemy tribe or not, they both survived that earthquake.`,
+        `"You were impressive in there," ${a} tells ${b} during the break. Cross-tribe compliment. The tribe watches.`,
+        `${a} offers ${b} water between phases. It's a small gesture that says everything about what they just survived together.`,
+      ];
+      addBond(a, b, 0.4);
+      rp.push({ type: 'drama', eventType: 'crossTribeRespect', players: [a, b], text: pool[Math.floor(Math.random() * pool.length)],
+        badgeText: 'CROSS-TRIBE RESPECT', badgeClass: 'teal', tag: 'challenge' });
+    },
+  },
+  nervousBreakdown: {
+    check: (a, b, ep) => pStats(a).temperament <= 3 && !!(gs.lingeringInjuries?.[a]),
+    apply: (a, b, ep, rp) => {
+      const prA = pronouns(a);
+      const pool = [
+        `${a} loses it between phases. Full breakdown — tears, shaking, the works. ${b} sits next to ${prA.obj} and waits it out.`,
+        `"I can't do this anymore." ${a} crumbles. ${b} doesn't talk ${prA.obj} out of it — just stays. That's enough.`,
+        `The earthquake broke something in ${a}. ${prA.Sub} sits with ${prA.posAdj} head in ${prA.posAdj} hands while ${b} shields ${prA.obj} from cameras.`,
+      ];
+      addBond(a, b, 0.6);
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[a] = (gs.popularity[a] || 0) - 1;
+      gs.popularity[b] = (gs.popularity[b] || 0) + 1;
+      rp.push({ type: 'drama', eventType: 'nervousBreakdown', players: [a, b], text: pool[Math.floor(Math.random() * pool.length)],
+        badgeText: 'BREAKDOWN', badgeClass: 'gray', tag: 'challenge' });
+    },
+  },
 };
 
 function _simulateDisasterDramaBreak(ep, tribeMembers, result) {
@@ -415,7 +505,7 @@ function _simulateDisasterDramaBreak(ep, tribeMembers, result) {
   if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
   if (!ep.campEvents[campKey].post) ep.campEvents[campKey].post = [];
 
-  const numEvents = 4 + Math.floor(Math.random() * 3); // 4-6
+  const numEvents = 5 + Math.floor(Math.random() * 3); // 5-7
   const eventKeys = Object.keys(DISASTER_DRAMA_EVENTS);
   const used = new Set();
 
@@ -552,10 +642,30 @@ function _simulateSubmarine(ep, tribeMembers, result) {
         }
       }
 
+      // Stage 4: guaranteed lock breakthrough attempt for tribes with surviving/snorkel players
+      if (si === SUBMARINE_STAGES.length - 1) {
+        const lockCandidates = t.members.filter(m => pState[m]?.status === 'surviving' || pState[m]?.status === 'snorkel');
+        if (lockCandidates.length) {
+          const bestMental = lockCandidates.reduce((best, m) => pStats(m).mental > pStats(best).mental ? m : best, lockCandidates[0]);
+          const lockSt = pStats(bestMental);
+          const lockRoll = lockSt.mental * 0.08 + noise(0.2);
+          const lockText = pick(SUBMARINE_EVENTS.lockBreakthrough)(bestMental, pronouns(bestMental));
+          if (lockRoll > 0.5) {
+            const delta = Math.max(0.1, escapeProgress[t.name] * 0.3);
+            tribeEscapeProg.events.push({ type: 'lockBreakthrough', text: lockText, progressDelta: delta, player: bestMental });
+            ep.chalMemberScores[bestMental] = (ep.chalMemberScores[bestMental] || 0) + 7;
+            gs.popularity[bestMental] = (gs.popularity[bestMental] || 0) + 2;
+          } else {
+            tribeEscapeProg.events.push({ type: 'lockBreakthrough', text: `${bestMental} fumbles the lock panel — so close, but the code doesn't click. The tribe's best shot just missed.`, progressDelta: 0, player: bestMental });
+          }
+        }
+      }
+
       // Events: 2-3 per tribe per stage — no repeat types within same stage
       const numEvents = 2 + (Math.random() < 0.33 ? 1 : 0);
       const eventKeys = Object.keys(SUBMARINE_EVENTS);
       const usedEventsThisStage = new Set();
+      usedEventsThisStage.add('lockBreakthrough'); // already handled above on stage 4
 
       for (let ei = 0; ei < numEvents; ei++) {
         const candidates = eventKeys.filter(k => {

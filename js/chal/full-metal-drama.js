@@ -971,115 +971,938 @@ export function _textFullMetalDrama(ep, ln, sec) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// VP SCREENS
+// VP SCREENS — WAR ROOM
 // ══════════════════════════════════════════════════════════════
+
+/* ── portrait helper ── */
+function _fmdPortrait(name, size = 44) {
+  const p = players.find(x => x.name === name);
+  const slug = p?.slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const init = (name || '?')[0].toUpperCase();
+  return `<img src="assets/avatars/${slug}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;filter:contrast(1.15) saturate(0.85)" /><span style="display:none;width:${size}px;height:${size}px;border-radius:50%;background:var(--wd-steel);color:#fff;font-size:${Math.round(size*0.45)}px;line-height:${size}px;text-align:center;display:none">${init}</span>`;
+}
+
+/* ── military ID card ── */
+function _fmdIdCard(name, role, statusText, statusColor) {
+  const p = players.find(x => x.name === name);
+  const slug = p?.slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const init = (name || '?')[0].toUpperCase();
+  const serial = name.split('').reduce((s, c) => s + c.charCodeAt(0), 0).toString(16).toUpperCase().padStart(4, '0');
+  return `<div class="fmd-id-card">
+    <div class="fmd-id-stripe" style="background:${statusColor || 'var(--wd-olive)'}"></div>
+    <div class="fmd-id-photo">
+      <img src="assets/avatars/${slug}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
+      <span style="display:none">${init}</span>
+    </div>
+    <div class="fmd-id-info">
+      <div class="fmd-id-name">${name}</div>
+      <div class="fmd-id-rank">PVT &middot; #${serial}</div>
+      ${role ? `<div class="fmd-id-role">${role}</div>` : ''}
+      ${statusText ? `<div class="fmd-id-status" style="color:${statusColor || 'var(--wd-khaki)'}">${statusText}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+/* ── small side portrait ── */
+function _fmdSidePortrait(name, size = 28) {
+  const p = players.find(x => x.name === name);
+  const slug = p?.slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const init = (name || '?')[0].toUpperCase();
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1px solid rgba(196,167,119,0.3);display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3)">
+    <img src="assets/avatars/${slug}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" style="width:${size}px;height:${size}px;object-fit:cover;filter:contrast(1.1) saturate(0.85)" />
+    <span style="display:none;font-size:${Math.round(size*0.45)}px;color:var(--wd-khaki)">${init}</span>
+  </div>`;
+}
+
+/* ── barbed wire divider ── */
+const _fmdBarbed = `<div class="fmd-barbed"></div>`;
+
+/* ── badge helper ── */
+function _fmdBadge(text, cls) {
+  return `<span class="fmd-ev-badge ${cls || ''}">${text}</span>`;
+}
+
+/* ── CSS Shell ── */
+function _fmdShell(content, ep) {
+  return `
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;600;700;900&display=swap');
+
+.fmd-shell{
+  --wd-olive:#4d5c2e;--wd-khaki:#c4a777;--wd-mud:#5c4033;
+  --wd-steel:#64748b;--wd-camo:#3d4f2f;--wd-blood:#991b1b;
+  --wd-dog-tag:#a8a29e;--wd-barbed:#78716c;
+  --wd-paint-red:#ef4444;--wd-paint-blue:#3b82f6;--wd-paint-yellow:#eab308;
+  --wd-explosion:#f97316;
+  font-family:'Inter',sans-serif;color:#e2e0db;
+  background:linear-gradient(180deg,#2d3318 0%,#3d4f2f 15%,#4d5c2e 35%,#5c4033 60%,#3a2a1e 85%,#1a1208 100%);
+  padding:0;max-width:1100px;margin:0 auto;position:relative;min-height:400px;
+  overflow:clip;border:3px solid #3a2a1e;box-shadow:inset 0 0 60px rgba(0,0,0,0.5),0 0 30px rgba(0,0,0,0.5);
+}
+
+/* ── tactical map texture ── */
+.fmd-shell::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;clip-path:inset(0);
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.45' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  opacity:.06;pointer-events:none;z-index:5;mix-blend-mode:overlay}
+
+/* ── radio static overlay ── */
+.fmd-shell::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;clip-path:inset(0);
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.015) 2px,rgba(255,255,255,0.015) 4px);
+  pointer-events:none;z-index:4;animation:fmd-scanline 8s linear infinite}
+
+/* ── Header — command bar ── */
+.fmd-header{background:linear-gradient(180deg,#1a1208 0%,#2a1f10 50%,#1a1208 100%);
+  padding:16px 20px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:3px solid var(--wd-khaki);position:relative;z-index:6;
+  box-shadow:inset 0 -2px 8px rgba(0,0,0,0.5),0 2px 10px rgba(0,0,0,0.4)}
+.fmd-title{font-family:'Black Ops One',sans-serif;font-size:18px;color:var(--wd-khaki);
+  text-shadow:2px 2px 0 rgba(0,0,0,0.6);letter-spacing:3px}
+.fmd-subtitle{font-size:10px;color:rgba(196,167,119,0.5);letter-spacing:4px;text-transform:uppercase;margin-top:2px}
+
+/* ── Layout ── */
+.fmd-layout{display:flex;gap:14px;align-items:flex-start;padding:14px;position:relative;z-index:6}
+.fmd-feed{flex:1;min-width:0}
+.fmd-sidebar{width:260px;flex-shrink:0;position:sticky;top:0;max-height:100vh;overflow-y:auto;align-self:flex-start;
+  scrollbar-width:thin;scrollbar-color:rgba(196,167,119,0.2) transparent;
+  background:linear-gradient(180deg,rgba(26,18,8,0.9),rgba(58,42,30,0.85));
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(196,167,119,0.15);border-radius:4px;padding:12px;
+  box-shadow:inset 0 0 20px rgba(0,0,0,0.3)}
+
+/* ── HUD — stencil scoreboard ── */
+.fmd-hud{display:flex;gap:2px;margin:0 14px 2px;position:relative;z-index:6}
+.fmd-hud-cell{flex:1;background:rgba(0,0,0,0.45);border:1px solid rgba(196,167,119,0.12);
+  padding:8px 4px;text-align:center}
+.fmd-hud-cell:first-child{border-radius:4px 0 0 4px}.fmd-hud-cell:last-child{border-radius:0 4px 4px 0}
+.fmd-hud-val{font-family:'Black Ops One',sans-serif;font-size:18px;font-weight:700;color:var(--wd-khaki);
+  text-shadow:0 0 8px rgba(196,167,119,0.3)}
+.fmd-hud-lbl{font-size:7px;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-top:2px;text-transform:uppercase}
+
+/* ── Event cards ── */
+.fmd-ev{background:linear-gradient(135deg,rgba(77,92,46,0.12),rgba(92,64,51,0.08));
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1px solid rgba(196,167,119,0.1);border-left:3px solid var(--wd-olive);
+  padding:12px 14px;margin-bottom:5px;display:flex;align-items:flex-start;gap:12px;
+  border-radius:3px;animation:fmd-fade-up 0.4s ease-out;position:relative}
+.fmd-ev.negative{border-left-color:var(--wd-blood)}
+.fmd-ev.positive{border-left-color:var(--wd-khaki)}
+.fmd-ev.heroic{border-left-color:#84cc16}
+.fmd-ev.explosive{border-left-color:var(--wd-explosion)}
+.fmd-ev.round-header{border-left-color:var(--wd-mud);
+  background:linear-gradient(135deg,rgba(92,64,51,0.2),rgba(61,79,47,0.15));
+  font-family:'Black Ops One',sans-serif}
+.fmd-ev.capture{border-left-color:#22c55e;background:rgba(34,197,94,0.1);border-width:4px}
+.fmd-ev-badge{display:inline-block;font-family:'Black Ops One',sans-serif;font-size:7px;letter-spacing:2px;
+  padding:2px 8px;border-radius:2px;margin-bottom:4px;text-transform:uppercase;
+  background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7)}
+.fmd-ev-badge.gold{background:rgba(196,167,119,0.2);color:var(--wd-khaki)}
+.fmd-ev-badge.red{background:rgba(153,27,27,0.25);color:#ef4444}
+.fmd-ev-badge.green{background:rgba(34,197,94,0.15);color:#84cc16}
+.fmd-ev-badge.blue{background:rgba(59,130,246,0.15);color:var(--wd-paint-blue)}
+.fmd-ev-badge.orange{background:rgba(249,115,22,0.15);color:var(--wd-explosion)}
+.fmd-ev-badge.purple{background:rgba(168,85,247,0.15);color:#c084fc}
+.fmd-ev-badge.pink{background:rgba(219,39,119,0.15);color:#f472b6}
+.fmd-ev-badge.gray{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4)}
+.fmd-ev-badge.sky{background:rgba(56,189,248,0.15);color:#38bdf8}
+.fmd-ev-text{font-size:13px;line-height:1.7;color:rgba(255,255,255,0.85)}
+.fmd-ev-port{width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;border:2px solid rgba(196,167,119,0.3)}
+.fmd-ev-port img{width:44px;height:44px;border-radius:50%;object-fit:cover;filter:contrast(1.1) saturate(0.85)}
+
+/* ── Military ID Card ── */
+.fmd-id-card{display:inline-flex;align-items:stretch;gap:0;
+  background:linear-gradient(135deg,#2a2520,#3a3025);
+  border:2px solid rgba(196,167,119,0.25);border-radius:4px;overflow:hidden;
+  box-shadow:2px 2px 8px rgba(0,0,0,0.4);min-width:160px;max-width:220px}
+.fmd-id-stripe{width:6px;flex-shrink:0}
+.fmd-id-photo{width:48px;height:48px;flex-shrink:0;overflow:hidden;margin:6px;border-radius:2px;
+  border:1px solid rgba(196,167,119,0.2);display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3)}
+.fmd-id-photo img{width:48px;height:48px;object-fit:cover;filter:contrast(1.15) saturate(0.8)}
+.fmd-id-photo span{font-size:18px;color:var(--wd-khaki)}
+.fmd-id-info{padding:6px 8px 6px 0;flex:1;min-width:0}
+.fmd-id-name{font-family:'Black Ops One',sans-serif;font-size:11px;color:var(--wd-khaki);letter-spacing:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fmd-id-rank{font-size:8px;color:rgba(168,162,158,0.7);letter-spacing:2px;margin-top:1px}
+.fmd-id-role{font-size:8px;color:rgba(255,255,255,0.5);letter-spacing:1px;margin-top:2px;text-transform:uppercase}
+.fmd-id-status{font-size:8px;font-weight:700;letter-spacing:1px;margin-top:2px;text-transform:uppercase}
+
+/* ── Barbed wire divider ── */
+.fmd-barbed{height:12px;margin:14px 0;position:relative;
+  background:repeating-linear-gradient(90deg,transparent 0px,transparent 8px,rgba(120,113,108,0.3) 8px,rgba(120,113,108,0.3) 9px,transparent 9px,transparent 14px);
+  border-top:1px solid rgba(120,113,108,0.2);border-bottom:1px solid rgba(120,113,108,0.2)}
+.fmd-barbed::before,.fmd-barbed::after{content:'';position:absolute;top:3px;width:8px;height:8px;
+  border:1px solid rgba(120,113,108,0.4);border-radius:1px;transform:rotate(45deg)}
+.fmd-barbed::before{left:20%}.fmd-barbed::after{right:20%}
+
+/* ── Controls ── */
+.fmd-controls{display:flex;gap:8px;justify-content:center;padding:14px 0;position:relative;z-index:6}
+.fmd-btn-next{padding:8px 20px;font-family:'Black Ops One',sans-serif;font-size:12px;letter-spacing:2px;
+  color:var(--wd-khaki);background:rgba(77,92,46,0.3);border:2px solid var(--wd-khaki);border-radius:4px;
+  cursor:pointer;text-transform:uppercase;transition:all 0.2s}
+.fmd-btn-next:hover{background:rgba(77,92,46,0.5);box-shadow:0 0 12px rgba(196,167,119,0.2)}
+.fmd-btn-all{padding:8px 16px;font-size:11px;color:rgba(255,255,255,0.5);background:transparent;
+  border:1px solid rgba(255,255,255,0.15);border-radius:4px;cursor:pointer}
+.fmd-btn-all:hover{color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.3)}
+
+/* ── Side section ── */
+.fmd-side-sec{font-family:'Black Ops One',sans-serif;font-size:9px;letter-spacing:3px;
+  color:var(--wd-khaki);text-transform:uppercase;padding:6px 0 4px;
+  border-bottom:1px solid rgba(196,167,119,0.15);margin-top:8px}
+.fmd-side-sec:first-child{margin-top:0}
+
+/* ── Animations ── */
+@keyframes fmd-fade-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fmd-scanline{0%{background-position:0 0}100%{background-position:0 200px}}
+@keyframes fmd-pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+@keyframes fmd-incoming{0%{transform:scale(0.8);opacity:0}50%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes fmd-explode{0%{transform:scale(0);opacity:1}100%{transform:scale(3);opacity:0}}
+@keyframes fmd-static{0%{opacity:0.03}25%{opacity:0.06}50%{opacity:0.02}75%{opacity:0.05}100%{opacity:0.03}}
+
+/* ── Paint splatter ── */
+.fmd-splatter{position:absolute;border-radius:50%;pointer-events:none;animation:fmd-explode 0.6s ease-out forwards;z-index:3}
+
+/* ── Reduced motion ── */
+@media(prefers-reduced-motion:reduce){
+  .fmd-ev{animation:none}
+  .fmd-shell::after{animation:none}
+  .fmd-splatter{animation:none}
+}
+</style>
+<div class="fmd-shell">
+  <div class="fmd-header">
+    <div>
+      <div class="fmd-title">FULL METAL DRAMA</div>
+      <div class="fmd-subtitle">Episode ${ep.num || '?'} &middot; War Challenge</div>
+    </div>
+    <div style="font-size:10px;color:rgba(196,167,119,0.4);letter-spacing:2px;text-transform:uppercase">CLASSIFIED</div>
+  </div>
+  ${content}
+</div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   1. TITLE CARD
+   ═══════════════════════════════════════════════════════════════ */
 export function rpBuildFullMetalDramaTitleCard(ep) {
-  if (!ep.fullMetalDrama) return '';
   const fm = ep.fullMetalDrama;
-  const h = host();
+  if (!fm) return '';
 
-  let html = `<div style="background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);padding:30px;color:#e0e0e0;font-family:'Courier New',monospace;min-height:100vh;">`;
-  html += `<div style="text-align:center;margin-bottom:30px;">`;
-  html += `<h1 style="color:#ff6b35;font-size:2.5em;text-shadow:2px 2px 0 #000;letter-spacing:3px;">⚔️ FULL METAL DRAMA ⚔️</h1>`;
-  html += `<p style="color:#84cc16;font-size:1.1em;">"Three phases. One winner. Maximum carnage."</p>`;
-  html += `</div>`;
+  const tribeNames = Object.keys(fm.tribeScores || {});
+  const allPlayers = gs.tribes ? gs.tribes.flatMap(t => t.members) : [];
 
-  // Phase 1: Jump
-  if (fm.planeJump) {
-    html += `<div style="background:rgba(255,107,53,0.1);border:1px solid #ff6b35;border-radius:8px;padding:20px;margin-bottom:20px;">`;
-    html += `<h2 style="color:#ff6b35;margin:0 0 15px;">🪂 PHASE 1: PLANE JUMP</h2>`;
-    for (const evt of fm.planeJump.events) {
-      const color = evt.type === 'heroicDive' ? '#84cc16' : evt.type === 'panicRefusal' ? '#ef4444' : '#e0e0e0';
-      html += `<p style="color:${color};margin:5px 0;padding:4px 8px;${evt.type === 'heroicDive' ? 'background:rgba(132,204,22,0.1);border-left:3px solid #84cc16;' : ''}">${evt.text}</p>`;
-    }
-    for (const [tribe, order] of Object.entries(fm.planeJump.jumpOrder)) {
-      html += `<p style="color:#94a3b8;margin-top:10px;"><strong>${tribe}:</strong> ${order.join(' → ')}</p>`;
-    }
-    html += `</div>`;
-  }
+  const taglines = [
+    '"Three phases. One winner. Maximum carnage."',
+    '"War is hell. Reality TV is worse."',
+    '"You don\'t volunteer for this. You survive it."',
+  ];
+  const tagline = taglines[Math.floor((ep.num || 0) % taglines.length)];
 
-  // Phase 2: Paint Bomb
-  if (fm.paintBomb) {
-    html += `<div style="background:rgba(168,85,247,0.1);border:1px solid #a855f7;border-radius:8px;padding:20px;margin-bottom:20px;">`;
-    html += `<h2 style="color:#a855f7;margin:0 0 15px;">💣 PHASE 2: PAINT BOMB</h2>`;
-    for (const tr of fm.paintBomb.tribes) {
-      const statusColor = tr.controlled ? '#84cc16' : '#ef4444';
-      html += `<div style="background:rgba(0,0,0,0.2);padding:12px;border-radius:6px;margin-bottom:10px;">`;
-      html += `<h3 style="color:#e0e0e0;margin:0 0 8px;">${tr.tribe} <span style="color:${statusColor};font-size:0.8em;">[${tr.controlled ? 'CONTROLLED' : 'UNCONTROLLED'}]</span></h3>`;
-      for (const evt of tr.events) {
-        html += `<p style="color:#cbd5e1;margin:4px 0;">${evt.text}</p>`;
+  return _fmdShell(`
+    <div style="text-align:center;padding:60px 20px 80px;position:relative;z-index:6;">
+      <!-- Stencil line -->
+      <div style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:5px;color:rgba(196,167,119,0.4);text-transform:uppercase;margin-bottom:14px;">OPERATION BRIEFING &middot; ${host().toUpperCase()} COMMANDING</div>
+
+      <!-- Main title -->
+      <div style="font-family:'Black Ops One',sans-serif;font-size:44px;color:var(--wd-khaki);text-shadow:3px 3px 0 rgba(0,0,0,0.6),6px 6px 0 rgba(0,0,0,0.2);letter-spacing:6px;line-height:1.1;margin-bottom:8px;">FULL METAL<br>DRAMA</div>
+
+      <!-- Tagline -->
+      <div style="font-family:'Inter',sans-serif;font-size:13px;font-style:italic;color:rgba(255,255,255,0.6);margin-bottom:24px;letter-spacing:1px;">${tagline}</div>
+
+      <!-- Phase breakdown -->
+      <div style="display:inline-block;background:rgba(0,0,0,0.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(196,167,119,0.15);border-radius:4px;padding:16px 28px;margin-bottom:24px;">
+        <div style="font-size:9px;letter-spacing:4px;color:rgba(196,167,119,0.4);text-transform:uppercase;margin-bottom:10px;">MISSION PHASES</div>
+        <div style="display:flex;gap:24px;justify-content:center;font-size:13px;color:rgba(255,255,255,0.8);">
+          <div style="text-align:center"><div style="font-family:'Black Ops One',sans-serif;font-size:18px;color:var(--wd-paint-blue);margin-bottom:2px;">I</div><div style="font-size:10px;letter-spacing:1px">PLANE JUMP</div></div>
+          <div style="color:rgba(196,167,119,0.3)">&middot;</div>
+          <div style="text-align:center"><div style="font-family:'Black Ops One',sans-serif;font-size:18px;color:var(--wd-explosion);margin-bottom:2px;">II</div><div style="font-size:10px;letter-spacing:1px">PAINT BOMB</div></div>
+          <div style="color:rgba(196,167,119,0.3)">&middot;</div>
+          <div style="text-align:center"><div style="font-family:'Black Ops One',sans-serif;font-size:18px;color:#84cc16;margin-bottom:2px;">III</div><div style="font-size:10px;letter-spacing:1px">CAPTURE FLAG</div></div>
+        </div>
+      </div>
+
+      <!-- Tribes -->
+      <div style="display:flex;gap:24px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
+        ${tribeNames.map(t => `<div style="text-align:center;padding:10px 16px;background:rgba(0,0,0,0.25);border:1px solid rgba(196,167,119,0.1);border-radius:4px;min-width:120px;">
+          <div style="font-family:'Black Ops One',sans-serif;font-size:14px;color:var(--wd-khaki);letter-spacing:2px;">${t}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">${(gs.tribes.find(tr => tr.name === t)?.members || []).length} soldiers</div>
+        </div>`).join('')}
+      </div>
+
+      <!-- Footer stats -->
+      <div style="display:flex;gap:20px;justify-content:center;font-size:11px;color:rgba(196,167,119,0.4);flex-wrap:wrap;">
+        <span>${allPlayers.length} Combatants</span>
+        <span>&middot;</span>
+        <span>3 Phases</span>
+        <span>&middot;</span>
+        <span>1 Survivor</span>
+      </div>
+    </div>
+  `, ep);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   2. PLANE JUMP (click-to-reveal per player)
+   ═══════════════════════════════════════════════════════════════ */
+export function rpBuildFullMetalDramaJump(ep) {
+  const fm = ep.fullMetalDrama;
+  if (!fm || !fm.planeJump) return '';
+  const pj = fm.planeJump;
+  const _tvState = window._tvState || (window._tvState = {});
+  const stateKey = 'fmd-jump';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const revIdx = _tvState[stateKey].idx;
+
+  // Build steps array from events
+  const steps = pj.events || [];
+  const totalSteps = steps.length;
+
+  // Sidebar — altitude meter + jump status per tribe
+  function buildJumpSidebar(revealCount) {
+    const revealed = steps.slice(0, revealCount);
+    const jumpedSet = new Set(revealed.filter(e => e.type === 'heroicDive' || e.type === 'jump' || e.type === 'tandemJump' || e.type === 'cornedBeefLure').map(e => e.player).filter(Boolean));
+    const refusedSet = new Set(revealed.filter(e => e.type === 'panicRefusal').map(e => e.player).filter(Boolean));
+    const mentionedSet = new Set([...jumpedSet, ...refusedSet]);
+
+    let sb = '';
+    sb += `<div class="fmd-side-sec">ALTITUDE: 10,000 FT</div>`;
+    sb += `<div style="height:8px;background:rgba(0,0,0,0.3);border-radius:4px;overflow:hidden;margin:6px 0 10px">
+      <div style="height:100%;width:${Math.min(100, (revealCount / Math.max(1, totalSteps)) * 100)}%;background:linear-gradient(90deg,var(--wd-paint-blue),#38bdf8);border-radius:4px;transition:width 0.3s"></div>
+    </div>`;
+
+    for (const [tribe, order] of Object.entries(pj.jumpOrder || {})) {
+      sb += `<div class="fmd-side-sec">${tribe}</div>`;
+      for (const name of order) {
+        const jumped = jumpedSet.has(name);
+        const refused = refusedSet.has(name);
+        const known = mentionedSet.has(name);
+        const icon = !known ? '&#10067;' : jumped ? '&#9989;' : refused ? '&#128020;' : '&#10067;';
+        sb += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${known ? 0.8 : 0.3});opacity:${known ? 1 : 0.4}">
+          ${_fmdSidePortrait(name, 24)}
+          <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
+          <span>${icon}</span>
+        </div>`;
       }
-      html += `<p style="color:${statusColor};margin-top:8px;font-weight:bold;">Score: ${tr.score.toFixed(2)}</p>`;
-      if (tr.hostJudge) html += `<p style="color:#fbbf24;font-style:italic;margin-top:6px;">${tr.hostJudge}</p>`;
-      html += `</div>`;
     }
-    html += `<p style="color:#84cc16;text-align:center;font-size:1.1em;margin-top:10px;">Phase 2 Winner: <strong>${fm.paintBomb.winner}</strong></p>`;
-    html += `</div>`;
+    return sb;
   }
 
-  // Drama Break
-  if (fm.breakEvents?.length) {
-    html += `<div style="background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;">`;
-    html += `<h2 style="color:#ef4444;margin:0 0 15px;">🎭 WAR DRAMA</h2>`;
-    for (const evt of fm.breakEvents) {
-      html += `<div style="margin:8px 0;padding:8px;border-left:3px solid ${evt.badgeClass === 'red' ? '#ef4444' : evt.badgeClass === 'green' ? '#22c55e' : evt.badgeClass === 'blue' ? '#3b82f6' : '#f59e0b'};background:rgba(0,0,0,0.2);border-radius:0 6px 6px 0;">`;
-      html += `<span style="background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:4px;font-size:0.75em;color:#94a3b8;">${evt.badgeText}</span>`;
-      html += `<p style="color:#e0e0e0;margin:6px 0 0;">${evt.text}</p>`;
-      html += `</div>`;
-    }
-    html += `</div>`;
+  // Feed
+  let feed = '';
+  // Opening step
+  feed += `<div class="fmd-ev round-header" style="${0 <= revIdx ? '' : 'display:none'}" id="fmd-step-jump-0">
+    <div class="fmd-ev-port" style="font-size:22px;border-color:rgba(59,130,246,0.3);">&#9992;</div>
+    <div style="flex:1"><div class="fmd-ev-badge sky">PHASE I &mdash; PLANE JUMP</div>
+    <div class="fmd-ev-text">${pick(WAR_HOST.planeIntro)(host())}</div></div>
+  </div>`;
+
+  // Event steps (offset by 1 for the opening step)
+  for (let i = 0; i < steps.length; i++) {
+    const evt = steps[i];
+    const visible = (i + 1) <= revIdx;
+    const evtClass = evt.type === 'heroicDive' ? 'heroic' : evt.type === 'panicRefusal' ? 'negative' : evt.type === 'midAirConflict' ? 'negative' : 'positive';
+    const badgeText = evt.type === 'heroicDive' ? 'HEROIC DIVE' : evt.type === 'panicRefusal' ? 'REFUSED' : evt.type === 'tandemJump' ? 'TANDEM JUMP' : evt.type === 'cornedBeefLure' ? 'CORNED BEEF LURE' : evt.type === 'midAirConflict' ? 'MID-AIR CONFLICT' : 'JUMP';
+    const badgeColor = evt.type === 'heroicDive' ? 'green' : evt.type === 'panicRefusal' ? 'red' : evt.type === 'midAirConflict' ? 'red' : evt.type === 'tandemJump' ? 'blue' : 'sky';
+    const playerName = evt.player || (evt.players ? evt.players[0] : '');
+
+    feed += `<div id="fmd-step-jump-${i + 1}" class="fmd-ev ${evtClass}" style="${visible ? '' : 'display:none'}">
+      ${playerName ? `<div class="fmd-ev-port">${_fmdPortrait(playerName, 44)}</div>` : ''}
+      <div style="flex:1;min-width:0">
+        <div class="fmd-ev-badge ${badgeColor}">${badgeText}</div>
+        <div class="fmd-ev-text">${evt.text || ''}</div>
+      </div>
+    </div>`;
   }
 
-  // Phase 3: Capture the Flag
-  if (fm.captureFlag) {
-    html += `<div style="background:rgba(132,204,22,0.1);border:1px solid #84cc16;border-radius:8px;padding:20px;margin-bottom:20px;">`;
-    html += `<h2 style="color:#84cc16;margin:0 0 15px;">🚩 PHASE 3: CAPTURE THE FLAG</h2>`;
+  const totalWithOpening = steps.length + 1;
+  const pending = revIdx < totalWithOpening - 1;
+  const controls = `<div id="fmd-controls-jump" class="fmd-controls" ${!pending && totalWithOpening ? 'style="display:none"' : ''}>
+    <button class="fmd-btn-next" onclick="fullMetalDramaRevealNext('fmd-jump',${totalWithOpening})">NEXT DROP</button>
+    <button class="fmd-btn-all" onclick="fullMetalDramaRevealAll('fmd-jump',${totalWithOpening})">Reveal All</button>
+  </div>
+  <div id="fmd-done-jump" style="${pending || !totalWithOpening ? 'display:none' : 'text-align:center;padding:14px 0'}">
+    ${_fmdBadge('ALL SOLDIERS DEPLOYED', 'sky')}
+  </div>`;
 
-    // Setup
-    html += `<div style="display:flex;gap:15px;flex-wrap:wrap;margin-bottom:15px;">`;
-    for (const s of fm.captureFlag.setup) {
-      html += `<div style="flex:1;min-width:200px;background:rgba(0,0,0,0.3);padding:12px;border-radius:6px;">`;
-      html += `<h4 style="color:#84cc16;margin:0 0 8px;">${s.tribe}</h4>`;
-      html += `<p style="color:#94a3b8;margin:2px 0;">⚔️ ${s.attackers} attackers | 🛡️ ${s.defenders} defenders</p>`;
-      html += `<p style="color:#94a3b8;margin:2px 0;">💣 ${s.traps} traps | 🕳️ ${s.foxholes} foxholes | 👁️ ${s.sentries} sentries</p>`;
-      html += `</div>`;
-    }
-    html += `</div>`;
+  // HUD
+  const jumpCount = pj.events.filter(e => e.type === 'heroicDive' || e.type === 'jump').length;
+  const refuseCount = pj.events.filter(e => e.type === 'panicRefusal').length;
+  const hudCells = `
+    <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:var(--wd-paint-blue)">${jumpCount}</div><div class="fmd-hud-lbl">JUMPED</div></div>
+    <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:var(--wd-paint-red)">${refuseCount}</div><div class="fmd-hud-lbl">REFUSED</div></div>
+    <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:var(--wd-khaki)">10K</div><div class="fmd-hud-lbl">ALTITUDE</div></div>
+  `;
 
-    // Rounds
-    for (const rd of fm.captureFlag.rounds) {
-      html += `<div style="background:rgba(0,0,0,0.2);padding:12px;border-radius:6px;margin-bottom:10px;">`;
-      html += `<h4 style="color:#fbbf24;margin:0 0 8px;">⚔️ ROUND ${rd.num}</h4>`;
-      for (const evt of rd.events) {
-        const evtColor = evt.type === 'flagCapture' ? '#84cc16' : evt.type === 'boobyTrapTrigger' ? '#ef4444' : evt.type === 'lastStand' ? '#fbbf24' : '#e0e0e0';
-        html += `<p style="color:${evtColor};margin:4px 0;${evt.type === 'flagCapture' ? 'font-size:1.2em;font-weight:bold;' : ''}">${evt.text}</p>`;
-      }
-      html += `</div>`;
+  return _fmdShell(`
+    <div class="fmd-hud">${hudCells}</div>
+    <div class="fmd-layout">
+      <div class="fmd-feed">${feed}${controls}</div>
+      <div class="fmd-sidebar" id="fmd-sidebar-jump">${buildJumpSidebar(revIdx + 1)}</div>
+    </div>
+  `, ep);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   3. PAINT BOMB (click-to-reveal per tribe)
+   ═══════════════════════════════════════════════════════════════ */
+export function rpBuildFullMetalDramaPaintBomb(ep) {
+  const fm = ep.fullMetalDrama;
+  if (!fm || !fm.paintBomb) return '';
+  const pb = fm.paintBomb;
+  const _tvState = window._tvState || (window._tvState = {});
+  const stateKey = 'fmd-paint';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const revIdx = _tvState[stateKey].idx;
+
+  // Steps: opening + each tribe's events + host judge, then tribe reveal
+  const steps = [];
+  steps.push({ type: 'intro', html: `<div class="fmd-ev round-header">
+    <div class="fmd-ev-port" style="font-size:22px;border-color:rgba(249,115,22,0.3);">&#128163;</div>
+    <div style="flex:1"><div class="fmd-ev-badge orange">PHASE II &mdash; PAINT BOMB</div>
+    <div class="fmd-ev-text">${pick(WAR_HOST.paintBombIntro)(host())}</div></div>
+  </div>` });
+
+  for (const tr of pb.tribes) {
+    // Each tribe's events
+    let tribeHtml = `<div class="fmd-ev explosive">
+      <div style="flex:1;min-width:0">
+        <div class="fmd-ev-badge ${tr.controlled ? 'green' : 'red'}">${tr.tribe} &mdash; ${tr.controlled ? 'CONTROLLED DETONATION' : 'UNCONTROLLED BLAST'}</div>`;
+    for (const evt of (tr.events || [])) {
+      const actorName = evt.player || (evt.players ? evt.players[0] : '');
+      tribeHtml += `<div style="display:flex;gap:8px;align-items:flex-start;margin-top:6px">
+        ${actorName ? `<div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;overflow:hidden">${_fmdPortrait(actorName, 28)}</div>` : ''}
+        <div class="fmd-ev-text" style="font-size:12px">${evt.text || ''}</div>
+      </div>`;
+    }
+    if (tr.hostJudge) {
+      tribeHtml += `<div style="margin-top:8px;padding-top:6px;border-top:1px dashed rgba(196,167,119,0.15);font-style:italic;font-size:12px;color:var(--wd-khaki)">${tr.hostJudge}</div>`;
+    }
+    tribeHtml += `<div style="margin-top:6px;display:flex;gap:12px;font-size:11px">
+      <span style="color:rgba(255,255,255,0.5)">Quality: ${tr.quality.toFixed(2)}</span>
+      <span style="color:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'}">Score: ${tr.score.toFixed(2)}</span>
+    </div>`;
+    tribeHtml += `</div></div>`;
+    steps.push({ type: 'tribe', tribe: tr.tribe, html: tribeHtml });
+  }
+
+  // Winner step
+  steps.push({ type: 'winner', html: `<div class="fmd-ev positive" style="text-align:center;justify-content:center;border-left-color:#84cc16">
+    <div style="flex:1"><div class="fmd-ev-badge green">PHASE II WINNER</div>
+    <div class="fmd-ev-text" style="font-size:15px;font-family:'Black Ops One',sans-serif;letter-spacing:2px;color:var(--wd-khaki)">${pb.winner} &mdash; MISSION ACCOMPLISHED</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px">+1 bonus trap for Capture the Flag</div>
+    </div>
+  </div>` });
+
+  const totalSteps = steps.length;
+
+  // Sidebar
+  function buildPaintSidebar(revealCount) {
+    let sb = `<div class="fmd-side-sec">DETONATION STATUS</div>`;
+    for (let i = 0; i < pb.tribes.length; i++) {
+      const tr = pb.tribes[i];
+      const tribeStepIdx = i + 1; // +1 for intro
+      const shown = tribeStepIdx < revealCount;
+      sb += `<div style="padding:8px 6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;border-left:3px solid ${shown ? (tr.controlled ? '#84cc16' : 'var(--wd-paint-red)') : 'rgba(255,255,255,0.1)'};opacity:${shown ? 1 : 0.4}">
+        <div style="font-family:'Black Ops One',sans-serif;font-size:10px;color:rgba(255,255,255,${shown ? 0.8 : 0.3});letter-spacing:1px">${tr.tribe}</div>
+        ${shown ? `<div style="font-size:9px;color:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'};margin-top:2px">${tr.controlled ? 'CONTROLLED' : 'UNCONTROLLED'} &middot; ${tr.score.toFixed(2)} pts</div>` : '<div style="font-size:9px;color:rgba(255,255,255,0.2);margin-top:2px">PENDING</div>'}
+      </div>`;
+    }
+    const winnerShown = revealCount >= totalSteps;
+    sb += `<div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(196,167,119,0.15)">
+      <div style="font-size:9px;color:rgba(196,167,119,0.5);letter-spacing:2px">PHASE WINNER</div>
+      <div style="font-family:'Black Ops One',sans-serif;font-size:12px;color:${winnerShown ? 'var(--wd-khaki)' : 'rgba(255,255,255,0.2)'};margin-top:2px">${winnerShown ? pb.winner : '???'}</div>
+    </div>`;
+    return sb;
+  }
+
+  // Feed
+  let feed = '';
+  for (let i = 0; i < totalSteps; i++) {
+    const visible = i <= revIdx;
+    feed += `<div id="fmd-step-paint-${i}" style="${visible ? '' : 'display:none'}">${steps[i].html}</div>`;
+  }
+
+  const pending = revIdx < totalSteps - 1;
+  const controls = `<div id="fmd-controls-paint" class="fmd-controls" ${!pending && totalSteps ? 'style="display:none"' : ''}>
+    <button class="fmd-btn-next" onclick="fullMetalDramaRevealNext('fmd-paint',${totalSteps})">DETONATE NEXT</button>
+    <button class="fmd-btn-all" onclick="fullMetalDramaRevealAll('fmd-paint',${totalSteps})">Reveal All</button>
+  </div>
+  <div id="fmd-done-paint" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:14px 0'}">
+    ${_fmdBadge('ALL BOMBS DETONATED', 'orange')}
+  </div>`;
+
+  // HUD
+  const hudCells = pb.tribes.map(tr => `
+    <div class="fmd-hud-cell">
+      <div class="fmd-hud-val" style="color:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'}">${tr.score.toFixed(1)}</div>
+      <div class="fmd-hud-lbl">${tr.tribe}</div>
+    </div>
+  `).join('') + `<div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:var(--wd-explosion)">II</div><div class="fmd-hud-lbl">PHASE</div></div>`;
+
+  return _fmdShell(`
+    <div class="fmd-hud">${hudCells}</div>
+    <div class="fmd-layout">
+      <div class="fmd-feed">${feed}${controls}</div>
+      <div class="fmd-sidebar" id="fmd-sidebar-paint">${buildPaintSidebar(revIdx + 1)}</div>
+    </div>
+  `, ep);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   4. DRAMA BREAK (show all, consequence badges)
+   ═══════════════════════════════════════════════════════════════ */
+export function rpBuildFullMetalDramaDramaBreak(ep) {
+  const fm = ep.fullMetalDrama;
+  if (!fm || !fm.breakEvents?.length) return '';
+
+  const badgeColorMap = {
+    red: 'var(--wd-paint-red)', green: '#84cc16', blue: 'var(--wd-paint-blue)',
+    gold: 'var(--wd-khaki)', orange: 'var(--wd-explosion)', pink: '#f472b6',
+  };
+
+  let feed = '';
+  feed += `<div class="fmd-ev round-header" style="margin-bottom:8px">
+    <div class="fmd-ev-port" style="font-size:22px;border-color:rgba(153,27,27,0.3);">&#128226;</div>
+    <div style="flex:1"><div class="fmd-ev-badge red">FIELD DISPATCH &mdash; WAR DRAMA</div>
+    <div class="fmd-ev-text">Between the explosions and the assault, tempers flared and alliances shifted.</div></div>
+  </div>`;
+
+  for (const evt of fm.breakEvents) {
+    const borderColor = badgeColorMap[evt.badgeClass] || 'var(--wd-steel)';
+    const evtClass = evt.badgeClass === 'red' ? 'negative' : evt.badgeClass === 'green' ? 'positive' : '';
+    const actorName = (evt.players || [])[0] || '';
+
+    feed += `<div class="fmd-ev ${evtClass}" style="border-left-color:${borderColor}">
+      ${actorName ? `<div class="fmd-ev-port">${_fmdPortrait(actorName, 44)}</div>` : ''}
+      <div style="flex:1;min-width:0">
+        <div class="fmd-ev-badge ${evt.badgeClass || 'gray'}">${evt.badgeText || 'EVENT'}</div>
+        <div class="fmd-ev-text">${evt.text}</div>
+        ${evt.players?.length > 1 ? `<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">${evt.players.slice(1).map(n => `<div style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.5)">${_fmdSidePortrait(n, 20)} ${n}</div>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  // Sidebar — consequence summary
+  let sidebar = `<div class="fmd-side-sec">INCIDENT REPORT</div>`;
+  for (const evt of fm.breakEvents) {
+    const medal = evt.badgeClass === 'gold' ? 'BRONZE STAR' : evt.badgeClass === 'green' ? 'COMMENDATION' : evt.badgeClass === 'red' ? 'DISHONORABLE' : evt.badgeClass === 'blue' ? 'STRATEGIC' : 'NOTED';
+    const medalColor = evt.badgeClass === 'gold' ? 'var(--wd-khaki)' : evt.badgeClass === 'green' ? '#84cc16' : evt.badgeClass === 'red' ? 'var(--wd-paint-red)' : evt.badgeClass === 'blue' ? 'var(--wd-paint-blue)' : 'var(--wd-steel)';
+    sidebar += `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:10px">
+      <div style="width:6px;height:6px;border-radius:50%;background:${medalColor};flex-shrink:0"></div>
+      <span style="color:rgba(255,255,255,0.6);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(evt.players || []).join(', ')}</span>
+      <span style="color:${medalColor};font-size:8px;letter-spacing:1px;font-family:'Black Ops One',sans-serif">${medal}</span>
+    </div>`;
+  }
+
+  return _fmdShell(`
+    ${_fmdBarbed}
+    <div class="fmd-layout">
+      <div class="fmd-feed">${feed}</div>
+      <div class="fmd-sidebar">${sidebar}</div>
+    </div>
+  `, ep);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   5. CAPTURE THE FLAG (two sub-screens: setup + assault)
+   ═══════════════════════════════════════════════════════════════ */
+export function rpBuildFullMetalDramaFlag(ep) {
+  const fm = ep.fullMetalDrama;
+  if (!fm || !fm.captureFlag) return '';
+  const cf = fm.captureFlag;
+  const _tvState = window._tvState || (window._tvState = {});
+  const stateKey = 'fmd-flag';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const revIdx = _tvState[stateKey].idx;
+
+  // Build steps: setup per tribe, then each round
+  const steps = [];
+
+  // Opening
+  steps.push({ type: 'intro', html: `<div class="fmd-ev round-header">
+    <div class="fmd-ev-port" style="font-size:22px;border-color:rgba(34,197,94,0.3);">&#127988;</div>
+    <div style="flex:1"><div class="fmd-ev-badge green">PHASE III &mdash; CAPTURE THE FLAG</div>
+    <div class="fmd-ev-text">${pick(WAR_HOST.flagIntro)(host())}</div></div>
+  </div>` });
+
+  // Setup per tribe
+  for (const setup of cf.setup) {
+    const planBar = Math.min(100, (setup.planQuality / 0.8) * 100);
+    steps.push({ type: 'setup', tribe: setup.tribe, html: `<div class="fmd-ev" style="border-left-color:var(--wd-mud)">
+      <div style="flex:1;min-width:0">
+        <div class="fmd-ev-badge gold">${setup.tribe} &mdash; DEFENSE SETUP</div>
+        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;font-size:12px">
+          <div style="text-align:center;padding:6px 10px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(196,167,119,0.1)">
+            <div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--wd-khaki)">${setup.attackers}</div>
+            <div style="font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.4)">ATTACKERS</div>
+          </div>
+          <div style="text-align:center;padding:6px 10px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(196,167,119,0.1)">
+            <div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--wd-steel)">${setup.defenders}</div>
+            <div style="font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.4)">DEFENDERS</div>
+          </div>
+          <div style="text-align:center;padding:6px 10px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(196,167,119,0.1)">
+            <div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--wd-paint-red)">${setup.traps}</div>
+            <div style="font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.4)">TRAPS</div>
+          </div>
+          <div style="text-align:center;padding:6px 10px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(196,167,119,0.1)">
+            <div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--wd-olive)">${setup.foxholes}</div>
+            <div style="font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.4)">FOXHOLES</div>
+          </div>
+          <div style="text-align:center;padding:6px 10px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(196,167,119,0.1)">
+            <div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--wd-paint-blue)">${setup.sentries}</div>
+            <div style="font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.4)">SENTRIES</div>
+          </div>
+        </div>
+        <div style="margin-top:8px">
+          <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:2px">PLAN QUALITY</div>
+          <div style="height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${planBar}%;background:linear-gradient(90deg,var(--wd-olive),#84cc16);border-radius:3px"></div>
+          </div>
+        </div>
+      </div>
+    </div>` });
+  }
+
+  // Assault rounds
+  for (const rd of cf.rounds) {
+    let roundHtml = `<div class="fmd-ev round-header" style="margin-bottom:4px">
+      <div style="flex:1"><div class="fmd-ev-badge red" style="animation:${rd.events.some(e => e.type === 'flagCapture') ? 'fmd-pulse 0.8s ease-in-out infinite' : 'none'}">ROUND ${rd.num} ${rd.events.some(e => e.type === 'flagCapture') ? '&mdash; FLAG CAPTURED!' : ''}</div>
+      <div class="fmd-ev-text" style="font-size:11px;color:rgba(255,255,255,0.5)">${rd.attacks.length} attack${rd.attacks.length !== 1 ? 's' : ''} this round</div></div>
+    </div>`;
+
+    // Events in this round
+    for (const evt of rd.events) {
+      const isCapture = evt.type === 'flagCapture';
+      const isTrap = evt.type === 'boobyTrapTrigger';
+      const isLastStand = evt.type === 'lastStand';
+      const evtClass = isCapture ? 'capture' : isTrap ? 'negative' : isLastStand ? 'positive' : '';
+      const badgeText = isCapture ? 'FLAG CAPTURED' : isTrap ? 'TRAP TRIGGERED' : isLastStand ? 'LAST STAND' : evt.type === 'flankingManeuver' ? 'FLANKING MANEUVER' : evt.type === 'smokescreen' ? 'SMOKESCREEN' : evt.type === 'rallyCry' ? 'RALLY CRY' : evt.type === 'friendlyFire' ? 'FRIENDLY FIRE' : evt.type === 'numYoAttack' ? 'MARTIAL ARTS' : evt.type === 'surrenderBluff' ? 'SURRENDER BLUFF' : evt.type === 'flagRunner' ? 'FLAG RUNNER' : 'EVENT';
+      const badgeColor = isCapture ? 'green' : isTrap ? 'red' : isLastStand ? 'gold' : evt.type === 'friendlyFire' ? 'red' : evt.type === 'flankingManeuver' ? 'blue' : evt.type === 'smokescreen' ? 'gray' : 'orange';
+      const actorName = evt.player || (evt.players ? evt.players[0] : '');
+
+      roundHtml += `<div class="fmd-ev ${evtClass}"${isCapture ? ' style="animation:fmd-incoming 0.5s ease-out"' : ''}>
+        ${actorName ? `<div class="fmd-ev-port">${_fmdPortrait(actorName, 44)}</div>` : ''}
+        <div style="flex:1;min-width:0">
+          <div class="fmd-ev-badge ${badgeColor}">${badgeText}</div>
+          <div class="fmd-ev-text"${isCapture ? ' style="font-size:15px;font-weight:700"' : ''}>${evt.text || ''}</div>
+        </div>
+      </div>`;
     }
 
-    // Result
-    if (fm.captureFlag.capturedBy) {
-      html += `<div style="text-align:center;padding:20px;background:rgba(132,204,22,0.2);border-radius:8px;margin-top:15px;">`;
-      html += `<p style="color:#84cc16;font-size:1.5em;font-weight:bold;">🏆 FLAG CAPTURED by ${fm.captureFlag.capturedBy}!</p>`;
-      html += `<p style="color:#e0e0e0;">${fm.captureFlag.winner} wins the war!</p>`;
-      html += `</div>`;
-    } else {
-      html += `<p style="color:#fbbf24;text-align:center;font-size:1.1em;">No capture — ${fm.captureFlag.winner} wins on advances.</p>`;
-    }
-    html += `</div>`;
+    // Attack summary for this round
+    const advances = rd.attacks.filter(a => a.advanced).length;
+    const stopped = rd.attacks.filter(a => !a.advanced).length;
+    roundHtml += `<div style="display:flex;gap:12px;font-size:10px;color:rgba(255,255,255,0.4);padding:4px 0 2px">
+      <span style="color:#84cc16">${advances} advanced</span>
+      <span style="color:var(--wd-paint-red)">${stopped} stopped</span>
+    </div>`;
+
+    steps.push({ type: 'round', num: rd.num, html: roundHtml });
   }
 
   // Final result
-  html += `<div style="text-align:center;padding:20px;border-top:2px solid #ff6b35;margin-top:20px;">`;
-  const sorted = Object.entries(fm.tribeScores).sort((a, b) => b[1] - a[1]);
-  for (const [tribe, score] of sorted) {
-    html += `<p style="color:#e0e0e0;font-size:1.1em;">${tribe}: <strong style="color:#ff6b35;">${score.toFixed(1)}</strong> pts</p>`;
-  }
-  html += `</div>`;
+  const resultText = cf.capturedBy
+    ? `FLAG CAPTURED by ${cf.capturedBy}! ${cf.winner} wins the war!`
+    : `No capture after ${cf.rounds.length} rounds. ${cf.winner} wins on total advances.`;
+  steps.push({ type: 'result', html: `<div class="fmd-ev capture" style="text-align:center;justify-content:center">
+    <div style="flex:1"><div class="fmd-ev-badge green">MISSION COMPLETE</div>
+    <div class="fmd-ev-text" style="font-size:15px;font-family:'Black Ops One',sans-serif;letter-spacing:2px;color:#84cc16">${resultText}</div></div>
+  </div>` });
 
-  html += `</div>`;
-  return html;
+  const totalSteps = steps.length;
+
+  // Sidebar — tactical map view
+  function buildFlagSidebar(revealCount) {
+    let sb = `<div class="fmd-side-sec">TACTICAL MAP</div>`;
+
+    // Setup info
+    for (const setup of cf.setup) {
+      const setupIdx = cf.setup.indexOf(setup) + 1; // +1 for intro
+      const shown = setupIdx < revealCount;
+      sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;opacity:${shown ? 1 : 0.4}">
+        <div style="font-family:'Black Ops One',sans-serif;font-size:9px;color:var(--wd-khaki);letter-spacing:1px">${setup.tribe}</div>
+        ${shown ? `<div style="display:flex;gap:8px;margin-top:3px;font-size:9px;color:rgba(255,255,255,0.5)">
+          <span>${setup.traps} traps</span><span>${setup.foxholes} fox</span><span>${setup.sentries} snt</span>
+        </div>` : '<div style="font-size:9px;color:rgba(255,255,255,0.2)">CLASSIFIED</div>'}
+      </div>`;
+    }
+
+    // Round progress
+    const setupCount = cf.setup.length + 1; // intro + setups
+    sb += `<div class="fmd-side-sec">ASSAULT PROGRESS</div>`;
+    for (const rd of cf.rounds) {
+      const rdIdx = setupCount + cf.rounds.indexOf(rd);
+      const shown = rdIdx < revealCount;
+      const hasCapture = rd.events.some(e => e.type === 'flagCapture');
+      sb += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;opacity:${shown ? 1 : 0.35}">
+        <div style="width:18px;height:18px;border-radius:50%;background:${shown ? (hasCapture ? '#84cc16' : 'var(--wd-olive)') : 'rgba(255,255,255,0.1)'};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${shown ? '#fff' : 'rgba(255,255,255,0.3)'}">${rd.num}</div>
+        <span style="color:rgba(255,255,255,${shown ? 0.7 : 0.3})">${shown ? (hasCapture ? 'FLAG CAPTURED!' : `${rd.attacks.filter(a => a.advanced).length} advanced`) : 'PENDING'}</span>
+      </div>`;
+    }
+
+    // Winner
+    const winnerShown = revealCount >= totalSteps;
+    sb += `<div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(196,167,119,0.15)">
+      <div style="font-size:9px;color:rgba(196,167,119,0.5);letter-spacing:2px">VICTOR</div>
+      <div style="font-family:'Black Ops One',sans-serif;font-size:12px;color:${winnerShown ? '#84cc16' : 'rgba(255,255,255,0.2)'};margin-top:2px">${winnerShown ? cf.winner : '???'}</div>
+    </div>`;
+    return sb;
+  }
+
+  // Feed
+  let feed = '';
+  for (let i = 0; i < totalSteps; i++) {
+    const visible = i <= revIdx;
+    feed += `<div id="fmd-step-flag-${i}" style="${visible ? '' : 'display:none'}">${steps[i].html}</div>`;
+  }
+
+  const pending = revIdx < totalSteps - 1;
+  const controls = `<div id="fmd-controls-flag" class="fmd-controls" ${!pending && totalSteps ? 'style="display:none"' : ''}>
+    <button class="fmd-btn-next" onclick="fullMetalDramaRevealNext('fmd-flag',${totalSteps})">ADVANCE!</button>
+    <button class="fmd-btn-all" onclick="fullMetalDramaRevealAll('fmd-flag',${totalSteps})">Reveal All</button>
+  </div>
+  <div id="fmd-done-flag" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:14px 0'}">
+    ${_fmdBadge('BATTLE CONCLUDED', 'green')}
+  </div>`;
+
+  // HUD
+  const totalAdvances = cf.rounds.flatMap(r => r.attacks).filter(a => a.advanced).length;
+  const totalStopped = cf.rounds.flatMap(r => r.attacks).filter(a => !a.advanced).length;
+  const hudCells = `
+    <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:#84cc16">${totalAdvances}</div><div class="fmd-hud-lbl">ADVANCED</div></div>
+    <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:var(--wd-paint-red)">${totalStopped}</div><div class="fmd-hud-lbl">STOPPED</div></div>
+    <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:var(--wd-khaki)">${cf.rounds.length}</div><div class="fmd-hud-lbl">ROUNDS</div></div>
+    <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:var(--wd-explosion)">III</div><div class="fmd-hud-lbl">PHASE</div></div>
+  `;
+
+  return _fmdShell(`
+    <div class="fmd-hud">${hudCells}</div>
+    <div class="fmd-layout">
+      <div class="fmd-feed">${feed}${controls}</div>
+      <div class="fmd-sidebar" id="fmd-sidebar-flag">${buildFlagSidebar(revIdx + 1)}</div>
+    </div>
+  `, ep);
 }
 
-export function fullMetalDramaRevealNext() {}
-export function fullMetalDramaRevealAll() {}
+/* ═══════════════════════════════════════════════════════════════
+   6. RESULTS — military leaderboard, winner, safe/tribal
+   ═══════════════════════════════════════════════════════════════ */
+export function rpBuildFullMetalDramaResults(ep) {
+  const fm = ep.fullMetalDrama;
+  if (!fm) return '';
+
+  const sorted = Object.entries(fm.tribeScores).sort((a, b) => b[1] - a[1]);
+  const winnerTribe = sorted[0]?.[0];
+  const loserTribe = sorted[sorted.length - 1]?.[0];
+  const tribeMembers = gs.tribes ? gs.tribes.map(t => ({ name: t.name, members: [...t.members] })) : [];
+
+  // Leaderboard from chalMemberScores
+  const scores = ep.chalMemberScores || {};
+  const leaderboard = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+
+  let content = '';
+
+  // Winner announcement
+  content += `<div style="text-align:center;padding:30px 20px;position:relative;z-index:6;">
+    <div style="font-size:10px;letter-spacing:5px;color:rgba(196,167,119,0.4);text-transform:uppercase;margin-bottom:8px">MISSION DEBRIEF</div>
+    <div style="font-family:'Black Ops One',sans-serif;font-size:32px;color:var(--wd-khaki);text-shadow:2px 2px 0 rgba(0,0,0,0.5);letter-spacing:4px;margin-bottom:6px">${winnerTribe}</div>
+    <div style="font-family:'Black Ops One',sans-serif;font-size:14px;color:#84cc16;letter-spacing:3px;margin-bottom:20px">WINS THE WAR</div>
+    ${pick(WAR_HOST.winner)(host(), winnerTribe) ? `<div style="font-size:13px;font-style:italic;color:rgba(255,255,255,0.6);max-width:500px;margin:0 auto 20px">${pick(WAR_HOST.winner)(host(), winnerTribe)}</div>` : ''}
+  </div>`;
+
+  content += _fmdBarbed;
+
+  // Tribe scores
+  content += `<div style="display:flex;gap:14px;justify-content:center;padding:0 14px 20px;flex-wrap:wrap;position:relative;z-index:6">`;
+  for (const [tribe, score] of sorted) {
+    const isWinner = tribe === winnerTribe;
+    const isLoser = tribe === loserTribe;
+    const members = tribeMembers.find(t => t.name === tribe)?.members || [];
+    content += `<div style="flex:1;min-width:240px;max-width:400px;background:rgba(0,0,0,0.3);border:2px solid ${isWinner ? '#84cc16' : isLoser ? 'var(--wd-paint-red)' : 'rgba(196,167,119,0.15)'};border-radius:6px;padding:16px;${isWinner ? 'box-shadow:0 0 20px rgba(132,204,22,0.1)' : ''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-family:'Black Ops One',sans-serif;font-size:14px;color:${isWinner ? '#84cc16' : isLoser ? 'var(--wd-paint-red)' : 'var(--wd-khaki)'};letter-spacing:2px">${tribe}</div>
+        <div style="font-family:'Black Ops One',sans-serif;font-size:18px;color:${isWinner ? '#84cc16' : 'var(--wd-khaki)'}">${score.toFixed(1)}</div>
+      </div>
+      <div style="font-size:10px;letter-spacing:2px;color:${isWinner ? '#84cc16' : isLoser ? 'var(--wd-paint-red)' : 'var(--wd-steel)'};margin-bottom:10px">${isWinner ? 'SAFE &mdash; IMMUNE' : isLoser ? 'TRIBAL COUNCIL TONIGHT' : 'SAFE'}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${members.map(name => {
+          const memberScore = scores[name] || 0;
+          const statusColor = isWinner ? '#84cc16' : isLoser ? 'var(--wd-paint-red)' : 'var(--wd-steel)';
+          return _fmdIdCard(name, '', `${memberScore} pts`, statusColor);
+        }).join('')}
+      </div>
+    </div>`;
+  }
+  content += `</div>`;
+
+  // Leaderboard — top performers
+  if (leaderboard.length > 0) {
+    content += `<div style="padding:0 14px 20px;position:relative;z-index:6">
+      <div style="font-family:'Black Ops One',sans-serif;font-size:12px;letter-spacing:3px;color:var(--wd-khaki);text-align:center;margin-bottom:12px">COMBAT LEADERBOARD</div>
+      <div style="max-width:500px;margin:0 auto">`;
+    const top = leaderboard.slice(0, 8);
+    for (let i = 0; i < top.length; i++) {
+      const [name, score] = top[i];
+      const medal = i === 0 ? 'BRONZE STAR' : i === 1 ? 'SILVER STAR' : i === 2 ? 'PURPLE HEART' : '';
+      const medalColor = i === 0 ? 'var(--wd-khaki)' : i === 1 ? 'var(--wd-dog-tag)' : i === 2 ? '#c084fc' : '';
+      content += `<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;margin-bottom:3px;background:rgba(0,0,0,${i < 3 ? 0.25 : 0.12});border-radius:4px;border-left:3px solid ${i < 3 ? medalColor : 'transparent'}">
+        <div style="font-family:'Black Ops One',sans-serif;font-size:14px;color:rgba(255,255,255,0.3);width:20px;text-align:center">${i + 1}</div>
+        ${_fmdSidePortrait(name, 28)}
+        <div style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:rgba(255,255,255,0.8)">${name}</div>
+        ${medal ? `<span style="font-size:7px;font-family:'Black Ops One',sans-serif;letter-spacing:1px;color:${medalColor}">${medal}</span>` : ''}
+        <div style="font-family:'Black Ops One',sans-serif;font-size:13px;color:var(--wd-khaki)">${score}</div>
+      </div>`;
+    }
+    content += `</div></div>`;
+  }
+
+  return _fmdShell(content, ep);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REVEAL FUNCTIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+function _fmdBuildJumpSidebarFromEp(ep, revIdx) {
+  const fm = ep.fullMetalDrama;
+  if (!fm || !fm.planeJump) return '';
+  const pj = fm.planeJump;
+  const steps = pj.events || [];
+  const totalSteps = steps.length;
+  const revealed = steps.slice(0, Math.max(0, revIdx)); // revIdx includes the opening step at 0
+  const jumpedSet = new Set(revealed.filter(e => e.type === 'heroicDive' || e.type === 'jump' || e.type === 'tandemJump' || e.type === 'cornedBeefLure').map(e => e.player).filter(Boolean));
+  const refusedSet = new Set(revealed.filter(e => e.type === 'panicRefusal').map(e => e.player).filter(Boolean));
+  const mentionedSet = new Set([...jumpedSet, ...refusedSet]);
+
+  let sb = '';
+  sb += `<div class="fmd-side-sec">ALTITUDE: 10,000 FT</div>`;
+  sb += `<div style="height:8px;background:rgba(0,0,0,0.3);border-radius:4px;overflow:hidden;margin:6px 0 10px">
+    <div style="height:100%;width:${Math.min(100, (revIdx / Math.max(1, totalSteps + 1)) * 100)}%;background:linear-gradient(90deg,var(--wd-paint-blue),#38bdf8);border-radius:4px;transition:width 0.3s"></div>
+  </div>`;
+  for (const [tribe, order] of Object.entries(pj.jumpOrder || {})) {
+    sb += `<div class="fmd-side-sec">${tribe}</div>`;
+    for (const name of order) {
+      const jumped = jumpedSet.has(name);
+      const refused = refusedSet.has(name);
+      const known = mentionedSet.has(name);
+      const icon = !known ? '&#10067;' : jumped ? '&#9989;' : refused ? '&#128020;' : '&#10067;';
+      sb += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${known ? 0.8 : 0.3});opacity:${known ? 1 : 0.4}">
+        ${_fmdSidePortrait(name, 24)}
+        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
+        <span>${icon}</span>
+      </div>`;
+    }
+  }
+  return sb;
+}
+
+function _fmdBuildPaintSidebarFromEp(ep, revIdx) {
+  const fm = ep.fullMetalDrama;
+  if (!fm || !fm.paintBomb) return '';
+  const pb = fm.paintBomb;
+  const totalSteps = pb.tribes.length + 2; // intro + tribes + winner
+
+  let sb = `<div class="fmd-side-sec">DETONATION STATUS</div>`;
+  for (let i = 0; i < pb.tribes.length; i++) {
+    const tr = pb.tribes[i];
+    const shown = (i + 1) <= revIdx;
+    sb += `<div style="padding:8px 6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;border-left:3px solid ${shown ? (tr.controlled ? '#84cc16' : 'var(--wd-paint-red)') : 'rgba(255,255,255,0.1)'};opacity:${shown ? 1 : 0.4}">
+      <div style="font-family:'Black Ops One',sans-serif;font-size:10px;color:rgba(255,255,255,${shown ? 0.8 : 0.3});letter-spacing:1px">${tr.tribe}</div>
+      ${shown ? `<div style="font-size:9px;color:${tr.controlled ? '#84cc16' : 'var(--wd-paint-red)'};margin-top:2px">${tr.controlled ? 'CONTROLLED' : 'UNCONTROLLED'} &middot; ${tr.score.toFixed(2)} pts</div>` : '<div style="font-size:9px;color:rgba(255,255,255,0.2);margin-top:2px">PENDING</div>'}
+    </div>`;
+  }
+  const winnerShown = revIdx >= totalSteps - 1;
+  sb += `<div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(196,167,119,0.15)">
+    <div style="font-size:9px;color:rgba(196,167,119,0.5);letter-spacing:2px">PHASE WINNER</div>
+    <div style="font-family:'Black Ops One',sans-serif;font-size:12px;color:${winnerShown ? 'var(--wd-khaki)' : 'rgba(255,255,255,0.2)'};margin-top:2px">${winnerShown ? pb.winner : '???'}</div>
+  </div>`;
+  return sb;
+}
+
+function _fmdBuildFlagSidebarFromEp(ep, revIdx) {
+  const fm = ep.fullMetalDrama;
+  if (!fm || !fm.captureFlag) return '';
+  const cf = fm.captureFlag;
+  const setupCount = cf.setup.length + 1;
+  const totalSteps = setupCount + cf.rounds.length + 1;
+
+  let sb = `<div class="fmd-side-sec">TACTICAL MAP</div>`;
+  for (const setup of cf.setup) {
+    const setupIdx = cf.setup.indexOf(setup) + 1;
+    const shown = setupIdx <= revIdx;
+    sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;opacity:${shown ? 1 : 0.4}">
+      <div style="font-family:'Black Ops One',sans-serif;font-size:9px;color:var(--wd-khaki);letter-spacing:1px">${setup.tribe}</div>
+      ${shown ? `<div style="display:flex;gap:8px;margin-top:3px;font-size:9px;color:rgba(255,255,255,0.5)">
+        <span>${setup.traps} traps</span><span>${setup.foxholes} fox</span><span>${setup.sentries} snt</span>
+      </div>` : '<div style="font-size:9px;color:rgba(255,255,255,0.2)">CLASSIFIED</div>'}
+    </div>`;
+  }
+  sb += `<div class="fmd-side-sec">ASSAULT PROGRESS</div>`;
+  for (const rd of cf.rounds) {
+    const rdIdx = setupCount + cf.rounds.indexOf(rd);
+    const shown = rdIdx <= revIdx;
+    const hasCapture = rd.events.some(e => e.type === 'flagCapture');
+    sb += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;opacity:${shown ? 1 : 0.35}">
+      <div style="width:18px;height:18px;border-radius:50%;background:${shown ? (hasCapture ? '#84cc16' : 'var(--wd-olive)') : 'rgba(255,255,255,0.1)'};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${shown ? '#fff' : 'rgba(255,255,255,0.3)'}">${rd.num}</div>
+      <span style="color:rgba(255,255,255,${shown ? 0.7 : 0.3})">${shown ? (hasCapture ? 'FLAG CAPTURED!' : `${rd.attacks.filter(a => a.advanced).length} advanced`) : 'PENDING'}</span>
+    </div>`;
+  }
+  const winnerShown = revIdx >= totalSteps - 1;
+  sb += `<div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(196,167,119,0.15)">
+    <div style="font-size:9px;color:rgba(196,167,119,0.5);letter-spacing:2px">VICTOR</div>
+    <div style="font-family:'Black Ops One',sans-serif;font-size:12px;color:${winnerShown ? '#84cc16' : 'rgba(255,255,255,0.2)'};margin-top:2px">${winnerShown ? cf.winner : '???'}</div>
+  </div>`;
+  return sb;
+}
+
+function _fmdUpdateSidebar(screenKey, revIdx) {
+  const ep = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+  if (!ep?.fullMetalDrama) return;
+  if (screenKey === 'fmd-jump') {
+    const sideEl = document.getElementById('fmd-sidebar-jump');
+    if (sideEl) sideEl.innerHTML = _fmdBuildJumpSidebarFromEp(ep, revIdx);
+  } else if (screenKey === 'fmd-paint') {
+    const sideEl = document.getElementById('fmd-sidebar-paint');
+    if (sideEl) sideEl.innerHTML = _fmdBuildPaintSidebarFromEp(ep, revIdx);
+  } else if (screenKey === 'fmd-flag') {
+    const sideEl = document.getElementById('fmd-sidebar-flag');
+    if (sideEl) sideEl.innerHTML = _fmdBuildFlagSidebarFromEp(ep, revIdx);
+  }
+}
+
+export function fullMetalDramaRevealNext(screenKey, totalSteps) {
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState[screenKey]) window._tvState[screenKey] = { idx: -1 };
+  const state = window._tvState[screenKey];
+  if (state.idx >= totalSteps - 1) return;
+  state.idx++;
+  const suffix = screenKey.replace('fmd-', '');
+  const el = document.getElementById(`fmd-step-${suffix}-${state.idx}`);
+  if (el) {
+    el.style.display = '';
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  if (state.idx >= totalSteps - 1) {
+    const controls = document.getElementById(`fmd-controls-${suffix}`);
+    const done = document.getElementById(`fmd-done-${suffix}`);
+    if (controls) controls.style.display = 'none';
+    if (done) done.style.display = '';
+  }
+  _fmdUpdateSidebar(screenKey, state.idx);
+}
+
+export function fullMetalDramaRevealAll(screenKey, totalSteps) {
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState[screenKey]) window._tvState[screenKey] = { idx: -1 };
+  const state = window._tvState[screenKey];
+  const suffix = screenKey.replace('fmd-', '');
+  for (let i = state.idx + 1; i < totalSteps; i++) {
+    const el = document.getElementById(`fmd-step-${suffix}-${i}`);
+    if (el) el.style.display = '';
+  }
+  state.idx = totalSteps - 1;
+  const controls = document.getElementById(`fmd-controls-${suffix}`);
+  const done = document.getElementById(`fmd-done-${suffix}`);
+  if (controls) controls.style.display = 'none';
+  if (done) done.style.display = '';
+  _fmdUpdateSidebar(screenKey, state.idx);
+}

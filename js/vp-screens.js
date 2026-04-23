@@ -17,7 +17,7 @@ import { rpBuildCrazytownTitleCard, rpBuildCrazytownHorseDive, rpBuildCrazytownS
 import { rpBuildChefshankTitleCard, rpBuildChefshankPrisonFood, rpBuildChefshankPrisonBreak, rpBuildChefshankDramaBreak, rpBuildChefshankResults, chefshankRevealNext, chefshankRevealAll } from './chal/chefshank.js';
 import { rpBuildOneFluTitleCard, rpBuildOneFluStudySleep, rpBuildOneFluQuiz, rpBuildOneFluAssembly, rpBuildOneFluDramaBreak, rpBuildOneFluDisease, rpBuildOneFluResults, oneFluRevealNext, oneFluRevealAll } from './chal/one-flu.js';
 import { rpBuildMastersOfDisastersTitleCard, rpBuildMastersOfDisastersEarthquake, rpBuildMastersOfDisastersDramaBreak, rpBuildMastersOfDisastersSubmarine, rpBuildMastersOfDisastersResults, mastersOfDisastersRevealNext, mastersOfDisastersRevealAll } from './chal/masters-of-disasters.js';
-import { rpBuildFullMetalDramaTitleCard, fullMetalDramaRevealNext, fullMetalDramaRevealAll } from './chal/full-metal-drama.js';
+import { rpBuildFullMetalDramaTitleCard, rpBuildFullMetalDramaJump, rpBuildFullMetalDramaPaintBomb, rpBuildFullMetalDramaDramaBreak, rpBuildFullMetalDramaFlag, rpBuildFullMetalDramaResults, fullMetalDramaRevealNext, fullMetalDramaRevealAll } from './chal/full-metal-drama.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10460,7 +10460,20 @@ export function buildVPScreens(epRecord) {
       if (_modRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _modRescLife });
     }
   } else if (ep.isFullMetalDrama && ep.fullMetalDrama) {
-    vpScreens.push({ id:'fmd-title', label:'⚔️ Full Metal Drama', html: rpBuildFullMetalDramaTitleCard(ep) });
+    vpScreens.push({ id:'fmd-title', label:'Full Metal Drama', html: rpBuildFullMetalDramaTitleCard(ep) });
+    if (ep.fullMetalDrama.planeJump) {
+      vpScreens.push({ id:'fmd-jump', label:'Plane Jump', html: rpBuildFullMetalDramaJump(ep) });
+    }
+    if (ep.fullMetalDrama.paintBomb) {
+      vpScreens.push({ id:'fmd-paint', label:'Paint Bomb', html: rpBuildFullMetalDramaPaintBomb(ep) });
+    }
+    if (ep.fullMetalDrama.breakEvents?.length) {
+      vpScreens.push({ id:'fmd-drama', label:'War Drama', html: rpBuildFullMetalDramaDramaBreak(ep) });
+    }
+    if (ep.fullMetalDrama.captureFlag) {
+      vpScreens.push({ id:'fmd-flag', label:'Capture the Flag', html: rpBuildFullMetalDramaFlag(ep) });
+    }
+    vpScreens.push({ id:'fmd-results', label:'Debrief', html: rpBuildFullMetalDramaResults(ep) });
     // RI screens
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _fmdRiLife = rpBuildRILife(ep);

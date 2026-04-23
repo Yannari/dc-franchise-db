@@ -332,6 +332,7 @@ function _simulatePlaneJump(ep, tribeMembers, result) {
       } else {
         refusers.push(name);
         events.push({ type: 'panicRefusal', player: name, text: pick(WAR_JUMP_EVENTS.panicRefusal)(name, pr) });
+        ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) - 2;
       }
     }
 
@@ -407,7 +408,6 @@ function _simulatePaintBomb(ep, tribeMembers, result) {
     const contributions = {};
     const events = [];
 
-    // Only jumpers contribute — refusers sit out
     for (const name of activeMembers) {
       const s = pStats(name);
       let q = s.mental * 0.04 + s.strategic * 0.03 + noise(0.2);
@@ -548,6 +548,7 @@ function _simulateCaptureTheFlag(ep, tribeMembers, result) {
 
   // ── 3a: DEFENSE SETUP ──
   const tribeState = {};
+  const smallestTeam = Math.min(...tribeMembers.map(t => t.members.length));
   for (const tribe of tribeMembers) {
     const members = tribe.members;
     const attackers = [];
@@ -569,8 +570,26 @@ function _simulateCaptureTheFlag(ep, tribeMembers, result) {
       else defenders.push(entry.name);
     });
 
-    // Defense plan quality = best strategist
-    const planQuality = Math.max(...members.map(n => pStats(n).strategic * 0.06 + pStats(n).mental * 0.04));
+    // Captain election — strategic + social (need buy-in) + mental, penalized by low loyalty
+    const captainScores = members.map(n => {
+      const s = pStats(n);
+      const leadership = s.strategic * 0.04 + s.social * 0.03 + s.mental * 0.03;
+      const trust = s.loyalty >= 4 ? 0.05 : -0.05; // team trusts loyal leaders
+      const archPenalty = ['chaos-agent', 'wildcard', 'floater'].includes(
+        players.find(p => p.name === n)?.archetype) ? -0.08 : 0;
+      return { name: n, score: leadership + trust + archPenalty + noise(0.1) };
+    }).sort((a, b) => b.score - a.score);
+    const captainName = captainScores[0].name;
+    const captainStats = pStats(captainName);
+
+    // Plan quality — captain ability × team cooperation
+    const captainAbility = captainStats.strategic * 0.05 + captainStats.mental * 0.04;
+    const teamBuyIn = members.reduce((sum, n) => {
+      if (n === captainName) return sum;
+      const bond = getBond(n, captainName);
+      return sum + (bond > 0 ? 0.03 : bond < -3 ? -0.03 : 0);
+    }, 0) / Math.max(1, members.length - 1);
+    const planQuality = Math.min(1, Math.max(0.1, captainAbility + teamBuyIn + noise(0.05)));
 
     // Defenders set up
     for (const name of defenders) {
@@ -604,92 +623,143 @@ function _simulateCaptureTheFlag(ep, tribeMembers, result) {
     const foxholeBonus = foxholes.length > 0 ? 0.1 : 0;
     const sentryBonus = sentries.length > 0 ? 0.05 : 0;
 
-    tribeState[tribe.name] = { attackers: [...attackers], defenders: [...defenders], traps: [...traps], foxholes, sentries, planQuality, foxholeBonus, sentryBonus, activeDefenders: [...defenders], activeAttackers: [...attackers] };
-    const bestStrategist = members.reduce((best, n) => (pStats(n).strategic + pStats(n).mental) > (pStats(best).strategic + pStats(best).mental) ? n : best, members[0]);
+    // planQuality scales defense: defenders get planBonus, traps get harder
+    const planBonus = planQuality * 0.06; // 0-6% bonus to all defenders
+    for (const trap of traps) trap.difficulty += planQuality * 0.03; // better plan = sneakier traps
+    tribeState[tribe.name] = { attackers: [...attackers], defenders: [...defenders], traps: [...traps], foxholes, sentries, planQuality, planBonus, foxholeBonus, sentryBonus, activeDefenders: [...defenders], activeAttackers: [...attackers] };
+    const bestStrategist = captainName;
     setup.push({
       tribe: tribe.name,
       attackerNames: [...attackers], defenderNames: [...defenders],
       foxholeBuilders: foxholes.map(f => f.builder || f).filter(Boolean),
       trapSetters: traps.map(t => t.builder).filter(Boolean),
-      sentryNames: sentries,
+      sentryNames: sentries.map(s => typeof s === 'string' ? s : s.builder || s.name || '?'),
       foxholes: foxholes.length, traps: traps.length, sentries: sentries.length,
       planQuality, captain: bestStrategist,
       attackers: attackers.length, defenders: defenders.length,
     });
   }
 
-  // ── 3b: ASSAULT (up to 5 rounds) ──
-  for (let round = 1; round <= 5; round++) {
+  // Balance: cap attackers AND defenders per round to smallest team's counts
+  const minAttackers = Math.min(...Object.values(tribeState).map(ts => ts.attackers.length));
+  const minDefenders = Math.min(...Object.values(tribeState).map(ts => ts.defenders.length));
+
+  // ── 3b: ASSAULT — play until someone captures ──
+  for (let round = 1; round <= 20; round++) {
     const roundAttacks = [];
     const roundEvents = [];
     let captured = false;
 
-    for (const tribe of tribeMembers) {
+    // Recover stunned defenders + reset per-round state
+    for (const ts of Object.values(tribeState)) {
+      ts._defenderUsedThisRound = new Set();
+      ts._flagGrabbedThisRound = false;
+      if (ts._stunnedUntil) {
+        for (const [defName, recoveryRound] of Object.entries(ts._stunnedUntil)) {
+          if (round > recoveryRound && !ts.activeDefenders.includes(defName) && ts.defenders.includes(defName)) {
+            ts.activeDefenders.push(defName);
+            delete ts._stunnedUntil[defName];
+            roundEvents.push({ type: 'defenderRecovery', player: defName,
+              text: `${defName} shook it off and returned to the defense!` });
+          }
+        }
+      }
+    }
+
+    // Randomize attack order each round — no first-mover advantage
+    const attackOrder = [...tribeMembers.keys()].sort(() => Math.random() - 0.5);
+
+    for (const ti of attackOrder) {
+      const tribe = tribeMembers[ti];
       const myState = tribeState[tribe.name];
-      const enemyTribe = tribeMembers.find(t => t.name !== tribe.name);
-      if (!enemyTribe) continue;
+      const enemyTribe = tribeMembers[(ti + 1) % tribeMembers.length];
+      if (enemyTribe.name === tribe.name) continue;
       const enemyState = tribeState[enemyTribe.name];
 
-      // Each active attacker advances
-      const stillActive = [];
-      for (const attacker of myState.activeAttackers) {
+      // Cap attackers for fairness — rotate bench each round
+      const atkPool = [...myState.activeAttackers];
+      const rotateBy = ((round - 1) * minAttackers) % atkPool.length;
+      const rotated = [...atkPool.slice(rotateBy), ...atkPool.slice(0, rotateBy)];
+      const roundAttackers = rotated.slice(0, minAttackers);
+      const benchedThisRound = rotated.slice(minAttackers);
+      const stillActive = [...benchedThisRound];
+
+      // Cap available defenders for fairness
+      const defenderPool = enemyState.activeDefenders.filter(d => !enemyState._defenderUsedThisRound.has(d));
+      const cappedDefenders = defenderPool.slice(0, minDefenders);
+      const defenderQueue = [...cappedDefenders];
+
+      for (const attacker of roundAttackers) {
         const s = pStats(attacker);
         const pr = pronouns(attacker);
         let advanced = false;
         let trapResult = 'none';
         let defenderResult = 'none';
+        let chaseResult = 'none';
 
-        // TRAP CHECK
-        if (enemyState.traps.length > 0) {
-          const trap = enemyState.traps[0]; // face outermost trap
-          const detect = s.strategic * 0.05 + s.mental * 0.04 + noise(0.2);
+        // TRAP CHECK — reckless rush in, strategic sniff them out
+        const trapEncounterChance = 0.3 + s.boldness * 0.05 - s.strategic * 0.04 - s.intuition * 0.02;
+        if (enemyState.traps.length > 0 && Math.random() < Math.max(0.1, Math.min(0.85, trapEncounterChance))) {
+          const trap = enemyState.traps[0];
+          const detect = s.strategic * 0.06 + s.mental * 0.04 + s.intuition * 0.03 + noise(0.15);
           if (detect > trap.difficulty) {
             trapResult = 'dodged';
+            ep.chalMemberScores[attacker] = (ep.chalMemberScores[attacker] || 0) + 1;
           } else {
             trapResult = 'hit';
+            enemyState.traps.shift();
             roundEvents.push({ type: 'boobyTrapTrigger', player: attacker, text: pick(WAR_FLAG_EVENTS.boobyTrapTrigger)(attacker, pr) });
             ep.chalMemberScores[trap.builder] = (ep.chalMemberScores[trap.builder] || 0) + 3;
-            roundAttacks.push({ attacker, tribe: tribe.name, trapResult, defenderResult: 'n/a', advanced: false });
-            continue; // eliminated this round
+            roundAttacks.push({ attacker, tribe: tribe.name, enemyTribe: enemyTribe.name, trapResult, defenderResult: 'n/a', chaseResult: 'none', advanced: false, defender: null });
+            stillActive.push(attacker);
+            continue;
           }
         }
 
-        // FLANKING MANEUVER (bypass traps entirely)
+        // FLANKING MANEUVER
         if (trapResult === 'none' && s.intuition * 0.08 > 0.5 + noise(0.1) && Math.random() < 0.2) {
           roundEvents.push({ type: 'flankingManeuver', player: attacker, text: pick(WAR_FLAG_EVENTS.flankingManeuver)(attacker, pr) });
           trapResult = 'flanked';
         }
 
         // DEFENDER MATCHUP
-        if (enemyState.activeDefenders.length > 0) {
-          const defender = enemyState.activeDefenders[0];
+        let defender = null;
+        if (defenderQueue.length > 0) {
+          defender = defenderQueue.shift();
+          enemyState._defenderUsedThisRound.add(defender);
           const ds = pStats(defender);
           const dpr = pronouns(defender);
 
           const attackPower = s.physical * 0.04 + s.boldness * 0.03 + s.endurance * 0.02 + noise(0.2);
-          const defendPower = ds.physical * 0.03 + ds.strategic * 0.04 + ds.mental * 0.03 + ds.endurance * 0.02 + enemyState.foxholeBonus + enemyState.sentryBonus + noise(0.2);
+          const fatigue = round > 6 ? (round - 6) * 0.04 : 0; // defenders tire after round 6
+          const defendPower = ds.physical * 0.03 + ds.strategic * 0.04 + ds.mental * 0.03 + ds.endurance * 0.02
+            + enemyState.foxholeBonus + enemyState.sentryBonus + enemyState.planBonus + 0.05 - fatigue + noise(0.2);
 
-          // Special events during matchup
-          // Num-yo attack
-          if (s.physical >= 7 && Math.random() < 0.15) {
+          if (s.physical >= 7 && Math.random() < 0.08) {
             roundEvents.push({ type: 'numYoAttack', player: attacker, text: pick(WAR_FLAG_EVENTS.numYoAttack)(attacker, pr, defender) });
-            enemyState.activeDefenders.shift(); // defender disabled
+            // Stunned: out for this round + next round, then recovers
+            if (!enemyState._stunnedUntil) enemyState._stunnedUntil = {};
+            enemyState._stunnedUntil[defender] = round + 1;
+            enemyState.activeDefenders = enemyState.activeDefenders.filter(d => d !== defender);
             advanced = true;
             defenderResult = 'stunned';
-          }
-          // Surrender bluff
-          else if (s.strategic >= 7 && Math.random() < 0.12) {
+            ep.chalMemberScores[attacker] = (ep.chalMemberScores[attacker] || 0) + 4;
+          } else if (s.strategic >= 7 && Math.random() < 0.06) {
             roundEvents.push({ type: 'surrenderBluff', player: attacker, text: pick(WAR_FLAG_EVENTS.surrenderBluff)(attacker, pr, defender) });
             advanced = true;
             defenderResult = 'bluffed';
-          }
-          else if (attackPower > defendPower) {
+            ep.chalMemberScores[attacker] = (ep.chalMemberScores[attacker] || 0) + 2;
+          } else if (attackPower > defendPower) {
             advanced = true;
             defenderResult = 'overpowered';
-            enemyState.activeDefenders.shift();
+            ep.chalMemberScores[attacker] = (ep.chalMemberScores[attacker] || 0) + 3;
+            // Overpowered: out this round + next, then recovers
+            if (!enemyState._stunnedUntil) enemyState._stunnedUntil = {};
+            enemyState._stunnedUntil[defender] = round + 1;
+            enemyState.activeDefenders = enemyState.activeDefenders.filter(d => d !== defender);
           } else {
             defenderResult = 'repelled';
-            // Last stand check
+            ep.chalMemberScores[defender] = (ep.chalMemberScores[defender] || 0) + 2;
             if (enemyState.activeDefenders.length === 1 && Math.random() < 0.3) {
               roundEvents.push({ type: 'lastStand', player: defender, text: pick(WAR_FLAG_EVENTS.lastStand)(defender, dpr) });
               popDelta(defender, 2);
@@ -697,42 +767,94 @@ function _simulateCaptureTheFlag(ep, tribeMembers, result) {
             }
           }
         } else {
-          // UNDEFENDED BASE → capture attempt
           advanced = true;
           defenderResult = 'undefended';
         }
 
-        if (advanced) stillActive.push(attacker);
-        roundAttacks.push({ attacker, tribe: tribe.name, trapResult, defenderResult, advanced });
+        // FLAG GRAB + CHASE — one attempt per tribe per round
+        if (advanced && enemyState.activeDefenders.length === 0 && !enemyState._flagGrabbedThisRound) {
+          enemyState._flagGrabbedThisRound = true;
+          const carrierSpeed = s.physical * 0.04 + s.endurance * 0.03 + s.boldness * 0.02;
 
-        // FLAG CAPTURE CHECK — undefended base
-        if (advanced && enemyState.activeDefenders.length === 0) {
-          const captureChance = s.physical * 0.06 + s.endurance * 0.04 + noise(0.15);
-          if (captureChance > 0.35 || round >= 5) {
-            capturedBy = attacker;
-            winnerTribe = tribe.name;
-            captured = true;
-            roundEvents.push({ type: 'flagCapture', player: attacker, text: pick(WAR_HOST.capture)(host(), attacker, tribe.name) });
-            ep.chalMemberScores[attacker] = (ep.chalMemberScores[attacker] || 0) + 8;
-            popDelta(attacker, 3);
-            break;
+          // Top 2 enemy chasers
+          const pursuers = enemyTribe.members
+            .map(n => ({ name: n, speed: pStats(n).physical * 0.04 + pStats(n).endurance * 0.03 + noise(0.1) }))
+            .sort((a, b) => b.speed - a.speed)
+            .slice(0, 2);
+
+          // Teammates escort — block one pursuer each
+          const escorts = stillActive.filter(n => n !== attacker);
+          const blockedPursuers = new Set();
+          for (const escName of escorts) {
+            const escSpeed = pStats(escName).physical * 0.03 + pStats(escName).endurance * 0.03 + noise(0.1);
+            const target = pursuers.find(p => !blockedPursuers.has(p.name));
+            if (target && escSpeed > target.speed * 0.8) {
+              blockedPursuers.add(target.name);
+              roundEvents.push({ type: 'escortBlock', player: escName,
+                text: `${escName} body-checked ${target.name} — "${attacker.split(' ')[0]}, GO!"` });
+              ep.chalMemberScores[escName] = (ep.chalMemberScores[escName] || 0) + 2;
+            }
           }
+
+          // One tackle attempt from best unblocked pursuer (~35% base chance)
+          const freePursuers = pursuers.filter(p => !blockedPursuers.has(p.name));
+          let tackled = false;
+          let tackler = null;
+          if (freePursuers.length > 0) {
+            const best = freePursuers[0];
+            const tackleChance = (best.speed / (carrierSpeed + 0.25)) * 0.35;
+            if (Math.random() < tackleChance) {
+              tackled = true;
+              tackler = best.name;
+            }
+          }
+
+          if (tackled && tackler) {
+            chaseResult = 'intercepted';
+            advanced = false;
+            roundEvents.push({ type: 'flagIntercept', player: tackler, carrier: attacker,
+              text: `${tackler} chased down ${attacker} and tackled ${pr.obj}! Flag recovered for ${enemyTribe.name}!` });
+            ep.chalMemberScores[tackler] = (ep.chalMemberScores[tackler] || 0) + 5;
+            popDelta(tackler, 2);
+          } else if (freePursuers.length > 0) {
+            chaseResult = 'escaped';
+            const closest = freePursuers[0].name;
+            const escortName = escorts.length ? escorts[0] : null;
+            roundEvents.push({ type: 'flagChase', player: attacker,
+              text: `${attacker} grabbed ${enemyTribe.name}'s flag and sprinted! ${closest} gave chase${escortName ? ` but ${escortName} blocked the path` : ''} — ${attacker} dove across the line!` });
+          } else {
+            chaseResult = 'clean';
+          }
+        } else if (advanced && enemyState.activeDefenders.length === 0 && enemyState._flagGrabbedThisRound) {
+          advanced = false;
+          defenderResult = 'flag-contested';
+        }
+
+        stillActive.push(attacker);
+        roundAttacks.push({ attacker, tribe: tribe.name, enemyTribe: enemyTribe.name, trapResult, defenderResult, chaseResult, advanced, defender });
+
+        // FLAG CAPTURE — only if chase happened AND carrier wasn't intercepted
+        if (advanced && (chaseResult === 'clean' || chaseResult === 'escaped')) {
+          capturedBy = attacker;
+          winnerTribe = tribe.name;
+          captured = true;
+          roundEvents.push({ type: 'flagCapture', player: attacker, text: pick(WAR_HOST.capture)(host(), attacker, tribe.name) });
+          ep.chalMemberScores[attacker] = (ep.chalMemberScores[attacker] || 0) + 8;
+          popDelta(attacker, 3);
+          break;
         }
       }
 
       myState.activeAttackers = stillActive;
-
       if (captured) break;
     }
 
-    // Round events — smokescreen, rally cry, friendly fire, flag runner
+    // Round events — smokescreen, rally cry, friendly fire
     if (!captured) {
-      for (const tribe of tribeMembers) {
+      for (let ti = 0; ti < tribeMembers.length; ti++) {
+        const tribe = tribeMembers[ti];
         const myState = tribeState[tribe.name];
-        const enemyTribe = tribeMembers.find(t => t.name !== tribe.name);
-        if (!enemyTribe) continue;
 
-        // Smokescreen
         if (Math.random() < 0.15) {
           const smokeCandidates = myState.activeAttackers.filter(n => pStats(n).temperament <= 4);
           if (smokeCandidates.length) {
@@ -740,8 +862,6 @@ function _simulateCaptureTheFlag(ep, tribeMembers, result) {
             roundEvents.push({ type: 'smokescreen', player: smoker, text: pick(WAR_FLAG_EVENTS.smokescreen)(smoker, pronouns(smoker)) });
           }
         }
-
-        // Rally cry
         if (Math.random() < 0.15) {
           const ralliers = myState.activeAttackers.filter(n => pStats(n).social >= 6);
           if (ralliers.length) {
@@ -750,8 +870,6 @@ function _simulateCaptureTheFlag(ep, tribeMembers, result) {
             popDelta(rallier, 1);
           }
         }
-
-        // Friendly fire
         if (Math.random() < 0.08 && myState.activeAttackers.length >= 2) {
           const [ff1, ff2] = [myState.activeAttackers[0], myState.activeAttackers[1]];
           roundEvents.push({ type: 'friendlyFire', players: [ff1, ff2], text: pick(WAR_FLAG_EVENTS.friendlyFire)(ff1, ff2, pronouns(ff1)) });
@@ -759,43 +877,22 @@ function _simulateCaptureTheFlag(ep, tribeMembers, result) {
           popDelta(ff1, -1);
           addWarHeat(ff2, ff1, 1.5);
           addBond(ff1, ff2, -1.5);
-          // Remove ff2 from active
           myState.activeAttackers = myState.activeAttackers.filter(n => n !== ff2);
         }
-
-        // Flag runner
-        if (Math.random() < 0.12) {
-          const runners = myState.activeAttackers.filter(n => pStats(n).physical >= 7);
-          if (runners.length) {
-            const runner = pick(runners);
-            const pr = pronouns(runner);
-            roundEvents.push({ type: 'flagRunner', player: runner, text: pick(WAR_FLAG_EVENTS.flagRunner)(runner, pr) });
-          }
-        }
-      }
-
-      // Consume one trap per round (outermost used up)
-      for (const tribe of tribeMembers) {
-        const enemyState = tribeState[tribeMembers.find(t => t.name !== tribe.name).name];
-        if (enemyState.traps.length > 0) enemyState.traps.shift();
       }
     }
 
-    rounds.push({ num: round, attacks: roundAttacks, events: roundEvents });
+    // Track trap counts per tribe for sidebar
+    const trapSnapshot = {};
+    for (const t of tribeMembers) trapSnapshot[t.name] = tribeState[t.name].traps.length;
+
+    rounds.push({ num: round, attacks: roundAttacks, events: roundEvents, trapSnapshot });
     if (captured) break;
   }
 
-  // Fallback: no capture after 5 rounds → most advances wins
+  // Safety fallback (should never trigger with fatigue mechanic)
   if (!winnerTribe) {
-    const advances = {};
-    tribeMembers.forEach(t => { advances[t.name] = 0; });
-    for (const rd of rounds) {
-      for (const atk of rd.attacks) {
-        if (atk.advanced) advances[atk.tribe] = (advances[atk.tribe] || 0) + 1;
-      }
-    }
-    const sorted = Object.entries(advances).sort((a, b) => b[1] - a[1]);
-    winnerTribe = sorted[0][0];
+    winnerTribe = tribeMembers[0].name;
   }
 
   result.captureFlag = {
@@ -844,13 +941,20 @@ export function simulateFullMetalDrama(ep) {
   _simulateCaptureTheFlag(ep, tribeMembers, result);
 
   // ── FINAL SCORING ──
-  // Paint bomb score (×20) + capture flag performance
+  // Phase 1 (jump): +2 per jumper, -2 per refuser (already in chalMemberScores)
+  // Phase 2 (paint bomb): averaged per member × 60
   for (const tr of result.paintBomb.tribes) {
-    result.tribeScores[tr.tribe] = (result.tribeScores[tr.tribe] || 0) + tr.score * 20;
+    const memberCount = tribeMembers.find(t => t.name === tr.tribe)?.members.length || 1;
+    result.tribeScores[tr.tribe] = (result.tribeScores[tr.tribe] || 0) + (tr.score / memberCount) * 60;
   }
-  // Phase 3 winner gets decisive bonus
+  // Phase 3 (CTF): winner bonus + per-member combat scores
   if (result.captureFlag.winner) {
-    result.tribeScores[result.captureFlag.winner] = (result.tribeScores[result.captureFlag.winner] || 0) + 50;
+    result.tribeScores[result.captureFlag.winner] = (result.tribeScores[result.captureFlag.winner] || 0) + 15;
+  }
+  // Add averaged combat scores per tribe
+  for (const tribe of tribeMembers) {
+    const tribeScoreSum = tribe.members.reduce((s, n) => s + (ep.chalMemberScores[n] || 0), 0);
+    result.tribeScores[tribe.name] = (result.tribeScores[tribe.name] || 0) + (tribeScoreSum / tribe.members.length);
   }
 
   const sorted = Object.entries(result.tribeScores).sort((a, b) => b[1] - a[1]);
@@ -1205,9 +1309,17 @@ function _fmdShell(content, ep) {
 /* ── Paint splatter ── */
 .fmd-splatter{position:absolute;border-radius:50%;pointer-events:none;animation:fmd-explode 0.6s ease-out forwards;z-index:3}
 
+/* ── CTF confetti + sidebar ── */
+.fmd-ctf-confetti{position:absolute;width:6px;height:6px;border-radius:1px;pointer-events:none}
+@keyframes fmd-dot-pulse{0%,100%{box-shadow:0 0 0 rgba(132,204,22,0)}50%{box-shadow:0 0 6px rgba(132,204,22,0.6)}}
+@keyframes fmd-flag-run{0%{transform:translateX(0)}25%{transform:translateX(8px)}50%{transform:translateX(0)}75%{transform:translateX(8px)}100%{transform:translateX(0)}}
+.fmd-tac-dot{width:6px;height:6px;border-radius:50%;display:inline-block;vertical-align:middle;margin:0 2px}
+.fmd-tac-dot.active{animation:fmd-dot-pulse 2s ease-in-out infinite}
+.fmd-tac-flag{display:inline-block;animation:fmd-flag-run 0.8s ease-in-out infinite;font-size:10px}
+
 /* ── Reduced motion ── */
 @media(prefers-reduced-motion:reduce){
-  .fmd-ev{animation:none}
+  .fmd-ev,.fmd-tac-dot,.fmd-tac-flag{animation:none!important}
   .fmd-shell::after{animation:none}
   .fmd-splatter{animation:none}
 }
@@ -1303,7 +1415,7 @@ export function rpBuildFullMetalDramaJump(ep) {
   // Sidebar — altitude meter + jump status per tribe
   function buildJumpSidebar(revealCount) {
     const revealed = steps.slice(0, revealCount);
-    const jumpedSet = new Set(revealed.filter(e => e.type === 'heroicDive' || e.type === 'jump' || e.type === 'tandemJump' || e.type === 'cornedBeefLure').map(e => e.player).filter(Boolean));
+    const jumpedSet = new Set(revealed.filter(e => e.type === 'heroicDive' || e.type === 'jump' || e.type === 'tandemJump').flatMap(e => e.players || [e.player]).filter(Boolean));
     const refusedSet = new Set(revealed.filter(e => e.type === 'panicRefusal').map(e => e.player).filter(Boolean));
     const mentionedSet = new Set([...jumpedSet, ...refusedSet]);
 
@@ -1319,7 +1431,7 @@ export function rpBuildFullMetalDramaJump(ep) {
         const jumped = jumpedSet.has(name);
         const refused = refusedSet.has(name);
         const known = mentionedSet.has(name);
-        const icon = !known ? '&#10067;' : jumped ? '&#9989;' : refused ? '&#128020;' : '&#10067;';
+        const icon = !known ? '&#10067;' : refused ? '&#128020;' : jumped ? '&#9989;' : '&#10067;';
         sb += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:rgba(255,255,255,${known ? 0.8 : 0.3});opacity:${known ? 1 : 0.4}">
           ${_fmdSidePortrait(name, 24)}
           <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
@@ -1620,13 +1732,17 @@ export function rpBuildFullMetalDramaFlag(ep) {
     <div class="fmd-ev-text">${pick(WAR_HOST.flagIntro)(host())}</div></div>
   </div>` });
 
-  // Setup per tribe
+  // Compute caps for bench display
+  const vpMinAtk = Math.min(...cf.setup.map(s => (s.attackerNames || []).length));
+  const vpMinDef = Math.min(...cf.setup.map(s => (s.defenderNames || []).length));
+
   for (const setup of cf.setup) {
-    const planBar = Math.min(100, (setup.planQuality / 0.8) * 100);
+    const planBar = Math.min(100, setup.planQuality * 100);
     const atkNames = setup.attackerNames || [];
     const defNames = setup.defenderNames || [];
+    const atkBenched = atkNames.length - vpMinAtk;
+    const defBenched = defNames.length - vpMinDef;
     const captain = setup.captain || '?';
-
     steps.push({ type: 'setup', tribe: setup.tribe, html: `<div class="fmd-ev" style="border-left-color:var(--wd-mud)">
       <div style="flex:1;min-width:0">
         <div class="fmd-ev-badge gold">${setup.tribe} — DEFENSE SETUP</div>
@@ -1635,21 +1751,24 @@ export function rpBuildFullMetalDramaFlag(ep) {
         <div style="display:flex;align-items:center;gap:8px;margin:8px 0;padding:6px 8px;background:rgba(196,167,119,0.08);border:1px solid rgba(196,167,119,0.15);border-radius:4px">
           ${_fmdPortrait(captain, 28)}
           <div><div style="font-size:10px;color:var(--wd-khaki);font-family:'Black Ops One',sans-serif;letter-spacing:1px">CAPTAIN: ${captain}</div>
-          <div style="font-size:9px;color:rgba(255,255,255,0.4)">Highest strategic+mental — directs the defense plan</div></div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.4)">Strategic + social + loyalty — the team's chosen leader</div></div>
         </div>
 
-        <!-- Attackers: charge the enemy base -->
+        <!-- Full roster -->
+        <div style="margin:6px 0 4px;font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:1px">ROSTER (${atkNames.length + defNames.length}): ${[...atkNames.map(n => `<span style="color:var(--wd-paint-red)">${n.split(' ')[0]}</span>`), ...defNames.map(n => `<span style="color:var(--wd-steel)">${n.split(' ')[0]}</span>`)].join(' · ')}</div>
+
+        <!-- Attackers -->
         <div style="margin:8px 0">
-          <div style="font-size:9px;color:var(--wd-paint-red);letter-spacing:2px;margin-bottom:4px">⚔️ ATTACKERS (${atkNames.length}) — charge the enemy base</div>
-          <div style="display:flex;gap:3px;flex-wrap:wrap">${atkNames.map(n => `<div style="text-align:center;width:36px">${_fmdPortrait(n, 24)}<div style="font-size:7px;color:rgba(255,255,255,0.5)">${n.split(' ')[0]}</div></div>`).join('')}</div>
-          <div style="font-size:8px;color:rgba(255,255,255,0.3);margin-top:2px">Bold, physical, aggressive — they run the gauntlet</div>
+          <div style="font-size:9px;color:var(--wd-paint-red);letter-spacing:2px;margin-bottom:4px">⚔️ ATTACKERS (${atkNames.length}${atkBenched > 0 ? `, ${vpMinAtk} active / ${atkBenched} rotate bench` : ''}) — charge the enemy base</div>
+          <div style="display:flex;gap:3px;flex-wrap:wrap">${atkNames.map((n, i) => `<div style="text-align:center;width:36px${i >= vpMinAtk ? ';opacity:0.4' : ''}">${_fmdPortrait(n, 24)}<div style="font-size:7px;color:${i >= vpMinAtk ? '#f59e0b' : 'rgba(255,255,255,0.5)'}">${n.split(' ')[0]}${i >= vpMinAtk ? ' 🔄' : ''}</div></div>`).join('')}</div>
+          <div style="font-size:8px;color:rgba(255,255,255,0.3);margin-top:2px">${atkBenched > 0 ? `Capped to ${vpMinAtk}/round for fairness — bench rotates` : 'Bold, physical, aggressive — they run the gauntlet'}</div>
         </div>
 
         <!-- Defenders: hold the base -->
         <div style="margin:8px 0">
-          <div style="font-size:9px;color:var(--wd-steel);letter-spacing:2px;margin-bottom:4px">🛡️ DEFENDERS (${defNames.length}) — hold the base</div>
-          <div style="display:flex;gap:3px;flex-wrap:wrap">${defNames.map(n => `<div style="text-align:center;width:36px">${_fmdPortrait(n, 24)}<div style="font-size:7px;color:rgba(255,255,255,0.5)">${n.split(' ')[0]}</div></div>`).join('')}</div>
-          <div style="font-size:8px;color:rgba(255,255,255,0.3);margin-top:2px">Strategic, calm, mental — they block enemy attackers 1v1</div>
+          <div style="font-size:9px;color:var(--wd-steel);letter-spacing:2px;margin-bottom:4px">🛡️ DEFENDERS (${defNames.length}${defBenched > 0 ? `, ${vpMinDef} active / ${defBenched} rotate bench` : ''}) — hold the base</div>
+          <div style="display:flex;gap:3px;flex-wrap:wrap">${defNames.map((n, i) => `<div style="text-align:center;width:36px${i >= vpMinDef ? ';opacity:0.4' : ''}">${_fmdPortrait(n, 24)}<div style="font-size:7px;color:${i >= vpMinDef ? '#f59e0b' : 'rgba(255,255,255,0.5)'}">${n.split(' ')[0]}${i >= vpMinDef ? ' 🔄' : ''}</div></div>`).join('')}</div>
+          <div style="font-size:8px;color:rgba(255,255,255,0.3);margin-top:2px">${defBenched > 0 ? `Capped to ${vpMinDef}/round for fairness — bench rotates` : 'Strategic, calm, mental — they block enemy attackers 1v1'}</div>
         </div>
 
         <!-- Defense installations -->
@@ -1681,6 +1800,7 @@ export function rpBuildFullMetalDramaFlag(ep) {
           <div style="height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden;margin-top:2px">
             <div style="height:100%;width:${planBar}%;background:linear-gradient(90deg,var(--wd-olive),#84cc16);border-radius:3px"></div>
           </div>
+          <div style="font-size:7px;color:rgba(255,255,255,0.25);margin-top:2px">Boosts defender strength + trap difficulty</div>
         </div>
       </div>
     </div>` });
@@ -1688,36 +1808,146 @@ export function rpBuildFullMetalDramaFlag(ep) {
 
   // Assault rounds
   for (const rd of cf.rounds) {
-    let roundHtml = `<div class="fmd-ev round-header" style="margin-bottom:4px">
-      <div style="flex:1"><div class="fmd-ev-badge red" style="animation:${rd.events.some(e => e.type === 'flagCapture') ? 'fmd-pulse 0.8s ease-in-out infinite' : 'none'}">ROUND ${rd.num} ${rd.events.some(e => e.type === 'flagCapture') ? '&mdash; FLAG CAPTURED!' : ''}</div>
+    const hasCapture = rd.events.some(e => e.type === 'flagCapture');
+    let roundHtml = `<div class="fmd-ev round-header fmd-ctf-alert" style="margin-bottom:4px;${hasCapture ? 'border:1px solid rgba(132,204,22,0.3);background:rgba(132,204,22,0.04)' : ''}">
+      <div style="flex:1"><div class="fmd-ev-badge ${hasCapture ? 'green' : 'red'}" style="${hasCapture ? 'animation:fmd-pulse 0.8s ease-in-out infinite;font-size:12px' : ''}">ROUND ${rd.num} ${hasCapture ? '&mdash; 🏁 FLAG CAPTURED!' : ''}</div>
       <div class="fmd-ev-text" style="font-size:11px;color:rgba(255,255,255,0.5)">${rd.attacks.length} attack${rd.attacks.length !== 1 ? 's' : ''} this round</div></div>
     </div>`;
 
-    // Events in this round
+    // Per-attack matchup cards — index events by player+type
+    const eventsByPlayer = {};
     for (const evt of rd.events) {
-      const isCapture = evt.type === 'flagCapture';
-      const isTrap = evt.type === 'boobyTrapTrigger';
-      const isLastStand = evt.type === 'lastStand';
-      const evtClass = isCapture ? 'capture' : isTrap ? 'negative' : isLastStand ? 'positive' : '';
-      const badgeText = isCapture ? 'FLAG CAPTURED' : isTrap ? 'TRAP TRIGGERED' : isLastStand ? 'LAST STAND' : evt.type === 'flankingManeuver' ? 'FLANKING MANEUVER' : evt.type === 'smokescreen' ? 'SMOKESCREEN' : evt.type === 'rallyCry' ? 'RALLY CRY' : evt.type === 'friendlyFire' ? 'FRIENDLY FIRE' : evt.type === 'numYoAttack' ? 'MARTIAL ARTS' : evt.type === 'surrenderBluff' ? 'SURRENDER BLUFF' : evt.type === 'flagRunner' ? 'FLAG RUNNER' : 'EVENT';
-      const badgeColor = isCapture ? 'green' : isTrap ? 'red' : isLastStand ? 'gold' : evt.type === 'friendlyFire' ? 'red' : evt.type === 'flankingManeuver' ? 'blue' : evt.type === 'smokescreen' ? 'gray' : 'orange';
-      const actorName = evt.player || (evt.players ? evt.players[0] : '');
-
-      roundHtml += `<div class="fmd-ev ${evtClass}"${isCapture ? ' style="animation:fmd-incoming 0.5s ease-out"' : ''}>
-        ${actorName ? `<div class="fmd-ev-port">${_fmdPortrait(actorName, 44)}</div>` : ''}
-        <div style="flex:1;min-width:0">
-          <div class="fmd-ev-badge ${badgeColor}">${badgeText}</div>
-          <div class="fmd-ev-text"${isCapture ? ' style="font-size:15px;font-weight:700"' : ''}>${evt.text || ''}</div>
-        </div>
-      </div>`;
+      if (evt.player) {
+        if (!eventsByPlayer[evt.player]) eventsByPlayer[evt.player] = {};
+        eventsByPlayer[evt.player][evt.type] = evt;
+      }
     }
 
-    // Attack summary for this round
-    const advances = rd.attacks.filter(a => a.advanced).length;
-    const stopped = rd.attacks.filter(a => !a.advanced).length;
+    // Group attacks by attacking tribe
+    const atkByTribe = {};
+    for (const atk of rd.attacks) {
+      if (!atkByTribe[atk.tribe]) atkByTribe[atk.tribe] = [];
+      atkByTribe[atk.tribe].push(atk);
+    }
+
+    for (const [tribeName, attacks] of Object.entries(atkByTribe)) {
+      const enemyName = attacks[0]?.enemyTribe || '?';
+      roundHtml += `<div style="margin:8px 0 4px;padding:4px 8px;font-size:10px;letter-spacing:2px;color:var(--wd-khaki);font-family:'Black Ops One',sans-serif;background:linear-gradient(90deg,rgba(196,167,119,0.08),rgba(196,167,119,0.02));border-left:2px solid var(--wd-khaki)">⚔ ${tribeName} → ${enemyName}'s base</div>`;
+
+      for (const atk of attacks) {
+        const pEvts = eventsByPlayer[atk.attacker] || {};
+        let lines = [];
+
+        // Phase 1: Trap
+        if (atk.trapResult === 'hit') {
+          lines.push({ icon: '💥', color: 'var(--wd-paint-red)', text: pEvts.boobyTrapTrigger?.text || `${atk.attacker} hit a trap — stopped!` });
+        } else if (atk.trapResult === 'dodged') {
+          lines.push({ icon: '⚡', color: '#f59e0b', text: `${atk.attacker} spotted the trap and dodged it!` });
+        } else if (atk.trapResult === 'flanked') {
+          lines.push({ icon: '🔀', color: '#60a5fa', text: pEvts.flankingManeuver?.text || `${atk.attacker} flanked around the defenses!` });
+        }
+
+        // Phase 2: Defender matchup (only if not trapped)
+        if (atk.trapResult !== 'hit') {
+          if (atk.defenderResult === 'stunned') {
+            lines.push({ icon: '🥋', color: '#f59e0b', text: pEvts.numYoAttack?.text || `${atk.attacker} stunned ${atk.defender} with martial arts!` });
+          } else if (atk.defenderResult === 'bluffed') {
+            lines.push({ icon: '🎭', color: '#a78bfa', text: pEvts.surrenderBluff?.text || `${atk.attacker} faked a surrender and slipped past ${atk.defender}!` });
+          } else if (atk.defenderResult === 'overpowered') {
+            lines.push({ icon: '💪', color: '#84cc16', text: `${atk.attacker} overpowered ${atk.defender} — defender eliminated!` });
+          } else if (atk.defenderResult === 'repelled') {
+            lines.push({ icon: '🛡', color: 'var(--wd-steel)', text: `${atk.defender} held the line — ${atk.attacker} blocked!` });
+          } else if (atk.defenderResult === 'undefended') {
+            lines.push({ icon: '🏃', color: '#84cc16', text: `No defenders left — ${atk.attacker} charges for the flag!` });
+          } else if (atk.defenderResult === 'flag-contested') {
+            lines.push({ icon: '⏳', color: '#f59e0b', text: `${atk.attacker} reached the base but the flag is already being contested!` });
+          }
+        }
+
+        // Phase 3: Chase gauntlet (only if got past defenders)
+        if (atk.chaseResult && atk.chaseResult !== 'none') {
+          lines.push({ icon: '🏃', color: '#f59e0b', text: `${atk.attacker} grabs the flag and RUNS!` });
+
+          // Show escort blocks
+          const escortEvts = rd.events.filter(e => e.type === 'escortBlock');
+          for (const esc of escortEvts) {
+            lines.push({ icon: '🤝', color: '#60a5fa', text: esc.text });
+          }
+
+          if (atk.chaseResult === 'intercepted') {
+            const intEvt = rd.events.find(e => e.type === 'flagIntercept' && (e.carrier === atk.attacker || !e.carrier));
+            lines.push({ icon: '🏈', color: 'var(--wd-paint-red)', text: intEvt?.text || `TACKLED! Flag carrier brought down — flag returned!` });
+          } else if (atk.chaseResult === 'escaped') {
+            lines.push({ icon: '🏁', color: '#84cc16', text: pEvts.flagChase?.text || `Pursuers closing in but ${atk.attacker} dives across the line — SAFE!` });
+          } else if (atk.chaseResult === 'clean') {
+            lines.push({ icon: '🏁', color: '#84cc16', text: `Teammates clear the way — clean run back to base!` });
+          }
+        }
+
+        const mainColor = lines[lines.length - 1]?.color || 'rgba(255,255,255,0.5)';
+        const hasChase = atk.chaseResult && atk.chaseResult !== 'none';
+        roundHtml += `<div class="fmd-ev" style="padding:4px 8px;border-left:3px solid ${mainColor}">
+          <div class="fmd-ev-port">${_fmdPortrait(atk.attacker, 32)}</div>
+          ${atk.defender ? `<div style="font-size:18px;color:rgba(255,255,255,0.2);margin:0 4px;font-family:'Black Ops One',sans-serif">⚔</div><div class="fmd-ev-port">${_fmdPortrait(atk.defender, 32)}</div>` : ''}
+          <div style="flex:1;min-width:0">
+            ${lines.map(l => `<div style="font-size:11px;color:${l.color};margin:1px 0">${l.icon} ${l.text}</div>`).join('')}
+          </div>
+        </div>`;
+      }
+    }
+
+    // Special round events (smokescreen, rally, friendly fire, flag capture)
+    for (const evt of rd.events) {
+      if (['boobyTrapTrigger', 'numYoAttack', 'surrenderBluff', 'flankingManeuver', 'flagIntercept', 'flagChase', 'escortBlock'].includes(evt.type)) continue;
+      if (evt.type === 'defenderRecovery') {
+        roundHtml += `<div class="fmd-ev" style="padding:4px 8px;border-left:2px solid #60a5fa;background:rgba(96,165,250,0.04)">
+          <div class="fmd-ev-port">${_fmdPortrait(evt.player, 32)}</div>
+          <div style="flex:1"><div style="font-size:11px;color:#60a5fa">🔄 ${evt.text}</div></div>
+        </div>`;
+        continue;
+      }
+      const isCapture = evt.type === 'flagCapture';
+      const badgeText = isCapture ? 'FLAG CAPTURED' : evt.type === 'smokescreen' ? 'SMOKESCREEN' : evt.type === 'rallyCry' ? 'RALLY CRY' : evt.type === 'friendlyFire' ? 'FRIENDLY FIRE' : evt.type === 'lastStand' ? 'LAST STAND' : evt.type === 'flagRunner' ? 'FLAG RUNNER' : 'EVENT';
+      const badgeColor = isCapture ? 'green' : evt.type === 'friendlyFire' ? 'red' : evt.type === 'lastStand' ? 'gold' : 'orange';
+      const actorName = evt.player || (evt.players ? evt.players[0] : '');
+      if (isCapture) {
+        // Cinematic flag capture card with confetti
+        const confettiColors = ['#84cc16','#f59e0b','#ef4444','#3b82f6','#a78bfa','#f472b6'];
+        const confetti = Array.from({length:12}, (_, i) => {
+          const c = confettiColors[i % confettiColors.length];
+          const left = 10 + Math.random() * 80;
+          const delay = Math.random() * 0.4;
+          const rot = Math.random() * 360;
+          return `<div class="fmd-ctf-confetti" style="background:${c};left:${left}%;bottom:0;animation-delay:${delay}s;transform:rotate(${rot}deg)"></div>`;
+        }).join('');
+        roundHtml += `<div class="fmd-ev" style="position:relative;overflow:hidden;border:2px solid rgba(132,204,22,0.4);background:rgba(132,204,22,0.06);padding:12px">
+          ${confetti}
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#84cc16,transparent)"></div>
+          ${actorName ? `<div class="fmd-ev-port">${_fmdPortrait(actorName, 52)}</div>` : ''}
+          <div style="flex:1;min-width:0">
+            <div class="fmd-ev-badge green" style="font-size:12px;padding:4px 12px">🏁 FLAG CAPTURED</div>
+            <div class="fmd-ev-text" style="font-size:15px;font-weight:700;color:#84cc16">${evt.text || ''}</div>
+          </div>
+        </div>`;
+      } else {
+        roundHtml += `<div class="fmd-ev">
+          ${actorName ? `<div class="fmd-ev-port">${_fmdPortrait(actorName, 44)}</div>` : ''}
+          <div style="flex:1;min-width:0">
+            <div class="fmd-ev-badge ${badgeColor}">${badgeText}</div>
+            <div class="fmd-ev-text">${evt.text || ''}</div>
+          </div>
+        </div>`;
+      }
+    }
+
+    // Attack summary
+    const captures = rd.attacks.filter(a => a.advanced).length;
+    const intercepts = rd.attacks.filter(a => a.chaseResult === 'intercepted').length;
+    const blocked = rd.attacks.filter(a => !a.advanced && a.chaseResult !== 'intercepted').length;
     roundHtml += `<div style="display:flex;gap:12px;font-size:10px;color:rgba(255,255,255,0.4);padding:4px 0 2px">
-      <span style="color:#84cc16">${advances} advanced</span>
-      <span style="color:var(--wd-paint-red)">${stopped} stopped</span>
+      <span style="color:#84cc16">${captures} captured flag</span>
+      ${intercepts ? `<span style="color:#f59e0b">${intercepts} intercepted</span>` : ''}
+      <span style="color:var(--wd-paint-red)">${blocked} stopped</span>
     </div>`;
 
     steps.push({ type: 'round', num: rd.num, html: roundHtml });
@@ -1726,10 +1956,18 @@ export function rpBuildFullMetalDramaFlag(ep) {
   // Final result
   const resultText = cf.capturedBy
     ? `FLAG CAPTURED by ${cf.capturedBy}! ${cf.winner} wins the war!`
-    : `No capture after ${cf.rounds.length} rounds. ${cf.winner} wins on total advances.`;
-  steps.push({ type: 'result', html: `<div class="fmd-ev capture" style="text-align:center;justify-content:center">
-    <div style="flex:1"><div class="fmd-ev-badge green">MISSION COMPLETE</div>
-    <div class="fmd-ev-text" style="font-size:15px;font-family:'Black Ops One',sans-serif;letter-spacing:2px;color:#84cc16">${resultText}</div></div>
+    : `After ${cf.rounds.length} brutal rounds, ${cf.winner} takes the war!`;
+  const victoryConfetti = cf.capturedBy ? Array.from({length:18}, (_, i) => {
+    const colors = ['#84cc16','#f59e0b','#ef4444','#3b82f6','#a78bfa','#f472b6'];
+    const c = colors[i % colors.length];
+    return `<div class="fmd-ctf-confetti" style="background:${c};left:${5 + Math.random()*90}%;bottom:0;animation-delay:${Math.random()*0.6}s;width:${4+Math.random()*4}px;height:${4+Math.random()*4}px"></div>`;
+  }).join('') : '';
+  steps.push({ type: 'result', html: `<div class="fmd-ev" style="text-align:center;justify-content:center;position:relative;overflow:hidden;padding:16px;${cf.capturedBy ? 'border:2px solid rgba(132,204,22,0.3);background:rgba(132,204,22,0.04)' : ''}">
+    ${victoryConfetti}
+    <div style="flex:1">
+      <div class="fmd-ev-badge green" style="font-size:14px;padding:6px 16px">🎖️ MISSION COMPLETE</div>
+      <div class="fmd-ev-text" style="font-size:16px;font-family:'Black Ops One',sans-serif;letter-spacing:2px;color:#84cc16;margin-top:6px">${resultText}</div>
+    </div>
   </div>` });
 
   const totalSteps = steps.length;
@@ -1738,15 +1976,34 @@ export function rpBuildFullMetalDramaFlag(ep) {
   function buildFlagSidebar(revealCount) {
     let sb = `<div class="fmd-side-sec">TACTICAL MAP</div>`;
 
-    // Setup info
+    // Find latest revealed round's trap snapshot
+    const setupCount2 = cf.setup.length + 1;
+    let latestTraps = null;
+    for (let ri = cf.rounds.length - 1; ri >= 0; ri--) {
+      const rdIdx2 = setupCount2 + ri;
+      if (rdIdx2 < revealCount && cf.rounds[ri].trapSnapshot) { latestTraps = cf.rounds[ri].trapSnapshot; break; }
+    }
+
     for (const setup of cf.setup) {
-      const setupIdx = cf.setup.indexOf(setup) + 1; // +1 for intro
+      const setupIdx = cf.setup.indexOf(setup) + 1;
       const shown = setupIdx < revealCount;
+      const atkN = setup.attackerNames || [];
+      const defN = setup.defenderNames || [];
+      const currentTraps = latestTraps ? (latestTraps[setup.tribe] ?? setup.traps) : setup.traps;
+      const trapsChanged = currentTraps < setup.traps;
       sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;opacity:${shown ? 1 : 0.4}">
         <div style="font-family:'Black Ops One',sans-serif;font-size:9px;color:var(--wd-khaki);letter-spacing:1px">${setup.tribe}</div>
         ${shown ? `<div style="display:flex;gap:8px;margin-top:3px;font-size:9px;color:rgba(255,255,255,0.5)">
-          <span>${setup.traps} traps</span><span>${setup.foxholes} fox</span><span>${setup.sentries} snt</span>
-        </div>` : '<div style="font-size:9px;color:rgba(255,255,255,0.2)">CLASSIFIED</div>'}
+          <span>${Array.from({length:setup.traps}, (_, i) => i < currentTraps
+            ? '<span class="fmd-tac-trap" style="font-size:10px" title="Active trap">💣</span>'
+            : '<span class="fmd-tac-trap consumed" style="font-size:10px;opacity:0.2" title="Consumed">💣</span>'
+          ).join('')} </span><span>${setup.foxholes}🕳️</span><span>${setup.sentries}👁️</span>
+        </div>
+        <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">
+          ${atkN.map(n => `<div style="display:flex;align-items:center;gap:3px;font-size:9px;padding:2px 5px;border-radius:3px;background:rgba(239,68,68,0.12);color:var(--wd-paint-red)" title="Attacker">${_fmdPortrait(n,22)}<span class="fmd-tac-dot active" style="background:var(--wd-paint-red);width:6px;height:6px"></span></div>`).join('')}
+          ${defN.map(n => `<div style="display:flex;align-items:center;gap:3px;font-size:9px;padding:2px 5px;border-radius:3px;background:rgba(148,163,184,0.12);color:var(--wd-steel)" title="Defender">${_fmdPortrait(n,22)}<span class="fmd-tac-dot active" style="background:#84cc16;width:6px;height:6px"></span></div>`).join('')}
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;margin-top:3px;font-size:7px;color:rgba(255,255,255,0.25)">👑 ${setup.captain || '?'} <span class="fmd-tac-flag">🏴</span></div>` : '<div style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px">CLASSIFIED</div>'}
       </div>`;
     }
 
@@ -1757,17 +2014,17 @@ export function rpBuildFullMetalDramaFlag(ep) {
       const rdIdx = setupCount + cf.rounds.indexOf(rd);
       const shown = rdIdx < revealCount;
       const hasCapture = rd.events.some(e => e.type === 'flagCapture');
-      sb += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;opacity:${shown ? 1 : 0.35}">
-        <div style="width:18px;height:18px;border-radius:50%;background:${shown ? (hasCapture ? '#84cc16' : 'var(--wd-olive)') : 'rgba(255,255,255,0.1)'};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${shown ? '#fff' : 'rgba(255,255,255,0.3)'}">${rd.num}</div>
-        <span style="color:rgba(255,255,255,${shown ? 0.7 : 0.3})">${shown ? (hasCapture ? 'FLAG CAPTURED!' : `${rd.attacks.filter(a => a.advanced).length} advanced`) : 'PENDING'}</span>
+      const rdLabel = shown ? (hasCapture ? '🏁 FLAG CAPTURED!' : (() => { const adv = rd.attacks.filter(a => a.advanced).length; const intc = rd.attacks.filter(a => a.chaseResult === 'intercepted').length; return `${adv} breached${intc ? ` · ${intc} 🏈` : ''}`; })()) : '· · ·';
+      sb += `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:10px;opacity:${shown ? 1 : 0.35}">
+        <div style="width:20px;height:20px;border-radius:50%;background:${shown ? (hasCapture ? '#84cc16' : 'var(--wd-olive)') : 'rgba(255,255,255,0.08)'};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:${shown ? '#fff' : 'rgba(255,255,255,0.2)'};${hasCapture && shown ? 'box-shadow:0 0 8px rgba(132,204,22,0.5)' : ''}">${rd.num}</div>
+        <span style="color:rgba(255,255,255,${shown ? (hasCapture ? 1 : 0.6) : 0.2});${hasCapture && shown ? 'font-weight:700;color:#84cc16' : ''}">${rdLabel}</span>
       </div>`;
     }
 
-    // Winner
     const winnerShown = revealCount >= totalSteps;
-    sb += `<div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(196,167,119,0.15)">
-      <div style="font-size:9px;color:rgba(196,167,119,0.5);letter-spacing:2px">VICTOR</div>
-      <div style="font-family:'Black Ops One',sans-serif;font-size:12px;color:${winnerShown ? '#84cc16' : 'rgba(255,255,255,0.2)'};margin-top:2px">${winnerShown ? cf.winner : '???'}</div>
+    sb += `<div style="margin-top:10px;padding:8px;border-top:1px solid rgba(196,167,119,0.15);${winnerShown ? 'background:rgba(132,204,22,0.06);border:1px solid rgba(132,204,22,0.15);border-radius:4px' : ''}">
+      <div style="font-size:9px;color:rgba(196,167,119,0.5);letter-spacing:2px;font-family:'Black Ops One',sans-serif">VICTOR</div>
+      <div style="font-family:'Black Ops One',sans-serif;font-size:14px;color:${winnerShown ? '#84cc16' : 'rgba(255,255,255,0.15)'};margin-top:2px;${winnerShown ? 'text-shadow:0 0 10px rgba(132,204,22,0.3)' : ''}">${winnerShown ? `🏆 ${cf.winner}` : '???'}</div>
     </div>`;
     return sb;
   }
@@ -1789,10 +2046,13 @@ export function rpBuildFullMetalDramaFlag(ep) {
   </div>`;
 
   // HUD
-  const totalAdvances = cf.rounds.flatMap(r => r.attacks).filter(a => a.advanced).length;
-  const totalStopped = cf.rounds.flatMap(r => r.attacks).filter(a => !a.advanced).length;
+  const allAtks = cf.rounds.flatMap(r => r.attacks);
+  const totalCaptures = allAtks.filter(a => a.advanced).length;
+  const totalIntercepted = allAtks.filter(a => a.chaseResult === 'intercepted').length;
+  const totalStopped = allAtks.filter(a => !a.advanced && a.chaseResult !== 'intercepted').length;
   const hudCells = `
-    <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:#84cc16">${totalAdvances}</div><div class="fmd-hud-lbl">ADVANCED</div></div>
+    <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:#84cc16">${totalCaptures}</div><div class="fmd-hud-lbl">CAPTURED</div></div>
+    <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:#f59e0b">${totalIntercepted}</div><div class="fmd-hud-lbl">INTERCEPTED</div></div>
     <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:var(--wd-paint-red)">${totalStopped}</div><div class="fmd-hud-lbl">STOPPED</div></div>
     <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:var(--wd-khaki)">${cf.rounds.length}</div><div class="fmd-hud-lbl">ROUNDS</div></div>
     <div class="fmd-hud-cell"><div class="fmd-hud-val" style="color:var(--wd-explosion)">III</div><div class="fmd-hud-lbl">PHASE</div></div>
@@ -1817,7 +2077,9 @@ export function rpBuildFullMetalDramaResults(ep) {
   const sorted = Object.entries(fm.tribeScores).sort((a, b) => b[1] - a[1]);
   const winnerTribe = sorted[0]?.[0];
   const loserTribe = sorted[sorted.length - 1]?.[0];
-  const tribeMembers = gs.tribes ? gs.tribes.map(t => ({ name: t.name, members: [...t.members] })) : [];
+  // Use episode data for tribes (gs.tribes may have eliminated players removed)
+  const jumpOrder = fm.planeJump?.jumpOrder || {};
+  const tribeMembers = Object.entries(jumpOrder).map(([name, members]) => ({ name, members: [...members] }));
 
   // Leaderboard from chalMemberScores
   const scores = ep.chalMemberScores || {};
@@ -1863,7 +2125,7 @@ export function rpBuildFullMetalDramaResults(ep) {
     content += `<div style="padding:0 14px 20px;position:relative;z-index:6">
       <div style="font-family:'Black Ops One',sans-serif;font-size:12px;letter-spacing:3px;color:var(--wd-khaki);text-align:center;margin-bottom:12px">COMBAT LEADERBOARD</div>
       <div style="max-width:500px;margin:0 auto">`;
-    const top = leaderboard.slice(0, 8);
+    const top = leaderboard;
     for (let i = 0; i < top.length; i++) {
       const [name, score] = top[i];
       const medal = i === 0 ? 'BRONZE STAR' : i === 1 ? 'SILVER STAR' : i === 2 ? 'PURPLE HEART' : '';
@@ -1959,14 +2221,30 @@ function _fmdBuildFlagSidebarFromEp(ep, revIdx) {
   const totalSteps = setupCount + cf.rounds.length + 1;
 
   let sb = `<div class="fmd-side-sec">TACTICAL MAP</div>`;
+
+  let latestTraps2 = null;
+  for (let ri = cf.rounds.length - 1; ri >= 0; ri--) {
+    const rdIdx2 = setupCount + ri;
+    if (rdIdx2 <= revIdx && cf.rounds[ri].trapSnapshot) { latestTraps2 = cf.rounds[ri].trapSnapshot; break; }
+  }
+
   for (const setup of cf.setup) {
     const setupIdx = cf.setup.indexOf(setup) + 1;
     const shown = setupIdx <= revIdx;
+    const atkN2 = setup.attackerNames || [];
+    const defN2 = setup.defenderNames || [];
+    const curTraps2 = latestTraps2 ? (latestTraps2[setup.tribe] ?? setup.traps) : setup.traps;
+    const trapsChanged2 = curTraps2 < setup.traps;
     sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;opacity:${shown ? 1 : 0.4}">
       <div style="font-family:'Black Ops One',sans-serif;font-size:9px;color:var(--wd-khaki);letter-spacing:1px">${setup.tribe}</div>
       ${shown ? `<div style="display:flex;gap:8px;margin-top:3px;font-size:9px;color:rgba(255,255,255,0.5)">
-        <span>${setup.traps} traps</span><span>${setup.foxholes} fox</span><span>${setup.sentries} snt</span>
-      </div>` : '<div style="font-size:9px;color:rgba(255,255,255,0.2)">CLASSIFIED</div>'}
+        <span style="${trapsChanged2 ? 'color:var(--wd-paint-red)' : ''}">${curTraps2}/${setup.traps} traps</span><span>${setup.foxholes} fox</span><span>${setup.sentries} snt</span>
+      </div>
+      <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">
+        ${atkN2.map(n => `<div style="display:flex;align-items:center;gap:3px;font-size:9px;padding:2px 5px;border-radius:3px;background:rgba(239,68,68,0.12);color:var(--wd-paint-red)" title="Attacker">${_fmdPortrait(n,22)}<span style="font-family:'Black Ops One',sans-serif;font-size:7px;letter-spacing:1px">ATK</span></div>`).join('')}
+        ${defN2.map(n => `<div style="display:flex;align-items:center;gap:3px;font-size:9px;padding:2px 5px;border-radius:3px;background:rgba(148,163,184,0.12);color:var(--wd-steel)" title="Defender">${_fmdPortrait(n,22)}<span style="font-family:'Black Ops One',sans-serif;font-size:7px;letter-spacing:1px">DEF</span></div>`).join('')}
+      </div>
+      <div style="font-size:7px;color:rgba(255,255,255,0.25);margin-top:2px">👑 ${setup.captain || '?'}</div>` : '<div style="font-size:9px;color:rgba(255,255,255,0.2)">CLASSIFIED</div>'}
     </div>`;
   }
   sb += `<div class="fmd-side-sec">ASSAULT PROGRESS</div>`;
@@ -1976,7 +2254,7 @@ function _fmdBuildFlagSidebarFromEp(ep, revIdx) {
     const hasCapture = rd.events.some(e => e.type === 'flagCapture');
     sb += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;opacity:${shown ? 1 : 0.35}">
       <div style="width:18px;height:18px;border-radius:50%;background:${shown ? (hasCapture ? '#84cc16' : 'var(--wd-olive)') : 'rgba(255,255,255,0.1)'};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${shown ? '#fff' : 'rgba(255,255,255,0.3)'}">${rd.num}</div>
-      <span style="color:rgba(255,255,255,${shown ? 0.7 : 0.3})">${shown ? (hasCapture ? 'FLAG CAPTURED!' : `${rd.attacks.filter(a => a.advanced).length} advanced`) : 'PENDING'}</span>
+      <span style="color:rgba(255,255,255,${shown ? 0.7 : 0.3})">${shown ? (hasCapture ? 'FLAG CAPTURED!' : (() => { const adv = rd.attacks.filter(a => a.advanced).length; const intc = rd.attacks.filter(a => a.chaseResult === 'intercepted').length; return `${adv} captured${intc ? `, ${intc} intercepted` : ''}`; })()) : 'PENDING'}</span>
     </div>`;
   }
   const winnerShown = revIdx >= totalSteps - 1;
@@ -2002,6 +2280,17 @@ function _fmdUpdateSidebar(screenKey, revIdx) {
   }
 }
 
+function _fmdAnimateOnReveal(container, baseDelay = 0) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // Only animate confetti
+  container.querySelectorAll('.fmd-ctf-confetti').forEach(el => {
+    el.animate([
+      { transform: 'translateY(0) rotate(0)', opacity: 1 },
+      { transform: `translateY(-${40 + Math.random()*40}px) rotate(${360+Math.random()*360}deg)`, opacity: 0 }
+    ], { duration: 1000 + Math.random()*400, delay: baseDelay + 200 + Math.random()*300, fill: 'forwards' });
+  });
+}
+
 export function fullMetalDramaRevealNext(screenKey, totalSteps) {
   if (!window._tvState) window._tvState = {};
   if (!window._tvState[screenKey]) window._tvState[screenKey] = { idx: -1 };
@@ -2012,6 +2301,7 @@ export function fullMetalDramaRevealNext(screenKey, totalSteps) {
   const el = document.getElementById(`fmd-step-${suffix}-${state.idx}`);
   if (el) {
     el.style.display = '';
+    _fmdAnimateOnReveal(el);
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   if (state.idx >= totalSteps - 1) {
@@ -2030,7 +2320,10 @@ export function fullMetalDramaRevealAll(screenKey, totalSteps) {
   const suffix = screenKey.replace('fmd-', '');
   for (let i = state.idx + 1; i < totalSteps; i++) {
     const el = document.getElementById(`fmd-step-${suffix}-${i}`);
-    if (el) el.style.display = '';
+    if (el) {
+      el.style.display = '';
+      _fmdAnimateOnReveal(el, i * 50);
+    }
   }
   state.idx = totalSteps - 1;
   const controls = document.getElementById(`fmd-controls-${suffix}`);

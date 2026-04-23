@@ -1258,21 +1258,18 @@ export function simulateOneFlu(ep) {
   _simulateFluDramaBreak(ep, tribeMembers, result);
   _simulateDiseaseOutbreak(ep, tribeMembers, result);
 
-  // Final scoring: 50% assembly + 50% disease cures (normalized)
-  // Assembly totals from result.assembly.tribes[].total
-  // Cure totals from result.diseaseOutbreak.cureScores
+  // Final scoring: assembly + cures weighted equally
+  // Assembly raw scores are small (~0.3-1.5), cures are large (~4-30)
+  // Scale assembly by 20x so both contribute roughly equal weight
   const asmTribes = result.assembly?.tribes || [];
-  const maxAsm = Math.max(...asmTribes.map(t => t.total || 0), 0.01);
   const cureScoresData = result.diseaseOutbreak?.cureScores || {};
-  const maxCure = Math.max(...Object.values(cureScoresData), 0.01);
 
-  // Reset tribeScores and compute 50/50
   tribeMembers.forEach(t => { result.tribeScores[t.name] = 0; });
   for (const t of tribeMembers) {
     const asmData = asmTribes.find(a => a.tribe === t.name);
-    const asmNorm = ((asmData?.total || 0) / maxAsm) * 50;
-    const cureNorm = ((cureScoresData[t.name] || 0) / maxCure) * 50;
-    result.tribeScores[t.name] = Math.round(asmNorm + cureNorm);
+    const asmPoints = (asmData?.total || 0) * 20;
+    const curePoints = cureScoresData[t.name] || 0;
+    result.tribeScores[t.name] = Math.round(asmPoints + curePoints);
   }
 
   const sorted = Object.entries(result.tribeScores).sort((a, b) => b[1] - a[1]);
@@ -1649,7 +1646,7 @@ export function _textOneFlu(ep, ln, sec) {
 // VP — Shell, Helpers, Screens
 // ═══════════════════════════════════════════════════════════════════════════
 
-function _ofShell(content, ep) {
+function _ofShell(content, ep, extraClass = '') {
   return `
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@400;600;700;900&display=swap');
@@ -1829,24 +1826,75 @@ function _ofShell(content, ep) {
 .of-cross{display:inline-block;color:var(--of-red);font-size:14px;margin-right:6px;
   text-shadow:0 0 6px rgba(239,68,68,0.3)}
 
+/* ═══ QUARANTINE SHIFT — when disease screen loads ═══ */
+.of-shell.quarantine-active{
+  background:linear-gradient(180deg,#1a2e1a 0%,#0d1a0d 30%,#050a05 100%);
+  border-color:#2d4a2d;
+  box-shadow:inset 0 0 80px rgba(132,204,22,0.08),0 0 30px rgba(0,0,0,0.5);
+  animation:of-quarantine-shift 1.5s ease-out both}
+.of-shell.quarantine-active .of-heartline svg path{stroke:var(--of-quarantine);
+  filter:drop-shadow(0 0 6px rgba(220,38,38,0.6))}
+.of-shell.quarantine-active .of-fluoro{
+  background:linear-gradient(90deg,transparent,rgba(132,204,22,0.2),rgba(132,204,22,0.35),rgba(132,204,22,0.2),transparent);
+  box-shadow:0 0 20px rgba(132,204,22,0.08);animation:of-flicker-toxic 3s linear infinite}
+.of-shell.quarantine-active .of-header{
+  background:linear-gradient(180deg,rgba(30,50,30,0.95),rgba(15,26,15,0.9));
+  border-bottom-color:rgba(132,204,22,0.2)}
+
+/* Contamination warning overlay — flashes once on load */
+.of-quarantine-warning{position:absolute;top:0;left:0;right:0;bottom:0;z-index:20;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(132,204,22,0.15),rgba(220,38,38,0.08),transparent 70%);
+  animation:of-contamination-flash 2s ease-out forwards}
+.of-quarantine-warning::before{content:'⚠ QUARANTINE ⚠';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(3);font-family:'Orbitron',sans-serif;font-size:28px;
+  letter-spacing:8px;color:rgba(220,38,38,0.7);text-shadow:0 0 30px rgba(220,38,38,0.5);
+  animation:of-quarantine-text 2s ease-out forwards;pointer-events:none}
+
+/* Biohazard scan line */
+.of-shell.quarantine-active::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;z-index:15;
+  background:linear-gradient(90deg,transparent,var(--of-toxic),transparent);
+  animation:of-scan-line 4s linear infinite;pointer-events:none;clip-path:inset(0)}
+
 /* ═══ KEYFRAMES ═══ */
 @keyframes of-ekg{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 @keyframes of-flicker{
   0%{opacity:0.6}5%{opacity:0.35}10%{opacity:0.65}15%{opacity:0.5}20%{opacity:0.7}
   50%{opacity:0.6}55%{opacity:0.4}60%{opacity:0.65}80%{opacity:0.55}100%{opacity:0.6}}
+@keyframes of-flicker-toxic{
+  0%{opacity:0.4}10%{opacity:0.15}20%{opacity:0.5}30%{opacity:0.2}40%{opacity:0.45}
+  60%{opacity:0.3}70%{opacity:0.5}90%{opacity:0.25}100%{opacity:0.4}}
 @keyframes of-stamp-inline{
   0%{transform:scale(1.5);opacity:0}
   70%{transform:scale(0.97);opacity:1}
   100%{transform:scale(1);opacity:1}}
 @keyframes of-fade-up{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes of-quarantine-shift{
+  0%{background:linear-gradient(180deg,#1e293b 0%,#0f172a 30%,#020617 100%);border-color:#1e293b}
+  30%{border-color:#dc2626}
+  60%{border-color:#84cc16}
+  100%{background:linear-gradient(180deg,#1a2e1a 0%,#0d1a0d 30%,#050a05 100%);border-color:#2d4a2d}}
+@keyframes of-contamination-flash{
+  0%{opacity:1}
+  20%{opacity:0.8}
+  40%{opacity:0.5}
+  100%{opacity:0}}
+@keyframes of-quarantine-text{
+  0%{transform:translate(-50%,-50%) scale(3);opacity:0}
+  15%{transform:translate(-50%,-50%) scale(1);opacity:0.8}
+  50%{opacity:0.6}
+  100%{transform:translate(-50%,-50%) scale(1.1);opacity:0}}
+@keyframes of-scan-line{
+  0%{top:0}100%{top:100%}}
 
 /* ═══ prefers-reduced-motion ═══ */
 @media (prefers-reduced-motion:reduce){
-  .of-shell::before,.of-fluoro,.of-heartline svg{animation:none !important}
+  .of-shell::before,.of-fluoro,.of-heartline svg,.of-quarantine-warning,.of-shell.quarantine-active::after{animation:none !important}
+  .of-shell.quarantine-active{animation:none !important}
+  .of-quarantine-warning{display:none}
   .of-ev,.of-stamp,.of-wristband.infected::after,.of-wristband.cured::after{animation:none !important;transition:none !important}
 }
 </style>
-<div class="of-shell">
+<div class="of-shell ${extraClass}">
   <div class="of-heartline">
     <svg viewBox="0 0 600 20" preserveAspectRatio="none">
       <path d="M0,10 L40,10 L50,10 L55,2 L60,18 L65,4 L70,10 L110,10 L150,10 L160,10 L165,2 L170,18 L175,4 L180,10 L220,10 L260,10 L270,10 L275,2 L280,18 L285,4 L290,10 L330,10 L370,10 L380,10 L385,2 L390,18 L395,4 L400,10 L440,10 L480,10 L490,10 L495,2 L500,18 L505,4 L510,10 L550,10 L600,10"/>
@@ -2646,13 +2694,14 @@ export function rpBuildOneFluDisease(ep) {
   </div>`;
 
   return _ofShell(`
+    <div class="of-quarantine-warning"></div>
     <div class="of-hud">${hudCells}</div>
     <div class="of-layout">
       <div class="of-feed">${feed}${controls}</div>
       <div class="of-sidebar" id="of-sidebar-disease">${sidebar}</div>
     </div>
     ${doneBox}
-  `, ep);
+  `, ep, 'quarantine-active');
 }
 
 function _ofBuildDiseaseSidebar(dis, revIdx, tribeNames, of) {
@@ -2862,7 +2911,7 @@ export function rpBuildOneFluResults(ep) {
   if (sortedPlayers.length) {
     leaderboard = `<div style="margin:12px 14px">
       <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:var(--of-blue);margin-bottom:8px;text-align:center">PLAYER STANDINGS</div>
-      ${sortedPlayers.slice(0, 8).map(([name, score], i) => {
+      ${sortedPlayers.map(([name, score], i) => {
         const medal = i === 0 ? 'gold' : i === 1 ? 'teal' : i === 2 ? 'blue' : '';
         return `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;margin-bottom:3px;background:rgba(0,0,0,${i < 3 ? '0.3' : '0.15'});border-radius:3px;border-left:3px solid ${i === 0 ? 'var(--of-teal)' : i < 3 ? 'var(--of-blue)' : 'transparent'}">
           <span style="font-family:'Orbitron',sans-serif;font-size:10px;color:rgba(255,255,255,0.3);width:18px">${i + 1}</span>

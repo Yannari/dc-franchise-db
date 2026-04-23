@@ -33,6 +33,7 @@ import { _textChefshank } from './chal/chefshank.js';
 import { _textOneFlu } from './chal/one-flu.js';
 import { _textMastersOfDisasters } from './chal/masters-of-disasters.js';
 import { _textFullMetalDrama } from './chal/full-metal-drama.js';
+import { _textOceansHeist } from './chal/oceans-heist.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -2024,6 +2025,7 @@ export function generateSummaryText(ep) {
   _textOneFlu(ep, ln, sec);
   _textMastersOfDisasters(ep, ln, sec);
   _textFullMetalDrama(ep, ln, sec);
+  _textOceansHeist(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
   _textJuryLife(ep, ln, sec);

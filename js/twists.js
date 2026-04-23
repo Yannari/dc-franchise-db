@@ -1443,6 +1443,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isMastersOfDisasters = true;
 
+  } else if (engineType === 'oceans-heist') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isOceansHeist = true;
+
   } else if (engineType === 'full-metal-drama') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isFullMetalDrama = true;

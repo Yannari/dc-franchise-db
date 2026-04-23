@@ -44,6 +44,7 @@ import { simulateChefshank } from './chal/chefshank.js';
 import { simulateOneFlu } from './chal/one-flu.js';
 import { simulateMastersOfDisasters } from './chal/masters-of-disasters.js';
 import { simulateFullMetalDrama } from './chal/full-metal-drama.js';
+import { simulateOceansHeist } from './chal/oceans-heist.js';
 import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
@@ -1851,6 +1852,8 @@ export function simulateEpisode() {
     simulateOneFlu(ep);
   } else if (ep.isMastersOfDisasters && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateMastersOfDisasters(ep);
+  } else if (ep.isOceansHeist && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateOceansHeist(ep, gs.tribes);
   } else if (ep.isFullMetalDrama && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateFullMetalDrama(ep);
   } else if (ep.isBasicStraining && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
@@ -2449,7 +2452,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist) {
     updateChalRecord(ep);
   }
 

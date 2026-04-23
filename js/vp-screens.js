@@ -18,6 +18,7 @@ import { rpBuildChefshankTitleCard, rpBuildChefshankPrisonFood, rpBuildChefshank
 import { rpBuildOneFluTitleCard, rpBuildOneFluStudySleep, rpBuildOneFluQuiz, rpBuildOneFluAssembly, rpBuildOneFluDramaBreak, rpBuildOneFluDisease, rpBuildOneFluResults, oneFluRevealNext, oneFluRevealAll } from './chal/one-flu.js';
 import { rpBuildMastersOfDisastersTitleCard, rpBuildMastersOfDisastersEarthquake, rpBuildMastersOfDisastersDramaBreak, rpBuildMastersOfDisastersSubmarine, rpBuildMastersOfDisastersResults, mastersOfDisastersRevealNext, mastersOfDisastersRevealAll } from './chal/masters-of-disasters.js';
 import { rpBuildFullMetalDramaTitleCard, rpBuildFullMetalDramaJump, rpBuildFullMetalDramaPaintBomb, rpBuildFullMetalDramaDramaBreak, rpBuildFullMetalDramaFlag, rpBuildFullMetalDramaResults, fullMetalDramaRevealNext, fullMetalDramaRevealAll } from './chal/full-metal-drama.js';
+import { rpBuildOceansHeistVault, rpBuildOceansHeistHeist, rpBuildOceansHeistGetaway, rpBuildOceansHeistResults, oceansHeistRevealNext, oceansHeistRevealAll } from './chal/oceans-heist.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10458,6 +10459,15 @@ export function buildVPScreens(epRecord) {
     if (ep.rescueIslandEvents?.length) {
       const _modRescLife = rpBuildRescueIslandLife(ep);
       if (_modRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _modRescLife });
+    }
+  } else if (ep.isOceansHeist && ep.oceansHeist) {
+    if (ep.oceansHeist.vaultCrack) vpScreens.push({ id:'oh-vault', label:'Vault Crack', html: rpBuildOceansHeistVault(ep) });
+    if (ep.oceansHeist.heist) vpScreens.push({ id:'oh-heist', label:'The Heist', html: rpBuildOceansHeistHeist(ep) });
+    if (ep.oceansHeist.getaway) vpScreens.push({ id:'oh-getaway', label:'Getaway', html: rpBuildOceansHeistGetaway(ep) });
+    vpScreens.push({ id:'oh-results', label:'Debrief', html: rpBuildOceansHeistResults(ep) });
+    if (ep.riLifeEvents?.length || ep.riDuel) {
+      const _ohRiLife = rpBuildRILife(ep);
+      if (_ohRiLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _ohRiLife });
     }
   } else if (ep.isFullMetalDrama && ep.fullMetalDrama) {
     vpScreens.push({ id:'fmd-title', label:'Full Metal Drama', html: rpBuildFullMetalDramaTitleCard(ep) });

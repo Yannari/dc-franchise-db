@@ -515,9 +515,11 @@ function _simulateWarDramaBreak(ep, tribeMembers, result) {
 
   const targetCount = 5 + Math.floor(Math.random() * 3); // 5-7
   const usedIds = new Set();
+  let attempts = 0;
+  const maxAttempts = targetCount * 4;
 
-  for (let i = 0; i < targetCount; i++) {
-    // Pick a random tribe for context
+  while (events.length < targetCount && attempts < maxAttempts) {
+    attempts++;
     const tribe = pick(tribeMembers);
     const eligible = WAR_DRAMA_EVENTS.filter(e => !usedIds.has(e.id));
     if (!eligible.length) break;
@@ -603,7 +605,17 @@ function _simulateCaptureTheFlag(ep, tribeMembers, result) {
     const sentryBonus = sentries.length > 0 ? 0.05 : 0;
 
     tribeState[tribe.name] = { attackers: [...attackers], defenders: [...defenders], traps: [...traps], foxholes, sentries, planQuality, foxholeBonus, sentryBonus, activeDefenders: [...defenders], activeAttackers: [...attackers] };
-    setup.push({ tribe: tribe.name, foxholes: foxholes.length, traps: traps.length, sentries: sentries.length, planQuality, attackers: attackers.length, defenders: defenders.length });
+    const bestStrategist = members.reduce((best, n) => (pStats(n).strategic + pStats(n).mental) > (pStats(best).strategic + pStats(best).mental) ? n : best, members[0]);
+    setup.push({
+      tribe: tribe.name,
+      attackerNames: [...attackers], defenderNames: [...defenders],
+      foxholeBuilders: foxholes.map(f => f.builder || f).filter(Boolean),
+      trapSetters: traps.map(t => t.builder).filter(Boolean),
+      sentryNames: sentries,
+      foxholes: foxholes.length, traps: traps.length, sentries: sentries.length,
+      planQuality, captain: bestStrategist,
+      attackers: attackers.length, defenders: defenders.length,
+    });
   }
 
   // ── 3b: ASSAULT (up to 5 rounds) ──
@@ -1611,34 +1623,62 @@ export function rpBuildFullMetalDramaFlag(ep) {
   // Setup per tribe
   for (const setup of cf.setup) {
     const planBar = Math.min(100, (setup.planQuality / 0.8) * 100);
+    const atkNames = setup.attackerNames || [];
+    const defNames = setup.defenderNames || [];
+    const captain = setup.captain || '?';
+
     steps.push({ type: 'setup', tribe: setup.tribe, html: `<div class="fmd-ev" style="border-left-color:var(--wd-mud)">
       <div style="flex:1;min-width:0">
-        <div class="fmd-ev-badge gold">${setup.tribe} &mdash; DEFENSE SETUP</div>
-        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;font-size:12px">
-          <div style="text-align:center;padding:6px 10px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(196,167,119,0.1)">
-            <div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--wd-khaki)">${setup.attackers}</div>
-            <div style="font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.4)">ATTACKERS</div>
+        <div class="fmd-ev-badge gold">${setup.tribe} — DEFENSE SETUP</div>
+
+        <!-- Captain -->
+        <div style="display:flex;align-items:center;gap:8px;margin:8px 0;padding:6px 8px;background:rgba(196,167,119,0.08);border:1px solid rgba(196,167,119,0.15);border-radius:4px">
+          ${_fmdPortrait(captain, 28)}
+          <div><div style="font-size:10px;color:var(--wd-khaki);font-family:'Black Ops One',sans-serif;letter-spacing:1px">CAPTAIN: ${captain}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.4)">Highest strategic+mental — directs the defense plan</div></div>
+        </div>
+
+        <!-- Attackers: charge the enemy base -->
+        <div style="margin:8px 0">
+          <div style="font-size:9px;color:var(--wd-paint-red);letter-spacing:2px;margin-bottom:4px">⚔️ ATTACKERS (${atkNames.length}) — charge the enemy base</div>
+          <div style="display:flex;gap:3px;flex-wrap:wrap">${atkNames.map(n => `<div style="text-align:center;width:36px">${_fmdPortrait(n, 24)}<div style="font-size:7px;color:rgba(255,255,255,0.5)">${n.split(' ')[0]}</div></div>`).join('')}</div>
+          <div style="font-size:8px;color:rgba(255,255,255,0.3);margin-top:2px">Bold, physical, aggressive — they run the gauntlet</div>
+        </div>
+
+        <!-- Defenders: hold the base -->
+        <div style="margin:8px 0">
+          <div style="font-size:9px;color:var(--wd-steel);letter-spacing:2px;margin-bottom:4px">🛡️ DEFENDERS (${defNames.length}) — hold the base</div>
+          <div style="display:flex;gap:3px;flex-wrap:wrap">${defNames.map(n => `<div style="text-align:center;width:36px">${_fmdPortrait(n, 24)}<div style="font-size:7px;color:rgba(255,255,255,0.5)">${n.split(' ')[0]}</div></div>`).join('')}</div>
+          <div style="font-size:8px;color:rgba(255,255,255,0.3);margin-top:2px">Strategic, calm, mental — they block enemy attackers 1v1</div>
+        </div>
+
+        <!-- Defense installations -->
+        <div style="display:flex;gap:8px;margin:8px 0;flex-wrap:wrap">
+          <div style="flex:1;min-width:70px;padding:6px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(239,68,68,0.15)">
+            <div style="font-family:'Black Ops One',sans-serif;font-size:14px;color:var(--wd-paint-red)">${setup.traps}</div>
+            <div style="font-size:7px;letter-spacing:1px;color:rgba(255,255,255,0.4)">TRAPS</div>
+            <div style="font-size:7px;color:rgba(255,255,255,0.25)">Auto-hit first attacker</div>
+            ${(setup.trapSetters||[]).length ? `<div style="font-size:7px;color:rgba(255,255,255,0.3);margin-top:2px">Set by: ${setup.trapSetters.join(', ')}</div>` : ''}
           </div>
-          <div style="text-align:center;padding:6px 10px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(196,167,119,0.1)">
-            <div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--wd-steel)">${setup.defenders}</div>
-            <div style="font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.4)">DEFENDERS</div>
+          <div style="flex:1;min-width:70px;padding:6px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(77,92,46,0.2)">
+            <div style="font-family:'Black Ops One',sans-serif;font-size:14px;color:var(--wd-olive)">${setup.foxholes}</div>
+            <div style="font-size:7px;letter-spacing:1px;color:rgba(255,255,255,0.4)">FOXHOLES</div>
+            <div style="font-size:7px;color:rgba(255,255,255,0.25)">Defenders get +10% bonus</div>
           </div>
-          <div style="text-align:center;padding:6px 10px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(196,167,119,0.1)">
-            <div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--wd-paint-red)">${setup.traps}</div>
-            <div style="font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.4)">TRAPS</div>
-          </div>
-          <div style="text-align:center;padding:6px 10px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(196,167,119,0.1)">
-            <div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--wd-olive)">${setup.foxholes}</div>
-            <div style="font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.4)">FOXHOLES</div>
-          </div>
-          <div style="text-align:center;padding:6px 10px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(196,167,119,0.1)">
-            <div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:var(--wd-paint-blue)">${setup.sentries}</div>
-            <div style="font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.4)">SENTRIES</div>
+          <div style="flex:1;min-width:70px;padding:6px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(59,130,246,0.15)">
+            <div style="font-family:'Black Ops One',sans-serif;font-size:14px;color:var(--wd-paint-blue)">${setup.sentries}</div>
+            <div style="font-size:7px;letter-spacing:1px;color:rgba(255,255,255,0.4)">SENTRIES</div>
+            <div style="font-size:7px;color:rgba(255,255,255,0.25)">Spot attackers early +5%</div>
+            ${(setup.sentryNames||[]).length ? `<div style="font-size:7px;color:rgba(255,255,255,0.3);margin-top:2px">Posted: ${setup.sentryNames.join(', ')}</div>` : ''}
           </div>
         </div>
-        <div style="margin-top:8px">
-          <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:2px">PLAN QUALITY</div>
-          <div style="height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden">
+
+        <!-- Plan quality -->
+        <div style="margin-top:6px">
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,0.4)">
+            <span>PLAN QUALITY (${captain}'s strategy)</span><span>${Math.round(planBar)}%</span>
+          </div>
+          <div style="height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden;margin-top:2px">
             <div style="height:100%;width:${planBar}%;background:linear-gradient(90deg,var(--wd-olive),#84cc16);border-radius:3px"></div>
           </div>
         </div>

@@ -260,7 +260,7 @@ export function renderEpisodeHistory() {
     const ctTag = ep.isCrazytown ? `<span class="ep-hist-tag" style="background:rgba(218,165,32,0.15);color:#daa520">Crazytown</span>` : '';
     const csTag = ep.isChefshank ? `<span class="ep-hist-tag" style="background:rgba(107,114,128,0.15);color:#6b7280">Chefshank</span>` : '';
     const ofTag = ep.isOneFlu ? `<span class="ep-hist-tag" style="background:rgba(96,165,250,0.15);color:#60a5fa">One Flu</span>` : '';
-    const modTag = ep.isMastersOfDisasters ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">Masters of Disasters</span>` : '';
+    const modTag = ep.isMastersOfDisasters ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">Disasters</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`

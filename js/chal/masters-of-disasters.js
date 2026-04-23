@@ -462,6 +462,9 @@ function _simulateSubmarine(ep, tribeMembers, result) {
   const ESCAPE_THRESHOLD = 1.5;
   const snorkelUsed = new Set();
   const fireAboveUsed = new Set();
+  const airPocketUsed = new Set();
+  const teamworkUsed = new Set();
+  const breathHoldUsed = new Set();
 
   for (let si = 0; si < SUBMARINE_STAGES.length; si++) {
     const stage = SUBMARINE_STAGES[si];
@@ -479,7 +482,7 @@ function _simulateSubmarine(ep, tribeMembers, result) {
       const statFns = [
         st => st.temperament * 0.06 + st.mental * 0.03,
         st => st.intuition * 0.06 + st.strategic * 0.04,
-        st => st.mental * 0.06 + st.strategic * 0.05,
+        st => st.mental * 0.04 + st.endurance * 0.03 + st.strategic * 0.02,
         st => st.endurance * 0.06 + st.physical * 0.05,
       ];
 
@@ -530,8 +533,16 @@ function _simulateSubmarine(ep, tribeMembers, result) {
           if (k === 'panicDrowning' && tribeEscapeProg.surviving.length < 2) return false;
           // Dropped code: only works if this tribe is Phase 1 winner
           if (k === 'droppedCode' && t.name !== phases1Winner) return false;
-          // Limit fire above to once per challenge
+          // Limit fire above to once per tribe
           if (k === 'fireAbove' && fireAboveUsed.has(t.name)) return false;
+          // Lock breakthrough: ONLY on stage 4 (the finale moment)
+          if (k === 'lockBreakthrough' && si < SUBMARINE_STAGES.length - 1) return false;
+          // Air pocket: once per tribe
+          if (k === 'airPocket' && airPocketUsed.has(t.name)) return false;
+          // Teamwork push: once per tribe
+          if (k === 'teamworkPush' && teamworkUsed.has(t.name)) return false;
+          // Breath hold: once per tribe
+          if (k === 'breathHold' && breathHoldUsed.has(t.name)) return false;
           return true;
         });
         if (!candidates.length) break;
@@ -539,6 +550,9 @@ function _simulateSubmarine(ep, tribeMembers, result) {
         usedEventsThisStage.add(evKey);
         if (evKey === 'fireAbove') fireAboveUsed.add(t.name);
         if (evKey === 'strawSnorkel') snorkelUsed.add(t.name);
+        if (evKey === 'airPocket') airPocketUsed.add(t.name);
+        if (evKey === 'teamworkPush') teamworkUsed.add(t.name);
+        if (evKey === 'breathHold') breathHoldUsed.add(t.name);
 
         const surviving = tribeEscapeProg.surviving;
         const submerged = tribeEscapeProg.submerged;
@@ -695,23 +709,24 @@ function _simulateSubmarine(ep, tribeMembers, result) {
 
     stages.push(stageData);
 
-    // Win check: first tribe past threshold
-    for (const t of tribeMembers) {
-      if (escapeProgress[t.name] >= ESCAPE_THRESHOLD && !escapedTribe) {
-        escapedTribe = t.name;
-        rp.push({ type: 'escape', tribe: t.name, text: pick(SUBMARINE_HOST.escape)(host, t.name) });
-        break;
+    // Escape only possible on final stage — first tribe past threshold wins
+    if (si === SUBMARINE_STAGES.length - 1) {
+      for (const t of tribeMembers) {
+        if (escapeProgress[t.name] >= ESCAPE_THRESHOLD && !escapedTribe) {
+          escapedTribe = t.name;
+          rp.push({ type: 'escape', tribe: t.name, text: pick(SUBMARINE_HOST.escape)(host, t.name) });
+          break;
+        }
       }
     }
-    if (escapedTribe) break;
   }
 
-  // If nobody escaped after all stages, highest progress wins
+  // If nobody hit threshold after all stages, highest progress wins
   if (!escapedTribe) {
     const sorted = Object.entries(escapeProgress).sort((a, b) => b[1] - a[1]);
     escapedTribe = sorted[0][0];
     rp.push({ type: 'escape', tribe: escapedTribe,
-      text: pick(SUBMARINE_HOST.escape)(host, escapedTribe) + ' (closest to escape)' });
+      text: pick(SUBMARINE_HOST.escape)(host, escapedTribe) });
   }
 
   result.submarine = {

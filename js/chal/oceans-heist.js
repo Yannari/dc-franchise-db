@@ -73,34 +73,46 @@ const HEIST_HOST = {
 const VAULT_EVENTS = {
   lockpick: [
     (p, pr) => `${p} knelt by the lock, picks in hand. Click... click... ${pr.Sub} was in the zone.`,
-    (p, pr) => `${p} worked the tumblers methodically. "Almost... almost..."`,
-    (p, pr) => `${p} pressed ${pr.posAdj} ear to the vault door, listening for the pins.`,
+    (p, pr) => `${p} worked the tumblers methodically. "Almost... almost..." The third pin gave way.`,
+    (p, pr) => `${p} pressed ${pr.posAdj} ear to the vault door, listening for the pins. "I hear it..."`,
+    (p, pr) => `Two bobby pins, a paperclip, and nerves of steel. ${p} was picking this lock old-school.`,
+    (p, pr) => `${p} closed ${pr.posAdj} eyes and felt the mechanism. "Four pins down. One to go."`,
+    (p, pr) => `"I learned this at camp." ${p}'s lockpick kit was already deployed. Pure concentration.`,
   ],
   bruteForce: [
     (p, pr) => `${p} SLAMMED ${pr.posAdj} shoulder into the vault door. The hinges groaned.`,
-    (p, pr) => `${p} gripped the handle and pulled with everything ${pr.sub} had.`,
-    (p, pr) => `"STAND BACK!" ${p} charged the door like a battering ram.`,
+    (p, pr) => `${p} gripped the handle and pulled with everything ${pr.sub} had. Veins popping.`,
+    (p, pr) => `"STAND BACK!" ${p} charged the door like a battering ram. BOOM.`,
+    (p, pr) => `${p} kicked the vault door so hard the whole wall shook. "${pr.Sub}'s not stopping."`,
+    (p, pr) => `Pure rage. ${p} was treating that vault door like a personal enemy.`,
+    (p, pr) => `${p} ripped off a piece of railing and used it as a crowbar. Improvise. Adapt. Break stuff.`,
   ],
   socialEng: [
     (p, pr) => `${p} studied the keypad. "If I were ${host()}, what would my code be..."`,
-    (p, pr) => `"${host()}'s birthday... no. ${host()}'s hair gel brand number..." ${p} kept guessing.`,
+    (p, pr) => `"${host()}'s birthday... no. His hair gel barcode..." ${p} kept guessing.`,
     (p, pr) => `${p} sweet-talked the electronic panel. "Come on, baby. Open up for me."`,
+    (p, pr) => `"The code is probably his measurements." ${p} punched in numbers. "Too vain NOT to be."`,
+    (p, pr) => `${p} found the manufacturer's override on the back panel. "They ALWAYS forget to change the default."`,
+    (p, pr) => `${p} called ${host()} on the intercom. "Hey, what's your favorite number?" ${host()} actually answered.`,
   ],
   slapFight: [
     (a, b) => `${a} and ${b} got into a slap fight over who should crack the vault!`,
     (a, b) => `"Let ME do it!" ${a} shoved ${b} aside. ${b} shoved back.`,
   ],
   panicInVault: [
-    (p, pr) => `Inside the vault, ${p} was panicking. "GET ME OUT! I CAN'T BREATHE!"`,
-    (p, pr) => `${p} banged on the vault door from inside. "HELLO?! ANYBODY?!"`,
+    (p, pr) => `Inside the vault, ${p} was losing it. "GET ME OUT! THE WALLS ARE CLOSING IN!"`,
+    (p, pr) => `${p} banged on the vault door from inside. "HELLO?! IS ANYONE EVEN TRYING?!"`,
+    (p, pr) => `Muffled screaming from inside the vault. ${p} was NOT handling this well.`,
   ],
   napInVault: [
-    (p, pr) => `Inside the vault, ${p} had found a comfortable spot and fallen asleep.`,
-    (p, pr) => `${p} yawned and stretched out in the vault. "Wake me when they figure it out."`,
+    (p, pr) => `Inside the vault, ${p} had found a comfortable spot and drifted off to sleep.`,
+    (p, pr) => `${p} yawned and stretched out. "Wake me when they figure it out." Then ${pr.sub} started snoring.`,
+    (p, pr) => `${p} leaned against the vault wall, closed ${pr.posAdj} eyes, and immediately fell asleep. Priorities.`,
   ],
   workInside: [
-    (p, pr) => `${p} found the emergency release panel inside and started working on it.`,
-    (p, pr) => `From inside, ${p} was calling out numbers: "Try 7... 3... no wait, 4!"`,
+    (p, pr) => `${p} found the emergency release panel inside and started tinkering. "I can help from here!"`,
+    (p, pr) => `From inside, ${p} was calling out numbers: "Try 7... 3... no wait — 4!" The crackers could barely hear.`,
+    (p, pr) => `${p} pried open an air vent inside the vault. "There's wiring back here! I think I can—" BZZT. "I'm fine!"`,
   ],
   cracked: [
     (tribe) => `CLICK. The ${tribe} vault swung open!`,
@@ -314,8 +326,19 @@ function _simulateVaultCrack(ep, tribeMembers, result) {
       ep.chalMemberScores[locked] = (ep.chalMemberScores[locked] || 0) + 3;
     }
 
-    // Each cracker picks best approach
+    // Each cracker picks best approach — deduplicate text templates
     const approaches = [];
+    const usedTemplates = {};
+    function pickUnique(pool, name, pr) {
+      const key = pool === VAULT_EVENTS.lockpick ? 'lp' : pool === VAULT_EVENTS.bruteForce ? 'bf' : 'se';
+      if (!usedTemplates[key]) usedTemplates[key] = new Set();
+      const available = pool.filter((_, i) => !usedTemplates[key].has(i));
+      const chosen = available.length ? available : pool;
+      const idx = pool.indexOf(chosen[Math.floor(Math.random() * chosen.length)]);
+      usedTemplates[key].add(idx);
+      return pool[idx](name, pr);
+    }
+
     for (const name of crackers) {
       const s = pStats(name);
       const pr = pronouns(name);
@@ -334,7 +357,7 @@ function _simulateVaultCrack(ep, tribeMembers, result) {
 
       approaches.push({ name, approach, score });
       totalScore += score;
-      events.push({ type, player: name, text: pick(VAULT_EVENTS[type])(name, pr) });
+      events.push({ type, player: name, text: pickUnique(VAULT_EVENTS[type], name, pr) });
       ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + Math.round(score * 5);
     }
 
@@ -843,62 +866,89 @@ export function rpBuildOceansHeistVault(ep) {
   const steps = [];
 
   // Intro
-  steps.push({ type: 'intro', html: `<div class="oh-ev" style="border-left-color:var(--heist-cyan)">
-    <div style="font-size:22px">🏦</div>
-    <div style="flex:1"><div class="oh-ev-badge cyan">PHASE I — VAULT CRACK</div>
-    <div class="oh-ev-text">${pick(HEIST_HOST.vaultIntro)(host())}</div></div>
+  steps.push({ type: 'intro', html: `<div class="oh-ev" style="border-left-color:var(--heist-cyan);padding:14px">
+    <div style="font-size:28px">🏦</div>
+    <div style="flex:1"><div class="oh-ev-badge cyan" style="font-size:11px;padding:4px 12px">PHASE I — VAULT CRACK</div>
+    <div class="oh-ev-text" style="font-size:14px;margin-top:6px">${pick(HEIST_HOST.vaultIntro)(host())}</div></div>
   </div>` });
 
-  // Per-tribe vault crack
+  // Per-tribe: each event is its own reveal step for suspense
   for (const vt of vc.tribes) {
-    // Locked member card
-    const lpr = pronouns(vt.locked);
     const reactionIcon = vt.lockedReaction === 'panic' ? '😰' : vt.lockedReaction === 'nap' ? '😴' : '🔧';
-    const reactionText = vt.lockedReaction === 'panic' ? 'PANICKING' : vt.lockedReaction === 'nap' ? 'NAPPING' : 'WORKING FROM INSIDE';
+    const reactionLabel = vt.lockedReaction === 'panic' ? 'PANICKING inside!' : vt.lockedReaction === 'nap' ? 'Taking a NAP inside.' : 'Working from INSIDE!';
+    const reactionColor = vt.lockedReaction === 'panic' ? 'var(--heist-red)' : vt.lockedReaction === 'nap' ? 'var(--heist-gold)' : 'var(--heist-green)';
 
-    let tribeHtml = `<div class="oh-ev" style="border-left-color:var(--heist-gold)">
+    // Tribe header + locked member
+    steps.push({ type: 'tribe-header', tribe: vt.tribe, html: `<div class="oh-ev" style="border-left-color:var(--heist-gold);padding:12px">
       <div style="flex:1">
-        <div class="oh-ev-badge gold">${vt.tribe} — VAULT CRACK</div>
-        <div style="display:flex;align-items:center;gap:8px;margin:6px 0;padding:6px;background:rgba(0,0,0,0.2);border-radius:4px;border:1px solid rgba(251,191,36,0.15)">
-          ${_ohPortrait(vt.locked, 32)}
+        <div class="oh-ev-badge gold" style="font-size:10px;padding:3px 10px">${vt.tribe} — VAULT</div>
+        <div style="display:flex;align-items:center;gap:12px;margin:10px 0;padding:10px;background:rgba(0,0,0,0.25);border-radius:6px;border:1px solid rgba(251,191,36,0.2)">
+          ${_ohPortrait(vt.locked, 48)}
           <div>
-            <div style="font-size:10px;color:var(--heist-gold);font-family:'Share Tech Mono',monospace">${reactionIcon} ${vt.locked} — LOCKED IN VAULT</div>
-            <div style="font-size:8px;color:rgba(255,255,255,0.4)">${reactionText}</div>
+            <div style="font-size:14px;color:var(--heist-gold);font-family:'Black Ops One',sans-serif;letter-spacing:1px">🔒 ${vt.locked}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5)">Locked in the vault</div>
           </div>
-        </div>`;
+        </div>
+        <div style="font-size:9px;letter-spacing:2px;color:rgba(34,211,238,0.5);margin-bottom:6px">CRACK TEAM ASSIGNED:</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${vt.approaches.map(a => {
+            const aIcon = a.approach === 'lockpick' ? '🔓' : a.approach === 'bruteForce' ? '💪' : '🗣️';
+            return `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(34,211,238,0.05);border:1px solid rgba(34,211,238,0.1);border-radius:4px">
+              ${_ohPortrait(a.name, 28)}
+              <div><div style="font-size:11px;color:rgba(255,255,255,0.8)">${a.name}</div>
+              <div style="font-size:9px;color:var(--heist-cyan);font-family:'Share Tech Mono',monospace">${aIcon} ${a.approach === 'lockpick' ? 'Lockpick' : a.approach === 'bruteForce' ? 'Brute Force' : 'Social Eng'}</div></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>` });
 
-    // Crackers and their approaches
-    tribeHtml += `<div style="margin:6px 0;font-size:8px;color:rgba(34,211,238,0.5);letter-spacing:1px">CRACK TEAM:</div>`;
-    for (const a of vt.approaches) {
-      const aIcon = a.approach === 'lockpick' ? '🔓' : a.approach === 'bruteForce' ? '💪' : '🗣️';
-      const aLabel = a.approach === 'lockpick' ? 'LOCKPICK' : a.approach === 'bruteForce' ? 'BRUTE FORCE' : 'SOCIAL ENG';
-      tribeHtml += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px">
-        ${_ohSidePortrait(a.name, 20)}
-        <span style="color:rgba(255,255,255,0.7)">${a.name}</span>
-        <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--heist-cyan)">${aIcon} ${aLabel}</span>
-        <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(255,255,255,0.3)">${a.score.toFixed(2)}</span>
-      </div>`;
-    }
-
-    // Events
+    // Each event as its own card
     for (const evt of vt.events) {
       if (evt.type === 'cracked') {
-        tribeHtml += `<div style="margin-top:6px;padding:4px 8px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:3px;font-size:11px;color:var(--heist-green)">🔓 ${evt.text}</div>`;
+        steps.push({ type: 'crack', tribe: vt.tribe, html: `<div class="oh-ev" style="border-left-color:var(--heist-green);padding:14px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.15);border-radius:6px">
+          <div style="font-size:28px">🔓</div>
+          <div style="flex:1">
+            <div class="oh-ev-badge green" style="font-size:10px;padding:3px 10px">VAULT OPEN!</div>
+            <div style="font-size:15px;color:var(--heist-green);font-weight:700;margin-top:4px">${evt.text}</div>
+          </div>
+        </div>` });
+      } else if (evt.type === 'slapFight') {
+        steps.push({ type: 'event', tribe: vt.tribe, html: `<div class="oh-ev" style="border-left-color:var(--heist-red);padding:10px">
+          <div style="display:flex;gap:4px">${_ohPortrait(evt.players[0], 36)}${_ohPortrait(evt.players[1], 36)}</div>
+          <div style="flex:1">
+            <div class="oh-ev-badge red" style="font-size:9px">SLAP FIGHT!</div>
+            <div style="font-size:13px;color:var(--heist-red);margin-top:2px">${evt.text}</div>
+          </div>
+        </div>` });
+      } else if (evt.type === 'panicInVault' || evt.type === 'napInVault' || evt.type === 'workInside') {
+        steps.push({ type: 'event', tribe: vt.tribe, html: `<div class="oh-ev" style="border-left-color:${reactionColor};padding:10px">
+          ${_ohPortrait(vt.locked, 36)}
+          <div style="flex:1">
+            <div class="oh-ev-badge ${vt.lockedReaction === 'panic' ? 'red' : vt.lockedReaction === 'nap' ? 'gold' : 'green'}" style="font-size:9px">${reactionIcon} ${reactionLabel}</div>
+            <div style="font-size:13px;color:${reactionColor};margin-top:2px">${evt.text}</div>
+          </div>
+        </div>` });
       } else {
-        const evtColor = evt.type === 'slapFight' ? 'var(--heist-red)' : evt.type === 'panicInVault' ? 'var(--heist-gold)' : 'rgba(255,255,255,0.6)';
-        tribeHtml += `<div style="font-size:10px;color:${evtColor};margin:3px 0;padding-left:8px;border-left:1px solid ${evtColor}">${evt.text}</div>`;
+        // Cracker attempt
+        const actorName = evt.player || '';
+        steps.push({ type: 'attempt', tribe: vt.tribe, html: `<div class="oh-ev" style="border-left-color:var(--heist-cyan);padding:10px">
+          ${actorName ? _ohPortrait(actorName, 36) : ''}
+          <div style="flex:1">
+            <div style="font-size:13px;color:rgba(255,255,255,0.75)">${evt.text}</div>
+          </div>
+        </div>` });
       }
     }
-
-    tribeHtml += `<div style="margin-top:4px;font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(34,211,238,0.4)">TOTAL: ${vt.score.toFixed(2)}</div>`;
-    tribeHtml += `</div></div>`;
-    steps.push({ type: 'tribe-vault', tribe: vt.tribe, html: tribeHtml });
   }
 
-  // Result
-  steps.push({ type: 'result', html: `<div class="oh-ev" style="border-left-color:var(--heist-green);text-align:center">
-    <div style="flex:1"><div class="oh-ev-badge green">VAULT CRACKED</div>
-    <div class="oh-ev-text" style="font-size:14px;color:var(--heist-green);font-family:'Share Tech Mono',monospace">${vc.firstTribe} cracks first — gets the equipment!</div></div>
+  // Final result
+  steps.push({ type: 'result', html: `<div class="oh-ev" style="border-left-color:var(--heist-green);padding:16px;text-align:center;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.12);border-radius:6px">
+    <div style="flex:1">
+      <div class="oh-ev-badge green" style="font-size:12px;padding:4px 14px">🏆 VAULT CRACKED</div>
+      <div style="font-size:16px;color:var(--heist-green);font-family:'Black Ops One',sans-serif;letter-spacing:2px;margin-top:6px">${vc.firstTribe} cracks first!</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">They get the bank equipment — bonus for Phase II</div>
+    </div>
   </div>` });
 
   const totalSteps = steps.length;

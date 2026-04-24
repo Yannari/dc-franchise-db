@@ -1365,14 +1365,37 @@ function _ohUpdateSidebar(screenKey, revIdx) {
 }
 
 function _ohBuildVaultSidebarFromData(vc, revCount) {
+  // Figure out which tribes have been revealed by checking step data
+  // Steps: intro(1) + per tribe: header + kidnap + reaction + N crackers + crack = variable
+  // We need to map revCount to which tribe's crack step has been shown
+  // Simpler: use the stored step metadata. Each step has a tribe field.
+  // A tribe is "shown" when its 'crack' step has been revealed.
+  // Since we don't have step metadata here, count by tribe order:
+  // intro=1, then each tribe has (1 header + 1 kidnap + 1 reaction + N crackers + 1 crack + possible slap fights)
+  // Approximate: track which tribe index we're in based on revCount
+
+  // Build a step-to-tribe map from the data
+  let stepIdx = 1; // skip intro
+  const tribeRevealedAt = {}; // tribe name → step index when crack is shown
+  const tribeStartAt = {};
+  for (const vt of vc.tribes) {
+    tribeStartAt[vt.tribe] = stepIdx;
+    // header(1) + events count (kidnap, reaction, crackers, slapfights, crack)
+    stepIdx += 1 + vt.events.length;
+    tribeRevealedAt[vt.tribe] = stepIdx - 1; // crack is last event
+  }
+
   let sb = `<div class="oh-side-sec">VAULT STATUS</div>`;
-  for (let i = 0; i < vc.tribes.length; i++) {
-    const vt = vc.tribes[i];
-    const shown = i + 1 < revCount;
+  for (const vt of vc.tribes) {
+    const started = revCount > tribeStartAt[vt.tribe];
+    const cracked = revCount > tribeRevealedAt[vt.tribe];
     const reactionIcon = vt.lockedReaction === 'panic' ? '😰' : vt.lockedReaction === 'nap' ? '😴' : '🔧';
-    sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;opacity:${shown ? 1 : 0.4}">
-      <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan);margin-bottom:4px">${vt.tribe}</div>
-      ${shown ? `
+    sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;opacity:${started ? 1 : 0.4}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan)">${vt.tribe}</span>
+        ${cracked ? '<span style="font-size:10px;color:var(--heist-green)">🔓 OPEN</span>' : started ? '<span style="font-size:10px;color:var(--heist-gold)">🔒 CRACKING...</span>' : ''}
+      </div>
+      ${started ? `
       <div style="display:flex;align-items:center;gap:6px;padding:4px;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.12);border-radius:3px;margin-bottom:4px">
         ${_ohSidePortrait(vt.locked, 22)}
         <div><div style="font-size:10px;color:var(--heist-gold)">🔒 ${vt.locked}</div>
@@ -1387,19 +1410,23 @@ function _ohBuildVaultSidebarFromData(vc, revCount) {
           </div>`;
         }).join('')}
       </div>
-      <div style="height:5px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden">
-        <div style="height:100%;width:${Math.min(100, vt.score * 100)}%;background:var(--heist-cyan);border-radius:3px"></div>
+      ${cracked ? `<div style="height:5px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${Math.min(100, vt.score * 130)}%;background:var(--heist-green);border-radius:3px"></div>
       </div>
-      <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:2px;font-family:'Share Tech Mono',monospace">${vt.score.toFixed(2)}</div>
-      ` : '<div style="font-size:9px;color:rgba(255,255,255,0.15)">LOCKED</div>'}
+      <div style="font-size:10px;color:var(--heist-green);margin-top:2px;font-family:'Share Tech Mono',monospace">${vt.score.toFixed(2)} pts</div>` :
+      `<div style="height:5px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:50%;background:var(--heist-gold);border-radius:3px;animation:oh-pulse 1.5s ease-in-out infinite"></div>
+      </div>`}
+      ` : '<div style="font-size:10px;color:rgba(255,255,255,0.15)">LOCKED</div>'}
     </div>`;
   }
   sb += `<div class="oh-side-sec">CRACK ORDER</div>`;
+  const allCracked = vc.tribes.every(vt => revCount > tribeRevealedAt[vt.tribe]);
   for (let i = 0; i < vc.tribes.length; i++) {
-    const shown = i + 1 < revCount;
-    sb += `<div style="display:flex;align-items:center;gap:6px;font-size:10px;color:${shown ? 'var(--heist-green)' : 'rgba(255,255,255,0.15)'};padding:3px 0;font-family:'Share Tech Mono',monospace">
+    const shown = allCracked;
+    sb += `<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:${shown ? 'var(--heist-green)' : 'rgba(255,255,255,0.15)'};padding:3px 0;font-family:'Share Tech Mono',monospace">
       <span style="width:16px;text-align:center;font-weight:700">${i + 1}</span>
-      <span>${shown ? vc.tribes[i].tribe : '???'}</span>${i === 0 && shown ? '<span style="font-size:8px"> 🏆</span>' : ''}
+      <span>${shown ? vc.tribes[i].tribe : '???'}</span>${i === 0 && shown ? ' 🏆' : ''}
     </div>`;
   }
   return sb;

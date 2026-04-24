@@ -52,8 +52,9 @@ const HEIST_HOST = {
     (h) => `${h} unrolled a blueprint. "Listen up. Three phases. One shot. Don't blow it."`,
   ],
   vaultIntro: [
-    (h) => `"Phase one: your teammate is locked in a vault. Get them out." ${h} tossed a lockpick set on the ground.`,
-    (h) => `"Someone from each team is trapped. Clock's ticking." ${h} checked his watch dramatically.`,
+    (h) => `"While you were sleeping, we kidnapped one member from each team and locked them in a bank vault." ${h} tossed a lockpick set on the ground. "Get them out."`,
+    (h) => `"Missing a teammate? That's because Chef bagged them in the night." ${h} grinned. "They're in separate vaults. Crack the code, free your friend."`,
+    (h) => `"Three vaults. Three hostages. First team to break their teammate out gets the heist equipment." ${h} checked his watch. "Clock's ticking."`,
   ],
   heistIntro: [
     (h) => `"Phase two: the bank is yours. Get past security, grab the loot, and get OUT." ${h} pointed at the building.`,
@@ -116,6 +117,13 @@ const VAULT_EVENTS = {
   ],
   cracked: [
     (tribe) => `CLICK. The ${tribe} vault swung open!`,
+  ],
+  kidnapped: [
+    (p, pr) => `An intern in a ski mask grabbed ${p} from behind. A bag went over ${pr.posAdj} head. "${pr.Sub} was gone before anyone noticed.`,
+    (p, pr) => `${p} was eating breakfast when two interns dragged ${pr.obj} away. "WHAT THE—" The bag muffled the rest.`,
+    (p, pr) => `${p} stepped outside the trailer and vanished. A suspicious van peeled away from the lot.`,
+    (p, pr) => `"Has anyone seen ${p}?" By the time they asked, ${pr.sub} was already locked in a vault somewhere on set.`,
+    (p, pr) => `Chef grabbed ${p} in a chokehold and carried ${pr.obj} off. "Nothing personal, kid."`,
   ],
 };
 
@@ -306,6 +314,10 @@ function _simulateVaultCrack(ep, tribeMembers, result) {
     const events = [];
     let totalScore = 0;
 
+    // Kidnapping event
+    const lpr2 = pronouns(locked);
+    events.push({ type: 'kidnapped', player: locked, text: pick(VAULT_EVENTS.kidnapped)(locked, lpr2) });
+
     // Locked teammate reaction
     const ls = pStats(locked);
     const lpr = pronouns(locked);
@@ -374,12 +386,13 @@ function _simulateVaultCrack(ep, tribeMembers, result) {
       }
     }
 
-    totalScore += lockedBonus;
+    // Average per cracker so team size doesn't matter
+    const avgScore = (crackers.length > 0 ? totalScore / crackers.length : 0) + lockedBonus;
     events.push({ type: 'cracked', tribe: tribe.name, text: pick(VAULT_EVENTS.cracked)(tribe.name) });
 
     result.vaultCrack.tribes.push({
       tribe: tribe.name, locked, lockedReaction, crackers,
-      approaches, score: totalScore, events,
+      approaches, score: avgScore, events,
     });
   }
 
@@ -918,6 +931,14 @@ export function rpBuildOceansHeistVault(ep) {
               </div>
               <span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--heist-green)">${vt.score.toFixed(1)} pts</span>
             </div>
+          </div>
+        </div>` });
+      } else if (evt.type === 'kidnapped') {
+        steps.push({ type: 'kidnap', tribe: vt.tribe, html: `<div class="oh-ev" style="border-left-color:var(--heist-red);padding:12px">
+          ${_ohPortrait(evt.player, 42)}
+          <div style="flex:1">
+            <div class="oh-ev-badge red" style="font-size:10px;padding:3px 10px">🎒 KIDNAPPED!</div>
+            <div style="font-size:14px;color:rgba(255,255,255,0.8);margin-top:4px">${evt.text}</div>
           </div>
         </div>` });
       } else if (evt.type === 'slapFight') {

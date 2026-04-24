@@ -327,10 +327,12 @@ function _simulateVaultCrack(ep, tribeMembers, result) {
       lockedReaction = 'panic';
       lockedBonus = -0.1;
       events.push({ type: 'panicInVault', player: locked, text: pick(VAULT_EVENTS.panicInVault)(locked, lpr) });
+      ep.chalMemberScores[locked] = (ep.chalMemberScores[locked] || 0) - 2;
     } else if (ls.temperament > 6) {
       lockedReaction = 'nap';
-      lockedBonus = 0;
+      lockedBonus = -0.05;
       events.push({ type: 'napInVault', player: locked, text: pick(VAULT_EVENTS.napInVault)(locked, lpr) });
+      ep.chalMemberScores[locked] = (ep.chalMemberScores[locked] || 0) - 1;
     } else if (ls.mental >= 6) {
       lockedReaction = 'workInside';
       lockedBonus = 0.1;

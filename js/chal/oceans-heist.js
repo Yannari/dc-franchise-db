@@ -747,7 +747,7 @@ function _ohShell(content, ep) {
 /* Layout */
 .oh-layout{display:flex;gap:0;position:relative;z-index:5;min-height:300px}
 .oh-feed{flex:1;padding:14px 18px;min-width:0}
-.oh-sidebar{width:220px;flex-shrink:0;padding:10px 14px;background:rgba(0,0,0,0.3);
+.oh-sidebar{width:280px;flex-shrink:0;padding:12px 16px;background:rgba(0,0,0,0.3);
   border-left:1px solid rgba(34,211,238,0.08);position:sticky;top:0;align-self:flex-start;max-height:80vh;overflow-y:auto}
 
 /* HUD */
@@ -1289,59 +1289,116 @@ function _ohBuildVaultSidebarFromData(vc, revCount) {
   for (let i = 0; i < vc.tribes.length; i++) {
     const vt = vc.tribes[i];
     const shown = i + 1 < revCount;
-    sb += `<div style="padding:5px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:3px;opacity:${shown ? 1 : 0.4}">
-      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--heist-cyan)">${vt.tribe}</div>
-      ${shown ? `<div style="font-size:8px;color:rgba(255,255,255,0.4);margin-top:2px">🔒 ${vt.locked} locked (${vt.lockedReaction})</div>
-      <div style="font-size:8px;color:rgba(255,255,255,0.3)">${vt.crackers.length} crackers</div>
-      <div style="margin-top:3px;height:4px;background:rgba(0,0,0,0.3);border-radius:2px;overflow:hidden">
-        <div style="height:100%;width:${Math.min(100, vt.score * 100)}%;background:var(--heist-cyan);border-radius:2px"></div>
-      </div>` : '<div style="font-size:8px;color:rgba(255,255,255,0.15)">LOCKED</div>'}
+    const reactionIcon = vt.lockedReaction === 'panic' ? '😰' : vt.lockedReaction === 'nap' ? '😴' : '🔧';
+    sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;opacity:${shown ? 1 : 0.4}">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--heist-cyan);margin-bottom:4px">${vt.tribe}</div>
+      ${shown ? `
+      <div style="display:flex;align-items:center;gap:6px;padding:4px;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.12);border-radius:3px;margin-bottom:4px">
+        ${_ohSidePortrait(vt.locked, 22)}
+        <div><div style="font-size:8px;color:var(--heist-gold)">🔒 ${vt.locked}</div>
+        <div style="font-size:7px;color:rgba(255,255,255,0.3)">${reactionIcon} ${vt.lockedReaction}</div></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px">
+        ${vt.crackers.map(n => {
+          const a = vt.approaches.find(ap => ap.name === n);
+          const aIcon = a?.approach === 'lockpick' ? '🔓' : a?.approach === 'bruteForce' ? '💪' : '🗣️';
+          return `<div style="display:flex;align-items:center;gap:3px;padding:2px 4px;background:rgba(34,211,238,0.06);border-radius:3px">
+            ${_ohSidePortrait(n, 18)}<span style="font-size:7px">${aIcon}</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="height:5px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${Math.min(100, vt.score * 100)}%;background:var(--heist-cyan);border-radius:3px"></div>
+      </div>
+      <div style="font-size:7px;color:rgba(255,255,255,0.3);margin-top:2px;font-family:'Share Tech Mono',monospace">${vt.score.toFixed(2)}</div>
+      ` : '<div style="font-size:9px;color:rgba(255,255,255,0.15)">LOCKED</div>'}
     </div>`;
   }
   sb += `<div class="oh-side-sec">CRACK ORDER</div>`;
   for (let i = 0; i < vc.tribes.length; i++) {
     const shown = i + 1 < revCount;
-    sb += `<div style="font-size:9px;color:${shown ? 'var(--heist-green)' : 'rgba(255,255,255,0.15)'};padding:2px 0;font-family:'Share Tech Mono',monospace">
-      ${i + 1}. ${shown ? vc.tribes[i].tribe : '???'}${i === 0 && shown ? ' 🏆' : ''}
+    sb += `<div style="display:flex;align-items:center;gap:6px;font-size:10px;color:${shown ? 'var(--heist-green)' : 'rgba(255,255,255,0.15)'};padding:3px 0;font-family:'Share Tech Mono',monospace">
+      <span style="width:16px;text-align:center;font-weight:700">${i + 1}</span>
+      <span>${shown ? vc.tribes[i].tribe : '???'}</span>${i === 0 && shown ? '<span style="font-size:8px"> 🏆</span>' : ''}
     </div>`;
   }
   return sb;
 }
 
 function _ohBuildHeistSidebarFromData(heist, revCount) {
+  const latestEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+  const crewRoles = latestEp?.oceansHeist?.crewRoles || {};
   let sb = `<div class="oh-side-sec">SECURITY STATUS</div>`;
   for (let i = 0; i < heist.tribes.length; i++) {
     const ht = heist.tribes[i];
     const shown = i + 1 < revCount;
-    sb += `<div style="padding:5px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:3px;opacity:${shown ? 1 : 0.4}">
-      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--heist-cyan)">${ht.tribe}${ht.hasEquipment ? ' 🔧' : ''}</div>
-      ${shown ? `<div style="font-size:8px;color:var(--heist-gold);margin-top:2px">💰 $${ht.totalLoot * 100}k loot</div>
-      <div style="font-size:8px;color:rgba(255,255,255,0.3)">Score: ${ht.score}</div>` : '<div style="font-size:8px;color:rgba(255,255,255,0.15)">IN PROGRESS</div>'}
+    const roles = crewRoles[ht.tribe] || {};
+    const members = Object.keys(ht.memberResults || {});
+    sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;opacity:${shown ? 1 : 0.4}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--heist-cyan)">${ht.tribe}</div>
+        ${ht.hasEquipment ? '<span style="font-size:8px;color:var(--heist-green)">🔧 EQUIPPED</span>' : ''}
+      </div>
+      ${shown ? `
+      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px">
+        ${members.map(n => {
+          const r = roles[n] || { emoji: '🎭' };
+          const mr = ht.memberResults[n];
+          const passed = mr ? mr.obstacles.filter(o => o.passed).length : 0;
+          const total = mr ? mr.obstacles.filter(o => o.type !== 'loot').length : 0;
+          return `<div style="display:flex;align-items:center;gap:3px;padding:2px 4px;background:rgba(0,0,0,0.15);border-radius:3px" title="${n}: ${passed}/${total} obstacles">
+            ${_ohSidePortrait(n, 18)}<span style="font-size:7px">${r.emoji}</span><span style="font-size:7px;color:${passed >= total ? 'var(--heist-green)' : passed > 0 ? 'var(--heist-gold)' : 'var(--heist-red)'}">${passed}/${total}</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:8px;font-size:8px">
+        <span style="color:var(--heist-gold)">💰 $${ht.totalLoot * 100}k</span>
+        <span style="color:rgba(255,255,255,0.3)">Score: ${ht.score}</span>
+      </div>
+      ` : '<div style="font-size:9px;color:rgba(255,255,255,0.15)">IN PROGRESS</div>'}
     </div>`;
   }
   return sb;
 }
 
 function _ohBuildGetawaySidebarFromData(gw, revCount) {
+  const latestEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+  const crewRoles = latestEp?.oceansHeist?.crewRoles || {};
   let sb = `<div class="oh-side-sec">RACE POSITIONS</div>`;
   const latestRound = gw.raceRounds.filter((_, i) => i + 3 < revCount).pop();
   const positions = latestRound ? latestRound.positions.sort((a, b) => b.distance - a.distance) : gw.tribes.map(g => ({ tribe: g.tribe, distance: 0 }));
   for (const pos of positions) {
     const gt = gw.tribes.find(g => g.tribe === pos.tribe);
+    const roles = crewRoles[pos.tribe] || {};
     const pct = Math.min(100, pos.distance);
-    sb += `<div style="padding:4px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:3px">
-      <div style="display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:9px">
-        <span style="color:var(--heist-cyan)">${pos.tribe}</span>
-        <span style="color:${gt?.crashed ? 'var(--heist-red)' : gt?.finished ? 'var(--heist-green)' : 'rgba(255,255,255,0.4)'}">${gt?.crashed ? '💥' : gt?.finished ? '🏁' : `${Math.round(pct)}%`}</span>
+    const statusIcon = gt?.crashed ? '💥' : gt?.finished ? '🏁' : gt?.outOfGas ? '⛽' : '🏎️';
+    const statusColor = gt?.crashed ? 'var(--heist-red)' : gt?.finished ? 'var(--heist-green)' : 'rgba(255,255,255,0.4)';
+    sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+        <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--heist-cyan)">${pos.tribe}</span>
+        <span style="font-size:10px;color:${statusColor}">${statusIcon} ${Math.round(pct)}%</span>
       </div>
-      <div style="height:4px;background:rgba(0,0,0,0.3);border-radius:2px;overflow:hidden;margin-top:2px">
-        <div style="height:100%;width:${pct}%;background:${gt?.crashed ? 'var(--heist-red)' : 'var(--heist-green)'};border-radius:2px"></div>
+      <div style="height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden;margin-bottom:4px">
+        <div style="height:100%;width:${pct}%;background:${gt?.crashed ? 'var(--heist-red)' : 'var(--heist-green)'};border-radius:3px;transition:width 0.3s"></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px">
+        ${(gt?.members || []).map(n => {
+          const r = roles[n] || { emoji: '🎭' };
+          return `<div style="display:flex;align-items:center;gap:2px;padding:1px 3px;background:rgba(0,0,0,0.15);border-radius:2px">
+            ${_ohSidePortrait(n, 16)}<span style="font-size:7px">${r.emoji}</span>
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
   }
   sb += `<div class="oh-side-sec">BUILD QUALITY</div>`;
   for (const gt of gw.tribes) {
-    sb += `<div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(255,255,255,0.4);padding:2px 0">${gt.tribe}: ${Math.round(gt.buildQuality * 100)}%</div>`;
+    const qualPct = Math.round(gt.buildQuality * 100);
+    const qualColor = qualPct > 50 ? 'var(--heist-green)' : qualPct > 30 ? 'var(--heist-gold)' : 'var(--heist-red)';
+    sb += `<div style="display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 0">
+      <span style="color:rgba(255,255,255,0.4)">${gt.tribe}</span>
+      <span style="color:${qualColor}">${qualPct}%</span>
+    </div>`;
   }
   return sb;
 }

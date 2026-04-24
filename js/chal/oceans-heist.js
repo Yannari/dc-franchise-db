@@ -681,7 +681,7 @@ export function rpBuildOceansHeistTitleCard(ep) {
       crewCards += `<div style="text-align:center;width:60px">
         ${_ohPortrait(name, 36)}
         <div style="font-size:8px;color:rgba(255,255,255,0.7);margin-top:2px">${name.split(' ')[0]}</div>
-        <div style="font-size:7px;color:var(--heist-gold);font-family:'Share Tech Mono',monospace">${r.emoji} ${r.role}</div>
+        <div style="font-size:9px;color:var(--heist-gold);font-family:'Share Tech Mono',monospace">${r.emoji} ${r.role}</div>
       </div>`;
     }
     crewCards += `</div></div>`;
@@ -779,7 +779,7 @@ function _ohShell(content, ep) {
 .oh-hud-cell{flex:1;text-align:center;padding:4px 12px;border-right:1px solid rgba(34,211,238,0.06)}
 .oh-hud-cell:last-child{border-right:none}
 .oh-hud-val{font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:700}
-.oh-hud-lbl{font-size:7px;letter-spacing:2px;color:rgba(34,211,238,0.4);text-transform:uppercase;margin-top:2px;font-family:'Share Tech Mono',monospace}
+.oh-hud-lbl{font-size:9px;letter-spacing:2px;color:rgba(34,211,238,0.4);text-transform:uppercase;margin-top:2px;font-family:'Share Tech Mono',monospace}
 
 /* Event cards */
 .oh-ev{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;margin-bottom:6px;
@@ -809,7 +809,7 @@ function _ohShell(content, ep) {
   border:1px solid rgba(255,255,255,0.1);border-radius:4px;cursor:pointer;font-family:'Share Tech Mono',monospace}
 
 /* Side section */
-.oh-side-sec{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;
+.oh-side-sec{font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;
   color:var(--heist-cyan);text-transform:uppercase;padding:6px 0 4px;
   border-bottom:1px solid rgba(34,211,238,0.1);margin-top:8px}
 .oh-side-sec:first-child{margin-top:0}
@@ -906,11 +906,18 @@ export function rpBuildOceansHeistVault(ep) {
     // Each event as its own card
     for (const evt of vt.events) {
       if (evt.type === 'cracked') {
+        const scorePct = Math.min(100, Math.round(vt.score * 33));
         steps.push({ type: 'crack', tribe: vt.tribe, html: `<div class="oh-ev" style="border-left-color:var(--heist-green);padding:14px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.15);border-radius:6px">
           <div style="font-size:28px">🔓</div>
           <div style="flex:1">
             <div class="oh-ev-badge green" style="font-size:10px;padding:3px 10px">VAULT OPEN!</div>
             <div style="font-size:15px;color:var(--heist-green);font-weight:700;margin-top:4px">${evt.text}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+              <div style="flex:1;height:8px;background:rgba(0,0,0,0.3);border-radius:4px;overflow:hidden">
+                <div style="height:100%;width:${scorePct}%;background:var(--heist-green);border-radius:4px"></div>
+              </div>
+              <span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--heist-green)">${vt.score.toFixed(1)} pts</span>
+            </div>
           </div>
         </div>` });
       } else if (evt.type === 'slapFight') {
@@ -960,9 +967,9 @@ export function rpBuildOceansHeistVault(ep) {
       const idx = vc.tribes.indexOf(vt) + 1;
       const shown = idx < revCount;
       sb += `<div style="padding:5px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:3px;opacity:${shown ? 1 : 0.4}">
-        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--heist-cyan)">${vt.tribe}</div>
-        ${shown ? `<div style="font-size:8px;color:rgba(255,255,255,0.4);margin-top:2px">🔒 ${vt.locked} locked</div>
-        <div style="font-size:8px;color:rgba(255,255,255,0.3)">${vt.crackers.length} crackers</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan)">${vt.tribe}</div>
+        ${shown ? `<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px">🔒 ${vt.locked} locked</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3)">${vt.crackers.length} crackers</div>
         <div style="margin-top:3px;height:4px;background:rgba(0,0,0,0.3);border-radius:2px;overflow:hidden">
           <div style="height:100%;width:${Math.min(100, vt.score * 100)}%;background:var(--heist-cyan);border-radius:2px"></div>
         </div>` : '<div style="font-size:8px;color:rgba(255,255,255,0.15)">LOCKED</div>'}
@@ -1064,9 +1071,9 @@ export function rpBuildOceansHeistHeist(ep) {
       const ht = heist.tribes[i];
       const shown = i + 1 < revCount;
       sb += `<div style="padding:5px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:3px;opacity:${shown ? 1 : 0.4}">
-        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--heist-cyan)">${ht.tribe}${ht.hasEquipment ? ' 🔧' : ''}</div>
-        ${shown ? `<div style="font-size:8px;color:var(--heist-gold);margin-top:2px">💰 $${ht.totalLoot * 100}k loot</div>
-        <div style="font-size:8px;color:rgba(255,255,255,0.3)">Score: ${ht.score}</div>` : '<div style="font-size:8px;color:rgba(255,255,255,0.15)">IN PROGRESS</div>'}
+        <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan)">${ht.tribe}${ht.hasEquipment ? ' 🔧' : ''}</div>
+        ${shown ? `<div style="font-size:10px;color:var(--heist-gold);margin-top:2px">💰 $${ht.totalLoot * 100}k loot</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3)">Score: ${ht.score}</div>` : '<div style="font-size:8px;color:rgba(255,255,255,0.15)">IN PROGRESS</div>'}
       </div>`;
     }
     return sb;
@@ -1129,7 +1136,7 @@ export function rpBuildOceansHeistGetaway(ep) {
     const qualPct = Math.round(gt.buildQuality * 100);
     const qualColor = qualPct > 50 ? 'var(--heist-green)' : qualPct > 30 ? 'var(--heist-gold)' : 'var(--heist-red)';
     buildHtml += `<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
-      <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--heist-cyan);width:60px">${gt.tribe}</span>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan);width:60px">${gt.tribe}</span>
       <div style="flex:1;height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden">
         <div style="height:100%;width:${qualPct}%;background:${qualColor};border-radius:3px"></div>
       </div>
@@ -1195,7 +1202,7 @@ export function rpBuildOceansHeistGetaway(ep) {
     }
     sb += `<div class="oh-side-sec">BUILD QUALITY</div>`;
     for (const gt of gw.tribes) {
-      sb += `<div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(255,255,255,0.4);padding:2px 0">${gt.tribe}: ${Math.round(gt.buildQuality * 100)}%</div>`;
+      sb += `<div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);padding:2px 0">${gt.tribe}: ${Math.round(gt.buildQuality * 100)}%</div>`;
     }
     return sb;
   }
@@ -1301,7 +1308,7 @@ export function rpBuildOceansHeistResults(ep) {
         <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:rgba(255,255,255,0.3);width:20px;text-align:center">${i + 1}</div>
         ${_ohSidePortrait(name, 24)}
         <div style="flex:1;font-size:11px;color:rgba(255,255,255,0.8)">${name}</div>
-        ${medal ? `<span style="font-size:7px;font-family:'Share Tech Mono',monospace;letter-spacing:1px;color:${medalColor}">${medal}</span>` : ''}
+        ${medal ? `<span style="font-size:9px;font-family:'Share Tech Mono',monospace;letter-spacing:1px;color:${medalColor}">${medal}</span>` : ''}
         <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-gold)">${score}</div>
       </div>`;
     }
@@ -1341,26 +1348,26 @@ function _ohBuildVaultSidebarFromData(vc, revCount) {
     const shown = i + 1 < revCount;
     const reactionIcon = vt.lockedReaction === 'panic' ? '😰' : vt.lockedReaction === 'nap' ? '😴' : '🔧';
     sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;opacity:${shown ? 1 : 0.4}">
-      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--heist-cyan);margin-bottom:4px">${vt.tribe}</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan);margin-bottom:4px">${vt.tribe}</div>
       ${shown ? `
       <div style="display:flex;align-items:center;gap:6px;padding:4px;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.12);border-radius:3px;margin-bottom:4px">
         ${_ohSidePortrait(vt.locked, 22)}
-        <div><div style="font-size:8px;color:var(--heist-gold)">🔒 ${vt.locked}</div>
-        <div style="font-size:7px;color:rgba(255,255,255,0.3)">${reactionIcon} ${vt.lockedReaction}</div></div>
+        <div><div style="font-size:10px;color:var(--heist-gold)">🔒 ${vt.locked}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.3)">${reactionIcon} ${vt.lockedReaction}</div></div>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px">
         ${vt.crackers.map(n => {
           const a = vt.approaches.find(ap => ap.name === n);
           const aIcon = a?.approach === 'lockpick' ? '🔓' : a?.approach === 'bruteForce' ? '💪' : '🗣️';
           return `<div style="display:flex;align-items:center;gap:3px;padding:2px 4px;background:rgba(34,211,238,0.06);border-radius:3px">
-            ${_ohSidePortrait(n, 18)}<span style="font-size:7px">${aIcon}</span>
+            ${_ohSidePortrait(n, 18)}<span style="font-size:9px">${aIcon}</span>
           </div>`;
         }).join('')}
       </div>
       <div style="height:5px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden">
         <div style="height:100%;width:${Math.min(100, vt.score * 100)}%;background:var(--heist-cyan);border-radius:3px"></div>
       </div>
-      <div style="font-size:7px;color:rgba(255,255,255,0.3);margin-top:2px;font-family:'Share Tech Mono',monospace">${vt.score.toFixed(2)}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:2px;font-family:'Share Tech Mono',monospace">${vt.score.toFixed(2)}</div>
       ` : '<div style="font-size:9px;color:rgba(255,255,255,0.15)">LOCKED</div>'}
     </div>`;
   }
@@ -1386,7 +1393,7 @@ function _ohBuildHeistSidebarFromData(heist, revCount) {
     const members = Object.keys(ht.memberResults || {});
     sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;opacity:${shown ? 1 : 0.4}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--heist-cyan)">${ht.tribe}</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan)">${ht.tribe}</div>
         ${ht.hasEquipment ? '<span style="font-size:8px;color:var(--heist-green)">🔧 EQUIPPED</span>' : ''}
       </div>
       ${shown ? `
@@ -1397,7 +1404,7 @@ function _ohBuildHeistSidebarFromData(heist, revCount) {
           const passed = mr ? mr.obstacles.filter(o => o.passed).length : 0;
           const total = mr ? mr.obstacles.filter(o => o.type !== 'loot').length : 0;
           return `<div style="display:flex;align-items:center;gap:3px;padding:2px 4px;background:rgba(0,0,0,0.15);border-radius:3px" title="${n}: ${passed}/${total} obstacles">
-            ${_ohSidePortrait(n, 18)}<span style="font-size:7px">${r.emoji}</span><span style="font-size:7px;color:${passed >= total ? 'var(--heist-green)' : passed > 0 ? 'var(--heist-gold)' : 'var(--heist-red)'}">${passed}/${total}</span>
+            ${_ohSidePortrait(n, 18)}<span style="font-size:9px">${r.emoji}</span><span style="font-size:9px;color:${passed >= total ? 'var(--heist-green)' : passed > 0 ? 'var(--heist-gold)' : 'var(--heist-red)'}">${passed}/${total}</span>
           </div>`;
         }).join('')}
       </div>
@@ -1425,7 +1432,7 @@ function _ohBuildGetawaySidebarFromData(gw, revCount) {
     const statusColor = gt?.crashed ? 'var(--heist-red)' : gt?.finished ? 'var(--heist-green)' : 'rgba(255,255,255,0.4)';
     sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-        <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--heist-cyan)">${pos.tribe}</span>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan)">${pos.tribe}</span>
         <span style="font-size:10px;color:${statusColor}">${statusIcon} ${Math.round(pct)}%</span>
       </div>
       <div style="height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden;margin-bottom:4px">
@@ -1435,7 +1442,7 @@ function _ohBuildGetawaySidebarFromData(gw, revCount) {
         ${(gt?.members || []).map(n => {
           const r = roles[n] || { emoji: '🎭' };
           return `<div style="display:flex;align-items:center;gap:2px;padding:1px 3px;background:rgba(0,0,0,0.15);border-radius:2px">
-            ${_ohSidePortrait(n, 16)}<span style="font-size:7px">${r.emoji}</span>
+            ${_ohSidePortrait(n, 16)}<span style="font-size:9px">${r.emoji}</span>
           </div>`;
         }).join('')}
       </div>

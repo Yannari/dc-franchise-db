@@ -1269,11 +1269,81 @@ function _ohUpdateSidebar(screenKey, revIdx) {
   const sideEl = document.getElementById(`oh-sidebar-${suffix}`);
   if (!sideEl) return;
 
-  const ep = gs.episodeHistory?.[gs.episodeHistory.length - 1] || window._currentEp;
-  if (!ep?.oceansHeist) return;
+  const latestEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+  const oh = latestEp?.oceansHeist;
+  if (!oh) return;
 
-  // Rebuild sidebar based on screen
-  // (simplified — each screen's sidebar builder handles its own state)
+  const revCount = revIdx + 1;
+
+  if (suffix === 'vault' && oh.vaultCrack) {
+    sideEl.innerHTML = _ohBuildVaultSidebarFromData(oh.vaultCrack, revCount);
+  } else if (suffix === 'heist' && oh.heist) {
+    sideEl.innerHTML = _ohBuildHeistSidebarFromData(oh.heist, revCount);
+  } else if (suffix === 'getaway' && oh.getaway) {
+    sideEl.innerHTML = _ohBuildGetawaySidebarFromData(oh.getaway, revCount);
+  }
+}
+
+function _ohBuildVaultSidebarFromData(vc, revCount) {
+  let sb = `<div class="oh-side-sec">VAULT STATUS</div>`;
+  for (let i = 0; i < vc.tribes.length; i++) {
+    const vt = vc.tribes[i];
+    const shown = i + 1 < revCount;
+    sb += `<div style="padding:5px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:3px;opacity:${shown ? 1 : 0.4}">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--heist-cyan)">${vt.tribe}</div>
+      ${shown ? `<div style="font-size:8px;color:rgba(255,255,255,0.4);margin-top:2px">🔒 ${vt.locked} locked (${vt.lockedReaction})</div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.3)">${vt.crackers.length} crackers</div>
+      <div style="margin-top:3px;height:4px;background:rgba(0,0,0,0.3);border-radius:2px;overflow:hidden">
+        <div style="height:100%;width:${Math.min(100, vt.score * 100)}%;background:var(--heist-cyan);border-radius:2px"></div>
+      </div>` : '<div style="font-size:8px;color:rgba(255,255,255,0.15)">LOCKED</div>'}
+    </div>`;
+  }
+  sb += `<div class="oh-side-sec">CRACK ORDER</div>`;
+  for (let i = 0; i < vc.tribes.length; i++) {
+    const shown = i + 1 < revCount;
+    sb += `<div style="font-size:9px;color:${shown ? 'var(--heist-green)' : 'rgba(255,255,255,0.15)'};padding:2px 0;font-family:'Share Tech Mono',monospace">
+      ${i + 1}. ${shown ? vc.tribes[i].tribe : '???'}${i === 0 && shown ? ' 🏆' : ''}
+    </div>`;
+  }
+  return sb;
+}
+
+function _ohBuildHeistSidebarFromData(heist, revCount) {
+  let sb = `<div class="oh-side-sec">SECURITY STATUS</div>`;
+  for (let i = 0; i < heist.tribes.length; i++) {
+    const ht = heist.tribes[i];
+    const shown = i + 1 < revCount;
+    sb += `<div style="padding:5px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:3px;opacity:${shown ? 1 : 0.4}">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--heist-cyan)">${ht.tribe}${ht.hasEquipment ? ' 🔧' : ''}</div>
+      ${shown ? `<div style="font-size:8px;color:var(--heist-gold);margin-top:2px">💰 $${ht.totalLoot * 100}k loot</div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.3)">Score: ${ht.score}</div>` : '<div style="font-size:8px;color:rgba(255,255,255,0.15)">IN PROGRESS</div>'}
+    </div>`;
+  }
+  return sb;
+}
+
+function _ohBuildGetawaySidebarFromData(gw, revCount) {
+  let sb = `<div class="oh-side-sec">RACE POSITIONS</div>`;
+  const latestRound = gw.raceRounds.filter((_, i) => i + 3 < revCount).pop();
+  const positions = latestRound ? latestRound.positions.sort((a, b) => b.distance - a.distance) : gw.tribes.map(g => ({ tribe: g.tribe, distance: 0 }));
+  for (const pos of positions) {
+    const gt = gw.tribes.find(g => g.tribe === pos.tribe);
+    const pct = Math.min(100, pos.distance);
+    sb += `<div style="padding:4px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:3px">
+      <div style="display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:9px">
+        <span style="color:var(--heist-cyan)">${pos.tribe}</span>
+        <span style="color:${gt?.crashed ? 'var(--heist-red)' : gt?.finished ? 'var(--heist-green)' : 'rgba(255,255,255,0.4)'}">${gt?.crashed ? '💥' : gt?.finished ? '🏁' : `${Math.round(pct)}%`}</span>
+      </div>
+      <div style="height:4px;background:rgba(0,0,0,0.3);border-radius:2px;overflow:hidden;margin-top:2px">
+        <div style="height:100%;width:${pct}%;background:${gt?.crashed ? 'var(--heist-red)' : 'var(--heist-green)'};border-radius:2px"></div>
+      </div>
+    </div>`;
+  }
+  sb += `<div class="oh-side-sec">BUILD QUALITY</div>`;
+  for (const gt of gw.tribes) {
+    sb += `<div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(255,255,255,0.4);padding:2px 0">${gt.tribe}: ${Math.round(gt.buildQuality * 100)}%</div>`;
+  }
+  return sb;
 }
 
 export function oceansHeistRevealNext(screenKey, totalSteps) {

@@ -745,9 +745,9 @@ function _ohShell(content, ep) {
 .oh-shell{
   --heist-cyan:#22d3ee;--heist-red:#ef4444;--heist-gold:#fbbf24;
   --heist-green:#22c55e;--heist-dark:#0f172a;--heist-navy:#1e293b;
-  font-family:'Inter',sans-serif;color:#e2e0db;
+  font-family:'Inter',sans-serif;color:#e2e0db;font-size:14px;
   background:linear-gradient(180deg,#0a0e1a 0%,#0f172a 30%,#1e293b 60%,#0f172a 85%,#0a0e1a 100%);
-  padding:0;max-width:1100px;margin:0 auto;position:relative;min-height:400px;
+  padding:0;max-width:100%;margin:0 auto;position:relative;min-height:400px;
   overflow:clip;border:2px solid rgba(34,211,238,0.15);box-shadow:inset 0 0 60px rgba(0,0,0,0.5),0 0 20px rgba(34,211,238,0.05);
 }
 
@@ -763,14 +763,14 @@ function _ohShell(content, ep) {
 
 .oh-header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;position:relative;z-index:5;
   border-bottom:1px solid rgba(34,211,238,0.1)}
-.oh-title{font-family:'Black Ops One',sans-serif;font-size:20px;letter-spacing:4px;color:var(--heist-cyan);
+.oh-title{font-family:'Black Ops One',sans-serif;font-size:24px;letter-spacing:4px;color:var(--heist-cyan);
   text-shadow:0 0 20px rgba(34,211,238,0.3)}
-.oh-subtitle{font-size:10px;letter-spacing:2px;color:rgba(34,211,238,0.4);margin-top:2px;font-family:'Share Tech Mono',monospace}
+.oh-subtitle{font-size:12px;letter-spacing:2px;color:rgba(34,211,238,0.4);margin-top:4px;font-family:'Share Tech Mono',monospace}
 
 /* Layout */
 .oh-layout{display:flex;gap:0;position:relative;z-index:5;min-height:300px}
 .oh-feed{flex:1;padding:14px 18px;min-width:0}
-.oh-sidebar{width:280px;flex-shrink:0;padding:12px 16px;background:rgba(0,0,0,0.3);
+.oh-sidebar{width:300px;flex-shrink:0;padding:14px 18px;background:rgba(0,0,0,0.3);
   border-left:1px solid rgba(34,211,238,0.08);position:sticky;top:0;align-self:flex-start;max-height:80vh;overflow-y:auto}
 
 /* HUD */
@@ -778,17 +778,17 @@ function _ohShell(content, ep) {
   border-bottom:1px solid rgba(34,211,238,0.08);background:rgba(0,0,0,0.2)}
 .oh-hud-cell{flex:1;text-align:center;padding:4px 12px;border-right:1px solid rgba(34,211,238,0.06)}
 .oh-hud-cell:last-child{border-right:none}
-.oh-hud-val{font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:700}
-.oh-hud-lbl{font-size:7px;letter-spacing:2px;color:rgba(34,211,238,0.4);text-transform:uppercase;margin-top:2px;font-family:'Share Tech Mono',monospace}
+.oh-hud-val{font-family:'Share Tech Mono',monospace;font-size:24px;font-weight:700}
+.oh-hud-lbl{font-size:9px;letter-spacing:2px;color:rgba(34,211,238,0.4);text-transform:uppercase;margin-top:2px;font-family:'Share Tech Mono',monospace}
 
 /* Event cards */
-.oh-ev{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;margin-bottom:6px;
-  background:rgba(0,0,0,0.2);border-radius:4px;border-left:3px solid rgba(34,211,238,0.15);
-  position:relative;font-size:12px;line-height:1.5}
+.oh-ev{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;
+  background:rgba(0,0,0,0.2);border-radius:6px;border-left:3px solid rgba(34,211,238,0.15);
+  position:relative;font-size:14px;line-height:1.6}
 .oh-ev-port{flex-shrink:0;position:relative}
-.oh-ev-text{color:rgba(255,255,255,0.75);font-size:12px}
-.oh-ev-badge{display:inline-block;padding:2px 8px;font-size:8px;font-family:'Share Tech Mono',monospace;
-  letter-spacing:2px;text-transform:uppercase;border-radius:2px;margin-bottom:4px}
+.oh-ev-text{color:rgba(255,255,255,0.8);font-size:14px}
+.oh-ev-badge{display:inline-block;padding:3px 10px;font-size:10px;font-family:'Share Tech Mono',monospace;
+  letter-spacing:2px;text-transform:uppercase;border-radius:3px;margin-bottom:4px}
 .oh-ev-badge.cyan{border:1px solid var(--heist-cyan);color:var(--heist-cyan);background:rgba(34,211,238,0.06)}
 .oh-ev-badge.red{border:1px solid var(--heist-red);color:var(--heist-red);background:rgba(239,68,68,0.06)}
 .oh-ev-badge.gold{border:1px solid var(--heist-gold);color:var(--heist-gold);background:rgba(251,191,36,0.06)}
@@ -801,17 +801,17 @@ function _ohShell(content, ep) {
 
 /* Controls */
 .oh-controls{display:flex;gap:10px;justify-content:center;padding:16px 0;position:relative;z-index:5}
-.oh-btn-next{padding:10px 24px;font-family:'Black Ops One',sans-serif;font-size:13px;letter-spacing:2px;
+.oh-btn-next{padding:12px 28px;font-family:'Black Ops One',sans-serif;font-size:15px;letter-spacing:2px;
   background:rgba(34,211,238,0.1);color:var(--heist-cyan);border:2px solid var(--heist-cyan);
   border-radius:4px;cursor:pointer;text-transform:uppercase;transition:all 0.2s}
 .oh-btn-next:hover{background:rgba(34,211,238,0.2);box-shadow:0 0 15px rgba(34,211,238,0.2)}
-.oh-btn-all{padding:10px 18px;font-size:11px;background:none;color:rgba(255,255,255,0.3);
+.oh-btn-all{padding:12px 20px;font-size:12px;background:none;color:rgba(255,255,255,0.3);
   border:1px solid rgba(255,255,255,0.1);border-radius:4px;cursor:pointer;font-family:'Share Tech Mono',monospace}
 
 /* Side section */
-.oh-side-sec{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;
-  color:var(--heist-cyan);text-transform:uppercase;padding:6px 0 4px;
-  border-bottom:1px solid rgba(34,211,238,0.1);margin-top:8px}
+.oh-side-sec{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;
+  color:var(--heist-cyan);text-transform:uppercase;padding:8px 0 5px;
+  border-bottom:1px solid rgba(34,211,238,0.1);margin-top:10px}
 .oh-side-sec:first-child{margin-top:0}
 
 /* Laser grid */

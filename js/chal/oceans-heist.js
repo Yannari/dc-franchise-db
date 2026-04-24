@@ -173,35 +173,97 @@ const HEIST_EVENTS = {
 };
 
 const GETAWAY_EVENTS = {
+  // Build phase — per member
+  buildWeld: [
+    (p, pr) => `${p} welded the frame together with precision. Solid.`,
+    (p, pr) => `${p} hammered the chassis into shape. "That's not going anywhere."`,
+  ],
+  buildWeldFail: [
+    (p, pr) => `${p} welded the bumper on upside down. "Close enough."`,
+    (p, pr) => `${p} dropped the wrench into the engine. Twice.`,
+  ],
+  buildEngine: [
+    (p, pr) => `${p} tuned the engine until it purred. "Now THAT'S horsepower."`,
+    (p, pr) => `${p} rewired the ignition like a pro. First try.`,
+  ],
+  buildEngineFail: [
+    (p, pr) => `${p} connected the wrong wires. The engine coughed black smoke.`,
+    (p, pr) => `"Why are there bolts left over?" ${p} stared at the spare parts.`,
+  ],
+  buildArgue: [
+    (a, b) => `${a} and ${b} argued over the blueprint. "The wheels go ON THE BOTTOM!"`,
+    (a, b) => `"That's the steering wheel." "No, that's a pizza pan." ${a} and ${b} lost precious time.`,
+  ],
+  buildSabotage: [
+    (p, target) => `${p} snuck over and loosened a bolt on ${target}'s kart. Nobody saw.`,
+  ],
   goodBuild: [
     (tribe) => `${tribe}'s kart was a thing of beauty — sleek, fast, and surprisingly sturdy.`,
+    (tribe) => `${tribe}'s ride looked like a real getaway car. ${host()} was impressed.`,
   ],
   badBuild: [
     (tribe) => `${tribe}'s kart looked like it was held together with hope and duct tape.`,
+    (tribe) => `${tribe}'s kart started smoking before the race even began. Not great.`,
   ],
-  propObstacle: [
-    (p, pr) => `A fake log truck rolled across the road! ${p} swerved hard!`,
-    (p, pr) => `A police roadblock prop appeared! ${p} plowed straight through it — it was cardboard!`,
-    (p, pr) => `A spaceship backdrop fell across the track! ${p} barely dodged it.`,
+  // Race — driver events
+  driverDodge: [
+    (p, pr) => `${p} swerved around a prop barricade! Smooth hands on the wheel.`,
+    (p, pr) => `A fake police car slid across the road! ${p} cut through the gap perfectly.`,
+    (p, pr) => `Cardboard buildings collapsed across the track! ${p} threaded the needle.`,
   ],
-  propCrash: [
-    (p, pr) => `${p} smashed right into a movie prop! Pieces flew everywhere.`,
+  driverCrash: [
+    (p, pr) => `${p} smashed right into a prop wall! Pieces flew everywhere.`,
+    (p, pr) => `${p} clipped a fake fire hydrant — the kart spun out!`,
   ],
-  breakdown: [
-    (tribe) => `${tribe}'s kart sputtered and a wheel wobbled dangerously.`,
-    (tribe) => `Something fell off ${tribe}'s kart. "Was that important?" "KEEP DRIVING!"`,
+  // Race — navigator events
+  navShortcut: [
+    (p, pr) => `"LEFT! GO LEFT!" ${p} spotted a shortcut through the back lot.`,
+    (p, pr) => `${p} read the track like a map. "Cut through that alley — trust me."`,
+  ],
+  navWrongTurn: [
+    (p, pr) => `"Turn here!" ${p} sent the team into a dead end. "...My bad."`,
+    (p, pr) => `${p} misread the signs. They drove in a circle for ten seconds.`,
+  ],
+  // Race — mechanic events
+  mechFix: [
+    (p, pr) => `The engine sputtered! ${p} leaned over and smacked something. It worked.`,
+    (p, pr) => `A belt snapped mid-race! ${p} jury-rigged a fix with ${pr.posAdj} shoelace.`,
+  ],
+  mechFail: [
+    (p, pr) => `The kart broke down! ${p} tried to fix it but made it worse.`,
+    (p, pr) => `Smoke poured from the hood. ${p} opened it and a spring launched into ${pr.posAdj} face.`,
+  ],
+  // Race — crew events (anyone)
+  crewPush: [
+    (p, pr) => `${p} jumped out and PUSHED the kart uphill! Pure muscle.`,
+    (p, pr) => `The engine stalled! ${p} got out and shoved from behind.`,
+  ],
+  crewThrow: [
+    (p, target, pr) => `${p} hurled a hubcap at ${target}'s kart! Direct hit.`,
+    (p, target, pr) => `${p} chucked a spare tire at ${target}! "CATCH!"`,
+  ],
+  crewCheer: [
+    (p, driver) => `"FLOOR IT!" ${p} screamed at ${driver}. The kart surged forward.`,
+    (p, driver) => `${p} started banging on the dashboard. "GO GO GO!" Somehow it helped.`,
+  ],
+  // Race — team events
+  nitroBoost: [
+    (tribe) => `${tribe}'s kart hit a nitro strip! WHOOSH — they rocketed ahead!`,
+  ],
+  tireBlowout: [
+    (tribe) => `${tribe} blew a tire! The kart scraped along on three wheels.`,
   ],
   outOfGas: [
-    (tribe) => `${tribe}'s kart ran out of gas! They had to push it the last stretch!`,
+    (tribe) => `${tribe}'s kart sputtered and died! They had to push it the last stretch!`,
   ],
   crashNearFinish: [
     (tribe) => `${tribe} was in the lead but their kart FLIPPED near the finish line!`,
   ],
-  sabotage: [
-    (a, b) => `Someone from ${a} tossed a wrench at ${b}'s kart!`,
-  ],
   finishStrong: [
-    (tribe) => `${tribe} rocketed across the finish line!`,
+    (tribe) => `${tribe} rocketed across the finish line! 🏁`,
+  ],
+  finishLimp: [
+    (tribe) => `${tribe} limped across the finish line, kart barely holding together.`,
   ],
 };
 
@@ -242,31 +304,33 @@ export function simulateOceansHeist(ep, tribes) {
   _simulateGetaway(ep, tribeMembers, result);
 
   // ── FINAL SCORING ──
-  // Vault: first=+10, second=+5, third=+2
-  const vaultOrder = result.vaultCrack.tribes.sort((a, b) => b.score - a.score);
-  const vaultBonuses = [10, 5, 2];
-  vaultOrder.forEach((vt, i) => {
-    result.tribeScores[vt.tribe] = (result.tribeScores[vt.tribe] || 0) + (vaultBonuses[i] || 1);
-  });
+  // Phase 1 (Vault): individual scores only, no tribe points
+  // chalMemberScores already populated during vault sim
 
-  // Heist: averaged per member × 30
+  // Phase 2 (Heist): 60% weight — averaged loot per member, normalized to 60-point scale
+  const maxHeistLoot = Math.max(1, ...result.heist.tribes.map(ht => {
+    const mc = tribeMembers.find(t => t.name === ht.tribe)?.members.length || 1;
+    return ht.score / mc;
+  }));
   for (const ht of result.heist.tribes) {
     const memberCount = tribeMembers.find(t => t.name === ht.tribe)?.members.length || 1;
-    result.tribeScores[ht.tribe] = (result.tribeScores[ht.tribe] || 0) + (ht.score / memberCount) * 30;
+    result.tribeScores[ht.tribe] = (result.tribeScores[ht.tribe] || 0) + ((ht.score / memberCount) / maxHeistLoot) * 60;
   }
 
-  // Getaway: race position bonus
-  const getawayOrder = result.getaway.tribes.sort((a, b) => b.distance - a.distance);
-  const getawayBonuses = [15, 8, 3];
-  getawayOrder.forEach((gt, i) => {
-    result.tribeScores[gt.tribe] = (result.tribeScores[gt.tribe] || 0) + (getawayBonuses[i] || 1);
+  // Phase 3 (Getaway): 40% weight — finish order + distance for non-finishers
+  // Finished teams ranked by finish order, then non-finishers by distance
+  const getawaySorted = [...result.getaway.tribes].sort((a, b) => {
+    if (a.finished && !b.finished) return -1;
+    if (!a.finished && b.finished) return 1;
+    if (a.finished && b.finished) return a.finishOrder - b.finishOrder;
+    if (a.crashed && !b.crashed) return 1;
+    if (!a.crashed && b.crashed) return -1;
+    return b.distance - a.distance;
   });
-
-  // Add averaged combat scores
-  for (const tribe of tribeMembers) {
-    const sum = tribe.members.reduce((s, n) => s + (ep.chalMemberScores[n] || 0), 0);
-    result.tribeScores[tribe.name] = (result.tribeScores[tribe.name] || 0) + (sum / tribe.members.length);
-  }
+  const getawayPoints = [40, 25, 12, 5, 2];
+  getawaySorted.forEach((gt, i) => {
+    result.tribeScores[gt.tribe] = (result.tribeScores[gt.tribe] || 0) + (getawayPoints[i] || 1);
+  });
 
   const sorted = Object.entries(result.tribeScores).sort((a, b) => b[1] - a[1]);
   const winnerName = sorted[0][0];
@@ -289,8 +353,8 @@ export function simulateOceansHeist(ep, tribes) {
     winner: winnerName,
     loser: loserName,
     tribeScores: { ...result.tribeScores },
-    vaultOrder: vaultOrder.map(v => v.tribe),
-    getawayOrder: getawayOrder.map(g => g.tribe),
+    vaultOrder: result.vaultCrack.tribes.map(v => v.tribe),
+    getawayOrder: [...result.getaway.tribes].sort((a, b) => b.distance - a.distance).map(g => g.tribe),
   };
 
   return ep;
@@ -404,103 +468,136 @@ function _simulateVaultCrack(ep, tribeMembers, result) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// PHASE 2: THE HEIST
+// PHASE 2: THE HEIST — 5-round gauntlet
 // ══════════════════════════════════════════════════════════════
+const HEIST_ROUNDS = 5;
+const VAULT_LOOT_PER_PLAYER = 2;
+const OBSTACLE_SEQUENCE = ['laser', 'camera', 'alarm', 'vault'];
+
 function _simulateHeist(ep, tribeMembers, result) {
   const equipmentTribe = result.vaultCrack.firstTribe;
+  const minSize = Math.min(...tribeMembers.map(t => t.members.length));
 
   for (const tribe of tribeMembers) {
     const members = tribe.members;
     const hasEquipment = tribe.name === equipmentTribe;
-    const events = [];
-    let totalScore = 0;
-    const memberResults = {};
+    const rounds = [];
+    let totalLoot = 0;
+    const memberTotals = {};
+    members.forEach(n => { memberTotals[n] = { loot: 0, vaultReaches: 0, totalObstacles: 0, benchedRounds: 0 }; });
+    const sitOuts = members.length - minSize;
 
+    // Special entrance events (once, before round 1)
+    const entranceEvents = [];
     for (const name of members) {
-      const s = pStats(name);
       const pr = pronouns(name);
-      const isVillain = isVillainArch(name);
-      const isNice = isNiceArch(name);
-      const equipBonus = hasEquipment ? 0.05 : 0;
-      const criminalBonus = isVillain ? 0.03 : 0;
-      let memberScore = 0;
-      const obstacles = [];
-
-      // Criminal bonus event
-      if (isVillain && Math.random() < 0.4) {
-        events.push({ type: 'criminalBonus', player: name, text: pick(HEIST_EVENTS.criminalBonus)(name, pr) });
+      if (isVillainArch(name) && Math.random() < 0.4) {
+        entranceEvents.push({ type: 'criminalBonus', player: name, text: pick(HEIST_EVENTS.criminalBonus)(name, pr) });
       }
-
-      // Hesitation for nice archetypes
-      if (isNice && Math.random() < 0.3) {
-        events.push({ type: 'hesitation', player: name, text: pick(HEIST_EVENTS.hesitation)(name, pr) });
+      if (isNiceArch(name) && Math.random() < 0.3) {
+        entranceEvents.push({ type: 'hesitation', player: name, text: pick(HEIST_EVENTS.hesitation)(name, pr) });
       }
-
-      // 1. Laser Grid
-      const laserCheck = s.physical * 0.04 + s.boldness * 0.03 + equipBonus + criminalBonus + noise(0.2);
-      const laserPass = laserCheck > 0.4 - (isNice ? 0.02 : 0);
-      obstacles.push({ type: 'laser', passed: laserPass, score: laserCheck });
-      if (laserPass) {
-        events.push({ type: 'laserDodge', player: name, text: pick(HEIST_EVENTS.laserDodge)(name, pr) });
-        memberScore += 2;
-      } else {
-        events.push({ type: 'laserFail', player: name, text: pick(HEIST_EVENTS.laserFail)(name, pr) });
-      }
-
-      // 2. Security Camera
-      const cameraCheck = s.intuition * 0.05 + s.strategic * 0.03 + equipBonus + criminalBonus + noise(0.2);
-      const cameraPass = cameraCheck > 0.38;
-      obstacles.push({ type: 'camera', passed: cameraPass, score: cameraCheck });
-      if (cameraPass) {
-        events.push({ type: 'cameraDodge', player: name, text: pick(HEIST_EVENTS.cameraDodge)(name, pr) });
-        memberScore += 2;
-      } else {
-        events.push({ type: 'cameraFail', player: name, text: pick(HEIST_EVENTS.cameraFail)(name, pr) });
-      }
-
-      // 3. Alarm Wire
-      const alarmCheck = s.mental * 0.05 + s.strategic * 0.04 + equipBonus + criminalBonus + noise(0.2);
-      const alarmPass = alarmCheck > 0.42;
-      obstacles.push({ type: 'alarm', passed: alarmPass, score: alarmCheck });
-      if (alarmPass) {
-        events.push({ type: 'alarmDefuse', player: name, text: pick(HEIST_EVENTS.alarmDefuse)(name, pr) });
-        memberScore += 2;
-      } else {
-        events.push({ type: 'alarmFail', player: name, text: pick(HEIST_EVENTS.alarmFail)(name, pr) });
-      }
-
-      // 4. Loot Grab — greed vs speed
-      const greedCheck = s.boldness * 0.04 - s.temperament * 0.03 + noise(0.15);
-      const isGreedy = greedCheck > 0.1;
-      const lootAmount = isGreedy ? 3 : 2;
-      const lootPenalty = isGreedy ? -0.05 : 0; // slower escape
-      obstacles.push({ type: 'loot', greedy: isGreedy, amount: lootAmount });
-      if (isGreedy) {
-        events.push({ type: 'lootGreed', player: name, text: pick(HEIST_EVENTS.lootGreed)(name, pr) });
-      } else {
-        events.push({ type: 'lootGrab', player: name, text: pick(HEIST_EVENTS.lootGrab)(name, pr) });
-      }
-      memberScore += lootAmount;
-
-      memberResults[name] = { obstacles, score: memberScore, greedy: isGreedy };
-      totalScore += memberScore;
-      ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + memberScore;
     }
 
-    // Vault door — collective push
-    const pushScore = members.reduce((s, n) => s + pStats(n).physical * 0.03 + pStats(n).endurance * 0.02, 0) / members.length + (hasEquipment ? 0.05 : 0) + noise(0.1);
-    const vaultOpen = pushScore > 0.3;
-    if (vaultOpen) {
-      events.push({ type: 'vaultPush', tribe: tribe.name, text: pick(HEIST_EVENTS.vaultPush)(tribe.name) });
-      totalScore += 3;
-    } else {
-      events.push({ type: 'vaultStuck', tribe: tribe.name, text: pick(HEIST_EVENTS.vaultStuck)(tribe.name) });
+    // Track per-player momentum across rounds
+    const prevRoundReached = {};
+    members.forEach(n => { prevRoundReached[n] = false; });
+
+    for (let rd = 0; rd < HEIST_ROUNDS; rd++) {
+      // Rotate bench: pick sitOuts players to sit, rotating by round index
+      let benched = [];
+      if (sitOuts > 0) {
+        const rotated = [...members].sort((a, b) => {
+          const aIdx = members.indexOf(a);
+          const bIdx = members.indexOf(b);
+          return ((aIdx + rd) % members.length) - ((bIdx + rd) % members.length);
+        });
+        benched = rotated.slice(0, sitOuts);
+        for (const n of benched) memberTotals[n].benchedRounds++;
+      }
+
+      const roundEvents = [];
+      const activeMembers = members.filter(n => !benched.includes(n));
+      let alive = [...activeMembers]; // only active players start
+      const roundResults = {};
+      members.forEach(n => { roundResults[n] = { obstacles: [], eliminated: false, reachedVault: false, benched: benched.includes(n) }; });
+      const equipBonus = hasEquipment ? 0.05 : 0;
+      // Security tightens slightly in later rounds
+      const fatigue = rd * 0.015;
+
+      for (const obsType of OBSTACLE_SEQUENCE) {
+        const survivors = [];
+        for (const name of alive) {
+          const s = pStats(name);
+          const pr = pronouns(name);
+          // Momentum: previous vault reach gives confidence, previous fail shakes you
+          const momentum = prevRoundReached[name] ? 0.04 : (rd > 0 ? -0.02 : 0);
+
+          if (obsType === 'vault') {
+            roundResults[name].reachedVault = true;
+            survivors.push(name);
+            continue;
+          }
+
+          let check, threshold;
+          if (obsType === 'laser') {
+            check = s.physical * 0.03 + s.boldness * 0.02 + equipBonus + momentum + noise(0.4);
+            threshold = 0.24 + fatigue;
+          } else if (obsType === 'camera') {
+            check = s.intuition * 0.04 + s.strategic * 0.02 + equipBonus + momentum + noise(0.4);
+            threshold = 0.22 + fatigue;
+          } else {
+            check = s.mental * 0.04 + s.strategic * 0.03 + equipBonus + momentum + noise(0.4);
+            threshold = 0.26 + fatigue;
+          }
+          const passed = check > threshold;
+          roundResults[name].obstacles.push({ type: obsType, passed });
+          memberTotals[name].totalObstacles++;
+
+          if (passed) {
+            const passTypes = { laser: 'laserDodge', camera: 'cameraDodge', alarm: 'alarmDefuse' };
+            roundEvents.push({ type: passTypes[obsType], player: name, obs: obsType, text: pick(HEIST_EVENTS[passTypes[obsType]])(name, pr) });
+            survivors.push(name);
+          } else {
+            const failTypes = { laser: 'laserFail', camera: 'cameraFail', alarm: 'alarmFail' };
+            roundEvents.push({ type: failTypes[obsType], player: name, obs: obsType, text: pick(HEIST_EVENTS[failTypes[obsType]])(name, pr) });
+            roundResults[name].eliminated = true;
+          }
+        }
+        alive = survivors;
+      }
+
+      // Vault loot — everyone who reached the vault gets equal loot
+      const vaultCrew = members.filter(n => roundResults[n].reachedVault);
+      let roundLoot = 0;
+      for (const name of vaultCrew) {
+        memberTotals[name].loot += VAULT_LOOT_PER_PLAYER;
+        memberTotals[name].vaultReaches++;
+        roundLoot += VAULT_LOOT_PER_PLAYER;
+        ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + VAULT_LOOT_PER_PLAYER;
+      }
+      totalLoot += roundLoot;
+
+      // Update momentum for next round (benched players keep previous momentum)
+      for (const name of activeMembers) {
+        prevRoundReached[name] = roundResults[name].reachedVault;
+      }
+
+      rounds.push({
+        round: rd + 1,
+        events: roundEvents,
+        results: roundResults,
+        vaultCrew,
+        roundLoot,
+      });
     }
 
     result.heist.tribes.push({
-      tribe: tribe.name, score: totalScore, memberResults, events,
-      hasEquipment, vaultOpen,
-      totalLoot: Object.values(memberResults).reduce((s, r) => s + (r.greedy ? 3 : 2), 0),
+      tribe: tribe.name, hasEquipment, rounds,
+      totalLoot,
+      memberTotals,
+      entranceEvents,
+      score: totalLoot,
     });
   }
 }
@@ -508,112 +605,265 @@ function _simulateHeist(ep, tribeMembers, result) {
 // ══════════════════════════════════════════════════════════════
 // PHASE 3: GETAWAY
 // ══════════════════════════════════════════════════════════════
+function _assignGetawayRoles(members) {
+  const scored = members.map(n => {
+    const s = pStats(n);
+    return { name: n, physical: s.physical, endurance: s.endurance, mental: s.mental,
+      strategic: s.strategic, intuition: s.intuition, boldness: s.boldness };
+  });
+  const used = new Set();
+  const assign = (sortFn) => {
+    const best = scored.filter(s => !used.has(s.name)).sort(sortFn)[0];
+    if (best) { used.add(best.name); return best.name; }
+    return null;
+  };
+  const driver = assign((a, b) => (b.physical + b.endurance + b.boldness) - (a.physical + a.endurance + a.boldness));
+  const navigator = assign((a, b) => (b.strategic + b.intuition) - (a.strategic + a.intuition));
+  const mechanic = assign((a, b) => (b.mental + b.strategic) - (a.mental + a.strategic));
+  const crew = members.filter(n => !used.has(n));
+  return { driver, navigator, mechanic, crew };
+}
+
 function _simulateGetaway(ep, tribeMembers, result) {
-  // Build phase
+  // Build phase — each member contributes
   for (const tribe of tribeMembers) {
     const members = tribe.members;
-    const buildScore = members.reduce((s, n) => {
-      const st = pStats(n);
-      return s + st.mental * 0.04 + st.physical * 0.03 + noise(0.1);
-    }, 0) / members.length;
-    const buildQuality = Math.min(1, Math.max(0.15, buildScore));
-    const events = [];
+    const roles = _assignGetawayRoles(members);
+    const buildEvents = [];
+    let buildTotal = 0;
 
-    if (buildQuality > 0.5) {
-      events.push({ type: 'goodBuild', tribe: tribe.name, text: pick(GETAWAY_EVENTS.goodBuild)(tribe.name) });
-    } else {
-      events.push({ type: 'badBuild', tribe: tribe.name, text: pick(GETAWAY_EVENTS.badBuild)(tribe.name) });
+    for (const name of members) {
+      const s = pStats(name);
+      const pr = pronouns(name);
+      const isMech = name === roles.mechanic;
+      const check = (isMech ? s.mental * 0.05 : s.physical * 0.03) + s.mental * 0.02 + noise(0.3);
+      const passed = check > 0.25;
+      buildTotal += passed ? 1 : 0.3;
+
+      if (isMech) {
+        buildEvents.push({ player: name, icon: passed ? '🔧' : '💥',
+          type: passed ? 'buildEngine' : 'buildEngineFail',
+          text: pick(passed ? GETAWAY_EVENTS.buildEngine : GETAWAY_EVENTS.buildEngineFail)(name, pr) });
+      } else {
+        buildEvents.push({ player: name, icon: passed ? '🔨' : '😬',
+          type: passed ? 'buildWeld' : 'buildWeldFail',
+          text: pick(passed ? GETAWAY_EVENTS.buildWeld : GETAWAY_EVENTS.buildWeldFail)(name, pr) });
+      }
+      ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + (passed ? 1 : 0);
     }
 
+    // Build argument between two low-bond members
+    if (members.length >= 2 && Math.random() < 0.35) {
+      const pair = members.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+      if (getBond(pair[0], pair[1]) < 3) {
+        buildEvents.push({ player: pair[0], player2: pair[1], icon: '🗣️', type: 'buildArgue',
+          text: pick(GETAWAY_EVENTS.buildArgue)(pair[0], pair[1]) });
+        buildTotal -= 0.3;
+      }
+    }
+
+    // Sabotage — villain sneaks over to a random rival
+    if (Math.random() < 0.2) {
+      const villain = members.find(n => isVillainArch(n));
+      if (villain) {
+        const others = tribeMembers.filter(t => t.name !== tribe.name);
+        const target = pick(others);
+        if (target) {
+          buildEvents.push({ player: villain, icon: '🔩', type: 'buildSabotage', target: target.name,
+            text: pick(GETAWAY_EVENTS.buildSabotage)(villain, target.name) });
+          addHeistHeat(ep, villain, 1.5);
+        }
+      }
+    }
+
+    const buildQuality = Math.min(1, Math.max(0.15, buildTotal / members.length));
+
     result.getaway.tribes.push({
-      tribe: tribe.name, buildQuality, distance: 0, events,
-      members: [...members], finished: false, crashed: false, outOfGas: false,
+      tribe: tribe.name, buildQuality, distance: 0, buildEvents, summary: null,
+      members: [...members], roles, finished: false, crashed: false, outOfGas: false,
+      sabotaged: false, sabotagedBy: null,
     });
   }
 
-  // Race — 5 rounds
+  // Apply sabotage penalty only to the targeted tribe
+  for (const gt of result.getaway.tribes) {
+    for (const other of result.getaway.tribes) {
+      if (other.tribe === gt.tribe) continue;
+      const sabEvt = other.buildEvents.find(e => e.type === 'buildSabotage' && e.target === gt.tribe);
+      if (sabEvt) {
+        gt.buildQuality = Math.max(0.1, gt.buildQuality - 0.15);
+        gt.sabotaged = true;
+        gt.sabotagedBy = sabEvt.player;
+      }
+    }
+  }
+
+  // Generate summaries AFTER sabotage so they reflect final quality
+  for (const gt of result.getaway.tribes) {
+    gt.summary = gt.buildQuality > 0.75
+      ? { icon: '✅', text: pick(GETAWAY_EVENTS.goodBuild)(gt.tribe) }
+      : { icon: '⚠️', text: pick(GETAWAY_EVENTS.badBuild)(gt.tribe) };
+  }
+
+  // Race — 5 rounds, all crew members involved
   const raceRounds = [];
   for (let round = 1; round <= 5; round++) {
+    if (result.getaway.tribes.every(g => g.finished || g.crashed)) break;
     const roundEvents = [];
 
     for (const gt of result.getaway.tribes) {
       if (gt.finished || gt.crashed) continue;
+      const roles = gt.roles;
+      const ds = pStats(roles.driver);
+      const dpr = pronouns(roles.driver);
+      const ns = roles.navigator ? pStats(roles.navigator) : null;
+      const npr = roles.navigator ? pronouns(roles.navigator) : null;
+      const ms = roles.mechanic ? pStats(roles.mechanic) : null;
+      const mpr = roles.mechanic ? pronouns(roles.mechanic) : null;
 
-      const tribe = tribeMembers.find(t => t.name === gt.tribe);
-      const driver = tribe.members[0]; // first member drives
-      const ds = pStats(driver);
-      const dpr = pronouns(driver);
-      const speed = gt.buildQuality * 0.5 + ds.physical * 0.03 + ds.endurance * 0.02 + noise(0.1);
-      let roundDistance = speed * 20;
+      let speedMod = 0;
+      const baseSpeed = gt.buildQuality * 0.5 + ds.physical * 0.03 + ds.endurance * 0.03 + 0.2 + noise(0.15);
+      const tribeRoundEvents = [];
 
-      // Prop obstacle (30% chance)
-      if (Math.random() < 0.3) {
-        const dodgeCheck = ds.intuition * 0.04 + ds.boldness * 0.03 + noise(0.15);
-        if (dodgeCheck > 0.35) {
-          roundEvents.push({ type: 'propObstacle', tribe: gt.tribe, player: driver,
-            text: pick(GETAWAY_EVENTS.propObstacle)(driver, dpr) });
+      // Driver — obstacle dodge (40% chance)
+      if (Math.random() < 0.4) {
+        const dodgeCheck = ds.intuition * 0.03 + ds.boldness * 0.03 + noise(0.3);
+        if (dodgeCheck > 0.25) {
+          tribeRoundEvents.push({ role: '🏎️', player: roles.driver, type: 'driverDodge', icon: '✅',
+            text: pick(GETAWAY_EVENTS.driverDodge)(roles.driver, dpr) });
+          speedMod += 0.05;
+          ep.chalMemberScores[roles.driver] = (ep.chalMemberScores[roles.driver] || 0) + 1;
         } else {
-          roundEvents.push({ type: 'propCrash', tribe: gt.tribe, player: driver,
-            text: pick(GETAWAY_EVENTS.propCrash)(driver, dpr) });
-          roundDistance *= 0.5;
-          ep.chalMemberScores[driver] = (ep.chalMemberScores[driver] || 0) - 1;
+          tribeRoundEvents.push({ role: '🏎️', player: roles.driver, type: 'driverCrash', icon: '💥',
+            text: pick(GETAWAY_EVENTS.driverCrash)(roles.driver, dpr) });
+          speedMod -= 0.1;
+          popDelta(roles.driver, -1);
         }
       }
 
-      // Breakdown (higher chance with low build quality)
-      if (Math.random() < (1 - gt.buildQuality) * 0.4) {
-        roundEvents.push({ type: 'breakdown', tribe: gt.tribe,
-          text: pick(GETAWAY_EVENTS.breakdown)(gt.tribe) });
-        roundDistance *= 0.6;
+      // Navigator — shortcut or wrong turn (35% chance)
+      if (roles.navigator && Math.random() < 0.35) {
+        const navCheck = ns.strategic * 0.04 + ns.intuition * 0.03 + noise(0.3);
+        if (navCheck > 0.28) {
+          tribeRoundEvents.push({ role: '🗺️', player: roles.navigator, type: 'navShortcut', icon: '⬆️',
+            text: pick(GETAWAY_EVENTS.navShortcut)(roles.navigator, npr) });
+          speedMod += 0.08;
+          ep.chalMemberScores[roles.navigator] = (ep.chalMemberScores[roles.navigator] || 0) + 1;
+        } else {
+          tribeRoundEvents.push({ role: '🗺️', player: roles.navigator, type: 'navWrongTurn', icon: '🔄',
+            text: pick(GETAWAY_EVENTS.navWrongTurn)(roles.navigator, npr) });
+          speedMod -= 0.08;
+        }
       }
 
-      // Out of gas (round 4-5, endurance check)
-      if (round >= 4 && Math.random() < 0.2 - ds.endurance * 0.015) {
-        gt.outOfGas = true;
-        roundEvents.push({ type: 'outOfGas', tribe: gt.tribe,
-          text: pick(GETAWAY_EVENTS.outOfGas)(gt.tribe) });
-        roundDistance *= 0.3;
+      // Mechanic — fix or fail on breakdown (triggered by low build quality)
+      if (roles.mechanic && Math.random() < (1 - gt.buildQuality) * 0.5) {
+        const fixCheck = ms.mental * 0.04 + ms.strategic * 0.02 + noise(0.3);
+        if (fixCheck > 0.25) {
+          tribeRoundEvents.push({ role: '🔧', player: roles.mechanic, type: 'mechFix', icon: '✅',
+            text: pick(GETAWAY_EVENTS.mechFix)(roles.mechanic, mpr) });
+          ep.chalMemberScores[roles.mechanic] = (ep.chalMemberScores[roles.mechanic] || 0) + 1;
+        } else {
+          tribeRoundEvents.push({ role: '🔧', player: roles.mechanic, type: 'mechFail', icon: '💥',
+            text: pick(GETAWAY_EVENTS.mechFail)(roles.mechanic, mpr) });
+          speedMod -= 0.12;
+        }
       }
 
-      // Sabotage between karts (15% chance, villain/schemer only)
-      if (Math.random() < 0.15) {
-        const schemer = tribe.members.find(n => isVillainArch(n));
-        if (schemer) {
-          const otherTribe = result.getaway.tribes.find(g => g.tribe !== gt.tribe && !g.crashed);
+      // Crew — push (when slow), cheer (when ahead), or throw stuff (villain)
+      for (const crewName of roles.crew) {
+        if (Math.random() > 0.4) continue;
+        const cs = pStats(crewName);
+        const cpr = pronouns(crewName);
+
+        if (gt.distance < 40 && cs.physical >= 5 && Math.random() < 0.4) {
+          tribeRoundEvents.push({ role: '💪', player: crewName, type: 'crewPush', icon: '⬆️',
+            text: pick(GETAWAY_EVENTS.crewPush)(crewName, cpr) });
+          speedMod += 0.04;
+          ep.chalMemberScores[crewName] = (ep.chalMemberScores[crewName] || 0) + 1;
+        } else if (isVillainArch(crewName) && Math.random() < 0.3) {
+          const otherTribe = result.getaway.tribes.find(g => g.tribe !== gt.tribe && !g.crashed && !g.finished);
           if (otherTribe) {
-            roundEvents.push({ type: 'sabotage', tribe: gt.tribe, target: otherTribe.tribe,
-              text: pick(GETAWAY_EVENTS.sabotage)(gt.tribe, otherTribe.tribe) });
+            tribeRoundEvents.push({ role: '😈', player: crewName, type: 'crewThrow', icon: '🎯',
+              text: pick(GETAWAY_EVENTS.crewThrow)(crewName, otherTribe.tribe, cpr) });
             otherTribe.distance -= 3;
-            addHeistHeat(ep, schemer, 1.5);
+            addHeistHeat(ep, crewName, 1);
+            popDelta(crewName, -1);
           }
+        } else {
+          tribeRoundEvents.push({ role: '📣', player: crewName, type: 'crewCheer', icon: '🔥',
+            text: pick(GETAWAY_EVENTS.crewCheer)(crewName, roles.driver) });
+          speedMod += 0.02;
         }
       }
 
+      // Tire blowout (round 3+, once per tribe max)
+      if (round >= 3 && !gt.hadBlowout && Math.random() < 0.15 + (1 - gt.buildQuality) * 0.1) {
+        gt.hadBlowout = true;
+        tribeRoundEvents.push({ role: '⚠️', type: 'tireBlowout', icon: '💨',
+          text: pick(GETAWAY_EVENTS.tireBlowout)(gt.tribe) });
+        speedMod -= 0.15;
+      }
+
+      // Nitro boost (round 2+, 20% chance, better with good build)
+      if (round >= 2 && Math.random() < gt.buildQuality * 0.25) {
+        tribeRoundEvents.push({ role: '🚀', type: 'nitroBoost', icon: '🔥',
+          text: pick(GETAWAY_EVENTS.nitroBoost)(gt.tribe) });
+        speedMod += 0.12;
+      }
+
+      // Out of gas (round 4-5)
+      if (round >= 4 && !gt.outOfGas && Math.random() < 0.18 - ds.endurance * 0.012) {
+        gt.outOfGas = true;
+        tribeRoundEvents.push({ role: '⛽', type: 'outOfGas', icon: '❌',
+          text: pick(GETAWAY_EVENTS.outOfGas)(gt.tribe) });
+        speedMod -= 0.2;
+      }
+
+      const roundDistance = Math.max(2, (baseSpeed + speedMod) * 22);
       gt.distance += roundDistance;
 
-      // Crash near finish (leading team, round 4-5, 15% chance — the Grips moment)
-      if (round >= 4 && gt.distance >= 80) {
+      // Crash near finish (leading, round 3+, 12%) — check BEFORE finish
+      if (round >= 3 && gt.distance >= 85 && !gt.finished) {
         const isLeading = result.getaway.tribes.every(g => g.tribe === gt.tribe || g.distance <= gt.distance);
-        if (isLeading && Math.random() < 0.15) {
+        if (isLeading && Math.random() < 0.12) {
           gt.crashed = true;
-          gt.distance -= 15;
-          roundEvents.push({ type: 'crashNearFinish', tribe: gt.tribe,
+          gt.distance = Math.max(50, gt.distance - 20);
+          tribeRoundEvents.push({ role: '💥', type: 'crashNearFinish', icon: '🔥',
             text: pick(GETAWAY_EVENTS.crashNearFinish)(gt.tribe) });
         }
       }
 
-      if (gt.distance >= 100) {
+      if (gt.distance >= 100 && !gt.crashed) {
         gt.finished = true;
+        gt.finishRound = round;
+        gt.finishOrder = result.getaway.tribes.filter(g => g.finished).length;
         gt.distance = 100;
-        roundEvents.push({ type: 'finishStrong', tribe: gt.tribe,
-          text: pick(GETAWAY_EVENTS.finishStrong)(gt.tribe) });
-        // Driver gets points
-        ep.chalMemberScores[driver] = (ep.chalMemberScores[driver] || 0) + 4;
+        const finishText = gt.buildQuality > 0.5
+          ? pick(GETAWAY_EVENTS.finishStrong)(gt.tribe)
+          : pick(GETAWAY_EVENTS.finishLimp)(gt.tribe);
+        tribeRoundEvents.push({ role: '🏁', type: 'finish', icon: '🏁', text: finishText });
+        ep.chalMemberScores[roles.driver] = (ep.chalMemberScores[roles.driver] || 0) + 3;
+        ep.chalMemberScores[roles.navigator] = (ep.chalMemberScores[roles.navigator] || 0) + 2;
       }
+
+      // Cap distance display at 100
+      const displayDist = Math.min(100, Math.round(gt.distance));
+
+      if (tribeRoundEvents.length === 0) {
+        tribeRoundEvents.push({ role: '🏎️', type: 'cruise', icon: '➡️',
+          text: `${gt.tribe} cruised along the track. No drama this round.` });
+      }
+
+      roundEvents.push({ tribe: gt.tribe, events: tribeRoundEvents,
+        distance: displayDist, roundGain: Math.round(roundDistance) });
     }
 
-    raceRounds.push({ num: round, events: roundEvents,
-      positions: result.getaway.tribes.map(g => ({ tribe: g.tribe, distance: Math.round(g.distance) })),
+    raceRounds.push({ num: round, tribes: roundEvents,
+      positions: result.getaway.tribes.map(g => ({
+        tribe: g.tribe, distance: Math.min(100, Math.round(g.distance)),
+        finished: g.finished, crashed: g.crashed,
+      })),
     });
   }
 
@@ -646,21 +896,31 @@ export function _textOceansHeist(ep, ln, sec) {
   ln('');
 
   // Heist
-  ln('── PHASE 2: THE HEIST ──');
+  ln('── PHASE 2: THE HEIST (5 ROUNDS) ──');
   for (const ht of oh.heist.tribes) {
-    ln(`${ht.tribe}${ht.hasEquipment ? ' (has equipment)' : ''}: Score ${ht.score}, Loot $${ht.totalLoot * 100}k`);
-    for (const e of ht.events) ln(`  ${e.text || ''}`);
+    ln(`${ht.tribe}${ht.hasEquipment ? ' (has equipment)' : ''}: Total Loot $${ht.totalLoot * 100}k`);
+    for (const e of (ht.entranceEvents || [])) ln(`  ${e.text || ''}`);
+    for (const rd of ht.rounds) {
+      ln(`  Round ${rd.round}: ${rd.vaultCrew.length} reached vault — $${rd.roundLoot * 100}k`);
+      for (const e of rd.events) ln(`    ${e.text || ''}`);
+    }
   }
   ln('');
 
   // Getaway
   ln('── PHASE 3: GETAWAY ──');
   for (const gt of oh.getaway.tribes) {
-    ln(`${gt.tribe}: Build ${(gt.buildQuality * 100).toFixed(0)}% | Distance ${Math.round(gt.distance)} | ${gt.crashed ? 'CRASHED' : gt.finished ? 'FINISHED' : 'DNF'}`);
+    const r = gt.roles;
+    ln(`${gt.tribe}: Build ${(gt.buildQuality * 100).toFixed(0)}%${gt.sabotaged ? ' (SABOTAGED)' : ''} | Driver: ${r.driver} | Nav: ${r.navigator} | Mech: ${r.mechanic}`);
+    ln(`  Distance ${Math.round(gt.distance)} | ${gt.crashed ? 'CRASHED' : gt.finished ? 'FINISHED' : 'DNF'}`);
+    for (const e of gt.buildEvents) ln(`  Build: ${e.text}`);
   }
   for (const rd of oh.getaway.raceRounds) {
     ln(`  Round ${rd.num}:`);
-    for (const e of rd.events) ln(`    ${e.text || ''}`);
+    for (const trd of rd.tribes) {
+      ln(`    ${trd.tribe}: +${trd.roundGain}% → ${trd.distance}%`);
+      for (const e of trd.events) ln(`      ${e.text || ''}`);
+    }
   }
   ln('');
 
@@ -829,15 +1089,97 @@ function _ohShell(content, ep) {
   border-bottom:1px solid rgba(34,211,238,0.1);margin-top:8px}
 .oh-side-sec:first-child{margin-top:0}
 
-/* Laser grid — animated sweeping beams */
-.oh-laser{position:relative}
-.oh-laser::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;
-  background:repeating-linear-gradient(0deg,transparent,transparent 18%,rgba(239,68,68,0.06) 18%,rgba(239,68,68,0.06) 18.3%,transparent 18.3%,transparent 36%,rgba(239,68,68,0.04) 36%,rgba(239,68,68,0.04) 36.3%,transparent 36.3%,transparent 55%,rgba(239,68,68,0.05) 55%,rgba(239,68,68,0.05) 55.3%,transparent 55.3%,transparent 75%,rgba(239,68,68,0.04) 75%,rgba(239,68,68,0.04) 75.3%,transparent 75.3%);
-  animation:oh-laser-sweep 3s linear infinite}
-@keyframes oh-laser-sweep{0%{background-position:0 0}100%{background-position:0 40px}}
+/* Laser grid — animated beams crossing the frame */
+.oh-laser{position:relative;overflow:hidden}
+.oh-laser::before,.oh-laser::after{content:'';position:absolute;pointer-events:none;z-index:1}
+.oh-laser::before{top:0;left:-100%;width:300%;height:2px;
+  background:linear-gradient(90deg,transparent 0%,transparent 30%,rgba(239,68,68,0.7) 45%,rgba(255,100,100,1) 50%,rgba(239,68,68,0.7) 55%,transparent 70%,transparent 100%);
+  box-shadow:0 0 8px 2px rgba(239,68,68,0.4),0 0 20px 4px rgba(239,68,68,0.15);
+  animation:oh-laser-h 4s linear infinite}
+.oh-laser::after{left:0;top:-100%;height:300%;width:2px;
+  background:linear-gradient(180deg,transparent 0%,transparent 30%,rgba(239,68,68,0.7) 45%,rgba(255,100,100,1) 50%,rgba(239,68,68,0.7) 55%,transparent 70%,transparent 100%);
+  box-shadow:0 0 8px 2px rgba(239,68,68,0.4),0 0 20px 4px rgba(239,68,68,0.15);
+  animation:oh-laser-v 5.5s linear infinite}
+@keyframes oh-laser-h{0%{transform:translateX(-20%) translateY(15px) rotate(3deg)}
+  25%{transform:translateX(10%) translateY(45px) rotate(-2deg)}
+  50%{transform:translateX(30%) translateY(25px) rotate(4deg)}
+  75%{transform:translateX(5%) translateY(60px) rotate(-3deg)}
+  100%{transform:translateX(-20%) translateY(15px) rotate(3deg)}}
+@keyframes oh-laser-v{0%{transform:translateY(-20%) translateX(30px) rotate(2deg)}
+  25%{transform:translateY(5%) translateX(70%) rotate(-4deg)}
+  50%{transform:translateY(25%) translateX(40%) rotate(3deg)}
+  75%{transform:translateY(10%) translateX(80%) rotate(-2deg)}
+  100%{transform:translateY(-20%) translateX(30px) rotate(2deg)}}
 
 /* Alarm flash */
 .oh-alarm{animation:oh-alarm-flash 0.6s ease-out}
+
+/* Security camera — sweeping crosshair/reticle */
+.oh-camera{position:relative;overflow:hidden}
+.oh-camera::before{content:'⊕';position:absolute;font-size:32px;color:rgba(34,211,238,0.12);
+  pointer-events:none;z-index:1;
+  animation:oh-cam-sweep 3.5s ease-in-out infinite}
+.oh-camera::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(34,211,238,0.02) 3px,rgba(34,211,238,0.02) 4px);
+  animation:oh-cam-scan 2s linear infinite}
+@keyframes oh-cam-sweep{
+  0%{top:10%;left:15%;transform:scale(1)}
+  20%{top:30%;left:65%;transform:scale(1.2)}
+  40%{top:55%;left:25%;transform:scale(0.9)}
+  60%{top:20%;left:75%;transform:scale(1.1)}
+  80%{top:60%;left:50%;transform:scale(1)}
+  100%{top:10%;left:15%;transform:scale(1)}}
+@keyframes oh-cam-scan{0%{background-position:0 0}100%{background-position:0 100px}}
+
+/* Camera fail — reddish highlight + target lock */
+.oh-cam-fail{background:rgba(239,68,68,0.08);border-radius:4px;padding:4px 6px!important;
+  border:1px solid rgba(239,68,68,0.12);position:relative}
+.oh-cam-fail::after{content:'◎';position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  font-size:16px;color:rgba(239,68,68,0.25);animation:oh-target-lock 0.8s ease-out}
+@keyframes oh-target-lock{0%{transform:translateY(-50%) scale(2.5);opacity:0}
+  50%{opacity:1}100%{transform:translateY(-50%) scale(1);opacity:0.25}}
+
+/* Alarm obstacle — pulsing red glow on the container */
+.oh-alarm-obs{position:relative;overflow:hidden}
+.oh-alarm-obs::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1;
+  border-radius:6px;
+  box-shadow:inset 0 0 20px rgba(251,191,36,0.06);
+  animation:oh-alarm-ambient 2s ease-in-out infinite}
+@keyframes oh-alarm-ambient{0%,100%{box-shadow:inset 0 0 15px rgba(251,191,36,0.04)}
+  50%{box-shadow:inset 0 0 25px rgba(251,191,36,0.1)}}
+
+/* Alarm fail — big red pulse on the failed row */
+.oh-alarm-fail{background:rgba(239,68,68,0.1);border-radius:4px;padding:4px 6px!important;
+  border:1px solid rgba(239,68,68,0.15);
+  animation:oh-alarm-blare 1.5s ease-in-out infinite}
+@keyframes oh-alarm-blare{0%,100%{box-shadow:0 0 0 rgba(239,68,68,0)}
+  50%{box-shadow:0 0 12px rgba(239,68,68,0.3),inset 0 0 8px rgba(239,68,68,0.1)}}
+
+/* Build phase — sparks flying */
+.oh-build-phase{position:relative;overflow:hidden}
+.oh-build-phase::before{content:'⚡ 🔨 ⚡ 🔩 ⚡ 🔧 ⚡';position:absolute;bottom:-10px;left:0;right:0;
+  font-size:10px;letter-spacing:8px;text-align:center;pointer-events:none;z-index:1;opacity:0.12;
+  animation:oh-sparks 2s ease-in-out infinite}
+@keyframes oh-sparks{0%,100%{transform:translateY(0);opacity:0.08}50%{transform:translateY(-6px);opacity:0.15}}
+
+/* Race round — speed lines */
+.oh-race-round{position:relative;overflow:hidden}
+.oh-race-round::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1;
+  background:repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(251,191,36,0.03) 60px,rgba(251,191,36,0.03) 62px);
+  animation:oh-speed-lines 0.8s linear infinite}
+@keyframes oh-speed-lines{0%{background-position:0 0}100%{background-position:-62px 0}}
+
+/* Vault loot — falling money */
+.oh-vault-loot{position:relative;overflow:hidden}
+.oh-vault-loot::before{content:'💵 💰 💵 💲 💰 💵 💲 💰';position:absolute;top:-30px;left:0;right:0;
+  font-size:14px;letter-spacing:12px;text-align:center;
+  pointer-events:none;z-index:1;opacity:0.15;white-space:nowrap;
+  animation:oh-money-fall 4s linear infinite}
+.oh-vault-loot::after{content:'💲 💰 💵 💰 💲 💵 💰 💵';position:absolute;top:-30px;left:20px;right:0;
+  font-size:12px;letter-spacing:16px;text-align:center;
+  pointer-events:none;z-index:1;opacity:0.1;white-space:nowrap;
+  animation:oh-money-fall 5.5s linear infinite;animation-delay:-2s}
+@keyframes oh-money-fall{0%{transform:translateY(-20px)}100%{transform:translateY(120px)}}
 
 /* Animations */
 @keyframes oh-scanline{0%{background-position:0 0}100%{background-position:0 200px}}
@@ -849,7 +1191,11 @@ function _ohShell(content, ep) {
 
 /* Reduced motion */
 @media(prefers-reduced-motion:reduce){
-  .oh-shell::after,.oh-rec,.oh-alarm{animation:none!important}
+  .oh-shell::after,.oh-rec,.oh-alarm,.oh-laser::before,.oh-laser::after,
+  .oh-camera::before,.oh-camera::after,.oh-cam-fail::after,
+  .oh-alarm-obs::before,.oh-alarm-fail,
+  .oh-vault-loot::before,.oh-vault-loot::after,
+  .oh-build-phase::before,.oh-race-round::before{animation:none!important}
 }
 </style>
 <div class="oh-shell">
@@ -1040,7 +1386,7 @@ export function rpBuildOceansHeistVault(ep) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// VP SCREEN 2: THE HEIST
+// VP SCREEN 2: THE HEIST (5-round gauntlet)
 // ══════════════════════════════════════════════════════════════
 export function rpBuildOceansHeistHeist(ep) {
   const oh = ep.oceansHeist;
@@ -1051,103 +1397,124 @@ export function rpBuildOceansHeistHeist(ep) {
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const revIdx = _tvState[stateKey].idx;
 
+  const obstacleLabels = {
+    laser: { label: 'LASER GRID', icon: '🔴', color: 'var(--heist-red)', badge: 'red', css: 'oh-laser' },
+    camera: { label: 'SECURITY CAMERAS', icon: '📹', color: 'var(--heist-cyan)', badge: 'cyan', css: 'oh-camera' },
+    alarm: { label: 'ALARM SYSTEM', icon: '🚨', color: 'var(--heist-gold)', badge: 'gold', css: 'oh-alarm-obs' },
+  };
+
   const steps = [];
 
+  // Intro
   steps.push({ type: 'intro', html: `<div class="oh-ev" style="border-left-color:var(--heist-red);padding:14px">
     <div style="font-size:28px">🏦</div>
     <div style="flex:1"><div class="oh-ev-badge red" style="font-size:11px;padding:4px 12px">PHASE II — THE HEIST</div>
-    <div class="oh-ev-text" style="font-size:14px;margin-top:6px">${pick(HEIST_HOST.heistIntro)(host())}</div></div>
+    <div class="oh-ev-text" style="font-size:14px;margin-top:6px">${pick(HEIST_HOST.heistIntro)(host())}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:8px;font-style:italic">5 rounds. Fail an obstacle — you're out for that round. Reach the vault to score loot.</div>
+    </div>
   </div>` });
 
-  // Build obstacle-by-obstacle view
-  const obstacleTypes = [
-    { key: 'laser', label: 'LASER GRID', icon: '🔴', passType: 'laserDodge', failType: 'laserFail', color: 'var(--heist-red)',
-      desc: 'Dodge the beams. One wrong move and the alarm triggers.' },
-    { key: 'camera', label: 'SECURITY CAMERAS', icon: '📹', passType: 'cameraDodge', failType: 'cameraFail', color: 'var(--heist-cyan)',
-      desc: 'Find the blind spots. The cameras never stop rotating.' },
-    { key: 'alarm', label: 'ALARM SYSTEM', icon: '🚨', passType: 'alarmDefuse', failType: 'alarmFail', color: 'var(--heist-gold)',
-      desc: 'Cut the right wire. Cut the wrong one and it\'s over.' },
-    { key: 'vault', label: 'VAULT DOOR', icon: '🚪', passType: 'vaultPush', failType: 'vaultStuck', color: 'var(--heist-green)',
-      desc: 'Team effort. Everyone pushes. The door either moves or it doesn\'t.' },
-    { key: 'loot', label: 'LOOT GRAB', icon: '💰', passType: 'lootGrab', failType: 'lootGreed', color: 'var(--heist-gold)',
-      desc: 'Take what you need... or take it ALL. Greed has consequences.' },
-  ];
-
-  // Special events (criminal bonus, hesitation) — show before obstacles
-  const specialEvents = heist.tribes.flatMap(ht =>
-    ht.events.filter(e => e.type === 'criminalBonus' || e.type === 'hesitation')
-  );
-  if (specialEvents.length) {
-    let specialHtml = `<div class="oh-ev" style="border-left-color:rgba(255,255,255,0.15);padding:12px">
+  // Entrance events
+  const hasEntrance = heist.tribes.some(ht => ht.entranceEvents?.length);
+  if (hasEntrance) {
+    let eHtml = `<div class="oh-ev" style="border-left-color:rgba(255,255,255,0.15);padding:12px">
       <div style="flex:1"><div class="oh-ev-badge gray" style="font-size:10px">ENTERING THE BANK</div>`;
-    for (const evt of specialEvents) {
-      const color = evt.type === 'criminalBonus' ? 'var(--heist-green)' : 'var(--heist-red)';
-      const icon = evt.type === 'criminalBonus' ? '😎' : '😰';
-      specialHtml += `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;color:${color}">
-        ${_ohPortrait(evt.player, 32)} <span>${icon} ${evt.text}</span>
-      </div>`;
+    for (const ht of heist.tribes) {
+      if (!ht.entranceEvents?.length) continue;
+      eHtml += `<div style="margin-top:8px;margin-bottom:4px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--heist-cyan);letter-spacing:1px">${ht.tribe}</div>`;
+      for (const evt of ht.entranceEvents) {
+        const color = evt.type === 'criminalBonus' ? 'var(--heist-green)' : 'var(--heist-red)';
+        const icon = evt.type === 'criminalBonus' ? '😎' : '😰';
+        eHtml += `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;color:${color}">
+          ${_ohPortrait(evt.player, 32)} <span>${icon} ${evt.text}</span>
+        </div>`;
+      }
     }
-    specialHtml += `</div></div>`;
-    steps.push({ type: 'special', html: specialHtml });
+    eHtml += `</div></div>`;
+    steps.push({ type: 'entrance', html: eHtml });
   }
 
-  for (const obs of obstacleTypes) {
-    let obsHtml = `<div class="oh-ev ${obs.key === 'laser' ? 'oh-laser' : ''}" style="border-left-color:${obs.color};padding:14px;position:relative${obs.key === 'laser' ? ';overflow:hidden' : ''}">
-      <div style="flex:1">
-        <div class="oh-ev-badge ${obs.key === 'laser' ? 'red' : obs.key === 'camera' ? 'cyan' : obs.key === 'alarm' ? 'gold' : 'green'}" style="font-size:11px;padding:4px 12px">${obs.icon} ${obs.label}</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin:4px 0 10px;font-style:italic">${obs.desc}</div>`;
+  // Per-round steps: each round gets one step per obstacle + vault result
+  for (const ht of heist.tribes) {
+    for (const rd of ht.rounds) {
+      const benchedNames = Object.entries(rd.results).filter(([_, r]) => r.benched).map(([n]) => n);
+      let rdHtml = `<div class="oh-ev" style="border-left-color:var(--heist-cyan);padding:14px">
+        <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="oh-ev-badge cyan" style="font-size:11px;padding:4px 12px">ROUND ${rd.round} — ${ht.tribe}${ht.hasEquipment ? ' 🔧' : ''}</div>
+        </div>`;
 
-    for (const ht of heist.tribes) {
-      obsHtml += `<div style="margin-bottom:8px">
-        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--heist-cyan);margin-bottom:4px;letter-spacing:1px">${ht.tribe}${ht.hasEquipment ? ' 🔧' : ''}</div>`;
-
-      if (obs.key === 'vault') {
-        // Vault door is team-wide
-        const vaultEvt = ht.events.find(e => e.type === 'vaultPush' || e.type === 'vaultStuck');
-        if (vaultEvt) {
-          const passed = vaultEvt.type === 'vaultPush';
-          obsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:6px;background:rgba(0,0,0,0.15);border-radius:4px;font-size:13px;color:${passed ? 'var(--heist-green)' : 'var(--heist-red)'}">
-            <span style="font-size:18px">${passed ? '✅' : '❌'}</span> ${vaultEvt.text}
-          </div>`;
-        }
-      } else if (obs.key === 'loot') {
-        // Loot per member
-        const lootEvts = ht.events.filter(e => e.type === 'lootGrab' || e.type === 'lootGreed');
-        for (const evt of lootEvts) {
-          const isGreedy = evt.type === 'lootGreed';
-          obsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:${isGreedy ? 'var(--heist-gold)' : 'var(--heist-green)'}">
-            ${_ohPortrait(evt.player, 28)} <span>${isGreedy ? '🤑' : '💰'} ${evt.text}</span>
-          </div>`;
-        }
-      } else {
-        // Per-member obstacle results
-        const passEvts = ht.events.filter(e => e.type === obs.passType);
-        const failEvts = ht.events.filter(e => e.type === obs.failType);
-        for (const evt of [...passEvts, ...failEvts]) {
-          const passed = evt.type === obs.passType;
-          obsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:${passed ? 'var(--heist-green)' : 'var(--heist-red)'}">
-            ${_ohPortrait(evt.player, 28)} <span>${passed ? '✅' : '❌'} ${evt.text}</span>
-          </div>`;
-        }
+      if (benchedNames.length) {
+        rdHtml += `<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;margin-bottom:10px;background:rgba(255,255,255,0.04);border-radius:4px;border:1px dashed rgba(255,255,255,0.1)">
+          <span style="font-size:10px;color:rgba(255,255,255,0.3);font-family:'Share Tech Mono',monospace">BENCH</span>
+          ${benchedNames.map(n => `<div style="display:flex;align-items:center;gap:3px;opacity:0.4">${_ohPortrait(n, 22)} <span style="font-size:11px">${n.split(' ')[0]}</span></div>`).join('')}
+        </div>`;
       }
-      obsHtml += `</div>`;
+
+      // Group events by obstacle type
+      for (const obsType of ['laser', 'camera', 'alarm']) {
+        const obsInfo = obstacleLabels[obsType];
+        const obsEvents = rd.events.filter(e => e.obs === obsType);
+        if (!obsEvents.length) continue;
+        const extraCss = obsInfo.css ? ` ${obsInfo.css}` : '';
+        rdHtml += `<div class="${extraCss}" style="margin-bottom:10px;padding:8px;background:rgba(0,0,0,0.12);border-radius:6px;border-left:3px solid ${obsInfo.color};position:relative;overflow:hidden">
+          <div style="font-size:10px;font-family:'Share Tech Mono',monospace;color:${obsInfo.color};margin-bottom:6px;letter-spacing:1px">${obsInfo.icon} ${obsInfo.label}</div>`;
+        for (const evt of obsEvents) {
+          const passed = evt.type.includes('Dodge') || evt.type.includes('Defuse');
+          const failClass = !passed ? (obsType === 'camera' ? ' oh-cam-fail' : obsType === 'alarm' ? ' oh-alarm-fail' : '') : '';
+          rdHtml += `<div class="${failClass}" style="display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13px;color:${passed ? 'var(--heist-green)' : 'var(--heist-red)'}">
+            ${_ohPortrait(evt.player, 26)} <span>${passed ? '✅' : '❌'} ${evt.text}</span>
+          </div>`;
+        }
+        rdHtml += `</div>`;
+      }
+
+      // Vault result
+      const vaultCount = rd.vaultCrew.length;
+      const totalMembers = Object.keys(rd.results).length;
+      if (vaultCount > 0) {
+        rdHtml += `<div class="oh-vault-loot" style="margin-top:6px;padding:8px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.15);border-radius:6px;position:relative;overflow:hidden">
+          <div style="font-size:10px;font-family:'Share Tech Mono',monospace;color:var(--heist-green);margin-bottom:4px;letter-spacing:1px">💰 VAULT REACHED</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">
+            ${rd.vaultCrew.map(n => `<div style="display:flex;align-items:center;gap:4px;padding:2px 6px;background:rgba(74,222,128,0.1);border-radius:3px">
+              ${_ohPortrait(n, 22)} <span style="font-size:11px;color:var(--heist-green)">${n}</span>
+            </div>`).join('')}
+          </div>
+          <div style="font-size:11px;color:var(--heist-gold)">💰 ${vaultCount}/${totalMembers} reached the vault — $${rd.roundLoot * 100}k scored</div>
+        </div>`;
+      } else {
+        rdHtml += `<div style="margin-top:6px;padding:8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15);border-radius:6px">
+          <div style="font-size:11px;color:var(--heist-red)">❌ Nobody reached the vault this round.</div>
+        </div>`;
+      }
+      rdHtml += `</div></div>`;
+      steps.push({ type: 'round', tribe: ht.tribe, round: rd.round, html: rdHtml });
     }
-    obsHtml += `</div></div>`;
-    steps.push({ type: 'obstacle', key: obs.key, html: obsHtml });
   }
 
   // Final scores
   let scoreHtml = `<div class="oh-ev" style="border-left-color:var(--heist-green);padding:14px">
     <div style="flex:1"><div class="oh-ev-badge green" style="font-size:11px;padding:4px 12px">💼 HEIST COMPLETE</div>`;
-  for (const ht of heist.tribes.sort((a, b) => b.score - a.score)) {
-    const barPct = Math.min(100, (ht.score / Math.max(...heist.tribes.map(h => h.score))) * 100);
-    scoreHtml += `<div style="margin:8px 0">
+  for (const ht of [...heist.tribes].sort((a, b) => b.totalLoot - a.totalLoot)) {
+    const maxLoot = Math.max(...heist.tribes.map(h => h.totalLoot));
+    const barPct = maxLoot > 0 ? Math.min(100, (ht.totalLoot / maxLoot) * 100) : 0;
+    scoreHtml += `<div style="margin:10px 0">
       <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
         <span style="color:var(--heist-cyan);font-family:'Share Tech Mono',monospace">${ht.tribe}${ht.hasEquipment ? ' 🔧' : ''}</span>
-        <span style="color:var(--heist-gold)">💰 $${ht.totalLoot * 100}k — ${ht.score} pts</span>
+        <span style="color:var(--heist-gold)">💰 $${ht.totalLoot * 100}k</span>
       </div>
       <div style="height:8px;background:rgba(0,0,0,0.3);border-radius:4px;overflow:hidden">
         <div style="height:100%;width:${barPct}%;background:var(--heist-green);border-radius:4px"></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+        ${Object.entries(ht.memberTotals).sort((a, b) => b[1].loot - a[1].loot).map(([name, mt]) => {
+          const played = 5 - mt.benchedRounds;
+          return `<div style="display:flex;align-items:center;gap:4px;font-size:10px;padding:2px 5px;background:rgba(0,0,0,0.15);border-radius:3px">
+            ${_ohPortrait(name, 18)} <span style="color:var(--heist-gold)">${mt.vaultReaches}/${played}</span>
+            <span style="color:rgba(255,255,255,0.3)">$${mt.loot * 100}k</span>
+            ${mt.benchedRounds ? `<span style="color:rgba(255,255,255,0.15);font-size:8px">🪑${mt.benchedRounds}</span>` : ''}
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
   }
@@ -1155,20 +1522,6 @@ export function rpBuildOceansHeistHeist(ep) {
   steps.push({ type: 'scores', html: scoreHtml });
 
   const totalSteps = steps.length;
-
-  function buildHeistSidebar(revCount) {
-    let sb = `<div class="oh-side-sec">SECURITY STATUS</div>`;
-    for (let i = 0; i < heist.tribes.length; i++) {
-      const ht = heist.tribes[i];
-      const shown = i + 1 < revCount;
-      sb += `<div style="padding:5px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:3px;opacity:${shown ? 1 : 0.4}">
-        <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan)">${ht.tribe}${ht.hasEquipment ? ' 🔧' : ''}</div>
-        ${shown ? `<div style="font-size:10px;color:var(--heist-gold);margin-top:2px">💰 $${ht.totalLoot * 100}k loot</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.3)">Score: ${ht.score}</div>` : '<div style="font-size:8px;color:rgba(255,255,255,0.15)">IN PROGRESS</div>'}
-      </div>`;
-    }
-    return sb;
-  }
 
   let feed = '';
   for (let i = 0; i < totalSteps; i++) {
@@ -1185,9 +1538,11 @@ export function rpBuildOceansHeistHeist(ep) {
     ${_ohBadge('HEIST COMPLETE', 'green')}
   </div>`;
 
+  const totalAlarms = heist.tribes.reduce((s, ht) => s + ht.rounds.reduce((rs, rd) => rs + rd.events.filter(e => e.type === 'laserFail' || e.type === 'alarmFail').length, 0), 0);
   const hudCells = `
     <div class="oh-hud-cell"><div class="oh-hud-val" style="color:var(--heist-gold)">$${heist.tribes.reduce((s, h) => s + h.totalLoot, 0) * 100}k</div><div class="oh-hud-lbl">TOTAL LOOT</div></div>
-    <div class="oh-hud-cell"><div class="oh-hud-val" style="color:var(--heist-red)">${heist.tribes.flatMap(h => h.events).filter(e => e.type === 'laserFail' || e.type === 'alarmFail').length}</div><div class="oh-hud-lbl">ALARMS</div></div>
+    <div class="oh-hud-cell"><div class="oh-hud-val" style="color:var(--heist-red)">${totalAlarms}</div><div class="oh-hud-lbl">ALARMS</div></div>
+    <div class="oh-hud-cell"><div class="oh-hud-val" style="color:var(--heist-cyan)">5</div><div class="oh-hud-lbl">ROUNDS</div></div>
     <div class="oh-hud-cell"><div class="oh-hud-val" style="color:var(--heist-cyan)">II</div><div class="oh-hud-lbl">PHASE</div></div>
   `;
 
@@ -1195,7 +1550,7 @@ export function rpBuildOceansHeistHeist(ep) {
     <div class="oh-hud">${hudCells}</div>
     <div class="oh-layout">
       <div class="oh-feed">${feed}${controls}</div>
-      <div class="oh-sidebar" id="oh-sidebar-heist">${buildHeistSidebar(revIdx + 1)}</div>
+      <div class="oh-sidebar" id="oh-sidebar-heist">${_ohBuildHeistSidebarFromData(heist, revIdx + 1)}</div>
     </div>
   `, ep);
 }
@@ -1214,89 +1569,126 @@ export function rpBuildOceansHeistGetaway(ep) {
 
   const steps = [];
 
-  steps.push({ type: 'intro', html: `<div class="oh-ev" style="border-left-color:var(--heist-gold)">
-    <div style="font-size:22px">🏎️</div>
-    <div style="flex:1"><div class="oh-ev-badge gold">PHASE III — GETAWAY</div>
-    <div class="oh-ev-text">${pick(HEIST_HOST.getawayIntro)(host())}</div></div>
+  // Intro
+  steps.push({ type: 'intro', html: `<div class="oh-ev" style="border-left-color:var(--heist-gold);padding:14px">
+    <div style="font-size:28px">🏎️</div>
+    <div style="flex:1"><div class="oh-ev-badge gold" style="font-size:11px;padding:4px 12px">PHASE III — GETAWAY</div>
+    <div class="oh-ev-text" style="font-size:14px;margin-top:6px">${pick(HEIST_HOST.getawayIntro)(host())}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:8px;font-style:italic">Build a kart. Race it. Escape with the loot.</div>
+    </div>
   </div>` });
 
-  // Build results
-  let buildHtml = `<div class="oh-ev" style="border-left-color:var(--heist-cyan)">
-    <div style="flex:1"><div class="oh-ev-badge cyan">BUILD PHASE</div>`;
+  // Build phase — per tribe with individual contributions
   for (const gt of gw.tribes) {
+    const r = gt.roles;
     const qualPct = Math.round(gt.buildQuality * 100);
-    const qualColor = qualPct > 50 ? 'var(--heist-green)' : qualPct > 30 ? 'var(--heist-gold)' : 'var(--heist-red)';
-    buildHtml += `<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
-      <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan);width:60px">${gt.tribe}</span>
-      <div style="flex:1;height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden">
-        <div style="height:100%;width:${qualPct}%;background:${qualColor};border-radius:3px"></div>
+    const qualColor = qualPct > 75 ? 'var(--heist-green)' : qualPct > 45 ? 'var(--heist-gold)' : 'var(--heist-red)';
+    let bHtml = `<div class="oh-ev oh-build-phase" style="border-left-color:var(--heist-cyan);padding:14px;position:relative;overflow:hidden">
+      <div style="flex:1">
+      <div class="oh-ev-badge cyan" style="font-size:11px;padding:4px 12px">🔨 BUILD — ${gt.tribe}</div>
+      <div style="display:flex;gap:8px;margin:8px 0;font-size:10px;font-family:'Share Tech Mono',monospace;color:rgba(255,255,255,0.4)">
+        <span>🏎️ ${r.driver}</span> <span>🗺️ ${r.navigator || '—'}</span> <span>🔧 ${r.mechanic || '—'}</span>
+      </div>`;
+    for (const evt of gt.buildEvents) {
+      const isGood = evt.type.includes('Fail') || evt.type === 'buildArgue' ? false : evt.type !== 'buildSabotage';
+      const color = evt.type === 'buildSabotage' ? 'var(--heist-red)' : isGood ? 'var(--heist-green)' : 'var(--heist-gold)';
+      bHtml += `<div style="display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13px;color:${color}">
+        ${_ohPortrait(evt.player, 24)} <span>${evt.icon} ${evt.text}</span>
+      </div>`;
+    }
+    bHtml += `<div style="margin-top:8px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px">
+        <span style="color:var(--heist-cyan);font-family:'Share Tech Mono',monospace">BUILD QUALITY</span>
+        <span style="color:${qualColor};font-family:'Share Tech Mono',monospace">${qualPct}%${gt.sabotaged ? ` ⚠️ SABOTAGED by ${gt.sabotagedBy}` : ''}</span>
       </div>
-      <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:${qualColor}">${qualPct}%</span>
-    </div>`;
-    if (gt.events.length) {
-      buildHtml += `<div style="font-size:9px;color:rgba(255,255,255,0.4);padding-left:68px">${gt.events[0].text}</div>`;
-    }
+      <div style="height:8px;background:rgba(0,0,0,0.3);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${qualPct}%;background:${qualColor};border-radius:4px"></div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;font-style:italic">${gt.summary.icon} ${gt.summary.text}</div>
+    </div>
+    </div></div>`;
+    steps.push({ type: 'build', tribe: gt.tribe, html: bHtml });
   }
-  buildHtml += `</div></div>`;
-  steps.push({ type: 'build', html: buildHtml });
 
-  // Race rounds
+  // Race rounds — per round, all tribes together
   for (const rd of gw.raceRounds) {
-    let roundHtml = `<div class="oh-ev" style="border-left-color:var(--heist-gold)">
-      <div style="flex:1"><div class="oh-ev-badge gold">ROUND ${rd.num}</div>`;
+    let rdHtml = `<div class="oh-ev oh-race-round" style="border-left-color:var(--heist-gold);padding:14px;position:relative;overflow:hidden">
+      <div style="flex:1">
+      <div class="oh-ev-badge gold" style="font-size:11px;padding:4px 12px">🏁 RACE — ROUND ${rd.num}</div>`;
 
-    for (const evt of rd.events) {
-      const icon = evt.type === 'propObstacle' ? '⚠️' : evt.type === 'propCrash' ? '💥' :
-        evt.type === 'breakdown' ? '🔧' : evt.type === 'outOfGas' ? '⛽' :
-        evt.type === 'crashNearFinish' ? '🔥' : evt.type === 'sabotage' ? '🔪' :
-        evt.type === 'finishStrong' ? '🏁' : '📋';
-      const color = ['propCrash', 'breakdown', 'outOfGas', 'crashNearFinish'].includes(evt.type) ? 'var(--heist-red)' :
-        evt.type === 'finishStrong' ? 'var(--heist-green)' : 'var(--heist-gold)';
-      roundHtml += `<div style="font-size:10px;color:${color};margin:2px 0">${icon} ${evt.text}</div>`;
+    for (const trd of rd.tribes) {
+      const gt = gw.tribes.find(g => g.tribe === trd.tribe);
+      const statusIcon = gt?.crashed ? '💥' : gt?.finished ? '🏁' : '🏎️';
+      rdHtml += `<div style="margin:10px 0;padding:8px;background:rgba(0,0,0,0.12);border-radius:6px;border-left:3px solid var(--heist-cyan)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan)">${statusIcon} ${trd.tribe}</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--heist-gold)">+${trd.roundGain}% → ${trd.distance}%</span>
+        </div>`;
+      for (const evt of trd.events) {
+        const isBad = ['driverCrash','navWrongTurn','mechFail','tireBlowout','outOfGas','crashNearFinish'].includes(evt.type);
+        const isGreat = ['navShortcut','nitroBoost','finish','driverDodge'].includes(evt.type);
+        const color = isBad ? 'var(--heist-red)' : isGreat ? 'var(--heist-green)' : 'rgba(255,255,255,0.6)';
+        rdHtml += `<div style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:12px;color:${color}">
+          <span style="font-size:10px;width:20px;text-align:center">${evt.role}</span>
+          ${evt.player ? _ohPortrait(evt.player, 22) : ''}
+          <span>${evt.icon} ${evt.text}</span>
+        </div>`;
+      }
+      rdHtml += `</div>`;
     }
 
-    // Positions
-    roundHtml += `<div style="margin-top:4px;display:flex;gap:12px;font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(34,211,238,0.4)">`;
+    // Position bars
+    rdHtml += `<div style="margin-top:8px">`;
     for (const pos of rd.positions.sort((a, b) => b.distance - a.distance)) {
       const pct = Math.min(100, pos.distance);
-      roundHtml += `<span>${pos.tribe}: ${pct}%</span>`;
+      const barColor = pos.crashed ? 'var(--heist-red)' : pos.finished ? 'var(--heist-green)' : 'var(--heist-gold)';
+      const icon = pos.crashed ? '💥' : pos.finished ? '🏁' : '🏎️';
+      rdHtml += `<div style="display:flex;align-items:center;gap:6px;margin:3px 0">
+        <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--heist-cyan);width:50px">${pos.tribe}</span>
+        <div style="flex:1;height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px"></div>
+        </div>
+        <span style="font-size:9px">${icon} ${pct}%</span>
+      </div>`;
     }
-    roundHtml += `</div></div></div>`;
-    steps.push({ type: 'round', num: rd.num, html: roundHtml });
+    rdHtml += `</div></div></div>`;
+    steps.push({ type: 'round', num: rd.num, html: rdHtml });
   }
 
   // Final result
-  const finalOrder = gw.tribes.sort((a, b) => b.distance - a.distance);
-  steps.push({ type: 'result', html: `<div class="oh-ev" style="border-left-color:var(--heist-green);text-align:center">
-    <div style="flex:1"><div class="oh-ev-badge green">🏁 GETAWAY COMPLETE</div>
-    <div style="font-size:13px;color:var(--heist-green);font-family:'Share Tech Mono',monospace;margin-top:4px">${finalOrder.map((g, i) => `${i + 1}. ${g.tribe} (${Math.round(g.distance)}%)${g.crashed ? ' 💥CRASHED' : ''}`).join(' · ')}</div></div>
-  </div>` });
+  const finalOrder = [...gw.tribes].sort((a, b) => {
+    if (a.finished && !b.finished) return -1;
+    if (!a.finished && b.finished) return 1;
+    if (a.finished && b.finished) return (a.finishOrder || 99) - (b.finishOrder || 99);
+    if (a.crashed && !b.crashed) return 1;
+    if (!a.crashed && b.crashed) return -1;
+    return b.distance - a.distance;
+  });
+  let resultHtml = `<div class="oh-ev" style="border-left-color:var(--heist-green);padding:14px;text-align:center">
+    <div style="flex:1"><div class="oh-ev-badge green" style="font-size:12px;padding:4px 14px">🏁 GETAWAY COMPLETE</div>`;
+  finalOrder.forEach((g, i) => {
+    const icon = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
+    const status = g.crashed ? '💥 CRASHED' : g.finished ? '🏁 ESCAPED' : `${Math.round(g.distance)}%`;
+    const color = i === 0 ? 'var(--heist-green)' : g.crashed ? 'var(--heist-red)' : 'var(--heist-cyan)';
+    resultHtml += `<div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:6px 0;font-size:14px">
+      <span>${icon}</span>
+      <span style="font-family:'Share Tech Mono',monospace;color:${color};letter-spacing:1px">${g.tribe}</span>
+      <span style="font-size:11px;color:rgba(255,255,255,0.4)">${status}</span>
+    </div>`;
+    // Crew role breakdown
+    const r = g.roles;
+    resultHtml += `<div style="display:flex;gap:6px;justify-content:center;margin-bottom:8px">
+      ${[['🏎️', r.driver], ['🗺️', r.navigator], ['🔧', r.mechanic], ...r.crew.map(n => ['💪', n])].filter(([,n]) => n).map(([icon, name]) =>
+        `<div style="display:flex;align-items:center;gap:3px;padding:2px 5px;background:rgba(0,0,0,0.15);border-radius:3px">
+          ${_ohPortrait(name, 16)}<span style="font-size:9px">${icon}</span>
+        </div>`
+      ).join('')}
+    </div>`;
+  });
+  resultHtml += `</div></div>`;
+  steps.push({ type: 'result', html: resultHtml });
 
   const totalSteps = steps.length;
-
-  function buildGetawaySidebar(revCount) {
-    let sb = `<div class="oh-side-sec">RACE POSITIONS</div>`;
-    const latestRound = gw.raceRounds.filter((_, i) => i + 3 < revCount).pop();
-    const positions = latestRound ? latestRound.positions.sort((a, b) => b.distance - a.distance) : gw.tribes.map(g => ({ tribe: g.tribe, distance: 0 }));
-    for (const pos of positions) {
-      const gt = gw.tribes.find(g => g.tribe === pos.tribe);
-      const pct = Math.min(100, pos.distance);
-      sb += `<div style="padding:4px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:3px">
-        <div style="display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:9px">
-          <span style="color:var(--heist-cyan)">${pos.tribe}</span>
-          <span style="color:${gt?.crashed ? 'var(--heist-red)' : gt?.finished ? 'var(--heist-green)' : 'rgba(255,255,255,0.4)'}">${gt?.crashed ? '💥' : gt?.finished ? '🏁' : `${Math.round(pct)}%`}</span>
-        </div>
-        <div style="height:4px;background:rgba(0,0,0,0.3);border-radius:2px;overflow:hidden;margin-top:2px">
-          <div style="height:100%;width:${pct}%;background:${gt?.crashed ? 'var(--heist-red)' : 'var(--heist-green)'};border-radius:2px;transition:width 0.3s"></div>
-        </div>
-      </div>`;
-    }
-    sb += `<div class="oh-side-sec">BUILD QUALITY</div>`;
-    for (const gt of gw.tribes) {
-      sb += `<div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);padding:2px 0">${gt.tribe}: ${Math.round(gt.buildQuality * 100)}%</div>`;
-    }
-    return sb;
-  }
 
   let feed = '';
   for (let i = 0; i < totalSteps; i++) {
@@ -1323,7 +1715,7 @@ export function rpBuildOceansHeistGetaway(ep) {
     <div class="oh-hud">${hudCells}</div>
     <div class="oh-layout">
       <div class="oh-feed">${feed}${controls}</div>
-      <div class="oh-sidebar" id="oh-sidebar-getaway">${buildGetawaySidebar(revIdx + 1)}</div>
+      <div class="oh-sidebar" id="oh-sidebar-getaway">${_ohBuildGetawaySidebarFromData(gw, revIdx + 1)}</div>
     </div>
   `, ep);
 }
@@ -1503,78 +1895,167 @@ function _ohBuildVaultSidebarFromData(vc, revCount) {
 function _ohBuildHeistSidebarFromData(heist, revCount) {
   const latestEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
   const crewRoles = latestEp?.oceansHeist?.crewRoles || {};
-  let sb = `<div class="oh-side-sec">SECURITY STATUS</div>`;
-  for (let i = 0; i < heist.tribes.length; i++) {
-    const ht = heist.tribes[i];
-    const shown = i + 1 < revCount;
+
+  // Map revCount to which round steps have been revealed
+  // Steps: intro(1) + optional entrance(1) + N round steps + scores(1)
+  const hasEntrance = heist.tribes.some(ht => ht.entranceEvents?.length);
+  const roundOffset = 1 + (hasEntrance ? 1 : 0);
+  const totalRoundSteps = heist.tribes.reduce((s, ht) => s + ht.rounds.length, 0);
+
+  // Build ordered list of (tribe, round) matching step order
+  const roundStepMap = [];
+  for (const ht of heist.tribes) {
+    for (const rd of ht.rounds) {
+      roundStepMap.push({ tribe: ht.tribe, round: rd.round });
+    }
+  }
+  const roundsRevealed = Math.max(0, Math.min(totalRoundSteps, revCount - roundOffset));
+  const scoresRevealed = revCount > roundOffset + totalRoundSteps;
+
+  // Track revealed rounds per tribe
+  const tribeRoundsRevealed = {};
+  for (const ht of heist.tribes) tribeRoundsRevealed[ht.tribe] = 0;
+  for (let i = 0; i < roundsRevealed; i++) {
+    tribeRoundsRevealed[roundStepMap[i].tribe]++;
+  }
+
+  let sb = `<div class="oh-side-sec">HEIST STATUS</div>`;
+
+  // Round progress dots
+  sb += `<div style="display:flex;gap:3px;margin-bottom:8px;justify-content:center">`;
+  for (let r = 1; r <= 5; r++) {
+    const anyRevealed = heist.tribes.some(ht => tribeRoundsRevealed[ht.tribe] >= r);
+    sb += `<div style="width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'Share Tech Mono',monospace;background:${anyRevealed ? 'var(--heist-cyan)' : 'rgba(0,0,0,0.3)'};color:${anyRevealed ? '#000' : 'rgba(255,255,255,0.2)'}">${r}</div>`;
+  }
+  sb += `</div>`;
+
+  for (const ht of heist.tribes) {
     const roles = crewRoles[ht.tribe] || {};
-    const members = Object.keys(ht.memberResults || {});
-    sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;opacity:${shown ? 1 : 0.4}">
+    const members = Object.keys(ht.memberTotals || {});
+    const revRounds = tribeRoundsRevealed[ht.tribe];
+    const started = revRounds > 0;
+
+    // Calculate revealed loot and benched rounds so far
+    let revealedLoot = 0;
+    const revealedVaultReaches = {};
+    const revealedBenched = {};
+    members.forEach(n => { revealedVaultReaches[n] = 0; revealedBenched[n] = 0; });
+    for (let r = 0; r < revRounds; r++) {
+      const rd = ht.rounds[r];
+      revealedLoot += rd.roundLoot;
+      for (const n of rd.vaultCrew) revealedVaultReaches[n]++;
+      for (const [n, res] of Object.entries(rd.results)) {
+        if (res.benched) revealedBenched[n]++;
+      }
+    }
+
+    sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px;opacity:${started || revCount > 0 ? 1 : 0.4}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan)">${ht.tribe}</div>
         ${ht.hasEquipment ? '<span style="font-size:8px;color:var(--heist-green)">🔧 EQUIPPED</span>' : ''}
-      </div>
-      ${shown ? `
-      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px">
-        ${members.map(n => {
-          const r = roles[n] || { emoji: '🎭' };
-          const mr = ht.memberResults[n];
-          const passed = mr ? mr.obstacles.filter(o => o.passed).length : 0;
-          const total = mr ? mr.obstacles.filter(o => o.type !== 'loot').length : 0;
-          return `<div style="display:flex;align-items:center;gap:3px;padding:2px 4px;background:rgba(0,0,0,0.15);border-radius:3px" title="${n}: ${passed}/${total} obstacles">
-            ${_ohSidePortrait(n, 18)}<span style="font-size:9px">${r.emoji}</span><span style="font-size:9px;color:${passed >= total ? 'var(--heist-green)' : passed > 0 ? 'var(--heist-gold)' : 'var(--heist-red)'}">${passed}/${total}</span>
-          </div>`;
-        }).join('')}
-      </div>
-      <div style="display:flex;gap:8px;font-size:8px">
-        <span style="color:var(--heist-gold)">💰 $${ht.totalLoot * 100}k</span>
-        <span style="color:rgba(255,255,255,0.3)">Score: ${ht.score}</span>
-      </div>
-      ` : '<div style="font-size:9px;color:rgba(255,255,255,0.15)">IN PROGRESS</div>'}
+      </div>`;
+
+    // Members with vault reach count
+    sb += `<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px">
+      ${members.map(n => {
+        const r = roles[n] || { emoji: '🎭' };
+        const reaches = revealedVaultReaches[n];
+        const played = revRounds - revealedBenched[n];
+        const isBenched = played < revRounds;
+        const color = played === 0 ? 'rgba(255,255,255,0.2)' : reaches >= played ? 'var(--heist-green)' : reaches >= played * 0.5 ? 'var(--heist-gold)' : reaches > 0 ? 'rgba(255,255,255,0.5)' : 'var(--heist-red)';
+        return `<div style="display:flex;align-items:center;gap:3px;padding:2px 4px;background:rgba(0,0,0,0.15);border-radius:3px" title="${n}: ${reaches}/${played} vaults${isBenched ? `, benched ${revealedBenched[n]}` : ''}">
+          ${_ohSidePortrait(n, 18)}<span style="font-size:9px">${r.emoji}</span>${started ? `<span style="font-size:9px;color:${color}">${reaches}/${played}</span>${isBenched ? '<span style="font-size:7px;color:rgba(255,255,255,0.15)">🪑</span>' : ''}` : ''}
+        </div>`;
+      }).join('')}
     </div>`;
+
+    // Loot running total
+    if (started) {
+      sb += `<div style="display:flex;justify-content:space-between;font-size:9px;margin-top:2px">
+        <span style="color:var(--heist-gold)">💰 $${revealedLoot * 100}k</span>
+        <span style="color:rgba(255,255,255,0.3)">Rd ${revRounds}/5</span>
+      </div>`;
+    } else {
+      sb += `<div style="font-size:9px;color:rgba(255,255,255,0.15)">AWAITING ENTRY</div>`;
+    }
+
+    sb += `</div>`;
   }
   return sb;
 }
 
 function _ohBuildGetawaySidebarFromData(gw, revCount) {
-  const latestEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
-  const crewRoles = latestEp?.oceansHeist?.crewRoles || {};
-  let sb = `<div class="oh-side-sec">RACE POSITIONS</div>`;
-  const latestRound = gw.raceRounds.filter((_, i) => i + 3 < revCount).pop();
-  const positions = latestRound ? latestRound.positions.sort((a, b) => b.distance - a.distance) : gw.tribes.map(g => ({ tribe: g.tribe, distance: 0 }));
+  // Step layout: intro(1) + builds(N tribes) + race rounds(5) + result(1)
+  const tribeCount = gw.tribes.length;
+  const buildOffset = 1;
+  const raceOffset = buildOffset + tribeCount;
+  const buildsRevealed = Math.max(0, Math.min(tribeCount, revCount - buildOffset));
+  const racesRevealed = Math.max(0, Math.min(gw.raceRounds.length, revCount - raceOffset));
+  const started = revCount > 0;
+
+  let sb = '';
+
+  // Crew roles (show after first build revealed)
+  if (buildsRevealed > 0) {
+    sb += `<div class="oh-side-sec">CREW</div>`;
+    for (const gt of gw.tribes) {
+      const r = gt.roles;
+      sb += `<div style="padding:4px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:3px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--heist-cyan);margin-bottom:3px">${gt.tribe}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px">
+          ${[['🏎️', r.driver], ['🗺️', r.navigator], ['🔧', r.mechanic], ...r.crew.map(n => ['💪', n])].filter(([,n]) => n).map(([icon, name]) =>
+            `<div style="display:flex;align-items:center;gap:2px;padding:1px 3px;background:rgba(0,0,0,0.15);border-radius:2px">
+              ${_ohSidePortrait(name, 16)}<span style="font-size:9px">${icon}</span>
+            </div>`
+          ).join('')}
+        </div>
+      </div>`;
+    }
+  }
+
+  // Build quality (show as builds are revealed)
+  if (buildsRevealed > 0) {
+    sb += `<div class="oh-side-sec">BUILD QUALITY</div>`;
+    for (let i = 0; i < tribeCount; i++) {
+      const gt = gw.tribes[i];
+      const shown = i < buildsRevealed;
+      const qualPct = Math.round(gt.buildQuality * 100);
+      const qualColor = qualPct > 75 ? 'var(--heist-green)' : qualPct > 45 ? 'var(--heist-gold)' : 'var(--heist-red)';
+      sb += `<div style="display:flex;align-items:center;gap:4px;padding:2px 0">
+        <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,0.4);width:45px">${gt.tribe}</span>
+        ${shown ? `<div style="flex:1;height:4px;background:rgba(0,0,0,0.3);border-radius:2px;overflow:hidden">
+          <div style="height:100%;width:${qualPct}%;background:${qualColor};border-radius:2px"></div>
+        </div>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:${qualColor}">${qualPct}%</span>` :
+        `<span style="font-size:8px;color:rgba(255,255,255,0.15)">???</span>`}
+      </div>`;
+    }
+  }
+
+  // Race positions (update live with each race round)
+  sb += `<div class="oh-side-sec">RACE POSITIONS</div>`;
+  const latestRound = racesRevealed > 0 ? gw.raceRounds[racesRevealed - 1] : null;
+  const positions = latestRound ? [...latestRound.positions].sort((a, b) => b.distance - a.distance) : gw.tribes.map(g => ({ tribe: g.tribe, distance: 0 }));
   for (const pos of positions) {
     const gt = gw.tribes.find(g => g.tribe === pos.tribe);
-    const roles = crewRoles[pos.tribe] || {};
     const pct = Math.min(100, pos.distance);
-    const statusIcon = gt?.crashed ? '💥' : gt?.finished ? '🏁' : gt?.outOfGas ? '⛽' : '🏎️';
-    const statusColor = gt?.crashed ? 'var(--heist-red)' : gt?.finished ? 'var(--heist-green)' : 'rgba(255,255,255,0.4)';
-    sb += `<div style="padding:6px;margin-bottom:4px;background:rgba(0,0,0,0.15);border-radius:4px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-        <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--heist-cyan)">${pos.tribe}</span>
-        <span style="font-size:10px;color:${statusColor}">${statusIcon} ${Math.round(pct)}%</span>
+    const statusIcon = pos.crashed ? '💥' : pos.finished ? '🏁' : gt?.outOfGas ? '⛽' : '🏎️';
+    const barColor = pos.crashed ? 'var(--heist-red)' : pos.finished ? 'var(--heist-green)' : 'var(--heist-gold)';
+    sb += `<div style="padding:4px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:3px">
+      <div style="display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:10px;margin-bottom:2px">
+        <span style="color:var(--heist-cyan)">${pos.tribe}</span>
+        <span style="color:${barColor}">${statusIcon} ${pct}%</span>
       </div>
-      <div style="height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden;margin-bottom:4px">
-        <div style="height:100%;width:${pct}%;background:${gt?.crashed ? 'var(--heist-red)' : 'var(--heist-green)'};border-radius:3px;transition:width 0.3s"></div>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:3px">
-        ${(gt?.members || []).map(n => {
-          const r = roles[n] || { emoji: '🎭' };
-          return `<div style="display:flex;align-items:center;gap:2px;padding:1px 3px;background:rgba(0,0,0,0.15);border-radius:2px">
-            ${_ohSidePortrait(n, 16)}<span style="font-size:9px">${r.emoji}</span>
-          </div>`;
-        }).join('')}
+      <div style="height:5px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px"></div>
       </div>
     </div>`;
   }
-  sb += `<div class="oh-side-sec">BUILD QUALITY</div>`;
-  for (const gt of gw.tribes) {
-    const qualPct = Math.round(gt.buildQuality * 100);
-    const qualColor = qualPct > 50 ? 'var(--heist-green)' : qualPct > 30 ? 'var(--heist-gold)' : 'var(--heist-red)';
-    sb += `<div style="display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 0">
-      <span style="color:rgba(255,255,255,0.4)">${gt.tribe}</span>
-      <span style="color:${qualColor}">${qualPct}%</span>
-    </div>`;
+
+  if (racesRevealed > 0) {
+    sb += `<div style="font-size:8px;color:rgba(255,255,255,0.2);text-align:center;margin-top:4px;font-family:'Share Tech Mono',monospace">ROUND ${racesRevealed}/5</div>`;
   }
+
   return sb;
 }
 

@@ -631,8 +631,64 @@ export function _textOceansHeist(ep, ln, sec) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// COLD OPEN
+// TITLE CARD + COLD OPEN
 // ══════════════════════════════════════════════════════════════
+export function rpBuildOceansHeistTitleCard(ep) {
+  const oh = ep.oceansHeist;
+  if (!oh) return '';
+
+  const taglines = [
+    '"Three phases. One crew. Infinite greed."',
+    '"Trust no one. Steal everything."',
+    '"The vault won\'t crack itself."',
+  ];
+  const tagline = taglines[Math.floor((ep.num || 0) % taglines.length)];
+
+  const crewRoles = oh.crewRoles || {};
+  const allRoles = Object.entries(crewRoles).flatMap(([tribe, roles]) =>
+    Object.entries(roles).map(([name, r]) => ({ name, tribe, ...r }))
+  );
+
+  let crewCards = '';
+  for (const [tribe, roles] of Object.entries(crewRoles)) {
+    crewCards += `<div style="margin-bottom:12px">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--heist-cyan);margin-bottom:6px">${tribe}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">`;
+    for (const [name, r] of Object.entries(roles)) {
+      crewCards += `<div style="text-align:center;width:60px">
+        ${_ohPortrait(name, 36)}
+        <div style="font-size:8px;color:rgba(255,255,255,0.7);margin-top:2px">${name.split(' ')[0]}</div>
+        <div style="font-size:7px;color:var(--heist-gold);font-family:'Share Tech Mono',monospace">${r.emoji} ${r.role}</div>
+      </div>`;
+    }
+    crewCards += `</div></div>`;
+  }
+
+  return _ohShell(`
+    <div style="text-align:center;padding:50px 20px 60px;position:relative;z-index:6;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:5px;color:rgba(34,211,238,0.4);text-transform:uppercase;margin-bottom:14px;">CLASSIFIED &middot; ${host().toUpperCase()} PRODUCTIONS</div>
+
+      <div style="font-family:'Black Ops One',sans-serif;font-size:40px;color:var(--heist-cyan);text-shadow:0 0 30px rgba(34,211,238,0.3),3px 3px 0 rgba(0,0,0,0.6);letter-spacing:5px;line-height:1.1;margin-bottom:8px;">OCEAN'S EIGHT<br><span style="font-size:20px;color:var(--heist-gold)">—OR NINE</span></div>
+
+      <div style="font-family:'Share Tech Mono',monospace;font-size:13px;font-style:italic;color:rgba(255,255,255,0.5);margin-bottom:24px;letter-spacing:1px;">${tagline}</div>
+
+      <div style="display:inline-block;background:rgba(0,0,0,0.35);border:1px solid rgba(34,211,238,0.12);border-radius:4px;padding:16px 28px;margin-bottom:24px;">
+        <div style="font-size:9px;letter-spacing:4px;color:rgba(34,211,238,0.4);text-transform:uppercase;margin-bottom:10px;">HEIST PHASES</div>
+        <div style="display:flex;gap:24px;justify-content:center;font-size:13px;color:rgba(255,255,255,0.8);">
+          <div style="text-align:center"><div style="font-family:'Black Ops One',sans-serif;font-size:18px;color:var(--heist-gold);margin-bottom:2px;">I</div><div style="font-size:10px;letter-spacing:1px">VAULT CRACK</div></div>
+          <div style="text-align:center"><div style="font-family:'Black Ops One',sans-serif;font-size:18px;color:var(--heist-red);margin-bottom:2px;">II</div><div style="font-size:10px;letter-spacing:1px">THE HEIST</div></div>
+          <div style="text-align:center"><div style="font-family:'Black Ops One',sans-serif;font-size:18px;color:var(--heist-green);margin-bottom:2px;">III</div><div style="font-size:10px;letter-spacing:1px">GETAWAY</div></div>
+        </div>
+      </div>
+
+      <div style="max-width:500px;margin:0 auto;background:rgba(0,0,0,0.2);border:1px solid rgba(34,211,238,0.08);border-radius:4px;padding:16px">
+        <div style="font-size:9px;letter-spacing:3px;color:rgba(34,211,238,0.4);text-transform:uppercase;margin-bottom:10px;font-family:'Share Tech Mono',monospace">THE CREW</div>
+        ${crewCards}
+      </div>
+    </div>
+  `, ep);
+}
+
 export function _coldOpenOceansHeist(ep) {
   const h = host();
   return `A black van screeched to a halt on the film lot. ${h} stepped out wearing a turtleneck and aviators. "Today's challenge is simple," he said, cracking his knuckles. "You're going to rob a bank." He unrolled a blueprint on the hood. "Three phases. Crack the vault. Steal the loot. Escape in your getaway car." He grinned. "First team out wins. Last team... well. Someone's going home tonight."`;

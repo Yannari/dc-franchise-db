@@ -829,12 +829,12 @@ function _ohShell(content, ep) {
   border-bottom:1px solid rgba(34,211,238,0.1);margin-top:8px}
 .oh-side-sec:first-child{margin-top:0}
 
-/* Laser grid */
+/* Laser grid — animated sweeping beams */
 .oh-laser{position:relative}
-.oh-laser::before{content:'';position:absolute;top:20%;left:0;right:0;height:1px;
-  background:var(--heist-red);box-shadow:0 0 6px var(--heist-red),0 0 12px rgba(239,68,68,0.3);opacity:0.4}
-.oh-laser::after{content:'';position:absolute;top:60%;left:0;right:0;height:1px;
-  background:var(--heist-red);box-shadow:0 0 6px var(--heist-red),0 0 12px rgba(239,68,68,0.3);opacity:0.3}
+.oh-laser::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 18%,rgba(239,68,68,0.06) 18%,rgba(239,68,68,0.06) 18.3%,transparent 18.3%,transparent 36%,rgba(239,68,68,0.04) 36%,rgba(239,68,68,0.04) 36.3%,transparent 36.3%,transparent 55%,rgba(239,68,68,0.05) 55%,rgba(239,68,68,0.05) 55.3%,transparent 55.3%,transparent 75%,rgba(239,68,68,0.04) 75%,rgba(239,68,68,0.04) 75.3%,transparent 75.3%);
+  animation:oh-laser-sweep 3s linear infinite}
+@keyframes oh-laser-sweep{0%{background-position:0 0}100%{background-position:0 40px}}
 
 /* Alarm flash */
 .oh-alarm{animation:oh-alarm-flash 0.6s ease-out}
@@ -1053,38 +1053,106 @@ export function rpBuildOceansHeistHeist(ep) {
 
   const steps = [];
 
-  steps.push({ type: 'intro', html: `<div class="oh-ev" style="border-left-color:var(--heist-red)">
-    <div style="font-size:22px">🏦</div>
-    <div style="flex:1"><div class="oh-ev-badge red">PHASE II — THE HEIST</div>
-    <div class="oh-ev-text">${pick(HEIST_HOST.heistIntro)(host())}</div></div>
+  steps.push({ type: 'intro', html: `<div class="oh-ev" style="border-left-color:var(--heist-red);padding:14px">
+    <div style="font-size:28px">🏦</div>
+    <div style="flex:1"><div class="oh-ev-badge red" style="font-size:11px;padding:4px 12px">PHASE II — THE HEIST</div>
+    <div class="oh-ev-text" style="font-size:14px;margin-top:6px">${pick(HEIST_HOST.heistIntro)(host())}</div></div>
   </div>` });
 
-  for (const ht of heist.tribes) {
-    let tribeHtml = `<div class="oh-ev oh-laser" style="border-left-color:var(--heist-red)">
-      <div style="flex:1">
-        <div class="oh-ev-badge ${ht.hasEquipment ? 'green' : 'gray'}">${ht.tribe} ${ht.hasEquipment ? '— HAS EQUIPMENT 🔧' : ''}</div>`;
+  // Build obstacle-by-obstacle view
+  const obstacleTypes = [
+    { key: 'laser', label: 'LASER GRID', icon: '🔴', passType: 'laserDodge', failType: 'laserFail', color: 'var(--heist-red)',
+      desc: 'Dodge the beams. One wrong move and the alarm triggers.' },
+    { key: 'camera', label: 'SECURITY CAMERAS', icon: '📹', passType: 'cameraDodge', failType: 'cameraFail', color: 'var(--heist-cyan)',
+      desc: 'Find the blind spots. The cameras never stop rotating.' },
+    { key: 'alarm', label: 'ALARM SYSTEM', icon: '🚨', passType: 'alarmDefuse', failType: 'alarmFail', color: 'var(--heist-gold)',
+      desc: 'Cut the right wire. Cut the wrong one and it\'s over.' },
+    { key: 'vault', label: 'VAULT DOOR', icon: '🚪', passType: 'vaultPush', failType: 'vaultStuck', color: 'var(--heist-green)',
+      desc: 'Team effort. Everyone pushes. The door either moves or it doesn\'t.' },
+    { key: 'loot', label: 'LOOT GRAB', icon: '💰', passType: 'lootGrab', failType: 'lootGreed', color: 'var(--heist-gold)',
+      desc: 'Take what you need... or take it ALL. Greed has consequences.' },
+  ];
 
-    for (const evt of ht.events) {
-      const isPass = ['laserDodge', 'cameraDodge', 'alarmDefuse', 'vaultPush', 'lootGrab', 'criminalBonus'].includes(evt.type);
-      const isFail = ['laserFail', 'cameraFail', 'alarmFail', 'vaultStuck', 'hesitation'].includes(evt.type);
-      const isGreed = evt.type === 'lootGreed';
-      const icon = isPass ? '✅' : isFail ? '❌' : isGreed ? '💰' : '📋';
-      const color = isPass ? 'var(--heist-green)' : isFail ? 'var(--heist-red)' : isGreed ? 'var(--heist-gold)' : 'rgba(255,255,255,0.5)';
-      const isAlarm = evt.type === 'alarmFail' || evt.type === 'laserFail';
-
-      tribeHtml += `<div class="${isAlarm ? 'oh-alarm' : ''}" style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;color:${color}">
-        ${evt.player ? _ohSidePortrait(evt.player, 18) : ''}
-        <span>${icon} ${evt.text}</span>
+  // Special events (criminal bonus, hesitation) — show before obstacles
+  const specialEvents = heist.tribes.flatMap(ht =>
+    ht.events.filter(e => e.type === 'criminalBonus' || e.type === 'hesitation')
+  );
+  if (specialEvents.length) {
+    let specialHtml = `<div class="oh-ev" style="border-left-color:rgba(255,255,255,0.15);padding:12px">
+      <div style="flex:1"><div class="oh-ev-badge gray" style="font-size:10px">ENTERING THE BANK</div>`;
+    for (const evt of specialEvents) {
+      const color = evt.type === 'criminalBonus' ? 'var(--heist-green)' : 'var(--heist-red)';
+      const icon = evt.type === 'criminalBonus' ? '😎' : '😰';
+      specialHtml += `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;color:${color}">
+        ${_ohPortrait(evt.player, 32)} <span>${icon} ${evt.text}</span>
       </div>`;
     }
-
-    tribeHtml += `<div style="display:flex;gap:12px;margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(34,211,238,0.4)">
-      <span>SCORE: ${ht.score}</span>
-      <span>LOOT: $${ht.totalLoot * 100}k</span>
-    </div>`;
-    tribeHtml += `</div></div>`;
-    steps.push({ type: 'tribe-heist', tribe: ht.tribe, html: tribeHtml });
+    specialHtml += `</div></div>`;
+    steps.push({ type: 'special', html: specialHtml });
   }
+
+  for (const obs of obstacleTypes) {
+    let obsHtml = `<div class="oh-ev ${obs.key === 'laser' ? 'oh-laser' : ''}" style="border-left-color:${obs.color};padding:14px;position:relative${obs.key === 'laser' ? ';overflow:hidden' : ''}">
+      <div style="flex:1">
+        <div class="oh-ev-badge ${obs.key === 'laser' ? 'red' : obs.key === 'camera' ? 'cyan' : obs.key === 'alarm' ? 'gold' : 'green'}" style="font-size:11px;padding:4px 12px">${obs.icon} ${obs.label}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin:4px 0 10px;font-style:italic">${obs.desc}</div>`;
+
+    for (const ht of heist.tribes) {
+      obsHtml += `<div style="margin-bottom:8px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--heist-cyan);margin-bottom:4px;letter-spacing:1px">${ht.tribe}${ht.hasEquipment ? ' 🔧' : ''}</div>`;
+
+      if (obs.key === 'vault') {
+        // Vault door is team-wide
+        const vaultEvt = ht.events.find(e => e.type === 'vaultPush' || e.type === 'vaultStuck');
+        if (vaultEvt) {
+          const passed = vaultEvt.type === 'vaultPush';
+          obsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:6px;background:rgba(0,0,0,0.15);border-radius:4px;font-size:13px;color:${passed ? 'var(--heist-green)' : 'var(--heist-red)'}">
+            <span style="font-size:18px">${passed ? '✅' : '❌'}</span> ${vaultEvt.text}
+          </div>`;
+        }
+      } else if (obs.key === 'loot') {
+        // Loot per member
+        const lootEvts = ht.events.filter(e => e.type === 'lootGrab' || e.type === 'lootGreed');
+        for (const evt of lootEvts) {
+          const isGreedy = evt.type === 'lootGreed';
+          obsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:${isGreedy ? 'var(--heist-gold)' : 'var(--heist-green)'}">
+            ${_ohPortrait(evt.player, 28)} <span>${isGreedy ? '🤑' : '💰'} ${evt.text}</span>
+          </div>`;
+        }
+      } else {
+        // Per-member obstacle results
+        const passEvts = ht.events.filter(e => e.type === obs.passType);
+        const failEvts = ht.events.filter(e => e.type === obs.failType);
+        for (const evt of [...passEvts, ...failEvts]) {
+          const passed = evt.type === obs.passType;
+          obsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:${passed ? 'var(--heist-green)' : 'var(--heist-red)'}">
+            ${_ohPortrait(evt.player, 28)} <span>${passed ? '✅' : '❌'} ${evt.text}</span>
+          </div>`;
+        }
+      }
+      obsHtml += `</div>`;
+    }
+    obsHtml += `</div></div>`;
+    steps.push({ type: 'obstacle', key: obs.key, html: obsHtml });
+  }
+
+  // Final scores
+  let scoreHtml = `<div class="oh-ev" style="border-left-color:var(--heist-green);padding:14px">
+    <div style="flex:1"><div class="oh-ev-badge green" style="font-size:11px;padding:4px 12px">💼 HEIST COMPLETE</div>`;
+  for (const ht of heist.tribes.sort((a, b) => b.score - a.score)) {
+    const barPct = Math.min(100, (ht.score / Math.max(...heist.tribes.map(h => h.score))) * 100);
+    scoreHtml += `<div style="margin:8px 0">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span style="color:var(--heist-cyan);font-family:'Share Tech Mono',monospace">${ht.tribe}${ht.hasEquipment ? ' 🔧' : ''}</span>
+        <span style="color:var(--heist-gold)">💰 $${ht.totalLoot * 100}k — ${ht.score} pts</span>
+      </div>
+      <div style="height:8px;background:rgba(0,0,0,0.3);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${barPct}%;background:var(--heist-green);border-radius:4px"></div>
+      </div>
+    </div>`;
+  }
+  scoreHtml += `</div></div>`;
+  steps.push({ type: 'scores', html: scoreHtml });
 
   const totalSteps = steps.length;
 

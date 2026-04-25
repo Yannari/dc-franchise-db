@@ -288,8 +288,9 @@ export function simulateMillionBucksBC(ep, tribes) {
   if (!ep.chalMemberScores) ep.chalMemberScores = {};
   tribeMembers.flatMap(t => t.members).forEach(n => { ep.chalMemberScores[n] = 0; });
 
-  // ── TWO PHASES ──
+  // ── TWO PHASES + DRAMA BREAK ──
   _simulateFireMaking(ep, tribeMembers, result);
+  _simulatePrehistoricBreak(ep, tribeMembers, result);
   _simulateBoneBattle(ep, tribeMembers, result);
 
   // ── FINAL SCORING ──
@@ -405,6 +406,194 @@ function _simulateFireMaking(ep, tribeMembers, result) {
   // Determine fire winner
   const sorted = [...result.fireMaking.tribes].sort((a, b) => b.fireScore - a.fireScore);
   result.fireWinner = sorted[0].tribe;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PREHISTORIC BREAK — camp events between phases
+// ══════════════════════════════════════════════════════════════
+const BC_DRAMA_EVENTS = [
+  {
+    id: 'fireRespect',
+    check(ep, all) { return ep.millionBucksBC?.fireMaking?.tribes?.some(ft => ft.events.some(e => e.type === 'goodContrib')); },
+    apply(ep, all) {
+      const goodPlayers = ep.millionBucksBC.fireMaking.tribes.flatMap(ft => ft.events.filter(e => e.type === 'goodContrib').map(e => e.player));
+      if (goodPlayers.length < 2) return null;
+      const a = pick(goodPlayers);
+      const others = goodPlayers.filter(n => n !== a);
+      const b = pick(others);
+      addBond(a, b, 0.4);
+      const texts = [
+        `${a} nodded at ${b} across the campfire. "You know your way around rocks." A quiet respect formed.`,
+        `${b} caught ${a}'s eye after the fire challenge. "Nice work out there." ${a} grinned. A bond sparked.`,
+        `${a} and ${b} sat by the dying embers, trading fire-starting tips. Mutual respect growing.`,
+      ];
+      return { text: pick(texts), players: [a, b], badgeText: 'FIRE RESPECT', badgeClass: 'amber' };
+    },
+  },
+  {
+    id: 'failBlame',
+    check(ep, all) { return ep.millionBucksBC?.fireMaking?.tribes?.some(ft => ft.events.some(e => e.type === 'badContrib')); },
+    apply(ep, all) {
+      const badByTribe = ep.millionBucksBC.fireMaking.tribes.map(ft => ({
+        tribe: ft.tribe,
+        fails: ft.events.filter(e => e.type === 'badContrib').map(e => e.player),
+        goods: ft.events.filter(e => e.type === 'goodContrib').map(e => e.player),
+      })).filter(t => t.fails.length && t.goods.length);
+      if (!badByTribe.length) return null;
+      const t = pick(badByTribe);
+      const blamer = pick(t.goods);
+      const blamed = pick(t.fails);
+      addBond(blamer, blamed, -0.4);
+      const texts = [
+        `${blamer} pulled ${blamed} aside. "You almost cost us the fire. Get it together."`,
+        `"Wet branches? Really?" ${blamer} couldn't hide the frustration with ${blamed}.`,
+        `${blamer} gave ${blamed} a look after the fire challenge. The kind that doesn't need words.`,
+      ];
+      return { text: pick(texts), players: [blamer, blamed], badgeText: 'BLAME', badgeClass: 'red' };
+    },
+  },
+  {
+    id: 'loinclotheComplaint',
+    check(ep, all) { return all.length >= 2; },
+    apply(ep, all) {
+      const a = pick(all);
+      const b = pick(all.filter(n => n !== a));
+      addBond(a, b, 0.3);
+      const aPr = pronouns(a);
+      const texts = [
+        `"This loincloth is riding up in places I didn't know existed." ${a} tugged at the fabric. ${b} laughed so hard ${b} snorted.`,
+        `${a} and ${b} compared loincloths. "Mine smells like Chef's cooking." "That's an IMPROVEMENT."`,
+        `"I feel like a cave-person Tarzan," ${a} complained. ${b} wheezed. "You LOOK like one too."`,
+      ];
+      return { text: pick(texts), players: [a, b], badgeText: 'COSTUME DRAMA', badgeClass: 'amber' };
+    },
+  },
+  {
+    id: 'caveBonding',
+    check(ep, all) { return all.length >= 2; },
+    apply(ep, all) {
+      const pair = all.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+      if (getBond(pair[0], pair[1]) > 5) return null;
+      addBond(pair[0], pair[1], 0.5);
+      const texts = [
+        `${pair[0]} and ${pair[1]} huddled by the fire sharing prehistoric jokes. "What does a caveman use for a phone? A MEGA-phone." Bonding over bad humor.`,
+        `${pair[0]} drew a stick figure of ${pair[1]} on the cave wall. ${pair[1]} added muscles. They both laughed.`,
+        `${pair[0]} offered ${pair[1]} a share of dried mammoth jerky. "I found it behind the prop truck." Friendship fuel.`,
+      ];
+      return { text: pick(texts), players: [pair[0], pair[1]], badgeText: 'CAVE BONDING', badgeClass: 'green' };
+    },
+  },
+  {
+    id: 'caveGrudge',
+    check(ep, all) {
+      for (const a of all) for (const b of all) if (a !== b && getBond(a, b) < -1) return true;
+      return false;
+    },
+    apply(ep, all) {
+      const pairs = [];
+      for (const a of all) for (const b of all) if (a !== b && getBond(a, b) < -1) pairs.push([a, b]);
+      if (!pairs.length) return null;
+      const [a, b] = pick(pairs);
+      addBond(a, b, -0.3);
+      const texts = [
+        `${a} "accidentally" kicked dirt into ${b}'s loincloth. "Oops." ${b} wasn't buying it.`,
+        `${a} and ${b} sat on opposite sides of the set. The silence between them was deafening.`,
+        `${b} caught ${a} glaring at them. "Got a problem, cave-person?" The tension thickened.`,
+      ];
+      return { text: pick(texts), players: [a, b], badgeText: 'CAVE GRUDGE', badgeClass: 'red' };
+    },
+  },
+  {
+    id: 'cheatFallout',
+    check(ep, all) { return ep.millionBucksBC?.fireMaking?.tribes?.some(ft => ft.events.some(e => e.type === 'cheatCaught')); },
+    apply(ep, all) {
+      const cheaters = ep.millionBucksBC.fireMaking.tribes.flatMap(ft => ft.events.filter(e => e.type === 'cheatCaught').map(e => e.player));
+      if (!cheaters.length) return null;
+      const cheater = pick(cheaters);
+      const teammate = all.find(n => n !== cheater && ep.millionBucksBC.fireMaking.tribes.some(ft => ft.members.includes(n) && ft.members.includes(cheater)));
+      if (!teammate) return null;
+      addBond(teammate, cheater, -0.5);
+      const texts = [
+        `"A LIGHTER? Really?" ${teammate} was furious with ${cheater}. "You cost us the bigger bones!"`,
+        `${teammate} wouldn't look at ${cheater} after the cheating penalty. Trust broken.`,
+        `"Way to go, genius." ${teammate} slow-clapped at ${cheater}. The sarcasm could cut stone.`,
+      ];
+      return { text: pick(texts), players: [teammate, cheater], badgeText: 'CHEAT FALLOUT', badgeClass: 'red' };
+    },
+  },
+  {
+    id: 'strategyTalk',
+    check(ep, all) { return all.length >= 2; },
+    apply(ep, all) {
+      const pair = all.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+      addBond(pair[0], pair[1], 0.3);
+      const texts = [
+        `${pair[0]} pulled ${pair[1]} aside. "When the bone battle starts, target the weakest first. Agreed?" A nod. Alliance formed.`,
+        `${pair[0]} and ${pair[1]} discussed strategy behind the columns. "We don't hit each other. Deal?" "Deal."`,
+        `"If we're on the same column, I've got your back," ${pair[0]} told ${pair[1]}. A prehistoric pact.`,
+      ];
+      return { text: pick(texts), players: [pair[0], pair[1]], badgeText: 'STRATEGY', badgeClass: 'teal' };
+    },
+  },
+  {
+    id: 'tarPitDare',
+    check(ep, all) { return all.length >= 2; },
+    apply(ep, all) {
+      const darer = all.find(n => pStats(n).boldness >= 6);
+      if (!darer) return null;
+      const target = pick(all.filter(n => n !== darer));
+      const dPr = pronouns(darer);
+      const tPr = pronouns(target);
+      const texts = [
+        `${darer} dared ${target} to stick ${tPr.posAdj} hand in the tar pit. ${target} did it. "It's... warm?" ${darer} respected that.`,
+        `"Bet you won't lick the tar." ${darer} grinned at ${target}. ${target} considered it for way too long.`,
+        `${darer} cannonballed into the tar pit between rounds. Just because. ${target} was both horrified and impressed.`,
+      ];
+      addBond(darer, target, 0.3);
+      popDelta(darer, 1);
+      return { text: pick(texts), players: [darer, target], badgeText: 'TAR DARE', badgeClass: 'amber' };
+    },
+  },
+  {
+    id: 'boneInspection',
+    check(ep, all) { return true; },
+    apply(ep, all) {
+      const fireWinner = ep.millionBucksBC?.fireWinner;
+      if (!fireWinner) return null;
+      const loserTribes = ep.millionBucksBC.fireMaking.tribes.filter(ft => ft.tribe !== fireWinner);
+      if (!loserTribes.length) return null;
+      const loserMember = pick(loserTribes.flatMap(ft => ft.members));
+      const winnerMember = pick(ep.millionBucksBC.fireMaking.tribes.find(ft => ft.tribe === fireWinner)?.members || []);
+      if (!loserMember || !winnerMember) return null;
+      addBond(loserMember, winnerMember, -0.2);
+      const texts = [
+        `${loserMember} picked up one of the small bones and compared it to ${winnerMember}'s massive one. "How is that fair?!" ${winnerMember} shrugged.`,
+        `${loserMember} stared at the bigger bones ${winnerMember}'s team got. "Those are basically clubs. We got toothpicks."`,
+      ];
+      return { text: pick(texts), players: [loserMember, winnerMember], badgeText: 'BONE ENVY', badgeClass: 'amber' };
+    },
+  },
+];
+
+function _simulatePrehistoricBreak(ep, tribeMembers, result) {
+  const campKey = gs.mergeName || gs.tribes[0]?.name || 'merge';
+  const allMembers = tribeMembers.flatMap(t => t.members);
+  const breakEvents = [];
+
+  const eligible = BC_DRAMA_EVENTS.filter(ev => ev.check(ep, allMembers));
+  const shuffled = [...eligible].sort(() => Math.random() - 0.5);
+  const target = 3 + Math.floor(Math.random() * 3); // 3-5
+
+  for (const ev of shuffled) {
+    if (breakEvents.length >= target) break;
+    const applied = ev.apply(ep, allMembers);
+    if (applied) {
+      ep.campEvents[campKey].post.push({ ...applied, tag: 'drama' });
+      breakEvents.push({ id: ev.id, ...applied });
+    }
+  }
+
+  result.breakEvents = breakEvents;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1216,6 +1405,71 @@ function _bcBuildFireSidebar(bc, revCount) {
     </div>`;
   }
   return sb;
+}
+
+// ══════════════════════════════════════════════════════════════
+// VP SCREEN 2.5: PREHISTORIC BREAK
+// ══════════════════════════════════════════════════════════════
+export function rpBuildMillionBucksBCBreak(ep) {
+  const bc = ep.millionBucksBC;
+  if (!bc || !bc.breakEvents?.length) return '';
+  const _tvState = window._tvState || (window._tvState = {});
+  const stateKey = 'bc-break';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const revIdx = _tvState[stateKey].idx;
+
+  const steps = [];
+
+  steps.push({ html: `<div class="bc-ev" style="border-left-color:var(--cave-amber);padding:14px">
+    <div style="font-size:28px">🏕️</div>
+    <div style="flex:1"><div class="bc-ev-badge amber" style="font-size:11px;padding:4px 12px">PREHISTORIC BREAK</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:6px">Between the fire and the fight, tensions rise and bonds form...</div></div>
+  </div>` });
+
+  for (const evt of bc.breakEvents) {
+    const badgeColor = evt.badgeClass === 'red' ? 'var(--cave-red)' : evt.badgeClass === 'green' ? 'var(--cave-green)' : evt.badgeClass === 'teal' ? '#2dd4bf' : 'var(--cave-amber)';
+    const borderColor = evt.badgeClass === 'red' ? 'rgba(239,68,68,0.2)' : evt.badgeClass === 'green' ? 'rgba(34,197,94,0.2)' : 'rgba(217,119,6,0.15)';
+    steps.push({ html: `<div class="bc-ev bc-fight-drama" style="border-left-color:${borderColor};padding:12px">
+      <div style="flex:1">
+      <div style="display:inline-block;padding:2px 8px;font-size:8px;font-family:'Share Tech Mono',monospace;letter-spacing:2px;border-radius:2px;margin-bottom:6px;border:1px solid ${badgeColor};color:${badgeColor};background:rgba(0,0,0,0.2)">${evt.badgeText}</div>
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <div style="display:flex;gap:3px">${(evt.players || []).map(n => _bcPortrait(n, 28)).join('')}</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);font-style:italic;line-height:1.5">${evt.text}</div>
+      </div></div>
+    </div>` });
+  }
+
+  const totalSteps = steps.length;
+  let feed = '';
+  for (let i = 0; i < totalSteps; i++) {
+    feed += `<div id="bc-step-break-${i}" style="${i <= revIdx ? '' : 'display:none'}">${steps[i].html}</div>`;
+  }
+
+  const pending = revIdx < totalSteps - 1;
+  const controls = `<div id="bc-controls-break" class="bc-controls" ${!pending && totalSteps ? 'style="display:none"' : ''}>
+    <button class="bc-btn-next" onclick="millionBucksBCRevealNext('bc-break',${totalSteps})">NEXT</button>
+    <button class="bc-btn-all" onclick="millionBucksBCRevealAll('bc-break',${totalSteps})">Reveal All</button>
+  </div>
+  <div id="bc-done-break" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:14px 0'}">
+    ${_bcBadge('BACK TO THE CHALLENGE', 'amber')}
+  </div>`;
+
+  return _bcShell(`
+    <div class="bc-hud">
+      <div class="bc-hud-cell"><div class="bc-hud-val" style="color:var(--cave-amber)">🏕️</div><div class="bc-hud-lbl">BREAK</div></div>
+      <div class="bc-hud-cell"><div class="bc-hud-val" style="color:var(--cave-amber)">${bc.breakEvents.length}</div><div class="bc-hud-lbl">EVENTS</div></div>
+    </div>
+    <div class="bc-layout">
+      <div class="bc-feed">${feed}${controls}</div>
+      <div class="bc-sidebar" id="bc-sidebar-break">
+        <div class="bc-side-sec">DRAMA LOG</div>
+        ${bc.breakEvents.map((e, i) => {
+          const shown = i + 1 < revIdx + 1;
+          return `<div style="padding:3px;margin-bottom:2px;font-size:9px;color:${shown ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.1)'};font-family:'Share Tech Mono',monospace">${shown ? e.badgeText : '???'}</div>`;
+        }).join('')}
+      </div>
+    </div>
+  `, ep);
 }
 
 // ══════════════════════════════════════════════════════════════

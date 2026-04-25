@@ -19,7 +19,7 @@ import { rpBuildOneFluTitleCard, rpBuildOneFluStudySleep, rpBuildOneFluQuiz, rpB
 import { rpBuildMastersOfDisastersTitleCard, rpBuildMastersOfDisastersEarthquake, rpBuildMastersOfDisastersDramaBreak, rpBuildMastersOfDisastersSubmarine, rpBuildMastersOfDisastersResults, mastersOfDisastersRevealNext, mastersOfDisastersRevealAll } from './chal/masters-of-disasters.js';
 import { rpBuildFullMetalDramaTitleCard, rpBuildFullMetalDramaJump, rpBuildFullMetalDramaPaintBomb, rpBuildFullMetalDramaDramaBreak, rpBuildFullMetalDramaFlag, rpBuildFullMetalDramaResults, fullMetalDramaRevealNext, fullMetalDramaRevealAll } from './chal/full-metal-drama.js';
 import { rpBuildOceansHeistTitleCard, rpBuildOceansHeistVault, rpBuildOceansHeistHeist, rpBuildOceansHeistGetaway, rpBuildOceansHeistResults, oceansHeistRevealNext, oceansHeistRevealAll } from './chal/oceans-heist.js';
-import { rpBuildMillionBucksBCTitleCard, rpBuildMillionBucksBCFire, rpBuildMillionBucksBCBattle, rpBuildMillionBucksBCResults, millionBucksBCRevealNext, millionBucksBCRevealAll } from './chal/million-bucks-bc.js';
+import { rpBuildMillionBucksBCTitleCard, rpBuildMillionBucksBCFire, rpBuildMillionBucksBCBreak, rpBuildMillionBucksBCBattle, rpBuildMillionBucksBCResults, millionBucksBCRevealNext, millionBucksBCRevealAll } from './chal/million-bucks-bc.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10464,6 +10464,7 @@ export function buildVPScreens(epRecord) {
   } else if ((ep.isMillionBucksBC || ep.challengeType === 'million-bucks-bc') && ep.millionBucksBC) {
     vpScreens.push({ id:'bc-title', label:'Bucks B.C.', html: rpBuildMillionBucksBCTitleCard(ep) });
     if (ep.millionBucksBC.fireMaking) vpScreens.push({ id:'bc-fire', label:'Fire Making', html: rpBuildMillionBucksBCFire(ep) });
+    if (ep.millionBucksBC.breakEvents?.length) vpScreens.push({ id:'bc-break', label:'Break', html: rpBuildMillionBucksBCBreak(ep) });
     if (ep.millionBucksBC.boneBattle) vpScreens.push({ id:'bc-battle', label:'Bone Battle', html: rpBuildMillionBucksBCBattle(ep) });
     vpScreens.push({ id:'bc-results', label:'Results', html: rpBuildMillionBucksBCResults(ep) });
     if (ep.riLifeEvents?.length || ep.riDuel) {

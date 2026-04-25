@@ -239,7 +239,42 @@ function _simulateScan(active, state, timeline) {
   }
 }
 
-function _simulateLaser(active, state, timeline) {
+const LASER_MID_EVENTS = {
+  stuck: [
+    (a, b) => `${a} and ${b} got tangled between the same two beams. "STOP MOVING!" "YOU stop moving!"`,
+    (a, b) => `${a} froze and ${b} nearly walked into ${a}. "GO! MOVE!" They were gridlocked between lasers.`,
+  ],
+  showmanceMoment: [
+    (a, b) => `${a} slid under a laser with impressive flexibility. ${b} stared. "${b}... focus." ${b} couldn't.`,
+    (a, b) => `${a} grabbed ${b}'s hand to pull ${b} under a beam. They held on a second too long.`,
+  ],
+  panicFreeze: [
+    (p, pr) => `${p} looked up and saw the web of lasers ahead. ${pr.Sub} froze. Completely locked up.`,
+    (p, pr) => `${p}'s legs wouldn't move. The red beams were everywhere. "I can't do this."`,
+  ],
+  helpOther: [
+    (a, b) => `${a} guided ${b} through a tight gap. "Duck... lower... NOW!" Teamwork in the vault.`,
+    (a, b) => `"Follow exactly where I step," ${a} told ${b}. ${b} did. They both made it through.`,
+  ],
+  bagGrab: [
+    (p, pr) => `${p} reached the center, smashed the glass case, and grabbed the bag! Wire cutters and a grappling hook inside.`,
+    (p, pr) => `${p} dove for the bag in the glass case. Got it! ${pr.Sub} pulled out wire cutters. "These will be useful..."`,
+  ],
+  countdownPrank: [
+    (h) => `${h} started a 10-second countdown. Everyone panicked. Hugging, screaming, fetal positions. ...Nothing happened. ${h} laughed hysterically. "Your FACES!"`,
+    (h) => `"SELF-DESTRUCT IN 10... 9... 8..." Everyone grabbed whoever was closest. At zero: silence. ${h}: "Just kidding! ...OR AM I?" Then he laughed.`,
+  ],
+  countdownReal: [
+    (h) => `Then ${h} started ANOTHER countdown. "This one's real. Probably." Nobody was laughing this time.`,
+  ],
+};
+
+function _simulateLaser(active, state, timeline, ep) {
+  const campKey = gs.mergeName || 'merge';
+  if (!ep.campEvents) ep.campEvents = {};
+  if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+
+  // Phase 1: Each player navigates the laser grid
   const ordered = [...active].sort(() => Math.random() - 0.5);
   for (const name of ordered) {
     const s = pStats(name);
@@ -257,6 +292,78 @@ function _simulateLaser(active, state, timeline) {
       text: pick(LASER_TEXT[result])(name, pr),
     });
   }
+
+  // Phase 2: Mid-vault events (stuck together, showmance, panic, helping)
+  // Stuck together (~40%)
+  if (active.length >= 2 && Math.random() < 0.4) {
+    const pair = active.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+    addBond(pair[0], pair[1], -0.2);
+    timeline.laser.push({ type: 'stuck', players: [pair[0], pair[1]],
+      text: pick(LASER_MID_EVENTS.stuck)(pair[0], pair[1]) });
+  }
+
+  // Showmance moment (~35% if showmance exists)
+  const sm = gs.showmances?.find(s => active.includes(s.a) && active.includes(s.b));
+  if (sm && Math.random() < 0.35) {
+    addBond(sm.a, sm.b, 0.3);
+    timeline.laser.push({ type: 'showmance', players: [sm.a, sm.b],
+      text: pick(LASER_MID_EVENTS.showmanceMoment)(sm.a, sm.b) });
+    ep.campEvents[campKey].post.push({ text: timeline.laser[timeline.laser.length - 1].text, players: [sm.a, sm.b], badgeText: 'LASER MOMENT', badgeClass: 'green', tag: 'drama' });
+  }
+
+  // Panic freeze for low-boldness player (~30%)
+  if (Math.random() < 0.3) {
+    const nervous = active.filter(n => pStats(n).boldness <= 4);
+    if (nervous.length) {
+      const freezer = pick(nervous);
+      const pr = pronouns(freezer);
+      state.players[freezer].total -= 1;
+      timeline.laser.push({ type: 'panic', player: freezer,
+        text: pick(LASER_MID_EVENTS.panicFreeze)(freezer, pr) });
+    }
+  }
+
+  // Help another player (~30%)
+  if (active.length >= 2 && Math.random() < 0.3) {
+    const helper = active.find(n => pStats(n).loyalty >= 6 || ['hero', 'loyal-soldier'].includes(arch(n)));
+    if (helper) {
+      const helped = pick(active.filter(n => n !== helper));
+      addBond(helper, helped, 0.4);
+      state.players[helped].total += 1;
+      timeline.laser.push({ type: 'help', players: [helper, helped],
+        text: pick(LASER_MID_EVENTS.helpOther)(helper, helped) });
+      ep.campEvents[campKey].post.push({ text: timeline.laser[timeline.laser.length - 1].text, players: [helper, helped], badgeText: 'VAULT TEAMWORK', badgeClass: 'green', tag: 'drama' });
+    }
+  }
+
+  // Phase 3: Bag grab — best laser score reaches it first
+  const laserRanked = [...active].sort((a, b) => (state.players[b].laser?.score || 0) - (state.players[a].laser?.score || 0));
+  const bagWinner = laserRanked[0];
+  const bwPr = pronouns(bagWinner);
+  state.players[bagWinner].total += 2;
+  state.laserBagWinner = bagWinner;
+  timeline.laser.push({ type: 'bag', player: bagWinner,
+    text: pick(LASER_MID_EVENTS.bagGrab)(bagWinner, bwPr) });
+
+  // Phase 4: Countdown prank
+  timeline.laser.push({ type: 'countdown-fake',
+    text: pick(LASER_MID_EVENTS.countdownPrank)(host()) });
+
+  // Panic hug bonds during fake countdown
+  if (active.length >= 2) {
+    const hugPairs = [];
+    for (let i = 0; i < Math.min(2, Math.floor(active.length / 2)); i++) {
+      const remaining = active.filter(n => !hugPairs.flat().includes(n));
+      if (remaining.length >= 2) {
+        const pair = remaining.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+        hugPairs.push(pair);
+        addBond(pair[0], pair[1], 0.3);
+      }
+    }
+  }
+
+  timeline.laser.push({ type: 'countdown-real',
+    text: pick(LASER_MID_EVENTS.countdownReal)(host()) });
 }
 
 function _simulateWiretap(active, state, timeline, ep) {
@@ -361,7 +468,8 @@ function _simulateDefusal(active, state, timeline, ep) {
     const pr = pronouns(name);
     const compromised = state.players[name].laser?.result === 'hit' || state.players[name].scan?.result === 'flagged';
     const intelBonus = (state.players[name].intel?.score || 0) > 0.30 ? 0.04 : 0;
-    const score = s.mental * 0.04 + s.intuition * 0.03 + s.temperament * 0.02 + intelBonus + (compromised ? -0.06 : 0) + noise(0.35);
+    const bagBonus = state.laserBagWinner === name ? 0.06 : 0;
+    const score = s.mental * 0.04 + s.intuition * 0.03 + s.temperament * 0.02 + intelBonus + bagBonus + (compromised ? -0.06 : 0) + noise(0.35);
     const result = defusalResult(score);
     const wire = wireNames[Math.floor(Math.abs(Math.round(score * 100 + name.length)) % wireNames.length)];
     let delta = result === 'perfect' ? 4 : result === 'defused' ? 2 : result === 'messy' ? -1 : -3;
@@ -413,7 +521,7 @@ export function simulateOperationClassified(ep) {
   active.forEach(name => { state.players[name] = { total: 0 }; });
 
   _simulateScan(active, state, timeline);
-  _simulateLaser(active, state, timeline);
+  _simulateLaser(active, state, timeline, ep);
   _simulateWiretap(active, state, timeline, ep);
   _simulateDrama(active, state, timeline, ep);
   _simulateDefusal(active, state, timeline, ep);
@@ -534,11 +642,13 @@ function css() {
         transparent 78%,rgba(255,45,45,0.1) 78.5%,rgba(255,45,45,0.1) 79%,transparent 79.5%),
       linear-gradient(90deg,transparent 25%,rgba(255,45,45,0.06) 25.5%,rgba(255,45,45,0.06) 26%,transparent 26.5%,
         transparent 70%,rgba(255,45,45,0.08) 70.5%,rgba(255,45,45,0.08) 71%,transparent 71.5%)}
-  /* Moving laser sweep across photo */
-  .oc-laser-feed::after{content:'';position:absolute;left:0;right:0;height:2px;z-index:4;pointer-events:none;
-    background:linear-gradient(90deg,transparent,rgba(255,45,45,0.7),rgba(255,80,80,1),rgba(255,45,45,0.7),transparent);
-    box-shadow:0 0 8px 2px rgba(255,45,45,0.3);animation:oc-laser-sweep-v 2.5s linear infinite}
-  @keyframes oc-laser-sweep-v{0%{top:-2px}100%{top:calc(100% + 2px)}}
+  /* Criss-crossing laser beams inside the vault */
+  .oc-laser-feed::after{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;
+    background:
+      linear-gradient(35deg,transparent 46%,rgba(255,45,45,0.5) 49.5%,rgba(255,80,80,0.8) 50%,rgba(255,45,45,0.5) 50.5%,transparent 54%),
+      linear-gradient(145deg,transparent 46%,rgba(255,45,45,0.3) 49.5%,rgba(255,60,60,0.6) 50%,rgba(255,45,45,0.3) 50.5%,transparent 54%);
+    background-size:100% 100%;animation:oc-laser-shift 3s ease-in-out infinite alternate}
+  @keyframes oc-laser-shift{0%{background-position:0 -10px,-5px 0}100%{background-position:0 10px,5px 0}}
 
   /* REC indicator */
   .oc-laser-rec{position:absolute;top:6px;left:6px;z-index:5;font:700 7px/1 'Share Tech Mono',monospace;
@@ -621,7 +731,7 @@ function css() {
   @media(prefers-reduced-motion:reduce){
     .oc-shell::after,.oc-bomb-timer,.oc-scan-photo::after,
     .oc-scan-field .val,.oc-scan-status.flagged,
-    .oc-laser-feed::after,.oc-laser-rec::before,.oc-laser-result.alarm,.oc-laser-result.hit,
+    .oc-laser-feed::after,.oc-laser-rec::before,
     .oc-wire-card::before,.oc-wire-signal{animation:none!important}
     .oc-scan-field .val{width:100%!important;border-right:none!important}
   }
@@ -764,29 +874,77 @@ export function rpBuildOperationClassifiedLaser(ep) {
   if (!window._tvState) window._tvState = {};
   if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };
   const state = window._tvState[stateKey];
+  const bagWinner = ep.operationClassified.laserBagWinner;
 
   let html = '';
+  let camNum = 0;
   events.forEach((ev, i) => {
     const visible = i <= state.idx;
-    const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
-    const resultLabel = ev.type === 'ghost' ? 'GHOST — UNDETECTED' : ev.type === 'clean' ? 'CLEAN CROSSING' : ev.type === 'alarm' ? 'ALARM TRIGGERED' : 'COMPROMISED';
-    const camId = `CAM-${String(i + 1).padStart(2, '0')}`;
-    html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
-      <div class="oc-laser-card">
-        <div class="oc-laser-feed">
-          <div class="oc-laser-rec">REC</div>
-          <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${ev.player}">
+    const ppl = (ev.players || [ev.player]).filter(Boolean);
+
+    if (['ghost', 'clean', 'alarm', 'hit'].includes(ev.type)) {
+      // Player crossing card
+      camNum++;
+      const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
+      const resultLabel = ev.type === 'ghost' ? 'GHOST — UNDETECTED' : ev.type === 'clean' ? 'CLEAN CROSSING' : ev.type === 'alarm' ? 'ALARM TRIGGERED' : 'COMPROMISED';
+      html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+        <div class="oc-laser-card">
+          <div class="oc-laser-feed">
+            <div class="oc-laser-rec">REC</div>
+            <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${ev.player}">
+          </div>
+          <div class="oc-laser-data">
+            <div class="oc-laser-header">CAM-${String(camNum).padStart(2, '0')} // LASER VAULT</div>
+            <div class="oc-laser-name">${ev.player}</div>
+            <div class="oc-scan-field"><span class="label">BEAMS</span><span class="val">${ev.type === 'ghost' || ev.type === 'clean' ? '0 TRIPPED' : ev.type === 'alarm' ? '1 TRIPPED' : 'MULTIPLE'}</span></div>
+            <div class="oc-laser-result ${ev.type}">${resultLabel}</div>
+            <div class="oc-laser-narrative">${ev.text}</div>
+          </div>
         </div>
-        <div class="oc-laser-data">
-          <div class="oc-laser-header">${camId} // LASER VAULT FEED</div>
-          <div class="oc-laser-name">${ev.player}</div>
-          <div class="oc-scan-field"><span class="label">SECTOR</span><span class="val">VAULT ${String.fromCharCode(65 + (i % 4))}-${i + 1}</span></div>
-          <div class="oc-scan-field"><span class="label">BEAMS</span><span class="val">${ev.type === 'ghost' ? '0 TRIPPED' : ev.type === 'clean' ? '0 TRIPPED' : ev.type === 'alarm' ? '1 TRIPPED' : 'MULTIPLE'}</span></div>
-          <div class="oc-laser-result ${ev.type}">${resultLabel}</div>
-          <div class="oc-laser-narrative">${ev.text}</div>
+      </div>`;
+    } else if (ev.type === 'bag') {
+      // Bag grab — special highlight card
+      const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
+      html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+        <div class="oc-laser-card" style="border-color:rgba(34,197,94,0.3)">
+          <div class="oc-laser-feed" style="background:#040a06">
+            <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${ev.player}" style="padding:6px">
+          </div>
+          <div class="oc-laser-data">
+            <div class="oc-laser-header" style="color:rgba(34,197,94,0.5)">💼 BAG SECURED</div>
+            <div class="oc-laser-name">${ev.player}</div>
+            <div class="oc-laser-result ghost">FIRST TO THE BAG — WIRE CUTTERS ACQUIRED</div>
+            <div class="oc-laser-narrative">${ev.text}</div>
+            <div style="font:700 9px/1 'Share Tech Mono',monospace;color:var(--oc-green);margin-top:4px;letter-spacing:1px">+ADVANTAGE: DEFUSAL BONUS</div>
+          </div>
         </div>
-      </div>
-    </div>`;
+      </div>`;
+    } else if (ev.type === 'countdown-fake' || ev.type === 'countdown-real') {
+      // Countdown prank — dramatic full-width event
+      const isFake = ev.type === 'countdown-fake';
+      html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+        <div class="oc-event ${isFake ? '' : 'oc-drama'}" data-tone="${isFake ? 'warn' : 'bad'}" style="padding:14px;text-align:center">
+          <div style="width:100%">
+            <div class="oc-bomb-timer" style="font-size:${isFake ? '20px' : '16px'};margin-bottom:8px">${isFake ? '💣 10... 9... 8... 7...' : '💣 ...THIS ONE IS REAL.'}</div>
+            <div class="oc-copy" style="text-align:left">${ev.text}</div>
+          </div>
+        </div>
+      </div>`;
+    } else {
+      // Mid-vault events (stuck, showmance, panic, help)
+      const portraits = ppl.map(p => portrait(p, 32)).join('');
+      const tone = ['stuck', 'panic'].includes(ev.type) ? 'bad' : ['showmance', 'help'].includes(ev.type) ? 'good' : 'warn';
+      const typeLabel = ev.type === 'stuck' ? 'GRIDLOCK' : ev.type === 'showmance' ? 'DISTRACTION' : ev.type === 'panic' ? 'FREEZE' : ev.type === 'help' ? 'ASSIST' : ev.type.toUpperCase();
+      html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+        <div class="oc-event" data-tone="${tone}" style="padding:12px">
+          <div style="display:flex;gap:4px">${portraits}</div>
+          <div>
+            <div style="font:700 8px/1 'Share Tech Mono',monospace;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:4px">${typeLabel}</div>
+            <div class="oc-copy">${ev.text}</div>
+          </div>
+        </div>
+      </div>`;
+    }
   });
 
   const done = state.idx >= events.length - 1;

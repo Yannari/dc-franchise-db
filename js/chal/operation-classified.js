@@ -522,6 +522,63 @@ function css() {
 
   .oc-scan-narrative{font-size:11px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:4px;line-height:1.4}
 
+  /* ── LASER VAULT CARD — security cam feed ── */
+  .oc-laser-card{display:flex;gap:0;background:#060810;border:2px solid rgba(255,45,45,0.15);border-radius:6px;overflow:hidden;max-width:500px;margin:8px auto;position:relative}
+  .oc-laser-feed{width:110px;flex-shrink:0;position:relative;background:#030408;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .oc-laser-feed img{width:100%;height:auto;object-fit:contain;padding:6px;position:relative;z-index:2}
+  /* Laser grid overlay on the photo */
+  .oc-laser-feed::before{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;
+    background:
+      linear-gradient(0deg,transparent 30%,rgba(255,45,45,0.12) 30.5%,rgba(255,45,45,0.12) 31%,transparent 31.5%,
+        transparent 55%,rgba(255,45,45,0.08) 55.5%,rgba(255,45,45,0.08) 56%,transparent 56.5%,
+        transparent 78%,rgba(255,45,45,0.1) 78.5%,rgba(255,45,45,0.1) 79%,transparent 79.5%),
+      linear-gradient(90deg,transparent 25%,rgba(255,45,45,0.06) 25.5%,rgba(255,45,45,0.06) 26%,transparent 26.5%,
+        transparent 70%,rgba(255,45,45,0.08) 70.5%,rgba(255,45,45,0.08) 71%,transparent 71.5%)}
+  /* Moving laser sweep across photo */
+  .oc-laser-feed::after{content:'';position:absolute;left:0;right:0;height:2px;z-index:4;pointer-events:none;
+    background:linear-gradient(90deg,transparent,rgba(255,45,45,0.7),rgba(255,80,80,1),rgba(255,45,45,0.7),transparent);
+    box-shadow:0 0 8px 2px rgba(255,45,45,0.3);animation:oc-laser-sweep-v 2.5s linear infinite}
+  @keyframes oc-laser-sweep-v{0%{top:-2px}100%{top:calc(100% + 2px)}}
+
+  /* REC indicator */
+  .oc-laser-rec{position:absolute;top:6px;left:6px;z-index:5;font:700 7px/1 'Share Tech Mono',monospace;
+    color:var(--oc-red);letter-spacing:1px;display:flex;align-items:center;gap:3px}
+  .oc-laser-rec::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--oc-red);
+    animation:oc-rec-blink 1.2s ease-in-out infinite}
+  @keyframes oc-rec-blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+  .oc-laser-data{flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:3px}
+  .oc-laser-header{font:700 8px/1 'Share Tech Mono',monospace;letter-spacing:3px;color:rgba(255,45,45,0.4);text-transform:uppercase}
+  .oc-laser-name{font:700 15px/1 'Share Tech Mono',monospace;color:#fff;letter-spacing:1px}
+  .oc-laser-result{font:700 10px/1 'Share Tech Mono',monospace;letter-spacing:2px;padding:4px 8px;border-radius:3px;text-align:center;margin-top:4px}
+  .oc-laser-result.ghost{color:var(--oc-green);border:1px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.06)}
+  .oc-laser-result.clean{color:var(--oc-green);border:1px solid rgba(34,197,94,0.2);background:rgba(34,197,94,0.04)}
+  .oc-laser-result.alarm{color:var(--oc-amber);border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.06);animation:oc-alarm-strobe 0.6s ease-out 2}
+  .oc-laser-result.hit{color:var(--oc-red);border:1px solid rgba(255,45,45,0.3);background:rgba(255,45,45,0.08);animation:oc-alarm-strobe 0.4s ease-out 3}
+  @keyframes oc-alarm-strobe{0%,100%{background:rgba(255,45,45,0.08)}50%{background:rgba(255,45,45,0.25)}}
+  .oc-laser-narrative{font-size:11px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:4px;line-height:1.4}
+
+  /* ── WIRETAP CARD — intercepted transmission ── */
+  .oc-wire-card{background:#060a08;border:1px solid rgba(34,197,94,0.15);border-radius:6px;overflow:hidden;max-width:500px;margin:8px auto;position:relative}
+  /* Scanline overlay */
+  .oc-wire-card::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(34,197,94,0.015) 2px,rgba(34,197,94,0.015) 4px);
+    animation:oc-wire-scan 6s linear infinite}
+  @keyframes oc-wire-scan{0%{background-position:0 0}100%{background-position:0 100px}}
+
+  .oc-wire-header{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(34,197,94,0.08);position:relative;z-index:2}
+  .oc-wire-signal{width:8px;height:8px;border-radius:50%;background:var(--oc-green);animation:oc-rec-blink 1.5s ease-in-out infinite}
+  .oc-wire-label{font:700 9px/1 'Share Tech Mono',monospace;letter-spacing:2px;color:rgba(34,197,94,0.5)}
+  .oc-wire-body{padding:10px 14px;position:relative;z-index:2;display:flex;align-items:flex-start;gap:10px}
+  .oc-wire-portraits{display:flex;gap:4px;flex-shrink:0}
+  .oc-wire-text{font-size:12px;line-height:1.55;color:rgba(34,197,94,0.75);font-family:'Share Tech Mono',monospace}
+  .oc-wire-type{font:700 9px/1 'Share Tech Mono',monospace;letter-spacing:2px;padding:3px 6px;border-radius:2px;margin-top:6px;display:inline-block}
+  .oc-wire-type.intel{color:var(--oc-green);border:1px solid rgba(34,197,94,0.2);background:rgba(34,197,94,0.05)}
+  .oc-wire-type.alliance{color:#60a5fa;border:1px solid rgba(96,165,250,0.3);background:rgba(96,165,250,0.06)}
+  .oc-wire-type.alliance-fail{color:var(--oc-amber);border:1px solid rgba(245,158,11,0.2);background:rgba(245,158,11,0.05)}
+  .oc-wire-type.blackmail{color:var(--oc-red);border:1px solid rgba(255,45,45,0.2);background:rgba(255,45,45,0.05)}
+  .oc-wire-type.blackmail-foiled{color:var(--oc-amber);border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.06)}
+
   .oc-controls{text-align:center;margin-top:14px;position:relative;z-index:5}
   .oc-btn{border:1px solid rgba(255,45,45,.4);background:linear-gradient(180deg,#1a0508,#0d0304);color:#fff;border-radius:4px;
     padding:10px 20px;font:700 11px 'Share Tech Mono',monospace;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
@@ -563,7 +620,9 @@ function css() {
 
   @media(prefers-reduced-motion:reduce){
     .oc-shell::after,.oc-bomb-timer,.oc-scan-photo::after,
-    .oc-scan-field .val,.oc-scan-status.flagged{animation:none!important}
+    .oc-scan-field .val,.oc-scan-status.flagged,
+    .oc-laser-feed::after,.oc-laser-rec::before,.oc-laser-result.alarm,.oc-laser-result.hit,
+    .oc-wire-card::before,.oc-wire-signal{animation:none!important}
     .oc-scan-field .val{width:100%!important;border-right:none!important}
   }
   @media(max-width:760px){.oc-layout{flex-direction:column}.oc-sidebar{width:100%}.oc-title{font-size:22px}}
@@ -701,11 +760,79 @@ export function rpBuildOperationClassifiedScan(ep) {
 }
 export function rpBuildOperationClassifiedLaser(ep) {
   const events = ep.operationClassified.timeline.laser || [];
-  return shell(ep, renderSteps(ep, 'laser', events, 'Breach'), 'laser', events);
+  const stateKey = `oc-${ep.num}-laser`;
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };
+  const state = window._tvState[stateKey];
+
+  let html = '';
+  events.forEach((ev, i) => {
+    const visible = i <= state.idx;
+    const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
+    const resultLabel = ev.type === 'ghost' ? 'GHOST — UNDETECTED' : ev.type === 'clean' ? 'CLEAN CROSSING' : ev.type === 'alarm' ? 'ALARM TRIGGERED' : 'COMPROMISED';
+    const camId = `CAM-${String(i + 1).padStart(2, '0')}`;
+    html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+      <div class="oc-laser-card">
+        <div class="oc-laser-feed">
+          <div class="oc-laser-rec">REC</div>
+          <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${ev.player}">
+        </div>
+        <div class="oc-laser-data">
+          <div class="oc-laser-header">${camId} // LASER VAULT FEED</div>
+          <div class="oc-laser-name">${ev.player}</div>
+          <div class="oc-scan-field"><span class="label">SECTOR</span><span class="val">VAULT ${String.fromCharCode(65 + (i % 4))}-${i + 1}</span></div>
+          <div class="oc-scan-field"><span class="label">BEAMS</span><span class="val">${ev.type === 'ghost' ? '0 TRIPPED' : ev.type === 'clean' ? '0 TRIPPED' : ev.type === 'alarm' ? '1 TRIPPED' : 'MULTIPLE'}</span></div>
+          <div class="oc-laser-result ${ev.type}">${resultLabel}</div>
+          <div class="oc-laser-narrative">${ev.text}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  const done = state.idx >= events.length - 1;
+  html += `<div id="oc-controls-${stateKey}" class="oc-controls" ${done ? 'style="display:none"' : ''}>
+    <button class="oc-btn" onclick="operationClassifiedRevealNext('${stateKey}',${events.length},'laser')">Breach</button>
+    <button class="oc-btn secondary" onclick="operationClassifiedRevealAll('${stateKey}',${events.length},'laser')">Reveal All</button>
+  </div>`;
+  return shell(ep, html, 'laser', events);
 }
+
 export function rpBuildOperationClassifiedWiretap(ep) {
   const events = ep.operationClassified.timeline.wiretap || [];
-  return shell(ep, renderSteps(ep, 'wiretap', events, 'Intercept'), 'wiretap', events);
+  const stateKey = `oc-${ep.num}-wiretap`;
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };
+  const state = window._tvState[stateKey];
+
+  let html = '';
+  events.forEach((ev, i) => {
+    const visible = i <= state.idx;
+    const ppl = (ev.players || [ev.player]).filter(Boolean);
+    const typeLabel = ev.type === 'intel' ? 'INTEL INTERCEPTED' : ev.type === 'alliance' ? 'ALLIANCE FORMED' : ev.type === 'alliance-fail' ? 'PITCH REJECTED' : ev.type === 'blackmail' ? 'BLACKMAIL DETECTED' : ev.type === 'blackmail-foiled' ? 'BLACKMAIL FOILED' : 'TRANSMISSION';
+    const freq = `${(137.2 + i * 0.8).toFixed(1)} MHz`;
+    html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+      <div class="oc-wire-card">
+        <div class="oc-wire-header">
+          <div class="oc-wire-signal"></div>
+          <div class="oc-wire-label">INTERCEPTED TRANSMISSION — ${freq}</div>
+        </div>
+        <div class="oc-wire-body">
+          <div class="oc-wire-portraits">${ppl.map(p => portrait(p, 36)).join('')}</div>
+          <div>
+            <div class="oc-wire-text">${ev.text}</div>
+            <div class="oc-wire-type ${ev.type}">${typeLabel}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  const done = state.idx >= events.length - 1;
+  html += `<div id="oc-controls-${stateKey}" class="oc-controls" ${done ? 'style="display:none"' : ''}>
+    <button class="oc-btn" onclick="operationClassifiedRevealNext('${stateKey}',${events.length},'wiretap')">Intercept</button>
+    <button class="oc-btn secondary" onclick="operationClassifiedRevealAll('${stateKey}',${events.length},'wiretap')">Reveal All</button>
+  </div>`;
+  return shell(ep, html, 'wiretap', events);
 }
 export function rpBuildOperationClassifiedDrama(ep) {
   const oc = ep.operationClassified;

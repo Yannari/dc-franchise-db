@@ -1009,32 +1009,107 @@ function _simulateSportMatch(ep, sportKey, fighters, result) {
   return { fighters, events, rankings: ranked, winner, loser: ranked[ranked.length - 1] };
 }
 
+const CHEER_EVENTS = {
+  planning: [
+    (tribe) => `${tribe} huddled up. "OK, who can actually dance?" Silence. "...Great."`,
+    (tribe) => `${tribe} argued over the cheer topic. "We cheer for OURSELVES!" "No, we cheer for the TEAM!" "Same thing!"`,
+    (tribe) => `${tribe} tried to choreograph in 30 seconds. It was chaos. But passionate chaos.`,
+  ],
+  memberGood: [
+    (p, pr) => `${p} nailed the choreography. Sharp moves, big energy. The crowd noticed.`,
+    (p, pr) => `${p} had MOVES. Where did THAT come from?! The team fed off ${pr.posAdj} energy.`,
+    (p, pr) => `${p} led the chant with pure conviction. You could feel it in the stands.`,
+    (p, pr) => `${p} did a backflip mid-cheer. BACKFLIP! The judges' jaws dropped.`,
+    (p, pr) => `${p} held the pyramid together with raw upper-body strength. MVP of the routine.`,
+    (p, pr) => `${p}'s voice carried across the stadium. "LET'S GO!" Goosebumps.`,
+  ],
+  memberBad: [
+    (p, pr) => `${p} forgot the cheer halfway through. Just... stood there. Waving.`,
+    (p, pr) => `${p} clapped off-beat for the entire routine. It was distracting.`,
+    (p, pr) => `${p} attempted a split and immediately regretted it. "MY LEGS!"`,
+    (p, pr) => `${p} tripped over the pom-poms. Then tripped over ${pr.posAdj} own feet. Then just sat down.`,
+    (p, pr) => `${p} looked like ${pr.sub} was having a medical event, not cheerleading.`,
+    (p, pr) => `${p} mouthed the wrong words the entire time. Nobody corrected ${pr.obj}. They were all wrong too.`,
+  ],
+  forHost: [
+    (tribe, h) => `${tribe} pivoted mid-routine. "Give me a C! H! R! I! S!" ${h}'s eyes lit up like Christmas.`,
+    (tribe, h) => `${tribe} dedicated their entire cheer to ${h}. "He's handsome! He's smart! He's—" ${h}: "Go on..."`,
+    (tribe, h) => `${tribe} chanted ${h}'s name with pom-poms waving. ${h} was BEAMING. "I'm not supposed to be biased but..."`,
+  ],
+  pyramid: [
+    (tribe) => `${tribe} formed a PYRAMID! It held for exactly two seconds before collapsing. But those two seconds were glorious.`,
+    (tribe) => `${tribe} attempted a human pyramid. The bottom row survived. Barely.`,
+    (tribe) => `${tribe}'s pyramid was actually stable! The crowd roared! ...Then it collapsed. But they stuck the landing!`,
+  ],
+  crowdReaction: [
+    (tribe) => `The crowd was ON THEIR FEET for ${tribe}! Standing ovation!`,
+    (tribe) => `Scattered applause for ${tribe}. Some polite coughing. Not great.`,
+    (tribe) => `${tribe} got the slow clap. It built. And built. And ERUPTED into cheers!`,
+  ],
+  judgeReaction: [
+    (h, tribe, score) => `${h} held up his scorecard: ${score}/10. ${tribe} ${score >= 7 ? 'erupted!' : score >= 5 ? 'nodded nervously.' : 'groaned.'}`,
+    (h, tribe, score) => `${h} scribbled on his clipboard. ${score}/10 for ${tribe}. ${score >= 7 ? '"Not bad. Not bad at all."' : '"I\'ve seen better. From kindergartners."'}`,
+  ],
+};
+
 function _simulateCheerleading(ep, tribeMembers, tiedTribes, tbType, result) {
   const cheerResults = [];
 
   for (const tribeName of tiedTribes) {
     const t = tribeMembers.find(tm => tm.name === tribeName);
     const members = t.members;
-    let teamScore = members.reduce((s, n) => {
-      const st = pStats(n);
-      return s + st.social * 0.04 + st.loyalty * 0.03 + noise(0.25);
-    }, 0) / members.length;
+    const events = [];
 
-    // Random chance to cheer for the host (~15%)
-    const cheeredForHost = Math.random() < 0.15;
-    if (cheeredForHost) teamScore += 0.15;
+    // Planning phase
+    events.push({ type: 'planning', icon: '📋', text: pick(CHEER_EVENTS.planning)(tribeName) });
 
-    const isGood = teamScore > 0.3;
-    let text;
-    if (cheeredForHost) {
-      text = pick(SPORT_EVENTS.cheer.forHost)(tribeName, host());
-    } else if (isGood) {
-      text = pick(SPORT_EVENTS.cheer.good)(tribeName);
-    } else {
-      text = pick(SPORT_EVENTS.cheer.bad)(tribeName);
+    // Per-member performance
+    let teamScore = 0;
+    for (const name of members) {
+      const s = pStats(name);
+      const pr = pronouns(name);
+      const check = s.social * 0.04 + s.loyalty * 0.03 + noise(0.3);
+      const passed = check > 0.28;
+      teamScore += passed ? 1 : 0;
+
+      if (passed) {
+        events.push({ type: 'memberGood', player: name, icon: '✅',
+          text: pick(CHEER_EVENTS.memberGood)(name, pr) });
+        ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + 1;
+      } else {
+        events.push({ type: 'memberBad', player: name, icon: '❌',
+          text: pick(CHEER_EVENTS.memberBad)(name, pr) });
+      }
     }
 
-    cheerResults.push({ tribe: tribeName, score: teamScore, cheeredForHost, text, isGood });
+    // Pyramid attempt (~40%)
+    if (members.length >= 3 && Math.random() < 0.4) {
+      events.push({ type: 'pyramid', icon: '🔺', text: pick(CHEER_EVENTS.pyramid)(tribeName) });
+      teamScore += 0.5;
+    }
+
+    // Cheer for host (~15% — big bonus)
+    const cheeredForHost = Math.random() < 0.15;
+    if (cheeredForHost) {
+      events.push({ type: 'forHost', icon: '⭐', text: pick(CHEER_EVENTS.forHost)(tribeName, host()) });
+      teamScore += 2;
+    }
+
+    // Crowd reaction
+    events.push({ type: 'crowd', icon: '📣', text: pick(CHEER_EVENTS.crowdReaction)(tribeName) });
+
+    // Normalize score
+    const normalizedScore = teamScore / members.length;
+    const judgeScore = Math.min(10, Math.max(1, Math.round(normalizedScore * 8 + noise(2))));
+
+    // Judge reveal
+    events.push({ type: 'judge', icon: '🏅',
+      text: pick(CHEER_EVENTS.judgeReaction)(host(), tribeName, judgeScore) });
+
+    cheerResults.push({
+      tribe: tribeName, score: normalizedScore, judgeScore, cheeredForHost, events,
+      isGood: normalizedScore > 0.5, members: [...members],
+    });
   }
 
   cheerResults.sort((a, b) => b.score - a.score);
@@ -1589,25 +1664,52 @@ export function rpBuildSportsMarathonSports(ep) {
     </div>` });
   }
 
-  // Cheerleading tiebreaker
+  // Cheerleading tiebreaker — full performance per team
   if (sm.cheerleader) {
-    let cheerHtml = `<div class="sm-vs-splash">
-      <div style="font-size:10px;color:${sm.cheerleader.tbType === 'bottom' ? 'var(--sport-red)' : 'var(--sport-gold)'};letter-spacing:3px;margin-bottom:4px">📣 CHEERLEADING TIEBREAKER</div>
-      <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:10px">${sm.cheerleader.tbType === 'top' ? 'Cheer for IMMUNITY' : 'Loser goes to TRIBAL COUNCIL'}</div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:10px">${pick(SM_HOST.cheerIntro)(host())}</div>
-    </div>`;
-    for (const r of sm.cheerleader.results) {
-      const isWinner = r.tribe === sm.cheerleader.winner;
-      cheerHtml += `<div class="sm-fight-row ${isWinner ? 'sm-fight-good' : 'sm-fight-bad'}" style="color:${isWinner ? 'var(--sport-green)' : 'var(--sport-red)'}">
-        <span style="font-family:'Share Tech Mono',monospace;width:50px;color:var(--sport-gold)">${r.tribe}</span>
-        <span>${r.cheeredForHost ? '⭐' : isWinner ? '✅' : '❌'} ${r.text}</span>
-      </div>`;
-    }
-    cheerHtml += `<div style="text-align:center;padding:8px 0;font-size:12px">
-      <span style="color:var(--sport-green);font-family:'Share Tech Mono',monospace;letter-spacing:2px">📣 ${sm.cheerleader.winner} WINS THE TIEBREAKER</span>
+    // Intro
+    let cheerIntro = `<div class="sm-vs-splash">
+      <div style="font-size:12px;color:${sm.cheerleader.tbType === 'bottom' ? 'var(--sport-red)' : 'var(--sport-gold)'};letter-spacing:3px;margin-bottom:6px;font-family:'Share Tech Mono',monospace">📣 CHEERLEADING TIEBREAKER</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:10px">${sm.cheerleader.tbType === 'top' ? 'Cheer for IMMUNITY' : 'Loser goes to TRIBAL COUNCIL'}</div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:6px">${pick(SM_HOST.cheerIntro)(host())}</div>
     </div>`;
     steps.push({ html: `<div class="sm-ev sm-cheer" style="border-left-color:var(--sport-gold);padding:14px;overflow:hidden">
-      <div style="flex:1">${cheerHtml}</div>
+      <div style="flex:1">${cheerIntro}</div>
+    </div>` });
+
+    // One step per team performance
+    for (const r of sm.cheerleader.results) {
+      let perfHtml = `<div class="sm-ev sm-cheer" style="border-left-color:var(--sport-gold);padding:14px;overflow:hidden">
+        <div style="flex:1">
+        <div class="sm-ev-badge ${r.isGood ? 'green' : 'red'}" style="font-size:11px;padding:4px 12px;margin-bottom:8px">📣 ${r.tribe}'s PERFORMANCE</div>
+        <div style="display:flex;gap:3px;margin-bottom:8px">${r.members.map(n => _smPortrait(n, 28)).join('')}</div>`;
+
+      for (const evt of r.events) {
+        const isGood = evt.type === 'memberGood' || evt.type === 'pyramid' || evt.type === 'forHost';
+        const isBad = evt.type === 'memberBad';
+        const isJudge = evt.type === 'judge';
+        const color = isJudge ? 'var(--sport-gold)' : isGood ? 'var(--sport-green)' : isBad ? 'var(--sport-red)' : 'rgba(255,255,255,0.6)';
+        const rowClass = isJudge ? 'sm-fight-climax' : isGood ? 'sm-fight-row sm-fight-good' : isBad ? 'sm-fight-row sm-fight-bad' : 'sm-fight-row sm-fight-neutral';
+
+        perfHtml += `<div class="${rowClass}" style="color:${color}">
+          ${evt.player ? _smPortrait(evt.player, 22) : '<span style="width:22px;flex-shrink:0"></span>'}
+          <span style="font-size:${isJudge ? '13px' : '12px'}">${evt.icon} ${evt.text}</span>
+        </div>`;
+      }
+
+      perfHtml += `</div></div>`;
+      steps.push({ html: perfHtml });
+    }
+
+    // Winner reveal
+    steps.push({ html: `<div class="sm-ev sm-cheer" style="border-left-color:var(--sport-green);padding:14px;text-align:center;overflow:hidden">
+      <div style="flex:1">
+        <div class="sm-ev-badge green" style="font-size:12px;padding:4px 14px">📣 TIEBREAKER RESULT</div>
+        <div style="font-size:18px;color:var(--sport-green);font-family:'Bungee Shade',sans-serif;letter-spacing:3px;margin-top:8px">${sm.cheerleader.winner}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px">wins the cheerleading tiebreaker!</div>
+        ${sm.cheerleader.results.map(r => `<div style="display:flex;justify-content:center;gap:6px;margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:11px">
+          <span style="color:${r.tribe === sm.cheerleader.winner ? 'var(--sport-green)' : 'var(--sport-red)'}">${r.tribe}: ${r.judgeScore}/10${r.cheeredForHost ? ' ⭐' : ''}</span>
+        </div>`).join('')}
+      </div>
     </div>` });
   }
 

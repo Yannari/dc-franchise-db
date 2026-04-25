@@ -578,6 +578,163 @@ function _simulateSeedingBreak(ep, tribeMembers, result) {
 // ══════════════════════════════════════════════════════════════
 // PHASE 2: FOUR SPORTS
 // ══════════════════════════════════════════════════════════════
+// ── HALFTIME DRAMA EVENTS ──
+const HALFTIME_EVENTS = [
+  {
+    id: 'scoreReaction',
+    check(ep, all, result) { return Object.keys(result.tribeScores).length >= 2; },
+    apply(ep, all, result) {
+      const sorted = Object.entries(result.tribeScores).sort((a, b) => b[1] - a[1]);
+      const leader = sorted[0];
+      const trailer = sorted[sorted.length - 1];
+      const leaderMember = pick(all.filter(n => result.obstacleCourse.players.find(p => p.name === n && p.tribe === leader[0])));
+      const trailerMember = pick(all.filter(n => result.obstacleCourse.players.find(p => p.name === n && p.tribe === trailer[0])));
+      if (!leaderMember || !trailerMember) return null;
+      const texts = [
+        `${leaderMember} checked the scoreboard. "${leader[0]} is UP! We just gotta hold it." ${trailerMember} overheard and scowled.`,
+        `"We're losing." ${trailerMember} stared at the board. "We need to win BOTH remaining events." The pressure was real.`,
+        `${leaderMember} high-fived a teammate. "Halfway there!" ${trailerMember}: "It's not over yet."`,
+      ];
+      return { text: pick(texts), players: [leaderMember, trailerMember], badgeText: 'SCOREBOARD', badgeClass: 'gold' };
+    },
+  },
+  {
+    id: 'strategyAdjust',
+    check(ep, all) { return all.length >= 2; },
+    apply(ep, all, result) {
+      const pair = all.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+      addBond(pair[0], pair[1], 0.3);
+      const texts = [
+        `${pair[0]} and ${pair[1]} huddled during the break. "We need to change our approach for wrestling." "Agreed. More aggression."`,
+        `"Watch their footwork," ${pair[0]} told ${pair[1]}. "They telegraph every move." Strategic adjustment.`,
+        `${pair[0]} drew plays in the dirt with a stick while ${pair[1]} nodded along. Halftime coaching.`,
+      ];
+      return { text: pick(texts), players: [pair[0], pair[1]], badgeText: 'HALFTIME HUDDLE', badgeClass: 'green' };
+    },
+  },
+  {
+    id: 'injuryCheck',
+    check(ep, all, result) {
+      return result.sports.some(s => s.events.some(e => e.phase === 'action' && e.icon === '❌'));
+    },
+    apply(ep, all, result) {
+      const losers = result.sports.flatMap(s => s.rankings.filter((_, i) => i > 0).map(r => r.name)).filter(n => all.includes(n));
+      if (!losers.length) return null;
+      const injured = pick(losers);
+      const pr = pronouns(injured);
+      const texts = [
+        `${injured} iced ${pr.posAdj} shoulder during the break. "I'm fine. Totally fine." ${pr.Sub} was not fine.`,
+        `The medic checked on ${injured}. "Can you continue?" "Just tape it up." Tough.`,
+        `${injured} winced stretching ${pr.posAdj} legs. The first two events took a toll.`,
+      ];
+      return { text: pick(texts), players: [injured], badgeText: 'INJURY CHECK', badgeClass: 'red' };
+    },
+  },
+  {
+    id: 'snackBreak',
+    check(ep, all) { return all.length >= 2; },
+    apply(ep, all) {
+      const pair = all.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+      addBond(pair[0], pair[1], 0.3);
+      const texts = [
+        `${pair[0]} and ${pair[1]} shared energy bars during the break. "Carbo-loading, baby." Bonding over snacks.`,
+        `${pair[0]} tossed ${pair[1]} a water bottle. "Stay hydrated." A small kindness between rivals.`,
+        `Chef served halftime nachos. ${pair[0]} and ${pair[1]} both dove for the last chip. They split it.`,
+      ];
+      return { text: pick(texts), players: [pair[0], pair[1]], badgeText: 'SNACK BREAK', badgeClass: 'green' };
+    },
+  },
+  {
+    id: 'rivalryBrew',
+    check(ep, all) {
+      for (const a of all) for (const b of all) if (a !== b && getBond(a, b) < -2) return true;
+      return false;
+    },
+    apply(ep, all) {
+      const pairs = [];
+      for (const a of all) for (const b of all) if (a !== b && getBond(a, b) < -2) pairs.push([a, b]);
+      if (!pairs.length) return null;
+      const [a, b] = pick(pairs);
+      addBond(a, b, -0.3);
+      const texts = [
+        `${a} and ${b} bumped shoulders in the locker room. "Watch it." "YOU watch it." Escalating.`,
+        `${a} glared at ${b} across the bench. "If we're matched in wrestling, you're DONE."`,
+        `${b} caught ${a} mocking ${b}'s earlier performance. The grudge deepened.`,
+      ];
+      return { text: pick(texts), players: [a, b], badgeText: 'RIVALRY', badgeClass: 'red' };
+    },
+  },
+  {
+    id: 'hostRoast',
+    check(ep, all) { return true; },
+    apply(ep, all, result) {
+      const worstPerformers = result.sports.flatMap(s => [s.rankings[s.rankings.length - 1]?.name]).filter(Boolean);
+      const target = worstPerformers.length ? pick(worstPerformers) : pick(all);
+      popDelta(target, -1);
+      const h = host();
+      const texts = [
+        `${h} grabbed the mic. "Halftime stats: ${target} has been... historically bad. Like, textbook bad."`,
+        `"Let's check the replay of ${target}'s worst moment." ${h} hit play. The crowd groaned. ${target} wanted to disappear.`,
+        `${h}: "I've seen better athleticism from my GRANDMOTHER. And she's imaginary." He looked directly at ${target}.`,
+      ];
+      return { text: pick(texts), players: [target], badgeText: 'HOST ROAST', badgeClass: 'amber' };
+    },
+  },
+  {
+    id: 'teamPepTalk',
+    check(ep, all) { return all.length >= 2; },
+    apply(ep, all, result) {
+      const sorted = Object.entries(result.tribeScores).sort((a, b) => a[1] - b[1]);
+      const losingTribe = sorted[0][0];
+      const losingMembers = all.filter(n => result.obstacleCourse.players.find(p => p.name === n && p.tribe === losingTribe));
+      if (losingMembers.length < 2) return null;
+      const [leader, teammate] = losingMembers.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+      addBond(leader, teammate, 0.4);
+      const texts = [
+        `"We're DOWN but we're not OUT." ${leader} rallied ${losingTribe}. ${teammate} punched the air. "LET'S GO!"`,
+        `${leader} gathered ${losingTribe} in a circle. "Two more events. We win BOTH. Who's with me?" ${teammate}: "ALL IN."`,
+        `${teammate} was spiraling. ${leader} grabbed ${teammate}'s shoulders. "Hey. Look at me. We've got this." Composure restored.`,
+      ];
+      return { text: pick(texts), players: [leader, teammate], badgeText: 'PEP TALK', badgeClass: 'green' };
+    },
+  },
+  {
+    id: 'equipmentComplaint',
+    check(ep, all) { return true; },
+    apply(ep, all) {
+      const complainer = pick(all);
+      const texts = [
+        `${complainer}: "Who puts MOUSETRAPS in tires?! I'm filing a complaint. With... someone."`,
+        `${complainer}: "My marshmallow gloves melted. I've been punching with sticky fists for two rounds."`,
+        `${complainer}: "There's a TODDLER in the ball pit. That can't be regulation."`,
+        `${complainer}: "The trampoline has a spring missing. I felt it. In my spine."`,
+      ];
+      return { text: pick(texts), players: [complainer], badgeText: 'COMPLAINT', badgeClass: 'amber' };
+    },
+  },
+];
+
+function _simulateHalftime(ep, tribeMembers, result) {
+  const campKey = gs.mergeName || gs.tribes[0]?.name || 'merge';
+  const allMembers = tribeMembers.flatMap(t => t.members);
+  const halftimeEvents = [];
+
+  const eligible = HALFTIME_EVENTS.filter(ev => ev.check(ep, allMembers, result));
+  const shuffled = [...eligible].sort(() => Math.random() - 0.5);
+  const target = 4 + Math.floor(Math.random() * 2); // 4-5
+
+  for (const ev of shuffled) {
+    if (halftimeEvents.length >= target) break;
+    const applied = ev.apply(ep, allMembers, result);
+    if (applied) {
+      ep.campEvents[campKey].post.push({ ...applied, tag: 'drama' });
+      halftimeEvents.push({ id: ev.id, ...applied });
+    }
+  }
+
+  return halftimeEvents;
+}
+
 const SPORT_ORDER = ['boxing', 'badminton', 'wrestling', 'slamDunk'];
 const SPORT_LABELS = {
   boxing: { name: 'BOXING', icon: '🥊', subtitle: 'Slow-Motion Marshmallow Boxing' },
@@ -591,9 +748,13 @@ function _simulateSports(ep, tribeMembers, result) {
   const seedBoard = result.seedBoard;
 
   for (let si = 0; si < SPORT_ORDER.length; si++) {
+    // Halftime break after sport 2
+    if (si === 2) {
+      result.halftimeEvents = _simulateHalftime(ep, tribeMembers, result);
+    }
+
     const sportKey = SPORT_ORDER[si];
     const label = SPORT_LABELS[sportKey];
-    // Use seed group matching sport index (wrap if more sports than seed groups)
     const groupIdx = si % seedBoard.length;
     const fighters = seedBoard[groupIdx];
 
@@ -687,22 +848,8 @@ function _simulateSports(ep, tribeMembers, result) {
 function _simulateSportMatch(ep, sportKey, fighters, result) {
   const events = [];
   const scores = {};
-
-  // Calculate fight scores
-  for (const f of fighters) {
-    const s = pStats(f.name);
-    let score;
-    if (sportKey === 'boxing') {
-      score = s.physical * 0.03 + s.mental * 0.03 + s.endurance * 0.02 + noise(0.35);
-    } else if (sportKey === 'badminton') {
-      score = s.intuition * 0.04 + s.strategic * 0.03 + noise(0.35);
-    } else if (sportKey === 'wrestling') {
-      score = s.physical * 0.04 + s.boldness * 0.03 + noise(0.35);
-    } else {
-      score = s.physical * 0.03 + s.boldness * 0.03 + s.social * 0.02 + noise(0.35);
-    }
-    scores[f.name] = score;
-  }
+  const sportTexts = SPORT_EVENTS[sportKey];
+  fighters.forEach(f => { scores[f.name] = 0; });
 
   // Matchup reactions
   for (const f of fighters) {
@@ -722,47 +869,74 @@ function _simulateSportMatch(ep, sportKey, fighters, result) {
     events.push({ phase: 'reaction', player: f.name, tribe: f.tribe, icon: s.boldness >= 7 ? '😎' : s.boldness <= 3 ? '😰' : '💪', text: reaction });
   }
 
-  // Sport-specific narration per fighter
-  const sportTexts = SPORT_EVENTS[sportKey];
-  for (const f of fighters) {
-    const pr = pronouns(f.name);
-    const isGood = scores[f.name] >= Math.max(...Object.values(scores)) * 0.7;
-    if (isGood) {
-      events.push({ phase: 'action', player: f.name, tribe: f.tribe, icon: '✅',
-        text: pick(sportTexts.good)(f.name, pr) });
-      ep.chalMemberScores[f.name] = (ep.chalMemberScores[f.name] || 0) + 1;
-    } else {
-      events.push({ phase: 'action', player: f.name, tribe: f.tribe, icon: '❌',
-        text: pick(sportTexts.bad)(f.name, pr) });
-    }
-  }
+  // 3 rounds of sport-specific play
+  const ROUNDS = 3;
+  for (let rd = 1; rd <= ROUNDS; rd++) {
+    events.push({ phase: 'roundLabel', icon: '🔔', text: `— Round ${rd} —` });
 
-  // Trash talk (~30%)
-  if (Math.random() < 0.3) {
-    const talker = pick(fighters);
-    const target = pick(fighters.filter(f => f.name !== talker.name));
-    if (target) {
-      const s = pStats(talker.name);
-      const trashCheck = s.social * 0.04 + (10 - s.temperament) * 0.03 + noise(0.25);
-      if (trashCheck > 0.22) {
-        events.push({ phase: 'trash', player: talker.name, tribe: talker.tribe, icon: '🗯️',
-          text: pick(SPORT_EVENTS.trashTalk)(talker.name, target.name) });
-        scores[target.name] -= 0.08;
-        ep.chalMemberScores[talker.name] = (ep.chalMemberScores[talker.name] || 0) + 1;
+    // Each fighter gets a check per round
+    for (const f of fighters) {
+      const s = pStats(f.name);
+      const pr = pronouns(f.name);
+      let check;
+      if (sportKey === 'boxing') {
+        check = s.physical * 0.03 + s.mental * 0.03 + s.endurance * 0.02 + noise(0.35);
+      } else if (sportKey === 'badminton') {
+        check = s.intuition * 0.04 + s.strategic * 0.03 + noise(0.35);
+      } else if (sportKey === 'wrestling') {
+        check = s.physical * 0.04 + s.boldness * 0.03 + noise(0.35);
       } else {
-        events.push({ phase: 'trash', player: talker.name, tribe: talker.tribe, icon: '🗯️',
-          text: pick(SPORT_EVENTS.trashTalkFail)(talker.name, target.name) });
-        scores[talker.name] -= 0.06;
+        check = s.physical * 0.03 + s.boldness * 0.03 + s.social * 0.02 + noise(0.35);
+      }
+
+      const roundThreshold = 0.30 + rd * 0.02; // gets harder each round
+      const passed = check > roundThreshold;
+      scores[f.name] += passed ? 1 : 0;
+
+      if (passed) {
+        events.push({ phase: 'action', player: f.name, tribe: f.tribe, icon: '✅',
+          text: pick(sportTexts.good)(f.name, pr) });
+        ep.chalMemberScores[f.name] = (ep.chalMemberScores[f.name] || 0) + 1;
+      } else {
+        events.push({ phase: 'action', player: f.name, tribe: f.tribe, icon: '❌',
+          text: pick(sportTexts.bad)(f.name, pr) });
       }
     }
+
+    // Mid-round event: trash talk (round 1-2, ~40%) or momentum shift
+    if (rd < ROUNDS && Math.random() < 0.4) {
+      const talker = pick(fighters);
+      const target = pick(fighters.filter(f => f.name !== talker.name));
+      if (target) {
+        const s = pStats(talker.name);
+        const trashCheck = s.social * 0.04 + (10 - s.temperament) * 0.03 + noise(0.25);
+        if (trashCheck > 0.22) {
+          events.push({ phase: 'trash', player: talker.name, tribe: talker.tribe, icon: '🗯️',
+            text: pick(SPORT_EVENTS.trashTalk)(talker.name, target.name) });
+          scores[target.name] -= 0.5;
+          ep.chalMemberScores[talker.name] = (ep.chalMemberScores[talker.name] || 0) + 1;
+        } else {
+          events.push({ phase: 'trash', player: talker.name, tribe: talker.tribe, icon: '🗯️',
+            text: pick(SPORT_EVENTS.trashTalkFail)(talker.name, target.name) });
+          scores[talker.name] -= 0.3;
+        }
+      }
+    }
+
+    // Crowd reaction after each round (~35%)
+    if (Math.random() < 0.35) {
+      const bestThisRound = fighters.reduce((best, f) => scores[f.name] > scores[best.name] ? f : best, fighters[0]);
+      events.push({ phase: 'crowd', tribe: bestThisRound.tribe, icon: '📣',
+        text: pick(SPORT_EVENTS.crowdReaction)(bestThisRound.tribe) });
+    }
   }
 
-  // Rank
+  // Rank by total round wins
   const ranked = fighters.map(f => ({ ...f, score: scores[f.name] })).sort((a, b) => b.score - a.score);
   const winner = ranked[0];
   const loser = ranked[ranked.length - 1];
 
-  // Winner event
+  // Climax — winner finishes the loser
   const finishKey = sportKey === 'boxing' ? 'knockout' : sportKey === 'badminton' ? 'winner' : sportKey === 'wrestling' ? 'pin' : 'showboat';
   if (sportTexts[finishKey]) {
     events.push({ phase: 'climax', player: winner.name, tribe: winner.tribe, icon: '👑',
@@ -828,7 +1002,12 @@ export function _textSportsMarathon(ep, ln, sec) {
   ln('');
 
   ln('── SPORTS ──');
-  for (const sport of sm.sports) {
+  for (let si = 0; si < sm.sports.length; si++) {
+    if (si === 2 && sm.halftimeEvents?.length) {
+      ln('  ── HALFTIME ──');
+      for (const e of sm.halftimeEvents) ln(`    ${e.badgeText}: ${e.text}`);
+    }
+    const sport = sm.sports[si];
     ln(`  ${sport.label.icon} ${sport.label.name}: ${sport.fighters.map(f => f.name).join(' vs ')}`);
     for (const e of sport.events) ln(`    ${e.icon} ${e.text}`);
     ln(`    Winner: ${sport.winner.name} (${sport.winner.tribe})`);
@@ -1222,7 +1401,28 @@ export function rpBuildSportsMarathonSports(ep) {
 
   const steps = [];
 
-  for (const sport of sm.sports) {
+  for (let si = 0; si < sm.sports.length; si++) {
+    // Halftime break after sport 2
+    if (si === 2 && sm.halftimeEvents?.length) {
+      let htHtml = `<div class="sm-ev sm-fight-drama" style="border-left-color:var(--sport-gold);padding:16px">
+        <div style="flex:1">
+        <div class="sm-ev-badge gold" style="font-size:12px;padding:4px 14px;margin-bottom:10px">⏱️ HALFTIME</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:10px;font-style:italic">The teams regroup. Tensions rise. Bonds form. The second half awaits.</div>`;
+      for (const evt of sm.halftimeEvents) {
+        const badgeColor = evt.badgeClass === 'red' ? 'var(--sport-red)' : evt.badgeClass === 'green' ? 'var(--sport-green)' : 'var(--sport-gold)';
+        htHtml += `<div style="padding:6px 8px;margin-bottom:4px;background:rgba(0,0,0,0.12);border-radius:5px;border-left:3px dashed ${badgeColor}">
+          <div style="font-size:8px;font-family:'Share Tech Mono',monospace;letter-spacing:2px;color:${badgeColor};margin-bottom:3px">${evt.badgeText}</div>
+          <div style="display:flex;align-items:flex-start;gap:8px">
+            <div style="display:flex;gap:3px;flex-shrink:0">${(evt.players || []).map(n => _smPortrait(n, 24)).join('')}</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.5">${evt.text}</div>
+          </div>
+        </div>`;
+      }
+      htHtml += `</div></div>`;
+      steps.push({ html: htHtml });
+    }
+
+    const sport = sm.sports[si];
     const sportCss = sport.sportKey === 'boxing' ? 'sm-boxing' : sport.sportKey === 'badminton' ? 'sm-badminton' : sport.sportKey === 'wrestling' ? 'sm-wrestling' : 'sm-slamdunk';
 
     // VS Splash + fight events

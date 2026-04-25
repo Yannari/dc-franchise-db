@@ -351,113 +351,156 @@ const LASER_MID_EVENTS = {
   ],
 };
 
+const LASER_STEPS = 5;
+const LASER_STEP_NAMES = ['ENTRY CORRIDOR', 'OUTER GRID', 'INNER GRID', 'VAULT CORE', 'THE BAG'];
+
+const LASER_ADVANCE = [
+  (p, pr, step) => `${p} reads the beam pattern and slips through to ${LASER_STEP_NAMES[step]}. Clean.`,
+  (p, pr, step) => `${p} ducks under a sweeping beam and advances. Step ${step + 1} of ${LASER_STEPS}.`,
+  (p, pr, step) => `${p} times it perfectly — through the gap, into ${LASER_STEP_NAMES[step]}.`,
+  (p, pr, step) => `${p} contorts between two crossing beams. Made it to step ${step + 1}.`,
+  (p, pr, step) => `${p} rolls under the lowest beam and pops up on the other side. ${LASER_STEP_NAMES[step]}.`,
+];
+const LASER_RESET = [
+  (p, pr) => `${p} clips a beam — RED ALARM! Back to the start. Everything resets.`,
+  (p, pr) => `BZZZZT! ${p} touches a laser. Sirens blare. ${pr.Sub} ha${pr.sub === 'they' ? 've' : 's'} to go ALL the way back.`,
+  (p, pr) => `${p}'s shoulder grazes a beam. The alarm screams. "BACK TO START!" ${host()} shouts.`,
+  (p, pr) => `${p} trips into a laser wall. Multiple beams hit. Total reset. ${pr.Sub} look${pr.sub === 'they' ? '' : 's'} devastated.`,
+];
+
 function _simulateLaser(active, state, timeline, ep) {
   const campKey = gs.mergeName || 'merge';
   if (!ep.campEvents) ep.campEvents = {};
   if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
 
-  // Phase 1: Each player navigates the laser grid
-  const ordered = [...active].sort(() => Math.random() - 0.5);
-  for (const name of ordered) {
-    const s = pStats(name);
-    const pr = pronouns(name);
-    const scanMod = state.players[name].scan.result === 'flagged' ? -0.06 : state.players[name].scan.result === 'clear' ? 0.03 : 0;
-    const score = s.physical * 0.03 + s.mental * 0.02 + s.endurance * 0.02 + s.intuition * 0.02 + scanMod + noise(0.35);
-    const result = laserResult(score);
-    let delta = result === 'ghost' ? 3 : result === 'clean' ? 1 : result === 'alarm' ? -1 : -2;
-    state.players[name].laser = { score, result };
-    state.players[name].total += delta;
-    if (result === 'alarm') state.alarm += 10;
-    if (result === 'hit') state.alarm += 16;
-    timeline.laser.push({
-      type: result, player: name, score,
-      text: pick(LASER_TEXT[result])(name, pr),
-    });
+  // Track position per player
+  const positions = {};
+  const maxReached = {};
+  active.forEach(n => { positions[n] = 0; maxReached[n] = 0; });
+  let bagWinner = null;
+  const laserRounds = [];
 
-    // Inline reactions after notable laser results
-    if (result === 'ghost' && Math.random() < 0.5) {
-      const reactor = pick(active.filter(n => n !== name));
-      if (reactor) {
-        timeline.laser.push({ type: 'reaction', players: [reactor, name],
-          text: pick(INLINE_REACTIONS.laserGhostReact)(reactor, name) });
-        addBond(reactor, name, 0.2);
+  // Race — max 8 turns (to prevent infinite loops)
+  for (let turn = 1; turn <= 8; turn++) {
+    if (bagWinner) break;
+    const turnEvents = [];
+    turnEvents.push({ type: 'turn-label', text: `— TURN ${turn} —` });
+
+    // Shuffle order each turn
+    const turnOrder = [...active].sort(() => Math.random() - 0.5);
+    for (const name of turnOrder) {
+      if (positions[name] >= LASER_STEPS) continue; // already at bag
+      const s = pStats(name);
+      const pr = pronouns(name);
+      const scanMod = state.players[name].scan?.result === 'flagged' ? -0.05 : state.players[name].scan?.result === 'clear' ? 0.03 : 0;
+      const stepDifficulty = positions[name] * 0.015; // harder as you get deeper
+      const check = s.physical * 0.03 + s.intuition * 0.02 + s.mental * 0.02 + scanMod - stepDifficulty + noise(0.35);
+      const passed = check > 0.22;
+
+      if (passed) {
+        positions[name]++;
+        if (positions[name] > maxReached[name]) maxReached[name] = positions[name];
+        if (positions[name] >= LASER_STEPS && !bagWinner) {
+          // First to reach the bag!
+          bagWinner = name;
+          turnEvents.push({ type: 'bag', player: name,
+            text: pick(LASER_MID_EVENTS.bagGrab)(name, pr) });
+          state.players[name].total += 3;
+        } else {
+          turnEvents.push({ type: 'advance', player: name, step: positions[name],
+            text: pick(LASER_ADVANCE)(name, pr, positions[name] - 1) });
+        }
+      } else {
+        // Hit a beam — reset to 0
+        const wasAt = positions[name];
+        positions[name] = 0;
+        state.alarm += wasAt > 2 ? 12 : 6;
+        turnEvents.push({ type: 'reset', player: name, wasAt,
+          text: pick(LASER_RESET)(name, pr) });
+
+        // Inline reaction (~40%)
+        if (Math.random() < 0.4) {
+          const reactor = Math.random() < 0.4 ? host() : pick(active.filter(n => n !== name));
+          if (reactor) {
+            turnEvents.push({ type: 'reaction', player: name,
+              text: pick(INLINE_REACTIONS.laserHitReact)(reactor, name) });
+          }
+        }
       }
-    } else if (result === 'hit' && Math.random() < 0.5) {
-      const reactor = Math.random() < 0.5 ? host() : pick(active.filter(n => n !== name));
-      if (reactor) {
-        timeline.laser.push({ type: 'reaction', players: reactor === host() ? [] : [reactor, name], player: name,
-          text: pick(INLINE_REACTIONS.laserHitReact)(reactor, name) });
+    }
+
+    // Mid-turn events (~30% per turn)
+    if (Math.random() < 0.3 && active.length >= 2) {
+      // Stuck together, showmance, help, etc.
+      const eventPool = [];
+      // Stuck
+      const pair = active.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+      if (Math.abs(positions[pair[0]] - positions[pair[1]]) <= 1) {
+        eventPool.push({ type: 'stuck', players: pair, text: pick(LASER_MID_EVENTS.stuck)(pair[0], pair[1]) });
+      }
+      // Help
+      const helper = active.find(n => positions[n] > 0 && (pStats(n).loyalty >= 6 || ['hero', 'loyal-soldier'].includes(arch(n))));
+      if (helper) {
+        const behind = active.filter(n => n !== helper && positions[n] < positions[helper]);
+        if (behind.length) {
+          const helped = pick(behind);
+          eventPool.push({ type: 'help', players: [helper, helped], text: pick(LASER_MID_EVENTS.helpOther)(helper, helped), helper, helped });
+        }
+      }
+      // Showmance
+      const sm = gs.showmances?.find(s => active.includes(s.a) && active.includes(s.b));
+      if (sm) {
+        eventPool.push({ type: 'showmance', players: [sm.a, sm.b], text: pick(LASER_MID_EVENTS.showmanceMoment)(sm.a, sm.b) });
+      }
+
+      if (eventPool.length) {
+        const chosen = pick(eventPool);
+        turnEvents.push(chosen);
+        if (chosen.type === 'stuck') addBond(chosen.players[0], chosen.players[1], -0.2);
+        if (chosen.type === 'help') { addBond(chosen.helper, chosen.helped, 0.4); positions[chosen.helped] = Math.min(LASER_STEPS - 1, positions[chosen.helped] + 1); }
+        if (chosen.type === 'showmance') addBond(chosen.players[0], chosen.players[1], 0.3);
       }
     }
+
+    // Position snapshot for sidebar
+    const snapshot = {};
+    active.forEach(n => { snapshot[n] = positions[n]; });
+    laserRounds.push({ turn, events: turnEvents, positions: { ...snapshot } });
+
+    // Push all turn events to timeline
+    for (const ev of turnEvents) timeline.laser.push(ev);
   }
 
-  // Phase 2: Mid-vault events (stuck together, showmance, panic, helping)
-  // Stuck together (~40%)
-  if (active.length >= 2 && Math.random() < 0.4) {
-    const pair = active.slice().sort(() => Math.random() - 0.5).slice(0, 2);
-    addBond(pair[0], pair[1], -0.2);
-    timeline.laser.push({ type: 'stuck', players: [pair[0], pair[1]],
-      text: pick(LASER_MID_EVENTS.stuck)(pair[0], pair[1]) });
+  // If nobody reached the bag in 8 turns, closest player gets it
+  if (!bagWinner) {
+    const closest = [...active].sort((a, b) => positions[b] - positions[a])[0];
+    bagWinner = closest;
+    const pr = pronouns(closest);
+    timeline.laser.push({ type: 'bag', player: closest,
+      text: `Time runs out! ${closest} was closest to the bag at step ${positions[closest]} and grabs it in the chaos.` });
+    state.players[closest].total += 2;
   }
 
-  // Showmance moment (~35% if showmance exists)
-  const sm = gs.showmances?.find(s => active.includes(s.a) && active.includes(s.b));
-  if (sm && Math.random() < 0.35) {
-    addBond(sm.a, sm.b, 0.3);
-    timeline.laser.push({ type: 'showmance', players: [sm.a, sm.b],
-      text: pick(LASER_MID_EVENTS.showmanceMoment)(sm.a, sm.b) });
-    ep.campEvents[campKey].post.push({ text: timeline.laser[timeline.laser.length - 1].text, players: [sm.a, sm.b], badgeText: 'LASER MOMENT', badgeClass: 'green', tag: 'drama' });
-  }
-
-  // Panic freeze for low-boldness player (~30%)
-  if (Math.random() < 0.3) {
-    const nervous = active.filter(n => pStats(n).boldness <= 4);
-    if (nervous.length) {
-      const freezer = pick(nervous);
-      const pr = pronouns(freezer);
-      state.players[freezer].total -= 1;
-      timeline.laser.push({ type: 'panic', player: freezer,
-        text: pick(LASER_MID_EVENTS.panicFreeze)(freezer, pr) });
-    }
-  }
-
-  // Help another player (~30%)
-  if (active.length >= 2 && Math.random() < 0.3) {
-    const helper = active.find(n => pStats(n).loyalty >= 6 || ['hero', 'loyal-soldier'].includes(arch(n)));
-    if (helper) {
-      const helped = pick(active.filter(n => n !== helper));
-      addBond(helper, helped, 0.4);
-      state.players[helped].total += 1;
-      timeline.laser.push({ type: 'help', players: [helper, helped],
-        text: pick(LASER_MID_EVENTS.helpOther)(helper, helped) });
-      ep.campEvents[campKey].post.push({ text: timeline.laser[timeline.laser.length - 1].text, players: [helper, helped], badgeText: 'VAULT TEAMWORK', badgeClass: 'green', tag: 'drama' });
-    }
-  }
-
-  // Phase 3: Bag grab — best laser score reaches it first
-  const laserRanked = [...active].sort((a, b) => (state.players[b].laser?.score || 0) - (state.players[a].laser?.score || 0));
-  const bagWinner = laserRanked[0];
-  const bwPr = pronouns(bagWinner);
-  state.players[bagWinner].total += 2;
   state.laserBagWinner = bagWinner;
-  timeline.laser.push({ type: 'bag', player: bagWinner,
-    text: pick(LASER_MID_EVENTS.bagGrab)(bagWinner, bwPr) });
+  state.laserRounds = laserRounds;
+  state.laserPositions = positions;
+  state.laserMaxReached = maxReached;
 
-  // Phase 4: Countdown prank
+  // Individual points based on max step reached
+  active.forEach(n => {
+    state.players[n].total += maxReached[n];
+    state.players[n].laser = { maxStep: maxReached[n], finalPos: positions[n] };
+    if (!ep.chalMemberScores) ep.chalMemberScores = {};
+    ep.chalMemberScores[n] = (ep.chalMemberScores[n] || 0) + maxReached[n];
+  });
+
+  // Countdown prank after bag grab
   timeline.laser.push({ type: 'countdown-fake',
     text: pick(LASER_MID_EVENTS.countdownPrank)(host()) });
 
-  // Panic hug bonds during fake countdown
   if (active.length >= 2) {
-    const hugPairs = [];
-    for (let i = 0; i < Math.min(2, Math.floor(active.length / 2)); i++) {
-      const remaining = active.filter(n => !hugPairs.flat().includes(n));
-      if (remaining.length >= 2) {
-        const pair = remaining.slice().sort(() => Math.random() - 0.5).slice(0, 2);
-        hugPairs.push(pair);
-        addBond(pair[0], pair[1], 0.3);
-      }
-    }
+    const hugPair = active.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+    addBond(hugPair[0], hugPair[1], 0.3);
   }
 
   timeline.laser.push({ type: 'countdown-real',
@@ -921,12 +964,54 @@ function buildSidebar(oc, screenKey, revIdx, events = []) {
   let html = `<div class="oc-side-title">Mission Control</div>
     <div class="oc-metric"><span>Alarm Level</span><b style="color:${alarmPct > 60 ? 'var(--oc-red)' : alarmPct > 30 ? 'var(--oc-amber)' : 'var(--oc-green)'}">${alarmPct}%</b></div>
     <div class="oc-metric"><span>Agents Active</span><b>${oc.activePlayers?.length || 0}</b></div>
-    ${leaderRevealed ? `<div class="oc-metric"><span>Immunity Lead</span><b style="color:var(--oc-green)">${oc.final?.winner || '???'}</b></div>` : ''}
-    <div class="oc-side-title">Agent Status</div>`;
-  (oc.activePlayers || []).forEach(name => {
-    const st = statusBy[name] || 'pending';
-    html += `<div class="oc-agent">${portrait(name, 22)}<span class="name">${name}</span><span class="oc-chip ${st}">${st.toUpperCase()}</span></div>`;
-  });
+    ${leaderRevealed ? `<div class="oc-metric"><span>Immunity Lead</span><b style="color:var(--oc-green)">${oc.final?.winner || '???'}</b></div>` : ''}`;
+
+  // Laser phase — position map
+  if (screenKey === 'laser' && oc.laserRounds?.length) {
+    // Find the latest position snapshot from revealed events
+    let latestPositions = {};
+    (oc.activePlayers || []).forEach(n => { latestPositions[n] = 0; });
+    for (const rd of oc.laserRounds) {
+      // Check if any event from this round has been revealed
+      const roundFirstIdx = events.findIndex(e => e.type === 'turn-label' && e.text.includes(`TURN ${rd.turn}`));
+      if (roundFirstIdx >= 0 && roundFirstIdx <= revIdx) {
+        latestPositions = { ...rd.positions };
+      }
+    }
+
+    html += `<div class="oc-side-title">Vault Position</div>`;
+    // Step labels
+    html += `<div style="display:flex;gap:2px;margin-bottom:6px;font:700 7px/1 'Share Tech Mono',monospace;color:rgba(255,255,255,0.2)">`;
+    for (let s = 0; s <= LASER_STEPS; s++) {
+      html += `<div style="flex:1;text-align:center">${s === LASER_STEPS ? '💼' : s}</div>`;
+    }
+    html += `</div>`;
+
+    // Position bars per player, sorted by position
+    const sorted = (oc.activePlayers || []).sort((a, b) => (latestPositions[b] || 0) - (latestPositions[a] || 0));
+    for (const name of sorted) {
+      const pos = latestPositions[name] || 0;
+      const pct = Math.round((pos / LASER_STEPS) * 100);
+      const atBag = pos >= LASER_STEPS;
+      const barColor = atBag ? 'var(--oc-green)' : pos > 0 ? 'var(--oc-amber)' : 'rgba(255,255,255,0.1)';
+      html += `<div style="display:flex;align-items:center;gap:4px;padding:2px 0;font-size:9px">
+        ${portrait(name, 16)}
+        <div style="flex:1">
+          <div style="height:4px;background:rgba(0,0,0,0.3);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${barColor};border-radius:2px;transition:width 0.3s"></div>
+          </div>
+        </div>
+        <span style="font-family:'Share Tech Mono',monospace;color:${barColor};width:16px;text-align:right">${atBag ? '💼' : pos}</span>
+      </div>`;
+    }
+  } else {
+    // Default agent status
+    html += `<div class="oc-side-title">Agent Status</div>`;
+    (oc.activePlayers || []).forEach(name => {
+      const st = statusBy[name] || 'pending';
+      html += `<div class="oc-agent">${portrait(name, 22)}<span class="name">${name}</span><span class="oc-chip ${st}">${st.toUpperCase()}</span></div>`;
+    });
+  }
   return html;
 }
 
@@ -1008,23 +1093,24 @@ export function rpBuildOperationClassifiedScan(ep) {
 }
 export function rpBuildOperationClassifiedLaser(ep) {
   const events = ep.operationClassified.timeline.laser || [];
+  const oc = ep.operationClassified;
   const stateKey = `oc-${ep.num}-laser`;
   if (!window._tvState) window._tvState = {};
   if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };
   const state = window._tvState[stateKey];
-  const bagWinner = ep.operationClassified.laserBagWinner;
 
   let html = '';
-  let camNum = 0;
   events.forEach((ev, i) => {
     const visible = i <= state.idx;
     const ppl = (ev.players || [ev.player]).filter(Boolean);
 
-    if (['ghost', 'clean', 'alarm', 'hit'].includes(ev.type)) {
-      // Player crossing card
-      camNum++;
+    if (ev.type === 'turn-label') {
+      html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+        <div style="text-align:center;padding:8px 0;font:700 10px/1 'Share Tech Mono',monospace;letter-spacing:3px;color:rgba(255,45,45,0.4)">${ev.text}</div>
+      </div>`;
+    } else if (ev.type === 'advance') {
       const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
-      const resultLabel = ev.type === 'ghost' ? 'GHOST — UNDETECTED' : ev.type === 'clean' ? 'CLEAN CROSSING' : ev.type === 'alarm' ? 'ALARM TRIGGERED' : 'COMPROMISED';
+      const stepPct = Math.round((ev.step / LASER_STEPS) * 100);
       html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
         <div class="oc-laser-card">
           <div class="oc-laser-feed">
@@ -1032,16 +1118,34 @@ export function rpBuildOperationClassifiedLaser(ep) {
             <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${ev.player}">
           </div>
           <div class="oc-laser-data">
-            <div class="oc-laser-header">CAM-${String(camNum).padStart(2, '0')} // LASER VAULT</div>
+            <div class="oc-laser-header">STEP ${ev.step}/${LASER_STEPS} — ${LASER_STEP_NAMES[ev.step - 1]}</div>
             <div class="oc-laser-name">${ev.player}</div>
-            <div class="oc-scan-field"><span class="label">BEAMS</span><span class="val">${ev.type === 'ghost' || ev.type === 'clean' ? '0 TRIPPED' : ev.type === 'alarm' ? '1 TRIPPED' : 'MULTIPLE'}</span></div>
-            <div class="oc-laser-result ${ev.type}">${resultLabel}</div>
+            <div style="height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden;margin:4px 0">
+              <div style="height:100%;width:${stepPct}%;background:var(--oc-green);border-radius:3px;transition:width 0.3s"></div>
+            </div>
+            <div class="oc-laser-result ghost">ADVANCED ✓</div>
+            <div class="oc-laser-narrative">${ev.text}</div>
+          </div>
+        </div>
+      </div>`;
+    } else if (ev.type === 'reset') {
+      const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
+      html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+        <div class="oc-laser-card" style="border-color:rgba(255,45,45,0.3)">
+          <div class="oc-laser-feed">
+            <div class="oc-laser-rec">REC</div>
+            <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${ev.player}">
+          </div>
+          <div class="oc-laser-data">
+            <div class="oc-laser-header" style="color:rgba(255,45,45,0.5)">🚨 BEAM CONTACT — RESET</div>
+            <div class="oc-laser-name">${ev.player}</div>
+            <div style="font:700 9px/1 'Share Tech Mono',monospace;color:var(--oc-red);margin:4px 0">WAS AT STEP ${ev.wasAt} → BACK TO 0</div>
+            <div class="oc-laser-result hit">ALARM — RESTART</div>
             <div class="oc-laser-narrative">${ev.text}</div>
           </div>
         </div>
       </div>`;
     } else if (ev.type === 'bag') {
-      // Bag grab — special highlight card
       const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
       html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
         <div class="oc-laser-card" style="border-color:rgba(34,197,94,0.3)">
@@ -1058,7 +1162,6 @@ export function rpBuildOperationClassifiedLaser(ep) {
         </div>
       </div>`;
     } else if (ev.type === 'countdown-fake' || ev.type === 'countdown-real') {
-      // Countdown prank — dramatic full-width event
       const isFake = ev.type === 'countdown-fake';
       html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
         <div class="oc-event ${isFake ? '' : 'oc-drama'}" data-tone="${isFake ? 'warn' : 'bad'}" style="padding:14px;text-align:center">
@@ -1069,17 +1172,14 @@ export function rpBuildOperationClassifiedLaser(ep) {
         </div>
       </div>`;
     } else {
-      // Mid-vault events (stuck, showmance, panic, help)
-      const portraits = ppl.map(p => portrait(p, 32)).join('');
-      const tone = ['stuck', 'panic'].includes(ev.type) ? 'bad' : ['showmance', 'help'].includes(ev.type) ? 'good' : 'warn';
-      const typeLabel = ev.type === 'stuck' ? 'GRIDLOCK' : ev.type === 'showmance' ? 'DISTRACTION' : ev.type === 'panic' ? 'FREEZE' : ev.type === 'help' ? 'ASSIST' : ev.type.toUpperCase();
+      // Mid-vault events + reactions
+      const portraits = ppl.map(p => portrait(p, 28)).join('');
+      const isDrama = ev.type === 'reaction' || ev.type === 'stuck' || ev.type === 'showmance' || ev.type === 'help';
+      const tone = ['stuck', 'reset'].includes(ev.type) ? 'bad' : ['showmance', 'help', 'advance'].includes(ev.type) ? 'good' : 'warn';
       html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
-        <div class="oc-event" data-tone="${tone}" style="padding:12px">
+        <div class="oc-event ${isDrama ? 'oc-drama' : ''}" data-tone="${tone}" style="padding:10px">
           <div style="display:flex;gap:4px">${portraits}</div>
-          <div>
-            <div style="font:700 8px/1 'Share Tech Mono',monospace;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:4px">${typeLabel}</div>
-            <div class="oc-copy">${ev.text}</div>
-          </div>
+          <div class="oc-copy" ${ev.type === 'reaction' ? 'style="font-style:italic"' : ''}>${ev.text}</div>
         </div>
       </div>`;
     }

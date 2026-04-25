@@ -663,13 +663,102 @@ function _simulatePrehistoricBreak(ep, tribeMembers, result) {
   const campKey = gs.mergeName || gs.tribes[0]?.name || 'merge';
   const allMembers = tribeMembers.flatMap(t => t.members);
   const breakEvents = [];
+  const minSize = Math.min(...tribeMembers.map(t => t.members.length));
 
+  // ── BENCH SELECTION ──
+  // Tribes with more members than the smallest must bench someone
+  const benchDecisions = {};
+  for (const t of tribeMembers) {
+    const sitOuts = t.members.length - minSize;
+    benchDecisions[t.name] = { benched: null, voluntary: false, events: [] };
+    if (sitOuts <= 0) continue;
+
+    const members = t.members;
+    // Check for voluntary sit-out: someone with low boldness or who wants to avoid fighting
+    const volunteers = members.filter(n => {
+      const s = pStats(n);
+      return s.boldness <= 3 || (s.physical <= 3 && Math.random() < 0.4);
+    });
+    // Check for weak record players the team might force to bench
+    const weakPlayers = members.filter(n => {
+      const memberScores = ep.chalMemberScores || {};
+      return (memberScores[n] || 0) <= 0;
+    });
+
+    let benched, isVoluntary = false;
+    if (volunteers.length && Math.random() < 0.5) {
+      benched = pick(volunteers);
+      isVoluntary = true;
+    } else if (weakPlayers.length && Math.random() < 0.4) {
+      benched = pick(weakPlayers);
+    } else {
+      benched = pick(members);
+    }
+    benchDecisions[t.name].benched = benched;
+    benchDecisions[t.name].voluntary = isVoluntary;
+
+    const pr = pronouns(benched);
+    if (isVoluntary) {
+      // Voluntary — team reacts
+      const teammatePr = members.filter(n => n !== benched);
+      const reactor = teammatePr.length ? pick(teammatePr) : null;
+      const hasGoodRecord = (ep.chalMemberScores?.[benched] || 0) >= 2;
+      if (hasGoodRecord && reactor) {
+        // Good player volunteers to sit — team resents losing their strength
+        addBond(reactor, benched, -0.3);
+        const texts = [
+          `${benched} volunteered to sit out the bone battle. ${reactor} pulled ${pr.obj} aside: "We NEED you up there. You're one of our best."`,
+          `"I'll sit this one out," ${benched} said. ${reactor} stared in disbelief. "Are you serious right now?"`,
+        ];
+        const evt = { text: pick(texts), players: [benched, reactor], badgeText: 'BENCH — FRUSTRATED', badgeClass: 'red' };
+        ep.campEvents[campKey].post.push({ ...evt, tag: 'drama' });
+        breakEvents.push({ id: 'benchVoluntaryResent', ...evt });
+      } else {
+        // Weak/timid player volunteers — team is fine with it
+        const texts = [
+          `${benched} raised ${pr.posAdj} hand. "I'll sit this one out. Heights aren't my thing." Nobody argued.`,
+          `"You guys fight. I'll cheer from down here." ${benched} was more than happy to skip the columns.`,
+        ];
+        const evt = { text: pick(texts), players: [benched], badgeText: 'BENCH — VOLUNTARY', badgeClass: 'amber' };
+        ep.campEvents[campKey].post.push({ ...evt, tag: 'drama' });
+        breakEvents.push({ id: 'benchVoluntary', ...evt });
+      }
+    } else {
+      // Forced bench — team tells someone to sit
+      const decider = members.filter(n => n !== benched).sort((a, b) => pStats(b).strategic - pStats(a).strategic)[0];
+      const wantedToFight = pStats(benched).boldness >= 5;
+      if (wantedToFight) {
+        // Player wanted to fight but got benched — resentment
+        addBond(benched, decider, -0.4);
+        const texts = [
+          `${decider} told ${benched} to sit out. ${benched}'s face darkened. "You're benching ME?"`,
+          `"We think it's better if you sit this one," ${decider} said carefully. ${benched} wasn't having it. "This isn't over."`,
+          `${benched} was told to stay on the ground. ${pr.Sub} threw ${pr.posAdj} bone down in frustration. "FINE."`,
+        ];
+        const evt = { text: pick(texts), players: [benched, decider], badgeText: 'BENCH — ANGRY', badgeClass: 'red' };
+        ep.campEvents[campKey].post.push({ ...evt, tag: 'drama' });
+        breakEvents.push({ id: 'benchForced', ...evt });
+      } else {
+        // Player is relieved to not fight
+        const texts = [
+          `${decider} assigned ${benched} to the bench. ${benched} tried to look disappointed. Failed. "Oh no. Guess I'll just... watch."`,
+          `${benched} was told to sit out. ${pr.Sub} shrugged. "Someone's gotta cheer." Secret relief.`,
+        ];
+        const evt = { text: pick(texts), players: [benched, decider], badgeText: 'BENCH — RELIEVED', badgeClass: 'green' };
+        ep.campEvents[campKey].post.push({ ...evt, tag: 'drama' });
+        breakEvents.push({ id: 'benchRelieved', ...evt });
+      }
+    }
+  }
+  result.benchDecisions = benchDecisions;
+
+  // ── REGULAR DRAMA EVENTS ──
   const eligible = BC_DRAMA_EVENTS.filter(ev => ev.check(ep, allMembers));
   const shuffled = [...eligible].sort(() => Math.random() - 0.5);
-  const target = 6 + Math.floor(Math.random() * 2); // 6-7
+  const target = 5 + Math.floor(Math.random() * 2); // 5-6 (bench events already added)
 
   for (const ev of shuffled) {
-    if (breakEvents.length >= target) break;
+    if (breakEvents.length >= target + Object.values(benchDecisions).filter(d => d.benched).length) break;
     const applied = ev.apply(ep, allMembers);
     if (applied) {
       ep.campEvents[campKey].post.push({ ...applied, tag: 'drama' });
@@ -688,23 +777,13 @@ function _simulateBoneBattle(ep, tribeMembers, result) {
   const minSize = Math.min(...tribeMembers.map(t => t.members.length));
   const roundCount = minSize;
 
-  // Build bench rotation per tribe
+  // Use bench decisions from the prehistoric break
   const tribeBenched = {};
   for (const t of tribeMembers) {
+    const decision = result.benchDecisions?.[t.name];
+    const benched = decision?.benched ? [decision.benched] : [];
     tribeBenched[t.name] = [];
-    const sitOuts = t.members.length - minSize;
-    if (sitOuts > 0) {
-      for (let rd = 0; rd < roundCount; rd++) {
-        const rotated = [...t.members].sort((a, b) => {
-          const aIdx = t.members.indexOf(a);
-          const bIdx = t.members.indexOf(b);
-          return ((aIdx + rd) % t.members.length) - ((bIdx + rd) % t.members.length);
-        });
-        tribeBenched[t.name].push(rotated.slice(0, sitOuts));
-      }
-    } else {
-      for (let rd = 0; rd < roundCount; rd++) tribeBenched[t.name].push([]);
-    }
+    for (let rd = 0; rd < roundCount; rd++) tribeBenched[t.name].push(benched);
   }
 
   // Build matchups — prioritize drama
@@ -1760,46 +1839,58 @@ function _bcBuildBattleSidebar(bc, revCount) {
     </div>`;
   }
 
-  // Fighters by team with round results
+  // Fighters by team with round results + benched players
   const currentRoundIdx = roundsRevealed - 1;
   const isComplete = roundsRevealed >= allRounds.length;
   const currentFighters = new Set(currentRoundIdx >= 0 && !isComplete ? allRounds[currentRoundIdx].fighters.map(f => f.fighter) : []);
 
-  // Build per-tribe fighter records
   const tribeNames = Object.keys(bb.battleScores);
   sb += `<div class="bc-side-sec">FIGHTERS</div>`;
   for (const tribe of tribeNames) {
-    sb += `<div style="padding:4px;margin-bottom:4px;background:rgba(0,0,0,0.1);border-radius:3px">
-      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--cave-amber);margin-bottom:4px">${tribe}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:3px">`;
-    // Collect all fighters from this tribe across all rounds
-    const tribeFighters = new Set();
-    for (const rd of allRounds) {
-      for (const f of rd.fighters) {
-        if (f.tribe === tribe) tribeFighters.add(f.fighter);
-      }
-    }
-    for (const name of tribeFighters) {
-      // Count wins/losses from revealed rounds
-      let wins = 0, losses = 0, fought = 0;
+    sb += `<div style="padding:6px;margin-bottom:5px;background:rgba(0,0,0,0.1);border-radius:4px">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cave-amber);margin-bottom:5px;letter-spacing:1px">${tribe}</div>`;
+
+    // Get ALL tribe members from the tribe data
+    const tribeObj = gs.tribes?.find(t => t.name === tribe);
+    const allTribeMembers = tribeObj?.members || [];
+    const benchedName = bc.benchDecisions?.[tribe]?.benched;
+
+    // Active fighters
+    const activeFighters = allTribeMembers.filter(n => n !== benchedName);
+    sb += `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:${benchedName ? '5px' : '0'}">`;
+    for (const name of activeFighters) {
+      let wins = 0, fought = 0;
       for (let i = 0; i < roundsRevealed; i++) {
         const rd = allRounds[i];
         const f = rd.fighters.find(fi => fi.fighter === name);
         if (!f) continue;
         fought++;
-        const rank = rd.rankings.findIndex(r => r.fighter === name);
-        if (rank === 0) wins++;
-        if (rank === rd.rankings.length - 1) losses++;
+        if (rd.rankings[0].fighter === name) wins++;
       }
       const isActive = currentFighters.has(name);
-      const borderColor = isActive ? 'var(--fire-orange)' : wins > losses ? 'var(--cave-green)' : losses > wins ? 'var(--cave-red)' : 'var(--cave-amber)';
+      const borderColor = isActive ? 'var(--fire-orange)' : fought === 0 ? 'rgba(217,119,6,0.2)' : wins > 0 ? 'var(--cave-green)' : 'var(--cave-red)';
       const glowStyle = isActive ? 'box-shadow:0 0 8px rgba(234,88,12,0.5);' : '';
-      sb += `<div style="display:flex;align-items:center;gap:3px;padding:2px 4px;background:rgba(0,0,0,0.15);border-radius:3px;border:1px solid ${borderColor};${glowStyle}" title="${name}: ${wins}W ${losses}L">
-        ${_bcSidePortrait(name, 18)}
-        ${fought > 0 ? `<span style="font-size:8px;color:${wins > losses ? 'var(--cave-green)' : losses > wins ? 'var(--cave-red)' : 'rgba(255,255,255,0.3)'}">${wins}W</span>` : ''}
+      sb += `<div style="display:flex;align-items:center;gap:3px;padding:3px 5px;background:rgba(0,0,0,0.15);border-radius:4px;border:1px solid ${borderColor};${glowStyle}" title="${name}: ${wins}W / ${fought} fights">
+        ${_bcSidePortrait(name, 20)}
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <span style="font-size:9px;color:rgba(255,255,255,0.7)">${name.split(' ')[0]}</span>
+          ${fought > 0 ? `<span style="font-size:8px;font-family:'Share Tech Mono',monospace;color:${wins > 0 ? 'var(--cave-green)' : 'var(--cave-red)'}">${wins}W/${fought}F</span>` : ''}
+        </div>
       </div>`;
     }
-    sb += `</div></div>`;
+    sb += `</div>`;
+
+    // Benched player (greyed out)
+    if (benchedName) {
+      const benchInfo = bc.benchDecisions[tribe];
+      const benchLabel = benchInfo.voluntary ? 'SAT OUT' : 'BENCHED';
+      sb += `<div style="display:flex;align-items:center;gap:4px;padding:3px 5px;background:rgba(0,0,0,0.08);border-radius:4px;border:1px dashed rgba(255,255,255,0.08);opacity:0.45">
+        ${_bcSidePortrait(benchedName, 18)}
+        <span style="font-size:9px;color:rgba(255,255,255,0.4)">${benchedName.split(' ')[0]}</span>
+        <span style="font-size:7px;font-family:'Share Tech Mono',monospace;color:rgba(255,255,255,0.2);letter-spacing:1px">${benchLabel}</span>
+      </div>`;
+    }
+    sb += `</div>`;
   }
 
   sb += `<div style="font-size:8px;color:rgba(255,255,255,0.2);text-align:center;margin-top:6px">${roundsRevealed > 0 ? `${roundsRevealed}/${allRounds.length} rounds` : 'AWAITING BATTLE'}</div>`;

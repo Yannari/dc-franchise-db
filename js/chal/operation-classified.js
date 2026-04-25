@@ -222,6 +222,48 @@ const DRAMA_EVENTS = [
 // ══════════════════════════════════════════════════════════════
 // SIMULATION
 // ══════════════════════════════════════════════════════════════
+const INLINE_REACTIONS = {
+  scanFlaggedHost: [
+    (h, p) => `${h} appeared on the hologram. "Fun fact: ${p}'s scan was the WORST I've ever seen. And I've scanned monkeys."`,
+    (h, p) => `${h}: "${p}, even the DOOR doesn't want you here." The others tried not to laugh.`,
+    (h, p) => `"${p}... your face literally broke the scanner." ${h} was delighted.`,
+  ],
+  scanFlaggedReact: [
+    (reactor, p) => `${reactor} watched ${p} get flagged. "Yikes. Glad that wasn't me."`,
+    (reactor, p) => `${reactor} winced as ${p}'s alarm blared. "That's... not great for us."`,
+  ],
+  scanClearReact: [
+    (reactor, p) => `${reactor} nodded at ${p}'s clean scan. "Smooth. Very smooth."`,
+    (reactor, p) => `"Show-off," ${reactor} muttered as ${p} breezed through. Half-jealous.`,
+  ],
+  laserGhostReact: [
+    (reactor, p) => `${reactor} watched ${p} glide through the lasers. "...How?!" Pure disbelief.`,
+    (reactor, p) => `"OK, ${p} has done this before. Nobody moves like that on a first try." ${reactor} was shook.`,
+  ],
+  laserHitReact: [
+    (reactor, p) => `${reactor} covered ${reactor === p ? '' : 'their '}eyes as ${p} hit the beam. "That had to hurt."`,
+    (h, p) => `${h}: "And THAT, kids, is why you don't run through a laser grid." ${p} was not amused.`,
+  ],
+  defusalPerfectReact: [
+    (reactor, p) => `${reactor}'s jaw dropped. "${p} cut that wire like it was NOTHING." Respect.`,
+    (h, p) => `${h} slow-clapped. "00:01 on the clock. ${p}, you absolute psychopath. Beautiful."`,
+  ],
+  defusalBlastReact: [
+    (reactor, p) => `${reactor} backed away from ${p}'s exploding bomb. "I am NOT standing near you for the next one."`,
+    (h, p) => `${h} pinched his nose. "${p}'s bomb went off and now the whole SET smells. Thanks, ${p}."`,
+  ],
+  suspicion: [
+    (a, b) => `${a} noticed ${b} lingering near the control panel. "What were you looking at?" ${b}: "Nothing." Suspicious.`,
+    (a, b) => `${a} caught ${b} whispering to someone during the scan phase. "Who were you talking to?" Eyes narrowing.`,
+  ],
+  confessional: [
+    (p) => `${p}: "I'm not a spy. I can barely unlock my own phone. But here we are."`,
+    (p) => `${p}: "${host()} in a turtleneck? THAT'S the real horror of this challenge."`,
+    (p) => `${p}: "If I survive this, I'm adding 'secret agent' to my resume."`,
+    (p) => `${p}: "I trusted my gut. My gut was wrong. My gut is fired."`,
+  ],
+};
+
 function _simulateScan(active, state, timeline) {
   for (const name of active) {
     const s = pStats(name);
@@ -236,6 +278,46 @@ function _simulateScan(active, state, timeline) {
       type: result, player: name, score,
       text: pick(SCAN_TEXT[result])(name, pr),
     });
+
+    // Inline reactions after notable results
+    if (result === 'flagged') {
+      // Host roasts the flagged player
+      timeline.scan.push({ type: 'reaction', player: name,
+        text: pick(INLINE_REACTIONS.scanFlaggedHost)(host(), name) });
+      popDelta(name, -1);
+      // Another castmate reacts
+      const reactor = pick(active.filter(n => n !== name));
+      if (reactor) {
+        timeline.scan.push({ type: 'reaction', players: [reactor, name],
+          text: pick(INLINE_REACTIONS.scanFlaggedReact)(reactor, name) });
+      }
+    } else if (result === 'clear' && Math.random() < 0.3) {
+      const reactor = pick(active.filter(n => n !== name));
+      if (reactor) {
+        timeline.scan.push({ type: 'reaction', players: [reactor, name],
+          text: pick(INLINE_REACTIONS.scanClearReact)(reactor, name) });
+      }
+    }
+  }
+
+  // Suspicion event between two players (~35%)
+  if (active.length >= 2 && Math.random() < 0.35) {
+    const a = pick(active.filter(n => pStats(n).strategic >= 5));
+    if (a) {
+      const b = pick(active.filter(n => n !== a));
+      if (b) {
+        addBond(a, b, -0.2);
+        timeline.scan.push({ type: 'reaction', players: [a, b],
+          text: pick(INLINE_REACTIONS.suspicion)(a, b) });
+      }
+    }
+  }
+
+  // Confessional from a random player (~40%)
+  if (Math.random() < 0.4) {
+    const conf = pick(active);
+    timeline.scan.push({ type: 'reaction', player: conf,
+      text: pick(INLINE_REACTIONS.confessional)(conf) });
   }
 }
 
@@ -291,6 +373,22 @@ function _simulateLaser(active, state, timeline, ep) {
       type: result, player: name, score,
       text: pick(LASER_TEXT[result])(name, pr),
     });
+
+    // Inline reactions after notable laser results
+    if (result === 'ghost' && Math.random() < 0.5) {
+      const reactor = pick(active.filter(n => n !== name));
+      if (reactor) {
+        timeline.laser.push({ type: 'reaction', players: [reactor, name],
+          text: pick(INLINE_REACTIONS.laserGhostReact)(reactor, name) });
+        addBond(reactor, name, 0.2);
+      }
+    } else if (result === 'hit' && Math.random() < 0.5) {
+      const reactor = Math.random() < 0.5 ? host() : pick(active.filter(n => n !== name));
+      if (reactor) {
+        timeline.laser.push({ type: 'reaction', players: reactor === host() ? [] : [reactor, name], player: name,
+          text: pick(INLINE_REACTIONS.laserHitReact)(reactor, name) });
+      }
+    }
   }
 
   // Phase 2: Mid-vault events (stuck together, showmance, panic, helping)
@@ -495,6 +593,21 @@ function _simulateDefusal(active, state, timeline, ep) {
       type: result, player: name, score,
       text: pick(DEFUSAL_TEXT[result])(name, pr, wire),
     });
+
+    // Inline reactions after notable defusal results
+    if (result === 'perfect' && Math.random() < 0.5) {
+      const reactor = Math.random() < 0.4 ? host() : pick(active.filter(n => n !== name));
+      if (reactor) {
+        timeline.defusal.push({ type: 'reaction', player: name,
+          text: pick(INLINE_REACTIONS.defusalPerfectReact)(reactor, name) });
+      }
+    } else if (result === 'blast' && Math.random() < 0.6) {
+      const reactor = Math.random() < 0.5 ? host() : pick(active.filter(n => n !== name));
+      if (reactor) {
+        timeline.defusal.push({ type: 'reaction', player: name,
+          text: pick(INLINE_REACTIONS.defusalBlastReact)(reactor, name) });
+      }
+    }
   }
 
   // Rank and determine winner
@@ -784,7 +897,7 @@ function renderSteps(ep, screenKey, events, btnLabel) {
     const visible = i <= state.idx;
     const imgs = (ev.players || [ev.player]).filter(Boolean).slice(0, 3).map(p => portrait(p, 36)).join('');
     html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
-      <div class="oc-event ${ev.type === 'confessional' || ev.badgeText ? 'oc-drama' : ''}" data-tone="${eventTone(ev.type)}">
+      <div class="oc-event ${ev.type === 'confessional' || ev.type === 'reaction' || ev.badgeText ? 'oc-drama' : ''}" data-tone="${eventTone(ev.type)}">
         <div style="display:flex;gap:4px">${imgs}</div>
         <div class="oc-copy">${ev.text}</div>
       </div>
@@ -850,6 +963,19 @@ export function rpBuildOperationClassifiedScan(ep) {
   let html = '';
   events.forEach((ev, i) => {
     const visible = i <= state.idx;
+
+    // Inline reaction — render as simple commentary card
+    if (ev.type === 'reaction') {
+      const ppl = (ev.players || [ev.player]).filter(Boolean);
+      html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+        <div class="oc-event oc-drama" data-tone="warn" style="padding:10px 14px;max-width:500px;margin:4px auto">
+          <div style="display:flex;gap:4px">${ppl.map(p => portrait(p, 28)).join('')}</div>
+          <div class="oc-copy" style="font-style:italic">${ev.text}</div>
+        </div>
+      </div>`;
+      return;
+    }
+
     const resultLabel = ev.type === 'clear' ? 'CLEARANCE GRANTED' : ev.type === 'watched' ? 'UNDER SURVEILLANCE' : 'INTRUDER FLAGGED';
     const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
     const agentNum = `AG-${String(Math.abs(ev.player.charCodeAt(0) * 37 + ev.player.length * 89) % 9000 + 1000)}`;

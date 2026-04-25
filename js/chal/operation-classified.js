@@ -30,8 +30,8 @@ function portrait(name, size = 42) {
 
 // ── RESULT TIERS (rescaled for 0.02-0.04 coefficients) ──
 function scanResult(score) {
-  if (score > 0.38) return 'clear';
-  if (score > 0.28) return 'watched';
+  if (score > 0.10) return 'clear';
+  if (score > 0.00) return 'watched';
   return 'flagged';
 }
 function laserResult(score) {
@@ -226,7 +226,7 @@ function _simulateScan(active, state, timeline) {
   for (const name of active) {
     const s = pStats(name);
     const pr = pronouns(name);
-    const score = s.mental * 0.03 + s.intuition * 0.03 + s.temperament * 0.02 + noise(0.35);
+    const score = s.temperament * 0.02 + s.boldness * 0.01 + noise(0.4);
     const result = scanResult(score);
     const delta = result === 'clear' ? 1 : result === 'watched' ? 0 : -1;
     state.players[name].scan = { score, result };
@@ -487,9 +487,9 @@ function css() {
   @keyframes oc-blink{0%,100%{opacity:1}50%{opacity:0.3}}
 
   /* ── SCAN CARD — spy ID badge ── */
-  .oc-scan-card{display:flex;gap:0;background:#0a0e14;border:2px solid rgba(59,130,246,0.2);border-radius:8px;overflow:hidden;max-width:460px;margin:8px auto}
-  .oc-scan-photo{width:100px;flex-shrink:0;position:relative;background:#080c12;display:flex;align-items:center;justify-content:center;overflow:hidden}
-  .oc-scan-photo img{width:100%;height:100%;object-fit:cover}
+  .oc-scan-card{display:flex;gap:0;background:#0a0e14;border:2px solid rgba(59,130,246,0.2);border-radius:8px;overflow:hidden;max-width:500px;margin:8px auto}
+  .oc-scan-photo{width:140px;flex-shrink:0;position:relative;background:#080c12;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px}
+  .oc-scan-photo img{width:100%;height:auto;object-fit:contain}
   /* Corner brackets like face detection */
   .oc-scan-photo::before{content:'';position:absolute;inset:8px;
     border:2px solid rgba(59,130,246,0.3);border-radius:2px;
@@ -528,10 +528,30 @@ function css() {
   .oc-btn:hover{background:#2a0a10;box-shadow:0 0 12px rgba(255,45,45,.2)}
   .oc-btn.secondary{border-color:rgba(148,163,184,.3);background:#0a0c10;color:var(--oc-steel);margin-left:8px}
 
-  .oc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px}
-  .oc-dossier{padding:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);border-radius:5px;text-align:center}
-  .oc-dossier .nm{font-size:10px;font-weight:700;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .oc-dossier .st{font:700 8px 'Share Tech Mono',monospace;color:var(--oc-steel);margin-top:3px}
+  .oc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:16px;padding:0 10px}
+
+  /* Manila folder dossier */
+  .oc-folder{position:relative;background:linear-gradient(160deg,#c4a265 0%,#d4b477 40%,#bfa05a 100%);
+    border-radius:2px 8px 4px 4px;padding:12px 10px 10px;min-height:140px;
+    box-shadow:2px 3px 8px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15);
+    display:flex;flex-direction:column;align-items:center;cursor:default}
+  /* Folder tab */
+  .oc-folder::before{content:'';position:absolute;top:-8px;left:10px;width:40px;height:10px;
+    background:linear-gradient(180deg,#d4b477,#c4a265);border-radius:3px 3px 0 0;
+    box-shadow:1px -1px 3px rgba(0,0,0,0.15)}
+  /* Paper edge peeking out */
+  .oc-folder::after{content:'';position:absolute;top:3px;right:4px;width:calc(100% - 14px);height:calc(100% - 10px);
+    background:#f0ead6;border-radius:1px;z-index:0;box-shadow:inset 0 0 4px rgba(0,0,0,0.05)}
+
+  .oc-folder-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%}
+  .oc-folder-photo{width:56px;height:56px;border:2px solid rgba(0,0,0,0.2);background:#ddd;overflow:hidden;margin-bottom:6px}
+  .oc-folder-photo img{width:100%;height:100%;object-fit:contain}
+  .oc-folder-name{font:700 11px/1.2 'Share Tech Mono',monospace;color:#1a1a1a;text-align:center;
+    margin-bottom:6px;letter-spacing:0.5px}
+  .oc-folder-stamp{font:900 9px/1 'Share Tech Mono',monospace;letter-spacing:2px;
+    padding:3px 8px;border:2px solid;border-radius:2px;transform:rotate(-3deg);text-transform:uppercase}
+  .oc-folder-stamp.pending{color:#8b6914;border-color:#8b6914;background:rgba(139,105,20,0.08)}
+  .oc-folder-stamp.mission{color:#b91c1c;border-color:#b91c1c;background:rgba(185,28,28,0.08)}
 
   .oc-winner{text-align:center;padding:28px 14px;position:relative;z-index:5}
   .oc-winner .name{font-family:'Bungee Shade',sans-serif;font-size:28px;letter-spacing:3px;color:#fff;text-shadow:0 0 20px rgba(255,45,45,.2)}
@@ -618,10 +638,25 @@ function buildSidebar(oc, screenKey, revIdx, events = []) {
 
 export function rpBuildOperationClassifiedTitleCard(ep) {
   const oc = ep.operationClassified;
-  const cards = (oc.activePlayers || []).map(name => {
-    return `<div class="oc-dossier">${portrait(name, 48)}<div class="nm">${name}</div><div class="st">PENDING</div></div>`;
+  const folders = (oc.activePlayers || []).map(name => {
+    const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+    return `<div class="oc-folder">
+      <div class="oc-folder-content">
+        <div class="oc-folder-photo"><img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${name}"></div>
+        <div class="oc-folder-name">${name}</div>
+        <div class="oc-folder-stamp mission">IN MISSION</div>
+      </div>
+    </div>`;
   }).join('');
-  return shell(ep, `<div class="oc-winner"><div class="oc-kicker">Unauthorized Broadcast</div><div class="name">Mission Feed Online</div><div class="oc-stamp">CLASSIFIED</div></div><div class="oc-grid">${cards}</div>`, 'title', []);
+  return shell(ep, `
+    <div class="oc-winner">
+      <div class="oc-kicker">Unauthorized Broadcast Captured</div>
+      <div class="name">Operation: Classified</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;font-family:'Share Tech Mono',monospace;letter-spacing:1px">Face Scan · Laser Vault · Wiretap · Bomb Defusal</div>
+      <div class="oc-stamp">TOP SECRET</div>
+    </div>
+    <div class="oc-grid">${folders}</div>
+  `, 'title', []);
 }
 
 export function rpBuildOperationClassifiedScan(ep) {

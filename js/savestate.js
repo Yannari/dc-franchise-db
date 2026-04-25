@@ -63,6 +63,8 @@ export function patchEpisodeHistory(ep) {
   if (!h.oceansHeist && ep.oceansHeist) h.oceansHeist = ep.oceansHeist;
   if (!h.fullMetalDrama && ep.fullMetalDrama) h.fullMetalDrama = ep.fullMetalDrama;
   if (!h.isOceansHeist && ep.isOceansHeist) h.isOceansHeist = true;
+  if (!h.isMillionBucksBC && ep.isMillionBucksBC) h.isMillionBucksBC = true;
+  if (!h.millionBucksBC && ep.millionBucksBC) h.millionBucksBC = ep.millionBucksBC;
   if (!h.isFullMetalDrama && ep.isFullMetalDrama) h.isFullMetalDrama = true;
   if (!h.bewareLostVotes && ep.bewareLostVotes) h.bewareLostVotes = ep.bewareLostVotes;
   if (!h.journey && ep.journey) h.journey = ep.journey;

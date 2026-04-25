@@ -19,6 +19,7 @@ import { rpBuildOneFluTitleCard, rpBuildOneFluStudySleep, rpBuildOneFluQuiz, rpB
 import { rpBuildMastersOfDisastersTitleCard, rpBuildMastersOfDisastersEarthquake, rpBuildMastersOfDisastersDramaBreak, rpBuildMastersOfDisastersSubmarine, rpBuildMastersOfDisastersResults, mastersOfDisastersRevealNext, mastersOfDisastersRevealAll } from './chal/masters-of-disasters.js';
 import { rpBuildFullMetalDramaTitleCard, rpBuildFullMetalDramaJump, rpBuildFullMetalDramaPaintBomb, rpBuildFullMetalDramaDramaBreak, rpBuildFullMetalDramaFlag, rpBuildFullMetalDramaResults, fullMetalDramaRevealNext, fullMetalDramaRevealAll } from './chal/full-metal-drama.js';
 import { rpBuildOceansHeistTitleCard, rpBuildOceansHeistVault, rpBuildOceansHeistHeist, rpBuildOceansHeistGetaway, rpBuildOceansHeistResults, oceansHeistRevealNext, oceansHeistRevealAll } from './chal/oceans-heist.js';
+import { rpBuildMillionBucksBCTitleCard, rpBuildMillionBucksBCFire, rpBuildMillionBucksBCBattle, rpBuildMillionBucksBCResults, millionBucksBCRevealNext, millionBucksBCRevealAll } from './chal/million-bucks-bc.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10459,6 +10460,15 @@ export function buildVPScreens(epRecord) {
     if (ep.rescueIslandEvents?.length) {
       const _modRescLife = rpBuildRescueIslandLife(ep);
       if (_modRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _modRescLife });
+    }
+  } else if ((ep.isMillionBucksBC || ep.challengeType === 'million-bucks-bc') && ep.millionBucksBC) {
+    vpScreens.push({ id:'bc-title', label:'Bucks B.C.', html: rpBuildMillionBucksBCTitleCard(ep) });
+    if (ep.millionBucksBC.fireMaking) vpScreens.push({ id:'bc-fire', label:'Fire Making', html: rpBuildMillionBucksBCFire(ep) });
+    if (ep.millionBucksBC.boneBattle) vpScreens.push({ id:'bc-battle', label:'Bone Battle', html: rpBuildMillionBucksBCBattle(ep) });
+    vpScreens.push({ id:'bc-results', label:'Results', html: rpBuildMillionBucksBCResults(ep) });
+    if (ep.riLifeEvents?.length || ep.riDuel) {
+      const _bcRiLife = rpBuildRILife(ep);
+      if (_bcRiLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _bcRiLife });
     }
   } else if ((ep.isOceansHeist || ep.challengeType === 'oceans-heist') && ep.oceansHeist) {
     vpScreens.push({ id:'oh-title', label:"Ocean's Heist", html: rpBuildOceansHeistTitleCard(ep) });

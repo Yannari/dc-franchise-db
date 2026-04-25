@@ -294,19 +294,12 @@ export function simulateMillionBucksBC(ep, tribes) {
   _simulateBoneBattle(ep, tribeMembers, result);
 
   // ── FINAL SCORING ──
-  // Fire: 40% weight
-  const maxFire = Math.max(1, ...result.fireMaking.tribes.map(ft => ft.fireScore));
-  for (const ft of result.fireMaking.tribes) {
-    result.tribeScores[ft.tribe] = (result.tribeScores[ft.tribe] || 0) + (ft.fireScore / maxFire) * 40;
-  }
-
-  // Battle: 60% weight — points from rounds
-  const maxBattle = Math.max(1, ...tribeMembers.map(t => result.boneBattle.battleScores?.[t.name] || 0));
+  // Tribe immunity = bone battle wins ONLY (fire just gives bigger bones advantage)
   for (const t of tribeMembers) {
-    const bs = result.boneBattle.battleScores?.[t.name] || 0;
-    result.tribeScores[t.name] = (result.tribeScores[t.name] || 0) + (bs / maxBattle) * 60;
+    result.tribeScores[t.name] = result.boneBattle.battleScores?.[t.name] || 0;
   }
 
+  // Tiebreaker already handled in _simulateBoneBattle — scores include TB points
   const sorted = Object.entries(result.tribeScores).sort((a, b) => b[1] - a[1]);
   const winnerName = sorted[0][0];
   const loserName = sorted[sorted.length - 1][0];
@@ -573,6 +566,97 @@ const BC_DRAMA_EVENTS = [
       return { text: pick(texts), players: [loserMember, winnerMember], badgeText: 'BONE ENVY', badgeClass: 'amber' };
     },
   },
+  {
+    id: 'caveWallArt',
+    check(ep, all) { return all.length >= 2; },
+    apply(ep, all) {
+      const artist = pick(all);
+      const subject = pick(all.filter(n => n !== artist));
+      addBond(artist, subject, getBond(artist, subject) > 0 ? 0.3 : -0.3);
+      const isNice = getBond(artist, subject) >= 0;
+      const texts = isNice ? [
+        `${artist} drew a flattering cave painting of ${subject} on the set wall. ${subject} was genuinely touched.`,
+        `${artist} carved "${artist} + ${subject}" into a fake boulder. Prehistoric friendship goals.`,
+      ] : [
+        `${artist} drew a very unflattering cave painting of ${subject}. Giant head, tiny body. ${subject} was NOT amused.`,
+        `${artist} scratched a stick figure of ${subject} falling into the tar pit. ${subject} saw it. Tension.`,
+      ];
+      return { text: pick(texts), players: [artist, subject], badgeText: isNice ? 'CAVE ART' : 'CAVE SHADE', badgeClass: isNice ? 'green' : 'red' };
+    },
+  },
+  {
+    id: 'hostTaunt',
+    check(ep, all) { return all.length >= 1; },
+    apply(ep, all) {
+      const target = pick(all);
+      popDelta(target, -1);
+      const h = host();
+      const texts = [
+        `${h} walked up to ${target} and handed them a tiny bone. "This one's more your speed." The others howled.`,
+        `"${target}, you looked like you were trying to start a fire with a wet noodle." ${h} was ruthless.`,
+        `${h} showed the replay of ${target}'s worst moment on a monitor. "Let's watch that again. In slow motion."`,
+      ];
+      return { text: pick(texts), players: [target], badgeText: 'HOST ROAST', badgeClass: 'amber' };
+    },
+  },
+  {
+    id: 'nervousBreakdown',
+    check(ep, all) { return all.some(n => pStats(n).boldness <= 4); },
+    apply(ep, all) {
+      const nervous = all.filter(n => pStats(n).boldness <= 4);
+      if (!nervous.length) return null;
+      const player = pick(nervous);
+      const pr = pronouns(player);
+      const comforter = all.find(n => n !== player && getBond(n, player) > 0);
+      if (comforter) {
+        addBond(comforter, player, 0.4);
+        const texts = [
+          `${player} was shaking before the bone battle. ${comforter} sat next to ${pr.obj}. "You've got this." A small nod.`,
+          `"I can't fight on a COLUMN." ${player}'s voice cracked. ${comforter} squeezed ${pr.posAdj} shoulder. "I'll be cheering for you."`,
+        ];
+        return { text: pick(texts), players: [comforter, player], badgeText: 'PEP TALK', badgeClass: 'green' };
+      }
+      const texts = [
+        `${player} stared at the columns and the tar pit. ${pr.Sub} looked like ${pr.sub} might throw up.`,
+        `${player} practiced swinging ${pr.posAdj} bone. It flew out of ${pr.posAdj} hands. Not a great sign.`,
+      ];
+      return { text: pick(texts), players: [player], badgeText: 'NERVES', badgeClass: 'amber' };
+    },
+  },
+  {
+    id: 'rivalryEscalation',
+    check(ep, all) {
+      for (const a of all) for (const b of all) if (a !== b && getBond(a, b) < -3) return true;
+      return false;
+    },
+    apply(ep, all) {
+      const pairs = [];
+      for (const a of all) for (const b of all) if (a !== b && getBond(a, b) < -3) pairs.push([a, b]);
+      if (!pairs.length) return null;
+      const [a, b] = pick(pairs);
+      addBond(a, b, -0.5);
+      const texts = [
+        `${a} and ${b} got in each other's faces during the break. "I'm gonna ENJOY knocking you off that column."`,
+        `${a} shoved ${b}'s shoulder walking past. ${b} shoved back. The crew had to step between them.`,
+        `"If we're on the same column, you're going in the tar FIRST." ${a}'s eyes were locked on ${b}.`,
+      ];
+      return { text: pick(texts), players: [a, b], badgeText: 'RIVALRY', badgeClass: 'red' };
+    },
+  },
+  {
+    id: 'foodScavenge',
+    check(ep, all) { return all.length >= 2; },
+    apply(ep, all) {
+      const pair = all.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+      addBond(pair[0], pair[1], 0.3);
+      const texts = [
+        `${pair[0]} and ${pair[1]} found prop berries behind the set. "Are these real?" "Only one way to find out." They ate them. They were real.`,
+        `${pair[0]} discovered a hidden snack stash in Chef's prop tent. ${pair[1]} stood lookout. Partners in crime.`,
+        `${pair[0]} and ${pair[1]} roasted prop marshmallows over the remaining fire. "This is the best thing about the Stone Age."`,
+      ];
+      return { text: pick(texts), players: [pair[0], pair[1]], badgeText: 'SNACK RUN', badgeClass: 'green' };
+    },
+  },
 ];
 
 function _simulatePrehistoricBreak(ep, tribeMembers, result) {
@@ -582,7 +666,7 @@ function _simulatePrehistoricBreak(ep, tribeMembers, result) {
 
   const eligible = BC_DRAMA_EVENTS.filter(ev => ev.check(ep, allMembers));
   const shuffled = [...eligible].sort(() => Math.random() - 0.5);
-  const target = 3 + Math.floor(Math.random() * 3); // 3-5
+  const target = 6 + Math.floor(Math.random() * 2); // 6-7
 
   for (const ev of shuffled) {
     if (breakEvents.length >= target) break;
@@ -656,12 +740,10 @@ function _simulateBoneBattle(ep, tribeMembers, result) {
     const roundResult = _simulateRound(ep, fighters, fireWinner, rd + 1);
     rounds.push(roundResult);
 
-    // Score: last standing = 2, middle = 1, first out = 0
-    for (let i = 0; i < roundResult.rankings.length; i++) {
-      const pts = i === 0 ? 2 : i === roundResult.rankings.length - 1 ? 0 : 1;
-      battleScores[roundResult.rankings[i].tribe] += pts;
-      ep.chalMemberScores[roundResult.rankings[i].fighter] = (ep.chalMemberScores[roundResult.rankings[i].fighter] || 0) + pts;
-    }
+    // Tribe score: round winner gets 1 point for the tribe
+    battleScores[roundResult.rankings[0].tribe] += 1;
+    // Individual: winner gets +3 (last standing bonus on top of knockoff/dodge points already earned)
+    ep.chalMemberScores[roundResult.rankings[0].fighter] = (ep.chalMemberScores[roundResult.rankings[0].fighter] || 0) + 3;
   }
 
   result.boneBattle.rounds = rounds;
@@ -801,6 +883,7 @@ function _simulateRound(ep, fighters, fireWinner, roundNum, isTiebreaker = false
       if (dodgeCheck > 0.25) {
         events.push({ phase: 'midResolve', player: target.fighter, tribe: target.tribe, icon: '✅',
           text: `${target.fighter} recovered! Held on tight!` });
+        ep.chalMemberScores[target.fighter] = (ep.chalMemberScores[target.fighter] || 0) + 1;
       } else {
         scores[target.fighter] -= 0.15;
         events.push({ phase: 'midResolve', player: target.fighter, tribe: target.tribe, icon: '❌',
@@ -819,6 +902,7 @@ function _simulateRound(ep, fighters, fireWinner, roundNum, isTiebreaker = false
           events.push({ phase: 'trashTalk', player: talker.fighter, tribe: talker.tribe, icon: '🗯️',
             text: pick(BATTLE_EVENTS.trashTalkSuccess)(talker.fighter, target.fighter) });
           scores[target.fighter] -= 0.08;
+          ep.chalMemberScores[talker.fighter] = (ep.chalMemberScores[talker.fighter] || 0) + 1;
         } else {
           events.push({ phase: 'trashTalk', player: talker.fighter, tribe: talker.tribe, icon: '🗯️',
             text: pick(BATTLE_EVENTS.trashTalkFail)(talker.fighter, target.fighter) });
@@ -838,6 +922,7 @@ function _simulateRound(ep, fighters, fireWinner, roundNum, isTiebreaker = false
           text: pick(BATTLE_EVENTS.showboatSuccess)(showboater.fighter, pr) });
         scores[showboater.fighter] += 0.05;
         popDelta(showboater.fighter, 1);
+        ep.chalMemberScores[showboater.fighter] = (ep.chalMemberScores[showboater.fighter] || 0) + 1;
       } else {
         events.push({ phase: 'showboat', player: showboater.fighter, tribe: showboater.tribe, icon: '😬',
           text: pick(BATTLE_EVENTS.showboatFail)(showboater.fighter, pr) });
@@ -854,6 +939,7 @@ function _simulateRound(ep, fighters, fireWinner, roundNum, isTiebreaker = false
       if (gripCheck > 0.24) {
         events.push({ phase: 'grip', player: target.fighter, tribe: target.tribe, icon: '💎',
           text: pick(BATTLE_EVENTS.gripHold)(target.fighter, pr) });
+        ep.chalMemberScores[target.fighter] = (ep.chalMemberScores[target.fighter] || 0) + 1;
       } else {
         scores[target.fighter] -= 0.10;
         events.push({ phase: 'grip', player: target.fighter, tribe: target.tribe, icon: '😰',
@@ -879,34 +965,66 @@ function _simulateRound(ep, fighters, fireWinner, roundNum, isTiebreaker = false
   const ranked = fighters.map(f => ({ ...f, score: scores[f.fighter] }))
     .sort((a, b) => b.score - a.score);
 
-  // Winner celebration
+  // Fight climax — staged falls with exchanges between them
   const winner = ranked[0];
   const pr_w = pronouns(winner.fighter);
-  events.push({ phase: 'climax', player: winner.fighter, tribe: winner.tribe, icon: '👑',
-    text: pick(BATTLE_EVENTS.lastStanding)(winner.fighter, pr_w) });
 
-  // Losers fall into tar (last first, then middle)
-  for (let i = ranked.length - 1; i >= 1; i--) {
-    const loser = ranked[i];
-    const pr_l = pronouns(loser.fighter);
-    if (i === ranked.length - 1 && ranked.length > 2) {
-      // First to fall — knocked off by someone or self-fall
-      const knocker = ranked[Math.floor(Math.random() * i)];
-      if (Math.random() < 0.6) {
-        events.push({ phase: 'fall', player: loser.fighter, tribe: loser.tribe, icon: '💥',
-          text: pick(BATTLE_EVENTS.knockOff)(knocker.fighter, loser.fighter) });
-      } else {
-        events.push({ phase: 'fall', player: loser.fighter, tribe: loser.tribe, icon: '💥',
-          text: pick(BATTLE_EVENTS.selfFall)(loser.fighter, pr_l) });
-      }
+  if (ranked.length > 2) {
+    // 3+ fighters: first to fall, then a second exchange, then second to fall
+    const firstOut = ranked[ranked.length - 1];
+    const pr_first = pronouns(firstOut.fighter);
+    const knocker1 = ranked[Math.floor(Math.random() * (ranked.length - 1))];
+    if (Math.random() < 0.6) {
+      events.push({ phase: 'fall', player: firstOut.fighter, tribe: firstOut.tribe, icon: '💥',
+        text: pick(BATTLE_EVENTS.knockOff)(knocker1.fighter, firstOut.fighter) });
+      ep.chalMemberScores[knocker1.fighter] = (ep.chalMemberScores[knocker1.fighter] || 0) + 1;
     } else {
-      // Second to fall (or only loser in 1v1)
-      events.push({ phase: 'fall', player: loser.fighter, tribe: loser.tribe, icon: '💥',
-        text: pick(BATTLE_EVENTS.knockOff)(winner.fighter, loser.fighter) });
+      events.push({ phase: 'fall', player: firstOut.fighter, tribe: firstOut.tribe, icon: '💥',
+        text: pick(BATTLE_EVENTS.selfFall)(firstOut.fighter, pr_first) });
     }
+    events.push({ phase: 'tar', player: firstOut.fighter, tribe: firstOut.tribe, icon: '🪨',
+      text: pick(BATTLE_EVENTS.tarSplash)(firstOut.fighter, pr_first) });
+
+    // Second exchange — the remaining two go at it
+    const remaining = ranked.filter(r => r.fighter !== firstOut.fighter);
+    const r0 = remaining[0], r1 = remaining[1];
+    const pr_r0 = pronouns(r0.fighter), pr_r1 = pronouns(r1.fighter);
+
+    events.push({ phase: 'opening', player: r0.fighter, tribe: r0.tribe, icon: '🦴',
+      text: pick(BATTLE_EVENTS.openSwing)(r0.fighter, pr_r0) });
+    events.push({ phase: 'opening', player: r1.fighter, tribe: r1.tribe, icon: '🦴',
+      text: pick(BATTLE_EVENTS.openSwing)(r1.fighter, pr_r1) });
+
+    // One more exchange event — trash talk, dodge, or raw swing
+    if (Math.random() < 0.4) {
+      const talker = pick([r0, r1]);
+      const tgt = talker === r0 ? r1 : r0;
+      events.push({ phase: 'trashTalk', player: talker.fighter, tribe: talker.tribe, icon: '🗯️',
+        text: pick(BATTLE_EVENTS.trashTalkSuccess)(talker.fighter, tgt.fighter) });
+    }
+
+    // Final fall
+    const secondOut = r1; // r0 is winner, r1 is second to fall
+    const pr_second = pronouns(secondOut.fighter);
+    events.push({ phase: 'fall', player: secondOut.fighter, tribe: secondOut.tribe, icon: '💥',
+      text: pick(BATTLE_EVENTS.knockOff)(winner.fighter, secondOut.fighter) });
+    ep.chalMemberScores[winner.fighter] = (ep.chalMemberScores[winner.fighter] || 0) + 1;
+    events.push({ phase: 'tar', player: secondOut.fighter, tribe: secondOut.tribe, icon: '🪨',
+      text: pick(BATTLE_EVENTS.tarSplash)(secondOut.fighter, pr_second) });
+  } else {
+    // 1v1 (tiebreaker) — just one fall
+    const loser = ranked[1];
+    const pr_l = pronouns(loser.fighter);
+    events.push({ phase: 'fall', player: loser.fighter, tribe: loser.tribe, icon: '💥',
+      text: pick(BATTLE_EVENTS.knockOff)(winner.fighter, loser.fighter) });
+    ep.chalMemberScores[winner.fighter] = (ep.chalMemberScores[winner.fighter] || 0) + 1;
     events.push({ phase: 'tar', player: loser.fighter, tribe: loser.tribe, icon: '🪨',
       text: pick(BATTLE_EVENTS.tarSplash)(loser.fighter, pr_l) });
   }
+
+  // Winner celebration
+  events.push({ phase: 'climax', player: winner.fighter, tribe: winner.tribe, icon: '👑',
+    text: pick(BATTLE_EVENTS.lastStanding)(winner.fighter, pr_w) });
 
   // Drama break between rounds
   if (!isTiebreaker) {
@@ -1553,7 +1671,7 @@ export function rpBuildMillionBucksBCBattle(ep) {
       <span style="color:var(--cave-green);font-family:'Share Tech Mono',monospace;letter-spacing:2px">👑 ${winner.fighter} (${winner.tribe}) WINS ROUND ${rd.isTiebreaker ? 'TB' : rd.round}</span>
     </div>`;
 
-    steps.push({ html: `<div class="bc-ev bc-beaver-run" style="border-left-color:var(--bone-white);padding:14px;overflow:hidden">
+    steps.push({ html: `<div class="bc-ev" style="border-left-color:var(--bone-white);padding:14px;overflow:hidden">
       <div style="flex:1">${rdHtml}</div>
     </div>` });
   }
@@ -1622,7 +1740,7 @@ function _bcBuildBattleSidebar(bc, revCount) {
   for (let i = 0; i < roundsRevealed; i++) {
     const rd = allRounds[i];
     for (let ri = 0; ri < rd.rankings.length; ri++) {
-      const pts = ri === 0 ? (rd.isTiebreaker ? 3 : 2) : ri === rd.rankings.length - 1 ? 0 : 1;
+      const pts = ri === 0 ? (rd.isTiebreaker ? 2 : 1) : 0;
       revScores[rd.rankings[ri].tribe] += pts;
     }
   }
@@ -1642,19 +1760,46 @@ function _bcBuildBattleSidebar(bc, revCount) {
     </div>`;
   }
 
-  // Round results
-  if (roundsRevealed > 0) {
-    sb += `<div class="bc-side-sec">ROUND RESULTS</div>`;
-    for (let i = 0; i < roundsRevealed; i++) {
-      const rd = allRounds[i];
-      const winner = rd.rankings[0];
-      sb += `<div style="display:flex;align-items:center;gap:4px;padding:3px 0;font-size:10px">
-        <span style="color:var(--cave-amber);width:24px">${rd.isTiebreaker ? 'TB' : `R${rd.round}`}</span>
-        ${_bcSidePortrait(winner.fighter, 16)}
-        <span style="color:#22c55e">${winner.fighter}</span>
-        <span style="color:rgba(255,255,255,0.3)">(${winner.tribe})</span>
+  // Fighters by team with round results
+  const currentRoundIdx = roundsRevealed - 1;
+  const isComplete = roundsRevealed >= allRounds.length;
+  const currentFighters = new Set(currentRoundIdx >= 0 && !isComplete ? allRounds[currentRoundIdx].fighters.map(f => f.fighter) : []);
+
+  // Build per-tribe fighter records
+  const tribeNames = Object.keys(bb.battleScores);
+  sb += `<div class="bc-side-sec">FIGHTERS</div>`;
+  for (const tribe of tribeNames) {
+    sb += `<div style="padding:4px;margin-bottom:4px;background:rgba(0,0,0,0.1);border-radius:3px">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--cave-amber);margin-bottom:4px">${tribe}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px">`;
+    // Collect all fighters from this tribe across all rounds
+    const tribeFighters = new Set();
+    for (const rd of allRounds) {
+      for (const f of rd.fighters) {
+        if (f.tribe === tribe) tribeFighters.add(f.fighter);
+      }
+    }
+    for (const name of tribeFighters) {
+      // Count wins/losses from revealed rounds
+      let wins = 0, losses = 0, fought = 0;
+      for (let i = 0; i < roundsRevealed; i++) {
+        const rd = allRounds[i];
+        const f = rd.fighters.find(fi => fi.fighter === name);
+        if (!f) continue;
+        fought++;
+        const rank = rd.rankings.findIndex(r => r.fighter === name);
+        if (rank === 0) wins++;
+        if (rank === rd.rankings.length - 1) losses++;
+      }
+      const isActive = currentFighters.has(name);
+      const borderColor = isActive ? 'var(--fire-orange)' : wins > losses ? 'var(--cave-green)' : losses > wins ? 'var(--cave-red)' : 'var(--cave-amber)';
+      const glowStyle = isActive ? 'box-shadow:0 0 8px rgba(234,88,12,0.5);' : '';
+      sb += `<div style="display:flex;align-items:center;gap:3px;padding:2px 4px;background:rgba(0,0,0,0.15);border-radius:3px;border:1px solid ${borderColor};${glowStyle}" title="${name}: ${wins}W ${losses}L">
+        ${_bcSidePortrait(name, 18)}
+        ${fought > 0 ? `<span style="font-size:8px;color:${wins > losses ? 'var(--cave-green)' : losses > wins ? 'var(--cave-red)' : 'rgba(255,255,255,0.3)'}">${wins}W</span>` : ''}
       </div>`;
     }
+    sb += `</div></div>`;
   }
 
   sb += `<div style="font-size:8px;color:rgba(255,255,255,0.2);text-align:center;margin-top:6px">${roundsRevealed > 0 ? `${roundsRevealed}/${allRounds.length} rounds` : 'AWAITING BATTLE'}</div>`;
@@ -1670,47 +1815,73 @@ export function rpBuildMillionBucksBCResults(ep) {
 
   const sorted = Object.entries(bc.tribeScores).sort((a, b) => b[1] - a[1]);
   const scores = ep.chalMemberScores || {};
-  const leaderboard = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const bb = bc.boneBattle;
+  const allRounds = [...bb.rounds, ...(bb.tiebreaker ? [bb.tiebreaker] : [])];
 
   let content = `<div style="text-align:center;padding:30px 20px;position:relative;z-index:6">
     <div style="font-size:10px;letter-spacing:5px;color:rgba(217,119,6,0.4);text-transform:uppercase;margin-bottom:8px">STONE AGE DEBRIEF</div>
     <div style="font-family:'Bungee Shade',sans-serif;font-size:28px;color:var(--cave-amber);text-shadow:0 0 20px rgba(217,119,6,0.3);letter-spacing:4px;margin-bottom:6px">${bc.winner}</div>
-    <div style="font-size:14px;color:#22c55e;letter-spacing:3px;margin-bottom:20px">SURVIVED THE STONE AGE</div>
+    <div style="font-size:14px;color:var(--cave-green);letter-spacing:3px;margin-bottom:20px">SURVIVED THE STONE AGE</div>
   </div>`;
 
-  // Tribe scores
+  // Tribe cards with ALL members
   content += `<div style="display:flex;gap:14px;justify-content:center;padding:0 14px 20px;flex-wrap:wrap;position:relative;z-index:6">`;
   for (const [tribe, score] of sorted) {
     const isWinner = tribe === bc.winner;
     const isLoser = tribe === bc.loser;
-    const borderColor = isWinner ? '#22c55e' : isLoser ? '#ef4444' : 'rgba(217,119,6,0.15)';
-    const status = isWinner ? 'SAFE — IMMUNE' : isLoser ? 'TRIBAL COUNCIL TONIGHT' : 'SAFE';
-    content += `<div style="flex:1;min-width:200px;max-width:350px;background:rgba(0,0,0,0.3);border:2px solid ${borderColor};border-radius:6px;padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div style="font-family:'Share Tech Mono',monospace;font-size:14px;color:${isWinner ? '#22c55e' : isLoser ? '#ef4444' : 'var(--cave-amber)'};letter-spacing:2px">${tribe}</div>
-        <div style="font-family:'Share Tech Mono',monospace;font-size:18px;color:${isWinner ? '#22c55e' : 'var(--cave-amber)'}">${score.toFixed(1)}</div>
-      </div>
-      <div style="font-size:8px;letter-spacing:2px;color:${isWinner ? '#22c55e' : isLoser ? '#ef4444' : 'rgba(255,255,255,0.4)'};margin-bottom:8px">${status}</div>
-    </div>`;
-  }
-  content += `</div>`;
+    const borderColor = isWinner ? 'var(--cave-green)' : isLoser ? 'var(--cave-red)' : 'rgba(217,119,6,0.15)';
+    const status = isWinner ? 'IMMUNE' : isLoser ? 'TRIBAL COUNCIL' : 'SAFE';
+    const statusColor = isWinner ? 'var(--cave-green)' : isLoser ? 'var(--cave-red)' : 'rgba(255,255,255,0.4)';
 
-  // Leaderboard
-  if (leaderboard.length) {
-    content += `<div style="max-width:400px;margin:0 auto;padding:0 14px 20px;position:relative;z-index:6">
-      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--cave-amber);margin-bottom:8px;text-align:center">INDIVIDUAL SCORES</div>`;
-    for (let i = 0; i < Math.min(8, leaderboard.length); i++) {
-      const [name, score] = leaderboard[i];
-      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
-      content += `<div style="display:flex;align-items:center;gap:8px;padding:3px 6px;margin-bottom:2px;background:rgba(0,0,0,0.15);border-radius:3px">
-        ${_bcPortrait(name, 22)}
-        <div style="flex:1;font-size:11px;color:rgba(255,255,255,0.8)">${name}</div>
-        ${medal ? `<span style="font-size:12px">${medal}</span>` : ''}
-        <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--cave-amber)">${score}</div>
+    // Get tribe members
+    const tribeData = ep.winner?.name === tribe ? ep.winner : ep.loser?.name === tribe ? ep.loser : ep.safeTribes?.find(t => t.name === tribe);
+    const members = tribeData?.members || [];
+
+    content += `<div style="flex:1;min-width:220px;max-width:380px;background:rgba(0,0,0,0.3);border:2px solid ${borderColor};border-radius:8px;padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div style="font-family:'Bungee Shade',sans-serif;font-size:16px;color:${isWinner ? 'var(--cave-green)' : isLoser ? 'var(--cave-red)' : 'var(--cave-amber)'};letter-spacing:2px">${tribe}</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--cave-amber)">🦴 ${score} wins</div>
+      </div>
+      <div style="font-size:8px;letter-spacing:2px;color:${statusColor};margin-bottom:10px;font-family:'Share Tech Mono',monospace">${status}</div>`;
+
+    // Fire score
+    const fireData = bc.fireMaking.tribes.find(ft => ft.tribe === tribe);
+    if (fireData) {
+      const isFireWinner = tribe === bc.fireWinner;
+      content += `<div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:8px;padding:4px 6px;background:rgba(0,0,0,0.15);border-radius:3px">
+        <span style="color:var(--fire-orange)">🔥 Fire: ${fireData.fireScore.toFixed(1)}</span>
+        ${isFireWinner ? '<span style="color:var(--cave-green)">🦴 BIGGER BONES</span>' : ''}
+      </div>`;
+    }
+
+    // All members with individual scores and battle record
+    for (const name of members.sort((a, b) => (scores[b] || 0) - (scores[a] || 0))) {
+      const memberScore = scores[name] || 0;
+      // Battle record
+      let wins = 0, fought = 0;
+      for (const rd of allRounds) {
+        const f = rd.fighters.find(fi => fi.fighter === name);
+        if (!f) continue;
+        fought++;
+        if (rd.rankings[0].fighter === name) wins++;
+      }
+      const recordText = fought > 0 ? `${wins}/${fought}` : 'bench';
+      const recordColor = wins > 0 ? 'var(--cave-green)' : fought > 0 ? 'var(--cave-red)' : 'rgba(255,255,255,0.2)';
+
+      content += `<div style="display:flex;align-items:center;gap:8px;padding:4px 6px;margin-bottom:3px;background:rgba(0,0,0,0.15);border-radius:4px">
+        ${_bcPortrait(name, 26)}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+          <div style="display:flex;gap:8px;font-size:9px;font-family:'Share Tech Mono',monospace">
+            <span style="color:${recordColor}">🦴 ${recordText}</span>
+          </div>
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--cave-amber);font-weight:700">${memberScore}</div>
       </div>`;
     }
     content += `</div>`;
   }
+  content += `</div>`;
 
   return _bcShell(content, ep);
 }

@@ -784,7 +784,9 @@ function _addDramaToTimeline(active, timelineArr, ep, count) {
     if (count <= 0) break;
     const applied = ev.apply(active, ep);
     if (applied) {
-      ep.campEvents[campKey].post.push({ ...applied, tag: 'drama' });
+      const hasPairImmunity = ep.isTriArmedTriathlon || ep.tiedDestinies;
+      const skipCamp = gs.isMerged && !hasPairImmunity && ['BLAME GAME', 'ACCUSATION'].includes(applied.badgeText);
+      if (!skipCamp) ep.campEvents[campKey].post.push({ ...applied, tag: 'drama' });
       timelineArr.push({ ...applied, type: applied.badgeClass || 'warn' });
       count--;
     }

@@ -670,7 +670,7 @@ function _simulatePrehistoricBreak(ep, tribeMembers, result) {
   const benchDecisions = {};
   for (const t of tribeMembers) {
     const sitOuts = t.members.length - minSize;
-    benchDecisions[t.name] = { benched: null, voluntary: false, events: [] };
+    benchDecisions[t.name] = { benched: null, voluntary: false, angry: false };
     if (sitOuts <= 0) continue;
 
     const members = t.members;
@@ -829,29 +829,50 @@ function _simulateBoneBattle(ep, tribeMembers, result) {
   result.boneBattle.battleScores = battleScores;
   result.boneBattle.benched = tribeBenched;
 
-  // Tiebreaker check
+  // Tiebreaker — check for ties at top OR bottom
   const sortedScores = Object.entries(battleScores).sort((a, b) => b[1] - a[1]);
   const topScore = sortedScores[0][1];
-  const tied = sortedScores.filter(([_, s]) => s === topScore);
-  if (tied.length >= 2) {
-    const tiedTribes = tied.map(([name]) => name);
+  const bottomScore = sortedScores[sortedScores.length - 1][1];
+  const tiedTop = sortedScores.filter(([_, s]) => s === topScore);
+  const tiedBottom = sortedScores.filter(([_, s]) => s === bottomScore);
+
+  // Determine which tied group needs a tiebreaker
+  // If everyone is tied, tiebreaker for immunity (top). If only bottom tied, tiebreaker to avoid tribal.
+  let tiedTribes;
+  let tbType; // 'top' = fight for immunity, 'bottom' = fight to avoid tribal
+  if (tiedTop.length >= 2 && tiedTop.length === sortedScores.length) {
+    // Everyone tied — fight for immunity
+    tiedTribes = tiedTop.map(([name]) => name);
+    tbType = 'top';
+  } else if (tiedTop.length >= 2) {
+    // Top tied — fight for immunity
+    tiedTribes = tiedTop.map(([name]) => name);
+    tbType = 'top';
+  } else if (tiedBottom.length >= 2) {
+    // Bottom tied — fight to avoid tribal
+    tiedTribes = tiedBottom.map(([name]) => name);
+    tbType = 'bottom';
+  }
+
+  if (tiedTribes) {
     const champions = [];
     for (const tribeName of tiedTribes) {
       const t = tribeMembers.find(tm => tm.name === tribeName);
-      const champ = t.members.sort((a, b) =>
+      const champ = [...t.members].sort((a, b) =>
         (pStats(b).physical + pStats(b).boldness) - (pStats(a).physical + pStats(a).boldness)
       )[0];
       champions.push({ tribe: tribeName, fighter: champ });
     }
 
     const tbResult = _simulateRound(ep, champions, fireWinner, 'TB', true);
+    tbResult.tbType = tbType;
     result.boneBattle.tiebreaker = tbResult;
 
-    // Adjust scores with tiebreaker
-    for (let i = 0; i < tbResult.rankings.length; i++) {
-      const pts = i === 0 ? 3 : 0;
-      battleScores[tbResult.rankings[i].tribe] += pts;
-      ep.chalMemberScores[tbResult.rankings[i].fighter] = (ep.chalMemberScores[tbResult.rankings[i].fighter] || 0) + pts;
+    if (tbType === 'top') {
+      battleScores[tbResult.rankings[0].tribe] += 3;
+    } else {
+      const loserTribe = tbResult.rankings[tbResult.rankings.length - 1].tribe;
+      battleScores[loserTribe] -= 1;
     }
   }
 }
@@ -1698,7 +1719,8 @@ export function rpBuildMillionBucksBCBattle(ep) {
 
     // VS Splash
     rdHtml += `<div class="bc-vs-splash">
-      <div style="font-size:10px;color:var(--cave-amber);letter-spacing:3px;margin-bottom:8px">${rd.isTiebreaker ? '⚔️ TIEBREAKER' : `ROUND ${rd.round}`}</div>
+      <div style="font-size:10px;color:${rd.isTiebreaker && rd.tbType === 'bottom' ? 'var(--cave-red)' : 'var(--cave-amber)'};letter-spacing:3px;margin-bottom:4px">${rd.isTiebreaker ? '⚔️ TIEBREAKER' : `ROUND ${rd.round}`}</div>
+      ${rd.isTiebreaker ? `<div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:8px">${rd.tbType === 'top' ? 'Fight for IMMUNITY' : 'Loser goes to TRIBAL COUNCIL'}</div>` : ''}
       <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">`;
     for (let fi = 0; fi < rd.fighters.length; fi++) {
       const f = rd.fighters[fi];
@@ -1819,7 +1841,7 @@ function _bcBuildBattleSidebar(bc, revCount) {
   for (let i = 0; i < roundsRevealed; i++) {
     const rd = allRounds[i];
     for (let ri = 0; ri < rd.rankings.length; ri++) {
-      const pts = ri === 0 ? (rd.isTiebreaker ? 2 : 1) : 0;
+      const pts = ri === 0 ? (rd.isTiebreaker ? (rd.tbType === 'top' ? 3 : 0) : 1) : (rd.isTiebreaker && rd.tbType === 'bottom' && ri === rd.rankings.length - 1 ? -1 : 0);
       revScores[rd.rankings[ri].tribe] += pts;
     }
   }
@@ -1850,9 +1872,9 @@ function _bcBuildBattleSidebar(bc, revCount) {
     sb += `<div style="padding:6px;margin-bottom:5px;background:rgba(0,0,0,0.1);border-radius:4px">
       <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cave-amber);margin-bottom:5px;letter-spacing:1px">${tribe}</div>`;
 
-    // Get ALL tribe members from the tribe data
-    const tribeObj = gs.tribes?.find(t => t.name === tribe);
-    const allTribeMembers = tribeObj?.members || [];
+    // Get ALL tribe members from challenge-time data (not gs.tribes which may have eliminations)
+    const fireTribe = bc.fireMaking?.tribes?.find(ft => ft.tribe === tribe);
+    const allTribeMembers = fireTribe?.members || gs.tribes?.find(t => t.name === tribe)?.members || [];
     const benchedName = bc.benchDecisions?.[tribe]?.benched;
 
     // Active fighters
@@ -1924,9 +1946,9 @@ export function rpBuildMillionBucksBCResults(ep) {
     const status = isWinner ? 'IMMUNE' : isLoser ? 'TRIBAL COUNCIL' : 'SAFE';
     const statusColor = isWinner ? 'var(--cave-green)' : isLoser ? 'var(--cave-red)' : 'rgba(255,255,255,0.4)';
 
-    // Get tribe members
-    const tribeData = ep.winner?.name === tribe ? ep.winner : ep.loser?.name === tribe ? ep.loser : ep.safeTribes?.find(t => t.name === tribe);
-    const members = tribeData?.members || [];
+    // Get tribe members from challenge-time data (survives eliminations)
+    const fireTribe = bc.fireMaking?.tribes?.find(ft => ft.tribe === tribe);
+    const members = fireTribe?.members || [];
 
     content += `<div style="flex:1;min-width:220px;max-width:380px;background:rgba(0,0,0,0.3);border:2px solid ${borderColor};border-radius:8px;padding:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">

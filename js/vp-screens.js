@@ -11,7 +11,7 @@ import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNigh
 import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/triple-dog-dare.js';
 import { rpBuildSlasherTitleCard, rpBuildSlasherActI, rpBuildSlasherActII, rpBuildSlasherActIII, rpBuildSlasherCredits, rpBuildSlasherAnnouncement, rpBuildSlasherRounds, rpBuildSlasherShowdown, rpBuildSlasherImmunity, rpBuildSlasherElimination, rpBuildSlasherLeaderboard, slasherRevealNextRound, slasherRevealAllRounds, slasherRevealNextScene, slasherRevealAllScenes } from './chal/slasher-night.js';
 import { rpBuildMonsterCashTitleCard, rpBuildMonsterCashRounds, rpBuildMonsterCashShowdown, rpBuildMonsterCashImmunity, rpBuildMonsterCashTribeResults, rpBuildMonsterCashLeaderboard, monsterCashRevealNext, monsterCashRevealAll } from './chal/monster-cash.js';
-import { rpBuildOperationClassifiedTitleCard, rpBuildOperationClassifiedScan, rpBuildOperationClassifiedLaser, rpBuildOperationClassifiedWiretap, rpBuildOperationClassifiedDrama, rpBuildOperationClassifiedDefusal, rpBuildOperationClassifiedDebrief, operationClassifiedRevealNext, operationClassifiedRevealAll } from './chal/operation-classified.js';
+import { rpBuildOperationClassifiedTitleCard, rpBuildOperationClassifiedScan, rpBuildOperationClassifiedWiretap1, rpBuildOperationClassifiedLaser, rpBuildOperationClassifiedWiretap2, rpBuildOperationClassifiedDefusal, rpBuildOperationClassifiedDebrief, operationClassifiedRevealNext, operationClassifiedRevealAll } from './chal/operation-classified.js';
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard, alienEggRevealNext, alienEggRevealAll } from './chal/alien-egg.js';
 import { rpBuildBeachBlanketBogusTitleCard, rpBuildBeachBlanketBogusSurf, rpBuildBeachBlanketBogusSandcastle, rpBuildBeachBlanketBogusHalftime, rpBuildBeachBlanketBogusDanceOff, rpBuildBeachBlanketBogusResults, beachBogusRevealNext, beachBogusRevealAll } from './chal/beach-blanket-bogus.js';
 import { rpBuildCrazytownTitleCard, rpBuildCrazytownHorseDive, rpBuildCrazytownStandoff, rpBuildCrazytownRoundup, rpBuildCrazytownDramaBreak, rpBuildCrazytownResults, crazytownRevealNext, crazytownRevealAll } from './chal/crazytown.js';
@@ -10339,9 +10339,9 @@ export function buildVPScreens(epRecord) {
   } else if (ep.isOperationClassified && ep.operationClassified) {
     vpScreens.push({ id:'oc-title', label:'Operation: Classified', html: rpBuildOperationClassifiedTitleCard(ep) });
     vpScreens.push({ id:'oc-scan', label:'Face Scan', html: rpBuildOperationClassifiedScan(ep) });
+    if (ep.operationClassified.timeline.wiretap1?.length) vpScreens.push({ id:'oc-wiretap1', label:'Intel', html: rpBuildOperationClassifiedWiretap1(ep) });
     vpScreens.push({ id:'oc-laser', label:'Laser Vault', html: rpBuildOperationClassifiedLaser(ep) });
-    vpScreens.push({ id:'oc-wiretap', label:'Wiretap', html: rpBuildOperationClassifiedWiretap(ep) });
-    if (ep.operationClassified.dramaEvents?.length) vpScreens.push({ id:'oc-drama', label:'Drama', html: rpBuildOperationClassifiedDrama(ep) });
+    if (ep.operationClassified.timeline.wiretap2?.length) vpScreens.push({ id:'oc-wiretap2', label:'Wiretap', html: rpBuildOperationClassifiedWiretap2(ep) });
     vpScreens.push({ id:'oc-defusal', label:'Bomb Defusal', html: rpBuildOperationClassifiedDefusal(ep) });
     vpScreens.push({ id:'oc-debrief', label:'Debrief', html: rpBuildOperationClassifiedDebrief(ep) });
   } else if (ep.isAlienEgg && ep.alienEgg) {

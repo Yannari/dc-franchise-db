@@ -366,7 +366,8 @@ function _simulateLaser(active, state, timeline, ep) {
     text: pick(LASER_MID_EVENTS.countdownReal)(host()) });
 }
 
-function _simulateWiretap(active, state, timeline, ep) {
+// Wiretap 1: intel gathering + alliance pitch + drama (before laser vault)
+function _simulateWiretap1(active, state, timeline, ep) {
   const campKey = gs.mergeName || 'merge';
   if (!ep.campEvents) ep.campEvents = {};
   if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
@@ -379,11 +380,12 @@ function _simulateWiretap(active, state, timeline, ep) {
     state.players[name].total += score > 0.28 ? 2 : 0;
     return { name, score };
   }).sort((a, b) => b.score - a.score);
+  state.intelScores = intelScores;
 
   // Top 2 get intel event
   intelScores.slice(0, 2).forEach(({ name }) => {
     const pr = pronouns(name);
-    timeline.wiretap.push({
+    timeline.wiretap1.push({
       type: 'intel', player: name, score: intelScores.find(i => i.name === name).score,
       text: pick(WIRETAP_TEXT.intel)(name, pr),
     });
@@ -407,11 +409,20 @@ function _simulateWiretap(active, state, timeline, ep) {
       pool.forEach(p => addBond(pitcher, p, -0.2));
       ep.campEvents[campKey].post.push({ text: pick(WIRETAP_TEXT.allianceFailed)(pitcher, pool), players: [pitcher, ...pool], badgeText: 'FAILED PITCH', badgeClass: 'red', tag: 'drama' });
     }
-    timeline.wiretap.push({
+    timeline.wiretap1.push({
       type: accepted ? 'alliance' : 'alliance-fail', player: pitcher, players: [pitcher, ...pool],
       text: accepted ? pick(WIRETAP_TEXT.allianceAccepted)(pitcher, pool) : pick(WIRETAP_TEXT.allianceFailed)(pitcher, pool),
     });
   }
+
+  // Drama events mixed in (2-3)
+  _addDramaToTimeline(active, timeline.wiretap1, ep, 2 + Math.floor(Math.random() * 2));
+}
+
+// Wiretap 2: blackmail + drama (before bomb defusal)
+function _simulateWiretap2(active, state, timeline, ep) {
+  const campKey = gs.mergeName || 'merge';
+  const intelScores = state.intelScores || [];
 
   // Blackmail attempt
   const blackmailer = active.filter(canBlackmail).sort((a, b) => pStats(b).strategic - pStats(a).strategic)[0];
@@ -437,28 +448,29 @@ function _simulateWiretap(active, state, timeline, ep) {
       state.alarm += 7;
       ep.campEvents[campKey].post.push({ text: pick(WIRETAP_TEXT.blackmailSuccess)(blackmailer, target), players: [blackmailer, target], badgeText: 'BLACKMAIL', badgeClass: 'red', tag: 'drama' });
     }
-    timeline.wiretap.push({
+    timeline.wiretap2.push({
       type: foiled ? 'blackmail-foiled' : 'blackmail', player: blackmailer, players: [blackmailer, target, exposer].filter(Boolean),
       text: foiled ? pick(WIRETAP_TEXT.blackmailFoiled)(blackmailer, target, exposer) : pick(WIRETAP_TEXT.blackmailSuccess)(blackmailer, target),
     });
   }
+
+  // Drama events mixed in (2-3)
+  _addDramaToTimeline(active, timeline.wiretap2, ep, 2 + Math.floor(Math.random() * 2));
 }
 
-function _simulateDrama(active, state, timeline, ep) {
+function _addDramaToTimeline(active, timelineArr, ep, count) {
   const campKey = gs.mergeName || 'merge';
-  const dramaEvents = [];
   const eligible = DRAMA_EVENTS.filter(ev => ev.check(active));
   const shuffled = [...eligible].sort(() => Math.random() - 0.5);
-  const target = 3 + Math.floor(Math.random() * 2); // 3-4
   for (const ev of shuffled) {
-    if (dramaEvents.length >= target) break;
+    if (count <= 0) break;
     const applied = ev.apply(active, ep);
     if (applied) {
       ep.campEvents[campKey].post.push({ ...applied, tag: 'drama' });
-      dramaEvents.push({ id: ev.id, ...applied });
+      timelineArr.push({ ...applied, type: applied.badgeClass || 'warn' });
+      count--;
     }
   }
-  state.dramaEvents = dramaEvents;
 }
 
 function _simulateDefusal(active, state, timeline, ep) {
@@ -515,15 +527,15 @@ export function simulateOperationClassified(ep) {
   const active = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
   const state = {
     title: 'Operation: Classified', host: host(),
-    players: {}, alarm: 0, alliancePitch: null, blackmail: null, final: null, dramaEvents: [],
+    players: {}, alarm: 0, alliancePitch: null, blackmail: null, final: null,
   };
-  const timeline = { scan: [], laser: [], wiretap: [], defusal: [] };
+  const timeline = { scan: [], wiretap1: [], laser: [], wiretap2: [], defusal: [] };
   active.forEach(name => { state.players[name] = { total: 0 }; });
 
   _simulateScan(active, state, timeline);
+  _simulateWiretap1(active, state, timeline, ep);
   _simulateLaser(active, state, timeline, ep);
-  _simulateWiretap(active, state, timeline, ep);
-  _simulateDrama(active, state, timeline, ep);
+  _simulateWiretap2(active, state, timeline, ep);
   _simulateDefusal(active, state, timeline, ep);
 
   const ranked = state.final.ranked;
@@ -955,9 +967,9 @@ export function rpBuildOperationClassifiedLaser(ep) {
   return shell(ep, html, 'laser', events);
 }
 
-export function rpBuildOperationClassifiedWiretap(ep) {
-  const events = ep.operationClassified.timeline.wiretap || [];
-  const stateKey = `oc-${ep.num}-wiretap`;
+function _renderWiretapScreen(ep, timelineKey, stateKeySuffix, btnLabel) {
+  const events = ep.operationClassified.timeline[timelineKey] || [];
+  const stateKey = `oc-${ep.num}-${stateKeySuffix}`;
   if (!window._tvState) window._tvState = {};
   if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };
   const state = window._tvState[stateKey];
@@ -966,13 +978,14 @@ export function rpBuildOperationClassifiedWiretap(ep) {
   events.forEach((ev, i) => {
     const visible = i <= state.idx;
     const ppl = (ev.players || [ev.player]).filter(Boolean);
-    const typeLabel = ev.type === 'intel' ? 'INTEL INTERCEPTED' : ev.type === 'alliance' ? 'ALLIANCE FORMED' : ev.type === 'alliance-fail' ? 'PITCH REJECTED' : ev.type === 'blackmail' ? 'BLACKMAIL DETECTED' : ev.type === 'blackmail-foiled' ? 'BLACKMAIL FOILED' : 'TRANSMISSION';
+    const isDrama = ev.badgeText && !['intel', 'alliance', 'alliance-fail', 'blackmail', 'blackmail-foiled'].includes(ev.type);
+    const typeLabel = ev.type === 'intel' ? 'INTEL INTERCEPTED' : ev.type === 'alliance' ? 'ALLIANCE FORMED' : ev.type === 'alliance-fail' ? 'PITCH REJECTED' : ev.type === 'blackmail' ? 'BLACKMAIL DETECTED' : ev.type === 'blackmail-foiled' ? 'BLACKMAIL FOILED' : isDrama ? (ev.badgeText || 'INTERCEPT') : 'TRANSMISSION';
     const freq = `${(137.2 + i * 0.8).toFixed(1)} MHz`;
     html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
       <div class="oc-wire-card">
         <div class="oc-wire-header">
           <div class="oc-wire-signal"></div>
-          <div class="oc-wire-label">INTERCEPTED TRANSMISSION — ${freq}</div>
+          <div class="oc-wire-label">${isDrama ? 'SURVEILLANCE LOG' : 'INTERCEPTED TRANSMISSION'} — ${freq}</div>
         </div>
         <div class="oc-wire-body">
           <div class="oc-wire-portraits">${ppl.map(p => portrait(p, 36)).join('')}</div>
@@ -987,16 +1000,17 @@ export function rpBuildOperationClassifiedWiretap(ep) {
 
   const done = state.idx >= events.length - 1;
   html += `<div id="oc-controls-${stateKey}" class="oc-controls" ${done ? 'style="display:none"' : ''}>
-    <button class="oc-btn" onclick="operationClassifiedRevealNext('${stateKey}',${events.length},'wiretap')">Intercept</button>
-    <button class="oc-btn secondary" onclick="operationClassifiedRevealAll('${stateKey}',${events.length},'wiretap')">Reveal All</button>
+    <button class="oc-btn" onclick="operationClassifiedRevealNext('${stateKey}',${events.length},'${stateKeySuffix}')">${btnLabel}</button>
+    <button class="oc-btn secondary" onclick="operationClassifiedRevealAll('${stateKey}',${events.length},'${stateKeySuffix}')">Reveal All</button>
   </div>`;
-  return shell(ep, html, 'wiretap', events);
+  return shell(ep, html, stateKeySuffix, events);
 }
-export function rpBuildOperationClassifiedDrama(ep) {
-  const oc = ep.operationClassified;
-  if (!oc.dramaEvents?.length) return '';
-  const events = oc.dramaEvents.map(e => ({ ...e, type: e.badgeClass || 'warn' }));
-  return shell(ep, renderSteps(ep, 'drama', events, 'Next'), 'drama', events);
+
+export function rpBuildOperationClassifiedWiretap1(ep) {
+  return _renderWiretapScreen(ep, 'wiretap1', 'wiretap1', 'Intercept');
+}
+export function rpBuildOperationClassifiedWiretap2(ep) {
+  return _renderWiretapScreen(ep, 'wiretap2', 'wiretap2', 'Intercept');
 }
 export function rpBuildOperationClassifiedDefusal(ep) {
   const events = ep.operationClassified.timeline.defusal || [];
@@ -1099,11 +1113,8 @@ export function _textOperationClassified(ep, ln, sec) {
   ln(`${host()} locks the merged players into a spy mission: face scans, laser grids, wiretaps, and bomb defusal.`);
   for (const e of oc.timeline.scan) ln(`  SCAN: ${e.text}`);
   for (const e of oc.timeline.laser) ln(`  LASER: ${e.text}`);
-  for (const e of oc.timeline.wiretap) ln(`  WIRETAP: ${e.text}`);
-  if (oc.dramaEvents?.length) {
-    ln('  ── DRAMA BREAK ──');
-    for (const e of oc.dramaEvents) ln(`  ${e.badgeText}: ${e.text}`);
-  }
+  for (const e of (oc.timeline.wiretap1 || [])) ln(`  WIRETAP: ${e.text}`);
+  for (const e of (oc.timeline.wiretap2 || [])) ln(`  WIRETAP: ${e.text}`);
   for (const e of oc.timeline.defusal) ln(`  DEFUSAL: ${e.text}`);
   if (oc.final?.tiebreak) ln(`Tiebreaker: ${oc.final.tiebreak.winner} wins sudden defusal.`);
   if (oc.final?.extraImmune) ln(`${oc.final.extraImmune} also receives immunity (double immunity).`);

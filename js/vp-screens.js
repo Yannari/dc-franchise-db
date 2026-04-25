@@ -22,6 +22,7 @@ import { rpBuildFullMetalDramaTitleCard, rpBuildFullMetalDramaJump, rpBuildFullM
 import { rpBuildOceansHeistTitleCard, rpBuildOceansHeistVault, rpBuildOceansHeistHeist, rpBuildOceansHeistGetaway, rpBuildOceansHeistResults, oceansHeistRevealNext, oceansHeistRevealAll } from './chal/oceans-heist.js';
 import { rpBuildMillionBucksBCTitleCard, rpBuildMillionBucksBCFire, rpBuildMillionBucksBCBreak, rpBuildMillionBucksBCBattle, rpBuildMillionBucksBCResults, millionBucksBCRevealNext, millionBucksBCRevealAll } from './chal/million-bucks-bc.js';
 import { rpBuildSportsMarathonTitleCard, rpBuildSportsMarathonObstacle, rpBuildSportsMarathonHalftime, rpBuildSportsMarathonSports, rpBuildSportsMarathonResults, sportsMarathonRevealNext, sportsMarathonRevealAll } from './chal/sports-marathon.js';
+import { rpBuildSuperHeroldTitleCard, rpBuildSuperHeroldCostume, rpBuildSuperHeroldBreak, rpBuildSuperHeroldObstacle, superHeroldRevealNext, superHeroldRevealAll } from './chal/super-hero-ld.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10344,6 +10345,11 @@ export function buildVPScreens(epRecord) {
     if (ep.operationClassified.timeline.wiretap2?.length) vpScreens.push({ id:'oc-wiretap2', label:'Wiretap', html: rpBuildOperationClassifiedWiretap2(ep) });
     vpScreens.push({ id:'oc-defusal', label:'Bomb Defusal', html: rpBuildOperationClassifiedDefusal(ep) });
     vpScreens.push({ id:'oc-debrief', label:'Debrief', html: rpBuildOperationClassifiedDebrief(ep) });
+  } else if ((ep.isSuperHerold || ep.challengeType === 'super-hero-ld') && ep.superHerold) {
+    vpScreens.push({ id:'sh-title', label:'Super Hero-ld', html: rpBuildSuperHeroldTitleCard(ep) });
+    vpScreens.push({ id:'sh-costume', label:'Costume', html: rpBuildSuperHeroldCostume(ep) });
+    if (ep.superHerold.breakEvents?.length) vpScreens.push({ id:'sh-break', label:'Break', html: rpBuildSuperHeroldBreak(ep) });
+    vpScreens.push({ id:'sh-obstacle', label:'Obstacle Course', html: rpBuildSuperHeroldObstacle(ep) });
   } else if (ep.isAlienEgg && ep.alienEgg) {
     vpScreens.push({ id:'ae-title', label:'👽 Alien Resurr-eggtion', html: rpBuildAlienEggTitleCard(ep) });
     vpScreens.push({ id:'ae-rounds', label:'The Egg Hunt', html: rpBuildAlienEggRounds(ep) });

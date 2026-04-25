@@ -1460,6 +1460,13 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isMillionBucksBC = true;
 
+  } else if (engineType === 'super-hero-ld') {
+    if (!gs.isMerged) {
+      const merging = gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
+      if (!merging) return;
+    }
+    ep.isSuperHerold = true;
+
   } else if (engineType === 'sports-marathon') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isSportsMarathon = true;

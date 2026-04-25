@@ -69,6 +69,8 @@ export function patchEpisodeHistory(ep) {
   if (!h.millionBucksBC && ep.millionBucksBC) h.millionBucksBC = ep.millionBucksBC;
   if (!h.isSportsMarathon && ep.isSportsMarathon) h.isSportsMarathon = true;
   if (!h.sportsMarathon && ep.sportsMarathon) h.sportsMarathon = ep.sportsMarathon;
+  if (!h.isSuperHerold && ep.isSuperHerold) h.isSuperHerold = true;
+  if (!h.superHerold && ep.superHerold) h.superHerold = ep.superHerold;
   if (!h.isFullMetalDrama && ep.isFullMetalDrama) h.isFullMetalDrama = true;
   if (!h.bewareLostVotes && ep.bewareLostVotes) h.bewareLostVotes = ep.bewareLostVotes;
   if (!h.journey && ep.journey) h.journey = ep.journey;

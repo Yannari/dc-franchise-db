@@ -48,6 +48,7 @@ import { simulateFullMetalDrama } from './chal/full-metal-drama.js';
 import { simulateOceansHeist } from './chal/oceans-heist.js';
 import { simulateMillionBucksBC } from './chal/million-bucks-bc.js';
 import { simulateSportsMarathon } from './chal/sports-marathon.js';
+import { simulateSuperHerold } from './chal/super-hero-ld.js';
 import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
@@ -981,7 +982,7 @@ export function handleExileFormat(ep) {
   if (phase === 'pre' && gs.isMerged) return;
   if (phase === 'post' && !gs.isMerged) return;
   // Don't fire on special episode types
-  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama) return;
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
   // Don't double up with schoolyard pick exile (unpicked player already on exile)
@@ -1468,7 +1469,13 @@ export function simulateEpisode() {
     simulateOperationClassified(ep);
     ep.immunityWinner = ep.operationClassified.final?.winner || ep.immunityWinner;
     ep.challengeType = 'operation-classified';
-    // Fall through to normal tribal flow
+  }
+
+  // ── SUPER HERO-LD (post-merge) — superhero challenge determines immunity, normal tribal follows ──
+  if (ep.isSuperHerold && gs.isMerged) {
+    simulateSuperHerold(ep);
+    ep.immunityWinner = ep.superHerold?.obstacleCourse?.winner || ep.immunityWinner;
+    ep.challengeType = 'super-hero-ld';
   }
 
   // ── ALIEN EGG (post-merge) — egg hunt determines immunity, normal tribal follows ──

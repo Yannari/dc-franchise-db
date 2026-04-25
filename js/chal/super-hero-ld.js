@@ -131,8 +131,66 @@ const SABOTAGE_TEXT = {
 };
 
 // ══════════════════════════════════════════════════════════════
-// COSTUME CONTEST JUDGING
+// COSTUME CONTEST NARRATION
 // ══════════════════════════════════════════════════════════════
+const ENTRANCE_TEXT = [
+  (h, p) => `${h} grabbed the mic. "NEXT UP..." The lights dimmed. A spotlight hit the stage. "...${p}!"`,
+  (h, p) => `"Ladies and gentlemen..." ${h} gestured dramatically. "Presenting... ${p}!"`,
+  (h, p) => `${h}: "Alright, let's see what ${p} has cooked up." The curtain pulled back.`,
+  (h, p) => `A drumroll echoed across the set. ${h}: "Give it up for... ${p}!" Smoke machines activated.`,
+  (h, p) => `${h} checked his clipboard. "Next contestant: ${p}." He looked up. His eyebrows went up too.`,
+];
+
+const COSTUME_DESC_TEXT = {
+  strength: [
+    (p, hero, pr) => `${p} stomped out in a red-and-black muscle suit with ripped sleeves. ${pr.Sub} flexed. The fabric strained.`,
+    (p, hero, pr) => `${p} wore a tank top with a lightning bolt, ripped at the seams. Arms bare. The message was clear: pure power.`,
+  ],
+  psychic: [
+    (p, hero, pr) => `${p} floated out in a purple hooded cloak with glowing eye symbols sewn into the fabric. Mysterious.`,
+    (p, hero, pr) => `${p} emerged in a sleek violet bodysuit with a crystal headband. ${pr.Sub} pressed two fingers to ${pr.posAdj} temple. "I know what you're thinking."`,
+  ],
+  speed: [
+    (p, hero, pr) => `${p} ZOOMED in wearing a yellow-and-red aerodynamic suit with lightning bolts down the arms. Wind effects and everything.`,
+    (p, hero, pr) => `${p} skidded to a stop in a streamlined yellow suit. Goggles on top. "Gotta go fast." ${pr.Sub} said it unironically.`,
+  ],
+  charm: [
+    (p, hero, pr) => `${p} sashayed out in a glittering pink-and-gold outfit with a heart emblem. Every step radiated confidence.`,
+    (p, hero, pr) => `${p} struck a pose in a magenta cape and bedazzled mask. Sparkles. Actual sparkles. How?`,
+  ],
+  fire: [
+    (p, hero, pr) => `${p} burst through the curtain in a flame-patterned bodysuit. Orange, red, yellow — the whole inferno.`,
+    (p, hero, pr) => `${p} appeared in a red-hot costume with flame decals and heat-shimmer fabric. ${pr.Sub} snapped ${pr.posAdj} fingers. "Flame on." Nothing happened. "...Flame on?"`,
+  ],
+  gadgets: [
+    (p, hero, pr) => `${p} walked out loaded with gadgets — utility belt, wrist launcher, what appeared to be a working grappling hook.`,
+    (p, hero, pr) => `${p} stepped out in a techy cyan-and-silver suit covered in pockets, pouches, and blinking LEDs.`,
+  ],
+  tank: [
+    (p, hero, pr) => `${p} lumbered out in a green-plated armor suit. Heavy. Thick. ${pr.Sub} looked like a walking fortress.`,
+    (p, hero, pr) => `${p} clanked onto the stage in homemade shield-plating. "Hit me." ${pr.Sub} meant it.`,
+  ],
+};
+
+const CROWD_REACT_TEXT = {
+  great: [
+    (p) => `The crowd erupted. Jaws dropped. Someone whispered, "OK, ${p} actually looks like a real superhero."`,
+    (p) => `Gasps. Actual gasps. ${p}'s costume was THAT good. Even Chef stopped sabotaging to stare.`,
+  ],
+  good: [
+    (p) => `Solid applause. A few nods. ${p} looked the part.`,
+    (p) => `The crowd clapped. Not a standing ovation, but genuine approval.`,
+  ],
+  mid: [
+    (p) => `Polite clapping. A few confused looks. "Is that... supposed to be...?" It was.`,
+    (p) => `Mixed reactions. Some applause, some side-eye. ${p} chose to focus on the applause.`,
+  ],
+  bad: [
+    (p) => `Silence. Then someone coughed. ${p} tried to pose harder. It didn't help.`,
+    (p) => `A single cricket chirped. ${p}'s costume was... a choice. A bold, bad choice.`,
+  ],
+};
+
 const CHRIS_JUDGE_TEXT = {
   great: [
     (h, p, hero, score) => `${h} whistled. "${hero.heroName}? ${hero.power}? ${score}/10. I'm IMPRESSED."`,
@@ -354,7 +412,18 @@ function _simulateCostumeContest(active, result, ep, campKey) {
     const pr = pronouns(name);
     const hero = result.heroes[name];
 
-    // Villain sabotage (~30%)
+    // 1. Chris introduces the contestant
+    cc.events.push({ type: 'entrance', player: name, icon: '🎤',
+      text: pick(ENTRANCE_TEXT)(host(), name) });
+
+    // 2. Costume description based on power type
+    const descTexts = COSTUME_DESC_TEXT[hero.powerType];
+    if (descTexts) {
+      cc.events.push({ type: 'costume-desc', player: name, icon: '👗',
+        text: pick(descTexts)(name, hero, pr) });
+    }
+
+    // 3. Villain sabotage (~30%)
     let sabotaged = false;
     if (Math.random() < 0.3) {
       const dodgeCheck = s.intuition * 0.03 + s.boldness * 0.02 + noise(0.3);
@@ -368,20 +437,23 @@ function _simulateCostumeContest(active, result, ep, campKey) {
       }
     }
 
-    // Power demo
+    // 4. Power demo
     const demoTexts = POWER_DEMO_TEXT[hero.powerType];
     if (demoTexts) {
       cc.events.push({ type: 'demo', player: name, icon: hero.icon,
         text: pick(demoTexts)(name, pr) });
     }
 
-    // Chris judges
+    // 5. Crowd reaction
     const score = s.social * 0.03 + s.mental * 0.02 + s.boldness * 0.02 + (sabotaged ? -0.08 : 0) + noise(0.35);
     const chrisScore = Math.min(10, Math.max(1, Math.round(score * 12 + 3)));
+    const judgeLevel = chrisScore >= 8 ? 'great' : chrisScore >= 6 ? 'good' : chrisScore >= 4 ? 'mid' : 'bad';
+    cc.events.push({ type: 'crowd', player: name, icon: '👥',
+      text: pick(CROWD_REACT_TEXT[judgeLevel])(name) });
+
+    // 6. Chris judges
     hero.chrisScore = chrisScore;
     ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + chrisScore;
-
-    const judgeLevel = chrisScore >= 8 ? 'great' : chrisScore >= 6 ? 'good' : chrisScore >= 4 ? 'mid' : 'bad';
     cc.events.push({ type: 'judge', player: name, icon: '⭐', score: chrisScore,
       text: pick(CHRIS_JUDGE_TEXT[judgeLevel])(host(), name, hero, chrisScore) });
 
@@ -743,9 +815,18 @@ export function rpBuildSuperHeroldCostume(ep) {
     const playerEvents = cc.events.filter(e => e.player === name);
     const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
 
-    let html = `<div class="sh-hero-card sh-panel-impact">
-      <div class="sh-hero-photo" style="background:linear-gradient(180deg,${hero.glow},transparent)">
-        <div class="sh-hero-glow" style="background:radial-gradient(circle at 50% 30%,${hero.glow},transparent 65%)"></div>
+    let html = `<div class="sh-panel sh-panel-impact" style="border-color:${hero.color};border-width:4px;overflow:hidden">`;
+
+    // Entrance narration (Chris MC)
+    const entranceEv = playerEvents.find(e => e.type === 'entrance');
+    if (entranceEv) {
+      html += `<div class="sh-caption" style="display:block;margin-bottom:10px">${entranceEv.text}</div>`;
+    }
+
+    // Hero card with costume
+    html += `<div class="sh-hero-card" style="border:none;box-shadow:none;margin:0">
+      <div class="sh-hero-photo" style="background:linear-gradient(180deg,${hero.color}22,${hero.color}08)">
+        <div class="sh-hero-glow" style="background:radial-gradient(circle at 50% 30%,${hero.glow},transparent 60%)"></div>
         <div class="sh-hero-cape" style="background:${hero.color}"></div>
         <div class="sh-hero-mask" style="color:${hero.color}"></div>
         <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${name}">
@@ -753,27 +834,47 @@ export function rpBuildSuperHeroldCostume(ep) {
       <div class="sh-hero-data">
         <div class="sh-hero-name" style="color:${hero.color}">${hero.icon} ${hero.heroName}</div>
         <div class="sh-hero-real">${name}</div>
-        <div class="sh-hero-power">${hero.icon} Power: ${hero.power}</div>
+        <div class="sh-hero-power">${hero.icon} POWER: ${hero.power}</div>
         <div class="sh-hero-origin">${hero.origin}</div>
-        <div class="sh-bubble" style="font-size:14px">"${hero.catchphrase}"</div>`;
+      </div>
+    </div>`;
 
+    // Costume description
+    const costumeEv = playerEvents.find(e => e.type === 'costume-desc');
+    if (costumeEv) {
+      html += `<div style="font-size:13px;color:rgba(0,0,0,0.7);padding:6px 0;line-height:1.5;border-left:4px solid ${hero.color};padding-left:10px;margin:6px 0">${costumeEv.text}</div>`;
+    }
+
+    // Catchphrase in speech bubble
+    html += `<div class="sh-bubble" style="font-size:15px">"${hero.catchphrase}"</div>`;
+
+    // Sabotage, demo, crowd reaction, judge
     for (const ev of playerEvents) {
-      const isGood = ev.type === 'sabotage-dodge' || (ev.type === 'judge' && ev.score >= 7);
+      if (['entrance', 'costume-desc'].includes(ev.type)) continue; // already rendered above
+      const isGood = ev.type === 'sabotage-dodge' || ev.type === 'crowd' || (ev.type === 'judge' && ev.score >= 7);
       const isBad = ev.type === 'sabotage-hit' || (ev.type === 'judge' && ev.score <= 3);
-      const cls = isGood ? 'sh-ev-good' : isBad ? 'sh-ev-bad' : 'sh-ev-neutral';
+
       if (ev.type === 'judge') {
         const stars = '⭐'.repeat(Math.min(5, Math.ceil(ev.score / 2)));
-        html += `<div class="${cls}" style="margin-top:6px">
-          <div class="sh-hero-score" style="color:${ev.score >= 7 ? 'var(--comic-green)' : ev.score <= 3 ? 'var(--comic-red)' : 'var(--comic-yellow)'}">${stars} ${ev.score}/10</div>
-          <div class="sh-caption" style="font-size:12px;display:block">${ev.text}</div>
+        const scoreColor = ev.score >= 8 ? 'var(--comic-green)' : ev.score >= 6 ? 'var(--comic-yellow)' : ev.score <= 3 ? 'var(--comic-red)' : 'var(--comic-black)';
+        html += `<div style="margin-top:8px;padding:8px;background:${ev.score >= 7 ? 'rgba(22,163,74,0.06)' : ev.score <= 3 ? 'rgba(220,38,38,0.06)' : 'rgba(234,179,8,0.06)'};border-radius:4px">
+          <div class="sh-hero-score" style="color:${scoreColor}">${stars} ${ev.score}/10</div>
+          <div class="sh-caption" style="font-size:13px;display:block;margin-top:4px">${ev.text}</div>
         </div>`;
       } else if (ev.type === 'demo') {
-        html += `<div class="${cls}"><span class="sh-pow sh-pow-sm" style="color:${hero.color}">${hero.icon}</span> <span style="font-size:12px">${ev.text}</span></div>`;
-      } else {
-        html += `<div class="${cls}"><span style="font-size:12px">${ev.icon} ${ev.text}</span></div>`;
+        html += `<div class="sh-ev-neutral" style="margin-top:6px">
+          <span class="sh-pow sh-pow-sm" style="color:${hero.color}">${hero.icon} POWER DEMO!</span>
+          <div style="font-size:12px;margin-top:2px">${ev.text}</div>
+        </div>`;
+      } else if (ev.type === 'crowd') {
+        html += `<div style="font-size:12px;color:rgba(0,0,0,0.5);font-style:italic;padding:4px 0">${ev.text}</div>`;
+      } else if (ev.type === 'sabotage-hit') {
+        html += `<div class="sh-ev-bad"><span class="sh-pow sh-pow-sm" style="color:var(--comic-red)">ZAP!</span> <span style="font-size:12px">${ev.text}</span></div>`;
+      } else if (ev.type === 'sabotage-dodge') {
+        html += `<div class="sh-ev-good"><span style="font-size:12px">${ev.icon} ${ev.text}</span></div>`;
       }
     }
-    html += `</div></div>`;
+    html += `</div>`;
     steps.push({ html });
   }
 

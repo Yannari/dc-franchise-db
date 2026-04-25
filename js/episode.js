@@ -46,6 +46,7 @@ import { simulateMastersOfDisasters } from './chal/masters-of-disasters.js';
 import { simulateFullMetalDrama } from './chal/full-metal-drama.js';
 import { simulateOceansHeist } from './chal/oceans-heist.js';
 import { simulateMillionBucksBC } from './chal/million-bucks-bc.js';
+import { simulateSportsMarathon } from './chal/sports-marathon.js';
 import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
@@ -1853,6 +1854,8 @@ export function simulateEpisode() {
     simulateOneFlu(ep);
   } else if (ep.isMastersOfDisasters && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateMastersOfDisasters(ep);
+  } else if (ep.isSportsMarathon && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateSportsMarathon(ep, gs.tribes);
   } else if (ep.isMillionBucksBC && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateMillionBucksBC(ep, gs.tribes);
   } else if (ep.isOceansHeist && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {

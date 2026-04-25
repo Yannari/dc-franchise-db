@@ -35,6 +35,7 @@ import { _textMastersOfDisasters } from './chal/masters-of-disasters.js';
 import { _textFullMetalDrama } from './chal/full-metal-drama.js';
 import { _textOceansHeist } from './chal/oceans-heist.js';
 import { _textMillionBucksBC } from './chal/million-bucks-bc.js';
+import { _textSportsMarathon } from './chal/sports-marathon.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -2028,6 +2029,7 @@ export function generateSummaryText(ep) {
   _textFullMetalDrama(ep, ln, sec);
   _textOceansHeist(ep, ln, sec);
   _textMillionBucksBC(ep, ln, sec);
+  _textSportsMarathon(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
   _textJuryLife(ep, ln, sec);

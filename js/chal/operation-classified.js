@@ -791,41 +791,144 @@ function _addDramaToTimeline(active, timelineArr, ep, count) {
   }
 }
 
+const WIRE_COLORS = ['blue', 'red', 'green', 'yellow', 'black', 'white'];
+const WIRE_CSS = { blue: '#3b82f6', red: '#ef4444', green: '#22c55e', yellow: '#eab308', black: '#64748b', white: '#e2e8f0' };
+
+const WIRE_PICK_TEXT = {
+  fashion: [
+    (p, wire) => `${p} studied the wires. "Easy. ${wire.toUpperCase()} is the most fashionable." Cut.`,
+    (p, wire) => `"${wire.toUpperCase()}. Obviously. It matches my outfit." ${p} didn't even hesitate.`,
+  ],
+  analyze: [
+    (p, wire) => `${p} traced the circuit from the timer to the detonator. "${wire.toUpperCase()}. Has to be." Snip.`,
+    (p, wire) => `${p} studied the panel for ten seconds. Followed the ${wire} wire to its source. "This one." Cut.`,
+  ],
+  gut: [
+    (p, wire) => `${p} closed ${pronouns(p).posAdj} eyes, grabbed the ${wire} wire, and cut. Pure instinct.`,
+    (p, wire) => `"Eeny meeny..." ${p} landed on ${wire}. "Good enough." SNIP.`,
+  ],
+  copy: [
+    (p, wire, copiedFrom) => `${p} saw ${copiedFrom} cut ${wire} and survive. "Same wire!" ${p} snipped ${wire}. But every bomb is wired differently...`,
+    (p, wire, copiedFrom) => `"If ${wire} worked for ${copiedFrom}, it'll work for me." ${p} was wrong.`,
+  ],
+  panic: [
+    (p, wire) => `${p}'s hands were shaking too hard. Grabbed ${wire} and yanked. Not a clean cut.`,
+    (p, wire) => `The timer was at 3 seconds. ${p} panicked and tore out the ${wire} wire with bare hands.`,
+  ],
+};
+const DEFUSAL_RESULT_TEXT = {
+  perfect: [
+    (p, wire) => `The timer froze at 00:01. Perfect cut. ${p} exhaled. The ${wire} wire was correct.`,
+    (p, wire) => `Click. Silence. The bomb went dark. ${p} didn't even flinch. Flawless.`,
+  ],
+  defused: [
+    (p, wire) => `The ${wire} wire sparks — then the timer dies. Not pretty, but ${p} is alive.`,
+    (p, wire) => `${p}'s bomb sputters, flickers, and finally stops. Close one.`,
+  ],
+  messy: [
+    (p, wire) => `Wrong wire. Then the RIGHT wire. ${p} is covered in warning foam but technically alive.`,
+    (p, wire) => `The bomb half-detonated. Foam everywhere. ${p} is soaked but the timer stopped. Barely.`,
+  ],
+  blast: [
+    (p, wire) => `WRONG WIRE. The bomb ERUPTS. Stink bomb cloud engulfs ${p}. Everyone backs away.`,
+    (p, wire) => `${p} cuts ${wire}. Nothing happens for one second. Then — BOOM. The smell is UNHOLY.`,
+    (p, wire) => `The bomb goes off in ${p}'s face. Rotten eggs, old cheese, and something that might be alive. ${p} gags.`,
+  ],
+};
+
 function _simulateDefusal(active, state, timeline, ep) {
-  const wireNames = ['blue', 'red', 'green', 'yellow', 'black', 'white'];
-  for (const name of active) {
+  const campKey = gs.mergeName || 'merge';
+  let firstDefuser = null;
+  let firstWire = null;
+
+  // Each player faces their bomb sequentially
+  const order = [...active].sort(() => Math.random() - 0.5);
+  for (const name of order) {
     const s = pStats(name);
     const pr = pronouns(name);
-    const compromised = state.players[name].laser?.result === 'hit' || state.players[name].scan?.result === 'flagged';
+    const compromised = state.players[name].laser?.maxStep <= 1 || state.players[name].scan?.result === 'flagged';
     const intelBonus = (state.players[name].intel?.score || 0) > 0.30 ? 0.04 : 0;
     const bagBonus = (state.laserBagWinner === name && state.laserChoice?.choseSelfish) ? 0.06 : 0;
-    const score = s.mental * 0.04 + s.intuition * 0.03 + s.temperament * 0.02 + intelBonus + bagBonus + (compromised ? -0.06 : 0) + noise(0.35);
+
+    // Wire selection — based on archetype/stats
+    const correctWire = pick(WIRE_COLORS);
+    let chosenWire, pickMethod;
+
+    // Check if they copy the first defuser
+    const willCopy = firstDefuser && firstWire && name !== firstDefuser && s.strategic < 6 && Math.random() < 0.4;
+    if (willCopy) {
+      chosenWire = firstWire; // copy — but each bomb is wired differently!
+      pickMethod = 'copy';
+    } else if (s.social >= 7 && s.strategic < 5) {
+      // Fashion pick — social butterflies, showmancers
+      chosenWire = pick(['blue', 'red', 'yellow']);
+      pickMethod = 'fashion';
+    } else if (s.mental >= 6 && s.strategic >= 5) {
+      // Analyze — smart players more likely to pick correct
+      chosenWire = Math.random() < 0.55 ? correctWire : pick(WIRE_COLORS);
+      pickMethod = 'analyze';
+    } else if (s.temperament <= 3) {
+      // Panic — low temperament
+      chosenWire = pick(WIRE_COLORS);
+      pickMethod = 'panic';
+    } else {
+      // Gut feeling
+      chosenWire = pick(WIRE_COLORS);
+      pickMethod = 'gut';
+    }
+
+    // Defusal check — correct wire + stats
+    const wireCorrect = chosenWire === correctWire;
+    const score = s.mental * 0.04 + s.intuition * 0.03 + s.temperament * 0.02 + intelBonus + bagBonus + (compromised ? -0.06 : 0) + (wireCorrect ? 0.12 : -0.08) + (willCopy ? -0.10 : 0) + noise(0.3);
     const result = defusalResult(score);
-    const wire = wireNames[Math.floor(Math.abs(Math.round(score * 100 + name.length)) % wireNames.length)];
+
+    // Wire pick narration
+    const pickText = pickMethod === 'copy'
+      ? pick(WIRE_PICK_TEXT.copy)(name, chosenWire, firstDefuser)
+      : pick(WIRE_PICK_TEXT[pickMethod])(name, chosenWire);
+
+    // Result narration
+    const resultText = pick(DEFUSAL_RESULT_TEXT[result])(name, chosenWire);
+
     let delta = result === 'perfect' ? 4 : result === 'defused' ? 2 : result === 'messy' ? -1 : -3;
-    state.players[name].defusal = { score, result, wire };
+    state.players[name].defusal = { score, result, wire: chosenWire, correctWire, pickMethod, wireCorrect };
     state.players[name].total += delta;
     if (result === 'messy') state.alarm += 8;
     if (result === 'blast') state.alarm += 18;
     if (!ep.chalMemberScores) ep.chalMemberScores = {};
     ep.chalMemberScores[name] = Math.round(state.players[name].total);
+
+    // Track first successful defuser for copycat mechanic
+    if (!firstDefuser && (result === 'perfect' || result === 'defused')) {
+      firstDefuser = name;
+      firstWire = chosenWire;
+    }
+
     timeline.defusal.push({
       type: result, player: name, score,
-      text: pick(DEFUSAL_TEXT[result])(name, pr, wire),
+      wire: chosenWire, correctWire, pickMethod, wireCorrect,
+      pickText, resultText,
+      text: `${pickText} ${resultText}`,
     });
 
-    // Inline reactions after notable defusal results
+    // Inline reactions
     if (result === 'perfect' && Math.random() < 0.5) {
       const reactor = Math.random() < 0.4 ? host() : pick(active.filter(n => n !== name));
       if (reactor) {
         timeline.defusal.push({ type: 'reaction', player: name,
           text: pick(INLINE_REACTIONS.defusalPerfectReact)(reactor, name) });
       }
-    } else if (result === 'blast' && Math.random() < 0.6) {
+    } else if (result === 'blast') {
       const reactor = Math.random() < 0.5 ? host() : pick(active.filter(n => n !== name));
       if (reactor) {
         timeline.defusal.push({ type: 'reaction', player: name,
           text: pick(INLINE_REACTIONS.defusalBlastReact)(reactor, name) });
+      }
+      // Copycat blame event
+      if (willCopy && firstDefuser) {
+        addBond(name, firstDefuser, -0.3);
+        timeline.defusal.push({ type: 'reaction', players: [name, firstDefuser],
+          text: `"I copied YOUR wire!" ${name} pointed at ${firstDefuser}. "Every bomb is wired DIFFERENTLY, genius!" Trust broken.` });
       }
     }
   }
@@ -1073,11 +1176,32 @@ function css() {
   /* Drama break */
   .oc-drama{border-left:3px dashed rgba(245,158,11,.2);background:rgba(245,158,11,.02);font-style:italic}
 
+  /* ── BOMB DEFUSAL CARD ── */
+  .oc-bomb-card{background:#0a0406;border:2px solid rgba(255,45,45,0.15);border-radius:6px;overflow:hidden;max-width:500px;margin:8px auto;position:relative}
+  .oc-bomb-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(255,45,45,0.08)}
+  .oc-bomb-timer-display{font:700 16px/1 'Share Tech Mono',monospace;color:var(--oc-red);animation:oc-blink 0.8s ease-in-out infinite}
+  .oc-bomb-wires{display:flex;gap:3px;padding:6px 12px;background:rgba(0,0,0,0.3)}
+  .oc-wire{height:4px;flex:1;border-radius:2px;position:relative;transition:all 0.3s}
+  .oc-wire.cut{opacity:0.2}
+  .oc-wire.cut::after{content:'✂';position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:10px}
+  .oc-wire.chosen{height:6px;box-shadow:0 0 8px currentColor}
+  .oc-bomb-body{padding:10px 14px;display:flex;align-items:flex-start;gap:10px}
+  .oc-bomb-result{font:700 10px/1 'Share Tech Mono',monospace;letter-spacing:2px;padding:4px 8px;border-radius:3px;text-align:center;margin-top:6px}
+  .oc-bomb-result.perfect,.oc-bomb-result.defused{color:var(--oc-green);border:1px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.06)}
+  .oc-bomb-result.messy{color:var(--oc-amber);border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.06)}
+  .oc-bomb-result.blast{color:var(--oc-red);border:1px solid rgba(255,45,45,0.3);background:rgba(255,45,45,0.08);animation:oc-explosion 0.6s ease-out}
+  @keyframes oc-explosion{0%{transform:scale(1);box-shadow:0 0 0 rgba(255,45,45,0)}30%{transform:scale(1.05);box-shadow:0 0 30px rgba(255,45,45,0.4)}100%{transform:scale(1);box-shadow:0 0 0 rgba(255,45,45,0)}}
+  .oc-bomb-stink{position:absolute;inset:0;pointer-events:none;z-index:1;
+    background:radial-gradient(circle at 50% 50%,rgba(120,100,20,0.15),transparent 70%);
+    animation:oc-stink-cloud 1.5s ease-out forwards}
+  @keyframes oc-stink-cloud{0%{opacity:0;transform:scale(0.5)}30%{opacity:1}100%{opacity:0;transform:scale(2)}}
+
   @media(prefers-reduced-motion:reduce){
     .oc-shell::after,.oc-bomb-timer,.oc-scan-photo::after,
     .oc-scan-field .val,.oc-scan-status.flagged,
     .oc-laser-feed::after,.oc-laser-rec::before,
-    .oc-wire-card::before,.oc-wire-signal{animation:none!important}
+    .oc-wire-card::before,.oc-wire-signal,
+    .oc-bomb-timer-display,.oc-bomb-result.blast,.oc-bomb-stink{animation:none!important}
     .oc-scan-field .val{width:100%!important;border-right:none!important}
   }
   @media(max-width:760px){.oc-layout{flex-direction:column}.oc-sidebar{width:100%}.oc-title{font-size:22px}}
@@ -1437,7 +1561,74 @@ export function rpBuildOperationClassifiedWiretap2(ep) {
 }
 export function rpBuildOperationClassifiedDefusal(ep) {
   const events = ep.operationClassified.timeline.defusal || [];
-  return shell(ep, renderSteps(ep, 'defusal', events, 'Cut Wire'), 'defusal', events);
+  const stateKey = `oc-${ep.num}-defusal`;
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };
+  const state = window._tvState[stateKey];
+
+  let html = '';
+  events.forEach((ev, i) => {
+    const visible = i <= state.idx;
+
+    if (ev.type === 'reaction') {
+      const ppl = (ev.players || [ev.player]).filter(Boolean);
+      html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+        <div class="oc-event oc-drama" data-tone="warn" style="padding:10px 14px;max-width:500px;margin:4px auto">
+          <div style="display:flex;gap:4px">${ppl.map(p => portrait(p, 28)).join('')}</div>
+          <div class="oc-copy" style="font-style:italic">${ev.text}</div>
+        </div>
+      </div>`;
+      return;
+    }
+
+    // Bomb defusal card
+    const isBlast = ev.type === 'blast';
+    const isMessy = ev.type === 'messy';
+    const isGood = ev.type === 'perfect' || ev.type === 'defused';
+    const resultLabel = ev.type === 'perfect' ? '✅ PERFECT DEFUSAL' : ev.type === 'defused' ? '✅ DEFUSED' : ev.type === 'messy' ? '⚠️ MESSY — FOAM EVERYWHERE' : '💥 DETONATED';
+    const methodLabel = ev.pickMethod === 'copy' ? 'COPIED' : ev.pickMethod === 'fashion' ? 'FASHION PICK' : ev.pickMethod === 'analyze' ? 'CIRCUIT ANALYSIS' : ev.pickMethod === 'panic' ? 'PANIC CUT' : 'GUT FEELING';
+    const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
+
+    // Build wire panel — show all 6 wires, highlight the chosen one
+    let wiresHtml = '';
+    for (const w of WIRE_COLORS) {
+      const isChosen = w === ev.wire;
+      const isCut = isChosen;
+      wiresHtml += `<div class="oc-wire ${isCut ? 'cut chosen' : ''}" style="background:${WIRE_CSS[w]};color:${WIRE_CSS[w]}"></div>`;
+    }
+
+    html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+      <div class="oc-bomb-card" style="${isBlast ? 'border-color:rgba(255,45,45,0.4)' : isGood ? 'border-color:rgba(34,197,94,0.2)' : ''}">
+        ${isBlast ? '<div class="oc-bomb-stink"></div>' : ''}
+        <div class="oc-bomb-header">
+          <div style="display:flex;align-items:center;gap:8px">
+            ${portrait(ev.player, 28)}
+            <div>
+              <div style="font:700 12px/1 'Share Tech Mono',monospace;color:#fff">${ev.player}</div>
+              <div style="font:9px/1 'Share Tech Mono',monospace;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-top:2px">${methodLabel}</div>
+            </div>
+          </div>
+          <div class="oc-bomb-timer-display" style="${isGood ? 'animation:none;color:var(--oc-green)' : isBlast ? 'color:var(--oc-red)' : ''}">${isGood ? '00:01' : isBlast ? 'BOOM' : '00:03'}</div>
+        </div>
+        <div class="oc-bomb-wires">${wiresHtml}</div>
+        <div class="oc-bomb-body">
+          <div style="flex:1">
+            <div class="oc-copy" style="font-size:11px;margin-bottom:4px;color:rgba(255,255,255,0.5)">${ev.pickText}</div>
+            <div class="oc-copy" style="font-size:12px">${ev.resultText}</div>
+            <div class="oc-bomb-result ${ev.type}">${resultLabel}</div>
+            ${ev.wireCorrect === false && !isBlast ? `<div style="font:9px/1 'Share Tech Mono',monospace;color:rgba(255,255,255,0.2);margin-top:4px">Correct wire was ${ev.correctWire}</div>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  const done = state.idx >= events.length - 1;
+  html += `<div id="oc-controls-${stateKey}" class="oc-controls" ${done ? 'style="display:none"' : ''}>
+    <button class="oc-btn" onclick="operationClassifiedRevealNext('${stateKey}',${events.length},'defusal')">Cut Wire</button>
+    <button class="oc-btn secondary" onclick="operationClassifiedRevealAll('${stateKey}',${events.length},'defusal')">Reveal All</button>
+  </div>`;
+  return shell(ep, html, 'defusal', events);
 }
 
 export function rpBuildOperationClassifiedDebrief(ep) {

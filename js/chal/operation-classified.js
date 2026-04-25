@@ -393,9 +393,9 @@ function _simulateLaser(active, state, timeline, ep) {
       const s = pStats(name);
       const pr = pronouns(name);
       const scanMod = state.players[name].scan?.result === 'flagged' ? -0.05 : state.players[name].scan?.result === 'clear' ? 0.03 : 0;
-      const stepDifficulty = positions[name] * 0.04; // much harder as you get deeper
+      const stepDifficulty = positions[name] * 0.05;
       const check = s.physical * 0.03 + s.intuition * 0.02 + s.mental * 0.02 + scanMod - stepDifficulty + noise(0.35);
-      const passed = check > 0.30;
+      const passed = check > 0.34;
 
       if (passed) {
         positions[name]++;
@@ -494,17 +494,126 @@ function _simulateLaser(active, state, timeline, ep) {
     ep.chalMemberScores[n] = (ep.chalMemberScores[n] || 0) + maxReached[n];
   });
 
-  // Countdown prank after bag grab
+  // ── COUNTDOWN SEQUENCE ──
+
+  // 1. First countdown — fake, everyone panics
   timeline.laser.push({ type: 'countdown-fake',
     text: pick(LASER_MID_EVENTS.countdownPrank)(host()) });
 
+  // Panic hug bonds
   if (active.length >= 2) {
     const hugPair = active.slice().sort(() => Math.random() - 0.5).slice(0, 2);
     addBond(hugPair[0], hugPair[1], 0.3);
+    timeline.laser.push({ type: 'reaction', players: [hugPair[0], hugPair[1]],
+      text: `${hugPair[0]} and ${hugPair[1]} grabbed each other in pure panic. They held on way too long after the fake-out.` });
   }
 
+  // 2. Second countdown — "this one's real"
   timeline.laser.push({ type: 'countdown-real',
     text: pick(LASER_MID_EVENTS.countdownReal)(host()) });
+
+  // 3. Bag winner faces THE CHOICE
+  const bw = bagWinner;
+  const bwS = pStats(bw);
+  const bwPr2 = pronouns(bw);
+  const others = active.filter(n => n !== bw);
+
+  // Decision logic: selfish vs selfless
+  // Selfish factors: high strategic, low loyalty, villain archetype, high heat, low avg bond
+  // Selfless factors: high loyalty, hero/loyal-soldier, high avg bond, nice archetype
+  const avgBond = others.length ? others.reduce((s, n) => s + getBond(bw, n), 0) / others.length : 0;
+  const hasHeat = (gs.popularity?.[bw] || 0) <= -2 || others.some(n => getBond(bw, n) < -3);
+  const isVillainType = VILLAINS.includes(arch(bw));
+  const isNiceType = ['hero', 'loyal-soldier', 'social-butterfly', 'underdog'].includes(arch(bw));
+
+  const selfishScore = bwS.strategic * 0.3 + (10 - bwS.loyalty) * 0.3 + (isVillainType ? 2 : 0) + (hasHeat ? 1.5 : 0) + (avgBond < 0 ? 1 : 0) + noise(3);
+  const selflessScore = bwS.loyalty * 0.3 + bwS.social * 0.2 + (isNiceType ? 2 : 0) + (avgBond > 2 ? 1.5 : 0) + noise(3);
+
+  const choseSelfish = selfishScore > selflessScore;
+  state.laserChoice = { player: bw, choseSelfish };
+
+  if (choseSelfish) {
+    // Keep wire cutters — defusal advantage, everyone resents them
+    const choiceTexts = [
+      `${bw} looked at the grappling hook, then at the wire cutters. ${bwPr2.Sub} pocketed the cutters. "Every agent for themselves." The others stared in disbelief.`,
+      `"Sorry, but I need these." ${bw} clutched the wire cutters while the countdown ticked. ${bwPr2.Sub} wasn't sharing.`,
+      `${bw} made ${bwPr2.posAdj} choice in a heartbeat. Wire cutters in pocket, grappling hook on the floor. "I'm winning immunity. Deal with it."`,
+    ];
+    timeline.laser.push({ type: 'choice-selfish', player: bw,
+      text: pick(choiceTexts) });
+
+    // Everyone resents the bag winner
+    for (const other of others) {
+      addBond(other, bw, -0.4);
+    }
+    popDelta(bw, -2);
+    state.players[bw].total += 2; // keeps the defusal bonus
+
+    // Chris reveals it was fake AGAIN — the selfish choice was for nothing socially
+    const revealTexts = [
+      `${host()} burst out laughing. "FAKE AGAIN! There's no budget for explosions!" ${bw} kept the cutters anyway. The damage was done.`,
+      `"You really thought I'd blow up my own set?" ${host()} wiped tears of laughter. ${bw} had the wire cutters... and zero friends.`,
+    ];
+    timeline.laser.push({ type: 'countdown-reveal', player: bw,
+      text: pick(revealTexts) });
+
+    // Others react
+    const angryReactor = pick(others);
+    if (angryReactor) {
+      const rTexts = [
+        `${angryReactor} stared at ${bw}. "You chose WIRE CUTTERS over saving us. I won't forget that."`,
+        `"Real nice, ${bw}." ${angryReactor}'s voice was ice. The group remembered.`,
+      ];
+      timeline.laser.push({ type: 'reaction', players: [angryReactor, bw],
+        text: pick(rTexts) });
+    }
+
+    ep.campEvents[campKey].post.push({
+      text: `${bw} chose wire cutters over saving the group during the countdown. Trust shattered.`,
+      players: [bw], badgeText: 'SELFISH CHOICE', badgeClass: 'red', tag: 'drama'
+    });
+  } else {
+    // Use grappling hook — save everyone, bonds + respect
+    const choiceTexts = [
+      `${bw} grabbed the grappling hook without hesitation. "EVERYBODY HOLD ON!" ${bwPr2.Sub} fired it at the ceiling and pulled the group to safety.`,
+      `"We're getting out of here. ALL of us." ${bw} used the grappling hook to create an escape route. One by one, they climbed out.`,
+      `${bw} didn't even think about it. Grappling hook deployed. "GRAB THE LINE!" The group made it out together.`,
+    ];
+    timeline.laser.push({ type: 'choice-selfless', player: bw,
+      text: pick(choiceTexts) });
+
+    // Bond boost with everyone
+    for (const other of others) {
+      addBond(other, bw, 0.4);
+    }
+    popDelta(bw, 3);
+    // No defusal bonus — they gave up the wire cutters
+    state.players[bw].total += 1;
+
+    // Chris reveals it was fake
+    const revealTexts = [
+      `${host()} appeared on the monitor, clapping slowly. "Beautiful. Heroic. Also... totally unnecessary. It was fake." ${bw} didn't regret it.`,
+      `"The countdown was fake, obviously." ${host()} shrugged. "But that rescue? GREAT television." ${bw} earned real respect.`,
+    ];
+    timeline.laser.push({ type: 'countdown-reveal', player: bw,
+      text: pick(revealTexts) });
+
+    // Others react positively
+    const gratefulReactor = pick(others);
+    if (gratefulReactor) {
+      const rTexts = [
+        `${gratefulReactor} grabbed ${bw}'s arm. "You saved us. I owe you one." Genuine gratitude.`,
+        `"You're alright, ${bw}." ${gratefulReactor} nodded with respect. That choice meant something.`,
+      ];
+      timeline.laser.push({ type: 'reaction', players: [gratefulReactor, bw],
+        text: pick(rTexts) });
+    }
+
+    ep.campEvents[campKey].post.push({
+      text: `${bw} used the grappling hook to save the group during the countdown. Respect earned.`,
+      players: [bw], badgeText: 'HEROIC SAVE', badgeClass: 'green', tag: 'drama'
+    });
+  }
 }
 
 // Wiretap 1: intel gathering + alliance pitch + drama (before laser vault)
@@ -621,7 +730,7 @@ function _simulateDefusal(active, state, timeline, ep) {
     const pr = pronouns(name);
     const compromised = state.players[name].laser?.result === 'hit' || state.players[name].scan?.result === 'flagged';
     const intelBonus = (state.players[name].intel?.score || 0) > 0.30 ? 0.04 : 0;
-    const bagBonus = state.laserBagWinner === name ? 0.06 : 0;
+    const bagBonus = (state.laserBagWinner === name && state.laserChoice?.choseSelfish) ? 0.06 : 0;
     const score = s.mental * 0.04 + s.intuition * 0.03 + s.temperament * 0.02 + intelBonus + bagBonus + (compromised ? -0.06 : 0) + noise(0.35);
     const result = defusalResult(score);
     const wire = wireNames[Math.floor(Math.abs(Math.round(score * 100 + name.length)) % wireNames.length)];
@@ -1162,10 +1271,32 @@ export function rpBuildOperationClassifiedLaser(ep) {
     } else if (ev.type === 'countdown-fake' || ev.type === 'countdown-real') {
       const isFake = ev.type === 'countdown-fake';
       html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
-        <div class="oc-event ${isFake ? '' : 'oc-drama'}" data-tone="${isFake ? 'warn' : 'bad'}" style="padding:14px;text-align:center">
+        <div class="oc-event" data-tone="bad" style="padding:14px;text-align:center">
           <div style="width:100%">
             <div class="oc-bomb-timer" style="font-size:${isFake ? '20px' : '16px'};margin-bottom:8px">${isFake ? '💣 10... 9... 8... 7...' : '💣 ...THIS ONE IS REAL.'}</div>
             <div class="oc-copy" style="text-align:left">${ev.text}</div>
+          </div>
+        </div>
+      </div>`;
+    } else if (ev.type === 'choice-selfish' || ev.type === 'choice-selfless') {
+      const isSelfish = ev.type === 'choice-selfish';
+      html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+        <div class="oc-event" data-tone="${isSelfish ? 'bad' : 'good'}" style="padding:14px;border:2px solid ${isSelfish ? 'rgba(255,45,45,0.3)' : 'rgba(34,197,94,0.3)'};background:${isSelfish ? 'rgba(255,45,45,0.04)' : 'rgba(34,197,94,0.04)'}">
+          <div style="display:flex;align-items:center;gap:10px;width:100%">
+            ${portrait(ev.player, 40)}
+            <div style="flex:1">
+              <div style="font:700 10px/1 'Share Tech Mono',monospace;letter-spacing:2px;color:${isSelfish ? 'var(--oc-red)' : 'var(--oc-green)'};margin-bottom:6px">${isSelfish ? '🔧 KEPT THE WIRE CUTTERS' : '🪝 USED THE GRAPPLING HOOK'}</div>
+              <div class="oc-copy">${ev.text}</div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    } else if (ev.type === 'countdown-reveal') {
+      html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+        <div class="oc-event oc-drama" data-tone="warn" style="padding:12px;text-align:center">
+          <div style="width:100%">
+            <div style="font:700 11px/1 'Share Tech Mono',monospace;color:var(--oc-amber);letter-spacing:2px;margin-bottom:6px">🎭 COUNTDOWN WAS FAKE</div>
+            <div class="oc-copy">${ev.text}</div>
           </div>
         </div>
       </div>`;

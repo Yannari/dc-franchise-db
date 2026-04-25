@@ -21,7 +21,7 @@ import { rpBuildMastersOfDisastersTitleCard, rpBuildMastersOfDisastersEarthquake
 import { rpBuildFullMetalDramaTitleCard, rpBuildFullMetalDramaJump, rpBuildFullMetalDramaPaintBomb, rpBuildFullMetalDramaDramaBreak, rpBuildFullMetalDramaFlag, rpBuildFullMetalDramaResults, fullMetalDramaRevealNext, fullMetalDramaRevealAll } from './chal/full-metal-drama.js';
 import { rpBuildOceansHeistTitleCard, rpBuildOceansHeistVault, rpBuildOceansHeistHeist, rpBuildOceansHeistGetaway, rpBuildOceansHeistResults, oceansHeistRevealNext, oceansHeistRevealAll } from './chal/oceans-heist.js';
 import { rpBuildMillionBucksBCTitleCard, rpBuildMillionBucksBCFire, rpBuildMillionBucksBCBreak, rpBuildMillionBucksBCBattle, rpBuildMillionBucksBCResults, millionBucksBCRevealNext, millionBucksBCRevealAll } from './chal/million-bucks-bc.js';
-import { rpBuildSportsMarathonTitleCard, rpBuildSportsMarathonObstacle, rpBuildSportsMarathonSports, rpBuildSportsMarathonResults, sportsMarathonRevealNext, sportsMarathonRevealAll } from './chal/sports-marathon.js';
+import { rpBuildSportsMarathonTitleCard, rpBuildSportsMarathonObstacle, rpBuildSportsMarathonHalftime, rpBuildSportsMarathonSports, rpBuildSportsMarathonResults, sportsMarathonRevealNext, sportsMarathonRevealAll } from './chal/sports-marathon.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10473,6 +10473,7 @@ export function buildVPScreens(epRecord) {
   } else if ((ep.isSportsMarathon || ep.challengeType === 'sports-marathon') && ep.sportsMarathon) {
     vpScreens.push({ id:'sm-title', label:'Sports Marathon', html: rpBuildSportsMarathonTitleCard(ep) });
     vpScreens.push({ id:'sm-obstacle', label:'Obstacle Course', html: rpBuildSportsMarathonObstacle(ep) });
+    if (ep.sportsMarathon.halftimeEvents?.length) vpScreens.push({ id:'sm-halftime', label:'Halftime', html: rpBuildSportsMarathonHalftime(ep) });
     vpScreens.push({ id:'sm-sports', label:'Sports', html: rpBuildSportsMarathonSports(ep) });
     vpScreens.push({ id:'sm-results', label:'Results', html: rpBuildSportsMarathonResults(ep) });
     if (ep.riLifeEvents?.length || ep.riDuel) {

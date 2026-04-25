@@ -397,6 +397,7 @@ export function simulateSportsMarathon(ep, tribes) {
 
   _simulateObstacleCourse(ep, tribeMembers, result);
   _simulateSeedingBreak(ep, tribeMembers, result);
+  result.halftimeEvents = _simulateHalftime(ep, tribeMembers, result);
   _simulateSports(ep, tribeMembers, result);
 
   // Tribe immunity = sport wins only
@@ -712,6 +713,72 @@ const HALFTIME_EVENTS = [
       return { text: pick(texts), players: [complainer], badgeText: 'COMPLAINT', badgeClass: 'amber' };
     },
   },
+  {
+    id: 'showmanceTension',
+    check(ep, all) { return gs.showmances?.some(s => all.includes(s.a) && all.includes(s.b)); },
+    apply(ep, all) {
+      const sm = gs.showmances.find(s => all.includes(s.a) && all.includes(s.b));
+      if (!sm) return null;
+      const onSameTeam = result => {
+        const oc = result?.obstacleCourse?.players || [];
+        const tA = oc.find(p => p.name === sm.a)?.tribe;
+        const tB = oc.find(p => p.name === sm.b)?.tribe;
+        return tA && tB && tA === tB;
+      };
+      addBond(sm.a, sm.b, 0.3);
+      const texts = [
+        `${sm.a} and ${sm.b} sat close during the break. "If we face each other... I won't go easy." "You better not."`,
+        `${sm.b} massaged ${sm.a}'s shoulders. "You looked good out there." "I always look good." Flirting between plays.`,
+        `${sm.a} caught ${sm.b} staring. "What?" "Nothing. Just... be careful in wrestling." Concern disguised as trash talk.`,
+      ];
+      return { text: pick(texts), players: [sm.a, sm.b], badgeText: 'SHOWMANCE', badgeClass: 'green' };
+    },
+  },
+  {
+    id: 'alliancePlot',
+    check(ep, all) { return gs.namedAlliances?.some(a => a.active && a.members.filter(m => all.includes(m)).length >= 2); },
+    apply(ep, all) {
+      const alliance = gs.namedAlliances.find(a => a.active && a.members.filter(m => all.includes(m)).length >= 2);
+      if (!alliance) return null;
+      const pair = alliance.members.filter(m => all.includes(m)).slice(0, 2);
+      addBond(pair[0], pair[1], 0.3);
+      const texts = [
+        `${pair[0]} and ${pair[1]} from ${alliance.name} whispered during the break. "We need to make sure our tribe wins the next two."`,
+        `"If it comes to cheerleading, we know what to do." ${pair[0]} and ${pair[1]} exchanged a look. Alliance mode.`,
+        `${pair[0]} pulled ${pair[1]} aside. "After this challenge, we need to talk targets." ${alliance.name} business never stops.`,
+      ];
+      return { text: pick(texts), players: [pair[0], pair[1]], badgeText: 'ALLIANCE TALK', badgeClass: 'green' };
+    },
+  },
+  {
+    id: 'warmupFail',
+    check(ep, all) { return all.length >= 1; },
+    apply(ep, all) {
+      const target = pick(all);
+      const pr = pronouns(target);
+      const texts = [
+        `${target} tried to stretch during the break and pulled something. "OW! My hamstring!" ${pr.Sub} limped it off.`,
+        `${target} practiced boxing moves on an invisible opponent. Hit the water cooler instead. Water everywhere.`,
+        `${target} attempted a practice dunk during the break. Missed. Hit the rim. The ball bounced into ${host()}'s face.`,
+      ];
+      return { text: pick(texts), players: [target], badgeText: 'WARMUP FAIL', badgeClass: 'red' };
+    },
+  },
+  {
+    id: 'lockerRoomBond',
+    check(ep, all) { return all.length >= 2; },
+    apply(ep, all) {
+      const pair = all.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+      if (getBond(pair[0], pair[1]) > 5) return null;
+      addBond(pair[0], pair[1], 0.4);
+      const texts = [
+        `${pair[0]} and ${pair[1]} compared bruises from the obstacle course. "Check this one." "That's nothing, look at THIS." Bonding over battle scars.`,
+        `${pair[0]} found ${pair[1]} sitting alone. "You did good out there. Seriously." A moment of genuine connection.`,
+        `${pair[0]} and ${pair[1]} practiced high-fives until they got the perfect one. Team chemistry building.`,
+      ];
+      return { text: pick(texts), players: [pair[0], pair[1]], badgeText: 'LOCKER ROOM', badgeClass: 'green' };
+    },
+  },
 ];
 
 function _simulateHalftime(ep, tribeMembers, result) {
@@ -721,7 +788,7 @@ function _simulateHalftime(ep, tribeMembers, result) {
 
   const eligible = HALFTIME_EVENTS.filter(ev => ev.check(ep, allMembers, result));
   const shuffled = [...eligible].sort(() => Math.random() - 0.5);
-  const target = 4 + Math.floor(Math.random() * 2); // 4-5
+  const target = 6 + Math.floor(Math.random() * 2); // 6-7
 
   for (const ev of shuffled) {
     if (halftimeEvents.length >= target) break;
@@ -748,11 +815,6 @@ function _simulateSports(ep, tribeMembers, result) {
   const seedBoard = result.seedBoard;
 
   for (let si = 0; si < SPORT_ORDER.length; si++) {
-    // Halftime break after sport 2
-    if (si === 2) {
-      result.halftimeEvents = _simulateHalftime(ep, tribeMembers, result);
-    }
-
     const sportKey = SPORT_ORDER[si];
     const label = SPORT_LABELS[sportKey];
     const groupIdx = si % seedBoard.length;
@@ -1389,6 +1451,71 @@ function _smBuildObstacleSidebar(sm, revCount) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// VP SCREEN 2.5: HALFTIME
+// ══════════════════════════════════════════════════════════════
+export function rpBuildSportsMarathonHalftime(ep) {
+  const sm = ep.sportsMarathon;
+  if (!sm || !sm.halftimeEvents?.length) return '';
+  const _tvState = window._tvState || (window._tvState = {});
+  const stateKey = 'sm-halftime';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const revIdx = _tvState[stateKey].idx;
+
+  const steps = [];
+
+  steps.push({ html: `<div class="sm-ev" style="border-left-color:var(--sport-gold);padding:14px">
+    <div style="font-size:28px">⏱️</div>
+    <div style="flex:1"><div class="sm-ev-badge gold" style="font-size:11px;padding:4px 12px">HALFTIME</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:6px">The teams regroup between the obstacle course and the sports. Tensions rise and bonds form...</div></div>
+  </div>` });
+
+  for (const evt of sm.halftimeEvents) {
+    const badgeColor = evt.badgeClass === 'red' ? 'var(--sport-red)' : evt.badgeClass === 'green' ? 'var(--sport-green)' : evt.badgeClass === 'amber' ? '#d97706' : 'var(--sport-gold)';
+    const borderColor = evt.badgeClass === 'red' ? 'rgba(239,68,68,0.2)' : evt.badgeClass === 'green' ? 'rgba(22,163,74,0.2)' : 'rgba(234,179,8,0.15)';
+    steps.push({ html: `<div class="sm-ev sm-fight-drama" style="border-left-color:${borderColor};padding:12px">
+      <div style="flex:1">
+      <div style="display:inline-block;padding:2px 8px;font-size:8px;font-family:'Share Tech Mono',monospace;letter-spacing:2px;border-radius:2px;margin-bottom:6px;border:1px solid ${badgeColor};color:${badgeColor};background:rgba(0,0,0,0.2)">${evt.badgeText}</div>
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <div style="display:flex;gap:3px;flex-shrink:0">${(evt.players || []).map(n => _smPortrait(n, 28)).join('')}</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);font-style:italic;line-height:1.5">${evt.text}</div>
+      </div></div>
+    </div>` });
+  }
+
+  const totalSteps = steps.length;
+  let feed = '';
+  for (let i = 0; i < totalSteps; i++) {
+    feed += `<div id="sm-step-halftime-${i}" style="${i <= revIdx ? '' : 'display:none'}">${steps[i].html}</div>`;
+  }
+
+  const pending = revIdx < totalSteps - 1;
+  const controls = `<div id="sm-controls-halftime" class="sm-controls" ${!pending && totalSteps ? 'style="display:none"' : ''}>
+    <button class="sm-btn-next" onclick="sportsMarathonRevealNext('sm-halftime',${totalSteps})">NEXT</button>
+    <button class="sm-btn-all" onclick="sportsMarathonRevealAll('sm-halftime',${totalSteps})">Reveal All</button>
+  </div>
+  <div id="sm-done-halftime" style="${pending || !totalSteps ? 'display:none' : 'text-align:center;padding:14px 0'}">
+    ${_smBadge('BACK TO THE GAMES', 'gold')}
+  </div>`;
+
+  return _smShell(`
+    <div class="sm-hud">
+      <div class="sm-hud-cell"><div class="sm-hud-val" style="color:var(--sport-gold)">⏱️</div><div class="sm-hud-lbl">HALFTIME</div></div>
+      <div class="sm-hud-cell"><div class="sm-hud-val" style="color:var(--sport-gold)">${sm.halftimeEvents.length}</div><div class="sm-hud-lbl">EVENTS</div></div>
+    </div>
+    <div class="sm-layout">
+      <div class="sm-feed">${feed}${controls}</div>
+      <div class="sm-sidebar" id="sm-sidebar-halftime">
+        <div class="sm-side-sec">DRAMA LOG</div>
+        ${sm.halftimeEvents.map((e, i) => {
+          const shown = i + 1 < revIdx + 1;
+          return `<div style="padding:3px;margin-bottom:2px;font-size:9px;color:${shown ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.1)'};font-family:'Share Tech Mono',monospace">${shown ? e.badgeText : '???'}</div>`;
+        }).join('')}
+      </div>
+    </div>
+  `, ep);
+}
+
+// ══════════════════════════════════════════════════════════════
 // VP SCREEN 3: SPORTS (one screen for all 4 + tiebreaker)
 // ══════════════════════════════════════════════════════════════
 export function rpBuildSportsMarathonSports(ep) {
@@ -1402,26 +1529,6 @@ export function rpBuildSportsMarathonSports(ep) {
   const steps = [];
 
   for (let si = 0; si < sm.sports.length; si++) {
-    // Halftime break after sport 2
-    if (si === 2 && sm.halftimeEvents?.length) {
-      let htHtml = `<div class="sm-ev sm-fight-drama" style="border-left-color:var(--sport-gold);padding:16px">
-        <div style="flex:1">
-        <div class="sm-ev-badge gold" style="font-size:12px;padding:4px 14px;margin-bottom:10px">⏱️ HALFTIME</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:10px;font-style:italic">The teams regroup. Tensions rise. Bonds form. The second half awaits.</div>`;
-      for (const evt of sm.halftimeEvents) {
-        const badgeColor = evt.badgeClass === 'red' ? 'var(--sport-red)' : evt.badgeClass === 'green' ? 'var(--sport-green)' : 'var(--sport-gold)';
-        htHtml += `<div style="padding:6px 8px;margin-bottom:4px;background:rgba(0,0,0,0.12);border-radius:5px;border-left:3px dashed ${badgeColor}">
-          <div style="font-size:8px;font-family:'Share Tech Mono',monospace;letter-spacing:2px;color:${badgeColor};margin-bottom:3px">${evt.badgeText}</div>
-          <div style="display:flex;align-items:flex-start;gap:8px">
-            <div style="display:flex;gap:3px;flex-shrink:0">${(evt.players || []).map(n => _smPortrait(n, 24)).join('')}</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.5">${evt.text}</div>
-          </div>
-        </div>`;
-      }
-      htHtml += `</div></div>`;
-      steps.push({ html: htHtml });
-    }
-
     const sport = sm.sports[si];
     const sportCss = sport.sportKey === 'boxing' ? 'sm-boxing' : sport.sportKey === 'badminton' ? 'sm-badminton' : sport.sportKey === 'wrestling' ? 'sm-wrestling' : 'sm-slamdunk';
 

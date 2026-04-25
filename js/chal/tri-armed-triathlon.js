@@ -732,7 +732,7 @@ function _runIdolHaul(triState, activePlayers, timeline, ep, chowdownWinnerId) {
   activePairs.forEach(pair => {
     const [a, b] = pair.members;
     if (romanticCompat(a, b) > 0) _challengeRomanceSpark(a, b, ep);
-    _checkShowmanceChalMoment(a, b, ep);
+    _checkShowmanceChalMoment(ep, 'idolHaul', null, null, 'challenge', [{ members: [a, b] }]);
   });
 
   const winner = activePairs.reduce((best, p) => p.idolTime < best.idolTime ? p : best, activePairs[0]);

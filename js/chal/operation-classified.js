@@ -116,12 +116,14 @@ const WIRETAP_TEXT = {
     (p, pr) => `${p} finds a blind spot in the surveillance. Files it away. That'll come in handy.`,
   ],
   allianceAccepted: [
-    (pitcher, targets) => `WIRETAP: ${pitcher} uses the camera blackout to pitch ${targets.join(' and ')}. The room has been cold, but the offer lands. A quiet bloc forms.`,
-    (pitcher, targets) => `${pitcher} corners ${targets.join(' and ')} during the static. "We vote together from here." Nods all around.`,
+    (pitcher, targets) => `WIRETAP: ${pitcher} uses the camera blackout to approach ${targets.join(' and ')}. "Can I count on you two?" Quiet nods. A bond forms in the dark.`,
+    (pitcher, targets) => `${pitcher} corners ${targets.join(' and ')} during the static. "I need people I can trust." They shake on it. Not an alliance — but a promise.`,
+    (pitcher, targets) => `${pitcher} has been on the outs. But ${targets.join(' and ')} listen this time. "We've got your back." Something shifted.`,
   ],
   allianceFailed: [
-    (pitcher, targets) => `WIRETAP: ${pitcher} tries to turn being shunned into leverage. ${targets.join(' and ')} listen but don't commit. Not yet.`,
-    (pitcher, targets) => `${pitcher}'s pitch falls flat. ${targets[0]} looks at ${targets[1] || 'the floor'}. "We'll think about it." Cold.`,
+    (pitcher, targets) => `WIRETAP: ${pitcher} tries to turn being shunned into leverage. ${targets.join(' and ')} listen but walk away. No deal.`,
+    (pitcher, targets) => `${pitcher}'s pitch falls flat. ${targets[0]} looks at ${targets[1] || 'the floor'}. "We'll think about it." Translation: no.`,
+    (pitcher, targets) => `"I know nobody trusts me, but—" ${pitcher} didn't finish. ${targets.join(' and ')} were already gone.`,
   ],
   blackmailFoiled: [
     (bm, target, exposer) => `BLACKMAIL FOILED: ${bm} corners ${target} with dirt from the mission feed. ${exposer} catches the recording and flips it back. The leverage burns in public.`,
@@ -215,6 +217,72 @@ const DRAMA_EVENTS = [
         `${p}: "I'm trusting my gut from here. My brain gave up three phases ago."`,
       ];
       return { text: pick(texts), players: [p], badgeText: 'CONFESSIONAL', badgeClass: 'amber' };
+    },
+  },
+  {
+    id: 'blameGame',
+    check(all) { return all.length >= 2; },
+    apply(all, ep) {
+      const blamer = pick(all);
+      const blamed = pick(all.filter(n => n !== blamer));
+      addBond(blamer, blamed, -0.4);
+      const texts = [
+        `"You tripped the alarm back there." ${blamer} jabbed a finger at ${blamed}. "That's on YOU."`,
+        `${blamer} was furious. "${blamed} almost got us ALL caught. I'm not going down because of someone else's mistake."`,
+        `"If we lose this, I know who to blame." ${blamer} glared at ${blamed}. The tension was suffocating.`,
+      ];
+      return { text: pick(texts), players: [blamer, blamed], badgeText: 'BLAME GAME', badgeClass: 'red' };
+    },
+  },
+  {
+    id: 'sabotageAccuse',
+    check(all) { return all.some(n => VILLAINS.includes(arch(n))); },
+    apply(all, ep) {
+      const accuser = pick(all.filter(n => pStats(n).intuition >= 5));
+      if (!accuser) return null;
+      const suspect = pick(all.filter(n => n !== accuser && VILLAINS.includes(arch(n))));
+      if (!suspect) return null;
+      addBond(accuser, suspect, -0.3);
+      addBond(suspect, accuser, -0.3);
+      const texts = [
+        `${accuser} pulled ${suspect} aside. "I saw you near that control panel. You're sabotaging us." ${suspect}: "Prove it."`,
+        `"Something's off about ${suspect}." ${accuser} said it loud enough for everyone to hear. The paranoia spread.`,
+      ];
+      return { text: pick(texts), players: [accuser, suspect], badgeText: 'ACCUSATION', badgeClass: 'red' };
+    },
+  },
+  {
+    id: 'betrayalWhisper',
+    check(all) { return all.length >= 3; },
+    apply(all, ep) {
+      const plotter = pick(all.filter(n => pStats(n).strategic >= 5));
+      if (!plotter) return null;
+      const target = pick(all.filter(n => n !== plotter && getBond(plotter, n) < 0));
+      if (!target) return null;
+      const recruit = pick(all.filter(n => n !== plotter && n !== target));
+      if (!recruit) return null;
+      addBond(plotter, recruit, 0.2);
+      addBond(target, plotter, -0.2);
+      const texts = [
+        `${plotter} whispered to ${recruit}: "After this, we vote ${target}. You in?" A glance. A nod. Done.`,
+        `${plotter} leaned into ${recruit} during the break. "If we survive this, ${target} goes home." Seeds planted.`,
+      ];
+      return { text: pick(texts), players: [plotter, recruit, target], badgeText: 'PLOTTING', badgeClass: 'red' };
+    },
+  },
+  {
+    id: 'panicMeltdown',
+    check(all) { return all.some(n => pStats(n).temperament <= 3); },
+    apply(all, ep) {
+      const panicker = pick(all.filter(n => pStats(n).temperament <= 3));
+      if (!panicker) return null;
+      popDelta(panicker, -1);
+      const pr = pronouns(panicker);
+      const texts = [
+        `${panicker} completely lost it. "I CAN'T DO THIS ANYMORE!" ${pr.Sub} kicked the wall. Then immediately apologized to the wall.`,
+        `${panicker} was hyperventilating between phases. "Lasers? Bombs? What's NEXT?!" ${host()} smiled. That wasn't reassuring.`,
+      ];
+      return { text: pick(texts), players: [panicker], badgeText: 'MELTDOWN', badgeClass: 'red' };
     },
   },
 ];
@@ -654,7 +722,7 @@ function _simulateWiretap1(active, state, timeline, ep) {
       pool.forEach(p => addBond(pitcher, p, 0.5));
       state.players[pitcher].total += 2;
       popDelta(pitcher, 1);
-      ep.campEvents[campKey].post.push({ text: pick(WIRETAP_TEXT.allianceAccepted)(pitcher, pool), players: [pitcher, ...pool], badgeText: 'SPY ALLIANCE', badgeClass: 'green', tag: 'drama' });
+      ep.campEvents[campKey].post.push({ text: pick(WIRETAP_TEXT.allianceAccepted)(pitcher, pool), players: [pitcher, ...pool], badgeText: 'TRUST EARNED', badgeClass: 'green', tag: 'drama' });
     } else {
       pool.forEach(p => addBond(pitcher, p, -0.2));
       ep.campEvents[campKey].post.push({ text: pick(WIRETAP_TEXT.allianceFailed)(pitcher, pool), players: [pitcher, ...pool], badgeText: 'FAILED PITCH', badgeClass: 'red', tag: 'drama' });
@@ -1334,7 +1402,7 @@ function _renderWiretapScreen(ep, timelineKey, stateKeySuffix, btnLabel) {
     const visible = i <= state.idx;
     const ppl = (ev.players || [ev.player]).filter(Boolean);
     const isDrama = ev.badgeText && !['intel', 'alliance', 'alliance-fail', 'blackmail', 'blackmail-foiled'].includes(ev.type);
-    const typeLabel = ev.type === 'intel' ? 'INTEL INTERCEPTED' : ev.type === 'alliance' ? 'ALLIANCE FORMED' : ev.type === 'alliance-fail' ? 'PITCH REJECTED' : ev.type === 'blackmail' ? 'BLACKMAIL DETECTED' : ev.type === 'blackmail-foiled' ? 'BLACKMAIL FOILED' : isDrama ? (ev.badgeText || 'INTERCEPT') : 'TRANSMISSION';
+    const typeLabel = ev.type === 'intel' ? 'INTEL INTERCEPTED' : ev.type === 'alliance' ? 'BOND FORMED' : ev.type === 'alliance-fail' ? 'PITCH REJECTED' : ev.type === 'blackmail' ? 'BLACKMAIL DETECTED' : ev.type === 'blackmail-foiled' ? 'BLACKMAIL FOILED' : isDrama ? (ev.badgeText || 'INTERCEPT') : 'TRANSMISSION';
     const freq = `${(137.2 + i * 0.8).toFixed(1)} MHz`;
     html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
       <div class="oc-wire-card">

@@ -393,9 +393,9 @@ function _simulateLaser(active, state, timeline, ep) {
       const s = pStats(name);
       const pr = pronouns(name);
       const scanMod = state.players[name].scan?.result === 'flagged' ? -0.05 : state.players[name].scan?.result === 'clear' ? 0.03 : 0;
-      const stepDifficulty = positions[name] * 0.015; // harder as you get deeper
+      const stepDifficulty = positions[name] * 0.04; // much harder as you get deeper
       const check = s.physical * 0.03 + s.intuition * 0.02 + s.mental * 0.02 + scanMod - stepDifficulty + noise(0.35);
-      const passed = check > 0.22;
+      const passed = check > 0.30;
 
       if (passed) {
         positions[name]++;
@@ -1109,55 +1109,53 @@ export function rpBuildOperationClassifiedLaser(ep) {
         <div style="text-align:center;padding:8px 0;font:700 10px/1 'Share Tech Mono',monospace;letter-spacing:3px;color:rgba(255,45,45,0.4)">${ev.text}</div>
       </div>`;
     } else if (ev.type === 'advance') {
-      const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
       const stepPct = Math.round((ev.step / LASER_STEPS) * 100);
       html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
-        <div class="oc-laser-card">
-          <div class="oc-laser-feed">
-            <div class="oc-laser-rec">REC</div>
-            <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${ev.player}">
-          </div>
-          <div class="oc-laser-data">
-            <div class="oc-laser-header">STEP ${ev.step}/${LASER_STEPS} — ${LASER_STEP_NAMES[ev.step - 1]}</div>
-            <div class="oc-laser-name">${ev.player}</div>
-            <div style="height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden;margin:4px 0">
-              <div style="height:100%;width:${stepPct}%;background:var(--oc-green);border-radius:3px;transition:width 0.3s"></div>
+        <div class="oc-event" data-tone="good" style="padding:8px 12px">
+          <div style="display:flex;align-items:center;gap:8px;width:100%">
+            ${portrait(ev.player, 28)}
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                <span style="font:700 11px/1 'Share Tech Mono',monospace;color:#fff">${ev.player}</span>
+                <span style="font:700 9px/1 'Share Tech Mono',monospace;color:var(--oc-green);letter-spacing:1px">STEP ${ev.step}/${LASER_STEPS}</span>
+              </div>
+              <div style="height:5px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden;margin-bottom:4px">
+                <div style="height:100%;width:${stepPct}%;background:var(--oc-green);border-radius:3px"></div>
+              </div>
+              <div class="oc-copy" style="font-size:11px">${ev.text}</div>
             </div>
-            <div class="oc-laser-result ghost">ADVANCED ✓</div>
-            <div class="oc-laser-narrative">${ev.text}</div>
           </div>
         </div>
       </div>`;
     } else if (ev.type === 'reset') {
-      const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
       html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
-        <div class="oc-laser-card" style="border-color:rgba(255,45,45,0.3)">
-          <div class="oc-laser-feed">
-            <div class="oc-laser-rec">REC</div>
-            <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${ev.player}">
-          </div>
-          <div class="oc-laser-data">
-            <div class="oc-laser-header" style="color:rgba(255,45,45,0.5)">🚨 BEAM CONTACT — RESET</div>
-            <div class="oc-laser-name">${ev.player}</div>
-            <div style="font:700 9px/1 'Share Tech Mono',monospace;color:var(--oc-red);margin:4px 0">WAS AT STEP ${ev.wasAt} → BACK TO 0</div>
-            <div class="oc-laser-result hit">ALARM — RESTART</div>
-            <div class="oc-laser-narrative">${ev.text}</div>
+        <div class="oc-event" data-tone="bad" style="padding:8px 12px;animation:oc-alarm-strobe 0.4s ease-out 2">
+          <div style="display:flex;align-items:center;gap:8px;width:100%">
+            ${portrait(ev.player, 28)}
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                <span style="font:700 11px/1 'Share Tech Mono',monospace;color:#fff">${ev.player}</span>
+                <span style="font:700 9px/1 'Share Tech Mono',monospace;color:var(--oc-red);letter-spacing:1px">🚨 STEP ${ev.wasAt} → 0</span>
+              </div>
+              <div style="height:5px;background:rgba(255,45,45,0.15);border-radius:3px;overflow:hidden;margin-bottom:4px">
+                <div style="height:100%;width:0%;background:var(--oc-red);border-radius:3px"></div>
+              </div>
+              <div class="oc-copy" style="font-size:11px">${ev.text}</div>
+            </div>
           </div>
         </div>
       </div>`;
     } else if (ev.type === 'bag') {
-      const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
       html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
-        <div class="oc-laser-card" style="border-color:rgba(34,197,94,0.3)">
-          <div class="oc-laser-feed" style="background:#040a06">
-            <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${ev.player}" style="padding:6px">
-          </div>
-          <div class="oc-laser-data">
-            <div class="oc-laser-header" style="color:rgba(34,197,94,0.5)">💼 BAG SECURED</div>
-            <div class="oc-laser-name">${ev.player}</div>
-            <div class="oc-laser-result ghost">FIRST TO THE BAG — WIRE CUTTERS ACQUIRED</div>
-            <div class="oc-laser-narrative">${ev.text}</div>
-            <div style="font:700 9px/1 'Share Tech Mono',monospace;color:var(--oc-green);margin-top:4px;letter-spacing:1px">+ADVANTAGE: DEFUSAL BONUS</div>
+        <div class="oc-event" data-tone="good" style="padding:12px;border:2px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.06)">
+          <div style="display:flex;align-items:center;gap:10px;width:100%">
+            ${portrait(ev.player, 36)}
+            <div style="flex:1">
+              <div style="font:700 9px/1 'Share Tech Mono',monospace;color:var(--oc-green);letter-spacing:2px;margin-bottom:4px">💼 BAG SECURED</div>
+              <div style="font:700 14px/1 'Share Tech Mono',monospace;color:#fff">${ev.player}</div>
+              <div class="oc-copy" style="margin-top:4px">${ev.text}</div>
+              <div style="font:700 9px/1 'Share Tech Mono',monospace;color:var(--oc-green);margin-top:6px;letter-spacing:1px">+ADVANTAGE: DEFUSAL BONUS</div>
+            </div>
           </div>
         </div>
       </div>`;

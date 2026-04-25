@@ -138,8 +138,8 @@ const BATTLE_EVENTS = {
     ],
     rivalry: [
       (p, rival) => `${p} locked eyes with ${rival}. "YOU. You're going DOWN."`,
-      (p, rival) => `${p}'s jaw tightened when ${pr.sub} saw ${rival}. This was personal.`,
-      (p, rival) => `${p} pointed ${pr.posAdj} bone directly at ${rival}. No words needed.`,
+      (p, rival) => `${p}'s jaw tightened the moment ${rival}'s name was called. This was personal.`,
+      (p, rival) => `${p} pointed a bone directly at ${rival}. No words needed.`,
       (p, rival) => `"Finally." ${p} stared at ${rival} with pure intensity.`,
     ],
   },

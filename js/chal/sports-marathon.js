@@ -1870,7 +1870,7 @@ function _smBuildSportsSidebar(sm, sportsRevealed) {
     const shown = i < sportsRevealed;
     sb += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;opacity:${shown ? 1 : 0.3}">
       <span style="font-size:14px">${sport.label.icon}</span>
-      ${shown ? `${_smSidePortrait(sport.winner.name, 16)} <span style="color:var(--sport-green)">${sport.winner.name}</span>` : `<span style="color:rgba(255,255,255,0.2)">???</span>`}
+      ${shown ? `${_smSidePortrait(sport.winner.name, 16)} <span style="color:var(--sport-green)">${sport.winner.name}</span> <span style="font-size:8px;color:rgba(255,255,255,0.25)">${sport.winner.tribe}</span>` : `<span style="color:rgba(255,255,255,0.2)">???</span>`}
     </div>`;
   }
   if (sm.cheerleader) {

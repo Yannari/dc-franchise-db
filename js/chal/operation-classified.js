@@ -30,8 +30,8 @@ function portrait(name, size = 42) {
 
 // ── RESULT TIERS (rescaled for 0.02-0.04 coefficients) ──
 function scanResult(score) {
-  if (score > 0.35) return 'clear';
-  if (score > 0.20) return 'watched';
+  if (score > 0.38) return 'clear';
+  if (score > 0.28) return 'watched';
   return 'flagged';
 }
 function laserResult(score) {
@@ -489,6 +489,7 @@ function css() {
   /* Scan pulse */
   .oc-scan-pulse{animation:oc-scan-flash 0.6s ease-out}
   @keyframes oc-scan-flash{0%{box-shadow:inset 0 0 20px rgba(255,45,45,0.2)}100%{box-shadow:none}}
+  @keyframes oc-scan-ring{0%{transform:scale(1.3);opacity:0}30%{opacity:1}100%{transform:scale(1);opacity:1}}
 
   .oc-controls{text-align:center;margin-top:14px;position:relative;z-index:5}
   .oc-btn{border:1px solid rgba(255,45,45,.4);background:linear-gradient(180deg,#1a0508,#0d0304);color:#fff;border-radius:4px;
@@ -510,7 +511,7 @@ function css() {
   .oc-drama{border-left:3px dashed rgba(245,158,11,.2);background:rgba(245,158,11,.02);font-style:italic}
 
   @media(prefers-reduced-motion:reduce){
-    .oc-shell::after,.oc-bomb-timer,.oc-scan-pulse{animation:none!important}
+    .oc-shell::after,.oc-bomb-timer,.oc-scan-pulse,[style*="oc-scan-ring"]{animation:none!important}
   }
   @media(max-width:760px){.oc-layout{flex-direction:column}.oc-sidebar{width:100%}.oc-title{font-size:22px}}
   </style>`;
@@ -592,7 +593,42 @@ export function rpBuildOperationClassifiedTitleCard(ep) {
 
 export function rpBuildOperationClassifiedScan(ep) {
   const events = ep.operationClassified.timeline.scan || [];
-  return shell(ep, renderSteps(ep, 'scan', events, 'Scan Next'), 'scan', events);
+  const stateKey = `oc-${ep.num}-scan`;
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };
+  const state = window._tvState[stateKey];
+
+  let html = '';
+  events.forEach((ev, i) => {
+    const visible = i <= state.idx;
+    const resultColor = ev.type === 'clear' ? 'var(--oc-green)' : ev.type === 'watched' ? 'var(--oc-amber)' : 'var(--oc-red)';
+    const resultLabel = ev.type === 'clear' ? 'CLEARANCE GRANTED' : ev.type === 'watched' ? 'UNDER SURVEILLANCE' : 'INTRUDER FLAGGED';
+    const resultIcon = ev.type === 'clear' ? '✅' : ev.type === 'watched' ? '⚠️' : '🚨';
+    html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
+      <div class="oc-event oc-scan-pulse" data-tone="${eventTone(ev.type)}" style="padding:14px">
+        <div style="display:flex;align-items:center;gap:14px;width:100%">
+          <div style="position:relative">
+            ${portrait(ev.player, 52)}
+            <div style="position:absolute;inset:-3px;border:2px solid ${resultColor};border-radius:50%;animation:oc-scan-ring 1s ease-out"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:2px;margin-bottom:4px">SCANNING FACE DATA...</div>
+            <div style="font-size:13px;color:#fff;font-weight:600;margin-bottom:4px">${ev.player}</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:${resultColor};padding:3px 8px;border:1px solid ${resultColor};border-radius:3px;display:inline-block;background:rgba(0,0,0,0.3)">${resultIcon} ${resultLabel}</div>
+            <div class="oc-copy" style="margin-top:6px">${ev.text}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  const done = state.idx >= events.length - 1;
+  html += `<div id="oc-controls-${stateKey}" class="oc-controls" ${done ? 'style="display:none"' : ''}>
+    <button class="oc-btn" onclick="operationClassifiedRevealNext('${stateKey}',${events.length},'scan')">Scan Next</button>
+    <button class="oc-btn secondary" onclick="operationClassifiedRevealAll('${stateKey}',${events.length},'scan')">Reveal All</button>
+  </div>`;
+
+  return shell(ep, html, 'scan', events);
 }
 export function rpBuildOperationClassifiedLaser(ep) {
   const events = ep.operationClassified.timeline.laser || [];

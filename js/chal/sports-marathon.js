@@ -532,20 +532,36 @@ function _simulateSeedingBreak(ep, tribeMembers, result) {
     }
   }
 
-  // Bench drama
+  // Bench drama — ranked too low in obstacle course to compete
   for (const t of tribeMembers) {
     const benched = result.benchDecisions[t.name]?.benched || [];
     for (const name of benched) {
       const pr = pronouns(name);
-      const wantedToFight = pStats(name).boldness >= 5;
+      const s = pStats(name);
+      const wantedToFight = s.boldness >= 5;
+      const decider = t.members.filter(n => !benched.includes(n)).sort((a, b) => pStats(b).strategic - pStats(a).strategic)[0];
+
       if (wantedToFight) {
-        breakEvents.push({ type: 'benchAngry', player: name, tribe: t.name, badgeText: 'BENCHED', badgeClass: 'red',
-          text: `${name} ranked too low to compete. ${pr.Sub} kicked the bench. "This is RIGGED!"` });
-        const teammate = t.members.find(n => n !== name);
-        if (teammate) addBond(name, teammate, -0.2);
+        const angryTexts = [
+          `${name} ranked too low to compete. ${pr.Sub} kicked the bench. "This is RIGGED!"`,
+          `"I'm BETTER than my ranking!" ${name} was furious about being benched. ${pr.Sub} glared at the obstacle course.`,
+          `${name} couldn't believe it. "I slipped in the MUD. ONE bad obstacle and I'm out?!"`,
+        ];
+        const evt = { type: 'benchAngry', player: name, tribe: t.name, players: [name, ...(decider ? [decider] : [])],
+          badgeText: 'BENCH — ANGRY', badgeClass: 'red', text: pick(angryTexts) };
+        breakEvents.push(evt);
+        ep.campEvents[campKey].post.push({ ...evt, tag: 'drama' });
+        if (decider) addBond(name, decider, -0.3);
       } else {
-        breakEvents.push({ type: 'benchRelief', player: name, tribe: t.name, badgeText: 'BENCHED', badgeClass: 'amber',
-          text: `${name} didn't make the cut. ${pr.Sub} shrugged. "More watching, less pain. Fine by me."` });
+        const reliefTexts = [
+          `${name} didn't make the cut. ${pr.Sub} shrugged. "More watching, less pain. Fine by me."`,
+          `${name} saw ${pr.posAdj} ranking and exhaled. "Honestly? I'm relieved. Those sports look PAINFUL."`,
+          `"Guess I'll be the cheerleader," ${name} said, grabbing pom-poms nobody asked for.`,
+        ];
+        const evt = { type: 'benchRelief', player: name, tribe: t.name, players: [name],
+          badgeText: 'BENCH — RELIEVED', badgeClass: 'green', text: pick(reliefTexts) };
+        breakEvents.push(evt);
+        ep.campEvents[campKey].post.push({ ...evt, tag: 'drama' });
       }
     }
   }
@@ -997,13 +1013,93 @@ function _simulateSportMatch(ep, sportKey, fighters, result) {
   const ranked = fighters.map(f => ({ ...f, score: scores[f.name] })).sort((a, b) => b.score - a.score);
   const winner = ranked[0];
   const loser = ranked[ranked.length - 1];
-
-  // Climax — winner finishes the loser
   const finishKey = sportKey === 'boxing' ? 'knockout' : sportKey === 'badminton' ? 'winner' : sportKey === 'wrestling' ? 'pin' : 'showboat';
-  if (sportTexts[finishKey]) {
-    events.push({ phase: 'climax', player: winner.name, tribe: winner.tribe, icon: '👑',
-      text: pick(sportTexts[finishKey])(winner.name, loser.name) });
+
+  const elimTexts = {
+    boxing: [
+      (a, b) => `${a} caught ${b} with a slow-motion hook to the jaw. ${b} crumpled to the mat!`,
+      (a, b) => `${b} took too many hits. The ref stopped the fight. ${b} is OUT!`,
+      (a, b) => `${a}'s slow-mo uppercut connected clean. ${b} went down in ultra slow-motion!`,
+    ],
+    badminton: [
+      (a, b) => `${b} couldn't return a thing. Game over for ${b} — eliminated!`,
+      (a, b) => `${a}'s smash was unreturnable. ${b} threw the racket down. Done.`,
+      (a, b) => `${b} whiffed the final return. ${a} pumped a fist. ${b} is OUT!`,
+    ],
+    wrestling: [
+      (a, b) => `${a} flipped ${b} out of the ball pit! ${b} landed on the mat — ELIMINATED!`,
+      (a, b) => `${b} got buried under the balls. Couldn't escape ${a}'s hold. OUT!`,
+      (a, b) => `${a} locked ${b} in a headlock and dragged them down. ${b} tapped out!`,
+    ],
+    slamDunk: [
+      (a, b) => `${b}'s dunk attempt was embarrassing. ${a}'s style points buried ${b}. Eliminated!`,
+      (a, b) => `${b} couldn't match ${a}'s flair. The judges shook their heads. ${b} is OUT!`,
+      (a, b) => `${a}'s dunk was so good it made ${b}'s look amateur. ${b} is done.`,
+    ],
+  };
+  const defeatReactions = [
+    (p, pr) => `${p} slumped on the bench. "I had that. I HAD that."`,
+    (p, pr) => `${p} kicked the equipment on the way out. Not taking it well.`,
+    (p, pr) => `${p} shook ${pr.posAdj} head. "Next time." But there was no next time.`,
+    (p, pr) => `${p} accepted the loss. "Good game." Barely concealed frustration.`,
+  ];
+
+  if (ranked.length > 2) {
+    // 3+ fighters: staged elimination like bone battle
+    const firstOut = ranked[ranked.length - 1];
+    const pr_first = pronouns(firstOut.name);
+    const knocker1 = ranked[Math.floor(Math.random() * (ranked.length - 1))];
+
+    // First elimination
+    events.push({ phase: 'elimination', player: firstOut.name, tribe: firstOut.tribe, icon: '💥',
+      text: pick(elimTexts[sportKey])(knocker1.name, firstOut.name) });
+    events.push({ phase: 'reaction', player: firstOut.name, tribe: firstOut.tribe, icon: '😤',
+      text: pick(defeatReactions)(firstOut.name, pr_first) });
+
+    // Remaining two — final showdown with real back-and-forth
+    const r0 = ranked[0], r1 = ranked[1];
+    const pr_r0 = pronouns(r0.name), pr_r1 = pronouns(r1.name);
+    events.push({ phase: 'roundLabel', icon: '⚡', text: '— FINAL SHOWDOWN —' });
+
+    events.push({ phase: 'action', player: r0.name, tribe: r0.tribe, icon: '🔥',
+      text: pick(sportTexts.good)(r0.name, pr_r0) });
+    events.push({ phase: 'action', player: r1.name, tribe: r1.tribe, icon: '🔥',
+      text: pick(sportTexts.good)(r1.name, pr_r1) });
+
+    // Possible trash talk in the showdown (~40%)
+    if (Math.random() < 0.4) {
+      const talker = pick([r0, r1]);
+      const target = talker === r0 ? r1 : r0;
+      events.push({ phase: 'trash', player: talker.name, tribe: talker.tribe, icon: '🗯️',
+        text: pick(SPORT_EVENTS.trashTalk)(talker.name, target.name) });
+    }
+
+    // One more exchange
+    events.push({ phase: 'action', player: r0.name, tribe: r0.tribe, icon: '🔥',
+      text: pick(sportTexts.good)(r0.name, pr_r0) });
+
+    // Second elimination
+    events.push({ phase: 'elimination', player: r1.name, tribe: r1.tribe, icon: '💥',
+      text: pick(elimTexts[sportKey])(winner.name, r1.name) });
+    events.push({ phase: 'reaction', player: r1.name, tribe: r1.tribe, icon: '😤',
+      text: pick(defeatReactions)(r1.name, pr_r1) });
+
+    // Winner celebration
+    if (sportTexts[finishKey]) {
+      events.push({ phase: 'climax', player: winner.name, tribe: winner.tribe, icon: '👑',
+        text: pick(sportTexts[finishKey])(winner.name, r1.name) });
+    }
+  } else {
+    // 1v1 — direct finish
+    if (sportTexts[finishKey]) {
+      events.push({ phase: 'climax', player: winner.name, tribe: winner.tribe, icon: '👑',
+        text: pick(sportTexts[finishKey])(winner.name, loser.name) });
+    }
+    const pr_l = pronouns(loser.name);
+    events.push({ phase: 'reaction', player: loser.name, tribe: loser.tribe, icon: '😤',
+      text: pick(defeatReactions)(loser.name, pr_l) });
   }
+
   ep.chalMemberScores[winner.name] = (ep.chalMemberScores[winner.name] || 0) + 3;
 
   return { fighters, events, rankings: ranked, winner, loser: ranked[ranked.length - 1] };
@@ -1783,6 +1879,22 @@ function _smBuildSportsSidebar(sm, sportsRevealed) {
       <span style="font-size:14px">📣</span>
       ${shown ? `<span style="color:var(--sport-green)">${sm.cheerleader.winner}</span>` : `<span style="color:rgba(255,255,255,0.2)">???</span>`}
     </div>`;
+  }
+
+  // Benched players
+  const hasBenched = Object.values(sm.benchDecisions).some(d => d.benched?.length);
+  if (hasBenched) {
+    sb += `<div class="sm-side-sec">BENCHED</div>`;
+    for (const [tribe, decision] of Object.entries(sm.benchDecisions)) {
+      if (!decision.benched?.length) continue;
+      for (const name of decision.benched) {
+        sb += `<div style="display:flex;align-items:center;gap:5px;padding:3px 5px;margin-bottom:2px;background:rgba(0,0,0,0.1);border-radius:3px;border:1px dashed rgba(255,255,255,0.06);opacity:0.45">
+          ${_smSidePortrait(name, 18)}
+          <span style="font-size:9px;color:rgba(255,255,255,0.4)">${name.split(' ')[0]}</span>
+          <span style="font-size:7px;font-family:'Share Tech Mono',monospace;color:rgba(255,255,255,0.15);letter-spacing:1px">${tribe}</span>
+        </div>`;
+      }
+    }
   }
 
   return sb;

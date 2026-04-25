@@ -621,23 +621,34 @@ function css() {
     --comic-black:#111;--comic-white:#fef9ef;--comic-green:#16a34a;
     --comic-pink:#ec4899;--comic-purple:#9333ea;
     font-family:'Inter',sans-serif;color:var(--comic-black);
-    background:var(--comic-white);
-    background-image:radial-gradient(circle,rgba(0,0,0,0.04) 1px,transparent 1px);
+    background:linear-gradient(180deg,#1a1a3e 0%,#2a2a5e 15%,#e8f4f8 16%,#f0f7fa 100%);
+    background-image:radial-gradient(circle,rgba(0,0,80,0.04) 1px,transparent 1px);
     background-size:4px 4px;
     padding:0;max-width:1100px;margin:0 auto;position:relative;min-height:400px;
     overflow:clip;border:4px solid var(--comic-black);box-shadow:6px 6px 0 rgba(0,0,0,0.15);
   }
 
+  /* Radial speed burst behind content */
+  .sh-shell::before{content:'';position:absolute;top:0;left:0;right:0;height:200px;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(ellipse at 50% 100%,rgba(59,130,246,0.08) 0%,transparent 50%),
+      repeating-conic-gradient(from 0deg at 50% 100%,rgba(59,130,246,0.04) 0deg 5deg,transparent 5deg 10deg)}
+  /* Halftone dot overlay */
+  .sh-shell::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+    background-image:radial-gradient(circle,rgba(30,30,80,0.035) 1px,transparent 1px);
+    background-size:5px 5px}
+
   /* ═══ LAYOUT ═══ */
   .sh-layout{display:flex;gap:0;position:relative;z-index:5;min-height:300px}
   .sh-feed{flex:1;padding:16px 20px;min-width:0}
-  .sh-sidebar{width:250px;flex-shrink:0;padding:14px;background:#fff;
+  .sh-sidebar{width:250px;flex-shrink:0;padding:14px;background:linear-gradient(180deg,#fffbf0,#fff8e8);
     border-left:4px solid var(--comic-black);position:sticky;top:0;align-self:flex-start;max-height:80vh;overflow-y:auto}
 
   /* ═══ HUD ═══ */
   .sh-hud{display:flex;justify-content:center;gap:0;padding:10px 0;position:relative;z-index:5;
-    border-bottom:4px solid var(--comic-black);background:var(--comic-yellow);
-    background-image:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(0,0,0,0.03) 10px,rgba(0,0,0,0.03) 20px)}
+    border-bottom:4px solid var(--comic-black);
+    background:linear-gradient(90deg,var(--comic-red),var(--comic-yellow) 30%,var(--comic-yellow) 70%,var(--comic-red));
+    background-image:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(0,0,0,0.04) 10px,rgba(0,0,0,0.04) 20px)}
   .sh-hud-cell{flex:1;text-align:center;padding:4px 12px;border-right:3px solid rgba(0,0,0,0.12)}
   .sh-hud-cell:last-child{border-right:none}
   .sh-hud-val{font-family:'Bangers',cursive;font-size:24px;color:var(--comic-black)}
@@ -733,9 +744,14 @@ function css() {
     background:rgba(234,179,8,0.04)}
 
   /* ═══ COVER PAGE ═══ */
-  .sh-cover{position:relative;text-align:center;padding:40px 20px 30px;overflow:hidden}
-  .sh-cover::before{content:'';position:absolute;inset:0;
-    background:radial-gradient(ellipse at 50% 30%,rgba(234,179,8,0.15) 0%,transparent 60%);pointer-events:none}
+  .sh-cover{position:relative;text-align:center;padding:40px 20px 30px;overflow:hidden;
+    background:linear-gradient(180deg,#1a1a3e 0%,#2d2d6b 40%,#3b82f6 100%)}
+  .sh-cover::before{content:'';position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(ellipse at 50% 60%,rgba(234,179,8,0.2) 0%,transparent 50%),
+      repeating-conic-gradient(from 0deg at 50% 70%,rgba(255,255,255,0.03) 0deg 4deg,transparent 4deg 8deg)}
+  .sh-cover-title{color:var(--comic-yellow);text-shadow:4px 4px 0 var(--comic-red),8px 8px 0 rgba(0,0,0,0.3)}
+  .sh-cover-sub{color:rgba(255,255,255,0.5)}
   .sh-cover-title{font-family:'Bangers',cursive;font-size:56px;color:var(--comic-red);letter-spacing:6px;line-height:0.9;
     text-shadow:4px 4px 0 var(--comic-yellow),8px 8px 0 rgba(0,0,0,0.08);position:relative;z-index:2;
     -webkit-text-stroke:1px rgba(0,0,0,0.1)}
@@ -788,11 +804,11 @@ export function rpBuildSuperHeroldTitleCard(ep) {
 
   return _shShell(`
     <div class="sh-cover">
-      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:4px;color:rgba(0,0,0,0.3);margin-bottom:8px">TOTAL DRAMA PRESENTS</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:4px;color:rgba(255,255,255,0.4);margin-bottom:8px">TOTAL DRAMA PRESENTS</div>
       <div class="sh-cover-title">SUPER<br>HERO-LD</div>
       <div class="sh-cover-sub">A ${host().toUpperCase()} PRODUCTION</div>
-      <div class="sh-caption" style="margin-top:20px">COSTUME CONTEST · OBSTACLE COURSE · VILLAIN SABOTAGE</div>
-      <div style="margin-top:16px;font-size:12px;color:rgba(0,0,0,0.4);font-style:italic">"Every hero needs a costume. Every villain needs a cat."</div>
+      <div class="sh-caption" style="margin-top:20px;position:relative;z-index:2">COSTUME CONTEST · OBSTACLE COURSE · VILLAIN SABOTAGE</div>
+      <div style="margin-top:16px;font-size:12px;color:rgba(255,255,255,0.5);font-style:italic;position:relative;z-index:2">"Every hero needs a costume. Every villain needs a cat."</div>
       <div class="sh-cover-roster">${badges}</div>
     </div>
   `, ep);
@@ -815,7 +831,7 @@ export function rpBuildSuperHeroldCostume(ep) {
     const playerEvents = cc.events.filter(e => e.player === name);
     const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
 
-    let html = `<div class="sh-panel sh-panel-impact" style="border-color:${hero.color};border-width:4px;overflow:hidden">`;
+    let html = `<div class="sh-panel sh-panel-impact" style="border-color:${hero.color};border-width:4px;overflow:hidden;background:linear-gradient(180deg,${hero.color}0a 0%,#fff 40%)">`;
 
     // Entrance narration (Chris MC)
     const entranceEv = playerEvents.find(e => e.type === 'entrance');
@@ -825,7 +841,7 @@ export function rpBuildSuperHeroldCostume(ep) {
 
     // Hero card with costume
     html += `<div class="sh-hero-card" style="border:none;box-shadow:none;margin:0">
-      <div class="sh-hero-photo" style="background:linear-gradient(180deg,${hero.color}22,${hero.color}08)">
+      <div class="sh-hero-photo" style="background:linear-gradient(180deg,${hero.color}40,${hero.color}15)">
         <div class="sh-hero-glow" style="background:radial-gradient(circle at 50% 30%,${hero.glow},transparent 60%)"></div>
         <div class="sh-hero-cape" style="background:${hero.color}"></div>
         <div class="sh-hero-mask" style="color:${hero.color}"></div>
@@ -846,7 +862,7 @@ export function rpBuildSuperHeroldCostume(ep) {
     }
 
     // Catchphrase in speech bubble
-    html += `<div class="sh-bubble" style="font-size:15px">"${hero.catchphrase}"</div>`;
+    html += `<div class="sh-bubble" style="font-size:15px;border-color:${hero.color};color:var(--comic-black)">"${hero.catchphrase}"</div>`;
 
     // Sabotage, demo, crowd reaction, judge
     for (const ev of playerEvents) {

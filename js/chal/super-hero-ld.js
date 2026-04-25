@@ -544,106 +544,154 @@ export function _textSuperHerold(ep, ln, sec) {
 // ══════════════════════════════════════════════════════════════
 function css() {
   return `<style>
-  @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Share+Tech+Mono&family=Inter:wght@400;600;700&display=swap');
-
   .sh-shell{
-    --comic-red:#ef4444;--comic-blue:#3b82f6;--comic-yellow:#eab308;
-    --comic-black:#1a1a1a;--comic-white:#fef9ef;--comic-green:#22c55e;
+    --comic-red:#dc2626;--comic-blue:#2563eb;--comic-yellow:#eab308;
+    --comic-black:#111;--comic-white:#fef9ef;--comic-green:#16a34a;
+    --comic-pink:#ec4899;--comic-purple:#9333ea;
     font-family:'Inter',sans-serif;color:var(--comic-black);
     background:var(--comic-white);
-    background-image:radial-gradient(circle,rgba(0,0,0,0.03) 1px,transparent 1px);
-    background-size:6px 6px;
+    background-image:radial-gradient(circle,rgba(0,0,0,0.04) 1px,transparent 1px);
+    background-size:4px 4px;
     padding:0;max-width:1100px;margin:0 auto;position:relative;min-height:400px;
-    overflow:clip;border:3px solid var(--comic-black);
+    overflow:clip;border:4px solid var(--comic-black);box-shadow:6px 6px 0 rgba(0,0,0,0.15);
   }
 
-  /* Layout */
+  /* ═══ LAYOUT ═══ */
   .sh-layout{display:flex;gap:0;position:relative;z-index:5;min-height:300px}
-  .sh-feed{flex:1;padding:14px 18px;min-width:0}
-  .sh-sidebar{width:260px;flex-shrink:0;padding:12px 14px;background:rgba(0,0,0,0.03);
-    border-left:3px solid var(--comic-black);position:sticky;top:0;align-self:flex-start;max-height:80vh;overflow-y:auto}
+  .sh-feed{flex:1;padding:16px 20px;min-width:0}
+  .sh-sidebar{width:250px;flex-shrink:0;padding:14px;background:#fff;
+    border-left:4px solid var(--comic-black);position:sticky;top:0;align-self:flex-start;max-height:80vh;overflow-y:auto}
 
-  /* HUD */
+  /* ═══ HUD ═══ */
   .sh-hud{display:flex;justify-content:center;gap:0;padding:10px 0;position:relative;z-index:5;
-    border-bottom:3px solid var(--comic-black);background:var(--comic-yellow)}
-  .sh-hud-cell{flex:1;text-align:center;padding:4px 12px;border-right:2px solid rgba(0,0,0,0.15)}
+    border-bottom:4px solid var(--comic-black);background:var(--comic-yellow);
+    background-image:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(0,0,0,0.03) 10px,rgba(0,0,0,0.03) 20px)}
+  .sh-hud-cell{flex:1;text-align:center;padding:4px 12px;border-right:3px solid rgba(0,0,0,0.12)}
   .sh-hud-cell:last-child{border-right:none}
-  .sh-hud-val{font-family:'Bangers',cursive;font-size:22px;color:var(--comic-black)}
-  .sh-hud-lbl{font-size:9px;letter-spacing:2px;color:rgba(0,0,0,0.5);text-transform:uppercase;font-family:'Share Tech Mono',monospace}
+  .sh-hud-val{font-family:'Bangers',cursive;font-size:24px;color:var(--comic-black)}
+  .sh-hud-lbl{font-size:8px;letter-spacing:3px;color:rgba(0,0,0,0.5);text-transform:uppercase;font-family:'Share Tech Mono',monospace}
 
-  /* Comic panel */
-  .sh-panel{background:#fff;border:3px solid var(--comic-black);border-radius:2px;margin:8px 0;padding:12px;position:relative;
-    box-shadow:4px 4px 0 rgba(0,0,0,0.1)}
-  .sh-panel-action{transform:rotate(-0.5deg)}
-  .sh-panel-impact{animation:sh-panel-slam 0.4s cubic-bezier(0.22,1,0.36,1)}
-  @keyframes sh-panel-slam{0%{transform:scale(1.3) rotate(-2deg);opacity:0}50%{transform:scale(1.02) rotate(0.5deg)}100%{transform:scale(1) rotate(0)}}
+  /* ═══ COMIC PANEL ═══ */
+  .sh-panel{background:#fff;border:4px solid var(--comic-black);border-radius:3px;margin:10px 0;padding:14px;position:relative;
+    box-shadow:5px 5px 0 rgba(0,0,0,0.12)}
+  .sh-panel-impact{animation:sh-slam 0.5s cubic-bezier(0.22,1,0.36,1)}
+  @keyframes sh-slam{0%{transform:scale(1.4) rotate(-3deg);opacity:0}40%{transform:scale(1.03) rotate(1deg);opacity:1}70%{transform:scale(0.98) rotate(-0.5deg)}100%{transform:scale(1) rotate(0)}}
 
-  /* Speech bubble */
-  .sh-bubble{position:relative;background:#fff;border:2px solid var(--comic-black);border-radius:12px;padding:8px 12px;
-    margin:6px 0;font-size:12px;line-height:1.5}
-  .sh-bubble::after{content:'';position:absolute;bottom:-8px;left:20px;width:0;height:0;
-    border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--comic-black)}
-  .sh-bubble-inner::after{content:'';position:absolute;bottom:-6px;left:21px;width:0;height:0;
-    border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid #fff}
+  /* ═══ SPEECH BUBBLE ═══ */
+  .sh-bubble{position:relative;background:#fff;border:3px solid var(--comic-black);border-radius:18px;padding:10px 16px;
+    margin:8px 0;font-family:'Bangers',cursive;font-size:15px;letter-spacing:1px;line-height:1.4}
+  .sh-bubble::after{content:'';position:absolute;bottom:-12px;left:24px;width:0;height:0;
+    border-left:10px solid transparent;border-right:10px solid transparent;border-top:12px solid var(--comic-black)}
 
-  /* Caption box (narrator) */
-  .sh-caption{background:var(--comic-yellow);border:2px solid var(--comic-black);padding:6px 10px;
-    font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;margin:6px 0;display:inline-block}
+  /* ═══ CAPTION BOX ═══ */
+  .sh-caption{background:var(--comic-yellow);border:3px solid var(--comic-black);padding:8px 14px;
+    font-family:'Bangers',cursive;font-size:14px;letter-spacing:2px;display:inline-block;
+    box-shadow:3px 3px 0 rgba(0,0,0,0.1)}
 
-  /* Action words */
-  .sh-action-word{font-family:'Bangers',cursive;font-size:28px;letter-spacing:3px;text-transform:uppercase;
-    display:inline-block;padding:4px 12px;transform:rotate(-3deg);
-    text-shadow:2px 2px 0 rgba(0,0,0,0.15);animation:sh-kapow 0.5s cubic-bezier(0.22,1,0.36,1)}
-  @keyframes sh-kapow{0%{transform:scale(0) rotate(-15deg)}60%{transform:scale(1.3) rotate(3deg)}100%{transform:scale(1) rotate(-3deg)}}
+  /* ═══ ACTION WORDS ═══ */
+  .sh-pow{font-family:'Bangers',cursive;letter-spacing:4px;text-transform:uppercase;
+    display:inline-block;padding:6px 16px;transform:rotate(-4deg);position:relative;
+    text-shadow:3px 3px 0 rgba(0,0,0,0.2);animation:sh-kapow 0.5s cubic-bezier(0.22,1,0.36,1)}
+  .sh-pow-lg{font-size:42px}
+  .sh-pow-md{font-size:28px}
+  .sh-pow-sm{font-size:18px}
+  /* Starburst behind action word */
+  .sh-pow::before{content:'';position:absolute;inset:-20px;z-index:-1;
+    background:radial-gradient(circle,currentColor 0%,transparent 70%);opacity:0.08;border-radius:50%}
+  @keyframes sh-kapow{0%{transform:scale(0) rotate(-20deg)}50%{transform:scale(1.4) rotate(5deg)}100%{transform:scale(1) rotate(-4deg)}}
 
-  /* Hero card */
-  .sh-hero-card{display:flex;gap:0;border:3px solid var(--comic-black);border-radius:4px;overflow:hidden;
-    background:#fff;margin:8px 0;box-shadow:4px 4px 0 rgba(0,0,0,0.1)}
-  .sh-hero-photo{width:90px;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  /* ═══ HERO CARD ═══ */
+  .sh-hero-card{display:flex;gap:0;border:4px solid var(--comic-black);border-radius:4px;overflow:hidden;
+    background:#fff;margin:10px 0;box-shadow:5px 5px 0 rgba(0,0,0,0.12);position:relative}
+  /* Halftone dot overlay on card */
+  .sh-hero-card::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
+    background-image:radial-gradient(circle,rgba(0,0,0,0.03) 1px,transparent 1px);background-size:3px 3px}
+
+  .sh-hero-photo{width:120px;flex-shrink:0;position:relative;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;min-height:130px}
   .sh-hero-photo img{width:100%;height:auto;object-fit:contain;position:relative;z-index:2}
-  /* Costume glow overlay */
-  .sh-hero-glow{position:absolute;inset:0;z-index:1;opacity:0.3}
-  /* Mask overlay */
-  .sh-hero-mask{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:3;
-    width:40px;height:16px;border-radius:50%;border:2px solid rgba(0,0,0,0.4);background:rgba(0,0,0,0.15)}
-  .sh-hero-data{flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:3px}
-  .sh-hero-name{font-family:'Bangers',cursive;font-size:20px;letter-spacing:2px;color:var(--comic-black);line-height:1}
-  .sh-hero-real{font-size:10px;color:rgba(0,0,0,0.4);font-family:'Share Tech Mono',monospace}
-  .sh-hero-power{font-size:11px;color:rgba(0,0,0,0.7);margin-top:2px}
-  .sh-hero-origin{font-size:10px;color:rgba(0,0,0,0.5);font-style:italic;margin-top:2px;line-height:1.3}
-  .sh-hero-score{font-family:'Bangers',cursive;font-size:18px;margin-top:4px}
+  /* Power glow */
+  .sh-hero-glow{position:absolute;inset:0;z-index:1}
+  /* Cape silhouette */
+  .sh-hero-cape{position:absolute;bottom:0;left:50%;transform:translateX(-50%);z-index:1;width:90%;height:60%;
+    clip-path:polygon(15% 30%,50% 0%,85% 30%,100% 100%,0% 100%);opacity:0.15}
+  /* Mask overlay on eyes */
+  .sh-hero-mask{position:absolute;top:15%;left:50%;transform:translateX(-50%);z-index:3;
+    width:50px;height:18px;border-radius:50%;border:3px solid currentColor;background:currentColor;opacity:0.25}
 
-  /* Speed lines */
+  .sh-hero-data{flex:1;padding:12px 16px;display:flex;flex-direction:column;gap:2px;position:relative;z-index:2}
+  .sh-hero-name{font-family:'Bangers',cursive;font-size:26px;letter-spacing:3px;line-height:1;
+    text-shadow:2px 2px 0 rgba(0,0,0,0.08)}
+  .sh-hero-real{font-size:10px;color:rgba(0,0,0,0.35);font-family:'Share Tech Mono',monospace;letter-spacing:1px;margin-top:2px}
+  .sh-hero-power{font-family:'Bangers',cursive;font-size:14px;color:rgba(0,0,0,0.6);margin-top:4px;letter-spacing:1px}
+  .sh-hero-origin{font-size:11px;color:rgba(0,0,0,0.45);font-style:italic;margin-top:4px;line-height:1.4}
+  .sh-hero-score{font-family:'Bangers',cursive;font-size:22px;margin-top:6px}
+
+  /* ═══ SPEED LINES ═══ */
   .sh-speed-lines{position:relative;overflow:hidden}
   .sh-speed-lines::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
-    background:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(0,0,0,0.02) 8px,rgba(0,0,0,0.02) 9px);
-    animation:sh-speed 0.8s linear infinite}
-  @keyframes sh-speed{0%{background-position:0 0}100%{background-position:-9px 0}}
+    background:
+      repeating-linear-gradient(180deg,transparent 0px,transparent 20px,rgba(0,0,0,0.015) 20px,rgba(0,0,0,0.015) 21px),
+      repeating-linear-gradient(90deg,transparent 0px,transparent 25px,rgba(0,0,0,0.01) 25px,rgba(0,0,0,0.01) 26px);
+    animation:sh-speed 1.5s linear infinite}
+  @keyframes sh-speed{0%{background-position:0 0,0 0}100%{background-position:-21px 0,0 -26px}}
 
-  /* Sidebar */
-  .sh-side-sec{font-family:'Bangers',cursive;font-size:14px;letter-spacing:2px;
-    color:var(--comic-black);padding:6px 0 4px;border-bottom:2px solid rgba(0,0,0,0.1);margin-top:8px}
+  /* ═══ SIDEBAR ═══ */
+  .sh-side-sec{font-family:'Bangers',cursive;font-size:16px;letter-spacing:3px;
+    color:var(--comic-black);padding:8px 0 6px;border-bottom:3px solid var(--comic-black);margin-top:10px}
   .sh-side-sec:first-child{margin-top:0}
+  .sh-side-hero{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px dashed rgba(0,0,0,0.08)}
+  .sh-side-hero img{border:2px solid var(--comic-black);border-radius:3px}
 
-  /* Controls */
-  .sh-controls{display:flex;gap:10px;justify-content:center;padding:16px 0;position:relative;z-index:5}
-  .sh-btn-next{padding:10px 24px;font-family:'Bangers',cursive;font-size:16px;letter-spacing:3px;
-    background:var(--comic-red);color:#fff;border:3px solid var(--comic-black);
-    border-radius:4px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;
-    box-shadow:3px 3px 0 rgba(0,0,0,0.2)}
-  .sh-btn-next:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(0,0,0,0.25)}
-  .sh-btn-all{padding:10px 18px;font-size:12px;background:#fff;color:rgba(0,0,0,0.5);
-    border:2px solid rgba(0,0,0,0.2);border-radius:4px;cursor:pointer;font-family:'Share Tech Mono',monospace}
+  /* ═══ CONTROLS ═══ */
+  .sh-controls{display:flex;gap:10px;justify-content:center;padding:18px 0;position:relative;z-index:5}
+  .sh-btn-next{padding:12px 28px;font-family:'Bangers',cursive;font-size:20px;letter-spacing:4px;
+    background:var(--comic-red);color:#fff;border:4px solid var(--comic-black);
+    border-radius:4px;cursor:pointer;text-transform:uppercase;transition:all 0.15s;
+    box-shadow:4px 4px 0 rgba(0,0,0,0.2);text-shadow:2px 2px 0 rgba(0,0,0,0.2)}
+  .sh-btn-next:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 rgba(0,0,0,0.25)}
+  .sh-btn-all{padding:10px 18px;font-size:13px;background:#fff;color:rgba(0,0,0,0.4);
+    border:3px solid rgba(0,0,0,0.15);border-radius:4px;cursor:pointer;font-family:'Bangers',cursive;letter-spacing:2px}
 
-  /* Event rows */
-  .sh-event-good{border-left:4px solid var(--comic-green);padding-left:8px;margin:4px 0}
-  .sh-event-bad{border-left:4px solid var(--comic-red);padding-left:8px;margin:4px 0}
-  .sh-event-neutral{border-left:4px solid var(--comic-yellow);padding-left:8px;margin:4px 0}
+  /* ═══ EVENT ROWS ═══ */
+  .sh-ev-good{border-left:5px solid var(--comic-green);padding:6px 10px;margin:5px 0;border-radius:0 4px 4px 0;
+    background:rgba(22,163,74,0.04)}
+  .sh-ev-bad{border-left:5px solid var(--comic-red);padding:6px 10px;margin:5px 0;border-radius:0 4px 4px 0;
+    background:rgba(220,38,38,0.04)}
+  .sh-ev-neutral{border-left:5px solid var(--comic-yellow);padding:6px 10px;margin:5px 0;border-radius:0 4px 4px 0;
+    background:rgba(234,179,8,0.04)}
+
+  /* ═══ COVER PAGE ═══ */
+  .sh-cover{position:relative;text-align:center;padding:40px 20px 30px;overflow:hidden}
+  .sh-cover::before{content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse at 50% 30%,rgba(234,179,8,0.15) 0%,transparent 60%);pointer-events:none}
+  .sh-cover-title{font-family:'Bangers',cursive;font-size:56px;color:var(--comic-red);letter-spacing:6px;line-height:0.9;
+    text-shadow:4px 4px 0 var(--comic-yellow),8px 8px 0 rgba(0,0,0,0.08);position:relative;z-index:2;
+    -webkit-text-stroke:1px rgba(0,0,0,0.1)}
+  .sh-cover-sub{font-family:'Bangers',cursive;font-size:18px;letter-spacing:4px;color:rgba(0,0,0,0.4);margin-top:6px}
+  .sh-cover-roster{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+  .sh-cover-badge{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;
+    border:3px solid var(--comic-black);border-radius:4px;background:#fff;box-shadow:3px 3px 0 rgba(0,0,0,0.1);
+    width:70px;transition:transform 0.15s}
+  .sh-cover-badge:hover{transform:rotate(-3deg) scale(1.05)}
+  .sh-cover-badge img{border-radius:3px;border:2px solid currentColor}
+  .sh-cover-badge-name{font-family:'Bangers',cursive;font-size:9px;letter-spacing:1px;line-height:1;text-align:center;
+    max-width:65px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* ═══ IMMUNITY SPLASH ═══ */
+  .sh-immunity{text-align:center;padding:30px 20px;position:relative;
+    background:linear-gradient(180deg,rgba(234,179,8,0.1),transparent);
+    border:4px solid var(--comic-yellow);border-radius:4px}
+  .sh-immunity::before{content:'';position:absolute;top:50%;left:50%;width:300px;height:300px;
+    transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle,rgba(234,179,8,0.15),transparent 70%);
+    animation:sh-glow-pulse 2s ease-in-out infinite}
+  @keyframes sh-glow-pulse{0%,100%{opacity:0.5;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}}
 
   @media(prefers-reduced-motion:reduce){
-    .sh-panel-impact,.sh-action-word,.sh-speed-lines::before{animation:none!important}
+    .sh-panel-impact,.sh-pow,.sh-speed-lines::before,.sh-immunity::before{animation:none!important}
   }
-  </style>`;
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Share+Tech+Mono&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">`;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -656,31 +704,25 @@ function _shShell(content, ep) {
 export function rpBuildSuperHeroldTitleCard(ep) {
   const sh = ep.superHerold;
   if (!sh) return '';
-  const heroCards = Object.entries(sh.heroes).map(([name, hero]) => {
+
+  // Hero roster badges
+  const badges = Object.entries(sh.heroes).map(([name, hero]) => {
     const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-    return `<div class="sh-hero-card sh-panel-impact" style="max-width:400px;margin:6px auto">
-      <div class="sh-hero-photo">
-        <div class="sh-hero-glow" style="background:radial-gradient(circle,${hero.glow},transparent 70%)"></div>
-        <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${name}">
-      </div>
-      <div class="sh-hero-data">
-        <div class="sh-hero-name" style="color:${hero.color}">${hero.icon} ${hero.heroName}</div>
-        <div class="sh-hero-real">${name}</div>
-        <div class="sh-hero-power">Power: ${hero.power}</div>
-        <div class="sh-hero-origin">${hero.origin}</div>
-        <div class="sh-bubble" style="margin-top:6px;font-style:italic;font-size:11px">"${hero.catchphrase}"</div>
-      </div>
+    return `<div class="sh-cover-badge" style="border-color:${hero.color};color:${hero.color}">
+      <img src="assets/avatars/${slug}.png" alt="${name}" style="width:44px;height:44px;object-fit:contain" onerror="this.style.display='none'">
+      <div class="sh-cover-badge-name">${hero.heroName.split(' ').pop()}</div>
     </div>`;
   }).join('');
 
   return _shShell(`
-    <div style="text-align:center;padding:30px 20px;position:relative;z-index:6">
-      <div style="font-family:'Bangers',cursive;font-size:44px;color:var(--comic-red);letter-spacing:4px;
-        text-shadow:3px 3px 0 var(--comic-yellow),6px 6px 0 rgba(0,0,0,0.1);line-height:1">SUPER HERO-LD</div>
-      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:3px;color:rgba(0,0,0,0.4);margin-top:8px">A ${host().toUpperCase()} PRODUCTION</div>
-      <div class="sh-caption" style="margin-top:16px">COSTUME CONTEST · OBSTACLE COURSE · VILLAIN SABOTAGE</div>
+    <div class="sh-cover">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:4px;color:rgba(0,0,0,0.3);margin-bottom:8px">TOTAL DRAMA PRESENTS</div>
+      <div class="sh-cover-title">SUPER<br>HERO-LD</div>
+      <div class="sh-cover-sub">A ${host().toUpperCase()} PRODUCTION</div>
+      <div class="sh-caption" style="margin-top:20px">COSTUME CONTEST · OBSTACLE COURSE · VILLAIN SABOTAGE</div>
+      <div style="margin-top:16px;font-size:12px;color:rgba(0,0,0,0.4);font-style:italic">"Every hero needs a costume. Every villain needs a cat."</div>
+      <div class="sh-cover-roster">${badges}</div>
     </div>
-    <div style="padding:0 16px 20px">${heroCards}</div>
   `, ep);
 }
 
@@ -701,44 +743,48 @@ export function rpBuildSuperHeroldCostume(ep) {
     const playerEvents = cc.events.filter(e => e.player === name);
     const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
 
-    let html = `<div class="sh-panel sh-panel-impact">
-      <div class="sh-hero-card" style="border:none;box-shadow:none">
-        <div class="sh-hero-photo">
-          <div class="sh-hero-glow" style="background:radial-gradient(circle,${hero.glow},transparent 70%)"></div>
-          <div class="sh-hero-mask" style="border-color:${hero.color}"></div>
-          <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${name}">
-        </div>
-        <div class="sh-hero-data">
-          <div class="sh-hero-name" style="color:${hero.color}">${hero.icon} ${hero.heroName}</div>
-          <div class="sh-hero-real">${name}</div>
-          <div class="sh-hero-power">Power: ${hero.power}</div>
-        </div>
-      </div>`;
+    let html = `<div class="sh-hero-card sh-panel-impact">
+      <div class="sh-hero-photo" style="background:linear-gradient(180deg,${hero.glow},transparent)">
+        <div class="sh-hero-glow" style="background:radial-gradient(circle at 50% 30%,${hero.glow},transparent 65%)"></div>
+        <div class="sh-hero-cape" style="background:${hero.color}"></div>
+        <div class="sh-hero-mask" style="color:${hero.color}"></div>
+        <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${name}">
+      </div>
+      <div class="sh-hero-data">
+        <div class="sh-hero-name" style="color:${hero.color}">${hero.icon} ${hero.heroName}</div>
+        <div class="sh-hero-real">${name}</div>
+        <div class="sh-hero-power">${hero.icon} Power: ${hero.power}</div>
+        <div class="sh-hero-origin">${hero.origin}</div>
+        <div class="sh-bubble" style="font-size:14px">"${hero.catchphrase}"</div>`;
 
     for (const ev of playerEvents) {
       const isGood = ev.type === 'sabotage-dodge' || (ev.type === 'judge' && ev.score >= 7);
       const isBad = ev.type === 'sabotage-hit' || (ev.type === 'judge' && ev.score <= 3);
-      const cls = isGood ? 'sh-event-good' : isBad ? 'sh-event-bad' : 'sh-event-neutral';
+      const cls = isGood ? 'sh-ev-good' : isBad ? 'sh-ev-bad' : 'sh-ev-neutral';
       if (ev.type === 'judge') {
         const stars = '⭐'.repeat(Math.min(5, Math.ceil(ev.score / 2)));
         html += `<div class="${cls}" style="margin-top:6px">
           <div class="sh-hero-score" style="color:${ev.score >= 7 ? 'var(--comic-green)' : ev.score <= 3 ? 'var(--comic-red)' : 'var(--comic-yellow)'}">${stars} ${ev.score}/10</div>
-          <div style="font-size:12px;color:rgba(0,0,0,0.6)">${ev.text}</div>
+          <div class="sh-caption" style="font-size:12px;display:block">${ev.text}</div>
         </div>`;
+      } else if (ev.type === 'demo') {
+        html += `<div class="${cls}"><span class="sh-pow sh-pow-sm" style="color:${hero.color}">${hero.icon}</span> <span style="font-size:12px">${ev.text}</span></div>`;
       } else {
-        html += `<div class="${cls}"><span>${ev.icon} ${ev.text}</span></div>`;
+        html += `<div class="${cls}"><span style="font-size:12px">${ev.icon} ${ev.text}</span></div>`;
       }
     }
-    html += `</div>`;
+    html += `</div></div>`;
     steps.push({ html });
   }
 
   // Winner announcement
   const winner = cc.winner;
-  steps.push({ html: `<div class="sh-panel" style="text-align:center;background:var(--comic-yellow)">
-    <div class="sh-action-word" style="color:var(--comic-red)">WINNER!</div>
-    <div style="font-family:'Bangers',cursive;font-size:22px;margin-top:8px">${sh.heroes[winner]?.heroName || winner}</div>
-    <div style="font-size:12px;color:rgba(0,0,0,0.5);margin-top:4px">${winner} wins the costume contest! -10 seconds on the obstacle course!</div>
+  const winHero = sh.heroes[winner];
+  steps.push({ html: `<div class="sh-panel sh-panel-impact" style="text-align:center;background:var(--comic-yellow);border-width:5px">
+    <div class="sh-pow sh-pow-lg" style="color:var(--comic-red)">WINNER!</div>
+    <div style="margin:10px 0">${portrait(winner, 56)}</div>
+    <div style="font-family:'Bangers',cursive;font-size:28px;color:${winHero?.color || '#333'};letter-spacing:3px">${winHero?.heroName || winner}</div>
+    <div class="sh-caption" style="margin-top:8px;display:block">-10 SECONDS ON THE OBSTACLE COURSE!</div>
   </div>` });
 
   const totalSteps = steps.length;
@@ -848,17 +894,19 @@ export function rpBuildSuperHeroldObstacle(ep) {
 
     for (const ev of playerEvents) {
       if (ev.type === 'reaction') {
-        html += `<div class="sh-bubble" style="font-size:11px;font-style:italic;margin:4px 0">${ev.text}</div>`;
+        html += `<div class="sh-bubble" style="font-size:13px;margin:6px 0">${ev.text}</div>`;
         continue;
       }
       const isPass = ev.type.includes('pass') || ev.type === 'sabotage-dodge' || ev.type === 'bonus';
       const isFail = ev.type.includes('fail') || ev.type === 'sabotage-hit';
       if (isFail) {
-        html += `<div class="sh-event-bad"><span class="sh-action-word" style="font-size:16px;color:var(--comic-red)">${ev.type.includes('meteor') ? 'BONK!' : ev.type.includes('jump') ? 'SPLAT!' : ev.type.includes('sabotage') ? 'ZAP!' : 'CRASH!'}</span> <span style="font-size:12px">${ev.text}</span></div>`;
+        const word = ev.type.includes('meteor') ? 'BONK!' : ev.type.includes('jump') ? 'SPLAT!' : ev.type.includes('sabotage') ? 'ZAP!' : 'CRASH!';
+        html += `<div class="sh-ev-bad"><span class="sh-pow sh-pow-sm" style="color:var(--comic-red)">${word}</span> <span style="font-size:12px">${ev.text}</span></div>`;
       } else if (isPass) {
-        html += `<div class="sh-event-good"><span class="sh-action-word" style="font-size:16px;color:var(--comic-green)">${ev.type.includes('meteor') ? 'WHOOSH!' : ev.type.includes('jump') ? 'SOAR!' : ev.type.includes('rescue') ? 'SAVE!' : '✓'}</span> <span style="font-size:12px">${ev.text}</span></div>`;
+        const word = ev.type.includes('meteor') ? 'WHOOSH!' : ev.type.includes('jump') ? 'SOAR!' : ev.type.includes('rescue') ? 'SAVE!' : ev.type.includes('sabotage') ? 'BLOCK!' : '✓';
+        html += `<div class="sh-ev-good"><span class="sh-pow sh-pow-sm" style="color:var(--comic-green)">${word}</span> <span style="font-size:12px">${ev.text}</span></div>`;
       } else {
-        html += `<div class="sh-event-neutral" style="font-size:12px">${ev.icon} ${ev.text}</div>`;
+        html += `<div class="sh-ev-neutral" style="font-size:12px">${ev.icon} ${ev.text}</div>`;
       }
     }
 
@@ -869,14 +917,21 @@ export function rpBuildSuperHeroldObstacle(ep) {
     steps.push({ html });
   }
 
-  // Winner
-  const winner = oc.winner;
-  const winHero = sh.heroes[winner];
-  steps.push({ html: `<div class="sh-panel" style="text-align:center;background:var(--comic-yellow);border:4px solid var(--comic-red)">
-    <div class="sh-action-word" style="color:var(--comic-red);font-size:36px">IMMUNITY!</div>
-    <div style="margin:12px 0">${portrait(winner, 64)}</div>
-    <div style="font-family:'Bangers',cursive;font-size:28px;color:${winHero?.color || '#333'}">${winHero?.heroName || winner}</div>
-    <div style="font-size:13px;color:rgba(0,0,0,0.5);margin-top:4px">${winner} wins immunity with ${oc.results[winner]?.finalTime}s!</div>
+  // Winner — immunity splash
+  const ocWinner = oc.winner;
+  const ocWinHero = sh.heroes[ocWinner];
+  const winSlug = players.find(p => p.name === ocWinner)?.slug || ocWinner.toLowerCase().replace(/\s+/g, '-');
+  steps.push({ html: `<div class="sh-immunity sh-panel-impact">
+    <div class="sh-pow sh-pow-lg" style="color:var(--comic-red);position:relative;z-index:2">IMMUNITY!</div>
+    <div style="margin:16px 0;position:relative;z-index:2">
+      <div style="display:inline-block;border:5px solid ${ocWinHero?.color || 'var(--comic-yellow)'};border-radius:6px;overflow:hidden;box-shadow:0 0 30px ${ocWinHero?.glow || 'rgba(234,179,8,0.3)'}">
+        <img src="assets/avatars/${winSlug}.png" alt="${ocWinner}" style="width:80px;height:80px;object-fit:contain;display:block" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <div style="font-family:'Bangers',cursive;font-size:34px;color:${ocWinHero?.color || '#333'};letter-spacing:4px;position:relative;z-index:2;
+      text-shadow:3px 3px 0 rgba(0,0,0,0.1)">${ocWinHero?.heroName || ocWinner}</div>
+    <div style="font-family:'Bangers',cursive;font-size:16px;color:rgba(0,0,0,0.4);margin-top:4px;position:relative;z-index:2">${ocWinner} — ${oc.results[ocWinner]?.finalTime}s</div>
+    <div class="sh-caption" style="margin-top:12px;position:relative;z-index:2">THE HERO PREVAILS!</div>
   </div>` });
 
   const totalSteps = steps.length;

@@ -37,6 +37,7 @@ import { simulateSayUncle } from './chal/say-uncle.js';
 import { simulateTripleDogDare } from './chal/triple-dog-dare.js';
 import { simulateSlasherNight } from './chal/slasher-night.js';
 import { simulateMonsterCash } from './chal/monster-cash.js';
+import { simulateOperationClassified } from './chal/operation-classified.js';
 import { simulateAlienEgg } from './chal/alien-egg.js';
 import { simulateBeachBlanketBogus } from './chal/beach-blanket-bogus.js';
 import { simulateCrazytown } from './chal/crazytown.js';
@@ -980,7 +981,7 @@ export function handleExileFormat(ep) {
   if (phase === 'pre' && gs.isMerged) return;
   if (phase === 'post' && !gs.isMerged) return;
   // Don't fire on special episode types
-  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama) return;
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
   // Don't double up with schoolyard pick exile (unpicked player already on exile)
@@ -1460,6 +1461,14 @@ export function simulateEpisode() {
     ep.immunityWinner = ep.monsterCash.immunityWinner;
     ep.challengeType = 'monster-cash';
     // Fall through to normal tribal flow — no auto-elimination, no early return
+  }
+
+  // ── OPERATION: CLASSIFIED (post-merge) — spy mission determines immunity, normal tribal follows ──
+  if (ep.isOperationClassified && gs.isMerged) {
+    simulateOperationClassified(ep);
+    ep.immunityWinner = ep.operationClassified.final?.winner || ep.immunityWinner;
+    ep.challengeType = 'operation-classified';
+    // Fall through to normal tribal flow
   }
 
   // ── ALIEN EGG (post-merge) — egg hunt determines immunity, normal tribal follows ──
@@ -2194,7 +2203,7 @@ export function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (ep.isMonsterCash || ep.isAlienEgg) {
+    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg) {
     // Special challenge already ran and set immunityWinner + chalMemberScores — skip generic challenge
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
@@ -2458,7 +2467,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist) {
     updateChalRecord(ep);
   }
 
@@ -5357,6 +5366,8 @@ function simulateJuryRoundtable(ep) {
     trustChallenge:     ep.trustChallenge      || null,
     isMonsterCash:      ep.isMonsterCash      || false,
     monsterCash:        ep.monsterCash        || null,
+    isOperationClassified: ep.isOperationClassified || false,
+    operationClassified:   ep.operationClassified   || null,
     isAlienEgg:         ep.isAlienEgg         || false,
     alienEgg:           ep.alienEgg           || null,
     isBeachBlanketBogus: ep.isBeachBlanketBogus || false,

@@ -306,6 +306,12 @@ export function computeHeat(name, tribalPlayers, alliances) {
       if (data.target === name && tribalPlayers.includes(victim) && ((gs.episode || 0) + 1) < data.expiresEp) heat += data.amount;
     });
   }
+  // Operation: Classified heat
+  if (gs._operationClassifiedHeat) {
+    Object.entries(gs._operationClassifiedHeat).forEach(([victim, data]) => {
+      if (data.target === name && tribalPlayers.includes(victim) && ((gs.episode || 0) + 1) < data.expiresEp) heat += data.amount;
+    });
+  }
   // Beach Blanket Bogus: sabotage victims want the saboteur gone
   if (gs._beachBogusHeat) {
     Object.entries(gs._beachBogusHeat).forEach(([victim, data]) => {

@@ -22,6 +22,7 @@ import { _textSayUncle } from './chal/say-uncle.js';
 import { _textTripleDogDare } from './chal/triple-dog-dare.js';
 import { _textSlasherNight } from './chal/slasher-night.js';
 import { _textMonsterCash } from './chal/monster-cash.js';
+import { _textOperationClassified } from './chal/operation-classified.js';
 import { _textHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { _textOffTheChain } from './chal/off-the-chain.js';
 import { _textWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
@@ -2000,6 +2001,7 @@ export function generateSummaryText(ep) {
   _textAftermath(ep, ln, sec);
   _textSlasherNight(ep, ln, sec);
   _textMonsterCash(ep, ln, sec);
+  _textOperationClassified(ep, ln, sec);
   _textAwakeAThon(ep, ln, sec);
   _textDodgebrawl(ep, ln, sec);
   _textTalentShow(ep, ln, sec);

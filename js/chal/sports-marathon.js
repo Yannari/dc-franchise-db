@@ -55,37 +55,163 @@ const SM_HOST = {
 };
 
 // ── OBSTACLE COURSE EVENTS ──
+// Archetype-aware text: pick archetype-specific line if available, else generic
+function _archText(archetype, archPool, genericPool, ...args) {
+  const pool = archPool[archetype];
+  if (pool?.length && Math.random() < 0.6) return pick(pool)(...args);
+  return pick(genericPool)(...args);
+}
+
 const OC_EVENTS = {
-  pushGood: [
-    (p, pr) => `${p} lowered ${pr.posAdj} shoulder and DROVE Chef across the field. Impressive.`,
-    (p, pr) => `${p} dug in and pushed like a truck. Chef slid back on his heels.`,
-    (p, pr) => `${p} exploded off the line. Chef barely kept his footing.`,
-  ],
-  pushBad: [
-    (p, pr) => `${p} pushed with everything ${pr.sub} had. Chef didn't move. "That all you got?"`,
-    (p, pr) => `${p} bounced off Chef like a tennis ball. "Next!"`,
-    (p, pr) => `${p} slipped and face-planted into Chef's chest. Awkward.`,
-  ],
-  tireGood: [
-    (p, pr) => `${p} danced through the tires like an NFL running back.`,
-    (p, pr) => `${p} high-stepped through the tires cleanly. Perfect footwork.`,
-    (p, pr) => `${p} weaved through the tires without a single stumble.`,
-  ],
-  tireBad: [
-    (p, pr) => `${p} got ${pr.posAdj} foot stuck in a tire. "It's eating my shoe!"`,
-    (p, pr) => `${p} stepped on a mousetrap hidden in a tire. "YOWCH!"`,
-    (p, pr) => `${p} tripped on the second tire and went face-first into the third.`,
-  ],
-  mudGood: [
-    (p, pr) => `${p} army-crawled through the mud like a soldier. Clean and fast.`,
-    (p, pr) => `${p} slithered through the mud under the wire. Born for this.`,
-    (p, pr) => `${p} powered through the mud pit. Dirty but fast.`,
-  ],
-  mudBad: [
-    (p, pr) => `${p} got stuck in the mud halfway through. "I can't... move... my legs..."`,
-    (p, pr) => `${p} panicked and stood up into the barbed wire. "OW OW OW!" Back down.`,
-    (p, pr) => `${p} crawled so slowly a snail passed ${pr.obj}. ${host()} timed it.`,
-  ],
+  pushGood: {
+    generic: [
+      (p, pr) => `${p} lowered ${pr.posAdj} shoulder and DROVE Chef across the field.`,
+      (p, pr) => `${p} dug in and pushed like a freight train. Chef slid back on his heels.`,
+      (p, pr) => `${p} exploded off the line. Chef's feet left skid marks in the turf.`,
+      (p, pr) => `${p} got low, drove ${pr.posAdj} legs, and moved Chef a solid ten yards.`,
+    ],
+    arch: {
+      'challenge-beast': [
+        (p, pr) => `${p} treated Chef like a training dummy. Effortless power. This is what ${pr.sub} lives for.`,
+        (p, pr) => `${p} moved Chef so fast it looked rehearsed. Pure athlete.`,
+      ],
+      'hothead': [
+        (p, pr) => `${p} SCREAMED and charged Chef like a bull. Raw fury. Chef flew.`,
+        (p, pr) => `"GET OUT OF MY WAY!" ${p} hit Chef with everything. Rage-powered.`,
+      ],
+      'villain': [
+        (p, pr) => `${p} waited for Chef to blink, then shoved with perfect timing. Calculated.`,
+        (p, pr) => `${p} drove Chef back with a smirk. "Too easy. Next."`,
+      ],
+      'social-butterfly': [
+        (p, pr) => `${p} surprised everyone — including ${pr.ref} — by bulldozing Chef. "I WORK OUT SOMETIMES!"`,
+      ],
+      'underdog': [
+        (p, pr) => `${p} gritted ${pr.posAdj} teeth and pushed. Chef moved. ${p} couldn't believe it. Neither could anyone else.`,
+      ],
+    },
+  },
+  pushBad: {
+    generic: [
+      (p, pr) => `${p} pushed with everything ${pr.sub} had. Chef didn't budge. "That tickled."`,
+      (p, pr) => `${p} bounced off Chef like a ping pong ball. "Next!"`,
+      (p, pr) => `${p} slipped on the grass and slid under Chef's legs. Not the plan.`,
+      (p, pr) => `${p}'s shoes had zero grip. ${pr.Sub} just ran in place while Chef laughed.`,
+    ],
+    arch: {
+      'social-butterfly': [
+        (p, pr) => `${p} tried to charm Chef into moving. "Pretty please?" Chef folded his arms. No.`,
+        (p, pr) => `${p} hugged Chef instead of pushing. "Is... is this right?" It was not.`,
+      ],
+      'floater': [
+        (p, pr) => `${p} leaned into Chef and just... stayed there. Pushing nothing. "Is it working?"`,
+        (p, pr) => `${p} put in about 30% effort. Chef yawned.`,
+      ],
+      'showmancer': [
+        (p, pr) => `${p} was too busy looking at the crowd to push properly. Chef tapped ${pr.posAdj} shoulder. "Focus."`,
+      ],
+      'wildcard': [
+        (p, pr) => `${p} tried to push Chef from the side. "Nobody said I had to push FORWARD!" ${host()} said yes, yes they did.`,
+      ],
+      'goat': [
+        (p, pr) => `${p} pushed. Nothing happened. ${p} pushed again. Still nothing. Chef sighed.`,
+      ],
+    },
+  },
+  tireGood: {
+    generic: [
+      (p, pr) => `${p} danced through the tires like a pro running back. Untouchable.`,
+      (p, pr) => `${p} high-kneed through every tire cleanly. Not a single misstep.`,
+      (p, pr) => `${p} hopped through the tires like ${pr.sub}'d done this a thousand times.`,
+      (p, pr) => `${p} cleared the tire gauntlet in record time. ${host()} checked the stopwatch twice.`,
+    ],
+    arch: {
+      'challenge-beast': [
+        (p, pr) => `${p} attacked the tires like a training exercise. Quick, precise, dominant.`,
+      ],
+      'chaos-agent': [
+        (p, pr) => `${p} JUMPED over three tires at once. Unorthodox but somehow it worked.`,
+      ],
+      'perceptive-player': [
+        (p, pr) => `${p} studied the pattern first, then glided through. Calculated steps.`,
+      ],
+      'wildcard': [
+        (p, pr) => `${p} cartwheeled through the tires. ${host()} had no idea how to score that but it was fast.`,
+      ],
+    },
+  },
+  tireBad: {
+    generic: [
+      (p, pr) => `${p} got ${pr.posAdj} foot stuck in a tire. "It's eating my shoe!"`,
+      (p, pr) => `${p} stepped on a mousetrap hidden in a tire. "YOWCH!" Hopping on one foot.`,
+      (p, pr) => `${p} tripped on the second tire and faceplanted into the third.`,
+      (p, pr) => `${p} rolled ${pr.posAdj} ankle on the first tire. Limped the rest.`,
+    ],
+    arch: {
+      'mastermind': [
+        (p, pr) => `${p} overthought the tire pattern and froze up. "Wait, which foot goes—" CRASH.`,
+      ],
+      'schemer': [
+        (p, pr) => `${p} tried to find a shortcut around the tires. There wasn't one. Lost time.`,
+      ],
+      'social-butterfly': [
+        (p, pr) => `${p} waved at the crowd mid-tire and ate dirt. "I'M FINE! I'm fine."`,
+      ],
+      'hothead': [
+        (p, pr) => `${p} kicked a tire in frustration. It went airborne. Hit Chef. "MY BAD!"`,
+      ],
+      'loyal-soldier': [
+        (p, pr) => `${p} tried to help a teammate through the tires first. Lost ${pr.posAdj} own rhythm.`,
+      ],
+    },
+  },
+  mudGood: {
+    generic: [
+      (p, pr) => `${p} army-crawled through the mud like a commando. Fast and flat.`,
+      (p, pr) => `${p} slithered through the mud like a snake. No hesitation.`,
+      (p, pr) => `${p} powered through the mud pit. Filthy but FAST.`,
+      (p, pr) => `${p} dove in and came out the other end before anyone else blinked.`,
+    ],
+    arch: {
+      'challenge-beast': [
+        (p, pr) => `${p} ate mud for breakfast. Through the pit like a machine.`,
+      ],
+      'villain': [
+        (p, pr) => `${p} crawled through with a smirk. "Please. I've dragged myself through worse."`,
+      ],
+      'hero': [
+        (p, pr) => `${p} led the charge into the mud. First in, first out. Inspiring.`,
+      ],
+      'chaos-agent': [
+        (p, pr) => `${p} rolled through the mud like a log. Weird technique. Somehow the fastest.`,
+      ],
+    },
+  },
+  mudBad: {
+    generic: [
+      (p, pr) => `${p} got stuck in the mud halfway through. "I can't... move..."`,
+      (p, pr) => `${p} panicked and stood up into the barbed wire. "OW OW OW!" Back down.`,
+      (p, pr) => `${p} crawled so slowly a worm passed ${pr.obj}. ${host()} timed it.`,
+      (p, pr) => `${p} swallowed a mouthful of mud. The gagging did not help.`,
+    ],
+    arch: {
+      'social-butterfly': [
+        (p, pr) => `"I am NOT putting my face in that." ${p} crawled on all fours. Way slower.`,
+      ],
+      'showmancer': [
+        (p, pr) => `${p} was worried about ${pr.posAdj} hair getting muddy. Priorities all wrong.`,
+      ],
+      'floater': [
+        (p, pr) => `${p} sort of just... lay in the mud. "I'm working on it." ${pr.Sub} was not.`,
+      ],
+      'goat': [
+        (p, pr) => `${p} went the wrong direction in the mud pit. Had to turn around.`,
+      ],
+      'schemer': [
+        (p, pr) => `${p} waited for someone else to crawl first, planning to follow their path. They all went different ways.`,
+      ],
+    },
+  },
 };
 
 // ── SPORT EVENTS ──
@@ -310,28 +436,30 @@ function _simulateObstacleCourse(ep, tribeMembers, result) {
       const pr = pronouns(name);
       const events = [];
 
+      const arch = getArchetype(name);
+
       // Push drill
       const pushScore = s.physical * 0.03 + s.endurance * 0.02 + noise(0.3);
-      if (pushScore > 0.25) {
-        events.push({ type: 'pushGood', icon: '💪', text: pick(OC_EVENTS.pushGood)(name, pr) });
+      if (pushScore > 0.30) {
+        events.push({ type: 'pushGood', icon: '💪', text: _archText(arch, OC_EVENTS.pushGood.arch, OC_EVENTS.pushGood.generic, name, pr) });
       } else {
-        events.push({ type: 'pushBad', icon: '😤', text: pick(OC_EVENTS.pushBad)(name, pr) });
+        events.push({ type: 'pushBad', icon: '😤', text: _archText(arch, OC_EVENTS.pushBad.arch, OC_EVENTS.pushBad.generic, name, pr) });
       }
 
       // Tire run
       const tireScore = s.physical * 0.02 + s.endurance * 0.02 + s.intuition * 0.01 + noise(0.3);
-      if (tireScore > 0.24) {
-        events.push({ type: 'tireGood', icon: '👟', text: pick(OC_EVENTS.tireGood)(name, pr) });
+      if (tireScore > 0.29) {
+        events.push({ type: 'tireGood', icon: '👟', text: _archText(arch, OC_EVENTS.tireGood.arch, OC_EVENTS.tireGood.generic, name, pr) });
       } else {
-        events.push({ type: 'tireBad', icon: '🪤', text: pick(OC_EVENTS.tireBad)(name, pr) });
+        events.push({ type: 'tireBad', icon: '🪤', text: _archText(arch, OC_EVENTS.tireBad.arch, OC_EVENTS.tireBad.generic, name, pr) });
       }
 
       // Mud crawl
       const mudScore = s.endurance * 0.03 + s.physical * 0.02 + noise(0.3);
-      if (mudScore > 0.26) {
-        events.push({ type: 'mudGood', icon: '🐍', text: pick(OC_EVENTS.mudGood)(name, pr) });
+      if (mudScore > 0.31) {
+        events.push({ type: 'mudGood', icon: '🐍', text: _archText(arch, OC_EVENTS.mudGood.arch, OC_EVENTS.mudGood.generic, name, pr) });
       } else {
-        events.push({ type: 'mudBad', icon: '🤢', text: pick(OC_EVENTS.mudBad)(name, pr) });
+        events.push({ type: 'mudBad', icon: '🤢', text: _archText(arch, OC_EVENTS.mudBad.arch, OC_EVENTS.mudBad.generic, name, pr) });
       }
 
       const totalScore = pushScore + tireScore + mudScore;

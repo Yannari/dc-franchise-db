@@ -1276,6 +1276,15 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 3) return;
     ep.isSayUncle = true;
 
+  } else if (engineType === 'operation-classified') {
+    // Post-merge only (or merge episode); normal tribal follows.
+    if (!gs.isMerged) {
+      const _ocMerging = gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
+      if (!_ocMerging) return;
+    }
+    if (gs.activePlayers.length < 4) return;
+    ep.isOperationClassified = true;
+
   } else if (engineType === 'lucky-hunt') {
     // Post-merge only (or merge episode); need at least 6 players for interesting hunt
     const _lhMerging = !gs.isMerged && gs.activePlayers.length <= (seasonConfig.mergeAt || 12);

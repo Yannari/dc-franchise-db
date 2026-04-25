@@ -62,7 +62,9 @@ export function patchEpisodeHistory(ep) {
   // Challenge-specific data
   if (!h.oceansHeist && ep.oceansHeist) h.oceansHeist = ep.oceansHeist;
   if (!h.fullMetalDrama && ep.fullMetalDrama) h.fullMetalDrama = ep.fullMetalDrama;
+  if (!h.operationClassified && ep.operationClassified) h.operationClassified = ep.operationClassified;
   if (!h.isOceansHeist && ep.isOceansHeist) h.isOceansHeist = true;
+  if (!h.isOperationClassified && ep.isOperationClassified) h.isOperationClassified = true;
   if (!h.isMillionBucksBC && ep.isMillionBucksBC) h.isMillionBucksBC = true;
   if (!h.millionBucksBC && ep.millionBucksBC) h.millionBucksBC = ep.millionBucksBC;
   if (!h.isSportsMarathon && ep.isSportsMarathon) h.isSportsMarathon = true;
@@ -593,4 +595,3 @@ export function resetSeason() {
   initGameState();
   window.renderRunTab();
 }
-

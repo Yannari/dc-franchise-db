@@ -41,9 +41,9 @@ function laserResult(score) {
   return 'hit';
 }
 function defusalResult(score) {
-  if (score > 0.40) return 'perfect';
-  if (score > 0.28) return 'defused';
-  if (score > 0.18) return 'messy';
+  if (score > 0.36) return 'perfect';
+  if (score > 0.18) return 'defused';
+  if (score > 0.08) return 'messy';
   return 'blast';
 }
 
@@ -879,7 +879,7 @@ function _simulateDefusal(active, state, timeline, ep) {
 
     // Defusal check — correct wire + stats
     const wireCorrect = chosenWire === correctWire;
-    const score = s.mental * 0.04 + s.intuition * 0.03 + s.temperament * 0.02 + intelBonus + bagBonus + (compromised ? -0.06 : 0) + (wireCorrect ? 0.12 : -0.08) + (willCopy ? -0.10 : 0) + noise(0.3);
+    const score = s.mental * 0.02 + s.intuition * 0.01 + s.temperament * 0.01 + intelBonus + bagBonus + (compromised ? -0.06 : 0) + (wireCorrect ? 0.15 : -0.20) + (willCopy ? -0.08 : 0) + noise(0.25);
     const result = defusalResult(score);
 
     // Wire pick narration
@@ -940,8 +940,8 @@ function _simulateDefusal(active, state, timeline, ep) {
   const tieDiff = runnerUp ? Math.abs(ranked[0].score - ranked[1].score) : Infinity;
   let extraImmune = null;
   let tiebreak = null;
-  if (runnerUp && tieDiff <= 1) {
-    if (tieDiff <= 0.5) {
+  if (runnerUp && tieDiff < 0.5) {
+    if (tieDiff < 0.2) {
       extraImmune = runnerUp;
     } else {
       const a = ranked[0].name, b = ranked[1].name;
@@ -1167,6 +1167,9 @@ function css() {
     padding:3px 8px;border:2px solid;border-radius:2px;transform:rotate(-3deg);text-transform:uppercase}
   .oc-folder-stamp.pending{color:#8b6914;border-color:#8b6914;background:rgba(139,105,20,0.08)}
   .oc-folder-stamp.mission{color:#b91c1c;border-color:#b91c1c;background:rgba(185,28,28,0.08)}
+  .oc-folder-stamp.mission-success{color:#15803d;border-color:#15803d;background:rgba(21,128,61,0.08)}
+  .oc-folder-stamp.mission-failed{color:#b91c1c;border-color:#b91c1c;background:rgba(185,28,28,0.08)}
+  .oc-folder-stamp.mission-complete{color:#8b6914;border-color:#8b6914;background:rgba(139,105,20,0.06)}
 
   .oc-winner{text-align:center;padding:28px 14px;position:relative;z-index:5}
   .oc-winner .name{font-family:'Bungee Shade',sans-serif;font-size:28px;letter-spacing:3px;color:#fff;text-shadow:0 0 20px rgba(255,45,45,.2)}
@@ -1189,19 +1192,38 @@ function css() {
   .oc-bomb-result{font:700 10px/1 'Share Tech Mono',monospace;letter-spacing:2px;padding:4px 8px;border-radius:3px;text-align:center;margin-top:6px}
   .oc-bomb-result.perfect,.oc-bomb-result.defused{color:var(--oc-green);border:1px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.06)}
   .oc-bomb-result.messy{color:var(--oc-amber);border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.06)}
-  .oc-bomb-result.blast{color:var(--oc-red);border:1px solid rgba(255,45,45,0.3);background:rgba(255,45,45,0.08);animation:oc-explosion 0.6s ease-out}
-  @keyframes oc-explosion{0%{transform:scale(1);box-shadow:0 0 0 rgba(255,45,45,0)}30%{transform:scale(1.05);box-shadow:0 0 30px rgba(255,45,45,0.4)}100%{transform:scale(1);box-shadow:0 0 0 rgba(255,45,45,0)}}
+  .oc-bomb-result.blast{color:var(--oc-red);border:1px solid rgba(255,45,45,0.3);background:rgba(255,45,45,0.08)}
+
+  /* Blast — full card shake + red flash */
+  .oc-bomb-card.blast-card{animation:oc-bomb-shake 0.5s ease-out}
+  @keyframes oc-bomb-shake{0%{transform:translateX(0)}10%{transform:translateX(-6px)}20%{transform:translateX(6px)}30%{transform:translateX(-5px)}40%{transform:translateX(5px)}50%{transform:translateX(-3px)}60%{transform:translateX(3px)}70%{transform:translateX(-1px)}100%{transform:translateX(0)}}
+
+  /* Blast — expanding red ring */
+  .oc-bomb-boom{position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;
+    border:3px solid rgba(255,45,45,0.5);transform:translate(-50%,-50%);
+    pointer-events:none;z-index:2;animation:oc-boom-ring 0.8s ease-out forwards}
+  @keyframes oc-boom-ring{0%{width:0;height:0;opacity:0.8;border-width:4px}100%{width:250px;height:250px;opacity:0;border-width:1px}}
+
+  /* Stink cloud on blast */
   .oc-bomb-stink{position:absolute;inset:0;pointer-events:none;z-index:1;
-    background:radial-gradient(circle at 50% 50%,rgba(120,100,20,0.15),transparent 70%);
+    background:radial-gradient(circle at 50% 50%,rgba(120,100,20,0.2),transparent 60%);
     animation:oc-stink-cloud 1.5s ease-out forwards}
-  @keyframes oc-stink-cloud{0%{opacity:0;transform:scale(0.5)}30%{opacity:1}100%{opacity:0;transform:scale(2)}}
+  @keyframes oc-stink-cloud{0%{opacity:0;transform:scale(0.3)}30%{opacity:1}100%{opacity:0;transform:scale(2.5)}}
+
+  /* Messy — amber foam splash */
+  .oc-bomb-card.messy-card{animation:oc-messy-wobble 0.4s ease-out}
+  @keyframes oc-messy-wobble{0%{transform:rotate(0)}25%{transform:rotate(1deg)}50%{transform:rotate(-1deg)}75%{transform:rotate(0.5deg)}100%{transform:rotate(0)}}
+  .oc-bomb-foam{position:absolute;inset:0;pointer-events:none;z-index:1;
+    background:radial-gradient(circle at 40% 60%,rgba(245,158,11,0.12),transparent 50%);
+    animation:oc-foam-splash 1s ease-out forwards}
+  @keyframes oc-foam-splash{0%{opacity:0;transform:scale(0.5)}20%{opacity:0.8}100%{opacity:0;transform:scale(1.8)}}
 
   @media(prefers-reduced-motion:reduce){
     .oc-shell::after,.oc-bomb-timer,.oc-scan-photo::after,
     .oc-scan-field .val,.oc-scan-status.flagged,
     .oc-laser-feed::after,.oc-laser-rec::before,
     .oc-wire-card::before,.oc-wire-signal,
-    .oc-bomb-timer-display,.oc-bomb-result.blast,.oc-bomb-stink{animation:none!important}
+    .oc-bomb-timer-display,.blast-card,.messy-card,.oc-bomb-boom,.oc-bomb-stink,.oc-bomb-foam{animation:none!important}
     .oc-scan-field .val{width:100%!important;border-right:none!important}
   }
   @media(max-width:760px){.oc-layout{flex-direction:column}.oc-sidebar{width:100%}.oc-title{font-size:22px}}
@@ -1258,7 +1280,7 @@ function renderSteps(ep, screenKey, events, btnLabel) {
 function buildSidebar(oc, screenKey, revIdx, events = []) {
   const revealed = events.slice(0, Math.max(0, revIdx + 1));
   const statusBy = {};
-  revealed.forEach(ev => { if (ev.player) statusBy[ev.player] = ev.type; });
+  revealed.forEach(ev => { if (ev.player && ev.type !== 'reaction') statusBy[ev.player] = ev.type; });
   const alarmPct = events.length ? Math.min(99, Math.round((oc.alarm || 0) * Math.max(0, (revIdx + 1) / Math.max(1, events.length)))) : 0;
   const leaderRevealed = screenKey === 'debrief' || (revIdx >= 0 && screenKey === 'defusal');
 
@@ -1455,7 +1477,7 @@ export function rpBuildOperationClassifiedLaser(ep) {
               <div style="font:700 9px/1 'Share Tech Mono',monospace;color:var(--oc-green);letter-spacing:2px;margin-bottom:4px">💼 BAG SECURED</div>
               <div style="font:700 14px/1 'Share Tech Mono',monospace;color:#fff">${ev.player}</div>
               <div class="oc-copy" style="margin-top:4px">${ev.text}</div>
-              <div style="font:700 9px/1 'Share Tech Mono',monospace;color:var(--oc-green);margin-top:6px;letter-spacing:1px">+ADVANTAGE: DEFUSAL BONUS</div>
+              <div style="font:700 9px/1 'Share Tech Mono',monospace;color:var(--oc-amber);margin-top:6px;letter-spacing:1px">WIRE CUTTERS + GRAPPLING HOOK — CHOOSE WISELY</div>
             </div>
           </div>
         </div>
@@ -1598,8 +1620,8 @@ export function rpBuildOperationClassifiedDefusal(ep) {
     }
 
     html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
-      <div class="oc-bomb-card" style="${isBlast ? 'border-color:rgba(255,45,45,0.4)' : isGood ? 'border-color:rgba(34,197,94,0.2)' : ''}">
-        ${isBlast ? '<div class="oc-bomb-stink"></div>' : ''}
+      <div class="oc-bomb-card ${isBlast ? 'blast-card' : isMessy ? 'messy-card' : ''}" style="${isBlast ? 'border-color:rgba(255,45,45,0.4)' : isGood ? 'border-color:rgba(34,197,94,0.2)' : ''}">
+        ${isBlast ? '<div class="oc-bomb-boom"></div><div class="oc-bomb-stink"></div>' : isMessy ? '<div class="oc-bomb-foam"></div>' : ''}
         <div class="oc-bomb-header">
           <div style="display:flex;align-items:center;gap:8px">
             ${portrait(ev.player, 28)}
@@ -1634,6 +1656,7 @@ export function rpBuildOperationClassifiedDefusal(ep) {
 export function rpBuildOperationClassifiedDebrief(ep) {
   const oc = ep.operationClassified;
   const winner = oc.final?.winner || ep.immunityWinner;
+  const ranked = oc.leaderboard || [];
   const stateKey = `oc-${ep.num}-debrief`;
   if (!window._tvState) window._tvState = {};
   if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };
@@ -1643,25 +1666,54 @@ export function rpBuildOperationClassifiedDebrief(ep) {
 
   // Step 1: Fallout summary
   const fallout = [
-    oc.blackmail?.foiled ? `Blackmail foiled: ${oc.blackmail.blackmailer} got exposed by ${oc.blackmail.exposer}.` : oc.blackmail ? `Blackmail unresolved: ${oc.blackmail.blackmailer} holds leverage on ${oc.blackmail.target}.` : 'No blackmail survived the mission.',
-    oc.alliancePitch?.accepted ? `New bloc: ${[oc.alliancePitch.pitcher, ...oc.alliancePitch.targets].join(', ')}.` : oc.alliancePitch ? `${oc.alliancePitch.pitcher}'s alliance pitch was rejected.` : '',
-    oc.final?.extraImmune ? `${oc.final.extraImmune} also receives immunity — double immunity activated.` : oc.final?.tiebreak ? `Tie broken by sudden defusal: ${oc.final.tiebreak.winner} wins.` : '',
+    oc.blackmail?.foiled ? `Blackmail foiled: ${oc.blackmail.blackmailer} got exposed by ${oc.blackmail.exposer}.` : oc.blackmail ? `Blackmail unresolved: ${oc.blackmail.blackmailer} holds leverage on ${oc.blackmail.target}.` : '',
+    oc.alliancePitch?.accepted ? `New bond formed: ${[oc.alliancePitch.pitcher, ...oc.alliancePitch.targets].join(', ')} built trust during the mission.` : '',
+    oc.laserChoice?.choseSelfish ? `${oc.laserChoice.player} kept the wire cutters over saving the group.` : oc.laserChoice ? `${oc.laserChoice.player} saved the group with the grappling hook.` : '',
+    oc.final?.extraImmune ? `${oc.final.extraImmune} also receives immunity — double immunity.` : oc.final?.tiebreak ? `Tie broken by sudden defusal: ${oc.final.tiebreak.winner} wins.` : '',
   ].filter(Boolean);
-  steps.push({ type: 'warn', text: fallout.map(t => `<div class="oc-event oc-drama" data-tone="warn"><div class="oc-copy">${t}</div></div>`).join('') });
+  if (fallout.length) {
+    steps.push({ text: `<div style="margin-bottom:12px">${fallout.map(t => `<div class="oc-event oc-drama" data-tone="warn"><div class="oc-copy">${t}</div></div>`).join('')}</div>` });
+  }
 
-  // Step 2: Leaderboard
-  const rows = (oc.leaderboard || []).map((r, i) => {
-    const win = r.name === winner;
-    return `<div class="oc-agent" style="${win ? 'background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.12);border-radius:4px;padding:4px 6px' : ''}">
-      <b style="width:20px;color:${win ? 'var(--oc-green)' : 'var(--oc-steel)'};font-family:monospace;font-size:11px">${i + 1}</b>
-      ${portrait(r.name, 26)}<span class="name">${r.name}</span>
-      <span class="oc-score">${Math.round(r.score)}</span>
+  // Step 2: Agent dossier folders — one grid showing all players
+  const bottomTwo = ranked.slice(-2).map(r => r.name);
+  let foldersHtml = `<div style="text-align:center;margin-bottom:12px">
+    <div style="font:700 10px/1 'Share Tech Mono',monospace;letter-spacing:3px;color:var(--oc-amber);margin-bottom:10px">MISSION DOSSIERS</div>
+  </div>
+  <div class="oc-grid">`;
+  for (const r of ranked) {
+    const isWinner = r.name === winner;
+    const isBottom = bottomTwo.includes(r.name);
+    const stamp = isWinner ? 'MISSION SUCCESS' : isBottom ? 'MISSION FAILED' : 'MISSION COMPLETE';
+    const stampClass = isWinner ? 'mission-success' : isBottom ? 'mission-failed' : 'mission-complete';
+    const slug = players.find(p => p.name === r.name)?.slug || r.name.toLowerCase().replace(/\s+/g, '-');
+    const defusalResult = oc.players[r.name]?.defusal?.result || '?';
+    const laserMax = oc.players[r.name]?.laser?.maxStep || 0;
+    foldersHtml += `<div class="oc-folder">
+      <div class="oc-folder-content">
+        <div class="oc-folder-photo"><img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${r.name}"></div>
+        <div class="oc-folder-name">${r.name}</div>
+        <div style="font:9px/1.3 'Share Tech Mono',monospace;color:#555;margin-bottom:4px">
+          SCORE: ${Math.round(r.score)} · LASER: ${laserMax}/5 · BOMB: ${defusalResult.toUpperCase()}
+        </div>
+        <div class="oc-folder-stamp ${stampClass}">${stamp}</div>
+      </div>
     </div>`;
-  }).join('');
-  steps.push({ type: 'good', text: `<div class="oc-side-title" style="margin-top:8px">Final Leaderboard</div>${rows}` });
+  }
+  foldersHtml += `</div>`;
+  steps.push({ text: foldersHtml });
 
   // Step 3: Winner reveal
-  steps.push({ type: 'good', text: `<div class="oc-winner">${portrait(winner, 72)}<div class="name">${winner}</div><div class="oc-stamp">IMMUNITY GRANTED</div></div>` });
+  const winSlug = players.find(p => p.name === winner)?.slug || winner.toLowerCase().replace(/\s+/g, '-');
+  steps.push({ text: `<div class="oc-winner">
+    <div class="oc-folder" style="margin:0 auto;max-width:160px">
+      <div class="oc-folder-content">
+        <div class="oc-folder-photo" style="width:72px;height:72px"><img src="assets/avatars/${winSlug}.png" onerror="this.style.display='none'" alt="${winner}"></div>
+        <div class="oc-folder-name" style="font-size:14px">${winner}</div>
+        <div class="oc-folder-stamp mission-success" style="font-size:11px;padding:5px 10px">IMMUNITY GRANTED</div>
+      </div>
+    </div>
+  </div>` });
 
   let html = '';
   steps.forEach((step, i) => {

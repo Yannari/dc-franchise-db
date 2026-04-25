@@ -923,47 +923,80 @@ export function rpBuildSportsMarathonObstacle(ep) {
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const revIdx = _tvState[stateKey].idx;
 
+  const obstacleLabels = ['💪 PUSH DRILL', '👟 TIRE RUN', '🐍 MUD CRAWL'];
   const steps = [];
 
+  // Intro
   steps.push({ html: `<div class="sm-ev" style="border-left-color:var(--sport-gold);padding:14px">
     <div style="font-size:28px">🏃</div>
     <div style="flex:1"><div class="sm-ev-badge gold" style="font-size:11px;padding:4px 12px">OBSTACLE COURSE — SEEDING</div>
-    <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-top:6px">${pick(SM_HOST.obstacleIntro)(host())}</div></div>
+    <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-top:6px">${pick(SM_HOST.obstacleIntro)(host())}</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;font-style:italic">Three obstacles. Your ranking determines your matchups.</div></div>
   </div>` });
 
-  // Group by tribe
-  const tribeGroups = {};
+  // One step per player — their full 3-obstacle run
   for (const p of oc.players) {
-    if (!tribeGroups[p.tribe]) tribeGroups[p.tribe] = [];
-    tribeGroups[p.tribe].push(p);
-  }
-
-  for (const [tribe, members] of Object.entries(tribeGroups)) {
-    let tHtml = `<div class="sm-ev" style="border-left-color:var(--sport-green);padding:14px">
-      <div style="flex:1"><div class="sm-ev-badge green" style="font-size:11px;padding:4px 12px">🏃 ${tribe}</div>`;
-    for (const p of members) {
-      for (const evt of p.events) {
-        const isGood = evt.type.includes('Good');
-        tHtml += `<div class="sm-fight-row ${isGood ? 'sm-fight-good' : 'sm-fight-bad'}" style="color:${isGood ? 'var(--sport-green)' : 'var(--sport-red)'}">
-          ${_smPortrait(p.name, 22)} <span>${evt.icon} ${evt.text}</span>
-        </div>`;
-      }
+    const passCount = p.events.filter(e => e.type.includes('Good')).length;
+    const resultIcon = passCount === 3 ? '🔥' : passCount >= 2 ? '✅' : passCount === 1 ? '⚠️' : '💀';
+    const resultColor = passCount === 3 ? 'var(--sport-gold)' : passCount >= 2 ? 'var(--sport-green)' : passCount === 1 ? 'var(--sport-gold)' : 'var(--sport-red)';
+    let pHtml = `<div class="sm-ev" style="border-left-color:${resultColor};padding:14px">
+      <div style="flex:1">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        ${_smPortrait(p.name, 36)}
+        <div>
+          <div style="font-size:14px;color:var(--sport-white);font-weight:600">${p.name}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);font-family:'Share Tech Mono',monospace">${p.tribe}</div>
+        </div>
+      </div>`;
+    for (let oi = 0; oi < p.events.length; oi++) {
+      const evt = p.events[oi];
+      const isGood = evt.type.includes('Good');
+      pHtml += `<div class="sm-fight-row ${isGood ? 'sm-fight-good' : 'sm-fight-bad'}" style="color:${isGood ? 'var(--sport-green)' : 'var(--sport-red)'}">
+        <span style="font-size:9px;font-family:'Share Tech Mono',monospace;color:rgba(255,255,255,0.3);width:70px;flex-shrink:0">${obstacleLabels[oi]}</span>
+        <span>${evt.icon} ${evt.text}</span>
+      </div>`;
     }
-    tHtml += `</div></div>`;
-    steps.push({ html: tHtml });
+    pHtml += `<div style="display:flex;justify-content:flex-end;margin-top:6px;font-size:11px;font-family:'Share Tech Mono',monospace;color:${resultColor}">
+      ${resultIcon} ${passCount}/3 obstacles cleared
+    </div>
+    </div></div>`;
+    steps.push({ html: pHtml, player: p.name, tribe: p.tribe, score: p.score, seed: p.seed });
   }
 
-  // Seeding reveal
+  // Seeding reveal with matchup brackets
   let seedHtml = `<div class="sm-ev" style="border-left-color:var(--sport-gold);padding:14px">
-    <div style="flex:1"><div class="sm-ev-badge gold" style="font-size:11px;padding:4px 12px">📋 SEEDING RESULTS</div>
+    <div style="flex:1"><div class="sm-ev-badge gold" style="font-size:11px;padding:4px 12px">📋 FINAL SEEDINGS</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.5);margin:6px 0">${pick(SM_HOST.seedReveal)(host())}</div>`;
   for (const p of oc.players) {
-    seedHtml += `<div style="display:flex;align-items:center;gap:8px;padding:3px 0;font-size:12px">
-      <span style="font-family:'Share Tech Mono',monospace;color:var(--sport-gold);width:24px">#${p.seed}</span>
-      ${_smPortrait(p.name, 22)}
-      <span style="color:var(--sport-white)">${p.name}</span>
-      <span style="font-size:10px;color:rgba(255,255,255,0.3)">(${p.tribe})</span>
+    const passCount = p.events.filter(e => e.type.includes('Good')).length;
+    const barPct = Math.min(100, (p.score / Math.max(0.1, ...oc.players.map(x => x.score))) * 100);
+    seedHtml += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px">
+      <span style="font-family:'Share Tech Mono',monospace;color:var(--sport-gold);width:28px;font-weight:700">#${p.seed}</span>
+      ${_smPortrait(p.name, 24)}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--sport-white)">${p.name}</span>
+          <span style="font-size:9px;color:rgba(255,255,255,0.3)">${p.tribe}</span>
+        </div>
+        <div style="height:4px;background:rgba(0,0,0,0.3);border-radius:2px;overflow:hidden;margin-top:2px">
+          <div style="height:100%;width:${barPct}%;background:${passCount === 3 ? 'var(--sport-gold)' : passCount >= 2 ? 'var(--sport-green)' : 'var(--sport-red)'};border-radius:2px"></div>
+        </div>
+      </div>
     </div>`;
+  }
+  // Show matchup preview
+  if (sm.seedBoard?.length) {
+    seedHtml += `<div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(234,179,8,0.1)">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--sport-gold);margin-bottom:6px;font-family:'Share Tech Mono',monospace">MATCHUP PREVIEW</div>`;
+    const sportIcons = ['🥊', '🏸', '🤼', '🏀'];
+    for (let i = 0; i < Math.min(sm.seedBoard.length, 4); i++) {
+      const group = sm.seedBoard[i];
+      seedHtml += `<div style="display:flex;align-items:center;gap:4px;padding:3px 0;font-size:10px">
+        <span style="width:20px;text-align:center">${sportIcons[i] || '🏅'}</span>
+        ${group.map(f => `<span style="display:flex;align-items:center;gap:2px">${_smSidePortrait(f.name, 16)}<span style="color:rgba(255,255,255,0.5)">${f.name.split(' ')[0]}</span></span>`).join('<span style="color:var(--sport-gold);margin:0 2px">vs</span>')}
+      </div>`;
+    }
+    seedHtml += `</div>`;
   }
   seedHtml += `</div></div>`;
   steps.push({ html: seedHtml });
@@ -990,9 +1023,62 @@ export function rpBuildSportsMarathonObstacle(ep) {
     </div>
     <div class="sm-layout">
       <div class="sm-feed">${feed}${controls}</div>
-      <div class="sm-sidebar" id="sm-sidebar-obstacle"><div class="sm-side-sec">SEEDING</div><div style="font-size:9px;color:rgba(255,255,255,0.2)">Reveal to see rankings</div></div>
+      <div class="sm-sidebar" id="sm-sidebar-obstacle">${_smBuildObstacleSidebar(sm, revIdx + 1)}</div>
     </div>
   `, ep);
+}
+
+function _smBuildObstacleSidebar(sm, revCount) {
+  const oc = sm.obstacleCourse;
+  const playerOffset = 1; // intro step
+  const playersRevealed = Math.max(0, Math.min(oc.players.length, revCount - playerOffset));
+  const seedingRevealed = revCount > playerOffset + oc.players.length;
+
+  let sb = `<div class="sm-side-sec">LEADERBOARD</div>`;
+
+  if (playersRevealed === 0) {
+    sb += `<div style="font-size:10px;color:rgba(255,255,255,0.15);padding:8px 0;text-align:center">Waiting for results...</div>`;
+    return sb;
+  }
+
+  // Show revealed players sorted by score (live leaderboard)
+  const revealed = oc.players.slice(0, playersRevealed).sort((a, b) => b.score - a.score);
+  const unrevealed = oc.players.length - playersRevealed;
+
+  for (let i = 0; i < revealed.length; i++) {
+    const p = revealed[i];
+    const passCount = p.events.filter(e => e.type.includes('Good')).length;
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+    const barColor = passCount === 3 ? 'var(--sport-gold)' : passCount >= 2 ? 'var(--sport-green)' : 'var(--sport-red)';
+    sb += `<div style="display:flex;align-items:center;gap:5px;padding:4px 5px;margin-bottom:2px;background:rgba(0,0,0,0.15);border-radius:3px">
+      <span style="font-size:10px;width:16px;text-align:center;flex-shrink:0">${medal || `<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,0.2)">${i + 1}</span>`}</span>
+      ${_smSidePortrait(p.name, 20)}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;color:var(--sport-white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+        <div style="height:3px;background:rgba(0,0,0,0.3);border-radius:2px;overflow:hidden;margin-top:1px">
+          <div style="height:100%;width:${Math.min(100, (p.score / Math.max(0.1, ...revealed.map(x => x.score))) * 100)}%;background:${barColor};border-radius:2px"></div>
+        </div>
+      </div>
+      <span style="font-size:9px;font-family:'Share Tech Mono',monospace;color:${barColor}">${passCount}/3</span>
+    </div>`;
+  }
+
+  if (unrevealed > 0) {
+    sb += `<div style="font-size:9px;color:rgba(255,255,255,0.15);text-align:center;padding:4px 0;font-family:'Share Tech Mono',monospace">${unrevealed} more to go...</div>`;
+  }
+
+  if (seedingRevealed) {
+    sb += `<div class="sm-side-sec">FINAL SEED</div>`;
+    for (const p of oc.players) {
+      sb += `<div style="display:flex;align-items:center;gap:4px;padding:2px 0;font-size:9px">
+        <span style="font-family:'Share Tech Mono',monospace;color:var(--sport-gold);width:20px">#${p.seed}</span>
+        ${_smSidePortrait(p.name, 14)}
+        <span style="color:rgba(255,255,255,0.5)">${p.name.split(' ')[0]}</span>
+      </div>`;
+    }
+  }
+
+  return sb;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1234,7 +1320,9 @@ function _smUpdateSidebar(screenKey, revIdx) {
   const latestEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
   const sm = latestEp?.sportsMarathon;
   if (!sm) return;
-  if (suffix === 'sports') {
+  if (suffix === 'obstacle') {
+    sideEl.innerHTML = _smBuildObstacleSidebar(sm, revIdx + 1);
+  } else if (suffix === 'sports') {
     sideEl.innerHTML = _smBuildSportsSidebar(sm, revIdx + 1);
   }
 }

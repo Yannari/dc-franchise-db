@@ -486,10 +486,41 @@ function css() {
     animation:oc-blink 0.8s ease-in-out infinite}
   @keyframes oc-blink{0%,100%{opacity:1}50%{opacity:0.3}}
 
-  /* Scan pulse */
-  .oc-scan-pulse{animation:oc-scan-flash 0.6s ease-out}
-  @keyframes oc-scan-flash{0%{box-shadow:inset 0 0 20px rgba(255,45,45,0.2)}100%{box-shadow:none}}
-  @keyframes oc-scan-ring{0%{transform:scale(1.3);opacity:0}30%{opacity:1}100%{transform:scale(1);opacity:1}}
+  /* ── SCAN CARD — spy ID badge ── */
+  .oc-scan-card{display:flex;gap:0;background:#0a0e14;border:2px solid rgba(59,130,246,0.2);border-radius:8px;overflow:hidden;max-width:460px;margin:8px auto}
+  .oc-scan-photo{width:100px;flex-shrink:0;position:relative;background:#080c12;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .oc-scan-photo img{width:100%;height:100%;object-fit:cover}
+  /* Corner brackets like face detection */
+  .oc-scan-photo::before{content:'';position:absolute;inset:8px;
+    border:2px solid rgba(59,130,246,0.3);border-radius:2px;
+    clip-path:polygon(0 0,25% 0,25% 2px,2px 2px,2px 25%,0 25%,0 0,75% 0,75% 0,100% 0,100% 25%,calc(100% - 2px) 25%,calc(100% - 2px) 2px,75% 2px,75% 0,0 75%,0 75%,0 100%,25% 100%,25% calc(100% - 2px),2px calc(100% - 2px),2px 75%,0 75%,100% 75%,100% 75%,100% 100%,75% 100%,75% calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) 75%,100% 75%);
+    pointer-events:none;z-index:2}
+  /* Scan line sweeping top to bottom */
+  .oc-scan-photo::after{content:'';position:absolute;left:0;right:0;height:3px;
+    background:linear-gradient(180deg,transparent,rgba(59,130,246,0.6),rgba(59,130,246,0.8),rgba(59,130,246,0.6),transparent);
+    box-shadow:0 0 12px 3px rgba(59,130,246,0.3);
+    pointer-events:none;z-index:3;animation:oc-scanline-sweep 2s ease-in-out infinite}
+  @keyframes oc-scanline-sweep{0%{top:-3px}50%{top:calc(100% + 3px)}50.01%{top:-3px}100%{top:calc(100% + 3px)}}
+
+  .oc-scan-data{flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:4px}
+  .oc-scan-header{font:700 8px/1 'Share Tech Mono',monospace;letter-spacing:3px;color:rgba(59,130,246,0.5);text-transform:uppercase;margin-bottom:2px}
+  .oc-scan-name{font:700 16px/1 'Share Tech Mono',monospace;color:#fff;letter-spacing:1px}
+  .oc-scan-field{display:flex;justify-content:space-between;font:11px/1.3 'Share Tech Mono',monospace;padding:2px 0;border-bottom:1px solid rgba(59,130,246,0.06)}
+  .oc-scan-field .label{color:rgba(59,130,246,0.4);letter-spacing:1px;font-size:9px}
+  .oc-scan-field .val{color:rgba(255,255,255,0.7);letter-spacing:1px}
+  /* Typewriter effect for data fields */
+  .oc-scan-field .val{overflow:hidden;white-space:nowrap;border-right:2px solid rgba(59,130,246,0.5);
+    animation:oc-type 1.2s steps(16) forwards,oc-blink-caret 0.6s step-end 3}
+  @keyframes oc-type{0%{width:0}100%{width:100%;border-right-color:transparent}}
+  @keyframes oc-blink-caret{50%{border-right-color:transparent}}
+
+  .oc-scan-status{margin-top:4px;font:700 11px/1 'Share Tech Mono',monospace;letter-spacing:2px;padding:5px 8px;border-radius:3px;text-align:center}
+  .oc-scan-status.clear{color:var(--oc-green);border:1px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.08)}
+  .oc-scan-status.watched{color:var(--oc-amber);border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.08)}
+  .oc-scan-status.flagged{color:var(--oc-red);border:1px solid rgba(255,45,45,0.3);background:rgba(255,45,45,0.08);animation:oc-alert-flash 0.8s ease-in-out 2}
+  @keyframes oc-alert-flash{0%,100%{background:rgba(255,45,45,0.08)}50%{background:rgba(255,45,45,0.2)}}
+
+  .oc-scan-narrative{font-size:11px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:4px;line-height:1.4}
 
   .oc-controls{text-align:center;margin-top:14px;position:relative;z-index:5}
   .oc-btn{border:1px solid rgba(255,45,45,.4);background:linear-gradient(180deg,#1a0508,#0d0304);color:#fff;border-radius:4px;
@@ -511,7 +542,9 @@ function css() {
   .oc-drama{border-left:3px dashed rgba(245,158,11,.2);background:rgba(245,158,11,.02);font-style:italic}
 
   @media(prefers-reduced-motion:reduce){
-    .oc-shell::after,.oc-bomb-timer,.oc-scan-pulse,[style*="oc-scan-ring"]{animation:none!important}
+    .oc-shell::after,.oc-bomb-timer,.oc-scan-photo::after,
+    .oc-scan-field .val,.oc-scan-status.flagged{animation:none!important}
+    .oc-scan-field .val{width:100%!important;border-right:none!important}
   }
   @media(max-width:760px){.oc-layout{flex-direction:column}.oc-sidebar{width:100%}.oc-title{font-size:22px}}
   </style>`;
@@ -601,22 +634,23 @@ export function rpBuildOperationClassifiedScan(ep) {
   let html = '';
   events.forEach((ev, i) => {
     const visible = i <= state.idx;
-    const resultColor = ev.type === 'clear' ? 'var(--oc-green)' : ev.type === 'watched' ? 'var(--oc-amber)' : 'var(--oc-red)';
     const resultLabel = ev.type === 'clear' ? 'CLEARANCE GRANTED' : ev.type === 'watched' ? 'UNDER SURVEILLANCE' : 'INTRUDER FLAGGED';
-    const resultIcon = ev.type === 'clear' ? '✅' : ev.type === 'watched' ? '⚠️' : '🚨';
+    const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
+    const agentNum = `AG-${String(Math.abs(ev.player.charCodeAt(0) * 37 + ev.player.length * 89) % 9000 + 1000)}`;
+    const clearance = ev.type === 'clear' ? 'LEVEL 9 — TOP SECRET' : ev.type === 'watched' ? 'LEVEL 4 — RESTRICTED' : 'LEVEL 0 — DENIED';
     html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
-      <div class="oc-event oc-scan-pulse" data-tone="${eventTone(ev.type)}" style="padding:14px">
-        <div style="display:flex;align-items:center;gap:14px;width:100%">
-          <div style="position:relative">
-            ${portrait(ev.player, 52)}
-            <div style="position:absolute;inset:-3px;border:2px solid ${resultColor};border-radius:50%;animation:oc-scan-ring 1s ease-out"></div>
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:2px;margin-bottom:4px">SCANNING FACE DATA...</div>
-            <div style="font-size:13px;color:#fff;font-weight:600;margin-bottom:4px">${ev.player}</div>
-            <div style="font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:${resultColor};padding:3px 8px;border:1px solid ${resultColor};border-radius:3px;display:inline-block;background:rgba(0,0,0,0.3)">${resultIcon} ${resultLabel}</div>
-            <div class="oc-copy" style="margin-top:6px">${ev.text}</div>
-          </div>
+      <div class="oc-scan-card">
+        <div class="oc-scan-photo">
+          <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${ev.player}">
+        </div>
+        <div class="oc-scan-data">
+          <div class="oc-scan-header">CLASSIFIED DOSSIER</div>
+          <div class="oc-scan-name">${ev.player}</div>
+          <div class="oc-scan-field"><span class="label">AGENT #</span><span class="val">${agentNum}</span></div>
+          <div class="oc-scan-field"><span class="label">CLEARANCE</span><span class="val">${clearance}</span></div>
+          <div class="oc-scan-field"><span class="label">THREAT</span><span class="val">${ev.type === 'flagged' ? 'HIGH' : ev.type === 'watched' ? 'MODERATE' : 'NONE'}</span></div>
+          <div class="oc-scan-status ${ev.type}">${resultLabel}</div>
+          <div class="oc-scan-narrative">${ev.text}</div>
         </div>
       </div>
     </div>`;

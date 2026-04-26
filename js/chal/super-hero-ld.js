@@ -1241,10 +1241,10 @@ export function simulateSuperHerold(ep) {
   const _romActive = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
   for (let _ri = 0; _ri < _romActive.length; _ri++) {
     for (let _rj = _ri + 1; _rj < _romActive.length; _rj++) {
-      _challengeRomanceSpark(_romActive[_ri], _romActive[_rj], ep, 'superHerold', _romActive, ep.chalMemberScores || {}, 'superhero battle royale');
+      _challengeRomanceSpark(_romActive[_ri], _romActive[_rj], ep, null, null, ep.chalMemberScores || {}, 'superhero battle royale');
     }
   }
-  _checkShowmanceChalMoment(ep, 'superHerold', _romActive, ep.chalMemberScores || {}, 'battle', _romActive);
+  _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'battle', _romActive);
 
   // ── FINALIZE ──
   ep.superHerold = result;

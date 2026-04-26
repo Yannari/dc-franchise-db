@@ -38,9 +38,10 @@ const CLASS_KEYS = Object.keys(CLASSES);
 const ARCHETYPE_PRIORITY_CLASS = {
   villain: 'rogue', mastermind: 'rogue',
   schemer: null, // special: rogue if strategic >= 7, else mage
-  hero: 'knight', 'loyal-soldier': 'knight', underdog: 'knight',
+  hero: 'knight', 'loyal-soldier': 'knight',
+  underdog: 'bard', floater: 'bard',
   hothead: 'barbarian', 'challenge-beast': 'barbarian', 'chaos-agent': 'barbarian',
-  'social-butterfly': 'bard', showmancer: 'bard', floater: 'bard',
+  'social-butterfly': 'bard', showmancer: 'bard',
   'perceptive-player': 'mage',
   wildcard: null, // random
   goat: 'barbarian',
@@ -118,10 +119,15 @@ function _assignClasses(knights) {
       firstPass.add(cls);
     }
   }
-  // Second pass: allow duplicates
+  // Second pass: priority overflow players go to unfilled classes first, then allow duplicates
   for (const { name, cls } of priorityPlayers) {
     if (assigned[name]) continue;
-    if (classCounts[cls] < cap) {
+    const unfilled = CLASS_KEYS.filter(c => classCounts[c] === 0);
+    if (unfilled.length) {
+      const best = unfilled.map(c => [c, _getClassScore(name, c)]).sort((a, b) => b[1] - a[1])[0][0];
+      classCounts[best]++;
+      assigned[name] = best;
+    } else if (classCounts[cls] < cap) {
       classCounts[cls]++;
       assigned[name] = cls;
     }
@@ -157,19 +163,27 @@ const CEREMONY_TEXT = {
     (h, name, title) => `${h} held up a gleaming glass slipper. "One of you is destined for the throne." The slipper glowed, pulsed, and flew through the air — landing at ${name}'s feet. "${title} ${name}," ${h} announced. "Your reign begins now."`,
     (h, name, title) => `A crystal slipper descended from the sky on a velvet cushion. ${h} caught it with a flourish. "The kingdom has chosen." He knelt before ${name}. "All hail ${title} ${name}."`,
     (h, name, title) => `${h} produced the glass slipper from behind his back. "Every fairy tale needs royalty." He walked down the line, studying each player. The slipper shimmered when he reached ${name}. "Looks like we have our ${title}."`,
+    (h, name, title) => `The glass slipper sat on a velvet pedestal, glowing faintly. ${h} circled the group. "One of you will rule. The rest will serve." The slipper shattered into a thousand sparks — and reformed in ${name}'s hands. "${title} ${name}. The kingdom recognizes its own."`,
+    (h, name, title) => `${h} snapped his fingers. A throne rose from the ground, vines and gold intertwining. "Somebody needs to sit in that." Every head turned to ${name}. The slipper materialized at their feet. ${h} grinned. "Congratulations, ${title} ${name}. Or should I say... condolences."`,
   ],
   reaction: {
     happy: [
       (name, pr, title) => `${name} smiled and accepted the crown. "I've been waiting my whole life for this moment." ${pr.Sub} wasn't kidding.`,
       (name, pr, title) => `${name} placed the crown on ${pr.posAdj} head with practiced ease. "Born for this."`,
+      (name, pr, title) => `${name} curtsied — or bowed, depending on who you asked — with theatrical grace. "The crown suits me. I always knew it would." ${pr.Sub} waved to an imaginary crowd. The crowd wasn't imaginary for long.`,
+      (name, pr, title) => `Tears welled in ${name}'s eyes. Actual tears. "I used to pretend I was royalty when I was a kid." ${pr.Sub} touched the crown gently. "Guess pretending paid off." The other players couldn't help but smile.`,
     ],
     villain: [
       (name, pr, title) => `${name} took the crown and smirked. "Finally, the power I deserve." The other players exchanged worried glances.`,
       (name, pr, title) => `${name} snatched the crown. "Every kingdom needs a ruler who isn't afraid to get their hands dirty." ${pr.Sub} was already scheming.`,
+      (name, pr, title) => `${name} examined the crown, turning it slowly. "Power isn't given. It's recognized." ${pr.Sub} placed it on ${pr.posAdj} head like ${pr.sub} was crowning ${pr.ref}. "Kneel." Nobody laughed. Nobody was sure ${pr.sub} was joking.`,
+      (name, pr, title) => `The crown settled on ${name}'s head and the temperature seemed to drop. "A throne is just a chair until someone worthy sits in it." ${pr.Sub} surveyed the other players like pieces on a chessboard. "Let's see who's expendable."`,
     ],
     reluctant: [
       (name, pr, title) => `${name} blinked. "Wait, me? I'm the ${title.toLowerCase()}?" ${pr.Sub} looked down at the slipper. "I... guess I am."`,
       (name, pr, title) => `${name} accepted the crown hesitantly. "I'm not sure I'm cut out for this." The crown fit perfectly. Destiny doesn't ask.`,
+      (name, pr, title) => `${name} fumbled the slipper, nearly dropping it. "I think there's been a mistake." The slipper pulsed brighter. "Okay, apparently not." ${pr.Sub} put the crown on sideways. Someone straightened it for ${pr.obj}. Fairy tales don't care if you're ready.`,
+      (name, pr, title) => `"Seriously?" ${name} looked around for someone to hand the crown to. Nobody reached for it. "I don't even like being in charge of what we eat for dinner." ${pr.Sub} put it on anyway. It fit like it had been waiting.`,
     ],
   },
 };
@@ -177,27 +191,39 @@ const CEREMONY_TEXT = {
 const CLASS_ASSIGN_TEXT = {
   knight: [
     (name, pr) => `${name} drew a broadsword from a stone pedestal. It rang like a bell. "By my honor." ${pr.Sub} was a Knight now.`,
-    (name, pr) => `A suit of gleaming red armor materialized around ${name}. ${pr.Sub} tested the sword. Balanced. Deadly. "${pr.Sub === 'She' || pr.Sub === 'she' ? 'she' : 'he'} looked like ${pr.sub} was born for battle."`,
+    (name, pr) => `A suit of gleaming red armor materialized around ${name}. ${pr.Sub} tested the sword. Balanced. Deadly. ${pr.Sub} looked like ${pr.sub} was born for battle.`,
+    (name, pr) => `${name} knelt before the enchanted anvil. A blade of crimson steel rose from the iron, hilt-first, glowing with an inner fire. ${pr.Sub} gripped it and stood. The Knight's oath was sealed without a word — the sword had already spoken.`,
+    (name, pr) => `A shield bearing an unknown crest slammed into the earth at ${name}'s feet. ${pr.Sub} picked it up, and the crest shifted — forming ${pr.posAdj} own face. "The kingdom arms its defenders." The Knight was ready before the quest even began.`,
   ],
   ranger: [
     (name, pr) => `${name} found a longbow hanging from an oak branch. The forest seemed to whisper ${pr.posAdj} name. Ranger.`,
     (name, pr) => `A green cloak settled on ${name}'s shoulders like a second skin. ${pr.Sub} nocked an arrow instinctively. The Ranger walks alone.`,
+    (name, pr) => `A hawk descended from the clouds and perched on ${name}'s outstretched arm. It carried a quiver of silver arrows. ${pr.Sub} slung them over ${pr.posAdj} shoulder without breaking eye contact with the bird. "Lead the way." The Ranger had found ${pr.posAdj} guide.`,
+    (name, pr) => `${name}'s boots left no prints in the enchanted soil. A longbow materialized in ${pr.posAdj} grip, already strung, already aimed. The forest recognized one of its own. "I don't need a path," ${pr.sub} murmured. "I AM the path."`,
   ],
   mage: [
     (name, pr) => `${name} opened an ancient spellbook. The pages glowed violet. Knowledge poured in like a flood. "I can SEE the patterns now."`,
     (name, pr) => `A crystal staff flew into ${name}'s hand. Purple sparks danced at the tip. "The arcane chooses the worthy." The Mage had arrived.`,
+    (name, pr) => `Runes etched themselves into ${name}'s forearms, spiraling from wrist to elbow. ${pr.Sub} flexed ${pr.posAdj} fingers and the air crackled. "Every problem has a formula. Every enchantment has a flaw." The Mage doesn't guess — ${pr.sub} calculates.`,
+    (name, pr) => `${name} touched the ancient tome and the world went silent. For three heartbeats, ${pr.sub} saw EVERYTHING — every enchantment, every curse, every hidden thread of magic in the kingdom. Then sound rushed back. ${pr.Sub} smiled. "I know things now."`,
   ],
   rogue: [
     (name, pr) => `${name} vanished into shadow and reappeared behind ${host()}. "Didn't see me, did you?" The Rogue grins. The Rogue always grins.`,
     (name, pr) => `A set of lockpicks and a dark cloak appeared at ${name}'s feet. ${pr.Sub} picked them up without a sound. Some are born to the shadows.`,
+    (name, pr) => `${name} was already wearing the dark cloak before anyone noticed it appear. Two daggers glinted at ${pr.posAdj} hips. "I don't fight fair," ${pr.sub} whispered to no one in particular. "I fight smart." The shadows wrapped around ${pr.obj} like an old friend.`,
+    (name, pr) => `One moment ${name} was standing with the group. The next, ${pr.sub} was gone — and three players found their pockets lighter. ${pr.Sub} reappeared on a tree branch overhead, tossing a stolen coin. "Just practicing." The Rogue was already in character.`,
   ],
   bard: [
     (name, pr) => `${name} strummed a lute that appeared from nowhere. The melody was haunting. Beautiful. "Every quest needs a song." The Bard had found ${pr.posAdj} instrument.`,
-    (name, pr) => `Music swelled around ${name}. A golden lute materialized. "${pr.Sub === 'She' || pr.Sub === 'she' ? 'She' : 'He'} who controls the story controls the kingdom." The Bard speaks truth.`,
+    (name, pr) => `Music swelled around ${name}. A golden lute materialized. "Whoever controls the story controls the kingdom." The Bard speaks truth.`,
+    (name, pr) => `${name}'s voice echoed across the clearing — a single, perfect note. The enchanted forest fell silent to listen. A silver lyre appeared in ${pr.posAdj} hands. "I don't fight monsters," ${pr.sub} said. "I make them weep." The Bard's power is not in the blade but in the ballad.`,
+    (name, pr) => `A quill and scroll materialized beside a gleaming lute. ${name} picked up both. "The Bard doesn't just survive the story," ${pr.sub} announced with a dramatic flourish. "The Bard WRITES it." ${pr.Sub} strummed a chord. The forest applauded. Literally — the trees clapped their branches.`,
   ],
   barbarian: [
     (name, pr) => `${name} hefted a battle axe bigger than ${pr.posAdj} torso. No finesse. No technique. Just raw, terrifying power. The Barbarian needs nothing else.`,
     (name, pr) => `The ground cracked where ${name} planted ${pr.posAdj} feet. Warpaint appeared across ${pr.posAdj} face. The Barbarian was ready for war.`,
+    (name, pr) => `${name} tore a tree from the earth with bare hands. Roots and all. "This is my weapon now." The other players took a collective step back. The Barbarian doesn't choose weapons — ${pr.sub} makes them from whatever's nearby.`,
+    (name, pr) => `A massive war axe embedded itself in the ground. Everyone stared at it. ${name} yanked it free one-handed and roared — a sound that scattered birds for a mile. Warpaint blazed across ${pr.posAdj} skin like liquid fire. "FINALLY." The Barbarian had been waiting for permission to break things.`,
   ],
 };
 
@@ -208,57 +234,89 @@ const BEAT_TEXT = {
     ranger: [
       (n, pr) => `${n} read the forest like an open book. The shifting paths couldn't fool the Ranger — ${pr.sub} spotted the true trail through the illusions, marking trees as ${pr.sub} went. The enchantment parted before ${pr.obj} like a curtain.`,
       (n, pr) => `The forest twisted and writhed, but ${n}'s Ranger instincts cut through the chaos. ${pr.Sub} tracked animal prints, noted moss patterns, and led the way without hesitation. "Nature doesn't lie."`,
+      (n, pr) => `${n} crouched low and pressed ${pr.posAdj} palm to the forest floor. The earth hummed with a secret frequency only Rangers could hear. "This way. The roots know the true path." ${pr.Sub} moved through the illusions like they were morning fog — present but powerless.`,
+      (n, pr) => `Every false turn whispered temptation, but ${n} followed the birds instead. "Watch where the animals go," ${pr.sub} muttered. "They can't be enchanted." The Ranger's trust in nature was absolute, and nature rewarded it with the straightest path through the labyrinth.`,
     ],
     knight: [
       (n, pr) => `${n} marched straight through the enchanted forest with sword raised. The illusions flickered and parted — not from skill, but from sheer determination. "I walk forward. That's my strategy."`,
       (n, pr) => `The Knight pressed on, hacking through phantom vines. ${n}'s armor rattled with every step. Subtle? No. Effective? Somehow, yes.`,
+      (n, pr) => `${n} refused to slow down. The enchanted forest conjured shifting shadows and whispered doubts, but the Knight's answer to confusion was the same as ${pr.posAdj} answer to everything: march forward and swing. The trees learned to get out of the way.`,
+      (n, pr) => `"A Knight does not wander," ${n} declared, carving a notch into every tree ${pr.sub} passed. The forest rearranged itself three times. ${pr.Sub} carved three more notches. The enchantment gave up first.`,
     ],
     mage: [
       (n, pr) => `${n} waved ${pr.posAdj} staff and the illusions dissolved into sparkling dust. "Parlor tricks." The Mage saw the true forest — and every trap laid within it.`,
       (n, pr) => `The Mage's eyes glowed as ${n} deciphered the enchantment's logic. "The path loops every seven steps unless you step left at the third stone." Nobody questioned the math.`,
+      (n, pr) => `${n} closed ${pr.posAdj} eyes and let the arcane signatures guide ${pr.obj}. Each illusion had a different magical fingerprint — amateur work, really. "Whoever enchanted this forest was a C-minus student at best." The Mage's contempt was its own kind of compass.`,
+      (n, pr) => `Purple runes orbited ${n}'s staff as ${pr.sub} mapped the enchantment's lattice structure in real time. "The illusions repeat on a thirteen-second cycle. Walk when I say walk. Stop when I say stop." The Mage turned chaos into a timetable.`,
     ],
     rogue: [
       (n, pr) => `${n} hugged the shadows, avoiding every trap and illusion by simply not being where they expected. The Rogue doesn't follow paths — ${pr.sub} makes ${pr.posAdj} own.`,
       (n, pr) => `While others stumbled through the front entrance, ${n} found a side trail hidden behind a waterfall. "Shortcuts aren't cheating. They're intelligence."`,
+      (n, pr) => `${n} vanished into the undergrowth and reappeared fifty yards ahead, leaning against a tree. "You all took the scenic route, I see." The Rogue had found three hidden passages, stolen a fairy's lantern for light, and still had time to look smug about it.`,
+      (n, pr) => `The enchanted forest tried to trap ${n} in a loop. The Rogue noticed after the second lap, pickpocketed a glowing stone from a tree sprite, and used it as a compass. "Everything enchanted has a weakness. Usually it's in its pockets."`,
     ],
     bard: [
       (n, pr) => `${n} hummed a melody and the forest calmed. Trees straightened, illusions faded, and even the enchanted creatures stopped to listen. "Music soothes the savage enchantment."`,
       (n, pr) => `The Bard sang to the forest, and the forest sang back. ${n} followed the harmony through the maze, ${pr.posAdj} voice the only compass ${pr.sub} needed.`,
+      (n, pr) => `${n} composed a walking song, each verse a landmark. "Past the twisted oak, beneath the silver stream..." The melody became a map. Other players hummed along, following the tune without realizing they were being led. The Bard's greatest trick — making everyone think they found the path themselves.`,
+      (n, pr) => `The enchanted trees swayed in rhythm as ${n} played. "Even cursed forests have ears," the Bard murmured. ${pr.Sub} matched ${pr.posAdj} tempo to the forest's breathing and the illusions dissolved like morning dew. Music and magic are cousins, after all.`,
     ],
     barbarian: [
       (n, pr) => `${n} didn't navigate the enchanted forest. ${n} DESTROYED it. Phantom trees? Smashed. Illusory walls? Punched. "I can't be lost if nothing is standing."`,
       (n, pr) => `The Barbarian charged through the forest roaring. The enchantment tried to redirect ${n}, but ${pr.sub} ran through every illusion like it wasn't there. Because to ${pr.obj}, it wasn't.`,
+      (n, pr) => `The forest conjured a wall of thorns. ${n} ran through it. The forest conjured a bottomless pit. ${n} jumped over it while screaming. The forest conjured a terrifying specter. ${n} headbutted it. The enchantment was running out of ideas.`,
+      (n, pr) => `${n} navigated by destruction. Every tree ${pr.sub} knocked down was a breadcrumb. Every boulder ${pr.sub} punted was a milestone. "I don't need a map. I need a CLEAR PATH." The Barbarian made one — the hard way, the only way ${pr.sub} knew.`,
     ],
   },
   'forest-riddle': {
     mage: [
       (n, pr) => `The Riddle Gate hummed with arcane energy. ${n} studied the inscription, cross-referenced two ancient languages, and spoke the answer before anyone else finished reading. The gate swung open. "Elementary."`,
       (n, pr) => `${n} pressed ${pr.posAdj} palm against the Riddle Gate and felt the answer through the stonework. "The question is the answer." The gate shattered. The Mage doesn't ask — ${pr.sub} knows.`,
+      (n, pr) => `${n} laughed at the riddle. Actually laughed. "This is a trick question wrapped in a paradox. The answer is 'silence.'" The gate groaned open. The other players hadn't even finished reading line one. The Mage was already walking through.`,
     ],
     knight: [
       (n, pr) => `${n} stared at the riddle. Stared harder. Then drew ${pr.posAdj} sword and smashed the gate's hinges off. "There. Solved." The gate fell open. Not elegant, but effective.`,
+      (n, pr) => `"I don't do riddles," ${n} announced. The Knight drove ${pr.posAdj} sword into the gate's lock mechanism and twisted. The enchanted door swung open with a groan of surrender. "Honor doesn't require literacy."`,
+      (n, pr) => `${n} studied the inscription with the intensity of someone who'd rather be fighting. After thirty seconds of squinting, ${pr.sub} rammed ${pr.posAdj} shoulder into the gate. It buckled. "That IS my answer." The enchanted stone crumbled around the Knight's brute sincerity.`,
+      (n, pr) => `The riddle glowed with ancient power. ${n} glowed with impatience. ${pr.Sub} wedged ${pr.posAdj} blade into the seam and levered the entire gate off its enchanted hinges. "A Knight's answer is always steel." The gate crashed to the ground, riddle unread, quest unimpeded.`,
     ],
     rogue: [
       (n, pr) => `While everyone puzzled over the riddle, ${n} noticed a loose stone beside the gate. A side passage. "Why solve a puzzle when you can go around it?"`,
+      (n, pr) => `${n} studied the riddle for exactly three seconds, then studied the FRAME for ten. A hidden latch. A false panel. "The riddle's a distraction," the Rogue whispered, slipping through. "The real answer is always 'look somewhere else.'"`,
+      (n, pr) => `${n} pressed ${pr.posAdj} ear to the gate and listened. A mechanism. A click pattern. The Rogue's fingers danced across the stonework, finding pressure plates hidden in the mortar. The gate slid open silently. "Riddles are for scholars. Locks are for Rogues."`,
+      (n, pr) => `The others stared at the riddle. ${n} stared at the hinges. Three lockpicks and twelve seconds later, the gate swung open from behind. "The answer was 'rusty hardware,'" the Rogue announced, already walking through. "You're welcome to keep reading if you want."`,
     ],
     bard: [
       (n, pr) => `${n} didn't solve the riddle — ${pr.sub} charmed the gate. A serenade, a few flattering words about its excellent craftsmanship, and the enchanted door blushed open. "Everything responds to kindness."`,
+      (n, pr) => `${n} read the riddle aloud in a dramatic voice, turning each line into a verse. The gate was so entertained by the performance that it opened voluntarily. "See? Even doors appreciate good theater."`,
+      (n, pr) => `${n} sat cross-legged before the Riddle Gate and began telling it a story. A story about a lonely gate that never got visitors, only riddle-solvers who never stayed to chat. The gate wept enchanted tears and swung wide. "All it wanted was company," the Bard explained. "Most enchantments do."`,
+      (n, pr) => `"The answer is a song," ${n} declared confidently. It was not, in fact, a song. But the Bard sang one anyway — a ballad so stirring that the gate's enchantment forgot what question it had asked. By the final note, the way was open and the gate was humming along.`,
     ],
     barbarian: [
       (n, pr) => `${n} headbutted the Riddle Gate. It cracked. ${pr.Sub} headbutted it again. It crumbled. "What riddle?" The Barbarian's solution to everything.`,
+      (n, pr) => `The Riddle Gate asked its question. ${n} picked up a boulder and answered with physics. The gate exploded into enchanted rubble. "I solved it," the Barbarian announced. "The answer was 'force.'"`,
+      (n, pr) => `${n} stared at the glowing inscription. The inscription stared back. After five painful seconds, the Barbarian grabbed the gate by its top edge and ripped it from the earth like a weed. "I don't negotiate with doors." The riddle's magic fizzled out mid-sentence.`,
+      (n, pr) => `The Riddle Gate began to speak. ${n} punched it before it finished the first word. Stone shrapnel flew. The enchantment sputtered. "Was that a question?" the Barbarian asked the rubble. "Because my answer is always the same." ${pr.Sub} cracked ${pr.posAdj} knuckles. Destiny doesn't require a vocabulary.`,
     ],
     ranger: [
       (n, pr) => `${n} found vines growing through a crack above the gate and scaled the wall entirely. "Don't need to solve it if you go over it."`,
+      (n, pr) => `${n} noticed a fox slipping through a gap beneath the Riddle Gate. Where animals go, Rangers follow. ${pr.Sub} squeezed through the same gap, emerging on the other side covered in dirt but ahead of everyone. "The forest always has a back door."`,
+      (n, pr) => `${n} studied the gate's foundation where roots had been slowly working into the stone for centuries. A firm kick to the weakened base and the entire left side gave way. "Nature already solved this riddle," the Ranger murmured. "You just have to know where to look."`,
+      (n, pr) => `A bird landed on the Riddle Gate's keystone and began pecking. ${n} watched with interest. Where the bird pecked, cracks formed — the enchantment was weakest there. The Ranger drove an arrow into the spot. The gate split cleanly in two. "The forest tells you everything if you pay attention."`,
     ],
   },
   'forest-ambush': {
     knight: [
       (n, pr) => `Enchanted wolves burst from the undergrowth! ${n} drew ${pr.posAdj} sword in one fluid motion and stood firm. Slash. Parry. Counter. The Knight's training took over. "Come and get it!"`,
       (n, pr) => `The creature ambush caught everyone off guard — except ${n}. The Knight had been waiting for this. Sword singing, armor ringing, ${pr.sub} carved through the enchanted beasts with disciplined fury.`,
+      (n, pr) => `${n} planted ${pr.posAdj} feet and raised ${pr.posAdj} shield. The enchanted wolves crashed against the Knight like waves against a cliff — and like waves, they broke. "This is what I trained for. This is what I LIVE for." Steel met fang. Steel won.`,
+      (n, pr) => `The pack circled, snarling. ${n} didn't flinch. The Knight rotated slowly, sword extended, creating a perimeter of death. "One at a time or all at once. I don't care." They came all at once. ${pr.Sub} still didn't flinch.`,
     ],
     _default: [
       (n, pr, cls) => `${n} fought back against the enchanted creatures with everything ${pr.sub} had, ${pr.posAdj} ${CLASSES[cls]?.label || 'class'} training pushed to its limits.`,
       (n, pr, cls) => `The ambush was brutal. ${n} scrambled, dodged, and fought — relying on ${pr.posAdj} ${cls === 'barbarian' ? 'raw strength' : cls === 'rogue' ? 'agility' : cls === 'mage' ? 'arcane shields' : cls === 'ranger' ? 'quick reflexes' : cls === 'bard' ? 'desperate melody' : 'skills'} to survive.`,
+      (n, pr, cls) => `Enchanted creatures erupted from every direction! ${n} staggered back, then found ${pr.posAdj} footing. The ${CLASSES[cls]?.label || 'adventurer'}'s instincts blazed to life — ${cls === 'barbarian' ? 'a war cry that made the beasts hesitate' : cls === 'rogue' ? 'a smoke bomb and three quick slashes from the shadows' : cls === 'mage' ? 'a shimmering ward that deflected claws and fangs' : cls === 'ranger' ? 'a volley of arrows that pinned the lead wolf mid-leap' : cls === 'bard' ? 'a shrieking chord that stunned the pack for precious seconds' : 'raw determination'}.`,
+      (n, pr, cls) => `The forest ambush tested ${n} to the breaking point. Claws raked, fangs snapped, and the enchanted beasts seemed to multiply with every one defeated. But the ${CLASSES[cls]?.label || 'adventurer'} held the line — battered, bloodied, but unbowed. The kingdom watched through the enchanted mirror, and the kingdom held its breath.`,
     ],
   },
   // Phase 2: Troll Bridge
@@ -266,39 +324,63 @@ const BEAT_TEXT = {
     bard: [
       (n, pr) => `Chef the Troll blocked the bridge, arms folded. "NOBODY CROSSES!" ${n} stepped forward, lute in hand, and played a lullaby so beautiful that Chef's eyes welled with tears. "That... that was the song my mama used to sing." He stepped aside, sniffling.`,
       (n, pr) => `${n} bowed before Chef the Troll. "Great guardian of the bridge, surely one of your immense wisdom and culinary genius wouldn't deny humble travelers?" Chef blinked. "...Culinary genius?" He stood a little taller. "Go ahead."`,
+      (n, pr) => `${n} pulled out ${pr.posAdj} lute and improvised "The Ballad of Chef the Magnificent." By the second verse, Chef was wiping tears. By the third, he was singing along. By the chorus, he had forgotten he was guarding anything. The Bard's weapon is flattery, and it never misses.`,
+      (n, pr) => `"Before we cross," ${n} said, "would you tell us your story? Every great guardian has one." Chef's lip trembled. Nobody had ever ASKED. Twenty minutes later, the Troll was sobbing into the Bard's shoulder, and everyone had crossed the bridge twice.`,
     ],
     knight: [
-      (n, pr) => `${n} challenged Chef the Troll to an honor duel. "If I win, we pass!" Chef cracked ${pronouns(n).posAdj === 'his' ? 'his' : 'his'} knuckles. "Nobody beats Chef!" The Knight's blade met the Troll's ladle. CLANG.`,
+      (n, pr) => `${n} challenged Chef the Troll to an honor duel. "If I win, we pass!" Chef cracked his knuckles. "Nobody beats Chef!" The Knight's blade met the Troll's ladle. CLANG.`,
+      (n, pr) => `${n} drew ${pr.posAdj} sword and pointed it at Chef. "In the name of the quest, I demand passage." Chef laughed. The Knight didn't. Something about ${n}'s expression made the Troll reconsider. "...Fine. But only because I respect honor. Not because I'm scared." He was scared.`,
+      (n, pr) => `${n} knelt before the Troll and placed ${pr.posAdj} sword on the ground. "I come not as a threat, but as a questing Knight seeking honorable passage." Chef was so confused by the display of chivalry that he forgot to block the bridge. "That was... weirdly respectful. Go ahead, weirdo."`,
+      (n, pr) => `"I have slain enchanted wolves and solved ancient riddles," ${n} declared, ${pr.posAdj} armor gleaming in the bridge's torchlight. "Do you truly wish to test me, troll?" Chef sized up the Knight. The sword. The scars. The absolute lack of bluffing. "Chef is... letting you pass. Out of GENEROSITY."`,
     ],
     rogue: [
       (n, pr) => `${n} distracted Chef with a fake gold coin. "Look, a tip!" While the Troll scrambled, the Rogue slipped past. "Works every time."`,
+      (n, pr) => `${n} told Chef there was a health inspector coming from the other direction. The Troll panicked, abandoned the bridge, and started scrubbing the riverbank. The Rogue was across before Chef realized trolls don't have health codes.`,
+      (n, pr) => `${n} leaned against the bridge railing with studied nonchalance. "I hear the Troll on the NORTH bridge gives free passage AND a mint." Chef's eyes bulged. "WHAT?! Chef is MORE generous than that!" He flung the gate open. "Go! Tell everyone CHEF is the generous one!" The Rogue winked at nobody in particular.`,
+      (n, pr) => `${n} pointed behind Chef. "Is that a Michelin reviewer?" The Troll spun around. By the time he turned back, the Rogue was halfway across, having also relieved Chef of his bridge keys. "You'll want these back eventually," ${n} called from the other side, dangling them. "Come and get them."`,
     ],
     barbarian: [
       (n, pr) => `${n} shoulder-checked Chef the Troll clean off the bridge. SPLASH. "Was that a troll? I thought it was a speed bump."`,
+      (n, pr) => `Chef demanded a toll. ${n} picked up the Troll, set him gently to one side, and walked across. "I paid in 'not throwing you into the river.' You're welcome." The Barbarian's negotiation style is simple but effective.`,
+      (n, pr) => `Chef planted himself in ${n}'s path. The Barbarian didn't slow down. ${pr.Sub} grabbed the Troll by both arms and spun him like a discus, launching Chef into the river with a magnificent splash. "Negotiation complete." ${pr.Sub} dusted off ${pr.posAdj} hands and crossed.`,
+      (n, pr) => `"TOLL!" Chef roared. ${n} roared louder. Much louder. The sound wave knocked the Troll's hat off and rattled the bridge planks. Chef backed up three steps. Then five. Then off the bridge entirely. "The Barbarian's toll," ${n} said, cracking ${pr.posAdj} neck, "is that you get to keep your teeth."`,
     ],
     mage: [
       (n, pr) => `${n} cast an illusion of a five-star restaurant across the river. Chef abandoned the bridge instantly. "FINALLY! A kitchen worthy of CHEF!" The Mage watched him go. "Too easy."`,
+      (n, pr) => `${n} transmuted a rock into a golden truffle and offered it to Chef. The Troll bit into it, eyes wide. "This... this is the finest truffle Chef has ever tasted!" He stepped aside, cradling the truffle like a newborn. The spell would wear off in an hour. The Mage would be long gone.`,
+      (n, pr) => `${n} waved ${pr.posAdj} staff and Chef's reflection in the river transformed into a dashing Troll prince. Chef was mesmerized. "Is that... is that CHEF?" While the Troll admired his enchanted reflection, the Mage strolled across the bridge. "Vanity is the simplest spell to exploit."`,
+      (n, pr) => `${n} conjured the aroma of a freshly baked soufflé — Chef's one weakness. The Troll's nose twitched. His eyes glazed. He wandered off the bridge following the scent like a cartoon character floating on a cloud. "Olfactory manipulation," the Mage noted. "Chapter three of the beginner's spellbook."`,
     ],
     ranger: [
       (n, pr) => `${n} found a rope bridge hidden upstream. Why negotiate with the troll when you can bypass the troll entirely? The Ranger always has a second path.`,
+      (n, pr) => `${n} whistled, and a hawk swooped down, carrying a fish. Chef's eyes went wide. "Is that... fresh salmon?" The Ranger tossed it to the Troll and walked past while Chef was distracted. "Nature provides — and nature distracts."`,
+      (n, pr) => `${n} crouched by the riverbank and cupped ${pr.posAdj} hands to the water. A family of otters surfaced, chittering. They led the Ranger to a series of stepping stones hidden just below the waterline. ${n} crossed the river twenty yards downstream, bypassing the bridge and the Troll entirely. "Why use the front door when nature builds a dozen back doors?"`,
+      (n, pr) => `${n} tossed a handful of berries into the underbrush behind Chef. A bear emerged, sniffing. The Troll shrieked, abandoned the bridge, and scrambled up a tree. The Ranger walked across, pausing to scratch the bear behind its ears. "Good girl." The Ranger speaks every language except 'troll,' and that's never been a problem.`,
     ],
   },
   'bridge-blindfold': {
     rogue: [
       (n, pr) => `Blindfolded on a swaying bridge with a troll throwing apples? ${n} peeked. Obviously. The Rogue's blindfold had a convenient gap. Every apple dodged, every step sure. "I don't cheat. I adapt."`,
       (n, pr) => `${n} "accidentally" loosened ${pr.posAdj} blindfold three steps in. Could see everything. Every incoming apple, every loose plank. "What? It slipped." The Rogue doesn't play fair. The Rogue plays smart.`,
+      (n, pr) => `${n} had already memorized the bridge layout before the blindfold went on. Photographic memory? Maybe. Rogue paranoia about always needing an escape route? Definitely. Every step was deliberate, every dodge premeditated. "I prepared for this."`,
     ],
     _default: [
       (n, pr, cls) => `Blindfolded on the bridge, ${n} relied on ${cls === 'ranger' ? 'trained ears catching every creak' : cls === 'barbarian' ? 'brute stubbornness, tanking every apple hit' : cls === 'knight' ? 'steady footwork and armor blocking the impacts' : cls === 'mage' ? 'mental mapping of the bridge layout' : cls === 'bard' ? 'listening to the rhythm of the trolls throws' : 'instinct'} to cross.`,
+      (n, pr, cls) => `The blindfold turned the bridge into a nightmare of wind and uncertainty. ${n} stretched out ${pr.posAdj} arms for balance, each step a prayer. ${cls === 'ranger' ? 'The wood told stories through vibration — ${pr.sub} listened to every one' : cls === 'barbarian' ? 'An apple hit ${pr.obj} square in the face. ${pr.Sub} barely noticed' : cls === 'knight' ? '${pr.Sub} marched with military precision, counting paces' : cls === 'mage' ? '${pr.Sub} projected a mental echo to sense the edges' : cls === 'bard' ? '${pr.Sub} sang to keep panic at bay, using the echo to navigate' : '${pr.Sub} shuffled forward on faith alone'}.`,
+      (n, pr, cls) => `${n} crossed the bridge blindfolded, arms stretched wide, heart pounding. The wind howled. Apples whizzed past. The ${CLASSES[cls]?.label || 'adventurer'} stumbled once, caught the railing, and pressed on. "I can't see the other side, but I know it's there." Sometimes, that's enough.`,
     ],
   },
   'bridge-endure': {
     barbarian: [
       (n, pr) => `Chef the Troll raged. Boulders flew. The bridge shook. ${n} planted ${pr.posAdj} feet, flexed, and ROARED back. The Barbarian does not break. The Barbarian does not bend. The bridge might collapse, but ${n} would be the last one standing on the rubble.`,
       (n, pr) => `The Troll's wrath was legendary. Most would run. ${n} walked INTO it. Every hit absorbed. Every blow endured. "Is that all you've got?" The Barbarian grinned through the pain.`,
+      (n, pr) => `Boulders rained down like hail. ${n} caught one. Actually CAUGHT it. Then threw it back. Chef the Troll ducked behind his own bridge. "WHAT ARE YOU?!" The Barbarian cracked ${pr.posAdj} neck. "Your worst nightmare with an axe."`,
+      (n, pr) => `The bridge was crumbling. Everyone else retreated. ${n} advanced. The Troll threw everything — boulders, barrels, what appeared to be a small piano. The Barbarian took every hit and kept walking. "Pain is temporary. GLORY is forever."`,
     ],
     _default: [
       (n, pr, cls) => `The Troll's fury tested every fiber of ${n}'s resolve. ${pr.Sub} held on, ${cls === 'knight' ? 'shield raised against the onslaught' : cls === 'rogue' ? 'weaving between the worst of it' : cls === 'mage' ? 'maintaining a wavering shield spell' : cls === 'ranger' ? 'using the railing for cover' : cls === 'bard' ? 'singing through gritted teeth' : 'enduring through willpower alone'}.`,
+      (n, pr, cls) => `Chef's rage shook the bridge to its foundations. Planks splintered. Ropes frayed. ${n} dug in and refused to yield, drawing on every reserve of ${cls === 'knight' ? 'honor and iron will' : cls === 'rogue' ? 'survival instinct honed in darker places than this' : cls === 'mage' ? 'arcane endurance, the staff glowing brighter with each impact' : cls === 'ranger' ? 'wild resilience forged in storm and snowfall' : cls === 'bard' ? 'the power of a song that refused to end' : 'stubborn, beautiful defiance'}.`,
+      (n, pr, cls) => `The bridge was a warzone. The Troll was relentless. ${n} was battered, bruised, barely standing — but standing. The kingdom watched through the enchanted mirror and saw something that fairy tales are made of: a ${CLASSES[cls]?.label || 'hero'} who would not fall.`,
     ],
   },
   // Phase 3: Dragon's Lair
@@ -306,33 +388,51 @@ const BEAT_TEXT = {
     rogue: [
       (n, pr) => `${n} moved through the Dragon's lair like smoke — silent, formless, invisible. The treasure-piled cavern couldn't betray a footstep that never happened. The Rogue was born for this moment.`,
       (n, pr) => `Every shadow was a highway for ${n}. The Dragon's eyes scanned the cavern but the Rogue was already past, silent as death, grinning in the dark. "This is what I do."`,
+      (n, pr) => `${n} mapped every gold coin, every sleeping twitch, every breath cycle. The Dragon exhaled — four seconds of cover. The Rogue moved. The Dragon inhaled — ${n} froze behind a gem-crusted pillar. Exhaled again. Moved again. A dance with death, and the Rogue led.`,
+      (n, pr) => `The treasure-piled cavern was a minefield of noise — one shifted coin and the Dragon wakes. ${n} didn't shift a single one. The Rogue's feet found the silent paths between gold like ${pr.sub} had walked them a thousand times. "Greed leaves patterns. I read patterns."`,
     ],
     knight: [
       (n, pr) => `${n}'s armor clanked with every step. CLANK. CLANK. CLANK. The Dragon's ear twitched. The Knight froze. "...Please don't wake up." CLANK. The Dragon's eye opened.`,
+      (n, pr) => `${n} tried to remove ${pr.posAdj} armor for stealth. Gauntlet hit the floor. CLANG. Breastplate followed. CRASH. The Dragon's tail twitched. "I am... not built for this," the Knight whispered, tiptoeing in chainmail. The chainmail jingled with every step.`,
+      (n, pr) => `${n} held ${pr.posAdj} scabbard to stop it rattling and crept forward with excruciating care. Ten steps. Twenty. Almost past the tail. Then ${pr.posAdj} shield caught a stalactite with a CLANG that echoed for eternity. The Dragon's nostril flared. "I hate stealth missions," the Knight muttered through gritted teeth.`,
+      (n, pr) => `Every fiber of ${n}'s being screamed to draw steel and fight. But the quest demanded silence. The Knight inched past the Dragon's snout, breath held, muscles locked. ${pr.Sub} could feel the beast's heat on ${pr.posAdj} face. "Honor is being brave enough to be quiet." It was the hardest battle ${pr.sub} had ever fought.`,
     ],
     barbarian: [
       (n, pr) => `${n} tried to sneak. The Barbarian's version of sneaking involved slightly quieter footsteps and breathing that was merely loud instead of thunderous. The Dragon stirred.`,
+      (n, pr) => `"I'll be quiet," ${n} promised. ${pr.Sub} made it three steps before accidentally kicking a pile of gold coins that cascaded like an avalanche. The Dragon's eye opened. ${n} waved. "...Hey." The Barbarian has many talents. Stealth is not among them.`,
+      (n, pr) => `${n} tiptoed with all the delicacy of a landslide wearing boots. Each footfall sent tremors through the treasure piles. The Dragon's claw twitched. ${n} froze mid-stride, one foot raised, holding the pose like a terrified statue. "I am being VERY sneaky right now," ${pr.sub} whispered at full volume.`,
+      (n, pr) => `Stealth required patience. ${n} had none. The Barbarian's attempt at crawling produced more noise than most people's sprinting. Coins scattered. Jewels clinked. The Dragon's tail swept lazily closer. "Why does being quiet have to be so LOUD?" ${pr.sub} hissed, accidentally elbowing a golden chalice off a pile.`,
     ],
     _default: [
       (n, pr, cls) => `${n} crept through the Dragon's lair, ${cls === 'mage' ? 'muffling sound with a dampening spell' : cls === 'ranger' ? 'stepping only on the soft sand between treasure piles' : cls === 'bard' ? 'humming a sleep charm under breath' : 'moving as carefully as possible'}.`,
+      (n, pr, cls) => `The Dragon's breath rumbled like distant thunder — asleep, but barely. ${n} inched forward through mountains of gold, every nerve screaming. The ${CLASSES[cls]?.label || 'adventurer'} was a single misstep from waking a monster, and the entire kingdom held its breath alongside ${pr.obj}.`,
+      (n, pr, cls) => `${n} pressed against the cavern wall, edging past the Dragon's snout. ${pr.Sub} could feel the beast's hot breath on ${pr.posAdj} face. One twitch. One sound. One heartbeat too loud — and the quest would end in fire.`,
     ],
   },
   'dragon-fight': {
     barbarian: [
       (n, pr) => `The Dragon ROARED. Fire filled the cavern. ${n} ROARED BACK. The Barbarian charged straight at the beast, axe high, fear absent. "I'VE BEEN WAITING FOR THIS!" The collision shook the mountain.`,
       (n, pr) => `${n} caught the Dragon's claw mid-swing. Muscles screaming. Ground cracking. The Barbarian held. "You're big. I'm ANGRY. Let's see which matters more."`,
+      (n, pr) => `Fire erupted from the Dragon's maw. ${n} ran THROUGH it. Singed, smoking, grinning. The Barbarian tackled the Dragon's foreleg and PULLED. The beast stumbled. "You breathe fire. I AM fire." The cavern shook with the impact of their clash.`,
+      (n, pr) => `The Dragon was ancient. Powerful. Terrifying. ${n} was furious. In the calculus of battle, fury trumped all three. The Barbarian's axe bit into scale after scale, each strike accompanied by a war cry that echoed through the mountain.`,
     ],
     _default: [
       (n, pr, cls) => `The Dragon attacked with fury! ${n} ${cls === 'knight' ? 'met the beast head-on, sword flashing against scale and claw' : cls === 'rogue' ? 'dodged and slashed at vulnerable joints' : cls === 'mage' ? 'hurled arcane bolts at the creature\'s eyes' : cls === 'ranger' ? 'peppered the beast with arrows from a distance' : cls === 'bard' ? 'wove a dissonant chord that made the Dragon flinch' : 'fought with everything left'}.`,
+      (n, pr, cls) => `The cavern erupted into chaos — fire, claw, and fury. ${n} fought the Dragon with ${cls === 'knight' ? 'disciplined swordwork that turned every swipe into a counter-attack' : cls === 'rogue' ? 'shadow-step dodges and precise dagger strikes to soft tissue' : cls === 'mage' ? 'layered arcane shields and retaliatory bolts of violet lightning' : cls === 'ranger' ? 'a rain of arrows aimed at the gaps between scales' : cls === 'bard' ? 'a war song that disoriented the beast, each note a weapon' : 'everything left in the tank'}. The kingdom would sing of this moment.`,
+      (n, pr, cls) => `Dragonfire scorched the walls as ${n} dove for cover. The heat was unbearable. The fear was worse. But the ${CLASSES[cls]?.label || 'adventurer'} pushed through both, rising from the ashes of a near-miss to strike back. "You don't scare me." That was a lie. But it was a brave one.`,
     ],
   },
   'dragon-weakness': {
     mage: [
       (n, pr) => `${n}'s eyes locked onto a hairline crack in the Dragon's chest scale — the one weakness. "THERE!" ${pr.Sub} channeled every ounce of arcane energy into a single focused strike. The Dragon SCREAMED. The Mage found what no one else could see.`,
       (n, pr) => `The Mage saw the pattern. The Dragon always protected its left side. Overcompensation. Which meant the RIGHT side was the weakness. ${n} pointed. "Strike there." The Dragon fell.`,
+      (n, pr) => `${n} had been studying the Dragon's magic aura since the sneak phase. Every scale had a resonance — except one. A dead spot beneath the jaw. "Magic can't protect what magic doesn't touch." The Mage's strike hit the one place the Dragon was mortal.`,
+      (n, pr) => `While everyone attacked in desperation, ${n} OBSERVED. The Dragon flinched when fire reflected off gold. Photosensitive. The Mage angled ${pr.posAdj} staff to catch the flame's light and bounced a blinding beam into the beast's eyes. "Knowledge is the sharpest blade in any lair."`,
     ],
     _default: [
       (n, pr, cls) => `${n} searched desperately for the Dragon's weakness, ${cls === 'knight' ? 'testing every joint with sword strikes' : cls === 'rogue' ? 'analyzing the beast\'s movement for blind spots' : cls === 'ranger' ? 'reading the creature\'s body language' : cls === 'barbarian' ? 'hitting everything until something worked' : cls === 'bard' ? 'noting which notes made the Dragon flinch' : 'relying on intuition'}.`,
+      (n, pr, cls) => `The Dragon seemed invincible — scales harder than steel, breath hotter than a forge. But ${n} noticed something. A hesitation. A flinch. The ${CLASSES[cls]?.label || 'adventurer'} had found the weakness the kingdom's fate depended on, and ${pr.sub} shouted the discovery to anyone close enough to hear.`,
+      (n, pr, cls) => `Finding a Dragon's weakness is the stuff of legends. ${n} earned ${pr.posAdj} legend the hard way — through trial, error, and one observation that changed everything. The tide of battle turned on a single word from the ${CLASSES[cls]?.label || 'adventurer'}.`,
     ],
   },
   // Phase 4: Tower Rescue
@@ -340,27 +440,39 @@ const BEAT_TEXT = {
     ranger: [
       (n, pr) => `${n} scaled the tower like a spider. Hand over hand, finding holds in the ancient stonework that nobody else could see. The wind howled. The height was dizzying. The Ranger didn't look down. The Ranger never looks down.`,
       (n, pr) => `The tower wall was sheer and the wind was cruel, but ${n} climbed as naturally as breathing. Fingers found impossible grips. Feet found invisible ledges. "The mountain taught me this."`,
+      (n, pr) => `${n}'s fingers found the ancient stonework's secrets — a crack here, a jutting brick there. The wind tried to tear ${pr.obj} loose, but the Ranger clung to the tower like ivy. "Height is just distance with a view." ${pr.Sub} was halfway up before anyone else found a handhold.`,
+      (n, pr) => `A hawk circled the tower above as ${n} climbed. The Ranger matched its spiral, finding the path of least resistance up the ancient wall. Every window ledge was a rest point. Every gargoyle was a handhold. "The tower is just a very tall cliff. And I've climbed worse."`,
     ],
     _default: [
       (n, pr, cls) => `${n} began the tower climb, ${cls === 'knight' ? 'armor weighing heavy but determination heavier' : cls === 'barbarian' ? 'punching handholds into the stone itself' : cls === 'rogue' ? 'finding every crack and crevice with practiced fingers' : cls === 'mage' ? 'levitating stone platforms as stepping stones' : cls === 'bard' ? 'singing to steady nerves against the vertigo' : 'climbing with everything left'}.`,
+      (n, pr, cls) => `The tower stretched into storm clouds above. ${n} looked up, swallowed hard, and started climbing. Every foot gained was a victory against gravity. The ${CLASSES[cls]?.label || 'adventurer'} was battered from three phases of hell — but the tower didn't care about fatigue. It only cared about who could reach the top.`,
+      (n, pr, cls) => `Wind howled around the tower's ancient stones as ${n} climbed higher than any sane person would go. ${pr.Sub} could see the entire kingdom below — the enchanted forest, the troll bridge, the smoking dragon's lair. Everything ${pr.sub} had survived. "I didn't come this far to fall now."`,
     ],
   },
   'tower-defenses': {
     knight: [
       (n, pr) => `Guards blocked the tower stairway. ${n} didn't slow down. Sword met spear met shield met fury. The Knight carved through the defenses like they were made of parchment. "I didn't come this far to be stopped by GUARDS."`,
       (n, pr) => `The enchanted gate slammed shut. The Knight slammed harder. ${n}'s blade cleaved through lock, chain, and bar in three precise strikes. "OPEN."`,
+      (n, pr) => `A wall of enchanted shields materialized on the stairway. ${n} hit them at full sprint. The shields cracked. The Knight hit them again. They shattered. "Defenses are suggestions to a Knight. Suggestions I DECLINE."`,
+      (n, pr) => `Tower sentinels crossed their spears in ${n}'s path. The Knight didn't break stride. ${pr.Sub} deflected both spears with a single sweeping parry and charged through the gap. "Honor does not wait in line." The sentinels were still processing what happened when ${n} was three flights up.`,
     ],
     _default: [
-      (n, pr, cls) => `Tower defenses activated! ${n} ${cls === 'barbarian' ? 'smashed through the barricade like it personally offended ${pr.obj}' : cls === 'rogue' ? 'slipped through a gap that shouldn\'t have been wide enough' : cls === 'mage' ? 'dispelled the enchanted barriers with a wave' : cls === 'ranger' ? 'shot the lock mechanism from across the room' : cls === 'bard' ? 'convinced the enchanted door it wanted to be open' : 'pushed through with sheer effort'}.`,
+      (n, pr, cls) => `Tower defenses activated! ${n} ${cls === 'barbarian' ? 'smashed through the barricade like it personally offended ' + pr.obj : cls === 'rogue' ? 'slipped through a gap that shouldn\'t have been wide enough' : cls === 'mage' ? 'dispelled the enchanted barriers with a wave' : cls === 'ranger' ? 'shot the lock mechanism from across the room' : cls === 'bard' ? 'convinced the enchanted door it wanted to be open' : 'pushed through with sheer effort'}.`,
+      (n, pr, cls) => `The tower's enchanted defenses sprang to life — walls shifting, floors tilting, doors sealing. ${n} met each obstacle with the ${CLASSES[cls]?.label || 'adventurer'}'s trademark resourcefulness. Destiny does not wait for locked doors, and neither did ${pr.sub}.`,
+      (n, pr, cls) => `Every defense the tower threw at ${n} was met and overcome. The ${CLASSES[cls]?.label || 'adventurer'} was running on fumes and fury — the perfect fuel for the final stretch. The tower seemed to sense it. Its defenses grew more desperate. So did ${n}.`,
     ],
   },
   'tower-push': {
     bard: [
       (n, pr) => `${n}'s voice echoed through the tower like thunder wrapped in velvet. "WE DID NOT COME THIS FAR TO FALL!" The remaining knights felt strength surge through exhausted limbs. The Bard's rally cry could move mountains — and it moved them one final push toward the top.`,
       (n, pr) => `The final stretch. Everyone was broken. Exhausted. Done. Then ${n} began to sing. Not a battle cry — a lullaby of hope. Of stories unfinished. "This is not where your tale ends." Legs moved. Hearts beat. The Bard's power isn't magic. It's belief.`,
+      (n, pr) => `${n} reached for the lute one last time. ${pr.Sub} was exhausted — everyone was. But the Bard played a melody that pulled tears from stone walls and courage from empty reserves. "One more verse. One more flight. ONE MORE STEP." The tower trembled. Music is the strongest magic of all.`,
+      (n, pr) => `"LISTEN!" ${n}'s voice cut through the chaos like a golden blade. "This is the part of the story where the heroes almost give up. This is the part where it looks hopeless." A beat. Then the melody changed — bright, fierce, defiant. "But we don't live in THAT story." The Bard turned despair into a battle hymn.`,
     ],
     _default: [
       (n, pr, cls) => `The final push to the top! ${n} summoned every last reserve of ${cls === 'knight' ? 'courage and steel' : cls === 'barbarian' ? 'furious, primal energy' : cls === 'rogue' ? 'cunning and desperation' : cls === 'mage' ? 'arcane willpower' : cls === 'ranger' ? 'endurance and grit' : 'determination'}.`,
+      (n, pr, cls) => `${n} was running on nothing but willpower and the memory of why ${pr.sub} started this quest. The final staircase spiraled into blinding light. The ${CLASSES[cls]?.label || 'adventurer'} climbed. Not because ${pr.sub} could. Because ${pr.sub} MUST. Every fairy tale has a final chapter, and ${n} refused to be a footnote.`,
+      (n, pr, cls) => `The tower's peak was in sight. One last push. ${n}'s legs burned. ${pr.Sub} could barely see through exhaustion. But the ${CLASSES[cls]?.label || 'adventurer'} took one more step. Then another. Then another. And that is the difference between heroes and everyone else — heroes take one more step.`,
     ],
   },
 };
@@ -370,14 +482,25 @@ const ELIMINATION_TEXT = {
   'forest-ambush': [
     (n, pr) => `Enchanted vines erupted from the earth and coiled around ${n}! ${pr.Sub} struggled, slashed, but the forest had chosen its victim. ${n} was dragged into the undergrowth. Cursed. Eliminated.`,
     (n, pr) => `The enchanted wolves circled ${n}. Too many. Too fast. A howl, a flash of fangs, and the ${CLASSES[n._ppClass]?.label || 'adventurer'} was swept away in a tide of phantom fur. The forest claims another.`,
+    (n, pr) => `A spectral stag appeared before ${n}, antlers lowered. The enchanted beast charged, and the impact sent the ${CLASSES[n._ppClass]?.label || 'adventurer'} crashing through the phantom undergrowth. When the mist cleared, ${n} was gone. The forest takes what the forest wants.`,
+    (n, pr) => `The ground opened beneath ${n}'s feet — a fairy ring trap, ancient and merciless. ${pr.Sub} reached for a branch, a vine, anything. But the enchantment pulled ${pr.obj} down. The last thing the others saw was ${n}'s hand disappearing into the earth. The forest had claimed its sacrifice.`,
   ],
   'bridge-endure': [
     (n, pr) => `The Troll's final blow sent ${n} sailing off the bridge! ${pr.Sub} caught the railing, hung for one heartbeat... and fell. SPLASH. The river carried ${pr.obj} away. The bridge shows no mercy.`,
     (n, pr) => `${n} couldn't hold on. The Troll's wrath was too much. ${pr.Sub} was knocked clean off the bridge, tumbling into the dark waters below. Gone. The quest continues without ${pr.obj}.`,
+    (n, pr) => `A boulder struck the bridge right where ${n} was standing. The planks splintered. For one terrible moment, ${pr.sub} balanced on the edge — then gravity made its choice. ${n} plummeted into the churning river below. The Troll laughed. The fairy tale grew darker.`,
+    (n, pr) => `${n}'s grip slipped. ${pr.Sub} clawed at the ropes, the planks, the air itself. "NO!" But the bridge had no mercy. The fall seemed to last forever. The SPLASH was the sound of a quest ending. Chef the Troll dusted off his hands. "NEXT."`,
   ],
   'dragon-weakness': [
     (n, pr) => `The Dragon's tail swept ${n} off the ledge! ${pr.Sub} hit the cavern wall and crumpled. Burned, battered, and beaten. The Dragon claims its toll.`,
     (n, pr) => `Dragonfire engulfed ${n}'s position! When the smoke cleared, the ${CLASSES[n._ppClass]?.label || 'adventurer'} was down, singed but alive. ${pr.Sub} wouldn't continue. The lair is sealed.`,
+    (n, pr) => `The Dragon's wing swept through the cavern like a battering ram. ${n} was caught mid-stride, launched across the lair into a pile of treasure. Gold coins rained down. When the dust settled, ${pr.sub} was buried. Alive, but cursed. The Dragon's toll is paid in fallen adventurers.`,
+    (n, pr) => `${n} got too close. The Dragon's jaws snapped shut inches from ${pr.posAdj} face — the shockwave alone sent ${pr.obj} tumbling. ${pr.Sub} rolled, tried to rise, but the beast's roar pinned ${pr.obj} to the stone. "I'm... I'm done." The admission cost more than the injuries. The quest moves on. Not everyone makes it to the final chapter.`,
+  ],
+  'tower-push': [
+    (n, pr) => `The tower staircase crumbled beneath ${n}'s feet! ${pr.Sub} scrambled for purchase, but the stones fell away like sand. The ${CLASSES[n._ppClass]?.label || 'adventurer'} slid back down into darkness, the tower's final cruel joke. So close to the top. So far from victory.`,
+    (n, pr) => `${n}'s legs finally gave out on the last flight of stairs. ${pr.Sub} sank to the stone, unable to take one more step. "I can't." The words echoed through the tower like a funeral bell. The quest demanded everything, and ${n} had given it — but everything wasn't quite enough.`,
+    (n, pr) => `An enchanted wind howled through the tower's peak and ripped ${n} from the stairway. ${pr.Sub} caught a windowsill, hung for a breathless moment, then lost ${pr.posAdj} grip. The fall was cushioned by magic — the tower doesn't kill, it CURSES. ${n} landed in a golden cage below. Eliminated by the tower's final enchantment.`,
   ],
 };
 
@@ -395,8 +518,14 @@ const SOCIAL_EVENTS = [
       const [a, b] = pick(pairs);
       addBond(a, b, 0.5);
       const clsA = CLASSES[classMap[a]], clsB = CLASSES[classMap[b]];
+      const oathTexts = [
+        `${a} and ${b} crossed ${clsA?.label === 'Knight' ? 'swords' : clsA?.label === 'Mage' ? 'staffs' : 'weapons'} beneath the ancient oak. "Until the tower falls." An oath sworn in fairy tale fashion — unbreakable until someone breaks it.`,
+        `${a} extended ${pronouns(a).posAdj} hand. ${b} took it. No words needed — in the fairy tale realm, a handshake between warriors is worth more than any written contract. The campfire flickered. The pact was sealed.`,
+        `"I watch your back, you watch mine," ${a} said. ${b} nodded. They pressed their ${clsA?.label === 'Knight' ? 'blades together' : clsA?.label === 'Mage' ? 'staffs together, sparks flying' : 'weapons together'} — a fairy tale oath, older than any kingdom. The enchanted forest seemed to glow brighter around them.`,
+        `${b} saved ${a} a seat by the campfire and handed over half a ration. In the fairy tale world, breaking bread means swearing loyalty. "Alliance?" ${a} asked. "Alliance," ${b} confirmed. Simple. Powerful. Dangerous for everyone else.`,
+      ];
       return { type: 'allianceOath', players: [a, b],
-        text: `${a} and ${b} crossed ${clsA?.label === 'Knight' ? 'swords' : clsA?.label === 'Mage' ? 'staffs' : 'weapons'} beneath the ancient oak. "Until the tower falls." An oath sworn in fairy tale fashion — unbreakable until someone breaks it.`,
+        text: pick(oathTexts),
         badgeText: 'QUEST OATH', badgeClass: 'green' };
     },
   },
@@ -411,8 +540,14 @@ const SOCIAL_EVENTS = [
       if (!pairs.length) return null;
       const [a, b] = pick(pairs);
       addBond(a, b, -0.5);
+      const rivalTexts = [
+        `${a} locked eyes with ${b} across the campfire. "When this quest is over, you and I are going to have words." ${b}'s hand moved to ${pronouns(b).posAdj} weapon. "I look forward to it." The flames danced between them.`,
+        `${a} found ${b}'s dagger embedded in ${pronouns(a).posAdj} bedroll — a warning, not an attack. ${a} pulled it free and hurled it back. It stuck in the tree an inch from ${b}'s ear. "Next time, aim for my face. At least then I'd respect you." The fairy tale had found its feud.`,
+        `"You're going to be the reason someone loses this quest," ${a} said, loud enough for everyone to hear. ${b} stood slowly. "The only thing I'm going to lose is my patience with YOU." The campfire crackled in the silence that followed. Even the enchanted forest held its breath.`,
+        `${a} deliberately took the seat ${b} had claimed. ${b} stood over ${pronouns(a).obj}, shadow falling like a blade. "Move." "Make me." Neither blinked. In fairy tales, rivalries burn hotter than dragonfire — and last twice as long.`,
+      ];
       return { type: 'rivalryDeclare', players: [a, b],
-        text: `${a} locked eyes with ${b} across the campfire. "When this quest is over, you and I are going to have words." ${b}'s hand moved to ${pronouns(b).posAdj} weapon. "I look forward to it." The flames danced between them.`,
+        text: pick(rivalTexts),
         badgeText: 'RIVALRY', badgeClass: 'red' };
     },
   },
@@ -423,8 +558,14 @@ const SOCIAL_EVENTS = [
       const sm = gs.showmances?.find(s => alive.includes(s.a) && alive.includes(s.b));
       if (!sm) return null;
       addBond(sm.a, sm.b, 0.5);
+      const smTexts = [
+        `${sm.a} found ${sm.b} by the enchanted stream. "Are you hurt?" "Better now." They sat beneath the willows, the quest forgotten for one quiet moment. In every fairy tale, there's a love story hiding in the margins.`,
+        `${sm.a} caught ${sm.b}'s hand as they crossed the enchanted bridge. Neither let go on the other side. The quest pressed on around them, but for a heartbeat the kingdom was just the two of them and the starlight filtering through the canopy.`,
+        `${sm.b} was bandaging a wound when ${sm.a} knelt beside ${pronouns(sm.b).obj}. "Let me." Their fingers brushed. The enchanted forest sparkled a little brighter. "Be careful out there," ${sm.a} whispered. "I need you to make it to the end." The fairy tale love story wrote itself.`,
+        `${sm.a} and ${sm.b} sat back-to-back against the ancient oak, catching their breath between phases. No words. Just the rhythm of two hearts beating in sync. The enchanted mirror in the tower showed the moment to the watching kingdom. Even the host got a little misty-eyed.`,
+      ];
       return { type: 'showmanceMoment', players: [sm.a, sm.b],
-        text: `${sm.a} found ${sm.b} by the enchanted stream. "Are you hurt?" "Better now." They sat beneath the willows, the quest forgotten for one quiet moment. In every fairy tale, there's a love story hiding in the margins.`,
+        text: pick(smTexts),
         badgeText: 'FAIRY TALE LOVE', badgeClass: 'green' };
     },
   },
@@ -439,8 +580,14 @@ const SOCIAL_EVENTS = [
       if (!target) return null;
       addBond(rogue, target, -1);
       popDelta(rogue, -1);
+      const schemeTexts = [
+        `${rogue} whispered to the shadows. A plan formed. ${target}'s equipment was sabotaged — a frayed strap here, a dulled blade there. The Rogue's smile in the firelight was cold as winter. "In fairy tales, the clever ones survive."`,
+        `While ${target} slept, ${rogue} swapped ${pronouns(target).posAdj} healing potion with colored water. "Survival of the fittest," the Rogue murmured. "And I'm the fittest because I cheat." The sabotage would reveal itself at the worst possible moment — that was the art of it.`,
+        `${rogue} planted a false trail marker pointing ${target} toward the dragon's territory. "Oops." The Rogue examined ${pronouns(rogue).posAdj} fingernails with theatrical innocence. "Must have been the wind." Every fairy tale needs a trickster. ${rogue} was born for the part.`,
+        `${rogue} loosened the straps on ${target}'s armor while pretending to help adjust it. "There, much better." It would fall apart mid-combat. The Rogue's cruelty was quiet, precise, and utterly deniable. "Accidents happen in enchanted kingdoms."`,
+      ];
       return { type: 'rogueScheme', players: [rogue, target],
-        text: `${rogue} whispered to the shadows. A plan formed. ${target}'s equipment was sabotaged — a frayed strap here, a dulled blade there. The Rogue's smile in the firelight was cold as winter. "In fairy tales, the clever ones survive."`,
+        text: pick(schemeTexts),
         badgeText: 'SABOTAGE', badgeClass: 'red' };
     },
   },
@@ -452,8 +599,14 @@ const SOCIAL_EVENTS = [
       const target = pick(alive);
       addBond(royalName, target, 0.5);
       const pr = pronouns(royalName);
+      const favorTexts = [
+        `${royalTitle} ${royalName} dropped a silk ribbon from the royal balcony. It fluttered down to ${target}, who caught it instinctively. ${royalName}: "A token of favor. Don't read too much into it." Everyone read too much into it.`,
+        `${royalTitle} ${royalName} sent a golden apple down from the tower. It rolled to a stop at ${target}'s feet. "For the bravest knight on the field." ${target} picked it up. The others seethed with jealousy. Royal favor is a weapon sharper than any sword.`,
+        `A scroll descended from the tower window, sealed with the royal crest. ${target} unrolled it: "You have the crown's confidence. Do not waste it." Signed with ${royalTitle} ${royalName}'s flourish. ${target} tucked it into ${pronouns(target).posAdj} armor. Favor received. Stakes raised.`,
+        `${royalTitle} ${royalName} clapped three times from the balcony — the fairy tale signal for "that one impressed me." Every knight looked up. The royal gaze was fixed on ${target}. "Continue to fight like that," ${royalName} called down, "and you might actually survive this."`,
+      ];
       return { type: 'princessFavor', players: [royalName, target],
-        text: `${royalTitle} ${royalName} dropped a silk ribbon from the royal balcony. It fluttered down to ${target}, who caught it instinctively. ${royalName}: "A token of favor. Don't read too much into it." Everyone read too much into it.`,
+        text: pick(favorTexts),
         badgeText: `${royalTitle.toUpperCase()} FAVOR`, badgeClass: 'amber' };
     },
   },
@@ -470,6 +623,10 @@ const SOCIAL_EVENTS = [
         `${p}: "I've seen every Disney movie. I know how this ends. The person who looks like the hero gets betrayed. I'm watching EVERYONE."`,
         `${p}: "In every fairy tale, someone gets cursed. I'm determined that someone won't be me."`,
         `${p}: "The dragon was scary. The troll was annoying. But the REAL monster is whoever decided to put me in tights."`,
+        `${p}: "I keep forgetting this is a game show. The sword feels real. The dragon LOOKED real. My fear? DEFINITELY real."`,
+        `${p}: "I made a quest oath with someone I've been trying to vote out for three weeks. Fairy tale logic is wild."`,
+        `${p}: "If I win this challenge, I'm keeping the ${CLASSES[cls]?.label || 'class'} costume. Don't judge me."`,
+        `${p}: "The ${CLASSES[cls]?.label || 'class'} role is actually perfect for me. I've been training for this my whole life — I just didn't know it was called '${CLASSES[cls]?.label || 'adventuring'}.'"`,
       ];
       return { type: 'confessional', players: [p], text: pick(texts), badgeText: 'CONFESSIONAL', badgeClass: 'amber' };
     },
@@ -484,8 +641,14 @@ const SOCIAL_EVENTS = [
       const allies = alive.filter(n => n !== p && getBond(p, n) >= 1).slice(0, 3);
       allies.forEach(a => addBond(p, a, 0.3));
       popDelta(p, 1);
+      const heroTexts = [
+        `${p} stood on a fallen log, moonlight catching ${pronouns(p).posAdj} armor. "We started this quest as strangers. We end it as something more. Whatever waits in that tower, we face it TOGETHER." ${allies.length ? `${allies.join(' and ')} raised their weapons in salute.` : 'The silence that followed was reverent.'}`,
+        `${p} planted ${pronouns(p).posAdj} weapon in the earth and addressed the group. "I know we're tired. I know we're scared. But the kingdom is WATCHING." ${allies.length ? `${allies.join(', ')} stood taller.` : 'Spines straightened around the campfire.'} "We show them what heroes look like. Not in the good moments — in the HARD ones." The enchanted forest rustled its approval.`,
+        `${p} shared ${pronouns(p).posAdj} last ration with the group without being asked. "A quest isn't won by one sword. It's won by many hearts beating as one." ${allies.length ? `${allies.join(' and ')} nodded, renewed.` : 'The exhaustion in the camp lifted, replaced by something warmer.'} Simple words. But in a fairy tale, simple words can move mountains.`,
+        `"Look at what we've survived," ${p} said quietly, gesturing behind them — the dark forest, the broken bridge, the smoking lair. "We've already done the impossible three times. What's one more?" ${allies.length ? `${allies.join(' and ')} gripped their weapons tighter, courage renewed.` : 'The group rallied around the words like a fire in the dark.'}`,
+      ];
       return { type: 'heroSpeech', players: [p, ...allies],
-        text: `${p} stood on a fallen log, moonlight catching ${pronouns(p).posAdj} armor. "We started this quest as strangers. We end it as something more. Whatever waits in that tower, we face it TOGETHER." ${allies.length ? `${allies.join(' and ')} raised their weapons in salute.` : 'The silence that followed was reverent.'}`,
+        text: pick(heroTexts),
         badgeText: 'RALLYING CRY', badgeClass: 'green' };
     },
   },
@@ -497,8 +660,14 @@ const SOCIAL_EVENTS = [
       if (!villains.length) return null;
       const v = pick(villains);
       popDelta(v, -1);
+      const villainTexts = [
+        `${v} sat apart from the group, tracing patterns in the dirt by firelight. ${pronouns(v).Sub} was calculating. Always calculating. "They think this quest is about courage. It's about knowing when to let someone else take the hit." A slow smile. Fairy tales have villains for a reason.`,
+        `${v} stared into the enchanted flames, and the flames stared back. "Heroes are predictable. They protect. They sacrifice. They're EASY to manipulate." ${pronouns(v).Sub} watched the others sleep. "By tomorrow, half of them will be gone. And they'll thank me for it."`,
+        `${v} found a quiet corner of the camp and began sharpening ${pronouns(v).posAdj} blade — slowly, deliberately, making sure everyone could hear. "The fairy tale doesn't end the way they think it does," ${pronouns(v).sub} whispered. "The villain writes the last chapter."`,
+        `The campfire cast long shadows, and ${v} sat in the longest one. ${pronouns(v).Sub} had memorized everyone's weaknesses. Their fears. Their bonds. "In fairy tales, the one who knows the most wins. Not the bravest. Not the strongest. The one who knows." ${pronouns(v).Sub} knew plenty.`,
+      ];
       return { type: 'villainScheme', players: [v],
-        text: `${v} sat apart from the group, tracing patterns in the dirt by firelight. ${pronouns(v).Sub} was calculating. Always calculating. "They think this quest is about courage. It's about knowing when to let someone else take the hit." A slow smile. Fairy tales have villains for a reason.`,
+        text: pick(villainTexts),
         badgeText: 'DARK PLANS', badgeClass: 'red' };
     },
   },
@@ -511,15 +680,27 @@ const SOCIAL_EVENTS = [
       const pr = pronouns(royalName);
       let text;
       if (['villain', 'mastermind', 'schemer'].includes(a)) {
-        text = `${royalTitle} ${royalName} watched from the tower with narrowed eyes. "They're all so desperate to prove themselves. It's... useful." ${pr.Sub} mentally ranked each knight's weaknesses. The throne room is the best vantage point for scheming.`;
+        const villainRoyalTexts = [
+          `${royalTitle} ${royalName} watched from the tower with narrowed eyes. "They're all so desperate to prove themselves. It's... useful." ${pr.Sub} mentally ranked each knight's weaknesses. The throne room is the best vantage point for scheming.`,
+          `${royalTitle} ${royalName} smiled from the tower as another knight fell. "One fewer competitor." ${pr.Sub} adjusted the crown. "They think I'm up here waiting to be rescued. I'm up here choosing who to destroy." The enchanted mirror reflected a face that had never needed saving.`,
+          `"The sword goes to the weakest link," ${royalTitle} ${royalName} murmured, studying the quest below. "Not the strongest. The weakest. Because the weakest is the most GRATEFUL." ${pr.Sub} was playing chess while everyone else played fairy tales.`,
+        ];
+        text = pick(villainRoyalTexts);
       } else if (gs.showmances?.some(s => (s.a === royalName || s.b === royalName))) {
         const sm = gs.showmances.find(s => (s.a === royalName || s.b === royalName));
         const partner = sm.a === royalName ? sm.b : sm.a;
-        text = `${royalTitle} ${royalName} leaned against the tower window. ${pr.Sub} was watching the quest, yes. But ${pr.posAdj} eyes kept drifting to ${partner}. "Be careful down there." Whispered. Nobody heard. That was the point.`;
+        const smRoyalTexts = [
+          `${royalTitle} ${royalName} leaned against the tower window. ${pr.Sub} was watching the quest, yes. But ${pr.posAdj} eyes kept drifting to ${partner}. "Be careful down there." Whispered. Nobody heard. That was the point.`,
+          `${royalTitle} ${royalName} pressed ${pr.posAdj} hand against the enchanted mirror, watching ${partner} fight. "Come back to me." The tower felt colder when ${partner} was in danger. The crown felt meaningless without someone to share it with.`,
+          `Every time ${partner} stumbled, ${royalTitle} ${royalName} gripped the balcony railing until ${pr.posAdj} knuckles turned white. "The sword. I should have given ${pronouns(partner).obj} the sword." Regret and love twisted together in the tower's cold air. Fairy tale royalty was never meant to be this lonely.`,
+        ];
+        text = pick(smRoyalTexts);
       } else {
         const texts = [
           `${royalTitle} ${royalName} paced the tower, watching the battles below through an enchanted mirror. "This is harder than fighting. Watching and choosing." The crown felt heavier with every decision.`,
           `${royalTitle} ${royalName} gripped the balcony railing. "${pr.Sub === 'She' ? 'She' : 'He'} survived. Good." A pause. "I need them strong for what comes next." The ${royalTitle.toLowerCase()} was already planning the endgame.`,
+          `${royalTitle} ${royalName} watched a knight fall and winced. "I didn't ask for this crown," ${pr.sub} whispered to the empty tower. "But I won't waste it." ${pr.Sub} turned back to the mirror. The quest demanded a ruler who could make hard choices. The crown demanded everything else.`,
+          `${royalTitle} ${royalName} traced the edge of the enchanted mirror with ${pr.posAdj} fingertip. Every battle. Every fall. Every act of courage — ${pr.sub} saw it all. "Being royalty isn't about sitting on a throne. It's about knowing who deserves to stand beside you." The tower was a prison and a vantage point, both at once.`,
         ];
         text = pick(texts);
       }
@@ -552,38 +733,55 @@ const DUEL_TEXT = {
     royalWins: [
       (r, k, rt) => `${rt} ${r} descended from the tower — not with gratitude, but with a SWORD. ${k} froze. "What... what are you doing?" ${r} smiled. "Did you think this was a rescue? This is a DUEL." The first strike came before ${k} could even raise ${pronouns(k).posAdj} weapon.`,
       (r, k, rt) => `${k} reached the tower summit, victorious, exhausted. ${rt} ${r} stood waiting. "My hero." Then ${r} drew a blade. "Now prove you deserve the crown." The betrayal hit harder than the sword.`,
+      (r, k, rt) => `${rt} ${r} was already armed when ${k} crested the final stair. "Surprise." The blade sang through the air. ${k} barely blocked it — stumbling backward, eyes wide. "The fairy tale lied," ${r} said. "Nobody was ever trapped up here. I was WAITING."`,
+      (r, k, rt) => `The tower doors burst open. ${k} charged in ready to rescue royalty. Instead, ${rt} ${r} was seated on the throne, sword across ${pronouns(r).posAdj} lap, smiling. "You made it. I'm impressed." ${r} stood. "Now let's see if you're worthy." The first strike came from above.`,
     ],
     knightWins: [
       (r, k, rt) => `${rt} ${r} struck first — a slashing blow that should have ended it. But ${k} had survived four phases of hell. ${pronouns(k).Sub} CAUGHT the blade. "You'll have to do better than that, Your Highness."`,
       (r, k, rt) => `The betrayal stung, but ${k} had been preparing for this. Every fairy tale has a twist. The Knight parried the ${rt.toLowerCase()}'s opening strike and countered with controlled fury.`,
+      (r, k, rt) => `${rt} ${r} swung for the head. ${k} ducked. Instinct. Survival. Four phases of combat had turned ${pronouns(k).obj} into something the ${rt.toLowerCase()} hadn't anticipated. "I've been stabbed, burned, and thrown off a bridge TODAY. You think a sword scares me?"`,
+      (r, k, rt) => `The shock lasted exactly one second. Then ${k}'s training took over. Parry. Sidestep. Counter. The knight's blade was at ${r}'s throat before the ${rt.toLowerCase()} finished ${pronouns(r).posAdj} opening speech. "Save the monologue, Your Highness. I didn't climb this tower to LOSE."`,
     ],
   },
   clash: {
     royalWins: [
       (r, k, rt) => `${rt} ${r} hadn't fought in four grueling phases. ${r} was FRESH. ${k} was battered, bruised, running on fumes. The ${rt.toLowerCase()} exploited every wound, every limp, every moment of hesitation. "I watched every fight. I know every weakness." Intel is the deadliest weapon.`,
       (r, k, rt) => `Steel met steel in the tower's highest chamber. ${k}'s arms shook with exhaustion. ${r}'s were steady. "You fought bravely down there," ${r} admitted. "But bravery doesn't beat strategy."`,
+      (r, k, rt) => `${r} circled ${k} like a predator, jabbing at the exact wounds the quest had inflicted. "I memorized every hit you took," the ${rt.toLowerCase()} said. "The mirror showed me everything." Knowledge, wielded like a blade, cut deeper than steel.`,
+      (r, k, rt) => `The clash was brutal and one-sided. ${r} had been studying ${k}'s fighting style through the enchanted mirror for four phases. Every feint was anticipated. Every strike was countered. "You're predictable," ${r} said, almost sadly. "Heroes always are."`,
     ],
     knightWins: [
       (r, k, rt) => `${k} was exhausted. Beaten. Running on nothing but willpower. But willpower is what Knights are MADE of. ${pronouns(k).Sub} pushed through the fatigue and drove ${r} back step by step. "You watched from above. I LIVED it. There's a difference."`,
       (r, k, rt) => `${r} knew every weakness — but ${k} had been forged by those weaknesses. Every wound was a lesson. The Knight's endurance trumped the ${rt.toLowerCase()}'s intelligence.`,
+      (r, k, rt) => `${r} pressed the advantage, targeting exhaustion and injury. But ${k} had something the ${rt.toLowerCase()} didn't — four phases of battle-hardened reflexes. The body was broken. The spirit was forged in fire. ${k} parried a strike that should have ended it and PUSHED BACK.`,
+      (r, k, rt) => `"I know your weaknesses," ${r} taunted. ${k} grinned through split lips. "Then you know I don't HAVE any." The Knight absorbed the punishment and kept advancing. ${r}'s strategy was perfect. But ${k}'s heart was bigger than any strategy.`,
     ],
   },
   finish: {
     royalWins: [
       (r, k, rt) => `In the end, the crown won. ${rt} ${r} feinted left, struck right, and sent ${k}'s weapon clattering across the stone floor. ${r} pressed ${pronouns(r).posAdj} blade to ${k}'s throat. "Checkmate." The kingdom was never in danger. The ${rt.toLowerCase()} was the danger all along.`,
       (r, k, rt) => `${r} ended it with elegance — a perfect disarm, a sweeping flourish, and a blade at ${k}'s neck. ${k} sank to one knee. Not in defeat, but in respect. "Well played, Your Highness." The ${rt.toLowerCase()} removed the sword. "You fought well, Knight. Better than I expected."`,
+      (r, k, rt) => `${r} spun, ducked under ${k}'s desperate final swing, and brought ${pronouns(r).posAdj} blade up to rest against the Knight's chest. "Yield." ${k} dropped ${pronouns(k).posAdj} weapon. "The crown wins." And so it did.`,
+      (r, k, rt) => `The final exchange was three moves. ${r} read each one in ${k}'s exhausted stance before it happened. Parry. Redirect. Disarm. ${k}'s blade hit the stone floor and the echo rang through the tower like a bell. "The kingdom is mine," ${r} said softly. "It always was."`,
     ],
     knightWins: [
       (r, k, rt) => `${k} SURGED. One final, desperate, magnificent strike. ${r}'s blade went flying. The Knight stood over the ${rt.toLowerCase()}, sword raised, breathing hard. "I earned this." ${r} looked up from the floor. For the first time, genuine surprise. Then a smile. "Yes. You did."`,
       (r, k, rt) => `The fairy tale ending — but not the one anyone expected. ${k} caught ${r}'s blade between two hands, twisted, and disarmed royalty itself. The crown rolled across the floor. ${k} picked it up. "I'll be taking this."`,
+      (r, k, rt) => `${k} had nothing left. No energy. No strategy. Just one final truth: ${pronouns(k).sub} had not survived hell to lose in the throne room. The Knight's last strike was wild, ugly, desperate — and it connected. ${r}'s blade clattered away. "The quest is OVER."`,
+      (r, k, rt) => `${r} lunged for the kill — and ${k} sidestepped. The ${rt.toLowerCase()} stumbled past, overextended. The Knight's blade came to rest at the back of ${r}'s neck. "Checkmate," ${k} whispered, borrowing the ${rt.toLowerCase()}'s own word. "But I earned mine."`,
     ],
   },
   showmanceHesitation: [
     (a, b) => `Their eyes met. For one heartbeat, neither could swing. The memory of every quiet moment, every stolen glance, every whispered word at camp — it all surged up. ${a}'s blade trembled. ${b}'s grip loosened. Love makes terrible warriors.`,
     (a, b) => `"I can't..." ${a} whispered. ${b}'s weapon dipped. They stood there, in the wreckage of the fairy tale, unable to fight the person they'd been protecting. Then both attacked at once — because the game demands it. Even love has limits.`,
+    (a, b) => `The swords crossed — and stopped. ${a} and ${b} stood inches apart, blades locked, breath mingling. "Not like this," ${b} murmured. "It has to be like this," ${a} replied. But neither moved. The fairy tale's cruelest twist: making lovers into enemies.`,
+    (a, b) => `${a} swung — and pulled the strike at the last moment. ${b} flinched. "You missed on purpose." "I didn't miss. I couldn't." Every whispered promise, every stolen moment by the enchanted stream — all of it stood between their blades like a ghost.`,
   ],
   showmanceSurge: [
     (winner) => `But something broke through the hesitation — not anger, not strategy, but RESOLVE. ${winner} whispered, "Forgive me." And struck with everything. The boldest move in the fairy tale.`,
+    (winner) => `The hesitation shattered like glass. ${winner} surged forward — eyes wet, jaw set. "This isn't about us. This is about the GAME." The strike landed true. Love didn't disappear. It just stepped aside for destiny.`,
+    (winner) => `${winner} closed ${pronouns(winner).posAdj} eyes. Took one breath. Then opened them — and the softness was gone, replaced by steel. "I'm sorry." The final blow was swift, precise, and absolutely devastating. The fairy tale love story would have to wait.`,
+    (winner) => `A single tear fell. Then ${winner} moved — not with anger, but with the quiet certainty of someone choosing the quest over everything else. The blade found its mark. "I'll spend the rest of the game making this up to you," ${winner} whispered. "But right now, I need to WIN."`,
   ],
 };
 
@@ -594,14 +792,20 @@ const ADVANTAGE_TEXT = {
   sword: [
     (royal, recipient, rt) => `${rt} ${royal} raised the Enchanted Sword — it gleamed with golden light. "This blade carries my blessing. Use it wisely." ${royal} descended from the tower and placed it in ${recipient}'s hands. The crowd gasped. Power shifted. ${recipient} felt the magic pulse through the steel. "I won't let you down."`,
     (royal, recipient, rt) => `The Enchanted Sword chose its wielder — or rather, ${rt} ${royal} chose FOR it. "${recipient}." The name echoed across the battlefield. ${recipient} accepted the blade. It felt lighter than air and sharper than truth. "For the quest."`,
+    (royal, recipient, rt) => `A golden scabbard materialized at the tower window. ${rt} ${royal} drew the Enchanted Sword from it — the blade hummed with ancient power — and cast it downward like a javelin of light. It embedded itself at ${recipient}'s feet, quivering with destiny. "The sword has found its champion," ${royal} called. ${recipient} pulled it free. The enchantment sang.`,
+    (royal, recipient, rt) => `${rt} ${royal} pressed ${pronouns(royal).posAdj} lips to the Enchanted Sword's blade — a royal blessing, older than any kingdom. Then ${royal} tossed it from the balcony. ${recipient} caught it one-handed. The steel blazed gold at the touch. "Wield it well," ${royal} commanded. "That blade carries the weight of every fairy tale that came before."`,
   ],
   armor: [
     (royal, recipient, rt) => `${rt} ${royal} bestowed the Golden Armor upon ${recipient}. Plates of enchanted gold materialized, wrapping around the knight like a second skin. "This armor has protected royalty for a thousand years." ${recipient} stood taller. Stronger. Ready for the final battle.`,
     (royal, recipient, rt) => `Golden light poured from ${rt} ${royal}'s hands as the Golden Armor took shape around ${recipient}. Every plate was perfect. Every joint, divine. "You've earned this." ${recipient}: "I'll wear it with honor."`,
+    (royal, recipient, rt) => `The Golden Armor descended from the tower in a cascade of enchanted light, assembling itself plate by plate around ${recipient}'s body. Chest. Arms. Shoulders. Every piece fit as though it had been forged for ${pronouns(recipient).obj} alone. ${rt} ${royal} watched from above. "The kingdom protects its champions. Now go be worthy of the protection."`,
+    (royal, recipient, rt) => `${rt} ${royal} raised both hands and spoke a word that echoed through the fairy tale realm. Golden metal flowed from the tower walls like liquid sunlight, wrapping around ${recipient} in a brilliant cocoon. When it hardened, the armor was magnificent — ancient runes pulsing along every seam. ${recipient} flexed and the enchanted plates moved like a second skin. "I feel... invincible." ${royal} smiled. "Close enough."`,
   ],
   save: [
     (royal, saved, rt) => `"WAIT!" ${rt} ${royal}'s voice rang from the tower. "I invoke my Royal Save!" Golden light descended, wrapping around ${saved}'s fallen form. The curse shattered. ${saved} rose — battered but alive. "Your ${rt.toLowerCase()} commands you RISE." And rise ${saved} did.`,
     (royal, saved, rt) => `${rt} ${royal} threw the crystal pendant from the tower. It shattered on impact, releasing a wave of golden magic. ${saved}'s eyes snapped open. The wounds closed. "You're not done yet," ${royal} called down. "The fairy tale isn't over until I SAY it's over."`,
+    (royal, saved, rt) => `A golden thread of light shot from the tower window and struck ${saved}'s chest like a thunderbolt of mercy. The curse recoiled. The wounds sealed. ${saved} gasped and staggered to ${pronouns(saved).posAdj} feet, restored by royal decree. ${rt} ${royal} gripped the balcony railing, breathless. "I chose you for a reason. Don't make me regret it."`,
+    (royal, saved, rt) => `${rt} ${royal} whispered a name into the enchanted mirror — ${saved}'s name. The mirror cracked, and from the fracture poured a river of golden light that cascaded down the tower and pooled around ${saved}'s fallen body. The curse dissolved. ${saved} opened ${pronouns(saved).posAdj} eyes. "The crown demands your service a while longer," ${royal}'s voice echoed. The fairy tale was not done with ${saved} yet.`,
   ],
 };
 
@@ -643,10 +847,45 @@ function _scoreBeat(name, cls, beatKey, swordHolder, armorHolder, fatigue) {
   return score;
 }
 
-function _getBeatText(name, cls, beatKey) {
+const STRUGGLE_TEXT = {
+  knight: [
+    (n, pr, beat) => `${n}'s armor weighed ${pr.obj} down. The Knight stumbled, sword dragging. "Come ON." ${pr.Sub} was falling behind and ${pr.sub} knew it.`,
+    (n, pr, beat) => `${n} charged in headfirst — and paid for it. The Knight's brute approach backfired spectacularly. "That... wasn't supposed to happen."`,
+    (n, pr, beat) => `${n} swung wide, hit nothing, and tripped over ${pr.posAdj} own cape. The Knight scrambled to recover, face burning with embarrassment.`,
+  ],
+  ranger: [
+    (n, pr, beat) => `${n}'s instincts failed ${pr.obj}. The Ranger second-guessed every turn, every sign. The forest wasn't talking — or ${pr.sub} wasn't listening.`,
+    (n, pr, beat) => `${n} tracked the wrong prints. The Ranger ended up in a dead end, brambles closing in. "This never happens to me." It was happening.`,
+  ],
+  mage: [
+    (n, pr, beat) => `${n}'s spell fizzled. The Mage tried again — another fizzle. "The enchantment is... resistant." It wasn't. ${pr.Sub} was just off today.`,
+    (n, pr, beat) => `${n} calculated the arcane formula, applied it confidently, and got it completely wrong. The Mage's face went red. "That was a... deliberate test."`,
+  ],
+  rogue: [
+    (n, pr, beat) => `${n} tried to sneak past — and stepped on a twig. A very loud twig. The Rogue froze. Everyone stared. "...I meant to do that."`,
+    (n, pr, beat) => `${n}'s lockpick snapped in the mechanism. Then the backup. Then the backup's backup. "I'm having an OFF DAY, okay?!"`,
+  ],
+  bard: [
+    (n, pr, beat) => `${n} strummed a chord and... nothing. The lute was out of tune. The Bard's voice cracked on the high note. The enchantment was unimpressed.`,
+    (n, pr, beat) => `${n} launched into an inspiring ballad. The audience was unmoved. A cricket chirped. "Tough crowd," the Bard muttered, retreating.`,
+  ],
+  barbarian: [
+    (n, pr, beat) => `${n} roared and charged — right into a wall. The Barbarian peeled ${pr.ref} off the stone, seeing stars. "Wall. Didn't see that."`,
+    (n, pr, beat) => `${n} swung the battle axe with everything ${pr.sub} had. It embedded in a tree and wouldn't come out. The Barbarian pulled, twisted, and eventually abandoned it. "I'll get a new one."`,
+  ],
+};
+
+function _getBeatText(name, cls, beatKey, score, maxScore) {
   const pr = pronouns(name);
   const beatTexts = BEAT_TEXT[beatKey];
   if (!beatTexts) return `${name} pushed through the challenge.`;
+
+  // Score determines success level — bottom third gets struggle text
+  const ratio = maxScore > 0 ? score / maxScore : 0.5;
+  if (ratio < 0.45 && STRUGGLE_TEXT[cls]?.length) {
+    return pick(STRUGGLE_TEXT[cls])(name, pr, beatKey);
+  }
+
   const classTexts = beatTexts[cls];
   if (classTexts?.length) return pick(classTexts)(name, pr);
   const defaults = beatTexts._default;
@@ -668,9 +907,11 @@ function _simulatePhase(phaseId, phaseLabel, beats, alive, classMap, result, ep,
     const texts = {};
     for (const name of alive) {
       scores[name] = _scoreBeat(name, classMap[name], beat.key, result.swordHolder, result.armorHolder, fatigue);
-      texts[name] = _getBeatText(name, classMap[name], beat.key);
-      // Fatigue from each beat
       fatigue[name] = (fatigue[name] || 0) - 0.3;
+    }
+    const maxBeatScore = Math.max(1, ...Object.values(scores));
+    for (const name of alive) {
+      texts[name] = _getBeatText(name, classMap[name], beat.key, scores[name], maxBeatScore);
     }
     // Rank
     const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
@@ -687,23 +928,7 @@ function _simulatePhase(phaseId, phaseLabel, beats, alive, classMap, result, ep,
       for (let i = 0; i < elimCount && alive.length > 2; i++) {
         const victim = ranked[ranked.length - 1 - i]?.[0];
         if (!victim) break;
-        // Check if royal saves
-        if (result.royalSaveAvailable && !result.royalSaveUsed && Math.random() < 0.35) {
-          result.royalSaveUsed = true;
-          result.royalSavedPlayer = victim;
-          result.royalSaveBeat = beat.key;
-          const saveText = pick(ADVANTAGE_TEXT.save)(result.royalName, victim, result.royalTitle);
-          beatResult.save = { player: victim, text: saveText };
-          popDelta(result.royalName, 1);
-          popDelta(victim, 1);
-          addBond(result.royalName, victim, 2);
-          ep.campEvents[campKey].post.push({
-            text: `${result.royalTitle} ${result.royalName} used the Royal Save on ${victim}!`,
-            players: [result.royalName, victim],
-            badgeText: 'ROYAL SAVE!', badgeClass: 'green', tag: 'princess-pride',
-          });
-          continue;
-        }
+        // Eliminate first, THEN check if royal saves (revive the fallen)
         beatResult.eliminated.push({ name: victim, text: _getElimText(victim, beat.key) });
         phase.eliminated.push(victim);
         const idx2 = alive.indexOf(victim);
@@ -714,8 +939,31 @@ function _simulatePhase(phaseId, phaseLabel, beats, alive, classMap, result, ep,
           players: [victim],
           badgeText: 'CURSED!', badgeClass: 'red', tag: 'princess-pride',
         });
+        // Royal save — only fires if the eliminated player is close to the royal (bond >= 3 or showmance)
+        const royalBond = getBond(result.royalName, victim);
+        const isShowmancePair = gs.showmances?.some(s => (s.a === result.royalName && s.b === victim) || (s.b === result.royalName && s.a === victim));
+        const saveWorthy = isShowmancePair || royalBond >= 3;
+        if (result.royalSaveAvailable && !result.royalSaveUsed && saveWorthy) {
+          result.royalSaveUsed = true;
+          result.royalSavedPlayer = victim;
+          result.royalSaveBeat = beat.key;
+          const saveText = pick(ADVANTAGE_TEXT.save)(result.royalName, victim, result.royalTitle);
+          beatResult.save = { player: victim, text: saveText };
+          alive.push(victim);
+          const elimIdx = phase.eliminated.indexOf(victim);
+          if (elimIdx >= 0) phase.eliminated.splice(elimIdx, 1);
+          popDelta(result.royalName, 1);
+          popDelta(victim, 2);
+          addBond(result.royalName, victim, 2);
+          ep.campEvents[campKey].post.push({
+            text: `${result.royalTitle} ${result.royalName} used the Royal Save on ${victim}!`,
+            players: [result.royalName, victim],
+            badgeText: 'ROYAL SAVE!', badgeClass: 'green', tag: 'princess-pride',
+          });
+        }
       }
     }
+    beatResult.scoreSnapshot = { ...ep.chalMemberScores };
     phase.beats.push(beatResult);
   }
   // Between-phase social events
@@ -914,9 +1162,10 @@ export function simulatePrincessPride(ep) {
 
   // After Phase 4: Give Golden Armor to the top knight
   if (alive.length >= 1) {
-    // Top scorer from tower push
+    // Top scorer from tower push — but NOT the sword holder (spread the advantages)
     const towerPush = phase4.beats.find(b => b.key === 'tower-push');
-    const topKnight = towerPush?.ranked[0]?.name || alive[0];
+    const towerRanked = towerPush?.ranked || [];
+    const topKnight = towerRanked.find(r => r.name !== result.swordHolder)?.name || towerRanked[0]?.name || alive[0];
     result.armorHolder = topKnight;
     result.armorGiven = { recipient: topKnight, text: pick(ADVANTAGE_TEXT.armor)(royalName, topKnight, royalTitle) };
     addBond(royalName, topKnight, 1);
@@ -953,10 +1202,10 @@ export function simulatePrincessPride(ep) {
   const _romActive = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
   for (let _ri = 0; _ri < _romActive.length; _ri++) {
     for (let _rj = _ri + 1; _rj < _romActive.length; _rj++) {
-      _challengeRomanceSpark(_romActive[_ri], _romActive[_rj], ep, 'princessPride', _romActive, ep.chalMemberScores || {}, 'fairy tale quest');
+      _challengeRomanceSpark(_romActive[_ri], _romActive[_rj], ep, null, null, ep.chalMemberScores || {}, 'fairy tale quest');
     }
   }
-  _checkShowmanceChalMoment(ep, 'princessPride', _romActive, ep.chalMemberScores || {}, 'quest', _romActive);
+  _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'quest', _romActive);
 
   // ── FINALIZE ──
   ep.princessPride = result;
@@ -1061,6 +1310,190 @@ function css() {
       linear-gradient(transparent 0%,rgba(30,27,75,0.95) 100%),
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80'%3E%3Cpath d='M0,80 L0,40 L20,40 L20,20 L30,20 L30,10 L35,10 L35,20 L45,20 L45,40 L60,40 L60,30 L80,30 L80,40 L100,40 L100,20 L110,20 L110,10 L115,10 L115,20 L125,20 L125,40 L160,40 L160,50 L200,50 L200,30 L210,30 L210,15 L215,15 L215,30 L225,30 L225,50 L260,50 L260,40 L280,40 L280,35 L290,35 L290,40 L320,40 L320,25 L330,25 L330,15 L335,15 L335,25 L345,25 L345,40 L380,40 L380,50 L400,50 L400,80Z' fill='rgba(30,27,75,0.4)'/%3E%3C/svg%3E") center bottom/400px 80px repeat-x}
 
+  /* ═══ PHASE-SPECIFIC BACKGROUNDS ═══ */
+
+  /* ── 1. CEREMONY: Royal coronation hall, deep indigo sky with golden stars ── */
+  .pp-shell.pp-theme-ceremony{background:linear-gradient(180deg,#1e1b4b 0%,#312e81 50%,#1e1b4b 100%)}
+  .pp-shell.pp-theme-ceremony::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(1.5px 1.5px at 10% 12%,rgba(234,179,8,0.7),transparent),
+      radial-gradient(2px 2px at 25% 5%,rgba(234,179,8,0.5),transparent),
+      radial-gradient(1px 1px at 40% 18%,rgba(234,179,8,0.6),transparent),
+      radial-gradient(2px 2px at 55% 8%,rgba(234,179,8,0.8),transparent),
+      radial-gradient(1.5px 1.5px at 70% 15%,rgba(234,179,8,0.55),transparent),
+      radial-gradient(1px 1px at 85% 10%,rgba(234,179,8,0.65),transparent),
+      radial-gradient(2px 2px at 15% 28%,rgba(234,179,8,0.4),transparent),
+      radial-gradient(1.5px 1.5px at 50% 25%,rgba(234,179,8,0.6),transparent),
+      radial-gradient(1px 1px at 65% 30%,rgba(234,179,8,0.45),transparent),
+      radial-gradient(2px 2px at 80% 22%,rgba(234,179,8,0.5),transparent),
+      radial-gradient(1px 1px at 33% 35%,rgba(234,179,8,0.55),transparent),
+      radial-gradient(1.5px 1.5px at 92% 18%,rgba(234,179,8,0.6),transparent)}
+
+  /* ── 2. ENCHANTED FOREST: Lush magical forest, dappled light, vines, fireflies ── */
+  .pp-shell.pp-theme-forest{background:linear-gradient(180deg,#052e16 0%,#166534 40%,#14532d 70%,#052e16 100%);
+    box-shadow:0 0 20px rgba(22,163,74,0.3),inset 0 0 60px rgba(0,40,0,0.4)}
+  .pp-shell.pp-theme-forest::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(circle at 12% 15%,rgba(134,239,172,0.3) 0%,transparent 22%),
+      radial-gradient(circle at 38% 8%,rgba(74,222,128,0.25) 0%,transparent 18%),
+      radial-gradient(circle at 62% 22%,rgba(187,247,208,0.2) 0%,transparent 20%),
+      radial-gradient(circle at 82% 12%,rgba(134,239,172,0.22) 0%,transparent 16%),
+      radial-gradient(circle at 25% 45%,rgba(34,197,94,0.15) 0%,transparent 25%),
+      radial-gradient(circle at 55% 38%,rgba(134,239,172,0.18) 0%,transparent 20%),
+      radial-gradient(circle at 75% 55%,rgba(74,222,128,0.14) 0%,transparent 22%),
+      radial-gradient(circle at 45% 65%,rgba(187,247,208,0.16) 0%,transparent 18%),
+      radial-gradient(circle at 18% 72%,rgba(134,239,172,0.2) 0%,transparent 15%),
+      radial-gradient(circle at 88% 68%,rgba(34,197,94,0.12) 0%,transparent 20%),
+      /* pink flower spots at ground level */
+      radial-gradient(circle at 15% 92%,rgba(236,72,153,0.2) 0%,transparent 6%),
+      radial-gradient(circle at 35% 95%,rgba(236,72,153,0.15) 0%,transparent 5%),
+      radial-gradient(circle at 65% 90%,rgba(251,191,36,0.15) 0%,transparent 5%),
+      radial-gradient(circle at 85% 93%,rgba(236,72,153,0.18) 0%,transparent 6%)}
+
+  /* vine borders */
+  .pp-shell.pp-theme-forest .pp-layout::before{content:'';position:absolute;top:0;left:0;width:50px;height:100%;pointer-events:none;z-index:6;
+    background:
+      repeating-linear-gradient(170deg,transparent 0px,transparent 14px,rgba(22,101,52,0.6) 14px,rgba(22,101,52,0.6) 17px,transparent 17px,transparent 35px),
+      repeating-linear-gradient(195deg,transparent 0px,transparent 20px,rgba(20,83,45,0.4) 20px,rgba(20,83,45,0.4) 23px,transparent 23px,transparent 45px),
+      linear-gradient(90deg,rgba(5,46,22,0.6),transparent)}
+  .pp-shell.pp-theme-forest .pp-layout::after{content:'';position:absolute;top:0;right:0;width:50px;height:100%;pointer-events:none;z-index:6;
+    background:
+      repeating-linear-gradient(190deg,transparent 0px,transparent 16px,rgba(22,101,52,0.55) 16px,rgba(22,101,52,0.55) 19px,transparent 19px,transparent 38px),
+      repeating-linear-gradient(175deg,transparent 0px,transparent 22px,rgba(20,83,45,0.35) 22px,rgba(20,83,45,0.35) 25px,transparent 25px,transparent 50px),
+      linear-gradient(270deg,rgba(5,46,22,0.6),transparent)}
+
+  /* firefly lantern override */
+  .pp-shell.pp-theme-forest .pp-lantern{background:rgba(134,239,172,0.9);width:6px;height:6px;border-radius:50%;
+    box-shadow:0 0 10px rgba(134,239,172,0.8),0 0 25px rgba(74,222,128,0.5),0 0 40px rgba(34,197,94,0.2);
+    animation:pp-firefly var(--pp-ff-dur,4s) ease-in-out infinite}
+  .pp-shell.pp-theme-forest .pp-lantern:nth-child(odd){--pp-ff-dur:3.2s}
+  .pp-shell.pp-theme-forest .pp-lantern:nth-child(3n){--pp-ff-dur:5.5s}
+  .pp-shell.pp-theme-forest .pp-lantern:nth-child(4n+1){--pp-ff-dur:4.8s}
+
+  /* tree canopy silhouette below HUD */
+  .pp-shell.pp-theme-forest .pp-hud::after{content:'';position:absolute;top:100%;left:0;right:0;height:40px;pointer-events:none;z-index:3;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 40'%3E%3Cpath d='M0,0 C20,15 30,25 50,10 C65,0 80,20 100,15 C115,10 130,30 150,8 C165,0 185,25 200,12 C220,0 235,20 250,15 C270,8 285,28 310,10 C330,0 345,18 360,12 C375,5 390,20 400,8 L400,0Z' fill='rgba(5,46,22,0.65)'/%3E%3Cpath d='M0,0 C30,20 60,5 90,18 C120,30 150,5 180,15 C210,25 240,8 270,20 C300,30 330,10 360,22 C380,30 400,15 400,0Z' fill='rgba(20,83,45,0.45)'/%3E%3C/svg%3E") center top/400px 40px repeat-x}
+
+  /* ground mushrooms + flowers */
+  .pp-shell.pp-theme-forest::before{
+    height:140px !important;
+    background:
+      linear-gradient(transparent 0%,rgba(5,46,22,0.9) 60%,rgba(2,30,12,1) 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80'%3E%3Ccircle cx='40' cy='55' r='12' fill='rgba(168,85,247,0.35)'/%3E%3Ccircle cx='33' cy='50' r='14' fill='rgba(168,85,247,0.25)'/%3E%3Crect x='38' y='57' width='5' height='18' rx='2' fill='rgba(200,200,200,0.15)'/%3E%3Ccircle cx='350' cy='58' r='10' fill='rgba(236,72,153,0.3)'/%3E%3Ccircle cx='345' cy='54' r='12' fill='rgba(236,72,153,0.2)'/%3E%3Crect x='349' y='60' width='4' height='15' rx='2' fill='rgba(200,200,200,0.12)'/%3E%3Ccircle cx='180' cy='62' r='8' fill='rgba(249,115,22,0.25)'/%3E%3Ccircle cx='176' cy='58' r='10' fill='rgba(249,115,22,0.18)'/%3E%3Crect x='179' y='63' width='3' height='12' rx='1' fill='rgba(200,200,200,0.1)'/%3E%3Ccircle cx='100' cy='68' r='5' fill='rgba(236,72,153,0.25)'/%3E%3Ccircle cx='280' cy='65' r='6' fill='rgba(134,239,172,0.2)'/%3E%3Ccircle cx='220' cy='60' r='4' fill='rgba(251,191,36,0.2)'/%3E%3Ccircle cx='310' cy='70' r='4' fill='rgba(168,85,247,0.2)'/%3E%3Ccircle cx='70' cy='72' r='3' fill='rgba(251,191,36,0.18)'/%3E%3C/svg%3E") center bottom/400px 80px repeat-x !important}
+
+  /* ── 3. TROLL BRIDGE: Dark stone bridge over misty chasm, torchlight flicker ── */
+  .pp-shell.pp-theme-bridge{background:linear-gradient(180deg,#1c1917 0%,#292524 30%,#44403c 60%,#292524 80%,#1c1917 100%);
+    box-shadow:0 0 20px rgba(180,83,9,0.3),inset 0 0 50px rgba(0,0,0,0.5)}
+  .pp-shell.pp-theme-bridge::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+    background:
+      /* torch glow left */
+      radial-gradient(ellipse at 3% 40%,rgba(245,158,11,0.18) 0%,transparent 25%),
+      /* torch glow right */
+      radial-gradient(ellipse at 97% 40%,rgba(245,158,11,0.18) 0%,transparent 25%),
+      /* mist bands */
+      radial-gradient(ellipse at 50% 85%,rgba(200,200,200,0.06) 0%,transparent 40%),
+      radial-gradient(ellipse at 30% 92%,rgba(180,180,180,0.04) 0%,transparent 35%),
+      radial-gradient(ellipse at 70% 88%,rgba(160,160,160,0.05) 0%,transparent 30%),
+      /* stone block lines */
+      repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(120,113,108,0.06) 28px,rgba(120,113,108,0.06) 30px);
+    animation:pp-mist-drift 12s ease-in-out infinite}
+  /* stone bridge railing silhouette at bottom */
+  .pp-shell.pp-theme-bridge::before{content:'';position:absolute;bottom:0;left:0;right:0;height:100px;pointer-events:none;z-index:0;
+    background:
+      linear-gradient(transparent 0%,rgba(28,25,23,0.95) 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 60'%3E%3Cpath d='M0,60 L0,35 L10,35 L10,20 L15,15 L20,20 L20,35 L60,35 L60,20 L65,15 L70,20 L70,35 L110,35 L110,20 L115,15 L120,20 L120,35 L160,35 L160,20 L165,15 L170,20 L170,35 L210,35 L210,20 L215,15 L220,20 L220,35 L260,35 L260,20 L265,15 L270,20 L270,35 L310,35 L310,20 L315,15 L320,20 L320,35 L360,35 L360,20 L365,15 L370,20 L370,35 L400,35 L400,60Z' fill='rgba(68,64,60,0.35)'/%3E%3Crect x='0' y='32' width='400' height='6' rx='1' fill='rgba(87,83,78,0.25)'/%3E%3C/svg%3E") center bottom/400px 60px repeat-x}
+  /* torch-flame lanterns */
+  .pp-shell.pp-theme-bridge .pp-lantern{background:rgba(245,158,11,0.8);width:5px;height:7px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+    box-shadow:0 0 10px rgba(245,158,11,0.6),0 0 20px rgba(234,88,12,0.3);
+    animation:pp-torch-flicker 0.8s ease-in-out infinite}
+  .pp-shell.pp-theme-bridge .pp-lantern:nth-child(2){animation-delay:-0.15s}
+  .pp-shell.pp-theme-bridge .pp-lantern:nth-child(3){animation-delay:-0.4s}
+  .pp-shell.pp-theme-bridge .pp-lantern:nth-child(4){animation-delay:-0.6s}
+
+  /* ── 4. DRAGON'S LAIR: Dark cave, fire glow, embers, lava cracks ── */
+  .pp-shell.pp-theme-dragon{background:linear-gradient(180deg,#1a0000 0%,#450a0a 30%,#7f1d1d 60%,#450a0a 80%,#1a0000 100%);
+    box-shadow:0 0 30px rgba(220,38,38,0.4),inset 0 0 60px rgba(0,0,0,0.5)}
+  .pp-shell.pp-theme-dragon::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+    background:
+      /* pulsing fire glow at bottom center */
+      radial-gradient(ellipse at 50% 95%,rgba(239,68,68,0.2) 0%,rgba(249,115,22,0.1) 20%,transparent 50%),
+      radial-gradient(ellipse at 35% 90%,rgba(220,38,38,0.1) 0%,transparent 30%),
+      radial-gradient(ellipse at 65% 88%,rgba(249,115,22,0.08) 0%,transparent 25%),
+      /* fire reflection at bottom */
+      linear-gradient(0deg,rgba(239,68,68,0.08) 0%,transparent 15%);
+    animation:pp-fire-pulse 3s ease-in-out infinite}
+  /* cave stalactites at top */
+  .pp-shell.pp-theme-dragon .pp-hud::after{content:'';position:absolute;top:100%;left:0;right:0;height:35px;pointer-events:none;z-index:3;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 35'%3E%3Cpath d='M0,0 L15,0 L18,18 L20,0 L55,0 L58,25 L61,0 L80,0 L84,15 L87,0 L120,0 L124,30 L127,0 L155,0 L158,12 L160,0 L195,0 L199,22 L202,0 L230,0 L233,17 L236,0 L270,0 L274,28 L277,0 L305,0 L308,14 L310,0 L340,0 L344,20 L347,0 L375,0 L378,16 L381,0 L400,0Z' fill='rgba(26,0,0,0.7)'/%3E%3C/svg%3E") center top/400px 35px repeat-x}
+  /* lava cracks at bottom */
+  .pp-shell.pp-theme-dragon::before{content:'';position:absolute;bottom:0;left:0;right:0;height:80px;pointer-events:none;z-index:0;
+    background:
+      linear-gradient(transparent 0%,rgba(26,0,0,0.95) 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 40'%3E%3Cpath d='M30,38 L35,28 L50,32 L55,20 L65,30 L80,35' stroke='rgba(249,115,22,0.3)' stroke-width='1.5' fill='none'/%3E%3Cpath d='M150,36 L160,22 L170,30 L180,18 L195,28 L200,35' stroke='rgba(239,68,68,0.25)' stroke-width='1.5' fill='none'/%3E%3Cpath d='M280,37 L290,25 L300,32 L310,20 L325,30 L335,36' stroke='rgba(249,115,22,0.28)' stroke-width='1.5' fill='none'/%3E%3Cpath d='M55,25 L58,15' stroke='rgba(251,191,36,0.2)' stroke-width='1' fill='none'/%3E%3Cpath d='M175,22 L178,12' stroke='rgba(251,191,36,0.18)' stroke-width='1' fill='none'/%3E%3Cpath d='M305,24 L308,14' stroke='rgba(251,191,36,0.2)' stroke-width='1' fill='none'/%3E%3C/svg%3E") center bottom/400px 40px repeat-x !important}
+  /* ember lantern override */
+  .pp-shell.pp-theme-dragon .pp-lantern{background:rgba(249,115,22,0.8);width:3px;height:3px;
+    box-shadow:0 0 4px rgba(239,68,68,0.6),0 0 8px rgba(249,115,22,0.3);
+    animation:pp-ember var(--pp-em-dur,3s) ease-out infinite}
+  .pp-shell.pp-theme-dragon .pp-lantern:nth-child(2){--pp-em-dur:2.4s;background:rgba(239,68,68,0.7)}
+  .pp-shell.pp-theme-dragon .pp-lantern:nth-child(3){--pp-em-dur:3.8s}
+
+  /* ── 5. TOWER RESCUE: Stone tower interior with stained glass light beams ── */
+  .pp-shell.pp-theme-tower{
+    background:linear-gradient(0deg,#312e81 0%,#4c1d95 40%,#2e1065 70%,#1e1b4b 100%);
+    box-shadow:0 0 20px rgba(124,58,237,0.3),inset 0 0 50px rgba(0,0,0,0.3)}
+  .pp-shell.pp-theme-tower::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+    background:
+      /* stained glass light beams — gold, rose, blue, green */
+      linear-gradient(35deg,transparent 30%,rgba(234,179,8,0.05) 40%,rgba(234,179,8,0.06) 45%,transparent 55%),
+      linear-gradient(55deg,transparent 20%,rgba(236,72,153,0.04) 30%,rgba(236,72,153,0.05) 38%,transparent 48%),
+      linear-gradient(25deg,transparent 50%,rgba(96,165,250,0.04) 58%,rgba(96,165,250,0.05) 65%,transparent 75%),
+      linear-gradient(45deg,transparent 60%,rgba(74,222,128,0.04) 68%,rgba(74,222,128,0.05) 73%,transparent 83%),
+      /* stone wall texture */
+      repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(139,92,246,0.04) 28px,rgba(139,92,246,0.04) 30px);
+    animation:pp-stained-glass 6s ease-in-out infinite}
+  /* climbing vine on left */
+  .pp-shell.pp-theme-tower .pp-layout::before{content:'';position:absolute;top:0;left:0;width:24px;height:100%;pointer-events:none;z-index:0;
+    background:
+      repeating-linear-gradient(175deg,transparent 0px,transparent 15px,rgba(22,163,74,0.2) 15px,rgba(22,163,74,0.2) 17px,transparent 17px,transparent 35px),
+      repeating-linear-gradient(185deg,transparent 0px,transparent 22px,rgba(34,197,94,0.15) 22px,rgba(34,197,94,0.15) 24px,transparent 24px,transparent 50px),
+      linear-gradient(90deg,rgba(22,163,74,0.1),transparent)}
+  /* slow upward-drifting golden lanterns */
+  .pp-shell.pp-theme-tower .pp-lantern{
+    background:radial-gradient(circle,rgba(234,179,8,0.9),rgba(234,179,8,0.3),transparent);
+    box-shadow:0 0 10px rgba(234,179,8,0.5),0 0 20px rgba(234,179,8,0.2);
+    animation:pp-float 7s ease-in-out infinite}
+  .pp-shell.pp-theme-tower .pp-lantern:nth-child(2){animation-duration:8.5s}
+  .pp-shell.pp-theme-tower .pp-lantern:nth-child(3){animation-duration:6.5s}
+  .pp-shell.pp-theme-tower .pp-lantern:nth-child(4){animation-duration:9s}
+
+  /* ── 6. THE BETRAYAL DUEL: Grand throne room, golden opulence ── */
+  .pp-shell.pp-theme-duel{background:linear-gradient(180deg,#451a03 0%,#78350f 35%,#422006 65%,#451a03 100%);
+    box-shadow:0 0 25px rgba(234,179,8,0.4),inset 0 0 50px rgba(0,0,0,0.3)}
+  .pp-shell.pp-theme-duel::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+    background:
+      /* central golden spotlight */
+      radial-gradient(ellipse at 50% 45%,rgba(234,179,8,0.12) 0%,rgba(234,179,8,0.04) 30%,transparent 60%),
+      /* floor golden reflection */
+      linear-gradient(0deg,rgba(234,179,8,0.06) 0%,transparent 20%),
+      /* royal banner lines at edges */
+      linear-gradient(90deg,rgba(234,179,8,0.05) 0%,transparent 3%,transparent 97%,rgba(234,179,8,0.05) 100%)}
+  /* crossed swords decoration at top center */
+  .pp-shell.pp-theme-duel .pp-hud::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);width:120px;height:40px;pointer-events:none;z-index:3;opacity:0.15;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40'%3E%3Cline x1='20' y1='35' x2='100' y2='5' stroke='%23eab308' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='100' y1='35' x2='20' y2='5' stroke='%23eab308' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='60' cy='20' r='4' fill='none' stroke='%23eab308' stroke-width='1.5'/%3E%3Crect x='16' y='32' width='8' height='3' rx='1' fill='%23eab308'/%3E%3Crect x='96' y='32' width='8' height='3' rx='1' fill='%23eab308'/%3E%3Crect x='16' y='2' width='8' height='3' rx='1' fill='%23eab308'/%3E%3Crect x='96' y='2' width='8' height='3' rx='1' fill='%23eab308'/%3E%3C/svg%3E") center/contain no-repeat}
+  /* throne room pillars on left and right */
+  .pp-shell.pp-theme-duel .pp-layout::before{content:'';position:absolute;top:0;left:0;width:20px;height:100%;pointer-events:none;z-index:0;
+    background:linear-gradient(90deg,rgba(69,26,3,0.6) 0%,rgba(69,26,3,0.3) 60%,transparent 100%)}
+  .pp-shell.pp-theme-duel .pp-layout::after{content:'';position:absolute;top:0;right:0;width:20px;height:100%;pointer-events:none;z-index:0;
+    background:linear-gradient(270deg,rgba(69,26,3,0.6) 0%,rgba(69,26,3,0.3) 60%,transparent 100%)}
+  /* golden majestic lanterns */
+  .pp-shell.pp-theme-duel .pp-lantern{
+    background:radial-gradient(circle,rgba(234,179,8,0.95),rgba(234,179,8,0.4),transparent);
+    width:7px;height:7px;
+    box-shadow:0 0 12px rgba(234,179,8,0.6),0 0 24px rgba(234,179,8,0.2);
+    animation:pp-float 6s ease-in-out infinite}
+  .pp-shell.pp-theme-duel .pp-lantern:nth-child(2){animation-duration:7.5s}
+  .pp-shell.pp-theme-duel .pp-lantern:nth-child(3){animation-duration:5.5s}
+
   /* Floating lanterns */
   .pp-lantern{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:1;
     background:radial-gradient(circle,rgba(234,179,8,0.9),rgba(234,179,8,0.3),transparent);
@@ -1073,6 +1506,48 @@ function css() {
   .pp-lantern:nth-child(7){animation-delay:-2.5s;animation-duration:4s}
   .pp-lantern:nth-child(8){animation-delay:-0.8s;animation-duration:3.8s}
   @keyframes pp-float{0%,100%{transform:translateY(0) scale(1);opacity:0.7}50%{transform:translateY(-15px) scale(1.2);opacity:1}}
+
+  @keyframes pp-firefly{
+    0%{opacity:0.2;transform:translateY(0) translateX(0)}
+    25%{opacity:0.8;transform:translateY(-8px) translateX(4px)}
+    50%{opacity:1;transform:translateY(-15px) translateX(-3px)}
+    75%{opacity:0.6;transform:translateY(-8px) translateX(5px)}
+    100%{opacity:0.2;transform:translateY(0) translateX(0)}}
+
+  @keyframes pp-ember{
+    0%{opacity:0.8;transform:translateY(0) translateX(0) scale(1)}
+    50%{opacity:0.6;transform:translateY(-80px) translateX(15px) scale(0.7)}
+    100%{opacity:0;transform:translateY(-160px) translateX(-10px) scale(0.3)}}
+
+  @keyframes pp-torch-flicker{
+    0%,100%{opacity:0.7;transform:scale(1)}
+    10%{opacity:1;transform:scale(1.1)}
+    20%{opacity:0.6;transform:scale(0.95)}
+    30%{opacity:0.9;transform:scale(1.05)}
+    50%{opacity:0.5;transform:scale(0.9)}
+    70%{opacity:1;transform:scale(1.1)}
+    90%{opacity:0.8;transform:scale(1)}}
+
+  @keyframes pp-mist-drift{
+    0%{transform:translateX(-5%)}
+    50%{transform:translateX(5%)}
+    100%{transform:translateX(-5%)}}
+
+  @keyframes pp-fire-pulse{
+    0%,100%{opacity:0.6;transform:scale(1)}
+    50%{opacity:1;transform:scale(1.15)}}
+
+  @keyframes pp-stained-glass{
+    0%,100%{opacity:0.03}
+    50%{opacity:0.07}}
+
+  @media(prefers-reduced-motion:reduce){
+    .pp-lantern,.pp-shell::after,.pp-shell.pp-theme-bridge::after,
+    .pp-shell.pp-theme-dragon::after,.pp-shell.pp-theme-tower::after{animation:none !important}
+    .pp-shell.pp-theme-forest .pp-lantern{animation:none !important}
+    .pp-shell.pp-theme-bridge .pp-lantern{animation:none !important}
+    .pp-shell.pp-theme-dragon .pp-lantern{animation:none !important}
+  }
 
   /* ═══ LAYOUT ═══ */
   .pp-layout{display:flex;gap:0;position:relative;z-index:5;min-height:300px}
@@ -1107,10 +1582,26 @@ function css() {
   .pp-panel-tower{background:linear-gradient(180deg,#ddd6fe,#ede9fe);border-color:#7c3aed}
   .pp-panel-duel{background:linear-gradient(180deg,#fef3c7,#fde68a);border-color:#eab308;
     box-shadow:0 0 20px rgba(234,179,8,0.3)}
-  .pp-panel-royal{background:linear-gradient(180deg,rgba(234,179,8,0.15),rgba(234,179,8,0.05));
-    border-color:var(--royal-gold);box-shadow:0 0 15px rgba(234,179,8,0.2)}
-  .pp-panel-elim{background:linear-gradient(180deg,#1f1f1f,#2d2d2d);border-color:#666;
-    color:#ddd}
+  .pp-panel-royal{background:linear-gradient(180deg,#fef3c7,var(--parchment));
+    border-color:var(--royal-gold);box-shadow:0 0 15px rgba(234,179,8,0.3)}
+  .pp-panel-elim{background:linear-gradient(180deg,#1a0a1a,#2d1f2d,#1a0a1a);border-color:#4a1d6a;
+    color:#ddd;position:relative;overflow:hidden;animation:pp-curse-darken 1s ease-out}
+  .pp-panel-elim::before{content:'';position:absolute;bottom:0;left:0;right:0;height:100%;pointer-events:none;z-index:0;
+    background:
+      repeating-linear-gradient(170deg,transparent 0px,transparent 12px,rgba(22,101,52,0.25) 12px,rgba(22,101,52,0.25) 15px,transparent 15px,transparent 30px),
+      repeating-linear-gradient(195deg,transparent 0px,transparent 18px,rgba(20,83,45,0.2) 18px,rgba(20,83,45,0.2) 21px,transparent 21px,transparent 40px),
+      repeating-linear-gradient(160deg,transparent 0px,transparent 22px,rgba(5,46,22,0.3) 22px,rgba(5,46,22,0.3) 24px,transparent 24px,transparent 50px);
+    animation:pp-vine-creep 1.5s ease-out forwards}
+  .pp-panel-elim::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(circle at 10% 90%,rgba(168,85,247,0.15) 0%,transparent 15%),
+      radial-gradient(circle at 90% 85%,rgba(22,101,52,0.2) 0%,transparent 12%),
+      radial-gradient(circle at 50% 95%,rgba(124,58,237,0.1) 0%,transparent 20%);
+    animation:pp-curse-glow 2s ease-in-out infinite alternate}
+  .pp-panel-elim>*{position:relative;z-index:1}
+  @keyframes pp-vine-creep{0%{clip-path:inset(100% 0 0 0)}100%{clip-path:inset(0 0 0 0)}}
+  @keyframes pp-curse-darken{0%{opacity:0;transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+  @keyframes pp-curse-glow{0%{opacity:0.5}100%{opacity:1}}
   .pp-panel-save{background:linear-gradient(180deg,#fef3c7,#fff);border-color:var(--royal-gold);
     box-shadow:0 0 25px rgba(234,179,8,0.5);animation:pp-save-glow 1.5s ease-in-out infinite alternate}
   @keyframes pp-save-glow{0%{box-shadow:0 0 15px rgba(234,179,8,0.3)}100%{box-shadow:0 0 30px rgba(234,179,8,0.6)}}
@@ -1120,11 +1611,12 @@ function css() {
     text-align:center;text-shadow:0 2px 8px rgba(0,0,0,0.4);line-height:1.2;letter-spacing:2px}
   .pp-subtitle{font-family:'Cinzel',serif;font-weight:400;font-size:14px;color:rgba(255,255,255,0.7);
     text-align:center;letter-spacing:4px;text-transform:uppercase}
-  .pp-narration{font-family:'Lora',serif;font-size:15px;line-height:1.7;color:var(--dark-text);
+  .pp-narration{font-family:'Lora',serif;font-size:15px;font-weight:600;line-height:1.7;color:#1a1a1a;
     padding:6px 0}
   .pp-royal-quote{font-family:'Dancing Script',cursive;font-size:18px;font-weight:700;
-    color:var(--royal-purple);font-style:italic;padding:8px 14px;
-    border-left:3px solid var(--royal-gold);margin:8px 0}
+    color:#4a1d96;font-style:italic;padding:8px 14px;
+    border-left:3px solid var(--royal-gold);margin:8px 0;
+    background:rgba(255,255,255,0.5);border-radius:0 6px 6px 0}
   .pp-phase-title{font-family:'Cinzel',serif;font-weight:700;font-size:22px;
     color:var(--royal-gold);text-shadow:0 1px 4px rgba(0,0,0,0.3);
     margin:8px 0 4px;text-align:center}
@@ -1227,16 +1719,29 @@ function css() {
   </style>`;
 }
 
-function _ppShell(content, ep) {
-  const lanterns = Array.from({ length: 8 }, (_, i) => {
+function _ppShell(content, ep, theme) {
+  theme = theme || '';
+  const lanternCount = theme === 'dragon' ? 3 : theme === 'bridge' ? 4 : 8;
+  const lanterns = Array.from({ length: lanternCount }, (_, i) => {
     const left = 5 + Math.random() * 90;
     const top = 5 + Math.random() * 85;
     return `<div class="pp-lantern" style="left:${left}%;top:${top}%"></div>`;
   }).join('');
-  return `${css()}<div class="pp-shell">${lanterns}${content}</div>`;
+  return `${css()}<div class="pp-shell ${theme ? 'pp-theme-' + theme : 'pp-theme-ceremony'}">${lanterns}${content}</div>`;
 }
 
-function _buildSidebar(pp, phaseFilter) {
+function _getPrevPhaseScores(pp, phaseIdx) {
+  if (phaseIdx <= 0) return {};
+  const prevPhase = pp.phases[phaseIdx - 1];
+  if (!prevPhase?.beats?.length) return {};
+  const lastBeat = prevPhase.beats[prevPhase.beats.length - 1];
+  return lastBeat?.scoreSnapshot || {};
+}
+
+function _buildSidebar(pp, revealedElims, scores, currentPhaseIdx) {
+  const visibleElims = revealedElims || [];
+  const scoreData = scores || {};
+  const maxScore = Math.max(1, ...Object.values(scoreData));
   let sb = '';
   sb += `<div class="pp-side-sec">ROYALTY</div>`;
   sb += `<div class="pp-side-player">
@@ -1244,23 +1749,39 @@ function _buildSidebar(pp, phaseFilter) {
     <span style="font-weight:700;color:var(--royal-gold)">${ROYAL.icon} ${pp.royalTitle} ${pp.royalName}</span>
   </div>`;
 
-  sb += `<div class="pp-side-sec">QUEST KNIGHTS</div>`;
-  for (const ca of pp.classAssignments) {
+  sb += `<div class="pp-side-sec">QUEST PROGRESS</div>`;
+  const sorted = [...pp.classAssignments].sort((a, b) => (scoreData[b.name] || 0) - (scoreData[a.name] || 0));
+  for (const ca of sorted) {
     const cls = CLASSES[ca.cls];
-    const isElim = pp.eliminationOrder.includes(ca.name);
-    sb += `<div class="pp-side-player ${isElim ? 'pp-side-elim' : ''}">
-      ${portrait(ca.name, 22)}
-      <span>${ca.name}</span>
-      <span class="pp-side-class">${cls?.icon || ''} ${cls?.label || ''}</span>
+    const isElim = visibleElims.includes(ca.name);
+    const score = scoreData[ca.name] || 0;
+    const pct = Math.round((score / maxScore) * 100);
+    const barColor = isElim ? '#666' : (cls?.color || '#7c3aed');
+    sb += `<div class="pp-side-player ${isElim ? 'pp-side-elim' : ''}" style="flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:4px;width:100%">
+        ${portrait(ca.name, 18)}
+        <span style="flex:1;font-size:10px">${ca.name}</span>
+        <span style="font-size:9px;color:${cls?.color || '#888'}">${cls?.icon || ''}</span>
+        <span style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:${barColor}">${score > 0 ? score.toFixed(0) : '-'}</span>
+      </div>
+      ${score > 0 ? `<div style="width:100%;height:4px;background:rgba(0,0,0,0.1);border-radius:2px;margin-top:2px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${barColor};border-radius:2px;transition:width 0.3s"></div>
+      </div>` : ''}
     </div>`;
   }
 
-  if (pp.swordHolder) {
+  // Advantages — only show after they've been awarded (sword after phase 2, armor after phase 4)
+  const showSword = currentPhaseIdx >= 2 && pp.swordGiven?.recipient;
+  const showArmor = currentPhaseIdx >= 4 && pp.armorGiven?.recipient;
+  const showSave = pp.royalSaveUsed && pp.royalSaveBeat;
+  if (showSword || showArmor || showSave || currentPhaseIdx >= 1) {
     sb += `<div class="pp-side-sec">ADVANTAGES</div>`;
-    sb += `<div style="font-size:11px;padding:2px 0">⚔️ Enchanted Sword: <b>${pp.swordHolder}</b></div>`;
-    if (pp.armorHolder) sb += `<div style="font-size:11px;padding:2px 0">🛡️ Golden Armor: <b>${pp.armorHolder}</b></div>`;
-    if (pp.royalSaveUsed) sb += `<div style="font-size:11px;padding:2px 0">👑 Royal Save: <b>${pp.royalSavedPlayer}</b></div>`;
-    else sb += `<div style="font-size:11px;padding:2px 0;color:var(--royal-gold)">👑 Royal Save: Available</div>`;
+    if (showSword) sb += `<div style="font-size:11px;padding:2px 0">⚔️ Enchanted Sword: <b>${pp.swordGiven.recipient}</b></div>`;
+    else if (currentPhaseIdx < 2) sb += `<div style="font-size:11px;padding:2px 0;color:#888">⚔️ Enchanted Sword: <i>After Troll Bridge</i></div>`;
+    if (showArmor) sb += `<div style="font-size:11px;padding:2px 0">🛡️ Golden Armor: <b>${pp.armorGiven.recipient}</b></div>`;
+    else if (currentPhaseIdx < 4) sb += `<div style="font-size:11px;padding:2px 0;color:#888">🛡️ Golden Armor: <i>After Tower</i></div>`;
+    if (showSave) sb += `<div style="font-size:11px;padding:2px 0">👑 Royal Save: <b>${pp.royalSavedPlayer}</b></div>`;
+    else if (!pp.royalSaveUsed) sb += `<div style="font-size:11px;padding:2px 0;color:var(--royal-gold)">👑 Royal Save: Available</div>`;
   }
 
   return sb;
@@ -1274,18 +1795,14 @@ export function rpBuildPrincessPrideTitleCard(ep) {
   const pp = ep.princessPride;
   if (!pp) return '';
 
-  const badges = pp.classAssignments.map(ca => {
-    const cls = CLASSES[ca.cls];
-    return `<div class="pp-cover-badge" style="border-color:${cls?.color || '#888'}">
-      <img src="assets/avatars/${slug(ca.name)}.png" alt="${ca.name}" style="width:40px;height:40px;object-fit:contain" onerror="this.style.display='none'">
-      <div class="pp-cover-badge-name">${ca.name.split(' ').pop()}</div>
+  // Show ALL players equally on the cover — no spoilers about who becomes princess
+  const allCover = [pp.royalName, ...pp.classAssignments.map(ca => ca.name)];
+  const badges = allCover.map(name => {
+    return `<div class="pp-cover-badge" style="border-color:var(--royal-purple)">
+      <img src="assets/avatars/${slug(name)}.png" alt="${name}" style="width:40px;height:40px;object-fit:contain" onerror="this.style.display='none'">
+      <div class="pp-cover-badge-name">${name.split(' ').pop()}</div>
     </div>`;
   }).join('');
-
-  const royalBadge = `<div class="pp-cover-badge" style="border-color:${ROYAL.color}">
-    <img src="assets/avatars/${slug(pp.royalName)}.png" alt="${pp.royalName}" style="width:44px;height:44px;object-fit:contain" onerror="this.style.display='none'">
-    <div class="pp-cover-badge-name">${ROYAL.icon} ${pp.royalTitle}</div>
-  </div>`;
 
   return _ppShell(`
     <div class="pp-cover">
@@ -1298,8 +1815,7 @@ export function rpBuildPrincessPrideTitleCard(ep) {
       <div style="margin-top:12px;font-family:'Dancing Script',cursive;font-size:18px;color:rgba(255,255,255,0.85)">
         "Every fairy tale has a twist. This one has a sword fight."
       </div>
-      <div style="margin-top:16px">${royalBadge}</div>
-      <div class="pp-cover-roster">${badges}</div>
+      <div class="pp-cover-roster" style="margin-top:16px">${badges}</div>
     </div>
   `, ep);
 }
@@ -1339,7 +1855,7 @@ export function rpBuildPrincessPrideCeremony(ep) {
           <img src="assets/avatars/${slug(ca.name)}.png" onerror="this.style.display='none'" alt="${ca.name}">
         </div>
         <div>
-          <div class="pp-hero-name" style="color:${cls?.color || '#333'}">${cls?.icon || ''} ${ca.name}</div>
+          <div class="pp-hero-name" style="color:${cls?.color || '#333'}">${ca.name}</div>
           <div class="pp-hero-class"><span class="pp-class-badge" style="background:${cls?.color || '#888'}22;color:${cls?.color || '#333'};border:1px solid ${cls?.color || '#888'}44">${cls?.icon || ''} ${cls?.label || ''}</span></div>
         </div>
       </div>
@@ -1366,7 +1882,7 @@ export function rpBuildPrincessPrideCeremony(ep) {
         </div>
         <div class="pp-done" id="pp-done-ceremony">The quest begins...</div>
       </div>
-      <div class="pp-sidebar">${_buildSidebar(pp)}</div>
+      <div class="pp-sidebar">${_buildSidebar(pp, [], {}, -1)}</div>
     </div>
   `, ep);
 }
@@ -1390,28 +1906,38 @@ function _buildPhaseScreen(ep, phaseIdx, panelClass) {
   </div>`);
 
   for (const beat of phase.beats) {
-    // Beat header
+    // Beat title card
     steps.push(`<div class="pp-panel ${panelClass}">
       <div class="pp-beat-title">${beat.label}</div>
-      ${beat.ranked.slice(0, Math.min(6, beat.ranked.length)).map((r, i) => {
-        const cls = CLASSES[r.cls];
-        return `<div class="pp-rank">
-          <div class="pp-rank-pos">${i + 1}</div>
-          ${portrait(r.name, 28)}
-          <div class="pp-rank-name">${r.name} <span class="pp-class-badge" style="background:${cls?.color || '#888'}22;color:${cls?.color || '#333'};border:1px solid ${cls?.color || '#888'}44;font-size:9px">${cls?.icon || ''} ${cls?.label || ''}</span></div>
-          <div class="pp-rank-score">${r.score.toFixed(1)}</div>
-        </div>`;
-      }).join('')}
+      <div class="pp-caption" style="font-style:italic;margin-top:4px">${
+        beat.label.includes('Navigate') ? 'The path shifts. The forest whispers. Only the perceptive will find the way...' :
+        beat.label.includes('Riddle') ? 'An ancient gate blocks the path. Its riddle glows with arcane light...' :
+        beat.label.includes('Ambush') ? 'The undergrowth erupts! Enchanted creatures attack from every direction!' :
+        beat.label.includes('Negotiate') ? 'Chef the Troll blocks the bridge. "NOBODY CROSSES!" Time to talk... or fight.' :
+        beat.label.includes('Blindfold') ? 'Blindfolds on. The bridge sways. Chef throws apples. Good luck.' :
+        beat.label.includes('Endure') ? 'The Troll goes full rage mode. Survive or be thrown into the chasm!' :
+        beat.label.includes('Sneak') ? 'A dragon sleeps in the lair. Every footstep could be the last...' :
+        beat.label.includes('Fight') ? 'The dragon awakens! ROAR! Fire fills the cavern!' :
+        beat.label.includes('Weakness') ? 'Brute force alone won\'t work. The dragon has a weakness — find it!' :
+        beat.label.includes('Scale') ? 'The tower stretches into the clouds. Climb. Don\'t look down.' :
+        beat.label.includes('Break') || beat.label.includes('Defense') ? 'Guards, gates, and enchanted locks. Break through to reach the top!' :
+        beat.label.includes('Push') || beat.label.includes('Rally') ? 'The final stretch. Exhaustion. Willpower. Who wants it more?' :
+        'The quest continues...'
+      }</div>
     </div>`);
 
-    // Narration for top players
-    const topNarrations = beat.ranked.slice(0, 3);
-    for (const r of topNarrations) {
-      steps.push(`<div class="pp-panel ${panelClass}" style="padding:12px 16px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          ${portrait(r.name, 32)}
-          <span class="pp-class-badge" style="background:${CLASSES[r.cls]?.color || '#888'}22;color:${CLASSES[r.cls]?.color || '#333'};border:1px solid ${CLASSES[r.cls]?.color || '#888'}44">${CLASSES[r.cls]?.icon || ''} ${CLASSES[r.cls]?.label || ''}</span>
-          <span style="font-family:'Cinzel',serif;font-weight:700;font-size:13px">${r.name}</span>
+    // Each player's narration — one at a time, like a story unfolding
+    for (const r of beat.ranked) {
+      const cls = CLASSES[r.cls];
+      const isTop = beat.ranked.indexOf(r) < 2;
+      const isBottom = beat.ranked.indexOf(r) >= beat.ranked.length - 2;
+      steps.push(`<div class="pp-panel ${panelClass}" style="padding:14px 18px;${isTop ? 'border-left:4px solid var(--forest-green);' : isBottom ? 'border-left:4px solid #dc2626;' : ''}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          ${portrait(r.name, 36)}
+          <div>
+            <div style="font-family:'Cinzel',serif;font-weight:700;font-size:15px;color:${cls?.color || '#333'}">${r.name}</div>
+            <span class="pp-class-badge" style="background:${cls?.color || '#888'}22;color:${cls?.color || '#333'};border:1px solid ${cls?.color || '#888'}44">${cls?.icon || ''} ${cls?.label || ''}</span>
+          </div>
         </div>
         <div class="pp-narration">${r.text}</div>
       </div>`);
@@ -1422,7 +1948,7 @@ function _buildPhaseScreen(ep, phaseIdx, panelClass) {
       steps.push(`<div class="pp-panel pp-panel-elim">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
           ${portrait(elim.name, 32)}
-          <span style="font-family:'Cinzel',serif;font-weight:700;font-size:14px;color:#ff6b6b">ELIMINATED</span>
+          <span style="font-family:'Cinzel',serif;font-weight:700;font-size:14px;color:#ff6b6b">CURSED!</span>
           <span style="font-weight:700;color:#ddd">${elim.name}</span>
         </div>
         <div class="pp-narration" style="color:#ccc">${elim.text}</div>
@@ -1472,6 +1998,8 @@ function _buildPhaseScreen(ep, phaseIdx, panelClass) {
   ).join('');
 
   const aliveCount = pp.classAssignments.length - pp.eliminationOrder.slice(0, pp.phases.slice(0, phaseIdx + 1).flatMap(p => p.eliminated).length).length;
+  const phaseThemes = ['forest', 'bridge', 'dragon', 'tower'];
+  const theme = phaseThemes[phaseIdx] || 'ceremony';
 
   return _ppShell(`
     <div class="pp-hud">
@@ -1487,9 +2015,9 @@ function _buildPhaseScreen(ep, phaseIdx, panelClass) {
         </div>
         <div class="pp-done" id="pp-done-${suffix}">The quest continues...</div>
       </div>
-      <div class="pp-sidebar" id="pp-sidebar-${suffix}">${_buildSidebar(pp)}</div>
+      <div class="pp-sidebar" id="pp-sidebar-${suffix}">${_buildSidebar(pp, pp.phases.slice(0, phaseIdx).flatMap(p => p.eliminated), _getPrevPhaseScores(pp, phaseIdx), phaseIdx)}</div>
     </div>
-  `, ep);
+  `, ep, theme);
 }
 
 export function rpBuildPrincessPrideForest(ep) { return _buildPhaseScreen(ep, 0, 'pp-panel-forest'); }
@@ -1581,9 +2109,9 @@ export function rpBuildPrincessPrideDuel(ep) {
         </div>
         <div class="pp-done" id="pp-done-duel">The fairy tale has ended.</div>
       </div>
-      <div class="pp-sidebar">${_buildSidebar(pp)}</div>
+      <div class="pp-sidebar">${_buildSidebar(pp, pp.eliminationOrder, _getPrevPhaseScores(pp, pp.phases.length), 99)}</div>
     </div>
-  `, ep);
+  `, ep, 'duel');
 }
 
 // ══════════════════════════════════════════════════════════════

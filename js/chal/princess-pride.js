@@ -875,15 +875,45 @@ const STRUGGLE_TEXT = {
   ],
 };
 
+const SMART_CLASS_TEXT = {
+  knight: {
+    'forest-riddle': [
+      (n, pr) => `${n} studied the riddle with surprising patience. The Knight read it twice, thought carefully, and spoke the answer. The gate opened. "What? Knights can READ."`,
+      (n, pr) => `${n} knelt before the Riddle Gate and thought — actually thought. The answer came not from instinct but from ${pr.posAdj} mind. "Strategy isn't just for battle," the Knight murmured as the gate swung wide.`,
+      (n, pr) => `${n} surprised everyone. The Knight traced the ancient letters with an armored finger, lips moving, then smiled. "My mother taught me this language." The gate recognized the answer and opened with respect.`,
+    ],
+    'dragon-weakness': [
+      (n, pr) => `${n} circled the dragon, studying its movements with a tactician's eye. "There — the scale pattern breaks at the neck." The Knight found the weakness through combat analysis, not magic.`,
+      (n, pr) => `"Every opponent has a tell," ${n} said, watching the dragon carefully. The Knight spotted the hesitation in its left wing — an old injury. "Strike there." Brains behind the brawn.`,
+    ],
+  },
+};
+
 function _getBeatText(name, cls, beatKey, score, maxScore) {
   const pr = pronouns(name);
+  const s = pStats(name);
   const beatTexts = BEAT_TEXT[beatKey];
   if (!beatTexts) return `${name} pushed through the challenge.`;
 
-  // Score determines success level — bottom third gets struggle text
+  // Score determines text tier: top 30% = heroic, middle 30% = adequate, bottom 40% = struggle/fail
   const ratio = maxScore > 0 ? score / maxScore : 0.5;
-  if (ratio < 0.45 && STRUGGLE_TEXT[cls]?.length) {
+  if (ratio < 0.35 && STRUGGLE_TEXT[cls]?.length) {
     return pick(STRUGGLE_TEXT[cls])(name, pr, beatKey);
+  }
+  if (ratio < 0.6) {
+    // Middle tier — adequate but not impressive
+    const adequateTexts = [
+      `${name} managed to get through, but it wasn't pretty. The ${CLASSES[cls]?.label || 'adventurer'} scraped by on determination more than skill.`,
+      `${name} pushed through with effort. Not the worst performance, not the best. The quest continued.`,
+      `It wasn't ${name}'s finest moment, but ${pr.sub} survived it. Sometimes that's enough.`,
+      `${name} gritted ${pr.posAdj} teeth and powered through. No style points, but the job got done. Barely.`,
+    ];
+    return pick(adequateTexts);
+  }
+
+  // Smart variant: if player has high mental/strategic but is in a "dumb" class, use smart text
+  if (SMART_CLASS_TEXT[cls]?.[beatKey]?.length && (s.mental >= 6 || s.strategic >= 6)) {
+    return pick(SMART_CLASS_TEXT[cls][beatKey])(name, pr);
   }
 
   const classTexts = beatTexts[cls];
@@ -922,11 +952,12 @@ function _simulatePhase(phaseId, phaseLabel, beats, alive, classMap, result, ep,
       ep.chalMemberScores[n] = (ep.chalMemberScores[n] || 0) + Math.max(1, alive.length - idx);
     });
 
-    // Eliminate bottom 1-2 on elimination beats
+    // Eliminate bottom 1-2 on elimination beats — uses CUMULATIVE scores, not just this beat
     if (beat.eliminates) {
+      const cumRanked = [...alive].sort((a, b) => (ep.chalMemberScores[b] || 0) - (ep.chalMemberScores[a] || 0));
       const elimCount = alive.length <= 4 ? 1 : (alive.length <= 6 ? (Math.random() < 0.5 ? 1 : 2) : 2);
       for (let i = 0; i < elimCount && alive.length > 2; i++) {
-        const victim = ranked[ranked.length - 1 - i]?.[0];
+        const victim = cumRanked[cumRanked.length - 1 - i];
         if (!victim) break;
         // Eliminate first, THEN check if royal saves (revive the fallen)
         beatResult.eliminated.push({ name: victim, text: _getElimText(victim, beat.key) });
@@ -939,10 +970,12 @@ function _simulatePhase(phaseId, phaseLabel, beats, alive, classMap, result, ep,
           players: [victim],
           badgeText: 'CURSED!', badgeClass: 'red', tag: 'princess-pride',
         });
-        // Royal save — only fires if the eliminated player is close to the royal (bond >= 3 or showmance)
+        // Royal save — fires for close allies, showmance, OR strategic value
         const royalBond = getBond(result.royalName, victim);
         const isShowmancePair = gs.showmances?.some(s => (s.a === result.royalName && s.b === victim) || (s.b === result.royalName && s.a === victim));
-        const saveWorthy = isShowmancePair || royalBond >= 3;
+        const royalStrategic = pStats(result.royalName).strategic;
+        const strategicSave = royalStrategic * 0.08 + royalBond * 0.1 + noise(0.2) > 0.3;
+        const saveWorthy = isShowmancePair || royalBond >= 2 || strategicSave;
         if (result.royalSaveAvailable && !result.royalSaveUsed && saveWorthy) {
           result.royalSaveUsed = true;
           result.royalSavedPlayer = victim;
@@ -963,16 +996,17 @@ function _simulatePhase(phaseId, phaseLabel, beats, alive, classMap, result, ep,
         }
       }
     }
+    // Between-beat social events (1-2 per gap)
+    const betweenCount = 1 + Math.floor(Math.random() * 2);
+    const beatEvents = _generateSocialEvents(alive, classMap, betweenCount, result.royalName, result.royalTitle);
+    beatResult.events = beatEvents;
+    for (const ev of beatEvents) {
+      ep.campEvents[campKey].post.push({ ...ev, tag: 'princess-pride' });
+    }
     beatResult.scoreSnapshot = { ...ep.chalMemberScores };
     phase.beats.push(beatResult);
   }
-  // Between-phase social events
-  const socialCount = 1 + Math.floor(Math.random() * 2);
-  const events = _generateSocialEvents(alive, classMap, socialCount, result.royalName, result.royalTitle);
-  phase.events = events;
-  for (const ev of events) {
-    ep.campEvents[campKey].post.push({ ...ev, tag: 'princess-pride' });
-  }
+  phase.events = [];
   return phase;
 }
 
@@ -1183,7 +1217,8 @@ export function simulatePrincessPride(ep) {
   }
 
   // ── FINAL DUEL: THE BETRAYAL ──
-  const duelistKnight = alive[0] || knights[0];
+  // Top cumulative performer reaches the top — not just whoever is first in the alive array
+  const duelistKnight = [...alive].sort((a, b) => (ep.chalMemberScores[b] || 0) - (ep.chalMemberScores[a] || 0))[0] || alive[0] || knights[0];
   const duel = _simulateDuel(royalName, duelistKnight, result, ep, campKey, fatigue);
   result.duel = duel;
   result.immunityWinner = duel.winner;
@@ -1586,22 +1621,31 @@ function css() {
     border-color:var(--royal-gold);box-shadow:0 0 15px rgba(234,179,8,0.3)}
   .pp-panel-elim{background:linear-gradient(180deg,#1a0a1a,#2d1f2d,#1a0a1a);border-color:#4a1d6a;
     color:#ddd;position:relative;overflow:hidden;animation:pp-curse-darken 1s ease-out}
-  .pp-panel-elim::before{content:'';position:absolute;bottom:0;left:0;right:0;height:100%;pointer-events:none;z-index:0;
-    background:
-      repeating-linear-gradient(170deg,transparent 0px,transparent 12px,rgba(22,101,52,0.25) 12px,rgba(22,101,52,0.25) 15px,transparent 15px,transparent 30px),
-      repeating-linear-gradient(195deg,transparent 0px,transparent 18px,rgba(20,83,45,0.2) 18px,rgba(20,83,45,0.2) 21px,transparent 21px,transparent 40px),
-      repeating-linear-gradient(160deg,transparent 0px,transparent 22px,rgba(5,46,22,0.3) 22px,rgba(5,46,22,0.3) 24px,transparent 24px,transparent 50px);
-    animation:pp-vine-creep 1.5s ease-out forwards}
-  .pp-panel-elim::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
-    background:
-      radial-gradient(circle at 10% 90%,rgba(168,85,247,0.15) 0%,transparent 15%),
-      radial-gradient(circle at 90% 85%,rgba(22,101,52,0.2) 0%,transparent 12%),
-      radial-gradient(circle at 50% 95%,rgba(124,58,237,0.1) 0%,transparent 20%);
-    animation:pp-curse-glow 2s ease-in-out infinite alternate}
   .pp-panel-elim>*{position:relative;z-index:1}
+  .pp-panel-elim::before{content:'';position:absolute;bottom:0;left:0;right:0;height:100%;pointer-events:none;z-index:0;
+    animation:pp-vine-creep 1.5s ease-out forwards}
   @keyframes pp-vine-creep{0%{clip-path:inset(100% 0 0 0)}100%{clip-path:inset(0 0 0 0)}}
   @keyframes pp-curse-darken{0%{opacity:0;transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
-  @keyframes pp-curse-glow{0%{opacity:0.5}100%{opacity:1}}
+
+  /* Forest curse — vines */
+  .pp-panel-forest .pp-panel-elim::before,.pp-panel-elim.pp-elim-forest::before{background:
+    repeating-linear-gradient(170deg,transparent 0px,transparent 12px,rgba(22,101,52,0.3) 12px,rgba(22,101,52,0.3) 15px,transparent 15px,transparent 30px),
+    repeating-linear-gradient(195deg,transparent 0px,transparent 18px,rgba(20,83,45,0.25) 18px,rgba(20,83,45,0.25) 21px,transparent 21px,transparent 40px)}
+  /* Bridge curse — mist swallow */
+  .pp-panel-elim.pp-elim-bridge::before{background:
+    linear-gradient(0deg,rgba(120,120,120,0.4) 0%,transparent 60%),
+    radial-gradient(ellipse at 50% 100%,rgba(200,200,200,0.3) 0%,transparent 50%)}
+  /* Dragon curse — fire consume */
+  .pp-panel-elim.pp-elim-dragon{border-color:#7f1d1d}
+  .pp-panel-elim.pp-elim-dragon::before{background:
+    linear-gradient(0deg,rgba(239,68,68,0.3) 0%,rgba(249,115,22,0.2) 30%,transparent 60%),
+    radial-gradient(ellipse at 30% 90%,rgba(234,179,8,0.2) 0%,transparent 30%),
+    radial-gradient(ellipse at 70% 85%,rgba(239,68,68,0.15) 0%,transparent 25%)}
+  /* Tower curse — crumbling stones */
+  .pp-panel-elim.pp-elim-tower{border-color:#4c1d95}
+  .pp-panel-elim.pp-elim-tower::before{background:
+    repeating-linear-gradient(180deg,transparent 0px,transparent 8px,rgba(124,58,237,0.15) 8px,rgba(124,58,237,0.15) 10px,transparent 10px,transparent 20px),
+    linear-gradient(0deg,rgba(30,10,65,0.5) 0%,transparent 50%)}
   .pp-panel-save{background:linear-gradient(180deg,#fef3c7,#fff);border-color:var(--royal-gold);
     box-shadow:0 0 25px rgba(234,179,8,0.5);animation:pp-save-glow 1.5s ease-in-out infinite alternate}
   @keyframes pp-save-glow{0%{box-shadow:0 0 15px rgba(234,179,8,0.3)}100%{box-shadow:0 0 30px rgba(234,179,8,0.6)}}
@@ -1927,28 +1971,40 @@ function _buildPhaseScreen(ep, phaseIdx, panelClass) {
     </div>`);
 
     // Each player's narration — one at a time, like a story unfolding
+    const maxBeatScore = Math.max(1, ...beat.ranked.map(r => r.score));
     for (const r of beat.ranked) {
       const cls = CLASSES[r.cls];
-      const isTop = beat.ranked.indexOf(r) < 2;
-      const isBottom = beat.ranked.indexOf(r) >= beat.ranked.length - 2;
-      steps.push(`<div class="pp-panel ${panelClass}" style="padding:14px 18px;${isTop ? 'border-left:4px solid var(--forest-green);' : isBottom ? 'border-left:4px solid #dc2626;' : ''}">
+      const ratio = r.score / maxBeatScore;
+      const pos = beat.ranked.indexOf(r);
+      const isFirst = pos === 0;
+      // Performance badge
+      let perfBadge, perfColor, borderColor;
+      if (isFirst) { perfBadge = '⭐ NAILED IT'; perfColor = '#16a34a'; borderColor = 'var(--forest-green)'; }
+      else if (ratio >= 0.75) { perfBadge = '✓ SOLID'; perfColor = '#22c55e'; borderColor = '#22c55e'; }
+      else if (ratio >= 0.6) { perfBadge = '~ OK'; perfColor = '#a3a3a3'; borderColor = '#a3a3a3'; }
+      else if (ratio >= 0.35) { perfBadge = '⚠ MEH'; perfColor = '#f59e0b'; borderColor = '#f59e0b'; }
+      else { perfBadge = '✗ ROUGH'; perfColor = '#ef4444'; borderColor = '#ef4444'; }
+
+      steps.push(`<div class="pp-panel ${panelClass}" style="padding:14px 18px;border-left:4px solid ${borderColor}">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
           ${portrait(r.name, 36)}
-          <div>
+          <div style="flex:1">
             <div style="font-family:'Cinzel',serif;font-weight:700;font-size:15px;color:${cls?.color || '#333'}">${r.name}</div>
             <span class="pp-class-badge" style="background:${cls?.color || '#888'}22;color:${cls?.color || '#333'};border:1px solid ${cls?.color || '#888'}44">${cls?.icon || ''} ${cls?.label || ''}</span>
           </div>
+          <span style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:${perfColor};padding:3px 8px;border:1px solid ${perfColor}44;border-radius:4px;background:${perfColor}11;letter-spacing:1px">${perfBadge}</span>
         </div>
         <div class="pp-narration">${r.text}</div>
       </div>`);
     }
 
-    // Eliminations
+    // Eliminations — location-specific curse animation
+    const elimPhase = phase.id === 'forest' ? 'forest' : phase.id === 'bridge' ? 'bridge' : phase.id === 'dragon' ? 'dragon' : 'tower';
     for (const elim of beat.eliminated) {
-      steps.push(`<div class="pp-panel pp-panel-elim">
+      steps.push(`<div class="pp-panel pp-panel-elim pp-elim-${elimPhase}">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
           ${portrait(elim.name, 32)}
-          <span style="font-family:'Cinzel',serif;font-weight:700;font-size:14px;color:#ff6b6b">CURSED!</span>
+          <span style="font-family:'Cinzel',serif;font-weight:700;font-size:14px;color:${elimPhase === 'dragon' ? '#ff4444' : elimPhase === 'bridge' ? '#aaa' : elimPhase === 'tower' ? '#a78bfa' : '#ff6b6b'}">CURSED!</span>
           <span style="font-weight:700;color:#ddd">${elim.name}</span>
         </div>
         <div class="pp-narration" style="color:#ccc">${elim.text}</div>
@@ -1966,15 +2022,17 @@ function _buildPhaseScreen(ep, phaseIdx, panelClass) {
         <div class="pp-narration">${beat.save.text}</div>
       </div>`);
     }
-  }
 
-  // Social events
-  for (const ev of phase.events) {
-    const evClass = ev.badgeClass === 'green' ? 'pp-event-green' : ev.badgeClass === 'red' ? 'pp-event-red' : 'pp-event-amber';
-    steps.push(`<div class="pp-event ${evClass}">
-      <span class="pp-event-badge">${ev.badgeText || ev.type}</span>
-      ${ev.text}
-    </div>`);
+    // Between-beat social events — interleaved with the quest
+    if (beat.events?.length) {
+      for (const ev of beat.events) {
+        const evClass = ev.badgeClass === 'green' ? 'pp-event-green' : ev.badgeClass === 'red' ? 'pp-event-red' : 'pp-event-amber';
+        steps.push(`<div class="pp-event ${evClass}">
+          <span class="pp-event-badge">${ev.badgeText || ev.type}</span>
+          ${ev.text}
+        </div>`);
+      }
+    }
   }
 
   // Advantage given after phase 2 (sword) or phase 4 (armor)

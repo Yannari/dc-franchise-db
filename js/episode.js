@@ -49,6 +49,7 @@ import { simulateOceansHeist } from './chal/oceans-heist.js';
 import { simulateMillionBucksBC } from './chal/million-bucks-bc.js';
 import { simulateSportsMarathon } from './chal/sports-marathon.js';
 import { simulateSuperHerold } from './chal/super-hero-ld.js';
+import { simulatePrincessPride } from './chal/princess-pride.js';
 import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
@@ -982,7 +983,7 @@ export function handleExileFormat(ep) {
   if (phase === 'pre' && gs.isMerged) return;
   if (phase === 'post' && !gs.isMerged) return;
   // Don't fire on special episode types
-  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama) return;
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isPrincessPride || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
   // Don't double up with schoolyard pick exile (unpicked player already on exile)
@@ -1474,8 +1475,15 @@ export function simulateEpisode() {
   // ── SUPER HERO-LD (post-merge) — superhero challenge determines immunity, normal tribal follows ──
   if (ep.isSuperHerold && gs.isMerged) {
     simulateSuperHerold(ep);
-    ep.immunityWinner = ep.superHerold?.obstacleCourse?.winner || ep.immunityWinner;
+    ep.immunityWinner = ep.superHerold?.battleRoyale?.immunityWinner || ep.immunityWinner;
     ep.challengeType = 'super-hero-ld';
+  }
+
+  // ── PRINCESS PRIDE (post-merge) — fairy tale quest determines immunity, normal tribal follows ──
+  if (ep.isPrincessPride && gs.isMerged) {
+    simulatePrincessPride(ep);
+    ep.immunityWinner = ep.princessPride?.immunityWinner || ep.immunityWinner;
+    ep.challengeType = 'princess-pride';
   }
 
   // ── ALIEN EGG (post-merge) — egg hunt determines immunity, normal tribal follows ──
@@ -2210,7 +2218,7 @@ export function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg) {
+    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride) {
     // Special challenge already ran and set immunityWinner + chalMemberScores — skip generic challenge
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
@@ -2474,7 +2482,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride) {
     updateChalRecord(ep);
   }
 

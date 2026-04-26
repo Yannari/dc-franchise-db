@@ -22,7 +22,8 @@ import { rpBuildFullMetalDramaTitleCard, rpBuildFullMetalDramaJump, rpBuildFullM
 import { rpBuildOceansHeistTitleCard, rpBuildOceansHeistVault, rpBuildOceansHeistHeist, rpBuildOceansHeistGetaway, rpBuildOceansHeistResults, oceansHeistRevealNext, oceansHeistRevealAll } from './chal/oceans-heist.js';
 import { rpBuildMillionBucksBCTitleCard, rpBuildMillionBucksBCFire, rpBuildMillionBucksBCBreak, rpBuildMillionBucksBCBattle, rpBuildMillionBucksBCResults, millionBucksBCRevealNext, millionBucksBCRevealAll } from './chal/million-bucks-bc.js';
 import { rpBuildSportsMarathonTitleCard, rpBuildSportsMarathonObstacle, rpBuildSportsMarathonHalftime, rpBuildSportsMarathonSports, rpBuildSportsMarathonResults, sportsMarathonRevealNext, sportsMarathonRevealAll } from './chal/sports-marathon.js';
-import { rpBuildSuperHeroldTitleCard, rpBuildSuperHeroldCostume, rpBuildSuperHeroldBreak, rpBuildSuperHeroldObstacle, superHeroldRevealNext, superHeroldRevealAll } from './chal/super-hero-ld.js';
+import { rpBuildSuperHeroldTitleCard, rpBuildSuperHeroldCostume, rpBuildSuperHeroldPrizes, rpBuildSuperHeroldRound1, rpBuildSuperHeroldRound2, rpBuildSuperHeroldRound, rpBuildSuperHeroldBoss, superHeroldRevealNext, superHeroldRevealAll } from './chal/super-hero-ld.js';
+import { rpBuildPrincessPrideTitleCard, rpBuildPrincessPrideCeremony, rpBuildPrincessPrideForest, rpBuildPrincessPrideBridge, rpBuildPrincessPrideDragon, rpBuildPrincessPrideTower, rpBuildPrincessPrideDuel, princessPrideRevealNext, princessPrideRevealAll } from './chal/princess-pride.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10348,8 +10349,20 @@ export function buildVPScreens(epRecord) {
   } else if ((ep.isSuperHerold || ep.challengeType === 'super-hero-ld') && ep.superHerold) {
     vpScreens.push({ id:'sh-title', label:'Super Hero-ld', html: rpBuildSuperHeroldTitleCard(ep) });
     vpScreens.push({ id:'sh-costume', label:'Costume', html: rpBuildSuperHeroldCostume(ep) });
-    if (ep.superHerold.breakEvents?.length) vpScreens.push({ id:'sh-break', label:'Break', html: rpBuildSuperHeroldBreak(ep) });
-    vpScreens.push({ id:'sh-obstacle', label:'Obstacle Course', html: rpBuildSuperHeroldObstacle(ep) });
+    vpScreens.push({ id:'sh-prizes', label:'Prizes', html: rpBuildSuperHeroldPrizes(ep) });
+    const brRounds = ep.superHerold.battleRoyale?.rounds || [];
+    for (let i = 0; i < brRounds.length; i++) {
+      vpScreens.push({ id:`sh-round${i+1}`, label: brRounds[i].label || `Round ${i+1}`, html: rpBuildSuperHeroldRound(ep, i) });
+    }
+    vpScreens.push({ id:'sh-boss', label:'Boss Fight', html: rpBuildSuperHeroldBoss(ep) });
+  } else if ((ep.isPrincessPride || ep.challengeType === 'princess-pride') && ep.princessPride) {
+    vpScreens.push({ id:'pp-title', label:'The Princess Pride', html: rpBuildPrincessPrideTitleCard(ep) });
+    vpScreens.push({ id:'pp-ceremony', label:'Glass Slipper', html: rpBuildPrincessPrideCeremony(ep) });
+    vpScreens.push({ id:'pp-forest', label:'Enchanted Forest', html: rpBuildPrincessPrideForest(ep) });
+    vpScreens.push({ id:'pp-bridge', label:'Troll Bridge', html: rpBuildPrincessPrideBridge(ep) });
+    vpScreens.push({ id:'pp-dragon', label:"Dragon's Lair", html: rpBuildPrincessPrideDragon(ep) });
+    vpScreens.push({ id:'pp-tower', label:'Tower Rescue', html: rpBuildPrincessPrideTower(ep) });
+    vpScreens.push({ id:'pp-duel', label:'The Betrayal', html: rpBuildPrincessPrideDuel(ep) });
   } else if (ep.isAlienEgg && ep.alienEgg) {
     vpScreens.push({ id:'ae-title', label:'👽 Alien Resurr-eggtion', html: rpBuildAlienEggTitleCard(ep) });
     vpScreens.push({ id:'ae-rounds', label:'The Egg Hunt', html: rpBuildAlienEggRounds(ep) });

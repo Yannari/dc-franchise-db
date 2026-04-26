@@ -1,6 +1,6 @@
 // js/chal/operation-classified.js — Operation: Classified spy challenge
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns } from '../players.js';
+import { pStats, pronouns, updateChalRecord } from '../players.js';
 import { getBond, addBond } from '../bonds.js';
 
 // ── HELPERS ──
@@ -989,6 +989,8 @@ export function simulateOperationClassified(ep) {
   if (!ep.chalMemberScores) ep.chalMemberScores = {};
   ranked.forEach(r => { ep.chalMemberScores[r.name] = Math.round(r.score); });
   ep.tribalPlayers = active;
+
+  updateChalRecord(ep);
 }
 
 // ══════════════════════════════════════════════════════════════

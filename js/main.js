@@ -46,6 +46,7 @@ import * as oceansHeistMod from './chal/oceans-heist.js';
 import * as millionBucksBCMod from './chal/million-bucks-bc.js';
 import * as sportsMarathonMod from './chal/sports-marathon.js';
 import * as superHeroldMod from './chal/super-hero-ld.js';
+import * as princessPrideMod from './chal/princess-pride.js';
 import * as socialManipMod from './social-manipulation.js';
 import * as campEventsMod from './camp-events.js';
 import * as twistsMod from './twists.js';
@@ -134,7 +135,7 @@ const extractedModules = [
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
-  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod,
+  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, princessPrideMod,
   socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,

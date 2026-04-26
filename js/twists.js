@@ -1467,6 +1467,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
     }
     ep.isSuperHerold = true;
 
+  } else if (engineType === 'princess-pride') {
+    ep.isPrincessPride = true;
+
   } else if (engineType === 'sports-marathon') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isSportsMarathon = true;

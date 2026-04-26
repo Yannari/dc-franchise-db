@@ -38,6 +38,7 @@ import { _textOceansHeist } from './chal/oceans-heist.js';
 import { _textMillionBucksBC } from './chal/million-bucks-bc.js';
 import { _textSportsMarathon } from './chal/sports-marathon.js';
 import { _textSuperHerold } from './chal/super-hero-ld.js';
+import { _textPrincessPride } from './chal/princess-pride.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -2034,6 +2035,7 @@ export function generateSummaryText(ep) {
   _textMillionBucksBC(ep, ln, sec);
   _textSportsMarathon(ep, ln, sec);
   _textSuperHerold(ep, ln, sec);
+  _textPrincessPride(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
   _textJuryLife(ep, ln, sec);

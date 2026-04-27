@@ -131,12 +131,12 @@ const COMPARTMENTS = [
 ];
 
 const CLUE_NAMES = {
-  fingerprint: ['orange fingerprint on a napkin', 'smudged print on the safe handle', 'partial print on a wine glass', 'greasy thumbprint on a menu'],
-  hair: ['strand of hair on the pillow', 'fibers caught in the curtain', 'hair tangled in the door latch', 'follicle sample from the headrest'],
-  weapon: ['suspicious pipe wrench', 'candlestick with scuff marks', 'rope with a fresh knot', 'heavy bookend with a dent'],
-  motive: ['torn page from a diary', 'threatening note in an envelope', 'photograph with a face scratched out', 'contract with a suspicious clause'],
-  witness: ['conductor\'s logbook entry', 'security camera still frame', 'overheard conversation transcript', 'passenger manifest with notes'],
-  alibi: ['signed bar tab with timestamp', 'poker chip receipt', 'spilled drink stain (timed)', 'magazine left open mid-article'],
+  fingerprint: ['an orange fingerprint on a napkin', 'a smudged print on the safe handle', 'a partial print on a wine glass', 'a greasy thumbprint on a menu'],
+  hair: ['a strand of hair on the pillow', 'fibers caught in the curtain', 'a hair tangled in the door latch', 'a follicle sample from the headrest'],
+  weapon: ['a suspicious pipe wrench', 'a candlestick with scuff marks', 'a rope with a fresh knot', 'a heavy bookend with a dent'],
+  motive: ['a torn page from a diary', 'a threatening note in an envelope', 'a photograph with a face scratched out', 'a contract with a suspicious clause'],
+  witness: ['a conductor\'s logbook entry', 'a security camera still frame', 'an overheard conversation transcript', 'a passenger manifest with notes'],
+  alibi: ['a signed bar tab with timestamp', 'a poker chip receipt', 'a spilled drink stain (timed)', 'a magazine left open mid-article'],
 };
 
 const SEARCH_TEXT = [
@@ -157,12 +157,12 @@ const RED_HERRING_TEXT = [
   (n, item) => `${n} found ${item}... but it's a red herring! Planted to waste time. ${pronouns(n).Sub} pocketed it anyway, convinced it means something.`,
   (n, item) => `${n} triumphantly held up ${item}. "KEY EVIDENCE!" Narrator: It was not key evidence. It was not even evidence.`,
   (n, item) => `${n} discovered ${item} and built an entire theory around it. The theory is wrong. The evidence is fake. But ${pronouns(n).posAdj} confidence is VERY real.`,
-  (n, item) => `A ${item} caught ${n}'s eye. Hours of analysis later: useless. But ${n} refuses to accept that. "This MEANS something!"`,
+  (n, item) => `${item.charAt(0).toUpperCase() + item.slice(1)} caught ${n}'s eye. Hours of analysis later: useless. But ${n} refuses to accept that. "This MEANS something!"`,
 ];
 
 const RED_HERRING_ITEMS = [
-  'rubber duck with lipstick marks', 'half-eaten cheese puff', 'mysterious sock', 'glitter-covered invitation',
-  'torn playing card', 'empty perfume bottle', 'broken watch (set to the wrong time)', 'crayon drawing of a stick figure',
+  'a rubber duck with lipstick marks', 'a half-eaten cheese puff', 'a mysterious sock', 'a glitter-covered invitation',
+  'a torn playing card', 'an empty perfume bottle', 'a broken watch set to the wrong time', 'a crayon drawing of a stick figure',
 ];
 
 // ══════════════════════════════════════════════════════════════
@@ -170,10 +170,10 @@ const RED_HERRING_ITEMS = [
 // ══════════════════════════════════════════════════════════════
 const BLACKOUT_TEXT = {
   murder: [
-    () => `The lights died. Absolute darkness. Then — a SCREAM. "${host()}: YOU CAN'T KILL THE HOST!" A THUD. Silence. The lights flickered back on. ${host()} lay motionless on the floor. A pipe beside him. Is this... real?`,
-    () => `CLICK. Darkness. A scuffle. A groan. "${host()}: NOT THE FACE—" CRASH. When the emergency lights sputtered to life, ${host()} was sprawled on the dining car floor. Not moving. The castmates stared. Someone here just "killed" the host.`,
-    () => `The train plunged into a tunnel. Total black. A struggle. A gasp. When daylight returned, ${host()} was on the ground, licorice pipe still in hand. "Dead." Courtney would kick the body later. But for now — silence. And fear.`,
-    () => `Every light on the train died simultaneously. Two seconds of chaos. A shout. A crack. The emergency generator kicked in, bathing everything in red. ${host()} was facedown. The "murder weapon" — a candlestick — lay nearby. One of them did this.`,
+    (w) => `The lights died. Absolute darkness. Then — a SCREAM. "${host()}: YOU CAN'T KILL THE HOST!" A THUD. Silence. The lights flickered back on. ${host()} lay motionless on the floor. A ${w} beside him. Is this... real?`,
+    (w) => `CLICK. Darkness. A scuffle. A groan. "${host()}: NOT THE FACE—" CRASH. When the emergency lights sputtered to life, ${host()} was sprawled on the dining car floor. A ${w} lay nearby. Not moving. The castmates stared. Someone here just "killed" the host.`,
+    (w) => `The train plunged into a tunnel. Total black. A struggle. A crack of something heavy — a ${w}? When daylight returned, ${host()} was on the ground. "Dead." Someone would kick the body later. But for now — silence. And fear.`,
+    (w) => `Every light on the train died simultaneously. Two seconds of chaos. A shout. A crack. The emergency generator kicked in, bathing everything in red. ${host()} was facedown. The "murder weapon" — a ${w} — lay nearby. One of them did this.`,
   ],
   bodyDisappear: [
     (killer) => `BLACKOUT AGAIN. Hands grabbed at nothing. Someone screamed. When the lights returned, ${host()}'s body was GONE. Only a smear of stage blood and a single green hair remained where the corpse had been.`,
@@ -188,10 +188,10 @@ const BLACKOUT_TEXT = {
     (killer, target) => `Someone whispered during the blackout: "I saw ${target} near the body." The voice was unidentifiable. The accusation was devastating. And it was a LIE — planted by the real killer.`,
   ],
   witness: [
-    (witness, detail) => `${witness} saw SOMETHING during the blackout. A silhouette. A flash of movement. ${detail}. It wasn't much, but it was more than anyone else had.`,
+    (witness, detail) => { const d = detail.charAt(0).toUpperCase() + detail.slice(1); return `${witness} saw SOMETHING during the blackout. A silhouette. A flash of movement. ${d}. It wasn't much, but it was more than anyone else had.`; },
     (witness, detail) => `${witness}'s eyes adjusted to the dark faster than the others. For one brief second, ${pronouns(witness).sub} caught a glimpse: ${detail}. "${pronouns(witness).Sub} saw something. But WHAT?"`,
-    (witness, detail) => `A flash of lightning outside the train window illuminated the car for one heartbeat. ${witness} was looking in the right direction. ${detail}. The image was burned into ${pronouns(witness).posAdj} memory.`,
-    (witness, detail) => `${witness} felt someone brush past in the darkness. ${detail}. It wasn't proof. But it was a lead.`,
+    (witness, detail) => { const d = detail.charAt(0).toUpperCase() + detail.slice(1); return `A flash of lightning outside the train window illuminated the car for one heartbeat. ${witness} was looking in the right direction. ${d}. The image was burned into ${pronouns(witness).posAdj} memory.`; },
+    (witness, detail) => { const d = detail.charAt(0).toUpperCase() + detail.slice(1); return `${witness} felt someone brush past in the darkness. ${d}. It wasn't proof. But it was a lead.`; },
   ],
   steal: [
     (thief, victim) => `The blackout was the perfect cover. ${thief} felt around in the dark and snatched an evidence bag from ${victim}'s coat. When the lights returned, ${victim} was missing a clue and ${thief} was trying very hard to look innocent.`,
@@ -215,22 +215,25 @@ const WITNESS_DETAILS = [
 // ══════════════════════════════════════════════════════════════
 const PRESENTATION_TEXT = {
   strong: [
-    (n) => `${n} stood before the group with a stack of evidence that would make a real detective jealous. "Let me walk you through this." Methodical. Detailed. Devastating.`,
-    (n) => `${n} laid out the case like a prosecutor. Every clue connected. Every timeline accounted for. The other players shifted uncomfortably. This was GOOD.`,
-    (n) => `${n}'s presentation was a masterclass in deduction. Evidence board metaphorically pinned together. Red strings metaphorically drawn. Jaws literally dropped.`,
-    (n) => `"The evidence speaks for itself." ${n} placed each clue on the table one by one. Fingerprint. Motive. Weapon. Witness testimony. The silence that followed said everything.`,
+    (n, ec) => `${n} stood before the group with ${ec} piece${ec !== 1 ? 's' : ''} of solid evidence. "Let me walk you through this." Methodical. Detailed. Devastating.`,
+    (n, ec) => `${n} laid out ${pronouns(n).posAdj} ${ec} clue${ec !== 1 ? 's' : ''} like a prosecutor. Every piece connected. Every timeline accounted for. The other players shifted uncomfortably. This was GOOD.`,
+    (n, ec) => `${n}'s presentation was a masterclass in deduction. ${ec} piece${ec !== 1 ? 's' : ''} of evidence, all cross-referenced, all pointing the same direction. Jaws literally dropped.`,
+    (n, ec) => `"The evidence speaks for itself." ${n} placed ${pronouns(n).posAdj} evidence on the table. ${ec} real clue${ec !== 1 ? 's' : ''} — each more damning than the last. The silence that followed said everything.`,
   ],
   medium: [
-    (n) => `${n} presented a solid case with a few gaps. The evidence pointed somewhere, but the connections weren't airtight. "I'm... pretty sure about this."`,
-    (n) => `${n}'s case was built on a strong foundation but had a shaky roof. Good evidence, questionable conclusions. The group nodded along — mostly.`,
-    (n) => `${n} made a compelling argument that fell apart slightly under scrutiny. Three strong clues and one wild guess held together by enthusiasm.`,
-    (n) => `"Okay, hear me out." ${n}'s presentation started strong, hit a rocky middle, but stuck the landing. Not perfect, but not dismissable either.`,
+    (n, ec) => `${n} presented ${ec >= 1 ? `${ec} clue${ec !== 1 ? 's' : ''} and some solid intuition` : 'a theory backed mostly by gut instinct'}. The evidence pointed somewhere, but the connections weren't airtight. "I'm... pretty sure about this."`,
+    (n, ec) => `${n}'s case had ${ec >= 1 ? `${ec} real finding${ec !== 1 ? 's' : ''} holding it together` : 'more confidence than evidence'}. Decent reasoning, questionable proof. The group nodded along — mostly.`,
+    (n, ec) => `${n} made a compelling argument with ${ec >= 1 ? `${ec} clue${ec !== 1 ? 's' : ''} and some educated guesses` : 'pure logic and no physical evidence'}. Not bad, but not bulletproof.`,
+    (n, ec) => `"Okay, hear me out." ${n}'s presentation ${ec >= 1 ? `started strong with ${ec} finding${ec !== 1 ? 's' : ''}` : 'started with a theory'}, hit a rocky middle, but stuck the landing. Not perfect, but not dismissable either.`,
   ],
   weak: [
-    (n) => `${n} stood up with confidence and no evidence. "I have a THEORY." The theory involved astrology. And a dream ${pronouns(n).sub} had. And vibes.`,
-    (n) => `${n}'s presentation was three minutes of pointing at people and saying "suspicious." No evidence. No logic. Just vibes and accusations.`,
-    (n) => `${n} presented a case built entirely on a single piece of evidence that turned out to be a red herring. The group tried to be polite.`,
-    (n) => `"I don't have 'proof' in the traditional sense," ${n} began. This was going to be a disaster. It was a disaster. ${host()} winced.`,
+    (n, ec) => `${n} stood up with confidence and ${ec === 0 ? 'no evidence whatsoever' : 'nothing but fake leads'}. "I have a THEORY." The theory involved astrology. And a dream ${pronouns(n).sub} had. And vibes.`,
+    (n, ec) => `${n}'s presentation was three minutes of pointing at people and saying "suspicious." ${ec === 0 ? 'No evidence. No logic.' : 'The only evidence was fake.'} Just vibes and accusations.`,
+    (n, ec) => `${n} stood at the front of the car and opened ${pronouns(n).posAdj} mouth. Nothing came out for three seconds. Then: "It was... the vibe I got." ${host()} buried ${pronouns(host()).posAdj || 'his'} face in ${pronouns(host()).posAdj || 'his'} hands.`,
+    (n, ec) => `"I don't have 'proof' in the traditional sense," ${n} began. ${ec === 0 ? 'Zero clues. Zero leads.' : 'Only fake leads. Nothing real.'} This was going to be a disaster. It was a disaster. ${host()} winced.`,
+    (n, ec) => `${n} drew a diagram on a napkin. It made no sense. "See? It's OBVIOUS." Nobody saw. Nothing was obvious. ${pronouns(n).Sub} sat down to complete silence.`,
+    (n, ec) => `${n}: "I've been thinking about this a LOT." The thinking produced zero evidence and one conspiracy theory involving Chef's cooking. ${host()}: "Please sit down."`,
+    (n, ec) => `${n} pointed at three different people in thirty seconds. "It was YOU. No, YOU. Actually — wait." The courtroom collectively sighed.`,
   ],
   killerConfession: [
     (n) => `${n} stood up. Deep breath. "It was me." The room went silent. "I did it. And you'll never PROVE it." A mic drop without a mic.`,
@@ -248,16 +251,16 @@ const PRESENTATION_TEXT = {
 
 const CROSS_EXAM_TEXT = {
   attack: [
-    (attacker, defender) => `${attacker} zeroed in on the weakness. "Your timeline doesn't add up. You say you were in the dining car at 9, but the conductor's log shows you weren't." ${defender} stammered.`,
-    (attacker, defender) => `"One question," ${attacker} said calmly. "If you DIDN'T do it, why were your fingerprints on the weapon?" ${defender}'s face went pale.`,
-    (attacker, defender) => `${attacker} cross-examined ${defender} mercilessly. "Explain the hair sample. Explain the motive. Explain why you were seen near the body." ${defender} couldn't explain any of it.`,
-    (attacker, defender) => `${attacker} produced a piece of evidence nobody had seen yet. "I found this in YOUR compartment." ${defender}: "That was PLANTED!" ${attacker}: "Prove it."`,
+    (attacker, defender) => `${attacker} zeroed in on the weakness. "Your timeline doesn't add up. Where were you during the FIRST blackout?" ${defender} stammered. No good answer.`,
+    (attacker, defender) => `"One question," ${attacker} said calmly. "If you're innocent, why can't you account for your movements?" ${defender}'s face went pale.`,
+    (attacker, defender) => `${attacker} cross-examined ${defender} mercilessly. "You found nothing. You saw nothing. You have no alibi. And you expect us to believe you?" ${defender} couldn't respond.`,
+    (attacker, defender) => `${attacker} held up a piece of evidence. "This was found near YOUR seat. Explain." ${defender}: "That was PLANTED!" ${attacker}: "That's what a guilty person would say."`,
   ],
   deflect: [
-    (defender, attacker) => `${defender} countered smoothly. "You're deflecting. You're accusing me because you can't explain YOUR whereabouts during the blackout." ${attacker} went quiet.`,
-    (defender, attacker) => `"Nice try," ${defender} said. "But I have three witnesses who saw me in the lounge car the entire time. Where were YOU?" The cross-examination reversed.`,
-    (defender, attacker) => `${defender} picked apart the accusation piece by piece. "This fingerprint is smudged. This witness is unreliable. And this motive? I have no motive." Clean deflection.`,
-    (defender, attacker) => `${defender} smiled under pressure. "You're reaching. The evidence you have is circumstantial at best. I'll take my chances." Unshakeable.`,
+    (defender, attacker) => `${attacker} pointed at ${defender}. "You were near the body. You had opportunity." ${defender} countered smoothly. "You're accusing me because you can't explain YOUR whereabouts during the blackout." ${attacker} went quiet.`,
+    (defender, attacker) => `${attacker} challenged ${defender}'s alibi. "Nobody can confirm where you were." ${defender}: "Actually, I have witnesses who saw me in the lounge car the entire time. Where were YOU?" The cross-examination reversed.`,
+    (defender, attacker) => `${attacker} laid out ${pronouns(attacker).posAdj} case against ${defender}. Fingerprints. Timeline. Motive. ${defender} picked it apart piece by piece. "That print is smudged. That timeline has gaps. And that motive? I have no motive." Clean deflection.`,
+    (defender, attacker) => `${attacker} tried to corner ${defender}. "The evidence points to you." ${defender} smiled under pressure. "You're reaching. Everything you have is circumstantial at best. I'll take my chances." Unshakeable.`,
   ],
   killerDerail: [
     (killer, detective) => `${killer} deliberately challenged ${detective}'s correct theory. "That's absurd. You're grasping at straws." The room wavered. Doubt planted. The real killer smiled inside.`,
@@ -484,6 +487,79 @@ export function simulateGetAClue(ep) {
     }
   }
 
+  // Rivalry event — two players who both succeeded on traps against each other's allies
+  const successfulTrappers = trapResults.filter(t => t.outcome === 'success');
+  if (successfulTrappers.length >= 2) {
+    const topTwo = successfulTrappers.slice(0, 2);
+    if (topTwo[0].trapper !== topTwo[1].trapper && getBond(topTwo[0].trapper, topTwo[1].trapper) < 2) {
+      const a = topTwo[0].trapper, b = topTwo[1].trapper;
+      result.phase1.events.push({ type: 'rivalry', players: [a, b],
+        text: pick([
+          `${a} and ${b} lock eyes across the craft services tent. Both collected samples. Both know the other is a threat. "May the best detective win," ${a} says. ${b} doesn't blink. "I intend to."`,
+          `${a} notices ${b} cataloguing ${pronouns(b).posAdj} samples with the same obsessive care. Two hunters recognizing each other. This just became personal.`,
+          `${a} watches ${b} pocket another evidence bag. "You're good." ${b}: "Better than you." The challenge hasn't even started and there's already a rivalry forming.`,
+        ])
+      });
+      addBond(a, b, -1);
+      ep.campEvents[campKey].post.push({
+        text: `${a} and ${b} sized each other up during DNA collection — a detective rivalry is brewing.`,
+        players: [a, b], badgeText: 'RIVALRY', badgeClass: 'amber', tag: 'get-a-clue',
+      });
+    }
+  }
+
+  // Showoff event — someone brags about their successful trap
+  const braggers = trapResults.filter(t => t.outcome === 'success' && pStats(t.trapper).boldness >= 6);
+  if (braggers.length) {
+    const bragger = pick(braggers);
+    const bPr = pronouns(bragger.trapper);
+    result.phase1.events.push({ type: 'showoff', player: bragger.trapper,
+      text: pick([
+        `${bragger.trapper} holds up ${bPr.posAdj} sample for everyone to see. "THAT'S how it's done." The other castmates are not impressed. ${host()} is mildly entertained.`,
+        `${bragger.trapper} can't resist gloating about tricking ${bragger.target}. "You should've seen ${pronouns(bragger.target).posAdj} FACE!" ${bragger.target} is standing right there. Awkward.`,
+        `${bragger.trapper} does a victory lap around camp after collecting ${bPr.posAdj} sample. Literally. A full lap. "I'm the greatest detective alive!" Nobody claps.`,
+      ])
+    });
+    popDelta(bragger.trapper, -1);
+    if (getBond(bragger.trapper, bragger.target) > 0) addBond(bragger.trapper, bragger.target, -1);
+  }
+
+  // Suspicion event — someone notices the backfire and gets paranoid
+  const backfires = trapResults.filter(t => t.outcome === 'backfire');
+  if (backfires.length) {
+    const bf = pick(backfires);
+    const witness = pick(active.filter(n => n !== bf.trapper && n !== bf.target));
+    if (witness) {
+      result.phase1.events.push({ type: 'suspicion', players: [witness, bf.trapper],
+        text: pick([
+          `${witness} saw the whole ${bf.trapper}-${bf.target} trap disaster. "If ${bf.trapper} is willing to do THAT, what else are ${pronouns(bf.trapper).sub} willing to do?" Suspicion planted.`,
+          `${witness} makes a mental note: ${bf.trapper} tried to deceive ${bf.target} and got caught. "That's the kind of player who'd commit a murder." A seed of doubt.`,
+          `${witness} overheard ${bf.trapper}'s failed scheme. "Interesting. Very interesting." ${pronouns(witness).Sub} files that information for later — it might be useful during the trial.`,
+        ])
+      });
+    }
+  }
+
+  // Alliance forming — two players who both succeeded bond over shared competence
+  const successPairs = successfulTrappers.filter(t => result.phase1.sampleCounts[t.trapper] >= 1);
+  if (successPairs.length >= 2 && Math.random() < 0.5) {
+    const pair = [successPairs[0].trapper, successPairs[successPairs.length > 1 ? 1 : 0].trapper];
+    if (pair[0] !== pair[1] && getBond(pair[0], pair[1]) >= 0) {
+      result.phase1.events.push({ type: 'alliance', players: pair,
+        text: pick([
+          `${pair[0]} and ${pair[1]} compare notes over lunch. Both collected samples. Both have leads. "We should work together on the train," ${pair[0]} suggests. ${pair[1]} considers it. "Deal. But I'm lead detective."`,
+          `${pair[0]} slides into the seat next to ${pair[1]}. "I have evidence. You have evidence. Together we have a case." A detective partnership forms before the murder even happens.`,
+          `${pair[0]} and ${pair[1]} realize they're the only ones who actually know what they're doing. An unspoken alliance forms — share leads, cover blind spots, solve this thing together.`,
+        ])
+      });
+      addBond(pair[0], pair[1], 2);
+      ep.campEvents[campKey].post.push({
+        text: `${pair[0]} and ${pair[1]} formed a detective partnership during DNA collection!`,
+        players: pair, badgeText: 'PARTNERS', badgeClass: 'blue', tag: 'get-a-clue',
+      });
+    }
+  }
+
   // Impressive collector (3+ samples)
   const topCollector = active.reduce((best, n) => result.phase1.sampleCounts[n] > result.phase1.sampleCounts[best] ? n : best, active[0]);
   const topCount = result.phase1.sampleCounts[topCollector];
@@ -520,7 +596,7 @@ export function simulateGetAClue(ep) {
   result.phase2.evidenceLocation = evidenceLocation;
 
   // Murder scene narration
-  result.phase2.murderText = pick(BLACKOUT_TEXT.murder)();
+  result.phase2.murderText = pick(BLACKOUT_TEXT.murder)(weapon);
 
   // Murder reactions — archetype-driven responses to finding Chris "dead"
   const murderReactions = [];
@@ -566,9 +642,15 @@ export function simulateGetAClue(ep) {
   const realClueComps = compartments.slice(0, 4);
   const herringComps = compartments.slice(4);
 
-  // Place real clues
+  // Place real clues — weapon compartment gets the actual murder weapon
   for (const comp of realClueComps) {
-    comp.realClue = pick(CLUE_NAMES[comp.clueType]);
+    if (comp.clueType === 'weapon') {
+      comp.realClue = `the murder weapon — a ${weapon} — stashed under the luggage`;
+    } else if (comp.clueType === 'motive') {
+      comp.realClue = `a note revealing the motive: ${motive}`;
+    } else {
+      comp.realClue = pick(CLUE_NAMES[comp.clueType]);
+    }
     comp.isReal = true;
   }
   for (const comp of herringComps) {
@@ -577,27 +659,65 @@ export function simulateGetAClue(ep) {
   }
   result.phase2.compartments = compartments;
 
+  // Track which compartments have been searched and which clues found
+  const searchedComps = new Set();
+  const foundClues = new Set();
+
   // Search rounds (2 rounds)
   for (let round = 0; round < 2; round++) {
     const roundResults = [];
     for (const name of active) {
-      if (name === killer && round === 0) continue; // Killer plants evidence during first blackout instead
+      if (name === killer && round === 0) {
+        // Killer decides: skip Round 1 to plant evidence, or search to blend in?
+        // High strategic = more likely to blend in. Low strategic/high boldness = more likely to skip.
+        const kS = pStats(killer);
+        const blendChance = kS.strategic * 0.06 + (10 - kS.boldness) * 0.03 + noise(2);
+        const killerSkips = blendChance < 0.5;
+        result.phase2.killerAbsent = killerSkips;
+        if (killerSkips) {
+          const kPr = pronouns(killer);
+          roundResults.push({ name: killer, found: false, isKillerAbsent: true,
+            text: pick([
+              `${killer} is suspiciously absent from the search. "I was... checking the other cars." Nobody asked.`,
+              `Where's ${killer}? Everyone else is searching, but ${kPr.sub} slipped away during the chaos. ${kPr.Sub} returns later, slightly out of breath.`,
+              `${killer} excuses ${kPr.ref} from the search. "I need some air." On a moving train. Sure.`,
+            ])
+          });
+          continue;
+        }
+        // Killer searches normally but finds less (distracted by their crime)
+      }
       const s = pStats(name);
       const searchSkill = s.intuition * 0.4 + s.mental * 0.4 + s.strategic * 0.2 + noise(2);
 
       // DNA samples from Phase 1 give accuracy bonus
-      const dnaBonus = result.phase1.sampleCounts[name] * 0.5;
+      const dnaBonus = result.phase1.sampleCounts[name] * 0.4;
+      // Round 2 is slightly easier — players know what to look for
+      const roundBonus = round * 0.5;
 
-      const targetComp = pick(compartments);
-      const discoveryThreshold = 5.5 - dnaBonus;
+      // Pick a compartment, prefer unsearched ones
+      const unsearched = compartments.filter(c => !searchedComps.has(`${name}-${c.id}`));
+      const targetComp = unsearched.length ? pick(unsearched) : pick(compartments);
+      searchedComps.add(`${name}-${targetComp.id}`);
+
+      const discoveryThreshold = 4.5 - dnaBonus - roundBonus;
 
       if (searchSkill > discoveryThreshold) {
         const clue = targetComp.realClue;
+        const alreadyFound = foundClues.has(targetComp.id);
+        foundClues.add(targetComp.id);
         result.phase2.playerEvidence[name].push({ compartment: targetComp.id, clue, isReal: targetComp.isReal, round });
-        ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + (targetComp.isReal ? 3 : -1);
+        ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + (targetComp.isReal ? (alreadyFound ? 1 : 3) : -1);
 
         if (targetComp.isReal) {
-          roundResults.push({ name, compartment: targetComp, clue, found: true, isReal: true, text: pick(SEARCH_TEXT)(name, targetComp, clue) });
+          const text = alreadyFound
+            ? pick([
+              `${name} found the same clue someone else already discovered in the ${targetComp.name} — ${clue}. Confirming evidence. The case grows stronger.`,
+              `${name} independently verified the evidence in the ${targetComp.name}: ${clue}. Two investigators, same conclusion. That's not coincidence.`,
+              `${name} searched the ${targetComp.name} and found what another detective already flagged — ${clue}. Corroboration. The real clues are emerging.`,
+            ])
+            : pick(SEARCH_TEXT)(name, targetComp, clue);
+          roundResults.push({ name, compartment: targetComp, clue, found: true, isReal: true, text });
         } else {
           roundResults.push({ name, compartment: targetComp, clue, found: true, isReal: false, text: pick(RED_HERRING_TEXT)(name, clue) });
         }
@@ -796,12 +916,26 @@ export function simulateGetAClue(ep) {
   result.phase2.framesPlanted.forEach(f => { frameCounts[f.target] = (frameCounts[f.target] || 0) + 1; });
   const mostFramed = Object.entries(frameCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || pick(active.filter(n => n !== killer));
 
-  // Presentations
+  // Framed player tracking
+  const framedNames = new Set(result.phase2.framesPlanted.map(f => f.target));
+
+  // Presentations — track used templates to avoid duplicates
   const presentations = [];
+  const _usedTemplates = { strong: [], medium: [], weak: [] };
+  const _pickUnique = (pool, category) => {
+    const unused = pool.filter((_, i) => !_usedTemplates[category]?.includes(i));
+    if (unused.length === 0) { _usedTemplates[category] = []; return pick(pool); }
+    const idx = pool.indexOf(pick(unused));
+    _usedTemplates[category]?.push(idx);
+    return pool[idx];
+  };
   for (const name of active) {
     const s = pStats(name);
     const evidenceCount = result.phase2.playerEvidence[name].filter(e => e.isReal).length;
-    const caseStrength = evidenceCount * 2 + s.social * 0.3 + s.mental * 0.2 + noise(1);
+    // Framed players suffer credibility penalty — hard to present when everyone suspects you
+    const isFramed = framedNames.has(name);
+    const framePenalty = isFramed ? -1.5 : 0;
+    const caseStrength = evidenceCount * 2.5 + s.social * 0.2 + s.mental * 0.15 + noise(0.5) + framePenalty;
 
     let text, category;
     if (name === killer) {
@@ -812,17 +946,17 @@ export function simulateGetAClue(ep) {
         text = pick(PRESENTATION_TEXT.killerDeepCover)(name, mostFramed);
         category = 'deepCover';
       } else {
-        text = pick(PRESENTATION_TEXT.medium)(name);
+        text = _pickUnique(PRESENTATION_TEXT.medium, 'medium')(name, evidenceCount);
         category = 'partialTruth';
       }
-    } else if (caseStrength > 6) {
-      text = pick(PRESENTATION_TEXT.strong)(name);
+    } else if (evidenceCount >= 2 && caseStrength > 4) {
+      text = _pickUnique(PRESENTATION_TEXT.strong, 'strong')(name, evidenceCount);
       category = 'strong';
-    } else if (caseStrength > 3) {
-      text = pick(PRESENTATION_TEXT.medium)(name);
+    } else if (evidenceCount >= 1 || caseStrength > 2.5) {
+      text = _pickUnique(PRESENTATION_TEXT.medium, 'medium')(name, evidenceCount);
       category = 'medium';
     } else {
-      text = pick(PRESENTATION_TEXT.weak)(name);
+      text = _pickUnique(PRESENTATION_TEXT.weak, 'weak')(name, evidenceCount);
       category = 'weak';
     }
 
@@ -831,28 +965,39 @@ export function simulateGetAClue(ep) {
   result.phase3.presentations = presentations;
 
   // Cross-Examination (2-3 exchanges)
+  // Cross-examination — evidence + stats determine power, results affect courtroom vote
   const numCrossExams = 2 + (active.length > 6 ? 1 : 0);
   const crossExams = [];
   const usedPairs = new Set();
+  const usedAttackers = new Set();
+  const crossExamBoosts = {};
+  const crossExamPenalties = {};
+  active.forEach(n => { crossExamBoosts[n] = 0; crossExamPenalties[n] = 0; });
+
   for (let i = 0; i < numCrossExams; i++) {
-    // High intuition attacks someone
-    const attackers = active.filter(n => {
+    // Qualification: intuition > 5, strategic > 6, OR 2+ real evidence
+    const attackerPool = active.filter(n => {
+      if (usedAttackers.has(n)) return false;
       const s = pStats(n);
-      return s.intuition > 5 || s.strategic > 6;
+      const ev = result.phase2.playerEvidence[n]?.filter(e => e.isReal).length || 0;
+      return s.intuition > 5 || s.strategic > 6 || ev >= 2;
     });
-    const attacker = pick(attackers.length ? attackers : active);
+    const attacker = pick(attackerPool.length ? attackerPool : active.filter(n => !usedAttackers.has(n)));
+    if (!attacker) break;
+    usedAttackers.add(attacker);
     const defenders = active.filter(n => n !== attacker && !usedPairs.has(`${attacker}-${n}`));
     const defender = pick(defenders.length ? defenders : active.filter(n => n !== attacker));
     usedPairs.add(`${attacker}-${defender}`);
 
     const aS = pStats(attacker);
     const dS = pStats(defender);
-    const attackPower = aS.intuition * 0.4 + aS.mental * 0.3 + aS.strategic * 0.3 + noise(1);
-    const defensePower = dS.social * 0.4 + dS.mental * 0.3 + dS.strategic * 0.3 + noise(1);
+    const aEvidence = result.phase2.playerEvidence[attacker]?.filter(e => e.isReal).length || 0;
+    const dEvidence = result.phase2.playerEvidence[defender]?.filter(e => e.isReal).length || 0;
+    const attackPower = aS.intuition * 0.3 + aS.mental * 0.2 + aS.strategic * 0.2 + aEvidence * 1.5 + noise(1);
+    const defensePower = dS.social * 0.3 + dS.mental * 0.2 + dS.strategic * 0.2 + dEvidence * 1.5 + noise(1);
 
     let text, winner;
     if (attacker === killer && defender !== killer) {
-      // Killer derailing correct theories
       text = pick(CROSS_EXAM_TEXT.killerDerail)(attacker, defender);
       winner = attackPower > defensePower ? 'attacker' : 'defender';
     } else if (attackPower > defensePower + 1) {
@@ -864,15 +1009,20 @@ export function simulateGetAClue(ep) {
     }
 
     if (winner === 'attacker') {
-      ep.chalMemberScores[attacker] = (ep.chalMemberScores[attacker] || 0) + 2;
+      ep.chalMemberScores[attacker] = (ep.chalMemberScores[attacker] || 0) + 3;
+      crossExamBoosts[attacker] += 2;
+      crossExamPenalties[defender] += 2;
       addBond(attacker, defender, -1);
       popDelta(attacker, 1);
+      popDelta(defender, -1);
       ep.campEvents[campKey].post.push({
         text: `${attacker} destroyed ${defender}'s case in cross-examination during the murder mystery trial!`,
         players: [attacker, defender], badgeText: 'CROSS-EXAM', badgeClass: 'amber', tag: 'get-a-clue',
       });
     } else {
-      ep.chalMemberScores[defender] = (ep.chalMemberScores[defender] || 0) + 2;
+      ep.chalMemberScores[defender] = (ep.chalMemberScores[defender] || 0) + 3;
+      crossExamBoosts[defender] += 1.5;
+      crossExamPenalties[attacker] += 1;
       addBond(defender, attacker, -1);
       popDelta(defender, 1);
     }
@@ -897,7 +1047,6 @@ export function simulateGetAClue(ep) {
   }
   // Showmance protection — guaranteed if partner was framed, otherwise 50%
   const protections = result.phase2.showmanceProtections || [];
-  const framedNames = new Set(result.phase2.framesPlanted.map(f => f.target));
   if (gs.showmances?.length) {
     for (const sm of gs.showmances) {
       if (!active.includes(sm.a) || !active.includes(sm.b)) continue;
@@ -935,15 +1084,68 @@ export function simulateGetAClue(ep) {
   }
   result.phase3.rebuttals = rebuttals;
 
-  // Deduction Scoring
+  // ── SUSPICION TRACKER ──
+  // Build a suspicion score for each player based on behavioral evidence from the entire challenge.
+  // This is what determines WHO each player accuses — not raw stats.
+  const suspicion = {};
+  active.forEach(n => { suspicion[n] = 0; });
+
+  // Killer was absent from Search Round 1 — huge red flag (only if they actually skipped)
+  if (result.phase2.killerAbsent) suspicion[killer] += 3;
+
+  // Killer found zero real evidence (spent time planting instead of searching)
+  const killerRealEvidence = result.phase2.playerEvidence[killer]?.filter(e => e.isReal).length || 0;
+  if (killerRealEvidence === 0) suspicion[killer] += 1.5;
+  else if (killerRealEvidence === 1) suspicion[killer] += 0.5;
+
+  // Murder reactions: the "calm" and "clueless" types are suspicious
+  for (const r of (result.phase2.murderReactions || [])) {
+    if (r.type === 'calm') suspicion[r.name] += 1.5;
+    if (r.type === 'clueless') suspicion[r.name] += 0.5;
+    if (r.type === 'leader') suspicion[r.name] -= 1;
+    if (r.type === 'panic') suspicion[r.name] -= 0.5;
+  }
+
+  // Framed players get false suspicion (the whole point of framing)
+  for (const f of result.phase2.framesPlanted) {
+    suspicion[f.target] += 2;
+  }
+
+  // Witnesses: what they saw can point toward the killer
+  for (const w of result.phase2.witnessLog.filter(wl => wl.round < 99)) {
+    // If the witness was believed, their testimony adds suspicion to the killer
+    const believed = result.phase2.witnessLog.some(wl => wl.witness === w.witness && wl.credibility === 'believed');
+    if (believed) suspicion[killer] += 0.5;
+  }
+
+  // Cross-exam results: losing cross-exam raises suspicion
+  for (const cx of crossExams) {
+    if (cx.winner === 'attacker') suspicion[cx.defender] += 1;
+    else suspicion[cx.attacker] += 0.5;
+  }
+
+  // Killer derailing a correct theory — if they won, it LOWERS their suspicion (successful misdirection)
+  for (const cx of crossExams) {
+    if (cx.attacker === killer && cx.winner === 'attacker') suspicion[killer] -= 1.5;
+  }
+
+  // Players who searched together with killer and found nothing suspicious — lowers killer suspicion
+  // (they vouch for normal behavior)
+
+  // Store suspicion for VP display
+  result.phase3.suspicionTracker = { ...suspicion };
+
+  // ── DEDUCTION SCORING (evidence-driven) ──
   for (const name of active) {
     const s = pStats(name);
     const realEvidence = result.phase2.playerEvidence[name].filter(e => e.isReal).length;
-    const witnessCount = result.phase2.witnessLog.filter(w => w.witness === name).length;
-    const deductionBase = s.mental * 0.3 + s.intuition * 0.3 + realEvidence * 1.5 + witnessCount * 0.5;
+    const witnessCount = result.phase2.witnessLog.filter(w => w.witness === name && w.round < 99).length;
+    const frameDistraction = framedNames.has(name) ? -1 : 0;
+    const deductionBase = s.mental * 0.15 + s.intuition * 0.15 + realEvidence * 1.5 + witnessCount * 0.5 + frameDistraction;
 
     const answers = {};
-    // WHO — killer knows the truth, decides whether to self-identify
+
+    // WHO — driven by suspicion tracker, not raw stats
     if (name === killer) {
       if (killerStrategy === 'confession') {
         answers.who = { guess: killer, correct: true };
@@ -951,24 +1153,43 @@ export function simulateGetAClue(ep) {
         answers.who = { guess: mostFramed, correct: false };
       }
     } else {
-      let whoScore = deductionBase + noise(2);
-      // Showmance protective bias: if the killer is your showmance partner, harder to accuse them
+      // Each player looks at the suspicion scores and picks the most suspicious person
+      const personalSuspicion = { ...suspicion };
+      // Can't suspect yourself
+      personalSuspicion[name] = -999;
+      // Showmance protective bias
       const isProtectingKiller = (result.phase2.showmanceProtections || []).some(p => p.protector === name && p.protected === killer);
-      if (isProtectingKiller) whoScore -= 3;
-      answers.who = { guess: whoScore > 5 ? killer : pick(active.filter(n => n !== name)), correct: whoScore > 5 };
+      if (isProtectingKiller) personalSuspicion[killer] -= 5;
+      // Bond bias — harder to suspect friends
+      active.forEach(n => { if (n !== name) personalSuspicion[n] -= getBond(name, n) * 0.3; });
+      // Intuition helps see through frames and deception
+      if (s.intuition >= 7) {
+        // High intuition sees through planted evidence
+        for (const f of result.phase2.framesPlanted) personalSuspicion[f.target] -= 1;
+        // And notices the REAL suspicious behavior more clearly
+        personalSuspicion[killer] += 1;
+      }
+      // Small noise so it's not perfectly deterministic
+      active.forEach(n => { if (n !== name) personalSuspicion[n] += noise(1.5); });
+
+      const topSuspect = Object.entries(personalSuspicion).sort((a, b) => b[1] - a[1])[0];
+      answers.who = { guess: topSuspect[0], correct: topSuspect[0] === killer };
     }
 
-    // WEAPON
-    const weaponScore = deductionBase * 0.8 + noise(2);
-    answers.weapon = { guess: weaponScore > 4 ? weapon : pick(WEAPONS), correct: weaponScore > 4 };
+    // WEAPON — primarily driven by finding the weapon clue
+    const foundWeapon = result.phase2.playerEvidence[name]?.some(e => e.compartment === 'luggage' && e.isReal);
+    const weaponScore = (foundWeapon ? 5 : 0) + s.mental * 0.1 + noise(1);
+    answers.weapon = { guess: weaponScore > 3 ? weapon : pick(WEAPONS.filter(w => w !== weapon)), correct: weaponScore > 3 };
 
-    // MOTIVE
-    const motiveScore = deductionBase * 0.7 + noise(2);
-    answers.motive = { guess: motiveScore > 3.5 ? motive : pick(MOTIVES), correct: motiveScore > 3.5 };
+    // MOTIVE — primarily driven by finding the motive clue
+    const foundMotive = result.phase2.playerEvidence[name]?.some(e => e.compartment === 'observation' && e.isReal);
+    const motiveScore = (foundMotive ? 5 : 0) + s.intuition * 0.1 + noise(1);
+    answers.motive = { guess: motiveScore > 3 ? motive : pick(MOTIVES.filter(m => m !== motive)), correct: motiveScore > 3 };
 
-    // LOCATION
-    const locScore = deductionBase * 0.6 + noise(2);
-    answers.location = { guess: locScore > 3 ? evidenceLocation : pick(EVIDENCE_LOCATIONS), correct: locScore > 3 };
+    // LOCATION — driven by finding fingerprint/hair evidence
+    const foundLocation = result.phase2.playerEvidence[name]?.some(e => (e.compartment === 'dining' || e.compartment === 'sleeper') && e.isReal);
+    const locScore = (foundLocation ? 5 : 0) + realEvidence * 0.5 + noise(1);
+    answers.location = { guess: locScore > 3 ? evidenceLocation : pick(EVIDENCE_LOCATIONS.filter(l => l !== evidenceLocation)), correct: locScore > 3 };
 
     const totalCorrect = Object.values(answers).filter(a => a.correct).length;
     const deductionScore = Object.entries(answers).reduce((sum, [key, a]) => {
@@ -988,7 +1209,10 @@ export function simulateGetAClue(ep) {
       const pres = presentations.find(p => p.name === n);
       const bond = getBond(voter, n);
       const isProtected = _protectedPairs.has(`${voter}|${n}`);
-      const score = parseFloat(pres.caseStrength) + bond * 0.3 + noise(1) + (isProtected ? -5 : 0);
+      const isSuspect = framedNames.has(n);
+      const cxBoost = crossExamBoosts[n] || 0;
+      const cxPenalty = crossExamPenalties[n] || 0;
+      const score = parseFloat(pres.caseStrength) + bond * 0.3 + noise(1) + (isProtected ? -5 : 0) + (isSuspect ? -2 : 0) + cxBoost - cxPenalty;
       return { name: n, score };
     }).sort((a, b) => b.score - a.score);
     result.phase3.courtroomVotes[voter] = voteScores[0].name;
@@ -1434,6 +1658,12 @@ function css() {
   .gc-player-card:hover{background:rgba(92,61,46,0.2)}
   .gc-player-name{font-family:'Playfair Display',serif;font-weight:700;font-size:14px}
   .gc-player-detail{font-family:'Special Elite',monospace;font-size:12px;color:rgba(245,230,200,0.6)}
+  /* Dark text for elements inside manila folders */
+  .gc-folder .gc-player-card{background:rgba(92,61,46,0.08);border-color:rgba(92,61,46,0.2)}
+  .gc-folder .gc-player-card:hover{background:rgba(92,61,46,0.15)}
+  .gc-folder .gc-player-name{color:var(--coffee)}
+  .gc-folder .gc-player-detail{color:rgba(92,61,46,0.75)}
+  .gc-folder .gc-narration{color:var(--coffee);background:rgba(59,130,246,0.06)}
 
   /* ═══ LEGAL PAD ═══ */
   .gc-legal{background:var(--legal-yellow);padding:12px 16px 12px 28px;margin:8px 0;border-radius:2px;
@@ -1550,7 +1780,7 @@ function css() {
 // ══════════════════════════════════════════════════════════════
 // VP — EVIDENCE BOARD (persistent sidebar)
 // ══════════════════════════════════════════════════════════════
-function _buildBoard(ep, phase, revealIdx = 999) {
+function _buildBoard(ep, phase, revealIdx = -1) {
   const gc = ep.getAClue;
   if (!gc) return '';
   const active = Object.keys(gc.phase1.sampleCounts);
@@ -1574,6 +1804,13 @@ function _buildBoard(ep, phase, revealIdx = 999) {
   } else {
     Object.assign(revealedSamples, gc.phase1.sampleCounts);
   }
+
+  // Gate all sidebar data by reveal progress
+  const hasRevealed = revealIdx >= 0;
+  const phase2SearchRevealed = phase === 2 && revealIdx >= 3;
+  const phase2BlackoutRevealed = phase === 2 && revealIdx >= 4;
+  const phase3Started = phase === 3 && revealIdx >= 1;
+  const phase4KillerRevealed = phase === 4 && revealIdx >= 2;
 
   // Suspect polaroids with pins
   const suspects = active.map((name, i) => {
@@ -1609,9 +1846,9 @@ function _buildBoard(ep, phase, revealIdx = 999) {
     </div>`;
   }).join('');
 
-  // Red string connections between suspects
+  // Red string connections between suspects — only show after traps start revealing
   let stringCards = '';
-  if (phase >= 1) {
+  if (phase >= 1 && revealedTraps > 0) {
     const revealedTrapList = phase === 1 ? gc.phase1.traps.slice(0, revealedTraps) : gc.phase1.traps;
     const connections = revealedTrapList.filter(t => t.outcome === 'success').slice(0, 6);
     if (connections.length) {
@@ -1627,31 +1864,25 @@ function _buildBoard(ep, phase, revealIdx = 999) {
         </div>`
       ).join('');
     }
-    if ((phase > 2 || phase2BlackoutRevealed) && gc.phase2.framesPlanted.length) {
-      stringCards += gc.phase2.framesPlanted.map((f, fi) =>
+    if (phase > 2 || phase2BlackoutRevealed) {
+      const framesToShow = phase > 2 ? gc.phase2.framesPlanted : gc.phase2.framesPlanted.filter((f, i) => {
+        const blackoutStepIdx = 4 + i * 2;
+        return revealIdx >= blackoutStepIdx;
+      });
+      stringCards += framesToShow.map((f, fi) =>
         `<div class="gc-string-card gc-string-card-yellow" style="animation-delay:${(connections.length + fi) * 0.15}s">
           <span class="gc-string-dot" style="background:var(--pin-yellow)"></span>
           <span class="gc-string-name" style="color:#b8860b">⚠️ ${f.target.split(' ').pop()}</span>
           <span class="gc-string-line-h" style="background:var(--gold-foil)"></span>
-          <span class="gc-string-name" style="color:#b8860b">FRAMED</span>
+          <span class="gc-string-name" style="color:#b8860b">SUSPECT</span>
         </div>`
       ).join('');
     }
   }
 
-  // Gate all phase 2+ sidebar data by reveal progress
-  // Phase 2: step 0=train map, 1=murder, 2+=search/blackout rounds
-  // Phase 3: step 0=trial opens, 1+=presentations/cross-exams
-  // Phase 4: step 0=deduction, 1=courtroom vote, 2=killer reveal, 3=immunity
-  const hasRevealed = revealIdx >= 0;
-  const phase2SearchRevealed = phase === 2 && revealIdx >= 3;
-  const phase2BlackoutRevealed = phase === 2 && revealIdx >= 4;
-  const phase3Started = phase === 3 && revealIdx >= 1;
-  const phase4KillerRevealed = phase === 4 && revealIdx >= 2;
-
-  // Sticky notes for key intel — gated per phase
+  // Sticky notes — only appear after enough reveals in each phase
   let stickies = '';
-  const allTrapsRevealed = phase > 1 || huntRevealed;
+  const allTrapsRevealed = huntRevealed;
   if (allTrapsRevealed) {
     const topCollector = Object.entries(revealedSamples).sort((a, b) => b[1] - a[1])[0];
     if (topCollector && topCollector[1] > 0) {
@@ -1685,12 +1916,17 @@ function _buildBoard(ep, phase, revealIdx = 999) {
     }
   }
 
-  // Framed players — only after blackout rounds revealed
+  // Framed players — only after corresponding blackout revealed
+  // Phase 2 steps: 0=train, 1=murder, 2=reactions, 3=search1, 4=blackout1, 5=search2, 6=blackout2...
   let frameInfo = '';
-  if ((phase > 2 || phase2BlackoutRevealed) && gc.phase2.framesPlanted.length) {
-    frameInfo = gc.phase2.framesPlanted.map(f =>
+  if (phase > 2 || phase2BlackoutRevealed) {
+    const framesToShow = phase > 2 ? gc.phase2.framesPlanted : gc.phase2.framesPlanted.filter((f, i) => {
+      const blackoutStepIdx = 4 + i * 2;
+      return revealIdx >= blackoutStepIdx;
+    });
+    frameInfo = framesToShow.map(f =>
       `<div class="gc-clue-pin" style="border-color:var(--gold-foil)"><div class="gc-clue-icon">⚠️</div>
-        <div class="gc-clue-text" style="color:#b8860b">Evidence planted near ${f.target.split(' ').pop()}</div></div>`
+        <div class="gc-clue-text" style="color:#b8860b">Suspicious evidence found near ${f.target.split(' ').pop()}...</div></div>`
     ).join('');
   }
 
@@ -1859,6 +2095,10 @@ export function rpBuildGetAClueCollection(ep) {
       mutual:     { icon: '🔄', label: 'MUTUAL HUNT', color: '#a855f7', bg: 'rgba(168,85,247,0.08)', pin: '#a855f7' },
       comfort:    { icon: '💙', label: 'COMFORT', color: 'var(--evidence-blue)', bg: 'rgba(59,130,246,0.08)', pin: 'var(--evidence-blue)' },
       impressive: { icon: '⭐', label: 'TOP COLLECTOR', color: 'var(--gold-foil)', bg: 'rgba(212,160,23,0.08)', pin: 'var(--gold-foil)' },
+      rivalry:    { icon: '⚔️', label: 'RIVALRY', color: '#f97316', bg: 'rgba(249,115,22,0.08)', pin: '#f97316' },
+      showoff:    { icon: '🎤', label: 'SHOWOFF', color: '#ec4899', bg: 'rgba(236,72,153,0.08)', pin: '#ec4899' },
+      suspicion:  { icon: '🤨', label: 'SUSPICION', color: '#6b7280', bg: 'rgba(107,114,128,0.08)', pin: '#6b7280' },
+      alliance:   { icon: '🤝', label: 'PARTNERS', color: '#22c55e', bg: 'rgba(34,197,94,0.08)', pin: '#22c55e' },
     }[evt.type];
     if (!evtConfig) continue;
 
@@ -1933,7 +2173,7 @@ export function rpBuildGetAClueTrain(ep) {
 
   // Murder
   steps.push(`<div class="gc-blackout">
-    <div class="gc-silhouette-row">${Object.keys(gc.phase1.sampleCounts).map(() => '<div class="gc-silhouette">👤</div>').join('')}</div>
+    <div class="gc-silhouette-row">${Object.keys(gc.phase1.sampleCounts).map(name => `<div class="gc-silhouette"><img src="assets/avatars/${slug(name)}.png" alt="${name}" style="width:24px;height:24px;object-fit:contain;border-radius:50%;filter:brightness(0.6) saturate(0) opacity(0.7)" onerror="this.outerHTML='👤'"></div>`).join('')}</div>
     <div class="gc-blackout-text">${gc.phase2.murderText}</div>
   </div>`);
 
@@ -1958,6 +2198,15 @@ export function rpBuildGetAClueTrain(ep) {
   // Search rounds + blackouts interleaved
   for (let r = 0; r < gc.phase2.searchRounds.length; r++) {
     const roundHtml = gc.phase2.searchRounds[r].map(sr => {
+      if (sr.isKillerAbsent) {
+        return `<div class="gc-player-card" style="border-color:var(--red-string);background:rgba(192,57,43,0.06)">
+          ${portrait(sr.name, 32)}
+          <div style="flex:1">
+            <div class="gc-player-name" style="color:var(--coffee)">👻 ${sr.name}</div>
+            <div class="gc-player-detail" style="color:rgba(92,61,46,0.75)">${sr.text}</div>
+          </div>
+        </div>`;
+      }
       if (sr.isEvent) {
         return `<div class="gc-narration" style="border-color:var(--evidence-blue);background:rgba(59,130,246,0.08)">
           <span style="font-size:14px;margin-right:4px">💬</span> ${sr.text}</div>`;
@@ -2015,7 +2264,7 @@ export function rpBuildGetAClueTrain(ep) {
     .map(([name, evs]) => {
       const real = evs.filter(e => e.isReal).length;
       const fake = evs.filter(e => !e.isReal).length;
-      return `<div class="gc-legal-text">${name}: ${'🔍'.repeat(real)}${fake ? ' ' + '🐟'.repeat(fake) : ''} <span style="opacity:0.5">(${real} real${fake ? `, ${fake} herring` : ''})</span></div>`;
+      return `<div class="gc-legal-text">${name}: ${'🔍'.repeat(real)}${fake ? ' ' + '🐟'.repeat(fake) : ''} <span style="opacity:0.5">(${real} real${fake ? `, ${fake} fake` : ''})</span></div>`;
     }).join('');
   steps.push(`<div class="gc-legal">
     <div class="gc-legal-text" style="font-weight:700;margin-bottom:4px;font-size:14px">📋 EVIDENCE COLLECTED</div>
@@ -2323,85 +2572,15 @@ export function getAClueRevealNext(screenKey, totalSteps) {
 }
 
 function _updateLiveBoard(revIdx) {
+  const boardCol = document.querySelector('.gc-board-col');
+  if (!boardCol || !window._gcBoardEp) return;
   const boardEl = document.getElementById('gc-live-board');
-  if (!boardEl || !window._gcBoardEp) return;
-  const phase = window._gcBoardPhase || 1;
-  const fakeEp = window._gcBoardEp;
-  const gc = fakeEp.getAClue;
-  if (!gc) return;
-  const active = Object.keys(gc.phase1.sampleCounts);
-
-  // Rebuild dynamic parts: tally marks, stickies, strings
-  // Step layout: 0=setup, 1..N=traps, N+1=hunt round, N+2+=zero events + scoreboard
-  const revealedTraps = phase === 1 ? Math.max(0, revIdx) : gc.phase1.traps.length;
-  const huntStepIdx = gc.phase1.traps.length + 1;
-  const huntRevealed = phase > 1 || revIdx >= huntStepIdx;
-  const revealedSamples = {};
-  active.forEach(n => { revealedSamples[n] = 0; });
-  if (phase === 1) {
-    gc.phase1.traps.slice(0, revealedTraps).forEach(t => {
-      if (t.outcome === 'success') revealedSamples[t.trapper]++;
-      if (t.outcome === 'backfire') revealedSamples[t.target]++;
-    });
-    if (huntRevealed) {
-      gc.phase1.hunts.filter(h => h.success).forEach(h => { revealedSamples[h.hunter]++; });
-    }
-  } else {
-    Object.assign(revealedSamples, gc.phase1.sampleCounts);
-  }
-
-  // Update tally marks on each polaroid
-  boardEl.querySelectorAll('.gc-polaroid').forEach(pol => {
-    const name = pol.dataset.name;
-    if (!name) return;
-    const count = revealedSamples[name] || 0;
-    let tallyEl = pol.querySelector('.gc-tally');
-    if (count > 0) {
-      const marks = Array(Math.min(count, 5)).fill('<div class="gc-tally-mark" style="width:2px;height:8px;background:var(--red-string)"></div>').join('');
-      if (tallyEl) {
-        tallyEl.innerHTML = marks;
-      } else {
-        const d = document.createElement('div');
-        d.className = 'gc-tally';
-        d.style.cssText = 'position:absolute;top:-2px;right:-2px';
-        d.innerHTML = marks;
-        pol.appendChild(d);
-      }
-    } else if (tallyEl) {
-      tallyEl.remove();
-    }
-  });
-
-  // Update string connection cards
-  let existingStrings = boardEl.querySelector('.gc-strings-container');
-  const revealedTrapList = phase === 1 ? gc.phase1.traps.slice(0, revealedTraps) : gc.phase1.traps;
-  const connections = revealedTrapList.filter(t => t.outcome === 'success').slice(0, 6);
-  if (connections.length) {
-    let cardsHtml = `<div class="gc-board-divider"></div>
-      <div style="font-family:'Courier Prime',monospace;font-size:9px;color:var(--coffee);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;text-align:center">CONNECTIONS</div>`;
-    cardsHtml += connections.map((c, ci) =>
-      `<div class="gc-string-card" style="animation-delay:${ci * 0.15}s">
-        <span class="gc-string-dot" style="background:var(--pin-red)"></span>
-        <span class="gc-string-name">${c.trapper.split(' ').pop()}</span>
-        <span class="gc-string-line-h"></span>
-        <span class="gc-string-name">${c.target.split(' ').pop()}</span>
-        <span class="gc-string-dot" style="background:var(--pin-red)"></span>
-      </div>`
-    ).join('');
-    if (!existingStrings) {
-      existingStrings = document.createElement('div');
-      existingStrings.className = 'gc-strings-container';
-      const grid = boardEl.querySelector('.gc-suspect-grid');
-      if (grid) grid.after(existingStrings);
-    }
-    existingStrings.innerHTML = cardsHtml;
-  }
-
-  // Show/hide sticky notes
-  const allTrapsRevealed = phase > 1 || huntRevealed;
-  boardEl.querySelectorAll('.gc-sticky').forEach(s => {
-    s.style.display = allTrapsRevealed ? '' : 'none';
-  });
+  const phase = boardEl ? parseInt(boardEl.dataset.phase) || 1 : 1;
+  const fullHtml = _buildBoard(window._gcBoardEp, phase, revIdx);
+  // _buildBoard returns '<div class="gc-board-col"><div class="gc-board" ...>...</div></div>'
+  // Extract inner content of gc-board-col
+  const inner = fullHtml.replace(/^<div class="gc-board-col">/, '').replace(/<\/div>$/, '');
+  boardCol.innerHTML = inner;
 }
 
 export function getAClueRevealAll(screenKey, totalSteps) {

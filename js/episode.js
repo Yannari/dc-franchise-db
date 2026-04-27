@@ -50,6 +50,7 @@ import { simulateMillionBucksBC } from './chal/million-bucks-bc.js';
 import { simulateSportsMarathon } from './chal/sports-marathon.js';
 import { simulateSuperHerold } from './chal/super-hero-ld.js';
 import { simulatePrincessPride } from './chal/princess-pride.js';
+import { simulateGetAClue } from './chal/get-a-clue.js';
 import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
@@ -1486,6 +1487,13 @@ export function simulateEpisode() {
     ep.challengeType = 'princess-pride';
   }
 
+  // ── GET A CLUE (post-merge) — murder mystery determines immunity, normal tribal follows ──
+  if (ep.isGetAClue && gs.isMerged) {
+    simulateGetAClue(ep);
+    ep.immunityWinner = ep.getAClue?.immunityWinner || ep.immunityWinner;
+    ep.challengeType = 'get-a-clue';
+  }
+
   // ── ALIEN EGG (post-merge) — egg hunt determines immunity, normal tribal follows ──
   if (ep.isAlienEgg && gs.isMerged) {
     simulateAlienEgg(ep);
@@ -2218,7 +2226,7 @@ export function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride) {
+    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue) {
     // Special challenge already ran and set immunityWinner + chalMemberScores — skip generic challenge
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
@@ -2482,7 +2490,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue) {
     updateChalRecord(ep);
   }
 
@@ -5401,6 +5409,8 @@ function simulateJuryRoundtable(ep) {
     superHerold:          ep.superHerold           || null,
     isPrincessPride:      ep.isPrincessPride      || false,
     princessPride:        ep.princessPride         || null,
+    isGetAClue:           ep.isGetAClue           || false,
+    getAClue:             ep.getAClue              || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,

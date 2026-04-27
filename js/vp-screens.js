@@ -24,6 +24,7 @@ import { rpBuildMillionBucksBCTitleCard, rpBuildMillionBucksBCFire, rpBuildMilli
 import { rpBuildSportsMarathonTitleCard, rpBuildSportsMarathonObstacle, rpBuildSportsMarathonHalftime, rpBuildSportsMarathonSports, rpBuildSportsMarathonResults, sportsMarathonRevealNext, sportsMarathonRevealAll } from './chal/sports-marathon.js';
 import { rpBuildSuperHeroldTitleCard, rpBuildSuperHeroldCostume, rpBuildSuperHeroldPrizes, rpBuildSuperHeroldRound1, rpBuildSuperHeroldRound2, rpBuildSuperHeroldRound, rpBuildSuperHeroldBoss, superHeroldRevealNext, superHeroldRevealAll } from './chal/super-hero-ld.js';
 import { rpBuildPrincessPrideTitleCard, rpBuildPrincessPrideCeremony, rpBuildPrincessPrideForest, rpBuildPrincessPrideBridge, rpBuildPrincessPrideDragon, rpBuildPrincessPrideTower, rpBuildPrincessPrideDuel, princessPrideRevealNext, princessPrideRevealAll } from './chal/princess-pride.js';
+import { rpBuildGetAClueTitleCard, rpBuildGetAClueCollection, rpBuildGetAClueTrain, rpBuildGetAClueTrial, rpBuildGetAClueVerdict, getAClueRevealNext, getAClueRevealAll } from './chal/get-a-clue.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10363,6 +10364,12 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'pp-dragon', label:"Dragon's Lair", html: rpBuildPrincessPrideDragon(ep) });
     vpScreens.push({ id:'pp-tower', label:'Tower Rescue', html: rpBuildPrincessPrideTower(ep) });
     vpScreens.push({ id:'pp-duel', label:'The Betrayal', html: rpBuildPrincessPrideDuel(ep) });
+  } else if ((ep.isGetAClue || ep.challengeType === 'get-a-clue') && ep.getAClue) {
+    vpScreens.push({ id:'gc-title', label:'Get a Clue', html: rpBuildGetAClueTitleCard(ep) });
+    vpScreens.push({ id:'gc-collection', label:'DNA Collection', html: rpBuildGetAClueCollection(ep) });
+    vpScreens.push({ id:'gc-train', label:'Murder Train', html: rpBuildGetAClueTrain(ep) });
+    vpScreens.push({ id:'gc-trial', label:'The Trial', html: rpBuildGetAClueTrial(ep) });
+    vpScreens.push({ id:'gc-verdict', label:'The Verdict', html: rpBuildGetAClueVerdict(ep) });
   } else if (ep.isAlienEgg && ep.alienEgg) {
     vpScreens.push({ id:'ae-title', label:'👽 Alien Resurr-eggtion', html: rpBuildAlienEggTitleCard(ep) });
     vpScreens.push({ id:'ae-rounds', label:'The Egg Hunt', html: rpBuildAlienEggRounds(ep) });

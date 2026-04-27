@@ -1470,6 +1470,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'princess-pride') {
     ep.isPrincessPride = true;
 
+  } else if (engineType === 'get-a-clue') {
+    ep.isGetAClue = true;
+
   } else if (engineType === 'sports-marathon') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isSportsMarathon = true;

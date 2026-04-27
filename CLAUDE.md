@@ -136,6 +136,8 @@ Tribe scores: averages per member, NEVER raw sums.
 | `lucky-hunt` | Lucky Hunt | Post-merge scavenger hunt. 28 unique locations (4 tiers). Timeline-based engine with interleaved attempts + events. Hunt events: help, sabotage, steal, ambush, taunt, intel trade, discovery, panic, showoff, encouragement, guard, bonding, alliance moment, rivalry. Chest ceremony: immunity, booby trap, shareable, advantage, food items. Dud keys (15%). VP: quest board clue draw + live status tracker + pirate theme. |
 | `hide-and-be-sneaky` | Hide and Be Sneaky | 5-phase: hide/hunt/betray/escape/showdown. Chef hunts with water gun. Archetype-driven betrayal (villains rat, nice stay loyal, neutrals need strategic>=6+loyalty<=4). 3-4 events per hunt round with hiding quality bonuses/maluses. Cat-and-mouse showdown. 1-2 immunity winners. Night-vision surveillance VP. |
 | `off-the-chain` | That's Off the Chain! | Post-merge bike build + race. Build phase with sabotage/help events, Chris judges bikes, swap mechanic (ride rival's bike). Two-part race: sprint + obstacle gauntlet. Bikes fall apart mid-race. Elimination reactions, rivalry heat. Motocross demolition derby VP theme. |
+| `super-hero-ld` | Super Hero-ld | Battle royale. 6 power types (Fire>Earth>Tech>Psychic>Shadow>Water), stat-pair assignment, priority draft. Costume contest (top 3 prizes: shield/momentum/zone pick). Multi-round zone fights with momentum system (3-5 exchanges). Between-fight micro-events. Mega Pythonicus boss fight with kill-steal. Comic book VP. |
+| `princess-pride` | The Princess Pride | Fairy tale quest. Glass slipper crowns Princess/Prince (gender-adaptive). 6 knight classes (Knight/Ranger/Mage/Rogue/Bard/Barbarian) with priority draft. 4 phases (Forest/Bridge/Dragon/Tower), 3 beats each. Class advantages per beat. Princess gives sword+armor advantages, has 1 save. Top knight duels Princess for immunity. Happy ending possible (showmance/high bond = both get immunity). Storybook VP with phase-specific environments. |
 
 ### Both Phases
 | ID | Name | Key Mechanic |
@@ -184,3 +186,135 @@ Season twist. 5 sabotage types. Suspicion tracking. Exposure at 3.0.
 - Always propose before implementing
 - Camp events MUST have gameplay consequences
 - Information from mechanics must flow into targeting
+- Skip spec/plan for challenge designs — go straight from brainstorm to implementation
+
+## How to Create a New Twist Challenge (Complete Guide)
+
+### Step 1: File Creation
+Create `js/chal/<challenge-id>.js`. Use an existing challenge (e.g., `super-hero-ld.js` or `princess-pride.js`) as a template. Standard imports:
+```javascript
+import { gs, players, seasonConfig } from '../core.js';
+import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { addBond, getBond } from '../bonds.js';
+import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
+```
+
+### Step 2: Integration Points (ALL required)
+**5 files must be updated:**
+
+1. **`js/core.js`** — Add TWIST_CATALOG entry:
+   ```javascript
+   { id:'challenge-id', emoji:'🎯', name:'Challenge Name', category:'challenge',
+     chalSeries:'action', phase:'post-merge',
+     desc:'Description...', engineType:'challenge-id',
+     incompatible:[...all other challenge IDs...] }
+   ```
+
+2. **`js/twists.js`** — Add `engineType` → flag mapping in `applyTwist()`:
+   ```javascript
+   } else if (engineType === 'challenge-id') {
+     ep.isChallengeId = true;
+   ```
+   No merge/phase checks here — let episode.js handle that.
+
+3. **`js/episode.js`** — THREE places to update:
+   - **Import**: `import { simulateChallengeId } from './chal/challenge-id.js';`
+   - **Dispatch block** (near other post-merge challenges ~line 1475):
+     ```javascript
+     if (ep.isChallengeId && gs.isMerged) {
+       simulateChallengeId(ep);
+       ep.immunityWinner = ep.challengeData?.immunityWinner || ep.immunityWinner;
+       ep.challengeType = 'challenge-id';
+     }
+     ```
+   - **Generic challenge skip** (~line 2221): add `|| ep.isChallengeId` to the `isMonsterCash || isOperationClassified || ...` condition
+   - **updateChalRecord skip** (~line 2485): add `&& !ep.isChallengeId` to the skip condition
+   - **Episode history save** (~line 5400): add `isChallengeId: ep.isChallengeId || false, challengeData: ep.challengeData || null,` ← THIS IS CRITICAL or VP screens won't work on replay
+
+4. **`js/vp-screens.js`** — Add import + screen registration:
+   ```javascript
+   import { rpBuild..., revealNext, revealAll } from './chal/challenge-id.js';
+   // In buildVPScreens(), add:
+   } else if ((ep.isChallengeId || ep.challengeType === 'challenge-id') && ep.challengeData) {
+     vpScreens.push({ id:'xx-title', label:'Title', html: rpBuildTitleCard(ep) });
+     // ... more screens
+   }
+   ```
+
+5. **`js/text-backlog.js`** — Add import of `_textChallengeId` and call it in the main function.
+
+6. **`js/main.js`** — Add `import * as challengeMod from './chal/challenge-id.js';` and add `challengeMod` to the module spread array.
+
+7. **`js/run-ui.js`** — Add episode history badge tag (colored pill in episode timeline).
+
+### Step 3: Simulation Structure
+```javascript
+export function simulateChallengeId(ep) {
+  const active = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
+  const campKey = gs.mergeName || 'merge';
+  if (!ep.campEvents) ep.campEvents = {};
+  if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+  if (!ep.chalMemberScores) ep.chalMemberScores = {};
+  active.forEach(n => { ep.chalMemberScores[n] = 0; });
+
+  const result = { /* challenge data */ };
+
+  // ... simulation logic ...
+
+  // Romance hooks (pass null for phases/phaseKey to avoid push errors)
+  const _romActive = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
+  for (let i = 0; i < _romActive.length; i++)
+    for (let j = i + 1; j < _romActive.length; j++)
+      _challengeRomanceSpark(_romActive[i], _romActive[j], ep, null, null, ep.chalMemberScores || {}, 'challenge context');
+  _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'challenge', _romActive);
+
+  // Finalize
+  ep.challengeData = result;
+  ep.isChallengeId = true;
+  ep.challengeType = 'challenge-id';
+  ep.challengeLabel = 'Challenge Name';
+  ep.challengeCategory = 'mixed';
+  ep.immunityWinner = result.immunityWinner;
+  ep.chalPlacements = [...];
+  // Immunity winner MUST be #1 in chalMemberScores
+  const maxOther = Math.max(0, ...Object.entries(ep.chalMemberScores).filter(([n]) => n !== result.immunityWinner).map(([,s]) => s));
+  ep.chalMemberScores[result.immunityWinner] = Math.max(ep.chalMemberScores[result.immunityWinner] || 0, maxOther) + active.length + 5;
+  ep.tribalPlayers = active;
+  updateChalRecord(ep);
+  return ep;
+}
+```
+
+### Step 4: VP Pattern
+- Each screen is an exported function: `rpBuildChallengeTitleCard(ep)`, `rpBuildChallengePhase1(ep)`, etc.
+- Use `_tvState[stateKey]` with `idx: -1` for click-to-reveal
+- Export `challengeRevealNext(screenKey, totalSteps)` and `challengeRevealAll(screenKey, totalSteps)`
+- Shell wrapper function with CSS + theme: `_shellWrapper(content, ep, theme)`
+- Sidebar should NOT spoil future results — show state from BEFORE current phase, update progressively
+- Each screen needs its own `stateKey` for independent reveal state
+
+### Step 5: Scoring Rules
+- `chalMemberScores` accumulates across all phases — used for challenge tab ranking
+- Immunity winner gets massive bonus to guarantee #1 position
+- Survivors/top performers get intermediate bonuses
+- `chalPlacements` array: best-to-worst order for podium/bomb tracking
+- `updateChalRecord(ep)` reads `ep.immunityWinner` to credit the win (1W)
+
+### Step 6: Common Bugs to Avoid
+- **Episode history not saving challenge data**: MUST add `challengeData: ep.challengeData || null` to the episode history object in `episode.js` (~line 5400) or VP screens show nothing on replay
+- **Romance hook crash**: pass `null` for `phases` and `phaseKey` params to `_challengeRomanceSpark` and `_checkShowmanceChalMoment` — they try to push to `phases[phaseKey]` array which doesn't exist
+- **Immunity winner not #1 in scores**: add massive bonus AFTER all other scoring
+- **Generic challenge overwriting results**: must add to BOTH skip conditions in episode.js (generic challenge dispatch + updateChalRecord)
+- **VP sidebar spoiling results**: build sidebar from state BEFORE current phase, not after
+- **Camp events spoiling VP reveals**: don't push "X was crowned/eliminated" camp events that appear in Cold Open before the challenge VP screens
+- **Same text repetition**: have 4+ text options per narration category minimum
+- **Class/type assignment clustering**: use priority draft + cap system to ensure diversity
+
+### Step 7: VP Aesthetic Identity
+Each challenge needs its own DISTINCT visual identity — different from all other challenges:
+- Unique CSS class prefix (e.g., `sh-` for Super Hero-ld, `pp-` for Princess Pride)
+- Unique font family + color palette
+- Phase-specific background themes that change per location
+- Animated decorations (CSS-only: particles, glows, environmental elements)
+- `@media(prefers-reduced-motion:reduce)` for ALL animations
+- Performance badges or visual indicators for player scores

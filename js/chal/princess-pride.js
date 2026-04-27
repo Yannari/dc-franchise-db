@@ -71,7 +71,7 @@ function _selectRoyal(active) {
     // Fitting score
     const scores = active.map(name => {
       const s = pStats(name);
-      return { name, score: s.social * 0.4 + s.boldness * 0.3 + noise(2) };
+      return { name, score: s.social * 0.3 + s.boldness * 0.2 + noise(5) };
     }).sort((a, b) => b.score - a.score);
     royalName = scores[0].name;
   }
@@ -580,6 +580,8 @@ const SOCIAL_EVENTS = [
       if (!target) return null;
       addBond(rogue, target, -1);
       popDelta(rogue, -1);
+      // Sabotage effect stored on the event — applied to fatigue in the simulation loop
+      const _sabEffect = { sabotageTarget: target, sabotagePenalty: -2 };
       const schemeTexts = [
         `${rogue} whispered to the shadows. A plan formed. ${target}'s equipment was sabotaged — a frayed strap here, a dulled blade there. The Rogue's smile in the firelight was cold as winter. "In fairy tales, the clever ones survive."`,
         `While ${target} slept, ${rogue} swapped ${pronouns(target).posAdj} healing potion with colored water. "Survival of the fittest," the Rogue murmured. "And I'm the fittest because I cheat." The sabotage would reveal itself at the worst possible moment — that was the art of it.`,
@@ -588,7 +590,7 @@ const SOCIAL_EVENTS = [
       ];
       return { type: 'rogueScheme', players: [rogue, target],
         text: pick(schemeTexts),
-        badgeText: 'SABOTAGE', badgeClass: 'red' };
+        badgeText: 'SABOTAGE', badgeClass: 'red', effect: _sabEffect };
     },
   },
   {
@@ -930,22 +932,83 @@ function _getElimText(name, beatKey) {
   return `${name} was eliminated from the quest. The fairy tale continues without ${pr.obj}.`;
 }
 
+// Class combos — complementary pairs that get a teamwork bonus when both alive
+const CLASS_COMBOS = [
+  { pair: ['knight', 'mage'], bonus: 1.5, texts: [
+    (a, b) => `${a} held the line while ${b} prepared the spell behind ${pronouns(a).obj}. Tank and caster — the oldest combo in the book, and still the best.`,
+    (a, b) => `"Cover me!" ${b} shouted. ${a} raised ${pronouns(a).posAdj} shield without hesitation. The Knight protected. The Mage delivered. Together, unstoppable.`,
+  ]},
+  { pair: ['bard', 'barbarian'], bonus: 1.5, texts: [
+    (a, b) => `${a}'s war song fueled ${b}'s rage. The Bard's melody turned the Barbarian into a force of nature — every note was another swing of the axe.`,
+    (a, b) => `${a} played faster. ${b} hit harder. The Bard and the Barbarian fed off each other's energy until the ground shook with their combined fury.`,
+  ]},
+  { pair: ['ranger', 'rogue'], bonus: 1.2, texts: [
+    (a, b) => `${a} spotted the path. ${b} cleared the traps along it. Ranger and Rogue — the forest's deadliest partnership.`,
+    (a, b) => `${a} tracked from above while ${b} infiltrated below. Between the Ranger's eyes and the Rogue's hands, nothing stayed hidden for long.`,
+  ]},
+  { pair: ['knight', 'bard'], bonus: 1.0, texts: [
+    (a, b) => `${a} fought with renewed vigor as ${b}'s melody swelled behind ${pronouns(a).obj}. "That song..." the Knight breathed. "It makes me feel invincible." The Bard smiled. "That's the idea."`,
+  ]},
+  { pair: ['mage', 'ranger'], bonus: 1.0, texts: [
+    (a, b) => `${b}'s nature instincts and ${a}'s arcane knowledge combined — the Ranger felt the forest's pulse while the Mage read its magical signature. Together they saw the full picture.`,
+  ]},
+];
+
+// Fatigue carry-over narration — prefixed to the main text when a player is worn down
+const FATIGUE_PREFIX = [
+  (n, pr) => `Still aching from the last trial, `,
+  (n, pr) => `Bruised and battered but refusing to quit, `,
+  (n, pr) => `${n} winced with every step — the previous round had taken its toll. But `,
+  (n, pr) => `Every muscle screamed for rest. ${n} ignored them all. `,
+  (n, pr) => `The wounds from before hadn't healed. ${n} pushed through anyway — `,
+  (n, pr) => `Limping slightly, jaw set, ${n} forced ${pr.ref} forward. `,
+];
+
 function _simulatePhase(phaseId, phaseLabel, beats, alive, classMap, result, ep, campKey, fatigue) {
   const phase = { id: phaseId, label: phaseLabel, beats: [], eliminated: [], events: [] };
+  let prevBeatPerf = {}; // track previous beat performance per player
+
   for (const beat of beats) {
     const scores = {};
     const texts = {};
+
+    // Class combo bonus — check for complementary pairs
+    const combosThisBeat = [];
+    for (const combo of CLASS_COMBOS) {
+      const playersA = alive.filter(n => classMap[n] === combo.pair[0]);
+      const playersB = alive.filter(n => classMap[n] === combo.pair[1]);
+      if (playersA.length && playersB.length) {
+        const a = pick(playersA), b = pick(playersB);
+        combosThisBeat.push({ a, b, bonus: combo.bonus, text: pick(combo.texts)(a, b) });
+      }
+    }
+
     for (const name of alive) {
-      scores[name] = _scoreBeat(name, classMap[name], beat.key, result.swordHolder, result.armorHolder, fatigue);
+      let score = _scoreBeat(name, classMap[name], beat.key, result.swordHolder, result.armorHolder, fatigue);
+      // Apply class combo bonus
+      const myCombo = combosThisBeat.find(c => c.a === name || c.b === name);
+      if (myCombo) score += myCombo.bonus;
+      scores[name] = score;
       fatigue[name] = (fatigue[name] || 0) - 0.3;
     }
     const maxBeatScore = Math.max(1, ...Object.values(scores));
     for (const name of alive) {
-      texts[name] = _getBeatText(name, classMap[name], beat.key, scores[name], maxBeatScore);
+      let baseText = _getBeatText(name, classMap[name], beat.key, scores[name], maxBeatScore);
+      // Fatigue carry-over: if player did poorly last beat AND has significant fatigue, prefix with fatigue text
+      const wasBadLastBeat = prevBeatPerf[name] === 'rough' || prevBeatPerf[name] === 'meh';
+      const isFatigued = (fatigue[name] || 0) < -1.5;
+      if (wasBadLastBeat && isFatigued && phase.beats.length > 0) {
+        const prefix = pick(FATIGUE_PREFIX)(name, pronouns(name));
+        baseText = prefix + baseText.charAt(0).toLowerCase() + baseText.slice(1);
+      }
+      texts[name] = baseText;
+      // Track performance for next beat
+      const ratio = maxBeatScore > 0 ? scores[name] / maxBeatScore : 0.5;
+      prevBeatPerf[name] = ratio < 0.35 ? 'rough' : ratio < 0.6 ? 'meh' : 'good';
     }
     // Rank
     const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-    const beatResult = { key: beat.key, label: beat.label, ranked: ranked.map(([n, s]) => ({ name: n, score: s, text: texts[n], cls: classMap[n] })), eliminated: [] };
+    const beatResult = { key: beat.key, label: beat.label, ranked: ranked.map(([n, s]) => ({ name: n, score: s, text: texts[n], cls: classMap[n] })), eliminated: [], combos: combosThisBeat };
 
     // Accumulate chalMemberScores
     ranked.forEach(([n, s], idx) => {
@@ -1002,6 +1065,10 @@ function _simulatePhase(phaseId, phaseLabel, beats, alive, classMap, result, ep,
     beatResult.events = beatEvents;
     for (const ev of beatEvents) {
       ep.campEvents[campKey].post.push({ ...ev, tag: 'princess-pride' });
+      // Apply gameplay effects from events
+      if (ev.effect?.sabotageTarget && alive.includes(ev.effect.sabotageTarget)) {
+        fatigue[ev.effect.sabotageTarget] = (fatigue[ev.effect.sabotageTarget] || 0) + (ev.effect.sabotagePenalty || -2);
+      }
     }
     beatResult.scoreSnapshot = { ...ep.chalMemberScores };
     phase.beats.push(beatResult);
@@ -1016,15 +1083,54 @@ function _simulateDuel(royalName, knightName, result, ep, campKey, fatigue) {
   const rPr = pronouns(royalName);
   const kPr = pronouns(knightName);
   const rt = result.royalTitle;
-  const isShowmance = gs.showmances?.some(s =>
-    (s.a === royalName && s.b === knightName) || (s.a === knightName && s.b === royalName));
 
   let royalMomentum = 0;
   const exchanges = [];
 
+  // ── HAPPY ENDING CHECK: showmance or very high bond = they refuse to fight ──
+  const duelBond = getBond(royalName, knightName);
+  const isShowmance = gs.showmances?.some(s =>
+    (s.a === royalName && s.b === knightName) || (s.a === knightName && s.b === royalName));
+  const happyEnding = isShowmance || (duelBond >= 6 && Math.random() < 0.7);
+
+  if (happyEnding) {
+    const happyTexts = [
+      { royal: `${rt} ${royalName} drew the sword... and lowered it. "I can't." ${knightName} stared. "What?" "I said I CAN'T. Not against you." The sword clattered to the stone floor. The tower fell silent.`,
+        knight: `${knightName} looked at the blade, then at ${royalName}. Then ${pronouns(knightName).sub} dropped ${pronouns(knightName).posAdj} weapon too. "If you're not fighting, neither am I." They stood there, disarmed, in the highest room of the tallest tower. Two people who chose each other over victory.`,
+        chris: `${host()} burst through the door. "WHAT ARE YOU DOING?! You're supposed to FIGHT! This is a DUEL! D-U-E-L!" ${royalName} and ${knightName} looked at each other, then back at ${host()}. "No." ${host()} sputtered. "You can't just — that's not how — the RATINGS—" He paced furiously. "FINE. You BOTH get immunity. Are you HAPPY?! Because I'm NOT. This was supposed to be DRAMATIC. This is a FAIRY TALE, not a LOVE STORY!" He paused. "...Okay, it's a little bit of a love story."`,
+      },
+      { royal: `${rt} ${royalName} raised the blade and ${knightName} braced for impact. The swing came — and stopped an inch from ${knightName}'s throat. "I watched you fight through everything down there," ${royalName} whispered. "I'm not going to be the thing that beats you."`,
+        knight: `${knightName}'s eyes widened. Then softened. "You know... I didn't climb this tower for immunity." ${pronouns(knightName).Sub} reached out and gently pushed ${royalName}'s blade aside. "I climbed it for you." The fairy tale had found its ending.`,
+        chris: `"Oh COME ON!" ${host()} threw his clipboard. "This is a COMPETITION, not a Disney movie!" He stormed around the room. "Rules say you fight! My contract says—" ${royalName}: "Give us both immunity or we walk." ${host()} stared. "${knightName}: "Together." ${host()} looked at the camera. Looked at the ratings. Looked at the two people who had just ruined his dramatic finale and turned it into something BETTER. "...Fine. DOUBLE immunity. But I'm billing you both for the swords."`,
+      },
+    ];
+    const ht = pick(happyTexts);
+    exchanges.push({ name: 'The Moment', winner: royalName, shift: 0, text: ht.royal });
+    exchanges.push({ name: 'The Choice', winner: knightName, shift: 0, text: ht.knight });
+    exchanges.push({ name: 'The Ending', winner: 'both', shift: 0, text: ht.chris });
+
+    addBond(royalName, knightName, 3);
+    popDelta(royalName, 3);
+    popDelta(knightName, 3);
+
+    return {
+      winner: 'both', royalName, knightName, exchanges, narrow: false,
+      happyEnding: true,
+      immunityBoth: true,
+    };
+  }
+
+  // ── NORMAL DUEL ──
+  // Battle-hardened bonus: surviving 4 phases gives the knight combat instincts the royal doesn't have
+  const battleHardened = 3;
+  // Fatigue is halved for the duel — adrenaline kicks in at the final moment
+  const duelFatigue = (fatigue[knightName] || 0) * 0.5;
+  // Golden Armor bonus — buffed to be meaningful
+  const armorBonus = result.armorHolder === knightName ? 4 : 0;
+
   // Beat 1: The Shock — Knight: boldness + physical. Royal: social + strategic
-  const kBeat1 = ks.boldness * 0.5 + ks.physical * 0.4 + (fatigue[knightName] || 0) + noise(2);
-  const rBeat1 = rs.social * 0.5 + rs.strategic * 0.4 + noise(2);
+  const kBeat1 = ks.boldness * 0.5 + ks.physical * 0.4 + duelFatigue + battleHardened + noise(3);
+  const rBeat1 = rs.social * 0.5 + rs.strategic * 0.4 + noise(3);
   const beat1Winner = rBeat1 >= kBeat1 ? royalName : knightName;
   const beat1Shift = Math.abs(rBeat1 - kBeat1) > 2 ? 3 : Math.abs(rBeat1 - kBeat1) > 1 ? 2 : 1;
   royalMomentum += (beat1Winner === royalName ? beat1Shift : -beat1Shift);
@@ -1040,13 +1146,11 @@ function _simulateDuel(royalName, knightName, result, ep, campKey, fatigue) {
     royalMomentum *= 0.7;
   }
 
-  // Beat 2: The Clash — Knight: physical + endurance. Royal: mental + intuition (intel bonus)
-  const kBeat2 = ks.physical * 0.5 + ks.endurance * 0.4 + (fatigue[knightName] || 0) + noise(2);
-  const intelBonus = rs.intuition * 0.3; // watched every fight
-  const rBeat2 = rs.mental * 0.5 + rs.intuition * 0.4 + intelBonus + noise(2);
-  // Golden Armor bonus for knight
-  const armorBonus = result.armorHolder === knightName ? 2 : 0;
-  const kBeat2Final = kBeat2 + armorBonus;
+  // Beat 2: The Clash — Knight: physical + endurance + armor. Royal: mental + intuition (intel bonus reduced)
+  const kBeat2 = ks.physical * 0.5 + ks.endurance * 0.4 + duelFatigue + battleHardened + armorBonus * 0.5 + noise(3);
+  const intelBonus = rs.intuition * 0.15; // watched fights, but watching isn't the same as doing
+  const rBeat2 = rs.mental * 0.5 + rs.intuition * 0.4 + intelBonus + noise(3);
+  const kBeat2Final = kBeat2;
   const beat2Winner = rBeat2 >= kBeat2Final ? royalName : knightName;
   const beat2Shift = Math.abs(rBeat2 - kBeat2Final) > 2 ? 3 : Math.abs(rBeat2 - kBeat2Final) > 1 ? 2 : 1;
   royalMomentum += (beat2Winner === royalName ? beat2Shift : -beat2Shift);
@@ -1054,9 +1158,9 @@ function _simulateDuel(royalName, knightName, result, ep, campKey, fatigue) {
   exchanges.push({ name: 'The Clash', winner: beat2Winner, shift: beat2Shift,
     text: pick(beat2Texts)(royalName, knightName, rt) });
 
-  // Beat 3: The Finish — Knight: strategic + boldness. Royal: boldness + social
-  const kBeat3 = ks.strategic * 0.5 + ks.boldness * 0.4 + (fatigue[knightName] || 0) + armorBonus * 0.5 + noise(3);
-  const rBeat3 = rs.boldness * 0.5 + rs.social * 0.4 + noise(3);
+  // Beat 3: The Finish — Knight: strategic + boldness + armor. Royal: boldness + social
+  const kBeat3 = ks.strategic * 0.5 + ks.boldness * 0.4 + duelFatigue + battleHardened + armorBonus * 0.5 + noise(4);
+  const rBeat3 = rs.boldness * 0.5 + rs.social * 0.4 + noise(4);
   // Showmance surge for the winner
   if (isShowmance) {
     const surgeTarget = royalMomentum >= 0 ? royalName : knightName;
@@ -1194,12 +1298,13 @@ export function simulatePrincessPride(ep) {
   result.phases.push(phase4);
   result.eliminationOrder.push(...phase4.eliminated);
 
-  // After Phase 4: Give Golden Armor to the top knight
+  // After Phase 4: Give Golden Armor to the top ALIVE knight
   if (alive.length >= 1) {
-    // Top scorer from tower push — but NOT the sword holder (spread the advantages)
+    // Top scorer who is still alive AND not the sword holder
     const towerPush = phase4.beats.find(b => b.key === 'tower-push');
     const towerRanked = towerPush?.ranked || [];
-    const topKnight = towerRanked.find(r => r.name !== result.swordHolder)?.name || towerRanked[0]?.name || alive[0];
+    const topKnight = towerRanked.find(r => alive.includes(r.name) && r.name !== result.swordHolder)?.name
+      || towerRanked.find(r => alive.includes(r.name))?.name || alive[0];
     result.armorHolder = topKnight;
     result.armorGiven = { recipient: topKnight, text: pick(ADVANTAGE_TEXT.armor)(royalName, topKnight, royalTitle) };
     addBond(royalName, topKnight, 1);
@@ -1217,21 +1322,51 @@ export function simulatePrincessPride(ep) {
   }
 
   // ── FINAL DUEL: THE BETRAYAL ──
-  // Top cumulative performer reaches the top — not just whoever is first in the alive array
-  const duelistKnight = [...alive].sort((a, b) => (ep.chalMemberScores[b] || 0) - (ep.chalMemberScores[a] || 0))[0] || alive[0] || knights[0];
+  // Top cumulative performer reaches the top — others fall short
+  const sortedAlive = [...alive].sort((a, b) => (ep.chalMemberScores[b] || 0) - (ep.chalMemberScores[a] || 0));
+  const duelistKnight = sortedAlive[0] || alive[0] || knights[0];
+  // Everyone else collapses on the stairs
+  const towerFallouts = sortedAlive.slice(1);
+  result.towerFallouts = towerFallouts.map(name => {
+    const pr = pronouns(name);
+    const cls = CLASSES[classMap[name]];
+    const texts = [
+      `${name} reached for the final ledge — and ${pr.posAdj} grip failed. The ${cls?.label || 'adventurer'} slid back down the tower stairs, exhaustion finally winning. So close. Not close enough.`,
+      `${name}'s legs gave out three steps from the summit. ${pr.Sub} collapsed against the cold stone, gasping. The quest was over. ${pr.Sub} could hear the duel beginning above. Without ${pr.obj}.`,
+      `The tower rejected ${name}. An enchanted wind pushed ${pr.obj} back, step by step, as if the fairy tale itself had decided ${pr.sub} wasn't the hero of this story. "No... I was so CLOSE!" But close doesn't count in fairy tales.`,
+      `${name} looked up at the final staircase and knew. ${pr.Sub} didn't have enough left. The ${cls?.label || 'adventurer'} sat down on the cold stone and listened to the sounds of battle above. "Next time," ${pr.sub} whispered. There might not be a next time.`,
+    ];
+    return { name, text: pick(texts), cls: classMap[name] };
+  });
+  // Remove fallouts from alive
+  for (const fo of towerFallouts) {
+    const idx = alive.indexOf(fo);
+    if (idx >= 0) alive.splice(idx, 1);
+    result.eliminationOrder.push(fo);
+  }
   const duel = _simulateDuel(royalName, duelistKnight, result, ep, campKey, fatigue);
   result.duel = duel;
-  result.immunityWinner = duel.winner;
 
-  popDelta(duel.winner, 3);
-  popDelta(duel.loser, 1);
-  addBond(royalName, duelistKnight, duel.narrow ? -1 : -2);
-
-  ep.campEvents[campKey].post.push({
-    text: `${duel.winner} won the final duel and claimed immunity in The Princess Pride!`,
-    players: [duel.winner],
-    badgeText: 'IMMUNITY!', badgeClass: 'green', tag: 'princess-pride',
-  });
+  if (duel.happyEnding) {
+    result.immunityWinner = royalName; // primary immunity
+    result.secondImmune = duelistKnight; // both get immunity
+    ep.extraImmune = [...(ep.extraImmune || []), duelistKnight];
+    ep.campEvents[campKey].post.push({
+      text: `${royalName} and ${duelistKnight} refused to fight! ${host()} reluctantly gave them BOTH immunity!`,
+      players: [royalName, duelistKnight],
+      badgeText: 'HAPPY ENDING!', badgeClass: 'green', tag: 'princess-pride',
+    });
+  } else {
+    result.immunityWinner = duel.winner;
+    popDelta(duel.winner, 3);
+    popDelta(duel.loser, 1);
+    addBond(royalName, duelistKnight, duel.narrow ? -1 : -2);
+    ep.campEvents[campKey].post.push({
+      text: `${duel.winner} won the final duel and claimed immunity in The Princess Pride!`,
+      players: [duel.winner],
+      badgeText: 'IMMUNITY!', badgeClass: 'green', tag: 'princess-pride',
+    });
+  }
 
   // ── ROMANCE HOOKS ──
   const _romActive = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
@@ -1264,7 +1399,9 @@ export function simulatePrincessPride(ep) {
     ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + Math.max(1, active.length - (idx >= 0 ? idx : active.length));
   }
   if (duel.winner) {
-    ep.chalMemberScores[duel.winner] = (ep.chalMemberScores[duel.winner] || 0) + active.length + 5;
+    // Immunity winner MUST be #1 — add enough to guarantee it
+    const maxOtherScore = Math.max(0, ...Object.entries(ep.chalMemberScores).filter(([n]) => n !== duel.winner).map(([, s]) => s));
+    ep.chalMemberScores[duel.winner] = Math.max((ep.chalMemberScores[duel.winner] || 0), maxOtherScore) + active.length + 5;
   }
   // Royal gets points for advantage quality
   if (royalName) {
@@ -1760,6 +1897,211 @@ function css() {
   .pp-event-red .pp-event-badge{background:rgba(220,38,38,0.15);color:#dc2626}
   .pp-event-amber{border-left-color:var(--royal-gold)}
   .pp-event-amber .pp-event-badge{background:rgba(234,179,8,0.15);color:#b45309}
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ═══ VISUAL OVERDRIVE — FAIRY TALE ENHANCEMENTS ═══    */
+  /* ═══════════════════════════════════════════════════════ */
+
+  /* ── 1. STORYBOOK NARRATOR SCROLL ── */
+  .pp-scroll{position:relative;
+    background:linear-gradient(180deg,#f5e1b0 0%,var(--parchment) 8%,var(--parchment) 92%,#f5e1b0 100%);
+    box-shadow:
+      inset 0 12px 18px -8px rgba(160,120,60,0.35),
+      inset 0 -12px 18px -8px rgba(160,120,60,0.35),
+      0 4px 12px rgba(0,0,0,0.15);
+    border:2px solid #c9a84c;border-radius:8px;overflow:hidden}
+  .pp-scroll::before,.pp-scroll::after{content:'';position:absolute;left:0;right:0;height:18px;pointer-events:none;z-index:2}
+  .pp-scroll::before{top:0;background:linear-gradient(180deg,rgba(180,140,70,0.25),transparent);border-radius:8px 8px 0 0}
+  .pp-scroll::after{bottom:0;background:linear-gradient(0deg,rgba(180,140,70,0.25),transparent);border-radius:0 0 8px 8px}
+  .pp-scroll .pp-beat-title{font-family:'Dancing Script',cursive;font-style:italic;font-size:19px;font-weight:700;
+    color:#5c3a12;text-align:center;border-bottom:1px dashed rgba(180,140,70,0.4)}
+  .pp-scroll .pp-caption{font-family:'Dancing Script',cursive;font-size:15px;color:#7a5a2c}
+  .pp-scroll-reveal{max-height:0;opacity:0;overflow:hidden;
+    transition:max-height 0.8s ease-out,opacity 0.6s ease-out 0.15s}
+  .pp-scroll-reveal.pp-revealed,.pp-scroll-reveal[style*="display: "],.pp-scroll-reveal:not([style*="display:none"]){max-height:600px;opacity:1}
+
+  /* ── 2. CLASS-COLORED PORTRAIT GLOW ── */
+  .pp-glow-knight .pp-hero-photo,
+  .pp-glow-knight>img:first-child{box-shadow:0 0 10px rgba(220,38,38,0.5),0 0 20px rgba(220,38,38,0.25);
+    animation:pp-glow-pulse-knight 2s ease-in-out infinite;will-change:box-shadow}
+  .pp-glow-mage .pp-hero-photo,
+  .pp-glow-mage>img:first-child{box-shadow:0 0 10px rgba(124,58,237,0.5),0 0 20px rgba(124,58,237,0.25);
+    animation:pp-glow-pulse-mage 2s ease-in-out infinite;will-change:box-shadow}
+  .pp-glow-rogue .pp-hero-photo,
+  .pp-glow-rogue>img:first-child{box-shadow:0 0 10px rgba(71,85,105,0.5),0 0 20px rgba(71,85,105,0.25);
+    animation:pp-glow-pulse-rogue 2s ease-in-out infinite;will-change:box-shadow}
+  .pp-glow-bard .pp-hero-photo,
+  .pp-glow-bard>img:first-child{box-shadow:0 0 10px rgba(236,72,153,0.5),0 0 20px rgba(236,72,153,0.25);
+    animation:pp-glow-pulse-bard 2s ease-in-out infinite;will-change:box-shadow}
+  .pp-glow-barbarian .pp-hero-photo,
+  .pp-glow-barbarian>img:first-child{box-shadow:0 0 10px rgba(180,83,9,0.5),0 0 20px rgba(180,83,9,0.25);
+    animation:pp-glow-pulse-barbarian 2s ease-in-out infinite;will-change:box-shadow}
+  .pp-glow-ranger .pp-hero-photo,
+  .pp-glow-ranger>img:first-child{box-shadow:0 0 10px rgba(22,163,74,0.5),0 0 20px rgba(22,163,74,0.25);
+    animation:pp-glow-pulse-ranger 2s ease-in-out infinite;will-change:box-shadow}
+
+  @keyframes pp-glow-pulse-knight{0%,100%{box-shadow:0 0 10px rgba(220,38,38,0.5),0 0 20px rgba(220,38,38,0.25)}50%{box-shadow:0 0 18px rgba(220,38,38,0.7),0 0 35px rgba(220,38,38,0.35)}}
+  @keyframes pp-glow-pulse-mage{0%,100%{box-shadow:0 0 10px rgba(124,58,237,0.5),0 0 20px rgba(124,58,237,0.25)}50%{box-shadow:0 0 18px rgba(124,58,237,0.7),0 0 35px rgba(124,58,237,0.35)}}
+  @keyframes pp-glow-pulse-rogue{0%,100%{box-shadow:0 0 10px rgba(71,85,105,0.5),0 0 20px rgba(71,85,105,0.25)}50%{box-shadow:0 0 18px rgba(71,85,105,0.7),0 0 35px rgba(71,85,105,0.35)}}
+  @keyframes pp-glow-pulse-bard{0%,100%{box-shadow:0 0 10px rgba(236,72,153,0.5),0 0 20px rgba(236,72,153,0.25)}50%{box-shadow:0 0 18px rgba(236,72,153,0.7),0 0 35px rgba(236,72,153,0.35)}}
+  @keyframes pp-glow-pulse-barbarian{0%,100%{box-shadow:0 0 10px rgba(180,83,9,0.5),0 0 20px rgba(180,83,9,0.25)}50%{box-shadow:0 0 18px rgba(180,83,9,0.7),0 0 35px rgba(180,83,9,0.35)}}
+  @keyframes pp-glow-pulse-ranger{0%,100%{box-shadow:0 0 10px rgba(22,163,74,0.5),0 0 20px rgba(22,163,74,0.25)}50%{box-shadow:0 0 18px rgba(22,163,74,0.7),0 0 35px rgba(22,163,74,0.35)}}
+
+  /* ── 3. ANIMATED PERFORMANCE BADGES ── */
+  .pp-perf-nailed{animation:pp-sparkle-burst 1.2s ease-out;will-change:transform,box-shadow}
+  .pp-perf-rough{animation:pp-crack-shake 0.5s ease-in-out}
+  .pp-perf-solid{animation:pp-gentle-glow 2s ease-in-out infinite;will-change:box-shadow}
+  .pp-perf-meh{opacity:0.6}
+
+  @keyframes pp-sparkle-burst{
+    0%{transform:scale(1);box-shadow:none}
+    30%{transform:scale(1.25);box-shadow:0 0 12px rgba(234,179,8,0.6),0 0 24px rgba(234,179,8,0.3)}
+    60%{transform:scale(1.05);box-shadow:0 0 6px rgba(234,179,8,0.3)}
+    100%{transform:scale(1);box-shadow:none}}
+  @keyframes pp-crack-shake{
+    0%,100%{transform:translateX(0)}
+    10%{transform:translateX(-3px)}
+    20%{transform:translateX(4px)}
+    30%{transform:translateX(-4px)}
+    40%{transform:translateX(3px)}
+    50%{transform:translateX(-2px)}
+    60%{transform:translateX(2px)}
+    70%{transform:translateX(-1px)}
+    80%{transform:translateX(1px)}}
+  @keyframes pp-gentle-glow{
+    0%,100%{box-shadow:0 0 4px rgba(34,197,94,0.2)}
+    50%{box-shadow:0 0 10px rgba(34,197,94,0.5)}}
+
+  /* ── 4. ENCHANTED ITEM CARDS ── */
+  .pp-enchanted-item{position:relative;overflow:hidden;
+    border:2px solid transparent;border-radius:8px;
+    background-clip:padding-box}
+  .pp-enchanted-item::before{content:'';position:absolute;inset:-2px;z-index:0;border-radius:10px;
+    background:linear-gradient(90deg,#eab308,#fbbf24,#f59e0b,#eab308,#fbbf24);
+    background-size:300% 100%;animation:pp-shimmer-border 3s linear infinite}
+  .pp-enchanted-item::after{content:'';position:absolute;inset:2px;z-index:0;border-radius:6px;
+    background:linear-gradient(180deg,var(--parchment),#fef9ef)}
+  .pp-enchanted-item>*{position:relative;z-index:1}
+  .pp-enchanted-item .pp-phase-title{text-shadow:0 0 12px rgba(234,179,8,0.5),0 2px 4px rgba(0,0,0,0.3)}
+
+  @keyframes pp-shimmer-border{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+
+  /* Enchanted sword glow on emoji */
+  .pp-sword-glow{text-shadow:0 0 8px rgba(234,179,8,0.6),0 0 16px rgba(234,179,8,0.3);
+    animation:pp-sword-pulse 2s ease-in-out infinite;display:inline-block}
+  @keyframes pp-sword-pulse{0%,100%{text-shadow:0 0 8px rgba(234,179,8,0.6),0 0 16px rgba(234,179,8,0.3);transform:scale(1)}
+    50%{text-shadow:0 0 14px rgba(234,179,8,0.8),0 0 28px rgba(234,179,8,0.5);transform:scale(1.1)}}
+
+  /* Golden armor cascading particles */
+  .pp-armor-particles{position:relative}
+  .pp-armor-particles::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+    box-shadow:
+      inset 12px 8px 0 -6px rgba(234,179,8,0.08),
+      inset -15px 12px 0 -6px rgba(251,191,36,0.06),
+      inset 8px -10px 0 -5px rgba(245,158,11,0.05),
+      inset -10px -14px 0 -6px rgba(234,179,8,0.07),
+      inset 20px 20px 0 -8px rgba(251,191,36,0.04),
+      inset -20px 25px 0 -8px rgba(245,158,11,0.04);
+    animation:pp-armor-cascade 3s ease-in-out infinite}
+  @keyframes pp-armor-cascade{0%,100%{opacity:0.5}50%{opacity:0.8}}
+
+  /* ── 5. DUEL VS SCREEN ENHANCEMENT ── */
+  .pp-duel-tension{position:relative;overflow:hidden}
+  .pp-duel-tension::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;opacity:0.08;
+    background:repeating-linear-gradient(45deg,transparent,transparent 8px,var(--royal-gold) 8px,var(--royal-gold) 10px);
+    background-size:200% 200%;animation:pp-speed-lines 1s linear infinite}
+  .pp-duel-tension .pp-duel-vs{animation:pp-vs-pulse 1.5s ease-in-out infinite;
+    text-shadow:0 0 12px rgba(220,38,38,0.6);color:#dc2626;
+    background:linear-gradient(180deg,#fff5f5,#fef3c7);will-change:transform}
+  .pp-duel-tension .pp-duel-vs::before{content:'';position:absolute;inset:-8px;z-index:-1;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cline x1='5' y1='55' x2='55' y2='5' stroke='%23eab308' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='55' y1='55' x2='5' y2='5' stroke='%23eab308' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;opacity:0.3}
+
+  @keyframes pp-speed-lines{0%{background-position:0% 0%}100%{background-position:28px 28px}}
+  @keyframes pp-vs-pulse{0%,100%{transform:translate(-50%,-50%) scale(1);text-shadow:0 0 12px rgba(220,38,38,0.6)}
+    50%{transform:translate(-50%,-50%) scale(1.15);text-shadow:0 0 24px rgba(220,38,38,0.9),0 0 40px rgba(220,38,38,0.4)}}
+
+  /* ── 6. HAPPY ENDING ENHANCEMENT ── */
+  .pp-happy-ending{position:relative;overflow:hidden;
+    background:linear-gradient(135deg,rgba(236,72,153,0.15),rgba(234,179,8,0.1),rgba(236,72,153,0.15));
+    background-size:200% 200%;animation:pp-warm-shift 4s ease-in-out infinite}
+  .pp-happy-ending::before{content:'❤️';position:absolute;font-size:18px;opacity:0;
+    top:80%;left:20%;z-index:0;animation:pp-heart-float 3s ease-out infinite}
+  .pp-happy-ending::after{content:'❤️';position:absolute;font-size:14px;opacity:0;
+    top:75%;left:65%;z-index:0;animation:pp-heart-float 3.5s ease-out 0.8s infinite}
+  .pp-happy-ending .pp-immunity-name::before{content:'❤️ ';font-size:14px}
+  .pp-happy-ending .pp-immunity-name::after{content:' ❤️';font-size:14px}
+  /* Extra hearts via box-shadow particles */
+  .pp-happy-ending>*{position:relative;z-index:1}
+
+  @keyframes pp-warm-shift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  @keyframes pp-heart-float{
+    0%{opacity:0;transform:translateY(0) scale(0.5)}
+    20%{opacity:0.7;transform:translateY(-20px) scale(1)}
+    80%{opacity:0.4;transform:translateY(-80px) scale(0.8)}
+    100%{opacity:0;transform:translateY(-120px) scale(0.5)}}
+
+  /* ── 7. TITLE ANIMATION ── */
+  .pp-title-animated{animation:pp-title-reveal 2s ease-out forwards;will-change:clip-path}
+  @keyframes pp-title-reveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+
+  /* ── 8. DRAGON FIRE ENHANCEMENT ── */
+  .pp-shell.pp-theme-dragon .pp-dragon-fire{position:absolute;bottom:0;left:0;right:0;height:200px;pointer-events:none;z-index:1;overflow:hidden}
+  .pp-dragon-fire-col{position:absolute;bottom:0;width:120px;height:180px;pointer-events:none;
+    background:
+      radial-gradient(ellipse at 50% 100%,rgba(255,200,0,0.4) 0%,rgba(255,100,0,0.2) 30%,transparent 60%),
+      radial-gradient(ellipse at 50% 85%,rgba(255,150,0,0.3) 0%,rgba(255,50,0,0.15) 25%,transparent 55%);
+    animation:pp-dragon-fire-move var(--pp-fire-dur,2.5s) ease-in-out infinite;will-change:transform,opacity}
+  .pp-dragon-fire-col:nth-child(1){left:15%;--pp-fire-dur:2.2s;animation-delay:-0.3s}
+  .pp-dragon-fire-col:nth-child(2){left:42%;--pp-fire-dur:2.8s;height:200px;width:140px}
+  .pp-dragon-fire-col:nth-child(3){left:70%;--pp-fire-dur:2.5s;animation-delay:-1s}
+
+  @keyframes pp-dragon-fire-move{
+    0%,100%{transform:scaleY(1) scaleX(1);opacity:0.7}
+    25%{transform:scaleY(1.15) scaleX(0.95);opacity:0.9}
+    50%{transform:scaleY(0.9) scaleX(1.05);opacity:0.6}
+    75%{transform:scaleY(1.1) scaleX(0.98);opacity:0.85}}
+
+  /* Enhanced embers for dragon theme */
+  .pp-shell.pp-theme-dragon .pp-lantern{width:4px;height:4px;
+    box-shadow:0 0 6px rgba(249,115,22,0.8),0 0 12px rgba(239,68,68,0.5),0 0 20px rgba(234,179,8,0.2);
+    animation:pp-ember-enhanced var(--pp-em-dur,3s) ease-out infinite}
+  .pp-shell.pp-theme-dragon .pp-lantern:nth-child(2){--pp-em-dur:2.2s;background:rgba(255,200,0,0.9)}
+  .pp-shell.pp-theme-dragon .pp-lantern:nth-child(3){--pp-em-dur:3.5s;background:rgba(255,100,0,0.8)}
+
+  @keyframes pp-ember-enhanced{
+    0%{opacity:1;transform:translateY(0) translateX(0) scale(1);filter:blur(0)}
+    30%{opacity:0.9;transform:translateY(-40px) translateX(8px) scale(0.9);filter:blur(0.5px)}
+    60%{opacity:0.5;transform:translateY(-100px) translateX(-5px) scale(0.6);filter:blur(1px)}
+    100%{opacity:0;transform:translateY(-180px) translateX(10px) scale(0.2);filter:blur(1.5px)}}
+
+  /* Bottom fire glow pulse for dragon */
+  .pp-shell.pp-theme-dragon .pp-dragon-glow{position:absolute;bottom:0;left:0;right:0;height:80px;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 50% 100%,rgba(239,68,68,0.25) 0%,rgba(249,115,22,0.15) 40%,transparent 70%);
+    animation:pp-dragon-glow-pulse 2s ease-in-out infinite}
+  @keyframes pp-dragon-glow-pulse{0%,100%{opacity:0.6}50%{opacity:1}}
+
+  /* ═══ REDUCED MOTION ═══ */
+  @media(prefers-reduced-motion:reduce){
+    .pp-glow-knight .pp-hero-photo,.pp-glow-knight>img:first-child,
+    .pp-glow-mage .pp-hero-photo,.pp-glow-mage>img:first-child,
+    .pp-glow-rogue .pp-hero-photo,.pp-glow-rogue>img:first-child,
+    .pp-glow-bard .pp-hero-photo,.pp-glow-bard>img:first-child,
+    .pp-glow-barbarian .pp-hero-photo,.pp-glow-barbarian>img:first-child,
+    .pp-glow-ranger .pp-hero-photo,.pp-glow-ranger>img:first-child{animation:none !important}
+    .pp-perf-nailed,.pp-perf-rough,.pp-perf-solid{animation:none !important}
+    .pp-enchanted-item::before{animation:none !important}
+    .pp-sword-glow{animation:none !important}
+    .pp-armor-particles::before{animation:none !important}
+    .pp-duel-tension::before{animation:none !important}
+    .pp-duel-tension .pp-duel-vs{animation:none !important}
+    .pp-happy-ending{animation:none !important}
+    .pp-happy-ending::before,.pp-happy-ending::after{animation:none !important}
+    .pp-title-animated{animation:none !important;clip-path:none !important}
+    .pp-dragon-fire-col{animation:none !important;opacity:0.5 !important}
+    .pp-shell.pp-theme-dragon .pp-dragon-glow{animation:none !important}
+    .pp-shell.pp-theme-dragon .pp-lantern{animation:none !important}
+    .pp-scroll-reveal{transition:none !important;max-height:none !important;opacity:1 !important}
+  }
   </style>`;
 }
 
@@ -1771,7 +2113,8 @@ function _ppShell(content, ep, theme) {
     const top = 5 + Math.random() * 85;
     return `<div class="pp-lantern" style="left:${left}%;top:${top}%"></div>`;
   }).join('');
-  return `${css()}<div class="pp-shell ${theme ? 'pp-theme-' + theme : 'pp-theme-ceremony'}">${lanterns}${content}</div>`;
+  const dragonFire = theme === 'dragon' ? `<div class="pp-dragon-fire"><div class="pp-dragon-fire-col"></div><div class="pp-dragon-fire-col"></div><div class="pp-dragon-fire-col"></div></div><div class="pp-dragon-glow"></div>` : '';
+  return `${css()}<div class="pp-shell ${theme ? 'pp-theme-' + theme : 'pp-theme-ceremony'}">${lanterns}${dragonFire}${content}</div>`;
 }
 
 function _getPrevPhaseScores(pp, phaseIdx) {
@@ -1816,7 +2159,7 @@ function _buildSidebar(pp, revealedElims, scores, currentPhaseIdx) {
 
   // Advantages — only show after they've been awarded (sword after phase 2, armor after phase 4)
   const showSword = currentPhaseIdx >= 2 && pp.swordGiven?.recipient;
-  const showArmor = currentPhaseIdx >= 4 && pp.armorGiven?.recipient;
+  const showArmor = currentPhaseIdx >= 3 && pp.armorGiven?.recipient;
   const showSave = pp.royalSaveUsed && pp.royalSaveBeat;
   if (showSword || showArmor || showSave || currentPhaseIdx >= 1) {
     sb += `<div class="pp-side-sec">ADVANTAGES</div>`;
@@ -1851,7 +2194,7 @@ export function rpBuildPrincessPrideTitleCard(ep) {
   return _ppShell(`
     <div class="pp-cover">
       <div class="pp-subtitle">TOTAL DRAMA PRESENTS</div>
-      <div class="pp-title" style="margin:12px 0">THE<br>PRINCESS PRIDE</div>
+      <div class="pp-title pp-title-animated" style="margin:12px 0">THE<br>PRINCESS PRIDE</div>
       <div class="pp-subtitle">A ${host().toUpperCase()} PRODUCTION</div>
       <div class="pp-caption" style="margin-top:16px;color:rgba(255,255,255,0.7);font-size:14px">
         GLASS SLIPPER &middot; ENCHANTED FOREST &middot; TROLL BRIDGE &middot; DRAGON'S LAIR &middot; TOWER RESCUE
@@ -1951,7 +2294,7 @@ function _buildPhaseScreen(ep, phaseIdx, panelClass) {
 
   for (const beat of phase.beats) {
     // Beat title card
-    steps.push(`<div class="pp-panel ${panelClass}">
+    steps.push(`<div class="pp-panel ${panelClass} pp-scroll">
       <div class="pp-beat-title">${beat.label}</div>
       <div class="pp-caption" style="font-style:italic;margin-top:4px">${
         beat.label.includes('Navigate') ? 'The path shifts. The forest whispers. Only the perceptive will find the way...' :
@@ -1978,24 +2321,40 @@ function _buildPhaseScreen(ep, phaseIdx, panelClass) {
       const pos = beat.ranked.indexOf(r);
       const isFirst = pos === 0;
       // Performance badge
-      let perfBadge, perfColor, borderColor;
-      if (isFirst) { perfBadge = '⭐ NAILED IT'; perfColor = '#16a34a'; borderColor = 'var(--forest-green)'; }
-      else if (ratio >= 0.75) { perfBadge = '✓ SOLID'; perfColor = '#22c55e'; borderColor = '#22c55e'; }
-      else if (ratio >= 0.6) { perfBadge = '~ OK'; perfColor = '#a3a3a3'; borderColor = '#a3a3a3'; }
-      else if (ratio >= 0.35) { perfBadge = '⚠ MEH'; perfColor = '#f59e0b'; borderColor = '#f59e0b'; }
-      else { perfBadge = '✗ ROUGH'; perfColor = '#ef4444'; borderColor = '#ef4444'; }
+      let perfBadge, perfColor, borderColor, perfClass;
+      if (isFirst) { perfBadge = '⭐ NAILED IT'; perfColor = '#16a34a'; borderColor = 'var(--forest-green)'; perfClass = 'pp-perf-nailed'; }
+      else if (ratio >= 0.75) { perfBadge = '✓ SOLID'; perfColor = '#22c55e'; borderColor = '#22c55e'; perfClass = 'pp-perf-solid'; }
+      else if (ratio >= 0.6) { perfBadge = '~ OK'; perfColor = '#a3a3a3'; borderColor = '#a3a3a3'; perfClass = 'pp-perf-meh'; }
+      else if (ratio >= 0.35) { perfBadge = '⚠ MEH'; perfColor = '#f59e0b'; borderColor = '#f59e0b'; perfClass = 'pp-perf-meh'; }
+      else { perfBadge = '✗ ROUGH'; perfColor = '#ef4444'; borderColor = '#ef4444'; perfClass = 'pp-perf-rough'; }
 
-      steps.push(`<div class="pp-panel ${panelClass}" style="padding:14px 18px;border-left:4px solid ${borderColor}">
+      const glowClass = r.cls ? `pp-glow-${r.cls}` : '';
+      steps.push(`<div class="pp-panel ${panelClass} ${glowClass}" style="padding:14px 18px;border-left:4px solid ${borderColor}">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
           ${portrait(r.name, 36)}
           <div style="flex:1">
             <div style="font-family:'Cinzel',serif;font-weight:700;font-size:15px;color:${cls?.color || '#333'}">${r.name}</div>
             <span class="pp-class-badge" style="background:${cls?.color || '#888'}22;color:${cls?.color || '#333'};border:1px solid ${cls?.color || '#888'}44">${cls?.icon || ''} ${cls?.label || ''}</span>
           </div>
-          <span style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:${perfColor};padding:3px 8px;border:1px solid ${perfColor}44;border-radius:4px;background:${perfColor}11;letter-spacing:1px">${perfBadge}</span>
+          <span class="${perfClass}" style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:${perfColor};padding:3px 8px;border:1px solid ${perfColor}44;border-radius:4px;background:${perfColor}11;letter-spacing:1px">${perfBadge}</span>
         </div>
         <div class="pp-narration">${r.text}</div>
       </div>`);
+    }
+
+    // Class combo moments
+    if (beat.combos?.length) {
+      for (const combo of beat.combos) {
+        const clsA = CLASSES[pp.classMap?.[combo.a]];
+        const clsB = CLASSES[pp.classMap?.[combo.b]];
+        steps.push(`<div class="pp-event pp-event-green">
+          <span class="pp-event-badge" style="background:rgba(234,179,8,0.15);color:#b45309">TEAMWORK</span>
+          <div style="display:flex;gap:4px;margin:4px 0">${portrait(combo.a, 24)}${portrait(combo.b, 24)}
+            <span style="font-size:10px;color:#888">${clsA?.icon || ''} ${clsA?.label || ''} + ${clsB?.icon || ''} ${clsB?.label || ''}</span>
+          </div>
+          ${combo.text}
+        </div>`);
+      }
     }
 
     // Eliminations — location-specific curse animation
@@ -2037,16 +2396,38 @@ function _buildPhaseScreen(ep, phaseIdx, panelClass) {
 
   // Advantage given after phase 2 (sword) or phase 4 (armor)
   if (phaseIdx === 1 && pp.swordGiven.recipient) {
-    steps.push(`<div class="pp-panel pp-panel-royal">
-      <div class="pp-phase-title">⚔️ The Enchanted Sword</div>
+    steps.push(`<div class="pp-panel pp-panel-royal pp-enchanted-item">
+      <div class="pp-phase-title"><span class="pp-sword-glow">⚔️</span> The Enchanted Sword</div>
       <div class="pp-narration">${pp.swordGiven.text}</div>
     </div>`);
   }
   if (phaseIdx === 3 && pp.armorGiven.recipient) {
-    steps.push(`<div class="pp-panel pp-panel-royal">
+    steps.push(`<div class="pp-panel pp-panel-royal pp-enchanted-item pp-armor-particles">
       <div class="pp-phase-title">🛡️ The Golden Armor</div>
       <div class="pp-narration">${pp.armorGiven.text}</div>
     </div>`);
+    // Show who fell short on the tower stairs
+    if (pp.towerFallouts?.length) {
+      for (const fo of pp.towerFallouts) {
+        const foCls = CLASSES[fo.cls];
+        steps.push(`<div class="pp-panel pp-panel-elim pp-elim-tower">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            ${portrait(fo.name, 32)}
+            <span style="font-family:'Cinzel',serif;font-weight:700;font-size:14px;color:#a78bfa">FELL SHORT</span>
+            <span style="font-weight:700;color:#ddd">${fo.name}</span>
+            <span class="pp-class-badge" style="background:${foCls?.color || '#888'}22;color:${foCls?.color || '#ccc'};border:1px solid ${foCls?.color || '#888'}44;font-size:9px">${foCls?.icon || ''} ${foCls?.label || ''}</span>
+          </div>
+          <div class="pp-narration" style="color:#ccc">${fo.text}</div>
+        </div>`);
+      }
+      const duelistName = pp.duel?.winner === pp.royalName ? pp.duel?.loser : pp.duel?.winner;
+      if (duelistName) {
+        steps.push(`<div class="pp-panel pp-panel-duel" style="text-align:center">
+          <div class="pp-phase-title">🏰 The Summit</div>
+          <div class="pp-narration" style="font-size:16px">Only one knight had the strength to reach the top. <b>${duelistName}</b> stood alone before the tower door, chest heaving, blade ready.</div>
+        </div>`);
+      }
+    }
   }
 
   const total = steps.length;
@@ -2094,13 +2475,32 @@ export function rpBuildPrincessPrideDuel(ep) {
 
   const steps = [];
 
-  // Duel intro — the betrayal reveal
+
+  const duelistKnight = duel.winner === pp.royalName ? duel.loser : duel.winner;
+
+  // Chris intervention
+  const chrisTexts = [
+    `${host()} appeared on the tower balcony, grinning. "Oh, you thought rescuing the ${pp.royalTitle.toLowerCase()} was the END? That's adorable." He tossed a second sword into the room. "Here's the REAL challenge: ${pp.royalTitle} ${pp.royalName} vs. the knight who made it to the top. Winner gets immunity. Loser gets... well, a great story for the confessional."`,
+    `"Hold on, hold on, HOLD ON!" ${host()} slid down a rope from the rafters. "Before any rescuing happens — plot twist!" He snapped his fingers. A second sword materialized in ${pp.royalTitle} ${pp.royalName}'s hands. "The ${pp.royalTitle.toLowerCase()} doesn't NEED saving. The ${pp.royalTitle.toLowerCase()} needs a SPARRING PARTNER. Last one standing wins immunity!"`,
+    `${host()}'s voice echoed through the tower chamber. "Did you really think the fairy tale ended with a rescue? This is TOTAL DRAMA. The fairy tale ends with a SWORD FIGHT." ${pp.royalTitle} ${pp.royalName} drew a blade that had been hidden behind the throne. "Surprise."`,
+  ];
+  steps.push(`<div class="pp-panel pp-panel-royal">
+    <div class="pp-narration" style="font-size:15px">${pick(chrisTexts)}</div>
+  </div>`);
+
+  // The betrayal moment — Princess/Prince reveals their true nature
+  const betrayalTexts = [
+    `${duelistKnight} stared at ${pp.royalName}. "Wait... you're fighting ME?" ${pp.royalTitle} ${pp.royalName} tested the blade's weight, smiling. "I've been watching every fight. Every stumble. Every weakness. I know exactly how to beat you." ${duelistKnight} gripped ${pronouns(duelistKnight).posAdj} sword tighter. "Then let's see if watching is the same as doing."`,
+    `The room fell silent. ${duelistKnight} had survived the forest, the troll, the dragon, and the tower — all to rescue ${pp.royalTitle} ${pp.royalName}. And now ${pp.royalName} was pointing a sword at ${pronouns(duelistKnight).obj}. "Nothing personal," ${pp.royalName} said. It was very personal. "Immunity is immunity."`,
+    `${pp.royalTitle} ${pp.royalName} descended from the throne, blade in hand. "You fought through an entire kingdom to reach me. I respect that." A pause. "But respect doesn't mean I'm giving you immunity." ${duelistKnight} watched ${pp.royalName}'s stance — practiced, confident, FRESH. This was going to hurt.`,
+  ];
   steps.push(`<div class="pp-panel pp-panel-duel">
+    <div class="pp-narration" style="font-size:15px">${pick(betrayalTexts)}</div>
+  </div>`);
+
+  // Duel VS card
+  steps.push(`<div class="pp-panel pp-panel-duel pp-duel-tension">
     <div class="pp-phase-title">⚔️ The Betrayal Duel</div>
-    <div class="pp-narration" style="text-align:center;font-size:16px">
-      The top knight reaches the tower summit. ${pp.royalTitle} ${pp.royalName} waits.
-      But this is no rescue. This is a <b>duel for immunity</b>.
-    </div>
     <div class="pp-duel-split">
       <div class="pp-duel-side" style="text-align:center">
         ${portrait(pp.royalName, 56)}
@@ -2137,15 +2537,33 @@ export function rpBuildPrincessPrideDuel(ep) {
   }
 
   // Result + immunity
-  steps.push(`<div class="pp-immunity">
-    ${portrait(duel.winner, 64)}
-    <div class="pp-immunity-name">${duel.winner}</div>
-    <div class="pp-immunity-label">Wins Immunity${duel.narrow ? ' (by a hair!)' : ''}</div>
-    <div class="pp-caption" style="margin-top:8px;color:var(--dark-text)">
-      ${duel.winner === pp.royalName
-        ? `${pp.royalTitle} ${pp.royalName} proved that the crown carries its own kind of strength. The fairy tale ends with royalty on top.`
-        : `The knight toppled the ${pp.royalTitle.toLowerCase()}. In this fairy tale, courage conquers privilege.`}
-    </div>
+  if (duel.happyEnding) {
+    steps.push(`<div class="pp-immunity pp-happy-ending" style="border-color:var(--fairy-pink);box-shadow:0 0 30px rgba(236,72,153,0.3)">
+      <div style="display:flex;gap:16px;justify-content:center;align-items:center">
+        ${portrait(pp.royalName, 56)}
+        <div style="font-size:32px">❤️</div>
+        ${portrait(duel.knightName, 56)}
+      </div>
+      <div class="pp-immunity-name" style="color:var(--fairy-pink)">HAPPY ENDING!</div>
+      <div class="pp-immunity-label">Both Win Immunity</div>
+      <div class="pp-caption" style="margin-top:8px;color:var(--dark-text)">
+        ${pp.royalTitle} ${pp.royalName} and ${duel.knightName} chose love over victory. ${host()} was furious. The audience was in tears. And somehow, against all the rules of competition, they both walked away safe.
+      </div>
+    </div>`);
+  } else {
+    steps.push(`<div class="pp-immunity">
+      ${portrait(duel.winner, 64)}
+      <div class="pp-immunity-name">${duel.winner}</div>
+      <div class="pp-immunity-label">Wins Immunity${duel.narrow ? ' (by a hair!)' : ''}</div>
+      <div class="pp-caption" style="margin-top:8px;color:var(--dark-text)">
+        ${duel.winner === pp.royalName
+          ? `${pp.royalTitle} ${pp.royalName} proved that the crown carries its own kind of strength. The fairy tale ends with royalty on top.`
+          : `The knight toppled the ${pp.royalTitle.toLowerCase()}. In this fairy tale, courage conquers privilege.`}
+      </div>
+    </div>`);
+  }
+  steps.push(`<div class="pp-panel" style="text-align:center">
+    <div class="pp-caption" style="color:var(--dark-text)">The fairy tale has ended. ${duel.happyEnding ? 'And they lived happily ever after... at least until Tribal Council.' : 'But the game continues.'}</div>
   </div>`);
 
   const total = steps.length;

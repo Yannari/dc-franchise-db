@@ -1311,3 +1311,929 @@ function _generateSprintSocial(sprinters, pStates, result, ep, campKey) {
 
   return null;
 }
+
+
+// ══════════════════════════════════════════════════════════════
+// VP (VISUAL PLAYBACK) SYSTEM
+// ══════════════════════════════════════════════════════════════
+
+// ── REVEAL STATE ──
+const _tvState = {};
+function _ensureState(key, total) {
+  if (!_tvState[key]) _tvState[key] = { idx: -1, total };
+  return _tvState[key];
+}
+
+export function spaceOwenRevealNext(screenKey, total) {
+  const st = _ensureState(screenKey, total);
+  if (st.idx < st.total - 1) { st.idx++; }
+  _rebuildCurrentScreen(screenKey);
+  _rebuildSidebar();
+}
+export function spaceOwenRevealAll(screenKey, total) {
+  const st = _ensureState(screenKey, total);
+  st.idx = st.total - 1;
+  _rebuildCurrentScreen(screenKey);
+  _rebuildSidebar();
+}
+window.soRevealNext = spaceOwenRevealNext;
+window.soRevealAll = spaceOwenRevealAll;
+
+function _rebuildCurrentScreen(screenKey) {
+  const el = document.querySelector(`[data-screen-key="${screenKey}"]`);
+  if (!el) return;
+  const scrollTop = el.scrollTop;
+  const builder = window._soScreenBuilders?.[screenKey];
+  if (builder) {
+    const ep = window._soEp;
+    if (ep) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = builder(ep);
+      const inner = tmp.querySelector(`[data-screen-key="${screenKey}"]`);
+      if (inner) {
+        el.innerHTML = inner.innerHTML;
+      }
+    }
+  }
+  el.scrollTop = scrollTop;
+}
+
+function _rebuildSidebar() {
+  const sidebarEl = document.getElementById('so-sidebar');
+  if (!sidebarEl) return;
+  const shell = sidebarEl.closest('.so-shell');
+  const phase = shell?.dataset?.phase || '';
+  const data = window._soData;
+  if (!data) return;
+  sidebarEl.innerHTML = _buildSidebarContent(data, phase);
+}
+
+// ── CSS ──
+function _css() {
+  return `<style>
+/* ═══ SPACE OWEN VP ═══ */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700&display=swap');
+
+.so-shell{position:relative;display:flex;gap:0;min-height:520px;font-family:'Exo 2','Segoe UI',sans-serif;color:#e0e8f0;background:#0a0e1a;border-radius:12px;overflow:hidden}
+.so-shell *{box-sizing:border-box}
+.so-main{flex:1;padding:18px 20px 18px 20px;overflow-y:auto;position:relative;z-index:1}
+.so-sidebar{width:240px;min-width:240px;background:rgba(0,229,255,0.04);border-left:2px solid rgba(0,229,255,0.15);padding:12px 10px;overflow-y:auto;font-size:0.82rem;position:relative;z-index:1}
+
+/* Nebula starfield background */
+.so-shell::before{content:'';position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 600px 400px at 20% 30%, rgba(107,47,160,0.35), transparent),
+    radial-gradient(ellipse 500px 350px at 80% 70%, rgba(26,79,122,0.4), transparent),
+    radial-gradient(ellipse 300px 300px at 60% 20%, rgba(196,75,170,0.2), transparent),
+    radial-gradient(circle 2px at 15% 25%, #fff, transparent),
+    radial-gradient(circle 1px at 35% 55%, rgba(0,200,224,0.8), transparent),
+    radial-gradient(circle 1.5px at 55% 15%, #fff, transparent),
+    radial-gradient(circle 1px at 75% 45%, rgba(0,200,224,0.6), transparent),
+    radial-gradient(circle 2px at 90% 80%, #fff, transparent),
+    radial-gradient(circle 1px at 10% 85%, rgba(0,200,224,0.7), transparent),
+    radial-gradient(circle 1.5px at 45% 90%, #fff, transparent),
+    radial-gradient(circle 1px at 65% 65%, rgba(0,229,255,0.5), transparent),
+    radial-gradient(circle 1px at 25% 70%, #fff, transparent),
+    #0a0e1a;
+  animation:so-nebulaDrift 40s ease-in-out infinite alternate}
+@keyframes so-nebulaDrift{0%{background-position:0 0}100%{background-position:30px -20px}}
+
+/* CRT scan lines */
+.so-shell::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,0.02) 2px,rgba(0,229,255,0.02) 4px);
+  animation:so-scanScroll 8s linear infinite}
+@keyframes so-scanScroll{0%{background-position:0 0}100%{background-position:0 100px}}
+
+/* Zone-specific backgrounds */
+.so-shell.so-zerog::before{background:
+  radial-gradient(ellipse 600px 400px at 20% 30%, rgba(0,229,255,0.15), transparent),
+  radial-gradient(ellipse 400px 300px at 70% 60%, rgba(107,47,160,0.2), transparent),
+  radial-gradient(circle 2px at 15% 25%, #fff, transparent),
+  radial-gradient(circle 1px at 55% 15%, #fff, transparent),
+  radial-gradient(circle 1.5px at 85% 40%, rgba(0,200,224,0.8), transparent),
+  radial-gradient(circle 1px at 40% 80%, #fff, transparent),
+  #0a0e1a}
+
+.so-shell.so-redalert{border-color:#ff1744}
+.so-shell.so-redalert::before{background:
+  radial-gradient(ellipse 600px 400px at 50% 50%, rgba(255,23,68,0.2), transparent),
+  radial-gradient(ellipse 300px 200px at 20% 80%, rgba(255,23,68,0.15), transparent),
+  radial-gradient(circle 2px at 15% 25%, rgba(255,100,100,0.8), transparent),
+  radial-gradient(circle 1px at 55% 15%, rgba(255,80,80,0.6), transparent),
+  #0a0e1a;
+  animation:so-redPulse 2s ease-in-out infinite}
+@keyframes so-redPulse{0%,100%{opacity:1}50%{opacity:0.7}}
+
+.so-shell.so-reentry::before{background:
+  linear-gradient(135deg, rgba(255,145,0,0.15) 0%, transparent 40%),
+  linear-gradient(225deg, rgba(255,255,255,0.05) 0%, transparent 30%),
+  radial-gradient(ellipse 400px 300px at 50% 50%, rgba(255,145,0,0.2), transparent),
+  #0a0e1a;
+  animation:so-heatGlow 3s ease-in-out infinite}
+@keyframes so-heatGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.15)}}
+
+.so-shell.so-station::before{background:
+  linear-gradient(90deg, rgba(0,230,118,0.05) 0%, transparent 30%),
+  linear-gradient(270deg, rgba(0,229,255,0.05) 0%, transparent 30%),
+  repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(138,155,174,0.08) 80px, rgba(138,155,174,0.08) 82px),
+  #0a0e1a}
+
+.so-shell.so-winner::before{background:
+  radial-gradient(ellipse 500px 400px at 50% 40%, rgba(255,215,0,0.2), transparent),
+  radial-gradient(ellipse 300px 200px at 30% 70%, rgba(0,229,255,0.15), transparent),
+  #0a0e1a}
+
+/* Headers */
+.so-h1{font-family:'Share Tech Mono','Courier New',monospace;font-size:1.5rem;text-align:center;letter-spacing:3px;text-transform:uppercase;
+  color:#00e5ff;text-shadow:0 0 20px rgba(0,229,255,0.6),0 0 40px rgba(0,229,255,0.3);margin:0 0 12px 0;
+  animation:so-glitch 4s ease-in-out infinite}
+@keyframes so-glitch{0%,92%,100%{transform:translateX(0);clip-path:none}93%{transform:translateX(-3px);clip-path:inset(20% 0 60% 0)}95%{transform:translateX(2px);clip-path:inset(50% 0 20% 0)}97%{transform:translateX(0);clip-path:none}}
+
+.so-h2{font-family:'Share Tech Mono','Courier New',monospace;font-size:1.1rem;letter-spacing:2px;color:#ff9100;margin:14px 0 8px 0;text-transform:uppercase;
+  text-shadow:0 0 10px rgba(255,145,0,0.4)}
+.so-h3{font-family:'Share Tech Mono','Courier New',monospace;font-size:0.95rem;color:#00e5ff;margin:10px 0 6px 0;letter-spacing:1px}
+
+/* Astronaut helmet player card */
+.so-helmet{display:inline-flex;align-items:center;gap:8px;background:rgba(0,229,255,0.06);border:3px solid #6b7a8a;border-radius:24px;padding:3px 14px 3px 3px;margin:3px;position:relative;overflow:hidden;transition:border-color 0.3s}
+.so-helmet.so-active{border-color:#00e5ff}
+.so-helmet.so-launched{border-color:#00e676}
+.so-helmet.so-struggling{border-color:#ff9100}
+.so-helmet.so-danger{border-color:#ff1744}
+.so-helmet.so-eliminated{border-color:#3a3f4d;opacity:0.6}
+.so-helmet.so-vomit{border-color:#7CC142}
+.so-helmet-visor{width:38px;height:38px;border-radius:50%;overflow:hidden;position:relative;flex-shrink:0;border:2px solid #6b7a8a}
+.so-helmet-visor img{width:100%;height:100%;object-fit:contain;display:block}
+.so-helmet-visor::after{content:'';position:absolute;inset:0;border-radius:50%;
+  background:linear-gradient(135deg, rgba(0,200,224,0.25) 0%, transparent 50%),
+  repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,200,224,0.06) 2px, rgba(0,200,224,0.06) 4px);
+  pointer-events:none}
+.so-helmet-visor::before{content:'';position:absolute;top:2px;left:4px;width:12px;height:6px;background:linear-gradient(135deg,rgba(255,255,255,0.4),transparent);border-radius:50%;pointer-events:none;transform:rotate(-20deg)}
+.so-helmet.so-eliminated .so-helmet-visor::after{background:linear-gradient(135deg, rgba(60,60,60,0.5) 0%, transparent 50%),linear-gradient(45deg, transparent 45%, rgba(80,80,80,0.5) 46%, rgba(80,80,80,0.5) 54%, transparent 55%)}
+.so-helmet.so-vomit .so-helmet-visor::after{background:radial-gradient(ellipse at 50% 30%, rgba(124,193,66,0.5) 0%, rgba(90,158,47,0.3) 40%, transparent 70%)}
+.so-helmet-name{font-size:0.82rem;font-weight:600;color:#e0e8f0;white-space:nowrap}
+.so-helmet-tag{font-size:0.65rem;font-family:'Share Tech Mono',monospace;padding:1px 5px;border-radius:8px;margin-left:4px}
+
+/* Cards */
+.so-card{background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);border-radius:8px;padding:10px 14px;margin:6px 0;color:#e0e8f0;font-size:0.88rem;line-height:1.5;position:relative}
+.so-card.so-social{border:1px dashed rgba(255,145,0,0.4);background:rgba(255,145,0,0.05)}
+.so-card.so-mole{border:1px dashed rgba(255,23,68,0.4);background:rgba(255,23,68,0.05)}
+.so-card.so-elim{border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08)}
+.so-card.so-launch{border:1px solid rgba(0,230,118,0.3);background:rgba(0,230,118,0.08)}
+.so-card.so-winner-card{border:2px solid rgba(255,215,0,0.5);background:rgba(255,215,0,0.08)}
+.so-card-icon{display:inline-block;margin-right:6px;font-size:1.1rem;vertical-align:middle}
+
+/* Progress bar */
+.so-bar-wrap{height:8px;background:rgba(0,229,255,0.1);border-radius:4px;overflow:hidden;margin:4px 0}
+.so-bar{height:100%;border-radius:4px;transition:width 0.4s ease}
+.so-bar.so-cyan{background:linear-gradient(90deg,#00e5ff,#00b8d4)}
+.so-bar.so-green{background:linear-gradient(90deg,#00e676,#00c853)}
+.so-bar.so-orange{background:linear-gradient(90deg,#ff9100,#ff6d00)}
+.so-bar.so-red{background:linear-gradient(90deg,#ff1744,#d50000)}
+.so-bar.so-slime{background:linear-gradient(90deg,#7CC142,#5A9E2F)}
+
+/* Reveal controls */
+.so-reveal-bar{display:flex;gap:8px;align-items:center;justify-content:center;margin:10px 0;flex-wrap:wrap}
+.so-btn{font-family:'Share Tech Mono',monospace;font-size:0.78rem;padding:5px 14px;border:1px solid rgba(0,229,255,0.3);border-radius:4px;background:rgba(0,229,255,0.1);color:#00e5ff;cursor:pointer;letter-spacing:1px;transition:all 0.2s}
+.so-btn:hover{background:rgba(0,229,255,0.2);border-color:#00e5ff}
+.so-btn.so-btn-orange{border-color:rgba(255,145,0,0.3);background:rgba(255,145,0,0.1);color:#ff9100}
+.so-btn.so-btn-orange:hover{background:rgba(255,145,0,0.2);border-color:#ff9100}
+
+/* Step visibility */
+.so-step{opacity:0;max-height:0;overflow:hidden;transition:opacity 0.4s,max-height 0.5s}
+.so-step.so-visible{opacity:1;max-height:4000px}
+
+/* Host line */
+.so-host{font-style:italic;color:#ff9100;margin:8px 0;padding:8px 12px;border-left:3px solid rgba(255,145,0,0.4);background:rgba(255,145,0,0.04);font-size:0.88rem;border-radius:0 6px 6px 0}
+
+/* Sidebar sections */
+.so-sb-title{font-family:'Share Tech Mono',monospace;font-size:0.75rem;letter-spacing:2px;color:#00e5ff;text-transform:uppercase;margin:0 0 6px 0;padding-bottom:4px;border-bottom:1px solid rgba(0,229,255,0.2)}
+.so-sb-section{margin:10px 0}
+.so-sb-row{display:flex;align-items:center;gap:5px;margin:3px 0;font-size:0.78rem}
+.so-sb-row img{width:22px;height:22px;border-radius:50%;object-fit:contain;flex-shrink:0;border:1.5px solid #6b7a8a}
+.so-sb-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e0e8f0}
+.so-sb-tag{font-family:'Share Tech Mono',monospace;font-size:0.6rem;padding:1px 4px;border-radius:3px;white-space:nowrap}
+.so-sb-tag.so-cyan{background:rgba(0,229,255,0.15);color:#00e5ff}
+.so-sb-tag.so-green{background:rgba(0,230,118,0.15);color:#00e676}
+.so-sb-tag.so-orange{background:rgba(255,145,0,0.15);color:#ff9100}
+.so-sb-tag.so-red{background:rgba(255,23,68,0.15);color:#ff1744}
+.so-sb-tag.so-grey{background:rgba(200,200,200,0.1);color:#888}
+.so-sb-tag.so-slime{background:rgba(124,193,66,0.15);color:#7CC142}
+.so-sb-tag.so-gold{background:rgba(255,215,0,0.15);color:#ffd700}
+
+/* Countdown */
+.so-countdown{font-family:'Share Tech Mono',monospace;font-size:2rem;color:#ff1744;text-align:center;text-shadow:0 0 20px rgba(255,23,68,0.6);letter-spacing:4px;margin:6px 0}
+.so-countdown.so-final{animation:so-countFlash 0.5s ease-in-out infinite}
+@keyframes so-countFlash{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* Oxygen gauge in sidebar */
+.so-gauge{height:100px;width:20px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2);border-radius:10px;overflow:hidden;position:relative;margin:4px auto}
+.so-gauge-fill{position:absolute;bottom:0;left:0;right:0;border-radius:0 0 10px 10px;transition:height 0.5s}
+
+/* Stage indicator */
+.so-stage-dots{display:flex;gap:4px;justify-content:center;margin:6px 0}
+.so-stage-dot{width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,229,255,0.3);background:transparent;transition:all 0.3s}
+.so-stage-dot.so-done{background:#00e676;border-color:#00e676}
+.so-stage-dot.so-current{background:#ff9100;border-color:#ff9100;box-shadow:0 0 8px rgba(255,145,0,0.5)}
+.so-stage-dot.so-future{background:transparent}
+
+/* Fire streaks for re-entry */
+.so-fire-streaks{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.so-fire-streak{position:absolute;width:2px;height:60px;background:linear-gradient(180deg,rgba(255,145,0,0.8),rgba(255,255,255,0.6),transparent);transform:rotate(135deg);animation:so-fireMove 1.5s linear infinite;opacity:0.6}
+@keyframes so-fireMove{0%{transform:rotate(135deg) translateY(-100px)}100%{transform:rotate(135deg) translateY(600px)}}
+
+/* Corridor map for sprint */
+.so-corridor{display:flex;align-items:center;gap:2px;margin:6px 0;padding:4px;background:rgba(138,155,174,0.08);border-radius:4px}
+.so-corridor-seg{flex:1;height:18px;border-radius:2px;position:relative;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.1);font-size:0.55rem;display:flex;align-items:center;justify-content:center;color:rgba(0,229,255,0.5);font-family:'Share Tech Mono',monospace;overflow:hidden}
+.so-corridor-seg.so-cleared{background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3)}
+.so-corridor-dot{position:absolute;width:8px;height:8px;border-radius:50%;border:1px solid #fff;top:50%;transform:translateY(-50%)}
+
+/* Floating animation for zero-G cards */
+.so-float{animation:so-bobFloat 3s ease-in-out infinite}
+@keyframes so-bobFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-4px) rotate(0.5deg)}}
+
+/* Screen shake for red alert */
+.so-shake{animation:so-screenShake 0.3s ease-in-out}
+@keyframes so-screenShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
+
+/* Pod launch */
+.so-pod-launch{animation:so-launchUp 0.8s ease-in forwards}
+@keyframes so-launchUp{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-40px);opacity:0.3}}
+
+/* Hatch burst */
+.so-hatch-burst{animation:so-burstOut 1s ease-out forwards}
+@keyframes so-burstOut{0%{transform:scale(0.8);opacity:0}30%{transform:scale(1.1);opacity:1}100%{transform:scale(1);opacity:1}}
+
+/* Leaderboard */
+.so-lb-row{display:flex;align-items:center;gap:6px;padding:4px 8px;margin:2px 0;border-radius:4px;font-size:0.85rem}
+.so-lb-row.so-first{background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3)}
+.so-lb-rank{font-family:'Share Tech Mono',monospace;width:24px;text-align:center;color:#ff9100}
+.so-lb-name{flex:1;color:#e0e8f0}
+.so-lb-score{font-family:'Share Tech Mono',monospace;color:#00e5ff;font-size:0.8rem}
+.so-lb-tag{font-size:0.6rem;padding:1px 5px;border-radius:6px}
+
+/* Escalation text */
+.so-escalation{text-align:center;font-style:italic;color:#ff9100;margin:8px 0;font-size:0.85rem;opacity:0.9}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  .so-shell::before,.so-shell::after{animation:none!important}
+  .so-h1,.so-float,.so-countdown.so-final,.so-pod-launch,.so-hatch-burst,.so-shake,.so-fire-streak{animation:none!important;transform:none!important}
+  .so-step{transition:none!important}
+  .so-bar{transition:none!important}
+}
+</style>`;
+}
+
+// ── PLAYER HELMET BUILDER ──
+function _helmet(name, statusCls = '', tag = '') {
+  const sl = slug(name);
+  return `<span class="so-helmet ${statusCls}">
+    <span class="so-helmet-visor"><img src="assets/avatars/${sl}.png" alt="${name}" onerror="this.style.display='none'"></span>
+    <span class="so-helmet-name">${name}</span>${tag ? `<span class="so-helmet-tag ${tag.cls || ''}">${tag.text}</span>` : ''}
+  </span>`;
+}
+
+// ── SHELL WRAPPER ──
+function _shell(content, ep, phaseCls = '') {
+  window._soData = ep.spaceOwen;
+  window._soEp = ep;
+  return `${_css()}<div class="so-shell ${phaseCls}" data-phase="${phaseCls}">
+    <div class="so-main">${content}</div>
+    <div class="so-sidebar" id="so-sidebar">${_buildSidebarContent(ep.spaceOwen, phaseCls)}</div>
+  </div>`;
+}
+
+// ── SIDEBAR CONTENT (gated by _tvState) ──
+function _buildSidebarContent(data, phase) {
+  if (!data) return '<div class="so-sb-title">NO DATA</div>';
+  const ps = data.playerStates;
+  const names = Object.keys(ps);
+
+  if (phase === 'so-zerog') return _sidebarZeroG(data, ps, names);
+  if (phase === 'so-redalert') return _sidebarRedAlert(data, ps, names);
+  if (phase === 'so-reentry') return _sidebarReEntry(data, ps, names);
+  if (phase === 'so-station') return _sidebarSprint(data, ps, names);
+  if (phase === 'so-winner') return _sidebarWinner(data, ps, names);
+  // Title card — mission roster
+  return _sidebarRoster(data, ps, names);
+}
+
+function _sidebarRoster(data, ps, names) {
+  let h = '<div class="so-sb-title">MISSION ROSTER</div>';
+  names.forEach(n => {
+    const sl = slug(n);
+    h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag so-cyan">CREW</span></div>`;
+  });
+  h += `<div class="so-sb-section"><div class="so-sb-title">MISSION BRIEF</div><div style="font-size:0.72rem;color:#8a9bae;line-height:1.4">4 Zones. Survive each to advance. Last one standing wins immunity.</div></div>`;
+  return h;
+}
+
+function _sidebarZeroG(data, ps, names) {
+  const st = _tvState['so-zerog'];
+  const revIdx = st ? st.idx : -1;
+  let h = '<div class="so-sb-title">CREW STATUS</div>';
+  // Show adaptation info gated by reveal
+  const adaptData = data.zone1.adaptation || [];
+  names.forEach((n, i) => {
+    const sl = slug(n);
+    const revealed = i <= revIdx;
+    const ad = adaptData.find(a => a.name === n);
+    if (revealed && ad) {
+      const pct = Math.round(ad.score * 10);
+      const barCls = ad.score >= 7 ? 'so-cyan' : ad.score >= 4 ? 'so-orange' : 'so-red';
+      h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag ${ad.score >= 7 ? 'so-cyan' : ad.score >= 4 ? 'so-orange' : 'so-red'}">${ad.attempts} SRCH</span></div>`;
+      h += `<div class="so-bar-wrap" style="margin-left:27px"><div class="so-bar ${barCls}" style="width:${pct}%"></div></div>`;
+      // Components found
+      const searchData = data.zone1.searches?.find(s => s.name === n);
+      if (searchData) {
+        const comps = searchData.finalComponents || [];
+        if (comps.length > 0) {
+          h += `<div style="margin-left:27px;font-size:0.65rem;color:#8a9bae">${comps.map(c => COMPONENT_LABELS[c] || c).join(' ')}</div>`;
+        }
+      }
+    } else {
+      h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag so-grey">???</span></div>`;
+    }
+  });
+  return h;
+}
+
+function _sidebarRedAlert(data, ps, names) {
+  const st = _tvState['so-redalert'];
+  const revIdx = st ? st.idx : -1;
+  const totalRounds = data.zone2.rounds?.length || 5;
+  const roundsRevealed = revIdx + 1;
+
+  let h = '<div class="so-sb-title">EMERGENCY</div>';
+
+  // Countdown
+  const remaining = Math.max(0, totalRounds - roundsRevealed);
+  h += `<div class="so-countdown ${remaining <= 1 ? 'so-final' : ''}">${remaining > 0 ? `T-${remaining}` : 'T-0'}</div>`;
+
+  // Ship integrity (fake gauge)
+  const integrity = Math.max(10, 100 - roundsRevealed * 18);
+  h += `<div style="text-align:center;margin:4px 0"><span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:${integrity < 40 ? '#ff1744' : '#ff9100'}">HULL ${integrity}%</span></div>`;
+  h += `<div class="so-bar-wrap"><div class="so-bar ${integrity < 40 ? 'so-red' : 'so-orange'}" style="width:${integrity}%"></div></div>`;
+
+  h += '<div class="so-sb-section"><div class="so-sb-title">POD STATUS</div>';
+
+  // Show repair progress gated by round
+  names.forEach(n => {
+    const sl = slug(n);
+    const elimData = data.zone2.eliminations?.find(e => e.name === n);
+    const launchData = data.zone2.launches?.find(l => l.name === n);
+    let progress = 0;
+    let status = 'REPAIRING';
+    let statusCls = 'so-cyan';
+
+    // Gather progress from revealed rounds
+    if (roundsRevealed > 0) {
+      const lastRevealed = data.zone2.rounds[Math.min(roundsRevealed - 1, totalRounds - 1)];
+      const repair = lastRevealed?.repairs?.find(r => r.name === n);
+      if (repair) progress = repair.progress;
+    }
+
+    // Only show launch/elim status after all rounds revealed
+    if (revIdx >= totalRounds - 1) {
+      if (elimData) { status = 'STRANDED'; statusCls = 'so-red'; }
+      else if (launchData) { status = 'LAUNCHED'; statusCls = 'so-green'; progress = 100; }
+    }
+
+    const barCls = progress >= 100 ? 'so-green' : progress >= 60 ? 'so-cyan' : progress >= 30 ? 'so-orange' : 'so-red';
+    h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag ${statusCls}">${status}</span></div>`;
+    h += `<div class="so-bar-wrap" style="margin-left:27px"><div class="so-bar ${barCls}" style="width:${progress}%"></div></div>`;
+  });
+  h += '</div>';
+  return h;
+}
+
+function _sidebarReEntry(data, ps, names) {
+  const st = _tvState['so-reentry'];
+  const revIdx = st ? st.idx : -1;
+  const stages = data.zone3.stages || [];
+  const totalStages = stages.length;
+  const stagesRevealed = revIdx + 1;
+
+  let h = '<div class="so-sb-title">RE-ENTRY TELEMETRY</div>';
+
+  // Stage indicator dots
+  h += '<div class="so-stage-dots">';
+  for (let i = 0; i < totalStages; i++) {
+    const cls = i < stagesRevealed ? 'so-done' : (i === stagesRevealed ? 'so-current' : 'so-future');
+    h += `<div class="so-stage-dot ${cls}" title="${REENTRY_TEXT.stages[i]?.name || ''}"></div>`;
+  }
+  h += '</div>';
+
+  // G-force meter (fake)
+  const gForce = Math.min(9, 1 + stagesRevealed * 1.6).toFixed(1);
+  h += `<div style="text-align:center;margin:6px 0"><span style="font-family:'Share Tech Mono',monospace;font-size:0.9rem;color:${parseFloat(gForce) > 5 ? '#ff1744' : '#ff9100'}">${gForce}G</span></div>`;
+
+  h += '<div class="so-sb-section"><div class="so-sb-title">CREW</div>';
+
+  // Only show players who launched (not zone2-eliminated)
+  const launched = names.filter(n => !data.zone2.eliminations?.some(e => e.name === n));
+  launched.forEach(n => {
+    const sl = slug(n);
+    let status = 'IN POD';
+    let statusCls = 'so-cyan';
+
+    // Check vomit status up to revealed stage
+    const elimEntry = data.zone3.eliminations?.find(e => e.name === n);
+    if (elimEntry && stagesRevealed > elimEntry.stageIdx) {
+      status = 'BURNOUT'; statusCls = 'so-slime';
+    } else if (stagesRevealed > 0) {
+      // Check last revealed stage result
+      const lastStage = stages[Math.min(stagesRevealed - 1, stages.length - 1)];
+      const res = lastStage?.results?.find(r => r.name === n);
+      if (res?.status === 'struggling') { status = 'STRUGGLING'; statusCls = 'so-orange'; }
+      else if (res?.status === 'holding') { status = 'HOLDING'; statusCls = 'so-green'; }
+    }
+
+    // Endurance bar
+    const endurance = Math.min(100, stagesRevealed > 0 && statusCls !== 'so-slime' ? (stagesRevealed / totalStages) * 100 : 0);
+    h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag ${statusCls}">${status}</span></div>`;
+    if (statusCls !== 'so-slime') {
+      h += `<div class="so-bar-wrap" style="margin-left:27px"><div class="so-bar so-orange" style="width:${endurance}%"></div></div>`;
+    }
+  });
+  h += '</div>';
+
+  // Burnout section
+  const burnouts = data.zone3.eliminations?.filter(e => stagesRevealed > e.stageIdx) || [];
+  if (burnouts.length > 0) {
+    h += '<div class="so-sb-section"><div class="so-sb-title">BURNOUT</div>';
+    burnouts.forEach(e => {
+      const sl = slug(e.name);
+      h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${e.name}" onerror="this.style.display='none'"><span class="so-sb-name" style="color:#7CC142">${e.name}</span><span class="so-sb-tag so-slime">${e.stage}</span></div>`;
+    });
+    h += '</div>';
+  }
+  return h;
+}
+
+function _sidebarSprint(data, ps, names) {
+  const st = _tvState['so-sprint'];
+  const revIdx = st ? st.idx : -1;
+  const rounds = data.sprint.rounds || [];
+  const roundsRevealed = revIdx + 1;
+  const obstacles = data.sprint.obstacles || [];
+
+  let h = '<div class="so-sb-title">STATION ESCAPE</div>';
+
+  // Corridor map
+  h += '<div class="so-corridor">';
+  obstacles.forEach((ob, i) => {
+    h += `<div class="so-corridor-seg" title="${ob.name}">${ob.icon}</div>`;
+  });
+  h += '</div>';
+
+  h += '<div class="so-sb-section"><div class="so-sb-title">RACE STATUS</div>';
+
+  // Only show sprinters (not eliminated)
+  const sprinters = names.filter(n => ps[n] && !ps[n].eliminatedAt);
+  sprinters.forEach(n => {
+    const sl = slug(n);
+    // Calculate obstacle position from revealed rounds
+    let obstaclePos = 0;
+    for (let r = 0; r < roundsRevealed && r < rounds.length; r++) {
+      const attempts = rounds[r].attempts?.filter(a => a.name === n && a.passed) || [];
+      obstaclePos += attempts.length;
+    }
+    obstaclePos = Math.min(obstaclePos, obstacles.length);
+
+    const isWinner = roundsRevealed >= rounds.length && data.sprint.winner === n;
+    const tag = isWinner ? '<span class="so-sb-tag so-gold">WINNER</span>' : `<span class="so-sb-tag so-cyan">${obstaclePos}/${obstacles.length}</span>`;
+    h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span>${tag}</div>`;
+    h += `<div class="so-bar-wrap" style="margin-left:27px"><div class="so-bar so-cyan" style="width:${(obstaclePos / obstacles.length) * 100}%"></div></div>`;
+  });
+  h += '</div>';
+  return h;
+}
+
+function _sidebarWinner(data, ps, names) {
+  let h = '<div class="so-sb-title">FINAL STANDINGS</div>';
+  const rankings = data.eliminationOrder ? [...data.eliminationOrder].reverse() : [];
+  // Winner first, then sprinters by obstacle, then elims reversed
+  const winner = data.immunityWinner;
+  const ordered = [winner, ...names.filter(n => n !== winner && !rankings.includes(n)), ...rankings];
+  ordered.forEach((n, i) => {
+    const sl = slug(n);
+    let tag = '';
+    if (n === winner) tag = '<span class="so-sb-tag so-gold">IMMUNE</span>';
+    else if (ps[n]?.eliminatedAt === 'zone2') tag = '<span class="so-sb-tag so-red">STRANDED</span>';
+    else if (ps[n]?.eliminatedAt === 'reentry') tag = '<span class="so-sb-tag so-slime">BURNOUT</span>';
+    else tag = `<span class="so-sb-tag so-cyan">#${i + 1}</span>`;
+    h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span>${tag}</div>`;
+  });
+  return h;
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN 1: TITLE CARD
+// ══════════════════════════════════════════════════════════════
+
+export function rpBuildSpaceOwenTitleCard(ep) {
+  const data = ep.spaceOwen;
+  if (!data) return '<div>No challenge data</div>';
+
+  const names = Object.keys(data.playerStates);
+  let helmets = names.map(n => `<div class="so-float" style="animation-delay:${(Math.random() * 2).toFixed(1)}s">${_helmet(n, 'so-active')}</div>`).join('');
+
+  const content = `
+    <div class="so-h1" style="font-size:2rem;margin:20px 0 6px">2008: A SPACE OWEN</div>
+    <div style="text-align:center;font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#8a9bae;letter-spacing:4px;margin-bottom:16px">POST-MERGE IMMUNITY CHALLENGE</div>
+    <div class="so-host">${data.hostLines?.zone1 || ''}</div>
+    <div style="text-align:center;margin:16px 0">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#00e5ff;letter-spacing:2px;margin-bottom:8px">CREW MANIFEST</div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px">${helmets}</div>
+    </div>
+    <div style="margin-top:16px;text-align:center">
+      <div class="so-card" style="display:inline-block;max-width:420px;text-align:left">
+        <div class="so-h3">MISSION PARAMETERS</div>
+        <div style="font-size:0.82rem;line-height:1.6;color:#8a9bae">
+          <b style="color:#00e5ff">ZONE 1</b> — Zero-G Adaptation + Component Search<br>
+          <b style="color:#ff1744">ZONE 2</b> — Red Alert: Escape Pod Repair (5 rounds)<br>
+          <b style="color:#ff9100">ZONE 3</b> — Re-Entry Shakedown (5 stages)<br>
+          <b style="color:#00e676">ZONE 4</b> — Earth Station Sprint (5 obstacles)<br>
+          <span style="color:#ffd700">First to exit the station wins immunity.</span>
+        </div>
+      </div>
+    </div>`;
+
+  if (!window._soScreenBuilders) window._soScreenBuilders = {};
+  window._soScreenBuilders['so-title'] = rpBuildSpaceOwenTitleCard;
+  return _shell(content, ep, '');
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN 2: ZERO-G (Zone 1)
+// ══════════════════════════════════════════════════════════════
+
+export function rpBuildSpaceOwenZeroG(ep) {
+  const data = ep.spaceOwen;
+  if (!data) return '<div>No challenge data</div>';
+
+  const adaptations = data.zone1.adaptation || [];
+  const searches = data.zone1.searches || [];
+  const socialEvents = data.zone1.socialEvents || [];
+  const moleActions = data.zone1.moleActions || [];
+  const totalSteps = adaptations.length;
+  const stKey = 'so-zerog';
+  const st = _ensureState(stKey, totalSteps);
+
+  let steps = '';
+  adaptations.forEach((ad, i) => {
+    const vis = i <= st.idx ? 'so-visible' : '';
+    const searchData = searches.find(s => s.name === ad.name);
+    const playerSearches = searchData?.searches || [];
+    const components = searchData?.finalComponents || [];
+    const scorePct = Math.round(ad.score * 10);
+    const barCls = ad.score >= 7 ? 'so-cyan' : ad.score >= 4 ? 'so-orange' : 'so-red';
+
+    let searchHtml = playerSearches.map(s => {
+      if (s.type === 'found') return `<div class="so-card" style="margin:3px 0;padding:6px 10px;font-size:0.82rem"><span class="so-card-icon">🔍</span>${s.text}</div>`;
+      if (s.type === 'bonus') return `<div class="so-card" style="margin:3px 0;padding:6px 10px;font-size:0.82rem;border-color:rgba(255,215,0,0.3)"><span class="so-card-icon">✨</span>${s.text}</div>`;
+      if (s.type === 'bumped') return `<div class="so-card so-mole" style="margin:3px 0;padding:6px 10px;font-size:0.82rem"><span class="so-card-icon">💥</span>${s.text}</div>`;
+      return `<div class="so-card" style="margin:3px 0;padding:6px 10px;font-size:0.82rem;opacity:0.7"><span class="so-card-icon">❌</span>${s.text}</div>`;
+    }).join('');
+
+    // Component inventory
+    let compHtml = '';
+    if (components.length > 0) {
+      compHtml = `<div style="margin:4px 0 0;font-size:0.78rem;color:#8a9bae">Inventory: ${components.map(c => COMPONENT_LABELS[c] || c).join(', ')}</div>`;
+    }
+
+    steps += `<div class="so-step ${vis}" data-step="${i}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">${_helmet(ad.name, barCls === 'so-cyan' ? 'so-active' : barCls === 'so-orange' ? 'so-struggling' : 'so-danger')}
+        <div style="flex:1">
+          <div style="font-size:0.75rem;color:#8a9bae;font-family:'Share Tech Mono',monospace">ZERO-G SCORE: ${ad.score.toFixed(1)}/10 — ${ad.attempts} SEARCHES</div>
+          <div class="so-bar-wrap"><div class="so-bar ${barCls}" style="width:${scorePct}%"></div></div>
+        </div>
+      </div>
+      <div class="so-card"><span class="so-card-icon">🚀</span>${ad.text}</div>
+      ${searchHtml}${compHtml}
+    </div>`;
+
+    // Insert social event after every 2-3 players
+    if ((i + 1) % 3 === 0 || i === adaptations.length - 1) {
+      const socIdx = Math.floor(i / 3);
+      if (socialEvents[socIdx]) {
+        const se = socialEvents[socIdx];
+        const seVis = i <= st.idx ? 'so-visible' : '';
+        const icon = se.type === 'showmance' ? '💕' : se.type === 'steal' ? '🗡' : se.type === 'taunt' ? '😈' : se.type === 'help' ? '🤝' : '💫';
+        steps += `<div class="so-step ${seVis}" data-step="${i}"><div class="so-card so-social"><span class="so-card-icon">${icon}</span>${se.text}</div></div>`;
+      }
+    }
+  });
+
+  // Mole actions at the end (shown when all revealed)
+  if (moleActions.length > 0) {
+    const moleVis = st.idx >= totalSteps - 1 ? 'so-visible' : '';
+    let moleHtml = moleActions.map(ma => `<div class="so-card so-mole"><span class="so-card-icon">🕵️</span>${ma.text}</div>`).join('');
+    steps += `<div class="so-step ${moleVis}" data-step="${totalSteps - 1}">${moleHtml}</div>`;
+  }
+
+  const content = `
+    <div class="so-h1">ZONE 1: ZERO GRAVITY</div>
+    <div class="so-host">${data.hostLines?.zone1 || ''}</div>
+    <div class="so-reveal-bar">
+      <button class="so-btn" onclick="soRevealNext('${stKey}',${totalSteps})">NEXT CREW MEMBER ▶</button>
+      <button class="so-btn so-btn-orange" onclick="soRevealAll('${stKey}',${totalSteps})">REVEAL ALL ⏩</button>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#8a9bae">${Math.min(st.idx + 1, totalSteps)}/${totalSteps}</span>
+    </div>
+    <div data-screen-key="${stKey}">${steps}</div>`;
+
+  if (!window._soScreenBuilders) window._soScreenBuilders = {};
+  window._soScreenBuilders[stKey] = rpBuildSpaceOwenZeroG;
+  return _shell(content, ep, 'so-zerog');
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN 3: RED ALERT (Zone 2)
+// ══════════════════════════════════════════════════════════════
+
+export function rpBuildSpaceOwenRedAlert(ep) {
+  const data = ep.spaceOwen;
+  if (!data) return '<div>No challenge data</div>';
+
+  const rounds = data.zone2.rounds || [];
+  const elims = data.zone2.eliminations || [];
+  const launches = data.zone2.launches || [];
+  const socialEvents = data.zone2.socialEvents || [];
+  const moleActions = data.zone2.moleActions || [];
+  const totalSteps = rounds.length;
+  const stKey = 'so-redalert';
+  const st = _ensureState(stKey, totalSteps);
+
+  let steps = '';
+
+  // Alarm intro (always visible)
+  steps += `<div class="so-card" style="border-color:rgba(255,23,68,0.4);background:rgba(255,23,68,0.08);text-align:center;font-size:0.95rem">${data.zone2.alarm}</div>`;
+
+  rounds.forEach((round, i) => {
+    const vis = i <= st.idx ? 'so-visible' : '';
+    const remaining = totalSteps - i - 1;
+    const isLast = i === totalSteps - 1;
+
+    let repairCards = (round.repairs || []).map(r => {
+      const pctColor = r.progress >= 100 ? '#00e676' : r.progress >= 60 ? '#00e5ff' : r.progress >= 30 ? '#ff9100' : '#ff1744';
+      const barCls = r.progress >= 100 ? 'so-green' : r.progress >= 60 ? 'so-cyan' : r.progress >= 30 ? 'so-orange' : 'so-red';
+      return `<div class="so-card" style="padding:8px 12px">
+        <div style="display:flex;align-items:center;gap:8px">
+          ${_helmet(r.name, r.progress >= 100 ? 'so-launched' : r.progress >= 60 ? 'so-active' : 'so-struggling')}
+          <div style="flex:1">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:${pctColor}">${r.progress}%</div>
+            <div class="so-bar-wrap"><div class="so-bar ${barCls}" style="width:${r.progress}%"></div></div>
+          </div>
+        </div>
+        <div style="margin-top:4px;font-size:0.84rem">${r.text}</div>
+      </div>`;
+    }).join('');
+
+    // Mole actions for this round
+    const roundMole = moleActions.filter(ma => ma.round === round.round);
+    let moleHtml = roundMole.map(ma => `<div class="so-card so-mole"><span class="so-card-icon">🕵️</span>${ma.text}</div>`).join('');
+
+    // Social events (1 per round)
+    const socEvent = socialEvents[i];
+    let socHtml = '';
+    if (socEvent) {
+      const icon = socEvent.type === 'showmanceSacrifice' ? '💕' : socEvent.type === 'give' ? '🤝' : socEvent.type === 'refuse' ? '🚫' : socEvent.type === 'hoard' ? '😈' : socEvent.type === 'blame' ? '😡' : '😰';
+      socHtml = `<div class="so-card so-social"><span class="so-card-icon">${icon}</span>${socEvent.text}</div>`;
+    }
+
+    steps += `<div class="so-step ${vis}" data-step="${i}">
+      <div class="so-h2">ROUND ${round.round} <span style="font-size:0.7rem;color:#ff1744">T-${remaining}</span></div>
+      ${round.escalation ? `<div class="so-escalation">${round.escalation}</div>` : ''}
+      ${repairCards}${moleHtml}${socHtml}
+    </div>`;
+  });
+
+  // Launch + elimination results (shown after all rounds)
+  const finalVis = st.idx >= totalSteps - 1 ? 'so-visible' : '';
+  let launchCards = launches.map(l => `<div class="so-card so-launch"><span class="so-card-icon">🚀</span>${l.text}</div>`).join('');
+  let elimCards = elims.map(e => `<div class="so-card so-elim"><span class="so-card-icon">💀</span>${e.text}</div>`).join('');
+
+  if (launches.length > 0 || elims.length > 0) {
+    steps += `<div class="so-step ${finalVis}" data-step="${totalSteps - 1}">
+      <div class="so-h2" style="color:#00e676">PODS AWAY</div>
+      ${launchCards}
+      ${elims.length > 0 ? `<div class="so-h2" style="color:#ff1744">LEFT BEHIND</div>${elimCards}` : ''}
+    </div>`;
+  }
+
+  const content = `
+    <div class="so-h1" style="color:#ff1744;text-shadow:0 0 20px rgba(255,23,68,0.6),0 0 40px rgba(255,23,68,0.3)">ZONE 2: RED ALERT</div>
+    <div class="so-host">${data.hostLines?.zone2 || ''}</div>
+    <div class="so-reveal-bar">
+      <button class="so-btn" style="border-color:rgba(255,23,68,0.3);background:rgba(255,23,68,0.1);color:#ff1744" onclick="soRevealNext('${stKey}',${totalSteps})">NEXT ROUND ▶</button>
+      <button class="so-btn so-btn-orange" onclick="soRevealAll('${stKey}',${totalSteps})">REVEAL ALL ⏩</button>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#8a9bae">${Math.min(st.idx + 1, totalSteps)}/${totalSteps}</span>
+    </div>
+    <div data-screen-key="${stKey}">${steps}</div>`;
+
+  if (!window._soScreenBuilders) window._soScreenBuilders = {};
+  window._soScreenBuilders[stKey] = rpBuildSpaceOwenRedAlert;
+  return _shell(content, ep, 'so-redalert');
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN 4: RE-ENTRY (Zone 3)
+// ══════════════════════════════════════════════════════════════
+
+export function rpBuildSpaceOwenReEntry(ep) {
+  const data = ep.spaceOwen;
+  if (!data) return '<div>No challenge data</div>';
+
+  const stages = data.zone3.stages || [];
+  const totalSteps = stages.length;
+  const stKey = 'so-reentry';
+  const st = _ensureState(stKey, totalSteps);
+
+  let steps = '';
+
+  stages.forEach((stage, i) => {
+    const vis = i <= st.idx ? 'so-visible' : '';
+    const intensity = Math.min(5, i + 1);
+
+    // Fire streaks increase per stage
+    let fireHtml = '';
+    if (i >= 2) {
+      const streakCount = (i - 1) * 3;
+      let streaks = '';
+      for (let s = 0; s < streakCount; s++) {
+        const left = Math.random() * 100;
+        const delay = (Math.random() * 2).toFixed(1);
+        const dur = (1 + Math.random()).toFixed(1);
+        streaks += `<div class="so-fire-streak" style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s"></div>`;
+      }
+      fireHtml = `<div class="so-fire-streaks">${streaks}</div>`;
+    }
+
+    // Player results
+    let resultCards = (stage.results || []).map(r => {
+      const icon = r.status === 'vomited' ? '🤮' : r.status === 'holding' ? '✊' : '😰';
+      const cardCls = r.status === 'vomited' ? 'so-elim' : '';
+      const helmetCls = r.status === 'vomited' ? 'so-vomit' : r.status === 'holding' ? 'so-active' : 'so-struggling';
+      return `<div class="so-card ${cardCls}">
+        <div style="display:flex;align-items:center;gap:8px">${_helmet(r.name, helmetCls)}<span class="so-card-icon">${icon}</span></div>
+        <div style="margin-top:4px;font-size:0.84rem">${r.text}</div>
+      </div>`;
+    }).join('');
+
+    // Social events for this stage
+    let socHtml = (stage.socialEvents || []).map(se => {
+      const icon = se.type === 'showmance' ? '💕' : se.type === 'trashTalk' ? '📡' : se.type === 'moleSuspicion' ? '🕵️' : '📡';
+      return `<div class="so-card so-social"><span class="so-card-icon">${icon}</span>${se.text}</div>`;
+    }).join('');
+
+    // Mole actions for this stage
+    const moleSt = (data.zone3.moleActions || []).filter(ma => ma.stage === i);
+    let moleHtml = moleSt.map(ma => `<div class="so-card so-mole"><span class="so-card-icon">🕵️</span>${ma.text}</div>`).join('');
+
+    steps += `<div class="so-step ${vis}" data-step="${i}" style="position:relative">
+      ${fireHtml}
+      <div class="so-h2" style="position:relative;z-index:1">${stage.icon} ${stage.name} <span style="font-size:0.7rem;color:#8a9bae">STAGE ${i + 1}/${totalSteps}</span></div>
+      <div style="position:relative;z-index:1">${resultCards}${socHtml}${moleHtml}</div>
+    </div>`;
+  });
+
+  const content = `
+    <div class="so-h1" style="color:#ff9100;text-shadow:0 0 20px rgba(255,145,0,0.6),0 0 40px rgba(255,145,0,0.3)">ZONE 3: RE-ENTRY</div>
+    <div class="so-host">${data.hostLines?.zone3 || ''}</div>
+    <div class="so-reveal-bar">
+      <button class="so-btn so-btn-orange" onclick="soRevealNext('${stKey}',${totalSteps})">NEXT STAGE ▶</button>
+      <button class="so-btn" onclick="soRevealAll('${stKey}',${totalSteps})">REVEAL ALL ⏩</button>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#8a9bae">${Math.min(st.idx + 1, totalSteps)}/${totalSteps}</span>
+    </div>
+    <div data-screen-key="${stKey}">${steps}</div>`;
+
+  if (!window._soScreenBuilders) window._soScreenBuilders = {};
+  window._soScreenBuilders[stKey] = rpBuildSpaceOwenReEntry;
+  return _shell(content, ep, 'so-reentry');
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN 5: SPRINT (Zone 3a)
+// ══════════════════════════════════════════════════════════════
+
+export function rpBuildSpaceOwenSprint(ep) {
+  const data = ep.spaceOwen;
+  if (!data) return '<div>No challenge data</div>';
+
+  const rounds = data.sprint.rounds || [];
+  const obstacles = data.sprint.obstacles || [];
+  const totalSteps = rounds.length;
+  const stKey = 'so-sprint';
+  const st = _ensureState(stKey, totalSteps);
+
+  let steps = '';
+
+  // Obstacle legend
+  steps += `<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0">${obstacles.map((ob, i) => `<span style="font-size:0.75rem;font-family:'Share Tech Mono',monospace;color:#8a9bae;padding:2px 8px;border:1px solid rgba(0,229,255,0.15);border-radius:4px">${ob.icon} ${ob.name}</span>`).join('')}</div>`;
+
+  rounds.forEach((round, i) => {
+    const vis = i <= st.idx ? 'so-visible' : '';
+    const attempts = round.attempts || [];
+    const socEvents = round.socialEvents || [];
+
+    let attemptCards = attempts.map(a => {
+      const obs = obstacles.find(o => o.id === a.obstacle);
+      const icon = a.passed ? '✅' : '❌';
+      const cls = a.passed ? '' : 'opacity:0.8';
+      return `<div class="so-card" style="${cls};padding:8px 12px">
+        <div style="display:flex;align-items:center;gap:6px">
+          ${_helmet(a.name, a.passed ? 'so-active' : 'so-struggling')}
+          <span style="font-size:0.9rem">${obs?.icon || ''}</span>
+          <span class="so-card-icon">${icon}</span>
+        </div>
+        <div style="margin-top:3px;font-size:0.84rem">${a.text}</div>
+      </div>`;
+    }).join('');
+
+    let socHtml = socEvents.map(se => {
+      const icon = se.type === 'shove' ? '😈' : se.type === 'encouragement' ? '🤝' : se.type === 'rally' ? '🔥' : se.type === 'meltdown' ? '💢' : '💬';
+      return `<div class="so-card so-social"><span class="so-card-icon">${icon}</span>${se.text}</div>`;
+    }).join('');
+
+    steps += `<div class="so-step ${vis}" data-step="${i}">
+      <div class="so-h2">SPRINT ROUND ${round.round}</div>
+      ${attemptCards}${socHtml}
+    </div>`;
+  });
+
+  const content = `
+    <div class="so-h1" style="color:#00e676;text-shadow:0 0 20px rgba(0,230,118,0.6)">ZONE 4: STATION ESCAPE</div>
+    <div class="so-host">${data.hostLines?.sprint || ''}</div>
+    <div class="so-reveal-bar">
+      <button class="so-btn" style="border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.1);color:#00e676" onclick="soRevealNext('${stKey}',${totalSteps})">NEXT ROUND ▶</button>
+      <button class="so-btn so-btn-orange" onclick="soRevealAll('${stKey}',${totalSteps})">REVEAL ALL ⏩</button>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#8a9bae">${Math.min(st.idx + 1, totalSteps)}/${totalSteps}</span>
+    </div>
+    <div data-screen-key="${stKey}">${steps}</div>`;
+
+  if (!window._soScreenBuilders) window._soScreenBuilders = {};
+  window._soScreenBuilders[stKey] = rpBuildSpaceOwenSprint;
+  return _shell(content, ep, 'so-station');
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN 6: WINNER
+// ══════════════════════════════════════════════════════════════
+
+export function rpBuildSpaceOwenWinner(ep) {
+  const data = ep.spaceOwen;
+  if (!data) return '<div>No challenge data</div>';
+
+  const winner = data.immunityWinner;
+  const ps = data.playerStates;
+  const names = Object.keys(ps);
+
+  // Build leaderboard from chalMemberScores
+  const scores = ep.chalMemberScores || {};
+  const sorted = names.slice().sort((a, b) => (scores[b] || 0) - (scores[a] || 0));
+
+  let leaderboard = sorted.map((n, i) => {
+    const isWinner = n === winner;
+    const elimAt = ps[n]?.eliminatedAt;
+    let tagHtml = '';
+    if (isWinner) tagHtml = '<span class="so-lb-tag" style="background:rgba(255,215,0,0.15);color:#ffd700">IMMUNE</span>';
+    else if (elimAt === 'zone2') tagHtml = '<span class="so-lb-tag" style="background:rgba(255,23,68,0.15);color:#ff1744">STRANDED</span>';
+    else if (elimAt === 'reentry') tagHtml = '<span class="so-lb-tag" style="background:rgba(124,193,66,0.15);color:#7CC142">BURNOUT</span>';
+
+    return `<div class="so-lb-row ${isWinner ? 'so-first' : ''}" style="${isWinner ? '' : 'background:rgba(0,229,255,0.03)'}">
+      <span class="so-lb-rank">#${i + 1}</span>
+      ${_helmet(n, isWinner ? 'so-launched' : elimAt ? 'so-eliminated' : 'so-active')}
+      <span class="so-lb-name">${n}</span>
+      <span class="so-lb-score">${scores[n] || 0} pts</span>
+      ${tagHtml}
+    </div>`;
+  }).join('');
+
+  // Winner highlight
+  const winnerVisor = slug(winner);
+
+  const content = `
+    <div class="so-hatch-burst" style="text-align:center;margin:12px 0">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#8a9bae;letter-spacing:3px;margin-bottom:6px">EXIT HATCH BREACHED</div>
+      <div class="so-h1" style="font-size:1.8rem;color:#ffd700;text-shadow:0 0 30px rgba(255,215,0,0.6),0 0 60px rgba(255,215,0,0.3)">IMMUNITY WINNER</div>
+      <div style="margin:14px auto;width:90px;height:90px;border-radius:50%;border:4px solid #ffd700;overflow:hidden;position:relative;box-shadow:0 0 30px rgba(255,215,0,0.4)">
+        <img src="assets/avatars/${winnerVisor}.png" alt="${winner}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none'">
+        <div style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,rgba(255,215,0,0.2),transparent 50%),repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,215,0,0.05) 2px,rgba(255,215,0,0.05) 4px);pointer-events:none"></div>
+      </div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:1.3rem;font-weight:700;color:#ffd700;margin:6px 0">${winner}</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#8a9bae;letter-spacing:2px">FIRST TO EXIT THE STATION</div>
+    </div>
+    <div class="so-h2" style="text-align:center">FINAL LEADERBOARD</div>
+    <div style="max-width:500px;margin:0 auto">${leaderboard}</div>`;
+
+  if (!window._soScreenBuilders) window._soScreenBuilders = {};
+  window._soScreenBuilders['so-winner'] = rpBuildSpaceOwenWinner;
+  return _shell(content, ep, 'so-winner');
+}

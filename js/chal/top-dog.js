@@ -1332,3 +1332,1142 @@ export function simulateTopDog(ep) {
 
   return ep;
 }
+
+
+// ══════════════════════════════════════════════════════════════
+// VP (VISUAL PLAYBACK) SYSTEM
+// ══════════════════════════════════════════════════════════════
+
+// ── REVEAL STATE ──
+const _tvState = {};
+function _ensureState(key, total) {
+  if (!_tvState[key]) _tvState[key] = { idx: -1, total };
+  return _tvState[key];
+}
+
+export function topDogRevealNext(screenKey, total) {
+  const st = _ensureState(screenKey, total);
+  if (st.idx < st.total - 1) { st.idx++; }
+  _rebuildCurrentScreen(screenKey);
+  _rebuildSidebar();
+  _updateCounter(screenKey);
+  _scrollToRevealedStep(screenKey, st.idx);
+}
+export function topDogRevealAll(screenKey, total) {
+  const st = _ensureState(screenKey, total);
+  st.idx = st.total - 1;
+  _rebuildCurrentScreen(screenKey);
+  _rebuildSidebar();
+  _updateCounter(screenKey);
+}
+window.tdRevealNext = topDogRevealNext;
+window.tdRevealAll = topDogRevealAll;
+
+function _scrollToRevealedStep(screenKey, idx) {
+  requestAnimationFrame(() => {
+    const container = document.querySelector(`[data-screen-key="${screenKey}"]`);
+    if (!container) return;
+    const allSteps = container.querySelectorAll('.td-step.td-visible');
+    const target = allSteps[allSteps.length - 1];
+    if (!target) return;
+    let scrollParent = target.closest('.rp-main');
+    if (!scrollParent) {
+      let el = target.parentElement;
+      while (el) {
+        const style = getComputedStyle(el);
+        if (style.overflowY === 'auto' || style.overflowY === 'scroll') { scrollParent = el; break; }
+        el = el.parentElement;
+      }
+    }
+    if (!scrollParent) scrollParent = document.documentElement;
+    const parentRect = scrollParent.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const offset = targetRect.top - parentRect.top + scrollParent.scrollTop - parentRect.height * 0.3;
+    scrollParent.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+  });
+}
+
+function _updateCounter(screenKey) {
+  const st = _tvState[screenKey];
+  if (!st) return;
+  const el = document.getElementById(`td-counter-${screenKey}`);
+  if (el) el.textContent = `${Math.max(0, st.idx + 1)}/${st.total}`;
+}
+
+function _rebuildCurrentScreen(screenKey) {
+  const el = document.querySelector(`[data-screen-key="${screenKey}"]`);
+  if (!el) return;
+  const scrollTop = el.scrollTop;
+  const builder = window._tdScreenBuilders?.[screenKey];
+  if (builder) {
+    const ep = window._tdEp;
+    if (ep) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = builder(ep);
+      const inner = tmp.querySelector(`[data-screen-key="${screenKey}"]`);
+      if (inner) {
+        el.innerHTML = inner.innerHTML;
+      }
+    }
+  }
+  el.scrollTop = scrollTop;
+}
+
+function _rebuildSidebar() {
+  const sidebarEl = document.getElementById('td-sidebar');
+  if (!sidebarEl) return;
+  const shell = sidebarEl.closest('.td-shell');
+  const phase = shell?.dataset?.phase || '';
+  const data = window._tdData;
+  if (!data) return;
+  sidebarEl.innerHTML = _buildSidebarContent(data, phase, window._tdEp);
+}
+
+// ══════════════════════════════════════════════════════════════
+// CUSTOM ANIMATED CSS ICONS (Layer 1)
+// ══════════════════════════════════════════════════════════════
+function _icon(type) {
+  const map = {
+    paw: 'td-icon-paw', movement: 'td-icon-paw',
+    spotlight: 'td-icon-spotlight', performance: 'td-icon-spotlight', judging: 'td-icon-spotlight',
+    trap: 'td-icon-trap',
+    compass: 'td-icon-compass', navigation: 'td-icon-compass',
+    tree: 'td-icon-tree', obstacle: 'td-icon-tree',
+    star: 'td-icon-star', success: 'td-icon-star', standingOvation: 'td-icon-star',
+    skull: 'td-icon-skull', critical_failure: 'td-icon-skull', catastrophe: 'td-icon-skull',
+    heart: 'td-icon-heart', showmance: 'td-icon-heart', animalBond: 'td-icon-heart',
+    whip: 'td-icon-whip', training: 'td-icon-whip',
+    lantern: 'td-icon-lantern', forest: 'td-icon-lantern',
+    claw: 'td-icon-claw', animalRivalry: 'td-icon-claw',
+    ribbon: 'td-icon-ribbon', immunity: 'td-icon-ribbon',
+    eye: 'td-icon-eye', mole: 'td-icon-eye',
+    mask: 'td-icon-mask', sabotage: 'td-icon-mask',
+    shield: 'td-icon-shield', help: 'td-icon-shield', respect: 'td-icon-shield',
+    failure: 'td-icon-skull',
+    impressed: 'td-icon-star',
+    meh: 'td-icon-spotlight',
+    disaster: 'td-icon-skull',
+    blame: 'td-icon-claw',
+    paranoia: 'td-icon-eye',
+    race: 'td-icon-paw',
+  };
+  const cls = map[type] || 'td-icon-paw';
+  return `<span class="td-icon ${cls}"></span>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// COMM CHATTER (Layer 3)
+// ══════════════════════════════════════════════════════════════
+const COMM_CHATTER = {
+  'td-circus': [
+    "RINGMASTER: 'All acts, prepare for the grand performance!'",
+    "STAGE CREW: 'Spotlights 1 through 6, standing by.'",
+    "BACKSTAGE: 'Animal wranglers, confirm all partners are in position.'",
+    "RINGMASTER: 'The crowd is ELECTRIC tonight, folks!'",
+    "JUDGE'S BOX: 'Scoring paddles ready. Chef has his reading glasses on.'",
+    "STAGE CREW: 'Curtain mechanism tested. We are GO for the show.'",
+    "RINGMASTER: 'Remember — the animals are the STARS. You're the supporting act.'",
+    "BACKSTAGE: 'Treat inventory: adequate. Bandages: hopefully adequate.'",
+    "JUDGE'S BOX: 'Chef is already disappointed. Standard operating procedure.'",
+    "STAGE CREW: 'Music cued. Confetti loaded. Dignity... optional.'",
+  ],
+  'td-forest': [
+    "BASE CAMP: 'Trail markers confirmed at sectors 3, 7, and 11.'",
+    "RANGER: 'Copy. Visibility dropping. Fog rolling in from the north.'",
+    "BASE CAMP: 'Multiple contestants entering the tree line. Tracking active.'",
+    "RANGER: 'Wildlife activity detected in sector 5. Advise caution.'",
+    "BASE CAMP: 'Trail conditions: muddy after sector 6. Expect slowdowns.'",
+    "RANGER: 'Moonlight holding. Should break through the canopy at sector 10.'",
+    "BASE CAMP: 'Exit point confirmed at sector 14. Finish line crew standing by.'",
+    "RANGER: 'Lost visual on contestant — fog is thick. Switching to thermal.'",
+    "BASE CAMP: 'One team approaching the halfway mark. Others are scattered.'",
+    "RANGER: 'Trap at sector 9 has been triggered. Reset in progress.'",
+  ],
+};
+
+function _pickChatter(zone, count = 1) {
+  const pool = COMM_CHATTER[zone];
+  if (!pool || pool.length === 0) return [];
+  const shuffled = pool.slice().sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, Math.min(count, pool.length));
+}
+
+function _commDiv(text) {
+  return `<div class="td-comm">${text}</div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// HUD / TELEMETRY (Layers 2 & 7)
+// ══════════════════════════════════════════════════════════════
+const HUD_DATA = {
+  '': { act: '', label: 'TOP DOG', sub: 'IMMUNITY CHALLENGE' },
+  'td-circus-assign': { act: 'PROLOGUE', label: 'ANIMAL DRAFT', sub: 'COMPATIBILITY ASSESSMENT' },
+  'td-circus-training': { act: 'ACT I', label: 'TRAINING MONTAGE', sub: 'FOUR ROUNDS' },
+  'td-circus-judging': { act: 'ACT II', label: 'GRAND PERFORMANCE', sub: 'CHRIS + CHEF SCORING' },
+  'td-forest': { act: '', label: 'THE GREAT FOREST RACE', sub: '14 SEGMENTS TO EXIT' },
+  'td-winner': { act: 'FINALE', label: 'TOP DOG CROWNED', sub: 'IMMUNITY EARNED' },
+};
+
+const TELEMETRY_DATA = {
+  'td-circus-assign': 'ANIMALS AVAILABLE: 12 ◆ DRAFT ORDER: BY SOCIAL+BOLDNESS ◆ COMPATIBILITY: CALCULATING ◆ VENUE: CIRCUS RING',
+  'td-circus-training': 'ACTS REMAINING: 4 ◆ ANIMALS TRAINED: IN PROGRESS ◆ CROWD ENERGY: HIGH ◆ JUDGE MOOD: FAVORABLE',
+  'td-circus-judging': 'PERFORMANCES: IN PROGRESS ◆ JUDGE PANEL: CHRIS + CHEF ◆ SCORE RANGE: 2-20 ◆ CROWD: SEATED',
+  'td-forest': 'DISTANCE TO EXIT: 14km ◆ TERRAIN: DENSE FOREST ◆ VISIBILITY: LOW ◆ WILDLIFE: ACTIVE ◆ TRAPS: ARMED',
+  'td-winner': 'STATUS: CHALLENGE COMPLETE ◆ IMMUNITY: AWARDED ◆ TRIBAL COUNCIL: PENDING',
+};
+
+// ══════════════════════════════════════════════════════════════
+// CSS (Layer 1-10 all integrated)
+// ══════════════════════════════════════════════════════════════
+function _css() {
+  return `<style>
+/* ═══ TOP DOG VP ═══ */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lora:wght@400;600;700&display=swap');
+
+.td-shell{position:relative;display:flex;gap:0;min-height:520px;max-width:1100px;margin:0 auto;font-family:'Lora','Georgia',serif;color:#faf0d4;background:#1a0a0a;border-radius:12px;overflow:clip;border:2px solid rgba(212,160,23,0.3);box-shadow:0 0 40px rgba(139,26,26,0.3),inset 0 0 60px rgba(0,0,0,0.6)}
+.td-shell *{box-sizing:border-box}
+.td-main{flex:1;padding:18px 20px 60px 20px;overflow-y:auto;position:relative;z-index:1}
+.td-sidebar{width:240px;min-width:240px;background:rgba(212,160,23,0.04);border-left:2px solid rgba(212,160,23,0.15);padding:12px 10px;overflow-y:auto;font-size:0.82rem;position:relative;z-index:1}
+
+/* Phase 1: Circus Ring background */
+.td-shell::before{content:'';position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 500px 400px at 50% 40%, rgba(139,26,26,0.4), transparent),
+    radial-gradient(ellipse 300px 200px at 20% 60%, rgba(139,26,26,0.2), transparent),
+    radial-gradient(ellipse 200px 200px at 80% 30%, rgba(184,134,11,0.15), transparent),
+    radial-gradient(circle 2px at 15% 25%, rgba(250,240,212,0.4), transparent),
+    radial-gradient(circle 1px at 55% 15%, rgba(212,160,23,0.3), transparent),
+    radial-gradient(circle 1.5px at 75% 65%, rgba(250,240,212,0.3), transparent),
+    radial-gradient(circle 1px at 35% 85%, rgba(212,160,23,0.2), transparent),
+    #1a0a0a}
+
+/* Spotlight sweep */
+.td-shell::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 120px 300px at 50% 20%, rgba(255,248,220,0.06), transparent);
+  animation:td-spotlightSweep 8s ease-in-out infinite alternate}
+@keyframes td-spotlightSweep{0%{background-position:20% 0}100%{background-position:80% 0}}
+
+/* Phase 2: Dark Forest */
+.td-shell.td-forest::before{background:
+  radial-gradient(ellipse 500px 400px at 50% 20%, rgba(192,216,224,0.08), transparent),
+  radial-gradient(ellipse 300px 300px at 30% 70%, rgba(26,58,26,0.5), transparent),
+  radial-gradient(ellipse 200px 200px at 70% 40%, rgba(232,160,32,0.05), transparent),
+  radial-gradient(circle 1px at 20% 30%, rgba(232,160,32,0.4), transparent),
+  radial-gradient(circle 1px at 60% 20%, rgba(232,160,32,0.3), transparent),
+  radial-gradient(circle 0.5px at 40% 80%, rgba(232,160,32,0.5), transparent),
+  radial-gradient(circle 1px at 80% 60%, rgba(232,160,32,0.3), transparent),
+  radial-gradient(circle 0.5px at 10% 90%, rgba(232,160,32,0.4), transparent),
+  radial-gradient(circle 1px at 90% 85%, rgba(232,160,32,0.2), transparent),
+  #0a1a0a}
+.td-shell.td-forest::after{background:none;animation:none}
+.td-shell.td-forest{border-color:rgba(26,58,26,0.5);color:#c0d8e0}
+
+/* Firefly particles (forest only) */
+.td-firefly{position:absolute;width:3px;height:3px;background:rgba(232,160,32,0.7);border-radius:50%;z-index:0;pointer-events:none;animation:td-fireflyFloat 6s ease-in-out infinite}
+@keyframes td-fireflyFloat{0%{transform:translate(0,0);opacity:0.3}25%{opacity:0.8}50%{transform:translate(15px,-20px);opacity:0.5}75%{opacity:0.9}100%{transform:translate(-10px,10px);opacity:0.3}}
+
+/* Winner phase */
+.td-shell.td-winner::before{background:
+  radial-gradient(ellipse 500px 400px at 50% 40%, rgba(212,160,23,0.3), transparent),
+  radial-gradient(ellipse 300px 200px at 30% 70%, rgba(139,26,26,0.15), transparent),
+  #1a0a0a}
+
+/* Headers */
+.td-h1{font-family:'Playfair Display','Georgia',serif;font-size:1.5rem;text-align:center;letter-spacing:4px;text-transform:uppercase;
+  color:#d4a017;text-shadow:0 0 20px rgba(212,160,23,0.5),0 2px 4px rgba(0,0,0,0.5);margin:0 0 12px 0;font-weight:900}
+.td-h2{font-family:'Playfair Display','Georgia',serif;font-size:1.1rem;letter-spacing:2px;color:#d4a017;margin:14px 0 8px 0;text-transform:uppercase;font-weight:700}
+.td-h3{font-family:'Playfair Display','Georgia',serif;font-size:0.95rem;color:#faf0d4;margin:10px 0 6px 0;letter-spacing:1px}
+
+/* Player card — circus poster style */
+.td-poster{display:inline-flex;align-items:center;gap:8px;background:rgba(250,240,212,0.06);border:2px solid rgba(212,160,23,0.3);border-radius:6px;padding:3px 14px 3px 3px;margin:3px;position:relative;overflow:hidden;transition:border-color 0.3s}
+.td-poster.td-high{border-color:#d4a017}
+.td-poster.td-mid{border-color:#b8860b}
+.td-poster.td-low{border-color:#8b1a1a}
+.td-poster.td-winner-p{border-color:#ffd700;box-shadow:0 0 12px rgba(255,215,0,0.3)}
+.td-poster-frame{width:38px;height:38px;border-radius:4px;overflow:hidden;flex-shrink:0;border:2px solid rgba(212,160,23,0.4);position:relative}
+.td-poster-frame img{width:100%;height:100%;object-fit:contain;display:block}
+.td-poster-name{font-size:0.82rem;font-weight:600;color:#faf0d4;white-space:nowrap;font-family:'Lora',serif}
+.td-poster-tag{font-size:0.65rem;font-family:'Playfair Display',serif;padding:1px 5px;border-radius:4px;margin-left:4px;letter-spacing:1px}
+
+/* Cards */
+.td-card{background:rgba(250,240,212,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:6px;padding:10px 14px;margin:6px 0;color:#faf0d4;font-size:0.88rem;line-height:1.5;position:relative}
+.td-card.td-social{border:1px dashed rgba(232,160,32,0.4);background:rgba(232,160,32,0.05)}
+.td-card.td-mole-card{border:1px dashed rgba(139,26,26,0.5);background:rgba(139,26,26,0.08)}
+.td-card.td-success-card{border:1px solid rgba(212,160,23,0.4);background:rgba(212,160,23,0.06)}
+.td-card.td-fail-card{border:1px solid rgba(139,26,26,0.3);background:rgba(139,26,26,0.06)}
+.td-card.td-winner-card{border:2px solid rgba(255,215,0,0.5);background:rgba(255,215,0,0.08)}
+.td-card.td-forest-card{background:rgba(26,58,26,0.15);border-color:rgba(192,216,224,0.15)}
+
+/* ═══ ANIMATED ICONS (CSS-only, no emoji) ═══ */
+.td-icon{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-right:8px;vertical-align:middle;flex-shrink:0;position:relative}
+
+/* Paw — bouncing for movement/animal */
+.td-icon-paw::before{content:'';width:12px;height:10px;background:#d4a017;border-radius:50% 50% 30% 30%;animation:td-pawBounce 1.2s ease infinite}
+.td-icon-paw::after{content:'';position:absolute;top:0;width:14px;height:5px;
+  background:radial-gradient(circle 2.5px at 20% 50%,#d4a017,transparent 60%),
+  radial-gradient(circle 2.5px at 50% 30%,#d4a017,transparent 60%),
+  radial-gradient(circle 2.5px at 80% 50%,#d4a017,transparent 60%)}
+@keyframes td-pawBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
+/* Spotlight — pulsing circle for performance */
+.td-icon-spotlight::before{content:'';width:14px;height:14px;border:2px solid #d4a017;border-radius:50%;animation:td-spotPulse 1.5s ease infinite}
+.td-icon-spotlight::after{content:'';position:absolute;width:6px;height:6px;background:#faf0d4;border-radius:50%;opacity:0.6}
+@keyframes td-spotPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:0.5}}
+
+/* Trap — snapping jaw */
+.td-icon-trap::before,.td-icon-trap::after{content:'';position:absolute;width:14px;height:4px;background:#8b1a1a;border-radius:2px}
+.td-icon-trap::before{top:4px;animation:td-jawTop 1s ease infinite}
+.td-icon-trap::after{bottom:4px;animation:td-jawBot 1s ease infinite}
+@keyframes td-jawTop{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+@keyframes td-jawBot{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
+/* Compass — spinning needle */
+.td-icon-compass::before{content:'';width:14px;height:14px;border:2px solid rgba(192,216,224,0.5);border-radius:50%}
+.td-icon-compass::after{content:'';position:absolute;width:2px;height:10px;background:linear-gradient(to top,#8b1a1a 50%,#c0d8e0 50%);border-radius:1px;animation:td-compassSpin 3s linear infinite}
+@keyframes td-compassSpin{to{transform:rotate(360deg)}}
+
+/* Tree — swaying */
+.td-icon-tree::before{content:'';width:3px;height:10px;background:#3a2a1a;position:absolute;bottom:2px}
+.td-icon-tree::after{content:'';width:12px;height:10px;background:#1a3a1a;clip-path:polygon(50% 0%,100% 100%,0% 100%);position:absolute;top:0;animation:td-treeSway 2s ease-in-out infinite alternate}
+@keyframes td-treeSway{0%{transform:rotate(-3deg)}100%{transform:rotate(3deg)}}
+
+/* Star — rotating */
+.td-icon-star::before{content:'';width:14px;height:14px;background:#d4a017;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);animation:td-starSpin 2s linear infinite}
+@keyframes td-starSpin{to{transform:rotate(360deg)}}
+
+/* Skull — pulsing */
+.td-icon-skull::before{content:'';width:14px;height:14px;border:2px solid #8b1a1a;border-radius:50% 50% 40% 40%;animation:td-skullGlow 1.5s ease infinite}
+.td-icon-skull::after{content:'';position:absolute;width:8px;height:3px;border-top:2px solid #8b1a1a;bottom:3px}
+@keyframes td-skullGlow{0%,100%{box-shadow:0 0 4px rgba(139,26,26,0.3)}50%{box-shadow:0 0 12px rgba(139,26,26,0.8)}}
+
+/* Heart — beating */
+.td-icon-heart::before{content:'';width:14px;height:13px;background:#ec4899;clip-path:polygon(50% 100%,0% 35%,0% 15%,25% 0%,50% 15%,75% 0%,100% 15%,100% 35%);animation:td-heartbeat 1s ease infinite}
+@keyframes td-heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.1)}}
+
+/* Whip — cracking */
+.td-icon-whip::before{content:'';width:3px;height:14px;background:linear-gradient(to top,#3a2a1a,#b8860b);border-radius:1px;animation:td-whipCrack 1s ease infinite}
+@keyframes td-whipCrack{0%,100%{transform:rotate(-20deg)}50%{transform:rotate(20deg)}}
+
+/* Lantern — glowing */
+.td-icon-lantern::before{content:'';width:10px;height:12px;border:2px solid #e8a020;border-radius:3px 3px 5px 5px;background:rgba(232,160,32,0.2);animation:td-lanternGlow 2s ease infinite}
+.td-icon-lantern::after{content:'';position:absolute;width:4px;height:3px;background:#e8a020;top:3px;border-radius:50%;animation:td-lanternFlicker 0.5s ease infinite alternate}
+@keyframes td-lanternGlow{0%,100%{box-shadow:0 0 4px rgba(232,160,32,0.3)}50%{box-shadow:0 0 12px rgba(232,160,32,0.7)}}
+@keyframes td-lanternFlicker{0%{opacity:0.6;transform:scaleY(1)}100%{opacity:1;transform:scaleY(1.2)}}
+
+/* Claw — slashing */
+.td-icon-claw::before,.td-icon-claw::after{content:'';position:absolute;width:2px;height:12px;background:#8b1a1a;border-radius:1px;animation:td-clawSlash 0.8s ease infinite}
+.td-icon-claw::before{transform:rotate(-15deg);left:5px}
+.td-icon-claw::after{transform:rotate(15deg);right:5px}
+@keyframes td-clawSlash{0%,100%{transform:rotate(-15deg)}50%{transform:rotate(-30deg) translateX(-1px)}}
+
+/* Ribbon — flowing */
+.td-icon-ribbon::before{content:'';width:14px;height:8px;background:linear-gradient(90deg,#d4a017,#ffd700);border-radius:0 4px 4px 0;animation:td-ribbonFlow 1.5s ease infinite alternate}
+@keyframes td-ribbonFlow{0%{transform:scaleX(1) skewY(0deg)}100%{transform:scaleX(1.1) skewY(3deg)}}
+
+/* Eye — blinking */
+.td-icon-eye::before{content:'';width:16px;height:10px;border:2px solid #8b1a1a;border-radius:50%;animation:td-blink 3s ease infinite}
+.td-icon-eye::after{content:'';position:absolute;width:6px;height:6px;background:#8b1a1a;border-radius:50%;animation:td-blink 3s ease infinite}
+@keyframes td-blink{0%,42%,46%,100%{transform:scaleY(1)}44%{transform:scaleY(0.1)}}
+
+/* Mask — for villain */
+.td-icon-mask::before{content:'';width:14px;height:10px;border:2px solid #8b1a1a;border-radius:50% 50% 30% 30%;background:rgba(139,26,26,0.2)}
+.td-icon-mask::after{content:'';position:absolute;width:10px;height:3px;border-bottom:2px solid #8b1a1a;border-radius:0 0 50% 50%;bottom:2px}
+
+/* Shield — for help/ally */
+.td-icon-shield::before{content:'';width:12px;height:14px;background:rgba(212,160,23,0.3);border:2px solid #d4a017;border-radius:3px 3px 50% 50%;clip-path:polygon(0% 0%,100% 0%,100% 65%,50% 100%,0% 65%)}
+
+@media(prefers-reduced-motion:reduce){
+  .td-icon-paw::before,.td-icon-spotlight::before,.td-icon-trap::before,.td-icon-trap::after,
+  .td-icon-compass::after,.td-icon-tree::after,.td-icon-star::before,.td-icon-skull::before,
+  .td-icon-heart::before,.td-icon-whip::before,.td-icon-lantern::before,.td-icon-lantern::after,
+  .td-icon-claw::before,.td-icon-claw::after,.td-icon-ribbon::before,
+  .td-icon-eye::before,.td-icon-eye::after{animation:none!important}
+}
+
+/* Progress bar */
+.td-bar-wrap{height:8px;background:rgba(212,160,23,0.1);border-radius:4px;overflow:hidden;margin:4px 0}
+.td-bar{height:100%;border-radius:4px;transition:width 0.4s ease}
+.td-bar.td-gold{background:linear-gradient(90deg,#d4a017,#ffd700)}
+.td-bar.td-green{background:linear-gradient(90deg,#2d8a4e,#4caf50)}
+.td-bar.td-crimson{background:linear-gradient(90deg,#8b1a1a,#c62828)}
+.td-bar.td-amber{background:linear-gradient(90deg,#e8a020,#f9a825)}
+
+/* Reveal controls (Layer 8) */
+.td-reveal-bar{display:flex;gap:8px;align-items:center;justify-content:center;padding:12px 20px;flex-wrap:wrap;position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:100;background:rgba(26,10,10,0.92);backdrop-filter:blur(8px);border-top:1px solid rgba(212,160,23,0.3);border-radius:12px 12px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,0.5);max-width:860px;width:100%}
+.td-btn{font-family:'Playfair Display',serif;font-size:0.78rem;padding:5px 14px;border:1px solid rgba(212,160,23,0.3);border-radius:4px;background:rgba(212,160,23,0.1);color:#d4a017;cursor:pointer;letter-spacing:1px;transition:all 0.2s;text-transform:uppercase}
+.td-btn:hover{background:rgba(212,160,23,0.2);border-color:#d4a017}
+.td-btn.td-btn-crimson{border-color:rgba(139,26,26,0.4);background:rgba(139,26,26,0.15);color:#ff6b6b}
+.td-btn.td-btn-crimson:hover{background:rgba(139,26,26,0.25);border-color:#8b1a1a}
+
+/* Step visibility */
+.td-step{opacity:0;max-height:0;overflow:hidden;transition:opacity 0.4s,max-height 0.5s}
+.td-step.td-visible{opacity:1;max-height:4000px}
+
+/* Host line */
+.td-host{font-style:italic;color:#d4a017;margin:8px 0;padding:8px 12px;border-left:3px solid rgba(212,160,23,0.4);background:rgba(212,160,23,0.04);font-size:0.88rem;border-radius:0 6px 6px 0}
+
+/* Sidebar */
+.td-sb-title{font-family:'Playfair Display',serif;font-size:0.75rem;letter-spacing:2px;color:#d4a017;text-transform:uppercase;margin:0 0 6px 0;padding-bottom:4px;border-bottom:1px solid rgba(212,160,23,0.2);font-weight:700}
+.td-sb-section{margin:10px 0}
+.td-sb-row{display:flex;align-items:center;gap:5px;margin:3px 0;font-size:0.78rem}
+.td-sb-row img{width:22px;height:22px;border-radius:4px;object-fit:contain;flex-shrink:0;border:1.5px solid rgba(212,160,23,0.3)}
+.td-sb-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#faf0d4}
+.td-sb-tag{font-family:'Playfair Display',serif;font-size:0.6rem;padding:1px 4px;border-radius:3px;white-space:nowrap;letter-spacing:0.5px}
+.td-sb-tag.td-gold{background:rgba(212,160,23,0.15);color:#d4a017}
+.td-sb-tag.td-green{background:rgba(45,138,78,0.15);color:#4caf50}
+.td-sb-tag.td-crimson{background:rgba(139,26,26,0.15);color:#ff6b6b}
+.td-sb-tag.td-amber{background:rgba(232,160,32,0.15);color:#e8a020}
+.td-sb-tag.td-grey{background:rgba(200,200,200,0.1);color:#888}
+.td-sb-tag.td-brass{background:rgba(184,134,11,0.15);color:#b8860b}
+.td-sb-tag.td-crown{background:rgba(255,215,0,0.2);color:#ffd700}
+
+/* ═══ OVERDRIVE: Ringmaster HUD (Layer 2) ═══ */
+.td-hud{font-family:'Playfair Display',serif;font-size:0.65rem;color:#8a7a4a;background:rgba(26,10,10,0.7);border-bottom:1px solid rgba(212,160,23,0.3);padding:4px 10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;z-index:2;position:relative;letter-spacing:1px}
+.td-hud-act{white-space:nowrap;font-weight:700;color:#b8860b}
+.td-hud-label{flex:1;text-align:center;white-space:nowrap;letter-spacing:2px;color:#d4a017}
+.td-hud-sub{white-space:nowrap;color:#8a7a4a}
+.td-hud-dots{display:flex;gap:2px;align-items:center;flex-wrap:wrap}
+.td-hud-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.td-hud-dot.td-compat-high{background:#d4a017}
+.td-hud-dot.td-compat-mid{background:#b8860b}
+.td-hud-dot.td-compat-low{background:#8b1a1a}
+
+/* ═══ OVERDRIVE: Comm Chatter (Layer 3) ═══ */
+.td-comm{font-style:italic;font-size:0.72rem;color:#8a7a4a;border-left:2px solid rgba(212,160,23,0.3);padding:4px 10px;margin:6px 0 6px 12px;line-height:1.4;font-family:'Playfair Display',serif}
+
+/* ═══ OVERDRIVE: Zone Transition (Layer 4) ═══ */
+.td-transition{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.td-transition.td-trans-curtain-rise{background:linear-gradient(180deg,rgba(139,26,26,0.8),rgba(26,10,10,0.9));animation:td-curtainRise 2s ease-out forwards}
+@keyframes td-curtainRise{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-100%);visibility:hidden}}
+.td-transition.td-trans-forest-enter{background:rgba(10,26,10,0.95);animation:td-forestFadeIn 2.5s ease-out forwards}
+.td-trans-forest-text{font-family:'Playfair Display',serif;font-size:1.5rem;color:#c0d8e0;letter-spacing:4px;text-shadow:0 0 20px rgba(192,216,224,0.4)}
+@keyframes td-forestFadeIn{0%{opacity:1}70%{opacity:0.6}100%{opacity:0;visibility:hidden}}
+.td-transition.td-trans-winner-burst{background:radial-gradient(circle,rgba(255,215,0,0.6),transparent 70%);animation:td-winnerBurst 2s ease-out forwards}
+@keyframes td-winnerBurst{0%{opacity:1;transform:scale(0.5)}40%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(2);visibility:hidden}}
+
+/* ═══ OVERDRIVE: Viewport Window (Layer 5) ═══ */
+.td-viewport{width:80px;height:60px;margin:0 auto 8px;border-radius:6px;border:2px solid rgba(212,160,23,0.25);overflow:hidden;position:relative;background:#1a0a0a}
+.td-viewport-circus{position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 30px 50px at 50% 60%, rgba(139,26,26,0.4), transparent),
+    radial-gradient(circle 3px at 50% 20%, rgba(255,248,220,0.5), transparent),
+    #1a0a0a}
+.td-viewport-circus::after{content:'';position:absolute;width:20px;height:50px;top:5px;
+  background:radial-gradient(ellipse 10px 25px at 50% 50%, rgba(255,248,220,0.15), transparent);
+  animation:td-vpSpotlight 4s ease-in-out infinite alternate}
+@keyframes td-vpSpotlight{0%{left:10px}100%{left:50px}}
+.td-viewport-forest{position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 40px 20px at 50% 15%, rgba(192,216,224,0.2), transparent),
+    linear-gradient(180deg,#0a1a0a,#1a3a1a);
+  overflow:hidden}
+.td-viewport-forest::after{content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(circle 1px at 20% 40%, rgba(232,160,32,0.6), transparent),
+    radial-gradient(circle 1px at 60% 30%, rgba(232,160,32,0.4), transparent),
+    radial-gradient(circle 1px at 40% 70%, rgba(232,160,32,0.5), transparent),
+    radial-gradient(circle 1px at 80% 50%, rgba(232,160,32,0.3), transparent);
+  animation:td-vpFireflies 3s ease-in-out infinite alternate}
+@keyframes td-vpFireflies{0%{opacity:0.3;transform:translateY(0)}100%{opacity:0.8;transform:translateY(-3px)}}
+
+/* ═══ OVERDRIVE: Card Physics (Layer 6) ═══ */
+/* Phase 1: spotlight wobble */
+.td-shell:not(.td-forest):not(.td-winner) .td-card{animation:td-cardSpotlight 3s ease-in-out infinite}
+.td-shell:not(.td-forest):not(.td-winner) .td-card:nth-child(2n){animation-delay:0.4s;animation-duration:3.3s}
+.td-shell:not(.td-forest):not(.td-winner) .td-card:nth-child(3n){animation-delay:0.8s;animation-duration:2.8s}
+@keyframes td-cardSpotlight{0%,100%{transform:scale(1)}50%{transform:scale(1.005)}}
+
+/* Scorecard flip for judging */
+.td-scoreflip{animation:td-flipIn 0.6s ease-out forwards}
+@keyframes td-flipIn{0%{transform:rotateY(90deg);opacity:0}100%{transform:rotateY(0deg);opacity:1}}
+
+/* Phase 2: forest sway */
+.td-shell.td-forest .td-card{animation:td-cardSway 3s ease-in-out infinite}
+.td-shell.td-forest .td-card:nth-child(2n){animation-delay:0.3s;animation-duration:3.4s}
+.td-shell.td-forest .td-card:nth-child(3n){animation-delay:0.7s;animation-duration:2.7s}
+@keyframes td-cardSway{0%,100%{transform:translateX(0) rotate(0deg)}50%{transform:translateX(2px) rotate(0.3deg)}}
+
+.td-step .td-card{animation-play-state:paused}
+.td-step.td-visible .td-card{animation-play-state:running}
+
+/* ═══ OVERDRIVE: Telemetry Ticker (Layer 7) ═══ */
+.td-ticker{font-family:'Playfair Display',serif;font-size:0.6rem;color:#6a5a3a;background:rgba(26,10,10,0.6);border-top:1px solid rgba(212,160,23,0.3);padding:2px 0;overflow:hidden;white-space:nowrap;position:relative;z-index:2;height:16px;letter-spacing:1px}
+.td-ticker-text{display:inline-block;animation:td-tickerScroll 25s linear infinite;padding-left:100%}
+@keyframes td-tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+
+/* Leaderboard */
+.td-lb-row{display:flex;align-items:center;gap:6px;padding:4px 8px;margin:2px 0;border-radius:4px;font-size:0.85rem}
+.td-lb-row.td-first{background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.3)}
+.td-lb-rank{font-family:'Playfair Display',serif;width:24px;text-align:center;color:#d4a017;font-weight:700}
+.td-lb-name{flex:1;color:#faf0d4}
+.td-lb-score{font-family:'Playfair Display',serif;color:#d4a017;font-size:0.8rem}
+
+/* Trail map (sidebar) */
+.td-trail{display:flex;flex-direction:column;gap:1px;margin:6px 0}
+.td-trail-seg{height:14px;display:flex;align-items:center;gap:3px;padding:0 4px;border-radius:2px;font-size:0.55rem;font-family:'Playfair Display',serif;color:#6a5a3a;background:rgba(26,58,26,0.15);border:1px solid rgba(26,58,26,0.2);position:relative}
+.td-trail-seg.td-reached{background:rgba(45,138,78,0.1);border-color:rgba(45,138,78,0.3)}
+.td-trail-seg.td-finish{background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.3)}
+.td-trail-dot{width:6px;height:6px;border-radius:50%;border:1px solid #faf0d4;position:absolute;right:4px}
+
+/* Compat bar in sidebar */
+.td-compat-bar{height:6px;border-radius:3px;background:rgba(212,160,23,0.1);overflow:hidden;margin:2px 0 0 27px}
+.td-compat-fill{height:100%;border-radius:3px}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  .td-shell::before,.td-shell::after{animation:none!important}
+  .td-h1,.td-firefly,.td-transition{animation:none!important;transform:none!important}
+  .td-transition{opacity:0!important;visibility:hidden!important}
+  .td-transition::before,.td-transition::after{animation:none!important}
+  .td-step{transition:none!important}
+  .td-bar{transition:none!important}
+  .td-viewport-circus::after,.td-viewport-forest::after{animation:none!important}
+  .td-ticker-text{animation:none!important;padding-left:0}
+  .td-card{animation:none!important;filter:none!important;opacity:1!important;transform:none!important}
+  .td-scoreflip{animation:none!important;transform:none!important;opacity:1!important}
+  .td-spotlightSweep{animation:none!important}
+}
+</style>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PLAYER POSTER BUILDER
+// ══════════════════════════════════════════════════════════════
+function _poster(name, statusCls = '', tag = '') {
+  const sl = slug(name);
+  return `<span class="td-poster ${statusCls}">
+    <span class="td-poster-frame"><img src="assets/avatars/${sl}.png" alt="${name}" onerror="this.style.display='none'"></span>
+    <span class="td-poster-name">${name}</span>${tag ? `<span class="td-poster-tag ${tag.cls || ''}">${tag.text}</span>` : ''}
+  </span>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SHELL WRAPPER
+// ══════════════════════════════════════════════════════════════
+function _buildHUD(phaseCls, ep) {
+  if (!phaseCls) return '';
+  const hud = HUD_DATA[phaseCls] || HUD_DATA[''];
+
+  // Compat dots from assignments
+  let dotsHtml = '';
+  const data = ep.topDog;
+  if (data?.phase1?.assignments) {
+    data.phase1.assignments.forEach(a => {
+      const cls = a.compatibility >= 6.5 ? 'td-compat-high' : a.compatibility >= 4 ? 'td-compat-mid' : 'td-compat-low';
+      dotsHtml += `<span class="td-hud-dot ${cls}" title="${a.player}: ${a.compatibility.toFixed(1)}"></span>`;
+    });
+  }
+
+  return `<div class="td-hud">
+    <span class="td-hud-act">${hud.act}</span>
+    <span class="td-hud-label">${hud.label}</span>
+    <span class="td-hud-sub">${hud.sub}</span>
+    <span class="td-hud-dots">${dotsHtml}</span>
+  </div>`;
+}
+
+function _buildTransition(phaseCls) {
+  if (phaseCls === 'td-circus-assign' || phaseCls === 'td-circus-training' || phaseCls === 'td-circus-judging') {
+    return `<div class="td-transition td-trans-curtain-rise"></div>`;
+  }
+  if (phaseCls === 'td-forest') {
+    return `<div class="td-transition td-trans-forest-enter"><span class="td-trans-forest-text">INTO THE FOREST</span></div>`;
+  }
+  if (phaseCls === 'td-winner') {
+    return `<div class="td-transition td-trans-winner-burst"></div>`;
+  }
+  return '';
+}
+
+function _buildTicker(phaseCls) {
+  const text = TELEMETRY_DATA[phaseCls];
+  if (!text) return '';
+  return `<div class="td-ticker"><span class="td-ticker-text">${text}  ◆  ${text}</span></div>`;
+}
+
+function _buildFireflies() {
+  let html = '';
+  for (let i = 0; i < 12; i++) {
+    const left = Math.random() * 100;
+    const top = Math.random() * 100;
+    const delay = (Math.random() * 6).toFixed(1);
+    const dur = (4 + Math.random() * 4).toFixed(1);
+    html += `<div class="td-firefly" style="left:${left}%;top:${top}%;animation-delay:${delay}s;animation-duration:${dur}s"></div>`;
+  }
+  return html;
+}
+
+function _shell(content, ep, phaseCls = '') {
+  window._tdData = ep.topDog;
+  window._tdEp = ep;
+  const isForest = phaseCls === 'td-forest';
+  const shellCls = isForest ? 'td-forest' : phaseCls === 'td-winner' ? 'td-winner' : '';
+  return `${_css()}<div class="td-shell ${shellCls}" data-phase="${phaseCls}">
+    ${_buildTransition(phaseCls)}
+    ${isForest ? _buildFireflies() : ''}
+    <div class="td-main">${_buildHUD(phaseCls, ep)}${content}${_buildTicker(phaseCls)}</div>
+    <div class="td-sidebar" id="td-sidebar">${_buildSidebarContent(ep.topDog, phaseCls, ep)}</div>
+  </div>`;
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SIDEBAR CONTENT (Layer 9 — Interactive, gated by _tvState)
+// ══════════════════════════════════════════════════════════════
+function _buildViewport(phaseCls) {
+  const isForest = phaseCls === 'td-forest';
+  return `<div class="td-viewport">
+    ${isForest ? '<div class="td-viewport-forest"></div>' : '<div class="td-viewport-circus"></div>'}
+  </div>`;
+}
+
+function _buildSidebarContent(data, phase, ep) {
+  if (!data) return '<div class="td-sb-title">NO DATA</div>';
+
+  if (phase === 'td-circus-assign') return _buildViewport(phase) + _sidebarAssignment(data);
+  if (phase === 'td-circus-training') return _buildViewport(phase) + _sidebarTraining(data);
+  if (phase === 'td-circus-judging') return _buildViewport(phase) + _sidebarJudging(data);
+  if (phase === 'td-forest') return _buildViewport(phase) + _sidebarForest(data);
+  if (phase === 'td-winner') return _buildViewport(phase) + _sidebarWinner(data, ep);
+  // Title card
+  return _sidebarRoster(data);
+}
+
+function _sidebarRoster(data) {
+  let h = '<div class="td-sb-title">CAST ROSTER</div>';
+  const assignments = data.phase1?.assignments || [];
+  assignments.forEach(a => {
+    const sl = slug(a.player);
+    h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${a.player}" onerror="this.style.display='none'"><span class="td-sb-name">${a.player}</span><span class="td-sb-tag td-gold">CAST</span></div>`;
+  });
+  h += `<div class="td-sb-section"><div class="td-sb-title">CHALLENGE BRIEF</div><div style="font-size:0.72rem;color:#b8860b;line-height:1.4">Phase 1: Train your animal + perform for judges. Phase 2: Race through the forest. First to the exit wins immunity.</div></div>`;
+  return h;
+}
+
+function _sidebarAssignment(data) {
+  const st = _tvState['td-assign'];
+  const revIdx = st ? st.idx : -1;
+  const assignments = data.phase1?.assignments || [];
+
+  let h = '<div class="td-sb-title">ANIMAL DRAFT</div>';
+  assignments.forEach((a, i) => {
+    const sl = slug(a.player);
+    const revealed = i <= revIdx;
+    if (revealed) {
+      const pct = Math.round(a.compatibility * 10);
+      const barCls = a.compatibility >= 6.5 ? 'td-gold' : a.compatibility >= 4 ? 'td-amber' : 'td-crimson';
+      const animal = a.animal;
+      h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${a.player}" onerror="this.style.display='none'"><span class="td-sb-name">${a.player}</span><span class="td-sb-tag td-gold">${animal.name}</span></div>`;
+      h += `<div class="td-compat-bar"><div class="td-compat-fill ${barCls}" style="width:${pct}%"></div></div>`;
+    } else {
+      h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${a.player}" onerror="this.style.display='none'"><span class="td-sb-name">${a.player}</span><span class="td-sb-tag td-grey">???</span></div>`;
+    }
+  });
+  return h;
+}
+
+function _sidebarTraining(data) {
+  const st = _tvState['td-training'];
+  const revIdx = st ? st.idx : -1;
+  const assignments = data.phase1?.assignments || [];
+  const rounds = data.phase1?.trainingRounds || [];
+  const roundsRevealed = revIdx + 1;
+
+  let h = `<div class="td-sb-title">TRAINER'S SCOREBOARD</div>`;
+  h += `<div style="text-align:center;font-family:'Playfair Display',serif;font-size:0.7rem;color:#8a7a4a;margin:4px 0">ROUND ${Math.min(roundsRevealed, rounds.length)} / ${rounds.length}</div>`;
+
+  assignments.forEach(a => {
+    const sl = slug(a.player);
+    // Count successes up to revealed rounds
+    let successes = 0;
+    for (let r = 0; r < roundsRevealed && r < rounds.length; r++) {
+      const res = rounds[r].results?.find(rr => rr.player === a.player);
+      if (res?.outcome === 'success') successes++;
+    }
+    const total = Math.min(roundsRevealed, rounds.length);
+    const pct = total > 0 ? Math.round((successes / total) * 100) : 0;
+    const barCls = pct >= 75 ? 'td-gold' : pct >= 50 ? 'td-amber' : 'td-crimson';
+
+    h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${a.player}" onerror="this.style.display='none'"><span class="td-sb-name">${a.player}</span><span class="td-sb-tag ${pct >= 75 ? 'td-gold' : pct >= 50 ? 'td-amber' : 'td-crimson'}">${successes}/${total}</span></div>`;
+    h += `<div class="td-compat-bar"><div class="td-compat-fill ${barCls}" style="width:${pct}%"></div></div>`;
+  });
+  return h;
+}
+
+function _sidebarJudging(data) {
+  const st = _tvState['td-judging'];
+  const revIdx = st ? st.idx : -1;
+  const perfs = data.phase1?.performances || [];
+
+  let h = '<div class="td-sb-title">JUDGE SCORES</div>';
+  // Build leaderboard gated by reveal
+  const revealed = perfs.filter((_, i) => i <= revIdx);
+  const sorted = [...revealed].sort((a, b) => b.total - a.total);
+  sorted.forEach((p, i) => {
+    const sl = slug(p.player);
+    const animal = p.animalObj || {};
+    h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${p.player}" onerror="this.style.display='none'"><span class="td-sb-name">${p.player}</span><span class="td-sb-tag td-gold">${p.total}/20</span></div>`;
+  });
+  // Unrevealed
+  perfs.forEach((p, i) => {
+    if (i > revIdx) {
+      const sl = slug(p.player);
+      h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${p.player}" onerror="this.style.display='none'"><span class="td-sb-name">${p.player}</span><span class="td-sb-tag td-grey">???</span></div>`;
+    }
+  });
+  return h;
+}
+
+function _sidebarForest(data) {
+  const st = _tvState['td-forest-race'];
+  const revIdx = st ? st.idx : -1;
+  const rounds = data.phase2?.rounds || [];
+  const roundsRevealed = revIdx + 1;
+  const positions = data.phase2?.positions || {};
+  const assignments = data.phase1?.assignments || [];
+
+  let h = '<div class="td-sb-title">TRAIL MAP</div>';
+
+  // Trail segments
+  h += '<div class="td-trail">';
+  for (let seg = FOREST_LENGTH; seg >= 0; seg--) {
+    const isFinish = seg === FOREST_LENGTH;
+    let segCls = isFinish ? 'td-finish' : '';
+
+    // Player dots at this segment (based on revealed positions)
+    let dots = '';
+    if (roundsRevealed > 0) {
+      assignments.forEach(a => {
+        // Calculate position from revealed rounds
+        let pos = 0;
+        const performances = data.phase1?.performances || [];
+        const perfIdx = performances.findIndex(p => p.player === a.player);
+        if (perfIdx === 0) pos = 3;
+        else if (perfIdx === 1) pos = 2;
+        else if (perfIdx === 2) pos = 1;
+
+        for (let r = 0; r < roundsRevealed && r < rounds.length; r++) {
+          const mov = rounds[r].movements?.find(m => m.player === a.player);
+          if (mov) pos = mov.position;
+        }
+
+        const playerSeg = Math.min(FOREST_LENGTH, Math.floor(pos));
+        if (playerSeg === seg) {
+          const sl = slug(a.player);
+          const color = a.compatibility >= 6.5 ? '#d4a017' : a.compatibility >= 4 ? '#b8860b' : '#8b1a1a';
+          dots += `<span class="td-trail-dot" style="background:${color}" title="${a.player}"></span>`;
+          segCls += ' td-reached';
+        }
+      });
+    }
+
+    h += `<div class="td-trail-seg ${segCls}">${isFinish ? 'EXIT' : seg}${dots}</div>`;
+  }
+  h += '</div>';
+
+  return h;
+}
+
+function _sidebarWinner(data, ep) {
+  let h = '<div class="td-sb-title">FINAL RANKINGS</div>';
+  const finishOrder = data.phase2?.finishOrder || [];
+  const winner = data.immunityWinner;
+  const scores = ep?.chalMemberScores || {};
+
+  finishOrder.forEach((n, i) => {
+    const sl = slug(n);
+    const isWinner = n === winner;
+    let tag = '';
+    if (isWinner) tag = '<span class="td-sb-tag td-crown">IMMUNE</span>';
+    else tag = `<span class="td-sb-tag td-gold">#${i + 1}</span>`;
+    h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="td-sb-name">${n}</span>${tag}</div>`;
+  });
+
+  return h;
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN 1: TITLE CARD
+// ══════════════════════════════════════════════════════════════
+export function rpBuildTopDogTitleCard(ep) {
+  const data = ep.topDog;
+  if (!data) return '<div>No challenge data</div>';
+
+  const assignments = data.phase1?.assignments || [];
+
+  // Animal silhouettes ring
+  const animalRing = assignments.map((a, i) => {
+    const angle = (i / assignments.length) * 360;
+    const radius = 80;
+    const x = Math.cos(angle * Math.PI / 180) * radius;
+    const y = Math.sin(angle * Math.PI / 180) * radius;
+    return `<span style="position:absolute;left:calc(50% + ${x}px - 10px);top:calc(50% + ${y}px - 10px);font-size:1.2rem;opacity:0.4">${a.animal.icon}</span>`;
+  }).join('');
+
+  let posters = assignments.map(a => `<div style="display:inline-block;margin:2px">${_poster(a.player, 'td-high')}</div>`).join('');
+
+  const content = `
+    <div class="td-h1" style="font-size:2.2rem;margin:20px 0 6px">TOP DOG</div>
+    <div style="text-align:center;font-family:'Playfair Display',serif;font-size:0.8rem;color:#b8860b;letter-spacing:4px;margin-bottom:16px;text-transform:uppercase">Immunity Challenge</div>
+    <div class="td-host">${data.hostOpening || ''}</div>
+    <div style="text-align:center;margin:16px 0;position:relative;height:200px">
+      <div style="position:relative;width:200px;height:200px;margin:0 auto">${animalRing}</div>
+    </div>
+    <div style="text-align:center;margin:12px 0">
+      <div style="font-family:'Playfair Display',serif;font-size:0.7rem;color:#d4a017;letter-spacing:2px;margin-bottom:8px;text-transform:uppercase">Cast</div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px">${posters}</div>
+    </div>
+    <div style="margin-top:16px;text-align:center">
+      <div class="td-card" style="display:inline-block;max-width:420px;text-align:left">
+        <div class="td-h3">Challenge Rules</div>
+        <div style="font-size:0.82rem;line-height:1.6;color:#b8860b">
+          <b style="color:#d4a017">Phase 1</b> — Animal Draft + Training + Judged Performance<br>
+          <b style="color:#8b1a1a">Phase 2</b> — Forest Race (14 segments to the exit)<br>
+          <span style="color:#ffd700">Top performance score = head start in the race. First to exit wins immunity.</span>
+        </div>
+      </div>
+    </div>`;
+
+  if (!window._tdScreenBuilders) window._tdScreenBuilders = {};
+  window._tdScreenBuilders['td-title'] = rpBuildTopDogTitleCard;
+  return _shell(content, ep, '');
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN 2: ANIMAL ASSIGNMENT
+// ══════════════════════════════════════════════════════════════
+export function rpBuildTopDogAssignment(ep) {
+  const data = ep.topDog;
+  if (!data) return '<div>No challenge data</div>';
+
+  const assignments = data.phase1?.assignments || [];
+  const totalSteps = assignments.length;
+  const stKey = 'td-assign';
+  const st = _ensureState(stKey, totalSteps);
+
+  let steps = '';
+  assignments.forEach((a, i) => {
+    const vis = i <= st.idx ? 'td-visible' : '';
+    const pct = Math.round(a.compatibility * 10);
+    const barCls = a.compatibility >= 6.5 ? 'td-gold' : a.compatibility >= 4 ? 'td-amber' : 'td-crimson';
+    const posterCls = a.compatibility >= 6.5 ? 'td-high' : a.compatibility >= 4 ? 'td-mid' : 'td-low';
+
+    // Archetype bonus/penalty description
+    const playerArch = arch(a.player);
+    let bonusText = '';
+    if (a.compatibility >= 7) bonusText = `<span style="color:#d4a017;font-size:0.75rem"> — Natural affinity!</span>`;
+    else if (a.compatibility <= 3) bonusText = `<span style="color:#8b1a1a;font-size:0.75rem"> — This could be trouble...</span>`;
+
+    steps += `<div class="td-step ${vis}" data-step="${i}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        ${_poster(a.player, posterCls, { text: a.animal.name, cls: 'td-gold' })}
+        <div style="flex:1">
+          <div style="font-size:0.78rem;color:#b8860b;font-family:'Playfair Display',serif">
+            ${a.animal.icon} ${a.animal.name} — Danger: ${'★'.repeat(a.animal.danger)}${'☆'.repeat(5 - a.animal.danger)} — ${a.animal.temperament}${bonusText}
+          </div>
+          <div style="font-size:0.7rem;color:#8a7a4a;font-family:'Playfair Display',serif;letter-spacing:1px">COMPATIBILITY: ${a.compatibility.toFixed(1)}/10</div>
+          <div class="td-bar-wrap"><div class="td-bar ${barCls}" style="width:${pct}%"></div></div>
+        </div>
+      </div>
+      <div class="td-card">${_icon(a.compatibility >= 5.5 ? 'heart' : 'claw')}${a.reactionText}</div>
+    </div>`;
+
+    // Comm chatter between reveals
+    if (i > 0 && i % 3 === 0) {
+      const chatter = _pickChatter('td-circus', 1);
+      if (chatter.length) steps += `<div class="td-step ${vis}" data-step="${i}">${_commDiv(chatter[0])}</div>`;
+    }
+  });
+
+  const content = `
+    <div class="td-h1">Animal Draft</div>
+    <div style="text-align:center;font-family:'Playfair Display',serif;font-size:0.75rem;color:#8a7a4a;letter-spacing:2px;margin-bottom:10px">PRIORITY PICK — HIGHEST SOCIAL+BOLDNESS DRAFTS FIRST</div>
+    <div data-screen-key="${stKey}">${steps}</div>
+    <div class="td-reveal-bar">
+      <button class="td-btn" onclick="tdRevealNext('${stKey}',${totalSteps})">Next Draft Pick &#9654;</button>
+      <button class="td-btn td-btn-crimson" onclick="tdRevealAll('${stKey}',${totalSteps})">Reveal All &#9193;</button>
+      <span id="td-counter-${stKey}" style="font-family:'Playfair Display',serif;font-size:0.7rem;color:#8a7a4a">${Math.max(0, st.idx + 1)}/${totalSteps}</span>
+    </div>`;
+
+  if (!window._tdScreenBuilders) window._tdScreenBuilders = {};
+  window._tdScreenBuilders[stKey] = rpBuildTopDogAssignment;
+  return _shell(content, ep, 'td-circus-assign');
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN 3: TRAINING MONTAGE
+// ══════════════════════════════════════════════════════════════
+export function rpBuildTopDogTraining(ep) {
+  const data = ep.topDog;
+  if (!data) return '<div>No challenge data</div>';
+
+  const rounds = data.phase1?.trainingRounds || [];
+  const assignments = data.phase1?.assignments || [];
+  const totalSteps = rounds.length;
+  const stKey = 'td-training';
+  const st = _ensureState(stKey, totalSteps);
+
+  let steps = '';
+
+  rounds.forEach((round, i) => {
+    const vis = i <= st.idx ? 'td-visible' : '';
+
+    // Training results for each player
+    let resultCards = (round.results || []).map(r => {
+      const assign = assignments.find(a => a.player === r.player);
+      const animal = assign?.animal || { name: '?', icon: '?' };
+      const cardCls = r.outcome === 'success' ? 'td-success-card' : r.outcome === 'critical_failure' ? 'td-fail-card' : '';
+      const iconType = r.outcome === 'success' ? 'star' : r.outcome === 'critical_failure' ? 'skull' : 'whip';
+      const posterCls = r.outcome === 'success' ? 'td-high' : r.outcome === 'critical_failure' ? 'td-low' : 'td-mid';
+
+      return `<div class="td-card ${cardCls}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          ${_poster(r.player, posterCls, { text: animal.name, cls: r.outcome === 'success' ? 'td-gold' : 'td-crimson' })}
+          ${_icon(iconType)}
+          <span style="font-family:'Playfair Display',serif;font-size:0.7rem;color:#8a7a4a;text-transform:uppercase;letter-spacing:1px">${r.outcome.replace('_', ' ')}</span>
+        </div>
+        <div style="font-size:0.84rem">${r.text}</div>
+      </div>`;
+    }).join('');
+
+    // Social events for this round
+    let socHtml = (round.socialEvents || []).map(se => {
+      return `<div class="td-card td-social">${_icon(se.type)}${se.text}</div>`;
+    }).join('');
+
+    // Mole action
+    let moleHtml = '';
+    if (round.moleAction) {
+      moleHtml = `<div class="td-card td-mole-card">${_icon('mole')}${round.moleAction.text}</div>`;
+    }
+
+    // Comm chatter
+    let chatter = '';
+    if (i > 0 && i % 2 === 0) {
+      const ch = _pickChatter('td-circus', 1);
+      if (ch.length) chatter = _commDiv(ch[0]);
+    }
+
+    steps += `<div class="td-step ${vis}" data-step="${i}">
+      ${chatter}
+      <div class="td-h2">Round ${round.round} <span style="font-size:0.7rem;color:#8a7a4a">${i + 1}/${totalSteps}</span></div>
+      ${resultCards}${socHtml}${moleHtml}
+    </div>`;
+  });
+
+  const content = `
+    <div class="td-h1">Training Montage</div>
+    <div class="td-host">${data.hostTrainingStart || ''}</div>
+    <div data-screen-key="${stKey}">${steps}</div>
+    <div class="td-reveal-bar">
+      <button class="td-btn" onclick="tdRevealNext('${stKey}',${totalSteps})">Next Round &#9654;</button>
+      <button class="td-btn td-btn-crimson" onclick="tdRevealAll('${stKey}',${totalSteps})">Reveal All &#9193;</button>
+      <span id="td-counter-${stKey}" style="font-family:'Playfair Display',serif;font-size:0.7rem;color:#8a7a4a">${Math.max(0, st.idx + 1)}/${totalSteps}</span>
+    </div>`;
+
+  if (!window._tdScreenBuilders) window._tdScreenBuilders = {};
+  window._tdScreenBuilders[stKey] = rpBuildTopDogTraining;
+  return _shell(content, ep, 'td-circus-training');
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN 4: JUDGING PERFORMANCE
+// ══════════════════════════════════════════════════════════════
+export function rpBuildTopDogJudging(ep) {
+  const data = ep.topDog;
+  if (!data) return '<div>No challenge data</div>';
+
+  const perfs = data.phase1?.performances || [];
+  const totalSteps = perfs.length;
+  const stKey = 'td-judging';
+  const st = _ensureState(stKey, totalSteps);
+
+  let steps = '';
+
+  perfs.forEach((p, i) => {
+    const vis = i <= st.idx ? 'td-visible' : '';
+    const animal = p.animalObj || { name: '?', icon: '?' };
+    const posterCls = p.tier === 'standingOvation' || p.tier === 'impressed' ? 'td-high' : p.tier === 'meh' ? 'td-mid' : 'td-low';
+    const scoreColor = p.total >= 16 ? '#ffd700' : p.total >= 12 ? '#d4a017' : p.total >= 8 ? '#b8860b' : '#8b1a1a';
+
+    steps += `<div class="td-step ${vis}" data-step="${i}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        ${_poster(p.player, posterCls, { text: animal.name, cls: 'td-gold' })}
+        ${_icon(p.tier)}
+      </div>
+      <div class="td-card">${_icon('spotlight')}${p.perfText}</div>
+      <div style="display:flex;gap:8px;margin:6px 0;flex-wrap:wrap">
+        <div class="td-card td-scoreflip" style="flex:1;min-width:180px;text-align:center;border-color:rgba(212,160,23,0.4)">
+          <div style="font-family:'Playfair Display',serif;font-size:0.7rem;color:#8a7a4a;letter-spacing:1px;text-transform:uppercase">Chris</div>
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;color:${scoreColor};font-weight:900;text-shadow:0 0 10px ${scoreColor}40">${p.chrisScore}</div>
+          <div style="font-size:0.82rem;margin-top:4px">${p.chrisText}</div>
+        </div>
+        <div class="td-card td-scoreflip" style="flex:1;min-width:180px;text-align:center;border-color:rgba(212,160,23,0.4);animation-delay:0.2s">
+          <div style="font-family:'Playfair Display',serif;font-size:0.7rem;color:#8a7a4a;letter-spacing:1px;text-transform:uppercase">Chef</div>
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;color:${scoreColor};font-weight:900;text-shadow:0 0 10px ${scoreColor}40">${p.chefScore}</div>
+          <div style="font-size:0.82rem;margin-top:4px">${p.chefText}</div>
+        </div>
+      </div>
+      <div style="text-align:center;font-family:'Playfair Display',serif;font-size:1.2rem;color:${scoreColor};font-weight:900;letter-spacing:2px">TOTAL: ${p.total}/20</div>
+    </div>`;
+
+    // Comm chatter
+    if (i > 0 && i % 2 === 1) {
+      const ch = _pickChatter('td-circus', 1);
+      if (ch.length) steps += `<div class="td-step ${vis}" data-step="${i}">${_commDiv(ch[0])}</div>`;
+    }
+  });
+
+  const content = `
+    <div class="td-h1">Grand Performance</div>
+    <div class="td-host">${data.hostJudgingStart || ''}</div>
+    <div data-screen-key="${stKey}">${steps}</div>
+    <div class="td-reveal-bar">
+      <button class="td-btn" onclick="tdRevealNext('${stKey}',${totalSteps})">Next Performance &#9654;</button>
+      <button class="td-btn td-btn-crimson" onclick="tdRevealAll('${stKey}',${totalSteps})">Reveal All &#9193;</button>
+      <span id="td-counter-${stKey}" style="font-family:'Playfair Display',serif;font-size:0.7rem;color:#8a7a4a">${Math.max(0, st.idx + 1)}/${totalSteps}</span>
+    </div>`;
+
+  if (!window._tdScreenBuilders) window._tdScreenBuilders = {};
+  window._tdScreenBuilders[stKey] = rpBuildTopDogJudging;
+  return _shell(content, ep, 'td-circus-judging');
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN 5: FOREST RACE
+// ══════════════════════════════════════════════════════════════
+export function rpBuildTopDogForest(ep) {
+  const data = ep.topDog;
+  if (!data) return '<div>No challenge data</div>';
+
+  const rounds = data.phase2?.rounds || [];
+  const totalSteps = rounds.length;
+  const stKey = 'td-forest-race';
+  const st = _ensureState(stKey, totalSteps);
+
+  let steps = '';
+
+  rounds.forEach((round, i) => {
+    const vis = i <= st.idx ? 'td-visible' : '';
+
+    // Movement cards
+    let moveCards = (round.movements || []).map(m => {
+      const assign = data.phase1.assignments.find(a => a.player === m.player);
+      const animal = assign?.animal || { name: '?', icon: '?' };
+      const speedCls = m.moveType === 'fast' ? 'td-success-card' : m.moveType === 'slow' ? 'td-fail-card' : '';
+      const posText = `Segment ${Math.floor(m.position)}/${FOREST_LENGTH}`;
+
+      return `<div class="td-card td-forest-card ${speedCls}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          ${_poster(m.player, m.moveType === 'fast' ? 'td-high' : m.moveType === 'slow' ? 'td-low' : 'td-mid', { text: posText, cls: 'td-gold' })}
+          ${_icon('paw')}
+        </div>
+        <div style="font-size:0.84rem">${m.text}</div>
+      </div>`;
+    }).join('');
+
+    // Encounters
+    let encounterCards = (round.encounters || []).map(e => {
+      const iconType = e.type === 'trap' ? 'trap' : e.type === 'navigation' ? 'compass' : e.type === 'obstacle' ? 'tree' : e.type === 'animalMoment' ? 'paw' : e.subType || 'paw';
+      const cardCls = (e.segDelta > 0 || e.outcome === 'success') ? 'td-success-card' : (e.segDelta < 0 || e.outcome === 'failure') ? 'td-fail-card' : '';
+      return `<div class="td-card td-forest-card ${cardCls}">${_icon(iconType)}${e.text}</div>`;
+    }).join('');
+
+    // Social events
+    let socHtml = (round.socialEvents || []).map(se => {
+      return `<div class="td-card td-social">${_icon(se.type)}${se.text}</div>`;
+    }).join('');
+
+    // Mole actions
+    let moleHtml = (round.moleActions || []).map(ma => {
+      return `<div class="td-card td-mole-card">${_icon('mole')}${ma.text}</div>`;
+    }).join('');
+
+    // Comm chatter
+    let chatter = '';
+    if (i > 0 && i % 3 === 0) {
+      const ch = _pickChatter('td-forest', 1);
+      if (ch.length) chatter = _commDiv(ch[0]);
+    }
+
+    steps += `<div class="td-step ${vis}" data-step="${i}">
+      ${chatter}
+      <div class="td-h2" style="color:#c0d8e0">Round ${round.round}</div>
+      ${moveCards}${encounterCards}${socHtml}${moleHtml}
+    </div>`;
+  });
+
+  const content = `
+    <div class="td-h1" style="color:#c0d8e0;text-shadow:0 0 20px rgba(192,216,224,0.4)">The Great Forest Race</div>
+    <div class="td-host" style="color:#e8a020;border-left-color:rgba(232,160,32,0.4)">${data.hostForestStart || ''}</div>
+    <div data-screen-key="${stKey}">${steps}</div>
+    <div class="td-reveal-bar">
+      <button class="td-btn" style="border-color:rgba(192,216,224,0.3);color:#c0d8e0;background:rgba(192,216,224,0.1)" onclick="tdRevealNext('${stKey}',${totalSteps})">Next Round &#9654;</button>
+      <button class="td-btn td-btn-crimson" onclick="tdRevealAll('${stKey}',${totalSteps})">Reveal All &#9193;</button>
+      <span id="td-counter-${stKey}" style="font-family:'Playfair Display',serif;font-size:0.7rem;color:#6a8a7a">${Math.max(0, st.idx + 1)}/${totalSteps}</span>
+    </div>`;
+
+  if (!window._tdScreenBuilders) window._tdScreenBuilders = {};
+  window._tdScreenBuilders[stKey] = rpBuildTopDogForest;
+  return _shell(content, ep, 'td-forest');
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SCREEN 6: WINNER
+// ══════════════════════════════════════════════════════════════
+export function rpBuildTopDogWinner(ep) {
+  const data = ep.topDog;
+  if (!data) return '<div>No challenge data</div>';
+
+  const winner = data.immunityWinner;
+  const finishOrder = data.phase2?.finishOrder || [];
+  const assignments = data.phase1?.assignments || [];
+  const performances = data.phase1?.performances || [];
+  const scores = ep.chalMemberScores || {};
+
+  // Find winner's animal
+  const winnerAssign = assignments.find(a => a.player === winner);
+  const winnerAnimal = winnerAssign?.animal || { name: '?', icon: '?' };
+  const winnerSlug = slug(winner);
+
+  // Build leaderboard
+  let leaderboard = finishOrder.map((n, i) => {
+    const isWinner = n === winner;
+    const perf = performances.find(p => p.player === n);
+    const perfScore = perf ? perf.total : 0;
+    const totalScore = scores[n] || 0;
+
+    return `<div class="td-lb-row ${isWinner ? 'td-first' : ''}" style="${isWinner ? '' : 'background:rgba(212,160,23,0.03)'}">
+      <span class="td-lb-rank">#${i + 1}</span>
+      ${_poster(n, isWinner ? 'td-winner-p' : 'td-high')}
+      <span class="td-lb-name">${n}</span>
+      <span class="td-lb-score">${totalScore} pts</span>
+      ${isWinner ? '<span style="font-size:0.6rem;padding:1px 5px;border-radius:6px;background:rgba(255,215,0,0.15);color:#ffd700">IMMUNE</span>' : ''}
+    </div>`;
+  }).join('');
+
+  const content = `
+    <div style="text-align:center;margin:12px 0">
+      <div style="font-family:'Playfair Display',serif;font-size:0.8rem;color:#8a7a4a;letter-spacing:3px;margin-bottom:6px;text-transform:uppercase">First Through the Forest</div>
+      <div class="td-h1" style="font-size:1.8rem;color:#ffd700;text-shadow:0 0 30px rgba(255,215,0,0.5),0 0 60px rgba(255,215,0,0.2)">IMMUNITY WINNER</div>
+      <div style="margin:14px auto;width:90px;height:90px;border-radius:8px;border:4px solid #ffd700;overflow:hidden;position:relative;box-shadow:0 0 30px rgba(255,215,0,0.4)">
+        <img src="assets/avatars/${winnerSlug}.png" alt="${winner}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none'">
+        <div style="position:absolute;inset:0;border-radius:8px;background:linear-gradient(135deg,rgba(255,215,0,0.15),transparent 50%);pointer-events:none"></div>
+      </div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#ffd700;margin:6px 0">${winner}</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1rem;color:#b8860b;margin:4px 0">with ${winnerAnimal.icon} ${winnerAnimal.name}</div>
+      <div style="font-size:0.82rem;color:#8a7a4a;margin-top:4px;font-style:italic">${data.phase2.finishText || ''}</div>
+    </div>
+    <div class="td-h2" style="text-align:center">Final Leaderboard</div>
+    <div style="max-width:500px;margin:0 auto">${leaderboard}</div>`;
+
+  if (!window._tdScreenBuilders) window._tdScreenBuilders = {};
+  window._tdScreenBuilders['td-winner'] = rpBuildTopDogWinner;
+  return _shell(content, ep, 'td-winner');
+}

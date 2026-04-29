@@ -37,11 +37,67 @@ import { _textFullMetalDrama } from './chal/full-metal-drama.js';
 import { _textOceansHeist } from './chal/oceans-heist.js';
 import { _textMillionBucksBC } from './chal/million-bucks-bc.js';
 import { _textSportsMarathon } from './chal/sports-marathon.js';
-import { _textSuperHerold } from './chal/super-hero-ld.js';
-import { _textPrincessPride } from './chal/princess-pride.js';
-import { _textGetAClue } from './chal/get-a-clue.js';
+import { _textSuperHerold, rpBuildSuperHeroldTitleCard, rpBuildSuperHeroldCostume, rpBuildSuperHeroldPrizes, rpBuildSuperHeroldRound, rpBuildSuperHeroldBoss } from './chal/super-hero-ld.js';
+import { _textPrincessPride, rpBuildPrincessPrideTitleCard, rpBuildPrincessPrideCeremony, rpBuildPrincessPrideForest, rpBuildPrincessPrideBridge, rpBuildPrincessPrideDragon, rpBuildPrincessPrideTower, rpBuildPrincessPrideDuel } from './chal/princess-pride.js';
+import { _textGetAClue, rpBuildGetAClueTitleCard, rpBuildGetAClueCollection, rpBuildGetAClueTrain, rpBuildGetAClueTrial, rpBuildGetAClueVerdict } from './chal/get-a-clue.js';
+import { _textRockNRule, rpBuildRockNRuleTitleCard, rpBuildRockNRuleGuitar, rpBuildRockNRuleCarpet, rpBuildRockNRuleHotel, rpBuildRockNRuleResults } from './chal/rock-n-rule.js';
+import { _textCrouchingCourtney, rpBuildCrouchingCourtneyTitleCard, rpBuildCrouchingCourtneyTraining, rpBuildCrouchingCourtneyFight, rpBuildCrouchingCourtneyClimb } from './chal/crouching-courtney.js';
+import { rpBuildHoustonTitleCard, rpBuildHoustonZeroG, rpBuildHoustonRedAlert, rpBuildHoustonReEntry, rpBuildHoustonSprint, rpBuildHoustonWinner } from './chal/houston.js';
+import { rpBuildTopDogTitleCard, rpBuildTopDogAssignment, rpBuildTopDogTraining, rpBuildTopDogJudging, rpBuildTopDogForest, rpBuildTopDogWinner } from './chal/top-dog.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
+
+// ══════════════════════════════════════════════════════════════
+// GENERIC TWIST CHALLENGE TEXT — renders VP screens as plain text
+// Instead of walking data structures, we call the actual VP build
+// functions and strip HTML to get the exact narration the VP shows.
+// ══════════════════════════════════════════════════════════════
+export function _textTwistChallenge(ep, ln, sec, dataKey, label, vpBuilders) {
+  const data = ep[dataKey];
+  if (!data) return;
+  sec(label);
+
+  // Force all reveal states to "show everything" so VP renders full content
+  const savedState = window._tvState ? { ...window._tvState } : {};
+  if (!window._tvState) window._tvState = {};
+
+  for (const builder of vpBuilders) {
+    try {
+      // Set reveal state to show all steps
+      const html = builder(ep);
+      if (!html) continue;
+      // Strip HTML tags, collapse whitespace, split into lines
+      const text = html
+        .replace(/<style[\s\S]*?<\/style>/gi, '')
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/div>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&middot;/g, '·')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&nbsp;/g, ' ')
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 0)
+        .filter(l => !/^(Investigate|Reveal All|NEXT|SMASH|REVEAL|SHOW ALL|DESTROY ALL|SET COMPLETE|CARPET CLEARED|ROOM DEMOLISHED|SHOW'S OVER|CASE CLOSED|ALL RISE|COLLECTION COMPLETE|INVESTIGATION CLOSED)$/i.test(l));
+
+      for (const line of text) {
+        ln(`  ${line}`);
+      }
+      ln('');
+    } catch (e) {
+      // If VP builder fails (eg missing window context), skip silently
+    }
+  }
+
+  // Restore reveal states
+  window._tvState = savedState;
+}
 
 export function _textExileFound(name, found, ln) {
   if (!found) { ln(`${name} searches Exile Island but finds nothing.`); return; }
@@ -1990,18 +2046,8 @@ export function generateSummaryText(ep) {
   _textImmunityChallenge(ep, ln, sec);
   _textTwists(ep, ln, sec);
   _textExile(ep, ln, sec);
-  _textCampPost(ep, ln, sec);
-  _textMoleExposed(ep, ln, sec);
-  _textTiedDestinies(ep, ln, sec);
-  _textVotingPlans(ep, ln, sec);
-  _textTribalCouncil(ep, ln, sec);
-  _textTheVotes(ep, ln, sec);
-  _textMoleDisruption(ep, ln, sec);
-  _textWhyVote(ep, ln, sec);
-  _textMoleReveal(ep, ln, sec);
-  _textVolunteerDuel(ep, ln, sec);
-  _textSchoolyardPick(ep, ln, sec);
-  _textAftermath(ep, ln, sec);
+
+  // ── TWIST CHALLENGES — before camp post since they ARE the immunity challenge ──
   _textSlasherNight(ep, ln, sec);
   _textMonsterCash(ep, ln, sec);
   _textOperationClassified(ep, ln, sec);
@@ -2035,9 +2081,67 @@ export function generateSummaryText(ep) {
   _textOceansHeist(ep, ln, sec);
   _textMillionBucksBC(ep, ln, sec);
   _textSportsMarathon(ep, ln, sec);
-  _textSuperHerold(ep, ln, sec);
-  _textPrincessPride(ep, ln, sec);
-  _textGetAClue(ep, ln, sec);
+  // VP-rendered text backlogs (full narration from VP screens)
+  if (ep.superHerold) {
+    const shBuilders = [rpBuildSuperHeroldTitleCard, rpBuildSuperHeroldCostume, rpBuildSuperHeroldPrizes];
+    const brRounds = ep.superHerold?.battleRoyale?.rounds || [];
+    for (let i = 0; i < brRounds.length; i++) shBuilders.push((e) => rpBuildSuperHeroldRound(e, i));
+    shBuilders.push(rpBuildSuperHeroldBoss);
+    _textTwistChallenge(ep, ln, sec, 'superHerold', 'SUPER HERO-LD', shBuilders);
+  } else _textSuperHerold(ep, ln, sec);
+  if (ep.princessPride) {
+    _textTwistChallenge(ep, ln, sec, 'princessPride', 'THE PRINCESS PRIDE', [
+      rpBuildPrincessPrideTitleCard, rpBuildPrincessPrideCeremony,
+      rpBuildPrincessPrideForest, rpBuildPrincessPrideBridge,
+      rpBuildPrincessPrideDragon, rpBuildPrincessPrideTower, rpBuildPrincessPrideDuel,
+    ]);
+  } else _textPrincessPride(ep, ln, sec);
+  if (ep.getAClue) {
+    _textTwistChallenge(ep, ln, sec, 'getAClue', 'GET A CLUE — MURDER MYSTERY', [
+      rpBuildGetAClueTitleCard, rpBuildGetAClueCollection, rpBuildGetAClueTrain,
+      rpBuildGetAClueTrial, rpBuildGetAClueVerdict,
+    ]);
+  } else _textGetAClue(ep, ln, sec);
+  if (ep.rockNRule) {
+    _textTwistChallenge(ep, ln, sec, 'rockNRule', 'ROCK N\' RULE', [
+      rpBuildRockNRuleTitleCard, rpBuildRockNRuleGuitar, rpBuildRockNRuleCarpet,
+      rpBuildRockNRuleHotel, rpBuildRockNRuleResults,
+    ]);
+  } else _textRockNRule(ep, ln, sec);
+  if (ep.crouchingCourtney) {
+    _textTwistChallenge(ep, ln, sec, 'crouchingCourtney', 'WAY OF THE WARRIOR', [
+      rpBuildCrouchingCourtneyTitleCard, rpBuildCrouchingCourtneyTraining,
+      rpBuildCrouchingCourtneyFight, rpBuildCrouchingCourtneyClimb,
+    ]);
+  } else _textCrouchingCourtney(ep, ln, sec);
+  if (ep.houston) {
+    _textTwistChallenge(ep, ln, sec, 'houston', 'HOUSTON, WE HAVE A PROBLEM', [
+      rpBuildHoustonTitleCard, rpBuildHoustonZeroG,
+      rpBuildHoustonRedAlert, rpBuildHoustonReEntry,
+      rpBuildHoustonSprint, rpBuildHoustonWinner,
+    ]);
+  }
+  if (ep.topDog) {
+    _textTwistChallenge(ep, ln, sec, 'topDog', 'TOP DOG', [
+      rpBuildTopDogTitleCard, rpBuildTopDogAssignment,
+      rpBuildTopDogTraining, rpBuildTopDogJudging,
+      rpBuildTopDogForest, rpBuildTopDogWinner,
+    ]);
+  }
+
+  // ── POST-CHALLENGE ──
+  _textCampPost(ep, ln, sec);
+  _textMoleExposed(ep, ln, sec);
+  _textTiedDestinies(ep, ln, sec);
+  _textVotingPlans(ep, ln, sec);
+  _textTribalCouncil(ep, ln, sec);
+  _textTheVotes(ep, ln, sec);
+  _textMoleDisruption(ep, ln, sec);
+  _textWhyVote(ep, ln, sec);
+  _textMoleReveal(ep, ln, sec);
+  _textVolunteerDuel(ep, ln, sec);
+  _textSchoolyardPick(ep, ln, sec);
+  _textAftermath(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
   _textJuryLife(ep, ln, sec);

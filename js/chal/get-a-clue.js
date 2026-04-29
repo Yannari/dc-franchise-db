@@ -874,7 +874,8 @@ export function simulateGetAClue(ep) {
       const listener = pick(active.filter(n => n !== witness && n !== killer));
       if (!listener) continue;
       const wBond = getBond(witness, listener);
-      const believeChance = pStats(listener).intuition * 0.3 + (wBond > 0 ? 2 : 0) + noise(2);
+      const witnessSamples = result.phase1.sampleCounts[witness] || 0;
+      const believeChance = pStats(listener).intuition * 0.3 + (wBond > 0 ? 2 : 0) + witnessSamples * 0.5 + noise(2);
       const wPr = pronouns(witness);
       if (believeChance > 3) {
         result.phase2.witnessLog.push({ witness, detail: `${listener} believed ${wPr.posAdj} testimony`, round: 99, credibility: 'believed', listener });
@@ -1098,6 +1099,33 @@ export function simulateGetAClue(ep) {
   if (killerRealEvidence === 0) suspicion[killer] += 1.5;
   else if (killerRealEvidence === 1) suspicion[killer] += 0.5;
 
+  // Fingerprint matching — players who collected the killer's DNA in Phase 1
+  // AND found fingerprint/hair evidence on the train can cross-reference
+  const fingerprintMatchers = [];
+  for (const name of active) {
+    if (name === killer) continue;
+    // Did this player collect a sample FROM the killer during Phase 1?
+    const gotKillerDNA = result.phase1.traps.some(t =>
+      (t.trapper === name && t.target === killer && t.outcome === 'success') ||
+      (t.target === name && t.trapper === killer && t.outcome === 'backfire')
+    ) || result.phase1.hunts.some(h => h.hunter === name && h.target === killer && h.success);
+
+    // Did this player find fingerprint or hair evidence on the train?
+    const foundPrintEvidence = result.phase2.playerEvidence[name]?.some(e =>
+      e.isReal && (e.compartment === 'dining' || e.compartment === 'sleeper')
+    );
+
+    if (gotKillerDNA && foundPrintEvidence) {
+      fingerprintMatchers.push(name);
+      suspicion[killer] += 2.5;
+      ep.campEvents[campKey].post.push({
+        text: `${name} cross-referenced DNA samples with train evidence — the fingerprints match someone in the cast!`,
+        players: [name], badgeText: 'DNA MATCH', badgeClass: 'purple', tag: 'get-a-clue',
+      });
+    }
+  }
+  result.phase3.fingerprintMatchers = fingerprintMatchers;
+
   // Murder reactions: the "calm" and "clueless" types are suspicious
   for (const r of (result.phase2.murderReactions || [])) {
     if (r.type === 'calm') suspicion[r.name] += 1.5;
@@ -1164,10 +1192,12 @@ export function simulateGetAClue(ep) {
       active.forEach(n => { if (n !== name) personalSuspicion[n] -= getBond(name, n) * 0.3; });
       // Intuition helps see through frames and deception
       if (s.intuition >= 7) {
-        // High intuition sees through planted evidence
         for (const f of result.phase2.framesPlanted) personalSuspicion[f.target] -= 1;
-        // And notices the REAL suspicious behavior more clearly
         personalSuspicion[killer] += 1;
+      }
+      // Fingerprint match — strongest evidence, directly points at the killer
+      if (fingerprintMatchers.includes(name)) {
+        personalSuspicion[killer] += 3;
       }
       // Small noise so it's not perfectly deterministic
       active.forEach(n => { if (n !== name) personalSuspicion[n] += noise(1.5); });
@@ -1201,18 +1231,38 @@ export function simulateGetAClue(ep) {
     ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + deductionScore;
   }
 
-  // Courtroom Vote — showmance partners with protection bias won't vote for each other
+  // Courtroom Vote — "most convincing detective" NOT "best presenter"
+  // Voters consider: case strength, cross-exam performance, deduction alignment, and suspicion
   const _protectedPairs = new Set((result.phase2.showmanceProtections || []).map(p => `${p.protector}|${p.protected}`));
   for (const voter of active) {
     const s = pStats(voter);
+    const voterSuspect = result.phase3.deductionResults[voter]?.answers.who.guess;
+
     const voteScores = active.filter(n => n !== voter).map(n => {
       const pres = presentations.find(p => p.name === n);
       const bond = getBond(voter, n);
       const isProtected = _protectedPairs.has(`${voter}|${n}`);
-      const isSuspect = framedNames.has(n);
       const cxBoost = crossExamBoosts[n] || 0;
       const cxPenalty = crossExamPenalties[n] || 0;
-      const score = parseFloat(pres.caseStrength) + bond * 0.3 + noise(1) + (isProtected ? -5 : 0) + (isSuspect ? -2 : 0) + cxBoost - cxPenalty;
+
+      let score = parseFloat(pres.caseStrength) + bond * 0.2 + cxBoost - cxPenalty + noise(0.8);
+
+      // If the voter thinks THIS person is the killer, DON'T vote for them
+      if (n === voterSuspect) score -= 8;
+
+      // Killer confession bonus — audacity is impressive to people who don't suspect you
+      if (pres.category === 'confession' && n !== voterSuspect) score += 2;
+
+      // If this person accused the same suspect as the voter, boost them (deduction alignment)
+      const theirSuspect = result.phase3.deductionResults[n]?.answers.who.guess;
+      if (theirSuspect && voterSuspect && theirSuspect === voterSuspect) score += 3;
+
+      // Showmance protection — won't vote for protected partner
+      if (isProtected) score -= 5;
+
+      // Framed players lose credibility as presenters
+      if (framedNames.has(n)) score -= 1.5;
+
       return { name: n, score };
     }).sort((a, b) => b.score - a.score);
     result.phase3.courtroomVotes[voter] = voteScores[0].name;
@@ -1248,14 +1298,25 @@ export function simulateGetAClue(ep) {
     });
   }
 
-  // Killer bonus: if fewer than half correctly identified them
+  // Did the killer get away? Two conditions must BOTH be true:
+  // 1. The courtroom winner did NOT identify the killer (the best detective missed)
+  // 2. Fewer than half the cast identified the killer
   const correctAccusers = active.filter(n => result.phase3.deductionResults[n].answers.who.correct).length;
-  if (correctAccusers < active.length / 2) {
-    ep.chalMemberScores[killer] = (ep.chalMemberScores[killer] || 0) + 4;
+  const winnerCaughtKiller = result.phase3.deductionResults[courtroomWinner]?.answers.who.correct;
+  if (!winnerCaughtKiller && correctAccusers <= 1) {
+    ep.chalMemberScores[killer] = (ep.chalMemberScores[killer] || 0) + 5;
     result.killerGotAway = true;
     ep.campEvents[campKey].post.push({
-      text: `${killer} was the killer — and got away with it! Fewer than half the cast figured it out.`,
+      text: `${killer} was the killer — and got away with it! The cast was fooled.`,
       players: [killer], badgeText: 'GOT AWAY!', badgeClass: 'purple', tag: 'get-a-clue',
+    });
+  } else if (!winnerCaughtKiller && correctAccusers < active.length / 2) {
+    ep.chalMemberScores[killer] = (ep.chalMemberScores[killer] || 0) + 2;
+    result.killerGotAway = false;
+    result.killerPartiallyCaught = true;
+    ep.campEvents[campKey].post.push({
+      text: `${killer} was the killer — some figured it out, but the courtroom missed the mark.`,
+      players: [killer], badgeText: 'SLIPPERY', badgeClass: 'amber', tag: 'get-a-clue',
     });
   } else {
     result.killerGotAway = false;
@@ -1267,8 +1328,40 @@ export function simulateGetAClue(ep) {
 
   // Killer reveal aftermath — social fallout
   result.phase3.aftermath = [];
-  // Killer's allies feel betrayed
-  const killerAllies = active.filter(n => n !== killer && getBond(n, killer) > 3);
+  const aftermathPlayers = new Set();
+
+  // Framed players — vindication (do first so we can skip them from betrayal)
+  const framedPlayers = [...new Set(result.phase2.framesPlanted.map(f => f.target))];
+  for (const framed of framedPlayers.slice(0, 2)) {
+    const fPr = pronouns(framed);
+    const wasAlsoAlly = getBond(framed, killer) > 3;
+    if (wasAlsoAlly) {
+      // Double whammy — framed AND betrayed by an ally
+      result.phase3.aftermath.push({ type: 'betrayed-and-vindicated', player: framed,
+        text: pick([
+          `${framed} stares at ${killer} in disbelief. "You framed me. YOU. My own ally." ${fPr.Sub} stands up. "I defended you in there. While you were planting evidence on ME." The betrayal is absolute. But the vindication? That's forever. "I was RIGHT. And everyone who doubted me owes me an apology."`,
+          `${framed}: "Let me get this straight. You 'killed' ${host()}. Then you planted evidence in MY pocket. Then you sat there while I got accused." ${pronouns(killer).Sub} doesn't respond. ${framed}: "We were ALLIES." The word hits like a hammer. The alliance is dead. But ${framed} walks away cleared of all suspicion — and with a target for the next tribal.`,
+        ])
+      });
+      addBond(framed, killer, -4);
+    } else {
+      result.phase3.aftermath.push({ type: 'vindicated', player: framed,
+        text: pick([
+          `${framed}: "I TOLD you it was planted! I TOLD you!" ${fPr.Sub} points at ${killer}. "YOU. You did this to me." Vindicated, furious, and already planning revenge.`,
+          `${framed} stands up slowly. "Every single one of you doubted me." ${fPr.Sub} looks at the room. "Remember that." The framed player is free — but the damage to trust is done.`,
+        ])
+      });
+    }
+    aftermathPlayers.add(framed);
+    popDelta(framed, 2);
+    ep.campEvents[campKey].post.push({
+      text: `${framed} was vindicated — the evidence was planted by ${killer}!`,
+      players: [framed, killer], badgeText: 'VINDICATED', badgeClass: 'green', tag: 'get-a-clue',
+    });
+  }
+
+  // Killer's allies feel betrayed (skip players already in aftermath)
+  const killerAllies = active.filter(n => n !== killer && !aftermathPlayers.has(n) && getBond(n, killer) > 3);
   for (const ally of killerAllies.slice(0, 2)) {
     const aPr = pronouns(ally);
     result.phase3.aftermath.push({ type: 'betrayed-ally', player: ally,
@@ -1278,26 +1371,39 @@ export function simulateGetAClue(ep) {
       ])
     });
     addBond(ally, killer, -3);
+    aftermathPlayers.add(ally);
     ep.campEvents[campKey].post.push({
       text: `${ally} felt betrayed after discovering ${killer} was the killer all along.`,
       players: [ally, killer], badgeText: 'BETRAYED', badgeClass: 'red', tag: 'get-a-clue',
     });
   }
-  // Framed player gets vindication
-  const framedPlayers = [...new Set(result.phase2.framesPlanted.map(f => f.target))];
-  for (const framed of framedPlayers.slice(0, 1)) {
-    const fPr = pronouns(framed);
-    result.phase3.aftermath.push({ type: 'vindicated', player: framed,
+
+  // Players who correctly identified the killer — vindication for the detectives
+  const correctDetectives = active.filter(n => n !== killer && !aftermathPlayers.has(n) && result.phase3.deductionResults[n]?.answers.who.correct);
+  for (const det of correctDetectives.slice(0, 1)) {
+    result.phase3.aftermath.push({ type: 'correct-detective', player: det,
       text: pick([
-        `${framed}: "I TOLD you it was planted! I TOLD you!" ${fPr.Sub} points at ${killer}. "YOU. You did this to me." Vindicated, furious, and already planning revenge.`,
-        `${framed} stands up slowly. "Every single one of you doubted me." ${fPr.Sub} looks at the room. "Remember that." The framed player is free — but the damage to trust is done.`,
+        `${det} slams the table. "I KNEW IT. I knew it was ${killer} the entire time." ${pronouns(det).Sub} turns to the others. "Did any of you listen? NO."`,
+        `${det} crosses ${pronouns(det).posAdj} arms and stares at ${killer}. No surprise on ${pronouns(det).posAdj} face. "I had you figured out since the first blackout." The best detective in the room, proven right.`,
       ])
     });
-    popDelta(framed, 2);
-    ep.campEvents[campKey].post.push({
-      text: `${framed} was vindicated — the evidence was planted by ${killer}!`,
-      players: [framed, killer], badgeText: 'VINDICATED', badgeClass: 'green', tag: 'get-a-clue',
+    popDelta(det, 2);
+    aftermathPlayers.add(det);
+  }
+
+  // Players who wrongly accused someone — embarrassment
+  const wrongAccusers = active.filter(n => n !== killer && !aftermathPlayers.has(n) && result.phase3.deductionResults[n]?.answers.who.guess && result.phase3.deductionResults[n].answers.who.guess !== killer);
+  if (wrongAccusers.length >= 2) {
+    const embarrassed = pick(wrongAccusers);
+    const wrongTarget = result.phase3.deductionResults[embarrassed].answers.who.guess;
+    result.phase3.aftermath.push({ type: 'wrong-accusation', player: embarrassed,
+      text: pick([
+        `${embarrassed} shrinks into ${pronouns(embarrassed).posAdj} seat. ${pronouns(embarrassed).Sub} accused ${wrongTarget}. It wasn't ${wrongTarget}. It was never ${wrongTarget}. "I... I was so sure."`,
+        `${embarrassed} owes ${wrongTarget} an apology. A big one. "I pointed at you in front of everyone." ${wrongTarget}: "Yeah. You did." This is going to be awkward at camp.`,
+      ])
     });
+    addBond(embarrassed, wrongTarget, -1);
+    aftermathPlayers.add(embarrassed);
   }
 
   // ── ROMANCE HOOKS ──
@@ -2466,7 +2572,7 @@ export function rpBuildGetAClueVerdict(ep) {
       Strategy: <strong style="color:var(--manila)">${strategyLabel}</strong>
     </div>
     <div style="margin-top:4px;font-family:'Special Elite',monospace;font-size:13px;color:${gc.killerGotAway ? '#a855f7' : '#22c55e'}">
-      ${gc.killerGotAway ? '🎭 Got away with it — fewer than half figured it out' : '🔍 Caught by the cast — justice served'}
+      ${gc.killerGotAway ? '🎭 Got away with it — the cast was completely fooled' : gc.killerPartiallyCaught ? '🎭 Slippery — some detectives found the truth, but the courtroom missed' : '🔍 Caught by the cast — justice served'}
     </div>
     ${gc.immunityWinner === kn ? '<div class="gc-untouchable">UNTOUCHABLE</div>' : ''}
   </div>`);
@@ -2474,8 +2580,8 @@ export function rpBuildGetAClueVerdict(ep) {
   // Aftermath — social fallout from the reveal
   if (gc.phase3.aftermath?.length) {
     const afterHtml = gc.phase3.aftermath.map(a => {
-      const icon = a.type === 'betrayed-ally' ? '💔' : a.type === 'vindicated' ? '✊' : '😤';
-      const border = a.type === 'vindicated' ? '#22c55e' : 'var(--red-string)';
+      const icon = { 'betrayed-ally': '💔', 'vindicated': '✊', 'betrayed-and-vindicated': '💔✊', 'correct-detective': '🔍', 'wrong-accusation': '😬' }[a.type] || '😤';
+      const border = { 'vindicated': '#22c55e', 'correct-detective': 'var(--gold-foil)', 'betrayed-and-vindicated': '#a855f7', 'wrong-accusation': 'var(--coffee)' }[a.type] || 'var(--red-string)';
       return `<div class="gc-player-card" style="border-color:${border}">
         ${portrait(a.player, 32)}
         <div style="flex:1">

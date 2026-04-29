@@ -51,23 +51,33 @@ export const ANIMALS = [
 // ══════════════════════════════════════════════════════════════
 function _calcCompatibility(name, animal) {
   const s = pStats(name);
-  const base = (s[animal.stats[0]] + s[animal.stats[1]]) * 0.5;
+  const base = (s[animal.stats[0]] + s[animal.stats[1]]) * 0.25;
   let bonus = 0;
   const a = arch(name);
 
-  // archetype bonuses
-  if (['villain', 'mastermind', 'schemer'].includes(a) && ['aggressive', 'cunning'].includes(animal.temperament)) bonus += 2;
-  if (a === 'hero' && ['loyal', 'playful'].includes(animal.temperament)) bonus += 2;
-  if (a === 'social-butterfly') bonus += 1;
-  if (a === 'goat' && animal.danger >= 4) bonus -= 2;
+  // archetype synergy
+  if (['villain', 'mastermind', 'schemer'].includes(a) && ['aggressive', 'cunning'].includes(animal.temperament)) bonus += 1.5;
+  if (a === 'hero' && ['loyal', 'playful'].includes(animal.temperament)) bonus += 1.5;
+  if (a === 'social-butterfly') bonus += 0.8;
   if (a === 'challenge-beast' && animal.stats.includes('physical')) bonus += 1;
-  if (a === 'loyal-soldier' && animal.temperament === 'loyal') bonus += 1.5;
+  if (a === 'loyal-soldier' && animal.temperament === 'loyal') bonus += 1.2;
   if (a === 'chaos-agent' && animal.temperament === 'playful') bonus += 1;
-  if (a === 'wildcard') bonus += noise(2); // extra variance
+  if (a === 'wildcard') bonus += noise(3);
   if (a === 'underdog' && animal.danger <= 2) bonus += 1;
   if (a === 'showmancer' && ['skittish', 'playful'].includes(animal.temperament)) bonus += 1;
 
-  return Math.max(0, Math.min(10, base + bonus + noise(3)));
+  // archetype clashes
+  if (a === 'goat' && animal.danger >= 4) bonus -= 2.5;
+  if (['hero', 'loyal-soldier'].includes(a) && animal.temperament === 'aggressive') bonus -= 1.5;
+  if (a === 'underdog' && animal.danger >= 4) bonus -= 1.5;
+  if (['villain', 'schemer'].includes(a) && animal.temperament === 'loyal') bonus -= 1;
+  if (a === 'floater' && animal.temperament === 'stubborn') bonus -= 1;
+
+  // danger tax — high-danger animals are harder to bond with
+  if (animal.danger >= 4) bonus -= 1;
+  if (animal.danger >= 5) bonus -= 0.5;
+
+  return Math.max(0, Math.min(10, base + bonus + noise(2.5)));
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -745,7 +755,7 @@ function _simulateTraining(assignments, ep, result) {
       const { player, animal, compatibility } = assign;
       const s = pStats(player);
       const relevantStat = (s[animal.stats[0]] + s[animal.stats[1]]) * 0.5;
-      const trainRoll = compatibility * 0.4 + relevantStat * 0.3 + noise(2.5);
+      const trainRoll = (compatibility + 2) * 0.35 + relevantStat * 0.35 + noise(2.5);
 
       // Success threshold proportional to difficulty
       const threshold = 3.5 + animal.danger * 0.3;
@@ -892,8 +902,8 @@ function _simulateJudging(assignments, result) {
     const pr = pronouns(player);
     const trainingRate = successCount / totalRounds;
     const perfRoll = (s.social * 0.4 + s.boldness * 0.3 + noise(2.5)) / 10;
-    const animalMood = compatibility / 10;
-    const rawScore = trainingRate * 0.4 + perfRoll * 0.3 + animalMood * 0.3;
+    const animalMood = (compatibility + 3) / 13;
+    const rawScore = trainingRate * 0.35 + perfRoll * 0.35 + animalMood * 0.3;
 
     const chrisScore = Math.round(Math.max(1, Math.min(10, rawScore * 10 + noise(1.5))));
     const chefScore = Math.round(Math.max(1, Math.min(10, rawScore * 10 + noise(1.5))));
@@ -1006,9 +1016,8 @@ function _simulateForestRace(assignments, performances, ep, result) {
       if (!assign) continue;
       const s = pStats(name);
       const pr = pronouns(name);
-      const moveRoll = s.physical * 0.3 + s.endurance * 0.2 + (assign.compatibility * 0.2) + noise(2.5);
-      // Scale to segments (0.5 to 2.5 typically)
-      let segments = Math.max(0.3, moveRoll / 4);
+      const moveRoll = s.physical * 0.3 + s.endurance * 0.2 + (assign.compatibility + 2) * 0.15 + noise(2.5);
+      let segments = Math.max(0.8, moveRoll / 3.5);
 
       // Encounter (1-2 per round)
       const encounterCount = 1 + (Math.random() < 0.35 ? 1 : 0);
@@ -1025,7 +1034,7 @@ function _simulateForestRace(assignments, performances, ep, result) {
         }
       }
 
-      segments = Math.max(0, segments);
+      segments = Math.max(0.3, segments);
       positions[name] = (positions[name] || 0) + segments;
 
       // Movement text
@@ -1055,8 +1064,8 @@ function _simulateForestRace(assignments, performances, ep, result) {
       if (moleAssign) {
         const s = pStats(mole);
         const pr = pronouns(mole);
-        const moveRoll = s.physical * 0.3 + s.endurance * 0.2 + (moleAssign.compatibility * 0.2) + noise(2.5);
-        let segments = Math.max(0.3, moveRoll / 4);
+        const moveRoll = s.physical * 0.3 + s.endurance * 0.2 + (moleAssign.compatibility + 2) * 0.15 + noise(2.5);
+        let segments = Math.max(0.8, moveRoll / 3.5);
         // GPS already added 3 segments, this is normal movement on top
         // Actually no — the GPS +3 was already applied above. Normal movement here.
         // Wait, we already added GPS bonus to positions. So this is just normal running.
@@ -1141,7 +1150,7 @@ function _generateEncounter(name, assign, currentSegments, pr) {
       const text = pick(FOREST_TEXT.navigation.success)(name, animal, pr);
       return { type: 'navigation', player: name, outcome: 'success', text, segDelta: 2 };
     } else {
-      const lostSegments = -(1 + Math.floor(Math.random() * 3));
+      const lostSegments = -(0.5 + Math.floor(Math.random() * 2));
       const text = pick(FOREST_TEXT.navigation.failure)(name, animal, pr);
       return { type: 'navigation', player: name, outcome: 'failure', text, segDelta: lostSegments };
     }
@@ -1167,7 +1176,7 @@ function _generateEncounter(name, assign, currentSegments, pr) {
     return { type: 'trap', player: name, outcome: 'success', text, segDelta: 0 };
   } else {
     const text = pick(FOREST_TEXT.trap.failure)(name, animal, pr);
-    return { type: 'trap', player: name, outcome: 'failure', text, segDelta: -2 };
+    return { type: 'trap', player: name, outcome: 'failure', text, segDelta: -1 };
   }
 }
 
@@ -1338,7 +1347,7 @@ export function simulateTopDog(ep) {
 // VP (VISUAL PLAYBACK) SYSTEM
 // ══════════════════════════════════════════════════════════════
 
-// ── REVEAL STATE ──
+// ── REVEAL STATE (alien-egg proven pattern: IDs + display:none) ──
 const _tvState = {};
 function _ensureState(key, total) {
   if (!_tvState[key]) _tvState[key] = { idx: -1, total };
@@ -1347,71 +1356,50 @@ function _ensureState(key, total) {
 
 export function topDogRevealNext(screenKey, total) {
   const st = _ensureState(screenKey, total);
-  if (st.idx < st.total - 1) { st.idx++; }
-  _rebuildCurrentScreen(screenKey);
+  if (st.idx >= st.total - 1) return;
+  st.idx++;
+  const el = document.getElementById(`td-step-${screenKey}-${st.idx}`);
+  if (el) {
+    el.style.display = '';
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  const elB = document.getElementById(`td-step-${screenKey}-${st.idx}b`);
+  if (elB) elB.style.display = '';
   _rebuildSidebar();
-  _updateCounter(screenKey);
-  _scrollToRevealedStep(screenKey, st.idx);
+  const counter = document.getElementById(`td-counter-${screenKey}`);
+  if (counter) counter.textContent = `${st.idx + 1}/${st.total}`;
+  if (st.idx >= st.total - 1) {
+    const ctrl = document.getElementById(`td-controls-${screenKey}`);
+    if (ctrl) ctrl.querySelector('.td-btn')?.setAttribute('disabled', 'true');
+  }
 }
 export function topDogRevealAll(screenKey, total) {
   const st = _ensureState(screenKey, total);
   st.idx = st.total - 1;
-  _rebuildCurrentScreen(screenKey);
+  for (let i = 0; i < st.total; i++) {
+    const el = document.getElementById(`td-step-${screenKey}-${i}`);
+    if (el) el.style.display = '';
+    const elB = document.getElementById(`td-step-${screenKey}-${i}b`);
+    if (elB) elB.style.display = '';
+  }
   _rebuildSidebar();
-  _updateCounter(screenKey);
+  const counter = document.getElementById(`td-counter-${screenKey}`);
+  if (counter) counter.textContent = `${st.total}/${st.total}`;
+  const ctrl = document.getElementById(`td-controls-${screenKey}`);
+  if (ctrl) ctrl.querySelector('.td-btn')?.setAttribute('disabled', 'true');
 }
 window.tdRevealNext = topDogRevealNext;
 window.tdRevealAll = topDogRevealAll;
-
-function _scrollToRevealedStep(screenKey, idx) {
-  requestAnimationFrame(() => {
-    const container = document.querySelector(`[data-screen-key="${screenKey}"]`);
-    if (!container) return;
-    const allSteps = container.querySelectorAll('.td-step.td-visible');
-    const target = allSteps[allSteps.length - 1];
-    if (!target) return;
-    let scrollParent = target.closest('.rp-main');
-    if (!scrollParent) {
-      let el = target.parentElement;
-      while (el) {
-        const style = getComputedStyle(el);
-        if (style.overflowY === 'auto' || style.overflowY === 'scroll') { scrollParent = el; break; }
-        el = el.parentElement;
-      }
-    }
-    if (!scrollParent) scrollParent = document.documentElement;
-    const parentRect = scrollParent.getBoundingClientRect();
-    const targetRect = target.getBoundingClientRect();
-    const offset = targetRect.top - parentRect.top + scrollParent.scrollTop - parentRect.height * 0.3;
-    scrollParent.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
-  });
-}
-
-function _updateCounter(screenKey) {
-  const st = _tvState[screenKey];
-  if (!st) return;
-  const el = document.getElementById(`td-counter-${screenKey}`);
-  if (el) el.textContent = `${Math.max(0, st.idx + 1)}/${st.total}`;
-}
-
-function _rebuildCurrentScreen(screenKey) {
-  const el = document.querySelector(`[data-screen-key="${screenKey}"]`);
-  if (!el) return;
-  const scrollTop = el.scrollTop;
-  const builder = window._tdScreenBuilders?.[screenKey];
-  if (builder) {
-    const ep = window._tdEp;
-    if (ep) {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = builder(ep);
-      const inner = tmp.querySelector(`[data-screen-key="${screenKey}"]`);
-      if (inner) {
-        el.innerHTML = inner.innerHTML;
-      }
-    }
-  }
-  el.scrollTop = scrollTop;
-}
+// Event delegation — inline onclick doesn't fire on innerHTML-injected buttons
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-td-action]');
+  if (!btn) return;
+  const action = btn.dataset.tdAction;
+  const key = btn.dataset.tdKey;
+  const total = parseInt(btn.dataset.tdTotal, 10);
+  if (action === 'next') topDogRevealNext(key, total);
+  else if (action === 'all') topDogRevealAll(key, total);
+});
 
 function _rebuildSidebar() {
   const sidebarEl = document.getElementById('td-sidebar');
@@ -1457,64 +1445,56 @@ function _icon(type) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// COMM CHATTER (Layer 3)
+// ANIMAL WHISPERS (Layer 3 — pet thoughts / nature sounds)
 // ══════════════════════════════════════════════════════════════
-const COMM_CHATTER = {
+const ANIMAL_WHISPERS = {
   'td-petshop': [
-    "PA SYSTEM: 'Attention shoppers! Training area 3 is now OPEN for demonstrations.'",
-    "KENNEL WORKER: 'Copy that. All animals fed and prepped. Treats on standby.'",
-    "PA SYSTEM: 'Reminder: please do NOT tap on the animal enclosures. They bite.'",
-    "KENNEL WORKER: 'We have a runner in aisle 4 — raccoon is loose again.'",
-    "PA SYSTEM: 'Scoring paddles have been distributed. Judges are ready.'",
-    "KENNEL WORKER: 'Treat inventory check: adequate. Bandage supply: hopefully adequate.'",
-    "PA SYSTEM: 'Remember — the animals are the stars. You are the supporting act.'",
-    "KENNEL WORKER: 'All training stations sanitized and ready. Obstacle course is GO.'",
-    "PA SYSTEM: 'Will the owner of the escaped parrot please report to the front desk?'",
-    "KENNEL WORKER: 'Cute levels are off the charts in here. Stay focused, people.'",
+    "A parrot shrieks 'DRAMA!' in a perfect Chris impression. Nobody taught it that. Nobody knows how.",
+    "Something just knocked over a feed bucket. Blame is being assigned. Loudly.",
+    "The raccoon figured out the latch again. Third time today. Security is a myth.",
+    "A monkey steals someone's granola bar and retreats to the rafters. Negotiations have begun.",
+    "Two animals stare each other down through cage bars. The beef is REAL.",
+    "The sound of aggressive treat-crunching fills the arena. War fuel.",
+    "A cat knocks something off a table and makes direct eye contact while doing it. Power move.",
+    "An iguana has been motionless for forty-five minutes. Either meditating or plotting. Unclear.",
+    "The parrot just learned a new phrase from confessional footage. This can only end badly.",
+    "Somewhere, a hamster is running on its wheel at Mach 3. No one can explain the motivation.",
   ],
   'td-forest': [
-    "RANGER RADIO: 'Trail markers confirmed at meadow 3, creek 7, and hilltop 11.'",
-    "FOREST NARRATOR: 'The forest whispers... someone took a wrong turn at the big oak.'",
-    "RANGER RADIO: 'Copy. Sunshine holding. Butterflies are especially active today.'",
-    "FOREST NARRATOR: 'A gentle breeze rustles the wildflowers. The race continues.'",
-    "RANGER RADIO: 'Multiple teams spotted near the creek crossing. Expect splashing.'",
-    "FOREST NARRATOR: 'The birds are watching from the treetops. They seem entertained.'",
-    "RANGER RADIO: 'Finish line crew standing by at the meadow exit. Flower arch is up.'",
-    "FOREST NARRATOR: 'One team is making excellent progress. The others? Not so much.'",
-    "RANGER RADIO: 'Wildlife report: friendly. Mostly bunnies and songbirds out here.'",
-    "FOREST NARRATOR: 'The old oak tree has seen many races. This one is particularly amusing.'",
+    "Sunlight filters through the canopy. A bird sings. Somewhere, someone just ate dirt.",
+    "The creek babbles. A squirrel watches the race from a branch, distinctly unimpressed.",
+    "The wind carries the scent of pine and desperation. Mostly desperation.",
+    "A frog croaks from a mossy rock. Translation: 'You're going the wrong way.' Nobody speaks frog.",
+    "Rustling in the underbrush. Just a hedgehog. It waddles across the path with zero urgency.",
+    "The old oak tree creaks. It's seen a thousand seasons. This race is the most fun it's had in decades.",
+    "A deer watches from the meadow edge. Ears forward. Judging. Always judging.",
+    "Something howls in the distance. Probably just the wind. Probably.",
+    "Spider webs across the trail at face height. Nature is undefeated.",
+    "The trail gets narrower. The animals know the way. The humans... less so.",
   ],
 };
 
-function _pickChatter(zone, count = 1) {
-  const pool = COMM_CHATTER[zone];
+function _pickWhisper(zone, count = 1) {
+  const pool = ANIMAL_WHISPERS[zone];
   if (!pool || pool.length === 0) return [];
   const shuffled = pool.slice().sort(() => Math.random() - 0.5);
   return shuffled.slice(0, Math.min(count, pool.length));
 }
 
-function _commDiv(text) {
-  return `<div class="td-comm">${text}</div>`;
+function _whisperDiv(text) {
+  return `<div class="td-whisper">${text}</div>`;
 }
 
 // ══════════════════════════════════════════════════════════════
-// HUD / TELEMETRY (Layers 2 & 7)
+// TREAT COUNTER / NATURE BAR (Layers 2 & 7)
 // ══════════════════════════════════════════════════════════════
-const HUD_DATA = {
-  '': { act: '', label: 'PET SHOP PARADISE', sub: 'IMMUNITY CHALLENGE' },
-  'td-petshop-assign': { act: 'MEET & GREET', label: 'ANIMAL ADOPTION', sub: 'COMPATIBILITY CHECK' },
-  'td-petshop-training': { act: 'TRAINING TIME', label: 'PET SCHOOL', sub: 'FOUR ROUNDS' },
-  'td-petshop-judging': { act: 'SHOWTIME', label: 'PET TALENT SHOW', sub: 'CHRIS + CHEF SCORING' },
-  'td-forest': { act: '', label: 'FOREST ADVENTURE', sub: '14 SEGMENTS TO THE MEADOW' },
-  'td-winner': { act: 'BEST IN SHOW', label: 'TOP DOG CROWNED', sub: 'IMMUNITY EARNED' },
-};
-
-const TELEMETRY_DATA = {
-  'td-petshop-assign': 'TREATS REMAINING: 48 ✦ ADOPTION BOOTH: OPEN ✦ CUTENESS LEVEL: MAX ✦ MOOD: PLAYFUL',
-  'td-petshop-training': 'TRAINING AREA: OPEN ✦ TREATS DISPENSED: IN PROGRESS ✦ TAIL WAGS: HIGH ✦ TOYS: READY',
-  'td-petshop-judging': 'PERFORMANCES: IN PROGRESS ✦ JUDGE PANEL: CHRIS + CHEF ✦ SCORE RANGE: 2-20 ✦ CROWD: DELIGHTED',
-  'td-forest': 'TRAIL DISTANCE: 14km ✦ WEATHER: SUNNY ✦ WILDLIFE: FRIENDLY ✦ FLOWERS FOUND: 7 ✦ BUTTERFLIES: ACTIVE',
-  'td-winner': 'STATUS: CHALLENGE COMPLETE ✦ BEST IN SHOW: AWARDED ✦ TRIBAL COUNCIL: PENDING',
+const TREAT_BAR_DATA = {
+  '': { icon: 'paw', label: 'TOP DOG', sub: 'Immunity Challenge' },
+  'td-petshop-assign': { icon: 'paw', label: 'ANIMAL DRAFT', sub: 'Pick Your Partner' },
+  'td-petshop-training': { icon: 'bone', label: 'BOOT CAMP', sub: 'Four Training Rounds' },
+  'td-petshop-judging': { icon: 'star', label: 'TALENT SHOWDOWN', sub: 'Chris + Chef Scoring' },
+  'td-forest': { icon: 'leaf', label: 'WILDERNESS RACE', sub: '14 Segments to the Finish' },
+  'td-winner': { icon: 'ribbon', label: 'TOP DOG', sub: 'Immunity Won' },
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -1522,98 +1502,142 @@ const TELEMETRY_DATA = {
 // ══════════════════════════════════════════════════════════════
 function _css() {
   return `<style>
-/* ═══ TOP DOG VP — PET SHOP PARADISE ═══ */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
+/* ═══ TOP DOG VP — TOTAL DRAMA BEAST MODE ═══ */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root{
-  --pet-pink:#e8a0b0;--pet-mint:#a8d8c8;--pet-lavender:#c8a8d8;--pet-peach:#f0c8a0;--pet-sky:#a0c8e8;
-  --pet-cream:#faf5ef;--pet-warm-white:#fff8f2;--pet-brown:#8a6a40;--pet-green:#4a8a3a;--pet-grass:#6ab54a;
-  --pet-dirt:#c8a870;--pet-sunset:#f0d0a0;--pet-text:#4a3a2a;--pet-muted:#9a8a7a;
-  --pet-danger:#e06060;--pet-success:#60b060;
+  --pet-pink:#c06040;--pet-hot-pink:#d05020;--pet-mint:#5a9a48;--pet-lavender:#8a7a6a;--pet-peach:#c8a060;--pet-sky:#4a8ab0;
+  --pet-cream:#f5efe0;--pet-warm-white:#ede4d0;--pet-brown:#5c3d2e;--pet-green:#2d5a1e;--pet-grass:#5a9a38;
+  --pet-lemon:#d4a017;--pet-bubblegum:#a08060;--pet-coral:#c07040;--pet-seafoam:#6a9a60;
+  --pet-text:#2a1a0a;--pet-muted:#7a6a5a;
+  --pet-danger:#cc3030;--pet-success:#3a8a2a;
+  --td-orange:#e87830;--td-bark:#5c3d2e;--td-dirt:#8b7530;--td-bone:#e8dcc8;
 }
 
-.td-shell{position:relative;display:flex;gap:0;min-height:520px;max-width:1100px;margin:0 auto;font-family:'Quicksand','Nunito',sans-serif;color:var(--pet-text);background:var(--pet-warm-white);border-radius:16px;overflow:clip;border:2px solid var(--pet-pink);box-shadow:0 4px 24px rgba(232,160,176,0.2),0 1px 4px rgba(138,106,64,0.1)}
+.td-shell{position:relative;display:flex;gap:0;min-height:520px;max-width:1100px;margin:0 auto;font-family:'Inter',system-ui,sans-serif;color:var(--pet-text);background:var(--pet-warm-white);border-radius:6px;overflow:clip;border:3px solid var(--td-bark);box-shadow:0 6px 30px rgba(92,61,46,0.3),0 2px 8px rgba(92,61,46,0.15),inset 0 1px 0 rgba(255,255,255,0.3)}
 .td-shell *{box-sizing:border-box}
 .td-main{flex:1;padding:18px 20px 60px 20px;overflow-y:auto;position:relative;z-index:1}
-.td-sidebar{width:240px;min-width:240px;background:rgba(250,245,239,0.7);border-left:2px solid rgba(232,160,176,0.25);padding:12px 10px;overflow-y:auto;font-size:0.82rem;position:relative;z-index:1}
+.td-sidebar{width:240px;min-width:240px;background:linear-gradient(180deg,rgba(232,220,200,0.6),rgba(92,61,46,0.08));border-left:2px solid rgba(92,61,46,0.25);padding:12px 10px;overflow-y:auto;font-size:0.82rem;position:relative;z-index:1}
 
-/* Phase 1: Pet Shop — warm pastel pink walls with cream wainscoting */
+/* Phase 1: Arena— worn wood + competition dirt */
 .td-shell::before{content:'';position:absolute;inset:0;z-index:0;
   background:
-    linear-gradient(180deg, #f8e8e0 0%, #faf5ef 40%, #faf5ef 100%),
-    radial-gradient(ellipse 300px 200px at 20% 80%, rgba(168,216,200,0.15), transparent),
-    radial-gradient(ellipse 200px 200px at 80% 30%, rgba(200,168,216,0.1), transparent)}
-/* Shelf silhouettes */
+    linear-gradient(160deg, rgba(232,220,200,0.7) 0%, rgba(245,239,224,0.9) 30%, rgba(200,180,140,0.15) 70%, rgba(92,61,46,0.08) 100%),
+    radial-gradient(ellipse 400px 300px at 15% 85%, rgba(200,180,140,0.15), transparent),
+    radial-gradient(ellipse 300px 250px at 85% 20%, rgba(92,61,46,0.06), transparent)}
+/* Claw scratches — competition edge */
 .td-shell::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
   background:
-    linear-gradient(90deg, transparent 8%, rgba(138,106,64,0.03) 8.5%, rgba(138,106,64,0.03) 9%, transparent 9.5%,
-      transparent 28%, rgba(138,106,64,0.03) 28.5%, rgba(138,106,64,0.03) 29%, transparent 29.5%,
-      transparent 68%, rgba(138,106,64,0.03) 68.5%, rgba(138,106,64,0.03) 69%, transparent 69.5%,
-      transparent 88%, rgba(138,106,64,0.03) 88.5%, rgba(138,106,64,0.03) 89%, transparent 89.5%);
-  opacity:0.5}
+    linear-gradient(35deg, transparent 48%, rgba(92,61,46,0.03) 49%, transparent 51%) 0 0/80px 60px,
+    linear-gradient(35deg, transparent 48%, rgba(92,61,46,0.02) 49%, transparent 51%) 40px 30px/80px 60px,
+    linear-gradient(-25deg, transparent 48%, rgba(92,61,46,0.02) 49%, transparent 51%) 20px 0/60px 80px}
 
-/* Phase 2: Forest Adventure — warm green grass, dirt path, sunset sky */
+/* Phase 2: Wilderness — dark canopy + undergrowth */
 .td-shell.td-forest::before{background:
-  linear-gradient(180deg, #e8d8b0 0%, #b8d898 20%, #6ab54a 50%, #4a8a3a 100%)}
+  linear-gradient(180deg, #4a6a30 0%, #3a5820 25%, #2d4a18 50%, #1e3810 80%, #152a0a 100%)}
 .td-shell.td-forest::after{background:
-  repeating-linear-gradient(90deg, transparent, transparent 18px, rgba(106,181,74,0.08) 18px, rgba(106,181,74,0.08) 20px);
-  opacity:0.6}
-.td-shell.td-forest{border-color:var(--pet-green);color:var(--pet-text);box-shadow:0 4px 24px rgba(74,138,58,0.2),0 1px 4px rgba(138,106,64,0.1)}
+  linear-gradient(35deg, transparent 48%, rgba(0,0,0,0.04) 49%, transparent 51%) 0 0/80px 60px,
+  linear-gradient(-25deg, transparent 48%, rgba(0,0,0,0.03) 49%, transparent 51%) 20px 0/60px 80px;
+  opacity:0.8}
+.td-shell.td-forest{border-color:#2d5a1e;border-width:3px;color:#f0e8d8;box-shadow:0 6px 30px rgba(30,56,16,0.4),0 2px 8px rgba(30,56,16,0.2)}
+
+/* ═══ ANIMATED ANIMAL PARTICLES (CSS-only wow factor) ═══ */
+
+/* Prancing cat — phase 1 */
+.td-anim-cat{position:absolute;z-index:0;pointer-events:none;width:20px;height:16px;animation:td-catPrance 6s ease-in-out infinite}
+.td-anim-cat::before{content:'';position:absolute;width:12px;height:10px;background:#a08060;border-radius:50% 50% 40% 40%;top:3px;left:2px}
+.td-anim-cat::after{content:'';position:absolute;width:6px;height:6px;background:#a08060;border-radius:50%;top:0;left:4px}
+@keyframes td-catPrance{0%{transform:translate(0,0) scaleX(1);opacity:0.12}20%{opacity:0.18;transform:translate(15px,-8px) scaleX(1)}40%{transform:translate(30px,0) scaleX(1);opacity:0.15}60%{transform:translate(15px,5px) scaleX(-1);opacity:0.18}80%{transform:translate(-5px,-3px) scaleX(-1);opacity:0.12}100%{transform:translate(0,0) scaleX(1);opacity:0.12}}
+
+/* Tail-wagging dog — phase 1 */
+.td-anim-dog{position:absolute;z-index:0;pointer-events:none;width:22px;height:16px;animation:td-dogWag 4s ease-in-out infinite}
+.td-anim-dog::before{content:'';position:absolute;width:14px;height:10px;background:#8a6a40;border-radius:45% 55% 40% 40%;top:4px;left:2px}
+.td-anim-dog::after{content:'';position:absolute;width:8px;height:3px;background:#8a6a40;border-radius:50%;top:4px;right:0;transform-origin:left center;animation:td-tailWag 0.4s ease-in-out infinite alternate}
+@keyframes td-dogWag{0%,100%{transform:translateY(0);opacity:0.12}50%{transform:translateY(-4px);opacity:0.18}}
+@keyframes td-tailWag{0%{transform:rotate(-20deg)}100%{transform:rotate(20deg)}}
+
+/* Hopping bunny — phase 1 */
+.td-anim-bunny{position:absolute;z-index:0;pointer-events:none;width:14px;height:14px;animation:td-bunnyHop 2.5s ease infinite}
+.td-anim-bunny::before{content:'';position:absolute;width:10px;height:8px;background:#b0a090;border-radius:50%;bottom:0;left:2px}
+.td-anim-bunny::after{content:'';position:absolute;width:4px;height:7px;background:#b0a090;border-radius:50% 50% 20% 20%;top:0;left:3px;transform-origin:bottom center}
+@keyframes td-bunnyHop{0%,100%{transform:translateY(0)}30%{transform:translateY(-12px)}60%{transform:translateY(0)}75%{transform:translateY(-5px)}}
+
+/* Swimming fish — sidebar accent */
+.td-anim-fish{position:absolute;z-index:0;pointer-events:none;width:16px;height:10px;animation:td-fishSwim 5s ease-in-out infinite}
+.td-anim-fish::before{content:'';position:absolute;width:11px;height:8px;background:#6a8a60;border-radius:60% 40% 40% 60%;top:1px;left:0}
+.td-anim-fish::after{content:'';position:absolute;width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid #6a8a60;top:1px;right:0;transform-origin:left center;animation:td-finFlap 0.5s ease-in-out infinite alternate}
+@keyframes td-fishSwim{0%{transform:translateX(0) scaleX(1);opacity:0.15}45%{transform:translateX(25px) scaleX(1);opacity:0.2}55%{transform:translateX(25px) scaleX(-1);opacity:0.2}100%{transform:translateX(0) scaleX(-1);opacity:0.15}}
+@keyframes td-finFlap{0%{transform:rotate(-15deg)}100%{transform:rotate(15deg)}}
+
+/* Flying bird — phase 1 */
+.td-anim-bird{position:absolute;z-index:0;pointer-events:none;width:18px;height:12px;animation:td-birdFly 7s ease-in-out infinite}
+.td-anim-bird::before{content:'';position:absolute;width:6px;height:6px;background:#7a8a6a;border-radius:50%;top:4px;left:6px}
+.td-anim-bird::after{content:'';position:absolute;width:16px;height:4px;top:2px;left:1px;
+  background:
+    linear-gradient(135deg, #7a8a6a 0%, transparent 45%),
+    linear-gradient(225deg, #7a8a6a 0%, transparent 45%);
+  animation:td-wingFlap 0.35s ease-in-out infinite alternate}
+@keyframes td-birdFly{0%{transform:translate(0,0);opacity:0.15}25%{opacity:0.22;transform:translate(30px,-20px)}50%{transform:translate(60px,-10px);opacity:0.18}75%{opacity:0.22;transform:translate(30px,-25px)}100%{transform:translate(0,0);opacity:0.15}}
+@keyframes td-wingFlap{0%{transform:scaleY(1)}100%{transform:scaleY(-0.6)}}
 
 /* Butterfly particles (forest only) */
-.td-butterfly{position:absolute;width:8px;height:6px;z-index:0;pointer-events:none;animation:td-butterflyFloat 8s ease-in-out infinite}
-.td-butterfly::before,.td-butterfly::after{content:'';position:absolute;width:5px;height:6px;border-radius:50% 50% 20% 50%;top:0}
+.td-butterfly{position:absolute;width:10px;height:8px;z-index:0;pointer-events:none;animation:td-butterflyFloat 8s ease-in-out infinite}
+.td-butterfly::before,.td-butterfly::after{content:'';position:absolute;width:6px;height:7px;border-radius:50% 50% 20% 50%;top:0}
 .td-butterfly::before{left:0;transform-origin:right center;animation:td-wingLeft 0.4s ease-in-out infinite alternate}
 .td-butterfly::after{right:0;transform-origin:left center;animation:td-wingRight 0.4s ease-in-out infinite alternate}
-@keyframes td-butterflyFloat{0%{transform:translate(0,0);opacity:0.5}25%{opacity:0.8;transform:translate(20px,-15px)}50%{transform:translate(-10px,-30px);opacity:0.6}75%{opacity:0.9;transform:translate(15px,-10px)}100%{transform:translate(0,0);opacity:0.5}}
+@keyframes td-butterflyFloat{0%{transform:translate(0,0);opacity:0.4}25%{opacity:0.7;transform:translate(25px,-18px)}50%{transform:translate(-12px,-35px);opacity:0.5}75%{opacity:0.8;transform:translate(18px,-12px)}100%{transform:translate(0,0);opacity:0.4}}
 @keyframes td-wingLeft{0%{transform:rotateY(0deg)}100%{transform:rotateY(60deg)}}
 @keyframes td-wingRight{0%{transform:rotateY(0deg)}100%{transform:rotateY(-60deg)}}
 
-/* Winner phase — golden meadow */
-.td-shell.td-winner::before{background:
-  linear-gradient(180deg, #fff8e0 0%, #faf5ef 30%, var(--pet-warm-white) 100%)}
-.td-shell.td-winner{border-color:#e8c050}
+/* Firefly (forest only) */
+.td-firefly{position:absolute;z-index:0;pointer-events:none;width:4px;height:4px;border-radius:50%;background:var(--pet-lemon);box-shadow:0 0 6px var(--pet-lemon),0 0 12px rgba(248,240,128,0.3);animation:td-fireflyDrift 10s ease-in-out infinite}
+@keyframes td-fireflyDrift{0%{opacity:0;transform:translate(0,0)}15%{opacity:0.6}30%{transform:translate(15px,-20px);opacity:0.8}50%{opacity:0.3;transform:translate(-10px,-35px)}70%{opacity:0.7;transform:translate(20px,-15px)}85%{opacity:0.4}100%{opacity:0;transform:translate(0,0)}}
 
 /* Paw print particles (phase 1 only) */
-.td-pawprint{position:absolute;z-index:0;pointer-events:none;opacity:0.06;animation:td-pawFloat 12s ease-in-out infinite}
-.td-pawprint::before{content:'';display:block;width:10px;height:8px;background:var(--pet-pink);border-radius:50% 50% 30% 30%}
+.td-pawprint{position:absolute;z-index:0;pointer-events:none;opacity:0.08;animation:td-pawFloat 12s ease-in-out infinite}
+.td-pawprint::before{content:'';display:block;width:10px;height:8px;background:#8a6a40;border-radius:50% 50% 30% 30%}
 @keyframes td-pawFloat{0%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(10px,-15px) rotate(20deg)}100%{transform:translate(0,0) rotate(0deg)}}
 
+/* Winner phase — golden meadow with sparkles */
+.td-shell.td-winner::before{background:
+  linear-gradient(180deg, #f5efe0 0%, #e8dcc8 30%, var(--pet-warm-white) 100%)}
+.td-shell.td-winner{border-color:#b8860b;box-shadow:0 6px 30px rgba(184,134,11,0.35),0 2px 8px rgba(184,134,11,0.15)}
+
 /* Headers */
-.td-h1{font-family:'Nunito',sans-serif;font-size:1.5rem;text-align:center;letter-spacing:3px;text-transform:uppercase;
-  color:var(--pet-brown);text-shadow:0 1px 0 rgba(255,255,255,0.6);margin:0 0 12px 0;font-weight:800}
-.td-h2{font-family:'Nunito',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--pet-brown);margin:14px 0 8px 0;text-transform:uppercase;font-weight:700}
-.td-h3{font-family:'Nunito',sans-serif;font-size:0.95rem;color:var(--pet-text);margin:10px 0 6px 0;letter-spacing:1px;font-weight:700}
+.td-h1{font-family:'Bebas Neue',Impact,sans-serif;font-size:2rem;text-align:center;letter-spacing:4px;text-transform:uppercase;
+  color:var(--td-orange);text-shadow:2px 2px 0 rgba(92,61,46,0.15);margin:0 0 12px 0;font-weight:400}
+.td-h2{font-family:'Bebas Neue',Impact,sans-serif;font-size:1.3rem;letter-spacing:3px;color:var(--td-orange);margin:14px 0 8px 0;text-transform:uppercase;font-weight:400}
+.td-h3{font-family:'Inter',sans-serif;font-size:0.95rem;color:var(--pet-text);margin:10px 0 6px 0;letter-spacing:1px;font-weight:700}
 
-/* Player card — pastel pet tag style */
-.td-poster{display:inline-flex;align-items:center;gap:8px;background:#ffffff;border:2px solid var(--pet-mint);border-radius:12px;padding:3px 14px 3px 3px;margin:3px;position:relative;overflow:hidden;transition:border-color 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-.td-poster.td-high{border-color:var(--pet-mint)}
-.td-poster.td-mid{border-color:var(--pet-peach)}
-.td-poster.td-low{border-color:var(--pet-danger)}
-.td-poster.td-winner-p{border-color:#e8c050;box-shadow:0 0 12px rgba(232,192,80,0.3)}
-.td-poster-frame{width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--pet-lavender);position:relative}
+/* Player card — rugged competitor badge */
+.td-poster{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f5efe0,#e8dcc8);border:2px solid var(--pet-mint);border-radius:4px;padding:3px 14px 3px 3px;margin:3px;position:relative;overflow:hidden;transition:border-color 0.3s,box-shadow 0.3s;box-shadow:0 2px 6px rgba(92,61,46,0.1)}
+.td-poster.td-high{border-color:var(--pet-mint);box-shadow:0 2px 8px rgba(90,154,72,0.2)}
+.td-poster.td-mid{border-color:var(--pet-peach);box-shadow:0 2px 8px rgba(200,160,96,0.15)}
+.td-poster.td-low{border-color:var(--pet-danger);box-shadow:0 2px 8px rgba(204,48,48,0.12)}
+.td-poster.td-winner-p{border-color:#b8860b;box-shadow:0 0 14px rgba(184,134,11,0.35)}
+.td-poster-frame{width:38px;height:38px;border-radius:4px;overflow:hidden;flex-shrink:0;border:2.5px solid var(--td-bark);position:relative;background:linear-gradient(135deg,rgba(92,61,46,0.05),rgba(200,180,140,0.1))}
 .td-poster-frame img{width:100%;height:100%;object-fit:contain;display:block}
-.td-poster-name{font-size:0.82rem;font-weight:600;color:var(--pet-text);white-space:nowrap;font-family:'Nunito',sans-serif}
-.td-poster-tag{font-size:0.65rem;font-family:'Nunito',sans-serif;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:4px;letter-spacing:0.5px}
+.td-poster-name{font-size:0.82rem;font-weight:700;color:var(--pet-text);white-space:nowrap;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
+.td-poster-tag{font-size:0.65rem;font-family:'Inter',sans-serif;font-weight:700;padding:1px 6px;border-radius:3px;margin-left:4px;letter-spacing:0.5px}
 
-/* Cards */
-.td-card{background:#ffffff;border:1px solid rgba(168,216,200,0.4);border-radius:12px;padding:10px 14px;margin:6px 0;color:var(--pet-text);font-size:0.88rem;line-height:1.5;position:relative;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-.td-card.td-social{border:1px dashed var(--pet-lavender);background:rgba(200,168,216,0.06)}
-.td-card.td-mole-card{border:1px dashed var(--pet-danger);background:rgba(224,96,96,0.04)}
-.td-card.td-success-card{border:1px solid rgba(96,176,96,0.4);background:rgba(96,176,96,0.04)}
-.td-card.td-fail-card{border:1px solid rgba(224,96,96,0.3);background:rgba(224,96,96,0.04)}
-.td-card.td-winner-card{border:2px solid rgba(232,192,80,0.5);background:rgba(232,192,80,0.06)}
-.td-card.td-forest-card{background:rgba(250,245,239,0.85);border-color:rgba(106,181,74,0.3)}
+/* Cards — rugged competition cards */
+.td-card{background:linear-gradient(135deg,#f5efe0,#ede4d0);border:1.5px solid rgba(92,61,46,0.2);border-radius:4px;padding:10px 14px;margin:6px 0;color:var(--pet-text);font-size:0.88rem;line-height:1.5;position:relative;box-shadow:0 2px 6px rgba(92,61,46,0.08)}
+.td-card.td-social{border:1.5px dashed rgba(92,61,46,0.3);background:linear-gradient(135deg,rgba(200,180,140,0.1),rgba(232,220,200,0.15))}
+.td-card.td-mole-card{border:1.5px dashed var(--pet-danger);background:linear-gradient(135deg,rgba(204,48,48,0.05),rgba(200,180,140,0.05))}
+.td-card.td-success-card{border:1.5px solid rgba(58,138,42,0.4);background:linear-gradient(135deg,rgba(58,138,42,0.06),rgba(90,154,72,0.08))}
+.td-card.td-fail-card{border:1.5px solid rgba(204,48,48,0.3);background:linear-gradient(135deg,rgba(204,48,48,0.04),rgba(200,180,140,0.04))}
+.td-card.td-winner-card{border:2.5px solid rgba(184,134,11,0.5);background:linear-gradient(135deg,rgba(184,134,11,0.06),rgba(212,160,23,0.08))}
+.td-card.td-forest-card{background:linear-gradient(135deg,rgba(240,232,208,0.9),rgba(90,154,72,0.06));border-color:rgba(45,90,30,0.3)}
 
 /* ═══ ANIMATED ICONS (CSS-only, animal-themed) ═══ */
 .td-icon{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-right:8px;vertical-align:middle;flex-shrink:0;position:relative}
 
 /* Paw — bouncing paw print */
-.td-icon-paw::before{content:'';width:12px;height:10px;background:var(--pet-pink);border-radius:50% 50% 30% 30%;animation:td-pawBounce 1.2s ease infinite}
+.td-icon-paw::before{content:'';width:12px;height:10px;background:#8a6a40;border-radius:50% 50% 30% 30%;animation:td-pawBounce 1.2s ease infinite}
 .td-icon-paw::after{content:'';position:absolute;top:0;width:14px;height:5px;
-  background:radial-gradient(circle 2.5px at 20% 50%,var(--pet-pink),transparent 60%),
-  radial-gradient(circle 2.5px at 50% 30%,var(--pet-pink),transparent 60%),
-  radial-gradient(circle 2.5px at 80% 50%,var(--pet-pink),transparent 60%)}
+  background:radial-gradient(circle 2.5px at 20% 50%,#8a6a40,transparent 60%),
+  radial-gradient(circle 2.5px at 50% 30%,#8a6a40,transparent 60%),
+  radial-gradient(circle 2.5px at 80% 50%,#8a6a40,transparent 60%)}
 @keyframes td-pawBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 
 /* Bone — rotating */
@@ -1630,7 +1654,7 @@ function _css() {
 @keyframes td-leafSway{0%{transform:rotate(-8deg)}100%{transform:rotate(8deg)}}
 
 /* Heart — soft beating */
-.td-icon-heart::before{content:'';width:14px;height:13px;background:var(--pet-pink);clip-path:polygon(50% 100%,0% 35%,0% 15%,25% 0%,50% 15%,75% 0%,100% 15%,100% 35%);animation:td-heartbeat 1s ease infinite}
+.td-icon-heart::before{content:'';width:14px;height:13px;background:var(--pet-hot-pink);clip-path:polygon(50% 100%,0% 35%,0% 15%,25% 0%,50% 15%,75% 0%,100% 15%,100% 35%);animation:td-heartbeat 1s ease infinite}
 @keyframes td-heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.1)}}
 
 /* Star — spinning gold */
@@ -1707,154 +1731,148 @@ function _css() {
 }
 
 /* Progress bar */
-.td-bar-wrap{height:8px;background:rgba(168,216,200,0.2);border-radius:8px;overflow:hidden;margin:4px 0}
-.td-bar{height:100%;border-radius:8px;transition:width 0.4s ease}
-.td-bar.td-gold{background:linear-gradient(90deg,#e8c050,#f0d870)}
-.td-bar.td-green{background:linear-gradient(90deg,var(--pet-green),var(--pet-grass))}
-.td-bar.td-crimson{background:linear-gradient(90deg,var(--pet-danger),#e88080)}
-.td-bar.td-amber{background:linear-gradient(90deg,var(--pet-peach),#f0d0a0)}
+.td-bar-wrap{height:8px;background:rgba(92,61,46,0.1);border-radius:3px;overflow:hidden;margin:4px 0}
+.td-bar{height:100%;border-radius:3px;transition:width 0.4s ease}
+.td-bar.td-gold{background:linear-gradient(90deg,#b8860b,#d4a017)}
+.td-bar.td-green{background:linear-gradient(90deg,#3a8a2a,#5a9a48)}
+.td-bar.td-crimson{background:linear-gradient(90deg,#cc3030,#e04040)}
+.td-bar.td-amber{background:linear-gradient(90deg,#c8a060,#d4b070)}
 
-/* Reveal controls (Layer 8) — pastel pink/mint bar */
-.td-reveal-bar{display:flex;gap:8px;align-items:center;justify-content:center;padding:12px 20px;flex-wrap:wrap;position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:100;background:rgba(250,245,239,0.95);backdrop-filter:blur(8px);border-top:2px solid var(--pet-mint);border-radius:16px 16px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,0.08);max-width:860px;width:100%}
-.td-btn{font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:700;padding:5px 14px;border:2px solid var(--pet-mint);border-radius:10px;background:rgba(168,216,200,0.15);color:var(--pet-green);cursor:pointer;letter-spacing:0.5px;transition:all 0.2s}
-.td-btn:hover{background:rgba(168,216,200,0.3);border-color:var(--pet-green)}
-.td-btn.td-btn-crimson{border-color:var(--pet-pink);background:rgba(232,160,176,0.1);color:var(--pet-danger)}
-.td-btn.td-btn-crimson:hover{background:rgba(232,160,176,0.25);border-color:var(--pet-danger)}
+/* Reveal controls (Layer 8) */
+.td-reveal-bar{display:flex;gap:8px;align-items:center;justify-content:center;padding:10px 20px;flex-wrap:wrap;position:sticky;bottom:0;z-index:100;background:linear-gradient(90deg,rgba(92,61,46,0.95),rgba(72,48,32,0.98));backdrop-filter:blur(8px);border-top:3px solid var(--td-orange);border-radius:0;box-shadow:0 -4px 20px rgba(0,0,0,0.2);max-width:100%;width:100%}
+.td-btn{font-family:'Bebas Neue',Impact,sans-serif;font-size:0.9rem;font-weight:400;padding:6px 20px;border:2px solid var(--td-orange);border-radius:3px;background:rgba(232,120,48,0.15);color:var(--td-orange);cursor:pointer;letter-spacing:2px;transition:all 0.2s;text-transform:uppercase;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.td-btn:hover{background:rgba(232,120,48,0.3);border-color:#ff8830;box-shadow:0 2px 8px rgba(232,120,48,0.3);color:#ff8830}
+.td-btn.td-btn-reveal-all{border-color:rgba(232,220,200,0.3);background:rgba(232,220,200,0.08);color:rgba(232,220,200,0.7)}
+.td-btn.td-btn-reveal-all:hover{background:rgba(232,220,200,0.15);border-color:rgba(232,220,200,0.5);color:rgba(232,220,200,0.9)}
 
 /* Step visibility */
-.td-step{opacity:0;max-height:0;overflow:hidden;transition:opacity 0.4s,max-height 0.5s}
-.td-step.td-visible{opacity:1;max-height:4000px}
+.td-step{transition:opacity 0.3s ease}
+.td-step.td-visible{opacity:1}
 
 /* Host line */
-.td-host{font-style:italic;color:var(--pet-brown);margin:8px 0;padding:8px 12px;border-left:3px solid var(--pet-peach);background:rgba(240,200,160,0.1);font-size:0.88rem;border-radius:0 10px 10px 0}
+.td-host{font-style:italic;color:var(--pet-brown);margin:8px 0;padding:8px 12px;border-left:3px solid var(--td-orange);background:linear-gradient(90deg,rgba(232,120,48,0.06),transparent);font-size:0.88rem;border-radius:0 3px 3px 0}
 
 /* Sidebar */
-.td-sb-title{font-family:'Nunito',sans-serif;font-size:0.75rem;letter-spacing:2px;color:var(--pet-brown);text-transform:uppercase;margin:0 0 6px 0;padding-bottom:4px;border-bottom:2px solid rgba(232,160,176,0.2);font-weight:800}
+.td-sb-title{font-family:'Bebas Neue',Impact,sans-serif;font-size:0.85rem;letter-spacing:3px;color:var(--td-orange);text-transform:uppercase;margin:0 0 6px 0;padding-bottom:4px;border-bottom:2px solid rgba(232,120,48,0.25);font-weight:400}
 .td-sb-section{margin:10px 0}
 .td-sb-row{display:flex;align-items:center;gap:5px;margin:3px 0;font-size:0.78rem}
-.td-sb-row img{width:22px;height:22px;border-radius:50%;object-fit:contain;flex-shrink:0;border:1.5px solid var(--pet-lavender)}
+.td-sb-row img{width:22px;height:22px;border-radius:3px;object-fit:contain;flex-shrink:0;border:1.5px solid var(--td-bark)}
 .td-sb-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--pet-text)}
-.td-sb-tag{font-family:'Nunito',sans-serif;font-size:0.6rem;font-weight:700;padding:1px 5px;border-radius:6px;white-space:nowrap;letter-spacing:0.5px}
-.td-sb-tag.td-gold{background:rgba(232,192,80,0.15);color:#a08020}
-.td-sb-tag.td-green{background:rgba(96,176,96,0.15);color:var(--pet-green)}
-.td-sb-tag.td-crimson{background:rgba(224,96,96,0.12);color:var(--pet-danger)}
-.td-sb-tag.td-amber{background:rgba(240,200,160,0.2);color:var(--pet-brown)}
-.td-sb-tag.td-grey{background:rgba(154,138,122,0.1);color:var(--pet-muted)}
-.td-sb-tag.td-brass{background:rgba(138,106,64,0.12);color:var(--pet-brown)}
-.td-sb-tag.td-crown{background:rgba(232,192,80,0.2);color:#a08020}
+.td-sb-tag{font-family:'Inter',sans-serif;font-size:0.6rem;font-weight:700;padding:1px 5px;border-radius:2px;white-space:nowrap;letter-spacing:0.5px;text-transform:uppercase}
+.td-sb-tag.td-gold{background:rgba(184,134,11,0.15);color:#8a6a00}
+.td-sb-tag.td-green{background:rgba(58,138,42,0.15);color:#2d5a1e}
+.td-sb-tag.td-crimson{background:rgba(204,48,48,0.12);color:#aa2020}
+.td-sb-tag.td-amber{background:rgba(200,160,96,0.2);color:#8a6a30}
+.td-sb-tag.td-grey{background:rgba(122,106,90,0.1);color:var(--pet-muted)}
+.td-sb-tag.td-brass{background:rgba(92,61,46,0.12);color:var(--pet-brown)}
+.td-sb-tag.td-crown{background:rgba(184,134,11,0.2);color:#8a6a00}
+.td-sb-tag.td-pink{background:rgba(232,120,48,0.15);color:var(--td-orange)}
 
-/* ═══ OVERDRIVE: Pet Shop Bulletin Board HUD (Layer 2) ═══ */
-.td-hud{font-family:'Nunito',sans-serif;font-size:0.65rem;color:var(--pet-muted);background:rgba(250,245,239,0.8);border-bottom:2px solid rgba(232,160,176,0.2);padding:4px 10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;z-index:2;position:relative;letter-spacing:0.5px;
-  background-image:repeating-linear-gradient(90deg, transparent 0, transparent 60px, rgba(138,106,64,0.03) 60px, rgba(138,106,64,0.03) 61px)}
-.td-hud-act{white-space:nowrap;font-weight:800;color:var(--pet-pink)}
-.td-hud-label{flex:1;text-align:center;white-space:nowrap;letter-spacing:2px;color:var(--pet-brown);font-weight:800}
-.td-hud-sub{white-space:nowrap;color:var(--pet-muted)}
-.td-hud-dots{display:flex;gap:2px;align-items:center;flex-wrap:wrap}
-.td-hud-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.td-hud-dot.td-compat-high{background:var(--pet-mint)}
-.td-hud-dot.td-compat-mid{background:var(--pet-peach)}
-.td-hud-dot.td-compat-low{background:var(--pet-danger)}
-/* Forest HUD variant */
-.td-shell.td-forest .td-hud{background:rgba(250,245,239,0.85);border-bottom-color:rgba(106,181,74,0.3);
-  background-image:none}
+/* ═══ OVERDRIVE: Treat Counter Bar (Layer 2) ═══ */
+.td-treat-bar{font-family:'Inter',sans-serif;font-size:0.72rem;color:var(--pet-brown);background:linear-gradient(90deg,rgba(92,61,46,0.08),rgba(245,239,224,0.6),rgba(92,61,46,0.08));border-bottom:2px solid rgba(92,61,46,0.2);padding:5px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;z-index:2;position:relative;letter-spacing:0.5px}
+.td-treat-label{flex:1;text-align:center;white-space:nowrap;letter-spacing:3px;color:var(--td-orange);font-weight:800;text-transform:uppercase;font-family:'Bebas Neue',Impact,sans-serif;font-size:0.85rem}
+.td-treat-sub{white-space:nowrap;color:var(--pet-muted);font-size:0.65rem;font-weight:600}
+.td-treat-dots{display:flex;gap:3px;align-items:center;flex-wrap:wrap}
+.td-treat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.td-treat-dot.td-compat-high{background:var(--pet-mint)}
+.td-treat-dot.td-compat-mid{background:var(--pet-peach)}
+.td-treat-dot.td-compat-low{background:var(--pet-danger)}
+.td-shell.td-forest .td-treat-bar{background:linear-gradient(90deg,rgba(30,56,16,0.3),rgba(45,90,30,0.15),rgba(30,56,16,0.3));border-bottom-color:rgba(90,154,56,0.3);color:#c8d8b0}
+.td-shell.td-forest .td-treat-label{color:#8ac050}
+.td-shell.td-forest .td-treat-sub{color:#8aa870}
 
-/* ═══ OVERDRIVE: Comm Chatter (Layer 3) ═══ */
-.td-comm{font-style:italic;font-size:0.72rem;color:var(--pet-muted);border-left:2px solid var(--pet-peach);padding:4px 10px;margin:6px 0 6px 12px;line-height:1.4;font-family:'Quicksand',sans-serif}
-.td-shell.td-forest .td-comm{border-left-color:var(--pet-grass)}
+/* ═══ OVERDRIVE: Animal Whispers (Layer 3) ═══ */
+.td-whisper{font-style:italic;font-size:0.72rem;color:var(--pet-muted);border-left:2px dashed rgba(92,61,46,0.3);padding:5px 10px;margin:6px 0 6px 12px;line-height:1.4;font-family:'Inter',sans-serif;background:linear-gradient(90deg,rgba(92,61,46,0.03),transparent);border-radius:0 3px 3px 0}
+.td-shell.td-forest .td-whisper{border-left-color:rgba(90,154,56,0.4);background:linear-gradient(90deg,rgba(90,154,56,0.04),transparent);color:#8aa870}
 
 /* ═══ OVERDRIVE: Zone Transition (Layer 4) ═══ */
-.td-transition{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.td-transition.td-trans-shop-open{background:linear-gradient(180deg,rgba(248,232,224,0.95),rgba(250,245,239,0.98));animation:td-shopOpen 2s ease-out forwards}
+.td-transition{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;pointer-events:none}
+.td-transition.td-trans-shop-open{background:linear-gradient(180deg,rgba(92,61,46,0.9),rgba(232,220,200,0.95));animation:td-shopOpen 2s ease-out forwards}
 @keyframes td-shopOpen{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-100%);visibility:hidden}}
-.td-transition.td-trans-forest-enter{background:rgba(106,181,74,0.9);animation:td-forestFadeIn 2.5s ease-out forwards}
-.td-trans-forest-text{font-family:'Nunito',sans-serif;font-size:1.5rem;font-weight:800;color:var(--pet-cream);letter-spacing:4px;text-shadow:0 2px 4px rgba(0,0,0,0.2)}
+.td-transition.td-trans-forest-enter{background:linear-gradient(180deg,rgba(30,56,16,0.9),rgba(45,74,24,0.85));animation:td-forestFadeIn 2.5s ease-out forwards}
+.td-trans-forest-text{font-family:'Bebas Neue',Impact,sans-serif;font-size:2rem;font-weight:400;color:#c8d8a0;letter-spacing:6px;text-shadow:2px 2px 0 rgba(0,0,0,0.3)}
 @keyframes td-forestFadeIn{0%{opacity:1}70%{opacity:0.6}100%{opacity:0;visibility:hidden}}
-.td-transition.td-trans-winner-burst{background:radial-gradient(circle,rgba(232,192,80,0.6),transparent 70%);animation:td-winnerBurst 2s ease-out forwards}
+.td-transition.td-trans-winner-burst{background:radial-gradient(circle,rgba(184,134,11,0.6),transparent 70%);animation:td-winnerBurst 2s ease-out forwards}
 @keyframes td-winnerBurst{0%{opacity:1;transform:scale(0.5)}40%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(2);visibility:hidden}}
-/* Paw print walk transition */
-.td-trans-paws{font-size:2rem;letter-spacing:12px;animation:td-pawWalk 2s ease-out forwards}
-@keyframes td-pawWalk{0%{opacity:0;transform:translateX(-50px)}30%{opacity:1}70%{opacity:1}100%{opacity:0;transform:translateX(50px)}}
-
-/* ═══ OVERDRIVE: Viewport Window (Layer 5) ═══ */
-.td-viewport{width:80px;height:60px;margin:0 auto 8px;border-radius:10px;border:2px solid rgba(232,160,176,0.3);overflow:hidden;position:relative;background:var(--pet-cream)}
-.td-viewport-shop{position:absolute;inset:0;
-  background:
-    linear-gradient(180deg, #f8e8e0, #faf5ef);overflow:hidden}
-.td-viewport-shop::after{content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(circle 4px at 25% 50%, rgba(232,160,176,0.3), transparent),
-    radial-gradient(circle 3px at 60% 35%, rgba(168,216,200,0.3), transparent),
-    radial-gradient(circle 3px at 75% 65%, rgba(200,168,216,0.3), transparent);
-  animation:td-vpShopPulse 3s ease-in-out infinite alternate}
-@keyframes td-vpShopPulse{0%{opacity:0.5}100%{opacity:1}}
-.td-viewport-forest{position:absolute;inset:0;
-  background:linear-gradient(180deg,#d0e8b0,#6ab54a,#4a8a3a);overflow:hidden}
-.td-viewport-forest::after{content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(circle 2px at 30% 30%, rgba(255,255,255,0.4), transparent),
-    radial-gradient(circle 2px at 60% 50%, rgba(255,255,255,0.3), transparent),
-    radial-gradient(circle 2px at 45% 70%, rgba(255,255,255,0.35), transparent);
-  animation:td-vpButterflies 4s ease-in-out infinite alternate}
-@keyframes td-vpButterflies{0%{opacity:0.3;transform:translateY(0)}100%{opacity:0.8;transform:translateY(-3px)}}
 
 /* ═══ OVERDRIVE: Card Physics (Layer 6) ═══ */
 /* Phase 1: gentle toy bounce */
-.td-shell:not(.td-forest):not(.td-winner) .td-card{animation:td-cardBounce 3s ease-in-out infinite}
-.td-shell:not(.td-forest):not(.td-winner) .td-card:nth-child(2n){animation-delay:0.4s;animation-duration:3.3s}
-.td-shell:not(.td-forest):not(.td-winner) .td-card:nth-child(3n){animation-delay:0.8s;animation-duration:2.8s}
-@keyframes td-cardBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-1px)}}
+.td-shell:not(.td-forest):not(.td-winner) .td-card{animation:td-cardBounce 3.5s ease-in-out infinite}
+.td-shell:not(.td-forest):not(.td-winner) .td-card:nth-child(2n){animation-delay:0.4s;animation-duration:3.8s}
+.td-shell:not(.td-forest):not(.td-winner) .td-card:nth-child(3n){animation-delay:0.9s;animation-duration:3.2s}
+@keyframes td-cardBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
 
 /* Scorecard pop for judging */
 .td-scoreflip{animation:td-scorePop 0.5s ease-out forwards}
-@keyframes td-scorePop{0%{transform:scale(0.8);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+@keyframes td-scorePop{0%{transform:scale(0.8) rotate(-2deg);opacity:0}60%{transform:scale(1.06) rotate(0.5deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
 
 /* Phase 2: tree branch sway */
-.td-shell.td-forest .td-card{animation:td-cardSway 3s ease-in-out infinite}
-.td-shell.td-forest .td-card:nth-child(2n){animation-delay:0.3s;animation-duration:3.4s}
-.td-shell.td-forest .td-card:nth-child(3n){animation-delay:0.7s;animation-duration:2.7s}
-@keyframes td-cardSway{0%,100%{transform:translateX(0) rotate(0deg)}50%{transform:translateX(1px) rotate(0.2deg)}}
+.td-shell.td-forest .td-card{animation:td-cardSway 3.5s ease-in-out infinite}
+.td-shell.td-forest .td-card:nth-child(2n){animation-delay:0.3s;animation-duration:3.8s}
+.td-shell.td-forest .td-card:nth-child(3n){animation-delay:0.7s;animation-duration:3.1s}
+@keyframes td-cardSway{0%,100%{transform:translateX(0) rotate(0deg)}50%{transform:translateX(1.5px) rotate(0.3deg)}}
 
-.td-step .td-card{animation-play-state:paused}
-.td-step.td-visible .td-card{animation-play-state:running}
-
-/* ═══ OVERDRIVE: Telemetry Ticker (Layer 7) ═══ */
-.td-ticker{font-family:'Nunito',sans-serif;font-size:0.6rem;font-weight:600;color:var(--pet-muted);background:rgba(250,245,239,0.7);border-top:1px solid rgba(168,216,200,0.3);padding:2px 0;overflow:hidden;white-space:nowrap;position:relative;z-index:2;height:16px;letter-spacing:0.5px}
-.td-ticker-text{display:inline-block;animation:td-tickerScroll 25s linear infinite;padding-left:100%}
-@keyframes td-tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+.td-step .td-card{animation-play-state:running}
 
 /* Leaderboard */
-.td-lb-row{display:flex;align-items:center;gap:6px;padding:4px 8px;margin:2px 0;border-radius:10px;font-size:0.85rem}
-.td-lb-row.td-first{background:rgba(232,192,80,0.1);border:2px solid rgba(232,192,80,0.3)}
-.td-lb-rank{font-family:'Nunito',sans-serif;width:24px;text-align:center;color:var(--pet-brown);font-weight:800}
-.td-lb-name{flex:1;color:var(--pet-text)}
-.td-lb-score{font-family:'Nunito',sans-serif;color:var(--pet-brown);font-size:0.8rem;font-weight:700}
+.td-lb-row{display:flex;align-items:center;gap:6px;padding:5px 8px;margin:3px 0;border-radius:3px;font-size:0.85rem;background:rgba(92,61,46,0.04)}
+.td-lb-row.td-first{background:rgba(184,134,11,0.08);border:2px solid rgba(184,134,11,0.35)}
+.td-lb-rank{font-family:'Bebas Neue',Impact,sans-serif;width:24px;text-align:center;color:var(--td-orange);font-weight:400;font-size:1rem}
+.td-lb-name{flex:1;color:var(--pet-text);font-weight:600}
+.td-lb-score{font-family:'Inter',sans-serif;color:var(--pet-brown);font-size:0.8rem;font-weight:700}
 
-/* Trail map (sidebar) — winding path with flower markers */
+/* Trail progress (sidebar) — paw step tracker */
 .td-trail{display:flex;flex-direction:column;gap:1px;margin:6px 0}
-.td-trail-seg{height:16px;display:flex;align-items:center;gap:3px;padding:0 6px;border-radius:8px;font-size:0.55rem;font-family:'Nunito',sans-serif;font-weight:600;color:var(--pet-muted);background:rgba(200,168,112,0.1);border:1px solid rgba(200,168,112,0.2);position:relative}
-.td-trail-seg.td-reached{background:rgba(106,181,74,0.1);border-color:rgba(106,181,74,0.3)}
-.td-trail-seg.td-finish{background:rgba(232,192,80,0.1);border-color:rgba(232,192,80,0.3)}
-.td-trail-dot{width:6px;height:6px;border-radius:50%;border:1px solid var(--pet-cream);position:absolute;right:4px}
+.td-trail-seg{height:16px;display:flex;align-items:center;gap:3px;padding:0 6px;border-radius:2px;font-size:0.55rem;font-family:'Inter',sans-serif;font-weight:600;color:var(--pet-muted);background:rgba(92,61,46,0.05);border:1px solid rgba(92,61,46,0.12);position:relative}
+.td-trail-seg.td-reached{background:rgba(58,138,42,0.1);border-color:rgba(58,138,42,0.3)}
+.td-trail-seg.td-finish{background:rgba(184,134,11,0.1);border-color:rgba(184,134,11,0.3)}
+.td-trail-dot{width:6px;height:6px;border-radius:50%;border:1px solid var(--td-bone);position:absolute;right:4px}
 
 /* Compat bar in sidebar */
-.td-compat-bar{height:6px;border-radius:6px;background:rgba(168,216,200,0.15);overflow:hidden;margin:2px 0 0 27px}
-.td-compat-fill{height:100%;border-radius:6px}
+.td-compat-bar{height:6px;border-radius:2px;background:rgba(92,61,46,0.08);overflow:hidden;margin:2px 0 0 27px}
+.td-compat-fill{height:100%;border-radius:2px}
+
+/* ═══ Sidebar animated pet (replaces viewport/map) ═══ */
+.td-sb-pet{width:60px;height:60px;margin:0 auto 8px;position:relative}
+.td-sb-pet-cat{position:absolute;width:30px;height:24px;left:4px;top:10px;animation:td-sbCatStretch 4s ease-in-out infinite}
+.td-sb-pet-cat::before{content:'';position:absolute;width:20px;height:16px;background:#a08060;border-radius:50%;top:5px;left:3px}
+.td-sb-pet-cat::after{content:'';position:absolute;width:10px;height:10px;background:#a08060;border-radius:50%;top:0;left:7px}
+@keyframes td-sbCatStretch{0%,100%{transform:scaleX(1) translateY(0)}30%{transform:scaleX(1.15) translateY(-2px)}60%{transform:scaleX(0.95) translateY(1px)}}
+.td-sb-pet-dog{position:absolute;width:28px;height:22px;right:2px;top:14px;animation:td-sbDogWag 2s ease-in-out infinite}
+.td-sb-pet-dog::before{content:'';position:absolute;width:18px;height:14px;background:#8a6a40;border-radius:50% 60% 40% 50%;top:5px;left:2px}
+.td-sb-pet-dog::after{content:'';position:absolute;width:8px;height:3px;background:#8a6a40;border-radius:3px;top:6px;right:0;transform-origin:left center;animation:td-sbDogTail 0.3s ease-in-out infinite alternate}
+@keyframes td-sbDogWag{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes td-sbDogTail{0%{transform:rotate(-25deg)}100%{transform:rotate(25deg)}}
+
+/* Forest sidebar: bunny + bird */
+.td-sb-pet-bunny{position:absolute;width:20px;height:18px;left:8px;top:16px;animation:td-sbBunnyHop 2.5s ease infinite}
+.td-sb-pet-bunny::before{content:'';position:absolute;width:14px;height:12px;background:#b0a090;border-radius:50%;bottom:0;left:3px}
+.td-sb-pet-bunny::after{content:'';position:absolute;width:6px;height:10px;background:#b0a090;border-radius:50% 50% 20% 20%;top:0;left:5px}
+@keyframes td-sbBunnyHop{0%,100%{transform:translateY(0)}25%{transform:translateY(-10px)}50%{transform:translateY(0)}65%{transform:translateY(-4px)}}
+.td-sb-pet-songbird{position:absolute;width:16px;height:14px;right:6px;top:6px;animation:td-sbBirdBob 3s ease-in-out infinite}
+.td-sb-pet-songbird::before{content:'';position:absolute;width:12px;height:10px;background:#7a8a6a;border-radius:50%;top:3px;left:0}
+.td-sb-pet-songbird::after{content:'';position:absolute;width:10px;height:3px;top:0;left:3px;
+  background:linear-gradient(135deg,#7a8a6a 0%,transparent 45%),linear-gradient(225deg,#7a8a6a 0%,transparent 45%);
+  animation:td-sbBirdWing 0.4s ease-in-out infinite alternate}
+@keyframes td-sbBirdBob{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-4px) rotate(3deg)}}
+@keyframes td-sbBirdWing{0%{transform:scaleY(1)}100%{transform:scaleY(-0.5)}}
 
 /* Reduced motion */
 @media(prefers-reduced-motion:reduce){
   .td-shell::before,.td-shell::after{animation:none!important}
   .td-h1,.td-butterfly,.td-pawprint,.td-transition{animation:none!important;transform:none!important}
+  .td-anim-cat,.td-anim-dog,.td-anim-bunny,.td-anim-fish,.td-anim-bird,.td-firefly{animation:none!important;transform:none!important}
+  .td-anim-dog::after,.td-anim-bird::after{animation:none!important}
+  .td-sb-pet-cat,.td-sb-pet-dog,.td-sb-pet-bunny,.td-sb-pet-songbird{animation:none!important}
+  .td-sb-pet-dog::after,.td-sb-pet-songbird::after{animation:none!important}
   .td-transition{opacity:0!important;visibility:hidden!important}
   .td-transition::before,.td-transition::after{animation:none!important}
-  .td-step{transition:none!important}
+  .td-step{transition:none!important;animation:none!important}
   .td-bar{transition:none!important}
-  .td-viewport-shop::after,.td-viewport-forest::after{animation:none!important}
-  .td-ticker-text{animation:none!important;padding-left:0}
   .td-card{animation:none!important;filter:none!important;opacity:1!important;transform:none!important}
   .td-scoreflip{animation:none!important;transform:none!important;opacity:1!important}
   .td-butterfly::before,.td-butterfly::after{animation:none!important}
   .td-pawprint{animation:none!important}
-  .td-trans-paws{animation:none!important}
 }
 </style>`;
 }
@@ -1873,34 +1891,33 @@ function _poster(name, statusCls = '', tag = '') {
 // ══════════════════════════════════════════════════════════════
 // SHELL WRAPPER
 // ══════════════════════════════════════════════════════════════
-function _buildHUD(phaseCls, ep) {
+function _buildTreatBar(phaseCls, ep) {
   if (!phaseCls) return '';
-  const hud = HUD_DATA[phaseCls] || HUD_DATA[''];
+  const bar = TREAT_BAR_DATA[phaseCls] || TREAT_BAR_DATA[''];
 
-  // Compat dots from assignments
   let dotsHtml = '';
   const data = ep.topDog;
   if (data?.phase1?.assignments) {
     data.phase1.assignments.forEach(a => {
       const cls = a.compatibility >= 6.5 ? 'td-compat-high' : a.compatibility >= 4 ? 'td-compat-mid' : 'td-compat-low';
-      dotsHtml += `<span class="td-hud-dot ${cls}" title="${a.player}: ${a.compatibility.toFixed(1)}"></span>`;
+      dotsHtml += `<span class="td-treat-dot ${cls}" title="${a.player}: ${a.compatibility.toFixed(1)}"></span>`;
     });
   }
 
-  return `<div class="td-hud">
-    <span class="td-hud-act">${hud.act}</span>
-    <span class="td-hud-label">${hud.label}</span>
-    <span class="td-hud-sub">${hud.sub}</span>
-    <span class="td-hud-dots">${dotsHtml}</span>
+  return `<div class="td-treat-bar">
+    ${_icon(bar.icon)}
+    <span class="td-treat-label">${bar.label}</span>
+    <span class="td-treat-sub">${bar.sub}</span>
+    <span class="td-treat-dots">${dotsHtml}</span>
   </div>`;
 }
 
 function _buildTransition(phaseCls) {
   if (phaseCls === 'td-petshop-assign' || phaseCls === 'td-petshop-training' || phaseCls === 'td-petshop-judging') {
-    return `<div class="td-transition td-trans-shop-open"><span class="td-trans-paws">&#128062; &#128062; &#128062;</span></div>`;
+    return `<div class="td-transition td-trans-shop-open">${_icon('paw')}${_icon('heart')}${_icon('paw')}</div>`;
   }
   if (phaseCls === 'td-forest') {
-    return `<div class="td-transition td-trans-forest-enter"><span class="td-trans-forest-text">INTO THE FOREST</span></div>`;
+    return `<div class="td-transition td-trans-forest-enter"><span class="td-trans-forest-text">INTO THE WILD</span></div>`;
   }
   if (phaseCls === 'td-winner') {
     return `<div class="td-transition td-trans-winner-burst"></div>`;
@@ -1908,15 +1925,30 @@ function _buildTransition(phaseCls) {
   return '';
 }
 
-function _buildTicker(phaseCls) {
-  const text = TELEMETRY_DATA[phaseCls];
-  if (!text) return '';
-  return `<div class="td-ticker"><span class="td-ticker-text">${text}  ✦  ${text}</span></div>`;
+function _buildAnimalParticles() {
+  let html = '';
+  const animalTypes = ['td-anim-cat', 'td-anim-dog', 'td-anim-bunny', 'td-anim-bird', 'td-anim-fish'];
+  for (let i = 0; i < 8; i++) {
+    const type = animalTypes[i % animalTypes.length];
+    const left = 5 + Math.random() * 85;
+    const top = 5 + Math.random() * 85;
+    const delay = (Math.random() * 10).toFixed(1);
+    const dur = (5 + Math.random() * 6).toFixed(1);
+    html += `<div class="${type}" style="left:${left}%;top:${top}%;animation-delay:${delay}s;animation-duration:${dur}s"></div>`;
+  }
+  for (let i = 0; i < 6; i++) {
+    const left = Math.random() * 100;
+    const top = Math.random() * 100;
+    const delay = (Math.random() * 12).toFixed(1);
+    const rot = Math.floor(Math.random() * 360);
+    html += `<div class="td-pawprint" style="left:${left}%;top:${top}%;animation-delay:${delay}s;transform:rotate(${rot}deg)"></div>`;
+  }
+  return html;
 }
 
-function _buildButterflies() {
-  const colors = ['var(--pet-pink)', 'var(--pet-lavender)', 'var(--pet-sky)', 'var(--pet-peach)'];
+function _buildForestParticles() {
   let html = '';
+  const colors = ['var(--pet-pink)', 'var(--pet-lavender)', 'var(--pet-sky)', 'var(--pet-lemon)', 'var(--pet-bubblegum)'];
   for (let i = 0; i < 10; i++) {
     const left = Math.random() * 100;
     const top = Math.random() * 100;
@@ -1925,18 +1957,12 @@ function _buildButterflies() {
     const color = colors[i % colors.length];
     html += `<div class="td-butterfly" style="left:${left}%;top:${top}%;animation-delay:${delay}s;animation-duration:${dur}s"><style>.td-butterfly:nth-child(${i + 1})::before,.td-butterfly:nth-child(${i + 1})::after{background:${color}}</style></div>`;
   }
-  return html;
-}
-
-function _buildPawPrints() {
-  let html = '';
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 6; i++) {
     const left = Math.random() * 100;
-    const top = Math.random() * 100;
-    const delay = (Math.random() * 12).toFixed(1);
-    const dur = (10 + Math.random() * 8).toFixed(1);
-    const rot = Math.floor(Math.random() * 360);
-    html += `<div class="td-pawprint" style="left:${left}%;top:${top}%;animation-delay:${delay}s;animation-duration:${dur}s;transform:rotate(${rot}deg)"></div>`;
+    const top = 20 + Math.random() * 70;
+    const delay = (Math.random() * 10).toFixed(1);
+    const dur = (8 + Math.random() * 8).toFixed(1);
+    html += `<div class="td-firefly" style="left:${left}%;top:${top}%;animation-delay:${delay}s;animation-duration:${dur}s"></div>`;
   }
   return html;
 }
@@ -1946,11 +1972,11 @@ function _shell(content, ep, phaseCls = '') {
   window._tdEp = ep;
   const isForest = phaseCls === 'td-forest';
   const shellCls = isForest ? 'td-forest' : phaseCls === 'td-winner' ? 'td-winner' : '';
-  const particles = isForest ? _buildButterflies() : _buildPawPrints();
+  const particles = isForest ? _buildForestParticles() : _buildAnimalParticles();
   return `${_css()}<div class="td-shell ${shellCls}" data-phase="${phaseCls}">
     ${_buildTransition(phaseCls)}
     ${particles}
-    <div class="td-main">${_buildHUD(phaseCls, ep)}${content}${_buildTicker(phaseCls)}</div>
+    <div class="td-main">${_buildTreatBar(phaseCls, ep)}${content}</div>
     <div class="td-sidebar" id="td-sidebar">${_buildSidebarContent(ep.topDog, phaseCls, ep)}</div>
   </div>`;
 }
@@ -1959,22 +1985,23 @@ function _shell(content, ep, phaseCls = '') {
 // ══════════════════════════════════════════════════════════════
 // SIDEBAR CONTENT (Layer 9 — Interactive, gated by _tvState)
 // ══════════════════════════════════════════════════════════════
-function _buildViewport(phaseCls) {
-  const isForest = phaseCls === 'td-forest';
-  return `<div class="td-viewport">
-    ${isForest ? '<div class="td-viewport-forest"></div>' : '<div class="td-viewport-shop"></div>'}
+function _buildSidebarPet(phaseCls) {
+  const isForest = phaseCls === 'td-forest' || phaseCls === 'td-winner';
+  return `<div class="td-sb-pet">
+    ${isForest
+      ? '<div class="td-sb-pet-bunny"></div><div class="td-sb-pet-songbird"></div>'
+      : '<div class="td-sb-pet-cat"></div><div class="td-sb-pet-dog"></div>'}
   </div>`;
 }
 
 function _buildSidebarContent(data, phase, ep) {
   if (!data) return '<div class="td-sb-title">NO DATA</div>';
 
-  if (phase === 'td-petshop-assign') return _buildViewport(phase) + _sidebarAssignment(data);
-  if (phase === 'td-petshop-training') return _buildViewport(phase) + _sidebarTraining(data);
-  if (phase === 'td-petshop-judging') return _buildViewport(phase) + _sidebarJudging(data);
-  if (phase === 'td-forest') return _buildViewport(phase) + _sidebarForest(data);
-  if (phase === 'td-winner') return _buildViewport(phase) + _sidebarWinner(data, ep);
-  // Title card
+  if (phase === 'td-petshop-assign') return _buildSidebarPet(phase) + _sidebarAssignment(data);
+  if (phase === 'td-petshop-training') return _buildSidebarPet(phase) + _sidebarTraining(data);
+  if (phase === 'td-petshop-judging') return _buildSidebarPet(phase) + _sidebarJudging(data);
+  if (phase === 'td-forest') return _buildSidebarPet(phase) + _sidebarForest(data);
+  if (phase === 'td-winner') return _buildSidebarPet(phase) + _sidebarWinner(data, ep);
   return _sidebarRoster(data);
 }
 
@@ -2019,7 +2046,7 @@ function _sidebarTraining(data) {
   const roundsRevealed = revIdx + 1;
 
   let h = `<div class="td-sb-title">TRAINING PROGRESS</div>`;
-  h += `<div style="text-align:center;font-family:'Nunito',sans-serif;font-size:0.7rem;font-weight:700;color:var(--pet-muted);margin:4px 0">ROUND ${Math.min(roundsRevealed, rounds.length)} / ${rounds.length}</div>`;
+  h += `<div style="text-align:center;font-family:'Inter',sans-serif;font-size:0.7rem;font-weight:700;color:var(--pet-muted);margin:4px 0">ROUND ${Math.min(roundsRevealed, rounds.length)} / ${rounds.length}</div>`;
 
   assignments.forEach(a => {
     const sl = slug(a.player);
@@ -2141,33 +2168,32 @@ export function rpBuildTopDogTitleCard(ep) {
 
   const assignments = data.phase1?.assignments || [];
 
-  // Animal silhouettes ring
   const animalRing = assignments.map((a, i) => {
     const angle = (i / assignments.length) * 360;
     const radius = 80;
     const x = Math.cos(angle * Math.PI / 180) * radius;
     const y = Math.sin(angle * Math.PI / 180) * radius;
-    return `<span style="position:absolute;left:calc(50% + ${x}px - 10px);top:calc(50% + ${y}px - 10px);font-size:1.2rem;opacity:0.4">${a.animal.icon}</span>`;
+    return `<span style="position:absolute;left:calc(50% + ${x}px - 11px);top:calc(50% + ${y}px - 11px);opacity:0.5">${_icon('paw')}</span>`;
   }).join('');
 
   let posters = assignments.map(a => `<div style="display:inline-block;margin:2px">${_poster(a.player, 'td-high')}</div>`).join('');
 
   const content = `
     <div class="td-h1" style="font-size:2.2rem;margin:20px 0 6px">TOP DOG</div>
-    <div style="text-align:center;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;color:var(--pet-muted);letter-spacing:4px;margin-bottom:16px;text-transform:uppercase">Pet Shop Paradise</div>
+    <div style="text-align:center;font-family:'Inter',sans-serif;font-size:0.8rem;font-weight:700;color:var(--pet-muted);letter-spacing:4px;margin-bottom:16px;text-transform:uppercase">TOP DOG CHALLENGE</div>
     <div class="td-host">${data.hostOpening || ''}</div>
     <div style="text-align:center;margin:16px 0;position:relative;height:200px">
       <div style="position:relative;width:200px;height:200px;margin:0 auto">${animalRing}</div>
     </div>
     <div style="text-align:center;margin:12px 0">
-      <div style="font-family:'Nunito',sans-serif;font-size:0.7rem;font-weight:800;color:var(--pet-brown);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase">Contestants</div>
+      <div style="font-family:'Inter',sans-serif;font-size:0.7rem;font-weight:800;color:var(--pet-brown);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase">Contestants</div>
       <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px">${posters}</div>
     </div>
     <div style="margin-top:16px;text-align:center">
       <div class="td-card" style="display:inline-block;max-width:420px;text-align:left">
         <div class="td-h3">Challenge Rules</div>
         <div style="font-size:0.82rem;line-height:1.6;color:var(--pet-brown)">
-          <b style="color:var(--pet-pink)">Phase 1</b> — Adopt your pet + Train them + Talent show performance<br>
+          <b style="color:var(--pet-hot-pink)">Phase 1</b> — Adopt your pet + Train them + Talent show performance<br>
           <b style="color:var(--pet-green)">Phase 2</b> — Forest adventure trail (14 segments to the meadow)<br>
           <span style="color:var(--pet-brown);font-weight:600">Top performance score = head start on the trail. First to the meadow wins immunity!</span>
         </div>
@@ -2194,7 +2220,7 @@ export function rpBuildTopDogAssignment(ep) {
 
   let steps = '';
   assignments.forEach((a, i) => {
-    const vis = i <= st.idx ? 'td-visible' : '';
+    const hide = i <= st.idx ? '' : 'display:none';
     const pct = Math.round(a.compatibility * 10);
     const barCls = a.compatibility >= 6.5 ? 'td-gold' : a.compatibility >= 4 ? 'td-amber' : 'td-crimson';
     const posterCls = a.compatibility >= 6.5 ? 'td-high' : a.compatibility >= 4 ? 'td-mid' : 'td-low';
@@ -2205,35 +2231,35 @@ export function rpBuildTopDogAssignment(ep) {
     if (a.compatibility >= 7) bonusText = `<span style="color:var(--pet-green);font-size:0.75rem"> — Natural affinity!</span>`;
     else if (a.compatibility <= 3) bonusText = `<span style="color:var(--pet-danger);font-size:0.75rem"> — This could be trouble...</span>`;
 
-    steps += `<div class="td-step ${vis}" data-step="${i}">
+    steps += `<div id="td-step-${stKey}-${i}" class="td-step" style="${hide}">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
         ${_poster(a.player, posterCls, { text: a.animal.name, cls: 'td-gold' })}
         <div style="flex:1">
-          <div style="font-size:0.78rem;color:var(--pet-brown);font-family:'Nunito',sans-serif;font-weight:600">
-            ${a.animal.icon} ${a.animal.name} — Danger: ${'★'.repeat(a.animal.danger)}${'☆'.repeat(5 - a.animal.danger)} — ${a.animal.temperament}${bonusText}
+          <div style="font-size:0.78rem;color:var(--pet-brown);font-family:'Inter',sans-serif;font-weight:600">
+            ${_icon('paw')} ${a.animal.name} — <span style="color:var(--pet-hot-pink)">${'●'.repeat(a.animal.danger)}${'○'.repeat(5 - a.animal.danger)}</span> — ${a.animal.temperament}${bonusText}
           </div>
-          <div style="font-size:0.7rem;color:var(--pet-muted);font-family:'Nunito',sans-serif;font-weight:600;letter-spacing:0.5px">COMPATIBILITY: ${a.compatibility.toFixed(1)}/10</div>
+          <div style="font-size:0.7rem;color:var(--pet-muted);font-family:'Inter',sans-serif;font-weight:600;letter-spacing:0.5px">COMPATIBILITY: ${a.compatibility.toFixed(1)}/10</div>
           <div class="td-bar-wrap"><div class="td-bar ${barCls}" style="width:${pct}%"></div></div>
         </div>
       </div>
       <div class="td-card">${_icon(a.compatibility >= 5.5 ? 'heart' : 'thorn')}${a.reactionText}</div>
     </div>`;
 
-    // Comm chatter between reveals
+    // Comm chatter between reveals — shares same step index so it reveals together
     if (i > 0 && i % 3 === 0) {
-      const chatter = _pickChatter('td-petshop', 1);
-      if (chatter.length) steps += `<div class="td-step ${vis}" data-step="${i}">${_commDiv(chatter[0])}</div>`;
+      const chatter = _pickWhisper('td-petshop', 1);
+      if (chatter.length) steps += `<div id="td-step-${stKey}-${i}b" class="td-step" style="${hide}">${_whisperDiv(chatter[0])}</div>`;
     }
   });
 
   const content = `
-    <div class="td-h1">Pet Adoption</div>
-    <div style="text-align:center;font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:700;color:var(--pet-muted);letter-spacing:2px;margin-bottom:10px">PRIORITY PICK — HIGHEST SOCIAL+BOLDNESS ADOPTS FIRST</div>
+    <div class="td-h1">Animal Draft</div>
+    <div style="text-align:center;font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:700;color:var(--pet-muted);letter-spacing:2px;margin-bottom:10px">PRIORITY PICK — HIGHEST SOCIAL+BOLDNESS ADOPTS FIRST</div>
     <div data-screen-key="${stKey}">${steps}</div>
-    <div class="td-reveal-bar">
-      <button class="td-btn" onclick="tdRevealNext('${stKey}',${totalSteps})">Next Adoption &#9654;</button>
-      <button class="td-btn td-btn-crimson" onclick="tdRevealAll('${stKey}',${totalSteps})">Reveal All &#9193;</button>
-      <span id="td-counter-${stKey}" style="font-family:'Nunito',sans-serif;font-size:0.7rem;font-weight:700;color:var(--pet-muted)">${Math.max(0, st.idx + 1)}/${totalSteps}</span>
+    <div id="td-controls-${stKey}" class="td-reveal-bar">
+      <button id="td-btn-${stKey}" class="td-btn" data-td-action="next" data-td-key="${stKey}" data-td-total="${totalSteps}">Next Adoption ▸</button>
+      <button class="td-btn td-btn-reveal-all" data-td-action="all" data-td-key="${stKey}" data-td-total="${totalSteps}">Reveal All ▸▸</button>
+      <span id="td-counter-${stKey}" style="font-family:'Inter',sans-serif;font-size:0.7rem;font-weight:700;color:var(--pet-muted)">${Math.max(0, st.idx + 1)}/${totalSteps}</span>
     </div>`;
 
   if (!window._tdScreenBuilders) window._tdScreenBuilders = {};
@@ -2258,7 +2284,7 @@ export function rpBuildTopDogTraining(ep) {
   let steps = '';
 
   rounds.forEach((round, i) => {
-    const vis = i <= st.idx ? 'td-visible' : '';
+    const hide = i <= st.idx ? '' : 'display:none';
 
     // Training results for each player
     let resultCards = (round.results || []).map(r => {
@@ -2272,7 +2298,7 @@ export function rpBuildTopDogTraining(ep) {
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
           ${_poster(r.player, posterCls, { text: animal.name, cls: r.outcome === 'success' ? 'td-gold' : 'td-crimson' })}
           ${_icon(iconType)}
-          <span style="font-family:'Nunito',sans-serif;font-size:0.7rem;font-weight:700;color:var(--pet-muted);text-transform:uppercase;letter-spacing:0.5px">${r.outcome.replace('_', ' ')}</span>
+          <span style="font-family:'Inter',sans-serif;font-size:0.7rem;font-weight:700;color:var(--pet-muted);text-transform:uppercase;letter-spacing:0.5px">${r.outcome.replace('_', ' ')}</span>
         </div>
         <div style="font-size:0.84rem">${r.text}</div>
       </div>`;
@@ -2292,11 +2318,11 @@ export function rpBuildTopDogTraining(ep) {
     // Comm chatter
     let chatter = '';
     if (i > 0 && i % 2 === 0) {
-      const ch = _pickChatter('td-petshop', 1);
-      if (ch.length) chatter = _commDiv(ch[0]);
+      const ch = _pickWhisper('td-petshop', 1);
+      if (ch.length) chatter = _whisperDiv(ch[0]);
     }
 
-    steps += `<div class="td-step ${vis}" data-step="${i}">
+    steps += `<div id="td-step-${stKey}-${i}" class="td-step" style="${hide}">
       ${chatter}
       <div class="td-h2">Round ${round.round} <span style="font-size:0.7rem;color:var(--pet-muted)">${i + 1}/${totalSteps}</span></div>
       ${resultCards}${socHtml}${moleHtml}
@@ -2304,13 +2330,13 @@ export function rpBuildTopDogTraining(ep) {
   });
 
   const content = `
-    <div class="td-h1">Pet School</div>
+    <div class="td-h1">Boot Camp</div>
     <div class="td-host">${data.hostTrainingStart || ''}</div>
     <div data-screen-key="${stKey}">${steps}</div>
-    <div class="td-reveal-bar">
-      <button class="td-btn" onclick="tdRevealNext('${stKey}',${totalSteps})">Next Round &#9654;</button>
-      <button class="td-btn td-btn-crimson" onclick="tdRevealAll('${stKey}',${totalSteps})">Reveal All &#9193;</button>
-      <span id="td-counter-${stKey}" style="font-family:'Nunito',sans-serif;font-size:0.7rem;font-weight:700;color:var(--pet-muted)">${Math.max(0, st.idx + 1)}/${totalSteps}</span>
+    <div id="td-controls-${stKey}" class="td-reveal-bar">
+      <button id="td-btn-${stKey}" class="td-btn" data-td-action="next" data-td-key="${stKey}" data-td-total="${totalSteps}">Next Round ▸</button>
+      <button class="td-btn td-btn-reveal-all" data-td-action="all" data-td-key="${stKey}" data-td-total="${totalSteps}">Reveal All ▸▸</button>
+      <span id="td-counter-${stKey}" style="font-family:'Inter',sans-serif;font-size:0.7rem;font-weight:700;color:var(--pet-muted)">${Math.max(0, st.idx + 1)}/${totalSteps}</span>
     </div>`;
 
   if (!window._tdScreenBuilders) window._tdScreenBuilders = {};
@@ -2327,19 +2353,19 @@ export function rpBuildTopDogJudging(ep) {
   if (!data) return '<div>No challenge data</div>';
 
   const perfs = data.phase1?.performances || [];
-  const totalSteps = perfs.length;
+  const totalSteps = perfs.length + 1;
   const stKey = 'td-judging';
   const st = _ensureState(stKey, totalSteps);
 
   let steps = '';
 
   perfs.forEach((p, i) => {
-    const vis = i <= st.idx ? 'td-visible' : '';
+    const hide = i <= st.idx ? '' : 'display:none';
     const animal = p.animalObj || { name: '?', icon: '?' };
     const posterCls = p.tier === 'standingOvation' || p.tier === 'impressed' ? 'td-high' : p.tier === 'meh' ? 'td-mid' : 'td-low';
     const scoreColor = p.total >= 16 ? 'var(--pet-green)' : p.total >= 12 ? 'var(--pet-brown)' : p.total >= 8 ? 'var(--pet-peach)' : 'var(--pet-danger)';
 
-    steps += `<div class="td-step ${vis}" data-step="${i}">
+    steps += `<div id="td-step-${stKey}-${i}" class="td-step" style="${hide}">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         ${_poster(p.player, posterCls, { text: animal.name, cls: 'td-gold' })}
         ${_icon(p.tier)}
@@ -2347,34 +2373,63 @@ export function rpBuildTopDogJudging(ep) {
       <div class="td-card">${_icon('feather')}${p.perfText}</div>
       <div style="display:flex;gap:8px;margin:6px 0;flex-wrap:wrap">
         <div class="td-card td-scoreflip" style="flex:1;min-width:180px;text-align:center;border-color:rgba(168,216,200,0.4)">
-          <div style="font-family:'Nunito',sans-serif;font-size:0.7rem;font-weight:800;color:var(--pet-muted);letter-spacing:0.5px;text-transform:uppercase">Chris</div>
-          <div style="font-family:'Nunito',sans-serif;font-size:2rem;color:${scoreColor};font-weight:800">${p.chrisScore}</div>
+          <div style="font-family:'Inter',sans-serif;font-size:0.7rem;font-weight:800;color:var(--pet-muted);letter-spacing:0.5px;text-transform:uppercase">Chris</div>
+          <div style="font-family:'Inter',sans-serif;font-size:2rem;color:${scoreColor};font-weight:800">${p.chrisScore}</div>
           <div style="font-size:0.82rem;margin-top:4px">${p.chrisText}</div>
         </div>
         <div class="td-card td-scoreflip" style="flex:1;min-width:180px;text-align:center;border-color:rgba(168,216,200,0.4);animation-delay:0.2s">
-          <div style="font-family:'Nunito',sans-serif;font-size:0.7rem;font-weight:800;color:var(--pet-muted);letter-spacing:0.5px;text-transform:uppercase">Chef</div>
-          <div style="font-family:'Nunito',sans-serif;font-size:2rem;color:${scoreColor};font-weight:800">${p.chefScore}</div>
+          <div style="font-family:'Inter',sans-serif;font-size:0.7rem;font-weight:800;color:var(--pet-muted);letter-spacing:0.5px;text-transform:uppercase">Chef</div>
+          <div style="font-family:'Inter',sans-serif;font-size:2rem;color:${scoreColor};font-weight:800">${p.chefScore}</div>
           <div style="font-size:0.82rem;margin-top:4px">${p.chefText}</div>
         </div>
       </div>
-      <div style="text-align:center;font-family:'Nunito',sans-serif;font-size:1.2rem;color:${scoreColor};font-weight:800;letter-spacing:2px">TOTAL: ${p.total}/20</div>
+      <div style="text-align:center;font-family:'Inter',sans-serif;font-size:1.2rem;color:${scoreColor};font-weight:800;letter-spacing:2px">TOTAL: ${p.total}/20</div>
     </div>`;
 
     // Comm chatter
     if (i > 0 && i % 2 === 1) {
-      const ch = _pickChatter('td-petshop', 1);
-      if (ch.length) steps += `<div class="td-step ${vis}" data-step="${i}">${_commDiv(ch[0])}</div>`;
+      const ch = _pickWhisper('td-petshop', 1);
+      if (ch.length) steps += `<div id="td-step-${stKey}-${i}b" class="td-step" style="${hide}">${_whisperDiv(ch[0])}</div>`;
     }
   });
 
+  // Winner announcement step
+  const judgingWinner = perfs[0];
+  const winIdx = perfs.length;
+  const hideWin = winIdx <= st.idx ? '' : 'display:none';
+  if (judgingWinner) {
+    const winAnimal = judgingWinner.animalObj || { name: '?', icon: '?' };
+    const runnerUp = perfs[1];
+    const lastPlace = perfs[perfs.length - 1];
+    steps += `<div id="td-step-${stKey}-${winIdx}" class="td-step" style="${hideWin}">
+      <div class="td-card" style="border:2px solid #e8c050;background:linear-gradient(135deg,rgba(232,192,80,0.08),rgba(200,160,96,0.05));text-align:center;padding:16px">
+        ${_icon('star')}
+        <div style="font-family:'Bebas Neue',Impact,sans-serif;font-size:1.4rem;color:#a08020;letter-spacing:3px;margin:8px 0">TOP SCORER</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0">
+          ${portrait(judgingWinner.player, 52)}
+          <div style="text-align:left">
+            <div style="font-family:'Inter',sans-serif;font-size:1.1rem;font-weight:800;color:var(--pet-text)">${judgingWinner.player}</div>
+            <div style="font-size:0.8rem;color:var(--pet-brown)">${_icon('heart')} with ${winAnimal.name} — ${judgingWinner.total}/20</div>
+          </div>
+        </div>
+        <div style="margin:10px 0;padding:8px;background:rgba(92,61,46,0.06);border-radius:4px;font-size:0.85rem">
+          ${_icon('ribbon')} <strong>${judgingWinner.player}</strong> earns a <strong style="color:#a08020">3-segment head start</strong> in the Wilderness Race!
+          ${runnerUp ? `<br>${runnerUp.player} starts at 2. ` : ''}
+          ${lastPlace ? `<br><span style="color:var(--pet-danger)">${lastPlace.player}</span> starts dead last — zero head start.` : ''}
+        </div>
+        <div style="font-size:0.82rem;color:var(--pet-muted);font-style:italic;margin-top:6px">${host()}: "Pack your bags. The forest doesn't care about your feelings."</div>
+      </div>
+    </div>`;
+  }
+
   const content = `
-    <div class="td-h1">Pet Talent Show</div>
+    <div class="td-h1">Talent Showdown</div>
     <div class="td-host">${data.hostJudgingStart || ''}</div>
     <div data-screen-key="${stKey}">${steps}</div>
-    <div class="td-reveal-bar">
-      <button class="td-btn" onclick="tdRevealNext('${stKey}',${totalSteps})">Next Performance &#9654;</button>
-      <button class="td-btn td-btn-crimson" onclick="tdRevealAll('${stKey}',${totalSteps})">Reveal All &#9193;</button>
-      <span id="td-counter-${stKey}" style="font-family:'Nunito',sans-serif;font-size:0.7rem;font-weight:700;color:var(--pet-muted)">${Math.max(0, st.idx + 1)}/${totalSteps}</span>
+    <div id="td-controls-${stKey}" class="td-reveal-bar">
+      <button id="td-btn-${stKey}" class="td-btn" data-td-action="next" data-td-key="${stKey}" data-td-total="${totalSteps}">Next Performance ▸</button>
+      <button class="td-btn td-btn-reveal-all" data-td-action="all" data-td-key="${stKey}" data-td-total="${totalSteps}">Reveal All ▸▸</button>
+      <span id="td-counter-${stKey}" style="font-family:'Inter',sans-serif;font-size:0.7rem;font-weight:700;color:var(--pet-muted)">${Math.max(0, st.idx + 1)}/${totalSteps}</span>
     </div>`;
 
   if (!window._tdScreenBuilders) window._tdScreenBuilders = {};
@@ -2398,7 +2453,7 @@ export function rpBuildTopDogForest(ep) {
   let steps = '';
 
   rounds.forEach((round, i) => {
-    const vis = i <= st.idx ? 'td-visible' : '';
+    const hide = i <= st.idx ? '' : 'display:none';
 
     // Movement cards
     let moveCards = (round.movements || []).map(m => {
@@ -2436,11 +2491,11 @@ export function rpBuildTopDogForest(ep) {
     // Comm chatter
     let chatter = '';
     if (i > 0 && i % 3 === 0) {
-      const ch = _pickChatter('td-forest', 1);
-      if (ch.length) chatter = _commDiv(ch[0]);
+      const ch = _pickWhisper('td-forest', 1);
+      if (ch.length) chatter = _whisperDiv(ch[0]);
     }
 
-    steps += `<div class="td-step ${vis}" data-step="${i}">
+    steps += `<div id="td-step-${stKey}-${i}" class="td-step" style="${hide}">
       ${chatter}
       <div class="td-h2" style="color:var(--pet-cream)">Round ${round.round}</div>
       ${moveCards}${encounterCards}${socHtml}${moleHtml}
@@ -2448,13 +2503,13 @@ export function rpBuildTopDogForest(ep) {
   });
 
   const content = `
-    <div class="td-h1" style="color:var(--pet-cream);text-shadow:0 1px 2px rgba(0,0,0,0.2)">Forest Adventure</div>
+    <div class="td-h1" style="color:var(--pet-cream);text-shadow:0 1px 2px rgba(0,0,0,0.2)">Wilderness Race</div>
     <div class="td-host" style="color:var(--pet-cream);border-left-color:var(--pet-grass)">${data.hostForestStart || ''}</div>
     <div data-screen-key="${stKey}">${steps}</div>
-    <div class="td-reveal-bar">
-      <button class="td-btn" style="border-color:var(--pet-grass);color:var(--pet-green);background:rgba(106,181,74,0.1)" onclick="tdRevealNext('${stKey}',${totalSteps})">Next Round &#9654;</button>
-      <button class="td-btn td-btn-crimson" onclick="tdRevealAll('${stKey}',${totalSteps})">Reveal All &#9193;</button>
-      <span id="td-counter-${stKey}" style="font-family:'Nunito',sans-serif;font-size:0.7rem;font-weight:700;color:var(--pet-grass)">${Math.max(0, st.idx + 1)}/${totalSteps}</span>
+    <div id="td-controls-${stKey}" class="td-reveal-bar">
+      <button id="td-btn-${stKey}" class="td-btn" style="border-color:#5a9a38;color:#8ac050;background:rgba(90,154,56,0.15)" data-td-action="next" data-td-key="${stKey}" data-td-total="${totalSteps}">Next Round ▸</button>
+      <button class="td-btn td-btn-reveal-all" data-td-action="all" data-td-key="${stKey}" data-td-total="${totalSteps}">Reveal All ▸▸</button>
+      <span id="td-counter-${stKey}" style="font-family:'Inter',sans-serif;font-size:0.7rem;font-weight:700;color:#8ac050">${Math.max(0, st.idx + 1)}/${totalSteps}</span>
     </div>`;
 
   if (!window._tdScreenBuilders) window._tdScreenBuilders = {};
@@ -2493,20 +2548,20 @@ export function rpBuildTopDogWinner(ep) {
       ${_poster(n, isWinner ? 'td-winner-p' : 'td-high')}
       <span class="td-lb-name">${n}</span>
       <span class="td-lb-score">${totalScore} pts</span>
-      ${isWinner ? '<span style="font-size:0.6rem;font-weight:700;padding:1px 6px;border-radius:8px;background:rgba(232,192,80,0.15);color:#a08020;font-family:Nunito,sans-serif">IMMUNE</span>' : ''}
+      ${isWinner ? '<span style="font-size:0.6rem;font-weight:700;padding:1px 6px;border-radius:3px;background:rgba(184,134,11,0.15);color:#8a6a00;font-family:Inter,sans-serif;text-transform:uppercase;letter-spacing:1px">IMMUNE</span>' : ''}
     </div>`;
   }).join('');
 
   const content = `
     <div style="text-align:center;margin:12px 0">
-      <div style="font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:800;color:var(--pet-muted);letter-spacing:3px;margin-bottom:6px;text-transform:uppercase">First to the Meadow</div>
+      <div style="font-family:'Inter',sans-serif;font-size:0.8rem;font-weight:800;color:var(--pet-muted);letter-spacing:3px;margin-bottom:6px;text-transform:uppercase">FIRST TO THE FINISH</div>
       <div class="td-h1" style="font-size:1.8rem;color:#a08020">BEST IN SHOW</div>
       <div style="margin:14px auto;width:90px;height:90px;border-radius:50%;border:4px solid #e8c050;overflow:hidden;position:relative;box-shadow:0 0 20px rgba(232,192,80,0.3)">
         <img src="assets/avatars/${winnerSlug}.png" alt="${winner}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none'">
         <div style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,rgba(232,192,80,0.15),transparent 50%);pointer-events:none"></div>
       </div>
-      <div style="font-family:'Nunito',sans-serif;font-size:1.3rem;font-weight:800;color:#a08020;margin:6px 0">${winner}</div>
-      <div style="font-family:'Nunito',sans-serif;font-size:1rem;font-weight:600;color:var(--pet-brown);margin:4px 0">with ${winnerAnimal.icon} ${winnerAnimal.name}</div>
+      <div style="font-family:'Inter',sans-serif;font-size:1.3rem;font-weight:800;color:#a08020;margin:6px 0">${winner}</div>
+      <div style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:600;color:var(--pet-brown);margin:4px 0">${_icon('heart')} with ${winnerAnimal.name}</div>
       <div style="font-size:0.82rem;color:var(--pet-muted);margin-top:4px;font-style:italic">${data.phase2.finishText || ''}</div>
     </div>
     <div class="td-h2" style="text-align:center">Final Leaderboard</div>

@@ -269,6 +269,10 @@ export function renderEpisodeHistory() {
     const shTag = ep.isSuperHerold ? `<span class="ep-hist-tag" style="background:rgba(239,68,68,0.15);color:#ef4444">Hero</span>` : '';
     const ppTag = ep.isPrincessPride ? `<span class="ep-hist-tag" style="background:rgba(236,72,153,0.15);color:#ec4899">Princess</span>` : '';
     const gcTag = ep.isGetAClue ? `<span class="ep-hist-tag" style="background:rgba(196,149,106,0.15);color:#c4956a">Mystery</span>` : '';
+    const rrTag = ep.isRockNRule ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8b5cf6">Rock</span>` : '';
+    const kfTag = ep.isCrouchingCourtney ? `<span class="ep-hist-tag" style="background:rgba(192,57,43,0.15);color:#c0392b">Warrior</span>` : '';
+    const swoTag = ep.isHouston ? `<span class="ep-hist-tag" style="background:rgba(0,229,255,0.15);color:#00e5ff">Space</span>` : '';
+    const tdTag = ep.isTopDog ? `<span class="ep-hist-tag" style="background:rgba(212,160,23,0.15);color:#d4a017">Top Dog</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -276,7 +280,7 @@ export function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${ppTag}${gcTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}</div>
     </div>`;
   }).join('');
 }
@@ -823,8 +827,12 @@ export function renderTwistCatalog() {
       const epInfo = epMap.find(e => e.ep === epN);
       return epInfo && epInfo.active % 2 !== 0;
     });
-    const blocked = phaseBlocked || incompBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked || _tdEvenBlocked || _taOddBlocked;
-    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist' : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : _tdEvenBlocked ? ' ⚠️ needs even player count' : _taOddBlocked ? ' ⚠️ needs even player count' : '';
+    const _ccEvenBlocked = canAssign && t.id === 'crouching-courtney' && _selEpNums.some(epN => {
+      const epInfo = epMap.find(e => e.ep === epN);
+      return epInfo && epInfo.active % 2 !== 0;
+    });
+    const blocked = phaseBlocked || incompBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked || _tdEvenBlocked || _taOddBlocked || _ccEvenBlocked;
+    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist' : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : _tdEvenBlocked ? ' ⚠️ needs even player count' : _taOddBlocked ? ' ⚠️ needs even player count' : _ccEvenBlocked ? ' ⚠️ needs even player count for pairs' : '';
     return `
     <div class="twist-card ${canAssign && !blocked ? 'assignable' : ''} ${blocked ? 'phase-blocked' : ''}" onclick="${blocked ? '' : `assignTwist('${t.id}')`}">
       <div class="twist-card-top">

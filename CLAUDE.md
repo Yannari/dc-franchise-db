@@ -61,10 +61,13 @@ ES modules, no build step. Open `simulator.html` in a browser.
 Check behavioral track record alongside raw stats.
 
 ### Every Feature Needs VP + Text Backlog
-VP screens (`rpBuild*`) + text backlog (`_text*`). Neither optional.
+VP screens (`rpBuild*`) + text backlog. Neither optional. For twist challenges, prefer `_textTwistChallenge()` which renders VP screens as plain text automatically — no custom `_text` function needed. The text backlog must be a complete retranscription of the VP narration, placed BEFORE `_textCampPost` in `generateSummaryText()`.
 
 ### Camp Events Must Have Consequences
 Bond/state/information changes. `players: []` array + `badgeText`/`badgeClass` required.
+
+### ALL Social Events Must Have Consequences
+Every social event inside a challenge — collisions, taunts, helps, steals, encouragement, trash talk, rivalry, banter — MUST have gameplay consequences (`addBond`, `popDelta`, camp event injection, or state changes). No event should be purely cosmetic text. If a player does something to another player, it must affect their relationship or reputation.
 
 ### Serialization
 Functions don't survive `JSON.stringify`. Pre-render text as strings. Sets need `prepGsForSave()`/`repairGsSets()`.
@@ -217,7 +220,7 @@ import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js
    ```
    No merge/phase checks here — let episode.js handle that.
 
-3. **`js/episode.js`** — THREE places to update:
+3. **`js/episode.js`** — SEVEN places to update:
    - **Import**: `import { simulateChallengeId } from './chal/challenge-id.js';`
    - **Dispatch block** (near other post-merge challenges ~line 1475):
      ```javascript
@@ -228,8 +231,10 @@ import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js
      }
      ```
    - **Generic challenge skip** (~line 2221): add `|| ep.isChallengeId` to the `isMonsterCash || isOperationClassified || ...` condition
-   - **updateChalRecord skip** (~line 2485): add `&& !ep.isChallengeId` to the skip condition
-   - **Episode history save** (~line 5400): add `isChallengeId: ep.isChallengeId || false, challengeData: ep.challengeData || null,` ← THIS IS CRITICAL or VP screens won't work on replay
+   - **Generic updateChalRecord guard** (~line 2545): add `&& !ep.isChallengeId` — prevents double-calling. The twist challenge's `simulate` function already calls `updateChalRecord(ep)` internally; this guard stops the GENERIC catch-all from calling it a second time (which would double-count wins/podiums/bombs).
+   - **`_hasTwistChallenge` list** (~line 1640): add `|| ep.isChallengeId` — THIS IS CRITICAL for sudden-death compatibility. Without it, sudden death runs its own generic challenge instead of using the twist challenge results to eliminate last place.
+   - **`handleExileFormat` guard** (~line 991): add `|| ep.isChallengeId` — prevents exile format from interfering with the twist challenge.
+   - **Episode history save** — add `isChallengeId: ep.isChallengeId || false, challengeData: ep.challengeData || null` to ALL `gs.episodeHistory.push` calls in episode.js (there are 4+: main ~line 5400, no-tribal ~line 2918, sudden-death ~line 1715, sudden-death+twist ~line 2417). Missing any one = VP screens show nothing on replay for that episode type.
 
 4. **`js/vp-screens.js`** — Add import + screen registration:
    ```javascript
@@ -241,7 +246,22 @@ import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js
    }
    ```
 
-5. **`js/text-backlog.js`** — Add import of `_textChallengeId` and call it in the main function.
+5. **`js/text-backlog.js`** — Two options for text backlog:
+
+   **Option A (recommended): VP-rendered text backlog** — uses `_textTwistChallenge()` to call VP builder functions and strip HTML. This automatically outputs the exact narration from the VP screens with zero manual work:
+   ```javascript
+   // In text-backlog.js — import VP builders:
+   import { rpBuildChallengeTitleCard, rpBuildChallengePhase1, ... } from './chal/challenge-id.js';
+   // In generateSummaryText() — call generic renderer:
+   if (ep.challengeData) {
+     _textTwistChallenge(ep, ln, sec, 'challengeData', 'CHALLENGE NAME', [
+       rpBuildChallengeTitleCard, rpBuildChallengePhase1, ...
+     ]);
+   }
+   ```
+   Place the call in the twist challenges block (BEFORE `_textCampPost`).
+
+   **Option B: Custom `_text` function** — export `_textChallengeId(ep, ln, sec)` from the challenge file and call it manually. Use this only if you need a different format than the VP output. Must include ALL narration text from the VP — every player action, every event, every score. The text backlog should be a complete retranscription of what the VP shows.
 
 6. **`js/main.js`** — Add `import * as challengeMod from './chal/challenge-id.js';` and add `challengeMod` to the module spread array.
 
@@ -309,12 +329,127 @@ export function simulateChallengeId(ep) {
 - **Camp events spoiling VP reveals**: don't push "X was crowned/eliminated" camp events that appear in Cold Open before the challenge VP screens
 - **Same text repetition**: have 4+ text options per narration category minimum
 - **Class/type assignment clustering**: use priority draft + cap system to ensure diversity
+- **No-tribal / sudden-death missing challenge data in history**: episode.js has MULTIPLE early-return history pushes (no-tribal ~line 2918, sudden-death ~line 1715, sudden-death+twist ~line 2417, off-the-chain+SD ~line 2140). ALL of these must include the twist challenge data fields (`isHouston`, `houston`, `isTopDog`, `topDog`, etc.) or VP screens show nothing on replay. When adding a new twist challenge, grep for ALL `gs.episodeHistory.push` calls and add the new fields to every one.
 
-### Step 7: VP Aesthetic Identity
-Each challenge needs its own DISTINCT visual identity — different from all other challenges:
-- Unique CSS class prefix (e.g., `sh-` for Super Hero-ld, `pp-` for Princess Pride)
-- Unique font family + color palette
-- Phase-specific background themes that change per location
-- Animated decorations (CSS-only: particles, glows, environmental elements)
-- `@media(prefers-reduced-motion:reduce)` for ALL animations
-- Performance badges or visual indicators for player scores
+### Step 7: VP Aesthetic Identity — OVERDRIVE IS THE BASELINE
+Every challenge VP must feel like a standalone immersive experience. The goal is **wow factor** — the user should feel transported into the challenge's world. Never settle for plain cards with emoji icons on a flat background.
+
+**Required visual layers (ALL of these, every challenge):**
+
+#### Layer 1: Unique Theme Foundation
+- Unique CSS class prefix (e.g., `sh-` for Super Hero-ld, `so-` for Houston)
+- Unique font family + color palette — at least 2 fonts (display + body)
+- `max-width:1100px;margin:0 auto` on the shell — never full-screen
+- Phase-specific background themes that shift atmosphere per zone (color temperature, mood)
+- `@media(prefers-reduced-motion:reduce)` fallback on ALL animations
+
+#### Layer 2: Custom Animated Icons (NO EMOJI)
+- Never use emoji as card icons. Build CSS-only animated icons for every event type.
+- Create an `_icon(type)` helper mapping event types → CSS class names
+- Each icon is a `<span class="xx-icon xx-icon-[type]">` with `::before`/`::after` pseudo-elements
+- Icons must animate: pulse, spin, bounce, blink, glow — each type has distinct motion
+- Minimum icon types: found/search, miss/fail, launch/success, elimination/death, social/bond, villain/scheme, help/ally, collision, alert/danger, spy/mole
+
+#### Layer 3: Environmental Animations
+- Persistent background animations (particles, drifting elements, atmospheric effects)
+- Phase-specific card physics — cards should MOVE differently per zone (float, shake, vibrate, slide)
+- Use `nth-child` for offset timing so cards don't move in sync
+- Transition cinematics between zones (overlays that auto-fade: 2s animation-fill-mode forwards)
+
+#### Layer 4: HUD / Mission Control Overlay
+- Persistent header bar with thematic telemetry/status data that changes per zone
+- Small ambient data readouts (coordinates, meters, clocks, signal bars) — makes it feel like a control room
+- Font: monospace, tiny (0.65rem), muted color — ambient, not distracting
+
+#### Layer 5: Atmospheric Flavor Text
+- Comm chatter / announcer lines / ambient radio between cards — NOT social events, just world-building
+- 8-10 lines per zone, randomly picked, never repeated in the same screen
+- Styled distinctly from content cards (italic, smaller, left-border accent, muted)
+
+#### Layer 6: Viewport / Environmental Window
+- Small animated element in the sidebar showing the outside world per zone
+- CSS-only: drifting stars, fire streaks, corridor lights, sky — whatever fits the theme
+- Changes per zone to reinforce the progression
+
+#### Layer 7: Telemetry Ticker
+- Scrolling strip at bottom of main content with zone-specific ambient data
+- `overflow:hidden` + `translateX` CSS scroll animation for seamless loop
+- Data should degrade/escalate through zones (values getting worse = tension)
+
+#### Layer 8: Sticky Reveal Controls
+- Reveal buttons (`NEXT ▶` / `REVEAL ALL ⏩`) must be `position:fixed;bottom:0` with blurred dark background
+- Counter showing `X/Y` progress, updated on every click via `_updateCounter()`
+- Auto-scroll to newly revealed content on each click
+
+#### Layer 9: Interactive Sidebar
+- Live-updating on every reveal click (call rebuild from `revealNext` AND `revealAll`)
+- Zone-specific layout — different data per phase, not one static sidebar
+- All data gated by `_tvState` reveal index — NEVER spoil future results
+- Store phase data on `window` (not globals that get overwritten when screens pre-build)
+
+#### Layer 10: Noise & Unpredictability
+- All stat checks use `noise(2.5)` minimum — outcomes should surprise
+- Never guarantee results from stats alone — upsets must happen regularly
+- Elimination thresholds should let ~20-30% of players fail naturally without forced elimination
+
+## Twist Challenge Design Rules (Learned from Get a Clue, Rock n' Rule, Way of the Warrior)
+
+### Scoring Balance
+- All phases should score in similar ranges (10-15 max per phase). One phase dominating = one player dominates.
+- Don't use the same stat in every phase — spread stat requirements so different archetypes shine in different phases.
+- No immunity score inflation (`maxOther + active.length + 5`) for challenges where the winner is already the highest scorer.
+- Phase advantages (VIP, backstage pass) should give a meaningful edge but NOT guarantee the win.
+
+### Sidebar / Honor Board
+- Must live-update on every reveal click (call a rebuild function from `revealNext` AND `revealAll`).
+- Store phase data on `window` via the shell wrapper, read phase from DOM `data-phase` attribute (not global variable — globals get overwritten when multiple screens pre-build).
+- Show different data per phase (e.g., fight wins in fight phase, water levels in climb phase).
+- Gate ALL data by reveal index — never spoil results before the corresponding card is revealed.
+- The initial `_buildBoard`/`_buildMeter`/`_buildHonor` render must also read `_tvState` and gate data.
+
+### VP Narration Quality
+- Minimum 4 text variants per narration category to avoid repetition.
+- Text must be archetype-driven — a villain, hero, and goat should react differently to the same event.
+- Every narration should reference the SPECIFIC player, their personality, and what happened — no generic "Player did well."
+- Use `pick()` with large pools, or `_pickUnique()` to prevent duplicate text in the same game.
+- Player cards inside manila/parchment folders need `color:var(--coffee)` or `rgba(26,26,26,0.8)` — light text on light backgrounds is INVISIBLE.
+
+### Social Events Between Beats
+- Fire social events BETWEEN each beat/round/phase, not just at the end.
+- Guarantee at least 1 social event per beat — use probability for bonus events, not for the base event.
+- Social event types: showmance, rivalry, bond, respect, blame, paranoia — each with distinct visual card.
+- Social cards need player portrait icons (hanko/polaroid) and visually distinct styling from regular cards (dashed border, different background).
+- Social events must have gameplay consequences (`addBond`, `popDelta`, camp events).
+
+### Phase-Specific Environments
+- Each phase needs its own distinct background/atmosphere — not the same background for all phases.
+- Use the `_shell` wrapper's `phaseCls` parameter to set CSS class per phase.
+- Environments should shift in color temperature: warm (training) → intense (fight) → cold/outdoor (climb).
+
+### Fight / Competition Mechanics
+- Round-robin for 3 players, bracket for 4+. Never leave someone with a bye in small groups.
+- Show both fighter AND trainer in VS cards and KO cards — they win as a PAIR.
+- Fight exchanges need: move icon + name + damage number + narration + HP bars for BOTH fighters.
+- Each fight should generate 2-4 social events (trainer pride, respect, showmance comfort, blame).
+
+### Climb / Endurance Mechanics
+- Water loss formula must be tested at scale — `* 100` is death, `* 20-25` is reasonable.
+- Players eliminated mid-stage should get elimination text, not just disappear next stage.
+- If a boss fight at the summit results in a prize (bonsai), only ONE player grabs it first. Others who pass the boss can chase.
+- Descent/steal mechanics: only players who passed the boss can intercept. Failed boss = no chase.
+
+### VP Reveal System
+- `<script>` tags in innerHTML don't execute — set `window` data directly in the VP build function.
+- Use CSS classes (`step-hidden`/`step-revealing`/`step-visible`) not just `display:none`.
+- Fight exchanges should trigger impact animations (screen shake, move burst, KO slam).
+- Betrayal/steal events should trigger screen shake on the entire shell.
+
+### Integration Checklist (7 files)
+Every twist challenge must update ALL of these:
+1. `core.js` — TWIST_CATALOG entry with incompatible list
+2. `twists.js` — `ep.isChallengeName = true` flag
+3. `episode.js` — import, dispatch block, generic challenge skip, generic updateChalRecord guard (prevent double-call), `_hasTwistChallenge` list, `handleExileFormat` guard, ALL episode history pushes (4+ locations) (7+ edits)
+4. `vp-screens.js` — import VP builders + screen registration
+5. `text-backlog.js` — import + `_textTwistChallenge()` call with VP builders (placed BEFORE `_textCampPost`)
+6. `main.js` — import module + add to spread array
+7. `run-ui.js` — badge tag + add to tag display line

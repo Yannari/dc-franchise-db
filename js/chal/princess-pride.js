@@ -967,19 +967,25 @@ const FATIGUE_PREFIX = [
 function _simulatePhase(phaseId, phaseLabel, beats, alive, classMap, result, ep, campKey, fatigue) {
   const phase = { id: phaseId, label: phaseLabel, beats: [], eliminated: [], events: [] };
   let prevBeatPerf = {}; // track previous beat performance per player
+  let phaseCombosCount = 0; // cap teamwork events at 2 per phase
 
   for (const beat of beats) {
     const scores = {};
     const texts = {};
 
-    // Class combo bonus — check for complementary pairs
+    // Class combo bonus — check for complementary pairs (max 2 per phase)
     const combosThisBeat = [];
-    for (const combo of CLASS_COMBOS) {
-      const playersA = alive.filter(n => classMap[n] === combo.pair[0]);
-      const playersB = alive.filter(n => classMap[n] === combo.pair[1]);
-      if (playersA.length && playersB.length) {
-        const a = pick(playersA), b = pick(playersB);
-        combosThisBeat.push({ a, b, bonus: combo.bonus, text: pick(combo.texts)(a, b) });
+    if (phaseCombosCount < 2) {
+      const shuffledCombos = [...CLASS_COMBOS].sort(() => Math.random() - 0.5);
+      for (const combo of shuffledCombos) {
+        if (phaseCombosCount >= 2) break;
+        const playersA = alive.filter(n => classMap[n] === combo.pair[0]);
+        const playersB = alive.filter(n => classMap[n] === combo.pair[1]);
+        if (playersA.length && playersB.length && Math.random() < 0.4) {
+          const a = pick(playersA), b = pick(playersB);
+          combosThisBeat.push({ a, b, bonus: combo.bonus, text: pick(combo.texts)(a, b) });
+          phaseCombosCount++;
+        }
       }
     }
 
@@ -1713,12 +1719,45 @@ function css() {
     0%,100%{opacity:0.03}
     50%{opacity:0.07}}
 
+  /* ═══ CINEMATIC REVEAL SYSTEM ═══ */
+  .pp-step-hidden{opacity:0;transform:translateY(14px);max-height:0;overflow:hidden;margin:0;padding:0}
+  .pp-step-revealing{animation:pp-card-enter 0.5s cubic-bezier(0.16,1,0.3,1) forwards;max-height:2000px}
+  .pp-step-visible{opacity:1;transform:none;max-height:none}
+  @keyframes pp-card-enter{
+    0%{opacity:0;transform:translateY(16px) scale(0.97);filter:blur(2px)}
+    60%{opacity:1;filter:blur(0)}
+    100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+  }
+  /* Elimination cards get a dramatic entrance */
+  .pp-step-revealing .pp-panel-elim{animation:pp-elim-enter 0.6s ease-out forwards}
+  @keyframes pp-elim-enter{
+    0%{opacity:0;transform:scale(1.08);filter:brightness(2)}
+    30%{filter:brightness(1.3)}
+    100%{opacity:1;transform:scale(1);filter:brightness(1)}
+  }
+  /* Save cards glow in */
+  .pp-step-revealing .pp-panel-save{animation:pp-save-enter 0.6s ease-out forwards}
+  @keyframes pp-save-enter{
+    0%{opacity:0;box-shadow:0 0 60px rgba(234,179,8,0.8)}
+    100%{opacity:1;box-shadow:0 0 25px rgba(234,179,8,0.5)}
+  }
+  /* Immunity card entrance */
+  .pp-step-revealing .pp-immunity{animation:pp-immunity-enter 0.7s cubic-bezier(0.16,1,0.3,1) forwards}
+  @keyframes pp-immunity-enter{
+    0%{opacity:0;transform:scale(0.8)}
+    50%{transform:scale(1.03)}
+    100%{opacity:1;transform:scale(1)}
+  }
+
   @media(prefers-reduced-motion:reduce){
     .pp-lantern,.pp-shell::after,.pp-shell.pp-theme-bridge::after,
     .pp-shell.pp-theme-dragon::after,.pp-shell.pp-theme-tower::after{animation:none !important}
     .pp-shell.pp-theme-forest .pp-lantern{animation:none !important}
     .pp-shell.pp-theme-bridge .pp-lantern{animation:none !important}
     .pp-shell.pp-theme-dragon .pp-lantern{animation:none !important}
+    .pp-step-hidden{opacity:1;transform:none;max-height:none}
+    .pp-step-revealing,.pp-step-revealing .pp-panel-elim,.pp-step-revealing .pp-panel-save,
+    .pp-step-revealing .pp-immunity{animation:none !important}
   }
 
   /* ═══ LAYOUT ═══ */
@@ -2252,7 +2291,7 @@ export function rpBuildPrincessPrideCeremony(ep) {
 
   const total = steps.length;
   const stepsHtml = steps.map((html, i) =>
-    `<div id="pp-step-ceremony-${i}" style="${i > revIdx ? 'display:none' : ''}">${html}</div>`
+    `<div id="pp-step-ceremony-${i}" class="${i > revIdx ? 'pp-step-hidden' : 'pp-step-visible'}" style="${i > revIdx ? 'display:none' : ''}">${html}</div>`
   ).join('');
 
   return _ppShell(`
@@ -2283,6 +2322,8 @@ function _buildPhaseScreen(ep, phaseIdx, panelClass) {
   if (!window._tvState) window._tvState = {};
   if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };
   const revIdx = window._tvState[stateKey].idx;
+  // Store data for live sidebar updates
+  window._ppData = { pp, phaseIdx };
 
   const steps = [];
 
@@ -2433,7 +2474,7 @@ function _buildPhaseScreen(ep, phaseIdx, panelClass) {
   const total = steps.length;
   const suffix = phase.id;
   const stepsHtml = steps.map((html, i) =>
-    `<div id="pp-step-${suffix}-${i}" style="${i > revIdx ? 'display:none' : ''}">${html}</div>`
+    `<div id="pp-step-${suffix}-${i}" class="${i > revIdx ? 'pp-step-hidden' : 'pp-step-visible'}" style="${i > revIdx ? 'display:none' : ''}">${html}</div>`
   ).join('');
 
   const aliveCount = pp.classAssignments.length - pp.eliminationOrder.slice(0, pp.phases.slice(0, phaseIdx + 1).flatMap(p => p.eliminated).length).length;
@@ -2568,7 +2609,7 @@ export function rpBuildPrincessPrideDuel(ep) {
 
   const total = steps.length;
   const stepsHtml = steps.map((html, i) =>
-    `<div id="pp-step-duel-${i}" style="${i > revIdx ? 'display:none' : ''}">${html}</div>`
+    `<div id="pp-step-duel-${i}" class="${i > revIdx ? 'pp-step-hidden' : 'pp-step-visible'}" style="${i > revIdx ? 'display:none' : ''}">${html}</div>`
   ).join('');
 
   return _ppShell(`
@@ -2601,13 +2642,43 @@ export function princessPrideRevealNext(screenKey, totalSteps) {
   state.idx++;
   const suffix = screenKey.replace('pp-', '');
   const el = document.getElementById(`pp-step-${suffix}-${state.idx}`);
-  if (el) { el.style.display = ''; el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  if (el) {
+    el.classList.remove('pp-step-hidden');
+    el.classList.add('pp-step-revealing');
+    el.style.display = '';
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => { el.classList.remove('pp-step-revealing'); el.classList.add('pp-step-visible'); }, 600);
+    // Live sidebar update — check if this step contains an elimination or save
+    if (el.querySelector('.pp-panel-elim') || el.querySelector('.pp-panel-save')) {
+      _ppUpdateSidebar(suffix, state.idx);
+    }
+  }
   if (state.idx >= totalSteps - 1) {
     const controls = document.getElementById(`pp-controls-${suffix}`);
     const done = document.getElementById(`pp-done-${suffix}`);
     if (controls) controls.style.display = 'none';
-    if (done) done.style.display = '';
+    if (done) { done.style.display = ''; done.classList.add('pp-step-revealing'); setTimeout(() => done.classList.remove('pp-step-revealing'), 600); }
   }
+}
+
+function _ppUpdateSidebar(suffix, revIdx) {
+  const sidebarEl = document.getElementById(`pp-sidebar-${suffix}`);
+  if (!sidebarEl || !window._ppData) return;
+  const { pp, phaseIdx } = window._ppData;
+  // Count how many eliminations have been revealed so far by scanning visible elim panels
+  const feed = sidebarEl.closest('.pp-layout')?.querySelector('.pp-feed');
+  if (!feed) return;
+  const visibleElims = [];
+  feed.querySelectorAll('.pp-step-visible .pp-panel-elim, .pp-step-revealing .pp-panel-elim').forEach(el => {
+    const nameEl = el.querySelector('[style*="font-weight:700"][style*="color:#ddd"], [style*="color:#ff"]');
+    if (nameEl) visibleElims.push(nameEl.textContent.trim());
+  });
+  // Rebuild sidebar with previous phases + currently revealed eliminations
+  const prevElims = pp.phases.slice(0, phaseIdx).flatMap(p => p.eliminated);
+  const currentPhaseElims = pp.phases[phaseIdx]?.eliminated || [];
+  const revealedCurrentElims = currentPhaseElims.filter(e => visibleElims.includes(e.name));
+  const allRevealed = [...prevElims, ...revealedCurrentElims];
+  sidebarEl.innerHTML = _buildSidebar(pp, allRevealed, _getPrevPhaseScores(pp, phaseIdx), phaseIdx);
 }
 
 export function princessPrideRevealAll(screenKey, totalSteps) {
@@ -2617,7 +2688,7 @@ export function princessPrideRevealAll(screenKey, totalSteps) {
   const suffix = screenKey.replace('pp-', '');
   for (let i = state.idx + 1; i < totalSteps; i++) {
     const el = document.getElementById(`pp-step-${suffix}-${i}`);
-    if (el) el.style.display = '';
+    if (el) { el.classList.remove('pp-step-hidden'); el.classList.add('pp-step-visible'); el.style.display = ''; }
   }
   state.idx = totalSteps - 1;
   const controls = document.getElementById(`pp-controls-${suffix}`);

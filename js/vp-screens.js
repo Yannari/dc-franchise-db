@@ -25,6 +25,10 @@ import { rpBuildSportsMarathonTitleCard, rpBuildSportsMarathonObstacle, rpBuildS
 import { rpBuildSuperHeroldTitleCard, rpBuildSuperHeroldCostume, rpBuildSuperHeroldPrizes, rpBuildSuperHeroldRound1, rpBuildSuperHeroldRound2, rpBuildSuperHeroldRound, rpBuildSuperHeroldBoss, superHeroldRevealNext, superHeroldRevealAll } from './chal/super-hero-ld.js';
 import { rpBuildPrincessPrideTitleCard, rpBuildPrincessPrideCeremony, rpBuildPrincessPrideForest, rpBuildPrincessPrideBridge, rpBuildPrincessPrideDragon, rpBuildPrincessPrideTower, rpBuildPrincessPrideDuel, princessPrideRevealNext, princessPrideRevealAll } from './chal/princess-pride.js';
 import { rpBuildGetAClueTitleCard, rpBuildGetAClueCollection, rpBuildGetAClueTrain, rpBuildGetAClueTrial, rpBuildGetAClueVerdict, getAClueRevealNext, getAClueRevealAll } from './chal/get-a-clue.js';
+import { rpBuildRockNRuleTitleCard, rpBuildRockNRuleGuitar, rpBuildRockNRuleCarpet, rpBuildRockNRuleHotel, rpBuildRockNRuleResults, rockNRuleRevealNext, rockNRuleRevealAll } from './chal/rock-n-rule.js';
+import { rpBuildCrouchingCourtneyTitleCard, rpBuildCrouchingCourtneyTraining, rpBuildCrouchingCourtneyFight, rpBuildCrouchingCourtneyClimb, crouchingCourtneyRevealNext, crouchingCourtneyRevealAll } from './chal/crouching-courtney.js';
+import { rpBuildHoustonTitleCard, rpBuildHoustonZeroG, rpBuildHoustonRedAlert, rpBuildHoustonReEntry, rpBuildHoustonSprint, rpBuildHoustonWinner, houstonRevealNext, houstonRevealAll } from './chal/houston.js';
+import { rpBuildTopDogTitleCard, rpBuildTopDogAssignment, rpBuildTopDogTraining, rpBuildTopDogJudging, rpBuildTopDogForest, rpBuildTopDogWinner, topDogRevealNext, topDogRevealAll } from './chal/top-dog.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10370,6 +10374,31 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'gc-train', label:'Murder Train', html: rpBuildGetAClueTrain(ep) });
     vpScreens.push({ id:'gc-trial', label:'The Trial', html: rpBuildGetAClueTrial(ep) });
     vpScreens.push({ id:'gc-verdict', label:'The Verdict', html: rpBuildGetAClueVerdict(ep) });
+  } else if ((ep.isRockNRule || ep.challengeType === 'rock-n-rule') && ep.rockNRule) {
+    vpScreens.push({ id:'rr-title', label:'Rock n\' Rule', html: rpBuildRockNRuleTitleCard(ep) });
+    vpScreens.push({ id:'rr-guitar', label:'Guitar Hero', html: rpBuildRockNRuleGuitar(ep) });
+    vpScreens.push({ id:'rr-carpet', label:'Red Carpet', html: rpBuildRockNRuleCarpet(ep) });
+    vpScreens.push({ id:'rr-hotel', label:'Hotel Trashing', html: rpBuildRockNRuleHotel(ep) });
+    vpScreens.push({ id:'rr-results', label:'Results', html: rpBuildRockNRuleResults(ep) });
+  } else if ((ep.isCrouchingCourtney || ep.challengeType === 'crouching-courtney') && ep.crouchingCourtney) {
+    vpScreens.push({ id:'kf-title', label:'Way of the Warrior', html: rpBuildCrouchingCourtneyTitleCard(ep) });
+    vpScreens.push({ id:'kf-training', label:'Training', html: rpBuildCrouchingCourtneyTraining(ep) });
+    vpScreens.push({ id:'kf-fight', label:'Robot Fight', html: rpBuildCrouchingCourtneyFight(ep) });
+    vpScreens.push({ id:'kf-climb', label:'Mountain Climb', html: rpBuildCrouchingCourtneyClimb(ep) });
+  } else if ((ep.isHouston || ep.challengeType === 'houston') && ep.houston) {
+    vpScreens.push({ id:'so-title', label:'🚀 Houston', html: rpBuildHoustonTitleCard(ep) });
+    vpScreens.push({ id:'so-zerog', label:'Zero-G Hunt', html: rpBuildHoustonZeroG(ep) });
+    vpScreens.push({ id:'so-redalert', label:'RED ALERT', html: rpBuildHoustonRedAlert(ep) });
+    vpScreens.push({ id:'so-reentry', label:'Re-Entry', html: rpBuildHoustonReEntry(ep) });
+    vpScreens.push({ id:'so-sprint', label:'Station Sprint', html: rpBuildHoustonSprint(ep) });
+    vpScreens.push({ id:'so-winner', label:'Winner', html: rpBuildHoustonWinner(ep) });
+  } else if ((ep.isTopDog || ep.challengeType === 'top-dog') && ep.topDog) {
+    vpScreens.push({ id:'td-title', label:'Top Dog', html: rpBuildTopDogTitleCard(ep) });
+    vpScreens.push({ id:'td-assign', label:'Animal Draft', html: rpBuildTopDogAssignment(ep) });
+    vpScreens.push({ id:'td-training', label:'Training', html: rpBuildTopDogTraining(ep) });
+    vpScreens.push({ id:'td-judging', label:'Judging', html: rpBuildTopDogJudging(ep) });
+    vpScreens.push({ id:'td-forest', label:'Forest Race', html: rpBuildTopDogForest(ep) });
+    vpScreens.push({ id:'td-winner', label:'Winner', html: rpBuildTopDogWinner(ep) });
   } else if (ep.isAlienEgg && ep.alienEgg) {
     vpScreens.push({ id:'ae-title', label:'👽 Alien Resurr-eggtion', html: rpBuildAlienEggTitleCard(ep) });
     vpScreens.push({ id:'ae-rounds', label:'The Egg Hunt', html: rpBuildAlienEggRounds(ep) });

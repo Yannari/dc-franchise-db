@@ -1473,6 +1473,18 @@ export function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'get-a-clue') {
     ep.isGetAClue = true;
 
+  } else if (engineType === 'crouching-courtney') {
+    ep.isCrouchingCourtney = true;
+
+  } else if (engineType === 'houston') {
+    ep.isHouston = true;
+
+  } else if (engineType === 'top-dog') {
+    ep.isTopDog = true;
+
+  } else if (engineType === 'rock-n-rule') {
+    ep.isRockNRule = true;
+
   } else if (engineType === 'sports-marathon') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isSportsMarathon = true;

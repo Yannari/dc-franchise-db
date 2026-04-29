@@ -666,7 +666,7 @@ export function simulateHouston(ep) {
   // Adaptation scores
   active.forEach(name => {
     const s = pStats(name);
-    const raw = s.physical * 0.3 + s.endurance * 0.3 + s.boldness * 0.2 + s.mental * 0.2 + noise(2);
+    const raw = s.physical * 0.3 + s.endurance * 0.3 + s.boldness * 0.2 + s.mental * 0.2 + noise(3);
     const score = Math.max(0, Math.min(10, raw));
     pStates[name].zeroGScore = score;
     pStates[name].state = 'searching';
@@ -716,7 +716,7 @@ export function simulateHouston(ep) {
         continue;
       }
 
-      const findChance = (s.mental * 0.5 + s.intuition * 0.5 + noise(2)) / 10;
+      const findChance = (s.mental * 0.5 + s.intuition * 0.5 + noise(3)) / 10;
       const needed = REQUIRED_COMPONENTS.filter(c => !ps.components.includes(c));
 
       if (needed.length > 0 && Math.random() < Math.min(0.85, findChance + 0.3)) {
@@ -828,8 +828,8 @@ export function simulateHouston(ep) {
       // 4 components (80% base) = very likely finish. 3 (60%) = good chance. 2 (40%) = tough. 1 (20%) = nearly impossible.
       const gap = 100 - baseProgress;
       if (gap > 0) {
-        const improveRoll = (s.mental * 0.3 + s.strategic * 0.2 + s.physical * 0.1 + noise(1.5)) / 10;
-        const roundGain = Math.max(0, improveRoll * 6.5 + noise(2));
+        const improveRoll = (s.mental * 0.3 + s.strategic * 0.2 + s.physical * 0.1 + noise(2.5)) / 10;
+        const roundGain = Math.max(0, improveRoll * 6.5 + noise(3));
         ps.podRepairProgress = Math.min(100, ps.podRepairProgress + (round === 0 ? baseProgress : 0) + roundGain);
       } else {
         if (round === 0) ps.podRepairProgress = Math.min(100, baseProgress);
@@ -1001,7 +1001,7 @@ export function simulateHouston(ep) {
       stage.stats.forEach((stat, i) => {
         score += s[stat] * stage.weight[i];
       });
-      score += noise(1.5);
+      score += noise(2.5);
 
       // Mole free pass
       if (mole === name && !moleUsedFreePass && score < stage.threshold) {
@@ -1141,7 +1141,7 @@ export function simulateHouston(ep) {
       obstacle.stats.forEach(stat => {
         score += s[stat] * 0.5;
       });
-      score += noise(1.5);
+      score += noise(2.5);
       const threshold = 3.5 + ps.sprintObstacle * 0.3; // slightly harder each obstacle
 
       const passed = score >= threshold;

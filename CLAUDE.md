@@ -332,65 +332,28 @@ export function simulateChallengeId(ep) {
 - **No-tribal / sudden-death missing challenge data in history**: episode.js has MULTIPLE early-return history pushes (no-tribal ~line 2918, sudden-death ~line 1715, sudden-death+twist ~line 2417, off-the-chain+SD ~line 2140). ALL of these must include the twist challenge data fields (`isHouston`, `houston`, `isTopDog`, `topDog`, etc.) or VP screens show nothing on replay. When adding a new twist challenge, grep for ALL `gs.episodeHistory.push` calls and add the new fields to every one.
 
 ### Step 7: VP Aesthetic Identity — OVERDRIVE IS THE BASELINE
-Every challenge VP must feel like a standalone immersive experience. The goal is **wow factor** — the user should feel transported into the challenge's world. Never settle for plain cards with emoji icons on a flat background.
+Every challenge VP must feel like a standalone immersive experience with its own **unique visual identity**. The goal is wow factor — the user should feel transported into the challenge's world. Never settle for plain cards with emoji icons on a flat background.
 
-**Required visual layers (ALL of these, every challenge):**
+**EVERY CHALLENGE IS DIFFERENT.** Do NOT copy another challenge's visual language. A pyramid expedition should not look like a space station. A fairy tale quest should not look like a spy thriller. Study the challenge's theme and invent visual primitives that belong to THAT world. No two challenges should share layout patterns, ambient effects, or HUD styles.
 
-#### Layer 1: Unique Theme Foundation
-- Unique CSS class prefix (e.g., `sh-` for Super Hero-ld, `so-` for Houston)
+**Required foundations (adapt the form to the theme):**
+- Unique CSS class prefix per challenge (e.g., `sh-` for Super Hero-ld, `eg-` for Walk Like an Egyptian)
 - Unique font family + color palette — at least 2 fonts (display + body)
 - `max-width:1100px;margin:0 auto` on the shell — never full-screen
-- Phase-specific background themes that shift atmosphere per zone (color temperature, mood)
+- Phase-specific background themes that shift atmosphere (color temperature, mood)
 - `@media(prefers-reduced-motion:reduce)` fallback on ALL animations
+- CSS-only animated icons (no emoji) via `_icon(type)` helper — each challenge invents its own icon set
+- Persistent background animations fitting the theme (particles, environmental effects)
+- Phase-specific card physics — cards MOVE differently per zone
+- Atmospheric flavor text between cards (comm chatter, announcer, ambient narration) — 8-10 per zone
+- Sticky reveal controls (`position:fixed;bottom:0`) with counter + auto-scroll
+- Interactive sidebar: live-updating on every reveal, zone-specific, gated by `_tvState`
+- Store phase data on `window`, read from DOM `data-phase` (not globals that get overwritten)
 
-#### Layer 2: Custom Animated Icons (NO EMOJI)
-- Never use emoji as card icons. Build CSS-only animated icons for every event type.
-- Create an `_icon(type)` helper mapping event types → CSS class names
-- Each icon is a `<span class="xx-icon xx-icon-[type]">` with `::before`/`::after` pseudo-elements
-- Icons must animate: pulse, spin, bounce, blink, glow — each type has distinct motion
-- Minimum icon types: found/search, miss/fail, launch/success, elimination/death, social/bond, villain/scheme, help/ally, collision, alert/danger, spy/mole
-
-#### Layer 3: Environmental Animations
-- Persistent background animations (particles, drifting elements, atmospheric effects)
-- Phase-specific card physics — cards should MOVE differently per zone (float, shake, vibrate, slide)
-- Use `nth-child` for offset timing so cards don't move in sync
-- Transition cinematics between zones (overlays that auto-fade: 2s animation-fill-mode forwards)
-
-#### Layer 4: HUD / Mission Control Overlay
-- Persistent header bar with thematic telemetry/status data that changes per zone
-- Small ambient data readouts (coordinates, meters, clocks, signal bars) — makes it feel like a control room
-- Font: monospace, tiny (0.65rem), muted color — ambient, not distracting
-
-#### Layer 5: Atmospheric Flavor Text
-- Comm chatter / announcer lines / ambient radio between cards — NOT social events, just world-building
-- 8-10 lines per zone, randomly picked, never repeated in the same screen
-- Styled distinctly from content cards (italic, smaller, left-border accent, muted)
-
-#### Layer 6: Viewport / Environmental Window
-- Small animated element in the sidebar showing the outside world per zone
-- CSS-only: drifting stars, fire streaks, corridor lights, sky — whatever fits the theme
-- Changes per zone to reinforce the progression
-
-#### Layer 7: Telemetry Ticker
-- Scrolling strip at bottom of main content with zone-specific ambient data
-- `overflow:hidden` + `translateX` CSS scroll animation for seamless loop
-- Data should degrade/escalate through zones (values getting worse = tension)
-
-#### Layer 8: Sticky Reveal Controls
-- Reveal buttons (`NEXT ▶` / `REVEAL ALL ⏩`) must be `position:fixed;bottom:0` with blurred dark background
-- Counter showing `X/Y` progress, updated on every click via `_updateCounter()`
-- Auto-scroll to newly revealed content on each click
-
-#### Layer 9: Interactive Sidebar
-- Live-updating on every reveal click (call rebuild from `revealNext` AND `revealAll`)
-- Zone-specific layout — different data per phase, not one static sidebar
-- All data gated by `_tvState` reveal index — NEVER spoil future results
-- Store phase data on `window` (not globals that get overwritten when screens pre-build)
-
-#### Layer 10: Noise & Unpredictability
+**Noise & Unpredictability (simulation, not VP):**
 - All stat checks use `noise(2.5)` minimum — outcomes should surprise
 - Never guarantee results from stats alone — upsets must happen regularly
-- Elimination thresholds should let ~20-30% of players fail naturally without forced elimination
+- Elimination thresholds should let ~20-30% of players fail naturally
 
 ## Twist Challenge Design Rules (Learned from Get a Clue, Rock n' Rule, Way of the Warrior)
 

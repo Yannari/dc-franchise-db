@@ -29,6 +29,7 @@ import { rpBuildRockNRuleTitleCard, rpBuildRockNRuleGuitar, rpBuildRockNRuleCarp
 import { rpBuildCrouchingCourtneyTitleCard, rpBuildCrouchingCourtneyTraining, rpBuildCrouchingCourtneyFight, rpBuildCrouchingCourtneyClimb, crouchingCourtneyRevealNext, crouchingCourtneyRevealAll } from './chal/crouching-courtney.js';
 import { rpBuildHoustonTitleCard, rpBuildHoustonZeroG, rpBuildHoustonRedAlert, rpBuildHoustonReEntry, rpBuildHoustonSprint, rpBuildHoustonWinner, houstonRevealNext, houstonRevealAll } from './chal/houston.js';
 import { rpBuildTopDogTitleCard, rpBuildTopDogAssignment, rpBuildTopDogTraining, rpBuildTopDogJudging, rpBuildTopDogForest, rpBuildTopDogWinner, topDogRevealNext, topDogRevealAll } from './chal/top-dog.js';
+import { rpBuildEgyptTitleCard, rpBuildEgyptPyramid, rpBuildEgyptDesert, rpBuildEgyptNile, rpBuildEgyptResults, egyptRevealNext, egyptRevealAll } from './chal/walk-like-an-egyptian.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10399,6 +10400,12 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'td-judging', label:'Judging', html: rpBuildTopDogJudging(ep) });
     vpScreens.push({ id:'td-forest', label:'Forest Race', html: rpBuildTopDogForest(ep) });
     vpScreens.push({ id:'td-winner', label:'Winner', html: rpBuildTopDogWinner(ep) });
+  } else if ((ep.isWalkEgypt || ep.challengeType === 'walk-like-an-egyptian') && ep.walkEgypt) {
+    vpScreens.push({ id:'eg-title', label:'Walk Like an Egyptian', html: rpBuildEgyptTitleCard(ep) });
+    vpScreens.push({ id:'eg-pyramid', label:'Pyramid', html: rpBuildEgyptPyramid(ep) });
+    vpScreens.push({ id:'eg-desert', label:'Desert Trek', html: rpBuildEgyptDesert(ep) });
+    vpScreens.push({ id:'eg-nile', label:'Nile Crossing', html: rpBuildEgyptNile(ep) });
+    vpScreens.push({ id:'eg-results', label:'Results', html: rpBuildEgyptResults(ep) });
   } else if (ep.isAlienEgg && ep.alienEgg) {
     vpScreens.push({ id:'ae-title', label:'👽 Alien Resurr-eggtion', html: rpBuildAlienEggTitleCard(ep) });
     vpScreens.push({ id:'ae-rounds', label:'The Egg Hunt', html: rpBuildAlienEggRounds(ep) });

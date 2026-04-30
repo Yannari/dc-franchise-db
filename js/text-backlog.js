@@ -44,6 +44,7 @@ import { _textRockNRule, rpBuildRockNRuleTitleCard, rpBuildRockNRuleGuitar, rpBu
 import { _textCrouchingCourtney, rpBuildCrouchingCourtneyTitleCard, rpBuildCrouchingCourtneyTraining, rpBuildCrouchingCourtneyFight, rpBuildCrouchingCourtneyClimb } from './chal/crouching-courtney.js';
 import { rpBuildHoustonTitleCard, rpBuildHoustonZeroG, rpBuildHoustonRedAlert, rpBuildHoustonReEntry, rpBuildHoustonSprint, rpBuildHoustonWinner } from './chal/houston.js';
 import { rpBuildTopDogTitleCard, rpBuildTopDogAssignment, rpBuildTopDogTraining, rpBuildTopDogJudging, rpBuildTopDogForest, rpBuildTopDogWinner } from './chal/top-dog.js';
+import { rpBuildEgyptTitleCard, rpBuildEgyptPyramid, rpBuildEgyptDesert, rpBuildEgyptNile, rpBuildEgyptResults } from './chal/walk-like-an-egyptian.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -2126,6 +2127,13 @@ export function generateSummaryText(ep) {
       rpBuildTopDogTitleCard, rpBuildTopDogAssignment,
       rpBuildTopDogTraining, rpBuildTopDogJudging,
       rpBuildTopDogForest, rpBuildTopDogWinner,
+    ]);
+  }
+  if (ep.walkEgypt) {
+    _textTwistChallenge(ep, ln, sec, 'walkEgypt', 'WALK LIKE AN EGYPTIAN', [
+      rpBuildEgyptTitleCard, rpBuildEgyptPyramid,
+      rpBuildEgyptDesert, rpBuildEgyptNile,
+      rpBuildEgyptResults,
     ]);
   }
 

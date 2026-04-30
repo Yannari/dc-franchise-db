@@ -400,6 +400,148 @@ const SOCIAL_TEXT = {
   ],
 };
 
+// ── PHASE 1 SOCIAL EVENTS ──
+const P1_SOCIAL = {
+  pathDebate: [
+    (a, b, apr) => `${a} and ${b} square off at the fork. "Over is suicide," ${b} insists. ${a} fires back: "Under is a maze for rats." They split — and neither forgets the other's choice.`,
+    (a, b, apr) => `"You're going UNDER?" ${a} stares at ${b}. "I thought you had guts." ${b} shrugs: "I thought you had brains." The barb stings.`,
+    (a, b, apr) => `${a} tries to convince ${b} to take the same path. ${b} won't budge. The argument gets heated. Tribes don't need this energy right now.`,
+    (a, b, apr) => `${a} calls the under path "cowardly." ${b} calls the over path "suicidal." ${host()} watches with popcorn. This is excellent television.`,
+  ],
+  trapBuddy: [
+    (hero, saved, hpr) => `${hero} grabs ${saved}'s hand just before the scarab pit. "Don't look down," ${hpr.sub} whispers. They make it through together.`,
+    (hero, saved, hpr) => `${saved} freezes at the mummy sarcophagus. ${hero} puts a hand on ${saved}'s shoulder. "I've got you. Walk." They walk.`,
+    (hero, saved, hpr) => `${hero} spots the collapse before ${saved} does. One pull backward saves a broken ankle. "You owe me," ${hero} grins.`,
+    (hero, saved, hpr) => `${hero} shields ${saved} from the scarab swarm with ${hpr.posAdj} own body. Takes the hits. Doesn't complain.`,
+  ],
+  summitTaunt: [
+    (taunter, target, tpr) => `${taunter} reaches the summit and looks down at the under players below. "ENJOY THE DARK!" ${tpr.Sub} cups ${tpr.posAdj} hands and hollers. ${target} hears it and seethes.`,
+    (taunter, target, tpr) => `From the pyramid's peak, ${taunter} waves at the tunnels below. "Better luck next time, ${target}!" The provocation is unnecessary. And effective.`,
+    (taunter, target, tpr) => `${taunter} poses at the summit like a pharaoh surveying ${tpr.posAdj} kingdom. ${target} looks up from below. The humiliation burns.`,
+    (taunter, target, tpr) => `"UNDER was the wrong call, ${target}!" ${taunter} shouts from above. ${tpr.Sub} can't help ${tpr.ref}. The high ground brings out the worst in ${tpr.obj}.`,
+  ],
+  mummyPanic: [
+    (panicker, affected, ppr) => `${panicker} rounds a corner and SCREAMS. Full-body, echoing-through-the-pyramid scream. ${affected} jumps sideways into a wall.`,
+    (panicker, affected, ppr) => `Something brushes ${panicker}'s neck. ${ppr.Sub} flails. ${affected} catches an elbow. Now BOTH of them are panicking.`,
+    (panicker, affected, ppr) => `${panicker} sees a shape in the dark and bolts. ${affected} doesn't know what ${panicker} saw — but runs too. Fear is contagious.`,
+    (panicker, affected, ppr) => `"MUMMY! ACTUAL MUMMY!" ${panicker} barrels past ${affected}, knocking ${affected} into a wall carving. ${affected} is NOT amused.`,
+  ],
+  encourage: [
+    (giver, receiver, gpr) => `${giver} waits for ${receiver} at the difficult section. "Take your time. I'll spot you." The support means everything in here.`,
+    (giver, receiver, gpr) => `"You've GOT this, ${receiver}." ${giver} doesn't need to say it — but ${gpr.sub} does. And ${receiver} pushes through.`,
+    (giver, receiver, gpr) => `${giver} passes ${gpr.posAdj} torch to ${receiver} when the darkness gets too thick. "Here. I can see in the dark." A lie — but a kind one.`,
+    (giver, receiver, gpr) => `${giver} gives ${receiver} a fist bump at the halfway point. "Almost there." Simple. But ${receiver} needed it.`,
+  ],
+};
+
+// ── PHASE 2 SOCIAL EVENTS (ADDITIONAL) ──
+const P2_SOCIAL = {
+  waterShare: [
+    (giver, receiver, gpr) => `${giver} notices ${receiver} struggling and offers ${gpr.posAdj} water. No hesitation. Just humanity. ${receiver} won't forget this.`,
+    (giver, receiver, gpr) => `"Drink." ${giver} shoves the canteen at ${receiver}. ${receiver} protests. ${giver} insists. "You're no good to us dead."`,
+    (giver, receiver, gpr) => `${giver} shares water with ${receiver} without being asked. ${receiver} looks surprised — then grateful.`,
+    (giver, receiver, gpr) => `${giver} takes a smaller sip to save some for ${receiver}. It's the kind of move people remember at tribal council.`,
+  ],
+  waterHoard: [
+    (hoarder, victim, hpr) => `${hoarder} hides the water from ${victim}. "Finished it already. Sorry." ${hpr.Sub} didn't. ${victim} sees the bulge under ${hpr.posAdj} shirt.`,
+    (hoarder, victim, hpr) => `${hoarder} takes a long drink and puts the cap back on. Tight. When ${victim} reaches for it: "We need to ration." But ${hoarder}'s already had plenty.`,
+    (hoarder, victim, hpr) => `${hoarder} conveniently "forgets" to pass the water to ${victim}. Twice. ${victim} starts keeping count.`,
+    (hoarder, victim, hpr) => `"Water's running low." ${hoarder} fails to mention that ${hpr.sub} drank most of it. ${victim} is parched and suspicious.`,
+  ],
+  animalDrama: [
+    (player, tName, pr) => `The camel spits on ${player}. The whole tribe watches. Nobody helps. Some laugh. ${pr.Sub} wipes ${pr.posAdj} face in silence.`,
+    (player, tName, pr) => `The goat headbutts ${player} for the third time. "WHY does it hate ME?" ${pr.Sub} shouts. The tribe has theories.`,
+    (player, tName, pr) => `${player} bonds with the tribe's animal while the others argue about navigation. ${pr.Sub} feeds it, talks to it, names it.`,
+    (player, tName, pr) => `The animal bites ${player}'s hand. ${pr.Sub} yelps. But ${pr.sub} doesn't let go. Points for determination. Minus points for judgment.`,
+  ],
+  desertMirage: [
+    (player, pr) => `${player} stops dead. "I see water." ${pr.Sub} walks toward nothing. The tribe has to physically pull ${pr.obj} back. "It was RIGHT THERE."`,
+    (player, pr) => `${player}'s eyes go wide. "${pr.Sub} sees the finish line!" There is no finish line. Just more sand. The heat is winning.`,
+    (player, pr) => `${player} starts talking to someone who isn't there. The tribe exchanges looks. "${pr.Sub} needs shade. NOW."`,
+    (player, pr) => `"Did you see that?" ${player} points at an empty dune. Nobody saw anything. ${pr.Sub} starts questioning ${pr.posAdj} own sanity.`,
+  ],
+  raJudgment: [
+    (blessed, pr) => `The sun breaks through at the exact moment ${blessed} crests the dune. The light catches ${pr.obj} like a spotlight from heaven. Ra smiles on this one.`,
+    (cursed, pr) => `The heat intensifies around ${cursed}. Specifically ${cursed}. The sun seems to follow ${pr.obj}. Ra is displeased with this mortal.`,
+  ],
+};
+
+// ── PHASE 3 SOCIAL EVENTS ──
+const P3_SOCIAL = {
+  boatTeamwork: [
+    (a, b) => `${a} and ${b} find a rowing rhythm. Perfect sync. The boat surges forward. For one glorious moment, they're a machine.`,
+    (a, b) => `"LEFT! RIGHT! LEFT!" ${a} and ${b} call the strokes together. The coordination is beautiful. The boat flies.`,
+    (a, b) => `${a} matches ${b}'s stroke naturally. No words needed. The boat cuts through the water like it was born to race.`,
+    (a, b) => `${a} and ${b} lock eyes across the boat. Nod. And row together like they've done it a thousand times. Chemistry.`,
+  ],
+  crocPanic: [
+    (panicker, affected, ppr) => `${panicker} sees scales break the surface and STANDS UP in the boat. The boat rocks. ${affected} grabs the sides. "SIT DOWN!"`,
+    (panicker, affected, ppr) => `"CROC! CROC! CROC!" ${panicker} drops ${ppr.posAdj} oar and clutches ${affected}. ${affected} peels ${panicker} off, but the boat has lost momentum.`,
+    (panicker, affected, ppr) => `${panicker}'s oar splashes wildly, attracting attention. ${affected} slaps ${panicker}'s arm. "You're making it WORSE."`,
+    (panicker, affected, ppr) => `${panicker} tries to jump out of the boat. ${affected} tackles ${ppr.obj} back in. The boat nearly capsizes. "Are you INSANE?"`,
+  ],
+  boatSabotage: [
+    (villain, targetTribe, vpr) => `${villain} reaches over and PULLS a reed from ${targetTribe}'s passing boat. Subtle. Devastating. A leak begins to form.`,
+    (villain, targetTribe, vpr) => `${villain} "accidentally" splashes ${targetTribe}'s boat with ${vpr.posAdj} oar. The water weighs them down. Pure coincidence, of course.`,
+    (villain, targetTribe, vpr) => `When boats pass close, ${villain} bumps ${targetTribe}'s hull. "Oops." The impact loosens a seam. ${vpr.Sub} doesn't look sorry.`,
+    (villain, targetTribe, vpr) => `${villain} spots a weak point in ${targetTribe}'s boat and kicks it during a close pass. A crack appears. ${vpr.Sub} whistles innocently.`,
+  ],
+  sobekJudgment: [
+    (player, pr) => `The water around ${player}'s oar turns still. Unnaturally still. Even the crocs give ${pr.obj} a wide berth. Sobek has chosen a champion.`,
+    (player, pr) => `A massive ripple follows ${player}'s boat. Not a croc — something bigger. Something watching. Sobek tests this one's nerve.`,
+  ],
+  encourageRow: [
+    (giver, receiver, gpr) => `"Keep going! You're doing amazing!" ${giver} shouts at ${receiver} between strokes. The encouragement is genuine — and needed.`,
+    (giver, receiver, gpr) => `${giver} takes ${receiver}'s oar for a few strokes. "Catch your breath." ${giver} rows double while ${receiver} recovers.`,
+    (giver, receiver, gpr) => `${receiver}'s arms are burning. ${giver} starts singing a rowing chant. It's stupid. But it works. ${receiver} finds the rhythm again.`,
+    (giver, receiver, gpr) => `${giver} swaps positions with ${receiver}, putting ${receiver} on the easier side. Nobody asked. ${giver} just saw the struggle.`,
+  ],
+};
+
+// ── DEITY JUDGMENT TEXT ──
+const DEITY_JUDGMENT = {
+  anubis: {
+    bless: [
+      (player, pr) => `Anubis, Guardian of the Dead, peers through the darkness. ${pr.posAdj} eyes find ${player} — and approve. "${player} passes the weighing of the heart."`,
+      (player, pr) => `The jackal god's shadow falls across ${player}. But it is not threatening — it is protective. Anubis grants safe passage through the dark.`,
+    ],
+    curse: [
+      (player, pr) => `Anubis turns ${pr.posAdj} jackal head toward ${player}. The temperature drops. "${player}'s heart is heavy with deception." The walls seem to close in.`,
+      (player, pr) => `The shadows deepen around ${player}. Anubis has weighed ${pr.posAdj} heart against the feather of Ma'at — and found it wanting.`,
+    ],
+  },
+  ra: {
+    bless: [
+      (player, pr) => `Ra's light blazes through the clouds and lands on ${player}. Warmth floods ${pr.posAdj} body. The sun god grants ${pr.obj} renewed strength.`,
+      (player, pr) => `The Eye of Ra opens above ${player}. Golden light pours down. ${pr.Sub} feels invincible — and for this moment, ${pr.sub} is.`,
+    ],
+    curse: [
+      (player, pr) => `Ra's fury descends. The sun intensifies specifically on ${player}. Sweat pours. Vision blurs. The sun god demands more from this mortal.`,
+      (player, pr) => `The desert sun singles out ${player}. Heat distortion warps the air around ${pr.obj}. Ra is not finished testing this one.`,
+    ],
+  },
+  sobek: {
+    bless: [
+      (player, pr) => `Sobek, Lord of the Waters, parts the current for ${player}. The Nile itself bows. Crocodiles scatter. ${pr.Sub} rows through glass-smooth water.`,
+      (player, pr) => `A massive crocodile surfaces beside ${player}'s boat — then swims ahead, clearing a path. Sobek protects ${pr.posAdj} favored.`,
+    ],
+    curse: [
+      (player, pr) => `Sobek's eye glints beneath the surface. The current shifts against ${player}. The river has teeth — and they're aimed at ${pr.obj}.`,
+      (player, pr) => `The water churns around ${player}'s oar. Sobek's displeasure is palpable. The Nile fights every stroke ${pr.sub} takes.`,
+    ],
+  },
+  isis: {
+    bless: [
+      (player, pr) => `Isis spreads her wings of protection. ${player} feels a calm descend — focus sharpens, pain fades, the path ahead becomes clear.`,
+      (player, pr) => `The wisdom of Isis touches ${player}'s mind. ${pr.Sub} sees the way forward with crystalline clarity. The goddess rewards the worthy.`,
+    ],
+    curse: [
+      (player, pr) => `Isis withdraws her favor. ${player} stumbles where others walked sure-footed. The goddess of magic strips the veil of protection.`,
+      (player, pr) => `${player} feels Isis's gaze — not warmth, but scrutiny. The goddess tests those who think themselves clever enough.`,
+    ],
+  },
+};
+
 // ── PHASE 3: NILE CROSSING ──
 const WEAVING_TEXT = {
   good: [
@@ -572,9 +714,9 @@ export function simulateWalkLikeAnEgyptian(ep) {
   // ── Master result object ──
   const result = {
     tribes: {},
-    phase1: { choices: [], overBeats: [], underBeats: [], mummifiedDog: null },
-    phase2: { leaders: {}, navBeats: [], scarabSwarm: [], socialEvents: [], stickLost: false, stickDiscovery: null },
-    phase3: { weaving: [], animalLoading: [], rowingBeats: [], crocAttacks: [], finalSprint: [], boatSunk: null },
+    phase1: { choices: [], overBeats: [], underBeats: [], mummifiedDog: null, socialEvents: [], deityJudgments: [] },
+    phase2: { leaders: {}, navBeats: [], scarabSwarm: [], socialEvents: [], deityJudgments: [], stickLost: false, stickDiscovery: null },
+    phase3: { weaving: [], animalLoading: [], rowingBeats: [], crocAttacks: [], finalSprint: [], boatSunk: null, socialEvents: [], deityJudgments: [] },
     tribeFinishOrder: [],
     hostLines: {
       intro: pick(HOST_TEXT.intro)(host()),
@@ -720,6 +862,102 @@ export function simulateWalkLikeAnEgyptian(ep) {
       ep.chalMemberScores[name] += Math.round(choice.score);
       result.phase1.choices.push(choice);
     });
+
+    // ── Phase 1 Social Events (between beats) ──
+    const tribeOverP1 = result.phase1.choices.filter(c => c.tribe === tName && c.path === 'over');
+    const tribeUnderP1 = result.phase1.choices.filter(c => c.tribe === tName && c.path === 'under');
+
+    // Path Debate (40% chance, needs both over and under players)
+    if (tribeOverP1.length > 0 && tribeUnderP1.length > 0 && Math.random() < 0.4) {
+      const overPlayer = pick(tribeOverP1).name;
+      const underPlayer = pick(tribeUnderP1).name;
+      const opr = pronouns(overPlayer);
+      result.phase1.socialEvents.push({
+        type: 'pathDebate', tribe: tName, players: [overPlayer, underPlayer],
+        text: pick(P1_SOCIAL.pathDebate)(overPlayer, underPlayer, opr),
+      });
+      addBond(overPlayer, underPlayer, -0.2);
+    }
+
+    // Trap Buddy (50% chance among under players, nice archetypes only)
+    if (tribeUnderP1.length >= 2 && Math.random() < 0.5) {
+      const niceUnder = tribeUnderP1.filter(c => ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog'].includes(arch(c.name)));
+      const needyUnder = tribeUnderP1.filter(c => !niceUnder.some(n => n.name === c.name));
+      if (niceUnder.length > 0 && needyUnder.length > 0) {
+        const hero = pick(niceUnder).name;
+        const saved = pick(needyUnder).name;
+        const hpr = pronouns(hero);
+        result.phase1.socialEvents.push({
+          type: 'trapBuddy', tribe: tName, players: [hero, saved],
+          text: pick(P1_SOCIAL.trapBuddy)(hero, saved, hpr),
+        });
+        addBond(saved, hero, 0.5);
+        popDelta(hero, 1);
+      }
+    }
+
+    // Summit Taunt (35% chance, villain over players taunt under players)
+    if (tribeOverP1.length > 0 && tribeUnderP1.length > 0 && Math.random() < 0.35) {
+      const villainOver = tribeOverP1.filter(c => canScheme(c.name));
+      if (villainOver.length > 0) {
+        const taunter = pick(villainOver).name;
+        const target = pick(tribeUnderP1).name;
+        const tpr = pronouns(taunter);
+        result.phase1.socialEvents.push({
+          type: 'summitTaunt', tribe: tName, players: [taunter, target],
+          text: pick(P1_SOCIAL.summitTaunt)(taunter, target, tpr),
+        });
+        addBond(target, taunter, -0.4);
+        popDelta(taunter, -1);
+      }
+    }
+
+    // Mummy Panic Chain (30% chance, under players)
+    if (tribeUnderP1.length >= 2 && Math.random() < 0.3) {
+      const panicker = pick(tribeUnderP1).name;
+      const affected = pick(tribeUnderP1.filter(c => c.name !== panicker))?.name;
+      if (affected) {
+        const ppr = pronouns(panicker);
+        result.phase1.socialEvents.push({
+          type: 'mummyPanic', tribe: tName, players: [panicker, affected],
+          text: pick(P1_SOCIAL.mummyPanic)(panicker, affected, ppr),
+        });
+        addBond(affected, panicker, -0.2);
+      }
+    }
+
+    // Encourage (40% chance, nice player encourages low-scoring teammate)
+    if (tribe.members.length >= 2 && Math.random() < 0.4) {
+      const niceMembers = tribe.members.filter(m => ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(arch(m)));
+      const lowScorers = result.phase1.choices.filter(c => c.tribe === tName && c.score <= 5).map(c => c.name);
+      const validGivers = niceMembers.filter(m => !lowScorers.includes(m));
+      if (validGivers.length > 0 && lowScorers.length > 0) {
+        const giver = pick(validGivers);
+        const receiver = pick(lowScorers);
+        const gpr = pronouns(giver);
+        result.phase1.socialEvents.push({
+          type: 'encourage', tribe: tName, players: [giver, receiver],
+          text: pick(P1_SOCIAL.encourage)(giver, receiver, gpr),
+        });
+        addBond(receiver, giver, 0.3);
+      }
+    }
+
+    // Anubis Deity Judgment (25% chance per tribe in pyramid phase)
+    if (Math.random() < 0.25) {
+      const judgedPlayer = pick(tribe.members);
+      const jpr = pronouns(judgedPlayer);
+      const blessed = pStats(judgedPlayer).loyalty >= 5 || arch(judgedPlayer) === 'hero';
+      const judgmentText = blessed
+        ? pick(DEITY_JUDGMENT.anubis.bless)(judgedPlayer, jpr)
+        : pick(DEITY_JUDGMENT.anubis.curse)(judgedPlayer, jpr);
+      result.phase1.deityJudgments.push({
+        deity: 'anubis', player: judgedPlayer, tribe: tName, blessed,
+        text: judgmentText,
+      });
+      if (blessed) { popDelta(judgedPlayer, 1); ep.chalMemberScores[judgedPlayer] += 2; }
+      else { popDelta(judgedPlayer, -1); ep.chalMemberScores[judgedPlayer] -= 1; }
+    }
 
     // Tribe average for P1
     const tribeChoices = result.phase1.choices.filter(c => c.tribe === tName);
@@ -1042,6 +1280,62 @@ export function simulateWalkLikeAnEgyptian(ep) {
       }
     }
 
+    // ── Phase 2 Additional Social Events ──
+
+    // Water Share/Hoard (50% chance)
+    if (members.length >= 2 && Math.random() < 0.5) {
+      const niceForWater = members.filter(m => ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog'].includes(arch(m)));
+      const villainsForWater = members.filter(m => canScheme(m));
+      const weakest = [...members].sort((a, b) => pStats(a).endurance - pStats(b).endurance)[0];
+
+      if (niceForWater.length > 0 && Math.random() < 0.6) {
+        const giver = pick(niceForWater);
+        const receiver = weakest !== giver ? weakest : pick(members.filter(m => m !== giver));
+        const gpr = pronouns(giver);
+        result.phase2.socialEvents.push({ type: 'waterShare', players: [giver, receiver], tribe: tName, text: pick(P2_SOCIAL.waterShare)(giver, receiver, gpr) });
+        addBond(receiver, giver, 0.4);
+        perPlayerP2[giver] = (perPlayerP2[giver] || 0) + 1;
+      } else if (villainsForWater.length > 0) {
+        const hoarder = pick(villainsForWater);
+        const victim = weakest !== hoarder ? weakest : pick(members.filter(m => m !== hoarder));
+        const hpr = pronouns(hoarder);
+        result.phase2.socialEvents.push({ type: 'waterHoard', players: [hoarder, victim], tribe: tName, text: pick(P2_SOCIAL.waterHoard)(hoarder, victim, hpr) });
+        addBond(victim, hoarder, -0.4);
+      }
+    }
+
+    // Animal Drama (40% chance, tied to reward animal)
+    if (Math.random() < 0.4) {
+      const animalPlayer = pick(members);
+      const apr = pronouns(animalPlayer);
+      result.phase2.socialEvents.push({ type: 'animalDrama', players: [animalPlayer], tribe: tName, text: pick(P2_SOCIAL.animalDrama)(animalPlayer, tName, apr) });
+    }
+
+    // Desert Mirage (25% chance, low endurance player)
+    if (Math.random() < 0.25) {
+      const endSorted = [...members].sort((a, b) => pStats(a).endurance - pStats(b).endurance);
+      const miragePlayer = endSorted[0];
+      const mpr = pronouns(miragePlayer);
+      result.phase2.socialEvents.push({ type: 'desertMirage', players: [miragePlayer], tribe: tName, text: pick(P2_SOCIAL.desertMirage)(miragePlayer, mpr) });
+      perPlayerP2[miragePlayer] = (perPlayerP2[miragePlayer] || 0) - 1;
+    }
+
+    // Ra Deity Judgment (25% chance per tribe in desert phase)
+    if (Math.random() < 0.25) {
+      const judgedPlayer = pick(members);
+      const jpr = pronouns(judgedPlayer);
+      const blessed = pStats(judgedPlayer).endurance >= 6 || arch(judgedPlayer) === 'challenge-beast';
+      const judgmentText = blessed
+        ? pick(DEITY_JUDGMENT.ra.bless)(judgedPlayer, jpr)
+        : pick(DEITY_JUDGMENT.ra.curse)(judgedPlayer, jpr);
+      result.phase2.deityJudgments.push({
+        deity: 'ra', player: judgedPlayer, tribe: tName, blessed,
+        text: judgmentText,
+      });
+      if (blessed) { popDelta(judgedPlayer, 1); perPlayerP2[judgedPlayer] = (perPlayerP2[judgedPlayer] || 0) + 2; }
+      else { perPlayerP2[judgedPlayer] = (perPlayerP2[judgedPlayer] || 0) - 1; }
+    }
+
     // ── Tribe P2 total ──
     const p2Raw = Object.values(perPlayerP2).reduce((sum, v) => sum + v, 0) / (members.length || 1);
     tribeP2Scores[tName] = p2Raw * speedMod + navBonusPenalty;
@@ -1294,6 +1588,65 @@ export function simulateWalkLikeAnEgyptian(ep) {
 
     result.tribes[tName].boatDamage = boatDamage;
 
+    // ── Phase 3 Social Events ──
+
+    // Boat Teamwork (50% chance, high bond pairs)
+    if (members.length >= 2 && Math.random() < 0.5) {
+      const pairs = [];
+      for (let i = 0; i < members.length; i++)
+        for (let j = i + 1; j < members.length; j++)
+          if (getBond(members[i], members[j]) >= 2) pairs.push([members[i], members[j]]);
+      if (pairs.length > 0) {
+        const [a, b] = pick(pairs);
+        result.phase3.socialEvents.push({ type: 'boatTeamwork', players: [a, b], tribe: tName, text: pick(P3_SOCIAL.boatTeamwork)(a, b) });
+        addBond(a, b, 0.3);
+        perPlayerP3[a] = (perPlayerP3[a] || 0) + 1;
+        perPlayerP3[b] = (perPlayerP3[b] || 0) + 1;
+      }
+    }
+
+    // Croc Panic (35% chance, low boldness player)
+    if (members.length >= 2 && Math.random() < 0.35) {
+      const boldSorted = [...members].sort((a, b) => pStats(a).boldness - pStats(b).boldness);
+      const panicker = boldSorted[0];
+      const affected = pick(members.filter(m => m !== panicker));
+      const ppr = pronouns(panicker);
+      result.phase3.socialEvents.push({ type: 'crocPanic', players: [panicker, affected], tribe: tName, text: pick(P3_SOCIAL.crocPanic)(panicker, affected, ppr) });
+      addBond(affected, panicker, -0.2);
+      boatDamage += 0.5;
+    }
+
+    // Encourage Row (40% chance, nice players help struggling rowers)
+    if (members.length >= 2 && Math.random() < 0.4) {
+      const niceRowers = members.filter(m => ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog'].includes(arch(m)));
+      const weakRowers = [...members].sort((a, b) => pStats(a).physical - pStats(b).physical).slice(0, 2);
+      const validGivers = niceRowers.filter(m => !weakRowers.includes(m));
+      if (validGivers.length > 0 && weakRowers.length > 0) {
+        const giver = pick(validGivers);
+        const receiver = pick(weakRowers);
+        const gpr = pronouns(giver);
+        result.phase3.socialEvents.push({ type: 'encourageRow', players: [giver, receiver], tribe: tName, text: pick(P3_SOCIAL.encourageRow)(giver, receiver, gpr) });
+        addBond(receiver, giver, 0.3);
+        perPlayerP3[receiver] = (perPlayerP3[receiver] || 0) + 1;
+      }
+    }
+
+    // Sobek Deity Judgment (25% chance per tribe)
+    if (Math.random() < 0.25) {
+      const judgedPlayer = pick(members);
+      const jpr = pronouns(judgedPlayer);
+      const blessed = pStats(judgedPlayer).physical >= 6 || arch(judgedPlayer) === 'challenge-beast';
+      const judgmentText = blessed
+        ? pick(DEITY_JUDGMENT.sobek.bless)(judgedPlayer, jpr)
+        : pick(DEITY_JUDGMENT.sobek.curse)(judgedPlayer, jpr);
+      result.phase3.deityJudgments.push({
+        deity: 'sobek', player: judgedPlayer, tribe: tName, blessed,
+        text: judgmentText,
+      });
+      if (blessed) { perPlayerP3[judgedPlayer] = (perPlayerP3[judgedPlayer] || 0) + 2; }
+      else { boatDamage += 1; perPlayerP3[judgedPlayer] = (perPlayerP3[judgedPlayer] || 0) - 1; }
+    }
+
     // ── Beat 4: Final Sprint ──
     const sinkThreshold = boatQuality * 1.5;
     const willSink = boatDamage > sinkThreshold;
@@ -1337,6 +1690,32 @@ export function simulateWalkLikeAnEgyptian(ep) {
       ep.chalMemberScores[m] += Math.round(clamp(perPlayerP3[m] || 0, 0, 12));
     });
   });
+
+  // ── Cross-tribe Boat Sabotage (20% chance, villain archetypes) ──
+  if (tribes.length >= 2 && Math.random() < 0.2) {
+    const allVillains = [];
+    tribes.forEach(t => t.members.filter(m => canScheme(m)).forEach(v => allVillains.push({ name: v, tribe: t.name })));
+    if (allVillains.length > 0) {
+      const saboteur = pick(allVillains);
+      const targetTribes = tribes.filter(t => t.name !== saboteur.tribe);
+      const targetTribe = pick(targetTribes);
+      const vpr = pronouns(saboteur.name);
+      result.phase3.socialEvents.push({
+        type: 'boatSabotage', players: [saboteur.name], tribe: saboteur.tribe, targetTribe: targetTribe.name,
+        text: pick(P3_SOCIAL.boatSabotage)(saboteur.name, targetTribe.name, vpr),
+      });
+      result.tribes[targetTribe.name].boatDamage = (result.tribes[targetTribe.name].boatDamage || 0) + 2;
+      popDelta(saboteur.name, -2);
+
+      const campKey = saboteur.tribe;
+      ep.campEvents[campKey].post.push({
+        type: 'boatSabotage', players: [saboteur.name],
+        text: `${saboteur.name} sabotaged ${targetTribe.name}'s boat during the Nile crossing. Underhanded — but effective.`,
+        consequences: 'Target tribe +2 boat damage. -2 popularity for saboteur.',
+        badgeText: 'SABOTEUR', badgeClass: 'badge-danger',
+      });
+    }
+  }
 
   // ══════════════════════════════════════════════════════════
   // FINISH ORDER
@@ -1623,36 +2002,36 @@ function _cartouche(name, statusCls = '', tag = '') {
 function _css() {
   return `<style>
 /* ═══ WALK LIKE AN EGYPTIAN VP ═══ */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Egyptian+Hieroglyphs&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Metamorphous&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 
 :root{
-  --eg-papyrus:#F5E6C8;--eg-gold:#C2A645;--eg-pharaoh-gold:#D4A017;--eg-scarab:#2D5F3E;
-  --eg-nile:#1B6B7A;--eg-terra:#B85C38;--eg-tomb:#1A1510;--eg-sand:#E8D5A8;
-  --eg-danger:#CC3030;--eg-success:#3A8A2A;--eg-text:#2A1A0A;--eg-muted:#7A6A5A;
+  --eg-papyrus:#E8C870;--eg-gold:#D4A017;--eg-pharaoh-gold:#F0C030;--eg-scarab:#2D8B57;
+  --eg-nile:#00A0A0;--eg-terra:#C04820;--eg-tomb:#1A1510;--eg-sand:#F0E0B0;
+  --eg-danger:#C02020;--eg-success:#228B22;--eg-text:#2A1A0A;--eg-muted:#8A7A5A;
   --eg-torch:#FF9944;--eg-water:#1B4B7A;
+  --eg-lapis:#2D5FBA;--eg-faience:#00A0A0;--eg-carnelian:#C04820;--eg-malachite:#228B22;
+  --eg-band:linear-gradient(90deg,var(--eg-gold),rgba(212,160,23,0.6));
+  --eg-zigzag:repeating-linear-gradient(135deg,rgba(212,160,23,0.15) 0px,rgba(212,160,23,0.15) 3px,transparent 3px,transparent 6px);
 }
 
-.eg-shell{position:relative;display:flex;gap:0;min-height:520px;max-width:1100px;margin:0 auto;font-family:'Inter','Segoe UI',sans-serif;color:var(--eg-text);background:var(--eg-papyrus);border-radius:2px;overflow:clip;border:none;
-  box-shadow:inset 4px 4px 0 rgba(255,235,180,0.12),inset -4px -4px 0 rgba(0,0,0,0.15),
-    0 6px 30px rgba(26,21,16,0.3),0 2px 0 var(--eg-terra),0 -2px 0 var(--eg-terra),-2px 0 0 var(--eg-terra),2px 0 0 var(--eg-terra)}
+.eg-shell{position:relative;display:flex;gap:0;min-height:520px;max-width:1100px;margin:0 auto;font-family:'Cormorant Garamond','Georgia',serif;font-size:1.12rem;color:var(--eg-text);background:var(--eg-papyrus);border-radius:2px;overflow:clip;border:none;
+  border-top:3px solid rgba(212,160,23,0.5);border-bottom:3px solid rgba(212,160,23,0.5);
+  box-shadow:0 6px 30px rgba(26,21,16,0.35),0 2px 0 rgba(212,160,23,0.2)}
 .eg-shell *{box-sizing:border-box}
 .eg-main{flex:1;padding:18px 20px 60px 20px;overflow-y:auto;position:relative;z-index:1}
-.eg-sidebar{width:240px;min-width:240px;padding:12px 10px;overflow-y:auto;font-size:0.82rem;position:relative;z-index:1;
-  background:linear-gradient(180deg,rgba(42,31,20,0.06),rgba(194,166,69,0.04));
-  border-left:none;box-shadow:inset 4px 0 0 rgba(194,166,69,0.12),inset 5px 0 0 rgba(0,0,0,0.08);
-  background-image:repeating-linear-gradient(0deg,transparent,transparent 38px,rgba(194,166,69,0.06) 38px,rgba(194,166,69,0.06) 40px)}
+.eg-sidebar{width:240px;min-width:240px;padding:12px 10px;overflow-y:auto;font-size:0.92rem;position:relative;z-index:1;
+  background:linear-gradient(180deg,rgba(42,31,20,0.06),rgba(194,166,69,0.04));color:var(--eg-text);
+  border-left:1px solid rgba(194,166,69,0.15);
+  box-shadow:inset 3px 0 0 rgba(194,166,69,0.06);
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 38px,rgba(194,166,69,0.04) 38px,rgba(194,166,69,0.04) 40px)}
 
-/* Living hieroglyph border — walking figures along top/bottom */
-.eg-shell::before{content:'';position:absolute;top:0;left:0;right:0;height:18px;z-index:2;pointer-events:none;
-  background:repeating-linear-gradient(90deg,
-    transparent 0px,transparent 30px,
-    rgba(194,166,69,0.12) 30px,rgba(194,166,69,0.12) 31px);
-  border-bottom:1px solid rgba(194,166,69,0.15)}
-.eg-shell::after{content:'';position:absolute;bottom:0;left:0;right:0;height:18px;z-index:2;pointer-events:none;
-  background:repeating-linear-gradient(90deg,
-    transparent 0px,transparent 30px,
-    rgba(194,166,69,0.12) 30px,rgba(194,166,69,0.12) 31px);
-  border-top:1px solid rgba(194,166,69,0.15)}
+/* Subtle gold accent lines top/bottom */
+.eg-shell::before{content:'';position:absolute;top:0;left:0;right:0;height:14px;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0px,transparent 28px,rgba(194,166,69,0.1) 28px,rgba(194,166,69,0.1) 30px);
+  border-bottom:1px solid rgba(194,166,69,0.12)}
+.eg-shell::after{content:'';position:absolute;bottom:0;left:0;right:0;height:14px;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0px,transparent 28px,rgba(194,166,69,0.1) 28px,rgba(194,166,69,0.1) 30px);
+  border-top:1px solid rgba(194,166,69,0.12)}
 
 /* Hieroglyph walker figures (CSS clip-path) */
 .eg-hiero-walker{position:absolute;z-index:3;pointer-events:none;width:12px;height:14px;top:2px;opacity:0.15}
@@ -1694,22 +2073,21 @@ function _css() {
 .eg-step.eg-visible>.eg-card{animation:eg-stone-emerge 0.5s ease-out}
 @keyframes eg-stone-emerge{0%{transform:translateY(6px);opacity:0.3;filter:brightness(0.7)}100%{transform:translateY(0);opacity:1;filter:brightness(1)}}
 
-/* ═══ CHISELED MONUMENTAL HEADERS — incised relief text ═══ */
-.eg-h1{font-family:'Cinzel',serif;font-size:1.8rem;text-align:center;letter-spacing:4px;text-transform:uppercase;
+/* ═══ HEADERS ═══ */
+.eg-h1{font-family:'Metamorphous',cursive;font-size:2.6rem;font-weight:700;text-align:center;letter-spacing:4px;text-transform:uppercase;
   color:var(--eg-pharaoh-gold);margin:0 0 4px 0;position:relative;
-  text-shadow:1px 1px 0 rgba(0,0,0,0.5),-1px -1px 0 rgba(255,235,180,0.15),0 0 20px rgba(212,160,23,0.25)}
-.eg-h1::after{content:'';display:block;width:100px;height:10px;margin:8px auto 12px;opacity:0.3;
-  background:currentColor;
-  clip-path:polygon(0% 50%,12% 0%,24% 45%,36% 5%,50% 50%,64% 5%,76% 45%,88% 0%,100% 50%,88% 100%,76% 55%,64% 95%,50% 50%,36% 95%,24% 55%,12% 100%)}
+  text-shadow:1px 1px 0 rgba(0,0,0,0.4),0 0 15px rgba(212,160,23,0.2)}
+.eg-h1::after{content:'';display:block;width:80px;height:1px;margin:8px auto 12px;
+  background:linear-gradient(90deg,transparent,var(--eg-gold),transparent)}
 
-.eg-h2{font-family:'Cinzel',serif;font-size:1.05rem;letter-spacing:3px;color:var(--eg-terra);margin:16px 0 8px;text-transform:uppercase;position:relative;
-  text-shadow:1px 1px 0 rgba(0,0,0,0.25),-1px -1px 0 rgba(255,235,180,0.1);
-  border-bottom:2px solid rgba(194,166,69,0.15);padding-bottom:6px}
-.eg-h2::before{content:'𓋹';margin-right:8px;font-size:0.85em;opacity:0.35}
-.eg-h2::after{content:'';position:absolute;bottom:-2px;left:0;width:40px;height:2px;background:var(--eg-gold);opacity:0.4}
+.eg-h2{font-family:'Metamorphous',cursive;font-size:1.4rem;font-weight:700;letter-spacing:3px;color:var(--eg-terra);margin:16px 0 8px;text-transform:uppercase;position:relative;
+  text-shadow:1px 1px 0 rgba(0,0,0,0.2);padding-bottom:6px;
+  border-bottom:1px solid rgba(194,166,69,0.15)}
+.eg-h2::before{content:'𓋹';margin-right:8px;font-size:0.85em;opacity:0.3}
+.eg-h2::after{content:'';position:absolute;bottom:-1px;left:0;width:40px;height:1px;background:var(--eg-gold);opacity:0.3}
 
-.eg-h3{font-family:'Cinzel',serif;font-size:0.9rem;color:var(--eg-gold);margin:10px 0 6px;letter-spacing:2px;
-  text-shadow:0 1px 0 rgba(0,0,0,0.25)}
+.eg-h3{font-family:'Metamorphous',cursive;font-size:1.15rem;font-weight:600;color:var(--eg-gold);margin:10px 0 6px;letter-spacing:2px;
+  text-shadow:0 1px 0 rgba(0,0,0,0.2)}
 
 .eg-pyramid .eg-h2{color:var(--eg-torch);border-bottom-color:rgba(255,153,68,0.15)}
 .eg-pyramid .eg-h2::after{background:var(--eg-torch)}
@@ -1717,75 +2095,70 @@ function _css() {
 .eg-nile .eg-h2::after{background:#4AC1D0}
 .eg-nile .eg-h3{color:#4AC1D0}
 
-/* ═══ STONE TABLET CARDS — chiseled relief panels ═══ */
+/* ═══ SAND-WEATHERED CARDS — desert-worn panels ═══ */
 .eg-card{
-  background:linear-gradient(175deg,rgba(194,166,69,0.1) 0%,rgba(194,166,69,0.05) 40%,rgba(184,140,60,0.07) 100%);
-  border:none;border-radius:2px;padding:12px 16px;margin:8px 0;color:var(--eg-text);font-size:0.88rem;line-height:1.5;position:relative;
-  box-shadow:inset 3px 3px 0 rgba(255,235,180,0.15),inset -3px -3px 0 rgba(0,0,0,0.18),0 2px 6px rgba(0,0,0,0.1);
-  background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(194,166,69,0.02) 3px,rgba(194,166,69,0.02) 4px)}
-.eg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:repeating-linear-gradient(90deg,var(--eg-gold) 0px,var(--eg-gold) 4px,transparent 4px,transparent 8px,var(--eg-terra) 8px,var(--eg-terra) 10px,transparent 10px,transparent 14px);opacity:0.2;border-radius:2px 2px 0 0}
+  background:linear-gradient(175deg,rgba(194,166,69,0.08) 0%,rgba(194,166,69,0.04) 40%,rgba(184,140,60,0.06) 100%);
+  border:none;border-left:3px solid rgba(194,166,69,0.25);
+  border-radius:2px;padding:12px 16px;margin:8px 0;color:var(--eg-text);font-size:1.0rem;line-height:1.55;position:relative;
+  box-shadow:inset 2px 2px 0 rgba(255,235,180,0.1),inset -2px -2px 0 rgba(0,0,0,0.12),0 2px 6px rgba(0,0,0,0.08)}
+.eg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,rgba(194,166,69,0.15),transparent);border-radius:2px 2px 0 0}
 
 .eg-pyramid .eg-card{
-  background:linear-gradient(175deg,rgba(255,153,68,0.07) 0%,rgba(42,31,20,0.35) 100%);color:#E8D5A8;
-  box-shadow:inset 3px 3px 0 rgba(255,153,68,0.12),inset -3px -3px 0 rgba(0,0,0,0.3),0 2px 8px rgba(0,0,0,0.25)}
+  background:linear-gradient(175deg,rgba(255,153,68,0.05) 0%,rgba(42,31,20,0.3) 100%);color:#E8D5A8;
+  border-left-color:rgba(255,153,68,0.3);
+  box-shadow:inset 2px 2px 0 rgba(255,153,68,0.08),inset -2px -2px 0 rgba(0,0,0,0.2),0 2px 8px rgba(0,0,0,0.2)}
 .eg-nile .eg-card{
-  background:linear-gradient(175deg,rgba(27,107,122,0.08) 0%,rgba(14,42,62,0.25) 100%);color:#E0E8F0;
-  box-shadow:inset 3px 3px 0 rgba(74,193,208,0.08),inset -3px -3px 0 rgba(0,0,0,0.25),0 2px 8px rgba(0,0,0,0.2)}
+  background:linear-gradient(175deg,rgba(27,107,122,0.06) 0%,rgba(14,42,62,0.2) 100%);color:#E0E8F0;
+  border-left-color:rgba(74,193,208,0.3);
+  box-shadow:inset 2px 2px 0 rgba(74,193,208,0.06),inset -2px -2px 0 rgba(0,0,0,0.2),0 2px 8px rgba(0,0,0,0.18)}
 
-.eg-card.eg-social{
-  box-shadow:inset 3px 3px 0 rgba(184,92,56,0.12),inset -3px -3px 0 rgba(0,0,0,0.18),0 2px 6px rgba(0,0,0,0.1);
-  background:linear-gradient(175deg,rgba(184,92,56,0.07),rgba(184,92,56,0.02))}
-.eg-card.eg-social::before{background:repeating-linear-gradient(90deg,var(--eg-terra) 0px,var(--eg-terra) 6px,transparent 6px,transparent 12px);opacity:0.25}
+.eg-card.eg-social{border-left-color:rgba(184,92,56,0.35);
+  background:linear-gradient(175deg,rgba(184,92,56,0.06),rgba(184,92,56,0.02));
+  border-left-style:dashed}
+.eg-card.eg-social::before{background:linear-gradient(90deg,rgba(184,92,56,0.2),transparent)}
 
-.eg-card.eg-curse{
-  box-shadow:inset 3px 3px 0 rgba(204,48,48,0.12),inset -3px -3px 0 rgba(0,0,0,0.22),0 2px 6px rgba(204,48,48,0.12);
-  background:linear-gradient(175deg,rgba(204,48,48,0.07),rgba(204,48,48,0.02))}
-.eg-card.eg-curse::before{background:repeating-linear-gradient(90deg,var(--eg-danger) 0px,var(--eg-danger) 3px,transparent 3px,transparent 6px);opacity:0.3}
+.eg-card.eg-curse{border-left-color:rgba(192,32,32,0.4);
+  background:linear-gradient(175deg,rgba(192,32,32,0.06),rgba(192,32,32,0.02));
+  box-shadow:inset 2px 2px 0 rgba(192,32,32,0.08),inset -2px -2px 0 rgba(0,0,0,0.15),0 2px 8px rgba(192,32,32,0.08)}
+.eg-card.eg-curse::before{background:linear-gradient(90deg,rgba(192,32,32,0.25),transparent)}
 
-.eg-card.eg-hero-card{
-  box-shadow:inset 3px 3px 0 rgba(58,138,42,0.12),inset -3px -3px 0 rgba(0,0,0,0.18),0 2px 6px rgba(58,138,42,0.08);
-  background:linear-gradient(175deg,rgba(58,138,42,0.07),rgba(58,138,42,0.02))}
+.eg-card.eg-hero-card{border-left-color:rgba(34,139,34,0.35);
+  background:linear-gradient(175deg,rgba(34,139,34,0.05),rgba(34,139,34,0.02))}
 
-.eg-card.eg-villain-card{
-  box-shadow:inset 3px 3px 0 rgba(204,48,48,0.1),inset -3px -3px 0 rgba(0,0,0,0.22),0 2px 6px rgba(204,48,48,0.08);
-  background:linear-gradient(175deg,rgba(204,48,48,0.05),rgba(0,0,0,0.03))}
+.eg-card.eg-villain-card{border-left-color:rgba(192,32,32,0.3);
+  background:linear-gradient(175deg,rgba(192,32,32,0.04),rgba(0,0,0,0.02))}
 
-.eg-card.eg-winner-card{
-  box-shadow:inset 3px 3px 0 rgba(212,160,23,0.2),inset -3px -3px 0 rgba(0,0,0,0.18),0 4px 12px rgba(212,160,23,0.15),0 0 20px rgba(212,160,23,0.06);
-  background:linear-gradient(175deg,rgba(212,160,23,0.1),rgba(194,166,69,0.05))}
-.eg-card.eg-winner-card::before{background:repeating-linear-gradient(90deg,var(--eg-pharaoh-gold) 0px,var(--eg-pharaoh-gold) 4px,transparent 4px,transparent 6px,var(--eg-gold) 6px,var(--eg-gold) 8px,transparent 8px,transparent 12px);opacity:0.35}
+.eg-card.eg-winner-card{border-left-color:rgba(212,160,23,0.5);
+  background:linear-gradient(175deg,rgba(212,160,23,0.1),rgba(194,166,69,0.05));
+  box-shadow:inset 2px 2px 0 rgba(212,160,23,0.15),inset -2px -2px 0 rgba(0,0,0,0.12),0 4px 12px rgba(212,160,23,0.12)}
+.eg-card.eg-winner-card::before{background:linear-gradient(90deg,rgba(212,160,23,0.3),transparent)}
 
-/* ═══ STONE SEAL CARTOUCHE — angular relief player badge ═══ */
+/* ═══ CARTOUCHE — subtle oval name badge ═══ */
 .eg-cartouche{display:inline-flex;align-items:center;gap:6px;padding:5px 14px 5px 5px;margin:4px;position:relative;
-  background:linear-gradient(135deg,rgba(194,166,69,0.12),rgba(160,136,56,0.06));
-  border:2px solid rgba(194,166,69,0.3);border-radius:2px;
-  box-shadow:inset 2px 2px 0 rgba(255,235,180,0.1),inset -2px -2px 0 rgba(0,0,0,0.12),0 2px 4px rgba(0,0,0,0.12)}
-.eg-cartouche::after{content:'';position:absolute;right:3px;top:20%;bottom:20%;width:2px;
-  background:linear-gradient(180deg,transparent,var(--eg-gold),transparent);opacity:0.4}
-.eg-cartouche::before{content:'· · ·';position:absolute;top:-2px;left:50%;transform:translateX(-50%);
-  font-size:0.45rem;color:var(--eg-gold);opacity:0.35;letter-spacing:2px;line-height:1}
+  background:linear-gradient(135deg,rgba(194,166,69,0.1),rgba(160,136,56,0.05));
+  border:1.5px solid rgba(194,166,69,0.3);border-radius:18px;
+  box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.eg-cartouche::before{content:'';position:absolute;left:-3px;top:30%;bottom:30%;width:2px;background:rgba(194,166,69,0.4);border-radius:1px}
+.eg-cartouche::after{content:'';position:absolute;right:-3px;top:30%;bottom:30%;width:2px;background:rgba(194,166,69,0.4);border-radius:1px}
 
-.eg-cartouche.eg-over{border-color:rgba(255,153,68,0.4);background:linear-gradient(135deg,rgba(255,153,68,0.12),rgba(184,92,56,0.06));
-  box-shadow:inset 2px 2px 0 rgba(255,153,68,0.1),inset -2px -2px 0 rgba(0,0,0,0.15),0 0 6px rgba(255,153,68,0.15)}
-.eg-cartouche.eg-under{border-color:rgba(45,95,62,0.4);background:linear-gradient(135deg,rgba(45,95,62,0.12),rgba(45,95,62,0.06));
-  box-shadow:inset 2px 2px 0 rgba(45,95,62,0.1),inset -2px -2px 0 rgba(0,0,0,0.15),0 0 6px rgba(45,95,62,0.15)}
-.eg-cartouche.eg-cursed{border-color:rgba(204,48,48,0.5);animation:eg-curse-pulse 2s ease infinite}
-.eg-cartouche.eg-immune{border-color:rgba(212,160,23,0.5);background:linear-gradient(135deg,rgba(212,160,23,0.2),rgba(194,166,69,0.1));
-  box-shadow:inset 2px 2px 0 rgba(212,160,23,0.15),inset -2px -2px 0 rgba(0,0,0,0.12),0 0 10px rgba(212,160,23,0.3)}
-@keyframes eg-curse-pulse{0%,100%{box-shadow:inset 2px 2px 0 rgba(204,48,48,0.1),inset -2px -2px 0 rgba(0,0,0,0.15),0 0 4px rgba(204,48,48,0.2)}
-  50%{box-shadow:inset 2px 2px 0 rgba(204,48,48,0.15),inset -2px -2px 0 rgba(0,0,0,0.15),0 0 12px rgba(204,48,48,0.4)}}
+.eg-cartouche.eg-over{border-color:rgba(255,153,68,0.35);background:linear-gradient(135deg,rgba(255,153,68,0.1),rgba(184,92,56,0.05))}
+.eg-cartouche.eg-under{border-color:rgba(45,139,87,0.3);background:linear-gradient(135deg,rgba(45,139,87,0.08),rgba(45,95,62,0.04))}
+.eg-cartouche.eg-cursed{border-color:rgba(192,32,32,0.4);animation:eg-curse-pulse 2s ease infinite}
+.eg-cartouche.eg-immune{border-color:rgba(212,160,23,0.5);background:linear-gradient(135deg,rgba(212,160,23,0.15),rgba(194,166,69,0.08));
+  box-shadow:0 0 8px rgba(212,160,23,0.2)}
+@keyframes eg-curse-pulse{0%,100%{box-shadow:0 0 4px rgba(192,32,32,0.15)}
+  50%{box-shadow:0 0 10px rgba(192,32,32,0.3)}}
 
-.eg-seal-frame{width:36px;height:36px;flex-shrink:0;overflow:hidden;border-radius:2px;position:relative;
-  border:2px solid var(--eg-gold);
-  box-shadow:inset 2px 2px 0 rgba(255,235,180,0.2),inset -1px -1px 0 rgba(0,0,0,0.25)}
+.eg-seal-frame{width:36px;height:36px;flex-shrink:0;overflow:hidden;border-radius:50%;position:relative;
+  border:2px solid rgba(194,166,69,0.4)}
 .eg-seal-frame img{width:100%;height:100%;object-fit:contain;display:block}
-.eg-seal-frame::after{content:'';position:absolute;inset:0;
-  box-shadow:inset 2px 2px 0 rgba(255,235,180,0.15),inset -1px -1px 0 rgba(0,0,0,0.2);pointer-events:none}
+.eg-seal-frame::after{content:'';position:absolute;inset:0;border-radius:50%;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.15);pointer-events:none}
 
-.eg-seal-name{font-family:'Cinzel',serif;font-size:0.75rem;font-weight:600;white-space:nowrap;letter-spacing:0.5px}
-.eg-seal-tag{font-size:0.58rem;font-family:'Cinzel',serif;padding:1px 5px;letter-spacing:1px;
-  border:1px solid rgba(194,166,69,0.25);border-radius:1px;text-transform:uppercase;margin-left:3px}
+.eg-seal-name{font-family:'Cormorant Garamond',serif;font-size:0.95rem;font-weight:600;white-space:nowrap;letter-spacing:0.3px}
+.eg-seal-tag{font-size:0.72rem;font-family:'Cormorant Garamond',serif;padding:1px 5px;letter-spacing:0.5px;
+  border:1px solid rgba(194,166,69,0.25);border-radius:1px;text-transform:uppercase;margin-left:3px;color:var(--eg-muted)}
 
 /* ═══ ANIMATED ICONS (CSS-only, no emoji) ═══ */
 .eg-icon{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-right:8px;vertical-align:middle;flex-shrink:0;position:relative}
@@ -1929,67 +2302,66 @@ function _css() {
 .eg-bar.eg-red{background:linear-gradient(180deg,#E53935,var(--eg-danger),rgba(204,48,48,0.8))}
 .eg-bar.eg-blue{background:linear-gradient(180deg,#2196F3,var(--eg-nile),rgba(27,75,122,0.8))}
 
-/* ═══ STONE SLAB REVEAL CONTROLS — monumental buttons ═══ */
+/* ═══ REVEAL CONTROLS ═══ */
 .eg-reveal-bar{display:flex;gap:10px;align-items:center;justify-content:center;padding:12px 24px;flex-wrap:wrap;
   position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:100;max-width:860px;width:100%;
   background:linear-gradient(0deg,rgba(26,21,16,0.95),rgba(42,31,20,0.9));
   backdrop-filter:blur(8px);border-radius:0;
-  box-shadow:0 -3px 0 rgba(194,166,69,0.2),0 -6px 20px rgba(0,0,0,0.5);
-  border-top:3px solid rgba(194,166,69,0.15)}
-.eg-reveal-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:repeating-linear-gradient(90deg,var(--eg-gold) 0px,var(--eg-gold) 8px,transparent 8px,transparent 16px);opacity:0.2}
-.eg-btn{font-family:'Cinzel',serif;font-size:0.75rem;padding:6px 18px;border:2px solid rgba(194,166,69,0.3);border-radius:2px;
-  background:linear-gradient(180deg,rgba(194,166,69,0.12),rgba(194,166,69,0.04));color:var(--eg-gold);cursor:pointer;
-  letter-spacing:2px;text-transform:uppercase;
-  box-shadow:inset 1px 1px 0 rgba(255,235,180,0.1),inset -1px -1px 0 rgba(0,0,0,0.15),0 2px 4px rgba(0,0,0,0.2);
-  transition:all 0.2s}
-.eg-btn:hover{background:linear-gradient(180deg,rgba(194,166,69,0.2),rgba(194,166,69,0.08));border-color:var(--eg-gold);
-  box-shadow:inset 1px 1px 0 rgba(255,235,180,0.15),inset -1px -1px 0 rgba(0,0,0,0.1),0 2px 6px rgba(212,160,23,0.2)}
-.eg-btn.eg-btn-terra{border-color:rgba(184,92,56,0.3);background:linear-gradient(180deg,rgba(184,92,56,0.12),rgba(184,92,56,0.04));color:var(--eg-terra)}
-.eg-btn.eg-btn-terra:hover{border-color:var(--eg-terra);background:linear-gradient(180deg,rgba(184,92,56,0.2),rgba(184,92,56,0.08))}
-
-/* ═══ STONE INSCRIPTION HOST — carved decree panels ═══ */
-.eg-host{font-family:'Cinzel',serif;font-size:0.85rem;color:var(--eg-terra);margin:10px 0;padding:10px 16px;
-  border:none;border-radius:2px;position:relative;
-  background:linear-gradient(135deg,rgba(184,92,56,0.06),rgba(194,166,69,0.04));
-  box-shadow:inset 2px 2px 0 rgba(255,235,180,0.08),inset -2px -2px 0 rgba(0,0,0,0.1);
-  text-shadow:0 1px 0 rgba(0,0,0,0.15);letter-spacing:0.3px;line-height:1.6}
-.eg-host::before{content:'𓂋';position:absolute;left:6px;top:50%;transform:translateY(-50%);font-size:0.7rem;opacity:0.2}
-.eg-host::after{content:'';position:absolute;bottom:0;left:8px;right:8px;height:1px;
+  box-shadow:0 -3px 0 rgba(194,166,69,0.15),0 -6px 20px rgba(0,0,0,0.4);
+  border-top:2px solid rgba(194,166,69,0.12)}
+.eg-reveal-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent,rgba(194,166,69,0.2),transparent)}
-.eg-pyramid .eg-host{color:var(--eg-torch);background:linear-gradient(135deg,rgba(255,153,68,0.05),rgba(42,31,20,0.08));
-  box-shadow:inset 2px 2px 0 rgba(255,153,68,0.06),inset -2px -2px 0 rgba(0,0,0,0.15)}
-.eg-nile .eg-host{color:#4AC1D0;background:linear-gradient(135deg,rgba(74,193,208,0.05),rgba(14,42,62,0.08));
-  box-shadow:inset 2px 2px 0 rgba(74,193,208,0.06),inset -2px -2px 0 rgba(0,0,0,0.15)}
+.eg-btn{font-family:'Metamorphous',cursive;font-size:0.95rem;font-weight:600;padding:8px 20px;border:1.5px solid rgba(194,166,69,0.3);border-radius:2px;
+  background:linear-gradient(180deg,rgba(194,166,69,0.1),rgba(194,166,69,0.03));color:var(--eg-gold);cursor:pointer;
+  letter-spacing:2px;text-transform:uppercase;
+  box-shadow:inset 1px 1px 0 rgba(255,235,180,0.08),0 2px 4px rgba(0,0,0,0.2);
+  transition:all 0.2s}
+.eg-btn:hover{background:linear-gradient(180deg,rgba(194,166,69,0.18),rgba(194,166,69,0.06));border-color:var(--eg-gold);
+  box-shadow:inset 1px 1px 0 rgba(255,235,180,0.12),0 2px 6px rgba(212,160,23,0.15)}
+.eg-btn.eg-btn-terra{border-color:rgba(184,92,56,0.3);color:var(--eg-terra);
+  background:linear-gradient(180deg,rgba(184,92,56,0.1),rgba(184,92,56,0.03))}
+.eg-btn.eg-btn-terra:hover{border-color:var(--eg-terra);background:linear-gradient(180deg,rgba(184,92,56,0.18),rgba(184,92,56,0.06))}
 
-/* ═══ STONE COLUMN SIDEBAR — stacked tablet sections ═══ */
-.eg-sb-title{font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:2px;color:var(--eg-gold);text-transform:uppercase;
+/* ═══ HOST LINES ═══ */
+.eg-host{font-family:'Cormorant Garamond',serif;font-size:1.08rem;font-style:italic;color:var(--eg-terra);margin:10px 0;padding:10px 16px;
+  border:none;border-radius:2px;position:relative;
+  background:linear-gradient(135deg,rgba(184,92,56,0.05),rgba(194,166,69,0.03));
+  box-shadow:inset 2px 2px 0 rgba(255,235,180,0.06),inset -2px -2px 0 rgba(0,0,0,0.08);
+  text-shadow:0 1px 0 rgba(0,0,0,0.1);letter-spacing:0.3px;line-height:1.6}
+.eg-host::before{content:'𓂋';position:absolute;left:6px;top:50%;transform:translateY(-50%);font-size:0.65rem;opacity:0.2}
+.eg-host::after{content:'';position:absolute;bottom:0;left:8px;right:8px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(194,166,69,0.15),transparent)}
+.eg-pyramid .eg-host{color:var(--eg-torch);background:linear-gradient(135deg,rgba(255,153,68,0.04),rgba(42,31,20,0.06))}
+.eg-nile .eg-host{color:#4AC1D0;background:linear-gradient(135deg,rgba(74,193,208,0.04),rgba(14,42,62,0.06))}
+
+/* ═══ SIDEBAR SECTIONS ═══ */
+.eg-sb-title{font-family:'Metamorphous',cursive;font-size:0.9rem;font-weight:700;letter-spacing:2px;color:var(--eg-gold);text-transform:uppercase;
   margin:0 0 8px 0;padding:4px 6px;text-align:center;position:relative;
-  text-shadow:0 1px 0 rgba(0,0,0,0.2);
-  background:linear-gradient(135deg,rgba(194,166,69,0.08),transparent);
-  box-shadow:inset 1px 1px 0 rgba(255,235,180,0.08),inset -1px -1px 0 rgba(0,0,0,0.08)}
-.eg-sb-title::before,.eg-sb-title::after{content:'';position:absolute;top:50%;width:12px;height:1px;background:var(--eg-gold);opacity:0.25}
+  text-shadow:0 1px 0 rgba(0,0,0,0.15);
+  background:linear-gradient(135deg,rgba(194,166,69,0.06),transparent);
+  border-bottom:1px solid rgba(194,166,69,0.12)}
+.eg-sb-title::before,.eg-sb-title::after{content:'';position:absolute;top:50%;width:10px;height:1px;background:var(--eg-gold);opacity:0.2}
 .eg-sb-title::before{left:0}.eg-sb-title::after{right:0}
 
 .eg-sb-section{margin:10px 0;padding:6px;border-radius:2px;
   background:rgba(194,166,69,0.03);
-  box-shadow:inset 1px 1px 0 rgba(255,235,180,0.05),inset -1px -1px 0 rgba(0,0,0,0.06)}
+  box-shadow:inset 1px 1px 0 rgba(255,235,180,0.04),inset -1px -1px 0 rgba(0,0,0,0.04)}
 
-.eg-sb-row{display:flex;align-items:center;gap:5px;margin:3px 0;font-size:0.78rem;padding:2px 3px;
-  border-bottom:1px solid rgba(194,166,69,0.06)}
+.eg-sb-row{display:flex;align-items:center;gap:5px;margin:3px 0;font-size:0.88rem;padding:2px 3px;
+  border-bottom:1px solid rgba(212,160,23,0.08)}
 .eg-sb-row:last-child{border-bottom:none}
 .eg-sb-row img{width:22px;height:22px;border-radius:2px;object-fit:contain;flex-shrink:0;
   border:1.5px solid rgba(194,166,69,0.3);box-shadow:inset 1px 1px 0 rgba(255,235,180,0.1)}
-.eg-sb-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Cinzel',serif;font-size:0.72rem}
+.eg-sb-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Cormorant Garamond',serif;font-size:0.92rem}
 
-.eg-sb-tag{font-family:'Cinzel',serif;font-size:0.55rem;padding:2px 5px;border-radius:1px;white-space:nowrap;
-  letter-spacing:1px;text-transform:uppercase;border:1px solid currentColor;opacity:0.9}
-.eg-sb-tag.eg-t-gold{color:var(--eg-gold);background:rgba(194,166,69,0.08);border-color:rgba(194,166,69,0.25)}
-.eg-sb-tag.eg-t-green{color:var(--eg-success);background:rgba(58,138,42,0.08);border-color:rgba(58,138,42,0.25)}
-.eg-sb-tag.eg-t-orange{color:var(--eg-torch);background:rgba(255,153,68,0.08);border-color:rgba(255,153,68,0.25)}
-.eg-sb-tag.eg-t-red{color:var(--eg-danger);background:rgba(204,48,48,0.08);border-color:rgba(204,48,48,0.25)}
-.eg-sb-tag.eg-t-blue{color:var(--eg-nile);background:rgba(27,107,122,0.08);border-color:rgba(27,107,122,0.25)}
-.eg-sb-tag.eg-t-grey{color:#999;background:rgba(200,200,200,0.05);border-color:rgba(200,200,200,0.15)}
+.eg-sb-tag{font-family:'Cormorant Garamond',serif;font-size:0.7rem;padding:2px 5px;border-radius:1px;white-space:nowrap;
+  letter-spacing:1px;text-transform:uppercase;border:1px solid currentColor;opacity:0.85}
+.eg-sb-tag.eg-t-gold{color:var(--eg-gold);background:rgba(194,166,69,0.06);border-color:rgba(194,166,69,0.2)}
+.eg-sb-tag.eg-t-green{color:var(--eg-success);background:rgba(58,138,42,0.06);border-color:rgba(58,138,42,0.2)}
+.eg-sb-tag.eg-t-orange{color:var(--eg-torch);background:rgba(255,153,68,0.06);border-color:rgba(255,153,68,0.2)}
+.eg-sb-tag.eg-t-red{color:var(--eg-danger);background:rgba(204,48,48,0.06);border-color:rgba(204,48,48,0.2)}
+.eg-sb-tag.eg-t-blue{color:var(--eg-nile);background:rgba(27,107,122,0.06);border-color:rgba(27,107,122,0.2)}
+.eg-sb-tag.eg-t-grey{color:#999;background:rgba(200,200,200,0.04);border-color:rgba(200,200,200,0.12)}
 
 /* ═══ STONE HOURGLASS RELIEF — carved sand timer ═══ */
 .eg-hourglass{width:28px;height:54px;margin:8px auto;position:relative;border-radius:2px;
@@ -2016,13 +2388,13 @@ function _css() {
 .eg-pyr-dot.eg-under-dot{background:var(--eg-scarab)}
 .eg-pyr-dot.eg-hidden-dot{background:var(--eg-muted);opacity:0.2}
 
-/* ═══ CHAMBER ECHOES — whispered ambient narration ═══ */
-.eg-comm{font-family:'Cinzel',serif;font-size:0.7rem;color:var(--eg-muted);padding:6px 14px;margin:8px 0;
-  line-height:1.5;text-align:center;position:relative;letter-spacing:0.5px;font-style:italic;
-  opacity:0.7}
-.eg-comm::before,.eg-comm::after{content:'𓃭';font-style:normal;font-size:0.5rem;opacity:0.25;vertical-align:middle}
+/* ═══ AMBIENT NARRATION ═══ */
+.eg-comm{font-family:'Cormorant Garamond',serif;font-size:0.88rem;font-style:italic;color:var(--eg-muted);padding:6px 14px;margin:8px 0;
+  line-height:1.5;text-align:center;position:relative;letter-spacing:0.5px;
+  opacity:0.6}
+.eg-comm::before,.eg-comm::after{content:'𓃭';font-style:normal;font-size:0.5rem;opacity:0.2;vertical-align:middle}
 .eg-comm::before{margin-right:8px}.eg-comm::after{margin-left:8px}
-.eg-pyramid .eg-comm{color:rgba(232,213,168,0.45)}
+.eg-pyramid .eg-comm{color:rgba(232,213,168,0.4)}
 .eg-nile .eg-comm{color:rgba(74,193,208,0.35)}
 
 /* ═══ LIVING FRIEZE — walking hieroglyphs + papyrus scroll + sand erosion decode ═══ */
@@ -2125,7 +2497,7 @@ function _css() {
 @keyframes eg-gold-pulse{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
 
 /* Sand erosion decode — text container */
-.eg-frieze-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:4;text-align:center;white-space:nowrap;font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:3px;color:var(--eg-muted);text-transform:uppercase;height:16px;overflow:hidden}
+.eg-frieze-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:4;text-align:center;white-space:nowrap;font-family:'Metamorphous',cursive;font-size:0.85rem;letter-spacing:3px;color:var(--eg-muted);text-transform:uppercase;height:16px;overflow:hidden}
 .eg-pyramid .eg-frieze-text{color:rgba(232,213,168,0.6)}
 .eg-nile .eg-frieze-text{color:rgba(74,193,208,0.5)}
 .eg-desert .eg-frieze-text{color:rgba(42,26,10,0.5)}
@@ -2182,19 +2554,18 @@ function _css() {
 .eg-shake{animation:eg-screen-shake 0.3s ease-in-out}
 @keyframes eg-screen-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
 
-/* ═══ CARVED STONE RANKINGS — engraved leaderboard plaques ═══ */
-.eg-lb-row{display:flex;align-items:center;gap:6px;padding:6px 10px;margin:3px 0;border-radius:2px;font-size:0.85rem;
-  background:linear-gradient(135deg,rgba(194,166,69,0.05),transparent);
-  box-shadow:inset 1px 1px 0 rgba(255,235,180,0.06),inset -1px -1px 0 rgba(0,0,0,0.06);
-  border-bottom:1px solid rgba(194,166,69,0.08)}
+/* ═══ LEADERBOARD ═══ */
+.eg-lb-row{display:flex;align-items:center;gap:6px;padding:6px 10px;margin:3px 0;border-radius:2px;font-size:0.95rem;
+  background:linear-gradient(135deg,rgba(194,166,69,0.04),transparent);
+  border-bottom:1px solid rgba(194,166,69,0.06)}
 .eg-lb-row.eg-first{
-  background:linear-gradient(135deg,rgba(212,160,23,0.12),rgba(194,166,69,0.06));
-  box-shadow:inset 2px 2px 0 rgba(212,160,23,0.12),inset -2px -2px 0 rgba(0,0,0,0.1),0 2px 6px rgba(212,160,23,0.1);
-  border-bottom:2px solid rgba(212,160,23,0.2)}
-.eg-lb-rank{font-family:'Cinzel',serif;width:28px;text-align:center;color:var(--eg-terra);font-weight:700;font-size:0.8rem;
-  text-shadow:0 1px 0 rgba(0,0,0,0.15)}
-.eg-lb-name{flex:1;font-family:'Cinzel',serif;font-size:0.82rem;letter-spacing:0.3px}
-.eg-lb-score{font-family:'Cinzel',serif;color:var(--eg-gold);font-size:0.78rem;font-weight:600;letter-spacing:0.5px}
+  background:linear-gradient(135deg,rgba(212,160,23,0.08),rgba(194,166,69,0.04));
+  box-shadow:inset 2px 2px 0 rgba(212,160,23,0.08),0 2px 6px rgba(212,160,23,0.06);
+  border-bottom:1px solid rgba(212,160,23,0.15)}
+.eg-lb-rank{font-family:'Metamorphous',cursive;width:28px;text-align:center;color:var(--eg-terra);font-weight:700;font-size:1.0rem;
+  text-shadow:0 1px 0 rgba(0,0,0,0.1)}
+.eg-lb-name{flex:1;font-family:'Cormorant Garamond',serif;font-size:1.0rem;letter-spacing:0.3px}
+.eg-lb-score{font-family:'Cormorant Garamond',serif;color:var(--eg-gold);font-size:0.95rem;font-weight:600;letter-spacing:0.5px}
 
 /* Reduced motion */
 @media(prefers-reduced-motion:reduce){
@@ -2220,6 +2591,111 @@ function _css() {
 
 .eg-step .eg-card{animation-play-state:paused}
 .eg-step.eg-visible .eg-card{animation-play-state:running}
+
+/* ═══ DEITY SILHOUETTES — CSS clip-path Egyptian gods ═══ */
+.eg-deity{position:relative;width:60px;height:80px;margin:0 auto 8px;opacity:0.7}
+.eg-deity::before{content:'';position:absolute;inset:0;background:currentColor}
+
+.eg-deity-anubis{color:var(--eg-gold)}
+.eg-deity-anubis::before{clip-path:polygon(45% 0%,55% 0%,58% 8%,65% 5%,70% 12%,62% 15%,58% 20%,60% 25%,70% 40%,90% 35%,85% 42%,65% 45%,62% 50%,65% 60%,60% 95%,55% 100%,52% 65%,48% 65%,45% 100%,40% 95%,35% 60%,38% 50%,35% 45%,15% 42%,10% 35%,30% 40%,40% 25%,42% 20%,38% 15%,30% 12%,35% 5%,42% 8%)}
+.eg-deity-anubis::after{content:'';position:absolute;top:6%;left:48%;width:5px;height:3px;background:var(--eg-faience);border-radius:50%;animation:eg-deity-eye 3s ease infinite}
+
+.eg-deity-ra{color:var(--eg-pharaoh-gold)}
+.eg-deity-ra::before{clip-path:polygon(50% 0%,60% 5%,65% 3%,62% 10%,55% 12%,58% 20%,62% 25%,75% 38%,95% 30%,88% 40%,68% 45%,62% 50%,65% 60%,60% 95%,55% 100%,52% 65%,48% 65%,45% 100%,40% 95%,35% 60%,38% 50%,32% 45%,12% 40%,5% 30%,25% 38%,38% 25%,42% 20%,45% 12%,38% 10%,35% 3%,40% 5%)}
+.eg-deity-ra::after{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:24px;height:12px;background:var(--eg-pharaoh-gold);border-radius:50% 50% 0 0;box-shadow:0 0 8px rgba(240,192,48,0.5);animation:eg-ra-glow 2s ease infinite}
+
+.eg-deity-sobek{color:var(--eg-scarab)}
+.eg-deity-sobek::before{clip-path:polygon(40% 0%,55% 0%,60% 3%,68% 2%,72% 8%,65% 12%,58% 15%,60% 22%,62% 28%,72% 38%,88% 32%,82% 42%,65% 45%,60% 52%,62% 62%,58% 95%,52% 100%,50% 68%,48% 68%,48% 100%,42% 95%,38% 62%,40% 52%,35% 45%,18% 42%,12% 32%,28% 38%,38% 28%,40% 22%,42% 15%,35% 12%,28% 8%,32% 2%,38% 3%)}
+
+.eg-deity-isis{color:var(--eg-lapis)}
+.eg-deity-isis::before{clip-path:polygon(50% 0%,55% 8%,58% 15%,60% 22%,65% 30%,95% 20%,90% 28%,70% 35%,65% 40%,62% 48%,60% 55%,70% 58%,62% 62%,60% 68%,58% 95%,52% 100%,50% 70%,48% 70%,48% 100%,42% 95%,40% 68%,38% 62%,30% 58%,40% 55%,38% 48%,35% 40%,30% 35%,10% 28%,5% 20%,35% 30%,40% 22%,42% 15%,45% 8%)}
+.eg-deity-isis::after{content:'';position:absolute;top:-4px;left:30%;right:30%;height:6px;background:var(--eg-faience);clip-path:polygon(0% 100%,50% 0%,100% 100%);animation:eg-isis-wings 3s ease infinite}
+
+@keyframes eg-deity-eye{0%,90%,100%{opacity:1}94%{opacity:0.1}}
+@keyframes eg-ra-glow{0%,100%{box-shadow:0 0 6px rgba(240,192,48,0.4);opacity:0.8}50%{box-shadow:0 0 14px rgba(240,192,48,0.7);opacity:1}}
+@keyframes eg-isis-wings{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.15)}}
+
+/* ═══ DEITY JUDGMENT CARDS ═══ */
+.eg-card.eg-deity-card{border-left-color:rgba(212,160,23,0.4);
+  background:linear-gradient(175deg,rgba(212,160,23,0.06),rgba(194,166,69,0.03))}
+
+/* ═══ ANIMATION KEYFRAMES ═══ */
+
+/* Hieroglyph Decode — glyphs fade into readable text */
+@keyframes eg-hiero-decode{0%{opacity:0;filter:blur(3px);letter-spacing:8px}40%{opacity:1;filter:blur(1px);letter-spacing:5px}100%{filter:blur(0);letter-spacing:normal}}
+.eg-decode{animation:eg-hiero-decode 1.2s ease-out}
+
+/* Papyrus Unroll — card slides open from top */
+@keyframes eg-papyrus-unroll{0%{max-height:0;opacity:0;transform:rotateX(15deg)}60%{opacity:1}100%{max-height:600px;transform:rotateX(0)}}
+.eg-unroll{animation:eg-papyrus-unroll 0.8s ease-out}
+
+/* Cartouche Stamp — seal pressed into place */
+@keyframes eg-cartouche-stamp{0%{transform:scale(1.8) rotate(-5deg);opacity:0}50%{transform:scale(0.95) rotate(1deg);opacity:1}70%{transform:scale(1.03)}100%{transform:scale(1) rotate(0)}}
+.eg-stamp{animation:eg-cartouche-stamp 0.5s cubic-bezier(0.22,1,0.36,1)}
+
+/* Ankh Pulse — life symbol radiates */
+@keyframes eg-ankh-pulse{0%{box-shadow:0 0 0 0 rgba(0,160,160,0.4)}70%{box-shadow:0 0 0 12px rgba(0,160,160,0)}100%{box-shadow:0 0 0 0 rgba(0,160,160,0)}}
+.eg-ankh-pulse{animation:eg-ankh-pulse 1.5s ease infinite}
+
+/* Scarab Scout — beetle skitters across */
+@keyframes eg-scarab-scout{0%{transform:translateX(-20px) scaleX(1);opacity:0}20%{opacity:1}50%{transform:translateX(50px) scaleX(1)}55%{transform:translateX(50px) scaleX(-1)}100%{transform:translateX(-10px) scaleX(-1);opacity:0}}
+.eg-scarab-scout{animation:eg-scarab-scout 3s ease infinite}
+
+/* Torch Illumination — light reveals from darkness */
+@keyframes eg-torch-reveal{0%{filter:brightness(0.2);opacity:0.3}30%{filter:brightness(0.6);opacity:0.7}100%{filter:brightness(1);opacity:1}}
+.eg-torch-reveal{animation:eg-torch-reveal 1s ease-out}
+
+/* Water Ink Bleed — content bleeds in like wet papyrus */
+@keyframes eg-ink-bleed{0%{clip-path:inset(50% 50% 50% 50%);opacity:0.3;filter:blur(2px)}60%{clip-path:inset(5% 5% 5% 5%);filter:blur(0.5px)}100%{clip-path:inset(0);opacity:1;filter:blur(0)}}
+.eg-ink-bleed{animation:eg-ink-bleed 0.9s ease-out}
+
+/* Sand Excavation — content dug from beneath sand */
+@keyframes eg-excavate{0%{transform:translateY(10px);opacity:0;filter:sepia(0.5) brightness(0.8)}50%{filter:sepia(0.2) brightness(0.95)}100%{transform:translateY(0);opacity:1;filter:none}}
+.eg-excavate{animation:eg-excavate 0.7s ease-out}
+
+/* Curse Smoke — dark wisps rise */
+@keyframes eg-curse-smoke{0%{opacity:0;transform:translateY(8px) scale(0.9);filter:brightness(0.6)}50%{opacity:1;filter:brightness(0.85)}100%{transform:translateY(0) scale(1);filter:brightness(1)}}
+.eg-curse-smoke{animation:eg-curse-smoke 0.8s ease-out}
+
+/* Ra's Beam — golden light descends */
+@keyframes eg-ra-beam{0%{opacity:0;background-position:50% -100%}50%{opacity:1}100%{background-position:50% 100%}}
+.eg-ra-beam{position:relative}
+.eg-ra-beam::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(240,192,48,0.15),transparent,transparent);
+  animation:eg-ra-beam 1.5s ease-out forwards}
+
+/* Anubis Emergence — figure rises from shadow */
+@keyframes eg-anubis-emerge{0%{transform:translateY(20px) scale(0.8);opacity:0;filter:brightness(0)}40%{filter:brightness(0.5)}100%{transform:translateY(0) scale(1);opacity:1;filter:brightness(1)}}
+.eg-anubis-emerge{animation:eg-anubis-emerge 1s ease-out}
+
+/* Ra Flare — sun burst */
+@keyframes eg-ra-flare{0%{box-shadow:0 0 0 0 rgba(240,192,48,0.6)}50%{box-shadow:0 0 30px 10px rgba(240,192,48,0.2)}100%{box-shadow:0 0 0 0 rgba(240,192,48,0)}}
+.eg-ra-flare{animation:eg-ra-flare 1.2s ease-out}
+
+/* Sobek Surge — water rush */
+@keyframes eg-sobek-surge{0%{transform:translateX(-100%);opacity:0}30%{opacity:1}100%{transform:translateX(0)}}
+.eg-sobek-surge{animation:eg-sobek-surge 0.7s cubic-bezier(0.22,1,0.36,1)}
+
+/* Isis Wings — protective spread */
+@keyframes eg-isis-spread{0%{transform:scaleX(0);opacity:0}60%{transform:scaleX(1.1)}100%{transform:scaleX(1);opacity:1}}
+.eg-isis-spread{animation:eg-isis-spread 0.8s cubic-bezier(0.22,1,0.36,1)}
+
+/* ═══ DEITY JUDGMENT ENTRANCE — dramatic god appearance ═══ */
+.eg-deity-entrance{text-align:center;padding:12px;margin:8px 0;position:relative;
+  background:linear-gradient(180deg,rgba(194,166,69,0.04),transparent);
+  border:1px solid rgba(194,166,69,0.1);border-radius:2px}
+.eg-deity-entrance::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(194,166,69,0.2),transparent)}
+.eg-deity-entrance .eg-deity-name{font-family:'Metamorphous',cursive;font-size:1.35rem;font-weight:700;color:var(--eg-pharaoh-gold);
+  letter-spacing:4px;text-transform:uppercase;margin-top:4px;text-shadow:0 1px 0 rgba(0,0,0,0.3)}
+.eg-deity-entrance .eg-deity-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.0rem;color:var(--eg-muted);
+  margin-top:2px;letter-spacing:1px}
+
+@media(prefers-reduced-motion:reduce){
+  .eg-decode,.eg-unroll,.eg-stamp,.eg-ankh-pulse,.eg-scarab-scout,.eg-torch-reveal,
+  .eg-ink-bleed,.eg-excavate,.eg-curse-smoke,.eg-ra-beam::after,.eg-anubis-emerge,
+  .eg-ra-flare,.eg-sobek-surge,.eg-isis-spread,.eg-deity-anubis::after,
+  .eg-deity-ra::after,.eg-deity-isis::after{animation:none!important}
+}
 </style>`;
 }
 
@@ -2335,7 +2811,7 @@ function _sidebarRoster(data) {
   const tribes = data.tribes;
   let h = '<div class="eg-sb-title">EXPEDITION ROSTER</div>';
   Object.entries(tribes).forEach(([tName, tData]) => {
-    h += `<div class="eg-sb-section"><div style="font-family:'Cinzel',serif;font-size:0.68rem;font-weight:700;color:var(--eg-terra);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;text-shadow:0 1px 0 rgba(0,0,0,0.1)">${tName}</div>`;
+    h += `<div class="eg-sb-section"><div style="font-family:Metamorphous,cursive;font-size:0.88rem;font-weight:700;color:var(--eg-terra);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;text-shadow:0 1px 0 rgba(0,0,0,0.1)">${tName}</div>`;
     tData.members.forEach(n => {
       const sl = slug(n);
       h += `<div class="eg-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="eg-sb-name">${n}</span><span class="eg-sb-tag eg-t-gold">CREW</span></div>`;
@@ -2397,18 +2873,18 @@ function _sidebarDesert(data) {
     const reward = tData.reward || 'stick';
     const rewardIcon = reward === 'camel' ? _icon('camel') : reward === 'goat' ? _icon('camel') : _icon('stick');
     const tagCls = reward === 'camel' ? 'eg-t-gold' : reward === 'goat' ? 'eg-t-orange' : 'eg-t-grey';
-    h += `<div class="eg-sb-section"><div style="font-family:'Cinzel',serif;font-size:0.68rem;font-weight:700;color:var(--eg-terra);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;text-shadow:0 1px 0 rgba(0,0,0,0.1)">${rewardIcon} ${tName}</div>`;
+    h += `<div class="eg-sb-section"><div style="font-family:Metamorphous,cursive;font-size:0.88rem;font-weight:700;color:var(--eg-terra);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;text-shadow:0 1px 0 rgba(0,0,0,0.1)">${rewardIcon} ${tName}</div>`;
     h += `<span class="eg-sb-tag ${tagCls}">${reward.toUpperCase()}</span>`;
     // Leader
     const leader = data.phase2.leaders?.[tName];
     if (leader && revIdx >= 0) {
-      h += `<div style="font-family:'Cinzel',serif;font-size:0.63rem;color:var(--eg-muted);margin-top:2px;letter-spacing:0.5px">Navigator: ${leader.navigator}</div>`;
+      h += `<div style="font-family:Cormorant Garamond,serif;font-size:0.85rem;color:var(--eg-muted);margin-top:2px;letter-spacing:0.5px">Navigator: ${leader.navigator}</div>`;
     }
     h += '</div>';
   });
 
   if (data.phase2.stickLost && revIdx >= 3) {
-    h += '<div style="font-family:Cinzel,serif;font-size:0.65rem;color:var(--eg-danger);margin-top:6px;font-style:italic;text-shadow:0 1px 0 rgba(0,0,0,0.15)">𓃭 The divining rod has been lost!</div>';
+    h += '<div style="font-family:Cormorant Garamond,serif;font-size:0.82rem;color:var(--eg-danger);margin-top:6px;font-style:italic;text-shadow:0 1px 0 rgba(0,0,0,0.15)">𓃭 The divining rod has been lost!</div>';
   }
   return h;
 }
@@ -2425,15 +2901,15 @@ function _sidebarNile(data) {
     const integrity = Math.max(0, Math.min(100, Math.round((bq - bd) / Math.max(1, bq) * 100)));
     const barCls = integrity > 60 ? 'eg-green' : integrity > 30 ? 'eg-orange' : 'eg-red';
 
-    h += `<div class="eg-sb-section"><div style="font-size:0.7rem;font-weight:700;margin-bottom:3px">${tName}</div>`;
-    h += `<div style="font-family:'Cinzel',serif;font-size:0.58rem;color:var(--eg-muted);letter-spacing:0.5px">Boat Integrity</div>`;
+    h += `<div class="eg-sb-section"><div style="font-size:0.85rem;font-weight:700;margin-bottom:3px">${tName}</div>`;
+    h += `<div style="font-family:Cormorant Garamond,serif;font-size:0.9rem;color:var(--eg-muted);letter-spacing:0.5px">Boat Integrity</div>`;
     h += `<div class="eg-bar-wrap"><div class="eg-bar ${barCls}" style="width:${integrity}%"></div></div>`;
     h += '</div>';
   });
 
   // Croc attack count
   const crocCount = data.phase3.crocAttacks?.filter((_, i) => i <= revIdx).length || 0;
-  h += `<div style="font-family:'Cinzel',serif;font-size:0.63rem;color:var(--eg-muted);margin-top:6px;letter-spacing:0.5px">${_icon('croc')} Croc attacks: ${crocCount}</div>`;
+  h += `<div style="font-family:Cormorant Garamond,serif;font-size:0.85rem;color:var(--eg-muted);margin-top:6px;letter-spacing:0.5px">${_icon('croc')} Croc attacks: ${crocCount}</div>`;
 
   return h;
 }
@@ -2466,24 +2942,24 @@ export function rpBuildEgyptTitleCard(ep) {
   const tribes = Object.entries(data.tribes);
   let rosterCards = tribes.map(([tName, tData]) =>
     `<div style="display:inline-block;margin:8px;vertical-align:top">
-      <div style="font-family:'Cinzel',serif;font-size:0.8rem;letter-spacing:3px;color:var(--eg-terra);margin-bottom:6px;text-shadow:1px 1px 0 rgba(0,0,0,0.2);text-transform:uppercase">${tName}</div>
+      <div style="font-family:Metamorphous,cursive;font-size:1.0rem;letter-spacing:3px;color:var(--eg-terra);margin-bottom:6px;text-shadow:1px 1px 0 rgba(0,0,0,0.2);text-transform:uppercase">${tName}</div>
       <div style="display:flex;flex-wrap:wrap;gap:3px">${tData.members.map(n => _cartouche(n, '', '')).join('')}</div>
     </div>`
   ).join('');
 
   const content = `
-    <div class="eg-h1" style="font-size:2rem;margin:20px 0 6px">WALK LIKE AN EGYPTIAN</div>
-    <div style="text-align:center;font-family:'Cinzel',serif;font-size:0.72rem;color:var(--eg-muted);letter-spacing:5px;margin-bottom:16px;text-shadow:0 1px 0 rgba(0,0,0,0.15)">𓂀 IMMUNITY CHALLENGE 𓂀</div>
+    <div class="eg-h1" style="font-size:2.4rem;margin:20px 0 6px">WALK LIKE AN EGYPTIAN</div>
+    <div style="text-align:center;font-family:Metamorphous,cursive;font-size:0.9rem;color:var(--eg-muted);letter-spacing:5px;margin-bottom:16px;text-shadow:0 1px 0 rgba(0,0,0,0.15)">𓂀 IMMUNITY CHALLENGE 𓂀</div>
     <div class="eg-host">${data.hostLines?.intro || ''}</div>
     <div style="text-align:center;margin:16px 0">${rosterCards}</div>
     <div style="margin-top:16px;text-align:center">
       <div class="eg-card" style="display:inline-block;max-width:440px;text-align:left">
         <div class="eg-h3">𓏏 EXPEDITION PARAMETERS</div>
-        <div style="font-size:0.82rem;line-height:1.7;font-family:'Cinzel',serif">
+        <div style="font-size:1.05rem;line-height:1.7;font-family:Cormorant Garamond,serif">
           <b style="color:var(--eg-torch)">𓊖 PHASE I</b> — Pyramid Over/Under<br>
           <b style="color:var(--eg-terra)">𓇳 PHASE II</b> — Desert Trek + Reward Animals<br>
           <b style="color:var(--eg-nile)">𓈗 PHASE III</b> — Nile Crossing + Crocodile Gauntlet<br>
-          <span style="color:var(--eg-pharaoh-gold);font-size:0.78rem;display:block;margin-top:4px;text-shadow:0 1px 0 rgba(0,0,0,0.15)">First tribe across wins immunity. Last tribe faces tribal council.</span>
+          <span style="color:var(--eg-pharaoh-gold);font-size:0.9rem;display:block;margin-top:4px;text-shadow:0 1px 0 rgba(0,0,0,0.15)">First tribe across wins immunity. Last tribe faces tribal council.</span>
         </div>
       </div>
     </div>`;
@@ -2521,14 +2997,14 @@ export function rpBuildEgyptPyramid(ep) {
       const match = (p1.overBeats || []).find(b => b.name === c.name);
       if (match) (match.beats || []).forEach(b => {
         const bIcon = b.method === 'surf_collision' ? _icon('collision') : b.method?.startsWith('surf') ? _icon('surf') : _icon('climb');
-        detail += `<div style="margin:3px 0;font-size:0.82rem">${bIcon} ${b.text}</div>`;
+        detail += `<div style="margin:3px 0;font-size:0.95rem">${bIcon} ${b.text}</div>`;
       });
-      if (c.summitView) detail += `<div style="margin:3px 0;font-size:0.82rem;color:var(--eg-pharaoh-gold)">${_icon('summit')} Summit view acquired — shortcut spotted for Phase 2!</div>`;
+      if (c.summitView) detail += `<div style="margin:3px 0;font-size:0.95rem;color:var(--eg-pharaoh-gold)">${_icon('summit')} Summit view acquired — shortcut spotted for Phase 2!</div>`;
     } else {
       const match = (p1.underBeats || []).find(b => b.name === c.name);
       if (match) (match.beats || []).forEach(b => {
         const beatIcon = b.type === 'door' ? _icon('door') : b.type?.includes('scarab') ? _icon('scarab') : b.type?.includes('mummy') ? _icon('mummy') : b.type?.includes('collapse') ? _icon('alert') : _icon('trap');
-        detail += `<div style="margin:3px 0;font-size:0.82rem">${beatIcon} ${b.text}</div>`;
+        detail += `<div style="margin:3px 0;font-size:0.95rem">${beatIcon} ${b.text}</div>`;
       });
     }
 
@@ -2542,17 +3018,44 @@ export function rpBuildEgyptPyramid(ep) {
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
         ${_cartouche(c.name, pathCls)}
         ${icon}
-        <span style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--eg-muted)">${c.path.toUpperCase()} • ${scoreDisplay} pts</span>
+        <span style="font-family:Cormorant Garamond,serif;font-size:0.9rem;color:var(--eg-muted)">${c.path.toUpperCase()} • ${scoreDisplay} pts</span>
       </div>
       ${detail}
     </div></div>`;
   });
 
+  // Social events
+  let socialIdx = p1.choices?.length || 0;
+  (p1.socialEvents || []).forEach((evt, i) => {
+    const vis = st.idx >= socialIdx + i ? 'eg-visible' : '';
+    const iconType = evt.type === 'trapBuddy' ? 'hero' : evt.type === 'summitTaunt' ? 'villain' : evt.type === 'mummyPanic' ? 'mummy' : evt.type === 'encourage' ? 'heart' : 'collision';
+    cards += `<div class="eg-step ${vis}"><div class="eg-card eg-social">
+      ${_icon(iconType)} <span style="font-family:Metamorphous,cursive;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;opacity:0.6">${evt.type.replace(/([A-Z])/g, ' $1').trim()}</span>
+      <div style="margin-top:4px;font-size:0.98rem">${evt.text}</div>
+    </div></div>`;
+  });
+
+  // Deity judgments
+  let deityIdx = socialIdx + (p1.socialEvents?.length || 0);
+  (p1.deityJudgments || []).forEach((dj, i) => {
+    const vis = st.idx >= deityIdx + i ? 'eg-visible' : '';
+    cards += `<div class="eg-step ${vis}"><div class="eg-card eg-deity-card">
+      <div class="eg-deity-entrance">
+        <div class="eg-deity eg-deity-${dj.deity}" style="width:40px;height:54px"></div>
+        <div class="eg-deity-name">${dj.deity.toUpperCase()}</div>
+        <div class="eg-deity-title">${dj.blessed ? 'Grants Blessing' : 'Passes Judgment'}</div>
+      </div>
+      <div style="margin-top:6px;font-size:0.98rem;font-style:italic">${dj.text}</div>
+    </div></div>`;
+  });
+
   // Reveal bar
-  const total = p1.choices?.length || 0;
+  const total = (p1.choices?.length || 0) + (p1.socialEvents?.length || 0) + (p1.deityJudgments?.length || 0);
+  // Update state total
+  _ensureState('eg-pyramid', total);
   cards += `<div class="eg-reveal-bar">
     <button class="eg-btn" onclick="egyptRevealNext('eg-pyramid',${total})">NEXT ▶</button>
-    <span style="font-family:'Cinzel',serif;font-size:0.72rem;color:var(--eg-gold)" id="eg-counter-eg-pyramid">0/${total}</span>
+    <span style="font-family:Metamorphous,cursive;font-size:0.9rem;color:var(--eg-gold)" id="eg-counter-eg-pyramid">0/${total}</span>
     <button class="eg-btn eg-btn-terra" onclick="egyptRevealAll('eg-pyramid',${total})">REVEAL ALL ⏩</button>
   </div>`;
 
@@ -2584,6 +3087,8 @@ export function rpBuildEgyptDesert(ep) {
   (p2.scarabSwarm || []).forEach(sw => allSteps.push({ type: 'scarab', data: sw }));
   // Social events
   (p2.socialEvents || []).forEach(se => allSteps.push({ type: 'social', data: se }));
+  // Deity judgments
+  (p2.deityJudgments || []).forEach(dj => allSteps.push({ type: 'deity', data: dj }));
 
   const total = allSteps.length;
   const st = _ensureState('eg-desert', total);
@@ -2619,8 +3124,22 @@ export function rpBuildEgyptDesert(ep) {
       cardContent = `<div class="eg-card">${icon} ${sw.text}</div>`;
     } else if (step.type === 'social') {
       const se = step.data;
-      const icon = se.subtype === 'seduction' ? _icon('eye') : se.subtype === 'alliance' ? _icon('bond') : _icon('alert');
-      cardContent = `<div class="eg-card eg-social">${icon} ${se.text}</div>`;
+      const sIcon = se.type === 'seduction' ? _icon('eye') : se.type === 'alliance' ? _icon('bond') : se.type === 'waterShare' ? _icon('heart') : se.type === 'waterHoard' ? _icon('villain') : se.type === 'animalDrama' ? _icon('camel') : se.type === 'desertMirage' ? _icon('eye') : _icon('alert');
+      const sLabel = se.type.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
+      cardContent = `<div class="eg-card eg-social">
+        ${sIcon} <span style="font-family:Metamorphous,cursive;font-size:0.78rem;letter-spacing:1px;opacity:0.6">${sLabel}</span>
+        <div style="margin-top:3px">${se.text}</div>
+      </div>`;
+    } else if (step.type === 'deity') {
+      const dj = step.data;
+      cardContent = `<div class="eg-card eg-deity-card">
+        <div class="eg-deity-entrance">
+          <div class="eg-deity eg-deity-${dj.deity}" style="width:40px;height:54px"></div>
+          <div class="eg-deity-name">${dj.deity.toUpperCase()}</div>
+          <div class="eg-deity-title">${dj.blessed ? 'Grants Blessing' : 'Passes Judgment'}</div>
+        </div>
+        <div style="margin-top:6px;font-size:0.98rem;font-style:italic">${dj.text}</div>
+      </div>`;
     }
 
     cards += `<div class="eg-step ${vis}">${cardContent}</div>`;
@@ -2628,7 +3147,7 @@ export function rpBuildEgyptDesert(ep) {
 
   cards += `<div class="eg-reveal-bar">
     <button class="eg-btn" onclick="egyptRevealNext('eg-desert',${total})">NEXT ▶</button>
-    <span style="font-family:'Cinzel',serif;font-size:0.72rem;color:var(--eg-gold)" id="eg-counter-eg-desert">0/${total}</span>
+    <span style="font-family:Metamorphous,cursive;font-size:0.9rem;color:var(--eg-gold)" id="eg-counter-eg-desert">0/${total}</span>
     <button class="eg-btn eg-btn-terra" onclick="egyptRevealAll('eg-desert',${total})">REVEAL ALL ⏩</button>
   </div>`;
 
@@ -2655,6 +3174,10 @@ export function rpBuildEgyptNile(ep) {
   (p3.rowingBeats || []).forEach(rb => allSteps.push({ type: 'row', data: rb }));
   // Croc attacks interleaved
   (p3.crocAttacks || []).forEach(ca => allSteps.push({ type: 'croc', data: ca }));
+  // Social events
+  (p3.socialEvents || []).forEach(se => allSteps.push({ type: 'social', data: se }));
+  // Deity judgments
+  (p3.deityJudgments || []).forEach(dj => allSteps.push({ type: 'deity', data: dj }));
   // Final sprint
   (p3.finalSprint || []).forEach(fs => allSteps.push({ type: 'sprint', data: fs }));
 
@@ -2692,13 +3215,40 @@ export function rpBuildEgyptNile(ep) {
     } else if (step.type === 'croc') {
       const ca = step.data;
       const icon = _icon('croc');
-      const cls = ca.isHeroSave ? 'eg-card eg-hero-card' : ca.isVillainShove ? 'eg-card eg-villain-card' : 'eg-card';
-      cardContent = `<div class="${cls}">${icon} ${ca.text}</div>`;
+      const cls = ca.heroSave ? 'eg-card eg-hero-card' : ca.villainShove ? 'eg-card eg-villain-card' : ca.defended ? 'eg-card' : 'eg-card eg-curse';
+      let crocText = ca.attackText || '';
+      if (ca.defenseText) crocText += ` ${ca.defenseText}`;
+      if (ca.heroSave) crocText += `<div style="margin-top:4px;color:var(--eg-success)">${_icon('hero')} ${ca.heroSave.text}</div>`;
+      if (ca.villainShove) {
+        crocText += `<div style="margin-top:4px;color:var(--eg-danger)">${_icon('villain')} ${ca.villainShove.text}</div>`;
+        if (ca.villainShove.caught) crocText += `<div style="margin-top:2px;color:var(--eg-danger);font-size:0.92rem">${_icon('eye')} ${ca.villainShove.caughtText}</div>`;
+      }
+      cardContent = `<div class="${cls}">${icon} ${crocText}</div>`;
+    } else if (step.type === 'social') {
+      const se = step.data;
+      const sIcon = se.type === 'boatTeamwork' ? _icon('bond') : se.type === 'crocPanic' ? _icon('alert') : se.type === 'encourageRow' ? _icon('heart') : se.type === 'boatSabotage' ? _icon('villain') : _icon('collision');
+      const sLabel = se.type.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
+      cardContent = `<div class="eg-card eg-social">
+        ${sIcon} <span style="font-family:Metamorphous,cursive;font-size:0.78rem;letter-spacing:1px;opacity:0.6">${sLabel}</span>
+        <div style="margin-top:3px">${se.text}</div>
+      </div>`;
+    } else if (step.type === 'deity') {
+      const dj = step.data;
+      cardContent = `<div class="eg-card eg-deity-card">
+        <div class="eg-deity-entrance">
+          <div class="eg-deity eg-deity-${dj.deity}" style="width:40px;height:54px"></div>
+          <div class="eg-deity-name">${dj.deity.toUpperCase()}</div>
+          <div class="eg-deity-title">${dj.blessed ? 'Grants Blessing' : 'Passes Judgment'}</div>
+        </div>
+        <div style="margin-top:6px;font-size:0.98rem;font-style:italic">${dj.text}</div>
+      </div>`;
     } else if (step.type === 'sprint') {
       const fs = step.data;
-      const icon = fs.isSinking ? _icon('alert') : _icon('boat');
-      const cls = fs.isSinking ? 'eg-card eg-curse' : 'eg-card';
-      cardContent = `<div class="${cls}">${icon} ${fs.text}</div>`;
+      const icon = fs.sunk ? _icon('alert') : _icon('boat');
+      const cls = fs.sunk ? 'eg-card eg-curse' : 'eg-card';
+      let sprintText = fs.text || '';
+      if (fs.bailAttempts?.length) sprintText += fs.bailAttempts.map(b => `<div style="margin-top:3px;font-size:0.95rem">${_icon('hero')} ${b.text}</div>`).join('');
+      cardContent = `<div class="${cls}">${icon} ${sprintText}</div>`;
     }
 
     cards += `<div class="eg-step ${vis}">${cardContent}</div>`;
@@ -2706,7 +3256,7 @@ export function rpBuildEgyptNile(ep) {
 
   cards += `<div class="eg-reveal-bar">
     <button class="eg-btn" onclick="egyptRevealNext('eg-nile',${total})">NEXT ▶</button>
-    <span style="font-family:'Cinzel',serif;font-size:0.72rem;color:var(--eg-gold)" id="eg-counter-eg-nile">0/${total}</span>
+    <span style="font-family:Metamorphous,cursive;font-size:0.9rem;color:var(--eg-gold)" id="eg-counter-eg-nile">0/${total}</span>
     <button class="eg-btn eg-btn-terra" onclick="egyptRevealAll('eg-nile',${total})">REVEAL ALL ⏩</button>
   </div>`;
 
@@ -2743,7 +3293,7 @@ export function rpBuildEgyptResults(ep) {
       <div style="display:flex;flex-wrap:wrap;gap:3px">
         ${members.map(n => _cartouche(n, i === 0 ? 'eg-immune' : '')).join('')}
       </div>
-      <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--eg-muted);margin-top:6px;letter-spacing:0.5px;text-shadow:0 1px 0 rgba(0,0,0,0.1)">
+      <div style="font-family:Cormorant Garamond,serif;font-size:0.9rem;color:var(--eg-muted);margin-top:6px;letter-spacing:0.5px;text-shadow:0 1px 0 rgba(0,0,0,0.1)">
         Reward: ${tData.reward?.toUpperCase() || '—'} · Score: ${Math.round(tData.totalScore * 10) / 10}
       </div>
     </div>`;
@@ -2761,7 +3311,7 @@ export function rpBuildEgyptResults(ep) {
     const sl = slug(name);
     content += `<div class="eg-lb-row ${i === 0 ? 'eg-first' : ''}">
       <span class="eg-lb-rank">#${i + 1}</span>
-      <img src="assets/avatars/${sl}.png" alt="${name}" style="width:22px;height:22px;border-radius:2px;object-fit:contain;border:1.5px solid rgba(194,166,69,0.3)" onerror="this.style.display='none'">
+      <img src="assets/avatars/${sl}.png" alt="${name}" style="width:22px;height:22px;border-radius:50%;object-fit:contain;border:1.5px solid var(--eg-gold);box-shadow:0 0 0 1px var(--eg-lapis)" onerror="this.style.display='none'">
       <span class="eg-lb-name">${name}</span>
       <span class="eg-lb-score">${Math.round(score * 10) / 10}</span>
     </div>`;

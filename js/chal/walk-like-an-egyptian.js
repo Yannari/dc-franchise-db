@@ -2696,6 +2696,125 @@ function _css() {
   .eg-ra-flare,.eg-sobek-surge,.eg-isis-spread,.eg-deity-anubis::after,
   .eg-deity-ra::after,.eg-deity-isis::after{animation:none!important}
 }
+
+/* ═══ COLD OPEN — cinematic expedition title card ═══ */
+.eg-co-wrap{text-align:center;padding:8px 0 20px;position:relative}
+
+/* Eye of Horus — animated CSS centerpiece */
+.eg-co-eye{width:60px;height:40px;margin:0 auto 12px;position:relative;opacity:0.3;animation:eg-co-eye-pulse 4s ease-in-out infinite}
+.eg-co-eye-inner{position:absolute;inset:0}
+.eg-co-eye-inner::before{content:'';position:absolute;width:40px;height:22px;left:10px;top:5px;
+  border:2.5px solid var(--eg-pharaoh-gold);border-radius:50%;
+  box-shadow:0 0 12px rgba(240,192,48,0.2)}
+.eg-co-eye-inner::after{content:'';position:absolute;width:10px;height:10px;left:25px;top:11px;
+  background:var(--eg-pharaoh-gold);border-radius:50%;
+  box-shadow:0 0 6px rgba(240,192,48,0.4)}
+@keyframes eg-co-eye-pulse{0%,100%{opacity:0.25;transform:scale(1)}50%{opacity:0.45;transform:scale(1.05)}}
+
+/* "CHRIS McLEAN PRESENTS" */
+.eg-co-presents{font-family:'Cormorant Garamond',serif;font-size:0.72rem;font-weight:600;letter-spacing:5px;
+  color:var(--eg-muted);text-transform:uppercase;margin-bottom:16px;opacity:0.6}
+
+/* Title block */
+.eg-co-title-block{position:relative;margin:0 auto 16px;max-width:500px}
+.eg-co-hiero{font-size:1.1rem;letter-spacing:6px;color:var(--eg-gold);opacity:0.25;margin-bottom:6px;
+  animation:eg-co-hiero-fade 6s ease-in-out infinite}
+@keyframes eg-co-hiero-fade{0%,100%{opacity:0.15}50%{opacity:0.35}}
+.eg-co-title{font-family:'Metamorphous',cursive;font-size:2.8rem;font-weight:700;line-height:1.05;
+  letter-spacing:5px;color:var(--eg-pharaoh-gold);
+  text-shadow:2px 2px 0 rgba(0,0,0,0.25),0 0 40px rgba(240,192,48,0.15);
+  background:linear-gradient(180deg,#F5D060 0%,var(--eg-gold) 50%,#B8860B 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  position:relative;z-index:1}
+.eg-co-stripe{width:200px;height:2px;margin:10px auto 8px;
+  background:linear-gradient(90deg,transparent,var(--eg-gold),transparent);opacity:0.4}
+.eg-co-subtitle{font-family:'Metamorphous',cursive;font-size:0.85rem;letter-spacing:6px;
+  color:var(--eg-terra);text-transform:uppercase;
+  text-shadow:0 1px 0 rgba(0,0,0,0.15)}
+
+/* Tagline */
+.eg-co-tagline{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-style:italic;
+  color:var(--eg-muted);margin:14px 0 18px;letter-spacing:0.5px;line-height:1.5}
+
+/* Host announcement card */
+.eg-co-host-card{display:flex;align-items:flex-start;gap:12px;text-align:left;
+  max-width:500px;margin:0 auto 20px;padding:14px 16px;
+  background:linear-gradient(135deg,rgba(184,92,56,0.06),rgba(194,166,69,0.04));
+  border-left:3px solid var(--eg-terra);border-radius:0 3px 3px 0;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.eg-co-host-badge{font-family:'Metamorphous',cursive;font-size:0.65rem;font-weight:700;letter-spacing:2px;
+  color:var(--eg-terra);white-space:nowrap;padding:3px 8px;
+  border:1.5px solid rgba(192,72,32,0.3);border-radius:2px;flex-shrink:0;
+  background:rgba(192,72,32,0.05)}
+.eg-co-host-text{font-family:'Cormorant Garamond',serif;font-size:1.02rem;font-style:italic;
+  color:var(--eg-text);line-height:1.55;letter-spacing:0.2px}
+
+/* Section labels */
+.eg-co-section-label{font-family:'Metamorphous',cursive;font-size:0.75rem;font-weight:700;
+  letter-spacing:4px;color:var(--eg-gold);text-transform:uppercase;margin:0 0 10px;
+  position:relative;display:flex;align-items:center;justify-content:center;gap:12px;opacity:0.5}
+.eg-co-section-label::before,.eg-co-section-label::after{content:'';flex:1;max-width:60px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(194,166,69,0.3))}
+.eg-co-section-label::after{background:linear-gradient(270deg,transparent,rgba(194,166,69,0.3))}
+
+/* Tribe blocks */
+.eg-co-tribes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:6px}
+.eg-co-tribe{flex:1;min-width:180px;max-width:280px;padding:10px 8px;
+  background:linear-gradient(175deg,rgba(194,166,69,0.05),rgba(194,166,69,0.02));
+  border:1px solid rgba(194,166,69,0.12);border-radius:3px;
+  border-top:2px solid var(--eg-tribe-accent)}
+.eg-co-tribe-header{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.eg-co-tribe-line{flex:1;height:1px;background:rgba(194,166,69,0.12)}
+.eg-co-tribe-name{font-family:'Metamorphous',cursive;font-size:0.82rem;font-weight:700;
+  letter-spacing:2px;color:var(--eg-tribe-accent);text-transform:uppercase;white-space:nowrap}
+.eg-co-members{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.eg-co-member{display:flex;align-items:center;gap:5px;padding:3px 8px 3px 3px;
+  background:rgba(194,166,69,0.04);border:1px solid rgba(194,166,69,0.1);border-radius:14px}
+.eg-co-avatar{width:26px;height:26px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  border:1.5px solid rgba(194,166,69,0.25)}
+.eg-co-avatar img{width:100%;height:100%;object-fit:contain;display:block}
+.eg-co-mname{font-family:'Cormorant Garamond',serif;font-size:0.82rem;font-weight:600;
+  white-space:nowrap;color:var(--eg-text)}
+
+/* Phase preview cards */
+.eg-co-phases{display:flex;flex-direction:column;gap:6px;max-width:460px;margin:0 auto 16px}
+.eg-co-phase{display:flex;align-items:center;gap:10px;padding:10px 14px;text-align:left;
+  background:var(--eg-phase-bg);border:1px solid rgba(194,166,69,0.1);border-radius:3px;
+  border-left:3px solid var(--eg-phase-color);transition:transform 0.2s}
+.eg-co-phase:hover{transform:translateX(3px)}
+.eg-co-phase-num{font-family:'Metamorphous',cursive;font-size:1.4rem;font-weight:700;
+  color:var(--eg-phase-color);line-height:1;min-width:28px;text-align:center;
+  text-shadow:0 1px 0 rgba(0,0,0,0.15);opacity:0.7}
+.eg-co-phase-body{flex:1}
+.eg-co-phase-name{font-family:'Metamorphous',cursive;font-size:0.88rem;font-weight:700;
+  letter-spacing:2px;color:var(--eg-phase-color);text-transform:uppercase;margin-bottom:1px}
+.eg-co-phase-desc{font-family:'Cormorant Garamond',serif;font-size:0.88rem;color:var(--eg-muted);
+  line-height:1.4}
+
+/* Stakes bar */
+.eg-co-stakes{display:flex;align-items:center;gap:10px;max-width:460px;margin:0 auto 20px;
+  padding:8px 14px;background:linear-gradient(135deg,rgba(212,160,23,0.06),rgba(194,166,69,0.03));
+  border:1px solid rgba(212,160,23,0.15);border-radius:3px}
+.eg-co-stakes-icon{flex-shrink:0;opacity:0.5}
+.eg-co-stakes-text{font-family:'Cormorant Garamond',serif;font-size:0.9rem;font-weight:600;
+  color:var(--eg-pharaoh-gold);text-align:left;line-height:1.4;
+  text-shadow:0 1px 0 rgba(0,0,0,0.1)}
+
+/* Launch line */
+.eg-co-launch{font-family:'Metamorphous',cursive;font-size:1.0rem;font-weight:700;
+  letter-spacing:5px;color:var(--eg-pharaoh-gold);text-transform:uppercase;
+  padding:10px 0 4px;position:relative;opacity:0.6;
+  animation:eg-co-launch-glow 3s ease-in-out infinite}
+.eg-co-launch::before,.eg-co-launch::after{content:'';position:absolute;top:50%;width:40px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,160,23,0.3))}
+.eg-co-launch::before{right:calc(50% + 140px)}
+.eg-co-launch::after{left:calc(50% + 140px);background:linear-gradient(270deg,transparent,rgba(212,160,23,0.3))}
+@keyframes eg-co-launch-glow{0%,100%{opacity:0.4;text-shadow:0 0 0 transparent}50%{opacity:0.7;text-shadow:0 0 12px rgba(240,192,48,0.2)}}
+
+@media(prefers-reduced-motion:reduce){
+  .eg-co-eye,.eg-co-hiero,.eg-co-launch{animation:none!important;opacity:0.4}
+  .eg-co-phase:hover{transform:none!important}
+}
 </style>`;
 }
 
@@ -2939,29 +3058,66 @@ export function rpBuildEgyptTitleCard(ep) {
   const data = ep.walkEgypt;
   if (!data) return '<div>No challenge data</div>';
 
+  const h = host();
   const tribes = Object.entries(data.tribes);
-  let rosterCards = tribes.map(([tName, tData]) =>
-    `<div style="display:inline-block;margin:8px;vertical-align:top">
-      <div style="font-family:Metamorphous,cursive;font-size:1.0rem;letter-spacing:3px;color:var(--eg-terra);margin-bottom:6px;text-shadow:1px 1px 0 rgba(0,0,0,0.2);text-transform:uppercase">${tName}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:3px">${tData.members.map(n => _cartouche(n, '', '')).join('')}</div>
-    </div>`
-  ).join('');
+
+  const tribeBlocks = tribes.map(([tName, tData], ti) => {
+    const accentColor = ti === 0 ? 'var(--eg-torch)' : ti === 1 ? 'var(--eg-nile)' : 'var(--eg-scarab)';
+    const members = tData.members.map(n => {
+      const sl = slug(n);
+      return `<div class="eg-co-member">
+        <div class="eg-co-avatar"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"></div>
+        <div class="eg-co-mname">${n}</div>
+      </div>`;
+    }).join('');
+    return `<div class="eg-co-tribe" style="--eg-tribe-accent:${accentColor}">
+      <div class="eg-co-tribe-header">
+        <div class="eg-co-tribe-line"></div>
+        <div class="eg-co-tribe-name">${tName}</div>
+        <div class="eg-co-tribe-line"></div>
+      </div>
+      <div class="eg-co-members">${members}</div>
+    </div>`;
+  }).join('');
+
+  const phases = [
+    { num: 'I', name: 'THE PYRAMID', desc: 'Scale the summit or crawl through the tombs', color: 'var(--eg-torch)', bg: 'rgba(255,153,68,0.08)', iconCls: 'eg-icon-climb' },
+    { num: 'II', name: 'THE DESERT', desc: 'Navigate the dunes with camel, goat, or stick', color: 'var(--eg-terra)', bg: 'rgba(192,72,32,0.06)', iconCls: 'eg-icon-navigate' },
+    { num: 'III', name: 'THE NILE', desc: 'Build a reed boat and cross crocodile waters', color: 'var(--eg-nile)', bg: 'rgba(0,160,160,0.06)', iconCls: 'eg-icon-croc' },
+  ];
+  const phaseCards = phases.map(p => `<div class="eg-co-phase" style="--eg-phase-color:${p.color};--eg-phase-bg:${p.bg}">
+    <div class="eg-co-phase-num">${p.num}</div>
+    <div class="eg-co-phase-body">
+      <div class="eg-co-phase-name">${p.name}</div>
+      <div class="eg-co-phase-desc">${p.desc}</div>
+    </div>
+    <span class="eg-icon ${p.iconCls}" style="margin:0;opacity:0.5"></span>
+  </div>`).join('');
 
   const content = `
-    <div class="eg-h1" style="font-size:2.4rem;margin:20px 0 6px">WALK LIKE AN EGYPTIAN</div>
-    <div style="text-align:center;font-family:Metamorphous,cursive;font-size:0.9rem;color:var(--eg-muted);letter-spacing:5px;margin-bottom:16px;text-shadow:0 1px 0 rgba(0,0,0,0.15)">𓂀 IMMUNITY CHALLENGE 𓂀</div>
-    <div class="eg-host">${data.hostLines?.intro || ''}</div>
-    <div style="text-align:center;margin:16px 0">${rosterCards}</div>
-    <div style="margin-top:16px;text-align:center">
-      <div class="eg-card" style="display:inline-block;max-width:440px;text-align:left">
-        <div class="eg-h3">𓏏 EXPEDITION PARAMETERS</div>
-        <div style="font-size:1.05rem;line-height:1.7;font-family:Cormorant Garamond,serif">
-          <b style="color:var(--eg-torch)">𓊖 PHASE I</b> — Pyramid Over/Under<br>
-          <b style="color:var(--eg-terra)">𓇳 PHASE II</b> — Desert Trek + Reward Animals<br>
-          <b style="color:var(--eg-nile)">𓈗 PHASE III</b> — Nile Crossing + Crocodile Gauntlet<br>
-          <span style="color:var(--eg-pharaoh-gold);font-size:0.9rem;display:block;margin-top:4px;text-shadow:0 1px 0 rgba(0,0,0,0.15)">First tribe across wins immunity. Last tribe faces tribal council.</span>
-        </div>
+    <div class="eg-co-wrap">
+      <div class="eg-co-eye"><div class="eg-co-eye-inner"></div></div>
+      <div class="eg-co-presents">${h.toUpperCase()} McLEAN PRESENTS</div>
+      <div class="eg-co-title-block">
+        <div class="eg-co-hiero">𓂀𓊪𓇋𓈖𓏏 𓃭𓇋𓎛 𓊖𓈖 𓂧𓇳𓏏𓎼</div>
+        <div class="eg-co-title">WALK LIKE AN<br>EGYPTIAN</div>
+        <div class="eg-co-stripe"></div>
+        <div class="eg-co-subtitle">IMMUNITY CHALLENGE</div>
       </div>
+      <div class="eg-co-tagline">"Three phases. Two safe tribes. One torch snuffed."</div>
+      <div class="eg-co-host-card">
+        <div class="eg-co-host-badge">${h.toUpperCase()}</div>
+        <div class="eg-co-host-text">${data.hostLines?.intro || ''}</div>
+      </div>
+      <div class="eg-co-section-label">EXPEDITION TEAMS</div>
+      <div class="eg-co-tribes">${tribeBlocks}</div>
+      <div class="eg-co-section-label" style="margin-top:20px">THE GAUNTLET</div>
+      <div class="eg-co-phases">${phaseCards}</div>
+      <div class="eg-co-stakes">
+        <div class="eg-co-stakes-icon"><span class="eg-icon eg-icon-summit" style="margin:0"></span></div>
+        <div class="eg-co-stakes-text">First tribe across the Nile wins immunity. Last tribe faces tribal council.</div>
+      </div>
+      <div class="eg-co-launch">THE EXPEDITION BEGINS</div>
     </div>`;
 
   if (!window._egScreenBuilders) window._egScreenBuilders = {};

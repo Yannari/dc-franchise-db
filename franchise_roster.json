@@ -154,7 +154,7 @@
         "intuition": 9,
         "temperament": 6
       },
-      "isReturnee": false
+      "isReturnee": true
     },
     {
       "name": "Brick",
@@ -762,7 +762,7 @@
         "intuition": 9,
         "temperament": 7
       },
-      "isReturnee": false
+      "isReturnee": true
     },
     {
       "name": "Izzy",
@@ -1306,7 +1306,7 @@
       "name": "Priya",
       "slug": "priya",
       "gender": "f",
-      "archetype": "",
+      "archetype": "challenge-beast",
       "stats": {
         "physical": 9,
         "endurance": 9,
@@ -1318,7 +1318,7 @@
         "intuition": 8,
         "temperament": 6
       },
-      "isReturnee": false
+      "isReturnee": true
     },
     {
       "name": "Raj",
@@ -1430,7 +1430,7 @@
       "name": "Sam",
       "slug": "sam",
       "gender": "m",
-      "archetype": "",
+      "archetype": "goat",
       "stats": {
         "physical": 4,
         "endurance": 2,

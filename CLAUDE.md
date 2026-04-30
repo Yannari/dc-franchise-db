@@ -86,6 +86,7 @@ Every challenge event that's heroic, villainous, cowardly, or selfless must affe
 - Showmance moments if challenge has downtime/partner interaction/danger
 - Popularity changes for heroic/villain/coward moments
 - `chalSeries` in TWIST_CATALOG entry — every challenge from a specific show MUST have an origin series (`'island'`, `'action'`, `'world-tour'`, `'revenge'`, `'all-stars'`, `'pahkitew'`, `'ridonculous'`, `'dc1'`–`'dc5'`). If a challenge is an original mechanic with no show origin, omit `chalSeries`.
+- `chalStyle` in TWIST_CATALOG entry — every challenge MUST have a style tag for the randomizer's category-aware pacing. Valid values: `'physical'`, `'endurance'`, `'hunt'`, `'social'`, `'puzzle'`, `'adventure'`, `'chaos'`. The randomizer avoids placing two consecutive episodes with the same style.
 
 ### Scoring Balance
 Tribe scores: averages per member, NEVER raw sums.
@@ -208,7 +209,7 @@ import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js
 1. **`js/core.js`** — Add TWIST_CATALOG entry:
    ```javascript
    { id:'challenge-id', emoji:'🎯', name:'Challenge Name', category:'challenge',
-     chalSeries:'action', phase:'post-merge',
+     chalSeries:'action', chalStyle:'adventure', phase:'post-merge',
      desc:'Description...', engineType:'challenge-id',
      incompatible:[...all other challenge IDs...] }
    ```

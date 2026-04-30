@@ -313,6 +313,7 @@ export function simulateNext() {
     }
   }
   if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
+  _autoRevealSpoiler(ep.num);
   viewingEpNum = ep.num;
   renderRunTab();
   document.getElementById('run-main').scrollTop = 0;
@@ -362,6 +363,7 @@ export function replayEpisode(epNum) {
   const ep = _isFinaleReplay ? simulateFinale() : simulateEpisode();
   if (!ep) return;
   if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
+  _autoRevealSpoiler(ep.num);
   viewingEpNum = ep.num;
   renderRunTab();
   document.getElementById('run-main').scrollTop = 0;
@@ -685,6 +687,10 @@ export function renderTimeline() {
         }
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${configHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      if (t.spoilerFree) {
+        const phaseTag = cat?.phase === 'pre-merge' ? 'Pre-merge challenge' : cat?.phase === 'post-merge' ? 'Post-merge challenge' : 'Challenge';
+        return `<span class="fd-ep-twist-tag" style="font-style:italic;opacity:0.7" onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')">🔒 ${phaseTag} ×</span>`;
+      }
       return `<span class="fd-ep-twist-tag" onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')">${cat ? cat.emoji : '🔀'} ${cat ? cat.name : t.type} ×</span>`;
     }).join('');
 
@@ -924,6 +930,222 @@ export function _updateReturnReason(twistId, slotIdx, reason) {
   t.returnReasons[slotIdx] = reason;
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   renderTimeline();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CHALLENGE RANDOMIZER
+// ══════════════════════════════════════════════════════════════════════
+
+export function randomizeChallenges(opts = {}) {
+  const {
+    seriesFilter = ['island', 'action', 'dc1', 'dc2', 'dc3', 'dc4', 'dc5'],
+    spoilerFree = false,
+    clearExisting = true
+  } = opts;
+
+  const epMap = buildEpisodeMap();
+  if (!epMap.length) return;
+
+  if (!seasonConfig.twistSchedule) seasonConfig.twistSchedule = [];
+
+  if (clearExisting) {
+    seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(t => {
+      const cat = TWIST_CATALOG.find(c => c.id === t.type);
+      return !cat || cat.category !== 'challenge';
+    });
+  }
+
+  const allChallenges = TWIST_CATALOG.filter(c => c.category === 'challenge');
+  const eligible = allChallenges.filter(c => {
+    if (!c.chalSeries) return true;
+    return seriesFilter.includes(c.chalSeries);
+  });
+
+  const nonFinaleEps = epMap.filter(e => e.phase !== 'finale');
+  const existingChalEps = new Set(
+    seasonConfig.twistSchedule
+      .filter(t => { const cat = TWIST_CATALOG.find(c => c.id === t.type); return cat?.category === 'challenge'; })
+      .map(t => Number(t.episode))
+  );
+
+  const targetEps = nonFinaleEps.filter(e => !existingChalEps.has(e.ep));
+  if (!targetEps.length) return;
+
+  const teams = seasonConfig.teams || 2;
+
+  const prePool = _shuffle(eligible.filter(c =>
+    c.phase === 'pre-merge' || c.phase === 'any'
+  ));
+  const postPool = _shuffle(eligible.filter(c =>
+    c.phase === 'post-merge' || c.phase === 'any'
+  ));
+
+  const used = new Set();
+  const assignments = [];
+
+  const mergeEp = targetEps.find(e =>
+    e.phase === 'post-merge' && epMap.find(p => p.ep === e.ep - 1)?.phase === 'pre-merge'
+  );
+  const preferMerge = eligible.filter(c => c.preferMergeEp && !used.has(c.id));
+  if (mergeEp && preferMerge.length) {
+    const pick = preferMerge[0];
+    if (_canPlace(pick, mergeEp, teams)) {
+      assignments.push({ ep: mergeEp.ep, challenge: pick });
+      used.add(pick.id);
+    }
+  }
+
+  for (const epInfo of targetEps) {
+    if (assignments.some(a => a.ep === epInfo.ep)) continue;
+
+    const pool = epInfo.phase === 'pre-merge' ? prePool : postPool;
+    const prevStyle = _getPrevStyle(assignments, epInfo.ep, epMap);
+
+    let placed = false;
+    for (let i = 0; i < pool.length; i++) {
+      const chal = pool[i];
+      if (used.has(chal.id)) continue;
+      if (!_canPlace(chal, epInfo, teams)) continue;
+      if (chal.chalStyle && chal.chalStyle === prevStyle) continue;
+
+      assignments.push({ ep: epInfo.ep, challenge: chal });
+      used.add(chal.id);
+      placed = true;
+      break;
+    }
+
+    if (!placed) {
+      for (let i = 0; i < pool.length; i++) {
+        const chal = pool[i];
+        if (used.has(chal.id)) continue;
+        if (!_canPlace(chal, epInfo, teams)) continue;
+
+        assignments.push({ ep: epInfo.ep, challenge: chal });
+        used.add(chal.id);
+        placed = true;
+        break;
+      }
+    }
+  }
+
+  for (const a of assignments) {
+    const entry = {
+      id: 'tw-rand-' + Date.now() + '-' + a.ep,
+      episode: a.ep,
+      type: a.challenge.id
+    };
+    if (spoilerFree) entry.spoilerFree = true;
+    seasonConfig.twistSchedule.push(entry);
+  }
+
+  if (spoilerFree) _spoilerFree = true;
+
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+  renderTwistCatalog();
+  return assignments.length;
+}
+
+function _shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function _canPlace(chal, epInfo, teams) {
+  if (chal.minTribes && teams < chal.minTribes) return false;
+  if (chal.minPlayers && epInfo.active < chal.minPlayers) return false;
+  if (chal.phase === 'pre-merge' && epInfo.phase !== 'pre-merge') return false;
+  if (chal.phase === 'post-merge' && epInfo.phase !== 'post-merge') return false;
+  return true;
+}
+
+function _getPrevStyle(assignments, currentEp, epMap) {
+  const sorted = assignments.filter(a => a.ep < currentEp).sort((a, b) => b.ep - a.ep);
+  return sorted.length ? sorted[0].challenge.chalStyle : null;
+}
+
+function _autoRevealSpoiler(epNum) {
+  const twists = (seasonConfig.twistSchedule || []).filter(t => Number(t.episode) === epNum && t.spoilerFree);
+  if (!twists.length) return;
+  twists.forEach(t => { delete t.spoilerFree; });
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+}
+
+export function revealSpoiler(ep) {
+  const twists = (seasonConfig.twistSchedule || []).filter(t => Number(t.episode) === ep);
+  twists.forEach(t => { delete t.spoilerFree; });
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
+export function revealAllSpoilers() {
+  (seasonConfig.twistSchedule || []).forEach(t => { delete t.spoilerFree; });
+  _spoilerFree = false;
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
+export function showRandomizerPanel() {
+  const existing = document.getElementById('randomizer-panel');
+  if (existing) { existing.remove(); return; }
+
+  const allSeries = [...new Set(TWIST_CATALOG.filter(c => c.category === 'challenge' && c.chalSeries).map(c => c.chalSeries))];
+  const seriesLabels = {
+    'island': 'Island', 'action': 'Action', 'world-tour': 'World Tour',
+    'revenge': 'Revenge', 'all-stars': 'All-Stars', 'pahkitew': 'Pahkitew',
+    'ridonculous': 'Ridonculous Race',
+    'dc1': 'DC S1', 'dc2': 'DC S2', 'dc3': 'DC S3', 'dc4': 'DC S4', 'dc5': 'DC S5'
+  };
+  const defaultOn = ['island', 'action', 'dc1', 'dc2', 'dc3', 'dc4', 'dc5'];
+
+  let checkboxes = allSeries.map(s =>
+    `<label style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--text);cursor:pointer">
+      <input type="checkbox" class="rand-series-cb" value="${s}" ${defaultOn.includes(s) ? 'checked' : ''} style="accent-color:#6366f1"> ${seriesLabels[s] || s}
+    </label>`
+  ).join('');
+
+  const panel = document.createElement('div');
+  panel.id = 'randomizer-panel';
+  panel.innerHTML = `
+    <div style="background:var(--surface);border:1px solid rgba(99,102,241,0.3);border-radius:8px;padding:16px;margin:12px 0;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:600;color:var(--text);font-size:14px">🎲 Challenge Randomizer</span>
+        <span onclick="showRandomizerPanel()" style="cursor:pointer;color:var(--muted);font-size:18px">×</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px 16px">
+        ${checkboxes}
+      </div>
+      <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text);cursor:pointer">
+        <input type="checkbox" id="rand-spoiler-free" style="accent-color:#6366f1"> Spoiler-free mode
+        <span style="color:var(--muted);font-size:11px">(hides challenge names until episode plays)</span>
+      </label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="_runRandomizer()" style="background:#6366f1;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:500">Randomize</button>
+        <button onclick="revealAllSpoilers()" style="background:transparent;border:1px solid rgba(99,102,241,0.3);color:var(--text);border-radius:6px;padding:8px 12px;font-size:12px;cursor:pointer">Reveal All</button>
+        <span id="rand-result" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+    </div>`;
+
+  const timeline = document.getElementById('fd-timeline');
+  if (timeline) timeline.parentNode.insertBefore(panel, timeline);
+}
+
+export function _runRandomizer() {
+  const cbs = document.querySelectorAll('.rand-series-cb:checked');
+  const seriesFilter = [...cbs].map(cb => cb.value);
+  if (!seriesFilter.length) {
+    const el = document.getElementById('rand-result');
+    if (el) el.textContent = 'Select at least one series.';
+    return;
+  }
+  const spoilerFree = document.getElementById('rand-spoiler-free')?.checked || false;
+  const count = randomizeChallenges({ seriesFilter, spoilerFree });
+  const el = document.getElementById('rand-result');
+  if (el) el.textContent = count ? `${count} challenge${count > 1 ? 's' : ''} assigned.` : 'No episodes available.';
 }
 
 // ══════════════════════════════════════════════════════════════════════

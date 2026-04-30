@@ -1,6 +1,6 @@
 // js/chal/walk-like-an-egyptian.js — Walk Like an Egyptian (pre-merge tribe challenge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -498,6 +498,40 @@ const P3_SOCIAL = {
   ],
 };
 
+// ── CROSS-TRIBE / EXTRA SOCIAL EVENTS ──
+const P1_CROSS = {
+  samePath: [
+    (a, b, pathName, apr) => `${a} and ${b} — different tribes, same path. Their eyes meet on the ${pathName === 'over' ? 'summit face' : 'tunnel corridor'}. No words. Just competition. Both push harder.`,
+    (a, b, pathName, apr) => `${a} catches up to ${b} on the ${pathName === 'over' ? 'ascent' : 'tunnel'}. "See you at the top." The race within the race is ON.`,
+    (a, b, pathName, apr) => `${a} passes ${b} on the ${pathName === 'over' ? 'climb' : 'crawl'}. ${b} grits teeth and surges. No way is ${a} finishing first.`,
+    (a, b, pathName, apr) => `${a} and ${b} reach the same chokepoint. Shoulder to shoulder. Neither gives way. The ${pathName === 'over' ? 'ridge' : 'tunnel'} isn't wide enough for both.`,
+  ],
+  overRivalry: [
+    (a, b, apr) => `${a} and ${b} are neck-and-neck on the pyramid face. ${a} kicks a loose stone — it tumbles toward ${b}. Accident? Hard to say.`,
+    (a, b, apr) => `"Get your own handhold!" ${a} snaps as ${b} reaches for the same ledge. The pyramid is big enough for both — but pride isn't.`,
+    (a, b, apr) => `${a} reaches the top first. ${apr.Sub} looks back at ${b}, still climbing. The smirk says everything words can't.`,
+    (a, b, apr) => `${a} and ${b} jockey for the fastest descent line. Elbows fly. Neither will admit who shoved first.`,
+  ],
+  underAlliance: [
+    (a, b, apr) => `Lost in the dark, ${a} hears ${b}'s footsteps ahead. "Wrong tribe, but... share the torch?" They navigate together for a stretch.`,
+    (a, b, apr) => `${a} and ${b} face the same sealed door. Enemy tribes. But the door won't budge alone. They heave together, then split without a word.`,
+    (a, b, apr) => `"Your tribe's torch is brighter than ours," ${a} admits. ${b} holds it higher so both can see. The help won't be forgotten — or forgiven.`,
+    (a, b, apr) => `${a} and ${b} reach a fork together. ${a} gestures: "After you." It's not politeness — it's using ${b} as a canary. ${b} knows. Goes anyway.`,
+  ],
+  surfCollision: [
+    (a, b) => `${a} slams into ${b} on the slide down. They roll as a tangled ball of limbs for thirty feet before separating. Both furious. Both sand-burned.`,
+    (a, b) => `"LOOK OUT!" Too late. ${a} plows into ${b} at full speed. Both wipe out spectacularly. The crowd below cringes.`,
+    (a, b) => `${a} and ${b} hit the same descent groove. Physics wins. They crash, tumble, and land in a heap. Accusations start before the dust settles.`,
+    (a, b) => `${a} tries to pass ${b} on the slide. Bad idea. They clip each other and cartwheel into the sand. Neither is happy.`,
+  ],
+  respect: [
+    (a, b, apr) => `${a} watches ${b} power through the obstacle and nods. No words needed. That was impressive. Even an enemy earns respect.`,
+    (a, b, apr) => `${b} finishes the phase and finds ${a} waiting. "Nice run." The compliment is genuine. ${a} tips an imaginary hat.`,
+    (a, b, apr) => `${a} sees ${b} struggling but pushing through with grit. ${apr.Sub} won't help — wrong tribe — but something like admiration flickers.`,
+    (a, b, apr) => `"You're faster than I thought," ${a} admits to ${b} after the phase. It's a compliment wrapped in a threat.`,
+  ],
+};
+
 // ── DEITY JUDGMENT TEXT ──
 const DEITY_JUDGMENT = {
   anubis: {
@@ -867,8 +901,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
     const tribeOverP1 = result.phase1.choices.filter(c => c.tribe === tName && c.path === 'over');
     const tribeUnderP1 = result.phase1.choices.filter(c => c.tribe === tName && c.path === 'under');
 
-    // Path Debate (40% chance, needs both over and under players)
-    if (tribeOverP1.length > 0 && tribeUnderP1.length > 0 && Math.random() < 0.4) {
+    // GUARANTEED: Path Debate when tribe splits between over/under
+    if (tribeOverP1.length > 0 && tribeUnderP1.length > 0) {
       const overPlayer = pick(tribeOverP1).name;
       const underPlayer = pick(tribeUnderP1).name;
       const opr = pronouns(overPlayer);
@@ -879,8 +913,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
       addBond(overPlayer, underPlayer, -0.2);
     }
 
-    // Trap Buddy (50% chance among under players, nice archetypes only)
-    if (tribeUnderP1.length >= 2 && Math.random() < 0.5) {
+    // GUARANTEED: Trap Buddy among under players (nice archetypes help)
+    if (tribeUnderP1.length >= 2) {
       const niceUnder = tribeUnderP1.filter(c => ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog'].includes(arch(c.name)));
       const needyUnder = tribeUnderP1.filter(c => !niceUnder.some(n => n.name === c.name));
       if (niceUnder.length > 0 && needyUnder.length > 0) {
@@ -896,8 +930,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
       }
     }
 
-    // Summit Taunt (35% chance, villain over players taunt under players)
-    if (tribeOverP1.length > 0 && tribeUnderP1.length > 0 && Math.random() < 0.35) {
+    // GUARANTEED: Summit Taunt if a villain went over and someone went under
+    if (tribeOverP1.length > 0 && tribeUnderP1.length > 0) {
       const villainOver = tribeOverP1.filter(c => canScheme(c.name));
       if (villainOver.length > 0) {
         const taunter = pick(villainOver).name;
@@ -912,8 +946,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
       }
     }
 
-    // Mummy Panic Chain (30% chance, under players)
-    if (tribeUnderP1.length >= 2 && Math.random() < 0.3) {
+    // GUARANTEED: Mummy Panic Chain when 2+ go under
+    if (tribeUnderP1.length >= 2) {
       const panicker = pick(tribeUnderP1).name;
       const affected = pick(tribeUnderP1.filter(c => c.name !== panicker))?.name;
       if (affected) {
@@ -926,8 +960,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
       }
     }
 
-    // Encourage (40% chance, nice player encourages low-scoring teammate)
-    if (tribe.members.length >= 2 && Math.random() < 0.4) {
+    // GUARANTEED: Encourage — nice player supports low scorer
+    if (tribe.members.length >= 2) {
       const niceMembers = tribe.members.filter(m => ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(arch(m)));
       const lowScorers = result.phase1.choices.filter(c => c.tribe === tName && c.score <= 5).map(c => c.name);
       const validGivers = niceMembers.filter(m => !lowScorers.includes(m));
@@ -943,8 +977,28 @@ export function simulateWalkLikeAnEgyptian(ep) {
       }
     }
 
-    // Anubis Deity Judgment (25% chance per tribe in pyramid phase)
-    if (Math.random() < 0.25) {
+    // BONUS: Second encourage (35% chance)
+    if (tribe.members.length >= 3 && Math.random() < 0.35) {
+      const niceMembers2 = tribe.members.filter(m => ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(arch(m)));
+      const usedGivers = result.phase1.socialEvents.filter(e => e.type === 'encourage' && e.tribe === tName).map(e => e.players[0]);
+      const availGivers = niceMembers2.filter(m => !usedGivers.includes(m));
+      const lowScorers2 = result.phase1.choices.filter(c => c.tribe === tName && c.score <= 6).map(c => c.name).filter(m => !usedGivers.includes(m));
+      if (availGivers.length > 0 && lowScorers2.length > 0) {
+        const giver = pick(availGivers);
+        const receiver = pick(lowScorers2.filter(m => m !== giver));
+        if (receiver) {
+          const gpr = pronouns(giver);
+          result.phase1.socialEvents.push({
+            type: 'encourage', tribe: tName, players: [giver, receiver],
+            text: pick(P1_SOCIAL.encourage)(giver, receiver, gpr),
+          });
+          addBond(receiver, giver, 0.3);
+        }
+      }
+    }
+
+    // Anubis Deity Judgment (35% chance per tribe)
+    if (Math.random() < 0.35) {
       const judgedPlayer = pick(tribe.members);
       const jpr = pronouns(judgedPlayer);
       const blessed = pStats(judgedPlayer).loyalty >= 5 || arch(judgedPlayer) === 'hero';
@@ -965,6 +1019,101 @@ export function simulateWalkLikeAnEgyptian(ep) {
     tribeP1Scores[tName] = avg;
     result.tribes[tName].p1Avg = avg;
   });
+
+  // ── Cross-Tribe Social Events (same path, different tribes) ──
+  const allOverP1 = result.phase1.choices.filter(c => c.path === 'over');
+  const allUnderP1 = result.phase1.choices.filter(c => c.path === 'under');
+  const tribeNames = tribes.map(t => t.name);
+
+  // Over-path cross-tribe encounters
+  for (let ti = 0; ti < tribeNames.length; ti++) {
+    for (let tj = ti + 1; tj < tribeNames.length; tj++) {
+      const overA = allOverP1.filter(c => c.tribe === tribeNames[ti]);
+      const overB = allOverP1.filter(c => c.tribe === tribeNames[tj]);
+      if (overA.length > 0 && overB.length > 0) {
+        // Guaranteed: same-path encounter
+        const a = pick(overA).name;
+        const b = pick(overB).name;
+        const apr = pronouns(a);
+        result.phase1.socialEvents.push({
+          type: 'samePath', tribe: null, players: [a, b],
+          text: pick(P1_CROSS.samePath)(a, b, 'over', apr),
+        });
+        addBond(a, b, -0.3);
+        popDelta(a, 0.5);
+        popDelta(b, 0.5);
+
+        // 50% chance: rivalry/collision on the descent
+        if (Math.random() < 0.5 && overA.length > 0 && overB.length > 0) {
+          const ra = pick(overA).name;
+          const rb = pick(overB.filter(c => c.name !== ra)).name || pick(overB).name;
+          if (Math.random() < 0.5) {
+            result.phase1.socialEvents.push({
+              type: 'surfCollision', tribe: null, players: [ra, rb],
+              text: pick(P1_CROSS.surfCollision)(ra, rb),
+            });
+            addBond(ra, rb, -0.4);
+          } else {
+            const rpr = pronouns(ra);
+            result.phase1.socialEvents.push({
+              type: 'overRivalry', tribe: null, players: [ra, rb],
+              text: pick(P1_CROSS.overRivalry)(ra, rb, rpr),
+            });
+            addBond(ra, rb, -0.3);
+          }
+        }
+      }
+    }
+  }
+
+  // Under-path cross-tribe encounters
+  for (let ti = 0; ti < tribeNames.length; ti++) {
+    for (let tj = ti + 1; tj < tribeNames.length; tj++) {
+      const underA = allUnderP1.filter(c => c.tribe === tribeNames[ti]);
+      const underB = allUnderP1.filter(c => c.tribe === tribeNames[tj]);
+      if (underA.length > 0 && underB.length > 0) {
+        const a = pick(underA).name;
+        const b = pick(underB).name;
+        const apr = pronouns(a);
+        // Guaranteed: tunnel encounter
+        result.phase1.socialEvents.push({
+          type: 'samePath', tribe: null, players: [a, b],
+          text: pick(P1_CROSS.samePath)(a, b, 'under', apr),
+        });
+        addBond(a, b, -0.2);
+
+        // 45% chance: temporary alliance or rivalry
+        if (Math.random() < 0.45) {
+          const ua = pick(underA).name;
+          const ub = pick(underB.filter(c => c.name !== ua)).name || pick(underB).name;
+          const upr = pronouns(ua);
+          result.phase1.socialEvents.push({
+            type: 'underAlliance', tribe: null, players: [ua, ub],
+            text: pick(P1_CROSS.underAlliance)(ua, ub, upr),
+          });
+          addBond(ua, ub, 0.3);
+        }
+      }
+    }
+  }
+
+  // Cross-tribe respect (high performers acknowledge each other)
+  const topScorers = [...result.phase1.choices].sort((a, b) => b.score - a.score).slice(0, 4);
+  for (let i = 0; i < topScorers.length; i++) {
+    for (let j = i + 1; j < topScorers.length; j++) {
+      if (topScorers[i].tribe !== topScorers[j].tribe && Math.random() < 0.4) {
+        const a = topScorers[i].name;
+        const b = topScorers[j].name;
+        const apr = pronouns(a);
+        result.phase1.socialEvents.push({
+          type: 'respect', tribe: null, players: [a, b],
+          text: pick(P1_CROSS.respect)(a, b, apr),
+        });
+        addBond(a, b, 0.2);
+        break;
+      }
+    }
+  }
 
   // ── Mummified Dog (one random UNDER player) ──
   const underPlayers = result.phase1.choices.filter(c => c.path === 'under');
@@ -1282,8 +1431,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
 
     // ── Phase 2 Additional Social Events ──
 
-    // Water Share/Hoard (50% chance)
-    if (members.length >= 2 && Math.random() < 0.5) {
+    // Water Share/Hoard (GUARANTEED when 2+ members)
+    if (members.length >= 2) {
       const niceForWater = members.filter(m => ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog'].includes(arch(m)));
       const villainsForWater = members.filter(m => canScheme(m));
       const weakest = [...members].sort((a, b) => pStats(a).endurance - pStats(b).endurance)[0];
@@ -1304,15 +1453,15 @@ export function simulateWalkLikeAnEgyptian(ep) {
       }
     }
 
-    // Animal Drama (40% chance, tied to reward animal)
-    if (Math.random() < 0.4) {
+    // Animal Drama (GUARANTEED)
+    if (true) {
       const animalPlayer = pick(members);
       const apr = pronouns(animalPlayer);
       result.phase2.socialEvents.push({ type: 'animalDrama', players: [animalPlayer], tribe: tName, text: pick(P2_SOCIAL.animalDrama)(animalPlayer, tName, apr) });
     }
 
-    // Desert Mirage (25% chance, low endurance player)
-    if (Math.random() < 0.25) {
+    // Desert Mirage (40% chance, low endurance player)
+    if (Math.random() < 0.4) {
       const endSorted = [...members].sort((a, b) => pStats(a).endurance - pStats(b).endurance);
       const miragePlayer = endSorted[0];
       const mpr = pronouns(miragePlayer);
@@ -1320,8 +1469,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
       perPlayerP2[miragePlayer] = (perPlayerP2[miragePlayer] || 0) - 1;
     }
 
-    // Ra Deity Judgment (25% chance per tribe in desert phase)
-    if (Math.random() < 0.25) {
+    // Ra Deity Judgment (35% chance per tribe in desert phase)
+    if (Math.random() < 0.35) {
       const judgedPlayer = pick(members);
       const jpr = pronouns(judgedPlayer);
       const blessed = pStats(judgedPlayer).endurance >= 6 || arch(judgedPlayer) === 'challenge-beast';
@@ -1590,8 +1739,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
 
     // ── Phase 3 Social Events ──
 
-    // Boat Teamwork (50% chance, high bond pairs)
-    if (members.length >= 2 && Math.random() < 0.5) {
+    // Boat Teamwork (GUARANTEED, high bond pairs)
+    if (members.length >= 2) {
       const pairs = [];
       for (let i = 0; i < members.length; i++)
         for (let j = i + 1; j < members.length; j++)
@@ -1605,8 +1754,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
       }
     }
 
-    // Croc Panic (35% chance, low boldness player)
-    if (members.length >= 2 && Math.random() < 0.35) {
+    // Croc Panic (GUARANTEED, low boldness player)
+    if (members.length >= 2) {
       const boldSorted = [...members].sort((a, b) => pStats(a).boldness - pStats(b).boldness);
       const panicker = boldSorted[0];
       const affected = pick(members.filter(m => m !== panicker));
@@ -1616,8 +1765,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
       boatDamage += 0.5;
     }
 
-    // Encourage Row (40% chance, nice players help struggling rowers)
-    if (members.length >= 2 && Math.random() < 0.4) {
+    // Encourage Row (GUARANTEED, nice players help struggling rowers)
+    if (members.length >= 2) {
       const niceRowers = members.filter(m => ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog'].includes(arch(m)));
       const weakRowers = [...members].sort((a, b) => pStats(a).physical - pStats(b).physical).slice(0, 2);
       const validGivers = niceRowers.filter(m => !weakRowers.includes(m));
@@ -1631,8 +1780,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
       }
     }
 
-    // Sobek Deity Judgment (25% chance per tribe)
-    if (Math.random() < 0.25) {
+    // Sobek Deity Judgment (35% chance per tribe)
+    if (Math.random() < 0.35) {
       const judgedPlayer = pick(members);
       const jpr = pronouns(judgedPlayer);
       const blessed = pStats(judgedPlayer).physical >= 6 || arch(judgedPlayer) === 'challenge-beast';
@@ -1691,8 +1840,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
     });
   });
 
-  // ── Cross-tribe Boat Sabotage (20% chance, villain archetypes) ──
-  if (tribes.length >= 2 && Math.random() < 0.2) {
+  // ── Cross-tribe Boat Sabotage (40% chance, villain archetypes) ──
+  if (tribes.length >= 2 && Math.random() < 0.4) {
     const allVillains = [];
     tribes.forEach(t => t.members.filter(m => canScheme(m)).forEach(v => allVillains.push({ name: v, tribe: t.name })));
     if (allVillains.length > 0) {
@@ -1886,6 +2035,12 @@ const FRIEZE_READINGS = {
     { glyph: '𓃀𓇋𓎼𓇋𓈖', text: 'EXPEDITION BEGINS' },
     { glyph: '𓉐𓂋𓏏 𓊪𓇋𓂋', text: 'THE PYRAMID AWAITS' },
   ],
+  'eg-cold-open': [
+    { glyph: '𓇳𓂀𓏏 𓊪𓃭𓏏', text: 'RA WATCHES' },
+    { glyph: '𓂧𓈖𓎼𓏏 𓇋𓅱', text: 'THE DEAD STIR' },
+    { glyph: '𓊃𓈖𓂧 𓏏𓎛𓇋', text: 'SAND REMEMBERS' },
+    { glyph: '𓉐𓂋𓏏 𓃀𓇋𓎼', text: 'EXPEDITION BEGINS' },
+  ],
   'eg-pyramid': [
     { glyph: '𓇥𓂧𓊪𓏏𓉔 ▼▼▼', text: 'PASSAGE DEPTH ▼▼▼' },
     { glyph: '𓎛𓂝𓏏 ████░░', text: 'TORCH FUEL ████░░' },
@@ -1912,6 +2067,7 @@ const FRIEZE_READINGS = {
 };
 const FRIEZE_FIGURES = {
   '': 'explorer',
+  'eg-cold-open': 'pharaoh',
   'eg-pyramid': 'torch-bearer',
   'eg-desert': 'camel-rider',
   'eg-nile': 'rower',
@@ -1987,11 +2143,29 @@ function _icon(type) {
 // ══════════════════════════════════════════════════════════════
 // CARTOUCHE PLAYER CARD
 // ══════════════════════════════════════════════════════════════
-function _cartouche(name, statusCls = '', tag = '') {
+function _tribeBadge(tribeName) {
+  if (!tribeName) return '';
+  const tc = tribeColor(tribeName);
+  return `<span style="font-family:Metamorphous,cursive;font-size:0.55rem;letter-spacing:1.5px;padding:1px 6px;border-radius:2px;background:${tc}18;color:${tc};border:1px solid ${tc}33;white-space:nowrap">${tribeName.toUpperCase()}</span>`;
+}
+
+function _playerChips(names, tribeName) {
+  if (!names?.length) return '';
+  const tc = tribeName ? tribeColor(tribeName) : 'var(--eg-muted)';
+  return `<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px">${names.map(n => {
+    const sl = slug(n);
+    return `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px 2px 2px;border-radius:14px;background:rgba(0,0,0,0.15);border:1px solid ${tc}44;font-size:0.78rem;font-family:Cormorant Garamond,serif;color:var(--eg-text)">
+      <img src="assets/avatars/${sl}.png" alt="${n}" style="width:20px;height:20px;border-radius:50%;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">${n}</span>`;
+  }).join('')}</div>`;
+}
+
+function _cartouche(name, statusCls = '', tag = '', tribeName = '') {
   const sl = slug(name);
-  return `<span class="eg-cartouche ${statusCls}">
+  const tc = tribeName ? tribeColor(tribeName) : '';
+  const borderStyle = tribeName ? `border-left:3px solid ${tc};padding-left:4px` : '';
+  return `<span class="eg-cartouche ${statusCls}" style="${borderStyle}">
     <span class="eg-seal-frame"><img src="assets/avatars/${sl}.png" alt="${name}" onerror="this.style.display='none'"></span>
-    <span class="eg-seal-name">${name}</span>${tag ? `<span class="eg-seal-tag ${tag.cls || ''}">${tag.text}</span>` : ''}
+    <span class="eg-seal-name">${name}</span>${tribeName ? _tribeBadge(tribeName) : ''}${tag ? `<span class="eg-seal-tag ${tag.cls || ''}">${tag.text}</span>` : ''}
   </span>`;
 }
 
@@ -2041,6 +2215,17 @@ function _css() {
 @keyframes eg-hiero-walk{0%{transform:translateX(0)}100%{transform:translateX(80px)}}
 
 /* Phase backgrounds */
+.eg-shell.eg-cold-open{background:linear-gradient(175deg,#1C1408 0%,#2E1E0E 20%,#3A2510 45%,#2A1A08 70%,#1A1005 100%);color:#E8D5A8;
+  border-color:rgba(212,160,23,0.3);box-shadow:0 6px 30px rgba(0,0,0,0.5),inset 0 0 80px rgba(212,160,23,0.03)}
+.eg-shell.eg-cold-open .eg-sidebar{background:linear-gradient(180deg,rgba(42,31,16,0.5),rgba(26,16,5,0.6));
+  border-left-color:rgba(212,160,23,0.1);
+  box-shadow:inset 4px 0 0 rgba(212,160,23,0.06),inset 5px 0 0 rgba(0,0,0,0.15)}
+.eg-shell.eg-cold-open .eg-frieze{background:linear-gradient(180deg,rgba(212,160,23,0.04),rgba(26,20,8,0.3));border-bottom-color:rgba(212,160,23,0.1)}
+.eg-shell.eg-cold-open .eg-hfig{opacity:0.08;color:var(--eg-pharaoh-gold)}
+.eg-shell.eg-cold-open .eg-frieze-text{color:rgba(240,192,48,0.35)}
+.eg-shell.eg-cold-open .eg-frieze-light{background:radial-gradient(ellipse 80px 40px at 50% 50%,rgba(240,192,48,0.06),transparent);animation:eg-gold-pulse 3s ease-in-out infinite}
+.eg-shell.eg-cold-open .eg-sb-title{color:var(--eg-pharaoh-gold);border-bottom-color:rgba(212,160,23,0.1)}
+.eg-shell.eg-cold-open .eg-sb-section{background:rgba(212,160,23,0.02)}
 .eg-shell.eg-pyramid{background:linear-gradient(180deg,#2A1F14 0%,#3D2E1E 40%,#1A1510 100%);color:#E8D5A8;border-color:#5C3D2E}
 .eg-shell.eg-pyramid .eg-sidebar{background:linear-gradient(180deg,rgba(42,31,20,0.1),rgba(255,153,68,0.03));box-shadow:inset 4px 0 0 rgba(255,153,68,0.1),inset 5px 0 0 rgba(0,0,0,0.1)}
 .eg-shell.eg-desert{background:linear-gradient(180deg,#E8C870 0%,#D4A040 30%,#C89030 60%,#B87830 100%);color:#2A1A0A;border-color:#B85C38}
@@ -2048,6 +2233,11 @@ function _css() {
 .eg-shell.eg-nile{background:linear-gradient(180deg,#1A3540 0%,#1B4B7A 30%,#164060 70%,#0E2A3E 100%);color:#E0E8F0;border-color:#1B6B7A}
 .eg-shell.eg-nile .eg-sidebar{background:linear-gradient(180deg,rgba(14,42,62,0.08),rgba(27,107,122,0.03));box-shadow:inset 4px 0 0 rgba(27,107,122,0.1),inset 5px 0 0 rgba(0,0,0,0.1)}
 .eg-shell.eg-winner{background:linear-gradient(180deg,var(--eg-papyrus) 0%,#E8D5A8 50%,var(--eg-papyrus) 100%);border-color:#D4A017;box-shadow:0 6px 30px rgba(212,160,23,0.3)}
+
+/* Pyramid beat styling */
+.eg-pyr-beat{margin:4px 0;font-size:0.92rem;line-height:1.5;display:flex;align-items:flex-start;gap:4px}
+.eg-pyr-beat .eg-icon{margin-top:2px}
+.eg-pyr-beat-gold{color:var(--eg-pharaoh-gold)}
 
 /* Torch flicker (pyramid phase) */
 .eg-pyramid .eg-card{box-shadow:0 0 15px rgba(255,153,68,0.15),0 0 30px rgba(255,153,68,0.08);animation:eg-torch-flicker 3s ease-in-out infinite}
@@ -2697,123 +2887,170 @@ function _css() {
   .eg-deity-ra::after,.eg-deity-isis::after{animation:none!important}
 }
 
-/* ═══ COLD OPEN — cinematic expedition title card ═══ */
-.eg-co-wrap{text-align:center;padding:8px 0 20px;position:relative}
+/* ═══ COLD OPEN — dark cinematic Egyptian atmosphere ═══ */
+.eg-co-wrap{text-align:center;padding:8px 0 20px;position:relative;z-index:1}
 
-/* Eye of Horus — animated CSS centerpiece */
-.eg-co-eye{width:60px;height:40px;margin:0 auto 12px;position:relative;opacity:0.3;animation:eg-co-eye-pulse 4s ease-in-out infinite}
+/* Golden dust motes floating through the scene */
+.eg-gold-mote{position:absolute;z-index:0;pointer-events:none;border-radius:50%;
+  background:radial-gradient(circle,rgba(240,192,48,0.6),rgba(212,160,23,0.1));
+  box-shadow:0 0 4px rgba(240,192,48,0.3);
+  animation:eg-mote-drift 6s ease-in-out infinite}
+@keyframes eg-mote-drift{0%{transform:translate(0,0);opacity:0}15%{opacity:0.5}50%{transform:translate(15px,-20px);opacity:0.3}85%{opacity:0.4}100%{transform:translate(-10px,10px);opacity:0}}
+
+/* Pyramid silhouette in background */
+.eg-co-pyramid-sil{position:absolute;bottom:0;left:50%;transform:translateX(-50%);z-index:0;pointer-events:none;
+  width:0;height:0;border-left:180px solid transparent;border-right:180px solid transparent;
+  border-bottom:220px solid rgba(212,160,23,0.025);opacity:1}
+.eg-co-pyramid-sil::before{content:'';position:absolute;bottom:-220px;left:-120px;
+  width:0;height:0;border-left:120px solid transparent;border-right:120px solid transparent;
+  border-bottom:150px solid rgba(212,160,23,0.018)}
+.eg-co-pyramid-sil::after{content:'';position:absolute;bottom:-220px;left:60px;
+  width:0;height:0;border-left:90px solid transparent;border-right:90px solid transparent;
+  border-bottom:110px solid rgba(212,160,23,0.015)}
+
+/* Horizon glow — warm golden light at the base */
+.eg-co-horizon-glow{position:absolute;bottom:0;left:0;right:0;height:120px;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 100% at 50% 100%,rgba(212,160,23,0.08),transparent);
+  animation:eg-horizon-breathe 5s ease-in-out infinite}
+@keyframes eg-horizon-breathe{0%,100%{opacity:0.6}50%{opacity:1}}
+
+/* Eye of Horus — CSS animated */
+.eg-co-eye{width:70px;height:48px;margin:0 auto 10px;position:relative;opacity:0.35;animation:eg-co-eye-pulse 4s ease-in-out infinite}
 .eg-co-eye-inner{position:absolute;inset:0}
-.eg-co-eye-inner::before{content:'';position:absolute;width:40px;height:22px;left:10px;top:5px;
-  border:2.5px solid var(--eg-pharaoh-gold);border-radius:50%;
-  box-shadow:0 0 12px rgba(240,192,48,0.2)}
-.eg-co-eye-inner::after{content:'';position:absolute;width:10px;height:10px;left:25px;top:11px;
+.eg-co-eye-inner::before{content:'';position:absolute;width:44px;height:24px;left:13px;top:6px;
+  border:2px solid rgba(240,192,48,0.6);border-radius:50%;
+  box-shadow:0 0 15px rgba(240,192,48,0.15),inset 0 0 8px rgba(240,192,48,0.05)}
+.eg-co-eye-inner::after{content:'';position:absolute;width:10px;height:10px;left:30px;top:13px;
   background:var(--eg-pharaoh-gold);border-radius:50%;
-  box-shadow:0 0 6px rgba(240,192,48,0.4)}
-@keyframes eg-co-eye-pulse{0%,100%{opacity:0.25;transform:scale(1)}50%{opacity:0.45;transform:scale(1.05)}}
+  box-shadow:0 0 8px rgba(240,192,48,0.5),0 0 20px rgba(240,192,48,0.15)}
+@keyframes eg-co-eye-pulse{0%,100%{opacity:0.2;transform:scale(1)}50%{opacity:0.45;transform:scale(1.06)}}
 
 /* "CHRIS McLEAN PRESENTS" */
-.eg-co-presents{font-family:'Cormorant Garamond',serif;font-size:0.72rem;font-weight:600;letter-spacing:5px;
-  color:var(--eg-muted);text-transform:uppercase;margin-bottom:16px;opacity:0.6}
+.eg-co-presents{font-family:'Cormorant Garamond',serif;font-size:0.7rem;font-weight:600;letter-spacing:6px;
+  color:rgba(232,213,168,0.35);text-transform:uppercase;margin-bottom:18px}
 
 /* Title block */
-.eg-co-title-block{position:relative;margin:0 auto 16px;max-width:500px}
-.eg-co-hiero{font-size:1.1rem;letter-spacing:6px;color:var(--eg-gold);opacity:0.25;margin-bottom:6px;
+.eg-co-title-block{position:relative;margin:0 auto 14px;max-width:520px}
+.eg-co-hiero{font-size:1.0rem;letter-spacing:8px;color:rgba(240,192,48,0.2);margin-bottom:4px;
   animation:eg-co-hiero-fade 6s ease-in-out infinite}
-@keyframes eg-co-hiero-fade{0%,100%{opacity:0.15}50%{opacity:0.35}}
-.eg-co-title{font-family:'Metamorphous',cursive;font-size:2.8rem;font-weight:700;line-height:1.05;
-  letter-spacing:5px;color:var(--eg-pharaoh-gold);
-  text-shadow:2px 2px 0 rgba(0,0,0,0.25),0 0 40px rgba(240,192,48,0.15);
-  background:linear-gradient(180deg,#F5D060 0%,var(--eg-gold) 50%,#B8860B 100%);
+@keyframes eg-co-hiero-fade{0%,100%{opacity:0.1}50%{opacity:0.3}}
+.eg-co-title{font-family:'Metamorphous',cursive;font-size:2.6rem;font-weight:700;line-height:1.08;
+  letter-spacing:4px;
+  background:linear-gradient(180deg,#FFE08A 0%,#D4A017 40%,#B8860B 80%,#8B6914 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4)) drop-shadow(0 0 30px rgba(240,192,48,0.1));
   position:relative;z-index:1}
-.eg-co-stripe{width:200px;height:2px;margin:10px auto 8px;
-  background:linear-gradient(90deg,transparent,var(--eg-gold),transparent);opacity:0.4}
-.eg-co-subtitle{font-family:'Metamorphous',cursive;font-size:0.85rem;letter-spacing:6px;
-  color:var(--eg-terra);text-transform:uppercase;
-  text-shadow:0 1px 0 rgba(0,0,0,0.15)}
+.eg-co-stripe{width:180px;height:1px;margin:10px auto 8px;position:relative;
+  background:linear-gradient(90deg,transparent,rgba(212,160,23,0.4),transparent)}
+.eg-co-stripe::before{content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);
+  width:6px;height:6px;background:var(--eg-pharaoh-gold);border-radius:50%;opacity:0.4;
+  box-shadow:0 0 6px rgba(240,192,48,0.3)}
+.eg-co-subtitle{font-family:'Metamorphous',cursive;font-size:0.8rem;letter-spacing:7px;
+  color:rgba(192,72,32,0.7);text-transform:uppercase}
 
 /* Tagline */
-.eg-co-tagline{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-style:italic;
-  color:var(--eg-muted);margin:14px 0 18px;letter-spacing:0.5px;line-height:1.5}
+.eg-co-tagline{font-family:'Cormorant Garamond',serif;font-size:1.0rem;font-style:italic;
+  color:rgba(232,213,168,0.4);margin:14px 0 20px;letter-spacing:0.5px;line-height:1.5}
 
 /* Host announcement card */
 .eg-co-host-card{display:flex;align-items:flex-start;gap:12px;text-align:left;
-  max-width:500px;margin:0 auto 20px;padding:14px 16px;
-  background:linear-gradient(135deg,rgba(184,92,56,0.06),rgba(194,166,69,0.04));
-  border-left:3px solid var(--eg-terra);border-radius:0 3px 3px 0;
-  box-shadow:0 2px 8px rgba(0,0,0,0.08)}
-.eg-co-host-badge{font-family:'Metamorphous',cursive;font-size:0.65rem;font-weight:700;letter-spacing:2px;
-  color:var(--eg-terra);white-space:nowrap;padding:3px 8px;
-  border:1.5px solid rgba(192,72,32,0.3);border-radius:2px;flex-shrink:0;
-  background:rgba(192,72,32,0.05)}
-.eg-co-host-text{font-family:'Cormorant Garamond',serif;font-size:1.02rem;font-style:italic;
-  color:var(--eg-text);line-height:1.55;letter-spacing:0.2px}
+  max-width:500px;margin:0 auto 22px;padding:14px 16px;
+  background:linear-gradient(135deg,rgba(192,72,32,0.08),rgba(42,31,16,0.3));
+  border-left:3px solid rgba(192,72,32,0.5);border-radius:0 3px 3px 0;
+  box-shadow:0 3px 12px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,153,68,0.05)}
+.eg-co-host-badge{font-family:'Metamorphous',cursive;font-size:0.62rem;font-weight:700;letter-spacing:2px;
+  color:var(--eg-torch);white-space:nowrap;padding:3px 8px;margin-top:2px;
+  border:1.5px solid rgba(255,153,68,0.25);border-radius:2px;flex-shrink:0;
+  background:rgba(255,153,68,0.06)}
+.eg-co-host-text{font-family:'Cormorant Garamond',serif;font-size:1.0rem;font-style:italic;
+  color:rgba(232,213,168,0.8);line-height:1.55;letter-spacing:0.2px}
 
 /* Section labels */
-.eg-co-section-label{font-family:'Metamorphous',cursive;font-size:0.75rem;font-weight:700;
-  letter-spacing:4px;color:var(--eg-gold);text-transform:uppercase;margin:0 0 10px;
-  position:relative;display:flex;align-items:center;justify-content:center;gap:12px;opacity:0.5}
-.eg-co-section-label::before,.eg-co-section-label::after{content:'';flex:1;max-width:60px;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(194,166,69,0.3))}
-.eg-co-section-label::after{background:linear-gradient(270deg,transparent,rgba(194,166,69,0.3))}
+.eg-co-section-label{font-family:'Metamorphous',cursive;font-size:0.72rem;font-weight:700;
+  letter-spacing:5px;color:rgba(212,160,23,0.4);text-transform:uppercase;margin:0 0 10px;
+  position:relative;display:flex;align-items:center;justify-content:center;gap:12px}
+.eg-co-section-label::before,.eg-co-section-label::after{content:'';flex:1;max-width:80px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,160,23,0.15))}
+.eg-co-section-label::after{background:linear-gradient(270deg,transparent,rgba(212,160,23,0.15))}
 
 /* Tribe blocks */
-.eg-co-tribes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:6px}
+.eg-co-tribes{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
 .eg-co-tribe{flex:1;min-width:180px;max-width:280px;padding:10px 8px;
-  background:linear-gradient(175deg,rgba(194,166,69,0.05),rgba(194,166,69,0.02));
-  border:1px solid rgba(194,166,69,0.12);border-radius:3px;
-  border-top:2px solid var(--eg-tribe-accent)}
+  background:linear-gradient(175deg,rgba(232,213,168,0.04),rgba(0,0,0,0.1));
+  border:1px solid rgba(212,160,23,0.08);border-radius:3px;
+  border-top:2px solid var(--eg-tribe-accent);
+  box-shadow:0 2px 8px rgba(0,0,0,0.15)}
 .eg-co-tribe-header{display:flex;align-items:center;gap:6px;margin-bottom:8px}
-.eg-co-tribe-line{flex:1;height:1px;background:rgba(194,166,69,0.12)}
-.eg-co-tribe-name{font-family:'Metamorphous',cursive;font-size:0.82rem;font-weight:700;
+.eg-co-tribe-line{flex:1;height:1px;background:rgba(212,160,23,0.08)}
+.eg-co-tribe-name{font-family:'Metamorphous',cursive;font-size:0.8rem;font-weight:700;
   letter-spacing:2px;color:var(--eg-tribe-accent);text-transform:uppercase;white-space:nowrap}
 .eg-co-members{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
 .eg-co-member{display:flex;align-items:center;gap:5px;padding:3px 8px 3px 3px;
-  background:rgba(194,166,69,0.04);border:1px solid rgba(194,166,69,0.1);border-radius:14px}
+  background:rgba(232,213,168,0.04);border:1px solid rgba(212,160,23,0.08);border-radius:14px;
+  transition:background 0.2s}
+.eg-co-member:hover{background:rgba(232,213,168,0.08)}
 .eg-co-avatar{width:26px;height:26px;border-radius:50%;overflow:hidden;flex-shrink:0;
-  border:1.5px solid rgba(194,166,69,0.25)}
+  border:1.5px solid rgba(212,160,23,0.2);box-shadow:0 0 4px rgba(0,0,0,0.2)}
 .eg-co-avatar img{width:100%;height:100%;object-fit:contain;display:block}
 .eg-co-mname{font-family:'Cormorant Garamond',serif;font-size:0.82rem;font-weight:600;
-  white-space:nowrap;color:var(--eg-text)}
+  white-space:nowrap;color:rgba(232,213,168,0.75)}
 
 /* Phase preview cards */
-.eg-co-phases{display:flex;flex-direction:column;gap:6px;max-width:460px;margin:0 auto 16px}
-.eg-co-phase{display:flex;align-items:center;gap:10px;padding:10px 14px;text-align:left;
-  background:var(--eg-phase-bg);border:1px solid rgba(194,166,69,0.1);border-radius:3px;
-  border-left:3px solid var(--eg-phase-color);transition:transform 0.2s}
-.eg-co-phase:hover{transform:translateX(3px)}
-.eg-co-phase-num{font-family:'Metamorphous',cursive;font-size:1.4rem;font-weight:700;
-  color:var(--eg-phase-color);line-height:1;min-width:28px;text-align:center;
-  text-shadow:0 1px 0 rgba(0,0,0,0.15);opacity:0.7}
+.eg-co-phases{display:flex;flex-direction:column;gap:5px;max-width:460px;margin:0 auto 16px}
+.eg-co-phase{display:flex;align-items:center;gap:12px;padding:10px 14px;text-align:left;
+  background:linear-gradient(135deg,var(--eg-phase-bg),rgba(0,0,0,0.08));
+  border:1px solid rgba(212,160,23,0.06);border-radius:3px;
+  border-left:3px solid var(--eg-phase-color);
+  box-shadow:0 2px 6px rgba(0,0,0,0.12);transition:transform 0.2s,box-shadow 0.2s}
+.eg-co-phase:hover{transform:translateX(4px);box-shadow:0 3px 10px rgba(0,0,0,0.2)}
+.eg-co-phase-num{font-family:'Metamorphous',cursive;font-size:1.5rem;font-weight:700;
+  color:var(--eg-phase-color);line-height:1;min-width:30px;text-align:center;
+  text-shadow:0 2px 4px rgba(0,0,0,0.3);opacity:0.6}
 .eg-co-phase-body{flex:1}
-.eg-co-phase-name{font-family:'Metamorphous',cursive;font-size:0.88rem;font-weight:700;
-  letter-spacing:2px;color:var(--eg-phase-color);text-transform:uppercase;margin-bottom:1px}
-.eg-co-phase-desc{font-family:'Cormorant Garamond',serif;font-size:0.88rem;color:var(--eg-muted);
+.eg-co-phase-name{font-family:'Metamorphous',cursive;font-size:0.85rem;font-weight:700;
+  letter-spacing:2px;color:var(--eg-phase-color);text-transform:uppercase;margin-bottom:2px}
+.eg-co-phase-desc{font-family:'Cormorant Garamond',serif;font-size:0.85rem;color:rgba(232,213,168,0.45);
   line-height:1.4}
 
 /* Stakes bar */
-.eg-co-stakes{display:flex;align-items:center;gap:10px;max-width:460px;margin:0 auto 20px;
-  padding:8px 14px;background:linear-gradient(135deg,rgba(212,160,23,0.06),rgba(194,166,69,0.03));
-  border:1px solid rgba(212,160,23,0.15);border-radius:3px}
-.eg-co-stakes-icon{flex-shrink:0;opacity:0.5}
-.eg-co-stakes-text{font-family:'Cormorant Garamond',serif;font-size:0.9rem;font-weight:600;
-  color:var(--eg-pharaoh-gold);text-align:left;line-height:1.4;
-  text-shadow:0 1px 0 rgba(0,0,0,0.1)}
+.eg-co-stakes{display:flex;align-items:center;gap:10px;max-width:460px;margin:0 auto 22px;
+  padding:8px 14px;background:linear-gradient(135deg,rgba(212,160,23,0.05),rgba(0,0,0,0.1));
+  border:1px solid rgba(212,160,23,0.1);border-radius:3px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+.eg-co-stakes-icon{flex-shrink:0;opacity:0.4}
+.eg-co-stakes-text{font-family:'Cormorant Garamond',serif;font-size:0.88rem;font-weight:600;
+  color:rgba(240,192,48,0.6);text-align:left;line-height:1.4}
 
 /* Launch line */
-.eg-co-launch{font-family:'Metamorphous',cursive;font-size:1.0rem;font-weight:700;
-  letter-spacing:5px;color:var(--eg-pharaoh-gold);text-transform:uppercase;
-  padding:10px 0 4px;position:relative;opacity:0.6;
+.eg-co-launch{font-family:'Metamorphous',cursive;font-size:0.95rem;font-weight:700;
+  letter-spacing:6px;color:var(--eg-pharaoh-gold);text-transform:uppercase;
+  padding:10px 0 4px;position:relative;
   animation:eg-co-launch-glow 3s ease-in-out infinite}
-.eg-co-launch::before,.eg-co-launch::after{content:'';position:absolute;top:50%;width:40px;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(212,160,23,0.3))}
-.eg-co-launch::before{right:calc(50% + 140px)}
-.eg-co-launch::after{left:calc(50% + 140px);background:linear-gradient(270deg,transparent,rgba(212,160,23,0.3))}
-@keyframes eg-co-launch-glow{0%,100%{opacity:0.4;text-shadow:0 0 0 transparent}50%{opacity:0.7;text-shadow:0 0 12px rgba(240,192,48,0.2)}}
+.eg-co-launch::before,.eg-co-launch::after{content:'';position:absolute;top:50%;width:50px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,160,23,0.2))}
+.eg-co-launch::before{right:calc(50% + 150px)}
+.eg-co-launch::after{left:calc(50% + 150px);background:linear-gradient(270deg,transparent,rgba(212,160,23,0.2))}
+@keyframes eg-co-launch-glow{0%,100%{opacity:0.35;text-shadow:0 0 0 transparent}50%{opacity:0.7;text-shadow:0 0 20px rgba(240,192,48,0.15)}}
+
+/* Sidebar cold-open stats */
+.eg-co-sb-stat{display:flex;justify-content:space-between;align-items:center;padding:3px 0;
+  border-bottom:1px solid rgba(212,160,23,0.06);font-family:'Cormorant Garamond',serif;font-size:0.82rem}
+.eg-co-sb-stat:last-child{border-bottom:none}
+.eg-co-sb-label{color:rgba(232,213,168,0.35);letter-spacing:1px;font-size:0.75rem}
+.eg-co-sb-val{color:rgba(232,213,168,0.7);font-weight:700;font-size:0.9rem}
+
+/* Sidebar route visualization */
+.eg-co-sb-route{display:flex;align-items:center;justify-content:center;gap:0;padding:6px 0}
+.eg-co-sb-route-node{text-align:center;position:relative}
+.eg-co-sb-route-dot{width:10px;height:10px;border-radius:50%;margin:0 auto 3px;
+  background:var(--rn-color);opacity:0.5;box-shadow:0 0 6px color-mix(in srgb,var(--rn-color) 30%,transparent)}
+.eg-co-sb-route-label{font-family:'Metamorphous',cursive;font-size:0.6rem;letter-spacing:1px;
+  color:rgba(232,213,168,0.4);text-transform:uppercase}
+.eg-co-sb-route-line{width:20px;height:1px;background:rgba(212,160,23,0.15);margin-bottom:12px}
 
 @media(prefers-reduced-motion:reduce){
-  .eg-co-eye,.eg-co-hiero,.eg-co-launch{animation:none!important;opacity:0.4}
-  .eg-co-phase:hover{transform:none!important}
+  .eg-co-eye,.eg-co-hiero,.eg-co-launch,.eg-gold-mote,.eg-co-horizon-glow{animation:none!important;opacity:0.3}
+  .eg-co-phase:hover,.eg-co-member:hover{transform:none!important}
 }
 </style>`;
 }
@@ -2856,6 +3093,17 @@ function _buildParticles(phaseCls) {
     for (let i = 0; i < 3; i++) {
       h += `<div class="eg-croc-shadow eg-swim" style="left:${15 + i * 25}%;top:${50 + i * 10}%;animation-delay:${(i * 2.5).toFixed(1)}s;animation-duration:${(7 + i).toFixed(1)}s"></div>`;
     }
+  } else if (phaseCls === 'eg-cold-open') {
+    for (let i = 0; i < 12; i++) {
+      const x = 5 + Math.random() * 85;
+      const y = 8 + Math.random() * 80;
+      const size = 1.5 + Math.random() * 2;
+      const dur = 4 + Math.random() * 5;
+      const delay = Math.random() * 6;
+      h += `<div class="eg-gold-mote" style="left:${x}%;top:${y}%;width:${size}px;height:${size}px;animation-delay:${delay.toFixed(1)}s;animation-duration:${dur.toFixed(1)}s"></div>`;
+    }
+    h += '<div class="eg-co-pyramid-sil"></div>';
+    h += '<div class="eg-co-horizon-glow"></div>';
   }
   return h;
 }
@@ -2919,11 +3167,57 @@ function _buildFrieze(phaseCls) {
 // ══════════════════════════════════════════════════════════════
 function _buildSidebarContent(data, phase) {
   if (!data) return '<div class="eg-sb-title">NO DATA</div>';
+  if (phase === 'eg-cold-open') return _sidebarColdOpen(data);
   if (phase === 'eg-pyramid') return _sidebarPyramid(data);
   if (phase === 'eg-desert') return _sidebarDesert(data);
   if (phase === 'eg-nile') return _sidebarNile(data);
   if (phase === 'eg-winner') return _sidebarResults(data);
   return _sidebarRoster(data);
+}
+
+function _sidebarColdOpen(data) {
+  const tribes = data.tribes;
+  const tribeCount = Object.keys(tribes).length;
+  const totalPlayers = Object.values(tribes).reduce((sum, t) => sum + t.members.length, 0);
+
+  let h = '';
+  h += `<div class="eg-sb-title" style="color:var(--eg-pharaoh-gold)">EXPEDITION MANIFEST</div>`;
+
+  // Deity patron
+  h += `<div style="text-align:center;margin:8px 0 12px">
+    <div class="eg-deity eg-deity-ra" style="width:40px;height:55px;opacity:0.5"></div>
+    <div style="font-family:Metamorphous,cursive;font-size:0.75rem;color:var(--eg-pharaoh-gold);letter-spacing:2px;opacity:0.6">RA PRESIDES</div>
+  </div>`;
+
+  // Mission stats
+  h += `<div class="eg-sb-section" style="background:rgba(212,160,23,0.03)">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:0.78rem;color:rgba(232,213,168,0.5);letter-spacing:1px;margin-bottom:6px">MISSION OVERVIEW</div>
+    <div class="eg-co-sb-stat"><span class="eg-co-sb-label">TEAMS</span><span class="eg-co-sb-val">${tribeCount}</span></div>
+    <div class="eg-co-sb-stat"><span class="eg-co-sb-label">CREW</span><span class="eg-co-sb-val">${totalPlayers}</span></div>
+    <div class="eg-co-sb-stat"><span class="eg-co-sb-label">PHASES</span><span class="eg-co-sb-val">3</span></div>
+    <div class="eg-co-sb-stat"><span class="eg-co-sb-label">SAFE TRIBES</span><span class="eg-co-sb-val" style="color:var(--eg-success)">2</span></div>
+    <div class="eg-co-sb-stat"><span class="eg-co-sb-label">TRIBAL</span><span class="eg-co-sb-val" style="color:var(--eg-danger)">1</span></div>
+  </div>`;
+
+  // Phase route
+  h += `<div class="eg-sb-section" style="background:rgba(212,160,23,0.03)">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:0.78rem;color:rgba(232,213,168,0.5);letter-spacing:1px;margin-bottom:6px">EXPEDITION ROUTE</div>
+    <div class="eg-co-sb-route">
+      <div class="eg-co-sb-route-node" style="--rn-color:var(--eg-torch)"><div class="eg-co-sb-route-dot"></div><div class="eg-co-sb-route-label">PYRAMID</div></div>
+      <div class="eg-co-sb-route-line"></div>
+      <div class="eg-co-sb-route-node" style="--rn-color:var(--eg-terra)"><div class="eg-co-sb-route-dot"></div><div class="eg-co-sb-route-label">DESERT</div></div>
+      <div class="eg-co-sb-route-line"></div>
+      <div class="eg-co-sb-route-node" style="--rn-color:var(--eg-nile)"><div class="eg-co-sb-route-dot"></div><div class="eg-co-sb-route-label">NILE</div></div>
+    </div>
+  </div>`;
+
+  // Coordinates
+  h += `<div style="text-align:center;margin:8px 0 4px">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:0.7rem;color:rgba(232,213,168,0.25);letter-spacing:2px">29.9792° N, 31.1342° E</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:0.65rem;color:rgba(232,213,168,0.18);letter-spacing:1px;margin-top:2px">GIZA PLATEAU — SECTOR 7</div>
+  </div>`;
+
+  return h;
 }
 
 function _sidebarRoster(data) {
@@ -2949,33 +3243,83 @@ function _buildHourglass(pct) {
 function _sidebarPyramid(data) {
   const st = _tvState['eg-pyramid'];
   const revIdx = st ? st.idx : -1;
-  let h = '<div class="eg-sb-title">PYRAMID STATUS</div>';
-  h += _buildHourglass(Math.min(100, (revIdx + 1) * 15));
-
-  // Pyramid cross-section tracker
-  h += '<div class="eg-pyramid-tracker">';
   const choices = data.phase1.choices || [];
+  const socialEvents = data.phase1.socialEvents || [];
+  const deityJudgments = data.phase1.deityJudgments || [];
+  const overTotal = choices.filter(c => c.path === 'over').length;
+  const underTotal = choices.filter(c => c.path === 'under').length;
+
+  // Reconstruct interleaved order to map revIdx to player cards
+  const extras = [...socialEvents.map(e => ({ kind: 'social' })), ...deityJudgments.map(d => ({ kind: 'deity' }))];
+  const spacing = extras.length > 0 ? Math.max(2, Math.floor(choices.length / (extras.length + 1))) : Infinity;
+  const interleaved = [];
+  let eIdx = 0;
   choices.forEach((c, i) => {
-    const revealed = i <= revIdx;
+    interleaved.push({ kind: 'player', choice: c, choiceIdx: i });
+    if (eIdx < extras.length && (i + 1) % spacing === 0 && i < choices.length - 1) {
+      interleaved.push(extras[eIdx++]);
+    }
+  });
+  while (eIdx < extras.length) interleaved.push(extras[eIdx++]);
+
+  // Figure out which player choices have been revealed
+  const revealedChoices = [];
+  interleaved.forEach((item, i) => {
+    if (i <= revIdx && item.kind === 'player') revealedChoices.push(item.choice);
+  });
+  const overRevealed = revealedChoices.filter(c => c.path === 'over');
+  const underRevealed = revealedChoices.filter(c => c.path === 'under');
+
+  let h = '<div class="eg-sb-title">PYRAMID STATUS</div>';
+
+  // Pyramid cross-section with positioned dots
+  h += '<div class="eg-pyramid-tracker">';
+  choices.forEach((c, ci) => {
+    const isRevealed = revealedChoices.includes(c);
     const isOver = c.path === 'over';
-    const dotCls = revealed ? (isOver ? 'eg-over-dot' : 'eg-under-dot') : 'eg-hidden-dot';
-    const x = isOver ? (20 + (i % 4) * 15) : (25 + (i % 3) * 20);
-    const y = isOver ? (5 + (i % 3) * 8) : (45 + (i % 3) * 12);
-    h += `<div class="eg-pyr-dot ${dotCls}" style="left:${x}%;top:${y}%" title="${revealed ? c.name + ' (' + c.path.toUpperCase() + ')' : '???'}"></div>`;
+    const dotCls = isRevealed ? (isOver ? 'eg-over-dot' : 'eg-under-dot') : 'eg-hidden-dot';
+    const x = isOver ? (20 + (ci % 4) * 15) : (25 + (ci % 3) * 20);
+    const y = isOver ? (5 + (ci % 3) * 8) : (45 + (ci % 3) * 12);
+    h += `<div class="eg-pyr-dot ${dotCls}" style="left:${x}%;top:${y}%" title="${isRevealed ? c.name + ' (' + c.path.toUpperCase() + ')' : '???'}"></div>`;
   });
   h += '</div>';
 
-  h += '<div class="eg-sb-section"><div class="eg-sb-title">EXPLORERS</div>';
-  choices.forEach((c, i) => {
+  // Path split stats
+  h += `<div class="eg-sb-section">
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+      <div style="text-align:center;flex:1">
+        <div style="font-family:Metamorphous,cursive;font-size:0.7rem;letter-spacing:1px;color:var(--eg-torch);margin-bottom:2px">${_icon('climb')} OVER</div>
+        <div style="font-family:Cormorant Garamond,serif;font-size:1.1rem;font-weight:700;color:#E8D5A8">${overRevealed.length}<span style="font-size:0.75rem;opacity:0.4">/${overTotal}</span></div>
+      </div>
+      <div style="width:1px;background:rgba(255,153,68,0.1)"></div>
+      <div style="text-align:center;flex:1">
+        <div style="font-family:Metamorphous,cursive;font-size:0.7rem;letter-spacing:1px;color:var(--eg-scarab);margin-bottom:2px">${_icon('door')} UNDER</div>
+        <div style="font-family:Cormorant Garamond,serif;font-size:1.1rem;font-weight:700;color:#E8D5A8">${underRevealed.length}<span style="font-size:0.75rem;opacity:0.4">/${underTotal}</span></div>
+      </div>
+    </div>
+  </div>`;
+
+  // Depth gauge
+  const depthPct = Math.min(100, revIdx >= 0 ? ((revIdx + 1) / interleaved.length * 100) : 0);
+  h += `<div class="eg-sb-section">
+    <div style="font-family:Cormorant Garamond,serif;font-size:0.75rem;color:rgba(232,213,168,0.4);letter-spacing:1px;margin-bottom:4px">DEPTH PROGRESS</div>
+    <div class="eg-bar-wrap"><div class="eg-bar eg-orange" style="width:${depthPct}%"></div></div>
+    <div style="font-family:Cormorant Garamond,serif;font-size:0.72rem;color:rgba(232,213,168,0.3);margin-top:2px;text-align:right">${Math.round(depthPct)}%</div>
+  </div>`;
+
+  // Explorer list
+  h += '<div class="eg-sb-section"><div style="font-family:Cormorant Garamond,serif;font-size:0.75rem;color:rgba(232,213,168,0.4);letter-spacing:1px;margin-bottom:4px">EXPLORERS</div>';
+  choices.forEach(c => {
     const sl = slug(c.name);
-    const revealed = i <= revIdx;
-    if (revealed) {
+    const isRevealed = revealedChoices.includes(c);
+    if (isRevealed) {
       const pathTag = c.path === 'over'
         ? '<span class="eg-sb-tag eg-t-orange">OVER</span>'
         : '<span class="eg-sb-tag eg-t-green">UNDER</span>';
-      h += `<div class="eg-sb-row"><img src="assets/avatars/${sl}.png" alt="${c.name}" onerror="this.style.display='none'"><span class="eg-sb-name">${c.name}</span>${pathTag}</div>`;
+      const scoreTag = `<span style="font-family:Cormorant Garamond,serif;font-size:0.72rem;color:rgba(232,213,168,0.4)">${Math.round((c.score || 0) * 10) / 10}</span>`;
+      h += `<div class="eg-sb-row"><img src="assets/avatars/${sl}.png" alt="${c.name}" onerror="this.style.display='none'"><span class="eg-sb-name">${c.name}</span>${scoreTag}${pathTag}</div>`;
     } else {
-      h += `<div class="eg-sb-row"><img src="assets/avatars/${sl}.png" alt="${c.name}" onerror="this.style.display='none'"><span class="eg-sb-name">${c.name}</span><span class="eg-sb-tag eg-t-grey">???</span></div>`;
+      h += `<div class="eg-sb-row" style="opacity:0.4"><img src="assets/avatars/${sl}.png" alt="${c.name}" onerror="this.style.display='none'" style="filter:brightness(0.5)"><span class="eg-sb-name">${c.name}</span><span class="eg-sb-tag eg-t-grey">???</span></div>`;
     }
   });
   h += '</div>';
@@ -2986,24 +3330,65 @@ function _sidebarDesert(data) {
   const st = _tvState['eg-desert'];
   const revIdx = st ? st.idx : -1;
   let h = '<div class="eg-sb-title">CARAVAN STATUS</div>';
-  h += _buildHourglass(Math.min(100, 33 + (revIdx + 1) * 10));
 
+  // Journey progress bar
+  const navBeats = data.phase2.navBeats || [];
+  const revealedNavs = navBeats.filter((_, i) => i <= revIdx);
+  const onCourse = revealedNavs.filter(n => n.success).length;
+  const offCourse = revealedNavs.filter(n => !n.success).length;
+  const journeyPct = Math.min(100, revIdx >= 0 ? ((revIdx + 1) / Math.max(1, navBeats.length + Object.keys(data.tribes).length + 1) * 100) : 0);
+  h += `<div class="eg-sb-section">
+    <div style="font-family:Cormorant Garamond,serif;font-size:0.75rem;color:rgba(232,213,168,0.4);letter-spacing:1px;margin-bottom:4px">JOURNEY PROGRESS</div>
+    <div class="eg-bar-wrap"><div class="eg-bar eg-orange" style="width:${journeyPct}%"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px">
+      <span style="font-family:Cormorant Garamond,serif;font-size:0.68rem;color:var(--eg-success)">${_icon('navigate')} ${onCourse} on course</span>
+      <span style="font-family:Cormorant Garamond,serif;font-size:0.68rem;color:var(--eg-danger)">${_icon('sand')} ${offCourse} lost</span>
+    </div>
+  </div>`;
+
+  // Tribe caravans
   Object.entries(data.tribes).forEach(([tName, tData]) => {
     const reward = tData.reward || 'stick';
     const rewardIcon = reward === 'camel' ? _icon('camel') : reward === 'goat' ? _icon('camel') : _icon('stick');
     const tagCls = reward === 'camel' ? 'eg-t-gold' : reward === 'goat' ? 'eg-t-orange' : 'eg-t-grey';
-    h += `<div class="eg-sb-section"><div style="font-family:Metamorphous,cursive;font-size:0.88rem;font-weight:700;color:var(--eg-terra);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;text-shadow:0 1px 0 rgba(0,0,0,0.1)">${rewardIcon} ${tName}</div>`;
-    h += `<span class="eg-sb-tag ${tagCls}">${reward.toUpperCase()}</span>`;
-    // Leader
+    const borderColor = reward === 'camel' ? 'var(--eg-pharaoh-gold)' : reward === 'goat' ? 'var(--eg-terra)' : 'rgba(138,122,90,0.3)';
+
+    h += `<div class="eg-sb-section" style="border-left:2px solid ${borderColor};padding-left:8px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        ${rewardIcon}
+        <span style="font-family:Metamorphous,cursive;font-size:0.82rem;font-weight:700;color:var(--eg-terra);letter-spacing:1px">${tName}</span>
+        <span class="eg-sb-tag ${tagCls}" style="margin-left:auto;font-size:0.62rem">${reward.toUpperCase()}</span>
+      </div>`;
+
+    // Navigator
     const leader = data.phase2.leaders?.[tName];
     if (leader && revIdx >= 0) {
-      h += `<div style="font-family:Cormorant Garamond,serif;font-size:0.85rem;color:var(--eg-muted);margin-top:2px;letter-spacing:0.5px">Navigator: ${leader.navigator}</div>`;
+      const navSl = slug(leader.navigator);
+      h += `<div class="eg-sb-row" style="margin-top:2px">
+        <img src="assets/avatars/${navSl}.png" alt="${leader.navigator}" onerror="this.style.display='none'">
+        <span class="eg-sb-name">${leader.navigator}</span>
+        <span style="font-family:Cormorant Garamond,serif;font-size:0.65rem;color:rgba(232,213,168,0.4);letter-spacing:0.5px">NAV</span>
+      </div>`;
     }
     h += '</div>';
   });
 
+  // Scarab threat
+  const scarabs = data.phase2.scarabSwarm || [];
+  const revealedScarabs = scarabs.filter((_, i) => {
+    const scarabStart = 1 + Object.keys(data.tribes).length + navBeats.length;
+    return (scarabStart + i) <= revIdx;
+  }).length;
+  if (revealedScarabs > 0) {
+    h += `<div class="eg-sb-section">
+      <div style="font-family:Cormorant Garamond,serif;font-size:0.75rem;color:rgba(232,213,168,0.4);letter-spacing:1px;margin-bottom:3px">SCARAB SWARMS</div>
+      <div style="font-family:Cormorant Garamond,serif;font-size:0.85rem;color:var(--eg-danger)">${_icon('scarab')} ${revealedScarabs} encounter${revealedScarabs !== 1 ? 's' : ''}</div>
+    </div>`;
+  }
+
+  // Stick lost warning
   if (data.phase2.stickLost && revIdx >= 3) {
-    h += '<div style="font-family:Cormorant Garamond,serif;font-size:0.82rem;color:var(--eg-danger);margin-top:6px;font-style:italic;text-shadow:0 1px 0 rgba(0,0,0,0.15)">𓃭 The divining rod has been lost!</div>';
+    h += `<div style="font-family:Cormorant Garamond,serif;font-size:0.78rem;color:var(--eg-danger);margin-top:6px;font-style:italic;padding:4px 6px;border:1px solid rgba(220,50,50,0.15);border-radius:3px;background:rgba(220,50,50,0.04)">${_icon('alert')} Divining rod lost!</div>`;
   }
   return h;
 }
@@ -3012,41 +3397,112 @@ function _sidebarNile(data) {
   const st = _tvState['eg-nile'];
   const revIdx = st ? st.idx : -1;
   let h = '<div class="eg-sb-title">NILE CROSSING</div>';
-  h += _buildHourglass(Math.min(100, 66 + (revIdx + 1) * 5));
 
+  // Crossing progress
+  const p3 = data.phase3;
+  const totalSteps = (p3.weaving?.length || 0) + (p3.animalLoading?.length || 0) + (p3.rowingBeats?.length || 0) + (p3.crocAttacks?.length || 0) + (p3.socialEvents?.length || 0) + (p3.deityJudgments?.length || 0) + (p3.finalSprint?.length || 0);
+  const crossPct = Math.min(100, revIdx >= 0 ? ((revIdx + 1) / Math.max(1, totalSteps) * 100) : 0);
+  h += `<div class="eg-sb-section">
+    <div style="font-family:Cormorant Garamond,serif;font-size:0.75rem;color:rgba(232,213,168,0.4);letter-spacing:1px;margin-bottom:4px">CROSSING PROGRESS</div>
+    <div class="eg-bar-wrap"><div class="eg-bar eg-nile-bar" style="width:${crossPct}%;background:linear-gradient(90deg,var(--eg-nile),#4A8B6F)"></div></div>
+    <div style="font-family:Cormorant Garamond,serif;font-size:0.72rem;color:rgba(232,213,168,0.3);margin-top:2px;text-align:right">${Math.round(crossPct)}%</div>
+  </div>`;
+
+  // Phase indicator — what stage are we in
+  const weaveCt = p3.weaving?.length || 0;
+  const loadCt = p3.animalLoading?.length || 0;
+  const rowCt = p3.rowingBeats?.length || 0;
+  let currentPhase = 'WEAVING';
+  if (revIdx >= weaveCt + loadCt + rowCt) currentPhase = 'SPRINT';
+  else if (revIdx >= weaveCt + loadCt) currentPhase = 'ROWING';
+  else if (revIdx >= weaveCt) currentPhase = 'LOADING';
+  const phaseSteps = ['WEAVING', 'LOADING', 'ROWING', 'SPRINT'];
+  h += `<div class="eg-sb-section">
+    <div style="display:flex;gap:2px;margin-bottom:6px">${phaseSteps.map(ps => {
+      const isCurrent = ps === currentPhase && revIdx >= 0;
+      const isPast = phaseSteps.indexOf(ps) < phaseSteps.indexOf(currentPhase) && revIdx >= 0;
+      const color = isCurrent ? 'var(--eg-nile)' : isPast ? 'rgba(78,157,116,0.4)' : 'rgba(138,122,90,0.15)';
+      return `<div style="flex:1;height:3px;border-radius:2px;background:${color}"></div>`;
+    }).join('')}</div>
+    ${revIdx >= 0 ? `<div style="font-family:Metamorphous,cursive;font-size:0.65rem;letter-spacing:2px;color:var(--eg-nile);text-align:center">${currentPhase}</div>` : ''}
+  </div>`;
+
+  // Tribe boats
   Object.entries(data.tribes).forEach(([tName, tData]) => {
     const bq = tData.boatQuality || 0;
     const bd = tData.boatDamage || 0;
     const integrity = Math.max(0, Math.min(100, Math.round((bq - bd) / Math.max(1, bq) * 100)));
     const barCls = integrity > 60 ? 'eg-green' : integrity > 30 ? 'eg-orange' : 'eg-red';
+    const statusLabel = integrity > 60 ? 'SEAWORTHY' : integrity > 30 ? 'DAMAGED' : 'SINKING';
+    const statusColor = integrity > 60 ? 'var(--eg-success)' : integrity > 30 ? 'var(--eg-terra)' : 'var(--eg-danger)';
 
-    h += `<div class="eg-sb-section"><div style="font-size:0.85rem;font-weight:700;margin-bottom:3px">${tName}</div>`;
-    h += `<div style="font-family:Cormorant Garamond,serif;font-size:0.9rem;color:var(--eg-muted);letter-spacing:0.5px">Boat Integrity</div>`;
-    h += `<div class="eg-bar-wrap"><div class="eg-bar ${barCls}" style="width:${integrity}%"></div></div>`;
-    h += '</div>';
+    h += `<div class="eg-sb-section" style="border-left:2px solid ${statusColor};padding-left:8px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        ${_icon('boat')}
+        <span style="font-family:Metamorphous,cursive;font-size:0.82rem;font-weight:700;color:#E8D5A8;letter-spacing:1px">${tName}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+        <div style="flex:1"><div class="eg-bar-wrap"><div class="eg-bar ${barCls}" style="width:${integrity}%"></div></div></div>
+        <span style="font-family:Cormorant Garamond,serif;font-size:0.65rem;color:${statusColor};letter-spacing:0.5px">${statusLabel}</span>
+      </div>
+    </div>`;
   });
 
-  // Croc attack count
-  const crocCount = data.phase3.crocAttacks?.filter((_, i) => i <= revIdx).length || 0;
-  h += `<div style="font-family:Cormorant Garamond,serif;font-size:0.85rem;color:var(--eg-muted);margin-top:6px;letter-spacing:0.5px">${_icon('croc')} Croc attacks: ${crocCount}</div>`;
+  // Croc attack tracker
+  const crocAttacks = p3.crocAttacks || [];
+  const revealedCrocs = crocAttacks.filter((_, ci) => {
+    const crocStart = weaveCt + loadCt + rowCt;
+    return (crocStart + ci) <= revIdx;
+  }).length;
+  h += `<div class="eg-sb-section">
+    <div style="font-family:Cormorant Garamond,serif;font-size:0.75rem;color:rgba(232,213,168,0.4);letter-spacing:1px;margin-bottom:3px">CROC ATTACKS</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      ${_icon('croc')}
+      <span style="font-family:Cormorant Garamond,serif;font-size:1rem;font-weight:700;color:${revealedCrocs > 0 ? 'var(--eg-danger)' : 'rgba(232,213,168,0.3)'}">${revealedCrocs}</span>
+      <span style="font-family:Cormorant Garamond,serif;font-size:0.7rem;color:rgba(232,213,168,0.3)">/ ${crocAttacks.length} total</span>
+    </div>
+  </div>`;
 
   return h;
 }
 
 function _sidebarResults(data) {
-  let h = '<div class="eg-sb-title">FINAL STANDINGS</div>';
   const finishOrder = data.tribeFinishOrder || [];
+  let h = '<div class="eg-sb-title">FINAL STANDINGS</div>';
+
+  // Deity blessing
+  h += `<div style="text-align:center;margin:6px 0 10px">
+    <div class="eg-deity eg-deity-ra" style="width:36px;height:48px;margin:0 auto 4px;opacity:0.35"></div>
+    <div style="font-family:Metamorphous,cursive;font-size:0.65rem;letter-spacing:2px;color:var(--eg-pharaoh-gold);opacity:0.5">JUDGMENT RENDERED</div>
+  </div>`;
+
+  // Tribe standings with visual hierarchy
   finishOrder.forEach((tName, i) => {
-    const tag = i === 0 ? '<span class="eg-sb-tag eg-t-gold">IMMUNE</span>'
-      : i === finishOrder.length - 1 ? '<span class="eg-sb-tag eg-t-red">TRIBAL</span>'
+    const isFirst = i === 0;
+    const isLast = i === finishOrder.length - 1;
+    const tag = isFirst ? '<span class="eg-sb-tag eg-t-gold">IMMUNE</span>'
+      : isLast ? '<span class="eg-sb-tag eg-t-red">TRIBAL</span>'
       : '<span class="eg-sb-tag eg-t-green">SAFE</span>';
-    h += `<div class="eg-sb-row"><span class="eg-sb-name" style="font-weight:700">#${i + 1} ${tName}</span>${tag}</div>`;
+    const accentColor = isFirst ? 'rgba(212,160,23,0.15)' : isLast ? 'rgba(192,32,32,0.08)' : 'rgba(34,139,34,0.06)';
+    const borderColor = isFirst ? 'rgba(212,160,23,0.3)' : isLast ? 'rgba(192,32,32,0.2)' : 'rgba(34,139,34,0.15)';
+    const tribeScore = Math.round((data.tribes[tName]?.totalScore || 0) * 10) / 10;
+
+    h += `<div class="eg-sb-section" style="background:${accentColor};border-left:2px solid ${borderColor};padding:6px 8px;margin:6px 0">
+      <div class="eg-sb-row" style="border-bottom:none"><span class="eg-sb-name" style="font-weight:700;font-family:Metamorphous,cursive;font-size:0.82rem;letter-spacing:1px">#${i + 1} ${tName}</span>${tag}</div>
+      <div style="font-family:Cormorant Garamond,serif;font-size:0.72rem;color:var(--eg-muted);margin:2px 0 4px">${tribeScore} pts</div>`;
     const members = data.tribes[tName]?.members || [];
     members.forEach(n => {
       const sl = slug(n);
-      h += `<div class="eg-sb-row" style="margin-left:10px"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="eg-sb-name">${n}</span></div>`;
+      h += `<div class="eg-sb-row" style="margin-left:4px;border-bottom-color:rgba(194,166,69,0.04)"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="eg-sb-name">${n}</span></div>`;
     });
+    h += '</div>';
   });
+
+  // Expedition stats
+  h += `<div style="text-align:center;margin:8px 0 4px">
+    <div style="font-family:Cormorant Garamond,serif;font-size:0.65rem;color:rgba(232,213,168,0.2);letter-spacing:2px">EXPEDITION COMPLETE</div>
+  </div>`;
+
   return h;
 }
 
@@ -3122,7 +3578,7 @@ export function rpBuildEgyptTitleCard(ep) {
 
   if (!window._egScreenBuilders) window._egScreenBuilders = {};
   window._egScreenBuilders['eg-title'] = rpBuildEgyptTitleCard;
-  return _shell(content, ep, '');
+  return _shell(content, ep, 'eg-cold-open');
 }
 
 
@@ -3133,82 +3589,132 @@ export function rpBuildEgyptPyramid(ep) {
   const data = ep.walkEgypt;
   if (!data?.phase1) return '';
   const p1 = data.phase1;
-  const st = _ensureState('eg-pyramid', (p1.choices?.length || 0));
+  const choices = p1.choices || [];
+  const socialEvents = p1.socialEvents || [];
+  const deityJudgments = p1.deityJudgments || [];
+
+  // Interleave social events and deity judgments between player cards
+  // Distribute them evenly: after every N player cards, insert a social/deity card
+  const interleaved = [];
+  const extras = [...socialEvents.map(e => ({ kind: 'social', data: e })), ...deityJudgments.map(d => ({ kind: 'deity', data: d }))];
+  const spacing = extras.length > 0 ? Math.max(2, Math.floor(choices.length / (extras.length + 1))) : Infinity;
+  let extraIdx = 0;
+
+  choices.forEach((c, i) => {
+    interleaved.push({ kind: 'player', data: c, playerIdx: i });
+    // After every `spacing` player cards, inject the next social/deity event
+    if (extraIdx < extras.length && (i + 1) % spacing === 0 && i < choices.length - 1) {
+      interleaved.push(extras[extraIdx++]);
+    }
+  });
+  // Append any remaining extras
+  while (extraIdx < extras.length) interleaved.push(extras[extraIdx++]);
+
+  const total = interleaved.length;
+  const st = _ensureState('eg-pyramid', total);
 
   let cards = '';
-  cards += `<div class="eg-h2">Phase 1: Pyramid Over/Under</div>`;
+
+  // Phase header with torch icon and path split
+  const overCount = choices.filter(c => c.path === 'over').length;
+  const underCount = choices.filter(c => c.path === 'under').length;
+  cards += `<div style="text-align:center;margin-bottom:6px">
+    <div class="eg-h2" style="text-align:center;border-bottom:none;padding-bottom:0;margin-bottom:4px">
+      ${_icon('climb')} Phase 1: The Pyramid ${_icon('door')}
+    </div>
+    <div style="display:flex;justify-content:center;gap:16px;margin:6px 0 10px">
+      <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:2px;color:var(--eg-torch);padding:2px 10px;border:1px solid rgba(255,153,68,0.2);border-radius:2px;background:rgba(255,153,68,0.06)">${overCount} OVER</span>
+      <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:2px;color:var(--eg-scarab);padding:2px 10px;border:1px solid rgba(45,139,87,0.2);border-radius:2px;background:rgba(45,139,87,0.06)">${underCount} UNDER</span>
+    </div>
+  </div>`;
   cards += `<div class="eg-host">${data.hostLines?.phase1 || ''}</div>`;
+  cards += `<div class="eg-comm">${pick(COMM_CHATTER['eg-pyramid'])}</div>`;
 
-  // Add comm chatter
-  const comm = pick(COMM_CHATTER['eg-pyramid']);
-  cards += `<div class="eg-comm">${comm}</div>`;
-
-  (p1.choices || []).forEach((c, i) => {
+  let playerCardCount = 0;
+  interleaved.forEach((item, i) => {
     const vis = st.idx >= i ? 'eg-visible' : '';
-    const pathCls = c.path === 'over' ? 'eg-over' : 'eg-under';
-    const icon = c.path === 'over' ? _icon('climb') : _icon('door');
 
-    let detail = '';
-    if (c.path === 'over') {
-      const match = (p1.overBeats || []).find(b => b.name === c.name);
-      if (match) (match.beats || []).forEach(b => {
-        const bIcon = b.method === 'surf_collision' ? _icon('collision') : b.method?.startsWith('surf') ? _icon('surf') : _icon('climb');
-        detail += `<div style="margin:3px 0;font-size:0.95rem">${bIcon} ${b.text}</div>`;
-      });
-      if (c.summitView) detail += `<div style="margin:3px 0;font-size:0.95rem;color:var(--eg-pharaoh-gold)">${_icon('summit')} Summit view acquired — shortcut spotted for Phase 2!</div>`;
-    } else {
-      const match = (p1.underBeats || []).find(b => b.name === c.name);
-      if (match) (match.beats || []).forEach(b => {
-        const beatIcon = b.type === 'door' ? _icon('door') : b.type?.includes('scarab') ? _icon('scarab') : b.type?.includes('mummy') ? _icon('mummy') : b.type?.includes('collapse') ? _icon('alert') : _icon('trap');
-        detail += `<div style="margin:3px 0;font-size:0.95rem">${beatIcon} ${b.text}</div>`;
-      });
+    if (item.kind === 'player') {
+      const c = item.data;
+      playerCardCount++;
+      const pathCls = c.path === 'over' ? 'eg-over' : 'eg-under';
+      const pathIcon = c.path === 'over' ? _icon('climb') : _icon('door');
+      const pathLabel = c.path === 'over' ? 'SUMMIT PATH' : 'TUNNEL PATH';
+      const pathColor = c.path === 'over' ? 'var(--eg-torch)' : 'var(--eg-scarab)';
+
+      let detail = '';
+      if (c.path === 'over') {
+        const match = (p1.overBeats || []).find(b => b.name === c.name);
+        if (match) (match.beats || []).forEach(b => {
+          const bIcon = b.method === 'surf_collision' ? _icon('collision') : b.method?.startsWith('surf') ? _icon('surf') : _icon('climb');
+          detail += `<div class="eg-pyr-beat">${bIcon} ${b.text}</div>`;
+        });
+        if (c.summitView) detail += `<div class="eg-pyr-beat eg-pyr-beat-gold">${_icon('summit')} Summit view acquired — shortcut spotted for Phase 2!</div>`;
+      } else {
+        const match = (p1.underBeats || []).find(b => b.name === c.name);
+        if (match) (match.beats || []).forEach(b => {
+          const beatIcon = b.type === 'door' ? _icon('door') : b.type?.includes('scarab') ? _icon('scarab') : b.type?.includes('mummy') ? _icon('mummy') : b.type?.includes('collapse') ? _icon('alert') : _icon('trap');
+          detail += `<div class="eg-pyr-beat">${beatIcon} ${b.text}</div>`;
+        });
+      }
+
+      if (p1.mummifiedDog && p1.mummifiedDog.player === c.name) {
+        detail += `<div class="eg-card eg-curse" style="margin-top:6px">${_icon('curse')} ${p1.mummifiedDog.text || `${c.name} discovered the Mummified Dog. The curse takes hold...`}</div>`;
+      }
+
+      const scoreDisplay = Math.round((c.score || 0) * 10) / 10;
+      const scorePct = Math.min(100, Math.max(5, (c.score || 0) * 10));
+      const barCls = scorePct > 60 ? 'eg-orange' : scorePct > 30 ? 'eg-gold' : 'eg-red';
+
+      cards += `<div class="eg-step ${vis}"><div class="eg-card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          ${_cartouche(c.name, pathCls, '', c.tribe)}
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+              ${pathIcon}
+              <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:2px;color:${pathColor}">${pathLabel}</span>
+              <span style="font-family:Cormorant Garamond,serif;font-size:0.85rem;color:var(--eg-muted);margin-left:auto">${scoreDisplay} pts</span>
+            </div>
+            <div class="eg-bar-wrap"><div class="eg-bar ${barCls}" style="width:${scorePct}%"></div></div>
+          </div>
+        </div>
+        ${detail}
+      </div></div>`;
+
+      // Interleave comm chatter every 3rd player card
+      if (playerCardCount > 0 && playerCardCount % 3 === 0 && i < interleaved.length - 1) {
+        cards += `<div class="eg-step ${vis}"><div class="eg-comm">${pick(COMM_CHATTER['eg-pyramid'])}</div></div>`;
+      }
+    } else if (item.kind === 'social') {
+      const evt = item.data;
+      const iconType = evt.type === 'trapBuddy' ? 'hero' : evt.type === 'summitTaunt' ? 'villain' : evt.type === 'mummyPanic' ? 'mummy' : evt.type === 'encourage' ? 'heart' : evt.type === 'samePath' ? 'climb' : evt.type === 'overRivalry' ? 'collision' : evt.type === 'surfCollision' ? 'collision' : evt.type === 'underAlliance' ? 'bond' : evt.type === 'respect' ? 'summit' : 'collision';
+      const evtLabel = evt.type.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
+      const evtTc = evt.tribe ? tribeColor(evt.tribe) : '';
+      const isCrossTribe = ['samePath', 'overRivalry', 'surfCollision', 'underAlliance', 'respect'].includes(evt.type);
+      cards += `<div class="eg-step ${vis}"><div class="eg-card eg-social" ${evt.tribe && !isCrossTribe ? `style="border-left:3px solid ${evtTc}"` : ''}>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          ${_icon(iconType)}
+          <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:1px;color:var(--eg-torch);opacity:0.6">${evtLabel}</span>
+          ${evt.tribe && !isCrossTribe ? _tribeBadge(evt.tribe) : ''}
+          ${isCrossTribe ? '<span style="font-family:Metamorphous,cursive;font-size:0.55rem;letter-spacing:1.5px;padding:1px 6px;border-radius:2px;background:rgba(255,153,68,0.1);color:var(--eg-torch);border:1px solid rgba(255,153,68,0.2);white-space:nowrap">CROSS-TRIBE</span>' : ''}
+        </div>
+        ${evt.players?.length ? _playerChips(evt.players, isCrossTribe ? null : evt.tribe) : ''}
+        <div style="font-size:0.95rem;line-height:1.5">${evt.text}</div>
+      </div></div>`;
+    } else if (item.kind === 'deity') {
+      const dj = item.data;
+      cards += `<div class="eg-step ${vis}"><div class="eg-card eg-deity-card">
+        <div class="eg-deity-entrance">
+          <div class="eg-deity eg-deity-${dj.deity}" style="width:40px;height:54px"></div>
+          <div class="eg-deity-name">${dj.deity.toUpperCase()}</div>
+          <div class="eg-deity-title">${dj.blessed ? 'Grants Blessing' : 'Passes Judgment'}</div>
+        </div>
+        <div style="margin-top:6px;font-size:0.95rem;font-style:italic;line-height:1.5">${dj.text}</div>
+      </div></div>`;
     }
-
-    // Mummified dog
-    if (p1.mummifiedDog && p1.mummifiedDog.player === c.name) {
-      detail += `<div class="eg-card eg-curse" style="margin-top:6px">${_icon('curse')} ${p1.mummifiedDog.text || `${c.name} discovered the Mummified Dog. The curse takes hold...`}</div>`;
-    }
-
-    const scoreDisplay = Math.round((c.score || 0) * 10) / 10;
-    cards += `<div class="eg-step ${vis}"><div class="eg-card">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        ${_cartouche(c.name, pathCls)}
-        ${icon}
-        <span style="font-family:Cormorant Garamond,serif;font-size:0.9rem;color:var(--eg-muted)">${c.path.toUpperCase()} • ${scoreDisplay} pts</span>
-      </div>
-      ${detail}
-    </div></div>`;
-  });
-
-  // Social events
-  let socialIdx = p1.choices?.length || 0;
-  (p1.socialEvents || []).forEach((evt, i) => {
-    const vis = st.idx >= socialIdx + i ? 'eg-visible' : '';
-    const iconType = evt.type === 'trapBuddy' ? 'hero' : evt.type === 'summitTaunt' ? 'villain' : evt.type === 'mummyPanic' ? 'mummy' : evt.type === 'encourage' ? 'heart' : 'collision';
-    cards += `<div class="eg-step ${vis}"><div class="eg-card eg-social">
-      ${_icon(iconType)} <span style="font-family:Metamorphous,cursive;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;opacity:0.6">${evt.type.replace(/([A-Z])/g, ' $1').trim()}</span>
-      <div style="margin-top:4px;font-size:0.98rem">${evt.text}</div>
-    </div></div>`;
-  });
-
-  // Deity judgments
-  let deityIdx = socialIdx + (p1.socialEvents?.length || 0);
-  (p1.deityJudgments || []).forEach((dj, i) => {
-    const vis = st.idx >= deityIdx + i ? 'eg-visible' : '';
-    cards += `<div class="eg-step ${vis}"><div class="eg-card eg-deity-card">
-      <div class="eg-deity-entrance">
-        <div class="eg-deity eg-deity-${dj.deity}" style="width:40px;height:54px"></div>
-        <div class="eg-deity-name">${dj.deity.toUpperCase()}</div>
-        <div class="eg-deity-title">${dj.blessed ? 'Grants Blessing' : 'Passes Judgment'}</div>
-      </div>
-      <div style="margin-top:6px;font-size:0.98rem;font-style:italic">${dj.text}</div>
-    </div></div>`;
   });
 
   // Reveal bar
-  const total = (p1.choices?.length || 0) + (p1.socialEvents?.length || 0) + (p1.deityJudgments?.length || 0);
-  // Update state total
-  _ensureState('eg-pyramid', total);
   cards += `<div class="eg-reveal-bar">
     <button class="eg-btn" onclick="egyptRevealNext('eg-pyramid',${total})">NEXT ▶</button>
     <span style="font-family:Metamorphous,cursive;font-size:0.9rem;color:var(--eg-gold)" id="eg-counter-eg-pyramid">0/${total}</span>
@@ -3229,62 +3735,106 @@ export function rpBuildEgyptDesert(ep) {
   if (!data?.phase2) return '';
   const p2 = data.phase2;
 
-  // Count total steps: leaders + nav beats + scarab + social events
   const allSteps = [];
-  // Reward assignment
   allSteps.push({ type: 'reward', text: '' });
-  // Leaders
   Object.entries(p2.leaders || {}).forEach(([tName, leader]) => {
     allSteps.push({ type: 'leader', tribe: tName, data: leader });
   });
-  // Nav beats
   (p2.navBeats || []).forEach(nb => allSteps.push({ type: 'nav', data: nb }));
-  // Scarab swarm
   (p2.scarabSwarm || []).forEach(sw => allSteps.push({ type: 'scarab', data: sw }));
-  // Social events
   (p2.socialEvents || []).forEach(se => allSteps.push({ type: 'social', data: se }));
-  // Deity judgments
   (p2.deityJudgments || []).forEach(dj => allSteps.push({ type: 'deity', data: dj }));
 
   const total = allSteps.length;
   const st = _ensureState('eg-desert', total);
 
   let cards = '';
-  cards += `<div class="eg-h2">Phase 2: Desert Trek</div>`;
+
+  // Phase header with caravan info
+  const tribeEntries = Object.entries(data.tribes);
+  const rewardSummary = tribeEntries.map(([tName, tData]) => {
+    const r = tData.reward || 'stick';
+    const color = r === 'camel' ? 'var(--eg-pharaoh-gold)' : r === 'goat' ? 'var(--eg-terra)' : 'var(--eg-muted)';
+    return `<span style="font-family:Metamorphous,cursive;font-size:0.7rem;letter-spacing:1px;color:${color};padding:2px 8px;border:1px solid ${color === 'var(--eg-muted)' ? 'rgba(138,122,90,0.2)' : color};border-radius:2px;opacity:0.7;background:rgba(0,0,0,0.05)">${tName}: ${r.toUpperCase()}</span>`;
+  }).join(' ');
+
+  cards += `<div style="text-align:center;margin-bottom:6px">
+    <div class="eg-h2" style="text-align:center;border-bottom:none;padding-bottom:0;margin-bottom:4px">
+      ${_icon('navigate')} Phase 2: The Desert ${_icon('sand')}
+    </div>
+    <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:6px 0 10px">${rewardSummary}</div>
+  </div>`;
   cards += `<div class="eg-host">${data.hostLines?.phase2 || ''}</div>`;
+  cards += `<div class="eg-comm">${pick(COMM_CHATTER['eg-desert'])}</div>`;
 
-  const comm = pick(COMM_CHATTER['eg-desert']);
-  cards += `<div class="eg-comm">${comm}</div>`;
-
+  let navCount = 0;
   allSteps.forEach((step, i) => {
     const vis = st.idx >= i ? 'eg-visible' : '';
     let cardContent = '';
 
     if (step.type === 'reward') {
-      let rewardCards = Object.entries(data.tribes).map(([tName, tData]) => {
+      let rewardCards = tribeEntries.map(([tName, tData]) => {
         const r = tData.reward || 'stick';
         const icon = _icon(r === 'stick' ? 'stick' : 'camel');
-        return `<div style="margin:4px 0">${icon} <b>${tName}</b>: ${r.toUpperCase()}</div>`;
+        const tagCls = r === 'camel' ? 'eg-t-gold' : r === 'goat' ? 'eg-t-orange' : 'eg-t-grey';
+        return `<div style="display:flex;align-items:center;gap:8px;margin:5px 0">
+          ${icon}<span style="font-family:Metamorphous,cursive;font-size:0.88rem;font-weight:700;letter-spacing:1px">${tName}</span>
+          <span class="eg-sb-tag ${tagCls}" style="margin-left:auto">${r.toUpperCase()}</span>
+        </div>`;
       }).join('');
-      cardContent = `<div class="eg-card"><div class="eg-h3">Reward Assignment</div>${rewardCards}</div>`;
+      cardContent = `<div class="eg-card"><div class="eg-h3" style="margin-top:0">Caravan Assignment</div>${rewardCards}</div>`;
     } else if (step.type === 'leader') {
       const l = step.data;
-      cardContent = `<div class="eg-card">${_icon('navigate')} ${l.beat?.text || `${l.navigator} takes the lead for ${step.tribe}.`}</div>`;
+      const ltc = tribeColor(step.tribe);
+      const leaderNames = [l.navigator];
+      if (l.beat?.challenger) leaderNames.push(l.beat.challenger);
+      cardContent = `<div class="eg-card" style="border-left:3px solid ${ltc}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          ${_icon('navigate')}
+          <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:2px;color:${ltc}">NAVIGATOR</span>
+          ${_tribeBadge(step.tribe)}
+        </div>
+        ${_playerChips(leaderNames, step.tribe)}
+        <div style="font-size:0.95rem;line-height:1.5">${l.beat?.text || `${l.navigator} takes the lead for ${step.tribe}.`}</div>
+      </div>`;
     } else if (step.type === 'nav') {
+      navCount++;
       const nb = step.data;
+      const ntc = tribeColor(nb.tribe);
       const icon = nb.success ? _icon('navigate') : _icon('sand');
-      cardContent = `<div class="eg-card">${icon} ${nb.text}</div>`;
+      const statusTag = nb.success
+        ? '<span style="font-family:Metamorphous,cursive;font-size:0.65rem;letter-spacing:1px;color:var(--eg-success);opacity:0.6">ON COURSE</span>'
+        : '<span style="font-family:Metamorphous,cursive;font-size:0.65rem;letter-spacing:1px;color:var(--eg-danger);opacity:0.6">OFF COURSE</span>';
+      cardContent = `<div class="eg-card" style="border-left:3px solid ${ntc}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">${icon}${statusTag}${_tribeBadge(nb.tribe)}</div>
+        ${_playerChips([nb.navigator], nb.tribe)}
+        <div style="font-size:0.95rem;line-height:1.5">${nb.text}</div>
+      </div>`;
     } else if (step.type === 'scarab') {
       const sw = step.data;
-      const icon = _icon('scarab');
-      cardContent = `<div class="eg-card">${icon} ${sw.text}</div>`;
+      const swtc = sw.tribe ? tribeColor(sw.tribe) : '';
+      cardContent = `<div class="eg-card eg-curse" ${sw.tribe ? `style="border-left:3px solid ${swtc}"` : ''}>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          ${_icon('scarab')}
+          <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:2px;color:var(--eg-danger);opacity:0.6">SCARAB SWARM</span>
+          ${sw.tribe ? _tribeBadge(sw.tribe) : ''}
+        </div>
+        ${sw.name ? _playerChips([sw.name], sw.tribe) : ''}
+        <div style="font-size:0.95rem;line-height:1.5">${sw.text}</div>
+      </div>`;
     } else if (step.type === 'social') {
       const se = step.data;
       const sIcon = se.type === 'seduction' ? _icon('eye') : se.type === 'alliance' ? _icon('bond') : se.type === 'waterShare' ? _icon('heart') : se.type === 'waterHoard' ? _icon('villain') : se.type === 'animalDrama' ? _icon('camel') : se.type === 'desertMirage' ? _icon('eye') : _icon('alert');
       const sLabel = se.type.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
-      cardContent = `<div class="eg-card eg-social">
-        ${sIcon} <span style="font-family:Metamorphous,cursive;font-size:0.78rem;letter-spacing:1px;opacity:0.6">${sLabel}</span>
-        <div style="margin-top:3px">${se.text}</div>
+      const setc = se.tribe ? tribeColor(se.tribe) : '';
+      cardContent = `<div class="eg-card eg-social" ${se.tribe ? `style="border-left:3px solid ${setc}"` : ''}>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          ${sIcon}
+          <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:1px;color:var(--eg-terra);opacity:0.6">${sLabel}</span>
+          ${se.tribe ? _tribeBadge(se.tribe) : ''}
+        </div>
+        ${se.players?.length ? _playerChips(se.players, se.tribe) : ''}
+        <div style="font-size:0.95rem;line-height:1.5">${se.text}</div>
       </div>`;
     } else if (step.type === 'deity') {
       const dj = step.data;
@@ -3294,11 +3844,16 @@ export function rpBuildEgyptDesert(ep) {
           <div class="eg-deity-name">${dj.deity.toUpperCase()}</div>
           <div class="eg-deity-title">${dj.blessed ? 'Grants Blessing' : 'Passes Judgment'}</div>
         </div>
-        <div style="margin-top:6px;font-size:0.98rem;font-style:italic">${dj.text}</div>
+        <div style="margin-top:6px;font-size:0.95rem;font-style:italic;line-height:1.5">${dj.text}</div>
       </div>`;
     }
 
     cards += `<div class="eg-step ${vis}">${cardContent}</div>`;
+
+    // Interleave comm chatter
+    if (i > 1 && i % 4 === 3 && i < allSteps.length - 1) {
+      cards += `<div class="eg-step ${vis}"><div class="eg-comm">${pick(COMM_CHATTER['eg-desert'])}</div></div>`;
+    }
   });
 
   cards += `<div class="eg-reveal-bar">
@@ -3322,32 +3877,39 @@ export function rpBuildEgyptNile(ep) {
   const p3 = data.phase3;
 
   const allSteps = [];
-  // Weaving
   (p3.weaving || []).forEach(w => allSteps.push({ type: 'weave', data: w }));
-  // Animal loading
   (p3.animalLoading || []).forEach(al => allSteps.push({ type: 'load', data: al }));
-  // Rowing beats
   (p3.rowingBeats || []).forEach(rb => allSteps.push({ type: 'row', data: rb }));
-  // Croc attacks interleaved
   (p3.crocAttacks || []).forEach(ca => allSteps.push({ type: 'croc', data: ca }));
-  // Social events
   (p3.socialEvents || []).forEach(se => allSteps.push({ type: 'social', data: se }));
-  // Deity judgments
   (p3.deityJudgments || []).forEach(dj => allSteps.push({ type: 'deity', data: dj }));
-  // Final sprint
   (p3.finalSprint || []).forEach(fs => allSteps.push({ type: 'sprint', data: fs }));
 
   const total = allSteps.length;
   const st = _ensureState('eg-nile', total);
 
   let cards = '';
-  cards += `<div class="eg-h2">Phase 3: Nile Crossing</div>`;
+
+  // Phase header with boat status badges
+  const tribeEntries = Object.entries(data.tribes);
+  const boatSummary = tribeEntries.map(([tName, tData]) => {
+    const bq = tData.boatQuality || 0;
+    const bd = tData.boatDamage || 0;
+    const integrity = Math.max(0, Math.min(100, Math.round((bq - bd) / Math.max(1, bq) * 100)));
+    const color = integrity > 60 ? 'var(--eg-nile)' : integrity > 30 ? 'var(--eg-terra)' : 'var(--eg-danger)';
+    return `<span style="font-family:Metamorphous,cursive;font-size:0.7rem;letter-spacing:1px;color:${color};padding:2px 8px;border:1px solid ${color};border-radius:2px;opacity:0.7;background:rgba(0,0,0,0.05)">${_icon('boat')} ${tName}: ${integrity}%</span>`;
+  }).join(' ');
+
+  cards += `<div style="text-align:center;margin-bottom:6px">
+    <div class="eg-h2" style="text-align:center;border-bottom:none;padding-bottom:0;margin-bottom:4px">
+      ${_icon('row')} Phase 3: Nile Crossing ${_icon('croc')}
+    </div>
+    <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:6px 0 10px">${boatSummary}</div>
+  </div>`;
   cards += `<div class="eg-host">${data.hostLines?.phase3 || ''}</div>`;
+  cards += `<div class="eg-comm">${pick(COMM_CHATTER['eg-nile'])}</div>`;
 
-  const comm = pick(COMM_CHATTER['eg-nile']);
-  cards += `<div class="eg-comm">${comm}</div>`;
-
-  // Rising water line (percentage based on reveal progress)
+  // Rising water line
   const waterPct = Math.min(70, (st.idx + 1) / Math.max(1, total) * 70);
   cards += `<div class="eg-water-rise" style="height:${waterPct}%"></div>`;
 
@@ -3357,36 +3919,79 @@ export function rpBuildEgyptNile(ep) {
 
     if (step.type === 'weave') {
       const w = step.data;
-      const icon = _icon('weave');
+      const wtc = tribeColor(w.tribe);
       const cls = w.isProdigy ? 'eg-card eg-hero-card' : 'eg-card';
-      cardContent = `<div class="${cls}">${icon} ${w.text}</div>`;
+      cardContent = `<div class="${cls}" style="border-left:3px solid ${wtc}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          ${_icon('weave')}
+          <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:2px;color:var(--eg-nile);opacity:0.6">REED WEAVING</span>
+          ${_tribeBadge(w.tribe)}
+          ${w.isProdigy ? '<span class="eg-sb-tag eg-t-green" style="margin-left:auto;font-size:0.6rem">PRODIGY</span>' : ''}
+        </div>
+        ${w.name ? _playerChips([w.name], w.tribe) : ''}
+        <div style="font-size:0.95rem;line-height:1.5">${w.text}</div>
+      </div>`;
     } else if (step.type === 'load') {
       const al = step.data;
-      const icon = _icon('camel');
-      cardContent = `<div class="eg-card">${icon} ${al.text}</div>`;
+      const altc = tribeColor(al.tribe);
+      cardContent = `<div class="eg-card" style="border-left:3px solid ${altc}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          ${_icon('camel')}
+          <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:2px;color:var(--eg-terra);opacity:0.6">ANIMAL LOADING</span>
+          ${_tribeBadge(al.tribe)}
+        </div>
+        ${al.name ? _playerChips([al.name], al.tribe) : ''}
+        <div style="font-size:0.95rem;line-height:1.5">${al.text}</div>
+      </div>`;
     } else if (step.type === 'row') {
       const rb = step.data;
-      const icon = _icon('row');
-      cardContent = `<div class="eg-card">${icon} ${rb.text}</div>`;
+      const rtc = tribeColor(rb.tribe);
+      const rowIcon = rb.strong ? _icon('success') : rb.struggle ? _icon('alert') : _icon('row');
+      const statusTag = rb.strong
+        ? '<span style="font-family:Metamorphous,cursive;font-size:0.65rem;letter-spacing:1px;color:var(--eg-success);opacity:0.6">STRONG STROKE</span>'
+        : rb.struggle
+        ? '<span style="font-family:Metamorphous,cursive;font-size:0.65rem;letter-spacing:1px;color:var(--eg-danger);opacity:0.6">STRUGGLING</span>'
+        : '<span style="font-family:Metamorphous,cursive;font-size:0.65rem;letter-spacing:1px;color:var(--eg-nile);opacity:0.6">ROWING</span>';
+      cardContent = `<div class="eg-card" style="border-left:3px solid ${rtc}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">${rowIcon}${statusTag}${_tribeBadge(rb.tribe)}</div>
+        ${rb.name ? _playerChips([rb.name], rb.tribe) : ''}
+        <div style="font-size:0.95rem;line-height:1.5">${rb.text}</div>
+      </div>`;
     } else if (step.type === 'croc') {
       const ca = step.data;
-      const icon = _icon('croc');
+      const ctc = tribeColor(ca.tribe);
       const cls = ca.heroSave ? 'eg-card eg-hero-card' : ca.villainShove ? 'eg-card eg-villain-card' : ca.defended ? 'eg-card' : 'eg-card eg-curse';
-      let crocText = ca.attackText || '';
-      if (ca.defenseText) crocText += ` ${ca.defenseText}`;
-      if (ca.heroSave) crocText += `<div style="margin-top:4px;color:var(--eg-success)">${_icon('hero')} ${ca.heroSave.text}</div>`;
+      const crocPlayers = [ca.target];
+      if (ca.heroSave?.hero) crocPlayers.push(ca.heroSave.hero);
+      if (ca.villainShove?.villain) crocPlayers.push(ca.villainShove.villain);
+      let crocText = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+        ${_icon('croc')}
+        <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:2px;color:var(--eg-danger);opacity:0.6">CROC ATTACK</span>
+        ${_tribeBadge(ca.tribe)}
+        ${ca.defended ? '<span class="eg-sb-tag eg-t-green" style="margin-left:auto;font-size:0.6rem">DEFENDED</span>' : '<span class="eg-sb-tag eg-t-red" style="margin-left:auto;font-size:0.6rem">DANGER</span>'}
+      </div>`;
+      crocText += _playerChips(crocPlayers, ca.tribe);
+      crocText += `<div style="font-size:0.95rem;line-height:1.5">${ca.attackText || ''}</div>`;
+      if (ca.defenseText) crocText += `<div style="font-size:0.92rem;line-height:1.5;margin-top:3px;color:var(--eg-muted)">${ca.defenseText}</div>`;
+      if (ca.heroSave) crocText += `<div style="margin-top:4px;color:var(--eg-success);font-size:0.92rem">${_icon('hero')} ${ca.heroSave.text}</div>`;
       if (ca.villainShove) {
-        crocText += `<div style="margin-top:4px;color:var(--eg-danger)">${_icon('villain')} ${ca.villainShove.text}</div>`;
-        if (ca.villainShove.caught) crocText += `<div style="margin-top:2px;color:var(--eg-danger);font-size:0.92rem">${_icon('eye')} ${ca.villainShove.caughtText}</div>`;
+        crocText += `<div style="margin-top:4px;color:var(--eg-danger);font-size:0.92rem">${_icon('villain')} ${ca.villainShove.text}</div>`;
+        if (ca.villainShove.caught) crocText += `<div style="margin-top:2px;color:var(--eg-danger);font-size:0.88rem">${_icon('eye')} ${ca.villainShove.caughtText}</div>`;
       }
-      cardContent = `<div class="${cls}">${icon} ${crocText}</div>`;
+      cardContent = `<div class="${cls}">${crocText}</div>`;
     } else if (step.type === 'social') {
       const se = step.data;
       const sIcon = se.type === 'boatTeamwork' ? _icon('bond') : se.type === 'crocPanic' ? _icon('alert') : se.type === 'encourageRow' ? _icon('heart') : se.type === 'boatSabotage' ? _icon('villain') : _icon('collision');
       const sLabel = se.type.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
-      cardContent = `<div class="eg-card eg-social">
-        ${sIcon} <span style="font-family:Metamorphous,cursive;font-size:0.78rem;letter-spacing:1px;opacity:0.6">${sLabel}</span>
-        <div style="margin-top:3px">${se.text}</div>
+      const setc2 = se.tribe ? tribeColor(se.tribe) : '';
+      cardContent = `<div class="eg-card eg-social" ${se.tribe ? `style="border-left:3px solid ${setc2}"` : ''}>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          ${sIcon}
+          <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:1px;color:var(--eg-terra);opacity:0.6">${sLabel}</span>
+          ${se.tribe ? _tribeBadge(se.tribe) : ''}
+        </div>
+        ${se.players?.length ? _playerChips(se.players, se.tribe) : ''}
+        <div style="font-size:0.95rem;line-height:1.5">${se.text}</div>
       </div>`;
     } else if (step.type === 'deity') {
       const dj = step.data;
@@ -3396,18 +4001,31 @@ export function rpBuildEgyptNile(ep) {
           <div class="eg-deity-name">${dj.deity.toUpperCase()}</div>
           <div class="eg-deity-title">${dj.blessed ? 'Grants Blessing' : 'Passes Judgment'}</div>
         </div>
-        <div style="margin-top:6px;font-size:0.98rem;font-style:italic">${dj.text}</div>
+        <div style="margin-top:6px;font-size:0.95rem;font-style:italic;line-height:1.5">${dj.text}</div>
       </div>`;
     } else if (step.type === 'sprint') {
       const fs = step.data;
-      const icon = fs.sunk ? _icon('alert') : _icon('boat');
+      const stc = tribeColor(fs.tribe);
       const cls = fs.sunk ? 'eg-card eg-curse' : 'eg-card';
-      let sprintText = fs.text || '';
-      if (fs.bailAttempts?.length) sprintText += fs.bailAttempts.map(b => `<div style="margin-top:3px;font-size:0.95rem">${_icon('hero')} ${b.text}</div>`).join('');
-      cardContent = `<div class="${cls}">${icon} ${sprintText}</div>`;
+      const sprintLabel = fs.sunk ? 'CAPSIZED' : 'FINAL SPRINT';
+      const sprintColor = fs.sunk ? 'var(--eg-danger)' : 'var(--eg-success)';
+      const sprintIcon = fs.sunk ? _icon('alert') : _icon('boat');
+      let sprintText = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+        ${sprintIcon}
+        <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:2px;color:${sprintColor};opacity:0.6">${sprintLabel}</span>
+        ${_tribeBadge(fs.tribe)}
+      </div>`;
+      sprintText += `<div style="font-size:0.95rem;line-height:1.5">${fs.text || ''}</div>`;
+      if (fs.bailAttempts?.length) sprintText += fs.bailAttempts.map(b => `<div style="margin-top:3px;font-size:0.92rem">${_icon('hero')} ${b.text}</div>`).join('');
+      cardContent = `<div class="${cls}">${sprintText}</div>`;
     }
 
     cards += `<div class="eg-step ${vis}">${cardContent}</div>`;
+
+    // Interleave comm chatter
+    if (i > 1 && i % 4 === 3 && i < allSteps.length - 1) {
+      cards += `<div class="eg-step ${vis}"><div class="eg-comm">${pick(COMM_CHATTER['eg-nile'])}</div></div>`;
+    }
   });
 
   cards += `<div class="eg-reveal-bar">
@@ -3430,45 +4048,69 @@ export function rpBuildEgyptResults(ep) {
   if (!data) return '';
 
   const finishOrder = data.tribeFinishOrder || [];
+  const h = host();
   let content = '';
-  content += `<div class="eg-h1">CHALLENGE RESULTS</div>`;
 
-  // Finish order
+  // Title with deity
+  content += `<div style="text-align:center;margin-bottom:6px">
+    <div class="eg-deity eg-deity-ra" style="width:50px;height:65px;margin:0 auto 6px;opacity:0.4"></div>
+    <div class="eg-h1" style="font-size:2rem;margin:0 0 4px">THE EXPEDITION CONCLUDES</div>
+    <div style="font-family:Metamorphous,cursive;font-size:0.75rem;letter-spacing:5px;color:var(--eg-muted);opacity:0.5">RA HAS JUDGED</div>
+  </div>`;
+
+  // Tribe results — dramatic placement cards
   finishOrder.forEach((tName, i) => {
     const tData = data.tribes[tName] || {};
     const members = tData.members || [];
-    const cls = i === 0 ? 'eg-card eg-winner-card' : i === finishOrder.length - 1 ? 'eg-card eg-curse' : 'eg-card';
-    const label = i === 0 ? 'IMMUNITY' : i === finishOrder.length - 1 ? 'TRIBAL COUNCIL' : 'SAFE';
-    const tagCls = i === 0 ? 'eg-t-gold' : i === finishOrder.length - 1 ? 'eg-t-red' : 'eg-t-green';
+    const isFirst = i === 0;
+    const isLast = i === finishOrder.length - 1;
+    const label = isFirst ? 'IMMUNITY' : isLast ? 'TRIBAL COUNCIL' : 'SAFE';
+    const tagCls = isFirst ? 'eg-t-gold' : isLast ? 'eg-t-red' : 'eg-t-green';
+    const cardCls = isFirst ? 'eg-card eg-winner-card' : isLast ? 'eg-card eg-curse' : 'eg-card';
+    const placeIcon = isFirst ? _icon('summit') : isLast ? _icon('alert') : _icon('success');
+    const placeSuffix = i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th';
 
-    content += `<div class="${cls}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span class="eg-h3">#${i + 1} — ${tName}</span>
-        <span class="eg-sb-tag ${tagCls}">${label}</span>
+    content += `<div class="${cardCls}" style="margin:10px 0">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        ${placeIcon}
+        <div style="flex:1">
+          <div style="display:flex;align-items:baseline;gap:6px">
+            <span style="font-family:Metamorphous,cursive;font-size:1.4rem;font-weight:700;color:${isFirst ? 'var(--eg-pharaoh-gold)' : isLast ? 'var(--eg-danger)' : 'var(--eg-success)'}">${i + 1}${placeSuffix}</span>
+            <span class="eg-h3" style="margin:0">${tName}</span>
+          </div>
+          <div style="font-family:Cormorant Garamond,serif;font-size:0.82rem;color:var(--eg-muted);letter-spacing:0.5px">
+            ${tData.reward?.toUpperCase() || '—'} · ${Math.round((tData.totalScore || 0) * 10) / 10} pts
+          </div>
+        </div>
+        <span class="eg-sb-tag ${tagCls}" style="font-size:0.72rem">${label}</span>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:3px">
-        ${members.map(n => _cartouche(n, i === 0 ? 'eg-immune' : '')).join('')}
-      </div>
-      <div style="font-family:Cormorant Garamond,serif;font-size:0.9rem;color:var(--eg-muted);margin-top:6px;letter-spacing:0.5px;text-shadow:0 1px 0 rgba(0,0,0,0.1)">
-        Reward: ${tData.reward?.toUpperCase() || '—'} · Score: ${Math.round(tData.totalScore * 10) / 10}
+        ${members.map(n => _cartouche(n, isFirst ? 'eg-immune' : '')).join('')}
       </div>
     </div>`;
   });
 
   // Host finish lines
-  if (data.hostLines?.finish1st) content += `<div class="eg-host">${data.hostLines.finish1st}</div>`;
-  if (data.hostLines?.finish2nd) content += `<div class="eg-host">${data.hostLines.finish2nd}</div>`;
-  if (data.hostLines?.finishLast) content += `<div class="eg-host">${data.hostLines.finishLast}</div>`;
+  const hostLines = [data.hostLines?.finish1st, data.hostLines?.finish2nd, data.hostLines?.finishLast].filter(Boolean);
+  hostLines.forEach(line => {
+    content += `<div class="eg-host">${line}</div>`;
+  });
 
   // Individual leaderboard
-  content += `<div class="eg-h2" style="margin-top:16px">Individual Scores</div>`;
+  content += `<div style="text-align:center;margin:18px 0 8px">
+    <div class="eg-h2" style="text-align:center;border-bottom:none;padding-bottom:0">Individual Expedition Scores</div>
+  </div>`;
   const scores = Object.entries(ep.chalMemberScores || {}).sort(([, a], [, b]) => b - a);
+  const maxScore = scores.length > 0 ? scores[0][1] : 1;
   scores.forEach(([name, score], i) => {
     const sl = slug(name);
-    content += `<div class="eg-lb-row ${i === 0 ? 'eg-first' : ''}">
-      <span class="eg-lb-rank">#${i + 1}</span>
-      <img src="assets/avatars/${sl}.png" alt="${name}" style="width:22px;height:22px;border-radius:50%;object-fit:contain;border:1.5px solid var(--eg-gold);box-shadow:0 0 0 1px var(--eg-lapis)" onerror="this.style.display='none'">
+    const pct = Math.min(100, Math.max(8, (score / maxScore) * 100));
+    const barCls = i === 0 ? 'eg-gold' : i < 3 ? 'eg-orange' : 'eg-green';
+    content += `<div class="eg-lb-row ${i === 0 ? 'eg-first' : ''}" style="gap:8px">
+      <span class="eg-lb-rank">${i + 1}</span>
+      <img src="assets/avatars/${sl}.png" alt="${name}" style="width:24px;height:24px;border-radius:50%;object-fit:contain;border:1.5px solid ${i === 0 ? 'var(--eg-pharaoh-gold)' : 'rgba(194,166,69,0.25)'}" onerror="this.style.display='none'">
       <span class="eg-lb-name">${name}</span>
+      <div style="width:60px;flex-shrink:0"><div class="eg-bar-wrap" style="height:6px"><div class="eg-bar ${barCls}" style="width:${pct}%"></div></div></div>
       <span class="eg-lb-score">${Math.round(score * 10) / 10}</span>
     </div>`;
   });

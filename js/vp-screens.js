@@ -33,7 +33,7 @@ import { rpBuildEgyptTitleCard, rpBuildEgyptPyramid, rpBuildEgyptDesert, rpBuild
 import { rpBuildBigBaddTitleCard, rpBuildBigBaddPhase1, rpBuildBigBaddPhase2, rpBuildBigBaddPhase3, rpBuildBigBaddResults, brutalerRevealNext, brutalerRevealAll } from './chal/bigger-badder-brutaler.js';
 import { rpBuildCFTTitleCard, rpBuildCFTPinball, rpBuildCFTDramaBreak, rpBuildCFTCommercial, rpBuildCFTVerdict, rpBuildCFTResults, crazyFunTimeRevealNext, crazyFunTimeRevealAll } from './chal/crazy-fun-time.js';
 import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults, frozenCrossingRevealNext, frozenCrossingRevealAll } from './chal/frozen-crossing.js';
-import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRFights, rpBuildSSRFinals, rpBuildSSRResults, ssrRevealNext, ssrRevealAll } from './chal/slap-slap-revolution.js';
+import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults, ssrRevealNext, ssrRevealAll } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults, broadwayBabyRevealNext, broadwayBabyRevealAll } from './chal/broadway-baby.js';
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext, tlsRevealAll } from './chal/truth-or-shark.js';
 
@@ -10684,8 +10684,13 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'ssr-descent', label:'The Descent', html: rpBuildSSRDescent(ep) });
     vpScreens.push({ id:'ssr-hats', label:'Hat Ceremony', html: rpBuildSSRHats(ep) });
     vpScreens.push({ id:'ssr-draft', label:"Captain's Draft", html: rpBuildSSRDraft(ep) });
-    vpScreens.push({ id:'ssr-fights', label:'Fights', html: rpBuildSSRFights(ep) });
-    vpScreens.push({ id:'ssr-finals', label:'Finals', html: rpBuildSSRFinals(ep) });
+    const ssrRounds = ep.slapRevolution.tournament?.rounds || [];
+    for (let ri = 0; ri < ssrRounds.length; ri++) {
+      const isFinal = ssrRounds[ri].roundLabel === 'FINAL';
+      const label = isFinal ? 'Finals' : ssrRounds[ri].roundLabel;
+      const id = isFinal ? 'ssr-finals' : `ssr-round${ri + 1}`;
+      vpScreens.push({ id, label, html: rpBuildSSRRound(ep, ri) });
+    }
     vpScreens.push({ id:'ssr-results', label:'Results', html: rpBuildSSRResults(ep) });
   } else if ((ep.isBroadwayBaby || ep.challengeType === 'broadway-baby') && ep.broadwayBaby) {
     vpScreens.push({ id:'bb-title', label:'Broadway Baby', html: rpBuildBBTitleCard(ep) });

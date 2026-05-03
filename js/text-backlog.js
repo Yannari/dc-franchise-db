@@ -48,7 +48,7 @@ import { rpBuildEgyptTitleCard, rpBuildEgyptPyramid, rpBuildEgyptDesert, rpBuild
 import { rpBuildBigBaddTitleCard, rpBuildBigBaddPhase1, rpBuildBigBaddPhase2, rpBuildBigBaddPhase3, rpBuildBigBaddResults } from './chal/bigger-badder-brutaler.js';
 import { rpBuildCFTTitleCard, rpBuildCFTPinball, rpBuildCFTDramaBreak, rpBuildCFTCommercial, rpBuildCFTVerdict, rpBuildCFTResults } from './chal/crazy-fun-time.js';
 import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults } from './chal/frozen-crossing.js';
-import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRFights, rpBuildSSRFinals, rpBuildSSRResults } from './chal/slap-slap-revolution.js';
+import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults } from './chal/broadway-baby.js';
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults } from './chal/truth-or-shark.js';
 
@@ -2165,8 +2165,9 @@ export function generateSummaryText(ep) {
     ]);
   }
   if (ep.slapRevolution) {
+    const ssrRoundBuilders = (ep.slapRevolution.tournament?.rounds || []).map((_, ri) => (e) => rpBuildSSRRound(e, ri));
     _textTwistChallenge(ep, ln, sec, 'slapRevolution', 'SLAP SLAP REVOLUTION', [
-      rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRFights, rpBuildSSRFinals, rpBuildSSRResults
+      rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, ...ssrRoundBuilders, rpBuildSSRResults
     ]);
   }
   if (ep.broadwayBaby) {

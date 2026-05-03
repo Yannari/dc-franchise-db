@@ -717,16 +717,8 @@ export function simulateSlapSlapRevolution(ep) {
       totalContribution += contribution;
       qualityBonus += qualityDelta;
 
-      // chalMemberScores
-      if (contribution >= 25) {
-        ep.chalMemberScores[r.name] += 5;
-      } else if (contribution >= 15) {
-        ep.chalMemberScores[r.name] += 3;
-      } else if (contribution >= 8) {
-        ep.chalMemberScores[r.name] += 1;
-      } else {
-        ep.chalMemberScores[r.name] -= 2;
-      }
+      // chalMemberScores — proportional to contribution
+      ep.chalMemberScores[r.name] += Math.round(contribution * 0.25 - 1);
     });
 
     // Normalize to 0-100
@@ -752,7 +744,7 @@ export function simulateSlapSlapRevolution(ep) {
             consequences: `Sausage quality -${Math.round(penalty)}`,
           });
           mObj.sabotageCount++;
-          mObj.sabotageLog.push({ ep: (gs.episode || 0) + 1, type: 'sausageSabotage', tribe: tribe.name });
+          mObj.sabotageLog.push({ ep: gs.episodeHistory.length, type: 'sausageSabotage', tribe: tribe.name });
         }
       });
     }
@@ -839,24 +831,18 @@ export function simulateSlapSlapRevolution(ep) {
       // Quality modifier: good quality = faster
       baseTime += (50 - quality) * 0.08;
 
-      // Navigation check
+      // Navigation check — proportional: higher score = lower penalty
       const navScore = navStats.physical * 0.6 + navStats.endurance * 0.4 + noise(3);
       const isGoodNav = navScore > 5;
-      let penalty = 0;
+      let penalty = Math.max(0, (8 - navScore) * 0.7 + noise(1));
 
-      if (!isGoodNav) {
-        penalty = 2 + Math.random() * 4;
-      }
-
-      // Hazard check
+      // Hazard check — proportional: higher score = lower hazard penalty
       let hazardPenalty = 0;
       let hazardHit = false;
       if (isHazard) {
         const hazardScore = navStats.endurance * 0.4 + navStats.physical * 0.3 + navStats.mental * 0.2 + noise(3);
-        if (hazardScore < 5) {
-          hazardPenalty = 3 + Math.random() * 4;
-          hazardHit = true;
-        }
+        hazardPenalty = Math.max(0, (7 - hazardScore) * 0.9 + noise(1));
+        hazardHit = hazardPenalty > 2;
       }
 
       const segTime = Math.round((baseTime + penalty + hazardPenalty) * 10) / 10;
@@ -893,9 +879,9 @@ export function simulateSlapSlapRevolution(ep) {
         speedTag = 'fast';
       }
 
-      // Nav scoring
+      // Nav scoring — scaled to avoid dominating fight scores
       if (isGoodNav) {
-        ep.chalMemberScores[nav] += 4;
+        ep.chalMemberScores[nav] += 2;
       } else {
         ep.chalMemberScores[nav] -= 1;
       }
@@ -921,8 +907,8 @@ export function simulateSlapSlapRevolution(ep) {
       };
     }
 
-    // Social events during descent (1 per segment, 40% chance)
-    if (Math.random() < 0.4 && tribes.length >= 2) {
+    // Social events during descent — guaranteed 1 per segment, bonus 40% chance for a second
+    if (tribes.length >= 2) {
       const eventType = Math.random();
       if (eventType < 0.35) {
         // Crash bonding within a tribe
@@ -943,7 +929,7 @@ export function simulateSlapSlapRevolution(ep) {
         const [tA, tB] = shuffle(tribes).slice(0, 2);
         const talker = pick(tA.members);
         const target = pick(tB.members);
-        if (canScheme(talker) || VILLAIN_ARCHS.has(arch(talker)) || Math.random() < 0.3) {
+        if (canScheme(talker)) {
           segData.socialEvents.push({
             type: 'trash-talk',
             p1: talker, p2: target,
@@ -955,20 +941,27 @@ export function simulateSlapSlapRevolution(ep) {
           popDelta(talker, -1);
         }
       } else {
-        // Showmance spark during descent (check romanticCompat)
+        // Showmance spark during descent — use proper romance pipeline
         const tribe = pick(tribes);
-        if (tribe.members.length >= 2 && seasonConfig.romance) {
+        if (tribe.members.length >= 2) {
           const candidates = shuffle(tribe.members).slice(0, 2);
-          if (romanticCompat(candidates[0], candidates[1])) {
-            segData.socialEvents.push({
-              type: 'showmance-spark',
-              p1: candidates[0], p2: candidates[1],
-              tribe: tribe.name,
-              text: pick(DESCENT_SHOWMANCE_SPARK)(candidates[0], candidates[1]),
-              bondDelta: 2,
-            });
-            addBond(candidates[0], candidates[1], 2);
-          }
+          _challengeRomanceSpark(candidates[0], candidates[1], ep, null, null, ep.chalMemberScores || {}, 'sausage sled descent');
+        }
+      }
+
+      // Bonus social event (40% chance for a second)
+      if (Math.random() < 0.4) {
+        const bonusTribe = pick(tribes);
+        if (bonusTribe.members.length >= 2) {
+          const pair = shuffle(bonusTribe.members).slice(0, 2);
+          segData.socialEvents.push({
+            type: 'crash-bonding',
+            p1: pair[0], p2: pair[1],
+            tribe: bonusTribe.name,
+            text: pick(DESCENT_CRASH_BONDING)(pair[0], pair[1]),
+            bondDelta: 1,
+          });
+          addBond(pair[0], pair[1], 1);
         }
       }
     }
@@ -1357,10 +1350,10 @@ export function simulateSlapSlapRevolution(ep) {
       let rawDamage = (atkStats.physical * 0.5 + atkStats.boldness * 0.3) * (atkDM / 100) + noise(2);
       rawDamage = clamp(Math.round(rawDamage), 1, 5);
 
-      // Block check
+      // Block check — proportional: higher blockScore = higher block chance
       let blockReduction = 0;
       const blockScore = (defStats.endurance * 0.3 + defStats.physical * 0.2) * (defDM / 100) + noise(1.5);
-      const blocked = blockScore > 3;
+      const blocked = Math.random() < blockScore * 0.12;
       if (blocked) {
         blockReduction = clamp(Math.round(blockScore * 0.5), 1, 2);
         rawDamage = Math.max(1, rawDamage - blockReduction);
@@ -1565,7 +1558,6 @@ export function simulateSlapSlapRevolution(ep) {
     // Bonus social event (40% chance)
     if (Math.random() < 0.4) {
       // Coaching from non-fighting tribe member
-      const winnerTribeObj = tribes.find(t => t.name === tribeOf[winner]);
       const benchMembers = (tribeSitOuts[tribeOf[winner]] || []);
       if (benchMembers.length > 0) {
         const benchCoach = pick(benchMembers);
@@ -1593,44 +1585,89 @@ export function simulateSlapSlapRevolution(ep) {
     };
   }
 
-  // Run tournament rounds
-  let currentMatchups = [...matchups];
+  // Run multi-round elimination tournament
+  // Round 1: all draft matchups fight
+  // Round 2+: winners fight winners until 1 remains (champion)
+  // Tribe elimination: first tribe with all fighters KO'd goes to tribal
+
+  const tribeTotal = {};
+  tribes.forEach(t => { tribeTotal[t.name] = tribeFighters[t.name].length; });
+
+  let currentRoundMatchups = [...matchups];
   let roundNum = 0;
-  const totalRounds = currentMatchups.length <= 3 ? 1 : (currentMatchups.length <= 6 ? 2 : 3);
+  let byeAdvancers = [];
+  let pendingByes = [];
 
-  // Simple approach: all matchups in round 1, check tribe elimination
-  const round1 = {
-    roundNum: 1,
-    roundLabel: totalRounds === 1 ? 'Final' : 'Round 1',
-    fights: [],
-    tribeEliminations: null,
-  };
+  while (currentRoundMatchups.length > 0) {
+    roundNum++;
+    const isFinalMatch = currentRoundMatchups.length === 1 && byeAdvancers.length === 0;
+    const roundObj = {
+      roundNum,
+      roundLabel: isFinalMatch ? 'FINAL' : `Round ${roundNum}`,
+      fights: [],
+      tribeEliminations: null,
+      byes: [...pendingByes],
+    };
+    pendingByes = [];
 
-  currentMatchups.forEach((m, i) => {
-    const fight = simulateFight(m, 1, i + 1);
-    round1.fights.push(fight);
+    currentRoundMatchups.forEach((m, i) => {
+      const fight = simulateFight(m, roundNum, i + 1);
+      roundObj.fights.push(fight);
 
-    // Check if any tribe is fully eliminated
-    const tribeTotal = {};
-    tribes.forEach(t => { tribeTotal[t.name] = tribeFighters[t.name].length; });
-
-    // After each fight, check if any tribe has all fighters KO'd
-    if (!eliminatedTribe) {
-      for (const t of tribes) {
-        if (tribeKOs[t.name] >= tribeTotal[t.name]) {
-          eliminatedTribe = t.name;
-          round1.tribeEliminations = { tribeName: t.name, eliminated: true };
-          break;
+      if (!eliminatedTribe) {
+        for (const t of tribes) {
+          if (tribeKOs[t.name] >= tribeTotal[t.name]) {
+            eliminatedTribe = t.name;
+            roundObj.tribeEliminations = { tribeName: t.name, eliminated: true };
+            break;
+          }
         }
       }
+    });
+
+    result.tournament.rounds.push(roundObj);
+
+    // Collect round winners + bye advancers for next round
+    const roundWinners = [
+      ...byeAdvancers,
+      ...roundObj.fights.map(f => f.winner).filter(Boolean),
+    ];
+    byeAdvancers = [];
+
+    if (roundWinners.length <= 1) break;
+
+    // Pair winners for next round — try cross-tribe first, same-tribe if unavoidable
+    const nextMatchups = [];
+    const available = roundWinners.map(w => ({ name: w, tribe: tribeOf[w] }));
+
+    while (available.length >= 2) {
+      const f1 = available.shift();
+      let f2Idx = available.findIndex(f => f.tribe !== f1.tribe);
+      if (f2Idx === -1) f2Idx = 0;
+      const f2 = available.splice(f2Idx, 1)[0];
+
+      nextMatchups.push({
+        p1: f1.name, tribe1: f1.tribe,
+        p2: f2.name, tribe2: f2.tribe,
+        pickNum: 0, captain: null, captainTribe: null,
+        reaction: '', isRivalry: false,
+      });
     }
-  });
 
-  result.tournament.rounds.push(round1);
+    // Odd winner gets BYE — auto-advances to next round
+    if (available.length === 1) {
+      const byePlayer = available[0];
+      byeAdvancers.push(byePlayer.name);
+      pendingByes.push({ player: byePlayer.name, tribe: byePlayer.tribe });
+      result.tournament.byes = result.tournament.byes || [];
+      result.tournament.byes.push({ player: byePlayer.name, tribe: byePlayer.tribe, round: roundNum + 1 });
+    }
 
-  // If no tribe eliminated after round 1 (rare with matched fighter counts), determine loser by KO ratio
+    currentRoundMatchups = nextMatchups;
+  }
+
+  // Determine eliminated tribe if not yet determined
   if (!eliminatedTribe) {
-    // Tribe with the worst KO ratio loses
     let worstTribe = null;
     let worstRatio = Infinity;
     tribes.forEach(t => {
@@ -1645,21 +1682,18 @@ export function simulateSlapSlapRevolution(ep) {
     eliminatedTribe = worstTribe;
   }
 
-  // Determine champion: fighter with the most wins from the best-performing tribe
-  let bestTribe = null;
-  let bestRecord = -Infinity;
-  tribes.forEach(t => {
-    const record = (tribeFighterWins[t.name] || 0) - (tribeKOs[t.name] || 0);
-    if (record > bestRecord || (record === bestRecord && Math.random() < 0.5)) {
-      bestRecord = record;
-      bestTribe = t.name;
-    }
-  });
-
-  // Champion: fighter from best tribe with highest chalMemberScores
-  const champCandidates = tribeFighters[bestTribe]
-    .sort((a, b) => (ep.chalMemberScores[b] || 0) - (ep.chalMemberScores[a] || 0));
-  const champion = champCandidates[0] || tribeFighters[bestTribe][0];
+  // Champion = winner of the final fight (last fight of last round)
+  const lastRound = result.tournament.rounds[result.tournament.rounds.length - 1];
+  const lastFight = lastRound?.fights[lastRound.fights.length - 1];
+  let champion = lastFight?.winner;
+  if (!champion) {
+    // Fallback
+    const allWinners = [];
+    result.tournament.rounds.forEach(r => r.fights.forEach(f => { if (f.winner) allWinners.push(f.winner); }));
+    champion = allWinners[allWinners.length - 1] || allActive[0];
+  }
+  const champTribeObj = tribes.find(t => tribeFighters[t.name]?.includes(champion));
+  const bestTribe = champTribeObj?.name || tribes[0]?.name;
 
   result.tournament.champion = champion;
   result.tournament.eliminatedTribe = eliminatedTribe;
@@ -1686,6 +1720,22 @@ export function simulateSlapSlapRevolution(ep) {
     for (let j = i + 1; j < _romActive.length; j++)
       _challengeRomanceSpark(_romActive[i], _romActive[j], ep, null, null, ep.chalMemberScores || {}, 'slap slap revolution');
   _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'slap slap revolution', _romActive);
+
+  // ══════════════════════════════════════════════════════════════
+  // COLD OPEN
+  // ══════════════════════════════════════════════════════════════
+  const finalFight = lastRound?.fights[lastRound.fights.length - 1];
+  const champPr = pronouns(champion);
+  if (finalFight && finalFight.winnerFinalHP <= 2) {
+    result.coldOpen = `${champion} won the final with only ${finalFight.winnerFinalHP} HP left. One more hit and it would have been over.`;
+  } else if (eliminatedTribe && result.tournament.rounds.length <= 2) {
+    result.coldOpen = `${eliminatedTribe} was wiped out before the tournament even reached a third round. Total domination.`;
+  } else if (result.grindPhase?.tribes?.some(g => g.sausageQuality < 20)) {
+    const worst = result.grindPhase.tribes.reduce((a, b) => a.sausageQuality < b.sausageQuality ? a : b);
+    result.coldOpen = `${worst.tribeName}'s sausage was so bad, Chris almost called a medevac for the judges.`;
+  } else {
+    result.coldOpen = `${champion} slapped ${champPr.pos} way through ${result.tournament.rounds.length} rounds of electrified combat to claim the crown.`;
+  }
 
   // ══════════════════════════════════════════════════════════════
   // FINALIZE
@@ -1794,6 +1844,8 @@ function _icon(type) {
     case 'mtn': return '<div class="ssr-i-mtn"></div>';
     case 'pad': return '<div class="ssr-i-pad"><div class="arr arr-u"></div><div class="arr arr-d"></div><div class="arr arr-l"></div><div class="arr arr-r"></div><div class="ctr"></div></div>';
     case 'goat': return '<div class="ssr-i-goat"></div>';
+    case 'slap': return '<div class="ssr-i-slap"></div>';
+    case 'kick': return '<div class="ssr-i-kick"></div>';
     default: return '';
   }
 }
@@ -1827,11 +1879,11 @@ function _speedTag(tag) {
   return '<span class="ssr-speed mid">STEADY</span>';
 }
 
-// ── Move icon ──
+// ── Move icon (CSS-only) ──
 function _moveIcon(moveType) {
-  if (moveType === 'dance-kick' || moveType === 'sweep') return '&#129461;';
-  if (moveType === 'haymaker' || moveType === 'rally-slap') return '&#128165;';
-  return '&#128074;';
+  if (moveType === 'dance-kick' || moveType === 'sweep') return _icon('kick');
+  if (moveType === 'haymaker' || moveType === 'rally-slap') return _icon('bolt');
+  return _icon('slap');
 }
 
 // ── Move display name ──
@@ -1855,67 +1907,168 @@ function _tribeDot(tribeName) {
   return `<div class="ssr-side-tribe-dot" style="background:${tc}"></div>`;
 }
 
-// ── Tournament bracket builder ──
-// revealedFightIdxs: Set of fight indices whose results should be visible
-function _buildBracket(matchups, fights, revealedFightIdxs) {
-  const revealed = revealedFightIdxs || new Set();
+// ── Tournament bracket builder (multi-round) ──
+// rounds: array of { roundLabel, fights: [{p1,p2,tribe1,tribe2,winner,loser}], byes: [] }
+// revealedGlobalIdxs: Set of global fight indices whose results are visible
+// draftMatchups: Round 1 matchups from the draft (used if rounds not available)
+// focusRound: if set, only show this round fully; prior rounds as compact summaries; future rounds hidden
+function _buildBracket(rounds, revealedGlobalIdxs, draftMatchups, focusRound) {
+  const revealed = revealedGlobalIdxs || new Set();
   let h = `<div class="ssr-bracket">`;
+  let globalIdx = 0;
 
-  // Build matchup slots
-  matchups.forEach((m, mi) => {
-    const fight = fights?.[mi];
-    const isRevealed = revealed.has(mi);
-    const tc1 = tribeColor(m.tribe1) || '#a8d8ea';
-    const tc2 = tribeColor(m.tribe2) || '#a8d8ea';
-    const p1Won = isRevealed && fight?.winner === m.p1;
-    const p2Won = isRevealed && fight?.winner === m.p2;
-    const rivalryTag = m.isRivalry ? `<span style="color:var(--ssr-danger);font-size:7px;letter-spacing:.5px;"> &#9876; RIVAL</span>` : '';
+  // If rounds is an array of round objects (multi-round), use that
+  // Legacy compat: if rounds is a flat matchup array, wrap it
+  let roundsArr;
+  if (rounds.length > 0 && rounds[0]?.fights) {
+    roundsArr = rounds;
+  } else {
+    // Legacy: flat matchup array from draft sidebar (no fights yet)
+    roundsArr = [{ roundLabel: 'Round 1', fights: [], byes: [] }];
+    draftMatchups = rounds;
+  }
 
-    h += `<div class="ssr-bracket-match${m.isRivalry ? ' rivalry' : ''}">
-      <div class="ssr-bracket-label">${m.isRivalry ? 'RIVALRY' : 'MATCH ' + mi}${rivalryTag}</div>
-      <div class="ssr-bracket-slot${p1Won ? ' winner' : p2Won ? ' loser' : ''}">
-        <div class="ssr-bracket-dot" style="background:${tc1};">${(m.p1 || '?')[0]}</div>
-        <span class="ssr-bracket-name">${m.p1}</span>
-        <span class="ssr-bracket-tribe" style="color:${tc1};">${m.tribe1}</span>
-        <span class="ssr-bracket-result" style="color:${p1Won ? 'var(--ssr-gold)' : p2Won ? 'var(--ssr-danger)' : 'rgba(232,240,248,.2)'};">${p1Won ? 'W' : p2Won ? 'KO' : '—'}</span>
-      </div>
-      <div class="ssr-bracket-vs">VS</div>
-      <div class="ssr-bracket-slot${p2Won ? ' winner' : p1Won ? ' loser' : ''}">
-        <div class="ssr-bracket-dot" style="background:${tc2};">${(m.p2 || '?')[0]}</div>
-        <span class="ssr-bracket-name">${m.p2}</span>
-        <span class="ssr-bracket-tribe" style="color:${tc2};">${m.tribe2}</span>
-        <span class="ssr-bracket-result" style="color:${p2Won ? 'var(--ssr-gold)' : p1Won ? 'var(--ssr-danger)' : 'rgba(232,240,248,.2)'};">${p2Won ? 'W' : p1Won ? 'KO' : '—'}</span>
-      </div>
+  // Draft-only mode: show matchups without results
+  if (draftMatchups && roundsArr[0]?.fights?.length === 0) {
+    draftMatchups.forEach((m, mi) => {
+      h += _buildMatchSlot(m, null, false, mi);
+    });
+    h += `</div>`;
+    return h;
+  }
+
+  // Multi-round display — only show rounds that have been reached
+  const tribeWins = {};
+  const tribeLosses = {};
+  const showAll = draftMatchups === 'show-all'; // results page passes this to show everything
+
+  roundsArr.forEach((round, ri) => {
+    const isFinal = round.roundLabel === 'FINAL';
+    const roundColor = isFinal ? 'var(--ssr-gold)' : 'var(--ssr-shock)';
+    const hasFocus = focusRound !== undefined && focusRound !== null;
+
+    // Check if any fight in this round has been revealed (gating)
+    const roundStartIdx = globalIdx;
+    const roundEndIdx = globalIdx + round.fights.length;
+    let roundReached = showAll;
+    if (!roundReached) {
+      for (let fi = roundStartIdx; fi < roundEndIdx; fi++) {
+        if (revealed.has(fi)) { roundReached = true; break; }
+      }
+    }
+
+    // When focusRound is set: hide future rounds, compact prior rounds
+    if (hasFocus && ri > focusRound) {
+      globalIdx += round.fights.length;
+      return;
+    }
+
+    if (hasFocus && ri < focusRound) {
+      // Compact summary for prior rounds — just winners
+      const winners = round.fights.filter(f => f.winner).map(f => {
+        const wt = f.winner === f.p1 ? f.tribe1 : f.tribe2;
+        return `${_av(f.winner, wt, 'sm')}<span style="font-size:8px;color:${tribeColor(wt) || '#a8d8ea'};">${f.winner}</span>`;
+      });
+      h += `<div style="border-bottom:1px solid rgba(124,58,237,.05);padding:3px 0;opacity:.4;">
+        <div style="font-size:7px;font-family:'Russo One',sans-serif;color:rgba(232,240,248,.3);letter-spacing:1px;">${round.roundLabel} — ${winners.length} winner${winners.length !== 1 ? 's' : ''}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;">${winners.join('')}</div>
+      </div>`;
+      globalIdx += round.fights.length;
+      return;
+    }
+
+    if (!roundReached && !hasFocus) {
+      // Show locked placeholder for future rounds
+      h += `<div class="ssr-bracket-round" style="border-bottom:1px solid rgba(124,58,237,.05);padding:4px 0 2px;margin-top:${ri > 0 ? '8px' : '0'};opacity:.25;">
+        <div style="font-size:7px;font-family:'Russo One',sans-serif;color:rgba(232,240,248,.3);letter-spacing:1.5px;">${_icon('pad')} ${round.roundLabel} &mdash; ${round.fights.length} match${round.fights.length !== 1 ? 'es' : ''}</div>
+      </div>`;
+      globalIdx += round.fights.length;
+      return;
+    }
+
+    // Round header
+    h += `<div class="ssr-bracket-round" style="border-bottom:1px solid ${isFinal ? 'rgba(251,191,36,.2)' : 'rgba(124,58,237,.1)'};padding:4px 0 2px;margin-top:${ri > 0 ? '8px' : '0'};">
+      <div style="font-size:7px;font-family:'Russo One',sans-serif;color:${roundColor};letter-spacing:1.5px;">${isFinal ? _icon('bolt') : _icon('pad')} ${round.roundLabel}</div>
     </div>`;
+
+    // Fights in this round
+    round.fights.forEach((fight, fi) => {
+      const isRevealed = revealed.has(globalIdx);
+      const matchup = { p1: fight.p1, tribe1: fight.tribe1, p2: fight.p2, tribe2: fight.tribe2, isRivalry: fight.isRivalry };
+      h += _buildMatchSlot(matchup, fight, isRevealed, globalIdx, isFinal);
+
+      if (isRevealed && fight.winner) {
+        const wTribe = fight.winner === fight.p1 ? fight.tribe1 : fight.tribe2;
+        const lTribe = fight.loser === fight.p1 ? fight.tribe1 : fight.tribe2;
+        tribeWins[wTribe] = (tribeWins[wTribe] || 0) + 1;
+        tribeLosses[lTribe] = (tribeLosses[lTribe] || 0) + 1;
+      }
+
+      // Advancement arrow for non-final fights
+      if (!isFinal && isRevealed && fight.winner) {
+        const winTC = tribeColor(fight.winner === fight.p1 ? fight.tribe1 : fight.tribe2) || '#a8d8ea';
+        h += `<div style="text-align:center;font-size:7px;color:${winTC};padding:1px 0;opacity:.6;">&#9660; ${fight.winner} advances</div>`;
+      }
+
+      globalIdx++;
+    });
+
+    // Byes — only show if round is reached
+    if (round.byes?.length) {
+      round.byes.forEach(bye => {
+        const tc = tribeColor(bye.tribe) || '#a8d8ea';
+        h += `<div style="display:flex;align-items:center;gap:4px;padding:3px 8px;font-size:8px;opacity:.5;">
+          ${_av(bye.player, bye.tribe, 'sm')}<span style="color:${tc};">${bye.player}</span><span style="color:var(--ssr-neon-cyan);margin-left:auto;">BYE</span>
+        </div>`;
+      });
+    }
   });
 
   // Tribe scoreboard
-  if (fights?.length > 0) {
-    const tribeWins = {};
-    const tribeLosses = {};
-    matchups.forEach((m, mi) => {
-      const fight = fights?.[mi];
-      if (!fight || !revealed.has(mi)) return;
-      const wTribe = m.p1 === fight.winner ? m.tribe1 : m.tribe2;
-      const lTribe = m.p1 === fight.winner ? m.tribe2 : m.tribe1;
-      tribeWins[wTribe] = (tribeWins[wTribe] || 0) + 1;
-      tribeLosses[lTribe] = (tribeLosses[lTribe] || 0) + 1;
+  if (Object.keys(tribeWins).length > 0) {
+    h += `<div class="ssr-bracket-score"><div style="font-size:7px;color:rgba(232,240,248,.3);letter-spacing:1px;margin-bottom:4px;">TRIBE SCORE</div>`;
+    const allTribes = new Set();
+    roundsArr.forEach(r => r.fights.forEach(f => { allTribes.add(f.tribe1); allTribes.add(f.tribe2); }));
+    allTribes.forEach(tn => {
+      const tc = tribeColor(tn) || '#a8d8ea';
+      const w = tribeWins[tn] || 0;
+      const l = tribeLosses[tn] || 0;
+      h += `<div style="display:flex;align-items:center;gap:4px;font-size:9px;"><div class="ssr-bracket-dot" style="background:${tc};width:8px;height:8px;">${tn[0]}</div><span style="flex:1;">${tn}</span><span style="color:var(--ssr-green);">${_icon('bolt')} ${w}W</span><span style="color:var(--ssr-danger);">${l}L</span></div>`;
     });
-    if (Object.keys(tribeWins).length > 0) {
-      h += `<div class="ssr-bracket-score"><div style="font-size:7px;color:rgba(232,240,248,.3);letter-spacing:1px;margin-bottom:4px;">TRIBE SCORE</div>`;
-      const allTribes = new Set([...matchups.map(m => m.tribe1), ...matchups.map(m => m.tribe2)]);
-      allTribes.forEach(tn => {
-        const tc = tribeColor(tn) || '#a8d8ea';
-        const w = tribeWins[tn] || 0;
-        const l = tribeLosses[tn] || 0;
-        h += `<div style="display:flex;align-items:center;gap:4px;font-size:9px;"><div class="ssr-bracket-dot" style="background:${tc};width:8px;height:8px;">${tn[0]}</div><span style="flex:1;">${tn}</span><span style="color:var(--ssr-green);">${w}W</span><span style="color:var(--ssr-danger);">${l}L</span></div>`;
-      });
-      h += `</div>`;
-    }
+    h += `</div>`;
   }
 
   h += `</div>`;
   return h;
+}
+
+function _buildMatchSlot(m, fight, isRevealed, matchIdx, isFinal) {
+  const tc1 = tribeColor(m.tribe1) || '#a8d8ea';
+  const tc2 = tribeColor(m.tribe2) || '#a8d8ea';
+  const p1Won = isRevealed && fight?.winner === m.p1;
+  const p2Won = isRevealed && fight?.winner === m.p2;
+  const rivalryTag = m.isRivalry ? `<span style="color:var(--ssr-danger);font-size:7px;letter-spacing:.5px;"> &#9876; RIVAL</span>` : '';
+
+  const resultIcon1 = p1Won ? _icon('bolt') : p2Won ? '<span style="color:var(--ssr-danger);font-size:8px;">&#10006;</span>' : _icon('pad');
+  const resultIcon2 = p2Won ? _icon('bolt') : p1Won ? '<span style="color:var(--ssr-danger);font-size:8px;">&#10006;</span>' : _icon('pad');
+
+  const borderStyle = isFinal ? 'border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.04);' : '';
+
+  return `<div class="ssr-bracket-match${m.isRivalry ? ' rivalry' : ''}" style="${borderStyle}">
+    <div class="ssr-bracket-slot${p1Won ? ' winner' : p2Won ? ' loser' : ''}">
+      ${_av(m.p1, m.tribe1, 'sm')}
+      <span class="ssr-bracket-name">${m.p1}</span>
+      <span class="ssr-bracket-tribe" style="color:${tc1};">${m.tribe1}</span>
+      <span class="ssr-bracket-result">${resultIcon1}</span>
+    </div>
+    <div class="ssr-bracket-vs">${_icon('bolt')} VS</div>
+    <div class="ssr-bracket-slot${p2Won ? ' winner' : p1Won ? ' loser' : ''}">
+      ${_av(m.p2, m.tribe2, 'sm')}
+      <span class="ssr-bracket-name">${m.p2}</span>
+      <span class="ssr-bracket-tribe" style="color:${tc2};">${m.tribe2}</span>
+      <span class="ssr-bracket-result">${resultIcon2}</span>
+    </div>
+  </div>`;
 }
 
 // ── Flavor text helper ──
@@ -1976,7 +2129,7 @@ function _shell(content, ep, phaseCls) {
   return `<style>
 @import url('https://fonts.googleapis.com/css2?family=Bungee+Shade&family=Russo+One&family=Oswald:wght@400;600;700&family=Special+Elite&family=Press+Start+2P&display=swap');
 :root{--ssr-wood:#5c3a1e;--ssr-wood-lt:#8b5e34;--ssr-wood-dk:#3a2210;--ssr-snow:#e8f0f8;--ssr-ice:#a8d8ea;--ssr-alpine:#1a3550;--ssr-deep:#0c1824;--ssr-deep2:#0f1f30;--ssr-meat:#c0392b;--ssr-meat-lt:#e74c3c;--ssr-sausage:#d4874a;--ssr-shock:#ffe44d;--ssr-shock-hot:#ffcc00;--ssr-spark:#fff700;--ssr-neon-pink:#ff2d7b;--ssr-neon-cyan:#00e5ff;--ssr-neon-green:#39ff14;--ssr-gold:#fbbf24;--ssr-red:#ef4444;--ssr-blue:#3b82f6;--ssr-green:#22c55e;--ssr-purple:#a855f7;--ssr-danger:#ff3b3b;--ssr-pad-bg:#2a1a3d;--ssr-pad-arrow:#7c3aed;}
-.ssr-broadcast{position:sticky;top:0;left:0;right:0;z-index:50;height:38px;background:linear-gradient(90deg,rgba(12,24,36,.97),rgba(42,26,61,.97));border-bottom:2px solid var(--ssr-shock);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:12px;}
+.ssr-broadcast{position:fixed;top:46px;left:0;right:0;z-index:8;height:38px;background:linear-gradient(90deg,rgba(12,24,36,.97),rgba(42,26,61,.97));border-bottom:2px solid var(--ssr-shock);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:12px;}
 .ssr-live{display:flex;align-items:center;gap:6px;color:var(--ssr-danger);text-transform:uppercase;letter-spacing:2px;font-size:10px;font-weight:700;}
 .ssr-live-dot{width:8px;height:8px;background:var(--ssr-danger);border-radius:50%;animation:ssr-blink 1s infinite;}
 @keyframes ssr-blink{0%,100%{opacity:1}50%{opacity:.2}}
@@ -1984,7 +2137,7 @@ function _shell(content, ep, phaseCls) {
 .ssr-ticker-inner{position:absolute;white-space:nowrap;animation:ssr-scroll 30s linear infinite;font-size:11px;color:var(--ssr-shock);letter-spacing:1px;}
 @keyframes ssr-scroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 .ssr-channel{font-family:'Bungee Shade',cursive;color:var(--ssr-neon-cyan);font-size:13px;letter-spacing:2px;}
-.ssr-alps{position:absolute;top:0;left:0;right:0;bottom:0;z-index:0;pointer-events:none;overflow:hidden;}
+.ssr-alps{position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;pointer-events:none;overflow:hidden;}
 .ssr-mtn{position:absolute;bottom:0;}
 .ssr-mtn.m1{left:-8%;width:0;height:0;border-style:solid;border-width:0 240px 380px 200px;border-color:transparent transparent rgba(26,53,80,.6) transparent;}
 .ssr-mtn.m2{left:15%;width:0;height:0;border-style:solid;border-width:0 180px 300px 160px;border-color:transparent transparent rgba(20,40,65,.5) transparent;}
@@ -1994,20 +2147,20 @@ function _shell(content, ep, phaseCls) {
 .ssr-cap{position:absolute;bottom:0;}
 .ssr-cap.c1{left:calc(-8% + 120px);bottom:280px;width:0;height:0;border-style:solid;border-width:0 100px 100px 80px;border-color:transparent transparent rgba(232,240,248,.08) transparent;}
 .ssr-cap.c3{left:calc(38% + 100px);bottom:320px;width:0;height:0;border-style:solid;border-width:0 130px 100px 110px;border-color:transparent transparent rgba(232,240,248,.1) transparent;}
-.ssr-snow-wrap{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;overflow:hidden;}
+.ssr-snow-wrap{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;overflow:hidden;}
 .ssr-sf{position:absolute;background:white;border-radius:50%;animation:ssr-fall linear infinite;}
 @keyframes ssr-fall{0%{transform:translateY(-20px) translateX(0);opacity:0;}5%{opacity:.6;}50%{transform:translateY(50vh) translateX(40px);}100%{transform:translateY(105vh) translateX(15px);opacity:0;}}
-.ssr-sparks{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;}
+.ssr-sparks{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;}
 .ssr-spark-p{position:absolute;width:3px;height:3px;background:var(--ssr-shock);border-radius:50%;box-shadow:0 0 6px var(--ssr-shock),0 0 12px var(--ssr-shock-hot);animation:ssr-zap 2s ease-out infinite;}
 @keyframes ssr-zap{0%{opacity:0;transform:scale(0);}10%{opacity:1;transform:scale(1.5);}20%{opacity:0;transform:scale(0);}100%{opacity:0;}}
-.ssr-float-arrows{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;overflow:hidden;}
+.ssr-float-arrows{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;overflow:hidden;}
 .ssr-farrow{position:absolute;font-size:24px;color:rgba(124,58,237,.08);animation:ssr-arrowfloat linear infinite;}
 @keyframes ssr-arrowfloat{0%{transform:translateY(110vh) rotate(0deg);opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{transform:translateY(-10vh) rotate(360deg);opacity:0;}}
-.ssr-meatsplat{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;overflow:hidden;}
+.ssr-meatsplat{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;overflow:hidden;}
 .ssr-meatp{position:absolute;border-radius:50%;animation:ssr-splat 4s ease-out infinite;}
 @keyframes ssr-splat{0%{transform:translateY(0) scale(.5);opacity:0;}5%{opacity:.4;}30%{transform:translateY(-60px) translateX(30px) scale(1.2);opacity:.3;}100%{transform:translateY(100px) scale(.3);opacity:0;}}
-.ssr-fog{position:absolute;bottom:0;left:0;right:0;height:200px;z-index:1;pointer-events:none;background:linear-gradient(to top,rgba(12,24,36,.95),transparent);}
-.ssr-shell{max-width:1100px;margin:16px auto 80px;display:grid;grid-template-columns:1fr 280px;gap:16px;padding:0 16px;position:relative;z-index:2;}
+.ssr-fog{position:fixed;bottom:0;left:0;right:0;height:200px;z-index:1;pointer-events:none;background:linear-gradient(to top,rgba(12,24,36,.95),transparent);}
+.ssr-shell{max-width:1100px;margin:60px auto 120px;display:grid;grid-template-columns:1fr 280px;gap:16px;padding:0 16px;position:relative;z-index:2;}
 .ssr-main{min-width:0;}
 .ssr-title-card{text-align:center;padding:50px 20px 40px;position:relative;overflow:hidden;border-radius:16px;border:3px solid var(--ssr-shock);background:linear-gradient(135deg,var(--ssr-pad-bg),var(--ssr-deep));margin-bottom:20px;}
 .ssr-title-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:35%;background:repeating-linear-gradient(90deg,transparent 0px,transparent 48px,rgba(124,58,237,.1) 48px,rgba(124,58,237,.1) 50px),repeating-linear-gradient(180deg,transparent 0px,transparent 24px,rgba(124,58,237,.07) 24px,rgba(124,58,237,.07) 26px);transform:perspective(400px) rotateX(50deg);transform-origin:bottom;pointer-events:none;}
@@ -2071,6 +2224,12 @@ function _shell(content, ep, phaseCls) {
 .ssr-i-goat{width:20px;height:18px;position:relative;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3));}
 .ssr-i-goat::before{content:'';position:absolute;bottom:0;left:3px;width:14px;height:12px;background:#d1d5db;border-radius:40%;}
 .ssr-i-goat::after{content:'';position:absolute;top:0;left:6px;width:4px;height:6px;background:#e5e7eb;border-radius:30%;transform:rotate(-15deg);}
+.ssr-i-slap{width:18px;height:18px;position:relative;display:inline-flex;flex-shrink:0;}
+.ssr-i-slap::before{content:'';position:absolute;bottom:2px;left:2px;width:14px;height:10px;background:var(--ssr-sausage);border-radius:3px 3px 6px 6px;transform:rotate(-10deg);}
+.ssr-i-slap::after{content:'';position:absolute;top:1px;right:2px;width:5px;height:5px;background:var(--ssr-danger);border-radius:50%;box-shadow:0 0 4px var(--ssr-danger);}
+.ssr-i-kick{width:18px;height:18px;position:relative;display:inline-flex;flex-shrink:0;}
+.ssr-i-kick::before{content:'';position:absolute;bottom:0;left:4px;width:4px;height:14px;background:var(--ssr-neon-cyan);border-radius:2px;transform:rotate(25deg);}
+.ssr-i-kick::after{content:'';position:absolute;bottom:0;left:8px;width:6px;height:4px;background:var(--ssr-shock);border-radius:1px;transform:rotate(-10deg);}
 .ssr-hp{display:flex;align-items:center;gap:8px;margin:6px 0;}
 .ssr-hp-track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;}
 .ssr-hp-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.34,1.56,.64,1);}
@@ -2117,7 +2276,7 @@ function _shell(content, ep, phaseCls) {
 .ssr-flavor.crowd{border-left-color:rgba(124,58,237,.2);color:rgba(168,130,255,.35);}
 .ssr-sidebar{position:sticky;top:60px;align-self:start;}
 .ssr-side-box{background:linear-gradient(135deg,rgba(42,26,61,.12),rgba(12,24,36,.2));border:1px solid rgba(124,58,237,.15);border-radius:10px;padding:14px;margin-bottom:12px;}
-.ssr-side-title{font-family:'Russo One',sans-serif;font-size:10px;letter-spacing:2px;color:var(--ssr-shock);text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(255,228,77,.1);}
+.ssr-side-title{font-family:'Russo One',sans-serif;font-size:10px;letter-spacing:2px;color:var(--ssr-shock);text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(255,228,77,.1);display:flex;align-items:center;gap:4px;}
 .ssr-side-tribe{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);}
 .ssr-side-tribe:last-child{border-bottom:none;}
 .ssr-side-tribe-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
@@ -2140,15 +2299,16 @@ function _shell(content, ep, phaseCls) {
 .ssr-bracket{display:flex;flex-direction:column;gap:8px;padding:8px 0;}
 .ssr-bracket-match{border:1px solid rgba(124,58,237,.15);border-radius:6px;overflow:hidden;background:rgba(42,26,61,.08);}
 .ssr-bracket-match.rivalry{border-color:rgba(239,68,68,.25);background:rgba(239,68,68,.04);}
-.ssr-bracket-label{font-size:7px;color:rgba(232,240,248,.3);letter-spacing:1px;padding:4px 8px 2px;text-transform:uppercase;}
+.ssr-bracket-round{display:flex;align-items:center;gap:4px;}
+.ssr-bracket-label{font-size:7px;color:rgba(232,240,248,.3);letter-spacing:1px;padding:4px 8px 2px;text-transform:uppercase;display:flex;align-items:center;gap:4px;}
 .ssr-bracket-slot{display:flex;align-items:center;gap:5px;padding:5px 8px;transition:opacity .3s;}
 .ssr-bracket-slot.winner{background:rgba(251,191,36,.06);}
 .ssr-bracket-slot.loser{opacity:.35;}
 .ssr-bracket-dot{width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;flex-shrink:0;}
 .ssr-bracket-name{font-size:10px;font-weight:600;flex:1;}
 .ssr-bracket-tribe{font-size:7px;letter-spacing:.5px;}
-.ssr-bracket-result{font-family:'Russo One',sans-serif;font-size:9px;min-width:18px;text-align:right;}
-.ssr-bracket-vs{text-align:center;font-family:'Russo One',sans-serif;font-size:8px;color:var(--ssr-shock);padding:1px 0;letter-spacing:2px;opacity:.5;}
+.ssr-bracket-result{font-family:'Russo One',sans-serif;font-size:9px;min-width:18px;text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:2px;}
+.ssr-bracket-vs{display:flex;align-items:center;justify-content:center;gap:4px;font-family:'Russo One',sans-serif;font-size:8px;color:var(--ssr-shock);padding:1px 0;letter-spacing:2px;opacity:.5;}
 .ssr-bracket-score{padding:8px;border-top:1px solid rgba(124,58,237,.1);margin-top:4px;}
 .ssr-hat-ceremony{display:flex;justify-content:center;gap:20px;padding:16px;flex-wrap:wrap;}
 .ssr-hat-group{text-align:center;padding:14px;background:rgba(92,58,30,.08);border:1px solid rgba(212,135,74,.15);border-radius:10px;min-width:130px;flex:1;}
@@ -2158,7 +2318,7 @@ function _shell(content, ep, phaseCls) {
 .ssr-speed.fast{background:rgba(0,229,255,.1);color:var(--ssr-neon-cyan);border:1px solid rgba(0,229,255,.2);}
 .ssr-speed.mid{background:rgba(251,191,36,.1);color:var(--ssr-gold);border:1px solid rgba(251,191,36,.2);}
 .ssr-speed.slow{background:rgba(239,68,68,.1);color:var(--ssr-danger);border:1px solid rgba(239,68,68,.2);}
-.ssr-controls{position:sticky;bottom:0;z-index:50;background:linear-gradient(0deg,rgba(12,24,36,.97),rgba(12,24,36,.9));border-top:1px solid rgba(255,228,77,.15);padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:16px;backdrop-filter:blur(10px);}
+.ssr-controls{position:fixed;bottom:0;left:0;right:0;z-index:8;background:linear-gradient(0deg,rgba(12,24,36,.97),rgba(12,24,36,.9));border-top:1px solid rgba(255,228,77,.15);padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:16px;backdrop-filter:blur(10px);}
 .ssr-btn{padding:8px 20px;border:1px solid var(--ssr-pad-arrow);border-radius:4px;background:rgba(124,58,237,.1);color:var(--ssr-snow);font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all .2s;}
 .ssr-btn:hover{background:var(--ssr-pad-arrow);color:#fff;box-shadow:0 0 12px rgba(124,58,237,.3);}
 .ssr-counter{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--ssr-shock);letter-spacing:1px;}
@@ -2174,7 +2334,6 @@ function _shell(content, ep, phaseCls) {
 @media(max-width:900px){.ssr-shell{grid-template-columns:1fr;}.ssr-sidebar{position:static;}}
 @media(prefers-reduced-motion:reduce){*{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;}}
 </style>
-<div class="ssr-wrap" style="position:relative;min-height:100vh;">
 <div class="ssr-broadcast">
   <div class="ssr-live"><div class="ssr-live-dot"></div> LIVE</div>
   <div class="ssr-ticker"><div class="ssr-ticker-inner">${_tickerText(ep)}</div></div>
@@ -2189,7 +2348,6 @@ function _shell(content, ep, phaseCls) {
 <div class="ssr-shell ${phaseCls || ''}">
   <div class="ssr-main">${content}</div>
   <div class="ssr-sidebar" id="ssr-sidebar-inner">${_buildSidebarContent(ep, phaseCls)}</div>
-</div>
 </div>`;
 }
 
@@ -2217,6 +2375,9 @@ function _buildSidebarContent(ep, phase) {
     return _sidebarFights(d, tribes, 'ssr-fights');
   } else if (phaseKey === 'finals' || phaseKey === 'phase-finals') {
     return _sidebarFights(d, tribes, 'ssr-finals');
+  } else if (phaseKey.match(/^(phase-)?round\d+$/)) {
+    const roundNum = phaseKey.replace('phase-', '').replace('round', '');
+    return _sidebarFights(d, tribes, `ssr-round${roundNum}`);
   } else if (phaseKey === 'results' || phaseKey === 'phase-results') {
     return _sidebarResults(d, tribes);
   }
@@ -2478,7 +2639,7 @@ function _sidebarDraft(d) {
 
   if (revealedMatchups.length > 0) {
     h += `<div class="ssr-side-box"><div class="ssr-side-title">BRACKET PREVIEW</div>`;
-    h += _buildBracket(revealedMatchups, [], new Set());
+    h += _buildBracket(revealedMatchups, new Set());
     h += `</div>`;
   }
 
@@ -2500,28 +2661,107 @@ function _sidebarFights(d, tribes, screenKey) {
   const allFights = [];
   (d.tournament?.rounds || []).forEach(r => { allFights.push(...r.fights); });
   const isFinals = screenKey === 'ssr-finals';
-  const allMatchups = d.captainDraft?.matchups || [];
 
   const st = _tvState[screenKey];
   const idx = st ? st.idx : -1;
-  const stepMeta = isFinals ? (window._ssrFinalsStepMeta || []) : (window._ssrFightsStepMeta || []);
 
-  // Count fights revealed
+  // Find stepMeta from the correct per-round window key
+  let stepMeta = [];
+  if (isFinals) {
+    const lastRoundIdx = (d.tournament?.rounds?.length || 1) - 1;
+    stepMeta = window[`_ssrRound${lastRoundIdx}StepMeta`] || [];
+  } else {
+    const roundMatch = screenKey.match(/ssr-round(\d+)/);
+    if (roundMatch) {
+      const rIdx = parseInt(roundMatch[1], 10) - 1;
+      stepMeta = window[`_ssrRound${rIdx}StepMeta`] || [];
+    }
+  }
+
+  // Count fights revealed from this screen's stepMeta
   const revealedFightIdxs = new Set();
   for (let i = 0; i <= idx && i < stepMeta.length; i++) {
     if (stepMeta[i]?.fightIdx !== undefined) revealedFightIdxs.add(stepMeta[i].fightIdx);
     if (stepMeta[i]?.isKO) revealedFightIdxs.add(stepMeta[i].fightIdx);
   }
 
-  // In finals mode, pre-finals fights are already revealed
+  // Pre-reveal all fights from prior rounds (if viewing Round 2+, Round 1 results are known)
+  let currentRoundIdx = 0;
   if (isFinals) {
-    for (let fi = 0; fi < allFights.length - 1; fi++) revealedFightIdxs.add(fi);
+    currentRoundIdx = (d.tournament?.rounds?.length || 1) - 1;
+  } else {
+    const roundMatch = screenKey.match(/ssr-round(\d+)/);
+    if (roundMatch) currentRoundIdx = parseInt(roundMatch[1], 10) - 1;
+  }
+  let priorFightIdx = 0;
+  const tournamentRounds = d.tournament?.rounds || [];
+  for (let r = 0; r < currentRoundIdx && r < tournamentRounds.length; r++) {
+    for (let f = 0; f < tournamentRounds[r].fights.length; f++) {
+      revealedFightIdxs.add(priorFightIdx++);
+    }
   }
 
-  // Tournament bracket using shared builder
-  let h = `<div class="ssr-side-box"><div class="ssr-side-title">TOURNAMENT BRACKET</div>`;
-  h += _buildBracket(allMatchups, allFights, revealedFightIdxs);
+  // Tournament bracket using shared builder — focused on current round only
+  let h = `<div class="ssr-side-box"><div class="ssr-side-title">${_icon('pad')} TOURNAMENT BRACKET</div>`;
+  h += _buildBracket(tournamentRounds, revealedFightIdxs, undefined, currentRoundIdx);
   h += `</div>`;
+
+  // Current fight HP tracker — find the latest active fight from stepMeta
+  let currentFightIdx = -1;
+  let latestExchange = null;
+  for (let i = 0; i <= idx && i < stepMeta.length; i++) {
+    const sm = stepMeta[i];
+    if (sm?.fightIdx !== undefined) currentFightIdx = sm.fightIdx;
+    if (sm?.isExchange) latestExchange = sm;
+    if (sm?.isKO) latestExchange = null;
+  }
+
+  if (currentFightIdx >= 0 && currentFightIdx < allFights.length) {
+    const fight = allFights[currentFightIdx];
+    const tc1 = tribeColor(fight.tribe1) || '#a8d8ea';
+    const tc2 = tribeColor(fight.tribe2) || '#a8d8ea';
+    const isKOd = !latestExchange && revealedFightIdxs.has(currentFightIdx);
+
+    if (latestExchange || !isKOd) {
+      const hp1 = latestExchange ? Math.max(0, latestExchange.p1HP) : (10 + (fight.p1HpBonus || 0));
+      const hp2 = latestExchange ? Math.max(0, latestExchange.p2HP) : (10 + (fight.p2HpBonus || 0));
+      const dm1 = latestExchange ? Math.max(0, latestExchange.p1DM) : 70;
+      const dm2 = latestExchange ? Math.max(0, latestExchange.p2DM) : 70;
+      const mHP1 = latestExchange ? latestExchange.maxHP1 : hp1;
+      const mHP2 = latestExchange ? latestExchange.maxHP2 : hp2;
+      const fightLabel = isFinals ? 'CHAMPIONSHIP' : `MATCH ${currentFightIdx + 1}`;
+
+      h += `<div class="ssr-side-box"><div class="ssr-side-title">${_icon('bolt')} ${fightLabel}</div>`;
+      h += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">`;
+      h += `<div style="text-align:center;">${_av(fight.p1, fight.tribe1, 'sm')}<div style="font-size:9px;font-weight:700;color:${tc1};margin:2px 0;">${fight.p1}</div>${_hpBar(hp1, mHP1)}${_dmBar(dm1)}</div>`;
+      h += `<div style="text-align:center;">${_av(fight.p2, fight.tribe2, 'sm')}<div style="font-size:9px;font-weight:700;color:${tc2};margin:2px 0;">${fight.p2}</div>${_hpBar(hp2, mHP2)}${_dmBar(dm2)}</div>`;
+      h += `</div>`;
+
+      // Last exchange summary
+      if (latestExchange) {
+        const moveCol = latestExchange.blocked ? 'green' : latestExchange.shock ? 'gold' : 'danger';
+        h += `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(124,58,237,.1);font-size:8px;color:rgba(232,240,248,.4);">
+          ${_icon(latestExchange.shock ? 'bolt' : 'pad')} <strong style="color:var(--ssr-${moveCol});">${latestExchange.attacker}</strong> &rarr; ${_moveName(latestExchange.move)} &rarr; <strong>${latestExchange.defender}</strong> ${latestExchange.blocked ? '<span style="color:var(--ssr-green);">BLOCKED</span>' : `<span style="color:var(--ssr-danger);">-${latestExchange.damage} HP</span>`}
+        </div>`;
+      }
+      h += `</div>`;
+    }
+
+    if (isKOd) {
+      const winTC = tribeColor(fight.winner === fight.p1 ? fight.tribe1 : fight.tribe2) || '#a8d8ea';
+      const loseTC = tribeColor(fight.loser === fight.p1 ? fight.tribe1 : fight.tribe2) || '#a8d8ea';
+      h += `<div class="ssr-side-box" style="border-color:rgba(255,59,59,.2);"><div class="ssr-side-title" style="color:var(--ssr-danger);">${_icon('bolt')} K.O.</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+          ${_av(fight.winner, fight.winner === fight.p1 ? fight.tribe1 : fight.tribe2, 'sm')}
+          <div><div style="font-size:10px;font-weight:700;color:var(--ssr-gold);">${fight.winner}</div><div style="font-size:8px;color:var(--ssr-gold);">WINNER</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;opacity:.5;">
+          ${_av(fight.loser, fight.loser === fight.p1 ? fight.tribe1 : fight.tribe2, 'sm')}
+          <div><div style="font-size:10px;">${fight.loser}</div><div style="font-size:8px;color:var(--ssr-danger);">ELIMINATED</div></div>
+        </div>
+      </div>`;
+    }
+  }
 
   // Tribe status
   h += `<div class="ssr-side-box"><div class="ssr-side-title">TRIBE STATUS</div>`;
@@ -2530,7 +2770,7 @@ function _sidebarFights(d, tribes, screenKey) {
   tribes.forEach(t => { tribeKOCount[t.tribeName] = 0; tribeFighterCount[t.tribeName] = 0; });
 
   const countedPlayers = {};
-  allMatchups.forEach(m => {
+  allFights.forEach(m => {
     if (!countedPlayers[m.p1]) { countedPlayers[m.p1] = m.tribe1; }
     if (!countedPlayers[m.p2]) { countedPlayers[m.p2] = m.tribe2; }
   });
@@ -2884,7 +3124,7 @@ export function rpBuildSSRHats(ep) {
 
   // Hat ceremony card
   let hatHtml = '<div class="ssr-hat-ceremony">';
-  const hatEmojis = { pickelhaube: '&#9935;', ushanka: '&#127913;', tyrolean: '&#129490;' };
+  const hatIcons = { pickelhaube: _icon('bolt'), ushanka: _icon('mtn'), tyrolean: _icon('goat') };
   placements.forEach((p, i) => {
     const tc = tribeColor(p.tribeName) || '#a8d8ea';
     const isLast = i === placements.length - 1;
@@ -2892,7 +3132,7 @@ export function rpBuildSSRHats(ep) {
     const placeCol = i === 0 ? 'var(--ssr-gold)' : (isLast ? 'var(--ssr-danger)' : 'var(--ssr-sausage)');
     hatHtml += `<div class="ssr-hat-group" style="${borderStyle}">
       <div class="ssr-hat-place" style="color:${placeCol};">${['1ST','2ND','3RD','4TH'][i] || `${i+1}TH`} &mdash; ${p.tribeName.toUpperCase()}</div>
-      <div style="font-size:28px;margin:8px 0;">${hatEmojis[p.hatType] || '&#129490;'}</div>
+      <div style="font-size:28px;margin:8px 0;display:flex;justify-content:center;">${hatIcons[p.hatType] || _icon('goat')}</div>
       <div style="font-size:11px;color:rgba(232,240,248,.6);">${_hatName(p.hatType)}${p.hatType === 'pickelhaube' ? 'n' : p.hatType === 'ushanka' ? 's' : ' Hats'}</div>
       <div class="ssr-hat-bonus"${isLast ? ' style="color:var(--ssr-danger);"' : ''}>+${p.hpBonus} HP IN FIGHTS${p.hpBonus === 0 ? ' (NONE)' : ''}</div>
       ${i === 0 ? '<div style="font-size:9px;color:rgba(232,240,248,.4);margin-top:4px;">Picks matchups first</div>' : ''}
@@ -2970,7 +3210,7 @@ export function rpBuildSSRDraft(ep) {
       </div>
       <div style="text-align:center;margin-top:8px;font-size:10px;color:rgba(232,240,248,.35);">Bond: <span style="color:var(--ssr-danger);">${rl.bond}</span></div>
     </div>`);
-    stepMeta.push({ type: 'rivalry', matchup: { p1: rl.p1, p2: rl.p2, isRivalry: true } });
+    stepMeta.push({ type: 'rivalry', matchup: { p1: rl.p1, tribe1: rl.tribe1, p2: rl.p2, tribe2: rl.tribe2, isRivalry: true } });
   });
 
   // Sit-out picks
@@ -3009,7 +3249,7 @@ export function rpBuildSSRDraft(ep) {
   const allMatchups = draft.matchups || [];
   steps.push(`<div class="ssr-card" style="border:2px solid var(--ssr-pad-arrow);">
     <div class="ssr-hdr">${_icon('pad')}<span class="ssr-title" style="color:var(--ssr-pad-arrow);">TOURNAMENT BRACKET</span><span class="ssr-badge ssr-b-fight">${allMatchups.length} FIGHTS</span></div>
-    ${_buildBracket(allMatchups, [], new Set())}
+    ${_buildBracket(allMatchups, new Set())}
   </div>`);
   stepMeta.push({ type: 'bracket' });
 
@@ -3107,7 +3347,7 @@ function _buildFightCards(fights, suffix, screenKey, isFinals) {
           <div><div style="font-size:11px;font-weight:600;">${ex.defenderName}</div><div style="font-size:9px;color:${ex.blocked ? 'var(--ssr-green)' : 'rgba(232,240,248,.4)'};">${ex.blocked ? 'PARTIAL BLOCK' : (defShocked ? 'SHOCKED!' : 'HIT')}</div></div>
         </div>
       </div>`);
-      stepMeta.push({ fightIdx: fi });
+      stepMeta.push({ fightIdx: fi, isExchange: true, attacker: ex.attackerName, defender: ex.defenderName, move: ex.moveType, damage: ex.damage, blocked: ex.blocked, shock: !!isShock, p1HP: isAttP1 ? ex.attackerHP : ex.defenderHP, p2HP: isAttP1 ? ex.defenderHP : ex.attackerHP, p1DM: isAttP1 ? ex.attackerDM : ex.defenderDM, p2DM: isAttP1 ? ex.defenderDM : ex.attackerDM, maxHP1, maxHP2 });
 
       // Narration text
       steps.push(`<div class="ssr-txt" style="padding:0 14px;font-size:11px;color:${isShock ? 'rgba(255,228,77,.4)' : 'rgba(232,240,248,.5)'};font-style:italic;">${ex.text}</div>`);
@@ -3171,21 +3411,51 @@ function _buildFightCards(fights, suffix, screenKey, isFinals) {
   return { steps, stepMeta };
 }
 
-export function rpBuildSSRFights(ep) {
+// Generic per-round VP builder
+export function rpBuildSSRRound(ep, roundIdx) {
   const d = ep.slapRevolution;
   if (!d) return '';
-  const screenKey = 'ssr-fights';
-  const suffix = 'fights';
+  const rounds = d.tournament?.rounds || [];
+  if (roundIdx >= rounds.length) return '';
 
-  // All fights except the last one (which is the final)
-  const allFights = [];
-  (d.tournament?.rounds || []).forEach(r => { allFights.push(...r.fights); });
-  const nonFinalFights = allFights.length > 1 ? allFights.slice(0, -1) : allFights;
+  const round = rounds[roundIdx];
+  const isFinal = round.roundLabel === 'FINAL';
+  const screenKey = isFinal ? 'ssr-finals' : `ssr-round${roundIdx + 1}`;
+  const suffix = isFinal ? 'finals' : `round${roundIdx + 1}`;
 
-  if (nonFinalFights.length === 0) return '';
+  // Compute global fight index offset (sum of all fights in prior rounds)
+  let globalFightOffset = 0;
+  for (let r = 0; r < roundIdx; r++) globalFightOffset += (rounds[r]?.fights?.length || 0);
 
-  const { steps, stepMeta } = _buildFightCards(nonFinalFights, suffix, screenKey, false);
-  window._ssrFightsStepMeta = stepMeta;
+  const roundTitle = isFinal ? 'CHAMPIONSHIP FINAL' : round.roundLabel.toUpperCase();
+  const fightCount = round.fights.length;
+  const roundDesc = isFinal
+    ? `The last two fighters standing! This is for the title!`
+    : `${fightCount} match${fightCount !== 1 ? 'es' : ''} — winners advance`;
+
+  const steps = [];
+  const stepMeta = [];
+
+  // Round header card
+  steps.push(`<div class="ssr-card" style="text-align:center;border:2px solid ${isFinal ? 'var(--ssr-gold)' : 'rgba(124,58,237,.3)'};padding:20px;${isFinal ? 'box-shadow:0 0 20px rgba(251,191,36,.15);' : ''}">
+    <div style="font-family:'Bungee Shade',cursive;font-size:${isFinal ? '28' : '20'}px;color:${isFinal ? 'var(--ssr-gold)' : 'var(--ssr-shock)'};letter-spacing:3px;text-shadow:0 0 12px ${isFinal ? 'rgba(251,191,36,.3)' : 'rgba(124,58,237,.3)'};">${roundTitle}</div>
+    <div style="font-size:10px;color:rgba(232,240,248,.4);margin-top:6px;">${roundDesc}</div>
+    ${round.byes?.length ? `<div style="font-size:9px;color:var(--ssr-neon-cyan);margin-top:4px;">${round.byes.map(b => b.player).join(', ')} — BYE (auto-advance)</div>` : ''}
+  </div>`);
+  stepMeta.push({ type: 'round-header', round: roundIdx });
+
+  // Build fight cards
+  const { steps: roundSteps, stepMeta: roundMeta } = _buildFightCards(round.fights, suffix, screenKey, isFinal);
+
+  roundSteps.forEach(s => steps.push(s));
+  roundMeta.forEach(sm => {
+    const adjusted = { ...sm };
+    if (adjusted.fightIdx !== undefined) adjusted.fightIdx += globalFightOffset;
+    adjusted.round = roundIdx;
+    stepMeta.push(adjusted);
+  });
+
+  window[`_ssrRound${roundIdx}StepMeta`] = stepMeta;
 
   const totalSteps = steps.length;
   let html = '';
@@ -3198,52 +3468,12 @@ export function rpBuildSSRFights(ep) {
     <button class="ssr-btn" onclick="ssrRevealAll('${screenKey}',${totalSteps})" style="margin-left:16px;border-color:var(--ssr-shock);color:var(--ssr-shock);">REVEAL ALL</button>
   </div>`;
 
-  return _shell(html, ep, 'phase-fights');
+  return _shell(html, ep, isFinal ? 'phase-finals' : 'phase-fights');
 }
 
-// ══════════════════════════════════════════════════════════════
-// VP BUILDER: FINALS (championship fight)
-// ══════════════════════════════════════════════════════════════
-
-export function rpBuildSSRFinals(ep) {
-  const d = ep.slapRevolution;
-  if (!d) return '';
-  const screenKey = 'ssr-finals';
-  const suffix = 'finals';
-
-  const allFights = [];
-  (d.tournament?.rounds || []).forEach(r => { allFights.push(...r.fights); });
-  const finalFight = allFights.length > 0 ? [allFights[allFights.length - 1]] : [];
-
-  if (finalFight.length === 0) return '';
-
-  // Opening flavor
-  const preSteps = [`<div class="ssr-flavor host">"FINAL MATCH! The last two standing! This is for the CHAMPIONSHIP!" &mdash; ${host()}</div>`];
-  const preStepMeta = [{ type: 'flavor' }];
-
-  const { steps: fightSteps, stepMeta: fightMeta } = _buildFightCards(finalFight, suffix, screenKey, true);
-
-  // Adjust fightIdx for the finals — the final fight is the last fight index overall
-  const finalFightIdx = allFights.length - 1;
-  fightMeta.forEach(sm => { if (sm.fightIdx !== undefined) sm.fightIdx = finalFightIdx; });
-
-  const allSteps = [...preSteps, ...fightSteps];
-  const allMeta = [...preStepMeta, ...fightMeta];
-  window._ssrFinalsStepMeta = allMeta;
-
-  const totalSteps = allSteps.length;
-  let html = '';
-  allSteps.forEach((s, i) => {
-    html += `<div id="ssr-step-${suffix}-${i}" class="ssr-step ssr-step-hidden">${s}</div>`;
-  });
-  html += `<div id="ssr-controls-${suffix}" class="ssr-controls">
-    <button class="ssr-btn" onclick="ssrRevealNext('${screenKey}',${totalSteps})">NEXT &#9654;</button>
-    <span class="ssr-counter" id="ssr-counter-${suffix}">0 / ${totalSteps}</span>
-    <button class="ssr-btn" onclick="ssrRevealAll('${screenKey}',${totalSteps})" style="margin-left:16px;border-color:var(--ssr-shock);color:var(--ssr-shock);">REVEAL ALL</button>
-  </div>`;
-
-  return _shell(html, ep, 'phase-finals');
-}
+// Legacy exports — vp-screens uses rpBuildSSRRound directly now
+export function rpBuildSSRFights(ep) { return ''; }
+export function rpBuildSSRFinals(ep) { return ''; }
 
 // ══════════════════════════════════════════════════════════════
 // VP BUILDER: RESULTS
@@ -3282,22 +3512,16 @@ export function rpBuildSSRResults(ep) {
     </div>`);
   }
 
-  // Full bracket display
+  // Full bracket display (all rounds, all results revealed)
+  const tournamentRounds = d.tournament?.rounds || [];
   const allFights = [];
-  (d.tournament?.rounds || []).forEach(r => { allFights.push(...r.fights); });
+  tournamentRounds.forEach(r => { allFights.push(...r.fights); });
 
   if (allFights.length > 0) {
+    const allIdxs = new Set(allFights.map((_, i) => i));
     let bracketHtml = `<div class="ssr-card" style="border:1px solid rgba(124,58,237,.2);">
-      <div class="ssr-hdr">${_icon('pad')}<span class="ssr-title">FINAL BRACKET</span><span class="ssr-badge ssr-b-fight">COMPLETE</span></div>`;
-    allFights.forEach(f => {
-      const tc1 = tribeColor(f.tribe1) || '#a8d8ea';
-      const tc2 = tribeColor(f.tribe2) || '#a8d8ea';
-      const p1Won = f.winner === f.p1;
-      bracketHtml += `<div class="ssr-mini-match" style="margin:6px 0;">
-        <div class="ssr-mini-slot ${p1Won ? 'winner' : 'loser'}"><div class="ssr-mini-dot" style="background:${tc1};">${(f.p1 || '?')[0]}</div><span class="ssr-mini-name">${f.p1}</span><span class="ssr-mini-result" style="color:${p1Won ? 'var(--ssr-gold)' : 'var(--ssr-danger)'};">${p1Won ? 'W' : 'KO'}</span></div>
-        <div class="ssr-mini-slot ${!p1Won ? 'winner' : 'loser'}"><div class="ssr-mini-dot" style="background:${tc2};">${(f.p2 || '?')[0]}</div><span class="ssr-mini-name">${f.p2}</span><span class="ssr-mini-result" style="color:${!p1Won ? 'var(--ssr-gold)' : 'var(--ssr-danger)'};">${!p1Won ? 'W' : 'KO'}</span></div>
-      </div>`;
-    });
+      <div class="ssr-hdr">${_icon('pad')}<span class="ssr-title">FULL BRACKET</span><span class="ssr-badge ssr-b-fight">COMPLETE</span></div>`;
+    bracketHtml += _buildBracket(tournamentRounds, allIdxs, 'show-all');
     bracketHtml += `</div>`;
     steps.push(bracketHtml);
   }

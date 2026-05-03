@@ -56,6 +56,12 @@ import { simulateCrouchingCourtney } from './chal/crouching-courtney.js';
 import { simulateHouston } from './chal/houston.js';
 import { simulateTopDog } from './chal/top-dog.js';
 import { simulateWalkLikeAnEgyptian } from './chal/walk-like-an-egyptian.js';
+import { simulateCrazyFunTime } from './chal/crazy-fun-time.js';
+import { simulateFrozenCrossing } from './chal/frozen-crossing.js';
+import { simulateSlapSlapRevolution } from './chal/slap-slap-revolution.js';
+import { simulateBroadwayBaby } from './chal/broadway-baby.js';
+import { simulateBiggerBadderBrutaler } from './chal/bigger-badder-brutaler.js';
+import { simulateTruthOrShark } from './chal/truth-or-shark.js';
 import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { simulateOffTheChain } from './chal/off-the-chain.js';
 import { simulateWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
@@ -989,7 +995,7 @@ export function handleExileFormat(ep) {
   if (phase === 'pre' && gs.isMerged) return;
   if (phase === 'post' && !gs.isMerged) return;
   // Don't fire on special episode types
-  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isPrincessPride || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama || ep.isHouston || ep.isTopDog || ep.isCrouchingCourtney || ep.isGetAClue || ep.isRockNRule || ep.isWalkEgypt) return;
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isPrincessPride || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama || ep.isHouston || ep.isTopDog || ep.isCrouchingCourtney || ep.isGetAClue || ep.isRockNRule || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isBiggerBadderBrutaler || ep.isTruthOrShark) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
   // Don't double up with schoolyard pick exile (unpicked player already on exile)
@@ -1456,7 +1462,13 @@ export function simulateEpisode() {
       rescueReturnChallenge: ep.rescueReturnChallenge || null,
       riArrival: ep.riArrival || null,
       riQuit: ep.riQuit || null,
-      advantagesPreTribal: ep.advantagesPreTribal || null, summaryText: '', gsSnapshot: window.snapshotGameState()
+      advantagesPreTribal: ep.advantagesPreTribal || null,
+      isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
+        isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
+        isFrozenCrossing: ep.isFrozenCrossing || false, frozenCrossing: ep.frozenCrossing || null,
+        isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
+        isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
+      summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stSN = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stSN; ep.summaryText = stSN;
@@ -1629,7 +1641,13 @@ export function simulateEpisode() {
       rescueReturnChallenge: ep.rescueReturnChallenge || null,
       riArrival: ep.riArrival || null,
       riQuit: ep.riQuit || null,
-      advantagesPreTribal: ep.advantagesPreTribal || null, summaryText: '', gsSnapshot: window.snapshotGameState()
+      advantagesPreTribal: ep.advantagesPreTribal || null,
+      isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
+        isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
+        isFrozenCrossing: ep.isFrozenCrossing || false, frozenCrossing: ep.frozenCrossing || null,
+        isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
+        isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
+      summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stTDD = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stTDD; ep.summaryText = stTDD;
@@ -1643,7 +1661,7 @@ export function simulateEpisode() {
     || ep.isBrunchOfDisgustingness || ep.isBasicStraining
     || ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg
     || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue
-    || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isWalkEgypt;
+    || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isBiggerBadderBrutaler || ep.isTruthOrShark;
   if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
@@ -1726,7 +1744,13 @@ export function simulateEpisode() {
       campEvents: ep.campEvents || null,
       journey: ep.journey || null,
       idolFinds: ep.idolFinds || [],
-      advantagesPreTribal: ep.advantagesPreTribal || null, summaryText: '', gsSnapshot: window.snapshotGameState()
+      advantagesPreTribal: ep.advantagesPreTribal || null,
+      isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
+        isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
+        isFrozenCrossing: ep.isFrozenCrossing || false, frozenCrossing: ep.frozenCrossing || null,
+        isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
+        isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
+      summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stSD = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stSD; ep.summaryText = stSD;
@@ -1936,6 +1960,26 @@ export function simulateEpisode() {
   } else if (ep.isWalkEgypt && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateWalkLikeAnEgyptian(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateWalkLikeAnEgyptian
+
+  } else if (ep.isCrazyFunTime && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateCrazyFunTime(ep);
+    // winner, loser, challengeType, tribalPlayers already set by simulateCrazyFunTime
+
+  } else if (ep.isFrozenCrossing && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateFrozenCrossing(ep);
+
+  } else if (ep.isSlapRevolution && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateSlapSlapRevolution(ep);
+
+  } else if (ep.isBroadwayBaby && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateBroadwayBaby(ep);
+
+  } else if (ep.isBiggerBadderBrutaler && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateBiggerBadderBrutaler(ep);
+    // winner, loser, challengeType, tribalPlayers set by simulateBiggerBadderBrutaler
+  } else if (ep.isTruthOrShark && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateTruthOrShark(ep);
+    // winner, loser, challengeType, tribalPlayers set by simulateTruthOrShark
   } else if (ep.isXtremeTorture && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateXtremeTorture(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateXtremeTorture
@@ -2159,6 +2203,11 @@ export function simulateEpisode() {
         journey: ep.journey || null,
         idolFinds: ep.idolFinds || [],
         advantagesPreTribal: ep.advantagesPreTribal || null,
+        isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
+        isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
+        isFrozenCrossing: ep.isFrozenCrossing || false, frozenCrossing: ep.frozenCrossing || null,
+        isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
+        isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         summaryText: '',
         gsSnapshot: window.snapshotGameState(),
       });
@@ -2233,6 +2282,11 @@ export function simulateEpisode() {
       idolFinds: ep.idolFinds || [],
       advantagesPreTribal: ep.advantagesPreTribal || null,
       areWeThereYeti: ep.areWeThereYeti || null,
+      isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
+        isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
+        isFrozenCrossing: ep.isFrozenCrossing || false, frozenCrossing: ep.frozenCrossing || null,
+        isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
+        isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stYT = generateSummaryText(ep);
@@ -2265,7 +2319,7 @@ export function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog) {
+    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby) {
     // Special challenge already ran and set immunityWinner + chalMemberScores — skip generic challenge
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
@@ -2454,6 +2508,12 @@ export function simulateEpisode() {
         isHouston: ep.isHouston || false, houston: ep.houston || null,
         isTopDog: ep.isTopDog || false, topDog: ep.topDog || null,
         isWalkEgypt: ep.isWalkEgypt || false, walkEgypt: ep.walkEgypt || null,
+        isBiggerBadderBrutaler: ep.isBiggerBadderBrutaler || false, brutaler: ep.brutaler || null,
+        isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
+        isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
+        isFrozenCrossing: ep.isFrozenCrossing || false, frozenCrossing: ep.frozenCrossing || null,
+        isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
+        isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         summaryText: '',
         gsSnapshot: window.snapshotGameState(),
       });
@@ -2547,7 +2607,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark) {
     updateChalRecord(ep);
   }
 
@@ -2868,7 +2928,13 @@ export function simulateEpisode() {
     gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null, immunityWinner: null,
       challengeType: ep.challengeType, isMerge: ep.isMerge, votes: {}, alliances: [],
       lastChance: true, riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
-      advantagesPreTribal: ep.advantagesPreTribal || null, summaryText: '', gsSnapshot: window.snapshotGameState() });
+      advantagesPreTribal: ep.advantagesPreTribal || null,
+      isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
+        isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
+        isFrozenCrossing: ep.isFrozenCrossing || false, frozenCrossing: ep.frozenCrossing || null,
+        isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
+        isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
+      summaryText: '', gsSnapshot: window.snapshotGameState() });
     const stLC = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stLC; ep.summaryText = stLC;
     window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
@@ -2916,10 +2982,149 @@ export function simulateEpisode() {
       gs.episodeHistory.push({ num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
         challengeType: ep.challengeType, isMerge: ep.isMerge, votes: {}, alliances: [],
         riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
-        advantagesPreTribal: ep.advantagesPreTribal || null, summaryText: '', gsSnapshot: window.snapshotGameState() });
+        advantagesPreTribal: ep.advantagesPreTribal || null,
+        isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
+        isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
+        isFrozenCrossing: ep.isFrozenCrossing || false, frozenCrossing: ep.frozenCrossing || null,
+        isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
+        isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
+        summaryText: '', gsSnapshot: window.snapshotGameState() });
       const stTD = generateSummaryText(ep);
       gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stTD; ep.summaryText = stTD;
       window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
+    }
+  }
+
+  // ── REWARD-ONLY TWIST CHALLENGE: companion selection + reward data ──
+  if (ep.isRewardOnly) {
+    const _rtcTwist = (ep.twists || []).find(t => t.type === 'reward-twist-challenge');
+    if (_rtcTwist) {
+      // Determine winner: post-merge = immunityWinner, pre-merge = winning tribe
+      const _rtcIsMerged = gs.isMerged;
+      if (_rtcIsMerged && ep.immunityWinner) {
+        // Individual reward — winner picks companions (reuse logic from reward-challenge)
+        const _w = ep.immunityWinner;
+        const _ws = pStats(_w);
+        const _wArch = players.find(p => p.name === _w)?.archetype || '';
+        const _others = gs.activePlayers.filter(p => p !== _w);
+        const _maxCompanions = gs.activePlayers.length >= 7 ? 2 : 1;
+        const _brainWeight = _ws.strategic * 0.08 + _ws.boldness * 0.03
+          + (['schemer','mastermind'].includes(_wArch) ? 0.25 : _wArch === 'villain' ? 0.15 : 0);
+        const _heartWeight = _ws.loyalty * 0.06 + _ws.social * 0.04;
+        const _useStrategy = Math.random() < _brainWeight / (_brainWeight + _heartWeight + 0.01);
+        const _scored = _others.map(p => {
+          const bond = getBond(_w, p);
+          const ps = pStats(p);
+          const heartScore = bond * 1.0;
+          const _sharedAlliance = (gs.namedAlliances || []).find(a =>
+            a.active !== false && a.members.includes(_w) && a.members.includes(p));
+          const _notAllied = !_sharedAlliance && bond < 2;
+          const brainScore = (_notAllied ? 2.0 : 0) + ps.strategic * 0.1 + (bond <= 0 ? 1.0 : 0);
+          const score = _useStrategy
+            ? brainScore * 0.7 + heartScore * 0.3 + Math.random() * 0.5
+            : heartScore * 0.8 + brainScore * 0.2 + Math.random() * 0.5;
+          const reason = _useStrategy
+            ? (_notAllied ? 'strategic-court' : _sharedAlliance ? 'strategic-strengthen' : 'strategic-read')
+            : (bond >= 5 ? 'heart-closest' : bond >= 2 ? 'heart-ally' : 'heart-connection');
+          return { name: p, score, bond, reason };
+        }).sort((a, b) => b.score - a.score);
+        const _companions = [];
+        const _pickReasons = [];
+        if (_scored.length) {
+          _companions.push(_scored[0].name);
+          _pickReasons.push({ name: _scored[0].name, reason: _scored[0].reason, bond: _scored[0].bond });
+        }
+        if (_maxCompanions >= 2 && _scored.length >= 2) {
+          _companions.push(_scored[1].name);
+          _pickReasons.push({ name: _scored[1].name, reason: _scored[1].reason, bond: _scored[1].bond });
+        }
+        // Bond boost from shared reward
+        _companions.forEach(c => addBond(_w, c, 1.0));
+        for (let _ci = 0; _ci < _companions.length; _ci++)
+          for (let _cj = _ci + 1; _cj < _companions.length; _cj++)
+            addBond(_companions[_ci], _companions[_cj], 0.5);
+        // Snub damage
+        const _snubs = [];
+        _others.filter(p => !_companions.includes(p)).forEach(p => {
+          const _snubBond = getBond(_w, p);
+          if (_snubBond <= 0) return;
+          const _pTemp = pStats(p).temperament;
+          const _tempMult = 1.0 + (5 - _pTemp) * 0.08;
+          const _snubDamage = -(_snubBond * 0.08 * _tempMult);
+          if (Math.abs(_snubDamage) > 0.1) {
+            addBond(p, _w, _snubDamage);
+            if (_snubBond >= 3) _snubs.push({ player: p, bond: _snubBond, damage: Math.round(_snubDamage * 10) / 10 });
+          }
+        });
+        _rtcTwist.rewardWinner = _w;
+        _rtcTwist.rewardWinnerType = 'individual';
+        _rtcTwist.rewardCompanions = _companions;
+        _rtcTwist.rewardPickReasons = _pickReasons;
+        _rtcTwist.rewardPickStrategy = _useStrategy ? 'brain' : 'heart';
+        _rtcTwist.rewardSnubs = _snubs;
+      } else if (!_rtcIsMerged && ep.winner) {
+        // Tribe reward — winning tribe bonds, no companion selection
+        const _winMembers = ep.winner.members || [];
+        for (let _i = 0; _i < _winMembers.length; _i++)
+          for (let _j = _i + 1; _j < _winMembers.length; _j++)
+            addBond(_winMembers[_i], _winMembers[_j], 0.5);
+        _rtcTwist.rewardWinner = ep.winner.name;
+        _rtcTwist.rewardWinnerType = 'tribe';
+      }
+      // Build rewardChalData for VP screen
+      const _rtcPlacements = [];
+      if (_rtcTwist.rewardWinnerType === 'tribe') {
+        const _scores = ep.chalMemberScores || {};
+        gs.tribes.forEach(t => {
+          _rtcPlacements.push({ name: t.tribeName || t.name, members: [...t.members], memberScores: Object.fromEntries(t.members.map(m => [m, _scores[m] || 0])) });
+        });
+        const _winName = _rtcTwist.rewardWinner;
+        _rtcPlacements.sort((a, b) => (a.name === _winName ? -1 : b.name === _winName ? 1 : 0));
+      } else {
+        const _indPlacements = ep.chalPlacements || (ep.immunityWinner ? [ep.immunityWinner] : []);
+        _rtcPlacements.push(..._indPlacements);
+      }
+      ep.rewardChalData = {
+        winner: _rtcTwist.rewardWinner,
+        winnerType: _rtcTwist.rewardWinnerType || 'individual',
+        label: _rtcTwist.rewardChalLabel || 'Reward Twist Challenge',
+        category: _rtcTwist.rewardChalCategory || 'mixed',
+        desc: _rtcTwist.rewardChalDesc || '',
+        placements: _rtcPlacements,
+        rewardItemId: _rtcTwist.rewardItemId,
+        rewardItemLabel: _rtcTwist.rewardItemLabel,
+        rewardItemDesc: _rtcTwist.rewardItemDesc,
+        rewardCompanions: _rtcTwist.rewardCompanions || null,
+        rewardPickReasons: _rtcTwist.rewardPickReasons || null,
+        rewardPickStrategy: _rtcTwist.rewardPickStrategy || null,
+        rewardSnubs: _rtcTwist.rewardSnubs || null,
+        isRewardOnly: true,
+      };
+      // Survival food restoration
+      if (seasonConfig.foodWater === 'enabled') {
+        const _foodBonus = { feast: 25, overnight: 20, comfort: 10, supplies: 15, spa: 10, letters: 0, clue: 0 };
+        const _survBonus = { feast: 15, overnight: 12, comfort: 8, supplies: 8, spa: 8, letters: 0, clue: 0 };
+        const _rwId = _rtcTwist.rewardItemId || '';
+        if (_rtcTwist.rewardWinnerType === 'tribe' && ep.winner) {
+          const _tribeBoost = _foodBonus[_rwId] || 0;
+          const _playerBoost = _survBonus[_rwId] || 0;
+          if (_tribeBoost > 0) gs.tribeFood[ep.winner.name] = Math.min(100, (gs.tribeFood[ep.winner.name] || 60) + _tribeBoost);
+          if (_playerBoost > 0) (ep.winner.members || []).forEach(p => {
+            gs.survival[p] = Math.min(100, (gs.survival[p] || 80) + _playerBoost);
+          });
+        } else if (ep.immunityWinner) {
+          const _mergeName = gs.mergeName || 'merge';
+          const _tribeBoost = _foodBonus[_rwId] || 0;
+          const _playerBoost = _survBonus[_rwId] || 0;
+          if (_tribeBoost > 0) gs.tribeFood[_mergeName] = Math.min(100, (gs.tribeFood[_mergeName] || 60) + Math.round(_tribeBoost * 0.5));
+          const _fedPlayers = [ep.immunityWinner, ...(_rtcTwist.rewardCompanions || [])].filter(Boolean);
+          if (_playerBoost > 0) _fedPlayers.forEach(p => {
+            gs.survival[p] = Math.min(100, (gs.survival[p] || 80) + _playerBoost);
+          });
+        }
+      }
+      // Clear immunity winner — this is a reward, not immunity
+      ep.immunityWinner = null;
     }
   }
 
@@ -2971,6 +3176,13 @@ export function simulateEpisode() {
       isHouston: ep.isHouston || false, houston: ep.houston || null,
       isTopDog: ep.isTopDog || false, topDog: ep.topDog || null,
       isWalkEgypt: ep.isWalkEgypt || false, walkEgypt: ep.walkEgypt || null,
+      isBiggerBadderBrutaler: ep.isBiggerBadderBrutaler || false, brutaler: ep.brutaler || null,
+      isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
+        isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
+        isFrozenCrossing: ep.isFrozenCrossing || false, frozenCrossing: ep.frozenCrossing || null,
+        isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
+        isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
+      isRewardOnly: ep.isRewardOnly || false, rewardChalData: ep.rewardChalData || null,
       summaryText: '', gsSnapshot: window.snapshotGameState() });
     const stNT = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stNT; ep.summaryText = stNT;
@@ -3891,7 +4103,13 @@ export function simulateEpisode() {
       doubleTribalLosingTribes: (ep.doubleTribalLosingTribes || []).map(t => ({ name: t.name, members: [...t.members] })),
       allianceQuits: ep.allianceQuits || [], allianceRecruits: ep.allianceRecruits || [],
       riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
-      advantagesPreTribal: ep.advantagesPreTribal || null, summaryText: '', gsSnapshot: window.snapshotGameState(),
+      advantagesPreTribal: ep.advantagesPreTribal || null,
+      isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
+        isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
+        isFrozenCrossing: ep.isFrozenCrossing || false, frozenCrossing: ep.frozenCrossing || null,
+        isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
+        isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
+      summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stDT = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stDT; ep.summaryText = stDT;
@@ -4071,7 +4289,13 @@ export function simulateEpisode() {
       bewareLostVotes: ep.bewareLostVotes || [],
       allianceQuits: ep.allianceQuits || [], allianceRecruits: ep.allianceRecruits || [],
       riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
-      advantagesPreTribal: ep.advantagesPreTribal || null, summaryText: '', gsSnapshot: window.snapshotGameState(),
+      advantagesPreTribal: ep.advantagesPreTribal || null,
+      isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
+        isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
+        isFrozenCrossing: ep.isFrozenCrossing || false, frozenCrossing: ep.frozenCrossing || null,
+        isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
+        isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
+      summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stMT = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stMT; ep.summaryText = stMT;
@@ -4428,6 +4652,11 @@ function simulateJuryRoundtable(ep) {
       allianceRecruits: ep.allianceRecruits || [],
       chalSitOuts: ep.chalSitOuts || null,
       riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
+      isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
+        isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
+        isFrozenCrossing: ep.isFrozenCrossing || false, frozenCrossing: ep.frozenCrossing || null,
+        isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
+        isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
     });
     const twistScenesJE = generateTwistScenes(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].twistScenes = twistScenesJE;
@@ -5497,6 +5726,18 @@ function simulateJuryRoundtable(ep) {
     topDog:               ep.topDog               || null,
     isWalkEgypt:          ep.isWalkEgypt          || false,
     walkEgypt:            ep.walkEgypt            || null,
+    isBiggerBadderBrutaler: ep.isBiggerBadderBrutaler || false,
+    brutaler:             ep.brutaler             || null,
+    isTruthOrShark:       ep.isTruthOrShark       || false,
+    truthOrShark:         ep.truthOrShark         || null,
+    isCrazyFunTime:       ep.isCrazyFunTime       || false,
+    crazyFunTime:         ep.crazyFunTime         || null,
+    isFrozenCrossing:     ep.isFrozenCrossing     || false,
+    frozenCrossing:       ep.frozenCrossing       || null,
+    isSlapRevolution:     ep.isSlapRevolution     || false,
+    slapRevolution:       ep.slapRevolution       || null,
+    isBroadwayBaby:       ep.isBroadwayBaby       || false,
+    broadwayBaby:         ep.broadwayBaby         || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,

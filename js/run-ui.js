@@ -274,6 +274,13 @@ export function renderEpisodeHistory() {
     const swoTag = ep.isHouston ? `<span class="ep-hist-tag" style="background:rgba(0,229,255,0.15);color:#00e5ff">Space</span>` : '';
     const tdTag = ep.isTopDog ? `<span class="ep-hist-tag" style="background:rgba(212,160,23,0.15);color:#d4a017">Top Dog</span>` : '';
     const weTag = ep.isWalkEgypt ? `<span class="ep-hist-tag" style="background:rgba(194,166,69,0.15);color:#C2A645">Egypt</span>` : '';
+    const brutalerTag = ep.isBiggerBadderBrutaler ? `<span class="ep-hist-tag" style="background:rgba(232,65,65,0.15);color:#E84141">Brutal-er</span>` : '';
+    const cftTag = ep.isCrazyFunTime ? `<span class="ep-hist-tag" style="background:rgba(255,0,128,0.15);color:#ff0080">Game Show</span>` : '';
+    const fcTag = ep.isFrozenCrossing ? `<span class="ep-hist-tag" style="background:rgba(168,216,234,0.15);color:#a8d8ea">Frozen</span>` : '';
+    const ssrTag = ep.isSlapRevolution ? `<span class="ep-hist-tag" style="background:rgba(124,58,237,0.15);color:#7c3aed">Slap Rev</span>` : '';
+    const bbTag = ep.isBroadwayBaby ? `<span class="ep-hist-tag" style="background:rgba(240,165,0,0.15);color:#f0a500">Broadway</span>` : '';
+    const tosTag = ep.isTruthOrShark ? `<span class="ep-hist-tag" style="background:rgba(0,229,255,0.15);color:#00e5ff">Shark</span>` : '';
+    const rtcTag = ep.isRewardOnly ? `<span class="ep-hist-tag" style="background:rgba(240,165,0,0.15);color:#f0a500">Reward</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -281,7 +288,7 @@ export function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${ssrTag}${bbTag}${tosTag}${rtcTag}</div>
     </div>`;
   }).join('');
 }
@@ -580,6 +587,7 @@ export function buildEpisodeMap() {
     // Check ALL twists on this episode (not just the last one)
     let elims = 1;
     if (_allTypes.includes('no-tribal')) elims = 0;
+    if (_allTypes.includes('reward-twist-challenge')) elims = 0;
     if (_allTypes.includes('elimination-swap')) elims = 0;
     // Account for Team Swap advantages that cancelled eliminations mid-season
     if (gs?.skippedEliminationEps?.includes(ep)) elims = 0;
@@ -687,6 +695,22 @@ export function renderTimeline() {
         }
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${configHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      if (t.type === 'reward-twist-challenge') {
+        const _rtcChallenges = TWIST_CATALOG.filter(c => c.category === 'challenge');
+        const _rtcSelected = t.rewardEngine || '';
+        const _rtcLabel = _rtcSelected ? (_rtcChallenges.find(c => c.id === _rtcSelected)?.name || _rtcSelected) : 'Generic';
+        let _rtcHtml = `<div style="display:inline-flex;align-items:center;gap:4px;position:relative">`;
+        _rtcHtml += `<input type="text" id="rtc-search-${t.id}" placeholder="Search challenges..." value="${_rtcLabel}" onfocus="this.value='';_showRtcDropdown('${t.id}')" onblur="setTimeout(()=>_hideRtcDropdown('${t.id}'),200)" oninput="_filterRtcDropdown('${t.id}',this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:2px 4px;width:140px">`;
+        _rtcHtml += `<div id="rtc-dropdown-${t.id}" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:#1e1e2e;border:1px solid rgba(99,102,241,0.4);border-radius:4px;max-height:200px;overflow-y:auto;width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.5)">`;
+        _rtcHtml += `<div class="rtc-option" onmousedown="event.preventDefault();_selectRtcEngine('${t.id}','')" style="padding:4px 8px;font-size:10px;color:#cdd6f4;cursor:pointer;border-bottom:1px solid rgba(99,102,241,0.15)" onmouseover="this.style.background='rgba(99,102,241,0.2)'" onmouseout="this.style.background=''">Generic (random)</div>`;
+        _rtcChallenges.forEach(c => {
+          const _seriesTag = c.chalSeries ? ` · ${c.chalSeries}` : '';
+          const _phaseTag = c.phase === 'pre-merge' ? ' [PRE]' : c.phase === 'post-merge' ? ' [POST]' : '';
+          _rtcHtml += `<div class="rtc-option" data-name="${c.name.toLowerCase()}" onmousedown="event.preventDefault();_selectRtcEngine('${t.id}','${c.id}')" style="padding:4px 8px;font-size:10px;color:#cdd6f4;cursor:pointer;border-bottom:1px solid rgba(99,102,241,0.08)" onmouseover="this.style.background='rgba(99,102,241,0.2)'" onmouseout="this.style.background=''">${c.emoji} ${c.name}${_seriesTag}${_phaseTag}</div>`;
+        });
+        _rtcHtml += `</div></div>`;
+        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} Reward: ${_rtcHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.spoilerFree) {
         const phaseTag = cat?.phase === 'pre-merge' ? 'Pre-merge challenge' : cat?.phase === 'post-merge' ? 'Post-merge challenge' : 'Challenge';
         return `<span class="fd-ep-twist-tag" style="font-style:italic;opacity:0.7" onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')">🔒 ${phaseTag} ×</span>`;
@@ -779,7 +803,7 @@ export function renderTwistCatalog() {
   if (allEl) allEl.textContent = TWIST_CATALOG.length;
 
   // Update challenge series sub-filter counts
-  const chalSeries = ['island','action','world-tour'];
+  const chalSeries = ['island','action','world-tour','revenge'];
   chalSeries.forEach(s => {
     const el = document.getElementById('fd-chal-count-' + s);
     if (el) el.textContent = TWIST_CATALOG.filter(t => t.category === 'challenge' && t.chalSeries === s).length;
@@ -846,7 +870,7 @@ export function renderTwistCatalog() {
         <span class="twist-card-emoji">${t.emoji}</span>
         <div class="twist-card-info">
           <span class="twist-card-name">${t.name}</span>
-          <span class="twist-phase">${t.phase}${t.chalSeries ? ` · ${t.chalSeries === 'island' ? '🏝️ Island' : t.chalSeries === 'action' ? '🎬 Action' : t.chalSeries === 'world-tour' ? '✈️ World Tour' : t.chalSeries}` : ''}${blockReason}</span>
+          <span class="twist-phase">${t.phase}${t.chalSeries ? ` · ${t.chalSeries === 'island' ? '🏝️ Island' : t.chalSeries === 'action' ? '🎬 Action' : t.chalSeries === 'world-tour' ? '✈️ World Tour' : t.chalSeries === 'revenge' ? '☢️ Revenge' : t.chalSeries}` : ''}${blockReason}</span>
         </div>
         <button class="twist-add-btn" ${canAssign && !blocked ? '' : 'disabled'} onclick="event.stopPropagation();${blocked ? '' : `assignTwist('${t.id}')`}">+</button>
       </div>
@@ -932,13 +956,51 @@ export function _updateReturnReason(twistId, slotIdx, reason) {
   renderTimeline();
 }
 
+// ── Reward Twist Challenge: searchable dropdown helpers ──
+
+export function _showRtcDropdown(twistId) {
+  const dd = document.getElementById('rtc-dropdown-' + twistId);
+  if (dd) { dd.style.display = 'block'; _filterRtcDropdown(twistId, ''); }
+}
+
+export function _hideRtcDropdown(twistId) {
+  const dd = document.getElementById('rtc-dropdown-' + twistId);
+  if (dd) dd.style.display = 'none';
+  // Restore display label
+  const input = document.getElementById('rtc-search-' + twistId);
+  if (input) {
+    const t = (seasonConfig.twistSchedule||[]).find(t => t.id === twistId);
+    const eng = t?.rewardEngine || '';
+    input.value = eng ? (TWIST_CATALOG.find(c => c.id === eng)?.name || eng) : 'Generic';
+  }
+}
+
+export function _filterRtcDropdown(twistId, query) {
+  const dd = document.getElementById('rtc-dropdown-' + twistId);
+  if (!dd) return;
+  const q = (query || '').toLowerCase();
+  dd.querySelectorAll('.rtc-option').forEach(opt => {
+    const name = opt.dataset.name || 'generic';
+    opt.style.display = (!q || name.includes(q) || opt.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+
+export function _selectRtcEngine(twistId, engineId) {
+  const t = (seasonConfig.twistSchedule||[]).find(t => t.id === twistId);
+  if (!t) return;
+  t.rewardEngine = engineId || null;
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  _hideRtcDropdown(twistId);
+  renderTimeline();
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // CHALLENGE RANDOMIZER
 // ══════════════════════════════════════════════════════════════════════
 
 export function randomizeChallenges(opts = {}) {
   const {
-    seriesFilter = ['island', 'action', 'dc1', 'dc2', 'dc3', 'dc4', 'dc5'],
+    seriesFilter = ['island', 'action', 'revenge', 'dc1', 'dc2', 'dc3', 'dc4', 'dc5'],
     spoilerFree = false,
     clearExisting = true
   } = opts;
@@ -1100,7 +1162,7 @@ export function showRandomizerPanel() {
     'ridonculous': 'Ridonculous Race',
     'dc1': 'DC S1', 'dc2': 'DC S2', 'dc3': 'DC S3', 'dc4': 'DC S4', 'dc5': 'DC S5'
   };
-  const defaultOn = ['island', 'action', 'dc1', 'dc2', 'dc3', 'dc4', 'dc5'];
+  const defaultOn = ['island', 'action', 'revenge', 'dc1', 'dc2', 'dc3', 'dc4', 'dc5'];
 
   let checkboxes = allSeries.map(s =>
     `<label style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--text);cursor:pointer">

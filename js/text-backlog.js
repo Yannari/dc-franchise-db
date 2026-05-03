@@ -45,6 +45,12 @@ import { _textCrouchingCourtney, rpBuildCrouchingCourtneyTitleCard, rpBuildCrouc
 import { rpBuildHoustonTitleCard, rpBuildHoustonZeroG, rpBuildHoustonRedAlert, rpBuildHoustonReEntry, rpBuildHoustonSprint, rpBuildHoustonWinner } from './chal/houston.js';
 import { rpBuildTopDogTitleCard, rpBuildTopDogAssignment, rpBuildTopDogTraining, rpBuildTopDogJudging, rpBuildTopDogForest, rpBuildTopDogWinner } from './chal/top-dog.js';
 import { rpBuildEgyptTitleCard, rpBuildEgyptPyramid, rpBuildEgyptDesert, rpBuildEgyptNile, rpBuildEgyptResults } from './chal/walk-like-an-egyptian.js';
+import { rpBuildBigBaddTitleCard, rpBuildBigBaddPhase1, rpBuildBigBaddPhase2, rpBuildBigBaddPhase3, rpBuildBigBaddResults } from './chal/bigger-badder-brutaler.js';
+import { rpBuildCFTTitleCard, rpBuildCFTPinball, rpBuildCFTDramaBreak, rpBuildCFTCommercial, rpBuildCFTVerdict, rpBuildCFTResults } from './chal/crazy-fun-time.js';
+import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults } from './chal/frozen-crossing.js';
+import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRFights, rpBuildSSRFinals, rpBuildSSRResults } from './chal/slap-slap-revolution.js';
+import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults } from './chal/broadway-baby.js';
+import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults } from './chal/truth-or-shark.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -440,10 +446,11 @@ export function _textRewardChallenge(ep, ln, sec) {
       }
     }
   }
-  // Standalone reward challenge data
+  // Standalone reward challenge data (including reward-twist-challenge)
   if (ep.rewardChalData && !_rcTwist) {
     const rc = ep.rewardChalData;
-    sec('REWARD CHALLENGE');
+    sec(rc.isRewardOnly ? 'REWARD-ONLY EPISODE' : 'REWARD CHALLENGE');
+    if (rc.isRewardOnly) ln('No elimination this episode — challenge played for reward only.');
     ln(`${rc.label} (${rc.category}): ${rc.winner} wins.`);
     if (rc.rewardItemLabel) ln(`Reward: ${rc.rewardItemLabel}`);
     if (rc.rewardCompanions?.length) ln(`Shares with: ${rc.rewardCompanions.join(', ')} (${rc.rewardPickStrategy || 'heart'} pick)`);
@@ -2134,6 +2141,42 @@ export function generateSummaryText(ep) {
       rpBuildEgyptTitleCard, rpBuildEgyptPyramid,
       rpBuildEgyptDesert, rpBuildEgyptNile,
       rpBuildEgyptResults,
+    ]);
+  }
+  if (ep.brutaler) {
+    _textTwistChallenge(ep, ln, sec, 'brutaler', 'BIGGER! BADDER! BRUTAL-ER!', [
+      rpBuildBigBaddTitleCard, rpBuildBigBaddPhase1,
+      rpBuildBigBaddPhase2, rpBuildBigBaddPhase3,
+      rpBuildBigBaddResults,
+    ]);
+  }
+  if (ep.crazyFunTime) {
+    const cftBuilders = [rpBuildCFTTitleCard, rpBuildCFTPinball, rpBuildCFTDramaBreak];
+    const cftTribes = ep.crazyFunTime?.tribes || [];
+    for (let i = 0; i < cftTribes.length; i++) {
+      cftBuilders.push((e) => rpBuildCFTCommercial(e, i));
+    }
+    cftBuilders.push(rpBuildCFTVerdict, rpBuildCFTResults);
+    _textTwistChallenge(ep, ln, sec, 'crazyFunTime', 'SUPER HAPPY CRAZY FUN TIME', cftBuilders);
+  }
+  if (ep.frozenCrossing) {
+    _textTwistChallenge(ep, ln, sec, 'frozenCrossing', 'FROZEN CROSSING', [
+      rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults
+    ]);
+  }
+  if (ep.slapRevolution) {
+    _textTwistChallenge(ep, ln, sec, 'slapRevolution', 'SLAP SLAP REVOLUTION', [
+      rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRFights, rpBuildSSRFinals, rpBuildSSRResults
+    ]);
+  }
+  if (ep.broadwayBaby) {
+    _textTwistChallenge(ep, ln, sec, 'broadwayBaby', 'BROADWAY BABY', [
+      rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults
+    ]);
+  }
+  if (ep.truthOrShark) {
+    _textTwistChallenge(ep, ln, sec, 'truthOrShark', 'TRUTH OR SHARK', [
+      rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults
     ]);
   }
 

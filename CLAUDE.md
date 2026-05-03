@@ -86,7 +86,9 @@ Every challenge event that's heroic, villainous, cowardly, or selfless must affe
 - Showmance moments if challenge has downtime/partner interaction/danger
 - Popularity changes for heroic/villain/coward moments
 - `chalSeries` in TWIST_CATALOG entry — every challenge from a specific show MUST have an origin series (`'island'`, `'action'`, `'world-tour'`, `'revenge'`, `'all-stars'`, `'pahkitew'`, `'ridonculous'`, `'dc1'`–`'dc5'`). If a challenge is an original mechanic with no show origin, omit `chalSeries`.
+- **World Tour challenges**: NEVER mention the real-world country name in narration, VP text, or challenge descriptions. Reference the setting indirectly (e.g. "ancient pyramids" not "Egypt", "neon-lit game show studio" not "Japan"). The simulator is its own universe — no real geography.
 - `chalStyle` in TWIST_CATALOG entry — every challenge MUST have a style tag for the randomizer's category-aware pacing. Valid values: `'physical'`, `'endurance'`, `'hunt'`, `'social'`, `'puzzle'`, `'adventure'`, `'chaos'`. The randomizer avoids placing two consecutive episodes with the same style.
+- Live-updating sidebar — every twist challenge VP MUST have an interactive sidebar that rebuilds on every reveal click. Sidebar must be gated by `_tvState` (never spoil ahead), show phase-specific data, and store phase data on `window` (not globals that get overwritten). Call the rebuild function from both `revealNext` AND `revealAll`.
 
 ### Scoring Balance
 Tribe scores: averages per member, NEVER raw sums.
@@ -178,6 +180,8 @@ UI: count dropdown (1-3) + per-slot reason dropdown in Episode Format Designer.
 
 ### Romance
 Toggle: `seasonConfig.romance`. Pipeline: spark → intensity → first move → showmance → love triangle → affair. `_challengeRomanceSpark()` for challenges. `_checkShowmanceChalMoment()` for existing showmances. Always check `romanticCompat(a, b)` before romance events — including fake/sabotage kisses.
+
+**Max 2 active showmances per season.** `_challengeRomanceSpark()` in romance.js already enforces this cap internally. NEVER create sparks/showmances via inline `gs.romanticSparks.push()` or `gs.showmances.push()` in challenge files — always use `_challengeRomanceSpark()`. If a challenge truly needs inline spark logic, it MUST check: (1) `seasonConfig.romance` enabled, (2) `gs.showmances.filter(sh => !sh.broken).length < 2`, (3) neither player already in an active showmance, (4) `romanticCompat(a, b)`, (5) no existing spark between the pair.
 
 ### The Mole
 Season twist. 5 sabotage types. Suspicion tracking. Exposure at 3.0.
@@ -314,6 +318,54 @@ export function simulateChallengeId(ep) {
 - Sidebar should NOT spoil future results — show state from BEFORE current phase, update progressively
 - Each screen needs its own `stateKey` for independent reveal state
 
+#### VP Reveal: DOM-Only Updates (CRITICAL)
+**NEVER rebuild the entire page on reveal click.** Calling `buildVPScreens()` + `renderVPScreen()` from a reveal handler destroys and recreates the entire DOM, causing the page to flash from top to bottom (nauseating scroll). Instead, use direct DOM manipulation:
+
+**Required reveal pattern** (see `crazy-fun-time.js` as latest reference):
+```javascript
+// Re-applies visibility to ALL steps 0..upToIdx — patches stale DOM after screen switch
+function _reapplyVisibility(suffix, upToIdx, total) {
+  for (let i = 0; i <= upToIdx; i++) {
+    const el = document.getElementById(`prefix-step-${suffix}-${i}`);
+    if (el) el.classList.add('prefix-visible');
+  }
+  const counter = document.getElementById(`prefix-counter-${suffix}`);
+  if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total}`;
+  if (upToIdx >= total - 1) {
+    const controls = document.getElementById(`prefix-controls-${suffix}`);
+    if (controls) { const btns = controls.querySelectorAll('.prefix-btn'); btns.forEach(b => b.style.opacity = '0.4'); }
+  }
+}
+
+export function challengeRevealNext(screenKey, totalSteps) {
+  const st = _ensureState(screenKey, totalSteps);
+  if (st.idx >= st.total - 1) return;
+  st.idx++;
+  const suffix = screenKey.replace('prefix-', '');
+  _reapplyVisibility(suffix, st.idx, st.total); // patches stale DOM from screen switch
+  const el = document.getElementById(`prefix-step-${suffix}-${st.idx}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  _updateSidebar(screenKey);
+}
+```
+
+**Required element IDs** (set during VP build):
+- Each step div: `id="prefix-step-{suffix}-{i}"` (suffix = screenKey minus the `prefix-` part)
+- Counter span: `id="prefix-counter-{suffix}"`
+- Controls container: `id="prefix-controls-{suffix}"`
+- Sidebar inner: `id="prefix-sidebar-inner"` (single element, innerHTML replaced on update)
+
+**Auto-scroll**: `scrollIntoView({ behavior: 'smooth', block: 'center' })` on the newly revealed element — page stays in place, new card slides into view.
+
+**Sidebar live-update**: Split `_buildSidebar()` into wrapper (has the `id`) and `_buildSidebarContent()` (returns inner HTML). The `_updateSidebar()` function finds the sidebar element by ID and replaces only its innerHTML — no full page rebuild.
+
+#### VP Mockup Workflow
+1. **Create a standalone mockup HTML file** (`mockup-<name>.html`) with all CSS, layout, icons, fonts, and placeholder data. This is the visual target.
+2. **Get user approval** on the mockup before writing any VP builder code.
+3. **VP builders must reproduce the mockup exactly** — same grid layout, same fonts, same CSS icon system, same sidebar structure, same card physics, same ambient effects. If the VP output doesn't match the mockup, it's wrong.
+4. **After VP builders are written, verify against the mockup** — open both in a browser and compare. The mockup is the source of truth.
+5. **Keep the mockup file** in the repo for future reference — it documents the visual intent.
+
 ### Step 5: Scoring Rules
 - `chalMemberScores` accumulates across all phases — used for challenge tab ranking
 - Immunity winner gets massive bonus to guarantee #1 position
@@ -331,6 +383,14 @@ export function simulateChallengeId(ep) {
 - **Same text repetition**: have 4+ text options per narration category minimum
 - **Class/type assignment clustering**: use priority draft + cap system to ensure diversity
 - **No-tribal / sudden-death missing challenge data in history**: episode.js has MULTIPLE early-return history pushes (no-tribal ~line 2918, sudden-death ~line 1715, sudden-death+twist ~line 2417, off-the-chain+SD ~line 2140). ALL of these must include the twist challenge data fields (`isHouston`, `houston`, `isTopDog`, `topDog`, etc.) or VP screens show nothing on replay. When adding a new twist challenge, grep for ALL `gs.episodeHistory.push` calls and add the new fields to every one.
+- **Reveal handler rebuilding entire page**: NEVER call `buildVPScreens()`/`renderVPScreen()` from reveal handlers — this destroys the DOM and causes nauseating top-to-bottom page flash. Toggle individual step elements by ID + update sidebar innerHTML instead. See Step 4 for the correct pattern.
+- **Tribe data property name**: Tribe objects use `tribeName` (NOT `name`). Using `tribe.name` gives `undefined`.
+- **Episode number**: Current episode number is `gs.episodeHistory.length` (NOT `gs.episodeHistory.length + 1` — the current episode is already pushed). Don't use `ep.episodeNum` which doesn't exist.
+- **buildVPScreens called without argument**: `buildVPScreens(epRecord)` requires the episode record argument. Calling it without args crashes with "epRecord is undefined".
+- **TWIST_CATALOG description too long**: Keep `desc` field under ~200 characters or the challenge card in the UI will be much taller than others.
+- **VP output doesn't match mockup**: Always compare the actual VP output against the approved mockup HTML file. Subagents building VP code must reproduce the mockup's exact layout, fonts, icons, sidebar, and card physics — not invent their own.
+- **Reveals break after screen switch**: VP screens are cached HTML strings. Navigating away and back re-inserts stale HTML with all steps hidden, but `_tvState.idx` is still advanced. Fix: every `revealNext`/`revealAll` must call `_reapplyVisibility()` which loops from step 0 to current idx and adds the visible class to ALL steps. This patches the stale DOM. Without this, reveals silently fail after any screen navigation.
+- **Reveal handlers must isolate sidebar/map updates**: Wrap sidebar and map update calls in separate try-catch blocks so that if `_updateSidebar()` or `_updateMap()` throws (e.g., missing `window` data after screen switch), it does NOT prevent `_reapplyVisibility()` from running. Always run `_reapplyVisibility()` FIRST (in its own try-catch), then sidebar/map updates. Pattern: `try { reapply } catch(e){} try { sidebar } catch(e){} try { map } catch(e){}`.
 
 ### Step 7: VP Aesthetic Identity — OVERDRIVE IS THE BASELINE
 Every challenge VP must feel like a standalone immersive experience with its own **unique visual identity**. The goal is wow factor — the user should feel transported into the challenge's world. Never settle for plain cards with emoji icons on a flat background.
@@ -347,8 +407,8 @@ Every challenge VP must feel like a standalone immersive experience with its own
 - Persistent background animations fitting the theme (particles, environmental effects)
 - Phase-specific card physics — cards MOVE differently per zone
 - Atmospheric flavor text between cards (comm chatter, announcer, ambient narration) — 8-10 per zone
-- Sticky reveal controls (`position:fixed;bottom:0`) with counter + auto-scroll
-- Interactive sidebar: live-updating on every reveal, zone-specific, gated by `_tvState`
+- Sticky reveal controls (`position:fixed;bottom:0`) with counter (by ID for live update) + auto-scroll via `scrollIntoView({ behavior: 'smooth', block: 'center' })` — page must stay in place, never flash top-to-bottom
+- Interactive sidebar: live-updating on every reveal via DOM innerHTML replacement (by ID), zone-specific, gated by `_tvState`. Use `stepMeta` arrays for progressive score accumulation.
 - Store phase data on `window`, read from DOM `data-phase` (not globals that get overwritten)
 
 **Noise & Unpredictability (simulation, not VP):**
@@ -364,12 +424,15 @@ Every challenge VP must feel like a standalone immersive experience with its own
 - No immunity score inflation (`maxOther + active.length + 5`) for challenges where the winner is already the highest scorer.
 - Phase advantages (VIP, backstage pass) should give a meaningful edge but NOT guarantee the win.
 
-### Sidebar / Honor Board
-- Must live-update on every reveal click (call a rebuild function from `revealNext` AND `revealAll`).
+### Sidebar / Honor Board — LIVE UPDATING (CRITICAL)
+- **Must live-update on every reveal click** — call `_updateSidebar(screenKey)` from BOTH `revealNext` AND `revealAll`. The sidebar innerHTML is replaced in-place (by ID), NOT via full page rebuild.
+- **Split sidebar into wrapper + content**: `_buildSidebar(ep, phase)` returns the outer `<div>` with `id="prefix-sidebar-inner"`. `_buildSidebarContent(ep, phase)` returns just the inner HTML. The update function calls `_buildSidebarContent()` and sets `sideEl.innerHTML`.
+- **Running score accumulation via stepMeta**: For phases with progressive scores (pinball, fights, etc.), build a `stepMeta` array during VP build that tracks per-step scoring data (`{tribe, points, hits, zones}`). Store on `window` (e.g., `window._cftPinballStepMeta`). Sidebar reads `_tvState[key].idx` and accumulates scores only up to that index — scores build up progressively as cards are revealed.
 - Store phase data on `window` via the shell wrapper, read phase from DOM `data-phase` attribute (not global variable — globals get overwritten when multiple screens pre-build).
 - Show different data per phase (e.g., fight wins in fight phase, water levels in climb phase).
-- Gate ALL data by reveal index — never spoil results before the corresponding card is revealed.
-- The initial `_buildBoard`/`_buildMeter`/`_buildHonor` render must also read `_tvState` and gate data.
+- **Gate ALL data by reveal index** — never spoil results before the corresponding card is revealed. Scores, zone breakdowns, event lists — everything must be gated by `_tvState[key].idx`.
+- The initial `_buildSidebarContent` render must also read `_tvState` and gate data (not just the update path).
+- **Episode data access**: Use `gs.episodeHistory[window.vpEpNum - 1]` to get the current episode record for sidebar updates.
 
 ### VP Narration Quality
 - Minimum 4 text variants per narration category to avoid repetition.
@@ -404,7 +467,25 @@ Every challenge VP must feel like a standalone immersive experience with its own
 
 ### VP Reveal System
 - `<script>` tags in innerHTML don't execute — set `window` data directly in the VP build function.
-- Use CSS classes (`step-hidden`/`step-revealing`/`step-visible`) not just `display:none`.
+- Use CSS classes (`step-hidden`/`step-visible`) toggled via `classList.add()` — NOT `display:none`/`display:block` via full page rebuild.
+- **NEVER call `buildVPScreens()` or `renderVPScreen()` from reveal handlers** — this destroys the entire DOM and causes a nauseating top-to-bottom page flash. Toggle individual step elements by ID instead.
+- **Each step div needs an ID**: `id="prefix-step-{suffix}-{i}"` so reveal handlers can find them directly.
+- **Auto-scroll on reveal**: `el.scrollIntoView({ behavior: 'smooth', block: 'center' })` — the page stays exactly where it is, new card slides smoothly into view. Never scroll to top.
+
+#### Stale DOM After Screen Switch (CRITICAL — recurring bug)
+**Problem:** VP screens are pre-built as HTML strings by `buildVPScreens()` and cached in an array. `renderVPScreen()` re-inserts this cached HTML on every screen navigation. So if the user reveals 5 cards (mutating the live DOM), navigates to another screen, then navigates back — the stale cached HTML is re-inserted with all steps hidden. But `_tvState.idx` is still at 4, so clicking reveal tries to show step 5 while steps 0-4 are invisible.
+
+**Fix:** Every `revealNext`/`revealAll` must call a `_reapplyVisibility(suffix, upToIdx, total)` helper that loops from step 0 through the current index and adds the visible class to ALL of them. This patches the stale DOM on every click:
+```javascript
+function _reapplyVisibility(suffix, upToIdx, total) {
+  for (let i = 0; i <= upToIdx; i++) {
+    const el = document.getElementById(`prefix-step-${suffix}-${i}`);
+    if (el) el.classList.add('prefix-visible');
+  }
+  // Also update counter text and dim buttons if done
+}
+```
+This is idempotent — adding a class that already exists is a no-op. The cost is trivial (a few DOM lookups per click). Without this, reveals break after ANY screen switch.
 - Fight exchanges should trigger impact animations (screen shake, move burst, KO slam).
 - Betrayal/steal events should trigger screen shake on the entire shell.
 
@@ -417,3 +498,33 @@ Every twist challenge must update ALL of these:
 5. `text-backlog.js` — import + `_textTwistChallenge()` call with VP builders (placed BEFORE `_textCampPost`)
 6. `main.js` — import module + add to spread array
 7. `run-ui.js` — badge tag + add to tag display line
+
+### Multi-Phase Race Challenges
+Challenges with timed races across multiple phases (e.g., Broadway Baby's climb → sewer → park dash) have unique pitfalls:
+
+**Time spread — avoid photo finishes:**
+- Penalties must be large enough to create real separation. If success adds +1.0 and failure adds +1.5, the spread over 6 segments is ~3s — every race is a tie.
+- Target: best-to-worst tribe spread of 10-20s. Below 10s feels artificially close. Above 25s feels like a blowout.
+- Use a **momentum system** to compound advantages: `momFactor = 1.0 + momentum * 0.1` (cap momentum at ±2). Struggling tribes fall further behind, leading tribes pull ahead.
+- Base penalties should be 2x-4x the success time, not 1.2x. A wrong turn should HURT.
+
+**Phase-isolated scoring:**
+- Each phase must track its own performance separately. Snapshot `tribe.time` before each phase starts (`t._prePhaseTime = t.time`) and compute phase-only time as `t.time - t._prePhaseTime`.
+- Phase winners are determined by phase-only time, NOT cumulative time from all previous phases. Otherwise the Phase 1 winner always wins Phase 2.
+- Cumulative time can still feed into overall final results.
+
+**Live map updates — every phase needs one:**
+- Every phase with a visual map MUST have a `_update[Phase]Map(screenKey)` function.
+- All phase map updaters must be hooked into a unified `_updateMap(screenKey)` caller, wrapped in try-catch.
+- Map markers need **tribe labels** (initials) and **vertical stagger** (`bottom: baseY + idx * offset`) so overlapping markers are distinguishable.
+- Markers must have IDs (`id="prefix-marker-${tribeName}"`) for DOM-based live updates.
+- Markers start at the ENTRY position, not at their final simulated position.
+
+**Event frequency — avoid spam:**
+- Routine success events (e.g., "Good Nav") should only emit cards ~35% of the time. Failures always emit.
+- Have 6-8 text variants minimum for any event that can fire every segment.
+- Guaranteed-every-segment events flood the timeline and make every tribe's log look identical.
+
+**No duplicate event arrays:**
+- Events belong in ONE array (e.g., `segmentData.events`). Do NOT also push them to a parallel array (e.g., `gatorEvents`) if the VP builder flattens both — this causes double rendering.
+- If a secondary array exists for metadata tracking, the VP builder must flatten from only ONE source.

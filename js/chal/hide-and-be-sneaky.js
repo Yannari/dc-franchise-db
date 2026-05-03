@@ -546,10 +546,13 @@ export function simulateHideAndBeSneaky(ep) {
             roundBonuses[a] = (roundBonuses[a] || 0) + 0.5;
             roundBonuses[b] = (roundBonuses[b] || 0) + 0.5;
             addBond(a, b, 1);
-            // Romance spark from shared hiding tension
+            // Romance spark from shared hiding tension — respects max 2 active showmance cap
             if (typeof romanticCompat === 'function' && romanticCompat(a, b)) {
-              if (!(gs.romanticSparks || []).some(s => s.players.includes(a) && s.players.includes(b)) &&
-                  !(gs.showmances || []).some(s => s.players.includes(a) && s.players.includes(b))) {
+              const _activeShows = (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p)));
+              if (_activeShows.length < 2 &&
+                  !(gs.romanticSparks || []).some(s => s.players.includes(a) && s.players.includes(b)) &&
+                  !(gs.showmances || []).some(s => s.players.includes(a) && s.players.includes(b)) &&
+                  !_activeShows.some(sh => sh.players.includes(a) || sh.players.includes(b))) {
                 if (!gs.romanticSparks) gs.romanticSparks = [];
                 gs.romanticSparks.push({ players: [a, b], intensity: 1, origin: 'hide-seek' });
                 showmanceMoments.push({ type: 'spark', players: [a, b],

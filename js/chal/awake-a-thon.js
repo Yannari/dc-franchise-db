@@ -162,11 +162,14 @@ export function simulateAwakeAThon(ep) {
             const a = awakePlayers[si], b = awakePlayers[sj];
             const _aIsShowmancer = players.find(p => p.name === a)?.archetype === 'showmancer';
             const _bIsShowmancer = players.find(p => p.name === b)?.archetype === 'showmancer';
-            const _bondReq = (_aIsShowmancer || _bIsShowmancer) ? 0.5 : 2; // showmancers connect faster
+            const _bondReq = (_aIsShowmancer || _bIsShowmancer) ? 0.5 : 2;
             if (getBond(a, b) >= _bondReq && romanticCompat(a, b)) {
-              const alreadyShowmance = (gs.showmances || []).some(s => s.players.includes(a) && s.players.includes(b));
-              if (alreadyShowmance) continue;
               if (!gs.showmances) gs.showmances = [];
+              const _activeShows = gs.showmances.filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p)));
+              if (_activeShows.length >= 2) continue;
+              const alreadyShowmance = gs.showmances.some(s => s.players.includes(a) && s.players.includes(b));
+              if (alreadyShowmance) continue;
+              if (_activeShows.some(sh => sh.players.includes(a) || sh.players.includes(b))) continue;
               gs.showmances.push({ players: [a, b], phase: 'spark', sparkEp: (gs.episode || 0) + 1, episodesActive: 0, origin: 'challenge-awakeathon', sparkContext: 'awake-a-thon social event' });
               addBond(a, b, 1.0);
               roundSocialEvents.push({

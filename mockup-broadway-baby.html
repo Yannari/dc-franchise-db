@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Broadway Baby — VP Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a0c10;color:#e6e6e6;overflow-x:hidden;font-family:'Barlow Condensed',sans-serif;}
+
+:root{
+  --bb-sky:#4a90c2;--bb-metal:#8a9bb0;--bb-rust:#c97b3a;--bb-concrete:#5c6370;
+  --bb-sewer:#3d5a3a;--bb-water:#2a6b5e;--bb-park:#5a9e4f;--bb-gold:#f0a500;
+  --bb-danger:#e04040;--bb-neon:#39ff14;--bb-graffiti:#ff4ecb;--bb-deep:#0d1117;
+  --bb-white:#f0f0f0;--bb-muted:rgba(240,240,240,0.55);
+  --bb-card-bg:rgba(14,18,26,0.88);
+}
+
+/* ══════════════════════════════════════════════════════════ */
+/* SHELL                                                     */
+/* ══════════════════════════════════════════════════════════ */
+.bb-shell{max-width:1100px;margin:0 auto;padding:20px 20px 80px;position:relative;z-index:2;font-family:'Barlow Condensed',sans-serif;color:var(--bb-white);min-height:900px;display:flex;gap:16px;align-items:flex-start;}
+.bb-main{flex:1;min-width:0;position:relative;z-index:2;}
+.bb-sidebar{width:260px;flex-shrink:0;position:sticky;top:20px;z-index:3;}
+
+/* ══════════════════════════════════════════════════════════ */
+/* ATMOSPHERE — polished urban sky + city                    */
+/* ══════════════════════════════════════════════════════════ */
+.bb-atmosphere{position:fixed;top:0;left:0;right:0;bottom:0;overflow:hidden;pointer-events:none;z-index:0;}
+
+.bb-sky{position:absolute;top:0;left:0;right:0;bottom:0;
+  background:linear-gradient(180deg, #1a3050 0%, #1e3858 10%, #264060 25%, #2a4568 35%, #1e3048 55%, #141e2e 75%, #0c1018 100%);}
+
+/* Subtle city glow on horizon */
+.bb-horizon-glow{position:absolute;bottom:20%;left:0;right:0;height:200px;
+  background:radial-gradient(ellipse at 50% 100%, rgba(240,165,0,0.06) 0%, transparent 70%);pointer-events:none;}
+
+/* Stars */
+.bb-stars{position:absolute;top:0;left:0;right:0;height:40%;pointer-events:none;}
+.bb-star{position:absolute;width:2px;height:2px;background:white;border-radius:50%;}
+
+/* Clouds — soft, cinematic */
+.bb-clouds{position:absolute;top:0;left:0;right:0;height:55%;pointer-events:none;overflow:hidden;}
+.bb-cloud{position:absolute;border-radius:50%;filter:blur(30px);}
+.bb-cloud:nth-child(1){width:500px;height:60px;top:5%;left:-15%;background:rgba(255,255,255,0.04);animation:bb-drift 60s linear infinite;}
+.bb-cloud:nth-child(2){width:350px;height:45px;top:12%;left:40%;background:rgba(255,255,255,0.03);animation:bb-drift 75s linear infinite reverse;animation-delay:-20s;}
+.bb-cloud:nth-child(3){width:600px;height:50px;top:3%;left:20%;background:rgba(200,220,255,0.03);animation:bb-drift 90s linear infinite;animation-delay:-40s;}
+@keyframes bb-drift{0%{transform:translateX(-30%);}100%{transform:translateX(110vw);}}
+
+/* City skyline — layered depth */
+.bb-skyline{position:absolute;bottom:0;left:0;right:0;height:55%;pointer-events:none;}
+/* Far layer */
+.bb-bldg-far{position:absolute;bottom:0;background:rgba(16,20,28,0.9);}
+.bb-bldg-far::before{content:'';position:absolute;top:8px;left:3px;right:3px;bottom:8px;
+  background:repeating-linear-gradient(0deg,transparent 0px,transparent 10px,rgba(255,200,80,0.03) 10px,rgba(255,200,80,0.03) 12px),
+  repeating-linear-gradient(90deg,transparent 0px,transparent 7px,rgba(255,200,80,0.02) 7px,rgba(255,200,80,0.02) 9px);}
+/* Mid layer */
+.bb-bldg-mid{position:absolute;bottom:0;background:rgba(12,16,22,0.95);}
+.bb-bldg-mid::before{content:'';position:absolute;top:6px;left:4px;right:4px;bottom:6px;
+  background:repeating-linear-gradient(0deg,transparent 0px,transparent 8px,rgba(255,200,80,0.05) 8px,rgba(255,200,80,0.05) 10px),
+  repeating-linear-gradient(90deg,transparent 0px,transparent 6px,rgba(255,200,80,0.04) 6px,rgba(255,200,80,0.04) 8px);}
+/* Near layer */
+.bb-bldg-near{position:absolute;bottom:0;background:rgba(8,10,16,1);}
+.bb-bldg-near::before{content:'';position:absolute;top:5px;left:3px;right:3px;bottom:5px;
+  background:repeating-linear-gradient(0deg,transparent 0px,transparent 7px,rgba(255,200,80,0.07) 7px,rgba(255,200,80,0.07) 9px),
+  repeating-linear-gradient(90deg,transparent 0px,transparent 5px,rgba(255,200,80,0.05) 5px,rgba(255,200,80,0.05) 7px);}
+/* Rooftop antennas */
+.bb-antenna{position:absolute;width:1px;background:rgba(255,100,100,0.3);}
+.bb-antenna::after{content:'';position:absolute;top:-2px;left:-2px;width:5px;height:5px;border-radius:50%;background:rgba(255,60,60,0.6);animation:bb-blink 2s ease-in-out infinite;}
+@keyframes bb-blink{0%,60%,100%{opacity:1;}30%{opacity:0.2;}}
+
+/* Graffiti tags — subtle */
+.bb-graffiti{position:absolute;bottom:15%;left:0;right:0;height:100px;pointer-events:none;}
+.bb-tag{position:absolute;font-family:'Permanent Marker',cursive;letter-spacing:2px;}
+
+/* Smog/fade at bottom */
+.bb-smog{position:absolute;bottom:0;left:0;right:0;height:120px;pointer-events:none;
+  background:linear-gradient(to top, rgba(10,12,16,1), rgba(10,12,16,0.7), transparent);}
+
+/* Floating dust */
+.bb-dust{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden;}
+.bb-dust-p{position:absolute;width:1.5px;height:1.5px;background:rgba(255,255,255,0.1);border-radius:50%;animation:bb-float linear infinite;}
+@keyframes bb-float{0%{transform:translateY(105vh) translateX(0);opacity:0;}10%{opacity:0.2;}50%{transform:translateY(50vh) translateX(20px);}90%{opacity:0.05;}100%{transform:translateY(-5vh) translateX(-10px);opacity:0;}}
+
+/* ══════════════════════════════════════════════════════════ */
+/* CSS ICONS                                                 */
+/* ══════════════════════════════════════════════════════════ */
+.bb-icon{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;}
+.bb-icon-rope .ic{width:3px;height:18px;background:repeating-linear-gradient(0deg,var(--bb-rust) 0px,var(--bb-rust) 3px,#8b6a3a 3px,#8b6a3a 6px);border-radius:1px;box-shadow:0 0 4px rgba(201,123,58,0.3);}
+.bb-icon-hero .ic{width:16px;height:16px;position:relative;}.bb-icon-hero .ic::before{content:'';position:absolute;top:2px;left:3px;width:10px;height:10px;background:var(--bb-gold);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);}
+.bb-icon-danger .ic{width:16px;height:16px;position:relative;}.bb-icon-danger .ic::before{content:'';position:absolute;top:1px;left:1px;width:14px;height:14px;background:transparent;border:2px solid var(--bb-danger);clip-path:polygon(50% 0%,100% 100%,0% 100%);}.bb-icon-danger .ic::after{content:'!';position:absolute;top:5px;left:6px;font-size:8px;font-weight:900;color:var(--bb-danger);line-height:1;}
+.bb-icon-pole .ic{width:3px;height:18px;background:linear-gradient(180deg,var(--bb-metal),#555);border-radius:1px;box-shadow:1px 0 0 rgba(255,255,255,0.1);}
+.bb-icon-speed .ic{width:18px;height:10px;position:relative;}.bb-icon-speed .ic::before{content:'';position:absolute;top:1px;left:0;width:10px;height:1px;background:var(--bb-gold);box-shadow:0 3px 0 var(--bb-gold),0 6px 0 var(--bb-gold);opacity:0.7;}.bb-icon-speed .ic::after{content:'';position:absolute;top:0;right:0;width:0;height:0;border-style:solid;border-width:5px 0 5px 8px;border-color:transparent transparent transparent var(--bb-gold);}
+.bb-icon-boat .ic{width:18px;height:10px;position:relative;}.bb-icon-boat .ic::before{content:'';position:absolute;bottom:0;left:0;right:0;height:6px;background:var(--bb-metal);border-radius:0 0 6px 6px/0 0 3px 3px;}.bb-icon-boat .ic::after{content:'';position:absolute;bottom:4px;left:7px;width:2px;height:8px;background:var(--bb-metal);}
+.bb-icon-gator .ic{width:20px;height:8px;position:relative;}.bb-icon-gator .ic::before{content:'';position:absolute;left:0;top:0;width:14px;height:8px;background:var(--bb-sewer);border-radius:8px 4px 2px 2px;box-shadow:0 0 6px rgba(61,90,58,0.5);}.bb-icon-gator .ic::after{content:'';position:absolute;right:0;top:2px;width:8px;height:4px;background:var(--bb-sewer);border-radius:0 2px 2px 0;clip-path:polygon(0 0,100% 30%,100% 70%,0 100%);}
+.bb-icon-apple .ic{width:14px;height:16px;position:relative;}.bb-icon-apple .ic::before{content:'';position:absolute;bottom:0;left:0;width:14px;height:14px;background:radial-gradient(circle at 40% 40%,#e04040,#a02020);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;}.bb-icon-apple .ic::after{content:'';position:absolute;top:0;left:5px;width:3px;height:5px;background:#5a3a20;border-radius:1px;}
+.bb-icon-turtle .ic{width:14px;height:10px;position:relative;}.bb-icon-turtle .ic::before{content:'';position:absolute;top:0;left:2px;width:10px;height:8px;background:#4a7a3a;border-radius:50%/60% 60% 40% 40%;}.bb-icon-turtle .ic::after{content:'';position:absolute;top:3px;left:0;width:4px;height:3px;background:#5a8a4a;border-radius:2px;}
+.bb-icon-carriage .ic{width:18px;height:14px;position:relative;}.bb-icon-carriage .ic::before{content:'';position:absolute;top:0;left:1px;width:16px;height:10px;background:var(--bb-sky);border-radius:3px 3px 0 0;border:1px solid rgba(138,155,176,0.3);}.bb-icon-carriage .ic::after{content:'';position:absolute;bottom:0;left:3px;width:4px;height:4px;background:var(--bb-metal);border-radius:50%;box-shadow:8px 0 0 var(--bb-metal);}
+.bb-icon-splash .ic{width:16px;height:16px;position:relative;}.bb-icon-splash .ic::before{content:'';position:absolute;bottom:2px;left:2px;width:12px;height:6px;background:var(--bb-water);border-radius:50%;opacity:0.6;}.bb-icon-splash .ic::after{content:'';position:absolute;bottom:8px;left:5px;width:2px;height:8px;background:var(--bb-water);border-radius:1px;box-shadow:-3px 2px 0 var(--bb-water),3px 3px 0 var(--bb-water);opacity:0.5;}
+.bb-icon-statue .ic{width:14px;height:18px;position:relative;}.bb-icon-statue .ic::before{content:'';position:absolute;bottom:0;left:2px;right:2px;height:4px;background:var(--bb-gold);border-radius:0 0 2px 2px;}.bb-icon-statue .ic::after{content:'';position:absolute;bottom:4px;left:4px;width:6px;height:14px;background:var(--bb-gold);border-radius:2px 2px 0 0;box-shadow:0 0 6px rgba(240,165,0,0.4);}
+
+/* ══════════════════════════════════════════════════════════ */
+/* PHASE HEADER                                              */
+/* ══════════════════════════════════════════════════════════ */
+.bb-phase-hdr{text-align:center;margin:0 0 20px;padding:28px 20px 16px;position:relative;z-index:2;}
+.bb-phase-tag{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:5px;color:var(--bb-gold);opacity:0.7;margin-bottom:4px;}
+.bb-phase-title{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:3px;color:var(--bb-white);text-shadow:0 2px 30px rgba(0,0,0,0.6),0 0 60px rgba(240,165,0,0.1);line-height:1.1;}
+.bb-phase-sub{font-size:13px;color:var(--bb-muted);margin-top:6px;max-width:500px;margin-left:auto;margin-right:auto;line-height:1.5;}
+
+/* ══════════════════════════════════════════════════════════ */
+/* CARDS                                                     */
+/* ══════════════════════════════════════════════════════════ */
+.bb-card{background:var(--bb-card-bg);border:1px solid rgba(138,155,176,0.10);border-radius:8px;padding:16px 20px;margin:12px 0;position:relative;overflow:hidden;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);animation:bb-card-in 0.6s cubic-bezier(0.16,1,0.3,1) forwards;}
+.bb-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 5%,rgba(138,155,176,0.2) 50%,transparent 95%);}
+@keyframes bb-card-in{from{transform:translateY(20px);opacity:0;filter:blur(3px);}to{transform:none;opacity:1;filter:none;}}
+.bb-card-climb{border-left:3px solid var(--bb-sky);}
+.bb-card-danger{border-left:3px solid var(--bb-danger);background:linear-gradient(135deg,rgba(224,64,64,0.05),var(--bb-card-bg))!important;}
+.bb-card-hero{border-left:3px solid var(--bb-gold);background:linear-gradient(135deg,rgba(240,165,0,0.05),var(--bb-card-bg))!important;}
+.bb-card-social{border-left:3px dashed rgba(138,155,176,0.2);background:rgba(14,18,26,0.6)!important;}
+.bb-card-sewer{border-left:3px solid var(--bb-sewer);}
+.bb-card-park{border-left:3px solid var(--bb-park);}
+.bb-card-gator{border-left:3px solid var(--bb-danger);background:linear-gradient(135deg,rgba(61,90,58,0.06),rgba(224,64,64,0.03),var(--bb-card-bg))!important;}
+.bb-card-speed{border-left:3px solid var(--bb-gold);background:linear-gradient(135deg,rgba(240,165,0,0.04),var(--bb-card-bg))!important;}
+
+/* IMPACT SHAKE on danger cards */
+.bb-card-danger{animation:bb-card-in 0.6s cubic-bezier(0.16,1,0.3,1) forwards, bb-shake 0.4s 0.6s ease-out;}
+.bb-card-gator{animation:bb-card-in 0.6s cubic-bezier(0.16,1,0.3,1) forwards, bb-shake 0.5s 0.5s ease-out;}
+@keyframes bb-shake{0%,100%{transform:translateX(0);}15%{transform:translateX(-4px) rotate(-0.3deg);}30%{transform:translateX(3px) rotate(0.2deg);}45%{transform:translateX(-2px);}60%{transform:translateX(1px);}75%{transform:translateX(-1px);}}
+
+/* HERO GLOW pulse on hero cards */
+.bb-card-hero{animation:bb-card-in 0.6s cubic-bezier(0.16,1,0.3,1) forwards, bb-hero-glow 2s 0.6s ease-out;}
+@keyframes bb-hero-glow{0%{box-shadow:0 0 0 rgba(240,165,0,0);}30%{box-shadow:0 0 25px rgba(240,165,0,0.15),inset 0 0 15px rgba(240,165,0,0.03);}100%{box-shadow:0 0 0 rgba(240,165,0,0);}}
+
+/* SPEED BLUR on speed cards */
+.bb-card-speed::after{content:'';position:absolute;top:0;right:0;bottom:0;width:40px;background:linear-gradient(270deg,rgba(240,165,0,0.06),transparent);pointer-events:none;animation:bb-speed-streak 1.5s ease-out;}
+@keyframes bb-speed-streak{from{width:100%;opacity:0.3;}to{width:40px;opacity:0;}}
+
+.bb-hdr{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.bb-label{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;color:var(--bb-white);}
+.bb-txt{font-size:13px;line-height:1.65;color:rgba(240,240,240,0.7);}
+.bb-txt strong{color:var(--bb-white);}
+
+/* Badges */
+.bb-badge{margin-left:auto;padding:3px 10px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:1.5px;white-space:nowrap;}
+.bb-badge-climb{background:rgba(74,144,194,0.12);color:var(--bb-sky);border:1px solid rgba(74,144,194,0.25);}
+.bb-badge-danger{background:rgba(224,64,64,0.10);color:var(--bb-danger);border:1px solid rgba(224,64,64,0.25);}
+.bb-badge-hero{background:rgba(240,165,0,0.10);color:var(--bb-gold);border:1px solid rgba(240,165,0,0.25);}
+.bb-badge-sewer{background:rgba(61,90,58,0.12);color:#6aaa5a;border:1px solid rgba(61,90,58,0.25);}
+.bb-badge-gator{background:rgba(224,64,64,0.08);color:var(--bb-danger);border:1px solid rgba(224,64,64,0.2);}
+.bb-badge-apple{background:rgba(224,64,64,0.10);color:#e06060;border:1px solid rgba(224,64,64,0.2);}
+.bb-badge-speed{background:rgba(240,165,0,0.10);color:var(--bb-gold);border:1px solid rgba(240,165,0,0.2);}
+.bb-badge-social{background:rgba(138,155,176,0.08);color:var(--bb-metal);border:1px solid rgba(138,155,176,0.2);}
+.bb-badge-park{background:rgba(90,158,79,0.10);color:var(--bb-park);border:1px solid rgba(90,158,79,0.2);}
+
+/* Comm chatter */
+.bb-chatter{padding:6px 14px;margin:8px 0;font-size:11px;color:rgba(240,240,240,0.3);font-style:italic;letter-spacing:0.5px;border-left:2px solid rgba(240,165,0,0.08);}
+.bb-chatter-host{color:rgba(240,165,0,0.5);font-style:normal;font-weight:600;}
+
+/* Tribe POV */
+.bb-tribe-pov{padding:10px 16px;margin:16px 0 8px;border-radius:6px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;display:flex;align-items:center;gap:10px;}
+.bb-tribe-pov-y{background:rgba(212,160,23,0.06);border:1px solid rgba(212,160,23,0.15);color:#f0c040;}
+.bb-tribe-pov-r{background:rgba(192,48,48,0.06);border:1px solid rgba(192,48,48,0.15);color:#e05050;}
+.bb-tribe-pov-b{background:rgba(32,96,160,0.06);border:1px solid rgba(32,96,160,0.15);color:#4080c0;}
+.bb-sb-tribe{display:inline-block;width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.bb-sb-tribe-y{background:#d4a017;}
+.bb-sb-tribe-r{background:#c03030;}
+.bb-sb-tribe-b{background:#2060a0;}
+
+/* ══════════════════════════════════════════════════════════ */
+/* CLIMB TRACKER — STICKY vertical map                       */
+/* ══════════════════════════════════════════════════════════ */
+.bb-map-wrap{position:sticky;top:0;z-index:5;margin:0 -20px 16px;padding:0;}
+.bb-climb-tracker{position:relative;width:100%;height:420px;border-radius:0;overflow:hidden;
+  background:linear-gradient(180deg, #283848 0%, #1e2c3a 20%, #182430 45%, #141c26 70%, #101820 90%, #0c1018 100%);
+  border-bottom:2px solid rgba(240,165,0,0.15);}
+.bb-climb-tracker::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(180deg,transparent 0px,transparent 3px,rgba(138,155,176,0.015) 3px,rgba(138,155,176,0.015) 4px);pointer-events:none;z-index:0;}
+.bb-climb-tracker::after{content:'';position:absolute;top:0;left:0;right:0;height:60px;
+  background:linear-gradient(180deg,rgba(100,160,220,0.06),transparent);pointer-events:none;z-index:0;}
+
+/* Chris statue */
+.bb-statue{position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:140px;height:380px;z-index:1;}
+.bb-statue-base{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:120px;height:50px;
+  background:linear-gradient(180deg,#3a4050,#2a2e38);border-radius:6px 6px 0 0;border:1px solid rgba(138,155,176,0.1);border-bottom:none;}
+.bb-statue-base::before{content:'CHRIS';position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:4px;color:rgba(240,165,0,0.3);}
+.bb-statue-body{position:absolute;bottom:50px;left:50%;transform:translateX(-50%);width:50px;height:220px;
+  background:linear-gradient(180deg,#d4a030,#b8882a,#9a7020);border-radius:6px 6px 0 0;
+  box-shadow:0 0 40px rgba(240,165,0,0.12),inset 0 0 20px rgba(0,0,0,0.3);}
+.bb-statue-arm{position:absolute;height:10px;border-radius:5px;
+  background:linear-gradient(90deg,#c89828,#d4a030);box-shadow:0 2px 8px rgba(0,0,0,0.3);}
+.bb-statue-arm-l{bottom:230px;left:-30px;width:65px;transform:rotate(-20deg);transform-origin:right center;}
+.bb-statue-arm-r{bottom:230px;right:-30px;width:65px;transform:rotate(20deg);transform-origin:left center;}
+.bb-statue-head{position:absolute;bottom:265px;left:50%;transform:translateX(-50%);width:70px;height:70px;z-index:2;}
+.bb-statue-head img{width:100%;height:100%;border-radius:50%;object-fit:contain;border:3px solid #d4a030;box-shadow:0 0 20px rgba(240,165,0,0.3),0 0 50px rgba(240,165,0,0.1);background:#1a1e28;}
+.bb-statue-head::before{content:'';position:absolute;top:-8px;left:-8px;right:-8px;bottom:-8px;border-radius:50%;background:radial-gradient(circle,rgba(240,165,0,0.15) 0%,transparent 70%);animation:bb-halo 3s ease-in-out infinite;z-index:-1;}
+@keyframes bb-halo{0%,100%{opacity:0.6;transform:scale(1);}50%{opacity:1;transform:scale(1.1);}}
+
+/* Ropes */
+.bb-rope{position:absolute;bottom:20px;width:2px;height:300px;z-index:1;
+  background:repeating-linear-gradient(0deg,var(--bb-rust) 0px,var(--bb-rust) 4px,#8b6a3a 4px,#8b6a3a 8px);box-shadow:0 0 6px rgba(201,123,58,0.15);}
+.bb-rope-1{left:12%;}
+.bb-rope-2{left:78%;}
+.bb-rope-3{left:90%;}
+
+/* Dangling carriages */
+.bb-dangling{position:absolute;top:8px;z-index:2;animation:bb-swing 3s ease-in-out infinite;}
+@keyframes bb-swing{0%,100%{transform:rotate(-3deg);}50%{transform:rotate(3deg);}}
+.bb-dangling-1{left:25%;animation-delay:0s;}
+.bb-dangling-2{left:48%;animation-delay:0.8s;}
+.bb-dangling-3{left:71%;animation-delay:1.6s;}
+.bb-dg-str{width:1px;height:12px;background:rgba(138,155,176,0.3);margin:0 auto;}
+.bb-dg-box{width:18px;height:12px;background:var(--bb-sky);border:1px solid rgba(138,155,176,0.3);border-radius:2px 2px 0 0;box-shadow:0 2px 6px rgba(0,0,0,0.3);}
+
+/* Segment markers */
+.bb-seg{position:absolute;width:100%;padding:0 8px;font-size:8px;font-weight:700;letter-spacing:2px;color:rgba(240,240,240,0.2);}
+.bb-seg-top{top:12px;}
+.bb-seg-mid{top:42%;}
+.bb-seg-bot{bottom:60px;}
+
+/* Climber dots */
+.bb-climber{position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#fff;z-index:3;box-shadow:0 0 10px rgba(0,0,0,0.5);transition:all 1.5s cubic-bezier(0.16,1,0.3,1);}
+.bb-climber img{width:24px;height:24px;border-radius:50%;object-fit:contain;}
+.bb-climber-y{background:#d4a017;border-color:#f0c040;}
+.bb-climber-r{background:#c03030;border-color:#e05050;}
+.bb-climber-b{background:#2060a0;border-color:#4080c0;}
+/* Climb pulse animation */
+.bb-climber::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid currentColor;opacity:0;animation:bb-climb-pulse 2s ease-out infinite;}
+@keyframes bb-climb-pulse{0%{transform:scale(0.8);opacity:0.5;}100%{transform:scale(1.6);opacity:0;}}
+
+/* Map label overlay */
+.bb-map-label{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:3px;color:rgba(240,165,0,0.3);z-index:4;}
+
+/* ══════════════════════════════════════════════════════════ */
+/* SEWER MAP — STICKY horizontal tunnel                      */
+/* ══════════════════════════════════════════════════════════ */
+.bb-sewer-wrap{position:sticky;top:0;z-index:5;margin:0 -20px 16px;}
+.bb-tunnel-map{position:relative;width:100%;height:160px;overflow:hidden;
+  background:linear-gradient(180deg, #1a1810 0%, #14120c 30%, #100e08 60%, #0c0a06 100%);
+  border-bottom:2px solid rgba(61,90,58,0.2);}
+
+/* Brick texture */
+.bb-tunnel-map::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;z-index:0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0px, transparent 14px, rgba(100,80,50,0.06) 14px, rgba(100,80,50,0.06) 15px),
+    repeating-linear-gradient(90deg, transparent 0px, transparent 24px, rgba(100,80,50,0.04) 24px, rgba(100,80,50,0.04) 25px);
+  pointer-events:none;}
+
+/* Arch shape — curved tunnel ceiling + floor */
+.bb-tunnel-arch-t{position:absolute;top:0;left:0;right:0;height:30px;z-index:1;
+  background:linear-gradient(180deg, #0a0804, rgba(10,8,4,0.6), transparent);
+  border-radius:0 0 50% 50%/0 0 100% 100%;pointer-events:none;}
+.bb-tunnel-arch-b{position:absolute;bottom:0;left:0;right:0;height:25px;z-index:1;
+  background:linear-gradient(0deg, #0a0804, rgba(10,8,4,0.6), transparent);
+  border-radius:50% 50% 0 0/100% 100% 0 0;pointer-events:none;}
+
+/* Sewer water — animated surface */
+.bb-sewer-water{position:absolute;bottom:0;left:0;right:0;height:55px;z-index:1;
+  background:linear-gradient(180deg, rgba(30,60,40,0.4) 0%, rgba(20,50,35,0.7) 40%, rgba(15,40,25,0.9) 100%);
+  overflow:hidden;}
+.bb-sewer-water::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg, transparent, rgba(80,180,100,0.15), rgba(60,140,80,0.1), rgba(80,180,100,0.12), transparent);
+  animation:bb-water-shimmer 4s ease-in-out infinite;}
+@keyframes bb-water-shimmer{0%,100%{transform:translateX(-20%);}50%{transform:translateX(20%);}}
+/* Water ripple lines */
+.bb-sewer-water::after{content:'';position:absolute;top:6px;left:0;right:0;height:30px;
+  background:repeating-linear-gradient(0deg, transparent 0px, transparent 5px, rgba(80,160,100,0.04) 5px, rgba(80,160,100,0.04) 6px);
+  animation:bb-ripple 3s ease-in-out infinite alternate;}
+@keyframes bb-ripple{from{transform:translateX(-3px);}to{transform:translateX(3px);}}
+
+/* Pipes — industrial details */
+.bb-pipe{position:absolute;height:4px;border-radius:2px;z-index:2;
+  background:linear-gradient(180deg,#5a5040,#3a3228);box-shadow:0 1px 0 rgba(0,0,0,0.4),0 -1px 0 rgba(255,255,255,0.03);}
+.bb-pipe-1{top:18px;left:5%;width:22%;}
+.bb-pipe-2{top:14px;left:45%;width:28%;}
+.bb-pipe-3{bottom:58px;left:15%;width:18%;}
+.bb-pipe-4{top:22px;left:80%;width:15%;}
+/* Drip from pipe */
+.bb-drip{position:absolute;width:2px;z-index:2;}
+.bb-drip::after{content:'';position:absolute;top:0;left:0;width:2px;height:6px;background:rgba(80,160,100,0.25);border-radius:0 0 1px 1px;animation:bb-drip-fall 2.5s ease-in infinite;}
+@keyframes bb-drip-fall{0%,70%{transform:translateY(0);opacity:0.5;}85%{transform:translateY(20px);opacity:0.3;}86%{transform:translateY(20px);opacity:0;}100%{opacity:0;}}
+.bb-drip-1{top:22px;left:27%;}
+.bb-drip-2{top:18px;left:73%;animation-delay:1.2s;}
+
+/* Grating light — light shaft from above */
+.bb-grate-light{position:absolute;top:0;width:40px;height:80px;z-index:1;
+  background:linear-gradient(180deg, rgba(255,230,180,0.06), transparent);
+  clip-path:polygon(10px 0, 30px 0, 40px 100%, 0 100%);pointer-events:none;}
+
+/* Boat markers — better shape */
+.bb-boat-marker{position:absolute;bottom:32px;z-index:3;transition:left 1.5s cubic-bezier(0.16,1,0.3,1);display:flex;flex-direction:column;align-items:center;gap:2px;}
+.bb-boat-body{width:32px;height:10px;border-radius:2px 2px 8px 8px;position:relative;}
+.bb-boat-body::after{content:'';position:absolute;top:-4px;left:12px;width:8px;height:4px;background:inherit;border-radius:2px 2px 0 0;filter:brightness(1.2);}
+.bb-boat-label{font-size:7px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,0.7);}
+.bb-boat-y .bb-boat-body{background:#d4a017;}
+.bb-boat-r .bb-boat-body{background:#c03030;}
+.bb-boat-b .bb-boat-body{background:#2060a0;}
+/* Boat wake animation */
+.bb-boat-marker::before{content:'';position:absolute;bottom:-2px;left:-8px;width:48px;height:6px;
+  background:radial-gradient(ellipse,rgba(80,160,100,0.12),transparent);animation:bb-wake 1.5s ease-in-out infinite alternate;pointer-events:none;}
+@keyframes bb-wake{from{transform:scaleX(0.8);opacity:0.4;}to{transform:scaleX(1.2);opacity:0.8;}}
+
+/* Gator — animated lurking */
+.bb-gator-marker{position:absolute;bottom:38px;z-index:4;animation:bb-gator-lurk 4s ease-in-out infinite;}
+@keyframes bb-gator-lurk{0%,70%,100%{transform:translateY(0);}35%{transform:translateY(-6px);}}
+.bb-gator-eyes{display:flex;gap:4px;}
+.bb-gator-eye{width:5px;height:5px;border-radius:50%;background:radial-gradient(circle,#ffcc00,#aa8800);box-shadow:0 0 6px rgba(255,200,0,0.5);animation:bb-eye-blink 5s ease-in-out infinite;}
+@keyframes bb-eye-blink{0%,45%,55%,100%{transform:scaleY(1);}50%{transform:scaleY(0.1);}}
+
+/* Segment labels */
+.bb-tunnel-seg{position:absolute;top:6px;font-size:7px;letter-spacing:1.5px;color:rgba(240,240,240,0.15);font-weight:700;z-index:3;}
+
+/* ══════════════════════════════════════════════════════════ */
+/* PARK MAP — STICKY horizontal race track                   */
+/* ══════════════════════════════════════════════════════════ */
+.bb-park-wrap{position:sticky;top:0;z-index:5;margin:0 -20px 16px;}
+.bb-park-map{position:relative;width:100%;height:160px;overflow:hidden;
+  background:linear-gradient(180deg, #1a2a18 0%, #16241a 30%, #121e14 60%, #0e180e 100%);
+  border-bottom:2px solid rgba(90,158,79,0.2);}
+
+/* Grass texture */
+.bb-park-map::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(90deg, transparent 0px, transparent 3px, rgba(90,158,79,0.03) 3px, rgba(90,158,79,0.03) 4px);pointer-events:none;}
+
+/* Pond */
+.bb-pond{position:absolute;left:8%;bottom:20px;width:100px;height:50px;
+  background:radial-gradient(ellipse, rgba(42,107,94,0.5), rgba(30,80,65,0.3));
+  border-radius:50%;border:1px solid rgba(42,107,94,0.2);z-index:1;overflow:hidden;}
+.bb-pond::before{content:'';position:absolute;top:5px;left:10px;right:10px;height:2px;
+  background:linear-gradient(90deg, transparent, rgba(120,200,180,0.15), transparent);
+  animation:bb-pond-ripple 3s ease-in-out infinite;}
+@keyframes bb-pond-ripple{0%,100%{transform:scaleX(0.6);opacity:0.3;}50%{transform:scaleX(1.2);opacity:0.7;}}
+.bb-pond-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:7px;font-weight:700;letter-spacing:2px;color:rgba(120,200,180,0.3);}
+
+/* Apple floating in pond */
+.bb-apple-float{position:absolute;left:12%;bottom:40px;z-index:2;animation:bb-apple-bob 2s ease-in-out infinite;}
+@keyframes bb-apple-bob{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-4px) rotate(3deg);}}
+.bb-apple-icon{width:14px;height:14px;background:radial-gradient(circle at 40% 40%,#e04040,#a02020);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;position:relative;}
+.bb-apple-icon::after{content:'';position:absolute;top:-3px;left:5px;width:2px;height:4px;background:#5a3a20;border-radius:1px;}
+
+/* Trees */
+.bb-tree{position:absolute;z-index:1;}
+.bb-tree-trunk{width:4px;height:12px;background:#3a2a1a;margin:0 auto;border-radius:1px;}
+.bb-tree-canopy{width:20px;height:16px;background:radial-gradient(ellipse,rgba(90,158,79,0.3),rgba(60,120,50,0.1));border-radius:50%;margin-bottom:-2px;}
+
+/* Race track — dotted path */
+.bb-race-track{position:absolute;top:50%;left:25%;right:5%;height:2px;z-index:1;
+  background:repeating-linear-gradient(90deg, rgba(240,240,240,0.1) 0px, rgba(240,240,240,0.1) 6px, transparent 6px, transparent 12px);}
+/* Checkpoints */
+.bb-checkpoint{position:absolute;top:46%;width:2px;height:14px;background:rgba(240,240,240,0.15);z-index:1;}
+.bb-checkpoint::after{content:'';position:absolute;top:-2px;left:-3px;width:8px;height:3px;background:rgba(240,240,240,0.08);border-radius:1px;}
+
+/* Carriage race markers */
+.bb-race-marker{position:absolute;top:42%;z-index:3;transition:left 1.5s cubic-bezier(0.16,1,0.3,1);display:flex;flex-direction:column;align-items:center;gap:2px;}
+.bb-race-body{width:22px;height:12px;border-radius:4px 4px 2px 2px;position:relative;box-shadow:0 2px 6px rgba(0,0,0,0.4);}
+.bb-race-body::after{content:'';position:absolute;bottom:-3px;left:3px;width:4px;height:4px;background:#444;border-radius:50%;box-shadow:10px 0 0 #444;}
+.bb-race-label{font-size:7px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,0.5);}
+.bb-race-y .bb-race-body{background:#d4a017;}
+.bb-race-r .bb-race-body{background:#c03030;}
+.bb-race-b .bb-race-body{background:#2060a0;}
+/* Speed lines behind leader */
+.bb-race-marker.bb-race-lead::before{content:'';position:absolute;top:4px;right:100%;width:30px;height:4px;
+  background:linear-gradient(270deg, rgba(240,165,0,0.15), transparent);animation:bb-speed-lines 0.8s ease-out infinite;pointer-events:none;}
+@keyframes bb-speed-lines{from{width:30px;opacity:0.5;}to{width:50px;opacity:0;}}
+
+/* Finish line */
+.bb-finish{position:absolute;top:38%;right:4%;width:4px;height:24px;z-index:2;
+  background:repeating-linear-gradient(0deg, #fff 0px, #fff 3px, #222 3px, #222 6px);}
+.bb-finish-label{position:absolute;top:30%;right:2%;font-size:7px;font-weight:700;letter-spacing:2px;color:rgba(240,240,240,0.2);z-index:2;}
+
+/* Park segment labels */
+.bb-park-seg{position:absolute;bottom:6px;font-size:7px;letter-spacing:1.5px;color:rgba(240,240,240,0.12);font-weight:700;z-index:2;}
+
+/* ══════════════════════════════════════════════════════════ */
+/* SIDEBAR                                                   */
+/* ══════════════════════════════════════════════════════════ */
+.bb-sb{background:rgba(14,18,26,0.92);border:1px solid rgba(138,155,176,0.10);border-radius:8px;padding:14px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+.bb-sb-hdr{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:var(--bb-gold);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(138,155,176,0.08);}
+.bb-sb-section{margin-bottom:14px;}
+.bb-sb-label{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--bb-muted);margin-bottom:6px;}
+.bb-sb-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;}
+.bb-sb-row img{width:22px;height:22px;border-radius:3px;object-fit:contain;border:1px solid rgba(138,155,176,0.15);}
+.bb-sb-phase{display:flex;gap:4px;margin-bottom:12px;}
+.bb-sb-phase-dot{flex:1;height:4px;border-radius:2px;background:rgba(138,155,176,0.1);}
+.bb-sb-phase-dot.active{background:var(--bb-gold);box-shadow:0 0 6px rgba(240,165,0,0.3);}
+.bb-sb-phase-dot.done{background:rgba(90,158,79,0.4);}
+.bb-sb-time{display:flex;align-items:center;gap:6px;padding:5px 8px;margin:3px 0;border-radius:5px;background:rgba(138,155,176,0.04);border:1px solid rgba(138,155,176,0.06);font-size:12px;}
+.bb-sb-time-val{margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:var(--bb-white);}
+.bb-sb-time-lead{color:var(--bb-gold);}
+.bb-sb-event{padding:4px 0;font-size:11px;color:rgba(240,240,240,0.5);border-bottom:1px solid rgba(138,155,176,0.04);}
+.bb-sb-event:last-child{border-bottom:none;}
+.bb-sb-event-icon{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;}
+.bb-sb-event-hero{background:var(--bb-gold);}
+.bb-sb-event-danger{background:var(--bb-danger);}
+.bb-sb-event-social{background:var(--bb-metal);}
+
+/* ══════════════════════════════════════════════════════════ */
+/* CONTROLS                                                  */
+/* ══════════════════════════════════════════════════════════ */
+.bb-controls{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,12,16,0.95);border-top:1px solid rgba(138,155,176,0.1);padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:12px;backdrop-filter:blur(10px);}
+.bb-btn{padding:8px 20px;border:none;border-radius:6px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;}
+.bb-btn-reveal{background:var(--bb-gold);color:#0d1117;}
+.bb-btn-reveal:hover{background:#ffb800;transform:scale(1.02);}
+.bb-btn-all{background:transparent;border:1px solid rgba(138,155,176,0.2);color:var(--bb-muted);}
+.bb-counter{font-size:12px;color:var(--bb-muted);letter-spacing:1px;}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ATMOSPHERE -->
+<div class="bb-atmosphere">
+  <div class="bb-sky"></div>
+  <div class="bb-horizon-glow"></div>
+  <div class="bb-stars">
+    <div class="bb-star" style="top:5%;left:15%;opacity:0.3;"></div><div class="bb-star" style="top:8%;left:45%;opacity:0.2;"></div>
+    <div class="bb-star" style="top:3%;left:70%;opacity:0.4;"></div><div class="bb-star" style="top:12%;left:30%;opacity:0.15;"></div>
+    <div class="bb-star" style="top:6%;left:85%;opacity:0.25;"></div><div class="bb-star" style="top:10%;left:55%;opacity:0.2;"></div>
+    <div class="bb-star" style="top:2%;left:20%;opacity:0.3;"></div><div class="bb-star" style="top:15%;left:75%;opacity:0.15;"></div>
+  </div>
+  <div class="bb-clouds"><div class="bb-cloud"></div><div class="bb-cloud"></div><div class="bb-cloud"></div></div>
+  <div class="bb-skyline">
+    <!-- Far buildings -->
+    <div class="bb-bldg-far" style="left:0;width:50px;height:200px;"></div>
+    <div class="bb-bldg-far" style="left:40px;width:35px;height:280px;"></div>
+    <div class="bb-bldg-far" style="left:70px;width:60px;height:220px;"></div>
+    <div class="bb-bldg-far" style="left:140px;width:25px;height:340px;"></div>
+    <div class="bb-bldg-far" style="left:180px;width:55px;height:240px;"></div>
+    <div class="bb-bldg-far" style="left:260px;width:40px;height:300px;"></div>
+    <div class="bb-bldg-far" style="left:310px;width:70px;height:210px;"></div>
+    <div class="bb-bldg-far" style="left:400px;width:30px;height:350px;"></div>
+    <div class="bb-bldg-far" style="left:440px;width:65px;height:260px;"></div>
+    <div class="bb-bldg-far" style="left:530px;width:45px;height:290px;"></div>
+    <div class="bb-bldg-far" style="left:590px;width:55px;height:230px;"></div>
+    <div class="bb-bldg-far" style="left:660px;width:35px;height:310px;"></div>
+    <div class="bb-bldg-far" style="left:710px;width:60px;height:250px;"></div>
+    <div class="bb-bldg-far" style="left:790px;width:40px;height:270px;"></div>
+    <div class="bb-bldg-far" style="left:850px;width:50px;height:320px;"></div>
+    <div class="bb-bldg-far" style="left:920px;width:70px;height:200px;"></div>
+    <div class="bb-bldg-far" style="left:1010px;width:45px;height:280px;"></div>
+    <div class="bb-bldg-far" style="left:1070px;width:55px;height:240px;"></div>
+    <!-- Mid buildings -->
+    <div class="bb-bldg-mid" style="left:20px;width:45px;height:160px;"></div>
+    <div class="bb-bldg-mid" style="left:90px;width:55px;height:180px;"></div>
+    <div class="bb-bldg-mid" style="left:170px;width:40px;height:200px;"></div>
+    <div class="bb-bldg-mid" style="left:250px;width:65px;height:170px;"></div>
+    <div class="bb-bldg-mid" style="left:350px;width:50px;height:210px;"></div>
+    <div class="bb-bldg-mid" style="left:430px;width:55px;height:175px;"></div>
+    <div class="bb-bldg-mid" style="left:520px;width:40px;height:195px;"></div>
+    <div class="bb-bldg-mid" style="left:600px;width:60px;height:165px;"></div>
+    <div class="bb-bldg-mid" style="left:690px;width:45px;height:190px;"></div>
+    <div class="bb-bldg-mid" style="left:770px;width:55px;height:185px;"></div>
+    <div class="bb-bldg-mid" style="left:860px;width:50px;height:205px;"></div>
+    <div class="bb-bldg-mid" style="left:940px;width:60px;height:175px;"></div>
+    <div class="bb-bldg-mid" style="left:1030px;width:50px;height:190px;"></div>
+    <!-- Near buildings -->
+    <div class="bb-bldg-near" style="left:10px;width:50px;height:100px;"></div>
+    <div class="bb-bldg-near" style="left:80px;width:60px;height:120px;"></div>
+    <div class="bb-bldg-near" style="left:160px;width:45px;height:90px;"></div>
+    <div class="bb-bldg-near" style="left:230px;width:55px;height:110px;"></div>
+    <div class="bb-bldg-near" style="left:320px;width:65px;height:100px;"></div>
+    <div class="bb-bldg-near" style="left:420px;width:50px;height:130px;"></div>
+    <div class="bb-bldg-near" style="left:500px;width:55px;height:95px;"></div>
+    <div class="bb-bldg-near" style="left:590px;width:45px;height:115px;"></div>
+    <div class="bb-bldg-near" style="left:670px;width:60px;height:105px;"></div>
+    <div class="bb-bldg-near" style="left:760px;width:50px;height:125px;"></div>
+    <div class="bb-bldg-near" style="left:840px;width:55px;height:98px;"></div>
+    <div class="bb-bldg-near" style="left:930px;width:60px;height:110px;"></div>
+    <div class="bb-bldg-near" style="left:1020px;width:50px;height:100px;"></div>
+    <!-- Antennas -->
+    <div class="bb-antenna" style="left:152px;bottom:340px;height:20px;"></div>
+    <div class="bb-antenna" style="left:412px;bottom:350px;height:15px;animation-delay:1s;"></div>
+    <div class="bb-antenna" style="left:862px;bottom:320px;height:18px;animation-delay:0.5s;"></div>
+  </div>
+  <div class="bb-graffiti">
+    <span class="bb-tag" style="bottom:30px;left:4%;font-size:18px;color:rgba(255,78,203,0.04);transform:rotate(-4deg);">MCLEAN WUZ HERE</span>
+    <span class="bb-tag" style="bottom:50px;left:40%;font-size:14px;color:rgba(57,255,20,0.035);transform:rotate(2deg);">DRAMA</span>
+    <span class="bb-tag" style="bottom:20px;right:8%;font-size:16px;color:rgba(240,165,0,0.03);transform:rotate(-6deg);">GG</span>
+  </div>
+  <div class="bb-dust">
+    <div class="bb-dust-p" style="left:10%;animation-duration:18s;animation-delay:-2s;"></div>
+    <div class="bb-dust-p" style="left:30%;animation-duration:22s;animation-delay:-8s;"></div>
+    <div class="bb-dust-p" style="left:50%;animation-duration:16s;animation-delay:-4s;"></div>
+    <div class="bb-dust-p" style="left:70%;animation-duration:20s;animation-delay:-12s;"></div>
+    <div class="bb-dust-p" style="left:85%;animation-duration:24s;animation-delay:-6s;"></div>
+  </div>
+  <div class="bb-smog"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SHELL                                                     -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="bb-shell">
+<div class="bb-main">
+
+  <!-- ═══ PHASE 1 ═══ -->
+  <div class="bb-phase-hdr">
+    <div class="bb-phase-tag">PHASE 1 OF 3</div>
+    <div class="bb-phase-title">THE CHRIS COLOSSUS</div>
+    <div class="bb-phase-sub">A 200-foot golden statue of Chris McLean towers over the challenge area. Three baby carriages dangle from the outstretched hand. Climb the steel wool ropes. Retrieve your carriage. Slide the pole. Don't look down.</div>
+  </div>
+
+  <!-- STICKY CLIMB MAP -->
+  <div class="bb-map-wrap">
+    <div class="bb-climb-tracker">
+      <div class="bb-statue">
+        <div class="bb-statue-head"><img src="assets/avatars/chris.png" alt="Chris McLean" onerror="this.style.display='none'"></div>
+        <div class="bb-statue-arm bb-statue-arm-l"></div>
+        <div class="bb-statue-arm bb-statue-arm-r"></div>
+        <div class="bb-statue-body"></div>
+        <div class="bb-statue-base"></div>
+      </div>
+      <div class="bb-rope bb-rope-1"></div><div class="bb-rope bb-rope-2"></div><div class="bb-rope bb-rope-3"></div>
+      <div class="bb-dangling bb-dangling-1"><div class="bb-dg-str"></div><div class="bb-dg-box"></div></div>
+      <div class="bb-dangling bb-dangling-2"><div class="bb-dg-str"></div><div class="bb-dg-box"></div></div>
+      <div class="bb-dangling bb-dangling-3"><div class="bb-dg-str"></div><div class="bb-dg-box"></div></div>
+      <div class="bb-seg bb-seg-top">TOP — CARRIAGE RETRIEVAL</div>
+      <div class="bb-seg bb-seg-mid">SEGMENT 2 — HALFWAY</div>
+      <div class="bb-seg bb-seg-bot">BASE — START</div>
+      <div class="bb-climber bb-climber-y" style="left:10%;bottom:55%;"><img src="assets/avatars/bowie.png" onerror="this.style.display='none';this.parentElement.textContent='B'"></div>
+      <div class="bb-climber bb-climber-y" style="left:15%;bottom:35%;"><img src="assets/avatars/zoey.png" onerror="this.style.display='none';this.parentElement.textContent='Z'"></div>
+      <div class="bb-climber bb-climber-r" style="left:76%;bottom:72%;"><img src="assets/avatars/hicks.png" onerror="this.style.display='none';this.parentElement.textContent='H'"></div>
+      <div class="bb-climber bb-climber-r" style="left:80%;bottom:42%;"><img src="assets/avatars/josee.png" onerror="this.style.display='none';this.parentElement.textContent='J'"></div>
+      <div class="bb-climber bb-climber-b" style="left:88%;bottom:85%;"><img src="assets/avatars/priya.png" onerror="this.style.display='none';this.parentElement.textContent='P'"></div>
+      <div class="bb-climber bb-climber-b" style="left:92%;bottom:22%;"><img src="assets/avatars/brick.png" onerror="this.style.display='none';this.parentElement.textContent='Br'"></div>
+      <div class="bb-map-label">COLOSSUS CLIMB TRACKER</div>
+    </div>
+  </div>
+
+  <div class="bb-chatter"><span class="bb-chatter-host">Chris:</span> "Welcome to the most narcissistic challenge in Total Drama history — and that's saying something."</div>
+
+  <div class="bb-card bb-card-climb"><div class="bb-hdr"><div class="bb-icon bb-icon-rope"><div class="ic"></div></div><div class="bb-label">CLIMB — ROUND 1</div><span class="bb-badge bb-badge-climb">SEGMENT 1→2</span></div><div class="bb-txt"><strong>Bowie</strong> grips the steel wool rope and hauls himself upward. His palms are already raw but he doesn't slow down. Clean ascent — one segment cleared.</div></div>
+
+  <div class="bb-card bb-card-danger"><div class="bb-hdr"><div class="bb-icon bb-icon-danger"><div class="ic"></div></div><div class="bb-label">ROPE BURN</div><span class="bb-badge bb-badge-danger">SLIP</span></div><div class="bb-txt"><strong>Zoey</strong> loses her grip halfway up. The steel wool shreds her gloves and she slides three feet before catching herself. Hands shaking. The rope is unforgiving.</div></div>
+
+  <div class="bb-chatter"><span class="bb-chatter-host">Chris:</span> "Steel wool ropes. Because regular rope is for shows that care about their contestants."</div>
+
+  <div class="bb-card bb-card-hero"><div class="bb-hdr"><div class="bb-icon bb-icon-hero"><div class="ic"></div></div><div class="bb-label">STUCK IN STATUE</div><span class="bb-badge bb-badge-hero">HERO RESCUE</span></div><div class="bb-txt"><strong>Brick</strong> climbs into the statue's nostril and gets wedged. <strong>Priya</strong> abandons her own climb to pull him free, costing a full round but earning massive respect. "No soldier left behind," Brick mutters, genuinely emotional.</div></div>
+
+  <div class="bb-card bb-card-social"><div class="bb-hdr"><div class="bb-icon bb-icon-speed"><div class="ic"></div></div><div class="bb-label">RIVALRY</div><span class="bb-badge bb-badge-social">BOND −0.5</span></div><div class="bb-txt"><strong>Josee</strong> glances across at Bowie's progress and mutters something unprintable. The camera catches it. Bowie doesn't respond. He doesn't need to — he's two segments ahead.</div></div>
+
+  <div class="bb-card bb-card-climb"><div class="bb-hdr"><div class="bb-icon bb-icon-statue"><div class="ic"></div></div><div class="bb-label">SHOWOFF MOMENT</div><span class="bb-badge bb-badge-hero">SKIP SEGMENT</span></div><div class="bb-txt"><strong>Hicks</strong> finds a groove in the statue's jawline and uses it to vault past an entire segment. The other tribes watch in disbelief. Pure physicality.</div></div>
+
+  <!-- POLE SLIDE -->
+  <div class="bb-phase-hdr" style="margin-top:30px;"><div class="bb-phase-tag">PHASE 1B</div><div class="bb-phase-title" style="font-size:28px;">THE POLE SLIDE</div><div class="bb-phase-sub">200 feet straight down. One fireman's pole. No net.</div></div>
+
+  <div class="bb-card bb-card-speed"><div class="bb-hdr"><div class="bb-icon bb-icon-pole"><div class="ic"></div></div><div class="bb-label">CLEAN DESCENT</div><span class="bb-badge bb-badge-speed">FAST</span></div><div class="bb-txt"><strong>Hicks</strong> wraps his legs around the pole and drops. No hesitation. Boots hit the ground, carriage in hand. The kind of exit that belongs on a recruiting poster.</div></div>
+
+  <div class="bb-card bb-card-danger"><div class="bb-hdr"><div class="bb-icon bb-icon-splash"><div class="ic"></div></div><div class="bb-label">SPECTACULAR CRASH</div><span class="bb-badge bb-badge-danger">WIPEOUT</span></div><div class="bb-txt"><strong>Zoey</strong> slides too fast and slams into the ground feet-first. The carriage goes flying. She's fine — but the audience isn't. They're on their feet.</div></div>
+
+  <div class="bb-chatter"><span class="bb-chatter-host">Chris:</span> "Carriage assignment! Champions get the luxury model. Contenders… get the one with three wheels."</div>
+
+  <!-- ═══ PHASE 2 ═══ -->
+  <div class="bb-phase-hdr" style="margin-top:40px;"><div class="bb-phase-tag">PHASE 2 OF 3</div><div class="bb-phase-title">THE UNDERGROUND GAUNTLET</div><div class="bb-phase-sub">Boats. Tunnels. Darkness. Something large and reptilian is following you. Navigate the sewer network beneath the challenge grounds. First team out wins the time advantage.</div></div>
+
+  <!-- STICKY SEWER MAP -->
+  <div class="bb-sewer-wrap">
+    <div class="bb-tunnel-map">
+      <div class="bb-tunnel-arch-t"></div>
+      <div class="bb-tunnel-arch-b"></div>
+      <div class="bb-sewer-water"></div>
+      <div class="bb-pipe bb-pipe-1"></div><div class="bb-pipe bb-pipe-2"></div><div class="bb-pipe bb-pipe-3"></div><div class="bb-pipe bb-pipe-4"></div>
+      <div class="bb-drip bb-drip-1"></div><div class="bb-drip bb-drip-2"></div>
+      <div class="bb-grate-light" style="left:20%;"></div>
+      <div class="bb-grate-light" style="left:60%;"></div>
+      <div class="bb-boat-marker bb-boat-y" style="left:52%;"><div class="bb-boat-body"></div><div class="bb-boat-label">CHAMP</div></div>
+      <div class="bb-boat-marker bb-boat-r" style="left:32%;"><div class="bb-boat-body"></div><div class="bb-boat-label">CONT</div></div>
+      <div class="bb-boat-marker bb-boat-b" style="left:42%;"><div class="bb-boat-body"></div><div class="bb-boat-label">BLUE</div></div>
+      <div class="bb-gator-marker" style="right:12%;"><div class="bb-gator-eyes"><div class="bb-gator-eye"></div><div class="bb-gator-eye"></div></div></div>
+      <div class="bb-tunnel-seg" style="left:3%;">ENTRY</div>
+      <div class="bb-tunnel-seg" style="left:22%;">FORK 1</div>
+      <div class="bb-tunnel-seg" style="left:45%;">PIPES</div>
+      <div class="bb-tunnel-seg" style="left:68%;">CURRENT</div>
+      <div class="bb-tunnel-seg" style="right:3%;">EXIT</div>
+    </div>
+  </div>
+
+  <div class="bb-tribe-pov bb-tribe-pov-y"><div class="bb-sb-tribe bb-sb-tribe-y"></div>CHAMPIONS — SEGMENT 4</div>
+
+  <div class="bb-card bb-card-sewer"><div class="bb-hdr"><div class="bb-icon bb-icon-boat"><div class="ic"></div></div><div class="bb-label">NAVIGATION</div><span class="bb-badge bb-badge-sewer">CORRECT PATH</span></div><div class="bb-txt"><strong>Gwen</strong> spots the current pattern and steers left at the fork. The tunnel opens up. Good call — they skip the dead-end entirely.</div></div>
+
+  <div class="bb-card bb-card-danger"><div class="bb-hdr"><div class="bb-icon bb-icon-danger"><div class="ic"></div></div><div class="bb-label">RATS ON BOAT</div><span class="bb-badge bb-badge-danger">PANIC</span></div><div class="bb-txt">A wave of rats pours from a broken pipe onto the bow. <strong>Carrie</strong> screams and nearly tips the boat. <strong>Scott</strong> kicks them off with zero hesitation. "Grew up with worse."</div></div>
+
+  <div class="bb-chatter" style="border-left-color:rgba(61,90,58,0.12);">The echo of water dripping from pipes. Something scraping against brick. The navigator's flashlight flickers twice.</div>
+
+  <div class="bb-tribe-pov bb-tribe-pov-r"><div class="bb-sb-tribe bb-sb-tribe-r"></div>CONTENDERS — SEGMENT 5</div>
+
+  <div class="bb-card bb-card-sewer"><div class="bb-hdr"><div class="bb-icon bb-icon-boat"><div class="ic"></div></div><div class="bb-label">WRONG TURN</div><span class="bb-badge bb-badge-danger">DEAD END</span></div><div class="bb-txt"><strong>Courtney</strong> insists on the right tunnel. It's a dead end. The boat has to reverse. <strong>Tyler</strong> says nothing. His face says everything.</div></div>
+
+  <div class="bb-card bb-card-social"><div class="bb-hdr"><div class="bb-icon bb-icon-speed"><div class="ic"></div></div><div class="bb-label">NAVIGATOR BLAME</div><span class="bb-badge bb-badge-social">BOND −0.5</span></div><div class="bb-txt"><strong>Stephanie</strong> turns to Courtney. "You said RIGHT. That was clearly LEFT." The boat goes quiet. The kind of quiet that follows someone into tribal council.</div></div>
+
+  <div class="bb-card bb-card-gator"><div class="bb-hdr"><div class="bb-icon bb-icon-gator"><div class="ic"></div></div><div class="bb-label">THE ALLIGATOR</div><span class="bb-badge bb-badge-gator">INCOMING</span></div><div class="bb-txt">The water behind the Contenders' boat starts to churn. Two yellow eyes surface. The alligator is here — and it's gaining.</div></div>
+
+  <div class="bb-card bb-card-hero"><div class="bb-hdr"><div class="bb-icon bb-icon-hero"><div class="ic"></div></div><div class="bb-label">GATOR FIGHT</div><span class="bb-badge bb-badge-hero">HERO +3 POP</span></div><div class="bb-txt"><strong>Brick</strong> grabs a loose pipe from the tunnel wall and shoves it toward the gator's snout. Direct hit. The gator swerves. The boat rockets forward on the wake. "THAT'S HOW WE DO IT IN BASIC!" Nobody corrects him.</div></div>
+
+  <div class="bb-chatter"><span class="bb-chatter-host">Chris:</span> "I'll be honest, I forgot we put the gator in there. Legal is going to hear about this."</div>
+
+  <!-- ═══ PHASE 3 ═══ -->
+  <div class="bb-phase-hdr" style="margin-top:40px;"><div class="bb-phase-tag">PHASE 3 OF 3</div><div class="bb-phase-title">THE PARK DASH</div><div class="bb-phase-sub">Turtle pond. Giant apples. Baby carriages. One player bobs for the apple. One player rides in the carriage. Everyone else pushes. First tribe to the finish line wins immunity.</div></div>
+
+  <!-- STICKY PARK MAP -->
+  <div class="bb-park-wrap">
+    <div class="bb-park-map">
+      <!-- Pond -->
+      <div class="bb-pond"><div class="bb-pond-label">POND</div></div>
+      <div class="bb-apple-float"><div class="bb-apple-icon"></div></div>
+      <!-- Trees -->
+      <div class="bb-tree" style="left:6%;top:10%;"><div class="bb-tree-canopy"></div><div class="bb-tree-trunk"></div></div>
+      <div class="bb-tree" style="left:18%;top:5%;"><div class="bb-tree-canopy"></div><div class="bb-tree-trunk"></div></div>
+      <div class="bb-tree" style="left:30%;top:15%;"><div class="bb-tree-canopy"></div><div class="bb-tree-trunk"></div></div>
+      <div class="bb-tree" style="right:15%;top:8%;"><div class="bb-tree-canopy"></div><div class="bb-tree-trunk"></div></div>
+      <div class="bb-tree" style="right:5%;top:12%;"><div class="bb-tree-canopy"></div><div class="bb-tree-trunk"></div></div>
+      <!-- Race track -->
+      <div class="bb-race-track"></div>
+      <div class="bb-checkpoint" style="left:25%;"></div>
+      <div class="bb-checkpoint" style="left:45%;"></div>
+      <div class="bb-checkpoint" style="left:65%;"></div>
+      <div class="bb-checkpoint" style="left:82%;"></div>
+      <div class="bb-finish"></div>
+      <div class="bb-finish-label">FINISH</div>
+      <!-- Carriage markers -->
+      <div class="bb-race-marker bb-race-r bb-race-lead" style="left:72%;"><div class="bb-race-body"></div><div class="bb-race-label">CONT</div></div>
+      <div class="bb-race-marker bb-race-y" style="left:58%;"><div class="bb-race-body"></div><div class="bb-race-label">CHAMP</div></div>
+      <div class="bb-race-marker bb-race-b" style="left:40%;"><div class="bb-race-body"></div><div class="bb-race-label">BLUE</div></div>
+      <!-- Segment labels -->
+      <div class="bb-park-seg" style="left:8%;">POND</div>
+      <div class="bb-park-seg" style="left:28%;">SEG 1</div>
+      <div class="bb-park-seg" style="left:48%;">SEG 2</div>
+      <div class="bb-park-seg" style="left:68%;">SEG 3</div>
+      <div class="bb-park-seg" style="right:3%;">FINISH</div>
+    </div>
+  </div>
+
+  <div class="bb-card bb-card-park"><div class="bb-hdr"><div class="bb-icon bb-icon-apple"><div class="ic"></div></div><div class="bb-label">APPLE BOBBING</div><span class="bb-badge bb-badge-apple">ATTEMPT 1</span></div><div class="bb-txt"><strong>Tyler</strong> dunks his entire head into the turtle pond. The apple is the size of a watermelon. His teeth can't get purchase. He surfaces, sputtering. The turtles are unimpressed.</div></div>
+
+  <div class="bb-card bb-card-danger"><div class="bb-hdr"><div class="bb-icon bb-icon-turtle"><div class="ic"></div></div><div class="bb-label">TURTLE ATTACK</div><span class="bb-badge bb-badge-danger">CLING</span></div><div class="bb-txt">A snapping turtle clamps onto <strong>Tyler</strong>'s headband. He thrashes. The turtle holds. He's lost his next attempt wrestling with a reptile half his size.</div></div>
+
+  <div class="bb-card bb-card-hero"><div class="bb-hdr"><div class="bb-icon bb-icon-apple"><div class="ic"></div></div><div class="bb-label">SPECTACULAR GRAB</div><span class="bb-badge bb-badge-hero">CRITICAL +2 POP</span></div><div class="bb-txt"><strong>Josee</strong> dives UNDER the apple, surfaces beneath it, and balances it on her head as she walks out of the pond. The precision is terrifying. She doesn't even look wet.</div></div>
+
+  <div class="bb-phase-hdr" style="margin-top:20px;"><div class="bb-phase-tag">PHASE 3B — FINAL LEG</div><div class="bb-phase-title" style="font-size:28px;">BABY CARRIAGE RACE</div><div class="bb-phase-sub">Load the baby. Load the apple. Push. One player rides as the "baby." The lightest carriage leads. The heaviest prays.</div></div>
+
+  <div class="bb-card bb-card-speed"><div class="bb-hdr"><div class="bb-icon bb-icon-carriage"><div class="ic"></div></div><div class="bb-label">SEGMENT 1</div><span class="bb-badge bb-badge-speed">CHAMPIONS LEAD</span></div><div class="bb-txt">Champions burst out of the gate with the lightest carriage. <strong>Cody</strong> is curled in the carriage looking deeply uncomfortable. <strong>Ryan</strong> and <strong>Sanders</strong> push like their lives depend on it. The wheels are a blur.</div></div>
+
+  <div class="bb-card bb-card-danger" style="border-left-color:#ff4ecb;"><div class="bb-hdr"><div class="bb-icon bb-icon-danger"><div class="ic"></div></div><div class="bb-label">CARRIAGE SWAP SABOTAGE</div><span class="bb-badge bb-badge-danger">UNDETECTED</span></div><div class="bb-txt"><strong>Scott</strong> swaps Champions' carriage with a random prop carriage during the blind turn. Nobody notices until they reach the checkpoint and Chris rejects it. "That's not a baby carriage, that's a shopping cart." Champions have to run back. Scott's grin could power a city block.</div></div>
+
+  <div class="bb-card bb-card-social"><div class="bb-hdr"><div class="bb-icon bb-icon-speed"><div class="ic"></div></div><div class="bb-label">BABY WHINING</div><span class="bb-badge bb-badge-social">BOND −0.3</span></div><div class="bb-txt"><strong>Cody</strong> complains about the bumps. <strong>Ryan</strong> tells him to bite the pacifier and be grateful he's not pushing. The carriage hits a rock. Cody goes airborne for half a second.</div></div>
+
+  <div class="bb-card bb-card-speed" style="border-left-width:4px;"><div class="bb-hdr"><div class="bb-icon bb-icon-speed"><div class="ic"></div></div><div class="bb-label">FINAL SPRINT</div><span class="bb-badge bb-badge-hero">CONTENDERS WIN</span></div><div class="bb-txt">Contenders cross the finish line a full carriage-length ahead. <strong>Josee</strong> screams. <strong>Brick</strong> salutes nobody in particular. <strong>Tyler</strong> is still picking turtle shell out of his hair. Champions limp across second. The third tribe watches from the pond, still looking for their apple.</div></div>
+
+  <div class="bb-chatter"><span class="bb-chatter-host">Chris:</span> "Contenders win immunity! Champions — you're safe. And the third tribe... see you tonight. Bring tissues."</div>
+
+</div>
+
+<!-- SIDEBAR -->
+<div class="bb-sidebar">
+  <div class="bb-sb" id="bb-sidebar-inner">
+    <div class="bb-sb-hdr">BROADWAY BABY</div>
+    <div class="bb-sb-phase"><div class="bb-sb-phase-dot done"></div><div class="bb-sb-phase-dot done"></div><div class="bb-sb-phase-dot active"></div></div>
+    <div class="bb-sb-section"><div class="bb-sb-label">TRIBE STANDINGS</div>
+      <div class="bb-sb-time"><div class="bb-sb-tribe bb-sb-tribe-r"></div><span>Contenders</span><span class="bb-sb-time-val bb-sb-time-lead">4:22</span></div>
+      <div class="bb-sb-time"><div class="bb-sb-tribe bb-sb-tribe-y"></div><span>Champions</span><span class="bb-sb-time-val">4:48</span></div>
+      <div class="bb-sb-time"><div class="bb-sb-tribe bb-sb-tribe-b"></div><span>Blue</span><span class="bb-sb-time-val">5:31</span></div>
+    </div>
+    <div class="bb-sb-section"><div class="bb-sb-label">PHASE 3 ROLES</div>
+      <div class="bb-sb-row"><img src="assets/avatars/tyler.png" onerror="this.style.display='none'"><span style="color:rgba(240,240,240,0.7)">Tyler</span><span class="bb-badge bb-badge-apple" style="margin-left:auto;font-size:8px;">BOBBER</span></div>
+      <div class="bb-sb-row"><img src="assets/avatars/cody.png" onerror="this.style.display='none'"><span style="color:rgba(240,240,240,0.7)">Cody</span><span class="bb-badge bb-badge-speed" style="margin-left:auto;font-size:8px;">BABY</span></div>
+      <div class="bb-sb-row"><img src="assets/avatars/josee.png" onerror="this.style.display='none'"><span style="color:rgba(240,240,240,0.7)">Josee</span><span class="bb-badge bb-badge-apple" style="margin-left:auto;font-size:8px;">BOBBER</span></div>
+    </div>
+    <div class="bb-sb-section"><div class="bb-sb-label">KEY EVENTS</div>
+      <div class="bb-sb-event"><span class="bb-sb-event-icon bb-sb-event-hero"></span>Priya rescues Brick from nostril</div>
+      <div class="bb-sb-event"><span class="bb-sb-event-icon bb-sb-event-hero"></span>Hicks showoff — skips segment</div>
+      <div class="bb-sb-event"><span class="bb-sb-event-icon bb-sb-event-danger"></span>Courtney wrong turn — dead end</div>
+      <div class="bb-sb-event"><span class="bb-sb-event-icon bb-sb-event-hero"></span>Brick fights off the gator</div>
+      <div class="bb-sb-event"><span class="bb-sb-event-icon bb-sb-event-danger"></span>Scott carriage swap sabotage</div>
+      <div class="bb-sb-event"><span class="bb-sb-event-icon bb-sb-event-social"></span>Stephanie blames Courtney</div>
+      <div class="bb-sb-event"><span class="bb-sb-event-icon bb-sb-event-hero"></span>Josee spectacular apple grab</div>
+    </div>
+    <div class="bb-sb-section"><div class="bb-sb-label">CARRIAGE QUALITY</div>
+      <div class="bb-sb-row"><div class="bb-sb-tribe bb-sb-tribe-r"></div><span style="color:rgba(240,240,240,0.7)">Contenders</span><span class="bb-badge bb-badge-climb" style="margin-left:auto;font-size:8px;">LIGHT ×1.15</span></div>
+      <div class="bb-sb-row"><div class="bb-sb-tribe bb-sb-tribe-y"></div><span style="color:rgba(240,240,240,0.7)">Champions</span><span class="bb-badge bb-badge-social" style="margin-left:auto;font-size:8px;">STANDARD ×1.0</span></div>
+      <div class="bb-sb-row"><div class="bb-sb-tribe bb-sb-tribe-b"></div><span style="color:rgba(240,240,240,0.7)">Blue</span><span class="bb-badge bb-badge-danger" style="margin-left:auto;font-size:8px;">HEAVY ×0.85</span></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- CONTROLS -->
+<div class="bb-controls">
+  <button class="bb-btn bb-btn-reveal">REVEAL NEXT</button>
+  <span class="bb-counter">7 / 18</span>
+  <button class="bb-btn bb-btn-all">SEE ALL</button>
+</div>
+
+</body>
+</html>

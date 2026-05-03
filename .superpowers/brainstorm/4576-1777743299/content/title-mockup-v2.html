@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Broadway Baby — Title Card Mockup v2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Permanent+Marker&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#5ba8e0; font-family:'Barlow Condensed',sans-serif; color:#f0f0f0; overflow-x:hidden; }
+
+/* ── Sky background ── */
+.bg {
+  position:fixed; inset:0; z-index:0;
+  background:linear-gradient(180deg,#5ba8e0 0%,#6ec4f5 25%,#a0ddfb 55%,#d4f0ff 80%,#e8d8c8 100%);
+}
+.bg .cloud {
+  position:absolute; background:rgba(255,255,255,0.65); border-radius:50%;
+  animation:drift 55s linear infinite;
+}
+.bg .cloud-sm { width:60px; height:16px; }
+.bg .cloud-md { width:100px; height:24px; }
+.bg .cloud-lg { width:140px; height:30px; }
+@keyframes drift { 0%{transform:translateX(-150px)} 100%{transform:translateX(calc(100vw + 150px))} }
+@keyframes fly { 0%{transform:translateX(-40px)} 100%{transform:translateX(calc(100vw + 40px))} }
+.bg .bird { position:absolute; font-size:11px; color:rgba(40,40,40,0.4); animation:fly 22s linear infinite; }
+
+/* sparkle rain */
+.bg .sparkle-rain {
+  position:absolute; width:3px; height:8px; border-radius:2px;
+  box-shadow:0 0 6px 1px rgba(240,200,60,0.5);
+  animation:sparkle-fall 5s linear infinite;
+}
+@keyframes sparkle-fall { 0%{transform:translateY(-20px);opacity:0.8} 50%{opacity:1} 100%{transform:translateY(calc(100vh + 40px));opacity:0} }
+
+/* ══════════════════════════════════════
+   DENSE MULTI-LAYER SKYLINE
+   ══════════════════════════════════════ */
+.skyline-wrap { position:absolute; bottom:0; left:0; right:0; height:380px; overflow:hidden; }
+
+/* Back layer — tallest, lightest (atmospheric perspective) */
+.sky-back { position:absolute; bottom:0; left:0; right:0; height:380px; }
+.sky-back .b {
+  position:absolute; bottom:0;
+  background:linear-gradient(180deg, rgba(140,170,200,0.5) 0%, rgba(120,150,180,0.45) 100%);
+}
+
+/* Mid layer — medium depth */
+.sky-mid { position:absolute; bottom:0; left:0; right:0; height:300px; }
+.sky-mid .b {
+  position:absolute; bottom:0;
+  background:linear-gradient(180deg, rgba(90,120,150,0.65) 0%, rgba(70,100,130,0.6) 100%);
+}
+.sky-mid .b .win {
+  position:absolute; width:4px; height:5px; background:rgba(180,220,255,0.2); border-radius:1px;
+}
+
+/* Front layer — darkest, most detail */
+.sky-front { position:absolute; bottom:0; left:0; right:0; height:240px; }
+.sky-front .b {
+  position:absolute; bottom:0;
+  border-top:2px solid rgba(100,140,170,0.3);
+}
+.sky-front .b .win {
+  position:absolute; width:5px; height:6px; background:rgba(180,220,255,0.3); border-radius:1px;
+}
+
+/* Rooftop decorations */
+.spire { position:absolute; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; }
+.crown { position:absolute; clip-path:polygon(0% 100%,12% 0%,24% 55%,38% 0%,50% 55%,62% 0%,76% 55%,88% 0%,100% 100%); }
+.wtower { position:absolute; border-radius:3px 3px 0 0; }
+.antenna { position:absolute; width:2px; }
+.ant-light { position:absolute; width:4px; height:4px; border-radius:50%; background:#e04040; animation:blink 2s infinite; }
+@keyframes blink { 0%,45%,55%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* color classes for variety */
+.b-warm { background:linear-gradient(180deg, #7a6a5a 0%, #5a4a3a 100%) !important; }
+.b-cool { background:linear-gradient(180deg, #4a6a85 0%, #3a5570 100%) !important; }
+.b-steel { background:linear-gradient(180deg, #6a7a8a 0%, #4a5a6a 100%) !important; }
+.b-dark { background:linear-gradient(180deg, #3a4a5a 0%, #2a3a48 100%) !important; }
+.b-rose { background:linear-gradient(180deg, #8a6070 0%, #6a4a58 100%) !important; }
+.b-teal { background:linear-gradient(180deg, #4a7a7a 0%, #3a6060 100%) !important; }
+.b-sand { background:linear-gradient(180deg, #9a8a6a 0%, #7a6a4a 100%) !important; }
+.b-slate { background:linear-gradient(180deg, #5a6a7a 0%, #3a4a5a 100%) !important; }
+
+/* glass reflection strip */
+.glass { position:absolute; top:0; width:30%; height:100%; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); pointer-events:none; }
+
+/* ── Main content ── */
+.wrap {
+  position:relative; z-index:1;
+  max-width:750px; margin:0 auto; padding:30px 20px 60px;
+  text-align:center;
+}
+
+/* episode tag */
+.ep-tag {
+  display:inline-block;
+  font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:4px;
+  color:rgba(30,60,90,0.7); background:rgba(255,255,255,0.25);
+  padding:4px 18px; border-radius:20px; margin-bottom:16px;
+  backdrop-filter:blur(4px);
+}
+
+/* ── MASSIVE STATUE ── */
+.statue-zone { position:relative; width:340px; margin:0 auto 10px; }
+
+.statue-sun {
+  position:absolute; top:-40px; left:50%; transform:translateX(-50%);
+  width:400px; height:400px; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,220,80,0.35) 0%, rgba(255,200,60,0.15) 30%, rgba(255,180,40,0.05) 55%, transparent 70%);
+  pointer-events:none;
+}
+.spotlight-l, .spotlight-r {
+  position:absolute; bottom:0; width:80px; height:350px;
+  background:linear-gradient(0deg, rgba(255,220,100,0.15), transparent 80%);
+  pointer-events:none;
+}
+.spotlight-l { left:20px; transform:rotate(8deg); transform-origin:bottom center; }
+.spotlight-r { right:20px; transform:rotate(-8deg); transform-origin:bottom center; }
+
+.statue-halo {
+  position:absolute; top:-20px; left:50%; transform:translateX(-50%);
+  width:120px; height:120px; border-radius:50%;
+  background:radial-gradient(circle, rgba(240,200,60,0.5), rgba(240,165,0,0.15), transparent 70%);
+  animation:halo-pulse 3s ease-in-out infinite;
+}
+@keyframes halo-pulse { 0%,100%{transform:translateX(-50%) scale(1);opacity:0.7} 50%{transform:translateX(-50%) scale(1.15);opacity:1} }
+
+.statue-beams { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:340px; height:420px; pointer-events:none; }
+.statue-beam { position:absolute; bottom:0; background:linear-gradient(0deg,rgba(240,200,60,0.1),transparent); }
+.statue-beam:nth-child(1) { left:25%; width:24px; height:100%; transform:rotate(-10deg); }
+.statue-beam:nth-child(2) { left:50%; width:20px; height:110%; transform:translateX(-50%); }
+.statue-beam:nth-child(3) { right:25%; width:24px; height:100%; transform:rotate(10deg); }
+.statue-beam:nth-child(4) { left:10%; width:14px; height:80%; transform:rotate(-18deg); opacity:0.5; }
+.statue-beam:nth-child(5) { right:10%; width:14px; height:80%; transform:rotate(18deg); opacity:0.5; }
+
+.statue-head {
+  width:90px; height:90px; margin:0 auto -8px; border-radius:50%;
+  background:linear-gradient(135deg,#d4a017,#f0c040);
+  overflow:hidden; border:4px solid #b08a10; position:relative; z-index:2;
+}
+.statue-head img { width:100%; height:100%; object-fit:cover; }
+
+.statue-body {
+  width:70px; height:260px; margin:0 auto;
+  background:linear-gradient(135deg,#e8b820,#d4a017,#b08a10);
+  border-radius:10px 10px 0 0; position:relative;
+}
+.statue-arm {
+  position:absolute; width:100px; height:14px;
+  background:linear-gradient(90deg,#d4a017,#b08a10);
+  top:30px; border-radius:7px;
+}
+.statue-arm-l { left:-80px; transform:rotate(-15deg); transform-origin:right center; }
+.statue-arm-r { right:-80px; transform:rotate(15deg); transform-origin:left center; }
+
+.statue-pedestal {
+  width:200px; height:55px; margin:0 auto;
+  background:linear-gradient(180deg,#8a7a5a,#6a5a3a);
+  border-radius:6px 6px 0 0; position:relative;
+}
+.statue-pedestal::after {
+  content:'THE CHRIS COLOSSUS';
+  position:absolute; bottom:8px; left:0; right:0; text-align:center;
+  font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:3px;
+  color:rgba(240,220,160,0.7);
+}
+
+.title-sparkle {
+  position:absolute; background:rgba(240,200,60,0.6); border-radius:50%;
+  animation:sparkle-float 5s ease-in-out infinite;
+}
+@keyframes sparkle-float { 0%{transform:translateY(0) scale(1);opacity:0.3} 25%{opacity:0.8;transform:translateY(-20px) scale(1.4)} 50%{opacity:0.3;transform:translateY(-40px) scale(1)} 75%{opacity:0.7;transform:translateY(-55px) scale(1.2)} 100%{transform:translateY(-70px) scale(0.8);opacity:0} }
+
+/* ── LOGO ── */
+.title-logo {
+  font-family:'Bebas Neue',sans-serif; font-size:72px; letter-spacing:8px;
+  color:#f0a500;
+  text-shadow:0 2px 12px rgba(240,165,0,0.4), 0 0 40px rgba(240,165,0,0.15);
+  margin:6px 0 4px;
+}
+.title-sub {
+  font-size:17px; color:rgba(30,60,100,0.6); max-width:500px; margin:0 auto 20px;
+  font-weight:600;
+}
+
+/* ── GOLDEN DIVIDER ── */
+.gold-divider {
+  width:200px; height:2px; margin:20px auto;
+  background:linear-gradient(90deg, transparent, #d4a017 30%, #f0c040 50%, #d4a017 70%, transparent);
+  position:relative;
+}
+.gold-divider::before {
+  content:''; position:absolute; top:-4px; left:50%; transform:translateX(-50%);
+  width:10px; height:10px; background:#f0c040; border-radius:50%;
+  box-shadow:0 0 8px rgba(240,200,60,0.5);
+}
+
+/* ── MECHANIC ICONS ROW ── */
+.mech-row { display:flex; justify-content:center; gap:24px; margin:20px 0; flex-wrap:wrap; }
+.mech-item { text-align:center; min-width:70px; }
+.mech-icon {
+  width:48px; height:48px; margin:0 auto 6px;
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:rgba(14,18,26,0.7); border:2px solid rgba(240,200,60,0.3);
+  backdrop-filter:blur(4px);
+}
+.mech-label {
+  font-family:'Bebas Neue',sans-serif; font-size:10px; letter-spacing:2px;
+  color:rgba(30,60,100,0.55); font-weight:700;
+}
+
+.ic-rope { width:4px; height:24px; background:repeating-linear-gradient(0deg,#c97b3a 0px,#c97b3a 3px,#8a5a2a 3px,#8a5a2a 6px); border-radius:1px; }
+.ic-boat { width:26px; height:12px; background:#6a5a3a; border-radius:0 0 8px 8px; position:relative; }
+.ic-boat::before { content:''; position:absolute; top:-8px; left:8px; width:3px; height:10px; background:#555; }
+.ic-boat::after { content:''; position:absolute; top:-10px; left:11px; width:10px; height:8px; background:rgba(200,80,80,0.8); clip-path:polygon(0% 100%, 0% 30%, 100% 0%); }
+.ic-apple { width:18px; height:20px; background:radial-gradient(circle at 40% 30%, #e04040, #a02020); border-radius:40% 40% 45% 45%; position:relative; }
+.ic-apple::before { content:''; position:absolute; top:-4px; left:7px; width:3px; height:6px; background:#5a3a1a; border-radius:1px; }
+.ic-apple::after { content:''; position:absolute; top:-6px; left:9px; width:6px; height:5px; background:rgba(90,160,60,0.8); border-radius:50%; transform:rotate(-30deg); }
+.ic-carriage { width:22px; height:16px; background:#6a5a3a; border-radius:4px 4px 0 0; position:relative; border:1px solid #8a7a5a; }
+.ic-carriage::after { content:''; position:absolute; bottom:-6px; left:2px; width:6px; height:6px; border-radius:50%; background:transparent; border:2px solid #8a7a5a; box-shadow:10px 0 0 0 #8a7a5a; }
+.ic-gator { width:28px; height:10px; background:#3d5a3a; border-radius:8px 14px 4px 4px; position:relative; }
+.ic-gator::before { content:''; position:absolute; top:1px; left:18px; width:4px; height:3px; background:#e8b820; border-radius:50%; }
+.ic-gator::after { content:''; position:absolute; bottom:-3px; left:2px; width:24px; height:4px; background:#2a4a28; border-radius:0 0 6px 4px; }
+
+/* ── PHASE CARDS ── */
+.phase-row { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin:10px 0 20px; }
+.phase-card {
+  background:rgba(14,18,26,0.8); border-radius:8px; padding:14px 18px;
+  flex:1; min-width:180px; max-width:240px;
+  border-left:3px solid #f0a500; text-align:left;
+  backdrop-filter:blur(4px);
+}
+.phase-num { font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:2px; color:#f0a500; }
+.phase-name { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:1px; margin:3px 0; }
+.phase-desc { font-size:12px; color:rgba(240,240,240,0.5); }
+
+/* ── PLAYER GRID ── */
+.player-grid-label {
+  font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:4px;
+  color:rgba(30,60,100,0.5); margin:10px 0 8px;
+}
+.player-grid { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:14px; }
+.player-av {
+  width:38px; height:38px; border-radius:50%; overflow:hidden;
+  border:2px solid #f0a500; background:rgba(14,18,26,0.5);
+}
+.player-av img { width:100%; height:100%; object-fit:cover; }
+.tribe-tag {
+  display:inline-block; font-family:'Bebas Neue',sans-serif;
+  font-size:11px; letter-spacing:2px; padding:2px 10px;
+  border-radius:10px; margin:2px 6px;
+}
+
+/* ── HOST QUOTE ── */
+.host-quote {
+  font-family:'Permanent Marker',cursive; font-size:15px;
+  color:rgba(30,60,100,0.35); margin-top:16px;
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .cloud, .bird, .sparkle-rain, .title-sparkle, .statue-halo, .ant-light { animation:none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg">
+  <!-- clouds -->
+  <div class="cloud cloud-lg" style="top:4%;animation-delay:0s"></div>
+  <div class="cloud cloud-md" style="top:10%;animation-delay:8s"></div>
+  <div class="cloud cloud-sm" style="top:18%;animation-delay:15s"></div>
+  <div class="cloud cloud-lg" style="top:7%;animation-delay:22s"></div>
+  <div class="cloud cloud-md" style="top:22%;animation-delay:30s"></div>
+  <div class="cloud cloud-sm" style="top:14%;animation-delay:38s"></div>
+  <div class="cloud cloud-md" style="top:26%;animation-delay:45s"></div>
+  <!-- birds -->
+  <div class="bird" style="top:8%;animation-delay:0s">~</div>
+  <div class="bird" style="top:15%;animation-delay:5s;font-size:9px">~</div>
+  <div class="bird" style="top:6%;animation-delay:11s;font-size:13px">~</div>
+  <div class="bird" style="top:20%;animation-delay:16s">~</div>
+  <!-- gold sparkle rain -->
+  <div class="sparkle-rain" style="left:8%;top:-5%;background:#f0c040;animation-delay:0.3s"></div>
+  <div class="sparkle-rain" style="left:15%;top:-8%;background:#ffd700;animation-delay:1.1s"></div>
+  <div class="sparkle-rain" style="left:25%;top:-3%;background:#e8b820;animation-delay:2.4s"></div>
+  <div class="sparkle-rain" style="left:35%;top:-10%;background:#f5d060;animation-delay:0.7s"></div>
+  <div class="sparkle-rain" style="left:42%;top:-6%;background:#ffd700;animation-delay:3.2s"></div>
+  <div class="sparkle-rain" style="left:50%;top:-4%;background:#daa520;animation-delay:1.8s"></div>
+  <div class="sparkle-rain" style="left:58%;top:-9%;background:#f0c040;animation-delay:4.0s"></div>
+  <div class="sparkle-rain" style="left:65%;top:-7%;background:#fff4c0;animation-delay:0.5s"></div>
+  <div class="sparkle-rain" style="left:72%;top:-2%;background:#e8b820;animation-delay:2.9s"></div>
+  <div class="sparkle-rain" style="left:78%;top:-11%;background:#ffd700;animation-delay:1.5s"></div>
+  <div class="sparkle-rain" style="left:85%;top:-5%;background:#f5d060;animation-delay:3.6s"></div>
+  <div class="sparkle-rain" style="left:92%;top:-8%;background:#f0c040;animation-delay:0.9s"></div>
+  <div class="sparkle-rain" style="left:20%;top:-12%;background:#daa520;animation-delay:4.5s"></div>
+  <div class="sparkle-rain" style="left:55%;top:-3%;background:#fff4c0;animation-delay:2.1s"></div>
+
+  <!-- ═══ DENSE SKYLINE ═══ -->
+  <div class="skyline-wrap">
+
+    <!-- BACK LAYER — tall ghostly towers, atmospheric perspective -->
+    <div class="sky-back">
+      <div class="b" style="left:0%;width:3.5%;height:220px"></div>
+      <div class="b" style="left:3%;width:4%;height:300px">
+        <div class="spire" style="top:-18px;left:40%;border-bottom:18px solid rgba(140,170,200,0.4);border-left-width:4px;border-right-width:4px"></div>
+      </div>
+      <div class="b" style="left:6.5%;width:3%;height:260px"></div>
+      <div class="b" style="left:9%;width:5%;height:180px"></div>
+      <div class="b" style="left:13%;width:3.5%;height:340px">
+        <div class="spire" style="top:-24px;left:35%;border-bottom:24px solid rgba(140,170,200,0.45);border-left-width:5px;border-right-width:5px"></div>
+      </div>
+      <div class="b" style="left:16%;width:4%;height:240px"></div>
+      <div class="b" style="left:19%;width:3%;height:280px"></div>
+      <div class="b" style="left:22%;width:5%;height:200px"></div>
+      <div class="b" style="left:26%;width:3.5%;height:320px">
+        <div class="antenna" style="left:45%;top:-20px;height:20px;background:rgba(140,170,200,0.35)">
+          <div class="ant-light" style="top:-3px;left:-1px;opacity:0.4;animation-delay:0.5s"></div>
+        </div>
+      </div>
+      <div class="b" style="left:29%;width:4%;height:250px"></div>
+      <div class="b" style="left:32%;width:3%;height:190px"></div>
+      <div class="b" style="left:35%;width:4.5%;height:310px"></div>
+      <div class="b" style="left:39%;width:3%;height:230px"></div>
+      <div class="b" style="left:41.5%;width:4%;height:270px"></div>
+      <div class="b" style="left:45%;width:3.5%;height:350px">
+        <div class="spire" style="top:-22px;left:38%;border-bottom:22px solid rgba(140,170,200,0.4);border-left-width:4px;border-right-width:4px"></div>
+      </div>
+      <div class="b" style="left:48%;width:4%;height:210px"></div>
+      <div class="b" style="left:51.5%;width:3%;height:280px"></div>
+      <div class="b" style="left:54%;width:5%;height:240px"></div>
+      <div class="b" style="left:58.5%;width:3.5%;height:330px">
+        <div class="antenna" style="left:42%;top:-18px;height:18px;background:rgba(140,170,200,0.3)"></div>
+      </div>
+      <div class="b" style="left:61.5%;width:4%;height:260px"></div>
+      <div class="b" style="left:65%;width:3%;height:200px"></div>
+      <div class="b" style="left:67.5%;width:4.5%;height:290px"></div>
+      <div class="b" style="left:71.5%;width:3%;height:220px"></div>
+      <div class="b" style="left:74%;width:4%;height:360px">
+        <div class="spire" style="top:-26px;left:36%;border-bottom:26px solid rgba(140,170,200,0.45);border-left-width:5px;border-right-width:5px"></div>
+      </div>
+      <div class="b" style="left:77.5%;width:3.5%;height:250px"></div>
+      <div class="b" style="left:80.5%;width:4%;height:180px"></div>
+      <div class="b" style="left:84%;width:3%;height:300px"></div>
+      <div class="b" style="left:86.5%;width:4.5%;height:230px"></div>
+      <div class="b" style="left:90.5%;width:3.5%;height:270px"></div>
+      <div class="b" style="left:93.5%;width:4%;height:310px">
+        <div class="antenna" style="left:45%;top:-16px;height:16px;background:rgba(140,170,200,0.3)"></div>
+      </div>
+      <div class="b" style="left:97%;width:3.5%;height:200px"></div>
+    </div>
+
+    <!-- MID LAYER — varied colors, some windows -->
+    <div class="sky-mid">
+      <div class="b b-cool" style="left:0%;width:5%;height:180px;opacity:0.8"><div class="glass" style="left:60%"></div></div>
+      <div class="b b-sand" style="left:4%;width:4.5%;height:250px;opacity:0.8">
+        <div class="crown" style="top:-10px;left:10%;width:80%;height:10px;background:rgba(90,120,150,0.6)"></div>
+      </div>
+      <div class="b b-steel" style="left:8%;width:5.5%;height:200px;opacity:0.8"></div>
+      <div class="b b-rose" style="left:12.5%;width:4%;height:280px;opacity:0.8">
+        <div class="spire" style="top:-16px;left:35%;border-bottom:16px solid rgba(120,80,100,0.7);border-left-width:5px;border-right-width:5px"></div>
+        <div class="glass" style="left:30%"></div>
+      </div>
+      <div class="b b-cool" style="left:16%;width:5%;height:170px;opacity:0.8"></div>
+      <div class="b b-teal" style="left:20%;width:4.5%;height:240px;opacity:0.8">
+        <div class="wtower" style="top:-14px;left:30%;width:14px;height:10px;background:rgba(80,120,120,0.6)"></div>
+      </div>
+      <div class="b b-warm" style="left:24%;width:5%;height:190px;opacity:0.8"><div class="glass" style="left:20%"></div></div>
+      <div class="b b-steel" style="left:28.5%;width:4%;height:260px;opacity:0.8">
+        <div class="antenna" style="left:45%;top:-14px;height:14px;background:rgba(80,100,120,0.5)">
+          <div class="ant-light" style="top:-3px;left:-1px;opacity:0.5;animation-delay:1.2s"></div>
+        </div>
+      </div>
+      <div class="b b-sand" style="left:32%;width:5.5%;height:210px;opacity:0.8"></div>
+      <div class="b b-cool" style="left:37%;width:4%;height:290px;opacity:0.8">
+        <div class="spire" style="top:-20px;left:32%;border-bottom:20px solid rgba(70,100,130,0.7);border-left-width:5px;border-right-width:5px"></div>
+        <div class="glass" style="left:50%"></div>
+      </div>
+      <div class="b b-warm" style="left:40.5%;width:5%;height:180px;opacity:0.8"></div>
+      <div class="b b-slate" style="left:45%;width:4.5%;height:230px;opacity:0.8"></div>
+      <div class="b b-rose" style="left:49%;width:4%;height:270px;opacity:0.8">
+        <div class="crown" style="top:-8px;left:8%;width:84%;height:8px;background:rgba(100,70,85,0.6)"></div>
+      </div>
+      <div class="b b-teal" style="left:52.5%;width:5.5%;height:200px;opacity:0.8"><div class="glass" style="left:40%"></div></div>
+      <div class="b b-steel" style="left:57.5%;width:4%;height:250px;opacity:0.8"></div>
+      <div class="b b-warm" style="left:61%;width:5%;height:170px;opacity:0.8"></div>
+      <div class="b b-cool" style="left:65.5%;width:4.5%;height:300px;opacity:0.8">
+        <div class="spire" style="top:-18px;left:34%;border-bottom:18px solid rgba(70,100,130,0.7);border-left-width:5px;border-right-width:5px"></div>
+      </div>
+      <div class="b b-sand" style="left:69.5%;width:5%;height:220px;opacity:0.8"><div class="glass" style="left:60%"></div></div>
+      <div class="b b-slate" style="left:74%;width:4%;height:260px;opacity:0.8">
+        <div class="wtower" style="top:-12px;left:28%;width:12px;height:8px;background:rgba(70,85,100,0.6)"></div>
+      </div>
+      <div class="b b-rose" style="left:77.5%;width:5.5%;height:190px;opacity:0.8"></div>
+      <div class="b b-teal" style="left:82.5%;width:4%;height:280px;opacity:0.8">
+        <div class="antenna" style="left:42%;top:-16px;height:16px;background:rgba(60,100,100,0.5)"></div>
+      </div>
+      <div class="b b-warm" style="left:86%;width:5%;height:230px;opacity:0.8"><div class="glass" style="left:35%"></div></div>
+      <div class="b b-cool" style="left:90.5%;width:4.5%;height:170px;opacity:0.8"></div>
+      <div class="b b-steel" style="left:94.5%;width:5.5%;height:250px;opacity:0.8">
+        <div class="crown" style="top:-10px;left:12%;width:76%;height:10px;background:rgba(80,100,110,0.6)"></div>
+      </div>
+    </div>
+
+    <!-- FRONT LAYER — closest, darkest, most detail + windows -->
+    <div class="sky-front">
+      <div class="b b-dark" style="left:0%;width:6%;height:140px">
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div><div class="win" style="left:30px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div><div class="win" style="left:30px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div><div class="win" style="left:18px;bottom:38px"></div>
+        <div class="win" style="left:6px;bottom:52px"></div><div class="win" style="left:18px;bottom:52px"></div>
+        <div class="glass" style="left:65%"></div>
+      </div>
+      <div class="b b-warm" style="left:5%;width:4.5%;height:200px">
+        <div class="spire" style="top:-20px;left:30%;border-bottom:20px solid #5a4a3a;border-left-width:6px;border-right-width:6px"></div>
+        <div class="ant-light" style="top:-24px;left:38%;animation-delay:0.3s"></div>
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div><div class="win" style="left:18px;bottom:38px"></div>
+        <div class="win" style="left:6px;bottom:52px"></div><div class="win" style="left:18px;bottom:52px"></div>
+        <div class="win" style="left:6px;bottom:66px"></div>
+      </div>
+      <div class="b b-slate" style="left:9%;width:7%;height:130px">
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div><div class="win" style="left:30px;bottom:10px"></div><div class="win" style="left:42px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div><div class="win" style="left:30px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div><div class="win" style="left:18px;bottom:38px"></div><div class="win" style="left:30px;bottom:38px"></div>
+        <div class="glass" style="left:50%"></div>
+      </div>
+      <div class="b b-cool" style="left:15%;width:5%;height:220px">
+        <div class="crown" style="top:-12px;left:8%;width:84%;height:12px;background:#3a5570"></div>
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div><div class="win" style="left:30px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div><div class="win" style="left:30px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div><div class="win" style="left:18px;bottom:38px"></div>
+        <div class="win" style="left:6px;bottom:52px"></div><div class="win" style="left:18px;bottom:52px"></div>
+        <div class="win" style="left:6px;bottom:66px"></div>
+      </div>
+      <div class="b b-sand" style="left:19.5%;width:5.5%;height:160px">
+        <div class="wtower" style="top:-16px;left:35%;width:16px;height:12px;background:#7a6a4a"></div>
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div><div class="win" style="left:30px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div><div class="win" style="left:30px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div><div class="win" style="left:18px;bottom:38px"></div>
+        <div class="glass" style="left:20%"></div>
+      </div>
+      <div class="b b-rose" style="left:24.5%;width:4%;height:240px">
+        <div class="spire" style="top:-22px;left:28%;border-bottom:22px solid #6a4a58;border-left-width:5px;border-right-width:5px"></div>
+        <div class="ant-light" style="top:-26px;left:34%;animation-delay:1.5s"></div>
+        <div class="win" style="left:5px;bottom:10px"></div><div class="win" style="left:16px;bottom:10px"></div>
+        <div class="win" style="left:5px;bottom:24px"></div><div class="win" style="left:16px;bottom:24px"></div>
+        <div class="win" style="left:5px;bottom:38px"></div><div class="win" style="left:16px;bottom:38px"></div>
+        <div class="win" style="left:5px;bottom:52px"></div>
+        <div class="win" style="left:5px;bottom:66px"></div>
+      </div>
+      <div class="b b-dark" style="left:28%;width:6.5%;height:150px">
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div><div class="win" style="left:30px;bottom:10px"></div><div class="win" style="left:42px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div><div class="win" style="left:30px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div><div class="win" style="left:18px;bottom:38px"></div><div class="win" style="left:30px;bottom:38px"></div>
+        <div class="win" style="left:6px;bottom:52px"></div><div class="win" style="left:18px;bottom:52px"></div>
+      </div>
+      <div class="b b-teal" style="left:34%;width:4.5%;height:190px">
+        <div class="antenna" style="left:42%;top:-18px;height:18px;background:#3a6060">
+          <div class="ant-light" style="top:-3px;left:-1px;animation-delay:0.8s"></div>
+        </div>
+        <div class="win" style="left:5px;bottom:10px"></div><div class="win" style="left:16px;bottom:10px"></div><div class="win" style="left:27px;bottom:10px"></div>
+        <div class="win" style="left:5px;bottom:24px"></div><div class="win" style="left:16px;bottom:24px"></div>
+        <div class="win" style="left:5px;bottom:38px"></div><div class="win" style="left:16px;bottom:38px"></div>
+        <div class="win" style="left:5px;bottom:52px"></div>
+        <div class="glass" style="left:70%"></div>
+      </div>
+      <div class="b b-steel" style="left:38%;width:5%;height:170px">
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div><div class="win" style="left:30px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div><div class="win" style="left:30px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div><div class="win" style="left:18px;bottom:38px"></div>
+        <div class="win" style="left:6px;bottom:52px"></div>
+      </div>
+      <!-- gap in center for statue to sit above -->
+      <div class="b b-warm" style="left:56%;width:5.5%;height:180px">
+        <div class="crown" style="top:-10px;left:10%;width:80%;height:10px;background:#5a4a3a"></div>
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div><div class="win" style="left:30px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div><div class="win" style="left:30px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div><div class="win" style="left:18px;bottom:38px"></div>
+        <div class="win" style="left:6px;bottom:52px"></div>
+      </div>
+      <div class="b b-cool" style="left:61%;width:4.5%;height:230px">
+        <div class="spire" style="top:-24px;left:30%;border-bottom:24px solid #3a5570;border-left-width:6px;border-right-width:6px"></div>
+        <div class="ant-light" style="top:-28px;left:36%;animation-delay:2.1s"></div>
+        <div class="win" style="left:5px;bottom:10px"></div><div class="win" style="left:16px;bottom:10px"></div><div class="win" style="left:27px;bottom:10px"></div>
+        <div class="win" style="left:5px;bottom:24px"></div><div class="win" style="left:16px;bottom:24px"></div><div class="win" style="left:27px;bottom:24px"></div>
+        <div class="win" style="left:5px;bottom:38px"></div><div class="win" style="left:16px;bottom:38px"></div>
+        <div class="win" style="left:5px;bottom:52px"></div><div class="win" style="left:16px;bottom:52px"></div>
+        <div class="win" style="left:5px;bottom:66px"></div>
+        <div class="glass" style="left:60%"></div>
+      </div>
+      <div class="b b-dark" style="left:65%;width:5.5%;height:145px">
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div><div class="win" style="left:30px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div><div class="win" style="left:30px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div><div class="win" style="left:18px;bottom:38px"></div>
+      </div>
+      <div class="b b-sand" style="left:70%;width:5%;height:210px">
+        <div class="wtower" style="top:-16px;left:32%;width:16px;height:12px;background:#7a6a4a"></div>
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div><div class="win" style="left:30px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div><div class="win" style="left:18px;bottom:38px"></div>
+        <div class="win" style="left:6px;bottom:52px"></div>
+        <div class="win" style="left:6px;bottom:66px"></div>
+        <div class="glass" style="left:25%"></div>
+      </div>
+      <div class="b b-rose" style="left:74.5%;width:4.5%;height:175px">
+        <div class="win" style="left:5px;bottom:10px"></div><div class="win" style="left:16px;bottom:10px"></div><div class="win" style="left:27px;bottom:10px"></div>
+        <div class="win" style="left:5px;bottom:24px"></div><div class="win" style="left:16px;bottom:24px"></div>
+        <div class="win" style="left:5px;bottom:38px"></div><div class="win" style="left:16px;bottom:38px"></div>
+        <div class="win" style="left:5px;bottom:52px"></div>
+      </div>
+      <div class="b b-steel" style="left:78.5%;width:6%;height:195px">
+        <div class="antenna" style="left:45%;top:-20px;height:20px;background:#4a5a6a">
+          <div class="ant-light" style="top:-3px;left:-1px;animation-delay:1.8s"></div>
+        </div>
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div><div class="win" style="left:30px;bottom:10px"></div><div class="win" style="left:42px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div><div class="win" style="left:30px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div><div class="win" style="left:18px;bottom:38px"></div><div class="win" style="left:30px;bottom:38px"></div>
+        <div class="win" style="left:6px;bottom:52px"></div><div class="win" style="left:18px;bottom:52px"></div>
+        <div class="glass" style="left:70%"></div>
+      </div>
+      <div class="b b-teal" style="left:84%;width:4.5%;height:160px">
+        <div class="win" style="left:5px;bottom:10px"></div><div class="win" style="left:16px;bottom:10px"></div><div class="win" style="left:27px;bottom:10px"></div>
+        <div class="win" style="left:5px;bottom:24px"></div><div class="win" style="left:16px;bottom:24px"></div>
+        <div class="win" style="left:5px;bottom:38px"></div><div class="win" style="left:16px;bottom:38px"></div>
+      </div>
+      <div class="b b-warm" style="left:88%;width:5%;height:225px">
+        <div class="spire" style="top:-20px;left:32%;border-bottom:20px solid #5a4a3a;border-left-width:5px;border-right-width:5px"></div>
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div><div class="win" style="left:30px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div><div class="win" style="left:18px;bottom:38px"></div>
+        <div class="win" style="left:6px;bottom:52px"></div>
+        <div class="win" style="left:6px;bottom:66px"></div>
+        <div class="glass" style="left:55%"></div>
+      </div>
+      <div class="b b-dark" style="left:92.5%;width:4%;height:155px">
+        <div class="win" style="left:5px;bottom:10px"></div><div class="win" style="left:16px;bottom:10px"></div>
+        <div class="win" style="left:5px;bottom:24px"></div><div class="win" style="left:16px;bottom:24px"></div>
+        <div class="win" style="left:5px;bottom:38px"></div><div class="win" style="left:16px;bottom:38px"></div>
+      </div>
+      <div class="b b-slate" style="left:96%;width:4.5%;height:185px">
+        <div class="crown" style="top:-8px;left:10%;width:80%;height:8px;background:#3a4a5a"></div>
+        <div class="win" style="left:6px;bottom:10px"></div><div class="win" style="left:18px;bottom:10px"></div>
+        <div class="win" style="left:6px;bottom:24px"></div><div class="win" style="left:18px;bottom:24px"></div>
+        <div class="win" style="left:6px;bottom:38px"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="wrap">
+  <div class="ep-tag">EPISODE 5 &mdash; TRIBE CHALLENGE</div>
+
+  <div class="statue-zone">
+    <div class="statue-sun"></div>
+    <div class="spotlight-l"></div>
+    <div class="spotlight-r"></div>
+    <div class="statue-beams"><div class="statue-beam"></div><div class="statue-beam"></div><div class="statue-beam"></div><div class="statue-beam"></div><div class="statue-beam"></div></div>
+    <div class="title-sparkle" style="left:15%;top:20%;width:4px;height:4px;animation-delay:0s"></div>
+    <div class="title-sparkle" style="left:80%;top:15%;width:5px;height:5px;animation-delay:1.2s"></div>
+    <div class="title-sparkle" style="left:25%;top:45%;width:3px;height:3px;animation-delay:2.5s"></div>
+    <div class="title-sparkle" style="left:70%;top:35%;width:4px;height:4px;animation-delay:0.8s"></div>
+    <div class="title-sparkle" style="left:40%;top:10%;width:5px;height:5px;animation-delay:3.1s"></div>
+    <div class="title-sparkle" style="left:60%;top:50%;width:3px;height:3px;animation-delay:1.7s"></div>
+    <div class="title-sparkle" style="left:35%;top:60%;width:4px;height:4px;animation-delay:4.0s"></div>
+    <div class="title-sparkle" style="left:55%;top:25%;width:5px;height:5px;animation-delay:2.0s"></div>
+    <div style="position:relative;z-index:2">
+      <div style="position:relative;display:inline-block">
+        <div class="statue-halo"></div>
+        <div class="statue-head"><img src="/assets/avatars/chris.png" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=&quot;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;background:#d4a017&quot;>C</div>'"></div>
+      </div>
+      <div class="statue-body">
+        <div class="statue-arm statue-arm-l"></div>
+        <div class="statue-arm statue-arm-r"></div>
+      </div>
+      <div class="statue-pedestal"></div>
+    </div>
+  </div>
+
+  <div class="title-logo">BROADWAY BABY</div>
+  <div class="title-sub">Three tribes. Three phases. One giant statue.<br>Climb. Survive. Race.</div>
+
+  <div class="gold-divider"></div>
+
+  <div class="mech-row">
+    <div class="mech-item"><div class="mech-icon"><div class="ic-rope"></div></div><div class="mech-label">CLIMB</div></div>
+    <div class="mech-item"><div class="mech-icon"><div class="ic-boat"></div></div><div class="mech-label">NAVIGATE</div></div>
+    <div class="mech-item"><div class="mech-icon"><div class="ic-gator"></div></div><div class="mech-label">SURVIVE</div></div>
+    <div class="mech-item"><div class="mech-icon"><div class="ic-apple"></div></div><div class="mech-label">BOB</div></div>
+    <div class="mech-item"><div class="mech-icon"><div class="ic-carriage"></div></div><div class="mech-label">RACE</div></div>
+  </div>
+
+  <div class="phase-row">
+    <div class="phase-card"><div class="phase-num">PHASE 1</div><div class="phase-name">The Chris Colossus</div><div class="phase-desc">Scale the golden statue and retrieve your carriage from the top</div></div>
+    <div class="phase-card"><div class="phase-num">PHASE 2</div><div class="phase-name">The Underground</div><div class="phase-desc">Navigate the sewers by boat — dodge rats, gators, and low pipes</div></div>
+    <div class="phase-card"><div class="phase-num">PHASE 3</div><div class="phase-name">The Park Dash</div><div class="phase-desc">Bob for apples, load the baby, and race to the finish line</div></div>
+  </div>
+
+  <div class="gold-divider"></div>
+
+  <div class="player-grid-label">COMPETITORS</div>
+  <div style="margin-bottom:14px;"><div class="tribe-tag" style="background:rgba(245,158,11,0.2);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);">CHAMPIONS</div></div>
+  <div class="player-grid">
+    <div class="player-av" style="border-color:#f59e0b"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">MC</div></div>
+    <div class="player-av" style="border-color:#f59e0b"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">ZO</div></div>
+    <div class="player-av" style="border-color:#f59e0b"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">GW</div></div>
+    <div class="player-av" style="border-color:#f59e0b"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">CO</div></div>
+    <div class="player-av" style="border-color:#f59e0b"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">RY</div></div>
+    <div class="player-av" style="border-color:#f59e0b"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">SA</div></div>
+  </div>
+  <div style="margin-bottom:14px;"><div class="tribe-tag" style="background:rgba(239,68,68,0.2);color:#ef4444;border:1px solid rgba(239,68,68,0.3);">CONTENDERS</div></div>
+  <div class="player-grid">
+    <div class="player-av" style="border-color:#ef4444"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">PR</div></div>
+    <div class="player-av" style="border-color:#ef4444"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">HI</div></div>
+    <div class="player-av" style="border-color:#ef4444"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">JA</div></div>
+    <div class="player-av" style="border-color:#ef4444"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">JO</div></div>
+    <div class="player-av" style="border-color:#ef4444"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">BR</div></div>
+    <div class="player-av" style="border-color:#ef4444"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">ST</div></div>
+    <div class="player-av" style="border-color:#ef4444"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">CT</div></div>
+    <div class="player-av" style="border-color:#ef4444"><div style="width:100%;height:100%;background:#2a3a4a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">TY</div></div>
+  </div>
+
+  <div class="host-quote">"Hope you're not afraid of heights... or alligators... or losing!"</div>
+</div>
+
+</body>
+</html>

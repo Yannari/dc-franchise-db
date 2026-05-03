@@ -5243,6 +5243,7 @@ export function generateCampEvents(ep, phase = 'both') {
         boost('foodConflict', -20); // plenty to eat — no scarcity conflict
         break;
       case 'reward-challenge':
+      case 'reward-twist-challenge':
         // Winners bond on reward; those left behind stew
         boost('tdBond', 20); boost('dispute', 15);
         boost('rumor', 10); boost('doubt', 10);

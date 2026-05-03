@@ -30,6 +30,12 @@ import { rpBuildCrouchingCourtneyTitleCard, rpBuildCrouchingCourtneyTraining, rp
 import { rpBuildHoustonTitleCard, rpBuildHoustonZeroG, rpBuildHoustonRedAlert, rpBuildHoustonReEntry, rpBuildHoustonSprint, rpBuildHoustonWinner, houstonRevealNext, houstonRevealAll } from './chal/houston.js';
 import { rpBuildTopDogTitleCard, rpBuildTopDogAssignment, rpBuildTopDogTraining, rpBuildTopDogJudging, rpBuildTopDogForest, rpBuildTopDogWinner, topDogRevealNext, topDogRevealAll } from './chal/top-dog.js';
 import { rpBuildEgyptTitleCard, rpBuildEgyptPyramid, rpBuildEgyptDesert, rpBuildEgyptNile, rpBuildEgyptResults, egyptRevealNext, egyptRevealAll } from './chal/walk-like-an-egyptian.js';
+import { rpBuildBigBaddTitleCard, rpBuildBigBaddPhase1, rpBuildBigBaddPhase2, rpBuildBigBaddPhase3, rpBuildBigBaddResults, brutalerRevealNext, brutalerRevealAll } from './chal/bigger-badder-brutaler.js';
+import { rpBuildCFTTitleCard, rpBuildCFTPinball, rpBuildCFTDramaBreak, rpBuildCFTCommercial, rpBuildCFTVerdict, rpBuildCFTResults, crazyFunTimeRevealNext, crazyFunTimeRevealAll } from './chal/crazy-fun-time.js';
+import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults, frozenCrossingRevealNext, frozenCrossingRevealAll } from './chal/frozen-crossing.js';
+import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRFights, rpBuildSSRFinals, rpBuildSSRResults, ssrRevealNext, ssrRevealAll } from './chal/slap-slap-revolution.js';
+import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults, broadwayBabyRevealNext, broadwayBabyRevealAll } from './chal/broadway-baby.js';
+import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext, tlsRevealAll } from './chal/truth-or-shark.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -141,40 +147,279 @@ export function vpGenerateQuote(name, ep, role) {
       `My vote didn't matter in the end. I have to fix that before the next tribal.`,
       `I read this wrong. I won't read it wrong twice.`,
     ],
-    eliminated: [
-      // Archetype / stat-driven exit speech — priority pick at index 0
-      (arch === 'mastermind' || arch === 'schemer')
-        ? `I had the best read in this game. Someone just had a better one tonight. That's hard to sit with.`
-        : (arch === 'hothead' || s.temperament <= 3)
-        ? `I burned too loud. I know that now. But I'd rather go out playing loud than survive playing quiet.`
-        : (arch === 'social-butterfly' || s.social >= 8)
-        ? `I came here to build real connections and I did. They voted me out anyway. That's this game — the connections were still real.`
-        : (arch === 'loyal-soldier' || s.loyalty >= 8)
-        ? `I was loyal to the end. Maybe too loyal. That's a lesson I'll carry out of here.`
-        : `I played the game I came here to play. It just ended sooner than I planned.`,
-      // Secondary — stat-driven
-      (s.strategic >= 8)
-        ? `I saw almost everything coming in this game. Just not this one. That's the move that gets you.`
-        : (s.boldness >= 8)
-        ? `I took shots. Some landed. This one didn't. That's the game.`
-        : (s.social >= 7)
-        ? `I built trust out here. Someone used it against me tonight. I can respect the move — it still stings.`
-        : `I'm walking out with my head up. Whatever happened tonight, I played my game.`,
-      // Emotional context
-      (gs.playerStates?.[name]?.emotional === 'comfortable')
-        ? `I didn't see it coming. I was comfortable. That's on me — and that's this game.`
-        : (gs.playerStates?.[name]?.emotional === 'content')
-        ? `I thought I was in a decent spot. Apparently I read that wrong.`
-        : (gs.playerStates?.[name]?.emotional === 'uneasy')
-        ? `I felt it coming. Something was off all day. I just couldn't figure out what to do about it.`
-        : (gs.playerStates?.[name]?.emotional === 'calculating')
-        ? `I had a plan going into tonight. Someone else had a better one. I can respect that.`
-        : (gs.playerStates?.[name]?.emotional === 'paranoid' || gs.playerStates?.[name]?.emotional === 'desperate')
-        ? `I knew it was coming and still couldn't stop it. That's the most frustrating way to go out.`
-        : `This game will eat you alive if you let it. Apparently it got to me a little early.`,
-      // Fallback
-      `It hurts. But I watched people play safe and small and go home anyway. At least I actually played.`,
-    ],
+    eliminated: (() => {
+      const pool = [];
+      const pr = pronouns(name);
+      const vlog = ep?.votingLog || [];
+      const votesAgainst = vlog.filter(v => v.voted === name);
+      const totalVoters = vlog.length;
+      const voteCount = votesAgainst.length;
+      const unanimous = totalVoters > 0 && voteCount === totalVoters;
+      const closeVote = totalVoters > 2 && voteCount <= Math.ceil(totalVoters / 2);
+      const landslide = totalVoters > 3 && voteCount >= totalVoters - 1;
+      const voterNames = votesAgainst.map(v => v.voter);
+      const alliances = ep?.alliances || [];
+      const myAlliance = alliances.find(a => a.members?.includes(name) && a.type !== 'solo' && a.members?.length > 1);
+      const allyWhoVotedMe = myAlliance ? myAlliance.members.filter(m => m !== name && voterNames.includes(m)) : [];
+      const betrayed = allyWhoVotedMe.length > 0;
+      const spearheadAlliance = alliances.find(a => a.target === name && a.members?.length >= 2);
+      const spearheader = spearheadAlliance?.members?.[0];
+      const bestAlly = gs.activePlayers?.filter(p => p !== name).sort((a, b) => getBond(name, b) - getBond(name, a))[0];
+      const bestBond = bestAlly ? getBond(name, bestAlly) : 0;
+      const worstEnemy = gs.activePlayers?.filter(p => p !== name).sort((a, b) => getBond(name, a) - getBond(name, b))[0];
+      const worstBond = worstEnemy ? getBond(name, worstEnemy) : 0;
+      const emotional = gs.playerStates?.[name]?.emotional || 'content';
+      const epNum = ep?.num || 1;
+      const earlyBoot = epNum <= 4;
+      const lateBoot = epNum >= 10;
+      const blindside = emotional === 'comfortable' || emotional === 'content';
+      const isHot = arch === 'hothead' || s.temperament <= 3;
+      const isBrain = arch === 'mastermind' || arch === 'schemer';
+      const isHeart = arch === 'social-butterfly' || s.social >= 8;
+      const isSoldier = arch === 'loyal-soldier' || s.loyalty >= 8;
+      const isBeast = arch === 'challenge-beast';
+      const isChaos = arch === 'wildcard' || arch === 'chaos-agent';
+
+      // ═══ BETRAYAL × ARCHETYPE ═══
+      if (betrayed && allyWhoVotedMe.length === 1) {
+        const traitor = allyWhoVotedMe[0];
+        if (isHot) {
+          pool.push(`${traitor}! Are you SERIOUS right now?! I had your back! I FOUGHT for you! And you — you wrote MY name?! You're DEAD to me. Dead! I hope you're happy because I am going to LOSE it at the reunion!`);
+          pool.push(`${traitor}, look me in the eyes. LOOK AT ME. You're a coward. A spineless, backstabbing coward. And I'm going to make sure the ENTIRE jury knows it. You think this is over? This is NOT over.`);
+        } else if (isBrain) {
+          pool.push(`${traitor}. Interesting. I actually counted you as a locked vote. I don't misread people often — but I misread you completely. That's... that's a good move. I hate admitting it, but it is.`);
+          pool.push(`I had ${traitor} mapped out. Loyalties, motivations, backup plans — all of it. And ${traitor} still flipped. Either I'm losing my touch or ${traitor}'s been running a game underneath mine this whole time. Either way — well played.`);
+        } else if (isHeart) {
+          pool.push(`${traitor}... we talked every single day. I thought that was real. I thought YOU were real. Was any of it genuine? Or was I just someone you needed until you didn't?`);
+          pool.push(`I don't even understand. ${traitor} and I had something. A real friendship. And ${pr.sub} just... threw it away for a vote. I'm not angry. I'm heartbroken. There's a difference.`);
+        } else if (isSoldier) {
+          pool.push(`${traitor}. I kept my word to you. Every. Single. Day. And you repaid that with a knife in my back. I hope the move was worth the trust you burned tonight.`);
+          pool.push(`I was loyal to ${traitor} until the very last second. I literally went into tribal ready to protect ${pronouns(traitor).obj}. And ${pronouns(traitor).sub} had already written my name down. That's the cruelest part.`);
+        } else if (isChaos) {
+          pool.push(`Ha! ${traitor}! YOU flipped on ME? That's rich. That is genuinely hilarious. I've been the unpredictable one this whole game and you just out-chaos'd me. Respect. But also — you're done.`);
+        } else if (arch === 'villain') {
+          pool.push(`${traitor}, I taught you everything you know about this game. And you used it against me. That's not betrayal — that's graduation. But the student always underestimates the alumni. See you at the jury.`);
+        } else {
+          pool.push(`${traitor}. Look at me. I trusted you. I went to bat for you when nobody else would. And you wrote my name down tonight. I hope you remember that when it's your turn.`);
+          pool.push(`You know what's funny? I could have voted ${traitor} out three episodes ago. I didn't. Because I believed in that alliance. ${pronouns(traitor).Sub} didn't return the favor.`);
+        }
+      }
+      if (betrayed && allyWhoVotedMe.length >= 2) {
+        if (isHot) {
+          pool.push(`${allyWhoVotedMe.join(' and ')} — ALL of you?! My ENTIRE alliance?! Are you KIDDING me?! I should've flipped on every single one of you when I had the chance! You're all SNAKES!`);
+        } else if (isBrain) {
+          pool.push(`${allyWhoVotedMe.join(', ')} — a coordinated flip. ${allyWhoVotedMe.length} of my own people. That means someone's been working against me inside my alliance for... at least two votes. I should have seen the fracture. I didn't.`);
+        } else if (isSoldier) {
+          pool.push(`My own alliance. ${allyWhoVotedMe.join(' and ')} — I was loyal to every one of you. I never wrote any of your names down. And this is what loyalty gets you. I hope you all sleep well tonight.`);
+        } else {
+          pool.push(`${allyWhoVotedMe.join(' and ')} — you flipped on me. Together. I defended that alliance every single day and you both had the dagger ready this whole time. That's not gameplay, that's cowardice.`);
+          pool.push(`My own alliance. My OWN alliance voted me out. ${allyWhoVotedMe.join(', ')} — I hope whoever orchestrated this enjoys it. Because the jury is watching, and we remember everything.`);
+        }
+      }
+
+      // ═══ SPEARHEADER × ARCHETYPE ═══
+      if (spearheader && !betrayed) {
+        if (isHot) {
+          pool.push(`${spearheader}! You did this! You went around camp whispering my name to everyone like a little RAT! You couldn't say it to my FACE?! You had to go behind my back?! COWARD!`);
+          pool.push(`I KNEW it was ${spearheader}. I could FEEL it. And nobody had the guts to tell me. You all just smiled and nodded while ${spearheader} loaded the gun. Every single one of you is complicit.`);
+        } else if (isBrain) {
+          pool.push(`${spearheader} orchestrated this. Clean execution — I'll give credit where it's due. But the jury should note who's actually running this game, because everyone else is just following ${spearheader}'s script.`);
+          pool.push(`${spearheader} wanted me gone because I was the only one who could see what ${pronouns(spearheader).sub} was doing. Now there's nobody left to check ${pronouns(spearheader).obj}. Good luck with that, everyone.`);
+        } else if (isHeart) {
+          pool.push(`${spearheader} built this whole thing behind my back. And the worst part? I thought we were fine. We talked this morning. ${pronouns(spearheader).Sub} looked me in the eye and lied. That hurts more than the vote.`);
+        } else if (arch === 'villain') {
+          pool.push(`${spearheader}. One villain to another — that was a solid play. But you just removed the only person this jury would have voted against over you. Think about that.`);
+        } else {
+          pool.push(`${spearheader} wanted this. ${spearheader} built this vote from the ground up and got everyone to go along with it. I can respect the move — but I want the jury to know exactly who's pulling the strings out here.`);
+          pool.push(`Everyone's going to sit there pretending this was a group decision. It wasn't. ${spearheader} made the call and the rest of you followed. Remember that when ${spearheader} comes for you next.`);
+        }
+      }
+
+      // ═══ UNANIMOUS × ARCHETYPE ═══
+      if (unanimous) {
+        if (isHot) {
+          pool.push(`EVERY. SINGLE. ONE. Not ONE person had my back?! Not ONE?! After everything I did for this tribe?! You're all cowards! Every last one of you chose the easy vote because you're too SCARED to make a real move!`);
+        } else if (isBrain) {
+          pool.push(`Unanimous. That means my information network was completely compromised and I had zero visibility. That doesn't happen by accident — someone ran a masterful counter-operation. I'd like to know who.`);
+        } else if (isHeart) {
+          pool.push(`Every single person. I thought... I thought at least SOMEONE would fight for me. I made connections with everyone here. Real ones. Or so I thought. Apparently none of them were strong enough to survive one vote.`);
+        } else if (isSoldier) {
+          pool.push(`Unanimous. I was loyal to this tribe from day one. Not one person returned that loyalty tonight. Not one. I guess in this game, loyalty is a one-way street and I was the only one driving.`);
+        } else if (arch === 'underdog') {
+          pool.push(`Every vote. Every single one. I knew I was on the outside, but I didn't think they'd ALL pile on. Not one person saw value in keeping me around. That's a special kind of lonely.`);
+        } else {
+          pool.push(`Unanimous. That's... that's a statement. They didn't just want me out — they wanted me to know that nobody fought for me. That's the part that stays with you.`);
+        }
+      }
+      if (landslide && !unanimous) {
+        if (isHot) pool.push(`${voteCount} votes?! ${voteCount}?! What did I DO to deserve THAT?! I thought I had numbers! I thought people had SPINES out here!`);
+        else pool.push(`${voteCount} votes. Against me. I knew I was in trouble but I didn't think it was THAT bad. There's 'targeted' and then there's 'erased.' That was an erasure.`);
+      }
+
+      // ═══ CLOSE VOTE × ARCHETYPE ═══
+      if (closeVote) {
+        if (isHot) {
+          pool.push(`ONE vote?! I lost by ONE VOTE?! Who was it?! WHO FLIPPED?! I swear, if I find out who the swing was, I'm going to lose my MIND at Ponderosa!`);
+          pool.push(`That close. THAT close. And I'm the one walking. If ONE person had shown some guts — just ONE — I'd still be here and somebody else would be doing this interview!`);
+        } else if (isBrain) {
+          pool.push(`One vote margin. I miscounted somewhere. One relationship I overvalued, one contingency I didn't plan for. The margin of error in this game is razor-thin and I just fell off the wrong side.`);
+        } else if (isHeart) {
+          pool.push(`That was so close. I can feel how close that was. Someone in there was torn — I could see it at tribal. They almost saved me. Almost. That 'almost' is going to keep me up tonight.`);
+        } else {
+          pool.push(`One vote. ONE vote and I'd still be here. Someone out there was on the fence and chose wrong. I just don't know who — and that's going to haunt me.`);
+        }
+      }
+
+      // ═══ BEST FRIEND × ARCHETYPE ═══
+      if (bestAlly && bestBond >= 4 && !voterNames.includes(bestAlly)) {
+        if (isHot) pool.push(`${bestAlly} — you better WIN this thing. I mean it. You're the only person out here worth a damn. If they take you out next I'm going to riot at the jury bench.`);
+        else if (isSoldier) pool.push(`My only regret is leaving ${bestAlly} without protection. We had each other's backs from day one. ${pronouns(bestAlly).Sub}'s alone now. I just hope ${pronouns(bestAlly).sub} finds new people to trust.`);
+        else pool.push(`The only thing I regret is leaving ${bestAlly} alone out here. We had each other's backs from day one. I just hope ${pronouns(bestAlly).sub} can survive without me watching out for ${pronouns(bestAlly).obj}.`);
+      }
+      if (bestAlly && bestBond >= 3 && voterNames.includes(bestAlly)) {
+        if (isHot) pool.push(`${bestAlly} voted for me. ${bestAlly}. My closest person out here. I literally can't — I can't even TALK about this right now. I'm too angry. I might say something I can't take back. Actually, no — ${bestAlly}, you're a TRAITOR!`);
+        else if (isBrain) pool.push(`${bestAlly} flipped. My best read, my closest ally, my most trusted asset — and they were the leak. I have to respect the emotional intelligence it takes to maintain that level of deception with someone that close.`);
+        else pool.push(`${bestAlly} voted for me. I would NEVER have done that to ${pronouns(bestAlly).obj}. Never. We were close. At least I thought we were. Turns out I was the only one who meant it.`);
+      }
+
+      // ═══ ENEMY × ARCHETYPE ═══
+      if (worstEnemy && worstBond <= -4) {
+        if (isHot) pool.push(`I know ${worstEnemy} is celebrating right now. Laughing. Having the time of ${pronouns(worstEnemy).posAdj} life. Laugh it up. I'll be front row at the jury with a VERY long list of things to say.`);
+        else if (arch === 'villain') pool.push(`${worstEnemy} thinks this is over. It's not. I'm on the jury now, and juries have very, very long memories. Especially when the person they're judging wronged them personally.`);
+        else pool.push(`I know ${worstEnemy} is thrilled right now. Probably can't even hide the smile. Enjoy it. Because the jury sees everything, and I'm going to remember every single thing you did to me out here.`);
+      }
+
+      // ═══ BLINDSIDE (comfortable/content) × ARCHETYPE ═══
+      if (blindside) {
+        if (isHot) {
+          pool.push(`I didn't see it coming. Which makes me FURIOUS. At myself. I should have been paying attention instead of sitting around like everything was fine. I got lazy and they punished me for it. I HATE that!`);
+          pool.push(`Blindsided?! ME?! I was sitting there thinking I was SAFE! How did I not see this?! I'm usually the loudest person in the room — how did I miss the room turning on me?!`);
+        } else if (isBrain) {
+          pool.push(`I didn't see it coming, and that's the part that really gets to me. I pride myself on reading every angle, and they slipped one past me. Someone was running a parallel game I had zero visibility into.`);
+          pool.push(`A blindside. Against me. I had contingencies for six different scenarios and none of them were 'they're all lying to your face.' That's a humbling miscalculation.`);
+        } else if (isHeart) {
+          pool.push(`I thought I was safe. I really did. Everyone was so warm today — the conversations, the eye contact, everything felt normal. And it was all a performance. They were acting. I wasn't. That's the difference.`);
+        } else if (isSoldier) {
+          pool.push(`I didn't see it coming because I trusted people. I took them at their word. That's who I am, and I won't apologize for it — but maybe this game isn't built for people who believe what they're told.`);
+        } else if (isChaos) {
+          pool.push(`Okay, I'll admit it — I was NOT paying attention. I was so busy stirring up my own chaos that I didn't notice someone else was stirring up chaos aimed at ME. Gotta respect the irony.`);
+        } else if (arch === 'goat') {
+          pool.push(`I thought they'd keep me around longer. I thought... I thought I was useful enough to stay. Turns out I overestimated how much they needed me. Or maybe I overestimated how much they liked me.`);
+        } else if (arch === 'underdog') {
+          pool.push(`I finally let my guard down. For the first time in this game I felt like I wasn't the target — and THAT's when they came for me. I survived everything they threw at me except feeling safe.`);
+        } else {
+          pool.push(`I didn't see it coming. I was comfortable — too comfortable. The moment you relax is the moment someone's writing your name down. That's this game's oldest lesson and I still had to learn it the hard way.`);
+        }
+      }
+
+      // ═══ PARANOID/DESPERATE × ARCHETYPE ═══
+      if (emotional === 'paranoid' || emotional === 'desperate') {
+        if (isHot) pool.push(`I KNEW it! I said it all day! I told everyone something was wrong and they all told me to CALM DOWN! 'You're fine, relax.' Well GUESS WHAT?! I WAS RIGHT! I should have trusted my gut and BLOWN THIS GAME UP!`);
+        else if (isBrain) pool.push(`I had the read. I saw it forming all day. But by the time I had confirmation, the numbers were locked. There's a window to counter a vote and I identified it thirty minutes too late.`);
+        else if (isHeart) pool.push(`I could feel it. The energy shifted. People weren't looking at me the same way. I tried to reconnect, tried to pull people back in, but once the tide turns against you in this game, warmth isn't enough to stop it.`);
+        else pool.push(`I knew it was coming. I could feel it all day — the conversations that stopped, the looks, the silence. I tried everything I could to stop it. It wasn't enough.`);
+      }
+
+      // ═══ CALCULATING × ARCHETYPE ═══
+      if (emotional === 'calculating') {
+        if (isHot) pool.push(`I had a plan! A GOOD plan! And then everyone just decided to ignore it and do their own thing! I swear, working with these people is like herding cats! Angry, stupid cats!`);
+        else if (isBrain) pool.push(`I had a plan going into tonight. Contingency A, contingency B, a backup for the backup. Someone found contingency C — the one I didn't model. That's the one that gets you.`);
+        else pool.push(`I had a plan going into tonight. A real plan, with numbers and contingencies. Someone else had a better one. Or maybe just more people willing to follow it.`);
+      }
+
+      // ═══ UNEASY × ARCHETYPE ═══
+      if (emotional === 'uneasy') {
+        if (isHot) pool.push(`I FELT something was off all day and I didn't do anything about it! I should have confronted people! I should have SCREAMED! Instead I sat there like an idiot waiting for the axe to fall!`);
+        else if (isBrain) pool.push(`The signals were there. Subtle shifts in conversation patterns, people making excuses to leave discussions early. I registered them but couldn't synthesize them into a coherent counter-strategy in time.`);
+        else pool.push(`Something was off all day. I couldn't pin it down — just this feeling like the ground was shifting under me. I should have trusted my gut harder and scrambled more.`);
+      }
+
+      // ═══ ARCHETYPE IDENTITY (general, non-situational) ═══
+      if (isHot) {
+        pool.push(`Yeah, I'm loud. Yeah, I made enemies. But at least I'm REAL out here! Half the people still in this game are hiding behind fake smiles and safe votes! I'd rather go out being myself than survive being NOBODY!`);
+        pool.push(`Everyone told me to calm down, play it cool, stop making waves. You know what?! The waves are what made this game INTERESTING. You're WELCOME.`);
+        if (earlyBoot) pool.push(`First few days and I'm already gone?! I barely got STARTED! This game is rigged against people with actual personalities! Have fun being boring without me!`);
+      }
+      if (isBrain) {
+        pool.push(`They didn't outplay me. They outnumbered me. There's a difference. I had the better strategy — I just ran out of people willing to execute it.`);
+        if (lateBoot) pool.push(`I got this far running the game from the shadows. Someone finally shined a light on me. It was bound to happen — I just thought I had one more episode in the dark.`);
+      }
+      if (isHeart) {
+        pool.push(`I talked to everybody. I listened to everybody. I made everyone feel heard. And they still chose to write my name down. Maybe being liked isn't enough. Maybe you have to be feared too.`);
+      }
+      if (isSoldier) {
+        pool.push(`I kept my word every single day. Every vote, every conversation — I was honest. And in this game, that's apparently a weakness. Loyalty gets you a seat on the jury, not a seat at Final Tribal.`);
+        if (!betrayed) pool.push(`I didn't flip. I didn't scheme. I played a clean game. And you know what? I'd do it exactly the same way again. That's who I am.`);
+      }
+      if (isBeast) {
+        pool.push(`They waited until I lost ONE challenge. ONE. That's how they had to get me — not through strategy, not through alliances. They just had to wait for me to have a bad day. Congratulations.`);
+        pool.push(`I won challenges. I earned my safety. But you can't win them all, and the one time I don't — I'm gone. That tells you everything about how scared they were of me.`);
+      }
+      if (isChaos) {
+        pool.push(`They voted me out because they couldn't control me. That's the real reason. Not threat level, not strategy — control. And I refused to give it to them. I'd rather leave on my own terms than stay as someone's number.`);
+        pool.push(`I kept everyone guessing. Nobody ever knew what I was going to do — honestly? Half the time I didn't either. That's what made it fun. This game doesn't reward fun, though. It rewards boring.`);
+      }
+      if (arch === 'underdog') {
+        pool.push(`I was never supposed to make it this far. Nobody picked me. Nobody believed in me. And I almost proved them all wrong. Almost. That 'almost' is going to eat at me for a long time.`);
+        if (earlyBoot) pool.push(`I didn't even get a chance. That's the worst part. I had so much more to give, so much game left to play. They took the easy vote and called it strategy.`);
+        if (lateBoot) pool.push(`From the bottom, every single episode. I clawed and scraped to get here. And now I'm this close to the end and they finally caught me. I made them work for it, though. Nobody can take that away from me.`);
+      }
+      if (arch === 'villain') {
+        pool.push(`I played this game the way it's supposed to be played — ruthlessly. Everyone is pretending they're not doing the same thing, but I'm the only one honest about it. Enjoy your moral high ground. I'll enjoy the jury bench.`);
+        pool.push(`Go ahead. Celebrate. The villain is gone. But you know what happens when the villain leaves? The heroes start eating each other. Give it two episodes.`);
+      }
+      if (arch === 'hero') {
+        pool.push(`I tried to play with integrity. I tried to protect the people who deserved it. And in this game, that paints a target on your back. The good ones always go before the snakes.`);
+        pool.push(`I know I played a game I can be proud of. Not everyone still out there can say the same. The jury's watching — and we know who played with honor and who didn't.`);
+      }
+      if (arch === 'goat' && !blindside) {
+        pool.push(`Everyone thought they could drag me to the end. Guess I wasn't as useful as they thought. At least I outlasted someone — that's more than people expected from me.`);
+        pool.push(`I know what people thought of my game. I know they thought I was just along for the ride. But I was here. I survived. And surviving is harder than anyone sitting at home will ever understand.`);
+      }
+      if (arch === 'floater') {
+        pool.push(`I stayed in the middle on purpose. Played all sides. It worked — until everyone decided I was the easiest name to agree on. The middle is safe right up until it isn't.`);
+        pool.push(`I floated, yeah. But floating takes skill. You have to read every room, dodge every conflict, make everyone think you're with them. It's exhausting. And apparently not enough.`);
+      }
+      if (arch === 'showmancer') {
+        pool.push(`I found something real out here. They can vote me out, but they can't take that away. Some things are bigger than a million dollars.`);
+        pool.push(`I let my heart get involved. Maybe that made me vulnerable. Maybe that gave people a reason to target me. But I wouldn't change it. This game gave me something worth more than winning.`);
+      }
+      if (arch === 'perceptive-player') {
+        pool.push(`I saw it coming. I read the room perfectly — I knew exactly who was voting for me, why, and when. I just couldn't find enough people willing to change course. Seeing the iceberg doesn't help if nobody else will steer.`);
+        pool.push(`I read every lie, every fake smile, every whispered conversation that stopped when I walked up. I knew everything. But knowing and doing something about it are two very different things.`);
+      }
+
+      // ═══ STAT COMBOS ═══
+      if (s.strategic >= 8 && s.social <= 4) {
+        if (isHot) pool.push(`I was the SMARTEST person out here and nobody CARED! They didn't want smart — they wanted comfortable! They wanted someone who'd smile and nod and not threaten their little safe votes!`);
+        else pool.push(`I played the smartest game out here. But smart doesn't matter if nobody likes you enough to keep you around. Turns out relationships ARE strategy. I learned that too late.`);
+      }
+      if (s.social >= 8 && s.strategic <= 4)
+        pool.push(`Everyone liked me. That was the problem. Nobody feared me, and when it came time to pick a name — the person nobody fears is the safest write-down. Likeable is a death sentence.`);
+      if (s.boldness >= 8 && !isHot)
+        pool.push(`I took big swings. Some landed, some didn't. But I refuse to apologize for playing hard. The people who play scared don't make the jury's highlight reel.`);
+      if (s.physical >= 8 && !isBeast)
+        pool.push(`They got me out before the individual challenges started mattering. Smart. Because if they'd let me reach the endgame, I would have immunity-run my way to the finale. They knew that.`);
+
+      // ═══ ARCHETYPE FALLBACKS ═══
+      if (isHot) {
+        pool.push(`Whatever! I'm DONE! Go ahead and play your boring, safe, predictable little game without me! See how fun tribal is when nobody has the guts to say anything REAL!`);
+        pool.push(`The torch is snuffed. Fine. But I'm going to be the LOUDEST person on that jury bench. You haven't heard the last of me. Not even CLOSE.`);
+      } else if (isBrain) {
+        pool.push(`The game continues without me. I'll be studying every move from the jury bench. Whoever gets to the end better have a thesis-level defense ready, because my questions will not be gentle.`);
+      } else if (isHeart) {
+        pool.push(`It hurts. I'm not going to pretend it doesn't. I poured my heart into every relationship out here. But I walk out with real connections, even if the game couldn't hold them.`);
+      } else if (isSoldier) {
+        pool.push(`I walk out with my integrity. That matters more to me than a million dollars. Not everyone still in there can say the same.`);
+      } else {
+        pool.push(`It hurts. I'm not going to pretend it doesn't. But I watched people play safe and small and go home anyway. At least I actually played.`);
+        pool.push(`This game will eat you alive if you let it. And right now, it got to me. But I walk out knowing I gave everything I had.`);
+        pool.push(`The torch is snuffed, the game is over. For me. But the jury bench has a front-row seat, and I plan to use it.`);
+        pool.push(`I'm going to sit on that jury bench and watch every single one of them very carefully. Whoever comes to Final Tribal is going to have to look me in the eye and explain why I'm sitting there and they're not.`);
+      }
+
+      return pool;
+    })(),
     juryEliminated: (() => {
       // Context-aware jury elimination quotes — pull in juror names and bond data
       const _jeTw = (ep?.twists||[]).find(t => t.type === 'jury-elimination' && t.juryBooted === name);
@@ -1088,6 +1333,7 @@ export function buildTwistDesc(tw) {
     case 'spirit-island':      if (tw.spiritVisitor) L.push(`Jury member ${tw.spiritVisitor} returns to camp for one day.`); break;
     case 'loved-ones':         L.push('Players\' loved ones visit camp. Tribal council still runs tonight.'); break;
     case 'reward-challenge':   L.push('A reward challenge runs before immunity.'); if (tw.rewardWinner) L.push(`${tw.rewardWinner} won the reward.`); break;
+    case 'reward-twist-challenge': L.push('This is a reward-only episode — no elimination tonight.'); if (tw.rewardChalLabel) L.push(`Challenge: ${tw.rewardChalLabel}.`); break;
     case 'fan-vote-boot':      if (tw.fanVoteSaved) { const _r = tw.fanVoteIsPreMerge ? 'tribal immunity' : 'an Extra Vote'; L.push(`Fan Vote: ${tw.fanVoteSaved} (score ${tw.fanVoteScore || 0}) receives ${_r}.`); } break;
     case 'jury-elimination':   L.push('Eliminated players voted to remove one active player from the game. Result after the vote.'); break;
     case 'tiebreaker-challenge': L.push('If the vote ties, tied players compete in a head-to-head challenge. No revote, no rocks.'); break;
@@ -6071,9 +6317,13 @@ export function rpBuildRewardChallenge(ep) {
   if (!rc) return '';
   const chalCat = rc.category || 'mixed';
   const isTribe = rc.winnerType === 'tribe';
+  const _rcEyebrow = rc.isRewardOnly
+    ? `Episode ${ep.num} \u2014 Reward-Only Episode`
+    : `Episode ${ep.num} \u2014 ${isTribe ? 'Tribe' : 'Individual'} Reward Challenge`;
+  const _rcTitle = rc.isRewardOnly ? 'Reward' : rc.label;
   let html = `<div class="rp-page">
-    <div class="rp-eyebrow">Episode ${ep.num} \u2014 ${isTribe ? 'Tribe' : 'Individual'} Reward Challenge</div>
-    <div class="rp-title">${rc.label}</div>
+    <div class="rp-eyebrow">${_rcEyebrow}</div>
+    <div class="rp-title">${_rcTitle}</div>
     <div style="text-align:center"><span class="rp-chal-type ${chalCat}">${chalCat}</span></div>`;
   if (rc.desc) {
     html += `<p style="font-size:13px;color:#8b949e;line-height:1.65;margin:0 auto 16px;text-align:center;max-width:440px">${rc.desc}</p>`;
@@ -10249,8 +10499,8 @@ export function buildVPScreens(epRecord) {
     });
   });
 
-  // ── 4b. Reward Challenge (if one ran this episode) ──
-  if (ep.rewardChalData) {
+  // ── 4b. Reward Challenge (if one ran this episode, but NOT reward-twist-challenge — those go after the challenge screens) ──
+  if (ep.rewardChalData && !ep.isRewardOnly) {
     vpScreens.push({ id:'reward-challenge', label:'Reward Challenge', html: rpBuildRewardChallenge(ep) });
   }
 
@@ -10406,6 +10656,47 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'eg-desert', label:'Desert Trek', html: rpBuildEgyptDesert(ep) });
     vpScreens.push({ id:'eg-nile', label:'Nile Crossing', html: rpBuildEgyptNile(ep) });
     vpScreens.push({ id:'eg-results', label:'Results', html: rpBuildEgyptResults(ep) });
+  } else if ((ep.isBiggerBadderBrutaler || ep.challengeType === 'bigger-badder-brutaler') && ep.brutaler) {
+    vpScreens.push({ id:'bb-title', label:'Bigger! Badder! Brutal-er!', html: rpBuildBigBaddTitleCard(ep) });
+    vpScreens.push({ id:'bb-phase1', label:'Method Debate', html: rpBuildBigBaddPhase1(ep) });
+    vpScreens.push({ id:'bb-phase2', label:'Axe & Bomb', html: rpBuildBigBaddPhase2(ep) });
+    vpScreens.push({ id:'bb-phase3', label:'Race & Smash', html: rpBuildBigBaddPhase3(ep) });
+    vpScreens.push({ id:'bb-results', label:'Results', html: rpBuildBigBaddResults(ep) });
+  } else if ((ep.isCrazyFunTime || ep.challengeType === 'crazy-fun-time') && ep.crazyFunTime) {
+    vpScreens.push({ id:'cft-title', label:'Crazy Fun Time', html: rpBuildCFTTitleCard(ep) });
+    vpScreens.push({ id:'cft-pinball', label:'Human Pinball', html: rpBuildCFTPinball(ep) });
+    vpScreens.push({ id:'cft-drama', label:'Drama Break', html: rpBuildCFTDramaBreak(ep) });
+    const cftTribes = ep.crazyFunTime?.tribes || [];
+    for (let i = 0; i < cftTribes.length; i++) {
+      vpScreens.push({ id:`cft-commercial-${i}`, label:`${cftTribes[i].tribeName} Ad`, html: rpBuildCFTCommercial(ep, i) });
+    }
+    vpScreens.push({ id:'cft-verdict', label:"Chef's Verdict", html: rpBuildCFTVerdict(ep) });
+    vpScreens.push({ id:'cft-results', label:'Results', html: rpBuildCFTResults(ep) });
+  } else if ((ep.isFrozenCrossing || ep.challengeType === 'frozen-crossing') && ep.frozenCrossing) {
+    vpScreens.push({ id:'fc-title', label:'Frozen Crossing', html: rpBuildFCTitleCard(ep) });
+    vpScreens.push({ id:'fc-phase1', label:'Ice Floes', html: rpBuildFCPhase1(ep) });
+    vpScreens.push({ id:'fc-sled', label:'Sled Assignment', html: rpBuildFCSledAssignment(ep) });
+    vpScreens.push({ id:'fc-phase2', label:'Sled Race', html: rpBuildFCPhase2(ep) });
+    vpScreens.push({ id:'fc-results', label:'Results', html: rpBuildFCResults(ep) });
+  } else if ((ep.isSlapRevolution || ep.challengeType === 'slap-slap-revolution') && ep.slapRevolution) {
+    vpScreens.push({ id:'ssr-title', label:'Slap Slap Revolution', html: rpBuildSSRTitleCard(ep) });
+    vpScreens.push({ id:'ssr-grind', label:'The Grind', html: rpBuildSSRGrind(ep) });
+    vpScreens.push({ id:'ssr-descent', label:'The Descent', html: rpBuildSSRDescent(ep) });
+    vpScreens.push({ id:'ssr-hats', label:'Hat Ceremony', html: rpBuildSSRHats(ep) });
+    vpScreens.push({ id:'ssr-draft', label:"Captain's Draft", html: rpBuildSSRDraft(ep) });
+    vpScreens.push({ id:'ssr-fights', label:'Fights', html: rpBuildSSRFights(ep) });
+    vpScreens.push({ id:'ssr-finals', label:'Finals', html: rpBuildSSRFinals(ep) });
+    vpScreens.push({ id:'ssr-results', label:'Results', html: rpBuildSSRResults(ep) });
+  } else if ((ep.isBroadwayBaby || ep.challengeType === 'broadway-baby') && ep.broadwayBaby) {
+    vpScreens.push({ id:'bb-title', label:'Broadway Baby', html: rpBuildBBTitleCard(ep) });
+    vpScreens.push({ id:'bb-phase1', label:'Chris Colossus', html: rpBuildBBPhase1(ep) });
+    vpScreens.push({ id:'bb-phase2', label:'Underground', html: rpBuildBBPhase2(ep) });
+    vpScreens.push({ id:'bb-phase3', label:'Park Dash', html: rpBuildBBPhase3(ep) });
+    vpScreens.push({ id:'bb-results', label:'Results', html: rpBuildBBResults(ep) });
+  } else if ((ep.isTruthOrShark || ep.challengeType === 'truth-or-shark') && ep.truthOrShark) {
+    vpScreens.push({ id:'tls-title', label:'Truth or Shark', html: rpBuildTlsTitleCard(ep) });
+    vpScreens.push({ id:'tls-rounds', label:'Game Show', html: rpBuildTlsRounds(ep) });
+    vpScreens.push({ id:'tls-results', label:'Results', html: rpBuildTlsResults(ep) });
   } else if (ep.isAlienEgg && ep.alienEgg) {
     vpScreens.push({ id:'ae-title', label:'👽 Alien Resurr-eggtion', html: rpBuildAlienEggTitleCard(ep) });
     vpScreens.push({ id:'ae-rounds', label:'The Egg Hunt', html: rpBuildAlienEggRounds(ep) });
@@ -10787,6 +11078,11 @@ export function buildVPScreens(epRecord) {
     if (_gaTwVP.gaRunnerUp) _gaHtml += _renderTwistScene({ text: `${_gaTwVP.gaRunnerUp} was the closest to earning the Guardian Angel. So close — but not enough.`, players: [_gaTwVP.gaRunnerUp] });
     _gaHtml += `</div>`;
     vpScreens.push({ id: 'guardian-angel', label: 'Guardian Angel', html: _gaHtml });
+  }
+
+  // ── 5b. Reward Reveal (reward-twist-challenge: shown AFTER the challenge results) ──
+  if (ep.rewardChalData && ep.isRewardOnly) {
+    vpScreens.push({ id:'reward-reveal', label:'Reward', html: rpBuildRewardChallenge(ep) });
   }
 
   // ── 6. Post-Challenge Camp — one screen per tribe with post events ──

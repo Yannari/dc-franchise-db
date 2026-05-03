@@ -1489,6 +1489,30 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isWalkEgypt = true;
 
+  } else if (engineType === 'crazy-fun-time') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isCrazyFunTime = true;
+
+  } else if (engineType === 'frozen-crossing') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isFrozenCrossing = true;
+
+  } else if (engineType === 'slap-slap-revolution') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isSlapRevolution = true;
+
+  } else if (engineType === 'broadway-baby') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isBroadwayBaby = true;
+
+  } else if (engineType === 'truth-or-shark') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isTruthOrShark = true;
+
+  } else if (engineType === 'bigger-badder-brutaler') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isBiggerBadderBrutaler = true;
+
   } else if (engineType === 'sports-marathon') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isSportsMarathon = true;
@@ -3811,6 +3835,64 @@ export function applyTwist(ep, twist, isPrimary = true) {
       twistObj.rewardCluedPlayer = _cluedPlayer;
     }
 
+  } else if (engineType === 'reward-twist-challenge') {
+    // ── REWARD TWIST CHALLENGE: run any twist challenge engine as reward-only (no elimination) ──
+    const _rtcEngine = twist.rewardEngine || null;
+
+    if (!_rtcEngine) {
+      // No engine selected — fall back to generic reward (same as reward-challenge)
+      const rchal = pickChallenge();
+      twistObj.rewardTwistFallback = true;
+      twistObj.rewardChalLabel    = rchal.name;
+      twistObj.rewardChalCategory = rchal.category;
+      twistObj.rewardChalDesc     = rchal.desc;
+    } else {
+      // Set the selected engine's flag so episode.js dispatches it
+      const _engineFlagMap = {
+        'phobia-factor': 'isPhobiaFactor', 'cliff-dive': 'isCliffDive', 'awake-a-thon': 'isAwakeAThon',
+        'dodgebrawl': 'isDodgebrawl', 'talent-show': 'isTalentShow', 'sucky-outdoors': 'isSuckyOutdoors',
+        'up-the-creek': 'isUpTheCreek', 'paintball-hunt': 'isPaintballHunt', 'hells-kitchen': 'isHellsKitchen',
+        'trust-challenge': 'isTrustChallenge', 'basic-straining': 'isBasicStraining', 'x-treme-torture': 'isXTremeTorture',
+        'sudden-death': 'isSuddenDeath', 'slasher-night': 'isSlasherNight', 'triple-dog-dare': 'isTripleDogDare',
+        'say-uncle': 'isSayUncle', 'brunch-of-disgustingness': 'isBrunch',
+        'monster-cash': 'isMonsterCash', 'operation-classified': 'isOperationClassified',
+        'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride',
+        'get-a-clue': 'isGetAClue', 'rock-n-rule': 'isRockNRule',
+        'crouching-courtney': 'isCrouchingCourtney', 'houston': 'isHouston', 'top-dog': 'isTopDog',
+        'walk-like-an-egyptian': 'isWalkEgypt', 'crazy-fun-time': 'isCrazyFunTime',
+        'frozen-crossing': 'isFrozenCrossing', 'slap-slap-revolution': 'isSlapRevolution', 'broadway-baby': 'isBroadwayBaby',
+        'truth-or-shark': 'isTruthOrShark',
+        'bigger-badder-brutaler': 'isBiggerBadderBrutaler',
+        'lucky-hunt': 'isLuckyHunt', 'hide-and-be-sneaky': 'isHideAndBeSneaky',
+        'off-the-chain': 'isOffTheChain', 'wawanakwa-gone-wild': 'isWawanakwaGoneWild',
+        'tri-armed-triathlon': 'isTriArmedTriathlon', 'camp-castaways': 'isCampCastaways',
+        'are-we-there-yeti': 'isAreWeThereYeti',
+        'alien-egg': 'isAlienEgg', 'beach-blanket-bogus': 'isBeachBlanketBogus',
+        'crazytown': 'isCrazytown', 'chefshank': 'isChefshank', 'one-flu': 'isOneFlu',
+        'masters-of-disasters': 'isMastersOfDisasters', 'oceans-heist': 'isOceansHeist',
+        'million-bucks-bc': 'isMillionBucksBC', 'sports-marathon': 'isSportsMarathon',
+        'full-metal-drama': 'isFullMetalDrama',
+      };
+      const _flag = _engineFlagMap[_rtcEngine];
+      if (_flag) ep[_flag] = true;
+      twistObj.rewardEngine = _rtcEngine;
+      const _catEntry = TWIST_CATALOG.find(c => c.id === _rtcEngine);
+      twistObj.rewardChalLabel    = _catEntry?.name || _rtcEngine;
+      twistObj.rewardChalCategory = _catEntry?.chalStyle || 'mixed';
+      twistObj.rewardChalDesc     = _catEntry?.desc || '';
+    }
+
+    // Mark as reward-only so episode.js skips tribal
+    ep.isRewardOnly = true;
+    ep.noTribal = true;
+    twistObj.isRewardOnly = true;
+
+    // Pick reward from pool
+    const _rtcReward = pickReward();
+    twistObj.rewardItemId    = _rtcReward.id;
+    twistObj.rewardItemLabel = _rtcReward.label;
+    twistObj.rewardItemDesc  = _rtcReward.desc;
+
   } else if (engineType === 'fan-vote-boot') {
     if (!seasonConfig.popularityEnabled) { twistObj.blocked = true; return; }
     const _pop = gs.popularity || {};
@@ -4131,6 +4213,10 @@ export function generateTwistScenes(ep) {
 
       case 'reward-challenge':
         // Reward challenge has its own dedicated VP screen — skip here.
+        break;
+
+      case 'reward-twist-challenge':
+        // Reward twist challenge — the twist challenge VP handles everything.
         break;
 
       case 'second-chance': {

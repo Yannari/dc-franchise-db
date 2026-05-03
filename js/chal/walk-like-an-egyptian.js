@@ -7,6 +7,18 @@ import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+// _pickUnique: tracks used items per tag so the same line doesn't repeat for the same player/context.
+const _pickUsed = {};
+function _pickUnique(arr, tag) {
+  if (!arr?.length) return null;
+  if (!_pickUsed[tag]) _pickUsed[tag] = new Set();
+  let avail = arr.filter(x => !_pickUsed[tag].has(x));
+  if (!avail.length) { _pickUsed[tag].clear(); avail = arr; }
+  const choice = avail[Math.floor(Math.random() * avail.length)];
+  _pickUsed[tag].add(choice);
+  return choice;
+}
+function _resetPickCache() { for (const k in _pickUsed) delete _pickUsed[k]; }
 function noise(range = 2.5) { return (Math.random() - 0.5) * range; }
 function popDelta(name, delta) {
   if (!gs.popularity) gs.popularity = {};
@@ -48,11 +60,11 @@ const HOST_TEXT = {
     h => `"I love this part," ${h} says. "Watching people realize both options are terrible."`,
   ],
   phase2: [
-    h => `"Phase two — desert trek!" ${h} tosses keys to the first-place tribe. "Winners get the camel. Second place gets... a goat. Last place gets a stick. Have fun!"`,
+    h => `"Phase two — desert trek!" ${h} tosses a stick to the first-place tribe. "Winners get the stick. Second place gets a goat. Last place gets the camel. Good luck getting THAT across the Nile later."`,
     h => `${h} points at the endless sand dunes. "Navigate to the Nile. First tribe there gets a head start. Last tribe gets to think about what they did wrong."`,
-    h => `"Out there is sand, sun, scarabs, and exactly zero shade. Unless you got the camel." ${h} winks at the leading tribe. "Navigate wisely. Or don't. It's funny either way."`,
+    h => `"Out there is sand, sun, scarabs, and exactly zero shade." ${h} grins at the last-place tribe. "At least your camel provides shade. Too bad it won't fit in a boat."`,
     h => `${h} squints at the horizon. "The Nile is... somewhere out there. Your navigator better be smart, because GPS hasn't been invented yet. In this challenge, anyway."`,
-    h => `"One camel, one goat, one stick." ${h} holds up three fingers. "The stick might be more useful than you think. Or it might just be a stick. Only one way to find out."`,
+    h => `"One stick, one goat, one camel." ${h} holds up three fingers. "The stick is a sorcerer's divining rod — it'll help you find the Nile. The camel? It'll help you carry regret."`,
   ],
   phase3: [
     h => `"Final phase!" ${h} stands at the riverbank. "Build a basket boat, load your animal, cross the Nile. Oh, and there are crocodiles. Real ones. Chef's pets."`,
@@ -231,32 +243,56 @@ const UNDER_MUMMIFIED_DOG = [
 // ── PHASE 2: DESERT TREK ──
 const REWARD_TEXT = {
   camel: [
-    t => `${t} gets the camel. It spits at them immediately, but the shade it provides is worth it.`,
-    t => `The camel regards ${t} with suspicion. They regard the camel with gratitude. Desert crossing with shade — luxury.`,
-    t => `${t} loads up the camel and sets off. The beast knows the desert better than any of them. First-class travel.`,
-    t => `"A camel!" ${t} cheers. The camel does not cheer back. But it walks, and it carries things, and it blocks the sun. Good enough.`,
-    t => `${t}'s camel is surly, smelly, and perfect. Fifteen percent faster than walking, and the shade keeps the heat at bay.`,
+    t => `${t} gets the camel. It spits at them immediately. Great. Now they have to haul this beast across the desert AND fit it in a boat later.`,
+    t => `"A CAMEL?" ${t} stares at the massive beast. "How are we supposed to get that on a boat?!" Chris shrugs. The camel sits down.`,
+    t => `The camel regards ${t} with suspicion. The shade is nice, sure, but this thing weighs a literal ton. The Nile crossing is going to be a nightmare.`,
+    t => `${t}'s camel is surly, smelly, and enormous. At least it blocks the sun. Too bad it'll also block the entire boat.`,
+    t => `${t} gets the short end of the camel. "Last place gets a two-thousand-pound anchor. Thanks, Chris." The camel spits in agreement.`,
   ],
   goat: [
-    t => `${t} gets the goat. It's... enthusiastic. It also keeps trying to eat their map. But the weight distribution helps.`,
-    t => `The goat headbutts the first person who tries to load it. After that, they reach an understanding. ${t} sets off.`,
-    t => `"A goat?" ${t} looks at the goat. The goat looks back. "Fine. Let's go." At least it carries some of their gear.`,
-    t => `${t}'s goat is small, angry, and surprisingly fast. Not exactly a camel, but better than nothing.`,
-    t => `The goat bleats at ${t}. ${t} bleats back. The bond is formed. They set off into the desert at a decent pace.`,
+    t => `${t} gets the goat. It's... enthusiastic. It also keeps trying to eat their map. But hey, at least it fits in a boat.`,
+    t => `The goat headbutts the first person who tries to lead it. After that, they reach an understanding. ${t} sets off.`,
+    t => `"A goat?" ${t} looks at the goat. The goat looks back. "Fine. Let's go." At least it won't sink their boat.`,
+    t => `${t}'s goat is small, angry, and surprisingly fast. Middle of the road — not a handicap, not an advantage.`,
+    t => `The goat bleats at ${t}. ${t} bleats back. The bond is formed. It's no divining rod, but it won't drown them either.`,
   ],
   stick: [
-    t => `${t} gets a stick. Just... a stick. The disappointment is visible from space.`,
-    t => `"A STICK?" ${t} holds it up. It's a stick. "This is what we get for losing?" It's just a stick. Probably.`,
-    t => `${t} stares at their "reward." A stick. Not even a good stick. It's slightly crooked.`,
-    t => `The stick is unimpressive. ${t} debates throwing it away but keeps it out of spite. At least they can poke things.`,
-    t => `"Last place gets a STICK." ${t} is not hiding their frustration. The stick just sits there, being a stick. Or is it?`,
+    t => `${t} gets the stick. "A... stick?" They look at Chris. Chris winks. There's something about this stick.`,
+    t => `"First place gets a STICK?" ${t} holds it up, confused. It's oddly warm. Vibrating? "Just trust the process," Chris says.`,
+    t => `${t} takes the stick. It's not much to look at. But winners get it for a reason — and they'll find out why in the desert.`,
+    t => `The stick looks unimpressive. ${t} almost drops it. But Chris's grin says there's more to this reward than meets the eye.`,
+    t => `"The sorcerer's stick," Chris calls it. ${t} holds it skeptically. It's a stick. A weird, slightly warm stick. For now.`,
+  ],
+  // Tribe reactions to their reward — said BEFORE they realize what it actually does
+  reactionStick: [
+    (n, pr, t) => `"WE WON and we get a STICK?!" ${n} is incensed. "${t} BEAT both other tribes and our prize is FIREWOOD?!" The tribe glares at Chris. Chris just smiles.`,
+    (n, pr, t) => `${n} stares at the stick. Then at Chris. Then at the camel the LAST PLACE tribe is loading. "...is this a prank?" Chris winks. ${pr.Sub} doesn't trust that wink.`,
+    (n, pr, t) => `"Are you KIDDING me?" ${n} drops the stick in protest. "We get sticks, they get a CAMEL with SHADE? Make it make sense, Chris!" Chris just sips his coffee.`,
+    (n, pr, t) => `${n} picks up the stick. It's surprisingly heavy. Warm. A little hum to it. "...okay. Maybe Chris isn't messing with us." The tribe is unconvinced.`,
+    (n, pr, t) => `"This better be magic." ${n} brandishes the stick at Chris. "I swear to god, if this is just a stick I'm walking back and demanding the camel." Chris waves them off. "Walk on."`,
+    (n, pr, t) => `The whole tribe groans when ${n} holds up the stick. "WE FINISHED FIRST." "Yes." "AND WE GET A STICK." "Yes." "...okay." They start walking. Confused.`,
+  ],
+  reactionGoat: [
+    (n, pr, t) => `${n} regards the goat. The goat regards ${pr.obj}. "Could be worse," ${pr.sub} sighs. "Could be a stick." Meanwhile the stick tribe is staring daggers from across the dunes.`,
+    (n, pr, t) => `"A GOAT. Okay. We can work with this." ${n} pats the goat. The goat headbutts ${pr.obj} immediately. "We can SOMETIMES work with this."`,
+    (n, pr, t) => `${n} surveys the situation. Camel for last place — too big to boat. Stick for first — apparently magic? "Honestly? Goat might be the best of all three. Let's go."`,
+    (n, pr, t) => `The goat bleats at ${n}. ${pr.Sub} bleats back. The bond is instant and weird. "We're gonna call him Steve." "It's a girl." "We're calling her Steve."`,
+    (n, pr, t) => `${n} watches the camel struggle and the stick tribe panic. ${pr.Sub} pets the goat. "We are SO middle-of-the-pack. I love it. Let's go."`,
+  ],
+  reactionCamel: [
+    (n, pr, t) => `${n} stares at the camel. The camel stares back, dead-eyed. "...how are we supposed to get this thing on a BOAT later?!" Chris doesn't answer. Chris is gone.`,
+    (n, pr, t) => `"At least we have shade." ${n} tries to find a silver lining. The camel immediately spits on ${pr.obj}. "...nevermind."`,
+    (n, pr, t) => `The camel is enormous. ${n} circles it slowly. "We came in last and our reward is... a two-thousand-pound problem?" The tribe nods grimly.`,
+    (n, pr, t) => `${n} tries to mount the camel. The camel sits down. ${n} tries to lead it. The camel sits down. "OH COME ON." The trek hasn't even started yet.`,
+    (n, pr, t) => `"Camel for last place is BS," ${n} mutters. "It's not even faster — it's slower because it stops every TWO MINUTES." The camel bites ${pr.posAdj} sleeve. "SEE."`,
+    (n, pr, t) => `${n} watches the stick tribe complain about their stick. "Trade you?" ${pr.Sub} calls. "NO!" the stick tribe shouts back, hugging their stick. ${n} doesn't trust this.`,
   ],
   stickDiscovery: [
-    (n, pr) => `Wait. ${n} stops walking and holds the stick level. It pulls. Not wind — it's a divining rod. ${pr.Sub} can feel water, direction, the path. "Guys. The stick is magic."`,
-    (n, pr) => `${n} notices the stick vibrating. ${pr.Sub} points it different directions — it tugs toward water. "This isn't just a stick. It's a compass." The tribe stares.`,
-    (n, pr) => `${n} was about to toss the stick when it twitched in ${pr.posAdj} hand. Points northeast. Toward the Nile? ${pr.Sub} follows it. The stick knows the way.`,
-    (n, pr) => `The stick glows. Okay, it doesn't glow. But ${n} swears it hums. ${pr.Sub} follows its pull and finds the path immediately. "I take back everything I said about this stick."`,
-    (n, pr) => `${n} spins the stick experimentally. It stops pointing the same direction every time. "It's a divining rod!" ${pr.Sub} grins. The losing tribe might just catch up.`,
+    (n, pr) => `Wait. ${n} holds the stick level and it PULLS. Not wind — it's a sorcerer's divining rod. ${pr.Sub} can feel water, direction, the path. "Guys. The stick is magic."`,
+    (n, pr) => `${n} notices the stick vibrating. ${pr.Sub} points it different directions — it tugs toward water. "Chris wasn't lying. This IS a sorcerer's rod." The tribe stares.`,
+    (n, pr) => `The stick starts humming in ${n}'s hand. ${pr.Sub} follows its pull and finds the path immediately. "This is why we won." The winner's reward pays off.`,
+    (n, pr) => `${n} feels the stick twitch northeast. Toward the Nile? ${pr.Sub} follows it. The sorcerer's stick knows the way. First place advantage activated.`,
+    (n, pr) => `${n} spins the stick experimentally. It stops pointing the same direction every time. "It's a divining rod!" ${pr.Sub} grins. First place earned this.`,
   ],
   stickLost: [
     (t, n, pr) => `${n} trips and the stick goes flying. By the time they look for it, the sand has swallowed it. ${t}'s secret weapon is gone.`,
@@ -393,9 +429,9 @@ const SOCIAL_TEXT = {
   ],
   blame: [
     (target, tribe, pr) => `The tribe is frustrated. Someone has to take the blame. Eyes turn to ${target}. "If ${pr.sub} hadn't slowed us down in the pyramid..."`,
-    (target, tribe, pr) => `${target} feels the heat building. ${pr.posAdj} tribemates are looking for a scapegoat, and ${pr.sub}'s name keeps coming up.`,
+    (target, tribe, pr) => `${target} feels the heat building. ${pr.posAdj} tribemates are looking for a scapegoat, and ${pr.posAdj} name keeps coming up.`,
     (target, tribe, pr) => `"This is ${target}'s fault." Nobody says it out loud, but the glances say everything. ${pr.Sub} is losing standing with every step.`,
-    (target, tribe, pr) => `The blame spiral starts with a whisper and reaches ${target} by the time they crest the dune. ${pr.Sub} knows ${pr.sub}'s in trouble.`,
+    (target, tribe, pr) => `The blame spiral starts with a whisper and reaches ${target} by the time they crest the dune. ${pr.Sub} knows ${pr.sub}'${pr.sub === 'they' ? 're' : 's'} in trouble.`,
     (target, tribe, pr) => `${target} stumbles and someone mutters, "Typical." The tribe dynamic shifts. ${pr.Sub} is the weak link, and everyone knows it.`,
   ],
 };
@@ -448,11 +484,30 @@ const P2_SOCIAL = {
     (hoarder, victim, hpr) => `${hoarder} conveniently "forgets" to pass the water to ${victim}. Twice. ${victim} starts keeping count.`,
     (hoarder, victim, hpr) => `"Water's running low." ${hoarder} fails to mention that ${hpr.sub} drank most of it. ${victim} is parched and suspicious.`,
   ],
-  animalDrama: [
-    (player, tName, pr) => `The camel spits on ${player}. The whole tribe watches. Nobody helps. Some laugh. ${pr.Sub} wipes ${pr.posAdj} face in silence.`,
-    (player, tName, pr) => `The goat headbutts ${player} for the third time. "WHY does it hate ME?" ${pr.Sub} shouts. The tribe has theories.`,
-    (player, tName, pr) => `${player} bonds with the tribe's animal while the others argue about navigation. ${pr.Sub} feeds it, talks to it, names it.`,
-    (player, tName, pr) => `The animal bites ${player}'s hand. ${pr.Sub} yelps. But ${pr.sub} doesn't let go. Points for determination. Minus points for judgment.`,
+  // Keyed by reward — animal-specific
+  camelDrama: [
+    (player, tName, pr) => `The camel spits on ${player}. A FULL spit. The whole tribe watches. Nobody helps. Some laugh. ${pr.Sub} wipes ${pr.posAdj} face in silence and adds the camel to ${pr.posAdj} list.`,
+    (player, tName, pr) => `The camel decides ${player} is its enemy and refuses to walk near ${pr.obj}. The tribe has to rotate who walks with it like it's a custody arrangement.`,
+    (player, tName, pr) => `${player} tries to ride the camel. The camel tolerates this for 12 seconds, then bucks ${pr.obj} into a dune. The tribe applauds. The camel walks away.`,
+    (player, tName, pr) => `${player} bonds with the camel. ${pr.Sub} names it Geoff. Geoff seems to like ${pr.obj} back. Geoff also seems to hate everyone else, which is somehow worse.`,
+    (player, tName, pr) => `The camel sits down. Refuses to move. ${player} pleads. ${player} bargains. ${player} cries. The camel finally stands up after twelve agonizing minutes — and immediately sits back down.`,
+    (player, tName, pr) => `${player} feeds the camel a date. The camel takes ${pr.posAdj} entire hand briefly into its mouth, then releases ${pr.obj}, slimy. "I think we're friends now." ${pr.Sub} is bleeding slightly.`,
+  ],
+  goatDrama: [
+    (player, tName, pr) => `The goat headbutts ${player} for the third time. "WHY does it hate ME?" ${pr.Sub} shouts. The tribe has theories. None of them flattering.`,
+    (player, tName, pr) => `The goat eats ${player}'s map. Just chews it up. ${pr.Sub} watches in horror. "We were USING THAT." The goat burps.`,
+    (player, tName, pr) => `${player} tries to lead the goat with a rope. The goat decides this is a game. ${player} is now being dragged across the dunes. The tribe is laughing too hard to help.`,
+    (player, tName, pr) => `The goat falls asleep. Standing up. ${player} pokes it. Nothing. The tribe waits. Three minutes pass. The goat wakes up, bleats indignantly, and walks the wrong direction.`,
+    (player, tName, pr) => `${player} discovers the goat is shockingly affectionate. It nuzzles ${pr.posAdj} hand. It follows ${pr.obj} willingly. "Maybe goats are underrated." The goat then headbutts ${pr.obj} into a cactus.`,
+    (player, tName, pr) => `The goat eats ${player}'s shoelace. Then ${pr.posAdj} hat. Then ${pr.posAdj} sleeve. ${pr.Sub} is being slowly DECONSTRUCTED by this small, evil creature.`,
+  ],
+  stickDrama: [
+    (player, tName, pr) => `${player} accidentally swings the stick into ${pr.posAdj} own face. The tribe pauses. "...Are you okay?" "Yes." "Are you SURE?" "...I don't know."`,
+    (player, tName, pr) => `${player} tries to use the stick like a walking staff. It's the wrong height and ${pr.sub} stumbles every third step. The tribe pretends not to notice.`,
+    (player, tName, pr) => `The stick gets HOT in ${player}'s hand. ${pr.Sub} drops it. It's not glowing. It's not on fire. But it's HOT. ${pr.Sub} cautiously picks it back up. "...okay magic stick. Be cool."`,
+    (player, tName, pr) => `${player} talks to the stick. Out loud. "Which way, buddy?" The tribe stares. The stick does not respond. ${pr.Sub} keeps walking, undeterred.`,
+    (player, tName, pr) => `${player} insists on carrying the stick like a sword. "I'm pretending we're on a quest." The tribe sighs. ${pr.Sub} is correct, technically.`,
+    (player, tName, pr) => `${player} loses ${pr.posAdj} grip and the stick rolls down a dune. The whole tribe SCREAMS and chases it. They retrieve it, panting. "We are not LOSING the magic stick."`,
   ],
   desertMirage: [
     (player, pr) => `${player} stops dead. "I see water." ${pr.Sub} walks toward nothing. The tribe has to physically pull ${pr.obj} back. "It was RIGHT THERE."`,
@@ -464,8 +519,93 @@ const P2_SOCIAL = {
     (blessed, pr) => `The sun breaks through at the exact moment ${blessed} crests the dune. The light catches ${pr.obj} like a spotlight from heaven. Ra smiles on this one.`,
     (cursed, pr) => `The heat intensifies around ${cursed}. Specifically ${cursed}. The sun seems to follow ${pr.obj}. Ra is displeased with this mortal.`,
   ],
+  // Strategy & gameplay moments during the trek
+  voteWhisper: [
+    (a, b, target, apr) => `${a} drops back to walk beside ${b}. Quiet voice: "When we lose this... ${target}. Right?" ${b} considers. The dune walk gives them privacy nobody else gets.`,
+    (a, b, target, apr) => `"You thinking what I'm thinking?" ${a} murmurs to ${b}. "${target}." ${b} doesn't even nod — just keeps walking. The pact is sealed in heat-shimmer.`,
+    (a, b, target, apr) => `${a} matches ${b}'s pace at the back of the line. "If we go to tribal — ${target}. Lock it in now." ${b}'s answer is one word. "Done."`,
+    (a, b, target, apr) => `Two tribemates falling slightly behind. ${a} and ${b}. Their conversation is short. ${target}'s name comes up. Decision made. Nobody else hears.`,
+    (a, b, target, apr) => `${a} times the conversation perfectly — when the wind picks up and nobody can overhear. "${target} goes home first." ${b} squints at the horizon. "Yeah. Yeah they do."`,
+  ],
+  intelTrade: [
+    (a, b, apr) => `${a} catches ${b} alone for a moment. Information changes hands — what ${a} overheard at camp last night, what ${b} saw between two other tribemates. Currency in this game.`,
+    (a, b, apr) => `"I'll tell you something if you tell me something." ${a} keeps walking, eyes forward. ${b} considers, then accepts. Two pieces of intel cross the dunes.`,
+    (a, b, apr) => `${a} pulls ${b} aside under the pretext of checking a boot. Real reason: trading what they each know about who's plotting what. The desert is the best meeting room.`,
+    (a, b, apr) => `${b} slows down. ${a} catches up. They walk in step. By the next dune, both know things they didn't before. Information is the only resource that grows out here.`,
+  ],
+  secretPact: [
+    (a, b, apr) => `${a} extends a hand mid-stride. Not a handshake — a fist bump, casual, deniable. ${b} bumps back. The alliance is real. Witnessed only by sand.`,
+    (a, b, apr) => `"Final two." ${a} doesn't look at ${b} when ${apr.sub} says it. ${b} doesn't look back. But the answer is "Yeah." The desert just witnessed a pact.`,
+    (a, b, apr) => `${a} and ${b} fall behind on purpose. Just enough distance. "If we both make merge..." A promise is made. A real one. The kind that holds.`,
+    (a, b, apr) => `Walking behind everyone else, ${a} and ${b} form something the tribe doesn't see coming. A secret two-person bloc. The dunes hide everything.`,
+  ],
+  rivalryFlare: [
+    (a, b, apr) => `${a} steps on ${b}'s heel. Probably not on purpose. ${b} mutters something under ${apr.posAdj} breath. ${a} hears it. The rivalry just got a degree hotter.`,
+    (a, b, apr) => `"Maybe walk faster, ${b}." ${a} doesn't even look back when ${apr.sub} says it. ${b}'s jaw tightens. There will be a reckoning. Not today, but soon.`,
+    (a, b, apr) => `${a} and ${b} keep ending up next to each other. Neither wants this. Both pretend not to notice. The tension radiates more heat than the sun.`,
+    (a, b, apr) => `A sharp word from ${a}. A sharper one back from ${b}. The tribe pretends not to hear. The desert echoes the silence after.`,
+  ],
+  showmanceMoment: [
+    (a, b, apr, bpr) => `${a} and ${b} fall into rhythm together. ${apr.Sub} grabs ${bpr.posAdj} hand briefly when no one's looking. Just a squeeze. Just a moment. The dunes blur a little.`,
+    (a, b, apr, bpr) => `${a} carries ${b}'s pack for a stretch without being asked. ${bpr.Sub} doesn't argue. They walk closer than they need to. The tribe pretends not to see.`,
+    (a, b, apr, bpr) => `${a} pulls ${b} aside behind a dune. A quick kiss. A whispered promise. They rejoin the line like nothing happened. Everyone knows.`,
+    (a, b, apr, bpr) => `${b} stumbles. ${a} catches ${bpr.obj}. Their eyes meet for a half-second too long. Someone behind them coughs. They keep walking, smiling.`,
+    (a, b, apr, bpr) => `${a} shares ${apr.posAdj} water with ${b}. The whole canteen. The tribe notices. ${bpr.Sub} drinks slowly, watching ${apr.obj}. The desert just got cinematic.`,
+    (a, b, apr, bpr) => `${a} writes something in the sand with a stick. ${b} reads it. Smiles. Erases it with ${bpr.posAdj} foot before anyone else sees. The tribe walks on, oblivious.`,
+  ],
+  showmanceFriction: [
+    (a, b, apr, bpr) => `${a} snaps at ${b} over nothing — direction, water, pace. ${bpr.Sub} stops walking. "Are we doing this NOW?" The whole tribe pretends very hard not to listen.`,
+    (a, b, apr, bpr) => `${a} and ${b} aren't talking. The tribe notices because they NEVER stop talking. Something happened back at camp. The desert isn't fixing it.`,
+    (a, b, apr, bpr) => `"You're being weird." ${a} doesn't look at ${b}. "I'm being NORMAL." ${bpr.Sub} keeps walking. The showmance is having a desert.`,
+  ],
 };
 
+// ── DESERT ENCOUNTERS — random adventure beats during phase 2 ──
+const DESERT_ENCOUNTERS = {
+  sandstorm: [
+    (t) => `A wall of sand rolls toward ${t}. The horizon vanishes. The wind screams. They drop, hood up, eyes shut, and wait. When it passes, half their gear is buried and they're somehow facing the wrong way.`,
+    (t) => `The sky goes orange. A sandstorm hits ${t} like a freight train. They form a chain, hands locked, heads down. Three minutes of chaos. When it ends, everyone is still there. Barely.`,
+    (t) => `Sand fills every crevice ${t} owns. Mouth, ears, boots, soul. The storm is brief but brutal. Visibility was zero. Direction was a guess. They emerge dazed, gritty, and behind schedule.`,
+    (t) => `${t} sees the sandstorm coming. They huddle behind a dune. The wind howls overhead like a wounded animal. They survive, but the trail is gone — wiped clean by the wind.`,
+  ],
+  oasis: [
+    (t, finder, pr) => `${finder} spots palm trees. PALM TREES. ${pr.Sub} sprints. The tribe sprints. It's a real oasis — water, shade, dates ripe on the trees. They drink. They rest. They almost don't want to leave.`,
+    (t, finder, pr) => `${finder} hears birdsong. ${pr.Sub} follows it. Behind a dune: a small spring, surrounded by green. ${t} tops up canteens, splashes water on burned faces, and gains a second wind.`,
+    (t, finder, pr) => `An actual oasis. ${finder} laughs in disbelief. The tribe collapses by the water. Five minutes of paradise. Five minutes of believing they might actually win this.`,
+  ],
+  oasisTrap: [
+    (t, victim, pr) => `${t} reaches an "oasis." It's a mirage. The water is dust. The palms are heat-shimmer. ${victim} keeps walking into the empty space, refusing to believe it's not real, until the tribe physically restrains ${pr.obj}.`,
+    (t, victim, pr) => `What looks like water turns out to be a salt flat. ${victim} face-plants into it trying to drink. The tribe winces. ${pr.Sub} stands up with white crust on ${pr.posAdj} face, dignity gone.`,
+  ],
+  ruin: [
+    (t, scout, pr) => `${scout} spots stones poking through the sand. ${pr.Sub} brushes them off. A buried obelisk. Hieroglyphs glow faintly under ${pr.posAdj} hand. "I think... I think this was a marker. Pointing east." The tribe gains direction.`,
+    (t, scout, pr) => `${scout} stumbles into a sunken courtyard. Ancient. Ruined. There's a worn carving of the Nile on the wall, and a faded arrow pointing somewhere. ${t} follows it without hesitation.`,
+    (t, scout, pr) => `Half-buried temple steps. ${scout} climbs them. From the top, ${pr.sub} can see a green ribbon on the horizon — the Nile. "TRIBE. THIS WAY." Game-changer.`,
+  ],
+  scorpion: [
+    (t, victim, pr) => `${victim} steps on a scorpion. Or near one. The pinch comes anyway. ${pr.Sub} screams a sound that does not belong in this dimension. The tribe halts. Someone has antivenom in a kit nobody remembered packing. ${pr.Sub} survives. Mostly.`,
+    (t, victim, pr) => `A scorpion drops out of ${victim}'s collar mid-step. ${pr.Sub} discovers acrobatics ${pr.sub} never knew ${pr.sub} had. The scorpion is fine. ${victim} is changed forever.`,
+    (t, victim, pr) => `${victim} flips a rock. Bad idea. Scorpion. Strike. ${pr.Sub} hisses through gritted teeth. The tribe debates whether to suck out the venom (no) and settles for water and walking it off.`,
+  ],
+  nomad: [
+    (t, talker, pr) => `An old nomad on a camel passes ${t}. ${talker} flags ${pr.obj} down. There's broken-language haggling. The nomad gestures northeast. Hands over a waterskin. Vanishes. ${t} now has bonus water and a direction. Nobody asks questions.`,
+    (t, talker, pr) => `A robed figure appears out of nowhere. Nomad. ${talker} approaches respectfully. The nomad listens, smiles, and points at the dunes. "Three hills. Then water." Then ${pr.sub} keeps walking. Was that real? It doesn't matter — it was right.`,
+    (t, talker, pr) => `A trader with a goat-drawn cart greets ${t} cheerfully. ${talker} barters charm for information. The trader laughs, points, and offers a piece of dried meat. The tribe leaves with a tip and full stomachs.`,
+  ],
+  sandPit: [
+    (t, faller, hero, fpr, hpr) => `${faller} steps wrong and the dune just OPENS. ${fpr.Sub} disappears to ${fpr.posAdj} chest in seconds. ${hero} doesn't hesitate — drops ${hpr.posAdj} pack, grabs ${fpr.posAdj} hand, hauls. The tribe forms a chain. ${faller} comes out coughing sand. Bond forged.`,
+    (t, faller, hero, fpr, hpr) => `Quicksand. Real quicksand. ${faller} starts sinking and ${fpr.sub} doesn't believe it at first. ${hero} believes it. ${hpr.Sub} throws a rope, pulls hard, and saves ${fpr.posAdj} life. Maybe. Probably. Either way, ${faller} owes ${hero}.`,
+    (t, faller, hero, fpr, hpr) => `The ground gives way under ${faller}. ${hero} catches ${fpr.posAdj} arm at the last second. They both nearly go down. ${hpr.Sub} braces. The tribe pulls. Both come out. Nobody talks for a minute.`,
+  ],
+  vultures: [
+    (t) => `Vultures circle. Lazy, patient. ${t} pretends not to notice. The vultures notice. ${t} walks faster.`,
+    (t) => `A buzzard lands ten feet from ${t}, watching. Tilting its head. Waiting. The tribe collectively decides to walk faster.`,
+  ],
+  cobra: [
+    (t, charmer, pr) => `A cobra rises from a coiled basket-shape in the sand. Hood flared. ${charmer} freezes. The tribe freezes. ${pr.Sub} slowly, slowly backs away. The cobra watches them leave. They don't turn ${pr.posAdj} back on it for a full minute.`,
+    (t, charmer, pr) => `Snake. Big snake. Bigger than expected. ${charmer} performs the most cautious sidestep in human history. The tribe follows ${pr.posAdj} lead exactly. Heart rate: maximum.`,
+  ],
+};
 // ── PHASE 3 SOCIAL EVENTS ──
 const P3_SOCIAL = {
   boatTeamwork: [
@@ -649,7 +789,7 @@ const ROWING_TEXT = {
   bad: [
     (n, pr) => `${n}'s rowing is... counterproductive. ${pr.Sub} keeps catching crabs — wrong angle, wrong timing. The boat barely moves.`,
     (n, pr) => `${n} rows hard. Unfortunately, ${pr.sub} rows hard in slightly the wrong direction. The boat drifts sideways.`,
-    (n, pr) => `${n}'s arms give out mid-river. ${pr.Sub} slumps over the oar, gasping. The boat loses momentum.`,
+    (n, pr) => `${n}'s arms give out mid-river. ${pr.Sub} ${pr.sub === 'they' ? 'slump' : 'slumps'} over the oar, gasping. The boat loses momentum.`,
     (n, pr) => `${n} and the river are having a disagreement about which direction the boat should go. The river is winning.`,
     (n, pr) => `${n} drops the oar. Picks it up. Drops it again. The current pushes them backward during the fumble.`,
   ],
@@ -657,7 +797,7 @@ const ROWING_TEXT = {
 
 const CROC_TEXT = {
   attack: [
-    (n, pr) => `A croc surges from the murk and snaps at the boat near ${n}. Reeds splinter. "${pr.Sub} hit THE BOAT!"`,
+    (n, pr) => `A croc surges from the murk and snaps at the boat near ${n}. Reeds splinter. "IT HIT THE BOAT!"`,
     (n, pr) => `Crocodile — big one — comes straight at ${n}'s side of the boat. Jaws wide. The tribe screams.`,
     (n, pr) => `The water erupts next to ${n}. Scales, teeth, and bad intentions. The croc wants ${pr.obj} specifically.`,
     (n, pr) => `${n} sees the croc too late. It rams the boat from below, launching ${pr.obj} half out of the basket. HOLD ON.`,
@@ -733,6 +873,7 @@ const BAIL_TEXT = [
 // ══════════════════════════════════════════════════════════════
 
 export function simulateWalkLikeAnEgyptian(ep) {
+  _resetPickCache();
   const tribes = gs.tribes;
   if (!ep.campEvents) ep.campEvents = {};
   tribes.forEach(t => {
@@ -749,7 +890,7 @@ export function simulateWalkLikeAnEgyptian(ep) {
   const result = {
     tribes: {},
     phase1: { choices: [], overBeats: [], underBeats: [], mummifiedDog: null, socialEvents: [], deityJudgments: [] },
-    phase2: { leaders: {}, navBeats: [], scarabSwarm: [], socialEvents: [], deityJudgments: [], stickLost: false, stickDiscovery: null },
+    phase2: { leaders: {}, navBeats: [], scarabSwarm: [], socialEvents: [], deityJudgments: [], reactions: [], encounters: [], stickLost: false, stickDiscovery: null },
     phase3: { weaving: [], animalLoading: [], rowingBeats: [], crocAttacks: [], finalSprint: [], boatSunk: null, socialEvents: [], deityJudgments: [] },
     tribeFinishOrder: [],
     hostLines: {
@@ -1143,20 +1284,32 @@ export function simulateWalkLikeAnEgyptian(ep) {
 
   const rewardMap = {};
   p1Ranking.forEach((entry, i) => {
-    if (i === 0) rewardMap[entry.name] = 'camel';
-    else if (i === p1Ranking.length - 1) rewardMap[entry.name] = 'stick';
+    if (i === 0) rewardMap[entry.name] = 'stick';
+    else if (i === p1Ranking.length - 1) rewardMap[entry.name] = 'camel';
     else rewardMap[entry.name] = 'goat';
   });
-  // For 2-tribe games, last gets stick
   if (tribes.length === 2) {
-    rewardMap[p1Ranking[0].name] = 'camel';
-    rewardMap[p1Ranking[1].name] = 'stick';
+    rewardMap[p1Ranking[0].name] = 'stick';
+    rewardMap[p1Ranking[1].name] = 'camel';
   }
 
   tribes.forEach(t => {
     result.tribes[t.name].reward = rewardMap[t.name];
     const rText = pick(REWARD_TEXT[rewardMap[t.name]])(t.name);
     result.tribes[t.name].rewardText = rText;
+
+    // Tribe reaction — pick the loudest member to voice the reaction
+    const loudest = [...t.members].sort((a, b) => (pStats(b).boldness + pStats(b).social) - (pStats(a).boldness + pStats(a).social))[0];
+    const lpr = pronouns(loudest);
+    const reward = rewardMap[t.name];
+    const reactionPool = reward === 'stick' ? REWARD_TEXT.reactionStick : reward === 'goat' ? REWARD_TEXT.reactionGoat : REWARD_TEXT.reactionCamel;
+    result.phase2.reactions.push({
+      tribe: t.name,
+      reward,
+      voicedBy: loudest,
+      players: [loudest],
+      text: pick(reactionPool)(loudest, lpr, t.name),
+    });
   });
 
   // ══════════════════════════════════════════════════════════
@@ -1174,7 +1327,11 @@ export function simulateWalkLikeAnEgyptian(ep) {
     members.forEach(m => { perPlayerP2[m] = 0; });
 
     // Speed modifier from reward
-    const speedMod = reward === 'camel' ? 1.15 : reward === 'goat' ? 1.08 : 1.0;
+    // Speed modifier: stick = divining rod (slight edge), camel = shade (slight edge), goat = neutral.
+    // Spread is tight (1.06 vs 1.04 vs 1.0) so reward isn't the only factor that decides P2.
+    const speedMod = reward === 'stick' ? 1.06 : reward === 'camel' ? 1.04 : 1.0;
+    // Camel gives a small flat nav cushion (the tribe rests in shade, conserves energy).
+    if (reward === 'camel') navBonusPenalty += 2;
 
     // ── Leader Selection ──
     const strategicRanked = [...members].sort((a, b) => pStats(b).strategic - pStats(a).strategic);
@@ -1227,15 +1384,15 @@ export function simulateWalkLikeAnEgyptian(ep) {
 
       let beatResult;
       if (navRoll >= difficulty + 2) {
-        beatResult = { type: 'nav', tribe: tName, navigator, success: 'good', text: pick(NAV_TEXT.success)(navigator, navPr), score: 3 };
+        beatResult = { type: 'nav', tribe: tName, navigator, success: 'good', text: _pickUnique(NAV_TEXT.success, `nav-good-${navigator}`)(navigator, navPr), score: 3 };
         navBonusPenalty += 3;
         perPlayerP2[navigator] += 3;
       } else if (navRoll >= difficulty - 1) {
-        beatResult = { type: 'nav', tribe: tName, navigator, success: 'fail', text: pick(NAV_TEXT.fail)(navigator, navPr), score: -1 };
+        beatResult = { type: 'nav', tribe: tName, navigator, success: 'fail', text: _pickUnique(NAV_TEXT.fail, `nav-fail-${navigator}`)(navigator, navPr), score: -1 };
         navBonusPenalty -= 1;
         perPlayerP2[navigator] -= 1;
       } else {
-        beatResult = { type: 'nav', tribe: tName, navigator, success: 'lost', text: pick(NAV_TEXT.lost)(navigator, navPr), score: -3 };
+        beatResult = { type: 'nav', tribe: tName, navigator, success: 'lost', text: _pickUnique(NAV_TEXT.lost, `nav-lost-${navigator}`)(navigator, navPr), score: -3 };
         navBonusPenalty -= 3;
         perPlayerP2[navigator] -= 3;
         popDelta(navigator, -1);
@@ -1278,14 +1435,14 @@ export function simulateWalkLikeAnEgyptian(ep) {
         const discPr = pronouns(discoverer);
         const discText = pick(REWARD_TEXT.stickDiscovery)(discoverer, discPr);
         result.phase2.stickDiscovery = { player: discoverer, tribe: tName, text: discText };
-        navBonusPenalty += 6; // Divining rod auto-passes one nav beat equivalent
+        navBonusPenalty += 3; // Divining rod is roughly one good nav beat — not a free win
         perPlayerP2[discoverer] = (perPlayerP2[discoverer] || 0) + 4;
         popDelta(discoverer, 1);
 
         ep.campEvents[tName].post.push({
           type: 'stickDiscovery',
           players: [discoverer],
-          text: `${discoverer} discovered the stick was actually a divining rod and used it to navigate the desert. Turned a last-place reward into an advantage.`,
+          text: `${discoverer} discovered the stick was actually a sorcerer's divining rod and used it to navigate the desert. The winner's reward pays off.`,
           consequences: 'Navigation bonus for the tribe. +1 popularity.',
           badgeText: 'DIVINING ROD', badgeClass: 'badge-info',
         });
@@ -1297,44 +1454,60 @@ export function simulateWalkLikeAnEgyptian(ep) {
           const lostText = pick(REWARD_TEXT.stickLost)(tName, loser, loserPr);
           result.phase2.stickLost = true;
           result.phase2.stickLostEvent = { player: loser, tribe: tName, text: lostText };
-          navBonusPenalty -= 4; // lose most of the benefit
+          navBonusPenalty -= 2; // lose most of the benefit
         }
       }
     }
 
-    // ── Scarab Swarm (all tribes hit simultaneously) ──
+    // ── Scarab Swarm (2-3 featured players per tribe, all scored) ──
     const scarabResults = [];
     const cursedPlayer = result.phase1.mummifiedDog?.player;
 
-    members.forEach(name => {
+    // Score all members but only feature 2-3 in VP
+    const scarabRolls = members.map(name => {
       const s = pStats(name);
-      const pr = pronouns(name);
       const isCursed = name === cursedPlayer;
       const swarmRoll = s.endurance * 0.5 + s.mental * 0.3 + noise(2.5) - (isCursed ? 3 : 0);
       const passed = swarmRoll >= 4;
+      if (isCursed) { perPlayerP2[name] = (perPlayerP2[name] || 0) - 3; }
+      else if (passed) { perPlayerP2[name] = (perPlayerP2[name] || 0) + 2; }
+      else { perPlayerP2[name] = (perPlayerP2[name] || 0) - 1; }
+      return { name, passed, cursed: isCursed, roll: swarmRoll };
+    });
 
+    // Feature ONE highlight per tribe — prefer cursed player, else most dramatic outcome
+    const featured = new Set();
+    const cursedEntry = scarabRolls.find(r => r.cursed);
+    if (cursedEntry) {
+      featured.add(cursedEntry.name);
+    } else {
+      // Pick whichever is more extreme: worst fail or best pass
+      const worstFail = scarabRolls.filter(r => !r.passed).sort((a, b) => a.roll - b.roll)[0];
+      const bestPass = scarabRolls.filter(r => r.passed).sort((a, b) => b.roll - a.roll)[0];
+      const drama = !worstFail ? bestPass : !bestPass ? worstFail : (Math.abs(worstFail.roll) > Math.abs(bestPass.roll - 4) ? worstFail : bestPass);
+      if (drama) featured.add(drama.name);
+    }
+
+    for (const entry of scarabRolls.filter(r => featured.has(r.name))) {
+      const pr = pronouns(entry.name);
       let scarabBeat;
-      if (isCursed) {
-        scarabBeat = { name, tribe: tName, passed: false, cursed: true, text: pick(SCARAB_SWARM_TEXT.cursedExtra)(name, pr), score: -3 };
-        perPlayerP2[name] = (perPlayerP2[name] || 0) - 3;
-      } else if (passed) {
-        scarabBeat = { name, tribe: tName, passed: true, cursed: false, text: pick(SCARAB_SWARM_TEXT.pass)(name, pr), score: 2 };
-        perPlayerP2[name] = (perPlayerP2[name] || 0) + 2;
+      if (entry.cursed) {
+        scarabBeat = { name: entry.name, tribe: tName, passed: false, cursed: true, text: pick(SCARAB_SWARM_TEXT.cursedExtra)(entry.name, pr), score: -3 };
+      } else if (entry.passed) {
+        scarabBeat = { name: entry.name, tribe: tName, passed: true, cursed: false, text: pick(SCARAB_SWARM_TEXT.pass)(entry.name, pr), score: 2 };
       } else {
-        scarabBeat = { name, tribe: tName, passed: false, cursed: false, text: pick(SCARAB_SWARM_TEXT.fail)(name, pr), score: -1 };
-        perPlayerP2[name] = (perPlayerP2[name] || 0) - 1;
+        scarabBeat = { name: entry.name, tribe: tName, passed: false, cursed: false, text: pick(SCARAB_SWARM_TEXT.fail)(entry.name, pr), score: -1 };
       }
-
       scarabResults.push(scarabBeat);
       result.phase2.scarabSwarm.push(scarabBeat);
-    });
+    }
 
     // ── Scarab Calmer (one per tribe may try) ──
     const calmCandidates = members.filter(m => {
       const s = pStats(m);
       return s.social * 0.5 + s.boldness * 0.5 + noise(1) >= 5;
     });
-    if (calmCandidates.length > 0 && Math.random() < 0.4) {
+    if (calmCandidates.length > 0 && Math.random() < 0.2) {
       const calmer = pick(calmCandidates);
       const calmerPr = pronouns(calmer);
       const calmRoll = pStats(calmer).social * 0.5 + pStats(calmer).boldness * 0.5 + noise(2.5);
@@ -1383,7 +1556,7 @@ export function simulateWalkLikeAnEgyptian(ep) {
             const resistRoll = pStats(target).intuition * 0.5 + pStats(target).mental * 0.5 + noise(2.5);
             const success = seductionRoll > resistRoll;
 
-            result.phase2.socialEvents.push({ type: 'seduction', schemer, target, tribe: tName, success, text: sText });
+            result.phase2.socialEvents.push({ type: 'seduction', schemer, target, players: [schemer, target], tribe: tName, success, text: sText });
 
             if (success) {
               addBond(target, schemer, 0.4);
@@ -1413,7 +1586,7 @@ export function simulateWalkLikeAnEgyptian(ep) {
         const blameTarget = bondSums[0].name;
         const bpr = pronouns(blameTarget);
         const blameText = pick(SOCIAL_TEXT.blame)(blameTarget, tName, bpr);
-        result.phase2.socialEvents.push({ type: 'blame', target: blameTarget, tribe: tName, text: blameText });
+        result.phase2.socialEvents.push({ type: 'blame', target: blameTarget, players: [blameTarget], tribe: tName, text: blameText });
 
         gs._egyptHeat = { target: blameTarget, amount: 1.5, expiresEp: gs.episode + 2 };
         members.filter(m => m !== blameTarget).forEach(m => addBond(m, blameTarget, -0.3));
@@ -1457,7 +1630,8 @@ export function simulateWalkLikeAnEgyptian(ep) {
     if (true) {
       const animalPlayer = pick(members);
       const apr = pronouns(animalPlayer);
-      result.phase2.socialEvents.push({ type: 'animalDrama', players: [animalPlayer], tribe: tName, text: pick(P2_SOCIAL.animalDrama)(animalPlayer, tName, apr) });
+      const dramaPool = reward === 'camel' ? P2_SOCIAL.camelDrama : reward === 'goat' ? P2_SOCIAL.goatDrama : P2_SOCIAL.stickDrama;
+      result.phase2.socialEvents.push({ type: 'animalDrama', players: [animalPlayer], tribe: tName, reward, text: pick(dramaPool)(animalPlayer, tName, apr) });
     }
 
     // Desert Mirage (40% chance, low endurance player)
@@ -1483,6 +1657,190 @@ export function simulateWalkLikeAnEgyptian(ep) {
       });
       if (blessed) { popDelta(judgedPlayer, 1); perPlayerP2[judgedPlayer] = (perPlayerP2[judgedPlayer] || 0) + 2; }
       else { perPlayerP2[judgedPlayer] = (perPlayerP2[judgedPlayer] || 0) - 1; }
+    }
+
+    // ── Strategy & Gameplay Beats (1-2 per tribe) ──
+    if (members.length >= 2) {
+      const stratEvents = [];
+
+      // Vote Whisper — two strategic players plot a vote target
+      const strategists = members.filter(m => pStats(m).strategic >= 5).sort((a, b) => pStats(b).strategic - pStats(a).strategic);
+      if (strategists.length >= 2 && Math.random() < 0.55) {
+        const a = strategists[0];
+        const b = strategists[1];
+        const targetPool = members.filter(m => m !== a && m !== b)
+          .map(m => ({ name: m, score: getBond(a, m) + getBond(b, m) }))
+          .sort((x, y) => x.score - y.score);
+        if (targetPool.length) {
+          const target = targetPool[0].name;
+          const apr = pronouns(a);
+          stratEvents.push({ kind: 'voteWhisper', players: [a, b], target, text: pick(P2_SOCIAL.voteWhisper)(a, b, target, apr) });
+        }
+      }
+
+      // Intel Trade — two social players exchange information
+      const socials = members.filter(m => pStats(m).social >= 5);
+      if (socials.length >= 2 && Math.random() < 0.4) {
+        const shuffled = [...socials].sort(() => Math.random() - 0.5);
+        const a = shuffled[0], b = shuffled[1];
+        const apr = pronouns(a);
+        stratEvents.push({ kind: 'intelTrade', players: [a, b], text: pick(P2_SOCIAL.intelTrade)(a, b, apr) });
+        addBond(a, b, 0.3);
+      }
+
+      // Secret Pact — two loyal/strategic players form a hidden alliance
+      const pactCandidates = members.filter(m => pStats(m).loyalty >= 5 && pStats(m).strategic >= 5);
+      if (pactCandidates.length >= 2 && Math.random() < 0.35) {
+        const shuffled = [...pactCandidates].sort(() => Math.random() - 0.5);
+        const a = shuffled[0], b = shuffled[1];
+        const apr = pronouns(a);
+        stratEvents.push({ kind: 'secretPact', players: [a, b], text: pick(P2_SOCIAL.secretPact)(a, b, apr) });
+        addBond(a, b, 0.6);
+        perPlayerP2[a] = (perPlayerP2[a] || 0) + 1;
+        perPlayerP2[b] = (perPlayerP2[b] || 0) + 1;
+      }
+
+      // Rivalry Flare — two players with low bond clash
+      if (members.length >= 3 && Math.random() < 0.45) {
+        let worstPair = null, worstBond = 99;
+        for (let i = 0; i < members.length; i++) {
+          for (let j = i + 1; j < members.length; j++) {
+            const b = getBond(members[i], members[j]);
+            if (b < worstBond) { worstBond = b; worstPair = [members[i], members[j]]; }
+          }
+        }
+        if (worstPair && worstBond <= 0) {
+          const [a, b] = worstPair;
+          const apr = pronouns(a);
+          stratEvents.push({ kind: 'rivalryFlare', players: [a, b], text: pick(P2_SOCIAL.rivalryFlare)(a, b, apr) });
+          addBond(a, b, -0.4);
+        }
+      }
+
+      // Cap at 2 strategy beats per tribe to keep things tight
+      if (stratEvents.length > 2) {
+        stratEvents.sort(() => Math.random() - 0.5);
+        stratEvents.length = 2;
+      }
+      stratEvents.forEach(ev => {
+        result.phase2.socialEvents.push({ type: ev.kind, players: ev.players, target: ev.target, tribe: tName, text: ev.text });
+      });
+
+      // Vote whisper has gameplay consequence: heat on the target
+      stratEvents.forEach(ev => {
+        if (ev.kind === 'voteWhisper' && ev.target) {
+          gs._egyptHeat = { target: ev.target, amount: 1.5, expiresEp: gs.episode + 2 };
+          ep.campEvents[tName].post.push({
+            type: 'voteWhisperEgypt',
+            players: [...ev.players, ev.target],
+            text: `${ev.players[0]} and ${ev.players[1]} agreed during the desert trek to target ${ev.target} at the next tribal.`,
+            consequences: `Heat +1.5 on ${ev.target} (2 episodes). Bond +0.4 between ${ev.players[0]} and ${ev.players[1]}.`,
+            badgeText: 'DESERT PACT', badgeClass: 'badge-warning',
+          });
+          addBond(ev.players[0], ev.players[1], 0.4);
+        }
+      });
+    }
+
+    // ── Showmance Moment (if any active showmance has both members in this tribe) ──
+    const tribeShowmances = (gs.showmances || []).filter(sh =>
+      sh.phase !== 'broken-up' &&
+      sh.players.length === 2 &&
+      members.includes(sh.players[0]) &&
+      members.includes(sh.players[1])
+    );
+    if (tribeShowmances.length && Math.random() < 0.7) {
+      const sh = pick(tribeShowmances);
+      const [a, b] = sh.players;
+      const apr = pronouns(a);
+      const bpr = pronouns(b);
+      const friction = sh.phase === 'rocky' || (getBond(a, b) < 3 && Math.random() < 0.4);
+      const pool = friction ? P2_SOCIAL.showmanceFriction : P2_SOCIAL.showmanceMoment;
+      result.phase2.socialEvents.push({
+        type: friction ? 'showmanceFriction' : 'showmanceMoment',
+        players: [a, b], tribe: tName,
+        text: pick(pool)(a, b, apr, bpr),
+      });
+      if (friction) addBond(a, b, -0.3);
+      else addBond(a, b, 0.4);
+    }
+
+    // ── Desert Encounters (1-2 random adventures per tribe) ──
+    const encounterPool = ['sandstorm', 'oasis', 'oasisTrap', 'ruin', 'scorpion', 'nomad', 'sandPit', 'vultures', 'cobra'];
+    const numEncounters = Math.random() < 0.6 ? 2 : 1;
+    const usedEnc = [];
+    for (let e = 0; e < numEncounters; e++) {
+      const avail = encounterPool.filter(t => !usedEnc.includes(t));
+      if (!avail.length) break;
+      const eType = pick(avail);
+      usedEnc.push(eType);
+
+      if (eType === 'sandstorm') {
+        const text = pick(DESERT_ENCOUNTERS.sandstorm)(tName);
+        result.phase2.encounters.push({ type: 'sandstorm', tribe: tName, players: [...members].slice(0, 4), text, scope: 'tribe' });
+        navBonusPenalty -= 2;
+        members.forEach(m => { perPlayerP2[m] = (perPlayerP2[m] || 0) - 1; });
+      } else if (eType === 'oasis') {
+        const finder = members.sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
+        const fpr = pronouns(finder);
+        const text = pick(DESERT_ENCOUNTERS.oasis)(tName, finder, fpr);
+        result.phase2.encounters.push({ type: 'oasis', tribe: tName, players: [finder], text, scope: 'tribe', good: true });
+        navBonusPenalty += 3;
+        members.forEach(m => { perPlayerP2[m] = (perPlayerP2[m] || 0) + 1; });
+        perPlayerP2[finder] = (perPlayerP2[finder] || 0) + 1;
+        popDelta(finder, 1);
+      } else if (eType === 'oasisTrap') {
+        const victim = members.sort((a, b) => pStats(a).mental - pStats(b).mental)[0];
+        const vpr = pronouns(victim);
+        const text = pick(DESERT_ENCOUNTERS.oasisTrap)(tName, victim, vpr);
+        result.phase2.encounters.push({ type: 'oasisTrap', tribe: tName, players: [victim], text });
+        perPlayerP2[victim] = (perPlayerP2[victim] || 0) - 1;
+      } else if (eType === 'ruin') {
+        const scout = members.sort((a, b) => (pStats(b).intuition + pStats(b).mental) - (pStats(a).intuition + pStats(a).mental))[0];
+        const spr = pronouns(scout);
+        const text = pick(DESERT_ENCOUNTERS.ruin)(tName, scout, spr);
+        result.phase2.encounters.push({ type: 'ruin', tribe: tName, players: [scout], text, good: true });
+        navBonusPenalty += 4;
+        perPlayerP2[scout] = (perPlayerP2[scout] || 0) + 3;
+        popDelta(scout, 1);
+      } else if (eType === 'scorpion') {
+        const victim = pick(members);
+        const vpr = pronouns(victim);
+        const text = pick(DESERT_ENCOUNTERS.scorpion)(tName, victim, vpr);
+        result.phase2.encounters.push({ type: 'scorpion', tribe: tName, players: [victim], text });
+        perPlayerP2[victim] = (perPlayerP2[victim] || 0) - 2;
+        navBonusPenalty -= 1;
+      } else if (eType === 'nomad') {
+        const talker = members.sort((a, b) => pStats(b).social - pStats(a).social)[0];
+        const tpr = pronouns(talker);
+        const text = pick(DESERT_ENCOUNTERS.nomad)(tName, talker, tpr);
+        result.phase2.encounters.push({ type: 'nomad', tribe: tName, players: [talker], text, good: true });
+        navBonusPenalty += 3;
+        perPlayerP2[talker] = (perPlayerP2[talker] || 0) + 2;
+        popDelta(talker, 1);
+      } else if (eType === 'sandPit') {
+        if (members.length >= 2) {
+          const faller = members.sort((a, b) => pStats(a).boldness - pStats(b).boldness)[0];
+          const heroPool = members.filter(m => m !== faller);
+          const hero = heroPool.sort((a, b) => (pStats(b).strength + pStats(b).loyalty) - (pStats(a).strength + pStats(a).loyalty))[0];
+          const fpr = pronouns(faller);
+          const hpr = pronouns(hero);
+          const text = pick(DESERT_ENCOUNTERS.sandPit)(tName, faller, hero, fpr, hpr);
+          result.phase2.encounters.push({ type: 'sandPit', tribe: tName, players: [faller, hero], text });
+          addBond(faller, hero, 0.6);
+          perPlayerP2[hero] = (perPlayerP2[hero] || 0) + 2;
+          popDelta(hero, 1);
+        }
+      } else if (eType === 'vultures') {
+        const text = pick(DESERT_ENCOUNTERS.vultures)(tName);
+        result.phase2.encounters.push({ type: 'vultures', tribe: tName, players: members.slice(0, 3), text, scope: 'tribe' });
+      } else if (eType === 'cobra') {
+        const charmer = members.sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
+        const cpr = pronouns(charmer);
+        const text = pick(DESERT_ENCOUNTERS.cobra)(tName, charmer, cpr);
+        result.phase2.encounters.push({ type: 'cobra', tribe: tName, players: [charmer], text });
+        perPlayerP2[charmer] = (perPlayerP2[charmer] || 0) + 1;
+      }
     }
 
     // ── Tribe P2 total ──
@@ -1511,30 +1869,32 @@ export function simulateWalkLikeAnEgyptian(ep) {
     let boatDamage = 0;
 
     // ── Beat 1: Basket Weaving ──
+    // Score everyone, but only show 1-2 highlights per tribe (best + worst, or just one)
     let weavingProdigy = null;
     const weavingResults = [];
-
-    members.forEach(name => {
+    const weaveScored = members.map(name => {
       const s = pStats(name);
       const pr = pronouns(name);
       const weaveScore = s.mental * 0.5 + s.social * 0.5 + noise(2.5);
+      let tier;
+      if (weaveScore >= 8) { tier = 'good'; boatQuality += 3; perPlayerP3[name] += 3; }
+      else if (weaveScore <= 3) { tier = 'bad'; boatQuality += 0.5; perPlayerP3[name] += 0.5; }
+      else { tier = 'mid'; boatQuality += 1.5; perPlayerP3[name] += 1.5; }
+      return { name, pr, weaveScore, tier };
+    });
 
-      let weaveTier, weaveText;
-      if (weaveScore >= 8) {
-        weaveTier = 'good'; weaveText = pick(WEAVING_TEXT.good)(name, pr);
-        boatQuality += 3;
-        perPlayerP3[name] += 3;
-      } else if (weaveScore <= 3) {
-        weaveTier = 'bad'; weaveText = pick(WEAVING_TEXT.bad)(name, pr);
-        boatQuality += 0.5;
-        perPlayerP3[name] += 0.5;
-      } else {
-        weaveTier = 'mid'; weaveText = pick(WEAVING_TEXT.good)(name, pr);
-        boatQuality += 1.5;
-        perPlayerP3[name] += 1.5;
-      }
+    // Pick best and worst as highlights
+    const sortedWeave = [...weaveScored].sort((a, b) => b.weaveScore - a.weaveScore);
+    const featuredWeave = new Set();
+    if (sortedWeave[0]) featuredWeave.add(sortedWeave[0].name);
+    const worstWeave = sortedWeave[sortedWeave.length - 1];
+    if (worstWeave && worstWeave.weaveScore <= 3) featuredWeave.add(worstWeave.name);
 
-      weavingResults.push({ name, tribe: tName, tier: weaveTier, score: weaveScore, text: weaveText });
+    weaveScored.filter(w => featuredWeave.has(w.name)).forEach(w => {
+      const weaveText = w.tier === 'bad'
+        ? _pickUnique(WEAVING_TEXT.bad, `weave-bad-${w.name}`)(w.name, w.pr)
+        : _pickUnique(WEAVING_TEXT.good, `weave-good-${w.name}`)(w.name, w.pr);
+      weavingResults.push({ name: w.name, tribe: tName, tier: w.tier, score: w.weaveScore, text: weaveText });
     });
 
     // Find prodigy (highest mental on tribe)
@@ -1591,16 +1951,17 @@ export function simulateWalkLikeAnEgyptian(ep) {
         }
       }
     } else if (reward === 'goat') {
-      const goatText = pick(ANIMAL_LOAD_TEXT.goat)(pick(members), pronouns(pick(members)));
-      loadResults.push({ type: 'goatLoad', tribe: tName, text: goatText });
+      const goatHandler = pick(members);
+      const goatText = pick(ANIMAL_LOAD_TEXT.goat)(goatHandler, pronouns(goatHandler));
+      loadResults.push({ type: 'goatLoad', name: goatHandler, players: [goatHandler], tribe: tName, text: goatText });
       // Goat panics on water — minor ongoing penalty handled in rowing
     } else {
-      // Stick — instant load
+      // Stick — instant load. Modest time advantage, NOT a runaway lead.
       if (!result.phase2.stickLost) {
         const stickText = pick(ANIMAL_LOAD_TEXT.stickInstant)(tName);
         loadResults.push({ type: 'stickLoad', tribe: tName, text: stickText, instant: true });
-        // Massive time advantage
-        members.forEach(m => { perPlayerP3[m] = (perPlayerP3[m] || 0) + 2; });
+        members.forEach(m => { perPlayerP3[m] = (perPlayerP3[m] || 0) + 0.5; });
+        boatQuality += 1; // Slight head start on rowing without animal-loading time lost
       } else {
         loadResults.push({ type: 'stickLost', tribe: tName, text: `${tName} lost the stick in the desert. Nothing to load — but nothing to help, either.` });
       }
@@ -1609,62 +1970,72 @@ export function simulateWalkLikeAnEgyptian(ep) {
     result.phase3.animalLoading.push(...loadResults);
 
     // ── Beat 3: Rowing & Croc Gauntlet ──
-    const numRowBeats = Math.random() < 0.3 ? 4 : 3;
+    const numRowBeats = 3;
     const boatQualityMod = boatQuality * 0.3; // Better boat = easier rowing
-    const goatPanicPenalty = reward === 'goat' ? -1.5 : 0;
+    // Goat panic is a flavor problem, not a major handicap (camel is the real boat penalty).
+    const goatPanicPenalty = reward === 'goat' ? -0.4 : 0;
+    // Camel is HARD to keep balanced in a reed boat — cumulative drag on the rowing.
+    const camelDragPenalty = reward === 'camel' ? -0.8 : 0;
     const cursedPlayer = result.phase1.mummifiedDog?.player;
+    const recentCrocTargets = []; // last 2 targets — avoid hitting same player back-to-back
 
     for (let beat = 0; beat < numRowBeats; beat++) {
-      // Tribe rowing score
+      // Score every member but only feature 1-2 highlights per beat (best + worst)
       const rowResults = [];
       let beatRowScore = 0;
-
-      members.forEach(name => {
+      const rowScored = members.map(name => {
         const s = pStats(name);
         const pr = pronouns(name);
-        const rowRoll = s.physical * 0.5 + s.endurance * 0.5 + noise(2.5) + boatQualityMod * 0.1 + goatPanicPenalty * 0.2;
+        const rowRoll = s.physical * 0.5 + s.endurance * 0.5 + noise(2.5) + boatQualityMod * 0.1 + goatPanicPenalty * 0.2 + camelDragPenalty * 0.2;
+        if (rowRoll >= 6) { perPlayerP3[name] = (perPlayerP3[name] || 0) + 2; beatRowScore += 2; }
+        else { perPlayerP3[name] = (perPlayerP3[name] || 0) - 0.5; beatRowScore -= 0.5; }
+        return { name, pr, rowRoll, good: rowRoll >= 6 };
+      });
 
-        let rowText;
-        if (rowRoll >= 6) {
-          rowText = pick(ROWING_TEXT.good)(name, pr);
-          perPlayerP3[name] = (perPlayerP3[name] || 0) + 2;
-          beatRowScore += 2;
-        } else {
-          rowText = pick(ROWING_TEXT.bad)(name, pr);
-          perPlayerP3[name] = (perPlayerP3[name] || 0) - 0.5;
-          beatRowScore -= 0.5;
-        }
+      const sortedRow = [...rowScored].sort((a, b) => b.rowRoll - a.rowRoll);
+      const featuredRow = new Set();
+      if (sortedRow[0]) featuredRow.add(sortedRow[0].name);
+      const worstRow = sortedRow[sortedRow.length - 1];
+      if (worstRow && !worstRow.good) featuredRow.add(worstRow.name);
 
-        rowResults.push({ name, tribe: tName, beat, score: rowRoll, text: rowText });
+      rowScored.filter(r => featuredRow.has(r.name)).forEach(r => {
+        const rowText = r.good
+          ? _pickUnique(ROWING_TEXT.good, `row-good-${r.name}`)(r.name, r.pr)
+          : _pickUnique(ROWING_TEXT.bad, `row-bad-${r.name}`)(r.name, r.pr);
+        rowResults.push({ name: r.name, tribe: tName, beat, score: r.rowRoll, text: rowText });
       });
 
       result.phase3.rowingBeats.push(...rowResults);
 
-      // ── Croc Attacks (1-2 per beat) ──
-      const numCrocs = Math.random() < 0.4 ? 2 : 1;
+      // ── Croc Attacks (1 per beat, occasionally 2) ──
+      const numCrocs = Math.random() < 0.25 ? 2 : 1;
       for (let c = 0; c < numCrocs; c++) {
-        // Target priority: cursed → lowest physical → random
+        // Pick target avoiding recent victims
+        const eligibleTargets = members.filter(m => !recentCrocTargets.includes(m));
+        const targetPool = eligibleTargets.length > 0 ? eligibleTargets : members;
         let target;
-        if (cursedPlayer && tribe.members.includes(cursedPlayer) && Math.random() < 0.5) {
+        if (cursedPlayer && targetPool.includes(cursedPlayer) && Math.random() < 0.4) {
           target = cursedPlayer;
         } else {
-          const physSorted = [...members].sort((a, b) => pStats(a).physical - pStats(b).physical);
-          target = Math.random() < 0.4 ? physSorted[0] : pick(members);
+          const physSorted = [...targetPool].sort((a, b) => pStats(a).physical - pStats(b).physical);
+          target = Math.random() < 0.4 ? physSorted[0] : pick(targetPool);
         }
+        recentCrocTargets.push(target);
+        if (recentCrocTargets.length > 2) recentCrocTargets.shift();
 
         const tpr = pronouns(target);
-        const attackText = pick(CROC_TEXT.attack)(target, tpr);
+        const attackText = _pickUnique(CROC_TEXT.attack, `croc-atk-${target}`)(target, tpr);
 
         // Defense check
         const defRoll = pStats(target).physical * 0.5 + pStats(target).boldness * 0.5 + noise(2.5);
         let defResult;
 
         if (defRoll >= 5) {
-          const defText = pick(CROC_TEXT.defenseSuccess)(target, tpr);
+          const defText = _pickUnique(CROC_TEXT.defenseSuccess, `croc-def-${target}`)(target, tpr);
           defResult = { target, tribe: tName, beat, defended: true, attackText, defenseText: defText };
           perPlayerP3[target] = (perPlayerP3[target] || 0) + 2;
         } else {
-          const defText = pick(CROC_TEXT.defenseFail)(target, tpr);
+          const defText = _pickUnique(CROC_TEXT.defenseFail, `croc-fail-${target}`)(target, tpr);
           defResult = { target, tribe: tName, beat, defended: false, attackText, defenseText: defText };
           boatDamage += 2;
           perPlayerP3[target] = (perPlayerP3[target] || 0) - 1;
@@ -1799,32 +2170,34 @@ export function simulateWalkLikeAnEgyptian(ep) {
     // ── Beat 4: Final Sprint ──
     const sinkThreshold = boatQuality * 1.5;
     const willSink = boatDamage > sinkThreshold;
+    // Anchor = strongest rower, used for chip + narrative focus
+    const anchor = [...members].sort((a, b) => (pStats(b).physical + pStats(b).endurance) - (pStats(a).physical + pStats(a).endurance))[0];
 
     let sprintResult;
     if (willSink) {
-      sprintResult = { tribe: tName, sunk: true, text: pick(FINAL_SPRINT_TEXT.sinking)(tName), penalty: -8 };
+      sprintResult = { tribe: tName, sunk: true, players: [anchor], text: _pickUnique(FINAL_SPRINT_TEXT.sinking, `sprint-sink-${tName}`)(tName), penalty: -8 };
       result.phase3.boatSunk = tName;
-      // Bail attempts
-      members.forEach(name => {
+      // Bail attempts — only top 2 endurance bailers feature in VP
+      const bailers = [...members].sort((a, b) => pStats(b).endurance - pStats(a).endurance).slice(0, 2);
+      bailers.forEach(name => {
         const s = pStats(name);
         const pr = pronouns(name);
         const bailRoll = s.endurance * 0.7 + noise(2);
-        if (bailRoll >= 5) {
-          const bailText = pick(BAIL_TEXT)(name, pr);
+        if (bailRoll >= 4) {
+          const bailText = _pickUnique(BAIL_TEXT, `bail-${name}`)(name, pr);
           sprintResult.bailAttempts = sprintResult.bailAttempts || [];
           sprintResult.bailAttempts.push({ name, text: bailText });
           perPlayerP3[name] = (perPlayerP3[name] || 0) + 1;
         }
       });
     } else if (boatDamage > sinkThreshold * 0.5) {
-      sprintResult = { tribe: tName, sunk: false, damaged: true, text: pick(FINAL_SPRINT_TEXT.bad)(tName), penalty: -3 };
-      // Bailing needed
+      sprintResult = { tribe: tName, sunk: false, damaged: true, players: [anchor], text: _pickUnique(FINAL_SPRINT_TEXT.bad, `sprint-bad-${tName}`)(tName), penalty: -3 };
       const bailer = pick(members);
       const bailerPr = pronouns(bailer);
-      sprintResult.bailAttempts = [{ name: bailer, text: pick(BAIL_TEXT)(bailer, bailerPr) }];
+      sprintResult.bailAttempts = [{ name: bailer, text: _pickUnique(BAIL_TEXT, `bail-${bailer}`)(bailer, bailerPr) }];
       perPlayerP3[bailer] = (perPlayerP3[bailer] || 0) + 1;
     } else {
-      sprintResult = { tribe: tName, sunk: false, damaged: false, text: pick(FINAL_SPRINT_TEXT.good)(tName), penalty: 0 };
+      sprintResult = { tribe: tName, sunk: false, damaged: false, players: [anchor], text: _pickUnique(FINAL_SPRINT_TEXT.good, `sprint-good-${tName}`)(tName), penalty: 0 };
     }
 
     result.phase3.finalSprint.push(sprintResult);
@@ -2090,7 +2463,7 @@ const COMM_CHATTER = {
     '"We\'ve lost visual on Team Charlie. Last heading was southwest."',
     '"Scarab mating swarm detected bearing 270. All teams brace."',
     '"Temperature is now 48 degrees. That\'s air temp, not sand."',
-    '"The stick team has veered off-course again. Classic."',
+    '"The camel team has veered off-course again. Classic."',
     '"Mirage confirmed at grid reference 7-7. That\'s not the oasis."',
     '"Goat team is maintaining formation. Barely."',
     '"Camel refused to move for four minutes. Situation resolved with dates."',
@@ -2154,7 +2527,7 @@ function _playerChips(names, tribeName) {
   const tc = tribeName ? tribeColor(tribeName) : 'var(--eg-muted)';
   return `<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px">${names.map(n => {
     const sl = slug(n);
-    return `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px 2px 2px;border-radius:14px;background:rgba(0,0,0,0.15);border:1px solid ${tc}44;font-size:0.78rem;font-family:Cormorant Garamond,serif;color:var(--eg-text)">
+    return `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px 2px 2px;border-radius:14px;background:rgba(0,0,0,0.15);border:1px solid ${tc}44;font-size:0.78rem;font-family:Cormorant Garamond,serif;color:inherit">
       <img src="assets/avatars/${sl}.png" alt="${n}" style="width:20px;height:20px;border-radius:50%;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">${n}</span>`;
   }).join('')}</div>`;
 }
@@ -3350,8 +3723,8 @@ function _sidebarDesert(data) {
   Object.entries(data.tribes).forEach(([tName, tData]) => {
     const reward = tData.reward || 'stick';
     const rewardIcon = reward === 'camel' ? _icon('camel') : reward === 'goat' ? _icon('camel') : _icon('stick');
-    const tagCls = reward === 'camel' ? 'eg-t-gold' : reward === 'goat' ? 'eg-t-orange' : 'eg-t-grey';
-    const borderColor = reward === 'camel' ? 'var(--eg-pharaoh-gold)' : reward === 'goat' ? 'var(--eg-terra)' : 'rgba(138,122,90,0.3)';
+    const tagCls = reward === 'stick' ? 'eg-t-gold' : reward === 'goat' ? 'eg-t-orange' : 'eg-t-grey';
+    const borderColor = reward === 'stick' ? 'var(--eg-pharaoh-gold)' : reward === 'goat' ? 'var(--eg-terra)' : 'rgba(138,122,90,0.3)';
 
     h += `<div class="eg-sb-section" style="border-left:2px solid ${borderColor};padding-left:8px">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
@@ -3737,10 +4110,12 @@ export function rpBuildEgyptDesert(ep) {
 
   const allSteps = [];
   allSteps.push({ type: 'reward', text: '' });
+  (p2.reactions || []).forEach(rx => allSteps.push({ type: 'reaction', data: rx }));
   Object.entries(p2.leaders || {}).forEach(([tName, leader]) => {
     allSteps.push({ type: 'leader', tribe: tName, data: leader });
   });
   (p2.navBeats || []).forEach(nb => allSteps.push({ type: 'nav', data: nb }));
+  (p2.encounters || []).forEach(en => allSteps.push({ type: 'encounter', data: en }));
   (p2.scarabSwarm || []).forEach(sw => allSteps.push({ type: 'scarab', data: sw }));
   (p2.socialEvents || []).forEach(se => allSteps.push({ type: 'social', data: se }));
   (p2.deityJudgments || []).forEach(dj => allSteps.push({ type: 'deity', data: dj }));
@@ -3754,7 +4129,7 @@ export function rpBuildEgyptDesert(ep) {
   const tribeEntries = Object.entries(data.tribes);
   const rewardSummary = tribeEntries.map(([tName, tData]) => {
     const r = tData.reward || 'stick';
-    const color = r === 'camel' ? 'var(--eg-pharaoh-gold)' : r === 'goat' ? 'var(--eg-terra)' : 'var(--eg-muted)';
+    const color = r === 'stick' ? 'var(--eg-pharaoh-gold)' : r === 'goat' ? 'var(--eg-terra)' : 'var(--eg-muted)';
     return `<span style="font-family:Metamorphous,cursive;font-size:0.7rem;letter-spacing:1px;color:${color};padding:2px 8px;border:1px solid ${color === 'var(--eg-muted)' ? 'rgba(138,122,90,0.2)' : color};border-radius:2px;opacity:0.7;background:rgba(0,0,0,0.05)">${tName}: ${r.toUpperCase()}</span>`;
   }).join(' ');
 
@@ -3776,7 +4151,7 @@ export function rpBuildEgyptDesert(ep) {
       let rewardCards = tribeEntries.map(([tName, tData]) => {
         const r = tData.reward || 'stick';
         const icon = _icon(r === 'stick' ? 'stick' : 'camel');
-        const tagCls = r === 'camel' ? 'eg-t-gold' : r === 'goat' ? 'eg-t-orange' : 'eg-t-grey';
+        const tagCls = r === 'stick' ? 'eg-t-gold' : r === 'goat' ? 'eg-t-orange' : 'eg-t-grey';
         return `<div style="display:flex;align-items:center;gap:8px;margin:5px 0">
           ${icon}<span style="font-family:Metamorphous,cursive;font-size:0.88rem;font-weight:700;letter-spacing:1px">${tName}</span>
           <span class="eg-sb-tag ${tagCls}" style="margin-left:auto">${r.toUpperCase()}</span>
@@ -3786,8 +4161,11 @@ export function rpBuildEgyptDesert(ep) {
     } else if (step.type === 'leader') {
       const l = step.data;
       const ltc = tribeColor(step.tribe);
-      const leaderNames = [l.navigator];
-      if (l.beat?.challenger) leaderNames.push(l.beat.challenger);
+      // For challenge beats, show original navigator + challenger (l.beat.navigator captured pre-swap).
+      // For uncontested selections, just the navigator.
+      const leaderNames = l.beat?.challenger
+        ? [l.beat.navigator, l.beat.challenger]
+        : [l.navigator];
       cardContent = `<div class="eg-card" style="border-left:3px solid ${ltc}">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
           ${_icon('navigate')}
@@ -3801,10 +4179,12 @@ export function rpBuildEgyptDesert(ep) {
       navCount++;
       const nb = step.data;
       const ntc = tribeColor(nb.tribe);
-      const icon = nb.success ? _icon('navigate') : _icon('sand');
-      const statusTag = nb.success
-        ? '<span style="font-family:Metamorphous,cursive;font-size:0.65rem;letter-spacing:1px;color:var(--eg-success);opacity:0.6">ON COURSE</span>'
-        : '<span style="font-family:Metamorphous,cursive;font-size:0.65rem;letter-spacing:1px;color:var(--eg-danger);opacity:0.6">OFF COURSE</span>';
+      const isGood = nb.success === 'good';
+      const isLost = nb.success === 'lost';
+      const icon = isGood ? _icon('navigate') : _icon('sand');
+      const statusLabel = isGood ? 'ON COURSE' : isLost ? 'LOST' : 'OFF COURSE';
+      const statusColor = isGood ? 'var(--eg-success)' : 'var(--eg-danger)';
+      const statusTag = `<span style="font-family:Metamorphous,cursive;font-size:0.65rem;letter-spacing:1px;color:${statusColor};opacity:0.6">${statusLabel}</span>`;
       cardContent = `<div class="eg-card" style="border-left:3px solid ${ntc}">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">${icon}${statusTag}${_tribeBadge(nb.tribe)}</div>
         ${_playerChips([nb.navigator], nb.tribe)}
@@ -3824,7 +4204,19 @@ export function rpBuildEgyptDesert(ep) {
       </div>`;
     } else if (step.type === 'social') {
       const se = step.data;
-      const sIcon = se.type === 'seduction' ? _icon('eye') : se.type === 'alliance' ? _icon('bond') : se.type === 'waterShare' ? _icon('heart') : se.type === 'waterHoard' ? _icon('villain') : se.type === 'animalDrama' ? _icon('camel') : se.type === 'desertMirage' ? _icon('eye') : _icon('alert');
+      const sIcon = se.type === 'seduction' ? _icon('eye')
+        : se.type === 'alliance' ? _icon('bond')
+        : se.type === 'waterShare' ? _icon('heart')
+        : se.type === 'waterHoard' ? _icon('villain')
+        : se.type === 'animalDrama' ? _icon('camel')
+        : se.type === 'desertMirage' ? _icon('eye')
+        : se.type === 'voteWhisper' ? _icon('villain')
+        : se.type === 'intelTrade' ? _icon('eye')
+        : se.type === 'secretPact' ? _icon('bond')
+        : se.type === 'rivalryFlare' ? _icon('alert')
+        : se.type === 'showmanceMoment' ? _icon('heart')
+        : se.type === 'showmanceFriction' ? _icon('heart')
+        : _icon('alert');
       const sLabel = se.type.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
       const setc = se.tribe ? tribeColor(se.tribe) : '';
       cardContent = `<div class="eg-card eg-social" ${se.tribe ? `style="border-left:3px solid ${setc}"` : ''}>
@@ -3845,6 +4237,46 @@ export function rpBuildEgyptDesert(ep) {
           <div class="eg-deity-title">${dj.blessed ? 'Grants Blessing' : 'Passes Judgment'}</div>
         </div>
         <div style="margin-top:6px;font-size:0.95rem;font-style:italic;line-height:1.5">${dj.text}</div>
+      </div>`;
+    } else if (step.type === 'reaction') {
+      const rx = step.data;
+      const rtc = tribeColor(rx.tribe);
+      const rewardLabel = rx.reward.toUpperCase();
+      const rewardColor = rx.reward === 'stick' ? 'var(--eg-pharaoh-gold)' : rx.reward === 'goat' ? 'var(--eg-terra)' : 'var(--eg-muted)';
+      cardContent = `<div class="eg-card" style="border-left:3px solid ${rtc};background:linear-gradient(175deg,rgba(194,166,69,0.10),rgba(184,92,56,0.04))">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          ${_icon('eye')}
+          <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:1.5px;color:${rtc}">REACTION</span>
+          <span style="font-family:Metamorphous,cursive;font-size:0.6rem;letter-spacing:1px;padding:1px 6px;border-radius:2px;color:${rewardColor};border:1px solid ${rewardColor};opacity:0.8">${rewardLabel}</span>
+          ${_tribeBadge(rx.tribe)}
+        </div>
+        ${rx.players?.length ? _playerChips(rx.players, rx.tribe) : ''}
+        <div style="font-size:0.95rem;line-height:1.5;font-style:italic">${rx.text}</div>
+      </div>`;
+    } else if (step.type === 'encounter') {
+      const en = step.data;
+      const etc = en.tribe ? tribeColor(en.tribe) : '';
+      const encMeta = {
+        sandstorm: { icon: 'storm', label: 'SANDSTORM', color: 'var(--eg-danger)' },
+        oasis: { icon: 'success', label: 'OASIS', color: 'var(--eg-success)' },
+        oasisTrap: { icon: 'eye', label: 'MIRAGE OASIS', color: 'var(--eg-danger)' },
+        ruin: { icon: 'summit', label: 'ANCIENT RUIN', color: 'var(--eg-pharaoh-gold)' },
+        scorpion: { icon: 'alert', label: 'SCORPION', color: 'var(--eg-danger)' },
+        nomad: { icon: 'camel', label: 'DESERT NOMAD', color: 'var(--eg-success)' },
+        sandPit: { icon: 'fail', label: 'SAND PIT', color: 'var(--eg-danger)' },
+        vultures: { icon: 'sand', label: 'VULTURES CIRCLE', color: 'var(--eg-muted)' },
+        cobra: { icon: 'alert', label: 'COBRA', color: 'var(--eg-danger)' },
+      };
+      const meta = encMeta[en.type] || { icon: 'sand', label: 'ENCOUNTER', color: 'var(--eg-terra)' };
+      const goodBg = en.good ? 'background:linear-gradient(175deg,rgba(45,139,87,0.12),rgba(194,166,69,0.04))' : 'background:linear-gradient(175deg,rgba(192,32,32,0.10),rgba(42,31,20,0.20))';
+      cardContent = `<div class="eg-card" style="border-left:3px solid ${meta.color};${goodBg}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          ${_icon(meta.icon)}
+          <span style="font-family:Metamorphous,cursive;font-size:0.74rem;letter-spacing:2px;color:${meta.color};font-weight:700">${meta.label}</span>
+          ${en.tribe ? _tribeBadge(en.tribe) : ''}
+        </div>
+        ${en.players?.length ? _playerChips(en.players, en.tribe) : ''}
+        <div style="font-size:0.95rem;line-height:1.5">${en.text}</div>
       </div>`;
     }
 
@@ -4015,6 +4447,7 @@ export function rpBuildEgyptNile(ep) {
         <span style="font-family:Metamorphous,cursive;font-size:0.72rem;letter-spacing:2px;color:${sprintColor};opacity:0.6">${sprintLabel}</span>
         ${_tribeBadge(fs.tribe)}
       </div>`;
+      if (fs.players?.length) sprintText += _playerChips(fs.players, fs.tribe);
       sprintText += `<div style="font-size:0.95rem;line-height:1.5">${fs.text || ''}</div>`;
       if (fs.bailAttempts?.length) sprintText += fs.bailAttempts.map(b => `<div style="margin-top:3px;font-size:0.92rem">${_icon('hero')} ${b.text}</div>`).join('');
       cardContent = `<div class="${cls}">${sprintText}</div>`;

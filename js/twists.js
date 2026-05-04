@@ -1513,6 +1513,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isBiggerBadderBrutaler = true;
 
+  } else if (engineType === 'amazon-race') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isAmazonRace = true;
+
   } else if (engineType === 'sports-marathon') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isSportsMarathon = true;
@@ -3863,6 +3867,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'frozen-crossing': 'isFrozenCrossing', 'slap-slap-revolution': 'isSlapRevolution', 'broadway-baby': 'isBroadwayBaby',
         'truth-or-shark': 'isTruthOrShark',
         'bigger-badder-brutaler': 'isBiggerBadderBrutaler',
+        'amazon-race': 'isAmazonRace',
         'lucky-hunt': 'isLuckyHunt', 'hide-and-be-sneaky': 'isHideAndBeSneaky',
         'off-the-chain': 'isOffTheChain', 'wawanakwa-gone-wild': 'isWawanakwaGoneWild',
         'tri-armed-triathlon': 'isTriArmedTriathlon', 'camp-castaways': 'isCampCastaways',

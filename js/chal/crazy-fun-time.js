@@ -242,16 +242,53 @@ export function simulateCrazyFunTime(ep) {
     // Calculate commercial quality
     const scores = _scoreCommercial(roles, voteResult, result.chefPreference, members, ep);
 
-    // Commercial member scores
+    // Commercial member scores — role performance + stat match + production events
     members.forEach(n => {
       const roleEntry = Object.values(roles).find(r => r.player === n);
       if (roleEntry) {
-        ep.chalMemberScores[n] = (ep.chalMemberScores[n] || 0) + Math.round(roleEntry.performance * 2);
+        // Base: performance scaled to meaningful range (3-10 pts)
+        const perfScore = Math.round(roleEntry.performance * 10);
+        // Stat match bonus: good fit = +3, ok = +1, bad = -1
+        const matchBonus = roleEntry.statMatch === 'good' ? 3 : roleEntry.statMatch === 'bad' ? -1 : 1;
+        // Named role bonus (director/writer/actor/editor get more than support)
+        const roleBonus = roleEntry.role !== 'support' ? 2 : 0;
+        ep.chalMemberScores[n] = (ep.chalMemberScores[n] || 0) + perfScore + matchBonus + roleBonus;
       }
     });
+    // Pitch winner bonus
     if (voteResult.selectedPitch.player) {
-      ep.chalMemberScores[voteResult.selectedPitch.player] = (ep.chalMemberScores[voteResult.selectedPitch.player] || 0) + 3;
+      ep.chalMemberScores[voteResult.selectedPitch.player] = (ep.chalMemberScores[voteResult.selectedPitch.player] || 0) + 5;
     }
+    // Rejected pitchers get a small consolation
+    if (voteResult.rejectedPitchers) {
+      voteResult.rejectedPitchers.forEach(rp => {
+        if (rp.player) ep.chalMemberScores[rp.player] = (ep.chalMemberScores[rp.player] || 0) + 1;
+      });
+    }
+    // Production event consequences on individual scores
+    productionEvents.forEach(pe => {
+      if (pe.type === 'breakthrough' && roles.actor?.player) {
+        ep.chalMemberScores[roles.actor.player] = (ep.chalMemberScores[roles.actor.player] || 0) + 4;
+      } else if (pe.type === 'bomb' && roles.actor?.player) {
+        ep.chalMemberScores[roles.actor.player] = (ep.chalMemberScores[roles.actor.player] || 0) - 3;
+      } else if (pe.type === 'sabotage') {
+        const saboteur = members.find(n => pe.text.startsWith(n));
+        if (saboteur) ep.chalMemberScores[saboteur] = (ep.chalMemberScores[saboteur] || 0) - 2;
+      } else if (pe.type === 'clash') {
+        if (roles.director?.player) ep.chalMemberScores[roles.director.player] = (ep.chalMemberScores[roles.director.player] || 0) - 1;
+        if (roles.writer?.player) ep.chalMemberScores[roles.writer.player] = (ep.chalMemberScores[roles.writer.player] || 0) - 1;
+      } else if (pe.type === 'showmance') {
+        // Both showmance partners get a small boost for chemistry
+        const sm = (gs.showmances || []).find(s => members.includes(s.a) && members.includes(s.b));
+        if (sm) {
+          ep.chalMemberScores[sm.a] = (ep.chalMemberScores[sm.a] || 0) + 2;
+          ep.chalMemberScores[sm.b] = (ep.chalMemberScores[sm.b] || 0) + 2;
+        }
+      } else if (pe.type === 'teamwork') {
+        // Small boost to director for coordinating
+        if (roles.director?.player) ep.chalMemberScores[roles.director.player] = (ep.chalMemberScores[roles.director.player] || 0) + 1;
+      }
+    });
 
     result.commercials.push({
       tribeName: tribe.name,
@@ -2104,22 +2141,18 @@ export function rpBuildCFTPinball(ep) {
           <div class="cft-card-text">${burstText ? `<span class="cft-burst">${burstText}</span> ` : ''}${evt.text}</div>
         </div>`);
         stepMeta.push({
-          tribe: t.tribeName, points: evt.points || 0,
-          bumpers: (evt.type === 'bumper' || evt.type === 'combo') ? 1 : 0,
-          ramps: evt.type === 'ramp' ? 1 : 0,
-          secrets: evt.type === 'secret' ? 1 : 0,
+          tribe: null, points: 0,
+          bumpers: 0, ramps: 0, secrets: 0,
         });
       });
-      if (launch.events.length === 0) {
-        steps.push(`<div class="cft-card cft-hit">
-          <div class="cft-card-header">${_icon('hit')}<span class="cft-card-label">Launch ${li + 1} — ${t.tribeName}</span><span class="cft-card-points">+${launch.score}</span></div>
-          <div class="cft-card-text">${_avatar(t.rep.name, col, 'cft-av-sm')} <strong>${t.rep.name}</strong> and ${t.animal.name} score ${launch.score} points. ${launch.bumperHits} bumpers, ${launch.rampHits} ramps${launch.secretHits ? ', 1 SECRET LANE' : ''}.</div>
-        </div>`);
-        stepMeta.push({
-          tribe: t.tribeName, points: launch.score,
-          bumpers: launch.bumperHits || 0, ramps: launch.rampHits || 0, secrets: launch.secretHits || 0,
-        });
-      }
+      steps.push(`<div class="cft-card cft-hit">
+        <div class="cft-card-header">${_icon('hit')}<span class="cft-card-label">Launch ${li + 1} — ${t.tribeName}</span><span class="cft-card-points">+${launch.score}</span></div>
+        <div class="cft-card-text">${_avatar(t.rep.name, col, 'cft-av-sm')} <strong>${t.rep.name}</strong> and ${t.animal.name} score ${launch.score} points. ${launch.bumperHits} bumpers, ${launch.rampHits} ramps${launch.secretHits ? ', 1 SECRET LANE' : ''}.</div>
+      </div>`);
+      stepMeta.push({
+        tribe: t.tribeName, points: launch.score,
+        bumpers: launch.bumperHits || 0, ramps: launch.rampHits || 0, secrets: launch.secretHits || 0,
+      });
     });
   }
 

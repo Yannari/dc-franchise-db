@@ -35,6 +35,7 @@ import { rpBuildCFTTitleCard, rpBuildCFTPinball, rpBuildCFTDramaBreak, rpBuildCF
 import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults, frozenCrossingRevealNext, frozenCrossingRevealAll } from './chal/frozen-crossing.js';
 import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults, ssrRevealNext, ssrRevealAll } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults, broadwayBabyRevealNext, broadwayBabyRevealAll } from './chal/broadway-baby.js';
+import { rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian, rpBuildAZRuins, rpBuildAZResults, azRevealNext, azRevealAll } from './chal/amazon-race.js';
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext, tlsRevealAll } from './chal/truth-or-shark.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -10698,6 +10699,13 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'bb-phase2', label:'Underground', html: rpBuildBBPhase2(ep) });
     vpScreens.push({ id:'bb-phase3', label:'Park Dash', html: rpBuildBBPhase3(ep) });
     vpScreens.push({ id:'bb-results', label:'Results', html: rpBuildBBResults(ep) });
+  } else if ((ep.isAmazonRace || ep.challengeType === 'amazon-race') && ep.amazonRace) {
+    vpScreens.push({ id:'az-title', label:'Am-AH-Zon Race', html: rpBuildAZTitleCard(ep) });
+    vpScreens.push({ id:'az-zipline', label:'Zipline', html: rpBuildAZZipline(ep) });
+    vpScreens.push({ id:'az-trek', label:'Jungle Trek', html: rpBuildAZTrek(ep) });
+    vpScreens.push({ id:'az-guardian', label:'Guardians', html: rpBuildAZGuardian(ep) });
+    vpScreens.push({ id:'az-ruins', label:'Ruins', html: rpBuildAZRuins(ep) });
+    vpScreens.push({ id:'az-results', label:'Results', html: rpBuildAZResults(ep) });
   } else if ((ep.isTruthOrShark || ep.challengeType === 'truth-or-shark') && ep.truthOrShark) {
     vpScreens.push({ id:'tls-title', label:'Truth or Shark', html: rpBuildTlsTitleCard(ep) });
     vpScreens.push({ id:'tls-rounds', label:'Game Show', html: rpBuildTlsRounds(ep) });

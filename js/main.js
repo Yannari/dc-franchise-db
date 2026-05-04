@@ -57,6 +57,7 @@ import * as crazyFunTimeMod from './chal/crazy-fun-time.js';
 import * as frozenCrossingMod from './chal/frozen-crossing.js';
 import * as slapSlapRevMod from './chal/slap-slap-revolution.js';
 import * as broadwayBabyMod from './chal/broadway-baby.js';
+import * as amazonRaceMod from './chal/amazon-race.js';
 import * as brutalerMod from './chal/bigger-badder-brutaler.js';
 import * as truthOrSharkMod from './chal/truth-or-shark.js';
 import * as socialManipMod from './social-manipulation.js';
@@ -147,7 +148,7 @@ const extractedModules = [
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
-  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, slapSlapRevMod, broadwayBabyMod, brutalerMod,
+  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, brutalerMod,
   truthOrSharkMod, socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,

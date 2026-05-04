@@ -50,6 +50,7 @@ import { rpBuildCFTTitleCard, rpBuildCFTPinball, rpBuildCFTDramaBreak, rpBuildCF
 import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults } from './chal/frozen-crossing.js';
 import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults } from './chal/broadway-baby.js';
+import { rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian, rpBuildAZRuins, rpBuildAZResults } from './chal/amazon-race.js';
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults } from './chal/truth-or-shark.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
@@ -2173,6 +2174,11 @@ export function generateSummaryText(ep) {
   if (ep.broadwayBaby) {
     _textTwistChallenge(ep, ln, sec, 'broadwayBaby', 'BROADWAY BABY', [
       rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults
+    ]);
+  }
+  if (ep.amazonRace) {
+    _textTwistChallenge(ep, ln, sec, 'amazonRace', 'THE AM-AH-ZON RACE', [
+      rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian, rpBuildAZRuins, rpBuildAZResults
     ]);
   }
   if (ep.truthOrShark) {

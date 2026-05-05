@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Night at the Museum — VP Mockup v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* TDI Museum palette — warm sandy walls, mauve panels, burgundy floor */
+  --nm-void:#b09070;--nm-marble:#c8a878;--nm-gallery:#a08868;
+  --nm-gold:#d4a84b;--nm-gold-bright:#f0c060;--nm-gold-dim:rgba(212,168,75,.15);
+  --nm-laser-red:#e84030;--nm-laser-green:#40c860;
+  --nm-ivory:#f0e8d8;--nm-cream:rgba(240,232,216,.85);
+  --nm-bronze:#8a6a30;--nm-copper:#a07040;
+  --nm-danger:#c83030;--nm-success:#50b860;--nm-info:#4090d0;
+  --nm-purple:#7a5080;--nm-violet:rgba(122,80,128,.15);
+  --nm-frame-gold:linear-gradient(135deg,#c8a040,#e0c060,#a08030);
+  --nm-card-bg:rgba(42,32,24,.88);
+  --nm-white:#f0e8d8;--nm-muted:rgba(240,232,216,.5);
+  --nm-alarm-glow:rgba(232,64,48,.15);
+  --nm-mauve:#7a6070;--nm-burgundy:#6a2828;--nm-tan:#c8a878;
+  --nm-floor-red:#5a2020;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--nm-void);color:var(--nm-white);font-family:'Inter',sans-serif;overflow-x:hidden;}
+
+/* ═══════════════════════════════════════════════════════ */
+/* ATMOSPHERE — Museum Interior with Architecture        */
+/* Columns, portrait frames, pedestals, phase-specific   */
+/* ═══════════════════════════════════════════════════════ */
+.nm-atmosphere{position:fixed;top:0;left:0;right:0;bottom:0;overflow:hidden;pointer-events:none;z-index:0;
+  background:linear-gradient(180deg,
+    #c8a878 0%,
+    #b89868 10%,
+    #a88a60 45%,
+    #8a7058 70%,
+    #6a2828 90%,
+    #5a2020 100%);
+  transition:background .8s;}
+/* Phase-specific background shifts */
+body[data-phase="title"] .nm-atmosphere{background:linear-gradient(180deg,
+    #c8a878 0%, #b89868 10%, #a88a60 45%, #8a7058 70%, #6a2828 90%, #5a2020 100%);}
+body[data-phase="security"] .nm-atmosphere{background:linear-gradient(180deg,
+    #705848 0%, #5a4438 10%, #483828 45%, #3a2a20 70%, #5a1818 90%, #401010 100%);}
+body[data-phase="gallery"] .nm-atmosphere{background:linear-gradient(180deg,
+    #c8a878 0%, #b89868 10%, #a88a60 45%, #8a7058 70%, #6a2828 90%, #5a2020 100%);}
+body[data-phase="assembly"] .nm-atmosphere{background:linear-gradient(180deg,
+    #8a7058 0%, #705848 10%, #584030 45%, #483028 70%, #5a1818 90%, #401010 100%);}
+
+/* ── Burgundy museum floor ── */
+.nm-floor{position:absolute;bottom:0;left:0;right:0;height:160px;
+  background:linear-gradient(to top,rgba(90,32,32,.9),rgba(106,40,40,.5) 40%,transparent);pointer-events:none;}
+.nm-floor::before{content:'';position:absolute;bottom:0;left:0;right:0;height:60px;
+  background:repeating-linear-gradient(90deg,rgba(80,25,25,.25) 0px,transparent 1px,transparent 80px,rgba(80,25,25,.25) 81px);opacity:.4;}
+
+/* ── Classical columns (pilasters) ── */
+.nm-columns{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;}
+.nm-col{position:absolute;top:0;bottom:140px;width:28px;
+  background:linear-gradient(90deg,
+    rgba(200,180,150,.06) 0%,
+    rgba(220,200,170,.12) 20%,
+    rgba(240,220,190,.15) 45%,
+    rgba(220,200,170,.12) 70%,
+    rgba(200,180,150,.06) 100%);
+  border-left:1px solid rgba(220,200,170,.06);border-right:1px solid rgba(220,200,170,.06);}
+.nm-col::before{content:'';position:absolute;top:0;left:-4px;right:-4px;height:18px;
+  background:linear-gradient(180deg,rgba(200,180,150,.15),rgba(200,180,150,.05));
+  border-bottom:2px solid rgba(212,168,75,.08);}
+.nm-col::after{content:'';position:absolute;bottom:0;left:-4px;right:-4px;height:18px;
+  background:linear-gradient(to top,rgba(200,180,150,.15),rgba(200,180,150,.05));
+  border-top:2px solid rgba(212,168,75,.08);}
+.nm-col:nth-child(1){left:4%;}.nm-col:nth-child(2){left:22%;}.nm-col:nth-child(3){right:22%;}.nm-col:nth-child(4){right:4%;}
+
+/* ── Mauve wall panels between columns ── */
+.nm-panels{position:absolute;top:20px;bottom:160px;left:0;right:0;}
+.nm-panel{position:absolute;top:0;bottom:0;
+  background:rgba(100,75,85,.12);
+  border:1px solid rgba(140,110,120,.08);}
+.nm-panel:nth-child(1){left:7%;right:76%;}
+.nm-panel:nth-child(2){left:26%;right:26%;}
+.nm-panel:nth-child(3){left:76%;right:7%;}
+
+/* ── Portrait frames on the walls ── */
+.nm-portraits{position:absolute;top:0;left:0;right:0;bottom:0;}
+.nm-portrait{position:absolute;overflow:hidden;}
+.nm-portrait .frame{position:absolute;top:0;left:0;right:0;bottom:0;
+  border:3px solid rgba(170,140,80,.2);
+  box-shadow:inset 0 0 15px rgba(0,0,0,.15),0 2px 8px rgba(0,0,0,.15);
+  border-radius:1px;}
+.nm-portrait .frame::before{content:'';position:absolute;top:2px;left:2px;right:2px;bottom:2px;
+  border:1px solid rgba(212,168,75,.1);}
+.nm-portrait .canvas{position:absolute;top:5px;left:5px;right:5px;bottom:5px;border-radius:1px;}
+/* Portrait 1 — landscape with mountains (warm tones) */
+.nm-portrait:nth-child(1){left:9%;top:15%;width:80px;height:60px;}
+.nm-portrait:nth-child(1) .canvas{
+  background:linear-gradient(180deg,
+    rgba(200,140,80,.2) 0%,rgba(180,120,60,.15) 35%,
+    rgba(100,80,60,.15) 35%,rgba(120,100,70,.12) 65%,
+    rgba(80,120,60,.1) 65%,rgba(60,100,50,.08) 100%);}
+/* Portrait 2 — abstract dark painting */
+.nm-portrait:nth-child(2){right:9%;top:18%;width:70px;height:90px;}
+.nm-portrait:nth-child(2) .canvas{
+  background:linear-gradient(160deg,
+    rgba(60,40,80,.15) 0%,rgba(80,50,50,.12) 40%,
+    rgba(40,30,50,.18) 60%,rgba(100,60,40,.1) 100%);}
+/* Portrait 3 — wide gallery piece */
+.nm-portrait:nth-child(3){left:35%;top:12%;width:100px;height:70px;}
+.nm-portrait:nth-child(3) .canvas{
+  background:linear-gradient(135deg,
+    rgba(180,150,100,.12) 0%,rgba(140,110,80,.1) 30%,
+    rgba(120,90,60,.08) 60%,rgba(160,130,90,.1) 100%);
+  background-size:cover;}
+/* Portrait 4 — small oval */
+.nm-portrait:nth-child(4){right:30%;top:20%;width:50px;height:65px;border-radius:40%;}
+.nm-portrait:nth-child(4) .frame{border-radius:40%;}
+.nm-portrait:nth-child(4) .frame::before{border-radius:40%;}
+.nm-portrait:nth-child(4) .canvas{border-radius:40%;
+  background:radial-gradient(ellipse at 50% 40%,rgba(200,170,130,.12),rgba(100,80,60,.08) 70%);}
+/* Portrait 5 — tall figure painting, left side low */
+.nm-portrait:nth-child(5){left:15%;top:42%;width:55px;height:80px;}
+.nm-portrait:nth-child(5) .canvas{
+  background:linear-gradient(170deg,rgba(140,100,70,.1) 0%,rgba(90,65,45,.08) 50%,rgba(60,45,35,.06) 100%);}
+/* Portrait 6 — wide landscape, right side */
+.nm-portrait:nth-child(6){right:15%;top:38%;width:90px;height:55px;}
+.nm-portrait:nth-child(6) .canvas{
+  background:linear-gradient(180deg,rgba(120,150,180,.08) 0%,rgba(80,120,80,.06) 50%,rgba(100,80,60,.08) 100%);}
+/* Portrait 7 — small square near center */
+.nm-portrait:nth-child(7){left:48%;top:30%;width:45px;height:45px;}
+.nm-portrait:nth-child(7) .canvas{
+  background:radial-gradient(circle at 50% 50%,rgba(180,140,100,.1),rgba(60,45,35,.06) 70%);}
+/* Portrait 8 — oval right side high */
+.nm-portrait:nth-child(8){right:40%;top:10%;width:40px;height:55px;border-radius:40%;}
+.nm-portrait:nth-child(8) .frame{border-radius:40%;}
+.nm-portrait:nth-child(8) .frame::before{border-radius:40%;}
+.nm-portrait:nth-child(8) .canvas{border-radius:40%;
+  background:radial-gradient(ellipse at 45% 35%,rgba(170,130,90,.1),rgba(80,60,45,.06) 70%);}
+/* Brighter portraits on title + gallery phases */
+body[data-phase="title"] .nm-portrait .frame,
+body[data-phase="gallery"] .nm-portrait .frame{border-color:rgba(170,140,80,.3);}
+body[data-phase="title"] .nm-portrait .canvas,
+body[data-phase="gallery"] .nm-portrait .canvas{filter:brightness(1.4);}
+body[data-phase="security"] .nm-portrait{opacity:.3;}
+
+/* ── Small statue on pedestal (decorative) ── */
+.nm-deco-statues{position:absolute;top:0;left:0;right:0;bottom:0;}
+.nm-deco-statue{position:absolute;bottom:140px;}
+.nm-deco-statue .ped{width:24px;height:14px;
+  background:linear-gradient(180deg,rgba(200,190,170,.15),rgba(160,150,130,.08));
+  border-top:1px solid rgba(212,168,75,.12);margin:0 auto;}
+.nm-deco-statue .fig{width:10px;height:22px;margin:0 auto;position:relative;bottom:22px;
+  background:linear-gradient(180deg,rgba(220,210,195,.12),rgba(200,190,170,.08));
+  border-radius:40% 40% 0 0;clip-path:polygon(20% 100%,30% 40%,50% 0%,70% 40%,80% 100%);}
+.nm-deco-statue:nth-child(1){left:6%;}
+.nm-deco-statue:nth-child(2){right:6%;}
+
+/* ── Ceiling with crown molding ── */
+.nm-ceiling{position:absolute;top:0;left:0;right:0;height:22px;z-index:1;
+  background:linear-gradient(to bottom,rgba(200,168,120,.25),transparent);}
+.nm-ceiling::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent 3%,rgba(212,168,75,.15) 20%,rgba(212,168,75,.2) 50%,rgba(212,168,75,.15) 80%,transparent 97%);}
+
+/* ── Floating dust motes ── */
+.nm-dust{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;}
+.nm-mote{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(232,200,140,.15);animation:nm-drift linear infinite;}
+.nm-mote:nth-child(1){top:15%;left:20%;animation-duration:25s;}
+.nm-mote:nth-child(2){top:40%;left:55%;width:1px;height:1px;animation-duration:30s;animation-delay:-8s;}
+.nm-mote:nth-child(3){top:60%;left:35%;animation-duration:22s;animation-delay:-4s;}
+.nm-mote:nth-child(4){top:25%;left:75%;width:1px;height:1px;animation-duration:28s;animation-delay:-12s;}
+.nm-mote:nth-child(5){top:70%;left:10%;animation-duration:26s;animation-delay:-6s;}
+.nm-mote:nth-child(6){top:50%;left:85%;width:1px;height:1px;animation-duration:32s;animation-delay:-15s;}
+@keyframes nm-drift{
+  0%{transform:translate(0,0);opacity:.1;}15%{opacity:.35;}30%{transform:translate(15px,-30px);opacity:.15;}
+  50%{transform:translate(-10px,-50px);opacity:.3;}70%{transform:translate(20px,-70px);opacity:.1;}
+  100%{transform:translate(5px,-100px);opacity:0;}}
+
+/* ── Recessed ceiling lights (amber spots) ── */
+.nm-ceiling-lights{position:absolute;top:0;left:0;right:0;height:300px;}
+.nm-clight{position:absolute;top:0;border-radius:50%;
+  background:radial-gradient(ellipse at 50% 0%,rgba(240,200,120,.06),transparent 70%);}
+.nm-clight:nth-child(1){left:15%;width:200px;height:250px;}
+.nm-clight:nth-child(2){left:45%;width:180px;height:220px;animation:nm-chandelier 8s 2s ease-in-out infinite;}
+.nm-clight:nth-child(3){right:10%;width:160px;height:200px;animation:nm-chandelier 8s 4s ease-in-out infinite;}
+@keyframes nm-chandelier{0%,100%{opacity:.5;}50%{opacity:.9;}}
+
+/* ── Security lasers (ONLY on security phase) ── */
+.nm-laser-grid{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;opacity:0;transition:opacity .5s;}
+body[data-phase="security"] .nm-laser-grid{opacity:1;}
+.nm-laser{position:absolute;height:2px;background:var(--nm-laser-red);box-shadow:0 0 10px rgba(232,64,48,.5),0 0 25px rgba(232,64,48,.2);opacity:.3;
+  animation:nm-laser-pulse 4s ease-in-out infinite,nm-laser-sweep 8s ease-in-out infinite;}
+.nm-laser:nth-child(1){top:20%;left:5%;right:15%;transform:rotate(3deg);}
+.nm-laser:nth-child(2){top:38%;left:10%;right:5%;transform:rotate(-2deg);animation-delay:-1.5s,-3s;}
+.nm-laser:nth-child(3){top:55%;left:3%;right:20%;transform:rotate(1.5deg);animation-delay:-3s,-5s;}
+.nm-laser:nth-child(4){top:70%;left:15%;right:8%;transform:rotate(-2.5deg);animation-delay:-.8s,-2s;}
+.nm-laser:nth-child(5){top:85%;left:8%;right:12%;transform:rotate(1deg);animation-delay:-2.2s,-6s;}
+.nm-laser-v{width:2px;height:auto;top:10%;bottom:10%;
+  animation:nm-laser-pulse 4s ease-in-out infinite,nm-laser-sweep-v 10s ease-in-out infinite;}
+.nm-laser-v:nth-child(6){left:20%;animation-delay:-1s,-4s;top:5%;bottom:25%;}
+.nm-laser-v:nth-child(7){left:55%;animation-delay:-2.5s,-7s;top:15%;bottom:10%;}
+.nm-laser-v:nth-child(8){left:80%;animation-delay:-.5s,-1s;top:8%;bottom:20%;}
+@keyframes nm-laser-pulse{0%,100%{opacity:.15;}50%{opacity:.45;}}
+@keyframes nm-laser-sweep{0%,100%{transform:rotate(var(--r,3deg)) translateY(0);}25%{transform:rotate(var(--r,3deg)) translateY(12px);}50%{transform:rotate(var(--r,3deg)) translateY(-8px);}75%{transform:rotate(var(--r,3deg)) translateY(5px);}}
+@keyframes nm-laser-sweep-v{0%,100%{transform:translateX(0);}30%{transform:translateX(15px);}60%{transform:translateX(-10px);}85%{transform:translateX(6px);}}
+
+/* ── Security red alarm wash ── */
+.nm-alarm-wash{position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;transition:opacity .5s;
+  background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(200,30,30,.04),transparent);pointer-events:none;}
+body[data-phase="security"] .nm-alarm-wash{opacity:1;animation:nm-alarm-flash 3s ease-in-out infinite;}
+@keyframes nm-alarm-flash{0%,100%{opacity:.3;}50%{opacity:1;}}
+
+/* ── Gallery warm glow — amber lighting for art viewing ── */
+.nm-gallery-glow{position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;transition:opacity .5s;
+  background:radial-gradient(ellipse 50% 40% at 50% 25%,rgba(240,200,120,.08),transparent);}
+body[data-phase="title"] .nm-gallery-glow{opacity:.7;}
+body[data-phase="gallery"] .nm-gallery-glow{opacity:1;}
+
+/* ── Assembly siege pulse ── */
+.nm-siege-pulse{position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;transition:opacity .5s;}
+body[data-phase="assembly"] .nm-siege-pulse{opacity:1;animation:nm-siege 3s ease-in-out infinite;}
+@keyframes nm-siege{0%,100%{background:rgba(232,64,48,0);}50%{background:rgba(232,64,48,.04);}}
+
+/* ── Results phase — portraits glow with warm exhibition lighting ── */
+body[data-phase="results"] .nm-portrait .frame{border-color:rgba(212,168,75,.35);box-shadow:inset 0 0 15px rgba(0,0,0,.15),0 2px 8px rgba(0,0,0,.15),0 0 12px rgba(212,168,75,.08);}
+body[data-phase="results"] .nm-portrait .canvas{filter:brightness(1.6);}
+body[data-phase="results"] .nm-atmosphere{background:linear-gradient(180deg,
+    #b09070 0%, #a08060 10%, #907050 45%, #806048 70%, #6a2828 90%, #5a2020 100%);}
+
+/* ═══════════════════════════════════════════════════════ */
+/* ORNATE BORDER PATTERNS                                */
+/* ═══════════════════════════════════════════════════════ */
+/* Greek key / ornate molding strips — like the wall trim in the show */
+.nm-ornate-strip{height:4px;background:repeating-linear-gradient(90deg,
+  var(--nm-gold) 0px,var(--nm-gold) 3px,transparent 3px,transparent 8px,
+  rgba(212,168,75,.3) 8px,rgba(212,168,75,.3) 10px,transparent 10px,transparent 16px);opacity:.2;}
+.nm-ornate-strip-thick{height:6px;background:repeating-linear-gradient(90deg,
+  var(--nm-gold) 0px,var(--nm-gold) 2px,transparent 2px,transparent 5px,
+  var(--nm-bronze) 5px,var(--nm-bronze) 7px,transparent 7px,transparent 10px,
+  var(--nm-gold) 10px,var(--nm-gold) 12px,transparent 12px,transparent 18px);opacity:.15;}
+
+/* ═══════════════════════════════════════════════════════ */
+/* SHELL                                                  */
+/* ═══════════════════════════════════════════════════════ */
+.nm-shell{max-width:1100px;margin:0 auto;padding:20px 20px 80px;position:relative;z-index:2;display:flex;gap:16px;align-items:flex-start;}
+.nm-main{flex:1;min-width:0;position:relative;z-index:2;}
+.nm-sidebar{width:260px;flex-shrink:0;position:sticky;top:20px;z-index:3;}
+.nm-shell.screen-shake{animation:nm-screen-shake .35s ease-out;}
+@keyframes nm-screen-shake{0%,100%{transform:translateX(0);}10%{transform:translateX(-3px) rotate(-.1deg);}20%{transform:translateX(3px) rotate(.1deg);}30%{transform:translateX(-2px);}40%{transform:translateX(2px);}50%{transform:translateX(-1px);}}
+
+/* ═══════════════════════════════════════════════════════ */
+/* CSS ICONS — Portrait-Framed (Ornate Gold Frames)      */
+/* Every icon sits inside a miniature painting frame      */
+/* ═══════════════════════════════════════════════════════ */
+.nm-icon{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex-shrink:0;position:relative;}
+/* Ornate portrait frame — wraps every icon */
+.nm-icon .frame-wrap{position:relative;width:26px;height:26px;
+  border:2px solid rgba(180,145,70,.6);border-radius:2px;
+  background:linear-gradient(145deg,rgba(56,42,32,.85),rgba(72,55,40,.9));
+  box-shadow:0 1px 4px rgba(0,0,0,.3),inset 0 0 8px rgba(0,0,0,.15),
+    0 0 0 1px rgba(212,168,75,.15);overflow:hidden;}
+.nm-icon .frame-wrap::before{content:'';position:absolute;top:1px;left:1px;right:1px;bottom:1px;
+  border:1px solid rgba(212,168,75,.2);pointer-events:none;z-index:1;}
+.nm-icon .frame-wrap::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(240,200,120,.25),transparent);z-index:1;}
+/* Canvas interior — holds the icon symbol */
+.nm-icon .canvas-inner{position:absolute;top:3px;left:3px;right:3px;bottom:3px;display:flex;align-items:center;justify-content:center;}
+/* Corner ornaments on the frame */
+.nm-icon .corner-tl,.nm-icon .corner-tr,.nm-icon .corner-bl,.nm-icon .corner-br{
+  position:absolute;width:4px;height:4px;z-index:2;}
+.nm-icon .corner-tl{top:0;left:0;border-top:1px solid rgba(240,200,120,.4);border-left:1px solid rgba(240,200,120,.4);}
+.nm-icon .corner-tr{top:0;right:0;border-top:1px solid rgba(240,200,120,.4);border-right:1px solid rgba(240,200,120,.4);}
+.nm-icon .corner-bl{bottom:0;left:0;border-bottom:1px solid rgba(240,200,120,.4);border-left:1px solid rgba(240,200,120,.4);}
+.nm-icon .corner-br{bottom:0;right:0;border-bottom:1px solid rgba(240,200,120,.4);border-right:1px solid rgba(240,200,120,.4);}
+
+/* ── Per-icon canvas paintings ── */
+/* Laser — red beams on dark canvas */
+.nm-icon-laser .canvas-inner{background:linear-gradient(170deg,rgba(40,20,20,.8),rgba(60,30,25,.6));}
+.nm-icon-laser .canvas-inner::before{content:'';position:absolute;top:6px;left:2px;right:2px;height:1px;background:var(--nm-laser-red);box-shadow:0 0 6px var(--nm-laser-red);animation:nm-icon-lpulse 2s ease-in-out infinite;}
+.nm-icon-laser .canvas-inner::after{content:'';position:absolute;top:12px;left:4px;right:4px;height:1px;background:var(--nm-laser-red);box-shadow:0 0 4px var(--nm-laser-red);animation:nm-icon-lpulse 2s .5s ease-in-out infinite;}
+@keyframes nm-icon-lpulse{0%,100%{opacity:.4;}50%{opacity:1;}}
+
+/* Camera — surveillance on dark canvas */
+.nm-icon-camera .canvas-inner{background:linear-gradient(160deg,rgba(30,25,40,.7),rgba(45,35,50,.6));}
+.nm-icon-camera .canvas-inner::before{content:'';position:absolute;top:5px;left:4px;width:10px;height:7px;background:rgba(56,42,32,.5);border:1px solid rgba(212,168,75,.35);border-radius:2px;}
+.nm-icon-camera .canvas-inner::after{content:'';position:absolute;top:3px;left:8px;width:3px;height:3px;background:var(--nm-danger);border-radius:50%;box-shadow:0 0 4px var(--nm-danger);animation:nm-cam-blink 2s step-end infinite;}
+@keyframes nm-cam-blink{0%,50%{opacity:1;}51%,100%{opacity:.2;}}
+
+/* Alarm — bell on warm canvas */
+.nm-icon-alarm .canvas-inner{background:linear-gradient(170deg,rgba(60,35,20,.7),rgba(50,30,25,.5));}
+.nm-icon-alarm .canvas-inner::before{content:'';position:absolute;top:4px;left:5px;width:10px;height:8px;background:linear-gradient(180deg,var(--nm-gold),var(--nm-bronze));border-radius:5px 5px 0 0;clip-path:polygon(10% 100%,20% 30%,50% 0%,80% 30%,90% 100%);}
+.nm-icon-alarm .canvas-inner::after{content:'';position:absolute;bottom:3px;left:9px;width:3px;height:2px;background:var(--nm-gold);border-radius:0 0 50% 50%;}
+
+/* Statue — marble figure on museum canvas */
+.nm-icon-statue .canvas-inner{background:linear-gradient(170deg,rgba(50,40,35,.7),rgba(70,55,45,.5));}
+.nm-icon-statue .canvas-inner::before{content:'';position:absolute;top:3px;left:8px;width:5px;height:5px;background:var(--nm-ivory);border-radius:50%;opacity:.7;}
+.nm-icon-statue .canvas-inner::after{content:'';position:absolute;top:8px;left:6px;width:8px;height:8px;background:linear-gradient(180deg,var(--nm-ivory),rgba(232,224,208,.4));clip-path:polygon(30% 0%,70% 0%,85% 40%,100% 100%,60% 80%,40% 80%,0% 100%,15% 40%);opacity:.6;}
+
+/* Frame — painting in painting (meta!) */
+.nm-icon-frame .canvas-inner{background:linear-gradient(135deg,rgba(60,40,30,.7),rgba(80,60,40,.5));}
+.nm-icon-frame .canvas-inner::before{content:'';position:absolute;top:4px;left:3px;width:14px;height:11px;border:1.5px solid rgba(212,168,75,.4);border-radius:1px;}
+.nm-icon-frame .canvas-inner::after{content:'';position:absolute;top:6px;left:5px;width:10px;height:7px;background:linear-gradient(135deg,rgba(96,64,160,.2),rgba(40,90,160,.2));border-radius:1px;}
+
+/* Shield — golden shield on dark canvas */
+.nm-icon-shield .canvas-inner{background:linear-gradient(170deg,rgba(40,30,25,.7),rgba(55,40,30,.5));}
+.nm-icon-shield .canvas-inner::before{content:'';position:absolute;top:3px;left:5px;width:11px;height:14px;background:linear-gradient(180deg,var(--nm-gold),var(--nm-bronze));clip-path:polygon(50% 100%,0 25%,0 0,100% 0,100% 25%);opacity:.6;}
+
+/* Paw — animal print on earthy canvas */
+.nm-icon-paw .canvas-inner{background:linear-gradient(160deg,rgba(50,30,20,.7),rgba(65,40,25,.5));}
+.nm-icon-paw .canvas-inner::before{content:'';position:absolute;bottom:4px;left:5px;width:9px;height:7px;background:rgba(212,168,75,.45);border-radius:50% 50% 40% 40%;}
+.nm-icon-paw .canvas-inner::after{content:'';position:absolute;top:4px;left:5px;width:10px;height:5px;
+  background:radial-gradient(circle 2px at 15% 50%,rgba(212,168,75,.4),transparent 2.5px),
+             radial-gradient(circle 2px at 85% 50%,rgba(212,168,75,.4),transparent 2.5px),
+             radial-gradient(circle 1.5px at 0% 80%,rgba(212,168,75,.35),transparent 2px),
+             radial-gradient(circle 1.5px at 100% 80%,rgba(212,168,75,.35),transparent 2px);}
+
+/* Search — magnifier on scholarly canvas */
+.nm-icon-search .canvas-inner{background:linear-gradient(150deg,rgba(45,35,30,.7),rgba(60,48,38,.5));}
+.nm-icon-search .canvas-inner::before{content:'';position:absolute;top:3px;left:3px;width:9px;height:9px;border:2px solid rgba(212,168,75,.5);border-radius:50%;}
+.nm-icon-search .canvas-inner::after{content:'';position:absolute;bottom:3px;right:3px;width:5px;height:1.5px;background:rgba(212,168,75,.5);transform:rotate(45deg);border-radius:1px;}
+
+/* Key — golden key on ancient canvas */
+.nm-icon-key .canvas-inner{background:linear-gradient(155deg,rgba(50,38,28,.7),rgba(65,50,35,.5));}
+.nm-icon-key .canvas-inner::before{content:'';position:absolute;top:5px;left:2px;width:7px;height:7px;border:2px solid var(--nm-gold);border-radius:50%;}
+.nm-icon-key .canvas-inner::after{content:'';position:absolute;top:8px;left:8px;width:7px;height:1.5px;background:var(--nm-gold);border-radius:0 1px 1px 0;}
+
+/* Build — crossed tools on workshop canvas */
+.nm-icon-build .canvas-inner{background:linear-gradient(170deg,rgba(35,40,30,.7),rgba(45,55,35,.5));}
+.nm-icon-build .canvas-inner::before{content:'';position:absolute;top:3px;left:6px;width:3px;height:12px;background:linear-gradient(180deg,rgba(212,168,75,.5),rgba(160,112,64,.5));border-radius:1px;transform:rotate(-30deg);transform-origin:center center;}
+.nm-icon-build .canvas-inner::after{content:'';position:absolute;top:3px;right:6px;width:3px;height:12px;background:linear-gradient(180deg,rgba(160,112,64,.5),rgba(212,168,75,.5));border-radius:1px;transform:rotate(30deg);transform-origin:center center;}
+
+/* Bond — golden heart on warm canvas */
+.nm-icon-bond .canvas-inner{background:linear-gradient(160deg,rgba(55,30,35,.7),rgba(70,40,45,.5));}
+.nm-icon-bond .canvas-inner::before,.nm-icon-bond .canvas-inner::after{content:'';position:absolute;width:6px;height:9px;border-radius:6px 6px 0 0;}
+.nm-icon-bond .canvas-inner::before{left:4px;top:4px;background:var(--nm-gold);transform:rotate(-45deg);transform-origin:bottom right;}
+.nm-icon-bond .canvas-inner::after{right:4px;top:4px;background:var(--nm-gold);transform:rotate(45deg);transform-origin:bottom left;}
+
+/* Debate — speech bubble on purple canvas */
+.nm-icon-debate .canvas-inner{background:linear-gradient(155deg,rgba(45,30,50,.7),rgba(60,40,65,.5));}
+.nm-icon-debate .canvas-inner::before{content:'';position:absolute;top:3px;left:3px;width:13px;height:9px;background:rgba(212,168,75,.12);border-radius:3px;border:1px solid rgba(212,168,75,.25);}
+.nm-icon-debate .canvas-inner::after{content:'';position:absolute;bottom:4px;left:6px;width:0;height:0;border-style:solid;border-width:3px 3px 0 0;border-color:rgba(212,168,75,.25) transparent transparent transparent;}
+
+/* Trophy — golden cup on rich canvas */
+.nm-icon-trophy .canvas-inner{background:linear-gradient(170deg,rgba(50,35,20,.7),rgba(65,48,25,.5));}
+.nm-icon-trophy .canvas-inner::before{content:'';position:absolute;top:3px;left:5px;width:10px;height:8px;background:linear-gradient(180deg,var(--nm-gold-bright),var(--nm-gold));border-radius:0 0 5px 5px;clip-path:polygon(0 0,100% 0,85% 100%,15% 100%);}
+.nm-icon-trophy .canvas-inner::after{content:'';position:absolute;bottom:3px;left:8px;width:5px;height:4px;background:var(--nm-bronze);clip-path:polygon(20% 0%,80% 0%,100% 100%,0% 100%);border-radius:0 0 1px 1px;}
+
+/* ── Large portrait icon for title card ── */
+.nm-icon-lg{width:70px;height:70px;}
+.nm-icon-lg .frame-wrap{width:66px;height:66px;border-width:3px;
+  box-shadow:0 2px 12px rgba(0,0,0,.4),inset 0 0 12px rgba(0,0,0,.2),0 0 0 1px rgba(212,168,75,.2),0 0 20px rgba(212,168,75,.06);}
+.nm-icon-lg .frame-wrap::before{top:2px;left:2px;right:2px;bottom:2px;border-width:2px;}
+.nm-icon-lg .corner-tl,.nm-icon-lg .corner-tr,.nm-icon-lg .corner-bl,.nm-icon-lg .corner-br{width:8px;height:8px;border-width:2px;}
+.nm-icon-lg .canvas-inner{top:5px;left:5px;right:5px;bottom:5px;}
+/* Large statue icon — full museum painting */
+.nm-icon-lg.nm-icon-statue .canvas-inner{background:linear-gradient(170deg,rgba(50,40,35,.8),rgba(70,55,45,.6));}
+.nm-icon-lg.nm-icon-statue .canvas-inner::before{content:'';position:absolute;top:10px;left:50%;margin-left:-6px;width:12px;height:12px;background:var(--nm-ivory);border-radius:50%;opacity:.7;}
+.nm-icon-lg.nm-icon-statue .canvas-inner::after{content:'';position:absolute;top:22px;left:50%;margin-left:-10px;width:20px;height:22px;background:linear-gradient(180deg,var(--nm-ivory),rgba(232,224,208,.4));clip-path:polygon(30% 0%,70% 0%,85% 40%,100% 100%,60% 80%,40% 80%,0% 100%,15% 40%);opacity:.6;}
+
+/* ═══════════════════════════════════════════════════════ */
+/* PHASE HEADERS                                          */
+/* ═══════════════════════════════════════════════════════ */
+.nm-phase-hdr{text-align:center;margin:0 0 20px;padding:28px 20px 16px;position:relative;z-index:2;}
+.nm-phase-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:5px;color:var(--nm-gold);opacity:.5;margin-bottom:4px;font-weight:600;}
+.nm-phase-title{font-family:'Playfair Display',serif;font-size:38px;font-weight:800;letter-spacing:1px;color:var(--nm-white);text-shadow:0 2px 25px rgba(0,0,0,.4),0 0 50px rgba(212,168,75,.06);line-height:1.1;}
+.nm-phase-sub{font-size:13px;color:var(--nm-muted);margin-top:8px;max-width:500px;margin-left:auto;margin-right:auto;line-height:1.5;}
+
+/* Security readout */
+.nm-sec-readout{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--nm-laser-green);opacity:.5;padding:4px 12px;border-left:2px solid rgba(64,200,96,.15);}
+.nm-sec-readout.alert{color:var(--nm-laser-red);border-left-color:rgba(232,64,48,.2);animation:nm-readout-flash .8s ease-out;}
+@keyframes nm-readout-flash{0%{background:rgba(232,64,48,.08);}100%{background:transparent;}}
+.nm-alarm-meter{display:flex;align-items:center;gap:8px;padding:8px 12px;}
+.nm-alarm-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:rgba(232,64,48,.5);font-weight:600;}
+.nm-alarm-dots{display:flex;gap:4px;}
+.nm-alarm-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(232,64,48,.2);background:transparent;transition:all .4s;}
+.nm-alarm-dot.triggered{background:var(--nm-laser-red);border-color:var(--nm-laser-red);box-shadow:0 0 8px rgba(232,64,48,.4);}
+
+/* ═══════════════════════════════════════════════════════ */
+/* CARDS                                                  */
+/* ═══════════════════════════════════════════════════════ */
+.nm-step{opacity:0;transform:translateY(25px);filter:blur(4px);pointer-events:none;max-height:0;overflow:hidden;margin:0;padding:0;}
+.nm-step.nm-visible{opacity:1;transform:none;filter:none;max-height:3000px;overflow:visible;pointer-events:auto;margin-top:12px;margin-bottom:12px;}
+.nm-entering{animation:nm-card-enter .45s cubic-bezier(.16,1,.3,1) forwards!important;max-height:3000px!important;overflow:visible!important;pointer-events:auto!important;}
+@keyframes nm-card-enter{
+  0%{opacity:0;transform:translateY(22px) rotate(-.2deg);filter:blur(3px);}
+  65%{opacity:1;transform:translateY(-3px) rotate(.1deg);filter:none;}
+  100%{opacity:1;transform:none;filter:none;}}
+.nm-step.nm-visible .nm-hdr{animation:nm-stag-in .35s .04s cubic-bezier(.16,1,.3,1) both;}
+.nm-step.nm-visible .nm-txt{animation:nm-stag-in .35s .1s cubic-bezier(.16,1,.3,1) both;}
+@keyframes nm-stag-in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+.nm-card{background:var(--nm-card-bg);border:1px solid rgba(212,168,75,.1);border-radius:6px;padding:16px 20px;position:relative;overflow:hidden;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 2px 10px rgba(40,25,15,.2);}
+.nm-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 5%,rgba(212,168,75,.2) 50%,transparent 95%);}
+.nm-card-framed{border:2px solid rgba(212,168,75,.15);position:relative;}
+.nm-card-framed::after{content:'';position:absolute;top:2px;left:2px;right:2px;bottom:2px;border:1px solid rgba(212,168,75,.06);pointer-events:none;}
+.nm-card-security{border-left:3px solid var(--nm-laser-green);}
+.nm-card-alarm{border-left:3px solid var(--nm-laser-red);background:linear-gradient(135deg,rgba(232,64,48,.06),var(--nm-card-bg))!important;}
+.nm-card-danger{border-left:3px solid var(--nm-danger);background:linear-gradient(135deg,rgba(200,48,48,.05),var(--nm-card-bg))!important;}
+.nm-card-hero{border-left:3px solid var(--nm-gold);background:linear-gradient(135deg,rgba(212,168,75,.06),var(--nm-card-bg))!important;}
+.nm-card-social{border-left:3px dashed rgba(212,168,75,.15);background:rgba(72,55,40,.6)!important;}
+.nm-card-piece{border-left:3px solid var(--nm-gold-bright);background:linear-gradient(135deg,rgba(240,192,96,.06),var(--nm-card-bg))!important;}
+.nm-card-animal{border-left:3px solid var(--nm-danger);background:linear-gradient(135deg,rgba(200,48,48,.05),var(--nm-card-bg))!important;}
+.nm-card-build{border-left:3px solid var(--nm-success);background:linear-gradient(135deg,rgba(80,184,96,.05),var(--nm-card-bg))!important;}
+.nm-card-defend{border-left:3px solid var(--nm-bronze);background:linear-gradient(135deg,rgba(138,106,48,.06),var(--nm-card-bg))!important;}
+.nm-card-debate{border-left:3px solid var(--nm-purple);background:linear-gradient(135deg,var(--nm-violet),var(--nm-card-bg))!important;}
+.nm-card-fumble{border-left:3px solid rgba(232,160,32,.6);background:linear-gradient(135deg,rgba(232,160,32,.05),var(--nm-card-bg))!important;}
+
+.nm-hdr{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.nm-label{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;letter-spacing:1px;color:#f0e8d8;}
+.nm-txt{font-size:13px;line-height:1.65;color:rgba(240,232,216,.88);}
+.nm-txt strong{color:#f5efe0;}
+
+.nm-badge{margin-left:auto;padding:3px 10px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:1.5px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;}
+.nm-badge-pass{background:rgba(64,200,96,.1);color:var(--nm-success);border:1px solid rgba(64,200,96,.2);}
+.nm-badge-fail{background:rgba(232,64,48,.1);color:var(--nm-laser-red);border:1px solid rgba(232,64,48,.2);}
+.nm-badge-found{background:rgba(212,168,75,.1);color:var(--nm-gold);border:1px solid rgba(212,168,75,.2);}
+.nm-badge-danger{background:rgba(200,48,48,.1);color:var(--nm-danger);border:1px solid rgba(200,48,48,.15);}
+.nm-badge-hero{background:rgba(212,168,75,.1);color:var(--nm-gold);border:1px solid rgba(212,168,75,.18);}
+.nm-badge-social{background:rgba(212,168,75,.06);color:rgba(212,168,75,.6);border:1px solid rgba(212,168,75,.1);}
+.nm-badge-build{background:rgba(80,184,96,.1);color:var(--nm-success);border:1px solid rgba(80,184,96,.15);}
+.nm-badge-defend{background:rgba(160,112,64,.1);color:var(--nm-copper);border:1px solid rgba(160,112,64,.2);}
+.nm-badge-fumble{background:rgba(232,160,32,.1);color:#e8a020;border:1px solid rgba(232,160,32,.2);}
+
+.nm-score-bar{display:flex;align-items:center;gap:8px;margin:6px 0;}
+.nm-strack{flex:1;height:6px;background:rgba(212,168,75,.06);border-radius:3px;overflow:hidden;}
+.nm-sfill{height:100%;border-radius:3px;}
+.nm-sfill-g{background:linear-gradient(90deg,var(--nm-success),#60d878);box-shadow:0 0 6px rgba(80,184,96,.3);}
+.nm-sfill-d{background:linear-gradient(90deg,var(--nm-danger),#e05050);box-shadow:0 0 6px rgba(200,48,48,.3);}
+.nm-sfill-gold{background:linear-gradient(90deg,var(--nm-bronze),var(--nm-gold));box-shadow:0 0 6px rgba(212,168,75,.3);}
+.nm-sval{font-size:11px;font-weight:700;min-width:24px;text-align:right;font-family:'IBM Plex Mono',monospace;}
+.nm-sval-g{color:var(--nm-success);}.nm-sval-d{color:var(--nm-danger);}.nm-sval-w{color:var(--nm-gold);}
+
+.nm-chatter{padding:6px 14px;font-size:11px;color:rgba(232,220,200,.2);font-style:italic;letter-spacing:.5px;border-left:2px solid rgba(212,168,75,.08);}
+.nm-chatter-host{color:rgba(212,168,75,.5);font-style:normal;font-weight:600;}
+
+.nm-tribe-pov{padding:10px 16px;border-radius:6px;font-family:'Playfair Display',serif;font-size:14px;font-weight:700;letter-spacing:2px;display:flex;align-items:center;gap:10px;}
+.nm-tribe-pov-y{background:rgba(138,122,16,.08);border:1px solid rgba(138,122,16,.15);color:var(--nm-gold);}
+.nm-tribe-pov-r{background:rgba(138,32,32,.08);border:1px solid rgba(138,32,32,.15);color:#e05050;}
+.nm-sb-tribe{display:inline-block;width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.nm-sb-tribe-y{background:#8a7a10;}.nm-sb-tribe-r{background:#8a2020;}
+
+.nm-debate{background:rgba(122,80,128,.06);border:1px solid rgba(122,80,128,.12);border-radius:8px;padding:14px 16px;margin:10px 0;}
+.nm-debate-title{font-family:'Playfair Display',serif;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--nm-gold);margin-bottom:8px;}
+.nm-debate-opt{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:4px;margin:4px 0;font-size:12px;}
+.nm-debate-opt.chosen{background:rgba(212,168,75,.08);border:1px solid rgba(212,168,75,.15);}
+.nm-debate-opt.rejected{opacity:.4;text-decoration:line-through;}
+.nm-debate-vote{font-size:10px;font-weight:700;color:var(--nm-gold);margin-left:auto;font-family:'IBM Plex Mono',monospace;}
+
+.nm-blame{display:flex;align-items:center;gap:12px;margin-top:8px;padding:8px 12px;background:rgba(200,48,48,.06);border:1px dashed rgba(200,48,48,.15);border-radius:6px;}
+.nm-blame-arrow{font-family:'Playfair Display',serif;font-size:18px;color:var(--nm-danger);opacity:.6;}
+
+/* ═══════════════════════════════════════════════════════ */
+/* GALLERY MAP                                            */
+/* ═══════════════════════════════════════════════════════ */
+.nm-map-wrap{position:sticky;top:0;z-index:5;margin:0 -20px 16px;}
+.nm-map{position:relative;width:100%;height:220px;overflow:hidden;
+  background:linear-gradient(135deg,rgba(72,55,40,.95),rgba(56,42,32,.92));
+  border-bottom:2px solid rgba(212,168,75,.1);}
+.nm-map-grid{position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(0deg,rgba(212,168,75,.03) 0px,transparent 1px,transparent 40px),
+    repeating-linear-gradient(90deg,rgba(212,168,75,.03) 0px,transparent 1px,transparent 40px);opacity:.5;}
+.nm-map-room{position:absolute;border:1.5px solid rgba(212,168,75,.12);border-radius:4px;background:rgba(56,42,32,.6);transition:all .5s;overflow:hidden;}
+.nm-map-room::before{content:attr(data-name);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:2px;color:rgba(212,168,75,.25);white-space:nowrap;}
+.nm-map-room.active{border-color:rgba(212,168,75,.35);background:rgba(212,168,75,.06);box-shadow:0 0 15px rgba(212,168,75,.08);}
+.nm-map-room.active::before{color:var(--nm-gold);opacity:.7;}
+.nm-map-room.done{border-color:rgba(80,184,96,.2);background:rgba(80,184,96,.04);}
+.nm-map-room.done::before{color:rgba(80,184,96,.4);}
+.nm-map-room.locked{opacity:.3;}
+.nm-map-room.locked::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(40,30,22,.6);backdrop-filter:blur(2px);}
+.nm-map-corridor{position:absolute;background:rgba(212,168,75,.05);z-index:0;}
+.nm-map-corridor.active{background:rgba(212,168,75,.12);}
+.nm-map-title{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:4;text-align:center;}
+.nm-map-title-text{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:4px;color:rgba(212,168,75,.3);font-weight:600;}
+.nm-map-phase{font-size:7px;font-weight:600;letter-spacing:2px;color:rgba(232,220,200,.2);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.nm-map-marker{position:absolute;z-index:4;width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4);transition:left 1s cubic-bezier(.16,1,.3,1),top 1s cubic-bezier(.16,1,.3,1);transform:translate(-50%,-50%);}
+.nm-map-marker-y{background:linear-gradient(135deg,#8a7a10,#a89520);border-color:var(--nm-gold);}
+.nm-map-marker-r{background:linear-gradient(135deg,#8a2020,#a83030);border-color:#e05050;}
+.nm-map-piece{position:absolute;z-index:3;width:12px;height:12px;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);transition:all .4s;}
+.nm-map-piece::before{content:'';width:8px;height:8px;background:var(--nm-gold);clip-path:polygon(50% 0%,100% 30%,100% 70%,50% 100%,0 70%,0 30%);box-shadow:0 0 6px rgba(212,168,75,.4);animation:nm-piece-glow 2s ease-in-out infinite;}
+@keyframes nm-piece-glow{0%,100%{box-shadow:0 0 6px rgba(212,168,75,.3);}50%{box-shadow:0 0 12px rgba(212,168,75,.6);}}
+.nm-map-piece.collected{opacity:0;transform:translate(-50%,-50%) scale(0);}
+.nm-map-animal{position:absolute;z-index:3;width:16px;height:16px;border-radius:50%;background:rgba(232,64,48,.15);border:1px solid rgba(232,64,48,.3);display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);animation:nm-animal-prowl 3s ease-in-out infinite;}
+@keyframes nm-animal-prowl{0%,100%{transform:translate(-50%,-50%) translate(0,0);}25%{transform:translate(-50%,-50%) translate(3px,-2px);}75%{transform:translate(-50%,-50%) translate(-3px,2px);}}
+.nm-map-animal .paw-mini{width:6px;height:6px;position:relative;}
+.nm-map-animal .paw-mini::before{content:'';position:absolute;bottom:0;left:1px;width:4px;height:3px;background:rgba(232,64,48,.5);border-radius:50%;}
+
+/* ═══════════════════════════════════════════════════════ */
+/* STATUE ASSEMBLY v2 — Real Marble, Physics, Tension    */
+/* ═══════════════════════════════════════════════════════ */
+.nm-statue-wrap{position:relative;width:100%;max-width:340px;margin:20px auto;height:280px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 70%,rgba(40,30,22,.3),transparent),
+    linear-gradient(180deg,rgba(72,55,40,.4) 0%,rgba(56,42,32,.6) 100%);
+  border:1px solid rgba(212,168,75,.08);border-radius:10px;overflow:visible;}
+
+/* Warm amber spotlight from above */
+.nm-statue-wrap::before{content:'';position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:200px;height:120px;
+  background:radial-gradient(ellipse at 50% 0%,rgba(240,200,120,.06),transparent 70%);pointer-events:none;z-index:0;}
+
+/* Pedestal — marble textured */
+.nm-pedestal{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:140px;height:32px;z-index:1;
+  background:
+    linear-gradient(180deg,rgba(200,190,170,.22) 0%,rgba(160,150,130,.14) 40%,rgba(120,115,100,.08) 100%);
+  border-radius:4px 4px 0 0;border-top:2px solid rgba(212,168,75,.25);
+  box-shadow:0 -4px 20px rgba(212,168,75,.05),inset 0 2px 8px rgba(232,224,208,.03);}
+.nm-pedestal::before{content:'';position:absolute;top:-4px;left:8px;right:8px;height:4px;
+  background:linear-gradient(90deg,transparent,rgba(212,168,75,.25),rgba(240,192,96,.3),rgba(212,168,75,.25),transparent);border-radius:2px 2px 0 0;}
+.nm-pedestal::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(95deg,transparent,transparent 15px,rgba(232,224,208,.015) 15px,rgba(232,224,208,.015) 16px);pointer-events:none;}
+
+/* Marble texture mixin — layered noise + veining */
+.marble-tex{
+  background:
+    repeating-linear-gradient(110deg,transparent,transparent 8px,rgba(255,255,255,.02) 8px,rgba(255,255,255,.02) 9px),
+    repeating-linear-gradient(70deg,transparent,transparent 12px,rgba(200,190,170,.03) 12px,rgba(200,190,170,.03) 13px),
+    repeating-linear-gradient(160deg,transparent,transparent 20px,rgba(180,170,150,.02) 20px,rgba(180,170,150,.02) 21px);
+}
+
+/* Shadow on pedestal from statue */
+.nm-statue-shadow{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);width:90px;height:12px;
+  background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,.2),transparent 70%);z-index:0;
+  transition:width .6s,opacity .6s;}
+
+/* Statue pieces — real marble look with bevels + depth */
+.nm-sp{position:absolute;z-index:2;transition:none;will-change:transform,opacity;}
+
+/* Ghost slot (target position, always visible) */
+.nm-sp-ghost{opacity:.06;filter:none;z-index:1;}
+
+/* Piece states */
+.nm-sp.waiting{opacity:0;transform:translateY(-80px) scale(.7);pointer-events:none;}
+.nm-sp.hovering{opacity:.7;filter:blur(.5px);animation:nm-hover 1.5s ease-in-out infinite;z-index:3;}
+@keyframes nm-hover{0%,100%{transform:translateY(-45px) scale(.92) rotate(-1deg);}50%{transform:translateY(-50px) scale(.93) rotate(1deg);}}
+.nm-sp.aligning{opacity:.9;animation:nm-align var(--align-dur,.8s) cubic-bezier(.22,1,.36,1) forwards;z-index:3;}
+@keyframes nm-align{
+  0%{transform:translateY(-45px) scale(.92) rotate(-1deg);filter:blur(.5px);}
+  60%{transform:translateY(-8px) scale(.98) rotate(.3deg);filter:none;}
+  100%{transform:translateY(-4px) scale(1) rotate(0deg);filter:none;}}
+.nm-sp.snapping{animation:nm-snap var(--snap-dur,.3s) cubic-bezier(.34,1.56,.64,1) forwards;z-index:3;}
+@keyframes nm-snap{
+  0%{transform:translateY(-4px) scale(1);}
+  40%{transform:translateY(2px) scale(1.02);}
+  70%{transform:translateY(-1px) scale(.99);}
+  100%{transform:none;}}
+.nm-sp.placed{opacity:1;transform:none;z-index:2;}
+
+/* Success reaction glow */
+.nm-sp.success-glow::after{content:'';position:absolute;top:-4px;left:-4px;right:-4px;bottom:-4px;
+  border-radius:4px;box-shadow:0 0 20px rgba(212,168,75,.3),0 0 40px rgba(212,168,75,.1);
+  animation:nm-success-pulse 1.2s ease-out forwards;pointer-events:none;}
+@keyframes nm-success-pulse{0%{opacity:1;box-shadow:0 0 25px rgba(212,168,75,.4),0 0 50px rgba(212,168,75,.15);}100%{opacity:0;box-shadow:0 0 0 transparent;}}
+
+/* Fail reaction — misaligned, dull thud */
+.nm-sp.fumble-shake{animation:nm-fumble .5s ease-out forwards;z-index:3;}
+@keyframes nm-fumble{
+  0%{transform:translateY(-4px) rotate(0deg);}
+  20%{transform:translateY(1px) rotate(2deg);}
+  40%{transform:translateY(0px) rotate(-1.5deg);}
+  60%{transform:translateY(1px) rotate(.8deg);}
+  100%{transform:translateX(2px) rotate(1.5deg);}}
+.nm-sp.fumbled{transform:translateX(2px) rotate(1.5deg);opacity:.75;}
+.nm-sp.fumbled .shape{filter:brightness(.7) saturate(.6);}
+
+/* Knocked off — gravity fall */
+.nm-sp.knocked{animation:nm-knock .8s cubic-bezier(.55,.06,.68,.19) forwards;z-index:4;}
+@keyframes nm-knock{
+  0%{transform:none;opacity:1;}
+  15%{transform:translateX(8px) rotate(5deg);}
+  30%{transform:translateX(18px) rotate(12deg) translateY(-5px);}
+  50%{transform:translateX(30px) rotate(20deg) translateY(10px);}
+  75%{transform:translateX(45px) rotate(30deg) translateY(40px);opacity:.7;}
+  100%{transform:translateX(55px) rotate(40deg) translateY(80px);opacity:0;}}
+
+/* Interrupted mid-placement — piece falls from alignment */
+.nm-sp.interrupted{animation:nm-interrupt .7s ease-in forwards;z-index:4;}
+@keyframes nm-interrupt{
+  0%{transform:translateY(-8px) scale(.98);opacity:.9;}
+  20%{transform:translateY(-15px) rotate(-8deg) scale(.95);opacity:.85;}
+  50%{transform:translateY(5px) rotate(-15deg) scale(.9);opacity:.6;}
+  100%{transform:translateY(60px) rotate(-25deg) scale(.7);opacity:0;}}
+
+/* ── Piece shapes with marble texture ── */
+/* Base — widest, heaviest, slowest */
+.nm-sp-base{bottom:32px;left:50%;margin-left:-46px;width:92px;height:36px;--align-dur:1.2s;--snap-dur:.45s;}
+.nm-sp-base .shape{width:92px;height:36px;clip-path:polygon(8% 0%,92% 0%,100% 100%,0% 100%);
+  background:
+    linear-gradient(175deg,rgba(220,210,195,.85) 0%,rgba(200,190,170,.7) 30%,rgba(180,170,150,.6) 60%,rgba(160,150,135,.5) 100%);
+  box-shadow:inset 2px 2px 6px rgba(255,255,255,.08),inset -2px -2px 4px rgba(0,0,0,.15),0 4px 12px rgba(0,0,0,.3);
+  border-radius:0 0 3px 3px;position:relative;}
+.nm-sp-base .shape::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(115deg,transparent,transparent 10px,rgba(255,255,255,.015) 10px,rgba(255,255,255,.015) 11px),
+    repeating-linear-gradient(65deg,transparent,transparent 15px,rgba(180,170,150,.025) 15px,rgba(180,170,150,.025) 16px);
+  border-radius:inherit;pointer-events:none;}
+.nm-sp-base .shape::after{content:'';position:absolute;top:4px;left:12px;width:25px;height:1px;
+  background:rgba(160,150,130,.2);transform:rotate(-5deg);border-radius:1px;}
+
+/* Torso — moderate weight */
+.nm-sp-torso{bottom:68px;left:50%;margin-left:-34px;width:68px;height:58px;--align-dur:1s;--snap-dur:.35s;}
+.nm-sp-torso .shape{width:68px;height:58px;clip-path:polygon(18% 0%,82% 0%,92% 100%,8% 100%);
+  background:
+    linear-gradient(170deg,rgba(225,215,200,.8) 0%,rgba(205,195,175,.7) 40%,rgba(185,175,158,.55) 100%);
+  box-shadow:inset 2px 3px 8px rgba(255,255,255,.06),inset -2px -2px 5px rgba(0,0,0,.12),0 3px 10px rgba(0,0,0,.25);
+  position:relative;}
+.nm-sp-torso .shape::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(105deg,transparent,transparent 8px,rgba(255,255,255,.012) 8px,rgba(255,255,255,.012) 9px),
+    repeating-linear-gradient(155deg,transparent,transparent 18px,rgba(170,160,140,.02) 18px,rgba(170,160,140,.02) 19px);pointer-events:none;}
+.nm-sp-torso .shape::after{content:'';position:absolute;top:12px;right:8px;width:18px;height:1px;
+  background:rgba(160,150,130,.15);transform:rotate(8deg);}
+
+/* Left arm */
+.nm-sp-larm{bottom:92px;left:50%;margin-left:-62px;width:34px;height:42px;--align-dur:.8s;--snap-dur:.3s;}
+.nm-sp-larm .shape{width:34px;height:42px;
+  clip-path:polygon(55% 0%,95% 8%,80% 100%,5% 85%,20% 15%);
+  background:linear-gradient(140deg,rgba(215,205,190,.75) 0%,rgba(190,180,165,.6) 100%);
+  box-shadow:inset 1px 2px 5px rgba(255,255,255,.06),inset -1px -1px 3px rgba(0,0,0,.1),0 2px 8px rgba(0,0,0,.2);
+  transform:rotate(-12deg);position:relative;}
+.nm-sp-larm .shape::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(130deg,transparent,transparent 6px,rgba(255,255,255,.01) 6px,rgba(255,255,255,.01) 7px);pointer-events:none;}
+
+/* Right arm */
+.nm-sp-rarm{bottom:92px;left:50%;margin-left:28px;width:34px;height:42px;--align-dur:.8s;--snap-dur:.3s;}
+.nm-sp-rarm .shape{width:34px;height:42px;
+  clip-path:polygon(45% 0%,5% 8%,20% 100%,95% 85%,80% 15%);
+  background:linear-gradient(220deg,rgba(215,205,190,.75) 0%,rgba(190,180,165,.6) 100%);
+  box-shadow:inset -1px 2px 5px rgba(255,255,255,.06),inset 1px -1px 3px rgba(0,0,0,.1),0 2px 8px rgba(0,0,0,.2);
+  transform:rotate(12deg);position:relative;}
+.nm-sp-rarm .shape::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(50deg,transparent,transparent 6px,rgba(255,255,255,.01) 6px,rgba(255,255,255,.01) 7px);pointer-events:none;}
+
+/* Head — lighter, faster */
+.nm-sp-head{bottom:126px;left:50%;margin-left:-16px;width:32px;height:38px;--align-dur:.6s;--snap-dur:.25s;}
+.nm-sp-head .shape{width:32px;height:38px;border-radius:50% 50% 42% 42%;
+  background:
+    radial-gradient(ellipse 80% 70% at 45% 35%,rgba(230,220,205,.8),rgba(200,190,170,.65) 60%,rgba(180,170,155,.5) 100%);
+  box-shadow:inset 2px 3px 8px rgba(255,255,255,.08),inset -1px -2px 5px rgba(0,0,0,.1),0 2px 8px rgba(0,0,0,.2);
+  position:relative;}
+.nm-sp-head .shape::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:inherit;
+  background:repeating-linear-gradient(100deg,transparent,transparent 7px,rgba(255,255,255,.012) 7px,rgba(255,255,255,.012) 8px);pointer-events:none;}
+/* Facial features hint */
+.nm-sp-head .shape::after{content:'';position:absolute;top:14px;left:8px;width:16px;height:8px;
+  border-bottom:1px solid rgba(160,150,130,.15);border-radius:0 0 50% 50%;pointer-events:none;}
+
+/* Crown — lightest, fastest, golden accent, BIG MOMENT */
+.nm-sp-crown{bottom:162px;left:50%;margin-left:-20px;width:40px;height:22px;--align-dur:.5s;--snap-dur:.2s;}
+.nm-sp-crown .shape{width:40px;height:22px;
+  clip-path:polygon(12% 100%,0% 55%,22% 0%,50% 45%,78% 0%,100% 55%,88% 100%);
+  background:linear-gradient(170deg,#e8c860,#c8a040 40%,#a08030 100%);
+  box-shadow:0 0 8px rgba(212,168,75,.2),inset 1px 1px 4px rgba(255,255,255,.15),inset -1px -1px 3px rgba(0,0,0,.1);
+  position:relative;filter:drop-shadow(0 0 6px rgba(212,168,75,.15));}
+.nm-sp-crown .shape::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(80deg,transparent,transparent 4px,rgba(255,255,255,.03) 4px,rgba(255,255,255,.03) 5px);pointer-events:none;}
+
+/* Completion aura */
+.nm-statue-complete{position:absolute;top:0;left:0;right:0;bottom:0;z-index:0;opacity:0;pointer-events:none;transition:opacity 1s;}
+.nm-statue-complete.active{opacity:1;}
+.nm-statue-complete .glow{position:absolute;top:20%;left:50%;transform:translateX(-50%);width:150px;height:200px;
+  background:radial-gradient(ellipse at 50% 60%,rgba(212,168,75,.12),rgba(212,168,75,.04) 40%,transparent 70%);
+  animation:nm-complete-breathe 2.5s ease-in-out infinite;}
+@keyframes nm-complete-breathe{0%,100%{transform:translateX(-50%) scale(1);opacity:.6;}50%{transform:translateX(-50%) scale(1.08);opacity:1;}}
+
+/* Crack overlay for fumbled pieces */
+.nm-crack{position:absolute;pointer-events:none;z-index:5;}
+.nm-crack::before{content:'';position:absolute;width:12px;height:1px;background:rgba(100,90,80,.3);transform:rotate(-35deg);}
+.nm-crack::after{content:'';position:absolute;top:2px;left:4px;width:8px;height:1px;background:rgba(100,90,80,.2);transform:rotate(20deg);}
+
+/* ═══════════════════════════════════════════════════════ */
+/* PIECE WEIGHT INDICATOR                                 */
+/* ═══════════════════════════════════════════════════════ */
+.nm-weight{display:flex;align-items:center;gap:6px;margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;}
+.nm-weight-label{color:rgba(232,220,200,.3);}
+.nm-weight-bar{display:flex;gap:2px;}
+.nm-weight-seg{width:12px;height:4px;border-radius:1px;background:rgba(212,168,75,.08);}
+.nm-weight-seg.filled{background:var(--nm-gold);box-shadow:0 0 4px rgba(212,168,75,.2);}
+
+/* ═══════════════════════════════════════════════════════ */
+/* THREAT + SIDEBAR + CONTROLS (same as v1)              */
+/* ═══════════════════════════════════════════════════════ */
+.nm-threat{padding:10px 14px;background:rgba(200,48,48,.04);border:1px solid rgba(200,48,48,.08);border-radius:6px;margin:8px 0;}
+.nm-threat-label{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;color:rgba(232,64,48,.4);margin-bottom:6px;font-weight:600;}
+.nm-threat-bar{height:8px;background:rgba(232,64,48,.04);border-radius:4px;overflow:hidden;}
+.nm-threat-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.34,1.56,.64,1);}
+.nm-threat-low{background:linear-gradient(90deg,rgba(80,184,96,.4),rgba(80,184,96,.6));width:20%;box-shadow:0 0 4px rgba(80,184,96,.3);}
+.nm-threat-med{background:linear-gradient(90deg,rgba(232,160,32,.5),rgba(232,160,32,.7));width:50%;box-shadow:0 0 6px rgba(232,160,32,.3);}
+.nm-threat-high{background:linear-gradient(90deg,rgba(200,48,48,.5),rgba(200,48,48,.8));width:80%;box-shadow:0 0 8px rgba(200,48,48,.3);animation:nm-threat-pulse 1.5s ease-in-out infinite;}
+.nm-threat-max{background:linear-gradient(90deg,rgba(232,64,48,.7),rgba(232,64,48,1));width:95%;box-shadow:0 0 12px rgba(232,64,48,.4);animation:nm-threat-pulse .8s ease-in-out infinite;}
+@keyframes nm-threat-pulse{0%,100%{box-shadow:0 0 8px rgba(232,64,48,.3);}50%{box-shadow:0 0 16px rgba(232,64,48,.6);}}
+
+.nm-sb{background:linear-gradient(180deg,rgba(56,42,32,.92),rgba(48,36,28,.95));border:1px solid rgba(212,168,75,.08);border-radius:8px;overflow:hidden;}
+.nm-sb-hdr{padding:14px 16px 10px;border-bottom:1px solid rgba(212,168,75,.06);font-family:'Playfair Display',serif;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--nm-gold);display:flex;align-items:center;gap:8px;}
+.nm-sb-body{padding:12px 14px;max-height:500px;overflow-y:auto;}
+.nm-sb-section{font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:600;letter-spacing:2px;color:rgba(232,220,200,.2);margin-bottom:6px;}
+.nm-sb-divider{height:1px;background:rgba(212,168,75,.06);margin:10px 0;}
+.nm-sb-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(212,168,75,.03);font-size:11px;transition:all .3s;}
+.nm-sb-row:last-child{border-bottom:none;}
+.nm-sb-row.highlight{background:rgba(212,168,75,.06);border-radius:4px;padding-left:6px;padding-right:6px;}
+.nm-sb-name{flex:1;color:rgba(232,220,200,.55);}
+.nm-sb-name strong{color:var(--nm-white);}
+.nm-sb-val{font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:11px;}
+.nm-sb-val-g{color:var(--nm-success);}.nm-sb-val-d{color:var(--nm-danger);}.nm-sb-val-w{color:var(--nm-gold);}
+.nm-sb-pill{display:inline-block;padding:1px 6px;border-radius:6px;font-size:8px;font-weight:700;letter-spacing:.5px;font-family:'IBM Plex Mono',monospace;}
+.nm-sb-pill-g{background:rgba(80,184,96,.1);color:var(--nm-success);}
+.nm-sb-pill-d{background:rgba(200,48,48,.1);color:var(--nm-danger);}
+.nm-sb-pill-w{background:rgba(212,168,75,.1);color:var(--nm-gold);}
+.nm-sb-bar{flex:1;height:4px;background:rgba(212,168,75,.06);border-radius:2px;overflow:hidden;margin:0 4px;}
+.nm-sb-bar-fill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.34,1.56,.64,1);}
+.nm-sb-bar-fill-y{background:var(--nm-gold);box-shadow:0 0 4px rgba(212,168,75,.3);}
+.nm-sb-bar-fill-r{background:#e05050;box-shadow:0 0 4px rgba(224,80,80,.3);}
+
+.nm-controls{position:fixed;bottom:0;left:0;right:0;z-index:10;background:linear-gradient(to top,rgba(56,42,32,.98),rgba(56,42,32,.85) 70%,transparent);padding:20px 0 16px;text-align:center;}
+.nm-btn{display:inline-block;padding:8px 20px;margin:0 6px;border:1px solid rgba(212,168,75,.2);border-radius:6px;background:rgba(212,168,75,.06);color:var(--nm-gold);font-family:'Playfair Display',serif;font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .15s;user-select:none;}
+.nm-btn:hover{background:rgba(212,168,75,.12);border-color:rgba(212,168,75,.35);box-shadow:0 0 15px rgba(212,168,75,.1);}
+.nm-btn:active{transform:scale(.96);}
+.nm-btn.disabled{opacity:.35;pointer-events:none;}
+.nm-counter{font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(232,220,200,.3);letter-spacing:1px;margin:0 10px;}
+
+.nm-phase-tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid rgba(212,168,75,.08);position:relative;z-index:6;}
+.nm-phase-tab{flex:1;padding:12px 8px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:2px;color:rgba(232,220,200,.3);cursor:pointer;transition:all .25s;border-bottom:2px solid transparent;margin-bottom:-2px;}
+.nm-phase-tab:hover{color:rgba(232,220,200,.5);}
+.nm-phase-tab.active{color:var(--nm-gold);border-bottom-color:var(--nm-gold);background:rgba(212,168,75,.04);}
+.nm-phase-section{display:none;}
+.nm-phase-section.active{display:block;}
+
+.nm-title-card{text-align:center;padding:50px 20px 40px;position:relative;}
+.nm-title-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse 70% 50% at 50% 40%,rgba(212,168,75,.04),transparent);pointer-events:none;}
+.nm-tc-title{font-family:'Playfair Display',serif;font-size:48px;font-weight:900;color:var(--nm-white);text-shadow:0 2px 40px rgba(0,0,0,.4),0 0 80px rgba(212,168,75,.06);letter-spacing:2px;line-height:1.1;}
+.nm-tc-sub{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--nm-gold);opacity:.5;margin-top:10px;}
+.nm-tc-cold{font-size:14px;color:var(--nm-cream);margin-top:16px;max-width:550px;margin-left:auto;margin-right:auto;line-height:1.6;font-style:italic;}
+.nm-tc-tribes{display:flex;justify-content:center;gap:20px;margin-top:24px;}
+.nm-tc-tribe{padding:10px 24px;border-radius:6px;font-family:'Playfair Display',serif;font-size:14px;font-weight:700;letter-spacing:2px;}
+.nm-tc-tribe-y{background:rgba(138,122,16,.08);border:1px solid rgba(138,122,16,.2);color:var(--nm-gold);}
+.nm-tc-tribe-r{background:rgba(138,32,32,.08);border:1px solid rgba(138,32,32,.2);color:#e05050;}
+
+/* Sidebar assembly live-reaction flash */
+.nm-sb-flash-g{animation:nm-sb-fg .6s ease-out;}
+@keyframes nm-sb-fg{0%{background:rgba(80,184,96,.12);}100%{background:transparent;}}
+.nm-sb-flash-d{animation:nm-sb-fd .6s ease-out;}
+@keyframes nm-sb-fd{0%{background:rgba(200,48,48,.12);}100%{background:transparent;}}
+
+/* ═══════════════════════════════════════════════════════ */
+/* ASSEMBLY DEMO CONTROLS                                 */
+/* ═══════════════════════════════════════════════════════ */
+.nm-demo-controls{text-align:center;margin:16px 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.nm-demo-btn{padding:6px 14px;border:1px solid rgba(212,168,75,.15);border-radius:4px;background:rgba(212,168,75,.04);
+  color:var(--nm-gold);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;transition:all .15s;}
+.nm-demo-btn:hover{background:rgba(212,168,75,.1);border-color:rgba(212,168,75,.3);}
+.nm-demo-btn.active{background:rgba(212,168,75,.15);border-color:var(--nm-gold);}
+.nm-demo-status{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(232,220,200,.3);letter-spacing:1px;text-align:center;margin:8px 0;}
+
+@media(prefers-reduced-motion:reduce){
+  .nm-mote,.nm-cam-sweep,.nm-laser,.nm-laser-v,.nm-map-animal{animation:none!important;}
+  .nm-step,.nm-entering{animation:none!important;opacity:1;transform:none;filter:none;}
+  .nm-step.nm-visible{opacity:1;transform:none;filter:none;}
+  .nm-sp.hovering,.nm-sp.aligning,.nm-sp.snapping,.nm-sp.knocked,.nm-sp.interrupted,.nm-sp.fumble-shake{animation:none!important;transform:none;opacity:1;}
+  .nm-shell.screen-shake{animation:none!important;}
+  .nm-threat-fill,.nm-map-marker{transition:none!important;}
+}
+</style>
+</head>
+<body data-phase="title">
+
+<div class="nm-atmosphere">
+  <!-- Ceiling + crown molding -->
+  <div class="nm-ceiling"></div>
+  <!-- Classical columns (pilasters) -->
+  <div class="nm-columns"><div class="nm-col"></div><div class="nm-col"></div><div class="nm-col"></div><div class="nm-col"></div></div>
+  <!-- Mauve wall panels between columns -->
+  <div class="nm-panels"><div class="nm-panel"></div><div class="nm-panel"></div><div class="nm-panel"></div></div>
+  <!-- Portrait frames — gallery wall paintings -->
+  <div class="nm-portraits">
+    <div class="nm-portrait"><div class="canvas"></div><div class="frame"></div></div>
+    <div class="nm-portrait"><div class="canvas"></div><div class="frame"></div></div>
+    <div class="nm-portrait"><div class="canvas"></div><div class="frame"></div></div>
+    <div class="nm-portrait"><div class="canvas"></div><div class="frame"></div></div>
+    <div class="nm-portrait"><div class="canvas"></div><div class="frame"></div></div>
+    <div class="nm-portrait"><div class="canvas"></div><div class="frame"></div></div>
+    <div class="nm-portrait"><div class="canvas"></div><div class="frame"></div></div>
+    <div class="nm-portrait"><div class="canvas"></div><div class="frame"></div></div>
+  </div>
+  <!-- Small decorative statues on pedestals -->
+  <div class="nm-deco-statues"><div class="nm-deco-statue"><div class="fig"></div><div class="ped"></div></div><div class="nm-deco-statue"><div class="fig"></div><div class="ped"></div></div></div>
+  <!-- Ceiling spot lights -->
+  <div class="nm-ceiling-lights"><div class="nm-clight"></div><div class="nm-clight"></div><div class="nm-clight"></div></div>
+  <!-- Dust motes -->
+  <div class="nm-dust"><div class="nm-mote"></div><div class="nm-mote"></div><div class="nm-mote"></div><div class="nm-mote"></div><div class="nm-mote"></div><div class="nm-mote"></div></div>
+  <!-- Security lasers (only visible on security phase) -->
+  <div class="nm-laser-grid"><div class="nm-laser"></div><div class="nm-laser"></div><div class="nm-laser"></div><div class="nm-laser"></div><div class="nm-laser"></div><div class="nm-laser nm-laser-v"></div><div class="nm-laser nm-laser-v"></div><div class="nm-laser nm-laser-v"></div></div>
+  <!-- Security alarm wash -->
+  <div class="nm-alarm-wash"></div>
+  <!-- Gallery warm glow -->
+  <div class="nm-gallery-glow"></div>
+  <!-- Assembly siege pulse -->
+  <div class="nm-siege-pulse"></div>
+  <!-- Burgundy floor -->
+  <div class="nm-floor"></div>
+</div>
+
+<div style="max-width:1100px;margin:0 auto;padding:10px 20px 0;position:relative;z-index:6;">
+  <div class="nm-phase-tabs">
+    <div class="nm-phase-tab active" onclick="switchPhase('title')">TITLE</div>
+    <div class="nm-phase-tab" onclick="switchPhase('security')">SECURITY</div>
+    <div class="nm-phase-tab" onclick="switchPhase('gallery')">GALLERY</div>
+    <div class="nm-phase-tab" onclick="switchPhase('assembly')">ASSEMBLY</div>
+    <div class="nm-phase-tab" onclick="switchPhase('results')">RESULTS</div>
+  </div>
+</div>
+
+<div class="nm-shell" id="nm-shell">
+<div class="nm-main">
+
+<!-- ═══ TITLE ═══ -->
+<div class="nm-phase-section active" id="phase-title">
+  <div class="nm-title-card">
+    <div class="nm-icon nm-icon-lg nm-icon-statue" style="margin:0 auto 16px;"><div class="frame-wrap"><div class="corner-tl"></div><div class="corner-tr"></div><div class="corner-bl"></div><div class="corner-br"></div><div class="canvas-inner"></div></div></div>
+    <div class="nm-tc-title">Night at the Museum</div>
+    <div class="nm-tc-sub">WORLD TOUR CHALLENGE</div>
+    <div class="nm-tc-cold">"The museum closes its doors at sundown... but tonight, it opens for a very different kind of exhibition."</div>
+    <div class="nm-tc-tribes">
+      <div class="nm-tc-tribe nm-tc-tribe-y">TEAM VICTORY</div>
+      <div class="nm-tc-tribe nm-tc-tribe-r">TEAM AMAZON</div>
+    </div>
+  </div>
+  <div class="nm-ornate-strip-thick"></div>
+  <div class="nm-step nm-visible" style="margin-top:20px;">
+    <div class="nm-card nm-card-framed">
+      <div class="nm-hdr"><div class="nm-icon nm-icon-frame"><div class="ic"></div></div><div class="nm-label">Grand Entrance</div><div class="nm-badge nm-badge-hero">COLD OPEN</div></div>
+      <div class="nm-txt">The contestants step through towering marble columns into the grand atrium. Moonlight pours through the glass dome above, casting silver pools across the checkered floor. Display cases gleam in the darkness, each one a treasure chest waiting to be cracked. Somewhere deep in the galleries, <strong>something moves</strong>.</div>
+    </div>
+  </div>
+  <div class="nm-chatter nm-chatter-host" style="margin:12px 0;opacity:1;">"Welcome to tonight's challenge — the greatest museum heist in franchise history. Three phases. Break in. Search. Build. And try not to wake... the residents."</div>
+  <div class="nm-step nm-visible">
+    <div class="nm-card"><div class="nm-hdr"><div class="nm-icon nm-icon-alarm"><div class="ic"></div></div><div class="nm-label">Rules Briefing</div></div>
+      <div class="nm-txt"><strong>Phase 1:</strong> Navigate the security gauntlet — laser grids, pressure floors, camera sweeps. Every alarm you trigger makes Phase 2 harder.<br><strong>Phase 2:</strong> Search four galleries for scattered statue pieces. Choose your statue wisely.<br><strong>Phase 3:</strong> Assemble your statue while the museum's... inhabitants... try to stop you.</div></div>
+  </div>
+</div>
+
+<!-- ═══ SECURITY ═══ -->
+<div class="nm-phase-section" id="phase-security">
+  <div class="nm-phase-hdr"><div class="nm-phase-tag">PHASE 01</div><div class="nm-phase-title">Security Breach</div><div class="nm-phase-sub">Navigate the museum's security gauntlet. Laser grids. Pressure floors. Camera sweeps. Every alarm counts.</div></div>
+  <div class="nm-sec-readout">SYS &gt; SECURITY GRID ONLINE &mdash; MOTION SENSORS ACTIVE &mdash; CAMERA SWEEP: 12s CYCLE</div>
+  <div class="nm-step nm-visible" style="margin-top:16px;"><div class="nm-tribe-pov nm-tribe-pov-y"><div class="nm-sb-tribe nm-sb-tribe-y"></div>TEAM VICTORY<div style="margin-left:auto;"><div class="nm-alarm-dots"><div class="nm-alarm-dot triggered"></div><div class="nm-alarm-dot triggered"></div><div class="nm-alarm-dot"></div><div class="nm-alarm-dot"></div><div class="nm-alarm-dot"></div></div></div></div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-social"><div class="nm-hdr"><div class="nm-icon nm-icon-bond"><div class="ic"></div></div><div class="nm-label">Teammate Tip</div><div class="nm-badge nm-badge-social">MICRO-EVENT</div></div><div class="nm-txt"><strong>Lindsay</strong> whispers to <strong>Beth</strong>: "The third laser grid has a gap on the left side — I saw it from here." Beth nods gratefully and adjusts her approach.</div><div class="nm-score-bar" style="margin-top:8px;"><span style="font-size:10px;color:var(--nm-muted);">Roll boost</span><div class="nm-strack"><div class="nm-sfill nm-sfill-gold" style="width:65%;"></div></div><span class="nm-sval nm-sval-w">+0.15</span></div></div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-security"><div class="nm-hdr"><div class="nm-icon nm-icon-laser"><div class="ic"></div></div><div class="nm-label">Beth &mdash; Security Roll</div><div class="nm-badge nm-badge-pass">CLEAR</div></div><div class="nm-txt"><strong>Beth</strong> drops flat, rolling under the first laser grid with inches to spare. She times the camera sweep perfectly — three seconds of darkness — and slides through the pressure corridor without touching a single tile. Clean.</div><div class="nm-score-bar"><span style="font-size:10px;color:var(--nm-muted);">Security Score</span><div class="nm-strack"><div class="nm-sfill nm-sfill-g" style="width:72%;"></div></div><span class="nm-sval nm-sval-g">+2</span></div></div></div>
+  <div class="nm-sec-readout">SYS &gt; SECTOR 3 &mdash; NO BREACH DETECTED &mdash; CONTINUING SWEEP</div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-animal"><div class="nm-hdr"><div class="nm-icon nm-icon-paw"><div class="ic"></div><div class="p1"></div><div class="p2"></div><div class="p3"></div><div class="p4"></div></div><div class="nm-label">Animal Startle</div><div class="nm-badge nm-badge-danger">DISRUPTION</div></div><div class="nm-txt">A shadow darts across the corridor ahead of <strong>Harold</strong>. Something large. Something with claws. Harold flinches, his hand brushing a display case. The glass wobbles but doesn't break. His nerves are shot.</div><div class="nm-score-bar"><span style="font-size:10px;color:var(--nm-muted);">Roll penalty</span><div class="nm-strack"><div class="nm-sfill nm-sfill-d" style="width:45%;"></div></div><span class="nm-sval nm-sval-d">-0.15</span></div></div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-alarm"><div class="nm-hdr"><div class="nm-icon nm-icon-alarm"><div class="ic"></div></div><div class="nm-label">Harold &mdash; Security Roll</div><div class="nm-badge nm-badge-fail">ALARM!</div></div><div class="nm-txt"><strong>Harold</strong> misjudges the pressure floor pattern. His right foot lands square on a sensor tile. A piercing alarm blares through the corridor — red lights flash along the ceiling. Harold freezes, eyes wide.</div><div class="nm-alarm-meter"><div class="nm-alarm-label">ALARM COUNT</div><div class="nm-alarm-dots"><div class="nm-alarm-dot triggered"></div><div class="nm-alarm-dot triggered"></div><div class="nm-alarm-dot triggered"></div><div class="nm-alarm-dot"></div><div class="nm-alarm-dot"></div></div></div><div class="nm-score-bar"><span style="font-size:10px;color:var(--nm-muted);">Score</span><div class="nm-strack"><div class="nm-sfill nm-sfill-d" style="width:40%;"></div></div><span class="nm-sval nm-sval-d">-2</span></div></div></div>
+  <div class="nm-sec-readout alert">!! ALERT &gt; SECTOR 5 BREACH &mdash; ALARM TRIGGERED &mdash; ANIMAL ALERT LEVEL: ELEVATED</div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-danger"><div class="nm-hdr"><div class="nm-icon nm-icon-camera"><div class="ic"></div></div><div class="nm-label">Blame</div><div class="nm-badge nm-badge-danger">FRICTION</div></div><div class="nm-txt"><strong>Heather</strong> rounds on Harold immediately. "Are you KIDDING me? A pressure floor? A CHILD could have dodged that!" She turns to the others, arms crossed. "If we lose because of him, I'm voting him out tonight."</div><div class="nm-blame"><span class="nm-blame-arrow">&rarr;</span><span style="font-size:11px;"><strong>Heather</strong> blames <strong>Harold</strong></span><span class="nm-sb-pill nm-sb-pill-d" style="margin-left:auto;">BOND -0.8</span></div></div></div>
+  <div class="nm-chatter" style="margin:16px 0;">The echoes of the alarm fade into the marble halls. Somewhere in the galleries, heavy footsteps begin to pace...</div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-social"><div class="nm-hdr"><div class="nm-icon nm-icon-debate"><div class="ic"></div></div><div class="nm-label">Cross-Tribe Taunt</div><div class="nm-badge nm-badge-social">BETWEEN PHASES</div></div><div class="nm-txt"><strong>Duncan</strong> catches sight of Team Victory's alarm count and grins. "Three alarms? Maybe try tiptoeing next time." <strong>Heather</strong> glares daggers but says nothing — for now.</div></div></div>
+</div>
+
+<!-- ═══ GALLERY ═══ -->
+<div class="nm-phase-section" id="phase-gallery">
+  <div class="nm-map-wrap"><div class="nm-ornate-strip"></div><div class="nm-map" id="nm-map"><div class="nm-map-grid"></div><div class="nm-map-title"><div class="nm-map-title-text">MUSEUM FLOOR PLAN</div><div class="nm-map-phase">PHASE 2 &middot; GALLERY SEARCH</div></div><div class="nm-map-room done" data-name="SCULPTURE HALL" style="left:5%;top:35%;width:22%;height:45%;"></div><div class="nm-map-room active" data-name="ANCIENT WING" style="left:32%;top:25%;width:20%;height:50%;"></div><div class="nm-map-room locked" data-name="MODERN GALLERY" style="left:57%;top:30%;width:18%;height:45%;"></div><div class="nm-map-room locked" data-name="THE VAULT" style="left:80%;top:35%;width:16%;height:40%;"></div><div class="nm-map-corridor active" style="left:27%;top:52%;width:5%;height:3px;"></div><div class="nm-map-corridor" style="left:52%;top:50%;width:5%;height:3px;"></div><div class="nm-map-corridor" style="left:75%;top:52%;width:5%;height:3px;"></div><div class="nm-map-piece" style="left:12%;top:50%;"></div><div class="nm-map-piece collected" style="left:20%;top:60%;"></div><div class="nm-map-piece" style="left:38%;top:42%;"></div><div class="nm-map-piece" style="left:45%;top:58%;"></div><div class="nm-map-piece" style="left:63%;top:48%;"></div><div class="nm-map-piece" style="left:86%;top:52%;"></div><div class="nm-map-animal" style="left:40%;top:65%;"><div class="paw-mini"></div></div><div class="nm-map-animal" style="left:70%;top:40%;"><div class="paw-mini"></div></div><div class="nm-map-marker nm-map-marker-y" style="left:36%;top:45%;">TV</div><div class="nm-map-marker nm-map-marker-r" style="left:15%;top:55%;">TA</div></div><div class="nm-ornate-strip"></div></div>
+  <div class="nm-phase-hdr"><div class="nm-phase-tag">PHASE 02</div><div class="nm-phase-title">Gallery Search</div><div class="nm-phase-sub">Four themed galleries. Scattered statue pieces. Animals prowling. Find what you need before something finds you.</div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-debate"><div class="nm-hdr"><div class="nm-icon nm-icon-debate"><div class="ic"></div></div><div class="nm-label">Statue Selection Debate</div><div class="nm-badge nm-badge-hero">TEAM VICTORY</div></div><div class="nm-txt" style="margin-bottom:10px;"><strong>Team Victory</strong> gathers around the statue catalogue. Three options. Each one a different kind of nightmare to assemble.</div><div class="nm-debate"><div class="nm-debate-title">STATUE OPTIONS</div><div class="nm-debate-opt chosen"><div class="nm-icon nm-icon-statue"><div class="ic"></div></div><div><strong>Classical Figure</strong> <span style="color:var(--nm-muted);font-size:11px;">— 6 heavy pieces, physical carry rolls</span></div><div class="nm-debate-vote">4 VOTES</div></div><div class="nm-debate-opt rejected"><div class="nm-icon nm-icon-key"><div class="ic"></div></div><div><strong>Ancient Relic</strong> <span style="color:var(--nm-muted);font-size:11px;">— 4 cursed pieces, decode rolls needed</span></div><div class="nm-debate-vote">1 VOTE</div></div><div class="nm-debate-opt rejected"><div class="nm-icon nm-icon-build"><div class="ic"></div></div><div><strong>Modern Abstract</strong> <span style="color:var(--nm-muted);font-size:11px;">— 5 confusing pieces, wrong placement risk</span></div><div class="nm-debate-vote">2 VOTES</div></div></div><div class="nm-txt" style="font-style:italic;opacity:.7;font-size:11px;margin-top:4px;"><strong>Lindsay</strong> advocates: "The Classical Figure is heavy but straightforward — we just need muscle. No tricks, no curses."</div></div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-framed"><div class="nm-hdr"><div class="nm-icon nm-icon-frame"><div class="ic"></div></div><div class="nm-label">Sculpture Hall</div><div class="nm-badge nm-badge-hero">GALLERY 1</div></div><div class="nm-txt">Rows of marble figures line the hall, their blank eyes following the contestants through the moonlight. Every shadow could be a statue piece — or something else entirely.</div></div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-piece"><div class="nm-hdr"><div class="nm-icon nm-icon-search"><div class="ic"></div></div><div class="nm-label">Beth &mdash; Piece Found!</div><div class="nm-badge nm-badge-found">PIECE 1/6</div></div><div class="nm-txt"><strong>Beth</strong> spots something glinting behind a Roman bust — it's a marble <strong>torso fragment</strong>, wrapped in protective cloth. She pulls it free carefully and signals the team.</div><div class="nm-score-bar"><span style="font-size:10px;color:var(--nm-muted);">Search Score</span><div class="nm-strack"><div class="nm-sfill nm-sfill-gold" style="width:68%;"></div></div><span class="nm-sval nm-sval-w">+2</span></div></div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-animal"><div class="nm-hdr"><div class="nm-icon nm-icon-paw"><div class="ic"></div><div class="p1"></div><div class="p2"></div><div class="p3"></div><div class="p4"></div></div><div class="nm-label">Animal Encounter!</div><div class="nm-badge nm-badge-danger">CAUGHT</div></div><div class="nm-txt"><strong>Harold</strong> rounds the corner of the Ancient Wing and comes face-to-face with something large, furry, and extremely territorial. Before he can react, it charges. Harold stumbles backward, dropping the piece he was carrying — it clatters across the marble floor and slides under a display case.</div><div class="nm-score-bar"><span style="font-size:10px;color:var(--nm-muted);">Impact</span><div class="nm-strack"><div class="nm-sfill nm-sfill-d" style="width:55%;"></div></div><span class="nm-sval nm-sval-d">-2, PIECE LOST</span></div></div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-hero"><div class="nm-hdr"><div class="nm-icon nm-icon-shield"><div class="ic"></div></div><div class="nm-label">DJ &mdash; Heroic Distraction</div><div class="nm-badge nm-badge-hero">HERO</div></div><div class="nm-txt"><strong>DJ</strong> sees the animal closing in on Harold and acts without thinking. He grabs a fallen banner pole and waves it, shouting "Hey! Over here, big guy!" The creature turns — DJ leads it down a side corridor, giving Harold time to recover the scattered piece.</div><div class="nm-score-bar"><span style="font-size:10px;color:var(--nm-muted);">Hero Score</span><div class="nm-strack"><div class="nm-sfill nm-sfill-g" style="width:75%;"></div></div><span class="nm-sval nm-sval-g">+2</span></div><div style="display:flex;gap:8px;margin-top:6px;"><span class="nm-sb-pill nm-sb-pill-g">POP +1</span><span class="nm-sb-pill nm-sb-pill-w">BOND +0.5</span></div></div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-danger"><div class="nm-hdr"><div class="nm-icon nm-icon-trophy"><div class="ic"></div></div><div class="nm-label">Cross-Tribe Piece Race!</div><div class="nm-badge nm-badge-danger">COLLISION</div></div><div class="nm-txt"><strong>Beth</strong> and <strong>Courtney</strong> spot the same statue piece at the same time — a gleaming <strong>arm fragment</strong> resting on a velvet cushion in the center of the Ancient Wing. They lock eyes across the gallery. Both break into a sprint.</div><div class="nm-score-bar" style="margin-top:8px;"><span style="font-size:10px;color:var(--nm-gold);font-weight:700;">Beth</span><div class="nm-strack"><div class="nm-sfill nm-sfill-gold" style="width:62%;"></div></div><span class="nm-sval nm-sval-w">0.58</span></div><div class="nm-score-bar"><span style="font-size:10px;color:var(--nm-danger);font-weight:700;">Courtney</span><div class="nm-strack"><div class="nm-sfill nm-sfill-d" style="width:48%;"></div></div><span class="nm-sval nm-sval-d">0.42</span></div><div style="text-align:center;margin-top:8px;font-family:'Playfair Display',serif;font-size:13px;color:var(--nm-gold);font-weight:700;letter-spacing:1px;">Beth grabs the piece! (+3 score)</div></div></div>
+  <div class="nm-chatter" style="margin:12px 0;">The gallery lights flicker. A low growl reverberates through the Ancient Wing — the animals are getting bolder...</div>
+</div>
+
+<!-- ═══ ASSEMBLY — The Big Upgrade ═══ -->
+<div class="nm-phase-section" id="phase-assembly">
+  <div class="nm-phase-hdr"><div class="nm-phase-tag">PHASE 03</div><div class="nm-phase-title">Assembly Under Pressure</div><div class="nm-phase-sub">Build your statue. Piece by piece. While the animals close in. Every placement counts. Every failed defense costs you.</div></div>
+
+  <!-- Role assignment -->
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-debate"><div class="nm-hdr"><div class="nm-icon nm-icon-debate"><div class="ic"></div></div><div class="nm-label">Role Assignment</div><div class="nm-badge nm-badge-hero">TEAM VICTORY</div></div><div class="nm-txt" style="margin-bottom:10px;">Three roles. Three tribe members. The rest provide support.</div><div class="nm-debate"><div class="nm-debate-title">ROLE ASSIGNMENTS</div><div class="nm-debate-opt chosen"><div class="nm-icon nm-icon-build"><div class="ic"></div></div><div><strong>Builder: Beth</strong> <span style="color:var(--nm-muted);font-size:11px;">— mental + intuition</span></div></div><div class="nm-debate-opt chosen"><div class="nm-icon nm-icon-shield"><div class="ic"></div></div><div><strong>Defender: DJ</strong> <span style="color:var(--nm-muted);font-size:11px;">— physical + boldness</span></div></div><div class="nm-debate-opt chosen"><div class="nm-icon nm-icon-bond"><div class="ic"></div></div><div><strong>Coordinator: Lindsay</strong> <span style="color:var(--nm-muted);font-size:11px;">— social + strategic</span></div></div></div></div></div>
+
+  <!-- Interactive Statue Assembly -->
+  <div class="nm-step nm-visible">
+    <div class="nm-card" style="padding:20px;">
+      <div class="nm-hdr">
+        <div class="nm-icon nm-icon-statue"><div class="ic"></div></div>
+        <div class="nm-label">Classical Figure — Live Assembly</div>
+        <div class="nm-badge nm-badge-build" id="statue-counter">0 / 6 PLACED</div>
+      </div>
+      <div class="nm-statue-wrap" id="statue-area">
+        <div class="nm-statue-shadow" id="statue-shadow"></div>
+        <div class="nm-statue-complete" id="statue-complete"><div class="glow"></div></div>
+        <!-- Ghost slots (always visible target positions) -->
+        <div class="nm-sp nm-sp-base nm-sp-ghost"><div class="shape"></div></div>
+        <div class="nm-sp nm-sp-torso nm-sp-ghost"><div class="shape"></div></div>
+        <div class="nm-sp nm-sp-larm nm-sp-ghost"><div class="shape"></div></div>
+        <div class="nm-sp nm-sp-rarm nm-sp-ghost"><div class="shape"></div></div>
+        <div class="nm-sp nm-sp-head nm-sp-ghost"><div class="shape"></div></div>
+        <div class="nm-sp nm-sp-crown nm-sp-ghost"><div class="shape"></div></div>
+        <!-- Active pieces -->
+        <div class="nm-sp nm-sp-base waiting" id="sp-base"><div class="shape"></div></div>
+        <div class="nm-sp nm-sp-torso waiting" id="sp-torso"><div class="shape"></div></div>
+        <div class="nm-sp nm-sp-larm waiting" id="sp-larm"><div class="shape"></div></div>
+        <div class="nm-sp nm-sp-rarm waiting" id="sp-rarm"><div class="shape"></div></div>
+        <div class="nm-sp nm-sp-head waiting" id="sp-head"><div class="shape"></div></div>
+        <div class="nm-sp nm-sp-crown waiting" id="sp-crown"><div class="shape"></div></div>
+        <div class="nm-pedestal"></div>
+      </div>
+
+      <!-- Demo controls -->
+      <div class="nm-demo-controls">
+        <div class="nm-demo-btn" onclick="demoPlace('success')">PLACE (SUCCESS)</div>
+        <div class="nm-demo-btn" onclick="demoPlace('fumble')">PLACE (FUMBLE)</div>
+        <div class="nm-demo-btn" onclick="demoPlace('interrupted')">PLACE (INTERRUPTED)</div>
+        <div class="nm-demo-btn" onclick="demoKnock()">ANIMAL ATTACK</div>
+        <div class="nm-demo-btn" onclick="demoReset()">RESET</div>
+        <div class="nm-demo-btn" onclick="demoFullSequence()">PLAY FULL SEQUENCE</div>
+      </div>
+      <div class="nm-demo-status" id="demo-status">Click a button to see the assembly animation sequence</div>
+    </div>
+  </div>
+
+  <!-- Placement card examples showing weight differentiation -->
+  <div class="nm-step nm-visible">
+    <div class="nm-card nm-card-build">
+      <div class="nm-hdr"><div class="nm-icon nm-icon-build"><div class="ic"></div></div><div class="nm-label">Beth &mdash; Base Placed</div><div class="nm-badge nm-badge-build">SUCCESS</div></div>
+      <div class="nm-txt"><strong>Beth</strong> heaves the massive base fragment onto the pedestal. The marble slab weighs a ton — her arms shake with the effort. <strong>Lindsay</strong> steadies the far side. It settles with a deep, resonant <em>thoom</em>. The pedestal groans under the weight.</div>
+      <div class="nm-weight"><span class="nm-weight-label">WEIGHT</span><div class="nm-weight-bar"><div class="nm-weight-seg filled"></div><div class="nm-weight-seg filled"></div><div class="nm-weight-seg filled"></div><div class="nm-weight-seg filled"></div><div class="nm-weight-seg filled"></div></div><span style="color:var(--nm-gold);font-size:9px;">HEAVY</span></div>
+      <div class="nm-score-bar"><span style="font-size:10px;color:var(--nm-muted);">Placement</span><div class="nm-strack"><div class="nm-sfill nm-sfill-g" style="width:78%;"></div></div><span class="nm-sval nm-sval-g">+2</span></div>
+    </div>
+  </div>
+
+  <!-- Fumble card -->
+  <div class="nm-step nm-visible">
+    <div class="nm-card nm-card-fumble">
+      <div class="nm-hdr"><div class="nm-icon nm-icon-build"><div class="ic"></div></div><div class="nm-label">Beth &mdash; Arm Fumbled</div><div class="nm-badge nm-badge-fumble">MISALIGNED</div></div>
+      <div class="nm-txt"><strong>Beth</strong> tries to slot the left arm into position but the angle is wrong. The piece lands with a dull <em>thud</em> — slightly off-center, a visible gap at the shoulder joint. A hairline crack appears where marble met marble too hard. It holds... barely.</div>
+      <div class="nm-weight"><span class="nm-weight-label">WEIGHT</span><div class="nm-weight-bar"><div class="nm-weight-seg filled"></div><div class="nm-weight-seg filled"></div><div class="nm-weight-seg"></div><div class="nm-weight-seg"></div><div class="nm-weight-seg"></div></div><span style="color:rgba(232,224,208,.3);font-size:9px;">LIGHT</span></div>
+      <div class="nm-score-bar"><span style="font-size:10px;color:var(--nm-muted);">Placement</span><div class="nm-strack"><div class="nm-sfill nm-sfill-d" style="width:35%;"></div></div><span class="nm-sval nm-sval-d">-1</span></div>
+    </div>
+  </div>
+
+  <!-- Animal attack -->
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-animal"><div class="nm-hdr"><div class="nm-icon nm-icon-paw"><div class="ic"></div><div class="p1"></div><div class="p2"></div><div class="p3"></div><div class="p4"></div></div><div class="nm-label">Animal Attack!</div><div class="nm-badge nm-badge-danger">SIEGE</div></div><div class="nm-txt">A massive shadow bursts from behind the Egyptian sarcophagus display. It's heading straight for the half-built statue. <strong>DJ</strong> steps between the creature and the pedestal, arms wide.</div></div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-defend"><div class="nm-hdr"><div class="nm-icon nm-icon-shield"><div class="ic"></div></div><div class="nm-label">DJ &mdash; Successful Defense!</div><div class="nm-badge nm-badge-defend">BLOCKED</div></div><div class="nm-txt"><strong>DJ</strong> stands his ground. The creature charges but DJ catches it — pure physical force versus animal rage. He drives it back, step by step, until it retreats into the shadows. The statue stands. Beth pumps her fist.</div><div class="nm-score-bar"><span style="font-size:10px;color:var(--nm-muted);">Defend Score</span><div class="nm-strack"><div class="nm-sfill nm-sfill-g" style="width:82%;"></div></div><span class="nm-sval nm-sval-g">+2</span></div><div style="display:flex;gap:8px;margin-top:6px;"><span class="nm-sb-pill nm-sb-pill-g">POP +1</span><span class="nm-sb-pill nm-sb-pill-w">BOND +0.5 (Beth)</span></div></div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-alarm"><div class="nm-hdr"><div class="nm-icon nm-icon-alarm"><div class="ic"></div></div><div class="nm-label">Defense Failed &mdash; Statue Hit!</div><div class="nm-badge nm-badge-fail">KNOCKED</div></div><div class="nm-txt">A second creature flanks <strong>DJ</strong> from the left. He can't cover both angles. It crashes into the pedestal — the left arm piece goes flying, shattering against the marble floor. One piece lost. Beth stares in disbelief.</div><div class="nm-score-bar"><span style="font-size:10px;color:var(--nm-muted);">Damage</span><div class="nm-strack"><div class="nm-sfill nm-sfill-d" style="width:65%;"></div></div><span class="nm-sval nm-sval-d">-3, PIECE LOST</span></div><div class="nm-blame"><span class="nm-blame-arrow">&rarr;</span><span style="font-size:11px;"><strong>Heather</strong> blames <strong>DJ</strong>: "You had ONE job!"</span><span class="nm-sb-pill nm-sb-pill-d" style="margin-left:auto;">BOND -0.8</span></div></div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-social"><div class="nm-hdr"><div class="nm-icon nm-icon-bond"><div class="ic"></div></div><div class="nm-label">Showmance Comfort</div><div class="nm-badge nm-badge-social">ROMANCE</div></div><div class="nm-txt">After the attack, <strong>Lindsay</strong> finds DJ sitting against a pillar, head in his hands. "Hey," she says softly, sitting beside him. "You literally fought a wild animal for us. That's the bravest thing I've ever seen." DJ looks up. Even in the chaos, he smiles.</div><div style="display:flex;gap:8px;margin-top:8px;"><span class="nm-sb-pill nm-sb-pill-w">BOND +0.5</span><span class="nm-sb-pill nm-sb-pill-g">SHOWMANCE</span></div></div></div>
+  <div class="nm-chatter" style="margin:12px 0;">The growling intensifies. More shadows gather at the gallery entrances. The final pieces must be placed... now.</div>
+
+  <!-- Crown placement — THE BIG MOMENT -->
+  <div class="nm-step nm-visible">
+    <div class="nm-card nm-card-hero" style="border:2px solid rgba(212,168,75,.2);">
+      <div class="nm-hdr"><div class="nm-icon nm-icon-trophy"><div class="ic"></div></div><div class="nm-label">Final Piece &mdash; The Crown</div><div class="nm-badge nm-badge-hero">MOMENT OF TRUTH</div></div>
+      <div class="nm-txt" style="font-size:14px;"><strong>Beth</strong> lifts the golden crown with trembling hands. The lightest piece — but the most important. The gallery holds its breath. She raises it above the statue's head... hesitates... and lowers it into place. It clicks. The Classical Figure stands complete.</div>
+      <div class="nm-weight"><span class="nm-weight-label">WEIGHT</span><div class="nm-weight-bar"><div class="nm-weight-seg filled"></div><div class="nm-weight-seg"></div><div class="nm-weight-seg"></div><div class="nm-weight-seg"></div><div class="nm-weight-seg"></div></div><span style="color:var(--nm-gold);font-size:9px;">CROWN</span></div>
+      <div class="nm-score-bar" style="margin-top:10px;"><span style="font-size:10px;color:var(--nm-gold);font-weight:700;">Completion Bonus</span><div class="nm-strack"><div class="nm-sfill nm-sfill-gold" style="width:100%;"></div></div><span class="nm-sval nm-sval-w">+5</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RESULTS ═══ -->
+<div class="nm-phase-section" id="phase-results">
+  <div class="nm-phase-hdr"><div class="nm-phase-tag">FINAL</div><div class="nm-phase-title">Results</div><div class="nm-phase-sub">The museum falls silent. The statues are judged. One tribe earns immunity.</div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-hero" style="text-align:center;border:2px solid rgba(212,168,75,.2);"><div style="font-family:'Playfair Display',serif;font-size:11px;letter-spacing:3px;color:var(--nm-gold);opacity:.6;margin-bottom:8px;">IMMUNITY WINNER</div><div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:800;color:var(--nm-white);margin-bottom:4px;">Team Victory</div><div style="font-size:12px;color:var(--nm-cream);">Classical Figure assembled with 5/6 pieces &mdash; one lost to animal attack</div><div class="nm-ornate-strip" style="margin:12px 0;"></div><div style="display:flex;gap:16px;margin-top:12px;text-align:left;"><div style="flex:1;padding:10px;background:rgba(138,122,16,.04);border:1px solid rgba(138,122,16,.1);border-radius:6px;"><div style="font-family:'Playfair Display',serif;font-size:12px;font-weight:700;color:var(--nm-gold);margin-bottom:8px;">Team Victory</div><div class="nm-sb-row"><span class="nm-sb-name">Phase 1 (Security)</span><span class="nm-sb-val nm-sb-val-g">+6</span></div><div class="nm-sb-row"><span class="nm-sb-name">Phase 2 (Gallery)</span><span class="nm-sb-val nm-sb-val-g">+12</span></div><div class="nm-sb-row"><span class="nm-sb-name">Phase 3 (Assembly)</span><span class="nm-sb-val nm-sb-val-g">+8</span></div><div class="nm-sb-row highlight"><span class="nm-sb-name"><strong>Total</strong></span><span class="nm-sb-val nm-sb-val-w">26</span></div></div><div style="flex:1;padding:10px;background:rgba(138,32,32,.04);border:1px solid rgba(138,32,32,.1);border-radius:6px;"><div style="font-family:'Playfair Display',serif;font-size:12px;font-weight:700;color:#e05050;margin-bottom:8px;">Team Amazon</div><div class="nm-sb-row"><span class="nm-sb-name">Phase 1 (Security)</span><span class="nm-sb-val nm-sb-val-g">+8</span></div><div class="nm-sb-row"><span class="nm-sb-name">Phase 2 (Gallery)</span><span class="nm-sb-val nm-sb-val-g">+9</span></div><div class="nm-sb-row"><span class="nm-sb-name">Phase 3 (Assembly)</span><span class="nm-sb-val nm-sb-val-d">+2</span></div><div class="nm-sb-row"><span class="nm-sb-name"><strong>Total</strong></span><span class="nm-sb-val" style="color:rgba(232,220,200,.4);">19</span></div></div></div></div></div>
+  <div class="nm-step nm-visible"><div class="nm-card nm-card-hero"><div class="nm-hdr"><div class="nm-icon nm-icon-trophy"><div class="ic"></div></div><div class="nm-label">Challenge MVP</div><div class="nm-badge nm-badge-hero">BETH</div></div><div class="nm-txt"><strong>Beth</strong> dominated from start to finish — clean security run, found 2 statue pieces, and assembled the Classical Figure under pressure. She earned the most individual challenge points and led Team Victory to immunity.</div></div></div>
+</div>
+
+</div><!-- nm-main -->
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="nm-sidebar">
+  <div class="nm-sb" id="nm-sidebar-inner">
+    <div class="nm-sb-hdr"><div class="nm-icon nm-icon-statue"><div class="frame-wrap"><div class="corner-tl"></div><div class="corner-tr"></div><div class="corner-bl"></div><div class="corner-br"></div><div class="canvas-inner"></div></div></div>MUSEUM STATUS</div>
+    <div class="nm-sb-body" id="sb-body">
+      <div class="nm-sb-section">ALARM COUNT</div>
+      <div class="nm-sb-row"><div class="nm-sb-tribe nm-sb-tribe-y"></div><span class="nm-sb-name"><strong>Team Victory</strong></span><span class="nm-sb-val nm-sb-val-d">3</span></div>
+      <div class="nm-sb-row"><div class="nm-sb-tribe nm-sb-tribe-r"></div><span class="nm-sb-name"><strong>Team Amazon</strong></span><span class="nm-sb-val nm-sb-val-g">1</span></div>
+      <div class="nm-sb-divider"></div>
+      <div class="nm-sb-section">PIECES FOUND</div>
+      <div class="nm-sb-row"><div class="nm-sb-tribe nm-sb-tribe-y"></div><span class="nm-sb-name">Victory</span><div class="nm-sb-bar"><div class="nm-sb-bar-fill nm-sb-bar-fill-y" style="width:66%;"></div></div><span class="nm-sb-val nm-sb-val-w">4/6</span></div>
+      <div class="nm-sb-row"><div class="nm-sb-tribe nm-sb-tribe-r"></div><span class="nm-sb-name">Amazon</span><div class="nm-sb-bar"><div class="nm-sb-bar-fill nm-sb-bar-fill-r" style="width:60%;"></div></div><span class="nm-sb-val nm-sb-val-w">3/5</span></div>
+      <div class="nm-sb-divider"></div>
+      <div class="nm-threat"><div class="nm-threat-label">ANIMAL THREAT</div><div class="nm-threat-bar"><div class="nm-threat-fill nm-threat-high" id="sb-threat"></div></div></div>
+      <div class="nm-sb-divider"></div>
+      <div class="nm-sb-section">ASSEMBLY PROGRESS</div>
+      <div class="nm-sb-row" id="sb-assembly"><div class="nm-sb-tribe nm-sb-tribe-y"></div><span class="nm-sb-name">Victory</span><span class="nm-sb-val nm-sb-val-g" id="sb-placed">0/6 placed</span></div>
+      <div style="padding:4px 0;font-size:10px;"><span style="color:var(--nm-muted);">Builder:</span> <span style="color:var(--nm-gold);">Beth</span> &middot; <span style="color:var(--nm-muted);">Defender:</span> <span style="color:var(--nm-gold);">DJ</span> &middot; <span style="color:var(--nm-muted);">Coord:</span> <span style="color:var(--nm-gold);">Lindsay</span></div>
+      <div class="nm-sb-divider"></div>
+      <div class="nm-sb-section">EVENT LOG</div>
+      <div id="sb-log">
+        <div class="nm-sb-row" style="font-size:10px;"><span class="nm-sb-pill nm-sb-pill-g" style="flex-shrink:0;">PASS</span><span class="nm-sb-name">Beth clears security</span></div>
+        <div class="nm-sb-row" style="font-size:10px;"><span class="nm-sb-pill nm-sb-pill-d" style="flex-shrink:0;">ALARM</span><span class="nm-sb-name">Harold triggers alarm #3</span></div>
+        <div class="nm-sb-row" style="font-size:10px;"><span class="nm-sb-pill nm-sb-pill-w" style="flex-shrink:0;">PIECE</span><span class="nm-sb-name">Beth finds torso fragment</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- nm-shell -->
+
+<div class="nm-controls">
+  <div class="nm-btn" onclick="revealPrev()">&#9664; PREV</div>
+  <span class="nm-counter" id="nm-counter">3 / 8</span>
+  <div class="nm-btn" onclick="revealNext()">NEXT &#9654;</div>
+  <div class="nm-btn" onclick="revealAll()">REVEAL ALL</div>
+</div>
+
+<script>
+// Auto-upgrade all icons to portrait-frame structure on load
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.nm-icon').forEach(icon => {
+    if (icon.querySelector('.frame-wrap')) return; // already upgraded
+    const inner = icon.innerHTML;
+    icon.innerHTML = '<div class="frame-wrap"><div class="corner-tl"></div><div class="corner-tr"></div><div class="corner-bl"></div><div class="corner-br"></div><div class="canvas-inner"></div></div>';
+  });
+});
+
+// Phase switching
+function switchPhase(phase) {
+  document.querySelectorAll('.nm-phase-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nm-phase-tab').forEach(t => t.classList.remove('active'));
+  const section = document.getElementById('phase-' + phase);
+  if (section) section.classList.add('active');
+  const tabs = document.querySelectorAll('.nm-phase-tab');
+  const phaseMap = ['title','security','gallery','assembly','results'];
+  const idx = phaseMap.indexOf(phase);
+  if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
+  document.body.setAttribute('data-phase', phase);
+}
+
+// Reveal
+let currentStep = 0;
+function revealNext() {
+  const active = document.querySelector('.nm-phase-section.active');
+  if (!active) return;
+  const steps = active.querySelectorAll('.nm-step');
+  if (currentStep < steps.length) {
+    steps[currentStep].classList.add('nm-visible');
+    steps[currentStep].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    currentStep++;
+  }
+}
+function revealPrev() {}
+function revealAll() {
+  const active = document.querySelector('.nm-phase-section.active');
+  if (!active) return;
+  active.querySelectorAll('.nm-step').forEach(s => s.classList.add('nm-visible'));
+}
+
+// ═══════════════════════════════════════════════════════
+// STATUE ASSEMBLY ENGINE — Interactive Demo
+// ═══════════════════════════════════════════════════════
+const PIECES = ['base','torso','larm','rarm','head','crown'];
+const PIECE_NAMES = {base:'Base',torso:'Torso',larm:'Left Arm',rarm:'Right Arm',head:'Head',crown:'Crown'};
+const PIECE_WEIGHT = {base:5,torso:4,larm:2,rarm:2,head:2,crown:1};
+let placedPieces = [];
+let animating = false;
+
+function getNextPiece() {
+  for (const p of PIECES) if (!placedPieces.includes(p)) return p;
+  return null;
+}
+
+function updateSidebar(action, pieceName) {
+  const placed = document.getElementById('sb-placed');
+  if (placed) placed.textContent = placedPieces.length + '/6 placed';
+  const counter = document.getElementById('statue-counter');
+  if (counter) counter.textContent = placedPieces.length + ' / 6 PLACED';
+  const row = document.getElementById('sb-assembly');
+  if (row) { row.classList.add(action === 'knock' ? 'nm-sb-flash-d' : 'nm-sb-flash-g'); setTimeout(() => row.classList.remove('nm-sb-flash-g','nm-sb-flash-d'), 600); }
+  // Add event log entry
+  const log = document.getElementById('sb-log');
+  if (log && pieceName) {
+    const cls = action === 'knock' ? 'nm-sb-pill-d' : action === 'fumble' ? 'nm-sb-pill-w' : 'nm-sb-pill-g';
+    const label = action === 'knock' ? 'KNOCKED' : action === 'fumble' ? 'FUMBLE' : 'PLACED';
+    const row = document.createElement('div');
+    row.className = 'nm-sb-row';
+    row.style.fontSize = '10px';
+    row.innerHTML = '<span class="nm-sb-pill '+cls+'" style="flex-shrink:0;">'+label+'</span><span class="nm-sb-name">'+pieceName+'</span>';
+    log.insertBefore(row, log.firstChild);
+  }
+  // Update threat bar on knock
+  if (action === 'knock') {
+    const threat = document.getElementById('sb-threat');
+    if (threat) { threat.className = 'nm-threat-fill nm-threat-max'; }
+  }
+  // Shadow grows with pieces
+  const shadow = document.getElementById('statue-shadow');
+  if (shadow) { shadow.style.width = (50 + placedPieces.length * 10) + 'px'; shadow.style.opacity = (.15 + placedPieces.length * .05).toString(); }
+}
+
+function setStatus(msg) { document.getElementById('demo-status').textContent = msg; }
+
+function screenShake() {
+  const shell = document.getElementById('nm-shell');
+  shell.classList.add('screen-shake');
+  setTimeout(() => shell.classList.remove('screen-shake'), 400);
+}
+
+// Place a piece with full hover → align → snap → reaction sequence
+function demoPlace(outcome) {
+  if (animating) return;
+  const pid = getNextPiece();
+  if (!pid) { setStatus('All pieces placed!'); return; }
+  animating = true;
+  const el = document.getElementById('sp-' + pid);
+  const weight = PIECE_WEIGHT[pid];
+  const hoverDur = 800 + weight * 200;  // heavier = longer hover
+  const alignDur = 400 + weight * 150;
+  const name = PIECE_NAMES[pid];
+  setStatus('Placing ' + name + '... (weight: ' + weight + '/5)');
+
+  // Phase 1: Hover — piece floats above target
+  el.className = 'nm-sp nm-sp-' + pid + ' hovering';
+
+  setTimeout(() => {
+    // Phase 2: Align — piece moves toward slot
+    el.className = 'nm-sp nm-sp-' + pid + ' aligning';
+    el.style.setProperty('--align-dur', alignDur + 'ms');
+
+    setTimeout(() => {
+      if (outcome === 'interrupted') {
+        // INTERRUPTED — animal hits mid-alignment, piece falls away
+        el.className = 'nm-sp nm-sp-' + pid + ' interrupted';
+        screenShake();
+        setStatus(name + ' knocked away during placement!');
+        setTimeout(() => {
+          el.className = 'nm-sp nm-sp-' + pid + ' waiting';
+          animating = false;
+          updateSidebar('knock', name + ' interrupted');
+        }, 800);
+        return;
+      }
+
+      // Phase 3: Snap into place
+      el.className = 'nm-sp nm-sp-' + pid + ' snapping';
+      el.style.setProperty('--snap-dur', (200 + weight * 40) + 'ms');
+
+      setTimeout(() => {
+        if (outcome === 'fumble') {
+          // FUMBLE — piece lands slightly off
+          el.className = 'nm-sp nm-sp-' + pid + ' fumbled';
+          el.classList.add('fumble-shake');
+          screenShake();
+          placedPieces.push(pid);
+          // Add crack
+          const crack = document.createElement('div');
+          crack.className = 'nm-crack';
+          crack.style.cssText = 'top:' + (el.offsetTop + 5) + 'px;left:' + (el.offsetLeft + 10) + 'px;';
+          document.getElementById('statue-area').appendChild(crack);
+          setStatus(name + ' placed — MISALIGNED! Crack visible.');
+          updateSidebar('fumble', name + ' fumbled');
+          setTimeout(() => { el.classList.remove('fumble-shake'); animating = false; }, 500);
+        } else {
+          // SUCCESS — confident snap + gold pulse
+          el.className = 'nm-sp nm-sp-' + pid + ' placed success-glow';
+          placedPieces.push(pid);
+          setStatus(name + ' placed successfully! (' + placedPieces.length + '/6)');
+          updateSidebar('success', name + ' placed');
+          // Check completion
+          if (placedPieces.length === 6) {
+            setTimeout(() => {
+              document.getElementById('statue-complete').classList.add('active');
+              setStatus('STATUE COMPLETE! All 6 pieces assembled.');
+            }, 600);
+          }
+          setTimeout(() => { el.classList.remove('success-glow'); animating = false; }, 1200);
+        }
+      }, 200 + weight * 40);
+    }, alignDur);
+  }, hoverDur);
+}
+
+// Knock a placed piece off
+function demoKnock() {
+  if (animating) return;
+  if (placedPieces.length === 0) { setStatus('No pieces to knock off!'); return; }
+  animating = true;
+  const pid = placedPieces.pop();
+  const el = document.getElementById('sp-' + pid);
+  const name = PIECE_NAMES[pid];
+  setStatus('Animal attack! ' + name + ' knocked off!');
+
+  // Remove completion glow
+  document.getElementById('statue-complete').classList.remove('active');
+
+  el.className = 'nm-sp nm-sp-' + pid + ' knocked';
+  screenShake();
+  updateSidebar('knock', name + ' knocked off');
+
+  setTimeout(() => {
+    el.className = 'nm-sp nm-sp-' + pid + ' waiting';
+    setStatus(name + ' lost. ' + placedPieces.length + '/6 remain.');
+    animating = false;
+  }, 900);
+}
+
+function demoReset() {
+  if (animating) return;
+  placedPieces = [];
+  PIECES.forEach(p => {
+    document.getElementById('sp-' + p).className = 'nm-sp nm-sp-' + p + ' waiting';
+  });
+  document.getElementById('statue-complete').classList.remove('active');
+  // Remove cracks
+  document.querySelectorAll('.nm-crack').forEach(c => c.remove());
+  updateSidebar('success', null);
+  setStatus('Reset. Click a button to begin.');
+}
+
+// Full automated sequence: base(success) → torso(success) → larm(fumble) → ATTACK(knock larm) → rarm(success) → head(interrupted) → head(success) → crown(success)
+function demoFullSequence() {
+  if (animating) return;
+  demoReset();
+  const steps = [
+    () => demoPlace('success'),     // base
+    () => demoPlace('success'),     // torso
+    () => demoPlace('fumble'),      // larm — fumbled
+    () => demoKnock(),              // animal knocks larm off
+    () => demoPlace('success'),     // rarm
+    () => demoPlace('interrupted'), // head — interrupted
+    () => demoPlace('success'),     // head retry
+    () => demoPlace('success'),     // crown — big moment
+  ];
+  let i = 0;
+  function next() {
+    if (i >= steps.length) return;
+    const waitForIdle = setInterval(() => {
+      if (!animating) {
+        clearInterval(waitForIdle);
+        setTimeout(() => { steps[i](); i++; next(); }, 400);
+      }
+    }, 100);
+  }
+  next();
+}
+</script>
+
+</body>
+</html>

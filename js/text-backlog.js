@@ -51,6 +51,7 @@ import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFC
 import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults } from './chal/broadway-baby.js';
 import { rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian, rpBuildAZRuins, rpBuildAZResults } from './chal/amazon-race.js';
+import { rpBuildNMTitleCard, rpBuildNMSecurity, rpBuildNMGallery, rpBuildNMAssembly, rpBuildNMResults } from './chal/night-at-museum.js';
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults } from './chal/truth-or-shark.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
@@ -2179,6 +2180,11 @@ export function generateSummaryText(ep) {
   if (ep.amazonRace) {
     _textTwistChallenge(ep, ln, sec, 'amazonRace', 'THE AM-AH-ZON RACE', [
       rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian, rpBuildAZRuins, rpBuildAZResults
+    ]);
+  }
+  if (ep.nightAtMuseum) {
+    _textTwistChallenge(ep, ln, sec, 'nightAtMuseum', 'NIGHT AT THE MUSEUM', [
+      rpBuildNMTitleCard, rpBuildNMSecurity, rpBuildNMGallery, rpBuildNMAssembly, rpBuildNMResults
     ]);
   }
   if (ep.truthOrShark) {

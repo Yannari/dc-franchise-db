@@ -36,6 +36,7 @@ import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFC
 import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults, ssrRevealNext, ssrRevealAll } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults, broadwayBabyRevealNext, broadwayBabyRevealAll } from './chal/broadway-baby.js';
 import { rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian, rpBuildAZRuins, rpBuildAZResults, azRevealNext, azRevealAll } from './chal/amazon-race.js';
+import { rpBuildNMTitleCard, rpBuildNMSecurity, rpBuildNMGallery, rpBuildNMAssembly, rpBuildNMResults, nightMuseumRevealNext, nightMuseumRevealAll } from './chal/night-at-museum.js';
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext, tlsRevealAll } from './chal/truth-or-shark.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -10706,6 +10707,12 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'az-guardian', label:'Guardians', html: rpBuildAZGuardian(ep) });
     vpScreens.push({ id:'az-ruins', label:'Ruins', html: rpBuildAZRuins(ep) });
     vpScreens.push({ id:'az-results', label:'Results', html: rpBuildAZResults(ep) });
+  } else if ((ep.isNightAtMuseum || ep.challengeType === 'night-at-museum') && ep.nightAtMuseum) {
+    vpScreens.push({ id:'nm-title', label:'Night at the Museum', html: rpBuildNMTitleCard(ep) });
+    vpScreens.push({ id:'nm-security', label:'Security Breach', html: rpBuildNMSecurity(ep) });
+    vpScreens.push({ id:'nm-gallery', label:'Gallery Search', html: rpBuildNMGallery(ep) });
+    vpScreens.push({ id:'nm-assembly', label:'Assembly', html: rpBuildNMAssembly(ep) });
+    vpScreens.push({ id:'nm-results', label:'Results', html: rpBuildNMResults(ep) });
   } else if ((ep.isTruthOrShark || ep.challengeType === 'truth-or-shark') && ep.truthOrShark) {
     vpScreens.push({ id:'tls-title', label:'Truth or Shark', html: rpBuildTlsTitleCard(ep) });
     vpScreens.push({ id:'tls-rounds', label:'Game Show', html: rpBuildTlsRounds(ep) });

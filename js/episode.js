@@ -61,6 +61,7 @@ import { simulateFrozenCrossing } from './chal/frozen-crossing.js';
 import { simulateSlapSlapRevolution } from './chal/slap-slap-revolution.js';
 import { simulateBroadwayBaby } from './chal/broadway-baby.js';
 import { simulateAmazonRace } from './chal/amazon-race.js';
+import { simulateNightAtMuseum } from './chal/night-at-museum.js';
 import { simulateBiggerBadderBrutaler } from './chal/bigger-badder-brutaler.js';
 import { simulateTruthOrShark } from './chal/truth-or-shark.js';
 import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
@@ -996,7 +997,7 @@ export function handleExileFormat(ep) {
   if (phase === 'pre' && gs.isMerged) return;
   if (phase === 'post' && !gs.isMerged) return;
   // Don't fire on special episode types
-  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isPrincessPride || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama || ep.isHouston || ep.isTopDog || ep.isCrouchingCourtney || ep.isGetAClue || ep.isRockNRule || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isBiggerBadderBrutaler || ep.isTruthOrShark) return;
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isPrincessPride || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama || ep.isHouston || ep.isTopDog || ep.isCrouchingCourtney || ep.isGetAClue || ep.isRockNRule || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
   // Don't double up with schoolyard pick exile (unpicked player already on exile)
@@ -1470,6 +1471,7 @@ export function simulateEpisode() {
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         isAmazonRace: ep.isAmazonRace || false, amazonRace: ep.amazonRace || null,
+        isNightAtMuseum: ep.isNightAtMuseum || false, nightAtMuseum: ep.nightAtMuseum || null,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stSN = generateSummaryText(ep);
@@ -1650,6 +1652,7 @@ export function simulateEpisode() {
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         isAmazonRace: ep.isAmazonRace || false, amazonRace: ep.amazonRace || null,
+        isNightAtMuseum: ep.isNightAtMuseum || false, nightAtMuseum: ep.nightAtMuseum || null,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stTDD = generateSummaryText(ep);
@@ -1664,7 +1667,7 @@ export function simulateEpisode() {
     || ep.isBrunchOfDisgustingness || ep.isBasicStraining
     || ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg
     || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue
-    || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isBiggerBadderBrutaler || ep.isTruthOrShark;
+    || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark;
   if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
@@ -1754,6 +1757,7 @@ export function simulateEpisode() {
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         isAmazonRace: ep.isAmazonRace || false, amazonRace: ep.amazonRace || null,
+        isNightAtMuseum: ep.isNightAtMuseum || false, nightAtMuseum: ep.nightAtMuseum || null,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stSD = generateSummaryText(ep);
@@ -1980,6 +1984,11 @@ export function simulateEpisode() {
 
   } else if (ep.isAmazonRace && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateAmazonRace(ep);
+
+  } else if (ep.isNightAtMuseum && !gs.isMerged && gs.tribes.length >= 2) {
+    simulateNightAtMuseum(ep);
+    ep.immunityWinner = ep.nightAtMuseum?.immunityWinner || ep.immunityWinner;
+    ep.challengeType = 'night-at-museum';
 
   } else if (ep.isBiggerBadderBrutaler && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateBiggerBadderBrutaler(ep);
@@ -2216,6 +2225,7 @@ export function simulateEpisode() {
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         isAmazonRace: ep.isAmazonRace || false, amazonRace: ep.amazonRace || null,
+        isNightAtMuseum: ep.isNightAtMuseum || false, nightAtMuseum: ep.nightAtMuseum || null,
         summaryText: '',
         gsSnapshot: window.snapshotGameState(),
       });
@@ -2296,6 +2306,7 @@ export function simulateEpisode() {
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         isAmazonRace: ep.isAmazonRace || false, amazonRace: ep.amazonRace || null,
+        isNightAtMuseum: ep.isNightAtMuseum || false, nightAtMuseum: ep.nightAtMuseum || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stYT = generateSummaryText(ep);
@@ -2328,7 +2339,7 @@ export function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace) {
+    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum) {
     // Special challenge already ran and set immunityWinner + chalMemberScores — skip generic challenge
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
@@ -2524,6 +2535,7 @@ export function simulateEpisode() {
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         isAmazonRace: ep.isAmazonRace || false, amazonRace: ep.amazonRace || null,
+        isNightAtMuseum: ep.isNightAtMuseum || false, nightAtMuseum: ep.nightAtMuseum || null,
         summaryText: '',
         gsSnapshot: window.snapshotGameState(),
       });
@@ -2617,7 +2629,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark) {
     updateChalRecord(ep);
   }
 
@@ -2945,6 +2957,7 @@ export function simulateEpisode() {
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         isAmazonRace: ep.isAmazonRace || false, amazonRace: ep.amazonRace || null,
+        isNightAtMuseum: ep.isNightAtMuseum || false, nightAtMuseum: ep.nightAtMuseum || null,
       summaryText: '', gsSnapshot: window.snapshotGameState() });
     const stLC = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stLC; ep.summaryText = stLC;
@@ -3000,6 +3013,7 @@ export function simulateEpisode() {
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         isAmazonRace: ep.isAmazonRace || false, amazonRace: ep.amazonRace || null,
+        isNightAtMuseum: ep.isNightAtMuseum || false, nightAtMuseum: ep.nightAtMuseum || null,
         summaryText: '', gsSnapshot: window.snapshotGameState() });
       const stTD = generateSummaryText(ep);
       gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stTD; ep.summaryText = stTD;
@@ -3195,6 +3209,7 @@ export function simulateEpisode() {
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         isAmazonRace: ep.isAmazonRace || false, amazonRace: ep.amazonRace || null,
+        isNightAtMuseum: ep.isNightAtMuseum || false, nightAtMuseum: ep.nightAtMuseum || null,
       isRewardOnly: ep.isRewardOnly || false, rewardChalData: ep.rewardChalData || null,
       summaryText: '', gsSnapshot: window.snapshotGameState() });
     const stNT = generateSummaryText(ep);
@@ -4123,6 +4138,7 @@ export function simulateEpisode() {
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         isAmazonRace: ep.isAmazonRace || false, amazonRace: ep.amazonRace || null,
+        isNightAtMuseum: ep.isNightAtMuseum || false, nightAtMuseum: ep.nightAtMuseum || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stDT = generateSummaryText(ep);
@@ -4310,6 +4326,7 @@ export function simulateEpisode() {
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         isAmazonRace: ep.isAmazonRace || false, amazonRace: ep.amazonRace || null,
+        isNightAtMuseum: ep.isNightAtMuseum || false, nightAtMuseum: ep.nightAtMuseum || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stMT = generateSummaryText(ep);
@@ -4673,6 +4690,7 @@ function simulateJuryRoundtable(ep) {
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
         isAmazonRace: ep.isAmazonRace || false, amazonRace: ep.amazonRace || null,
+        isNightAtMuseum: ep.isNightAtMuseum || false, nightAtMuseum: ep.nightAtMuseum || null,
     });
     const twistScenesJE = generateTwistScenes(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].twistScenes = twistScenesJE;
@@ -5756,6 +5774,8 @@ function simulateJuryRoundtable(ep) {
     broadwayBaby:         ep.broadwayBaby         || null,
     isAmazonRace:         ep.isAmazonRace         || false,
     amazonRace:           ep.amazonRace           || null,
+    isNightAtMuseum:      ep.isNightAtMuseum      || false,
+    nightAtMuseum:        ep.nightAtMuseum        || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,

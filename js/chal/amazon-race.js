@@ -371,6 +371,16 @@ const TREK_NIGHT_PARANOIA = [
   (a, b) => `${a} lies awake, convinced ${b} is plotting against ${pronouns(a).obj}. The jungle amplifies every fear.`,
 ];
 
+// ── GUARDIAN ARRIVAL ──
+const GUARD_ARRIVAL = [
+  (tribe, members) => `The jungle goes SILENT. No birds, no insects. Then — DRUMS. Deep, pounding drums from everywhere at once. ${members[0]} freezes. Painted figures materialize from the undergrowth, spears leveled. The Zing-Zing tribe has found them.`,
+  (tribe, members) => `A tripwire. ${members[0]} catches it with ${pronouns(members[0]).posAdj} ankle and a net of vines ROCKETS upward — empty, but a warning. When they look up, painted warriors line every branch above them. They've been watched for miles.`,
+  (tribe, members) => `${members[1] || members[0]} steps on something hollow. A trapdoor? The ground gives slightly. Before anyone moves, the Zing-Zing guardians emerge from behind every tree, faces streaked with war paint, blocking the path forward.`,
+  (tribe, members) => `The trail ends at a wall of sharpened bamboo stakes. No way around. Then the stakes MOVE — they're being held by painted warriors. The Zing-Zing tribe steps forward in unison, spears crossed, chanting something low and rhythmic.`,
+  (tribe, members) => `Smoke. Thick, green smoke rolls across the path. ${members[0]} coughs, eyes watering. When it clears, the Zing-Zing tribe stands in a perfect semicircle around them. How long have they been there? Nobody knows.`,
+  (tribe, members) => `${members[Math.min(2, members.length - 1)]} spots something hanging from a vine — a shrunken head. Fake? Real? Before anyone can decide, the Zing-Zing warriors drop from the canopy like spiders, surrounding the group in seconds.`,
+];
+
 // ── GUARDIAN FAKE REVEAL ──
 const GUARD_FAKE_REVEAL = [
   (tribe) => `The "Zing-Zing" chief pulls off his headdress. It's... a TEENAGER? ${host()} steps out laughing. "LOCAL ACTORS. You got PUNKED!"`,
@@ -380,6 +390,33 @@ const GUARD_FAKE_REVEAL = [
   (tribe) => `Chef emerges from behind a tree, pulls off a guardian mask. "I was the tall one." ${host()}: "The Zing-Zings are about as real as my concern for your safety."`,
   (tribe) => `The guardians high-five each other and one pulls out a selfie stick. ${host()}: "Hired talent. The real tribe here is bad decisions."`,
 ];
+
+const GUARD_FAKE_REACTION = {
+  smug: [
+    (n, pr) => `${n} folds ${pr.posAdj} arms. "Called it. I KNEW those spears were foam."`,
+    (n, pr) => `"Please. Their war paint was literally craft glitter." ${n} rolls ${pr.posAdj} eyes. "I wasn't fooled for a SECOND."`,
+    (n, pr) => `${n} scoffs. "Their 'ancient chant' was a pop song backwards. Obviously fake."`,
+    (n, pr) => `"Actors? Yeah, BAD actors." ${n} smirks. "I've seen better performances at a school play."`,
+  ],
+  shocked: [
+    (n, pr) => `${n}'s jaw drops. "WHAT?! I was genuinely TERRIFIED! Those were TEENAGERS?!"`,
+    (n, pr) => `"You're kidding me." ${n} stares at the unmasked guardians. "I almost peed myself over DRAMA STUDENTS?"`,
+    (n, pr) => `${n} sits down heavily. "I... I offered them my SHOES. As tribute. To teenagers."`,
+    (n, pr) => `"NO. No way." ${n} points at the tallest guardian. "That one had a REAL spear energy! ...It's foam?!"`,
+  ],
+  angry: [
+    (n, pr) => `"Are you KIDDING me?!" ${n} kicks a prop totem. It wobbles pathetically. "I HATE this show!"`,
+    (n, pr) => `${n} rounds on ${host()}. "You wasted our TIME with this?! We could've just WALKED THROUGH!"`,
+    (n, pr) => `"I swear to—" ${n} takes a deep breath. "When I get my hands on that host..."`,
+    (n, pr) => `${n} throws ${pr.posAdj} hands up. "FAKE. It's ALL fake. The tribe, the spears, my dignity."`,
+  ],
+  goddess: [
+    (n, pr) => `${n} turns slowly toward the unmasked guardians. "Wait. So I'm NOT the chosen one?" ${pr.posAdj} face crumbles.`,
+    (n, pr) => `"But... they said I was FORETOLD." ${n} looks at ${pr.posAdj} golden tooth gift. "Is THIS even real gold?"`,
+    (n, pr) => `${n}: "So the whole goddess thing was..." ${host()}: "Completely fake." ${n}: "...I want to go home."`,
+    (n, pr) => `${n} stares at the guardians pulling off their costumes. "But they WORSHIPPED me." A guardian shrugs: "It's in the script."`,
+  ],
+};
 
 const GUARD_HEATHER_GODDESS = [
   (n, pr) => `${n} steps forward and the "guardians" gasp. "THE GOLDEN ONE! SHE IS FORETOLD!" ${n} preens immediately. "${pr.Sub}'s a GODDESS here."`,
@@ -466,6 +503,95 @@ const SOCIAL_HERO = [
 ];
 
 // ── GUARDIAN ──
+// ── GUARDIAN SPEAKER NOMINATIONS ──
+const GUARD_NOMINATE_SELF = [
+  (n, pr) => `"I'll handle this." ${n} steps forward before anyone else can speak. "I know how to talk to people."`,
+  (n, pr) => `${n} plants ${pr.ref} between the tribe and the guardians. "Nobody else needs to do this. I've got it."`,
+  (n, pr) => `"Let me." ${n} pushes to the front. "I'm the reason we made it this far — I'll get us through this too."`,
+  (n, pr) => `${n} volunteers immediately. "I speak for us. No arguments." ${pr.posAdj} confidence is absolute.`,
+  (n, pr) => `"Everyone shut up and let me do the talking." ${n} adjusts ${pr.posAdj} collar. "I was BORN for this."`,
+  (n, pr) => `${n} is already walking toward the guardians before anyone votes. "You can thank me later."`,
+];
+
+const GUARD_NOMINATE_OTHER = [
+  (n, pr, target, tPr) => `"${target} should speak," ${n} says. "${tPr.Sub}'s the best with people. No offense to the rest of us."`,
+  (n, pr, target, tPr) => `${n} points at ${target}. "You. You've got that... thing. The charm. Use it."`,
+  (n, pr, target, tPr) => `"I nominate ${target}." ${n} nods firmly. "No one here has better social instincts."`,
+  (n, pr, target, tPr) => `"Honestly? ${target}. ${tPr.Sub} could sell sand in a desert." ${n} backs ${pr.posAdj} choice with a shrug.`,
+  (n, pr, target, tPr) => `${n} grabs ${target}'s shoulder. "You're our best shot. Just... don't say anything weird."`,
+  (n, pr, target, tPr) => `"If anyone can get us past them, it's ${target}." ${n} looks to the others for agreement.`,
+];
+
+const GUARD_NOMINATE_REFUSE = [
+  (n, pr) => `"Don't look at me." ${n} takes a step back. "I don't do public speaking. Especially not to people with SPEARS."`,
+  (n, pr) => `${n} backs away slowly. "Yeah, no. Someone else is getting stabbed today."`,
+  (n, pr) => `"Absolutely not." ${n} crosses ${pr.posAdj} arms. "I can barely talk to my OWN tribe."`,
+  (n, pr) => `${n} hides behind the tallest teammate. "I'll be emotional support. From back here."`,
+];
+
+// ── GUARDIAN APPROACH DEBATE ──
+const GUARD_ADVOCATE_PEACEFUL = [
+  (n, pr) => `"We go in PEACE." ${n} holds up open palms. "They have spears. We have manners. Manners win."`,
+  (n, pr) => `"Think about it — they live here. We're the invaders." ${n} is calm. "Show respect. Earn passage."`,
+  (n, pr) => `"Violence gets us killed. Sneaking gets us caught." ${n} looks around. "We TALK our way through."`,
+  (n, pr) => `${n} picks up a flower and presents it. "See? Peace offering. It's universal. Even in the jungle."`,
+  (n, pr) => `"They're people, not monsters. We treat them with dignity and they'll do the same." ${n} sounds certain.`,
+  (n, pr) => `"Smile. Bow. Show empty hands. Basic diplomacy." ${n} sounds like ${pr.sub}'s done this before. ${pr.Sub} has not.`,
+];
+
+const GUARD_ADVOCATE_BOLD = [
+  (n, pr) => `"We walk RIGHT UP to them. No fear." ${n} pounds ${pr.posAdj} chest. "Respect is EARNED, not begged for."`,
+  (n, pr) => `"They respect STRENGTH. Roll over and they'll walk all over us." ${n} flexes. "We go bold."`,
+  (n, pr) => `"Show weakness and we're done." ${n} cracks ${pr.posAdj} knuckles. "We look them in the eye and demand passage."`,
+  (n, pr) => `${n} gestures at the spears. "They're testing us. They WANT us to cower. We don't. We challenge them."`,
+  (n, pr) => `"Back home, I'd never let someone block my path. Why start now?" ${n}'s bravery borders on stupidity.`,
+  (n, pr) => `"BOLD. Capital B." ${n} stares down the guardians from a distance. "I'm not bowing to hired extras."`,
+];
+
+const GUARD_ADVOCATE_SNEAKY = [
+  (n, pr) => `"Or — hear me out — we DON'T fight the people with spears." ${n} eyes the treeline. "There's always a way around."`,
+  (n, pr) => `"Their patrol has gaps. I counted." ${n} traces a path in the dirt. "We ghost through."`,
+  (n, pr) => `"Bold gets you stabbed. Peace wastes time." ${n} taps ${pr.posAdj} temple. "Smart gets you through ALIVE."`,
+  (n, pr) => `${n} points at the dense undergrowth. "We don't need their permission. We need their blind spot."`,
+  (n, pr) => `"Why fight when you can disappear?" ${n} is already scanning escape routes. "Follow me."`,
+  (n, pr) => `"The smartest way through a wall isn't THROUGH it." ${n} smirks. "It's around it."`,
+];
+
+const GUARD_APPROACH_INTERJECT = {
+  hothead: [
+    (n, pr) => `"JUST GO! I don't care HOW!" ${n} kicks a root. "Peace, bold, sneaky — ANYTHING but standing here ARGUING!"`,
+    (n, pr) => `${n} grabs a stick. "We're surrounded by spear guys and you all want to VOTE? I'm going THROUGH them!"`,
+    (n, pr) => `"Five more seconds of debate and I start throwing things." ${n} is NOT kidding.`,
+  ],
+  hero: [
+    (n, pr) => `"Whatever keeps the team safe. I'll go first no matter what we pick." ${n}'s selflessness shuts up the arguers.`,
+    (n, pr) => `${n} steps between the debaters. "We stick together. That matters more than HOW we approach."`,
+  ],
+  villain: [
+    (n, pr) => `${n} smiles coldly. "Personally? I'd sacrifice the weakest one as a distraction. But sure. 'Peace.'"`,
+    (n, pr) => `"Let the speaker figure it out." ${n} examines ${pr.posAdj} nails. "If they fail, we have someone to blame."`,
+  ],
+  socialButterfly: [
+    (n, pr) => `"VOTE VOTE VOTE!" ${n} bounces. "Democracy! Let's all raise hands! Come on, it'll be fun!"`,
+    (n, pr) => `"Okay everyone gets a voice! Even you!" ${n} points at the quietest teammate. "What do YOU think?"`,
+  ],
+  loyal: [
+    (n, pr) => `"I'll back whatever the speaker decides. That's what a team does." ${n} nods at the speaker.`,
+    (n, pr) => `${n} stands behind the speaker. "Your call. We're with you."`,
+  ],
+  underdog: [
+    (n, pr) => `"Can we just... not get stabbed? Is that an option?" ${n} is shaking slightly.`,
+    (n, pr) => `${n} raises a hand. "What if sneaky? Because I'm really good at not being noticed. Like, too good."`,
+  ],
+};
+
+const GUARD_APPROACH_DECIDED = [
+  (speaker, approach) => `The tribe decides: <strong>${approach}</strong>. ${speaker} nods. "Then that's what we do."`,
+  (speaker, approach) => `Votes are in. <strong>${approach.charAt(0).toUpperCase() + approach.slice(1)}</strong> wins. ${speaker} squares ${pronouns(speaker).posAdj} shoulders. Time to face the guardians.`,
+  (speaker, approach) => `"${approach.toUpperCase()} it is." ${speaker} takes a breath and turns toward the guardians. No going back.`,
+  (speaker, approach) => `The debate ends. <strong>${approach.charAt(0).toUpperCase() + approach.slice(1)}</strong>. ${speaker} steps forward. The tribe holds its breath.`,
+];
+
 const GUARD_PEACEFUL = [
   (speaker, pr) => `${speaker} steps forward with open palms. "${pr.Sub} means no harm. We come offering respect."`,
   (speaker, pr) => `${speaker} bows low and presents a gift of gathered jungle flowers. The guardians watch, intrigued.`,
@@ -523,6 +649,77 @@ const RUINS_FOUND = [
   (n, pr) => `${n} reads the ancient symbols on the wall and follows them to a hidden niche. Fragment secured.`,
 ];
 
+// ── RUINS ROOMS ──
+const RUINS_ENTRANCE = [
+  (tribe) => `${tribe} pushes through the vine-covered entrance. The air inside is cold and stale. Ancient carvings cover every surface — warnings, or a map?`,
+  (tribe) => `The temple doors are massive, cracked, and barely standing. ${tribe} squeezes through the gap into darkness. Torchlight reveals murals of a forgotten civilization.`,
+  (tribe) => `${tribe} enters the ruins. The floor is a mosaic of golden tiles, most shattered. Something glints deeper inside.`,
+  (tribe) => `The entrance is a mouth — literally carved into the shape of a screaming face. ${tribe} walks into its jaws. The temperature drops ten degrees.`,
+  (tribe) => `${tribe} crosses the threshold. Their footsteps echo in the vast entry hall. Pillars stretch to a ceiling they can't see. Somewhere ahead, something shifts.`,
+];
+
+const RUINS_CORRIDOR = [
+  (tribe) => `${tribe} moves through a narrow corridor. The walls are covered in scratch marks — something was kept here. Or something tried to escape.`,
+  (tribe) => `The corridor forks. Left goes up, right goes down. ${tribe} splits to cover ground — risky, but faster.`,
+  (tribe) => `Cobwebs thick as curtains block the path. ${tribe} tears through them, triggering clouds of ancient dust.`,
+  (tribe) => `Water drips from the ceiling. The corridor slopes downward. ${tribe}'s torches flicker in the damp air.`,
+  (tribe) => `The walls narrow until ${tribe} has to move single file. Carved faces watch them pass with empty stone eyes.`,
+];
+
+const RUINS_SANCTUM = [
+  (tribe) => `${tribe} reaches the inner sanctum — a vast chamber with a shattered altar at its center. Fragment pedestals ring the room. This is where the real treasure hides.`,
+  (tribe) => `The inner sanctum opens up. Gold leaf peels from every surface. The ceiling is painted with a star map. And there — on raised pedestals — the fragments GLOW.`,
+  (tribe) => `${tribe} enters the heart of the ruins. An underground spring feeds a pool of crystal water. The fragments are scattered around the chamber, half-buried in centuries of debris.`,
+  (tribe) => `Light pours through a crack in the ceiling, illuminating a circular chamber lined with stone faces. ${tribe} can see fragments glinting in every corner. The final search begins.`,
+  (tribe) => `The sanctum takes ${tribe}'s breath away. Towering statues guard a sunken floor covered in gold mosaic. The remaining fragments are HERE — embedded in the walls, hidden behind carvings.`,
+];
+
+const RUINS_PUZZLE = [
+  (n, pr) => `${n} finds a door sealed with a stone puzzle — rotating discs with ancient symbols. ${pr.Sub} studies the pattern, turning discs one by one.`,
+  (n, pr) => `The path is blocked by a weighted mechanism. ${n} experiments with stones on the pressure plates, trying to find the right combination.`,
+  (n, pr) => `${n} discovers a mural with a sequence of animals. Below it, stone buttons shaped the same way. A puzzle lock. ${pr.Sub} starts pressing.`,
+  (n, pr) => `The corridor ends at a wall of sliding stone panels. ${n} pushes one and the whole grid SHIFTS. It's a maze puzzle.`,
+];
+const RUINS_PUZZLE_SOLVE = [
+  (n, pr) => `CLICK. The door grinds open. ${n} grins — ${pr.sub} actually solved it. Behind the door: a hidden chamber!`,
+  (n, pr) => `The final disc locks into place and the wall slides apart. ${n} just cracked a puzzle that's been sealed for centuries.`,
+  (n, pr) => `${n} presses the last button. The mechanism whirs. The path opens. ${pr.Sub} pumps ${pr.posAdj} fist.`,
+  (n, pr) => `The symbols align. A deep THUNK echoes through the corridor. The stone wall retracts and ${n} doesn't even try to hide the smug grin.`,
+];
+const RUINS_PUZZLE_FAIL = [
+  (n, pr) => `Wrong. The discs spin back to start and a section of wall drops, sealing the route. ${n} has to backtrack.`,
+  (n, pr) => `${n} pushes the wrong panel. The whole grid resets with a grinding crash. Back to square one.`,
+  (n, pr) => `The mechanism jams. ${n} forces it and the entire puzzle LOCKS UP permanently. That corridor is done.`,
+  (n, pr) => `The symbols flash red. A grinding sound fills the corridor. ${n} just triggered the wrong sequence and the passage seals shut.`,
+];
+
+const RUINS_CROSS_RACE = [
+  (a, aPr, b, bPr) => `${a} and ${b} spot the same fragment at the same time! They SPRINT — elbows out, diving for the pedestal!`,
+  (a, aPr, b, bPr) => `Two torches converge on the same alcove. ${a} from ${aPr.posAdj} tribe. ${b} from ${bPr.posAdj}. One fragment. Both reaching.`,
+  (a, aPr, b, bPr) => `${a} is inches from a fragment when ${b} rounds the corner. Their eyes lock. Both lunge!`,
+  (a, aPr, b, bPr) => `The golden glint catches both of them at once. ${a} dives left, ${b} dives right — both sliding across ancient stone toward the same pedestal!`,
+];
+const RUINS_CROSS_WIN = [
+  (winner, wPr, loser, lPr) => `${winner} gets there FIRST! ${loser} slams the ground in frustration. That fragment is gone.`,
+  (winner, wPr, loser, lPr) => `${winner} snatches it! ${loser} grabs air. "TOO SLOW!" ${winner} shouts, already running.`,
+  (winner, wPr, loser, lPr) => `${winner}'s hand closes around the fragment a heartbeat before ${loser}'s. ${loser} can only watch ${wPr.obj} run.`,
+  (winner, wPr, loser, lPr) => `${winner} RIPS the fragment from the pedestal and is gone before ${loser} can react. "THAT WAS MINE!" ${loser} screams at the empty corridor.`,
+];
+
+const RUINS_CROSS_BLOCK = [
+  (blocker, bPr, victim, vPr, blockerTribe) => `${blocker} sees ${victim} heading for a fragment and BLOCKS the corridor! "Find your own treasure!" ${victim}: "Are you KIDDING me?!"`,
+  (blocker, bPr, victim, vPr, blockerTribe) => `${blocker} body-checks ${victim} at a junction. "Wrong corridor, friend." ${victim} has to find another route while ${blockerTribe} searches ahead.`,
+  (blocker, bPr, victim, vPr, blockerTribe) => `${blocker} triggers a trap between ${victim} and the next chamber. Intentional? "Totally an accident." The smirk says otherwise.`,
+  (blocker, bPr, victim, vPr, blockerTribe) => `${blocker} shoves a stone slab across the corridor just as ${victim} approaches. "Oops! Guess you'll need the long way around." ${victim} seethes.`,
+];
+
+const RUINS_CROSS_TAUNT = [
+  (a, aPr, b, bPr, aFrags, bFrags) => `${a} holds up ${aPr.posAdj} tribe's fragments for ${b} to see. "We're at ${aFrags}. You?" ${b} looks at ${bPr.posAdj} tribe's pile: ${bFrags}. Not great.`,
+  (a, aPr, b, bPr, aFrags, bFrags) => `${a} passes ${b} in a corridor. "Still looking? We found ours AGES ago." ${b}'s jaw tightens.`,
+  (a, aPr, b, bPr, aFrags, bFrags) => `"How many you got?" ${a} asks ${b} with fake concern. "${bFrags}? Oh. Well, keep trying." ${a} waves and disappears around a corner.`,
+  (a, aPr, b, bPr, aFrags, bFrags) => `${a} jingles ${aPr.posAdj} tribe's fragments like keys. "Hear that, ${b}? That's the sound of WINNING." ${b}: "That's the sound of someone who's about to get lost."`,
+];
+
 const RUINS_TRAP_HIT = [
   (n, pr) => `${n} steps on the wrong stone and a barrage of darts fires from the wall. ${pr.Sub} dives but gets clipped.`,
   (n, pr) => `The floor gives way under ${n}. ${pr.Sub} drops into a shallow pit lined with thorns. Painful.`,
@@ -569,6 +766,15 @@ const RUINS_SABOTAGE = [
 ];
 
 // ── HOST ──
+// ── COLD OPEN ──
+const COLD_OPEN = [
+  () => `Dawn breaks over the jungle canopy. Mist clings to the treetops. The tribes are gathered at the edge of a clearing where ancient stone markers jut from the earth — the start of something massive. ${host()} stands on a moss-covered platform, holding a golden idol. "Welcome to the Am-AH-Zon Race."`,
+  () => `The air is thick. Heavy. Something about this stretch of jungle feels ANCIENT — the trees are wider, the vines thicker, the silence deeper. The tribes arrive to find ${host()} perched on a crumbling stone arch. "Today, you earn your place. Or the jungle takes it from you."`,
+  () => `A river cuts through the clearing. On the far side, barely visible through the mist — ruins. Old ones. The kind of old that makes you feel small. ${host()} gestures across the water. "Four phases. One shot. Last tribe standing doesn't have to vote anyone out tonight."`,
+  () => `Drums. Somewhere deep in the jungle, drums. The tribes file into a clearing ringed with torches that shouldn't still be burning. ${host()} is waiting, golden fragments hanging from ${host() === 'Chris' ? 'his' : 'the'} neck. "Hope you stretched. You're about to run, climb, beg, and dig your way across THIS."`,
+  () => `The jungle goes quiet as the tribes approach. Too quiet. Even the insects are listening. A zipline stretches across a river gorge into green nothing. ${host()} grins from a platform above. "Welcome to the most BRUTAL challenge this season. Maybe ever."`,
+];
+
 const HOST_QUIP = [
   () => `${host()} adjusts ${host() === 'Chris' ? 'his' : 'the'} safari hat. "I love watching other people suffer in nature."`,
   () => `"Pro tip: the jungle doesn't care about your feelings." ${host()} is already sipping something iced.`,
@@ -1015,6 +1221,8 @@ export function simulateAmazonRace(ep) {
       if (chosen.id === 'piggyback' && group.length === 2) {
         const [a, b] = group;
         addBond(a, b, 0.5);
+        popDelta(a, 1);
+        popDelta(b, 1);
         tr.zipline.events.push({
           type: 'social', subtype: 'tandem-bond', player: a, target: b,
           text: `${a} and ${b} land together from the piggyback crossing. Shared adrenaline builds trust.`,
@@ -1462,6 +1670,7 @@ export function simulateAmazonRace(ep) {
                   score: 0, badge: 'PARANOIA', badgeClass: 'danger'
                 });
                 addBond(target, partner, -0.5);
+                popDelta(target, -1);
               }
             }
           } else {
@@ -1493,15 +1702,23 @@ export function simulateAmazonRace(ep) {
   tribes.forEach(t => {
     const tr = tribeResults[t.tribeName];
 
-    // Elect speaker (weighted by social)
+    // Arrival — dramatic setup before mechanics
+    tr.guardian.events.push({
+      type: 'guardian', subtype: 'arrival',
+      text: pick(GUARD_ARRIVAL)(t.tribeName, t.members),
+      badge: 'AMBUSH', badgeClass: 'danger'
+    });
+
+    // ── SPEAKER NOMINATION DEBATE ──
     const spkWeights = {};
     t.members.forEach(n => {
       const s = pStats(n);
       spkWeights[n] = s.social * 0.08 + s.charisma * 0.04 + noise(2.5);
     });
+    const speakerRanked = t.members.slice().sort((a, b) => spkWeights[b] - spkWeights[a]);
+    const speaker = speakerRanked[0];
     const speakerVotes = {};
     t.members.forEach(n => {
-      // Each member "votes" for the person they think is best
       const bestPick = t.members.slice().sort((a, b) => {
         const aW = spkWeights[a] + (a === n ? 1 : 0) + noise(1);
         const bW = spkWeights[b] + (b === n ? 1 : 0) + noise(1);
@@ -1509,11 +1726,43 @@ export function simulateAmazonRace(ep) {
       })[0];
       speakerVotes[bestPick] = (speakerVotes[bestPick] || 0) + 1;
     });
-    const speaker = Object.entries(speakerVotes).sort((a, b) => b[1] - a[1])[0][0];
     tr.guardian.speaker = speaker;
     tr.guardian.speakerVotes = { ...speakerVotes };
 
-    // Approach vote
+    const sPr = pronouns(speaker);
+    const sStats = pStats(speaker);
+    const sArch = arch(speaker);
+
+    // Speaker self-nominates or gets nominated
+    const selfNom = ['social-butterfly', 'mastermind', 'villain', 'challenge-beast', 'hero'].includes(sArch) || (sStats.social * 0.12 + noise(1.5) > 0.6);
+    if (selfNom) {
+      tr.guardian.events.push({
+        type: 'debate', subtype: 'nomination', player: speaker,
+        text: pick(GUARD_NOMINATE_SELF)(speaker, sPr),
+        badge: 'VOLUNTEERS', badgeClass: 'tribe'
+      });
+    } else {
+      const nominator = t.members.filter(m => m !== speaker).sort(() => Math.random() - 0.5)[0];
+      if (nominator) {
+        tr.guardian.events.push({
+          type: 'debate', subtype: 'nomination', player: nominator,
+          text: pick(GUARD_NOMINATE_OTHER)(nominator, pronouns(nominator), speaker, sPr),
+          badge: 'NOMINATES', badgeClass: 'tribe'
+        });
+      }
+    }
+
+    // Someone might refuse or deflect (20% chance, not the speaker)
+    const refuser = t.members.filter(m => m !== speaker && (pStats(m).social * 0.1 + noise(1.5) < 0.4)).sort(() => Math.random() - 0.5)[0];
+    if (refuser && Math.random() < 0.2) {
+      tr.guardian.events.push({
+        type: 'debate', subtype: 'refusal', player: refuser,
+        text: pick(GUARD_NOMINATE_REFUSE)(refuser, pronouns(refuser)),
+        badge: 'REFUSES', badgeClass: 'social'
+      });
+    }
+
+    // ── APPROACH DEBATE ──
     const approachVotes = { peaceful: 0, bold: 0, sneaky: 0 };
     t.members.forEach(n => {
       const s = pStats(n);
@@ -1535,10 +1784,57 @@ export function simulateAmazonRace(ep) {
     tr.guardian.approachVotes = { ...approachVotes };
     tr.guardian.approach = Object.entries(approachVotes).sort((a, b) => b[1] - a[1])[0][0];
 
-    const sPr = pronouns(speaker);
-    const sStats = pStats(speaker);
+    // 2-3 approach advocates from tribe members
+    const usedAdvocates = new Set();
+    const approachPools = { peaceful: GUARD_ADVOCATE_PEACEFUL, bold: GUARD_ADVOCATE_BOLD, sneaky: GUARD_ADVOCATE_SNEAKY };
+    const approaches = ['peaceful', 'bold', 'sneaky'].filter(a => approachVotes[a] > 0);
+    approaches.forEach(appr => {
+      const eligible = t.members.filter(m => !usedAdvocates.has(m));
+      if (!eligible.length) return;
+      const advocate = eligible.sort((a, b) => {
+        const aFit = appr === 'peaceful' ? pStats(a).social : appr === 'bold' ? pStats(a).boldness : pStats(a).intuition;
+        const bFit = appr === 'peaceful' ? pStats(b).social : appr === 'bold' ? pStats(b).boldness : pStats(b).intuition;
+        return (bFit + noise(2)) - (aFit + noise(2));
+      })[0];
+      usedAdvocates.add(advocate);
+      const advPr = pronouns(advocate);
+      tr.guardian.events.push({
+        type: 'debate', subtype: 'advocacy', player: advocate,
+        text: pick(approachPools[appr])(advocate, advPr),
+        badge: appr.toUpperCase(), badgeClass: 'trek'
+      });
+    });
 
-    // Speaker narration
+    // 1-2 interjections from bystanders
+    const interjPool = t.members.filter(m => !usedAdvocates.has(m));
+    const numInterj = interjPool.length >= 2 ? (1 + (Math.random() < 0.5 ? 1 : 0)) : interjPool.length;
+    for (let ii = 0; ii < numInterj; ii++) {
+      if (!interjPool.length) break;
+      const idx = Math.floor(Math.random() * interjPool.length);
+      const interjector = interjPool.splice(idx, 1)[0];
+      const iPr = pronouns(interjector);
+      const iArch = arch(interjector);
+      let pool = GUARD_APPROACH_INTERJECT.loyal;
+      if (iArch === 'hothead') pool = GUARD_APPROACH_INTERJECT.hothead;
+      else if (iArch === 'hero') pool = GUARD_APPROACH_INTERJECT.hero;
+      else if (['villain', 'mastermind', 'schemer'].includes(iArch)) pool = GUARD_APPROACH_INTERJECT.villain;
+      else if (iArch === 'social-butterfly') pool = GUARD_APPROACH_INTERJECT.socialButterfly;
+      else if (['underdog', 'goat'].includes(iArch)) pool = GUARD_APPROACH_INTERJECT.underdog;
+      tr.guardian.events.push({
+        type: 'debate', subtype: 'interjection', player: interjector,
+        text: pick(pool)(interjector, iPr),
+        badge: 'CHIMES IN', badgeClass: 'social'
+      });
+    }
+
+    // Decision card
+    tr.guardian.events.push({
+      type: 'debate', subtype: 'decision', player: speaker,
+      text: pick(GUARD_APPROACH_DECIDED)(speaker, tr.guardian.approach),
+      badge: tr.guardian.approach.toUpperCase() + ' LOCKED', badgeClass: 'trek'
+    });
+
+    // Speaker executes the approach
     const approachTexts = { peaceful: GUARD_PEACEFUL, bold: GUARD_BOLD, sneaky: GUARD_SNEAKY };
     tr.guardian.events.push({
       type: 'guardian', subtype: 'approach', player: speaker,
@@ -1615,30 +1911,83 @@ export function simulateAmazonRace(ep) {
       popDelta(goddessCandidate, 1);
     }
 
-    // FAKE REVEAL — Chef exposes the Zing-Zings as actors
-    tr.guardian.events.push({
-      type: 'guardian', subtype: 'fake-reveal', player: null,
-      text: pick(GUARD_FAKE_REVEAL)(t.tribeName),
-      score: 0, badge: 'BUSTED!', badgeClass: 'tribe'
-    });
-    tr.guardian.fakeReveal = true;
   });
 
+  // FAKE REVEAL — one shared moment, Chef exposes the Zing-Zings as actors
+  const fakeRevealEvents = [];
+  fakeRevealEvents.push({
+    type: 'guardian', subtype: 'fake-reveal', player: null,
+    text: pick(GUARD_FAKE_REVEAL)(tribes[0].tribeName),
+    score: 0, badge: 'BUSTED!', badgeClass: 'tribe'
+  });
+
+  // 2-3 reactions from random players across all tribes
+  const allGuardMembers = tribes.flatMap(t => t.members);
+  const reactors = allGuardMembers.slice().sort(() => Math.random() - 0.5);
+  const numReactions = Math.min(reactors.length, 2 + (Math.random() < 0.5 ? 1 : 0));
+  const usedReactTypes = new Set();
+  for (let ri = 0; ri < numReactions; ri++) {
+    const reactor = reactors[ri];
+    const rPr = pronouns(reactor);
+    const rArch = arch(reactor);
+
+    // Goddess gets the goddess reaction
+    const isGoddess = tribes.some(t => tribeResults[t.tribeName].guardian.goddess === reactor);
+    let reactType;
+    if (isGoddess && !usedReactTypes.has('goddess')) {
+      reactType = 'goddess';
+    } else if (['villain', 'mastermind', 'schemer', 'perceptive-player'].includes(rArch) && !usedReactTypes.has('smug')) {
+      reactType = 'smug';
+    } else if (['hothead'].includes(rArch) && !usedReactTypes.has('angry')) {
+      reactType = 'angry';
+    } else if (!usedReactTypes.has('shocked')) {
+      reactType = 'shocked';
+    } else {
+      reactType = pick(['smug', 'shocked', 'angry'].filter(r => !usedReactTypes.has(r))) || 'shocked';
+    }
+    usedReactTypes.add(reactType);
+
+    fakeRevealEvents.push({
+      type: 'guardian', subtype: 'fake-reaction', player: reactor,
+      text: pick(GUARD_FAKE_REACTION[reactType])(reactor, rPr),
+      score: 0, badge: reactType === 'goddess' ? 'DEVASTATED' : reactType === 'angry' ? 'FURIOUS' : reactType === 'smug' ? 'KNEW IT' : 'SHOCKED',
+      badgeClass: reactType === 'angry' ? 'danger' : 'social'
+    });
+  }
+
+  // Store fake reveal events separately so VP can render them after all tribes
+  tribes.forEach(t => { tribeResults[t.tribeName].guardian.fakeReveal = true; });
+  // Attach to first tribe's results for simplicity — VP will pull from a shared key
+  const fakeRevealData = { events: fakeRevealEvents };
+
   // ══ PHASE 4: TREASURE HUNT IN RUINS ══
+  const FRAGMENTS_NEEDED = 4;
+  const ruinsRooms = ['entrance', 'corridors', 'sanctum'];
+
+  // Initialize per-tribe ruins data
   tribes.forEach(t => {
     const tr = tribeResults[t.tribeName];
-    const FRAGMENTS_NEEDED = 4;
+    tr.ruins.rooms = [];
+  });
 
-    t.members.forEach(n => {
+  // ── ROOM 1: ENTRANCE HALL ──
+  tribes.forEach(t => {
+    const tr = tribeResults[t.tribeName];
+    // Entrance narration
+    tr.ruins.events.push({
+      type: 'chatter', subtype: 'entrance',
+      text: pick(RUINS_ENTRANCE)(t.tribeName),
+      badge: 'ENTRANCE', badgeClass: 'tribe'
+    });
+
+    // 1-2 members search the entrance hall — can find 1 fragment here
+    const searchers = t.members.slice().sort(() => Math.random() - 0.5).slice(0, Math.min(2, t.members.length));
+    searchers.forEach(n => {
       const s = pStats(n);
       const pr = pronouns(n);
-      const a = arch(n);
-
-      // Search score
       const searchScore = s.intuition * 0.06 + s.mental * 0.05 + noise(2.5);
 
-      // Fragment find chance
-      if (searchScore > 0.3 && tr.ruins.fragmentsFound < FRAGMENTS_NEEDED) {
+      if (searchScore > 0.4 && tr.ruins.fragmentsFound < FRAGMENTS_NEEDED && tr.ruins.fragmentsFound < 1) {
         tr.ruins.fragmentsFound++;
         tr.ruins.events.push({
           type: 'frag', player: n,
@@ -1650,8 +1999,143 @@ export function simulateAmazonRace(ep) {
         popDelta(n, 1);
       }
 
-      // Trap check (~35%)
-      if (Math.random() < 0.35) {
+      // Entrance trap (~25%)
+      if (Math.random() < 0.25) {
+        const dodgeScore = s.physical * 0.06 + s.intuition * 0.04 + noise(2.5);
+        if (dodgeScore > 0) {
+          tr.ruins.events.push({
+            type: 'trap', subtype: 'dodge', player: n,
+            text: pick(RUINS_TRAP_DODGE)(n, pr),
+            score: 1, badge: 'TRAP DODGE', badgeClass: 'trek'
+          });
+          ep.chalMemberScores[n] += 1;
+          tr.ruins.score += 1;
+          tr.ruins.traps.push({ player: n, dodged: true });
+        } else {
+          tr.ruins.events.push({
+            type: 'trap', subtype: 'hit', player: n,
+            text: pick(RUINS_TRAP_HIT)(n, pr),
+            score: -2, badge: 'TRAP', badgeClass: 'danger'
+          });
+          ep.chalMemberScores[n] -= 2;
+          tr.ruins.score -= 2;
+          popDelta(n, -1);
+          tr.ruins.traps.push({ player: n, dodged: false });
+        }
+      }
+    });
+
+    tr.ruins.rooms.push('entrance');
+  });
+
+  // ── CROSS-TRIBE: ENTRANCE COLLISION ──
+  // Tribes run into each other in the entrance hall
+  if (tribes.length >= 2) {
+    const t1 = tribes[Math.floor(Math.random() * tribes.length)];
+    const t2 = tribes.filter(t => t !== t1)[Math.floor(Math.random() * (tribes.length - 1))];
+    const p1 = pick(t1.members);
+    const p2 = pick(t2.members);
+    if (p1 && p2) {
+      const p1Pr = pronouns(p1);
+      const p2Pr = pronouns(p2);
+      // Taunt or block
+      if (canScheme(p1) && Math.random() < 0.5) {
+        result.crossTribeEvents = result.crossTribeEvents || [];
+        const evt = {
+          type: 'social', subtype: 'cross-block', player: p1, target: p2,
+          text: pick(RUINS_CROSS_BLOCK)(p1, p1Pr, p2, p2Pr, t1.tribeName),
+          badge: 'BLOCKED!', badgeClass: 'danger'
+        };
+        result.crossTribeEvents.push(evt);
+        addBond(p1, p2, -0.5);
+        addBond(p2, p1, -0.5);
+        popDelta(p1, -1);
+      } else {
+        const tr1 = tribeResults[t1.tribeName];
+        const tr2 = tribeResults[t2.tribeName];
+        result.crossTribeEvents = result.crossTribeEvents || [];
+        const evt = {
+          type: 'social', subtype: 'cross-taunt', player: p1, target: p2,
+          text: pick(RUINS_CROSS_TAUNT)(p1, p1Pr, p2, p2Pr, tr1.ruins.fragmentsFound, tr2.ruins.fragmentsFound),
+          badge: 'TRASH TALK', badgeClass: 'social'
+        };
+        result.crossTribeEvents.push(evt);
+        addBond(p1, p2, -0.3);
+        popDelta(p1, -1);
+      }
+    }
+  }
+
+  // ── ROOM 2: CORRIDORS ──
+  tribes.forEach(t => {
+    const tr = tribeResults[t.tribeName];
+    // Corridor narration
+    tr.ruins.events.push({
+      type: 'chatter', subtype: 'corridor',
+      text: pick(RUINS_CORRIDOR)(t.tribeName),
+      badge: 'CORRIDORS', badgeClass: 'tribe'
+    });
+
+    // Puzzle door — one member attempts it
+    const puzzler = t.members.slice().sort((a, b) =>
+      (pStats(b).mental * 0.1 + pStats(b).intuition * 0.05 + noise(1.5)) -
+      (pStats(a).mental * 0.1 + pStats(a).intuition * 0.05 + noise(1.5))
+    )[0];
+    if (puzzler) {
+      const pzPr = pronouns(puzzler);
+      const pzStats = pStats(puzzler);
+      const puzzleCheck = pzStats.mental * 0.07 + pzStats.intuition * 0.05 + noise(2.5);
+
+      tr.ruins.events.push({
+        type: 'trap', subtype: 'puzzle', player: puzzler,
+        text: pick(RUINS_PUZZLE)(puzzler, pzPr),
+        badge: 'PUZZLE', badgeClass: 'trek'
+      });
+
+      if (puzzleCheck > 0.3) {
+        tr.ruins.events.push({
+          type: 'trap', subtype: 'puzzle-solve', player: puzzler,
+          text: pick(RUINS_PUZZLE_SOLVE)(puzzler, pzPr),
+          score: 3, badge: 'SOLVED!', badgeClass: 'frag'
+        });
+        ep.chalMemberScores[puzzler] += 3;
+        tr.ruins.score += 3;
+        popDelta(puzzler, 1);
+        t.members.filter(m => m !== puzzler).forEach(m => addBond(m, puzzler, 0.3));
+      } else {
+        tr.ruins.events.push({
+          type: 'trap', subtype: 'puzzle-fail', player: puzzler,
+          text: pick(RUINS_PUZZLE_FAIL)(puzzler, pzPr),
+          score: -2, badge: 'FAILED', badgeClass: 'danger'
+        });
+        ep.chalMemberScores[puzzler] -= 2;
+        tr.ruins.score -= 2;
+      }
+    }
+
+    // Corridor fragment searches — 2 members can find fragments here
+    const corridorSearchers = t.members.slice().sort(() => Math.random() - 0.5);
+    corridorSearchers.forEach(n => {
+      const s = pStats(n);
+      const pr = pronouns(n);
+      const a = arch(n);
+
+      // Fragment chance — harder in corridors
+      const searchScore = s.intuition * 0.06 + s.mental * 0.04 + noise(2.5);
+      if (searchScore > 0.35 && tr.ruins.fragmentsFound < FRAGMENTS_NEEDED && tr.ruins.fragmentsFound < 3) {
+        tr.ruins.fragmentsFound++;
+        tr.ruins.events.push({
+          type: 'frag', player: n,
+          text: pick(RUINS_FOUND)(n, pr),
+          score: 2, badge: 'FRAGMENT', badgeClass: 'frag'
+        });
+        ep.chalMemberScores[n] += 2;
+        tr.ruins.score += 2;
+        popDelta(n, 1);
+      }
+
+      // Traps more frequent in corridors (~30%)
+      if (Math.random() < 0.30) {
         const dodgeScore = s.physical * 0.06 + s.intuition * 0.04 + noise(2.5);
         if (dodgeScore > 0) {
           tr.ruins.events.push({
@@ -1675,47 +2159,8 @@ export function simulateAmazonRace(ep) {
         }
       }
 
-      // Decoy treasure (~20%) — grabs wrong treasure, causes collapse
-      if (Math.random() < 0.20 && !tr.ruins._hadDecoy) {
-        const intCheck = s.intuition * 0.06 + s.mental * 0.04 + noise(2.5);
-        if (intCheck > 0.5) {
-          // Spots the decoy before grabbing it
-          tr.ruins.events.push({
-            type: 'trap', subtype: 'decoy-spot', player: n,
-            text: `${n} reaches for a gleaming idol, then stops. Something's off. The pedestal has a pressure plate. Smart call — it's a DECOY.`,
-            score: 2, badge: 'DECOY SPOTTED', badgeClass: 'trek'
-          });
-          ep.chalMemberScores[n] += 2;
-          tr.ruins.score += 2;
-          popDelta(n, 1);
-        } else {
-          // Grabs decoy — ruins collapse!
-          tr.ruins._hadDecoy = true;
-          const escapeCheck = s.physical * 0.07 + noise(2.5);
-          if (escapeCheck > 0) {
-            tr.ruins.events.push({
-              type: 'hazard', subtype: 'decoy-escape', player: n,
-              text: pick(RUINS_DECOY)(n, pr) + ' ' + pick(RUINS_DECOY_ESCAPE)(n, pr),
-              score: -1, badge: 'DECOY TRAP!', badgeClass: 'danger'
-            });
-            ep.chalMemberScores[n] -= 1;
-            tr.ruins.score -= 1;
-            popDelta(n, -1);
-          } else {
-            tr.ruins.events.push({
-              type: 'hazard', subtype: 'decoy-hit', player: n,
-              text: pick(RUINS_DECOY)(n, pr) + ' ' + pick(RUINS_DECOY_HIT)(n, pr),
-              score: -4, badge: 'BURIED!', badgeClass: 'danger'
-            });
-            ep.chalMemberScores[n] -= 4;
-            tr.ruins.score -= 4;
-            popDelta(n, -2);
-          }
-        }
-      }
-
-      // Collapse hazard (~12%)
-      if (Math.random() < 0.12) {
+      // Collapse hazard (~15%)
+      if (Math.random() < 0.15) {
         const escape = s.physical * 0.07 + noise(2.5);
         if (escape > 0) {
           tr.ruins.events.push({
@@ -1736,8 +2181,8 @@ export function simulateAmazonRace(ep) {
         }
       }
 
-      // Help or sabotage (~30%)
-      if (Math.random() < 0.3 && t.members.length >= 2) {
+      // Help or sabotage (~25%)
+      if (Math.random() < 0.25 && t.members.length >= 2) {
         const target = pick(t.members.filter(m => m !== n));
         if (target) {
           if (canScheme(n) && getBond(n, target) < 0) {
@@ -1762,6 +2207,177 @@ export function simulateAmazonRace(ep) {
       }
     });
 
+    // Decoy treasure (~25% per tribe in corridors)
+    if (Math.random() < 0.25) {
+      const decoyVictim = pick(t.members);
+      if (decoyVictim) {
+        const dvS = pStats(decoyVictim);
+        const dvPr = pronouns(decoyVictim);
+        const intCheck = dvS.intuition * 0.06 + dvS.mental * 0.04 + noise(2.5);
+        if (intCheck > 0.5) {
+          tr.ruins.events.push({
+            type: 'trap', subtype: 'decoy-spot', player: decoyVictim,
+            text: `${decoyVictim} reaches for a gleaming idol, then stops. Something's off. The pedestal has a pressure plate. Smart call — it's a DECOY.`,
+            score: 2, badge: 'DECOY SPOTTED', badgeClass: 'trek'
+          });
+          ep.chalMemberScores[decoyVictim] += 2;
+          tr.ruins.score += 2;
+          popDelta(decoyVictim, 1);
+        } else {
+          const escapeCheck = dvS.physical * 0.07 + noise(2.5);
+          if (escapeCheck > 0) {
+            tr.ruins.events.push({
+              type: 'hazard', subtype: 'decoy-escape', player: decoyVictim,
+              text: pick(RUINS_DECOY)(decoyVictim, dvPr) + ' ' + pick(RUINS_DECOY_ESCAPE)(decoyVictim, dvPr),
+              score: -1, badge: 'DECOY TRAP!', badgeClass: 'danger'
+            });
+            ep.chalMemberScores[decoyVictim] -= 1;
+            tr.ruins.score -= 1;
+            popDelta(decoyVictim, -1);
+          } else {
+            tr.ruins.events.push({
+              type: 'hazard', subtype: 'decoy-hit', player: decoyVictim,
+              text: pick(RUINS_DECOY)(decoyVictim, dvPr) + ' ' + pick(RUINS_DECOY_HIT)(decoyVictim, dvPr),
+              score: -4, badge: 'BURIED!', badgeClass: 'danger'
+            });
+            ep.chalMemberScores[decoyVictim] -= 4;
+            tr.ruins.score -= 4;
+            popDelta(decoyVictim, -2);
+          }
+        }
+      }
+    }
+
+    // Showmance moment in dark corridors (~30% if active showmance in tribe)
+    if (seasonConfig.romance) {
+      const activeShowmances = (gs.showmances || []).filter(sh => !sh.broken);
+      const tribeShowmance = activeShowmances.find(sh =>
+        t.members.includes(sh.a) && t.members.includes(sh.b)
+      );
+      if (tribeShowmance && Math.random() < 0.3) {
+        const [sa, sb] = [tribeShowmance.a, tribeShowmance.b];
+        const saPr = pronouns(sa);
+        const texts = [
+          `In the dark corridor, ${sa} grabs ${sb}'s hand. Neither lets go. "Stay close," ${sa} whispers. For once, it's not strategy.`,
+          `A trap nearly catches ${sb}. ${sa} yanks ${saPr.obj === 'him' ? 'her' : 'him'} back just in time. They stand chest-to-chest in the dark, breathing hard. The rescue lingers.`,
+          `${sa} and ${sb} end up alone in a dead-end corridor. The torchlight flickers. "You okay?" "Better now." The ruins don't care about showmances. They do.`,
+          `${sb} stumbles in the dark. ${sa} catches ${pronouns(sb).obj}. Their faces are inches apart. "This is NOT the time," ${sb} says. Neither moves.`,
+        ];
+        tr.ruins.events.push({
+          type: 'social', subtype: 'bond', player: sa, target: sb,
+          text: pick(texts),
+          badge: 'MOMENT', badgeClass: 'social'
+        });
+        addBond(sa, sb, 0.8);
+        popDelta(sa, 1);
+        popDelta(sb, 1);
+      }
+    }
+
+    tr.ruins.rooms.push('corridors');
+  });
+
+  // ── CROSS-TRIBE: FRAGMENT RACE ──
+  // Two players from different tribes race for the same fragment
+  if (tribes.length >= 2) {
+    const raceTribes = tribes.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+    const racer1 = pick(raceTribes[0].members);
+    const racer2 = pick(raceTribes[1].members);
+    if (racer1 && racer2) {
+      const r1Pr = pronouns(racer1);
+      const r2Pr = pronouns(racer2);
+      const r1S = pStats(racer1);
+      const r2S = pStats(racer2);
+      result.crossTribeEvents = result.crossTribeEvents || [];
+
+      // Race setup
+      result.crossTribeEvents.push({
+        type: 'social', subtype: 'cross-race', player: racer1, target: racer2,
+        text: pick(RUINS_CROSS_RACE)(racer1, r1Pr, racer2, r2Pr),
+        badge: 'RACE!', badgeClass: 'danger'
+      });
+
+      // Who wins the race
+      const r1Score = r1S.physical * 0.06 + r1S.boldness * 0.04 + noise(2.5);
+      const r2Score = r2S.physical * 0.06 + r2S.boldness * 0.04 + noise(2.5);
+      const winner = r1Score >= r2Score ? racer1 : racer2;
+      const loser = winner === racer1 ? racer2 : racer1;
+      const wPr = pronouns(winner);
+      const lPr = pronouns(loser);
+      const winnerTribe = tribes.find(t => t.members.includes(winner));
+      const winTr = tribeResults[winnerTribe.tribeName];
+
+      result.crossTribeEvents.push({
+        type: 'social', subtype: 'cross-win', player: winner, target: loser,
+        text: pick(RUINS_CROSS_WIN)(winner, wPr, loser, lPr),
+        badge: 'SNATCHED!', badgeClass: 'frag'
+      });
+
+      if (winTr.ruins.fragmentsFound < FRAGMENTS_NEEDED) {
+        winTr.ruins.fragmentsFound++;
+        ep.chalMemberScores[winner] += 3;
+        winTr.ruins.score += 3;
+        popDelta(winner, 2);
+      }
+      addBond(winner, loser, -0.5);
+      addBond(loser, winner, -0.5);
+      popDelta(loser, -1);
+    }
+  }
+
+  // ── ROOM 3: INNER SANCTUM ──
+  tribes.forEach(t => {
+    const tr = tribeResults[t.tribeName];
+    // Sanctum narration
+    tr.ruins.events.push({
+      type: 'chatter', subtype: 'sanctum',
+      text: pick(RUINS_SANCTUM)(t.tribeName),
+      badge: 'INNER SANCTUM', badgeClass: 'frag'
+    });
+
+    // Remaining fragments found here — easier in the sanctum
+    t.members.forEach(n => {
+      if (tr.ruins.fragmentsFound >= FRAGMENTS_NEEDED) return;
+      const s = pStats(n);
+      const pr = pronouns(n);
+      const searchScore = s.intuition * 0.05 + s.mental * 0.04 + noise(2.5);
+
+      if (searchScore > 0.2) {
+        tr.ruins.fragmentsFound++;
+        tr.ruins.events.push({
+          type: 'frag', player: n,
+          text: pick(RUINS_FOUND)(n, pr),
+          score: 2, badge: 'FRAGMENT', badgeClass: 'frag'
+        });
+        ep.chalMemberScores[n] += 2;
+        tr.ruins.score += 2;
+        popDelta(n, 1);
+      }
+
+      // Final traps in sanctum (~20%)
+      if (Math.random() < 0.20) {
+        const dodgeScore = s.physical * 0.06 + s.intuition * 0.04 + noise(2.5);
+        if (dodgeScore > 0) {
+          tr.ruins.events.push({
+            type: 'trap', subtype: 'dodge', player: n,
+            text: pick(RUINS_TRAP_DODGE)(n, pr),
+            score: 1, badge: 'TRAP DODGE', badgeClass: 'trek'
+          });
+          ep.chalMemberScores[n] += 1;
+          tr.ruins.score += 1;
+        } else {
+          tr.ruins.events.push({
+            type: 'trap', subtype: 'hit', player: n,
+            text: pick(RUINS_TRAP_HIT)(n, pr),
+            score: -2, badge: 'TRAP', badgeClass: 'danger'
+          });
+          ep.chalMemberScores[n] -= 2;
+          tr.ruins.score -= 2;
+          popDelta(n, -1);
+        }
+      }
+    });
+
     // All fragments bonus
     if (tr.ruins.fragmentsFound >= FRAGMENTS_NEEDED) {
       tr.ruins.allFragments = true;
@@ -1774,6 +2390,7 @@ export function simulateAmazonRace(ep) {
       });
     }
 
+    tr.ruins.rooms.push('sanctum');
     tr.ruins.score = Math.round(tr.ruins.score / Math.max(1, t.members.length) * 10) / 10;
   });
 
@@ -1816,6 +2433,7 @@ export function simulateAmazonRace(ep) {
   const tribesSorted = sorted.map(t => t.tribeName);
 
   result.tribes = tribes.map(t => tribeResults[t.tribeName]);
+  result.fakeReveal = fakeRevealData;
   result.tribesSorted = tribesSorted;
   result.winner = tribesSorted[0];
   result.loser = tribesSorted[tribesSorted.length - 1];
@@ -1926,10 +2544,14 @@ function _eventIcon(evt) {
   if (t === 'trap') return _icon('trap');
   if (t === 'hero') return _icon('shield');
   if (t === 'social' && st === 'sabotage') return _icon('xhair');
+  if (t === 'social' && (st === 'cross-race' || st === 'cross-win')) return _icon('frag');
+  if (t === 'social' && (st === 'cross-block' || st === 'cross-taunt')) return _icon('xhair');
   if (t === 'social' && (st === 'bond' || st === 'encourage' || st === 'help' || st === 'tandem-bond' || st === 'rival-respect' || st === 'night-bond')) return _icon('heart');
   if (t === 'social' && (st === 'blame' || st === 'rivalry' || st === 'heckle' || st === 'rival-taunt' || st === 'night-paranoia')) return _icon('xhair');
   if (t === 'social' && (st === 'rival-observe')) return _icon('machete');
   if (t === 'social' && st === 'tandem-save') return _icon('heart');
+  if (t === 'debate' && st === 'nomination') return _icon('tiki');
+  if (t === 'debate' && st === 'refusal') return _icon('wind');
   if (t === 'debate' && st === 'advocacy') return _icon('tiki');
   if (t === 'debate' && st === 'interjection') return _icon('wind');
   if (t === 'debate' && st === 'decision') return _icon('shield');
@@ -1980,7 +2602,11 @@ function _cardType(evt) {
   if (t === 'hazard' || (t === 'zipline' && st === 'freeze')) return 'danger';
   if (t === 'hero') return 'hero';
   if (t === 'camp') return 'tribe';
+  if (t === 'guardian' && st === 'arrival') return 'danger';
+  if (t === 'guardian' && st === 'fake-reaction') return 'social';
   if (t === 'guardian') return 'tribe';
+  if (t === 'social' && (st === 'cross-race' || st === 'cross-block')) return 'danger';
+  if (t === 'social' && st === 'cross-win') return 'frag';
   if (t === 'social') return 'social';
   if (t === 'debate' && st === 'interjection') return 'social';
   if (t === 'debate') return 'trek';
@@ -2741,6 +3367,9 @@ export function rpBuildAZTitleCard(ep) {
         </div>
       </div>
       <div class="az-title-tribes">${tribeBlocks}</div>
+      <div class="az-title-cold-open" style="padding:14px 18px;margin:12px 0;background:rgba(11,26,15,.6);border-left:3px solid var(--az-tribal);border-radius:6px;font-size:11px;line-height:1.6;color:var(--az-text);font-style:italic;">
+        ${pick(COLD_OPEN)()}
+      </div>
       <div class="az-title-host">
         <img src="assets/avatars/${hostSlug}.png" class="az-title-host-av" onerror="this.style.display='none'">
         <div class="az-title-host-quote">"${pick(HOST_QUIP)()}"</div>
@@ -3042,27 +3671,7 @@ export function rpBuildAZGuardian(ep) {
   const allEvents = [];
   az.tribes.forEach(tribe => {
     allEvents.push({ _tribe: _tn(tribe), type: 'tribe-header' });
-    // Speaker election
-    const speakerVoteText = Object.entries(tribe.guardian.speakerVotes)
-      .sort((a, b) => b[1] - a[1])
-      .map(([n, v]) => `${n}: ${v}`)
-      .join(', ');
-    allEvents.push({
-      _tribe: _tn(tribe), type: 'guardian', subtype: 'election',
-      text: `<strong>${_tn(tribe)}</strong> elects a speaker. Votes: ${speakerVoteText}. <strong>${tribe.guardian.speaker}</strong> steps forward.`,
-      badge: 'SPEAKER', badgeClass: 'tribe', player: tribe.guardian.speaker
-    });
-    // Approach vote
-    const approachText = Object.entries(tribe.guardian.approachVotes)
-      .filter(([, v]) => v > 0)
-      .sort((a, b) => b[1] - a[1])
-      .map(([a, v]) => `${a}: ${v}`)
-      .join(', ');
-    allEvents.push({
-      _tribe: _tn(tribe), type: 'guardian', subtype: 'vote',
-      text: `The tribe votes on approach: ${approachText}. <strong>${tribe.guardian.approach.toUpperCase()}</strong> wins.`,
-      badge: 'APPROACH', badgeClass: 'tribe'
-    });
+    // All events flow through in order: arrival → nominations → approach debate → decision → approach execution → outcome
     tribe.guardian.events.forEach(evt => {
       allEvents.push({ ...evt, _tribe: _tn(tribe) });
     });
@@ -3074,6 +3683,13 @@ export function rpBuildAZGuardian(ep) {
     t => t.zipline.score + t.trek.score + t.guardian.score
   );
   allEvents.push({ type: 'phase-results', _placement: guardPlacement, _title: 'GUARDIAN RESULTS', _badge: 'PHASE 3 COMPLETE', _icon: _icon('tiki') });
+
+  // Fake reveal + reactions — one shared moment after all tribes
+  if (az.fakeReveal?.events) {
+    az.fakeReveal.events.forEach(evt => {
+      allEvents.push({ ...evt, _tribe: null });
+    });
+  }
 
   const totalSteps = allEvents.length;
   _ensureState(screenKey, totalSteps);
@@ -3119,9 +3735,68 @@ export function rpBuildAZRuins(ep) {
   const suffix = 'ruins';
 
   const allEvents = [];
+
+  // Group events by room — entrance events come first per tribe, then corridors, then sanctum
+  const roomSubtypes = {
+    entrance: new Set(['entrance']),
+    corridors: new Set(['corridor', 'puzzle', 'puzzle-solve', 'puzzle-fail']),
+    sanctum: new Set(['sanctum']),
+  };
+
+  // Helper: get events for a tribe in a specific room
+  function _ruinsRoomEvents(tribe, roomIdx) {
+    const events = tribe.ruins.events;
+    let roomCount = -1;
+    const result = [];
+    for (const evt of events) {
+      if (evt.type === 'chatter' && (evt.subtype === 'entrance' || evt.subtype === 'corridor' || evt.subtype === 'sanctum')) {
+        roomCount++;
+      }
+      if (roomCount === roomIdx) result.push(evt);
+      if (roomCount > roomIdx) break;
+    }
+    return result;
+  }
+
+  // Room 1: Entrance
   az.tribes.forEach(tribe => {
     allEvents.push({ _tribe: _tn(tribe), type: 'tribe-header' });
-    tribe.ruins.events.forEach(evt => {
+    _ruinsRoomEvents(tribe, 0).forEach(evt => {
+      allEvents.push({ ...evt, _tribe: _tn(tribe) });
+    });
+  });
+
+  // Cross-tribe events after entrance (block/taunt)
+  if (az.crossTribeEvents?.length) {
+    const entranceEvents = az.crossTribeEvents.filter(e => e.subtype === 'cross-block' || e.subtype === 'cross-taunt');
+    entranceEvents.forEach(evt => {
+      allEvents.push({ ...evt, _tribe: null });
+    });
+  }
+
+  // Room 2: Corridors
+  az.tribes.forEach(tribe => {
+    allEvents.push({ _tribe: _tn(tribe), type: 'tribe-header' });
+    _ruinsRoomEvents(tribe, 1).forEach(evt => {
+      allEvents.push({ ...evt, _tribe: _tn(tribe) });
+    });
+  });
+
+  // Cross-tribe fragment race after corridors
+  if (az.crossTribeEvents?.length) {
+    const raceEvents = az.crossTribeEvents.filter(e => e.subtype === 'cross-race' || e.subtype === 'cross-win');
+    if (raceEvents.length) {
+      allEvents.push({ type: 'chatter', text: `Two explorers from rival tribes converge on the same corridor...`, badge: 'COLLISION', badgeClass: 'danger', _tribe: null });
+      raceEvents.forEach(evt => {
+        allEvents.push({ ...evt, _tribe: null });
+      });
+    }
+  }
+
+  // Room 3: Inner Sanctum
+  az.tribes.forEach(tribe => {
+    allEvents.push({ _tribe: _tn(tribe), type: 'tribe-header' });
+    _ruinsRoomEvents(tribe, 2).forEach(evt => {
       allEvents.push({ ...evt, _tribe: _tn(tribe) });
     });
   });
@@ -3131,7 +3806,6 @@ export function rpBuildAZRuins(ep) {
     az, 'RUINS', 4, 4, null,
     t => t.zipline.score + t.trek.score + t.guardian.score + t.ruins.score
   );
-  // Override gapText for final results
   const finalWinner = az.tribesSorted[0];
   const finalLoser = az.tribesSorted[az.tribesSorted.length - 1];
   const winTc = tribeColor(finalWinner);

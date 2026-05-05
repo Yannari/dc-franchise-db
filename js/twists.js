@@ -1521,6 +1521,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isNightAtMuseum = true;
 
+  } else if (engineType === 'rock-the-dock') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isRockTheDock = true;
+
   } else if (engineType === 'sports-marathon') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isSportsMarathon = true;
@@ -3872,6 +3876,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'truth-or-shark': 'isTruthOrShark',
         'bigger-badder-brutaler': 'isBiggerBadderBrutaler',
         'amazon-race': 'isAmazonRace', 'night-at-museum': 'isNightAtMuseum',
+        'rock-the-dock': 'isRockTheDock',
         'lucky-hunt': 'isLuckyHunt', 'hide-and-be-sneaky': 'isHideAndBeSneaky',
         'off-the-chain': 'isOffTheChain', 'wawanakwa-gone-wild': 'isWawanakwaGoneWild',
         'tri-armed-triathlon': 'isTriArmedTriathlon', 'camp-castaways': 'isCampCastaways',

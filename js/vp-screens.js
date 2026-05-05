@@ -38,6 +38,7 @@ import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, 
 import { rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian, rpBuildAZRuins, rpBuildAZResults, azRevealNext, azRevealAll } from './chal/amazon-race.js';
 import { rpBuildNMTitleCard, rpBuildNMSecurity, rpBuildNMGallery, rpBuildNMAssembly, rpBuildNMResults, nightMuseumRevealNext, nightMuseumRevealAll } from './chal/night-at-museum.js';
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext, tlsRevealAll } from './chal/truth-or-shark.js';
+import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults, rockTheDockRevealNext, rockTheDockRevealAll } from './chal/rock-the-dock.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10717,6 +10718,11 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'tls-title', label:'Truth or Shark', html: rpBuildTlsTitleCard(ep) });
     vpScreens.push({ id:'tls-rounds', label:'Game Show', html: rpBuildTlsRounds(ep) });
     vpScreens.push({ id:'tls-results', label:'Results', html: rpBuildTlsResults(ep) });
+  } else if ((ep.isRockTheDock || ep.challengeType === 'rock-the-dock') && ep.rockTheDock) {
+    vpScreens.push({ id:'rtd-title', label:'⚓ Rock the Dock', html: rpBuildRTDTitleCard(ep) });
+    vpScreens.push({ id:'rtd-swim', label:'🌊 Ocean Swim', html: rpBuildRTDSwim(ep) });
+    vpScreens.push({ id:'rtd-relay', label:'🏗️ Dock Relay', html: rpBuildRTDRelay(ep) });
+    vpScreens.push({ id:'rtd-results', label:'🏆 Results', html: rpBuildRTDResults(ep) });
   } else if (ep.isAlienEgg && ep.alienEgg) {
     vpScreens.push({ id:'ae-title', label:'👽 Alien Resurr-eggtion', html: rpBuildAlienEggTitleCard(ep) });
     vpScreens.push({ id:'ae-rounds', label:'The Egg Hunt', html: rpBuildAlienEggRounds(ep) });

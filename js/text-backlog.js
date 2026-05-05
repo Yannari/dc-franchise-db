@@ -53,6 +53,7 @@ import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, 
 import { rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian, rpBuildAZRuins, rpBuildAZResults } from './chal/amazon-race.js';
 import { rpBuildNMTitleCard, rpBuildNMSecurity, rpBuildNMGallery, rpBuildNMAssembly, rpBuildNMResults } from './chal/night-at-museum.js';
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults } from './chal/truth-or-shark.js';
+import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults } from './chal/rock-the-dock.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -2190,6 +2191,11 @@ export function generateSummaryText(ep) {
   if (ep.truthOrShark) {
     _textTwistChallenge(ep, ln, sec, 'truthOrShark', 'TRUTH OR SHARK', [
       rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults
+    ]);
+  }
+  if (ep.rockTheDock) {
+    _textTwistChallenge(ep, ln, sec, 'rockTheDock', 'ROCK THE DOCK', [
+      rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults,
     ]);
   }
 

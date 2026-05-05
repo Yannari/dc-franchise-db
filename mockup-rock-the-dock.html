@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock the Dock — VP Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;700;900&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══ RESET ═══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#1e2a33;color:#ddd8cc;font-family:'Source Sans 3',sans-serif;overflow-x:hidden;min-height:100vh;}
+
+/* ═══ CSS VARIABLES ═══ */
+:root {
+  /* Ocean & sky — desaturated, moody, grey-blue palette from reference */
+  --rtd-ocean:#3d6a84;--rtd-ocean-deep:#253e50;--rtd-ocean-mid:#4d7a94;
+  --rtd-sky-top:#536d7e;--rtd-sky-mid:#7a95a6;--rtd-sky-low:#9aadba;--rtd-sky-haze:#b5c0c6;
+  /* Land */
+  --rtd-cliff:#5a5a58;--rtd-cliff-dark:#3a3a38;--rtd-cliff-face:#4a4a48;
+  --rtd-sand:#b5a882;--rtd-sand-dark:#8a7e62;
+  /* Wood & structure */
+  --rtd-wood:#5a4a3a;--rtd-wood-mid:#6e5c48;--rtd-wood-dark:#3e3028;--rtd-wood-grain:#7a6a55;
+  --rtd-plank:#6a5844;--rtd-shack-red:#7a3030;--rtd-shack-red-fade:#6a2828;
+  /* Nautical */
+  --rtd-rope:#a08050;--rtd-rope-dark:#6a5430;--rtd-rope-light:#b89860;
+  --rtd-net:#8a7a60;--rtd-foam:rgba(200,210,215,.25);
+  --rtd-beacon:#d04030;--rtd-lighthouse:#c8c0b0;
+  /* Text */
+  --rtd-white:#e0dace;--rtd-cream:rgba(224,218,206,.88);--rtd-muted:rgba(224,218,206,.4);
+  --rtd-warm-muted:rgba(180,160,130,.5);
+  /* Status */
+  --rtd-success:#5a9a5e;--rtd-danger:#b04040;--rtd-warning:#c49430;
+  /* Cards */
+  --rtd-card-bg:rgba(46,38,32,.88);--rtd-card-border:rgba(160,128,80,.08);
+  /* Tribes — muted versions */
+  --rtd-tribe-y:#7a6a18;--rtd-tribe-r:#7a2828;--rtd-tribe-b:#2a5078;
+  --rtd-tribe-y-light:#a09028;--rtd-tribe-r-light:#a84848;--rtd-tribe-b-light:#4a7aaa;
+  /* Grain overlay */
+  --rtd-grain:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ═══ ATMOSPHERE ═══ */
+.rtd-atmo{position:fixed;top:0;left:0;right:0;bottom:0;overflow:hidden;pointer-events:none;z-index:0;}
+
+/* Sky — layered gradient with haze bands */
+.rtd-sky{position:absolute;top:0;left:0;right:0;height:50%;
+  background:linear-gradient(180deg,var(--rtd-sky-top) 0%,var(--rtd-sky-mid) 35%,var(--rtd-sky-low) 65%,var(--rtd-sky-haze) 100%);}
+/* Subtle haze bands */
+.rtd-sky::after{content:'';position:absolute;bottom:0;left:0;right:0;height:30%;
+  background:linear-gradient(180deg,transparent,rgba(180,192,198,.12));}
+
+/* Film grain overlay — adds texture to everything */
+.rtd-grain-overlay{position:absolute;top:0;left:0;right:0;bottom:0;z-index:20;
+  background-image:var(--rtd-grain);opacity:.03;mix-blend-mode:overlay;pointer-events:none;}
+
+/* Fog layers — atmospheric depth */
+.rtd-fog{position:absolute;left:-10%;width:120%;opacity:.06;z-index:6;}
+.rtd-fog-1{top:28%;height:60px;background:linear-gradient(90deg,transparent,rgba(180,192,198,.5) 30%,rgba(180,192,198,.3) 60%,transparent);
+  animation:rtd-fog-drift 80s linear infinite;}
+.rtd-fog-2{top:36%;height:40px;background:linear-gradient(90deg,transparent,rgba(180,192,198,.4) 40%,rgba(180,192,198,.2) 70%,transparent);
+  animation:rtd-fog-drift 120s 20s linear infinite reverse;}
+@keyframes rtd-fog-drift{0%{transform:translateX(-10%);}100%{transform:translateX(10%);}}
+
+/* Clouds — soft, blurred, semi-transparent silhouettes (not clip art) */
+.rtd-clouds{position:absolute;top:4%;left:0;right:0;height:30%;z-index:2;}
+.rtd-cloud{position:absolute;border-radius:50%;filter:blur(8px);opacity:.12;}
+.rtd-cloud::before,.rtd-cloud::after{content:'';position:absolute;background:inherit;border-radius:50%;}
+.rtd-cloud-a{width:180px;height:40px;top:10%;left:12%;background:rgba(180,195,205,.8);animation:rtd-drift-a 70s linear infinite;}
+.rtd-cloud-a::before{width:80px;height:35px;top:-15px;left:40px;background:rgba(180,195,205,.6);}
+.rtd-cloud-a::after{width:100px;height:30px;top:-8px;left:70px;background:rgba(180,195,205,.5);}
+.rtd-cloud-b{width:140px;height:35px;top:20%;left:55%;background:rgba(170,185,195,.7);filter:blur(10px);opacity:.08;animation:rtd-drift-a 90s 15s linear infinite;}
+.rtd-cloud-b::before{width:60px;height:28px;top:-12px;left:30px;background:rgba(170,185,195,.5);}
+.rtd-cloud-b::after{width:70px;height:24px;top:-6px;left:55px;background:rgba(170,185,195,.4);}
+.rtd-cloud-c{width:200px;height:45px;top:6%;left:75%;background:rgba(175,190,200,.6);filter:blur(12px);opacity:.1;animation:rtd-drift-a 60s 35s linear infinite;}
+.rtd-cloud-c::before{width:90px;height:38px;top:-16px;left:50px;background:rgba(175,190,200,.5);}
+@keyframes rtd-drift-a{0%{transform:translateX(0);}100%{transform:translateX(-110vw);}}
+
+/* Cliffs — jagged, layered, dark silhouette */
+.rtd-cliffs{position:absolute;top:30%;left:0;right:0;height:25%;z-index:3;}
+.rtd-cliff-back{position:absolute;bottom:0;left:0;right:0;height:100%;
+  background:var(--rtd-cliff-dark);opacity:.5;
+  clip-path:polygon(0 100%,0 55%,3% 42%,8% 48%,14% 35%,20% 42%,26% 28%,32% 38%,38% 22%,44% 32%,50% 18%,56% 30%,62% 20%,68% 35%,74% 25%,80% 38%,86% 30%,92% 42%,98% 35%,100% 45%,100% 100%);}
+.rtd-cliff-front{position:absolute;bottom:0;left:0;right:0;height:85%;
+  background:var(--rtd-cliff);opacity:.4;
+  clip-path:polygon(0 100%,0 60%,5% 50%,10% 55%,16% 42%,22% 48%,28% 35%,34% 45%,40% 30%,46% 40%,52% 28%,58% 38%,64% 32%,70% 42%,76% 35%,82% 45%,88% 38%,94% 48%,100% 42%,100% 100%);}
+/* Cliff face texture — horizontal strata lines */
+.rtd-cliff-front::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent 0px,transparent 12px,
+    rgba(0,0,0,.06) 12px,rgba(0,0,0,.06) 14px
+  );opacity:.6;}
+
+/* Lighthouse — positioned on cliff edge, silhouette with beacon sweep */
+.rtd-lh{position:absolute;top:20%;right:22%;z-index:4;width:14px;height:65px;}
+.rtd-lh-base{position:absolute;bottom:0;left:1px;width:12px;height:48px;
+  background:linear-gradient(180deg,var(--rtd-lighthouse),rgba(160,152,140,.8));
+  clip-path:polygon(20% 0%,80% 0%,95% 100%,5% 100%);opacity:.5;}
+.rtd-lh-top{position:absolute;bottom:46px;left:0;width:14px;height:10px;
+  background:rgba(100,80,60,.4);border-radius:3px 3px 0 0;opacity:.5;}
+.rtd-lh-lamp{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);
+  width:6px;height:6px;border-radius:50%;opacity:.7;
+  background:var(--rtd-beacon);
+  box-shadow:0 0 8px var(--rtd-beacon),0 0 20px rgba(208,64,48,.2);
+  animation:rtd-pulse 4s ease-in-out infinite;}
+/* Beacon sweep — a rotating light cone */
+.rtd-lh-sweep{position:absolute;bottom:54px;left:50%;width:0;height:0;z-index:3;
+  border-left:80px solid transparent;border-right:80px solid transparent;
+  border-bottom:3px solid rgba(208,64,48,.04);
+  transform-origin:bottom center;opacity:0;
+  animation:rtd-sweep 4s ease-in-out infinite;}
+@keyframes rtd-pulse{0%,100%{opacity:.25;box-shadow:0 0 4px var(--rtd-beacon);}50%{opacity:.8;box-shadow:0 0 12px var(--rtd-beacon),0 0 30px rgba(208,64,48,.15);}}
+@keyframes rtd-sweep{0%,30%{opacity:0;transform:translateX(-50%) rotate(-60deg);}35%{opacity:1;}50%{opacity:1;transform:translateX(-50%) rotate(60deg);}55%,100%{opacity:0;transform:translateX(-50%) rotate(60deg);}}
+
+/* Ocean — deep gradient */
+.rtd-ocean{position:absolute;top:46%;left:0;right:0;bottom:0;z-index:4;
+  background:linear-gradient(180deg,var(--rtd-ocean-mid) 0%,var(--rtd-ocean) 25%,var(--rtd-ocean-deep) 60%,#1a3040 100%);}
+
+/* Wave layers — translucent rolling motion, NOT zigzag lines */
+.rtd-waves{position:absolute;top:44%;left:0;right:0;height:15%;z-index:5;overflow:hidden;}
+.rtd-wv{position:absolute;left:-100%;width:300%;height:100%;}
+.rtd-wv-1{top:0;opacity:.04;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 60'%3E%3Cpath d='M0,30 Q150,10 300,30 T600,30 T900,30 T1200,30 L1200,60 L0,60Z' fill='%23b5c0c6'/%3E%3C/svg%3E") repeat-x;
+  background-size:600px 60px;animation:rtd-wv-roll 10s linear infinite;}
+.rtd-wv-2{top:15px;opacity:.03;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 50'%3E%3Cpath d='M0,25 Q100,8 200,25 T400,25 T600,25 T800,25 T1000,25 T1200,25 L1200,50 L0,50Z' fill='%23b5c0c6'/%3E%3C/svg%3E") repeat-x;
+  background-size:500px 50px;animation:rtd-wv-roll 14s 3s linear infinite reverse;}
+.rtd-wv-3{top:30px;opacity:.02;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40'%3E%3Cpath d='M0,20 Q80,5 160,20 T320,20 T480,20 T640,20 T800,20 T960,20 T1120,20 L1200,40 L0,40Z' fill='%23b5c0c6'/%3E%3C/svg%3E") repeat-x;
+  background-size:450px 40px;animation:rtd-wv-roll 18s 7s linear infinite;}
+@keyframes rtd-wv-roll{0%{transform:translateX(0);}100%{transform:translateX(33.33%);}}
+
+/* Shore foam — subtle white edge */
+.rtd-shore{position:absolute;top:54%;left:0;right:0;height:3px;z-index:6;
+  background:rgba(200,210,215,.08);filter:blur(1px);
+  animation:rtd-shore-pulse 6s ease-in-out infinite;}
+@keyframes rtd-shore-pulse{0%,100%{opacity:.5;transform:scaleX(1);}50%{opacity:.8;transform:scaleX(1.002);}}
+
+/* Beach/dock ground */
+.rtd-ground{position:absolute;bottom:0;left:0;right:0;height:28%;z-index:7;
+  background:linear-gradient(180deg,var(--rtd-sand-dark) 0%,var(--rtd-wood) 35%,var(--rtd-wood-dark) 100%);}
+/* Dock plank texture */
+.rtd-ground::before{content:'';position:absolute;top:30%;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(
+    0deg,
+    rgba(110,92,72,.15) 0px,rgba(110,92,72,.15) 16px,
+    rgba(62,48,40,.2) 16px,rgba(62,48,40,.2) 18px
+  );opacity:.5;}
+/* Wood grain horizontal lines */
+.rtd-ground::after{content:'';position:absolute;top:30%;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(
+    90deg,
+    transparent 0px,transparent 80px,
+    rgba(0,0,0,.02) 80px,rgba(0,0,0,.02) 82px
+  );opacity:.8;}
+
+/* Shack silhouette — dark, minimal detail, atmospheric */
+.rtd-shack-sil{position:absolute;bottom:25%;left:4%;z-index:8;opacity:.2;}
+.rtd-shack-body-s{width:55px;height:35px;background:var(--rtd-shack-red-fade);position:relative;border-radius:1px;}
+.rtd-shack-body-s::before{content:'';position:absolute;top:10px;left:6px;width:10px;height:8px;
+  background:rgba(160,180,200,.08);border:1px solid rgba(0,0,0,.1);}
+.rtd-shack-roof-s{width:65px;height:0;border-left:5px solid transparent;border-right:5px solid transparent;
+  border-bottom:18px solid var(--rtd-wood-dark);position:relative;left:-5px;margin-bottom:-2px;}
+/* Lobster silhouette on shack — very subtle */
+.rtd-shack-body-s::after{content:'';position:absolute;top:8px;right:6px;width:14px;height:10px;
+  background:rgba(120,48,48,.25);clip-path:polygon(30% 0%,70% 0%,100% 30%,80% 100%,20% 100%,0% 30%);border-radius:2px;}
+
+/* Boats — dark hull silhouettes, gentle bob */
+.rtd-boat-sil{position:absolute;z-index:5;opacity:.12;}
+.rtd-boat-hull-s{width:50px;height:16px;background:var(--rtd-cliff-dark);
+  clip-path:polygon(8% 40%,0 100%,100% 100%,92% 40%,75% 20%,25% 20%);border-radius:1px;}
+.rtd-boat-cabin-s{position:absolute;top:-8px;left:12px;width:14px;height:10px;
+  background:var(--rtd-cliff-dark);border-radius:1px;}
+.rtd-boat-mast-s{position:absolute;top:-24px;left:30px;width:1.5px;height:24px;
+  background:var(--rtd-cliff-dark);}
+.rtd-boat-1{top:40%;right:20%;animation:rtd-bob 5s ease-in-out infinite;}
+.rtd-boat-2{top:44%;right:38%;transform:scale(.7);opacity:.07;animation:rtd-bob 7s 2s ease-in-out infinite;}
+@keyframes rtd-bob{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-3px) rotate(.8deg);}}
+
+/* Seagulls — thin angular silhouettes, subtle */
+.rtd-gull{position:absolute;z-index:8;opacity:.15;}
+.rtd-gull::before,.rtd-gull::after{content:'';position:absolute;width:10px;height:1.5px;background:#3a3a3a;top:0;}
+.rtd-gull::before{left:-10px;transform:rotate(-22deg);transform-origin:right center;animation:rtd-flap 1.5s ease-in-out infinite;}
+.rtd-gull::after{left:0;transform:rotate(22deg);transform-origin:left center;animation:rtd-flap 1.5s ease-in-out infinite reverse;}
+.rtd-g1{top:14%;left:20%;animation:rtd-gfly 40s linear infinite;}
+.rtd-g2{top:18%;left:55%;animation:rtd-gfly 32s 10s linear infinite;opacity:.1;}
+.rtd-g3{top:10%;left:78%;animation:rtd-gfly 50s 20s linear infinite;opacity:.08;}
+@keyframes rtd-gfly{0%{transform:translate(0,0);}25%{transform:translate(-12vw,2vh);}50%{transform:translate(-25vw,-1vh);}75%{transform:translate(-38vw,3vh);}100%{transform:translate(-55vw,0);}}
+@keyframes rtd-flap{0%,100%{transform:rotate(-22deg);}50%{transform:rotate(-32deg);}}
+
+/* Spray/mist — subtle particles near waterline */
+.rtd-mist{position:absolute;width:3px;height:3px;background:rgba(200,210,215,.2);border-radius:50%;z-index:6;}
+.rtd-m1{top:47%;left:28%;animation:rtd-mist-up 4s ease-out infinite;}
+.rtd-m2{top:48%;left:52%;animation:rtd-mist-up 5s 1.5s ease-out infinite;}
+.rtd-m3{top:46%;left:70%;animation:rtd-mist-up 4.5s 3s ease-out infinite;}
+@keyframes rtd-mist-up{0%{opacity:0;transform:translate(0,0) scale(1);}25%{opacity:.4;}70%{opacity:.15;transform:translate(2px,-12px) scale(1.3);}100%{opacity:0;transform:translate(4px,-20px) scale(.6);}}
+
+/* Vignette */
+.rtd-vignette{position:absolute;top:0;left:0;right:0;bottom:0;z-index:19;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 40%,transparent 50%,rgba(20,28,34,.4) 100%);}
+
+/* ═══ SHELL LAYOUT ═══ */
+.rtd-wrap{position:relative;z-index:10;min-height:100vh;}
+.rtd-shell{max-width:1100px;margin:0 auto;padding:24px 20px 90px;display:flex;gap:18px;align-items:flex-start;}
+.rtd-main{flex:1;min-width:0;}
+.rtd-sidebar{width:255px;flex-shrink:0;position:sticky;top:20px;}
+
+/* ═══ PHASE HEADER ═══ */
+.rtd-phase-hdr{text-align:center;margin:0 0 18px;padding:30px 20px 18px;position:relative;
+  background:var(--rtd-card-bg);border:1px solid var(--rtd-card-border);border-radius:6px;
+  box-shadow:0 4px 24px rgba(0,0,0,.25);}
+.rtd-phase-hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 10%,var(--rtd-rope-dark) 40%,var(--rtd-rope) 50%,var(--rtd-rope-dark) 60%,transparent 90%);opacity:.2;}
+.rtd-phase-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:6px;color:var(--rtd-rope);opacity:.4;margin-bottom:5px;font-weight:600;}
+.rtd-phase-title{font-family:'Bitter',serif;font-size:36px;font-weight:900;letter-spacing:1.5px;color:var(--rtd-white);
+  text-shadow:0 2px 20px rgba(0,0,0,.3);line-height:1.15;}
+.rtd-phase-sub{font-size:13px;color:var(--rtd-muted);margin-top:8px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.55;}
+
+/* ═══ RELAY PROGRESS TRACKER ═══ */
+.rtd-relay-tracker{display:flex;align-items:flex-end;justify-content:center;gap:0;margin:0 0 18px;padding:14px 16px 10px;
+  background:var(--rtd-card-bg);border:1px solid var(--rtd-card-border);border-radius:6px;position:relative;overflow:hidden;}
+.rtd-relay-tracker::before{content:'';position:absolute;bottom:0;left:0;right:0;height:6px;
+  background:repeating-linear-gradient(90deg,var(--rtd-wood-mid) 0px,var(--rtd-wood-mid) 28px,var(--rtd-wood-dark) 28px,var(--rtd-wood-dark) 30px);opacity:.25;}
+.rtd-leg{flex:1;text-align:center;position:relative;padding:8px 4px 12px;}
+.rtd-leg::after{content:'';position:absolute;right:0;top:6px;bottom:6px;width:1px;
+  background:linear-gradient(180deg,transparent,rgba(160,128,80,.12),transparent);;}
+.rtd-leg:last-child::after{display:none;}
+.rtd-leg-num{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--rtd-muted);font-weight:600;}
+.rtd-leg-name{font-family:'Bitter',serif;font-size:11px;font-weight:700;color:var(--rtd-cream);margin-top:3px;letter-spacing:.5px;}
+.rtd-leg-icon{margin-top:5px;display:flex;justify-content:center;}
+.rtd-leg.active{background:rgba(160,128,80,.04);border-radius:4px;}
+.rtd-leg.active .rtd-leg-name{color:var(--rtd-warning);}
+.rtd-leg.done .rtd-leg-name{color:var(--rtd-success);opacity:.55;}
+.rtd-leg.locked .rtd-leg-name{opacity:.2;}
+.rtd-leg.locked .rtd-leg-icon{opacity:.12;}
+
+/* ═══ CSS-ONLY ICONS ═══ */
+.rtd-icon{width:20px;height:20px;position:relative;flex-shrink:0;}
+.rtd-icon .fw{width:20px;height:20px;border:1.5px solid var(--rtd-rope-dark);border-radius:2px;position:relative;overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,.25),inset 0 0 3px rgba(0,0,0,.12);}
+.rtd-icon .ci{position:absolute;top:2px;left:2px;right:2px;bottom:2px;border-radius:1px;overflow:hidden;}
+
+/* Swim */
+.rtd-icon-swim .ci{background:linear-gradient(170deg,var(--rtd-ocean),var(--rtd-ocean-deep));}
+.rtd-icon-swim .ci::before{content:'';position:absolute;top:6px;left:1px;right:1px;height:1.5px;
+  background:repeating-linear-gradient(90deg,transparent 0px,transparent 3px,rgba(200,210,215,.2) 3px,rgba(200,210,215,.2) 5px);}
+.rtd-icon-swim .ci::after{content:'';position:absolute;top:9px;left:2px;right:2px;height:1.5px;
+  background:repeating-linear-gradient(90deg,transparent 0px,transparent 4px,rgba(200,210,215,.15) 4px,rgba(200,210,215,.15) 6px);}
+
+/* Chug */
+.rtd-icon-chug .ci{background:linear-gradient(170deg,rgba(80,65,45,.7),rgba(60,45,30,.5));}
+.rtd-icon-chug .ci::before{content:'';position:absolute;top:2px;left:4px;width:7px;height:9px;
+  background:linear-gradient(180deg,var(--rtd-sand),var(--rtd-sand-dark));border-radius:0 0 2px 2px;
+  clip-path:polygon(10% 0%,90% 0%,100% 100%,0% 100%);}
+.rtd-icon-chug .ci::after{content:'';position:absolute;top:1px;left:3px;width:9px;height:2.5px;
+  background:var(--rtd-rope-dark);border-radius:1px;}
+
+/* Decipher */
+.rtd-icon-decipher .ci{background:linear-gradient(170deg,rgba(55,70,55,.6),rgba(45,58,45,.4));}
+.rtd-icon-decipher .ci::before{content:'';position:absolute;top:2px;left:2px;width:11px;height:7px;
+  background:rgba(200,210,215,.06);border-radius:3px;border:1px solid rgba(200,210,215,.1);}
+.rtd-icon-decipher .ci::after{content:'';position:absolute;bottom:3px;left:5px;width:0;height:0;
+  border-style:solid;border-width:2px 2px 0 0;border-color:rgba(200,210,215,.1) transparent transparent transparent;}
+
+/* Stunt */
+.rtd-icon-stunt .ci{background:linear-gradient(170deg,rgba(90,65,40,.7),rgba(70,50,30,.5));}
+.rtd-icon-stunt .ci::before{content:'';position:absolute;top:2px;left:6px;width:1.5px;height:11px;
+  background:var(--rtd-rope-dark);border-radius:1px;}
+.rtd-icon-stunt .ci::after{content:'';position:absolute;top:3px;left:4px;width:7px;height:7px;
+  border:1px solid var(--rtd-rope-dark);border-radius:50%;background:transparent;clip-path:polygon(0 0,100% 0,100% 55%,0 55%);}
+
+/* Fish */
+.rtd-icon-fish .ci{background:linear-gradient(170deg,var(--rtd-ocean),var(--rtd-ocean-deep));}
+.rtd-icon-fish .ci::before{content:'';position:absolute;top:4px;left:1px;width:9px;height:6px;
+  background:rgba(160,175,185,.35);clip-path:polygon(0 50%,25% 0%,80% 5%,100% 50%,80% 95%,25% 100%);}
+.rtd-icon-fish .ci::after{content:'';position:absolute;top:5px;left:10px;width:0;height:0;
+  border-style:solid;border-width:2.5px 0 2.5px 3px;border-color:transparent transparent transparent rgba(160,175,185,.25);}
+
+/* Anchor */
+.rtd-icon-anchor .ci{background:linear-gradient(170deg,var(--rtd-ocean-deep),rgba(25,38,48,.7));}
+.rtd-icon-anchor .ci::before{content:'';position:absolute;top:2px;left:5px;width:3px;height:9px;
+  background:var(--rtd-rope-dark);border-radius:1px;}
+.rtd-icon-anchor .ci::after{content:'';position:absolute;bottom:2px;left:3px;width:8px;height:3px;
+  border:1px solid var(--rtd-rope-dark);border-radius:0 0 4px 4px;border-top:none;background:transparent;}
+
+/* Trophy */
+.rtd-icon-trophy .ci{background:linear-gradient(170deg,rgba(45,35,22,.6),rgba(55,42,25,.4));}
+.rtd-icon-trophy .ci::before{content:'';position:absolute;top:3px;left:4px;width:6px;height:5px;
+  background:linear-gradient(180deg,var(--rtd-warning),var(--rtd-rope-dark));border-radius:0 0 2px 2px;
+  clip-path:polygon(0 0,100% 0,85% 100%,15% 100%);}
+.rtd-icon-trophy .ci::after{content:'';position:absolute;bottom:2px;left:5px;width:4px;height:2.5px;
+  background:var(--rtd-rope-dark);clip-path:polygon(15% 0%,85% 0%,100% 100%,0% 100%);}
+
+/* Danger */
+.rtd-icon-danger .ci{background:linear-gradient(170deg,rgba(140,42,42,.5),rgba(100,28,28,.3));}
+.rtd-icon-danger .ci::before{content:'';position:absolute;top:2px;left:4.5px;width:5px;height:7px;
+  background:var(--rtd-danger);clip-path:polygon(50% 0%,100% 100%,0% 100%);opacity:.55;}
+.rtd-icon-danger .ci::after{content:'';position:absolute;bottom:2px;left:6px;width:2px;height:2px;
+  background:var(--rtd-danger);border-radius:50%;opacity:.55;}
+
+/* Social */
+.rtd-icon-social .ci{background:linear-gradient(170deg,rgba(80,70,55,.5),rgba(60,52,40,.3));}
+.rtd-icon-social .ci::before{content:'';position:absolute;top:4px;left:3px;width:4px;height:4px;background:var(--rtd-rope-dark);border-radius:50%;opacity:.4;}
+.rtd-icon-social .ci::after{content:'';position:absolute;top:4px;left:8px;width:4px;height:4px;background:var(--rtd-rope-dark);border-radius:50%;opacity:.4;}
+
+/* ═══ CARDS ═══ */
+.rtd-card{background:var(--rtd-card-bg);border:1px solid var(--rtd-card-border);border-radius:5px;padding:14px 18px;position:relative;overflow:hidden;
+  box-shadow:0 2px 10px rgba(0,0,0,.3);}
+.rtd-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 8%,rgba(160,128,80,.1) 50%,transparent 92%);}
+/* Subtle wood grain */
+.rtd-card::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(3deg,transparent 0px,transparent 16px,rgba(160,128,80,.008) 16px,rgba(160,128,80,.008) 17px);
+  pointer-events:none;border-radius:5px;}
+
+/* Card variants */
+.rtd-card-swim{border-left:2px solid var(--rtd-ocean-mid);}
+.rtd-card-success{border-left:2px solid var(--rtd-success);}
+.rtd-card-fail{border-left:2px solid var(--rtd-danger);}
+.rtd-card-social{border-left:2px dashed rgba(160,128,80,.1);background:rgba(55,46,38,.7)!important;}
+.rtd-card-captain{border-left:2px solid var(--rtd-warning);background:linear-gradient(135deg,rgba(196,148,48,.03),var(--rtd-card-bg))!important;}
+.rtd-card-chug{border-left:2px solid var(--rtd-sand-dark);}
+.rtd-card-decipher{border-left:2px solid rgba(90,106,58,.6);}
+.rtd-card-stunt{border-left:2px solid var(--rtd-rope);}
+.rtd-card-fish{border-left:2px solid var(--rtd-ocean-mid);background:linear-gradient(135deg,rgba(61,106,132,.04),var(--rtd-card-bg))!important;}
+.rtd-card-rescue{border-left:2px solid var(--rtd-danger);background:linear-gradient(135deg,rgba(176,64,64,.03),var(--rtd-card-bg))!important;}
+.rtd-card-vomit{border-left:2px solid rgba(90,110,40,.5);background:linear-gradient(135deg,rgba(90,110,40,.03),var(--rtd-card-bg))!important;}
+.rtd-card-tribe{padding:8px 14px;border-radius:5px;font-family:'Bitter',serif;font-size:12px;font-weight:700;letter-spacing:2.5px;display:flex;align-items:center;gap:10px;text-transform:uppercase;}
+.rtd-card-tribe-y{background:rgba(122,106,24,.06);border:1px solid rgba(122,106,24,.1);color:var(--rtd-tribe-y-light);}
+.rtd-card-tribe-r{background:rgba(122,40,40,.06);border:1px solid rgba(122,40,40,.1);color:var(--rtd-tribe-r-light);}
+.rtd-card-tribe-b{background:rgba(42,80,120,.06);border:1px solid rgba(42,80,120,.1);color:var(--rtd-tribe-b-light);}
+
+.rtd-hdr{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.rtd-label{font-family:'Bitter',serif;font-size:12.5px;font-weight:700;letter-spacing:.5px;color:var(--rtd-white);}
+.rtd-txt{font-size:13px;line-height:1.7;color:rgba(224,218,206,.85);}
+.rtd-txt strong{color:var(--rtd-white);font-weight:600;}
+.rtd-badge{margin-left:auto;padding:2px 9px;border-radius:10px;font-size:8.5px;font-weight:700;letter-spacing:1.5px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;}
+.rtd-badge-pass{background:rgba(90,154,94,.08);color:var(--rtd-success);border:1px solid rgba(90,154,94,.15);}
+.rtd-badge-fail{background:rgba(176,64,64,.08);color:var(--rtd-danger);border:1px solid rgba(176,64,64,.15);}
+.rtd-badge-fast{background:rgba(196,148,48,.08);color:var(--rtd-warning);border:1px solid rgba(196,148,48,.15);}
+.rtd-badge-social{background:rgba(160,128,80,.05);color:var(--rtd-warm-muted);border:1px solid rgba(160,128,80,.08);}
+.rtd-badge-captain{background:rgba(196,148,48,.08);color:var(--rtd-warning);border:1px solid rgba(196,148,48,.15);}
+.rtd-badge-rescue{background:rgba(176,64,64,.08);color:var(--rtd-danger);border:1px solid rgba(176,64,64,.1);}
+.rtd-badge-vomit{background:rgba(90,110,40,.08);color:#8a9a40;border:1px solid rgba(90,110,40,.12);}
+.rtd-badge-fish{background:rgba(61,106,132,.08);color:var(--rtd-ocean-mid);border:1px solid rgba(61,106,132,.12);}
+
+/* Score bars */
+.rtd-score-bar{display:flex;align-items:center;gap:8px;margin:5px 0;}
+.rtd-strack{flex:1;height:5px;background:rgba(160,128,80,.04);border-radius:2px;overflow:hidden;}
+.rtd-sfill{height:100%;border-radius:2px;}
+.rtd-sfill-g{background:linear-gradient(90deg,var(--rtd-success),#6aaa6e);box-shadow:0 0 4px rgba(90,154,94,.2);}
+.rtd-sfill-d{background:linear-gradient(90deg,var(--rtd-danger),#c05050);box-shadow:0 0 4px rgba(176,64,64,.2);}
+.rtd-sfill-w{background:linear-gradient(90deg,var(--rtd-rope-dark),var(--rtd-warning));box-shadow:0 0 4px rgba(160,128,80,.2);}
+.rtd-sval{font-size:10.5px;font-weight:700;min-width:22px;text-align:right;font-family:'IBM Plex Mono',monospace;}
+.rtd-sval-g{color:var(--rtd-success);}.rtd-sval-d{color:var(--rtd-danger);}.rtd-sval-w{color:var(--rtd-warning);}
+
+/* Chatter */
+.rtd-chatter{padding:9px 14px;font-size:11.5px;color:rgba(180,170,155,.5);font-style:italic;letter-spacing:.3px;
+  border-left:1.5px solid rgba(160,128,80,.1);background:rgba(40,34,28,.85);border-radius:3px;}
+.rtd-chatter-host{color:var(--rtd-rope);font-style:normal;font-weight:600;opacity:.7;}
+
+/* Rope divider */
+.rtd-rope-strip{height:3px;margin:16px 0;
+  background:repeating-linear-gradient(90deg,var(--rtd-rope-dark) 0px,var(--rtd-rope-dark) 4px,transparent 4px,transparent 8px,rgba(106,84,48,.3) 8px,rgba(106,84,48,.3) 11px,transparent 11px,transparent 16px);
+  opacity:.08;}
+
+/* Step reveal */
+.rtd-step{opacity:0;transform:translateY(20px);filter:blur(3px);pointer-events:none;max-height:0;overflow:hidden;margin:0;padding:0;
+  transition:opacity .4s,transform .4s,filter .4s;}
+.rtd-step.rtd-visible{opacity:1;transform:none;filter:none;max-height:3000px;overflow:visible;pointer-events:auto;margin-top:10px;margin-bottom:10px;}
+
+/* ═══ SIDEBAR ═══ */
+.rtd-sb{background:linear-gradient(180deg,rgba(46,38,32,.9),rgba(38,32,26,.94));border:1px solid var(--rtd-card-border);border-radius:6px;overflow:hidden;}
+.rtd-sb-hdr{padding:13px 14px 9px;border-bottom:1px solid rgba(160,128,80,.05);font-family:'Bitter',serif;font-size:11px;font-weight:700;letter-spacing:2.5px;color:var(--rtd-rope-light);display:flex;align-items:center;gap:7px;}
+.rtd-sb-body{padding:10px 12px;max-height:calc(100vh - 120px);overflow-y:auto;}
+.rtd-sb-section{font-family:'IBM Plex Mono',monospace;font-size:7.5px;font-weight:600;letter-spacing:2.5px;color:rgba(180,170,155,.18);margin-bottom:5px;margin-top:2px;}
+.rtd-sb-divider{height:1px;background:rgba(160,128,80,.04);margin:8px 0;}
+.rtd-sb-row{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid rgba(160,128,80,.02);font-size:10.5px;}
+.rtd-sb-row:last-child{border-bottom:none;}
+.rtd-sb-name{flex:1;color:var(--rtd-muted);}
+.rtd-sb-name strong{color:var(--rtd-cream);font-weight:600;}
+.rtd-sb-val{font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:10.5px;}
+.rtd-sb-val-g{color:var(--rtd-success);}.rtd-sb-val-d{color:var(--rtd-danger);}.rtd-sb-val-w{color:var(--rtd-warning);}
+.rtd-sb-pill{display:inline-block;padding:1px 5px;border-radius:5px;font-size:7.5px;font-weight:700;letter-spacing:.5px;font-family:'IBM Plex Mono',monospace;}
+.rtd-sb-pill-g{background:rgba(90,154,94,.08);color:var(--rtd-success);}
+.rtd-sb-pill-d{background:rgba(176,64,64,.08);color:var(--rtd-danger);}
+.rtd-sb-pill-w{background:rgba(196,148,48,.08);color:var(--rtd-warning);}
+.rtd-sb-tribe{display:inline-block;width:7px;height:7px;border-radius:2px;flex-shrink:0;}
+.rtd-sb-tribe-y{background:var(--rtd-tribe-y);}.rtd-sb-tribe-r{background:var(--rtd-tribe-r);}.rtd-sb-tribe-b{background:var(--rtd-tribe-b);}
+.rtd-sb-bar{flex:1;height:3px;background:rgba(160,128,80,.04);border-radius:2px;overflow:hidden;margin:0 3px;}
+.rtd-sb-bar-fill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.16,1,.3,1);}
+.rtd-sb-bar-fill-y{background:var(--rtd-tribe-y-light);box-shadow:0 0 3px rgba(160,144,40,.2);}
+.rtd-sb-bar-fill-r{background:var(--rtd-tribe-r-light);box-shadow:0 0 3px rgba(168,72,72,.2);}
+.rtd-sb-bar-fill-b{background:var(--rtd-tribe-b-light);box-shadow:0 0 3px rgba(74,122,170,.2);}
+
+.rtd-captain-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:3px;
+  background:rgba(196,148,48,.06);border:1px solid rgba(196,148,48,.08);font-size:8px;font-weight:700;
+  color:var(--rtd-rope-light);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;}
+
+.rtd-assign-tag{display:inline-block;padding:1px 5px;border-radius:2px;font-size:7.5px;font-weight:600;
+  font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;margin-left:4px;}
+.rtd-assign-chug{background:rgba(181,168,130,.05);color:var(--rtd-sand);border:1px solid rgba(181,168,130,.08);}
+.rtd-assign-decipher{background:rgba(90,106,58,.05);color:rgba(122,138,80,.7);border:1px solid rgba(90,106,58,.08);}
+.rtd-assign-stunt{background:rgba(160,128,80,.05);color:var(--rtd-rope);border:1px solid rgba(160,128,80,.08);}
+.rtd-assign-fish{background:rgba(61,106,132,.05);color:var(--rtd-ocean-mid);border:1px solid rgba(61,106,132,.08);}
+
+/* ═══ CONTROLS ═══ */
+.rtd-controls{position:fixed;bottom:0;left:0;right:0;z-index:30;
+  background:linear-gradient(to top,rgba(30,42,51,.97),rgba(30,42,51,.8) 75%,transparent);padding:18px 0 14px;text-align:center;}
+.rtd-btn{display:inline-block;padding:7px 18px;margin:0 5px;border:1px solid rgba(160,128,80,.12);border-radius:4px;
+  background:rgba(160,128,80,.04);color:var(--rtd-rope-light);font-family:'Bitter',serif;font-size:10.5px;font-weight:700;
+  letter-spacing:2px;cursor:pointer;transition:all .15s;user-select:none;-webkit-appearance:none;appearance:none;outline:none;}
+.rtd-btn:hover{background:rgba(160,128,80,.08);border-color:rgba(160,128,80,.2);box-shadow:0 0 10px rgba(160,128,80,.06);}
+.rtd-btn:active{transform:scale(.97);}
+.rtd-btn:focus-visible{outline:2px solid var(--rtd-rope-light);outline-offset:2px;}
+.rtd-counter{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(180,170,155,.25);letter-spacing:1px;margin:0 8px;}
+
+/* ═══ TITLE CARD ═══ */
+.rtd-title-card{text-align:center;padding:55px 20px 40px;position:relative;}
+.rtd-tc-title{font-family:'Bitter',serif;font-size:48px;font-weight:900;color:var(--rtd-white);
+  text-shadow:0 2px 30px rgba(0,0,0,.35),0 0 60px rgba(160,128,80,.04);letter-spacing:2px;line-height:1.1;}
+.rtd-tc-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:5px;color:var(--rtd-rope);opacity:.35;margin-bottom:6px;}
+.rtd-tc-cold{font-size:13.5px;color:var(--rtd-cream);margin-top:14px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.6;font-style:italic;opacity:.7;}
+.rtd-tc-tribes{display:flex;justify-content:center;gap:14px;margin-top:22px;flex-wrap:wrap;}
+
+/* ═══ SWIM MAP ═══ */
+.rtd-swim-map{position:sticky;top:0;z-index:5;margin:0 -18px 16px;height:130px;overflow:hidden;
+  background:linear-gradient(180deg,var(--rtd-sky-haze) 0%,var(--rtd-ocean-mid) 35%,var(--rtd-ocean) 100%);
+  border-bottom:1px solid rgba(160,128,80,.06);position:relative;}
+.rtd-swim-map::before{content:'SWIM RACE';position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:4;
+  font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:5px;color:rgba(160,128,80,.2);font-weight:600;}
+.rtd-swim-map .dock-target{position:absolute;right:7%;top:18%;bottom:18%;width:12px;
+  background:repeating-linear-gradient(0deg,var(--rtd-wood-mid) 0px,var(--rtd-wood-mid) 7px,var(--rtd-wood-dark) 7px,var(--rtd-wood-dark) 9px);
+  border-radius:1px;opacity:.35;}
+.rtd-swim-map .dock-target::before{content:'DOCK';position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  font-family:'IBM Plex Mono',monospace;font-size:6.5px;letter-spacing:2px;color:rgba(160,128,80,.2);}
+.rtd-swim-marker{position:absolute;z-index:4;width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);
+  display:flex;align-items:center;justify-content:center;font-size:7.5px;font-weight:900;color:rgba(255,255,255,.9);
+  box-shadow:0 2px 8px rgba(0,0,0,.35);transition:left 1s cubic-bezier(.16,1,.3,1);transform:translate(-50%,-50%);}
+.rtd-swim-marker::after{content:'';position:absolute;top:-8px;left:-8px;right:-8px;bottom:-8px;}
+.rtd-swim-marker-y{background:linear-gradient(135deg,var(--rtd-tribe-y),var(--rtd-tribe-y-light));border-color:rgba(160,144,40,.5);}
+.rtd-swim-marker-r{background:linear-gradient(135deg,var(--rtd-tribe-r),var(--rtd-tribe-r-light));border-color:rgba(168,72,72,.5);}
+.rtd-swim-marker-b{background:linear-gradient(135deg,var(--rtd-tribe-b),var(--rtd-tribe-b-light));border-color:rgba(74,122,170,.5);}
+.rtd-swim-map .wv-map{position:absolute;bottom:0;left:-100%;width:300%;height:20px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 30'%3E%3Cpath d='M0,15 Q100,5 200,15 T400,15 T600,15 T800,15 T1000,15 T1200,15 L1200,30 L0,30Z' fill='rgba(200,210,215,0.04)'/%3E%3C/svg%3E") repeat-x;
+  background-size:400px 30px;animation:rtd-wv-roll 8s linear infinite;}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:768px){
+  .rtd-shell{flex-direction:column;padding:12px 12px 80px;}
+  .rtd-sidebar{width:100%;position:relative;top:auto;order:-1;}
+  .rtd-sb-body{max-height:200px;}
+  .rtd-phase-title{font-size:26px;}
+  .rtd-tc-title{font-size:30px;}
+  .rtd-swim-map{height:95px;}
+  .rtd-tc-tribes{flex-direction:column;align-items:center;gap:8px;}
+}
+@media(max-width:480px){
+  .rtd-shell{padding:8px 8px 70px;}
+  .rtd-phase-title{font-size:22px;}
+  .rtd-tc-title{font-size:24px;}
+  .rtd-swim-map{height:80px;}
+  .rtd-btn{padding:9px 14px;font-size:11px;min-height:44px;}
+  .rtd-card{padding:12px 14px;}
+}
+/* ═══ 1. POSITION CHANGE BURST — swim map overtake ═══ */
+.rtd-swim-marker{transition:left 1.2s cubic-bezier(.16,1,.3,1),top .8s cubic-bezier(.16,1,.3,1);}
+.rtd-swim-marker.rtd-overtake{
+  box-shadow:0 0 16px rgba(255,255,255,.5),0 2px 8px rgba(0,0,0,.35);
+  animation:rtd-overtake-glow .6s ease-out;}
+@keyframes rtd-overtake-glow{
+  0%{box-shadow:0 0 0 rgba(255,255,255,0),0 2px 8px rgba(0,0,0,.35);transform:translate(-50%,-50%) scale(1);}
+  40%{box-shadow:0 0 20px rgba(255,255,255,.6),0 0 40px rgba(200,210,215,.2);transform:translate(-50%,-50%) scale(1.25);}
+  100%{box-shadow:0 0 8px rgba(255,255,255,.1),0 2px 8px rgba(0,0,0,.35);transform:translate(-50%,-50%) scale(1);}}
+
+/* Overtake text floating above map */
+.rtd-overtake-text{position:absolute;z-index:10;font-family:'Bitter',serif;font-size:11px;font-weight:900;
+  letter-spacing:2px;color:var(--rtd-white);text-shadow:0 1px 8px rgba(0,0,0,.6);
+  pointer-events:none;white-space:nowrap;
+  animation:rtd-overtake-float 1.8s ease-out forwards;}
+@keyframes rtd-overtake-float{
+  0%{opacity:0;transform:translate(-50%,0) scale(.8);}
+  15%{opacity:1;transform:translate(-50%,-5px) scale(1);}
+  70%{opacity:1;transform:translate(-50%,-20px) scale(1);}
+  100%{opacity:0;transform:translate(-50%,-30px) scale(.9);}}
+
+/* Splash burst on overtake — expanding ring */
+.rtd-splash-ring{position:absolute;z-index:5;width:10px;height:10px;border-radius:50%;
+  border:1.5px solid rgba(200,210,215,.3);pointer-events:none;
+  animation:rtd-splash-expand .8s ease-out forwards;}
+@keyframes rtd-splash-expand{
+  0%{transform:translate(-50%,-50%) scale(1);opacity:.6;}
+  100%{transform:translate(-50%,-50%) scale(5);opacity:0;}}
+
+/* ═══ 2. IMPACT CARDS — rare dramatic entries ═══ */
+.rtd-card.rtd-impact{animation:rtd-impact-slam .4s cubic-bezier(.16,1,.3,1);}
+@keyframes rtd-impact-slam{
+  0%{opacity:0;transform:translateY(30px) scale(.95);}
+  60%{opacity:1;transform:translateY(-3px) scale(1.01);}
+  100%{transform:translateY(0) scale(1);}}
+
+/* Screen dim overlay for impact moments */
+.rtd-impact-dim{position:fixed;top:0;left:0;right:0;bottom:0;z-index:25;pointer-events:none;
+  background:rgba(10,15,20,.4);animation:rtd-dim-flash .5s ease-out forwards;}
+@keyframes rtd-dim-flash{
+  0%{opacity:0;}20%{opacity:1;}100%{opacity:0;}}
+
+/* Screen shake for vomit/rescue */
+.rtd-shake .rtd-main{animation:rtd-screen-shake .4s ease-out;}
+@keyframes rtd-screen-shake{
+  0%,100%{transform:translate(0,0);}
+  15%{transform:translate(-3px,1px);}
+  30%{transform:translate(3px,-1px);}
+  45%{transform:translate(-2px,2px);}
+  60%{transform:translate(2px,-1px);}
+  75%{transform:translate(-1px,1px);}}
+
+/* ═══ 3. WATER REACTIVITY — ripple from marker ═══ */
+.rtd-ripple{position:absolute;z-index:5;pointer-events:none;
+  width:6px;height:6px;border-radius:50%;
+  border:1px solid rgba(200,210,215,.25);
+  animation:rtd-ripple-out 1.2s ease-out forwards;}
+.rtd-ripple-2{animation-delay:.2s;border-color:rgba(200,210,215,.15);}
+.rtd-ripple-3{animation-delay:.4s;border-color:rgba(200,210,215,.1);}
+@keyframes rtd-ripple-out{
+  0%{transform:translate(-50%,-50%) scale(1);opacity:.5;}
+  100%{transform:translate(-50%,-50%) scale(8);opacity:0;}}
+
+/* ═══ 4. PHASE TRANSITION CINEMATIC ═══ */
+.rtd-phase-transition{position:fixed;top:0;left:0;right:0;bottom:0;z-index:28;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;}
+.rtd-phase-transition-overlay{position:absolute;top:0;left:0;right:0;bottom:0;
+  background:rgba(10,15,20,.7);animation:rtd-transition-dim 2s ease-in-out forwards;}
+@keyframes rtd-transition-dim{
+  0%{opacity:0;}30%{opacity:1;}70%{opacity:1;}100%{opacity:0;}}
+.rtd-phase-transition-text{position:relative;z-index:1;text-align:center;
+  animation:rtd-transition-text 2s ease-in-out forwards;}
+.rtd-phase-transition-text .phase-label{font-family:'IBM Plex Mono',monospace;font-size:10px;
+  letter-spacing:6px;color:var(--rtd-rope);opacity:.5;}
+.rtd-phase-transition-text .phase-name{font-family:'Bitter',serif;font-size:42px;font-weight:900;
+  color:var(--rtd-white);text-shadow:0 2px 30px rgba(0,0,0,.5);margin-top:6px;letter-spacing:2px;}
+.rtd-phase-transition-text .phase-sub{font-size:13px;color:var(--rtd-cream);opacity:.6;margin-top:8px;}
+@keyframes rtd-transition-text{
+  0%{opacity:0;transform:translateY(15px) scale(.95);}
+  25%{opacity:1;transform:translateY(0) scale(1);}
+  75%{opacity:1;transform:translateY(0) scale(1);}
+  100%{opacity:0;transform:translateY(-10px) scale(1.02);}}
+
+/* ═══ 5. RELAY ACTIVE LEG FOCUS ═══ */
+.rtd-leg.active{background:rgba(160,128,80,.06);border-radius:4px;
+  animation:rtd-leg-pulse 2s ease-in-out infinite;}
+@keyframes rtd-leg-pulse{
+  0%,100%{background:rgba(160,128,80,.04);box-shadow:none;}
+  50%{background:rgba(160,128,80,.08);box-shadow:0 0 12px rgba(196,148,48,.06);}}
+.rtd-leg.active .rtd-icon .fw{animation:rtd-icon-breathe 2s ease-in-out infinite;}
+@keyframes rtd-icon-breathe{
+  0%,100%{transform:scale(1);box-shadow:0 1px 3px rgba(0,0,0,.25),inset 0 0 3px rgba(0,0,0,.12);}
+  50%{transform:scale(1.1);box-shadow:0 1px 6px rgba(196,148,48,.15),inset 0 0 3px rgba(0,0,0,.12);}}
+
+/* Sidebar active player highlight */
+.rtd-sb-row.rtd-sb-active{background:rgba(196,148,48,.04);border-radius:3px;
+  animation:rtd-sb-highlight 2s ease-in-out infinite;}
+@keyframes rtd-sb-highlight{
+  0%,100%{background:rgba(196,148,48,.02);}
+  50%{background:rgba(196,148,48,.06);}}
+
+/* Chug fill micro-animation */
+.rtd-icon-chug.rtd-icon-active .ci::before{
+  animation:rtd-chug-fill 1.5s ease-in-out infinite;}
+@keyframes rtd-chug-fill{
+  0%,100%{clip-path:polygon(10% 0%,90% 0%,100% 100%,0% 100%);}
+  50%{clip-path:polygon(10% 30%,90% 30%,100% 100%,0% 100%);}}
+
+/* ═══ 6. FISH KISS SPECTACLE ═══ */
+.rtd-card-fish.rtd-fish-spectacle{animation:rtd-fish-zoom .6s cubic-bezier(.16,1,.3,1);}
+@keyframes rtd-fish-zoom{
+  0%{opacity:0;transform:scale(.92);}
+  50%{transform:scale(1.02);}
+  100%{transform:scale(1);}}
+
+/* Fish icon lunge animation */
+.rtd-fish-lunge .ci::before{animation:rtd-fish-lunge-anim .5s ease-out;}
+@keyframes rtd-fish-lunge-anim{
+  0%{transform:translateX(-4px);}
+  40%{transform:translateX(3px);}
+  100%{transform:translateX(0);}}
+
+/* Fish success glow */
+.rtd-card-fish.rtd-fish-success{box-shadow:0 0 20px rgba(90,154,94,.15),0 2px 10px rgba(0,0,0,.3);
+  animation:rtd-fish-success-glow 1s ease-out;}
+@keyframes rtd-fish-success-glow{
+  0%{box-shadow:0 0 0 rgba(90,154,94,0),0 2px 10px rgba(0,0,0,.3);}
+  30%{box-shadow:0 0 25px rgba(90,154,94,.2),0 0 50px rgba(90,154,94,.08),0 2px 10px rgba(0,0,0,.3);}
+  100%{box-shadow:0 0 10px rgba(90,154,94,.05),0 2px 10px rgba(0,0,0,.3);}}
+
+/* Fish refusal recoil */
+.rtd-card-fish.rtd-fish-recoil{animation:rtd-fish-recoil .5s ease-out;}
+@keyframes rtd-fish-recoil{
+  0%{transform:translateX(0);}
+  20%{transform:translateX(6px);}
+  40%{transform:translateX(-4px);}
+  60%{transform:translateX(2px);}
+  100%{transform:translateX(0);}}
+
+@media(prefers-reduced-motion:reduce){
+  .rtd-atmo *,.rtd-wrap *{animation-duration:.01s!important;animation-delay:0s!important;transition-duration:.01s!important;}
+  .rtd-step{opacity:1;transform:none;filter:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ ATMOSPHERE ═══ -->
+<div class="rtd-atmo">
+  <div class="rtd-sky"></div>
+  <div class="rtd-grain-overlay"></div>
+  <div class="rtd-fog rtd-fog-1"></div>
+  <div class="rtd-fog rtd-fog-2"></div>
+  <div class="rtd-clouds">
+    <div class="rtd-cloud rtd-cloud-a"></div>
+    <div class="rtd-cloud rtd-cloud-b"></div>
+    <div class="rtd-cloud rtd-cloud-c"></div>
+  </div>
+  <div class="rtd-cliffs">
+    <div class="rtd-cliff-back"></div>
+    <div class="rtd-cliff-front"></div>
+  </div>
+  <div class="rtd-lh">
+    <div class="rtd-lh-sweep"></div>
+    <div class="rtd-lh-lamp"></div>
+    <div class="rtd-lh-top"></div>
+    <div class="rtd-lh-base"></div>
+  </div>
+  <div class="rtd-ocean"></div>
+  <div class="rtd-waves">
+    <div class="rtd-wv rtd-wv-1"></div>
+    <div class="rtd-wv rtd-wv-2"></div>
+    <div class="rtd-wv rtd-wv-3"></div>
+  </div>
+  <div class="rtd-shore"></div>
+  <div class="rtd-ground"></div>
+  <div class="rtd-shack-sil">
+    <div class="rtd-shack-roof-s"></div>
+    <div class="rtd-shack-body-s"></div>
+  </div>
+  <div class="rtd-boat-sil rtd-boat-1"><div class="rtd-boat-cabin-s"></div><div class="rtd-boat-hull-s"></div><div class="rtd-boat-mast-s"></div></div>
+  <div class="rtd-boat-sil rtd-boat-2"><div class="rtd-boat-cabin-s"></div><div class="rtd-boat-hull-s"></div><div class="rtd-boat-mast-s"></div></div>
+  <div class="rtd-gull rtd-g1"></div>
+  <div class="rtd-gull rtd-g2"></div>
+  <div class="rtd-gull rtd-g3"></div>
+  <div class="rtd-mist rtd-m1"></div>
+  <div class="rtd-mist rtd-m2"></div>
+  <div class="rtd-mist rtd-m3"></div>
+  <div class="rtd-vignette"></div>
+</div>
+
+<!-- ═══ CONTENT ═══ -->
+<div class="rtd-wrap">
+<div class="rtd-shell">
+<div class="rtd-main">
+
+  <!-- TITLE CARD -->
+  <div class="rtd-title-card">
+    <div class="rtd-tc-sub">WORLD TOUR CHALLENGE</div>
+    <div class="rtd-tc-title">Rock the Dock</div>
+    <div class="rtd-tc-cold">"Drop 'em in the ocean, race 'em to the dock, and make 'em kiss a fish. Now THAT'S entertainment." — Chris</div>
+    <div class="rtd-tc-tribes">
+      <div class="rtd-card-tribe rtd-card-tribe-y"><span class="rtd-sb-tribe rtd-sb-tribe-y"></span> KILLER BASS</div>
+      <div class="rtd-card-tribe rtd-card-tribe-r"><span class="rtd-sb-tribe rtd-sb-tribe-r"></span> SCREAMING GOPHERS</div>
+      <div class="rtd-card-tribe rtd-card-tribe-b"><span class="rtd-sb-tribe rtd-sb-tribe-b"></span> RAGING WAVES</div>
+    </div>
+  </div>
+
+  <div class="rtd-rope-strip"></div>
+
+  <!-- PHASE 1: OCEAN SWIM -->
+  <div class="rtd-phase-hdr">
+    <div class="rtd-phase-tag">PHASE 1</div>
+    <div class="rtd-phase-title">Ocean Swim</div>
+    <div class="rtd-phase-sub">Tribes swim from the drop point to the dock. Pick a formation and pray your weakest link can float.</div>
+  </div>
+
+  <!-- Swim Map -->
+  <div class="rtd-swim-map" id="rtd-swim-map">
+    <div class="dock-target"></div>
+    <div class="rtd-swim-marker rtd-swim-marker-y" id="marker-kb" style="left:62%;top:35%;">KB</div>
+    <div class="rtd-swim-marker rtd-swim-marker-r" id="marker-sg" style="left:48%;top:55%;">SG</div>
+    <div class="rtd-swim-marker rtd-swim-marker-b" id="marker-rw" style="left:55%;top:72%;">RW</div>
+    <div class="wv-map"></div>
+  </div>
+
+  <!-- Formation Debate -->
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card-tribe rtd-card-tribe-y">
+      <span class="rtd-sb-tribe rtd-sb-tribe-y"></span> KILLER BASS — Formation Vote
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-captain">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-anchor"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Formation Debate</span>
+        <span class="rtd-badge rtd-badge-captain">VOTE</span>
+      </div>
+      <div class="rtd-txt">
+        <strong>Courtney</strong> advocates for V-Formation: "We swim like geese — fastest bird formation in nature!"<br>
+        <strong>DJ</strong> pushes Buddy System: "Nobody drowns on my watch."<br>
+        <strong>Courtney</strong> wins the vote. V-Formation it is.
+      </div>
+    </div>
+  </div>
+
+  <!-- Individual Swim Rolls -->
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-success">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-swim"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Alejandro — Strong Swim</span>
+        <span class="rtd-badge rtd-badge-pass">+2</span>
+      </div>
+      <div class="rtd-txt">Alejandro cuts through the waves like he was born in the ocean. His arms barely disturb the surface. He touches the dock ladder first, pulls himself up in one smooth motion, and immediately scans for his team.</div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-chatter"><span class="rtd-chatter-host">CHRIS:</span> "Alejandro hits the dock first! Somebody get that man a towel — actually, don't. More entertaining this way."</div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-social">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-social"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Teammate Encouragement</span>
+        <span class="rtd-badge rtd-badge-social">BOND</span>
+      </div>
+      <div class="rtd-txt"><strong>Lindsay</strong> shouts back to <strong>Owen</strong>: "You can do it, Oscar! Just keep kicking!" Owen doesn't correct her. He's too busy not drowning.</div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-fail">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-danger"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Owen — Struggle</span>
+        <span class="rtd-badge rtd-badge-fail">-1</span>
+      </div>
+      <div class="rtd-txt">Owen's arms windmill through the water with more enthusiasm than technique. He's moving. Just... not forward. The V-formation has become more of a checkmark shape with him as the dangling tail.</div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-rescue rtd-impact" id="card-rescue">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-danger"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">DJ — Rescued!</span>
+        <span class="rtd-badge rtd-badge-rescue">RESCUE</span>
+      </div>
+      <div class="rtd-txt"><strong>DJ</strong> goes under. His arms flail, his eyes go wide. <strong>Eva</strong> doesn't hesitate — she grabs his collar mid-stroke and hauls him toward the dock with one arm. DJ coughs up half the ocean. Eva doesn't even break her rhythm.</div>
+      <div class="rtd-score-bar">
+        <span style="font-size:10px;color:var(--rtd-muted);min-width:45px;">DJ</span>
+        <div class="rtd-strack"><div class="rtd-sfill rtd-sfill-d" style="width:15%;"></div></div>
+        <span class="rtd-sval rtd-sval-d">-2</span>
+      </div>
+      <div class="rtd-score-bar">
+        <span style="font-size:10px;color:var(--rtd-muted);min-width:45px;">Eva</span>
+        <div class="rtd-strack"><div class="rtd-sfill rtd-sfill-g" style="width:40%;"></div></div>
+        <span class="rtd-sval rtd-sval-g">+2</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-swim">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-swim"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Heather — Strong Swim</span>
+        <span class="rtd-badge rtd-badge-pass">+2</span>
+      </div>
+      <div class="rtd-txt">Heather keeps her head above water and her mouth shut for once. Clean, efficient strokes. She pulls herself onto the dock and immediately starts wringing out her hair like this is a spa visit.</div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-social">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-social"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Cross-Tribe Splash War</span>
+        <span class="rtd-badge rtd-badge-social">RIVALRY</span>
+      </div>
+      <div class="rtd-txt"><strong>Duncan</strong> deliberately splashes <strong>Harold</strong> as he passes. "Oops. Turbulence." Harold gets a face full of salt water and loses three strokes.</div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-chatter"><span class="rtd-chatter-host">CHRIS:</span> "Killer Bass hit the dock first! Screaming Gophers are dragging themselves up... and Raging Waves are still out there arguing about who swallowed more seawater."</div>
+  </div>
+
+  <!-- PHASE TRANSITION — replaces flat rope divider -->
+  <div class="rtd-rope-strip" id="rtd-transition-trigger" style="cursor:pointer;position:relative;">
+    <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:3px;color:var(--rtd-rope);opacity:.25;white-space:nowrap;">CLICK FOR TRANSITION DEMO</div>
+  </div>
+
+  <!-- PHASE 2: DOCK RELAY -->
+  <div class="rtd-phase-hdr">
+    <div class="rtd-phase-tag">PHASE 2</div>
+    <div class="rtd-phase-title">Dock Relay</div>
+    <div class="rtd-phase-sub">Four legs. Four tasks. One captain calling the shots. Chug, decipher, climb, and kiss your way to immunity.</div>
+  </div>
+
+  <!-- Relay Tracker -->
+  <div class="rtd-relay-tracker">
+    <div class="rtd-leg done">
+      <div class="rtd-leg-num">LEG 1</div>
+      <div class="rtd-leg-name">CHUG</div>
+      <div class="rtd-leg-icon"><div class="rtd-icon rtd-icon-chug"><div class="fw"><div class="ci"></div></div></div></div>
+    </div>
+    <div class="rtd-leg active">
+      <div class="rtd-leg-num">LEG 2</div>
+      <div class="rtd-leg-name">DECIPHER</div>
+      <div class="rtd-leg-icon"><div class="rtd-icon rtd-icon-decipher"><div class="fw"><div class="ci"></div></div></div></div>
+    </div>
+    <div class="rtd-leg locked">
+      <div class="rtd-leg-num">LEG 3</div>
+      <div class="rtd-leg-name">STUNT</div>
+      <div class="rtd-leg-icon"><div class="rtd-icon rtd-icon-stunt"><div class="fw"><div class="ci"></div></div></div></div>
+    </div>
+    <div class="rtd-leg locked">
+      <div class="rtd-leg-num">LEG 4</div>
+      <div class="rtd-leg-name">FISH KISS</div>
+      <div class="rtd-leg-icon"><div class="rtd-icon rtd-icon-fish"><div class="fw"><div class="ci"></div></div></div></div>
+    </div>
+  </div>
+
+  <!-- Captain Election -->
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-captain">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-anchor"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Captain Election — Killer Bass</span>
+        <span class="rtd-badge rtd-badge-captain">CAPTAIN</span>
+      </div>
+      <div class="rtd-txt">
+        <strong>Duncan</strong> crosses his arms. "I'll do it. I know who's good at what."<br>
+        <strong>Courtney</strong> scoffs. "You'll just assign your friends to the easy legs!"<br>
+        <strong>Duncan</strong> wins the election. He grins. This won't end well for certain people.
+      </div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-captain">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-anchor"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Duncan's Assignments</span>
+        <span class="rtd-badge rtd-badge-captain">LINEUP</span>
+      </div>
+      <div class="rtd-txt">
+        <strong>Owen</strong> <span class="rtd-assign-tag rtd-assign-chug">CHUG</span> — "Obviously."<br>
+        <strong>Harold</strong> <span class="rtd-assign-tag rtd-assign-decipher">DECIPHER</span> — "Nerd stuff. Your department."<br>
+        <strong>DJ</strong> <span class="rtd-assign-tag rtd-assign-stunt">STUNT</span> — "...Wait, DJ hates heights." <em style="color:var(--rtd-danger);font-size:10px;">BAD FIT -0.1</em><br>
+        <strong>Eva</strong> <span class="rtd-assign-tag rtd-assign-fish">FISH KISS</span> — Eva's jaw tightens. Duncan smirks.
+      </div>
+    </div>
+  </div>
+
+  <!-- Leg 1: Chug -->
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card-tribe rtd-card-tribe-y" style="opacity:.6;font-size:10px;letter-spacing:3px;">
+      <span class="rtd-sb-tribe rtd-sb-tribe-y"></span> LEG 1 — CHUG
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-chug">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-chug"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Owen — Chug (Killer Bass)</span>
+        <span class="rtd-badge rtd-badge-fast">FAST +3</span>
+      </div>
+      <div class="rtd-txt">Owen tilts the jug back and <em>inhales</em> the fish vinegar. His eyes water. His throat convulses. He slams the empty jug down and belches so loud the seagulls scatter. "Got any chips?"</div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-social">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-social"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Teammate Cheer</span>
+        <span class="rtd-badge rtd-badge-social">BOND</span>
+      </div>
+      <div class="rtd-txt"><strong>Lindsay</strong> claps wildly. "Owen, you're like a human garbage disposal! That's a COMPLIMENT!" Owen beams.</div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-fail">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-chug"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Izzy — Chug (Screaming Gophers)</span>
+        <span class="rtd-badge rtd-badge-fail">FAIL -2</span>
+      </div>
+      <div class="rtd-txt">Izzy takes one sip, declares it "needs more fermentation," then tries to add seaweed to "improve the flavor profile." Three minutes later she's still experimenting and her team is screaming.</div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-vomit rtd-impact" id="card-vomit">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-danger"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Vomit Chain!</span>
+        <span class="rtd-badge rtd-badge-vomit">CHAOS</span>
+      </div>
+      <div class="rtd-txt"><strong>Cody</strong> watches Izzy's experimental chugging and gags. Then <strong>Tyler</strong> sees Cody gag and loses it over the dock railing. The chain reaction takes out half the Gophers' bench.</div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-chatter"><span class="rtd-chatter-host">CHRIS:</span> "Owen CRUSHES it for Killer Bass! Meanwhile, Screaming Gophers are... well, screaming. And vomiting. Mostly vomiting."</div>
+  </div>
+
+  <!-- Leg 2: Decipher -->
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card-tribe rtd-card-tribe-y" style="opacity:.6;font-size:10px;letter-spacing:3px;">
+      <span class="rtd-sb-tribe rtd-sb-tribe-y"></span> LEG 2 — DECIPHER
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-decipher">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-decipher"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Harold — Decipher (Killer Bass)</span>
+        <span class="rtd-badge rtd-badge-pass">PASS +1</span>
+      </div>
+      <div class="rtd-txt">The local fisherman rattles off something that sounds like a drunk pirate reading a phone book backwards. Harold tilts his head, mouths the words silently, then snaps his fingers. "He said 'the codfish jumps at midnight under the red buoy.' Obviously." Nobody knows if he's right, but he sounds confident.</div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-social">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-social"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Captain Pride</span>
+        <span class="rtd-badge rtd-badge-social">BOND</span>
+      </div>
+      <div class="rtd-txt"><strong>Duncan</strong> blinks. "...Huh. Nerd stuff actually worked." He gives Harold a grudging nod. It's the nicest thing he's ever done.</div>
+    </div>
+  </div>
+
+  <!-- Leg 4: Fish Kiss -->
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card-tribe rtd-card-tribe-y" style="opacity:.6;font-size:10px;letter-spacing:3px;">
+      <span class="rtd-sb-tribe rtd-sb-tribe-y"></span> LEG 4 — FISH KISS
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-fish rtd-fish-spectacle rtd-fish-success" id="card-fish-success">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-fish rtd-fish-lunge"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Eva — Fish Kiss (Killer Bass)</span>
+        <span class="rtd-badge rtd-badge-fast">FAST +3</span>
+      </div>
+      <div class="rtd-txt">Eva picks up the cod, stares it dead in its glassy eye, and plants a kiss on it so aggressive the fish looks traumatized. She drops it back on the table. "Done." The dock is silent.</div>
+    </div>
+  </div>
+
+  <!-- Fish Kiss Crowd Reactions -->
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-social" style="border-color:var(--rtd-ocean-mid);">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-fish"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Crowd Reactions</span>
+        <span class="rtd-badge rtd-badge-fish">REACTIONS</span>
+      </div>
+      <div class="rtd-txt">
+        <strong>Duncan</strong> laughs so hard he has to hold onto a dock post. "I assigned her that as a JOKE!"<br>
+        <strong>Owen</strong> looks genuinely impressed. "She kissed it better than Tyler kissed Lindsay that one time."<br>
+        <strong>Harold</strong> adjusts his glasses. "Technically, the bacteria transfer from a cold-water fish is—" Nobody listens.
+      </div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-fail rtd-card-fish rtd-fish-spectacle rtd-fish-recoil" style="border-left-color:var(--rtd-danger);" id="card-fish-fail">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-fish"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Tyler — Fish Kiss Refusal (Gophers)</span>
+        <span class="rtd-badge rtd-badge-fail">REFUSED -2</span>
+      </div>
+      <div class="rtd-txt">Tyler holds the fish at arm's length. He leans in. He pulls back. He leans in again. He dry heaves. "I can't — it's looking at me!" His team groans in unison.</div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-social">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-social"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Captain Blame</span>
+        <span class="rtd-badge rtd-badge-social">FRICTION</span>
+      </div>
+      <div class="rtd-txt"><strong>Heather</strong> rounds on Tyler. "I TOLD you he couldn't handle it! Why did nobody listen to me?" Tyler's ears turn red. The fish stares on, unmoved.</div>
+    </div>
+  </div>
+
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-chatter"><span class="rtd-chatter-host">CHRIS:</span> "Killer Bass ROCK the dock! Raging Waves take second. And Screaming Gophers... you'll be shucking clams for yours truly tonight."</div>
+  </div>
+
+  <!-- Clam Punishment -->
+  <div class="rtd-step rtd-visible" style="margin-top:10px;margin-bottom:10px;">
+    <div class="rtd-card rtd-card-fail" style="border-left-color:var(--rtd-cliff);">
+      <div class="rtd-hdr">
+        <div class="rtd-icon rtd-icon-chug"><div class="fw"><div class="ci"></div></div></div>
+        <span class="rtd-label">Clam Punishment — Screaming Gophers</span>
+        <span class="rtd-badge rtd-badge-fail">LAST PLACE</span>
+      </div>
+      <div class="rtd-txt">The Gophers spend the evening shucking giant clams under the host's supervision. Heather pries one open and something squirts in her eye. Tyler can't figure out which end is the hinge. The host eats the results with visible skepticism.</div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="rtd-controls">
+    <button type="button" class="rtd-btn" aria-label="Reveal next card">NEXT &#9654;</button>
+    <span class="rtd-counter" role="status" aria-live="polite">22 / 22</span>
+    <button type="button" class="rtd-btn" aria-label="Reveal all cards">REVEAL ALL</button>
+  </div>
+
+</div><!-- /rtd-main -->
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="rtd-sidebar" role="complementary" aria-label="Challenge status">
+  <div class="rtd-sb" id="rtd-sidebar-inner" aria-live="polite">
+    <div class="rtd-sb-hdr">
+      <div class="rtd-icon rtd-icon-anchor"><div class="fw"><div class="ci"></div></div></div>
+      DOCK STATUS
+    </div>
+    <div class="rtd-sb-body">
+
+      <!-- Swim Times -->
+      <div class="rtd-sb-section">SWIM TIMES</div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-tribe rtd-sb-tribe-y"></span>
+        <span class="rtd-sb-name"><strong>Killer Bass</strong></span>
+        <span class="rtd-sb-val rtd-sb-val-g">1st</span>
+      </div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-tribe rtd-sb-tribe-b"></span>
+        <span class="rtd-sb-name"><strong>Raging Waves</strong></span>
+        <span class="rtd-sb-val rtd-sb-val-w">2nd</span>
+      </div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-tribe rtd-sb-tribe-r"></span>
+        <span class="rtd-sb-name"><strong>Scr. Gophers</strong></span>
+        <span class="rtd-sb-val rtd-sb-val-d">3rd</span>
+      </div>
+
+      <div class="rtd-sb-divider"></div>
+
+      <!-- Captains -->
+      <div class="rtd-sb-section">CAPTAINS</div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-tribe rtd-sb-tribe-y"></span>
+        <span class="rtd-sb-name"><strong>Duncan</strong></span>
+        <span class="rtd-captain-badge">CPT</span>
+      </div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-tribe rtd-sb-tribe-r"></span>
+        <span class="rtd-sb-name"><strong>Heather</strong></span>
+        <span class="rtd-captain-badge">CPT</span>
+      </div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-tribe rtd-sb-tribe-b"></span>
+        <span class="rtd-sb-name"><strong>Leshawna</strong></span>
+        <span class="rtd-captain-badge">CPT</span>
+      </div>
+
+      <div class="rtd-sb-divider"></div>
+
+      <!-- Relay Progress -->
+      <div class="rtd-sb-section">RELAY PROGRESS</div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-tribe rtd-sb-tribe-y"></span>
+        <span class="rtd-sb-name">Killer Bass</span>
+        <div class="rtd-sb-bar"><div class="rtd-sb-bar-fill rtd-sb-bar-fill-y" style="width:100%;"></div></div>
+        <span class="rtd-sb-pill rtd-sb-pill-g">4/4</span>
+      </div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-tribe rtd-sb-tribe-b"></span>
+        <span class="rtd-sb-name">Raging Waves</span>
+        <div class="rtd-sb-bar"><div class="rtd-sb-bar-fill rtd-sb-bar-fill-b" style="width:75%;"></div></div>
+        <span class="rtd-sb-pill rtd-sb-pill-w">3/4</span>
+      </div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-tribe rtd-sb-tribe-r"></span>
+        <span class="rtd-sb-name">Scr. Gophers</span>
+        <div class="rtd-sb-bar"><div class="rtd-sb-bar-fill rtd-sb-bar-fill-r" style="width:50%;"></div></div>
+        <span class="rtd-sb-pill rtd-sb-pill-d">2/4</span>
+      </div>
+
+      <div class="rtd-sb-divider"></div>
+
+      <!-- Leg Results -->
+      <div class="rtd-sb-section">LEG RESULTS</div>
+      <div class="rtd-sb-row" style="font-size:9.5px;">
+        <span style="color:var(--rtd-muted);width:46px;">CHUG</span>
+        <span class="rtd-sb-pill rtd-sb-pill-g" style="margin-right:2px;">KB</span>
+        <span class="rtd-sb-pill rtd-sb-pill-w" style="margin-right:2px;">RW</span>
+        <span class="rtd-sb-pill rtd-sb-pill-d">SG</span>
+      </div>
+      <div class="rtd-sb-row" style="font-size:9.5px;">
+        <span style="color:var(--rtd-muted);width:46px;">DECODE</span>
+        <span class="rtd-sb-pill rtd-sb-pill-g" style="margin-right:2px;">KB</span>
+        <span class="rtd-sb-pill rtd-sb-pill-g" style="margin-right:2px;">RW</span>
+        <span class="rtd-sb-pill rtd-sb-pill-d">SG</span>
+      </div>
+      <div class="rtd-sb-row" style="font-size:9.5px;">
+        <span style="color:var(--rtd-muted);width:46px;">STUNT</span>
+        <span class="rtd-sb-pill rtd-sb-pill-w" style="margin-right:2px;">KB</span>
+        <span class="rtd-sb-pill rtd-sb-pill-g" style="margin-right:2px;">RW</span>
+        <span class="rtd-sb-pill rtd-sb-pill-d">SG</span>
+      </div>
+      <div class="rtd-sb-row" style="font-size:9.5px;">
+        <span style="color:var(--rtd-muted);width:46px;">FISH</span>
+        <span class="rtd-sb-pill rtd-sb-pill-g" style="margin-right:2px;">KB</span>
+        <span class="rtd-sb-pill rtd-sb-pill-w" style="margin-right:2px;">RW</span>
+        <span class="rtd-sb-pill rtd-sb-pill-d">SG</span>
+      </div>
+
+      <div class="rtd-sb-divider"></div>
+
+      <!-- Key Events -->
+      <div class="rtd-sb-section">KEY EVENTS</div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-name" style="font-size:9.5px;">Eva rescued DJ</span>
+        <span class="rtd-sb-pill rtd-sb-pill-g">HERO</span>
+      </div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-name" style="font-size:9.5px;">Tyler refused fish kiss</span>
+        <span class="rtd-sb-pill rtd-sb-pill-d">REFUSE</span>
+      </div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-name" style="font-size:9.5px;">Duncan mis-assigned DJ</span>
+        <span class="rtd-sb-pill rtd-sb-pill-d">SABOTAGE</span>
+      </div>
+      <div class="rtd-sb-row">
+        <span class="rtd-sb-name" style="font-size:9.5px;">Vomit chain (3 hit)</span>
+        <span class="rtd-sb-pill rtd-sb-pill-d">CHAOS</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div><!-- /rtd-shell -->
+</div><!-- /rtd-wrap -->
+
+<!-- ═══ DEMO SCRIPT — triggers reactive effects ═══ -->
+<script>
+(function() {
+  const map = document.getElementById('rtd-swim-map');
+
+  // 1. OVERTAKE DEMO — auto-runs after 2s
+  setTimeout(function() {
+    const rw = document.getElementById('marker-rw');
+    const sg = document.getElementById('marker-sg');
+    if (!rw || !sg || !map) return;
+
+    // RW overtakes SG
+    rw.style.left = '58%';
+    rw.style.top = '50%';
+    rw.classList.add('rtd-overtake');
+    sg.classList.add('rtd-overtake');
+
+    // Splash rings at overtake point
+    for (let i = 0; i < 3; i++) {
+      const ring = document.createElement('div');
+      ring.className = 'rtd-splash-ring' + (i > 0 ? ' rtd-ripple-' + (i + 1) : '');
+      ring.style.left = '56%';
+      ring.style.top = '55%';
+      map.appendChild(ring);
+      setTimeout(() => ring.remove(), 1200);
+    }
+
+    // Floating overtake text
+    const txt = document.createElement('div');
+    txt.className = 'rtd-overtake-text';
+    txt.textContent = 'RAGING WAVES OVERTAKE!';
+    txt.style.left = '56%';
+    txt.style.top = '40%';
+    map.appendChild(txt);
+    setTimeout(() => txt.remove(), 2000);
+
+    // Clean up glow
+    setTimeout(() => {
+      rw.classList.remove('rtd-overtake');
+      sg.classList.remove('rtd-overtake');
+    }, 800);
+  }, 2500);
+
+  // 2. IMPACT — screen shake on vomit card (observer demo)
+  // In real VP: triggered on reveal. Here: auto-trigger after 4s
+  setTimeout(function() {
+    const shell = document.querySelector('.rtd-wrap');
+    if (shell) {
+      shell.classList.add('rtd-shake');
+      // Dim flash
+      const dim = document.createElement('div');
+      dim.className = 'rtd-impact-dim';
+      document.body.appendChild(dim);
+      setTimeout(() => {
+        shell.classList.remove('rtd-shake');
+        dim.remove();
+      }, 600);
+    }
+  }, 4500);
+
+  // 3. WATER RIPPLES on rescue card area — auto after 3.5s
+  setTimeout(function() {
+    if (!map) return;
+    const sg = document.getElementById('marker-sg');
+    if (!sg) return;
+    for (let i = 0; i < 3; i++) {
+      const rip = document.createElement('div');
+      rip.className = 'rtd-ripple' + (i > 0 ? ' rtd-ripple-' + (i + 1) : '');
+      rip.style.left = sg.style.left;
+      rip.style.top = sg.style.top;
+      map.appendChild(rip);
+      setTimeout(() => rip.remove(), 1600);
+    }
+  }, 3500);
+
+  // 4. PHASE TRANSITION — click the rope strip
+  const trigger = document.getElementById('rtd-transition-trigger');
+  if (trigger) {
+    trigger.addEventListener('click', function() {
+      const trans = document.createElement('div');
+      trans.className = 'rtd-phase-transition';
+      trans.innerHTML = '<div class="rtd-phase-transition-overlay"></div>' +
+        '<div class="rtd-phase-transition-text">' +
+        '<div class="phase-label">ARRIVING AT</div>' +
+        '<div class="phase-name">The Dock</div>' +
+        '<div class="phase-sub">Four legs. One captain. Kiss that fish.</div>' +
+        '</div>';
+      document.body.appendChild(trans);
+      setTimeout(() => trans.remove(), 2200);
+    });
+  }
+
+  // 5. RELAY ACTIVE LEG — the active leg is already styled via CSS
+  // Add sidebar active class demo
+  const sbRows = document.querySelectorAll('.rtd-sb-row');
+  if (sbRows.length > 3) sbRows[3].classList.add('rtd-sb-active'); // Highlight Duncan
+
+  // 6. FISH KISS — animations are inline on the cards via CSS classes
+  // rtd-fish-spectacle + rtd-fish-success on Eva's card
+  // rtd-fish-recoil on Tyler's card
+  // These replay on scroll into view in real VP
+})();
+</script>
+
+</body>
+</html>

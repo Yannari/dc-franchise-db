@@ -344,6 +344,8 @@ export function computeHeat(name, tribalPlayers, alliances) {
   }
   // Off the Chain: bike race sabotage/rivalry heat
   if (gs._bikeRaceHeat?.[name] && ((gs.episode || 0) + 1) < gs._bikeRaceHeat[name].expiresEp) heat += gs._bikeRaceHeat[name].amount;
+  // Rock the Dock: lost at sea blame heat
+  if (gs._rockTheDockHeat?.[name] && ((gs.episode || 0) + 1) < gs._rockTheDockHeat[name].expiresEp) heat += gs._rockTheDockHeat[name].amount;
   // Full Metal Drama: friendly fire, sabotage, desertion heat
   if (gs._warHeat) {
     Object.entries(gs._warHeat).forEach(([victim, data]) => {

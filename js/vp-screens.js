@@ -39,6 +39,9 @@ import { rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian,
 import { rpBuildNMTitleCard, rpBuildNMSecurity, rpBuildNMGallery, rpBuildNMAssembly, rpBuildNMResults, nightMuseumRevealNext, nightMuseumRevealAll } from './chal/night-at-museum.js';
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext, tlsRevealAll } from './chal/truth-or-shark.js';
 import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults, rockTheDockRevealNext, rockTheDockRevealAll } from './chal/rock-the-dock.js';
+import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTChainHunt, rpBuildTTLongboardRace, rpBuildTTResults, ttRevealNext, ttRevealAll } from './chal/tropical-takedown.js';
+import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
+import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults, gpRevealNext, gpRevealAll } from './chal/greeces-pieces.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10723,6 +10726,26 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'rtd-swim', label:'🌊 Ocean Swim', html: rpBuildRTDSwim(ep) });
     vpScreens.push({ id:'rtd-relay', label:'🏗️ Dock Relay', html: rpBuildRTDRelay(ep) });
     vpScreens.push({ id:'rtd-results', label:'🏆 Results', html: rpBuildRTDResults(ep) });
+  } else if ((ep.isTropicalTakedown || ep.challengeType === 'tropical-takedown') && ep.tropicalTakedown) {
+    vpScreens.push({ id:'tt-title', label:'🌴 Tropical Takedown', html: rpBuildTTTitleCard(ep) });
+    vpScreens.push({ id:'tt-captain', label:'Captain Draft', html: rpBuildTTCaptainDraft(ep) });
+    vpScreens.push({ id:'tt-dive', label:'Deep Dive Relay', html: rpBuildTTCliffDive(ep) });
+    vpScreens.push({ id:'tt-race', label:'Longboard Race', html: rpBuildTTLongboardRace(ep) });
+    vpScreens.push({ id:'tt-results', label:'🏆 Results', html: rpBuildTTResults(ep) });
+  } else if ((ep.isMidnightManhunt || ep.challengeType === 'midnight-manhunt') && ep.midnightManhunt) {
+    vpScreens.push({ id:'mm-title', label:'🔍 Midnight Manhunt', html: rpBuildMMTitleCard(ep) });
+    vpScreens.push({ id:'mm-guard', label:'Guard Strip', html: rpBuildMMGuardStrip(ep) });
+    vpScreens.push({ id:'mm-rack', label:'Torture Rack', html: rpBuildMMRack(ep) });
+    vpScreens.push({ id:'mm-hunt', label:'Whitechapel Hunt', html: rpBuildMMManhunt(ep) });
+    vpScreens.push({ id:'mm-results', label:'🏆 Results', html: rpBuildMMResults(ep) });
+  } else if ((ep.isGreecesPieces || ep.challengeType === 'greeces-pieces') && (ep.challengeData || ep.greecesPieces)) {
+    const gpEp = ep.greecesPieces ? Object.assign({}, ep, { challengeData: ep.greecesPieces }) : ep;
+    vpScreens.push({ id:'gp-title', label:"Greece's Pieces", html: rpBuildGPTitleCard(gpEp) });
+    vpScreens.push({ id:'gp-maze', label:'Pillar Maze', html: rpBuildGPMaze(gpEp) });
+    vpScreens.push({ id:'gp-wrestling', label:'Wrestling', html: rpBuildGPWrestling(gpEp) });
+    vpScreens.push({ id:'gp-hurdles', label:'Hurdle Race', html: rpBuildGPHurdles(gpEp) });
+    if ((gpEp.challengeData || {}).icarus) vpScreens.push({ id:'gp-icarus', label:'Icarus', html: rpBuildGPIcarus(gpEp) });
+    vpScreens.push({ id:'gp-results', label:'Results', html: rpBuildGPResults(gpEp) });
   } else if (ep.isAlienEgg && ep.alienEgg) {
     vpScreens.push({ id:'ae-title', label:'👽 Alien Resurr-eggtion', html: rpBuildAlienEggTitleCard(ep) });
     vpScreens.push({ id:'ae-rounds', label:'The Egg Hunt', html: rpBuildAlienEggRounds(ep) });

@@ -1525,6 +1525,19 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isRockTheDock = true;
 
+  } else if (engineType === 'tropical-takedown') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isTropicalTakedown = true;
+
+  } else if (engineType === 'midnight-manhunt') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isMidnightManhunt = true;
+
+  } else if (engineType === 'greeces-pieces') {
+    if (!gs.isMerged && gs.tribes.length < 2) return;
+    if (gs.activePlayers.length < 4) return;
+    ep.isGreecesPieces = true;
+
   } else if (engineType === 'sports-marathon') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isSportsMarathon = true;
@@ -3886,6 +3899,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'masters-of-disasters': 'isMastersOfDisasters', 'oceans-heist': 'isOceansHeist',
         'million-bucks-bc': 'isMillionBucksBC', 'sports-marathon': 'isSportsMarathon',
         'full-metal-drama': 'isFullMetalDrama',
+        'tropical-takedown': 'isTropicalTakedown',
+        'midnight-manhunt': 'isMidnightManhunt',
+        'greeces-pieces': 'isGreecesPieces',
       };
       const _flag = _engineFlagMap[_rtcEngine];
       if (_flag) ep[_flag] = true;

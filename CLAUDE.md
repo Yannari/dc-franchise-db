@@ -69,6 +69,9 @@ Bond/state/information changes. `players: []` array + `badgeText`/`badgeClass` r
 ### ALL Social Events Must Have Consequences
 Every social event inside a challenge — collisions, taunts, helps, steals, encouragement, trash talk, rivalry, banter — MUST have gameplay consequences (`addBond`, `popDelta`, camp event injection, or state changes). No event should be purely cosmetic text. If a player does something to another player, it must affect their relationship or reputation.
 
+### SVG for Visual Elements — Never CSS Divs
+When creating decorative or illustrative visuals (animals, objects, scenery, icons beyond simple geometric shapes), always use inline SVG. Never attempt to build images out of CSS div hacks — they produce unrecognizable shapes. SVG gives precise control over paths, curves, and proportions. CSS is for layout, styling, and simple geometric indicators (dots, bars, borders) only.
+
 ### Serialization
 Functions don't survive `JSON.stringify`. Pre-render text as strings. Sets need `prepGsForSave()`/`repairGsSets()`.
 
@@ -310,6 +313,85 @@ export function simulateChallengeId(ep) {
 }
 ```
 
+### Step 3b: Pre-Merge vs Post-Merge vs Both-Phase Challenges
+
+Every twist challenge must handle immunity and tribal assignment differently based on the game phase. The Step 3 template above shows the post-merge pattern. Below are the critical differences.
+
+#### Post-Merge (Individual Immunity)
+The winner gets personal immunity. Everyone else goes to tribal.
+```javascript
+ep.immunityWinner = result.immunityWinner;  // player name
+ep.tribalPlayers = active;                  // everyone goes to tribal (immune player protected by episode.js)
+// Immunity winner MUST be #1 in chalMemberScores — add massive bonus:
+const maxOther = Math.max(0, ...Object.entries(ep.chalMemberScores).filter(([n]) => n !== result.immunityWinner).map(([,s]) => s));
+ep.chalMemberScores[result.immunityWinner] = Math.max(ep.chalMemberScores[result.immunityWinner] || 0, maxOther) + active.length + 5;
+```
+- `updateChalRecord(ep)` reads `ep.immunityWinner` to credit 1W (individual win)
+- episode.js dispatch: `if (ep.isChallengeId && gs.isMerged)`
+
+#### Pre-Merge (Tribe Immunity)
+The winning tribe gets immunity. Tribes are ranked by average member score — worst tribe goes to tribal, middle tribes are safe.
+```javascript
+// DO NOT set ep.immunityWinner — tribe wins, not an individual
+// Rank tribes by average member score
+const tribeRankings = tribeData.map(t => {
+  const avg = t.members.map(n => ep.chalMemberScores[n] || 0).reduce((a, b) => a + b, 0) / (t.members.length || 1);
+  return { tribeName: t.tribeName, avg, members: t.members };
+});
+tribeRankings.sort((a, b) => {
+  if (a.tribeName === result.winningTribe) return -1;
+  if (b.tribeName === result.winningTribe) return 1;
+  return b.avg - a.avg;
+});
+const lastTribe = tribeRankings[tribeRankings.length - 1];
+
+// Set ep fields for episode.js tribe challenge flow
+ep.tribalPlayers = gs.tribes.find(t => t.tribeName === lastTribe.tribeName)?.members || active;
+ep.winner = gs.tribes.find(t => t.tribeName === result.winningTribe);
+ep.loser = gs.tribes.find(t => t.tribeName === lastTribe.tribeName);
+ep.safeTribes = tribeRankings.slice(0, -1).map(t => gs.tribes.find(gt => gt.tribeName === t.tribeName)).filter(Boolean);
+ep.challengePlacements = tribeRankings.map(t => gs.tribes.find(gt => gt.tribeName === t.tribeName)).filter(Boolean);
+```
+- `ep.tribalPlayers` = ONLY the losing tribe's members (not everyone)
+- `ep.winner` / `ep.loser` = tribe objects from `gs.tribes` (NOT tribeData)
+- `ep.safeTribes` = array of tribe objects for tribes that are safe
+- `ep.challengePlacements` = all tribes in rank order
+- VP results must explicitly show which tribe is safe vs which goes to tribal — don't just dump "Tribe A, Tribe B — tribal council awaits"
+- episode.js dispatch: `if (ep.isChallengeId && !gs.isMerged)`
+- Camp events use per-tribe keys (from `tribeData`), not `gs.mergeName`
+
+#### Both-Phase Challenges
+The challenge works in both phases but with different scoring and immunity logic. Branch on `gs.isMerged` inside the simulate function.
+```javascript
+export function simulateChallengeId(ep) {
+  const active = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
+
+  if (gs.isMerged) {
+    // POST-MERGE: individual immunity
+    const campKey = gs.mergeName || 'merge';
+    // ... individual scoring logic ...
+    ep.immunityWinner = result.winner;
+    ep.tribalPlayers = active;
+    // massive chalMemberScores bonus for winner
+  } else {
+    // PRE-MERGE: tribe immunity
+    const tribeData = gs.tribes.map(t => ({ tribeName: t.tribeName, members: t.members.filter(m => active.includes(m)) }));
+    // ... tribe scoring logic ...
+    // DO NOT set ep.immunityWinner
+    // Set ep.winner, ep.loser, ep.safeTribes, ep.tribalPlayers (losing tribe only)
+  }
+
+  ep.challengeData = result;
+  updateChalRecord(ep);
+  return ep;
+}
+```
+- episode.js dispatch: `if (ep.isChallengeId)` — no `gs.isMerged` check (fires in both phases)
+- TWIST_CATALOG entry: `phase: 'both'` (not `'pre-merge'` or `'post-merge'`)
+- VP results screen must branch on `gs.isMerged` to show tribe placements vs individual winner
+- Pre-merge: tribe scores = averages per member, NEVER raw sums
+- The simulate function handles both paths; episode.js doesn't need separate dispatch blocks
+
 ### Step 4: VP Pattern
 - Each screen is an exported function: `rpBuildChallengeTitleCard(ep)`, `rpBuildChallengePhase1(ep)`, etc.
 - Use `_tvState[stateKey]` with `idx: -1` for click-to-reveal
@@ -377,6 +459,7 @@ export function challengeRevealNext(screenKey, totalSteps) {
 - **Episode history not saving challenge data**: MUST add `challengeData: ep.challengeData || null` to the episode history object in `episode.js` (~line 5400) or VP screens show nothing on replay
 - **Romance hook crash**: pass `null` for `phases` and `phaseKey` params to `_challengeRomanceSpark` and `_checkShowmanceChalMoment` — they try to push to `phases[phaseKey]` array which doesn't exist
 - **Immunity winner not #1 in scores**: add massive bonus AFTER all other scoring
+- **Pre-merge challenges must NOT set `ep.immunityWinner`**: Pre-merge challenges are tribe challenges — the tribe wins immunity, not an individual. Setting `ep.immunityWinner` to a player name causes `updateChalRecord` to credit that player with 1W (individual win), which is wrong. Use the massive `chalMemberScores` bonus for podium placement only. Only post-merge (individual immunity) challenges should set `ep.immunityWinner`.
 - **Generic challenge overwriting results**: must add to BOTH skip conditions in episode.js (generic challenge dispatch + updateChalRecord)
 - **VP sidebar spoiling results**: build sidebar from state BEFORE current phase, not after
 - **Camp events spoiling VP reveals**: don't push "X was crowned/eliminated" camp events that appear in Cold Open before the challenge VP screens

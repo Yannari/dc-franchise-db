@@ -1557,7 +1557,6 @@ export function simulateNightAtMuseum(ep) {
     return { name, members: [...(t?.members || [])], memberScores: Object.fromEntries((t?.members || []).map(m => [m, ep.chalMemberScores[m] || 0])) };
   });
 
-  ep.immunityWinner = result.immunityWinner;
   ep.tribalPlayers = tribes.find(t => t.name === loserTribeName)?.members ? [...tribes.find(t => t.name === loserTribeName).members] : [];
 
   // chalPlacements: all players best-to-worst
@@ -1565,9 +1564,11 @@ export function simulateNightAtMuseum(ep) {
     .sort(([, a], [, b]) => b - a)
     .map(([n]) => n);
 
-  // Massive bonus for immunity winner
-  const maxOther = Math.max(0, ...Object.entries(ep.chalMemberScores).filter(([n]) => n !== result.immunityWinner).map(([, s]) => s));
-  ep.chalMemberScores[result.immunityWinner] = Math.max(ep.chalMemberScores[result.immunityWinner] || 0, maxOther) + active.length + 5;
+  // Massive bonus for top scorer — podium only, no 1W (pre-merge tribe challenge)
+  if (result.immunityWinner) {
+    const maxOther = Math.max(0, ...Object.entries(ep.chalMemberScores).filter(([n]) => n !== result.immunityWinner).map(([, s]) => s));
+    ep.chalMemberScores[result.immunityWinner] = Math.max(ep.chalMemberScores[result.immunityWinner] || 0, maxOther) + active.length + 5;
+  }
 
   updateChalRecord(ep);
 

@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tropical Takedown — VP Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+/* ═══ RESET ═══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0d2b1f;color:#f0e8d8;font-family:'Nunito',sans-serif;overflow-x:hidden;min-height:100vh;}
+
+/* ═══ CSS VARIABLES ═══ */
+:root {
+  --tt-ocean:#0e6b5e;--tt-ocean-deep:#083d35;--tt-ocean-shallow:#1a9e8a;--tt-ocean-surface:#2cc4ad;
+  --tt-sky-top:#1a4a6e;--tt-sky-mid:#3a8aae;--tt-sky-low:#6ec0d0;--tt-sky-haze:#a0dce0;
+  --tt-jungle:#1a4a28;--tt-jungle-mid:#2a6a38;--tt-jungle-light:#3a8a48;--tt-jungle-dark:#0e3018;
+  --tt-cliff:#3a3028;--tt-cliff-dark:#2a2018;--tt-cliff-face:#4a3a30;--tt-cliff-moss:rgba(42,106,56,.15);
+  --tt-sand:#d4b878;--tt-sand-dark:#a08a58;
+  --tt-bamboo:#8a7a48;--tt-bamboo-dark:#5a5028;--tt-bamboo-light:#b0a068;
+  --tt-chain:#c0a848;--tt-chain-glow:rgba(220,190,80,.4);--tt-chain-dark:#8a7830;
+  --tt-decoy:#5a5a58;
+  --tt-eel:#4a2a6a;--tt-eel-glow:rgba(120,60,180,.3);
+  --tt-shark:#4a5058;
+  --tt-track:#5a4a30;--tt-track-dark:#3a2a18;--tt-track-rail:rgba(140,120,80,.3);
+  --tt-white:#f0e8d8;--tt-cream:rgba(240,232,216,.88);--tt-muted:rgba(240,232,216,.4);
+  --tt-warm:rgba(220,190,120,.6);
+  --tt-success:#4aaa58;--tt-danger:#d04838;--tt-warning:#daa030;
+  --tt-card-bg:rgba(18,48,35,.88);--tt-card-border:rgba(42,106,56,.1);
+  --tt-tribe-y:#8a7a18;--tt-tribe-r:#8a2828;--tt-tribe-b:#1a5a8a;
+  --tt-tribe-y-light:#b0a028;--tt-tribe-r-light:#b84848;--tt-tribe-b-light:#3a8aba;
+}
+
+/* ═══ BROADCAST BAR ═══ */
+.tt-broadcast{position:fixed;top:0;left:0;right:0;z-index:1000;height:38px;
+  background:linear-gradient(90deg,rgba(13,43,31,.97),rgba(8,61,53,.97));
+  border-bottom:2px solid var(--tt-ocean-surface);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:12px;}
+.tt-live{display:flex;align-items:center;gap:6px;color:var(--tt-danger);text-transform:uppercase;letter-spacing:2px;font-size:10px;font-weight:700;}
+.tt-live-dot{width:8px;height:8px;background:var(--tt-danger);border-radius:50%;animation:tt-blink 1s infinite;}
+@keyframes tt-blink{0%,100%{opacity:1}50%{opacity:.2}}
+.tt-ticker{flex:1;overflow:hidden;margin:0 24px;height:20px;position:relative;}
+.tt-ticker-inner{position:absolute;white-space:nowrap;animation:tt-scroll 35s linear infinite;font-size:11px;color:var(--tt-ocean-surface);letter-spacing:1px;font-family:'JetBrains Mono',monospace;}
+@keyframes tt-scroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+.tt-channel{font-family:'Lilita One',cursive;color:var(--tt-chain);font-size:13px;letter-spacing:2px;}
+
+/* ═══ PHASE TABS ═══ */
+.tt-tabs{position:fixed;top:38px;left:0;right:0;z-index:999;display:flex;justify-content:center;gap:4px;flex-wrap:wrap;
+  padding:8px 16px;background:rgba(13,43,31,.96);border-bottom:1px solid rgba(42,196,173,.12);}
+.tt-tab{padding:6px 14px;border:1px solid rgba(42,196,173,.15);border-radius:4px;
+  font-family:'Lilita One',cursive;font-size:10px;letter-spacing:1.5px;
+  cursor:pointer;background:transparent;color:rgba(240,232,216,.35);transition:all .3s;}
+.tt-tab:hover{border-color:var(--tt-ocean-surface);color:#fff;}
+.tt-tab.active{background:var(--tt-ocean-surface);color:var(--tt-jungle-dark);border-color:var(--tt-ocean-surface);font-weight:700;}
+
+/* ═══ MAIN LAYOUT ═══ */
+.tt-shell{max-width:1100px;margin:100px auto 120px;display:grid;grid-template-columns:1fr 260px;gap:16px;padding:0 16px;}
+.tt-main{min-width:0;}
+.tt-phase{display:none;}
+.tt-phase.active{display:block;}
+
+/* ═══ ATMOSPHERE ═══ */
+.tt-atmo{position:fixed;top:38px;left:0;right:0;bottom:0;overflow:hidden;pointer-events:none;z-index:0;}
+
+/* Sky */
+.tt-sky{position:absolute;top:0;left:0;right:0;height:45%;
+  background:linear-gradient(180deg,var(--tt-sky-top) 0%,var(--tt-sky-mid) 40%,var(--tt-sky-low) 70%,var(--tt-sky-haze) 100%);}
+
+/* Sun */
+.tt-sun{position:absolute;top:8%;right:18%;width:60px;height:60px;z-index:2;
+  background:radial-gradient(circle,rgba(255,220,140,.2) 0%,rgba(255,200,100,.08) 40%,transparent 70%);
+  border-radius:50%;filter:blur(4px);}
+.tt-sun::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:20px;height:20px;border-radius:50%;background:rgba(255,230,160,.15);}
+
+/* Clouds */
+.tt-clouds{position:absolute;top:3%;left:0;right:0;height:25%;z-index:2;}
+.tt-cloud{position:absolute;border-radius:50%;filter:blur(6px);opacity:.08;}
+.tt-cloud::before,.tt-cloud::after{content:'';position:absolute;background:inherit;border-radius:50%;}
+.tt-cloud-a{width:160px;height:30px;top:8%;left:10%;background:rgba(255,250,240,.7);animation:tt-drift 60s linear infinite;}
+.tt-cloud-a::before{width:70px;height:25px;top:-10px;left:40px;background:rgba(255,250,240,.5);}
+.tt-cloud-b{width:120px;height:25px;top:18%;left:60%;background:rgba(255,250,240,.5);filter:blur(8px);opacity:.06;animation:tt-drift 80s 20s linear infinite;}
+@keyframes tt-drift{0%{transform:translateX(0);}100%{transform:translateX(-110vw);}}
+
+/* Cliffs */
+.tt-cliffs{position:absolute;top:22%;left:0;right:0;height:30%;z-index:3;}
+.tt-cliff-back{position:absolute;bottom:0;left:0;right:0;height:100%;
+  background:var(--tt-cliff-dark);opacity:.6;
+  clip-path:polygon(0 100%,0 65%,2% 52%,5% 58%,8% 45%,12% 50%,18% 32%,22% 42%,28% 55%,32% 42%,36% 28%,40% 38%,44% 22%,48% 35%,52% 20%,56% 32%,60% 25%,64% 40%,68% 30%,72% 45%,76% 35%,80% 48%,84% 38%,88% 50%,92% 42%,96% 55%,100% 48%,100% 100%);}
+.tt-cliff-front{position:absolute;bottom:0;left:0;right:0;height:80%;
+  background:linear-gradient(180deg,var(--tt-cliff-face),var(--tt-cliff-dark));opacity:.5;
+  clip-path:polygon(0 100%,0 70%,4% 60%,8% 65%,14% 50%,18% 58%,24% 42%,28% 50%,34% 38%,38% 48%,44% 32%,48% 42%,54% 30%,58% 40%,64% 35%,68% 48%,72% 40%,78% 52%,82% 45%,88% 55%,92% 48%,96% 58%,100% 52%,100% 100%);}
+.tt-cliff-front::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(175deg,transparent 0px,transparent 20px,var(--tt-cliff-moss) 20px,var(--tt-cliff-moss) 22px);opacity:.4;}
+
+/* ═══ PALM TREES — SVG silhouettes on the beach ═══ */
+.tt-palm{position:absolute;z-index:15;pointer-events:none;transform-origin:bottom center;}
+.tt-palm svg{width:100%;height:100%;display:block;}
+/* foreground — large, cropped at edges */
+.tt-palm-1{left:-30px;bottom:12%;width:220px;height:400px;animation:tt-sway1 6s ease-in-out infinite;}
+.tt-palm-2{right:-40px;bottom:12%;width:240px;height:420px;animation:tt-sway2 8s ease-in-out infinite;transform:scaleX(-1);}
+/* mid-ground — medium, slightly inward */
+.tt-palm-3{left:7%;bottom:15%;width:130px;height:240px;opacity:.5;animation:tt-sway1 5s 2s ease-in-out infinite;}
+.tt-palm-4{right:7%;bottom:15%;width:140px;height:250px;opacity:.45;animation:tt-sway2 7s 1s ease-in-out infinite;transform:scaleX(-1);}
+/* mid-ground extras — fill the gaps */
+.tt-palm-5{left:3%;bottom:16%;width:110px;height:200px;opacity:.35;animation:tt-sway1 7s 3s ease-in-out infinite;}
+.tt-palm-6{right:3%;bottom:17%;width:100px;height:190px;opacity:.3;animation:tt-sway2 6s 4s ease-in-out infinite;transform:scaleX(-1);}
+/* background — small, distant, along the shoreline */
+.tt-palm-7{left:18%;bottom:18%;width:70px;height:130px;opacity:.55;animation:tt-sway1 4s 1s ease-in-out infinite;}
+.tt-palm-8{right:18%;bottom:18%;width:65px;height:120px;opacity:.5;animation:tt-sway2 5s 3s ease-in-out infinite;transform:scaleX(-1);}
+.tt-palm-9{left:28%;bottom:19%;width:50px;height:95px;opacity:.4;animation:tt-sway1 6s 2s ease-in-out infinite;}
+@keyframes tt-sway1{0%,100%{transform:rotate(0deg);}50%{transform:rotate(2deg);}}
+@keyframes tt-sway2{0%,100%{transform:scaleX(-1) rotate(0deg);}50%{transform:scaleX(-1) rotate(2deg);}}
+
+/* Ocean */
+.tt-ocean{position:absolute;top:45%;left:0;right:0;bottom:0;z-index:5;
+  background:linear-gradient(180deg,var(--tt-ocean-shallow) 0%,var(--tt-ocean) 20%,var(--tt-ocean-deep) 60%,#051e18 100%);}
+/* Waves */
+.tt-waves{position:absolute;top:43%;left:0;right:0;height:12%;z-index:6;overflow:hidden;}
+.tt-wv{position:absolute;left:-100%;width:300%;height:100%;}
+.tt-wv-1{top:0;opacity:.06;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 60'%3E%3Cpath d='M0,30 Q150,10 300,30 T600,30 T900,30 T1200,30 L1200,60 L0,60Z' fill='%23a0dce0'/%3E%3C/svg%3E") repeat-x;
+  background-size:600px 60px;animation:tt-wv 12s linear infinite;}
+.tt-wv-2{top:12px;opacity:.04;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 50'%3E%3Cpath d='M0,25 Q100,8 200,25 T400,25 T600,25 T800,25 T1000,25 T1200,25 L1200,50 L0,50Z' fill='%23a0dce0'/%3E%3C/svg%3E") repeat-x;
+  background-size:500px 50px;animation:tt-wv 16s 4s linear infinite reverse;}
+@keyframes tt-wv{0%{transform:translateX(0);}100%{transform:translateX(33.33%);}}
+/* Shore */
+.tt-shore{position:absolute;top:50%;left:0;right:0;height:4px;z-index:7;
+  background:rgba(200,240,230,.06);filter:blur(1px);animation:tt-shore-p 5s ease-in-out infinite;}
+@keyframes tt-shore-p{0%,100%{opacity:.4;}50%{opacity:.7;}}
+/* Beach */
+.tt-beach{position:absolute;bottom:0;left:0;right:0;height:20%;z-index:8;
+  background:linear-gradient(180deg,var(--tt-sand-dark) 0%,var(--tt-sand) 30%,var(--tt-sand-dark) 100%);}
+/* Bubbles */
+.tt-bubble{position:absolute;border-radius:50%;z-index:6;pointer-events:none;
+  border:1px solid rgba(160,240,220,.08);background:rgba(160,240,220,.02);}
+.tt-b1{width:6px;height:6px;bottom:30%;left:25%;animation:tt-bub 6s ease-in infinite;}
+.tt-b2{width:4px;height:4px;bottom:35%;left:45%;animation:tt-bub 8s 2s ease-in infinite;}
+.tt-b3{width:5px;height:5px;bottom:28%;left:65%;animation:tt-bub 7s 4s ease-in infinite;}
+.tt-b4{width:3px;height:3px;bottom:32%;left:78%;animation:tt-bub 5s 1s ease-in infinite;}
+@keyframes tt-bub{0%{opacity:0;transform:translateY(0);}20%{opacity:.5;}80%{opacity:.2;transform:translateY(-120px) translateX(8px);}100%{opacity:0;transform:translateY(-160px);}}
+/* Birds */
+.tt-bird{position:absolute;z-index:9;opacity:.1;}
+.tt-bird::before,.tt-bird::after{content:'';position:absolute;width:8px;height:1.5px;background:#1a3a28;top:0;}
+.tt-bird::before{left:-8px;transform:rotate(-25deg);transform-origin:right center;animation:tt-flap 1.2s ease-in-out infinite;}
+.tt-bird::after{left:0;transform:rotate(25deg);transform-origin:left center;animation:tt-flap 1.2s ease-in-out infinite reverse;}
+.tt-bird-1{top:12%;left:30%;animation:tt-bfly 35s linear infinite;}
+.tt-bird-2{top:16%;left:60%;animation:tt-bfly 28s 8s linear infinite;opacity:.07;}
+@keyframes tt-bfly{0%{transform:translate(0,0);}50%{transform:translate(-22vw,-2vh);}100%{transform:translate(-50vw,0);}}
+@keyframes tt-flap{0%,100%{transform:rotate(-25deg);}50%{transform:rotate(-35deg);}}
+/* Particles */
+.tt-particle{position:absolute;width:2px;height:2px;background:rgba(220,200,140,.15);border-radius:50%;z-index:10;pointer-events:none;}
+.tt-p1{top:20%;left:15%;animation:tt-flt 12s ease-in-out infinite;}
+.tt-p2{top:35%;left:40%;animation:tt-flt 15s 3s ease-in-out infinite;}
+.tt-p3{top:25%;left:70%;animation:tt-flt 10s 6s ease-in-out infinite;}
+@keyframes tt-flt{0%{opacity:0;transform:translate(0,0);}25%{opacity:.5;}75%{opacity:.2;}100%{opacity:0;transform:translate(-30px,20px);}}
+/* Grain */
+.tt-grain{position:absolute;top:0;left:0;right:0;bottom:0;z-index:20;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:.025;mix-blend-mode:overlay;pointer-events:none;}
+/* Vignette */
+.tt-vignette{position:absolute;top:0;left:0;right:0;bottom:0;z-index:19;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 35%,transparent 45%,rgba(10,30,20,.5) 100%);}
+
+/* ═══ CSS-ONLY ICONS ═══ */
+.tt-icon{width:20px;height:20px;position:relative;flex-shrink:0;}
+.tt-icon .fw{width:20px;height:20px;border:1.5px solid rgba(42,106,56,.25);border-radius:3px;position:relative;overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,.3),inset 0 0 3px rgba(0,0,0,.15);}
+.tt-icon .ci{position:absolute;top:2px;left:2px;right:2px;bottom:2px;border-radius:2px;overflow:hidden;}
+/* Dive */
+.tt-icon-dive .ci{background:linear-gradient(170deg,var(--tt-sky-low),var(--tt-ocean));}
+.tt-icon-dive .ci::before{content:'';position:absolute;top:2px;left:5px;width:4px;height:6px;
+  background:var(--tt-white);opacity:.3;clip-path:polygon(50% 0%,100% 30%,80% 100%,20% 100%,0% 30%);}
+.tt-icon-dive .ci::after{content:'';position:absolute;bottom:1px;left:2px;right:2px;height:4px;
+  background:linear-gradient(180deg,transparent,rgba(14,107,94,.4));}
+/* Chain */
+.tt-icon-chain .ci{background:linear-gradient(170deg,var(--tt-ocean-deep),#051e18);}
+.tt-icon-chain .ci::before{content:'';position:absolute;top:3px;left:3px;width:4px;height:6px;
+  border:1.5px solid var(--tt-chain);border-radius:2px;background:transparent;}
+.tt-icon-chain .ci::after{content:'';position:absolute;top:6px;left:6px;width:4px;height:6px;
+  border:1.5px solid var(--tt-chain);border-radius:2px;background:transparent;}
+/* Shark */
+.tt-icon-shark .ci{background:linear-gradient(170deg,var(--tt-ocean),var(--tt-ocean-deep));}
+.tt-icon-shark .ci::before{content:'';position:absolute;top:4px;left:2px;width:10px;height:5px;
+  background:var(--tt-shark);clip-path:polygon(0 50%,30% 0%,70% 10%,100% 50%,70% 90%,30% 100%);}
+.tt-icon-shark .ci::after{content:'';position:absolute;top:2px;left:7px;width:0;height:0;
+  border-left:3px solid transparent;border-right:3px solid transparent;border-bottom:4px solid var(--tt-shark);opacity:.6;}
+/* Eel */
+.tt-icon-eel .ci{background:linear-gradient(170deg,var(--tt-ocean-deep),#051e18);}
+.tt-icon-eel .ci::before{content:'';position:absolute;top:4px;left:2px;width:10px;height:3px;
+  background:var(--tt-eel);border-radius:4px;box-shadow:0 0 4px var(--tt-eel-glow);}
+.tt-icon-eel .ci::after{content:'';position:absolute;top:4px;left:10px;width:2px;height:2px;
+  background:#a060d0;border-radius:50%;box-shadow:0 0 3px rgba(160,96,208,.4);}
+/* Board */
+.tt-icon-board .ci{background:linear-gradient(170deg,var(--tt-jungle),var(--tt-jungle-dark));}
+.tt-icon-board .ci::before{content:'';position:absolute;top:5px;left:1px;width:12px;height:3px;
+  background:var(--tt-bamboo);border-radius:4px;transform:rotate(-15deg);}
+.tt-icon-board .ci::after{content:'';position:absolute;bottom:2px;left:3px;width:2px;height:2px;
+  background:var(--tt-sand);border-radius:50%;box-shadow:5px 0 0 var(--tt-sand);}
+/* Crash */
+.tt-icon-crash .ci{background:linear-gradient(170deg,rgba(200,60,40,.3),rgba(100,30,20,.3));}
+.tt-icon-crash .ci::before{content:'';position:absolute;top:2px;left:3px;width:8px;height:8px;
+  border:1.5px solid var(--tt-danger);border-radius:50%;opacity:.5;}
+/* Helmet */
+.tt-icon-helmet .ci{background:linear-gradient(170deg,rgba(60,80,50,.5),rgba(40,60,30,.3));}
+.tt-icon-helmet .ci::before{content:'';position:absolute;top:2px;left:3px;width:8px;height:6px;
+  background:var(--tt-chain);border-radius:4px 4px 1px 1px;opacity:.5;}
+/* Captain */
+.tt-icon-captain .ci{background:linear-gradient(170deg,rgba(80,60,20,.5),rgba(60,40,10,.3));}
+.tt-icon-captain .ci::before{content:'';position:absolute;top:2px;left:3px;width:8px;height:5px;
+  background:var(--tt-warning);clip-path:polygon(0 100%,15% 0%,35% 60%,50% 10%,65% 60%,85% 0%,100% 100%);opacity:.5;}
+/* Collision */
+.tt-icon-collision .ci{background:linear-gradient(170deg,rgba(200,100,40,.3),rgba(140,60,20,.2));}
+.tt-icon-collision .ci::before{content:'';position:absolute;top:1px;left:1px;right:1px;bottom:1px;
+  background:transparent;border:1.5px solid rgba(255,180,60,.3);
+  clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);}
+/* Social */
+.tt-icon-social .ci{background:linear-gradient(170deg,rgba(60,70,50,.5),rgba(40,50,30,.3));}
+.tt-icon-social .ci::before{content:'';position:absolute;top:4px;left:3px;width:4px;height:4px;background:var(--tt-warm);border-radius:50%;opacity:.4;}
+.tt-icon-social .ci::after{content:'';position:absolute;top:4px;left:8px;width:4px;height:4px;background:var(--tt-warm);border-radius:50%;opacity:.4;}
+/* Trophy */
+.tt-icon-trophy .ci{background:linear-gradient(170deg,rgba(50,70,30,.5),rgba(30,50,15,.3));}
+.tt-icon-trophy .ci::before{content:'';position:absolute;top:3px;left:4px;width:6px;height:5px;
+  background:linear-gradient(180deg,var(--tt-chain),var(--tt-chain-dark));border-radius:0 0 3px 3px;
+  clip-path:polygon(0 0,100% 0,80% 100%,20% 100%);}
+/* Steal */
+.tt-icon-steal .ci{background:linear-gradient(170deg,rgba(140,40,40,.3),rgba(80,20,20,.2));}
+.tt-icon-steal .ci::before{content:'';position:absolute;top:2px;left:4px;width:6px;height:8px;
+  background:transparent;border:1.5px solid var(--tt-danger);border-radius:0 0 2px 2px;
+  clip-path:polygon(0 30%,100% 30%,100% 100%,0 100%);opacity:.5;}
+
+/* ═══ CARDS ═══ */
+.tt-card{background:var(--tt-card-bg);border:1px solid var(--tt-card-border);border-radius:5px;padding:14px 18px;position:relative;overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,0,0,.35);margin-bottom:10px;cursor:pointer;transition:transform .1s;}
+.tt-card:active{transform:scale(.99);}
+.tt-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 8%,rgba(42,106,56,.12) 50%,transparent 92%);}
+
+.tt-card-dive{border-left:2px solid var(--tt-ocean-shallow);}
+.tt-card-chain{border-left:2px solid var(--tt-chain);background:linear-gradient(135deg,rgba(192,168,72,.03),var(--tt-card-bg))!important;}
+.tt-card-shark{border-left:2px solid var(--tt-shark);background:linear-gradient(135deg,rgba(74,80,88,.04),var(--tt-card-bg))!important;}
+.tt-card-eel{border-left:2px solid var(--tt-eel);background:linear-gradient(135deg,rgba(74,42,106,.03),var(--tt-card-bg))!important;}
+.tt-card-board{border-left:2px solid var(--tt-bamboo);}
+.tt-card-crash{border-left:2px solid var(--tt-danger);background:linear-gradient(135deg,rgba(208,72,56,.03),var(--tt-card-bg))!important;}
+.tt-card-captain{border-left:2px solid var(--tt-warning);background:linear-gradient(135deg,rgba(218,160,48,.03),var(--tt-card-bg))!important;}
+.tt-card-collision{border-left:2px solid rgba(255,180,60,.4);background:linear-gradient(135deg,rgba(255,180,60,.02),var(--tt-card-bg))!important;}
+.tt-card-social{border-left:2px dashed rgba(42,106,56,.12);background:rgba(20,55,38,.75)!important;}
+.tt-card-steal{border-left:2px solid var(--tt-danger);}
+.tt-card-success{border-left:2px solid var(--tt-success);}
+.tt-card-fail{border-left:2px solid var(--tt-danger);}
+
+.tt-card-tribe{padding:8px 14px;border-radius:5px;font-family:'Lilita One',cursive;font-size:12px;letter-spacing:2.5px;display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.tt-card-tribe-y{background:rgba(138,122,24,.06);border:1px solid rgba(138,122,24,.1);color:var(--tt-tribe-y-light);}
+.tt-card-tribe-r{background:rgba(138,40,40,.06);border:1px solid rgba(138,40,40,.1);color:var(--tt-tribe-r-light);}
+.tt-card-tribe-b{background:rgba(26,90,138,.06);border:1px solid rgba(26,90,138,.1);color:var(--tt-tribe-b-light);}
+
+.tt-hdr{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.tt-label{font-family:'Lilita One',cursive;font-size:13px;letter-spacing:.5px;color:var(--tt-white);}
+.tt-txt{font-size:13px;line-height:1.7;color:rgba(240,232,216,.85);}
+.tt-txt strong{color:var(--tt-white);font-weight:700;}
+.tt-badge{margin-left:auto;padding:2px 9px;border-radius:10px;font-size:8.5px;font-weight:700;letter-spacing:1.5px;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.tt-badge-pass{background:rgba(74,170,88,.08);color:var(--tt-success);border:1px solid rgba(74,170,88,.15);}
+.tt-badge-fail{background:rgba(208,72,56,.08);color:var(--tt-danger);border:1px solid rgba(208,72,56,.15);}
+.tt-badge-chain{background:rgba(192,168,72,.08);color:var(--tt-chain);border:1px solid rgba(192,168,72,.15);}
+.tt-badge-decoy{background:rgba(90,90,88,.08);color:var(--tt-decoy);border:1px solid rgba(90,90,88,.15);}
+.tt-badge-fast{background:rgba(218,160,48,.08);color:var(--tt-warning);border:1px solid rgba(218,160,48,.15);}
+.tt-badge-captain{background:rgba(218,160,48,.08);color:var(--tt-warning);border:1px solid rgba(218,160,48,.15);}
+.tt-badge-social{background:rgba(42,106,56,.05);color:var(--tt-warm);border:1px solid rgba(42,106,56,.08);}
+.tt-badge-steal{background:rgba(208,72,56,.08);color:var(--tt-danger);border:1px solid rgba(208,72,56,.1);}
+.tt-badge-collision{background:rgba(255,180,60,.08);color:rgba(255,180,60,.7);border:1px solid rgba(255,180,60,.12);}
+.tt-badge-helmet{background:rgba(192,168,72,.06);color:var(--tt-chain);border:1px solid rgba(192,168,72,.1);}
+.tt-badge-eel{background:rgba(74,42,106,.08);color:rgba(160,96,208,.6);border:1px solid rgba(74,42,106,.15);}
+.tt-badge-shark{background:rgba(74,80,88,.08);color:rgba(140,150,160,.6);border:1px solid rgba(74,80,88,.15);}
+
+/* Score bars */
+.tt-score-bar{display:flex;align-items:center;gap:8px;margin:5px 0;}
+.tt-strack{flex:1;height:5px;background:rgba(42,106,56,.06);border-radius:2px;overflow:hidden;}
+.tt-sfill{height:100%;border-radius:2px;}
+.tt-sfill-g{background:linear-gradient(90deg,var(--tt-success),#5aba68);box-shadow:0 0 4px rgba(74,170,88,.2);}
+.tt-sfill-d{background:linear-gradient(90deg,var(--tt-danger),#e05848);box-shadow:0 0 4px rgba(208,72,56,.2);}
+.tt-sfill-w{background:linear-gradient(90deg,var(--tt-chain-dark),var(--tt-chain));box-shadow:0 0 4px rgba(192,168,72,.2);}
+.tt-sfill-t{background:linear-gradient(90deg,var(--tt-ocean),var(--tt-ocean-surface));box-shadow:0 0 4px rgba(44,196,173,.2);}
+.tt-sval{font-size:10.5px;font-weight:700;min-width:22px;text-align:right;font-family:'JetBrains Mono',monospace;}
+.tt-sval-g{color:var(--tt-success);}.tt-sval-d{color:var(--tt-danger);}.tt-sval-w{color:var(--tt-warning);}.tt-sval-t{color:var(--tt-ocean-surface);}
+
+/* Chatter */
+.tt-chatter{padding:9px 14px;font-size:11.5px;color:rgba(220,200,140,.4);font-style:italic;letter-spacing:.3px;
+  border-left:1.5px solid rgba(42,106,56,.12);background:rgba(13,43,31,.85);border-radius:3px;margin-bottom:10px;}
+.tt-chatter-host{color:var(--tt-ocean-surface);font-style:normal;font-weight:700;opacity:.6;}
+
+/* Vine divider */
+.tt-vine{height:3px;margin:16px 0;
+  background:repeating-linear-gradient(90deg,var(--tt-jungle) 0px,var(--tt-jungle) 6px,transparent 6px,transparent 10px,rgba(42,90,32,.2) 10px,rgba(42,90,32,.2) 14px,transparent 14px,transparent 20px);
+  opacity:.1;}
+
+/* Phase header */
+.tt-phase-hdr{text-align:center;margin:0 0 18px;padding:30px 20px 18px;position:relative;
+  background:var(--tt-card-bg);border:1px solid var(--tt-card-border);border-radius:6px;
+  box-shadow:0 4px 24px rgba(0,0,0,.3);}
+.tt-phase-hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 10%,rgba(42,106,56,.15) 50%,transparent 90%);}
+.tt-phase-tag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:6px;color:var(--tt-ocean-surface);opacity:.35;margin-bottom:5px;font-weight:600;}
+.tt-phase-title{font-family:'Lilita One',cursive;font-size:38px;letter-spacing:2px;color:var(--tt-white);
+  text-shadow:0 2px 20px rgba(0,0,0,.4);line-height:1.15;}
+.tt-phase-sub{font-size:13px;color:var(--tt-muted);margin-top:8px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.55;}
+
+/* Title card */
+.tt-title-card{text-align:center;padding:55px 20px 40px;position:relative;}
+.tt-tc-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:6px;color:var(--tt-ocean-surface);opacity:.3;margin-bottom:6px;}
+.tt-tc-title{font-family:'Lilita One',cursive;font-size:52px;color:var(--tt-white);
+  text-shadow:0 3px 30px rgba(0,0,0,.4),0 0 60px rgba(42,106,56,.06);letter-spacing:3px;line-height:1.1;}
+.tt-tc-cold{font-size:13.5px;color:var(--tt-cream);margin-top:14px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.6;font-style:italic;opacity:.7;}
+.tt-tc-tribes{display:flex;justify-content:center;gap:14px;margin-top:22px;flex-wrap:wrap;}
+
+/* ═══ DEPTH MAP ═══ */
+.tt-depth-map{position:relative;margin:0 0 16px;height:140px;overflow:hidden;
+  background:linear-gradient(180deg,var(--tt-sky-haze) 0%,var(--tt-ocean-shallow) 20%,var(--tt-ocean) 50%,var(--tt-ocean-deep) 80%,#051e18 100%);
+  border:1px solid rgba(42,106,56,.08);border-radius:6px;}
+.tt-depth-map::before{content:'DIVE TRACKER';position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:4;
+  font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:4px;color:rgba(160,240,220,.15);font-weight:600;}
+.tt-depth-line{position:absolute;left:0;right:0;height:1px;background:rgba(160,240,220,.04);z-index:2;}
+.tt-depth-line::after{content:attr(data-depth);position:absolute;right:8px;top:-6px;
+  font-family:'JetBrains Mono',monospace;font-size:6px;color:rgba(160,240,220,.1);letter-spacing:1px;}
+.tt-depth-cliff{position:absolute;top:0;left:0;right:0;height:25%;z-index:3;
+  background:var(--tt-cliff-dark);opacity:.3;
+  clip-path:polygon(0 0,0 60%,8% 55%,15% 70%,25% 100%,35% 80%,50% 100%,100% 100%,100% 0);}
+.tt-depth-target{position:absolute;bottom:8%;left:50%;transform:translateX(-50%);z-index:4;
+  width:16px;height:16px;border:1.5px solid var(--tt-chain);border-radius:3px;opacity:.3;
+  box-shadow:0 0 8px var(--tt-chain-glow);animation:tt-chain-pulse 3s ease-in-out infinite;}
+@keyframes tt-chain-pulse{0%,100%{box-shadow:0 0 4px var(--tt-chain-glow);opacity:.2;}50%{box-shadow:0 0 12px var(--tt-chain-glow);opacity:.4;}}
+.tt-dive-marker{position:absolute;z-index:5;width:24px;height:24px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);
+  display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900;color:rgba(255,255,255,.9);
+  box-shadow:0 2px 8px rgba(0,0,0,.4);transform:translate(-50%,-50%);}
+.tt-dive-marker-y{background:linear-gradient(135deg,var(--tt-tribe-y),var(--tt-tribe-y-light));}
+.tt-dive-marker-r{background:linear-gradient(135deg,var(--tt-tribe-r),var(--tt-tribe-r-light));}
+.tt-dive-marker-b{background:linear-gradient(135deg,var(--tt-tribe-b),var(--tt-tribe-b-light));}
+.tt-hazard-marker{position:absolute;z-index:4;width:14px;height:14px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:6px;color:rgba(255,255,255,.5);
+  animation:tt-hazard-drift 6s ease-in-out infinite;}
+.tt-hazard-shark{background:rgba(74,80,88,.4);border:1px solid rgba(140,150,160,.2);box-shadow:0 0 6px rgba(74,80,88,.3);}
+.tt-hazard-eel{background:rgba(74,42,106,.3);border:1px solid rgba(120,60,180,.2);box-shadow:0 0 6px var(--tt-eel-glow);}
+@keyframes tt-hazard-drift{0%,100%{transform:translate(0,0);}33%{transform:translate(3px,-2px);}66%{transform:translate(-2px,3px);}}
+
+/* ═══ TRACK MAP ═══ */
+.tt-track-map{position:relative;margin:0 0 16px;height:120px;overflow:hidden;
+  background:linear-gradient(180deg,var(--tt-jungle) 0%,var(--tt-jungle-dark) 40%,var(--tt-track-dark) 100%);
+  border:1px solid rgba(42,106,56,.08);border-radius:6px;}
+.tt-track-map::before{content:'RACE TRACKER';position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:4;
+  font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:4px;color:rgba(140,120,80,.15);font-weight:600;}
+.tt-track-path{position:absolute;top:30%;left:8%;right:8%;height:40%;z-index:2;
+  background:linear-gradient(180deg,var(--tt-track),var(--tt-track-dark));
+  clip-path:polygon(0 20%,100% 45%,100% 80%,0 55%);border-radius:2px;opacity:.4;}
+.tt-track-finish{position:absolute;right:10%;top:20%;bottom:20%;width:3px;z-index:4;
+  background:repeating-linear-gradient(0deg,var(--tt-white) 0px,var(--tt-white) 4px,var(--tt-card-bg) 4px,var(--tt-card-bg) 8px);opacity:.15;}
+.tt-race-marker{position:absolute;z-index:5;width:22px;height:22px;border-radius:3px;border:1.5px solid rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900;color:rgba(255,255,255,.9);
+  box-shadow:0 2px 6px rgba(0,0,0,.4);}
+.tt-race-marker-y{background:linear-gradient(135deg,var(--tt-tribe-y),var(--tt-tribe-y-light));}
+.tt-race-marker-r{background:linear-gradient(135deg,var(--tt-tribe-r),var(--tt-tribe-r-light));}
+.tt-race-marker-b{background:linear-gradient(135deg,var(--tt-tribe-b),var(--tt-tribe-b-light));}
+
+/* ═══ SIDEBAR ═══ */
+.tt-sb{background:linear-gradient(180deg,rgba(18,48,35,.92),rgba(13,38,28,.95));border:1px solid var(--tt-card-border);border-radius:6px;overflow:hidden;position:sticky;top:100px;}
+.tt-sb-hdr{padding:13px 14px 9px;border-bottom:1px solid rgba(42,106,56,.06);font-family:'Lilita One',cursive;font-size:11px;letter-spacing:2.5px;color:var(--tt-ocean-surface);display:flex;align-items:center;gap:7px;}
+.tt-sb-body{padding:10px 12px;max-height:calc(100vh - 160px);overflow-y:auto;}
+.tt-sb-section{font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:600;letter-spacing:2.5px;color:rgba(160,240,220,.12);margin-bottom:5px;margin-top:2px;}
+.tt-sb-divider{height:1px;background:rgba(42,106,56,.06);margin:8px 0;}
+.tt-sb-row{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid rgba(42,106,56,.03);font-size:10.5px;}
+.tt-sb-row:last-child{border-bottom:none;}
+.tt-sb-name{flex:1;color:var(--tt-muted);}
+.tt-sb-name strong{color:var(--tt-cream);font-weight:700;}
+.tt-sb-val{font-weight:700;font-family:'JetBrains Mono',monospace;font-size:10.5px;}
+.tt-sb-val-g{color:var(--tt-success);}.tt-sb-val-d{color:var(--tt-danger);}.tt-sb-val-w{color:var(--tt-warning);}
+.tt-sb-pill{display:inline-block;padding:1px 5px;border-radius:5px;font-size:7.5px;font-weight:700;letter-spacing:.5px;font-family:'JetBrains Mono',monospace;}
+.tt-sb-pill-g{background:rgba(74,170,88,.08);color:var(--tt-success);}
+.tt-sb-pill-d{background:rgba(208,72,56,.08);color:var(--tt-danger);}
+.tt-sb-pill-w{background:rgba(218,160,48,.08);color:var(--tt-warning);}
+.tt-sb-pill-chain{background:rgba(192,168,72,.08);color:var(--tt-chain);}
+.tt-sb-tribe{display:inline-block;width:7px;height:7px;border-radius:2px;flex-shrink:0;}
+.tt-sb-tribe-y{background:var(--tt-tribe-y);}.tt-sb-tribe-r{background:var(--tt-tribe-r);}.tt-sb-tribe-b{background:var(--tt-tribe-b);}
+.tt-chain-count{display:flex;align-items:center;gap:4px;padding:3px 0;}
+.tt-chain-link{width:8px;height:12px;border:1.5px solid var(--tt-chain);border-radius:2px;opacity:.2;}
+.tt-chain-link.found{opacity:.8;background:rgba(192,168,72,.1);box-shadow:0 0 4px var(--tt-chain-glow);}
+.tt-captain-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:3px;
+  background:rgba(218,160,48,.06);border:1px solid rgba(218,160,48,.08);font-size:8px;font-weight:700;
+  color:var(--tt-warning);font-family:'JetBrains Mono',monospace;letter-spacing:1px;}
+
+/* ═══ CARD ANIMATIONS (click to replay) ═══ */
+/* General */
+.tt-anim-splash{animation:tt-splash .4s cubic-bezier(.16,1,.3,1);}
+@keyframes tt-splash{0%{opacity:.5;transform:translateY(25px) scale(.96);}60%{transform:translateY(-2px) scale(1.01);}100%{transform:none;}}
+
+/* Cliff Dive phase — cards fall from above like a diver */
+.tt-anim-dive-drop{animation:tt-dive-drop .55s cubic-bezier(.22,.9,.36,1);}
+@keyframes tt-dive-drop{0%{opacity:0;transform:translateY(-60px) rotate(-3deg);}50%{opacity:1;transform:translateY(8px) rotate(1deg);}70%{transform:translateY(-3px) rotate(0);}100%{transform:none;}}
+.tt-anim-bellyflop{animation:tt-bellyflop .5s ease-out;}
+@keyframes tt-bellyflop{0%{opacity:0;transform:translateY(-40px) scaleY(.7);}40%{opacity:1;transform:translateY(6px) scaleY(1.15) scaleX(.92);}60%{transform:translateY(-2px) scaleY(.95) scaleX(1.03);}100%{transform:none;}}
+.tt-anim-collision{animation:tt-collision .45s ease-out;}
+@keyframes tt-collision{0%{transform:translate(0);}12%{transform:translate(6px,-2px);}24%{transform:translate(-5px,3px);}36%{transform:translate(4px,-1px) rotate(1deg);}48%{transform:translate(-3px,1px) rotate(-1deg);}60%{transform:translate(2px);}100%{transform:none;}}
+
+/* Chain Hunt phase — underwater swim/glide animations */
+.tt-anim-swim{animation:tt-swim .6s cubic-bezier(.22,.9,.36,1);}
+@keyframes tt-swim{0%{opacity:0;transform:translateX(-50px) rotate(-2deg);}50%{opacity:1;transform:translateX(5px) rotate(.5deg);}100%{transform:none;}}
+.tt-anim-chain-glow{animation:tt-cglow 1s ease-out;}
+@keyframes tt-cglow{0%{box-shadow:0 2px 12px rgba(0,0,0,.35);transform:scale(1);}25%{transform:scale(1.02);}40%{box-shadow:0 0 30px rgba(192,168,72,.35),0 0 60px rgba(192,168,72,.12);transform:scale(1.01);}100%{box-shadow:0 2px 12px rgba(0,0,0,.35);transform:none;}}
+.tt-anim-shark{animation:tt-shark .5s ease-out;}
+@keyframes tt-shark{0%{transform:translateX(0);}10%{transform:translateX(8px);}25%{transform:translateX(-6px) rotate(-1deg);}40%{transform:translateX(4px) rotate(.5deg);}55%{transform:translateX(-2px);}100%{transform:none;}}
+.tt-anim-eel{animation:tt-eel .5s ease-out;}
+@keyframes tt-eel{0%{box-shadow:0 2px 12px rgba(0,0,0,.35);filter:brightness(1);}20%{box-shadow:0 0 20px var(--tt-eel-glow),0 2px 12px rgba(0,0,0,.35);filter:brightness(1.3);}40%{filter:brightness(.9);}60%{box-shadow:0 0 18px var(--tt-eel-glow);filter:brightness(1.2);}100%{box-shadow:0 2px 12px rgba(0,0,0,.35);filter:brightness(1);}}
+.tt-anim-steal{animation:tt-steal .5s ease-out;}
+@keyframes tt-steal{0%{transform:translateX(30px) rotate(3deg);opacity:0;}30%{transform:translateX(-5px) rotate(-1deg);opacity:1;}60%{transform:translateX(2px) rotate(0);}100%{transform:none;}}
+
+/* Longboard Race phase — cards zoom in from left like a racing board */
+.tt-anim-board-slide{animation:tt-board-slide .5s cubic-bezier(.22,.9,.36,1);}
+@keyframes tt-board-slide{0%{opacity:0;transform:translateX(-70px) skewX(-3deg);}50%{opacity:1;transform:translateX(6px) skewX(1deg);}75%{transform:translateX(-2px) skewX(0);}100%{transform:none;}}
+.tt-anim-crash{animation:tt-crash .5s ease-out;}
+@keyframes tt-crash{0%{transform:translate(0) rotate(0);}12%{transform:translate(-5px,3px) rotate(-2deg);}24%{transform:translate(6px,-2px) rotate(2deg);}36%{transform:translate(-4px,2px) rotate(-1deg);}48%{transform:translate(3px,-1px) rotate(1deg);}60%{transform:translate(-1px);}100%{transform:none;}}
+.tt-anim-wipeout{animation:tt-wipeout .6s ease-out;}
+@keyframes tt-wipeout{0%{opacity:0;transform:translateX(-40px) rotate(-8deg);}25%{opacity:1;transform:translateX(10px) rotate(4deg);}45%{transform:translateX(-5px) rotate(-2deg);}65%{transform:translateX(2px) rotate(1deg);}100%{transform:none;}}
+
+/* Results — victory scale pop */
+.tt-anim-victory{animation:tt-victory .6s cubic-bezier(.16,1,.3,1);}
+@keyframes tt-victory{0%{opacity:0;transform:scale(.8);}40%{opacity:1;transform:scale(1.05);}60%{transform:scale(.98);}100%{transform:none;}}
+@media(prefers-reduced-motion:reduce){
+  .tt-anim-splash,.tt-anim-dive-drop,.tt-anim-bellyflop,.tt-anim-collision,
+  .tt-anim-swim,.tt-anim-chain-glow,.tt-anim-shark,.tt-anim-eel,.tt-anim-steal,
+  .tt-anim-board-slide,.tt-anim-crash,.tt-anim-wipeout,.tt-anim-victory{animation:none!important;}
+}
+
+/* ═══ TITLE SCREEN — EXTREME SPORTS POSTER ═══ */
+.tt-title-bg{text-align:center;padding:0;background:transparent;border-radius:12px;
+  border:2px solid rgba(44,196,173,.15);position:relative;overflow:hidden;min-height:580px;}
+
+/* Vertical scene: sky → cliff → ocean → deep */
+.tt-title-scene{position:absolute;top:0;left:0;right:0;bottom:0;z-index:0;}
+.tt-scene-sky{position:absolute;top:0;left:0;right:0;height:20%;
+  background:linear-gradient(180deg,#0a2a40,var(--tt-sky-mid));}
+.tt-scene-cliff{position:absolute;top:15%;left:0;right:0;height:20%;
+  background:linear-gradient(180deg,var(--tt-cliff-face),var(--tt-cliff-dark));
+  clip-path:polygon(0 0,0 100%,8% 70%,15% 85%,25% 55%,32% 65%,40% 40%,48% 50%,55% 35%,62% 45%,70% 30%,78% 42%,85% 28%,92% 38%,100% 25%,100% 0);}
+/* Cliff top platform — flat ledge where players stand */
+.tt-scene-ledge{position:absolute;top:14.5%;left:20%;right:20%;height:8px;z-index:2;
+  background:var(--tt-cliff-face);border-radius:2px 2px 0 0;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.tt-scene-ocean-surface{position:absolute;top:35%;left:0;right:0;height:6px;z-index:2;
+  background:linear-gradient(180deg,rgba(160,220,224,.08),rgba(26,158,138,.15));filter:blur(1px);
+  animation:tt-shore-p 4s ease-in-out infinite;}
+.tt-scene-ocean{position:absolute;top:35%;left:0;right:0;bottom:0;
+  background:linear-gradient(180deg,var(--tt-ocean-shallow) 0%,var(--tt-ocean) 25%,var(--tt-ocean-deep) 60%,#041510 100%);}
+
+/* Player silhouettes on cliff edge */
+.tt-cliff-player{position:absolute;z-index:3;display:flex;flex-direction:column;align-items:center;}
+.tt-cliff-player img{border-radius:50%;object-fit:cover;box-shadow:0 2px 10px rgba(0,0,0,.5);}
+.tt-cliff-player-name{font-family:'JetBrains Mono',monospace;font-size:6px;letter-spacing:1px;
+  color:rgba(240,232,216,.5);margin-top:2px;white-space:nowrap;}
+/* Player stances — some leaning forward (brave), some leaning back (scared) */
+.tt-stance-brave{animation:tt-stance-brave 3s ease-in-out infinite;}
+.tt-stance-scared{animation:tt-stance-scared 2s ease-in-out infinite;}
+.tt-stance-pumped{animation:tt-stance-pumped 1.5s ease-in-out infinite;}
+@keyframes tt-stance-brave{0%,100%{transform:rotate(0deg)}50%{transform:rotate(3deg) translateY(-2px)}}
+@keyframes tt-stance-scared{0%,100%{transform:rotate(0deg)}30%{transform:rotate(-2deg)}60%{transform:rotate(1deg)}}
+@keyframes tt-stance-pumped{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* Diver mid-air — one player frozen in dive pose */
+.tt-diver{position:absolute;z-index:4;animation:tt-diver-fall 4s ease-in infinite;}
+.tt-diver img{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.4);
+  object-fit:cover;box-shadow:0 0 15px rgba(0,0,0,.5);}
+.tt-diver-splash{position:absolute;top:0;left:50%;transform:translateX(-50%);width:40px;height:8px;
+  background:radial-gradient(ellipse,rgba(160,240,220,.15),transparent);border-radius:50%;filter:blur(2px);
+  animation:tt-splash-ring 4s ease-in infinite;}
+@keyframes tt-diver-fall{
+  0%{top:18%;opacity:0;transform:rotate(0deg) scale(.8)}
+  10%{opacity:1;transform:rotate(15deg) scale(1)}
+  45%{top:32%;transform:rotate(90deg) scale(1)}
+  50%{top:34%;opacity:1;transform:rotate(100deg) scale(.9)}
+  55%{opacity:0}
+  100%{top:34%;opacity:0;transform:rotate(100deg) scale(.7)}}
+@keyframes tt-splash-ring{
+  0%,48%{opacity:0;transform:translateX(-50%) scale(.5)}
+  50%{opacity:.8;transform:translateX(-50%) scale(1)}
+  65%{opacity:.3;transform:translateX(-50%) scale(2)}
+  75%,100%{opacity:0;transform:translateX(-50%) scale(2.5)}}
+
+/* Underwater chains glowing in the deep */
+.tt-deep-chain{position:absolute;z-index:2;width:12px;height:16px;
+  border:2px solid var(--tt-chain);border-radius:3px;opacity:.25;
+  box-shadow:0 0 10px var(--tt-chain-glow);animation:tt-chain-bob 4s ease-in-out infinite;}
+@keyframes tt-chain-bob{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-5px) rotate(4deg)}}
+
+/* Shark silhouettes patrolling */
+.tt-deep-shark{position:absolute;z-index:2;opacity:.12;
+  width:30px;height:12px;background:var(--tt-shark);
+  clip-path:polygon(0 50%,25% 10%,60% 15%,100% 50%,60% 85%,25% 90%);
+  animation:tt-shark-patrol 10s ease-in-out infinite;}
+.tt-deep-shark::before{content:'';position:absolute;top:-6px;left:55%;width:0;height:0;
+  border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:7px solid var(--tt-shark);}
+.tt-deep-shark-2{animation-direction:reverse;animation-duration:12s;}
+@keyframes tt-shark-patrol{0%{transform:translateX(0)}50%{transform:translateX(60px)}100%{transform:translateX(0)}}
+
+/* Eel glow at bottom */
+.tt-deep-eel{position:absolute;z-index:2;width:24px;height:4px;
+  background:var(--tt-eel);border-radius:8px;opacity:.15;
+  box-shadow:0 0 8px var(--tt-eel-glow);animation:tt-eel-wiggle 3s ease-in-out infinite;}
+@keyframes tt-eel-wiggle{0%,100%{transform:scaleX(1) translateX(0)}25%{transform:scaleX(.8) translateX(3px)}75%{transform:scaleX(1.1) translateX(-2px)}}
+
+/* Longboard track — diagonal line down the cliff */
+.tt-title-track{position:absolute;top:16%;right:8%;width:4px;height:22%;z-index:2;
+  background:repeating-linear-gradient(0deg,var(--tt-bamboo) 0px,var(--tt-bamboo) 6px,var(--tt-bamboo-dark) 6px,var(--tt-bamboo-dark) 8px);
+  transform:rotate(15deg);transform-origin:top right;opacity:.2;border-radius:2px;}
+.tt-title-track::before{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
+  width:12px;height:12px;border-radius:50%;background:var(--tt-sand);opacity:.5;
+  box-shadow:0 0 8px rgba(212,184,120,.2);}
+
+/* Title text — layered over the scene */
+.tt-title-overlay{position:relative;z-index:5;padding:30px 20px 0;}
+.tt-title-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tt-ocean-surface);
+  letter-spacing:5px;text-shadow:0 0 10px rgba(44,196,173,.5),0 1px 4px rgba(0,0,0,.8);}
+.tt-title-main{font-family:'Lilita One',cursive;font-size:58px;letter-spacing:4px;color:var(--tt-white);
+  text-shadow:0 3px 0 var(--tt-ocean-deep),0 6px 20px rgba(0,0,0,.6),0 0 40px rgba(44,196,173,.15);
+  line-height:1.05;margin-top:4px;}
+.tt-title-episode{font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:var(--tt-chain);
+  letter-spacing:2px;margin-top:10px;text-transform:uppercase;
+  text-shadow:0 1px 4px rgba(0,0,0,.8);}
+.tt-title-cold{font-size:13px;color:var(--tt-cream);margin-top:10px;max-width:420px;
+  margin-left:auto;margin-right:auto;line-height:1.6;font-style:italic;opacity:.65;
+  text-shadow:0 1px 4px rgba(0,0,0,.6);}
+
+/* Teams row at bottom of scene */
+.tt-teams-row{position:relative;z-index:5;display:flex;justify-content:center;gap:24px;flex-wrap:wrap;
+  padding:0 20px;margin-top:12px;}
+.tt-team-block{text-align:center;background:rgba(13,43,31,.7);border:1px solid rgba(42,106,56,.15);
+  border-radius:6px;padding:8px 12px;backdrop-filter:blur(4px);}
+.tt-team-name{font-family:'Lilita One',cursive;font-size:12px;letter-spacing:2px;}
+.tt-team-count{font-size:8px;color:rgba(240,232,216,.3);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-top:2px;}
+.tt-team-av-row{display:flex;justify-content:center;gap:3px;margin-top:5px;}
+.tt-team-av{width:22px;height:22px;border-radius:50%;border:2px solid;object-fit:cover;
+  box-shadow:0 0 6px rgba(0,0,0,.4);}
+
+/* Press start */
+.tt-insert-coin{position:relative;z-index:5;font-family:'Press Start 2P',monospace;font-size:10px;
+  color:var(--tt-chain);padding:16px 0 20px;
+  animation:tt-coin-blink 1.2s step-end infinite;letter-spacing:2px;
+  text-shadow:0 0 12px var(--tt-chain-glow),0 1px 4px rgba(0,0,0,.8);}
+@keyframes tt-coin-blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ═══ SIDEBAR PLAYER AVATARS ═══ */
+.tt-sb-av{width:20px;height:20px;border-radius:50%;border:1.5px solid;object-fit:cover;flex-shrink:0;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.tt-sb-av-y{border-color:var(--tt-tribe-y-light);}
+.tt-sb-av-r{border-color:var(--tt-tribe-r-light);}
+.tt-sb-av-b{border-color:var(--tt-tribe-b-light);}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:768px){
+  .tt-shell{grid-template-columns:1fr;margin-top:90px;}
+  .tt-sb{position:relative;top:auto;order:-1;}
+  .tt-sb-body{max-height:200px;}
+  .tt-phase-title{font-size:28px;}
+  .tt-tc-title{font-size:34px;}
+}
+@media(prefers-reduced-motion:reduce){
+  .tt-atmo *,.tt-wrap *{animation-duration:.01s!important;transition-duration:.01s!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ BROADCAST BAR ═══ -->
+<div class="tt-broadcast">
+  <div class="tt-live"><div class="tt-live-dot"></div>LIVE</div>
+  <div class="tt-ticker"><div class="tt-ticker-inner">TROPICAL TAKEDOWN — Cliff dive into shark-infested waters, retrieve golden chains, then race longboards down a volcanic slope — only the fastest tribe survives &bull; WORLD TOUR CHALLENGE &bull;</div></div>
+  <div class="tt-channel">TT&bull;TV</div>
+</div>
+
+<!-- ═══ PHASE TABS ═══ -->
+<div class="tt-tabs">
+  <div class="tt-tab active" onclick="showPhase('title')">TITLE</div>
+  <div class="tt-tab" onclick="showPhase('captain')">CAPTAIN DRAFT</div>
+  <div class="tt-tab" onclick="showPhase('dive')">CLIFF DIVE</div>
+  <div class="tt-tab" onclick="showPhase('chain')">CHAIN HUNT</div>
+  <div class="tt-tab" onclick="showPhase('race')">LONGBOARD RACE</div>
+  <div class="tt-tab" onclick="showPhase('results')">RESULTS</div>
+</div>
+
+<!-- ═══ ATMOSPHERE ═══ -->
+<div class="tt-atmo">
+  <div class="tt-sky"></div>
+  <div class="tt-sun"></div>
+  <div class="tt-grain"></div>
+  <div class="tt-clouds">
+    <div class="tt-cloud tt-cloud-a"></div>
+    <div class="tt-cloud tt-cloud-b"></div>
+  </div>
+  <div class="tt-cliffs">
+    <div class="tt-cliff-back"></div>
+    <div class="tt-cliff-front"></div>
+  </div>
+  <!-- Palm trees — SVG silhouettes rooted on the beach -->
+  <div class="tt-palm tt-palm-1"><svg viewBox="0 0 120 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- trunk: curved, brown, growing from bottom up -->
+    <path d="M60 280 C58 240 52 180 48 140 C44 100 50 60 56 40" stroke="url(#trunk1)" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <!-- coconuts -->
+    <circle cx="56" cy="38" r="4" fill="#5a3a18"/><circle cx="50" cy="42" r="3.5" fill="#4a2e12"/><circle cx="62" cy="42" r="3" fill="#6a4420"/>
+    <!-- fronds fanning out from top of trunk -->
+    <path d="M56 40 C70 20 100 8 120 15" stroke="#2a6a30" stroke-width="4" fill="none"/>
+    <path d="M56 40 C72 15 108 0 118 2" stroke="#1e5a25" stroke-width="3.5" fill="none"/>
+    <path d="M56 40 C65 25 95 25 115 30" stroke="#35803a" stroke-width="3" fill="none"/>
+    <path d="M56 40 C50 18 30 5 5 10" stroke="#2a6a30" stroke-width="4" fill="none"/>
+    <path d="M56 40 C45 12 20 -2 0 5" stroke="#1e5a25" stroke-width="3.5" fill="none"/>
+    <path d="M56 40 C48 22 25 20 8 25" stroke="#35803a" stroke-width="3" fill="none"/>
+    <path d="M56 40 C60 15 75 -5 90 -8" stroke="#236b28" stroke-width="3" fill="none"/>
+    <path d="M56 40 C46 10 15 -8 -5 -2" stroke="#236b28" stroke-width="3" fill="none"/>
+    <defs><linearGradient id="trunk1" x1="60" y1="280" x2="56" y2="40"><stop offset="0%" stop-color="#5a3a18"/><stop offset="100%" stop-color="#7a5530"/></linearGradient></defs>
+  </svg></div>
+  <div class="tt-palm tt-palm-2"><svg viewBox="0 0 120 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60 280 C58 235 50 170 46 130 C42 90 48 55 55 35" stroke="url(#trunk2)" stroke-width="11" stroke-linecap="round" fill="none"/>
+    <circle cx="55" cy="33" r="4" fill="#5a3a18"/><circle cx="49" cy="37" r="3.5" fill="#4a2e12"/>
+    <path d="M55 35 C70 15 100 5 120 12" stroke="#2a6a30" stroke-width="4" fill="none"/>
+    <path d="M55 35 C72 10 105 -2 115 0" stroke="#1e5a25" stroke-width="3.5" fill="none"/>
+    <path d="M55 35 C65 20 92 22 112 28" stroke="#35803a" stroke-width="3" fill="none"/>
+    <path d="M55 35 C48 14 28 2 5 8" stroke="#2a6a30" stroke-width="4" fill="none"/>
+    <path d="M55 35 C42 8 18 -5 -2 2" stroke="#1e5a25" stroke-width="3.5" fill="none"/>
+    <path d="M55 35 C46 18 22 18 6 22" stroke="#35803a" stroke-width="3" fill="none"/>
+    <path d="M55 35 C58 10 72 -8 88 -10" stroke="#236b28" stroke-width="3" fill="none"/>
+    <defs><linearGradient id="trunk2" x1="60" y1="280" x2="55" y2="35"><stop offset="0%" stop-color="#5a3a18"/><stop offset="100%" stop-color="#7a5530"/></linearGradient></defs>
+  </svg></div>
+  <div class="tt-palm tt-palm-3"><svg viewBox="0 0 100 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 220 C48 185 44 130 42 95 C40 65 45 40 50 28" stroke="#5a3a18" stroke-width="7" stroke-linecap="round" fill="none" opacity=".7"/>
+    <path d="M50 28 C60 12 82 5 98 10" stroke="#2a6a30" stroke-width="3" fill="none" opacity=".7"/>
+    <path d="M50 28 C62 8 88 -2 96 0" stroke="#1e5a25" stroke-width="2.5" fill="none" opacity=".7"/>
+    <path d="M50 28 C42 10 22 2 4 8" stroke="#2a6a30" stroke-width="3" fill="none" opacity=".7"/>
+    <path d="M50 28 C38 5 14 -4 0 2" stroke="#1e5a25" stroke-width="2.5" fill="none" opacity=".7"/>
+    <path d="M50 28 C55 8 70 -2 82 -5" stroke="#35803a" stroke-width="2.5" fill="none" opacity=".7"/>
+  </svg></div>
+  <div class="tt-palm tt-palm-4"><svg viewBox="0 0 100 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 220 C48 180 45 125 44 90 C42 60 46 38 52 25" stroke="#5a3a18" stroke-width="7" stroke-linecap="round" fill="none" opacity=".7"/>
+    <path d="M52 25 C62 10 84 4 98 8" stroke="#2a6a30" stroke-width="3" fill="none" opacity=".7"/>
+    <path d="M52 25 C64 5 90 -4 98 -2" stroke="#1e5a25" stroke-width="2.5" fill="none" opacity=".7"/>
+    <path d="M52 25 C44 8 24 0 6 6" stroke="#2a6a30" stroke-width="3" fill="none" opacity=".7"/>
+    <path d="M52 25 C40 2 16 -6 2 0" stroke="#1e5a25" stroke-width="2.5" fill="none" opacity=".7"/>
+    <path d="M52 25 C56 5 72 -4 85 -7" stroke="#35803a" stroke-width="2.5" fill="none" opacity=".7"/>
+  </svg></div>
+  <!-- mid-ground extra left — shorter, between palm 1 and 3 -->
+  <div class="tt-palm tt-palm-5"><svg viewBox="0 0 100 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M55 220 C53 180 48 120 46 85 C44 55 50 35 54 22" stroke="#5a3a18" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <circle cx="54" cy="20" r="3" fill="#4a2e12"/>
+    <path d="M54 22 C65 8 88 2 100 8" stroke="#2a6a30" stroke-width="2.8" fill="none"/>
+    <path d="M54 22 C68 3 92 -5 100 -2" stroke="#1e5a25" stroke-width="2.5" fill="none"/>
+    <path d="M54 22 C46 6 24 -2 4 5" stroke="#2a6a30" stroke-width="2.8" fill="none"/>
+    <path d="M54 22 C40 0 12 -8 -4 -2" stroke="#1e5a25" stroke-width="2.5" fill="none"/>
+    <path d="M54 22 C58 2 74 -6 88 -8" stroke="#35803a" stroke-width="2.5" fill="none"/>
+  </svg></div>
+  <!-- mid-ground extra right -->
+  <div class="tt-palm tt-palm-6"><svg viewBox="0 0 100 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M48 220 C46 178 42 118 44 82 C46 52 50 32 54 20" stroke="#5a3a18" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <circle cx="54" cy="18" r="3" fill="#4a2e12"/><circle cx="49" cy="21" r="2.5" fill="#5a3a18"/>
+    <path d="M54 20 C66 5 90 0 100 5" stroke="#2a6a30" stroke-width="2.8" fill="none"/>
+    <path d="M54 20 C70 0 95 -6 100 -3" stroke="#1e5a25" stroke-width="2.5" fill="none"/>
+    <path d="M54 20 C44 4 22 -3 2 4" stroke="#2a6a30" stroke-width="2.8" fill="none"/>
+    <path d="M54 20 C38 -2 10 -10 -5 -4" stroke="#1e5a25" stroke-width="2.5" fill="none"/>
+    <path d="M54 20 C56 0 68 -8 82 -10" stroke="#35803a" stroke-width="2.5" fill="none"/>
+  </svg></div>
+  <!-- background — small distant palms along shoreline -->
+  <div class="tt-palm tt-palm-7"><svg viewBox="0 0 80 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M40 180 C38 145 36 95 38 65 C40 40 43 25 45 15" stroke="#5a3a18" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="M45 15 C55 4 72 0 80 4" stroke="#2a6a30" stroke-width="2" fill="none"/>
+    <path d="M45 15 C58 0 76 -5 80 -2" stroke="#1e5a25" stroke-width="2" fill="none"/>
+    <path d="M45 15 C36 2 18 -3 2 3" stroke="#2a6a30" stroke-width="2" fill="none"/>
+    <path d="M45 15 C34 -2 10 -8 -2 -2" stroke="#1e5a25" stroke-width="2" fill="none"/>
+  </svg></div>
+  <div class="tt-palm tt-palm-8"><svg viewBox="0 0 80 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M40 180 C38 142 35 90 37 60 C39 38 42 22 46 12" stroke="#5a3a18" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="M46 12 C56 2 74 -2 80 2" stroke="#2a6a30" stroke-width="2" fill="none"/>
+    <path d="M46 12 C60 -3 78 -8 80 -4" stroke="#1e5a25" stroke-width="2" fill="none"/>
+    <path d="M46 12 C38 0 20 -5 4 2" stroke="#2a6a30" stroke-width="2" fill="none"/>
+    <path d="M46 12 C32 -4 8 -10 -4 -4" stroke="#1e5a25" stroke-width="2" fill="none"/>
+  </svg></div>
+  <div class="tt-palm tt-palm-9"><svg viewBox="0 0 60 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M30 140 C29 112 28 72 30 48 C32 30 34 18 36 10" stroke="#5a3a18" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <path d="M36 10 C44 2 56 -1 60 2" stroke="#2a6a30" stroke-width="1.8" fill="none"/>
+    <path d="M36 10 C28 0 14 -4 2 1" stroke="#2a6a30" stroke-width="1.8" fill="none"/>
+    <path d="M36 10 C46 -2 58 -6 60 -3" stroke="#1e5a25" stroke-width="1.5" fill="none"/>
+  </svg></div>
+  <div class="tt-ocean"></div>
+  <div class="tt-waves">
+    <div class="tt-wv tt-wv-1"></div>
+    <div class="tt-wv tt-wv-2"></div>
+  </div>
+  <div class="tt-shore"></div>
+  <div class="tt-beach"></div>
+  <div class="tt-bubble tt-b1"></div>
+  <div class="tt-bubble tt-b2"></div>
+  <div class="tt-bubble tt-b3"></div>
+  <div class="tt-bubble tt-b4"></div>
+  <div class="tt-bird tt-bird-1"></div>
+  <div class="tt-bird tt-bird-2"></div>
+  <div class="tt-particle tt-p1"></div>
+  <div class="tt-particle tt-p2"></div>
+  <div class="tt-particle tt-p3"></div>
+  <div class="tt-vignette"></div>
+</div>
+
+<!-- ═══ CONTENT ═══ -->
+<div class="tt-shell">
+<div class="tt-main">
+
+  <!-- ════════ TITLE SCREEN ════════ -->
+  <div class="tt-phase active" id="phase-title">
+    <div class="tt-title-bg">
+      <!-- Vertical scene: sky → cliff with players → ocean with hazards -->
+      <div class="tt-title-scene">
+        <div class="tt-scene-sky"></div>
+        <div class="tt-scene-cliff"></div>
+        <div class="tt-scene-ledge"></div>
+        <div class="tt-scene-ocean-surface"></div>
+        <div class="tt-scene-ocean"></div>
+
+        <!-- Players on cliff edge — different stances -->
+        <div class="tt-cliff-player tt-stance-pumped" style="top:7%;left:22%;"><img src="assets/avatars/geoff.png" width="30" height="30" style="border:2px solid var(--tt-tribe-b-light)"><div class="tt-cliff-player-name">GEOFF</div></div>
+        <div class="tt-cliff-player tt-stance-scared" style="top:6.5%;left:30%;"><img src="assets/avatars/dj.png" width="28" height="28" style="border:2px solid var(--tt-tribe-y-light)"><div class="tt-cliff-player-name">DJ</div></div>
+        <div class="tt-cliff-player tt-stance-brave" style="top:7%;left:38%;"><img src="assets/avatars/heather.png" width="28" height="28" style="border:2px solid var(--tt-tribe-r-light)"><div class="tt-cliff-player-name">HEATHER</div></div>
+        <div class="tt-cliff-player tt-stance-pumped" style="top:6%;left:47%;"><img src="assets/avatars/duncan.png" width="30" height="30" style="border:2px solid var(--tt-tribe-y-light)"><div class="tt-cliff-player-name">DUNCAN</div></div>
+        <div class="tt-cliff-player tt-stance-scared" style="top:7%;left:56%;"><img src="assets/avatars/owen.png" width="32" height="32" style="border:2px solid var(--tt-tribe-r-light)"><div class="tt-cliff-player-name">OWEN</div></div>
+        <div class="tt-cliff-player tt-stance-brave" style="top:6.5%;left:65%;"><img src="assets/avatars/bridgette.png" width="28" height="28" style="border:2px solid var(--tt-tribe-b-light)"><div class="tt-cliff-player-name">BRIDGETTE</div></div>
+        <div class="tt-cliff-player tt-stance-scared" style="top:7%;left:73%;"><img src="assets/avatars/lindsay.png" width="28" height="28" style="border:2px solid var(--tt-tribe-y-light)"><div class="tt-cliff-player-name">LINDSAY</div></div>
+
+        <!-- Diver mid-air — looping fall animation -->
+        <div class="tt-diver" style="left:45%;">
+          <img src="assets/avatars/alejandro.png" alt="Alejandro">
+          <div class="tt-diver-splash"></div>
+        </div>
+
+        <!-- Underwater chains glowing -->
+        <div class="tt-deep-chain" style="top:52%;left:25%;"></div>
+        <div class="tt-deep-chain" style="top:62%;left:55%;animation-delay:1.5s;"></div>
+        <div class="tt-deep-chain" style="top:70%;left:75%;animation-delay:3s;"></div>
+
+        <!-- Shark silhouettes -->
+        <div class="tt-deep-shark" style="top:58%;left:15%;"></div>
+        <div class="tt-deep-shark tt-deep-shark-2" style="top:72%;left:60%;"></div>
+
+        <!-- Eel glow -->
+        <div class="tt-deep-eel" style="top:78%;left:35%;"></div>
+        <div class="tt-deep-eel" style="top:85%;left:70%;animation-delay:1s;"></div>
+
+        <!-- Longboard track down the cliff -->
+        <div class="tt-title-track"></div>
+      </div>
+
+      <!-- Title text overlaid on scene -->
+      <div class="tt-title-overlay">
+        <div class="tt-title-sub">WORLD TOUR CHALLENGE</div>
+        <div class="tt-title-main">TROPICAL<br>TAKEDOWN</div>
+        <div class="tt-title-episode">EPISODE 4 — PRE-MERGE</div>
+        <div class="tt-title-cold">"Dive off a cliff, dodge some sharks, grab a chain, and ride a board down a mountain. First one to survive wins!"</div>
+      </div>
+
+      <!-- Teams with avatars — over the ocean section -->
+      <div class="tt-teams-row" style="position:absolute;bottom:60px;left:0;right:0;">
+        <div class="tt-team-block">
+          <div class="tt-team-name" style="color:var(--tt-tribe-y-light);">KILLER BASS</div>
+          <div class="tt-team-av-row">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-y-light)" src="assets/avatars/alejandro.png">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-y-light)" src="assets/avatars/duncan.png">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-y-light)" src="assets/avatars/dj.png">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-y-light)" src="assets/avatars/lindsay.png">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-y-light)" src="assets/avatars/courtney.png">
+          </div>
+        </div>
+        <div class="tt-team-block">
+          <div class="tt-team-name" style="color:var(--tt-tribe-r-light);">SCREAMING GOPHERS</div>
+          <div class="tt-team-av-row">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-r-light)" src="assets/avatars/heather.png">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-r-light)" src="assets/avatars/gwen.png">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-r-light)" src="assets/avatars/owen.png">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-r-light)" src="assets/avatars/izzy.png">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-r-light)" src="assets/avatars/leshawna.png">
+          </div>
+        </div>
+        <div class="tt-team-block">
+          <div class="tt-team-name" style="color:var(--tt-tribe-b-light);">RAGING WAVES</div>
+          <div class="tt-team-av-row">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-b-light)" src="assets/avatars/bridgette.png">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-b-light)" src="assets/avatars/geoff.png">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-b-light)" src="assets/avatars/trent.png">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-b-light)" src="assets/avatars/harold.png">
+            <img class="tt-team-av" style="border-color:var(--tt-tribe-b-light)" src="assets/avatars/tyler.png">
+          </div>
+        </div>
+      </div>
+
+      <div class="tt-insert-coin" style="position:absolute;bottom:20px;left:0;right:0;">&#9658; PRESS REVEAL TO START &#9668;</div>
+    </div>
+  </div>
+
+  <!-- ════════ CAPTAIN DRAFT SCREEN ════════ -->
+  <div class="tt-phase" id="phase-captain">
+    <div class="tt-phase-hdr">
+      <div class="tt-phase-tag">PRE-CHALLENGE</div>
+      <div class="tt-phase-title">Captain Draft</div>
+      <div class="tt-phase-sub">Each tribe elects a captain who assigns dive order and longboard pairings. Choose wisely — or face the backlash.</div>
+    </div>
+
+    <div class="tt-card-tribe tt-card-tribe-y"><span class="tt-sb-tribe tt-sb-tribe-y"></span> KILLER BASS</div>
+    <div class="tt-card tt-card-captain" data-anim="splash">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-captain"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Captain Elected</div>
+        <div class="tt-badge tt-badge-captain">CAPTAIN</div>
+      </div>
+      <div class="tt-txt"><strong>Alejandro</strong> lobbies aggressively for the captain role. <strong>DJ</strong> steps aside quietly — he'd rather not be responsible if someone drowns. The tribe agrees: Alejandro takes the helm.</div>
+    </div>
+
+    <div class="tt-card tt-card-social" data-anim="splash">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-social"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Dive Order Debate</div>
+        <div class="tt-badge tt-badge-social">TENSION</div>
+      </div>
+      <div class="tt-txt"><strong>Alejandro</strong> assigns <strong>Lindsay</strong> to dive first as "anchor." <strong>Leshawna</strong> pushes back hard — "You're sending her down there with the sharks?!" The captain holds firm. Leshawna's jaw tightens.</div>
+    </div>
+
+    <div class="tt-vine"></div>
+
+    <div class="tt-card-tribe tt-card-tribe-r"><span class="tt-sb-tribe tt-sb-tribe-r"></span> SCREAMING GOPHERS</div>
+    <div class="tt-card tt-card-captain" data-anim="splash">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-captain"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Captain Elected</div>
+        <div class="tt-badge tt-badge-captain">CAPTAIN</div>
+      </div>
+      <div class="tt-txt"><strong>LeShawna</strong> takes the role with zero resistance. "Somebody's gotta keep this mess organized." <strong>Heather</strong> rolls her eyes but doesn't challenge — she's saving her energy for the water.</div>
+    </div>
+
+    <div class="tt-vine"></div>
+
+    <div class="tt-card-tribe tt-card-tribe-b"><span class="tt-sb-tribe tt-sb-tribe-b"></span> RAGING WAVES</div>
+    <div class="tt-card tt-card-captain" data-anim="splash">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-captain"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Captain Elected</div>
+        <div class="tt-badge tt-badge-captain">CAPTAIN</div>
+      </div>
+      <div class="tt-txt"><strong>Geoff</strong> wins captain by being the only one enthusiastic about the cliff dive. "Dude, this is gonna be EPIC!" <strong>Bridgette</strong> nods approvingly — at least he won't freeze on the edge.</div>
+    </div>
+  </div>
+
+  <!-- ════════ CLIFF DIVE SCREEN ════════ -->
+  <div class="tt-phase" id="phase-dive">
+    <div class="tt-phase-hdr">
+      <div class="tt-phase-tag">PHASE 1A</div>
+      <div class="tt-phase-title">Cliff Dive</div>
+      <div class="tt-phase-sub">Tag-relay off the volcanic cliff — all tribes dive simultaneously. Fastest entry, fastest tag.</div>
+    </div>
+
+    <div class="tt-chatter"><span class="tt-chatter-host">CHRIS:</span> "Three tribes. One cliff. A whole lotta sharks. Let's get TROPICAL!"</div>
+
+    <div class="tt-card tt-card-dive" data-anim="dive-drop">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-dive"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Diver 1 — Simultaneous</div>
+        <div class="tt-badge tt-badge-pass">CLEAN ENTRY</div>
+      </div>
+      <div class="tt-txt"><strong>Lindsay</strong> <span style="color:var(--tt-tribe-y-light)">KB</span> leaps without hesitation — barely a splash. <strong>Gwen</strong> <span style="color:var(--tt-tribe-r-light)">SG</span> follows arms flailing but making it clean. <strong>Trent</strong> <span style="color:var(--tt-tribe-b-light)">RW</span> belly-flops spectacularly.</div>
+      <div class="tt-score-bar">
+        <span style="font-size:10px;color:var(--tt-tribe-y-light);width:20px;">KB</span>
+        <div class="tt-strack"><div class="tt-sfill tt-sfill-g" style="width:85%"></div></div>
+        <span class="tt-sval tt-sval-g">8.5</span>
+      </div>
+      <div class="tt-score-bar">
+        <span style="font-size:10px;color:var(--tt-tribe-r-light);width:20px;">SG</span>
+        <div class="tt-strack"><div class="tt-sfill tt-sfill-t" style="width:72%"></div></div>
+        <span class="tt-sval tt-sval-t">7.2</span>
+      </div>
+      <div class="tt-score-bar">
+        <span style="font-size:10px;color:var(--tt-tribe-b-light);width:20px;">RW</span>
+        <div class="tt-strack"><div class="tt-sfill tt-sfill-d" style="width:38%"></div></div>
+        <span class="tt-sval tt-sval-d">3.8</span>
+      </div>
+    </div>
+
+    <div class="tt-card tt-card-collision" data-anim="collision">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-collision"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Underwater Collision!</div>
+        <div class="tt-badge tt-badge-collision">IMPACT</div>
+      </div>
+      <div class="tt-txt"><strong>Lindsay</strong> and <strong>Gwen</strong> both dove for the same depth zone — they slam into each other mid-descent! Both lose precious seconds.</div>
+    </div>
+
+    <div class="tt-chatter"><span class="tt-chatter-host">CHRIS:</span> "Ohhh, underwater fender-bender! That's gonna leave a mark on someone's strategy."</div>
+
+    <div class="tt-card tt-card-dive" data-anim="dive-drop">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-dive"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Diver 2 — Simultaneous</div>
+        <div class="tt-badge tt-badge-fast">FAST TAG</div>
+      </div>
+      <div class="tt-txt"><strong>DJ</strong> <span style="color:var(--tt-tribe-y-light)">KB</span> cannonballs off the cliff eyes shut — tags quickly on surfacing. <strong>Heather</strong> <span style="color:var(--tt-tribe-r-light)">SG</span> enters at a measured angle. <strong>Bridgette</strong> <span style="color:var(--tt-tribe-b-light)">RW</span> dives like she was born in the ocean — fastest tag of the round.</div>
+    </div>
+
+    <div class="tt-card tt-card-social" data-anim="swim">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-social"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Showmance Moment</div>
+        <div class="tt-badge tt-badge-social">BOND +2</div>
+      </div>
+      <div class="tt-txt"><strong>Bridgette</strong> surfaces gasping — <strong>Geoff</strong> from the other team reaches across the lane divider to steady her. Their eyes lock for a beat too long.</div>
+    </div>
+
+    <div class="tt-card tt-card-dive" data-anim="bellyflop">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-dive"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Diver 3 — Simultaneous</div>
+        <div class="tt-badge tt-badge-fail">BELLY FLOP</div>
+      </div>
+      <div class="tt-txt"><strong>Owen</strong> <span style="color:var(--tt-tribe-r-light)">SG</span> creates a tidal wave. <strong>Duncan</strong> <span style="color:var(--tt-tribe-y-light)">KB</span> does a crisp pike. <strong>Harold</strong> <span style="color:var(--tt-tribe-b-light)">RW</span> over-rotates and lands on his back.</div>
+    </div>
+  </div>
+
+  <!-- ════════ CHAIN HUNT SCREEN ════════ -->
+  <div class="tt-phase" id="phase-chain">
+    <div class="tt-phase-hdr">
+      <div class="tt-phase-tag">PHASE 1B</div>
+      <div class="tt-phase-title">Chain Hunt</div>
+      <div class="tt-phase-sub">Retrieve golden chains from the lagoon floor. Eels guard the real ones, sharks patrol the lanes, and decoy chains waste your breath.</div>
+    </div>
+
+    <!-- Depth Map -->
+    <div class="tt-depth-map">
+      <div class="tt-depth-cliff"></div>
+      <div class="tt-depth-line" style="top:35%;" data-depth="5M"></div>
+      <div class="tt-depth-line" style="top:55%;" data-depth="10M"></div>
+      <div class="tt-depth-line" style="top:75%;" data-depth="15M"></div>
+      <div class="tt-depth-target"></div>
+      <div class="tt-dive-marker tt-dive-marker-y" style="left:30%;top:50%;">KB</div>
+      <div class="tt-dive-marker tt-dive-marker-r" style="left:50%;top:42%;">SG</div>
+      <div class="tt-dive-marker tt-dive-marker-b" style="left:70%;top:60%;">RW</div>
+      <div class="tt-hazard-marker tt-hazard-shark" style="left:40%;top:65%;">&#9660;</div>
+      <div class="tt-hazard-marker tt-hazard-eel" style="left:60%;top:78%;">&#9889;</div>
+    </div>
+
+    <div class="tt-card tt-card-chain" data-anim="chain-glow">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-chain"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Chain Found!</div>
+        <div class="tt-badge tt-badge-chain">GOLD CHAIN</div>
+      </div>
+      <div class="tt-txt"><strong>Bridgette</strong> spots the glint of gold wedged between two coral formations at the 12-meter mark. She pries it free — heavy, real, golden. One down for <span style="color:var(--tt-tribe-b-light)">Raging Waves</span>.</div>
+    </div>
+
+    <div class="tt-card tt-card-chain" data-anim="swim">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-chain"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Decoy Chain</div>
+        <div class="tt-badge tt-badge-decoy">DECOY</div>
+      </div>
+      <div class="tt-txt"><strong>Heather</strong> surfaces triumphantly — only for it to crumble into rusted flakes in her hands. "WHAT?!" She throws the remains into the ocean. <span style="color:var(--tt-tribe-r-light)">Screaming Gophers</span> wasted 40 seconds.</div>
+    </div>
+
+    <div class="tt-card tt-card-shark" data-anim="shark">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-shark"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Shark Patrol!</div>
+        <div class="tt-badge tt-badge-shark">SHARK</div>
+      </div>
+      <div class="tt-txt"><strong>DJ</strong> freezes mid-stroke as a shadow glides past — the reef shark circles twice before losing interest. DJ kicks frantically toward the surface. <span style="color:var(--tt-tribe-y-light)">Killer Bass</span> loses momentum.</div>
+    </div>
+
+    <div class="tt-card tt-card-eel" data-anim="eel">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-eel"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Eel Strike!</div>
+        <div class="tt-badge tt-badge-eel">ZAPPED</div>
+      </div>
+      <div class="tt-txt"><strong>Owen</strong> reaches for what looks like a chain — face full of electric eel. His whole body jolts; he shoots upward like a cork. The eel was guarding a real chain — now someone else will grab it.</div>
+    </div>
+
+    <div class="tt-chatter"><span class="tt-chatter-host">CHRIS:</span> "Owen just got the shock of his life — literally! That eel's got better defense than half these contestants."</div>
+
+    <div class="tt-card tt-card-steal" data-anim="steal">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-steal"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Shore Steal!</div>
+        <div class="tt-badge tt-badge-steal">STOLEN</div>
+      </div>
+      <div class="tt-txt"><strong>Alejandro</strong> intercepts <strong>Trent</strong> on the beach — snatches the golden chain from his exhausted hands. "Nothing personal." Trent stares in disbelief.</div>
+    </div>
+
+    <div class="tt-card tt-card-chain" data-anim="chain-glow">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-chain"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Chain Found!</div>
+        <div class="tt-badge tt-badge-chain">GOLD CHAIN</div>
+      </div>
+      <div class="tt-txt"><strong>Duncan</strong> surfaces with a chain clenched in his teeth, grinning through salt water. That's chain #2 for <span style="color:var(--tt-tribe-y-light)">Killer Bass</span>.</div>
+    </div>
+
+    <div class="tt-card tt-card-collision" data-anim="collision">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-collision"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Underwater Collision!</div>
+        <div class="tt-badge tt-badge-collision">IMPACT</div>
+      </div>
+      <div class="tt-txt"><strong>Geoff</strong> and <strong>Owen</strong> both spot the same chain at 10m — Geoff grabs it first but Owen's momentum carries him straight into Geoff's back. Both tumble. Geoff holds on.</div>
+    </div>
+  </div>
+
+  <!-- ════════ LONGBOARD RACE SCREEN ════════ -->
+  <div class="tt-phase" id="phase-race">
+    <div class="tt-phase-hdr">
+      <div class="tt-phase-tag">PHASE 2</div>
+      <div class="tt-phase-title">Longboard Race</div>
+      <div class="tt-phase-sub">Paired riders hurtle down the volcanic slope on makeshift longboards. 3 rounds. Helmets from Phase 1 reduce crash penalties. Track degrades each round.</div>
+    </div>
+
+    <!-- Track Map -->
+    <div class="tt-track-map">
+      <div class="tt-track-path"></div>
+      <div class="tt-track-finish"></div>
+      <div class="tt-race-marker tt-race-marker-y" style="left:55%;top:38%;">KB</div>
+      <div class="tt-race-marker tt-race-marker-r" style="left:40%;top:44%;">SG</div>
+      <div class="tt-race-marker tt-race-marker-b" style="left:65%;top:50%;">RW</div>
+    </div>
+
+    <div class="tt-card tt-card-captain" data-anim="board-slide">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-helmet"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Helmet Advantage</div>
+        <div class="tt-badge tt-badge-helmet">PROTECTED</div>
+      </div>
+      <div class="tt-txt"><span style="color:var(--tt-tribe-b-light)">Raging Waves</span> earned helmets from their Phase 1 chain haul. Crash penalties reduced by 40% — their riders can push harder through corners.</div>
+    </div>
+
+    <div class="tt-vine"></div>
+
+    <div class="tt-card-tribe tt-card-tribe-y"><span class="tt-sb-tribe tt-sb-tribe-y"></span> ROUND 1 — All Tribes</div>
+
+    <div class="tt-card tt-card-board" data-anim="board-slide">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-board"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Downhill Run</div>
+        <div class="tt-badge tt-badge-fast">14.2s</div>
+      </div>
+      <div class="tt-txt"><strong>Duncan</strong> + <strong>Courtney</strong> <span style="color:var(--tt-tribe-y-light)">KB</span> — Duncan steers hard into the first switchback while Courtney white-knuckles the back. They clip the rail on turn 3 but recover. Clean finish.</div>
+      <div class="tt-score-bar">
+        <span style="font-size:10px;color:var(--tt-muted)">TIME</span>
+        <div class="tt-strack"><div class="tt-sfill tt-sfill-w" style="width:72%"></div></div>
+        <span class="tt-sval tt-sval-w">14.2s</span>
+      </div>
+    </div>
+
+    <div class="tt-card tt-card-crash" data-anim="wipeout">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-crash"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Wipeout!</div>
+        <div class="tt-badge tt-badge-fail">CRASH +6.5s</div>
+      </div>
+      <div class="tt-txt"><strong>Owen</strong> + <strong>Izzy</strong> <span style="color:var(--tt-tribe-r-light)">SG</span> — Izzy tries to stand mid-run for "better aerodynamics." The board catches a rut and launches both into the bushes. Owen rolls downhill 15 feet.</div>
+    </div>
+
+    <div class="tt-card tt-card-collision" data-anim="collision">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-collision"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Mid-Run Sabotage!</div>
+        <div class="tt-badge tt-badge-collision">DIRTY PLAY</div>
+      </div>
+      <div class="tt-txt"><strong>Heather</strong> kicks a loose rock onto the track as <span style="color:var(--tt-tribe-b-light)">Raging Waves</span>' board approaches. <strong>Geoff</strong> swerves — helmet absorbs the corner impact. Only +2.1s penalty instead of a full wipeout.</div>
+    </div>
+
+    <div class="tt-chatter"><span class="tt-chatter-host">CHRIS:</span> "The track's falling apart! Round 2 riders, you might want to hold onto something."</div>
+
+    <div class="tt-card" style="border-left:2px solid rgba(140,120,80,.3);" data-anim="crash">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-crash"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Track Degradation</div>
+        <div class="tt-badge tt-badge-fail">WORSE</div>
+      </div>
+      <div class="tt-txt">The volcanic gravel is coming loose. Turn 2 has completely lost its rail. Turn 4 has a new gap in the planking. All crash chances increased by 15%.</div>
+    </div>
+
+    <div class="tt-vine"></div>
+
+    <div class="tt-card tt-card-board" data-anim="board-slide">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-board"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Round 2 — KB</div>
+        <div class="tt-badge tt-badge-fast">15.8s</div>
+      </div>
+      <div class="tt-txt"><strong>Alejandro</strong> + <strong>Lindsay</strong> <span style="color:var(--tt-tribe-y-light)">KB</span> — Alejandro navigates the damaged track expertly. Lindsay screams the entire way down but holds the balance. Respectable time.</div>
+    </div>
+
+    <div class="tt-card tt-card-board" data-anim="board-slide">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-board"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Round 2 — RW</div>
+        <div class="tt-badge tt-badge-pass">12.9s</div>
+      </div>
+      <div class="tt-txt"><strong>Bridgette</strong> + <strong>Trent</strong> <span style="color:var(--tt-tribe-b-light)">RW</span> — Bridgette's balance is unreal. She reads the damaged track like a surfer reads waves, cutting the perfect line. Fastest run of the day.</div>
+    </div>
+  </div>
+
+  <!-- ════════ RESULTS SCREEN ════════ -->
+  <div class="tt-phase" id="phase-results">
+    <div class="tt-phase-hdr">
+      <div class="tt-phase-tag">FINAL</div>
+      <div class="tt-phase-title">Results</div>
+      <div class="tt-phase-sub">Aggregate bobsled times determine the winner. Tribal immunity for the fastest tribe.</div>
+    </div>
+
+    <div class="tt-card tt-card-success" style="border-left-width:3px;" data-anim="victory">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-trophy"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Tribal Immunity!</div>
+        <div class="tt-badge tt-badge-pass">SAFE</div>
+      </div>
+      <div class="tt-txt"><span style="color:var(--tt-tribe-b-light)">Raging Waves</span> finishes with the lowest aggregate time — 41.3 seconds across 3 rounds. Helmets saved them at least 8 seconds in crash reductions. The tribe is <strong>SAFE</strong>.</div>
+      <div style="margin-top:8px;">
+        <div class="tt-score-bar">
+          <span style="font-size:10px;color:var(--tt-tribe-b-light);width:20px;">RW</span>
+          <div class="tt-strack"><div class="tt-sfill tt-sfill-g" style="width:90%"></div></div>
+          <span class="tt-sval tt-sval-g">41.3s</span>
+        </div>
+        <div class="tt-score-bar">
+          <span style="font-size:10px;color:var(--tt-tribe-y-light);width:20px;">KB</span>
+          <div class="tt-strack"><div class="tt-sfill tt-sfill-w" style="width:68%"></div></div>
+          <span class="tt-sval tt-sval-w">48.7s</span>
+        </div>
+        <div class="tt-score-bar">
+          <span style="font-size:10px;color:var(--tt-tribe-r-light);width:20px;">SG</span>
+          <div class="tt-strack"><div class="tt-sfill tt-sfill-d" style="width:42%"></div></div>
+          <span class="tt-sval tt-sval-d">56.1s</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tt-card tt-card-captain" data-anim="victory">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-trophy"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Runner-Up</div>
+        <div class="tt-badge tt-badge-captain">SAFE</div>
+      </div>
+      <div class="tt-txt"><span style="color:var(--tt-tribe-y-light)">Killer Bass</span> squeezes through in second — 48.7 seconds. Alejandro's captaincy was controversial but effective. They avoid tribal council.</div>
+    </div>
+
+    <div class="tt-card tt-card-fail" style="border-left-width:3px;" data-anim="wipeout">
+      <div class="tt-hdr">
+        <div class="tt-icon tt-icon-crash"><div class="fw"><div class="ci"></div></div></div>
+        <div class="tt-label">Tribal Council</div>
+        <div class="tt-badge tt-badge-fail">LAST PLACE</div>
+      </div>
+      <div class="tt-txt"><span style="color:var(--tt-tribe-r-light)">Screaming Gophers</span> crashed too many times, pulled too many decoy chains, and couldn't recover. They face tribal council tonight. Owen's belly-flop haunts them all.</div>
+    </div>
+  </div>
+
+</div><!-- /tt-main -->
+
+<!-- ═══ SIDEBAR ═══ -->
+<div id="sidebar">
+  <div class="tt-sb">
+    <div class="tt-sb-hdr">
+      <div class="tt-icon tt-icon-chain"><div class="fw"><div class="ci"></div></div></div>
+      TROPICAL TAKEDOWN
+    </div>
+    <div class="tt-sb-body" id="tt-sidebar-inner"></div>
+  </div>
+</div>
+
+</div><!-- /tt-shell -->
+
+<script>
+const sidebars = {};
+
+// Shared player roster — always shown on every tab
+const roster = `
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-section">KILLER BASS</div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-y" src="assets/avatars/alejandro.png"><span class="tt-sb-name"><strong>Alejandro</strong></span></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-y" src="assets/avatars/duncan.png"><span class="tt-sb-name"><strong>Duncan</strong></span></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-y" src="assets/avatars/dj.png"><span class="tt-sb-name"><strong>DJ</strong></span></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-y" src="assets/avatars/lindsay.png"><span class="tt-sb-name"><strong>Lindsay</strong></span></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-y" src="assets/avatars/courtney.png"><span class="tt-sb-name"><strong>Courtney</strong></span></div>
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-section">SCREAMING GOPHERS</div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-r" src="assets/avatars/heather.png"><span class="tt-sb-name"><strong>Heather</strong></span></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-r" src="assets/avatars/gwen.png"><span class="tt-sb-name"><strong>Gwen</strong></span></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-r" src="assets/avatars/owen.png"><span class="tt-sb-name"><strong>Owen</strong></span></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-r" src="assets/avatars/izzy.png"><span class="tt-sb-name"><strong>Izzy</strong></span></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-r" src="assets/avatars/leshawna.png"><span class="tt-sb-name"><strong>LeShawna</strong></span></div>
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-section">RAGING WAVES</div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-b" src="assets/avatars/bridgette.png"><span class="tt-sb-name"><strong>Bridgette</strong></span></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-b" src="assets/avatars/geoff.png"><span class="tt-sb-name"><strong>Geoff</strong></span></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-b" src="assets/avatars/trent.png"><span class="tt-sb-name"><strong>Trent</strong></span></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-b" src="assets/avatars/harold.png"><span class="tt-sb-name"><strong>Harold</strong></span></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-b" src="assets/avatars/tyler.png"><span class="tt-sb-name"><strong>Tyler</strong></span></div>
+`;
+
+sidebars.title = `
+  <div class="tt-sb-section">CHALLENGE PHASES</div>
+  <div class="tt-sb-row"><span class="tt-sb-name"><strong>1A</strong> Cliff Dive</span><span class="tt-sb-val tt-sb-val-w">TAG-RELAY</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name"><strong>1B</strong> Chain Hunt</span><span class="tt-sb-val tt-sb-val-w">UNDERWATER</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name"><strong>2</strong> Longboard Race</span><span class="tt-sb-val tt-sb-val-w">DOWNHILL</span></div>
+  ${roster}
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-section">MECHANICS</div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Golden chains</span><span class="tt-sb-val" style="color:var(--tt-chain)">3 per tribe</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Decoy chains</span><span class="tt-sb-val" style="color:var(--tt-decoy)">scattered</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Helmet reward</span><span class="tt-sb-val tt-sb-val-g">-40% crash</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Race rounds</span><span class="tt-sb-val tt-sb-val-w">3 paired</span></div>
+`;
+
+sidebars.captain = `
+  <div class="tt-sb-section">CAPTAINS</div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-y" src="assets/avatars/alejandro.png"><span class="tt-sb-name"><strong>Alejandro</strong></span><div class="tt-captain-badge">CPT</div></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-r" src="assets/avatars/leshawna.png"><span class="tt-sb-name"><strong>LeShawna</strong></span><div class="tt-captain-badge">CPT</div></div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-b" src="assets/avatars/geoff.png"><span class="tt-sb-name"><strong>Geoff</strong></span><div class="tt-captain-badge">CPT</div></div>
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-section">CAPTAIN RESPONSIBILITIES</div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Assign dive order</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Assign longboard pairs</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Take blame if tribe loses</span></div>
+  ${roster}
+`;
+
+sidebars.dive = `
+  <div class="tt-sb-section">DIVE SCORES</div>
+  <div class="tt-sb-row"><span class="tt-sb-tribe tt-sb-tribe-y"></span><span class="tt-sb-name"><strong>Killer Bass</strong></span><span class="tt-sb-val tt-sb-val-g">8.5 avg</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-tribe tt-sb-tribe-b"></span><span class="tt-sb-name"><strong>Raging Waves</strong></span><span class="tt-sb-val tt-sb-val-w">6.2 avg</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-tribe tt-sb-tribe-r"></span><span class="tt-sb-name"><strong>Screaming Gophers</strong></span><span class="tt-sb-val tt-sb-val-d">5.8 avg</span></div>
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-section">EVENTS</div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Collisions</span><span class="tt-sb-val" style="color:rgba(255,180,60,.6)">1</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Showmance moments</span><span class="tt-sb-val tt-sb-val-g">1</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Belly flops</span><span class="tt-sb-val tt-sb-val-d">2</span></div>
+  ${roster}
+`;
+
+sidebars.chain = `
+  <div class="tt-sb-section">CHAINS RECOVERED</div>
+  <div class="tt-sb-row">
+    <span class="tt-sb-tribe tt-sb-tribe-y"></span>
+    <span class="tt-sb-name"><strong>Killer Bass</strong></span>
+    <div class="tt-chain-count">
+      <div class="tt-chain-link found"></div><div class="tt-chain-link found"></div><div class="tt-chain-link"></div>
+    </div>
+    <span class="tt-sb-val tt-sb-val-w">2/3</span>
+  </div>
+  <div class="tt-sb-row">
+    <span class="tt-sb-tribe tt-sb-tribe-r"></span>
+    <span class="tt-sb-name"><strong>Screaming Gophers</strong></span>
+    <div class="tt-chain-count">
+      <div class="tt-chain-link found"></div><div class="tt-chain-link"></div><div class="tt-chain-link"></div>
+    </div>
+    <span class="tt-sb-val tt-sb-val-d">1/3</span>
+  </div>
+  <div class="tt-sb-row">
+    <span class="tt-sb-tribe tt-sb-tribe-b"></span>
+    <span class="tt-sb-name"><strong>Raging Waves</strong></span>
+    <div class="tt-chain-count">
+      <div class="tt-chain-link found"></div><div class="tt-chain-link found"></div><div class="tt-chain-link found"></div>
+    </div>
+    <span class="tt-sb-val tt-sb-val-g">3/3</span>
+  </div>
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-section">HAZARD LOG</div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Shark encounters</span><span class="tt-sb-val" style="color:rgba(140,150,160,.6)">3</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Eel zaps</span><span class="tt-sb-val" style="color:rgba(160,96,208,.6)">2</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Decoy chains</span><span class="tt-sb-val" style="color:var(--tt-decoy)">4</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Collisions</span><span class="tt-sb-val" style="color:rgba(255,180,60,.6)">2</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Shore steals</span><span class="tt-sb-val tt-sb-val-d">1</span></div>
+  ${roster}
+`;
+
+sidebars.race = `
+  <div class="tt-sb-section">HELMETS</div>
+  <div class="tt-sb-row"><span class="tt-sb-tribe tt-sb-tribe-b"></span><span class="tt-sb-name"><strong>Raging Waves</strong></span><span class="tt-sb-pill tt-sb-pill-chain">-40% CRASH</span></div>
+  <div class="tt-sb-row" style="opacity:.3"><span class="tt-sb-tribe tt-sb-tribe-y"></span><span class="tt-sb-name">Killer Bass</span><span style="font-size:9px;color:var(--tt-muted)">NO HELMET</span></div>
+  <div class="tt-sb-row" style="opacity:.3"><span class="tt-sb-tribe tt-sb-tribe-r"></span><span class="tt-sb-name">Screaming Gophers</span><span style="font-size:9px;color:var(--tt-muted)">NO HELMET</span></div>
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-section">RACE TIMES (BY ROUND)</div>
+  <div class="tt-sb-row"><span class="tt-sb-name"><strong>R1</strong> KB</span><span class="tt-sb-val tt-sb-val-w">14.2s</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name"><strong>R1</strong> SG</span><span class="tt-sb-val tt-sb-val-d">21.8s</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name"><strong>R1</strong> RW</span><span class="tt-sb-val tt-sb-val-g">13.1s</span></div>
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-row"><span class="tt-sb-name"><strong>R2</strong> KB</span><span class="tt-sb-val tt-sb-val-w">15.8s</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name"><strong>R2</strong> RW</span><span class="tt-sb-val tt-sb-val-g">12.9s</span></div>
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-section">TRACK CONDITION</div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Turn 2 rail</span><span class="tt-sb-val tt-sb-val-d">GONE</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Turn 4 planking</span><span class="tt-sb-val tt-sb-val-d">GAP</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-name">Crash chance</span><span class="tt-sb-val tt-sb-val-d">+15%</span></div>
+  ${roster}
+`;
+
+sidebars.results = `
+  <div class="tt-sb-section">FINAL STANDINGS</div>
+  <div class="tt-sb-row"><span class="tt-sb-tribe tt-sb-tribe-b"></span><span class="tt-sb-name"><strong>Raging Waves</strong></span><span class="tt-sb-pill tt-sb-pill-g">1ST</span><span class="tt-sb-val tt-sb-val-g">41.3s</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-tribe tt-sb-tribe-y"></span><span class="tt-sb-name"><strong>Killer Bass</strong></span><span class="tt-sb-pill tt-sb-pill-w">2ND</span><span class="tt-sb-val tt-sb-val-w">48.7s</span></div>
+  <div class="tt-sb-row"><span class="tt-sb-tribe tt-sb-tribe-r"></span><span class="tt-sb-name"><strong>Screaming Gophers</strong></span><span class="tt-sb-pill tt-sb-pill-d">3RD</span><span class="tt-sb-val tt-sb-val-d">56.1s</span></div>
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-section">PHASE 1 MVP</div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-b" src="assets/avatars/bridgette.png"><span class="tt-sb-name"><strong>Bridgette</strong></span><span class="tt-sb-val tt-sb-val-g">3 chains</span></div>
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-section">PHASE 2 MVP</div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-b" src="assets/avatars/bridgette.png"><span class="tt-sb-name"><strong>Bridgette</strong></span><span class="tt-sb-val tt-sb-val-g">12.9s</span></div>
+  <div class="tt-sb-divider"></div>
+  <div class="tt-sb-section">BIGGEST FLOP</div>
+  <div class="tt-sb-row"><img class="tt-sb-av tt-sb-av-r" src="assets/avatars/owen.png"><span class="tt-sb-name"><strong>Owen</strong></span><span class="tt-sb-val tt-sb-val-d">eel + crash</span></div>
+  ${roster}
+`;
+
+function showPhase(id) {
+  document.querySelectorAll('.tt-phase').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tt-tab').forEach(t => t.classList.remove('active'));
+  const phase = document.getElementById('phase-' + id);
+  if (phase) phase.classList.add('active');
+  document.querySelectorAll('.tt-tab').forEach(t => {
+    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + id + "'")) t.classList.add('active');
+  });
+  document.getElementById('tt-sidebar-inner').innerHTML = sidebars[id] || '';
+  window.scrollTo(0, 0);
+}
+
+// Click any card to replay its animation
+document.addEventListener('click', function(e) {
+  const card = e.target.closest('.tt-card[data-anim]');
+  if (!card) return;
+  const type = card.dataset.anim;
+  const cls = 'tt-anim-' + type;
+  card.classList.remove(cls);
+  void card.offsetWidth;
+  card.classList.add(cls);
+  card.addEventListener('animationend', () => card.classList.remove(cls), { once: true });
+});
+
+// Init
+document.getElementById('tt-sidebar-inner').innerHTML = sidebars.title;
+</script>
+</body>
+</html>

@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Midnight Manhunt — VP Mockup v2</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:wght@400;700&family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════ */
+/* MIDNIGHT MANHUNT — Victorian Detective Desk VP             */
+/* Prefix: mm-                                                */
+/* ═══════════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  /* Desk & wood */
+  --mm-desk:#1a110a;--mm-desk-mid:#2a1a0e;--mm-desk-light:#3a2818;
+  --mm-wood-grain:rgba(60,40,20,.15);
+  /* Brick */
+  --mm-brick:#5a3a2a;--mm-brick-dark:#3a2218;--mm-brick-mortar:rgba(120,100,80,.2);
+  /* Parchment & paper */
+  --mm-parchment:#e8d8b8;--mm-parchment-dark:#c8b898;--mm-parchment-dim:rgba(232,216,184,.7);
+  --mm-aged:#d4c4a0;--mm-aged-dark:#b8a880;
+  /* Ink & text */
+  --mm-ink:#1a1410;--mm-ink-brown:#3a2a18;--mm-coffee:#5c3d2e;
+  /* Brass & gold */
+  --mm-brass:#b8962e;--mm-brass-light:#d4b040;--mm-brass-dark:#8a6e1a;
+  --mm-gold:#d4a830;--mm-gold-glow:rgba(212,168,48,.15);
+  /* Blood & danger */
+  --mm-blood:#8a1818;--mm-blood-bright:#c02020;--mm-string-red:#c0392b;
+  /* Pin */
+  --mm-pin-red:#d04040;--mm-pin-white:#e8e0d0;--mm-pin-yellow:#d4b030;
+  /* Fog */
+  --mm-fog:rgba(180,170,155,.06);--mm-fog-thick:rgba(160,155,145,.1);
+  /* Tribes */
+  --mm-tribe-a:#2848a0;--mm-tribe-a-light:#4070d0;
+  --mm-tribe-b:#a03030;--mm-tribe-b-light:#d04848;
+  /* Functional */
+  --mm-success:#3a7a3a;--mm-warning:#b8862e;
+}
+
+body{
+  background:var(--mm-desk);
+  color:var(--mm-parchment);
+  font-family:'Libre Baskerville',serif;
+  overflow-x:hidden;min-height:100vh;
+}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* DESK SURFACE — Dark mahogany with wood grain               */
+/* ═══════════════════════════════════════════════════════════ */
+.mm-desk{
+  position:relative;min-height:100vh;
+  background:
+    repeating-linear-gradient(90deg,transparent 0px,var(--mm-wood-grain) 1px,transparent 2px,transparent 18px),
+    repeating-linear-gradient(90deg,transparent 0px,rgba(40,25,12,.08) 1px,transparent 2px,transparent 60px),
+    linear-gradient(180deg,var(--mm-desk) 0%,var(--mm-desk-mid) 30%,var(--mm-desk-light) 60%,var(--mm-desk-mid) 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* AMBIENT FOG & PARTICLES                                    */
+/* ═══════════════════════════════════════════════════════════ */
+.mm-fog-layer{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.mm-fog-wisp{position:absolute;height:3px;border-radius:50%;opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(180,170,155,.07),transparent);}
+.mm-fog-wisp:nth-child(1){top:20%;left:-15%;width:300px;animation:mm-drift 22s 0s ease-in-out infinite;}
+.mm-fog-wisp:nth-child(2){top:45%;left:-10%;width:250px;animation:mm-drift 18s 4s ease-in-out infinite;}
+.mm-fog-wisp:nth-child(3){top:70%;left:-12%;width:280px;animation:mm-drift 25s 8s ease-in-out infinite;}
+.mm-fog-wisp:nth-child(4){top:85%;left:-8%;width:220px;animation:mm-drift 20s 12s ease-in-out infinite;}
+@keyframes mm-drift{0%{transform:translateX(-5%);opacity:0}12%{opacity:.5}50%{opacity:.3}88%{opacity:.5}100%{transform:translateX(110vw);opacity:0}}
+
+/* Golden dust motes */
+.mm-particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.mm-mote{position:absolute;width:2px;height:2px;background:rgba(212,168,48,.25);border-radius:50%;opacity:0;}
+.mm-mote:nth-child(1){left:15%;animation:mm-float 12s 0s infinite;}
+.mm-mote:nth-child(2){left:35%;animation:mm-float 15s 3s infinite;}
+.mm-mote:nth-child(3){left:55%;animation:mm-float 10s 6s infinite;}
+.mm-mote:nth-child(4){left:75%;animation:mm-float 14s 2s infinite;}
+.mm-mote:nth-child(5){left:90%;animation:mm-float 11s 8s infinite;}
+.mm-mote:nth-child(6){left:25%;animation:mm-float 13s 5s infinite;}
+@keyframes mm-float{0%{bottom:-5%;opacity:0;transform:translateX(0)}15%{opacity:.6}50%{opacity:.3;transform:translateX(15px)}85%{opacity:.5}100%{bottom:105%;opacity:0;transform:translateX(-10px)}}
+
+@media(prefers-reduced-motion:reduce){
+  .mm-fog-wisp,.mm-mote{animation:none !important;opacity:0 !important;}
+}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* AMBIENT DESK OBJECTS                                       */
+/* ═══════════════════════════════════════════════════════════ */
+.mm-ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+
+/* Magnifying glass (bottom-right) */
+.mm-ambient-magnifier{position:absolute;bottom:40px;right:60px;opacity:.12;}
+/* Inkwell (bottom-left of main area) */
+.mm-ambient-inkwell{position:absolute;bottom:30px;left:340px;opacity:.1;}
+/* Leather logbook edge (bottom) */
+.mm-ambient-logbook{position:absolute;bottom:-10px;right:180px;width:120px;height:60px;
+  background:linear-gradient(135deg,#4a2a18,#6a3a20,#5a3018);
+  border-radius:4px 4px 0 0;border:2px solid #3a2010;border-bottom:none;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.4);opacity:.2;transform:rotate(-5deg);}
+.mm-ambient-logbook::before{content:'';position:absolute;top:8px;left:10px;right:10px;height:2px;
+  background:rgba(212,168,48,.15);}
+.mm-ambient-logbook::after{content:'LOGBOOK';position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  font-family:'Courier Prime',monospace;font-size:6px;color:rgba(212,168,48,.2);letter-spacing:3px;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* MAIN LAYOUT                                                */
+/* ═══════════════════════════════════════════════════════════ */
+.mm-layout{
+  position:relative;z-index:1;
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:290px 1fr;gap:0;
+  min-height:100vh;
+}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* SIDEBAR — Brick Wall Evidence Board                        */
+/* ═══════════════════════════════════════════════════════════ */
+.mm-sidebar{
+  background:
+    repeating-linear-gradient(0deg,transparent 0px,transparent 18px,var(--mm-brick-mortar) 18px,var(--mm-brick-mortar) 20px),
+    repeating-linear-gradient(90deg,transparent 0px,transparent 38px,var(--mm-brick-mortar) 38px,var(--mm-brick-mortar) 40px),
+    linear-gradient(180deg,#4a2a1a 0%,var(--mm-brick) 20%,var(--mm-brick-dark) 80%,#2a1810 100%);
+  border-right:4px solid var(--mm-ink-brown);
+  box-shadow:inset 0 0 40px rgba(0,0,0,.5),inset 0 0 80px rgba(0,0,0,.2),4px 0 20px rgba(0,0,0,.4);
+  padding:12px;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:rgba(184,150,46,.2) transparent;
+}
+
+/* ── Pocket Watch (top of sidebar) ── */
+.mm-watch{text-align:center;margin-bottom:12px;position:relative;}
+.mm-watch svg{filter:drop-shadow(0 2px 8px rgba(0,0,0,.5));}
+.mm-watch-label{
+  font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:3px;
+  color:var(--mm-brass-light);text-transform:uppercase;margin-top:4px;
+}
+
+/* ── Wanted Poster ── */
+.mm-wanted{
+  background:linear-gradient(180deg,var(--mm-parchment) 0%,var(--mm-aged) 60%,var(--mm-aged-dark) 100%);
+  border:2px solid var(--mm-coffee);
+  box-shadow:2px 3px 10px rgba(0,0,0,.5),inset 0 0 20px rgba(0,0,0,.08);
+  padding:8px;margin-bottom:12px;position:relative;
+  transform:rotate(-1deg);
+}
+.mm-wanted::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+  width:14px;height:14px;background:var(--mm-pin-red);border-radius:50%;
+  box-shadow:0 2px 4px rgba(0,0,0,.4),inset 0 -2px 3px rgba(0,0,0,.2);z-index:2;}
+.mm-wanted-header{
+  font-family:'IM Fell English',serif;font-size:22px;font-weight:700;
+  color:var(--mm-ink);text-align:center;letter-spacing:4px;text-transform:uppercase;
+  border-bottom:2px solid var(--mm-ink-brown);padding-bottom:4px;margin-bottom:6px;
+}
+.mm-wanted-reward{
+  display:inline-block;padding:2px 12px;
+  border:3px solid var(--mm-blood);color:var(--mm-blood);
+  font-family:'Courier Prime',monospace;font-size:14px;font-weight:700;
+  letter-spacing:4px;transform:rotate(-4deg);
+  position:absolute;top:8px;right:6px;
+}
+.mm-wanted-silhouette{display:block;margin:4px auto;}
+.mm-wanted-name{
+  font-family:'IM Fell English',serif;font-size:13px;color:var(--mm-ink);
+  text-align:center;font-style:italic;margin-top:4px;
+}
+.mm-wanted-status{
+  margin-top:6px;padding:4px 8px;
+  background:rgba(138,24,24,.08);border:1px solid rgba(138,24,24,.3);
+  font-family:'Courier Prime',monospace;font-size:10px;color:var(--mm-blood-bright);
+  text-align:center;letter-spacing:2px;text-transform:uppercase;
+}
+/* Pinned clue scraps on the poster */
+.mm-wanted-pin{
+  position:relative;padding:3px 6px;margin-top:4px;
+  background:rgba(232,216,184,.9);border:1px solid var(--mm-aged-dark);
+  font-family:'Courier Prime',monospace;font-size:8px;color:var(--mm-ink-brown);
+  transform:rotate(2deg);box-shadow:1px 1px 3px rgba(0,0,0,.2);
+}
+.mm-wanted-pin::before{content:'';position:absolute;top:-4px;right:8px;
+  width:8px;height:8px;background:var(--mm-pin-yellow);border-radius:50%;
+  box-shadow:0 1px 2px rgba(0,0,0,.3);}
+
+/* ── Evidence Board Label ── */
+.mm-board-label{
+  font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;
+  color:var(--mm-parchment-dim);text-transform:uppercase;text-align:center;
+  margin:10px 0 8px;padding-bottom:4px;
+  border-bottom:1px solid rgba(232,216,184,.1);
+}
+
+/* ── Player Polaroids ── */
+.mm-polaroids{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
+.mm-polaroid{
+  background:var(--mm-parchment);padding:4px 4px 14px;
+  box-shadow:2px 2px 6px rgba(0,0,0,.4);position:relative;
+  transition:transform .2s;
+}
+.mm-polaroid:nth-child(1){transform:rotate(-3deg);}
+.mm-polaroid:nth-child(2){transform:rotate(2.5deg);}
+.mm-polaroid:nth-child(3){transform:rotate(-1deg);}
+.mm-polaroid:nth-child(4){transform:rotate(4deg);}
+.mm-polaroid:nth-child(5){transform:rotate(-2.5deg);}
+.mm-polaroid:nth-child(6){transform:rotate(1deg);}
+.mm-polaroid:nth-child(7){transform:rotate(3deg);}
+.mm-polaroid:nth-child(8){transform:rotate(-4deg);}
+.mm-polaroid:nth-child(9){transform:rotate(2deg);}
+.mm-polaroid:nth-child(10){transform:rotate(-1.5deg);}
+.mm-polaroid:nth-child(11){transform:rotate(3.5deg);}
+.mm-polaroid:nth-child(12){transform:rotate(-2deg);}
+.mm-polaroid-photo{
+  width:100%;aspect-ratio:1;
+  background:var(--mm-aged);
+  display:flex;align-items:center;justify-content:center;
+}
+.mm-polaroid-photo svg{width:80%;height:80%;}
+.mm-polaroid-name{
+  font-family:'Courier Prime',monospace;font-size:7px;color:var(--mm-ink);
+  text-align:center;margin-top:2px;letter-spacing:1px;text-transform:uppercase;
+}
+/* Pin on polaroid */
+.mm-polaroid::before{content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);
+  width:10px;height:10px;border-radius:50%;
+  box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 -1px 2px rgba(0,0,0,.15);z-index:2;}
+.mm-polaroid.tribe-a::before{background:var(--mm-tribe-a);}
+.mm-polaroid.tribe-b::before{background:var(--mm-tribe-b);}
+/* Caught overlay — hide from main grid */
+.mm-polaroid.caught{display:none;}
+
+/* ── Caught Players Section — Grease-pencil X ── */
+.mm-caught-section{margin-bottom:10px;}
+.mm-caught-gallery{display:flex;gap:6px;flex-wrap:wrap;}
+.mm-caught-photo{
+  position:relative;width:68px;
+  background:var(--mm-parchment);padding:4px 4px 12px;
+  box-shadow:2px 2px 6px rgba(0,0,0,.5);
+  transform:rotate(-2deg);
+}
+.mm-caught-photo:nth-child(even){transform:rotate(1.5deg);}
+.mm-caught-photo-img{
+  width:100%;aspect-ratio:1;background:var(--mm-aged);
+  display:flex;align-items:center;justify-content:center;
+}
+.mm-caught-photo-img svg{width:80%;height:80%;}
+.mm-caught-photo-name{
+  font-family:'Courier Prime',monospace;font-size:7px;color:var(--mm-ink);
+  text-align:center;margin-top:2px;letter-spacing:1px;text-transform:uppercase;
+}
+/* Grease pencil X — thick, rough, hand-drawn feel */
+.mm-caught-photo .mm-grease-x{
+  position:absolute;top:2px;left:2px;right:2px;bottom:12px;
+  pointer-events:none;z-index:3;
+}
+.mm-caught-photo .mm-grease-x svg{width:100%;height:100%;}
+
+/* Red string between polaroids */
+.mm-strings{position:relative;height:20px;margin:-4px 0 8px;}
+.mm-string-line{position:absolute;height:1px;background:var(--mm-string-red);opacity:.5;transform-origin:left center;}
+
+/* ── Clue Tracker ── */
+.mm-clue-section{margin-bottom:10px;}
+.mm-clue-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.mm-clue-tribe{font-family:'Courier Prime',monospace;font-size:9px;width:60px;text-align:right;letter-spacing:1px;}
+.mm-clue-pips{display:flex;gap:3px;flex:1;}
+.mm-clue-pip{width:14px;height:14px;border-radius:1px;border:1px solid rgba(232,216,184,.15);
+  display:flex;align-items:center;justify-content:center;}
+.mm-clue-pip.found{border-color:var(--mm-brass);}
+.mm-clue-pip.found svg{opacity:1;}
+.mm-clue-pip svg{opacity:.15;}
+
+/* (caught section styles moved to caught-photo block above) */
+
+/* ── Corgi Ally Slot ── */
+.mm-corgi-slot{
+  padding:8px;margin-bottom:10px;position:relative;
+  background:linear-gradient(135deg,rgba(232,216,184,.08),rgba(180,140,80,.04));
+  border:1px dashed rgba(180,140,80,.25);
+  display:flex;align-items:center;gap:8px;
+  font-family:'Courier Prime',monospace;font-size:9px;color:var(--mm-brass-light);
+  letter-spacing:1px;text-transform:uppercase;
+}
+.mm-corgi-slot::before{content:'';position:absolute;top:-4px;left:12px;
+  width:8px;height:8px;background:var(--mm-brass);border-radius:50%;
+  box-shadow:0 1px 2px rgba(0,0,0,.3);}
+
+/* ── SVG Icon Row (card type indicators) ── */
+.mm-icon-row{display:flex;gap:6px;margin-top:6px;padding-top:6px;
+  border-top:1px dotted rgba(60,40,20,.1);position:relative;z-index:1;}
+.mm-icon-row svg{opacity:.3;transition:opacity .2s;}
+.mm-icon-row svg.mm-icon-active{opacity:.8;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* MAIN CONTENT AREA                                          */
+/* ═══════════════════════════════════════════════════════════ */
+.mm-main{
+  padding:0 16px 120px;
+  background:linear-gradient(90deg,rgba(0,0,0,.15) 0%,transparent 30px);
+}
+
+/* ── Phase Tabs — Ornate Brass Plaques ── */
+.mm-phase-tabs{
+  display:flex;gap:2px;margin:0 -16px;position:relative;z-index:10;
+  background:linear-gradient(180deg,#3a2818,#2a1a0e);
+  border-bottom:3px solid;border-image:linear-gradient(90deg,var(--mm-brass-dark),var(--mm-brass),var(--mm-brass-dark)) 1;
+  padding:4px 4px 0;
+}
+.mm-phase-tab{
+  flex:1;padding:8px 6px 10px;text-align:center;cursor:pointer;
+  font-family:'IM Fell English',serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--mm-parchment-dim);
+  background:linear-gradient(180deg,#4a3420 0%,#3a2418 40%,#2a1810 100%);
+  border:1px solid rgba(184,150,46,.12);border-bottom:none;
+  border-radius:3px 3px 0 0;
+  transition:all .25s;position:relative;
+  box-shadow:inset 0 1px 0 rgba(184,150,46,.08);
+}
+.mm-phase-tab:hover{color:var(--mm-parchment);
+  background:linear-gradient(180deg,#5a4028 0%,#4a3018 40%,#3a2010 100%);
+  border-color:rgba(184,150,46,.25);}
+.mm-phase-tab.active{
+  color:var(--mm-brass-light);
+  background:linear-gradient(180deg,rgba(184,150,46,.15) 0%,#3a2818 30%,#2a1a0e 100%);
+  border-color:rgba(184,150,46,.3);
+  box-shadow:inset 0 1px 0 rgba(184,150,46,.2),0 -2px 8px rgba(212,168,48,.06);
+}
+.mm-phase-tab.active::before{content:'';position:absolute;top:0;left:15%;right:15%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--mm-brass-light),transparent);}
+.mm-phase-tab.active::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:3px;
+  background:var(--mm-desk-mid);}
+
+/* ── Sticky Map Header ── */
+.mm-map-sticky{
+  position:sticky;top:0;z-index:5;
+  margin:0 -16px;padding:0;
+  background:var(--mm-desk-mid);
+  border-bottom:3px solid var(--mm-brass-dark);
+  box-shadow:0 4px 20px rgba(0,0,0,.6);
+}
+.mm-map-frame{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--mm-parchment) 0%,var(--mm-aged) 50%,var(--mm-aged-dark) 100%);
+  border:8px solid;
+  border-image:linear-gradient(180deg,#6a4a28,#4a3018,#3a2010) 1;
+}
+.mm-map-frame svg{display:block;width:100%;}
+/* Map corner brass tacks */
+.mm-map-frame::before,.mm-map-frame::after{content:'';position:absolute;width:12px;height:12px;
+  background:radial-gradient(circle,var(--mm-brass-light),var(--mm-brass-dark));border-radius:50%;
+  box-shadow:0 1px 3px rgba(0,0,0,.4);z-index:3;}
+.mm-map-frame::before{top:6px;left:6px;}
+.mm-map-frame::after{top:6px;right:6px;}
+.mm-map-tack-bl,.mm-map-tack-br{position:absolute;width:12px;height:12px;
+  background:radial-gradient(circle,var(--mm-brass-light),var(--mm-brass-dark));border-radius:50%;
+  box-shadow:0 1px 3px rgba(0,0,0,.4);z-index:3;}
+.mm-map-tack-bl{bottom:6px;left:6px;}
+.mm-map-tack-br{bottom:6px;right:6px;}
+/* Phase label on map */
+.mm-map-phase-label{
+  position:absolute;top:8px;right:20px;
+  font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:2px;
+  color:var(--mm-ink-brown);text-transform:uppercase;
+  background:rgba(232,216,184,.7);padding:2px 8px;
+  border:1px solid var(--mm-coffee);z-index:4;
+}
+
+/* ── Card Feed ── */
+.mm-feed{padding-top:16px;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* CARDS — Aged Paper Documents                               */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* Base card — aged paper pinned to desk */
+.mm-card{
+  position:relative;margin-bottom:14px;
+  background:linear-gradient(135deg,var(--mm-parchment) 0%,var(--mm-aged) 70%,var(--mm-aged-dark) 100%);
+  color:var(--mm-ink);
+  padding:14px 16px;
+  border:1px solid var(--mm-aged-dark);
+  box-shadow:3px 4px 12px rgba(0,0,0,.4),inset 0 0 20px rgba(0,0,0,.04);
+  font-family:'Libre Baskerville',serif;font-size:13px;line-height:1.6;
+}
+/* Aged paper texture overlay */
+.mm-card::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:.5;}
+/* Pin at top-left */
+.mm-card::after{content:'';position:absolute;top:-5px;left:16px;
+  width:12px;height:12px;background:var(--mm-pin-red);border-radius:50%;
+  box-shadow:0 2px 4px rgba(0,0,0,.4),inset 0 -2px 3px rgba(0,0,0,.2);}
+
+/* Card header */
+.mm-card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;
+  padding-bottom:6px;border-bottom:1px solid rgba(60,40,20,.15);}
+.mm-card-head svg{flex-shrink:0;}
+.mm-card-type{font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--mm-coffee);}
+.mm-card-body{position:relative;z-index:1;}
+.mm-card-body strong{color:var(--mm-ink);font-weight:700;}
+.mm-card-body em{font-family:'Caveat',cursive;font-style:normal;font-size:16px;color:var(--mm-coffee);font-weight:500;}
+
+/* Gaslight glow on active/latest card */
+.mm-card-active{box-shadow:3px 4px 12px rgba(0,0,0,.4),0 0 40px rgba(212,168,48,.12),0 0 80px rgba(212,168,48,.06);
+  border-color:rgba(212,168,48,.3);}
+.mm-card-ripper.mm-card-active{box-shadow:3px 4px 12px rgba(0,0,0,.5),0 0 40px rgba(138,24,24,.15),0 0 80px rgba(138,24,24,.08);}
+.mm-card-capture.mm-card-active{box-shadow:3px 4px 12px rgba(0,0,0,.4),0 0 40px rgba(58,122,58,.12),0 0 80px rgba(58,122,58,.06);}
+
+/* Card variants */
+/* Constabulary Report */
+.mm-card-report{transform:rotate(-0.3deg);}
+.mm-card-report .mm-card-type{color:var(--mm-ink-brown);}
+
+/* Telegram */
+.mm-card-telegram{
+  background:linear-gradient(180deg,#f0e8d0 0%,#e8dcc0 100%);
+  font-family:'Courier Prime',monospace;font-size:12px;line-height:1.7;
+  text-transform:uppercase;letter-spacing:.5px;
+  border:2px dashed var(--mm-aged-dark);transform:rotate(0.5deg);
+}
+.mm-card-telegram::after{background:var(--mm-pin-yellow);}
+.mm-card-telegram .mm-card-head{border-bottom:2px solid var(--mm-ink-brown);}
+
+/* Newspaper Clipping */
+.mm-card-clipping{
+  background:linear-gradient(180deg,#e8dcc0 0%,#d8c8a0 100%);
+  transform:rotate(-0.8deg);
+  border:none;box-shadow:3px 4px 12px rgba(0,0,0,.4);
+}
+.mm-card-clipping .mm-card-head{
+  font-family:'IM Fell English',serif;font-size:16px;font-weight:700;
+  letter-spacing:1px;border-bottom:3px double var(--mm-ink-brown);
+}
+
+/* Ripper / Danger card */
+.mm-card-ripper{
+  background:linear-gradient(135deg,#2a1a14 0%,#1a1210 70%,#100a08 100%);
+  color:var(--mm-parchment);border:2px solid var(--mm-blood);
+  box-shadow:3px 4px 12px rgba(0,0,0,.5),0 0 30px rgba(138,24,24,.1);
+  transform:rotate(0deg);
+}
+.mm-card-ripper::before{background:none;}
+.mm-card-ripper::after{background:var(--mm-blood-bright);}
+.mm-card-ripper .mm-card-type{color:var(--mm-blood-bright);}
+.mm-card-ripper strong{color:var(--mm-parchment);}
+.mm-card-ripper em{font-family:'Caveat',cursive;font-style:normal;font-size:16px;color:var(--mm-parchment-dim);font-weight:500;}
+.mm-card-ripper .mm-card-head{border-bottom-color:rgba(192,32,32,.2);}
+
+/* Social / Bond card */
+.mm-card-social{
+  background:linear-gradient(135deg,var(--mm-parchment) 0%,var(--mm-aged) 100%);
+  border:1px dashed var(--mm-coffee);border-left:3px solid var(--mm-coffee);
+  transform:rotate(0.4deg);
+}
+.mm-card-social::after{background:var(--mm-pin-white);}
+
+/* Corgi encounter */
+.mm-card-corgi{
+  background:linear-gradient(135deg,var(--mm-parchment) 0%,#e0d4b4 100%);
+  border-left:4px solid var(--mm-brass);transform:rotate(-0.4deg);
+}
+
+/* Capture / Victory */
+.mm-card-capture{
+  background:linear-gradient(135deg,#f0ecd8 0%,#e0d8b8 100%);
+  border:2px solid var(--mm-success);
+  box-shadow:3px 4px 12px rgba(0,0,0,.4),0 0 20px rgba(58,122,58,.08);
+  transform:rotate(-0.2deg);
+}
+.mm-card-capture::after{background:var(--mm-success);}
+.mm-card-capture .mm-card-type{color:var(--mm-success);}
+
+/* ── Card Footer: Badges ── */
+.mm-card-foot{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:8px;
+  border-top:1px solid rgba(60,40,20,.1);position:relative;z-index:1;}
+.mm-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;
+  font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:1px;
+  border-radius:1px;}
+.mm-badge-score{background:rgba(184,150,46,.15);color:var(--mm-brass-dark);border:1px solid rgba(184,150,46,.3);}
+.mm-badge-bond{background:rgba(90,60,40,.1);color:var(--mm-coffee);border:1px solid rgba(90,60,40,.2);}
+.mm-badge-pop{background:rgba(138,24,24,.1);color:var(--mm-blood);border:1px solid rgba(138,24,24,.2);}
+.mm-badge-camp{background:rgba(26,20,16,.08);color:var(--mm-ink-brown);border:1px solid rgba(60,40,20,.15);}
+
+/* Stamp overlays */
+.mm-stamp{
+  position:absolute;top:10px;right:12px;
+  font-family:'Courier Prime',monospace;font-size:12px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;
+  padding:4px 12px;border:3px solid;
+  transform:rotate(-8deg);opacity:.6;z-index:2;
+}
+.mm-stamp-classified{color:var(--mm-blood);border-color:var(--mm-blood);}
+.mm-stamp-filed{color:var(--mm-brass-dark);border-color:var(--mm-brass-dark);}
+.mm-stamp-urgent{color:var(--mm-blood-bright);border-color:var(--mm-blood-bright);animation:mm-stamp-pulse 3s ease-in-out infinite;}
+@keyframes mm-stamp-pulse{0%,100%{opacity:.6}50%{opacity:.9}}
+
+/* ── Caught Flash ── */
+.mm-caught-flash{
+  display:flex;align-items:center;gap:10px;
+  margin-top:10px;padding:8px 12px;
+  background:rgba(138,24,24,.15);border:1px solid var(--mm-blood);
+}
+.mm-caught-flash-x{
+  font-family:'IM Fell English',serif;font-size:28px;font-weight:700;
+  color:var(--mm-blood-bright);line-height:1;
+}
+.mm-caught-flash-info{font-family:'Courier Prime',monospace;font-size:10px;
+  color:var(--mm-blood-bright);letter-spacing:1px;line-height:1.4;}
+
+/* ── Street Tags ── */
+.mm-street{display:inline-flex;align-items:center;gap:4px;
+  padding:1px 8px;margin-right:4px;
+  background:rgba(26,20,16,.06);border:1px solid rgba(60,40,20,.15);
+  font-family:'Courier Prime',monospace;font-size:9px;color:var(--mm-coffee);
+  letter-spacing:1px;}
+
+/* ── Volunteer Box ── */
+.mm-vol-box{
+  background:rgba(26,20,16,.04);border:1px dashed rgba(60,40,20,.15);
+  padding:10px;margin:10px 0;position:relative;z-index:1;
+}
+.mm-vol-title{font-family:'Courier Prime',monospace;font-size:10px;color:var(--mm-coffee);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.mm-vol-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.mm-vol-slot{display:flex;align-items:center;gap:6px;padding:4px 8px;font-size:12px;
+  border-radius:1px;}
+.mm-vol-slot.v-yes{background:rgba(58,122,58,.08);border:1px solid rgba(58,122,58,.2);color:var(--mm-success);}
+.mm-vol-slot.v-no{background:rgba(138,24,24,.05);border:1px solid rgba(138,24,24,.12);color:var(--mm-blood);}
+.mm-vol-slot.v-press{background:rgba(184,150,46,.08);border:1px solid rgba(184,150,46,.15);color:var(--mm-brass-dark);}
+.mm-vol-icon{flex-shrink:0;}
+
+/* ── Rack Meter ── */
+.mm-rack-meter{display:flex;align-items:center;gap:8px;margin:8px 0;position:relative;z-index:1;}
+.mm-rack-label{font-family:'Courier Prime',monospace;font-size:9px;color:var(--mm-coffee);
+  letter-spacing:1px;text-transform:uppercase;width:60px;}
+.mm-rack-bar{flex:1;height:10px;background:rgba(26,20,16,.08);border:1px solid rgba(60,40,20,.1);overflow:hidden;}
+.mm-rack-fill{height:100%;transition:width .4s;}
+.mm-rack-fill.gentle{background:linear-gradient(90deg,#4a7a4a,#60a060);width:30%;}
+.mm-rack-fill.normal{background:linear-gradient(90deg,#a08030,#c8a030);width:60%;}
+.mm-rack-fill.brutal{background:linear-gradient(90deg,#a03030,#d04040);width:90%;}
+
+/* ── Flavor Text / Atmosphere Narration ── */
+.mm-flavor{
+  font-family:'IM Fell English',serif;font-size:13px;font-style:italic;
+  color:var(--mm-parchment-dim);text-align:center;
+  padding:8px 20px;margin:10px 0;position:relative;
+}
+.mm-flavor::before,.mm-flavor::after{content:'—';margin:0 8px;opacity:.4;}
+
+/* ── Reveal Steps ── */
+.mm-step{opacity:0;transform:translateY(10px);transition:opacity .4s ease,transform .4s ease;}
+.mm-step.mm-visible{opacity:1;transform:translateY(0);}
+
+/* ── Title Card ── */
+.mm-title-card{text-align:center;padding:40px 20px 30px;}
+.mm-title-line{width:60%;max-width:300px;height:1px;margin:0 auto 12px;
+  background:linear-gradient(90deg,transparent,var(--mm-brass),transparent);}
+.mm-title-sub{font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:5px;
+  color:var(--mm-brass-light);text-transform:uppercase;margin-bottom:8px;}
+.mm-title-h1{font-family:'IM Fell English',serif;font-size:42px;font-weight:400;
+  color:var(--mm-parchment);line-height:1.1;text-shadow:0 2px 20px rgba(212,168,48,.1);}
+.mm-title-h1 span{display:block;font-size:14px;letter-spacing:6px;color:var(--mm-brass);margin-top:8px;}
+.mm-title-desc{font-family:'IM Fell English',serif;font-size:14px;font-style:italic;
+  color:var(--mm-parchment-dim);margin-top:16px;}
+.mm-title-vs{display:flex;justify-content:center;gap:30px;margin-top:20px;align-items:center;}
+.mm-title-tribe{text-align:center;}
+.mm-title-tribe-name{font-family:'IM Fell English',serif;font-size:18px;letter-spacing:3px;}
+.mm-title-tribe-name.tribe-a{color:var(--mm-tribe-a-light);}
+.mm-title-tribe-name.tribe-b{color:var(--mm-tribe-b-light);}
+.mm-title-tribe-members{font-family:'Courier Prime',monospace;font-size:9px;
+  color:var(--mm-parchment-dim);margin-top:4px;letter-spacing:1px;line-height:1.5;}
+.mm-title-vs-sep{font-family:'IM Fell English',serif;font-size:20px;color:var(--mm-brass);
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--mm-brass);border-radius:50%;}
+
+/* ── Controls ── */
+.mm-controls{position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:linear-gradient(to top,rgba(26,17,10,.98),rgba(26,17,10,.92));
+  border-top:2px solid var(--mm-brass-dark);
+  padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:12px;}
+.mm-btn{padding:8px 20px;border:1px solid rgba(184,150,46,.3);border-radius:1px;
+  background:rgba(184,150,46,.06);color:var(--mm-brass-light);cursor:pointer;
+  font-family:'Courier Prime',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  transition:all .2s;}
+.mm-btn:hover{background:rgba(184,150,46,.15);border-color:var(--mm-brass);}
+.mm-counter{font-family:'Courier Prime',monospace;font-size:11px;color:var(--mm-parchment-dim);
+  min-width:50px;text-align:center;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* RESPONSIVE                                                 */
+/* ═══════════════════════════════════════════════════════════ */
+@media(max-width:820px){
+  .mm-layout{grid-template-columns:1fr;}
+  .mm-sidebar{position:static;height:auto;max-height:50vh;overflow-y:auto;}
+  .mm-map-sticky{position:relative;}
+}
+</style>
+</head>
+<body>
+
+<div class="mm-desk">
+
+<!-- ═══ AMBIENT EFFECTS ═══ -->
+<div class="mm-fog-layer">
+  <div class="mm-fog-wisp"></div><div class="mm-fog-wisp"></div>
+  <div class="mm-fog-wisp"></div><div class="mm-fog-wisp"></div>
+</div>
+<div class="mm-particles">
+  <div class="mm-mote"></div><div class="mm-mote"></div><div class="mm-mote"></div>
+  <div class="mm-mote"></div><div class="mm-mote"></div><div class="mm-mote"></div>
+</div>
+<div class="mm-ambient">
+  <div class="mm-ambient-logbook"></div>
+  <!-- Magnifying glass SVG -->
+  <div class="mm-ambient-magnifier">
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+      <circle cx="32" cy="32" r="20" stroke="rgba(184,150,46,.4)" stroke-width="4" fill="none"/>
+      <circle cx="32" cy="32" r="17" stroke="rgba(184,150,46,.2)" stroke-width="1" fill="rgba(232,216,184,.03)"/>
+      <line x1="47" y1="47" x2="72" y2="72" stroke="rgba(120,80,40,.4)" stroke-width="5" stroke-linecap="round"/>
+      <line x1="48" y1="48" x2="70" y2="70" stroke="rgba(90,60,30,.3)" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <!-- Inkwell SVG -->
+  <div class="mm-ambient-inkwell">
+    <svg width="40" height="50" viewBox="0 0 40 50" fill="none">
+      <rect x="8" y="20" width="24" height="28" rx="3" fill="rgba(20,16,12,.3)" stroke="rgba(60,40,20,.2)" stroke-width="1"/>
+      <rect x="12" y="16" width="16" height="6" rx="1" fill="rgba(30,22,16,.3)"/>
+      <ellipse cx="20" cy="20" rx="10" ry="3" fill="rgba(10,8,6,.3)"/>
+      <line x1="22" y1="5" x2="18" y2="18" stroke="rgba(60,40,20,.2)" stroke-width="1.5"/>
+    </svg>
+  </div>
+</div>
+
+<!-- ═══ MAIN LAYOUT ═══ -->
+<div class="mm-layout">
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SIDEBAR — Brick Wall Evidence Board        -->
+  <!-- ═══════════════════════════════════════════ -->
+  <aside class="mm-sidebar">
+
+    <!-- Sidebar Title -->
+    <div style="text-align:center;margin-bottom:8px;">
+      <div style="font-family:'IM Fell English',serif;font-size:13px;color:var(--mm-parchment-dim);letter-spacing:2px;">Midnight Manhunt</div>
+      <div style="font-family:'Courier Prime',monospace;font-size:8px;color:var(--mm-parchment-dim);letter-spacing:3px;text-transform:uppercase;opacity:.5;margin-top:2px;">Criminal Investigation Board</div>
+    </div>
+
+    <!-- Pocket Watch Act Tracker -->
+    <div class="mm-watch">
+      <svg width="120" height="130" viewBox="0 0 120 130" fill="none">
+        <!-- Chain loop -->
+        <path d="M60 8 Q55 0 50 4 Q45 8 48 14" stroke="rgba(184,150,46,.4)" stroke-width="2" fill="none"/>
+        <path d="M60 8 Q65 0 70 4 Q75 8 72 14" stroke="rgba(184,150,46,.4)" stroke-width="2" fill="none"/>
+        <!-- Crown/winder -->
+        <rect x="55" y="6" width="10" height="10" rx="2" fill="url(#brass-grad)" stroke="rgba(120,80,20,.5)" stroke-width="1"/>
+        <circle cx="60" cy="8" r="3" fill="rgba(184,150,46,.6)"/>
+        <!-- Outer ring -->
+        <circle cx="60" cy="72" r="50" fill="url(#brass-grad)" stroke="rgba(120,80,20,.6)" stroke-width="2"/>
+        <circle cx="60" cy="72" r="47" fill="none" stroke="rgba(212,168,48,.3)" stroke-width="1"/>
+        <!-- Face -->
+        <circle cx="60" cy="72" r="44" fill="#f0ead8" stroke="rgba(120,80,20,.3)" stroke-width="1"/>
+        <!-- Hour marks -->
+        <line x1="60" y1="32" x2="60" y2="36" stroke="var(--mm-ink)" stroke-width="2"/><!-- 12 -->
+        <line x1="80" y1="37" x2="78" y2="40" stroke="var(--mm-ink)" stroke-width="1.5"/><!-- 1 -->
+        <line x1="94" y1="52" x2="91" y2="54" stroke="var(--mm-ink)" stroke-width="1.5"/><!-- 2 -->
+        <line x1="100" y1="72" x2="96" y2="72" stroke="var(--mm-ink)" stroke-width="2"/><!-- 3 -->
+        <line x1="94" y1="92" x2="91" y2="90" stroke="var(--mm-ink)" stroke-width="1.5"/><!-- 4 -->
+        <line x1="80" y1="107" x2="78" y2="104" stroke="var(--mm-ink)" stroke-width="1.5"/><!-- 5 -->
+        <line x1="60" y1="112" x2="60" y2="108" stroke="var(--mm-ink)" stroke-width="2"/><!-- 6 -->
+        <line x1="40" y1="107" x2="42" y2="104" stroke="var(--mm-ink)" stroke-width="1.5"/><!-- 7 -->
+        <line x1="26" y1="92" x2="29" y2="90" stroke="var(--mm-ink)" stroke-width="1.5"/><!-- 8 -->
+        <line x1="20" y1="72" x2="24" y2="72" stroke="var(--mm-ink)" stroke-width="2"/><!-- 9 -->
+        <line x1="26" y1="52" x2="29" y2="54" stroke="var(--mm-ink)" stroke-width="1.5"/><!-- 10 -->
+        <line x1="40" y1="37" x2="42" y2="40" stroke="var(--mm-ink)" stroke-width="1.5"/><!-- 11 -->
+        <!-- Numerals (key positions) -->
+        <text x="60" y="44" text-anchor="middle" fill="var(--mm-ink)" font-family="IM Fell English" font-size="10">XII</text>
+        <text x="96" y="76" text-anchor="middle" fill="var(--mm-ink)" font-family="IM Fell English" font-size="9">III</text>
+        <text x="60" y="106" text-anchor="middle" fill="var(--mm-ink)" font-family="IM Fell English" font-size="9">VI</text>
+        <text x="25" y="76" text-anchor="middle" fill="var(--mm-ink)" font-family="IM Fell English" font-size="9">IX</text>
+        <!-- Act labels on face -->
+        <text x="60" y="58" text-anchor="middle" fill="var(--mm-coffee)" font-family="Courier Prime" font-size="6" letter-spacing="2">ROUND 4</text>
+        <text x="60" y="90" text-anchor="middle" fill="var(--mm-blood)" font-family="Courier Prime" font-size="7" font-weight="700" letter-spacing="1">ACT II</text>
+        <!-- Hour hand (pointing ~2 o'clock = Act II) -->
+        <line x1="60" y1="72" x2="78" y2="48" stroke="var(--mm-ink)" stroke-width="3" stroke-linecap="round"/>
+        <!-- Minute hand -->
+        <line x1="60" y1="72" x2="52" y2="38" stroke="var(--mm-ink)" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- Center pip -->
+        <circle cx="60" cy="72" r="3" fill="var(--mm-brass-dark)"/>
+        <circle cx="60" cy="72" r="1.5" fill="var(--mm-brass-light)"/>
+        <!-- Glass sheen -->
+        <ellipse cx="48" cy="56" rx="15" ry="10" fill="rgba(255,255,255,.04)" transform="rotate(-20 48 56)"/>
+        <defs>
+          <linearGradient id="brass-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#c8a030"/>
+            <stop offset="30%" stop-color="#d8b848"/>
+            <stop offset="60%" stop-color="#b89028"/>
+            <stop offset="100%" stop-color="#8a6e1a"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="mm-watch-label">Closing In</div>
+    </div>
+
+    <!-- Wanted Poster -->
+    <div class="mm-wanted">
+      <div class="mm-wanted-header">WANTED</div>
+      <div class="mm-wanted-reward">REWARD</div>
+      <!-- Ripper Silhouette SVG -->
+      <svg class="mm-wanted-silhouette" width="100" height="110" viewBox="0 0 100 110" style="display:block;margin:4px auto;">
+        <!-- Top hat -->
+        <rect x="30" y="8" width="40" height="6" rx="1" fill="var(--mm-ink)"/>
+        <rect x="35" y="0" width="30" height="12" rx="2" fill="var(--mm-ink-brown)"/>
+        <!-- Head -->
+        <ellipse cx="50" cy="24" rx="14" ry="12" fill="var(--mm-ink)"/>
+        <!-- Shoulders/cape -->
+        <path d="M20 65 Q25 40 50 38 Q75 40 80 65 L85 110 L15 110 Z" fill="var(--mm-ink-brown)" opacity=".8"/>
+        <path d="M25 60 Q30 42 50 40 Q70 42 75 60" fill="var(--mm-ink)" opacity=".5"/>
+        <!-- Knife in hand -->
+        <line x1="78" y1="55" x2="92" y2="40" stroke="rgba(180,180,180,.4)" stroke-width="2"/>
+        <rect x="90" y="36" width="3" height="8" rx="1" fill="rgba(120,80,40,.4)" transform="rotate(-40 91 40)"/>
+        <!-- Question mark -->
+        <text x="50" y="78" text-anchor="middle" fill="var(--mm-blood)" font-family="IM Fell English" font-size="28" opacity=".5">?</text>
+      </svg>
+      <div class="mm-wanted-name">"The Fugitive"</div>
+      <div class="mm-wanted-status">▸ STALKING — Boiler Passage</div>
+      <!-- Pinned evidence scraps -->
+      <div class="mm-wanted-pin">EVIDENCE: Dark fabric — Gaslight Row</div>
+      <div class="mm-wanted-pin" style="transform:rotate(-1deg);">EVIDENCE: Boot print — Inkwell Court</div>
+    </div>
+
+    <!-- Evidence Board -->
+    <div class="mm-board-label">— EVIDENCE BOARD —</div>
+
+    <!-- Player Polaroids -->
+    <div class="mm-polaroids">
+      <!-- Team A (blue pins) -->
+      <div class="mm-polaroid tribe-a">
+        <div class="mm-polaroid-photo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+            <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+          </svg>
+        </div>
+        <div class="mm-polaroid-name">Alejandro</div>
+      </div>
+      <div class="mm-polaroid tribe-a">
+        <div class="mm-polaroid-photo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+            <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+            <path d="M12 10 L20 6 L28 10" fill="none" stroke="rgba(90,70,50,.3)" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="mm-polaroid-name">Heather</div>
+      </div>
+      <div class="mm-polaroid tribe-a">
+        <div class="mm-polaroid-photo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+            <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+          </svg>
+        </div>
+        <div class="mm-polaroid-name">Duncan</div>
+      </div>
+      <div class="mm-polaroid tribe-a">
+        <div class="mm-polaroid-photo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+            <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+          </svg>
+        </div>
+        <div class="mm-polaroid-name">Leshawna</div>
+      </div>
+      <div class="mm-polaroid tribe-a">
+        <div class="mm-polaroid-photo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+            <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+          </svg>
+        </div>
+        <div class="mm-polaroid-name">Noah</div>
+      </div>
+      <div class="mm-polaroid tribe-a">
+        <div class="mm-polaroid-photo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+            <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+          </svg>
+        </div>
+        <div class="mm-polaroid-name">DJ</div>
+      </div>
+      <!-- Team B (red pins) -->
+      <div class="mm-polaroid tribe-b">
+        <div class="mm-polaroid-photo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+            <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+          </svg>
+        </div>
+        <div class="mm-polaroid-name">Courtney</div>
+      </div>
+      <div class="mm-polaroid tribe-b">
+        <div class="mm-polaroid-photo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+            <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+          </svg>
+        </div>
+        <div class="mm-polaroid-name">Gwen</div>
+      </div>
+      <div class="mm-polaroid tribe-b">
+        <div class="mm-polaroid-photo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+            <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+          </svg>
+        </div>
+        <div class="mm-polaroid-name">Owen</div>
+      </div>
+      <div class="mm-polaroid tribe-b">
+        <div class="mm-polaroid-photo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+            <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+          </svg>
+        </div>
+        <div class="mm-polaroid-name">Izzy</div>
+      </div>
+      <div class="mm-polaroid tribe-b">
+        <div class="mm-polaroid-photo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+            <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+          </svg>
+        </div>
+        <div class="mm-polaroid-name">Tyler</div>
+      </div>
+      <div class="mm-polaroid tribe-b caught">
+        <div class="mm-polaroid-photo">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+            <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+          </svg>
+        </div>
+        <div class="mm-polaroid-name">Lindsay</div>
+      </div>
+    </div>
+
+    <!-- Red string connections — SVG overlay -->
+    <div class="mm-strings">
+      <svg width="100%" height="40" viewBox="0 0 266 40" fill="none" style="display:block;margin:-8px 0 4px;">
+        <!-- Alejandro ↔ Heather (bond) -->
+        <path d="M44 5 Q80 20 133 8 Q160 4 175 10" stroke="#c0392b" stroke-width="1.2" fill="none" opacity=".45" stroke-dasharray="none"/>
+        <!-- Duncan ↔ Leshawna (bond) -->
+        <path d="M222 5 Q200 25 133 30 Q100 32 44 25" stroke="#c0392b" stroke-width="1.2" fill="none" opacity=".35"/>
+        <!-- Gwen ↔ Courtney (rivalry) -->
+        <path d="M133 15 Q160 35 222 20" stroke="#c0392b" stroke-width="1" fill="none" opacity=".3" stroke-dasharray="4,3"/>
+        <!-- Small pin dots at connection points -->
+        <circle cx="44" cy="5" r="2" fill="#c0392b" opacity=".5"/>
+        <circle cx="175" cy="10" r="2" fill="#c0392b" opacity=".5"/>
+        <circle cx="44" cy="25" r="2" fill="#c0392b" opacity=".5"/>
+        <circle cx="222" cy="20" r="2" fill="#c0392b" opacity=".5"/>
+      </svg>
+    </div>
+
+    <!-- Clue Tracker -->
+    <div class="mm-clue-section">
+      <div class="mm-board-label">— CLUES —</div>
+      <div class="mm-clue-row">
+        <span class="mm-clue-tribe" style="color:var(--mm-tribe-a-light);">TEAM A</span>
+        <div class="mm-clue-pips">
+          <div class="mm-clue-pip found"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="4" r="3" stroke="var(--mm-brass)" stroke-width="1" fill="none"/><line x1="7" y1="6" x2="9" y2="9" stroke="var(--mm-brass)" stroke-width="1"/></svg></div>
+          <div class="mm-clue-pip found"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="4" r="3" stroke="var(--mm-brass)" stroke-width="1" fill="none"/><line x1="7" y1="6" x2="9" y2="9" stroke="var(--mm-brass)" stroke-width="1"/></svg></div>
+          <div class="mm-clue-pip found"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="4" r="3" stroke="var(--mm-brass)" stroke-width="1" fill="none"/><line x1="7" y1="6" x2="9" y2="9" stroke="var(--mm-brass)" stroke-width="1"/></svg></div>
+          <div class="mm-clue-pip"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="4" r="3" stroke="var(--mm-brass)" stroke-width="1" fill="none"/><line x1="7" y1="6" x2="9" y2="9" stroke="var(--mm-brass)" stroke-width="1"/></svg></div>
+          <div class="mm-clue-pip"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="4" r="3" stroke="var(--mm-brass)" stroke-width="1" fill="none"/><line x1="7" y1="6" x2="9" y2="9" stroke="var(--mm-brass)" stroke-width="1"/></svg></div>
+        </div>
+      </div>
+      <div class="mm-clue-row">
+        <span class="mm-clue-tribe" style="color:var(--mm-tribe-b-light);">TEAM B</span>
+        <div class="mm-clue-pips">
+          <div class="mm-clue-pip found"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="4" r="3" stroke="var(--mm-brass)" stroke-width="1" fill="none"/><line x1="7" y1="6" x2="9" y2="9" stroke="var(--mm-brass)" stroke-width="1"/></svg></div>
+          <div class="mm-clue-pip found"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="4" r="3" stroke="var(--mm-brass)" stroke-width="1" fill="none"/><line x1="7" y1="6" x2="9" y2="9" stroke="var(--mm-brass)" stroke-width="1"/></svg></div>
+          <div class="mm-clue-pip"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="4" r="3" stroke="var(--mm-brass)" stroke-width="1" fill="none"/><line x1="7" y1="6" x2="9" y2="9" stroke="var(--mm-brass)" stroke-width="1"/></svg></div>
+          <div class="mm-clue-pip"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="4" r="3" stroke="var(--mm-brass)" stroke-width="1" fill="none"/><line x1="7" y1="6" x2="9" y2="9" stroke="var(--mm-brass)" stroke-width="1"/></svg></div>
+          <div class="mm-clue-pip"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="4" r="3" stroke="var(--mm-brass)" stroke-width="1" fill="none"/><line x1="7" y1="6" x2="9" y2="9" stroke="var(--mm-brass)" stroke-width="1"/></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Caught Players — Polaroids with grease-pencil X -->
+    <div class="mm-caught-section">
+      <div class="mm-board-label">— CAUGHT —</div>
+      <div class="mm-caught-gallery">
+        <!-- Lindsay — caught Act I -->
+        <div class="mm-caught-photo">
+          <div class="mm-caught-photo-img">
+            <svg viewBox="0 0 40 40" fill="none">
+              <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+              <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+            </svg>
+          </div>
+          <div class="mm-caught-photo-name">Lindsay</div>
+          <div class="mm-grease-x">
+            <svg viewBox="0 0 60 60" fill="none">
+              <line x1="5" y1="8" x2="52" y2="55" stroke="#c02020" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+              <line x1="52" y1="8" x2="5" y2="55" stroke="#c02020" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+              <line x1="7" y1="10" x2="54" y2="53" stroke="#e03030" stroke-width="3" stroke-linecap="round" opacity=".4"/>
+              <line x1="54" y1="10" x2="7" y2="53" stroke="#e03030" stroke-width="3" stroke-linecap="round" opacity=".4"/>
+            </svg>
+          </div>
+        </div>
+        <!-- Alejandro — caught Act II (example) -->
+        <div class="mm-caught-photo" style="transform:rotate(2.5deg);">
+          <div class="mm-caught-photo-img">
+            <svg viewBox="0 0 40 40" fill="none">
+              <circle cx="20" cy="14" r="8" fill="rgba(90,70,50,.4)"/>
+              <path d="M8 38 Q8 24 20 22 Q32 24 32 38" fill="rgba(90,70,50,.3)"/>
+            </svg>
+          </div>
+          <div class="mm-caught-photo-name">Alejandro</div>
+          <div class="mm-grease-x">
+            <svg viewBox="0 0 60 60" fill="none">
+              <line x1="8" y1="5" x2="55" y2="52" stroke="#c02020" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+              <line x1="55" y1="5" x2="8" y2="52" stroke="#c02020" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+              <line x1="10" y1="7" x2="53" y2="54" stroke="#e03030" stroke-width="3" stroke-linecap="round" opacity=".4"/>
+              <line x1="53" y1="7" x2="10" y2="54" stroke="#e03030" stroke-width="3" stroke-linecap="round" opacity=".4"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Corgi Ally -->
+    <div class="mm-corgi-slot">
+      <svg width="20" height="14" viewBox="0 0 20 14" fill="none">
+        <!-- Paw print -->
+        <ellipse cx="10" cy="10" rx="5" ry="3.5" fill="var(--mm-brass)"/>
+        <circle cx="5" cy="5" r="2" fill="var(--mm-brass)"/>
+        <circle cx="9" cy="3" r="2" fill="var(--mm-brass)"/>
+        <circle cx="13" cy="3" r="2" fill="var(--mm-brass)"/>
+        <circle cx="17" cy="5" r="2" fill="var(--mm-brass)"/>
+      </svg>
+      <span>CORGI ALLY: IZZY</span>
+    </div>
+
+  </aside>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- MAIN CONTENT                               -->
+  <!-- ═══════════════════════════════════════════ -->
+  <main class="mm-main">
+
+    <!-- Phase Tabs -->
+    <div class="mm-phase-tabs">
+      <div class="mm-phase-tab" onclick="switchPhase('title')">Case Brief</div>
+      <div class="mm-phase-tab" onclick="switchPhase('guard')">I · Guard Strip</div>
+      <div class="mm-phase-tab" onclick="switchPhase('rack')">II · The Rack</div>
+      <div class="mm-phase-tab active" onclick="switchPhase('hunt')">III · Manhunt</div>
+      <div class="mm-phase-tab" onclick="switchPhase('capture')">IV · Capture</div>
+    </div>
+
+    <!-- Sticky Map Header -->
+    <div class="mm-map-sticky">
+      <div class="mm-map-frame">
+        <div class="mm-map-tack-bl"></div>
+        <div class="mm-map-tack-br"></div>
+        <div class="mm-map-phase-label">Phase III — Manhunt</div>
+        <svg viewBox="0 0 780 220" style="display:block;">
+          <!-- Parchment bg -->
+          <defs>
+            <filter id="paper-noise">
+              <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="4" stitchTiles="stitch"/>
+              <feColorMatrix type="saturate" values="0"/>
+              <feBlend in="SourceGraphic" mode="multiply"/>
+            </filter>
+            <radialGradient id="fog-of-war" cx="50%" cy="50%" r="55%">
+              <stop offset="0%" stop-color="transparent"/>
+              <stop offset="60%" stop-color="transparent"/>
+              <stop offset="100%" stop-color="rgba(200,186,158,0.5)"/>
+            </radialGradient>
+            <!-- Gas lamp glow -->
+            <radialGradient id="lamp-glow">
+              <stop offset="0%" stop-color="rgba(212,168,48,0.2)"/>
+              <stop offset="100%" stop-color="transparent"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Background aged paper -->
+          <rect width="780" height="220" fill="#d4c4a0"/>
+          <rect width="780" height="220" fill="url(#fog-of-war)"/>
+
+          <!-- ═══ STREET GRID (hand-drawn style — slightly imperfect lines) ═══ -->
+          <!-- Main horizontal streets -->
+          <path d="M40 50 Q200 48 400 51 Q600 49 740 50" stroke="#5c3d2e" stroke-width="8" fill="none" opacity=".15"/>
+          <path d="M40 110 Q180 108 350 112 Q550 109 740 110" stroke="#5c3d2e" stroke-width="10" fill="none" opacity=".15"/>
+          <path d="M40 170 Q250 168 500 172 Q650 169 740 170" stroke="#5c3d2e" stroke-width="7" fill="none" opacity=".15"/>
+
+          <!-- Vertical alleys -->
+          <path d="M120 30 Q118 80 121 130 Q119 170 120 200" stroke="#5c3d2e" stroke-width="5" fill="none" opacity=".12"/>
+          <path d="M280 30 Q282 90 279 140 Q281 180 280 200" stroke="#5c3d2e" stroke-width="5" fill="none" opacity=".12"/>
+          <path d="M440 30 Q438 70 441 120 Q439 160 440 200" stroke="#5c3d2e" stroke-width="6" fill="none" opacity=".12"/>
+          <path d="M600 30 Q602 80 599 130 Q601 175 600 200" stroke="#5c3d2e" stroke-width="5" fill="none" opacity=".12"/>
+
+          <!-- ═══ BUILDINGS (ink rectangles with cross-hatching) ═══ -->
+          <!-- Block 1 -->
+          <rect x="50" y="55" width="60" height="50" fill="none" stroke="#3a2a18" stroke-width="1.5" opacity=".3"/>
+          <line x1="55" y1="60" x2="105" y2="100" stroke="#3a2a18" stroke-width=".5" opacity=".1"/>
+          <line x1="105" y1="60" x2="55" y2="100" stroke="#3a2a18" stroke-width=".5" opacity=".1"/>
+          <!-- Block 2 -->
+          <rect x="140" y="55" width="130" height="50" fill="none" stroke="#3a2a18" stroke-width="1.5" opacity=".3"/>
+          <line x1="145" y1="60" x2="265" y2="100" stroke="#3a2a18" stroke-width=".5" opacity=".08"/>
+          <!-- Block 3 -->
+          <rect x="300" y="55" width="130" height="50" fill="none" stroke="#3a2a18" stroke-width="1.5" opacity=".3"/>
+          <!-- Block 4 -->
+          <rect x="460" y="55" width="130" height="50" fill="none" stroke="#3a2a18" stroke-width="1.5" opacity=".3"/>
+          <!-- Block 5 -->
+          <rect x="50" y="115" width="60" height="50" fill="none" stroke="#3a2a18" stroke-width="1.5" opacity=".3"/>
+          <!-- Block 6 -->
+          <rect x="140" y="115" width="130" height="50" fill="none" stroke="#3a2a18" stroke-width="1.5" opacity=".3"/>
+          <!-- Block 7 -->
+          <rect x="300" y="115" width="130" height="50" fill="none" stroke="#3a2a18" stroke-width="1.5" opacity=".3"/>
+          <!-- Block 8 -->
+          <rect x="460" y="115" width="130" height="50" fill="none" stroke="#3a2a18" stroke-width="1.5" opacity=".3"/>
+
+          <!-- ═══ STREET NAMES (handwritten style) ═══ -->
+          <text x="200" y="45" fill="#5c3d2e" font-family="IM Fell English" font-size="9" font-style="italic" opacity=".5">Gaslight Row</text>
+          <text x="350" y="106" fill="#5c3d2e" font-family="IM Fell English" font-size="10" font-style="italic" opacity=".6">Whitechapel Row</text>
+          <text x="500" y="166" fill="#5c3d2e" font-family="IM Fell English" font-size="9" font-style="italic" opacity=".5">Boiler Passage</text>
+          <text x="115" y="22" fill="#5c3d2e" font-family="IM Fell English" font-size="8" font-style="italic" opacity=".4" transform="rotate(-90 115 22)">Brass Alley</text>
+          <text x="275" y="22" fill="#5c3d2e" font-family="IM Fell English" font-size="8" font-style="italic" opacity=".4" transform="rotate(-90 275 22)">Chandler La.</text>
+          <text x="435" y="22" fill="#5c3d2e" font-family="IM Fell English" font-size="8" font-style="italic" opacity=".4" transform="rotate(-90 435 22)">Inkwell Ct.</text>
+
+          <!-- ═══ GAS LAMPS (SVG icons along streets) ═══ -->
+          <!-- Lamp 1 -->
+          <g transform="translate(80,42)" opacity=".35">
+            <rect x="-1" y="0" width="2" height="10" fill="#5c3d2e"/>
+            <rect x="-4" y="-2" width="8" height="4" rx="2" fill="none" stroke="#5c3d2e" stroke-width="1"/>
+            <circle cx="0" cy="0" r="6" fill="url(#lamp-glow)"/>
+          </g>
+          <!-- Lamp 2 -->
+          <g transform="translate(350,42)" opacity=".35">
+            <rect x="-1" y="0" width="2" height="10" fill="#5c3d2e"/>
+            <rect x="-4" y="-2" width="8" height="4" rx="2" fill="none" stroke="#5c3d2e" stroke-width="1"/>
+            <circle cx="0" cy="0" r="6" fill="url(#lamp-glow)"/>
+          </g>
+          <!-- Lamp 3 -->
+          <g transform="translate(550,162)" opacity=".35">
+            <rect x="-1" y="0" width="2" height="10" fill="#5c3d2e"/>
+            <rect x="-4" y="-2" width="8" height="4" rx="2" fill="none" stroke="#5c3d2e" stroke-width="1"/>
+            <circle cx="0" cy="0" r="6" fill="url(#lamp-glow)"/>
+          </g>
+
+          <!-- ═══ LOCATION NODES ═══ -->
+          <!-- Tower Gate (start, top-left) -->
+          <circle cx="50" cy="50" r="8" fill="none" stroke="#8a6e1a" stroke-width="2" opacity=".6"/>
+          <text x="50" y="53" text-anchor="middle" fill="#5c3d2e" font-family="Courier Prime" font-size="7" font-weight="700">T</text>
+
+          <!-- Inkwell Court (Lindsay caught — X mark) -->
+          <circle cx="440" cy="110" r="8" fill="none" stroke="#8a1818" stroke-width="2" opacity=".6"/>
+          <line x1="434" y1="104" x2="446" y2="116" stroke="#c02020" stroke-width="2.5" opacity=".7"/>
+          <line x1="446" y1="104" x2="434" y2="116" stroke="#c02020" stroke-width="2.5" opacity=".7"/>
+
+          <!-- Bus Depot (capture target, bottom-right) — pulsing -->
+          <circle cx="700" cy="170" r="10" fill="none" stroke="#3a7a3a" stroke-width="2" opacity=".5">
+            <animate attributeName="r" values="10;13;10" dur="2.5s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values=".5;.8;.5" dur="2.5s" repeatCount="indefinite"/>
+          </circle>
+          <text x="700" y="188" text-anchor="middle" fill="#3a7a3a" font-family="Courier Prime" font-size="8" font-weight="700" opacity=".6">BUS DEPOT</text>
+
+          <!-- ═══ TRIBE MARKERS ═══ -->
+          <!-- Team A marker (blue) — at Whitechapel Row -->
+          <circle cx="360" cy="110" r="6" fill="var(--mm-tribe-a)" opacity=".8"/>
+          <text x="360" y="113" text-anchor="middle" fill="#fff" font-family="Courier Prime" font-size="7" font-weight="700">A</text>
+          <!-- Team B marker (red) — approaching Bus Depot -->
+          <circle cx="620" cy="170" r="6" fill="var(--mm-tribe-b)" opacity=".8"/>
+          <text x="620" y="173" text-anchor="middle" fill="#fff" font-family="Courier Prime" font-size="7" font-weight="700">B</text>
+
+          <!-- ═══ RIPPER SHADOW (animated) ═══ -->
+          <circle cx="500" cy="140" r="8" fill="rgba(138,24,24,.1)" stroke="none">
+            <animate attributeName="opacity" values=".05;.2;.05" dur="4s" repeatCount="indefinite"/>
+            <animate attributeName="cx" values="500;520;480;500" dur="10s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="140;150;135;140" dur="8s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="500" cy="140" r="3" fill="rgba(138,24,24,.15)">
+            <animate attributeName="opacity" values=".1;.3;.1" dur="4s" repeatCount="indefinite"/>
+            <animate attributeName="cx" values="500;520;480;500" dur="10s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="140;150;135;140" dur="8s" repeatCount="indefinite"/>
+          </circle>
+
+          <!-- ═══ CORGI PACK MARKER ═══ -->
+          <g transform="translate(120,110)" opacity=".5">
+            <ellipse cx="0" cy="4" rx="4" ry="2.5" fill="#b8862e"/>
+            <circle cx="-3" cy="-1" r="1.5" fill="#b8862e"/>
+            <circle cx="0" cy="-2.5" r="1.5" fill="#b8862e"/>
+            <circle cx="3" cy="-1" r="1.5" fill="#b8862e"/>
+          </g>
+
+          <!-- Compass rose (bottom-right corner) -->
+          <g transform="translate(740,30)" opacity=".25">
+            <line x1="0" y1="-12" x2="0" y2="12" stroke="#5c3d2e" stroke-width="1"/>
+            <line x1="-12" y1="0" x2="12" y2="0" stroke="#5c3d2e" stroke-width="1"/>
+            <polygon points="0,-12 -3,-4 3,-4" fill="#5c3d2e"/>
+            <text x="0" y="-14" text-anchor="middle" fill="#5c3d2e" font-family="IM Fell English" font-size="7">N</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ═══ CARD FEED ═══ -->
+    <div class="mm-feed">
+
+      <!-- Atmosphere narration -->
+      <div class="mm-flavor mm-step mm-visible">The fog rolls in as the church bell tolls midnight. The hunt begins.</div>
+
+      <!-- Act I Header -->
+      <div class="mm-step mm-visible" style="text-align:center;margin:8px 0 14px;">
+        <span style="display:inline-block;padding:4px 16px;border:2px solid var(--mm-brass-dark);font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--mm-brass-light);text-transform:uppercase;">Act I — Searching</span>
+      </div>
+
+      <!-- Investigation Report -->
+      <div class="mm-step mm-visible">
+        <div class="mm-card mm-card-report">
+          <div class="mm-stamp mm-stamp-filed">Filed</div>
+          <div class="mm-card-head">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <circle cx="8" cy="8" r="6" stroke="var(--mm-coffee)" stroke-width="1.5" fill="none"/>
+              <line x1="12.5" y1="12.5" x2="17" y2="17" stroke="var(--mm-coffee)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="mm-card-type">Constabulary Report — Investigation</span>
+          </div>
+          <div class="mm-card-body">
+            <span class="mm-street">Gaslight Row</span>
+            <strong>Alejandro</strong> moves through the amber haze, eyes scanning every shadow. His fingers trace a mark gouged into the cobblestones — fresh. <em>"This way. Recently."</em> He pockets a torn piece of dark fabric caught on a rusted nail. First evidence secured.
+          </div>
+          <div class="mm-card-foot">
+            <span class="mm-badge mm-badge-score">+2 CLUE</span>
+          </div>
+          <!-- Evidence type icons -->
+          <div class="mm-icon-row">
+            <!-- Magnifying glass (active) -->
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="mm-icon-active"><circle cx="7" cy="7" r="5" stroke="var(--mm-brass)" stroke-width="1.5" fill="none"/><line x1="11" y1="11" x2="15" y2="15" stroke="var(--mm-brass)" stroke-width="2" stroke-linecap="round"/></svg>
+            <!-- Top hat -->
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="8" width="10" height="2" rx="1" fill="var(--mm-coffee)"/><rect x="5" y="2" width="6" height="7" rx="1" fill="var(--mm-coffee)"/></svg>
+            <!-- Knife -->
+            <svg width="12" height="16" viewBox="0 0 12 16" fill="none"><path d="M6 0 L8 10 L6 9 L4 10 Z" fill="var(--mm-coffee)"/><rect x="5" y="10" width="2" height="5" rx="0.5" fill="var(--mm-coffee)"/></svg>
+            <!-- Paw print -->
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><ellipse cx="7" cy="10" rx="4" ry="2.5" fill="var(--mm-coffee)"/><circle cx="4" cy="5" r="1.5" fill="var(--mm-coffee)"/><circle cx="7" cy="4" r="1.5" fill="var(--mm-coffee)"/><circle cx="10" cy="5" r="1.5" fill="var(--mm-coffee)"/></svg>
+            <!-- Handcuffs -->
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><circle cx="5" cy="7" r="3.5" stroke="var(--mm-coffee)" stroke-width="1" fill="none"/><circle cx="11" cy="7" r="3.5" stroke="var(--mm-coffee)" stroke-width="1" fill="none"/><line x1="7" y1="5" x2="9" y2="5" stroke="var(--mm-coffee)" stroke-width="1.5"/></svg>
+            <!-- Pocket watch -->
+            <svg width="14" height="16" viewBox="0 0 14 16" fill="none"><circle cx="7" cy="9" r="6" stroke="var(--mm-coffee)" stroke-width="1" fill="none"/><line x1="7" y1="5" x2="7" y2="9" stroke="var(--mm-coffee)" stroke-width="1"/><line x1="7" y1="9" x2="10" y2="7" stroke="var(--mm-coffee)" stroke-width="0.8"/><rect x="6" y="1" width="2" height="3" rx="0.5" fill="var(--mm-coffee)"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Corgi Encounter -->
+      <div class="mm-step mm-visible">
+        <div class="mm-card mm-card-corgi">
+          <div class="mm-card-head">
+            <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
+              <ellipse cx="10" cy="12" rx="5" ry="3.5" fill="var(--mm-brass)"/>
+              <circle cx="5" cy="6" r="2" fill="var(--mm-brass)"/>
+              <circle cx="9" cy="4" r="2" fill="var(--mm-brass)"/>
+              <circle cx="13" cy="4" r="2" fill="var(--mm-brass)"/>
+              <circle cx="17" cy="6" r="2" fill="var(--mm-brass)"/>
+            </svg>
+            <span class="mm-card-type" style="color:var(--mm-brass-dark);">Field Report — Corgi Encounter</span>
+          </div>
+          <div class="mm-card-body">
+            <span class="mm-street">Brass Alley</span>
+            A pack of corgis emerges from behind a lamppost, ears perked, tails wagging suspiciously. <strong>Izzy</strong> drops to all fours and barks at them. The lead corgi tilts its head... then trots over and licks her face. <em>"WE ARE PACK NOW."</em> The corgis yip in agreement.
+          </div>
+          <div class="mm-card-foot">
+            <span class="mm-badge mm-badge-score">+3 CORGI ALLY</span>
+            <span class="mm-badge mm-badge-camp">CAMP: Befriended the Corgis</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Card -->
+      <div class="mm-step mm-visible">
+        <div class="mm-card mm-card-social">
+          <div class="mm-card-head">
+            <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
+              <rect x="1" y="1" width="14" height="10" rx="2" stroke="var(--mm-coffee)" stroke-width="1.5" fill="none"/>
+              <polygon points="5,11 8,15 3,15" fill="var(--mm-coffee)"/>
+            </svg>
+            <span class="mm-card-type">Social — Fear Bonding</span>
+          </div>
+          <div class="mm-card-body">
+            <span class="mm-street">Chandler Lane</span>
+            <strong>DJ</strong> and <strong>Leshawna</strong> huddle together behind a barrel. Every shadow looks like the fugitive. <em>"If we die,"</em> DJ whispers, <em>"tell my mama I was brave."</em> Leshawna squeezes his arm. <em>"We're not dying, baby. But I'm telling her anyway."</em>
+          </div>
+          <div class="mm-card-foot">
+            <span class="mm-badge mm-badge-bond">BOND +1.5 DJ↔Leshawna</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mm-flavor mm-step mm-visible">A distant church bell strikes one. The fog swallows the sound.</div>
+
+      <!-- RIPPER STRIKE -->
+      <div class="mm-step mm-visible">
+        <div class="mm-card mm-card-ripper">
+          <div class="mm-stamp mm-stamp-urgent">URGENT</div>
+          <div class="mm-card-head">
+            <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
+              <path d="M8 0 L11 12 L8 11 L5 12 Z" fill="var(--mm-blood-bright)"/>
+              <rect x="6" y="12" width="4" height="7" rx="1" fill="rgba(120,80,40,.6)"/>
+              <line x1="4" y1="14" x2="12" y2="14" stroke="rgba(120,80,40,.6)" stroke-width="1.5"/>
+            </svg>
+            <span class="mm-card-type" style="color:var(--mm-blood-bright);">Fugitive — Strike</span>
+          </div>
+          <div class="mm-card-body">
+            <span class="mm-street" style="border-color:rgba(138,24,24,.3);color:var(--mm-blood-bright);">Inkwell Court</span>
+            A shadow detaches from the wall. <strong>Lindsay</strong> doesn't see it coming — a gloved hand, a muffled yelp, and she's pulled into the darkness. Her lantern clatters to the cobblestones, flame guttering out.
+          </div>
+          <div class="mm-caught-flash">
+            <span class="mm-caught-flash-x">✕</span>
+            <div class="mm-caught-flash-info">LINDSAY — CAUGHT BY THE FUGITIVE<br>
+              <span style="font-size:8px;color:var(--mm-parchment-dim);">Vulnerability: isolated · low intuition · floater archetype</span></div>
+          </div>
+          <div class="mm-card-foot">
+            <span class="mm-badge mm-badge-score" style="background:rgba(138,24,24,.15);color:var(--mm-blood-bright);border-color:rgba(138,24,24,.3);">−3 CAUGHT</span>
+            <span class="mm-badge mm-badge-pop" style="color:var(--mm-blood-bright);">POP −1</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Act II -->
+      <div class="mm-step mm-visible" style="text-align:center;margin:14px 0;">
+        <span style="display:inline-block;padding:4px 16px;border:2px solid var(--mm-blood);font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--mm-blood-bright);text-transform:uppercase;">Act II — Closing In</span>
+      </div>
+
+      <!-- Telegram -->
+      <div class="mm-step mm-visible">
+        <div class="mm-card mm-card-telegram">
+          <div class="mm-card-head">
+            <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+              <rect x="1" y="1" width="16" height="12" rx="1" stroke="var(--mm-ink-brown)" stroke-width="1.5" fill="none"/>
+              <polyline points="1,1 9,8 17,1" stroke="var(--mm-ink-brown)" stroke-width="1" fill="none"/>
+            </svg>
+            <span class="mm-card-type">Telegram — Clue Discovery</span>
+          </div>
+          <div class="mm-card-body">
+            <span class="mm-street">Whitechapel Row</span>
+            NOAH CROUCHES BY DRAIN GRATE STOP FINDS SCRATCHED SYMBOL STOP ARROW POINTS TOWARD OLD BUS DEPOT STOP QUOTE ELEMENTARY UNQUOTE STOP FUGITIVE PATTERN CONVERGING NORTHEAST STOP
+          </div>
+          <div class="mm-card-foot">
+            <span class="mm-badge mm-badge-score">+2 CLUE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Escape card -->
+      <div class="mm-step mm-visible">
+        <div class="mm-card mm-card-ripper">
+          <div class="mm-card-head">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="7" stroke="var(--mm-blood-bright)" stroke-width="1.5" fill="none" stroke-dasharray="3,2"/>
+              <path d="M6 9 L9 6 L12 9 L9 12 Z" fill="var(--mm-blood-bright)" opacity=".6"/>
+            </svg>
+            <span class="mm-card-type" style="color:var(--mm-blood-bright);">Fugitive — Near Miss</span>
+          </div>
+          <div class="mm-card-body">
+            <span class="mm-street" style="border-color:rgba(138,24,24,.3);color:var(--mm-blood-bright);">Boiler Passage</span>
+            The fugitive's shadow falls across <strong>Duncan</strong>. But Duncan's been in enough dark alleys to know when trouble's coming. He spins, ducks under a reaching arm, and bolts down the passage. <em>"Not today, freak."</em> His boots echo off the wet stones as he vanishes into the fog.
+          </div>
+          <div class="mm-card-foot">
+            <span class="mm-badge mm-badge-score">+2 ESCAPE</span>
+            <span class="mm-badge mm-badge-pop">POP +1 Duncan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Act III -->
+      <div class="mm-step mm-visible" style="text-align:center;margin:14px 0;">
+        <span style="display:inline-block;padding:4px 16px;border:2px solid var(--mm-success);font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:3px;color:var(--mm-success);text-transform:uppercase;">Act III — Cornered</span>
+      </div>
+
+      <!-- Capture card -->
+      <div class="mm-step mm-visible">
+        <div class="mm-card mm-card-capture mm-card-active">
+          <div class="mm-stamp mm-stamp-filed" style="color:var(--mm-success);border-color:var(--mm-success);">Case Closed</div>
+          <div class="mm-card-head">
+            <svg width="20" height="18" viewBox="0 0 20 18" fill="none">
+              <!-- Handcuffs -->
+              <circle cx="6" cy="10" r="5" stroke="var(--mm-success)" stroke-width="1.5" fill="none"/>
+              <circle cx="14" cy="10" r="5" stroke="var(--mm-success)" stroke-width="1.5" fill="none"/>
+              <line x1="9" y1="7" x2="11" y2="7" stroke="var(--mm-success)" stroke-width="2"/>
+              <rect x="4" y="1" width="4" height="4" rx="1" fill="none" stroke="var(--mm-success)" stroke-width="1"/>
+              <rect x="12" y="1" width="4" height="4" rx="1" fill="none" stroke="var(--mm-success)" stroke-width="1"/>
+            </svg>
+            <span class="mm-card-type" style="color:var(--mm-success);">Capture Report — The Bagging</span>
+          </div>
+          <div class="mm-card-body">
+            <span class="mm-street" style="border-color:rgba(58,122,58,.3);color:var(--mm-success);">Bus Depot</span>
+            The fugitive is cornered on the upper deck. <strong>Izzy</strong> charges up the stairs with her corgi squad flanking her. The corgis herd the fugitive into a dead end — and Izzy leaps, sack in hand. A brief, chaotic struggle. Fur flies. Someone screams. Then silence. <em>"GOT 'EM!"</em> Izzy holds up the thrashing bag triumphantly.
+          </div>
+          <div class="mm-card-foot">
+            <span class="mm-badge mm-badge-score">+5 CAPTURE HERO</span>
+            <span class="mm-badge mm-badge-score">+3 CORGI ASSIST</span>
+            <span class="mm-badge mm-badge-pop" style="background:rgba(58,122,58,.1);color:var(--mm-success);border-color:rgba(58,122,58,.2);">POP +2 Izzy</span>
+            <span class="mm-badge mm-badge-camp">CAMP: Capture Hero</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</div><!-- /mm-layout -->
+</div><!-- /mm-desk -->
+
+<!-- ═══ CONTROLS ═══ -->
+<div class="mm-controls">
+  <button class="mm-btn" onclick="mockRevealNext()">Reveal Next</button>
+  <span class="mm-counter" id="mm-counter">10 / 10</span>
+  <button class="mm-btn" onclick="mockRevealAll()">Reveal All</button>
+</div>
+
+<script>
+function switchPhase(phase) {
+  document.querySelectorAll('.mm-phase-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+let revealIdx = 0;
+function mockRevealNext() {
+  const steps = document.querySelectorAll('.mm-step:not(.mm-visible)');
+  if (steps.length === 0) return;
+  steps[0].classList.add('mm-visible');
+  const total = document.querySelectorAll('.mm-step').length;
+  const shown = document.querySelectorAll('.mm-step.mm-visible').length;
+  document.getElementById('mm-counter').textContent = shown + ' / ' + total;
+  steps[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function mockRevealAll() {
+  document.querySelectorAll('.mm-step').forEach(s => s.classList.add('mm-visible'));
+  const total = document.querySelectorAll('.mm-step').length;
+  document.getElementById('mm-counter').textContent = total + ' / ' + total;
+}
+</script>
+
+</body>
+</html>

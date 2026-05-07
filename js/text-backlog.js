@@ -54,6 +54,9 @@ import { rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian,
 import { rpBuildNMTitleCard, rpBuildNMSecurity, rpBuildNMGallery, rpBuildNMAssembly, rpBuildNMResults } from './chal/night-at-museum.js';
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults } from './chal/truth-or-shark.js';
 import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults } from './chal/rock-the-dock.js';
+import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTChainHunt, rpBuildTTLongboardRace, rpBuildTTResults } from './chal/tropical-takedown.js';
+import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults } from './chal/midnight-manhunt.js';
+import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults } from './chal/greeces-pieces.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -2197,6 +2200,22 @@ export function generateSummaryText(ep) {
     _textTwistChallenge(ep, ln, sec, 'rockTheDock', 'ROCK THE DOCK', [
       rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults,
     ]);
+  }
+  if (ep.tropicalTakedown) {
+    _textTwistChallenge(ep, ln, sec, 'tropicalTakedown', 'TROPICAL TAKEDOWN', [
+      rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTLongboardRace, rpBuildTTResults,
+    ]);
+  }
+  if (ep.midnightManhunt) {
+    _textTwistChallenge(ep, ln, sec, 'midnightManhunt', 'MIDNIGHT MANHUNT', [
+      rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults,
+    ]);
+  }
+  if (ep.challengeData && ep.isGreecesPieces) {
+    const gpBuilders = [rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles];
+    if (ep.challengeData.icarus) gpBuilders.push(rpBuildGPIcarus);
+    gpBuilders.push(rpBuildGPResults);
+    _textTwistChallenge(ep, ln, sec, 'challengeData', "GREECE'S PIECES", gpBuilders);
   }
 
   // ── POST-CHALLENGE ──

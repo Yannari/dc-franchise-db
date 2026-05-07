@@ -1121,7 +1121,6 @@ export function simulateFrozenCrossing(ep) {
       .filter(([n]) => n !== topScorer).map(([, s]) => s));
     ep.chalMemberScores[topScorer] = Math.max(
       ep.chalMemberScores[topScorer] || 0, maxOther) + allActive.length + 5;
-    ep.immunityWinner = topScorer;
   }
 
   updateChalRecord(ep);

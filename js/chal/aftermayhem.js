@@ -766,22 +766,52 @@ function _updateBoardMap(screenKey) {
   const snap = snapshots[snapIdx];
   if (!snap) return;
 
-  // Update token positions
+  const board = document.getElementById('am-game-board');
+  if (!board) return;
+  const boardRect = board.getBoundingClientRect();
+
+  // Group racers by current square for stagger
+  const squareOccupants = {};
+  am.racers.forEach((r, pi) => {
+    const pos = snap.positions[r.name] ?? 0;
+    if (!squareOccupants[pos]) squareOccupants[pos] = [];
+    squareOccupants[pos].push({ name: r.name, idx: pi });
+  });
+
+  // Position tokens over their squares
   am.racers.forEach((r, pi) => {
     const tok = document.getElementById(`am-token-${slug(r.name)}`);
     if (!tok) return;
     const pos = snap.positions[r.name] ?? 0;
+    const prevPos = parseInt(tok.getAttribute('data-pos') || '0');
     const isKo = snap.ko.has(r.name);
     const sqEl = document.querySelector(`.am-sq[data-sq="${pos}"]`);
     if (!sqEl) return;
-    const board = document.getElementById('am-game-board');
-    if (!board) return;
-    // Position token relative to square
+
+    const sqRect = sqEl.getBoundingClientRect();
+    const occupants = squareOccupants[pos] || [];
+    const myIdx = occupants.findIndex(o => o.name === r.name);
+    const staggerX = occupants.length > 1 ? (myIdx - (occupants.length - 1) / 2) * 14 : 0;
+    const staggerY = occupants.length > 1 ? myIdx * 6 : 0;
+
+    const leftPx = sqRect.left - boardRect.left + sqRect.width / 2 - 15 + staggerX;
+    const topPx = sqRect.top - boardRect.top - 12 - staggerY;
+
+    tok.style.left = `${leftPx}px`;
+    tok.style.top = `${topPx}px`;
     tok.setAttribute('data-pos', pos);
+
     if (isKo) {
       tok.classList.add('eliminated');
     } else {
       tok.classList.remove('eliminated');
+    }
+
+    // Hop animation when position changes
+    if (pos !== prevPos) {
+      tok.classList.remove('moving');
+      void tok.offsetWidth;
+      tok.classList.add('moving');
     }
   });
 
@@ -805,11 +835,14 @@ function _updateBoardMap(screenKey) {
     diceResult.textContent = `${snap.lastPlayer || ''} ROLLED ${snap.lastDice}`;
     diceResult.classList.add('show');
     _setPips(snap.lastDice);
+  } else if (diceResult) {
+    diceResult.textContent = '';
+    diceResult.classList.remove('show');
   }
 
   // Highlight active square
   document.querySelectorAll('.am-sq.active').forEach(s => s.classList.remove('active'));
-  if (snap.activeSquare !== undefined) {
+  if (snap.activeSquare !== undefined && snap.activeSquare !== null) {
     const aSq = document.querySelector(`.am-sq[data-sq="${snap.activeSquare}"]`);
     if (aSq) aSq.classList.add('active');
   }
@@ -1396,12 +1429,15 @@ export function rpBuildAftermayhemBoard(ep) {
   });
   boardTrackHtml += `<div class="am-sq finish" data-sq="15"><div class="am-sq-num">&#9733;</div><div class="am-sq-icon">${_icon('trophy')}</div><div class="am-sq-label">TROPHY</div></div>`;
 
-  // Tokens
+  // Tokens — initially stacked at START square with stagger
   let tokensHtml = '';
+  const numRacers = am.racers.length;
   am.racers.forEach((r, i) => {
     const color = TOKEN_COLORS[i % TOKEN_COLORS.length];
     const s = slug(r.name);
-    tokensHtml += `<div id="am-token-${s}" class="am-token" style="border-color:${color};" data-pos="0">
+    const staggerX = numRacers > 1 ? (i - (numRacers - 1) / 2) * 14 : 0;
+    const staggerY = i * 6;
+    tokensHtml += `<div id="am-token-${s}" class="am-token" style="border-color:${color};left:${15 + staggerX}px;top:${-12 - staggerY}px;" data-pos="0">
       <img src="assets/avatars/${s}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="${r.name}">
       <div class="initials" style="display:none;background:${color};">${r.name[0]}</div>
     </div>`;

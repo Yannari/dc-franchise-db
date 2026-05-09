@@ -1113,14 +1113,14 @@ export function generateAftermathShow(ep) {
     }
   }
 
-  // ── AFTERMAYHEM BOARD GAME (when twist is active) ──
+  // ── AFTERMAYHEM BOARD GAME (config-driven, fires at a specific aftermath threshold) ──
   let aftermayhemData = null;
-  if (ep._aftermayhemPending && !gs._aftermayhemUsed) {
+  const _amThreshold = parseInt(cfg.aftermayhemReturn) || 0;
+  if (_amThreshold && _totalElims >= _amThreshold && !gs._aftermayhemUsed) {
     const _amEligible = gs.eliminated.filter(n => !gs.riPlayers?.includes(n) && !gs.activePlayers.includes(n));
     if (_amEligible.length >= 6) {
       simulateAftermayhem(ep);
       aftermayhemData = ep.aftermath?.aftermayhem || null;
-      // If aftermayhem fired, skip fan vote — the board game IS the return mechanism
       if (aftermayhemData) {
         fanVote = null;
         gs.pendingFanVoteReturn = null;

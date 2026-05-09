@@ -726,6 +726,7 @@ export function saveConfig() {
     survivalDifficulty: g('cfg-survival-difficulty')?.value || 'casual',
     aftermath:   g('cfg-aftermath')?.value || 'disabled',
     fanVoteFrequency: g('cfg-fan-vote-frequency')?.value || 'disabled',
+    aftermayhemReturn: g('cfg-aftermayhem-return')?.value || 'disabled',
     mole:        g('cfg-mole')?.value || 'disabled',
     molePlayers: seasonConfig.molePlayers || [],
     moleCoordination: g('cfg-mole-coordination')?.value || 'independent',
@@ -838,6 +839,7 @@ export function renderConfig() {
   // Aftermath
   set('cfg-aftermath', seasonConfig.aftermath || 'disabled');
   set('cfg-fan-vote-frequency', seasonConfig.fanVoteFrequency || 'disabled');
+  set('cfg-aftermayhem-return', seasonConfig.aftermayhemReturn || 'disabled');
   // The Mole
   set('cfg-mole', seasonConfig.mole || 'disabled');
   set('cfg-mole-coordination', seasonConfig.moleCoordination || 'independent');

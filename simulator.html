@@ -2507,7 +2507,17 @@
                     <option value="12">At Aftermath #4 (after 12 eliminations)</option>
                   </select>
                 </div>
-                <p class="acc-desc">Aftermath: Chris interviews eliminated players, reveals secrets, shows unseen footage. Fan Vote: when enabled, the Aftermath includes a fan vote — the winner returns at the start of the next episode. No need to schedule second-chance separately.</p>
+                <div class="form-group">
+                  <label class="form-label">Aftermayhem Return</label>
+                  <select id="cfg-aftermayhem-return" class="form-select" onchange="saveConfig()">
+                    <option value="disabled">Disabled</option>
+                    <option value="3">At Aftermath #1 (after 3 eliminations)</option>
+                    <option value="6">At Aftermath #2 (after 6 eliminations)</option>
+                    <option value="9">At Aftermath #3 (after 9 eliminations)</option>
+                    <option value="12">At Aftermath #4 (after 12 eliminations)</option>
+                  </select>
+                </div>
+                <p class="acc-desc">Aftermath: Chris interviews eliminated players, reveals secrets, shows unseen footage. Fan Vote: the winner returns at the start of the next episode. Aftermayhem: 6 eliminated players race across a board game gauntlet — first to the trophy case returns! If both fan vote and aftermayhem fire on the same aftermath, aftermayhem replaces the fan vote.</p>
               </div>
             </div>
 

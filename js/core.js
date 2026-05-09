@@ -214,7 +214,6 @@ export const TWIST_CATALOG = [
   { id:'jury-elimination', emoji:'⚖️', name:'Jury Elimination',     category:'elim',       phase:'post-merge', desc:'All eliminated players (jury) vote to boot one active player. Immunity winner is safe.',        engineType:'jury-elimination'},
   { id:'aftermath',       emoji:'🎬', name:'Aftermath Show',       category:'social',     phase:'any',        desc:'Total Drama Aftermath: Chris interviews eliminated players, reveals secrets, shows unseen footage.', engineType:'aftermath' },
   { id:'tied-destinies',  emoji:'🔗', name:'Tied Destinies',       category:'elim',       phase:'post-merge', desc:'Players randomly paired. Vote someone out and their partner goes too. Paired immunity challenge. Double elimination.', engineType:'tied-destinies', incompatible:['pre-merge'] },
-  { id:'aftermayhem',    emoji:'🎲', name:'Aftermath Aftermayhem', category:'returns',    phase:'any',        chalSeries:'world-tour', chalStyle:'chaos', desc:'6 eliminated players race across a board game gauntlet. Manage your energy or get KO\'d — first to the trophy case returns!', engineType:'aftermayhem', incompatible:['second-chance'] },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──
@@ -833,6 +832,7 @@ export function defaultConfig() {
     romance: 'enabled',
     aftermath: 'disabled',
     fanVoteFrequency: 'disabled',
+    aftermayhemReturn: 'disabled',
     host: 'Chris',
     advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, { enabled: a.default > 0, count: a.default }])),
     twistSchedule: [],

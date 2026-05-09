@@ -221,12 +221,72 @@ const DICE_ROLL = {
   3: [(n,pr) => `${n} rolls a 3! Maximum movement! Three squares ahead plus a +5 energy boost!`, (n,pr) => `THREE! ${n} pumps ${pr.posAdj} fist. Best possible roll! Three squares AND bonus energy!`, (n,pr) => `${n}'s die lands on 3. The golden roll! Three squares forward. The crowd erupts!`, (n,pr) => `Max roll for ${n}! Three squares ahead and a surge of energy. THIS is momentum!`, (n,pr) => `The die shows 3. ${n} grins. "That's what I'm talking about!" Three squares. +5 energy.`],
 };
 
-// ── Cameo narration ──
-const CAMEO_TEXT = [
-  (active, competitor) => `${active} walks on set from backstage. "I can't believe I'm back here." ${pronouns(active).Sub} takes the judge's seat.`,
-  (active, competitor) => `Guest appearance: ${active}! The active player strolls in with swagger. The gallery buzzes.`,
-  (active, competitor) => `${active} emerges from behind the curtain. "So YOU'RE the one trying to come back." ${pronouns(active).Sub} eyes ${competitor}.`,
-  (active, competitor) => `The host introduces ${active} as the guest judge. ${competitor}'s face says everything.`,
+// ── Video screen cameo narration ──
+const CAMEO_CHEER = [
+  (active, racer) => `The studio screen lights up — ${active} appears live from the game! "You got this, ${racer}! Win it!" The crowd roars.`,
+  (active, racer) => `VIDEO LINK: ${active}'s face fills the screen. "Go ${racer}! I'm rooting for you!" A burst of energy surges through ${racer}.`,
+  (active, racer) => `The monitors flash: INCOMING CALL. ${active} appears, cheering ${racer} on. "Bring it HOME!"`,
+  (active, racer) => `${active} video-calls into the studio. "Come on, ${racer}! We need you back in this game!" The gallery goes wild.`,
+];
+const CAMEO_HECKLE = [
+  (active, racer) => `The screen flickers on — ${active}! "Stay eliminated, ${racer}. Nobody wants you back." The crowd oohs.`,
+  (active, racer) => `VIDEO LINK from ${active}. "${racer}? Seriously? The game is BETTER without you." Savage.`,
+  (active, racer) => `${active} appears on screen just to trash-talk. "Don't bother coming back, ${racer}. You'll just get voted out again."`,
+  (active, racer) => `The monitors light up with ${active}'s face. "I eliminated you once. I'll do it again." ${racer} flinches.`,
+];
+const CAMEO_NEUTRAL = [
+  (active, racer) => `The studio screen activates — ${active} waves from the game camp. "Good luck out there." Polite but distant.`,
+  (active, racer) => `VIDEO LINK: ${active} watches ${racer}'s challenge from camp. No cheers, no jeers. Just watching.`,
+  (active, racer) => `${active} appears briefly on screen. A nod toward ${racer}. Nothing more.`,
+];
+const CAMEO_ROAST_WIN = [
+  (active, racer) => `${active} roasts ${racer} on screen — but ${racer} fires RIGHT back! "At least I had the guts to try twice!" The gallery EXPLODES.`,
+  (active, racer) => `${active} tries to humiliate ${racer} via video link. ${racer} grabs the mic: "Funny coming from someone who's scared to show up in person." DEVASTATION.`,
+  (active, racer) => `The screen shows ${active} talking smack. ${racer} claps back so hard the gallery gives a standing ovation.`,
+  (active, racer) => `${active} roasts from the safety of a screen. ${racer} doesn't blink: "Talk to me when you've survived the board." MIC DROP.`,
+];
+const CAMEO_ROAST_FAIL = [
+  (active, racer) => `${active} roasts ${racer} on screen and it LANDS. ${racer} has nothing. The gallery cringes.`,
+  (active, racer) => `VIDEO ROAST from ${active}. ${racer} tries to respond but stumbles over ${pronouns(racer).posAdj} words. Brutal.`,
+  (active, racer) => `${active} destroys ${racer} via video link. "${racer} was eliminated for a reason." No comeback. Just silence.`,
+  (active, racer) => `The screen lights up with ${active}'s smirking face. The roast is surgical. ${racer} deflates.`,
+];
+
+// ── Trap backtrack narration ──
+const TRAP_BACKTRACK = [
+  (n,pr,sq) => `The explosion LAUNCHES ${n} backward! ${pr.Sub} slides back ${sq} square${sq > 1 ? 's' : ''}!`,
+  (n,pr,sq) => `The trap floor tilts and ${n} tumbles backward! Knocked back ${sq} square${sq > 1 ? 's' : ''}!`,
+  (n,pr,sq) => `WIPEOUT! ${n} is blasted back ${sq} square${sq > 1 ? 's' : ''} by the trap!`,
+  (n,pr,sq) => `The trap sends ${n} flying! ${pr.Sub} lands ${sq} square${sq > 1 ? 's' : ''} behind where ${pr.sub} started!`,
+  (n,pr,sq) => `${n} gets catapulted BACKWARD! Minus ${sq} square${sq > 1 ? 's' : ''}! The gallery gasps!`,
+];
+
+// ── Host curveball narration ──
+const HOST_CURVEBALL = {
+  'board-shuffle': [(sq1,sq2) => `"Getting too comfortable? I don't THINK so!" The host hits a switch — Squares ${sq1} and ${sq2} swap challenges! The board shifts under everyone's feet!`, (sq1,sq2) => `"Time to shuffle things up!" The host cackles as Squares ${sq1} and ${sq2} exchange places. Plans? Ruined.`],
+  'energy-tax': [() => `"You're all looking a little too healthy." The host slams a big red button. ENERGY TAX! Everyone loses 10 HP!`, () => `"This is MY show and I say... DRAIN THEM!" A jolt runs through the board. -10 energy to ALL racers!`],
+  'second-wind': [(n) => `The crowd starts chanting: "${n}! ${n}! ${n}!" The underdog surges with energy! +20 HP!`, (n) => `"The fans have spoken!" The host tosses an energy drink to ${n}. "Don't say I never did anything for you." +20 HP!`],
+  'trap-reveal': [(sq) => `"I'm feeling generous..." The host reveals a trap on Square ${sq}! "...or maybe I just want to watch you sweat around it."`, (sq) => `TRAP ALERT! The host exposes the booby trap on Square ${sq}. "Now you KNOW it's there. That makes it worse, right?"`],
+};
+
+// ── Collision narration ──
+const COLLISION_RIVALRY = [
+  (a,b) => `${a} and ${b} land on the SAME SQUARE! They get in each other's face. Shoving. The host has to separate them. Both lose energy from the brawl!`,
+  (a,b) => `COLLISION! ${a} catches up to ${b} and neither will back down. A full-on board fight erupts!`,
+  (a,b) => `${a} steps onto ${b}'s square. Eyes lock. Fists clench. This rivalry just went physical!`,
+  (a,b) => `Same square, same grudge. ${a} and ${b} crash into each other. The gallery is on its feet!`,
+];
+const COLLISION_ALLIANCE = [
+  (a,b) => `${a} lands right next to ${b}! They share a quick strategy huddle. Alliance energy flowing!`,
+  (a,b) => `${a} and ${b} end up on the same square. Fist bump. "We got this." Both feel recharged.`,
+  (a,b) => `SAME SQUARE! ${a} and ${b} use the moment to regroup. The bond between them is visible.`,
+  (a,b) => `${a} catches up to ${b}. A knowing nod. They share supplies and both get an energy boost.`,
+];
+const COLLISION_BUMP = [
+  (a,b) => `${a} lands on ${b}'s square and shoulders past! "Move it!" ${a} steals some of ${b}'s energy!`,
+  (a,b) => `SAME SQUARE! ${a} bumps ${b} aside and grabs ${b}'s energy pack. "Thanks for the boost!"`,
+  (a,b) => `${a} arrives on ${b}'s square. In the chaos, ${a} snags some of ${b}'s reserves. Sneaky!`,
+  (a,b) => `${a} and ${b} collide! ${a} comes out on top, siphoning energy in the scuffle.`,
 ];
 
 
@@ -354,10 +414,11 @@ export function simulateAftermayhem(ep) {
     });
   }
 
-  // Booby traps (2 random, not sq 1 or 15 — sq indices 0..13, avoid index 0)
+  // Booby traps (3-4 random, not sq 1 or 15 — sq indices 0..13, avoid index 0)
   const trapCandidates = board.filter((_, i) => i > 0).map((_, i) => i + 1);
   const shuffledTrapC = trapCandidates.sort(() => Math.random() - 0.5);
-  const trapIndices = shuffledTrapC.slice(0, 2).map(i => board[i].sq);
+  const trapCount = 3 + (Math.random() < 0.5 ? 1 : 0);
+  const trapIndices = shuffledTrapC.slice(0, trapCount).map(i => board[i].sq);
   const trapsSet = new Set(trapIndices);
 
   // ── Race Simulation ──
@@ -384,7 +445,7 @@ export function simulateAftermayhem(ep) {
 
   for (let roundNum = 1; roundNum <= 20 && !gameOver; roundNum++) {
     const roundData = { roundNum, turns: [], socialEvents: [], eliminations: [] };
-    const escalation = roundNum >= 9 ? 1.0 + (roundNum - 8) * 0.5 : 1.0;
+    const escalation = roundNum >= 5 ? 1.0 + (roundNum - 4) * 0.4 : 1.0;
 
     for (const racer of turnOrder) {
       if (!racer.alive || gameOver) continue;
@@ -411,8 +472,10 @@ export function simulateAftermayhem(ep) {
       let koBeforeChallenge = false;
 
       // ── Booby Trap ──
+      let trapBacktrack = 0;
+      let trapBacktrackText = '';
       if (isTrap && racer.position < 15) {
-        trapDamage = 20;
+        trapDamage = 30;
         revealedTraps.add(racer.position);
         const trapDrainMult = escalation;
         const actualTrapDmg = Math.round(trapDamage * trapDrainMult);
@@ -429,6 +492,12 @@ export function simulateAftermayhem(ep) {
           trapSurviveText = pick(TRAP_SURVIVE)(racer.name, pr);
           ep.chalMemberScores[racer.name] = (ep.chalMemberScores[racer.name] || 0) + 3;
           popDelta(racer.name, 1);
+          // Trap backtrack — 50% chance to get knocked back 1-2 squares
+          trapBacktrack = Math.random() < 0.5 ? (1 + Math.floor(Math.random() * 2)) : 0;
+          if (trapBacktrack > 0) {
+            racer.position = Math.max(1, racer.position - trapBacktrack);
+            trapBacktrackText = pick(TRAP_BACKTRACK)(racer.name, pr, trapBacktrack);
+          }
         }
       }
 
@@ -444,10 +513,37 @@ export function simulateAftermayhem(ep) {
           player: racer.name, diceRoll, oldPos, newPos: racer.position,
           challengeType: null, score: null, energyDelta: 0, energyAfter: racer.energy,
           isTrap, trapDamage, trapText, trapSurviveText,
+          trapBacktrack, trapBacktrackText,
           rollText, challengeText: null, dominationText: null,
           isWinner: true, koBeforeChallenge,
         });
         break;
+      }
+
+      // ── Same-Square Collision ──
+      if (racer.alive && !koBeforeChallenge && racer.position < 15) {
+        const collision = racers.filter(r => r.alive && r.name !== racer.name && r.position === racer.position);
+        if (collision.length > 0) {
+          const target = collision[0];
+          const bond = getBond(racer.name, target.name);
+          let collisionEvent = null;
+          if (bond <= -2 && canTrashTalk(racer.name)) {
+            racer.energy = clamp(racer.energy - 8, 0, 100);
+            target.energy = clamp(target.energy - 8, 0, 100);
+            addBond(racer.name, target.name, -1);
+            collisionEvent = { type: 'collision-rivalry', players: [racer.name, target.name], text: pick(COLLISION_RIVALRY)(racer.name, target.name), bondDelta: -1, energyDelta: -8 };
+          } else if (bond >= 3) {
+            racer.energy = clamp(racer.energy + 8, 0, 100);
+            target.energy = clamp(target.energy + 8, 0, 100);
+            addBond(racer.name, target.name, 0.5);
+            collisionEvent = { type: 'collision-alliance', players: [racer.name, target.name], text: pick(COLLISION_ALLIANCE)(racer.name, target.name), bondDelta: 0.5, energyDelta: 8 };
+          } else {
+            racer.energy = clamp(racer.energy + 5, 0, 100);
+            target.energy = clamp(target.energy - 5, 0, 100);
+            collisionEvent = { type: 'collision-bump', players: [racer.name, target.name], text: pick(COLLISION_BUMP)(racer.name, target.name), bondDelta: 0, energyDelta: 5 };
+          }
+          if (collisionEvent) roundData.socialEvents.push(collisionEvent);
+        }
       }
 
       // ── Face Challenge ──
@@ -463,16 +559,56 @@ export function simulateAftermayhem(ep) {
         const secondaryVal = stats[sqData.secondary] || 5;
         challengeScore = primaryVal * 0.6 + secondaryVal * 0.3 + noise(2.5);
 
-        // Cameo bond modifier
-        if (sqData.cameo && (sqData.type === 'crowd' || sqData.type === 'roast')) {
+        // Cameo video link (crowd/roast squares)
+        if (sqData.cameo && racer.alive && !koBeforeChallenge) {
           const bond = getBond(racer.name, sqData.cameo);
-          challengeScore += bond * 0.15;
-          cameoData = { activePlayer: sqData.cameo, bond };
+          let cameoType, cameoEnergyDelta = 0, cameoText = '';
+
+          if (sqData.type === 'roast') {
+            const activeSocial = pStats(sqData.cameo).social || 5;
+            const racerSocial = stats.social || 5;
+            const roastScore = racerSocial - (activeSocial * 0.6 + noise(2.5));
+            if (roastScore >= 0) {
+              cameoType = 'roast-win';
+              cameoEnergyDelta = 10;
+              cameoText = pick(CAMEO_ROAST_WIN)(sqData.cameo, racer.name);
+              addBond(racer.name, sqData.cameo, -0.5);
+              popDelta(racer.name, 2);
+            } else {
+              cameoType = 'roast-fail';
+              cameoEnergyDelta = -12;
+              cameoText = pick(CAMEO_ROAST_FAIL)(sqData.cameo, racer.name);
+              addBond(racer.name, sqData.cameo, -1);
+              popDelta(racer.name, -1);
+            }
+          } else {
+            // Crowd square — bond determines effect
+            if (bond >= 2) {
+              cameoType = 'cheer';
+              cameoEnergyDelta = 10;
+              cameoText = pick(CAMEO_CHEER)(sqData.cameo, racer.name);
+              addBond(racer.name, sqData.cameo, 1);
+              popDelta(racer.name, 1);
+            } else if (bond <= -2) {
+              cameoType = 'heckle';
+              cameoEnergyDelta = -10;
+              cameoText = pick(CAMEO_HECKLE)(sqData.cameo, racer.name);
+              addBond(racer.name, sqData.cameo, -0.5);
+              popDelta(racer.name, -1);
+            } else {
+              cameoType = 'neutral';
+              cameoEnergyDelta = 0;
+              cameoText = pick(CAMEO_NEUTRAL)(sqData.cameo, racer.name);
+            }
+          }
+
+          racer.energy = clamp(racer.energy + cameoEnergyDelta, 0, 100);
+          cameoData = { activePlayer: sqData.cameo, bond, type: cameoType, energyDelta: cameoEnergyDelta, text: cameoText };
           if (!cameos[racer.position]) cameos[racer.position] = sqData.cameo;
         }
 
-        const threshold = 5.0;
-        challengeEnergyDelta = Math.round((challengeScore - threshold) * 2.5 * escalation);
+        const threshold = 6.5;
+        challengeEnergyDelta = Math.round((challengeScore - threshold) * 4.0 * escalation);
         racer.energy = clamp(racer.energy + challengeEnergyDelta, 0, 100);
 
         const isPass = challengeScore >= threshold;
@@ -480,12 +616,6 @@ export function simulateAftermayhem(ep) {
         challengeText = pick(chalTextPool)(racer.name, pr);
 
         ep.chalMemberScores[racer.name] = (ep.chalMemberScores[racer.name] || 0) + 3;
-
-        // Cameo bond change
-        if (cameoData) {
-          const bondDelta = isPass ? 0.5 : -0.5;
-          addBond(racer.name, cameoData.activePlayer, bondDelta);
-        }
 
         // Elimination check
         if (racer.energy <= 0) {
@@ -504,6 +634,7 @@ export function simulateAftermayhem(ep) {
         score: challengeScore, energyDelta: challengeEnergyDelta,
         energyAfter: racer.energy,
         isTrap, trapDamage, trapText, trapSurviveText,
+        trapBacktrack, trapBacktrackText,
         rollText, challengeText, dominationText: '',
         isWinner: false, koBeforeChallenge,
         cameo: cameoData,
@@ -616,9 +747,52 @@ export function simulateAftermayhem(ep) {
       }
     }
 
+    // ── Host Curveball (15% chance after round 2) ──
+    if (roundNum >= 3 && Math.random() < 0.15 && !gameOver) {
+      const curveballs = ['board-shuffle','energy-tax','second-wind','trap-reveal'];
+      const cbType = pick(curveballs);
+      let cbData = { type: cbType, text: '' };
+      if (cbType === 'board-shuffle') {
+        const swappable = board.filter((_, i) => i > 0 && i < board.length - 1 && !trapsSet.has(board[i].sq));
+        if (swappable.length >= 2) {
+          const [a, b] = swappable.sort(() => Math.random() - 0.5).slice(0, 2);
+          const aIdx = board.indexOf(a), bIdx = board.indexOf(b);
+          [board[aIdx], board[bIdx]] = [board[bIdx], board[aIdx]];
+          const tmpType = a.type; a.type = b.type; b.type = tmpType;
+          ['typeName','primary','secondary','callback','callbackEp','cameo'].forEach(k => { const t = a[k]; a[k] = b[k]; b[k] = t; });
+          cbData.text = pick(HOST_CURVEBALL['board-shuffle'])(a.sq, b.sq);
+          cbData.squares = [a.sq, b.sq];
+        }
+      } else if (cbType === 'energy-tax') {
+        racers.filter(r => r.alive).forEach(r => { r.energy = clamp(r.energy - 10, 0, 100); if (r.energy <= 0) { r.alive = false; r.koRound = roundNum; } });
+        cbData.text = pick(HOST_CURVEBALL['energy-tax'])();
+      } else if (cbType === 'second-wind') {
+        const last = [...racers].filter(r => r.alive).sort((a, b) => a.position - b.position || a.energy - b.energy)[0];
+        if (last) { last.energy = clamp(last.energy + 20, 0, 100); cbData.text = pick(HOST_CURVEBALL['second-wind'])(last.name); cbData.target = last.name; }
+      } else if (cbType === 'trap-reveal') {
+        const unrev = [...trapsSet].filter(sq => !revealedTraps.has(sq));
+        if (unrev.length > 0) { const sq = pick(unrev); revealedTraps.add(sq); cbData.text = pick(HOST_CURVEBALL['trap-reveal'])(sq); cbData.square = sq; }
+      }
+      if (cbData.text) roundData.hostEvents = [cbData];
+    }
+
     // Per-round survival bonus
     racers.filter(r => r.alive).forEach(r => {
       ep.chalMemberScores[r.name] = (ep.chalMemberScores[r.name] || 0) + 2;
+    });
+
+    // ── Fatigue Drain ──
+    racers.filter(r => r.alive).forEach(r => {
+      r.energy = clamp(r.energy - (roundNum >= 5 ? 8 : 5), 0, 100);
+      if (r.energy <= 0) {
+        r.alive = false;
+        r.koRound = roundNum;
+        popDelta(r.name, -1);
+        const fPr = pronouns(r.name);
+        const fA = arch(r.name);
+        const koPool = KO_REACTION[fA] || KO_REACTION.default;
+        roundData.eliminations.push({ name: r.name, square: r.position, energy: 0, text: pick(koPool)(r.name, fPr), round: roundNum });
+      }
     });
 
     rounds.push(roundData);
@@ -1190,7 +1364,7 @@ function _shell(content, ep, phaseCls, sidebarHtml) {
     tickerItems.push(`&#x2B25; DICE RANGE 1-3`);
     tickerItems.push(`&#x2B25; FIRST TO THE TROPHY CASE RETURNS!`);
   } else {
-    tickerItems.push(`&#x2B25; DICE RANGE: 1-3`, `&#x2B25; FIRST TO THE TROPHY CASE RETURNS!`, `&#x2B25; BOOBY TRAPS DRAIN 20 ENERGY`);
+    tickerItems.push(`&#x2B25; DICE RANGE: 1-3`, `&#x2B25; FIRST TO THE TROPHY CASE RETURNS!`, `&#x2B25; BOOBY TRAPS DRAIN 30 ENERGY`);
   }
 
   const sidebar = sidebarHtml || `<div class="am-sidebar"><div id="am-sidebar-inner">${_buildSidebarContent(ep, phaseCls)}</div></div>`;
@@ -1543,7 +1717,7 @@ export function rpBuildAftermayhemBoard(ep) {
       // Trap card
       if (turn.isTrap && turn.trapText) {
         revTraps.add(turn.newPos);
-        const trapEnergy = turn.koBeforeChallenge ? 0 : (energies[turn.player] || 100) - 20;
+        const trapEnergy = turn.koBeforeChallenge ? 0 : (energies[turn.player] || 100) - 30;
         energies[turn.player] = clamp(trapEnergy, 0, 100);
 
         cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
@@ -1556,7 +1730,7 @@ export function rpBuildAftermayhemBoard(ep) {
             <div class="am-card-body">${turn.trapText}</div>
             <div class="am-card-foot">
               <span>TRAP DAMAGE</span>
-              <span class="am-energy-pill drain">&#x2212;20 ENERGY</span>
+              <span class="am-energy-pill drain">&#x2212;30 ENERGY</span>
             </div>
             ${!turn.koBeforeChallenge ? `<div class="am-card-body" style="margin-top:6px;font-style:italic;color:#999;">${turn.trapSurviveText}</div>` : ''}
             <div class="am-card-energy">
@@ -1574,6 +1748,24 @@ export function rpBuildAftermayhemBoard(ep) {
 
         snapshots.push({ positions: {...positions}, energies: {...energies}, ko: new Set(ko), koRounds: {...koRounds}, revealedTraps: new Set(revTraps), lastDice: turn.diceRoll, lastPlayer: turn.player, activeSquare: turn.newPos, winner: null });
         stepIdx++;
+
+        // Trap backtrack card
+        if (turn.trapBacktrack > 0) {
+          positions[turn.player] = Math.max(1, positions[turn.player] - turn.trapBacktrack);
+          cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
+            <div class="am-card trap" style="border-left-color:var(--am-red);">
+              <div class="am-card-head">
+                <div class="am-card-avatar" style="border-color:var(--am-red);"><img src="assets/avatars/${slug(turn.player)}.png" onerror="this.style.display='none'" alt="${turn.player}"></div>
+                <span class="am-card-who" style="color:var(--am-red);">${turn.player}</span>
+                <span class="am-card-tag tag-trap">KNOCKED BACK!</span>
+              </div>
+              <div class="am-card-body" style="color:var(--am-red);font-weight:600;">${turn.trapBacktrackText}</div>
+              <div class="am-card-foot"><span>&#x2190; Back to Sq ${positions[turn.player]}</span></div>
+            </div>
+          </div>`;
+          snapshots.push({ positions: {...positions}, energies: {...energies}, ko: new Set(ko), koRounds: {...koRounds}, revealedTraps: new Set(revTraps), lastDice: null, lastPlayer: turn.player, activeSquare: positions[turn.player], winner: null });
+          stepIdx++;
+        }
       }
 
       // KO card (from trap)
@@ -1600,16 +1792,31 @@ export function rpBuildAftermayhemBoard(ep) {
         // Skip to next turn — no challenge
       }
 
-      // Cameo card
+      // Cameo video link card
       if (turn.cameo && !turn.koBeforeChallenge) {
+        const cType = turn.cameo.type || 'neutral';
+        const cText = turn.cameo.text || '';
+        const cDelta = turn.cameo.energyDelta || 0;
+        const tagColors = {
+          'cheer': 'background:rgba(16,185,129,.15);color:var(--am-green);border-color:var(--am-green);',
+          'heckle': 'background:rgba(255,60,60,.15);color:var(--am-red);border-color:var(--am-red);',
+          'roast-win': 'background:rgba(255,209,60,.15);color:var(--am-gold);border-color:var(--am-gold);',
+          'roast-fail': 'background:rgba(255,60,60,.15);color:var(--am-red);border-color:var(--am-red);',
+          'neutral': 'background:rgba(255,255,255,.08);color:#aaa;border-color:#555;',
+        };
+        const tagLabels = { 'cheer': 'VIDEO CHEER', 'heckle': 'VIDEO HECKLE', 'roast-win': 'ROAST CLAP-BACK', 'roast-fail': 'ROASTED', 'neutral': 'VIDEO LINK' };
+
+        if (cDelta !== 0) energies[turn.player] = clamp((energies[turn.player] || 100) + cDelta, 0, 100);
+
         cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
           <div class="am-card cameo">
             <div class="am-card-head">
               <div class="am-card-avatar" style="border-color:var(--am-neon);"><img src="assets/avatars/${slug(turn.cameo.activePlayer)}.png" onerror="this.style.display='none'" alt="${turn.cameo.activePlayer}"></div>
-              <span class="am-card-who">Guest Judge: ${turn.cameo.activePlayer}</span>
-              <span class="am-card-tag tag-cameo">ACTIVE PLAYER</span>
+              <span class="am-card-who">${turn.cameo.activePlayer} via Video</span>
+              <span class="am-card-tag" style="${tagColors[cType] || tagColors.neutral}">${tagLabels[cType] || 'VIDEO LINK'}</span>
             </div>
-            <div class="am-card-body">${pick(CAMEO_TEXT)(turn.cameo.activePlayer, turn.player)}</div>
+            <div class="am-card-body">${cText}</div>
+            ${cDelta !== 0 ? `<div class="am-card-foot"><span>${turn.player}</span><span class="am-energy-pill ${cDelta > 0 ? 'gain' : 'drain'}">${cDelta > 0 ? '+' : ''}${cDelta} ENERGY</span></div>` : ''}
           </div>
         </div>`;
         snapshots.push({ positions: {...positions}, energies: {...energies}, ko: new Set(ko), koRounds: {...koRounds}, revealedTraps: new Set(revTraps), lastDice: null, lastPlayer: null, activeSquare: turn.newPos, winner: null });
@@ -1723,6 +1930,20 @@ export function rpBuildAftermayhemBoard(ep) {
       } else if (se.type === 'peanut-gallery') {
         tagLabel = 'PEANUT GALLERY';
         avatarColor = 'rgba(255,255,255,.3)';
+      } else if (se.type === 'collision-rivalry') {
+        avatarColor = 'var(--am-red)';
+        tagLabel = 'COLLISION!';
+        // Update energy tracking for both
+        am.racers.forEach(r => { if (se.players.includes(r.name)) energies[r.name] = clamp((energies[r.name] || 100) - 8, 0, 100); });
+      } else if (se.type === 'collision-alliance') {
+        avatarColor = 'var(--am-green)';
+        tagLabel = 'ALLIANCE BOOST';
+        am.racers.forEach(r => { if (se.players.includes(r.name)) energies[r.name] = clamp((energies[r.name] || 100) + 8, 0, 100); });
+      } else if (se.type === 'collision-bump') {
+        avatarColor = 'var(--am-neon)';
+        tagLabel = 'BOARD BUMP';
+        energies[sePlayer] = clamp((energies[sePlayer] || 100) + 5, 0, 100);
+        energies[seTarget] = clamp((energies[seTarget] || 100) - 5, 0, 100);
       }
 
       cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
@@ -1733,12 +1954,66 @@ export function rpBuildAftermayhemBoard(ep) {
             <span class="am-card-tag tag-social">${tagLabel}</span>
           </div>
           <div class="am-card-body">${se.text}</div>
-          ${se.bondDelta !== 0 ? `<div class="am-card-foot"><span>${sePlayer} &#x2192; ${seTarget}: Bond ${se.bondDelta > 0 ? '+' : ''}${se.bondDelta}</span>${se.energyDelta !== 0 ? `<span class="am-energy-pill ${se.energyDelta > 0 ? 'gain' : 'drain'}">${seTarget} ${se.energyDelta > 0 ? '+' : ''}${se.energyDelta} ENERGY</span>` : ''}</div>` : ''}
+          ${se.bondDelta !== 0 || se.energyDelta !== 0 ? `<div class="am-card-foot"><span>${sePlayer} &#x2192; ${seTarget}${se.bondDelta !== 0 ? `: Bond ${se.bondDelta > 0 ? '+' : ''}${se.bondDelta}` : ''}</span>${se.energyDelta !== 0 ? `<span class="am-energy-pill ${se.energyDelta > 0 ? 'gain' : 'drain'}">${se.energyDelta > 0 ? '+' : ''}${se.energyDelta} ENERGY</span>` : ''}</div>` : ''}
         </div>
       </div>`;
       snapshots.push({ positions: {...positions}, energies: {...energies}, ko: new Set(ko), koRounds: {...koRounds}, revealedTraps: new Set(revTraps), lastDice: null, lastPlayer: null, activeSquare: null, winner: am.winner });
       stepIdx++;
     });
+
+    // Host curveball cards
+    (rd.hostEvents || []).forEach(he => {
+      let cardStyle = '';
+      if (he.type === 'energy-tax') cardStyle = 'border-left-color:var(--am-red);';
+      else if (he.type === 'second-wind') cardStyle = 'border-left-color:var(--am-green);';
+      else if (he.type === 'board-shuffle') cardStyle = 'border-left-color:var(--am-neon);';
+      else if (he.type === 'trap-reveal') cardStyle = 'border-left-color:var(--am-gold);';
+
+      const hostSlug2 = seasonConfig?.hostSlug || 'chris';
+      cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
+        <div class="am-card" style="border-left:4px solid var(--am-gold);background:rgba(255,209,60,.03);${cardStyle}">
+          <div class="am-card-head">
+            <div class="am-card-avatar" style="border-color:var(--am-gold);"><img src="assets/avatars/${hostSlug2}.png" onerror="this.style.display='none'" alt="Host"></div>
+            <span class="am-card-who" style="color:var(--am-gold);">HOST CURVEBALL</span>
+            <span class="am-card-tag" style="background:rgba(255,209,60,.15);color:var(--am-gold);border-color:var(--am-gold);">${he.type.replace(/-/g,' ').toUpperCase()}</span>
+          </div>
+          <div class="am-card-body">${he.text}</div>
+        </div>
+      </div>`;
+
+      if (he.type === 'energy-tax') {
+        am.racers.forEach(r => { if (!ko.has(r.name)) energies[r.name] = clamp((energies[r.name] || 100) - 10, 0, 100); });
+      } else if (he.type === 'second-wind' && he.target) {
+        energies[he.target] = clamp((energies[he.target] || 100) + 20, 0, 100);
+      } else if (he.type === 'trap-reveal' && he.square) {
+        revTraps.add(he.square);
+      }
+
+      snapshots.push({ positions: {...positions}, energies: {...energies}, ko: new Set(ko), koRounds: {...koRounds}, revealedTraps: new Set(revTraps), lastDice: null, lastPlayer: null, activeSquare: null, winner: null });
+      stepIdx++;
+    });
+
+    // Fatigue drain card
+    if (ri >= 1) {
+      const fatigueDmg = ri >= 4 ? 8 : 5;
+      const aliveNames = am.racers.filter(r => !ko.has(r.name)).map(r => r.name);
+      aliveNames.forEach(n => { energies[n] = clamp((energies[n] || 100) - fatigueDmg, 0, 100); });
+
+      const fatigueKOs = aliveNames.filter(n => energies[n] <= 0);
+      fatigueKOs.forEach(n => { ko.add(n); koRounds[n] = rd.roundNum; });
+
+      cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
+        <div class="am-card" style="border-left:3px solid rgba(255,60,138,.3);background:rgba(255,60,138,.03);">
+          <div class="am-card-head">
+            <span class="am-card-who" style="color:var(--am-pink);font-size:11px;">FATIGUE DRAIN</span>
+            <span class="am-card-tag" style="background:rgba(255,60,138,.1);color:var(--am-pink);border-color:rgba(255,60,138,.3);">-${fatigueDmg} HP ALL</span>
+          </div>
+          <div class="am-card-body" style="font-size:11px;color:#888;">The board takes its toll. All racers lose ${fatigueDmg} HP from exhaustion.${fatigueKOs.length > 0 ? ` <span style="color:var(--am-red);font-weight:700;">${fatigueKOs.join(', ')} ${fatigueKOs.length === 1 ? 'collapses' : 'collapse'} from fatigue!</span>` : ''}</div>
+        </div>
+      </div>`;
+      snapshots.push({ positions: {...positions}, energies: {...energies}, ko: new Set(ko), koRounds: {...koRounds}, revealedTraps: new Set(revTraps), lastDice: null, lastPlayer: null, activeSquare: null, winner: null });
+      stepIdx++;
+    }
 
     // Last standing check — show winner card
     const aliveAfterRound = am.racers.filter(r => !ko.has(r.name));

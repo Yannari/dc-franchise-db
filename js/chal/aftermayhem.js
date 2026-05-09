@@ -218,7 +218,10 @@ const TRAP_SURVIVE = [
 const DICE_ROLL = {
   1: [(n,pr) => `${n} rolls a 1. One square forward. The crowd groans.`, (n,pr) => `A measly 1 for ${n}. "${pr.Sub === 'They' ? 'They\'re' : pr.Sub + '\'s'} crawling out there."`, (n,pr) => `${n} rolls... 1. "That's barely movement!" the host laughs.`, (n,pr) => `The die tumbles to 1. ${n} inches forward. "Come ON."`, (n,pr) => `One step. That's all ${n} gets. The Trophy Case feels miles away.`],
   2: [(n,pr) => `${n} rolls a 2. Solid. Not great, not terrible. Two squares ahead.`, (n,pr) => `A 2 for ${n}. Steady progress. ${pr.Sub} advances two squares.`, (n,pr) => `${n}'s die lands on 2. "I'll take it." Two squares forward.`, (n,pr) => `Two squares for ${n}. The middle road. The safe road.`, (n,pr) => `${n} rolls 2. Two hops down the board. Keep moving.`],
-  3: [(n,pr) => `${n} rolls a 3! Maximum movement! Three squares ahead plus a +5 energy boost!`, (n,pr) => `THREE! ${n} pumps ${pr.posAdj} fist. Best possible roll! Three squares AND bonus energy!`, (n,pr) => `${n}'s die lands on 3. The golden roll! Three squares forward. The crowd erupts!`, (n,pr) => `Max roll for ${n}! Three squares ahead and a surge of energy. THIS is momentum!`, (n,pr) => `The die shows 3. ${n} grins. "That's what I'm talking about!" Three squares. +5 energy.`],
+  3: [(n,pr) => `${n} rolls a 3. Three squares forward. Decent movement.`, (n,pr) => `A 3 for ${n}. ${pr.Sub} hops three squares ahead.`, (n,pr) => `${n}'s die shows 3. "Not bad." Three squares forward.`, (n,pr) => `Three squares for ${n}. Right in the middle. Could be worse.`],
+  4: [(n,pr) => `${n} rolls a 4! Four squares forward! Solid progress!`, (n,pr) => `A 4 for ${n}! ${pr.Sub} leaps four squares ahead. The crowd nods appreciatively.`, (n,pr) => `${n}'s die lands on 4. "Now we're moving!" Four squares forward.`, (n,pr) => `Four squares for ${n}. Above average. The Trophy Case feels closer.`],
+  5: [(n,pr) => `${n} rolls a 5! Five squares forward! Big movement!`, (n,pr) => `FIVE! ${n} surges five squares ahead. The gallery cheers!`, (n,pr) => `${n}'s die shows 5. "YES!" Five squares forward. Momentum is building!`, (n,pr) => `Five squares for ${n}! ${pr.Sub}'s flying across the board!`],
+  6: [(n,pr) => `${n} rolls a 6! MAXIMUM ROLL! Six squares forward plus a +5 energy boost!`, (n,pr) => `SIX! ${n} pumps ${pr.posAdj} fist. Best possible roll! Six squares AND bonus energy!`, (n,pr) => `${n}'s die lands on 6! The golden roll! Six squares forward! The crowd erupts!`, (n,pr) => `Max roll for ${n}! Six squares ahead and a surge of energy. THIS is momentum!`, (n,pr) => `The die shows 6! ${n} grins. "That's what I'm talking about!" Six squares. +5 energy.`],
 };
 
 // ── Video screen cameo narration ──
@@ -294,6 +297,9 @@ const COLLISION_BUMP = [
 // SIMULATION
 // ══════════════════════════════════════════════════════════════
 
+const BOARD_SQUARES = 24;
+const BOARD_FINISH = BOARD_SQUARES + 1; // square 25 = trophy case
+
 export function simulateAftermayhem(ep) {
   // Eligibility
   const eligible = (gs.eliminated || []).filter(n => !(gs.riPlayers || []).includes(n));
@@ -364,7 +370,7 @@ export function simulateAftermayhem(ep) {
     if (['awake-a-thon', 'sucky-outdoors', 'say-uncle'].includes(ct)) enduranceEps.push(i + 1);
   });
 
-  for (let sq = 1; sq <= 14; sq++) {
+  for (let sq = 1; sq <= BOARD_SQUARES; sq++) {
     // No adjacent same type
     const prevType = sq > 1 ? board[sq - 2]?.type : null;
     const available = typePool.filter(t => t.id !== prevType);
@@ -414,10 +420,10 @@ export function simulateAftermayhem(ep) {
     });
   }
 
-  // Booby traps (3-4 random, not sq 1 or 15 — sq indices 0..13, avoid index 0)
+  // Booby traps (5-7 random for the bigger board, avoid first square)
   const trapCandidates = board.filter((_, i) => i > 0).map((_, i) => i + 1);
   const shuffledTrapC = trapCandidates.sort(() => Math.random() - 0.5);
-  const trapCount = 3 + (Math.random() < 0.5 ? 1 : 0);
+  const trapCount = 5 + Math.floor(Math.random() * 3);
   const trapIndices = shuffledTrapC.slice(0, trapCount).map(i => board[i].sq);
   const trapsSet = new Set(trapIndices);
 
@@ -451,12 +457,12 @@ export function simulateAftermayhem(ep) {
       if (!racer.alive || gameOver) continue;
 
       // ── Dice Roll ──
-      const diceRoll = 1 + Math.floor(Math.random() * 3);
+      const diceRoll = 1 + Math.floor(Math.random() * 6);
       const oldPos = racer.position;
-      racer.position = Math.min(racer.position + diceRoll, 15);
+      racer.position = Math.min(racer.position + diceRoll, BOARD_FINISH);
 
-      // Energy bonus for rolling 3
-      if (diceRoll === 3) {
+      // Energy bonus for rolling 6
+      if (diceRoll === 6) {
         racer.energy = clamp(racer.energy + 5, 0, 100);
       }
 
@@ -464,7 +470,7 @@ export function simulateAftermayhem(ep) {
       const rollText = pick(DICE_ROLL[diceRoll])(racer.name, pr);
 
       // Find the board square data (0-indexed: position 1 = board[0])
-      const sqData = racer.position >= 1 && racer.position <= 14 ? board[racer.position - 1] : null;
+      const sqData = racer.position >= 1 && racer.position <= BOARD_SQUARES ? board[racer.position - 1] : null;
       const isTrap = trapsSet.has(racer.position);
       let trapDamage = 0;
       let trapText = '';
@@ -474,7 +480,7 @@ export function simulateAftermayhem(ep) {
       // ── Booby Trap ──
       let trapBacktrack = 0;
       let trapBacktrackText = '';
-      if (isTrap && racer.position < 15) {
+      if (isTrap && racer.position < BOARD_FINISH) {
         trapDamage = 30;
         revealedTraps.add(racer.position);
         const trapDrainMult = escalation;
@@ -501,8 +507,8 @@ export function simulateAftermayhem(ep) {
         }
       }
 
-      // ── Win Check (reached sq 15) ──
-      if (racer.position >= 15 && racer.alive) {
+      // ── Win Check (reached finish) ──
+      if (racer.position >= BOARD_FINISH && racer.alive) {
         raceWinner = racer.name;
         winCondition = 'finish';
         gameOver = true;
@@ -521,7 +527,7 @@ export function simulateAftermayhem(ep) {
       }
 
       // ── Same-Square Collision ──
-      if (racer.alive && !koBeforeChallenge && racer.position < 15) {
+      if (racer.alive && !koBeforeChallenge && racer.position < BOARD_FINISH) {
         const collision = racers.filter(r => r.alive && r.name !== racer.name && r.position === racer.position);
         if (collision.length > 0) {
           const target = collision[0];
@@ -1035,6 +1041,9 @@ function _setPips(val) {
     1: [0,0,0, 0,1,0, 0,0,0],
     2: [1,0,0, 0,0,0, 0,0,1],
     3: [1,0,0, 0,1,0, 0,0,1],
+    4: [1,0,1, 0,0,0, 1,0,1],
+    5: [1,0,1, 0,1,0, 1,0,1],
+    6: [1,0,1, 1,0,1, 1,0,1],
   };
   const pat = patterns[val] || patterns[1];
   const dots = pips.querySelectorAll('.am-pip');
@@ -1361,10 +1370,10 @@ function _shell(content, ep, phaseCls, sidebarHtml) {
     const low = am.racers?.filter(r => r.alive)?.sort((a, b) => a.finalEnergy - b.finalEnergy)?.[0];
     if (low && low.finalEnergy <= 30) tickerItems.push(`&#x2B25; ${low.name.toUpperCase()} DOWN TO ${low.finalEnergy} ENERGY`);
     am.revealedTraps?.forEach(sq => tickerItems.push(`&#x2B25; TRAP ON SQUARE ${sq}!`));
-    tickerItems.push(`&#x2B25; DICE RANGE 1-3`);
+    tickerItems.push(`&#x2B25; DICE RANGE 1-6`);
     tickerItems.push(`&#x2B25; FIRST TO THE TROPHY CASE RETURNS!`);
   } else {
-    tickerItems.push(`&#x2B25; DICE RANGE: 1-3`, `&#x2B25; FIRST TO THE TROPHY CASE RETURNS!`, `&#x2B25; BOOBY TRAPS DRAIN 30 ENERGY`);
+    tickerItems.push(`&#x2B25; DICE RANGE: 1-6`, `&#x2B25; FIRST TO THE TROPHY CASE RETURNS!`, `&#x2B25; BOOBY TRAPS DRAIN 30 ENERGY`);
   }
 
   const sidebar = sidebarHtml || `<div class="am-sidebar"><div id="am-sidebar-inner">${_buildSidebarContent(ep, phaseCls)}</div></div>`;
@@ -1609,7 +1618,7 @@ export function rpBuildAftermayhemBoard(ep) {
     // Start as normal — traps reveal dynamically
     boardTrackHtml += `<div class="am-sq normal" data-sq="${sq.sq}"><div class="am-sq-num">${sq.sq}</div><div class="am-sq-icon">${_icon(sq.type)}</div><div class="am-sq-label">${sq.callback || sq.typeName}</div></div>`;
   });
-  boardTrackHtml += `<div class="am-sq finish" data-sq="15"><div class="am-sq-num">&#9733;</div><div class="am-sq-icon">${_icon('trophy')}</div><div class="am-sq-label">TROPHY</div></div>`;
+  boardTrackHtml += `<div class="am-sq finish" data-sq="${BOARD_FINISH}"><div class="am-sq-num">&#9733;</div><div class="am-sq-icon">${_icon('trophy')}</div><div class="am-sq-label">TROPHY</div></div>`;
 
   // Tokens — initially stacked at START square with stagger
   let tokensHtml = '';
@@ -1626,7 +1635,7 @@ export function rpBuildAftermayhemBoard(ep) {
   });
 
   const boardMapHtml = `<div class="am-board" id="am-game-board">
-    <div class="am-board-label">GAME BOARD &#8212; ROLL 1-3</div>
+    <div class="am-board-label">GAME BOARD &#8212; ROLL 1-6</div>
     <div class="am-dice-zone">
       <div class="am-dice-label">DICE</div>
       <div class="am-dice-box">
@@ -1706,11 +1715,11 @@ export function rpBuildAftermayhemBoard(ep) {
             <span class="am-card-tag tag-roll">ROLLED ${turn.diceRoll}</span>
           </div>
           <div class="am-card-body">${turn.rollText}</div>
-          <div class="am-card-foot"><span>&#x2192; Advances from Sq ${turn.oldPos} to Sq ${turn.newPos}</span>${turn.diceRoll === 3 ? '<span class="am-energy-pill gain">+5 ENERGY</span>' : ''}</div>
+          <div class="am-card-foot"><span>&#x2192; Advances from Sq ${turn.oldPos} to Sq ${turn.newPos}</span>${turn.diceRoll === 6 ? '<span class="am-energy-pill gain">+5 ENERGY</span>' : ''}</div>
         </div>
       </div>`;
 
-      if (turn.diceRoll === 3) energies[turn.player] = clamp((energies[turn.player] || 100) + 5, 0, 100);
+      if (turn.diceRoll === 6) energies[turn.player] = clamp((energies[turn.player] || 100) + 5, 0, 100);
       snapshots.push({ positions: {...positions}, energies: {...energies}, ko: new Set(ko), koRounds: {...koRounds}, revealedTraps: new Set(revTraps), lastDice: turn.diceRoll, lastPlayer: turn.player, activeSquare: turn.newPos, winner: null });
       stepIdx++;
 
@@ -1888,14 +1897,14 @@ export function rpBuildAftermayhemBoard(ep) {
 
       // Winner card (reached finish)
       if (turn.isWinner) {
-        positions[turn.player] = 15;
+        positions[turn.player] = BOARD_FINISH;
         cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
           <div class="am-round" style="margin-top:16px;">
             <div class="am-round-num">FINISH!</div>
             <div class="am-round-sub">A player has reached the Trophy Case!</div>
           </div>
         </div>`;
-        snapshots.push({ positions: {...positions}, energies: {...energies}, ko: new Set(ko), koRounds: {...koRounds}, revealedTraps: new Set(revTraps), lastDice: turn.diceRoll, lastPlayer: turn.player, activeSquare: 15, winner: turn.player });
+        snapshots.push({ positions: {...positions}, energies: {...energies}, ko: new Set(ko), koRounds: {...koRounds}, revealedTraps: new Set(revTraps), lastDice: turn.diceRoll, lastPlayer: turn.player, activeSquare: BOARD_FINISH, winner: turn.player });
         stepIdx++;
       }
     });
@@ -2073,7 +2082,7 @@ export function rpBuildAftermayhemFinish(ep) {
   const totalRounds = am.rounds.length;
   const wColor = TOKEN_COLORS[am.racers.findIndex(r => r.name === winner) % TOKEN_COLORS.length];
 
-  const conditionText = am.winCondition === 'finish' ? `Sq 15 reached` : am.winCondition === 'last-standing' ? 'Last player standing' : 'Failsafe winner';
+  const conditionText = am.winCondition === 'finish' ? `Sq ${BOARD_FINISH} reached` : am.winCondition === 'last-standing' ? 'Last player standing' : 'Failsafe winner';
 
   // Confetti spans
   const confettiColors = ['var(--am-gold)', 'var(--am-pink)', 'var(--am-cyan)', 'var(--am-violet)', 'var(--am-neon)', 'var(--am-orange)'];

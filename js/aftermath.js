@@ -3,6 +3,7 @@ import { gs, seasonConfig, players } from './core.js';
 import { pStats, pronouns } from './players.js';
 import { getBond, addBond } from './bonds.js';
 import { buildNextEpQs } from './text-backlog.js';
+import { simulateAftermayhem } from './chal/aftermayhem.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   rpPortrait, vpArchLabel
@@ -1112,6 +1113,21 @@ export function generateAftermathShow(ep) {
     }
   }
 
+  // ── AFTERMAYHEM BOARD GAME (when twist is active) ──
+  let aftermayhemData = null;
+  if (ep.isAftermayhem && !gs._aftermayhemUsed) {
+    const _amEligible = gs.eliminated.filter(n => !gs.riPlayers?.includes(n) && !gs.activePlayers.includes(n));
+    if (_amEligible.length >= 6) {
+      simulateAftermayhem(ep);
+      aftermayhemData = ep.aftermath?.aftermayhem || null;
+      // If aftermayhem fired, skip fan vote — the board game IS the return mechanism
+      if (aftermayhemData) {
+        fanVote = null;
+        gs.pendingFanVoteReturn = null;
+      }
+    }
+  }
+
   // ── REUNION DISCUSSION (finale only) — deep group conversations ──
   let reunionDiscussion = null;
   if (isReunion) {
@@ -1321,7 +1337,7 @@ export function generateAftermathShow(ep) {
   ep.aftermath = {
     number: aftermathNum, isReunion,
     interviewees: [...interviewees], peanutGallery: [...peanutGallery],
-    interviews, truthOrAnvil, unseenFootage, fanCall, fanVote, aftermathMoments: aftermathMoment, reunionDiscussion, awards, seasonRating
+    interviews, truthOrAnvil, unseenFootage, fanCall, fanVote, aftermayhem: aftermayhemData, aftermathMoments: aftermathMoment, reunionDiscussion, awards, seasonRating
   };
   gs.lastAftermathEp = curEp;
   if (!gs.aftermathHistory) gs.aftermathHistory = [];

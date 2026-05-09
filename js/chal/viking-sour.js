@@ -161,6 +161,26 @@ const WHALE_SIGHT_TEXT = [
   (tribe) => `${tribe} sails past a pod of whales. The sounds echo through the hull. The crew rows in silence, humbled.`,
 ];
 
+const SAIL_HERO_TEXT = [
+  (n, pr) => `${n} takes the helm and steers through a narrow ice gap. Nerves of steel.`,
+  (n, pr) => `${n} spots a faster channel between the floes and redirects the ship. Smart sailing.`,
+  (n, pr) => `${n} rows with everything ${pr.sub} has. The oar bends. The ship surges.`,
+  (n, pr) => `${n} climbs the mast to scout ahead. "${pr.Sub} sees clear water to starboard!"`,
+  (n, pr) => `${n} bails water while rowing. Somehow ${pr.sub} does both. Superhuman effort.`,
+  (n, pr) => `${n} leans into each stroke like ${pr.posAdj} life depends on it. The ship responds.`,
+  (n, pr) => `${n} takes the rudder and carves a perfect line through the ice field.`,
+  (n, pr) => `${n} catches a rogue wave at the perfect angle. The ship shoots forward.`,
+];
+
+const SAIL_STRUGGLE_TEXT = [
+  (n, pr) => `${n}'s oar catches on ice and snaps. ${pr.Sub} grabs a spare but time is lost.`,
+  (n, pr) => `${n} slips on the frozen deck and crashes into the mast. ${pr.Sub} hobbles back to the oar.`,
+  (n, pr) => `${n}'s hands are too numb to grip. ${pr.Sub} blows on them desperately between strokes.`,
+  (n, pr) => `${n} misjudges the current and steers into a dead end. The crew has to backtrack.`,
+  (n, pr) => `${n} freezes up at the tiller. The ship drifts. Someone else has to take over.`,
+  (n, pr) => `A wave slams the deck and sweeps ${n}'s feet out. ${pr.Sub} goes sliding into the rail.`,
+];
+
 const ALLIANCE_WHISPER_TEXT = [
   (a, b) => `${a} and ${b} huddle at the stern while the others row. Words are exchanged. A deal is forming.`,
   (a, b) => `${a} leans toward ${b} between strokes. "After this... we need to talk." ${b} nods.`,
@@ -334,6 +354,14 @@ const MUTINY_TEXT = [
   (n, tribe) => `"I'm taking over!" ${n} announces. Nobody follows. The mutiny dies on the deck.`,
 ];
 
+const MUTINY_SUCCESS_TEXT = [
+  (n, tribe) => `${n} seizes control of ${tribe}'s ship! The old captain is shoved aside. New orders ring out.`,
+  (n, tribe) => `MUTINY! ${n} takes the helm of ${tribe}'s longship. The crew falls in line. This ship has a new captain.`,
+  (n, tribe) => `${n} rips the tiller from the captain's hands. "MY ship now." ${tribe} sails under new command.`,
+  (n, tribe) => `The crew sides with ${n}. ${tribe}'s captain steps down. The mutineer takes the wheel. New era.`,
+  (n, tribe) => `${n} calls for a vote on the deck. The tribe backs ${pronouns(n).obj}. ${tribe} has a new leader mid-battle.`,
+];
+
 const CANNON_SABOTAGE_TEXT = [
   (n, target) => `${n} jams something into ${target}'s cannon barrel when nobody's looking. It won't fire next round.`,
   (n, target) => `Sabotage! ${n} sabotages ${target}'s cannon during the chaos. The mechanism locks.`,
@@ -438,9 +466,6 @@ export function simulateVikingSour(ep) {
   const allActive = tribeData.flatMap(t => t.members);
   allActive.forEach(n => { ep.chalMemberScores[n] = 0; });
 
-  const tribeOf = {};
-  tribeData.forEach(t => t.members.forEach(m => { tribeOf[m] = t.name; }));
-
   // ═══════════════════════════════════════════════
   // PHASE 1: BLUEPRINT ASSEMBLY
   // ═══════════════════════════════════════════════
@@ -459,9 +484,20 @@ export function simulateVikingSour(ep) {
   // Study rounds — accumulate clarity
   const MAX_STUDY_ROUNDS = 5;
   const eurekaUsed = new Set();
+  const tribeEurekaCount = {};
+  const MAX_EUREKAS_PER_TRIBE = 2;
+  tribeData.forEach(t => { tribeEurekaCount[t.name] = 0; });
   for (let round = 0; round < MAX_STUDY_ROUNDS; round++) {
     tribeData.forEach(t => {
       if (tribeClarity[t.name] >= 100) return;
+
+      // Eureka candidate: pick 1 best mental+intuition member per round (caps tribe size advantage)
+      const eurekaCandidate = tribeEurekaCount[t.name] < MAX_EUREKAS_PER_TRIBE
+        ? t.members.filter(n => !eurekaUsed.has(n))
+            .map(n => ({ name: n, score: pStats(n).mental + pStats(n).intuition + noise(2.5) }))
+            .sort((a, b) => b.score - a.score)[0] || null
+        : null;
+
       t.members.forEach(n => {
         const s = pStats(n);
         const pr = pronouns(n);
@@ -470,9 +506,10 @@ export function simulateVikingSour(ep) {
         tribeClarity[t.name] = clamp(tribeClarity[t.name] + clarityGain / t.members.length, 0, 100);
         ep.chalMemberScores[n] += Math.round(fragQuality * 0.5);
 
-        // Eureka moment — rare breakthrough (1 per player max, high threshold)
-        if (!eurekaUsed.has(n) && s.mental + s.intuition + noise(2.5) > 15 && Math.random() < 0.5) {
+        // Eureka: only the round's best candidate gets a shot (1 attempt per tribe per round)
+        if (eurekaCandidate && eurekaCandidate.name === n && eurekaCandidate.score > 15 && Math.random() < 0.5) {
           eurekaUsed.add(n);
+          tribeEurekaCount[t.name]++;
           tribeClarity[t.name] = clamp(tribeClarity[t.name] + 25 / t.members.length, 0, 100);
           ep.chalMemberScores[n] += 10;
           popDelta(n, 2);
@@ -634,10 +671,8 @@ export function simulateVikingSour(ep) {
     tribeBuildQuality[t.name] = rawQuality;
     tribeAssemblyDone[t.name] = true;
 
-    // Boat HP from build quality
-    if (rawQuality >= 80) tribeBoatHP[t.name] = 100;
-    else if (rawQuality >= 50) tribeBoatHP[t.name] = 75;
-    else tribeBoatHP[t.name] = 50;
+    // Boat HP from build quality — scaled high so naval battles last 5-8 rounds
+    tribeBoatHP[t.name] = clamp(Math.round(rawQuality * 25), 150, 250);
   });
 
   // Determine P1 winner by clarity + build quality
@@ -652,6 +687,9 @@ export function simulateVikingSour(ep) {
     ep.chalMemberScores[n] += 5;
   });
 
+  // Snapshot Phase 1 HP before Phase 2/3 mutate tribeBoatHP
+  const phase1BoatHP = { ...tribeBoatHP };
+
   // ═══════════════════════════════════════════════
   // PHASE 2: LAUNCH & SAIL
   // ═══════════════════════════════════════════════
@@ -660,28 +698,31 @@ export function simulateVikingSour(ep) {
   const tribeSailProgress = {};
   let arrivalOrder = [];
 
+  const iceBreakUsedTexts = new Set();
   tribeData.forEach(t => {
     tribeSailProgress[t.name] = 0;
 
-    // Launch phase
-    let launchTotal = 0;
-    const launchThreshold = tribeBoatHP[t.name] >= 100 ? 30 : tribeBoatHP[t.name] >= 75 ? 40 : 50;
-    t.members.forEach(n => {
-      const s = pStats(n);
-      const pr = pronouns(n);
-      const launchScore = s.physical * 0.5 + s.endurance * 0.3 + noise(2.5);
-      launchTotal += launchScore;
-      if (Math.random() < 0.4) {
-        phase2Events.push({
-          type: 'launch', player: n, tribe: t.name,
-          text: pick(LAUNCH_TEXT)(n, pr),
-          score: 0, badge: 'LAUNCH', badgeClass: 'sail'
-        });
-      }
+    // Launch phase — pick 2 best pushers (normalize tribe size)
+    const launchCandidates = t.members
+      .map(n => ({ name: n, score: pStats(n).physical * 0.5 + pStats(n).endurance * 0.3 + noise(2.5) }))
+      .sort((a, b) => b.score - a.score);
+    const pushers = launchCandidates.slice(0, 2);
+    const launchTotal = pushers.reduce((s, p) => s + p.score, 0);
+    const hpBonus = tribeBoatHP[t.name] >= 230 ? 3 : tribeBoatHP[t.name] >= 180 ? 1.5 : 0;
+    const launchSuccess = (launchTotal + hpBonus) > 9 + noise(2);
+
+    pushers.forEach(p => {
+      const memberScore = clamp(Math.round(p.score * 0.6), 1, 4);
+      ep.chalMemberScores[p.name] += memberScore;
+      phase2Events.push({
+        type: 'launch', player: p.name, tribe: t.name,
+        text: pick(LAUNCH_TEXT)(p.name, pronouns(p.name)),
+        score: memberScore, badge: 'LAUNCH', badgeClass: 'sail'
+      });
     });
 
-    const launchSuccess = (launchTotal / t.members.length) > (launchThreshold / t.members.length * 0.6);
     if (!launchSuccess) {
+      tribeSailProgress[t.name] -= 3;
       phase2Events.push({
         type: 'launchStall', tribe: t.name,
         text: `${t.name}'s ship gets stuck in the sand! The crew scrambles to free it. Precious time lost.`,
@@ -699,9 +740,16 @@ export function simulateVikingSour(ep) {
     const icePr = pronouns(iceBreaker.name);
     if (iceScore > 12) {
       ep.chalMemberScores[iceBreaker.name] += 8;
+      // Avoid text repetition across tribes
+      let iceText;
+      for (let attempt = 0; attempt < 8; attempt++) {
+        iceText = pick(ICE_BREAK_SUCCESS_TEXT)(iceBreaker.name, icePr);
+        if (!iceBreakUsedTexts.has(iceText) || attempt >= 7) break;
+      }
+      iceBreakUsedTexts.add(iceText);
       phase2Events.push({
         type: 'iceBreakSuccess', player: iceBreaker.name, tribe: t.name,
-        text: pick(ICE_BREAK_SUCCESS_TEXT)(iceBreaker.name, icePr),
+        text: iceText,
         score: 8, badge: 'ICE BREAK', badgeClass: 'sail'
       });
     } else {
@@ -713,15 +761,40 @@ export function simulateVikingSour(ep) {
       });
     }
 
-    // 3-segment sailing
+    // 3-segment sailing with individual player moments
     for (let seg = 0; seg < 3; seg++) {
       const endAvg = t.members.reduce((s, n) => s + pStats(n).endurance, 0) / t.members.length;
       const physAvg = t.members.reduce((s, n) => s + pStats(n).physical, 0) / t.members.length;
       const bq = (tribeBuildQuality[t.name] || 50) / 10;
-      const segSpeed = endAvg * 0.4 + physAvg * 0.3 + bq * 0.3 + noise(2);
+      const hpFactor = clamp(tribeBoatHP[t.name] / 250, 0.6, 1.0);
+      const segSpeed = (endAvg * 0.4 + physAvg * 0.3 + bq * 0.3 + noise(2)) * hpFactor;
       tribeSailProgress[t.name] += Math.max(0, segSpeed);
 
-      if (Math.random() < 0.5) {
+      // Individual player moment each segment (hero or struggle)
+      const segPlayer = t.members[seg % t.members.length];
+      const sp = pStats(segPlayer);
+      const sailCheck = sp.endurance * 0.4 + sp.physical * 0.3 + noise(2.5);
+      if (sailCheck > 5) {
+        const heroScore = clamp(Math.round(sailCheck * 0.6), 2, 5);
+        ep.chalMemberScores[segPlayer] += heroScore;
+        tribeSailProgress[t.name] += 1.5;
+        phase2Events.push({
+          type: 'sailHero', player: segPlayer, tribe: t.name, segment: seg,
+          text: pick(SAIL_HERO_TEXT)(segPlayer, pronouns(segPlayer)),
+          score: heroScore, badge: 'HELM', badgeClass: 'sail'
+        });
+      } else {
+        ep.chalMemberScores[segPlayer] -= 2;
+        tribeSailProgress[t.name] -= 1;
+        phase2Events.push({
+          type: 'sailStruggle', player: segPlayer, tribe: t.name, segment: seg,
+          text: pick(SAIL_STRUGGLE_TEXT)(segPlayer, pronouns(segPlayer)),
+          score: -2, badge: 'STRUGGLE', badgeClass: 'chaos'
+        });
+      }
+
+      // Tribe-level sail card (50% chance, shows overall progress)
+      if (Math.random() < 0.4) {
         const segScore = clamp(Math.round(segSpeed * 0.5), 2, 5);
         t.members.forEach(n => { ep.chalMemberScores[n] += Math.round(segScore / t.members.length); });
         phase2Events.push({
@@ -731,47 +804,10 @@ export function simulateVikingSour(ep) {
         });
       }
 
-      // Wind event (1 per segment)
-      const windRoll = Math.random();
-      if (windRoll < 0.3) {
-        // Favorable wind
-        tribeSailProgress[t.name] += 5;
-        phase2Events.push({
-          type: 'wind', tribe: t.name, segment: seg,
-          text: pick(WIND_FAVORABLE_TEXT)(t.name),
-          badge: 'TAILWIND', badgeClass: 'sail'
-        });
-      } else if (windRoll < 0.5) {
-        // Ice collision
-        const dmg = 5 + Math.floor(Math.random() * 6);
-        tribeBoatHP[t.name] = Math.max(0, tribeBoatHP[t.name] - dmg);
-        phase2Events.push({
-          type: 'iceCollision', tribe: t.name, segment: seg, damage: dmg,
-          text: pick(ICE_COLLISION_TEXT)(t.name, dmg),
-          badge: `−${dmg} HP`, badgeClass: 'chaos'
-        });
-      } else if (windRoll < 0.65) {
-        // Current drag
-        tribeSailProgress[t.name] -= 3;
-        phase2Events.push({
-          type: 'current', tribe: t.name, segment: seg,
-          text: pick(CURRENT_DRAG_TEXT)(t.name),
-          badge: 'DRAGGED', badgeClass: 'chaos'
-        });
-      } else if (windRoll < 0.75) {
-        // Whale sighting (morale)
-        t.members.forEach(n => { addBond(n, t.members.find(m => m !== n) || n, 0.5); });
-        phase2Events.push({
-          type: 'whale', tribe: t.name, segment: seg,
-          text: pick(WHALE_SIGHT_TEXT)(t.name),
-          badge: 'WHALE', badgeClass: 'sail'
-        });
-      }
-
-      // Social events (1-2 per tribe across all segments)
-      if (seg === 1) {
+      // Social events (spread across segments, not just seg 1)
+      if (seg === 1 || seg === 2) {
         const socialRoll = Math.random();
-        if (socialRoll < 0.3 && t.members.length >= 2) {
+        if (seg === 1 && socialRoll < 0.3 && t.members.length >= 2) {
           const pair = _randomPair(t.members);
           if (pair) {
             const [a, b] = pair;
@@ -787,32 +823,33 @@ export function simulateVikingSour(ep) {
               players: [a, b], badgeText: 'Sea Bond', badgeClass: 'badge-positive'
             });
           }
-        } else if (socialRoll < 0.5) {
+        } else if (seg === 1 && socialRoll < 0.5) {
           const sickCandidate = t.members.reduce((worst, n) =>
             pStats(n).endurance < (pStats(worst).endurance) ? n : worst, t.members[0]);
           if (pStats(sickCandidate).endurance * 0.8 + noise(2.5) < 5) {
             ep.chalMemberScores[sickCandidate] -= 4;
+            tribeSailProgress[t.name] -= 2;
             phase2Events.push({
               type: 'seasick', player: sickCandidate, tribe: t.name,
               text: pick(SEASICK_TEXT)(sickCandidate, pronouns(sickCandidate)),
               score: -4, badge: 'SEASICK', badgeClass: 'chaos'
             });
           }
-        } else if (socialRoll < 0.65 && t.members.length >= 2) {
+        } else if (seg === 2 && socialRoll < 0.35 && t.members.length >= 2) {
           const pair = _rivalPair(t.members);
           if (pair) {
             const [a, b] = pair;
             addBond(a, b, -1);
             ep.chalMemberScores[a] -= 2;
             ep.chalMemberScores[b] -= 2;
+            tribeSailProgress[t.name] -= 1.5;
             phase2Events.push({
               type: 'rivalryRow', players: [a, b], tribe: t.name,
               text: pick(RIVALRY_ROW_TEXT)(a, b),
               score: -2, badge: 'ROWING CLASH', badgeClass: 'social'
             });
           }
-        } else if (socialRoll < 0.85) {
-          // Captain encouragement
+        } else if (seg === 2 && socialRoll < 0.6) {
           const captain = t.members.reduce((best, n) =>
             pStats(n).social > pStats(best).social ? n : best, t.members[0]);
           const captainScore = pStats(captain).social * 0.5 + noise(2.5);
@@ -831,12 +868,56 @@ export function simulateVikingSour(ep) {
     }
   });
 
+  // Weather events — 1 per segment, affects ALL tribes (not per-tribe)
+  for (let seg = 0; seg < 3; seg++) {
+    const weatherRoll = Math.random();
+    if (weatherRoll < 0.25) {
+      const luckyTribe = pick(tribeData);
+      tribeSailProgress[luckyTribe.name] += 5;
+      phase2Events.push({
+        type: 'wind', tribe: luckyTribe.name, segment: seg,
+        text: pick(WIND_FAVORABLE_TEXT)(luckyTribe.name),
+        badge: 'TAILWIND', badgeClass: 'sail'
+      });
+    } else if (weatherRoll < 0.45) {
+      const unluckyTribe = pick(tribeData);
+      const dmg = 8 + Math.floor(Math.random() * 8);
+      tribeBoatHP[unluckyTribe.name] = Math.max(0, tribeBoatHP[unluckyTribe.name] - dmg);
+      phase2Events.push({
+        type: 'iceCollision', tribe: unluckyTribe.name, segment: seg, damage: dmg,
+        text: pick(ICE_COLLISION_TEXT)(unluckyTribe.name, dmg),
+        badge: `−${dmg} HP`, badgeClass: 'chaos'
+      });
+    } else if (weatherRoll < 0.6) {
+      const draggedTribe = pick(tribeData);
+      tribeSailProgress[draggedTribe.name] -= 3;
+      phase2Events.push({
+        type: 'current', tribe: draggedTribe.name, segment: seg,
+        text: pick(CURRENT_DRAG_TEXT)(draggedTribe.name),
+        badge: 'DRAGGED', badgeClass: 'chaos'
+      });
+    } else if (weatherRoll < 0.7) {
+      const whaleTribe = pick(tribeData);
+      for (let wi = 0; wi < whaleTribe.members.length; wi++)
+        for (let wj = wi + 1; wj < whaleTribe.members.length; wj++)
+          addBond(whaleTribe.members[wi], whaleTribe.members[wj], 0.5);
+      phase2Events.push({
+        type: 'whale', tribe: whaleTribe.name, segment: seg,
+        text: pick(WHALE_SIGHT_TEXT)(whaleTribe.name),
+        badge: 'WHALE', badgeClass: 'sail'
+      });
+    }
+  }
+
   // Determine arrival order by sail progress
   arrivalOrder = tribeData.map(t => ({
     name: t.name,
     progress: tribeSailProgress[t.name]
   })).sort((a, b) => b.progress - a.progress);
   arrivalOrder.forEach((t, i) => { tribePositions[t.name] = i; });
+
+  // Snapshot Phase 2 HP before Phase 3 mutates tribeBoatHP
+  const phase2BoatHP = { ...tribeBoatHP };
 
   // ═══════════════════════════════════════════════
   // PHASE 3: NAVAL BATTLE
@@ -854,11 +935,12 @@ export function simulateVikingSour(ep) {
   let battleWinner = null;
   let battleEndReason = null;
 
+  const ACTION_SLOTS = 3; // fixed slots per tribe per round — neutralizes tribe size advantage
   tribeData.forEach(t => {
     const isFlintTribe = t.name === phase1Winner;
-    TOTAL_AMMO[t.name] = isFlintTribe ? 13 : 11;
+    TOTAL_AMMO[t.name] = isFlintTribe ? 20 : 16;
     CANNON_UNLOCKED[t.name] = isFlintTribe;
-    FLAG_DISTANCE[t.name] = 100 - (tribePositions[t.name] === 0 ? 20 : 0); // first arrival bonus
+    FLAG_DISTANCE[t.name] = 100 - (tribePositions[t.name] === 0 ? 15 : 0);
     SAIL_ACCUM[t.name] = 0;
     CANNON_JAMMED[t.name] = false;
     HUMAN_CANNONBALL_USED[t.name] = false;
@@ -869,64 +951,105 @@ export function simulateVikingSour(ep) {
   for (let round = 0; round < MAX_ROUNDS; round++) {
     if (battleWinner) break;
 
-    // Per-tribe actions
+    // Decrement coward cooldowns once per round (not per tribe)
+    allActive.forEach(n => { if (COWARD_ROUNDS[n] > 0) COWARD_ROUNDS[n]--; });
+
+    // Auto-unlock non-flint tribes at round 1 — flint tribe's advantage is 1 free round of fire + extra ammo
+    if (round === 1) {
+      tribeData.forEach(t => {
+        if (!CANNON_UNLOCKED[t.name] && tribeBoatHP[t.name] > 0) {
+          CANNON_UNLOCKED[t.name] = true;
+          const unlocker = t.members.reduce((best, n) =>
+            pStats(n).mental + pStats(n).boldness > pStats(best).mental + pStats(best).boldness ? n : best, t.members[0]);
+          ep.chalMemberScores[unlocker] += 3;
+          phase3Events.push({
+            type: 'cannonUnlock', player: unlocker, tribe: t.name, round,
+            text: pick(CANNON_UNLOCK_TEXT)(unlocker, pronouns(unlocker)),
+            score: 3, badge: 'UNLOCKED', badgeClass: 'cannon'
+          });
+        }
+      });
+    }
+
     tribeData.forEach(t => {
       if (tribeBoatHP[t.name] <= 0 || battleWinner) return;
       const enemies = tribeData.filter(et => et.name !== t.name && tribeBoatHP[et.name] > 0);
       if (enemies.length === 0) return;
-      const target = enemies.reduce((best, et) =>
-        (tribeBoatHP[et.name] < tribeBoatHP[best.name]) ? et : best, enemies[0]);
+      // Target selection: weighted by proximity (closest flag distance) + grudge (lowest bond) + vulnerability
+      const target = enemies.reduce((best, et) => {
+        const distScore = (100 - FLAG_DISTANCE[et.name]) * 0.3; // closer to flag = higher priority
+        const vulnScore = (250 - tribeBoatHP[et.name]) * 0.1; // more damaged = slightly higher priority
+        const bondAvg = t.members.reduce((s, n) => s + et.members.reduce((s2, m) => s2 + getBond(n, m), 0), 0) / (t.members.length * et.members.length || 1);
+        const grudgeScore = Math.max(0, -bondAvg) * 2; // negative bonds = grudge
+        const totalScore = distScore + vulnScore + grudgeScore + noise(3);
+        const bestDistScore = (100 - FLAG_DISTANCE[best.name]) * 0.3;
+        const bestVulnScore = (250 - tribeBoatHP[best.name]) * 0.1;
+        const bestBondAvg = t.members.reduce((s, n) => s + best.members.reduce((s2, m) => s2 + getBond(n, m), 0), 0) / (t.members.length * best.members.length || 1);
+        const bestGrudgeScore = Math.max(0, -bestBondAvg) * 2;
+        const bestTotalScore = bestDistScore + bestVulnScore + bestGrudgeScore + noise(3);
+        return totalScore > bestTotalScore ? et : best;
+      }, enemies[0]);
 
-      // Role assignment per member
-      t.members.forEach(n => {
-        if (COWARD_ROUNDS[n] > 0) {
-          COWARD_ROUNDS[n]--;
-          return;
-        }
+      // Pick best member for each action slot role
+      const available = t.members.filter(n => COWARD_ROUNDS[n] === 0);
+      if (available.length === 0) return;
 
+      // Score each available member for each role
+      const scored = available.map(n => {
         const s = pStats(n);
         const a = arch(n);
-        const pr = pronouns(n);
+        const fireScore = (s.physical * 0.3 + s.intuition * 0.4 + noise(1.5)) * ((['challenge-beast', 'hothead'].includes(a)) ? 1.3 : 1);
+        const repairScore = s.mental * 0.6 + s.intuition * 0.2 + noise(1.5);
+        const sailScore = s.endurance * 0.4 + s.physical * 0.3 + noise(1.5);
+        return { name: n, fireScore, repairScore, sailScore, stats: s, arch: a, pr: pronouns(n) };
+      });
 
-        // AI role assignment
-        let role = 'sail'; // default
-        if (CANNON_UNLOCKED[t.name] && TOTAL_AMMO[t.name] > 0 && !CANNON_JAMMED[t.name]) {
-          if (s.physical * 0.3 + s.intuition * 0.4 > 5) role = 'fire';
+      // Decide slot allocation: fire + sail + flex
+      const canFire = CANNON_UNLOCKED[t.name] && TOTAL_AMMO[t.name] > 0 && !CANNON_JAMMED[t.name];
+      const needsRepair = tribeBoatHP[t.name] < 150;
+      const slots = [];
+      // Slot 1: fire if available, else sail
+      if (canFire) slots.push('fire');
+      else slots.push('sail');
+      // Slot 2: always sail
+      slots.push('sail');
+      // Slot 3: flex — repair if damaged, double-fire if ammo, else sail
+      if (needsRepair && available.some(m => pStats(m).mental > 4)) slots.push('repair');
+      else if (canFire && TOTAL_AMMO[t.name] > 1) slots.push('fire');
+      else slots.push('sail');
+
+      // Assign best-fit member to each slot (no duplicates)
+      const assigned = new Set();
+      const slotAssignments = [];
+      for (const role of slots) {
+        let best = null, bestScore = -Infinity;
+        for (const m of scored) {
+          if (assigned.has(m.name)) continue;
+          const sc = role === 'fire' ? m.fireScore : role === 'repair' ? m.repairScore : m.sailScore;
+          if (sc > bestScore) { bestScore = sc; best = m; }
         }
-        if (tribeBoatHP[t.name] < 40 && s.mental > 6) role = 'repair';
-        // Override: challenge-beasts and hotheads prefer firing
-        if (['challenge-beast', 'hothead'].includes(a) && CANNON_UNLOCKED[t.name] && TOTAL_AMMO[t.name] > 0) role = 'fire';
-        // heroes/loyal prefer repair when HP low
-        if (NICE_ARCHS.has(a) && tribeBoatHP[t.name] < 50) role = 'repair';
+        if (!best && scored.length > 0) best = scored.find(m => !assigned.has(m.name)) || scored[0];
+        if (best) {
+          assigned.add(best.name);
+          slotAssignments.push({ role, member: best });
+        }
+      }
+
+      // Execute each slot
+      for (const { role, member } of slotAssignments) {
+        const n = member.name;
+        const s = member.stats;
+        const pr = member.pr;
 
         if (role === 'fire') {
-          // Cannon fire
-          if (!CANNON_UNLOCKED[t.name]) {
-            // Try to unlock
-            const unlockScore = s.mental * 0.4 + s.boldness * 0.3 + noise(2.5);
-            if (unlockScore > 6) {
-              CANNON_UNLOCKED[t.name] = true;
-              ep.chalMemberScores[n] += 5;
-              phase3Events.push({
-                type: 'cannonUnlock', player: n, tribe: t.name, round,
-                text: pick(CANNON_UNLOCK_TEXT)(n, pr),
-                score: 5, badge: 'UNLOCKED', badgeClass: 'cannon'
-              });
-            } else {
-              phase3Events.push({
-                type: 'cannonUnlockFail', player: n, tribe: t.name, round,
-                text: pick(CANNON_UNLOCK_FAIL_TEXT)(n, pr),
-                score: 0, badge: 'JAMMED', badgeClass: 'chaos'
-              });
-            }
-          } else if (TOTAL_AMMO[t.name] > 0 && !CANNON_JAMMED[t.name]) {
-            const isFlaming = tribeBoatHP[t.name] < 30 && TOTAL_AMMO[t.name] >= 2;
+          if (TOTAL_AMMO[t.name] > 0 && !CANNON_JAMMED[t.name]) {
+            const isFlaming = tribeBoatHP[t.name] < 100 && TOTAL_AMMO[t.name] >= 2 && round >= 3;
             const ammoCost = isFlaming ? 2 : 1;
             TOTAL_AMMO[t.name] -= ammoCost;
             const accuracy = s.physical * 0.3 + s.intuition * 0.4 + noise(2.5);
             if (accuracy > 4) {
-              let dmg = 15 + Math.floor(Math.random() * 11);
-              if (isFlaming) dmg *= 2;
+              let dmg = 12 + Math.floor(Math.random() * 12);
+              if (isFlaming) dmg = Math.round(dmg * 1.6);
               tribeBoatHP[target.name] = Math.max(0, tribeBoatHP[target.name] - dmg);
               ep.chalMemberScores[n] += 5;
               if (isFlaming) {
@@ -953,8 +1076,8 @@ export function simulateVikingSour(ep) {
             }
           }
         } else if (role === 'repair') {
-          const repairAmt = clamp(5 + Math.floor(s.mental * 0.8 + noise(2.5)), 5, 15);
-          tribeBoatHP[t.name] = Math.min(100, tribeBoatHP[t.name] + repairAmt);
+          const repairAmt = clamp(4 + Math.floor(s.mental * 0.5 + noise(2)), 4, 10);
+          tribeBoatHP[t.name] = Math.min(250, tribeBoatHP[t.name] + repairAmt);
           ep.chalMemberScores[n] += 3;
           phase3Events.push({
             type: 'repair', player: n, tribe: t.name, round, hp: repairAmt,
@@ -962,12 +1085,11 @@ export function simulateVikingSour(ep) {
             score: 3, badge: `+${repairAmt} HP`, badgeClass: 'repair'
           });
         } else {
-          // Sail — move toward flag
           const sailSpeed = s.endurance * 0.4 + s.physical * 0.3 + noise(2.5);
           SAIL_ACCUM[t.name] += Math.max(0, sailSpeed);
-          FLAG_DISTANCE[t.name] = Math.max(0, FLAG_DISTANCE[t.name] - sailSpeed * 0.3);
+          FLAG_DISTANCE[t.name] = Math.max(0, FLAG_DISTANCE[t.name] - sailSpeed * 0.4);
           ep.chalMemberScores[n] += 2;
-          if (Math.random() < 0.35) {
+          if (Math.random() < 0.45) {
             phase3Events.push({
               type: 'sailProgress', player: n, tribe: t.name, round,
               text: pick(SAIL_PROGRESS_TEXT)(n, pr, t.name),
@@ -975,7 +1097,6 @@ export function simulateVikingSour(ep) {
             });
           }
 
-          // Flag grab attempt when close enough
           if (FLAG_DISTANCE[t.name] <= 10) {
             const grabScore = s.physical * 0.3 + s.boldness * 0.4 + noise(2.5);
             if (grabScore > 5) {
@@ -997,23 +1118,31 @@ export function simulateVikingSour(ep) {
             }
           }
         }
-      });
-
-      // Check for sinking
-      if (tribeBoatHP[t.name] <= 0) {
-        phase3Events.push({
-          type: 'sink', tribe: t.name, round,
-          text: pick(SINK_TEXT)(t.name),
-          badge: 'SUNK', badgeClass: 'chaos'
-        });
-        // If only one tribe remains, they win
-        const alive = tribeData.filter(et => tribeBoatHP[et.name] > 0);
-        if (alive.length === 1 && !battleWinner) {
-          battleWinner = alive[0].name;
-          battleEndReason = 'sink';
-        }
       }
+
     });
+
+    // Check for sinking AFTER all tribes act (targets may have been sunk by cannon fire)
+    if (!battleWinner) {
+      tribeData.forEach(t => {
+        if (tribeBoatHP[t.name] <= 0 && !phase3Events.some(e => e.type === 'sink' && e.tribe === t.name)) {
+          phase3Events.push({
+            type: 'sink', tribe: t.name, round,
+            text: pick(SINK_TEXT)(t.name),
+            badge: 'SUNK', badgeClass: 'chaos'
+          });
+        }
+      });
+      const alive = tribeData.filter(et => tribeBoatHP[et.name] > 0);
+      if (alive.length === 1) {
+        battleWinner = alive[0].name;
+        battleEndReason = 'sink';
+      } else if (alive.length === 0) {
+        // All sunk — winner is whoever had most HP before the final round
+        battleWinner = tribeData.reduce((best, t) => (tribeBoatHP[t.name] > tribeBoatHP[best.name]) ? t : best, tribeData[0]).name;
+        battleEndReason = 'sink';
+      }
+    }
 
     // Clear jammed cannons
     tribeData.forEach(t => { CANNON_JAMMED[t.name] = false; });
@@ -1033,12 +1162,13 @@ export function simulateVikingSour(ep) {
             const endAvg = attacker.members.reduce((s, n) => s + pStats(n).endurance, 0) / attacker.members.length;
             const ramScore = physAvg + endAvg + noise(3);
             if (ramScore > 12) {
-              const dmg = 30;
+              const dmg = 25 + Math.floor(Math.random() * 15) + Math.round(physAvg * 0.3);
+              const selfDmg = 8 + Math.floor(Math.random() * 8);
               tribeBoatHP[defender.name] = Math.max(0, tribeBoatHP[defender.name] - dmg);
-              tribeBoatHP[attacker.name] = Math.max(0, tribeBoatHP[attacker.name] - 10);
+              tribeBoatHP[attacker.name] = Math.max(0, tribeBoatHP[attacker.name] - selfDmg);
               attacker.members.forEach(n => { ep.chalMemberScores[n] += 3; });
               phase3Events.push({
-                type: 'ramHit', attacker: attacker.name, target: defender.name, round, damage: dmg,
+                type: 'ramHit', attacker: attacker.name, target: defender.name, round, damage: dmg, selfDamage: selfDmg,
                 text: pick(RAM_SUCCESS_TEXT)(attacker.name, defender.name, dmg),
                 score: 3, badge: `RAM −${dmg}`, badgeClass: 'cannon'
               });
@@ -1059,17 +1189,19 @@ export function simulateVikingSour(ep) {
             badge: 'SQUALL', badgeClass: 'chaos'
           });
           tribeData.forEach(t => {
-            tribeBoatHP[t.name] = Math.max(0, tribeBoatHP[t.name] - 5);
+            const squallDmg = 5 + Math.floor(Math.random() * 8);
+            tribeBoatHP[t.name] = Math.max(0, tribeBoatHP[t.name] - squallDmg);
           });
         } else if (eventType < 0.30) {
           // Friendly fire
           const tribe = pick(tribeData.filter(t => CANNON_UNLOCKED[t.name] && tribeBoatHP[t.name] > 0));
           if (tribe) {
             const shooter = pick(tribe.members);
-            tribeBoatHP[tribe.name] = Math.max(0, tribeBoatHP[tribe.name] - 10);
+            const ffDmg = 8 + Math.floor(Math.random() * 10);
+            tribeBoatHP[tribe.name] = Math.max(0, tribeBoatHP[tribe.name] - ffDmg);
             ep.chalMemberScores[shooter] -= 5;
             phase3Events.push({
-              type: 'friendlyFire', player: shooter, tribe: tribe.name, round,
+              type: 'friendlyFire', player: shooter, tribe: tribe.name, round, damage: ffDmg,
               text: pick(FRIENDLY_FIRE_TEXT)(shooter, tribe.name),
               score: -5, badge: 'FRIENDLY FIRE', badgeClass: 'chaos'
             });
@@ -1110,7 +1242,7 @@ export function simulateVikingSour(ep) {
             const target = pick(flagTarget);
             const player = pick(interferer.members);
             FLAG_DISTANCE[target.name] += 15;
-            addBond(player, target.members[0], 1);
+            addBond(player, target.members[0], -1);
             ep.chalMemberScores[player] += 3;
             phase3Events.push({
               type: 'flagInterference', player, tribe: interferer.name, target: target.name, round,
@@ -1120,13 +1252,13 @@ export function simulateVikingSour(ep) {
           }
         } else if (eventType < 0.58 && !Object.values(PATCH_GENIUS_USED).includes(true)) {
           // Patch job genius
-          const tribe = pick(tribeData.filter(t => tribeBoatHP[t.name] > 0 && tribeBoatHP[t.name] < 70));
+          const tribe = pick(tribeData.filter(t => tribeBoatHP[t.name] > 0 && tribeBoatHP[t.name] < 160));
           if (tribe) {
             const genius = tribe.members.reduce((best, n) =>
               pStats(n).mental > pStats(best).mental ? n : best, tribe.members[0]);
             if (pStats(genius).mental > 6) {
-              const hp = 25;
-              tribeBoatHP[tribe.name] = Math.min(100, tribeBoatHP[tribe.name] + hp);
+              const hp = 30;
+              tribeBoatHP[tribe.name] = Math.min(250, tribeBoatHP[tribe.name] + hp);
               ep.chalMemberScores[genius] += 6;
               PATCH_GENIUS_USED[tribe.name] = true;
               phase3Events.push({
@@ -1145,7 +1277,7 @@ export function simulateVikingSour(ep) {
             if (candidate) {
               const target = pick(tribeData.filter(t => t.name !== tribe.name && tribeBoatHP[t.name] > 0));
               if (target) {
-                const dmg = 40;
+                const dmg = 35 + Math.floor(Math.random() * 15);
                 tribeBoatHP[target.name] = Math.max(0, tribeBoatHP[target.name] - dmg);
                 HUMAN_CANNONBALL_USED[tribe.name] = true;
                 ep.chalMemberScores[candidate] += 12;
@@ -1166,12 +1298,12 @@ export function simulateVikingSour(ep) {
           }
         } else if (eventType < 0.74) {
           // Heroic shield
-          const tribe = pick(tribeData.filter(t => tribeBoatHP[t.name] > 0 && tribeBoatHP[t.name] < 50));
+          const tribe = pick(tribeData.filter(t => tribeBoatHP[t.name] > 0 && tribeBoatHP[t.name] < 120));
           if (tribe) {
             const heroes = tribe.members.filter(n => NICE_ARCHS.has(arch(n)) && COWARD_ROUNDS[n] === 0);
             if (heroes.length > 0) {
               const hero = pick(heroes);
-              tribeBoatHP[tribe.name] = Math.min(100, tribeBoatHP[tribe.name] + 20);
+              tribeBoatHP[tribe.name] = Math.min(250, tribeBoatHP[tribe.name] + 25);
               ep.chalMemberScores[hero] += 6;
               popDelta(hero, 3);
               phase3Events.push({
@@ -1233,7 +1365,7 @@ export function simulateVikingSour(ep) {
               ep.chalMemberScores[mutineer] += 5;
               phase3Events.push({
                 type: 'mutinySuccess', player: mutineer, tribe: tribe.name, round,
-                text: `${mutineer} seizes control of ${tribe.name}'s ship! The new captain takes the helm.`,
+                text: pick(MUTINY_SUCCESS_TEXT)(mutineer, tribe.name),
                 score: 5, badge: 'MUTINY', badgeClass: 'chaos'
               });
             } else {
@@ -1265,21 +1397,23 @@ export function simulateVikingSour(ep) {
       }
     }
 
-    // Check sinking after events
-    tribeData.forEach(t => {
-      if (tribeBoatHP[t.name] <= 0 && !phase3Events.find(e => e.type === 'sink' && e.tribe === t.name && e.round === round)) {
-        phase3Events.push({
-          type: 'sink', tribe: t.name, round,
-          text: pick(SINK_TEXT)(t.name),
-          badge: 'SUNK', badgeClass: 'chaos'
-        });
-        const alive = tribeData.filter(et => tribeBoatHP[et.name] > 0);
-        if (alive.length === 1 && !battleWinner) {
-          battleWinner = alive[0].name;
-          battleEndReason = 'sink';
+    // Check sinking after battle events too (ram, squall, friendly fire can sink)
+    if (!battleWinner) {
+      tribeData.forEach(t => {
+        if (tribeBoatHP[t.name] <= 0 && !phase3Events.some(e => e.type === 'sink' && e.tribe === t.name)) {
+          phase3Events.push({
+            type: 'sink', tribe: t.name, round,
+            text: pick(SINK_TEXT)(t.name),
+            badge: 'SUNK', badgeClass: 'chaos'
+          });
         }
+      });
+      const alive2 = tribeData.filter(et => tribeBoatHP[et.name] > 0);
+      if (alive2.length === 1) {
+        battleWinner = alive2[0].name;
+        battleEndReason = 'sink';
       }
-    });
+    }
   }
 
   // Timeout — closest to flag wins
@@ -1308,14 +1442,14 @@ export function simulateVikingSour(ep) {
       events: phase1Events,
       clarity: { ...tribeClarity },
       buildQuality: { ...tribeBuildQuality },
-      boatHP: { ...tribeBoatHP },
+      boatHP: { ...phase1BoatHP },
       winner: phase1Winner
     },
     phase2: {
       events: phase2Events,
       sailProgress: { ...tribeSailProgress },
       arrivalOrder: arrivalOrder.map(a => a.name),
-      boatHP: Object.fromEntries(tribeData.map(t => [t.name, tribeBoatHP[t.name]]))
+      boatHP: { ...phase2BoatHP }
     },
     phase3: {
       events: phase3Events,
@@ -1330,7 +1464,7 @@ export function simulateVikingSour(ep) {
       name: t.name,
       members: [...t.members],
       color: t.color,
-      boatHP: tribeBoatHP[t.name],
+      boatHP: phase1BoatHP[t.name],
       buildQuality: tribeBuildQuality[t.name] || 50,
       ammo: TOTAL_AMMO[t.name],
       flagDist: FLAG_DISTANCE[t.name],
@@ -1349,7 +1483,7 @@ export function simulateVikingSour(ep) {
   // Set episode fields
   ep.vikingSour = result;
   ep.isVikingSour = true;
-  ep.challengeType = 'tribe';
+  ep.challengeType = 'viking-sour';
   ep.challengeLabel = 'Viking Sour';
   ep.challengeCategory = 'mixed';
 
@@ -1413,7 +1547,7 @@ function _romanticPair(members) {
       }
     }
   }
-  return _randomPair(members); // fallback
+  return null;
 }
 
 function _rivalPair(members) {
@@ -1490,7 +1624,7 @@ function _vsUpdateBlueprintTracker(screenKey) {
 
   const skipTypes = new Set(['header', 'blueprint', 'yard', 'summary', 'chatter']);
   const totalEvts = stepMeta.filter(s => !skipTypes.has(s.type)).length;
-  const preShowSteps = 3; // header + blueprint + yard
+  const preShowSteps = 2; // header + blueprint
   const revealedEvts = revealIdx <= preShowSteps - 1 ? 0 : Math.min(totalEvts, revealIdx - (preShowSteps - 1));
   const progress = totalEvts > 0 ? revealedEvts / totalEvts : 0;
 
@@ -1553,7 +1687,10 @@ function _vsUpdateSidebar(screenKey) {
   const epRecord = window._vsEpRecord || gs.episodeHistory?.[window.vpEpNum - 1];
   if (!epRecord?.vikingSour) return;
   const phase = _screenKeyToPhase(screenKey);
+  const sidebar = sideEl.closest('.vs-sidebar');
+  const scrollTop = sidebar ? sidebar.scrollTop : 0;
   sideEl.innerHTML = _buildSidebarContent(epRecord, phase, screenKey);
+  if (sidebar) sidebar.scrollTop = scrollTop;
 }
 
 function _vsUpdateMap(screenKey) {
@@ -1564,23 +1701,105 @@ function _vsUpdateMap(screenKey) {
   const st = _tvState[screenKey];
   const revealIdx = st ? st.idx : -1;
   const snapshots = window._vsMapSnapshots;
+  const stepMeta = window._vsPhase3StepMeta;
   if (!snapshots) return;
-  const snap = snapshots[clamp(revealIdx, 0, snapshots.length - 1)] || {};
+  const curMeta = stepMeta && stepMeta[revealIdx] ? stepMeta[revealIdx] : null;
+  const snapIdx = curMeta?.snapIdx !== undefined ? curMeta.snapIdx : clamp(revealIdx, 0, snapshots.length - 1);
+  const snap = snapshots[clamp(snapIdx, 0, snapshots.length - 1)] || {};
+  const maxHP = 250;
+
+  // Update round label
+  const roundEl = document.getElementById('vs-map-round');
+  if (roundEl && curMeta?.round !== undefined) {
+    roundEl.textContent = `Round ${curMeta.round + 1}`;
+  }
+
+  const tribeIndexMap = {};
+  data.tribes.forEach((t, i) => { tribeIndexMap[t.name] = i; });
 
   data.tribes.forEach((tribe, idx) => {
     const ship = document.getElementById(`vs-ship-${idx}`);
     if (!ship) return;
     const flagDist = snap[tribe.name]?.flagDist ?? 100;
     const pct = clamp(100 - flagDist, 0, 100);
-    ship.style.left = `${5 + pct * 0.85}%`;
+    ship.style.left = `${5 + pct * 0.82}%`;
 
-    const hp = snap[tribe.name]?.hp ?? 100;
+    const hp = snap[tribe.name]?.hp ?? maxHP;
+    const hpPct = clamp(Math.round(hp / maxHP * 100), 0, 100);
     const hpBar = document.getElementById(`vs-shiphp-${idx}`);
+    const hpLabel = document.getElementById(`vs-shiphp-label-${idx}`);
     if (hpBar) {
-      hpBar.style.width = `${hp}%`;
-      hpBar.className = 'vs-hp-fill ' + (hp > 50 ? 'healthy' : hp > 25 ? 'damaged' : 'critical');
+      hpBar.style.width = `${hpPct}%`;
+      hpBar.className = 'vs-hp-fill ' + (hp > maxHP * 0.5 ? 'healthy' : hp > maxHP * 0.25 ? 'damaged' : 'critical');
+    }
+    if (hpLabel) hpLabel.textContent = `${Math.max(0, Math.round(hp))} HP`;
+
+    // Fire effect on damaged ships
+    const fireEl = document.getElementById(`vs-ship-fire-${idx}`);
+    if (fireEl) {
+      fireEl.classList.toggle('active', hp <= maxHP * 0.4 && hp > 0);
+    }
+
+    // Sinking animation
+    if (hp <= 0) {
+      if (!ship.classList.contains('sinking')) ship.classList.add('sinking');
+    } else {
+      ship.classList.remove('sinking');
     }
   });
+
+  // Cannon shot animation on hit events
+  if (curMeta && ['cannonHit', 'flamingAmmo', 'ramHit', 'humanCannonball'].includes(curMeta.type)) {
+    const attackerTribe = curMeta.tribe;
+    const targetTribe = curMeta.target || (data.tribes.find(t => t.name !== attackerTribe)?.name);
+    if (attackerTribe && targetTribe) {
+      _fireCannonAnimation(tribeIndexMap[attackerTribe], tribeIndexMap[targetTribe]);
+    }
+  }
+}
+
+function _fireCannonAnimation(fromIdx, toIdx) {
+  const mapEl = document.getElementById('vs-sea-map');
+  const fromShip = document.getElementById(`vs-ship-${fromIdx}`);
+  const toShip = document.getElementById(`vs-ship-${toIdx}`);
+  if (!mapEl || !fromShip || !toShip) return;
+
+  const mapRect = mapEl.getBoundingClientRect();
+  const fromRect = fromShip.getBoundingClientRect();
+  const toRect = toShip.getBoundingClientRect();
+
+  const startX = fromRect.left + fromRect.width / 2 - mapRect.left;
+  const startY = fromRect.top + fromRect.height / 2 - mapRect.top;
+  const endX = toRect.left + toRect.width / 2 - mapRect.left;
+  const endY = toRect.top + toRect.height / 2 - mapRect.top;
+  const dx = endX - startX;
+  const dy = endY - startY;
+
+  // Cannonball
+  const ball = document.createElement('div');
+  ball.className = 'vs-cannonball';
+  ball.style.left = startX + 'px';
+  ball.style.top = startY + 'px';
+  ball.style.setProperty('--cb-dx', dx + 'px');
+  ball.style.setProperty('--cb-dy', dy + 'px');
+  mapEl.appendChild(ball);
+  requestAnimationFrame(() => ball.classList.add('fired'));
+  setTimeout(() => ball.remove(), 700);
+
+  // Impact flash on target
+  setTimeout(() => {
+    const flash = document.createElement('div');
+    flash.className = 'vs-impact-flash';
+    flash.style.left = endX + 'px';
+    flash.style.top = endY + 'px';
+    mapEl.appendChild(flash);
+    requestAnimationFrame(() => flash.classList.add('active'));
+    setTimeout(() => flash.remove(), 600);
+
+    // Hit shake on target ship
+    toShip.classList.add('hit');
+    setTimeout(() => toShip.classList.remove('hit'), 450);
+  }, 500);
 }
 
 function _screenKeyToPhase(key) {
@@ -1811,10 +2030,10 @@ function _shell(content, ep, sidebarPhase = 'title', screenKey = 'vs-title') {
   --vs-danger:#c83030;--vs-safe:#3a8850;--vs-warn:#c89830;
   --vs-glass:rgba(26,21,16,.7);--vs-glass2:rgba(26,21,16,.85);
 }
-.vs-shell{position:relative;max-width:1100px;margin:0 auto 140px;font-family:'EB Garamond',Georgia,serif;color:var(--vs-parchment);z-index:2;}
+.vs-shell{position:relative;max-width:1100px;margin:0 auto;font-family:'EB Garamond',Georgia,serif;color:var(--vs-parchment);z-index:2;}
 .vs-grid{display:grid;grid-template-columns:1fr 260px;gap:0;}
 @media(max-width:800px){.vs-grid{grid-template-columns:1fr;}.vs-sidebar{order:-1;}}
-.vs-main{min-width:0;border-right:2px solid var(--vs-plank-lt);}
+.vs-main{min-width:0;border-right:2px solid var(--vs-plank-lt);padding-bottom:140px;}
 /* Title screen (no grid, full viewport) */
 .vs-title-screen{position:relative;min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center;}
 .vs-title-screen .vs-title-series{font-family:'Cinzel',serif;font-size:clamp(11px,1.5vw,14px);color:var(--vs-frost);letter-spacing:8px;text-transform:uppercase;}
@@ -1998,8 +2217,11 @@ function _shell(content, ep, sidebarPhase = 'title', screenKey = 'vs-title') {
   font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:var(--vs-gold);flex-shrink:0;object-fit:contain;}
 
 /* ═══════ SIDEBAR ═══════ */
-.vs-sidebar{background:var(--vs-glass2);padding:12px;font-size:12px;position:sticky;top:90px;
-  max-height:calc(100vh - 100px);overflow-y:auto;border-left:2px solid var(--vs-plank-lt);}
+.vs-sidebar-cell{position:relative;}
+.vs-sidebar{background:var(--vs-glass2);padding:12px;font-size:12px;position:sticky;top:0;
+  height:100vh;max-height:100vh;overflow-y:auto;
+  border-left:2px solid var(--vs-plank-lt);scrollbar-width:thin;scrollbar-color:var(--vs-plank-lt) transparent;
+  overscroll-behavior:contain;}
 .vs-sb-title{font-family:'Cinzel',serif;font-size:11px;color:var(--vs-gold);letter-spacing:2px;
   text-transform:uppercase;margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(192,160,64,.2);}
 .vs-sb-title:first-child{margin-top:0;}
@@ -2038,7 +2260,7 @@ function _shell(content, ep, sidebarPhase = 'title', screenKey = 'vs-title') {
 .vs-flag-goal{position:absolute;right:4px;top:2px;font-size:10px;}
 
 /* Player row */
-.vs-sb-player{display:flex;align-items:center;gap:6px;padding:3px 0;}
+.vs-sb-player{display:flex;align-items:center;gap:6px;padding:3px 4px;margin:1px 0;}
 .vs-sb-player-name{font-family:'EB Garamond',serif;font-size:12px;color:var(--vs-parchment);}
 .vs-sb-player-stat{font-family:'Fira Code',monospace;font-size:9px;color:var(--vs-parch-dk);margin-left:auto;}
 .vs-sb-badge{font-family:'Fira Code',monospace;font-size:8px;padding:1px 5px;border-radius:2px;display:inline-block;margin-left:4px;}
@@ -2047,20 +2269,49 @@ function _shell(content, ep, sidebarPhase = 'title', screenKey = 'vs-title') {
 .vs-sb-badge-blue{background:var(--vs-fjord);color:var(--vs-ice);}
 
 /* ═══════ SEA MAP (Naval Battle) ═══════ */
-.vs-sea-map{position:relative;height:180px;background:linear-gradient(180deg,var(--vs-storm),var(--vs-sea-deep));
-  border:2px solid var(--vs-plank-lt);border-radius:4px;margin:12px 16px;overflow:hidden;}
+.vs-sea-map{position:sticky;top:0;z-index:5;height:220px;background:linear-gradient(180deg,#1a2838 0%,var(--vs-storm) 30%,var(--vs-sea-deep) 70%,#0e1820 100%);
+  border:2px solid var(--vs-plank-lt);border-bottom:3px solid var(--vs-ember);margin:0 0 8px;overflow:hidden;backdrop-filter:blur(4px);}
+.vs-sea-map::before{content:'NAVAL BATTLE TRACKER';position:absolute;top:6px;left:12px;font-family:'Cinzel',serif;font-size:8px;color:var(--vs-rune);letter-spacing:3px;text-transform:uppercase;opacity:.5;z-index:6;}
 .vs-sea-map-grid{position:absolute;inset:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 29px,rgba(154,184,200,.06) 30px),
-  repeating-linear-gradient(90deg,transparent,transparent 29px,rgba(154,184,200,.06) 30px);}
-.vs-sea-map-label{position:absolute;font-family:'Fira Code',monospace;font-size:8px;color:var(--vs-frost);opacity:.4;}
-.vs-sea-map-flag{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;}
-.vs-sea-ship{position:absolute;z-index:4;transition:all .8s ease-out;display:flex;flex-direction:column;align-items:center;gap:2px;}
-.vs-sea-ship-body{width:28px;height:14px;border-radius:0 0 50% 50%;border:2px solid;position:relative;}
-.vs-sea-ship-body::after{content:'';position:absolute;top:-8px;left:12px;width:2px;height:10px;background:currentColor;}
-.vs-sea-ship-label{font-family:'Fira Code',monospace;font-size:7px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
-.vs-sea-map-wave{position:absolute;height:1px;left:0;right:0;background:rgba(154,184,200,.1);
+  background:repeating-linear-gradient(0deg,transparent,transparent 29px,rgba(154,184,200,.04) 30px),
+  repeating-linear-gradient(90deg,transparent,transparent 29px,rgba(154,184,200,.04) 30px);}
+.vs-sea-map-label{position:absolute;font-family:'Fira Code',monospace;font-size:8px;color:var(--vs-frost);opacity:.4;z-index:6;}
+.vs-sea-map-flag{position:absolute;top:50%;right:8%;transform:translateY(-50%);z-index:3;}
+.vs-sea-map-flag-glow{position:absolute;top:50%;right:7%;width:30px;height:30px;transform:translateY(-50%);
+  background:radial-gradient(circle,rgba(200,160,64,.25) 0%,transparent 70%);border-radius:50%;
+  animation:vs-flag-pulse 2s ease-in-out infinite;z-index:2;}
+@keyframes vs-flag-pulse{0%,100%{opacity:.6;transform:translateY(-50%) scale(1)}50%{opacity:1;transform:translateY(-50%) scale(1.3)}}
+.vs-sea-ship{position:absolute;z-index:4;transition:left .8s ease-out,top .3s ease-out;display:flex;flex-direction:column;align-items:center;gap:1px;}
+.vs-sea-ship.sinking{animation:vs-sink 2s ease-in forwards;}
+.vs-sea-ship.hit{animation:vs-ship-hit .4s ease-out;}
+@keyframes vs-sink{0%{transform:rotate(0) translateY(0);opacity:1}40%{transform:rotate(12deg) translateY(8px);opacity:.8}100%{transform:rotate(25deg) translateY(40px);opacity:0}}
+@keyframes vs-ship-hit{0%{filter:brightness(1)}15%{filter:brightness(3) saturate(2)}100%{filter:brightness(1)}}
+.vs-sea-ship-svg{width:60px;height:30px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+.vs-sea-ship-label{font-family:'Fira Code',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.8);}
+.vs-sea-ship-hpwrap{width:54px;height:6px;border-radius:3px;background:rgba(0,0,0,.5);border:1px solid rgba(154,184,200,.15);overflow:hidden;position:relative;}
+.vs-sea-ship-hplabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Fira Code',monospace;font-size:6px;color:#fff;text-shadow:0 1px 2px #000;z-index:1;white-space:nowrap;}
+.vs-hp-fill{height:100%;border-radius:2px;transition:width .6s ease-out;}
+.vs-hp-fill.healthy{background:linear-gradient(90deg,#3a8850,#5aaa70);}
+.vs-hp-fill.damaged{background:linear-gradient(90deg,#c89830,#e0b040);}
+.vs-hp-fill.critical{background:linear-gradient(90deg,#c83030,#e85040);animation:vs-hp-crit .8s ease-in-out infinite;}
+@keyframes vs-hp-crit{0%,100%{opacity:1}50%{opacity:.5}}
+.vs-sea-ship-fire{position:absolute;top:-6px;left:50%;transform:translateX(-50%);opacity:0;transition:opacity .5s;pointer-events:none;}
+.vs-sea-ship-fire.active{opacity:1;}
+.vs-sea-map-wave{position:absolute;height:1px;left:0;right:0;background:rgba(154,184,200,.08);
   animation:vs-mapwave 3s ease-in-out infinite alternate;}
 @keyframes vs-mapwave{0%{transform:translateX(-2%)}100%{transform:translateX(2%)}}
+.vs-cannonball{position:absolute;width:6px;height:6px;background:radial-gradient(circle,var(--vs-ember),#333);
+  border-radius:50%;z-index:10;pointer-events:none;opacity:0;}
+.vs-cannonball.fired{animation:vs-cannonball-fly .6s ease-in forwards;}
+.vs-cannonball-trail{position:absolute;width:3px;height:3px;background:var(--vs-ember);border-radius:50%;
+  z-index:9;pointer-events:none;opacity:0;}
+@keyframes vs-cannonball-fly{0%{opacity:1;transform:translate(0,0) scale(1)}50%{opacity:1;transform:translate(var(--cb-dx),calc(var(--cb-dy) - 20px)) scale(1.2)}100%{opacity:0;transform:translate(var(--cb-dx),var(--cb-dy)) scale(.5)}}
+.vs-impact-flash{position:absolute;width:20px;height:20px;border-radius:50%;z-index:11;pointer-events:none;opacity:0;
+  background:radial-gradient(circle,rgba(255,200,80,.9) 0%,rgba(200,90,32,.5) 40%,transparent 70%);}
+.vs-impact-flash.active{animation:vs-impact .5s ease-out forwards;}
+@keyframes vs-impact{0%{opacity:1;transform:translate(-50%,-50%) scale(.3)}50%{opacity:.8;transform:translate(-50%,-50%) scale(1.5)}100%{opacity:0;transform:translate(-50%,-50%) scale(2)}}
+.vs-map-round-label{position:absolute;top:6px;right:12px;font-family:'Cinzel',serif;font-size:9px;color:var(--vs-frost);letter-spacing:2px;opacity:.6;z-index:6;}
+@media(prefers-reduced-motion:reduce){.vs-sea-ship.sinking,.vs-sea-ship.hit,.vs-cannonball.fired,.vs-impact-flash.active,.vs-sea-map-flag-glow,.vs-hp-fill.critical{animation:none !important;}}
 
 /* ═══════ BLUEPRINT OVERLAY ═══════ */
 .vs-blueprint{background:rgba(200,206,180,.06);border:1px dashed var(--vs-parch-dk);
@@ -2089,7 +2340,7 @@ function _shell(content, ep, sidebarPhase = 'title', screenKey = 'vs-title') {
 .vs-assembly-pct{font-family:'Fira Code',monospace;font-size:9px;color:var(--vs-parch-dk);width:35px;text-align:right;}
 
 /* ═══════ CONSTRUCTION YARD MAP ═══════ */
-.vs-yard{margin:8px 16px;padding:16px;background:rgba(26,21,16,.5);border:1px solid rgba(192,160,64,.15);position:relative;overflow:hidden;}
+.vs-yard{margin:8px 16px;padding:16px;background:rgba(26,21,16,.85);border:1px solid rgba(192,160,64,.15);position:sticky;top:0;z-index:5;overflow:hidden;backdrop-filter:blur(4px);}
 .vs-yard::before{content:'CONSTRUCTION YARD';position:absolute;top:8px;left:16px;font-family:'Cinzel',serif;font-size:9px;color:var(--vs-rune);letter-spacing:3px;text-transform:uppercase;opacity:.6;}
 .vs-yard-grid{display:flex;gap:12px;margin-top:24px;justify-content:center;flex-wrap:wrap;}
 .vs-yard-bay{flex:1;min-width:200px;max-width:320px;position:relative;padding:8px;border:1px solid rgba(192,160,64,.1);background:rgba(58,46,30,.15);}
@@ -2178,11 +2429,11 @@ function _shell(content, ep, sidebarPhase = 'title', screenKey = 'vs-title') {
 // ══════════════════════════════════════════════════════════════
 
 function _buildSidebar(ep, phase, screenKey) {
-  return `<div class="vs-sidebar"><div id="vs-sidebar-inner">${_buildSidebarContent(ep, phase, screenKey)}</div></div>`;
+  return `<div class="vs-sidebar-cell"><div class="vs-sidebar"><div id="vs-sidebar-inner">${_buildSidebarContent(ep, phase, screenKey)}</div></div></div>`;
 }
 
 function _hpClass(hp) {
-  return hp > 50 ? 'healthy' : hp > 25 ? 'damaged' : 'critical';
+  return hp > 125 ? 'healthy' : hp > 60 ? 'damaged' : 'critical';
 }
 
 function _buildAmmoHTML(total, spent, flintCount) {
@@ -2214,7 +2465,7 @@ function _buildSidebarContent(ep, phase, screenKey) {
       const stepMeta = window._vsPhase1StepMeta;
       const _skipTypes = new Set(['header', 'blueprint', 'yard', 'summary', 'chatter']);
       const totalEvts = stepMeta ? stepMeta.filter(s => !_skipTypes.has(s.type)).length : 1;
-      const _preShow = 3;
+      const _preShow = 2;
       const revealedEvts = revealIdx <= _preShow - 1 ? 0 : Math.min(totalEvts, revealIdx - (_preShow - 1));
       const progress = totalEvts > 0 ? revealedEvts / totalEvts : 0;
 
@@ -2224,7 +2475,8 @@ function _buildSidebarContent(ep, phase, screenKey) {
 
       const clarity = Math.round(finalClarity * progress);
       const bq = Math.round(finalBQ * progress);
-      const hp = Math.round(100 - (100 - finalHP) * progress);
+      const hp = Math.round(250 - (250 - finalHP) * progress);
+      const hpPct = clamp(Math.round(hp / 250 * 100), 0, 100);
       const qualityLabel = bq >= 75 ? 'Sturdy' : bq >= 50 ? 'Decent' : bq > 0 ? 'Leaky' : '—';
       html += `<div class="vs-sb-tribe">
         <div class="vs-sb-tribe-name">
@@ -2238,11 +2490,54 @@ function _buildSidebarContent(ep, phase, screenKey) {
         </div>
         <div class="vs-sb-stat">${_icoShield()} Hull HP:</div>
         <div class="vs-hp-bar">
-          <div class="vs-hp-fill ${_hpClass(hp)}" style="width:${hp}%"></div>
-          <div class="vs-hp-label">${hp} / 100</div>
+          <div class="vs-hp-fill ${_hpClass(hp)}" style="width:${hpPct}%"></div>
+          <div class="vs-hp-label">${hp} / 250</div>
         </div>
-        <div class="vs-sb-stat">${_icoScroll()} Build Quality: ${Math.round(bq)} (${qualityLabel})</div>
-      </div>`;
+        <div class="vs-sb-stat">${_icoScroll()} Build Quality: ${Math.round(bq)} (${qualityLabel})</div>`;
+
+      // Player contribution bars inside tribe block
+      const evts = data.phase1.events;
+      const _preShow2 = 2;
+      const _skipT = new Set(['header', 'blueprint', 'yard', 'summary', 'chatter']);
+      const revealedCount = revealIdx <= _preShow2 - 1 ? 0 : revealIdx - (_preShow2 - 1);
+      const playerScores = {};
+      const playerBest = {};
+      let evtIdx = 0;
+      if (stepMeta) {
+        for (let si = 0; si < stepMeta.length; si++) {
+          if (_skipT.has(stepMeta[si].type)) continue;
+          if (evtIdx >= revealedCount) break;
+          const evt = evts[evtIdx];
+          evtIdx++;
+          if (!evt || evt.tribe !== tribe.name) continue;
+          const p = evt.player || (evt.players ? evt.players[0] : null) || evt.thief || evt.winner;
+          if (!p) continue;
+          playerScores[p] = (playerScores[p] || 0) + Math.abs(evt.score || 1);
+          if (evt.type === 'eureka') playerBest[p] = 'eureka';
+          else if (!playerBest[p]) playerBest[p] = evt.type;
+        }
+      }
+      const maxScore = Math.max(1, ...Object.values(playerScores));
+      const tribeMembers = tribe.members || [];
+      if (tribeMembers.length > 0) {
+        html += `<div style="margin-top:6px;border-top:1px solid rgba(192,160,64,.1);padding-top:4px;">`;
+        tribeMembers.forEach(n => {
+          const sc = playerScores[n] || 0;
+          const pct = maxScore > 0 ? Math.round(sc / maxScore * 100) : 0;
+          const best = playerBest[n];
+          const barCol = best === 'eureka' ? 'var(--vs-gold)' : best === 'sabotage' || best === 'argument' ? 'var(--vs-danger)' : col;
+          html += `<div style="display:flex;align-items:center;gap:4px;margin:2px 0;">
+            ${_av(n, 16)}
+            <span style="font-family:'Cinzel',serif;font-size:8px;color:var(--vs-parch-dk);width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n}</span>
+            <div style="flex:1;height:6px;background:rgba(42,42,42,.4);border-radius:1px;overflow:hidden;">
+              <div style="height:100%;width:${pct}%;background:${barCol};border-radius:1px;transition:width .4s ease-out;"></div>
+            </div>
+            <span style="font-family:'Fira Code',monospace;font-size:7px;color:var(--vs-parch-dk);width:20px;text-align:right;">${sc}</span>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+      html += `</div>`;
 
     } else if (phase === 'sail') {
       const stepMeta = window._vsPhase2StepMeta;
@@ -2250,9 +2545,10 @@ function _buildSidebarContent(ep, phase, screenKey) {
       const revealedEvts = revealIdx <= 0 ? 0 : Math.min(totalEvts, revealIdx);
       const sailProgress = totalEvts > 0 ? revealedEvts / totalEvts : 0;
 
-      const startHP = data.phase1.boatHP[tribe.name] || 100;
-      const finalHP = data.phase2.boatHP[tribe.name] || 50;
+      const startHP = data.phase1.boatHP[tribe.name] || 200;
+      const finalHP = data.phase2.boatHP[tribe.name] || 150;
       const hp = Math.round(startHP - (startHP - finalHP) * sailProgress);
+      const hpPct2 = clamp(Math.round(hp / 250 * 100), 0, 100);
 
       const finalSailProg = data.phase2.sailProgress[tribe.name] || 0;
       const maxSailProg = Math.max(1, ...Object.values(data.phase2.sailProgress));
@@ -2269,11 +2565,51 @@ function _buildSidebarContent(ep, phase, screenKey) {
         </div>
         <div class="vs-sb-stat">${_icoShield()} Hull HP:</div>
         <div class="vs-hp-bar">
-          <div class="vs-hp-fill ${_hpClass(hp)}" style="width:${hp}%"></div>
-          <div class="vs-hp-label">${hp} / 100</div>
+          <div class="vs-hp-fill ${_hpClass(hp)}" style="width:${hpPct2}%"></div>
+          <div class="vs-hp-label">${hp} / 250</div>
         </div>
-        <div class="vs-sb-stat">${_icoScroll()} Build Quality: ${Math.round(tribe.buildQuality)}</div>
-      </div>`;
+        <div class="vs-sb-stat">${_icoScroll()} Build Quality: ${Math.round(tribe.buildQuality)}</div>`;
+
+      // Player contribution bars for Phase 2
+      const p2Evts = data.phase2.events;
+      const _skipT2 = new Set(['header', 'summary', 'chatter']);
+      const p2Scores = {};
+      const p2Best = {};
+      let p2Count = 0;
+      if (stepMeta) {
+        for (let si = 0; si < stepMeta.length; si++) {
+          if (_skipT2.has(stepMeta[si]?.type)) continue;
+          if (p2Count >= revealedEvts) break;
+          const evt = p2Evts[p2Count];
+          p2Count++;
+          if (!evt || evt.tribe !== tribe.name) continue;
+          const p = evt.player || (evt.players ? evt.players[0] : null);
+          if (!p) continue;
+          p2Scores[p] = (p2Scores[p] || 0) + Math.abs(evt.score || 1);
+          if (!p2Best[p]) p2Best[p] = evt.type;
+        }
+      }
+      const p2Max = Math.max(1, ...Object.values(p2Scores));
+      const p2Members = tribe.members || [];
+      if (p2Members.length > 0) {
+        html += `<div style="margin-top:6px;border-top:1px solid rgba(192,160,64,.1);padding-top:4px;">`;
+        p2Members.forEach(n => {
+          const sc = p2Scores[n] || 0;
+          const pct2 = p2Max > 0 ? Math.round(sc / p2Max * 100) : 0;
+          const best = p2Best[n];
+          const barCol = best === 'iceBreakSuccess' ? 'var(--vs-frost)' : best === 'seasick' ? 'var(--vs-danger)' : col;
+          html += `<div style="display:flex;align-items:center;gap:4px;margin:2px 0;">
+            ${_av(n, 16)}
+            <span style="font-family:'Cinzel',serif;font-size:8px;color:var(--vs-parch-dk);width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n}</span>
+            <div style="flex:1;height:6px;background:rgba(42,42,42,.4);border-radius:1px;overflow:hidden;">
+              <div style="height:100%;width:${pct2}%;background:${barCol};border-radius:1px;transition:width .4s ease-out;"></div>
+            </div>
+            <span style="font-family:'Fira Code',monospace;font-size:7px;color:var(--vs-parch-dk);width:20px;text-align:right;">${sc}</span>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+      html += `</div>`;
 
     } else if (phase === 'battle') {
       const snapshots = window._vsMapSnapshots;
@@ -2289,6 +2625,7 @@ function _buildSidebarContent(ep, phase, screenKey) {
       const flintCount = tribe.isFlintWinner ? 3 : 0;
       const flagPct = clamp(100 - flagDist, 0, 100);
 
+      const hpPct3 = clamp(Math.round(hp / 250 * 100), 0, 100);
       html += `<div class="vs-sb-tribe">
         <div class="vs-sb-tribe-name">
           <span class="vs-sb-tribe-dot" style="background:${col}"></span> ${tribe.name}
@@ -2296,8 +2633,8 @@ function _buildSidebarContent(ep, phase, screenKey) {
         </div>
         <div class="vs-sb-stat">${_icoShield()} Hull HP:</div>
         <div class="vs-hp-bar">
-          <div class="vs-hp-fill ${isSunk ? 'critical' : _hpClass(hp)}" style="width:${Math.max(0, hp)}%"></div>
-          <div class="vs-hp-label" ${isSunk ? 'style="color:var(--vs-danger)"' : ''}>${isSunk ? 'SUNK' : Math.max(0, hp) + ' / 100'}</div>
+          <div class="vs-hp-fill ${isSunk ? 'critical' : _hpClass(hp)}" style="width:${Math.max(0, hpPct3)}%"></div>
+          <div class="vs-hp-label" ${isSunk ? 'style="color:var(--vs-danger)"' : ''}>${isSunk ? 'SUNK' : Math.max(0, hp) + ' / 250'}</div>
         </div>
         <div class="vs-sb-stat">${_icoCannon()} Ammo:</div>
         <div class="vs-ammo">${_buildAmmoHTML(totalAmmo, spent, flintCount)}</div>
@@ -2308,12 +2645,53 @@ function _buildSidebarContent(ep, phase, screenKey) {
           </div>
           <div class="vs-flag-goal">${_icoFlag()}</div>
         </div>
-        <div class="vs-sb-stat">${_icoScroll()} Build Quality: ${Math.round(tribe.buildQuality)} (${tribe.buildQuality >= 75 ? 'Sturdy' : tribe.buildQuality >= 50 ? 'Decent' : 'Leaky'})</div>
-      </div>`;
+        <div class="vs-sb-stat">${_icoScroll()} Build Quality: ${Math.round(tribe.buildQuality)} (${tribe.buildQuality >= 75 ? 'Sturdy' : tribe.buildQuality >= 50 ? 'Decent' : 'Leaky'})</div>`;
+
+      // Player contribution bars for Phase 3
+      const p3Evts = data.phase3.events;
+      const p3Scores = {};
+      const p3Best = {};
+      const p3StepMeta = window._vsPhase3StepMeta;
+      const p3Skip = new Set(['header', 'summary', 'chatter', 'map']);
+      let p3EvtIdx = 0;
+      if (p3StepMeta) {
+        for (let si = 0; si <= revealIdx && si < p3StepMeta.length; si++) {
+          if (p3Skip.has(p3StepMeta[si]?.type)) continue;
+          const evt = p3Evts[p3EvtIdx];
+          p3EvtIdx++;
+          if (!evt || evt.tribe !== tribe.name) continue;
+          const p = evt.player || (evt.players ? evt.players[0] : null);
+          if (!p) continue;
+          p3Scores[p] = (p3Scores[p] || 0) + Math.abs(evt.score || 1);
+          if (!p3Best[p]) p3Best[p] = evt.type;
+        }
+      }
+      const p3Max = Math.max(1, ...Object.values(p3Scores));
+      const p3Members = tribe.members || [];
+      if (p3Members.length > 0) {
+        html += `<div style="margin-top:6px;border-top:1px solid rgba(192,160,64,.1);padding-top:4px;">`;
+        p3Members.forEach(n => {
+          const sc = p3Scores[n] || 0;
+          const pct3 = p3Max > 0 ? Math.round(sc / p3Max * 100) : 0;
+          const best = p3Best[n];
+          const barCol = best === 'cannonHit' || best === 'flamingAmmo' ? 'var(--vs-ember)' : best === 'repair' ? 'var(--vs-safe)' : best === 'flagGrab' ? 'var(--vs-gold)' : col;
+          html += `<div style="display:flex;align-items:center;gap:4px;margin:2px 0;">
+            ${_av(n, 16)}
+            <span style="font-family:'Cinzel',serif;font-size:8px;color:var(--vs-parch-dk);width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n}</span>
+            <div style="flex:1;height:6px;background:rgba(42,42,42,.4);border-radius:1px;overflow:hidden;">
+              <div style="height:100%;width:${pct3}%;background:${barCol};border-radius:1px;transition:width .4s ease-out;"></div>
+            </div>
+            <span style="font-family:'Fira Code',monospace;font-size:7px;color:var(--vs-parch-dk);width:20px;text-align:right;">${sc}</span>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+      html += `</div>`;
 
     } else {
       // Title / results
-      const hp = data.phase3?.finalHP?.[tribe.name] ?? data.phase1?.boatHP?.[tribe.name] ?? 50;
+      const hp = data.phase3?.finalHP?.[tribe.name] ?? data.phase1?.boatHP?.[tribe.name] ?? 150;
+      const hpPctR = clamp(Math.round(Math.max(0, hp) / 250 * 100), 0, 100);
       const isWinner = data.winnerTribe === tribe.name;
       html += `<div class="vs-sb-tribe">
         <div class="vs-sb-tribe-name">
@@ -2322,8 +2700,8 @@ function _buildSidebarContent(ep, phase, screenKey) {
         </div>
         <div class="vs-sb-stat">${_icoShield()} Hull HP:</div>
         <div class="vs-hp-bar">
-          <div class="vs-hp-fill ${_hpClass(Math.max(0, hp))}" style="width:${Math.max(0, hp)}%"></div>
-          <div class="vs-hp-label">${hp <= 0 ? 'SUNK' : Math.max(0, hp) + ' / 100'}</div>
+          <div class="vs-hp-fill ${_hpClass(Math.max(0, hp))}" style="width:${hpPctR}%"></div>
+          <div class="vs-hp-label">${hp <= 0 ? 'SUNK' : Math.max(0, hp) + ' / 250'}</div>
         </div>
       </div>`;
     }
@@ -2335,7 +2713,14 @@ function _buildSidebarContent(ep, phase, screenKey) {
     html += `<div class="vs-sb-title">${_icoCannon()} Battle Log</div>`;
     const battleEvts = data.phase3.events;
     const stepMeta = window._vsPhase3StepMeta;
-    const maxShow = revealIdx >= 0 && stepMeta ? Math.min(revealIdx + 1, battleEvts.length) : 0;
+    const _logSkip = new Set(['header', 'summary', 'chatter', 'map']);
+    let maxShow = 0;
+    if (revealIdx >= 0 && stepMeta) {
+      for (let si = 0; si <= revealIdx && si < stepMeta.length; si++) {
+        if (!_logSkip.has(stepMeta[si]?.type)) maxShow++;
+      }
+      maxShow = Math.min(maxShow, battleEvts.length);
+    }
     for (let i = 0; i < maxShow && i < battleEvts.length; i++) {
       const evt = battleEvts[i];
       if (!evt) continue;
@@ -2685,9 +3070,7 @@ export function rpBuildVSPhase1(ep) {
   `);
   stepMeta.push({ type: 'blueprint' });
 
-  // Construction yard map — shows ships being built
-  steps.push(_buildConstructionYard(data));
-  stepMeta.push({ type: 'yard' });
+  // Construction yard is injected outside steps for sticky positioning
 
   // Interleave chatter and events
   let chatterIdx = 0;
@@ -2747,17 +3130,20 @@ export function rpBuildVSPhase1(ep) {
   const suffix = stKey.replace('vs-', '');
 
   const stepsHTML = steps.map((html, i) =>
-    `<div id="vs-step-${suffix}-${i}" class="${i <= 2 ? 'vs-visible' : 'vs-card vs-hidden'}">${html}</div>`
+    `<div id="vs-step-${suffix}-${i}" class="${i <= 1 ? 'vs-visible' : 'vs-card vs-hidden'}">${html}</div>`
   ).join('');
 
-  // Pre-show title banner, blueprint tracker, and construction yard
-  if (st.idx < 2) st.idx = 2;
+  // Pre-show title banner and blueprint tracker
+  if (st.idx < 1) st.idx = 1;
+
+  const yardHTML = _buildConstructionYard(data);
 
   const content = `
+    ${yardHTML}
     ${stepsHTML}
     <div id="vs-controls-${suffix}" class="vs-controls">
       <button class="vs-btn" onclick="vikingSourRevealNext('${stKey}',${steps.length})">Reveal Next</button>
-      <span id="vs-counter-${suffix}" class="vs-counter">3 / ${steps.length}</span>
+      <span id="vs-counter-${suffix}" class="vs-counter">2 / ${steps.length}</span>
       <button class="vs-btn" onclick="vikingSourRevealAll('${stKey}',${steps.length})">Reveal All</button>
     </div>
   `;
@@ -2891,8 +3277,8 @@ export function rpBuildVSPhase3(ep) {
   });
   mapSnapshots.push(JSON.parse(JSON.stringify(currentState)));
 
-  // Title banner (battle-themed with ember border)
-  steps.push(`
+  // Title banner (battle-themed with ember border) — always visible, not a step
+  const titleBanner = `
     <div class="vs-title-banner" style="border-bottom-color:var(--vs-ember);">
       <div class="vs-title-sub">World Tour Challenge</div>
       <div class="vs-title-main">Viking Sour</div>
@@ -2902,20 +3288,18 @@ export function rpBuildVSPhase3(ep) {
         `Capture the flag or sink the enemy. ${data.tribes.find(t => t.isFlintWinner).name} has flint — their cannons are hot from round one. The other tribe must improvise fire or race for the flag.` :
         'Capture the flag or sink the enemy. Load your cannons, aim true, and pray the hull holds.'}</div>
     </div>
-  `);
-  stepMeta.push({ type: 'header' });
+  `;
 
-  // Sea map
+  // Sea map — sticky, always visible, NOT a step
   const mapHTML = _buildSeaMap(data);
-  steps.push(mapHTML);
-  stepMeta.push({ type: 'map' });
 
   let chatterIdx = 0;
+  let snapCount = 0;
 
   events.forEach((evt, i) => {
     if (i > 0 && i % 3 === 0 && chatterIdx < CHATTER_P3.length) {
       steps.push(`<div class="vs-comm vs-comm-host">${CHATTER_P3[chatterIdx++]}</div>`);
-      stepMeta.push({ type: 'chatter' });
+      stepMeta.push({ type: 'chatter', snapIdx: snapCount });
     }
 
     // Update state for map snapshots
@@ -2923,23 +3307,23 @@ export function rpBuildVSPhase3(ep) {
       if (currentState[evt.target]) currentState[evt.target].hp = Math.max(0, currentState[evt.target].hp - evt.damage);
     }
     if (evt.type === 'repair' && evt.tribe && evt.hp) {
-      if (currentState[evt.tribe]) currentState[evt.tribe].hp = Math.min(100, currentState[evt.tribe].hp + evt.hp);
+      if (currentState[evt.tribe]) currentState[evt.tribe].hp = Math.min(250, currentState[evt.tribe].hp + evt.hp);
     }
     if (evt.type === 'patchGenius' && evt.tribe && evt.hp) {
-      if (currentState[evt.tribe]) currentState[evt.tribe].hp = Math.min(100, currentState[evt.tribe].hp + evt.hp);
+      if (currentState[evt.tribe]) currentState[evt.tribe].hp = Math.min(250, currentState[evt.tribe].hp + evt.hp);
     }
     if (evt.type === 'heroicShield' && evt.tribe) {
-      if (currentState[evt.tribe]) currentState[evt.tribe].hp = Math.min(100, currentState[evt.tribe].hp + 20);
+      if (currentState[evt.tribe]) currentState[evt.tribe].hp = Math.min(250, currentState[evt.tribe].hp + 25);
     }
     if (evt.type === 'ramHit' && evt.target) {
       if (currentState[evt.target]) currentState[evt.target].hp = Math.max(0, currentState[evt.target].hp - (evt.damage || 30));
-      if (evt.attacker && currentState[evt.attacker]) currentState[evt.attacker].hp = Math.max(0, currentState[evt.attacker].hp - 10);
+      if (evt.attacker && currentState[evt.attacker]) currentState[evt.attacker].hp = Math.max(0, currentState[evt.attacker].hp - (evt.selfDamage || 12));
     }
     if (evt.type === 'friendlyFire' && evt.tribe) {
-      if (currentState[evt.tribe]) currentState[evt.tribe].hp = Math.max(0, currentState[evt.tribe].hp - 10);
+      if (currentState[evt.tribe]) currentState[evt.tribe].hp = Math.max(0, currentState[evt.tribe].hp - (evt.damage || 12));
     }
     if (evt.type === 'squall') {
-      data.tribes.forEach(t => { if (currentState[t.name]) currentState[t.name].hp = Math.max(0, currentState[t.name].hp - 5); });
+      data.tribes.forEach(t => { if (currentState[t.name]) currentState[t.name].hp = Math.max(0, currentState[t.name].hp - 8); });
     }
     if (evt.type === 'boardingSuccess' && evt.tribe && evt.target) {
       const stolen = evt.stolen || 2;
@@ -2959,6 +3343,7 @@ export function rpBuildVSPhase3(ep) {
       if (currentState[evt.tribe]) currentState[evt.tribe].ammo = Math.max(0, (currentState[evt.tribe].ammo || 0) - (evt.type === 'flamingAmmo' ? 2 : 1));
     }
 
+    snapCount++;
     mapSnapshots.push(JSON.parse(JSON.stringify(currentState)));
 
     const cardType = ['cannonHit', 'cannonMiss', 'cannonUnlock', 'cannonUnlockFail', 'flamingAmmo', 'humanCannonball', 'cannonSabotage'].includes(evt.type) ? 'cannon' :
@@ -2973,7 +3358,6 @@ export function rpBuildVSPhase3(ep) {
     const tribeCol3 = data.tribes.find(t => t.name === evt.tribe)?.color || '#888';
     const tribeDot3 = evt.tribe ? `<span class="vs-sb-tribe-dot" style="background:${tribeCol3};width:10px;height:10px;flex-shrink:0"></span><span class="vs-card-tribe" style="color:${tribeCol3}">${evt.tribe}</span>` : '';
 
-    // Hit/miss sub-tag
     const hitTag = ['cannonHit', 'ramHit', 'boardingSuccess', 'flamingAmmo', 'humanCannonball'].includes(evt.type) ?
       '<span class="vs-card-tag tag-hit">HIT</span>' :
       ['cannonMiss', 'ramMiss', 'boardingFail', 'flagFail', 'cannonUnlockFail'].includes(evt.type) ?
@@ -2995,7 +3379,7 @@ export function rpBuildVSPhase3(ep) {
       <div class="vs-card-body">${evt.text}</div>
       ${foot ? `<div class="vs-card-foot">${foot}</div>` : ''}
     </div>`);
-    stepMeta.push({ type: evt.type, tribe: evt.tribe || evt.attacker, score: evt.score || 0, round: evt.round });
+    stepMeta.push({ type: evt.type, tribe: evt.tribe || evt.attacker, target: evt.target, score: evt.score || 0, round: evt.round, snapIdx: snapCount });
   });
 
   // Battle result announcement
@@ -3019,7 +3403,7 @@ export function rpBuildVSPhase3(ep) {
     <div style="margin-top:6px;font-family:'EB Garamond',serif;font-style:italic;color:var(--vs-parch-dk);">
       ${loseTribe?.name || 'The losing tribe'} goes to tribal council.</div>
   </div>`);
-  stepMeta.push({ type: 'result' });
+  stepMeta.push({ type: 'result', snapIdx: snapCount });
 
   window._vsMapSnapshots = mapSnapshots;
   window._vsPhase3StepMeta = stepMeta;
@@ -3028,17 +3412,18 @@ export function rpBuildVSPhase3(ep) {
   const suffix = stKey.replace('vs-', '');
 
   const stepsHTML = steps.map((html, i) =>
-    `<div id="vs-step-${suffix}-${i}" class="${i <= 1 ? 'vs-visible' : 'vs-card vs-hidden'}">${html}</div>`
+    `<div id="vs-step-${suffix}-${i}" class="vs-card vs-hidden">${html}</div>`
   ).join('');
 
-  // Pre-show header and map
-  if (st.idx < 1) st.idx = 1;
+  if (st.idx < 0) st.idx = -1;
 
   const content = `
+    ${titleBanner}
+    ${mapHTML}
     ${stepsHTML}
     <div id="vs-controls-${suffix}" class="vs-controls">
       <button class="vs-btn" onclick="vikingSourRevealNext('${stKey}',${steps.length})">Reveal Next</button>
-      <span id="vs-counter-${suffix}" class="vs-counter">2 / ${steps.length}</span>
+      <span id="vs-counter-${suffix}" class="vs-counter">0 / ${steps.length}</span>
       <button class="vs-btn" onclick="vikingSourRevealAll('${stKey}',${steps.length})">Reveal All</button>
     </div>
   `;
@@ -3046,31 +3431,69 @@ export function rpBuildVSPhase3(ep) {
   return _shell(content, ep, 'battle', stKey);
 }
 
+function _buildMapShipSVG(color, idx) {
+  const hull = color;
+  return `<svg class="vs-sea-ship-svg" viewBox="0 0 60 30" fill="none">
+    <path d="M5 18 Q8 26 30 26 Q52 26 55 18 L50 14 Q30 11 10 14 Z" fill="${hull}" opacity=".8" stroke="${hull}" stroke-width=".5"/>
+    <path d="M20 26 L30 29 L40 26" fill="none" stroke="${hull}" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
+    <line x1="30" y1="5" x2="30" y2="20" stroke="var(--vs-plank-lt)" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M31 7 Q42 12 42 17 L31 19 Z" fill="var(--vs-parchment)" opacity=".2" stroke="var(--vs-parch-dk)" stroke-width=".3"/>
+    <path d="M5 18 Q3 14 4 8 Q5 5 7 7 L9 14 Z" fill="${hull}" opacity=".7"/>
+    <path d="M55 18 Q57 14 56 9 Q55 6 53 8 L51 14 Z" fill="${hull}" opacity=".7"/>
+    <rect x="18" y="15" width="6" height="3" rx="1" fill="var(--vs-iron)" opacity=".8"/>
+    <rect x="36" y="15" width="6" height="3" rx="1" fill="var(--vs-iron)" opacity=".8"/>
+    ${[14,22,30,38,44].map((x,i) => `<rect x="${x}" y="12" width="3" height="5" rx="1.5" fill="${i%2===0?hull:'var(--vs-gold)'}" opacity=".4"/>`).join('')}
+  </svg>`;
+}
+
+function _buildFireSVG() {
+  return `<svg width="20" height="16" viewBox="0 0 20 16" fill="none" style="display:block;">
+    <path d="M10 0 Q14 4 14 8 Q14 14 10 16 Q6 14 6 8 Q6 4 10 0Z" fill="var(--vs-ember)" opacity=".7">
+      <animate attributeName="d" dur="0.6s" repeatCount="indefinite" values="M10 0 Q14 4 14 8 Q14 14 10 16 Q6 14 6 8 Q6 4 10 0Z;M10 1 Q15 5 13 9 Q13 14 10 15 Q7 14 7 9 Q5 5 10 1Z;M10 0 Q14 4 14 8 Q14 14 10 16 Q6 14 6 8 Q6 4 10 0Z"/>
+    </path>
+    <path d="M10 4 Q12 6 12 9 Q12 13 10 14 Q8 13 8 9 Q8 6 10 4Z" fill="var(--vs-flame)" opacity=".8"/>
+  </svg>`;
+}
+
 function _buildSeaMap(data) {
+  const tribeCount = data.tribes.length;
+  const laneHeight = Math.min(55, Math.floor(160 / tribeCount));
+
   let shipsHTML = '';
   data.tribes.forEach((tribe, idx) => {
     const startPct = tribe.isFlintWinner ? 20 : 5;
-    const topPct = 30 + idx * 25;
-    shipsHTML += `<div id="vs-ship-${idx}" class="vs-sea-ship" style="left:${startPct}%;top:${topPct}%;">
-      <div class="vs-sea-ship-body" style="background:rgba(${tribe.color === '#c45a20' ? '196,90,32' : '58,85,104'},.2);border-color:${tribe.color};color:${tribe.color};"></div>
+    const topPx = 35 + idx * laneHeight;
+    const initHP = data.phase2.boatHP?.[tribe.name] || tribe.boatHP || 200;
+    shipsHTML += `<div id="vs-ship-${idx}" class="vs-sea-ship" style="left:${startPct}%;top:${topPx}px;" data-tribe="${tribe.name}">
+      <div class="vs-sea-ship-fire" id="vs-ship-fire-${idx}">${_buildFireSVG()}</div>
+      ${_buildMapShipSVG(tribe.color, idx)}
       <div class="vs-sea-ship-label" style="color:${tribe.color};">${tribe.name}</div>
-      <div style="width:28px;height:3px;border-radius:2px;background:rgba(255,255,255,.15);margin:2px auto 0;overflow:hidden;">
-        <div id="vs-shiphp-${idx}" class="vs-hp-fill healthy" style="width:100%;height:100%;border-radius:2px;"></div>
+      <div class="vs-sea-ship-hpwrap">
+        <div class="vs-sea-ship-hplabel" id="vs-shiphp-label-${idx}">${initHP} HP</div>
+        <div id="vs-shiphp-${idx}" class="vs-hp-fill healthy" style="width:100%;height:100%;"></div>
       </div>
     </div>`;
   });
 
-  return `<div class="vs-sea-map">
+  const laneLines = data.tribes.slice(0, -1).map((_, idx) => {
+    const y = 35 + (idx + 1) * laneHeight - Math.floor(laneHeight / 2);
+    return `<div style="position:absolute;left:5%;right:5%;top:${y}px;height:1px;background:rgba(154,184,200,.06);"></div>`;
+  }).join('');
+
+  return `<div class="vs-sea-map" id="vs-sea-map">
     <div class="vs-sea-map-grid"></div>
-    <div class="vs-sea-map-wave" style="top:20%"></div>
-    <div class="vs-sea-map-wave" style="top:45%"></div>
-    <div class="vs-sea-map-wave" style="top:70%"></div>
-    <div class="vs-sea-map-label" style="top:4px;left:4px;">N</div>
-    <div class="vs-sea-map-label" style="bottom:4px;right:4px;">S</div>
+    <div class="vs-sea-map-wave" style="top:25%"></div>
+    <div class="vs-sea-map-wave" style="top:50%"></div>
+    <div class="vs-sea-map-wave" style="top:75%"></div>
+    ${laneLines}
+    <div class="vs-sea-map-label" style="top:4px;left:12px;">START</div>
+    <div class="vs-sea-map-label" style="top:4px;right:12px;">FLAG</div>
+    <div class="vs-sea-map-flag-glow"></div>
     <div class="vs-sea-map-flag">
       ${_icoFlag()}
-      <div style="font-family:'Fira Code',monospace;font-size:7px;color:var(--vs-gold-lt);text-align:center;margin-top:2px;">FLAG</div>
+      <div style="font-family:'Fira Code',monospace;font-size:7px;color:var(--vs-gold-lt);text-align:center;margin-top:1px;">GOAL</div>
     </div>
+    <div class="vs-map-round-label" id="vs-map-round">Round 1</div>
     ${shipsHTML}
   </div>`;
 }

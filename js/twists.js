@@ -4045,6 +4045,8 @@ export function applyTwist(ep, twist, isPrimary = true) {
 
   } else if (engineType === 'aftermath') {
     twistObj.aftermath = true; // generateAftermathShow handles everything in patchEpisodeHistory
+  } else if (engineType === 'aftermayhem') {
+    ep.isAftermayhem = true;
   } else if (engineType === 'shot-in-dark') {
     gs.shotInDarkEnabledThisEp = true;
   }

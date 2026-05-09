@@ -60,6 +60,7 @@ import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildT
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults } from './chal/greeces-pieces.js';
 import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults } from './chal/hangar-black.js';
+import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemFinish } from './chal/aftermayhem.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -1882,6 +1883,14 @@ export function _textAftermath(ep, ln, sec) {
     ln('');
     ln('FAN VOTE RESULTS:');
     a.fanVote.results.forEach(r => ln(`${r.name}: ${r.pct}%${r.name === a.fanVote.winner ? ' — RETURNING' : ''}`));
+  }
+  // Aftermayhem
+  if (a.aftermayhem) {
+    ln('');
+    sec('AFTERMATH AFTERMAYHEM');
+    [rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemFinish].forEach(fn => {
+      try { const html = fn(ep); if (html) ln(_textStripHtml(html)); } catch(e) {}
+    });
   }
   // Awards
   if (a.awards?.length) {

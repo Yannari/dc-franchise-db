@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aftermayhem VP — Mockup v3</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Bungee+Shade&family=Press+Start+2P&family=Fredoka:wght@400;600;700&family=Bangers&display=swap');
+
+:root {
+  /* Palette drawn from the reference Aftermayhem mockup: deep purple + magenta + gold */
+  --am-deep:#100418;--am-deep2:#2a0a3a;--am-purple:#3a1258;--am-magenta:#5a0a4a;
+  --am-gold:#ffd13c;--am-gold-dk:#c9a020;--am-orange:#ff6b35;
+  --am-cyan:#00d4ff;--am-red:#ff3c3c;--am-green:#00c864;
+  --am-pink:#ff3c8a;--am-neon:#39ff14;--am-violet:#b44dff;
+  --am-cream:#f0e8d8;--am-grey:#888;
+  --am-hot:#ff2d7b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--am-deep);color:var(--am-cream);font-family:'Fredoka',sans-serif;overflow-x:hidden;}
+
+/* ══════ ATMOSPHERE ══════ */
+.am-atmo{position:fixed;top:46px;left:0;right:0;bottom:0;z-index:0;pointer-events:none;overflow:hidden;}
+
+/* Confetti rain — permanent */
+.am-confetti{position:absolute;width:8px;border-radius:1px;opacity:0;}
+.am-confetti.fall{animation:am-cfall linear infinite;}
+@keyframes am-cfall{0%{opacity:.6;transform:translateY(-30px) rotate(0deg) scaleX(1);}25%{transform:translateY(25vh) rotate(270deg) scaleX(.5);}50%{transform:translateY(50vh) rotate(540deg) scaleX(1);}75%{transform:translateY(75vh) rotate(810deg) scaleX(.5);}100%{opacity:0;transform:translateY(110vh) rotate(1080deg) scaleX(1);}}
+
+/* Stage spotlights */
+.am-spot{position:absolute;width:200px;height:700px;background:linear-gradient(180deg,rgba(255,209,60,.06) 0%,transparent 100%);transform-origin:top center;border-radius:0 0 50% 50%;}
+.am-spot.s1{left:5%;top:-30px;animation:am-sweep 7s ease-in-out infinite;}
+.am-spot.s2{right:8%;top:-30px;animation:am-sweep 7s ease-in-out infinite 2.5s;}
+.am-spot.s3{left:40%;top:-30px;animation:am-sweep 5s ease-in-out infinite 4s;}
+.am-spot.s4{left:65%;top:-30px;animation:am-sweep 9s ease-in-out infinite 1s;}
+@keyframes am-sweep{0%{transform:rotate(-20deg);opacity:.5}50%{transform:rotate(20deg);opacity:1}100%{transform:rotate(-20deg);opacity:.5}}
+
+/* Floating dice ghosts */
+.am-float-die{position:absolute;opacity:.03;animation:am-diefloat linear infinite;}
+@keyframes am-diefloat{0%{transform:translateY(110vh) rotate(0deg);}100%{transform:translateY(-10vh) rotate(720deg);}}
+
+/* Hot pink stage glow (from reference) */
+.am-floor{position:fixed;bottom:0;left:0;right:0;height:300px;
+  background:radial-gradient(ellipse at 50% 100%,rgba(255,60,138,.08) 0%,rgba(255,209,60,.04) 40%,transparent 70%);pointer-events:none;z-index:0;}
+
+/* Magenta side panels (from reference thumbnail) */
+.am-panel-l,.am-panel-r{position:fixed;top:0;bottom:0;width:80px;z-index:0;pointer-events:none;}
+.am-panel-l{left:0;background:linear-gradient(90deg,rgba(90,10,74,.3),transparent);}
+.am-panel-r{right:0;background:linear-gradient(270deg,rgba(90,10,74,.3),transparent);}
+
+/* KO screen flash */
+@keyframes am-ko-flash{0%{opacity:0}5%{opacity:.2}100%{opacity:0}}
+
+/* ══════ BROADCAST CHROME ══════ */
+.am-broadcast{position:fixed;top:0;left:0;right:0;z-index:1000;height:36px;
+  background:linear-gradient(90deg,rgba(16,4,24,.97),rgba(58,18,88,.97),rgba(90,10,74,.97));
+  border-bottom:2px solid var(--am-gold);display:flex;align-items:center;padding:0 16px;font-size:11px;}
+.am-live{display:flex;align-items:center;gap:6px;color:var(--am-pink);text-transform:uppercase;letter-spacing:2px;font-size:9px;font-weight:700;font-family:'Press Start 2P',monospace;}
+.am-live-dot{width:8px;height:8px;background:var(--am-pink);border-radius:50%;animation:am-blink 1s infinite;}
+@keyframes am-blink{0%,100%{opacity:1}50%{opacity:.2}}
+.am-ticker{flex:1;overflow:hidden;margin:0 16px;height:18px;position:relative;}
+.am-ticker-inner{position:absolute;white-space:nowrap;animation:am-scroll 25s linear infinite;font-size:10px;color:var(--am-gold);letter-spacing:1px;font-family:'Fredoka',sans-serif;}
+@keyframes am-scroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+.am-channel{font-family:'Bungee',sans-serif;color:var(--am-pink);font-size:11px;letter-spacing:2px;}
+
+/* ══════ MAIN SHELL ══════ */
+.am-shell{max-width:1100px;margin:42px auto 120px;display:grid;grid-template-columns:1fr 260px;gap:0;position:relative;z-index:2;
+  border:2px solid rgba(255,209,60,.15);border-radius:8px;overflow:visible;
+  background:linear-gradient(180deg,rgba(42,10,58,.95),rgba(58,18,88,.85),rgba(42,10,58,.95));
+  box-shadow:0 0 80px rgba(255,60,138,.06),0 0 120px rgba(0,0,0,.5);}
+.am-main{padding:0;overflow:visible;position:relative;}
+
+/* ══════ TITLE BANNER ══════ */
+.am-banner{text-align:center;padding:32px 16px 20px;position:relative;overflow:hidden;grid-column:1/-1;}
+.am-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,209,60,.1) 0%,transparent 60%);}
+.am-banner-sub{font-family:'Fredoka',sans-serif;font-size:11px;color:rgba(255,60,138,.7);letter-spacing:4px;text-transform:uppercase;position:relative;z-index:1;}
+.am-banner-main{font-family:'Bungee Shade',sans-serif;font-size:42px;color:var(--am-gold);
+  text-shadow:0 0 30px rgba(255,209,60,.4),0 4px 0 var(--am-gold-dk),0 0 80px rgba(255,209,60,.15);
+  margin:6px 0;position:relative;z-index:1;letter-spacing:3px;
+  animation:am-title-glow 3s ease-in-out infinite alternate;}
+@keyframes am-title-glow{0%{text-shadow:0 0 30px rgba(255,209,60,.4),0 4px 0 var(--am-gold-dk);}100%{text-shadow:0 0 50px rgba(255,209,60,.6),0 4px 0 var(--am-gold-dk),0 0 100px rgba(255,209,60,.2);}}
+.am-banner-phase{font-family:'Bangers',sans-serif;font-size:18px;color:var(--am-pink);letter-spacing:3px;text-transform:uppercase;position:relative;z-index:1;}
+
+/* ══════ TICKER BAR ══════ */
+.am-ticker-bar{background:linear-gradient(90deg,var(--am-gold),var(--am-pink),var(--am-gold));padding:4px 0;overflow:hidden;grid-column:1/-1;}
+.am-ticker-bar-inner{display:flex;gap:60px;animation:am-scroll 30s linear infinite;white-space:nowrap;
+  font-family:'Bangers',sans-serif;font-size:12px;color:var(--am-deep);padding:0 8px;letter-spacing:1px;}
+
+/* ══════════════════════════════════════════════ */
+/* GAME BOARD MAP — STICKY, ALWAYS VISIBLE       */
+/* ══════════════════════════════════════════════ */
+.am-board{position:sticky;top:36px;z-index:20;min-height:240px;
+  background:linear-gradient(180deg,#2a0e40 0%,#3a1258 40%,#2a0e40 100%);
+  border-bottom:3px solid var(--am-pink);padding:14px 16px 16px;margin:0;}
+.am-board::before{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent 0px,transparent 58px,rgba(255,209,60,.02) 58px,rgba(255,209,60,.02) 60px),
+    repeating-linear-gradient(0deg,transparent 0px,transparent 58px,rgba(255,60,138,.02) 58px,rgba(255,60,138,.02) 60px);
+  pointer-events:none;}
+.am-board-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--am-gold);letter-spacing:3px;opacity:.5;margin-bottom:8px;}
+
+/* Board track */
+.am-track{display:flex;flex-wrap:wrap;gap:5px;position:relative;padding:4px 0;}
+
+/* Squares */
+.am-sq{width:54px;height:62px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;transition:all .3s;flex-shrink:0;}
+.am-sq.normal{background:rgba(255,209,60,.06);border:1.5px solid rgba(255,209,60,.15);}
+.am-sq.trap-revealed{background:rgba(255,60,60,.12);border:1.5px solid rgba(255,60,60,.4);animation:am-trap-pulse 1.5s ease-in-out infinite;}
+@keyframes am-trap-pulse{0%,100%{box-shadow:0 0 8px rgba(255,60,60,.2)}50%{box-shadow:0 0 20px rgba(255,60,60,.5)}}
+.am-sq.finish{background:linear-gradient(135deg,rgba(255,209,60,.15),rgba(255,60,138,.1));border:2px solid var(--am-gold);
+  box-shadow:0 0 20px rgba(255,209,60,.2);animation:am-finish-glow 2s ease-in-out infinite;}
+@keyframes am-finish-glow{0%,100%{box-shadow:0 0 10px rgba(255,209,60,.15)}50%{box-shadow:0 0 30px rgba(255,209,60,.4)}}
+.am-sq.start{background:rgba(255,255,255,.03);border:1.5px dashed rgba(255,255,255,.12);}
+.am-sq-num{font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(255,255,255,.35);}
+.am-sq-icon{margin-top:3px;}
+.am-sq-label{font-family:'Press Start 2P',monospace;font-size:5px;color:rgba(255,255,255,.2);margin-top:2px;max-width:50px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.am-sq.active{transform:scale(1.12);border-color:#fff;box-shadow:0 0 15px rgba(255,255,255,.25);z-index:3;}
+
+/* ═══ Player Tokens (avatars on board) ═══ */
+.am-token{width:30px;height:30px;border-radius:50%;border:2.5px solid #fff;position:absolute;bottom:-8px;overflow:hidden;z-index:4;
+  box-shadow:0 2px 10px rgba(0,0,0,.7);transition:left .8s cubic-bezier(.4,0,.2,1),bottom .8s cubic-bezier(.4,0,.2,1),transform .3s;}
+.am-token img{width:100%;height:100%;object-fit:cover;}
+.am-token.moving{animation:am-token-hop .6s ease-out;}
+@keyframes am-token-hop{0%{transform:translateY(0)}30%{transform:translateY(-18px)}60%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+.am-token.eliminated{opacity:.25;filter:grayscale(1) brightness(.5);transform:scale(.6);border-color:var(--am-grey);}
+.am-token.eliminated::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:900;color:var(--am-red);text-shadow:0 0 6px rgba(0,0,0,.9);}
+.am-token .initials{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-family:'Bungee',sans-serif;font-size:10px;color:#fff;background:rgba(255,255,255,.15);}
+
+/* ═══ DICE — center of board, animated ═══ */
+.am-dice-zone{position:absolute;top:8px;right:16px;display:flex;flex-direction:column;align-items:center;gap:4px;z-index:10;}
+.am-dice-label{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--am-pink);letter-spacing:2px;}
+
+/* SVG Dice */
+.am-dice-box{width:64px;height:64px;perspective:400px;cursor:pointer;}
+.am-dice-face{width:64px;height:64px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 20px rgba(0,0,0,.5),inset 0 -4px 0 rgba(0,0,0,.1),0 0 30px rgba(255,209,60,.15);
+  position:relative;transition:transform .1s;}
+.am-dice-face.rolling{animation:am-dice-tumble .6s cubic-bezier(.2,.6,.4,1);}
+@keyframes am-dice-tumble{
+  0%{transform:rotate(0deg) scale(.6);opacity:.5;box-shadow:0 0 0 rgba(255,209,60,0);}
+  25%{transform:rotate(270deg) scale(.9);opacity:.8;}
+  50%{transform:rotate(540deg) scale(1.15);box-shadow:0 0 40px rgba(255,209,60,.4);}
+  75%{transform:rotate(720deg) scale(1.05);}
+  100%{transform:rotate(720deg) scale(1);box-shadow:0 6px 20px rgba(0,0,0,.5);}
+}
+.am-dice-face.landed{animation:am-dice-land .3s ease-out;}
+@keyframes am-dice-land{0%{transform:scale(1.15) rotate(720deg)}50%{transform:scale(.95) rotate(720deg)}100%{transform:scale(1) rotate(720deg)}}
+
+/* Dice pips */
+.am-dice-pips{display:grid;grid-template-columns:repeat(3,14px);grid-template-rows:repeat(3,14px);gap:3px;padding:4px;}
+.am-pip{width:14px;height:14px;border-radius:50%;background:transparent;}
+.am-pip.on{background:var(--am-deep);box-shadow:inset 0 2px 3px rgba(0,0,0,.3);}
+.am-dice-result{font-family:'Bungee',sans-serif;font-size:11px;color:var(--am-gold);letter-spacing:1px;margin-top:2px;
+  opacity:0;transition:opacity .3s;}
+.am-dice-result.show{opacity:1;}
+
+/* ══════ CSS ICONS (same as v2, condensed) ══════ */
+.am-icon{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;position:relative;}
+.am-icon-obstacle::before{content:'';width:14px;height:2px;background:var(--am-orange);position:absolute;top:8px;}
+.am-icon-obstacle::after{content:'';width:2px;height:12px;background:var(--am-orange);position:absolute;left:3px;top:4px;box-shadow:8px 0 0 var(--am-orange);}
+.am-icon-trivia::before{content:'?';font-family:'Bungee',sans-serif;font-size:16px;color:var(--am-cyan);}
+.am-icon-feast::before{content:'';width:3px;height:14px;background:var(--am-green);border-radius:1px;position:absolute;}
+.am-icon-feast::after{content:'';width:10px;height:6px;border:2px solid var(--am-green);border-top:none;border-radius:0 0 5px 5px;position:absolute;top:2px;}
+.am-icon-laser::before{content:'';width:14px;height:14px;border:2px solid var(--am-cyan);border-radius:50%;position:absolute;}
+.am-icon-laser::after{content:'+';font-size:10px;color:var(--am-cyan);font-weight:900;}
+.am-icon-crowd::before{content:'';width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:10px solid var(--am-violet);position:absolute;left:6px;}
+.am-icon-crowd::after{content:'';width:6px;height:8px;background:var(--am-violet);border-radius:2px 0 0 2px;position:absolute;left:0;top:6px;}
+.am-icon-puzzle::before{content:'';width:12px;height:12px;background:var(--am-gold);border-radius:2px;position:absolute;}
+.am-icon-puzzle::after{content:'';width:6px;height:6px;background:var(--am-gold);border-radius:50%;position:absolute;top:-2px;left:3px;}
+.am-icon-memory::before{content:'';width:14px;height:12px;background:var(--am-pink);border-radius:50% 50% 0 0;position:absolute;top:2px;}
+.am-icon-memory::after{content:'';width:1px;height:10px;background:var(--am-deep);position:absolute;top:3px;}
+.am-icon-roast::before{content:'';width:8px;height:12px;background:var(--am-orange);border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;position:absolute;top:2px;}
+.am-icon-roast::after{content:'';width:4px;height:7px;background:var(--am-gold);border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;position:absolute;top:5px;}
+.am-icon-creature::before{content:'';width:3px;height:14px;background:var(--am-red);border-radius:1px;transform:rotate(-15deg);position:absolute;box-shadow:5px 0 0 var(--am-red),10px 0 0 var(--am-red);}
+.am-icon-trap::before{content:'';width:12px;height:3px;background:var(--am-neon);position:absolute;bottom:3px;border-radius:1px;}
+.am-icon-trap::after{content:'';width:8px;height:8px;border:2px solid var(--am-neon);border-top:none;border-right:none;border-radius:0 0 0 4px;position:absolute;top:3px;left:4px;}
+.am-icon-trophy{color:var(--am-gold);}
+.am-icon-trophy::before{content:'';width:12px;height:10px;background:var(--am-gold);border-radius:0 0 4px 4px;position:absolute;top:4px;}
+.am-icon-trophy::after{content:'';width:18px;height:8px;border:2px solid var(--am-gold);border-bottom:none;border-radius:4px 4px 0 0;position:absolute;top:0;}
+.am-icon-skull::before{content:'';width:14px;height:12px;background:var(--am-red);border-radius:50% 50% 20% 20%;position:absolute;top:1px;}
+.am-icon-skull::after{content:'';width:10px;height:4px;background:var(--am-deep2);border-radius:0 0 2px 2px;position:absolute;top:9px;left:3px;box-shadow:inset 3px 0 0 var(--am-red);}
+.am-icon-start::before{content:'';width:2px;height:14px;background:rgba(255,255,255,.4);position:absolute;left:6px;top:2px;}
+.am-icon-start::after{content:'';width:10px;height:7px;background:rgba(255,255,255,.12);position:absolute;left:8px;top:2px;clip-path:polygon(0 0,100% 50%,0 100%);}
+
+/* ══════ ENERGY BAR ══════ */
+.am-energy-fill.high{background:linear-gradient(90deg,var(--am-green),#4ade80);}
+.am-energy-fill.mid{background:linear-gradient(90deg,#f59e0b,var(--am-gold));}
+.am-energy-fill.low{background:linear-gradient(90deg,var(--am-red),var(--am-orange));animation:am-energy-danger 1s ease-in-out infinite;}
+@keyframes am-energy-danger{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ══════ EVENT CARDS ══════ */
+.am-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,209,60,.08);border-radius:8px;padding:14px 16px;margin:10px 16px;
+  position:relative;overflow:hidden;}
+.am-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 10%,rgba(255,209,60,.15) 50%,transparent 90%);}
+.am-card.roll{border-left:4px solid var(--am-gold);}
+.am-card.challenge{border-left:4px solid var(--am-cyan);}
+.am-card.trap{border-left:4px solid var(--am-red);background:rgba(255,60,60,.04);}
+.am-card.social{border-left:4px solid var(--am-violet);}
+.am-card.ko{border-left:4px solid var(--am-red);background:linear-gradient(90deg,rgba(255,60,60,.06),transparent);
+  animation:am-ko-shake .5s ease-in-out;}
+@keyframes am-ko-shake{0%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}100%{transform:translateX(0)}}
+.am-card.winner{border:2px solid var(--am-gold);background:rgba(255,209,60,.05);box-shadow:0 0 30px rgba(255,209,60,.08);}
+.am-card.cameo{border-left:4px solid var(--am-neon);background:rgba(57,255,20,.02);}
+
+.am-card-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.am-card-avatar{width:32px;height:32px;border-radius:50%;border:2px solid;overflow:hidden;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.4);}
+.am-card-avatar img{width:100%;height:100%;object-fit:cover;}
+.am-card-who{font-family:'Bungee',sans-serif;font-size:13px;color:var(--am-cream);}
+.am-card-tag{font-family:'Press Start 2P',monospace;font-size:7px;padding:3px 8px;border-radius:3px;margin-left:auto;letter-spacing:1px;}
+.tag-roll{background:rgba(255,209,60,.15);color:var(--am-gold);}
+.tag-challenge{background:rgba(0,212,255,.1);color:var(--am-cyan);}
+.tag-trap{background:rgba(255,60,60,.2);color:var(--am-red);animation:am-trap-flash .6s ease-in-out 3;}
+@keyframes am-trap-flash{0%,100%{opacity:1}50%{opacity:.3}}
+.tag-ko{background:rgba(255,60,60,.25);color:var(--am-red);}
+.tag-social{background:rgba(180,77,255,.1);color:var(--am-violet);}
+.tag-win{background:rgba(255,209,60,.25);color:var(--am-gold);}
+.tag-cameo{background:rgba(57,255,20,.1);color:var(--am-neon);}
+
+.am-card-body{font-family:'Fredoka',sans-serif;font-size:13px;color:#bbb;line-height:1.6;}
+.am-card-foot{font-family:'Press Start 2P',monospace;font-size:7px;color:#666;margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.am-energy-pill{display:inline-flex;align-items:center;gap:3px;font-family:'Press Start 2P',monospace;font-size:8px;padding:2px 6px;border-radius:3px;}
+.am-energy-pill.drain{background:rgba(255,60,60,.15);color:var(--am-red);}
+.am-energy-pill.gain{background:rgba(0,200,100,.1);color:var(--am-green);}
+.am-callback{display:inline-flex;align-items:center;gap:4px;font-family:'Press Start 2P',monospace;font-size:6px;
+  color:rgba(0,212,255,.5);background:rgba(0,212,255,.04);padding:2px 6px;border-radius:2px;margin-bottom:6px;}
+
+/* Card energy bar */
+.am-card-energy{display:flex;align-items:center;gap:6px;margin-top:6px;}
+.am-card-energy-bar{flex:1;height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;}
+.am-card-energy-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+.am-card-energy-label{font-family:'Press Start 2P',monospace;font-size:7px;color:#888;white-space:nowrap;}
+
+/* ══════ WINNER CARD ══════ */
+.am-winner{text-align:center;padding:36px 20px;margin:16px;border:2px solid var(--am-gold);
+  background:linear-gradient(180deg,rgba(255,209,60,.06),rgba(255,60,138,.04));position:relative;border-radius:12px;overflow:hidden;}
+.am-winner::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 30%,rgba(255,209,60,.1) 0%,transparent 70%);}
+.am-winner-confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.am-winner-confetti span{position:absolute;width:6px;height:10px;opacity:0;border-radius:1px;}
+.am-winner-confetti span.go{animation:am-wconf 3.5s ease-out forwards;}
+@keyframes am-wconf{0%{opacity:1;transform:translateY(-20px) rotate(0deg)}100%{opacity:0;transform:translateY(350px) rotate(1200deg)}}
+.am-winner-avatar{width:72px;height:72px;border-radius:50%;border:3px solid var(--am-gold);margin:0 auto 10px;overflow:hidden;
+  box-shadow:0 0 25px rgba(255,209,60,.3);position:relative;z-index:1;}
+.am-winner-avatar img{width:100%;height:100%;object-fit:cover;}
+.am-winner-label{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--am-pink);letter-spacing:4px;text-transform:uppercase;position:relative;z-index:1;}
+.am-winner-name{font-family:'Bungee Shade',sans-serif;font-size:36px;color:var(--am-gold);
+  text-shadow:0 0 30px rgba(255,209,60,.5);margin:8px 0;position:relative;z-index:1;}
+.am-winner-sub{font-family:'Fredoka',sans-serif;font-size:15px;color:#aaa;font-style:italic;position:relative;z-index:1;}
+.am-winner-beats{margin-top:14px;font-family:'Press Start 2P',monospace;font-size:8px;color:#888;position:relative;z-index:1;}
+
+/* ══════ ROUND BANNER ══════ */
+.am-round{text-align:center;padding:18px;margin:8px 16px;position:relative;overflow:hidden;border-radius:6px;
+  background:rgba(255,209,60,.02);border:1px solid rgba(255,209,60,.06);}
+.am-round::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,60,138,.03),transparent);}
+.am-round-num{font-family:'Bungee Shade',sans-serif;font-size:26px;color:var(--am-gold);text-shadow:0 0 20px rgba(255,209,60,.2);position:relative;z-index:1;}
+.am-round-sub{font-family:'Fredoka',sans-serif;font-size:12px;color:#999;margin-top:4px;position:relative;z-index:1;}
+
+/* ══════ SIDEBAR ══════ */
+.am-sidebar{border-left:2px solid rgba(255,60,138,.15);
+  background:linear-gradient(180deg,rgba(42,10,58,.95),rgba(90,10,74,.6),rgba(42,10,58,.95));
+  padding:14px;font-size:12px;position:sticky;top:36px;height:calc(100vh - 36px);overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:rgba(255,209,60,.15) transparent;}
+.am-sb-title{font-family:'Bungee',sans-serif;font-size:9px;color:var(--am-pink);letter-spacing:2px;text-transform:uppercase;
+  margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid rgba(255,60,138,.15);}
+.am-sb-title:first-child{margin-top:0;}
+
+.am-sb-player{display:flex;align-items:center;gap:8px;padding:6px 8px;margin:5px 0;
+  background:rgba(255,255,255,.02);border:1px solid rgba(255,209,60,.05);border-radius:5px;transition:all .3s;}
+.am-sb-player.ko{opacity:.3;filter:grayscale(.8);}
+.am-sb-player.winner{border-color:var(--am-gold);background:rgba(255,209,60,.06);box-shadow:0 0 12px rgba(255,209,60,.1);}
+.am-sb-avatar{width:26px;height:26px;border-radius:50%;border:2px solid;overflow:hidden;flex-shrink:0;}
+.am-sb-avatar img{width:100%;height:100%;object-fit:cover;}
+.am-sb-info{flex:1;min-width:0;}
+.am-sb-name{font-family:'Fredoka',sans-serif;font-size:11px;color:var(--am-cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.am-sb-pos{font-family:'Press Start 2P',monospace;font-size:6px;color:#777;margin-top:1px;}
+.am-sb-energy{height:5px;background:rgba(255,255,255,.05);border-radius:3px;margin-top:3px;overflow:hidden;}
+.am-sb-energy-fill{height:100%;border-radius:3px;}
+.am-sb-status{font-family:'Press Start 2P',monospace;font-size:7px;padding:2px 5px;border-radius:2px;flex-shrink:0;}
+.am-sb-status.racing{background:rgba(0,200,100,.1);color:var(--am-green);}
+.am-sb-status.ko{background:rgba(255,60,60,.12);color:var(--am-red);}
+.am-sb-status.win{background:rgba(255,209,60,.2);color:var(--am-gold);}
+
+/* Peanut gallery */
+.am-peanut{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0;}
+.am-peanut-face{width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(255,255,255,.1);overflow:hidden;position:relative;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.am-peanut-face img{width:100%;height:100%;object-fit:cover;}
+.am-peanut-react{position:absolute;bottom:-2px;right:-2px;font-size:8px;background:var(--am-deep2);border-radius:50%;padding:1px;line-height:1;}
+
+/* ══════ CONTROLS ══════ */
+.am-controls{position:fixed;bottom:0;left:0;right:0;z-index:1000;
+  background:linear-gradient(0deg,var(--am-deep),rgba(42,10,58,.96));
+  border-top:2px solid var(--am-pink);padding:10px 16px;
+  display:flex;align-items:center;justify-content:center;gap:16px;}
+.am-btn{font-family:'Bungee',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  padding:8px 24px;border:1.5px solid var(--am-gold);background:transparent;color:var(--am-gold);
+  cursor:pointer;border-radius:4px;transition:all .2s;}
+.am-btn:hover{background:var(--am-gold);color:var(--am-deep);}
+.am-btn:active{transform:scale(.95);}
+.am-counter{font-family:'Press Start 2P',monospace;font-size:10px;color:#888;}
+
+/* ══════ DEMO OVERLAY ══════ */
+.am-demo-btn{position:fixed;top:40px;right:16px;z-index:2000;font-family:'Bungee',sans-serif;font-size:10px;
+  padding:6px 14px;background:var(--am-pink);color:#fff;border:none;border-radius:4px;cursor:pointer;
+  letter-spacing:1px;box-shadow:0 2px 10px rgba(255,60,138,.3);}
+.am-demo-btn:hover{background:var(--am-hot);}
+
+/* ══════ REDUCED MOTION ══════ */
+@media(prefers-reduced-motion:reduce){
+  .am-spot,.am-confetti,.am-ticker-inner,.am-ticker-bar-inner,
+  .am-sq.finish,.am-energy-fill.low,.am-float-die,.am-winner-confetti span,
+  .am-card.ko,.am-dice-face.rolling,.am-token.moving{animation:none !important;}
+}
+</style>
+</head>
+<body>
+
+<!-- DEMO BUTTON -->
+<button class="am-demo-btn" onclick="demoRoll()">DEMO: ROLL DICE</button>
+
+<!-- ══════ ATMOSPHERE ══════ -->
+<div class="am-atmo">
+  <div class="am-spot s1"></div>
+  <div class="am-spot s2"></div>
+  <div class="am-spot s3"></div>
+  <div class="am-spot s4"></div>
+  <!-- Confetti -->
+  <div class="am-confetti fall" style="left:4%;height:6px;background:var(--am-gold);animation-duration:4s;animation-delay:0s;"></div>
+  <div class="am-confetti fall" style="left:11%;height:8px;background:var(--am-pink);animation-duration:5.5s;animation-delay:1s;"></div>
+  <div class="am-confetti fall" style="left:20%;height:5px;background:var(--am-cyan);animation-duration:3.5s;animation-delay:2.2s;"></div>
+  <div class="am-confetti fall" style="left:32%;height:7px;background:var(--am-violet);animation-duration:4.5s;animation-delay:0.5s;"></div>
+  <div class="am-confetti fall" style="left:44%;height:6px;background:var(--am-gold);animation-duration:5s;animation-delay:1.5s;"></div>
+  <div class="am-confetti fall" style="left:56%;height:8px;background:var(--am-pink);animation-duration:3.8s;animation-delay:3s;"></div>
+  <div class="am-confetti fall" style="left:66%;height:5px;background:var(--am-neon);animation-duration:4.2s;animation-delay:0.8s;"></div>
+  <div class="am-confetti fall" style="left:77%;height:7px;background:var(--am-orange);animation-duration:5.2s;animation-delay:2.5s;"></div>
+  <div class="am-confetti fall" style="left:87%;height:6px;background:var(--am-gold);animation-duration:3.2s;animation-delay:1.8s;"></div>
+  <div class="am-confetti fall" style="left:96%;height:8px;background:var(--am-pink);animation-duration:4.8s;animation-delay:0.3s;"></div>
+  <div class="am-confetti fall" style="left:8%;height:5px;background:var(--am-hot);animation-duration:6s;animation-delay:3.5s;"></div>
+  <div class="am-confetti fall" style="left:50%;height:7px;background:var(--am-gold);animation-duration:3s;animation-delay:4s;"></div>
+  <!-- Floating dice ghosts -->
+  <div class="am-float-die" style="left:8%;font-size:32px;animation-duration:18s;animation-delay:0s;">🎲</div>
+  <div class="am-float-die" style="left:30%;font-size:24px;animation-duration:22s;animation-delay:5s;">🎲</div>
+  <div class="am-float-die" style="left:55%;font-size:36px;animation-duration:16s;animation-delay:8s;">🎲</div>
+  <div class="am-float-die" style="left:75%;font-size:20px;animation-duration:20s;animation-delay:3s;">🎲</div>
+  <div class="am-float-die" style="left:92%;font-size:28px;animation-duration:24s;animation-delay:10s;">🎲</div>
+</div>
+<div class="am-floor"></div>
+<div class="am-panel-l"></div>
+<div class="am-panel-r"></div>
+
+<!-- ══════ BROADCAST CHROME ══════ -->
+<div class="am-broadcast">
+  <div class="am-live"><div class="am-live-dot"></div>AFTERMATH LIVE</div>
+  <div class="am-ticker">
+    <div class="am-ticker-inner">
+      ⬥ DICE RANGE: 1-3 — EVERY SQUARE COUNTS ⬥ FIRST TO THE TROPHY CASE RETURNS! ⬥ BOOBY TRAPS DRAIN 20 ENERGY ⬥ SEASON CHALLENGES ARE BACK — HARDER THAN EVER ⬥ ACTIVE PLAYER CAMEOS ON THE BOARD
+    </div>
+  </div>
+  <div class="am-channel">CH.AM</div>
+</div>
+
+<!-- ══════ MAIN SHELL ══════ -->
+<div class="am-shell">
+
+  <!-- Title -->
+  <div class="am-banner">
+    <div class="am-banner-sub">Total Drama Aftermath Presents</div>
+    <div class="am-banner-main">AFTERMAYHEM</div>
+    <div class="am-banner-phase">Race to the Trophy Case — Roll 1-3</div>
+  </div>
+
+  <!-- Ticker -->
+  <div class="am-ticker-bar">
+    <div class="am-ticker-bar-inner">
+      <span>⬥ LESHAWNA LEADS AT SQ 7</span>
+      <span>⬥ GEOFF DOWN TO 15 ENERGY</span>
+      <span>⬥ GWEN JUDGES THE CROWD CONVINCE</span>
+      <span>⬥ EVA HIT THE BOOBY TRAP!</span>
+      <span>⬥ DICE RANGE 1-3</span>
+      <span>⬥ LESHAWNA LEADS AT SQ 7</span>
+    </div>
+  </div>
+
+  <!-- ══════ MAIN CONTENT ══════ -->
+  <div class="am-main">
+
+    <!-- ═══ STICKY GAME BOARD MAP ═══ -->
+    <div class="am-board" id="game-board">
+      <div class="am-board-label">GAME BOARD — ROLL 1-3</div>
+
+      <!-- Dice zone -->
+      <div class="am-dice-zone">
+        <div class="am-dice-label">DICE</div>
+        <div class="am-dice-box" id="dice-box">
+          <div class="am-dice-face" id="dice-face">
+            <div class="am-dice-pips" id="dice-pips">
+              <!-- pips set by JS -->
+              <div class="am-pip"></div><div class="am-pip"></div><div class="am-pip on"></div>
+              <div class="am-pip"></div><div class="am-pip on"></div><div class="am-pip"></div>
+              <div class="am-pip on"></div><div class="am-pip"></div><div class="am-pip"></div>
+            </div>
+          </div>
+        </div>
+        <div class="am-dice-result" id="dice-result">ROLLED 3</div>
+      </div>
+
+      <!-- Board track -->
+      <div class="am-track" id="board-track">
+        <div class="am-sq start" data-sq="0"><div class="am-sq-num">START</div><div class="am-sq-icon"><div class="am-icon am-icon-start"></div></div></div>
+        <div class="am-sq normal" data-sq="1"><div class="am-sq-num">1</div><div class="am-sq-icon"><div class="am-icon am-icon-obstacle"></div></div><div class="am-sq-label">Ep3 Relay</div></div>
+        <div class="am-sq normal" data-sq="2"><div class="am-sq-num">2</div><div class="am-sq-icon"><div class="am-icon am-icon-trivia"></div></div><div class="am-sq-label">Season Q</div></div>
+        <div class="am-sq normal" data-sq="3"><div class="am-sq-num">3</div><div class="am-sq-icon"><div class="am-icon am-icon-feast"></div></div><div class="am-sq-label">Chef Slop</div></div>
+        <div class="am-sq trap-revealed" data-sq="4"><div class="am-sq-num">4</div><div class="am-sq-icon"><div class="am-icon am-icon-skull"></div></div><div class="am-sq-label">TRAP!</div></div>
+        <div class="am-sq normal" data-sq="5"><div class="am-sq-num">5</div><div class="am-sq-icon"><div class="am-icon am-icon-crowd"></div></div><div class="am-sq-label">Gwen Judges</div></div>
+        <div class="am-sq normal" data-sq="6"><div class="am-sq-num">6</div><div class="am-sq-icon"><div class="am-icon am-icon-puzzle"></div></div><div class="am-sq-label">Ep5 Puzzle</div></div>
+        <div class="am-sq normal" data-sq="7"><div class="am-sq-num">7</div><div class="am-sq-icon"><div class="am-icon am-icon-memory"></div></div><div class="am-sq-label">Boot Order</div></div>
+        <div class="am-sq normal" data-sq="8"><div class="am-sq-num">8</div><div class="am-sq-icon"><div class="am-icon am-icon-roast"></div></div><div class="am-sq-label">Host Roast</div></div>
+        <div class="am-sq normal" data-sq="9"><div class="am-sq-num">9</div><div class="am-sq-icon"><div class="am-icon am-icon-trap"></div></div><div class="am-sq-label">Trap Sprint</div></div>
+        <div class="am-sq normal" data-sq="10"><div class="am-sq-num">10</div><div class="am-sq-icon"><div class="am-icon am-icon-creature"></div></div><div class="am-sq-label">Robo Bear</div></div>
+        <div class="am-sq normal" data-sq="11"><div class="am-sq-num">11</div><div class="am-sq-icon"><div class="am-icon am-icon-laser"></div></div><div class="am-sq-label">Ep8 Laser</div></div>
+        <div class="am-sq normal" data-sq="12"><div class="am-sq-num">12</div><div class="am-sq-icon"><div class="am-icon am-icon-obstacle"></div></div><div class="am-sq-label">Speed Run</div></div>
+        <div class="am-sq normal" data-sq="13"><div class="am-sq-num">13</div><div class="am-sq-icon"><div class="am-icon am-icon-feast"></div></div><div class="am-sq-label">Pepper Eat</div></div>
+        <div class="am-sq normal" data-sq="14"><div class="am-sq-num">14</div><div class="am-sq-icon"><div class="am-icon am-icon-memory"></div></div><div class="am-sq-label">Alliance Q</div></div>
+        <div class="am-sq finish" data-sq="15"><div class="am-sq-num">★</div><div class="am-sq-icon"><div class="am-icon am-icon-trophy"></div></div><div class="am-sq-label">TROPHY</div></div>
+      </div>
+
+      <!-- Player tokens — positioned by JS -->
+      <div id="token-noah" class="am-token" style="border-color:var(--am-cyan);" data-pos="4">
+        <img src="assets/avatars/noah.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="Noah">
+        <div class="initials" style="display:none;background:#0088cc;">N</div>
+      </div>
+      <div id="token-eva" class="am-token" style="border-color:var(--am-red);" data-pos="3">
+        <img src="assets/avatars/eva.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="Eva">
+        <div class="initials" style="display:none;background:#cc2020;">E</div>
+      </div>
+      <div id="token-leshawna" class="am-token" style="border-color:var(--am-green);" data-pos="7">
+        <img src="assets/avatars/leshawna.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="Leshawna">
+        <div class="initials" style="display:none;background:#00a050;">L</div>
+      </div>
+      <div id="token-tyler" class="am-token" style="border-color:var(--am-orange);" data-pos="5">
+        <img src="assets/avatars/tyler.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="Tyler">
+        <div class="initials" style="display:none;background:#cc5500;">T</div>
+      </div>
+      <div id="token-beth" class="am-token eliminated" style="border-color:var(--am-grey);" data-pos="3">
+        <img src="assets/avatars/beth.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="Beth">
+        <div class="initials" style="display:none;background:#888;">B</div>
+      </div>
+      <div id="token-geoff" class="am-token" style="border-color:#f59e0b;" data-pos="6">
+        <img src="assets/avatars/geoff.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="Geoff">
+        <div class="initials" style="display:none;background:#cc8800;">G</div>
+      </div>
+    </div>
+
+    <!-- ═══ ROUND BANNER ═══ -->
+    <div class="am-round">
+      <div class="am-round-num">ROUND 3</div>
+      <div class="am-round-sub">The race heats up — energy is everything</div>
+    </div>
+
+    <!-- ═══ CARDS ═══ -->
+
+    <!-- Dice roll card -->
+    <div class="am-card roll">
+      <div class="am-card-head">
+        <div class="am-card-avatar" style="border-color:var(--am-cyan);"><img src="assets/avatars/noah.png" onerror="this.style.display='none'" alt="Noah"></div>
+        <span class="am-card-who">Noah</span>
+        <span class="am-card-tag tag-roll">ROLLED 2</span>
+      </div>
+      <div class="am-card-body">Noah picks up the oversized die — it's comically large for his scrawny arms. He gives it a theatrical toss. It tumbles to a 2. "Statistically reasonable. I'll work with it."</div>
+      <div class="am-card-foot"><span>→ Advances from Sq 2 to Sq 4</span></div>
+    </div>
+
+    <!-- Challenge with season callback -->
+    <div class="am-card challenge">
+      <div class="am-card-head">
+        <div class="am-card-avatar" style="border-color:var(--am-cyan);"><img src="assets/avatars/noah.png" onerror="this.style.display='none'" alt="Noah"></div>
+        <div style="flex:1;">
+          <span class="am-card-who">Noah</span>
+          <div class="am-callback">📺 CALLBACK: Ep6 Boot Order Quiz</div>
+        </div>
+        <span class="am-card-tag tag-challenge">MEMORY MAZE</span>
+      </div>
+      <div class="am-card-body">The host pulls up a scrambled timeline of this season's boot order. Noah scans it. "Ezekiel, then Justin, then... wait, was it Katie or Sadie?" He hesitates. The buzzer nearly sounds — but he nails the last three in order.</div>
+      <div class="am-card-foot">
+        <span>Intuition 7 × 0.6 + Mental 8 × 0.3 = 6.6 → Score: 7.9</span>
+        <span class="am-energy-pill gain">+7 ENERGY</span>
+      </div>
+      <div class="am-card-energy">
+        <span class="am-card-energy-label">NOAH 82 HP</span>
+        <div class="am-card-energy-bar"><div class="am-card-energy-fill am-energy-fill high" style="width:82%;"></div></div>
+      </div>
+    </div>
+
+    <!-- Social -->
+    <div class="am-card social">
+      <div class="am-card-head">
+        <div class="am-card-avatar" style="border-color:var(--am-red);"><img src="assets/avatars/eva.png" onerror="this.style.display='none'" alt="Eva"></div>
+        <span class="am-card-who">Eva</span>
+        <span class="am-card-tag tag-social">TRASH TALK</span>
+      </div>
+      <div class="am-card-body">"Hey bookworm — enjoy your little memory game. When I catch up, I won't need to remember anything except the sound you make when you hit the floor." The peanut gallery oohs.</div>
+      <div class="am-card-foot">
+        <span>Eva → Noah: Bond −1</span>
+        <span class="am-energy-pill drain">NOAH −5 ENERGY</span>
+      </div>
+    </div>
+
+    <!-- Active player cameo -->
+    <div class="am-card cameo">
+      <div class="am-card-head">
+        <div class="am-card-avatar" style="border-color:var(--am-neon);"><img src="assets/avatars/gwen.png" onerror="this.style.display='none'" alt="Gwen"></div>
+        <span class="am-card-who">Guest Judge: Gwen</span>
+        <span class="am-card-tag tag-cameo">ACTIVE PLAYER</span>
+      </div>
+      <div class="am-card-body">Gwen walks on set from backstage. "I can't believe I'm back here." She takes the judge's seat for the Crowd Convince — Tyler will have to convince his former tribemate he deserves a second chance.</div>
+    </div>
+
+    <!-- Trap + KO -->
+    <div class="am-card trap">
+      <div class="am-card-head">
+        <div class="am-card-avatar" style="border-color:#f59e0b;"><img src="assets/avatars/geoff.png" onerror="this.style.display='none'" alt="Geoff"></div>
+        <span class="am-card-who">Geoff</span>
+        <span class="am-card-tag tag-trap">BOOBY TRAP!</span>
+      </div>
+      <div class="am-card-body">The square cracks open under Geoff's feet. A geyser of green slime erupts, drenching him head to toe. He tumbles through a trapdoor, slides down a chute, and lands in a pile of foam peanuts.</div>
+      <div class="am-card-foot">
+        <span>TRAP DAMAGE</span>
+        <span class="am-energy-pill drain">−20 ENERGY</span>
+      </div>
+      <div class="am-card-energy">
+        <span class="am-card-energy-label">GEOFF 15 HP</span>
+        <div class="am-card-energy-bar"><div class="am-card-energy-fill am-energy-fill low" style="width:15%;"></div></div>
+      </div>
+    </div>
+
+    <!-- KO -->
+    <div class="am-card ko">
+      <div class="am-card-head">
+        <div class="am-card-avatar" style="border-color:var(--am-grey);filter:grayscale(1);"><img src="assets/avatars/geoff.png" onerror="this.style.display='none'" alt="Geoff"></div>
+        <span class="am-card-who" style="color:var(--am-red);">Geoff — KNOCKED OUT!</span>
+        <span class="am-card-tag tag-ko">K.O.</span>
+      </div>
+      <div class="am-card-body" style="color:var(--am-red);font-weight:600;">Geoff's energy hits zero. The animatronic bear nudges him one last time. "Dude... not cool..." His token goes dark.</div>
+      <div class="am-card-energy">
+        <span class="am-card-energy-label" style="color:var(--am-red);">GEOFF 0 HP — ELIMINATED</span>
+        <div class="am-card-energy-bar"><div class="am-card-energy-fill" style="width:0%;background:var(--am-red);"></div></div>
+      </div>
+    </div>
+
+    <!-- Tyler domination -->
+    <div class="am-card challenge">
+      <div class="am-card-head">
+        <div class="am-card-avatar" style="border-color:var(--am-orange);"><img src="assets/avatars/tyler.png" onerror="this.style.display='none'" alt="Tyler"></div>
+        <div style="flex:1;">
+          <span class="am-card-who">Tyler</span>
+          <div class="am-callback">📺 CALLBACK: Ep3 Obstacle Course</div>
+        </div>
+        <span class="am-card-tag tag-challenge">OBSTACLE REMIX</span>
+      </div>
+      <div class="am-card-body">Tyler recognizes this course — it's a compressed version of the relay from Episode 3. "I GOT THIS!" He launches over the balance beam, nails the rope swing (for once), and sticks the landing. The crowd erupts.</div>
+      <div class="am-card-foot">
+        <span>Physical 8 × 0.6 + Endurance 6 × 0.3 = 6.6 → Score: 9.1 ★ DOMINATION</span>
+        <span class="am-energy-pill gain">+15 ENERGY</span>
+      </div>
+      <div class="am-card-energy">
+        <span class="am-card-energy-label">TYLER 95 HP</span>
+        <div class="am-card-energy-bar"><div class="am-card-energy-fill am-energy-fill high" style="width:95%;"></div></div>
+      </div>
+    </div>
+
+    <!-- WINNER -->
+    <div class="am-round" style="margin-top:16px;">
+      <div class="am-round-num">FINISH!</div>
+      <div class="am-round-sub">A player has reached the Trophy Case!</div>
+    </div>
+
+    <div class="am-winner">
+      <div class="am-winner-confetti">
+        <span class="go" style="left:5%;top:0;background:var(--am-gold);animation-delay:0s;"></span>
+        <span class="go" style="left:15%;top:0;background:var(--am-pink);animation-delay:.15s;"></span>
+        <span class="go" style="left:25%;top:0;background:var(--am-cyan);animation-delay:.3s;"></span>
+        <span class="go" style="left:35%;top:0;background:var(--am-violet);animation-delay:.1s;"></span>
+        <span class="go" style="left:45%;top:0;background:var(--am-gold);animation-delay:.25s;"></span>
+        <span class="go" style="left:55%;top:0;background:var(--am-pink);animation-delay:.4s;"></span>
+        <span class="go" style="left:65%;top:0;background:var(--am-neon);animation-delay:.05s;"></span>
+        <span class="go" style="left:75%;top:0;background:var(--am-orange);animation-delay:.35s;"></span>
+        <span class="go" style="left:85%;top:0;background:var(--am-cyan);animation-delay:.2s;"></span>
+        <span class="go" style="left:95%;top:0;background:var(--am-gold);animation-delay:.45s;"></span>
+      </div>
+      <div class="am-winner-avatar" style="border-color:var(--am-cyan);">
+        <img src="assets/avatars/noah.png" onerror="this.style.display='none'" alt="Noah">
+      </div>
+      <div class="am-winner-label">TROPHY CASE REACHED</div>
+      <div class="am-winner-name">NOAH</div>
+      <div class="am-winner-sub">"I knew my brain would beat their brawn eventually."</div>
+      <div class="am-winner-beats">Round 5 • Sq 15 • 62 HP remaining • 2 KO'd</div>
+    </div>
+  </div>
+
+  <!-- ══════ SIDEBAR ══════ -->
+  <div class="am-sidebar">
+    <div class="am-sb-title">ENERGY TRACKER</div>
+
+    <div class="am-sb-player winner">
+      <div class="am-sb-avatar" style="border-color:var(--am-cyan);"><img src="assets/avatars/noah.png" onerror="this.style.display='none'" alt="Noah"></div>
+      <div class="am-sb-info">
+        <div class="am-sb-name">Noah</div>
+        <div class="am-sb-pos">Sq 15 — FINISH</div>
+        <div class="am-sb-energy"><div class="am-sb-energy-fill am-energy-fill high" style="width:62%;"></div></div>
+      </div>
+      <span class="am-sb-status win">★ WIN</span>
+    </div>
+
+    <div class="am-sb-player">
+      <div class="am-sb-avatar" style="border-color:var(--am-red);"><img src="assets/avatars/eva.png" onerror="this.style.display='none'" alt="Eva"></div>
+      <div class="am-sb-info">
+        <div class="am-sb-name">Eva</div>
+        <div class="am-sb-pos">Sq 11</div>
+        <div class="am-sb-energy"><div class="am-sb-energy-fill am-energy-fill high" style="width:70%;"></div></div>
+      </div>
+      <span class="am-sb-status racing">RACING</span>
+    </div>
+
+    <div class="am-sb-player">
+      <div class="am-sb-avatar" style="border-color:var(--am-green);"><img src="assets/avatars/leshawna.png" onerror="this.style.display='none'" alt="Leshawna"></div>
+      <div class="am-sb-info">
+        <div class="am-sb-name">Leshawna</div>
+        <div class="am-sb-pos">Sq 9</div>
+        <div class="am-sb-energy"><div class="am-sb-energy-fill am-energy-fill high" style="width:85%;"></div></div>
+      </div>
+      <span class="am-sb-status racing">RACING</span>
+    </div>
+
+    <div class="am-sb-player">
+      <div class="am-sb-avatar" style="border-color:var(--am-orange);"><img src="assets/avatars/tyler.png" onerror="this.style.display='none'" alt="Tyler"></div>
+      <div class="am-sb-info">
+        <div class="am-sb-name">Tyler</div>
+        <div class="am-sb-pos">Sq 12</div>
+        <div class="am-sb-energy"><div class="am-sb-energy-fill am-energy-fill high" style="width:95%;"></div></div>
+      </div>
+      <span class="am-sb-status racing">RACING</span>
+    </div>
+
+    <div class="am-sb-player ko">
+      <div class="am-sb-avatar" style="border-color:var(--am-grey);"><img src="assets/avatars/beth.png" onerror="this.style.display='none'" alt="Beth"></div>
+      <div class="am-sb-info">
+        <div class="am-sb-name">Beth</div>
+        <div class="am-sb-pos">Sq 3 — KO'd R2</div>
+        <div class="am-sb-energy"><div class="am-sb-energy-fill" style="width:0%;background:var(--am-red);"></div></div>
+      </div>
+      <span class="am-sb-status ko">K.O.</span>
+    </div>
+
+    <div class="am-sb-player ko">
+      <div class="am-sb-avatar" style="border-color:var(--am-grey);"><img src="assets/avatars/geoff.png" onerror="this.style.display='none'" alt="Geoff"></div>
+      <div class="am-sb-info">
+        <div class="am-sb-name">Geoff</div>
+        <div class="am-sb-pos">Sq 6 — KO'd R3</div>
+        <div class="am-sb-energy"><div class="am-sb-energy-fill" style="width:0%;background:var(--am-red);"></div></div>
+      </div>
+      <span class="am-sb-status ko">K.O.</span>
+    </div>
+
+    <div class="am-sb-title">PEANUT GALLERY</div>
+    <div class="am-peanut">
+      <div class="am-peanut-face" style="border-color:#e06040;"><img src="assets/avatars/harold.png" alt=""><div class="am-peanut-react">😤</div></div>
+      <div class="am-peanut-face" style="border-color:#80c0e0;"><img src="assets/avatars/trent.png" alt=""><div class="am-peanut-react">😮</div></div>
+      <div class="am-peanut-face" style="border-color:#60a060;"><img src="assets/avatars/dj.png" alt=""><div class="am-peanut-react">😎</div></div>
+      <div class="am-peanut-face" style="border-color:#e0a060;"><img src="assets/avatars/owen.png" alt=""><div class="am-peanut-react">🤣</div></div>
+      <div class="am-peanut-face" style="border-color:#c06080;"><img src="assets/avatars/courtney.png" alt=""><div class="am-peanut-react">🙄</div></div>
+    </div>
+
+    <div class="am-sb-title">ROUND LOG</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:7px;line-height:2.2;">
+      <div style="color:var(--am-green);">R1: 6 racing ✓</div>
+      <div style="color:var(--am-green);">R2: Beth KO'd ✓</div>
+      <div style="color:var(--am-gold);">R3: Geoff KO'd ◆</div>
+      <div style="color:#444;">R4: ...</div>
+    </div>
+
+    <div class="am-sb-title">SEASON CALLBACKS</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:#555;line-height:2.5;">
+      <div>Sq1: Ep3 Relay</div>
+      <div>Sq6: Ep5 Puzzle</div>
+      <div>Sq7: Boot Order</div>
+      <div>Sq10: Ep2 Bear</div>
+      <div style="color:var(--am-neon);">Sq5: Gwen Judges</div>
+    </div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="am-controls">
+  <button class="am-btn" onclick="demoRoll()">◀ REVEAL NEXT</button>
+  <span class="am-counter" id="reveal-counter">8 / 22</span>
+  <button class="am-btn">REVEAL ALL ▶▶</button>
+</div>
+
+<script>
+// ═══ INTERACTIVE DEMO: Dice roll → token hop → board move ═══
+
+const PLAYERS = [
+  { id: 'noah', pos: 4, color: 'var(--am-cyan)' },
+  { id: 'eva', pos: 3, color: 'var(--am-red)' },
+  { id: 'leshawna', pos: 7, color: 'var(--am-green)' },
+  { id: 'tyler', pos: 5, color: 'var(--am-orange)' },
+  { id: 'geoff', pos: 6, color: '#f59e0b' },
+];
+let demoIdx = 0;
+
+// Position tokens on the board
+function positionTokens() {
+  const squares = document.querySelectorAll('.am-sq');
+  PLAYERS.forEach((p, pi) => {
+    const tok = document.getElementById('token-' + p.id);
+    if (!tok || tok.classList.contains('eliminated')) return;
+    const sq = squares[Math.min(p.pos, squares.length - 1)];
+    if (!sq) return;
+    const board = document.getElementById('game-board');
+    const bRect = board.getBoundingClientRect();
+    const sRect = sq.getBoundingClientRect();
+    // Stack tokens at same square
+    const sameSquare = PLAYERS.filter((pp, ppi) => pp.pos === p.pos && ppi < pi && !document.getElementById('token-' + pp.id)?.classList.contains('eliminated'));
+    const offset = sameSquare.length * 14;
+    tok.style.position = 'absolute';
+    tok.style.left = (sRect.left - bRect.left + 4 + offset) + 'px';
+    tok.style.top = (sRect.top - bRect.top + sRect.height - 12) + 'px';
+  });
+}
+
+// Set dice pips for value 1-3
+function setPips(val) {
+  const pips = document.getElementById('dice-pips');
+  // 3x3 grid, positions: TL TC TR ML MC MR BL BC BR
+  const patterns = {
+    1: [0,0,0, 0,1,0, 0,0,0],
+    2: [1,0,0, 0,0,0, 0,0,1],
+    3: [1,0,0, 0,1,0, 0,0,1],
+  };
+  const pat = patterns[val] || patterns[1];
+  const dots = pips.querySelectorAll('.am-pip');
+  dots.forEach((d, i) => {
+    d.classList.toggle('on', !!pat[i]);
+  });
+}
+
+// Demo: roll dice, move a player token
+function demoRoll() {
+  const p = PLAYERS[demoIdx % PLAYERS.length];
+  const tok = document.getElementById('token-' + p.id);
+  if (!tok || tok.classList.contains('eliminated')) {
+    demoIdx++;
+    demoRoll();
+    return;
+  }
+
+  const roll = 1 + Math.floor(Math.random() * 3); // 1-3!
+  const face = document.getElementById('dice-face');
+  const result = document.getElementById('dice-result');
+
+  // Hide result during roll
+  result.classList.remove('show');
+
+  // Trigger dice tumble animation
+  face.classList.remove('rolling', 'landed');
+  void face.offsetWidth; // reflow
+  face.classList.add('rolling');
+
+  setTimeout(() => {
+    face.classList.remove('rolling');
+    face.classList.add('landed');
+    setPips(roll);
+    result.textContent = p.id.toUpperCase() + ' ROLLED ' + roll;
+    result.classList.add('show');
+
+    // Move token
+    const oldPos = p.pos;
+    p.pos = Math.min(p.pos + roll, 15);
+
+    // Highlight active square
+    document.querySelectorAll('.am-sq.active').forEach(s => s.classList.remove('active'));
+    const squares = document.querySelectorAll('.am-sq');
+    if (squares[p.pos]) squares[p.pos].classList.add('active');
+
+    // Hop animation
+    tok.classList.remove('moving');
+    void tok.offsetWidth;
+    tok.classList.add('moving');
+
+    // Reposition all tokens
+    positionTokens();
+
+    // Update counter
+    const counter = document.getElementById('reveal-counter');
+    const cur = parseInt(counter.textContent) + 1;
+    counter.textContent = cur + ' / 22';
+
+    demoIdx++;
+  }, 600);
+}
+
+// Initial positioning
+window.addEventListener('load', positionTokens);
+window.addEventListener('resize', positionTokens);
+</script>
+
+</body>
+</html>

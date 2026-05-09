@@ -45,6 +45,7 @@ import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildT
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults, gpRevealNext, gpRevealAll } from './chal/greeces-pieces.js';
 import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults, hbRevealNext, hbRevealAll } from './chal/hangar-black.js';
+import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemFinish, aftermayhemRevealNext, aftermayhemRevealAll } from './chal/aftermayhem.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -11724,6 +11725,13 @@ export function buildVPScreens(epRecord) {
     // Fan Vote
     const _amFanVote = rpBuildAftermathFanVote(ep);
     if (_amFanVote) vpScreens.push({ id: 'aftermath-fanvote', label: `${_amDot}Fan Vote`, html: _amFanVote });
+    // Aftermayhem board game
+    if (_am.aftermayhem) {
+      const _amhDot = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffd13c;margin-right:6px;flex-shrink:0"></span>`;
+      vpScreens.push({ id: 'aftermayhem-lottery', label: `${_amhDot}Golden Can Lottery`, html: rpBuildAftermayhemLottery(ep) });
+      vpScreens.push({ id: 'aftermayhem-board', label: `${_amhDot}Board Game Gauntlet`, html: rpBuildAftermayhemBoard(ep) });
+      vpScreens.push({ id: 'aftermayhem-finish', label: `${_amhDot}Winner Returns!`, html: rpBuildAftermayhemFinish(ep) });
+    }
     // Reunion: Winner Interview + Awards
     if (_am.isReunion) {
       // All finalists get interviews — winner + runner(s) up

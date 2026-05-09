@@ -75,6 +75,7 @@ export function patchEpisodeHistory(ep) {
   if (!h.bewareLostVotes && ep.bewareLostVotes) h.bewareLostVotes = ep.bewareLostVotes;
   if (!h.journey && ep.journey) h.journey = ep.journey;
   if (!h.extraImmune && ep.extraImmune) h.extraImmune = ep.extraImmune;
+  if (!h.isAftermayhem && ep.isAftermayhem) h.isAftermayhem = true;
   // Winner/loser tribe
   if (!h.winner && ep.winner) h.winner = { name: ep.winner.name, members: [...(ep.winner.members||[])] };
   if (!h.loser && ep.loser) h.loser = { name: ep.loser.name, members: [...(ep.loser.members||[])] };

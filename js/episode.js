@@ -1004,7 +1004,7 @@ export function handleExileFormat(ep) {
   if (phase === 'pre' && gs.isMerged) return;
   if (phase === 'post' && !gs.isMerged) return;
   // Don't fire on special episode types
-  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isPrincessPride || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama || ep.isHouston || ep.isTopDog || ep.isCrouchingCourtney || ep.isGetAClue || ep.isRockNRule || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork) return;
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isPrincessPride || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama || ep.isHouston || ep.isTopDog || ep.isCrouchingCourtney || ep.isGetAClue || ep.isRockNRule || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isAftermayhem) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
   // Don't double up with schoolyard pick exile (unpicked player already on exile)
@@ -1485,7 +1485,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stSN = generateSummaryText(ep);
@@ -1687,7 +1687,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stTDD = generateSummaryText(ep);
@@ -1702,7 +1702,7 @@ export function simulateEpisode() {
     || ep.isBrunchOfDisgustingness || ep.isBasicStraining
     || ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg
     || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue
-    || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork;
+    || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isAftermayhem;
   if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
@@ -1799,7 +1799,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stSD = generateSummaryText(ep);
@@ -2298,7 +2298,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
         summaryText: '',
         gsSnapshot: window.snapshotGameState(),
       });
@@ -2386,7 +2386,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stYT = generateSummaryText(ep);
@@ -2419,7 +2419,7 @@ export function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork) {
+    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isAftermayhem) {
     // Special challenge already ran and set immunityWinner + chalMemberScores — skip generic challenge
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
@@ -2622,7 +2622,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
         summaryText: '',
         gsSnapshot: window.snapshotGameState(),
       });
@@ -2716,7 +2716,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isAftermayhem) {
     updateChalRecord(ep);
   }
 
@@ -3051,7 +3051,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
       summaryText: '', gsSnapshot: window.snapshotGameState() });
     const stLC = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stLC; ep.summaryText = stLC;
@@ -3114,7 +3114,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
         summaryText: '', gsSnapshot: window.snapshotGameState() });
       const stTD = generateSummaryText(ep);
       gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stTD; ep.summaryText = stTD;
@@ -3317,7 +3317,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
       isRewardOnly: ep.isRewardOnly || false, rewardChalData: ep.rewardChalData || null,
       summaryText: '', gsSnapshot: window.snapshotGameState() });
     const stNT = generateSummaryText(ep);
@@ -4253,7 +4253,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stDT = generateSummaryText(ep);
@@ -4448,7 +4448,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stMT = generateSummaryText(ep);
@@ -4819,7 +4819,7 @@ function simulateJuryRoundtable(ep) {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
     });
     const twistScenesJE = generateTwistScenes(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].twistScenes = twistScenesJE;

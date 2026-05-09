@@ -1115,7 +1115,7 @@ export function generateAftermathShow(ep) {
 
   // ── AFTERMAYHEM BOARD GAME (when twist is active) ──
   let aftermayhemData = null;
-  if (ep.isAftermayhem && !gs._aftermayhemUsed) {
+  if (ep._aftermayhemPending && !gs._aftermayhemUsed) {
     const _amEligible = gs.eliminated.filter(n => !gs.riPlayers?.includes(n) && !gs.activePlayers.includes(n));
     if (_amEligible.length >= 6) {
       simulateAftermayhem(ep);

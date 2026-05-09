@@ -158,6 +158,17 @@ const WRESTLE_FLASHY_MISS = [
   (n, pr) => `${n} winds up for the big finish... and misses by a mile. ${host()} cackles from the sideline.`,
 ];
 
+const WRESTLE_INSTANT_KO = [
+  (a, b) => `${a} catches ${b} with a haymaker out of nowhere. ${b}'s eyes roll back. One punch. Done.`,
+  (a, b) => `${a} trips over debris and accidentally headbutts ${b} square in the jaw. ${b} crumbles. Nobody planned that.`,
+  (a, b) => `${b} turns around and walks directly into ${a}'s fist. A collision more than a punch. ${b} drops like a stone.`,
+  (a, b) => `${a} throws a desperate wild swing — and connects perfectly. ${b} spins and hits the ground. Lights out.`,
+  (a, b) => `${a} grabs a loose column fragment and swings. ${b} doesn't see it coming. The arena goes silent.`,
+  (a, b) => `${b} slips on sweat, stumbles forward — ${a} drives a knee up on instinct. ${b} folds in half and doesn't get up.`,
+  (a, b) => `${a} leaps off the turnbuckle with a flying elbow. It connects with devastating precision. ${b} is finished.`,
+  (a, b) => `A running clothesline from ${a} catches ${b} across the throat. ${b}'s feet leave the ground. That's it.`,
+];
+
 const WRESTLE_TAG_IN = [
   (out, into) => `${out} slaps ${into}'s hand. Tag! ${into} jumps in fresh.`,
   (out, into) => `${out} is hurting. ${out} crawls to the corner and tags ${into}. Relief.`,
@@ -178,6 +189,35 @@ const WRESTLE_BETRAYAL = [
   (a, partner) => `${a} trips ${partner} from the apron. ${partner} goes down. The opponent pounces. ${a} watches with cold eyes.`,
   (a, partner) => `"Trust me," ${a} says, then throws ${partner} directly into the opponent's arms. Trust broken.`,
   (a, partner) => `${a} yanks ${partner} backward into a falling opponent. Both go down. ${a} steps over them.`,
+];
+
+// ── WRESTLING SELECTION REACTIONS ──
+const WRESTLE_SELECTED_EAGER = [
+  (n, pr) => `${n} cracks ${pr.posAdj} knuckles and steps forward. "${pr.Sub === 'They' ? 'We\'ve' : 'I\'ve'} been waiting for this."`,
+  (n, pr) => `${n} slams a fist into ${pr.posAdj} palm. "Let's go."`,
+  (n, pr) => `${n} rolls ${pr.posAdj} shoulders, eyes locked on the arena. Born for this.`,
+  (n, pr) => `${n} grins and shadowboxes the air. The crowd already loves ${pr.obj}.`,
+  (n, pr) => `"Finally." ${n} strides toward the ring like ${pr.sub} own${pr.sub === 'they' ? '' : 's'} it already.`,
+  (n, pr) => `${n} bounces on ${pr.posAdj} feet, shaking out ${pr.posAdj} arms. "Who wants some?"`,
+];
+const WRESTLE_SELECTED_NERVOUS = [
+  (n, pr) => `${n} swallows hard and steps into the ring. ${pr.Sub} did NOT sign up for this.`,
+  (n, pr) => `"Wait, me?" ${n} points at ${pr.ref}. The host nods. ${n} looks like ${pr.sub} might be sick.`,
+  (n, pr) => `${n} inches forward, eyes darting around the arena. Every instinct says run.`,
+  (n, pr) => `${n} takes a shaky breath. "Okay. Okay. I can do this." ${pr.Sub} do${pr.sub === 'they' ? '' : 'es'} not look like ${pr.sub} can do this.`,
+  (n, pr) => `${n} wraps ${pr.posAdj} hands, fumbling the tape twice. Nerves.`,
+  (n, pr) => `${n} enters the ring and immediately backs into the corner. Survival mode already.`,
+];
+const WRESTLE_PARTNER_REACT = [
+  (fighter, partner, bond) => bond > 2 ? `${partner} pounds the turnbuckle. "Let's DO this, ${fighter}!" Pure energy.` :
+    bond < -2 ? `${partner} crosses ${pronouns(partner).posAdj} arms. "Try not to lose immediately."` :
+    `${partner} nods at ${fighter}. "I got your back." Whether that's true remains to be seen.`,
+  (fighter, partner, bond) => bond > 2 ? `${partner} and ${fighter} bump fists. No words needed — they're in sync.` :
+    bond < -2 ? `${partner} barely looks at ${fighter}. This partnership is strictly transactional.` :
+    `${partner} stretches beside ${fighter}. "So... you any good at this?"`,
+  (fighter, partner, bond) => bond > 2 ? `${partner} points at ${fighter}, then at the opponents. "We got this. Together."` :
+    bond < -2 ? `${partner} sighs. "Just stay out of my way." ${fighter} raises an eyebrow.` :
+    `${partner} sizes up ${fighter}. "Alright. Don't make me regret this."`,
 ];
 
 // ── HURDLES ──
@@ -223,7 +263,7 @@ const ICARUS_FLIGHT = [
   (n, pr, alt) => `${n} tilts into the wind and rises. The wax creaks. Altitude: ${alt.toFixed(1)}.`,
   (n, pr, alt) => `${n} spirals upward with surprising grace. The heat is building. Altitude: ${alt.toFixed(1)}.`,
   (n, pr, alt) => `${n} powers through the turbulence and climbs another level. Altitude: ${alt.toFixed(1)}.`,
-  (n, pr, alt) => `${n}'s wings flex dangerously but hold. ${pr.Sub} gain${pr.sub === 'they' ? '' : 's'} altitude. ${alt.toFixed(1)}.`,
+  (n, pr, alt) => `${n}'s wings flex dangerously but hold. ${pr.Sub} gain${pr.sub === 'they' ? '' : 's'} altitude. Altitude: ${alt.toFixed(1)}.`,
 ];
 
 const ICARUS_MELT = [
@@ -298,6 +338,60 @@ const SOCIAL_CONFRONTATION = [
   (a, b) => `${a} is furious with ${b}. Words are exchanged. None of them are pleasant.`,
   (a, b) => `"This isn't over." ${a} says it quietly to ${b}. Quiet threats are the worst kind.`,
   (a, b) => `${a} and ${b} have to be separated after the event. Both are seething.`,
+];
+
+const SOCIAL_STRATEGY = [
+  (a, b) => `${a} whispers to ${b} between corridors. "If we make it out of here, I've got a plan for tribal." ${b} listens carefully.`,
+  (a, b) => `${a} pulls ${b} into a side chamber. "We need to talk targets. Who's dangerous out there?" They scheme in the dark.`,
+  (a, b) => `"Think about it," ${a} murmurs to ${b}. "We're paired together. That's an alliance waiting to happen." ${b} doesn't say no.`,
+  (a, b) => `${a} sizes up ${b} mid-stride. "You're smarter than people think. We should work together after this."`,
+  (a, b) => `While catching their breath, ${a} floats a name to ${b}. "Who do you trust least out here?" The answer is interesting.`,
+  (a, b) => `${a} and ${b} use the maze's privacy to compare notes on who's been scheming back at camp.`,
+];
+
+const SOCIAL_FEAR = [
+  (a, pr) => `${a} freezes at a dead end. ${pr.Sub} can hear the Boar breathing somewhere close. Hands shaking, ${pr.sub} forces ${pr.ref} to keep moving.`,
+  (a, pr) => `A shadow moves across the wall. ${a} jumps back, heart pounding. It's nothing — just a trick of the torchlight. But ${pr.posAdj} nerves are shot.`,
+  (a, pr) => `${a} presses against a pillar, eyes wide. "Something's following us." ${pr.Sub} can't shake the feeling.`,
+  (a, pr) => `The corridors narrow and ${a} starts breathing fast. Claustrophobia hits hard. ${pr.Sub} pushes through, but barely.`,
+  (a, pr) => `${a} hears hooves echoing — could be the Boar, could be echoes. Either way, ${pr.sub} picks up the pace.`,
+  (a, pr) => `A column groans and shifts. ${a} dives clear as dust rains down. "This whole place is falling apart!"`,
+];
+
+const SOCIAL_TRASH_TALK = [
+  (a, b) => `${a} spots ${b} across a corridor gap. "How's it going over there? Finding anything? Didn't think so."`,
+  (a, b) => `${a} calls out to ${b} from a ledge. "I can see you struggling from up here! Maybe try actually looking!"`,
+  (a, b) => `${a} leaves a scratched message on a pillar for ${b}: "TOO SLOW." ${b} finds it and is NOT amused.`,
+  (a, b) => `"Hey ${b}!" ${a} yells across the ruins. "The medal's not hiding in last place!" ${b} seethes.`,
+  (a, b) => `${a} flexes at ${b} after dodging the Boar. "That's how it's done. Take notes."`,
+  (a, b) => `${a} passes ${b} in a corridor and can't resist: "Still looking? I thought you were supposed to be good at this."`,
+];
+
+const SOCIAL_SHOWMANCE = [
+  (a, b) => `${a} and ${b} find a quiet alcove in the ruins. For a moment, the competition fades. They share a look that lingers too long.`,
+  (a, b) => `${a} catches ${b} when ${b} stumbles on loose rubble. They don't let go right away. The maze notices.`,
+  (a, b) => `"Stay close to me," ${a} tells ${b} softly. In the labyrinth's gloom, the words carry a weight beyond strategy.`,
+  (a, b) => `${a} and ${b} sit back-to-back against a column, catching their breath. ${a} reaches back and squeezes ${b}'s hand. Brief but electric.`,
+  (a, b) => `${a} brushes dust off ${b}'s shoulder. "Can't have you looking rough out there." ${b} smiles. The cameras catch everything.`,
+  (a, b) => `"If we get out of this maze," ${a} says to ${b}, "I'm taking you somewhere nice." ${b} laughs — but doesn't say no.`,
+];
+
+const SOCIAL_VILLAIN_SCHEME = [
+  (a, b) => `${a} deliberately leads ${b} toward a dead end, then doubles back alone. "Wrong way! Sorry!" ${a} isn't sorry at all.`,
+  (a, b) => `${a} pockets a marker that could help ${b} navigate. Information is currency, and ${a} is hoarding it.`,
+  (a, b) => `${a} notices ${b}'s search pattern and memorizes it. Not to help — to exploit later. Every detail is leverage.`,
+  (a, b) => `"Trust me," ${a} tells ${b} with a smile that doesn't reach ${pronouns(a).posAdj} eyes. ${a} is already planning three moves ahead.`,
+  (a, b) => `${a} pretends to find something interesting to lure ${b} off course. "Oh wait, never mind." The misdirection costs ${b} precious time.`,
+  (a, b) => `${a} whispers to a rival pair about ${b}'s weaknesses. Alliances are built on shared enemies.`,
+];
+
+const SOCIAL_ENCOURAGEMENT = [
+  (a, b) => `"You've got this," ${a} tells ${b}, who's flagging. "We're in this together." ${b} finds a second wind.`,
+  (a, b) => `${a} shares the last of ${pronouns(a).posAdj} water with ${b}. "Drink. You need it more than me." Genuine kindness in a ruthless game.`,
+  (a, b) => `${a} talks ${b} through a panic attack in a narrow passage. "Breathe. Focus on my voice." ${b} calms down. Trust deepens.`,
+  (a, b) => `"Remember why you're here," ${a} tells ${b}. "You didn't come this far to quit in a maze." ${b} nods and pushes on.`,
+  (a, b) => `${a} waits for ${b} at a fork instead of pushing ahead. "We move together or not at all."`,
+  (a, b) => `${a} cheers when ${b} clears a difficult passage. "YES! That's what I'm talking about!" The enthusiasm is infectious.`,
 ];
 
 // ── HOST COMMENTARY ──
@@ -409,17 +503,14 @@ function _simulateMaze(active, ep, tribeData) {
       comboIdx++;
       if (comboIdx > tribeCombos.length * 20) break;
     }
-    // Any leftover unpaired player pairs with another leftover or goes solo
     const leftovers = active.filter(p => !paired.has(p));
-    for (let i = 0; i < leftovers.length; i += 2) {
-      if (i + 1 < leftovers.length) pairs.push([leftovers[i], leftovers[i + 1]]);
-      else pairs.push([leftovers[i]]);
+    for (let i = 0; i + 1 < leftovers.length; i += 2) {
+      pairs.push([leftovers[i], leftovers[i + 1]]);
     }
   } else {
     const shuffled = [...active].sort(() => Math.random() - 0.5);
-    for (let i = 0; i < shuffled.length; i += 2) {
-      if (i + 1 < shuffled.length) pairs.push([shuffled[i], shuffled[i + 1]]);
-      else pairs.push([shuffled[i]]);
+    for (let i = 0; i + 1 < shuffled.length; i += 2) {
+      pairs.push([shuffled[i], shuffled[i + 1]]);
     }
   }
   maze.pairs = pairs.map(p => [...p]);
@@ -443,7 +534,8 @@ function _simulateMaze(active, ep, tribeData) {
     const goldZone = MAZE_ZONES[goldZoneIdx];
     roundData.goldZone = goldZone.id;
 
-    const boarBase = round <= 1 ? 0.20 : (round <= 3 ? 0.45 : 0.70);
+    const boarBase = round <= 1 ? 0.45 : (round <= 3 ? 0.65 : 0.85);
+    let roundBoarCount = 0;
 
     pairs.forEach((pair, pairIdx) => {
       if (!pairZoneHistory[pairIdx]) pairZoneHistory[pairIdx] = [];
@@ -466,7 +558,7 @@ function _simulateMaze(active, ep, tribeData) {
       // Zone entry event
       roundData.events.push({
         type: 'zone-enter', pair: [...pair], zone: chosenZone.id, zoneName: chosenZone.name, round: round + 1,
-        text: pick(MAZE_ZONE_ENTER)(pair, chosenZone),
+        text: pair.length >= 2 ? pick(MAZE_ZONE_ENTER)(pair, chosenZone) : `${pair[0]} ventures alone into ${chosenZone.name}.`,
         flavor: pick(MAZE_ZONE_FLAVOR[chosenZone.id]),
         badge: chosenZone.name.toUpperCase(), badgeClass: 'blue'
       });
@@ -532,8 +624,9 @@ function _simulateMaze(active, ep, tribeData) {
       });
 
       // ── Boar encounter (zone-modified chance) ──
-      const boarChance = clamp(boarBase + chosenZone.boarMod, 0, 0.9);
+      const boarChance = clamp(boarBase + chosenZone.boarMod, 0, 0.95);
       if (Math.random() < boarChance) {
+        roundBoarCount++;
         const target = pick(pair);
         const s = pStats(target);
         const pr = pronouns(target);
@@ -619,61 +712,162 @@ function _simulateMaze(active, ep, tribeData) {
         }
       }
 
-      // ── Social events ──
+      // ── Social events — guaranteed 1-2 per pair per round ──
       if (pair.length > 1) {
         const bond = getBond(pair[0], pair[1]);
+        const a0 = arch(pair[0]), a1 = arch(pair[1]);
+        const s0 = pStats(pair[0]), s1 = pStats(pair[1]);
+        const pr0 = pronouns(pair[0]), pr1 = pronouns(pair[1]);
+        const _pTribe = n => tribeData?.find(t => t.members.includes(n))?.tribeName;
+        const crossTribe = !isMerged && _pTribe(pair[0]) !== _pTribe(pair[1]);
+        let socialFired = 0;
 
-        if (bond < 0 && Math.random() < 0.65) {
-          addBond(pair[0], pair[1], -1);
-          const evt = {
-            type: 'social-tension', players: [...pair], round: round + 1, zone: chosenZone.id,
-            text: pick(SOCIAL_TENSION)(pair[0], pair[1]),
-            badge: 'TENSION', badgeClass: 'red'
-          };
-          roundData.events.push(evt);
-          maze.socialEvents.push(evt);
-        } else if (bond >= 0 && Math.random() < 0.35) {
+        function _pushSocial(evt) { roundData.events.push(evt); maze.socialEvents.push(evt); socialFired++; }
+
+        // Showmance moment (existing showmance or romantic spark)
+        const hasShowmance = gs.showmances?.some(sh => !sh.broken && sh.pair?.includes(pair[0]) && sh.pair?.includes(pair[1]));
+        const hasSpark = gs.romanticSparks?.some(sp => sp.pair?.includes(pair[0]) && sp.pair?.includes(pair[1]));
+        if ((hasShowmance || hasSpark) && Math.random() < 0.70) {
           addBond(pair[0], pair[1], 1);
-          const evt = {
-            type: 'social-cooperation', players: [...pair], round: round + 1, zone: chosenZone.id,
-            text: pick(SOCIAL_COOPERATION)(pair[0], pair[1]),
-            badge: 'TEAMWORK', badgeClass: 'green'
-          };
-          roundData.events.push(evt);
-          maze.socialEvents.push(evt);
+          _pushSocial({
+            type: 'social-showmance', players: [...pair], round: round + 1, zone: chosenZone.id,
+            text: pick(SOCIAL_SHOWMANCE)(pair[0], pair[1]),
+            badge: 'CHEMISTRY', badgeClass: 'camp'
+          });
         }
 
-        // Confrontation in later rounds when bond very negative
+        // Villain scheming
+        if ((VILLAIN_ARCHS.has(a0) || VILLAIN_ARCHS.has(a1)) && Math.random() < 0.55) {
+          const villain = VILLAIN_ARCHS.has(a0) ? pair[0] : pair[1];
+          const victim = villain === pair[0] ? pair[1] : pair[0];
+          addBond(victim, villain, -1);
+          popDelta(villain, -1);
+          _pushSocial({
+            type: 'social-scheme', players: [villain, victim], round: round + 1, zone: chosenZone.id,
+            text: pick(SOCIAL_VILLAIN_SCHEME)(villain, victim),
+            badge: 'SCHEMING', badgeClass: 'red'
+          });
+        }
+
+        // Encouragement from nice archetypes
+        if ((NICE_ARCHS.has(a0) || NICE_ARCHS.has(a1)) && Math.random() < 0.45) {
+          const helper = NICE_ARCHS.has(a0) ? pair[0] : pair[1];
+          const helped = helper === pair[0] ? pair[1] : pair[0];
+          addBond(helped, helper, 1);
+          popDelta(helper, 1);
+          _pushSocial({
+            type: 'social-encouragement', players: [helper, helped], round: round + 1, zone: chosenZone.id,
+            text: pick(SOCIAL_ENCOURAGEMENT)(helper, helped),
+            badge: 'SUPPORT', badgeClass: 'green'
+          });
+        }
+
+        // Strategy whisper (high strategic players)
+        if ((s0.strategic >= 6 || s1.strategic >= 6) && Math.random() < 0.35) {
+          const lead = s0.strategic >= s1.strategic ? pair[0] : pair[1];
+          const other = lead === pair[0] ? pair[1] : pair[0];
+          addBond(lead, other, 1);
+          _pushSocial({
+            type: 'social-strategy', players: [lead, other], round: round + 1, zone: chosenZone.id,
+            text: pick(SOCIAL_STRATEGY)(lead, other),
+            badge: 'STRATEGY', badgeClass: 'blue'
+          });
+        }
+
+        // Trash talk (cross-pair, between rivals or boldness)
+        if (bond < 1 && (s0.boldness >= 6 || s1.boldness >= 6) && Math.random() < 0.35) {
+          const talker = s0.boldness >= s1.boldness ? pair[0] : pair[1];
+          const target = talker === pair[0] ? pair[1] : pair[0];
+          addBond(target, talker, -1);
+          popDelta(talker, -1);
+          _pushSocial({
+            type: 'social-trash-talk', players: [talker, target], round: round + 1, zone: chosenZone.id,
+            text: pick(SOCIAL_TRASH_TALK)(talker, target),
+            badge: 'TRASH TALK', badgeClass: 'red'
+          });
+        }
+
+        // Fear/paranoia (low composure or physical)
+        if (Math.random() < 0.30) {
+          const scared = s0.temperament <= s1.temperament ? pair[0] : pair[1];
+          const sPr = scared === pair[0] ? pr0 : pr1;
+          _pushSocial({
+            type: 'social-fear', players: [scared], round: round + 1, zone: chosenZone.id,
+            text: pick(SOCIAL_FEAR)(scared, sPr),
+            badge: 'SHAKEN', badgeClass: 'orange'
+          });
+        }
+
+        // Bond-based tension/cooperation (original system, but only if nothing else fired)
+        if (socialFired === 0) {
+          if (bond < 0) {
+            addBond(pair[0], pair[1], -1);
+            _pushSocial({
+              type: 'social-tension', players: [...pair], round: round + 1, zone: chosenZone.id,
+              text: pick(SOCIAL_TENSION)(pair[0], pair[1]),
+              badge: 'TENSION', badgeClass: 'red'
+            });
+          } else {
+            addBond(pair[0], pair[1], 1);
+            _pushSocial({
+              type: 'social-cooperation', players: [...pair], round: round + 1, zone: chosenZone.id,
+              text: pick(SOCIAL_COOPERATION)(pair[0], pair[1]),
+              badge: 'TEAMWORK', badgeClass: 'green'
+            });
+          }
+        }
+
+        // Confrontation in later rounds when bond very negative (bonus event)
         if (round >= 2 && bond <= -3 && Math.random() < 0.40) {
           addBond(pair[0], pair[1], -2);
           popDelta(pair[0], -1);
           popDelta(pair[1], -1);
           const instigator = Math.random() < 0.5 ? pair[0] : pair[1];
           const other = pair.find(p => p !== instigator);
-          const evt = {
+          _pushSocial({
             type: 'social-confrontation', players: [...pair], instigator, other, round: round + 1, zone: chosenZone.id,
-            text: `${instigator} snaps at ${other} in the maze corridors. "You're useless! I'd be better off alone!" The partnership is fracturing.`,
+            text: pick(SOCIAL_CONFRONTATION)(instigator, other),
             badge: 'CONFRONTATION', badgeClass: 'red'
-          };
-          roundData.events.push(evt);
-          maze.socialEvents.push(evt);
+          });
         }
 
         // Cross-tribe respect (pre-merge, later rounds)
-        if (!isMerged && round >= 1 && Math.random() < 0.25) {
-          const s0 = pStats(pair[0]);
-          const s1 = pStats(pair[1]);
-          if (s0.physical > 7 && s1.physical > 7 && bond > -2) {
+        if (crossTribe && round >= 1 && Math.random() < 0.30) {
+          if (s0.physical > 6 && s1.physical > 6 && bond > -2) {
             addBond(pair[0], pair[1], 1);
-            roundData.events.push({
+            _pushSocial({
               type: 'social-respect', players: [...pair], round: round + 1, zone: chosenZone.id,
-              text: `${pair[0]} and ${pair[1]} share a grudging nod after navigating ${chosenZone.name} together. Enemies? Maybe. But respect is earned in the maze.`,
+              text: pick(SOCIAL_RESPECT)(pair[0], pair[1]),
               badge: 'RESPECT', badgeClass: 'green'
             });
           }
         }
       }
     });
+
+    // Guarantee at least one boar per round
+    if (roundBoarCount === 0 && pairs.length > 0) {
+      const victimPair = pick(pairs);
+      const target = pick(victimPair);
+      const s = pStats(target);
+      const pr = pronouns(target);
+      const boarRoll = s.physical * 0.1 + s.intuition * 0.06 + noise(2.5);
+      const zoneId = roundData.zoneAssignments?.find(z => z.pair?.includes(target))?.zone || 'colonnade';
+      const chargeText = pick(BOAR_CHARGE)(target, pr);
+      if (boarRoll > 0.5) {
+        ep.chalMemberScores[target] = (ep.chalMemberScores[target] || 0) + 1;
+        popDelta(target, 1);
+        const evt = { type: 'boar-dodge', player: target, round: round + 1, zone: zoneId, chargeText, text: pick(BOAR_DODGE)(target, pr), badge: 'BOAR DODGE', badgeClass: 'gold' };
+        roundData.events.push(evt);
+        maze.boarEvents.push(evt);
+      } else {
+        ep.chalMemberScores[target] = (ep.chalMemberScores[target] || 0) - 2;
+        popDelta(target, -1);
+        const evt = { type: 'boar-hit', player: target, round: round + 1, zone: zoneId, chargeText, text: pick(BOAR_HIT)(target, pr), badge: 'BOAR ATTACK', badgeClass: 'red' };
+        roundData.events.push(evt);
+        maze.boarEvents.push(evt);
+      }
+    }
 
     maze.rounds.push(roundData);
     maze.zoneHistory.push(roundData.zoneAssignments);
@@ -718,305 +912,270 @@ function _simulateMaze(active, ep, tribeData) {
 
 
 // ══════════════════════════════════════════════════════════════════════
-// PHASE 2: WRESTLING — TAG-TEAM BRAWL
+// ══════════════════════════════════════════════════════════════════════
+// PHASE 2: WRESTLING — BATTLE ROYALE
 // ══════════════════════════════════════════════════════════════════════
 function _simulateWrestling(active, ep, tribeData) {
   const isMerged = gs.isMerged;
-  const wrestling = { matches: [], rounds: [], goldWinner: null, goldTribe: null, knockouts: [] };
+  const wrestling = { matches: [], rounds: [], goldWinner: null, goldTribe: null, knockouts: [], fighters: [] };
 
-  // ── Build teams ──
-  let teams = [];
+  // ── Select fighters: 2 per tribe (pre-merge) or all active (post-merge) ──
+  let fighters = [];
   if (!isMerged && tribeData) {
-    // Pre-merge: 2 per tribe (highest physical+social combo)
     tribeData.forEach(t => {
       const ranked = [...t.members].sort((a, b) => {
         const sa = pStats(a), sb = pStats(b);
         return (sb.physical + sb.social) - (sa.physical + sa.social);
       });
-      teams.push({
-        tribeName: t.tribeName,
-        fighters: ranked.slice(0, 2),
-        hp: [100, 100],
-        tags: 2,
-        active: 0 // index of active fighter
-      });
+      const selected = ranked.slice(0, 2);
+      selected.forEach(f => fighters.push({ name: f, tribe: t.tribeName }));
     });
   } else {
-    // Post-merge: random pairs, bracket tournament
-    const shuffled = [...active].sort(() => Math.random() - 0.5);
-    for (let i = 0; i < shuffled.length; i += 2) {
-      if (i + 1 < shuffled.length) {
-        teams.push({
-          tribeName: null,
-          fighters: [shuffled[i], shuffled[i + 1]],
-          hp: [100, 100],
-          tags: 2,
-          active: 0
-        });
-      } else {
-        // Odd player out — solo fighter
-        teams.push({
-          tribeName: null,
-          fighters: [shuffled[i]],
-          hp: [100],
-          tags: 0,
-          active: 0
-        });
-      }
-    }
+    active.forEach(f => fighters.push({ name: f, tribe: null }));
   }
 
-  // ── Combat simulation ──
-  const maxRounds = 8;
-  const alive = new Set(teams.map((_, i) => i));
+  // Fighter state
+  const hp = {};
+  const fatigue = {};
+  fighters.forEach(f => { hp[f.name] = 100; fatigue[f.name] = 0; });
+  const aliveSet = new Set(fighters.map(f => f.name));
 
-  for (let round = 0; round < maxRounds && alive.size > 1; round++) {
+  // ── Selection reactions ──
+  wrestling.selections = [];
+  fighters.forEach(f => {
+    const s = pStats(f.name);
+    const pr = pronouns(f.name);
+    const isEager = s.boldness >= 6 || s.physical >= 7;
+    const text = isEager ? pick(WRESTLE_SELECTED_EAGER)(f.name, pr) : pick(WRESTLE_SELECTED_NERVOUS)(f.name, pr);
+    wrestling.selections.push({ player: f.name, tribe: f.tribe, eager: isEager, text });
+  });
+
+  // ── Battle royale — fight until one team remains (pre-merge) or 1 standing (post-merge) ──
+  const maxRounds = 50;
+  function _fightOver() {
+    const alive = fighters.filter(f => aliveSet.has(f.name));
+    if (alive.length <= 1) return true;
+    if (!isMerged && tribeData) {
+      const tribesLeft = new Set(alive.map(f => f.tribe));
+      return tribesLeft.size <= 1;
+    }
+    return false;
+  }
+
+  for (let round = 0; round < maxRounds; round++) {
+    if (_fightOver()) break;
+    const aliveFighters = fighters.filter(f => aliveSet.has(f.name));
+
     const roundData = { round: round + 1, events: [] };
-    const teamIndices = [...alive];
 
-    // Each active fighter targets a random opponent
-    for (const ti of teamIndices) {
-      if (!alive.has(ti)) continue;
-      const team = teams[ti];
-      const fighter = team.fighters[team.active];
-      if (!fighter) continue;
+    // Every alive fighter picks a target and attacks
+    const shuffled = [...aliveFighters].sort(() => Math.random() - 0.5);
+    for (const fObj of shuffled) {
+      const fighter = fObj.name;
+      if (!aliveSet.has(fighter)) continue;
 
-      // Pick target
-      const opponents = teamIndices.filter(j => j !== ti && alive.has(j));
-      if (opponents.length === 0) continue;
-      const oppIdx = pick(opponents);
-      const oppTeam = teams[oppIdx];
-      const opponent = oppTeam.fighters[oppTeam.active];
-      if (!opponent) continue;
+      // Pick target: prefer enemy tribe (pre-merge), then low bond, then weakest
+      const targets = aliveFighters.filter(t => t.name !== fighter && aliveSet.has(t.name));
+      if (targets.length === 0) continue;
+      const enemyTargets = fObj.tribe ? targets.filter(t => t.tribe !== fObj.tribe) : [];
+      const pool = enemyTargets.length > 0 ? enemyTargets : targets;
+
+      const targetWeights = pool.map(t => {
+        const bond = getBond(fighter, t.name);
+        const hpWeight = (100 - (hp[t.name] || 100)) * 0.02;
+        const bondWeight = Math.max(0, 3 - bond) * 0.3;
+        return { name: t.name, weight: 1 + hpWeight + bondWeight + Math.random() * 2 };
+      });
+      targetWeights.sort((a, b) => b.weight - a.weight);
+      const opponent = targetWeights[0].name;
 
       const fs = pStats(fighter);
       const os = pStats(opponent);
       const fpr = pronouns(fighter);
+      const fatiguePenalty = fatigue[fighter] * 0.003;
 
-      // Flashy move check (boldness >= 7)
+      // Instant KO — very rare, slight escalation in late rounds
+      const ikoChance = round <= 4 ? 0.008 : round <= 8 ? 0.015 : 0.025;
+      if (Math.random() < ikoChance && aliveSet.has(opponent)) {
+        hp[opponent] = 0;
+        fatigue[opponent] += 999;
+        ep.chalMemberScores[fighter] = (ep.chalMemberScores[fighter] || 0) + 4;
+        roundData.events.push({
+          type: 'instant-ko', attacker: fighter, defender: opponent, damage: hp[opponent] <= 0 ? 999 : 100, round: round + 1,
+          text: pick(WRESTLE_INSTANT_KO)(fighter, opponent),
+          badge: 'INSTANT K.O.', badgeClass: 'red',
+          hpAfter: { [fighter]: hp[fighter], [opponent]: 0 }
+        });
+        popDelta(fighter, 2);
+        continue;
+      }
+
       const isCocky = fs.boldness >= 7;
-      let doFlashy = isCocky && Math.random() < 0.35;
+      let doFlashy = isCocky && Math.random() < 0.25;
 
-      // Hit roll
-      let hitRoll = fs.physical * 0.1 + fs.boldness * 0.06 + noise(2.5);
-      let defRoll = os.physical * 0.08 + os.intuition * 0.05 + noise(2.5);
+      let hitRoll = fs.physical * 0.08 + fs.boldness * 0.04 + fs.endurance * 0.03 - fatiguePenalty + noise(3.0);
+      let defRoll = os.physical * 0.06 + os.endurance * 0.04 + os.intuition * 0.04 + noise(3.0);
 
       if (doFlashy) {
-        hitRoll += 0.15; // miss penalty for flashy
+        hitRoll -= 0.2;
         if (hitRoll > defRoll) {
-          // Flashy hit — 1.5x damage
-          const damage = Math.floor((15 + Math.floor(Math.random() * 16)) * 1.5);
-          oppTeam.hp[oppTeam.active] -= damage;
+          const damage = Math.floor((12 + Math.floor(Math.random() * 14)) * 1.5);
+          hp[opponent] -= damage;
+          fatigue[opponent] += damage;
           ep.chalMemberScores[fighter] = (ep.chalMemberScores[fighter] || 0) + 2;
           roundData.events.push({
             type: 'flashy-hit', attacker: fighter, defender: opponent, damage, round: round + 1,
             text: pick(WRESTLE_FLASHY)(fighter, fpr) + ' ' + pick(WRESTLE_HIT)(fighter, opponent),
-            badge: 'FLASHY HIT', badgeClass: 'gold'
+            badge: 'FLASHY HIT', badgeClass: 'gold',
+            hpAfter: { [fighter]: hp[fighter], [opponent]: hp[opponent] }
           });
           popDelta(fighter, 1);
         } else {
-          // Flashy miss
-          roundData.events.push({
-            type: 'flashy-miss', attacker: fighter, defender: opponent, round: round + 1,
-            text: pick(WRESTLE_FLASHY_MISS)(fighter, fpr),
-            badge: 'SHOWBOAT FAIL', badgeClass: 'red'
-          });
-          popDelta(fighter, -1);
+          const counterChance = os.intuition * 0.06 + noise(1.5);
+          if (counterChance > 0.4) {
+            const counterDmg = 10 + Math.floor(Math.random() * 12);
+            hp[fighter] -= counterDmg;
+            fatigue[fighter] += counterDmg;
+            ep.chalMemberScores[opponent] = (ep.chalMemberScores[opponent] || 0) + 1;
+            roundData.events.push({
+              type: 'counter', attacker: opponent, defender: fighter, damage: counterDmg, round: round + 1,
+              text: `${fighter} goes for a flashy move — ${opponent} reads it perfectly and counters! ${fighter} takes ${counterDmg} damage!`,
+              badge: 'COUNTER', badgeClass: 'blue',
+              hpAfter: { [fighter]: hp[fighter], [opponent]: hp[opponent] }
+            });
+            popDelta(opponent, 1);
+          } else {
+            roundData.events.push({
+              type: 'flashy-miss', attacker: fighter, defender: opponent, round: round + 1,
+              text: pick(WRESTLE_FLASHY_MISS)(fighter, fpr),
+              badge: 'SHOWBOAT FAIL', badgeClass: 'red',
+              hpAfter: { [fighter]: hp[fighter], [opponent]: hp[opponent] }
+            });
+            popDelta(fighter, -1);
+          }
         }
       } else if (hitRoll > defRoll) {
-        // Normal hit
-        const damage = 15 + Math.floor(Math.random() * 16);
-        oppTeam.hp[oppTeam.active] -= damage;
+        const damage = 12 + Math.floor(Math.random() * 14);
+        hp[opponent] -= damage;
+        fatigue[opponent] += damage;
         ep.chalMemberScores[fighter] = (ep.chalMemberScores[fighter] || 0) + 1;
         roundData.events.push({
           type: 'hit', attacker: fighter, defender: opponent, damage, round: round + 1,
           text: pick(WRESTLE_HIT)(fighter, opponent),
-          badge: 'HIT', badgeClass: 'orange'
+          badge: 'HIT', badgeClass: 'orange',
+          hpAfter: { [fighter]: hp[fighter], [opponent]: hp[opponent] }
         });
       } else {
-        // Miss
-        roundData.events.push({
-          type: 'miss', attacker: fighter, defender: opponent, round: round + 1,
-          text: pick(WRESTLE_MISS)(fighter, opponent),
-          badge: 'MISS', badgeClass: 'grey'
-        });
-      }
-
-      // Betrayal check: partner bond < -2, villain/schemer archetype
-      if (team.fighters.length > 1) {
-        const partnerIdx = team.active === 0 ? 1 : 0;
-        const partner = team.fighters[partnerIdx];
-        if (partner && team.hp[partnerIdx] > 0) {
-          const bond = getBond(fighter, partner);
-          const a = arch(fighter);
-          const canBetray = VILLAIN_ARCHS.has(a) || (
-            !NICE_ARCHS.has(a) && fs.strategic >= 6 && fs.loyalty <= 4
-          );
-          if (bond < -2 && canBetray && Math.random() < 0.20) {
-            team.hp[partnerIdx] -= 20;
-            addBond(fighter, partner, -3);
-            popDelta(fighter, -2);
-            roundData.events.push({
-              type: 'betrayal', betrayer: fighter, victim: partner, round: round + 1,
-              text: pick(WRESTLE_BETRAYAL)(fighter, partner),
-              badge: 'BETRAYAL', badgeClass: 'red'
-            });
-            // Camp event
-            const evtKey = isMerged ? (gs.mergeName || 'merge') : (team.tribeName || gs.mergeName || 'merge');
-            if (!ep.campEvents[evtKey]) ep.campEvents[evtKey] = { pre: [], post: [] };
-            ep.campEvents[evtKey].post.push({
-              type: 'greeces-pieces-betrayal',
-              players: [fighter, partner],
-              badgeText: 'Betrayal',
-              badgeClass: 'badge-red',
-              text: `${fighter} turned on ${partner} during the wrestling match!`
-            });
-          }
-        }
-      }
-
-      // Villain throw partner at opponent (15%)
-      if (team.fighters.length > 1 && VILLAIN_ARCHS.has(arch(fighter))) {
-        const partnerIdx = team.active === 0 ? 1 : 0;
-        const partner = team.fighters[partnerIdx];
-        if (partner && team.hp[partnerIdx] > 0 && Math.random() < 0.15) {
-          team.hp[partnerIdx] -= 20;
-          oppTeam.hp[oppTeam.active] -= 10;
-          popDelta(fighter, -1);
-          addBond(fighter, partner, -2);
+        const counterChance = os.intuition * 0.04 + noise(1.5);
+        if (counterChance > 0.5 && Math.random() < 0.3) {
+          const counterDmg = 8 + Math.floor(Math.random() * 10);
+          hp[fighter] -= counterDmg;
+          fatigue[fighter] += counterDmg;
+          ep.chalMemberScores[opponent] = (ep.chalMemberScores[opponent] || 0) + 1;
           roundData.events.push({
-            type: 'throw-partner', thrower: fighter, partner, target: opponent, round: round + 1,
-            text: `${fighter} grabs ${partner} and hurls ${pronouns(partner).obj} at ${opponent}! Both go down!`,
-            badge: 'DIRTY MOVE', badgeClass: 'red'
+            type: 'counter', attacker: opponent, defender: fighter, damage: counterDmg, round: round + 1,
+            text: `${fighter} swings wide — ${opponent} ducks and fires back! A clean counter for ${counterDmg} damage.`,
+            badge: 'COUNTER', badgeClass: 'blue',
+            hpAfter: { [fighter]: hp[fighter], [opponent]: hp[opponent] }
+          });
+        } else {
+          roundData.events.push({
+            type: 'miss', attacker: fighter, defender: opponent, round: round + 1,
+            text: pick(WRESTLE_MISS)(fighter, opponent),
+            badge: 'MISS', badgeClass: 'grey',
+            hpAfter: { [fighter]: hp[fighter], [opponent]: hp[opponent] }
           });
         }
       }
     }
 
-    // Check KOs and tag-outs
-    for (const ti of teamIndices) {
-      if (!alive.has(ti)) continue;
-      const team = teams[ti];
-      const activeIdx = team.active;
-      const fighter = team.fighters[activeIdx];
-      if (!fighter) continue;
-
-      if (team.hp[activeIdx] <= 0) {
-        // KO
+    // Check KOs after all attacks resolve
+    for (const fObj of aliveFighters) {
+      const fighter = fObj.name;
+      if (!aliveSet.has(fighter)) continue;
+      if (hp[fighter] <= 0) {
+        // Check if already handled by instant-ko
+        const alreadyKOd = roundData.events.some(e => e.type === 'instant-ko' && e.defender === fighter);
+        if (alreadyKOd) {
+          wrestling.knockouts.push({ player: fighter, round: round + 1, instant: true });
+          aliveSet.delete(fighter);
+          continue;
+        }
         ep.chalMemberScores[fighter] = (ep.chalMemberScores[fighter] || 0) - 1;
         wrestling.knockouts.push({ player: fighter, round: round + 1 });
-
-        // Find who last hit this fighter for KO text
         const lastHit = roundData.events.filter(e =>
-          (e.type === 'hit' || e.type === 'flashy-hit') && e.defender === fighter
+          (e.type === 'hit' || e.type === 'flashy-hit' || e.type === 'counter' || e.type === 'instant-ko') && e.defender === fighter
         );
         const koPair = lastHit.length > 0 ? lastHit[lastHit.length - 1].attacker : 'the opponent';
         roundData.events.push({
           type: 'ko', eliminated: fighter, by: koPair, round: round + 1,
           text: pick(WRESTLE_KO)(koPair, fighter),
-          badge: 'KO', badgeClass: 'red'
+          badge: 'KO', badgeClass: 'red',
+          hpAfter: { [fighter]: 0 }
         });
-
         if (typeof koPair === 'string' && koPair !== 'the opponent') {
           ep.chalMemberScores[koPair] = (ep.chalMemberScores[koPair] || 0) + 3;
           popDelta(koPair, 1);
         }
-
-        // Can tag partner?
-        const partnerIdx = activeIdx === 0 ? 1 : 0;
-        if (team.fighters.length > 1 && team.hp[partnerIdx] > 0 && team.tags > 0) {
-          team.tags--;
-          team.active = partnerIdx;
-          const partner = team.fighters[partnerIdx];
-          roundData.events.push({
-            type: 'tag-in', out: fighter, into: partner, round: round + 1,
-            text: pick(WRESTLE_TAG_IN)(fighter, partner),
-            badge: 'TAG IN', badgeClass: 'blue'
-          });
-        } else {
-          // Team eliminated
-          alive.delete(ti);
-        }
-      } else if (team.hp[activeIdx] < 30 && team.fighters.length > 1 && team.tags > 0) {
-        // Low HP — might tag out
-        const partnerIdx = activeIdx === 0 ? 1 : 0;
-        if (team.hp[partnerIdx] > 0 && Math.random() < 0.50) {
-          team.tags--;
-          team.active = partnerIdx;
-          const partner = team.fighters[partnerIdx];
-          roundData.events.push({
-            type: 'tag-in', out: fighter, into: partner, round: round + 1,
-            text: pick(WRESTLE_TAG_IN)(fighter, partner),
-            badge: 'TAG IN', badgeClass: 'blue'
-          });
-        }
+        aliveSet.delete(fighter);
       }
     }
+
+    // Snapshot HP at end of round for VP
+    roundData.hpSnapshot = {};
+    fighters.forEach(f => { roundData.hpSnapshot[f.name] = Math.max(0, hp[f.name]); });
 
     wrestling.rounds.push(roundData);
+
+    if (_fightOver()) break;
   }
 
-  // Determine winner
-  const survivors = [...alive];
-  if (survivors.length === 1) {
-    const winTeam = teams[survivors[0]];
-    const winFighter = winTeam.fighters[winTeam.active];
-    wrestling.goldWinner = winFighter;
-    ep.chalMemberScores[winFighter] = (ep.chalMemberScores[winFighter] || 0) + 5;
-    popDelta(winFighter, 2);
+  // Safety valve: if maxRounds hit and fight isn't over, force-KO weakest until one team/player remains
+  while (!_fightOver() && aliveSet.size > 1) {
+    const alive = fighters.filter(f => aliveSet.has(f.name));
+    alive.sort((a, b) => (hp[a.name] || 0) - (hp[b.name] || 0));
+    const weakest = alive[0];
+    hp[weakest.name] = 0;
+    aliveSet.delete(weakest.name);
+    wrestling.knockouts.push({ player: weakest.name, round: wrestling.rounds.length, exhaustion: true });
+  }
 
-    if (!isMerged) {
-      wrestling.goldTribe = winTeam.tribeName;
-    } else {
-      // Post-merge: for 1v1 final if bracket, the winner of the last standing team gets gold
-      // Award both fighters in winning team
-      winTeam.fighters.forEach(f => {
-        ep.chalMemberScores[f] = (ep.chalMemberScores[f] || 0) + 2;
-      });
-    }
-  } else if (survivors.length > 1) {
-    // Multiple survivors — highest remaining HP
-    let bestTeamIdx = survivors[0];
-    let bestHP = 0;
-    survivors.forEach(ti => {
-      const t = teams[ti];
-      const hp = t.hp[t.active] || 0;
-      if (hp > bestHP) { bestHP = hp; bestTeamIdx = ti; }
-    });
-    const winTeam = teams[bestTeamIdx];
-    const winFighter = winTeam.fighters[winTeam.active];
-    wrestling.goldWinner = winFighter;
-    ep.chalMemberScores[winFighter] = (ep.chalMemberScores[winFighter] || 0) + 5;
-    popDelta(winFighter, 2);
-    if (!isMerged) wrestling.goldTribe = winTeam.tribeName;
+  // Determine winner(s): last standing individual or team
+  const survivors = fighters.filter(f => aliveSet.has(f.name));
+  if (survivors.length >= 1) {
+    survivors.sort((a, b) => (hp[b.name] || 0) - (hp[a.name] || 0));
+    wrestling.goldWinner = survivors[0].name;
+    wrestling.goldSurvivors = survivors.map(f => f.name);
   } else {
-    // All eliminated — last KO'd fighter gets gold by default
     const lastKO = wrestling.knockouts[wrestling.knockouts.length - 1];
-    wrestling.goldWinner = lastKO ? lastKO.player : active[0];
-    ep.chalMemberScores[wrestling.goldWinner] = (ep.chalMemberScores[wrestling.goldWinner] || 0) + 5;
-    if (!isMerged && tribeData) {
-      for (const t of tribeData) {
-        if (t.members.includes(wrestling.goldWinner)) {
-          wrestling.goldTribe = t.tribeName;
-          break;
-        }
-      }
-    }
+    wrestling.goldWinner = lastKO ? lastKO.player : fighters[0].name;
+    wrestling.goldSurvivors = [wrestling.goldWinner];
   }
 
-  wrestling.teams = teams.map(t => ({
-    tribeName: t.tribeName,
-    fighters: [...t.fighters],
-    finalHP: [...t.hp],
-    tagsUsed: 2 - t.tags
+  survivors.forEach(f => {
+    ep.chalMemberScores[f.name] = (ep.chalMemberScores[f.name] || 0) + 5;
+    popDelta(f.name, 2);
+  });
+
+  if (!isMerged && tribeData) {
+    const winFighter = fighters.find(f => f.name === wrestling.goldWinner);
+    if (winFighter) wrestling.goldTribe = winFighter.tribe;
+  }
+
+  // Store fighter data for VP
+  wrestling.fighters = fighters.map(f => ({
+    name: f.name,
+    tribe: f.tribe,
+    finalHP: Math.max(0, hp[f.name]),
+    koRound: wrestling.knockouts.find(k => k.player === f.name)?.round || null
   }));
 
   // Social events between wrestlers
-  const allFighters = teams.flatMap(t => t.fighters);
-  for (let i = 0; i < allFighters.length; i++) {
-    for (let j = i + 1; j < allFighters.length; j++) {
+  const allNames = fighters.map(f => f.name);
+  for (let i = 0; i < allNames.length; i++) {
+    for (let j = i + 1; j < allNames.length; j++) {
       if (Math.random() < 0.25) {
-        const a = allFighters[i], b = allFighters[j];
+        const a = allNames[i], b = allNames[j];
         const bond = getBond(a, b);
         if (bond < -2) {
           addBond(a, b, -1);
@@ -1041,12 +1200,16 @@ function _simulateWrestling(active, ep, tribeData) {
   const evtKey = isMerged ? (gs.mergeName || 'merge') : wrestling.goldTribe;
   if (evtKey) {
     if (!ep.campEvents[evtKey]) ep.campEvents[evtKey] = { pre: [], post: [] };
+    const survs = wrestling.goldSurvivors || [wrestling.goldWinner];
+    const goldText = survs.length > 1
+      ? `${survs.join(' & ')} were the last ones standing and claimed wrestling gold!`
+      : `${wrestling.goldWinner} dominated the wrestling event and claimed gold!`;
     ep.campEvents[evtKey].post.push({
       type: 'greeces-pieces-wrestling-gold',
-      players: [wrestling.goldWinner],
+      players: survs,
       badgeText: 'Wrestling Gold',
       badgeClass: 'badge-gold',
-      text: `${wrestling.goldWinner} dominated the wrestling event and claimed gold!`
+      text: goldText
     });
   }
 
@@ -1186,13 +1349,14 @@ function _simulateIcarus(contenders, ep) {
       const s = pStats(name);
       const pr = pronouns(name);
 
-      // Fly higher
-      const gain = s.physical * 0.08 + s.boldness * 0.06 + noise(2.5);
-      state[name].altitude += Math.max(0, gain);
+      // Fly higher — boldness for risky gains, physical for steady climb
+      const gain = 0.6 + s.physical * 0.06 + s.boldness * 0.04 + noise(0.4);
+      state[name].altitude += Math.max(0.1, gain);
 
-      // Wing degradation — heavier = more melt
-      const melt = 15 + s.physical * 2 + noise(5);
-      state[name].integrity -= Math.max(5, melt);
+      // Wing degradation — higher altitude = more heat, boldness = riskier flight path
+      const altPenalty = Math.max(0, state[name].altitude - 1.5) * 2;
+      const melt = 8 + s.boldness * 0.8 + altPenalty + noise(4);
+      state[name].integrity -= Math.max(3, melt);
       state[name].integrity = Math.max(0, state[name].integrity);
 
       ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + 2;
@@ -1216,8 +1380,8 @@ function _simulateIcarus(contenders, ep) {
         });
       }
 
-      // Check medal reach
-      if (state[name].altitude >= MEDAL_ALTITUDE && state[name].integrity > 0) {
+      // Check medal reach — can grab even at 0% (last-gasp reach)
+      if (state[name].altitude >= MEDAL_ALTITUDE) {
         medalClaimed = true;
         icarus.winner = name;
         ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + 8;
@@ -1239,6 +1403,12 @@ function _simulateIcarus(contenders, ep) {
           badge: 'WINGS COLLAPSED', badgeClass: 'red'
         });
       }
+    });
+
+    // Snapshot state at end of round for sidebar live-update
+    roundData.snapshot = {};
+    contenders.forEach(n => {
+      roundData.snapshot[n] = { altitude: state[n].altitude, integrity: Math.round(state[n].integrity), alive: state[n].alive };
     });
 
     icarus.rounds.push(roundData);
@@ -1561,30 +1731,71 @@ function _gpCSS() {
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 
 .gp-shell{max-width:1100px;margin:0 auto;position:relative;min-height:100vh;
-  background:#2a2018;border-left:3px solid #6a5030;border-right:3px solid #6a5030;}
+  background:linear-gradient(180deg,#2a2018 0%,#241a10 50%,#1e1408 100%);
+  border-left:3px solid #6a5030;border-right:3px solid #6a5030;
+  box-shadow:0 0 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(138,108,56,.1);}
 
-/* ATMOSPHERE */
+/* ATMOSPHERE — temple interior with torchlight */
 .gp-atmo{position:fixed;top:46px;left:0;right:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden;}
 .gp-atmo-sky{position:absolute;inset:0;
-  background:linear-gradient(180deg,#87CEEB 0%,#b8d4e8 30%,#e8c8a0 70%,#d4956a 100%);}
-.gp-atmo-ruins{position:absolute;bottom:0;left:0;right:0;height:40%;
-  background:linear-gradient(0deg,#c4a06a 0%,#d4b07a 20%,transparent 100%);}
-.gp-atmo-columns{position:absolute;bottom:15%;left:5%;width:12%;height:35%;
-  border:4px solid #b8a080;border-bottom:none;background:linear-gradient(90deg,#e8dcc8,#d4c8b0,#e8dcc8);opacity:.3;}
-.gp-atmo-columns2{position:absolute;bottom:15%;right:8%;width:8%;height:28%;
-  border:4px solid #b8a080;border-bottom:none;background:linear-gradient(90deg,#e8dcc8,#d4c8b0);opacity:.25;}
-.gp-atmo-sun{position:absolute;top:8%;right:15%;width:80px;height:80px;border-radius:50%;
-  background:radial-gradient(circle,#fff8e0 0%,#f0d870 40%,rgba(240,216,112,0) 70%);
-  box-shadow:0 0 60px 30px rgba(240,216,112,.3);opacity:.6;}
-@keyframes gp-feather-fall{0%{transform:translateY(-20px) rotate(0deg);opacity:0}10%{opacity:.25}90%{opacity:.2}100%{transform:translateY(100vh) rotate(360deg);opacity:0}}
-.gp-feather{position:absolute;width:8px;height:16px;background:linear-gradient(135deg,#d4a844,#c49838);
-  border-radius:50% 50% 50% 0;opacity:0;animation:gp-feather-fall linear infinite;}
-.gp-feather:nth-child(1){left:10%;animation-duration:12s;animation-delay:0s;}
-.gp-feather:nth-child(2){left:30%;animation-duration:15s;animation-delay:3s;width:6px;height:12px;}
-.gp-feather:nth-child(3){left:55%;animation-duration:18s;animation-delay:6s;}
-.gp-feather:nth-child(4){left:75%;animation-duration:14s;animation-delay:9s;width:10px;height:18px;}
-.gp-feather:nth-child(5){left:90%;animation-duration:16s;animation-delay:2s;width:5px;height:10px;}
-@media(prefers-reduced-motion:reduce){.gp-feather{animation:none;}}
+  background:linear-gradient(180deg,#1a1408 0%,#2a1c10 20%,#3a2814 50%,#2a1c0e 80%,#1a1008 100%);}
+.gp-atmo-ruins{position:absolute;bottom:0;left:0;right:0;height:50%;
+  background:linear-gradient(0deg,#0e0a06 0%,#1a1408 30%,transparent 100%);}
+.gp-atmo-columns{position:absolute;bottom:0;left:2%;width:14%;height:90%;
+  border:3px solid rgba(138,108,56,.2);border-bottom:none;
+  background:linear-gradient(90deg,rgba(80,60,30,.15),rgba(100,80,40,.1),rgba(80,60,30,.15));opacity:.5;
+  box-shadow:inset 0 0 30px rgba(0,0,0,.5);}
+.gp-atmo-columns2{position:absolute;bottom:0;right:3%;width:10%;height:80%;
+  border:3px solid rgba(138,108,56,.15);border-bottom:none;
+  background:linear-gradient(90deg,rgba(80,60,30,.12),rgba(100,80,40,.08));opacity:.4;
+  box-shadow:inset 0 0 20px rgba(0,0,0,.4);}
+.gp-atmo-sun{position:absolute;top:5%;right:12%;width:120px;height:120px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,200,100,.15) 0%,rgba(212,168,68,.08) 40%,transparent 70%);
+  box-shadow:0 0 80px 40px rgba(212,168,68,.06);opacity:.8;}
+
+/* Torch glow effects */
+@keyframes gp-torch-flicker{0%,100%{opacity:.7;transform:scaleY(1)}25%{opacity:.9;transform:scaleY(1.1)}50%{opacity:.6;transform:scaleY(.95)}75%{opacity:.85;transform:scaleY(1.05)}}
+.gp-atmo-torch{position:absolute;bottom:35%;width:40px;pointer-events:none;}
+.gp-atmo-torch::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:6px;height:60px;background:linear-gradient(180deg,#5a4020,#3a2810);border-radius:2px;}
+.gp-atmo-torch::after{content:'';position:absolute;bottom:55px;left:50%;transform:translateX(-50%);
+  width:16px;height:24px;border-radius:50% 50% 20% 20%;
+  background:radial-gradient(ellipse at 50% 70%,#f0a020,#e07010,#c04008);
+  box-shadow:0 0 30px 15px rgba(240,160,40,.25),0 0 60px 30px rgba(200,100,20,.1);
+  animation:gp-torch-flicker 2s ease-in-out infinite;}
+.gp-atmo-torch-l{left:6%;}
+.gp-atmo-torch-r{right:6%;}
+.gp-atmo-torch-r::after{animation-delay:.7s;}
+
+/* Dust motes floating in torchlight */
+@keyframes gp-dust-float{0%{transform:translate(0,0) scale(.8);opacity:0}20%{opacity:.4}50%{opacity:.6}80%{opacity:.3}100%{transform:translate(30px,-80px) scale(1.2);opacity:0}}
+.gp-dust{position:absolute;width:3px;height:3px;border-radius:50%;
+  background:radial-gradient(circle,rgba(212,180,120,.6),transparent);pointer-events:none;}
+.gp-dust:nth-child(1){left:8%;bottom:40%;animation:gp-dust-float 8s linear infinite;}
+.gp-dust:nth-child(2){left:12%;bottom:35%;animation:gp-dust-float 11s linear 2s infinite;width:2px;height:2px;}
+.gp-dust:nth-child(3){right:10%;bottom:45%;animation:gp-dust-float 9s linear 4s infinite;}
+.gp-dust:nth-child(4){right:15%;bottom:38%;animation:gp-dust-float 13s linear 1s infinite;width:4px;height:4px;}
+.gp-dust:nth-child(5){left:20%;bottom:50%;animation:gp-dust-float 10s linear 6s infinite;width:2px;height:2px;}
+.gp-dust:nth-child(6){right:20%;bottom:42%;animation:gp-dust-float 12s linear 3s infinite;}
+.gp-dust:nth-child(7){left:40%;bottom:30%;animation:gp-dust-float 14s linear 5s infinite;width:2px;height:2px;}
+.gp-dust:nth-child(8){right:35%;bottom:48%;animation:gp-dust-float 7s linear 7s infinite;}
+
+/* Boar silhouette crossing */
+@keyframes gp-boar-cross{0%{transform:translateX(-100px) scaleX(-1);opacity:0}5%{opacity:.08}50%{opacity:.06}95%{opacity:.08}100%{transform:translateX(calc(100vw + 100px)) scaleX(-1);opacity:0}}
+.gp-boar-ghost{position:absolute;bottom:8%;width:80px;height:40px;opacity:0;
+  animation:gp-boar-cross 25s linear 8s infinite;pointer-events:none;}
+
+/* Feathers — now ember-like sparks from torches */
+@keyframes gp-ember-rise{0%{transform:translateY(0) rotate(0deg);opacity:0}10%{opacity:.5}60%{opacity:.3}100%{transform:translateY(-100vh) rotate(720deg);opacity:0}}
+.gp-feather{position:absolute;width:4px;height:4px;border-radius:50%;
+  background:radial-gradient(circle,#f0a020,#c06010);opacity:0;
+  animation:gp-ember-rise linear infinite;pointer-events:none;}
+.gp-feather:nth-child(1){left:7%;bottom:35%;animation-duration:6s;animation-delay:0s;}
+.gp-feather:nth-child(2){left:9%;bottom:38%;animation-duration:8s;animation-delay:2s;width:3px;height:3px;}
+.gp-feather:nth-child(3){right:7%;bottom:35%;animation-duration:7s;animation-delay:1s;}
+.gp-feather:nth-child(4){right:9%;bottom:37%;animation-duration:9s;animation-delay:3s;width:3px;height:3px;}
+.gp-feather:nth-child(5){left:15%;bottom:32%;animation-duration:10s;animation-delay:5s;width:2px;height:2px;}
+@media(prefers-reduced-motion:reduce){.gp-feather,.gp-dust,.gp-boar-ghost,.gp-atmo-torch::after{animation:none;}}
 
 /* MARBLE TEXTURE */
 .gp-marble{
@@ -1620,19 +1831,23 @@ function _gpCSS() {
 
 /* TITLE BANNER */
 .gp-title-banner{
-  background:linear-gradient(180deg,#3a2a14 0%,#2a1c0e 40%,#1e1408 100%);
-  border-bottom:4px solid #a88850;
-  padding:18px 24px 14px;text-align:center;position:relative;z-index:2;
-  box-shadow:0 4px 20px rgba(0,0,0,.6);}
-.gp-title-banner::before,.gp-title-banner::after{content:'';position:absolute;top:0;bottom:0;width:50px;
-  background:repeating-linear-gradient(0deg,transparent 0px,transparent 4px,rgba(168,136,80,.15) 4px,rgba(168,136,80,.15) 5px);}
+  background:
+    radial-gradient(ellipse at 50% 100%,rgba(212,168,68,.08) 0%,transparent 60%),
+    linear-gradient(180deg,#3a2a14 0%,#2a1c0e 40%,#1e1408 100%);
+  border-bottom:4px solid #a88850;border-top:1px solid rgba(168,136,80,.2);
+  padding:20px 24px 14px;text-align:center;position:relative;z-index:2;
+  box-shadow:0 6px 24px rgba(0,0,0,.7);}
+.gp-title-banner::before,.gp-title-banner::after{content:'';position:absolute;top:0;bottom:0;width:60px;
+  background:
+    repeating-linear-gradient(0deg,transparent 0px,transparent 4px,rgba(168,136,80,.12) 4px,rgba(168,136,80,.12) 5px),
+    linear-gradient(90deg,rgba(168,136,80,.06),transparent);}
 .gp-title-banner::before{left:0;}
-.gp-title-banner::after{right:0;}
-.gp-title-main{font-family:'Cinzel',serif;font-weight:900;font-size:28px;color:#d4a844;
-  letter-spacing:6px;text-transform:uppercase;
-  text-shadow:0 2px 4px rgba(0,0,0,.6),0 0 30px rgba(212,168,68,.2);}
+.gp-title-banner::after{right:0;transform:scaleX(-1);}
+.gp-title-main{font-family:'Cinzel',serif;font-weight:900;font-size:30px;color:#d4a844;
+  letter-spacing:7px;text-transform:uppercase;
+  text-shadow:0 2px 6px rgba(0,0,0,.7),0 0 40px rgba(212,168,68,.15),0 0 80px rgba(212,168,68,.06);}
 .gp-title-sub{font-family:'Cinzel',serif;font-size:12px;color:#a08850;letter-spacing:8px;
-  text-transform:uppercase;margin-top:4px;}
+  text-transform:uppercase;margin-top:4px;text-shadow:0 1px 3px rgba(0,0,0,.4);}
 .gp-greek-key{height:14px;margin-top:10px;
   background:
     repeating-linear-gradient(90deg,
@@ -1645,27 +1860,34 @@ function _gpCSS() {
 
 /* MEDAL SCOREBOARD */
 .gp-scoreboard{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;
-  padding:10px 16px;
-  background:linear-gradient(180deg,#4a3520 0%,#3a2818 100%);
-  border-bottom:3px solid #8a6c38;box-shadow:0 3px 12px rgba(0,0,0,.4);}
-.gp-sb-tribe{display:flex;align-items:center;gap:10px;flex:1;}
+  padding:12px 16px;
+  background:
+    linear-gradient(90deg,rgba(138,108,56,.05),rgba(138,108,56,.15) 50%,rgba(138,108,56,.05)),
+    linear-gradient(180deg,#3a2818 0%,#2e2010 50%,#3a2818 100%);
+  border-bottom:3px solid #8a6c38;border-top:1px solid rgba(138,108,56,.3);
+  box-shadow:0 4px 16px rgba(0,0,0,.5),inset 0 1px 0 rgba(200,170,100,.1);}
+.gp-sb-tribe{display:flex;align-items:center;gap:10px;flex:1;position:relative;}
 .gp-sb-tribe-left{justify-content:flex-end;}
 .gp-sb-tribe-right{justify-content:flex-start;}
-.gp-sb-tribe-name{font-family:'Cinzel',serif;font-weight:700;font-size:13px;color:#d4c8a8;letter-spacing:2px;text-transform:uppercase;}
-.gp-sb-medals{display:flex;gap:4px;}
-.gp-sb-medal{width:20px;height:20px;border-radius:50%;
+.gp-sb-tribe-name{font-family:'Cinzel',serif;font-weight:700;font-size:14px;color:#d4c8a8;letter-spacing:3px;text-transform:uppercase;
+  text-shadow:0 1px 4px rgba(0,0,0,.4);}
+.gp-sb-medals{display:flex;gap:5px;}
+@keyframes gp-medal-glow{0%,100%{box-shadow:0 2px 4px rgba(0,0,0,.4),0 0 8px rgba(212,168,68,.2)}50%{box-shadow:0 2px 4px rgba(0,0,0,.4),0 0 16px rgba(212,168,68,.4)}}
+.gp-sb-medal{width:22px;height:22px;border-radius:50%;
   background:radial-gradient(circle at 35% 35%,#f0d870,#c9a84c,#a08030);
-  border:2px solid #8a6c28;box-shadow:0 2px 4px rgba(0,0,0,.4);}
-.gp-sb-medal-empty{background:radial-gradient(circle at 35% 35%,#5a5040,#3a3028);
-  border-color:#4a4030;opacity:.5;box-shadow:none;}
-.gp-sb-medal-count{font-family:'Cinzel',serif;font-weight:900;font-size:28px;color:#d4a844;
-  text-shadow:0 2px 6px rgba(0,0,0,.4);}
+  border:2px solid #8a6c28;box-shadow:0 2px 4px rgba(0,0,0,.4),0 0 8px rgba(212,168,68,.2);
+  animation:gp-medal-glow 3s ease-in-out infinite;}
+.gp-sb-medal-empty{background:radial-gradient(circle at 35% 35%,#4a4030,#2e2820);
+  border-color:#3a3020;opacity:.4;box-shadow:inset 0 1px 3px rgba(0,0,0,.4);animation:none;}
+.gp-sb-medal-count{font-family:'Cinzel',serif;font-weight:900;font-size:32px;color:#d4a844;
+  text-shadow:0 2px 8px rgba(0,0,0,.5),0 0 20px rgba(212,168,68,.15);}
 .gp-sb-center{display:flex;flex-direction:column;align-items:center;gap:2px;padding:0 20px;}
 .gp-sb-vs{font-family:'Cinzel',serif;font-size:11px;color:#8a7850;letter-spacing:4px;text-transform:uppercase;}
-.gp-sb-status{font-family:'Cinzel',serif;font-size:11px;color:#6a5a3a;letter-spacing:2px;text-transform:uppercase;}
-.gp-sb-medal-lg{width:38px;height:38px;}
+.gp-sb-status{font-family:'Cinzel',serif;font-size:10px;color:#6a5a3a;letter-spacing:2px;text-transform:uppercase;}
+.gp-sb-medal-lg{width:42px;height:42px;filter:drop-shadow(0 2px 6px rgba(212,168,68,.3));}
 .gp-tribe-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-size:16px;border:2px solid #8a6c38;}
+@media(prefers-reduced-motion:reduce){.gp-sb-medal{animation:none;}}
 
 /* 3-COLUMN LAYOUT */
 .gp-layout{display:flex;position:relative;z-index:1;}
@@ -1675,20 +1897,25 @@ function _gpCSS() {
 
 /* Right sidebar */
 .gp-sidebar-right{width:260px;flex-shrink:0;position:sticky;top:50px;align-self:flex-start;
-  background:linear-gradient(180deg,#2a2018 0%,#241c14 100%);
+  background:
+    linear-gradient(180deg,rgba(42,32,24,.98) 0%,rgba(30,22,14,.99) 100%);
   border-left:3px solid #6a5030;
-  padding:0;overflow-y:auto;max-height:calc(100vh - 60px);}
+  padding:0;overflow-y:auto;max-height:calc(100vh - 60px);
+  box-shadow:inset 3px 0 16px rgba(0,0,0,.3);}
 .gp-right-header{font-family:'Cinzel',serif;font-weight:700;font-size:11px;color:#a08850;
   letter-spacing:3px;text-transform:uppercase;padding:10px 12px 6px;
-  border-bottom:2px solid #5a4828;text-align:center;}
+  border-bottom:2px solid #5a4828;text-align:center;
+  background:linear-gradient(90deg,transparent,rgba(138,108,56,.06),transparent);}
 
 /* CONTESTANTS GRID */
 .gp-contestants{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:8px;}
 .gp-contestant{display:flex;flex-direction:column;align-items:center;padding:6px 2px;
   border:1px solid #4a3828;border-radius:2px;
-  background:linear-gradient(180deg,#3a3020 0%,#2e2418 100%);}
+  background:linear-gradient(180deg,#3a3020 0%,#2e2418 100%);
+  box-shadow:inset 0 1px 0 rgba(138,108,56,.08);transition:border-color .2s;}
+.gp-contestant:hover{border-color:#8a6c38;}
 .gp-contestant img{width:36px;height:36px;border-radius:50%;border:2px solid #8a6c38;
-  object-fit:cover;box-shadow:0 2px 4px rgba(0,0,0,.4);}
+  object-fit:cover;box-shadow:0 2px 6px rgba(0,0,0,.5);}
 .gp-contestant-name{font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:#d4c8a8;
   letter-spacing:.5px;margin-top:3px;text-align:center;}
 .gp-contestant-tribe{font-family:'Cinzel',serif;font-size:7px;color:#8a7850;letter-spacing:1px;text-transform:uppercase;}
@@ -1737,36 +1964,45 @@ function _gpCSS() {
 .gp-lb-rank-3{color:#8a6c38;}
 .gp-lb-avatar{width:22px;height:22px;border-radius:50%;border:1.5px solid #6a5030;
   object-fit:cover;flex-shrink:0;}
-.gp-lb-name{font-family:'Cinzel',serif;font-size:12px;color:#d4c8a8;flex:1;letter-spacing:.5px;}
+.gp-lb-name{font-family:'Cinzel',serif;font-size:12px;color:#3a2a18;flex:1;letter-spacing:.5px;}
 .gp-lb-golds{display:flex;gap:2px;flex-shrink:0;}
 .gp-lb-gold-dot{width:8px;height:8px;border-radius:50%;
   background:radial-gradient(circle at 35% 35%,#f0d870,#c9a84c);border:1px solid #8a6c28;}
 .gp-lb-score{font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:#d4a844;width:32px;text-align:right;}
 
 /* EVENT BANNER */
-.gp-event-banner{position:relative;margin:16px 0 10px;padding:12px 20px;text-align:center;
-  background:linear-gradient(180deg,#3a2a14 0%,#2a1c0e 100%);
+.gp-event-banner{position:relative;margin:16px 0 10px;padding:14px 24px;text-align:center;
+  background:
+    radial-gradient(ellipse at 50% 50%,rgba(212,168,68,.06) 0%,transparent 60%),
+    linear-gradient(180deg,#3a2a14 0%,#2a1c0e 100%);
   border:2px solid #8a6c38;border-radius:2px;
-  box-shadow:0 4px 16px rgba(0,0,0,.4);}
-.gp-event-banner::before,.gp-event-banner::after{content:'';position:absolute;top:50%;width:20px;height:34px;
-  border:2px solid #8a6c38;border-radius:50%;opacity:.25;transform:translateY(-50%);}
-.gp-event-banner::before{left:10px;border-right:none;}
-.gp-event-banner::after{right:10px;border-left:none;}
+  box-shadow:0 4px 20px rgba(0,0,0,.5),inset 0 0 30px rgba(0,0,0,.3);}
+.gp-event-banner::before,.gp-event-banner::after{content:'';position:absolute;top:50%;width:24px;height:38px;
+  border:2px solid #8a6c38;border-radius:50%;opacity:.2;transform:translateY(-50%);}
+.gp-event-banner::before{left:12px;border-right:none;}
+.gp-event-banner::after{right:12px;border-left:none;}
 .gp-event-banner-num{font-family:'Cinzel',serif;font-size:11px;color:#8a7850;letter-spacing:4px;text-transform:uppercase;}
-.gp-event-banner-title{font-family:'Cinzel',serif;font-weight:900;font-size:17px;color:#d4a844;
-  letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
-.gp-event-banner-desc{font-family:'Crimson Text',serif;font-size:14px;color:#a09070;margin-top:4px;font-style:italic;}
+.gp-event-banner-title{font-family:'Cinzel',serif;font-weight:900;font-size:18px;color:#d4a844;
+  letter-spacing:3px;text-transform:uppercase;margin-top:2px;
+  text-shadow:0 2px 6px rgba(0,0,0,.5),0 0 20px rgba(212,168,68,.1);}
+.gp-event-banner-desc{font-family:'Crimson Text',serif;font-size:14px;color:#a09070;margin-top:4px;font-style:italic;
+  text-shadow:0 1px 3px rgba(0,0,0,.3);}
 
-/* CARDS */
+/* CARDS — parchment texture */
 .gp-card{position:relative;margin-bottom:14px;color:#2a1c10;padding:16px 20px;
   border:1px solid #b8a878;border-radius:2px;
-  box-shadow:0 2px 8px rgba(0,0,0,.15);transition:opacity .4s,transform .3s;
+  box-shadow:0 2px 8px rgba(0,0,0,.15),inset 0 0 40px rgba(160,130,80,.08);
+  transition:opacity .4s,transform .3s;
   background:
-    linear-gradient(130deg, transparent 15%, rgba(185,170,140,.06) 17%, transparent 19%),
-    linear-gradient(250deg, transparent 40%, rgba(175,160,130,.05) 42%, transparent 44%),
-    linear-gradient(180deg,#ece5d6 0%,#e4ddd0 30%,#e8e0d4 60%,#e0d9cc 100%);}
+    repeating-linear-gradient(0deg,transparent 0px,transparent 24px,rgba(160,130,80,.03) 24px,rgba(160,130,80,.03) 25px),
+    linear-gradient(130deg, transparent 15%, rgba(185,170,140,.08) 17%, transparent 19%),
+    linear-gradient(250deg, transparent 40%, rgba(175,160,130,.06) 42%, transparent 44%),
+    radial-gradient(ellipse at 80% 10%, rgba(200,170,100,.06) 0%, transparent 50%),
+    linear-gradient(180deg,#ede6d6 0%,#e6dfd0 30%,#eae3d6 60%,#e2dbc8 100%);}
 .gp-card::before{content:'';position:absolute;inset:0;border-radius:2px;
-  background:radial-gradient(ellipse at 30% 20%, rgba(200,190,170,.1) 0%, transparent 50%);
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(200,190,170,.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 85%, rgba(180,160,120,.08) 0%, transparent 40%);
   pointer-events:none;}
 .gp-card-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;
   padding-bottom:6px;border-bottom:1px solid rgba(184,168,120,.3);position:relative;z-index:1;}
@@ -1776,33 +2012,53 @@ function _gpCSS() {
 .gp-card-foot{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;position:relative;z-index:1;}
 
 /* Card variants */
-.gp-card-maze{border-left:4px solid #6b7c3c;}
-.gp-card-wrestle{border-left:4px solid #b85c38;}
-.gp-card-hurdle{border-left:4px solid #4a7ab8;}
+.gp-card-maze{border-left:4px solid #6b7c3c;
+  box-shadow:0 2px 8px rgba(0,0,0,.15),inset 3px 0 12px rgba(107,124,60,.08);}
+.gp-card-wrestle{border-left:4px solid #b85c38;
+  box-shadow:0 2px 8px rgba(0,0,0,.15),inset 3px 0 12px rgba(184,92,56,.08);}
+.gp-card-hurdle{border-left:4px solid #4a7ab8;
+  box-shadow:0 2px 8px rgba(0,0,0,.15),inset 3px 0 12px rgba(74,122,184,.08);}
 .gp-card-icarus{border-left:4px solid #c9a84c;
   background:
     linear-gradient(130deg, transparent 15%, rgba(200,185,140,.08) 17%, transparent 19%),
-    linear-gradient(180deg,#f0eadc 0%,#ece4d4 30%,#f0e8d8 60%,#e8e0d0 100%);}
+    linear-gradient(180deg,#f0eadc 0%,#ece4d4 30%,#f0e8d8 60%,#e8e0d0 100%);
+  box-shadow:0 2px 10px rgba(201,168,76,.15),inset 0 0 20px rgba(201,168,76,.06);}
 .gp-card-social{border-left:4px solid #8a5a8a;border-left-style:dashed;
-  background:linear-gradient(180deg,#eae4d8 0%,#e4ded2 100%);}
-.gp-card-drama{border-left:4px solid #c02020;
-  background:linear-gradient(180deg,#ece2d4 0%,#e8dcd0 100%);}
-.gp-card-gold{border:2px solid #c9a84c;
   background:
+    repeating-linear-gradient(0deg,transparent 0px,transparent 20px,rgba(138,90,138,.02) 20px,rgba(138,90,138,.02) 21px),
+    linear-gradient(180deg,#eae4d8 0%,#e4ded2 100%);
+  box-shadow:0 2px 6px rgba(0,0,0,.1),inset 3px 0 10px rgba(138,90,138,.06);}
+.gp-card-drama{border-left:4px solid #c02020;position:relative;
+  background:
+    linear-gradient(140deg, transparent 25%, rgba(120,40,20,.03) 26%, transparent 27%),
+    linear-gradient(140deg, transparent 55%, rgba(120,40,20,.02) 56%, transparent 57%),
+    linear-gradient(180deg,#ece2d4 0%,#e8dcd0 100%);
+  box-shadow:0 2px 8px rgba(0,0,0,.15),inset 3px 0 12px rgba(192,32,32,.06);}
+.gp-card-drama::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;
+  background:
+    linear-gradient(35deg, transparent 48%, rgba(80,30,10,.04) 49%, transparent 50%),
+    linear-gradient(155deg, transparent 62%, rgba(80,30,10,.03) 63%, transparent 64%);}
+.gp-card-gold{border:2px solid #c9a84c;position:relative;
+  background:
+    radial-gradient(ellipse at 85% 15%, rgba(240,216,112,.12) 0%, transparent 40%),
     linear-gradient(130deg, transparent 10%, rgba(212,168,68,.06) 12%, transparent 14%),
     linear-gradient(180deg,#f4eede 0%,#ece4d0 50%,#e8dcc4 100%);
-  box-shadow:0 0 12px rgba(201,168,76,.25);}
+  box-shadow:0 0 16px rgba(201,168,76,.3),0 2px 8px rgba(0,0,0,.15);}
+.gp-card-gold::after{content:'';position:absolute;top:8px;right:8px;width:28px;height:28px;
+  border-radius:50%;background:radial-gradient(circle at 40% 35%,#f0d870,#c9a84c,#8a6c28);
+  border:2px solid #6a5020;box-shadow:0 2px 6px rgba(0,0,0,.3),inset 0 -2px 4px rgba(0,0,0,.2);
+  opacity:.5;pointer-events:none;}
 
 /* STAMPS */
-.gp-stamp{position:absolute;top:-6px;right:12px;padding:3px 10px;
+.gp-stamp{position:absolute;top:-8px;right:12px;padding:4px 12px;
   font-family:'Cinzel',serif;font-weight:700;font-size:11px;letter-spacing:2px;
   text-transform:uppercase;border-radius:1px;transform:rotate(2deg);z-index:2;}
 .gp-stamp-gold{background:linear-gradient(135deg,#f0d870,#c9a84c);color:#3a2a18;
-  border:1px solid #a08030;box-shadow:0 2px 6px rgba(201,168,76,.4);}
+  border:1px solid #a08030;box-shadow:0 2px 8px rgba(201,168,76,.5),0 0 16px rgba(212,168,68,.2);}
 .gp-stamp-ko{background:linear-gradient(135deg,#c02020,#8a1818);color:#fff;
-  border:1px solid #6a1010;}
+  border:1px solid #6a1010;box-shadow:0 2px 8px rgba(192,32,32,.4);}
 .gp-stamp-wipeout{background:linear-gradient(135deg,#b85c38,#8a4028);color:#fff;
-  border:1px solid #6a3018;}
+  border:1px solid #6a3018;box-shadow:0 2px 6px rgba(184,92,56,.3);}
 .gp-stamp-event{background:linear-gradient(135deg,#4a7ab8,#3a5a88);color:#fff;
   border:1px solid #2a4a78;}
 
@@ -1848,6 +2104,135 @@ function _gpCSS() {
 .gp-hp-ko{background:#6a6a6a;width:0%;}
 .gp-hp-pct{font-family:'Cinzel',serif;font-size:11px;width:30px;color:#6a5a40;}
 
+/* ══ FIGHTING GAME — VS SPLASH ══ */
+.gp-fight-vs{display:flex;align-items:stretch;justify-content:center;gap:0;margin:14px 0;
+  border:2px solid #6a3010;border-radius:3px;overflow:hidden;
+  box-shadow:0 6px 24px rgba(0,0,0,.6),inset 0 0 40px rgba(0,0,0,.4);
+  background:linear-gradient(135deg,#1a0c04 0%,#2a1808 40%,#1a0c04 100%);}
+.gp-fight-corner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px 12px;position:relative;min-width:120px;}
+.gp-fight-corner-left{background:linear-gradient(135deg,rgba(180,40,40,.15) 0%,transparent 60%);}
+.gp-fight-corner-right{background:linear-gradient(225deg,rgba(40,80,180,.15) 0%,transparent 60%);}
+.gp-fight-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;
+  border:3px solid;box-shadow:0 0 16px rgba(0,0,0,.5);}
+.gp-fight-corner-left .gp-fight-avatar{border-color:#c03030;}
+.gp-fight-corner-right .gp-fight-avatar{border-color:#3060c0;}
+.gp-fight-name{font-family:'Cinzel',serif;font-weight:900;font-size:14px;color:#e8d8c0;
+  letter-spacing:1.5px;text-transform:uppercase;margin-top:6px;
+  text-shadow:0 2px 6px rgba(0,0,0,.6);}
+.gp-fight-hp-wrap{width:100%;margin-top:8px;}
+.gp-fight-hp-track{width:100%;height:8px;background:#1a1008;border-radius:4px;
+  overflow:hidden;border:1px solid #4a3018;}
+.gp-fight-hp-fill{height:100%;border-radius:4px;transition:width .3s;}
+.gp-fight-hp-left{background:linear-gradient(90deg,#c03030,#e05040);}
+.gp-fight-hp-right{background:linear-gradient(90deg,#3060c0,#50a0e0);}
+.gp-fight-hp-text{font-family:'Cinzel',serif;font-size:10px;color:#a09070;text-align:center;margin-top:2px;}
+.gp-fight-vs-label{display:flex;align-items:center;justify-content:center;width:50px;flex-shrink:0;
+  font-family:'Cinzel',serif;font-weight:900;font-size:28px;color:#d4a844;
+  text-shadow:0 0 20px rgba(212,168,68,.6),0 2px 8px rgba(0,0,0,.5);
+  background:radial-gradient(ellipse at 50% 50%,rgba(212,168,68,.1) 0%,transparent 70%);
+  letter-spacing:2px;}
+
+/* ══ FIGHTING GAME — ROUND BANNER ══ */
+.gp-round-banner{display:flex;align-items:center;justify-content:center;gap:12px;
+  margin:18px 0 8px;padding:8px 16px;
+  background:linear-gradient(90deg,transparent 0%,rgba(212,168,68,.06) 20%,rgba(212,168,68,.06) 80%,transparent 100%);
+  border-top:1px solid rgba(212,168,68,.2);border-bottom:1px solid rgba(212,168,68,.2);}
+.gp-round-banner::before,.gp-round-banner::after{content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,168,68,.3),transparent);}
+.gp-round-num{font-family:'Cinzel',serif;font-weight:900;font-size:13px;color:#d4a844;
+  letter-spacing:4px;text-transform:uppercase;
+  text-shadow:0 1px 4px rgba(0,0,0,.3);}
+
+/* ══ FIGHTING GAME — HIT CARD ══ */
+.gp-fight-card{position:relative;margin:6px 0;padding:10px 14px;border-radius:2px;
+  border:1px solid #5a3a18;
+  background:linear-gradient(180deg,#2a1c0e 0%,#221608 100%);
+  box-shadow:0 2px 8px rgba(0,0,0,.4);color:#d4c8a8;}
+.gp-fight-card-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.gp-fight-card-avatars{display:flex;align-items:center;gap:4px;}
+.gp-fight-card-ava{width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid;}
+.gp-fight-card-arrow{font-family:'Cinzel',serif;font-size:14px;color:#8a7850;margin:0 2px;}
+.gp-fight-card-label{font-family:'Cinzel',serif;font-weight:700;font-size:11px;letter-spacing:1.5px;
+  text-transform:uppercase;margin-left:auto;}
+.gp-fight-card-body{font-family:'Crimson Text',serif;font-size:15px;line-height:1.5;color:#c8b890;}
+.gp-fight-card-foot{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.gp-fight-card-hpbar{display:flex;align-items:center;gap:4px;margin-top:6px;}
+.gp-fight-card-hpbar-name{font-family:'Cinzel',serif;font-size:10px;color:#8a7850;width:50px;text-align:right;}
+.gp-fight-card-hpbar-track{flex:1;height:6px;background:#1a1008;border-radius:3px;overflow:hidden;border:1px solid #3a2810;}
+.gp-fight-card-hpbar-fill{height:100%;border-radius:3px;}
+.gp-fight-card-hpbar-pct{font-family:'Cinzel',serif;font-size:9px;color:#8a7850;width:28px;}
+.gp-fight-hit{border-left:3px solid #e08030;}
+.gp-fight-miss{border-left:3px solid #4a4030;opacity:.8;}
+.gp-fight-flashy{border-left:3px solid #d4a844;
+  box-shadow:0 2px 8px rgba(0,0,0,.4),0 0 12px rgba(212,168,68,.15);}
+.gp-fight-counter{border-left:3px solid #4a90d0;
+  box-shadow:0 2px 8px rgba(0,0,0,.4),0 0 8px rgba(74,144,208,.1);}
+.gp-fight-ko{border:2px solid #c02020;
+  background:linear-gradient(180deg,#2a0808 0%,#1a0404 100%);
+  box-shadow:0 4px 16px rgba(192,32,32,.3),0 0 20px rgba(192,32,32,.1);
+  animation:gp-ko-shake .4s ease-out;}
+.gp-fight-tag{border-left:3px solid #3a7ab8;background:linear-gradient(180deg,#1a1c2a 0%,#14162a 100%);}
+.gp-fight-betrayal{border:2px solid #8a1010;
+  background:linear-gradient(180deg,#2a0c08 0%,#1a0804 100%);
+  box-shadow:0 4px 12px rgba(138,16,16,.3);}
+.gp-fight-dirty{border-left:3px solid #8a1010;background:linear-gradient(180deg,#2a1008 0%,#1a0804 100%);}
+.gp-fight-social{border-left:3px dashed #8a5a8a;
+  background:linear-gradient(180deg,#201820 0%,#181418 100%);}
+.gp-fight-gold{border:2px solid #c9a84c;
+  background:linear-gradient(180deg,#2a2010 0%,#1a1808 100%);
+  box-shadow:0 0 20px rgba(201,168,76,.3),0 4px 12px rgba(0,0,0,.4);}
+@keyframes gp-ko-shake{
+  0%{transform:translateX(0)}
+  15%{transform:translateX(-6px)}
+  30%{transform:translateX(5px)}
+  45%{transform:translateX(-4px)}
+  60%{transform:translateX(3px)}
+  75%{transform:translateX(-1px)}
+  100%{transform:translateX(0)}
+}
+@media(prefers-reduced-motion:reduce){
+  .gp-fight-ko,.gp-fight-instant-ko,.gp-dmg-instant-ko{animation:none;}
+}
+
+/* ══ FIGHTING GAME — KO STAMP ══ */
+.gp-fight-stamp{position:absolute;top:-6px;right:10px;padding:4px 14px;
+  font-family:'Cinzel',serif;font-weight:900;font-size:13px;letter-spacing:3px;
+  text-transform:uppercase;border-radius:1px;z-index:2;}
+.gp-fight-stamp-ko{background:linear-gradient(135deg,#c02020,#8a1818);color:#fff;
+  border:1px solid #6a1010;box-shadow:0 2px 10px rgba(192,32,32,.5);transform:rotate(-2deg);}
+.gp-fight-instant-ko{animation:gp-instant-ko-shake .6s ease-out;
+  border-left:4px solid #ff2020!important;box-shadow:0 0 20px rgba(255,32,32,.3);}
+@keyframes gp-instant-ko-shake{
+  0%{transform:translateX(0)}10%{transform:translateX(-6px)}
+  20%{transform:translateX(6px)}30%{transform:translateX(-4px)}
+  40%{transform:translateX(4px)}50%{transform:translateX(-2px)}
+  60%{transform:translateX(2px)}70%{transform:translateX(-1px)}
+  80%{transform:translateX(1px)}100%{transform:translateX(0)}
+}
+.gp-fight-stamp-instant-ko{background:linear-gradient(135deg,#ff2020,#c01010);color:#fff;
+  border:2px solid #ff6040;box-shadow:0 2px 16px rgba(255,32,32,.7),0 0 30px rgba(255,96,64,.3);
+  transform:rotate(-3deg) scale(1.15);font-size:14px;letter-spacing:4px;}
+.gp-fight-stamp-gold{background:linear-gradient(135deg,#f0d870,#c9a84c);color:#3a2a18;
+  border:1px solid #a08030;box-shadow:0 2px 10px rgba(201,168,76,.5);transform:rotate(1deg);}
+.gp-fight-stamp-counter{background:linear-gradient(135deg,#4a90d0,#3060a0);color:#fff;
+  border:1px solid #2a5090;box-shadow:0 2px 8px rgba(74,144,208,.4);transform:rotate(2deg);}
+.gp-fight-stamp-betrayal{background:linear-gradient(135deg,#8a1010,#5a0808);color:#fff;
+  border:1px solid #4a0808;box-shadow:0 2px 8px rgba(138,16,16,.4);transform:rotate(-1deg);}
+
+/* ══ FIGHTING GAME — DAMAGE BURST ══ */
+.gp-dmg-burst{display:inline-flex;align-items:center;justify-content:center;
+  padding:2px 8px;font-family:'Cinzel',serif;font-weight:900;font-size:14px;
+  color:#fff;border-radius:2px;letter-spacing:1px;
+  text-shadow:0 1px 3px rgba(0,0,0,.5);}
+.gp-dmg-hit{background:linear-gradient(135deg,#c05020,#e06030);}
+.gp-dmg-flashy{background:linear-gradient(135deg,#d4a844,#e8c040);}
+.gp-dmg-counter{background:linear-gradient(135deg,#4a90d0,#6ab0e0);}
+.gp-dmg-instant-ko{background:linear-gradient(135deg,#ff2020,#ff6040);font-size:16px;
+  box-shadow:0 0 12px rgba(255,32,32,.5);animation:gp-dmg-pulse .5s ease-out;}
+@keyframes gp-dmg-pulse{0%{transform:scale(1.4)}100%{transform:scale(1)}}
+.gp-dmg-heal{background:linear-gradient(135deg,#4a8a4a,#60aa60);}
+
 /* HURDLE TRACK */
 .gp-hurdle-track{position:relative;margin:10px 0;padding:8px;}
 .gp-hurdle-row{display:flex;align-items:center;gap:4px;margin:4px 0;}
@@ -1880,14 +2265,19 @@ function _gpCSS() {
 .gp-wing-gone{background:#8a8070;opacity:.3;}
 
 /* VS CARD */
-.gp-vs{display:flex;align-items:center;justify-content:center;gap:16px;padding:12px;margin:8px 0;
-  background:linear-gradient(135deg,#3a2a14 0%,#2e2010 100%);border:2px solid #8a6c38;border-radius:2px;}
+.gp-vs{display:flex;align-items:center;justify-content:center;gap:20px;padding:14px 16px;margin:8px 0;
+  background:
+    radial-gradient(ellipse at 50% 50%,rgba(212,168,68,.06) 0%,transparent 60%),
+    linear-gradient(135deg,#3a2a14 0%,#2a1c0e 100%);
+  border:2px solid #8a6c38;border-radius:2px;
+  box-shadow:0 4px 12px rgba(0,0,0,.4),inset 0 0 20px rgba(0,0,0,.3);}
 .gp-vs-player{display:flex;flex-direction:column;align-items:center;gap:4px;}
-.gp-vs-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;
-  border:2px solid #8a6c38;box-shadow:0 2px 8px rgba(0,0,0,.4);}
-.gp-vs-name{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:#d4a844;letter-spacing:1px;}
-.gp-vs-label{font-family:'Cinzel',serif;font-weight:900;font-size:20px;color:#d4a844;
-  text-shadow:0 2px 8px rgba(212,168,68,.4);}
+.gp-vs-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;
+  border:2px solid #8a6c38;box-shadow:0 2px 10px rgba(0,0,0,.5),0 0 8px rgba(212,168,68,.1);}
+.gp-vs-name{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:#d4a844;letter-spacing:1px;
+  text-shadow:0 1px 4px rgba(0,0,0,.4);}
+.gp-vs-label{font-family:'Cinzel',serif;font-weight:900;font-size:22px;color:#d4a844;
+  text-shadow:0 2px 10px rgba(212,168,68,.5),0 0 30px rgba(212,168,68,.15);}
 
 /* CSS ICONS */
 .gp-icon{display:inline-block;width:16px;height:16px;position:relative;flex-shrink:0;}
@@ -1926,27 +2316,34 @@ function _gpCSS() {
 
 /* FLAVOR TEXT */
 .gp-flavor{font-family:'Crimson Text',serif;font-size:15px;font-style:italic;color:#8a7a60;
-  text-align:center;margin:10px 0;padding:8px 16px;
-  border-top:1px solid rgba(184,168,120,.2);border-bottom:1px solid rgba(184,168,120,.2);}
+  text-align:center;margin:10px 0;padding:10px 20px;
+  border-top:1px solid rgba(184,168,120,.15);border-bottom:1px solid rgba(184,168,120,.15);
+  background:linear-gradient(90deg,transparent,rgba(184,168,120,.03),transparent);}
 
 /* REVEAL CONTROLS */
 .gp-controls{position:fixed;bottom:0;left:50%;transform:translateX(-50%);
   max-width:1100px;width:100%;display:flex;align-items:center;justify-content:center;gap:16px;
-  padding:10px 20px;z-index:10;
-  background:linear-gradient(180deg,rgba(42,32,24,.95),rgba(30,20,12,.98));
-  border-top:3px solid #8a6c38;box-shadow:0 -4px 20px rgba(0,0,0,.6);}
+  padding:12px 20px;z-index:10;
+  background:
+    linear-gradient(90deg,rgba(138,108,56,.03),rgba(138,108,56,.08) 50%,rgba(138,108,56,.03)),
+    linear-gradient(180deg,rgba(42,32,24,.96),rgba(26,16,8,.99));
+  border-top:3px solid #8a6c38;box-shadow:0 -6px 24px rgba(0,0,0,.7);}
 .gp-btn{font-family:'Cinzel',serif;font-weight:700;font-size:11px;letter-spacing:2px;
-  text-transform:uppercase;padding:8px 22px;border:2px solid #8a6c38;
+  text-transform:uppercase;padding:8px 24px;border:2px solid #8a6c38;
   background:linear-gradient(180deg,#4a3828,#3a2a18);color:#d4a844;cursor:pointer;
-  border-radius:2px;transition:all .2s;}
-.gp-btn:hover{background:linear-gradient(180deg,#5a4838,#4a3828);box-shadow:0 0 12px rgba(212,168,68,.3);}
-.gp-counter{font-family:'Cinzel',serif;font-size:12px;color:#8a7850;letter-spacing:1px;}
+  border-radius:2px;transition:all .2s;
+  box-shadow:0 2px 6px rgba(0,0,0,.3),inset 0 1px 0 rgba(200,170,100,.1);}
+.gp-btn:hover{background:linear-gradient(180deg,#5a4838,#4a3828);
+  box-shadow:0 0 16px rgba(212,168,68,.3),0 2px 6px rgba(0,0,0,.3);
+  border-color:#a88850;}
+.gp-counter{font-family:'Cinzel',serif;font-size:12px;color:#8a7850;letter-spacing:1px;
+  text-shadow:0 1px 3px rgba(0,0,0,.3);}
 
 
 /* STEP VISIBILITY */
-.gp-step-hidden{opacity:0;transform:translateY(10px);pointer-events:none;max-height:0;overflow:hidden;margin:0;padding:0;}
+.gp-step-hidden{opacity:0;transform:translateY(12px);pointer-events:none;max-height:0;overflow:hidden;margin:0;padding:0;}
 .gp-step-visible{opacity:1;transform:none;pointer-events:auto;max-height:none;overflow:visible;
-  transition:opacity .4s,transform .3s;}
+  transition:opacity .5s ease-out,transform .4s ease-out;}
 
 /* TITLE SCREEN — full viewport cinematic cold open */
 .gp-titlescreen{position:relative;overflow:hidden;min-height:calc(100vh - 46px);
@@ -2155,27 +2552,31 @@ function _gpCSS() {
   letter-spacing:3px;text-transform:uppercase;white-space:nowrap;}
 
 /* ZONE LABEL */
-.gp-zone-label{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;margin-bottom:6px;
+.gp-zone-label{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;margin-bottom:6px;
   font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  color:#6a5a40;border:1px solid rgba(138,108,56,.2);border-radius:2px;
-  background:rgba(138,108,56,.06);}
-.gp-zone-dot{width:6px;height:6px;border-radius:50%;}
-.gp-zone-dot-colonnade{background:#8aa040;}
-.gp-zone-dot-pediment{background:#b89050;}
-.gp-zone-dot-cistern{background:#5080a0;}
-.gp-zone-dot-sanctum{background:#a06898;}
-.gp-zone-dot-agora{background:#c08838;}
+  color:#6a5a40;border:1px solid rgba(138,108,56,.25);border-radius:2px;
+  background:linear-gradient(135deg,rgba(138,108,56,.08),rgba(138,108,56,.04));
+  box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.gp-zone-dot{width:8px;height:8px;border-radius:50%;}
+.gp-zone-dot-colonnade{background:#8aa040;box-shadow:0 0 6px rgba(138,160,64,.4);}
+.gp-zone-dot-pediment{background:#b89050;box-shadow:0 0 6px rgba(184,144,80,.4);}
+.gp-zone-dot-cistern{background:#5080a0;box-shadow:0 0 6px rgba(80,128,160,.4);}
+.gp-zone-dot-sanctum{background:#a06898;box-shadow:0 0 6px rgba(160,104,152,.4);}
+.gp-zone-dot-agora{background:#c08838;box-shadow:0 0 6px rgba(192,136,56,.4);}
 
 /* ZONE FLAVOR TEXT */
 .gp-zone-flavor{font-family:'Crimson Text',serif;font-size:15px;font-style:italic;color:#7a6a50;
-  padding:4px 14px 6px;margin:-4px 0 4px;
-  border-left:2px solid rgba(138,108,56,.15);}
+  padding:6px 16px 8px;margin:-4px 0 4px;
+  border-left:2px solid rgba(138,108,56,.2);
+  background:linear-gradient(90deg,rgba(138,108,56,.03),transparent 60%);}
 
 /* STONE TABLET (boar threat) */
-.gp-tablet{position:relative;display:flex;align-items:center;gap:10px;margin:12px 0;padding:10px 14px;
-  background:linear-gradient(135deg,#d0c4a8 0%,#c4b898 40%,#b8ac8c 100%);
+.gp-tablet{position:relative;display:flex;align-items:center;gap:10px;margin:14px 0;padding:12px 16px;
+  background:
+    repeating-linear-gradient(0deg,transparent 0px,transparent 3px,rgba(120,100,60,.04) 3px,rgba(120,100,60,.04) 4px),
+    linear-gradient(135deg,#d0c4a8 0%,#c4b898 40%,#b8ac8c 100%);
   border:2px solid #9a8a68;border-radius:2px;color:#4a3a20;
-  box-shadow:inset 0 1px 2px rgba(255,255,255,.15),0 2px 6px rgba(0,0,0,.15);}
+  box-shadow:inset 0 1px 2px rgba(255,255,255,.15),0 3px 10px rgba(0,0,0,.2);}
 .gp-tablet-icon{width:32px;height:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
 .gp-tablet-boar-svg{width:28px;height:28px;}
 .gp-tablet-body{flex:1;}
@@ -2189,7 +2590,8 @@ function _gpCSS() {
 .gp-tablet-crack-3{width:50px;height:1px;top:70%;left:25%;transform:rotate(-5deg);}
 .gp-tablet-crack-4{width:25px;height:1px;top:20%;right:30%;transform:rotate(18deg);}
 .gp-tablet-crack-5{width:35px;height:1px;top:45%;left:40%;transform:rotate(-15deg);}
-.gp-tablet-enraged{border-color:#c05020;box-shadow:inset 0 0 8px rgba(192,80,32,.1),0 2px 6px rgba(0,0,0,.15);}
+.gp-tablet-enraged{border-color:#c05020;
+  box-shadow:inset 0 0 12px rgba(192,80,32,.15),0 3px 10px rgba(0,0,0,.2),0 0 20px rgba(192,80,32,.08);}
 .gp-tablet-enraged .gp-tablet-title{color:#8a3a18;}
 .gp-tablet-enraged .gp-tablet-crack{background:#a05030;opacity:.25;}
 
@@ -2223,11 +2625,13 @@ function _gpShell(content, ep, screenKey, totalSteps) {
     <div class="gp-atmo-columns"></div>
     <div class="gp-atmo-columns2"></div>
     <div class="gp-atmo-sun"></div>
-    <div class="gp-feather"></div>
-    <div class="gp-feather"></div>
-    <div class="gp-feather"></div>
-    <div class="gp-feather"></div>
-    <div class="gp-feather"></div>
+    <div class="gp-atmo-torch gp-atmo-torch-l"></div>
+    <div class="gp-atmo-torch gp-atmo-torch-r"></div>
+    <div class="gp-dust"></div><div class="gp-dust"></div><div class="gp-dust"></div><div class="gp-dust"></div>
+    <div class="gp-dust"></div><div class="gp-dust"></div><div class="gp-dust"></div><div class="gp-dust"></div>
+    <div class="gp-boar-ghost"><svg viewBox="0 0 100 60" style="width:100%;height:100%;fill:rgba(138,108,56,.3)"><ellipse cx="50" cy="38" rx="35" ry="18"/><ellipse cx="50" cy="28" rx="22" ry="14"/><path d="M25 42 L18 55 M75 42 L82 55 M35 42 L30 55 M65 42 L70 55" stroke="rgba(138,108,56,.3)" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M28 30 L18 20 M72 30 L82 20" stroke="rgba(138,108,56,.3)" stroke-width="3" stroke-linecap="round" fill="none"/></svg></div>
+    <div class="gp-feather"></div><div class="gp-feather"></div><div class="gp-feather"></div>
+    <div class="gp-feather"></div><div class="gp-feather"></div>
   </div>
   <div class="gp-title-banner">
     <div class="gp-title-laurels">
@@ -2240,13 +2644,13 @@ function _gpShell(content, ep, screenKey, totalSteps) {
     </div>
     <div class="gp-greek-key"></div>
   </div>
-  ${_buildScoreboard(ep, screenKey)}
+  <div id="gp-scoreboard-wrap">${_buildScoreboard(ep, screenKey)}</div>
   <div class="gp-layout">
     <div class="gp-main-col gp-marble">
       ${content}
     </div>
-    <div class="gp-sidebar-right">
-      ${_buildRightSidebar(ep, screenKey)}
+    <div class="gp-sidebar-right" data-screen="${screenKey}">
+      <div id="gp-right-inner">${_buildRightSidebarContent(ep, screenKey)}</div>
     </div>
   </div>
   <div class="gp-controls" id="gp-controls-${suffix}">
@@ -2269,29 +2673,40 @@ function _buildScoreboard(ep, screenKey) {
   const phaseOrder = ['title', 'maze', 'wrestling', 'hurdles', 'icarus', 'results'];
   const phaseIdx = phaseOrder.indexOf(screenPhase);
 
-  // Gate golds by phase — only show golds for completed events
-  const gatedGolds = {};
-  if (phaseIdx > 1 && data.maze) {
-    const key = data.isMerged ? data.maze.goldWinner : data.maze.goldTribe;
-    if (key) gatedGolds[key] = (gatedGolds[key] || 0) + 1;
-  }
-  if (phaseIdx > 2 && data.wrestling) {
-    const key = data.isMerged ? data.wrestling.goldWinner : data.wrestling.goldTribe;
-    if (key) gatedGolds[key] = (gatedGolds[key] || 0) + 1;
-  }
-  if (phaseIdx > 3 && data.hurdles) {
-    const key = data.isMerged ? data.hurdles.goldWinner : data.hurdles.goldTribe;
-    if (key) gatedGolds[key] = (gatedGolds[key] || 0) + 1;
-  }
-  if (phaseIdx > 4 && data.icarus && data.icarus.winner) {
-    if (data.isMerged) {
-      gatedGolds[data.icarus.winner] = (gatedGolds[data.icarus.winner] || 0) + 1;
-    } else {
-      const winTribe = (data.tribeRankings || []).find(t =>
-        (t.members || []).includes(data.icarus.winner))?.tribeName;
-      if (winTribe) gatedGolds[winTribe] = (gatedGolds[winTribe] || 0) + 1;
+  const _smKeys = { maze: '_gpMazeStepMeta', wrestling: '_gpWrestlingStepMeta', hurdles: '_gpHurdlesStepMeta', icarus: '_gpIcarusStepMeta' };
+  function _goldDone(phaseName, stateKey) {
+    const past = phaseIdx > phaseOrder.indexOf(phaseName);
+    if (past) return true;
+    if (screenPhase !== phaseName) return false;
+    const smKey = _smKeys[phaseName];
+    const sm = (typeof window !== 'undefined' && smKey && window[smKey]) || [];
+    const st = _tvState[stateKey];
+    if (!st) return false;
+    for (let i = 0; i <= st.idx && i < sm.length; i++) {
+      if (sm[i].phase === phaseName && (sm[i].type === 'gold' || sm[i].type === 'gold-found' || sm[i].type === 'gold-claim' || sm[i].type === 'gold-found-default')) return true;
     }
+    return false;
   }
+
+  // Gate golds by reveal progress
+  const gatedGolds = {};
+  function _addGold(phaseData, phaseName, stateKey) {
+    if (!phaseData || !_goldDone(phaseName, stateKey)) return;
+    const key = data.isMerged ? (phaseData.goldWinner || phaseData.winner) : phaseData.goldTribe;
+    if (!key && !data.isMerged) {
+      const winner = phaseData.goldWinner || phaseData.winner;
+      if (winner) {
+        const winTribe = (data.tribeRankings || []).find(t => (t.members || []).includes(winner))?.tribeName;
+        if (winTribe) gatedGolds[winTribe] = (gatedGolds[winTribe] || 0) + 1;
+      }
+      return;
+    }
+    if (key) gatedGolds[key] = (gatedGolds[key] || 0) + 1;
+  }
+  _addGold(data.maze, 'maze', 'gp-maze');
+  _addGold(data.wrestling, 'wrestling', 'gp-wrestling');
+  _addGold(data.hurdles, 'hurdles', 'gp-hurdles');
+  _addGold(data.icarus, 'icarus', 'gp-icarus');
 
   if (data.isMerged) {
     const ranked = [...(data.active || [])].sort((a, b) => (gatedGolds[b] || 0) - (gatedGolds[a] || 0));
@@ -2447,7 +2862,7 @@ function _buildZoneMapSVG(ep, screenKey) {
 // ══════════════════════════════════════════════════════════════════════
 // RIGHT SIDEBAR — Contestants, Matchup, Results, Leaderboard
 // ══════════════════════════════════════════════════════════════════════
-function _buildRightSidebar(ep, screenKey) {
+function _buildRightSidebarContent(ep, screenKey) {
   const data = ep.challengeData;
   if (!data) return '';
   const active = data.active || [];
@@ -2459,7 +2874,35 @@ function _buildRightSidebar(ep, screenKey) {
 
   let html = '';
 
-  // Contestants Grid — grouped by tribe with colored dots in pre-merge
+  // Compute per-player gold medals gated by reveal
+  const _smKeys2 = { maze: '_gpMazeStepMeta', wrestling: '_gpWrestlingStepMeta', hurdles: '_gpHurdlesStepMeta', icarus: '_gpIcarusStepMeta' };
+  function _isGoldDone(phaseName, stateKey) {
+    const past = phaseIdx > phaseOrder.indexOf(phaseName);
+    if (past) return true;
+    if (screenPhase !== phaseName) return false;
+    const smKey = _smKeys2[phaseName];
+    const sm = (typeof window !== 'undefined' && smKey && window[smKey]) || [];
+    const st = _tvState[stateKey];
+    if (!st) return false;
+    for (let i = 0; i <= st.idx && i < sm.length; i++) {
+      if (sm[i].phase === phaseName && (sm[i].type === 'gold' || sm[i].type === 'gold-found' || sm[i].type === 'gold-claim' || sm[i].type === 'gold-found-default')) return true;
+    }
+    return false;
+  }
+  const playerGolds = {};
+  active.forEach(n => { playerGolds[n] = 0; });
+  if (_isGoldDone('maze', 'gp-maze') && data.maze?.goldWinner) playerGolds[data.maze.goldWinner] = (playerGolds[data.maze.goldWinner] || 0) + 1;
+  if (_isGoldDone('wrestling', 'gp-wrestling') && data.wrestling?.goldWinner) playerGolds[data.wrestling.goldWinner] = (playerGolds[data.wrestling.goldWinner] || 0) + 1;
+  if (_isGoldDone('hurdles', 'gp-hurdles') && data.hurdles?.goldWinner) playerGolds[data.hurdles.goldWinner] = (playerGolds[data.hurdles.goldWinner] || 0) + 1;
+  if (_isGoldDone('icarus', 'gp-icarus') && data.icarus?.winner) playerGolds[data.icarus.winner] = (playerGolds[data.icarus.winner] || 0) + 1;
+
+  function _medalDots(name) {
+    const g = playerGolds[name] || 0;
+    if (g === 0) return '';
+    return `<span style="margin-left:auto;display:flex;gap:2px">${Array.from({ length: g }, () => `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#d4a844,#f0d080);border:1px solid #a08030;box-shadow:0 0 3px rgba(212,168,68,.5)"></span>`).join('')}</span>`;
+  }
+
+  // Contestants — always present, tribe-grouped with colored dots + medal indicators
   html += `<div class="gp-right-header">Contestants</div>`;
   if (!isMerged) {
     const tribeGroups = {};
@@ -2473,9 +2916,10 @@ function _buildRightSidebar(ep, screenKey) {
       html += `<div class="gp-tribe-divider" style="color:${tc || '#8a7850'}">${tribe}</div>
       <div class="gp-contestants">`;
       members.forEach(name => {
-        html += `<div class="gp-contestant">
+        html += `<div class="gp-contestant" style="display:flex;align-items:center">
           <img src="${_avatar(name)}" alt="" style="border-color:${tc || '#8a6c38'}">
           <div class="gp-contestant-name">${name}</div>
+          ${_medalDots(name)}
           <div class="gp-contestant-dot" style="background:${tc || '#8a7850'}"></div>
         </div>`;
       });
@@ -2484,23 +2928,192 @@ function _buildRightSidebar(ep, screenKey) {
   } else {
     html += `<div class="gp-contestants">`;
     active.forEach(name => {
-      html += `<div class="gp-contestant">
+      html += `<div class="gp-contestant" style="display:flex;align-items:center">
         <img src="${_avatar(name)}" alt="">
         <div class="gp-contestant-name">${name}</div>
+        ${_medalDots(name)}
       </div>`;
     });
     html += `</div>`;
   }
 
-  // Zone Map — only visible on maze phase
+  // Maze phase: pair assignments + zone map (gated by reveal)
   if (screenPhase === 'maze' || screenPhase === 'title') {
-    html += `<div class="gp-right-header" style="margin-top:4px">Labyrinth Map</div>
-    <div id="gp-zone-map-inner" style="padding:4px 8px;background:rgba(138,108,56,.06);border-bottom:1px solid #4a3828">
+    const maze = data.maze;
+    const mazeStepMeta = (typeof window !== 'undefined' && window._gpMazeStepMeta) || [];
+    const st = _tvState['gp-maze'];
+    const revealIdx = st ? st.idx : -1;
+    let pairsRevealed = 0;
+    for (let i = 0; i <= revealIdx && i < mazeStepMeta.length; i++) {
+      if (mazeStepMeta[i].type === 'pair') pairsRevealed++;
+    }
+
+    if (maze?.pairs?.length) {
+      html += `<div class="gp-right-header" style="margin-top:2px">Maze Pairs</div>
+      <div style="padding:4px 8px">`;
+      maze.pairs.forEach((pair, i) => {
+        if (pair.length < 2) return;
+        const revealed = i < pairsRevealed;
+        const t1 = _tribeForPlayer(pair[0], ep);
+        const t2 = _tribeForPlayer(pair[1], ep);
+        const tc1 = _tribeColorFromEp(t1, ep) || '#8a7850';
+        const tc2 = _tribeColorFromEp(t2, ep) || '#8a7850';
+        const cross = !isMerged && t1 && t2 && t1 !== t2;
+        if (revealed) {
+          html += `<div style="display:flex;align-items:center;gap:5px;padding:4px 0;${i > 0 ? 'border-top:1px solid rgba(138,108,56,.15);' : ''}">
+            <img src="${_avatar(pair[0])}" alt="" style="width:22px;height:22px;border-radius:50%;border:2px solid ${tc1};object-fit:cover">
+            <span style="font-family:Cinzel,serif;font-size:11px;color:${tc1};font-weight:700">${pair[0]}</span>
+            <span style="font-family:Cinzel,serif;font-size:10px;color:#6a5a3a">&amp;</span>
+            <img src="${_avatar(pair[1])}" alt="" style="width:22px;height:22px;border-radius:50%;border:2px solid ${tc2};object-fit:cover">
+            <span style="font-family:Cinzel,serif;font-size:11px;color:${tc2};font-weight:700">${pair[1]}</span>
+            ${cross ? `<span style="font-family:Cinzel,serif;font-size:8px;color:#a08850;letter-spacing:1px;margin-left:auto">✕</span>` : ''}
+          </div>`;
+        } else {
+          html += `<div style="display:flex;align-items:center;gap:5px;padding:4px 0;opacity:.3;${i > 0 ? 'border-top:1px solid rgba(138,108,56,.1);' : ''}">
+            <div style="width:22px;height:22px;border-radius:50%;background:#3a3020;border:2px solid #5a4828"></div>
+            <span style="font-family:Cinzel,serif;font-size:10px;color:#5a4a30;letter-spacing:1px">? ? ?</span>
+            <span style="font-family:Cinzel,serif;font-size:10px;color:#5a4a30">&amp;</span>
+            <div style="width:22px;height:22px;border-radius:50%;background:#3a3020;border:2px solid #5a4828"></div>
+            <span style="font-family:Cinzel,serif;font-size:10px;color:#5a4a30;letter-spacing:1px">? ? ?</span>
+          </div>`;
+        }
+      });
+      html += `</div>`;
+    }
+
+    // Zone Map
+    html += `<div class="gp-right-header" style="margin-top:2px">Labyrinth Map</div>
+    <div style="padding:4px 8px;background:rgba(138,108,56,.06);border-bottom:1px solid #4a3828">
       ${_buildZoneMapSVG(ep, screenKey)}
     </div>`;
   }
 
-  // Event Results — only show completed events (phase must be PAST the event)
+  // Hurdle phase: live race progress grid gated by per-event reveal
+  if (screenPhase === 'hurdles' && data.hurdles) {
+    const hurdles = data.hurdles;
+    const hurdleStepMeta = (typeof window !== 'undefined' && window._gpHurdlesStepMeta) || [];
+    const hst = _tvState['gp-hurdles'];
+    const hRevealIdx = hst ? hst.idx : -1;
+
+    // Build set of revealed {player, segment} from stepMeta
+    const revealedSet = new Set();
+    for (let i = 0; i <= hRevealIdx && i < hurdleStepMeta.length; i++) {
+      const sm = hurdleStepMeta[i];
+      if (sm.player && sm.segment) revealedSet.add(`${sm.player}|${sm.segment}`);
+    }
+
+    const SEGMENTS = 6;
+    const runnerProgress = (hurdles.runners || []).map(runner => {
+      let revealedTime = 0;
+      const segs = [];
+      let anyRevealed = false;
+      for (let seg = 0; seg < SEGMENTS; seg++) {
+        const segData = hurdles.segments[seg];
+        const key = `${runner.name}|${seg + 1}`;
+        if (revealedSet.has(key) && segData) {
+          anyRevealed = true;
+          const playerEvt = segData.events.find(e => e.player === runner.name);
+          if (playerEvt) {
+            revealedTime += playerEvt.time || 0;
+            if (playerEvt.type === 'showoff-success') segs.push('show');
+            else if (playerEvt.type === 'showoff-wipeout') segs.push('wipe');
+            else segs.push('run');
+          } else {
+            segs.push('pending');
+          }
+        } else {
+          segs.push('pending');
+        }
+      }
+      return { name: runner.name, segs, revealedTime, anyRevealed };
+    });
+
+    runnerProgress.sort((a, b) => {
+      if (!a.anyRevealed && !b.anyRevealed) return 0;
+      if (!a.anyRevealed) return 1;
+      if (!b.anyRevealed) return -1;
+      return a.revealedTime - b.revealedTime;
+    });
+
+    html += `<div class="gp-right-header" style="margin-top:2px">Race Progress</div>
+    <div style="padding:6px 2px;background:rgba(74,122,184,.06);border-bottom:1px solid #4a3828">`;
+    runnerProgress.forEach(rp => {
+      const tc = _tribeColorFromEp(_tribeForPlayer(rp.name, ep), ep) || '#8a7850';
+      html += `<div style="display:flex;align-items:center;gap:4px;padding:3px 2px;${rp.anyRevealed ? '' : 'opacity:.4;'}">
+        <img src="${_avatar(rp.name)}" alt="" style="width:20px;height:20px;border-radius:50%;border:2px solid ${tc};object-fit:cover;flex-shrink:0">
+        <div style="font-family:Cinzel,serif;font-size:10px;color:#d4c8a0;width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">${rp.name}</div>
+        <div style="display:flex;gap:1px;flex:1">`;
+      rp.segs.forEach(s => {
+        if (s === 'show') html += `<div class="gp-hurdle-seg gp-seg-showoff" style="flex:1;height:14px;font-size:6px">SHOW</div>`;
+        else if (s === 'wipe') html += `<div class="gp-hurdle-seg gp-seg-wipe" style="flex:1;height:14px;font-size:6px">WIPE</div>`;
+        else if (s === 'run') html += `<div class="gp-hurdle-seg gp-seg-safe" style="flex:1;height:14px;font-size:6px">RUN</div>`;
+        else html += `<div class="gp-hurdle-seg" style="flex:1;height:14px;font-size:6px;background:#3a3020;border-color:#5a4828;color:#5a4828"></div>`;
+      });
+      html += `</div>
+        <div style="font-family:Cinzel,serif;font-size:10px;color:#4a7ab8;font-weight:700;width:32px;text-align:right;flex-shrink:0">${rp.anyRevealed ? rp.revealedTime.toFixed(1) + 's' : ''}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Icarus phase: live altitude & wing integrity tracker
+  if (screenPhase === 'icarus' && data.icarus) {
+    const icarus = data.icarus;
+    const icarusStepMeta = (typeof window !== 'undefined' && window._gpIcarusStepMeta) || [];
+    const ist = _tvState['gp-icarus'];
+    const iRevealIdx = ist ? ist.idx : -1;
+
+    // Find max revealed round
+    let maxRevealedRound = 0;
+    for (let i = 0; i <= iRevealIdx && i < icarusStepMeta.length; i++) {
+      if (icarusStepMeta[i].round && icarusStepMeta[i].round > maxRevealedRound) {
+        maxRevealedRound = icarusStepMeta[i].round;
+      }
+    }
+
+    // Get snapshot from the latest revealed round
+    const snapshot = maxRevealedRound > 0 && icarus.rounds[maxRevealedRound - 1]?.snapshot
+      ? icarus.rounds[maxRevealedRound - 1].snapshot : null;
+
+    html += `<div class="gp-right-header" style="margin-top:2px">Flight Tracker</div>
+    <div style="padding:6px 4px;background:rgba(74,122,184,.06);border-bottom:1px solid #4a3828">`;
+
+    (icarus.participants || []).forEach(name => {
+      const st = snapshot ? snapshot[name] : { altitude: 0, integrity: 100, alive: true };
+      const altPct = Math.min(100, (st.altitude / 5.0) * 100);
+      const integ = st.integrity;
+      const alive = st.alive;
+      const tc = _tribeColorFromEp(_tribeForPlayer(name, ep), ep) || '#8a7850';
+      const wingCount = 4;
+      const wingBlocks = [];
+      for (let w = 0; w < wingCount; w++) {
+        const threshold = (wingCount - w) * (100 / wingCount);
+        if (integ >= threshold) wingBlocks.push('#5a9a3a');
+        else if (integ >= threshold - 15) wingBlocks.push('#d4a030');
+        else wingBlocks.push('#4a3020');
+      }
+
+      html += `<div style="padding:4px 6px;margin:2px 0;${!alive ? 'opacity:.4;' : ''}">
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
+          <img src="${_avatar(name)}" alt="" style="width:20px;height:20px;border-radius:50%;border:2px solid ${tc};object-fit:cover;flex-shrink:0">
+          <span style="font-family:Cinzel,serif;font-size:10px;color:#d4c8a0;flex:1">${name}</span>
+          <span style="font-family:Cinzel,serif;font-size:9px;color:#4a7ab8;font-weight:700">${snapshot ? st.altitude.toFixed(1) : '0.0'}</span>
+          ${!alive ? '<span style="font-family:Cinzel,serif;font-size:8px;color:#c03030;letter-spacing:1px;margin-left:2px">FELL</span>' : ''}
+        </div>
+        <div style="display:flex;gap:2px;align-items:center">
+          <div style="flex:1;height:6px;background:#2a2018;border-radius:3px;overflow:hidden;border:1px solid #5a4828">
+            <div style="width:${altPct}%;height:100%;background:linear-gradient(90deg,#87CEEB,#5a9ae0);transition:width .3s"></div>
+          </div>
+          <div style="display:flex;gap:1px;margin-left:4px">
+            ${wingBlocks.map(c => `<div style="width:6px;height:10px;border-radius:1px;background:${c};border:1px solid rgba(255,255,255,.1)"></div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Event Results — gates by reveal progress within the current phase
   html += `<div class="gp-right-header" style="margin-top:4px">Event Results</div>
   <div class="gp-results-list">`;
 
@@ -2515,106 +3128,43 @@ function _buildRightSidebar(ep, screenKey) {
     return tribe ? `${winner} (${tribe})` : winner;
   }
 
-  const mazeRevealed = phaseIdx > 1;
-  html += `<div class="gp-result-row">
-    <div class="gp-result-num">I</div>
-    <div class="gp-result-dot gp-result-dot-maze"></div>
-    <div class="gp-result-info">
-      <div class="gp-result-event">Maze &amp; Beast Hunt</div>
-      ${mazeRevealed && maze && maze.goldWinner ? `<div class="gp-result-winner">${_resultLabel(maze.goldWinner, maze.goldTribe)}</div>` :
-        `<div class="gp-result-pending">${phaseIdx === 1 ? 'In progress...' : 'Pending'}</div>`}
-    </div>
-  </div>`;
+  // Check if gold card for a specific phase has been revealed via stepMeta
+  const _stepMetaKeys = { maze: '_gpMazeStepMeta', wrestling: '_gpWrestlingStepMeta', hurdles: '_gpHurdlesStepMeta', icarus: '_gpIcarusStepMeta' };
+  function _goldRevealed(phaseName, stateKey) {
+    const smKey = _stepMetaKeys[phaseName];
+    const sm = (typeof window !== 'undefined' && smKey && window[smKey]) || [];
+    const st = _tvState[stateKey];
+    if (!st) return false;
+    for (let i = 0; i <= st.idx && i < sm.length; i++) {
+      if (sm[i].phase === phaseName && (sm[i].type === 'gold' || sm[i].type === 'gold-found' || sm[i].type === 'gold-claim' || sm[i].type === 'gold-found-default')) return true;
+    }
+    return false;
+  }
 
-  const wrestleRevealed = phaseIdx > 2;
-  html += `<div class="gp-result-row">
-    <div class="gp-result-num">II</div>
-    <div class="gp-result-dot gp-result-dot-wrestle"></div>
-    <div class="gp-result-info">
-      <div class="gp-result-event">Wrestling Match</div>
-      ${wrestleRevealed && wrestling && wrestling.goldWinner ? `<div class="gp-result-winner">${_resultLabel(wrestling.goldWinner, wrestling.goldTribe)}</div>` :
-        `<div class="gp-result-pending">${phaseIdx === 2 ? 'In progress...' : 'Pending'}</div>`}
-    </div>
-  </div>`;
-
-  const hurdleRevealed = phaseIdx > 3;
-  html += `<div class="gp-result-row">
-    <div class="gp-result-num">III</div>
-    <div class="gp-result-dot gp-result-dot-hurdle"></div>
-    <div class="gp-result-info">
-      <div class="gp-result-event">Hurdle Race</div>
-      ${hurdleRevealed && hurdles && hurdles.goldWinner ? `<div class="gp-result-winner">${_resultLabel(hurdles.goldWinner, hurdles.goldTribe)}</div>` :
-        `<div class="gp-result-pending">${phaseIdx === 3 ? 'In progress...' : 'Pending'}</div>`}
-    </div>
-  </div>`;
-
-  if (icarus) {
-    const icarusRevealed = phaseIdx > 4;
-    html += `<div class="gp-result-row" style="border-color:rgba(212,168,68,.3)">
-      <div class="gp-result-num" style="color:#d4a844">&#9733;</div>
-      <div class="gp-result-dot gp-result-dot-icarus"></div>
+  // For multi-screen challenges, each phase has its own screen + stepMeta
+  // Gate: past phase = always revealed, current phase = check stepMeta, future = pending
+  function _phaseResult(phaseKey, phaseName, stateKey, winner, winnerTribe, numeral, dotCls, eventLabel, extraStyle) {
+    const past = phaseIdx > phaseOrder.indexOf(phaseKey);
+    const current = screenPhase === phaseKey;
+    const revealed = past || (current && _goldRevealed(phaseName, stateKey));
+    const inProgress = current && !revealed;
+    html += `<div class="gp-result-row"${extraStyle ? ` style="${extraStyle}"` : ''}>
+      <div class="gp-result-num"${numeral === '★' ? ' style="color:#d4a844"' : ''}>${numeral}</div>
+      <div class="gp-result-dot ${dotCls}"></div>
       <div class="gp-result-info">
-        <div class="gp-result-event">Flight Tiebreaker</div>
-        ${icarusRevealed && icarus.winner ? `<div class="gp-result-winner">${_resultLabel(icarus.winner, _tribeForPlayer(icarus.winner, ep))}</div>` :
-          `<div class="gp-result-pending">${phaseIdx === 4 ? 'In progress...' : 'Pending'}</div>`}
+        <div class="gp-result-event">${eventLabel}</div>
+        ${revealed && winner ? `<div class="gp-result-winner">${_resultLabel(winner, winnerTribe)}</div>` :
+          `<div class="gp-result-pending">${inProgress ? 'In progress...' : 'Pending'}</div>`}
       </div>
     </div>`;
   }
-  html += `</div>`;
 
-  // Performance Leaderboard — show scores only for completed events
-  html += `<div class="gp-right-header" style="margin-top:4px">Performance</div>
-  <div class="gp-leaderboard">`;
-
-  // Gate scores: only show scores accumulated up through completed phases
-  // Use stepMeta snapshots if available, otherwise gate by phase
-  const gatedGolds = {};
-  const gatedScores = {};
-  active.forEach(n => { gatedGolds[n] = 0; gatedScores[n] = 0; });
-
-  if (mazeRevealed && maze) {
-    (maze.performances || []).forEach(p => {
-      gatedScores[p.name] = (gatedScores[p.name] || 0) + (p.score || 0);
-    });
-    if (maze.goldWinner) {
-      if (isMerged) gatedGolds[maze.goldWinner] = (gatedGolds[maze.goldWinner] || 0) + 1;
-    }
+  _phaseResult('maze', 'maze', 'gp-maze', maze?.goldWinner, maze?.goldTribe, 'I', 'gp-result-dot-maze', 'Maze &amp; Beast Hunt');
+  _phaseResult('wrestling', 'wrestling', 'gp-wrestling', wrestling?.goldWinner, wrestling?.goldTribe, 'II', 'gp-result-dot-wrestle', 'Wrestling Match');
+  _phaseResult('hurdles', 'hurdles', 'gp-hurdles', hurdles?.goldWinner, hurdles?.goldTribe, 'III', 'gp-result-dot-hurdle', 'Hurdle Race');
+  if (icarus) {
+    _phaseResult('icarus', 'icarus', 'gp-icarus', icarus?.winner, _tribeForPlayer(icarus?.winner, ep), '★', 'gp-result-dot-icarus', 'Flight Tiebreaker', 'border-color:rgba(212,168,68,.3)');
   }
-  if (wrestleRevealed && wrestling) {
-    (wrestling.performances || []).forEach(p => {
-      gatedScores[p.name] = (gatedScores[p.name] || 0) + (p.score || 0);
-    });
-    if (wrestling.goldWinner) {
-      if (isMerged) gatedGolds[wrestling.goldWinner] = (gatedGolds[wrestling.goldWinner] || 0) + 1;
-    }
-  }
-  if (hurdleRevealed && hurdles) {
-    (hurdles.performances || []).forEach(p => {
-      gatedScores[p.name] = (gatedScores[p.name] || 0) + (p.score || 0);
-    });
-    if (hurdles.goldWinner) {
-      if (isMerged) gatedGolds[hurdles.goldWinner] = (gatedGolds[hurdles.goldWinner] || 0) + 1;
-    }
-  }
-
-  // On results screen, use final scores
-  const useScores = phaseIdx >= 5 ? (ep.chalMemberScores || {}) : gatedScores;
-  const useGolds = phaseIdx >= 5 ? (data.golds || {}) : gatedGolds;
-
-  const ranked = [...active].sort((a, b) => (useScores[b] || 0) - (useScores[a] || 0));
-  ranked.forEach((name, i) => {
-    const rankCls = i === 0 ? ' gp-lb-rank-1' : (i === 1 ? ' gp-lb-rank-2' : (i === 2 ? ' gp-lb-rank-3' : ''));
-    const playerGolds = isMerged ? (useGolds[name] || 0) : 0;
-    const goldDots = Array.from({ length: playerGolds }, () => `<div class="gp-lb-gold-dot"></div>`).join('');
-    const score = useScores[name] || 0;
-    html += `<div class="gp-lb-row">
-      <div class="gp-lb-rank${rankCls}">${i + 1}</div>
-      <img class="gp-lb-avatar" src="${_avatar(name)}" alt="">
-      <div class="gp-lb-name">${name}</div>
-      <div class="gp-lb-golds">${goldDots}</div>
-      <div class="gp-lb-score">${score > 0 ? '+' + score : '—'}</div>
-    </div>`;
-  });
   html += `</div>`;
 
   return html;
@@ -2650,6 +3200,12 @@ function _eventCard(evt, cardClass, iconType) {
       evt.type === 'social-cooperation' ? 'Teamwork' :
       evt.type === 'social-confrontation' ? 'Confrontation' :
       evt.type === 'social-respect' ? 'Respect' :
+      evt.type === 'social-scheme' ? 'Scheming' :
+      evt.type === 'social-encouragement' ? 'Encouragement' :
+      evt.type === 'social-strategy' ? 'Strategy Session' :
+      evt.type === 'social-trash-talk' ? 'Trash Talk' :
+      evt.type === 'social-fear' ? 'Fear' :
+      evt.type === 'social-showmance' ? 'Chemistry' :
       evt.type === 'boar-help' ? 'Rescue' :
       evt.type === 'boar-abandon' ? 'Abandoned!' :
       'Social'
@@ -2717,6 +3273,7 @@ function _eventCard(evt, cardClass, iconType) {
 // ══════════════════════════════════════════════════════════════════════
 export function rpBuildGPTitleCard(ep) {
   _currentEp = ep;
+  if (typeof window !== 'undefined') window._gpEpRecord = ep;
   const data = ep.challengeData;
   if (!data) return '<div>No challenge data</div>';
   const active = data.active || [];
@@ -2790,6 +3347,7 @@ export function rpBuildGPTitleCard(ep) {
 // ══════════════════════════════════════════════════════════════════════
 export function rpBuildGPMaze(ep) {
   _currentEp = ep;
+  if (typeof window !== 'undefined') window._gpEpRecord = ep;
   const data = ep.challengeData;
   if (!data || !data.maze) return '<div>No maze data</div>';
   const maze = data.maze;
@@ -2805,7 +3363,7 @@ export function rpBuildGPMaze(ep) {
     let iconType = 'column';
     if (evt.type === 'boar-dodge' || evt.type === 'boar-hit') { iconType = 'boar'; }
     else if (evt.type.startsWith('social-') || evt.type === 'boar-help' || evt.type === 'boar-abandon') {
-      cardClass = (evt.type === 'social-tension' || evt.type === 'boar-abandon' || evt.type === 'social-confrontation') ? 'gp-card-drama' : 'gp-card-social';
+      cardClass = (evt.type === 'social-tension' || evt.type === 'boar-abandon' || evt.type === 'social-confrontation' || evt.type === 'social-scheme' || evt.type === 'social-trash-talk' || evt.type === 'social-fear') ? 'gp-card-drama' : 'gp-card-social';
       iconType = 'social';
     } else if (evt.type === 'gold-found' || evt.type === 'gold-claim' || evt.type === 'gold-found-default') {
       cardClass = 'gp-card-gold'; iconType = 'medal';
@@ -3005,8 +3563,135 @@ export function rpBuildGPMaze(ep) {
 
 
 // ══════════════════════════════════════════════════════════════════════
-// rpBuildGPWrestling — Event II: Wrestling
+// rpBuildGPWrestling — Event II: Wrestling (Fighting Game VP)
 // ══════════════════════════════════════════════════════════════════════
+function _fightHPBar(name, hp, side) {
+  const pct = Math.max(0, Math.min(100, hp));
+  const fillCls = side === 'left' ? 'gp-fight-hp-left' : 'gp-fight-hp-right';
+  return `<div class="gp-fight-card-hpbar">
+    <div class="gp-fight-card-hpbar-name">${name}</div>
+    <div class="gp-fight-card-hpbar-track"><div class="gp-fight-card-hpbar-fill ${fillCls}" style="width:${pct}%"></div></div>
+    <div class="gp-fight-card-hpbar-pct">${pct}%</div>
+  </div>`;
+}
+
+function _fightVSCard(fighterA, fighterB, hpA, hpB, round) {
+  return `<div class="gp-fight-vs">
+    <div class="gp-fight-corner gp-fight-corner-left">
+      <img class="gp-fight-avatar" src="${_avatar(fighterA)}" alt="${fighterA}">
+      <div class="gp-fight-name">${fighterA}</div>
+      <div class="gp-fight-hp-wrap">
+        <div class="gp-fight-hp-track"><div class="gp-fight-hp-fill gp-fight-hp-left" style="width:${Math.max(0, hpA)}%"></div></div>
+        <div class="gp-fight-hp-text">${Math.max(0, hpA)}%</div>
+      </div>
+    </div>
+    <div class="gp-fight-vs-label">VS</div>
+    <div class="gp-fight-corner gp-fight-corner-right">
+      <img class="gp-fight-avatar" src="${_avatar(fighterB)}" alt="${fighterB}">
+      <div class="gp-fight-name">${fighterB}</div>
+      <div class="gp-fight-hp-wrap">
+        <div class="gp-fight-hp-track"><div class="gp-fight-hp-fill gp-fight-hp-right" style="width:${Math.max(0, hpB)}%"></div></div>
+        <div class="gp-fight-hp-text">${Math.max(0, hpB)}%</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function _fightActionCard(evt) {
+  const type = evt.type;
+  let cardCls = 'gp-fight-hit';
+  let stampHtml = '';
+  let labelText = evt.badge || 'HIT';
+  let labelColor = '#e08030';
+  let dmgHtml = '';
+
+  if (type === 'hit') {
+    cardCls = 'gp-fight-hit';
+    labelColor = '#e08030';
+  } else if (type === 'flashy-hit') {
+    cardCls = 'gp-fight-flashy';
+    labelText = 'FLASHY HIT';
+    labelColor = '#d4a844';
+  } else if (type === 'miss' || type === 'flashy-miss') {
+    cardCls = 'gp-fight-miss';
+    labelText = type === 'miss' ? 'MISS' : 'SHOWBOAT FAIL';
+    labelColor = '#6a6050';
+  } else if (type === 'counter') {
+    cardCls = 'gp-fight-counter';
+    labelText = 'COUNTER';
+    labelColor = '#6ab0e0';
+    stampHtml = `<div class="gp-fight-stamp gp-fight-stamp-counter">COUNTER!</div>`;
+  } else if (type === 'ko') {
+    cardCls = 'gp-fight-ko';
+    labelText = 'KNOCKOUT';
+    labelColor = '#ff4040';
+    stampHtml = `<div class="gp-fight-stamp gp-fight-stamp-ko">K.O.!</div>`;
+  } else if (type === 'instant-ko') {
+    cardCls = 'gp-fight-ko gp-fight-instant-ko';
+    labelText = 'INSTANT KNOCKOUT';
+    labelColor = '#ff2020';
+    stampHtml = `<div class="gp-fight-stamp gp-fight-stamp-instant-ko">INSTANT K.O.!</div>`;
+  } else if (type === 'tag-in') {
+    cardCls = 'gp-fight-tag';
+    labelText = 'TAG IN';
+    labelColor = '#6a9ad0';
+  } else if (type === 'betrayal') {
+    cardCls = 'gp-fight-betrayal';
+    labelText = 'BETRAYAL';
+    labelColor = '#ff3030';
+    stampHtml = `<div class="gp-fight-stamp gp-fight-stamp-betrayal">BETRAYAL!</div>`;
+  } else if (type === 'throw-partner') {
+    cardCls = 'gp-fight-dirty';
+    labelText = 'DIRTY MOVE';
+    labelColor = '#c03030';
+  }
+
+  if (evt.damage) {
+    const dmgCls = type === 'instant-ko' ? 'gp-dmg-instant-ko' : type === 'flashy-hit' ? 'gp-dmg-flashy' : type === 'counter' ? 'gp-dmg-counter' : 'gp-dmg-hit';
+    dmgHtml = `<span class="gp-dmg-burst ${dmgCls}">${evt.damage} DMG</span>`;
+  }
+
+  // Attacker → defender avatars
+  const atkName = evt.attacker || evt.betrayer || evt.thrower || evt.eliminated || evt.out || '';
+  const defName = evt.defender || evt.victim || evt.target || evt.into || '';
+
+  let avatarsHtml = '';
+  if (atkName) {
+    avatarsHtml += `<img class="gp-fight-card-ava" style="border-color:#c03030" src="${_avatar(atkName)}" alt="${atkName}">`;
+    if (defName) {
+      avatarsHtml += `<span class="gp-fight-card-arrow">➔</span>`;
+      avatarsHtml += `<img class="gp-fight-card-ava" style="border-color:#3060c0" src="${_avatar(defName)}" alt="${defName}">`;
+    }
+  }
+
+  // HP bars after action
+  let hpBarsHtml = '';
+  if (evt.hpAfter) {
+    for (const [name, hp] of Object.entries(evt.hpAfter)) {
+      const pct = Math.max(0, Math.min(100, hp));
+      const fillColor = pct > 50 ? '#5a9a3a' : pct > 25 ? '#d4a030' : '#c03030';
+      hpBarsHtml += `<div class="gp-fight-card-hpbar">
+        <div class="gp-fight-card-hpbar-name">${name}</div>
+        <div class="gp-fight-card-hpbar-track"><div class="gp-fight-card-hpbar-fill" style="width:${pct}%;background:${fillColor}"></div></div>
+        <div class="gp-fight-card-hpbar-pct">${pct}%</div>
+      </div>`;
+    }
+  }
+
+  const roundLabel = evt.round ? ` · Round ${evt.round}` : '';
+
+  return `<div class="gp-fight-card ${cardCls}">
+    ${stampHtml}
+    <div class="gp-fight-card-head">
+      <div class="gp-fight-card-avatars">${avatarsHtml}</div>
+      <span class="gp-fight-card-label" style="color:${labelColor}">${labelText}${roundLabel}</span>
+      ${dmgHtml}
+    </div>
+    <div class="gp-fight-card-body">${evt.text || ''}</div>
+    ${hpBarsHtml}
+  </div>`;
+}
+
 export function rpBuildGPWrestling(ep) {
   _currentEp = ep;
   const data = ep.challengeData;
@@ -3024,56 +3709,93 @@ export function rpBuildGPWrestling(ep) {
   // Event banner
   html += `<div class="gp-event-banner">
     <div class="gp-event-banner-num">Event II</div>
-    <div class="gp-event-banner-title">Tag-Team Wrestling</div>
-    <div class="gp-event-banner-desc">Pairs enter the ring. Chaos determines who leaves it.</div>
+    <div class="gp-event-banner-title">Battle Royale</div>
+    <div class="gp-event-banner-desc">All fighters enter. Last one standing claims the gold.</div>
   </div>`;
 
-  // Initial HP bars
-  if (wrestling.teams) {
-    let hpHtml = `<div class="gp-card gp-card-wrestle" style="padding:14px">
-      <div class="gp-card-head">
-        ${_icon('fist')}
-        <span class="gp-card-type" style="color:#b85c38">Arena Status</span>
+  // ── Fighter roster card ──
+  if (wrestling.fighters && wrestling.fighters.length > 0) {
+    let rosterHtml = `<div class="gp-fight-card" style="border:2px solid #6a3010;background:linear-gradient(180deg,#2a1c0e 0%,#1a1008 100%)">
+      <div class="gp-fight-card-head">
+        <span class="gp-fight-card-label" style="color:#d4a844;font-size:13px;letter-spacing:2px">FIGHTERS ENTERING THE ARENA</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 4px">`;
+    wrestling.fighters.forEach(f => {
+      const tColor = f.tribe ? (_tribeColorFromEp(f.tribe, ep) || '#8a7850') : '#8a7850';
+      rosterHtml += `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid rgba(106,80,48,.3);border-radius:2px;background:rgba(42,28,14,.5)">
+        <img src="${_avatar(f.name)}" style="width:28px;height:28px;border-radius:50%;border:2px solid ${tColor};object-fit:cover">
+        <span style="font-family:Cinzel,serif;font-size:12px;color:#d4c8a8;font-weight:700">${f.name}</span>
+        ${f.tribe ? `<span style="font-family:Cinzel,serif;font-size:9px;color:${tColor};letter-spacing:1px;text-transform:uppercase;opacity:.7">${f.tribe}</span>` : ''}
       </div>`;
-    wrestling.teams.forEach((team, tIdx) => {
-      team.fighters.forEach((fighter, fIdx) => {
-        hpHtml += `<div class="gp-hp-bar">
-          <div class="gp-hp-name">${fighter}</div>
-          <div class="gp-hp-track"><div class="gp-hp-fill gp-hp-full"></div></div>
-          <div class="gp-hp-pct">100%</div>
-        </div>`;
-      });
-      if (tIdx < wrestling.teams.length - 1) {
-        hpHtml += `<div style="height:6px;border-bottom:1px dashed rgba(184,92,56,.3);margin:4px 0"></div>`;
-      }
     });
-    hpHtml += `</div>`;
-    html += `<div class="gp-step-hidden" id="gp-step-wrestling-${stepIdx}">${hpHtml}</div>`;
-    stepMeta.push({ phase: 'wrestling', type: 'hp-status' });
+    rosterHtml += `</div></div>`;
+    html += `<div class="gp-step-hidden" id="gp-step-wrestling-${stepIdx}">${rosterHtml}</div>`;
+    stepMeta.push({ phase: 'wrestling', type: 'roster' });
     stepIdx++;
   }
 
-  // Round events
-  wrestling.rounds.forEach(round => {
-    round.events.forEach(evt => {
-      let cardClass = 'gp-card-wrestle';
-      let iconType = 'fist';
-
-      if (evt.type === 'betrayal' || evt.type === 'throw-partner') {
-        cardClass = 'gp-card-drama';
-        iconType = 'social';
-      } else if (evt.type === 'tag-in') {
-        cardClass = 'gp-card-wrestle';
-      } else if (evt.type === 'ko') {
-        cardClass = 'gp-card-wrestle';
-      } else if (evt.type === 'flashy-hit') {
-        cardClass = 'gp-card-wrestle';
-      } else if (evt.type === 'flashy-miss') {
-        cardClass = 'gp-card-wrestle';
-      }
-
+  // ── Selection reactions ──
+  if (wrestling.selections && wrestling.selections.length > 0) {
+    wrestling.selections.forEach(sel => {
+      const bgCls = sel.eager ? 'gp-fight-flashy' : 'gp-fight-miss';
+      const label = sel.eager ? 'READY TO FIGHT' : 'RELUCTANT FIGHTER';
+      const labelColor = sel.eager ? '#d4a844' : '#8a7850';
       html += `<div class="gp-step-hidden" id="gp-step-wrestling-${stepIdx}">
-        ${_eventCard(evt, cardClass, iconType)}
+        <div class="gp-fight-card ${bgCls}">
+          <div class="gp-fight-card-head">
+            <div class="gp-fight-card-avatars">
+              <img class="gp-fight-card-ava" style="border-color:${labelColor}" src="${_avatar(sel.player)}" alt="${sel.player}">
+            </div>
+            <span class="gp-fight-card-label" style="color:${labelColor}">${label}</span>
+          </div>
+          <div class="gp-fight-card-body">${sel.text}</div>
+        </div>
+      </div>`;
+      stepMeta.push({ phase: 'wrestling', type: 'selection' });
+      stepIdx++;
+    });
+  }
+
+  // ── Rounds — each starts with HP status bar, then action cards ──
+  wrestling.rounds.forEach((round, rIdx) => {
+    // Round banner
+    html += `<div class="gp-step-hidden" id="gp-step-wrestling-${stepIdx}">
+      <div class="gp-round-banner"><span class="gp-round-num">Round ${round.round}</span></div>
+    </div>`;
+    stepMeta.push({ phase: 'wrestling', type: 'round-banner', round: round.round });
+    stepIdx++;
+
+    // HP status bar at start of each round (from previous round's snapshot or 100%)
+    if (wrestling.fighters) {
+      const prevSnap = rIdx > 0 ? wrestling.rounds[rIdx - 1].hpSnapshot : null;
+      let hpHtml = `<div class="gp-fight-card" style="border:1px solid #4a3018;padding:10px 14px">
+        <div class="gp-fight-card-head">
+          <span class="gp-fight-card-label" style="color:#8a7850">ARENA STATUS</span>
+        </div>`;
+      wrestling.fighters.forEach(f => {
+        const curHP = prevSnap ? (prevSnap[f.name] || 0) : 100;
+        const isKO = curHP <= 0;
+        const fillColor = isKO ? '#4a4040' : curHP > 50 ? '#5a9a3a' : curHP > 25 ? '#d4a030' : '#c03030';
+        const tColor = f.tribe ? (_tribeColorFromEp(f.tribe, ep) || '#8a7850') : '#8a7850';
+        hpHtml += `<div style="display:flex;align-items:center;gap:6px;margin:3px 0;${isKO ? 'opacity:.4;' : ''}">
+          <img src="${_avatar(f.name)}" style="width:20px;height:20px;border-radius:50%;border:1.5px solid ${tColor};object-fit:cover">
+          <span style="font-family:Cinzel,serif;font-size:11px;color:#d4c8a8;width:55px">${f.name}</span>
+          <div style="flex:1;height:8px;background:#1a1008;border-radius:4px;overflow:hidden;border:1px solid #3a2810">
+            <div style="height:100%;width:${Math.max(0, curHP)}%;background:${fillColor};border-radius:4px;transition:width .3s"></div>
+          </div>
+          <span style="font-family:Cinzel,serif;font-size:10px;color:${isKO ? '#6a4040' : '#8a7850'};width:30px;text-align:right">${isKO ? 'K.O.' : curHP + '%'}</span>
+        </div>`;
+      });
+      hpHtml += `</div>`;
+      html += `<div class="gp-step-hidden" id="gp-step-wrestling-${stepIdx}">${hpHtml}</div>`;
+      stepMeta.push({ phase: 'wrestling', type: 'hp-status', round: round.round });
+      stepIdx++;
+    }
+
+    // Action cards
+    round.events.forEach(evt => {
+      html += `<div class="gp-step-hidden" id="gp-step-wrestling-${stepIdx}">
+        ${_fightActionCard(evt)}
       </div>`;
       stepMeta.push({ phase: 'wrestling', type: evt.type, round: round.round });
       stepIdx++;
@@ -3083,9 +3805,32 @@ export function rpBuildGPWrestling(ep) {
   // Social events from wrestling
   if (wrestling.matches) {
     wrestling.matches.forEach(evt => {
-      const cardClass = evt.type === 'social-confrontation' ? 'gp-card-drama' : 'gp-card-social';
+      const players = evt.players || [];
+      let avatarsHtml = '';
+      players.forEach(p => {
+        avatarsHtml += `<img class="gp-fight-card-ava" style="border-color:#8a5a8a" src="${_avatar(p)}" alt="${p}">`;
+      });
+
+      const socialLabel = evt.type === 'social-confrontation' ? 'CONFRONTATION' :
+        evt.type === 'social-respect' ? 'RESPECT' :
+        evt.type === 'social-scheme' ? 'SCHEME' :
+        evt.type === 'social-encouragement' ? 'ENCOURAGEMENT' :
+        evt.type === 'social-strategy' ? 'STRATEGY' :
+        evt.type === 'social-trash-talk' ? 'TRASH TALK' :
+        evt.type === 'social-fear' ? 'FEAR' :
+        evt.type === 'social-showmance' ? 'CHEMISTRY' :
+        'SOCIAL';
+
+      const socialColor = evt.type === 'social-confrontation' ? '#c03030' : '#8a5a8a';
+
       html += `<div class="gp-step-hidden" id="gp-step-wrestling-${stepIdx}">
-        ${_eventCard(evt, cardClass, 'social')}
+        <div class="gp-fight-card gp-fight-social">
+          <div class="gp-fight-card-head">
+            <div class="gp-fight-card-avatars">${avatarsHtml}</div>
+            <span class="gp-fight-card-label" style="color:${socialColor}">${socialLabel}</span>
+          </div>
+          <div class="gp-fight-card-body">${evt.text || ''}</div>
+        </div>
       </div>`;
       stepMeta.push({ phase: 'wrestling', type: evt.type });
       stepIdx++;
@@ -3094,15 +3839,22 @@ export function rpBuildGPWrestling(ep) {
 
   // Wrestling gold medal card
   if (wrestling.goldWinner) {
-    const goldEvt = {
-      type: 'gold-found',
-      player: wrestling.goldWinner,
-      text: `${wrestling.goldWinner} stands victorious in the arena! The gold medal is awarded.`,
-      badge: wrestling.goldTribe ? `GOLD — ${wrestling.goldTribe.toUpperCase()}` : `GOLD — ${wrestling.goldWinner.toUpperCase()}`,
-      badgeClass: 'gold'
-    };
+    const winner = wrestling.goldWinner;
+    const survs = wrestling.goldSurvivors || [winner];
+    const tribeLabel = wrestling.goldTribe ? wrestling.goldTribe.toUpperCase() : winner.toUpperCase();
+    const avasHtml = survs.map(s => `<img class="gp-fight-card-ava" style="border-color:#c9a84c" src="${_avatar(s)}" alt="${s}">`).join('');
+    const bodyText = survs.length > 1
+      ? `${survs.join(' & ')} are the last ones standing! The gold medal goes to their team.`
+      : `${winner} stands alone in the arena! The gold medal is awarded.`;
     html += `<div class="gp-step-hidden" id="gp-step-wrestling-${stepIdx}">
-      ${_eventCard(goldEvt, 'gp-card-gold', 'medal')}
+      <div class="gp-fight-card gp-fight-gold">
+        <div class="gp-fight-stamp gp-fight-stamp-gold">GOLD MEDAL!</div>
+        <div class="gp-fight-card-head">
+          <div class="gp-fight-card-avatars">${avasHtml}</div>
+          <span class="gp-fight-card-label" style="color:#d4a844">GOLD ${'—'} ${tribeLabel}</span>
+        </div>
+        <div class="gp-fight-card-body" style="color:#d4c8a0;font-size:17px">${bodyText}</div>
+      </div>
     </div>`;
     stepMeta.push({ phase: 'wrestling', type: 'gold' });
     stepIdx++;
@@ -3114,7 +3866,7 @@ export function rpBuildGPWrestling(ep) {
 }
 
 
-// ══════════════════════════════════════════════════════════════════════
+
 // rpBuildGPHurdles — Event III: Hurdle Race
 // ══════════════════════════════════════════════════════════════════════
 export function rpBuildGPHurdles(ep) {
@@ -3138,50 +3890,28 @@ export function rpBuildGPHurdles(ep) {
     <div class="gp-event-banner-desc">Sprint. Jump. Don't show off... or do. Your funeral.</div>
   </div>`;
 
-  // Hurdle track visualization
-  if (hurdles.runners && hurdles.segments) {
-    let trackHtml = `<div class="gp-card gp-card-hurdle" style="padding:14px">
-      <div class="gp-card-head">
-        ${_icon('hurdle')}
-        <span class="gp-card-type" style="color:#4a7ab8">Race Progress</span>
-      </div>
-      <div class="gp-hurdle-track">`;
-
-    hurdles.runners.forEach(runner => {
-      trackHtml += `<div class="gp-hurdle-row">
-        <div class="gp-hurdle-name">${runner.name}</div>
-        <div class="gp-hurdle-segments">`;
-
-      // Build segment visualization from events
-      const SEGMENTS = 6;
-      for (let seg = 0; seg < SEGMENTS; seg++) {
-        const segData = hurdles.segments[seg];
-        if (segData) {
-          const playerEvt = segData.events.find(e => e.player === runner.name);
-          if (playerEvt) {
-            if (playerEvt.type === 'showoff-success') {
-              trackHtml += `<div class="gp-hurdle-seg gp-seg-showoff">SHOW</div>`;
-            } else if (playerEvt.type === 'showoff-wipeout') {
-              trackHtml += `<div class="gp-hurdle-seg gp-seg-wipe">WIPE</div>`;
-            } else {
-              trackHtml += `<div class="gp-hurdle-seg gp-seg-safe">RUN</div>`;
-            }
-          } else {
-            trackHtml += `<div class="gp-hurdle-seg gp-seg-pending">---</div>`;
-          }
-        } else {
-          trackHtml += `<div class="gp-hurdle-seg gp-seg-pending">---</div>`;
-        }
-      }
-
-      trackHtml += `</div>
-        <div class="gp-hurdle-time">${runner.time.toFixed(1)}s</div>
+  // Intro card — runners at the starting line
+  {
+    const runnerCount = hurdles.runners?.length || 0;
+    let introAvas = '';
+    (hurdles.runners || []).forEach(r => {
+      const tc = _tribeColorFromEp(_tribeForPlayer(r.name, ep), ep) || '#8a7850';
+      introAvas += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+        <img src="${_avatar(r.name)}" alt="${r.name}" style="width:36px;height:36px;border-radius:50%;border:2px solid ${tc};object-fit:cover">
+        <span style="font-family:Cinzel,serif;font-size:9px;color:#d4c8a0">${r.name}</span>
       </div>`;
     });
-
-    trackHtml += `</div></div>`;
-    html += `<div class="gp-step-hidden" id="gp-step-hurdles-${stepIdx}">${trackHtml}</div>`;
-    stepMeta.push({ phase: 'hurdles', type: 'track' });
+    html += `<div class="gp-step-hidden" id="gp-step-hurdles-${stepIdx}">
+      <div class="gp-card gp-card-hurdle" style="padding:14px;border-left:4px solid #4a7ab8">
+        <div class="gp-card-head">
+          ${_icon('hurdle')}
+          <span class="gp-card-type" style="color:#4a7ab8">STARTING LINE</span>
+        </div>
+        <div style="color:#3a2a18;font-size:14px;margin:6px 0">${runnerCount} runners take their positions. Six hurdles stand between them and the gold. Play it safe or show off${' — '}but a wipeout costs precious seconds.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px">${introAvas}</div>
+      </div>
+    </div>`;
+    stepMeta.push({ phase: 'hurdles', type: 'intro' });
     stepIdx++;
   }
 
@@ -3191,7 +3921,7 @@ export function rpBuildGPHurdles(ep) {
       html += `<div class="gp-step-hidden" id="gp-step-hurdles-${stepIdx}">
         ${_eventCard(evt, 'gp-card-hurdle', 'hurdle')}
       </div>`;
-      stepMeta.push({ phase: 'hurdles', type: evt.type, segment: seg.segment });
+      stepMeta.push({ phase: 'hurdles', type: evt.type, segment: seg.segment, player: evt.player });
       stepIdx++;
     });
   });
@@ -3201,7 +3931,7 @@ export function rpBuildGPHurdles(ep) {
     const goldEvt = {
       type: 'gold-found',
       player: hurdles.goldWinner,
-      text: `${hurdles.goldWinner} crosses the finish line first! The hurdle gold is theirs.`,
+      text: `${hurdles.goldWinner} crosses the finish line first! The hurdle gold is ${pronouns(hurdles.goldWinner).pos}.`,
       badge: hurdles.goldTribe ? `GOLD — ${hurdles.goldTribe.toUpperCase()}` : `GOLD — ${hurdles.goldWinner.toUpperCase()}`,
       badgeClass: 'gold'
     };
@@ -3236,47 +3966,6 @@ export function rpBuildGPIcarus(ep) {
     <div class="gp-event-banner-title" style="color:#f0d870">Wings of Icarus</div>
     <div class="gp-event-banner-desc" style="color:#a0b8d0">Wax wings. One medal. Don't fly too close to the sun.</div>
   </div>`;
-
-  // Altitude tracker
-  if (icarus.state && icarus.participants) {
-    let altHtml = `<div class="gp-card gp-card-icarus" style="padding:14px">
-      <div class="gp-card-head">
-        ${_icon('wing')}
-        <span class="gp-card-type" style="color:#c9a84c">Altitude &amp; Wing Integrity</span>
-      </div>
-      <div class="gp-icarus-alt">`;
-
-    icarus.participants.forEach(name => {
-      const st = icarus.state[name] || { altitude: 0, integrity: 0 };
-      const altPct = Math.min(100, (st.altitude / 5.0) * 100);
-      const integ = st.integrity;
-      // Wing segments: 4 blocks
-      const wingCount = 4;
-      const wingBlocks = [];
-      for (let w = 0; w < wingCount; w++) {
-        const threshold = (wingCount - w) * (100 / wingCount);
-        if (integ >= threshold) wingBlocks.push('gp-wing-ok');
-        else if (integ >= threshold - 15) wingBlocks.push('gp-wing-melting');
-        else wingBlocks.push('gp-wing-gone');
-      }
-
-      altHtml += `<div class="gp-icarus-row">
-        <div class="gp-icarus-name">${name}</div>
-        <div class="gp-icarus-bar">
-          <div class="gp-icarus-fill" style="width:${altPct}%"></div>
-          <div class="gp-icarus-medal"></div>
-        </div>
-        <div class="gp-icarus-wings">
-          ${wingBlocks.map(cls => `<div class="gp-icarus-wing ${cls}"></div>`).join('')}
-        </div>
-      </div>`;
-    });
-
-    altHtml += `</div></div>`;
-    html += `<div class="gp-step-hidden" id="gp-step-icarus-${stepIdx}">${altHtml}</div>`;
-    stepMeta.push({ phase: 'icarus', type: 'altitude-tracker' });
-    stepIdx++;
-  }
 
   // Round events
   icarus.rounds.forEach(round => {
@@ -3373,6 +4062,37 @@ export function rpBuildGPResults(ep) {
   html += `<div class="gp-step-hidden" id="gp-step-results-${stepIdx}">${tallyHtml}</div>`;
   stepIdx++;
 
+  // Tribe fate card — who's safe vs who goes to tribal (pre-merge only, 2+ tribes)
+  if (!isMerged) {
+    const tribeRankings = data.tribeRankings || [];
+    if (tribeRankings.length >= 2) {
+      const loser = tribeRankings[tribeRankings.length - 1];
+      let fateHtml = `<div style="padding:12px 16px">`;
+      tribeRankings.forEach((t, i) => {
+        const isLast = i === tribeRankings.length - 1;
+        const isFirst = i === 0;
+        const tc = _tribeColorFromEp(t.tribeName, ep) || '#8a7850';
+        const statusLabel = isFirst ? 'IMMUNITY' : isLast ? 'TRIBAL COUNCIL' : 'SAFE';
+        const statusColor = isFirst ? '#5a9a3a' : isLast ? '#c03030' : '#8a7850';
+        const bg = isLast ? 'rgba(192,48,48,.08)' : isFirst ? 'rgba(90,154,58,.08)' : 'rgba(138,120,80,.05)';
+        const border = isLast ? '2px solid rgba(192,48,48,.3)' : isFirst ? '2px solid rgba(90,154,58,.3)' : '1px solid rgba(138,120,80,.15)';
+        const icon = isFirst ? _icon('medal') : isLast ? _icon('fist') : _icon('laurel');
+        fateHtml += `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin:4px 0;background:${bg};border:${border};border-radius:3px">
+          <div style="flex-shrink:0">${icon}</div>
+          <div style="flex:1">
+            <div style="font-family:Cinzel,serif;font-weight:700;font-size:14px;color:${tc};letter-spacing:1px">${t.tribeName}</div>
+            <div style="font-family:Cinzel,serif;font-size:10px;color:${statusColor};letter-spacing:2px;text-transform:uppercase;margin-top:2px">${statusLabel}</div>
+          </div>
+          <div style="display:flex;gap:2px">${Array.from({ length: t.goldCount || 0 }, () => `<div class="gp-lb-gold-dot"></div>`).join('') || '<span style="font-family:Cinzel,serif;font-size:9px;color:#6a5a3a">0 golds</span>'}</div>
+        </div>`;
+      });
+      fateHtml += `<div style="text-align:center;margin-top:8px;font-family:Cinzel,serif;font-size:12px;color:#c03030;letter-spacing:1px">${loser.tribeName} must send someone home tonight.</div>`;
+      fateHtml += `</div>`;
+      html += `<div class="gp-step-hidden" id="gp-step-results-${stepIdx}">${fateHtml}</div>`;
+      stepIdx++;
+    }
+  }
+
   // Final leaderboard
   let lbHtml = `<div class="gp-right-header" style="margin-top:8px">Final Standings</div>
     <div class="gp-leaderboard" style="max-width:400px;margin:0 auto;">`;
@@ -3416,16 +4136,30 @@ function _reapplyVisibility(suffix, upToIdx, total) {
   }
 }
 
-function _gpUpdateZoneMap(screenKey) {
+function _getEpForUpdate() {
+  return _currentEp
+    || (typeof window !== 'undefined' && window._gpEpRecord)
+    || (gs.episodeHistory && gs.episodeHistory[(window.vpEpNum || 1) - 1]);
+}
+
+function _gpUpdateRightSidebar(screenKey) {
   try {
-    if (screenKey !== 'gp-maze') return;
-    const mapEl = document.getElementById('gp-zone-map-inner');
-    if (!mapEl) return;
-    const epIdx = window.vpEpNum;
-    const epRecord = gs.episodeHistory && gs.episodeHistory[epIdx - 1];
-    if (!epRecord) return;
-    mapEl.innerHTML = _buildZoneMapSVG(epRecord, screenKey);
-  } catch (e) {}
+    const sideEl = document.getElementById('gp-right-inner');
+    if (!sideEl) return;
+    const ep = _getEpForUpdate();
+    if (!ep || !ep.challengeData) return;
+    sideEl.innerHTML = _buildRightSidebarContent(ep, screenKey);
+  } catch (e) { console.warn('gp sidebar update:', e); }
+}
+
+function _gpUpdateScoreboard(screenKey) {
+  try {
+    const wrap = document.getElementById('gp-scoreboard-wrap');
+    if (!wrap) return;
+    const ep = _getEpForUpdate();
+    if (!ep || !ep.challengeData) return;
+    wrap.innerHTML = _buildScoreboard(ep, screenKey);
+  } catch (e) { console.warn('gp scoreboard update:', e); }
 }
 
 export function gpRevealNext(screenKey, totalSteps) {
@@ -3438,7 +4172,8 @@ export function gpRevealNext(screenKey, totalSteps) {
     const el = document.getElementById(`gp-step-${suffix}-${st.idx}`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   } catch (e) {}
-  try { _gpUpdateZoneMap(screenKey); } catch (e) {}
+  try { _gpUpdateRightSidebar(screenKey); } catch (e) {}
+  try { _gpUpdateScoreboard(screenKey); } catch (e) {}
 }
 
 export function gpRevealAll(screenKey, totalSteps) {
@@ -3446,5 +4181,6 @@ export function gpRevealAll(screenKey, totalSteps) {
   st.idx = st.total - 1;
   const suffix = screenKey.replace('gp-', '');
   try { _reapplyVisibility(suffix, st.idx, st.total); } catch (e) {}
-  try { _gpUpdateZoneMap(screenKey); } catch (e) {}
+  try { _gpUpdateRightSidebar(screenKey); } catch (e) {}
+  try { _gpUpdateScoreboard(screenKey); } catch (e) {}
 }

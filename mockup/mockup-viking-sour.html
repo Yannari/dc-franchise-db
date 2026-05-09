@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viking Sour — VP Mockup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Fira+Code:wght@400;500&display=swap');
+
+:root {
+  /* Tarred wood & parchment */
+  --vs-tar:#1a1510;--vs-tar2:#241e16;--vs-plank:#3a2e1e;--vs-plank-lt:#584830;
+  --vs-parchment:#d8ceb4;--vs-parch-dk:#b8a888;--vs-parch-lt:#e8e0cc;
+  /* Frost & sea */
+  --vs-fjord:#3a5568;--vs-frost:#9ab8c8;--vs-ice:#c8dce8;--vs-storm:#2a3a48;
+  --vs-sea-deep:#1a2830;--vs-sea-mid:#2a4050;--vs-wave:#4a7888;
+  /* Fire & gold */
+  --vs-ember:#c45a20;--vs-flame:#e87830;--vs-gold:#c8a040;--vs-gold-lt:#e0c060;
+  --vs-forge:#ff9040;
+  /* Blood & iron */
+  --vs-blood:#8a2020;--vs-iron:#6a6a6a;--vs-steel:#8a8a88;
+  /* Rune accents */
+  --vs-rune:#a08048;--vs-rune-glow:rgba(192,160,64,.3);
+  /* UI */
+  --vs-danger:#c83030;--vs-safe:#3a8850;--vs-warn:#c89830;
+  --vs-glass:rgba(26,21,16,.7);--vs-glass2:rgba(26,21,16,.85);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--vs-tar);color:var(--vs-parchment);font-family:'EB Garamond',Georgia,serif;overflow-x:hidden;}
+
+/* ═══════ BROADCAST CHROME ═══════ */
+.vs-broadcast{position:fixed;top:0;left:0;right:0;z-index:1000;height:38px;
+  background:linear-gradient(90deg,var(--vs-tar2),var(--vs-plank),var(--vs-tar2));
+  border-bottom:2px solid var(--vs-gold);display:flex;align-items:center;justify-content:space-between;padding:0 16px;}
+.vs-live{display:flex;align-items:center;gap:6px;font-family:'Cinzel',serif;font-size:10px;
+  color:var(--vs-ember);text-transform:uppercase;letter-spacing:3px;font-weight:700;}
+.vs-live-dot{width:8px;height:8px;background:var(--vs-ember);border-radius:50%;
+  animation:vs-pulse 1.2s ease-in-out infinite;}
+@keyframes vs-pulse{0%,100%{opacity:1;box-shadow:0 0 4px var(--vs-ember)}50%{opacity:.3;box-shadow:none}}
+.vs-ticker{flex:1;overflow:hidden;margin:0 24px;height:18px;position:relative;}
+.vs-ticker-inner{position:absolute;white-space:nowrap;animation:vs-scroll 35s linear infinite;
+  font-family:'EB Garamond',serif;font-size:12px;font-style:italic;color:var(--vs-parch-dk);letter-spacing:1px;}
+@keyframes vs-scroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+.vs-saga-mark{font-family:'Cinzel Decorative',serif;color:var(--vs-gold);font-size:12px;letter-spacing:3px;}
+
+/* ═══════ PHASE TABS ═══════ */
+.vs-tabs{position:fixed;top:38px;left:0;right:0;z-index:999;display:flex;justify-content:center;gap:0;
+  background:var(--vs-plank);border-bottom:1px solid var(--vs-rune);}
+.vs-tab{padding:8px 20px;border:none;border-right:1px solid rgba(192,160,64,.15);
+  font-family:'Cinzel',serif;font-size:10px;text-transform:uppercase;letter-spacing:2px;
+  cursor:pointer;background:transparent;color:var(--vs-parch-dk);transition:all .3s;position:relative;}
+.vs-tab:last-child{border-right:none;}
+.vs-tab:hover{color:var(--vs-parchment);background:rgba(200,160,64,.08);}
+.vs-tab.active{color:var(--vs-gold);background:var(--vs-tar);}
+.vs-tab.active::after{content:'';position:absolute;bottom:-1px;left:20%;right:20%;height:2px;background:var(--vs-gold);}
+.vs-tab-icon{margin-right:6px;display:inline-block;width:14px;height:14px;vertical-align:middle;}
+
+/* ═══════ MAIN LAYOUT ═══════ */
+.vs-shell{max-width:1100px;margin:90px auto 140px;display:grid;grid-template-columns:1fr 260px;gap:0;
+  position:relative;z-index:2;}
+.vs-main{min-width:0;border-right:2px solid var(--vs-plank-lt);}
+.vs-phase{display:none;}
+.vs-phase.active{display:block;}
+
+/* ═══════ ATMOSPHERE — frozen fjord ═══════ */
+.vs-atmo{position:fixed;top:46px;left:0;right:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden;}
+
+/* Sky gradient — storm clouds */
+.vs-atmo-sky{position:absolute;inset:0;
+  background:linear-gradient(180deg,#2a3540 0%,#3a4a58 25%,#4a5a68 50%,#3a4a58 75%,var(--vs-sea-deep) 100%);}
+
+/* Northern lights — subtle aurora */
+.vs-aurora{position:absolute;top:5%;left:0;right:0;height:30%;opacity:.12;
+  background:linear-gradient(90deg,transparent 0%,rgba(80,180,120,.4) 20%,rgba(60,160,180,.3) 40%,
+  rgba(100,200,140,.35) 60%,rgba(80,140,180,.25) 80%,transparent 100%);
+  filter:blur(40px);animation:vs-aurora-shift 20s ease-in-out infinite alternate;}
+@keyframes vs-aurora-shift{0%{transform:translateX(-5%) scaleY(1)}50%{transform:translateX(5%) scaleY(1.3)}100%{transform:translateX(-3%) scaleY(.8)}}
+
+/* Mountain silhouettes */
+.vs-mtn{position:absolute;bottom:35%;}
+.vs-mtn.m1{left:-5%;width:0;height:0;border-style:solid;border-width:0 200px 300px 180px;
+  border-color:transparent transparent rgba(20,28,35,.8) transparent;}
+.vs-mtn.m2{left:20%;width:0;height:0;border-style:solid;border-width:0 160px 260px 140px;
+  border-color:transparent transparent rgba(25,32,40,.7) transparent;}
+.vs-mtn.m3{left:50%;width:0;height:0;border-style:solid;border-width:0 220px 340px 200px;
+  border-color:transparent transparent rgba(22,30,38,.75) transparent;}
+.vs-mtn.m4{left:75%;width:0;height:0;border-style:solid;border-width:0 180px 280px 160px;
+  border-color:transparent transparent rgba(18,26,33,.7) transparent;}
+/* Snow caps */
+.vs-cap{position:absolute;}
+.vs-cap.c1{left:calc(-5% + 110px);bottom:calc(35% + 200px);width:0;height:0;border-style:solid;
+  border-width:0 80px 80px 60px;border-color:transparent transparent rgba(200,220,232,.08) transparent;}
+.vs-cap.c3{left:calc(50% + 90px);bottom:calc(35% + 240px);width:0;height:0;border-style:solid;
+  border-width:0 100px 80px 90px;border-color:transparent transparent rgba(200,220,232,.1) transparent;}
+
+/* Sea layer */
+.vs-sea{position:absolute;bottom:0;left:0;right:0;height:35%;
+  background:linear-gradient(0deg,var(--vs-sea-deep) 0%,var(--vs-sea-mid) 40%,var(--vs-storm) 100%);}
+.vs-wave-line{position:absolute;left:0;right:0;height:2px;opacity:.15;}
+.vs-wave-line:nth-child(1){top:10%;background:var(--vs-frost);animation:vs-wave 4s ease-in-out infinite;}
+.vs-wave-line:nth-child(2){top:30%;background:var(--vs-wave);animation:vs-wave 5s ease-in-out infinite .5s;}
+.vs-wave-line:nth-child(3){top:55%;background:var(--vs-frost);animation:vs-wave 6s ease-in-out infinite 1s;}
+.vs-wave-line:nth-child(4){top:75%;background:var(--vs-wave);animation:vs-wave 4.5s ease-in-out infinite 1.5s;}
+@keyframes vs-wave{0%,100%{transform:translateX(-3%)}50%{transform:translateX(3%)}}
+
+/* Snowfall */
+.vs-snow-wrap{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;overflow:hidden;}
+.vs-sf{position:absolute;background:rgba(200,220,232,.6);border-radius:50%;animation:vs-fall linear infinite;}
+@keyframes vs-fall{0%{transform:translateY(-10px) translateX(0);opacity:0}5%{opacity:.4}
+  50%{transform:translateY(50vh) translateX(25px)}100%{transform:translateY(105vh) translateX(10px);opacity:0}}
+@media(prefers-reduced-motion:reduce){.vs-sf,.vs-aurora,.vs-wave-line{animation:none !important;}}
+
+/* Ember particles (forge/fire phase ambience) */
+.vs-embers{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;overflow:hidden;}
+.vs-ember-p{position:absolute;border-radius:50%;background:var(--vs-ember);
+  animation:vs-ember-rise linear infinite;}
+@keyframes vs-ember-rise{0%{transform:translateY(100vh) translateX(0);opacity:0}
+  10%{opacity:.6}80%{opacity:.3}100%{transform:translateY(-10vh) translateX(30px);opacity:0}}
+
+/* ═══════ CSS ICONS (runic/nordic) ═══════ */
+.vs-ico{display:inline-block;position:relative;vertical-align:middle;}
+/* Hammer — Thor's mjolnir */
+.vs-ico-hammer{width:14px;height:14px;}
+.vs-ico-hammer::before{content:'';position:absolute;top:1px;left:3px;width:8px;height:6px;
+  background:var(--vs-iron);border-radius:1px;border:1px solid var(--vs-steel);}
+.vs-ico-hammer::after{content:'';position:absolute;top:7px;left:6px;width:2px;height:7px;
+  background:var(--vs-plank-lt);border-radius:0 0 1px 1px;}
+/* Shield */
+.vs-ico-shield{width:14px;height:16px;}
+.vs-ico-shield::before{content:'';position:absolute;top:0;left:1px;width:12px;height:12px;
+  border:2px solid var(--vs-gold);border-radius:50% 50% 50% 50% / 40% 40% 60% 60%;
+  background:var(--vs-plank);}
+.vs-ico-shield::after{content:'';position:absolute;top:4px;left:5px;width:4px;height:4px;
+  background:var(--vs-gold);border-radius:50%;}
+/* Cannon */
+.vs-ico-cannon{width:16px;height:12px;}
+.vs-ico-cannon::before{content:'';position:absolute;top:2px;left:0;width:12px;height:6px;
+  background:var(--vs-iron);border-radius:2px 6px 6px 2px;border:1px solid var(--vs-steel);}
+.vs-ico-cannon::after{content:'';position:absolute;top:4px;left:12px;width:4px;height:3px;
+  background:var(--vs-ember);border-radius:0 2px 2px 0;}
+/* Flag */
+.vs-ico-flag{width:12px;height:16px;}
+.vs-ico-flag::before{content:'';position:absolute;top:0;left:0;width:2px;height:16px;
+  background:var(--vs-plank-lt);}
+.vs-ico-flag::after{content:'';position:absolute;top:1px;left:2px;width:9px;height:7px;
+  background:var(--vs-ember);clip-path:polygon(0 0,100% 15%,85% 50%,100% 85%,0 100%);}
+/* Ship */
+.vs-ico-ship{width:18px;height:14px;}
+.vs-ico-ship::before{content:'';position:absolute;bottom:0;left:0;width:18px;height:6px;
+  background:var(--vs-plank);border-radius:0 0 50% 50%;border:1px solid var(--vs-plank-lt);}
+.vs-ico-ship::after{content:'';position:absolute;top:0;left:8px;width:2px;height:10px;
+  background:var(--vs-plank-lt);}
+/* Rune */
+.vs-ico-rune{width:10px;height:14px;font-family:'Cinzel Decorative',serif;font-size:14px;
+  color:var(--vs-gold);line-height:1;}
+/* Scroll/blueprint */
+.vs-ico-scroll{width:14px;height:12px;}
+.vs-ico-scroll::before{content:'';position:absolute;top:0;left:0;width:14px;height:10px;
+  background:var(--vs-parch-dk);border-radius:2px;border:1px solid var(--vs-rune);}
+.vs-ico-scroll::after{content:'';position:absolute;top:2px;left:3px;right:3px;height:1px;
+  background:var(--vs-plank);box-shadow:0 3px 0 var(--vs-plank),0 6px 0 var(--vs-plank);}
+/* Fire */
+.vs-ico-fire{width:10px;height:14px;}
+.vs-ico-fire::before{content:'';position:absolute;bottom:0;left:1px;width:8px;height:10px;
+  background:var(--vs-ember);border-radius:50% 50% 30% 30%;clip-path:polygon(50% 0%,100% 60%,80% 100%,20% 100%,0% 60%);}
+.vs-ico-fire::after{content:'';position:absolute;bottom:1px;left:3px;width:4px;height:5px;
+  background:var(--vs-flame);border-radius:50% 50% 30% 30%;clip-path:polygon(50% 0%,100% 60%,80% 100%,20% 100%,0% 60%);}
+/* Skull (danger) */
+.vs-ico-skull{width:12px;height:14px;}
+.vs-ico-skull::before{content:'';position:absolute;top:0;left:1px;width:10px;height:10px;
+  background:var(--vs-parchment);border-radius:50% 50% 40% 40%;border:1px solid var(--vs-iron);}
+.vs-ico-skull::after{content:'';position:absolute;top:3px;left:3px;width:3px;height:3px;
+  background:var(--vs-tar);border-radius:50%;box-shadow:4px 0 0 var(--vs-tar);}
+/* Trophy */
+.vs-ico-trophy{width:14px;height:14px;}
+.vs-ico-trophy::before{content:'';position:absolute;top:0;left:3px;width:8px;height:8px;
+  background:var(--vs-gold);border-radius:0 0 50% 50%;border:1px solid var(--vs-gold-lt);}
+.vs-ico-trophy::after{content:'';position:absolute;bottom:0;left:4px;width:6px;height:4px;
+  background:var(--vs-gold);border-radius:0 0 2px 2px;border-top:1px solid var(--vs-gold-lt);}
+/* Anchor */
+.vs-ico-anchor{width:12px;height:16px;}
+.vs-ico-anchor::before{content:'';position:absolute;top:0;left:4px;width:4px;height:12px;
+  background:var(--vs-iron);border-radius:2px 2px 0 0;}
+.vs-ico-anchor::after{content:'';position:absolute;bottom:0;left:0;width:12px;height:4px;
+  border:2px solid var(--vs-iron);border-top:none;border-radius:0 0 50% 50%;}
+/* Ammo */
+.vs-ico-ammo{width:10px;height:10px;}
+.vs-ico-ammo::before{content:'';position:absolute;top:1px;left:1px;width:8px;height:8px;
+  background:var(--vs-iron);border-radius:50%;border:1px solid var(--vs-steel);
+  box-shadow:inset -2px -2px 0 rgba(0,0,0,.3);}
+
+/* ═══════ TITLE BANNER ═══════ */
+.vs-title-banner{
+  background:linear-gradient(180deg,var(--vs-tar) 0%,var(--vs-plank) 100%);
+  border-bottom:3px solid var(--vs-gold);padding:24px 28px 18px;position:relative;z-index:2;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);}
+/* Carved border pattern */
+.vs-title-banner::before{content:'';position:absolute;bottom:3px;left:0;right:0;height:8px;
+  background:repeating-linear-gradient(90deg,var(--vs-gold) 0px,var(--vs-gold) 4px,transparent 4px,transparent 12px,
+  var(--vs-gold) 12px,var(--vs-gold) 14px,transparent 14px,transparent 20px);opacity:.2;}
+.vs-title-main{font-family:'Cinzel Decorative',serif;font-weight:900;font-size:clamp(22px,3vw,30px);
+  color:var(--vs-gold);letter-spacing:6px;text-transform:uppercase;
+  text-shadow:0 2px 4px rgba(0,0,0,.6),0 0 20px var(--vs-rune-glow);}
+.vs-title-sub{font-family:'Cinzel',serif;font-size:11px;color:var(--vs-parch-dk);letter-spacing:6px;
+  text-transform:uppercase;margin-top:4px;}
+.vs-title-phase{font-family:'Cinzel',serif;font-size:13px;color:var(--vs-frost);letter-spacing:3px;
+  margin-top:10px;padding-top:8px;border-top:1px solid rgba(192,160,64,.2);}
+.vs-title-desc{font-family:'EB Garamond',serif;font-size:15px;font-style:italic;color:var(--vs-parch-dk);
+  margin-top:6px;line-height:1.4;max-width:600px;}
+
+/* Knotwork divider */
+.vs-knot{height:16px;margin:8px 0;position:relative;overflow:hidden;}
+.vs-knot::before{content:'';position:absolute;top:7px;left:0;right:0;height:2px;background:var(--vs-rune);opacity:.3;}
+.vs-knot::after{content:'◆ ◆ ◆';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  font-size:10px;color:var(--vs-rune);letter-spacing:8px;background:var(--vs-tar);padding:0 12px;}
+
+/* ═══════ CARDS ═══════ */
+.vs-card{background:var(--vs-glass2);border:1px solid rgba(192,160,64,.15);
+  margin:8px 16px;padding:12px 16px;position:relative;
+  border-left:3px solid var(--vs-plank-lt);transition:opacity .4s ease-out,transform .4s ease-out;}
+.vs-card.vs-hidden{opacity:0;transform:translateY(12px);pointer-events:none;}
+.vs-card.vs-visible{opacity:1;transform:translateY(0);}
+.vs-card-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+.vs-card-who{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--vs-parchment);letter-spacing:1px;}
+.vs-card-tag{font-family:'Fira Code',monospace;font-size:9px;padding:2px 8px;border-radius:2px;
+  text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
+.vs-card-body{font-family:'EB Garamond',serif;font-size:14px;line-height:1.5;color:var(--vs-parch-dk);}
+.vs-card-foot{font-family:'Fira Code',monospace;font-size:10px;margin-top:6px;opacity:.6;}
+
+/* Card accent variants */
+.vs-card.eureka{border-left-color:var(--vs-gold);background:rgba(200,160,64,.06);}
+.vs-card.build{border-left-color:var(--vs-plank-lt);}
+.vs-card.sail{border-left-color:var(--vs-fjord);}
+.vs-card.cannon{border-left-color:var(--vs-ember);}
+.vs-card.social{border-left-color:var(--vs-frost);border-style:dashed;border-left-style:dashed;
+  background:rgba(154,184,200,.04);}
+.vs-card.chaos{border-left-color:var(--vs-danger);background:rgba(200,48,48,.04);}
+.vs-card.heroic{border-left-color:var(--vs-gold-lt);background:rgba(224,192,96,.06);}
+
+/* Tags */
+.tag-eureka{background:var(--vs-gold);color:var(--vs-tar);}
+.tag-build{background:var(--vs-plank-lt);color:var(--vs-parchment);}
+.tag-sail{background:var(--vs-fjord);color:var(--vs-ice);}
+.tag-cannon{background:var(--vs-ember);color:var(--vs-parchment);}
+.tag-hit{background:var(--vs-danger);color:#fff;}
+.tag-miss{background:var(--vs-iron);color:var(--vs-parchment);}
+.tag-social{background:var(--vs-frost);color:var(--vs-tar);}
+.tag-chaos{background:var(--vs-blood);color:var(--vs-parchment);}
+.tag-repair{background:var(--vs-safe);color:#fff;}
+.tag-flag{background:var(--vs-gold-lt);color:var(--vs-tar);}
+.tag-sink{background:var(--vs-danger);color:#fff;font-weight:700;}
+
+/* Portrait placeholder */
+.vs-portrait{width:28px;height:28px;border-radius:50%;background:var(--vs-plank);
+  border:2px solid var(--vs-rune);display:inline-flex;align-items:center;justify-content:center;
+  font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:var(--vs-gold);flex-shrink:0;}
+
+/* ═══════ SIDEBAR ═══════ */
+.vs-sidebar{background:var(--vs-glass2);padding:12px;font-size:12px;position:sticky;top:90px;
+  max-height:calc(100vh - 100px);overflow-y:auto;border-left:2px solid var(--vs-plank-lt);}
+.vs-sb-title{font-family:'Cinzel',serif;font-size:11px;color:var(--vs-gold);letter-spacing:2px;
+  text-transform:uppercase;margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(192,160,64,.2);}
+.vs-sb-title:first-child{margin-top:0;}
+.vs-sb-divider{border:none;border-top:1px solid rgba(192,160,64,.1);margin:8px 0;}
+
+/* Ship HP bar */
+.vs-hp-bar{height:12px;background:rgba(42,42,42,.5);border:1px solid var(--vs-plank-lt);border-radius:2px;
+  margin:4px 0;position:relative;overflow:hidden;}
+.vs-hp-fill{height:100%;border-radius:1px;transition:width .5s ease-out;}
+.vs-hp-fill.healthy{background:linear-gradient(90deg,var(--vs-safe),#4a9860);}
+.vs-hp-fill.damaged{background:linear-gradient(90deg,var(--vs-warn),#d4a830);}
+.vs-hp-fill.critical{background:linear-gradient(90deg,var(--vs-danger),#e84040);animation:vs-hp-flash 1s infinite;}
+@keyframes vs-hp-flash{0%,100%{opacity:1}50%{opacity:.6}}
+.vs-hp-label{position:absolute;top:0;left:0;right:0;height:100%;display:flex;align-items:center;
+  justify-content:center;font-family:'Fira Code',monospace;font-size:8px;color:var(--vs-parchment);
+  text-shadow:0 1px 2px rgba(0,0,0,.8);letter-spacing:1px;}
+
+/* Ammo display */
+.vs-ammo{display:flex;gap:3px;margin:4px 0;flex-wrap:wrap;}
+.vs-ammo-ball{width:10px;height:10px;border-radius:50%;background:var(--vs-iron);
+  border:1px solid var(--vs-steel);box-shadow:inset -2px -2px 0 rgba(0,0,0,.3);}
+.vs-ammo-ball.spent{opacity:.2;}
+.vs-ammo-ball.flint{background:var(--vs-ember);border-color:var(--vs-flame);
+  box-shadow:inset -2px -2px 0 rgba(0,0,0,.3),0 0 4px rgba(232,120,48,.3);}
+
+/* Flag distance */
+.vs-flag-track{height:20px;background:rgba(42,58,72,.3);border:1px solid var(--vs-fjord);
+  border-radius:2px;margin:4px 0;position:relative;}
+.vs-flag-marker{position:absolute;top:50%;transform:translateY(-50%);transition:left .5s ease-out;}
+.vs-flag-goal{position:absolute;right:4px;top:2px;font-size:10px;}
+
+/* Tribe row */
+.vs-sb-tribe{padding:6px 8px;margin:4px 0;background:rgba(58,46,30,.3);border:1px solid rgba(192,160,64,.1);
+  border-radius:3px;}
+.vs-sb-tribe-name{font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:1px;
+  display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.vs-sb-tribe-dot{width:8px;height:8px;border-radius:2px;display:inline-block;}
+.vs-sb-stat{font-family:'Fira Code',monospace;font-size:9px;color:var(--vs-parch-dk);
+  display:flex;align-items:center;gap:4px;margin:2px 0;}
+
+/* Player row */
+.vs-sb-player{display:flex;align-items:center;gap:6px;padding:3px 0;}
+.vs-sb-player-name{font-family:'EB Garamond',serif;font-size:12px;color:var(--vs-parchment);}
+.vs-sb-player-stat{font-family:'Fira Code',monospace;font-size:9px;color:var(--vs-parch-dk);margin-left:auto;}
+.vs-sb-badge{font-family:'Fira Code',monospace;font-size:8px;padding:1px 5px;border-radius:2px;
+  display:inline-block;margin-left:4px;}
+.vs-sb-badge-gold{background:var(--vs-gold);color:var(--vs-tar);}
+.vs-sb-badge-red{background:var(--vs-danger);color:#fff;}
+.vs-sb-badge-blue{background:var(--vs-fjord);color:var(--vs-ice);}
+
+/* ═══════ SEA MAP (Naval Battle) ═══════ */
+.vs-sea-map{position:relative;height:180px;background:linear-gradient(180deg,var(--vs-storm),var(--vs-sea-deep));
+  border:2px solid var(--vs-plank-lt);border-radius:4px;margin:12px 16px;overflow:hidden;}
+.vs-sea-map-grid{position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 29px,rgba(154,184,200,.06) 30px),
+  repeating-linear-gradient(90deg,transparent,transparent 29px,rgba(154,184,200,.06) 30px);}
+.vs-sea-map-label{position:absolute;font-family:'Fira Code',monospace;font-size:8px;color:var(--vs-frost);opacity:.4;}
+.vs-sea-map-flag{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;}
+.vs-sea-ship{position:absolute;z-index:4;transition:all .8s ease-out;
+  display:flex;flex-direction:column;align-items:center;gap:2px;}
+.vs-sea-ship-body{width:28px;height:14px;border-radius:0 0 50% 50%;border:2px solid;position:relative;}
+.vs-sea-ship-body::after{content:'';position:absolute;top:-8px;left:12px;width:2px;height:10px;
+  background:currentColor;}
+.vs-sea-ship-label{font-family:'Fira Code',monospace;font-size:7px;letter-spacing:1px;
+  text-transform:uppercase;white-space:nowrap;}
+.vs-sea-cannonball{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--vs-iron);
+  box-shadow:0 0 8px var(--vs-ember);animation:vs-cannonfly 1s ease-out forwards;z-index:5;}
+@keyframes vs-cannonfly{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0.3) translateX(80px)}}
+
+/* Map waves */
+.vs-sea-map-wave{position:absolute;height:1px;background:rgba(154,184,200,.1);
+  animation:vs-mapwave 3s ease-in-out infinite alternate;}
+@keyframes vs-mapwave{0%{transform:translateX(-2%)}100%{transform:translateX(2%)}}
+
+/* ═══════ BLUEPRINT OVERLAY ═══════ */
+.vs-blueprint{background:rgba(200,206,180,.06);border:1px dashed var(--vs-parch-dk);
+  margin:8px 16px;padding:16px;position:relative;}
+.vs-blueprint-title{font-family:'Cinzel',serif;font-size:11px;color:var(--vs-rune);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.vs-clarity-bar{height:16px;background:rgba(42,42,42,.4);border:1px solid var(--vs-rune);
+  border-radius:2px;position:relative;overflow:hidden;}
+.vs-clarity-fill{height:100%;background:linear-gradient(90deg,var(--vs-rune),var(--vs-gold));
+  border-radius:1px;transition:width 1s ease-out;}
+.vs-clarity-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Fira Code',monospace;font-size:9px;color:var(--vs-parchment);text-shadow:0 1px 2px rgba(0,0,0,.8);}
+/* Blueprint fragments */
+.vs-frag{display:inline-block;padding:2px 6px;margin:2px;font-family:'Fira Code',monospace;font-size:9px;
+  background:var(--vs-parch-dk);color:var(--vs-tar);border-radius:1px;opacity:.6;
+  transform:rotate(var(--rot));transition:opacity .3s;}
+.vs-frag.found{opacity:1;background:var(--vs-gold);color:var(--vs-tar);}
+
+/* ═══════ REVEAL CONTROLS ═══════ */
+.vs-controls{position:fixed;bottom:0;left:0;right:0;z-index:1000;
+  background:linear-gradient(0deg,var(--vs-tar),rgba(26,21,16,.95));
+  border-top:2px solid var(--vs-gold);padding:10px 16px;
+  display:flex;align-items:center;justify-content:center;gap:12px;}
+.vs-btn{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  padding:8px 20px;border:1px solid var(--vs-gold);background:transparent;color:var(--vs-gold);
+  cursor:pointer;transition:all .2s;}
+.vs-btn:hover{background:var(--vs-gold);color:var(--vs-tar);}
+.vs-counter{font-family:'Fira Code',monospace;font-size:11px;color:var(--vs-parch-dk);}
+
+/* ═══════ PHASE 1: BLUEPRINT ASSEMBLY ═══════ */
+
+/* Assembly progress per tribe */
+.vs-assembly-row{display:flex;align-items:center;gap:10px;margin:6px 16px;
+  padding:8px 12px;background:rgba(58,46,30,.2);border:1px solid rgba(192,160,64,.1);}
+.vs-assembly-tribe{font-family:'Cinzel',serif;font-size:11px;font-weight:700;width:80px;
+  display:flex;align-items:center;gap:6px;}
+.vs-assembly-bar{flex:1;height:14px;background:rgba(42,42,42,.4);border:1px solid var(--vs-plank-lt);
+  border-radius:2px;position:relative;overflow:hidden;}
+.vs-assembly-fill{height:100%;transition:width .6s ease-out;border-radius:1px;}
+.vs-assembly-pct{font-family:'Fira Code',monospace;font-size:9px;color:var(--vs-parch-dk);width:35px;text-align:right;}
+
+/* ═══════ PHASE 3: BATTLE RESULTS ═══════ */
+.vs-battle-result{margin:12px 16px;padding:16px;text-align:center;
+  border:2px solid var(--vs-gold);background:rgba(200,160,64,.06);position:relative;}
+.vs-battle-result::before{content:'';position:absolute;inset:3px;border:1px solid rgba(192,160,64,.2);}
+.vs-battle-result-title{font-family:'Cinzel Decorative',serif;font-size:20px;color:var(--vs-gold);
+  letter-spacing:4px;text-transform:uppercase;}
+.vs-battle-result-method{font-family:'EB Garamond',serif;font-style:italic;font-size:14px;
+  color:var(--vs-parch-dk);margin-top:4px;}
+
+/* ═══════ COMM CHATTER ═══════ */
+.vs-comm{font-family:'EB Garamond',serif;font-style:italic;font-size:12px;color:var(--vs-parch-dk);
+  margin:4px 16px;padding:4px 12px;border-left:2px solid rgba(192,160,64,.15);opacity:.7;}
+.vs-comm-host{color:var(--vs-frost);border-left-color:var(--vs-frost);}
+
+/* ═══════ PODIUM ═══════ */
+.vs-podium{display:flex;justify-content:center;gap:16px;margin:16px;flex-wrap:wrap;}
+.vs-podium-slot{padding:16px;text-align:center;min-width:140px;
+  background:var(--vs-glass2);border:1px solid rgba(192,160,64,.15);position:relative;}
+.vs-podium-slot.winner{border-color:var(--vs-gold);box-shadow:0 0 20px var(--vs-rune-glow);}
+.vs-podium-slot.loser{border-color:var(--vs-danger);opacity:.7;}
+.vs-podium-rank{font-family:'Cinzel Decorative',serif;font-size:20px;color:var(--vs-gold);}
+.vs-podium-name{font-family:'Cinzel',serif;font-size:14px;color:var(--vs-parchment);
+  letter-spacing:2px;margin:6px 0;}
+.vs-podium-scores{font-family:'Fira Code',monospace;font-size:9px;color:var(--vs-parch-dk);line-height:1.8;}
+</style>
+</head>
+<body>
+
+<!-- ═══ ATMOSPHERE ═══ -->
+<div class="vs-atmo">
+  <div class="vs-atmo-sky"></div>
+  <div class="vs-aurora"></div>
+  <div class="vs-mtn m1"></div><div class="vs-mtn m2"></div><div class="vs-mtn m3"></div><div class="vs-mtn m4"></div>
+  <div class="vs-cap c1"></div><div class="vs-cap c3"></div>
+  <div class="vs-sea">
+    <div class="vs-wave-line"></div><div class="vs-wave-line"></div>
+    <div class="vs-wave-line"></div><div class="vs-wave-line"></div>
+  </div>
+</div>
+
+<!-- Snowfall -->
+<div class="vs-snow-wrap" id="vs-snow"></div>
+
+<!-- Embers (activated during battle phase) -->
+<div class="vs-embers" id="vs-embers"></div>
+
+<!-- ═══ BROADCAST CHROME ═══ -->
+<div class="vs-broadcast">
+  <div class="vs-live"><div class="vs-live-dot"></div> SAGA LIVE</div>
+  <div class="vs-ticker"><div class="vs-ticker-inner">
+    ◆ The longships are assembled... the fjord awaits... cannons loaded, flags flying — WHO WILL CLAIM VICTORY? ◆ Assembly was chaos — now the sea decides ◆ The frozen north shows no mercy ◆
+  </div></div>
+  <div class="vs-saga-mark">VIKING SOUR</div>
+</div>
+
+<!-- ═══ PHASE TABS ═══ -->
+<div class="vs-tabs">
+  <div class="vs-tab active" onclick="showPhase('assembly')">
+    <span class="vs-ico vs-ico-scroll vs-tab-icon"></span> Blueprint Assembly
+  </div>
+  <div class="vs-tab" onclick="showPhase('sail')">
+    <span class="vs-ico vs-ico-ship vs-tab-icon"></span> Launch &amp; Sail
+  </div>
+  <div class="vs-tab" onclick="showPhase('battle')">
+    <span class="vs-ico vs-ico-cannon vs-tab-icon"></span> Naval Battle
+  </div>
+  <div class="vs-tab" onclick="showPhase('results')">
+    <span class="vs-ico vs-ico-trophy vs-tab-icon"></span> Results
+  </div>
+</div>
+
+<!-- ═══ MAIN SHELL ═══ -->
+<div class="vs-shell">
+<div class="vs-main">
+
+  <!-- ════════ PHASE 1: BLUEPRINT ASSEMBLY ════════ -->
+  <div class="vs-phase active" id="phase-assembly">
+
+    <div class="vs-title-banner">
+      <div class="vs-title-sub">World Tour Challenge</div>
+      <div class="vs-title-main">Viking Sour</div>
+      <div class="vs-knot"></div>
+      <div class="vs-title-phase"><span class="vs-ico vs-ico-scroll"></span> &ensp;Phase I — Blueprint Assembly</div>
+      <div class="vs-title-desc">Shredded blueprints. Wooden pieces. Allen keys. Sledgehammers. Figure out what you're building — then build it before the other tribe does.</div>
+    </div>
+
+    <!-- Blueprint clarity tracker -->
+    <div class="vs-blueprint">
+      <div class="vs-blueprint-title"><span class="vs-ico vs-ico-scroll"></span> Blueprint Fragments</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;">
+        <span class="vs-frag found" style="--rot:-2deg">HULL-A3</span>
+        <span class="vs-frag found" style="--rot:1deg">KEEL-B1</span>
+        <span class="vs-frag found" style="--rot:-1deg">MAST-C2</span>
+        <span class="vs-frag" style="--rot:3deg">???-D4</span>
+        <span class="vs-frag" style="--rot:-3deg">???-E1</span>
+        <span class="vs-frag found" style="--rot:2deg">STERN-F3</span>
+        <span class="vs-frag" style="--rot:-1deg">???-G2</span>
+        <span class="vs-frag found" style="--rot:1deg">RUDDER-H1</span>
+      </div>
+      <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--vs-parch-dk);margin-bottom:4px;">
+        TRIBE CLARITY</div>
+      <div class="vs-assembly-row" style="margin:4px 0">
+        <div class="vs-assembly-tribe"><span class="vs-sb-tribe-dot" style="background:#c45a20"></span> Ragnarök</div>
+        <div class="vs-assembly-bar"><div class="vs-assembly-fill" style="width:72%;background:linear-gradient(90deg,var(--vs-rune),var(--vs-gold))"></div></div>
+        <div class="vs-assembly-pct">72%</div>
+      </div>
+      <div class="vs-assembly-row" style="margin:4px 0">
+        <div class="vs-assembly-tribe"><span class="vs-sb-tribe-dot" style="background:#3a5568"></span> Valhalla</div>
+        <div class="vs-assembly-bar"><div class="vs-assembly-fill" style="width:58%;background:linear-gradient(90deg,var(--vs-fjord),var(--vs-frost))"></div></div>
+        <div class="vs-assembly-pct">58%</div>
+      </div>
+    </div>
+
+    <!-- Assembly round cards -->
+    <div class="vs-comm">The host dumps two heaps of wood and metal onto the frozen ground. "Build... something. Good luck."</div>
+
+    <div class="vs-card build vs-visible">
+      <div class="vs-card-head">
+        <div class="vs-portrait">BW</div>
+        <span class="vs-card-who">Bowie</span>
+        <span class="vs-card-tag tag-build"><span class="vs-ico vs-ico-hammer"></span> ASSEMBLY</span>
+      </div>
+      <div class="vs-card-body">Bowie grabs a sledgehammer and starts fitting planks together. His movements are precise — he's built things before. The hull starts taking shape under his hands.</div>
+      <div class="vs-card-foot">+6 build progress &bull; 8.2 contribution</div>
+    </div>
+
+    <div class="vs-card eureka vs-visible">
+      <div class="vs-card-head">
+        <div class="vs-portrait">PR</div>
+        <span class="vs-card-who">Priya</span>
+        <span class="vs-card-tag tag-eureka"><span class="vs-ico vs-ico-rune">ᚱ</span> EUREKA!</span>
+      </div>
+      <div class="vs-card-body">Priya stares at the scattered fragments, turns one upside down, rotates another — and her eyes go wide. "It's a SHIP. We're building a ship!" The tribe scrambles to reorganize.</div>
+      <div class="vs-card-foot">+25% clarity boost &bull; +10 score &bull; POP +2</div>
+    </div>
+
+    <div class="vs-card social vs-visible">
+      <div class="vs-card-head">
+        <div class="vs-portrait">JL</div>
+        <span class="vs-card-who">Julia</span>
+        <span class="vs-ico vs-ico-skull" style="margin-left:4px"></span>
+        <div class="vs-portrait">WN</div>
+        <span class="vs-card-who">Wayne</span>
+        <span class="vs-card-tag tag-social">ARGUMENT</span>
+      </div>
+      <div class="vs-card-body">Julia insists the keel goes starboard. Wayne says that's not even a real direction for a keel. Tools are thrown. Time is wasted. Both storm to opposite ends of the pile.</div>
+      <div class="vs-card-foot">BOND -1 &bull; -2 score each &bull; build time lost</div>
+    </div>
+
+    <div class="vs-card build vs-visible">
+      <div class="vs-card-head">
+        <div class="vs-portrait">HK</div>
+        <span class="vs-card-who">Hicks</span>
+        <span class="vs-card-tag tag-build"><span class="vs-ico vs-ico-hammer"></span> ASSEMBLY</span>
+      </div>
+      <div class="vs-card-body">Hicks swings the sledgehammer with frightening force. Planks lock together. The stern section is done in minutes. Brute force works when you know where to aim it.</div>
+      <div class="vs-card-foot">+7 build progress &bull; 9.1 contribution</div>
+    </div>
+
+    <div class="vs-comm vs-comm-host">"Ragnarök is pulling ahead! Valhalla better figure out which end is the bow before it's too late!"</div>
+
+    <div class="vs-card chaos vs-visible">
+      <div class="vs-card-head">
+        <div class="vs-portrait">ZE</div>
+        <span class="vs-card-who">Zee</span>
+        <span class="vs-card-tag tag-chaos"><span class="vs-ico vs-ico-skull"></span> SABOTAGE</span>
+      </div>
+      <div class="vs-card-body">Zee sneaks to Valhalla's pile and hides three crucial bolts under a snowdrift. Nobody notices. Valhalla will spend the next round looking for them.</div>
+      <div class="vs-card-foot">Valhalla loses 1 build round &bull; If caught: -5 score, BOND hit</div>
+    </div>
+
+    <div class="vs-card build vs-visible">
+      <div class="vs-card-head">
+        <div class="vs-portrait">CH</div>
+        <span class="vs-card-who">Chase</span>
+        <span class="vs-card-tag tag-build"><span class="vs-ico vs-ico-hammer"></span> ASSEMBLY</span>
+      </div>
+      <div class="vs-card-body">Chase tightens the last allen bolt on the rudder assembly. It's slightly crooked, but it'll hold. Probably. He wipes frost from his hands and moves to the mast.</div>
+      <div class="vs-card-foot">+4 build progress &bull; 5.8 contribution</div>
+    </div>
+
+    <div class="vs-knot"></div>
+
+    <!-- Assembly complete announcement -->
+    <div class="vs-card heroic vs-visible" style="text-align:center;border:2px solid var(--vs-gold)">
+      <div style="font-family:'Cinzel Decorative',serif;font-size:16px;color:var(--vs-gold);letter-spacing:3px;margin-bottom:6px;">
+        ASSEMBLY COMPLETE</div>
+      <div style="font-family:'Cinzel',serif;font-size:13px;color:var(--vs-parchment);">
+        <span class="vs-sb-tribe-dot" style="background:#c45a20"></span> Ragnarök finishes first!</div>
+      <div style="font-family:'EB Garamond',serif;font-style:italic;color:var(--vs-parch-dk);margin-top:6px;">
+        Advantage earned: <span style="color:var(--vs-ember)">FLINT ROCKS</span> — fire cannons from round 1 + 3 bonus ammo</div>
+    </div>
+
+  </div>
+
+  <!-- ════════ PHASE 2: LAUNCH & SAIL ════════ -->
+  <div class="vs-phase" id="phase-sail">
+
+    <div class="vs-title-banner">
+      <div class="vs-title-sub">World Tour Challenge</div>
+      <div class="vs-title-main">Viking Sour</div>
+      <div class="vs-knot"></div>
+      <div class="vs-title-phase"><span class="vs-ico vs-ico-ship"></span> &ensp;Phase II — Launch &amp; Sail</div>
+      <div class="vs-title-desc">Push your longship across the ice, break through to open water, and sail north through the frozen straits. Build quality determines how well your ship holds together.</div>
+    </div>
+
+    <div class="vs-comm">The longships sit on the frozen shore. The water is fifty yards away. The ice between here and there looks... unreliable.</div>
+
+    <!-- Launch cards -->
+    <div class="vs-card sail vs-visible">
+      <div class="vs-card-head">
+        <span class="vs-sb-tribe-dot" style="background:#c45a20;width:10px;height:10px"></span>
+        <span class="vs-card-who">Ragnarök — Launch</span>
+        <span class="vs-card-tag tag-sail"><span class="vs-ico vs-ico-anchor"></span> PUSH</span>
+      </div>
+      <div class="vs-card-body">The tribe throws their weight against the hull. Wood groans on ice. Inches become feet. The longship starts to slide.</div>
+      <div class="vs-card-foot">Push force: 34.7 &bull; Threshold: 30 (Quality 82 = light boat)</div>
+    </div>
+
+    <div class="vs-card heroic vs-visible">
+      <div class="vs-card-head">
+        <div class="vs-portrait">HK</div>
+        <span class="vs-card-who">Hicks</span>
+        <span class="vs-card-tag tag-eureka"><span class="vs-ico vs-ico-hammer"></span> ICE BREAK!</span>
+      </div>
+      <div class="vs-card-body">Hicks grabs the sledgehammer from the build phase and SLAMS it into the ice ahead of the ship. CRACK. A channel opens. The longship surges forward into the water. The tribe cheers.</div>
+      <div class="vs-card-foot">+8 score &bull; Massive time save</div>
+    </div>
+
+    <div class="vs-card sail vs-visible">
+      <div class="vs-card-head">
+        <span class="vs-sb-tribe-dot" style="background:#3a5568;width:10px;height:10px"></span>
+        <span class="vs-card-who">Valhalla — Launch</span>
+        <span class="vs-card-tag tag-sail"><span class="vs-ico vs-ico-anchor"></span> PUSH</span>
+      </div>
+      <div class="vs-card-body">Valhalla's ship is heavier — the sloppy assembly added dead weight. They push, grunt, push again. It barely moves. Someone suggests lifting instead of pushing. That doesn't help either.</div>
+      <div class="vs-card-foot">Push force: 28.3 &bull; Threshold: 35 (Quality 54 = heavy boat) &bull; FAILED — retry next round</div>
+    </div>
+
+    <div class="vs-knot"></div>
+
+    <!-- Sailing segment -->
+    <div class="vs-card sail vs-visible">
+      <div class="vs-card-head">
+        <span class="vs-card-tag tag-sail">SEGMENT 1</span>
+        <span class="vs-card-who">Frozen Straits</span>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:16px;letter-spacing:3px;color:var(--vs-frost);margin:8px 0;">
+        FROZEN STRAITS</div>
+    </div>
+
+    <div class="vs-card sail vs-visible">
+      <div class="vs-card-head">
+        <span class="vs-sb-tribe-dot" style="background:#c45a20;width:10px;height:10px"></span>
+        <span class="vs-card-who">Ragnarök</span>
+        <span class="vs-card-tag tag-sail"><span class="vs-ico vs-ico-ship"></span> 42.3s</span>
+      </div>
+      <div class="vs-card-body">Oars dip in rhythm. The well-built hull cuts through icy water like it was born here. Wind fills the patched sail and Ragnarök surges ahead.</div>
+    </div>
+
+    <div class="vs-card chaos vs-visible">
+      <div class="vs-card-head">
+        <span class="vs-sb-tribe-dot" style="background:#3a5568;width:10px;height:10px"></span>
+        <span class="vs-card-who">Valhalla</span>
+        <span class="vs-card-tag tag-chaos"><span class="vs-ico vs-ico-skull"></span> ICE FLOE!</span>
+      </div>
+      <div class="vs-card-body">A wall of ice drifts into Valhalla's path. The helmsman swerves — too late. CRUNCH. The bow splinters. Water seeps through the cracks. The tribe grabs buckets.</div>
+      <div class="vs-card-foot">-8 HP damage &bull; 67 → 59 HP &bull; +5.2s time penalty</div>
+    </div>
+
+    <div class="vs-card social vs-visible">
+      <div class="vs-card-head">
+        <div class="vs-portrait">ML</div>
+        <span class="vs-card-who">Millie</span>
+        <span class="vs-ico vs-ico-anchor" style="margin:0 2px"></span>
+        <div class="vs-portrait">BR</div>
+        <span class="vs-card-who">Brightly</span>
+        <span class="vs-card-tag tag-social">ALLIANCE WHISPERS</span>
+      </div>
+      <div class="vs-card-body">Between rowing strokes, Millie and Brightly exchange quiet words. Something about the merge. Something about trust. By the time the second strait opens up, they've made a deal.</div>
+      <div class="vs-card-foot">BOND +2</div>
+    </div>
+
+  </div>
+
+  <!-- ════════ PHASE 3: NAVAL BATTLE ════════ -->
+  <div class="vs-phase" id="phase-battle">
+
+    <div class="vs-title-banner" style="border-bottom-color:var(--vs-ember);">
+      <div class="vs-title-sub">World Tour Challenge</div>
+      <div class="vs-title-main">Viking Sour</div>
+      <div class="vs-knot"></div>
+      <div class="vs-title-phase"><span class="vs-ico vs-ico-cannon"></span> &ensp;Phase III — Viking Naval Battle</div>
+      <div class="vs-title-desc">Capture the flag or sink the enemy. Ragnarök has flint — their cannons are hot from round one. Valhalla must improvise fire or race for the flag.</div>
+    </div>
+
+    <!-- Sea Map -->
+    <div class="vs-sea-map">
+      <div class="vs-sea-map-grid"></div>
+      <!-- Wave lines -->
+      <div class="vs-sea-map-wave" style="top:20%;left:0;right:0"></div>
+      <div class="vs-sea-map-wave" style="top:45%;left:0;right:0"></div>
+      <div class="vs-sea-map-wave" style="top:70%;left:0;right:0"></div>
+      <!-- Grid labels -->
+      <div class="vs-sea-map-label" style="top:4px;left:4px;">N</div>
+      <div class="vs-sea-map-label" style="bottom:4px;right:4px;">S</div>
+      <!-- Flag -->
+      <div class="vs-sea-map-flag"><span class="vs-ico vs-ico-flag" style="transform:scale(1.5)"></span>
+        <div style="font-family:'Fira Code',monospace;font-size:7px;color:var(--vs-gold-lt);text-align:center;margin-top:2px;">FLAG</div>
+      </div>
+      <!-- Ships -->
+      <div class="vs-sea-ship" style="left:15%;top:35%;">
+        <div class="vs-sea-ship-body" style="background:rgba(196,90,32,.2);border-color:#c45a20;color:#c45a20;"></div>
+        <div class="vs-sea-ship-label" style="color:#c45a20;">Ragnarök</div>
+      </div>
+      <div class="vs-sea-ship" style="right:15%;top:55%;">
+        <div class="vs-sea-ship-body" style="background:rgba(58,85,104,.2);border-color:#3a5568;color:#3a5568;"></div>
+        <div class="vs-sea-ship-label" style="color:var(--vs-frost);">Valhalla</div>
+      </div>
+    </div>
+
+    <div class="vs-comm vs-comm-host">"ROUND ONE! Ragnarök, your flint is sparking. Valhalla... you might want to start rubbing sticks together."</div>
+
+    <!-- Battle round cards -->
+    <div class="vs-card cannon vs-visible">
+      <div class="vs-card-head">
+        <span class="vs-sb-tribe-dot" style="background:#c45a20;width:10px;height:10px"></span>
+        <span class="vs-card-who">Ragnarök</span>
+        <span class="vs-card-tag tag-cannon"><span class="vs-ico vs-ico-cannon"></span> FIRE!</span>
+        <span class="vs-card-tag tag-hit">HIT</span>
+      </div>
+      <div class="vs-card-body">BOOM! The flint sparks, the powder ignites, and an iron ball screams across the water. It punches through Valhalla's hull amidships. Wood splinters. Water pours in.</div>
+      <div class="vs-card-foot">-22 HP to Valhalla (59 → 37 HP) &bull; Bowie: +5 score</div>
+    </div>
+
+    <div class="vs-card sail vs-visible">
+      <div class="vs-card-head">
+        <span class="vs-sb-tribe-dot" style="background:#3a5568;width:10px;height:10px"></span>
+        <span class="vs-card-who">Valhalla — Improvise Fire</span>
+        <span class="vs-card-tag tag-miss">FAILED</span>
+      </div>
+      <div class="vs-card-body">Wayne tries flint on steel, steel on wood, wood on hope. Nothing catches. The cannons sit cold and useless. Valhalla's only option is to sail for the flag.</div>
+      <div class="vs-card-foot">Cannons still locked &bull; Attempting sail toward flag</div>
+    </div>
+
+    <div class="vs-card heroic vs-visible">
+      <div class="vs-card-head">
+        <div class="vs-portrait">ML</div>
+        <span class="vs-card-who">Millie</span>
+        <span class="vs-card-tag tag-eureka"><span class="vs-ico vs-ico-shield"></span> HEROIC SHIELD</span>
+      </div>
+      <div class="vs-card-body">A cannonball arcs toward Valhalla's weakened hull. Millie sees it coming. She grabs a loose plank and HURLS herself in front of the impact. The plank shatters. Millie's arm goes numb. But the hull holds.</div>
+      <div class="vs-card-foot">Saved 20 HP &bull; Millie's stats halved for remaining rounds &bull; POP +3 &bull; +6 score</div>
+    </div>
+
+    <div class="vs-card social vs-visible">
+      <div class="vs-card-head">
+        <div class="vs-portrait">PR</div>
+        <span class="vs-card-who">Priya</span>
+        <span class="vs-card-tag tag-social">BATTLE CRY</span>
+      </div>
+      <div class="vs-card-body">Priya stands at the bow, frost in her hair, fire in her eyes. "ROW! ROW LIKE YOUR LIVES DEPEND ON IT!" The crew digs deep. Oars blur. The ship leaps forward.</div>
+      <div class="vs-card-foot">+2 bonus to all Ragnarök actions next round &bull; BOND +1 crew</div>
+    </div>
+
+    <div class="vs-knot"></div>
+    <div class="vs-comm vs-comm-host">"Round 4! Valhalla FINALLY has fire! But they're at 37 HP and sinking fast!"</div>
+
+    <div class="vs-card cannon vs-visible">
+      <div class="vs-card-head">
+        <span class="vs-sb-tribe-dot" style="background:#3a5568;width:10px;height:10px"></span>
+        <span class="vs-card-who">Valhalla</span>
+        <span class="vs-card-tag tag-cannon"><span class="vs-ico vs-ico-cannon"></span> FIRE!</span>
+        <span class="vs-card-tag tag-hit">HIT</span>
+      </div>
+      <div class="vs-card-body">Valhalla's first shot is a masterpiece of desperation. The iron ball catches Ragnarök's mast dead center. CRACK. The mast splinters and the sail crumples into the sea.</div>
+      <div class="vs-card-foot">-18 HP to Ragnarök (88 → 70 HP) &bull; Wayne: +5 score</div>
+    </div>
+
+    <div class="vs-card chaos vs-visible">
+      <div class="vs-card-head">
+        <div class="vs-portrait">CH</div>
+        <span class="vs-card-who">Chase</span>
+        <span class="vs-card-tag tag-chaos"><span class="vs-ico vs-ico-skull"></span> BOARDING RAID</span>
+        <span class="vs-card-tag tag-hit">SUCCESS</span>
+      </div>
+      <div class="vs-card-body">Chase leaps from Ragnarök's bow, sails through the air, and LANDS on Valhalla's deck. The crew freezes. Chase grabs two cannonballs and dives back into the water before anyone reacts.</div>
+      <div class="vs-card-foot">Stole 2 ammo from Valhalla &bull; Sabotaged next repair &bull; +8 score &bull; BOND: rivalry with Wayne</div>
+    </div>
+
+    <div class="vs-card chaos vs-visible" style="border-left-color:var(--vs-ember);background:rgba(232,120,48,.08)">
+      <div class="vs-card-head">
+        <div class="vs-portrait">HK</div>
+        <span class="vs-card-who">Hicks</span>
+        <span class="vs-card-tag tag-chaos" style="background:var(--vs-forge);color:var(--vs-tar);">
+          <span class="vs-ico vs-ico-cannon"></span> HUMAN CANNONBALL</span>
+      </div>
+      <div class="vs-card-body">Hicks looks at the cannon. Looks at the enemy ship. Looks back at the cannon. "Load me up." The crew exchanges glances. Nobody argues. BOOM. Hicks sails through the frozen air like a bearded meteor and CRASHES through Valhalla's deck. The ship buckles. Water erupts through the hole.</div>
+      <div class="vs-card-foot">-40 HP to Valhalla &bull; SHIP DESTROYED &bull; Hicks injured (out) &bull; POP +4 &bull; +12 score &bull; LEGENDARY</div>
+    </div>
+
+    <!-- Battle result -->
+    <div class="vs-battle-result">
+      <div class="vs-battle-result-title"><span class="vs-ico vs-ico-trophy"></span> &ensp;Victory by Sinking</div>
+      <div class="vs-battle-result-method">Ragnarök sank Valhalla's longship. The frozen sea claims another vessel.</div>
+      <div style="margin-top:12px;">
+        <span class="vs-sb-tribe-dot" style="background:#c45a20"></span>
+        <span style="font-family:'Cinzel',serif;font-size:14px;color:var(--vs-gold);letter-spacing:2px;">
+          RAGNARÖK WINS TRIBAL IMMUNITY</span>
+      </div>
+      <div style="margin-top:6px;font-family:'EB Garamond',serif;font-style:italic;color:var(--vs-parch-dk);">
+        Valhalla goes to tribal council.</div>
+    </div>
+
+  </div>
+
+  <!-- ════════ PHASE 4: RESULTS ════════ -->
+  <div class="vs-phase" id="phase-results">
+
+    <div class="vs-title-banner">
+      <div class="vs-title-sub">World Tour Challenge</div>
+      <div class="vs-title-main">Viking Sour</div>
+      <div class="vs-knot"></div>
+      <div class="vs-title-phase"><span class="vs-ico vs-ico-trophy"></span> &ensp;Final Standings</div>
+    </div>
+
+    <div class="vs-podium">
+      <div class="vs-podium-slot winner" style="animation:vs-title-enter .6s ease-out .2s both">
+        <div class="vs-podium-rank">#1</div>
+        <div style="margin:8px 0;display:flex;justify-content:center;gap:4px;">
+          <div class="vs-portrait">BW</div><div class="vs-portrait">PR</div>
+          <div class="vs-portrait">HK</div><div class="vs-portrait">ZE</div><div class="vs-portrait">CH</div>
+        </div>
+        <div class="vs-podium-name" style="color:#c45a20;">Ragnarök</div>
+        <div class="vs-podium-scores">
+          <span class="vs-ico vs-ico-scroll"></span> Build Quality: 82<br>
+          <span class="vs-ico vs-ico-ship"></span> Sail: 1st arrival<br>
+          <span class="vs-ico vs-ico-cannon"></span> Battle: SANK ENEMY<br>
+          <span class="vs-ico vs-ico-trophy"></span> IMMUNE
+        </div>
+      </div>
+      <div class="vs-podium-slot loser" style="animation:vs-title-enter .6s ease-out .4s both">
+        <div class="vs-podium-rank" style="color:var(--vs-danger)">#2</div>
+        <div style="margin:8px 0;display:flex;justify-content:center;gap:4px;">
+          <div class="vs-portrait">WN</div><div class="vs-portrait">JL</div>
+          <div class="vs-portrait">ML</div><div class="vs-portrait">BR</div>
+        </div>
+        <div class="vs-podium-name" style="color:var(--vs-frost);">Valhalla</div>
+        <div class="vs-podium-scores">
+          <span class="vs-ico vs-ico-scroll"></span> Build Quality: 54<br>
+          <span class="vs-ico vs-ico-ship"></span> Sail: 2nd arrival<br>
+          <span class="vs-ico vs-ico-cannon"></span> Battle: SUNK<br>
+          <span class="vs-ico vs-ico-skull"></span> TRIBAL COUNCIL
+        </div>
+      </div>
+    </div>
+
+    <div class="vs-knot"></div>
+
+    <!-- Individual scores -->
+    <div style="margin:0 16px;font-family:'Cinzel',serif;font-size:11px;color:var(--vs-gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">
+      Individual Scores</div>
+    <div class="vs-card vs-visible" style="padding:8px 12px;">
+      <div class="vs-sb-player"><div class="vs-portrait">HK</div><span class="vs-sb-player-name">Hicks</span>
+        <span class="vs-sb-badge vs-sb-badge-gold">CANNONBALL</span><span class="vs-sb-player-stat">42pts</span></div>
+      <div class="vs-sb-player"><div class="vs-portrait">BW</div><span class="vs-sb-player-name">Bowie</span>
+        <span class="vs-sb-player-stat">38pts</span></div>
+      <div class="vs-sb-player"><div class="vs-portrait">PR</div><span class="vs-sb-player-name">Priya</span>
+        <span class="vs-sb-badge vs-sb-badge-gold">EUREKA</span><span class="vs-sb-player-stat">36pts</span></div>
+      <div class="vs-sb-player"><div class="vs-portrait">CH</div><span class="vs-sb-player-name">Chase</span>
+        <span class="vs-sb-badge vs-sb-badge-blue">RAIDER</span><span class="vs-sb-player-stat">31pts</span></div>
+      <div class="vs-sb-player"><div class="vs-portrait">ZE</div><span class="vs-sb-player-name">Zee</span>
+        <span class="vs-sb-player-stat">24pts</span></div>
+      <hr class="vs-sb-divider">
+      <div class="vs-sb-player"><div class="vs-portrait">ML</div><span class="vs-sb-player-name">Millie</span>
+        <span class="vs-sb-badge vs-sb-badge-gold">SHIELD</span><span class="vs-sb-player-stat">28pts</span></div>
+      <div class="vs-sb-player"><div class="vs-portrait">WN</div><span class="vs-sb-player-name">Wayne</span>
+        <span class="vs-sb-player-stat">22pts</span></div>
+      <div class="vs-sb-player"><div class="vs-portrait">JL</div><span class="vs-sb-player-name">Julia</span>
+        <span class="vs-sb-player-stat">16pts</span></div>
+      <div class="vs-sb-player"><div class="vs-portrait">BR</div><span class="vs-sb-player-name">Brightly</span>
+        <span class="vs-sb-player-stat">14pts</span></div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ═══════ SIDEBAR ═══════ -->
+<div class="vs-sidebar" id="vs-sidebar">
+
+  <div class="vs-sb-title"><span class="vs-ico vs-ico-ship"></span> Fleet Status</div>
+
+  <!-- Ragnarök -->
+  <div class="vs-sb-tribe">
+    <div class="vs-sb-tribe-name">
+      <span class="vs-sb-tribe-dot" style="background:#c45a20"></span> Ragnarök
+      <span class="vs-sb-badge vs-sb-badge-gold" style="margin-left:auto;font-size:7px;">FLINT</span>
+    </div>
+    <div class="vs-sb-stat"><span class="vs-ico vs-ico-shield"></span> Hull HP:</div>
+    <div class="vs-hp-bar">
+      <div class="vs-hp-fill healthy" style="width:70%"></div>
+      <div class="vs-hp-label">70 / 100</div>
+    </div>
+    <div class="vs-sb-stat"><span class="vs-ico vs-ico-cannon"></span> Ammo:</div>
+    <div class="vs-ammo">
+      <div class="vs-ammo-ball flint"></div><div class="vs-ammo-ball flint"></div><div class="vs-ammo-ball flint"></div>
+      <div class="vs-ammo-ball"></div><div class="vs-ammo-ball"></div><div class="vs-ammo-ball"></div>
+      <div class="vs-ammo-ball"></div><div class="vs-ammo-ball"></div>
+      <div class="vs-ammo-ball spent"></div><div class="vs-ammo-ball spent"></div><div class="vs-ammo-ball spent"></div>
+    </div>
+    <div class="vs-sb-stat"><span class="vs-ico vs-ico-flag"></span> Flag distance:</div>
+    <div class="vs-flag-track">
+      <div class="vs-flag-marker" style="left:55%;">
+        <span class="vs-sb-tribe-dot" style="background:#c45a20;width:10px;height:10px"></span>
+      </div>
+      <div class="vs-flag-goal"><span class="vs-ico vs-ico-flag"></span></div>
+    </div>
+    <div class="vs-sb-stat"><span class="vs-ico vs-ico-scroll"></span> Build Quality: 82 (Sturdy)</div>
+  </div>
+
+  <!-- Valhalla -->
+  <div class="vs-sb-tribe">
+    <div class="vs-sb-tribe-name">
+      <span class="vs-sb-tribe-dot" style="background:#3a5568"></span> Valhalla
+    </div>
+    <div class="vs-sb-stat"><span class="vs-ico vs-ico-shield"></span> Hull HP:</div>
+    <div class="vs-hp-bar">
+      <div class="vs-hp-fill critical" style="width:0%"></div>
+      <div class="vs-hp-label" style="color:var(--vs-danger)">SUNK</div>
+    </div>
+    <div class="vs-sb-stat"><span class="vs-ico vs-ico-cannon"></span> Ammo:</div>
+    <div class="vs-ammo">
+      <div class="vs-ammo-ball spent"></div><div class="vs-ammo-ball spent"></div><div class="vs-ammo-ball spent"></div>
+      <div class="vs-ammo-ball spent"></div><div class="vs-ammo-ball spent"></div><div class="vs-ammo-ball spent"></div>
+      <div class="vs-ammo-ball spent"></div><div class="vs-ammo-ball spent"></div>
+    </div>
+    <div class="vs-sb-stat"><span class="vs-ico vs-ico-flag"></span> Flag distance:</div>
+    <div class="vs-flag-track">
+      <div class="vs-flag-marker" style="left:30%;">
+        <span class="vs-sb-tribe-dot" style="background:#3a5568;width:10px;height:10px"></span>
+      </div>
+      <div class="vs-flag-goal"><span class="vs-ico vs-ico-flag"></span></div>
+    </div>
+    <div class="vs-sb-stat"><span class="vs-ico vs-ico-scroll"></span> Build Quality: 54 (Leaky)</div>
+  </div>
+
+  <hr class="vs-sb-divider">
+
+  <div class="vs-sb-title"><span class="vs-ico vs-ico-cannon"></span> Battle Log</div>
+  <div class="vs-sb-stat" style="color:var(--vs-ember)">R1: Ragnarök HIT → Valhalla -22 HP</div>
+  <div class="vs-sb-stat" style="color:var(--vs-iron)">R1: Valhalla — no fire</div>
+  <div class="vs-sb-stat" style="color:var(--vs-ember)">R2: Ragnarök HIT → Valhalla -15 HP</div>
+  <div class="vs-sb-stat" style="color:var(--vs-iron)">R2: Valhalla — no fire</div>
+  <div class="vs-sb-stat" style="color:var(--vs-iron)">R3: Ragnarök MISS</div>
+  <div class="vs-sb-stat" style="color:var(--vs-iron)">R3: Valhalla — no fire</div>
+  <div class="vs-sb-stat" style="color:var(--vs-frost)">R4: Valhalla FIRE UNLOCKED</div>
+  <div class="vs-sb-stat" style="color:var(--vs-frost)">R4: Valhalla HIT → Ragnarök -18 HP</div>
+  <div class="vs-sb-stat" style="color:var(--vs-gold)">R5: Chase BOARDING RAID</div>
+  <div class="vs-sb-stat" style="color:var(--vs-forge)">R6: Hicks HUMAN CANNONBALL → -40 HP</div>
+  <div class="vs-sb-stat" style="color:var(--vs-danger);font-weight:700;">VALHALLA SUNK</div>
+
+  <hr class="vs-sb-divider">
+
+  <div class="vs-sb-title"><span class="vs-ico vs-ico-rune">ᚱ</span> Saga Moments</div>
+  <div class="vs-sb-player"><div class="vs-portrait">PR</div><span class="vs-sb-player-name">Priya</span>
+    <span class="vs-sb-badge vs-sb-badge-gold">EUREKA</span></div>
+  <div class="vs-sb-player"><div class="vs-portrait">HK</div><span class="vs-sb-player-name">Hicks</span>
+    <span class="vs-sb-badge vs-sb-badge-gold">CANNONBALL</span></div>
+  <div class="vs-sb-player"><div class="vs-portrait">ML</div><span class="vs-sb-player-name">Millie</span>
+    <span class="vs-sb-badge vs-sb-badge-gold">SHIELD</span></div>
+  <div class="vs-sb-player"><div class="vs-portrait">CH</div><span class="vs-sb-player-name">Chase</span>
+    <span class="vs-sb-badge vs-sb-badge-blue">RAIDER</span></div>
+  <div class="vs-sb-player"><div class="vs-portrait">ZE</div><span class="vs-sb-player-name">Zee</span>
+    <span class="vs-sb-badge vs-sb-badge-red">SABOTEUR</span></div>
+
+</div>
+</div>
+
+<!-- ═══ REVEAL CONTROLS ═══ -->
+<div class="vs-controls">
+  <button class="vs-btn" onclick="alert('Reveal next')">Reveal Next</button>
+  <span class="vs-counter">6 / 24</span>
+  <button class="vs-btn" onclick="alert('Reveal all')">Reveal All</button>
+</div>
+
+<script>
+// Phase switching
+function showPhase(phase) {
+  document.querySelectorAll('.vs-phase').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.vs-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('phase-' + phase).classList.add('active');
+  const tabs = document.querySelectorAll('.vs-tab');
+  const map = { assembly: 0, sail: 1, battle: 2, results: 3 };
+  if (tabs[map[phase]]) tabs[map[phase]].classList.add('active');
+
+  // Toggle embers for battle phase
+  const embers = document.getElementById('vs-embers');
+  if (phase === 'battle') {
+    embers.style.opacity = '1';
+  } else {
+    embers.style.opacity = '0';
+  }
+}
+
+// Generate snowfall
+(function() {
+  const wrap = document.getElementById('vs-snow');
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement('div');
+    s.className = 'vs-sf';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.width = s.style.height = (1.5 + Math.random() * 3) + 'px';
+    s.style.animationDuration = (8 + Math.random() * 12) + 's';
+    s.style.animationDelay = (Math.random() * 15) + 's';
+    wrap.appendChild(s);
+  }
+})();
+
+// Generate embers
+(function() {
+  const wrap = document.getElementById('vs-embers');
+  wrap.style.opacity = '0';
+  wrap.style.transition = 'opacity 1s';
+  for (let i = 0; i < 25; i++) {
+    const e = document.createElement('div');
+    e.className = 'vs-ember-p';
+    e.style.left = Math.random() * 100 + '%';
+    e.style.width = e.style.height = (2 + Math.random() * 4) + 'px';
+    e.style.animationDuration = (6 + Math.random() * 10) + 's';
+    e.style.animationDelay = (Math.random() * 12) + 's';
+    e.style.opacity = (0.2 + Math.random() * 0.4);
+    wrap.appendChild(e);
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -48,6 +48,8 @@ import { rpBuildEgyptTitleCard, rpBuildEgyptPyramid, rpBuildEgyptDesert, rpBuild
 import { rpBuildBigBaddTitleCard, rpBuildBigBaddPhase1, rpBuildBigBaddPhase2, rpBuildBigBaddPhase3, rpBuildBigBaddResults } from './chal/bigger-badder-brutaler.js';
 import { rpBuildCFTTitleCard, rpBuildCFTPinball, rpBuildCFTDramaBreak, rpBuildCFTCommercial, rpBuildCFTVerdict, rpBuildCFTResults } from './chal/crazy-fun-time.js';
 import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults } from './chal/frozen-crossing.js';
+import { rpBuildVSTitleCard, rpBuildVSPhase1, rpBuildVSPhase2, rpBuildVSPhase3, rpBuildVSResults } from './chal/viking-sour.js';
+import { rpBuildHDTitleCard, rpBuildHDEmuWrangling, rpBuildHDEmuRace, rpBuildHDBungeeGrab, rpBuildHDResults } from './chal/picnic-hanging-dork.js';
 import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults } from './chal/broadway-baby.js';
 import { rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian, rpBuildAZRuins, rpBuildAZResults } from './chal/amazon-race.js';
@@ -57,6 +59,7 @@ import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults
 import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTChainHunt, rpBuildTTLongboardRace, rpBuildTTResults } from './chal/tropical-takedown.js';
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults } from './chal/greeces-pieces.js';
+import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults } from './chal/hangar-black.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -2170,6 +2173,16 @@ export function generateSummaryText(ep) {
       rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults
     ]);
   }
+  if (ep.vikingSour) {
+    _textTwistChallenge(ep, ln, sec, 'vikingSour', 'VIKING SOUR', [
+      rpBuildVSTitleCard, rpBuildVSPhase1, rpBuildVSPhase2, rpBuildVSPhase3, rpBuildVSResults
+    ]);
+  }
+  if (ep.picnicHangingDork) {
+    _textTwistChallenge(ep, ln, sec, 'picnicHangingDork', 'PICNIC AT HANGING DORK', [
+      rpBuildHDTitleCard, rpBuildHDEmuWrangling, rpBuildHDEmuRace, rpBuildHDBungeeGrab, rpBuildHDResults
+    ]);
+  }
   if (ep.slapRevolution) {
     const ssrRoundBuilders = (ep.slapRevolution.tournament?.rounds || []).map((_, ri) => (e) => rpBuildSSRRound(e, ri));
     _textTwistChallenge(ep, ln, sec, 'slapRevolution', 'SLAP SLAP REVOLUTION', [
@@ -2216,6 +2229,11 @@ export function generateSummaryText(ep) {
     if (ep.challengeData.icarus) gpBuilders.push(rpBuildGPIcarus);
     gpBuilders.push(rpBuildGPResults);
     _textTwistChallenge(ep, ln, sec, 'challengeData', "GREECE'S PIECES", gpBuilders);
+  }
+  if (ep.challengeData && ep.isHangarBlack) {
+    _textTwistChallenge(ep, ln, sec, 'challengeData', 'OPERATION: HANGAR BLACK', [
+      rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults
+    ]);
   }
 
   // ── POST-CHALLENGE ──

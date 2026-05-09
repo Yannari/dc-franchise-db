@@ -152,7 +152,8 @@ export function updateChalRecord(ep) {
   players.forEach(p => { oldRec[p] = { ...gs.chalRecord[p] }; });
 
   // Post-merge individual: immunity winner counts as a win
-  const immWinner = ep.immunityWinner;
+  // Guard: pre-merge challenges are tribe challenges — no individual wins
+  const immWinner = gs.isMerged ? ep.immunityWinner : null;
   if (immWinner) {
     if (!gs.chalRecord[immWinner]) gs.chalRecord[immWinner] = { wins: 0, podiums: 0, bombs: 0 };
     gs.chalRecord[immWinner].wins++;

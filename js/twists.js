@@ -1497,6 +1497,14 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isFrozenCrossing = true;
 
+  } else if (engineType === 'picnic-hanging-dork') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isPicnicHangingDork = true;
+
+  } else if (engineType === 'viking-sour') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isVikingSour = true;
+
   } else if (engineType === 'slap-slap-revolution') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isSlapRevolution = true;
@@ -1550,6 +1558,11 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.isMerged || gs.tribes.length < 2) return;
     if ((gs.episode || 0) + 1 < 2) return;
     ep.isXtremeTorture = true;
+
+  } else if (engineType === 'hangar-black') {
+    if (!gs.isMerged && gs.tribes.length < 2) return;
+    if (gs.activePlayers.length < 4) return;
+    ep.isHangarBlack = true;
 
   } else if (engineType === 'cultural-reset') {
     const activePlayers = gs.activePlayers;
@@ -3885,7 +3898,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'get-a-clue': 'isGetAClue', 'rock-n-rule': 'isRockNRule',
         'crouching-courtney': 'isCrouchingCourtney', 'houston': 'isHouston', 'top-dog': 'isTopDog',
         'walk-like-an-egyptian': 'isWalkEgypt', 'crazy-fun-time': 'isCrazyFunTime',
-        'frozen-crossing': 'isFrozenCrossing', 'slap-slap-revolution': 'isSlapRevolution', 'broadway-baby': 'isBroadwayBaby',
+        'frozen-crossing': 'isFrozenCrossing', 'picnic-hanging-dork': 'isPicnicHangingDork', 'slap-slap-revolution': 'isSlapRevolution', 'broadway-baby': 'isBroadwayBaby', 'viking-sour': 'isVikingSour',
         'truth-or-shark': 'isTruthOrShark',
         'bigger-badder-brutaler': 'isBiggerBadderBrutaler',
         'amazon-race': 'isAmazonRace', 'night-at-museum': 'isNightAtMuseum',
@@ -3902,6 +3915,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'tropical-takedown': 'isTropicalTakedown',
         'midnight-manhunt': 'isMidnightManhunt',
         'greeces-pieces': 'isGreecesPieces',
+        'hangar-black': 'isHangarBlack',
       };
       const _flag = _engineFlagMap[_rtcEngine];
       if (_flag) ep[_flag] = true;

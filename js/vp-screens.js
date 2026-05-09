@@ -33,6 +33,8 @@ import { rpBuildEgyptTitleCard, rpBuildEgyptPyramid, rpBuildEgyptDesert, rpBuild
 import { rpBuildBigBaddTitleCard, rpBuildBigBaddPhase1, rpBuildBigBaddPhase2, rpBuildBigBaddPhase3, rpBuildBigBaddResults, brutalerRevealNext, brutalerRevealAll } from './chal/bigger-badder-brutaler.js';
 import { rpBuildCFTTitleCard, rpBuildCFTPinball, rpBuildCFTDramaBreak, rpBuildCFTCommercial, rpBuildCFTVerdict, rpBuildCFTResults, crazyFunTimeRevealNext, crazyFunTimeRevealAll } from './chal/crazy-fun-time.js';
 import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults, frozenCrossingRevealNext, frozenCrossingRevealAll } from './chal/frozen-crossing.js';
+import { rpBuildVSTitleCard, rpBuildVSPhase1, rpBuildVSPhase2, rpBuildVSPhase3, rpBuildVSResults, vikingSourRevealNext, vikingSourRevealAll } from './chal/viking-sour.js';
+import { rpBuildHDTitleCard, rpBuildHDEmuWrangling, rpBuildHDEmuRace, rpBuildHDBungeeGrab, rpBuildHDResults, hdRevealNext, hdRevealAll } from './chal/picnic-hanging-dork.js';
 import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults, ssrRevealNext, ssrRevealAll } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults, broadwayBabyRevealNext, broadwayBabyRevealAll } from './chal/broadway-baby.js';
 import { rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian, rpBuildAZRuins, rpBuildAZResults, azRevealNext, azRevealAll } from './chal/amazon-race.js';
@@ -42,6 +44,7 @@ import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults
 import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTChainHunt, rpBuildTTLongboardRace, rpBuildTTResults, ttRevealNext, ttRevealAll } from './chal/tropical-takedown.js';
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults, gpRevealNext, gpRevealAll } from './chal/greeces-pieces.js';
+import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults, hbRevealNext, hbRevealAll } from './chal/hangar-black.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10684,6 +10687,18 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'fc-sled', label:'Sled Assignment', html: rpBuildFCSledAssignment(ep) });
     vpScreens.push({ id:'fc-phase2', label:'Sled Race', html: rpBuildFCPhase2(ep) });
     vpScreens.push({ id:'fc-results', label:'Results', html: rpBuildFCResults(ep) });
+  } else if ((ep.isVikingSour || ep.challengeType === 'viking-sour') && ep.vikingSour) {
+    vpScreens.push({ id:'vs-title', label:'Viking Sour', html: rpBuildVSTitleCard(ep) });
+    vpScreens.push({ id:'vs-phase1', label:'Blueprint Assembly', html: rpBuildVSPhase1(ep) });
+    vpScreens.push({ id:'vs-phase2', label:'Launch & Sail', html: rpBuildVSPhase2(ep) });
+    vpScreens.push({ id:'vs-phase3', label:'Naval Battle', html: rpBuildVSPhase3(ep) });
+    vpScreens.push({ id:'vs-results', label:'Results', html: rpBuildVSResults(ep) });
+  } else if ((ep.isPicnicHangingDork || ep.challengeType === 'picnic-hanging-dork') && ep.picnicHangingDork) {
+    vpScreens.push({ id:'hd-title', label:'Hanging Dork', html: rpBuildHDTitleCard(ep) });
+    vpScreens.push({ id:'hd-wrangle', label:'Emu Wrangling', html: rpBuildHDEmuWrangling(ep) });
+    vpScreens.push({ id:'hd-race', label:'Emu Race', html: rpBuildHDEmuRace(ep) });
+    vpScreens.push({ id:'hd-bungee', label:'Bungee Grab', html: rpBuildHDBungeeGrab(ep) });
+    vpScreens.push({ id:'hd-results', label:'Results', html: rpBuildHDResults(ep) });
   } else if ((ep.isSlapRevolution || ep.challengeType === 'slap-slap-revolution') && ep.slapRevolution) {
     vpScreens.push({ id:'ssr-title', label:'Slap Slap Revolution', html: rpBuildSSRTitleCard(ep) });
     vpScreens.push({ id:'ssr-grind', label:'The Grind', html: rpBuildSSRGrind(ep) });
@@ -10746,6 +10761,13 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'gp-hurdles', label:'Hurdle Race', html: rpBuildGPHurdles(gpEp) });
     if ((gpEp.challengeData || {}).icarus) vpScreens.push({ id:'gp-icarus', label:'Icarus', html: rpBuildGPIcarus(gpEp) });
     vpScreens.push({ id:'gp-results', label:'Results', html: rpBuildGPResults(gpEp) });
+  } else if ((ep.isHangarBlack || ep.challengeType === 'hangar-black') && (ep.challengeData || ep.hangarBlack)) {
+    const hbEp = ep.hangarBlack ? Object.assign({}, ep, { challengeData: ep.hangarBlack }) : ep;
+    vpScreens.push({ id:'hb-title', label:'Operation: Hangar Black', html: rpBuildHBTitleCard(hbEp) });
+    vpScreens.push({ id:'hb-entry', label:'Entry', html: rpBuildHBEntry(hbEp), revealNext: (k,t) => hbRevealNext(k,t), revealAll: (k,t) => hbRevealAll(k,t) });
+    vpScreens.push({ id:'hb-hunt', label:'The Hunt', html: rpBuildHBHunt(hbEp), revealNext: (k,t) => hbRevealNext(k,t), revealAll: (k,t) => hbRevealAll(k,t) });
+    vpScreens.push({ id:'hb-extract', label:'Extraction', html: rpBuildHBExtract(hbEp), revealNext: (k,t) => hbRevealNext(k,t), revealAll: (k,t) => hbRevealAll(k,t) });
+    vpScreens.push({ id:'hb-results', label:'Results', html: rpBuildHBResults(hbEp) });
   } else if (ep.isAlienEgg && ep.alienEgg) {
     vpScreens.push({ id:'ae-title', label:'👽 Alien Resurr-eggtion', html: rpBuildAlienEggTitleCard(ep) });
     vpScreens.push({ id:'ae-rounds', label:'The Egg Hunt', html: rpBuildAlienEggRounds(ep) });

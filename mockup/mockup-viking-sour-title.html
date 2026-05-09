@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viking Sour — Title + Gameplay Overview</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+:root {
+  --tar:#1a1510;--tar2:#241e16;--plank:#3a2e1e;--plank-lt:#584830;
+  --parch:#d8ceb4;--parch-dk:#b8a888;--parch-lt:#e8e0cc;
+  --fjord:#3a5568;--frost:#9ab8c8;--ice:#c8dce8;--storm:#2a3a48;
+  --sea-deep:#1a2830;--sea-mid:#2a4050;--wave:#4a7888;
+  --ember:#c45a20;--flame:#e87830;--gold:#c8a040;--gold-lt:#e0c060;
+  --forge:#ff9040;--blood:#8a2020;--iron:#6a6a6a;--steel:#8a8a88;
+  --rune:#a08048;--danger:#c83030;--safe:#3a8850;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--tar);color:var(--parch);font-family:'EB Garamond',Georgia,serif;overflow-x:hidden;}
+
+/* ═══════════════════════════════════════════
+   TITLE SCREEN — CINEMATIC INTRO
+   ═══════════════════════════════════════════ */
+.title-screen{position:relative;min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;overflow:hidden;}
+
+/* Layered background */
+.title-sky{position:absolute;inset:0;
+  background:linear-gradient(180deg,#1a2028 0%,#2a3540 20%,#3a4a58 45%,#4a5a68 60%,var(--storm) 80%,var(--sea-deep) 100%);}
+
+/* Aurora */
+.title-aurora{position:absolute;top:3%;left:0;right:0;height:25%;opacity:.15;
+  background:linear-gradient(90deg,transparent,rgba(80,180,120,.5) 25%,rgba(60,160,180,.4) 50%,rgba(100,200,140,.45) 75%,transparent);
+  filter:blur(50px);animation:aurora 18s ease-in-out infinite alternate;}
+@keyframes aurora{0%{transform:translateX(-8%) scaleY(1)}50%{transform:translateX(8%) scaleY(1.4)}100%{transform:translateX(-5%) scaleY(.7)}}
+
+/* Mountains — dramatic fjord silhouette */
+.title-mtns{position:absolute;bottom:30%;left:0;right:0;height:50%;}
+.title-mtn{position:absolute;bottom:0;}
+.title-mtn.a{left:-8%;width:0;height:0;border-style:solid;border-width:0 280px 420px 240px;
+  border-color:transparent transparent rgba(14,20,26,.9) transparent;}
+.title-mtn.b{left:18%;width:0;height:0;border-style:solid;border-width:0 200px 350px 180px;
+  border-color:transparent transparent rgba(18,24,30,.85) transparent;}
+.title-mtn.c{left:40%;width:0;height:0;border-style:solid;border-width:0 300px 480px 260px;
+  border-color:transparent transparent rgba(12,18,24,.92) transparent;}
+.title-mtn.d{left:68%;width:0;height:0;border-style:solid;border-width:0 240px 380px 200px;
+  border-color:transparent transparent rgba(16,22,28,.87) transparent;}
+.title-mtn.e{left:85%;width:0;height:0;border-style:solid;border-width:0 180px 300px 160px;
+  border-color:transparent transparent rgba(14,20,26,.85) transparent;}
+/* Snow caps */
+.title-cap{position:absolute;bottom:0;}
+.title-cap.ca{left:calc(-8% + 150px);bottom:310px;width:0;height:0;border-style:solid;
+  border-width:0 110px 90px 80px;border-color:transparent transparent rgba(200,220,232,.06) transparent;}
+.title-cap.cc{left:calc(40% + 130px);bottom:370px;width:0;height:0;border-style:solid;
+  border-width:0 140px 100px 120px;border-color:transparent transparent rgba(200,220,232,.08) transparent;}
+
+/* Fjord water */
+.title-fjord{position:absolute;bottom:0;left:0;right:0;height:30%;
+  background:linear-gradient(0deg,var(--sea-deep) 0%,var(--sea-mid) 50%,rgba(42,58,72,.6) 100%);}
+.title-fjord-wave{position:absolute;height:2px;background:var(--frost);opacity:.08;left:0;right:0;}
+.title-fjord-wave:nth-child(1){top:15%;animation:twave 5s ease-in-out infinite;}
+.title-fjord-wave:nth-child(2){top:35%;animation:twave 6s ease-in-out infinite .8s;}
+.title-fjord-wave:nth-child(3){top:55%;animation:twave 4.5s ease-in-out infinite 1.5s;}
+.title-fjord-wave:nth-child(4){top:75%;animation:twave 5.5s ease-in-out infinite 2s;}
+@keyframes twave{0%,100%{transform:translateX(-2%)}50%{transform:translateX(2%)}}
+
+/* Longship silhouettes on the fjord */
+.title-ship{position:absolute;z-index:3;}
+.title-ship svg{filter:drop-shadow(0 2px 8px rgba(0,0,0,.6));}
+
+/* Snowfall */
+.title-snow{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:4;}
+.tsf{position:absolute;background:rgba(200,220,232,.5);border-radius:50%;animation:tfall linear infinite;}
+@keyframes tfall{0%{transform:translateY(-10px) translateX(0);opacity:0}5%{opacity:.35}
+  50%{transform:translateY(50vh) translateX(20px)}100%{transform:translateY(105vh) translateX(8px);opacity:0}}
+
+/* Title text group */
+.title-content{position:relative;z-index:10;text-align:center;padding:0 20px;}
+.title-series{font-family:'Cinzel',serif;font-size:clamp(11px,1.5vw,14px);color:var(--frost);
+  letter-spacing:8px;text-transform:uppercase;opacity:0;animation:tfade 1s ease-out .5s forwards;}
+.title-main{font-family:'Cinzel Decorative',serif;font-weight:900;
+  font-size:clamp(48px,8vw,96px);color:var(--gold);letter-spacing:clamp(4px,1vw,12px);
+  text-transform:uppercase;line-height:1;margin:8px 0;
+  text-shadow:0 4px 12px rgba(0,0,0,.7),0 0 40px rgba(200,160,64,.15),0 0 80px rgba(200,160,64,.08);
+  opacity:0;animation:trise 1.2s cubic-bezier(.16,1,.3,1) .8s forwards;}
+.title-tagline{font-family:'EB Garamond',serif;font-style:italic;font-size:clamp(14px,2vw,20px);
+  color:var(--parch-dk);letter-spacing:2px;margin-top:4px;
+  opacity:0;animation:tfade 1s ease-out 1.4s forwards;}
+@keyframes tfade{to{opacity:1}}
+@keyframes trise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* Rune decorations flanking title */
+.title-runes{display:flex;align-items:center;justify-content:center;gap:16px;margin:16px 0;
+  opacity:0;animation:tfade 1s ease-out 1.8s forwards;}
+.title-rune{font-family:'Cinzel Decorative',serif;font-size:24px;color:var(--rune);opacity:.4;}
+.title-rune-line{width:clamp(40px,8vw,100px);height:1px;background:linear-gradient(90deg,transparent,var(--rune),transparent);}
+
+/* Phase indicator strip */
+.title-phases{display:flex;gap:0;margin-top:28px;
+  opacity:0;animation:tfade 1s ease-out 2.2s forwards;}
+.title-phase-pip{padding:8px 20px;font-family:'Cinzel',serif;font-size:clamp(8px,1vw,11px);
+  letter-spacing:2px;text-transform:uppercase;border:1px solid rgba(160,128,72,.2);
+  color:var(--parch-dk);position:relative;background:rgba(26,21,16,.5);
+  backdrop-filter:blur(4px);}
+.title-phase-pip:first-child{border-radius:4px 0 0 4px;}
+.title-phase-pip:last-child{border-radius:0 4px 4px 0;}
+.title-phase-pip .pip-num{font-family:'Cinzel Decorative',serif;color:var(--gold);margin-right:6px;font-size:13px;}
+.title-phase-pip.active{background:rgba(200,160,64,.1);border-color:var(--gold);color:var(--gold);}
+
+/* Player roster strip */
+.title-roster{display:flex;gap:8px;margin-top:32px;flex-wrap:wrap;justify-content:center;
+  opacity:0;animation:tfade 1s ease-out 2.6s forwards;}
+.title-player{display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:transform .3s ease-out;}
+.title-player:hover{transform:translateY(-4px);}
+.title-player-avatar{width:40px;height:40px;border-radius:50%;border:2px solid var(--rune);
+  overflow:hidden;background:var(--plank);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.5);}
+.title-player-avatar img{width:100%;height:100%;object-fit:cover;}
+.title-player-avatar .initials{font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--gold);}
+.title-player-name{font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px;color:var(--parch-dk);
+  text-transform:uppercase;}
+.title-player.team-a .title-player-avatar{border-color:var(--ember);}
+.title-player.team-b .title-player-avatar{border-color:var(--frost);}
+
+/* Tribe labels */
+.title-tribe-row{display:flex;align-items:center;gap:8px;margin-top:24px;
+  opacity:0;animation:tfade 1s ease-out 2.4s forwards;}
+.title-tribe-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  padding:4px 12px;border-radius:3px;}
+.title-tribe-label.a{color:var(--ember);border:1px solid rgba(196,90,32,.3);background:rgba(196,90,32,.08);}
+.title-tribe-label.b{color:var(--frost);border:1px solid rgba(58,85,104,.3);background:rgba(58,85,104,.08);}
+.title-tribe-vs{font-family:'Cinzel Decorative',serif;font-size:14px;color:var(--gold);opacity:.5;}
+
+/* Scroll prompt */
+.title-scroll-hint{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:10;
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--parch-dk);opacity:0;animation:tfade 1s ease-out 3s forwards,tbounce 2s ease-in-out 3s infinite;}
+@keyframes tbounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+.title-scroll-arrow{display:block;text-align:center;margin-top:4px;font-size:14px;color:var(--rune);}
+
+/* ═══════════════════════════════════════════
+   PHASE EVOLUTION PANELS
+   ═══════════════════════════════════════════ */
+.phase-panel{position:relative;min-height:100vh;display:flex;overflow:hidden;}
+
+/* Phase layouts: left event feed + center environment + right sidebar */
+.phase-env{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:40px 20px;min-height:100vh;}
+.phase-feed{width:320px;min-width:320px;padding:20px 16px;position:relative;z-index:5;
+  display:flex;flex-direction:column;gap:8px;overflow-y:auto;}
+.phase-sidebar{width:240px;min-width:240px;padding:16px;position:relative;z-index:5;
+  background:rgba(26,21,16,.85);border-left:2px solid var(--plank-lt);}
+
+/* Phase headers */
+.phase-header{position:absolute;top:0;left:0;right:0;z-index:6;
+  padding:12px 20px;display:flex;align-items:center;gap:12px;
+  background:linear-gradient(180deg,rgba(26,21,16,.9),transparent);}
+.phase-num{font-family:'Cinzel Decorative',serif;font-size:28px;color:var(--gold);opacity:.3;}
+.phase-name{font-family:'Cinzel',serif;font-size:14px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--gold);}
+.phase-desc{font-family:'EB Garamond',serif;font-style:italic;font-size:12px;color:var(--parch-dk);}
+
+/* ── PHASE 1: BUILD AREA ── */
+.build-bg{position:absolute;inset:0;
+  background:linear-gradient(180deg,#1a1510 0%,#2a2018 30%,#3a2e1e 60%,#2a2018 100%);}
+
+/* Scattered parts illustration */
+.build-parts{position:relative;width:500px;height:300px;}
+.build-part{position:absolute;transition:all 1.5s cubic-bezier(.16,1,.3,1);}
+
+/* Wood plank SVG pieces */
+.part-plank{width:80px;height:16px;background:var(--plank-lt);border:1px solid var(--rune);
+  border-radius:2px;transform-origin:center;box-shadow:0 2px 4px rgba(0,0,0,.4);}
+.part-plank.dark{background:var(--plank);}
+
+/* Tool */
+.part-tool{width:12px;height:40px;position:relative;}
+.part-tool::before{content:'';position:absolute;top:0;left:2px;width:8px;height:10px;
+  background:var(--iron);border:1px solid var(--steel);border-radius:1px;}
+.part-tool::after{content:'';position:absolute;top:10px;left:4px;width:4px;height:30px;
+  background:var(--plank-lt);border-radius:0 0 2px 2px;}
+
+/* Fragment scraps */
+.part-frag{padding:3px 8px;background:var(--parch-dk);color:var(--tar);
+  font-family:'Fira Code',monospace;font-size:8px;border-radius:1px;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);}
+
+/* Assembly progress glow */
+.build-glow{position:absolute;top:50%;left:50%;width:200px;height:200px;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,rgba(200,160,64,.08),transparent 70%);
+  animation:buildpulse 3s ease-in-out infinite;}
+@keyframes buildpulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.3}50%{transform:translate(-50%,-50%) scale(1.3);opacity:.6}}
+
+/* Eureka flash */
+.build-eureka{position:absolute;top:50%;left:50%;width:400px;height:400px;
+  transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(200,160,64,.2),transparent 60%);
+  opacity:0;animation:eureka-flash 3s ease-out 4s forwards;}
+@keyframes eureka-flash{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}
+  20%{opacity:1;transform:translate(-50%,-50%) scale(1.5)}100%{opacity:0;transform:translate(-50%,-50%) scale(2)}}
+
+/* Ship forming SVG */
+.build-ship-reveal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  opacity:0;animation:ship-appear 2s ease-out 5s forwards;}
+@keyframes ship-appear{from{opacity:0;transform:translate(-50%,-50%) scale(.8)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+
+/* ── PHASE 2: ICE FIELD → WATER ── */
+.transport-bg{position:absolute;inset:0;
+  background:linear-gradient(180deg,#2a3540 0%,#3a4a58 30%,#4a5a68 50%,var(--storm) 70%,var(--sea-deep) 100%);}
+
+/* Ice surface */
+.ice-surface{position:absolute;bottom:30%;left:0;right:0;height:30%;
+  background:linear-gradient(0deg,rgba(154,184,200,.06),rgba(200,220,232,.12) 50%,rgba(154,184,200,.04));
+  border-top:1px solid rgba(200,220,232,.1);}
+.ice-crack{position:absolute;height:2px;background:rgba(200,220,232,.15);transform-origin:left;}
+.ice-crack.c1{top:20%;left:10%;width:120px;transform:rotate(15deg);}
+.ice-crack.c2{top:45%;left:40%;width:80px;transform:rotate(-10deg);}
+.ice-crack.c3{top:70%;left:60%;width:100px;transform:rotate(25deg);}
+
+/* Water below ice */
+.transport-water{position:absolute;bottom:0;left:0;right:0;height:30%;
+  background:linear-gradient(0deg,var(--sea-deep),var(--sea-mid));}
+
+/* Ship being pushed across ice */
+.transport-ship{position:absolute;bottom:38%;left:15%;z-index:3;
+  transition:all 3s cubic-bezier(.16,1,.3,1);}
+.transport-ship.launched{left:50%;bottom:18%;transform:rotate(-2deg);}
+
+/* Push figures (silhouettes) */
+.push-figure{position:absolute;width:16px;height:32px;z-index:4;}
+.push-figure::before{content:'';position:absolute;top:0;left:4px;width:8px;height:8px;
+  background:var(--parch-dk);border-radius:50%;}
+.push-figure::after{content:'';position:absolute;top:8px;left:3px;width:10px;height:20px;
+  background:var(--parch-dk);border-radius:2px;opacity:.7;}
+
+/* Ice break animation */
+.ice-break-flash{position:absolute;bottom:30%;left:0;right:0;height:4px;
+  background:rgba(200,220,232,.3);opacity:0;animation:icebreak 1s ease-out 3s forwards;}
+@keyframes icebreak{0%{opacity:0}20%{opacity:1}100%{opacity:0;height:20px;bottom:28%}}
+
+/* ── PHASE 3: NAVAL BATTLE ── */
+.battle-bg{position:absolute;inset:0;
+  background:linear-gradient(180deg,#1a2028 0%,#2a3540 25%,var(--storm) 50%,var(--sea-mid) 75%,var(--sea-deep) 100%);}
+
+/* Battle water */
+.battle-sea{position:absolute;bottom:0;left:0;right:0;height:55%;
+  background:linear-gradient(0deg,var(--sea-deep),var(--sea-mid) 40%,var(--storm));}
+.battle-wave{position:absolute;height:3px;background:rgba(154,184,200,.06);left:0;right:0;
+  animation:bwave 4s ease-in-out infinite alternate;}
+@keyframes bwave{0%{transform:translateX(-3%)}100%{transform:translateX(3%)}}
+
+/* Ships in battle */
+.battle-ship{position:absolute;z-index:4;transition:all .8s ease-out;}
+.battle-ship-hull{position:relative;}
+
+/* Cannon flash */
+.cannon-flash{position:absolute;width:30px;height:30px;border-radius:50%;
+  background:radial-gradient(circle,var(--forge),rgba(255,144,64,.3),transparent);
+  opacity:0;animation:cflash 1.5s ease-out infinite;pointer-events:none;}
+@keyframes cflash{0%{opacity:0;transform:scale(.5)}10%{opacity:1;transform:scale(1.2)}30%{opacity:.5;transform:scale(1)}100%{opacity:0}}
+
+/* Cannonball arc */
+.cannonball-arc{position:absolute;z-index:5;pointer-events:none;}
+.cannonball{width:8px;height:8px;border-radius:50%;background:var(--iron);
+  box-shadow:0 0 12px var(--ember);animation:cball 1.2s cubic-bezier(.2,.8,.3,1) forwards;}
+@keyframes cball{0%{transform:translate(0,0) scale(1)}50%{transform:translate(150px,-60px) scale(1.2)}
+  100%{transform:translate(300px,10px) scale(.6);opacity:.3}}
+
+/* Impact splash */
+.impact-splash{position:absolute;width:40px;height:40px;border-radius:50%;z-index:6;
+  background:radial-gradient(circle,rgba(200,220,232,.4),transparent);
+  animation:splash .8s ease-out forwards;pointer-events:none;}
+@keyframes splash{0%{transform:scale(0);opacity:1}100%{transform:scale(3);opacity:0}}
+
+/* Flag in the middle */
+.battle-flag{position:absolute;top:40%;left:50%;transform:translateX(-50%);z-index:3;}
+
+/* Damage cracks on hull */
+.hull-damage{position:absolute;width:20px;height:3px;background:var(--sea-mid);
+  transform:rotate(-15deg);opacity:0;animation:dmg-appear .3s ease-out forwards;}
+@keyframes dmg-appear{to{opacity:.8}}
+
+/* Smoke from damaged ship */
+.battle-smoke{position:absolute;z-index:5;pointer-events:none;}
+.smoke-p{position:absolute;border-radius:50%;background:rgba(60,60,60,.3);
+  animation:smokrise 4s ease-out infinite;}
+@keyframes smokrise{0%{transform:translateY(0) scale(1);opacity:.4}
+  100%{transform:translateY(-80px) scale(2.5);opacity:0}}
+
+/* Embers during battle */
+.battle-embers{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2;}
+.bemb{position:absolute;border-radius:50%;background:var(--ember);
+  animation:embrise linear infinite;}
+@keyframes embrise{0%{transform:translateY(100%) translateX(0);opacity:0}
+  10%{opacity:.5}80%{opacity:.2}100%{transform:translateY(-10%) translateX(20px);opacity:0}}
+
+/* ═══════ EVENT CARDS (feed) ═══════ */
+.evt-card{background:rgba(26,21,16,.8);border:1px solid rgba(160,128,72,.15);
+  padding:10px 12px;border-left:3px solid var(--plank-lt);
+  font-family:'EB Garamond',serif;font-size:13px;color:var(--parch-dk);line-height:1.4;
+  animation:card-in .5s cubic-bezier(.16,1,.3,1) both;position:relative;}
+.evt-card:nth-child(1){animation-delay:0s}
+.evt-card:nth-child(2){animation-delay:.15s}
+.evt-card:nth-child(3){animation-delay:.3s}
+.evt-card:nth-child(4){animation-delay:.45s}
+.evt-card:nth-child(5){animation-delay:.6s}
+@keyframes card-in{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+.evt-card.eureka{border-left-color:var(--gold);background:rgba(200,160,64,.06);}
+.evt-card.social{border-left-color:var(--frost);border-left-style:dashed;}
+.evt-card.cannon{border-left-color:var(--ember);}
+.evt-card.chaos{border-left-color:var(--danger);background:rgba(200,48,48,.04);}
+.evt-card.heroic{border-left-color:var(--gold-lt);background:rgba(224,192,96,.06);}
+.evt-head{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.evt-who{font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--parch);letter-spacing:1px;}
+.evt-tag{font-size:8px;padding:2px 6px;border-radius:2px;letter-spacing:1px;text-transform:uppercase;
+  font-family:'Cinzel',serif;}
+.evt-avatar{width:24px;height:24px;border-radius:50%;overflow:hidden;background:var(--plank);
+  border:2px solid var(--rune);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.evt-avatar img{width:100%;height:100%;object-fit:cover;}
+.evt-avatar .ini{font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--gold);}
+.evt-score{font-family:'Fira Code',monospace;font-size:9px;margin-top:4px;opacity:.5;}
+
+/* ═══════ SIDEBAR ELEMENTS ═══════ */
+.sb-title{font-family:'Cinzel',serif;font-size:10px;color:var(--gold);letter-spacing:2px;
+  text-transform:uppercase;padding-bottom:4px;border-bottom:1px solid rgba(160,128,72,.2);margin-bottom:8px;}
+.sb-tribe{padding:8px;margin-bottom:8px;background:rgba(58,46,30,.2);border:1px solid rgba(160,128,72,.1);
+  border-radius:3px;}
+.sb-tribe-name{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:1px;
+  display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.sb-dot{width:8px;height:8px;border-radius:2px;display:inline-block;}
+.sb-bar{height:10px;background:rgba(42,42,42,.5);border:1px solid var(--plank-lt);border-radius:2px;
+  margin:3px 0;overflow:hidden;}
+.sb-fill{height:100%;border-radius:1px;transition:width .8s ease-out;}
+.sb-label{font-family:'Fira Code',monospace;font-size:8px;color:var(--parch-dk);margin:2px 0;}
+.sb-ammo{display:flex;gap:2px;margin:3px 0;flex-wrap:wrap;}
+.sb-ball{width:8px;height:8px;border-radius:50%;background:var(--iron);border:1px solid var(--steel);}
+.sb-ball.spent{opacity:.2;}
+.sb-ball.flint{background:var(--ember);border-color:var(--flame);}
+
+/* HP specific */
+.hp-healthy{background:linear-gradient(90deg,var(--safe),#4a9860);}
+.hp-damaged{background:linear-gradient(90deg,#c89830,#d4a830);}
+.hp-critical{background:linear-gradient(90deg,var(--danger),#e84040);animation:hpflash 1s infinite;}
+@keyframes hpflash{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* Flag distance track */
+.sb-flag-track{height:16px;background:rgba(42,58,72,.2);border:1px solid var(--fjord);
+  border-radius:2px;margin:4px 0;position:relative;}
+.sb-flag-dot{position:absolute;top:50%;transform:translateY(-50%);width:8px;height:8px;
+  border-radius:2px;transition:left .5s ease-out;}
+.sb-flag-goal{position:absolute;right:3px;top:3px;width:6px;height:8px;}
+.sb-flag-goal::before{content:'';position:absolute;top:0;left:0;width:1px;height:8px;background:var(--parch-dk);}
+.sb-flag-goal::after{content:'';position:absolute;top:0;left:1px;width:5px;height:4px;background:var(--ember);}
+
+/* ═══════ PHASE TRANSITION DIVIDERS ═══════ */
+.phase-divider{position:relative;padding:60px 0;text-align:center;
+  background:linear-gradient(180deg,var(--tar),rgba(26,21,16,.5),var(--tar));}
+.phase-divider-line{position:absolute;top:50%;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--rune),transparent);}
+.phase-divider-text{position:relative;z-index:1;background:var(--tar);display:inline-block;padding:0 24px;}
+.phase-divider-num{font-family:'Cinzel Decorative',serif;font-size:32px;color:var(--gold);opacity:.3;}
+.phase-divider-name{font-family:'Cinzel',serif;font-size:12px;letter-spacing:4px;
+  text-transform:uppercase;color:var(--gold);margin-top:4px;}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important;}
+}
+@media(max-width:900px){
+  .phase-panel{flex-direction:column;}
+  .phase-feed,.phase-sidebar{width:100%;min-width:0;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     TITLE SCREEN
+     ═══════════════════════════════════════════ -->
+<section class="title-screen">
+  <div class="title-sky"></div>
+  <div class="title-aurora"></div>
+  <div class="title-mtns">
+    <div class="title-mtn a"></div><div class="title-mtn b"></div>
+    <div class="title-mtn c"></div><div class="title-mtn d"></div><div class="title-mtn e"></div>
+    <div class="title-cap ca"></div><div class="title-cap cc"></div>
+  </div>
+  <div class="title-fjord">
+    <div class="title-fjord-wave"></div><div class="title-fjord-wave"></div>
+    <div class="title-fjord-wave"></div><div class="title-fjord-wave"></div>
+  </div>
+
+  <!-- Longship silhouettes -->
+  <div class="title-ship" style="bottom:22%;left:18%;opacity:.15">
+    <svg width="120" height="50" viewBox="0 0 120 50" fill="none">
+      <path d="M10 35 Q20 45 60 45 Q100 45 110 35 L100 20 Q60 10 20 20 Z" fill="#3a2e1e" stroke="#584830" stroke-width="1"/>
+      <line x1="60" y1="5" x2="60" y2="40" stroke="#584830" stroke-width="2"/>
+      <path d="M62 8 Q80 15 62 25" fill="#3a5568" opacity=".4"/>
+    </svg>
+  </div>
+  <div class="title-ship" style="bottom:20%;right:22%;opacity:.1;transform:scaleX(-1)">
+    <svg width="100" height="42" viewBox="0 0 120 50" fill="none">
+      <path d="M10 35 Q20 45 60 45 Q100 45 110 35 L100 20 Q60 10 20 20 Z" fill="#3a2e1e" stroke="#584830" stroke-width="1"/>
+      <line x1="60" y1="5" x2="60" y2="40" stroke="#584830" stroke-width="2"/>
+      <path d="M62 8 Q80 15 62 25" fill="#c45a20" opacity=".3"/>
+    </svg>
+  </div>
+
+  <div class="title-snow" id="title-snow"></div>
+
+  <div class="title-content">
+    <div class="title-series">Total Drama World Tour</div>
+    <div class="title-main">Viking Sour</div>
+    <div class="title-tagline">Build the unknown. Sail the frozen. Sink or be sunk.</div>
+
+    <div class="title-runes">
+      <div class="title-rune-line"></div>
+      <div class="title-rune">ᚱ</div>
+      <div class="title-rune">ᚦ</div>
+      <div class="title-rune">ᛟ</div>
+      <div class="title-rune-line"></div>
+    </div>
+
+    <div class="title-phases">
+      <div class="title-phase-pip active"><span class="pip-num">I</span> Build</div>
+      <div class="title-phase-pip"><span class="pip-num">II</span> Transport</div>
+      <div class="title-phase-pip"><span class="pip-num">III</span> Battle</div>
+    </div>
+
+    <div class="title-tribe-row">
+      <span class="title-tribe-label a">Ragnarök</span>
+      <span class="title-tribe-vs">vs</span>
+      <span class="title-tribe-label b">Valhalla</span>
+    </div>
+
+    <div class="title-roster">
+      <!-- Ragnarök -->
+      <div class="title-player team-a">
+        <div class="title-player-avatar"><img src="assets/avatars/bowie.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><span class="initials" style="display:none">BW</span></div>
+        <div class="title-player-name">Bowie</div>
+      </div>
+      <div class="title-player team-a">
+        <div class="title-player-avatar"><img src="assets/avatars/priya.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><span class="initials" style="display:none">PR</span></div>
+        <div class="title-player-name">Priya</div>
+      </div>
+      <div class="title-player team-a">
+        <div class="title-player-avatar"><img src="assets/avatars/hicks.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><span class="initials" style="display:none">HK</span></div>
+        <div class="title-player-name">Hicks</div>
+      </div>
+      <div class="title-player team-a">
+        <div class="title-player-avatar"><img src="assets/avatars/zee.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><span class="initials" style="display:none">ZE</span></div>
+        <div class="title-player-name">Zee</div>
+      </div>
+      <div class="title-player team-a">
+        <div class="title-player-avatar"><img src="assets/avatars/chase.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><span class="initials" style="display:none">CH</span></div>
+        <div class="title-player-name">Chase</div>
+      </div>
+
+      <!-- Divider -->
+      <div style="width:2px;height:48px;background:linear-gradient(180deg,transparent,var(--rune),transparent);margin:0 8px;align-self:center;"></div>
+
+      <!-- Valhalla -->
+      <div class="title-player team-b">
+        <div class="title-player-avatar"><img src="assets/avatars/wayne.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><span class="initials" style="display:none">WN</span></div>
+        <div class="title-player-name">Wayne</div>
+      </div>
+      <div class="title-player team-b">
+        <div class="title-player-avatar"><img src="assets/avatars/julia.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><span class="initials" style="display:none">JL</span></div>
+        <div class="title-player-name">Julia</div>
+      </div>
+      <div class="title-player team-b">
+        <div class="title-player-avatar"><img src="assets/avatars/millie.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><span class="initials" style="display:none">ML</span></div>
+        <div class="title-player-name">Millie</div>
+      </div>
+      <div class="title-player team-b">
+        <div class="title-player-avatar"><img src="assets/avatars/brightly.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><span class="initials" style="display:none">BR</span></div>
+        <div class="title-player-name">Brightly</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="title-scroll-hint">Scroll to begin<div class="title-scroll-arrow">▾</div></div>
+</section>
+
+<!-- ═══ PHASE TRANSITION ═══ -->
+<div class="phase-divider">
+  <div class="phase-divider-line"></div>
+  <div class="phase-divider-text">
+    <div class="phase-divider-num">I</div>
+    <div class="phase-divider-name">Blind Assembly</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PHASE 1 — BLIND ASSEMBLY
+     ═══════════════════════════════════════════ -->
+<section class="phase-panel" id="phase1">
+  <!-- Left: Event feed -->
+  <div class="phase-feed">
+    <div class="evt-card">
+      <div class="evt-head">
+        <div class="evt-avatar"><img src="assets/avatars/bowie.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><span class="ini" style="display:none">BW</span></div>
+        <span class="evt-who">Bowie</span>
+        <span class="evt-tag" style="background:var(--plank-lt);color:var(--parch)">ASSEMBLY</span>
+      </div>
+      Bowie grabs a plank and a sledgehammer. Fits two pieces together by instinct. The shape means nothing yet.
+      <div class="evt-score">+5 build progress</div>
+    </div>
+
+    <div class="evt-card social">
+      <div class="evt-head">
+        <div class="evt-avatar"><span class="ini">JL</span></div>
+        <span class="evt-who">Julia</span>
+        <span style="font-size:10px;color:var(--parch-dk)">→</span>
+        <div class="evt-avatar"><span class="ini">WN</span></div>
+        <span class="evt-who">Wayne</span>
+        <span class="evt-tag" style="background:var(--frost);color:var(--tar)">ARGUMENT</span>
+      </div>
+      "The keel goes HERE!" "That's not a keel, that's a bench!" Tools clatter. Time burns.
+      <div class="evt-score">BOND -1 · -2 each</div>
+    </div>
+
+    <div class="evt-card eureka">
+      <div class="evt-head">
+        <div class="evt-avatar"><img src="assets/avatars/priya.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><span class="ini" style="display:none">PR</span></div>
+        <span class="evt-who">Priya</span>
+        <span class="evt-tag" style="background:var(--gold);color:var(--tar)">ᚱ EUREKA!</span>
+      </div>
+      Priya freezes. Turns a fragment sideways. Her eyes go wide. "It's a SHIP. We're building a SHIP!" The tribe scrambles.
+      <div class="evt-score">+25% clarity · +10 score · POP +2</div>
+    </div>
+
+    <div class="evt-card chaos">
+      <div class="evt-head">
+        <div class="evt-avatar"><span class="ini">ZE</span></div>
+        <span class="evt-who">Zee</span>
+        <span class="evt-tag" style="background:var(--blood);color:var(--parch)">SABOTAGE</span>
+      </div>
+      Zee sneaks three bolts from the enemy pile under a snowdrift. Nobody sees. Valhalla will search for twenty minutes.
+      <div class="evt-score">-1 enemy build round</div>
+    </div>
+
+    <div class="evt-card" style="border-left-color:var(--gold);text-align:center;border:2px solid var(--gold);background:rgba(200,160,64,.06)">
+      <div style="font-family:'Cinzel Decorative',serif;font-size:14px;color:var(--gold);letter-spacing:2px;">ASSEMBLY COMPLETE</div>
+      <div style="font-size:12px;margin-top:4px;">Ragnarök finishes first — earns <span style="color:var(--ember)">FLINT ROCKS</span></div>
+    </div>
+  </div>
+
+  <!-- Center: Build environment -->
+  <div class="phase-env">
+    <div class="build-bg"></div>
+    <div class="phase-header">
+      <div class="phase-num">I</div>
+      <div><div class="phase-name">Blind Assembly</div>
+      <div class="phase-desc">Decipher the blueprints. Build the unknown.</div></div>
+    </div>
+
+    <div class="build-glow"></div>
+
+    <!-- Scattered parts -->
+    <div class="build-parts">
+      <div class="build-part part-plank" style="top:20%;left:5%;transform:rotate(-12deg)"></div>
+      <div class="build-part part-plank dark" style="top:10%;left:35%;transform:rotate(8deg)"></div>
+      <div class="build-part part-plank" style="top:40%;left:15%;transform:rotate(-25deg)"></div>
+      <div class="build-part part-plank dark" style="top:55%;left:45%;transform:rotate(15deg)"></div>
+      <div class="build-part part-plank" style="top:30%;left:60%;transform:rotate(-5deg)"></div>
+      <div class="build-part part-plank dark" style="top:65%;left:25%;transform:rotate(20deg)"></div>
+      <div class="build-part part-plank" style="top:15%;left:70%;transform:rotate(-18deg)"></div>
+      <div class="build-part part-plank dark" style="top:75%;left:55%;transform:rotate(10deg)"></div>
+
+      <div class="build-part part-tool" style="top:45%;left:8%"></div>
+      <div class="build-part part-tool" style="top:25%;left:80%;transform:rotate(30deg)"></div>
+
+      <div class="build-part part-frag" style="top:50%;left:40%">HULL-A3</div>
+      <div class="build-part part-frag" style="top:20%;left:50%">???-D4</div>
+      <div class="build-part part-frag" style="top:70%;left:70%">KEEL-B1</div>
+    </div>
+
+    <div class="build-eureka"></div>
+
+    <!-- Ship reveal (appears after eureka) -->
+    <div class="build-ship-reveal">
+      <svg width="200" height="80" viewBox="0 0 200 80" fill="none" style="opacity:.6">
+        <path d="M15 55 Q30 70 100 70 Q170 70 185 55 L170 30 Q100 15 30 30 Z"
+          fill="none" stroke="var(--gold)" stroke-width="2" stroke-dasharray="6 4"/>
+        <line x1="100" y1="8" x2="100" y2="65" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="100" y="48" text-anchor="middle" font-family="'Cinzel',serif" font-size="10"
+          fill="var(--gold)" letter-spacing="3" opacity=".6">LONGSHIP</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Right: Sidebar -->
+  <div class="phase-sidebar">
+    <div class="sb-title">Assembly Progress</div>
+    <div class="sb-tribe">
+      <div class="sb-tribe-name"><span class="sb-dot" style="background:var(--ember)"></span> Ragnarök</div>
+      <div class="sb-label">Clarity: 72%</div>
+      <div class="sb-bar"><div class="sb-fill" style="width:72%;background:linear-gradient(90deg,var(--rune),var(--gold))"></div></div>
+      <div class="sb-label">Assembly: 88%</div>
+      <div class="sb-bar"><div class="sb-fill" style="width:88%;background:linear-gradient(90deg,var(--plank-lt),var(--gold))"></div></div>
+      <div class="sb-label" style="color:var(--gold);font-size:9px;">ᚱ EUREKA — "It's a ship!"</div>
+    </div>
+    <div class="sb-tribe">
+      <div class="sb-tribe-name"><span class="sb-dot" style="background:var(--frost)"></span> Valhalla</div>
+      <div class="sb-label">Clarity: 45%</div>
+      <div class="sb-bar"><div class="sb-fill" style="width:45%;background:linear-gradient(90deg,var(--fjord),var(--frost))"></div></div>
+      <div class="sb-label">Assembly: 52%</div>
+      <div class="sb-bar"><div class="sb-fill" style="width:52%;background:linear-gradient(90deg,var(--fjord),var(--frost))"></div></div>
+      <div class="sb-label" style="color:var(--danger);font-size:9px;">Missing bolts — sabotage?</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PHASE TRANSITION ═══ -->
+<div class="phase-divider">
+  <div class="phase-divider-line"></div>
+  <div class="phase-divider-text">
+    <div class="phase-divider-num">II</div>
+    <div class="phase-divider-name">Transport</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PHASE 2 — TRANSPORT
+     ═══════════════════════════════════════════ -->
+<section class="phase-panel" id="phase2">
+  <div class="phase-feed">
+    <div class="evt-card">
+      <div class="evt-head">
+        <span class="evt-tag" style="background:var(--fjord);color:var(--ice)">LAUNCH</span>
+        <span class="evt-who">Ragnarök</span>
+      </div>
+      The tribe heaves. Wood groans against ice. The longship slides — slowly, then fast. It hits the waterline and floats.
+      <div class="evt-score">Push force: 34.7 (threshold 30)</div>
+    </div>
+
+    <div class="evt-card heroic">
+      <div class="evt-head">
+        <div class="evt-avatar"><span class="ini">HK</span></div>
+        <span class="evt-who">Hicks</span>
+        <span class="evt-tag" style="background:var(--gold);color:var(--tar)">ICE BREAK!</span>
+      </div>
+      CRACK. Hicks brings the sledgehammer down like a thunderbolt. The ice splits open. A channel forms. The ship surges through.
+      <div class="evt-score">+8 score · massive time save</div>
+    </div>
+
+    <div class="evt-card" style="border-left-color:var(--danger)">
+      <div class="evt-head">
+        <span class="evt-tag" style="background:var(--fjord);color:var(--ice)">LAUNCH</span>
+        <span class="evt-who">Valhalla</span>
+      </div>
+      The leaky hull catches on every ridge. Four people pushing, zero progress. Someone suggests flipping it over. That helps somehow.
+      <div class="evt-score">Push force: 28.3 (threshold 35) — RETRY</div>
+    </div>
+
+    <div class="evt-card">
+      <div class="evt-head">
+        <span class="evt-tag" style="background:var(--fjord);color:var(--ice)">SEGMENT 1</span>
+        <span class="evt-who">Frozen Straits</span>
+      </div>
+      Oars in. The race north begins. Ice crunches against hulls.
+    </div>
+
+    <div class="evt-card social">
+      <div class="evt-head">
+        <div class="evt-avatar"><span class="ini">ML</span></div>
+        <span class="evt-who">Millie</span>
+        <span style="font-size:10px;color:var(--parch-dk)">↔</span>
+        <div class="evt-avatar"><span class="ini">BR</span></div>
+        <span class="evt-who">Brightly</span>
+        <span class="evt-tag" style="background:var(--frost);color:var(--tar)">WHISPERS</span>
+      </div>
+      Between strokes, they talk. About the merge. About who to trust. By the second strait, something has been decided.
+      <div class="evt-score">BOND +2</div>
+    </div>
+  </div>
+
+  <div class="phase-env">
+    <div class="transport-bg"></div>
+    <div class="phase-header">
+      <div class="phase-num">II</div>
+      <div><div class="phase-name">Launch &amp; Sail</div>
+      <div class="phase-desc">Push across the ice. Break into open water. Race north.</div></div>
+    </div>
+
+    <!-- Ice surface -->
+    <div class="ice-surface">
+      <div class="ice-crack c1"></div>
+      <div class="ice-crack c2"></div>
+      <div class="ice-crack c3"></div>
+    </div>
+    <div class="transport-water"></div>
+
+    <!-- Ship being pushed -->
+    <div class="transport-ship">
+      <svg width="140" height="60" viewBox="0 0 140 60" fill="none">
+        <path d="M10 42 Q20 52 70 52 Q120 52 130 42 L118 22 Q70 12 22 22 Z"
+          fill="var(--plank)" stroke="var(--plank-lt)" stroke-width="1.5"/>
+        <line x1="70" y1="5" x2="70" y2="48" stroke="var(--plank-lt)" stroke-width="2"/>
+        <path d="M72 8 Q95 18 72 30" fill="var(--parch-dk)" opacity=".3"/>
+        <!-- Dragon head -->
+        <path d="M125 38 Q135 32 140 22 Q138 28 132 34" fill="var(--plank-lt)" stroke="var(--rune)" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <!-- Push figures -->
+    <div class="push-figure" style="bottom:40%;left:12%"></div>
+    <div class="push-figure" style="bottom:42%;left:10%"></div>
+    <div class="push-figure" style="bottom:39%;left:8%"></div>
+
+    <div class="ice-break-flash"></div>
+  </div>
+
+  <div class="phase-sidebar">
+    <div class="sb-title">Fleet Status</div>
+    <div class="sb-tribe">
+      <div class="sb-tribe-name"><span class="sb-dot" style="background:var(--ember)"></span> Ragnarök</div>
+      <div class="sb-label">Build Quality: 82 (Sturdy)</div>
+      <div class="sb-bar"><div class="sb-fill hp-healthy" style="width:100%"></div></div>
+      <div class="sb-label">100 HP · Launched ✓</div>
+      <div class="sb-label">Sail Progress:</div>
+      <div class="sb-bar"><div class="sb-fill" style="width:65%;background:linear-gradient(90deg,var(--ember),var(--flame))"></div></div>
+    </div>
+    <div class="sb-tribe">
+      <div class="sb-tribe-name"><span class="sb-dot" style="background:var(--frost)"></span> Valhalla</div>
+      <div class="sb-label">Build Quality: 54 (Leaky)</div>
+      <div class="sb-bar"><div class="sb-fill hp-damaged" style="width:78%"></div></div>
+      <div class="sb-label">59 HP (ice floe damage) · Launched</div>
+      <div class="sb-label">Sail Progress:</div>
+      <div class="sb-bar"><div class="sb-fill" style="width:35%;background:linear-gradient(90deg,var(--fjord),var(--frost))"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PHASE TRANSITION ═══ -->
+<div class="phase-divider">
+  <div class="phase-divider-line"></div>
+  <div class="phase-divider-text">
+    <div class="phase-divider-num">III</div>
+    <div class="phase-divider-name">Naval Battle</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PHASE 3 — NAVAL BATTLE
+     ═══════════════════════════════════════════ -->
+<section class="phase-panel" id="phase3">
+  <div class="phase-feed">
+    <div class="evt-card cannon">
+      <div class="evt-head">
+        <span class="sb-dot" style="background:var(--ember)"></span>
+        <span class="evt-who">Ragnarök</span>
+        <span class="evt-tag" style="background:var(--ember);color:var(--parch)">FIRE!</span>
+        <span class="evt-tag" style="background:var(--danger);color:#fff">HIT</span>
+      </div>
+      BOOM. The flint sparks, the powder ignites. Iron screams across the water and punches through Valhalla's hull.
+      <div class="evt-score">-22 HP to Valhalla · Bowie +5</div>
+    </div>
+
+    <div class="evt-card" style="border-left-color:var(--iron)">
+      <div class="evt-head">
+        <span class="sb-dot" style="background:var(--frost)"></span>
+        <span class="evt-who">Valhalla</span>
+        <span class="evt-tag" style="background:var(--iron);color:var(--parch)">NO FIRE</span>
+      </div>
+      Wayne rubs flint against steel. Steel against wood. Wood against hope. Nothing catches. The cannons sit cold.
+    </div>
+
+    <div class="evt-card heroic">
+      <div class="evt-head">
+        <div class="evt-avatar"><span class="ini">ML</span></div>
+        <span class="evt-who">Millie</span>
+        <span class="evt-tag" style="background:var(--gold-lt);color:var(--tar)">HEROIC SHIELD</span>
+      </div>
+      A cannonball arcs toward the weakened hull. Millie grabs a plank and HURLS herself in front. The plank shatters. Her arm goes numb. But the hull holds.
+      <div class="evt-score">Saved 20 HP · stats halved · POP +3 · +6 score</div>
+    </div>
+
+    <div class="evt-card chaos">
+      <div class="evt-head">
+        <div class="evt-avatar"><span class="ini">CH</span></div>
+        <span class="evt-who">Chase</span>
+        <span class="evt-tag" style="background:var(--blood);color:var(--parch)">BOARDING RAID</span>
+        <span class="evt-tag" style="background:var(--danger);color:#fff">SUCCESS</span>
+      </div>
+      Chase leaps between ships, snatches two cannonballs, and dives into the water before anyone reacts.
+      <div class="evt-score">Stole 2 ammo · +8 score · rivalry with Wayne</div>
+    </div>
+
+    <div class="evt-card heroic" style="border:2px solid var(--forge);background:rgba(255,144,64,.08)">
+      <div class="evt-head">
+        <div class="evt-avatar"><span class="ini">HK</span></div>
+        <span class="evt-who">Hicks</span>
+        <span class="evt-tag" style="background:var(--forge);color:var(--tar)">HUMAN CANNONBALL</span>
+      </div>
+      "Load. Me. Up." BOOM. Hicks sails through frozen air like a bearded meteor and CRASHES through Valhalla's deck. The ship buckles.
+      <div class="evt-score">-40 HP · SHIP DESTROYED · POP +4 · +12 score · LEGENDARY</div>
+    </div>
+  </div>
+
+  <div class="phase-env">
+    <div class="battle-bg"></div>
+    <div class="phase-header">
+      <div class="phase-num">III</div>
+      <div><div class="phase-name">Naval Battle</div>
+      <div class="phase-desc">Capture the flag or sink the enemy.</div></div>
+    </div>
+
+    <!-- Battle sea -->
+    <div class="battle-sea">
+      <div class="battle-wave" style="top:15%"></div>
+      <div class="battle-wave" style="top:35%;animation-delay:.5s"></div>
+      <div class="battle-wave" style="top:55%;animation-delay:1s"></div>
+      <div class="battle-wave" style="top:75%;animation-delay:1.5s"></div>
+    </div>
+
+    <div class="battle-embers" id="battle-embers"></div>
+
+    <!-- Flag -->
+    <div class="battle-flag">
+      <svg width="24" height="40" viewBox="0 0 24 40">
+        <line x1="4" y1="0" x2="4" y2="40" stroke="var(--plank-lt)" stroke-width="2"/>
+        <path d="M6 2 L22 8 L18 14 L22 20 L6 14 Z" fill="var(--gold)" stroke="var(--rune)" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <!-- Ragnarök ship -->
+    <div class="battle-ship" style="left:20%;top:35%;">
+      <div class="battle-ship-hull">
+        <svg width="120" height="50" viewBox="0 0 120 50" fill="none">
+          <path d="M8 35 Q16 45 60 45 Q104 45 112 35 L100 18 Q60 8 20 18 Z"
+            fill="var(--plank)" stroke="#c45a20" stroke-width="2"/>
+          <line x1="60" y1="4" x2="60" y2="42" stroke="var(--plank-lt)" stroke-width="2"/>
+          <path d="M62 6 Q82 14 62 24" fill="rgba(196,90,32,.3)"/>
+          <path d="M108 32 Q116 26 120 16 Q118 24 112 30" fill="var(--plank-lt)" stroke="var(--rune)" stroke-width="1"/>
+        </svg>
+        <div class="cannon-flash" style="right:-10px;top:15px;animation-delay:0s"></div>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--ember);letter-spacing:2px;text-align:center;margin-top:2px;">RAGNARÖK</div>
+    </div>
+
+    <!-- Valhalla ship (damaged) -->
+    <div class="battle-ship" style="right:15%;top:50%;">
+      <div class="battle-ship-hull" style="position:relative;">
+        <svg width="120" height="50" viewBox="0 0 120 50" fill="none">
+          <path d="M8 35 Q16 45 60 45 Q104 45 112 35 L100 18 Q60 8 20 18 Z"
+            fill="var(--plank)" stroke="var(--fjord)" stroke-width="2" opacity=".7"/>
+          <line x1="60" y1="4" x2="60" y2="42" stroke="var(--plank-lt)" stroke-width="2" opacity=".5"/>
+          <path d="M62 6 Q82 14 62 24" fill="rgba(58,85,104,.2)"/>
+          <!-- Damage marks -->
+          <line x1="30" y1="25" x2="45" y2="30" stroke="var(--sea-mid)" stroke-width="2" opacity=".7"/>
+          <line x1="70" y1="28" x2="85" y2="25" stroke="var(--sea-mid)" stroke-width="2" opacity=".7"/>
+          <line x1="50" y1="35" x2="65" y2="38" stroke="var(--sea-mid)" stroke-width="3" opacity=".5"/>
+        </svg>
+        <!-- Smoke -->
+        <div class="battle-smoke" style="left:40px;top:-10px;">
+          <div class="smoke-p" style="width:12px;height:12px;left:0;animation-delay:0s"></div>
+          <div class="smoke-p" style="width:8px;height:8px;left:10px;animation-delay:.5s"></div>
+          <div class="smoke-p" style="width:15px;height:15px;left:-5px;animation-delay:1s"></div>
+        </div>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--frost);letter-spacing:2px;text-align:center;margin-top:2px;opacity:.5;text-decoration:line-through;">VALHALLA</div>
+    </div>
+
+    <!-- Cannonball in flight -->
+    <div class="cannonball-arc" style="left:25%;top:38%;">
+      <div class="cannonball"></div>
+    </div>
+
+    <!-- Impact splash -->
+    <div class="impact-splash" style="right:20%;top:48%;animation-delay:1.2s"></div>
+  </div>
+
+  <div class="phase-sidebar">
+    <div class="sb-title">Battle Status</div>
+    <div class="sb-tribe">
+      <div class="sb-tribe-name"><span class="sb-dot" style="background:var(--ember)"></span> Ragnarök
+        <span style="font-size:7px;background:var(--gold);color:var(--tar);padding:1px 4px;border-radius:2px;margin-left:auto;">FLINT</span></div>
+      <div class="sb-label">Hull HP:</div>
+      <div class="sb-bar"><div class="sb-fill hp-healthy" style="width:70%"></div></div>
+      <div class="sb-label">70 / 100</div>
+      <div class="sb-label">Ammo:</div>
+      <div class="sb-ammo">
+        <div class="sb-ball flint"></div><div class="sb-ball flint"></div><div class="sb-ball flint"></div>
+        <div class="sb-ball"></div><div class="sb-ball"></div><div class="sb-ball"></div>
+        <div class="sb-ball"></div><div class="sb-ball"></div>
+        <div class="sb-ball spent"></div><div class="sb-ball spent"></div><div class="sb-ball spent"></div>
+      </div>
+      <div class="sb-label">Flag distance:</div>
+      <div class="sb-flag-track">
+        <div class="sb-flag-dot" style="left:55%;background:var(--ember)"></div>
+        <div class="sb-flag-goal"></div>
+      </div>
+    </div>
+    <div class="sb-tribe">
+      <div class="sb-tribe-name"><span class="sb-dot" style="background:var(--frost)"></span> Valhalla</div>
+      <div class="sb-label">Hull HP:</div>
+      <div class="sb-bar"><div class="sb-fill hp-critical" style="width:0%"></div></div>
+      <div class="sb-label" style="color:var(--danger);font-weight:700;">SUNK</div>
+      <div class="sb-label">Ammo:</div>
+      <div class="sb-ammo">
+        <div class="sb-ball spent"></div><div class="sb-ball spent"></div><div class="sb-ball spent"></div>
+        <div class="sb-ball spent"></div><div class="sb-ball spent"></div><div class="sb-ball spent"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;border-top:1px solid rgba(160,128,72,.2);padding-top:8px;">
+      <div class="sb-title">Battle Log</div>
+      <div class="sb-label" style="color:var(--ember)">R1: Ragnarök HIT → -22 HP</div>
+      <div class="sb-label" style="color:var(--iron)">R1: Valhalla — no fire</div>
+      <div class="sb-label" style="color:var(--ember)">R2: Ragnarök HIT → -15 HP</div>
+      <div class="sb-label" style="color:var(--gold)">R3: Millie HEROIC SHIELD</div>
+      <div class="sb-label" style="color:var(--frost)">R4: Valhalla FIRE UNLOCKED</div>
+      <div class="sb-label" style="color:var(--frost)">R4: Valhalla HIT → -18 HP</div>
+      <div class="sb-label" style="color:var(--gold)">R5: Chase BOARDING RAID</div>
+      <div class="sb-label" style="color:var(--forge);font-weight:700">R6: HUMAN CANNONBALL → -40 HP</div>
+      <div class="sb-label" style="color:var(--danger);font-weight:700">VALHALLA SUNK</div>
+    </div>
+  </div>
+</section>
+
+<script>
+// Snowfall for title screen
+(function(){
+  const w = document.getElementById('title-snow');
+  for(let i=0;i<50;i++){
+    const s=document.createElement('div');s.className='tsf';
+    s.style.left=Math.random()*100+'%';
+    s.style.width=s.style.height=(1.5+Math.random()*3)+'px';
+    s.style.animationDuration=(8+Math.random()*14)+'s';
+    s.style.animationDelay=(Math.random()*18)+'s';
+    w.appendChild(s);
+  }
+})();
+
+// Battle embers
+(function(){
+  const w=document.getElementById('battle-embers');
+  for(let i=0;i<20;i++){
+    const e=document.createElement('div');e.className='bemb';
+    e.style.left=Math.random()*100+'%';
+    e.style.width=e.style.height=(2+Math.random()*4)+'px';
+    e.style.animationDuration=(5+Math.random()*8)+'s';
+    e.style.animationDelay=(Math.random()*10)+'s';
+    w.appendChild(e);
+  }
+})();
+</script>
+
+</body>
+</html>

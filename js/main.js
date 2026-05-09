@@ -55,6 +55,8 @@ import * as topDogMod from './chal/top-dog.js';
 import * as walkEgyptMod from './chal/walk-like-an-egyptian.js';
 import * as crazyFunTimeMod from './chal/crazy-fun-time.js';
 import * as frozenCrossingMod from './chal/frozen-crossing.js';
+import * as vikingSourMod from './chal/viking-sour.js';
+import * as picnicHangingDorkMod from './chal/picnic-hanging-dork.js';
 import * as slapSlapRevMod from './chal/slap-slap-revolution.js';
 import * as broadwayBabyMod from './chal/broadway-baby.js';
 import * as amazonRaceMod from './chal/amazon-race.js';
@@ -65,6 +67,7 @@ import * as rockTheDockMod from './chal/rock-the-dock.js';
 import * as tropicalTakedownMod from './chal/tropical-takedown.js';
 import * as midnightManhuntMod from './chal/midnight-manhunt.js';
 import * as greecesPiecesMod from './chal/greeces-pieces.js';
+import * as hangarBlackMod from './chal/hangar-black.js';
 import * as socialManipMod from './social-manipulation.js';
 import * as campEventsMod from './camp-events.js';
 import * as twistsMod from './twists.js';
@@ -153,8 +156,8 @@ const extractedModules = [
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
-  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
-  truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
+  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
+  truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
   savestateMod,

@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Reality Island Simulator — Operation: Hangar Black</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet" />
+<style>
+  /* ═══════════════════════════════════════════════════════════
+     OPERATION HANGAR BLACK — Area 51 Infiltration Sim
+     prefix: hb-
+     ═══════════════════════════════════════════════════════════ */
+  :root {
+    --bg-0: #060a0e;
+    --bg-1: #0c1218;
+    --bg-2: #131a22;
+    --bg-3: #1a232c;
+    --grid: rgba(120,255,160,0.06);
+    --line: #2a3a44;
+    --line-2: #3d5260;
+    --hud: #92ffb3;
+    --hud-dim: #5fa67c;
+    --warn: #ffb836;
+    --hot: #ff3a3a;
+    --laser: #ff2a6a;
+    --alien: #b76dff;
+    --classified: #ff5e3a;
+    --paper: #d8d2bc;
+    --paper-dim: #a39d88;
+    --tan: #c8b88a;
+    --redacted: #1a1a1a;
+    --teamA: #3aa0ff;
+    --teamA-dim: #1d5d99;
+    --teamB: #ff5e3a;
+    --teamB-dim: #993218;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg-0);
+    color: var(--paper);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background: dark desert night with grid + scanlines */
+  .hb-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 100%, rgba(146, 255, 179, 0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 20% 0%, rgba(255, 90, 58, 0.04) 0%, transparent 60%),
+      linear-gradient(180deg, #050810 0%, #0c1218 70%, #1a1410 100%);
+  }
+  .hb-grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+    transform: perspective(700px) rotateX(60deg) translateY(20vh) scale(2);
+    transform-origin: center bottom;
+    opacity: 0.6;
+    mask-image: linear-gradient(to top, black 0%, transparent 70%);
+  }
+  .hb-scanlines {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(255,255,255,0.012) 2px, rgba(255,255,255,0.012) 3px);
+    mix-blend-mode: overlay;
+  }
+  .hb-vignette {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+  }
+  .hb-stars {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  }
+  .hb-star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; opacity: 0.4; animation: twinkle 4s infinite ease-in-out;}
+  @keyframes twinkle { 0%,100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+
+  /* ═══ TOP CHROME — Broadcast bar ═══ */
+  .hb-broadcast {
+    position: sticky; top: 0; z-index: 50;
+    background: linear-gradient(180deg, #060a0e 0%, #0c1218 100%);
+    border-bottom: 1px solid var(--hud-dim);
+    height: 36px;
+    display: flex; align-items: center; gap: 16px;
+    padding: 0 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+  }
+  .hb-rec { display: flex; align-items: center; gap: 6px; color: var(--hot); font-weight: 700;}
+  .hb-rec-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--hot); animation: blink 1s infinite;}
+  @keyframes blink { 0%, 100% {opacity:1;} 50% {opacity: 0.2;} }
+  .hb-channel { color: var(--hud); }
+  .hb-ticker { flex: 1; overflow: hidden; position: relative; height: 16px; }
+  .hb-ticker-inner { position: absolute; white-space: nowrap; animation: scroll 40s linear infinite; color: var(--hud-dim);}
+  .hb-ticker-inner span { color: var(--warn); margin: 0 6px;}
+  @keyframes scroll { from { transform: translateX(100%);} to { transform: translateX(-100%);} }
+  .hb-clock { color: var(--hud); }
+  .hb-feed-id { color: var(--paper-dim); }
+
+  /* ═══ TITLE PLATE ═══ */
+  .hb-title-plate {
+    position: relative; z-index: 5;
+    max-width: 1480px;
+    margin: 16px auto 0;
+    padding: 18px 24px;
+    background:
+      linear-gradient(135deg, rgba(146, 255, 179, 0.04), rgba(255, 90, 58, 0.04)),
+      linear-gradient(180deg, var(--bg-2), var(--bg-1));
+    border: 1px solid var(--hud-dim);
+    border-left: 4px solid var(--classified);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    box-shadow: 0 0 60px rgba(146, 255, 179, 0.05);
+  }
+  .hb-title-plate::before {
+    content: 'CLASSIFIED'; position: absolute; top: 8px; right: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px; letter-spacing: 0.4em;
+    color: var(--classified);
+    border: 1px solid var(--classified);
+    padding: 2px 6px;
+    transform: rotate(2deg);
+    opacity: 0.7;
+  }
+  .hb-title-meta {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--hud-dim);
+    line-height: 1.6;
+  }
+  .hb-title-meta b { color: var(--hud); display: block;}
+  .hb-title-main {
+    text-align: center;
+  }
+  .hb-title-eyebrow {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 0.4em;
+    color: var(--warn);
+  }
+  .hb-title-name {
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 38px;
+    letter-spacing: 0.06em;
+    color: var(--paper);
+    text-shadow: 0 0 20px rgba(146, 255, 179, 0.2);
+    line-height: 1;
+    margin: 4px 0 6px;
+  }
+  .hb-title-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 0.3em;
+    color: var(--hud);
+  }
+  .hb-title-stats {
+    display: flex; gap: 16px; justify-content: flex-end;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+  }
+  .hb-stat { text-align: right;}
+  .hb-stat-v { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 22px; color: var(--hud); display: block; line-height: 1;}
+  .hb-stat-l { color: var(--paper-dim); display: block; margin-top: 4px;}
+
+  /* ═══ MAIN LAYOUT ═══ */
+  .hb-shell {
+    position: relative; z-index: 5;
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+  }
+  .hb-main { min-width: 0; }
+
+  /* ═══ INFILTRATION MAP ═══ */
+  .hb-map-wrap {
+    position: sticky; top: 36px; z-index: 10;
+    background: var(--bg-1);
+    border: 1px solid var(--hud-dim);
+    margin-bottom: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  }
+  .hb-map-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 14px;
+    background: linear-gradient(90deg, var(--bg-3), var(--bg-2));
+    border-bottom: 1px solid var(--hud-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; letter-spacing: 0.2em;
+  }
+  .hb-map-title { color: var(--hud); font-weight: 700;}
+  .hb-map-coords { color: var(--paper-dim);}
+  .hb-map-phase {
+    color: var(--warn);
+    border: 1px solid var(--warn);
+    padding: 2px 8px;
+  }
+  .hb-map { position: relative; height: 380px; overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 100%, rgba(146,255,179,0.08), transparent 70%),
+      linear-gradient(180deg, #0a0d12 0%, #1a1410 100%);
+  }
+  .hb-map svg { display: block; width: 100%; height: 100%; }
+
+  /* Map labels overlaid on SVG */
+  .hb-zone-label {
+    position: absolute;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--hud);
+    background: rgba(6,10,14,0.85);
+    border: 1px solid var(--hud-dim);
+    padding: 3px 7px;
+    pointer-events: none;
+    text-transform: uppercase;
+  }
+  .hb-zone-label .stat { color: var(--paper-dim); display: block; font-size: 8px; letter-spacing: 0.2em; margin-top: 2px;}
+  .hb-zone-label.danger { color: var(--warn); border-color: var(--warn); animation: hazardpulse 1.6s infinite;}
+  .hb-zone-label.locked { color: var(--paper-dim); border-color: var(--line-2);}
+  @keyframes hazardpulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255, 184, 54, 0.6);} 50% { box-shadow: 0 0 0 6px rgba(255, 184, 54, 0);}}
+
+  /* Team tokens on map */
+  .hb-tok {
+    position: absolute;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid;
+    display: grid; place-items: center;
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 11px;
+    transition: top 0.8s cubic-bezier(.4,0,.2,1), left 0.8s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 0 14px;
+    z-index: 3;
+  }
+  .hb-tok.A { background: var(--bg-1); border-color: var(--teamA); color: var(--teamA); box-shadow-color: var(--teamA);}
+  .hb-tok.A { box-shadow: 0 0 14px rgba(58,160,255,0.7);}
+  .hb-tok.B { background: var(--bg-1); border-color: var(--teamB); color: var(--teamB); box-shadow: 0 0 14px rgba(255,94,58,0.7);}
+  .hb-tok.hit { animation: tokhit 0.4s ease;}
+  @keyframes tokhit { 0%,100% { transform: translate(0,0);} 25% { transform: translate(-3px,-2px);} 75% { transform: translate(3px, 2px);}}
+  .hb-tok-trail {
+    position: absolute; width: 6px; height: 6px; border-radius: 50%;
+    pointer-events: none;
+    animation: trailfade 1s forwards;
+  }
+  @keyframes trailfade { from { opacity: 1;} to { opacity: 0; transform: scale(0.3);} }
+
+  /* Hazard pulse on map */
+  .hb-hazard-pulse {
+    position: absolute;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid;
+    pointer-events: none;
+    animation: hpulse 1.4s ease-out forwards;
+  }
+  @keyframes hpulse { 0% { transform: scale(0.4); opacity: 1;} 100% { transform: scale(4); opacity: 0;}}
+
+  /* Map decorative SVG style */
+  .map-fence { stroke: var(--hud-dim); stroke-width: 1.5; stroke-dasharray: 3 2; fill: none;}
+  .map-fence-hot { stroke: var(--warn); stroke-width: 2; fill: none; filter: drop-shadow(0 0 4px var(--warn));}
+  .map-mine { fill: var(--hot); }
+  .map-laser { stroke: var(--laser); stroke-width: 1; opacity: 0.7;}
+  .map-bldg { fill: var(--bg-2); stroke: var(--hud-dim); stroke-width: 1;}
+  .map-bldg-2 { fill: var(--bg-3); stroke: var(--line-2); stroke-width: 1;}
+  .map-path { stroke: var(--hud); stroke-width: 1.5; stroke-dasharray: 4 3; fill: none; opacity: 0.5;}
+  .map-text { font-family: 'Share Tech Mono', monospace; font-size: 8px; fill: var(--paper-dim); letter-spacing: 1px;}
+
+  /* ═══ FEED ═══ */
+  .hb-feed { display: flex; flex-direction: column; gap: 10px; }
+
+  .hb-section-bar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 14px;
+    background: linear-gradient(90deg, var(--bg-3), transparent);
+    border-left: 3px solid var(--hud);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    margin-top: 8px;
+  }
+  .hb-section-bar:first-child { margin-top: 0; }
+  .hb-section-tag { color: var(--hud); font-weight: 700;}
+  .hb-section-title { color: var(--paper); font-family: 'Black Ops One', sans-serif; font-size: 14px; letter-spacing: 0.1em;}
+  .hb-section-meta { color: var(--paper-dim);}
+
+  /* Card base */
+  .hb-card {
+    position: relative;
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-1));
+    border: 1px solid var(--line-2);
+    padding: 12px 14px;
+    animation: cardin 0.45s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes cardin {
+    from { opacity: 0; transform: translateX(-10px); filter: blur(2px);}
+    to { opacity: 1; transform: translateX(0); filter: blur(0);}
+  }
+
+  .hb-card-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed rgba(146,255,179,0.15);
+  }
+  .hb-card-icon {
+    width: 28px; height: 28px;
+    flex-shrink: 0;
+    border: 1px solid;
+    display: grid; place-items: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; font-weight: 700;
+  }
+  .hb-card-who {
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 13px; letter-spacing: 0.1em;
+    flex: 1;
+  }
+  .hb-card-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px; letter-spacing: 0.2em;
+    padding: 2px 8px;
+    border: 1px solid;
+  }
+  .hb-card-body {
+    font-size: 13.5px; line-height: 1.55;
+    color: var(--paper);
+  }
+  .hb-card-body em {
+    font-style: normal;
+    color: var(--hud);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    background: rgba(146,255,179,0.08);
+    padding: 0 4px;
+  }
+  .hb-card-body b { color: var(--warn); font-weight: 700;}
+
+  .hb-card-foot {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+  }
+  .hb-chip {
+    padding: 2px 8px;
+    border: 1px solid;
+  }
+  .hb-chip.ok { color: var(--hud); border-color: var(--hud-dim);}
+  .hb-chip.bad { color: var(--hot); border-color: var(--hot);}
+  .hb-chip.warn { color: var(--warn); border-color: var(--warn);}
+  .hb-chip.team-a { color: var(--teamA); border-color: var(--teamA-dim);}
+  .hb-chip.team-b { color: var(--teamB); border-color: var(--teamB-dim);}
+
+  /* Card variants */
+  .hb-card.briefing {
+    background: linear-gradient(135deg, rgba(146,255,179,0.06), var(--bg-1));
+    border-color: var(--hud-dim);
+    border-left: 3px solid var(--hud);
+  }
+  .hb-card.briefing .hb-card-icon { border-color: var(--hud); color: var(--hud);}
+  .hb-card.briefing .hb-card-tag { border-color: var(--hud); color: var(--hud);}
+
+  .hb-card.movement {
+    border-color: var(--teamA-dim);
+  }
+  .hb-card.movement[data-team="B"] { border-color: var(--teamB-dim); }
+  .hb-card.movement .hb-card-icon { border-color: var(--teamA); color: var(--teamA);}
+  .hb-card.movement[data-team="B"] .hb-card-icon { border-color: var(--teamB); color: var(--teamB);}
+
+  .hb-card.hazard {
+    background: linear-gradient(135deg, rgba(255, 90, 58, 0.12), var(--bg-1));
+    border: 1px solid var(--hot);
+    border-left: 4px solid var(--hot);
+    animation: cardin 0.45s cubic-bezier(.16,1,.3,1) both, hazardflash 0.6s ease;
+  }
+  @keyframes hazardflash {
+    0% { box-shadow: 0 0 0 4px rgba(255,58,58,0.6), 0 0 40px rgba(255,58,58,0.4);}
+    100% { box-shadow: 0 0 0 0 rgba(255,58,58,0), 0 0 0 rgba(255,58,58,0);}
+  }
+  .hb-card.hazard .hb-card-icon { border-color: var(--hot); color: var(--hot); background: rgba(255,58,58,0.1);}
+  .hb-card.hazard .hb-card-tag { border-color: var(--hot); color: var(--hot); background: rgba(255,58,58,0.1);}
+  .hb-card.hazard .hb-card-who { color: var(--hot);}
+
+  .hb-card.interrupt {
+    background: var(--bg-2);
+    border: 1px solid var(--warn);
+    border-left: 4px solid var(--warn);
+    position: relative;
+  }
+  .hb-card.interrupt::before {
+    content: '⚠ INTERRUPT'; position: absolute; top: -1px; right: -1px;
+    background: var(--warn); color: var(--bg-0);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.2em;
+    padding: 2px 8px;
+  }
+  .hb-card.interrupt .hb-card-who { color: var(--warn);}
+  .hb-card.interrupt .hb-card-icon { border-color: var(--warn); color: var(--warn);}
+
+  .hb-card.alien {
+    background: linear-gradient(135deg, rgba(183, 109, 255, 0.12), var(--bg-1));
+    border: 1px solid var(--alien);
+    border-left: 4px solid var(--alien);
+    animation: cardin 0.45s, alienpulse 2s ease-in-out infinite;
+  }
+  @keyframes alienpulse {
+    0%,100% { box-shadow: inset 0 0 30px rgba(183,109,255,0.05);}
+    50% { box-shadow: inset 0 0 50px rgba(183,109,255,0.15), 0 0 30px rgba(183,109,255,0.2);}
+  }
+  .hb-card.alien .hb-card-icon { border-color: var(--alien); color: var(--alien);}
+  .hb-card.alien .hb-card-tag { border-color: var(--alien); color: var(--alien);}
+  .hb-card.alien .hb-card-who { color: var(--alien);}
+
+  .hb-card.discovery {
+    background: linear-gradient(135deg, rgba(146,255,179,0.1), var(--bg-1));
+    border: 1px solid var(--hud);
+    box-shadow: 0 0 30px rgba(146,255,179,0.1);
+  }
+  .hb-card.discovery .hb-card-icon { border-color: var(--hud); color: var(--hud); background: rgba(146,255,179,0.1);}
+  .hb-card.discovery .hb-card-tag { border-color: var(--hud); color: var(--hud);}
+  .hb-card.discovery .hb-card-who { color: var(--hud);}
+
+  .hb-card.confessional {
+    background: var(--bg-2);
+    border: 1px dashed var(--paper-dim);
+    border-left: 3px solid var(--paper-dim);
+  }
+  .hb-card.confessional .hb-card-body { font-style: italic; color: var(--paper-dim);}
+  .hb-card.confessional .hb-card-icon { border-color: var(--paper-dim); color: var(--paper-dim);}
+  .hb-card.confessional .hb-card-body::before { content: '"'; color: var(--hud); font-size: 22px; font-family: serif;}
+  .hb-card.confessional .hb-card-body::after { content: '"'; color: var(--hud); font-size: 22px; font-family: serif;}
+
+  .hb-card.victory {
+    background: linear-gradient(135deg, rgba(255,184,54,0.15), var(--bg-1));
+    border: 2px solid var(--warn);
+    text-align: center;
+  }
+  .hb-card.victory .hb-card-who { color: var(--warn); font-size: 18px;}
+
+  /* Cause→Effect connector */
+  .hb-cause-effect {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 10px;
+    align-items: stretch;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .hb-ce-side {
+    padding: 8px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--line);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    line-height: 1.5;
+    letter-spacing: 0.05em;
+  }
+  .hb-ce-side .lbl { color: var(--paper-dim); display: block; font-size: 8px; letter-spacing: 0.25em; margin-bottom: 4px;}
+  .hb-ce-arrow {
+    align-self: center;
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 24px;
+    color: var(--warn);
+    animation: arrowshift 1s ease-in-out infinite;
+  }
+  @keyframes arrowshift {
+    0%,100% { transform: translateX(0);}
+    50% { transform: translateX(4px);}
+  }
+
+  /* Mini-icons for log avatars */
+  .hb-av {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid;
+    display: grid; place-items: center;
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  /* ═══ SIDEBAR ═══ */
+  .hb-side { position: sticky; top: 50px; align-self: start; max-height: calc(100vh - 70px); overflow-y: auto;
+    display: flex; flex-direction: column; gap: 12px;
+    padding-right: 4px;
+  }
+  .hb-side::-webkit-scrollbar { width: 6px;}
+  .hb-side::-webkit-scrollbar-thumb { background: var(--line-2); }
+
+  .hb-panel {
+    background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+    border: 1px solid var(--hud-dim);
+    position: relative;
+  }
+  .hb-panel-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px;
+    background: linear-gradient(90deg, var(--bg-3), transparent);
+    border-bottom: 1px solid var(--hud-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--hud);
+  }
+  .hb-panel-head .pill {
+    background: var(--hud);
+    color: var(--bg-0);
+    padding: 1px 6px;
+    font-weight: 700;
+  }
+  .hb-panel-body { padding: 10px 12px; }
+
+  /* Roster */
+  .hb-roster { display: flex; flex-direction: column; gap: 6px;}
+  .hb-roster-row {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 6px;
+    background: var(--bg-1);
+    border-left: 3px solid var(--line-2);
+    transition: all 0.3s;
+  }
+  .hb-roster-row[data-team="A"] { border-left-color: var(--teamA);}
+  .hb-roster-row[data-team="B"] { border-left-color: var(--teamB);}
+  .hb-roster-row.eliminated { opacity: 0.4; filter: grayscale(0.8);}
+  .hb-roster-row.injured { background: rgba(255,184,54,0.06);}
+  .hb-roster-row.captured { background: rgba(183,109,255,0.08);}
+
+  .hb-roster-pic {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 2px solid;
+    display: grid; place-items: center;
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 11px;
+    position: relative;
+  }
+  .hb-roster-info { min-width: 0;}
+  .hb-roster-name {
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 12px; letter-spacing: 0.05em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .hb-roster-role {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--paper-dim);
+    letter-spacing: 0.1em;
+  }
+  .hb-roster-status {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border: 1px solid;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+  .hb-status-ok { color: var(--hud); border-color: var(--hud-dim);}
+  .hb-status-warn { color: var(--warn); border-color: var(--warn);}
+  .hb-status-hot { color: var(--hot); border-color: var(--hot);}
+  .hb-status-alien { color: var(--alien); border-color: var(--alien);}
+
+  /* HP bar */
+  .hb-hp { margin-top: 4px; height: 3px; background: rgba(255,255,255,0.05); position: relative;}
+  .hb-hp-fill { height: 100%; background: var(--hud); transition: width 0.6s; }
+  .hb-hp-fill.warn { background: var(--warn);}
+  .hb-hp-fill.hot { background: var(--hot);}
+
+  /* Artifact panel */
+  .hb-art-grid { display: flex; flex-direction: column; gap: 8px;}
+  .hb-art {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    position: relative;
+  }
+  .hb-art.confirmed { border-color: var(--hud); background: rgba(146,255,179,0.05); box-shadow: 0 0 12px rgba(146,255,179,0.2);}
+  .hb-art.decoy { border-color: var(--paper-dim); opacity: 0.6;}
+  .hb-art.alive { border-color: var(--alien); animation: alienthrob 2s infinite;}
+  @keyframes alienthrob { 0%,100% { box-shadow: inset 0 0 0 0 var(--alien);} 50% { box-shadow: inset 0 0 18px rgba(183,109,255,0.3);}}
+  .hb-art-icon {
+    width: 36px; height: 36px;
+    border: 1px solid var(--line-2);
+    display: grid; place-items: center;
+    background: rgba(0,0,0,0.4);
+  }
+  .hb-art-name {
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 11px; letter-spacing: 0.05em;
+  }
+  .hb-art-meta {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--paper-dim);
+    letter-spacing: 0.1em;
+  }
+  .hb-art-status {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+  }
+
+  /* Hazard log mini-list */
+  .hb-haz-list { display: flex; flex-direction: column; gap: 4px;}
+  .hb-haz-item {
+    display: grid;
+    grid-template-columns: 14px 1fr auto;
+    gap: 6px;
+    padding: 5px 0;
+    border-bottom: 1px dotted rgba(255,255,255,0.06);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+  }
+  .hb-haz-item:last-child { border-bottom: none;}
+  .hb-haz-dot { width: 8px; height: 8px; border-radius: 50%; align-self: center;}
+  .hb-haz-fence { background: var(--warn); box-shadow: 0 0 6px var(--warn);}
+  .hb-haz-mine { background: var(--hot); box-shadow: 0 0 6px var(--hot);}
+  .hb-haz-laser { background: var(--laser); box-shadow: 0 0 6px var(--laser);}
+  .hb-haz-alien { background: var(--alien); box-shadow: 0 0 6px var(--alien);}
+  .hb-haz-label { color: var(--paper); letter-spacing: 0.1em;}
+  .hb-haz-count { color: var(--paper-dim);}
+
+  /* Race meter */
+  .hb-race { display: flex; flex-direction: column; gap: 8px;}
+  .hb-race-row {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+  .hb-race-row .label { display: flex; justify-content: space-between; margin-bottom: 4px;}
+  .hb-race-row .lname { font-family: 'Black Ops One', sans-serif; font-size: 11px;}
+  .hb-race-row .lpct { color: var(--paper-dim);}
+  .hb-race-track {
+    height: 14px;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .hb-race-track::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(90deg, transparent 0, transparent 19px, rgba(255,255,255,0.04) 19px, rgba(255,255,255,0.04) 20px);
+  }
+  .hb-race-fill {
+    height: 100%;
+    transition: width 0.8s cubic-bezier(.4,0,.2,1);
+    position: relative;
+  }
+  .hb-race-fill.A { background: linear-gradient(90deg, var(--teamA-dim), var(--teamA));}
+  .hb-race-fill.B { background: linear-gradient(90deg, var(--teamB-dim), var(--teamB));}
+  .hb-race-fill::after {
+    content: ''; position: absolute; right: 0; top: -4px; bottom: -4px; width: 2px;
+    background: white;
+    box-shadow: 0 0 8px white;
+  }
+
+  /* Tension meter */
+  .hb-tension { display: flex; align-items: center; gap: 10px;}
+  .hb-tension-track { flex: 1; height: 6px; background: rgba(255,255,255,0.05); position: relative; overflow: hidden;}
+  .hb-tension-fill { height: 100%; background: linear-gradient(90deg, var(--hud), var(--warn), var(--hot)); transition: width 0.6s;}
+  .hb-tension-val { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 14px; color: var(--hot); min-width: 40px; text-align: right;}
+
+  /* ═══ CONTROLS ═══ */
+  .hb-controls {
+    position: sticky; bottom: 16px;
+    margin: 16px 0 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    background: var(--bg-1);
+    border: 1px solid var(--hud-dim);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+  }
+  .hb-btn {
+    background: linear-gradient(180deg, var(--bg-3), var(--bg-2));
+    color: var(--paper);
+    border: none;
+    border-right: 1px solid var(--line-2);
+    padding: 16px 18px;
+    cursor: pointer;
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: all 0.15s;
+  }
+  .hb-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, var(--hud-dim), var(--bg-3));
+    color: var(--bg-0);
+  }
+  .hb-btn:disabled { opacity: 0.3; cursor: not-allowed;}
+  .hb-btn.primary { color: var(--hud);}
+  .hb-btn.primary:hover:not(:disabled) { background: var(--hud); color: var(--bg-0);}
+  .hb-btn.danger { color: var(--hot);}
+  .hb-btn.danger:hover:not(:disabled) { background: var(--hot); color: var(--bg-0);}
+  .hb-btn:last-child { border-right: none;}
+  .hb-btn .arrow { font-size: 18px;}
+
+  .hb-progress {
+    grid-column: 1 / -1;
+    height: 4px;
+    background: var(--bg-0);
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+  }
+  .hb-progress-fill { height: 100%; background: linear-gradient(90deg, var(--hud), var(--warn)); transition: width 0.4s;}
+
+  /* Glitch tension at high pressure */
+  body.tense .hb-map-wrap { animation: tenseflicker 4s infinite;}
+  @keyframes tenseflicker {
+    0%, 95%, 100% { filter: none;}
+    97% { filter: hue-rotate(15deg) brightness(1.1);}
+    98% { filter: brightness(0.9);}
+  }
+
+  /* Empty state */
+  .hb-empty {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--paper-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+  }
+  .hb-empty .blip { color: var(--hud); animation: blink 1s infinite;}
+
+  /* Mobile */
+  @media (max-width: 980px) {
+    .hb-shell { grid-template-columns: 1fr;}
+    .hb-side { position: static; max-height: none;}
+    .hb-title-plate { grid-template-columns: 1fr; text-align: center;}
+    .hb-title-stats { justify-content: center;}
+    .hb-title-meta { text-align: center;}
+  }
+</style>
+</head>
+<body>
+<div class="hb-bg"></div>
+<div class="hb-grid"></div>
+<div class="hb-stars" id="stars"></div>
+<div class="hb-scanlines"></div>
+<div class="hb-vignette"></div>
+
+<div id="app"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="area51-app.jsx"></script>
+
+<script>
+  // tiny stars
+  (function(){
+    const s = document.getElementById('stars');
+    for (let i = 0; i < 80; i++) {
+      const star = document.createElement('div');
+      star.className = 'hb-star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 60 + '%';
+      star.style.animationDelay = (Math.random() * 4) + 's';
+      star.style.opacity = (0.2 + Math.random() * 0.6).toFixed(2);
+      s.appendChild(star);
+    }
+  })();
+</script>
+</body>
+</html>

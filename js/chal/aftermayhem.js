@@ -529,13 +529,13 @@ export function simulateAftermayhem(ep) {
           if (gs.showmances) {
             for (const sh of gs.showmances) {
               if (sh.broken) continue;
-              const aInRace = aliveRacers.find(r => r.name === sh.pair[0]);
-              const bActive = (gs.activePlayers || []).includes(sh.pair[1]);
-              const bInRace = aliveRacers.find(r => r.name === sh.pair[1]);
-              const aActive = (gs.activePlayers || []).includes(sh.pair[0]);
-              if (aInRace && bActive) showmancePartners.push([sh.pair[0], sh.pair[1]]);
-              if (bInRace && aActive) showmancePartners.push([sh.pair[1], sh.pair[0]]);
-              if (aInRace && bInRace) showmancePartners.push([sh.pair[0], sh.pair[1]]);
+              const aInRace = aliveRacers.find(r => r.name === sh.players[0]);
+              const bActive = (gs.activePlayers || []).includes(sh.players[1]);
+              const bInRace = aliveRacers.find(r => r.name === sh.players[1]);
+              const aActive = (gs.activePlayers || []).includes(sh.players[0]);
+              if (aInRace && bActive) showmancePartners.push([sh.players[0], sh.players[1]]);
+              if (bInRace && aActive) showmancePartners.push([sh.players[1], sh.players[0]]);
+              if (aInRace && bInRace) showmancePartners.push([sh.players[0], sh.players[1]]);
             }
           }
 

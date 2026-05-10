@@ -1498,7 +1498,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
     ep.isFrozenCrossing = true;
 
   } else if (engineType === 'picnic-hanging-dork') {
-    if (gs.isMerged || gs.tribes.length < 2) return;
+    if (!gs.isMerged && gs.tribes.length < 2) return;
     ep.isPicnicHangingDork = true;
 
   } else if (engineType === 'viking-sour') {

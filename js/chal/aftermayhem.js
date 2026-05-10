@@ -316,7 +316,7 @@ export function simulateAftermayhem(ep) {
     const pop = (gs.popularity?.[name] || 0);
     const elimIdx = gs.eliminated.indexOf(name);
     const recency = totalElim > 1 ? elimIdx / (totalElim - 1) : 0.5;
-    const w = pop * 0.4 + recency * 0.3 + Math.random() * 0.3;
+    const w = pop * 0.15 + recency * 0.1 + Math.random() * 0.75;
     return { name, weight: w, popularity: pop, recency, selected: false };
   });
   weighted.sort((a, b) => b.weight - a.weight);

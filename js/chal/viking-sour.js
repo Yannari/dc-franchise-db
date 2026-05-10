@@ -2218,8 +2218,8 @@ function _shell(content, ep, sidebarPhase = 'title', screenKey = 'vs-title') {
 
 /* ═══════ SIDEBAR ═══════ */
 .vs-sidebar-cell{position:relative;}
-.vs-sidebar{background:var(--vs-glass2);padding:12px;font-size:12px;position:sticky;top:0;
-  height:100vh;max-height:100vh;overflow-y:auto;
+.vs-sidebar{background:var(--vs-glass2);padding:12px;font-size:12px;position:sticky;top:46px;
+  height:calc(100vh - 46px);max-height:calc(100vh - 46px);overflow-y:auto;
   border-left:2px solid var(--vs-plank-lt);scrollbar-width:thin;scrollbar-color:var(--vs-plank-lt) transparent;
   overscroll-behavior:contain;}
 .vs-sb-title{font-family:'Cinzel',serif;font-size:11px;color:var(--vs-gold);letter-spacing:2px;

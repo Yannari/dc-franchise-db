@@ -191,7 +191,7 @@ const HOST_CHATTER = [
   () => `"Roll those dice, people! The Trophy Case won't walk to you!"`,
   () => `"Another one bites the dust! ...Er, the board."`,
   () => `"I LOVE this challenge. The drama! The pain! The ratings!"`,
-  () => `"Remember — the dice only go to 3. Every. Square. Counts."`,
+  () => `"Roll high or roll home! Every square is a new nightmare!"`,
   () => `"The peanut gallery is going WILD! Can you blame them?"`,
   () => `"Booby traps, brutal challenges, and broken dreams. That's Aftermayhem!"`,
   () => `"Keep rolling! Keep fighting! Keep my ratings up!"`,
@@ -452,6 +452,7 @@ export function simulateAftermayhem(ep) {
   for (let roundNum = 1; roundNum <= 20 && !gameOver; roundNum++) {
     const roundData = { roundNum, turns: [], socialEvents: [], eliminations: [] };
     const escalation = roundNum >= 5 ? 1.0 + (roundNum - 4) * 0.4 : 1.0;
+    const collisionUsed = new Set();
 
     for (const racer of turnOrder) {
       if (!racer.alive || gameOver) continue;
@@ -478,6 +479,7 @@ export function simulateAftermayhem(ep) {
       let koBeforeChallenge = false;
 
       // ── Booby Trap ──
+      const preBacktrackPos = racer.position;
       let trapBacktrack = 0;
       let trapBacktrackText = '';
       if (isTrap && racer.position < BOARD_FINISH) {
@@ -527,28 +529,40 @@ export function simulateAftermayhem(ep) {
       }
 
       // ── Same-Square Collision ──
-      if (racer.alive && !koBeforeChallenge && racer.position < BOARD_FINISH) {
-        const collision = racers.filter(r => r.alive && r.name !== racer.name && r.position === racer.position);
+      if (racer.alive && !koBeforeChallenge && racer.position < BOARD_FINISH && racer.energy > 0 && !collisionUsed.has(racer.name)) {
+        const collision = racers.filter(r => r.alive && r.energy > 0 && r.name !== racer.name && r.position === racer.position && !collisionUsed.has(r.name));
         if (collision.length > 0) {
           const target = collision[0];
           const bond = getBond(racer.name, target.name);
           let collisionEvent = null;
           if (bond <= -2 && canTrashTalk(racer.name)) {
-            racer.energy = clamp(racer.energy - 8, 0, 100);
-            target.energy = clamp(target.energy - 8, 0, 100);
+            const trashSuccess = (pStats(racer.name).social || 5) + noise(2.5) > (pStats(target.name).mental || 5) + noise(2.5);
+            if (trashSuccess) {
+              racer.energy = clamp(racer.energy + 5, 0, 100);
+              target.energy = clamp(target.energy - 12, 0, 100);
+            } else {
+              racer.energy = clamp(racer.energy - 12, 0, 100);
+              target.energy = clamp(target.energy + 5, 0, 100);
+            }
             addBond(racer.name, target.name, -1);
-            collisionEvent = { type: 'collision-rivalry', players: [racer.name, target.name], text: pick(COLLISION_RIVALRY)(racer.name, target.name), bondDelta: -1, energyDelta: -8 };
+            collisionEvent = { type: 'collision-rivalry', players: [racer.name, target.name], text: pick(COLLISION_RIVALRY)(racer.name, target.name), bondDelta: -1, energyDelta: trashSuccess ? -12 : 12, trashSuccess };
           } else if (bond >= 3) {
             racer.energy = clamp(racer.energy + 8, 0, 100);
             target.energy = clamp(target.energy + 8, 0, 100);
             addBond(racer.name, target.name, 0.5);
             collisionEvent = { type: 'collision-alliance', players: [racer.name, target.name], text: pick(COLLISION_ALLIANCE)(racer.name, target.name), bondDelta: 0.5, energyDelta: 8 };
           } else {
-            racer.energy = clamp(racer.energy + 5, 0, 100);
-            target.energy = clamp(target.energy - 5, 0, 100);
-            collisionEvent = { type: 'collision-bump', players: [racer.name, target.name], text: pick(COLLISION_BUMP)(racer.name, target.name), bondDelta: 0, energyDelta: 5 };
+            const stolen = 8 + Math.floor(Math.random() * 5);
+            racer.energy = clamp(racer.energy + stolen, 0, 100);
+            target.energy = clamp(target.energy - stolen, 0, 100);
+            addBond(racer.name, target.name, -0.5);
+            collisionEvent = { type: 'collision-bump', players: [racer.name, target.name], text: pick(COLLISION_BUMP)(racer.name, target.name), bondDelta: -0.5, energyDelta: stolen };
           }
-          if (collisionEvent) roundData.socialEvents.push(collisionEvent);
+          if (collisionEvent) {
+            roundData.socialEvents.push(collisionEvent);
+            collisionUsed.add(racer.name);
+            collisionUsed.add(target.name);
+          }
         }
       }
 
@@ -632,14 +646,14 @@ export function simulateAftermayhem(ep) {
       }
 
       roundData.turns.push({
-        player: racer.name, diceRoll, oldPos, newPos: racer.position,
+        player: racer.name, diceRoll, oldPos, newPos: preBacktrackPos, finalPos: racer.position,
         challengeType: sqData?.type || null,
         challengeTypeName: sqData?.typeName || null,
         callback: sqData?.callback || null,
         callbackEp: sqData?.callbackEp || null,
         score: challengeScore, energyDelta: challengeEnergyDelta,
         energyAfter: racer.energy,
-        isTrap, trapDamage, trapText, trapSurviveText,
+        isTrap, trapDamage, actualTrapDmg: isTrap ? Math.round(30 * escalation) : 0, trapText, trapSurviveText,
         trapBacktrack, trapBacktrackText,
         rollText, challengeText, dominationText: '',
         isWinner: false, koBeforeChallenge,
@@ -1278,7 +1292,7 @@ function _amCSS() {
 .am-round-sub{font-family:'Fredoka',sans-serif;font-size:12px;color:#999;margin-top:4px;position:relative;z-index:1;}
 
 /* Sidebar */
-.am-sidebar{border-left:2px solid rgba(255,60,138,.15);background:linear-gradient(180deg,rgba(42,10,58,.95),rgba(90,10,74,.6),rgba(42,10,58,.95));padding:14px;font-size:12px;position:sticky;top:84px;height:calc(100vh - 84px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,209,60,.15) transparent;}
+.am-sidebar{border-left:2px solid rgba(255,60,138,.15);background:linear-gradient(180deg,rgba(42,10,58,.95),rgba(90,10,74,.6),rgba(42,10,58,.95));padding:14px;font-size:12px;position:sticky;top:46px;height:calc(100vh - 46px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,209,60,.15) transparent;overscroll-behavior:contain;}
 .am-sb-title{font-family:'Bungee',sans-serif;font-size:9px;color:var(--am-pink);letter-spacing:2px;text-transform:uppercase;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid rgba(255,60,138,.15);}
 .am-sb-title:first-child{margin-top:0;}
 .am-sb-player{display:flex;align-items:center;gap:8px;padding:6px 8px;margin:5px 0;background:rgba(255,255,255,.02);border:1px solid rgba(255,209,60,.05);border-radius:5px;transition:all .3s;}
@@ -1726,7 +1740,8 @@ export function rpBuildAftermayhemBoard(ep) {
       // Trap card
       if (turn.isTrap && turn.trapText) {
         revTraps.add(turn.newPos);
-        const trapEnergy = turn.koBeforeChallenge ? 0 : (energies[turn.player] || 100) - 30;
+        const trapActual = turn.actualTrapDmg || 30;
+        const trapEnergy = turn.koBeforeChallenge ? 0 : (energies[turn.player] || 100) - trapActual;
         energies[turn.player] = clamp(trapEnergy, 0, 100);
 
         cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
@@ -1739,7 +1754,7 @@ export function rpBuildAftermayhemBoard(ep) {
             <div class="am-card-body">${turn.trapText}</div>
             <div class="am-card-foot">
               <span>TRAP DAMAGE</span>
-              <span class="am-energy-pill drain">&#x2212;30 ENERGY</span>
+              <span class="am-energy-pill drain">&#x2212;${turn.actualTrapDmg || 30} ENERGY</span>
             </div>
             ${!turn.koBeforeChallenge ? `<div class="am-card-body" style="margin-top:6px;font-style:italic;color:#999;">${turn.trapSurviveText}</div>` : ''}
             <div class="am-card-energy">
@@ -1922,14 +1937,13 @@ export function rpBuildAftermayhemBoard(ep) {
       if (se.type === 'trash-talk') {
         const pi = am.racers.findIndex(r => r.name === sePlayer);
         avatarColor = pi >= 0 ? TOKEN_COLORS[pi % TOKEN_COLORS.length] : 'var(--am-red)';
-        // Update energy tracking for target
         const targetRacer = am.racers.find(r => r.name === seTarget);
-        if (targetRacer) energies[seTarget] = clamp((energies[seTarget] || 100) - 5, 0, 100);
+        if (targetRacer) energies[seTarget] = clamp((energies[seTarget] || 100) + (se.energyDelta || -5), 0, 100);
       } else if (se.type === 'encouragement') {
         const pi = am.racers.findIndex(r => r.name === sePlayer);
         avatarColor = pi >= 0 ? TOKEN_COLORS[pi % TOKEN_COLORS.length] : 'var(--am-green)';
         const targetRacer = am.racers.find(r => r.name === seTarget);
-        if (targetRacer) energies[seTarget] = clamp((energies[seTarget] || 100) + 5, 0, 100);
+        if (targetRacer) energies[seTarget] = clamp((energies[seTarget] || 100) + (se.energyDelta || 5), 0, 100);
       } else if (se.type === 'showmance') {
         avatarColor = 'var(--am-pink)';
         tagLabel = 'SHOWMANCE';
@@ -1941,18 +1955,24 @@ export function rpBuildAftermayhemBoard(ep) {
         avatarColor = 'rgba(255,255,255,.3)';
       } else if (se.type === 'collision-rivalry') {
         avatarColor = 'var(--am-red)';
-        tagLabel = 'COLLISION!';
-        // Update energy tracking for both
-        am.racers.forEach(r => { if (se.players.includes(r.name)) energies[r.name] = clamp((energies[r.name] || 100) - 8, 0, 100); });
+        tagLabel = se.trashSuccess ? 'TRASH TALK' : 'TRASH TALK';
+        const absE = Math.abs(se.energyDelta);
+        if (se.trashSuccess) {
+          energies[sePlayer] = clamp((energies[sePlayer] || 100) + 5, 0, 100);
+          energies[seTarget] = clamp((energies[seTarget] || 100) - absE, 0, 100);
+        } else {
+          energies[sePlayer] = clamp((energies[sePlayer] || 100) - absE, 0, 100);
+          energies[seTarget] = clamp((energies[seTarget] || 100) + 5, 0, 100);
+        }
       } else if (se.type === 'collision-alliance') {
         avatarColor = 'var(--am-green)';
         tagLabel = 'ALLIANCE BOOST';
-        am.racers.forEach(r => { if (se.players.includes(r.name)) energies[r.name] = clamp((energies[r.name] || 100) + 8, 0, 100); });
+        am.racers.forEach(r => { if (se.players.includes(r.name)) energies[r.name] = clamp((energies[r.name] || 100) + se.energyDelta, 0, 100); });
       } else if (se.type === 'collision-bump') {
         avatarColor = 'var(--am-neon)';
         tagLabel = 'BOARD BUMP';
-        energies[sePlayer] = clamp((energies[sePlayer] || 100) + 5, 0, 100);
-        energies[seTarget] = clamp((energies[seTarget] || 100) - 5, 0, 100);
+        energies[sePlayer] = clamp((energies[sePlayer] || 100) + se.energyDelta, 0, 100);
+        energies[seTarget] = clamp((energies[seTarget] || 100) - se.energyDelta, 0, 100);
       }
 
       cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">

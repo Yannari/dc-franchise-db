@@ -889,6 +889,8 @@ export function simulateAftermayhem(ep) {
 
     popDelta(raceWinner, 3);
     gs._aftermayhemUsed = true;
+    gs._aftermayhemWinner = raceWinner;
+    gs._aftermayhemReturnTribe = returnedTo;
   }
 
   // Build peanut gallery list (eliminated non-racers)

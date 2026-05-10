@@ -1102,6 +1102,28 @@ export function simulateEpisode() {
     delete gs.kidnappedPlayer;
   }
 
+  // ── AFTERMAYHEM RETURN ANNOUNCEMENT ──
+  if (gs._aftermayhemWinner) {
+    const _amW = gs._aftermayhemWinner;
+    const _amPr = pronouns(_amW);
+    const _amTribe = gs._aftermayhemReturnTribe || gs.mergeName || 'merge';
+    ep.twistNarrativeEvents = ep.twistNarrativeEvents || {};
+    ep.twistNarrativeEvents[_amTribe + '_aftermayhem'] = { type: 'rumor', players: [_amW], text:
+      `The tribe looks up. ${_amW} is walking into camp. ${_amPr.Sub} won the Aftermayhem — fought through traps, board games, and brutal challenges to earn ${_amPr.pos} way back. Some faces light up. Others go very, very still. The game just changed.` };
+    if (!ep.campEvents) ep.campEvents = {};
+    const _amCampKey = gs.isMerged ? (gs.mergeName || 'merge') : _amTribe;
+    if (!ep.campEvents[_amCampKey]) ep.campEvents[_amCampKey] = { pre: [], post: [] };
+    ep.campEvents[_amCampKey].pre.push({
+      type: 'aftermayhem-arrival',
+      text: `${_amW} has returned to the game via the Aftermayhem! The other players size ${_amPr.obj} up — ally or target?`,
+      players: [_amW],
+      badgeText: 'Aftermayhem Return',
+      badgeClass: 'badge-advantage',
+    });
+    delete gs._aftermayhemWinner;
+    delete gs._aftermayhemReturnTribe;
+  }
+
   // ── RESET EPISODE VOTE-LOSS & TWIST FLAGS ──
   // Preserve journey lost votes until the player actually attends tribal (dedup to prevent stale repeats)
   // Post-merge: everyone attends tribal, so clear all journey lost votes — they should only last one tribal

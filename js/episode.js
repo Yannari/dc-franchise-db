@@ -1108,7 +1108,8 @@ export function simulateEpisode() {
     const _amPr = pronouns(_amW);
     const _amTribe = gs._aftermayhemReturnTribe || gs.mergeName || 'merge';
     ep.twistNarrativeEvents = ep.twistNarrativeEvents || {};
-    ep.twistNarrativeEvents[_amTribe + '_aftermayhem'] = { type: 'rumor', players: [_amW], text:
+    const _amNarrKey = gs.isMerged ? 'merge' : _amTribe;
+    ep.twistNarrativeEvents[_amNarrKey] = { type: 'rumor', players: [_amW], text:
       `The tribe looks up. ${_amW} is walking into camp. ${_amPr.Sub} won the Aftermayhem — fought through traps, board games, and brutal challenges to earn ${_amPr.pos} way back. Some faces light up. Others go very, very still. The game just changed.` };
     if (!ep.campEvents) ep.campEvents = {};
     const _amCampKey = gs.isMerged ? (gs.mergeName || 'merge') : _amTribe;

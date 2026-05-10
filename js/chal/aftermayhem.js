@@ -451,7 +451,7 @@ export function simulateAftermayhem(ep) {
 
   for (let roundNum = 1; roundNum <= 20 && !gameOver; roundNum++) {
     const roundData = { roundNum, turns: [], socialEvents: [], eliminations: [] };
-    const escalation = roundNum >= 5 ? 1.0 + (roundNum - 4) * 0.4 : 1.0;
+    const escalation = roundNum >= 6 ? Math.min(1.0 + (roundNum - 5) * 0.25, 2.0) : 1.0;
     const collisionUsed = new Set();
 
     for (const racer of turnOrder) {
@@ -483,7 +483,7 @@ export function simulateAftermayhem(ep) {
       let trapBacktrack = 0;
       let trapBacktrackText = '';
       if (isTrap && racer.position < BOARD_FINISH) {
-        trapDamage = 30;
+        trapDamage = 20;
         revealedTraps.add(racer.position);
         const trapDrainMult = escalation;
         const actualTrapDmg = Math.round(trapDamage * trapDrainMult);
@@ -627,8 +627,8 @@ export function simulateAftermayhem(ep) {
           if (!cameos[racer.position]) cameos[racer.position] = sqData.cameo;
         }
 
-        const threshold = 6.5;
-        challengeEnergyDelta = Math.round((challengeScore - threshold) * 4.0 * escalation);
+        const threshold = 5.5;
+        challengeEnergyDelta = Math.round((challengeScore - threshold) * 2.5 * escalation);
         racer.energy = clamp(racer.energy + challengeEnergyDelta, 0, 100);
 
         const isPass = challengeScore >= threshold;
@@ -653,7 +653,7 @@ export function simulateAftermayhem(ep) {
         callbackEp: sqData?.callbackEp || null,
         score: challengeScore, energyDelta: challengeEnergyDelta,
         energyAfter: racer.energy,
-        isTrap, trapDamage, actualTrapDmg: isTrap ? Math.round(30 * escalation) : 0, trapText, trapSurviveText,
+        isTrap, trapDamage, actualTrapDmg: isTrap ? Math.round(20 * escalation) : 0, trapText, trapSurviveText,
         trapBacktrack, trapBacktrackText,
         rollText, challengeText, dominationText: '',
         isWinner: false, koBeforeChallenge,
@@ -803,7 +803,7 @@ export function simulateAftermayhem(ep) {
 
     // ── Fatigue Drain ──
     racers.filter(r => r.alive).forEach(r => {
-      r.energy = clamp(r.energy - (roundNum >= 5 ? 8 : 5), 0, 100);
+      r.energy = clamp(r.energy - (roundNum >= 6 ? 5 : 3), 0, 100);
       if (r.energy <= 0) {
         r.alive = false;
         r.koRound = roundNum;
@@ -1389,7 +1389,7 @@ function _shell(content, ep, phaseCls, sidebarHtml) {
     tickerItems.push(`&#x2B25; DICE RANGE 1-6`);
     tickerItems.push(`&#x2B25; FIRST TO THE TROPHY CASE RETURNS!`);
   } else {
-    tickerItems.push(`&#x2B25; DICE RANGE: 1-6`, `&#x2B25; FIRST TO THE TROPHY CASE RETURNS!`, `&#x2B25; BOOBY TRAPS DRAIN 30 ENERGY`);
+    tickerItems.push(`&#x2B25; DICE RANGE: 1-6`, `&#x2B25; FIRST TO THE TROPHY CASE RETURNS!`, `&#x2B25; BOOBY TRAPS DRAIN 20 ENERGY`);
   }
 
   const sidebar = sidebarHtml || `<div class="am-sidebar"><div id="am-sidebar-inner">${_buildSidebarContent(ep, phaseCls)}</div></div>`;
@@ -1742,7 +1742,7 @@ export function rpBuildAftermayhemBoard(ep) {
       // Trap card
       if (turn.isTrap && turn.trapText) {
         revTraps.add(turn.newPos);
-        const trapActual = turn.actualTrapDmg || 30;
+        const trapActual = turn.actualTrapDmg || 20;
         const trapEnergy = turn.koBeforeChallenge ? 0 : (energies[turn.player] || 100) - trapActual;
         energies[turn.player] = clamp(trapEnergy, 0, 100);
 
@@ -1756,7 +1756,7 @@ export function rpBuildAftermayhemBoard(ep) {
             <div class="am-card-body">${turn.trapText}</div>
             <div class="am-card-foot">
               <span>TRAP DAMAGE</span>
-              <span class="am-energy-pill drain">&#x2212;${turn.actualTrapDmg || 30} ENERGY</span>
+              <span class="am-energy-pill drain">&#x2212;${turn.actualTrapDmg || 20} ENERGY</span>
             </div>
             ${!turn.koBeforeChallenge ? `<div class="am-card-body" style="margin-top:6px;font-style:italic;color:#999;">${turn.trapSurviveText}</div>` : ''}
             <div class="am-card-energy">
@@ -2026,7 +2026,7 @@ export function rpBuildAftermayhemBoard(ep) {
 
     // Fatigue drain card
     if (ri >= 1) {
-      const fatigueDmg = ri >= 4 ? 8 : 5;
+      const fatigueDmg = ri >= 5 ? 5 : 3;
       const aliveNames = am.racers.filter(r => !ko.has(r.name)).map(r => r.name);
       aliveNames.forEach(n => { energies[n] = clamp((energies[n] || 100) - fatigueDmg, 0, 100); });
 

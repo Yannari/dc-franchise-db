@@ -40,6 +40,9 @@ ES modules, no build step. Open `simulator.html` in a browser.
 
 ## Non-Negotiable Rules
 
+### Valid Stats
+`physical`, `endurance`, `mental`, `social`, `strategic`, `loyalty`, `boldness`, `intuition`, `temperament`. These are the ONLY stats that exist. Do NOT invent stats that don't exist (no `speed`, `luck`, `agility`, `charisma`, `strength`, `intelligence`, `charm`, `dexterity`, `stamina`, `courage`, `wisdom`). Every stat reference in code MUST use one of the 9 valid keys above.
+
 ### Stats are ALWAYS Proportional
 `stat * factor` — never `if (stat >= X)` for gameplay. Thresholds ONLY for narrative text selection.
 
@@ -276,121 +279,15 @@ import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js
 7. **`js/run-ui.js`** — Add episode history badge tag (colored pill in episode timeline).
 
 ### Step 3: Simulation Structure
-```javascript
-export function simulateChallengeId(ep) {
-  const active = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-  const campKey = gs.mergeName || 'merge';
-  if (!ep.campEvents) ep.campEvents = {};
-  if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
-  if (!ep.chalMemberScores) ep.chalMemberScores = {};
-  active.forEach(n => { ep.chalMemberScores[n] = 0; });
+Init: `active` (filter exileDuelPlayer), `campKey`, `campEvents`, `chalMemberScores`. Run romance hooks with `null` for phases/phaseKey. Finalize: set `ep.challengeData`, `ep.isChallengeId`, `ep.challengeType`, `ep.challengeLabel`, `ep.challengeCategory`, `ep.chalPlacements`, call `updateChalRecord(ep)`. See existing challenges for template.
 
-  const result = { /* challenge data */ };
+### Step 3b: Pre-Merge vs Post-Merge vs Both-Phase
 
-  // ... simulation logic ...
+**Post-merge:** Set `ep.immunityWinner` + `ep.tribalPlayers = active`. Massive `chalMemberScores` bonus: `maxOther + active.length + 5`. Dispatch: `ep.isChallengeId && gs.isMerged`.
 
-  // Romance hooks (pass null for phases/phaseKey to avoid push errors)
-  const _romActive = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-  for (let i = 0; i < _romActive.length; i++)
-    for (let j = i + 1; j < _romActive.length; j++)
-      _challengeRomanceSpark(_romActive[i], _romActive[j], ep, null, null, ep.chalMemberScores || {}, 'challenge context');
-  _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'challenge', _romActive);
+**Pre-merge:** DO NOT set `ep.immunityWinner`. Rank tribes by avg member score. Set `ep.tribalPlayers` = losing tribe only, `ep.winner`/`ep.loser`/`ep.safeTribes`/`ep.challengePlacements` = tribe objects from `gs.tribes` (NOT tribeData). Dispatch: `ep.isChallengeId && !gs.isMerged`. Camp events use per-tribe keys.
 
-  // Finalize
-  ep.challengeData = result;
-  ep.isChallengeId = true;
-  ep.challengeType = 'challenge-id';
-  ep.challengeLabel = 'Challenge Name';
-  ep.challengeCategory = 'mixed';
-  ep.immunityWinner = result.immunityWinner;
-  ep.chalPlacements = [...];
-  // Immunity winner MUST be #1 in chalMemberScores
-  const maxOther = Math.max(0, ...Object.entries(ep.chalMemberScores).filter(([n]) => n !== result.immunityWinner).map(([,s]) => s));
-  ep.chalMemberScores[result.immunityWinner] = Math.max(ep.chalMemberScores[result.immunityWinner] || 0, maxOther) + active.length + 5;
-  ep.tribalPlayers = active;
-  updateChalRecord(ep);
-  return ep;
-}
-```
-
-### Step 3b: Pre-Merge vs Post-Merge vs Both-Phase Challenges
-
-Every twist challenge must handle immunity and tribal assignment differently based on the game phase. The Step 3 template above shows the post-merge pattern. Below are the critical differences.
-
-#### Post-Merge (Individual Immunity)
-The winner gets personal immunity. Everyone else goes to tribal.
-```javascript
-ep.immunityWinner = result.immunityWinner;  // player name
-ep.tribalPlayers = active;                  // everyone goes to tribal (immune player protected by episode.js)
-// Immunity winner MUST be #1 in chalMemberScores — add massive bonus:
-const maxOther = Math.max(0, ...Object.entries(ep.chalMemberScores).filter(([n]) => n !== result.immunityWinner).map(([,s]) => s));
-ep.chalMemberScores[result.immunityWinner] = Math.max(ep.chalMemberScores[result.immunityWinner] || 0, maxOther) + active.length + 5;
-```
-- `updateChalRecord(ep)` reads `ep.immunityWinner` to credit 1W (individual win)
-- episode.js dispatch: `if (ep.isChallengeId && gs.isMerged)`
-
-#### Pre-Merge (Tribe Immunity)
-The winning tribe gets immunity. Tribes are ranked by average member score — worst tribe goes to tribal, middle tribes are safe.
-```javascript
-// DO NOT set ep.immunityWinner — tribe wins, not an individual
-// Rank tribes by average member score
-const tribeRankings = tribeData.map(t => {
-  const avg = t.members.map(n => ep.chalMemberScores[n] || 0).reduce((a, b) => a + b, 0) / (t.members.length || 1);
-  return { tribeName: t.tribeName, avg, members: t.members };
-});
-tribeRankings.sort((a, b) => {
-  if (a.tribeName === result.winningTribe) return -1;
-  if (b.tribeName === result.winningTribe) return 1;
-  return b.avg - a.avg;
-});
-const lastTribe = tribeRankings[tribeRankings.length - 1];
-
-// Set ep fields for episode.js tribe challenge flow
-ep.tribalPlayers = gs.tribes.find(t => t.tribeName === lastTribe.tribeName)?.members || active;
-ep.winner = gs.tribes.find(t => t.tribeName === result.winningTribe);
-ep.loser = gs.tribes.find(t => t.tribeName === lastTribe.tribeName);
-ep.safeTribes = tribeRankings.slice(0, -1).map(t => gs.tribes.find(gt => gt.tribeName === t.tribeName)).filter(Boolean);
-ep.challengePlacements = tribeRankings.map(t => gs.tribes.find(gt => gt.tribeName === t.tribeName)).filter(Boolean);
-```
-- `ep.tribalPlayers` = ONLY the losing tribe's members (not everyone)
-- `ep.winner` / `ep.loser` = tribe objects from `gs.tribes` (NOT tribeData)
-- `ep.safeTribes` = array of tribe objects for tribes that are safe
-- `ep.challengePlacements` = all tribes in rank order
-- VP results must explicitly show which tribe is safe vs which goes to tribal — don't just dump "Tribe A, Tribe B — tribal council awaits"
-- episode.js dispatch: `if (ep.isChallengeId && !gs.isMerged)`
-- Camp events use per-tribe keys (from `tribeData`), not `gs.mergeName`
-
-#### Both-Phase Challenges
-The challenge works in both phases but with different scoring and immunity logic. Branch on `gs.isMerged` inside the simulate function.
-```javascript
-export function simulateChallengeId(ep) {
-  const active = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-
-  if (gs.isMerged) {
-    // POST-MERGE: individual immunity
-    const campKey = gs.mergeName || 'merge';
-    // ... individual scoring logic ...
-    ep.immunityWinner = result.winner;
-    ep.tribalPlayers = active;
-    // massive chalMemberScores bonus for winner
-  } else {
-    // PRE-MERGE: tribe immunity
-    const tribeData = gs.tribes.map(t => ({ tribeName: t.tribeName, members: t.members.filter(m => active.includes(m)) }));
-    // ... tribe scoring logic ...
-    // DO NOT set ep.immunityWinner
-    // Set ep.winner, ep.loser, ep.safeTribes, ep.tribalPlayers (losing tribe only)
-  }
-
-  ep.challengeData = result;
-  updateChalRecord(ep);
-  return ep;
-}
-```
-- episode.js dispatch: `if (ep.isChallengeId)` — no `gs.isMerged` check (fires in both phases)
-- TWIST_CATALOG entry: `phase: 'both'` (not `'pre-merge'` or `'post-merge'`)
-- VP results screen must branch on `gs.isMerged` to show tribe placements vs individual winner
-- Pre-merge: tribe scores = averages per member, NEVER raw sums
-- The simulate function handles both paths; episode.js doesn't need separate dispatch blocks
+**Both-phase:** Branch on `gs.isMerged` inside simulate function. TWIST_CATALOG: `phase: 'both'`. Dispatch: `ep.isChallengeId` (no merge check). VP results branch on `gs.isMerged`.
 
 ### Step 4: VP Pattern
 - Each screen is an exported function: `rpBuildChallengeTitleCard(ep)`, `rpBuildChallengePhase1(ep)`, etc.
@@ -401,45 +298,11 @@ export function simulateChallengeId(ep) {
 - Each screen needs its own `stateKey` for independent reveal state
 
 #### VP Reveal: DOM-Only Updates (CRITICAL)
-**NEVER rebuild the entire page on reveal click.** Calling `buildVPScreens()` + `renderVPScreen()` from a reveal handler destroys and recreates the entire DOM, causing the page to flash from top to bottom (nauseating scroll). Instead, use direct DOM manipulation:
+**NEVER rebuild entire page on reveal.** Use `_reapplyVisibility(suffix, upToIdx, total)` — loops step 0 to current idx, adds visible class, updates counter, dims buttons when done. Patches stale DOM after screen switch. See `crazy-fun-time.js` as reference.
 
-**Required reveal pattern** (see `crazy-fun-time.js` as latest reference):
-```javascript
-// Re-applies visibility to ALL steps 0..upToIdx — patches stale DOM after screen switch
-function _reapplyVisibility(suffix, upToIdx, total) {
-  for (let i = 0; i <= upToIdx; i++) {
-    const el = document.getElementById(`prefix-step-${suffix}-${i}`);
-    if (el) el.classList.add('prefix-visible');
-  }
-  const counter = document.getElementById(`prefix-counter-${suffix}`);
-  if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total}`;
-  if (upToIdx >= total - 1) {
-    const controls = document.getElementById(`prefix-controls-${suffix}`);
-    if (controls) { const btns = controls.querySelectorAll('.prefix-btn'); btns.forEach(b => b.style.opacity = '0.4'); }
-  }
-}
+**Required element IDs:** step divs `id="prefix-step-{suffix}-{i}"`, counter `id="prefix-counter-{suffix}"`, controls `id="prefix-controls-{suffix}"`, sidebar `id="prefix-sidebar-inner"`.
 
-export function challengeRevealNext(screenKey, totalSteps) {
-  const st = _ensureState(screenKey, totalSteps);
-  if (st.idx >= st.total - 1) return;
-  st.idx++;
-  const suffix = screenKey.replace('prefix-', '');
-  _reapplyVisibility(suffix, st.idx, st.total); // patches stale DOM from screen switch
-  const el = document.getElementById(`prefix-step-${suffix}-${st.idx}`);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  _updateSidebar(screenKey);
-}
-```
-
-**Required element IDs** (set during VP build):
-- Each step div: `id="prefix-step-{suffix}-{i}"` (suffix = screenKey minus the `prefix-` part)
-- Counter span: `id="prefix-counter-{suffix}"`
-- Controls container: `id="prefix-controls-{suffix}"`
-- Sidebar inner: `id="prefix-sidebar-inner"` (single element, innerHTML replaced on update)
-
-**Auto-scroll**: `scrollIntoView({ behavior: 'smooth', block: 'center' })` on the newly revealed element — page stays in place, new card slides into view.
-
-**Sidebar live-update**: Split `_buildSidebar()` into wrapper (has the `id`) and `_buildSidebarContent()` (returns inner HTML). The `_updateSidebar()` function finds the sidebar element by ID and replaces only its innerHTML — no full page rebuild.
+**Auto-scroll**: `scrollIntoView({ behavior: 'smooth', block: 'center' })` on revealed element. **Sidebar**: split into wrapper + `_buildSidebarContent()`, update via `sideEl.innerHTML` replacement.
 
 #### VP Mockup Workflow
 1. **Create a standalone mockup HTML file** (`mockup-<name>.html`) with all CSS, layout, icons, fonts, and placeholder data. This is the visual target.
@@ -456,26 +319,16 @@ export function challengeRevealNext(screenKey, totalSteps) {
 - `updateChalRecord(ep)` reads `ep.immunityWinner` to credit the win (1W)
 
 ### Step 6: Common Bugs to Avoid
-- **Episode history not saving challenge data**: MUST add `challengeData: ep.challengeData || null` to the episode history object in `episode.js` (~line 5400) or VP screens show nothing on replay
-- **Romance hook crash**: pass `null` for `phases` and `phaseKey` params to `_challengeRomanceSpark` and `_checkShowmanceChalMoment` — they try to push to `phases[phaseKey]` array which doesn't exist
-- **Immunity winner not #1 in scores**: add massive bonus AFTER all other scoring
-- **Pre-merge challenges must NOT set `ep.immunityWinner`**: Pre-merge challenges are tribe challenges — the tribe wins immunity, not an individual. Setting `ep.immunityWinner` to a player name causes `updateChalRecord` to credit that player with 1W (individual win), which is wrong. Use the massive `chalMemberScores` bonus for podium placement only. Only post-merge (individual immunity) challenges should set `ep.immunityWinner`.
-- **Generic challenge overwriting results**: must add to BOTH skip conditions in episode.js (generic challenge dispatch + updateChalRecord)
-- **VP sidebar spoiling results**: build sidebar from state BEFORE current phase, not after
-- **Camp events spoiling VP reveals**: don't push "X was crowned/eliminated" camp events that appear in Cold Open before the challenge VP screens
-- **Same text repetition**: have 4+ text options per narration category minimum
-- **Class/type assignment clustering**: use priority draft + cap system to ensure diversity
-- **No-tribal / sudden-death missing challenge data in history**: episode.js has MULTIPLE early-return history pushes (no-tribal ~line 2918, sudden-death ~line 1715, sudden-death+twist ~line 2417, off-the-chain+SD ~line 2140). ALL of these must include the twist challenge data fields (`isHouston`, `houston`, `isTopDog`, `topDog`, etc.) or VP screens show nothing on replay. When adding a new twist challenge, grep for ALL `gs.episodeHistory.push` calls and add the new fields to every one.
-- **Reveal handler rebuilding entire page**: NEVER call `buildVPScreens()`/`renderVPScreen()` from reveal handlers — this destroys the DOM and causes nauseating top-to-bottom page flash. Toggle individual step elements by ID + update sidebar innerHTML instead. See Step 4 for the correct pattern.
-- **Tribe data property name**: Tribe objects use `tribeName` (NOT `name`). Using `tribe.name` gives `undefined`.
-- **Episode number**: Current episode number is `gs.episodeHistory.length` (NOT `gs.episodeHistory.length + 1` — the current episode is already pushed). Don't use `ep.episodeNum` which doesn't exist.
-- **buildVPScreens called without argument**: `buildVPScreens(epRecord)` requires the episode record argument. Calling it without args crashes with "epRecord is undefined".
-- **TWIST_CATALOG description too long**: Keep `desc` field under ~200 characters or the challenge card in the UI will be much taller than others.
-- **VP output doesn't match mockup**: Always compare the actual VP output against the approved mockup HTML file. Subagents building VP code must reproduce the mockup's exact layout, fonts, icons, sidebar, and card physics — not invent their own.
-- **Reveals break after screen switch**: VP screens are cached HTML strings. Navigating away and back re-inserts stale HTML with all steps hidden, but `_tvState.idx` is still advanced. Fix: every `revealNext`/`revealAll` must call `_reapplyVisibility()` which loops from step 0 to current idx and adds the visible class to ALL steps. This patches the stale DOM. Without this, reveals silently fail after any screen navigation.
-- **Reveal handlers must isolate sidebar/map updates**: Wrap sidebar and map update calls in separate try-catch blocks so that if `_updateSidebar()` or `_updateMap()` throws (e.g., missing `window` data after screen switch), it does NOT prevent `_reapplyVisibility()` from running. Always run `_reapplyVisibility()` FIRST (in its own try-catch), then sidebar/map updates. Pattern: `try { reapply } catch(e){} try { sidebar } catch(e){} try { map } catch(e){}`.
-- **Reward Twist Challenge compatibility**: When adding a new twist challenge, you must do TWO things: (1) Add its ID to the `reward-twist-challenge` entry's `incompatible` list in `core.js` (prevents selecting both as separate twists in the same episode). (2) Add its engine ID and flag to the `_engineFlagMap` in `twists.js` inside the `reward-twist-challenge` handler (e.g., `'rock-the-dock': 'isRockTheDock'`). Without step 2, selecting the challenge as a reward engine shows a generic immunity challenge instead.
-- **VP atmosphere covering VP nav bar**: Challenge atmosphere layers using `position:fixed;inset:0` will cover the VP player's top navigation bar (which has the close button). Fix: use `top:46px` instead of `top:0` on the atmosphere container so it doesn't overlap the 46px-tall `.rp-nav` bar.
+- **Episode history**: Add challenge data fields to ALL `gs.episodeHistory.push` calls (4+ locations — grep for them). Missing = VP shows nothing on replay.
+- **Romance hooks**: Pass `null` for phases/phaseKey params or they crash trying to push to nonexistent array.
+- **Pre-merge: NO `ep.immunityWinner`** — tribe wins, not individual. Only post-merge sets this.
+- **Generic challenge skip**: Add to BOTH skip conditions in episode.js (dispatch + updateChalRecord guard).
+- **Tribe property**: `tribeName` not `name`. Episode number: `gs.episodeHistory.length` not `+1`.
+- **Reveals after screen switch**: `_reapplyVisibility()` loops 0→idx on every click. Isolate sidebar/map updates in separate try-catch blocks so reapply always runs first.
+- **Reward Twist compatibility**: (1) Add ID to `reward-twist-challenge` incompatible list in core.js. (2) Add engine ID + flag to `_engineFlagMap` in twists.js.
+- **VP atmosphere**: Use `top:46px` not `top:0` — don't cover the 46px `.rp-nav` bar.
+- **VP mockup**: Always compare VP output against approved mockup. Subagents must reproduce exact layout.
+- **Text variety**: 4+ variants per narration category. Use priority draft for class/type assignment.
 
 ### Step 7: VP Aesthetic Identity — OVERDRIVE IS THE BASELINE
 Every challenge VP must feel like a standalone immersive experience with its own **unique visual identity**. The goal is wow factor — the user should feel transported into the challenge's world. Never settle for plain cards with emoji icons on a flat background.
@@ -510,14 +363,9 @@ Every challenge VP must feel like a standalone immersive experience with its own
 - Phase advantages (VIP, backstage pass) should give a meaningful edge but NOT guarantee the win.
 
 ### Sidebar / Honor Board — LIVE UPDATING (CRITICAL)
-- **Must live-update on every reveal click** — call `_updateSidebar(screenKey)` from BOTH `revealNext` AND `revealAll`. The sidebar innerHTML is replaced in-place (by ID), NOT via full page rebuild.
-- **Split sidebar into wrapper + content**: `_buildSidebar(ep, phase)` returns the outer `<div>` with `id="prefix-sidebar-inner"`. `_buildSidebarContent(ep, phase)` returns just the inner HTML. The update function calls `_buildSidebarContent()` and sets `sideEl.innerHTML`.
-- **Running score accumulation via stepMeta**: For phases with progressive scores (pinball, fights, etc.), build a `stepMeta` array during VP build that tracks per-step scoring data (`{tribe, points, hits, zones}`). Store on `window` (e.g., `window._cftPinballStepMeta`). Sidebar reads `_tvState[key].idx` and accumulates scores only up to that index — scores build up progressively as cards are revealed.
-- Store phase data on `window` via the shell wrapper, read phase from DOM `data-phase` attribute (not global variable — globals get overwritten when multiple screens pre-build).
-- Show different data per phase (e.g., fight wins in fight phase, water levels in climb phase).
-- **Gate ALL data by reveal index** — never spoil results before the corresponding card is revealed. Scores, zone breakdowns, event lists — everything must be gated by `_tvState[key].idx`.
-- The initial `_buildSidebarContent` render must also read `_tvState` and gate data (not just the update path).
-- **Episode data access**: Use `gs.episodeHistory[window.vpEpNum - 1]` to get the current episode record for sidebar updates.
+- Live-update on every reveal via `_updateSidebar(screenKey)` from BOTH `revealNext` AND `revealAll`. Replace innerHTML by ID, never full rebuild.
+- Use `stepMeta` arrays on `window` for progressive score accumulation. Gate ALL data by `_tvState[key].idx` — never spoil ahead.
+- Store phase data on `window`, read from DOM `data-phase` (not globals). Episode data: `gs.episodeHistory[window.vpEpNum - 1]`.
 
 ### VP Narration Quality
 - Minimum 4 text variants per narration category to avoid repetition.
@@ -539,50 +387,17 @@ Every challenge VP must feel like a standalone immersive experience with its own
 - Environments should shift in color temperature: warm (training) → intense (fight) → cold/outdoor (climb).
 
 ### Fight / Competition Mechanics
-- Round-robin for 3 players, bracket for 4+. Never leave someone with a bye in small groups.
-- Show both fighter AND trainer in VS cards and KO cards — they win as a PAIR.
-- Fight exchanges need: move icon + name + damage number + narration + HP bars for BOTH fighters.
-- Each fight should generate 2-4 social events (trainer pride, respect, showmance comfort, blame).
+- Round-robin for 3, bracket for 4+. Show both fighter AND trainer. Each fight generates 2-4 social events.
 
 ### Climb / Endurance Mechanics
-- Water loss formula must be tested at scale — `* 100` is death, `* 20-25` is reasonable.
-- Players eliminated mid-stage should get elimination text, not just disappear next stage.
-- If a boss fight at the summit results in a prize (bonsai), only ONE player grabs it first. Others who pass the boss can chase.
-- Descent/steal mechanics: only players who passed the boss can intercept. Failed boss = no chase.
+- Resource loss formulas: `* 20-25` reasonable, `* 100` is death. Mid-stage eliminations need text. Boss prizes go to first player only.
 
 ### VP Reveal System
-- `<script>` tags in innerHTML don't execute — set `window` data directly in the VP build function.
-- Use CSS classes (`step-hidden`/`step-visible`) toggled via `classList.add()` — NOT `display:none`/`display:block` via full page rebuild.
-- **NEVER call `buildVPScreens()` or `renderVPScreen()` from reveal handlers** — this destroys the entire DOM and causes a nauseating top-to-bottom page flash. Toggle individual step elements by ID instead.
-- **Each step div needs an ID**: `id="prefix-step-{suffix}-{i}"` so reveal handlers can find them directly.
-- **Auto-scroll on reveal**: `el.scrollIntoView({ behavior: 'smooth', block: 'center' })` — the page stays exactly where it is, new card slides smoothly into view. Never scroll to top.
+- `<script>` tags in innerHTML don't execute — set `window` data in VP build function.
+- Toggle CSS classes by ID, never rebuild page. See Step 4 for full pattern.
 
-#### Stale DOM After Screen Switch (CRITICAL — recurring bug)
-**Problem:** VP screens are pre-built as HTML strings by `buildVPScreens()` and cached in an array. `renderVPScreen()` re-inserts this cached HTML on every screen navigation. So if the user reveals 5 cards (mutating the live DOM), navigates to another screen, then navigates back — the stale cached HTML is re-inserted with all steps hidden. But `_tvState.idx` is still at 4, so clicking reveal tries to show step 5 while steps 0-4 are invisible.
-
-**Fix:** Every `revealNext`/`revealAll` must call a `_reapplyVisibility(suffix, upToIdx, total)` helper that loops from step 0 through the current index and adds the visible class to ALL of them. This patches the stale DOM on every click:
-```javascript
-function _reapplyVisibility(suffix, upToIdx, total) {
-  for (let i = 0; i <= upToIdx; i++) {
-    const el = document.getElementById(`prefix-step-${suffix}-${i}`);
-    if (el) el.classList.add('prefix-visible');
-  }
-  // Also update counter text and dim buttons if done
-}
-```
-This is idempotent — adding a class that already exists is a no-op. The cost is trivial (a few DOM lookups per click). Without this, reveals break after ANY screen switch.
 - Fight exchanges should trigger impact animations (screen shake, move burst, KO slam).
 - Betrayal/steal events should trigger screen shake on the entire shell.
-
-### Integration Checklist (7 files)
-Every twist challenge must update ALL of these:
-1. `core.js` — TWIST_CATALOG entry with incompatible list
-2. `twists.js` — `ep.isChallengeName = true` flag
-3. `episode.js` — import, dispatch block, generic challenge skip, generic updateChalRecord guard (prevent double-call), `_hasTwistChallenge` list, `handleExileFormat` guard, ALL episode history pushes (4+ locations) (7+ edits)
-4. `vp-screens.js` — import VP builders + screen registration
-5. `text-backlog.js` — import + `_textTwistChallenge()` call with VP builders (placed BEFORE `_textCampPost`)
-6. `main.js` — import module + add to spread array
-7. `run-ui.js` — badge tag + add to tag display line
 
 ### Multi-Phase Race Challenges
 Challenges with timed races across multiple phases (e.g., Broadway Baby's climb → sewer → park dash) have unique pitfalls:

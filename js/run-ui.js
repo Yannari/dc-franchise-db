@@ -278,6 +278,8 @@ export function renderEpisodeHistory() {
     const cftTag = ep.isCrazyFunTime ? `<span class="ep-hist-tag" style="background:rgba(255,0,128,0.15);color:#ff0080">Game Show</span>` : '';
     const fcTag = ep.isFrozenCrossing ? `<span class="ep-hist-tag" style="background:rgba(168,216,234,0.15);color:#a8d8ea">Frozen</span>` : '';
     const vsTag = ep.isVikingSour ? `<span class="ep-hist-tag" style="background:rgba(200,160,64,0.15);color:#c8a040">Viking</span>` : '';
+    const brbTag = ep.isBridalBrawls ? `<span class="ep-hist-tag" style="background:rgba(232,48,112,0.15);color:#e83070">Bridal</span>` : '';
+    const gfoTag = ep.isGreatFakeOut ? `<span class="ep-hist-tag" style="background:rgba(194,54,22,0.15);color:#c23616">Fake-Out</span>` : '';
     const ssrTag = ep.isSlapRevolution ? `<span class="ep-hist-tag" style="background:rgba(124,58,237,0.15);color:#7c3aed">Slap Rev</span>` : '';
     const bbTag = ep.isBroadwayBaby ? `<span class="ep-hist-tag" style="background:rgba(240,165,0,0.15);color:#f0a500">Broadway</span>` : '';
     const azTag = ep.isAmazonRace ? `<span class="ep-hist-tag" style="background:rgba(46,204,64,0.15);color:#2ecc40">AHZon</span>` : '';
@@ -298,7 +300,7 @@ export function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${amhTag}${rtcTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${amhTag}${rtcTag}</div>
     </div>`;
   }).join('');
 }
@@ -588,6 +590,8 @@ export function buildEpisodeMap() {
   let _totalElimsToHere = 0;
   let _lastFVReturn = 0;
   let _fvReturnApplied = false;
+  let _lastAMReturn = 0;
+  let _amReturnApplied = false;
 
   while (active > finale && ep <= 100) {
     const etype = twistMap[ep] || null;
@@ -622,11 +626,19 @@ export function buildEpisodeMap() {
     // Fan vote prediction: ONCE after X total eliminations, someone comes back NEXT episode
     const _fvThresholdCfg = parseInt(seasonConfig.fanVoteFrequency) || 0;
     if (_fvThresholdCfg && !_lastFVReturn && _totalElimsToHere >= _fvThresholdCfg) {
-      _lastFVReturn = _totalElimsToHere; // mark it — return applies next iteration
+      _lastFVReturn = _totalElimsToHere;
     }
     // Apply the return on the episode AFTER the fan vote fired
     if (_lastFVReturn && _lastFVReturn !== _totalElimsToHere && !_fvReturnApplied) {
       returns++; _fvReturnApplied = true;
+    }
+    // Aftermayhem prediction: ONCE after X total eliminations, winner comes back NEXT episode
+    const _amThresholdCfg = parseInt(seasonConfig.aftermayhemReturn) || 0;
+    if (_amThresholdCfg && !_lastAMReturn && _totalElimsToHere >= _amThresholdCfg) {
+      _lastAMReturn = _totalElimsToHere;
+    }
+    if (_lastAMReturn && _lastAMReturn !== _totalElimsToHere && !_amReturnApplied) {
+      returns++; _amReturnApplied = true;
     }
 
     // RI return: fires when the episode STARTS with <= riReentryAt players.
@@ -645,8 +657,7 @@ export function buildEpisodeMap() {
     if (!merged && active <= mergeAt) merged = true;
 
     const activeWithReturns = active + returns + riReturn;
-    const _hasFVReturn = _fvReturnApplied && returns > 0 && !eps.some(e => e.fanVoteReturn);
-    eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: etype, fanVoteReturn: _hasFVReturn || false });
+    eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: etype });
     active = Math.max(finale, activeWithReturns - elims);
     ep++;
 
@@ -683,7 +694,7 @@ export function renderTimeline() {
   }
 
   let html = '';
-  epMap.forEach(({ ep, active, phase, fanVoteReturn }) => {
+  epMap.forEach(({ ep, active, phase }) => {
     const isFinale   = phase === 'finale';
     const isMergeEp  = phase === 'post-merge' && epMap.find(e => e.ep === ep - 1)?.phase === 'pre-merge';
     const isSelected = selectedEpisodes.has(ep);
@@ -872,8 +883,12 @@ export function renderTwistCatalog() {
       const epInfo = epMap.find(e => e.ep === epN);
       return epInfo && epInfo.active % 2 !== 0;
     });
-    const blocked = phaseBlocked || incompBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked || _tdEvenBlocked || _taOddBlocked || _ccEvenBlocked;
-    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist' : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : _tdEvenBlocked ? ' ⚠️ needs even player count' : _taOddBlocked ? ' ⚠️ needs even player count' : _ccEvenBlocked ? ' ⚠️ needs even player count for pairs' : '';
+    const _bbEvenBlocked = canAssign && t.id === 'bridal-brawls' && _selEpNums.some(epN => {
+      const epInfo = epMap.find(e => e.ep === epN);
+      return epInfo && epInfo.active % 2 !== 0;
+    });
+    const blocked = phaseBlocked || incompBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked || _tdEvenBlocked || _taOddBlocked || _ccEvenBlocked || _bbEvenBlocked;
+    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist' : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : _tdEvenBlocked ? ' ⚠️ needs even player count' : _taOddBlocked ? ' ⚠️ needs even player count' : _ccEvenBlocked ? ' ⚠️ needs even player count for pairs' : _bbEvenBlocked ? ' ⚠️ needs even player count for pairs' : '';
     return `
     <div class="twist-card ${canAssign && !blocked ? 'assignable' : ''} ${blocked ? 'phase-blocked' : ''}" onclick="${blocked ? '' : `assignTwist('${t.id}')`}">
       <div class="twist-card-top">
@@ -1127,11 +1142,13 @@ function _shuffle(arr) {
   return a;
 }
 
+const _EVEN_PLAYER_IDS = new Set(['tied-destinies','tri-armed-triathlon','crouching-courtney','bridal-brawls']);
 function _canPlace(chal, epInfo, teams) {
   if (chal.minTribes && teams < chal.minTribes) return false;
   if (chal.minPlayers && epInfo.active < chal.minPlayers) return false;
   if (chal.phase === 'pre-merge' && epInfo.phase !== 'pre-merge') return false;
   if (chal.phase === 'post-merge' && epInfo.phase !== 'post-merge') return false;
+  if (_EVEN_PLAYER_IDS.has(chal.id) && epInfo.active % 2 !== 0) return false;
   return true;
 }
 

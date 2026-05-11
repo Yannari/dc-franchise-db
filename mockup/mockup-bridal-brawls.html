@@ -1,0 +1,2127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bridal Brawls — VP Mockup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;600;700&family=Permanent+Marker&family=Press+Start+2P&display=swap');
+
+/* ═══════════════════════════════════════════════════════════ */
+/* BRIDAL BRAWLS — Wedding Casino VP  (OVERDRIVE)             */
+/* Prefix: bb-                                                */
+/* ═══════════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  /* Casino */
+  --bb-casino:#110818;--bb-casino2:#1a0c28;--bb-velvet:#2a1040;
+  --bb-felt:#1a3828;--bb-felt-lt:#2a5040;--bb-felt-dk:#0e2418;
+  /* Gold & glitz */
+  --bb-gold:#d4a830;--bb-gold-lt:#f0cc50;--bb-gold-dk:#a07818;
+  --bb-champagne:#e8d8b0;--bb-cream:#f0e8d8;
+  /* Wedding */
+  --bb-blush:#e8a0a8;--bb-hotpink:#e83070;--bb-rose:#c84868;
+  --bb-white:#f0eee8;--bb-lace:#e8e0d4;
+  /* Waterfall / Danger */
+  --bb-mist:#8ab8d0;--bb-spray:#a8d0e0;--bb-water:#2848a0;
+  --bb-deep:#0c1828;--bb-falls:#183860;--bb-shark:#4a6878;
+  /* Customs */
+  --bb-stamp:#c02020;--bb-manila:#d8c8a0;--bb-fluor:#e8e8d8;
+  --bb-ink:#1a1a18;
+  /* Trust rings */
+  --bb-trust-high:#d4a830;--bb-trust-mid:#a08848;--bb-trust-low:#6a4a3a;
+  --bb-trust-crack:#c04040;
+  /* Chrome */
+  --bb-chrome:#c0c0c8;--bb-chrome-dk:#888890;--bb-chrome-lt:#e0e0e8;
+  /* Slot machine */
+  --bb-neon-pink:#ff2080;--bb-neon-gold:#ffd700;--bb-reel-bg:#0a0a12;
+}
+
+body{background:var(--bb-casino);color:var(--bb-cream);font-family:'Cormorant Garamond',Georgia,serif;overflow-x:hidden;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* BROADCAST CHROME BAR                                       */
+/* ═══════════════════════════════════════════════════════════ */
+.bb-broadcast{position:fixed;top:0;left:0;right:0;z-index:200;height:32px;
+  background:linear-gradient(90deg,#0a0a12,#1a0c28,#0a0a12);
+  border-bottom:1px solid rgba(212,168,48,.2);display:flex;align-items:center;padding:0 16px;gap:12px;
+  font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;}
+.bb-live-dot{width:8px;height:8px;border-radius:50%;background:#e02020;
+  animation:bb-live-blink 1.2s ease-in-out infinite;box-shadow:0 0 6px #e02020;}
+@keyframes bb-live-blink{0%,100%{opacity:1}50%{opacity:.3}}
+.bb-live-label{color:#e02020;font-weight:700;letter-spacing:2px;}
+.bb-channel{color:var(--bb-gold);letter-spacing:2px;margin-left:8px;}
+.bb-ticker-wrap{flex:1;overflow:hidden;position:relative;height:100%;display:flex;align-items:center;}
+.bb-ticker{white-space:nowrap;color:var(--bb-champagne);opacity:.5;
+  animation:bb-ticker-scroll 40s linear infinite;}
+@keyframes bb-ticker-scroll{0%{transform:translateX(100%)}100%{transform:translateX(-200%)}}
+.bb-broadcast-time{color:var(--bb-champagne);opacity:.4;font-variant-numeric:tabular-nums;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* PHASE-SPECIFIC AMBIENT PARTICLES                           */
+/* ═══════════════════════════════════════════════════════════ */
+/* Phase 1: dust motes in spotlight */
+.bb-dust-motes{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.bb-dust{position:absolute;width:2px;height:2px;border-radius:50%;
+  background:rgba(232,208,160,.3);animation:bb-dust-float linear infinite;}
+@keyframes bb-dust-float{
+  0%{transform:translate(0,0) scale(.5);opacity:0}
+  20%{opacity:.4}50%{opacity:.2}
+  100%{transform:translate(var(--dx),var(--dy)) scale(1.2);opacity:0}}
+
+/* Phase 2: water droplets streaking down */
+.bb-rain-drops{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.bb-raindrop{position:absolute;width:1px;background:linear-gradient(180deg,transparent,rgba(138,184,208,.3),transparent);
+  animation:bb-rain-fall linear infinite;}
+@keyframes bb-rain-fall{0%{transform:translateY(-20px);opacity:0}10%{opacity:.5}90%{opacity:.3}100%{transform:translateY(110vh);opacity:0}}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* COLD OPEN — CINEMATIC TITLE                                */
+/* ═══════════════════════════════════════════════════════════ */
+.bb-cold-open{position:relative;min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;overflow:hidden;padding-top:32px;}
+
+/* Layered casino background */
+.bb-casino-bg{position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 50% 40%,rgba(42,16,64,.4),transparent 70%),
+    linear-gradient(180deg,var(--bb-casino) 0%,var(--bb-casino2) 30%,var(--bb-velvet) 60%,var(--bb-casino) 100%);}
+
+/* Waterfall SVG background */
+.bb-waterfall-bg{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden;opacity:.15;}
+
+/* Spotlight beams */
+.bb-spotlights{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2;}
+.bb-spot{position:absolute;top:-20%;width:200px;height:120vh;
+  background:linear-gradient(180deg,rgba(232,160,168,.08),transparent 80%);
+  transform-origin:top center;animation:bb-spot-sweep 8s ease-in-out infinite alternate;}
+.bb-spot:nth-child(1){left:15%;animation-delay:0s;transform:rotate(-15deg);}
+.bb-spot:nth-child(2){left:45%;animation-delay:2s;transform:rotate(5deg);
+  background:linear-gradient(180deg,rgba(212,168,48,.06),transparent 80%);}
+.bb-spot:nth-child(3){left:75%;animation-delay:4s;transform:rotate(10deg);}
+@keyframes bb-spot-sweep{0%{transform:rotate(-15deg)}100%{transform:rotate(15deg)}}
+
+/* Floating hearts - CSS only */
+.bb-hearts{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3;}
+.bb-heart-p{position:absolute;opacity:0;animation:bb-float-heart linear infinite;}
+.bb-heart-p::before{content:'';display:block;width:var(--sz,14px);height:var(--sz,14px);
+  background:var(--bb-hotpink);clip-path:path('M8 13 Q0 7 0 4 Q0 0 4 0 Q6 0 8 3 Q10 0 12 0 Q16 0 16 4 Q16 7 8 13');
+  transform:scale(calc(var(--sz,14) / 16));}
+@keyframes bb-float-heart{
+  0%{transform:translateY(110vh) rotate(0deg) scale(.5);opacity:0}
+  10%{opacity:.2}50%{opacity:.12}
+  90%{opacity:.08}100%{transform:translateY(-10vh) rotate(360deg) scale(1.2);opacity:0}}
+
+/* Card suit particles - CSS shapes */
+.bb-suits{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3;}
+.bb-suit-p{position:absolute;opacity:0;animation:bb-suit-drift linear infinite;}
+@keyframes bb-suit-drift{
+  0%{transform:translateY(105vh) rotate(0deg);opacity:0}
+  8%{opacity:.1}50%{opacity:.05}
+  100%{transform:translateY(-5vh) rotate(720deg);opacity:0}}
+/* Spade shape */
+.bb-suit-spade{width:12px;height:14px;position:relative;}
+.bb-suit-spade::before{content:'';position:absolute;top:0;left:0;width:12px;height:12px;
+  background:var(--bb-cream);clip-path:polygon(50% 0%,100% 40%,80% 100%,50% 75%,20% 100%,0% 40%);}
+.bb-suit-spade::after{content:'';position:absolute;bottom:0;left:4px;width:4px;height:5px;background:var(--bb-cream);}
+/* Diamond shape */
+.bb-suit-diamond{width:10px;height:14px;background:var(--bb-hotpink);
+  clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);}
+/* Club shape */
+.bb-suit-club{width:12px;height:14px;position:relative;}
+.bb-suit-club::before{content:'';position:absolute;top:0;left:1px;width:10px;height:10px;
+  background:var(--bb-cream);border-radius:50%;
+  box-shadow:-3px 3px 0 var(--bb-cream),3px 3px 0 var(--bb-cream);}
+.bb-suit-club::after{content:'';position:absolute;bottom:0;left:4px;width:4px;height:5px;background:var(--bb-cream);}
+
+/* Champagne bubbles */
+.bb-bubbles{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3;}
+.bb-bubble{position:absolute;border-radius:50%;border:1px solid rgba(240,204,80,.15);
+  animation:bb-bubble-rise linear infinite;}
+@keyframes bb-bubble-rise{
+  0%{transform:translateY(100vh) scale(.3);opacity:0}
+  10%{opacity:.3}60%{opacity:.15}
+  100%{transform:translateY(-10vh) scale(1);opacity:0}}
+
+/* Title content */
+.bb-title-wrap{position:relative;z-index:10;text-align:center;padding:0 20px;}
+.bb-title-series{font-family:'Outfit',sans-serif;font-size:clamp(10px,1.3vw,13px);
+  color:var(--bb-blush);letter-spacing:6px;text-transform:uppercase;
+  opacity:0;animation:bb-fade 1s ease-out .5s forwards;}
+.bb-title-main{font-family:'Playfair Display',serif;font-weight:900;font-style:italic;
+  font-size:clamp(52px,9vw,108px);color:var(--bb-gold);letter-spacing:clamp(2px,.5vw,8px);
+  line-height:.95;margin:8px 0;
+  text-shadow:0 4px 20px rgba(0,0,0,.7),0 0 60px rgba(212,168,48,.2),0 0 120px rgba(232,48,112,.1);
+  opacity:0;animation:bb-title-rise 1.4s cubic-bezier(.16,1,.3,1) .8s forwards;}
+.bb-title-tagline{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(15px,2.2vw,22px);
+  color:var(--bb-champagne);letter-spacing:2px;margin-top:6px;
+  opacity:0;animation:bb-fade 1s ease-out 1.6s forwards;}
+@keyframes bb-fade{to{opacity:1}}
+@keyframes bb-title-rise{from{opacity:0;transform:translateY(40px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* Ring decorations */
+.bb-rings-deco{display:flex;align-items:center;justify-content:center;gap:12px;margin:20px 0;
+  opacity:0;animation:bb-fade 1s ease-out 2s forwards;}
+.bb-ring-line{width:clamp(50px,10vw,120px);height:1px;
+  background:linear-gradient(90deg,transparent,var(--bb-gold),transparent);}
+
+/* Animated interlocking rings SVG */
+.bb-rings-svg{animation:bb-ring-pulse 3s ease-in-out infinite;}
+@keyframes bb-ring-pulse{0%,100%{filter:drop-shadow(0 0 4px rgba(212,168,48,.3))}50%{filter:drop-shadow(0 0 12px rgba(212,168,48,.6))}}
+
+/* Phase pills */
+.bb-phase-pills{display:flex;gap:0;margin-top:24px;opacity:0;animation:bb-fade 1s ease-out 2.4s forwards;}
+.bb-pill{padding:8px 18px;font-family:'Outfit',sans-serif;font-size:clamp(8px,1vw,10px);
+  letter-spacing:2px;text-transform:uppercase;border:1px solid rgba(212,168,48,.15);
+  color:var(--bb-champagne);background:rgba(17,8,24,.6);backdrop-filter:blur(4px);}
+.bb-pill:first-child{border-radius:4px 0 0 4px;}
+.bb-pill:last-child{border-radius:0 4px 4px 0;}
+.bb-pill.active{background:rgba(212,168,48,.12);border-color:var(--bb-gold);color:var(--bb-gold);}
+.bb-pill-num{font-family:'Playfair Display',serif;font-weight:700;margin-right:6px;font-size:12px;color:var(--bb-gold);}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* COLD OPEN — PLAYER DROP WITH PARACHUTES                    */
+/* ═══════════════════════════════════════════════════════════ */
+.bb-player-drop{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:36px;
+  opacity:0;animation:bb-fade .8s ease-out 2.8s forwards;}
+
+.bb-drop-player{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;
+  opacity:0;animation:bb-player-fall 1.2s cubic-bezier(.17,.67,.29,1.0) forwards;}
+.bb-drop-player:nth-child(1){animation-delay:3.0s}
+.bb-drop-player:nth-child(2){animation-delay:3.2s}
+.bb-drop-player:nth-child(3){animation-delay:3.4s}
+.bb-drop-player:nth-child(4){animation-delay:3.6s}
+.bb-drop-player:nth-child(5){animation-delay:3.8s}
+.bb-drop-player:nth-child(6){animation-delay:4.0s}
+.bb-drop-player:nth-child(7){animation-delay:4.2s}
+.bb-drop-player:nth-child(8){animation-delay:4.4s}
+@keyframes bb-player-fall{
+  0%{opacity:0;transform:translateY(-200px) scale(.6)}
+  40%{opacity:1;transform:translateY(-40px) scale(.9)}
+  70%{transform:translateY(6px) scale(1.02)}
+  85%{transform:translateY(-2px) scale(.99)}
+  100%{opacity:1;transform:translateY(0) scale(1)}}
+
+/* Parachute triangle above player */
+.bb-parachute{position:absolute;top:-40px;width:0;height:0;
+  border-left:14px solid transparent;border-right:14px solid transparent;
+  border-bottom:20px solid rgba(232,160,168,.5);
+  opacity:1;animation:bb-chute-detach .6s ease-in forwards;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));}
+.bb-parachute::after{content:'';position:absolute;top:20px;left:-1px;width:2px;height:18px;
+  background:linear-gradient(180deg,rgba(232,160,168,.4),transparent);}
+.bb-parachute::before{content:'';position:absolute;top:20px;left:-14px;width:28px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(232,160,168,.3),transparent);}
+.bb-drop-player:nth-child(1) .bb-parachute{animation-delay:3.5s;border-bottom-color:rgba(212,168,48,.5);}
+.bb-drop-player:nth-child(2) .bb-parachute{animation-delay:3.7s;border-bottom-color:rgba(232,48,112,.4);}
+.bb-drop-player:nth-child(3) .bb-parachute{animation-delay:3.9s;border-bottom-color:rgba(168,208,224,.4);}
+.bb-drop-player:nth-child(4) .bb-parachute{animation-delay:4.1s;border-bottom-color:rgba(212,168,48,.5);}
+.bb-drop-player:nth-child(5) .bb-parachute{animation-delay:4.3s;border-bottom-color:rgba(232,160,168,.5);}
+.bb-drop-player:nth-child(6) .bb-parachute{animation-delay:4.5s;border-bottom-color:rgba(138,184,208,.5);}
+.bb-drop-player:nth-child(7) .bb-parachute{animation-delay:4.7s;border-bottom-color:rgba(232,48,112,.4);}
+.bb-drop-player:nth-child(8) .bb-parachute{animation-delay:4.9s;border-bottom-color:rgba(212,168,48,.5);}
+@keyframes bb-chute-detach{
+  0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1)}
+  50%{opacity:.6;transform:translateY(-30px) rotate(25deg) scale(.7)}
+  100%{opacity:0;transform:translateY(-80px) rotate(60deg) scale(.3)}}
+
+.bb-drop-avatar{width:48px;height:48px;border-radius:50%;border:2px solid var(--bb-gold);
+  overflow:hidden;background:var(--bb-velvet);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(0,0,0,.5),0 0 20px rgba(212,168,48,.1);
+  transition:transform .3s,box-shadow .3s;position:relative;z-index:2;}
+.bb-drop-avatar:hover{transform:translateY(-6px) scale(1.1);
+  box-shadow:0 8px 24px rgba(0,0,0,.5),0 0 30px rgba(232,48,112,.2);}
+.bb-drop-avatar img{width:100%;height:100%;object-fit:cover;}
+.bb-drop-avatar .bb-ini{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--bb-gold);}
+.bb-drop-name{font-family:'Outfit',sans-serif;font-size:8px;letter-spacing:1px;color:var(--bb-champagne);
+  text-transform:uppercase;}
+
+/* Blue water splash effect after player lands */
+.bb-splash-ring{position:absolute;bottom:-8px;width:50px;height:12px;border-radius:50%;
+  border:2px solid rgba(40,72,160,.4);opacity:0;z-index:1;}
+.bb-splash-ring.ring1{animation:bb-splash-out .8s ease-out forwards;}
+.bb-splash-ring.ring2{animation:bb-splash-out .8s ease-out .1s forwards;width:60px;height:14px;}
+.bb-splash-ring.ring3{animation:bb-splash-out .8s ease-out .2s forwards;width:40px;height:10px;
+  border-color:rgba(138,184,208,.3);}
+.bb-drop-player:nth-child(1) .bb-splash-ring.ring1{animation-delay:3.6s}
+.bb-drop-player:nth-child(1) .bb-splash-ring.ring2{animation-delay:3.7s}
+.bb-drop-player:nth-child(1) .bb-splash-ring.ring3{animation-delay:3.75s}
+.bb-drop-player:nth-child(2) .bb-splash-ring.ring1{animation-delay:3.8s}
+.bb-drop-player:nth-child(2) .bb-splash-ring.ring2{animation-delay:3.9s}
+.bb-drop-player:nth-child(2) .bb-splash-ring.ring3{animation-delay:3.95s}
+.bb-drop-player:nth-child(3) .bb-splash-ring.ring1{animation-delay:4.0s}
+.bb-drop-player:nth-child(3) .bb-splash-ring.ring2{animation-delay:4.1s}
+.bb-drop-player:nth-child(3) .bb-splash-ring.ring3{animation-delay:4.15s}
+.bb-drop-player:nth-child(4) .bb-splash-ring.ring1{animation-delay:4.2s}
+.bb-drop-player:nth-child(4) .bb-splash-ring.ring2{animation-delay:4.3s}
+.bb-drop-player:nth-child(4) .bb-splash-ring.ring3{animation-delay:4.35s}
+.bb-drop-player:nth-child(5) .bb-splash-ring.ring1{animation-delay:4.4s}
+.bb-drop-player:nth-child(5) .bb-splash-ring.ring2{animation-delay:4.5s}
+.bb-drop-player:nth-child(5) .bb-splash-ring.ring3{animation-delay:4.55s}
+.bb-drop-player:nth-child(6) .bb-splash-ring.ring1{animation-delay:4.6s}
+.bb-drop-player:nth-child(6) .bb-splash-ring.ring2{animation-delay:4.7s}
+.bb-drop-player:nth-child(6) .bb-splash-ring.ring3{animation-delay:4.75s}
+.bb-drop-player:nth-child(7) .bb-splash-ring.ring1{animation-delay:4.8s}
+.bb-drop-player:nth-child(7) .bb-splash-ring.ring2{animation-delay:4.9s}
+.bb-drop-player:nth-child(7) .bb-splash-ring.ring3{animation-delay:4.95s}
+.bb-drop-player:nth-child(8) .bb-splash-ring.ring1{animation-delay:5.0s}
+.bb-drop-player:nth-child(8) .bb-splash-ring.ring2{animation-delay:5.1s}
+.bb-drop-player:nth-child(8) .bb-splash-ring.ring3{animation-delay:5.15s}
+@keyframes bb-splash-out{0%{transform:scaleX(.3) scaleY(.5);opacity:.7}100%{transform:scaleX(1.8) scaleY(1.5);opacity:0}}
+
+/* Host announcement card */
+.bb-host-announce{position:relative;z-index:10;margin-top:32px;padding:16px 40px;
+  background:linear-gradient(135deg,rgba(42,16,64,.8),rgba(17,8,24,.9));
+  border:2px solid var(--bb-gold);border-radius:8px;
+  box-shadow:0 0 30px rgba(212,168,48,.15),0 8px 32px rgba(0,0,0,.5);
+  opacity:0;animation:bb-announce-slide 1s cubic-bezier(.16,1,.3,1) 5.5s forwards;
+  overflow:hidden;}
+.bb-host-announce::before{content:'';position:absolute;inset:-2px;border-radius:10px;
+  background:linear-gradient(45deg,var(--bb-gold),var(--bb-hotpink),var(--bb-gold));
+  z-index:-1;opacity:.3;}
+.bb-host-label{font-family:'Outfit',sans-serif;font-size:8px;letter-spacing:4px;
+  text-transform:uppercase;color:var(--bb-hotpink);margin-bottom:4px;}
+.bb-host-text{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(16px,3vw,28px);
+  color:var(--bb-gold);overflow:hidden;white-space:nowrap;
+  border-right:2px solid var(--bb-gold);width:0;
+  animation:bb-typewriter 2s steps(35) 6.5s forwards,bb-cursor .7s step-end 6.5s infinite;}
+@keyframes bb-announce-slide{from{opacity:0;transform:translateY(30px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes bb-typewriter{to{width:100%}}
+@keyframes bb-cursor{0%,100%{border-color:var(--bb-gold)}50%{border-color:transparent}}
+
+/* Scroll prompt */
+.bb-scroll{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;
+  font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--bb-champagne);opacity:0;animation:bb-fade 1s ease-out 9s forwards,bb-bounce 2s ease-in-out 9s infinite;}
+@keyframes bb-bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* SLOT MACHINE — FULL CASINO CABINET                         */
+/* ═══════════════════════════════════════════════════════════ */
+.bb-section{max-width:1100px;margin:0 auto;padding:24px 16px;}
+
+.bb-slot-machine{position:relative;overflow:visible;margin:20px 0;
+  background:linear-gradient(180deg,var(--bb-felt-dk),var(--bb-felt),var(--bb-felt-dk));
+  border-radius:20px;padding:0;
+  box-shadow:0 12px 60px rgba(0,0,0,.7),inset 0 2px 0 rgba(255,255,255,.05);}
+
+/* Chrome cabinet frame */
+.bb-cabinet{position:relative;border:4px solid var(--bb-chrome-dk);border-radius:20px;
+  overflow:hidden;
+  background:linear-gradient(180deg,#2a2a34,#1a1a24 30%,var(--bb-felt-dk) 40%,var(--bb-felt) 50%,var(--bb-felt-dk) 90%,#1a1a24);
+  box-shadow:inset 0 0 40px rgba(0,0,0,.5);}
+.bb-cabinet::before{content:'';position:absolute;inset:0;border-radius:16px;
+  border:2px solid rgba(192,192,200,.1);pointer-events:none;z-index:5;}
+
+/* Chasing marquee light bulbs around the border */
+.bb-marquee-lights{position:absolute;inset:-6px;border-radius:24px;pointer-events:none;z-index:6;}
+.bb-bulb{position:absolute;width:8px;height:8px;border-radius:50%;
+  background:var(--bb-neon-gold);
+  box-shadow:0 0 6px var(--bb-neon-gold),0 0 12px rgba(255,215,0,.3);
+  animation:bb-chase-bulb 2s linear infinite;opacity:.3;}
+@keyframes bb-chase-bulb{
+  0%{opacity:.3;background:var(--bb-neon-gold);box-shadow:0 0 4px var(--bb-neon-gold)}
+  20%{opacity:1;background:#fff;box-shadow:0 0 8px var(--bb-neon-gold),0 0 16px rgba(255,215,0,.5)}
+  40%{opacity:.3;background:var(--bb-neon-pink);box-shadow:0 0 4px var(--bb-neon-pink)}
+  60%{opacity:.8;background:#fff;box-shadow:0 0 8px var(--bb-neon-pink),0 0 16px rgba(255,32,128,.4)}
+  80%{opacity:.3}100%{opacity:.3}}
+
+/* JACKPOT sign on top */
+.bb-jackpot-sign{text-align:center;padding:20px 0 8px;position:relative;z-index:4;}
+.bb-jackpot-text{font-family:'Press Start 2P',monospace;font-size:clamp(20px,4vw,36px);
+  color:var(--bb-neon-gold);letter-spacing:8px;
+  text-shadow:0 0 10px var(--bb-neon-gold),0 0 30px rgba(255,215,0,.3),0 0 60px rgba(255,215,0,.1);
+  animation:bb-jackpot-idle 3s ease-in-out infinite;}
+@keyframes bb-jackpot-idle{0%,100%{text-shadow:0 0 10px var(--bb-neon-gold),0 0 30px rgba(255,215,0,.3)}
+  50%{text-shadow:0 0 20px var(--bb-neon-gold),0 0 50px rgba(255,215,0,.5),0 0 80px rgba(255,32,128,.2)}}
+.bb-jackpot-sub{font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:4px;
+  text-transform:uppercase;color:var(--bb-champagne);opacity:.5;margin-top:4px;}
+
+/* Slot display window (felt green) */
+.bb-slot-display{margin:8px 24px 24px;padding:24px;
+  background:linear-gradient(135deg,rgba(26,56,40,.8),rgba(14,36,24,.9));
+  border:3px solid var(--bb-chrome-dk);border-radius:12px;
+  box-shadow:inset 0 4px 20px rgba(0,0,0,.6),0 2px 0 rgba(192,192,200,.1);}
+
+/* Individual pair slot (3 reels) */
+.bb-reel-row{display:flex;align-items:center;justify-content:center;gap:4px;
+  margin:16px 0;opacity:0;transform:translateY(10px);
+  animation:bb-reel-row-in .5s ease-out forwards;}
+.bb-reel-row:nth-child(1){animation-delay:.5s}
+.bb-reel-row:nth-child(2){animation-delay:3.5s}
+.bb-reel-row:nth-child(3){animation-delay:6.5s}
+.bb-reel-row:nth-child(4){animation-delay:9.5s}
+@keyframes bb-reel-row-in{to{opacity:1;transform:translateY(0)}}
+
+.bb-reel-set{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;}
+
+/* Individual reel window */
+.bb-reel{width:72px;height:52px;overflow:hidden;position:relative;
+  background:var(--bb-reel-bg);border:2px solid var(--bb-chrome-dk);border-radius:6px;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.8),0 1px 0 rgba(192,192,200,.15);}
+.bb-reel::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.4),transparent 30%,transparent 70%,rgba(0,0,0,.4));
+  z-index:2;pointer-events:none;}
+/* Scan line */
+.bb-reel::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;
+  background:rgba(255,215,0,.15);z-index:3;pointer-events:none;
+  box-shadow:0 0 4px rgba(255,215,0,.1);}
+
+/* Reel strip (scrolling content) */
+.bb-reel-strip{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  animation:bb-reel-spin 0.15s linear infinite;
+  position:absolute;width:100%;top:0;}
+.bb-reel-strip.stopped{animation:none;position:relative;}
+.bb-reel-strip.decel{animation:bb-reel-decel 1.2s cubic-bezier(.33,0,.2,1) forwards;}
+@keyframes bb-reel-spin{0%{transform:translateY(0)}100%{transform:translateY(-52px)}}
+@keyframes bb-reel-decel{
+  0%{transform:translateY(-30px)}
+  70%{transform:translateY(4px)}
+  85%{transform:translateY(-2px)}
+  100%{transform:translateY(0)}}
+
+.bb-reel-item{width:100%;height:52px;display:flex;align-items:center;justify-content:center;
+  font-family:'Press Start 2P',monospace;font-size:14px;color:var(--bb-neon-gold);
+  text-shadow:0 0 8px rgba(255,215,0,.4);}
+.bb-reel-item.compat{font-size:22px;text-shadow:0 0 12px rgba(232,48,112,.4);}
+
+/* Pair info that slides in after reels lock */
+.bb-pair-info{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 16px;margin-top:8px;
+  background:rgba(0,0,0,.3);border-radius:6px;border:1px solid rgba(212,168,48,.15);
+  opacity:0;transform:translateY(10px);
+  animation:bb-pair-slide .6s ease-out forwards;}
+.bb-reel-row:nth-child(1) .bb-pair-info{animation-delay:2.8s}
+.bb-reel-row:nth-child(2) .bb-pair-info{animation-delay:5.8s}
+.bb-reel-row:nth-child(3) .bb-pair-info{animation-delay:8.8s}
+.bb-reel-row:nth-child(4) .bb-pair-info{animation-delay:11.8s}
+@keyframes bb-pair-slide{to{opacity:1;transform:translateY(0)}}
+
+.bb-pair-player{display:flex;align-items:center;gap:8px;}
+.bb-pair-player.right{flex-direction:row-reverse;}
+.bb-pair-av{width:36px;height:36px;border-radius:50%;border:2px solid var(--bb-gold);
+  background:var(--bb-velvet);display:flex;align-items:center;justify-content:center;
+  overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+.bb-pair-av .bb-ini{font-family:'Playfair Display',serif;font-size:11px;font-weight:700;color:var(--bb-gold);}
+.bb-pair-label{font-family:'Outfit',sans-serif;font-size:11px;}
+.bb-pair-name{font-weight:600;letter-spacing:1px;color:var(--bb-cream);}
+.bb-pair-role{font-size:8px;color:var(--bb-champagne);text-transform:uppercase;letter-spacing:1px;}
+
+/* Compat badge between pair info */
+.bb-pair-compat-badge{display:flex;flex-direction:column;align-items:center;gap:2px;padding:0 12px;}
+.bb-pair-compat-icon{font-size:18px;}
+.bb-pair-compat-text{font-family:'Press Start 2P',monospace;font-size:6px;letter-spacing:1px;text-transform:uppercase;}
+.bb-compat-high{color:var(--bb-hotpink);}
+.bb-compat-mid{color:var(--bb-gold);}
+.bb-compat-low{color:var(--bb-shark);}
+.bb-compat-chaos{color:var(--bb-stamp);}
+
+/* Trust rings (inline) */
+.bb-trust-rings{position:relative;width:32px;height:20px;margin:4px auto 0;}
+.bb-trust-ring{position:absolute;width:16px;height:16px;border-radius:50%;border:2px solid var(--bb-gold);
+  top:2px;transition:all .5s;}
+.bb-trust-ring.left{left:0;}
+.bb-trust-ring.right{left:12px;}
+.bb-trust-rings.high .bb-trust-ring{border-color:var(--bb-trust-high);box-shadow:0 0 6px rgba(212,168,48,.4);}
+.bb-trust-rings.mid .bb-trust-ring{border-color:var(--bb-trust-mid);}
+.bb-trust-rings.low .bb-trust-ring{border-color:var(--bb-trust-low);}
+.bb-trust-rings.cracked .bb-trust-ring{border-color:var(--bb-trust-crack);border-style:dashed;}
+
+/* Gold coin particles burst */
+.bb-coin-burst{position:absolute;bottom:20px;left:50%;z-index:10;pointer-events:none;}
+.bb-coin{position:absolute;width:12px;height:12px;border-radius:50%;
+  background:linear-gradient(135deg,#ffd700,#daa520,#ffd700);
+  border:1px solid #b8860b;
+  box-shadow:inset 0 1px 2px rgba(255,255,255,.4),0 2px 4px rgba(0,0,0,.3);
+  opacity:0;animation:bb-coin-fly 1.5s cubic-bezier(.15,.8,.3,1) forwards;}
+.bb-coin::after{content:'';position:absolute;top:3px;left:4px;width:4px;height:6px;
+  border:1px solid #b8860b;border-radius:50%;opacity:.6;}
+@keyframes bb-coin-fly{
+  0%{opacity:1;transform:translate(0,0) rotate(0deg) scale(.5)}
+  30%{opacity:1;transform:translate(var(--cx),var(--cy)) rotate(180deg) scale(1)}
+  70%{opacity:.8;transform:translate(calc(var(--cx)*1.2),calc(var(--cy) + 40px)) rotate(360deg) scale(.9)}
+  100%{opacity:0;transform:translate(calc(var(--cx)*1.3),120px) rotate(540deg) scale(.4)}}
+
+/* Jackpot flash overlay */
+.bb-jackpot-flash{position:absolute;inset:0;pointer-events:none;z-index:8;
+  background:radial-gradient(circle at 50% 50%,rgba(255,215,0,.15),transparent 70%);
+  opacity:0;animation:bb-jp-flash .4s ease-out forwards;}
+@keyframes bb-jp-flash{0%{opacity:1;transform:scale(.8)}50%{opacity:.6}100%{opacity:0;transform:scale(1.5)}}
+
+/* Lever SVG area */
+.bb-lever-area{position:absolute;right:-40px;top:50%;transform:translateY(-50%);z-index:10;
+  width:50px;height:200px;}
+.bb-lever-svg{animation:bb-lever-pull 1.5s cubic-bezier(.4,0,.2,1) .2s both;}
+@keyframes bb-lever-pull{
+  0%{transform:rotate(0)}
+  25%{transform:rotate(35deg)}
+  50%{transform:rotate(35deg)}
+  75%{transform:rotate(-5deg)}
+  100%{transform:rotate(0)}}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* PHASE DIVIDERS                                             */
+/* ═══════════════════════════════════════════════════════════ */
+.bb-divider{position:relative;padding:50px 0;text-align:center;overflow:hidden;}
+.bb-divider-line{position:absolute;top:50%;left:8%;right:8%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--bb-gold),transparent);}
+.bb-divider-text{position:relative;z-index:1;background:var(--bb-casino);display:inline-block;padding:0 28px;}
+.bb-divider-num{font-family:'Playfair Display',serif;font-weight:900;font-size:36px;color:var(--bb-gold);opacity:.25;}
+.bb-divider-name{font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:5px;
+  text-transform:uppercase;color:var(--bb-gold);margin-top:2px;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* MAIN LAYOUT — GRID                                         */
+/* ═══════════════════════════════════════════════════════════ */
+.bb-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 260px;gap:16px;padding:0 16px;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* EVENT CARDS                                                */
+/* ═══════════════════════════════════════════════════════════ */
+.bb-card{position:relative;padding:16px 18px;margin:12px 0;border-radius:8px;
+  border:1px solid rgba(212,168,48,.08);overflow:hidden;
+  animation:bb-card-in .6s cubic-bezier(.16,1,.3,1) both;}
+@keyframes bb-card-in{from{opacity:0;transform:translateY(20px) rotate(-1deg);filter:blur(2px)}
+  to{opacity:1;transform:none;filter:none}}
+
+/* Phase 1 cards — warm amber/blush */
+.bb-card.phase1{background:linear-gradient(135deg,rgba(232,160,168,.05),rgba(42,16,64,.3));
+  border-left:3px solid var(--bb-blush);}
+/* Phase 2 cards — cold blue/mist */
+.bb-card.phase2{background:linear-gradient(135deg,rgba(40,72,160,.05),rgba(12,24,40,.4));
+  border-left:3px solid var(--bb-mist);}
+/* Phase 3 cards — bureaucratic manila */
+.bb-card.phase3{background:linear-gradient(135deg,rgba(216,200,160,.06),rgba(26,26,24,.4));
+  border-left:3px solid var(--bb-manila);}
+
+/* Card variants */
+.bb-card.trust{border-left-color:var(--bb-gold);background:linear-gradient(135deg,rgba(212,168,48,.06),rgba(42,16,64,.2));}
+.bb-card.sabotage{border-left-color:var(--bb-stamp);background:linear-gradient(135deg,rgba(192,32,32,.06),rgba(42,16,64,.2));
+  animation:bb-card-in .6s cubic-bezier(.16,1,.3,1) both,bb-shake .4s ease-out .6s;}
+@keyframes bb-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-2px)}80%{transform:translateX(2px)}}
+.bb-card.social{border-left:3px dashed var(--bb-blush);background:linear-gradient(135deg,rgba(232,48,112,.04),rgba(42,16,64,.15));}
+.bb-card.fall{border-left-color:var(--bb-water);background:linear-gradient(135deg,rgba(40,72,160,.08),rgba(12,24,40,.4));
+  animation:bb-card-in .6s cubic-bezier(.16,1,.3,1) both,bb-fall-shake .6s ease-out .6s;}
+@keyframes bb-fall-shake{0%{transform:translateY(0)}20%{transform:translateY(6px)}40%{transform:translateY(-4px)}60%{transform:translateY(3px)}80%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+.bb-card.stamp-pass{border-left-color:#3a8850;border:2px solid #3a8850;
+  background:linear-gradient(135deg,rgba(58,136,80,.08),rgba(26,26,24,.3));
+  animation:bb-card-in .6s cubic-bezier(.16,1,.3,1) both,bb-paper-shuffle .4s ease-out;}
+.bb-card.stamp-fail{border-left-color:var(--bb-stamp);border:2px solid var(--bb-stamp);
+  background:linear-gradient(135deg,rgba(192,32,32,.08),rgba(26,26,24,.3));
+  animation:bb-card-in .6s cubic-bezier(.16,1,.3,1) both,bb-paper-shuffle .4s ease-out;}
+/* Paper shuffle animation for customs cards */
+@keyframes bb-paper-shuffle{
+  0%{transform:translateX(20px) rotate(2deg);opacity:.5}
+  50%{transform:translateX(-3px) rotate(-0.5deg);opacity:.9}
+  100%{transform:translateX(0) rotate(0);opacity:1}}
+
+/* Card header */
+.bb-card-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.bb-card-av{width:30px;height:30px;border-radius:50%;border:2px solid var(--bb-gold-dk);
+  background:var(--bb-velvet);display:flex;align-items:center;justify-content:center;
+  overflow:hidden;flex-shrink:0;}
+.bb-card-av img{width:100%;height:100%;object-fit:cover;}
+.bb-card-av .bb-ini{font-family:'Playfair Display',serif;font-size:10px;font-weight:700;color:var(--bb-gold);}
+.bb-card-av.blind{position:relative;overflow:visible;}
+.bb-card-av.blind::after{content:'';position:absolute;top:35%;left:-3px;right:-3px;height:8px;
+  background:var(--bb-ink);border-radius:2px;opacity:.7;z-index:2;}
+.bb-card-who{font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;color:var(--bb-cream);}
+.bb-card-tag{font-family:'Outfit',sans-serif;font-size:8px;padding:2px 8px;border-radius:10px;
+  letter-spacing:1px;text-transform:uppercase;font-weight:600;margin-left:auto;white-space:nowrap;}
+
+/* Tag colors */
+.bb-tag-obstacle{background:rgba(232,160,168,.1);color:var(--bb-blush);border:1px solid rgba(232,160,168,.2);}
+.bb-tag-trust{background:rgba(212,168,48,.1);color:var(--bb-gold);border:1px solid rgba(212,168,48,.2);}
+.bb-tag-sabotage{background:rgba(192,32,32,.1);color:var(--bb-stamp);border:1px solid rgba(192,32,32,.2);}
+.bb-tag-social{background:rgba(232,48,112,.08);color:var(--bb-hotpink);border:1px solid rgba(232,48,112,.2);}
+.bb-tag-fall{background:rgba(40,72,160,.1);color:var(--bb-mist);border:1px solid rgba(40,72,160,.25);}
+.bb-tag-shark{background:rgba(74,104,120,.1);color:var(--bb-shark);border:1px solid rgba(74,104,120,.25);}
+.bb-tag-balance{background:rgba(138,184,208,.08);color:var(--bb-spray);border:1px solid rgba(138,184,208,.2);}
+.bb-tag-trivia{background:rgba(216,200,160,.1);color:var(--bb-manila);border:1px solid rgba(216,200,160,.2);}
+.bb-tag-approved{background:rgba(58,136,80,.1);color:#5ab870;border:1px solid rgba(58,136,80,.25);}
+.bb-tag-denied{background:rgba(192,32,32,.1);color:var(--bb-stamp);border:1px solid rgba(192,32,32,.25);}
+
+.bb-card-txt{font-size:13px;line-height:1.5;color:rgba(240,232,216,.7);}
+.bb-card-score{font-family:'Outfit',sans-serif;font-size:10px;margin-top:6px;opacity:.45;letter-spacing:.5px;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* CSS ICONS (No emoji)                                       */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* Eye icon (guide) */
+.bb-i-eye{width:18px;height:12px;position:relative;flex-shrink:0;}
+.bb-i-eye::before{content:'';position:absolute;top:0;left:0;width:18px;height:12px;
+  border:2px solid var(--bb-champagne);border-radius:50%;background:transparent;}
+.bb-i-eye::after{content:'';position:absolute;top:3px;left:6px;width:6px;height:6px;
+  background:var(--bb-champagne);border-radius:50%;}
+
+/* Blindfold icon */
+.bb-i-blind{width:20px;height:14px;position:relative;flex-shrink:0;}
+.bb-i-blind::before{content:'';position:absolute;top:2px;left:0;width:20px;height:10px;
+  border-radius:50%;border:2px solid var(--bb-blush);border-bottom:none;}
+.bb-i-blind::after{content:'';position:absolute;top:5px;left:2px;right:2px;height:4px;
+  background:var(--bb-ink);border-radius:2px;}
+
+/* Ring icon */
+.bb-i-ring{width:16px;height:16px;border-radius:50%;border:2px solid var(--bb-gold);
+  position:relative;flex-shrink:0;box-shadow:0 0 4px rgba(212,168,48,.3);}
+.bb-i-ring::after{content:'';position:absolute;top:3px;left:3px;width:4px;height:4px;
+  background:var(--bb-gold-lt);border-radius:50%;}
+
+/* Shark fin icon */
+.bb-i-shark{width:18px;height:14px;position:relative;flex-shrink:0;}
+.bb-i-shark::before{content:'';position:absolute;bottom:0;left:0;right:0;height:6px;
+  background:var(--bb-water);border-radius:0 0 4px 4px;}
+.bb-i-shark::after{content:'';position:absolute;bottom:4px;left:6px;width:0;height:0;
+  border-style:solid;border-width:0 4px 10px 4px;border-color:transparent transparent var(--bb-shark) transparent;}
+
+/* Rope icon */
+.bb-i-rope{width:24px;height:4px;position:relative;flex-shrink:0;
+  background:repeating-linear-gradient(90deg,var(--bb-champagne) 0px,var(--bb-champagne) 3px,transparent 3px,transparent 5px);}
+
+/* Stamp icon */
+.bb-i-stamp{width:20px;height:16px;position:relative;flex-shrink:0;}
+.bb-i-stamp::before{content:'';position:absolute;top:0;left:2px;width:16px;height:12px;
+  border:2px solid var(--bb-stamp);border-radius:2px;}
+.bb-i-stamp::after{content:'';position:absolute;bottom:0;left:6px;width:8px;height:6px;
+  background:var(--bb-stamp);border-radius:0 0 2px 2px;}
+
+/* Waterfall icon */
+.bb-i-falls{width:20px;height:18px;position:relative;flex-shrink:0;}
+.bb-i-falls::before{content:'';position:absolute;top:0;left:2px;right:2px;height:4px;
+  background:var(--bb-mist);border-radius:2px 2px 0 0;}
+.bb-i-falls::after{content:'';position:absolute;top:4px;left:4px;width:3px;height:14px;
+  background:linear-gradient(180deg,var(--bb-mist),var(--bb-water));border-radius:0 0 2px 2px;
+  box-shadow:6px 0 0 var(--bb-mist),3px 2px 0 rgba(138,184,208,.3);}
+
+/* Heart icon */
+.bb-i-heart{width:16px;height:14px;position:relative;flex-shrink:0;}
+.bb-i-heart::before{content:'';position:absolute;top:0;left:0;width:16px;height:14px;
+  background:var(--bb-hotpink);clip-path:path('M8 13 Q0 7 0 4 Q0 0 4 0 Q6 0 8 3 Q10 0 12 0 Q16 0 16 4 Q16 7 8 13');
+  filter:drop-shadow(0 0 3px rgba(232,48,112,.4));}
+
+/* Crown icon (SVG CSS) */
+.bb-i-crown{width:24px;height:18px;position:relative;flex-shrink:0;}
+.bb-i-crown::before{content:'';position:absolute;bottom:0;left:2px;right:2px;height:8px;
+  background:var(--bb-gold);border-radius:0 0 2px 2px;}
+.bb-i-crown::after{content:'';position:absolute;top:0;left:0;width:24px;height:14px;
+  background:var(--bb-gold);
+  clip-path:polygon(0% 100%,0% 40%,20% 70%,35% 20%,50% 60%,65% 20%,80% 70%,100% 40%,100% 100%);}
+
+/* Spade icon */
+.bb-i-spade{width:14px;height:16px;position:relative;flex-shrink:0;}
+.bb-i-spade::before{content:'';position:absolute;top:0;left:0;width:14px;height:14px;
+  background:var(--bb-cream);
+  clip-path:polygon(50% 0%,100% 45%,80% 100%,50% 78%,20% 100%,0% 45%);}
+.bb-i-spade::after{content:'';position:absolute;bottom:0;left:5px;width:4px;height:5px;background:var(--bb-cream);}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* SIDEBAR                                                    */
+/* ═══════════════════════════════════════════════════════════ */
+.bb-sidebar{position:sticky;top:32px;height:calc(100vh - 32px);overflow-y:auto;padding:16px 12px;
+  background:linear-gradient(180deg,rgba(17,8,24,.95),rgba(26,12,40,.95));
+  border-left:2px solid rgba(212,168,48,.1);
+  scrollbar-width:thin;scrollbar-color:rgba(212,168,48,.15) transparent;}
+
+.bb-sb-title{font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--bb-gold);padding-bottom:6px;border-bottom:1px solid rgba(212,168,48,.15);margin-bottom:10px;}
+
+/* Pair card in sidebar */
+.bb-sb-pair{padding:10px;margin-bottom:8px;border-radius:6px;
+  background:rgba(42,16,64,.3);border:1px solid rgba(212,168,48,.08);
+  transition:border-color .3s;}
+.bb-sb-pair.leading{border-color:var(--bb-gold);box-shadow:0 0 12px rgba(212,168,48,.1);}
+.bb-sb-pair-header{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.bb-sb-pair-avatars{display:flex;gap:-4px;}
+.bb-sb-av{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--bb-gold-dk);
+  background:var(--bb-velvet);display:flex;align-items:center;justify-content:center;
+  overflow:hidden;font-family:'Playfair Display',serif;font-size:8px;font-weight:700;color:var(--bb-gold);}
+.bb-sb-av:nth-child(2){margin-left:-6px;}
+.bb-sb-pair-names{font-family:'Outfit',sans-serif;font-size:10px;font-weight:600;letter-spacing:.5px;flex:1;}
+.bb-sb-pair-rank{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--bb-gold);opacity:.3;}
+
+/* Trust rings in sidebar */
+.bb-sb-trust{display:flex;align-items:center;gap:6px;margin:4px 0;}
+.bb-sb-trust-label{font-family:'Outfit',sans-serif;font-size:8px;color:var(--bb-champagne);letter-spacing:1px;}
+.bb-sb-trust-rings{display:flex;gap:-2px;}
+.bb-sb-ring{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--bb-gold);}
+.bb-sb-ring:nth-child(2){margin-left:-4px;}
+.bb-sb-ring.cracked{border-color:var(--bb-trust-crack);border-style:dashed;}
+.bb-sb-ring.glow{border-color:var(--bb-gold-lt);box-shadow:0 0 4px rgba(212,168,48,.4);}
+
+/* Score bar */
+.bb-sb-bar{height:6px;background:rgba(255,255,255,.04);border-radius:3px;margin:3px 0;overflow:hidden;}
+.bb-sb-fill{height:100%;border-radius:3px;transition:width .8s ease-out;}
+.bb-sb-fill.gold{background:linear-gradient(90deg,var(--bb-gold-dk),var(--bb-gold));}
+.bb-sb-fill.blush{background:linear-gradient(90deg,var(--bb-rose),var(--bb-blush));}
+.bb-sb-fill.blue{background:linear-gradient(90deg,var(--bb-falls),var(--bb-mist));}
+.bb-sb-fill.green{background:linear-gradient(90deg,#2a6840,#3a8850);}
+.bb-sb-label{font-family:'Outfit',sans-serif;font-size:8px;color:var(--bb-champagne);letter-spacing:.5px;}
+
+/* Phase progress journey */
+.bb-sb-journey{margin:12px 0;padding:8px;background:rgba(0,0,0,.2);border-radius:6px;
+  border:1px solid rgba(212,168,48,.06);}
+.bb-sb-journey-step{display:flex;align-items:center;gap:8px;padding:4px 0;position:relative;}
+.bb-sb-journey-step::before{content:'';position:absolute;left:9px;top:22px;width:1px;height:calc(100% - 4px);
+  background:rgba(212,168,48,.1);}
+.bb-sb-journey-step:last-child::before{display:none;}
+.bb-sb-journey-dot{width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(212,168,48,.2);
+  background:rgba(42,16,64,.5);display:flex;align-items:center;justify-content:center;
+  font-size:10px;flex-shrink:0;z-index:1;}
+.bb-sb-journey-dot.active{border-color:var(--bb-gold);background:rgba(212,168,48,.15);
+  box-shadow:0 0 8px rgba(212,168,48,.2);}
+.bb-sb-journey-dot.done{border-color:var(--bb-gold);background:var(--bb-gold-dk);}
+.bb-sb-journey-info{font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:.5px;}
+.bb-sb-journey-info.active{color:var(--bb-gold);}
+.bb-sb-journey-info.done{color:var(--bb-champagne);opacity:.5;text-decoration:line-through;}
+
+/* Shark counter */
+.bb-sb-sharks{display:flex;gap:4px;margin:6px 0;flex-wrap:wrap;}
+.bb-sb-shark-fin{position:relative;width:14px;height:12px;}
+.bb-sb-shark-fin::before{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;
+  background:var(--bb-water);border-radius:0 0 3px 3px;}
+.bb-sb-shark-fin::after{content:'';position:absolute;bottom:3px;left:4px;width:0;height:0;
+  border-style:solid;border-width:0 3px 8px 3px;border-color:transparent transparent var(--bb-shark) transparent;}
+.bb-sb-shark-fin.hit{opacity:1;}
+.bb-sb-shark-fin.empty{opacity:.2;}
+
+/* Drama feed */
+.bb-sb-drama{margin-top:8px;border-top:1px solid rgba(212,168,48,.1);padding-top:8px;}
+.bb-sb-drama-item{font-family:'Outfit',sans-serif;font-size:8px;color:var(--bb-champagne);
+  padding:2px 0;display:flex;gap:4px;align-items:flex-start;}
+.bb-sb-drama-dot{width:4px;height:4px;border-radius:50%;margin-top:3px;flex-shrink:0;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* PHASE 1 — BLINDFOLD OBSTACLE COURSE                        */
+/* ═══════════════════════════════════════════════════════════ */
+/* Warm amber atmosphere */
+.bb-phase1-bg{position:relative;}
+.bb-phase1-bg::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 50% 30%,rgba(232,160,168,.03),transparent 60%);}
+
+.bb-phase-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px 16px;
+  background:linear-gradient(90deg,rgba(212,168,48,.06),transparent);
+  border-left:3px solid var(--bb-gold);border-radius:0 8px 8px 0;}
+.bb-phase-num{font-family:'Playfair Display',serif;font-weight:900;font-size:32px;color:var(--bb-gold);opacity:.2;}
+.bb-phase-name{font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;letter-spacing:3px;
+  text-transform:uppercase;color:var(--bb-gold);}
+.bb-phase-desc{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--bb-champagne);}
+
+/* Obstacle progress SVG */
+.bb-obstacle-track{display:flex;align-items:center;gap:0;margin:16px 0;padding:12px 16px;
+  background:rgba(0,0,0,.2);border-radius:8px;overflow-x:auto;}
+.bb-obs-node{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px;}
+.bb-obs-dot{width:28px;height:28px;border-radius:50%;border:2px solid rgba(212,168,48,.15);
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+  background:rgba(42,16,64,.4);transition:all .5s;}
+.bb-obs-dot.passed{border-color:var(--bb-gold);background:rgba(212,168,48,.15);
+  box-shadow:0 0 8px rgba(212,168,48,.2);}
+.bb-obs-dot.failed{border-color:var(--bb-stamp);background:rgba(192,32,32,.1);}
+.bb-obs-dot.current{border-color:var(--bb-blush);animation:bb-obs-pulse 1.5s ease-in-out infinite;
+  box-shadow:0 0 12px rgba(232,160,168,.3);}
+@keyframes bb-obs-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.bb-obs-label{font-family:'Outfit',sans-serif;font-size:7px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--bb-champagne);text-align:center;}
+.bb-obs-line{width:30px;height:2px;background:rgba(212,168,48,.1);flex-shrink:0;}
+.bb-obs-line.done{background:var(--bb-gold-dk);}
+/* Checkmark icon inside obs dot */
+.bb-obs-check{width:12px;height:8px;border-left:2px solid var(--bb-gold);border-bottom:2px solid var(--bb-gold);
+  transform:rotate(-45deg);margin-bottom:2px;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* PHASE 2 — TIGHTROPE OVER WATERFALL                         */
+/* ═══════════════════════════════════════════════════════════ */
+/* Cold atmosphere shift */
+.bb-phase2-bg{position:relative;}
+.bb-phase2-bg::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 50% 80%,rgba(40,72,160,.04),transparent 60%);}
+
+/* Tightrope SVG visualization */
+.bb-tightrope-vis{position:relative;margin:20px 0;padding:20px 16px;
+  background:linear-gradient(180deg,rgba(24,56,96,.15),rgba(12,24,40,.4));
+  border-radius:8px;border:1px solid rgba(138,184,208,.1);overflow:hidden;min-height:240px;}
+
+/* Waterfall streams on sides */
+.bb-side-falls{position:absolute;top:0;bottom:0;width:40px;pointer-events:none;overflow:hidden;z-index:1;}
+.bb-side-falls.left{left:0;}
+.bb-side-falls.right{right:0;}
+.bb-fall-stream{position:absolute;width:3px;
+  background:linear-gradient(180deg,rgba(138,184,208,.2),rgba(40,72,160,.3),rgba(138,184,208,.15));
+  animation:bb-stream-flow linear infinite;border-radius:2px;}
+@keyframes bb-stream-flow{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+
+/* Mist particles rising from below */
+.bb-mist-layer{position:absolute;bottom:0;left:0;right:0;height:60%;
+  background:linear-gradient(0deg,rgba(138,184,208,.08),transparent);pointer-events:none;z-index:1;}
+.bb-mist-particles{position:absolute;bottom:0;left:0;right:0;height:100%;pointer-events:none;overflow:hidden;z-index:2;}
+.bb-mist-dot{position:absolute;width:var(--msz,3px);height:var(--msz,3px);border-radius:50%;
+  background:rgba(200,220,240,.25);
+  animation:bb-mist-rise linear infinite;opacity:0;}
+@keyframes bb-mist-rise{
+  0%{transform:translateY(0) translateX(0);opacity:0}
+  15%{opacity:.3}
+  50%{opacity:.15;transform:translateY(-50%) translateX(var(--mdx,5px))}
+  100%{transform:translateY(-100%) translateX(calc(var(--mdx,5px) * 2));opacity:0}}
+
+/* Rope SVG */
+.bb-rope-svg{width:100%;height:60px;position:relative;z-index:3;}
+
+/* Water below */
+.bb-water-layer{position:absolute;bottom:0;left:0;right:0;height:40%;
+  background:linear-gradient(0deg,var(--bb-deep),rgba(40,72,160,.3));
+  border-top:1px solid rgba(138,184,208,.1);z-index:2;}
+
+/* Shark fins in water — bob up and down */
+.bb-shark-fins{position:absolute;bottom:15%;left:0;right:0;height:50px;z-index:3;}
+.bb-shark-fin-svg{position:absolute;opacity:.5;}
+.bb-shark-fin-svg.swim{animation:bb-shark-swim 6s ease-in-out infinite;}
+.bb-shark-fin-svg.bob{animation:bb-shark-bob 3s ease-in-out infinite;}
+@keyframes bb-shark-swim{0%{transform:translateX(-20px) translateY(0)}50%{transform:translateX(20px) translateY(-5px)}100%{transform:translateX(-20px) translateY(0)}}
+@keyframes bb-shark-bob{0%,100%{transform:translateY(0)}30%{transform:translateY(-12px)}60%{transform:translateY(-3px)}}
+
+/* Full shark body surface */
+.bb-shark-body{position:absolute;bottom:0;opacity:0;z-index:4;
+  animation:bb-shark-surface 12s ease-in-out infinite;}
+@keyframes bb-shark-surface{
+  0%,70%,100%{opacity:0;transform:translateY(20px)}
+  75%{opacity:.35;transform:translateY(0)}
+  85%{opacity:.3;transform:translateY(-5px)}
+  90%{opacity:0;transform:translateY(15px)}}
+
+/* Spray/splash particles on fall */
+.bb-spray-burst{position:absolute;bottom:40%;left:50%;z-index:5;pointer-events:none;}
+.bb-spray-p{position:absolute;width:3px;height:3px;border-radius:50%;
+  background:rgba(168,208,224,.6);opacity:0;}
+
+/* Pair markers on rope */
+.bb-rope-marker{position:absolute;top:-24px;display:flex;flex-direction:column;align-items:center;
+  gap:2px;transition:left 1s cubic-bezier(.16,1,.3,1);z-index:5;}
+.bb-rope-marker-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--bb-gold);
+  background:var(--bb-velvet);display:flex;align-items:center;justify-content:center;
+  font-family:'Outfit',sans-serif;font-size:7px;font-weight:700;color:var(--bb-gold);}
+.bb-rope-marker-label{font-family:'Outfit',sans-serif;font-size:7px;color:var(--bb-champagne);
+  white-space:nowrap;}
+
+/* Segment labels below rope */
+.bb-seg-labels{display:flex;justify-content:space-between;padding:0 4px;margin-top:4px;position:relative;z-index:3;}
+.bb-seg-label{font-family:'Outfit',sans-serif;font-size:7px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--bb-mist);opacity:.4;text-align:center;flex:1;}
+.bb-seg-label.danger{color:var(--bb-stamp);opacity:.6;}
+
+/* Wind effect lines */
+.bb-wind-lines{position:absolute;top:20%;left:0;right:0;height:40%;pointer-events:none;z-index:2;overflow:hidden;}
+.bb-wind{position:absolute;height:1px;background:linear-gradient(90deg,transparent,rgba(200,220,240,.1),transparent);
+  animation:bb-wind-blow linear infinite;}
+@keyframes bb-wind-blow{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* PHASE 3 — CUSTOMS TRIVIA                                   */
+/* ═══════════════════════════════════════════════════════════ */
+.bb-phase3-bg{position:relative;}
+.bb-phase3-bg::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:linear-gradient(180deg,rgba(232,232,216,.02),transparent 30%);}
+
+/* Passport desk illustration */
+.bb-passport-desk{position:relative;margin:12px 0;padding:16px;
+  background:linear-gradient(180deg,rgba(216,200,160,.04),rgba(26,26,24,.2));
+  border-radius:8px;border:1px solid rgba(216,200,160,.08);overflow:hidden;}
+.bb-desk-svg{position:absolute;right:16px;top:50%;transform:translateY(-50%);opacity:.08;z-index:0;}
+
+/* Stamp animation on trivia cards */
+.bb-stamp-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg) scale(0);
+  font-family:'Permanent Marker',cursive;font-size:28px;letter-spacing:3px;
+  padding:4px 16px;border:3px solid;border-radius:4px;pointer-events:none;z-index:5;
+  animation:bb-stamp-slam .4s cubic-bezier(.17,.67,.29,1.4) .3s forwards;}
+@keyframes bb-stamp-slam{0%{transform:translate(-50%,-50%) rotate(-12deg) scale(3);opacity:0}
+  60%{transform:translate(-50%,-50%) rotate(-12deg) scale(.9);opacity:1}
+  100%{transform:translate(-50%,-50%) rotate(-12deg) scale(1);opacity:.8}}
+.bb-stamp-pass{color:#3a8850;border-color:#3a8850;text-shadow:0 0 8px rgba(58,136,80,.3);}
+.bb-stamp-deny{color:var(--bb-stamp);border-color:var(--bb-stamp);text-shadow:0 0 8px rgba(192,32,32,.3);}
+
+/* Ink splatter particles around stamp */
+.bb-ink-splatter{position:absolute;top:50%;left:50%;pointer-events:none;z-index:4;}
+.bb-splat{position:absolute;border-radius:50%;opacity:0;
+  animation:bb-splat-burst .6s ease-out .4s forwards;}
+@keyframes bb-splat-burst{0%{opacity:0;transform:translate(0,0) scale(0)}
+  50%{opacity:.5;transform:translate(var(--sx),var(--sy)) scale(1)}
+  100%{opacity:.2;transform:translate(var(--sx),var(--sy)) scale(.8)}}
+
+/* Red ink drip on DENIED */
+.bb-ink-drip{position:absolute;pointer-events:none;z-index:6;}
+.bb-drip{position:absolute;width:2px;background:linear-gradient(180deg,var(--bb-stamp),rgba(192,32,32,.3));
+  border-radius:0 0 50% 50%;opacity:0;
+  animation:bb-drip-fall 2s ease-in .8s forwards;}
+@keyframes bb-drip-fall{
+  0%{height:0;opacity:.6}
+  60%{height:var(--dh,20px);opacity:.5}
+  100%{height:calc(var(--dh,20px) + 8px);opacity:.2}}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* RESULTS CARD                                               */
+/* ═══════════════════════════════════════════════════════════ */
+.bb-results{padding:24px;margin:20px 0;border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,rgba(42,16,64,.4),rgba(212,168,48,.05));
+  border:2px solid var(--bb-gold);box-shadow:0 0 40px rgba(212,168,48,.1);
+  animation:bb-results-glow 2s ease-in-out infinite alternate;
+  position:relative;overflow:hidden;}
+@keyframes bb-results-glow{0%{box-shadow:0 0 20px rgba(212,168,48,.1)}100%{box-shadow:0 0 60px rgba(212,168,48,.2)}}
+
+/* Confetti particles */
+.bb-confetti-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;}
+.bb-confetti{position:absolute;top:-10px;width:var(--cw,6px);height:var(--ch,10px);
+  background:var(--cc,var(--bb-gold));opacity:0;
+  animation:bb-confetti-fall linear infinite;
+  transform:rotate(var(--cr,0deg));}
+@keyframes bb-confetti-fall{
+  0%{transform:translateY(0) rotate(var(--cr,0deg));opacity:0}
+  5%{opacity:.8}
+  50%{opacity:.6;transform:translateY(50%) rotate(calc(var(--cr,0deg) + 180deg)) translateX(var(--csx,10px))}
+  100%{transform:translateY(120%) rotate(calc(var(--cr,0deg) + 360deg)) translateX(calc(var(--csx,10px) * -1));opacity:0}}
+
+/* Golden rotating halo ring */
+.bb-results-halo{position:relative;display:inline-block;}
+.bb-results-halo::before{content:'';position:absolute;inset:-8px;border-radius:50%;
+  border:2px solid transparent;border-top-color:var(--bb-gold);border-right-color:var(--bb-gold-lt);
+  animation:bb-halo-spin 2s linear infinite;
+  filter:drop-shadow(0 0 4px rgba(212,168,48,.4));}
+.bb-results-halo::after{content:'';position:absolute;inset:-12px;border-radius:50%;
+  border:1px solid transparent;border-bottom-color:rgba(212,168,48,.3);border-left-color:rgba(212,168,48,.2);
+  animation:bb-halo-spin 3s linear infinite reverse;}
+@keyframes bb-halo-spin{to{transform:rotate(360deg)}}
+
+/* Firework bursts */
+.bb-fireworks{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1;}
+.bb-firework{position:absolute;width:4px;height:4px;border-radius:50%;opacity:0;}
+.bb-firework.ring{border:1px solid var(--fw-color,var(--bb-gold));background:transparent;
+  width:8px;height:8px;
+  animation:bb-fw-ring 2s ease-out infinite;}
+@keyframes bb-fw-ring{
+  0%{opacity:0;transform:scale(0)}
+  20%{opacity:.7}
+  100%{opacity:0;transform:scale(8)}}
+.bb-firework.trail{background:var(--fw-color,var(--bb-gold));
+  animation:bb-fw-trail 2s ease-out infinite;}
+@keyframes bb-fw-trail{
+  0%{opacity:0;transform:translate(0,0) scale(1)}
+  15%{opacity:.8}
+  100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
+
+.bb-results-crown-icon{margin-bottom:8px;}
+.bb-results-title{font-family:'Playfair Display',serif;font-weight:900;font-size:24px;
+  color:var(--bb-gold);letter-spacing:2px;position:relative;z-index:2;}
+.bb-results-pair{display:flex;align-items:center;justify-content:center;gap:16px;margin:16px 0;position:relative;z-index:2;}
+.bb-results-av{width:56px;height:56px;border-radius:50%;border:3px solid var(--bb-gold);
+  background:var(--bb-velvet);display:flex;align-items:center;justify-content:center;
+  overflow:hidden;box-shadow:0 0 20px rgba(212,168,48,.3);
+  animation:bb-winner-pulse 1.5s ease-in-out infinite;}
+@keyframes bb-winner-pulse{0%,100%{box-shadow:0 0 20px rgba(212,168,48,.3)}50%{box-shadow:0 0 40px rgba(212,168,48,.5)}}
+.bb-results-av img{width:100%;height:100%;object-fit:cover;}
+.bb-results-av .bb-ini{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--bb-gold);}
+.bb-results-rings-icon{position:relative;z-index:2;}
+.bb-results-score{font-family:'Outfit',sans-serif;font-size:14px;color:var(--bb-champagne);margin-top:8px;letter-spacing:1px;position:relative;z-index:2;}
+.bb-results-immune{font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--bb-gold);padding:6px 20px;border:1px solid var(--bb-gold);border-radius:20px;margin-top:12px;
+  display:inline-block;background:rgba(212,168,48,.06);position:relative;z-index:2;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* CHATTER / FLAVOR TEXT                                      */
+/* ═══════════════════════════════════════════════════════════ */
+.bb-chatter{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:12px;
+  color:var(--bb-champagne);opacity:.35;padding:4px 16px;text-align:center;
+  letter-spacing:.5px;}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* REVEAL CONTROLS (fixed bottom)                             */
+/* ═══════════════════════════════════════════════════════════ */
+.bb-controls{position:fixed;bottom:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 20px;
+  background:linear-gradient(0deg,rgba(17,8,24,.98),rgba(17,8,24,.8));
+  border-top:1px solid rgba(212,168,48,.15);backdrop-filter:blur(8px);}
+.bb-btn{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;letter-spacing:2px;
+  text-transform:uppercase;padding:8px 24px;border-radius:20px;border:1px solid var(--bb-gold-dk);
+  background:rgba(212,168,48,.08);color:var(--bb-gold);cursor:pointer;transition:all .3s;}
+.bb-btn:hover{background:rgba(212,168,48,.15);border-color:var(--bb-gold);
+  box-shadow:0 0 16px rgba(212,168,48,.2);}
+.bb-counter{font-family:'Outfit',sans-serif;font-size:10px;color:var(--bb-champagne);letter-spacing:1px;}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;}
+}
+@media(max-width:900px){
+  .bb-grid{grid-template-columns:1fr;}
+  .bb-sidebar{position:static;height:auto;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- BROADCAST CHROME BAR                                       -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="bb-broadcast">
+  <div class="bb-live-dot"></div>
+  <span class="bb-live-label">LIVE</span>
+  <span class="bb-channel">DC WORLD TOUR</span>
+  <div class="bb-ticker-wrap">
+    <span class="bb-ticker">BRIDAL BRAWLS -- POST-MERGE IMMUNITY CHALLENGE -- 8 PLAYERS REMAIN -- PAIRS MATCHED BY THE WEDDING MACHINE -- BLINDFOLD RUN / TIGHTROPE / CUSTOMS GATE -- WHO WILL WIN IMMUNITY?</span>
+  </div>
+  <span class="bb-broadcast-time" id="bb-clock">21:04:37</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- COLD OPEN                                                  -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="bb-cold-open">
+  <div class="bb-casino-bg"></div>
+
+  <!-- Waterfall SVG background -->
+  <div class="bb-waterfall-bg">
+    <svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 400 600">
+      <!-- Mountain silhouettes -->
+      <polygon points="0,300 60,180 120,250 180,150 240,220 300,170 360,240 400,200 400,600 0,600" fill="#1a0c28" opacity=".4"/>
+      <polygon points="0,350 80,250 140,300 200,200 260,280 320,230 400,270 400,600 0,600" fill="#110818" opacity=".3"/>
+      <!-- Waterfall streams -->
+      <rect x="140" y="200" width="8" height="400" fill="url(#wf-grad)" opacity=".4">
+        <animate attributeName="y" values="200;195;200" dur="2s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="155" y="210" width="5" height="390" fill="url(#wf-grad)" opacity=".3">
+        <animate attributeName="y" values="210;205;210" dur="2.5s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="230" y="170" width="6" height="430" fill="url(#wf-grad)" opacity=".35">
+        <animate attributeName="y" values="170;165;170" dur="1.8s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="245" y="180" width="4" height="420" fill="url(#wf-grad)" opacity=".25">
+        <animate attributeName="y" values="180;175;180" dur="2.2s" repeatCount="indefinite"/>
+      </rect>
+      <!-- Mist at bottom -->
+      <ellipse cx="160" cy="590" rx="60" ry="20" fill="rgba(168,208,224,.15)">
+        <animate attributeName="rx" values="60;80;60" dur="4s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="240" cy="585" rx="50" ry="15" fill="rgba(168,208,224,.1)">
+        <animate attributeName="rx" values="50;70;50" dur="5s" repeatCount="indefinite"/>
+      </ellipse>
+      <defs>
+        <linearGradient id="wf-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="rgba(138,184,208,.6)"/>
+          <stop offset="50%" stop-color="rgba(40,72,160,.4)"/>
+          <stop offset="100%" stop-color="rgba(138,184,208,.2)"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="bb-spotlights">
+    <div class="bb-spot"></div><div class="bb-spot"></div><div class="bb-spot"></div>
+  </div>
+  <div class="bb-hearts" id="bb-hearts"></div>
+  <div class="bb-suits" id="bb-suits"></div>
+  <div class="bb-bubbles" id="bb-bubbles"></div>
+
+  <!-- Phase 1 ambient: dust motes -->
+  <div class="bb-dust-motes" id="bb-dust"></div>
+
+  <div class="bb-title-wrap">
+    <div class="bb-title-series">Drama Cruise: World Tour</div>
+    <div class="bb-title-main">Bridal Brawls</div>
+    <div class="bb-title-tagline">"Do you take this partner... to have and to hold... through mud, rope, and sharks?"</div>
+
+    <div class="bb-rings-deco">
+      <div class="bb-ring-line"></div>
+      <svg class="bb-rings-svg" width="48" height="28" viewBox="0 0 48 28">
+        <circle cx="16" cy="14" r="10" fill="none" stroke="#d4a830" stroke-width="2" opacity=".7"/>
+        <circle cx="32" cy="14" r="10" fill="none" stroke="#e83070" stroke-width="2" opacity=".7"/>
+        <circle cx="16" cy="14" r="10" fill="none" stroke="#d4a830" stroke-width="2" stroke-dasharray="2 4" opacity=".3"/>
+      </svg>
+      <div class="bb-ring-line"></div>
+    </div>
+
+    <div class="bb-phase-pills">
+      <div class="bb-pill active"><span class="bb-pill-num">I</span> Slot Machine</div>
+      <div class="bb-pill"><span class="bb-pill-num">II</span> Blindfold Run</div>
+      <div class="bb-pill"><span class="bb-pill-num">III</span> The Big Drop</div>
+      <div class="bb-pill"><span class="bb-pill-num">IV</span> Customs</div>
+    </div>
+
+    <!-- Players dropping in with parachutes -->
+    <div class="bb-player-drop">
+      <div class="bb-drop-player">
+        <div class="bb-parachute"></div>
+        <div class="bb-drop-avatar"><span class="bb-ini">BW</span></div>
+        <div class="bb-drop-name">Bowie</div>
+        <div class="bb-splash-ring ring1"></div><div class="bb-splash-ring ring2"></div><div class="bb-splash-ring ring3"></div>
+      </div>
+      <div class="bb-drop-player">
+        <div class="bb-parachute"></div>
+        <div class="bb-drop-avatar"><span class="bb-ini">PR</span></div>
+        <div class="bb-drop-name">Priya</div>
+        <div class="bb-splash-ring ring1"></div><div class="bb-splash-ring ring2"></div><div class="bb-splash-ring ring3"></div>
+      </div>
+      <div class="bb-drop-player">
+        <div class="bb-parachute"></div>
+        <div class="bb-drop-avatar"><span class="bb-ini">JL</span></div>
+        <div class="bb-drop-name">Julia</div>
+        <div class="bb-splash-ring ring1"></div><div class="bb-splash-ring ring2"></div><div class="bb-splash-ring ring3"></div>
+      </div>
+      <div class="bb-drop-player">
+        <div class="bb-parachute"></div>
+        <div class="bb-drop-avatar"><span class="bb-ini">WN</span></div>
+        <div class="bb-drop-name">Wayne</div>
+        <div class="bb-splash-ring ring1"></div><div class="bb-splash-ring ring2"></div><div class="bb-splash-ring ring3"></div>
+      </div>
+      <div class="bb-drop-player">
+        <div class="bb-parachute"></div>
+        <div class="bb-drop-avatar"><span class="bb-ini">ML</span></div>
+        <div class="bb-drop-name">Millie</div>
+        <div class="bb-splash-ring ring1"></div><div class="bb-splash-ring ring2"></div><div class="bb-splash-ring ring3"></div>
+      </div>
+      <div class="bb-drop-player">
+        <div class="bb-parachute"></div>
+        <div class="bb-drop-avatar"><span class="bb-ini">HK</span></div>
+        <div class="bb-drop-name">Hicks</div>
+        <div class="bb-splash-ring ring1"></div><div class="bb-splash-ring ring2"></div><div class="bb-splash-ring ring3"></div>
+      </div>
+      <div class="bb-drop-player">
+        <div class="bb-parachute"></div>
+        <div class="bb-drop-avatar"><span class="bb-ini">CH</span></div>
+        <div class="bb-drop-name">Chase</div>
+        <div class="bb-splash-ring ring1"></div><div class="bb-splash-ring ring2"></div><div class="bb-splash-ring ring3"></div>
+      </div>
+      <div class="bb-drop-player">
+        <div class="bb-parachute"></div>
+        <div class="bb-drop-avatar"><span class="bb-ini">ZE</span></div>
+        <div class="bb-drop-name">Zee</div>
+        <div class="bb-splash-ring ring1"></div><div class="bb-splash-ring ring2"></div><div class="bb-splash-ring ring3"></div>
+      </div>
+    </div>
+
+    <!-- Host Announcement -->
+    <div class="bb-host-announce">
+      <div class="bb-host-label">HOST ANNOUNCEMENT</div>
+      <div class="bb-host-text">Welcome to... THE WEDDING MACHINE!</div>
+    </div>
+  </div>
+
+  <div class="bb-scroll">Scroll to begin<br><span style="font-size:14px;">&#9662;</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLOT MACHINE PAIRING — FULL CASINO CABINET                 -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="bb-section">
+  <div class="bb-slot-machine">
+    <div class="bb-cabinet">
+      <!-- Chasing marquee lights (generated by JS) -->
+      <div class="bb-marquee-lights" id="bb-marquee"></div>
+
+      <!-- JACKPOT sign -->
+      <div class="bb-jackpot-sign">
+        <div class="bb-jackpot-text">JACKPOT</div>
+        <div class="bb-jackpot-sub">The Wedding Machine</div>
+      </div>
+
+      <!-- Lever SVG -->
+      <div class="bb-lever-area">
+        <svg class="bb-lever-svg" width="50" height="200" viewBox="0 0 50 200">
+          <!-- Base mount -->
+          <rect x="18" y="0" width="14" height="20" rx="3" fill="#888890"/>
+          <rect x="20" y="2" width="10" height="16" rx="2" fill="#666"/>
+          <!-- Shaft -->
+          <rect x="22" y="20" width="6" height="140" rx="3" fill="url(#lever-chrome)"/>
+          <rect x="24" y="20" width="2" height="140" fill="rgba(255,255,255,.1)"/>
+          <!-- Ball handle -->
+          <circle cx="25" cy="170" r="14" fill="url(#lever-ball)"/>
+          <circle cx="22" cy="166" r="4" fill="rgba(255,255,255,.15)"/>
+          <defs>
+            <linearGradient id="lever-chrome" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#888890"/>
+              <stop offset="50%" stop-color="#c0c0c8"/>
+              <stop offset="100%" stop-color="#888890"/>
+            </linearGradient>
+            <radialGradient id="lever-ball" cx="40%" cy="35%">
+              <stop offset="0%" stop-color="#ff4060"/>
+              <stop offset="80%" stop-color="#c02040"/>
+              <stop offset="100%" stop-color="#801030"/>
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- Slot display window -->
+      <div class="bb-slot-display">
+
+        <!-- PAIR 1: Bowie & Priya -->
+        <div class="bb-reel-row" id="reel-row-1">
+          <div class="bb-reel-set">
+            <div class="bb-reel" id="reel-1a">
+              <div class="bb-reel-strip" id="strip-1a">
+                <div class="bb-reel-item">BW</div>
+              </div>
+            </div>
+            <div class="bb-reel" id="reel-1b">
+              <div class="bb-reel-strip" id="strip-1b">
+                <div class="bb-reel-item compat" style="color:var(--bb-hotpink)">&#9829;</div>
+              </div>
+            </div>
+            <div class="bb-reel" id="reel-1c">
+              <div class="bb-reel-strip" id="strip-1c">
+                <div class="bb-reel-item">PR</div>
+              </div>
+            </div>
+          </div>
+          <div class="bb-pair-info">
+            <div class="bb-pair-player">
+              <div class="bb-pair-av"><span class="bb-ini">BW</span></div>
+              <div class="bb-pair-label"><div class="bb-pair-name">Bowie</div><div class="bb-pair-role"><span class="bb-i-eye" style="display:inline-block;width:12px;height:8px;vertical-align:middle;margin-right:2px;border:1.5px solid var(--bb-champagne);border-radius:50%;position:relative;top:-1px;"></span> Guide</div></div>
+            </div>
+            <div class="bb-pair-compat-badge">
+              <div class="bb-pair-compat-icon" style="color:var(--bb-hotpink)">&#9829;</div>
+              <div class="bb-pair-compat-text bb-compat-high">HIGH COMPAT</div>
+              <div class="bb-trust-rings high"><div class="bb-trust-ring left"></div><div class="bb-trust-ring right"></div></div>
+            </div>
+            <div class="bb-pair-player right">
+              <div class="bb-pair-av"><span class="bb-ini">PR</span></div>
+              <div class="bb-pair-label"><div class="bb-pair-name">Priya</div><div class="bb-pair-role">Blindfolded</div></div>
+            </div>
+          </div>
+          <div class="bb-coin-burst" id="coins-1"></div>
+        </div>
+
+        <!-- PAIR 2: Julia & Wayne -->
+        <div class="bb-reel-row" id="reel-row-2">
+          <div class="bb-reel-set">
+            <div class="bb-reel"><div class="bb-reel-strip" id="strip-2a"><div class="bb-reel-item">JL</div></div></div>
+            <div class="bb-reel"><div class="bb-reel-strip" id="strip-2b"><div class="bb-reel-item compat" style="color:var(--bb-stamp)">&#9760;</div></div></div>
+            <div class="bb-reel"><div class="bb-reel-strip" id="strip-2c"><div class="bb-reel-item">WN</div></div></div>
+          </div>
+          <div class="bb-pair-info">
+            <div class="bb-pair-player">
+              <div class="bb-pair-av"><span class="bb-ini">JL</span></div>
+              <div class="bb-pair-label"><div class="bb-pair-name">Julia</div><div class="bb-pair-role">Guide</div></div>
+            </div>
+            <div class="bb-pair-compat-badge">
+              <div class="bb-pair-compat-icon" style="color:var(--bb-stamp)">&#9760;</div>
+              <div class="bb-pair-compat-text bb-compat-chaos">RIVALS</div>
+              <div class="bb-trust-rings cracked"><div class="bb-trust-ring left"></div><div class="bb-trust-ring right"></div></div>
+            </div>
+            <div class="bb-pair-player right">
+              <div class="bb-pair-av"><span class="bb-ini">WN</span></div>
+              <div class="bb-pair-label"><div class="bb-pair-name">Wayne</div><div class="bb-pair-role">Blindfolded</div></div>
+            </div>
+          </div>
+          <div class="bb-coin-burst" id="coins-2"></div>
+        </div>
+
+        <!-- PAIR 3: Hicks & Millie -->
+        <div class="bb-reel-row" id="reel-row-3">
+          <div class="bb-reel-set">
+            <div class="bb-reel"><div class="bb-reel-strip" id="strip-3a"><div class="bb-reel-item">HK</div></div></div>
+            <div class="bb-reel"><div class="bb-reel-strip" id="strip-3b"><div class="bb-reel-item compat" style="color:var(--bb-gold)">&#9733;</div></div></div>
+            <div class="bb-reel"><div class="bb-reel-strip" id="strip-3c"><div class="bb-reel-item">ML</div></div></div>
+          </div>
+          <div class="bb-pair-info">
+            <div class="bb-pair-player">
+              <div class="bb-pair-av"><span class="bb-ini">HK</span></div>
+              <div class="bb-pair-label"><div class="bb-pair-name">Hicks</div><div class="bb-pair-role">Guide</div></div>
+            </div>
+            <div class="bb-pair-compat-badge">
+              <div class="bb-pair-compat-icon" style="color:var(--bb-gold)">&#9733;</div>
+              <div class="bb-pair-compat-text bb-compat-mid">TENSION</div>
+              <div class="bb-trust-rings mid"><div class="bb-trust-ring left"></div><div class="bb-trust-ring right"></div></div>
+            </div>
+            <div class="bb-pair-player right">
+              <div class="bb-pair-av"><span class="bb-ini">ML</span></div>
+              <div class="bb-pair-label"><div class="bb-pair-name">Millie</div><div class="bb-pair-role">Blindfolded</div></div>
+            </div>
+          </div>
+          <div class="bb-coin-burst" id="coins-3"></div>
+        </div>
+
+        <!-- PAIR 4: Chase & Zee -->
+        <div class="bb-reel-row" id="reel-row-4">
+          <div class="bb-reel-set">
+            <div class="bb-reel"><div class="bb-reel-strip" id="strip-4a"><div class="bb-reel-item">CH</div></div></div>
+            <div class="bb-reel"><div class="bb-reel-strip" id="strip-4b"><div class="bb-reel-item compat" style="color:var(--bb-shark)">&#9888;</div></div></div>
+            <div class="bb-reel"><div class="bb-reel-strip" id="strip-4c"><div class="bb-reel-item">ZE</div></div></div>
+          </div>
+          <div class="bb-pair-info">
+            <div class="bb-pair-player">
+              <div class="bb-pair-av"><span class="bb-ini">CH</span></div>
+              <div class="bb-pair-label"><div class="bb-pair-name">Chase</div><div class="bb-pair-role">Guide</div></div>
+            </div>
+            <div class="bb-pair-compat-badge">
+              <div class="bb-pair-compat-icon" style="color:var(--bb-shark)">&#9888;</div>
+              <div class="bb-pair-compat-text bb-compat-low">AWKWARD</div>
+              <div class="bb-trust-rings low"><div class="bb-trust-ring left"></div><div class="bb-trust-ring right"></div></div>
+            </div>
+            <div class="bb-pair-player right">
+              <div class="bb-pair-av"><span class="bb-ini">ZE</span></div>
+              <div class="bb-pair-label"><div class="bb-pair-name">Zee</div><div class="bb-pair-role">Blindfolded</div></div>
+            </div>
+          </div>
+          <div class="bb-coin-burst" id="coins-4"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PHASE 1 DIVIDER ═══ -->
+<div class="bb-divider">
+  <div class="bb-divider-line"></div>
+  <div class="bb-divider-text"><div class="bb-divider-num">II</div><div class="bb-divider-name">Blindfold Run</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PHASE 1 — BLINDFOLD OBSTACLE COURSE                        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="bb-phase1-bg">
+<div class="bb-grid">
+  <div class="bb-main">
+    <div class="bb-phase-header">
+      <div class="bb-phase-num">II</div>
+      <div><div class="bb-phase-name">Dress Hunt</div>
+      <div class="bb-phase-desc">Navigate your blindfolded partner through chaos. Find the dress.</div></div>
+    </div>
+
+    <!-- Obstacle track -->
+    <div class="bb-obstacle-track">
+      <div class="bb-obs-node"><div class="bb-obs-dot passed"><div class="bb-obs-check"></div></div><div class="bb-obs-label">Mud Pit</div></div>
+      <div class="bb-obs-line done"></div>
+      <div class="bb-obs-node"><div class="bb-obs-dot passed"><div class="bb-obs-check"></div></div><div class="bb-obs-label">Swing Logs</div></div>
+      <div class="bb-obs-line done"></div>
+      <div class="bb-obs-node"><div class="bb-obs-dot current"><div class="bb-i-blind"></div></div><div class="bb-obs-label">Slippery Ramp</div></div>
+      <div class="bb-obs-line"></div>
+      <div class="bb-obs-node"><div class="bb-obs-dot">4</div><div class="bb-obs-label">Curtain Maze</div></div>
+      <div class="bb-obs-line"></div>
+      <div class="bb-obs-node"><div class="bb-obs-dot">5</div><div class="bb-obs-label">Collapse Bridge</div></div>
+      <div class="bb-obs-line"></div>
+      <div class="bb-obs-node"><div class="bb-obs-dot"><div class="bb-i-ring"></div></div><div class="bb-obs-label">Dress Grab</div></div>
+    </div>
+
+    <div class="bb-chatter">"Left! No, YOUR left! The OTHER left!" -- every guide, simultaneously</div>
+
+    <!-- Event cards -->
+    <div class="bb-card phase1" style="animation-delay:.1s">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av"><span class="bb-ini">BW</span></div>
+        <span class="bb-card-who">Bowie &rarr; Priya</span>
+        <span class="bb-card-tag bb-tag-obstacle">MUD PIT</span>
+      </div>
+      <div class="bb-card-txt">"Three steps forward, then duck." Priya ducks. The log swings over. Clean pass. Bowie exhales.</div>
+      <div class="bb-card-score">+2 guide &middot; +3 blind &middot; time: 9.4s (fast)</div>
+    </div>
+
+    <div class="bb-card trust" style="animation-delay:.2s">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av"><span class="bb-ini">PR</span></div>
+        <span class="bb-card-who">Priya</span>
+        <div class="bb-i-heart"></div>
+        <span class="bb-card-tag bb-tag-trust">TRUST MOMENT</span>
+      </div>
+      <div class="bb-card-txt">Priya reaches back blindly. Finds Bowie's hand. Squeezes once. They both move faster after that.</div>
+      <div class="bb-card-score">BOND +0.5 &middot; -2s next obstacle</div>
+    </div>
+
+    <div class="bb-card sabotage" style="animation-delay:.3s">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av"><span class="bb-ini">JL</span></div>
+        <span class="bb-card-who">Julia</span>
+        <span class="bb-card-tag bb-tag-sabotage">SABOTAGE</span>
+      </div>
+      <div class="bb-card-txt">Julia "accidentally" shouts "JUMP!" near Millie. Millie leaps into a mud puddle. Hicks spins around, furious. "That wasn't me!"</div>
+      <div class="bb-card-score">+3s penalty (Hicks/Millie) &middot; Julia undetected &middot; BOND Hicks&rarr;Julia -0.5</div>
+    </div>
+
+    <div class="bb-card phase1" style="animation-delay:.4s">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av blind"><span class="bb-ini">WN</span></div>
+        <span class="bb-card-who">Wayne (blind)</span>
+        <span class="bb-card-tag bb-tag-obstacle">SWING LOGS</span>
+      </div>
+      <div class="bb-card-txt">Julia says "duck." Wayne doesn't duck. LOG. Wayne staggers. Julia sighs. "I said duck." Wayne: "I thought you said 'luck.'"</div>
+      <div class="bb-card-score">CRITICAL FAIL &middot; +8s penalty &middot; -0.3 bond</div>
+    </div>
+
+    <div class="bb-card social" style="animation-delay:.5s">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av"><span class="bb-ini">WN</span></div>
+        <span class="bb-card-who">Wayne</span>
+        <span style="font-size:10px;color:var(--bb-champagne);">&rarr;</span>
+        <div class="bb-card-av"><span class="bb-ini">JL</span></div>
+        <span class="bb-card-who">Julia</span>
+        <span class="bb-card-tag bb-tag-social">ARGUMENT</span>
+      </div>
+      <div class="bb-card-txt">"Maybe if you gave REAL directions--" "Maybe if you had EARS--" The other pairs pretend not to watch. They're all watching.</div>
+      <div class="bb-card-score">BOND -0.8 &middot; POP Wayne -1 &middot; camp event injected</div>
+    </div>
+
+    <div class="bb-chatter">"This is the worst wedding rehearsal in the history of television." -- Host</div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="bb-sidebar">
+    <div class="bb-sb-title">Pair Status</div>
+
+    <div class="bb-sb-pair leading">
+      <div class="bb-sb-pair-header">
+        <div class="bb-sb-pair-avatars"><div class="bb-sb-av">BW</div><div class="bb-sb-av">PR</div></div>
+        <div class="bb-sb-pair-names">Bowie &amp; Priya</div>
+        <div class="bb-sb-pair-rank">#1</div>
+      </div>
+      <div class="bb-sb-trust"><div class="bb-sb-trust-label">Trust</div>
+        <div class="bb-sb-trust-rings"><div class="bb-sb-ring glow"></div><div class="bb-sb-ring glow"></div></div>
+        <div class="bb-sb-trust-label" style="color:var(--bb-gold)">HIGH</div></div>
+      <div class="bb-sb-label">Obstacle 3/6 &middot; Time: 22.4s</div>
+      <div class="bb-sb-bar"><div class="bb-sb-fill gold" style="width:65%"></div></div>
+    </div>
+
+    <div class="bb-sb-pair">
+      <div class="bb-sb-pair-header">
+        <div class="bb-sb-pair-avatars"><div class="bb-sb-av">HK</div><div class="bb-sb-av">ML</div></div>
+        <div class="bb-sb-pair-names">Hicks &amp; Millie</div>
+        <div class="bb-sb-pair-rank">#2</div>
+      </div>
+      <div class="bb-sb-trust"><div class="bb-sb-trust-label">Trust</div>
+        <div class="bb-sb-trust-rings"><div class="bb-sb-ring"></div><div class="bb-sb-ring"></div></div>
+        <div class="bb-sb-trust-label">MED</div></div>
+      <div class="bb-sb-label">Obstacle 2/6 &middot; Time: 28.1s (sabotaged!)</div>
+      <div class="bb-sb-bar"><div class="bb-sb-fill blush" style="width:48%"></div></div>
+    </div>
+
+    <div class="bb-sb-pair">
+      <div class="bb-sb-pair-header">
+        <div class="bb-sb-pair-avatars"><div class="bb-sb-av">CH</div><div class="bb-sb-av">ZE</div></div>
+        <div class="bb-sb-pair-names">Chase &amp; Zee</div>
+        <div class="bb-sb-pair-rank">#3</div>
+      </div>
+      <div class="bb-sb-trust"><div class="bb-sb-trust-label">Trust</div>
+        <div class="bb-sb-trust-rings"><div class="bb-sb-ring"></div><div class="bb-sb-ring"></div></div>
+        <div class="bb-sb-trust-label">LOW</div></div>
+      <div class="bb-sb-label">Obstacle 2/6 &middot; Time: 30.5s</div>
+      <div class="bb-sb-bar"><div class="bb-sb-fill blush" style="width:40%"></div></div>
+    </div>
+
+    <div class="bb-sb-pair">
+      <div class="bb-sb-pair-header">
+        <div class="bb-sb-pair-avatars"><div class="bb-sb-av">JL</div><div class="bb-sb-av">WN</div></div>
+        <div class="bb-sb-pair-names">Julia &amp; Wayne</div>
+        <div class="bb-sb-pair-rank">#4</div>
+      </div>
+      <div class="bb-sb-trust"><div class="bb-sb-trust-label">Trust</div>
+        <div class="bb-sb-trust-rings"><div class="bb-sb-ring cracked"></div><div class="bb-sb-ring cracked"></div></div>
+        <div class="bb-sb-trust-label" style="color:var(--bb-trust-crack)">CRACKED</div></div>
+      <div class="bb-sb-label">Obstacle 2/6 &middot; Time: 38.7s</div>
+      <div class="bb-sb-bar"><div class="bb-sb-fill blush" style="width:25%"></div></div>
+    </div>
+
+    <!-- Journey map -->
+    <div class="bb-sb-journey">
+      <div class="bb-sb-title" style="border:none;margin:0 0 6px;">Journey</div>
+      <div class="bb-sb-journey-step">
+        <div class="bb-sb-journey-dot done"><div class="bb-i-spade" style="width:10px;height:12px;"></div></div>
+        <div class="bb-sb-journey-info done">Slot Machine</div>
+      </div>
+      <div class="bb-sb-journey-step">
+        <div class="bb-sb-journey-dot active"><div class="bb-i-blind" style="width:14px;height:10px;"></div></div>
+        <div class="bb-sb-journey-info active">Blindfold Run</div>
+      </div>
+      <div class="bb-sb-journey-step">
+        <div class="bb-sb-journey-dot"><div class="bb-i-falls" style="width:12px;height:12px;"></div></div>
+        <div class="bb-sb-journey-info">The Big Drop</div>
+      </div>
+      <div class="bb-sb-journey-step">
+        <div class="bb-sb-journey-dot"><div class="bb-i-stamp" style="width:12px;height:10px;"></div></div>
+        <div class="bb-sb-journey-info">Customs Gate</div>
+      </div>
+    </div>
+
+    <!-- Drama feed -->
+    <div class="bb-sb-drama">
+      <div class="bb-sb-title" style="border:none;margin:0 0 4px;">Drama Feed</div>
+      <div class="bb-sb-drama-item"><div class="bb-sb-drama-dot" style="background:var(--bb-gold)"></div>Bowie &amp; Priya trust moment (+0.5)</div>
+      <div class="bb-sb-drama-item"><div class="bb-sb-drama-dot" style="background:var(--bb-stamp)"></div>Julia sabotaged Millie (undetected!)</div>
+      <div class="bb-sb-drama-item"><div class="bb-sb-drama-dot" style="background:var(--bb-hotpink)"></div>Wayne &amp; Julia argument (-0.8)</div>
+      <div class="bb-sb-drama-item"><div class="bb-sb-drama-dot" style="background:var(--bb-blush)"></div>Wayne critical fail at swing logs</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ PHASE 2 DIVIDER ═══ -->
+<div class="bb-divider">
+  <div class="bb-divider-line"></div>
+  <div class="bb-divider-text"><div class="bb-divider-num">III</div><div class="bb-divider-name">The Big Drop</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PHASE 2 — TIGHTROPE OVER WATERFALL                         -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="bb-phase2-bg">
+<!-- Phase 2 ambient: water droplets -->
+<div class="bb-rain-drops" id="bb-rain"></div>
+
+<div class="bb-grid">
+  <div class="bb-main">
+    <div class="bb-phase-header">
+      <div class="bb-phase-num">III</div>
+      <div><div class="bb-phase-name">The Big Drop</div>
+      <div class="bb-phase-desc">Carry your partner across. Don't look down.</div></div>
+    </div>
+
+    <!-- Tightrope visualization -->
+    <div class="bb-tightrope-vis">
+      <!-- Waterfall streams on sides -->
+      <div class="bb-side-falls left" id="bb-side-falls-l"></div>
+      <div class="bb-side-falls right" id="bb-side-falls-r"></div>
+
+      <!-- Wind effect lines -->
+      <div class="bb-wind-lines" id="bb-wind"></div>
+
+      <div class="bb-mist-layer"></div>
+      <!-- Mist particles -->
+      <div class="bb-mist-particles" id="bb-mist-p"></div>
+
+      <div class="bb-water-layer">
+        <div class="bb-shark-fins">
+          <!-- Fin 1: swim pattern -->
+          <svg class="bb-shark-fin-svg swim" style="left:15%;animation-delay:0s" width="20" height="16" viewBox="0 0 20 16">
+            <path d="M10 0 L14 12 L6 12 Z" fill="#4a6878" opacity=".6"/>
+            <rect x="0" y="12" width="20" height="4" fill="#2848a0" rx="2"/>
+          </svg>
+          <!-- Fin 2: bob pattern -->
+          <svg class="bb-shark-fin-svg bob" style="left:45%;animation-delay:1s" width="20" height="16" viewBox="0 0 20 16">
+            <path d="M10 0 L14 12 L6 12 Z" fill="#4a6878" opacity=".6"/>
+            <rect x="0" y="12" width="20" height="4" fill="#2848a0" rx="2"/>
+          </svg>
+          <!-- Fin 3: swim -->
+          <svg class="bb-shark-fin-svg swim" style="left:70%;animation-delay:3s" width="20" height="16" viewBox="0 0 20 16">
+            <path d="M10 0 L14 12 L6 12 Z" fill="#4a6878" opacity=".6"/>
+            <rect x="0" y="12" width="20" height="4" fill="#2848a0" rx="2"/>
+          </svg>
+          <!-- Full shark body briefly surfacing -->
+          <svg class="bb-shark-body" style="left:30%;animation-delay:4s" width="80" height="24" viewBox="0 0 80 24">
+            <path d="M0 18 Q10 8 20 12 L35 6 L40 0 L45 6 L60 10 Q70 14 80 18 Z" fill="#4a6878" opacity=".5"/>
+            <circle cx="18" cy="14" r="2" fill="#1a1a18" opacity=".6"/>
+            <rect x="0" y="18" width="80" height="6" fill="#2848a0" rx="2"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Rope with more pronounced sway -->
+      <svg class="bb-rope-svg" viewBox="0 0 800 60" preserveAspectRatio="none" style="position:relative;z-index:3;">
+        <path d="M0 30 Q100 25 200 32 Q300 38 400 28 Q500 22 600 35 Q700 40 800 30"
+          fill="none" stroke="#e8d8b0" stroke-width="3" stroke-dasharray="8 4" opacity=".6">
+          <animate attributeName="d" dur="3s" repeatCount="indefinite"
+            values="M0 30 Q100 20 200 36 Q300 42 400 24 Q500 18 600 38 Q700 44 800 28;
+                    M0 34 Q100 40 200 24 Q300 18 400 38 Q500 42 600 24 Q700 20 800 34;
+                    M0 30 Q100 20 200 36 Q300 42 400 24 Q500 18 600 38 Q700 44 800 28"/>
+        </path>
+        <!-- Segment dividers -->
+        <line x1="160" y1="15" x2="160" y2="50" stroke="rgba(138,184,208,.15)" stroke-width="1" stroke-dasharray="2 3"/>
+        <line x1="320" y1="15" x2="320" y2="50" stroke="rgba(138,184,208,.15)" stroke-width="1" stroke-dasharray="2 3"/>
+        <line x1="480" y1="15" x2="480" y2="50" stroke="rgba(138,184,208,.2)" stroke-width="1" stroke-dasharray="2 3"/>
+        <line x1="640" y1="15" x2="640" y2="50" stroke="rgba(192,32,32,.2)" stroke-width="1" stroke-dasharray="2 3"/>
+      </svg>
+
+      <!-- Pair markers on rope -->
+      <div class="bb-rope-marker" style="left:55%;top:2px;">
+        <div class="bb-rope-marker-dot">B+P</div>
+        <div class="bb-rope-marker-label">Bowie &amp; Priya</div>
+      </div>
+      <div class="bb-rope-marker" style="left:35%;top:2px;">
+        <div class="bb-rope-marker-dot" style="border-color:var(--bb-blush)">H+M</div>
+        <div class="bb-rope-marker-label">Hicks &amp; Millie</div>
+      </div>
+      <div class="bb-rope-marker" style="left:20%;top:2px;">
+        <div class="bb-rope-marker-dot" style="border-color:var(--bb-shark)">C+Z</div>
+        <div class="bb-rope-marker-label">Chase &amp; Zee</div>
+      </div>
+      <div class="bb-rope-marker" style="left:10%;top:2px;">
+        <div class="bb-rope-marker-dot" style="border-color:var(--bb-stamp)">J+W</div>
+        <div class="bb-rope-marker-label">Julia &amp; Wayne</div>
+      </div>
+
+      <div class="bb-seg-labels">
+        <div class="bb-seg-label">Misty Start</div>
+        <div class="bb-seg-label">Gusty Middle</div>
+        <div class="bb-seg-label">Spray Zone</div>
+        <div class="bb-seg-label danger">Shark Alley</div>
+        <div class="bb-seg-label danger">Thunder Step</div>
+      </div>
+    </div>
+
+    <div class="bb-chatter">"The water below looks... hungry." -- Zee, probably regretting everything</div>
+
+    <!-- Event cards -->
+    <div class="bb-card phase2" style="animation-delay:.1s">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av"><span class="bb-ini">BW</span></div>
+        <span class="bb-card-who">Bowie (carrying Priya)</span>
+        <span class="bb-card-tag bb-tag-balance">CLEAN CROSS</span>
+      </div>
+      <div class="bb-card-txt">Bowie's feet barely wobble. Priya keeps still, eyes shut. They glide through Segment 3 like they've done this before. They haven't.</div>
+      <div class="bb-card-score">+3 carrier &middot; +2 carried &middot; -2s bonus</div>
+    </div>
+
+    <div class="bb-card fall" style="animation-delay:.2s">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av" style="border-color:var(--bb-stamp)"><span class="bb-ini">JL</span></div>
+        <span class="bb-card-who">Julia &amp; Wayne</span>
+        <span class="bb-card-tag bb-tag-fall">FALL!</span>
+        <span class="bb-card-tag bb-tag-shark">SHARK!</span>
+      </div>
+      <div class="bb-card-txt">Wayne shifts weight. Julia screams. They tumble. SPLASH. Two shark fins converge. Julia scrambles up Wayne's back to escape. "EVERY MAN FOR HIMSELF!"</div>
+      <div class="bb-card-score">Shark dodge FAIL &middot; +11s penalty (3.0x mult) &middot; POP Julia -1 &middot; Wayne -1</div>
+    </div>
+
+    <div class="bb-card social" style="animation-delay:.3s">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av"><span class="bb-ini">HK</span></div>
+        <span class="bb-card-who">Hicks</span>
+        <div class="bb-i-heart"></div>
+        <div class="bb-card-av"><span class="bb-ini">ML</span></div>
+        <span class="bb-card-who">Millie</span>
+        <span class="bb-card-tag bb-tag-social">SHOWMANCE</span>
+      </div>
+      <div class="bb-card-txt">"Hold me tighter." He does. The rope sways but they don't fall. Something shifts between them on Segment 4 that has nothing to do with balance.</div>
+      <div class="bb-card-score">BOND +1.0 &middot; POP +2 Hicks &middot; romantic spark check</div>
+    </div>
+
+    <div class="bb-card phase2" style="animation-delay:.4s">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av"><span class="bb-ini">CH</span></div>
+        <span class="bb-card-who">Chase (carrying Zee)</span>
+        <span class="bb-card-tag bb-tag-balance">WOBBLE</span>
+      </div>
+      <div class="bb-card-txt">Chase's knee buckles. Zee gasps. For two full seconds they teeter -- then Chase plants his foot and steadies. The rope hums with tension.</div>
+      <div class="bb-card-score">Near-fall &middot; +3s penalty &middot; scare narration</div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR — Phase 2 -->
+  <div class="bb-sidebar">
+    <div class="bb-sb-title">Tightrope Status</div>
+
+    <div class="bb-sb-pair leading">
+      <div class="bb-sb-pair-header">
+        <div class="bb-sb-pair-avatars"><div class="bb-sb-av">BW</div><div class="bb-sb-av">PR</div></div>
+        <div class="bb-sb-pair-names">Bowie &amp; Priya</div>
+        <div class="bb-sb-pair-rank">#1</div>
+      </div>
+      <div class="bb-sb-label">Segment 4/5 &middot; 0 falls</div>
+      <div class="bb-sb-bar"><div class="bb-sb-fill blue" style="width:80%"></div></div>
+    </div>
+
+    <div class="bb-sb-pair">
+      <div class="bb-sb-pair-header">
+        <div class="bb-sb-pair-avatars"><div class="bb-sb-av">HK</div><div class="bb-sb-av">ML</div></div>
+        <div class="bb-sb-pair-names">Hicks &amp; Millie</div>
+        <div class="bb-sb-pair-rank">#2</div>
+      </div>
+      <div class="bb-sb-label">Segment 3/5 &middot; 0 falls</div>
+      <div class="bb-sb-bar"><div class="bb-sb-fill blue" style="width:60%"></div></div>
+    </div>
+
+    <div class="bb-sb-pair">
+      <div class="bb-sb-pair-header">
+        <div class="bb-sb-pair-avatars"><div class="bb-sb-av">CH</div><div class="bb-sb-av">ZE</div></div>
+        <div class="bb-sb-pair-names">Chase &amp; Zee</div>
+        <div class="bb-sb-pair-rank">#3</div>
+      </div>
+      <div class="bb-sb-label">Segment 2/5 &middot; 1 wobble</div>
+      <div class="bb-sb-bar"><div class="bb-sb-fill blue" style="width:40%"></div></div>
+    </div>
+
+    <div class="bb-sb-pair">
+      <div class="bb-sb-pair-header">
+        <div class="bb-sb-pair-avatars"><div class="bb-sb-av">JL</div><div class="bb-sb-av">WN</div></div>
+        <div class="bb-sb-pair-names">Julia &amp; Wayne</div>
+        <div class="bb-sb-pair-rank">#4</div>
+      </div>
+      <div class="bb-sb-label" style="color:var(--bb-stamp)">Segment 2/5 &middot; 1 FALL (shark!)</div>
+      <div class="bb-sb-bar"><div class="bb-sb-fill blue" style="width:20%"></div></div>
+    </div>
+
+    <!-- Shark counter -->
+    <div style="margin-top:12px;">
+      <div class="bb-sb-title" style="border:none;margin:0 0 4px;">Shark Encounters</div>
+      <div class="bb-sb-sharks">
+        <div class="bb-sb-shark-fin hit"></div>
+        <div class="bb-sb-shark-fin empty"></div>
+        <div class="bb-sb-shark-fin empty"></div>
+        <div class="bb-sb-shark-fin empty"></div>
+        <div class="bb-sb-shark-fin empty"></div>
+      </div>
+      <div class="bb-sb-label">1 encounter &middot; Julia &amp; Wayne (Seg 2)</div>
+    </div>
+
+    <div class="bb-sb-drama">
+      <div class="bb-sb-title" style="border:none;margin:0 0 4px;">Drama Feed</div>
+      <div class="bb-sb-drama-item"><div class="bb-sb-drama-dot" style="background:var(--bb-water)"></div>Julia &amp; Wayne FALL into sharks!</div>
+      <div class="bb-sb-drama-item"><div class="bb-sb-drama-dot" style="background:var(--bb-hotpink)"></div>Hicks &amp; Millie showmance spark</div>
+      <div class="bb-sb-drama-item"><div class="bb-sb-drama-dot" style="background:var(--bb-mist)"></div>Chase &amp; Zee wobble at Seg 2</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ PHASE 3 DIVIDER ═══ -->
+<div class="bb-divider">
+  <div class="bb-divider-line"></div>
+  <div class="bb-divider-text"><div class="bb-divider-num">IV</div><div class="bb-divider-name">Customs Gate</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PHASE 3 — CUSTOMS TRIVIA                                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="bb-phase3-bg">
+<div class="bb-grid">
+  <div class="bb-main">
+    <div class="bb-phase-header">
+      <div class="bb-phase-num">IV</div>
+      <div><div class="bb-phase-name">The Border</div>
+      <div class="bb-phase-desc">Answer correctly about your partner. Or be denied entry.</div></div>
+    </div>
+
+    <!-- Passport desk area -->
+    <div class="bb-passport-desk">
+      <svg class="bb-desk-svg" width="200" height="120" viewBox="0 0 200 120">
+        <!-- Desk surface -->
+        <rect x="10" y="50" width="180" height="60" rx="4" fill="#6a5a3a" opacity=".3"/>
+        <rect x="10" y="50" width="180" height="4" rx="2" fill="#a08848" opacity=".2"/>
+        <!-- Stamp pad -->
+        <rect x="30" y="65" width="40" height="30" rx="3" fill="#2a2020" opacity=".4"/>
+        <rect x="35" y="70" width="30" height="20" rx="2" fill="#c02020" opacity=".2"/>
+        <!-- Passport booklet -->
+        <rect x="120" y="60" width="50" height="35" rx="2" fill="#183860" opacity=".3"/>
+        <rect x="125" y="65" width="40" height="10" rx="1" fill="#d4a830" opacity=".15"/>
+        <!-- Pen -->
+        <line x1="90" y1="95" x2="110" y2="60" stroke="#1a1a18" stroke-width="2" opacity=".2"/>
+      </svg>
+
+      <div class="bb-chatter">"Welcome to customs. Passports and knowledge of your spouse, please." -- Host</div>
+    </div>
+
+    <div class="bb-card stamp-pass" style="animation-delay:.1s;position:relative">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av"><span class="bb-ini">PR</span></div>
+        <span class="bb-card-who">Priya answers for Bowie</span>
+        <span class="bb-card-tag bb-tag-trivia">Q1</span>
+        <span class="bb-card-tag bb-tag-approved">CORRECT</span>
+      </div>
+      <div class="bb-card-txt">"What is your partner's biggest fear?" Priya doesn't hesitate. "Losing control." Bowie stares. "...yeah."</div>
+      <div class="bb-stamp-overlay bb-stamp-pass">APPROVED</div>
+      <!-- Ink splatter (green) -->
+      <div class="bb-ink-splatter">
+        <div class="bb-splat" style="width:4px;height:4px;background:#3a8850;--sx:-20px;--sy:-12px;"></div>
+        <div class="bb-splat" style="width:3px;height:3px;background:#3a8850;--sx:15px;--sy:-8px;animation-delay:.45s"></div>
+        <div class="bb-splat" style="width:5px;height:5px;background:#3a8850;--sx:-12px;--sy:10px;animation-delay:.5s"></div>
+        <div class="bb-splat" style="width:2px;height:2px;background:#3a8850;--sx:18px;--sy:14px;animation-delay:.48s"></div>
+        <div class="bb-splat" style="width:3px;height:3px;background:#3a8850;--sx:8px;--sy:-18px;animation-delay:.42s"></div>
+      </div>
+      <div class="bb-card-score">-3s bonus &middot; +3 answerer &middot; +1 partner</div>
+    </div>
+
+    <div class="bb-card stamp-fail" style="animation-delay:.2s;position:relative">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av"><span class="bb-ini">WN</span></div>
+        <span class="bb-card-who">Wayne answers for Julia</span>
+        <span class="bb-card-tag bb-tag-trivia">Q1</span>
+        <span class="bb-card-tag bb-tag-denied">WRONG</span>
+      </div>
+      <div class="bb-card-txt">"What does your partner value most?" Wayne: "Winning." Julia: "LOYALTY. The answer is loyalty." Wayne: "...same thing?"</div>
+      <div class="bb-stamp-overlay bb-stamp-deny">DENIED</div>
+      <!-- Red ink splatter + drip -->
+      <div class="bb-ink-splatter">
+        <div class="bb-splat" style="width:5px;height:5px;background:var(--bb-stamp);--sx:-22px;--sy:-10px;"></div>
+        <div class="bb-splat" style="width:3px;height:3px;background:var(--bb-stamp);--sx:18px;--sy:-14px;animation-delay:.45s"></div>
+        <div class="bb-splat" style="width:4px;height:4px;background:var(--bb-stamp);--sx:-8px;--sy:12px;animation-delay:.5s"></div>
+        <div class="bb-splat" style="width:6px;height:6px;background:var(--bb-stamp);--sx:10px;--sy:8px;animation-delay:.48s"></div>
+        <div class="bb-splat" style="width:2px;height:2px;background:var(--bb-stamp);--sx:-16px;--sy:16px;animation-delay:.42s"></div>
+      </div>
+      <div class="bb-ink-drip" style="top:60%;left:55%;">
+        <div class="bb-drip" style="--dh:22px;left:0"></div>
+        <div class="bb-drip" style="--dh:15px;left:6px;animation-delay:1.2s"></div>
+      </div>
+      <div class="bb-card-score">+5s penalty &middot; -1 answerer &middot; BRUTAL difficulty (bond: -4)</div>
+    </div>
+
+    <div class="bb-card stamp-pass" style="animation-delay:.3s;position:relative">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av"><span class="bb-ini">ML</span></div>
+        <span class="bb-card-who">Millie answers for Hicks</span>
+        <span class="bb-card-tag bb-tag-trivia">Q2</span>
+        <span class="bb-card-tag bb-tag-approved">CORRECT</span>
+      </div>
+      <div class="bb-card-txt">"What would your partner do with a million dollars?" Millie pauses. "Build something. He doesn't know what yet, but he'd build it." Hicks grins. "She's right."</div>
+      <div class="bb-stamp-overlay bb-stamp-pass">APPROVED</div>
+      <div class="bb-ink-splatter">
+        <div class="bb-splat" style="width:3px;height:3px;background:#3a8850;--sx:-18px;--sy:-10px;"></div>
+        <div class="bb-splat" style="width:4px;height:4px;background:#3a8850;--sx:14px;--sy:8px;animation-delay:.47s"></div>
+        <div class="bb-splat" style="width:2px;height:2px;background:#3a8850;--sx:20px;--sy:-14px;animation-delay:.52s"></div>
+      </div>
+      <div class="bb-card-score">-3s bonus &middot; +3 answerer &middot; +1 partner</div>
+    </div>
+
+    <div class="bb-card stamp-fail" style="animation-delay:.4s;position:relative">
+      <div class="bb-card-hdr">
+        <div class="bb-card-av"><span class="bb-ini">ZE</span></div>
+        <span class="bb-card-who">Zee answers for Chase</span>
+        <span class="bb-card-tag bb-tag-trivia">Q3</span>
+        <span class="bb-card-tag bb-tag-denied">WRONG</span>
+      </div>
+      <div class="bb-card-txt">"Who does your partner trust the least?" Zee: "...everyone?" The customs officer stamps DENIED without looking up.</div>
+      <div class="bb-stamp-overlay bb-stamp-deny">DENIED</div>
+      <div class="bb-ink-splatter">
+        <div class="bb-splat" style="width:4px;height:4px;background:var(--bb-stamp);--sx:-15px;--sy:-12px;"></div>
+        <div class="bb-splat" style="width:3px;height:3px;background:var(--bb-stamp);--sx:12px;--sy:10px;animation-delay:.46s"></div>
+        <div class="bb-splat" style="width:5px;height:5px;background:var(--bb-stamp);--sx:20px;--sy:-6px;animation-delay:.5s"></div>
+      </div>
+      <div class="bb-ink-drip" style="top:55%;left:48%;">
+        <div class="bb-drip" style="--dh:18px;left:0"></div>
+      </div>
+      <div class="bb-card-score">+5s penalty &middot; -1 answerer &middot; HARD difficulty (bond: -1)</div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR — Phase 3 -->
+  <div class="bb-sidebar">
+    <div class="bb-sb-title">Customs Gate</div>
+
+    <div class="bb-sb-pair leading">
+      <div class="bb-sb-pair-header">
+        <div class="bb-sb-pair-avatars"><div class="bb-sb-av">BW</div><div class="bb-sb-av">PR</div></div>
+        <div class="bb-sb-pair-names">Bowie &amp; Priya</div>
+        <div class="bb-sb-pair-rank">#1</div>
+      </div>
+      <div class="bb-sb-label">Trivia: 3/5 correct &middot; Difficulty: EASY</div>
+      <div class="bb-sb-bar"><div class="bb-sb-fill green" style="width:90%"></div></div>
+    </div>
+
+    <div class="bb-sb-pair">
+      <div class="bb-sb-pair-header">
+        <div class="bb-sb-pair-avatars"><div class="bb-sb-av">HK</div><div class="bb-sb-av">ML</div></div>
+        <div class="bb-sb-pair-names">Hicks &amp; Millie</div>
+        <div class="bb-sb-pair-rank">#2</div>
+      </div>
+      <div class="bb-sb-label">Trivia: 2/5 correct &middot; Difficulty: MEDIUM</div>
+      <div class="bb-sb-bar"><div class="bb-sb-fill green" style="width:70%"></div></div>
+    </div>
+
+    <div class="bb-sb-pair">
+      <div class="bb-sb-pair-header">
+        <div class="bb-sb-pair-avatars"><div class="bb-sb-av">CH</div><div class="bb-sb-av">ZE</div></div>
+        <div class="bb-sb-pair-names">Chase &amp; Zee</div>
+        <div class="bb-sb-pair-rank">#3</div>
+      </div>
+      <div class="bb-sb-label">Trivia: 1/5 correct &middot; Difficulty: HARD</div>
+      <div class="bb-sb-bar"><div class="bb-sb-fill green" style="width:40%"></div></div>
+    </div>
+
+    <div class="bb-sb-pair">
+      <div class="bb-sb-pair-header">
+        <div class="bb-sb-pair-avatars"><div class="bb-sb-av">JL</div><div class="bb-sb-av">WN</div></div>
+        <div class="bb-sb-pair-names">Julia &amp; Wayne</div>
+        <div class="bb-sb-pair-rank">#4</div>
+      </div>
+      <div class="bb-sb-label" style="color:var(--bb-stamp)">Trivia: 0/5 &middot; Difficulty: BRUTAL</div>
+      <div class="bb-sb-bar"><div class="bb-sb-fill green" style="width:10%"></div></div>
+    </div>
+
+    <div class="bb-sb-drama">
+      <div class="bb-sb-title" style="border:none;margin:0 0 4px;">Customs Log</div>
+      <div class="bb-sb-drama-item"><div class="bb-sb-drama-dot" style="background:#3a8850"></div>Priya APPROVED (Q1)</div>
+      <div class="bb-sb-drama-item"><div class="bb-sb-drama-dot" style="background:var(--bb-stamp)"></div>Wayne DENIED (Q1) -- brutal</div>
+      <div class="bb-sb-drama-item"><div class="bb-sb-drama-dot" style="background:#3a8850"></div>Millie APPROVED (Q2)</div>
+      <div class="bb-sb-drama-item"><div class="bb-sb-drama-dot" style="background:var(--bb-stamp)"></div>Zee DENIED (Q3)</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- FINAL RESULTS                                              -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="bb-section" style="padding-bottom:120px;">
+  <div class="bb-results">
+    <!-- Confetti layer -->
+    <div class="bb-confetti-layer" id="bb-confetti"></div>
+
+    <!-- Firework bursts -->
+    <div class="bb-fireworks" id="bb-fireworks"></div>
+
+    <div class="bb-results-crown-icon">
+      <svg width="48" height="36" viewBox="0 0 48 36">
+        <path d="M4 28 L4 14 L12 22 L18 6 L24 18 L30 6 L36 22 L44 14 L44 28 Z"
+          fill="var(--bb-gold)" stroke="var(--bb-gold-dk)" stroke-width="1.5"/>
+        <circle cx="18" cy="8" r="3" fill="var(--bb-gold-lt)"/>
+        <circle cx="30" cy="8" r="3" fill="var(--bb-gold-lt)"/>
+        <circle cx="24" cy="18" r="2.5" fill="var(--bb-hotpink)" opacity=".7"/>
+        <rect x="4" y="28" width="40" height="4" rx="1" fill="var(--bb-gold-dk)"/>
+        <animate attributeName="opacity" values="1;.8;1" dur="2s" repeatCount="indefinite"/>
+      </svg>
+    </div>
+    <div class="bb-results-title">IMMUNITY WINNERS</div>
+    <div class="bb-results-pair">
+      <div class="bb-results-halo">
+        <div class="bb-results-av"><span class="bb-ini">BW</span></div>
+      </div>
+      <div class="bb-results-rings-icon">
+        <svg width="40" height="24" viewBox="0 0 40 24">
+          <circle cx="14" cy="12" r="9" fill="none" stroke="var(--bb-gold)" stroke-width="2.5">
+            <animate attributeName="r" values="9;10;9" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="26" cy="12" r="9" fill="none" stroke="var(--bb-hotpink)" stroke-width="2.5">
+            <animate attributeName="r" values="9;10;9" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <!-- Diamond on ring -->
+          <path d="M14 3 L16 6 L14 9 L12 6 Z" fill="var(--bb-gold-lt)" opacity=".6">
+            <animate attributeName="opacity" values=".6;1;.6" dur="1.5s" repeatCount="indefinite"/>
+          </path>
+        </svg>
+      </div>
+      <div class="bb-results-halo">
+        <div class="bb-results-av"><span class="bb-ini">PR</span></div>
+      </div>
+    </div>
+    <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--bb-cream);margin:8px 0;position:relative;z-index:2;">Bowie &amp; Priya</div>
+    <div class="bb-results-score">Combined Score: 48.7 &middot; Phase 1: 18.2 &middot; Phase 2: 16.5 &middot; Phase 3: 14.0</div>
+    <div class="bb-results-immune">BOTH IMMUNE</div>
+  </div>
+
+  <!-- Final standings -->
+  <div style="margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+    <div style="text-align:center;padding:16px;background:rgba(42,16,64,.3);border-radius:8px;border:1px solid rgba(212,168,48,.08);">
+      <div style="font-family:'Outfit',sans-serif;font-size:9px;color:var(--bb-champagne);letter-spacing:2px;text-transform:uppercase;">2nd Place</div>
+      <div style="display:flex;justify-content:center;gap:4px;margin:8px 0;">
+        <div class="bb-sb-av" style="width:28px;height:28px;font-size:9px;">HK</div>
+        <div class="bb-sb-av" style="width:28px;height:28px;font-size:9px;margin-left:-6px;">ML</div>
+      </div>
+      <div style="font-family:'Outfit',sans-serif;font-size:11px;">Hicks &amp; Millie</div>
+      <div style="font-family:'Outfit',sans-serif;font-size:9px;color:var(--bb-champagne);">Score: 35.2</div>
+    </div>
+    <div style="text-align:center;padding:16px;background:rgba(42,16,64,.3);border-radius:8px;border:1px solid rgba(212,168,48,.08);">
+      <div style="font-family:'Outfit',sans-serif;font-size:9px;color:var(--bb-champagne);letter-spacing:2px;text-transform:uppercase;">3rd Place</div>
+      <div style="display:flex;justify-content:center;gap:4px;margin:8px 0;">
+        <div class="bb-sb-av" style="width:28px;height:28px;font-size:9px;">CH</div>
+        <div class="bb-sb-av" style="width:28px;height:28px;font-size:9px;margin-left:-6px;">ZE</div>
+      </div>
+      <div style="font-family:'Outfit',sans-serif;font-size:11px;">Chase &amp; Zee</div>
+      <div style="font-family:'Outfit',sans-serif;font-size:9px;color:var(--bb-champagne);">Score: 22.8</div>
+    </div>
+    <div style="text-align:center;padding:16px;background:rgba(42,16,64,.3);border-radius:8px;border:1px solid rgba(192,32,32,.1);">
+      <div style="font-family:'Outfit',sans-serif;font-size:9px;color:var(--bb-stamp);letter-spacing:2px;text-transform:uppercase;">Last Place</div>
+      <div style="display:flex;justify-content:center;gap:4px;margin:8px 0;">
+        <div class="bb-sb-av" style="width:28px;height:28px;font-size:9px;border-color:var(--bb-stamp);">JL</div>
+        <div class="bb-sb-av" style="width:28px;height:28px;font-size:9px;margin-left:-6px;border-color:var(--bb-stamp);">WN</div>
+      </div>
+      <div style="font-family:'Outfit',sans-serif;font-size:11px;">Julia &amp; Wayne</div>
+      <div style="font-family:'Outfit',sans-serif;font-size:9px;color:var(--bb-stamp);">Score: 8.4</div>
+    </div>
+  </div>
+</div>
+
+<!-- REVEAL CONTROLS -->
+<div class="bb-controls">
+  <button class="bb-btn" onclick="">&#9664; Reveal Next</button>
+  <span class="bb-counter">12 / 24</span>
+  <button class="bb-btn" onclick="">Reveal All &#9654;&#9654;</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// PARTICLE GENERATORS
+// ═══════════════════════════════════════════════════════════
+
+// CSS heart particles (no emoji)
+(function(){
+  const w=document.getElementById('bb-hearts');
+  for(let i=0;i<15;i++){
+    const h=document.createElement('div');h.className='bb-heart-p';
+    const sz=10+Math.random()*14;
+    h.style.cssText=`left:${Math.random()*100}%;--sz:${sz}px;animation-duration:${10+Math.random()*20}s;animation-delay:${Math.random()*15}s;`;
+    w.appendChild(h);
+  }
+})();
+
+// CSS card suit particles (spades, diamonds, clubs)
+(function(){
+  const w=document.getElementById('bb-suits');
+  const types=['spade','diamond','club'];
+  for(let i=0;i<12;i++){
+    const s=document.createElement('div');s.className='bb-suit-p';
+    const t=types[Math.floor(Math.random()*types.length)];
+    const inner=document.createElement('div');inner.className='bb-suit-'+t;
+    s.appendChild(inner);
+    s.style.cssText=`left:${Math.random()*100}%;animation-duration:${15+Math.random()*25}s;animation-delay:${Math.random()*20}s;`;
+    w.appendChild(s);
+  }
+})();
+
+// Champagne bubbles
+(function(){
+  const w=document.getElementById('bb-bubbles');
+  for(let i=0;i<20;i++){
+    const b=document.createElement('div');b.className='bb-bubble';
+    const size=3+Math.random()*8;
+    b.style.cssText=`left:${Math.random()*100}%;width:${size}px;height:${size}px;animation-duration:${8+Math.random()*15}s;animation-delay:${Math.random()*12}s;`;
+    w.appendChild(b);
+  }
+})();
+
+// Dust motes (Phase 1 ambient)
+(function(){
+  const w=document.getElementById('bb-dust');
+  for(let i=0;i<30;i++){
+    const d=document.createElement('div');d.className='bb-dust';
+    const dx=(Math.random()-0.5)*200;
+    const dy=-(100+Math.random()*300);
+    d.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;--dx:${dx}px;--dy:${dy}px;animation-duration:${6+Math.random()*12}s;animation-delay:${Math.random()*8}s;width:${1+Math.random()*3}px;height:${1+Math.random()*3}px;`;
+    w.appendChild(d);
+  }
+})();
+
+// Rain droplets (Phase 2 ambient)
+(function(){
+  const w=document.getElementById('bb-rain');
+  for(let i=0;i<30;i++){
+    const r=document.createElement('div');r.className='bb-raindrop';
+    const h=20+Math.random()*40;
+    r.style.cssText=`left:${Math.random()*100}%;height:${h}px;animation-duration:${1+Math.random()*2}s;animation-delay:${Math.random()*3}s;`;
+    w.appendChild(r);
+  }
+})();
+
+// Marquee chasing lights
+(function(){
+  const w=document.getElementById('bb-marquee');
+  const totalBulbs=60;
+  const rect=w.getBoundingClientRect();
+  // Distribute bulbs around the perimeter
+  for(let i=0;i<totalBulbs;i++){
+    const b=document.createElement('div');b.className='bb-bulb';
+    const pct=i/totalBulbs;
+    let x,y;
+    if(pct<0.3){// top edge
+      x=(pct/0.3)*100+'%';y='-3px';
+    }else if(pct<0.5){// right edge
+      x='calc(100% - 1px)';y=((pct-0.3)/0.2)*100+'%';
+    }else if(pct<0.8){// bottom edge
+      x=(1-(pct-0.5)/0.3)*100+'%';y='calc(100% - 1px)';
+    }else{// left edge
+      x='-3px';y=(1-(pct-0.8)/0.2)*100+'%';
+    }
+    b.style.cssText=`left:${x};top:${y};animation-delay:${(i*0.08)}s;`;
+    w.appendChild(b);
+  }
+})();
+
+// Waterfall side streams (Phase 2)
+(function(){
+  ['bb-side-falls-l','bb-side-falls-r'].forEach(id=>{
+    const w=document.getElementById(id);
+    for(let i=0;i<5;i++){
+      const s=document.createElement('div');s.className='bb-fall-stream';
+      const h=60+Math.random()*80;
+      s.style.cssText=`left:${5+Math.random()*25}px;height:${h}px;animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*3}s;opacity:${0.1+Math.random()*0.2};`;
+      w.appendChild(s);
+    }
+  });
+})();
+
+// Mist particles (Phase 2)
+(function(){
+  const w=document.getElementById('bb-mist-p');
+  for(let i=0;i<25;i++){
+    const m=document.createElement('div');m.className='bb-mist-dot';
+    const sz=2+Math.random()*4;
+    const dx=-15+Math.random()*30;
+    m.style.cssText=`left:${Math.random()*100}%;bottom:${Math.random()*20}%;--msz:${sz}px;--mdx:${dx}px;animation-duration:${4+Math.random()*6}s;animation-delay:${Math.random()*5}s;`;
+    w.appendChild(m);
+  }
+})();
+
+// Wind lines (Phase 2)
+(function(){
+  const w=document.getElementById('bb-wind');
+  for(let i=0;i<6;i++){
+    const l=document.createElement('div');l.className='bb-wind';
+    const width=60+Math.random()*120;
+    l.style.cssText=`top:${Math.random()*100}%;width:${width}px;animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*4}s;`;
+    w.appendChild(l);
+  }
+})();
+
+// Coin burst generator
+function spawnCoins(containerId,count){
+  const c=document.getElementById(containerId);if(!c)return;
+  c.innerHTML='';
+  for(let i=0;i<count;i++){
+    const coin=document.createElement('div');coin.className='bb-coin';
+    const cx=-60+Math.random()*120;
+    const cy=-80-Math.random()*60;
+    coin.style.cssText=`--cx:${cx}px;--cy:${cy}px;animation-delay:${Math.random()*0.3}s;width:${8+Math.random()*6}px;height:${8+Math.random()*6}px;`;
+    c.appendChild(coin);
+  }
+}
+
+// Spawn coins for each pair (staggered)
+setTimeout(()=>spawnCoins('coins-1',10),2500);
+setTimeout(()=>spawnCoins('coins-2',8),5500);
+setTimeout(()=>spawnCoins('coins-3',10),8500);
+setTimeout(()=>spawnCoins('coins-4',8),11500);
+
+// Confetti generator (results)
+(function(){
+  const w=document.getElementById('bb-confetti');
+  const colors=['#d4a830','#e83070','#f0cc50','#8ab8d0','#3a8850','#e8a0a8','#a07818','#c84868'];
+  for(let i=0;i<40;i++){
+    const c=document.createElement('div');c.className='bb-confetti';
+    const cw=4+Math.random()*6;
+    const ch=6+Math.random()*10;
+    const cr=Math.random()*360;
+    const csx=-30+Math.random()*60;
+    c.style.cssText=`left:${Math.random()*100}%;--cw:${cw}px;--ch:${ch}px;--cc:${colors[Math.floor(Math.random()*colors.length)]};--cr:${cr}deg;--csx:${csx}px;animation-duration:${3+Math.random()*4}s;animation-delay:${Math.random()*3}s;`;
+    w.appendChild(c);
+  }
+})();
+
+// Firework bursts (results)
+(function(){
+  const w=document.getElementById('bb-fireworks');
+  const fwColors=['#d4a830','#e83070','#f0cc50','#8ab8d0','#3a8850'];
+  // 3 firework locations
+  const positions=[{x:'20%',y:'25%'},{x:'75%',y:'20%'},{x:'50%',y:'35%'}];
+  positions.forEach((pos,pi)=>{
+    // Ring
+    const ring=document.createElement('div');ring.className='bb-firework ring';
+    ring.style.cssText=`left:${pos.x};top:${pos.y};--fw-color:${fwColors[pi]};animation-delay:${pi*1.5}s;`;
+    w.appendChild(ring);
+    // Trail particles
+    for(let i=0;i<8;i++){
+      const t=document.createElement('div');t.className='bb-firework trail';
+      const angle=(i/8)*Math.PI*2;
+      const dist=20+Math.random()*30;
+      const tx=Math.cos(angle)*dist;
+      const ty=Math.sin(angle)*dist;
+      t.style.cssText=`left:${pos.x};top:${pos.y};--fw-color:${fwColors[pi]};--tx:${tx}px;--ty:${ty}px;animation-delay:${pi*1.5+0.1}s;`;
+      w.appendChild(t);
+    }
+  });
+})();
+
+// Broadcast clock
+(function(){
+  const cl=document.getElementById('bb-clock');
+  function tick(){
+    const d=new Date();
+    cl.textContent=d.toTimeString().slice(0,8);
+  }
+  tick();setInterval(tick,1000);
+})();
+</script>
+
+</body>
+</html>

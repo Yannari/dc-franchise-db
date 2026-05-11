@@ -1,0 +1,3221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Great Fake-Out — VP Mockup</title>
+<style>
+/* ═══════════════════════════════════════════════════
+   THE GREAT FAKE-OUT — INK WASH FORTRESS VP
+   Direction A+B+C: Living Ink Scroll + Parallax Theater + Ink Explosion Chaos
+   ═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --gfo-cinnabar:#c23616;
+  --gfo-cinnabar-dark:#8b1a0e;
+  --gfo-jade:#2d6a4f;
+  --gfo-jade-light:#40916c;
+  --gfo-gold:#d4a017;
+  --gfo-gold-light:#f0c94b;
+  --gfo-ink:#1a1a1a;
+  --gfo-parchment:#f0e6d3;
+  --gfo-parchment-dark:#d9cbb8;
+  --gfo-mist:#8fa7c4;
+  --gfo-mist-light:#b8cfe0;
+  --gfo-amber:#e8952e;
+  --gfo-amber-dark:#b8700f;
+  --gfo-steam:rgba(255,255,255,0.12);
+  --gfo-vomit:#7a9a3a;
+  --gfo-grease:rgba(120,80,30,0.15);
+  --gfo-font-display:'Cinzel', serif;
+  --gfo-font-body:'Crimson Text', serif;
+}
+
+body{
+  background:#0d0d0d;
+  color:var(--gfo-ink);
+  font-family:var(--gfo-font-body);
+  overflow-x:hidden;
+}
+
+/* ── SHELL ── */
+.gfo-shell{
+  max-width:1100px;
+  margin:0 auto;
+  position:relative;
+  min-height:100vh;
+}
+
+/* ═══════════════════════════════════════════════════
+   AMBIENT & ATMOSPHERE — THE IDENTITY LAYER
+   ═══════════════════════════════════════════════════ */
+
+/* ── SVG Pattern Defs (referenced by fills) ── */
+/* Parchment grain texture via repeating conic-gradient */
+.gfo-shell{
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ── Ink Wash Background Texture ── */
+.gfo-title-screen::before,
+.gfo-race-screen::before,
+.gfo-scramble-screen::before,
+.gfo-eating-screen::before,
+.gfo-results-screen::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:var(--grain);
+  pointer-events:none;
+  z-index:0;
+  opacity:0.6;
+}
+
+/* ── Brush Stroke Border Mixin on Cards ── */
+.gfo-card::before{
+  content:'';
+  position:absolute;
+  inset:-1px;
+  background:
+    linear-gradient(90deg,rgba(240,230,211,0.06) 0%,transparent 3%,transparent 97%,rgba(240,230,211,0.06) 100%),
+    linear-gradient(180deg,rgba(240,230,211,0.04) 0%,transparent 4%,transparent 96%,rgba(240,230,211,0.04) 100%);
+  pointer-events:none;
+  border-radius:3px;
+}
+.gfo-card::after{
+  content:'';
+  position:absolute;
+  bottom:-1px;
+  left:8px;
+  right:8px;
+  height:2px;
+  background:linear-gradient(90deg,transparent,rgba(240,230,211,0.05),rgba(240,230,211,0.08),rgba(240,230,211,0.05),transparent);
+  pointer-events:none;
+}
+
+/* Ink bleed corners on cards */
+.gfo-card{
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(240,230,211,0.04) 0%, transparent 35%),
+    radial-gradient(ellipse at 100% 100%, rgba(240,230,211,0.03) 0%, transparent 35%),
+    linear-gradient(135deg,rgba(240,230,211,0.06) 0%,rgba(240,230,211,0.02) 100%);
+}
+
+/* ── Floating Ink Drip Particles ── */
+.gfo-ink-drip{
+  position:absolute;
+  width:3px;
+  pointer-events:none;
+  z-index:1;
+}
+.gfo-ink-drip-drop{
+  width:3px;
+  height:0;
+  background:linear-gradient(180deg,rgba(26,26,26,0.3),rgba(26,26,26,0.05));
+  border-radius:0 0 2px 2px;
+  animation:gfo-drip-fall linear infinite;
+}
+@keyframes gfo-drip-fall{
+  0%{height:0;opacity:0;transform:translateY(0);}
+  10%{opacity:0.6;}
+  60%{height:25px;opacity:0.4;}
+  100%{height:35px;opacity:0;transform:translateY(80px);}
+}
+
+/* ── Brush Stroke Flourish (decorative swipe) ── */
+.gfo-brush-flourish{
+  position:absolute;
+  pointer-events:none;
+  z-index:1;
+  overflow:visible;
+}
+.gfo-brush-flourish svg{
+  width:100%;
+  height:100%;
+}
+
+/* ── Bird Silhouettes (race screen) ── */
+.gfo-bird{
+  position:absolute;
+  pointer-events:none;
+  z-index:2;
+  animation:gfo-bird-fly linear infinite;
+}
+@keyframes gfo-bird-fly{
+  0%{transform:translateX(-100px) translateY(0);}
+  25%{transform:translateX(100px) translateY(-15px);}
+  50%{transform:translateX(300px) translateY(-5px);}
+  75%{transform:translateX(500px) translateY(-20px);}
+  100%{transform:translateX(1200px) translateY(-10px);}
+}
+.gfo-bird svg{
+  width:20px;
+  height:12px;
+  fill:none;
+  stroke:rgba(240,230,211,0.08);
+  stroke-width:1.5;
+  stroke-linecap:round;
+}
+
+/* ── Watchtower Torch Glow ── */
+.gfo-torch-glow{
+  position:absolute;
+  pointer-events:none;
+  z-index:2;
+}
+.gfo-torch-flame{
+  width:6px;
+  height:10px;
+  background:radial-gradient(ellipse at 50% 80%,rgba(232,149,46,0.6),rgba(232,149,46,0.2),transparent);
+  border-radius:50% 50% 30% 30%;
+  animation:gfo-torch-flicker 0.8s ease-in-out infinite alternate;
+  filter:blur(1px);
+}
+@keyframes gfo-torch-flicker{
+  0%{transform:scaleY(1) scaleX(1);opacity:0.7;}
+  30%{transform:scaleY(1.2) scaleX(0.85);opacity:0.9;}
+  60%{transform:scaleY(0.9) scaleX(1.1);opacity:0.6;}
+  100%{transform:scaleY(1.1) scaleX(0.9);opacity:0.85;}
+}
+.gfo-torch-halo{
+  position:absolute;
+  top:-8px;
+  left:-10px;
+  width:26px;
+  height:26px;
+  background:radial-gradient(circle,rgba(232,149,46,0.12),transparent 70%);
+  animation:gfo-torch-halo-pulse 2s ease-in-out infinite alternate;
+}
+@keyframes gfo-torch-halo-pulse{
+  0%{opacity:0.5;transform:scale(0.9);}
+  100%{opacity:0.8;transform:scale(1.1);}
+}
+
+/* ── Fog Bands (fortress race) ── */
+.gfo-fog-band{
+  position:absolute;
+  pointer-events:none;
+  z-index:1;
+  height:15px;
+  background:linear-gradient(90deg,transparent 0%,rgba(143,167,196,0.05) 20%,rgba(143,167,196,0.08) 50%,rgba(143,167,196,0.05) 80%,transparent 100%);
+  filter:blur(6px);
+  border-radius:50%;
+  animation:gfo-fog-drift linear infinite;
+}
+@keyframes gfo-fog-drift{
+  0%{transform:translateX(-30%);}
+  100%{transform:translateX(30%);}
+}
+
+/* ── Calligraphy Fragments (floating background text) ── */
+.gfo-calli-fragment{
+  position:absolute;
+  pointer-events:none;
+  z-index:0;
+  font-family:var(--gfo-font-display);
+  font-size:28px;
+  font-weight:900;
+  color:rgba(240,230,211,0.02);
+  letter-spacing:4px;
+  transform:rotate(-8deg);
+  user-select:none;
+  white-space:nowrap;
+}
+
+/* ── Announcer / Comm Chatter Lines ── */
+.gfo-announcer{
+  text-align:center;
+  padding:6px 16px;
+  margin:4px 0;
+  font-family:var(--gfo-font-body);
+  font-size:12px;
+  font-style:italic;
+  color:rgba(240,230,211,0.2);
+  position:relative;
+}
+.gfo-announcer::before{
+  content:'';
+  display:inline-block;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:rgba(240,230,211,0.15);
+  margin-right:8px;
+  vertical-align:middle;
+}
+.gfo-announcer.host{color:rgba(212,160,23,0.25);}
+.gfo-announcer.host::before{background:rgba(212,160,23,0.3);box-shadow:0 0 4px rgba(212,160,23,0.2);}
+.gfo-announcer.crowd{color:rgba(143,167,196,0.2);}
+.gfo-announcer.crowd::before{background:rgba(143,167,196,0.2);}
+
+/* ── Hanging Scroll Decorations (Phase 2) ── */
+.gfo-hanging-scroll{
+  position:absolute;
+  pointer-events:none;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.gfo-hanging-scroll-string{
+  width:1px;
+  height:25px;
+  background:rgba(240,230,211,0.1);
+}
+.gfo-hanging-scroll-body{
+  width:18px;
+  height:50px;
+  background:linear-gradient(180deg,rgba(240,230,211,0.06),rgba(240,230,211,0.02));
+  border:1px solid rgba(240,230,211,0.04);
+  border-radius:2px 2px 0 0;
+  position:relative;
+  animation:gfo-scroll-sway 5s ease-in-out infinite;
+}
+@keyframes gfo-scroll-sway{
+  0%,100%{transform:rotate(-1deg);}
+  50%{transform:rotate(1deg);}
+}
+.gfo-hanging-scroll-body::after{
+  content:'';
+  position:absolute;
+  bottom:-8px;
+  left:3px;
+  right:3px;
+  height:8px;
+  background:linear-gradient(180deg,rgba(240,230,211,0.03),transparent);
+  clip-path:polygon(0 0, 100% 0, 50% 100%);
+}
+/* Calligraphy line inside scroll */
+.gfo-hanging-scroll-char{
+  position:absolute;
+  top:8px;
+  left:50%;
+  transform:translateX(-50%);
+  width:1px;
+  height:30px;
+  background:linear-gradient(180deg,rgba(26,26,26,0.15),rgba(26,26,26,0.05));
+}
+
+/* ── Chopstick Motif (Phase 2 decorative) ── */
+.gfo-chopsticks{
+  position:absolute;
+  pointer-events:none;
+  z-index:1;
+  width:30px;
+  height:60px;
+}
+.gfo-chopsticks svg{
+  width:100%;
+  height:100%;
+}
+
+/* ── Grease Drip SVGs (accumulate in Phase 2) ── */
+.gfo-grease-drip{
+  position:absolute;
+  pointer-events:none;
+  z-index:1;
+  opacity:0;
+  transition:opacity 0.8s ease;
+}
+.gfo-grease-drip.visible{opacity:1;}
+.gfo-grease-drip svg{
+  width:100%;
+  height:100%;
+}
+
+/* ── Steam Columns (Phase 2, intensifying) ── */
+.gfo-steam-column{
+  position:absolute;
+  bottom:0;
+  pointer-events:none;
+  z-index:1;
+  width:40px;
+  overflow:visible;
+}
+.gfo-steam-puff{
+  position:absolute;
+  bottom:0;
+  width:20px;
+  height:20px;
+  background:radial-gradient(circle,rgba(255,255,255,0.06),transparent 70%);
+  border-radius:50%;
+  animation:gfo-puff-rise ease-out infinite;
+}
+@keyframes gfo-puff-rise{
+  0%{transform:translateY(0) scale(1);opacity:0.5;}
+  40%{opacity:0.3;}
+  100%{transform:translateY(-200px) scale(3);opacity:0;}
+}
+
+/* ── Ink Wash Wipe (Transition) ── */
+.gfo-ink-wipe{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:3;
+}
+.gfo-ink-wipe-band{
+  position:absolute;
+  top:0;
+  bottom:0;
+  background:rgba(26,26,26,0.85);
+  animation:gfo-wipe-sweep 1.5s cubic-bezier(0.7,0,0.3,1) forwards;
+}
+@keyframes gfo-wipe-sweep{
+  0%{left:-100%;width:100%;}
+  40%{left:0%;width:100%;}
+  60%{left:0%;width:100%;}
+  100%{left:100%;width:100%;}
+}
+.gfo-ink-wipe-band:nth-child(2){
+  animation-delay:0.1s;
+  background:rgba(26,26,26,0.5);
+}
+.gfo-ink-wipe-band:nth-child(3){
+  animation-delay:0.2s;
+  background:rgba(26,26,26,0.3);
+}
+
+/* ── Gong Impact Upgrade ── */
+.gfo-gong-burst{
+  width:500px!important;
+  height:500px!important;
+}
+.gfo-gong-shockwave{
+  position:absolute;
+  inset:20%;
+  border:3px solid rgba(212,160,23,0.4);
+  border-radius:50%;
+  animation:gfo-shockwave 1s ease-out forwards;
+  animation-delay:2.5s;
+  opacity:0;
+}
+@keyframes gfo-shockwave{
+  0%{opacity:0;transform:scale(0);border-width:3px;}
+  30%{opacity:0.8;border-width:2px;}
+  100%{opacity:0;transform:scale(5);border-width:0.5px;}
+}
+
+/* ── Ink Pool Effect (Cold Open) ── */
+.gfo-ink-pool{
+  position:absolute;
+  pointer-events:none;
+  border-radius:50%;
+  animation:gfo-pool-spread 3s ease-out forwards;
+  opacity:0;
+}
+@keyframes gfo-pool-spread{
+  0%{opacity:0;transform:scale(0);}
+  20%{opacity:0.15;}
+  100%{opacity:0.08;transform:scale(1);}
+}
+
+/* ── Section Border Brush Strokes ── */
+.gfo-race-screen,
+.gfo-scramble-screen,
+.gfo-eating-screen{
+  border-top:2px solid transparent;
+  border-image:linear-gradient(90deg,transparent 5%,rgba(240,230,211,0.06) 15%,rgba(240,230,211,0.1) 50%,rgba(240,230,211,0.06) 85%,transparent 95%) 1;
+}
+
+/* ── Card hover brush glow ── */
+.gfo-card{
+  transition:box-shadow 0.3s ease,border-color 0.3s ease;
+}
+.gfo-card:hover{
+  box-shadow:0 0 15px rgba(240,230,211,0.03);
+}
+
+/* ── Phase TRACKER ambient brush underline ── */
+.gfo-phase-pip.active::after{
+  content:'';
+  position:absolute;
+  bottom:0;
+  left:10%;
+  right:10%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--gfo-gold),transparent);
+  border-radius:1px;
+}
+
+/* ── PHASE TRACKER RIBBON ── */
+.gfo-phase-tracker{
+  position:sticky;
+  top:46px;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+  padding:10px 20px;
+  background:linear-gradient(180deg,rgba(26,26,26,0.95) 0%,rgba(26,26,26,0.85) 100%);
+  backdrop-filter:blur(8px);
+  border-bottom:2px solid var(--gfo-gold);
+}
+.gfo-phase-pip{
+  font-family:var(--gfo-font-display);
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:rgba(240,230,211,0.35);
+  padding:6px 18px;
+  position:relative;
+  transition:all 0.4s ease;
+}
+.gfo-phase-pip.active{
+  color:var(--gfo-gold);
+  text-shadow:0 0 12px rgba(212,160,23,0.4);
+}
+.gfo-phase-pip.completed{
+  color:rgba(240,230,211,0.55);
+}
+.gfo-phase-arrow{
+  color:rgba(240,230,211,0.2);
+  font-size:16px;
+  margin:0 4px;
+}
+
+/* ═══════════════════════════════════════════════════
+   SCREEN 1 — COLD OPEN / TITLE CARD
+   ═══════════════════════════════════════════════════ */
+
+.gfo-title-screen{
+  position:relative;
+  min-height:90vh;
+  overflow:hidden;
+  background:#0d0d0d;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Parallax mountain layers */
+.gfo-title-mountains{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+}
+.gfo-mountain-layer{
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  opacity:0.15;
+}
+.gfo-mountain-far{
+  height:45%;
+  background:
+    linear-gradient(135deg, transparent 30%, rgba(143,167,196,0.08) 50%, transparent 70%),
+    linear-gradient(160deg, transparent 20%, rgba(143,167,196,0.06) 40%, transparent 60%);
+  clip-path:polygon(0 60%, 8% 35%, 15% 50%, 25% 20%, 35% 40%, 45% 15%, 55% 35%, 65% 10%, 75% 30%, 85% 18%, 92% 40%, 100% 25%, 100% 100%, 0 100%);
+  animation:gfo-parallax-drift 40s ease-in-out infinite alternate;
+}
+.gfo-mountain-mid{
+  height:35%;
+  background:rgba(143,167,196,0.1);
+  clip-path:polygon(0 55%, 10% 30%, 20% 45%, 30% 15%, 42% 35%, 55% 10%, 68% 30%, 78% 20%, 88% 35%, 100% 15%, 100% 100%, 0 100%);
+  animation:gfo-parallax-drift 30s ease-in-out infinite alternate-reverse;
+}
+@keyframes gfo-parallax-drift{
+  0%{transform:translateX(-10px);}
+  100%{transform:translateX(10px);}
+}
+
+/* Mist particles */
+.gfo-mist-layer{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+.gfo-mist-band{
+  position:absolute;
+  width:200%;
+  height:30px;
+  background:linear-gradient(90deg,transparent,rgba(143,167,196,0.06),rgba(143,167,196,0.1),rgba(143,167,196,0.06),transparent);
+  animation:gfo-mist-flow linear infinite;
+  border-radius:50%;
+  filter:blur(8px);
+}
+.gfo-mist-band:nth-child(1){top:30%;animation-duration:35s;opacity:0.7;}
+.gfo-mist-band:nth-child(2){top:50%;animation-duration:28s;opacity:0.5;animation-delay:-10s;}
+.gfo-mist-band:nth-child(3){top:70%;animation-duration:42s;opacity:0.4;animation-delay:-20s;}
+@keyframes gfo-mist-flow{
+  0%{transform:translateX(-50%);}
+  100%{transform:translateX(0%);}
+}
+
+/* Scroll unfurl container */
+.gfo-scroll-unfurl{
+  position:relative;
+  z-index:10;
+  text-align:center;
+  padding:60px 40px;
+}
+
+/* Scroll paper */
+.gfo-scroll-paper{
+  position:relative;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(217,203,184,0.08) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(240,230,211,0.04) 0%, rgba(240,230,211,0.02) 100%);
+  border:1px solid rgba(240,230,211,0.08);
+  padding:60px 50px 50px;
+  max-width:700px;
+  margin:0 auto;
+  animation:gfo-scroll-reveal 1.8s cubic-bezier(0.16,1,0.3,1) forwards;
+  transform-origin:top center;
+}
+@keyframes gfo-scroll-reveal{
+  0%{max-height:0;opacity:0;padding:0 50px;}
+  30%{opacity:1;}
+  100%{max-height:800px;opacity:1;padding:60px 50px 50px;}
+}
+
+/* Scroll rollers (top and bottom) */
+.gfo-scroll-roller{
+  position:absolute;
+  left:-8px;
+  right:-8px;
+  height:18px;
+  background:linear-gradient(180deg,
+    rgba(90,60,30,0.6) 0%,
+    rgba(120,80,40,0.8) 30%,
+    rgba(160,120,60,0.6) 50%,
+    rgba(120,80,40,0.8) 70%,
+    rgba(90,60,30,0.6) 100%
+  );
+  border-radius:9px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.4);
+}
+.gfo-scroll-roller-top{top:-9px;}
+.gfo-scroll-roller-bottom{bottom:-9px;}
+.gfo-scroll-roller-knob{
+  position:absolute;
+  top:2px;
+  width:14px;
+  height:14px;
+  background:radial-gradient(circle at 40% 40%,rgba(212,160,23,0.6),rgba(120,80,30,0.8));
+  border-radius:50%;
+  box-shadow:0 1px 4px rgba(0,0,0,0.4);
+}
+.gfo-scroll-roller-knob.left{left:4px;}
+.gfo-scroll-roller-knob.right{right:4px;}
+
+/* Brush stroke decorations */
+.gfo-brush-line{
+  height:2px;
+  background:linear-gradient(90deg,transparent,rgba(212,160,23,0.3),rgba(212,160,23,0.6),rgba(212,160,23,0.3),transparent);
+  margin:16px auto;
+  max-width:300px;
+  position:relative;
+}
+.gfo-brush-line::after{
+  content:'';
+  position:absolute;
+  top:-1px;
+  left:20%;
+  right:20%;
+  height:4px;
+  background:linear-gradient(90deg,transparent,rgba(212,160,23,0.15),transparent);
+  filter:blur(2px);
+}
+
+/* Title text */
+.gfo-title-main{
+  font-family:var(--gfo-font-display);
+  font-size:42px;
+  font-weight:900;
+  color:var(--gfo-gold);
+  text-shadow:
+    0 0 20px rgba(212,160,23,0.3),
+    0 2px 4px rgba(0,0,0,0.5);
+  letter-spacing:3px;
+  text-transform:uppercase;
+  line-height:1.2;
+  margin:8px 0;
+  animation:gfo-title-burn 2.5s ease forwards;
+  animation-delay:1s;
+  opacity:0;
+}
+@keyframes gfo-title-burn{
+  0%{opacity:0;letter-spacing:8px;filter:blur(4px);}
+  60%{opacity:1;filter:blur(0);}
+  100%{opacity:1;letter-spacing:3px;filter:blur(0);}
+}
+
+.gfo-title-sub{
+  font-family:var(--gfo-font-display);
+  font-size:14px;
+  font-weight:600;
+  color:rgba(240,230,211,0.4);
+  letter-spacing:4px;
+  text-transform:uppercase;
+  margin-bottom:8px;
+  animation:gfo-fade-in 1s ease forwards;
+  animation-delay:0.5s;
+  opacity:0;
+}
+@keyframes gfo-fade-in{
+  to{opacity:1;}
+}
+
+/* Fortress silhouette */
+.gfo-fortress-silhouette{
+  position:relative;
+  height:80px;
+  margin:24px 0 16px;
+  animation:gfo-fade-in 1.5s ease forwards;
+  animation-delay:1.8s;
+  opacity:0;
+}
+.gfo-fortress-svg{
+  width:100%;
+  height:100%;
+}
+
+/* Gong burst */
+.gfo-gong-burst{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:300px;
+  height:300px;
+  pointer-events:none;
+  animation:gfo-gong-ring 2s ease-out forwards;
+  animation-delay:2.5s;
+  opacity:0;
+}
+@keyframes gfo-gong-ring{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(0);}
+  20%{opacity:0.6;}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(3);}
+}
+.gfo-gong-circle{
+  position:absolute;
+  inset:0;
+  border:2px solid var(--gfo-gold);
+  border-radius:50%;
+  opacity:0.4;
+}
+.gfo-gong-circle:nth-child(2){
+  inset:15%;
+  animation-delay:2.6s;
+  border-color:rgba(212,160,23,0.3);
+}
+.gfo-gong-circle:nth-child(3){
+  inset:30%;
+  animation-delay:2.7s;
+  border-color:rgba(212,160,23,0.2);
+}
+
+/* Ink splatters that hit the scroll */
+.gfo-ink-splatter{
+  position:absolute;
+  pointer-events:none;
+  animation:gfo-splat-in 0.3s ease-out forwards;
+  opacity:0;
+}
+@keyframes gfo-splat-in{
+  0%{opacity:0;transform:scale(0);}
+  60%{opacity:0.7;transform:scale(1.2);}
+  100%{opacity:0.5;transform:scale(1);}
+}
+.gfo-splatter-1{top:15%;left:8%;animation-delay:2.8s;width:40px;height:35px;}
+.gfo-splatter-2{top:60%;right:10%;animation-delay:3.0s;width:30px;height:40px;}
+.gfo-splatter-3{bottom:20%;left:20%;animation-delay:3.2s;width:50px;height:30px;}
+.gfo-splatter-4{top:35%;right:25%;animation-delay:3.1s;width:25px;height:25px;}
+
+/* Deceptive host text */
+.gfo-host-announce{
+  font-family:var(--gfo-font-body);
+  font-size:16px;
+  font-style:italic;
+  color:rgba(240,230,211,0.5);
+  margin-top:20px;
+  animation:gfo-fade-in 1s ease forwards;
+  animation-delay:2s;
+  opacity:0;
+  line-height:1.5;
+}
+.gfo-host-ellipsis{
+  color:var(--gfo-cinnabar);
+  font-weight:700;
+  font-style:normal;
+}
+
+/* Player scramble grid */
+.gfo-scramble-grid{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  margin-top:24px;
+  animation:gfo-fade-in 1s ease forwards;
+  animation-delay:2.2s;
+  opacity:0;
+}
+.gfo-scramble-card{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:8px 6px 6px;
+  width:72px;
+  background:rgba(240,230,211,0.03);
+  border:1px solid rgba(240,230,211,0.06);
+  border-radius:3px;
+  position:relative;
+  animation:gfo-scramble-jolt 0.8s ease forwards;
+  opacity:0;
+}
+.gfo-scramble-card:nth-child(1){animation-delay:2.3s;}
+.gfo-scramble-card:nth-child(2){animation-delay:2.4s;}
+.gfo-scramble-card:nth-child(3){animation-delay:2.5s;}
+.gfo-scramble-card:nth-child(4){animation-delay:2.6s;}
+.gfo-scramble-card:nth-child(5){animation-delay:2.7s;}
+.gfo-scramble-card:nth-child(6){animation-delay:2.8s;}
+.gfo-scramble-card:nth-child(7){animation-delay:2.9s;}
+@keyframes gfo-scramble-jolt{
+  0%{opacity:0;transform:translateY(15px) rotate(0deg);}
+  40%{opacity:1;transform:translateY(-4px) rotate(-2deg);}
+  60%{transform:translateY(2px) rotate(1deg);}
+  100%{opacity:1;transform:translateY(0) rotate(0deg);}
+}
+/* Idle scramble animation — each player jitters differently */
+.gfo-scramble-card:nth-child(odd){animation:gfo-scramble-jolt 0.8s ease forwards, gfo-jitter-a 2.5s ease-in-out infinite 3.5s;}
+.gfo-scramble-card:nth-child(even){animation:gfo-scramble-jolt 0.8s ease forwards, gfo-jitter-b 3s ease-in-out infinite 3.5s;}
+@keyframes gfo-jitter-a{
+  0%,100%{transform:translateX(0) rotate(0deg);}
+  25%{transform:translateX(-2px) rotate(-1deg);}
+  75%{transform:translateX(2px) rotate(1deg);}
+}
+@keyframes gfo-jitter-b{
+  0%,100%{transform:translateY(0) rotate(0deg);}
+  30%{transform:translateY(-2px) rotate(0.5deg);}
+  70%{transform:translateY(2px) rotate(-0.5deg);}
+}
+.gfo-scramble-avatar{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  border:2px solid rgba(240,230,211,0.2);
+  background:rgba(26,26,26,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:700;
+  color:var(--gfo-parchment);
+  font-family:var(--gfo-font-display);
+  position:relative;
+}
+.gfo-scramble-name{
+  font-family:var(--gfo-font-display);
+  font-size:8px;
+  font-weight:600;
+  letter-spacing:0.5px;
+  color:rgba(240,230,211,0.5);
+  text-align:center;
+  line-height:1.2;
+}
+.gfo-scramble-vehicle{
+  width:22px;
+  height:22px;
+  margin-top:2px;
+}
+.gfo-scramble-vehicle svg{
+  width:100%;
+  height:100%;
+  fill:none;
+  stroke:rgba(240,230,211,0.3);
+  stroke-width:1.5;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.gfo-scramble-tier{
+  font-family:var(--gfo-font-display);
+  font-size:7px;
+  font-weight:600;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+  padding:1px 4px;
+  border-radius:2px;
+}
+.gfo-scramble-tier.t1{color:var(--gfo-gold);background:rgba(212,160,23,0.12);}
+.gfo-scramble-tier.t2{color:rgba(240,230,211,0.4);background:rgba(240,230,211,0.05);}
+.gfo-scramble-tier.t3{color:var(--gfo-amber);background:rgba(232,149,46,0.1);}
+.gfo-scramble-tier.t4{color:var(--gfo-cinnabar);background:rgba(194,54,22,0.1);}
+/* Reaction bubbles — tiny thought/exclamation near each player */
+.gfo-scramble-react{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  font-size:10px;
+  animation:gfo-react-pop 0.4s ease forwards;
+  opacity:0;
+}
+.gfo-scramble-card:nth-child(1) .gfo-scramble-react{animation-delay:3.2s;}
+.gfo-scramble-card:nth-child(2) .gfo-scramble-react{animation-delay:3.4s;}
+.gfo-scramble-card:nth-child(3) .gfo-scramble-react{animation-delay:3.1s;}
+.gfo-scramble-card:nth-child(4) .gfo-scramble-react{animation-delay:3.5s;}
+.gfo-scramble-card:nth-child(5) .gfo-scramble-react{animation-delay:3.3s;}
+.gfo-scramble-card:nth-child(6) .gfo-scramble-react{animation-delay:3.6s;}
+.gfo-scramble-card:nth-child(7) .gfo-scramble-react{animation-delay:3.0s;}
+@keyframes gfo-react-pop{
+  0%{opacity:0;transform:scale(0);}
+  50%{transform:scale(1.3);}
+  100%{opacity:1;transform:scale(1);}
+}
+/* Running legs animation on avatars */
+.gfo-scramble-legs{
+  position:absolute;
+  bottom:-8px;
+  left:50%;
+  transform:translateX(-50%);
+  width:20px;
+  height:10px;
+}
+.gfo-scramble-leg{
+  position:absolute;
+  bottom:0;
+  width:2px;
+  height:8px;
+  background:rgba(240,230,211,0.25);
+  border-radius:1px;
+  transform-origin:top center;
+}
+.gfo-scramble-leg.left{left:5px;animation:gfo-leg-run-l 0.4s ease-in-out infinite 3.5s;}
+.gfo-scramble-leg.right{right:5px;animation:gfo-leg-run-r 0.4s ease-in-out infinite 3.5s;}
+@keyframes gfo-leg-run-l{
+  0%,100%{transform:rotate(-20deg);}
+  50%{transform:rotate(20deg);}
+}
+@keyframes gfo-leg-run-r{
+  0%,100%{transform:rotate(20deg);}
+  50%{transform:rotate(-20deg);}
+}
+
+/* ═══════════════════════════════════════════════════
+   SCREEN 1.5 — THE SCRAMBLE (Vehicle Selection)
+   ═══════════════════════════════════════════════════ */
+
+.gfo-scramble-screen{
+  position:relative;
+  min-height:80vh;
+  padding:30px 0;
+  background:linear-gradient(180deg,
+    rgba(13,13,13,1) 0%,
+    rgba(25,30,40,0.95) 20%,
+    rgba(35,30,25,0.9) 60%,
+    rgba(13,13,13,1) 100%
+  );
+}
+
+/* Scramble intro banner */
+.gfo-scramble-banner{
+  text-align:center;
+  padding:0 20px 20px;
+}
+.gfo-scramble-phase-title{
+  font-family:var(--gfo-font-display);
+  font-size:22px;
+  font-weight:800;
+  color:var(--gfo-gold);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.gfo-scramble-phase-sub{
+  font-family:var(--gfo-font-body);
+  font-size:14px;
+  font-style:italic;
+  color:rgba(240,230,211,0.4);
+}
+
+/* Vehicle depot — shows available vehicles before grab */
+.gfo-vehicle-depot{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:16px 20px;
+  padding:16px;
+  background:rgba(240,230,211,0.02);
+  border:1px solid rgba(240,230,211,0.06);
+  border-radius:3px;
+}
+.gfo-depot-slot{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:8px;
+  min-width:65px;
+  border:1px dashed rgba(240,230,211,0.08);
+  border-radius:3px;
+  transition:all 0.3s ease;
+}
+.gfo-depot-slot.grabbed{
+  opacity:0.25;
+  border-color:transparent;
+}
+.gfo-depot-slot.grabbed .gfo-depot-vehicle-name::after{
+  content:' ✗';
+  color:var(--gfo-cinnabar);
+}
+.gfo-depot-vehicle{
+  width:28px;
+  height:28px;
+}
+.gfo-depot-vehicle svg{
+  width:100%;
+  height:100%;
+  fill:none;
+  stroke:rgba(240,230,211,0.3);
+  stroke-width:1.5;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.gfo-depot-vehicle-name{
+  font-family:var(--gfo-font-display);
+  font-size:8px;
+  font-weight:600;
+  letter-spacing:0.5px;
+  color:rgba(240,230,211,0.35);
+  text-align:center;
+}
+.gfo-depot-tier-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+}
+
+/* Grab order card — who grabbed what and drama during */
+.gfo-grab-card{
+  position:relative;
+  background:linear-gradient(135deg,rgba(240,230,211,0.05) 0%,rgba(240,230,211,0.02) 100%);
+  border:1px solid rgba(240,230,211,0.08);
+  border-radius:3px;
+  padding:14px 18px;
+  display:grid;
+  grid-template-columns:36px 1fr auto;
+  align-items:center;
+  gap:12px;
+}
+.gfo-grab-card.has-drama{
+  border-left:3px solid var(--gfo-amber);
+}
+.gfo-grab-order{
+  font-family:var(--gfo-font-display);
+  font-size:18px;
+  font-weight:800;
+  color:rgba(240,230,211,0.2);
+  text-align:center;
+}
+.gfo-grab-info{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.gfo-grab-player{
+  font-family:var(--gfo-font-display);
+  font-size:14px;
+  font-weight:700;
+  color:var(--gfo-parchment);
+}
+.gfo-grab-action{
+  font-family:var(--gfo-font-body);
+  font-size:13px;
+  color:rgba(240,230,211,0.55);
+  line-height:1.4;
+}
+.gfo-grab-action strong{color:var(--gfo-gold);}
+.gfo-grab-action .gfo-neg{color:var(--gfo-cinnabar);}
+.gfo-grab-vehicle-result{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+  padding:6px 10px;
+  background:rgba(240,230,211,0.03);
+  border:1px solid rgba(240,230,211,0.06);
+  border-radius:3px;
+  min-width:70px;
+}
+.gfo-grab-vehicle-icon{
+  width:24px;
+  height:24px;
+}
+.gfo-grab-vehicle-icon svg{
+  width:100%;
+  height:100%;
+  fill:none;
+  stroke:rgba(240,230,211,0.4);
+  stroke-width:1.5;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.gfo-grab-vehicle-label{
+  font-family:var(--gfo-font-display);
+  font-size:8px;
+  font-weight:600;
+  letter-spacing:0.5px;
+  color:rgba(240,230,211,0.4);
+}
+
+/* Drama event card within scramble */
+.gfo-scramble-drama{
+  position:relative;
+  background:linear-gradient(135deg,rgba(232,149,46,0.06) 0%,rgba(26,26,26,0.4) 100%);
+  border:1px solid rgba(232,149,46,0.12);
+  border-left:3px solid var(--gfo-amber);
+  border-radius:3px;
+  padding:14px 18px;
+}
+.gfo-scramble-drama-header{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:6px;
+}
+.gfo-scramble-drama-tag{
+  font-family:var(--gfo-font-display);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--gfo-amber);
+}
+.gfo-scramble-drama-body{
+  font-family:var(--gfo-font-body);
+  font-size:14px;
+  color:rgba(240,230,211,0.7);
+  line-height:1.5;
+}
+.gfo-scramble-drama-body strong{color:var(--gfo-gold);}
+
+/* ═══════════════════════════════════════════════════
+   SCREEN 2 — PHASE 1: FORTRESS WALL RACE
+   ═══════════════════════════════════════════════════ */
+
+.gfo-race-screen{
+  position:relative;
+  background:linear-gradient(180deg,
+    rgba(13,13,13,1) 0%,
+    rgba(20,25,35,1) 15%,
+    rgba(30,40,55,0.95) 40%,
+    rgba(40,35,25,0.9) 70%,
+    rgba(13,13,13,1) 100%
+  );
+  padding:20px 0;
+  min-height:100vh;
+}
+
+/* Fortress wall map — horizontal */
+.gfo-wall-map{
+  position:relative;
+  margin:20px 20px 20px 20px;
+  height:220px;
+  background:
+    linear-gradient(180deg,
+      transparent 0%,
+      rgba(143,167,196,0.04) 20%,
+      rgba(143,167,196,0.08) 50%,
+      rgba(90,70,50,0.1) 80%,
+      transparent 100%
+    );
+  border-radius:4px;
+  overflow:hidden;
+}
+
+/* Parallax mountain backdrop inside map */
+.gfo-wall-bg-mountains{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:60%;
+  opacity:0.2;
+}
+.gfo-wall-bg-far{
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  height:100%;
+  clip-path:polygon(0 70%,5% 50%,12% 65%,20% 35%,30% 55%,40% 25%,50% 45%,60% 20%,70% 40%,80% 30%,90% 50%,100% 35%,100% 100%,0 100%);
+  background:linear-gradient(180deg,rgba(143,167,196,0.3),rgba(143,167,196,0.1));
+}
+
+/* The actual wall path */
+.gfo-wall-path{
+  position:absolute;
+  bottom:30px;
+  left:40px;
+  right:40px;
+  height:80px;
+}
+.gfo-wall-svg{
+  width:100%;
+  height:100%;
+}
+
+/* Watchtower segment dividers */
+.gfo-watchtower{
+  position:absolute;
+  bottom:60px;
+  width:24px;
+  text-align:center;
+}
+.gfo-watchtower svg{
+  width:24px;
+  height:50px;
+}
+
+/* Player markers on the wall */
+.gfo-racer-marker{
+  position:absolute;
+  bottom:85px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  transition:left 0.8s cubic-bezier(0.16,1,0.3,1);
+}
+.gfo-racer-avatar{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  border:2px solid var(--gfo-gold);
+  background:rgba(26,26,26,0.8);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:700;
+  color:var(--gfo-parchment);
+  font-family:var(--gfo-font-display);
+}
+.gfo-racer-vehicle{
+  width:18px;
+  height:18px;
+}
+.gfo-racer-vehicle svg{
+  width:100%;
+  height:100%;
+  fill:none;
+  stroke:var(--gfo-parchment);
+  stroke-width:1.5;
+}
+.gfo-racer-name{
+  font-size:9px;
+  font-family:var(--gfo-font-display);
+  color:rgba(240,230,211,0.6);
+  letter-spacing:0.5px;
+  font-weight:600;
+  white-space:nowrap;
+}
+.gfo-racer-marker.last-place .gfo-racer-avatar{
+  border-color:var(--gfo-cinnabar);
+}
+.gfo-racer-marker.last-place .gfo-racer-name{
+  color:var(--gfo-cinnabar);
+}
+
+/* Ink splatter overlays on the map (chaos accumulation) */
+.gfo-map-splatter{
+  position:absolute;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.3s ease;
+}
+.gfo-map-splatter.visible{opacity:0.3;}
+
+/* Trap explosion bursts */
+.gfo-trap-burst{
+  position:absolute;
+  pointer-events:none;
+  animation:gfo-trap-explode 0.6s ease-out forwards;
+}
+@keyframes gfo-trap-explode{
+  0%{opacity:0;transform:scale(0) rotate(0deg);}
+  30%{opacity:0.8;transform:scale(1.3) rotate(15deg);}
+  100%{opacity:0;transform:scale(2) rotate(30deg);}
+}
+
+/* ── MAIN CONTENT AREA (cards + sidebar) ── */
+.gfo-content-area{
+  display:grid;
+  grid-template-columns:1fr 280px;
+  gap:16px;
+  padding:0 20px 20px;
+}
+
+/* ── EVENT CARDS COLUMN ── */
+.gfo-card-feed{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+/* Base card */
+.gfo-card{
+  position:relative;
+  background:
+    linear-gradient(135deg,rgba(240,230,211,0.06) 0%,rgba(240,230,211,0.02) 100%);
+  border:1px solid rgba(240,230,211,0.08);
+  border-radius:3px;
+  padding:16px 20px;
+  overflow:hidden;
+}
+
+/* Card paint-in animation (Direction A — ink bleeding) */
+.gfo-card.paint-in{
+  animation:gfo-card-paint 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes gfo-card-paint{
+  0%{opacity:0;clip-path:inset(0 100% 0 0);}
+  100%{opacity:1;clip-path:inset(0 0% 0 0);}
+}
+
+/* Card type accents */
+.gfo-card.race-event{border-left:3px solid var(--gfo-gold);}
+.gfo-card.trap-event{border-left:3px solid var(--gfo-cinnabar);}
+.gfo-card.social-event{border-left:3px solid var(--gfo-jade);}
+.gfo-card.elimination-event{
+  border-left:3px solid var(--gfo-cinnabar);
+  background:linear-gradient(135deg,rgba(194,54,22,0.08) 0%,rgba(26,26,26,0.4) 100%);
+}
+
+/* Brush stroke stamp icon */
+.gfo-card-stamp{
+  position:absolute;
+  top:8px;
+  right:12px;
+  width:28px;
+  height:28px;
+  opacity:0.5;
+}
+.gfo-card-stamp svg{
+  width:100%;
+  height:100%;
+}
+
+/* Card header */
+.gfo-card-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+.gfo-card-player-ring{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  border:2px solid rgba(240,230,211,0.2);
+  background:rgba(26,26,26,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  font-weight:700;
+  color:var(--gfo-parchment);
+  font-family:var(--gfo-font-display);
+  flex-shrink:0;
+}
+.gfo-card-title{
+  font-family:var(--gfo-font-display);
+  font-size:14px;
+  font-weight:700;
+  color:var(--gfo-parchment);
+  letter-spacing:0.5px;
+}
+.gfo-card-subtitle{
+  font-size:11px;
+  color:rgba(240,230,211,0.4);
+  font-family:var(--gfo-font-display);
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+/* Card body */
+.gfo-card-body{
+  font-family:var(--gfo-font-body);
+  font-size:15px;
+  color:rgba(240,230,211,0.75);
+  line-height:1.5;
+}
+.gfo-card-body strong{color:var(--gfo-gold);font-weight:600;}
+.gfo-card-body .gfo-neg{color:var(--gfo-cinnabar);}
+.gfo-card-body .gfo-pos{color:var(--gfo-jade-light);}
+
+/* Card consequence tag */
+.gfo-consequence{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  margin-top:8px;
+  padding:3px 10px;
+  border-radius:2px;
+  font-family:var(--gfo-font-display);
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+.gfo-consequence.time-loss{
+  background:rgba(194,54,22,0.15);
+  color:var(--gfo-cinnabar);
+  border:1px solid rgba(194,54,22,0.2);
+}
+.gfo-consequence.time-gain{
+  background:rgba(45,106,79,0.15);
+  color:var(--gfo-jade-light);
+  border:1px solid rgba(45,106,79,0.2);
+}
+.gfo-consequence.bond-change{
+  background:rgba(212,160,23,0.1);
+  color:var(--gfo-gold);
+  border:1px solid rgba(212,160,23,0.15);
+}
+.gfo-consequence.pop-change{
+  background:rgba(143,167,196,0.1);
+  color:var(--gfo-mist-light);
+  border:1px solid rgba(143,167,196,0.15);
+}
+
+/* Segment divider (atmospheric flavor text) */
+.gfo-segment-divider{
+  text-align:center;
+  padding:12px 0;
+  position:relative;
+}
+.gfo-segment-divider::before,
+.gfo-segment-divider::after{
+  content:'';
+  position:absolute;
+  top:50%;
+  height:1px;
+  width:30%;
+  background:linear-gradient(90deg,transparent,rgba(240,230,211,0.1),transparent);
+}
+.gfo-segment-divider::before{left:0;}
+.gfo-segment-divider::after{right:0;}
+.gfo-segment-label{
+  font-family:var(--gfo-font-display);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:rgba(240,230,211,0.25);
+}
+.gfo-segment-flavor{
+  font-family:var(--gfo-font-body);
+  font-size:13px;
+  font-style:italic;
+  color:rgba(240,230,211,0.3);
+  margin-top:4px;
+}
+
+/* ── SIDEBAR ── */
+.gfo-sidebar{
+  position:sticky;
+  top:110px;
+  align-self:start;
+  background:rgba(26,26,26,0.6);
+  border:1px solid rgba(240,230,211,0.06);
+  border-radius:3px;
+  padding:16px;
+  max-height:calc(100vh - 130px);
+  overflow-y:auto;
+}
+.gfo-sidebar-title{
+  font-family:var(--gfo-font-display);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--gfo-gold);
+  margin-bottom:12px;
+  padding-bottom:8px;
+  border-bottom:1px solid rgba(212,160,23,0.2);
+}
+
+/* Race leaderboard entries */
+.gfo-lb-entry{
+  display:grid;
+  grid-template-columns:18px 28px 1fr 50px;
+  align-items:center;
+  gap:6px;
+  padding:6px 4px;
+  border-bottom:1px solid rgba(240,230,211,0.04);
+  transition:all 0.4s ease;
+}
+.gfo-lb-pos{
+  font-family:var(--gfo-font-display);
+  font-size:11px;
+  font-weight:700;
+  color:rgba(240,230,211,0.4);
+  text-align:center;
+}
+.gfo-lb-pos.first{color:var(--gfo-gold);}
+.gfo-lb-pos.last{color:var(--gfo-cinnabar);}
+.gfo-lb-avatar{
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  border:1.5px solid rgba(240,230,211,0.15);
+  background:rgba(26,26,26,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:9px;
+  font-weight:700;
+  color:var(--gfo-parchment);
+  font-family:var(--gfo-font-display);
+}
+.gfo-lb-name{
+  font-family:var(--gfo-font-body);
+  font-size:13px;
+  color:rgba(240,230,211,0.7);
+}
+.gfo-lb-time{
+  font-family:var(--gfo-font-display);
+  font-size:11px;
+  font-weight:600;
+  color:rgba(240,230,211,0.5);
+  text-align:right;
+}
+.gfo-lb-entry.danger{
+  background:rgba(194,54,22,0.06);
+}
+.gfo-lb-entry.danger .gfo-lb-name{color:var(--gfo-cinnabar);}
+.gfo-lb-entry.danger .gfo-lb-avatar{border-color:var(--gfo-cinnabar);}
+
+/* Vehicle tag in sidebar */
+.gfo-lb-vehicle-tag{
+  font-family:var(--gfo-font-display);
+  font-size:8px;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+  padding:1px 5px;
+  border-radius:2px;
+  background:rgba(240,230,211,0.06);
+  color:rgba(240,230,211,0.35);
+  margin-left:4px;
+}
+.gfo-lb-vehicle-tag.tier1{color:var(--gfo-gold);background:rgba(212,160,23,0.1);}
+.gfo-lb-vehicle-tag.tier3{color:var(--gfo-cinnabar);background:rgba(194,54,22,0.08);}
+
+/* Position change arrows */
+.gfo-lb-delta{
+  font-size:10px;
+  margin-left:2px;
+}
+.gfo-lb-delta.up{color:var(--gfo-jade-light);}
+.gfo-lb-delta.down{color:var(--gfo-cinnabar);}
+
+/* ═══════════════════════════════════════════════════
+   TRANSITION BEAT
+   ═══════════════════════════════════════════════════ */
+
+.gfo-transition{
+  position:relative;
+  height:250px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(180deg,
+    rgba(13,13,13,1) 0%,
+    rgba(20,15,10,0.95) 30%,
+    rgba(30,20,10,0.9) 50%,
+    rgba(20,15,10,0.95) 70%,
+    rgba(13,13,13,1) 100%
+  );
+  overflow:hidden;
+}
+.gfo-transition-ink{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,
+    rgba(26,26,26,0.9) 0%,
+    rgba(26,26,26,0.5) 40%,
+    rgba(26,26,26,0.2) 60%,
+    rgba(26,26,26,0.5) 80%,
+    rgba(26,26,26,0.9) 100%
+  );
+}
+.gfo-transition-text{
+  position:relative;
+  z-index:2;
+  text-align:center;
+}
+.gfo-transition-quote{
+  font-family:var(--gfo-font-body);
+  font-size:22px;
+  font-style:italic;
+  color:rgba(240,230,211,0.5);
+  line-height:1.4;
+}
+.gfo-transition-quote em{
+  color:var(--gfo-gold);
+  font-style:normal;
+  font-weight:700;
+}
+.gfo-transition-sub{
+  font-family:var(--gfo-font-display);
+  font-size:11px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:rgba(240,230,211,0.2);
+  margin-top:12px;
+}
+
+/* ═══════════════════════════════════════════════════
+   SCREEN 3 — PHASE 2: EATING GAUNTLET
+   ═══════════════════════════════════════════════════ */
+
+.gfo-eating-screen{
+  position:relative;
+  min-height:100vh;
+  padding:20px 0;
+  background:linear-gradient(180deg,
+    rgba(13,13,13,1) 0%,
+    rgba(35,25,15,0.95) 15%,
+    rgba(50,35,20,0.9) 50%,
+    rgba(35,25,15,0.95) 85%,
+    rgba(13,13,13,1) 100%
+  );
+}
+
+/* Lantern ambient layer */
+.gfo-lantern-layer{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:200px;
+  pointer-events:none;
+  overflow:hidden;
+}
+.gfo-lantern{
+  position:absolute;
+  top:-5px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.gfo-lantern-string{
+  width:1px;
+  height:20px;
+  background:rgba(240,230,211,0.15);
+}
+.gfo-lantern-body{
+  width:22px;
+  height:30px;
+  border-radius:4px 4px 8px 8px;
+  position:relative;
+  overflow:hidden;
+  animation:gfo-lantern-sway 4s ease-in-out infinite;
+}
+.gfo-lantern-body.amber{background:rgba(232,149,46,0.25);box-shadow:0 4px 20px rgba(232,149,46,0.15);}
+.gfo-lantern-body.red{background:rgba(194,54,22,0.2);box-shadow:0 4px 20px rgba(194,54,22,0.1);}
+.gfo-lantern-body.gold{background:rgba(212,160,23,0.2);box-shadow:0 4px 20px rgba(212,160,23,0.1);}
+.gfo-lantern-glow{
+  position:absolute;
+  inset:20% 15%;
+  background:radial-gradient(ellipse,rgba(255,200,100,0.4),transparent);
+  animation:gfo-lantern-flicker 2s ease-in-out infinite alternate;
+}
+@keyframes gfo-lantern-sway{
+  0%,100%{transform:rotate(-2deg);}
+  50%{transform:rotate(2deg);}
+}
+@keyframes gfo-lantern-flicker{
+  0%{opacity:0.6;}
+  50%{opacity:1;}
+  100%{opacity:0.7;}
+}
+
+/* Steam particles */
+.gfo-steam-layer{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+}
+.gfo-steam-particle{
+  position:absolute;
+  bottom:-20px;
+  width:6px;
+  height:6px;
+  background:radial-gradient(circle,rgba(255,255,255,0.08),transparent);
+  border-radius:50%;
+  animation:gfo-steam-rise linear infinite;
+}
+@keyframes gfo-steam-rise{
+  0%{transform:translateY(0) scale(1);opacity:0.6;}
+  50%{transform:translateY(-200px) scale(2);opacity:0.3;}
+  100%{transform:translateY(-400px) scale(3);opacity:0;}
+}
+.gfo-steam-particle:nth-child(1){left:15%;animation-duration:6s;}
+.gfo-steam-particle:nth-child(2){left:30%;animation-duration:8s;animation-delay:-2s;}
+.gfo-steam-particle:nth-child(3){left:50%;animation-duration:7s;animation-delay:-4s;}
+.gfo-steam-particle:nth-child(4){left:65%;animation-duration:9s;animation-delay:-1s;}
+.gfo-steam-particle:nth-child(5){left:80%;animation-duration:5s;animation-delay:-3s;}
+
+/* Grease stain overlays (accumulate per round — Direction C degradation) */
+.gfo-grease-overlay{
+  position:absolute;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.5s ease;
+}
+.gfo-grease-overlay.visible{opacity:1;}
+
+/* Eating cards — chopstick snap physics */
+.gfo-card.eating-card{
+  animation:gfo-chopstick-snap 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  border-left:3px solid var(--gfo-amber);
+}
+@keyframes gfo-chopstick-snap{
+  0%{opacity:0;transform:translateY(-30px);}
+  60%{transform:translateY(3px);}
+  100%{opacity:1;transform:translateY(0);}
+}
+
+/* Vomit card variant */
+.gfo-card.vomit-card{
+  border-left:3px solid var(--gfo-vomit);
+  background:linear-gradient(135deg,rgba(122,154,58,0.06) 0%,rgba(26,26,26,0.4) 100%);
+}
+
+/* Elimination ink wash dissolve */
+.gfo-card.eliminated-card{
+  border-left:3px solid var(--gfo-cinnabar);
+  position:relative;
+}
+.gfo-card.eliminated-card::after{
+  content:'';
+  position:absolute;
+  top:0;
+  right:0;
+  bottom:0;
+  width:40%;
+  background:linear-gradient(90deg,transparent,rgba(26,26,26,0.4));
+  pointer-events:none;
+}
+
+/* Dish display */
+.gfo-dish-display{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 14px;
+  margin:8px 0;
+  background:rgba(240,230,211,0.03);
+  border:1px solid rgba(240,230,211,0.06);
+  border-radius:3px;
+}
+.gfo-dish-icon{
+  width:36px;
+  height:36px;
+  flex-shrink:0;
+}
+.gfo-dish-icon svg{
+  width:100%;
+  height:100%;
+}
+.gfo-dish-name{
+  font-family:var(--gfo-font-display);
+  font-size:13px;
+  font-weight:700;
+  color:var(--gfo-parchment);
+}
+.gfo-dish-desc{
+  font-family:var(--gfo-font-body);
+  font-size:12px;
+  font-style:italic;
+  color:rgba(240,230,211,0.4);
+}
+.gfo-dish-difficulty{
+  margin-left:auto;
+  display:flex;
+  gap:3px;
+}
+.gfo-dish-pip{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:rgba(240,230,211,0.1);
+}
+.gfo-dish-pip.filled{background:var(--gfo-cinnabar);}
+
+/* ── EATING SIDEBAR ── */
+.gfo-eat-bracket{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.gfo-eat-entry{
+  display:grid;
+  grid-template-columns:24px 1fr auto;
+  align-items:center;
+  gap:8px;
+  padding:6px 4px;
+  border-bottom:1px solid rgba(240,230,211,0.04);
+  transition:all 0.4s ease;
+}
+.gfo-eat-avatar{
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  border:1.5px solid rgba(240,230,211,0.15);
+  background:rgba(26,26,26,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:9px;
+  font-weight:700;
+  color:var(--gfo-parchment);
+  font-family:var(--gfo-font-display);
+}
+.gfo-eat-name{
+  font-family:var(--gfo-font-body);
+  font-size:13px;
+  color:rgba(240,230,211,0.7);
+}
+.gfo-eat-status{
+  font-family:var(--gfo-font-display);
+  font-size:9px;
+  font-weight:600;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:2px 8px;
+  border-radius:2px;
+}
+.gfo-eat-status.eating{color:var(--gfo-jade-light);background:rgba(45,106,79,0.15);}
+.gfo-eat-status.eliminated{color:var(--gfo-cinnabar);background:rgba(194,54,22,0.1);text-decoration:line-through;}
+.gfo-eat-status.winner{color:var(--gfo-gold);background:rgba(212,160,23,0.15);}
+
+/* Eliminated strike-through on name */
+.gfo-eat-entry.out .gfo-eat-name{
+  text-decoration:line-through;
+  color:rgba(240,230,211,0.3);
+}
+.gfo-eat-entry.out .gfo-eat-avatar{
+  opacity:0.4;
+  border-color:var(--gfo-cinnabar);
+}
+
+/* Current dish in sidebar */
+.gfo-sidebar-dish{
+  margin:12px 0;
+  padding:10px;
+  background:rgba(240,230,211,0.03);
+  border:1px solid rgba(240,230,211,0.06);
+  border-radius:3px;
+  text-align:center;
+}
+.gfo-sidebar-dish-label{
+  font-family:var(--gfo-font-display);
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:rgba(240,230,211,0.3);
+}
+.gfo-sidebar-dish-name{
+  font-family:var(--gfo-font-display);
+  font-size:14px;
+  font-weight:700;
+  color:var(--gfo-amber);
+  margin-top:4px;
+}
+.gfo-sidebar-round{
+  font-family:var(--gfo-font-display);
+  font-size:10px;
+  letter-spacing:1.5px;
+  color:rgba(240,230,211,0.2);
+  margin-top:4px;
+}
+
+/* Lantern status indicators */
+.gfo-lantern-status{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  margin:10px 0;
+}
+.gfo-lantern-pip{
+  width:10px;
+  height:14px;
+  border-radius:2px 2px 4px 4px;
+  transition:all 0.3s ease;
+}
+.gfo-lantern-pip.lit{
+  background:var(--gfo-amber);
+  box-shadow:0 2px 8px rgba(232,149,46,0.3);
+}
+.gfo-lantern-pip.extinguished{
+  background:rgba(240,230,211,0.08);
+}
+.gfo-lantern-pip.golden{
+  background:var(--gfo-gold);
+  box-shadow:0 2px 12px rgba(212,160,23,0.4);
+}
+
+/* ═══════════════════════════════════════════════════
+   RESULTS SCREEN
+   ═══════════════════════════════════════════════════ */
+.gfo-results-screen{
+  padding:40px 20px;
+  text-align:center;
+  background:linear-gradient(180deg,rgba(13,13,13,1),rgba(25,20,12,0.95),rgba(13,13,13,1));
+}
+.gfo-results-title{
+  font-family:var(--gfo-font-display);
+  font-size:28px;
+  font-weight:900;
+  color:var(--gfo-gold);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  text-shadow:0 0 20px rgba(212,160,23,0.3);
+  margin-bottom:24px;
+}
+.gfo-winner-card{
+  max-width:400px;
+  margin:0 auto 30px;
+  padding:24px;
+  background:linear-gradient(135deg,rgba(212,160,23,0.08) 0%,rgba(26,26,26,0.4) 100%);
+  border:2px solid rgba(212,160,23,0.3);
+  border-radius:4px;
+  position:relative;
+}
+.gfo-winner-card::before{
+  content:'';
+  position:absolute;
+  inset:-2px;
+  border:1px solid rgba(212,160,23,0.1);
+  border-radius:6px;
+  pointer-events:none;
+}
+.gfo-winner-avatar{
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  border:3px solid var(--gfo-gold);
+  background:rgba(26,26,26,0.8);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  font-weight:700;
+  color:var(--gfo-gold);
+  font-family:var(--gfo-font-display);
+  margin:0 auto 12px;
+  box-shadow:0 0 20px rgba(212,160,23,0.2);
+}
+.gfo-winner-name{
+  font-family:var(--gfo-font-display);
+  font-size:22px;
+  font-weight:700;
+  color:var(--gfo-gold);
+  margin-bottom:4px;
+}
+.gfo-winner-subtitle{
+  font-family:var(--gfo-font-body);
+  font-size:14px;
+  font-style:italic;
+  color:rgba(240,230,211,0.5);
+}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  .gfo-mist-band,
+  .gfo-steam-particle,
+  .gfo-lantern-body,
+  .gfo-lantern-glow,
+  .gfo-mountain-far,
+  .gfo-mountain-mid{animation:none!important;}
+  .gfo-card.paint-in{animation:none!important;opacity:1;clip-path:none;}
+  .gfo-card.eating-card{animation:none!important;opacity:1;transform:none;}
+  .gfo-title-main{animation:none!important;opacity:1;letter-spacing:3px;filter:none;}
+  .gfo-title-sub,.gfo-host-announce,.gfo-scramble-grid,.gfo-fortress-silhouette{animation:none!important;opacity:1;}
+  .gfo-scramble-card{animation:none!important;opacity:1;transform:none!important;}
+  .gfo-scramble-react{animation:none!important;opacity:1;}
+  .gfo-scramble-leg{animation:none!important;}
+  .gfo-scroll-paper{animation:none!important;max-height:none;opacity:1;}
+  .gfo-bird,.gfo-fog-band,.gfo-ink-drip-drop,.gfo-torch-flame,.gfo-torch-halo,
+  .gfo-hanging-scroll-body,.gfo-steam-puff,.gfo-ink-wipe-band,
+  .gfo-gong-shockwave,.gfo-ink-pool{animation:none!important;opacity:0.5;}
+  .gfo-ink-splatter{animation:none!important;opacity:0.3;}
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .gfo-content-area{grid-template-columns:1fr;gap:12px;}
+  .gfo-sidebar{position:static;max-height:none;}
+  .gfo-title-main{font-size:28px;}
+  .gfo-wall-map{height:160px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     PHASE TRACKER
+     ═══════════════════════════════════════════════════ -->
+<div class="gfo-shell">
+
+  <div class="gfo-phase-tracker">
+    <div class="gfo-phase-pip completed">Cold Open</div>
+    <div class="gfo-phase-arrow">›</div>
+    <div class="gfo-phase-pip active">The Scramble</div>
+    <div class="gfo-phase-arrow">›</div>
+    <div class="gfo-phase-pip">Gauntlet Race</div>
+    <div class="gfo-phase-arrow">›</div>
+    <div class="gfo-phase-pip">Eating Gauntlet</div>
+    <div class="gfo-phase-arrow">›</div>
+    <div class="gfo-phase-pip">Results</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SCREEN 1 — COLD OPEN / TITLE CARD
+       ═══════════════════════════════════════════════════ -->
+  <div class="gfo-title-screen">
+
+    <!-- Parallax mountains -->
+    <div class="gfo-title-mountains">
+      <div class="gfo-mountain-layer gfo-mountain-far"></div>
+      <div class="gfo-mountain-layer gfo-mountain-mid"></div>
+    </div>
+
+    <!-- Mist layer -->
+    <div class="gfo-mist-layer">
+      <div class="gfo-mist-band"></div>
+      <div class="gfo-mist-band"></div>
+      <div class="gfo-mist-band"></div>
+    </div>
+
+    <!-- Scroll unfurl -->
+    <div class="gfo-scroll-unfurl">
+      <div class="gfo-scroll-paper">
+        <div class="gfo-scroll-roller gfo-scroll-roller-top">
+          <div class="gfo-scroll-roller-knob left"></div>
+          <div class="gfo-scroll-roller-knob right"></div>
+        </div>
+        <div class="gfo-scroll-roller gfo-scroll-roller-bottom">
+          <div class="gfo-scroll-roller-knob left"></div>
+          <div class="gfo-scroll-roller-knob right"></div>
+        </div>
+
+        <div class="gfo-title-sub">Post-Merge Challenge</div>
+        <div class="gfo-brush-line"></div>
+        <div class="gfo-title-main">The Great<br>Fake-Out</div>
+        <div class="gfo-brush-line"></div>
+
+        <!-- Fortress silhouette -->
+        <div class="gfo-fortress-silhouette">
+          <svg class="gfo-fortress-svg" viewBox="0 0 600 80" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(240,230,211,0.3)"/>
+                <stop offset="100%" stop-color="rgba(240,230,211,0.05)"/>
+              </linearGradient>
+            </defs>
+            <!-- Wall path with watchtowers -->
+            <path d="M0,65 L40,65 L40,55 L50,55 L50,35 L55,35 L55,30 L60,30 L60,35 L65,35 L65,55 L75,55 L75,60
+                     L120,58 L120,55 L130,55 L130,30 L135,30 L135,25 L140,25 L140,30 L145,30 L145,55 L155,55 L155,58
+                     L200,55 L240,52 L240,50 L250,50 L250,28 L255,28 L255,22 L260,22 L260,28 L265,28 L265,50 L275,50 L275,52
+                     L320,48 L360,45 L360,42 L370,42 L370,20 L375,20 L375,15 L380,15 L380,20 L385,20 L385,42 L395,42 L395,45
+                     L440,42 L480,40 L480,38 L490,38 L490,18 L495,18 L495,12 L500,12 L500,18 L505,18 L505,38 L515,38 L515,40
+                     L560,38 L600,35"
+                  stroke="url(#wallGrad)" stroke-width="2" fill="none"/>
+            <!-- Wall fill -->
+            <path d="M0,65 L40,65 L40,55 L75,55 L75,60 L155,55 L155,58 L275,50 L275,52 L395,42 L395,45 L515,38 L515,40 L600,35 L600,80 L0,80 Z"
+                  fill="rgba(240,230,211,0.03)"/>
+            <!-- Battlements -->
+            <g stroke="rgba(240,230,211,0.15)" stroke-width="1" fill="none">
+              <rect x="80" y="56" width="4" height="4"/>
+              <rect x="90" y="55" width="4" height="4"/>
+              <rect x="100" y="56" width="4" height="4"/>
+              <rect x="110" y="56" width="4" height="4"/>
+              <rect x="160" y="54" width="4" height="4"/>
+              <rect x="170" y="53" width="4" height="4"/>
+              <rect x="180" y="53" width="4" height="4"/>
+              <rect x="280" y="49" width="4" height="4"/>
+              <rect x="290" y="48" width="4" height="4"/>
+              <rect x="300" y="47" width="4" height="4"/>
+              <rect x="400" y="43" width="4" height="4"/>
+              <rect x="410" y="42" width="4" height="4"/>
+              <rect x="520" y="38" width="4" height="4"/>
+              <rect x="530" y="37" width="4" height="4"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Host announcement -->
+        <div class="gfo-host-announce">
+          "Race along the fortress wall to the finish line, and<span class="gfo-host-ellipsis">...</span> that's all you need to know."
+        </div>
+
+        <!-- Player scramble grid -->
+        <div class="gfo-scramble-grid">
+
+          <!-- Alejandro — Skateboard (T1) -->
+          <div class="gfo-scramble-card">
+            <div class="gfo-scramble-avatar">
+              A
+              <div class="gfo-scramble-react" style="color:var(--gfo-gold);">&#x2713;</div>
+              <div class="gfo-scramble-legs"><div class="gfo-scramble-leg left"></div><div class="gfo-scramble-leg right"></div></div>
+            </div>
+            <div class="gfo-scramble-name">Alejandro</div>
+            <div class="gfo-scramble-vehicle">
+              <svg viewBox="0 0 32 32"><rect x="6" y="14" width="20" height="4" rx="2"/><circle cx="10" cy="22" r="3"/><circle cx="22" cy="22" r="3"/></svg>
+            </div>
+            <div class="gfo-scramble-tier t1">Fast</div>
+          </div>
+
+          <!-- Duncan — Bicycle (T1) -->
+          <div class="gfo-scramble-card">
+            <div class="gfo-scramble-avatar">
+              D
+              <div class="gfo-scramble-react" style="color:var(--gfo-jade-light);">&#x1f4aa;</div>
+              <div class="gfo-scramble-legs"><div class="gfo-scramble-leg left"></div><div class="gfo-scramble-leg right"></div></div>
+            </div>
+            <div class="gfo-scramble-name">Duncan</div>
+            <div class="gfo-scramble-vehicle">
+              <svg viewBox="0 0 32 32"><circle cx="9" cy="22" r="6"/><circle cx="23" cy="22" r="6"/><path d="M9,22 L16,10 L23,22"/><line x1="12" y1="10" x2="20" y2="10"/></svg>
+            </div>
+            <div class="gfo-scramble-tier t1">Fast</div>
+          </div>
+
+          <!-- Heather — Tricycle (T2) -->
+          <div class="gfo-scramble-card">
+            <div class="gfo-scramble-avatar">
+              H
+              <div class="gfo-scramble-react" style="color:var(--gfo-cinnabar);">&#x2757;</div>
+              <div class="gfo-scramble-legs"><div class="gfo-scramble-leg left"></div><div class="gfo-scramble-leg right"></div></div>
+            </div>
+            <div class="gfo-scramble-name">Heather</div>
+            <div class="gfo-scramble-vehicle">
+              <svg viewBox="0 0 32 32"><circle cx="16" cy="10" r="5"/><circle cx="8" cy="24" r="5"/><circle cx="24" cy="24" r="5"/><line x1="16" y1="15" x2="8" y2="24"/><line x1="16" y1="15" x2="24" y2="24"/></svg>
+            </div>
+            <div class="gfo-scramble-tier t2">Medium</div>
+          </div>
+
+          <!-- Sierra — Pogo Stick (T3) -->
+          <div class="gfo-scramble-card">
+            <div class="gfo-scramble-avatar">
+              S
+              <div class="gfo-scramble-react" style="color:var(--gfo-gold);">&#x2605;</div>
+              <div class="gfo-scramble-legs"><div class="gfo-scramble-leg left"></div><div class="gfo-scramble-leg right"></div></div>
+            </div>
+            <div class="gfo-scramble-name">Sierra</div>
+            <div class="gfo-scramble-vehicle">
+              <svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="24"/><line x1="12" y1="12" x2="20" y2="12"/><circle cx="16" cy="27" r="3"/><line x1="13" y1="8" x2="19" y2="8"/></svg>
+            </div>
+            <div class="gfo-scramble-tier t3">Slow</div>
+          </div>
+
+          <!-- Cody — Donkey (T3) -->
+          <div class="gfo-scramble-card">
+            <div class="gfo-scramble-avatar">
+              C
+              <div class="gfo-scramble-react" style="color:var(--gfo-mist-light);">&#x3f;</div>
+              <div class="gfo-scramble-legs"><div class="gfo-scramble-leg left"></div><div class="gfo-scramble-leg right"></div></div>
+            </div>
+            <div class="gfo-scramble-name">Cody</div>
+            <div class="gfo-scramble-vehicle">
+              <svg viewBox="0 0 32 32"><ellipse cx="16" cy="16" rx="8" ry="6"/><line x1="10" y1="22" x2="9" y2="28"/><line x1="14" y1="22" x2="13" y2="28"/><line x1="18" y1="22" x2="19" y2="28"/><line x1="22" y1="22" x2="23" y2="28"/><path d="M8,12 L5,6"/><path d="M10,12 L8,6"/><circle cx="24" cy="14" r="1.5"/></svg>
+            </div>
+            <div class="gfo-scramble-tier t3">Slow</div>
+          </div>
+
+          <!-- Blaineley — Rickshaw (T2) -->
+          <div class="gfo-scramble-card">
+            <div class="gfo-scramble-avatar">
+              B
+              <div class="gfo-scramble-react" style="color:var(--gfo-amber);">&#x2728;</div>
+              <div class="gfo-scramble-legs"><div class="gfo-scramble-leg left"></div><div class="gfo-scramble-leg right"></div></div>
+            </div>
+            <div class="gfo-scramble-name">Blaineley</div>
+            <div class="gfo-scramble-vehicle">
+              <svg viewBox="0 0 32 32"><rect x="10" y="8" width="14" height="12" rx="2"/><circle cx="17" cy="26" r="5"/><line x1="10" y1="14" x2="4" y2="20"/><line x1="4" y1="20" x2="4" y2="14"/></svg>
+            </div>
+            <div class="gfo-scramble-tier t2">Medium</div>
+          </div>
+
+          <!-- Courtney — Wooden Sandals (T4) -->
+          <div class="gfo-scramble-card">
+            <div class="gfo-scramble-avatar">
+              Co
+              <div class="gfo-scramble-react" style="color:var(--gfo-cinnabar);">&#x1f621;</div>
+              <div class="gfo-scramble-legs"><div class="gfo-scramble-leg left"></div><div class="gfo-scramble-leg right"></div></div>
+            </div>
+            <div class="gfo-scramble-name">Courtney</div>
+            <div class="gfo-scramble-vehicle">
+              <svg viewBox="0 0 32 32"><path d="M6,12 Q6,8 10,8 Q14,8 14,12 L14,24 Q14,28 10,28 Q6,28 6,24 Z"/><path d="M18,12 Q18,8 22,8 Q26,8 26,12 L26,24 Q26,28 22,28 Q18,28 18,24 Z"/><line x1="10" y1="10" x2="10" y2="16"/><line x1="22" y1="10" x2="22" y2="16"/></svg>
+            </div>
+            <div class="gfo-scramble-tier t4">Terrible</div>
+          </div>
+
+        </div>
+
+        <!-- Ink splatters (chaos begins) -->
+        <svg class="gfo-ink-splatter gfo-splatter-1" viewBox="0 0 40 35"><circle cx="20" cy="18" r="12" fill="rgba(26,26,26,0.6)"/><circle cx="10" cy="10" r="5" fill="rgba(26,26,26,0.4)"/><circle cx="30" cy="25" r="4" fill="rgba(26,26,26,0.3)"/><ellipse cx="25" cy="8" rx="6" ry="3" fill="rgba(26,26,26,0.35)"/></svg>
+        <svg class="gfo-ink-splatter gfo-splatter-2" viewBox="0 0 30 40"><circle cx="15" cy="20" r="10" fill="rgba(26,26,26,0.5)"/><circle cx="8" cy="8" r="4" fill="rgba(26,26,26,0.3)"/><circle cx="22" cy="32" r="6" fill="rgba(26,26,26,0.4)"/></svg>
+        <svg class="gfo-ink-splatter gfo-splatter-3" viewBox="0 0 50 30"><ellipse cx="25" cy="15" rx="18" ry="10" fill="rgba(26,26,26,0.5)"/><circle cx="8" cy="8" r="5" fill="rgba(26,26,26,0.3)"/><circle cx="42" cy="22" r="4" fill="rgba(26,26,26,0.25)"/></svg>
+        <svg class="gfo-ink-splatter gfo-splatter-4" viewBox="0 0 25 25"><circle cx="12" cy="12" r="8" fill="rgba(26,26,26,0.4)"/><circle cx="5" cy="5" r="3" fill="rgba(26,26,26,0.25)"/></svg>
+
+        <!-- Ink pools (cold open life) -->
+        <div class="gfo-ink-pool" style="width:120px;height:80px;bottom:10%;left:5%;background:radial-gradient(ellipse,rgba(26,26,26,0.2),transparent 70%);animation-delay:3.5s;"></div>
+        <div class="gfo-ink-pool" style="width:90px;height:60px;top:20%;right:8%;background:radial-gradient(ellipse,rgba(26,26,26,0.15),transparent 70%);animation-delay:3.8s;"></div>
+
+        <!-- Gong burst (upgraded) -->
+        <div class="gfo-gong-burst">
+          <div class="gfo-gong-circle"></div>
+          <div class="gfo-gong-circle"></div>
+          <div class="gfo-gong-circle"></div>
+          <div class="gfo-gong-shockwave"></div>
+          <div class="gfo-gong-shockwave" style="animation-delay:2.65s;inset:25%;border-color:rgba(212,160,23,0.25);"></div>
+        </div>
+
+        <!-- Calligraphy fragments (background texture) -->
+        <div class="gfo-calli-fragment" style="top:15%;left:2%;">FORTRESS</div>
+        <div class="gfo-calli-fragment" style="bottom:25%;right:3%;transform:rotate(5deg);">SCROLL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SCREEN 1.5 — THE SCRAMBLE
+       ═══════════════════════════════════════════════════ -->
+  <div class="gfo-scramble-screen">
+
+    <div class="gfo-scramble-banner">
+      <div class="gfo-scramble-phase-title">The Scramble</div>
+      <div class="gfo-scramble-phase-sub">Grab a vehicle. Any vehicle. Don't ask questions.</div>
+    </div>
+
+    <!-- Vehicle depot — available vehicles -->
+    <div class="gfo-vehicle-depot">
+      <div class="gfo-depot-slot grabbed">
+        <div class="gfo-depot-vehicle">
+          <svg viewBox="0 0 32 32"><rect x="6" y="14" width="20" height="4" rx="2"/><circle cx="10" cy="22" r="3"/><circle cx="22" cy="22" r="3"/></svg>
+        </div>
+        <div class="gfo-depot-vehicle-name">Skateboard</div>
+        <div class="gfo-depot-tier-dot" style="background:var(--gfo-gold);"></div>
+      </div>
+      <div class="gfo-depot-slot grabbed">
+        <div class="gfo-depot-vehicle">
+          <svg viewBox="0 0 32 32"><circle cx="9" cy="22" r="6"/><circle cx="23" cy="22" r="6"/><path d="M9,22 L16,10 L23,22"/><line x1="12" y1="10" x2="20" y2="10"/></svg>
+        </div>
+        <div class="gfo-depot-vehicle-name">Bicycle</div>
+        <div class="gfo-depot-tier-dot" style="background:var(--gfo-gold);"></div>
+      </div>
+      <div class="gfo-depot-slot grabbed">
+        <div class="gfo-depot-vehicle">
+          <svg viewBox="0 0 32 32"><rect x="10" y="8" width="14" height="12" rx="2"/><circle cx="17" cy="26" r="5"/><line x1="10" y1="14" x2="4" y2="20"/><line x1="4" y1="20" x2="4" y2="14"/></svg>
+        </div>
+        <div class="gfo-depot-vehicle-name">Rickshaw</div>
+        <div class="gfo-depot-tier-dot" style="background:rgba(240,230,211,0.3);"></div>
+      </div>
+      <div class="gfo-depot-slot grabbed">
+        <div class="gfo-depot-vehicle">
+          <svg viewBox="0 0 32 32"><circle cx="16" cy="10" r="5"/><circle cx="8" cy="24" r="5"/><circle cx="24" cy="24" r="5"/><line x1="16" y1="15" x2="8" y2="24"/><line x1="16" y1="15" x2="24" y2="24"/></svg>
+        </div>
+        <div class="gfo-depot-vehicle-name">Tricycle</div>
+        <div class="gfo-depot-tier-dot" style="background:rgba(240,230,211,0.3);"></div>
+      </div>
+      <div class="gfo-depot-slot grabbed">
+        <div class="gfo-depot-vehicle">
+          <svg viewBox="0 0 32 32"><ellipse cx="16" cy="16" rx="8" ry="6"/><line x1="10" y1="22" x2="9" y2="28"/><line x1="14" y1="22" x2="13" y2="28"/><line x1="18" y1="22" x2="19" y2="28"/><line x1="22" y1="22" x2="23" y2="28"/><path d="M8,12 L5,6"/><path d="M10,12 L8,6"/><circle cx="24" cy="14" r="1.5"/></svg>
+        </div>
+        <div class="gfo-depot-vehicle-name">Donkey</div>
+        <div class="gfo-depot-tier-dot" style="background:var(--gfo-amber);"></div>
+      </div>
+      <div class="gfo-depot-slot">
+        <div class="gfo-depot-vehicle">
+          <svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="24"/><line x1="12" y1="12" x2="20" y2="12"/><circle cx="16" cy="27" r="3"/><line x1="13" y1="8" x2="19" y2="8"/></svg>
+        </div>
+        <div class="gfo-depot-vehicle-name">Pogo Stick</div>
+        <div class="gfo-depot-tier-dot" style="background:var(--gfo-amber);"></div>
+      </div>
+      <div class="gfo-depot-slot">
+        <div class="gfo-depot-vehicle">
+          <svg viewBox="0 0 32 32"><path d="M6,12 Q6,8 10,8 Q14,8 14,12 L14,24 Q14,28 10,28 Q6,28 6,24 Z"/><path d="M18,12 Q18,8 22,8 Q26,8 26,12 L26,24 Q26,28 22,28 Q18,28 18,24 Z"/><line x1="10" y1="10" x2="10" y2="16"/><line x1="22" y1="10" x2="22" y2="16"/></svg>
+        </div>
+        <div class="gfo-depot-vehicle-name">Sandals</div>
+        <div class="gfo-depot-tier-dot" style="background:var(--gfo-cinnabar);"></div>
+      </div>
+      <div class="gfo-depot-slot">
+        <div class="gfo-depot-vehicle">
+          <svg viewBox="0 0 32 32"><path d="M8,10 L22,10 L26,20 L4,20 Z"/><circle cx="15" cy="24" r="4"/><line x1="22" y1="10" x2="28" y2="6"/><line x1="4" y1="20" x2="2" y2="16"/></svg>
+        </div>
+        <div class="gfo-depot-vehicle-name">Wheelbarrow</div>
+        <div class="gfo-depot-tier-dot" style="background:var(--gfo-cinnabar);"></div>
+      </div>
+    </div>
+
+    <!-- Grab sequence + drama events -->
+    <div class="gfo-content-area">
+      <div class="gfo-card-feed">
+
+        <div class="gfo-segment-divider">
+          <div class="gfo-segment-label">Host Announcement</div>
+          <div class="gfo-segment-flavor">"Today you'll race along the ancient fortress wall to the finish line, and the winner gets—" *phone rings* "...just go!"</div>
+        </div>
+
+        <!-- Grab 1: Alejandro tricks Duncan -->
+        <div class="gfo-scramble-drama">
+          <div class="gfo-scramble-drama-header">
+            <div class="gfo-card-player-ring">A</div>
+            <div class="gfo-scramble-drama-tag">Manipulation</div>
+          </div>
+          <div class="gfo-scramble-drama-body">
+            <strong>Alejandro</strong> nudges <strong>Duncan</strong> toward the bicycle. "Take it — fastest thing here. I'll take whatever's left." Duncan grabs it confidently. Alejandro casually picks up the skateboard — the <em>actual</em> fastest option. <span class="gfo-neg">"A small price to pay for his loyalty."</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+            <div class="gfo-consequence bond-change">Alejandro → Duncan Bond +1</div>
+            <div class="gfo-consequence pop-change">Alejandro: deception stored</div>
+          </div>
+        </div>
+
+        <!-- Grab 1: Alejandro → Skateboard -->
+        <div class="gfo-grab-card">
+          <div class="gfo-grab-order">1</div>
+          <div class="gfo-grab-info">
+            <div class="gfo-grab-player">Alejandro</div>
+            <div class="gfo-grab-action">Arrives first. Casually picks up the skateboard like he just happened to find it.</div>
+          </div>
+          <div class="gfo-grab-vehicle-result">
+            <div class="gfo-grab-vehicle-icon">
+              <svg viewBox="0 0 32 32"><rect x="6" y="14" width="20" height="4" rx="2"/><circle cx="10" cy="22" r="3"/><circle cx="22" cy="22" r="3"/></svg>
+            </div>
+            <div class="gfo-grab-vehicle-label">Skateboard</div>
+            <div class="gfo-scramble-tier t1">Fast</div>
+          </div>
+        </div>
+
+        <!-- Grab 2: Duncan → Bicycle (tricked) -->
+        <div class="gfo-grab-card has-drama">
+          <div class="gfo-grab-order">2</div>
+          <div class="gfo-grab-info">
+            <div class="gfo-grab-player">Duncan</div>
+            <div class="gfo-grab-action">Grabs the bicycle thinking he's got the edge. <strong>"Sucker."</strong> He doesn't realize he's been played.</div>
+          </div>
+          <div class="gfo-grab-vehicle-result">
+            <div class="gfo-grab-vehicle-icon">
+              <svg viewBox="0 0 32 32"><circle cx="9" cy="22" r="6"/><circle cx="23" cy="22" r="6"/><path d="M9,22 L16,10 L23,22"/><line x1="12" y1="10" x2="20" y2="10"/></svg>
+            </div>
+            <div class="gfo-grab-vehicle-label">Bicycle</div>
+            <div class="gfo-scramble-tier t1">Fast</div>
+          </div>
+        </div>
+
+        <!-- Grab 3: Blaineley → Rickshaw -->
+        <div class="gfo-grab-card">
+          <div class="gfo-grab-order">3</div>
+          <div class="gfo-grab-info">
+            <div class="gfo-grab-player">Blaineley</div>
+            <div class="gfo-grab-action">Gets to the rickshaw first, yelling for her "alliance buddy" to help pull. Catches herself. <em>"...if I still had one."</em></div>
+          </div>
+          <div class="gfo-grab-vehicle-result">
+            <div class="gfo-grab-vehicle-icon">
+              <svg viewBox="0 0 32 32"><rect x="10" y="8" width="14" height="12" rx="2"/><circle cx="17" cy="26" r="5"/><line x1="10" y1="14" x2="4" y2="20"/><line x1="4" y1="20" x2="4" y2="14"/></svg>
+            </div>
+            <div class="gfo-grab-vehicle-label">Rickshaw</div>
+            <div class="gfo-scramble-tier t2">Medium</div>
+          </div>
+        </div>
+
+        <!-- Spite grab drama -->
+        <div class="gfo-scramble-drama">
+          <div class="gfo-scramble-drama-header">
+            <div class="gfo-card-player-ring" style="border-color:var(--gfo-cinnabar);">Co</div>
+            <div class="gfo-scramble-drama-tag">Shove</div>
+          </div>
+          <div class="gfo-scramble-drama-body">
+            <strong>Courtney</strong> barrels toward the tricycle, shoulder-checking <strong>Heather</strong> out of the way. "Move it or lose it!" Courtney's tricycle wheel rolls over Heather's foot for good measure.
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+            <div class="gfo-consequence bond-change">Courtney → Heather Bond -2</div>
+            <div class="gfo-consequence pop-change">Courtney Pop -1</div>
+          </div>
+        </div>
+
+        <!-- Grab 4: Courtney → Tricycle -->
+        <div class="gfo-grab-card has-drama">
+          <div class="gfo-grab-order">4</div>
+          <div class="gfo-grab-info">
+            <div class="gfo-grab-player">Courtney</div>
+            <div class="gfo-grab-action">Snatches the tricycle after shoving Heather aside. Pedals away without looking back.</div>
+          </div>
+          <div class="gfo-grab-vehicle-result">
+            <div class="gfo-grab-vehicle-icon">
+              <svg viewBox="0 0 32 32"><circle cx="16" cy="10" r="5"/><circle cx="8" cy="24" r="5"/><circle cx="24" cy="24" r="5"/><line x1="16" y1="15" x2="8" y2="24"/><line x1="16" y1="15" x2="24" y2="24"/></svg>
+            </div>
+            <div class="gfo-grab-vehicle-label">Tricycle</div>
+            <div class="gfo-scramble-tier t2">Medium</div>
+          </div>
+        </div>
+
+        <!-- Grab 5: Cody → Donkey (with Sierra help) -->
+        <div class="gfo-grab-card has-drama">
+          <div class="gfo-grab-order">5</div>
+          <div class="gfo-grab-info">
+            <div class="gfo-grab-player">Cody</div>
+            <div class="gfo-grab-action">Struggles to climb onto the donkey. <strong>Sierra</strong> bounces over on her pogo stick and boosts him up. The donkey doesn't look thrilled.</div>
+          </div>
+          <div class="gfo-grab-vehicle-result">
+            <div class="gfo-grab-vehicle-icon">
+              <svg viewBox="0 0 32 32"><ellipse cx="16" cy="16" rx="8" ry="6"/><line x1="10" y1="22" x2="9" y2="28"/><line x1="14" y1="22" x2="13" y2="28"/><line x1="18" y1="22" x2="19" y2="28"/><line x1="22" y1="22" x2="23" y2="28"/><path d="M8,12 L5,6"/><path d="M10,12 L8,6"/><circle cx="24" cy="14" r="1.5"/></svg>
+            </div>
+            <div class="gfo-grab-vehicle-label">Donkey</div>
+            <div class="gfo-scramble-tier t3">Slow</div>
+          </div>
+        </div>
+
+        <!-- Grab 6: Sierra → Pogo Stick -->
+        <div class="gfo-grab-card">
+          <div class="gfo-grab-order">6</div>
+          <div class="gfo-grab-info">
+            <div class="gfo-grab-player">Sierra</div>
+            <div class="gfo-grab-action">Already on the pogo stick. Has been bouncing since the gong. Nobody knows when she grabbed it.</div>
+          </div>
+          <div class="gfo-grab-vehicle-result">
+            <div class="gfo-grab-vehicle-icon">
+              <svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="24"/><line x1="12" y1="12" x2="20" y2="12"/><circle cx="16" cy="27" r="3"/><line x1="13" y1="8" x2="19" y2="8"/></svg>
+            </div>
+            <div class="gfo-grab-vehicle-label">Pogo Stick</div>
+            <div class="gfo-scramble-tier t3">Slow</div>
+          </div>
+        </div>
+
+        <!-- Grab 7: Heather → Sandals (last pick, humiliation) -->
+        <div class="gfo-grab-card">
+          <div class="gfo-grab-order">7</div>
+          <div class="gfo-grab-info">
+            <div class="gfo-grab-player">Heather</div>
+            <div class="gfo-grab-action">Arrives last, limping from Courtney's wheel. Only the <span class="gfo-neg">wooden sandals</span> remain. Blaineley finds this hilarious.</div>
+          </div>
+          <div class="gfo-grab-vehicle-result">
+            <div class="gfo-grab-vehicle-icon">
+              <svg viewBox="0 0 32 32"><path d="M6,12 Q6,8 10,8 Q14,8 14,12 L14,24 Q14,28 10,28 Q6,28 6,24 Z"/><path d="M18,12 Q18,8 22,8 Q26,8 26,12 L26,24 Q26,28 22,28 Q18,28 18,24 Z"/><line x1="10" y1="10" x2="10" y2="16"/><line x1="22" y1="10" x2="22" y2="16"/></svg>
+            </div>
+            <div class="gfo-grab-vehicle-label">Sandals</div>
+            <div class="gfo-scramble-tier t4">Terrible</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar: Vehicle Assignment Summary -->
+      <div class="gfo-sidebar">
+        <div class="gfo-sidebar-title">Vehicle Assignments</div>
+
+        <div class="gfo-lb-entry">
+          <div class="gfo-lb-pos first">1</div>
+          <div class="gfo-lb-avatar">A</div>
+          <div class="gfo-lb-name">Alejandro <span class="gfo-lb-vehicle-tag tier1">Skateboard</span></div>
+          <div class="gfo-lb-time" style="font-size:9px;color:var(--gfo-gold);">T1</div>
+        </div>
+        <div class="gfo-lb-entry">
+          <div class="gfo-lb-pos">2</div>
+          <div class="gfo-lb-avatar">D</div>
+          <div class="gfo-lb-name">Duncan <span class="gfo-lb-vehicle-tag tier1">Bicycle</span></div>
+          <div class="gfo-lb-time" style="font-size:9px;color:var(--gfo-gold);">T1</div>
+        </div>
+        <div class="gfo-lb-entry">
+          <div class="gfo-lb-pos">3</div>
+          <div class="gfo-lb-avatar">B</div>
+          <div class="gfo-lb-name">Blaineley <span class="gfo-lb-vehicle-tag">Rickshaw</span></div>
+          <div class="gfo-lb-time" style="font-size:9px;">T2</div>
+        </div>
+        <div class="gfo-lb-entry">
+          <div class="gfo-lb-pos">4</div>
+          <div class="gfo-lb-avatar">Co</div>
+          <div class="gfo-lb-name">Courtney <span class="gfo-lb-vehicle-tag">Tricycle</span></div>
+          <div class="gfo-lb-time" style="font-size:9px;">T2</div>
+        </div>
+        <div class="gfo-lb-entry">
+          <div class="gfo-lb-pos">5</div>
+          <div class="gfo-lb-avatar">C</div>
+          <div class="gfo-lb-name">Cody <span class="gfo-lb-vehicle-tag tier3">Donkey</span></div>
+          <div class="gfo-lb-time" style="font-size:9px;color:var(--gfo-amber);">T3</div>
+        </div>
+        <div class="gfo-lb-entry">
+          <div class="gfo-lb-pos">6</div>
+          <div class="gfo-lb-avatar">S</div>
+          <div class="gfo-lb-name">Sierra <span class="gfo-lb-vehicle-tag tier3">Pogo</span></div>
+          <div class="gfo-lb-time" style="font-size:9px;color:var(--gfo-amber);">T3</div>
+        </div>
+        <div class="gfo-lb-entry danger">
+          <div class="gfo-lb-pos last">7</div>
+          <div class="gfo-lb-avatar">H</div>
+          <div class="gfo-lb-name">Heather <span class="gfo-lb-vehicle-tag tier3">Sandals</span></div>
+          <div class="gfo-lb-time" style="font-size:9px;color:var(--gfo-cinnabar);">T4</div>
+        </div>
+
+        <!-- Drama summary -->
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(240,230,211,0.06);">
+          <div style="font-family:var(--gfo-font-display);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(240,230,211,0.25);margin-bottom:8px;">Scramble Drama</div>
+          <div style="font-family:var(--gfo-font-body);font-size:12px;color:rgba(240,230,211,0.35);line-height:1.8;">
+            <div style="color:var(--gfo-amber);">&#9670; Alejandro tricked Duncan</div>
+            <div style="color:var(--gfo-cinnabar);">&#9670; Courtney shoved Heather</div>
+            <div style="color:var(--gfo-jade-light);">&#9670; Sierra helped Cody mount</div>
+          </div>
+        </div>
+
+        <!-- Tier legend -->
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(240,230,211,0.06);">
+          <div style="font-family:var(--gfo-font-display);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(240,230,211,0.25);margin-bottom:8px;">Vehicle Tiers</div>
+          <div style="display:flex;flex-direction:column;gap:4px;font-family:var(--gfo-font-body);font-size:11px;">
+            <div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--gfo-gold);"></div><span style="color:var(--gfo-gold);">T1 — Fast</span><span style="color:rgba(240,230,211,0.25);margin-left:auto;">×1.3</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:rgba(240,230,211,0.3);"></div><span style="color:rgba(240,230,211,0.4);">T2 — Medium</span><span style="color:rgba(240,230,211,0.25);margin-left:auto;">×1.0</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--gfo-amber);"></div><span style="color:var(--gfo-amber);">T3 — Slow</span><span style="color:rgba(240,230,211,0.25);margin-left:auto;">×0.75</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--gfo-cinnabar);"></div><span style="color:var(--gfo-cinnabar);">T4 — Terrible</span><span style="color:rgba(240,230,211,0.25);margin-left:auto;">×0.55</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SCREEN 2 — PHASE 1: GAUNTLET RACE
+       ═══════════════════════════════════════════════════ -->
+  <div class="gfo-race-screen">
+
+    <!-- ── AMBIENT LAYER: Race ── -->
+    <!-- Bird silhouettes crossing the sky -->
+    <div class="gfo-bird" style="top:8%;animation-duration:18s;">
+      <svg viewBox="0 0 20 12"><path d="M0,6 Q5,0 10,6 Q15,0 20,6"/></svg>
+    </div>
+    <div class="gfo-bird" style="top:12%;animation-duration:25s;animation-delay:-8s;">
+      <svg viewBox="0 0 20 12"><path d="M0,6 Q5,0 10,6 Q15,0 20,6"/></svg>
+    </div>
+    <div class="gfo-bird" style="top:5%;animation-duration:22s;animation-delay:-15s;">
+      <svg viewBox="0 0 20 12" style="width:14px;height:8px;"><path d="M0,6 Q5,0 10,6 Q15,0 20,6"/></svg>
+    </div>
+
+    <!-- Fog bands drifting across -->
+    <div class="gfo-fog-band" style="top:35%;width:120%;animation-duration:30s;opacity:0.5;"></div>
+    <div class="gfo-fog-band" style="top:55%;width:150%;animation-duration:40s;animation-delay:-15s;opacity:0.3;"></div>
+
+    <!-- Ink drips along edges -->
+    <div class="gfo-ink-drip" style="top:5%;left:3%;"><div class="gfo-ink-drip-drop" style="animation-duration:5s;"></div></div>
+    <div class="gfo-ink-drip" style="top:15%;right:5%;"><div class="gfo-ink-drip-drop" style="animation-duration:7s;animation-delay:-2s;"></div></div>
+    <div class="gfo-ink-drip" style="top:45%;left:8%;"><div class="gfo-ink-drip-drop" style="animation-duration:6s;animation-delay:-4s;"></div></div>
+
+    <!-- Calligraphy background fragments -->
+    <div class="gfo-calli-fragment" style="top:10%;right:5%;font-size:36px;transform:rotate(-12deg);">GAUNTLET</div>
+    <div class="gfo-calli-fragment" style="bottom:15%;left:3%;font-size:24px;transform:rotate(6deg);">RACE</div>
+
+    <!-- Brush stroke flourish -->
+    <div class="gfo-brush-flourish" style="top:0;left:0;width:200px;height:40px;opacity:0.08;">
+      <svg viewBox="0 0 200 40"><path d="M0,30 Q30,5 80,20 T160,15 T200,25" stroke="rgba(240,230,211,0.3)" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+    </div>
+    <div class="gfo-brush-flourish" style="bottom:0;right:0;width:180px;height:35px;opacity:0.06;transform:scaleX(-1);">
+      <svg viewBox="0 0 180 35"><path d="M0,25 Q40,5 90,18 T180,10" stroke="rgba(240,230,211,0.25)" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+    </div>
+
+    <!-- Fortress wall map -->
+    <div class="gfo-wall-map">
+      <div class="gfo-wall-bg-mountains">
+        <div class="gfo-wall-bg-far"></div>
+      </div>
+
+      <!-- Wall path SVG -->
+      <div class="gfo-wall-path">
+        <svg class="gfo-wall-svg" viewBox="0 0 1000 80" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="wallPathGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="rgba(143,167,196,0.3)"/>
+              <stop offset="50%" stop-color="rgba(212,160,23,0.2)"/>
+              <stop offset="100%" stop-color="rgba(194,54,22,0.3)"/>
+            </linearGradient>
+          </defs>
+          <!-- Wall surface -->
+          <path d="M0,50 L100,48 C150,46 180,40 200,42 L300,38 C350,35 380,30 400,32 L500,28 C550,25 580,22 600,24 L700,20 C750,18 780,15 800,16 L900,14 L1000,12"
+                stroke="url(#wallPathGrad)" stroke-width="3" fill="none"/>
+          <path d="M0,50 L100,48 C150,46 180,40 200,42 L300,38 C350,35 380,30 400,32 L500,28 C550,25 580,22 600,24 L700,20 C750,18 780,15 800,16 L900,14 L1000,12 L1000,80 L0,80 Z"
+                fill="rgba(240,230,211,0.02)"/>
+          <!-- Battlements -->
+          <g stroke="rgba(240,230,211,0.1)" stroke-width="1" fill="none">
+            <rect x="50" y="46" width="5" height="4"/>
+            <rect x="65" y="45" width="5" height="4"/>
+            <rect x="150" y="41" width="5" height="4"/>
+            <rect x="165" y="40" width="5" height="4"/>
+            <rect x="250" y="36" width="5" height="4"/>
+            <rect x="350" y="33" width="5" height="4"/>
+            <rect x="450" y="27" width="5" height="4"/>
+            <rect x="550" y="23" width="5" height="4"/>
+            <rect x="650" y="19" width="5" height="4"/>
+            <rect x="750" y="16" width="5" height="4"/>
+            <rect x="850" y="13" width="5" height="4"/>
+            <rect x="950" y="11" width="5" height="4"/>
+          </g>
+          <!-- Watchtower markers at segment boundaries -->
+          <g fill="rgba(240,230,211,0.12)">
+            <rect x="198" y="20" width="10" height="22" rx="1"/>
+            <rect x="200" y="16" width="6" height="6" rx="1"/>
+            <rect x="398" y="10" width="10" height="22" rx="1"/>
+            <rect x="400" y="6" width="6" height="6" rx="1"/>
+            <rect x="598" y="2" width="10" height="22" rx="1"/>
+            <rect x="600" y="-2" width="6" height="6" rx="1"/>
+            <rect x="798" y="-4" width="10" height="20" rx="1"/>
+            <rect x="800" y="-8" width="6" height="6" rx="1"/>
+          </g>
+          <!-- Segment labels -->
+          <text x="100" y="70" font-family="Cinzel" font-size="8" fill="rgba(240,230,211,0.15)" text-anchor="middle">SEG 1</text>
+          <text x="300" y="70" font-family="Cinzel" font-size="8" fill="rgba(240,230,211,0.15)" text-anchor="middle">SEG 2</text>
+          <text x="500" y="70" font-family="Cinzel" font-size="8" fill="rgba(240,230,211,0.15)" text-anchor="middle">SEG 3</text>
+          <text x="700" y="70" font-family="Cinzel" font-size="8" fill="rgba(240,230,211,0.15)" text-anchor="middle">SEG 4</text>
+          <text x="900" y="70" font-family="Cinzel" font-size="8" fill="rgba(240,230,211,0.15)" text-anchor="middle">SEG 5</text>
+          <!-- Finish flag -->
+          <g transform="translate(980,6)">
+            <line x1="0" y1="0" x2="0" y2="16" stroke="rgba(212,160,23,0.4)" stroke-width="1.5"/>
+            <path d="M0,0 L12,4 L0,8 Z" fill="rgba(212,160,23,0.3)"/>
+          </g>
+          <!-- Start gate -->
+          <g transform="translate(10,44)">
+            <line x1="0" y1="0" x2="0" y2="16" stroke="rgba(240,230,211,0.2)" stroke-width="1.5"/>
+            <text x="4" y="8" font-family="Cinzel" font-size="7" fill="rgba(240,230,211,0.2)">START</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Player markers (sample positions mid-race) -->
+      <div class="gfo-racer-marker" style="left:45%;bottom:95px;">
+        <div class="gfo-racer-avatar">A</div>
+        <div class="gfo-racer-name">Alejandro</div>
+      </div>
+      <div class="gfo-racer-marker" style="left:42%;bottom:115px;">
+        <div class="gfo-racer-avatar">D</div>
+        <div class="gfo-racer-name">Duncan</div>
+      </div>
+      <div class="gfo-racer-marker" style="left:35%;bottom:95px;">
+        <div class="gfo-racer-avatar">H</div>
+        <div class="gfo-racer-name">Heather</div>
+      </div>
+      <div class="gfo-racer-marker" style="left:30%;bottom:115px;">
+        <div class="gfo-racer-avatar">S</div>
+        <div class="gfo-racer-name">Sierra</div>
+      </div>
+      <div class="gfo-racer-marker" style="left:28%;bottom:95px;">
+        <div class="gfo-racer-avatar">C</div>
+        <div class="gfo-racer-name">Cody</div>
+      </div>
+      <div class="gfo-racer-marker" style="left:22%;bottom:115px;">
+        <div class="gfo-racer-avatar">B</div>
+        <div class="gfo-racer-name">Blaineley</div>
+      </div>
+      <div class="gfo-racer-marker last-place" style="left:15%;bottom:95px;">
+        <div class="gfo-racer-avatar">Co</div>
+        <div class="gfo-racer-name">Courtney</div>
+      </div>
+
+      <!-- Torch glows on watchtowers -->
+      <div class="gfo-torch-glow" style="left:19.5%;bottom:82px;">
+        <div class="gfo-torch-halo"></div>
+        <div class="gfo-torch-flame"></div>
+      </div>
+      <div class="gfo-torch-glow" style="left:39.5%;bottom:88px;">
+        <div class="gfo-torch-halo"></div>
+        <div class="gfo-torch-flame" style="animation-delay:-0.3s;"></div>
+      </div>
+      <div class="gfo-torch-glow" style="left:59.5%;bottom:94px;">
+        <div class="gfo-torch-halo"></div>
+        <div class="gfo-torch-flame" style="animation-delay:-0.5s;"></div>
+      </div>
+      <div class="gfo-torch-glow" style="left:79.5%;bottom:98px;">
+        <div class="gfo-torch-halo"></div>
+        <div class="gfo-torch-flame" style="animation-delay:-0.7s;"></div>
+      </div>
+
+      <!-- Ink splatters on map (chaos accumulation) -->
+      <svg class="gfo-map-splatter visible" style="left:25%;top:30%;width:50px;height:40px;" viewBox="0 0 50 40"><circle cx="25" cy="20" r="15" fill="rgba(194,54,22,0.15)"/><circle cx="10" cy="10" r="6" fill="rgba(194,54,22,0.1)"/><circle cx="40" cy="30" r="5" fill="rgba(194,54,22,0.08)"/></svg>
+      <svg class="gfo-map-splatter visible" style="left:55%;top:20%;width:35px;height:35px;" viewBox="0 0 35 35"><circle cx="18" cy="18" r="12" fill="rgba(26,26,26,0.12)"/><circle cx="8" cy="8" r="4" fill="rgba(26,26,26,0.08)"/></svg>
+      <svg class="gfo-map-splatter visible" style="left:72%;top:40%;width:30px;height:25px;" viewBox="0 0 30 25"><circle cx="15" cy="12" r="9" fill="rgba(194,54,22,0.1)"/><circle cx="6" cy="6" r="4" fill="rgba(194,54,22,0.06)"/></svg>
+    </div>
+
+    <!-- Cards + Sidebar -->
+    <div class="gfo-content-area">
+      <div class="gfo-card-feed">
+
+        <!-- Segment 3 divider -->
+        <div class="gfo-segment-divider">
+          <div class="gfo-segment-label">Segment 3 of 5</div>
+          <div class="gfo-segment-flavor">The wall narrows. The air thickens with dust.</div>
+        </div>
+
+        <!-- Race event card — trap -->
+        <div class="gfo-card trap-event paint-in">
+          <div class="gfo-card-stamp">
+            <svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="10" fill="none" stroke="rgba(194,54,22,0.4)" stroke-width="2"/><path d="M14,6 L14,14 M10,10 L18,10 M8,18 L14,14 L20,18" stroke="rgba(194,54,22,0.4)" stroke-width="1.5" fill="none"/></svg>
+          </div>
+          <div class="gfo-card-header">
+            <div class="gfo-card-player-ring">D</div>
+            <div>
+              <div class="gfo-card-title">Booby Trap!</div>
+              <div class="gfo-card-subtitle">Trap Trigger</div>
+            </div>
+          </div>
+          <div class="gfo-card-body">
+            <strong>Duncan</strong> hits a hidden pressure plate. The wall section erupts in a cloud of debris and colored smoke. His bicycle goes flying — and he barely keeps his footing. <span class="gfo-neg">Heather</span>, trailing just behind, catches the edge of the blast radius.
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <div class="gfo-consequence time-loss">Duncan +3.2s</div>
+            <div class="gfo-consequence time-loss">Heather +1.4s (chain)</div>
+            <div class="gfo-consequence pop-change">Pop +1 (dramatic)</div>
+          </div>
+        </div>
+
+        <!-- Announcer chatter -->
+        <div class="gfo-announcer host">"Oh, that's gonna leave a mark! Duncan is DOWN but not out!"</div>
+
+        <!-- Social event card — rivalry sprint -->
+        <div class="gfo-card social-event paint-in" style="animation-delay:0.2s;">
+          <div class="gfo-card-stamp">
+            <svg viewBox="0 0 28 28"><path d="M6,22 L14,6 L22,22" fill="none" stroke="rgba(45,106,79,0.4)" stroke-width="2"/><circle cx="14" cy="14" r="3" fill="rgba(45,106,79,0.3)"/></svg>
+          </div>
+          <div class="gfo-card-header">
+            <div class="gfo-card-player-ring">A</div>
+            <div>
+              <div class="gfo-card-title">Rivalry Sprint</div>
+              <div class="gfo-card-subtitle">Social Event</div>
+            </div>
+          </div>
+          <div class="gfo-card-body">
+            <strong>Alejandro</strong> and <strong>Duncan</strong> lock eyes as they barrel down the same stretch. Neither willing to give an inch. They push harder, burning energy for a burst of speed — Alejandro edges ahead by half a stride.
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <div class="gfo-consequence time-gain">Alejandro -2.1s</div>
+            <div class="gfo-consequence time-loss">Duncan +1.0s</div>
+            <div class="gfo-consequence bond-change">Bond -1</div>
+          </div>
+        </div>
+
+        <!-- Announcer chatter -->
+        <div class="gfo-announcer crowd">The crowd gasps as Alejandro pulls ahead on the final stretch of Segment 3.</div>
+
+        <!-- Race event — vehicle breakdown -->
+        <div class="gfo-card race-event paint-in" style="animation-delay:0.4s;">
+          <div class="gfo-card-header">
+            <div class="gfo-card-player-ring">C</div>
+            <div>
+              <div class="gfo-card-title">Stubborn Donkey</div>
+              <div class="gfo-card-subtitle">Vehicle Breakdown</div>
+            </div>
+          </div>
+          <div class="gfo-card-body">
+            <strong>Cody</strong>'s donkey plants its hooves and refuses to move. He pulls, begs, and bargains — nothing works. <strong>Sierra</strong> bounces past on her pogo stick, stops, and somehow whispers the donkey into cooperation.
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <div class="gfo-consequence time-loss">Cody +2.8s</div>
+            <div class="gfo-consequence bond-change">Sierra → Cody Bond +2</div>
+          </div>
+        </div>
+
+        <!-- Announcer chatter -->
+        <div class="gfo-announcer host">"That donkey has more personality than half the cast. And better hair."</div>
+
+        <!-- Atmospheric flavor -->
+        <div class="gfo-segment-divider">
+          <div class="gfo-segment-label">Segment 4 of 5</div>
+          <div class="gfo-segment-flavor">Smoke rises from the last trap. The finish line glimmers in the distance.</div>
+        </div>
+
+        <div class="gfo-announcer crowd">Wind howls through the watchtower gaps. Someone screams. It might be Courtney.</div>
+
+        <!-- Dirty move card -->
+        <div class="gfo-card trap-event paint-in" style="animation-delay:0.1s;">
+          <div class="gfo-card-header">
+            <div class="gfo-card-player-ring">H</div>
+            <div>
+              <div class="gfo-card-title">Dirty Move</div>
+              <div class="gfo-card-subtitle">Sabotage</div>
+            </div>
+          </div>
+          <div class="gfo-card-body">
+            <strong>Heather</strong> kicks loose stones into <strong>Blaineley</strong>'s path. Blaineley's rickshaw wheel catches, nearly toppling. Heather doesn't look back.
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <div class="gfo-consequence time-loss">Blaineley +2.0s</div>
+            <div class="gfo-consequence pop-change">Heather Pop -1</div>
+            <div class="gfo-consequence bond-change">Bond -2</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar: Race Leaderboard -->
+      <div class="gfo-sidebar">
+        <div class="gfo-sidebar-title">Race Standings</div>
+
+        <div class="gfo-lb-entry">
+          <div class="gfo-lb-pos first">1</div>
+          <div class="gfo-lb-avatar">A</div>
+          <div class="gfo-lb-name">Alejandro <span class="gfo-lb-vehicle-tag tier1">Skateboard</span></div>
+          <div class="gfo-lb-time">18.4s</div>
+        </div>
+        <div class="gfo-lb-entry">
+          <div class="gfo-lb-pos">2</div>
+          <div class="gfo-lb-avatar">D</div>
+          <div class="gfo-lb-name">Duncan <span class="gfo-lb-vehicle-tag tier1">Bicycle</span></div>
+          <div class="gfo-lb-time">20.1s <span class="gfo-lb-delta down">▼</span></div>
+        </div>
+        <div class="gfo-lb-entry">
+          <div class="gfo-lb-pos">3</div>
+          <div class="gfo-lb-avatar">H</div>
+          <div class="gfo-lb-name">Heather <span class="gfo-lb-vehicle-tag">Tricycle</span></div>
+          <div class="gfo-lb-time">22.6s</div>
+        </div>
+        <div class="gfo-lb-entry">
+          <div class="gfo-lb-pos">4</div>
+          <div class="gfo-lb-avatar">S</div>
+          <div class="gfo-lb-name">Sierra <span class="gfo-lb-vehicle-tag">Pogo</span></div>
+          <div class="gfo-lb-time">24.3s <span class="gfo-lb-delta up">▲</span></div>
+        </div>
+        <div class="gfo-lb-entry">
+          <div class="gfo-lb-pos">5</div>
+          <div class="gfo-lb-avatar">B</div>
+          <div class="gfo-lb-name">Blaineley <span class="gfo-lb-vehicle-tag">Rickshaw</span></div>
+          <div class="gfo-lb-time">26.8s <span class="gfo-lb-delta down">▼</span></div>
+        </div>
+        <div class="gfo-lb-entry">
+          <div class="gfo-lb-pos">6</div>
+          <div class="gfo-lb-avatar">C</div>
+          <div class="gfo-lb-name">Cody <span class="gfo-lb-vehicle-tag tier3">Donkey</span></div>
+          <div class="gfo-lb-time">28.1s</div>
+        </div>
+        <div class="gfo-lb-entry danger">
+          <div class="gfo-lb-pos last">7</div>
+          <div class="gfo-lb-avatar">Co</div>
+          <div class="gfo-lb-name">Courtney <span class="gfo-lb-vehicle-tag tier3">Sandals</span></div>
+          <div class="gfo-lb-time">32.5s</div>
+        </div>
+
+        <!-- Segment progress -->
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(240,230,211,0.06);">
+          <div style="font-family:var(--gfo-font-display);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(240,230,211,0.25);margin-bottom:8px;">Segment Progress</div>
+          <div style="display:flex;gap:4px;">
+            <div style="flex:1;height:6px;border-radius:3px;background:var(--gfo-jade);"></div>
+            <div style="flex:1;height:6px;border-radius:3px;background:var(--gfo-jade);"></div>
+            <div style="flex:1;height:6px;border-radius:3px;background:var(--gfo-gold);"></div>
+            <div style="flex:1;height:6px;border-radius:3px;background:rgba(240,230,211,0.08);"></div>
+            <div style="flex:1;height:6px;border-radius:3px;background:rgba(240,230,211,0.08);"></div>
+          </div>
+          <div style="font-family:var(--gfo-font-body);font-size:11px;color:rgba(240,230,211,0.3);margin-top:6px;text-align:center;">3 of 5 segments complete</div>
+        </div>
+
+        <!-- Trap counter -->
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(240,230,211,0.06);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-family:var(--gfo-font-display);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(240,230,211,0.25);">Traps Triggered</div>
+            <div style="font-family:var(--gfo-font-display);font-size:16px;font-weight:700;color:var(--gfo-cinnabar);">4</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       TRANSITION BEAT
+       ═══════════════════════════════════════════════════ -->
+  <div class="gfo-transition">
+    <div class="gfo-transition-ink"></div>
+    <!-- Ink wash wipe animation -->
+    <div class="gfo-ink-wipe">
+      <div class="gfo-ink-wipe-band"></div>
+      <div class="gfo-ink-wipe-band"></div>
+      <div class="gfo-ink-wipe-band"></div>
+    </div>
+    <!-- Brush stroke flourishes framing the quote -->
+    <div class="gfo-brush-flourish" style="top:20%;left:10%;width:150px;height:20px;opacity:0.1;">
+      <svg viewBox="0 0 150 20"><path d="M0,15 Q30,2 75,10 T150,5" stroke="rgba(212,160,23,0.3)" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    </div>
+    <div class="gfo-brush-flourish" style="bottom:20%;right:10%;width:150px;height:20px;opacity:0.1;transform:scaleX(-1);">
+      <svg viewBox="0 0 150 20"><path d="M0,15 Q30,2 75,10 T150,5" stroke="rgba(212,160,23,0.3)" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    </div>
+    <div class="gfo-transition-text">
+      <div class="gfo-transition-quote">"The race was never the challenge<span class="gfo-host-ellipsis">...</span><br><em>the feast</em> is."</div>
+      <div class="gfo-transition-sub">Phase 2 — The Eating Gauntlet</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SCREEN 3 — PHASE 2: EATING GAUNTLET
+       ═══════════════════════════════════════════════════ -->
+  <div class="gfo-eating-screen">
+
+    <!-- Lanterns -->
+    <div class="gfo-lantern-layer">
+      <div class="gfo-lantern" style="left:8%;">
+        <div class="gfo-lantern-string"></div>
+        <div class="gfo-lantern-body amber"><div class="gfo-lantern-glow"></div></div>
+      </div>
+      <div class="gfo-lantern" style="left:22%;">
+        <div class="gfo-lantern-string"></div>
+        <div class="gfo-lantern-body red"><div class="gfo-lantern-glow"></div></div>
+      </div>
+      <div class="gfo-lantern" style="left:38%;">
+        <div class="gfo-lantern-string"></div>
+        <div class="gfo-lantern-body gold"><div class="gfo-lantern-glow"></div></div>
+      </div>
+      <div class="gfo-lantern" style="left:55%;">
+        <div class="gfo-lantern-string"></div>
+        <div class="gfo-lantern-body amber"><div class="gfo-lantern-glow"></div></div>
+      </div>
+      <div class="gfo-lantern" style="left:70%;">
+        <div class="gfo-lantern-string"></div>
+        <div class="gfo-lantern-body red"><div class="gfo-lantern-glow"></div></div>
+      </div>
+      <div class="gfo-lantern" style="left:85%;">
+        <div class="gfo-lantern-string"></div>
+        <div class="gfo-lantern-body gold"><div class="gfo-lantern-glow"></div></div>
+      </div>
+    </div>
+
+    <!-- Steam (doubled for density) -->
+    <div class="gfo-steam-layer">
+      <div class="gfo-steam-particle"></div>
+      <div class="gfo-steam-particle"></div>
+      <div class="gfo-steam-particle"></div>
+      <div class="gfo-steam-particle"></div>
+      <div class="gfo-steam-particle"></div>
+      <div class="gfo-steam-particle" style="left:20%;animation-duration:7.5s;animation-delay:-1.5s;"></div>
+      <div class="gfo-steam-particle" style="left:40%;animation-duration:6.5s;animation-delay:-3.5s;"></div>
+      <div class="gfo-steam-particle" style="left:60%;animation-duration:8.5s;animation-delay:-5s;"></div>
+      <div class="gfo-steam-particle" style="left:75%;animation-duration:5.5s;animation-delay:-2.5s;"></div>
+    </div>
+
+    <!-- Hanging scroll decorations -->
+    <div class="gfo-hanging-scroll" style="left:4%;top:60px;">
+      <div class="gfo-hanging-scroll-string"></div>
+      <div class="gfo-hanging-scroll-body"><div class="gfo-hanging-scroll-char"></div></div>
+    </div>
+    <div class="gfo-hanging-scroll" style="right:4%;top:50px;">
+      <div class="gfo-hanging-scroll-string"></div>
+      <div class="gfo-hanging-scroll-body" style="animation-delay:-2s;"><div class="gfo-hanging-scroll-char"></div></div>
+    </div>
+    <div class="gfo-hanging-scroll" style="left:12%;top:45px;">
+      <div class="gfo-hanging-scroll-string"></div>
+      <div class="gfo-hanging-scroll-body" style="animation-delay:-1s;height:40px;"><div class="gfo-hanging-scroll-char"></div></div>
+    </div>
+    <div class="gfo-hanging-scroll" style="right:12%;top:55px;">
+      <div class="gfo-hanging-scroll-string"></div>
+      <div class="gfo-hanging-scroll-body" style="animation-delay:-3s;height:45px;"><div class="gfo-hanging-scroll-char"></div></div>
+    </div>
+
+    <!-- Chopstick motifs -->
+    <div class="gfo-chopsticks" style="left:2%;top:200px;opacity:0.06;transform:rotate(15deg);">
+      <svg viewBox="0 0 30 60"><line x1="8" y1="0" x2="12" y2="58" stroke="rgba(240,230,211,0.4)" stroke-width="2" stroke-linecap="round"/><line x1="22" y1="0" x2="18" y2="58" stroke="rgba(240,230,211,0.4)" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+    <div class="gfo-chopsticks" style="right:2%;bottom:300px;opacity:0.05;transform:rotate(-20deg);">
+      <svg viewBox="0 0 30 60"><line x1="8" y1="0" x2="12" y2="58" stroke="rgba(240,230,211,0.4)" stroke-width="2" stroke-linecap="round"/><line x1="22" y1="0" x2="18" y2="58" stroke="rgba(240,230,211,0.4)" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+
+    <!-- Grease drips (chaos accumulation in eating phase) -->
+    <svg class="gfo-grease-drip visible" style="right:6%;top:30%;width:15px;height:60px;" viewBox="0 0 15 60"><path d="M7,0 Q8,15 7,30 Q6,40 8,50 Q7,55 8,60" stroke="rgba(120,80,30,0.2)" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="8" cy="58" r="3" fill="rgba(120,80,30,0.15)"/></svg>
+    <svg class="gfo-grease-drip visible" style="left:5%;top:45%;width:12px;height:50px;" viewBox="0 0 12 50"><path d="M6,0 Q7,12 6,25 Q5,35 7,45" stroke="rgba(120,80,30,0.15)" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="7" cy="48" r="2.5" fill="rgba(120,80,30,0.12)"/></svg>
+    <svg class="gfo-grease-drip visible" style="right:15%;top:60%;width:10px;height:45px;" viewBox="0 0 10 45"><path d="M5,0 Q6,10 5,20 Q4,30 6,40" stroke="rgba(120,80,30,0.18)" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="6" cy="43" r="2" fill="rgba(120,80,30,0.1)"/></svg>
+
+    <!-- Steam columns (from the table, intensifying) -->
+    <div class="gfo-steam-column" style="left:35%;">
+      <div class="gfo-steam-puff" style="animation-duration:4s;left:5px;"></div>
+      <div class="gfo-steam-puff" style="animation-duration:5s;animation-delay:-1.5s;left:15px;"></div>
+      <div class="gfo-steam-puff" style="animation-duration:3.5s;animation-delay:-3s;left:10px;"></div>
+    </div>
+    <div class="gfo-steam-column" style="left:55%;">
+      <div class="gfo-steam-puff" style="animation-duration:4.5s;animation-delay:-0.5s;left:8px;"></div>
+      <div class="gfo-steam-puff" style="animation-duration:3.8s;animation-delay:-2s;left:18px;"></div>
+    </div>
+
+    <!-- Ink drips (chaos from race bleeding in) -->
+    <div class="gfo-ink-drip" style="top:10%;right:3%;"><div class="gfo-ink-drip-drop" style="animation-duration:8s;"></div></div>
+    <div class="gfo-ink-drip" style="top:50%;left:2%;"><div class="gfo-ink-drip-drop" style="animation-duration:6s;animation-delay:-3s;"></div></div>
+
+    <!-- Brush stroke flourishes -->
+    <div class="gfo-brush-flourish" style="top:60px;right:0;width:160px;height:30px;opacity:0.06;">
+      <svg viewBox="0 0 160 30"><path d="M0,20 Q40,5 80,15 T160,8" stroke="rgba(232,149,46,0.3)" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+    </div>
+
+    <!-- Calligraphy background -->
+    <div class="gfo-calli-fragment" style="top:20%;left:1%;font-size:32px;transform:rotate(-10deg);color:rgba(232,149,46,0.02);">FEAST</div>
+    <div class="gfo-calli-fragment" style="bottom:20%;right:2%;font-size:26px;transform:rotate(4deg);color:rgba(194,54,22,0.02);">GAUNTLET</div>
+
+    <!-- Cards + Sidebar -->
+    <div class="gfo-content-area" style="padding-top:60px;">
+      <div class="gfo-card-feed">
+
+        <!-- Round divider -->
+        <div class="gfo-segment-divider">
+          <div class="gfo-segment-label">Round 3 of 5</div>
+          <div class="gfo-segment-flavor">The dishes grow darker. The air grows thicker with dread.</div>
+        </div>
+
+        <!-- Dish presentation -->
+        <div class="gfo-card eating-card">
+          <div class="gfo-dish-display">
+            <div class="gfo-dish-icon">
+              <svg viewBox="0 0 36 36">
+                <ellipse cx="18" cy="22" rx="14" ry="8" fill="none" stroke="rgba(232,149,46,0.5)" stroke-width="1.5"/>
+                <path d="M8,22 Q8,14 18,14 Q28,14 28,22" fill="none" stroke="rgba(232,149,46,0.3)" stroke-width="1"/>
+                <!-- Steam wisps -->
+                <path d="M12,12 Q13,8 12,4" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+                <path d="M18,10 Q19,6 18,2" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+                <path d="M24,12 Q25,8 24,4" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+              </svg>
+            </div>
+            <div>
+              <div class="gfo-dish-name">Live Tentacle Soup</div>
+              <div class="gfo-dish-desc">Still moving. Still angry.</div>
+            </div>
+            <div class="gfo-dish-difficulty">
+              <div class="gfo-dish-pip filled"></div>
+              <div class="gfo-dish-pip filled"></div>
+              <div class="gfo-dish-pip filled"></div>
+              <div class="gfo-dish-pip"></div>
+              <div class="gfo-dish-pip"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Eating event — psych-out -->
+        <div class="gfo-card social-event eating-card" style="animation-delay:0.2s;">
+          <div class="gfo-card-header">
+            <div class="gfo-card-player-ring">H</div>
+            <div>
+              <div class="gfo-card-title">Psych-Out</div>
+              <div class="gfo-card-subtitle">Social Event</div>
+            </div>
+          </div>
+          <div class="gfo-card-body">
+            <strong>Heather</strong> leans toward <strong>Cody</strong> and describes every squirming tentacle in excruciating detail. His face goes green. "Can you feel them <span class="gfo-neg">crawling down your throat</span>?"
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <div class="gfo-consequence time-loss">Cody Endurance -2</div>
+            <div class="gfo-consequence bond-change">Bond -1</div>
+          </div>
+        </div>
+
+        <div class="gfo-announcer host">"Heather's going full psychological warfare on that poor kid. I love it."</div>
+
+        <!-- Eating event — stomach of steel -->
+        <div class="gfo-card eating-card" style="animation-delay:0.3s;">
+          <div class="gfo-card-header">
+            <div class="gfo-card-player-ring">S</div>
+            <div>
+              <div class="gfo-card-title">Stomach of Steel</div>
+              <div class="gfo-card-subtitle">Eating Event</div>
+            </div>
+          </div>
+          <div class="gfo-card-body">
+            <strong>Sierra</strong> finishes her bowl in seconds, tentacles and all. She licks the spoon and grins at the remaining players. The table goes silent.
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <div class="gfo-consequence pop-change">Pop +1</div>
+            <div class="gfo-consequence time-loss">Weakest: Intimidate -1</div>
+          </div>
+        </div>
+
+        <div class="gfo-announcer crowd">Sierra finishes so fast the camera crew missed it. Someone check if she actually ate it.</div>
+
+        <!-- Elimination card — vomit out -->
+        <div class="gfo-card eliminated-card eating-card" style="animation-delay:0.4s;">
+          <div class="gfo-card-header">
+            <div class="gfo-card-player-ring" style="border-color:var(--gfo-cinnabar);">D</div>
+            <div>
+              <div class="gfo-card-title" style="color:var(--gfo-cinnabar);">Eliminated — Round 3</div>
+              <div class="gfo-card-subtitle">Eating Failure</div>
+            </div>
+          </div>
+          <div class="gfo-card-body">
+            <strong>Duncan</strong> stares at the writhing bowl. He raises the spoon. He puts it back down. He tries again. A tentacle wraps around the spoon. <span class="gfo-neg">He's done.</span> The bowl goes flying across the table.
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <div class="gfo-consequence time-loss">Eliminated from Gauntlet</div>
+          </div>
+        </div>
+
+        <div class="gfo-announcer host">"And Duncan is OUT! That tentacle really got the last word there."</div>
+
+        <!-- Vomit chain event -->
+        <div class="gfo-card vomit-card eating-card" style="animation-delay:0.5s;">
+          <div class="gfo-card-header">
+            <div class="gfo-card-player-ring">A</div>
+            <div>
+              <div class="gfo-card-title">Vomit Chain!</div>
+              <div class="gfo-card-subtitle">Chain Reaction</div>
+            </div>
+          </div>
+          <div class="gfo-card-body">
+            Duncan's dramatic exit triggers a chain reaction. <strong>Alejandro</strong> gags hard but holds it together — barely. His eyes water. The tentacle on his spoon seems to judge him.
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <div class="gfo-consequence time-loss">Alejandro Endurance -1 next round</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar: Eating Bracket -->
+      <div class="gfo-sidebar">
+        <div class="gfo-sidebar-title">Eating Bracket</div>
+
+        <!-- Lantern status -->
+        <div class="gfo-lantern-status">
+          <div class="gfo-lantern-pip lit" title="Alejandro"></div>
+          <div class="gfo-lantern-pip extinguished" title="Duncan"></div>
+          <div class="gfo-lantern-pip lit" title="Heather"></div>
+          <div class="gfo-lantern-pip lit" title="Sierra"></div>
+          <div class="gfo-lantern-pip extinguished" title="Blaineley"></div>
+          <div class="gfo-lantern-pip lit" title="Cody"></div>
+        </div>
+
+        <!-- Current dish -->
+        <div class="gfo-sidebar-dish">
+          <div class="gfo-sidebar-dish-label">Now Serving</div>
+          <div class="gfo-sidebar-dish-name">Live Tentacle Soup</div>
+          <div class="gfo-sidebar-round">Round 3 of 5</div>
+        </div>
+
+        <!-- Player bracket -->
+        <div class="gfo-eat-bracket">
+          <div class="gfo-eat-entry">
+            <div class="gfo-eat-avatar">S</div>
+            <div class="gfo-eat-name">Sierra</div>
+            <div class="gfo-eat-status eating">Eating</div>
+          </div>
+          <div class="gfo-eat-entry">
+            <div class="gfo-eat-avatar">A</div>
+            <div class="gfo-eat-name">Alejandro</div>
+            <div class="gfo-eat-status eating">Eating</div>
+          </div>
+          <div class="gfo-eat-entry">
+            <div class="gfo-eat-avatar">H</div>
+            <div class="gfo-eat-name">Heather</div>
+            <div class="gfo-eat-status eating">Eating</div>
+          </div>
+          <div class="gfo-eat-entry">
+            <div class="gfo-eat-avatar">C</div>
+            <div class="gfo-eat-name">Cody</div>
+            <div class="gfo-eat-status eating">Eating</div>
+          </div>
+          <div class="gfo-eat-entry out">
+            <div class="gfo-eat-avatar">D</div>
+            <div class="gfo-eat-name">Duncan</div>
+            <div class="gfo-eat-status eliminated">Round 3</div>
+          </div>
+          <div class="gfo-eat-entry out">
+            <div class="gfo-eat-avatar">B</div>
+            <div class="gfo-eat-name">Blaineley</div>
+            <div class="gfo-eat-status eliminated">Round 2</div>
+          </div>
+        </div>
+
+        <!-- Elimination log -->
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(240,230,211,0.06);">
+          <div style="font-family:var(--gfo-font-display);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(240,230,211,0.25);margin-bottom:8px;">Elimination Log</div>
+          <div style="font-family:var(--gfo-font-body);font-size:12px;color:rgba(240,230,211,0.35);line-height:1.8;">
+            <div>R1: <span style="color:var(--gfo-cinnabar);text-decoration:line-through;">Courtney</span> — <span style="font-style:italic;color:rgba(240,230,211,0.25);">Did not qualify</span></div>
+            <div>R2: <span style="color:var(--gfo-cinnabar);text-decoration:line-through;">Blaineley</span> — <span style="font-style:italic;color:rgba(240,230,211,0.25);">Spicy Brain Jelly</span></div>
+            <div>R3: <span style="color:var(--gfo-cinnabar);text-decoration:line-through;">Duncan</span> — <span style="font-style:italic;color:rgba(240,230,211,0.25);">Live Tentacle Soup</span></div>
+          </div>
+        </div>
+
+        <!-- Dish difficulty escalation -->
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(240,230,211,0.06);">
+          <div style="font-family:var(--gfo-font-display);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(240,230,211,0.25);margin-bottom:8px;">Dish Difficulty</div>
+          <div style="display:flex;gap:3px;align-items:flex-end;height:40px;">
+            <div style="flex:1;background:var(--gfo-jade);border-radius:2px 2px 0 0;height:30%;"></div>
+            <div style="flex:1;background:var(--gfo-amber);border-radius:2px 2px 0 0;height:50%;"></div>
+            <div style="flex:1;background:var(--gfo-cinnabar);border-radius:2px 2px 0 0;height:70%;box-shadow:0 0 8px rgba(194,54,22,0.3);"></div>
+            <div style="flex:1;background:rgba(240,230,211,0.08);border-radius:2px 2px 0 0;height:85%;"></div>
+            <div style="flex:1;background:rgba(240,230,211,0.06);border-radius:2px 2px 0 0;height:100%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       RESULTS SCREEN
+       ═══════════════════════════════════════════════════ -->
+  <div class="gfo-results-screen">
+    <div class="gfo-results-title">Immunity Winner</div>
+
+    <div class="gfo-winner-card">
+      <div class="gfo-winner-avatar">S</div>
+      <div class="gfo-winner-name">Sierra</div>
+      <div class="gfo-winner-subtitle">Last one eating — stomach of absolute steel</div>
+      <div style="margin-top:16px;">
+        <div class="gfo-lantern-status">
+          <div class="gfo-lantern-pip golden"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final standings -->
+    <div style="max-width:500px;margin:0 auto;text-align:left;">
+      <div style="font-family:var(--gfo-font-display);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:rgba(240,230,211,0.25);margin-bottom:12px;text-align:center;">Final Standings</div>
+
+      <div class="gfo-lb-entry" style="border-bottom-color:rgba(212,160,23,0.1);">
+        <div class="gfo-lb-pos first">1</div>
+        <div class="gfo-lb-avatar" style="border-color:var(--gfo-gold);">S</div>
+        <div class="gfo-lb-name" style="color:var(--gfo-gold);font-weight:600;">Sierra</div>
+        <div class="gfo-lb-time" style="color:var(--gfo-gold);">Winner</div>
+      </div>
+      <div class="gfo-lb-entry">
+        <div class="gfo-lb-pos">2</div>
+        <div class="gfo-lb-avatar">A</div>
+        <div class="gfo-lb-name">Alejandro</div>
+        <div class="gfo-lb-time">Round 5</div>
+      </div>
+      <div class="gfo-lb-entry">
+        <div class="gfo-lb-pos">3</div>
+        <div class="gfo-lb-avatar">H</div>
+        <div class="gfo-lb-name">Heather</div>
+        <div class="gfo-lb-time">Round 4</div>
+      </div>
+      <div class="gfo-lb-entry">
+        <div class="gfo-lb-pos">4</div>
+        <div class="gfo-lb-avatar">C</div>
+        <div class="gfo-lb-name">Cody</div>
+        <div class="gfo-lb-time">Round 4</div>
+      </div>
+      <div class="gfo-lb-entry">
+        <div class="gfo-lb-pos">5</div>
+        <div class="gfo-lb-avatar">D</div>
+        <div class="gfo-lb-name">Duncan</div>
+        <div class="gfo-lb-time">Round 3</div>
+      </div>
+      <div class="gfo-lb-entry">
+        <div class="gfo-lb-pos">6</div>
+        <div class="gfo-lb-avatar">B</div>
+        <div class="gfo-lb-name">Blaineley</div>
+        <div class="gfo-lb-time">Round 2</div>
+      </div>
+      <div class="gfo-lb-entry danger">
+        <div class="gfo-lb-pos last">7</div>
+        <div class="gfo-lb-avatar">Co</div>
+        <div class="gfo-lb-name">Courtney</div>
+        <div class="gfo-lb-time">Cut (Race)</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

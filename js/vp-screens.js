@@ -34,6 +34,8 @@ import { rpBuildBigBaddTitleCard, rpBuildBigBaddPhase1, rpBuildBigBaddPhase2, rp
 import { rpBuildCFTTitleCard, rpBuildCFTPinball, rpBuildCFTDramaBreak, rpBuildCFTCommercial, rpBuildCFTVerdict, rpBuildCFTResults, crazyFunTimeRevealNext, crazyFunTimeRevealAll } from './chal/crazy-fun-time.js';
 import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults, frozenCrossingRevealNext, frozenCrossingRevealAll } from './chal/frozen-crossing.js';
 import { rpBuildVSTitleCard, rpBuildVSPhase1, rpBuildVSPhase2, rpBuildVSPhase3, rpBuildVSResults, vikingSourRevealNext, vikingSourRevealAll } from './chal/viking-sour.js';
+import { rpBuildBRBTitleCard, rpBuildBRBSlotMachine, rpBuildBRBObstacleCourse, rpBuildBRBTightrope, rpBuildBRBCustomsTrivia, rpBuildBRBFinalResults, bbRevealNext, bbRevealAll } from './chal/bridal-brawls.js';
+import { rpBuildGFOTitleCard, rpBuildGFOScramble, rpBuildGFORace, rpBuildGFOTransition, rpBuildGFOEating, rpBuildGFOResults, gfoRevealNext, gfoRevealAll } from './chal/great-fake-out.js';
 import { rpBuildHDTitleCard, rpBuildHDEmuWrangling, rpBuildHDEmuRace, rpBuildHDBungeeGrab, rpBuildHDResults, hdRevealNext, hdRevealAll } from './chal/picnic-hanging-dork.js';
 import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults, ssrRevealNext, ssrRevealAll } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults, broadwayBabyRevealNext, broadwayBabyRevealAll } from './chal/broadway-baby.js';
@@ -2978,7 +2980,7 @@ export function rpBuildDebug(ep) {
       });
     }
     const _chalLabel = ep.challengeLabel || 'Challenge';
-    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : ep.isBasicStraining ? 'Basic Straining' : ep.isXtremeTorture ? 'X-Treme Torture' : ep.isLuckyHunt ? 'Lucky Hunt' : ep.isHideAndBeSneaky ? 'Hide and Be Sneaky' : ep.isOffTheChain ? "That's Off the Chain!" : ep.isWawanakwaGoneWild ? 'Wawanakwa Gone Wild!' : ep.isTriArmedTriathlon ? 'Trial by Tri-Armed Triathlon' : ep.isCampCastaways ? 'Camp Castaways' : ep.isAreWeThereYeti ? 'Are We There Yeti?' : _chalLabel;
+    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : ep.isBasicStraining ? 'Basic Straining' : ep.isXtremeTorture ? 'X-Treme Torture' : ep.isLuckyHunt ? 'Lucky Hunt' : ep.isHideAndBeSneaky ? 'Hide and Be Sneaky' : ep.isOffTheChain ? "That's Off the Chain!" : ep.isWawanakwaGoneWild ? 'Wawanakwa Gone Wild!' : ep.isTriArmedTriathlon ? 'Trial by Tri-Armed Triathlon' : ep.isCampCastaways ? 'Camp Castaways' : ep.isAreWeThereYeti ? 'Are We There Yeti?' : ep.isBridalBrawls ? 'Bridal Brawls' : _chalLabel;
 
     html += `<div style="margin-bottom:12px">
       <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
@@ -10688,6 +10690,22 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'fc-sled', label:'Sled Assignment', html: rpBuildFCSledAssignment(ep) });
     vpScreens.push({ id:'fc-phase2', label:'Sled Race', html: rpBuildFCPhase2(ep) });
     vpScreens.push({ id:'fc-results', label:'Results', html: rpBuildFCResults(ep) });
+  } else if ((ep.isBridalBrawls || ep.challengeType === 'bridal-brawls') && (ep.challengeData || ep.bridalBrawls)) {
+    if (ep.bridalBrawls && !ep.challengeData) ep.challengeData = ep.bridalBrawls;
+    vpScreens.push({ id:'brb-title', label:'Bridal Brawls', html: rpBuildBRBTitleCard(ep) });
+    vpScreens.push({ id:'brb-slot', label:'Slot Machine', html: rpBuildBRBSlotMachine(ep) });
+    vpScreens.push({ id:'brb-obstacle', label:'Blindfold Run', html: rpBuildBRBObstacleCourse(ep) });
+    vpScreens.push({ id:'brb-tightrope', label:'Tightrope', html: rpBuildBRBTightrope(ep) });
+    vpScreens.push({ id:'brb-customs', label:'Customs Trivia', html: rpBuildBRBCustomsTrivia(ep) });
+    vpScreens.push({ id:'brb-results', label:'Results', html: rpBuildBRBFinalResults(ep) });
+  } else if ((ep.isGreatFakeOut || ep.challengeType === 'great-fake-out') && (ep.challengeData || ep.greatFakeOut)) {
+    if (ep.greatFakeOut && !ep.challengeData) ep.challengeData = ep.greatFakeOut;
+    vpScreens.push({ id:'gfo-title', label:'The Great Fake-Out', html: rpBuildGFOTitleCard(ep) });
+    vpScreens.push({ id:'gfo-scramble', label:'The Scramble', html: rpBuildGFOScramble(ep) });
+    vpScreens.push({ id:'gfo-race', label:'Gauntlet Race', html: rpBuildGFORace(ep) });
+    vpScreens.push({ id:'gfo-transition', label:'Transition', html: rpBuildGFOTransition(ep) });
+    vpScreens.push({ id:'gfo-eating', label:'Eating Gauntlet', html: rpBuildGFOEating(ep) });
+    vpScreens.push({ id:'gfo-results', label:'Results', html: rpBuildGFOResults(ep) });
   } else if ((ep.isVikingSour || ep.challengeType === 'viking-sour') && ep.vikingSour) {
     vpScreens.push({ id:'vs-title', label:'Viking Sour', html: rpBuildVSTitleCard(ep) });
     vpScreens.push({ id:'vs-phase1', label:'Blueprint Assembly', html: rpBuildVSPhase1(ep) });

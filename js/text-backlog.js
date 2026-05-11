@@ -49,6 +49,8 @@ import { rpBuildBigBaddTitleCard, rpBuildBigBaddPhase1, rpBuildBigBaddPhase2, rp
 import { rpBuildCFTTitleCard, rpBuildCFTPinball, rpBuildCFTDramaBreak, rpBuildCFTCommercial, rpBuildCFTVerdict, rpBuildCFTResults } from './chal/crazy-fun-time.js';
 import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults } from './chal/frozen-crossing.js';
 import { rpBuildVSTitleCard, rpBuildVSPhase1, rpBuildVSPhase2, rpBuildVSPhase3, rpBuildVSResults } from './chal/viking-sour.js';
+import { rpBuildBRBTitleCard, rpBuildBRBSlotMachine, rpBuildBRBObstacleCourse, rpBuildBRBTightrope, rpBuildBRBCustomsTrivia, rpBuildBRBFinalResults } from './chal/bridal-brawls.js';
+import { rpBuildGFOTitleCard, rpBuildGFOScramble, rpBuildGFORace, rpBuildGFOTransition, rpBuildGFOEating, rpBuildGFOResults } from './chal/great-fake-out.js';
 import { rpBuildHDTitleCard, rpBuildHDEmuWrangling, rpBuildHDEmuRace, rpBuildHDBungeeGrab, rpBuildHDResults } from './chal/picnic-hanging-dork.js';
 import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults } from './chal/broadway-baby.js';
@@ -2180,6 +2182,18 @@ export function generateSummaryText(ep) {
   if (ep.frozenCrossing) {
     _textTwistChallenge(ep, ln, sec, 'frozenCrossing', 'FROZEN CROSSING', [
       rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults
+    ]);
+  }
+  if ((ep.challengeData || ep.bridalBrawls) && ep.isBridalBrawls) {
+    if (ep.bridalBrawls && !ep.challengeData) ep.challengeData = ep.bridalBrawls;
+    _textTwistChallenge(ep, ln, sec, 'challengeData', 'BRIDAL BRAWLS', [
+      rpBuildBRBTitleCard, rpBuildBRBSlotMachine, rpBuildBRBObstacleCourse, rpBuildBRBTightrope, rpBuildBRBCustomsTrivia, rpBuildBRBFinalResults
+    ]);
+  }
+  if ((ep.challengeData || ep.greatFakeOut) && ep.isGreatFakeOut) {
+    if (ep.greatFakeOut && !ep.challengeData) ep.challengeData = ep.greatFakeOut;
+    _textTwistChallenge(ep, ln, sec, 'challengeData', 'THE GREAT FAKE-OUT', [
+      rpBuildGFOTitleCard, rpBuildGFOScramble, rpBuildGFORace, rpBuildGFOTransition, rpBuildGFOEating, rpBuildGFOResults
     ]);
   }
   if (ep.vikingSour) {

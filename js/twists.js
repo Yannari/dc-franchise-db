@@ -1501,6 +1501,12 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (!gs.isMerged && gs.tribes.length < 2) return;
     ep.isPicnicHangingDork = true;
 
+  } else if (engineType === 'bridal-brawls') {
+    ep.isBridalBrawls = true;
+
+  } else if (engineType === 'great-fake-out') {
+    ep.isGreatFakeOut = true;
+
   } else if (engineType === 'viking-sour') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isVikingSour = true;
@@ -3916,6 +3922,8 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'midnight-manhunt': 'isMidnightManhunt',
         'greeces-pieces': 'isGreecesPieces',
         'hangar-black': 'isHangarBlack',
+        'bridal-brawls': 'isBridalBrawls',
+        'great-fake-out': 'isGreatFakeOut',
       };
       const _flag = _engineFlagMap[_rtcEngine];
       if (_flag) ep[_flag] = true;

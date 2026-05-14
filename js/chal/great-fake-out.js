@@ -7,6 +7,16 @@ import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js
 // ── HELPERS ──
 function host() { return seasonConfig?.hostName || 'Chris'; }
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const _usedIndices = new Map();
+function pickFresh(arr, poolKey) {
+  if (!_usedIndices.has(poolKey)) _usedIndices.set(poolKey, new Set());
+  const used = _usedIndices.get(poolKey);
+  if (used.size >= arr.length) used.clear();
+  const available = arr.map((_, i) => i).filter(i => !used.has(i));
+  const idx = available[Math.floor(Math.random() * available.length)];
+  used.add(idx);
+  return arr[idx];
+}
 function noise(range = 2.5) { return (Math.random() - 0.5) * range; }
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function popDelta(name, delta) {
@@ -75,7 +85,7 @@ const SCRAMBLE_GRAB = [
   (n, pr, v) => `${n} shoulders past the crowd and grabs the ${v} before anyone else can reach it.`,
   (n, pr, v) => `The ${v} catches ${n}'s eye. ${pr.Sub} claims it without hesitation.`,
   (n, pr, v) => `${n} weaves between the other players and locks down the ${v}. Smart pick.`,
-  (n, pr, v) => `${n} spots the ${v} and makes a beeline. ${pr.Sub}'s got wheels — or close enough.`,
+  (n, pr, v) => `${n} spots the ${v} and makes a beeline. Got wheels — or close enough.`,
   (n, pr, v) => `${n} slides across the depot floor and emerges clutching the ${v}. First come, first served.`,
 ];
 
@@ -108,36 +118,59 @@ const SCRAMBLE_LAST_PICK = [
   (n, pr, v) => `${n} is the last one to the depot. All that's left is the ${v}. ${pr.Sub} stares at it in disbelief.`,
   (n, pr, v) => `${n} arrives at the depot and finds... the ${v}. The absolute bottom of the barrel. ${pr.Sub} sighs.`,
   (n, pr, v) => `Everyone else is already gone. ${n} picks up the ${v}. It's either this or walking.`,
-  (n, pr, v) => `${n} gets stuck with the ${v}. ${pr.Sub} looks at the other players' vehicles with pure envy.`,
+  (n, pr, v) => `${n} gets stuck with the ${v}. A glance at the other players' vehicles — pure envy.`,
   (n, pr, v) => `The ${v}. That's what ${n} gets. Last pick. ${pr.Sub} already knows this is going to hurt.`,
   (n, pr, v) => `${n} stares at the lone ${v} left in the depot. "${host()} really had this planned for me, didn't ${pr.sub}."`,
 ];
 
 // ── Phase 1: Gauntlet Race ──
 const RACE_GOOD_SEGMENT = [
-  (n, pr, seg) => `${n} tears through segment ${seg} with no trouble. The ${pr.posAdj} vehicle handles the terrain like it was built for this.`,
-  (n, pr, seg) => `Clean run for ${n} on segment ${seg}. ${pr.Sub} keeps ${pr.posAdj} head down and pushes forward.`,
-  (n, pr, seg) => `${n} navigates segment ${seg} with impressive speed. No traps, no drama — just raw pace.`,
-  (n, pr, seg) => `Segment ${seg} goes smoothly for ${n}. ${pr.Sub} finds a rhythm and rolls through unscathed.`,
-  (n, pr, seg) => `${n} picks the clean line through segment ${seg}. Fast. Efficient. ${pr.Sub} makes it look easy.`,
-  (n, pr, seg) => `${n} blazes through segment ${seg}. The fortress walls blur past. No stopping ${pr.obj} now.`,
+  (n, pr, v, t) => `${n} tears through on the ${v} — ${t}s flat. The fortress can't touch ${pr.obj}.`,
+  (n, pr, v, t) => `Clean run. ${n} pushes the ${v} hard and clocks ${t}s. No traps, no drama — just raw pace.`,
+  (n, pr, v, t) => `The ${v} hums beneath ${n}. ${t}s. Making this segment look effortless.`,
+  (n, pr, v, t) => `${n} finds the perfect line — ${t}s on the ${v}. Nobody's catching ${pr.obj} right now.`,
+  (n, pr, v, t) => `${t}s! ${n} blazes through on the ${v}. The walls blur past. Absolute domination.`,
+  (n, pr, v, t) => `${n} and the ${v} are in sync. ${t}s. ${pr.Sub} barely slowed down.`,
+];
+
+const RACE_AVG_SEGMENT = [
+  (n, pr, v, t) => `${n} grinds through on the ${v}. ${t}s — middle of the pack. Nothing special, nothing disastrous.`,
+  (n, pr, v, t) => `${t}s for ${n}. The ${v} holds steady but ${pr.sub} lost time on a tight corner.`,
+  (n, pr, v, t) => `${n} pushes the ${v} through in ${t}s. Not ${pr.posAdj} best segment, not ${pr.posAdj} worst.`,
+  (n, pr, v, t) => `The ${v} wobbles but ${n} recovers. ${t}s. Serviceable, but the leaders are pulling away.`,
+  (n, pr, v, t) => `${n} fights the ${v} around a blind curve. ${t}s. ${pr.Sub} keeps ${pr.posAdj} position.`,
+  (n, pr, v, t) => `${t}s. ${n} on the ${v}, holding ground but not gaining. The fortress isn't making it easy.`,
+];
+
+const RACE_SLOW_SEGMENT = [
+  (n, pr, v, t) => `${n} struggles on the ${v} — ${t}s. The wheels catch on every crack in the stone.`,
+  (n, pr, v, t) => `Rough segment. ${n} limps the ${v} through in ${t}s. Losing ground fast.`,
+  (n, pr, v, t) => `${t}s. The ${v} is fighting ${n} more than the course is. This is painful to watch.`,
+  (n, pr, v, t) => `${n} can barely keep the ${v} moving. ${t}s — dead last pace. Desperation on every pedal.`,
+  (n, pr, v, t) => `The ${v} nearly dies under ${n}. ${t}s. Falling further behind with every meter.`,
+  (n, pr, v, t) => `${t}s. ${n} wrestles the ${v} through sheer willpower. The gap to the pack is growing.`,
 ];
 
 const RACE_TRAP_HIT = [
-  (n, pr, trap) => `A tripwire snaps across ${n}'s path — ${pr.sub} goes tumbling! Precious seconds lost.`,
-  (n, pr, trap) => `${n} hits a hidden pressure plate. A wall of slime dumps on ${pr.obj}. The vehicle skids sideways.`,
-  (n, pr, trap) => `BOOM! A paint bomb explodes under ${n}'s wheels. ${pr.Sub} swerves but can't avoid the blast.`,
-  (n, pr, trap) => `${n} triggers a spring-loaded barrier. It slams into ${pr.posAdj} vehicle and sends ${pr.obj} spinning.`,
-  (n, pr, trap) => `Spike strip! ${n}'s vehicle hits it hard. ${pr.Sub} staggers and loses ground.`,
-  (n, pr, trap) => `A net drops from the ceiling and catches ${n} mid-stride. ${pr.Sub} fights free but the damage is done.`,
+  (n, pr, trap, v) => `A tripwire snaps across ${n}'s path — the ${v} flips and ${pr.sub} goes tumbling! Precious seconds lost.`,
+  (n, pr, trap, v) => `${n} hits a hidden pressure plate. A wall of slime dumps on ${pr.obj}. The ${v} skids sideways.`,
+  (n, pr, trap, v) => `BOOM! A paint bomb explodes under the ${v}. ${n} swerves but can't avoid the blast.`,
+  (n, pr, trap, v) => `${n} triggers a spring-loaded barrier. It slams into the ${v} and sends ${pr.obj} spinning.`,
+  (n, pr, trap, v) => `Spike strip! The ${v} hits it hard. ${n} staggers and loses ground.`,
+  (n, pr, trap, v) => `A net drops from the ceiling and catches ${n} mid-stride. The ${v} keeps rolling without ${pr.obj}.`,
+  (n, pr, trap, v) => `The floor gives way under the ${v}. ${n} drops into a pit, scrambles out, and drags the ${v} back onto the wall.`,
+  (n, pr, trap, v) => `A swinging log smashes into ${n}'s ${v}. ${pr.Sub} goes airborne for a second. The landing is ugly.`,
 ];
 
 const RACE_TRAP_CHAIN = [
-  (victim, original) => `${victim} gets caught in the blast from ${original}'s trap! Collateral damage!`,
-  (victim, original) => `The shockwave from ${original}'s trap sends debris flying into ${victim}. Wrong place, wrong time.`,
-  (victim, original) => `${victim} was right behind ${original} when the trap went off. The splash damage gets ${victim} too.`,
-  (victim, original) => `${original}'s trap sends a chain reaction right into ${victim}'s path. Neither of them is happy.`,
-  (victim, original) => `"Watch out!" Too late. ${victim} rolls right through the mess left by ${original}'s trap.`,
+  (victim, original, vV) => `${victim}'s ${vV} catches the blast from ${original}'s trap! Collateral damage!`,
+  (victim, original, vV) => `The shockwave from ${original}'s trap sends debris flying into ${victim}'s ${vV}. Wrong place, wrong time.`,
+  (victim, original, vV) => `${victim} was right behind ${original} when the trap went off. The ${vV} takes a direct hit.`,
+  (victim, original, vV) => `${original}'s trap sends a chain reaction right into ${victim}'s path. The ${vV} rattles. Neither of them is happy.`,
+  (victim, original, vV) => `"Watch out!" Too late. ${victim} rolls the ${vV} right through the mess left by ${original}'s trap.`,
+  (victim, original, vV) => `Debris from ${original}'s trap ricochets off the wall and nails ${victim}'s ${vV}. Pure bad luck.`,
+  (victim, original, vV) => `${victim} tries to dodge ${original}'s wreckage but the ${vV} clips it. Seconds lost.`,
+  (victim, original, vV) => `The smoke from ${original}'s trap blinds ${victim}. The ${vV} slams into a stone column.`,
 ];
 
 const RACE_RIVALRY_SPRINT = [
@@ -150,9 +183,9 @@ const RACE_RIVALRY_SPRINT = [
 
 const RACE_VEHICLE_BREAKDOWN = [
   (n, pr, v) => `${n}'s ${v} gives out mid-segment! A wheel pops off and rolls into a ditch.`,
-  (n, pr, v) => `The ${v} shudders and collapses under ${n}. ${pr.Sub} has to drag the wreckage forward.`,
+  (n, pr, v) => `The ${v} shudders and collapses under ${n}. Nothing to do but drag the wreckage forward.`,
   (n, pr, v) => `Something snaps on ${n}'s ${v}. ${pr.Sub} grinds to a halt and stares at the broken vehicle in disbelief.`,
-  (n, pr, v) => `${n}'s ${v} falls apart. Literally. Pieces scatter across the fortress wall. ${pr.Sub} is going on foot now.`,
+  (n, pr, v) => `${n}'s ${v} falls apart. Literally. Pieces scatter across the fortress wall. On foot from here.`,
   (n, pr, v) => `The ${v} wasn't built for this. ${n} watches helplessly as it disintegrates beneath ${pr.obj}.`,
 ];
 
@@ -180,19 +213,41 @@ const RACE_ENCOURAGE = [
   (helper, target, hPr) => `${helper} slows down just enough for ${target} to catch up. "We're almost through this." Genuine support.`,
 ];
 
-const RACE_FINISH_ORDER = [
-  (n, pr, place) => `${n} crosses the finish line in ${_ordinal(place)} place!`,
-  (n, pr, place) => `${_ordinal(place)} place goes to ${n}. ${pr.Sub} collapses past the finish.`,
-  (n, pr, place) => `${n} rolls across the line — ${_ordinal(place)}. ${pr.Sub} ${place <= 2 ? 'pumps a fist' : 'catches ' + pr.posAdj + ' breath'}.`,
-  (n, pr, place) => `${n} finishes ${_ordinal(place)}. ${place === 1 ? pr.Sub + ' was untouchable.' : 'Not bad for what ' + pr.sub + ' was riding.'}`,
+const RACE_FINISH_FIRST = [
+  (n, pr, v) => `${n} blazes across the finish line on the ${v}! First place — and it wasn't even close.`,
+  (n, pr, v) => `The ${v} screeches to a stop. ${n} hops off, arms raised. Nobody else is even in sight.`,
+  (n, pr, v) => `${n} and the ${v} cross the line in first. ${pr.Sub} didn't just win the race — ${pr.sub} dominated it.`,
+  (n, pr, v) => `FIRST PLACE! ${n} on the ${v}, untouchable from start to finish. The fortress belongs to ${pr.obj}.`,
+];
+
+const RACE_FINISH_TOP = [
+  (n, pr, place, v) => `${n} rolls the ${v} across the line — ${_ordinal(place)} place. Solid run.`,
+  (n, pr, place, v) => `The ${v} holds together just long enough. ${n} finishes ${_ordinal(place)}. ${pr.Sub} exhales.`,
+  (n, pr, place, v) => `${_ordinal(place)} place: ${n}. The ${v} served ${pr.obj} well out there.`,
+  (n, pr, place, v) => `${n} crosses in ${_ordinal(place)}. ${pr.Sub} pats the ${v}. "We made it."`,
+];
+
+const RACE_FINISH_MID = [
+  (n, pr, place, v) => `${n} limps the ${v} across the finish. ${_ordinal(place)} place. Could've been worse.`,
+  (n, pr, place, v) => `${_ordinal(place)} for ${n}. The ${v} is barely recognizable. Just glad it's over.`,
+  (n, pr, place, v) => `${n} drags the battered ${v} across the line. ${_ordinal(place)} place — survival, not victory.`,
+  (n, pr, place, v) => `${n} finishes ${_ordinal(place)} on what's left of the ${v}. ${pr.Sub} collapses past the finish.`,
+];
+
+const RACE_FINISH_BOTTOM = [
+  (n, pr, place, v) => `${n} crawls across the line in ${_ordinal(place)}. The ${v} gave up two segments ago.`,
+  (n, pr, place, v) => `${_ordinal(place)} place. ${n} is carrying the ${v} at this point, not riding it.`,
+  (n, pr, place, v) => `${n} staggers across in ${_ordinal(place)}. The ${v} is in pieces. So is ${pr.posAdj} dignity.`,
+  (n, pr, place, v) => `${n} and the wreckage of the ${v} finally cross the line. ${_ordinal(place)} — barely.`,
 ];
 
 const RACE_ELIMINATED = [
-  (n, pr) => `${n} finishes dead last. ${host()} points to the sideline. "Sorry, ${n}. You're done. No eating round for you."`,
-  (n, pr) => `Last place. ${n} is cut from the eating gauntlet. ${pr.Sub} slumps onto ${pr.posAdj} broken vehicle and watches from the bench.`,
-  (n, pr) => `${host()}: "${n}, you finished last. Which means you don't get to eat any disgusting food. Lucky you." ${n} doesn't look like ${pr.sub} agrees.`,
-  (n, pr) => `${n} crawls across the finish line last. ${host()} shakes ${pr.posAdj} head. "The race has spoken. You're out of phase two."`,
-  (n, pr) => `The ${n} experiment is over. Last place means no eating challenge. ${pr.Sub} watches the rest line up at the table, powerless.`,
+  (n, pr, v) => `${n} finishes dead last. The ${v} is a pile of scrap. ${host()} points to the sideline. "Sorry, ${n}. You're done."`,
+  (n, pr, v) => `Last place. ${n} is cut from the eating gauntlet. ${pr.Sub} slumps onto the ruined ${v} and watches from the bench.`,
+  (n, pr, v) => `The ${v} dies three feet from the line. ${n} pushes it across on foot. Last place. No eating round.`,
+  (n, pr, v) => `${n} crawls across the finish on the destroyed ${v}. ${host()}: "The race has spoken. You're out of phase two."`,
+  (n, pr, v) => `Dead last. ${n} kicks the ${v} in frustration. ${pr.Sub} watches the survivors line up at the table, powerless.`,
+  (n, pr, v) => `${host()}: "${n}, you finished last. Which means you don't get to eat any disgusting food. Lucky you." ${n} doesn't look like ${pr.sub} agrees.`,
 ];
 
 // ── Phase 2: Eating Gauntlet ──
@@ -206,30 +261,48 @@ const EAT_DISH_PRESENT = [
 ];
 
 const EAT_SUCCESS = [
-  (n, pr, dish) => `${n} shoves the ${dish} down in one go. ${pr.Sub} doesn't even flinch. Impressive.`,
+  (n, pr, dish) => `${n} shoves it down in one go. ${pr.Sub} doesn't even flinch. Impressive.`,
   (n, pr, dish) => `${n} chews, swallows, and opens ${pr.posAdj} mouth. Clean plate. The table erupts.`,
-  (n, pr, dish) => `${n} powers through the ${dish} like it's nothing. Either ${pr.sub} has no taste buds or an iron will.`,
-  (n, pr, dish) => `${n} finishes the ${dish} and slams ${pr.posAdj} fork down. "${pr.Sub === 'They' ? 'They want' : pr.Sub + ' wants'} seconds." Absolutely unhinged.`,
-  (n, pr, dish) => `The ${dish} disappears from ${n}'s plate in seconds. ${pr.Sub} wipes ${pr.posAdj} mouth and waits for the next round.`,
-  (n, pr, dish) => `${n} eats the ${dish} methodically. No drama. No gagging. Just pure execution.`,
+  (n, pr, dish) => `${n} powers through the ${dish} like it's nothing. No taste buds or an iron will — one of the two.`,
+  (n, pr, dish) => `${n} finishes and slams ${pr.posAdj} fork down. "${pr.Sub === 'They' ? 'They want' : pr.Sub + ' wants'} seconds." Absolutely unhinged.`,
+  (n, pr, dish) => `The plate is clean before anyone else has taken a second bite. ${n} sits back, arms crossed. Next.`,
+  (n, pr, dish) => `${n} eats methodically. No drama. No gagging. Just pure execution.`,
+  (n, pr, dish) => `${n} finishes the ${dish}, licks ${pr.posAdj} lips, and stares down the rest of the table. Dominance.`,
+  (n, pr, dish) => `${n} treats the ${dish} like breakfast cereal. Two bites and it's gone. The table is stunned.`,
+  (n, pr, dish) => `Plate empty. Mouth clean. ${n} even reaches for a napkin. Makes it look effortless.`,
+  (n, pr, dish) => `${n} swallows, exhales once, and pushes the plate forward for more. ${host()} raises an eyebrow.`,
 ];
 
 const EAT_STRUGGLE = [
-  (n, pr, dish) => `${n} takes thirty seconds to get the first bite down. ${pr.Sub} barely survives the ${dish}. But ${pr.sub} survives.`,
-  (n, pr, dish) => `${n}'s face turns green. ${pr.Sub} gags three times. But the ${dish} goes down. Barely.`,
-  (n, pr, dish) => `It takes everything ${n} has. ${pr.Sub} chews with tears streaming. The ${dish} almost wins. Almost.`,
-  (n, pr, dish) => `${n} holds ${pr.posAdj} nose, closes ${pr.posAdj} eyes, and forces the ${dish} down. ${pr.Sub} dry-heaves but keeps it in.`,
-  (n, pr, dish) => `"I can't do this." ${n} stares at the ${dish}. Then ${pr.sub} does it anyway. Willpower over stomach.`,
-  (n, pr, dish) => `${n} puts the ${dish} in ${pr.posAdj} mouth and immediately regrets it. But spitting it out means losing. ${pr.Sub} swallows. Hard.`,
+  (n, pr, dish) => `${n} takes thirty seconds to get the first bite down. Barely survives. But survives.`,
+  (n, pr, dish) => `${n}'s face turns green. ${pr.Sub} gags three times. But it goes down. Barely.`,
+  (n, pr, dish) => `It takes everything ${n} has. Chewing with tears streaming. The dish almost wins. Almost.`,
+  (n, pr, dish) => `${n} holds ${pr.posAdj} nose, closes ${pr.posAdj} eyes, and forces it down. ${pr.Sub} dry-heaves but keeps it in.`,
+  (n, pr, dish) => `"I can't do this." ${n} stares at the plate. Then ${pr.sub} does it anyway. Willpower over stomach.`,
+  (n, pr, dish) => `${n} puts it in ${pr.posAdj} mouth and immediately regrets it. But spitting it out means losing. One hard swallow. Done.`,
+  (n, pr, dish) => `${n}'s hand shakes lifting the fork. The first bite takes ten seconds of chewing. The second takes twenty. But the plate empties.`,
+  (n, pr, dish) => `Tears roll down ${n}'s face — gagging between bites, barely holding on. But ${n} keeps going. The table watches in horrified respect.`,
+  (n, pr, dish) => `${n} slams the table. Breathes. Picks up the fork again. It's ugly, but the plate empties.`,
+  (n, pr, dish) => `${n} needs water between every bite. Looks like quitting three separate times. Doesn't.`,
 ];
 
-const EAT_FAIL = [
-  (n, pr, dish) => `${n} takes one look at the ${dish} and pushes ${pr.posAdj} plate away. "I'm done." ${host()} nods. Out.`,
-  (n, pr, dish) => `${n} tries the ${dish}. It comes back up. ${pr.Sub}'s finished.`,
-  (n, pr, dish) => `${n} can't do it. The ${dish} defeats ${pr.obj}. ${pr.Sub} walks away from the table in shame.`,
-  (n, pr, dish) => `The ${dish} breaks ${n}. ${pr.Sub} spits it out and ${host()} rings the bell. Eliminated.`,
-  (n, pr, dish) => `${n} refuses to eat. ${pr.Sub} stares at the ${dish}, shakes ${pr.posAdj} head, and steps back. Game over.`,
-  (n, pr, dish) => `Two bites in and ${n} can't take it anymore. The ${dish} wins this round. ${pr.Sub}'s out.`,
+// Close fail — player tried hard but couldn't finish (roll close to threshold)
+const EAT_FAIL_CLOSE = [
+  (n, pr, dish) => `${n} tries. Really tries. But the body says no. The fork drops and ${host()} calls it.`,
+  (n, pr, dish) => `${n} gets halfway through and stops. Fork down, shaking hands. "I can't." ${host()} points to the exit.`,
+  (n, pr, dish) => `${n} stands up mid-bite, covers ${pr.posAdj} mouth, and bolts. ${host()} doesn't even need to say it.`,
+  (n, pr, dish) => `Two bites in and ${n} can't take it anymore. Out.`,
+  (n, pr, dish) => `${n} tries the ${dish}. It comes back up. Done.`,
+  (n, pr, dish) => `The ${dish} breaks ${n}. ${pr.Sub} spits it out and ${host()} rings the bell. Done.`,
+];
+// Hard fail — player gave up or didn't try (roll far below threshold)
+const EAT_FAIL_HARD = [
+  (n, pr, dish) => `${n} takes one look and pushes ${pr.posAdj} plate away. "I'm done." ${host()} nods. Out.`,
+  (n, pr, dish) => `${n} refuses to eat. Stares at the plate, shakes ${pr.posAdj} head, steps back. Game over.`,
+  (n, pr, dish) => `${n} can't do it. The dish wins. A quiet walk away from the table.`,
+  (n, pr, dish) => `The fork never makes it to ${n}'s mouth a second time. A push back from the table. That's it.`,
+  (n, pr, dish) => `${n} doesn't even pick up the fork. One look at the ${dish} and ${pr.sub}'s done. ${host()} doesn't argue.`,
+  (n, pr, dish) => `"No. Absolutely not." ${n} pushes the plate away before the lid is even fully off. Out.`,
 ];
 
 const EAT_PSYCH_OUT = [
@@ -242,19 +315,30 @@ const EAT_PSYCH_OUT = [
 ];
 
 const EAT_STOMACH_STEEL = [
-  (n, pr) => `${n} eats every bite without flinching. The rest of the table watches in awe. ${pr.Sub}'s a machine.`,
+  (n, pr) => `${n} eats every bite without flinching. The rest of the table watches in awe. Absolute machine.`,
   (n, pr) => `While everyone else struggles, ${n} cleans ${pr.posAdj} plate like it's a regular Tuesday lunch.`,
-  (n, pr) => `${n} finishes first. Again. ${pr.Sub} looks around the table. "What? It's not that bad."`,
+  (n, pr) => `${n} finishes first. Again. Looks around the table. "What? It's not that bad."`,
   (n, pr) => `The weakest eater at the table glances at ${n}'s empty plate and loses all hope.`,
-  (n, pr) => `${n} is in a different league. ${pr.Sub} eats calmly, efficiently, and with zero visible discomfort. Terrifying.`,
+  (n, pr) => `${n} is in a different league. Calm, efficient, zero visible discomfort. Terrifying.`,
   (n, pr) => `${n} doesn't just survive the dish — ${pr.sub} enjoys it. Or at least looks like ${pr.sub} does. The intimidation factor is enormous.`,
 ];
 
 const EAT_VOMIT_CHAIN = [
   (trigger, victim) => `${trigger}'s elimination triggers a wave of nausea. ${victim} gags — barely holds on.`,
-  (victim, trigger) => `The sight of ${trigger} losing it is too much for ${victim}. ${victim} fights back the urge.`,
-  (victim, trigger) => `${victim} watches ${trigger} get eliminated and feels ${pronouns(victim).posAdj} own stomach turn. Chain reaction incoming.`,
-  (victim, trigger) => `${trigger}'s exit sets off a domino effect. ${victim} clutches the table. "Don't look. Don't look." ${pronouns(victim).Sub} looks.`,
+  (trigger, victim) => `The sight of ${trigger} going down is too much for ${victim}. ${victim} fights back the urge.`,
+  (trigger, victim) => `${victim} watches ${trigger} get eliminated and feels ${pronouns(victim).posAdj} own stomach turn. Chain reaction incoming.`,
+  (trigger, victim) => `${trigger}'s exit sets off a domino effect. ${victim} clutches the table. "Don't look. Don't look." ${pronouns(victim).Sub} looks.`,
+  (trigger, victim) => `${trigger} stumbling away from the table is the last straw. ${victim}'s stomach flips. ${pronouns(victim).Sub} grips the edge and holds on.`,
+  (trigger, victim) => `The sound of ${trigger} retching echoes across the set. ${victim} goes pale. "Oh no. Oh no no no."`,
+];
+
+const DOUBLE_ELIM_REACTIONS = [
+  (names, count, host) => `"${count} down in one round. That's a massacre." — ${host}`,
+  (names, count, host) => `${names} — gone. Just like that. The table feels twice as empty.`,
+  (names, count, host) => `"${names}! Both at once! I didn't plan for this kind of carnage!" — ${host}`,
+  (names, count, host) => `A collective gasp from the crew. ${names} — eliminated in the same round. Brutal.`,
+  (names, count, host) => `"We're losing them in bunches now. ${names}, you fought well. You lost, but you fought well." — ${host}`,
+  (names, count, host) => `The remaining players stare at the empty seats where ${names} just sat. Nobody speaks for a moment.`,
 ];
 
 const EAT_ENCOURAGE = [
@@ -488,69 +572,121 @@ export function simulateGreatFakeOut(ep) {
     active.forEach(name => {
       const s = pStats(name);
       const va = nameToVehicle[name];
-      const roll = (s.physical * 0.3 + s.endurance * 0.3 + s.speed * 0.2 + s.luck * 0.2) * va.tierMult + noise(2.5);
+      const roll = (s.physical * 0.35 + s.endurance * 0.35 + s.boldness * 0.3) * va.tierMult + noise(2.5);
       const clampedRoll = Math.max(roll, 0.5);
       let segTime = BASE_TIME / clampedRoll;
 
-      // Booby trap: ~25% chance
-      if (Math.random() < 0.25) {
+      // Booby trap: ~18% chance (down from 25% to reduce trap spam)
+      if (Math.random() < 0.18) {
         const trapPenalty = 1.5 + Math.random() * 2.0;
         segTime += trapPenalty;
         const pr = pronouns(name);
         segEvents.push({
           type: 'trap', player: name, target: null,
-          text: pick(RACE_TRAP_HIT)(name, pr, 'trap'),
+          text: pick(RACE_TRAP_HIT)(name, pr, 'trap', va.vehicleName),
           timeDelta: trapPenalty,
           consequences: `+${trapPenalty.toFixed(1)}s penalty`,
         });
 
-        // Chain damage: 50% to nearby racers
+        // Chain damage: 40% to ONE nearby racer (down from 50% to each neighbor)
         const sorted = Object.entries(raceTimes).sort(([,a],[,b]) => a - b);
         const myIdx = sorted.findIndex(([n]) => n === name);
-        [-1, 1].forEach(offset => {
-          const neighbor = sorted[myIdx + offset];
-          if (neighbor && Math.random() < 0.5) {
-            const chainPenalty = trapPenalty * 0.5;
-            segmentTimes[neighbor[0]] = segmentTimes[neighbor[0]] || [];
-            // chain penalty applied below to final segment time
-            raceTimes[neighbor[0]] += chainPenalty;
-            segEvents.push({
-              type: 'trap-chain', player: neighbor[0], target: name,
-              text: pick(RACE_TRAP_CHAIN)(neighbor[0], name),
-              timeDelta: chainPenalty,
-              consequences: `+${chainPenalty.toFixed(1)}s chain damage`,
-            });
-          }
-        });
+        const neighbors = [-1, 1].map(o => sorted[myIdx + o]).filter(Boolean);
+        if (neighbors.length > 0 && Math.random() < 0.4) {
+          const neighbor = pick(neighbors);
+          const chainPenalty = trapPenalty * 0.5;
+          segmentTimes[neighbor[0]] = segmentTimes[neighbor[0]] || [];
+          raceTimes[neighbor[0]] += chainPenalty;
+          const victimVehicle = nameToVehicle[neighbor[0]]?.vehicleName || 'vehicle';
+          segEvents.push({
+            type: 'trap-chain', player: neighbor[0], target: name,
+            text: pick(RACE_TRAP_CHAIN)(neighbor[0], name, victimVehicle),
+            timeDelta: chainPenalty,
+            consequences: `+${chainPenalty.toFixed(1)}s chain damage`,
+          });
+        }
       }
 
       raceTimes[name] += segTime;
       segmentTimes[name].push(segTime);
     });
 
-    // Between-segment events (1-2 guaranteed)
-    const numEvents = 1 + (Math.random() < 0.5 ? 1 : 0);
+    // ── Per-player segment results: show every racer's segment ──
+    const segTimesThisRound = active.map(name => ({
+      name, segTime: segmentTimes[name][seg - 1],
+    })).sort((a, b) => a.segTime - b.segTime);
+    const medianTime = segTimesThisRound[Math.floor(segTimesThisRound.length / 2)].segTime;
+    const playersWithEvents = new Set(segEvents.filter(e => e.player).map(e => e.player));
+
+    segTimesThisRound.forEach((st, rank) => {
+      if (playersWithEvents.has(st.name)) return;
+      const pr = pronouns(st.name);
+      const v = nameToVehicle[st.name].vehicleName;
+      const t = st.segTime.toFixed(1);
+      let text;
+      if (st.segTime <= medianTime * 0.85) {
+        text = pick(RACE_GOOD_SEGMENT)(st.name, pr, v, t);
+      } else if (st.segTime >= medianTime * 1.2) {
+        text = pick(RACE_SLOW_SEGMENT)(st.name, pr, v, t);
+      } else {
+        text = pick(RACE_AVG_SEGMENT)(st.name, pr, v, t);
+      }
+      segEvents.push({
+        type: 'segment-result', player: st.name, target: null,
+        text, timeDelta: 0,
+        consequences: `${t}s — ${rank === 0 ? 'fastest' : rank < 3 ? 'top 3' : rank >= segTimesThisRound.length - 2 ? 'trailing' : 'mid-pack'}`,
+      });
+    });
+
+    // ── Social events: GUARANTEE 2-3 per segment ──
+    const socialEventPool = [];
     const usedEventPlayers = new Set();
 
-    for (let e = 0; e < numEvents; e++) {
-      const eventRoll = Math.random();
+    // Always try: Rivalry Sprint
+    const closePairs = [];
+    const sorted = Object.entries(raceTimes).sort(([,a],[,b]) => a - b);
+    for (let i = 0; i < sorted.length - 1; i++) {
+      if (Math.abs(sorted[i][1] - sorted[i+1][1]) < 3.0 &&
+          getBond(sorted[i][0], sorted[i+1][0]) < 3) {
+        closePairs.push([sorted[i][0], sorted[i+1][0]]);
+      }
+    }
+    if (closePairs.length > 0) socialEventPool.push('rivalry');
 
-      // Rivalry Sprint
-      if (eventRoll < 0.25) {
-        const closePairs = [];
-        const sorted = Object.entries(raceTimes).sort(([,a],[,b]) => a - b);
-        for (let i = 0; i < sorted.length - 1; i++) {
-          if (Math.abs(sorted[i][1] - sorted[i+1][1]) < 3.0 &&
-              getBond(sorted[i][0], sorted[i+1][0]) < 3 &&
-              !usedEventPlayers.has(sorted[i][0]) && !usedEventPlayers.has(sorted[i+1][0])) {
-            closePairs.push([sorted[i][0], sorted[i+1][0]]);
-          }
-        }
-        if (closePairs.length > 0) {
-          const [a, b] = pick(closePairs);
+    // Always try: Vehicle Breakdown
+    const breakdownCandidates = active.filter(n => nameToVehicle[n].tier >= 3);
+    if (breakdownCandidates.length > 0) socialEventPool.push('breakdown');
+
+    // Always try: Dirty Move
+    const dirtyMovers = active.filter(n => canScheme(n));
+    if (dirtyMovers.length > 0) socialEventPool.push('dirty');
+
+    // Always try: Encouragement
+    const encouragers = active.filter(n => NICE_ARCHS.has(arch(n)));
+    if (encouragers.length > 0) socialEventPool.push('encourage');
+
+    // Always available as fallback
+    socialEventPool.push('rivalry', 'encourage');
+
+    // Shuffle and pick 2-3 unique event types
+    const shuffledEvents = socialEventPool.sort(() => Math.random() - 0.5);
+    const numSocialEvents = 2 + (Math.random() < 0.4 ? 1 : 0);
+    const pickedTypes = new Set();
+
+    for (let e = 0; e < numSocialEvents && shuffledEvents.length > 0; e++) {
+      let eventType = shuffledEvents.shift();
+      if (pickedTypes.has(eventType) && shuffledEvents.length > 0) {
+        eventType = shuffledEvents.shift();
+      }
+      pickedTypes.add(eventType);
+
+      if (eventType === 'rivalry') {
+        const available = closePairs.filter(([a, b]) => !usedEventPlayers.has(a) && !usedEventPlayers.has(b));
+        if (available.length > 0) {
+          const [a, b] = pick(available);
           const sA = pStats(a), sB = pStats(b);
-          const rollA = (sA.speed * 0.5 + sA.physical * 0.5) + noise(2.5);
-          const rollB = (sB.speed * 0.5 + sB.physical * 0.5) + noise(2.5);
+          const rollA = (sA.physical * 0.5 + sA.endurance * 0.5) + noise(2.5);
+          const rollB = (sB.physical * 0.5 + sB.endurance * 0.5) + noise(2.5);
           const winner = rollA >= rollB ? a : b;
           const loser = winner === a ? b : a;
           raceTimes[winner] -= 2.0;
@@ -560,20 +696,17 @@ export function simulateGreatFakeOut(ep) {
             type: 'rivalry-sprint', player: winner, target: loser,
             text: pick(RACE_RIVALRY_SPRINT)(winner, loser),
             timeDelta: -2.0,
-            consequences: 'winner -2s, loser +1s, bond -1',
+            consequences: 'winner -2s',
           });
           usedEventPlayers.add(winner);
           usedEventPlayers.add(loser);
         }
       }
 
-      // Vehicle breakdown (T3/T4, ~20%)
-      if (eventRoll >= 0.25 && eventRoll < 0.45) {
-        const breakdownCandidates = active.filter(n =>
-          nameToVehicle[n].tier >= 3 && !usedEventPlayers.has(n) && Math.random() < 0.5
-        );
-        if (breakdownCandidates.length > 0) {
-          const victim = pick(breakdownCandidates);
+      if (eventType === 'breakdown') {
+        const candidates = breakdownCandidates.filter(n => !usedEventPlayers.has(n) && Math.random() < 0.6);
+        if (candidates.length > 0) {
+          const victim = pick(candidates);
           const va = nameToVehicle[victim];
           const pr = pronouns(victim);
           const penalty = 2.0 + Math.random() * 2.0;
@@ -586,13 +719,13 @@ export function simulateGreatFakeOut(ep) {
           });
           usedEventPlayers.add(victim);
 
-          // Possible rescue by high-bond player
-          const rescuers = active.filter(n => n !== victim && getBond(n, victim) > 3 && !usedEventPlayers.has(n));
-          if (rescuers.length > 0 && Math.random() < 0.5) {
+          // Rescue by bonded player (~60% chance)
+          const rescuers = active.filter(n => n !== victim && getBond(n, victim) > 2 && !usedEventPlayers.has(n));
+          if (rescuers.length > 0 && Math.random() < 0.6) {
             const rescuer = pick(rescuers);
             const rPr = pronouns(rescuer);
-            raceTimes[victim] -= penalty * 0.5; // recovers half
-            raceTimes[rescuer] += 1.5; // rescuer loses time
+            raceTimes[victim] -= penalty * 0.5;
+            raceTimes[rescuer] += 1.5;
             addBond(rescuer, victim, 2);
             popDelta(rescuer, 1);
             segEvents.push({
@@ -611,11 +744,10 @@ export function simulateGreatFakeOut(ep) {
         }
       }
 
-      // Dirty Move (villain archetypes, ~15%)
-      if (eventRoll >= 0.45 && eventRoll < 0.65) {
-        const dirtyMovers = active.filter(n => canScheme(n) && !usedEventPlayers.has(n));
-        if (dirtyMovers.length > 0) {
-          const villain = pick(dirtyMovers);
+      if (eventType === 'dirty') {
+        const movers = dirtyMovers.filter(n => !usedEventPlayers.has(n));
+        if (movers.length > 0) {
+          const villain = pick(movers);
           const targets = active.filter(n => n !== villain && !usedEventPlayers.has(n));
           if (targets.length > 0) {
             const target = pick(targets);
@@ -628,7 +760,7 @@ export function simulateGreatFakeOut(ep) {
               type: 'dirty-move', player: villain, target,
               text: pick(RACE_DIRTY_MOVE)(villain, target, vPr),
               timeDelta: penalty,
-              consequences: `target +${penalty.toFixed(1)}s, villain pop -1, bond -2`,
+              consequences: `target +${penalty.toFixed(1)}s`,
             });
             usedEventPlayers.add(villain);
             usedEventPlayers.add(target);
@@ -641,11 +773,10 @@ export function simulateGreatFakeOut(ep) {
         }
       }
 
-      // Encouragement (nice archetypes, ~20%)
-      if (eventRoll >= 0.65) {
-        const encouragers = active.filter(n => NICE_ARCHS.has(arch(n)) && !usedEventPlayers.has(n));
-        if (encouragers.length > 0) {
-          const helper = pick(encouragers);
+      if (eventType === 'encourage') {
+        const helpers = encouragers.filter(n => !usedEventPlayers.has(n));
+        if (helpers.length > 0) {
+          const helper = pick(helpers);
           const targets = active.filter(n => n !== helper && !usedEventPlayers.has(n));
           if (targets.length > 0) {
             const target = pick(targets);
@@ -665,13 +796,35 @@ export function simulateGreatFakeOut(ep) {
       }
     }
 
-    // Add announcer chatter for the segment
-    if (Math.random() < 0.5) {
+    // Showmance moment (~30% per segment if showmances exist)
+    if (seg <= NUM_SEGMENTS) {
+      try { _checkShowmanceChalMoment(ep, null, null); } catch (_) {}
+    }
+
+    // ── Segment standings summary (after social events modify times) ──
+    const standingsAfterSeg = active.map(name => ({
+      name, totalTime: raceTimes[name],
+    })).sort((a, b) => a.totalTime - b.totalTime);
+    segEvents.push({
+      type: 'standings', player: null, target: null,
+      text: standingsAfterSeg.map((s, i) =>
+        `${i + 1}. ${s.name} — ${s.totalTime.toFixed(1)}s${i === 0 ? ' ⛩' : i === standingsAfterSeg.length - 1 ? ' ⚠' : ''}`
+      ).join('\n'),
+      timeDelta: 0,
+      consequences: `After segment ${seg}`,
+    });
+
+    // Announcer chatter — guaranteed every segment, 50% chance of a second
+    segEvents.push({
+      type: 'announcer', player: null, target: null,
+      text: pick(ANNOUNCER_RACE),
+      timeDelta: 0, consequences: '',
+    });
+    if (Math.random() < 0.4) {
       segEvents.push({
         type: 'announcer', player: null, target: null,
         text: pick(ANNOUNCER_RACE),
-        timeDelta: 0,
-        consequences: '',
+        timeDelta: 0, consequences: '',
       });
     }
 
@@ -687,10 +840,20 @@ export function simulateGreatFakeOut(ep) {
     tier: nameToVehicle[name].tier,
   })).sort((a, b) => a.totalTime - b.totalTime);
 
-  // Generate finish text
+  // Generate finish text — tiered by placement
   raceStandings.forEach((rs, i) => {
     const pr = pronouns(rs.name);
-    rs.finishText = pick(RACE_FINISH_ORDER)(rs.name, pr, i + 1);
+    const place = i + 1;
+    const v = rs.vehicle;
+    if (place === 1) {
+      rs.finishText = pick(RACE_FINISH_FIRST)(rs.name, pr, v);
+    } else if (place <= Math.ceil(active.length * 0.33)) {
+      rs.finishText = pick(RACE_FINISH_TOP)(rs.name, pr, place, v);
+    } else if (place <= Math.ceil(active.length * 0.66)) {
+      rs.finishText = pick(RACE_FINISH_MID)(rs.name, pr, place, v);
+    } else {
+      rs.finishText = pick(RACE_FINISH_BOTTOM)(rs.name, pr, place, v);
+    }
   });
 
   // Race scoring: position-based
@@ -702,7 +865,8 @@ export function simulateGreatFakeOut(ep) {
   // Last place eliminated from eating
   const raceEliminated = raceStandings[raceStandings.length - 1].name;
   const raceElimPr = pronouns(raceEliminated);
-  const raceElimText = pick(RACE_ELIMINATED)(raceEliminated, raceElimPr);
+  const raceElimVehicle = raceStandings[raceStandings.length - 1].vehicle;
+  const raceElimText = pick(RACE_ELIMINATED)(raceEliminated, raceElimPr, raceElimVehicle);
 
   gs.campEvents[campKey].push({
     type: 'gfo-race-elim', players: [raceEliminated],
@@ -735,8 +899,7 @@ export function simulateGreatFakeOut(ep) {
 
     const dish = dishes[round];
     const difficulty = dish.diff;
-    const roundMultiplier = 1.0 - round * 0.1; // 1.0, 0.9, 0.8, 0.7, 0.6
-    const threshold = 4.5 + (round + 1) * 0.5;
+    const threshold = 3.5 + difficulty * 0.9 + round * 0.6;
 
     const roundEvents = [];
 
@@ -750,9 +913,10 @@ export function simulateGreatFakeOut(ep) {
     // Pre-eat events
     const roundSurvivors = [...survivors];
 
-    // Psych-out attempt (villain -> weakest)
+    // Psych-out attempt (villain -> weakest) — more likely in later rounds
+    const socialBoost = Math.min(round * 0.1, 0.3);
     const eaterVillains = roundSurvivors.filter(n => canScheme(n));
-    if (eaterVillains.length > 0 && Math.random() < 0.35) {
+    if (eaterVillains.length > 0 && Math.random() < 0.35 + socialBoost) {
       const villain = pick(eaterVillains);
       const targets = roundSurvivors.filter(n => n !== villain);
       // Target weakest endurance
@@ -771,9 +935,9 @@ export function simulateGreatFakeOut(ep) {
       }
     }
 
-    // Encouragement from nice archetypes
+    // Encouragement from nice archetypes — more likely in later rounds
     const eaterNice = roundSurvivors.filter(n => NICE_ARCHS.has(arch(n)));
-    if (eaterNice.length > 0 && Math.random() < 0.3) {
+    if (eaterNice.length > 0 && Math.random() < 0.3 + socialBoost) {
       const helper = pick(eaterNice);
       const targets = roundSurvivors.filter(n => n !== helper && getBond(helper, n) > 0);
       if (targets.length > 0) {
@@ -791,17 +955,18 @@ export function simulateGreatFakeOut(ep) {
 
     // Each player attempts to eat
     let roundEliminated = null;
+    let roundEliminatedAll = null;
     const eatResults = [];
 
     roundSurvivors.forEach(name => {
       const s = pStats(name);
       const debuff = vomitDebuff[name] || 0;
-      const eatRoll = (
-        (s.endurance - debuff) * 0.35 +
-        s.physical * 0.25 +
-        s.boldness * 0.2 +
-        s.luck * 0.2
-      ) * roundMultiplier + noise(2.5);
+      const eatRoll =
+        (s.endurance - debuff) * 0.30 +
+        s.boldness * 0.25 +
+        s.mental * 0.20 +
+        s.temperament * 0.25 +
+        noise(2.5);
 
       const pr = pronouns(name);
       const survived = eatRoll >= threshold;
@@ -813,7 +978,7 @@ export function simulateGreatFakeOut(ep) {
           eatResults.push({ name, survived: true, dominant: true, roll: eatRoll });
           roundEvents.push({
             type: 'eat-success', player: name, target: null,
-            text: pick(EAT_SUCCESS)(name, pr, dish.name),
+            text: pickFresh(EAT_SUCCESS, 'eat-success')(name, pr, dish.name),
             timeDelta: 0, consequences: 'survived',
           });
         } else if (eatRoll < threshold + 1.5) {
@@ -821,27 +986,33 @@ export function simulateGreatFakeOut(ep) {
           eatResults.push({ name, survived: true, dominant: false, roll: eatRoll });
           roundEvents.push({
             type: 'eat-struggle', player: name, target: null,
-            text: pick(EAT_STRUGGLE)(name, pr, dish.name),
+            text: pickFresh(EAT_STRUGGLE, 'eat-struggle')(name, pr, dish.name),
             timeDelta: 0, consequences: 'survived (barely)',
           });
         } else {
           eatResults.push({ name, survived: true, dominant: false, roll: eatRoll });
           roundEvents.push({
             type: 'eat-success', player: name, target: null,
-            text: pick(EAT_SUCCESS)(name, pr, dish.name),
+            text: pickFresh(EAT_SUCCESS, 'eat-success')(name, pr, dish.name),
             timeDelta: 0, consequences: 'survived',
           });
         }
       } else {
         eatResults.push({ name, survived: false, dominant: false, roll: eatRoll });
+        const closeFail = eatRoll >= threshold - 1.5;
+        const failPool = closeFail ? EAT_FAIL_CLOSE : EAT_FAIL_HARD;
+        const failKey = closeFail ? 'eat-fail-close' : 'eat-fail-hard';
         roundEvents.push({
           type: 'eat-fail', player: name, target: null,
-          text: pick(EAT_FAIL)(name, pr, dish.name),
+          text: pickFresh(failPool, failKey)(name, pr, dish.name),
           timeDelta: 0, consequences: 'eliminated',
         });
         survivors.delete(name);
         eatingStandings[name].roundEliminated = round + 1;
+        eatingStandings[name].finalRoll = eatRoll;
         if (!roundEliminated) roundEliminated = name;
+        if (!roundEliminatedAll) roundEliminatedAll = [];
+        roundEliminatedAll.push(name);
         popDelta(name, -1);
       }
     });
@@ -872,18 +1043,44 @@ export function simulateGreatFakeOut(ep) {
           vomitDebuff[name] += 1;
           roundEvents.push({
             type: 'vomit-chain', player: name, target: roundEliminated,
-            text: pick(EAT_VOMIT_CHAIN)(roundEliminated, name),
+            text: pickFresh(EAT_VOMIT_CHAIN, 'vomit-chain')(roundEliminated, name),
             timeDelta: 0, consequences: 'endurance -1 next round',
           });
         }
       });
     }
 
-    // Announcer chatter
-    if (Math.random() < 0.6) {
+    // Double-elimination reaction
+    const elimCount = roundEliminatedAll ? roundEliminatedAll.length : (roundEliminated ? 1 : 0);
+    if (elimCount >= 2) {
+      const names = roundEliminatedAll.join(' and ');
       roundEvents.push({
         type: 'announcer', player: null, target: null,
-        text: pick(ANNOUNCER_EAT),
+        text: pickFresh(DOUBLE_ELIM_REACTIONS, 'double-elim')(names, elimCount, host()),
+        timeDelta: 0, consequences: '',
+      });
+    }
+
+    // Survivor count
+    if (survivors.size > 0 && elimCount > 0) {
+      const survCount = survivors.size;
+      const survText = survCount === 1
+        ? `One player remains. This is it.`
+        : survCount === 2
+          ? `Two players remain. The tension is unbearable.`
+          : `${survCount} players remain. The table is getting emptier.`;
+      roundEvents.push({
+        type: 'announcer', player: null, target: null,
+        text: `"${survText}" — ${host()}`,
+        timeDelta: 0, consequences: '',
+      });
+    }
+
+    // Announcer chatter
+    if (Math.random() < 0.4) {
+      roundEvents.push({
+        type: 'announcer', player: null, target: null,
+        text: pickFresh(ANNOUNCER_EAT, 'announcer-eat'),
         timeDelta: 0, consequences: '',
       });
     }
@@ -893,6 +1090,7 @@ export function simulateGreatFakeOut(ep) {
       dish,
       events: roundEvents,
       eliminated: roundEliminated,
+      eliminatedAll: roundEliminatedAll || (roundEliminated ? [roundEliminated] : []),
       survivors: [...survivors],
     });
 
@@ -907,18 +1105,18 @@ export function simulateGreatFakeOut(ep) {
   const survivorList = [...survivors];
 
   if (survivorList.length === 0) {
-    // Everyone eliminated in the same round — last person eliminated wins
+    // Everyone eliminated — pick from the LAST round's eliminated (they lasted longest)
     const lastRound = eatingRounds[eatingRounds.length - 1];
-    const lastElim = lastRound?.events.filter(e => e.type === 'eat-fail');
-    if (lastElim && lastElim.length > 0) {
-      // Pick the one with the highest roll from the round
-      const roundResults = eaters.map(n => {
-        const s = pStats(n);
-        return { name: n, roll: s.endurance * 0.35 + s.physical * 0.25 + s.boldness * 0.2 + s.luck * 0.2 + noise(2.5) };
-      }).sort((a, b) => b.roll - a.roll);
-      immunityWinner = roundResults[0].name;
+    const lastRoundElim = lastRound?.eliminatedAll || (lastRound?.eliminated ? [lastRound.eliminated] : []);
+    const candidates = lastRoundElim.length > 0 ? lastRoundElim : eaters;
+    if (candidates.length === 1) {
+      immunityWinner = candidates[0];
     } else {
-      immunityWinner = pick(eaters);
+      // Use actual rolls from the round — whoever came closest to surviving wins
+      const roundResults = candidates.map(n => ({
+        name: n, roll: eatingStandings[n]?.finalRoll ?? 0,
+      })).sort((a, b) => b.roll - a.roll);
+      immunityWinner = roundResults[0].name;
     }
   } else if (survivorList.length === 1) {
     immunityWinner = survivorList[0];
@@ -926,8 +1124,8 @@ export function simulateGreatFakeOut(ep) {
     // Eat-off
     const [a, b] = survivorList;
     const sA = pStats(a), sB = pStats(b);
-    const rollA = (sA.endurance * 0.4 + sA.boldness * 0.3 + sA.luck * 0.3) + noise(2.5);
-    const rollB = (sB.endurance * 0.4 + sB.boldness * 0.3 + sB.luck * 0.3) + noise(2.5);
+    const rollA = sA.endurance * 0.30 + sA.boldness * 0.25 + sA.mental * 0.20 + sA.temperament * 0.25 + noise(2.5);
+    const rollB = sB.endurance * 0.30 + sB.boldness * 0.25 + sB.mental * 0.20 + sB.temperament * 0.25 + noise(2.5);
 
     const eatOffText = pick(EAT_EATOFF)(a, b);
     const eatOffDish = pick(DISH_POOL.filter(d => d.diff >= 4)) || DISH_POOL[DISH_POOL.length - 1];
@@ -943,16 +1141,16 @@ export function simulateGreatFakeOut(ep) {
         type: immunityWinner === a ? 'eat-success' : 'eat-fail',
         player: a, target: null,
         text: immunityWinner === a
-          ? pick(EAT_SUCCESS)(a, pronouns(a), eatOffDish.name)
-          : pick(EAT_FAIL)(a, pronouns(a), eatOffDish.name),
+          ? pickFresh(EAT_SUCCESS, 'eat-success')(a, pronouns(a), eatOffDish.name)
+          : pickFresh(EAT_FAIL_CLOSE, 'eat-fail-close')(a, pronouns(a), eatOffDish.name),
         timeDelta: 0, consequences: immunityWinner === a ? 'won eat-off' : 'lost eat-off',
       },
       {
         type: immunityWinner === b ? 'eat-success' : 'eat-fail',
         player: b, target: null,
         text: immunityWinner === b
-          ? pick(EAT_SUCCESS)(b, pronouns(b), eatOffDish.name)
-          : pick(EAT_FAIL)(b, pronouns(b), eatOffDish.name),
+          ? pickFresh(EAT_SUCCESS, 'eat-success')(b, pronouns(b), eatOffDish.name)
+          : pickFresh(EAT_FAIL_CLOSE, 'eat-fail-close')(b, pronouns(b), eatOffDish.name),
         timeDelta: 0, consequences: immunityWinner === b ? 'won eat-off' : 'lost eat-off',
       },
     ];
@@ -964,12 +1162,45 @@ export function simulateGreatFakeOut(ep) {
       survivors: [immunityWinner],
     });
   } else {
-    // More than 2 survived all rounds — best roll overall wins
-    const finalRolls = survivorList.map(n => {
+    // More than 2 survived all rounds — sudden death eat-off with hardest dish
+    const eatOffDish = pick(DISH_POOL.filter(d => d.diff >= 4)) || DISH_POOL[DISH_POOL.length - 1];
+    const eatOffRolls = survivorList.map(n => {
       const s = pStats(n);
-      return { name: n, roll: s.endurance * 0.4 + s.boldness * 0.3 + s.luck * 0.3 + noise(2.5) };
+      return { name: n, roll: s.endurance * 0.30 + s.boldness * 0.25 + s.mental * 0.20 + s.temperament * 0.25 + noise(2.5) };
     }).sort((a, b) => b.roll - a.roll);
-    immunityWinner = finalRolls[0].name;
+    immunityWinner = eatOffRolls[0].name;
+    const losers = eatOffRolls.slice(1);
+    losers.forEach(l => { eatingStandings[l.name].roundEliminated = dishes.length + 1; });
+
+    const eatOffEvents = [
+      { type: 'announcer', player: null, target: null,
+        text: `"${survivorList.length} still standing?! Fine. One more dish. Sudden death." — ${host()}`,
+        timeDelta: 0, consequences: 'sudden death eat-off' },
+      { type: 'dish-present', player: null, target: null,
+        text: `${eatOffDish.name} — ${eatOffDish.desc}`, timeDelta: 0, consequences: '' },
+    ];
+    // Winner survives
+    eatOffEvents.push({
+      type: 'eat-success', player: immunityWinner, target: null,
+      text: pickFresh(EAT_SUCCESS, 'eat-success')(immunityWinner, pronouns(immunityWinner), eatOffDish.name),
+      timeDelta: 0, consequences: 'won eat-off',
+    });
+    // Losers fall
+    losers.forEach(l => {
+      eatOffEvents.push({
+        type: 'eat-fail', player: l.name, target: null,
+        text: pickFresh(EAT_FAIL_CLOSE, 'eat-fail-close')(l.name, pronouns(l.name), eatOffDish.name),
+        timeDelta: 0, consequences: 'lost eat-off',
+      });
+    });
+    eatingRounds.push({
+      round: dishes.length + 1,
+      dish: { ...eatOffDish, round: dishes.length + 1 },
+      events: eatOffEvents,
+      eliminated: losers[0]?.name || null,
+      eliminatedAll: losers.map(l => l.name),
+      survivors: [immunityWinner],
+    });
   }
 
   // Winner text + scoring
@@ -1128,9 +1359,18 @@ function _ensureState(key, total) {
 }
 
 function _reapplyVisibility(suffix, upToIdx, total) {
-  for (let i = 0; i <= upToIdx; i++) {
+  for (let i = 0; i < total; i++) {
     const el = document.getElementById(`gfo-step-${suffix}-${i}`);
-    if (el) el.classList.add('visible');
+    if (!el) continue;
+    if (i <= upToIdx) {
+      el.classList.add('visible');
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    } else {
+      el.classList.remove('visible');
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(8px)';
+    }
   }
   const counter = document.getElementById(`gfo-counter-${suffix}`);
   if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total}`;
@@ -1231,12 +1471,15 @@ function _cardTypeClass(type) {
   if (type === 'rivalry-sprint' || type === 'encourage' || type === 'vehicle-rescue' || type === 'psych-out') return 'social-event';
   if (type === 'eat-fail') return 'elimination-event';
   if (type === 'vomit-chain') return 'vomit-card';
+  if (type === 'segment-result') return 'segment-result';
+  if (type === 'standings') return 'standings-card';
   return 'race-event';
 }
 
 function _cardStamp(type) {
   if (type === 'trap' || type === 'trap-chain' || type === 'dirty-move') return `<div class="gfo-card-stamp">${_trapStampSvg()}</div>`;
   if (type === 'rivalry-sprint' || type === 'encourage' || type === 'vehicle-rescue' || type === 'psych-out') return `<div class="gfo-card-stamp">${_socialStampSvg()}</div>`;
+  if (type === 'segment-result') return `<div class="gfo-card-stamp"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(240,230,211,0.4)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>`;
   return '';
 }
 
@@ -1244,7 +1487,15 @@ function _consequenceTags(consequences) {
   if (!consequences) return '';
   const tags = [];
   const c = consequences.toLowerCase();
-  if (c.includes('+') && c.includes('s') && (c.includes('penalty') || c.includes('breakdown') || c.includes('chain') || c.includes('target +'))) {
+  if (c.includes('fastest') || c.includes('top 3')) {
+    tags.push(`<div class="gfo-consequence time-gain">${consequences}</div>`);
+  } else if (c.includes('trailing')) {
+    tags.push(`<div class="gfo-consequence time-loss">${consequences}</div>`);
+  } else if (c.includes('mid-pack')) {
+    tags.push(`<div class="gfo-consequence bond-change">${consequences}</div>`);
+  } else if (c.includes('after segment')) {
+    return '';
+  } else if (c.includes('+') && c.includes('s') && (c.includes('penalty') || c.includes('breakdown') || c.includes('chain') || c.includes('target +'))) {
     tags.push(`<div class="gfo-consequence time-loss">${consequences.split(',')[0].trim()}</div>`);
   } else if (c.includes('-') && c.includes('s')) {
     tags.push(`<div class="gfo-consequence time-gain">${consequences.split(',')[0].trim()}</div>`);
@@ -1264,7 +1515,8 @@ function _eventTitle(type) {
   const map = {
     'trap': 'Booby Trap!', 'trap-chain': 'Chain Damage!', 'rivalry-sprint': 'Rivalry Sprint',
     'vehicle-breakdown': 'Vehicle Breakdown', 'vehicle-rescue': 'Race Rescue', 'dirty-move': 'Dirty Move',
-    'encourage': 'Encouragement', 'announcer': '', 'dish-present': 'Course Served',
+    'encourage': 'Encouragement', 'segment-result': 'Segment Run', 'standings': 'Standings',
+    'announcer': '', 'dish-present': 'Course Served',
     'psych-out': 'Psych-Out', 'eat-success': 'Ate It!', 'eat-struggle': 'Barely Survived',
     'eat-fail': 'Eliminated', 'stomach-steel': 'Stomach of Steel', 'vomit-chain': 'Vomit Chain!',
     'eat-off': 'Eat-Off!',
@@ -1277,6 +1529,8 @@ function _eventSubtitle(type) {
   if (type === 'rivalry-sprint' || type === 'encourage' || type === 'vehicle-rescue' || type === 'psych-out') return 'Social Event';
   if (type === 'dirty-move') return 'Sabotage';
   if (type === 'vehicle-breakdown') return 'Vehicle Failure';
+  if (type === 'segment-result') return 'Performance';
+  if (type === 'standings') return 'Leaderboard';
   if (type === 'eat-fail') return 'Eating Failure';
   if (type === 'vomit-chain') return 'Chain Reaction';
   if (type === 'stomach-steel') return 'Eating Event';
@@ -1399,11 +1653,13 @@ function _buildGFOSidebarContent(ep, screenKey) {
     // Build cumulative standings from revealed steps
     const stepMeta = window._gfoRaceStepMeta || [];
     const revealedTimes = {};
+    let maxRevealedSeg = 0;
     for (let i = 0; i <= Math.min(revealIdx, stepMeta.length - 1); i++) {
       const sm = stepMeta[i];
       if (sm && sm.standings) {
         sm.standings.forEach(s => { revealedTimes[s.name] = s.totalTime; });
       }
+      if (sm && sm.segment) maxRevealedSeg = Math.max(maxRevealedSeg, sm.segment);
     }
 
     // Sort by revealed times, fallback to final standings
@@ -1411,6 +1667,30 @@ function _buildGFOSidebarContent(ep, screenKey) {
       ...rs,
       displayTime: revealedTimes[rs.name] !== undefined ? revealedTimes[rs.name] : null,
     })).filter(rs => rs.displayTime !== null).sort((a, b) => a.displayTime - b.displayTime);
+
+    // Mini race map inside sidebar
+    if (standings.length > 0 && cd.raceSegments) {
+      const totalSegs = cd.raceSegments.length;
+      const minT = standings[0].displayTime;
+      const maxT = standings[standings.length - 1].displayTime;
+      const timeRange = maxT - minT;
+      const frontPct = 5 + (maxRevealedSeg / totalSegs) * 80;
+      const maxSpread = Math.min(35, maxRevealedSeg * 10);
+      html += `<div class="gfo-mini-map">`;
+      html += `<div class="gfo-mini-map-track">`;
+      for (let s = 0; s < totalSegs; s++) {
+        const pct = 5 + ((s + 1) / totalSegs) * 80;
+        html += `<div class="gfo-mini-map-seg" style="left:${pct}%;">${s + 1}</div>`;
+      }
+      html += `<div class="gfo-mini-map-finish" style="left:90%;">⛩</div>`;
+      standings.forEach((rs, i) => {
+        const behind = timeRange > 0.01 ? (rs.displayTime - minT) / timeRange : 0;
+        const pct = Math.max(3, frontPct - behind * maxSpread);
+        const ava = portrait(rs.name, 18) || `<span style="font-size:8px;">${rs.name[0]}</span>`;
+        html += `<div class="gfo-mini-map-dot" style="left:${pct}%;bottom:${4 + (i % 3) * 12}px;" title="${rs.name} — ${rs.displayTime.toFixed(1)}s">${ava}</div>`;
+      });
+      html += `</div></div>`;
+    }
 
     standings.forEach((rs, i) => {
       const isLast = i === standings.length - 1 && standings.length === cd.raceStandings.length;
@@ -1513,9 +1793,12 @@ function _buildGFOSidebarContent(ep, screenKey) {
         html += `<div style="display:flex;align-items:center;gap:4px;">R0: ${portrait(cd.raceEliminated, 18)} <span style="color:var(--gfo-cinnabar);text-decoration:line-through;">${cd.raceEliminated}</span> &#8212; <span style="font-style:italic;color:rgba(240,230,211,0.25);">Did not qualify</span></div>`;
       }
       cd.eatingRounds.forEach(round => {
-        if (round.eliminated && eliminated.has(round.eliminated)) {
-          html += `<div style="display:flex;align-items:center;gap:4px;">R${round.round}: ${portrait(round.eliminated, 18)} <span style="color:var(--gfo-cinnabar);text-decoration:line-through;">${round.eliminated}</span> &#8212; <span style="font-style:italic;color:rgba(240,230,211,0.25);">${round.dish.name}</span></div>`;
-        }
+        const allElim = round.eliminatedAll || (round.eliminated ? [round.eliminated] : []);
+        allElim.forEach(elName => {
+          if (eliminated.has(elName)) {
+            html += `<div style="display:flex;align-items:center;gap:4px;">R${round.round}: ${portrait(elName, 18)} <span style="color:var(--gfo-cinnabar);text-decoration:line-through;">${elName}</span> &#8212; <span style="font-style:italic;color:rgba(240,230,211,0.25);">${round.dish.name}</span></div>`;
+          }
+        });
       });
       html += `</div></div>`;
     }
@@ -1540,7 +1823,9 @@ function _updateGFOSidebar(screenKey) {
   const sideEl = document.getElementById('gfo-sidebar-inner');
   if (!sideEl) return;
   const epRecord = window._gfoEpRecord || gs.episodeHistory?.[window.vpEpNum - 1];
-  if (!epRecord?.challengeData) return;
+  if (!epRecord) return;
+  if (epRecord.greatFakeOut && !epRecord.challengeData) epRecord.challengeData = epRecord.greatFakeOut;
+  if (!epRecord.challengeData) return;
   sideEl.innerHTML = _buildGFOSidebarContent(epRecord, screenKey);
 }
 
@@ -1672,7 +1957,7 @@ function _buildWallMap(cd) {
   // Player markers (initial: all at start)
   cd.raceStandings.forEach((rs, i) => {
     const isLast = rs.name === cd.raceEliminated;
-    const stagger = i % 2 === 0 ? 95 : 115;
+    const stagger = 30 + (i % 3) * 22;
     html += `<div class="gfo-racer-marker${isLast ? ' last-place' : ''}" id="gfo-racer-${slug(rs.name)}" style="left:3%;bottom:${stagger}px;">
       <div class="gfo-racer-avatar">${portrait(rs.name, 28) || _initial(rs.name)}</div>
       <div class="gfo-racer-name">${rs.name}</div>
@@ -1681,7 +1966,7 @@ function _buildWallMap(cd) {
 
   // Torch glows at watchtower positions
   [19.5, 39.5, 59.5, 79.5].forEach((pos, i) => {
-    html += `<div class="gfo-torch-glow" style="left:${pos}%;bottom:${82 + i * 6}px;">
+    html += `<div class="gfo-torch-glow" style="left:${pos}%;bottom:${60 + i * 8}px;">
       <div class="gfo-torch-halo"></div>
       <div class="gfo-torch-flame" style="animation-delay:-${i * 0.2}s;"></div>
     </div>`;
@@ -1838,8 +2123,8 @@ function _gfoCss() {
 .gfo-scramble-screen::after,.gfo-race-screen::after{content:'';position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(180deg,transparent 0%,rgba(26,15,10,0.4) 40%,rgba(26,15,10,0.7) 100%);clip-path:polygon(0 60%,2% 45%,5% 55%,8% 35%,12% 50%,15% 30%,18% 45%,22% 25%,26% 40%,30% 20%,34% 35%,38% 22%,42% 38%,46% 18%,50% 32%,54% 15%,58% 28%,62% 20%,66% 35%,70% 18%,74% 30%,78% 22%,82% 38%,86% 15%,90% 30%,94% 20%,98% 35%,100% 25%,100% 100%,0 100%);pointer-events:none;z-index:0;}
 
 /* Phase tracker */
-.gfo-phase-tracker{position:sticky;top:46px;z-index:100;display:flex;align-items:center;justify-content:center;gap:0;padding:10px 20px;background:linear-gradient(180deg,rgba(30,18,12,0.95) 0%,rgba(40,25,15,0.9) 100%);backdrop-filter:blur(8px);border-bottom:2px solid var(--gfo-gold);}
-.gfo-phase-pip{font-family:var(--gfo-font-display);font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(240,230,211,0.35);padding:6px 18px;position:relative;transition:all 0.4s ease;}
+.gfo-phase-tracker{position:sticky;top:46px;z-index:100;display:flex;align-items:center;justify-content:center;gap:0;padding:4px 20px;background:linear-gradient(180deg,rgba(30,18,12,0.95) 0%,rgba(40,25,15,0.9) 100%);backdrop-filter:blur(8px);border-bottom:2px solid var(--gfo-gold);box-sizing:border-box;}
+.gfo-phase-pip{font-family:var(--gfo-font-display);font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(240,230,211,0.35);padding:3px 14px;position:relative;transition:all 0.4s ease;}
 .gfo-phase-pip.active{color:var(--gfo-gold);text-shadow:0 0 12px rgba(212,160,23,0.4);}
 .gfo-phase-pip.active::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,var(--gfo-gold),transparent);border-radius:1px;}
 .gfo-phase-pip.completed{color:rgba(240,230,211,0.55);}
@@ -1950,13 +2235,13 @@ function _gfoCss() {
 /* ── RACE SCREEN ── */
 .gfo-race-screen{position:relative;background:linear-gradient(180deg,#1a0f2e 0%,#2d1835 10%,#4a2540 20%,#6a3535 35%,#8a4a30 50%,#7a4030 65%,#4a2530 80%,#2a1525 90%,#1a0f1e 100%);padding:20px 0;min-height:100vh;}
 
-.gfo-wall-map{position:relative;margin:20px;height:220px;background:linear-gradient(180deg,#3a2030 0%,#5a3535 20%,#7a4a35 45%,#6a4030 65%,#4a2a25 85%,#2a1520 100%);border-radius:4px;overflow:hidden;border:1px solid rgba(212,160,23,0.15);}
+.gfo-wall-map{position:sticky;top:76px;z-index:55;margin:0 20px;height:140px;background:linear-gradient(180deg,#3a2030 0%,#5a3535 20%,#7a4a35 45%,#6a4030 65%,#4a2a25 85%,#2a1520 100%);border-radius:0 0 4px 4px;overflow:hidden;border:1px solid rgba(212,160,23,0.15);border-top:none;}
 .gfo-wall-bg-mountains{position:absolute;top:0;left:0;right:0;height:60%;opacity:0.6;}
 .gfo-wall-bg-far{position:absolute;bottom:0;left:0;width:100%;height:100%;clip-path:polygon(0 70%,5% 50%,12% 65%,20% 35%,30% 55%,40% 25%,50% 45%,60% 20%,70% 40%,80% 30%,90% 50%,100% 35%,100% 100%,0 100%);background:linear-gradient(180deg,#4a2535,#3a1a25);}
 .gfo-wall-path{position:absolute;bottom:30px;left:40px;right:40px;height:80px;}
 .gfo-wall-svg{width:100%;height:100%;}
 
-.gfo-racer-marker{position:absolute;bottom:85px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:left 0.8s cubic-bezier(0.16,1,0.3,1);}
+.gfo-racer-marker{position:absolute;bottom:40px;display:flex;flex-direction:column;align-items:center;gap:1px;transition:left 0.8s cubic-bezier(0.16,1,0.3,1);}
 .gfo-racer-avatar{width:28px;height:28px;border-radius:50%;border:2px solid var(--gfo-gold);background:rgba(26,26,26,0.8);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gfo-parchment);font-family:var(--gfo-font-display);overflow:hidden;}
 .gfo-racer-avatar img{width:28px;height:28px;border-radius:50%;object-fit:contain;}
 .gfo-racer-name{font-size:9px;font-family:var(--gfo-font-display);color:rgba(240,230,211,0.6);letter-spacing:0.5px;font-weight:600;white-space:nowrap;}
@@ -1972,13 +2257,26 @@ function _gfoCss() {
 
 /* Base card */
 .gfo-card{position:relative;background:linear-gradient(135deg,rgba(240,230,211,0.06) 0%,rgba(240,230,211,0.02) 100%);border:1px solid rgba(240,230,211,0.08);border-radius:3px;padding:16px 20px;overflow:hidden;}
-.gfo-card.paint-in{animation:gfo-card-paint 0.6s cubic-bezier(0.16,1,0.3,1) forwards;}
-@keyframes gfo-card-paint{0%{opacity:0;clip-path:inset(0 100% 0 0);}100%{opacity:1;clip-path:inset(0 0% 0 0);}}
+[id^="gfo-step-"].visible.paint-in{animation:gfo-card-paint 0.6s cubic-bezier(0.16,1,0.3,1) forwards;}
+@keyframes gfo-card-paint{0%{clip-path:inset(0 100% 0 0);}100%{clip-path:inset(0 0% 0 0);}}
 
 .gfo-card.race-event{border-left:3px solid var(--gfo-gold);}
 .gfo-card.trap-event{border-left:3px solid var(--gfo-cinnabar);}
 .gfo-card.social-event{border-left:3px solid var(--gfo-jade);}
+.gfo-card.segment-result{border-left:3px solid rgba(240,230,211,0.25);background:rgba(26,26,26,0.25);}
+.gfo-card.standings-card{border-left:3px solid var(--gfo-gold);background:linear-gradient(135deg,rgba(212,175,55,0.06) 0%,rgba(26,26,26,0.4) 100%);}
 .gfo-card.elimination-event{border-left:3px solid var(--gfo-cinnabar);background:linear-gradient(135deg,rgba(194,54,22,0.08) 0%,rgba(26,26,26,0.4) 100%);}
+
+.gfo-standings-board{display:flex;flex-direction:column;gap:3px;margin-top:6px;}
+.gfo-standings-row{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:3px;font-family:var(--gfo-font-body);font-size:13px;color:rgba(240,230,211,0.7);background:rgba(26,26,26,0.25);}
+.gfo-standings-row.gfo-pos-first{background:rgba(212,175,55,0.12);color:var(--gfo-gold);font-weight:600;}
+.gfo-standings-row.gfo-pos-last{background:rgba(194,54,22,0.1);color:var(--gfo-cinnabar);}
+.gfo-standings-pos{font-family:var(--gfo-font-display);font-weight:700;width:18px;text-align:center;font-size:12px;}
+.gfo-standings-avatar{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;}
+.gfo-standings-avatar img{width:24px;height:24px;border-radius:50%;object-fit:contain;}
+.gfo-standings-name{flex:1;font-weight:500;}
+.gfo-standings-time{font-family:var(--gfo-font-display);font-size:12px;letter-spacing:0.5px;opacity:0.8;}
+.gfo-standings-badge{font-size:14px;}
 
 .gfo-card-stamp{position:absolute;top:8px;right:12px;width:28px;height:28px;opacity:0.5;}
 .gfo-card-stamp svg{width:100%;height:100%;}
@@ -2006,8 +2304,15 @@ function _gfoCss() {
 .gfo-segment-flavor{font-family:var(--gfo-font-body);font-size:13px;font-style:italic;color:rgba(240,230,211,0.3);margin-top:4px;}
 
 /* Sidebar */
-.gfo-sidebar{position:sticky;top:110px;align-self:start;background:rgba(30,20,15,0.75);border:1px solid rgba(212,160,23,0.12);border-radius:3px;padding:16px;max-height:calc(100vh - 130px);overflow-y:auto;backdrop-filter:blur(4px);}
+.gfo-sidebar{position:sticky;top:80px;align-self:start;background:rgba(30,20,15,0.85);border:1px solid rgba(212,160,23,0.12);border-radius:3px;padding:14px;max-height:calc(100vh - 90px);overflow-y:auto;backdrop-filter:blur(4px);z-index:60;}
 .gfo-sidebar-title{font-family:var(--gfo-font-display);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gfo-gold);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(212,160,23,0.2);}
+
+.gfo-mini-map{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(240,230,211,0.06);}
+.gfo-mini-map-track{position:relative;height:44px;background:linear-gradient(180deg,rgba(90,53,53,0.4) 0%,rgba(42,21,32,0.4) 100%);border-radius:3px;border:1px solid rgba(212,160,23,0.08);overflow:hidden;}
+.gfo-mini-map-seg{position:absolute;top:2px;transform:translateX(-50%);font-family:var(--gfo-font-display);font-size:8px;color:rgba(240,230,211,0.15);letter-spacing:0.5px;}
+.gfo-mini-map-finish{position:absolute;top:2px;transform:translateX(-50%);font-size:12px;}
+.gfo-mini-map-dot{position:absolute;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--gfo-gold);background:rgba(26,26,26,0.8);display:flex;align-items:center;justify-content:center;overflow:hidden;transition:left 0.6s cubic-bezier(0.16,1,0.3,1);}
+.gfo-mini-map-dot img{width:18px;height:18px;border-radius:50%;object-fit:contain;}
 
 .gfo-lb-entry{display:grid;grid-template-columns:18px 28px 1fr 50px;align-items:center;gap:6px;padding:6px 4px;border-bottom:1px solid rgba(240,230,211,0.04);transition:all 0.4s ease;}
 .gfo-lb-pos{font-family:var(--gfo-font-display);font-size:11px;font-weight:700;color:rgba(240,230,211,0.4);text-align:center;}
@@ -2050,7 +2355,8 @@ function _gfoCss() {
 .gfo-steam-particle{position:absolute;bottom:-20px;width:8px;height:8px;background:radial-gradient(circle,rgba(255,220,160,0.15),rgba(255,200,130,0.05),transparent);border-radius:50%;animation:gfo-steam-rise linear infinite;}
 @keyframes gfo-steam-rise{0%{transform:translateY(0) scale(1);opacity:0.7;}50%{transform:translateY(-200px) scale(2.5);opacity:0.35;}100%{transform:translateY(-400px) scale(4);opacity:0;}}
 
-.gfo-card.eating-card{animation:gfo-chopstick-snap 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;border-left:3px solid var(--gfo-amber);}
+.gfo-card.eating-card{border-left:3px solid var(--gfo-amber);}
+[id^="gfo-step-"].visible.eating-card{animation:gfo-chopstick-snap 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;}
 @keyframes gfo-chopstick-snap{0%{opacity:0;transform:translateY(-30px);}60%{transform:translateY(3px);}100%{opacity:1;transform:translateY(0);}}
 .gfo-card.vomit-card{border-left:3px solid var(--gfo-vomit);background:linear-gradient(135deg,rgba(122,154,58,0.06) 0%,rgba(26,26,26,0.4) 100%);}
 .gfo-card.eliminated-card{border-left:3px solid var(--gfo-cinnabar);position:relative;}
@@ -2212,6 +2518,7 @@ export function rpBuildGFOScramble(ep) {
   const cd = ep.challengeData;
   if (!cd) return '';
   window._gfoEpRecord = ep;
+  delete _tvState['scramble'];
 
   // Build step metadata for sidebar
   const stepMeta = [];
@@ -2242,7 +2549,7 @@ export function rpBuildGFOScramble(ep) {
   content += `<div class="gfo-content-area"><div class="gfo-card-feed">`;
 
   // Host announcement divider
-  content += `<div id="gfo-step-scramble-${stepIdx}" class="gfo-segment-divider">
+  content += `<div id="gfo-step-scramble-${stepIdx}" class="gfo-segment-divider" style="opacity:0"
     <div class="gfo-segment-label">Host Announcement</div>
     <div class="gfo-segment-flavor">"Today you'll race along the ancient fortress wall to the finish line, and the winner gets&#8212;" *phone rings* "...just go!"</div>
   </div>`;
@@ -2264,7 +2571,7 @@ export function rpBuildGFOScramble(ep) {
     // Drama events before this grab
     if (dramaByGrabOrder[i]) {
       dramaByGrabOrder[i].forEach(d => {
-        content += `<div id="gfo-step-scramble-${stepIdx}" class="gfo-scramble-drama">
+        content += `<div id="gfo-step-scramble-${stepIdx}" class="gfo-scramble-drama" style="opacity:0"
           <div class="gfo-scramble-drama-header">
             <div class="gfo-card-player-ring">${portrait(d.actor, 32) || _initial(d.actor)}</div>
             ${d.target ? `<div class="gfo-card-player-ring">${portrait(d.target, 32) || _initial(d.target)}</div>` : ''}
@@ -2280,7 +2587,7 @@ export function rpBuildGFOScramble(ep) {
 
     // Grab card
     const hasDrama = cd.scrambleDrama.some(d => d.actor === va.name || d.target === va.name);
-    content += `<div id="gfo-step-scramble-${stepIdx}" class="gfo-grab-card${hasDrama ? ' has-drama' : ''}">
+    content += `<div id="gfo-step-scramble-${stepIdx}" class="gfo-grab-card${hasDrama ? ' has-drama' : ''}" style="opacity:0">
       <div class="gfo-grab-order">${i + 1}</div>
       <div class="gfo-card-player-ring">${portrait(va.name, 32)}</div>
       <div class="gfo-grab-info">
@@ -2299,7 +2606,7 @@ export function rpBuildGFOScramble(ep) {
     // Announcer chatter occasionally
     if (i > 0 && i < cd.vehicles.length - 1 && Math.random() < 0.3) {
       const chatter = RACE_CHATTER[i % RACE_CHATTER.length];
-      content += `<div id="gfo-step-scramble-${stepIdx}" class="gfo-announcer host">${chatter}</div>`;
+      content += `<div id="gfo-step-scramble-${stepIdx}" class="gfo-announcer host" style="opacity:0">${chatter}</div>`;
       stepMeta.push({ type: 'chatter' });
       stepIdx++;
     }
@@ -2327,6 +2634,7 @@ export function rpBuildGFORace(ep) {
   const cd = ep.challengeData;
   if (!cd) return '';
   window._gfoEpRecord = ep;
+  delete _tvState['race'];
 
   const stepMeta = [];
   let stepIdx = 0;
@@ -2342,35 +2650,83 @@ export function rpBuildGFORace(ep) {
   // Cards + sidebar
   content += `<div class="gfo-content-area"><div class="gfo-card-feed">`;
 
-  // Build cumulative times for sidebar
+  // Build cumulative times — advance each player individually as their card appears
   const cumulativeTimes = {};
-  cd.raceStandings.forEach(rs => { cumulativeTimes[rs.name] = 0; });
+  const playerSegmentAdded = {};
+  cd.raceStandings.forEach(rs => { cumulativeTimes[rs.name] = 0; playerSegmentAdded[rs.name] = -1; });
+
+  // Helper: advance a specific player's marker to include up to segIdx
+  function _advancePlayer(name, segIdx) {
+    const rs = cd.raceStandings.find(r => r.name === name);
+    if (!rs?.segments) return;
+    while (playerSegmentAdded[name] < segIdx) {
+      playerSegmentAdded[name]++;
+      const segT = rs.segments[playerSegmentAdded[name]];
+      if (segT != null) cumulativeTimes[name] += segT;
+    }
+  }
+
+  function _currentStandings() {
+    return Object.entries(cumulativeTimes).map(([name, t]) => ({ name, totalTime: t }));
+  }
 
   cd.raceSegments.forEach((seg, segIdx) => {
-    // Segment divider
+    // Segment divider — don't advance anyone yet, just mark the segment
     const flavor = SEGMENT_FLAVORS[segIdx % SEGMENT_FLAVORS.length];
-    content += `<div id="gfo-step-race-${stepIdx}" class="gfo-segment-divider">
+    content += `<div id="gfo-step-race-${stepIdx}" class="gfo-segment-divider" style="opacity:0">
       <div class="gfo-segment-label">Segment ${seg.seg} of ${cd.raceSegments.length}</div>
       <div class="gfo-segment-flavor">${flavor}</div>
     </div>`;
-    stepMeta.push({ type: 'divider', segment: segIdx + 1, standings: Object.entries(cumulativeTimes).map(([name, t]) => ({ name, totalTime: t })) });
+    stepMeta.push({ type: 'divider', segment: segIdx + 1, standings: _currentStandings() });
     stepIdx++;
 
-    // Event cards
+    // Event cards — advance the player mentioned in each card
     seg.events.forEach(ev => {
       if (ev.type === 'announcer') {
-        content += `<div id="gfo-step-race-${stepIdx}" class="gfo-announcer host">${ev.text}</div>`;
-        stepMeta.push({ type: 'chatter', segment: segIdx + 1, standings: Object.entries(cumulativeTimes).map(([name, t]) => ({ name, totalTime: t })) });
+        content += `<div id="gfo-step-race-${stepIdx}" class="gfo-announcer host" style="opacity:0">${ev.text}</div>`;
+        stepMeta.push({ type: 'chatter', segment: segIdx + 1, standings: _currentStandings() });
         stepIdx++;
         return;
       }
 
-      if (ev.type === 'trap' || ev.type === 'trap-chain') trapCount++;
-
-      // Update cumulative times
-      if (ev.player && ev.timeDelta) {
-        cumulativeTimes[ev.player] = (cumulativeTimes[ev.player] || 0) + Math.abs(ev.timeDelta);
+      // Standings leaderboard — special compact table
+      if (ev.type === 'standings') {
+        cd.raceStandings.forEach(rs => _advancePlayer(rs.name, segIdx));
+        const lines = ev.text.split('\n');
+        const rows = lines.map(line => {
+          const m = line.match(/^(\d+)\.\s+(.+?)\s+—\s+([\d.]+s)(.*)/);
+          if (!m) return `<div class="gfo-standings-row">${line}</div>`;
+          const pos = m[1], name = m[2], time = m[3], badge = m[4].trim();
+          const posClass = pos === '1' ? 'gfo-pos-first' : pos === String(lines.length) ? 'gfo-pos-last' : '';
+          const ring = portrait(name, 24) || _initial(name);
+          return `<div class="gfo-standings-row ${posClass}">
+            <span class="gfo-standings-pos">${pos}</span>
+            <span class="gfo-standings-avatar">${ring}</span>
+            <span class="gfo-standings-name">${name}</span>
+            <span class="gfo-standings-time">${time}</span>
+            ${badge ? `<span class="gfo-standings-badge">${badge}</span>` : ''}
+          </div>`;
+        }).join('');
+        content += `<div id="gfo-step-race-${stepIdx}" class="gfo-card standings-card paint-in" style="opacity:0">
+          <div class="gfo-card-header">
+            <div><div class="gfo-card-title">Standings</div>
+            <div class="gfo-card-subtitle">After Segment ${segIdx + 1}</div></div>
+          </div>
+          <div class="gfo-standings-board">${rows}</div>
+        </div>`;
+        stepMeta.push({
+          type: 'standings', segment: segIdx + 1,
+          standings: _currentStandings(),
+        });
+        stepIdx++;
+        return;
       }
+
+      // Advance the player(s) in this card to current segment
+      if (ev.player) _advancePlayer(ev.player, segIdx);
+      if (ev.target) _advancePlayer(ev.target, segIdx);
+
+      if (ev.type === 'trap' || ev.type === 'trap-chain') trapCount++;
 
       const cardCls = _cardTypeClass(ev.type);
       const stamp = _cardStamp(ev.type);
@@ -2380,7 +2736,7 @@ export function rpBuildGFORace(ep) {
       const targetRing = ev.target ? (portrait(ev.target, 32) || _initial(ev.target)) : '';
       const elimCls = ev.type === 'eat-fail' ? ' eliminated-card' : '';
 
-      content += `<div id="gfo-step-race-${stepIdx}" class="gfo-card ${cardCls}${elimCls} paint-in">
+      content += `<div id="gfo-step-race-${stepIdx}" class="gfo-card ${cardCls}${elimCls} paint-in" style="opacity:0">
         ${stamp}
         <div class="gfo-card-header">
           <div class="gfo-card-player-ring">${playerRing}</div>
@@ -2395,14 +2751,14 @@ export function rpBuildGFORace(ep) {
       </div>`;
       stepMeta.push({
         type: 'event', eventType: ev.type, segment: segIdx + 1, trapCount,
-        standings: Object.entries(cumulativeTimes).map(([name, t]) => ({ name, totalTime: t })),
+        standings: _currentStandings(),
       });
       stepIdx++;
     });
   });
 
   // Race finish + elimination
-  content += `<div id="gfo-step-race-${stepIdx}" class="gfo-segment-divider">
+  content += `<div id="gfo-step-race-${stepIdx}" class="gfo-segment-divider" style="opacity:0">
     <div class="gfo-segment-label">Finish Line</div>
     <div class="gfo-segment-flavor">The dust settles. The standings are final.</div>
   </div>`;
@@ -2422,7 +2778,7 @@ export function rpBuildGFORace(ep) {
     const ringStyle = isElim ? ' style="border-color:var(--gfo-cinnabar);"' : '';
     const titleStyle = isElim ? ' style="color:var(--gfo-cinnabar);"' : '';
 
-    content += `<div id="gfo-step-race-${stepIdx}" class="gfo-card ${cardCls} paint-in">
+    content += `<div id="gfo-step-race-${stepIdx}" class="gfo-card ${cardCls} paint-in" style="opacity:0">
       <div class="gfo-card-header">
         <div class="gfo-card-player-ring"${ringStyle}>${portrait(rs.name, 32) || _initial(rs.name)}</div>
         <div>
@@ -2488,6 +2844,7 @@ export function rpBuildGFOEating(ep) {
   const cd = ep.challengeData;
   if (!cd) return '';
   window._gfoEpRecord = ep;
+  delete _tvState['eating'];
 
   const stepMeta = [];
   let stepIdx = 0;
@@ -2502,7 +2859,7 @@ export function rpBuildGFOEating(ep) {
   cd.eatingRounds.forEach((round, rIdx) => {
     // Round divider
     const flavor = EAT_ROUND_FLAVOR[rIdx % EAT_ROUND_FLAVOR.length];
-    content += `<div id="gfo-step-eating-${stepIdx}" class="gfo-segment-divider">
+    content += `<div id="gfo-step-eating-${stepIdx}" class="gfo-segment-divider" style="opacity:0">
       <div class="gfo-segment-label">Round ${round.round} of ${cd.dishes.length}</div>
       <div class="gfo-segment-flavor">${flavor}</div>
     </div>`;
@@ -2512,7 +2869,7 @@ export function rpBuildGFOEating(ep) {
     // Event cards
     round.events.forEach(ev => {
       if (ev.type === 'announcer') {
-        content += `<div id="gfo-step-eating-${stepIdx}" class="gfo-announcer host">${ev.text}</div>`;
+        content += `<div id="gfo-step-eating-${stepIdx}" class="gfo-announcer host" style="opacity:0">${ev.text}</div>`;
         stepMeta.push({ type: 'chatter', round: round.round, dish: round.dish });
         stepIdx++;
         return;
@@ -2520,7 +2877,7 @@ export function rpBuildGFOEating(ep) {
 
       if (ev.type === 'dish-present') {
         // Dish presentation card
-        content += `<div id="gfo-step-eating-${stepIdx}" class="gfo-card eating-card">
+        content += `<div id="gfo-step-eating-${stepIdx}" class="gfo-card eating-card" style="opacity:0">
           <div class="gfo-dish-display">
             <div class="gfo-dish-icon">${_dishSvg()}</div>
             <div>
@@ -2553,7 +2910,7 @@ export function rpBuildGFOEating(ep) {
       const playerRing = ev.player ? (portrait(ev.player, 32) || _initial(ev.player)) : '';
       const targetRing = ev.target ? (portrait(ev.target, 32) || _initial(ev.target)) : '';
 
-      content += `<div id="gfo-step-eating-${stepIdx}" class="gfo-card ${cardCls}">
+      content += `<div id="gfo-step-eating-${stepIdx}" class="gfo-card ${cardCls}" style="opacity:0">
         <div class="gfo-card-header">
           <div class="gfo-card-player-ring"${ringStyle}>${playerRing}</div>
           ${targetRing ? `<div class="gfo-card-player-ring">${targetRing}</div>` : ''}
@@ -2575,7 +2932,7 @@ export function rpBuildGFOEating(ep) {
   });
 
   // Winner announcement
-  content += `<div id="gfo-step-eating-${stepIdx}" class="gfo-card eating-card" style="border-left:3px solid var(--gfo-gold);background:linear-gradient(135deg,rgba(212,160,23,0.08) 0%,rgba(26,26,26,0.4) 100%);">
+  content += `<div id="gfo-step-eating-${stepIdx}" class="gfo-card eating-card" style="opacity:0;border-left:3px solid var(--gfo-gold);background:linear-gradient(135deg,rgba(212,160,23,0.08) 0%,rgba(26,26,26,0.4) 100%);">
     <div class="gfo-card-header">
       <div class="gfo-card-player-ring" style="border-color:var(--gfo-gold);">${portrait(cd.immunityWinner, 32) || _initial(cd.immunityWinner)}</div>
       <div>
@@ -2710,18 +3067,35 @@ function _updateRaceMap(stepMeta) {
   const cd = window._gfoEpRecord?.challengeData;
   if (!cd) return;
 
-  // Get max time for normalization
-  const maxTime = Math.max(...stepMeta.standings.map(s => s.totalTime), 1);
-  const finalMax = Math.max(...cd.raceStandings.map(rs => rs.totalTime), 1);
+  const totalSegs = cd.raceSegments.length;
+  const currentSeg = stepMeta.segment || 1;
+
+  // Only consider players whose time has been revealed (> 0)
+  const revealed = stepMeta.standings.filter(s => (s.totalTime || 0) > 0);
+  const revTimes = revealed.map(s => s.totalTime);
+  const minT = revTimes.length > 0 ? Math.min(...revTimes) : 0;
+  const maxT = revTimes.length > 0 ? Math.max(...revTimes) : 1;
+  const timeRange = maxT - minT;
+
+  // Leader position advances by segment (3% start → 88% finish)
+  const frontPct = 3 + (currentSeg / totalSegs) * 85;
+  // Spread between leader and slowest grows as race progresses
+  const maxSpread = Math.min(35, currentSeg * 10);
 
   stepMeta.standings.forEach((s, i) => {
     const el = document.getElementById(`gfo-racer-${slug(s.name)}`);
     if (!el) return;
-    // Position: 3% to 90% based on progress relative to final time
-    const progress = s.totalTime / finalMax;
-    const pct = 3 + Math.min(progress, 1) * 87;
-    el.style.left = `${pct}%`;
-    // Stagger vertically
-    el.style.bottom = i % 2 === 0 ? '95px' : '115px';
+    const t = s.totalTime || 0;
+
+    if (t === 0) {
+      el.style.left = '3%';
+    } else {
+      // Lower time = faster = further ahead. behind=0 for leader, behind=1 for slowest.
+      const behind = timeRange > 0.01 ? (t - minT) / timeRange : 0;
+      const pct = frontPct - behind * maxSpread;
+      el.style.left = `${Math.max(3, pct)}%`;
+    }
+    el.style.transition = 'left 0.6s cubic-bezier(0.16,1,0.3,1)';
+    el.style.bottom = (30 + (i % 3) * 22) + 'px';
   });
 }

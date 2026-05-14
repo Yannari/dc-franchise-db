@@ -86,7 +86,7 @@ export function patchEpisodeHistory(ep) {
   if (ep.isTie !== undefined && !h.isTie) h.isTie = ep.isTie;
   if (ep.tiedPlayers?.length && !h.tiedPlayers) h.tiedPlayers = [...ep.tiedPlayers];
   if (ep.revoteVotes && !h.revoteVotes) h.revoteVotes = ep.revoteVotes;
-  if (ep.revoteLog?.length && !h.revoteLog) h.revoteLog = ep.revoteLog;
+  if (ep.revoteLog?.length && (!h.revoteLog || !h.revoteLog.length)) h.revoteLog = ep.revoteLog;
   if (ep.isRockDraw && !h.isRockDraw) h.isRockDraw = ep.isRockDraw;
   // Clear journey lost votes for players who attended this tribal — vote loss is consumed
   if (ep.tribalPlayers?.length && gs.journeyLostVotes?.length) {

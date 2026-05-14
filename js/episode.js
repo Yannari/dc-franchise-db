@@ -79,6 +79,7 @@ import { simulatePicnicHangingDork } from './chal/picnic-hanging-dork.js';
 import { simulateVikingSour } from './chal/viking-sour.js';
 import { simulateBridalBrawls } from './chal/bridal-brawls.js';
 import { simulateGreatFakeOut } from './chal/great-fake-out.js';
+import { simulateAfricanLyingSafari } from './chal/african-lying-safari.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   patchEpisodeHistory, saveGameState, snapshotGameState, buildCrashout
@@ -1006,7 +1007,7 @@ export function handleExileFormat(ep) {
   if (phase === 'pre' && gs.isMerged) return;
   if (phase === 'post' && !gs.isMerged) return;
   // Don't fire on special episode types
-  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isPrincessPride || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama || ep.isHouston || ep.isTopDog || ep.isCrouchingCourtney || ep.isGetAClue || ep.isRockNRule || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut) return;
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isPrincessPride || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama || ep.isHouston || ep.isTopDog || ep.isCrouchingCourtney || ep.isGetAClue || ep.isRockNRule || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
   // Don't double up with schoolyard pick exile (unpicked player already on exile)
@@ -1503,6 +1504,7 @@ export function simulateEpisode() {
         isVikingSour: ep.isVikingSour || false, vikingSour: ep.vikingSour || null,
         isBridalBrawls: ep.isBridalBrawls || false, challengeData: ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
         isGreatFakeOut: ep.isGreatFakeOut || false, greatFakeOut: ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+        isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -1610,6 +1612,13 @@ export function simulateEpisode() {
     simulateGreatFakeOut(ep);
     ep.immunityWinner = ep.challengeData?.immunityWinner || ep.immunityWinner;
     ep.challengeType = 'great-fake-out';
+  }
+
+  // ── AFRICAN LYING SAFARI (post-merge) — 3-phase safari hunt ──
+  if (ep.isAfricanLyingSafari && gs.isMerged) {
+    simulateAfricanLyingSafari(ep);
+    ep.immunityWinner = ep.challengeData?.immunityWinner || ep.immunityWinner;
+    ep.challengeType = 'african-lying-safari';
   }
 
   // ── ALIEN EGG (post-merge) — egg hunt determines immunity, normal tribal follows ──
@@ -1721,6 +1730,7 @@ export function simulateEpisode() {
         isVikingSour: ep.isVikingSour || false, vikingSour: ep.vikingSour || null,
         isBridalBrawls: ep.isBridalBrawls || false, challengeData: ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
         isGreatFakeOut: ep.isGreatFakeOut || false, greatFakeOut: ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+        isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -1745,7 +1755,7 @@ export function simulateEpisode() {
     || ep.isBrunchOfDisgustingness || ep.isBasicStraining
     || ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg
     || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue
-    || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut;
+    || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari;
   if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
@@ -1835,6 +1845,7 @@ export function simulateEpisode() {
         isVikingSour: ep.isVikingSour || false, vikingSour: ep.vikingSour || null,
         isBridalBrawls: ep.isBridalBrawls || false, challengeData: ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
         isGreatFakeOut: ep.isGreatFakeOut || false, greatFakeOut: ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+        isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -2336,6 +2347,7 @@ export function simulateEpisode() {
         isVikingSour: ep.isVikingSour || false, vikingSour: ep.vikingSour || null,
         isBridalBrawls: ep.isBridalBrawls || false, challengeData: ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
         isGreatFakeOut: ep.isGreatFakeOut || false, greatFakeOut: ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+        isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -2426,6 +2438,7 @@ export function simulateEpisode() {
         isVikingSour: ep.isVikingSour || false, vikingSour: ep.vikingSour || null,
         isBridalBrawls: ep.isBridalBrawls || false, challengeData: ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
         isGreatFakeOut: ep.isGreatFakeOut || false, greatFakeOut: ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+        isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -2468,7 +2481,7 @@ export function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut) {
+    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari) {
     // Special challenge already ran and set immunityWinner + chalMemberScores — skip generic challenge
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
@@ -2664,6 +2677,7 @@ export function simulateEpisode() {
         isVikingSour: ep.isVikingSour || false, vikingSour: ep.vikingSour || null,
         isBridalBrawls: ep.isBridalBrawls || false, challengeData: ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
         isGreatFakeOut: ep.isGreatFakeOut || false, greatFakeOut: ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+        isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -2767,7 +2781,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari) {
     updateChalRecord(ep);
   }
 
@@ -3095,6 +3109,7 @@ export function simulateEpisode() {
         isVikingSour: ep.isVikingSour || false, vikingSour: ep.vikingSour || null,
         isBridalBrawls: ep.isBridalBrawls || false, challengeData: ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
         isGreatFakeOut: ep.isGreatFakeOut || false, greatFakeOut: ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+        isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -3160,6 +3175,7 @@ export function simulateEpisode() {
         isVikingSour: ep.isVikingSour || false, vikingSour: ep.vikingSour || null,
         isBridalBrawls: ep.isBridalBrawls || false, challengeData: ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
         isGreatFakeOut: ep.isGreatFakeOut || false, greatFakeOut: ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+        isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -3365,6 +3381,7 @@ export function simulateEpisode() {
         isVikingSour: ep.isVikingSour || false, vikingSour: ep.vikingSour || null,
         isBridalBrawls: ep.isBridalBrawls || false, challengeData: ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
         isGreatFakeOut: ep.isGreatFakeOut || false, greatFakeOut: ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+        isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -4284,6 +4301,9 @@ export function simulateEpisode() {
       chalMemberScores: ep.chalMemberScores || null, chalSitOuts: ep.chalSitOuts || null,
       votes: ep.votes, alliances: (ep.alliances||[]).map(a=>({...a})),
       votingLog: ep.votingLog || [],
+      revoteLog: ep.revoteLog || [], revoteVotes: ep.revoteVotes || null,
+      isTie: ep.isTie || false, tiedPlayers: ep.tiedPlayers ? [...ep.tiedPlayers] : null, isRockDraw: ep.isRockDraw || false,
+      sidFreshVote: ep.sidFreshVote || false,
       tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
       tribalPlayers: ep.tribalPlayers ? [...ep.tribalPlayers] : null,
       tribalTribe: _dtTribeLabel,
@@ -4303,6 +4323,7 @@ export function simulateEpisode() {
         isVikingSour: ep.isVikingSour || false, vikingSour: ep.vikingSour || null,
         isBridalBrawls: ep.isBridalBrawls || false, challengeData: ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
         isGreatFakeOut: ep.isGreatFakeOut || false, greatFakeOut: ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+        isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -4490,6 +4511,9 @@ export function simulateEpisode() {
       shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null, tribalDisruption: ep.tribalDisruption || null, feastEvents: ep.feastEvents || null, idolWagerResults: ep.idolWagerResults || null,
       multiTribalResults: ep.multiTribalResults, multiTribalElims: multiElims,
       votingLog: ep.votingLog || [],
+      revoteLog: ep.revoteLog || [], revoteVotes: ep.revoteVotes || null,
+      isTie: ep.isTie || false, tiedPlayers: ep.tiedPlayers ? [...ep.tiedPlayers] : null, isRockDraw: ep.isRockDraw || false,
+      sidFreshVote: ep.sidFreshVote || false,
       bewareLostVotes: ep.bewareLostVotes || [],
       allianceQuits: ep.allianceQuits || [], allianceRecruits: ep.allianceRecruits || [],
       riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
@@ -4500,6 +4524,7 @@ export function simulateEpisode() {
         isVikingSour: ep.isVikingSour || false, vikingSour: ep.vikingSour || null,
         isBridalBrawls: ep.isBridalBrawls || false, challengeData: ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
         isGreatFakeOut: ep.isGreatFakeOut || false, greatFakeOut: ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+        isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -4873,6 +4898,7 @@ function simulateJuryRoundtable(ep) {
         isVikingSour: ep.isVikingSour || false, vikingSour: ep.vikingSour || null,
         isBridalBrawls: ep.isBridalBrawls || false, challengeData: ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
         isGreatFakeOut: ep.isGreatFakeOut || false, greatFakeOut: ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+        isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -5897,6 +5923,9 @@ function simulateJuryRoundtable(ep) {
     votingLog:        ep.votingLog        || [],
     revoteLog:        ep.revoteLog        || [],
     revoteVotes:      ep.revoteVotes      || null,
+    isTie:            ep.isTie            || false,
+    tiedPlayers:      ep.tiedPlayers      ? [...ep.tiedPlayers] : null,
+    isRockDraw:       ep.isRockDraw       || false,
     swapResult:       ep.swapResult       || null,
     emissary:           ep.emissary           || null,
     emissaryPick:       ep.emissaryPick       || null,
@@ -5966,6 +5995,8 @@ function simulateJuryRoundtable(ep) {
     bridalBrawls:         ep.isBridalBrawls ? (ep.challengeData || null) : undefined,
     isGreatFakeOut:       ep.isGreatFakeOut       || false,
     greatFakeOut:         ep.isGreatFakeOut ? (ep.challengeData || null) : undefined,
+    isAfricanLyingSafari: ep.isAfricanLyingSafari || false,
+    africanLyingSafari:   ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
     isPicnicHangingDork:  ep.isPicnicHangingDork  || false,
     picnicHangingDork:    ep.picnicHangingDork    || null,
     isSlapRevolution:     ep.isSlapRevolution     || false,

@@ -857,10 +857,6 @@ export function simulateOffTheChain(ep) {
     });
   }
 
-  // Challenge record
-  if (immunityWinner) updateChalRecord(immunityWinner, 'win');
-  if (lastPlace) updateChalRecord(lastPlace, 'loss');
-
   // chalMemberScores for debug
   ep.chalMemberScores = {};
   activePlayers.forEach(name => {
@@ -873,6 +869,8 @@ export function simulateOffTheChain(ep) {
     ep.chalMemberScores[name] = score;
   });
   ep.chalPlacements = Object.entries(ep.chalMemberScores).sort(([,a],[,b]) => b - a).map(([n]) => n);
+
+  updateChalRecord(ep);
 
   // Badge camp events
   const campKey = gs.mergeName || 'merge';

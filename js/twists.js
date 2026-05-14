@@ -1570,6 +1570,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 4) return;
     ep.isHangarBlack = true;
 
+  } else if (engineType === 'african-lying-safari') {
+    ep.isAfricanLyingSafari = true;
+
   } else if (engineType === 'cultural-reset') {
     const activePlayers = gs.activePlayers;
     twistObj.revealedAlliances = (gs.namedAlliances||[]).filter(a => a.active).map(a => a.name);
@@ -3924,6 +3927,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'hangar-black': 'isHangarBlack',
         'bridal-brawls': 'isBridalBrawls',
         'great-fake-out': 'isGreatFakeOut',
+        'african-lying-safari': 'isAfricanLyingSafari',
       };
       const _flag = _engineFlagMap[_rtcEngine];
       if (_flag) ep[_flag] = true;

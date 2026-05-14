@@ -48,6 +48,7 @@ import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhun
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults, gpRevealNext, gpRevealAll } from './chal/greeces-pieces.js';
 import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults, hbRevealNext, hbRevealAll } from './chal/hangar-black.js';
 import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemFinish, aftermayhemRevealNext, aftermayhemRevealAll } from './chal/aftermayhem.js';
+import { rpBuildSafariColdOpen, rpBuildSafariPhase1, rpBuildSafariPhase2, rpBuildSafariHunt, rpBuildSafariResults, safariRevealNext, safariRevealAll } from './chal/african-lying-safari.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10706,6 +10707,13 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'gfo-transition', label:'Transition', html: rpBuildGFOTransition(ep) });
     vpScreens.push({ id:'gfo-eating', label:'Eating Gauntlet', html: rpBuildGFOEating(ep) });
     vpScreens.push({ id:'gfo-results', label:'Results', html: rpBuildGFOResults(ep) });
+  } else if ((ep.isAfricanLyingSafari || ep.challengeType === 'african-lying-safari') && (ep.challengeData || ep.africanLyingSafari)) {
+    if (ep.africanLyingSafari && !ep.challengeData) ep.challengeData = ep.africanLyingSafari;
+    vpScreens.push({ id:'als-cold-open', label:'African Lying Safari', html: rpBuildSafariColdOpen(ep) });
+    vpScreens.push({ id:'als-phase1', label:'Sock-et To Me', html: rpBuildSafariPhase1(ep) });
+    vpScreens.push({ id:'als-phase2', label:'Gourd Smash', html: rpBuildSafariPhase2(ep) });
+    vpScreens.push({ id:'als-hunt', label:'The Great Safari Hunt', html: rpBuildSafariHunt(ep) });
+    vpScreens.push({ id:'als-results', label:'Results', html: rpBuildSafariResults(ep) });
   } else if ((ep.isVikingSour || ep.challengeType === 'viking-sour') && ep.vikingSour) {
     vpScreens.push({ id:'vs-title', label:'Viking Sour', html: rpBuildVSTitleCard(ep) });
     vpScreens.push({ id:'vs-phase1', label:'Blueprint Assembly', html: rpBuildVSPhase1(ep) });

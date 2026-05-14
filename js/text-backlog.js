@@ -51,6 +51,7 @@ import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFC
 import { rpBuildVSTitleCard, rpBuildVSPhase1, rpBuildVSPhase2, rpBuildVSPhase3, rpBuildVSResults } from './chal/viking-sour.js';
 import { rpBuildBRBTitleCard, rpBuildBRBSlotMachine, rpBuildBRBObstacleCourse, rpBuildBRBTightrope, rpBuildBRBCustomsTrivia, rpBuildBRBFinalResults } from './chal/bridal-brawls.js';
 import { rpBuildGFOTitleCard, rpBuildGFOScramble, rpBuildGFORace, rpBuildGFOTransition, rpBuildGFOEating, rpBuildGFOResults } from './chal/great-fake-out.js';
+import { rpBuildSafariColdOpen, rpBuildSafariPhase1, rpBuildSafariPhase2, rpBuildSafariHunt, rpBuildSafariResults } from './chal/african-lying-safari.js';
 import { rpBuildHDTitleCard, rpBuildHDEmuWrangling, rpBuildHDEmuRace, rpBuildHDBungeeGrab, rpBuildHDResults } from './chal/picnic-hanging-dork.js';
 import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults } from './chal/broadway-baby.js';
@@ -2194,6 +2195,12 @@ export function generateSummaryText(ep) {
     if (ep.greatFakeOut && !ep.challengeData) ep.challengeData = ep.greatFakeOut;
     _textTwistChallenge(ep, ln, sec, 'challengeData', 'THE GREAT FAKE-OUT', [
       rpBuildGFOTitleCard, rpBuildGFOScramble, rpBuildGFORace, rpBuildGFOTransition, rpBuildGFOEating, rpBuildGFOResults
+    ]);
+  }
+  if ((ep.challengeData || ep.africanLyingSafari) && ep.isAfricanLyingSafari) {
+    if (ep.africanLyingSafari && !ep.challengeData) ep.challengeData = ep.africanLyingSafari;
+    _textTwistChallenge(ep, ln, sec, 'challengeData', 'AFRICAN LYING SAFARI', [
+      rpBuildSafariColdOpen, rpBuildSafariPhase1, rpBuildSafariPhase2, rpBuildSafariHunt, rpBuildSafariResults
     ]);
   }
   if (ep.vikingSour) {

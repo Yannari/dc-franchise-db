@@ -3899,9 +3899,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'phobia-factor': 'isPhobiaFactor', 'cliff-dive': 'isCliffDive', 'awake-a-thon': 'isAwakeAThon',
         'dodgebrawl': 'isDodgebrawl', 'talent-show': 'isTalentShow', 'sucky-outdoors': 'isSuckyOutdoors',
         'up-the-creek': 'isUpTheCreek', 'paintball-hunt': 'isPaintballHunt', 'hells-kitchen': 'isHellsKitchen',
-        'trust-challenge': 'isTrustChallenge', 'basic-straining': 'isBasicStraining', 'x-treme-torture': 'isXTremeTorture',
+        'trust-challenge': 'isTrustChallenge', 'basic-straining': 'isBasicStraining', 'x-treme-torture': 'isXtremeTorture',
         'sudden-death': 'isSuddenDeath', 'slasher-night': 'isSlasherNight', 'triple-dog-dare': 'isTripleDogDare',
-        'say-uncle': 'isSayUncle', 'brunch-of-disgustingness': 'isBrunch',
+        'say-uncle': 'isSayUncle', 'brunch-of-disgustingness': 'isBrunchOfDisgustingness',
         'monster-cash': 'isMonsterCash', 'operation-classified': 'isOperationClassified',
         'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride',
         'get-a-clue': 'isGetAClue', 'rock-n-rule': 'isRockNRule',
@@ -3930,9 +3930,24 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'african-lying-safari': 'isAfricanLyingSafari',
       };
       const _flag = _engineFlagMap[_rtcEngine];
-      if (_flag) ep[_flag] = true;
-      twistObj.rewardEngine = _rtcEngine;
       const _catEntry = TWIST_CATALOG.find(c => c.id === _rtcEngine);
+
+      // Phase compatibility check: don't set the flag if the engine can't run in the current phase
+      const _rtcPhase = _catEntry?.phase || 'any';
+      const _phaseOk = _rtcPhase === 'any' || _rtcPhase === 'both'
+        || (_rtcPhase === 'post-merge' && gs.isMerged)
+        || (_rtcPhase === 'pre-merge' && !gs.isMerged && gs.tribes?.length >= (_catEntry?.minTribes || 2));
+
+      if (_flag && _phaseOk) {
+        ep[_flag] = true;
+        twistObj.rewardEngine = _rtcEngine;
+      } else {
+        // Engine incompatible with current phase — fall back to generic reward challenge
+        const rchal = pickChallenge();
+        twistObj.rewardTwistFallback = true;
+        twistObj.rewardFallbackReason = _phaseOk ? 'unknown-engine' : 'phase-mismatch';
+        twistObj.rewardEngine = null;
+      }
       twistObj.rewardChalLabel    = _catEntry?.name || _rtcEngine;
       twistObj.rewardChalCategory = _catEntry?.chalStyle || 'mixed';
       twistObj.rewardChalDesc     = _catEntry?.desc || '';

@@ -1426,7 +1426,7 @@ export function simulateEpisode() {
     || (cfg.twistSchedule||[]).some(t => Number(t.episode) === epNum && t.type === 'no-tribal');
   if (_hasNoTribalTwist) ep.noTribal = true;
   // ── SLASHER NIGHT — round-by-round survival challenge replaces immunity + tribal ──
-  if (ep.isSlasherNight) {
+  if (ep.isSlasherNight && !ep.isRewardOnly) {
     // Pre-slasher: journey, advantages, camp events fire normally
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
@@ -1520,6 +1520,30 @@ export function simulateEpisode() {
     const stSN = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stSN; ep.summaryText = stSN;
     window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
+  }
+
+  // ── SLASHER NIGHT (reward-only) — run challenge without elimination, fall through to reward flow ──
+  if (ep.isSlasherNight && ep.isRewardOnly) {
+    simulateSlasherNight(ep);
+    ep.immunityWinner = ep.slasherNight.immunityWinner;
+    ep.challengeType = 'slasher-night';
+  }
+
+  // ── TRIPLE DOG DARE (reward-only) — run challenge without elimination, fall through to reward flow ──
+  if (ep.isTripleDogDare && ep.isRewardOnly) {
+    simulateTripleDogDare(ep);
+    ep.challengeType = 'triple-dog-dare';
+    if (ep.chalMemberScores) {
+      const _tddTop = Object.entries(ep.chalMemberScores).sort(([,a],[,b]) => b - a)[0];
+      if (_tddTop) ep.immunityWinner = _tddTop[0];
+    }
+  }
+
+  // ── ARE WE THERE YETI (reward-only) — run challenge without elimination, fall through to reward flow ──
+  if (ep.isAreWeThereYeti && ep.isRewardOnly) {
+    simulateAreWeThereYeti(ep);
+    ep.immunityWinner = ep.areWeThereYeti?.immunityWinner || ep.immunityWinner;
+    ep.challengeType = 'are-we-there-yeti';
   }
 
   // ── MONSTER CASH (post-merge) — monster hunt determines immunity, normal tribal follows ──
@@ -1630,7 +1654,7 @@ export function simulateEpisode() {
   }
 
   // ── TRIPLE DOG DARE — dare challenge replaces immunity + tribal ──
-  if (ep.isTripleDogDare) {
+  if (ep.isTripleDogDare && !ep.isRewardOnly) {
     // Pre-challenge: journey, advantages, camp events fire normally
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
@@ -2384,7 +2408,7 @@ export function simulateEpisode() {
     // ── CAMP CASTAWAYS: flood survival scoring ──
     simulateCampCastaways(ep);
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-  } else if (ep.isAreWeThereYeti) {
+  } else if (ep.isAreWeThereYeti && !ep.isRewardOnly) {
     // ── ARE WE THERE YETI: forest nav race, Chef eliminates AFTER camp events ──
     simulateAreWeThereYeti(ep);
 
@@ -2578,7 +2602,7 @@ export function simulateEpisode() {
   // ── SUDDEN DEATH + TWIST CHALLENGE: eliminate last place from challenge results ──
   // When SD co-fires with a twist challenge, the twist ran above and populated its data.
   // We read chalPlacements (or derive from chalMemberScores) to find last place.
-  if (ep.isSuddenDeath && _hasTwistChallenge) {
+  if (ep.isSuddenDeath && _hasTwistChallenge && !ep.isRewardOnly) {
     if (!ep.chalPlacements?.length && ep.chalMemberScores && Object.keys(ep.chalMemberScores).length) {
       ep.chalPlacements = Object.entries(ep.chalMemberScores)
         .sort(([,a],[,b]) => b - a).map(([n]) => n);

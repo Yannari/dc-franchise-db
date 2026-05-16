@@ -49,6 +49,8 @@ import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles
 import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults, hbRevealNext, hbRevealAll } from './chal/hangar-black.js';
 import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemFinish, aftermayhemRevealNext, aftermayhemRevealAll } from './chal/aftermayhem.js';
 import { rpBuildSafariColdOpen, rpBuildSafariPhase1, rpBuildSafariPhase2, rpBuildSafariHunt, rpBuildSafariResults, safariRevealNext, safariRevealAll } from './chal/african-lying-safari.js';
+import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPPillarPhase, rpBuildRPResults, rpRevealNext, rpRevealAll } from './chal/rapa-phooey.js';
+import { rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults, dhRevealNext, dhRevealAll } from './chal/drumheller.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -10707,6 +10709,20 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'gfo-transition', label:'Transition', html: rpBuildGFOTransition(ep) });
     vpScreens.push({ id:'gfo-eating', label:'Eating Gauntlet', html: rpBuildGFOEating(ep) });
     vpScreens.push({ id:'gfo-results', label:'Results', html: rpBuildGFOResults(ep) });
+  } else if ((ep.isRapaPhooey || ep.challengeType === 'rapa-phooey') && (ep.challengeData || ep.rapaPhooey)) {
+    const rpEp = ep.rapaPhooey ? Object.assign({}, ep, { challengeData: ep.rapaPhooey }) : ep;
+    vpScreens.push({ id:'rp-title', label:'Rapa Phooey!', html: rpBuildRPTitleCard(rpEp) });
+    vpScreens.push({ id:'rp-field', label:'Rock Head Field', html: rpBuildRPFieldPhase(rpEp) });
+    vpScreens.push({ id:'rp-cave', label:'Underground Cave', html: rpBuildRPCavePhase(rpEp) });
+    vpScreens.push({ id:'rp-pillar', label:'Nest Pillar', html: rpBuildRPPillarPhase(rpEp) });
+    vpScreens.push({ id:'rp-results', label:'Results', html: rpBuildRPResults(rpEp) });
+  } else if ((ep.isDrumheller || ep.challengeType === 'drumheller') && (ep.challengeData || ep.drumheller)) {
+    const dhEp = ep.drumheller ? Object.assign({}, ep, { challengeData: ep.drumheller }) : ep;
+    vpScreens.push({ id:'dh-title', label:'Drumheller', html: rpBuildDHTitleCard(dhEp) });
+    vpScreens.push({ id:'dh-build', label:'Dinosaur Build', html: rpBuildDHBuildPhase(dhEp) });
+    vpScreens.push({ id:'dh-vote', label:'Lie-Detector Vote', html: rpBuildDHVotePhase(dhEp) });
+    vpScreens.push({ id:'dh-dig', label:'Barrel Dig', html: rpBuildDHDigPhase(dhEp) });
+    vpScreens.push({ id:'dh-results', label:'Results', html: rpBuildDHResults(dhEp) });
   } else if ((ep.isAfricanLyingSafari || ep.challengeType === 'african-lying-safari') && (ep.challengeData || ep.africanLyingSafari)) {
     if (ep.africanLyingSafari && !ep.challengeData) ep.challengeData = ep.africanLyingSafari;
     vpScreens.push({ id:'als-cold-open', label:'African Lying Safari', html: rpBuildSafariColdOpen(ep) });

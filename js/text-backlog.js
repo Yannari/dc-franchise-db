@@ -52,6 +52,8 @@ import { rpBuildVSTitleCard, rpBuildVSPhase1, rpBuildVSPhase2, rpBuildVSPhase3, 
 import { rpBuildBRBTitleCard, rpBuildBRBSlotMachine, rpBuildBRBObstacleCourse, rpBuildBRBTightrope, rpBuildBRBCustomsTrivia, rpBuildBRBFinalResults } from './chal/bridal-brawls.js';
 import { rpBuildGFOTitleCard, rpBuildGFOScramble, rpBuildGFORace, rpBuildGFOTransition, rpBuildGFOEating, rpBuildGFOResults } from './chal/great-fake-out.js';
 import { rpBuildSafariColdOpen, rpBuildSafariPhase1, rpBuildSafariPhase2, rpBuildSafariHunt, rpBuildSafariResults } from './chal/african-lying-safari.js';
+import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPPillarPhase, rpBuildRPResults } from './chal/rapa-phooey.js';
+import { rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults } from './chal/drumheller.js';
 import { rpBuildHDTitleCard, rpBuildHDEmuWrangling, rpBuildHDEmuRace, rpBuildHDBungeeGrab, rpBuildHDResults } from './chal/picnic-hanging-dork.js';
 import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults } from './chal/broadway-baby.js';
@@ -2202,6 +2204,12 @@ export function generateSummaryText(ep) {
     _textTwistChallenge(ep, ln, sec, 'challengeData', 'AFRICAN LYING SAFARI', [
       rpBuildSafariColdOpen, rpBuildSafariPhase1, rpBuildSafariPhase2, rpBuildSafariHunt, rpBuildSafariResults
     ]);
+  }
+  if (ep.challengeData && ep.isRapaPhooey) {
+    _textTwistChallenge(ep, ln, sec, 'challengeData', 'RAPA PHOOEY!', [rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPPillarPhase, rpBuildRPResults]);
+  }
+  if (ep.challengeData && ep.isDrumheller) {
+    _textTwistChallenge(ep, ln, sec, 'challengeData', 'AWWWWWW, DRUMHELLER', [rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults]);
   }
   if (ep.vikingSour) {
     _textTwistChallenge(ep, ln, sec, 'vikingSour', 'VIKING SOUR', [

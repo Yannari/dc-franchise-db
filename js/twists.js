@@ -1573,6 +1573,12 @@ export function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'african-lying-safari') {
     ep.isAfricanLyingSafari = true;
 
+  } else if (engineType === 'rapa-phooey') {
+    ep.isRapaPhooey = true;
+
+  } else if (engineType === 'drumheller') {
+    ep.isDrumheller = true;
+
   } else if (engineType === 'cultural-reset') {
     const activePlayers = gs.activePlayers;
     twistObj.revealedAlliances = (gs.namedAlliances||[]).filter(a => a.active).map(a => a.name);
@@ -3928,6 +3934,8 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'bridal-brawls': 'isBridalBrawls',
         'great-fake-out': 'isGreatFakeOut',
         'african-lying-safari': 'isAfricanLyingSafari',
+        'rapa-phooey': 'isRapaPhooey',
+        'drumheller': 'isDrumheller',
       };
       const _flag = _engineFlagMap[_rtcEngine];
       const _catEntry = TWIST_CATALOG.find(c => c.id === _rtcEngine);
@@ -4082,7 +4090,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
 }
 
 export function generateTwistScenes(ep) {
-  const twistList = ep.twists?.length ? ep.twists : (ep.twist ? [ep.twist] : []);
+  const twistList = (ep.twists?.length ? ep.twists : (ep.twist ? [ep.twist] : [])).filter(t => t && t.type);
   const result = [];
   const active = gs.activePlayers.slice();
 

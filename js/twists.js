@@ -1579,6 +1579,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'drumheller') {
     ep.isDrumheller = true;
 
+  } else if (engineType === 'planes-trains') {
+    ep.isPlanesTrains = true;
+
   } else if (engineType === 'cultural-reset') {
     const activePlayers = gs.activePlayers;
     twistObj.revealedAlliances = (gs.namedAlliances||[]).filter(a => a.active).map(a => a.name);
@@ -3936,6 +3939,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'african-lying-safari': 'isAfricanLyingSafari',
         'rapa-phooey': 'isRapaPhooey',
         'drumheller': 'isDrumheller',
+        'planes-trains': 'isPlanesTrains',
       };
       const _flag = _engineFlagMap[_rtcEngine];
       const _catEntry = TWIST_CATALOG.find(c => c.id === _rtcEngine);

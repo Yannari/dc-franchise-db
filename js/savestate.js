@@ -7,22 +7,73 @@ import { checkShowmanceBreakup, checkLoveTriangleBreakup } from './romance.js';
 import { generateAftermathShow } from './aftermath.js';
 import { _checkMoleExposure } from './camp-events.js';
 
+// ── IndexedDB wrapper (replaces localStorage for gs + checkpoints) ──
+const DB_NAME = 'dc_franchise_db';
+const DB_VERSION = 1;
+const STORE_NAME = 'gameState';
+let _db = null;
+
+export function _openDB() {
+  if (_db) return Promise.resolve(_db);
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => { req.result.createObjectStore(STORE_NAME); };
+    req.onsuccess = () => { _db = req.result; resolve(_db); };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export function _idbPut(key, value) {
+  return _openDB().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  })).catch(e => console.warn('IndexedDB put failed:', e));
+}
+
+export function _idbGet(key) {
+  return _openDB().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  }));
+}
+
+export function _idbDelete(key) {
+  return _openDB().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  })).catch(e => console.warn('IndexedDB delete failed:', e));
+}
+
+export function _idbClear() {
+  return _openDB().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  })).catch(e => console.warn('IndexedDB clear failed:', e));
+}
+
+export function _idbKeys() {
+  return _openDB().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).getAllKeys();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  }));
+}
+
 export function saveGameState() {
   prepGsForSave(gs);
-  try {
-    localStorage.setItem('simulator_gs', JSON.stringify(gs));
-  } catch (e) {
-    // localStorage full — prune old checkpoints and retry
-    console.warn('localStorage quota exceeded — pruning checkpoints...');
-    const cpKeys = Object.keys(localStorage)
-      .filter(k => k.startsWith('simulator_cp_'))
-      .sort((a, b) => parseInt(a.replace('simulator_cp_', '')) - parseInt(b.replace('simulator_cp_', '')));
-    // Remove oldest half, always keep the most recent checkpoint
-    const removeCount = Math.min(Math.max(1, Math.ceil(cpKeys.length / 2)), Math.max(0, cpKeys.length - 1));
-    cpKeys.slice(0, removeCount).forEach(k => { localStorage.removeItem(k); delete gsCheckpoints[parseInt(k.replace('simulator_cp_', ''))]; });
-    try { localStorage.setItem('simulator_gs', JSON.stringify(gs)); }
-    catch (e2) { console.error('Still over quota after pruning. Season data may be too large.', e2); }
-  }
+  // Store as structured clone (parsed object, not string) — IndexedDB handles cloning
+  _idbPut('gs', JSON.parse(JSON.stringify(gs)));
+  // One-time migration cleanup: remove old localStorage key if it exists
+  try { localStorage.removeItem('simulator_gs'); } catch(e) {}
   repairGsSets(gs);
 }
 
@@ -591,9 +642,14 @@ export function initGameState() {
 
 export function resetSeason() {
   if (!confirm('Reset season? This clears all episode history. Your cast and setup are kept.')) return;
-  setGs(null); localStorage.removeItem('simulator_gs');
+  setGs(null);
+  _idbDelete('gs');
+  // Also clean up any leftover localStorage keys from before the migration
+  try { localStorage.removeItem('simulator_gs'); } catch(e) {}
   setGsCheckpoints({});
-  Object.keys(localStorage).filter(k => k.startsWith('simulator_cp_')).forEach(k => localStorage.removeItem(k));
+  _idbKeys().then(keys => keys.filter(k => typeof k === 'string' && k.startsWith('cp_')).forEach(k => _idbDelete(k)));
+  // Also clean up any leftover localStorage checkpoint keys
+  try { Object.keys(localStorage).filter(k => k.startsWith('simulator_cp_')).forEach(k => localStorage.removeItem(k)); } catch(e) {}
   setViewingEpNum(null);
   initGameState();
   window.renderRunTab();

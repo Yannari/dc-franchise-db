@@ -1109,7 +1109,7 @@ export function simulateRapaPhooey(ep) {
         if (gs.showmances?.length > 0) {
           for (const sh of gs.showmances) {
             if (sh.broken) continue;
-            const [pa, pb] = sh.pair;
+            const [pa, pb] = [sh.a, sh.b];
             if (livePillar.includes(pa) && livePillar.includes(pb) && !state[pa].atBase && !state[pb].atBase && Math.random() < 0.30) {
               state[pa].pepTalkBuff = true; state[pb].pepTalkBuff = true;
               addBond(pa, pb, 1.5); popDelta(pa, 2); popDelta(pb, 2);
@@ -2279,7 +2279,7 @@ export function simulateRapaPhooey(ep) {
       // Basket weaving decision
       const wantBasket = !st.basket && (ps.strategic >= 6 || st.carrying.length >= 2);
       const wantGiftBasket = st.basket && fieldOccupants.some(o => {
-        return o !== n && !state[o].basket && (getBond(n, o) >= 5 || (gs.showmances || []).some(sh => !sh.broken && sh.pair?.includes(n) && sh.pair?.includes(o)) || ps.loyalty >= 7);
+        return o !== n && !state[o].basket && (getBond(n, o) >= 5 || (gs.showmances || []).some(sh => !sh.broken && (sh.a === n || sh.b === n) && (sh.a === o || sh.b === o)) || ps.loyalty >= 7);
       });
 
       if (wantGiftBasket && Math.random() < 0.25) {

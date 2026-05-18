@@ -12,20 +12,20 @@ import { generateSocialManipulationEvents } from './social-manipulation.js';
 import { simulateTribeChallenge } from './challenges-core.js';
 
 export const CAMP_EVENT_TYPES = [
-  // ═══ POSITIVE (~300 weight = 50%) — bonding, comfort, growth, alliance building ═══
+  // ═══ POSITIVE (~55%) — bonding, comfort, growth, alliance building ═══
   { id: 'bond',                twoPlayer: true,  weight: 18 },
   { id: 'tdBond',              twoPlayer: true,  weight: 18 },
-  { id: 'comfort',             twoPlayer: true,  weight: 12 },
-  { id: 'hardWork',            twoPlayer: false, weight: 12 },
-  { id: 'groupLaugh',          twoPlayer: false, weight: 12 },
-  { id: 'sharedStruggle',      twoPlayer: true,  weight: 12 },
-  { id: 'rivalThaw',           twoPlayer: true,  weight: 10 },
-  { id: 'flirtation',          twoPlayer: true,  weight: 10 },
+  { id: 'comfort',             twoPlayer: true,  weight: 15 },
+  { id: 'hardWork',            twoPlayer: false, weight: 13 },
+  { id: 'groupLaugh',          twoPlayer: false, weight: 15 },
+  { id: 'sharedStruggle',      twoPlayer: true,  weight: 15 },
+  { id: 'rivalThaw',           twoPlayer: true,  weight: 11 },
+  { id: 'flirtation',          twoPlayer: true,  weight: 11 },
   { id: 'unexpectedCompetence',twoPlayer: false, weight: 8  },
   { id: 'teachingMoment',      twoPlayer: true,  weight: 10 },
-  { id: 'vulnerability',       twoPlayer: true,  weight: 10 },
-  { id: 'insideJoke',          twoPlayer: true,  weight: 11 },
-  { id: 'loyaltyProof',        twoPlayer: true,  weight: 10 },
+  { id: 'vulnerability',       twoPlayer: true,  weight: 12 },
+  { id: 'insideJoke',          twoPlayer: true,  weight: 12 },
+  { id: 'loyaltyProof',        twoPlayer: true,  weight: 11 },
   { id: 'showmancerMoment',    twoPlayer: true,  weight: 8  },
   { id: 'socialBoost',         twoPlayer: false, weight: 8  },
   { id: 'soldierCheckin',      twoPlayer: true,  weight: 8  },
@@ -35,43 +35,58 @@ export const CAMP_EVENT_TYPES = [
   { id: 'sideDeal',            twoPlayer: true,  weight: 10 }, // builds connection
   { id: 'idolSearch',          twoPlayer: false, weight: 10 }, // empowers finder
   { id: 'wildcardPivot',       twoPlayer: false, weight: 8  }, // wildcard finds new path (positive for them)
-  // ═══ NEGATIVE (~270 weight = 45%) — conflict, damage, drama, scheming, suspicion ═══
-  { id: 'fight',               twoPlayer: true,  weight: 15 },
-  { id: 'dispute',             twoPlayer: true,  weight: 13 },
+  { id: 'gratitude',           twoPlayer: true,  weight: 11 }, // thanks for past help deepens bond
+  { id: 'protectiveInstinct',  twoPlayer: true,  weight: 10 }, // defends another from blame
+  { id: 'sharedMeal',          twoPlayer: true,  weight: 11 }, // cooking/fishing together bonds
+  { id: 'moraleBoost',         twoPlayer: false, weight: 10 }, // rallies tribe after adversity
+  { id: 'secretShared',        twoPlayer: true,  weight: 11 }, // confides personal info, trust deepens
+  { id: 'sunriseTalk',         twoPlayer: true,  weight: 11 }, // early morning honest conversation
+  { id: 'celebrateTogether',   twoPlayer: false, weight: 10 }, // tribe bonds over a win/milestone
+  { id: 'mentorBond',          twoPlayer: true,  weight: 10 }, // emotional guidance (not skill teaching)
+  { id: 'forgiveness',         twoPlayer: true,  weight: 10 }, // apology accepted, bond recovery
+  { id: 'silentSolidarity',    twoPlayer: true,  weight: 9  }, // standing together without words
+  { id: 'campImprovement',     twoPlayer: false, weight: 10 }, // builds something for the tribe
+  // ═══ NEGATIVE (~35%) — conflict, damage, drama, scheming, suspicion ═══
+  { id: 'fight',               twoPlayer: true,  weight: 13 },
+  { id: 'dispute',             twoPlayer: true,  weight: 11 },
   { id: 'meltdown',            twoPlayer: false, weight: 10 },
   { id: 'injury',              twoPlayer: false, weight: 7  },
-  { id: 'rumor',               twoPlayer: true,  weight: 12 },
+  { id: 'rumor',               twoPlayer: true,  weight: 10 },
   { id: 'overplay',            twoPlayer: false, weight: 10 },
-  { id: 'leadershipClash',     twoPlayer: true,  weight: 12 },
-  { id: 'foodConflict',        twoPlayer: true,  weight: 9  },
-  { id: 'intimidation',        twoPlayer: true,  weight: 9  },
-  { id: 'lie',                 twoPlayer: true,  weight: 11 },
-  { id: 'hotheadExplosion',    twoPlayer: false, weight: 11 },
-  { id: 'chaosAgentStirsUp',   twoPlayer: true,  weight: 11 },
-  { id: 'jealousy',            twoPlayer: true,  weight: 11 },
-  { id: 'exclusion',           twoPlayer: false, weight: 9  },
-  { id: 'blame',               twoPlayer: true,  weight: 10 },
-  { id: 'passiveAggressive',   twoPlayer: true,  weight: 9  },
-  { id: 'trustCrack',          twoPlayer: true,  weight: 10 },
-  { id: 'allianceCrack',       twoPlayer: true,  weight: 11 },
-  { id: 'eavesdrop',           twoPlayer: true,  weight: 9  }, // creates suspicion
-  { id: 'paranoia',            twoPlayer: false, weight: 8  },
-  { id: 'scramble',            twoPlayer: true,  weight: 9  }, // desperation
-  { id: 'overconfidence',      twoPlayer: false, weight: 7  }, // blindside setup
-  { id: 'doubt',               twoPlayer: false, weight: 8  },
+  { id: 'leadershipClash',     twoPlayer: true,  weight: 10 },
+  { id: 'foodConflict',        twoPlayer: true,  weight: 8  },
+  { id: 'intimidation',        twoPlayer: true,  weight: 8  },
+  { id: 'lie',                 twoPlayer: true,  weight: 10 },
+  { id: 'hotheadExplosion',    twoPlayer: false, weight: 10 },
+  { id: 'chaosAgentStirsUp',   twoPlayer: true,  weight: 9  },
+  { id: 'jealousy',            twoPlayer: true,  weight: 9  },
+  { id: 'exclusion',           twoPlayer: false, weight: 8  },
+  { id: 'blame',               twoPlayer: true,  weight: 9  },
+  { id: 'passiveAggressive',   twoPlayer: true,  weight: 8  },
+  { id: 'trustCrack',          twoPlayer: true,  weight: 9  },
+  { id: 'allianceCrack',       twoPlayer: true,  weight: 8  },
+  { id: 'eavesdrop',           twoPlayer: true,  weight: 8  }, // creates suspicion
+  { id: 'paranoia',            twoPlayer: false, weight: 7  },
+  { id: 'scramble',            twoPlayer: true,  weight: 8  }, // desperation
+  { id: 'overconfidence',      twoPlayer: false, weight: 6  }, // blindside setup
+  { id: 'doubt',               twoPlayer: false, weight: 7  },
   { id: 'watchingYou',         twoPlayer: true,  weight: 8  }, // surveillance = negative
-  { id: 'prank',               twoPlayer: true,  weight: 9  }, // usually causes friction
-  { id: 'showboat',            twoPlayer: false, weight: 6  }, // rubs people wrong
+  { id: 'prank',               twoPlayer: true,  weight: 8  }, // usually causes friction
+  { id: 'showboat',            twoPlayer: false, weight: 5  }, // rubs people wrong
   { id: 'schemerManipulates',  twoPlayer: true,  weight: 9  },
   { id: 'mastermindOrchestrates',twoPlayer: true, weight: 8  },
   { id: 'goatOblivious',       twoPlayer: false, weight: 7  }, // negative perception
-  // ═══ TRUE NEUTRAL (~30 weight = 5%) — pure flavor, no real consequences ═══
+  // ═══ TRUE NEUTRAL (~10%) — flavor with minor consequences ═══
   { id: 'confessional',        twoPlayer: false, weight: 8  },
   { id: 'weirdMoment',         twoPlayer: false, weight: 5  },
   { id: 'readingRoom',         twoPlayer: false, weight: 5  },
   { id: 'tribeMood',           twoPlayer: false, weight: 4  },
   { id: 'homesick',            twoPlayer: false, weight: 4  },
   { id: 'loneWolf',            twoPlayer: false, weight: 4  },
+  { id: 'superstition',        twoPlayer: false, weight: 8  }, // ritual/lucky charm
+  { id: 'animalEncounter',     twoPlayer: false, weight: 8  }, // wildlife at camp
+  { id: 'dreaming',            twoPlayer: false, weight: 8  }, // vivid dream talk
+  { id: 'weatherShift',        twoPlayer: false, weight: 8  }, // weather changes camp mood
   // ═══ MIXED (lean positive or negative based on context) ═══
   { id: 'strategicTalk',       twoPlayer: true,  weight: 14 },
   { id: 'tdStrategy',          twoPlayer: true,  weight: 14 },
@@ -287,7 +302,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
     // Auction idol find — use auction-specific narrative
     if (find.fromAuction) {
       const _ap = pronouns(name);
-      events.push({ type: 'idolFound', players: [name], text: `${name} spent their auction money on an idol clue and followed it immediately. ${_ap.Sub} come${_ap.sub==='they'?'':'s'} back to camp quiet — and armed.` });
+      events.push({ type: 'idolFound', players: [name], text: `${name} spent their auction money on an idol clue and followed it immediately. ${_ap.Sub} come${_ap.sub==='they'?'':'s'} back to camp quiet — and armed.`, badgeText: 'IDOL FOUND', badgeClass: 'gold' });
       return;
     }
     // Gift 2 (idol clue) — narrative already handled by ep.giftNarrativeEvents injection; skip duplicate
@@ -295,7 +310,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
     // Beware activation is a group event — handle separately
     if (find.type === 'beware-activated') {
       const holderList = find.holders.join(', ');
-      events.push({ type: 'idolFound', players: find.holders || [], text: `The final Beware Advantage has been found. Every tribe has now claimed theirs. The idols activate: ${holderList}. The vote restriction is lifted. Each holder now has a live Hidden Immunity Idol.` });
+      events.push({ type: 'idolFound', players: find.holders || [], text: `The final Beware Advantage has been found. Every tribe has now claimed theirs. The idols activate: ${holderList}. The vote restriction is lifted. Each holder now has a live Hidden Immunity Idol.`, badgeText: 'IDOLS ACTIVATED', badgeClass: 'gold' });
       return;
     }
     const advType = find.type || 'idol';
@@ -345,7 +360,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
     // generate their own discovery camp events via key+'Found' in findAdvantages — skip them here
     if (['teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower', 'soleVote'].includes(advType)) return;
     const lines = advTextMap[advType] || advTextMap.idol;
-    events.push({ type: 'idolFound', advType, text: lines[Math.floor(Math.random() * lines.length)], players: [name] });
+    events.push({ type: 'idolFound', advType, text: lines[Math.floor(Math.random() * lines.length)], players: [name], badgeText: 'ADVANTAGE FOUND', badgeClass: 'gold' });
   });
 
   // Participation tracker — penalises players already featured in loop events (weight ÷ 1.9^appearances).
@@ -386,7 +401,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `Frustration spills over between ${a} and ${b}. It stays controlled, barely.`]
         : [`${a} pushes back on ${b} in a way that surprises everyone — they're usually so composed.`,
            `Even ${a}, who rarely reacts, finally says something to ${b}. That's how you know it's bad.`];
-      events.push({ type: 'fight', text: fightLines[Math.floor(Math.random() * fightLines.length)] });
+      events.push({ type: 'fight', text: fightLines[Math.floor(Math.random() * fightLines.length)], players: [a, b], badgeText: 'FIGHT', badgeClass: 'red' });
       if (!gs._blowupPlayers) gs._blowupPlayers = [];
       if (!gs._blowupPlayers.includes(a)) gs._blowupPlayers.push(a);
 
@@ -413,7 +428,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${a} and ${b} share a quiet moment. Something real is forming between them.`,
            `${a} opens up to ${b} about something personal. The trust between them grows.`,
            `${a} and ${b} spend the afternoon working together. By sunset they feel like a unit.`];
-      events.push({ type: 'bond', text: bondLines[Math.floor(Math.random() * bondLines.length)] });
+      events.push({ type: 'bond', text: bondLines[Math.floor(Math.random() * bondLines.length)], players: [a, b], badgeText: 'BONDING', badgeClass: 'green' });
 
     } else if (eventType === 'meltdown') {
       // Very low temperament + high boldness = full breakdown. Low temperament alone = implosion.
@@ -430,7 +445,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `The pressure finally gets to ${p}. ${_mpP.Sub} crack${_mpP.sub==='they'?'':'s'}. Not quietly.`]
         : [`${p}'s controlled exterior breaks down for a rare moment. The tribe takes a mental note.`,
            `${p} usually keeps it together. Not today. The cracks are visible now.`];
-      events.push({ type: 'meltdown', text: meltdownLines[Math.floor(Math.random() * meltdownLines.length)] });
+      events.push({ type: 'meltdown', text: meltdownLines[Math.floor(Math.random() * meltdownLines.length)], player: p, players: [p], badgeText: 'MELTDOWN', badgeClass: 'red' });
       if (!gs._blowupPlayers) gs._blowupPlayers = [];
       if (!gs._blowupPlayers.includes(p)) gs._blowupPlayers.push(p);
 
@@ -448,7 +463,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${p} catches three fish before anyone else has left their shelter. ${_hwP.Sub} ${_hwP.sub==='they'?'don\'t':'doesn\'t'} brag about it. The fish speak for themselves.`,
         `${p} carries water for the entire tribe today. Two trips. Nobody else offered. The gesture isn't lost on anyone.`,
       ];
-      events.push({ type: 'hardWork', text: hwLines[Math.floor(Math.random() * hwLines.length)], player: p, players: [p] });
+      events.push({ type: 'hardWork', text: hwLines[Math.floor(Math.random() * hwLines.length)], player: p, players: [p], badgeText: 'HARD WORK', badgeClass: 'green' });
 
     } else if (eventType === 'strategicTalk') {
       const a = _pick(group, n => Math.max(0.1, pStats(n).strategic * pStats(n).strategic * 0.1));
@@ -474,7 +489,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} pulls ${b} aside for a long game conversation. Names are floated. A loose agreement is made.`,
            `${a} approaches ${b} quietly. "We need to talk." They do. For a long time.`,
            `${a} and ${b} find a spot away from camp. A check-in becomes a full strategic session.`];
-      events.push({ type: 'strategicTalk', text: stalkLines[Math.floor(Math.random() * stalkLines.length)] });
+      events.push({ type: 'strategicTalk', text: stalkLines[Math.floor(Math.random() * stalkLines.length)], players: [a, b], badgeText: 'STRATEGY', badgeClass: 'gold' });
 
     } else if (eventType === 'dispute') {
       // Strategic + bold initiates disputes. Low temperament makes them escalate faster.
@@ -497,7 +512,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} and ${b} disagree on the next vote. Neither backs down. The alliance is showing its first crack.`,
            `${b} confronts ${a} about a name they heard floating. ${a} denies it. ${b} doesn't believe them.`,
            `${a} and ${b} clash over who's actually in control. The argument is quiet — but the damage is real.`];
-      events.push({ type: 'dispute', text: disputeLines[Math.floor(Math.random() * disputeLines.length)] });
+      events.push({ type: 'dispute', text: disputeLines[Math.floor(Math.random() * disputeLines.length)], players: [a, b], badgeText: 'DISPUTE', badgeClass: 'red' });
 
     } else if (eventType === 'idolSearch') {
       const searchers = group.filter(n => !findsInGroup.some(f => f.finder === n));
@@ -515,7 +530,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${p} checks behind the same rock for the third time this week. The idol isn't there. The paranoia is.`,
         `${p} comes back from a "walk" with dirt on ${_srP.posAdj} hands and a face that says nothing. The tribe reads everything.`,
       ];
-      events.push({ type: 'idolSearch', text: searchLines[Math.floor(Math.random() * searchLines.length)], players: [p] });
+      events.push({ type: 'idolSearch', text: searchLines[Math.floor(Math.random() * searchLines.length)], players: [p], badgeText: 'SEARCHING', badgeClass: 'gold' });
 
     } else if (eventType === 'injury') {
       // Low survival = more injury-prone (weakened body). Survival 80 = 1x, 40 = 1.6x, 20 = 2.2x
@@ -542,7 +557,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       // Lingering injury: challenge penalty for 2-3 episodes
       if (!gs.lingeringInjuries) gs.lingeringInjuries = {};
       gs.lingeringInjuries[p] = { ep: (gs.episode || 0) + 1, duration: 2 + Math.floor(Math.random() * 2), penalty: 1.5 + Math.random() };
-      events.push({ type: 'injury', text: injuryLines[Math.floor(Math.random() * injuryLines.length)], player: p, players: [p] });
+      events.push({ type: 'injury', text: injuryLines[Math.floor(Math.random() * injuryLines.length)], player: p, players: [p], badgeText: 'INJURY', badgeClass: 'red' });
 
     } else if (eventType === 'allianceForm') {
       // Skip if this group already has an allianceForm this episode
@@ -567,7 +582,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         const allianceName = nameNewAlliance(members.length);
         gs.namedAlliances.push({ id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`, name: allianceName, members: [...members], formed: gs.episode + 1, betrayals: [], active: true });
         for (let x = 0; x < members.length; x++) for (let y = x + 1; y < members.length; y++) addBond(members[x], members[y], 0.2);
-        events.push({ type: 'allianceForm', text: formText.replace(/\{name\}/g, allianceName), alliance: allianceName, members, players: members });
+        events.push({ type: 'allianceForm', text: formText.replace(/\{name\}/g, allianceName), alliance: allianceName, members, players: members, badgeText: 'ALLIANCE', badgeClass: 'gold' });
       };
       const _isAllied = p => gs.namedAlliances?.some(a => a.active && a.members.includes(p) && a.members.filter(m => group.includes(m)).length >= 2);
       // Global cap: max active alliances scales with active player count
@@ -737,7 +752,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${target} realizes people are talking about them without them. ${_rP.Sub} smile${_rP.sub==='they'?'':'s'} at camp. Internally, ${_rP.sub} ${_rP.sub==='they'?'are':'is'} already rethinking everything.`]
         : [`${target} gets wind that ${_rP.posAdj} name was thrown out. ${_rP.Sub} brush${_rP.sub==='they'?'':'es'} it off in public — but quietly starts paying closer attention.`,
            `Someone lets it slip that ${target}'s name was mentioned. ${_rP.Sub} tuck${_rP.sub==='they'?'':'s'} that information away and say nothing.`];
-      events.push({ type: 'rumor', text: rumorLines[Math.floor(Math.random() * rumorLines.length)] });
+      events.push({ type: 'rumor', text: rumorLines[Math.floor(Math.random() * rumorLines.length)], players: [spreader, target], badgeText: 'RUMOR', badgeClass: 'red' });
 
     } else if (eventType === 'comfort') {
       // One player supports another after a hard day — builds a real bond
@@ -759,7 +774,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${comforter} and ${struggling} share a quiet moment by the water. Something real passes between them.`,
            `${comforter} brings ${struggling} food when nobody's looking. Small gesture. Huge in this game.`,
            `${comforter} stays up with ${struggling} by the fire long after everyone else is asleep. No strategy. Just presence.`];
-      events.push({ type: 'comfort', text: comfortLines[Math.floor(Math.random() * comfortLines.length)], players: [comforter, struggling] });
+      events.push({ type: 'comfort', text: comfortLines[Math.floor(Math.random() * comfortLines.length)], players: [comforter, struggling], badgeText: 'COMFORT', badgeClass: 'green' });
 
     } else if (eventType === 'overplay') {
       // Someone is visibly making too many deals — slight bond damage with everyone who notices
@@ -775,7 +790,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${p} pulls too many people aside in too short a window. The energy ${_opP.sub} ${_opP.sub==='they'?'give':'gives'} off is making people uncomfortable.`]
         : [`${p} is moving too hard for this early in the game. ${_opP.Sub} ${_opP.sub==='they'?'aren\'t':'isn\'t'} subtle about it. People are noticing.`,
            `${p} is nervous and it shows. ${_opP.Sub} ${_opP.sub==='they'?'keep':'keeps'} bringing up the vote when nobody asked. The tribe goes quiet.`];
-      events.push({ type: 'overplay', text: overplayLines[Math.floor(Math.random() * overplayLines.length)], player: p, players: [p] });
+      events.push({ type: 'overplay', text: overplayLines[Math.floor(Math.random() * overplayLines.length)], player: p, players: [p], badgeText: 'OVERPLAYING', badgeClass: 'red' });
 
     // ══════════════════════════════════════════════════════════
     // TOTAL DRAMA — SOCIAL & BONDING
@@ -805,7 +820,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} and ${b} end up on the same shift and bond over how exhausting this is. It's the most honest conversation either has had out here.`,
            `${a} teaches ${b} something random — a card trick, a knot, a song. By sunset they feel like old friends.`,
            `${a} and ${b} get stuck on a camp task together and it takes twice as long as it should. Neither minds.`];
-      events.push({ type: 'tdBond', text: tdBondLines[Math.floor(Math.random() * tdBondLines.length)], players: [a, b] });
+      events.push({ type: 'tdBond', text: tdBondLines[Math.floor(Math.random() * tdBondLines.length)], players: [a, b], badgeText: 'BONDING', badgeClass: 'green' });
 
     } else if (eventType === 'groupLaugh') {
       // A funny shared moment — eases tension camp-wide, small bond to several random pairs
@@ -825,7 +840,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `An argument about something dumb devolves into everyone laughing. Nobody even remembers what started it.`,
            `Camp has a rare good evening. People are talking, laughing, not thinking about the vote. These moments don't last long out here.`,
            `${p} says something that catches the whole tribe off guard. The laughter is genuine. Real. A reminder that these are actual people.`];
-      events.push({ type: 'groupLaugh', text: groupLaughLines[Math.floor(Math.random() * groupLaughLines.length)], player: p, players: [p] });
+      events.push({ type: 'groupLaugh', text: groupLaughLines[Math.floor(Math.random() * groupLaughLines.length)], player: p, players: [p], badgeText: 'GOOD VIBES', badgeClass: 'green' });
 
     } else if (eventType === 'sharedStruggle') {
       // Two players endure something hard together — builds bond even between unlikely pairs
@@ -848,7 +863,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `A hard day at camp leaves ${a} and ${b} sitting together in silence. The kind of silence where nothing needs to be said.`,
            `${a} and ${b} push through a rough stretch together. It's nothing dramatic — just grinding through it side by side. That's enough.`,
            `${b} sees ${a} struggling and says nothing, just starts helping. No comment. No big gesture. ${_ssA.Sub} ${_ssA.sub==='they'?'notice':'notices'}.`];
-      events.push({ type: 'sharedStruggle', text: sharedStruggleLines[Math.floor(Math.random() * sharedStruggleLines.length)], players: [a, b] });
+      events.push({ type: 'sharedStruggle', text: sharedStruggleLines[Math.floor(Math.random() * sharedStruggleLines.length)], players: [a, b], badgeText: 'SHARED STRUGGLE', badgeClass: 'green' });
 
     } else if (eventType === 'rivalThaw') {
       // Two players who have been in conflict find unexpected common ground
@@ -872,7 +887,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${b} does something for ${a} they didn't have to do. ${a} doesn't say much. But ${_rtA.sub} ${_rtA.sub==='they'?'stop':'stops'} treating ${_rtA.obj} like an enemy.`,
            `${a} and ${b} share a meal in near-silence. By the end of it, whatever was between them has loosened slightly. Not gone — but loosened.`,
            `${a} catches ${b} doing something unexpectedly decent. It doesn't fit the version of them ${_rtA.sub} ${_rtA.sub==='they'?'have':'has'} been holding onto.`];
-      events.push({ type: 'rivalThaw', text: rivalThawLines[Math.floor(Math.random() * rivalThawLines.length)], players: [a, b] });
+      events.push({ type: 'rivalThaw', text: rivalThawLines[Math.floor(Math.random() * rivalThawLines.length)], players: [a, b], badgeText: 'THAWING', badgeClass: 'green' });
 
     } else if (eventType === 'flirtation') {
       // Romantic tension — bond boost for both; others notice
@@ -896,7 +911,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${a} reaches for the same thing as ${b} and their hands brush. Neither of them moves away immediately. The tribe files this away for later.`,
         `${b} passes ${a} something without being asked. ${a} holds it a beat longer than necessary before saying thank you. Everyone saw that.`,
       ];
-      events.push({ type: 'flirtation', text: flirtLines[Math.floor(Math.random() * flirtLines.length)] });
+      events.push({ type: 'flirtation', text: flirtLines[Math.floor(Math.random() * flirtLines.length)], players: [a, b], badgeText: 'SPARKS', badgeClass: 'green' });
 
     } else if (eventType === 'showmancerMoment') {
       // Showmancer deepens their most important relationship — bigger bond boost than flirtation
@@ -937,7 +952,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${b} reaches over and moves something out of ${a}'s way — barely a gesture. ${a} doesn't say anything. But the tribe notices every single time.`,
         `${a} says something that makes ${b} laugh and then immediately looks around to see if anyone else caught it. Everyone did.`,
       ];
-      events.push({ type: 'showmancerMoment', text: smLines[Math.floor(Math.random() * smLines.length)], players: [a, b] });
+      events.push({ type: 'showmancerMoment', text: smLines[Math.floor(Math.random() * smLines.length)], players: [a, b], badgeText: 'SHOWMANCE', badgeClass: 'green' });
 
     } else if (eventType === 'prank') {
       // Prank — goes well or badly depending on target's temperament
@@ -959,7 +974,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} thinks the prank on ${b} is hilarious. ${b} does not. The tribe goes very quiet.`,
            `${a} pulls something on ${b} at entirely the wrong moment. ${b}'s reaction is not a laugh.`,
            `${a} meant it as a joke. ${b} took it personally. Now there's a thing.`];
-      events.push({ type: 'prank', text: prankLines[Math.floor(Math.random() * prankLines.length)], player: a, players: [a], goesWell });
+      events.push({ type: 'prank', text: prankLines[Math.floor(Math.random() * prankLines.length)], player: a, players: [a], goesWell, badgeText: 'PRANK', badgeClass: 'red' });
 
     } else if (eventType === 'unexpectedCompetence') {
       // A "weak" player surprises everyone — threat perception shifts
@@ -974,7 +989,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${p} navigates something the tribe's been struggling with all day in about thirty seconds. The silence after is respectful.`,
         `Everyone underestimated ${p}. That was a mistake. The tribe is starting to figure that out.`,
       ];
-      events.push({ type: 'unexpectedCompetence', text: ucLines[Math.floor(Math.random() * ucLines.length)], player: p, players: [p] });
+      events.push({ type: 'unexpectedCompetence', text: ucLines[Math.floor(Math.random() * ucLines.length)], player: p, players: [p], badgeText: 'SURPRISE', badgeClass: 'green' });
 
     } else if (eventType === 'homesick') {
       // Emotional exhaustion — doesn't want sympathy, but the tribe sees it
@@ -988,7 +1003,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${p} mentions home — just once, just briefly. Then changes the subject. The moment hangs.`,
         `${p} is fine. ${_hkP.Sub} keep${_hkP.sub==='they'?'':'s'} saying ${_hkP.sub} ${_hkP.sub==='they'?'are':'is'} fine. The tribe isn't sure.`,
       ];
-      events.push({ type: 'homesick', text: hkLines[Math.floor(Math.random() * hkLines.length)] });
+      events.push({ type: 'homesick', text: hkLines[Math.floor(Math.random() * hkLines.length)], player: p, players: [p], badgeText: 'HOMESICK', badgeClass: '' });
 
     // ══════════════════════════════════════════════════════════
     // TOTAL DRAMA — CONFLICT & DRAMA
@@ -1012,7 +1027,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${a} and ${b} are both convinced they're the leader today. The tribe has a third opinion about who's actually in charge: nobody.`,
         `${a} delegates tasks. ${b} reassigns them. By noon the tribe is doing whatever they want and ignoring both.`,
       ];
-      events.push({ type: 'leadershipClash', text: lcLines[Math.floor(Math.random() * lcLines.length)] });
+      events.push({ type: 'leadershipClash', text: lcLines[Math.floor(Math.random() * lcLines.length)], players: [a, b], badgeText: 'POWER CLASH', badgeClass: 'red' });
 
     } else if (eventType === 'showboat') {
       // Someone brags — tribe gets quietly irritated
@@ -1029,7 +1044,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${p} describes ${_sbP.posAdj} game to someone like it's already a documentary. The other person smiles and quietly reconsiders the alliance.`,
         `${p} announces that ${_sbP.sub} ${_sbP.sub==='they'?'have':'has'} this figured out. The tribe exchanges looks. Nobody corrects ${_sbP.obj}.`,
       ];
-      events.push({ type: 'showboat', text: sbLines[Math.floor(Math.random() * sbLines.length)], player: p, players: [p] });
+      events.push({ type: 'showboat', text: sbLines[Math.floor(Math.random() * sbLines.length)], player: p, players: [p], badgeText: 'SHOWBOATING', badgeClass: 'red' });
 
     } else if (eventType === 'foodConflict') {
       // Someone takes more than their share — targeted resentment
@@ -1049,7 +1064,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${a} ate while others were working. ${b} says something about it. ${a} says it's not a big deal. ${b} disagrees. The tribe takes sides.`,
         `${a} suggests rationing. Then eats more than the ration. ${b} counts and says nothing. For now.`,
       ];
-      events.push({ type: 'foodConflict', text: fcLines[Math.floor(Math.random() * fcLines.length)], player: a, players: [a] });
+      events.push({ type: 'foodConflict', text: fcLines[Math.floor(Math.random() * fcLines.length)], player: a, players: [a, b], badgeText: 'FOOD FIGHT', badgeClass: 'red' });
 
     } else if (eventType === 'intimidation') {
       // Physical or social dominant player establishes presence — target is unnerved
@@ -1069,7 +1084,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${a} challenges ${b} to something small — a bet, a task, a point of logic. ${b} backs down.`,
            `${a} makes a comment that wasn't technically a threat. ${b} heard it as one. Maybe that was the point.`,
            `${a} holds eye contact with ${b} a beat too long during a group conversation. ${b} looks away first.`];
-      events.push({ type: 'intimidation', text: intLines[Math.floor(Math.random() * intLines.length)] });
+      events.push({ type: 'intimidation', text: intLines[Math.floor(Math.random() * intLines.length)], players: [a, b], badgeText: 'INTIMIDATION', badgeClass: 'red' });
 
     // ══════════════════════════════════════════════════════════
     // TOTAL DRAMA — STRATEGY & SCHEMING
@@ -1099,7 +1114,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} and ${b} take a walk that lasts too long to be casual. They come back with the same energy.`,
            `${a} floats a name to ${b}. ${b} floats one back. They leave it there for now, but it's in the air.`,
            `${a} and ${b} run through the numbers. The math is clear. The question is whether anyone else will see it first.`];
-      events.push({ type: 'tdStrategy', text: tdStratLines[Math.floor(Math.random() * tdStratLines.length)], player: a, players: [a] });
+      events.push({ type: 'tdStrategy', text: tdStratLines[Math.floor(Math.random() * tdStratLines.length)], player: a, players: [a, b], badgeText: 'STRATEGY', badgeClass: 'gold' });
 
     } else if (eventType === 'lie') {
       // Someone plants false information — bond damage if the target finds out
@@ -1126,7 +1141,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       ];
       if (!gs.lieTargetsThisEp) gs.lieTargetsThisEp = new Set();
       gs.lieTargetsThisEp.add(subject);
-      events.push({ type: 'lie', text: lieLines[Math.floor(Math.random() * lieLines.length)], player: a, players: [a, b] });
+      events.push({ type: 'lie', text: lieLines[Math.floor(Math.random() * lieLines.length)], player: a, players: [a, b], badgeText: 'DECEPTION', badgeClass: 'red' });
 
     } else if (eventType === 'eavesdrop') {
       // Someone overhears a conversation — strategic info gain, bond shift
@@ -1148,7 +1163,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${a} doesn't mean to overhear — but does. The game just changed, quietly.`]
         : [`${a} was nearby when ${b} said something ${_evA.sub} wasn't meant to. ${_evA.Sub} nod${_evA.sub==='they'?'':'s'}, smile${_evA.sub==='they'?'':'s'}, and keep moving. This will matter later.`,
            `${a} absorbs what ${b} said when ${_evB.sub} thought no one was listening. No reaction. Perfect poker face. The information is already being processed.`];
-      events.push({ type: 'eavesdrop', text: eavLines[Math.floor(Math.random() * eavLines.length)] });
+      events.push({ type: 'eavesdrop', text: eavLines[Math.floor(Math.random() * eavLines.length)], players: [a, b], badgeText: 'EAVESDROP', badgeClass: 'red' });
 
     // ══════════════════════════════════════════════════════════
     // FLAVOR / NO IMPACT
@@ -1176,7 +1191,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${p} to the confessional: "Okay. Here's what I actually think." What follows is more honest than anything said at camp.`,
            `${p} recaps the episode from ${_cfP.posAdj} perspective. The version in ${_cfP.posAdj} head is very different from what the tribe thinks happened.`,
            `${p} in the confessional: "I came here to play the game." Beat. "I just didn't think it would feel like this."`];
-      events.push({ type: 'confessional', text: confLines[Math.floor(Math.random() * confLines.length)], player: p, players: [p] });
+      events.push({ type: 'confessional', text: confLines[Math.floor(Math.random() * confLines.length)], player: p, players: [p], badgeText: 'CONFESSIONAL', badgeClass: '' });
 
     } else if (eventType === 'doubt') {
       // Player privately questions their position — no bond change, foreshadowing
@@ -1190,7 +1205,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${p} replays a conversation from earlier. The more ${_dbP.sub} think${_dbP.sub==='they'?'':'s'} about it, the less comfortable ${_dbP.sub} ${_dbP.sub==='they'?'feel':'feels'}.`,
         `${p} thought ${_dbP.sub} knew where ${_dbP.sub} stood in this game. Today raised a question ${_dbP.sub} didn't have before.`,
       ];
-      events.push({ type: 'doubt', text: doubtLines[Math.floor(Math.random() * doubtLines.length)] });
+      events.push({ type: 'doubt', text: doubtLines[Math.floor(Math.random() * doubtLines.length)], player: p, players: [p], badgeText: 'DOUBT', badgeClass: 'red' });
 
     } else if (eventType === 'weirdMoment') {
       // Total Drama absurdism — chaotic, funny, or bizarre — but with real consequences
@@ -1225,7 +1240,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           `${p} says something. ${b} takes it wrong. Within minutes the whole camp is involved in an argument that has nothing to do with strategy.`,
           `What started as ${p} making a comment turned into a full confrontation with ${b}. The tribe watched — and quietly chose sides.`,
         ];
-        events.push({ type: 'weirdMoment', text: argLines[Math.floor(Math.random() * argLines.length)], players: [p, b] });
+        events.push({ type: 'weirdMoment', text: argLines[Math.floor(Math.random() * argLines.length)], players: [p, b], badgeText: 'WEIRD', badgeClass: '' });
 
       } else if (b && _wmRoll < 0.60) {
         // ── Bonding: shared absurdity builds connection ──
@@ -1241,7 +1256,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           `${p} and ${b} overhear the host say something they weren't meant to hear. Neither of them brings it up. It haunts them both — and brings them closer.`,
           `${p} and ${b} spend an hour building something out of coconuts. It's terrible. They're proud of it. The tribe lets them have this.`,
         ];
-        events.push({ type: 'weirdMoment', text: bondLines[Math.floor(Math.random() * bondLines.length)], players: [p, b] });
+        events.push({ type: 'weirdMoment', text: bondLines[Math.floor(Math.random() * bondLines.length)], players: [p, b], badgeText: 'WEIRD', badgeClass: '' });
 
       } else {
         // ── Solo chaos: embarrassment or endearing moment depending on how they handle it ──
@@ -1255,7 +1270,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
             `It rains for exactly four minutes. ${p} stands in it deliberately. Nobody asks why. Nobody needs to.`,
             `${p} does something so inexplicable at camp that the tribe just agrees not to address it. But everyone's smiling.`,
           ];
-          events.push({ type: 'weirdMoment', text: boldLines[Math.floor(Math.random() * boldLines.length)], players: [p] });
+          events.push({ type: 'weirdMoment', text: boldLines[Math.floor(Math.random() * boldLines.length)], players: [p], badgeText: 'WEIRD', badgeClass: '' });
         } else {
           // Shy/low-temperament players get embarrassed — slight social friction
           others.slice(0, 2).forEach(o => addBond(o, p, -0.2));
@@ -1265,7 +1280,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
             `${p} gets into a one-sided argument with a seagull. The seagull wins. The tribe pretends not to notice.`,
             `${p} talks to the camera for ten minutes when no one is filming. Someone catches ${_pPr.obj}. It's awkward.`,
           ];
-          events.push({ type: 'weirdMoment', text: shyLines[Math.floor(Math.random() * shyLines.length)], players: [p] });
+          events.push({ type: 'weirdMoment', text: shyLines[Math.floor(Math.random() * shyLines.length)], players: [p], badgeText: 'WEIRD', badgeClass: '' });
         }
       }
 
@@ -1285,7 +1300,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${p} reads a normal conversation as something threatening. ${_paP.Sub} spend${_paP.sub==='they'?'':'s'} the rest of the day quietly processing that.`,
            `${p} is in ${_paP.posAdj} own head today. The tribe can feel the energy shift.`,
            `Something has gotten to ${p}. ${_paP.Sub} ${_paP.sub==='they'?'are':'is'} still functional — but barely.`];
-      events.push({ type: 'paranoia', text: paraLines[Math.floor(Math.random() * paraLines.length)], players: [p] });
+      events.push({ type: 'paranoia', text: paraLines[Math.floor(Math.random() * paraLines.length)], players: [p], badgeText: 'PARANOIA', badgeClass: 'red' });
 
     } else if (eventType === 'scramble') {
       const a = _pick(group, n => {
@@ -1309,7 +1324,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} is checking in with everyone — more than usual. ${scB} gets a longer conversation than expected.`,
            `${a} pulls ${scB} aside and floats a plan. It feels slightly rushed. ${scB} files that away.`,
            `${a} moves through camp with too much purpose today. ${scB} notices.`];
-      events.push({ type: 'scramble', text: scrambleLines[Math.floor(Math.random() * scrambleLines.length)], player: a, players: [a] });
+      events.push({ type: 'scramble', text: scrambleLines[Math.floor(Math.random() * scrambleLines.length)], player: a, players: [a], badgeText: 'SCRAMBLING', badgeClass: 'red' });
 
     } else if (eventType === 'overconfidence') {
       const p = _pick(group, n => {
@@ -1328,7 +1343,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${p} walks around camp with the energy of someone who's already won today. The tribe reads it as arrogance.`,
         `${p} makes a comment about how "the vote is obvious tonight." Three people in earshot disagree silently.`,
       ];
-      events.push({ type: 'overconfidence', text: ocLines[Math.floor(Math.random() * ocLines.length)], player: p, players: [p] });
+      events.push({ type: 'overconfidence', text: ocLines[Math.floor(Math.random() * ocLines.length)], player: p, players: [p], badgeText: 'OVERCONFIDENT', badgeClass: 'red' });
 
     } else if (eventType === 'readingRoom') {
       const p = _pick(group, n => Math.max(0.1, pStats(n).intuition * 0.6 + pStats(n).strategic * 0.2 + 1));
@@ -1341,7 +1356,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${p} notices something the rest of the tribe missed. ${_rrP.Sub} don't${_rrP.sub==='they'?'':'es'} say it out loud. Not yet.`,
            `${p} watches two people talk across camp and reads the whole dynamic from body language alone.`,
            `${p} has been paying quiet attention. More than anyone realized. The picture ${_rrP.sub} ${_rrP.sub==='they'?'have':'has'} is fuller than everyone else's.`];
-      events.push({ type: 'readingRoom', text: rrLines[Math.floor(Math.random() * rrLines.length)], players: [p] });
+      events.push({ type: 'readingRoom', text: rrLines[Math.floor(Math.random() * rrLines.length)], players: [p], badgeText: 'READING', badgeClass: '' });
 
     } else if (eventType === 'allianceCrack') {
       const naMembers = group.filter(n => gs.namedAlliances?.some(a => a.active && a.members.includes(n) && a.members.some(m => group.includes(m) && m !== n)));
@@ -1370,7 +1385,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${acA} hasn't been told the full ${acNa.name} plan in two days. The exclusion is quiet but deliberate.`,
         `${acA} tests ${acB} with a small piece of information. When it comes back wrong, ${_acA.sub} ${_acA.sub==='they'?'know':'knows'} ${acNa.name} has a trust problem.`,
       ];
-      events.push({ type: 'allianceCrack', text: crackLines[Math.floor(Math.random() * crackLines.length)], players: [acA, acB], alliance: acNa.name });
+      events.push({ type: 'allianceCrack', text: crackLines[Math.floor(Math.random() * crackLines.length)], players: [acA, acB], alliance: acNa.name, badgeText: 'ALLIANCE CRACK', badgeClass: 'red' });
 
     } else if (eventType === 'sideDeal') {
       const sdCandidates = group.filter(n => {
@@ -1396,7 +1411,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${sdA} and ${sdB} have a conversation the rest of the tribe doesn't see. By tomorrow, the game might look different.`,
         `${sdA} pulls ${sdB} aside with a pitch that's either brilliant or desperate. ${sdB} is going to sleep on it.`,
       ];
-      events.push({ type: 'strategicApproach', text: sdLines[Math.floor(Math.random() * sdLines.length)], players: [sdA, sdB] });
+      events.push({ type: 'strategicApproach', text: sdLines[Math.floor(Math.random() * sdLines.length)], players: [sdA, sdB], badgeText: 'SIDE DEAL', badgeClass: 'gold' });
 
     } else if (eventType === 'bigMoveThoughts') {
       const p = _pick(group, n => {
@@ -1412,7 +1427,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${p} has been playing it safe for too long. ${_bmP.Sub} know${_bmP.sub==='they'?'':'s'} it. The game is moving past ${_bmP.obj}.`,
            `${p} to the confessional: "I need to do something. I need them to know I was here."`,
            `${p} contemplates a move that could flip everything. ${_bmP.Sub} run${_bmP.sub==='they'?'':'s'} it over and over.`];
-      events.push({ type: 'bigMoveThoughts', text: bmLines[Math.floor(Math.random() * bmLines.length)], player: p, players: [p] });
+      events.push({ type: 'bigMoveThoughts', text: bmLines[Math.floor(Math.random() * bmLines.length)], player: p, players: [p], badgeText: 'BIG MOVE', badgeClass: 'gold' });
 
     } else if (eventType === 'watchingYou') {
       const wyA = _pick(group, n => Math.max(0.1, pStats(n).intuition * 0.5 + pStats(n).strategic * 0.2 + 1));
@@ -1431,7 +1446,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${wyA} notices ${wyB} tracking where ${_wyA.sub} go${_wyA.sub==='they'?'':'es'} and who ${_wyA.sub} talk${_wyA.sub==='they'?'':'s'} to. It makes ${_wyA.obj} uncomfortable.`,
            `Something changes in how ${wyA} moves through camp after noticing ${wyB}'s attention. ${_wyA.Sub} ${_wyA.sub==='they'?'are':'is'} more careful now.`,
            `${wyA} can feel ${wyB}'s eyes on ${_wyA.obj} during every group conversation. It's not paranoia. It's accurate.`];
-      events.push({ type: 'watchingYou', text: wyLines[Math.floor(Math.random() * wyLines.length)] });
+      events.push({ type: 'watchingYou', text: wyLines[Math.floor(Math.random() * wyLines.length)], players: [wyA, wyB], badgeText: 'WATCHING', badgeClass: 'red' });
 
     } else if (eventType === 'loneWolf') {
       const p = _pick(group, n => Math.max(0.1, (10 - pStats(n).loyalty) * 0.4 + pStats(n).boldness * 0.25 + 1));
@@ -1447,7 +1462,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${p} sits at the edge of every group conversation. Present but not participating. It's calculated or it's checked out. Nobody can tell.`,
         `Someone tries to loop ${p} into the vote discussion. ${p} listens, nods, contributes nothing. The non-answer is an answer.`,
       ];
-      events.push({ type: 'loneWolf', text: lwLines[Math.floor(Math.random() * lwLines.length)], player: p, players: [p] });
+      events.push({ type: 'loneWolf', text: lwLines[Math.floor(Math.random() * lwLines.length)], player: p, players: [p], badgeText: 'LONE WOLF', badgeClass: '' });
 
     } else if (eventType === 'tribeMood') {
       const tmP = group[Math.floor(Math.random() * group.length)];
@@ -1462,7 +1477,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `There's a moment at sunset where the game disappears — for everyone, briefly. Then it comes back.`,
         `The tribe laughs together at something dumb. For thirty seconds it doesn't feel like a competition.`,
       ];
-      events.push({ type: 'tribeMood', text: moodLines[Math.floor(Math.random() * moodLines.length)] });
+      events.push({ type: 'tribeMood', text: moodLines[Math.floor(Math.random() * moodLines.length)], badgeText: 'TRIBE MOOD', badgeClass: '' });
 
     // ══════════════════════════════════════════════════════════
     // ARCHETYPE-SPECIFIC EVENTS
@@ -1484,7 +1499,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} pulls ${b} close with information that sounds valuable. Some of it is. The rest is useful to ${a}.`,
            `${a} makes ${b} feel like an equal partner. The split of power in their arrangement is not equal.`,
            `${a} works ${b} through a slow conversation that ends with ${b} committed to something ${_smA.sub} barely had to ask for.`];
-      events.push({ type: 'schemerManipulates', text: smLines[Math.floor(Math.random() * smLines.length)], player: a, players: [a, b] });
+      events.push({ type: 'schemerManipulates', text: smLines[Math.floor(Math.random() * smLines.length)], player: a, players: [a, b], badgeText: 'MANIPULATION', badgeClass: 'red' });
 
     } else if (eventType === 'mastermindOrchestrates') {
       // Mastermind quietly engineers something without anyone knowing
@@ -1502,7 +1517,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} positions ${b} for a move ${_mmA.sub} won't make until next week. ${b} has no idea ${_mmA.sub}'s already that far ahead.`,
            `${a} and ${b} have a conversation that looks like small talk and functions as architecture.`,
            `${a} didn't speak much at camp today. ${_mmA.Sub} didn't need to. The pieces are already where ${_mmA.sub} put${_mmA.sub==='they'?'':'s'} them.`];
-      events.push({ type: 'mastermindOrchestrates', text: mmLines[Math.floor(Math.random() * mmLines.length)], player: a, players: [a, b] });
+      events.push({ type: 'mastermindOrchestrates', text: mmLines[Math.floor(Math.random() * mmLines.length)], player: a, players: [a, b], badgeText: 'ORCHESTRATING', badgeClass: 'red' });
 
     } else if (eventType === 'hotheadExplosion') {
       // Hothead loses control — wide bond damage
@@ -1524,7 +1539,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${a} gets in ${b}'s face. The words are sharp and personal. ${b} doesn't respond. That might be worse.`]
         : [`${a} loses the composure ${_hhA.sub} usually ${_hhA.sub==='they'?'maintain':'maintains'}. It comes out on ${b}. The tribe clocks it.`,
            `${a} cracks and it's aimed at ${b}. The outburst is brief but the damage is real.`];
-      events.push({ type: 'hotheadExplosion', text: hhLines[Math.floor(Math.random() * hhLines.length)], player: a, players: [a] });
+      events.push({ type: 'hotheadExplosion', text: hhLines[Math.floor(Math.random() * hhLines.length)], player: a, players: [a], badgeText: 'EXPLOSION', badgeClass: 'red' });
 
     } else if (eventType === 'beastDrills') {
       // Challenge beast is training — tribe grows quietly threatened
@@ -1544,7 +1559,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${a} doesn't train — ${_bdA.sub} just ${_bdA.sub==='they'?'work':'works'}. The output is the same. The tribe takes note.`];
       if (!gs.beastDrillsThisEp) gs.beastDrillsThisEp = new Set();
       gs.beastDrillsThisEp.add(a);
-      events.push({ type: 'beastDrills', text: bdLines[Math.floor(Math.random() * bdLines.length)], player: a, players: [a] });
+      events.push({ type: 'beastDrills', text: bdLines[Math.floor(Math.random() * bdLines.length)], player: a, players: [a], badgeText: 'TRAINING', badgeClass: 'green' });
 
     } else if (eventType === 'socialBoost') {
       // Social butterfly lifts the whole tribe's mood
@@ -1562,7 +1577,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${a} checks in on everyone individually. Nobody felt singled out. Everyone felt seen.`]
         : [`${a} has a way of making silence feel comfortable. Today that was exactly what the tribe needed.`,
            `${a} says the right thing at the right moment. Camp exhales.`];
-      events.push({ type: 'socialBoost', text: sbLines[Math.floor(Math.random() * sbLines.length)], player: a, players: [a] });
+      events.push({ type: 'socialBoost', text: sbLines[Math.floor(Math.random() * sbLines.length)], player: a, players: [a], badgeText: 'SOCIAL LIFT', badgeClass: 'green' });
 
     } else if (eventType === 'soldierCheckin') {
       // Loyal soldier reaffirms alliance — bond boost
@@ -1582,7 +1597,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${a} pulls ${b} aside — not with information, just with presence. "We're fine." ${b} believes it.`]
         : [`${a} and ${b} exchange a look across camp that means something. No words needed. No words used.`,
            `${a} shows up for ${b} in a small way today. ${b} clocks it. That's how loyalty works in here.`];
-      events.push({ type: 'soldierCheckin', text: lsLines[Math.floor(Math.random() * lsLines.length)], player: a, players: [a, b] });
+      events.push({ type: 'soldierCheckin', text: lsLines[Math.floor(Math.random() * lsLines.length)], player: a, players: [a, b], badgeText: 'LOYALTY', badgeClass: 'green' });
 
     } else if (eventType === 'wildcardPivot') {
       // Wildcard does something nobody predicted — direction could go either way
@@ -1601,7 +1616,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} moves differently today — not toward the obvious play. The tribe tries to read it.`,
            b ? `${a} and ${b} end up in conversation nobody would have predicted. Nobody knows what to do with that.`
              : `${a} declines to play the expected role today. What ${_wcA.sub} ${_wcA.sub==='they'?'do':'does'} instead doesn't fit any pattern.`];
-      events.push({ type: 'wildcardPivot', text: wcLines[Math.floor(Math.random() * wcLines.length)] });
+      events.push({ type: 'wildcardPivot', text: wcLines[Math.floor(Math.random() * wcLines.length)], player: a, players: [a], badgeText: 'WILDCARD', badgeClass: 'gold' });
 
     } else if (eventType === 'chaosAgentStirsUp') {
       // Chaos agent deliberately engineers drama between two others
@@ -1622,7 +1637,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} says the wrong thing — or exactly the right wrong thing — and watches ${b} and ${c} deal with the fallout.`,
            `${a} stirs something between ${b} and ${c} with one offhand comment. Whether it was intentional is the question.`,
            `${a} pokes at the tension between ${b} and ${c} until it becomes something. That was the goal.`];
-      events.push({ type: 'chaosAgentStirsUp', text: caLines[Math.floor(Math.random() * caLines.length)] });
+      events.push({ type: 'chaosAgentStirsUp', text: caLines[Math.floor(Math.random() * caLines.length)], players: [a, b, c], badgeText: 'CHAOS', badgeClass: 'red' });
 
     } else if (eventType === 'floaterInvisible') {
       // Floater successfully goes unnoticed — no bond change, pure flavor
@@ -1638,7 +1653,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${a} moves through camp like wallpaper. People talk freely around ${_flA.obj} because they forget ${_flA.sub} ${_flA.sub==='they'?'are':'is'} there. That's the whole strategy.`,
         `${a} hasn't been on anyone's radar for three episodes. In this game, invisibility is a superpower — until it isn't.`,
       ];
-      events.push({ type: 'floaterInvisible', text: fiLines[Math.floor(Math.random() * fiLines.length)], player: a, players: [a] });
+      events.push({ type: 'floaterInvisible', text: fiLines[Math.floor(Math.random() * fiLines.length)], player: a, players: [a], badgeText: 'INVISIBLE', badgeClass: 'gold' });
 
     } else if (eventType === 'underdogMoment') {
       // Underdog shows quiet resilience — small bond boost with tribe
@@ -1653,7 +1668,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} doesn't fit the profile of someone who makes it far. ${_udA.Sub} ${_udA.sub==='they'?'are':'is'} still here, still contributing, still invisible on the threat board.`,
            `${a} earns something from the tribe today — not respect exactly, but something adjacent to it.`,
            `Nobody expected ${a} to matter this much. ${_udA.Sub} ${_udA.sub==='they'?'are':'is'} quietly compiling a case for why ${_udA.sub} belongs here.`];
-      events.push({ type: 'underdogMoment', text: udLines[Math.floor(Math.random() * udLines.length)], player: a, players: [a] });
+      events.push({ type: 'underdogMoment', text: udLines[Math.floor(Math.random() * udLines.length)], player: a, players: [a], badgeText: 'UNDERDOG', badgeClass: 'green' });
 
     } else if (eventType === 'goatOblivious') {
       // Goat is unaware of how the tribe actually sees them, gets actively used
@@ -1671,7 +1686,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} moves through camp without reading the subtext. The subtext is about ${_goA.obj}.`,
            b ? `${b} makes sure ${a} feels valued today. It costs ${b} nothing. It means everything to ${a}.`
              : `${a} isn't playing the game aggressively. The tribe has filed that information in a very specific place.`];
-      events.push({ type: 'goatOblivious', text: goLines[Math.floor(Math.random() * goLines.length)] });
+      events.push({ type: 'goatOblivious', text: goLines[Math.floor(Math.random() * goLines.length)], players: [a], badgeText: 'OBLIVIOUS', badgeClass: 'red' });
 
     } else if (eventType === 'perceptiveReads') {
       // Perceptive player catches something others missed — trust in target drops
@@ -1693,7 +1708,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${a} has been watching ${b}. Today, ${b} gave something away without knowing it. ${a} filed it.`]
         : [`${a} senses something is off with ${b} before anyone else does. ${_prA.Sub} can't explain exactly how. ${_prA.Sub} know${_prA.sub==='they'?'':'s'} what ${_prA.sub} know${_prA.sub==='they'?'':'s'}.`,
            `${a} checks in with ${b}. The response is slightly wrong. Not wrong enough for anyone else to notice. ${a} notices.`];
-      events.push({ type: 'perceptiveReads', text: prLines[Math.floor(Math.random() * prLines.length)] });
+      events.push({ type: 'perceptiveReads', text: prLines[Math.floor(Math.random() * prLines.length)], players: [a, b], badgeText: 'SHARP READ', badgeClass: 'gold' });
 
     // ── NEW POSITIVE EVENTS ──
 
@@ -1724,7 +1739,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} helps ${b} with a puzzle technique. Something clicks. ${b} solves it twice as fast the second time.`,
            `${a} shows ${b} a memory trick for keeping track of camp conversations. Small thing. But ${b} starts catching things ${pB.sub} missed before.`,
            `${a} and ${b} practice puzzle patterns by the fire. It's quiet, focused, and by the end ${b} feels sharper. ${a} feels useful.`];
-      events.push({ type: 'teachingMoment', text: _teachLines[Math.floor(Math.random() * _teachLines.length)], players: [a, b] });
+      events.push({ type: 'teachingMoment', text: _teachLines[Math.floor(Math.random() * _teachLines.length)], players: [a, b], badgeText: 'TEACHING', badgeClass: 'green' });
 
     } else if (eventType === 'vulnerability') {
       // Player opens up emotionally — requires social >= 5, temperament <= 6, bond >= 1 with recipient
@@ -1744,7 +1759,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${a} admits to ${b} that ${pA.sub}'${pA.sub==='they'?'re':'s'} scared. Not of the game — of what it's bringing out in ${pA.obj}. ${b} says something simple that lands.`,
         `${a} talks about missing home. ${b} lets ${pA.obj} talk. By the end, something has shifted between them — not strategy, just trust.`,
       ];
-      events.push({ type: 'vulnerability', text: _vulnLines[Math.floor(Math.random() * _vulnLines.length)], players: [a, b] });
+      events.push({ type: 'vulnerability', text: _vulnLines[Math.floor(Math.random() * _vulnLines.length)], players: [a, b], badgeText: 'VULNERABLE', badgeClass: 'green' });
 
     } else if (eventType === 'insideJoke') {
       // Two bonded players develop a running bit — bond >= 1, at least one has temperament >= 6
@@ -1766,7 +1781,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `There's a noise from the jungle and ${a} and ${b} say the exact same thing at the exact same time. The tribe stares. They lose it.`,
         `${a} and ${b} invented a handshake. It's stupid. They do it every time they pass each other. The tribe is either charmed or annoyed.`,
       ];
-      events.push({ type: 'insideJoke', text: _jokeLines[Math.floor(Math.random() * _jokeLines.length)], players: [a, b] });
+      events.push({ type: 'insideJoke', text: _jokeLines[Math.floor(Math.random() * _jokeLines.length)], players: [a, b], badgeText: 'INSIDE JOKE', badgeClass: 'green' });
 
     } else if (eventType === 'loyaltyProof') {
       // Player defends someone who isn't present — loyalty >= 6, bond >= 2
@@ -1786,7 +1801,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `The tribe is venting about ${b}. ${a} stays quiet until it goes too far, then says something that changes the temperature. Nobody comes for ${b} again that day.`,
         `${a} goes to bat for ${b} in a strategy conversation. It's not subtle. The tribe reads it as loyalty — because it is.`,
       ];
-      events.push({ type: 'loyaltyProof', text: _defLines[Math.floor(Math.random() * _defLines.length)], players: [a, b] });
+      events.push({ type: 'loyaltyProof', text: _defLines[Math.floor(Math.random() * _defLines.length)], players: [a, b], badgeText: 'LOYALTY PROOF', badgeClass: 'green' });
 
     // ── NEW NEGATIVE EVENTS ──
 
@@ -1811,7 +1826,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${a} makes a comment about ${target}'s wins that sounds like a compliment but lands like something else. The tribe catches the tone.`,
         `Every time ${target}'s name comes up as a threat, ${a} nods a little too eagerly. The jealousy is becoming strategy.`,
       ];
-      events.push({ type: 'jealousy', text: _jealLines[Math.floor(Math.random() * _jealLines.length)], players: [a, target] });
+      events.push({ type: 'jealousy', text: _jealLines[Math.floor(Math.random() * _jealLines.length)], players: [a, target], badgeText: 'JEALOUSY', badgeClass: 'red' });
 
     } else if (eventType === 'exclusion') {
       // Player left out of group conversation — low social OR minority position
@@ -1832,7 +1847,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `There's a strategy meeting happening. ${excluded} finds out about it after. ${pE.Sub} pretend${pE.sub==='they'?'':'s'} not to care. The pretending is visible.`,
         `The tribe laughs at something. ${excluded} asks what's funny. "You had to be there." ${pE.Sub} ${pE.sub==='they'?'were':'was'} there. Just not included.`,
       ];
-      events.push({ type: 'exclusion', text: _exclLines[Math.floor(Math.random() * _exclLines.length)], players: [excluded] });
+      events.push({ type: 'exclusion', text: _exclLines[Math.floor(Math.random() * _exclLines.length)], players: [excluded], badgeText: 'EXCLUDED', badgeClass: 'red' });
 
     } else if (eventType === 'blame') {
       // Someone blamed for challenge loss — target must have actually performed poorly
@@ -1858,7 +1873,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${a} replays the challenge loss out loud. Every detail points to ${target}. ${pA.Sub} ${pA.sub==='they'?'say':'says'} it's just analysis. It's not just analysis.`,
         `${target} apologizes for the challenge performance. ${a} accepts the apology in a way that makes it worse. "It's fine." It's not fine.`,
       ];
-      events.push({ type: 'blame', text: _blameLines[Math.floor(Math.random() * _blameLines.length)], players: [a, target] });
+      events.push({ type: 'blame', text: _blameLines[Math.floor(Math.random() * _blameLines.length)], players: [a, target], badgeText: 'BLAME', badgeClass: 'red' });
 
     } else if (eventType === 'passiveAggressive') {
       // Subtle dig — initiator: temperament <= 5, target: bond <= 1 with initiator
@@ -1879,7 +1894,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${a} says something to ${b} with a smile. The words are fine. The delivery is surgical. The tribe pretends not to notice.`,
         `${a} brings up something ${b} said three days ago — casually, in front of everyone. The context makes ${b} look bad. ${a} acts surprised that it landed that way.`,
       ];
-      events.push({ type: 'passiveAggressive', text: _paLines[Math.floor(Math.random() * _paLines.length)], players: [a, b] });
+      events.push({ type: 'passiveAggressive', text: _paLines[Math.floor(Math.random() * _paLines.length)], players: [a, b], badgeText: 'PASSIVE-AGGRESSIVE', badgeClass: 'red' });
 
     } else if (eventType === 'trustCrack') {
       // Caught in a contradiction — target must have actually contradicted themselves
@@ -1922,7 +1937,311 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} noticed something at the last tribal. ${b}'s vote didn't match what ${pB.sub} said ${pB.sub} ${pB.sub==='they'?'were':'was'} going to do. ${a} hasn't mentioned it yet. But ${pA.sub} will.`,
            `${a} pulls the voting data apart in ${pA.posAdj} head. ${b} was supposed to vote one way. ${pB.Sub} didn't. ${a} doesn't confront — ${pA.sub} adjust${pA.sub==='they'?'':'s'}.`,
            `Something ${b} said yesterday contradicts what ${pB.sub} did at tribal. ${a} caught it. The trust between them just cracked.`];
-      events.push({ type: 'trustCrack', text: _crackLines[Math.floor(Math.random() * _crackLines.length)], players: [a, b] });
+      events.push({ type: 'trustCrack', text: _crackLines[Math.floor(Math.random() * _crackLines.length)], players: [a, b], badgeText: 'TRUST CRACKED', badgeClass: 'red' });
+
+    // ═══════════════════════════════════════════════════════════
+    // NEW POSITIVE EVENTS
+    // ═══════════════════════════════════════════════════════════
+
+    } else if (eventType === 'gratitude') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.3 + pStats(n).loyalty * 0.4 + 1));
+      const others = group.filter(p => p !== a && getBond(a, p) >= 1 && _canBond(a, p));
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.5 + 1));
+      addBond(a, b, 0.6);
+      addBond(b, a, 0.3);
+      _trackBond(a, b);
+      const pA = pronouns(a), pB = pronouns(b);
+      const loA = pStats(a).loyalty, socA = pStats(a).social;
+      const _gratLines = (loA >= 8)
+        ? [`${a} pulls ${b} aside. "I haven't said it, but — what you did for me back there? I won't forget it." ${b} nods. In this game, that means something.`,
+           `${a} brings ${b} water without being asked. When ${b} looks up, ${a} just says: "You covered for me. I remember." The exchange is small. The weight is not.`,
+           `${a} tells the confessional: "Everyone in this game is performing gratitude. Mine isn't a performance. ${b} showed up for me and I intend to return it."`]
+        : (socA >= 7)
+        ? [`${a} thanks ${b} for something nobody else noticed — a small kindness days ago that ${a} has been carrying since. ${b} didn't think anyone was paying attention.`,
+           `${a} catches ${b} alone and says something genuine about what ${b} did last week. No strategy. Just acknowledgement. ${b} wasn't expecting it.`]
+        : [`${a} isn't great at saying it out loud — but ${pA.sub} find${pA.sub==='they'?'':'s'} a way to show ${b} that the help mattered. A gesture. A moment. ${b} gets it.`,
+           `${a} does something small for ${b} — returns a favor from days ago. No words. Just reciprocity. The kind that builds something real.`,
+           `${a} and ${b} share a look after a tough day that says more than either of them would say out loud. The debt from earlier is acknowledged. Settled.`];
+      events.push({ type: 'gratitude', text: _gratLines[Math.floor(Math.random() * _gratLines.length)], players: [a, b], badgeText: 'GRATITUDE', badgeClass: 'green' });
+
+    } else if (eventType === 'protectiveInstinct') {
+      // Player defends another from group criticism — needs someone who was recently blamed/targeted
+      const _recentTargets = group.filter(n => {
+        const avgBond = group.filter(p => p !== n).reduce((s, p) => s + getBond(p, n), 0) / Math.max(1, group.length - 1);
+        return avgBond < 1.5;
+      });
+      if (!_recentTargets.length) continue;
+      const target = _recentTargets[Math.floor(Math.random() * _recentTargets.length)];
+      const defenders = group.filter(p => p !== target && getBond(p, target) >= 0.5 && (pStats(p).loyalty >= 6 || pStats(p).boldness >= 7));
+      if (!defenders.length) continue;
+      const a = _pick(defenders, n => Math.max(0.1, pStats(n).loyalty * 0.4 + pStats(n).boldness * 0.3 + 1));
+      addBond(a, target, 0.7);
+      addBond(target, a, 0.8);
+      group.filter(p => p !== a && p !== target).forEach(p => addBond(p, a, 0.1));
+      const pA = pronouns(a), pT = pronouns(target);
+      const boA = pStats(a).boldness, loA = pStats(a).loyalty;
+      const _protLines = (boA >= 8)
+        ? [`Someone floats ${target}'s name and ${a} shuts it down immediately. "Not ${pT.obj}. Pick someone else." The room shifts.`,
+           `${a} steps between the tribe and ${target} — not physically, but the effect is the same. Nobody pushes the ${target} conversation further.`,
+           `${a} looks at whoever said ${target}'s name and says nothing. Just holds the look. The suggestion dies on the spot.`]
+        : (loA >= 8)
+        ? [`${a} quietly redirects the conversation when ${target}'s name comes up. Nobody notices the deflection. ${target} doesn't know it happened. But it did.`,
+           `${a} vouches for ${target} in a side conversation — unprompted, unhesitating. "They're solid. Leave them out of it." The lobby loses steam.`]
+        : [`${a} defends ${target} in a way that surprises even ${pA.ref}. It wasn't planned. It just came out. ${target} files it away.`,
+           `When the group turns toward ${target}, ${a} offers a counter-argument nobody expected. The energy breaks. ${target} breathes.`,
+           `${a} makes a case for ${target} staying that has nothing to do with loyalty and everything to do with respect. The tribe listens.`];
+      events.push({ type: 'protectiveInstinct', text: _protLines[Math.floor(Math.random() * _protLines.length)], players: [a, target], badgeText: 'DEFENDED', badgeClass: 'green' });
+
+    } else if (eventType === 'sharedMeal') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).loyalty * 0.3 + pStats(n).social * 0.3 + pStats(n).endurance * 0.2 + 1));
+      const others = group.filter(p => p !== a && _canBond(a, p));
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + pStats(n).social * 0.2 + 2));
+      addBond(a, b, 0.5);
+      addBond(b, a, 0.4);
+      _trackBond(a, b);
+      const pA = pronouns(a), pB = pronouns(b);
+      const _mealLines = [
+        `${a} and ${b} cook together tonight — something improvised from whatever's left. The food is terrible. The company makes up for it.`,
+        `${a} catches a fish and brings it straight to ${b}. They eat it together by the shore without saying much. The silence is comfortable.`,
+        `${a} splits ${pA.posAdj} ration with ${b} after noticing ${pB.sub} gave ${pB.pos} away earlier. The tribe doesn't see it. ${b} does.`,
+        `${a} and ${b} wake up before the others and make breakfast for the tribe. By the time anyone stirs, the fire is going and the mood is lifted.`,
+        `${a} forages something edible from the treeline and shares it with ${b} first. It's not strategic. It's instinct. ${b} reads it correctly.`,
+        `${a} and ${b} sit away from camp to eat. The conversation that happens over the meal is worth more than the food.`,
+        `${a} notices ${b} hasn't eaten all day and brings over the last of the coconut. No words. Just the offering. ${b} takes it.`,
+      ];
+      events.push({ type: 'sharedMeal', text: _mealLines[Math.floor(Math.random() * _mealLines.length)], players: [a, b], badgeText: 'SHARED MEAL', badgeClass: 'green' });
+
+    } else if (eventType === 'moraleBoost') {
+      // Player rallies tribe after a challenge loss or tough stretch
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.4 + pStats(n).temperament * 0.3 + pStats(n).boldness * 0.2 + 1));
+      group.filter(x => x !== a).forEach(other => addBond(other, a, 0.25));
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[a] = (gs.popularity[a] || 0) + 1;
+      const socA = pStats(a).social, boA = pStats(a).boldness;
+      const pA = pronouns(a);
+      const _moraleLines = (socA >= 8 && boA >= 7)
+        ? [`${a} gathers the tribe after the loss. "We're still here. That's what matters. Tomorrow we go again." The energy shifts. People believe ${pA.obj}.`,
+           `${a} refuses to let the tribe spiral. ${pA.Sub} ${pA.sub==='they'?'crack':'cracks'} jokes, ${pA.sub} assign${pA.sub==='they'?'':'s'} tasks, ${pA.sub} keep${pA.sub==='they'?'':'s'} everyone moving. The depression doesn't land.`,
+           `The tribe is deflated. ${a} starts talking — not about the game, not about strategy. About why they're all here. By the end, people are nodding.`]
+        : (socA >= 7)
+        ? [`${a} doesn't give a big speech. Just quietly starts rebuilding the fire, organizing camp, checking on people. The tribe follows the energy.`,
+           `${a} pulls the tribe back from the edge after a hard day. No drama about it. Just steady presence and the right words at the right time.`]
+        : [`${a} surprises everyone by being the one who pulls camp together after the loss. Nobody expected it from ${pA.obj}. It lands harder because of that.`,
+           `${a} says something after the challenge that reframes everything. The tribe needed it and didn't know until ${pA.sub} said it.`,
+           `${a} keeps working when everyone else has stopped. The tribe sees it. One by one, they get back up. That's leadership — even if ${pA.sub} ${pA.sub==='they'?'don\'t':'doesn\'t'} call it that.`];
+      events.push({ type: 'moraleBoost', text: _moraleLines[Math.floor(Math.random() * _moraleLines.length)], player: a, players: [a], badgeText: 'RALLIED', badgeClass: 'green' });
+
+    } else if (eventType === 'secretShared') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.3 + pStats(n).loyalty * 0.3 + pStats(n).temperament * 0.2 + 1));
+      const others = group.filter(p => p !== a && getBond(a, p) >= 2 && _canBond(a, p));
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.5 + pStats(n).loyalty * 0.2 + 1));
+      addBond(a, b, 0.7);
+      addBond(b, a, 0.5);
+      _trackBond(a, b);
+      const pA = pronouns(a), pB = pronouns(b);
+      const loA = pStats(a).loyalty, intB = pStats(b).intuition;
+      const _secretLines = (loA >= 8)
+        ? [`${a} tells ${b} something about ${pA.posAdj} life outside the game that ${pA.sub} hasn't told anyone else here. It changes how ${b} sees ${pA.obj}. Permanently.`,
+           `${a} confides in ${b} — not game information, something personal. ${b} doesn't share it. The trust between them just doubled.`]
+        : (intB >= 7)
+        ? [`${b} asks ${a} the right question at the right moment. ${a} answers honestly — more honestly than ${pA.sub} planned. Something unlocks between them.`,
+           `${a} opens up to ${b} about something ${pA.sub}'s been carrying alone. ${b} listens without judgment. That's rarer than an idol out here.`]
+        : [`${a} shares something real with ${b}. Not game talk. Not strategy. Something that makes ${b} see a full person instead of a player.`,
+           `Late at night, ${a} tells ${b} something nobody else knows. It's a risk. ${b} receives it like the gift it is.`,
+           `${a} lets ${b} see past the game face for a moment. What's underneath is complicated and human. ${b} protects that moment going forward.`,
+           `${a} and ${b} trade real stories — family, fears, the world outside. The game fades for an hour. When it comes back, the alliance between them is different. Deeper.`];
+      events.push({ type: 'secretShared', text: _secretLines[Math.floor(Math.random() * _secretLines.length)], players: [a, b], badgeText: 'SECRET SHARED', badgeClass: 'green' });
+
+    } else if (eventType === 'sunriseTalk') {
+      const earlyRisers = group.filter(n => pStats(n).endurance >= 5 || pStats(n).temperament >= 6);
+      if (earlyRisers.length < 2) continue;
+      const a = _pick(earlyRisers, n => Math.max(0.1, pStats(n).temperament * 0.3 + pStats(n).social * 0.3 + 1));
+      const bPool = earlyRisers.filter(p => p !== a && _canBond(a, p));
+      if (!bPool.length) continue;
+      const b = wRandom(bPool, n => Math.max(0.1, pStats(n).temperament * 0.3 + getBond(a, n) * 0.2 + 2));
+      addBond(a, b, 0.6);
+      addBond(b, a, 0.6);
+      _trackBond(a, b);
+      const pA = pronouns(a), pB = pronouns(b);
+      const _sunLines = [
+        `${a} and ${b} are the only ones awake at dawn. They sit by the fire and talk — unguarded, honest. The kind of conversation you can only have when nobody's listening.`,
+        `Before the game starts for the day, ${a} and ${b} have already had the most important conversation of the episode. Nobody else heard it.`,
+        `The sunrise catches ${a} and ${b} mid-conversation. They've been talking since before light. Something about those hours feels separate from the game entirely.`,
+        `${a} finds ${b} staring at the water at first light. ${a} sits. They talk about home, about the future. When the tribe wakes up, both of them are different.`,
+        `${a} and ${b} share the early morning in silence that becomes conversation. No angles. No pitches. Just two people being real in a game that doesn't reward it.`,
+        `The tribe sleeps. ${a} and ${b} don't. They watch the sky shift colors and talk about things that have nothing to do with votes. It matters more than any strategy session.`,
+      ];
+      events.push({ type: 'sunriseTalk', text: _sunLines[Math.floor(Math.random() * _sunLines.length)], players: [a, b], badgeText: 'SUNRISE TALK', badgeClass: 'green' });
+
+    } else if (eventType === 'celebrateTogether') {
+      // Tribe bonds over shared success — requires recent challenge win or merge milestone
+      const shuffled = [...group].sort(() => Math.random() - 0.5);
+      for (let ci = 0; ci < Math.min(shuffled.length - 1, 3); ci++) addBond(shuffled[ci], shuffled[ci + 1], 0.4);
+      group.forEach(p => { if (!gs.popularity) gs.popularity = {}; gs.popularity[p] = (gs.popularity[p] || 0) + 0.3; });
+      const instigator = _pick(group, n => Math.max(0.1, pStats(n).social * 0.4 + pStats(n).boldness * 0.3 + 1));
+      const pI = pronouns(instigator);
+      const _celebLines = [
+        `The tribe collectively loses it after the win. Screaming, hugging, someone picks someone else up. For five minutes the game doesn't exist.`,
+        `${instigator} starts cheering and it's contagious. Within seconds the entire camp is celebrating. Alliances don't matter right now. Nothing does except this.`,
+        `The tribe builds a bigger fire tonight. They earned it. Stories flow, people relax, guards come down. Tomorrow the game resumes. Tonight they're a family.`,
+        `${instigator} proposes a toast with coconut water. It's ridiculous. Everyone does it anyway. The camp hasn't felt this good in days.`,
+        `Something clicks at camp — a collective exhale, a shared relief. The tribe eats together, laughs together, exists together. It won't last. But right now it's real.`,
+        `${instigator} drags the whole tribe into an impromptu celebration. Half of them were planning to strategize tonight. Nobody does. They're too busy being human.`,
+      ];
+      events.push({ type: 'celebrateTogether', text: _celebLines[Math.floor(Math.random() * _celebLines.length)], player: instigator, players: [instigator], badgeText: 'CELEBRATION', badgeClass: 'green' });
+
+    } else if (eventType === 'mentorBond') {
+      // Older/experienced player offers emotional guidance — different from teachingMoment (skill-based)
+      const mentors = group.filter(n => pStats(n).temperament >= 7 && pStats(n).social >= 5);
+      if (!mentors.length) continue;
+      const a = _pick(mentors, n => Math.max(0.1, pStats(n).temperament * 0.4 + pStats(n).social * 0.3 + 1));
+      const mentees = group.filter(p => p !== a && pStats(p).temperament <= 5 && _canBond(a, p));
+      if (!mentees.length) continue;
+      const b = wRandom(mentees, n => Math.max(0.1, (6 - pStats(n).temperament) * 0.4 + 1));
+      addBond(a, b, 0.6);
+      addBond(b, a, 0.7);
+      _trackBond(a, b);
+      const pA = pronouns(a), pB = pronouns(b);
+      const tmpB = pStats(b).temperament;
+      const _mentorLines = (tmpB <= 3)
+        ? [`${b} is spiraling. ${a} sits with ${pB.obj} and doesn't try to fix it — just asks questions until ${b} finds ${pB.posAdj} own footing. It works.`,
+           `${a} catches ${b} at a breaking point and says exactly the right thing. Not a pep talk. Something ${b} can actually use. The panic subsides.`,
+           `${a} recognizes something in ${b} — the frustration, the isolation. ${pA.Sub} ${pA.sub==='they'?'have':'has'} been there. The advice ${pA.sub} offer${pA.sub==='they'?'':'s'} comes from experience, not strategy.`]
+        : [`${a} checks in with ${b} after a rough stretch. The conversation isn't strategic — it's navigational. "You're fine. Just breathe. Play your game."`,
+           `${b} is overthinking everything. ${a} cuts through it in one sentence. ${b} exhales for the first time in hours.`,
+           `${a} and ${b} sit together and ${a} talks about how ${pA.sub} handle${pA.sub==='they'?'':'s'} the pressure. ${b} listens like it's the first useful advice ${pB.sub}'s gotten all game.`,
+           `${a} gives ${b} permission to stop trying so hard. "You're already here. That's enough." ${b} didn't know how badly ${pB.sub} needed to hear that.`];
+      events.push({ type: 'mentorBond', text: _mentorLines[Math.floor(Math.random() * _mentorLines.length)], players: [a, b], badgeText: 'MENTORING', badgeClass: 'green' });
+
+    } else if (eventType === 'forgiveness') {
+      // Two players with a negative bond reconcile — requires existing conflict
+      const conflictPairs = [];
+      for (let i = 0; i < group.length; i++)
+        for (let j = i + 1; j < group.length; j++)
+          if (getBond(group[i], group[j]) >= -4 && getBond(group[i], group[j]) <= -1) conflictPairs.push([group[i], group[j]]);
+      if (!conflictPairs.length) continue;
+      const [a, b] = conflictPairs[Math.floor(Math.random() * conflictPairs.length)];
+      const initiator = pStats(a).temperament >= pStats(b).temperament ? a : b;
+      const receiver = initiator === a ? b : a;
+      addBond(a, b, 1.5);
+      const pI = pronouns(initiator), pR = pronouns(receiver);
+      const tmpI = pStats(initiator).temperament;
+      const _forgiveLines = (tmpI >= 8)
+        ? [`${initiator} approaches ${receiver} and says it plainly: "I was wrong. About what I said." ${receiver} looks up. Nods. Something releases between them.`,
+           `${initiator} apologizes — no conditions, no justification. ${receiver} accepts it without making ${pI.obj} grovel. The dynamic resets.`]
+        : (tmpI >= 6)
+        ? [`${initiator} finds a way to say sorry without the word "sorry." ${receiver} understands what's being offered. Takes it.`,
+           `${initiator} makes a peace offering — a gesture, a favor, a moment of vulnerability. ${receiver} could reject it. ${pR.Sub} don't${pR.sub==='they'?'':'es'}.`]
+        : [`It takes ${initiator} all day to work up to it. But ${pI.sub} finally ${pI.sub==='they'?'say':'says'} something to ${receiver} that sounds like a bridge. ${receiver} crosses it.`,
+           `${initiator} and ${receiver} end up alone at camp. The silence becomes a conversation becomes something neither expected: a reset. Not friendship. But not war.`,
+           `${initiator} doesn't apologize exactly — but ${pI.sub} stop${pI.sub==='they'?'':'s'} the hostility. ${receiver} matches it. The tribe exhales. The cold front is over.`];
+      events.push({ type: 'forgiveness', text: _forgiveLines[Math.floor(Math.random() * _forgiveLines.length)], players: [initiator, receiver], badgeText: 'TRUCE', badgeClass: 'green' });
+
+    } else if (eventType === 'silentSolidarity') {
+      // Two allied players show loyalty through action, not words
+      const bondedPairs = [];
+      for (let i = 0; i < group.length; i++)
+        for (let j = i + 1; j < group.length; j++)
+          if (getBond(group[i], group[j]) >= 3 && _canBond(group[i], group[j])) bondedPairs.push([group[i], group[j]]);
+      if (!bondedPairs.length) continue;
+      const [a, b] = bondedPairs[Math.floor(Math.random() * bondedPairs.length)];
+      addBond(a, b, 0.4);
+      _trackBond(a, b);
+      const pA = pronouns(a), pB = pronouns(b);
+      const _solidLines = [
+        `${a} and ${b} don't need to say anything. A look across the fire. A nod during the conversation. The tribe doesn't catch it. That's the point.`,
+        `When the vote comes up, ${a} and ${b} already know where they stand. No meeting needed. No check-in. The understanding between them is older than today.`,
+        `${a} takes a seat next to ${b} when the tribe gathers. Nothing dramatic. But in the geometry of camp, proximity is a statement. Everyone has one.`,
+        `${b} is catching heat. ${a} doesn't defend ${pB.obj} out loud — just quietly steers two conversations in a different direction. ${b} doesn't know. Doesn't need to.`,
+        `${a} covers for ${b}'s absence without being asked. When ${b} returns, ${pB.sub} find${pB.sub==='they'?'':'s'} the story already told. ${a} shrugs. "I handled it."`,
+        `The tribe splits into conversations. ${a} and ${b} are never in the same group — by design. They don't need to be together to be aligned.`,
+      ];
+      events.push({ type: 'silentSolidarity', text: _solidLines[Math.floor(Math.random() * _solidLines.length)], players: [a, b], badgeText: 'SOLIDARITY', badgeClass: 'green' });
+
+    } else if (eventType === 'campImprovement') {
+      // Player builds/fixes something for the whole tribe — respect boost
+      const a = _pick(group, n => Math.max(0.1, pStats(n).physical * 0.3 + pStats(n).loyalty * 0.3 + pStats(n).endurance * 0.2 + 1));
+      group.filter(x => x !== a).forEach(other => addBond(other, a, 0.15));
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[a] = (gs.popularity[a] || 0) + 0.5;
+      const pA = pronouns(a);
+      const phA = pStats(a).physical, loA = pStats(a).loyalty;
+      const _improveLines = (phA >= 8)
+        ? [`${a} rebuilds the entire shelter support structure in an afternoon. The tribe sleeps better tonight. Nobody questions ${pA.posAdj} value.`,
+           `${a} constructs a rain catch system from scratch. When the downpour hits that night, the tribe has fresh water. ${pA.Sub} earned that.`,
+           `${a} reinforces the fire pit with rocks hauled from the beach. It takes hours. The next morning, the fire holds through the wind for the first time.`]
+        : (loA >= 7)
+        ? [`${a} spends the entire afternoon making camp livable. New seating, fixed roof, organized supplies. By evening the tribe feels like a home.`,
+           `${a} weaves a proper drying rack for clothes. It's not flashy. But for the next week, everyone is a little less miserable because of it.`]
+        : [`${a} figures out a better way to store food. Simple but effective. The tribe loses less to ants and rain going forward.`,
+           `${a} builds a crude table near the fire. It's not pretty. But having a surface to prep food on changes camp life in a way nobody expected.`,
+           `${a} digs a drainage channel around the sleeping area. That night when it rains, the shelter stays dry for the first time. The tribe takes note.`,
+           `${a} patches every gap in the roof. Takes all day. ${pA.Sub} ${pA.sub==='they'?'don\'t':'doesn\'t'} announce it — the tribe just notices they're not getting rained on anymore.`];
+      events.push({ type: 'campImprovement', text: _improveLines[Math.floor(Math.random() * _improveLines.length)], player: a, players: [a], badgeText: 'CAMP BUILD', badgeClass: 'green' });
+
+    // ═══════════════════════════════════════════════════════════
+    // NEW NEUTRAL EVENTS
+    // ═══════════════════════════════════════════════════════════
+
+    } else if (eventType === 'superstition') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).intuition * 0.3 + pStats(n).boldness * 0.2 + Math.random() * 2 + 1));
+      const pA = pronouns(a);
+      const _superLines = [
+        `${a} has a pre-challenge ritual now. Nobody questions it. Questioning it would be worse.`,
+        `${a} refuses to sit in the same spot at tribal two episodes in a row. The tribe thinks it's weird. ${a} thinks it's survival.`,
+        `${a} finds a rock ${pA.sub} like${pA.sub==='they'?'':'s'} and keeps it in ${pA.posAdj} pocket for every challenge. Nobody asks. The rock stays.`,
+        `${a} wakes up on the wrong side. Literally — ${pA.sub} slept facing the other direction and is convinced the whole day is cursed now.`,
+        `${a} won't eat before a challenge. ${pA.Sub} say${pA.sub==='they'?'':'s'} it threw off ${pA.posAdj} rhythm last time. The tribe humors it.`,
+        `${a} touches the same tree every morning on the way to the water well. ${pA.Sub} started doing it on Day 3 and now ${pA.sub} can't stop.`,
+        `${a} has been counting things. Steps to the fire. Coconuts on the tree. Votes at tribal. ${pA.Sub} won't say why. The tribe has stopped asking.`,
+      ];
+      events.push({ type: 'superstition', text: _superLines[Math.floor(Math.random() * _superLines.length)], player: a, players: [a], badgeText: 'SUPERSTITION', badgeClass: '' });
+
+    } else if (eventType === 'animalEncounter') {
+      const a = _pick(group, n => Math.max(0.1, Math.random() * 3 + 1));
+      const pA = pronouns(a);
+      const _animalLines = [
+        `A bird lands on ${a}'s shoulder at camp. ${pA.Sub} freeze${pA.sub==='they'?'':'s'}. The tribe watches in disbelief. It stays for ten seconds then flies off. ${a} takes it as a sign.`,
+        `A crab walks directly through camp during dinner. The tribe watches its entire journey in silence. Nobody explains why it mattered. It just did.`,
+        `${a} is convinced an iguana has been watching ${pA.obj} for three days. The tribe thinks ${pA.sub}'s losing it. The iguana is definitely there though.`,
+        `A group of fish jump near the shore while the tribe is talking. Everyone stops mid-sentence to watch. For thirty seconds, nothing else exists.`,
+        `${a} finds a turtle near camp and spends twenty minutes just sitting with it. The tribe lets ${pA.obj} have the moment. Everyone needs one.`,
+        `Something rustles in the trees above camp. The tribe goes silent. It's a monkey. It throws a coconut. It misses. Camp erupts.`,
+        `${a} wakes up with a lizard on ${pA.posAdj} chest. The scream wakes up the entire tribe. Nobody lets ${pA.obj} forget it.`,
+      ];
+      events.push({ type: 'animalEncounter', text: _animalLines[Math.floor(Math.random() * _animalLines.length)], player: a, players: [a], badgeText: 'WILDLIFE', badgeClass: '' });
+
+    } else if (eventType === 'dreaming') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).intuition * 0.3 + (10 - pStats(n).temperament) * 0.2 + 1));
+      const pA = pronouns(a);
+      const intA = pStats(a).intuition;
+      const _dreamLines = (intA >= 7)
+        ? [`${a} tells the tribe about a dream where ${pA.sub} knew who was going home next. Nobody laughs. ${pA.posAdj} reads have been too accurate for that.`,
+           `${a} dreamed about the challenge before it happened — or at least ${pA.sub} claim${pA.sub==='they'?'':'s'} ${pA.sub} did. The tribe files it under "unsettling."`,
+           `${a} wakes up certain about something. Won't say what. Won't say why. Just — certain. The tribe notices the confidence shift.`]
+        : [`${a} had a dream about home last night and tells the whole story over breakfast. Half the tribe tears up. The other half pretends not to.`,
+           `${a} woke up laughing from a dream ${pA.sub} can't fully explain. Something about a coconut and the host. The tribe demands details.`,
+           `${a} tells ${pA.posAdj} dream at the fire and it makes no sense. Absolutely none. The tribe loves it anyway.`,
+           `${a} dreamed ${pA.sub} won. ${pA.Sub} tell${pA.sub==='they'?'':'s'} one person. That person tells three. By noon the whole tribe knows.`];
+      events.push({ type: 'dreaming', text: _dreamLines[Math.floor(Math.random() * _dreamLines.length)], player: a, players: [a], badgeText: 'DREAM', badgeClass: '' });
+
+    } else if (eventType === 'weatherShift') {
+      const shuffled = [...group].sort(() => Math.random() - 0.5);
+      const featured = shuffled[0];
+      const pF = pronouns(featured);
+      const _weatherLines = [
+        `The rain starts at midday and doesn't stop. The tribe huddles under the shelter. Conversations happen that wouldn't have happened in sunshine.`,
+        `A perfect sunset tonight. The tribe gathers to watch it without anyone suggesting it. Nobody talks about the game for ten minutes. A small miracle.`,
+        `The wind picks up after dark. The fire fights to stay lit. ${featured} stays up feeding it all night. In the morning the tribe doesn't know who to thank.`,
+        `The heat today is oppressive. Camp slows to a crawl. Conversations get shorter. Tempers hover near the surface but never quite break through.`,
+        `A clear night after days of clouds. The tribe lies on the beach looking up. Someone points out a constellation. For a moment this doesn't feel like a game.`,
+        `Thunder in the distance keeps the tribe on edge all afternoon. It never hits camp. But the tension from waiting changes the conversations.`,
+        `The temperature drops sharply after sunset. The tribe clusters closer at the fire than they have all season. Proximity creates conversation creates connection.`,
+      ];
+      events.push({ type: 'weatherShift', text: _weatherLines[Math.floor(Math.random() * _weatherLines.length)], player: featured, players: [featured], badgeText: 'WEATHER', badgeClass: '' });
     }
   }
 
@@ -1938,7 +2257,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       if (_eb <= -9 && Math.random() < 0.55) {
         addBond(a, b, -0.8);
         group.filter(p => p !== a && p !== b).forEach(p => { addBond(p, a, -0.3); addBond(p, b, -0.3); });
-        events.push({ type: 'pureHatred', players: [a, b], text: _rp2([
+        events.push({ type: 'pureHatred', players: [a, b], badgeText: 'HATRED', badgeClass: 'red', text: _rp2([
           `${a} and ${b} can't be in the same space. The tribe has stopped trying to fix it. They just keep them apart now.`,
           `${a} moves ${pA.pos} things to the other side of camp. Nobody asks why. Everyone already knows — ${b} is the reason.`,
           `${a} refuses to eat if ${b} is at the fire. It's not strategy. It's not a move. It's personal in a way this game rarely sees.`,
@@ -1957,7 +2276,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         addBond(a, b, -0.5);
         if (gs.playerStates?.[a] && pStats(a).temperament <= 5) gs.playerStates[a].emotional = 'paranoid';
         else if (gs.playerStates?.[b] && pStats(b).temperament <= 5) gs.playerStates[b].emotional = 'paranoid';
-        events.push({ type: 'nemesis', players: [a, b], text: _rp2([
+        events.push({ type: 'nemesis', players: [a, b], badgeText: 'NEMESIS', badgeClass: 'red', text: _rp2([
           `${a} and ${b} have a conversation that starts normal and ends with both of them walking away shaking.`,
           `Every time ${a} speaks at camp, ${b} visibly tenses. It's the tribe's unspoken tension.`,
           `${a} makes a pointed comment clearly aimed at ${b}. ${b} doesn't respond. The silence is louder than any argument.`,
@@ -1976,7 +2295,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           if (getBond(p, a) < 3) addBond(p, a, -0.2);
           if (getBond(p, b) < 3) addBond(p, b, -0.2);
         });
-        events.push({ type: 'unbreakableBond', players: [a, b], text: _rp2([
+        events.push({ type: 'unbreakableBond', players: [a, b], badgeText: 'UNBREAKABLE', badgeClass: 'green', text: _rp2([
           `${a} and ${b} don't need to talk strategy anymore. A look across the fire is enough. The tribe has noticed — and some of them are afraid of it.`,
           `${a} and ${b} have a conversation late at night that has nothing to do with the game. The kind that makes everyone else feel like outsiders.`,
           `The bond between ${a} and ${b} is so obvious it's become a liability. Everyone can see it. Neither of them cares.`,
@@ -1995,7 +2314,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         addBond(a, b, 0.5);
         const protector = pStats(a).loyalty >= pStats(b).loyalty ? a : b;
         group.filter(p => p !== a && p !== b).forEach(p => { if (Math.random() < 0.3) addBond(p, protector, 0.3); });
-        events.push({ type: 'rideOrDie', players: [a, b], text: _rp2([
+        events.push({ type: 'rideOrDie', players: [a, b], badgeText: 'RIDE OR DIE', badgeClass: 'green', text: _rp2([
           `${a} and ${b} sit together at every meal, every challenge, every tribal. The tribe has started referring to them as a single unit.`,
           `${a} catches wind that ${b}'s name was mentioned. ${pA.Sub} shut${pA.sub==='they'?'':'s'} it down immediately — not with strategy, with loyalty.`,
           `${a} and ${b} finish each other's sentences in a way that makes other players uncomfortable. Because it's clearly not fake.`,
@@ -2015,7 +2334,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           const receiver = initiator === a ? b : a;
           const pI = pronouns(initiator), pR = pronouns(receiver);
           addBond(a, b, 2.5);
-          events.push({ type: 'rekindle', players: [initiator, receiver], text: _rp2([
+          events.push({ type: 'rekindle', players: [initiator, receiver], badgeText: 'REKINDLE', badgeClass: 'green', text: _rp2([
             `${initiator} sits down next to ${receiver} for the first time in days. Neither says anything for a while. Then ${initiator} speaks — about home. ${receiver} listens. Something cracks open.`,
             `${initiator} catches ${receiver} alone at the water well. "I know we've had our issues. I'm just saying — we don't have to keep doing this." ${receiver} doesn't walk away.`,
             `The game stripped everything back today. ${initiator} and ${receiver} had a conversation that was raw, uncomfortable, and longer than either expected. Not forgiveness. But something.`,
@@ -2041,7 +2360,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           const damage = -1.5 - Math.random() * 1.5;
           addBond(a, b, damage);
           if (gs.playerStates?.[hurt]) gs.playerStates[hurt].emotional = 'uneasy';
-          events.push({ type: 'breakup', players: [instigator, hurt], text: _rp2([
+          events.push({ type: 'breakup', players: [instigator, hurt], badgeText: 'BREAKUP', badgeClass: 'red', text: _rp2([
             `${instigator} pulls back from ${hurt} today. Not a fight — something quieter. The conversations get shorter. The eye contact disappears.`,
             `${instigator} is seen having long strategy talks with other players — talks that used to include ${hurt}. When ${hurt} asks, ${instigator} deflects.`,
             `${hurt} overhears something ${instigator} said about ${pH.obj}. Not cruel — worse. Dismissive. Like the bond was a phase ${instigator} has moved past.`,

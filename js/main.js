@@ -61,6 +61,7 @@ import * as greatFakeOutMod from './chal/great-fake-out.js';
 import * as africanLyingSafariMod from './chal/african-lying-safari.js';
 import * as rapaPhooeyMod from './chal/rapa-phooey.js';
 import * as drumhellerMod from './chal/drumheller.js';
+import * as planesTrainsMod from './chal/planes-trains.js';
 import * as picnicHangingDorkMod from './chal/picnic-hanging-dork.js';
 import * as slapSlapRevMod from './chal/slap-slap-revolution.js';
 import * as broadwayBabyMod from './chal/broadway-baby.js';
@@ -162,7 +163,7 @@ const extractedModules = [
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
-  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
+  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
   truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, aftermayhemMod, socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
@@ -258,10 +259,10 @@ window.CHALLENGES = {
 // INIT
 // ══════════════════════════════════════════════════════════════════════
 
-function init() {
+async function init() {
   buildStatSliders();
   buildAdvantageList();
-  loadAll();
+  await loadAll();
   renderCast();
   renderConfig();
   renderRelList();
@@ -281,4 +282,4 @@ function init() {
   }
 }
 
-init();
+await init();

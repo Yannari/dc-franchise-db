@@ -17,6 +17,7 @@ import {
   generateRILifeEvents, generateRIPostDuelEvents, generateRescueIslandLife
 } from './rescue-island.js';
 import { generateSummaryText } from './text-backlog.js';
+import { _idbPut } from './savestate.js';
 
 // Challenge simulate functions
 import { simulateCliffDive } from './chal/cliff-dive.js';
@@ -82,6 +83,7 @@ import { simulateGreatFakeOut } from './chal/great-fake-out.js';
 import { simulateAfricanLyingSafari } from './chal/african-lying-safari.js';
 import { simulateRapaPhooey } from './chal/rapa-phooey.js';
 import { simulateDrumheller } from './chal/drumheller.js';
+import { simulatePlanesTrains } from './chal/planes-trains.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   patchEpisodeHistory, saveGameState, snapshotGameState, buildCrashout
@@ -1009,7 +1011,7 @@ export function handleExileFormat(ep) {
   if (phase === 'pre' && gs.isMerged) return;
   if (phase === 'post' && !gs.isMerged) return;
   // Don't fire on special episode types
-  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isPrincessPride || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama || ep.isHouston || ep.isTopDog || ep.isCrouchingCourtney || ep.isGetAClue || ep.isRockNRule || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller) return;
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare || ep.isMonsterCash || ep.isOperationClassified || ep.isSuperHerold || ep.isPrincessPride || ep.isAlienEgg || ep.isBeachBlanketBogus || ep.isCrazytown || ep.isChefshank || ep.isOneFlu || ep.isMastersOfDisasters || ep.isFullMetalDrama || ep.isHouston || ep.isTopDog || ep.isCrouchingCourtney || ep.isGetAClue || ep.isRockNRule || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
   // Don't double up with schoolyard pick exile (unpicked player already on exile)
@@ -1068,17 +1070,7 @@ export function simulateEpisode() {
   const _cpNum = gs.episode + 1;
   gsCheckpoints[_cpNum] = JSON.parse(JSON.stringify(gs));
   repairGsSets(gsCheckpoints[_cpNum]);
-  try {
-    localStorage.setItem('simulator_cp_' + _cpNum, JSON.stringify(gsCheckpoints[_cpNum]));
-  } catch(e) {
-    // Quota exceeded — prune old checkpoints (keep this one) and retry
-    const _pruneKeys = Object.keys(localStorage)
-      .filter(k => k.startsWith('simulator_cp_') && k !== 'simulator_cp_' + _cpNum)
-      .sort((a, b) => parseInt(a.replace('simulator_cp_', '')) - parseInt(b.replace('simulator_cp_', '')));
-    const _pruneCount = Math.max(1, Math.ceil(_pruneKeys.length / 2));
-    _pruneKeys.slice(0, _pruneCount).forEach(k => { localStorage.removeItem(k); delete gsCheckpoints[parseInt(k.replace('simulator_cp_', ''))]; });
-    try { localStorage.setItem('simulator_cp_' + _cpNum, JSON.stringify(gsCheckpoints[_cpNum])); } catch(e2) {}
-  }
+  _idbPut('cp_' + _cpNum, JSON.parse(JSON.stringify(gsCheckpoints[_cpNum])));
   const cfg = seasonConfig;
   // Fire-making / Koh-Lanta force F4 finale — override every episode start
   if ((cfg.firemaking || cfg.finaleFormat === 'fire-making' || cfg.finaleFormat === 'koh-lanta') && cfg.finaleSize < 4) cfg.finaleSize = 4;
@@ -1273,13 +1265,13 @@ export function simulateEpisode() {
   // Filter incompatible twists: if two immunity twists conflict, keep the first scheduled
   // Auto-inject reward challenge when survival + auto-reward is enabled (stops at F4)
   if (cfg.autoRewardChallenges && cfg.foodWater === 'enabled' && gs.activePlayers.length > 4) {
-    const _hasReward = (cfg.twistSchedule||[]).some(t => Number(t.episode) === epNum && t.type === 'reward-challenge');
+    const _hasReward = (cfg.twistSchedule||[]).some(t => t && Number(t.episode) === epNum && t.type === 'reward-challenge');
     if (!_hasReward) {
       if (!cfg.twistSchedule) cfg.twistSchedule = [];
       cfg.twistSchedule.push({ episode: epNum, type: 'reward-challenge', id: 'auto-reward-' + epNum });
     }
   }
-  const _rawScheduled = (cfg.twistSchedule||[]).filter(t => Number(t.episode) === epNum);
+  const _rawScheduled = (cfg.twistSchedule||[]).filter(t => t && Number(t.episode) === epNum);
   const _usedTypes = new Set();
   const scheduledTwists = _rawScheduled.filter(twist => {
     const cat = TWIST_CATALOG.find(c => c.id === twist.type);
@@ -1390,7 +1382,7 @@ export function simulateEpisode() {
       gs.tribeFood = {};
       gs.tribeFood[gs.mergeName || 'merge'] = Math.min(100, _avgFood);
       // Feast bonus only if a merge-reward or the-feast twist is scheduled this episode
-      const _hasMergeFeast = (cfg.twistSchedule || []).some(t => Number(t.episode) === epNum && (t.type === 'merge-reward' || t.type === 'the-feast'));
+      const _hasMergeFeast = (cfg.twistSchedule || []).some(t => t && Number(t.episode) === epNum && (t.type === 'merge-reward' || t.type === 'the-feast'));
       if (_hasMergeFeast) {
         gs.tribeFood[gs.mergeName || 'merge'] = Math.min(100, gs.tribeFood[gs.mergeName || 'merge'] + 30);
         gs.activePlayers.forEach(p => { gs.survival[p] = Math.min(100, (gs.survival[p] || 80) + 20); });
@@ -1425,7 +1417,7 @@ export function simulateEpisode() {
   const _hasNoTribalTwist = ep.noTribal
     || ep.twist?.type === 'no-tribal'
     || ep.twists?.some(t => t.type === 'no-tribal')
-    || (cfg.twistSchedule||[]).some(t => Number(t.episode) === epNum && t.type === 'no-tribal');
+    || (cfg.twistSchedule||[]).some(t => t && Number(t.episode) === epNum && t.type === 'no-tribal');
   if (_hasNoTribalTwist) ep.noTribal = true;
   // ── SLASHER NIGHT — round-by-round survival challenge replaces immunity + tribal ──
   if (ep.isSlasherNight && !ep.isRewardOnly) {
@@ -1509,6 +1501,7 @@ export function simulateEpisode() {
         isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isRapaPhooey: ep.isRapaPhooey || false, rapaPhooey: ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
         isDrumheller: ep.isDrumheller || false, drumheller: ep.isDrumheller ? (ep.challengeData || null) : undefined,
+        isPlanesTrains: ep.isPlanesTrains || false, planesTrains: ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -1663,6 +1656,13 @@ export function simulateEpisode() {
     ep.challengeType = 'drumheller';
   }
 
+  // ── PLANES TRAINS & HOT AIR MOBILES (post-merge) — multi-vehicle race ──
+  if (ep.isPlanesTrains && gs.isMerged) {
+    simulatePlanesTrains(ep);
+    ep.immunityWinner = ep.challengeData?.immunityWinner || ep.immunityWinner;
+    ep.challengeType = 'planes-trains';
+  }
+
   // ── ALIEN EGG (post-merge) — egg hunt determines immunity, normal tribal follows ──
   if (ep.isAlienEgg && gs.isMerged) {
     simulateAlienEgg(ep);
@@ -1775,6 +1775,7 @@ export function simulateEpisode() {
         isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isRapaPhooey: ep.isRapaPhooey || false, rapaPhooey: ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
         isDrumheller: ep.isDrumheller || false, drumheller: ep.isDrumheller ? (ep.challengeData || null) : undefined,
+        isPlanesTrains: ep.isPlanesTrains || false, planesTrains: ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -1799,7 +1800,7 @@ export function simulateEpisode() {
     || ep.isBrunchOfDisgustingness || ep.isBasicStraining
     || ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg
     || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue
-    || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller;
+    || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains;
   if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
@@ -1892,6 +1893,7 @@ export function simulateEpisode() {
         isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isRapaPhooey: ep.isRapaPhooey || false, rapaPhooey: ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
         isDrumheller: ep.isDrumheller || false, drumheller: ep.isDrumheller ? (ep.challengeData || null) : undefined,
+        isPlanesTrains: ep.isPlanesTrains || false, planesTrains: ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -2396,6 +2398,7 @@ export function simulateEpisode() {
         isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isRapaPhooey: ep.isRapaPhooey || false, rapaPhooey: ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
         isDrumheller: ep.isDrumheller || false, drumheller: ep.isDrumheller ? (ep.challengeData || null) : undefined,
+        isPlanesTrains: ep.isPlanesTrains || false, planesTrains: ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -2489,6 +2492,7 @@ export function simulateEpisode() {
         isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isRapaPhooey: ep.isRapaPhooey || false, rapaPhooey: ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
         isDrumheller: ep.isDrumheller || false, drumheller: ep.isDrumheller ? (ep.challengeData || null) : undefined,
+        isPlanesTrains: ep.isPlanesTrains || false, planesTrains: ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -2531,7 +2535,7 @@ export function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller) {
+    } else if (ep.isMonsterCash || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains) {
     // Special challenge already ran and set immunityWinner + chalMemberScores — skip generic challenge
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
@@ -2730,6 +2734,7 @@ export function simulateEpisode() {
         isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isRapaPhooey: ep.isRapaPhooey || false, rapaPhooey: ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
         isDrumheller: ep.isDrumheller || false, drumheller: ep.isDrumheller ? (ep.challengeData || null) : undefined,
+        isPlanesTrains: ep.isPlanesTrains || false, planesTrains: ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -2833,7 +2838,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari && !ep.isRapaPhooey && !ep.isDrumheller) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari && !ep.isRapaPhooey && !ep.isDrumheller && !ep.isPlanesTrains) {
     updateChalRecord(ep);
   }
 
@@ -3164,6 +3169,7 @@ export function simulateEpisode() {
         isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isRapaPhooey: ep.isRapaPhooey || false, rapaPhooey: ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
         isDrumheller: ep.isDrumheller || false, drumheller: ep.isDrumheller ? (ep.challengeData || null) : undefined,
+        isPlanesTrains: ep.isPlanesTrains || false, planesTrains: ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -3232,6 +3238,7 @@ export function simulateEpisode() {
         isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isRapaPhooey: ep.isRapaPhooey || false, rapaPhooey: ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
         isDrumheller: ep.isDrumheller || false, drumheller: ep.isDrumheller ? (ep.challengeData || null) : undefined,
+        isPlanesTrains: ep.isPlanesTrains || false, planesTrains: ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -3440,6 +3447,7 @@ export function simulateEpisode() {
         isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isRapaPhooey: ep.isRapaPhooey || false, rapaPhooey: ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
         isDrumheller: ep.isDrumheller || false, drumheller: ep.isDrumheller ? (ep.challengeData || null) : undefined,
+        isPlanesTrains: ep.isPlanesTrains || false, planesTrains: ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -4384,6 +4392,7 @@ export function simulateEpisode() {
         isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isRapaPhooey: ep.isRapaPhooey || false, rapaPhooey: ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
         isDrumheller: ep.isDrumheller || false, drumheller: ep.isDrumheller ? (ep.challengeData || null) : undefined,
+        isPlanesTrains: ep.isPlanesTrains || false, planesTrains: ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -4587,6 +4596,7 @@ export function simulateEpisode() {
         isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isRapaPhooey: ep.isRapaPhooey || false, rapaPhooey: ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
         isDrumheller: ep.isDrumheller || false, drumheller: ep.isDrumheller ? (ep.challengeData || null) : undefined,
+        isPlanesTrains: ep.isPlanesTrains || false, planesTrains: ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -4963,6 +4973,7 @@ function simulateJuryRoundtable(ep) {
         isAfricanLyingSafari: ep.isAfricanLyingSafari || false, africanLyingSafari: ep.isAfricanLyingSafari ? (ep.challengeData || null) : undefined,
         isRapaPhooey: ep.isRapaPhooey || false, rapaPhooey: ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
         isDrumheller: ep.isDrumheller || false, drumheller: ep.isDrumheller ? (ep.challengeData || null) : undefined,
+        isPlanesTrains: ep.isPlanesTrains || false, planesTrains: ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
         isPicnicHangingDork: ep.isPicnicHangingDork || false, picnicHangingDork: ep.picnicHangingDork || null,
         isSlapRevolution: ep.isSlapRevolution || false, slapRevolution: ep.slapRevolution || null,
         isBroadwayBaby: ep.isBroadwayBaby || false, broadwayBaby: ep.broadwayBaby || null,
@@ -5476,7 +5487,7 @@ function simulateJuryRoundtable(ep) {
       if (!gs._twistShiftedForEps.includes(epNum) && seasonConfig.twistSchedule?.length) {
         gs._twistShiftedForEps.push(epNum);
         seasonConfig.twistSchedule.forEach(tw => {
-          if (Number(tw.episode) > epNum) tw.episode = Number(tw.episode) + 1;
+          if (tw && Number(tw.episode) > epNum) tw.episode = Number(tw.episode) + 1;
         });
         try { localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); } catch(e) {}
       }
@@ -6065,6 +6076,8 @@ function simulateJuryRoundtable(ep) {
     rapaPhooey:           ep.isRapaPhooey ? (ep.challengeData || null) : undefined,
     isDrumheller:         ep.isDrumheller         || false,
     drumheller:           ep.isDrumheller ? (ep.challengeData || null) : undefined,
+    isPlanesTrains:       ep.isPlanesTrains       || false,
+    planesTrains:         ep.isPlanesTrains ? (ep.challengeData || null) : undefined,
     isPicnicHangingDork:  ep.isPicnicHangingDork  || false,
     picnicHangingDork:    ep.picnicHangingDork    || null,
     isSlapRevolution:     ep.isSlapRevolution     || false,
@@ -6311,6 +6324,13 @@ export function updatePopularity(ep) {
       case 'hardWork':            if (p)       add(p, 'like', 1, evt.type); break;
       case 'soldierCheckin':      if (p)       add(p, 'like', 1, evt.type); break;
       case 'unexpectedCompetence':if (p)       { add(p, 'like', 1, evt.type); add(p, 'under', 1, evt.type); } break;
+      case 'gratitude':           if (ps?.[0]) add(ps[0], 'like', 1, evt.type); break;
+      case 'protectiveInstinct':  if (ps?.[0]) add(ps[0], 'like', 2, evt.type); break;
+      case 'sharedMeal':          if (ps?.[0]) add(ps[0], 'like', 1, evt.type); break;
+      case 'moraleBoost':         if (p)       add(p, 'like', 2, evt.type); break;
+      case 'secretShared':        if (ps?.[0]) add(ps[0], 'like', 1, evt.type); break;
+      case 'mentorBond':          if (ps?.[0]) add(ps[0], 'like', 1, evt.type); break;
+      case 'campImprovement':     if (p)       add(p, 'like', 2, evt.type); break;
       // Negative Drama
       case 'floaterInvisible':    if (p)       add(p, 'drama', -2, evt.type); break;
       case 'overplay':            if (p)       add(p, 'drama', -1, evt.type); break;

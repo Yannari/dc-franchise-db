@@ -283,6 +283,7 @@ export function renderEpisodeHistory() {
     const alsTag = ep.isAfricanLyingSafari ? `<span class="ep-hist-tag" style="background:rgba(196,163,90,0.15);color:#C4A35A">Safari</span>` : '';
     const rpTag = ep.isRapaPhooey ? `<span class="ep-hist-tag" style="background:rgba(232,118,84,0.15);color:#e87654">Rapa Phooey</span>` : '';
     const dhTag = ep.isDrumheller ? `<span class="ep-hist-tag" style="background:rgba(214,138,58,0.15);color:#d68a3a">Drumheller</span>` : '';
+    const ptTag = ep.isPlanesTrains ? `<span class="ep-hist-tag" style="background:rgba(56,189,248,0.15);color:#38bdf8">Planes Trains</span>` : '';
     const ssrTag = ep.isSlapRevolution ? `<span class="ep-hist-tag" style="background:rgba(124,58,237,0.15);color:#7c3aed">Slap Rev</span>` : '';
     const bbTag = ep.isBroadwayBaby ? `<span class="ep-hist-tag" style="background:rgba(240,165,0,0.15);color:#f0a500">Broadway</span>` : '';
     const azTag = ep.isAmazonRace ? `<span class="ep-hist-tag" style="background:rgba(46,204,64,0.15);color:#2ecc40">AHZon</span>` : '';
@@ -303,7 +304,7 @@ export function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${amhTag}${rtcTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${ptTag}${amhTag}${rtcTag}</div>
     </div>`;
   }).join('');
 }
@@ -377,7 +378,7 @@ export function replayEpisode(epNum) {
   Object.keys(gsCheckpoints).forEach(k => {
     if (Number(k) >= epNum) {
       delete gsCheckpoints[k];
-      try { localStorage.removeItem('simulator_cp_' + k); } catch(e) {}
+      _idbDelete('cp_' + k);
     }
   });
   // Re-run this episode — check if we're replaying the finale
@@ -577,6 +578,7 @@ export function buildEpisodeMap() {
   const twistMap = {};
   const twistMapAll = {}; // all engine types on this episode
   (seasonConfig.twistSchedule || []).forEach(t => {
+    if (!t) return;
     const cat = TWIST_CATALOG.find(c => c.id === t.type);
     const et = cat?.engineType || t.type;
     twistMap[Number(t.episode)] = et;
@@ -620,7 +622,7 @@ export function buildEpisodeMap() {
     if (_allTypes.includes('exile-duel')) elims = 0;
     _totalElimsToHere += elims;
     let returns = _allTypes.includes('second-chance') ? 1 : 0;
-    const _rpTwist = (seasonConfig.twistSchedule||[]).filter(t => Number(t.episode) === ep).find(t => t.type === 'returning-player');
+    const _rpTwist = (seasonConfig.twistSchedule||[]).filter(t => t && Number(t.episode) === ep).find(t => t.type === 'returning-player');
     if (_rpTwist) returns += (_rpTwist.returnCount || 1);
     // Fan vote return: pending return from live game adds +1 this episode
     if (gs?.pendingFanVoteReturn && gs.eliminated?.includes(gs.pendingFanVoteReturn) && !_fvReturnApplied) {
@@ -689,7 +691,7 @@ export function renderTimeline() {
   const container = document.getElementById('fd-timeline');
   if (!container) return;
   const epMap   = buildEpisodeMap();
-  const schedule = seasonConfig.twistSchedule || [];
+  const schedule = (seasonConfig.twistSchedule || []).filter(Boolean);
 
   if (!epMap.length) {
     container.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:13px">Add players in Cast Builder to generate timeline.</div>';
@@ -861,6 +863,7 @@ export function renderTwistCatalog() {
   const _existingOnSelected = new Set();
   if (canAssign) {
     (seasonConfig.twistSchedule || []).forEach(tw => {
+      if (!tw) return;
       if (selectedEpisodes.has(Number(tw.episode))) _existingOnSelected.add(tw.type);
     });
   }
@@ -1161,21 +1164,21 @@ function _getPrevStyle(assignments, currentEp, epMap) {
 }
 
 function _autoRevealSpoiler(epNum) {
-  const twists = (seasonConfig.twistSchedule || []).filter(t => Number(t.episode) === epNum && t.spoilerFree);
+  const twists = (seasonConfig.twistSchedule || []).filter(t => t && Number(t.episode) === epNum && t.spoilerFree);
   if (!twists.length) return;
   twists.forEach(t => { delete t.spoilerFree; });
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
 }
 
 export function revealSpoiler(ep) {
-  const twists = (seasonConfig.twistSchedule || []).filter(t => Number(t.episode) === ep);
+  const twists = (seasonConfig.twistSchedule || []).filter(t => t && Number(t.episode) === ep);
   twists.forEach(t => { delete t.spoilerFree; });
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   renderTimeline();
 }
 
 export function revealAllSpoilers() {
-  (seasonConfig.twistSchedule || []).forEach(t => { delete t.spoilerFree; });
+  (seasonConfig.twistSchedule || []).forEach(t => { if (t) delete t.spoilerFree; });
   _spoilerFree = false;
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   renderTimeline();

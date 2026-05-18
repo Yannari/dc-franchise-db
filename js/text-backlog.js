@@ -54,6 +54,7 @@ import { rpBuildGFOTitleCard, rpBuildGFOScramble, rpBuildGFORace, rpBuildGFOTran
 import { rpBuildSafariColdOpen, rpBuildSafariPhase1, rpBuildSafariPhase2, rpBuildSafariHunt, rpBuildSafariResults } from './chal/african-lying-safari.js';
 import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPPillarPhase, rpBuildRPResults } from './chal/rapa-phooey.js';
 import { rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults } from './chal/drumheller.js';
+import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaCrossing, rpBuildPTBeachSprint, rpBuildPTResults } from './chal/planes-trains.js';
 import { rpBuildHDTitleCard, rpBuildHDEmuWrangling, rpBuildHDEmuRace, rpBuildHDBungeeGrab, rpBuildHDResults } from './chal/picnic-hanging-dork.js';
 import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults } from './chal/broadway-baby.js';
@@ -2210,6 +2211,11 @@ export function generateSummaryText(ep) {
   }
   if (ep.challengeData && ep.isDrumheller) {
     _textTwistChallenge(ep, ln, sec, 'challengeData', 'AWWWWWW, DRUMHELLER', [rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults]);
+  }
+  if (ep.isPlanesTrains && (ep.planesTrains || ep.challengeData)) {
+    _textTwistChallenge(ep, ln, sec, ep.planesTrains ? 'planesTrains' : 'challengeData', 'PLANES TRAINS & HOT AIR MOBILES', [
+      rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaCrossing, rpBuildPTBeachSprint, rpBuildPTResults
+    ]);
   }
   if (ep.vikingSour) {
     _textTwistChallenge(ep, ln, sec, 'vikingSour', 'VIKING SOUR', [

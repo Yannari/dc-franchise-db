@@ -51,6 +51,7 @@ import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemF
 import { rpBuildSafariColdOpen, rpBuildSafariPhase1, rpBuildSafariPhase2, rpBuildSafariHunt, rpBuildSafariResults, safariRevealNext, safariRevealAll } from './chal/african-lying-safari.js';
 import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPPillarPhase, rpBuildRPResults, rpRevealNext, rpRevealAll } from './chal/rapa-phooey.js';
 import { rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults, dhRevealNext, dhRevealAll } from './chal/drumheller.js';
+import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaCrossing, rpBuildPTBeachSprint, rpBuildPTResults, ptRevealNext, ptRevealAll } from './chal/planes-trains.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -2988,7 +2989,7 @@ export function rpBuildDebug(ep) {
     html += `<div style="margin-bottom:12px">
       <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
 
-    const _ranked = Object.entries(_chalScores).sort(([,a], [,b]) => b - a);
+    const _ranked = Object.entries(_chalScores).filter(([,v]) => v != null).sort(([,a], [,b]) => b - a);
     const _maxScore = _ranked[0]?.[1] || 1;
 
     if (_ranked.length) {
@@ -10719,10 +10720,18 @@ export function buildVPScreens(epRecord) {
   } else if ((ep.isDrumheller || ep.challengeType === 'drumheller') && (ep.challengeData || ep.drumheller)) {
     const dhEp = ep.drumheller ? Object.assign({}, ep, { challengeData: ep.drumheller }) : ep;
     vpScreens.push({ id:'dh-title', label:'Drumheller', html: rpBuildDHTitleCard(dhEp) });
-    vpScreens.push({ id:'dh-build', label:'Dinosaur Build', html: rpBuildDHBuildPhase(dhEp) });
+    vpScreens.push({ id:'dh-build', label:'Design-o-Saurus', html: rpBuildDHBuildPhase(dhEp) });
     vpScreens.push({ id:'dh-vote', label:'Lie-Detector Vote', html: rpBuildDHVotePhase(dhEp) });
     vpScreens.push({ id:'dh-dig', label:'Barrel Dig', html: rpBuildDHDigPhase(dhEp) });
     vpScreens.push({ id:'dh-results', label:'Results', html: rpBuildDHResults(dhEp) });
+  } else if ((ep.isPlanesTrains || ep.challengeType === 'planes-trains') && (ep.planesTrains || ep.challengeData)) {
+    const ptEp = ep.planesTrains ? Object.assign({}, ep, { challengeData: ep.planesTrains }) : ep;
+    vpScreens.push({ id:'pt-title', label:'Planes Trains & HAM', html: rpBuildPTTitleCard(ptEp) });
+    vpScreens.push({ id:'pt-scavenge', label:'Wreckage Draft', html: rpBuildPTScavenge(ptEp) });
+    vpScreens.push({ id:'pt-land', label:'Land Race', html: rpBuildPTLandRace(ptEp) });
+    vpScreens.push({ id:'pt-sea', label:'Sea Crossing', html: rpBuildPTSeaCrossing(ptEp) });
+    vpScreens.push({ id:'pt-beach', label:'Beach Sprint', html: rpBuildPTBeachSprint(ptEp) });
+    vpScreens.push({ id:'pt-results', label:'Results', html: rpBuildPTResults(ptEp) });
   } else if ((ep.isAfricanLyingSafari || ep.challengeType === 'african-lying-safari') && (ep.challengeData || ep.africanLyingSafari)) {
     if (ep.africanLyingSafari && !ep.challengeData) ep.challengeData = ep.africanLyingSafari;
     vpScreens.push({ id:'als-cold-open', label:'African Lying Safari', html: rpBuildSafariColdOpen(ep) });

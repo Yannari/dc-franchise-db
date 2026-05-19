@@ -771,7 +771,7 @@ export function rpBuildBenches(ep) {
       return `<div style="text-align:center">
         ${rpPortrait(f, 'lg')}
         <div style="font-size:12px;font-family:var(--font-display);margin-top:6px">${f}</div>
-        <div class="tv-tally-count" id="tv-tc-${stateKey}-${f.replace(/[^a-zA-Z0-9]/g,'')}" style="font-size:20px;font-family:var(--font-display);color:var(--accent-gold);margin-top:4px">0</div>
+        <div class="tv-tally-count" id="tv-hdr-${stateKey}-${f.replace(/[^a-zA-Z0-9]/g,'')}" style="font-size:20px;font-family:var(--font-display);color:var(--accent-gold);margin-top:4px">0</div>
         <div style="font-size:9px;color:var(--muted)">supporters</div>
       </div>`;
     }).join(`<div style="align-self:center;font-size:18px;color:#30363d;font-weight:700">vs</div>`)}
@@ -815,7 +815,7 @@ export function rpBuildBenches(ep) {
     <div class="tv-tally-header">Bench Count</div>`;
   finalists.forEach(f => {
     const slug = f.replace(/[^a-zA-Z0-9]/g, '');
-    html += `<div class="tv-tally-row" data-name="${f}" style="opacity:0;transition:opacity 0.4s">
+    html += `<div class="tv-tally-row" data-name="${f}">
       ${rpPortrait(f)}
       <div class="tv-tally-pname">${f}</div>
       <div class="tv-tally-bar-bg"><div class="tv-tally-bar" id="tv-tb-${stateKey}-${slug}" style="width:0%"></div></div>

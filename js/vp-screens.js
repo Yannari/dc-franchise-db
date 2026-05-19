@@ -47,7 +47,7 @@ import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildT
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults, gpRevealNext, gpRevealAll } from './chal/greeces-pieces.js';
 import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults, hbRevealNext, hbRevealAll } from './chal/hangar-black.js';
-import { rpBuildHPTitleCard, rpBuildHPTiebreaker, rpBuildHPJoust, rpBuildHPVolcanoRace, rpBuildHPSummit, rpBuildHPEndings, hpRevealNext, hpRevealAll } from './chal/hawaiian-punch.js';
+import { rpBuildHPTitleCard, rpBuildHPChallenge, rpBuildHPTiebreaker, rpBuildHPJoust, rpBuildHPVolcanoRace, rpBuildHPSummit, rpBuildHPEndings, hpRevealNext, hpRevealAll } from './chal/hawaiian-punch.js';
 import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemFinish, aftermayhemRevealNext, aftermayhemRevealAll } from './chal/aftermayhem.js';
 import { rpBuildSafariColdOpen, rpBuildSafariPhase1, rpBuildSafariPhase2, rpBuildSafariHunt, rpBuildSafariResults, safariRevealNext, safariRevealAll } from './chal/african-lying-safari.js';
 import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPPillarPhase, rpBuildRPResults, rpRevealNext, rpRevealAll } from './chal/rapa-phooey.js';
@@ -9926,6 +9926,13 @@ export function _tvUpdateTally(epNum, state) {
       void countEl.offsetWidth;
       countEl.classList.add('tv-count-bounce');
     }
+    const hdrEl = document.getElementById(`tv-hdr-${epNum}-${slug}`);
+    if (hdrEl) {
+      hdrEl.textContent = count;
+      hdrEl.classList.remove('tv-count-bounce');
+      void hdrEl.offsetWidth;
+      hdrEl.classList.add('tv-count-bounce');
+    }
     if (barEl) barEl.style.width = `${Math.round((count / maxCount) * 100)}%`;
     if (rowEl) {
       if (!rowEl.classList.contains('tv-tally-visible')) rowEl.classList.add('tv-tally-visible');
@@ -11567,9 +11574,16 @@ export function buildVPScreens(epRecord) {
     // Hawaiian Punch: tiebreaker → joust → volcano race → summit → endings
     if (ep.hpRaceData) {
       vpScreens.push({ id: 'hp-title', label: 'Hawaiian Punch', html: rpBuildHPTitleCard(ep) });
+      if (ep.hpFIC) {
+        vpScreens.push({ id: 'hp-fic', label: 'Hawaiian Style', html: rpBuildHPChallenge(ep) });
+      }
       if (ep.hpTiebreaker) {
         vpScreens.push({ id: 'hp-tiebreaker', label: 'Tiebreaker', html: rpBuildHPTiebreaker(ep) });
         vpScreens.push({ id: 'hp-joust', label: 'The Joust', html: rpBuildHPJoust(ep) });
+      }
+      if (ep.benchAssignments) {
+        const _benchHtml = rpBuildBenches(ep);
+        if (_benchHtml) vpScreens.push({ id:'benches', label:'The Benches', html: _benchHtml });
       }
       vpScreens.push({ id: 'hp-volcano', label: 'Volcano Race', html: rpBuildHPVolcanoRace(ep) });
       vpScreens.push({ id: 'hp-summit', label: 'Summit', html: rpBuildHPSummit(ep) });
@@ -11597,8 +11611,8 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'final-cut', label:'The Decision', html: rpBuildFinalCut(ep) });
     }
 
-    // The Benches: eliminated players choose sides (when there's a challenge)
-    if (ep.benchAssignments) {
+    // The Benches: eliminated players choose sides (when there's a challenge — skip if Hawaiian Punch already inserted it)
+    if (ep.benchAssignments && !ep.hpRaceData) {
       const _benchHtml = rpBuildBenches(ep);
       if (_benchHtml) vpScreens.push({ id:'benches', label:'The Benches', html: _benchHtml });
     }

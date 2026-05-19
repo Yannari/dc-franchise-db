@@ -144,10 +144,372 @@ export function simulateFinale() {
   // Final immunity challenge — skip for fan-vote F2 (no one to cut)
   const _skipImmunity = cfg.finaleFormat === 'fan-vote' && cfg.finaleSize <= 2;
   if (!_skipImmunity) {
-    const immResult = simulateIndividualChallenge(players, null);
-    ep.immunityWinner = immResult?.name || players[0];
-    ep.challengeLabel = immResult?.challengeType || 'Mixed';
-    ep.chalPlacements = immResult?.chalPlacements || null;
+    if (cfg.finaleFormat === 'hawaiian-punch' && players.length >= 3) {
+      // ── HAWAIIAN STYLE: volcano sprint → surf descent → spirit animal lei ──
+      const _hpNoise = (r) => (Math.random() * r * 2) - r;
+      const _hpPick = (a) => a[Math.floor(Math.random() * a.length)];
+      const _hpArch = (name) => (window.players || []).find(p => p.name === name)?.archetype || 'floater';
+
+      // Unique spirit animal draft — priority by archetype, no duplicates
+      const ANIMAL_POOL = [
+        { id: 'jaguar', archetypes: ['mastermind','schemer','villain'] },
+        { id: 'shark', archetypes: ['challenge-beast','hothead'] },
+        { id: 'dolphin', archetypes: ['social-butterfly','showmancer'] },
+        { id: 'hawk', archetypes: ['hero','loyal-soldier'] },
+        { id: 'scorpion', archetypes: ['villain','chaos-agent'] },
+        { id: 'monkey', archetypes: ['wildcard','chaos-agent'] },
+        { id: 'deer', archetypes: ['underdog','goat','floater'] },
+        { id: 'owl', archetypes: ['perceptive-player','mastermind'] },
+        { id: 'turtle', archetypes: ['goat','floater','loyal-soldier'] },
+        { id: 'wolf', archetypes: ['hero','challenge-beast','hothead'] },
+        { id: 'parrot', archetypes: ['social-butterfly','showmancer','wildcard'] },
+      ];
+      const ANIMAL_DIFFICULTY = { shark: -1.5, jaguar: -1.0, wolf: -0.8, scorpion: -0.6, monkey: -0.3, dolphin: -0.3, hawk: 0, owl: 0, parrot: 0.3, deer: 0.5, turtle: 0.8 };
+
+      const ficData = { phases: [], placements: [], spiritAnimals: {}, animalDraft: [], events: [], confessionals: [], socialEvents: [] };
+      const taken = new Set();
+
+      // Priority draft: each player picks their best-fit animal
+      const draftOrder = [...players].sort((a, b) => pStats(b).intuition - pStats(a).intuition); // most intuitive picks first
+      for (const f of draftOrder) {
+        const a = _hpArch(f);
+        let chosen = null;
+        // Try archetype match first
+        for (const ap of ANIMAL_POOL) {
+          if (!taken.has(ap.id) && ap.archetypes.includes(a)) { chosen = ap.id; break; }
+        }
+        // Fallback: first available
+        if (!chosen) {
+          for (const ap of ANIMAL_POOL) {
+            if (!taken.has(ap.id)) { chosen = ap.id; break; }
+          }
+        }
+        taken.add(chosen);
+        ficData.spiritAnimals[f] = chosen;
+        ficData.animalDraft.push({ player: f, animal: chosen, archetype: a });
+      }
+
+      const ficScores = {};
+      const peanutGallery = [...(gs.jury || []), ...(gs.eliminated || [])].filter(p => !players.includes(p));
+      players.forEach(f => { ficScores[f] = 0; });
+
+      // ── PEANUT GALLERY SUPPORTER MAP ──
+      // Each gallery member supports the finalist they have the highest bond with
+      const gallerySupporters = {}; // finalist → [supporters]
+      const galleryFaction = {};   // spectator → { supports, archetype, bond }
+      players.forEach(f => { gallerySupporters[f] = []; });
+      for (const pg of peanutGallery) {
+        const best = players.reduce((b, f) => getBond(pg, f) > getBond(pg, b) ? f : b, players[0]);
+        gallerySupporters[best].push(pg);
+        galleryFaction[pg] = { supports: best, archetype: _hpArch(pg), bond: getBond(pg, best) };
+      }
+      ficData.gallerySupporters = gallerySupporters;
+      ficData.galleryFaction = galleryFaction;
+      const usedGallery = new Set(); // avoid repeating the same spectator too often
+
+      // Gallery event generator — picks a spectator, generates archetype-driven event
+      function _galleryEvent(phase, beat, triggerType, triggerTarget) {
+        if (peanutGallery.length === 0) return;
+        // Prefer unused gallery members, but allow repeats if needed
+        const pool = peanutGallery.filter(pg => !usedGallery.has(pg));
+        const source = pool.length > 0 ? pool : peanutGallery;
+
+        // Pick spectator based on trigger type
+        let spectator;
+        if (triggerType === 'cheer-leader') {
+          const supporters = gallerySupporters[triggerTarget] || [];
+          spectator = supporters.find(s => !usedGallery.has(s)) || _hpPick(supporters.length > 0 ? supporters : source);
+        } else if (triggerType === 'heckle') {
+          const enemies = source.filter(pg => getBond(pg, triggerTarget) <= -1);
+          spectator = enemies.length > 0 ? _hpPick(enemies) : _hpPick(source);
+        } else if (triggerType === 'panic') {
+          const friends = source.filter(pg => getBond(pg, triggerTarget) >= 1);
+          spectator = friends.length > 0 ? _hpPick(friends) : _hpPick(source);
+        } else {
+          spectator = _hpPick(source);
+        }
+        if (!spectator) return;
+        usedGallery.add(spectator);
+
+        const specArch = _hpArch(spectator);
+        const specSupports = galleryFaction[spectator]?.supports;
+        const bondWithTarget = getBond(spectator, triggerTarget);
+
+        const evt = {
+          phase, beat, type: triggerType, spectator, target: triggerTarget,
+          specArch, specSupports, bondWithTarget,
+          isSupporter: specSupports === triggerTarget,
+        };
+
+        // Bond consequences
+        if (triggerType === 'cheer-leader' || triggerType === 'cheer') { addBond(spectator, triggerTarget, 0.3); }
+        if (triggerType === 'heckle') { addBond(spectator, triggerTarget, -0.3); }
+        if (triggerType === 'argue') {
+          const argueWith = peanutGallery.find(pg => pg !== spectator && galleryFaction[pg]?.supports !== specSupports);
+          if (argueWith) {
+            evt.argueWith = argueWith;
+            evt.argueWithArch = _hpArch(argueWith);
+            evt.argueWithSupports = galleryFaction[argueWith]?.supports;
+            addBond(spectator, argueWith, -0.5);
+          }
+        }
+
+        ficData.socialEvents.push(evt);
+        return evt;
+      }
+
+      // ── PHASE 1: VOLCANO SPRINT — 3 beats per player ──
+      const p1 = { name: 'Volcano Sprint', results: [], beats: [] };
+      const p1Positions = {};
+      players.forEach(f => { p1Positions[f] = 0; });
+
+      // Beat 1: Launch — explosive start
+      const beat1 = { name: 'launch', events: [] };
+      for (const f of players) {
+        const s = pStats(f);
+        const burst = s.physical * 0.4 + s.boldness * 0.3 + _hpNoise(2.0);
+        p1Positions[f] += burst;
+        const fastStart = burst > 5;
+        beat1.events.push({ player: f, type: 'launch', score: burst, fastStart });
+      }
+      p1.beats.push(beat1);
+
+      // Gallery: cheer at launch + possible heckle
+      _galleryEvent(1, 1, 'cheer-leader', players[0]);
+      if (peanutGallery.length >= 3 && Math.random() < 0.6) _galleryEvent(1, 1, 'heckle', players[Math.floor(Math.random() * players.length)]);
+
+      // Beat 2: Midhill — obstacles + possible stumble
+      const beat2 = { name: 'midhill', events: [] };
+      for (const f of players) {
+        const s = pStats(f);
+        const climb = s.endurance * 0.35 + s.physical * 0.25 + s.intuition * 0.2 + _hpNoise(2.5);
+        const stumble = Math.random() < 0.25;
+        const penalty = stumble ? (1.5 + Math.random() * 1.5) : 0;
+        p1Positions[f] += climb - penalty;
+        beat2.events.push({ player: f, type: 'midhill', score: climb - penalty, stumble });
+        if (stumble) {
+          ficData.events.push({ phase: 1, beat: 2, type: 'stumble', player: f });
+          // Gallery reacts to stumble
+          if (Math.random() < 0.7) _galleryEvent(1, 2, gallerySupporters[f]?.length > 0 ? 'panic' : 'heckle', f);
+        }
+      }
+      p1.beats.push(beat2);
+
+      // Gallery: argument between supporters of different finalists
+      if (peanutGallery.length >= 4 && Math.random() < 0.5) _galleryEvent(1, 2, 'argue', players[0]);
+
+      // Beat 3: Summit grab — first to the lei
+      const beat3 = { name: 'summit-grab', events: [] };
+      for (const f of players) {
+        const s = pStats(f);
+        const grab = s.mental * 0.3 + s.intuition * 0.35 + s.boldness * 0.2 + _hpNoise(2.0);
+        p1Positions[f] += grab;
+        beat3.events.push({ player: f, type: 'summit-grab', score: grab });
+      }
+      p1.beats.push(beat3);
+
+      // Phase 1 results
+      for (const f of players) {
+        ficScores[f] += p1Positions[f];
+        p1.results.push({ player: f, score: p1Positions[f] });
+      }
+      p1.results.sort((a, b) => b.score - a.score);
+      p1.winner = p1.results[0].player;
+      p1.trailer = p1.results[p1.results.length - 1].player;
+      ficData.phases.push(p1);
+
+      ficData.confessionals.push({ phase: 1, player: p1.winner, type: 'leader' });
+
+      // Gallery: cheer the summit leader
+      _galleryEvent(1, 3, 'cheer-leader', p1.winner);
+
+      // ── LEI STEAL ATTEMPT ──
+      const stealCandidates = players.filter(f => {
+        const s = pStats(f);
+        const a = _hpArch(f);
+        return (s.boldness >= 5 || s.strategic >= 6 || ['villain','mastermind','schemer','chaos-agent'].includes(a));
+      });
+      const stealAttacker = stealCandidates.length > 0 && Math.random() < 0.5 ? _hpPick(stealCandidates) : null;
+      if (stealAttacker) {
+        const stealVictim = p1.winner !== stealAttacker ? p1.winner : p1.results[1]?.player;
+        if (stealVictim) {
+          const aS = pStats(stealAttacker);
+          const vS = pStats(stealVictim);
+          const stealScore = aS.boldness * 0.35 + aS.strategic * 0.3 + aS.physical * 0.15 + _hpNoise(2.5);
+          const defenseScore = vS.intuition * 0.35 + vS.physical * 0.3 + vS.boldness * 0.15 + _hpNoise(2.5);
+          const success = stealScore > defenseScore;
+          if (success) { ficScores[stealAttacker] += 2.5; ficScores[stealVictim] -= 2.0; }
+          ficData.events.push({ phase: 1, type: 'lei-steal', attacker: stealAttacker, victim: stealVictim, success, attackerArch: _hpArch(stealAttacker) });
+          addBond(stealAttacker, stealVictim, success ? -1.5 : -0.5);
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[stealAttacker] = (gs.popularity[stealAttacker] || 0) + (success ? -2 : -1);
+          ficData.confessionals.push({ phase: 1, player: stealVictim, type: success ? 'steal-victim' : 'steal-blocked' });
+          // Gallery erupts over the steal
+          _galleryEvent(1, 3, success ? 'heckle' : 'cheer', stealAttacker);
+        }
+      }
+
+      // Rivalry between finalists
+      const rivalPairs = [];
+      for (let i = 0; i < players.length; i++) {
+        for (let j = i + 1; j < players.length; j++) {
+          if (getBond(players[i], players[j]) <= -2) rivalPairs.push([players[i], players[j]]);
+        }
+      }
+      if (rivalPairs.length > 0) {
+        const [rA, rB] = _hpPick(rivalPairs);
+        ficData.socialEvents.push({ phase: 1, beat: 2, type: 'rivalry-taunt', spectator: rA, target: rB, playerA: rA, playerB: rB, specArch: _hpArch(rA) });
+        addBond(rA, rB, -0.5);
+      }
+
+      // ── PHASE 2: SURF DESCENT — 3 beats ──
+      const p2 = { name: 'Surf Descent', results: [], beats: [] };
+      const p2Positions = {};
+      players.forEach(f => { p2Positions[f] = 0; });
+
+      // Beat 1: Board launch
+      const s2b1 = { name: 'board-launch', events: [] };
+      for (const f of players) {
+        const s = pStats(f);
+        const launch = s.boldness * 0.4 + s.physical * 0.25 + s.endurance * 0.15 + _hpNoise(2.0);
+        p2Positions[f] += launch;
+        s2b1.events.push({ player: f, type: 'board-launch', score: launch });
+      }
+      p2.beats.push(s2b1);
+
+      // Gallery: cheer at surf launch
+      _galleryEvent(2, 1, 'cheer', _hpPick(players));
+
+      // Beat 2: Rapids — wipeout risk
+      const s2b2 = { name: 'rapids', events: [] };
+      for (const f of players) {
+        const s = pStats(f);
+        const ride = s.physical * 0.3 + s.boldness * 0.25 + s.intuition * 0.25 + _hpNoise(2.5);
+        const wipeout = Math.random() < 0.25;
+        const penalty = wipeout ? (2.0 + Math.random() * 1.5) : 0;
+        p2Positions[f] += ride - penalty;
+        s2b2.events.push({ player: f, type: 'rapids', score: ride - penalty, wipeout });
+        if (wipeout) {
+          ficData.events.push({ phase: 2, beat: 2, type: 'wipeout', player: f });
+          // Gallery reacts to wipeout
+          if (Math.random() < 0.7) _galleryEvent(2, 2, 'panic', f);
+        }
+      }
+      p2.beats.push(s2b2);
+
+      // Gallery: argument during rapids tension
+      if (peanutGallery.length >= 4 && Math.random() < 0.5) _galleryEvent(2, 2, 'argue', _hpPick(players));
+
+      // Showmance moment
+      const activeShowmances = (gs.showmances || []).filter(sh => !sh.broken && sh.players.some(p => players.includes(p)));
+      if (activeShowmances.length > 0) {
+        const sh = _hpPick(activeShowmances);
+        const inRace = sh.players.filter(p => players.includes(p));
+        if (inRace.length >= 1) {
+          ficData.socialEvents.push({ phase: 2, beat: 2, type: 'showmance-moment', spectator: inRace[0], target: inRace[0], players: inRace, showmance: sh });
+        }
+      }
+
+      // Beat 3: Beach landing
+      const s2b3 = { name: 'beach-landing', events: [] };
+      for (const f of players) {
+        const s = pStats(f);
+        const landing = s.endurance * 0.3 + s.physical * 0.3 + s.boldness * 0.2 + _hpNoise(2.0);
+        p2Positions[f] += landing;
+        s2b3.events.push({ player: f, type: 'beach-landing', score: landing });
+      }
+      p2.beats.push(s2b3);
+
+      // Phase 2 results
+      for (const f of players) {
+        ficScores[f] += p2Positions[f];
+        p2.results.push({ player: f, score: p2Positions[f] });
+      }
+      p2.results.sort((a, b) => b.score - a.score);
+      p2.winner = p2.results[0].player;
+      ficData.phases.push(p2);
+
+      ficData.confessionals.push({ phase: 2, player: p2.results[p2.results.length - 1].player, type: 'trailing' });
+
+      // Gallery: panic for trailer + cheer for leader
+      _galleryEvent(2, 3, 'panic', p2.results[p2.results.length - 1].player);
+      _galleryEvent(2, 3, 'cheer-leader', p2.winner);
+
+      // ── PHASE 3: SPIRIT ANIMAL LEI — 2 beats ──
+      const p3 = { name: 'Spirit Animal Lei', results: [], beats: [] };
+      const p3Positions = {};
+      players.forEach(f => { p3Positions[f] = 0; });
+
+      // Gallery: coaching before animals
+      if (peanutGallery.length >= 2) {
+        _galleryEvent(3, 0, 'gallery-coach', players.reduce((best, f) => {
+          const supporters = gallerySupporters[f] || [];
+          return supporters.length > (gallerySupporters[best] || []).length ? f : best;
+        }, players[0]));
+      }
+
+      // Beat 1: Approach — read the animal
+      const s3b1 = { name: 'approach', events: [] };
+      for (const f of players) {
+        const s = pStats(f);
+        const animal = ficData.spiritAnimals[f];
+        const diff = ANIMAL_DIFFICULTY[animal] || 0;
+        const approach = s.intuition * 0.35 + s.social * 0.3 + s.mental * 0.2 + _hpNoise(2.0) + diff;
+        const animalAttack = Math.random() < 0.2;
+        const penalty = animalAttack ? (1.5 + Math.random() * 1.0) : 0;
+        p3Positions[f] += approach - penalty;
+        s3b1.events.push({ player: f, type: 'approach', score: approach - penalty, animalAttack, animal });
+        if (animalAttack) {
+          ficData.events.push({ phase: 3, beat: 1, type: 'animal-attack', player: f, animal });
+          if (Math.random() < 0.7) _galleryEvent(3, 1, 'panic', f);
+        }
+      }
+      p3.beats.push(s3b1);
+
+      // Gallery: heckle or cheer during approach
+      if (Math.random() < 0.5) _galleryEvent(3, 1, 'heckle', p3Positions[players[0]] < p3Positions[players[1]] ? players[0] : players[1]);
+
+      // Beat 2: Lei placement — crown the animal
+      const s3b2 = { name: 'lei-placement', events: [] };
+      for (const f of players) {
+        const s = pStats(f);
+        const animal = ficData.spiritAnimals[f];
+        const placement = s.mental * 0.3 + s.boldness * 0.25 + s.intuition * 0.25 + _hpNoise(2.0);
+        p3Positions[f] += placement;
+        const crowned = p3Positions[f] > 0;
+        s3b2.events.push({ player: f, type: 'lei-placement', score: placement, crowned, animal });
+      }
+      p3.beats.push(s3b2);
+
+      for (const f of players) {
+        ficScores[f] += p3Positions[f];
+        p3.results.push({ player: f, score: p3Positions[f], animal: ficData.spiritAnimals[f] });
+      }
+      p3.results.sort((a, b) => b.score - a.score);
+      p3.winner = p3.results[0].player;
+      ficData.phases.push(p3);
+
+      ficData.confessionals.push({ phase: 3, player: p3.winner, type: 'lei-winner' });
+
+      // Determine overall winner
+      const sorted = players.slice().sort((a, b) => ficScores[b] - ficScores[a]);
+      ficData.placements = sorted.map((f, i) => ({ player: f, score: ficScores[f], rank: i + 1 }));
+      ficData.peanutGallery = peanutGallery;
+      const ficWinner = sorted[0];
+
+      // Final confessional from winner
+      ficData.confessionals.push({ phase: 4, player: ficWinner, type: 'immunity-winner' });
+
+      ep.immunityWinner = ficWinner;
+      ep.challengeLabel = 'Hawaiian Style';
+      ep.chalPlacements = sorted;
+      ep.hpFIC = ficData;
+    } else {
+      const immResult = simulateIndividualChallenge(players, null);
+      ep.immunityWinner = immResult?.name || players[0];
+      ep.challengeLabel = immResult?.challengeType || 'Mixed';
+      ep.chalPlacements = immResult?.chalPlacements || null;
+    }
   }
 
   let finalists = [...players];
@@ -608,15 +970,16 @@ export function simulateFinale() {
   }
 
   // Bench selection: eliminated players pick sides (final-challenge format ONLY — jury formats don't have benches)
-  const hasFinaleChallenge = cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay' || cfg.finaleFormat === 'hawaiian-punch';
+  // Hawaiian Punch defers bench assignment until AFTER tiebreaker (so joust loser is in the pool and only F2 remain)
+  const hasFinaleChallenge = cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay';
   if (hasFinaleChallenge && (gs.eliminated.length > 0 || (gs.jury || []).length > 0)) {
     const benchResult = generateBenchAssignments(finalists);
     ep.benchAssignments = benchResult.assignments;
     ep.benchReasons = benchResult.reasons;
   }
 
-  // Assistant selection: final-challenge format only, when setting enabled
-  if ((cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay' || cfg.finaleFormat === 'hawaiian-punch') && cfg.finaleAssistants && ep.benchAssignments) {
+  // Assistant selection: final-challenge format only, when setting enabled (HP does its own after tiebreaker)
+  if (hasFinaleChallenge && cfg.finaleAssistants && ep.benchAssignments) {
     ep.assistants = selectAssistants(finalists, ep.benchAssignments);
   }
 
@@ -644,8 +1007,8 @@ export function simulateFinale() {
       let sharkPenaltyA = 0, sharkPenaltyB = 0;
       const socialEvents = [];
 
-      // Peanut gallery = everyone NOT dueling (immunity winner + bench)
-      const peanutGallery = [immWinner, ...(ep.benchAssignments ? Object.keys(ep.benchAssignments).filter(n => n !== dA && n !== dB) : [])];
+      // Peanut gallery = everyone NOT dueling (immunity winner + all eliminated)
+      const peanutGallery = [immWinner, ...gs.eliminated.filter(n => n !== dA && n !== dB && n !== immWinner)];
 
       for (let i = 0; i < numExchanges; i++) {
         // Desperation rally for losing 2+ consecutive
@@ -689,7 +1052,7 @@ export function simulateFinale() {
         }
 
         // Showmance Tension
-        const showmance = (gs.showmances || []).find(sh => !sh.broken && sh.pair.includes(dA) && sh.pair.includes(dB));
+        const showmance = (gs.showmances || []).find(sh => !sh.broken && sh.players.includes(dA) && sh.players.includes(dB));
         if (showmance && Math.random() < 0.35) {
           addBond(dA, dB, 0.5);
           exchangeEvents.push({ type: 'showmance-tension', players: [dA, dB], round: i + 1 });
@@ -780,98 +1143,216 @@ export function simulateFinale() {
       };
     }
 
+    // ── BENCH ASSIGNMENT (after tiebreaker — F2 only, joust loser in pool) ──
+    if (gs.eliminated.length > 0 || (gs.jury || []).length > 0) {
+      const benchResult = generateBenchAssignments(finalists);
+      ep.benchAssignments = benchResult.assignments;
+      ep.benchReasons = benchResult.reasons;
+    }
+    if (cfg.finaleAssistants && ep.benchAssignments) {
+      ep.assistants = selectAssistants(finalists, ep.benchAssignments);
+    }
+
     // ── 4-PHASE VOLCANO RACE (always 2 finalists) ──
     const [rA, rB] = finalists.length >= 2 ? [finalists[0], finalists[1]] : [finalists[0], finalists[0]];
     const rsA = pStats(rA), rsB = pStats(rB);
     const archA = getArchetype(rA), archB = getArchetype(rB);
 
-    // Get assistants if available
-    const assistantA = ep.assistants?.[rA] || null;
-    const assistantB = ep.assistants?.[rB] || null;
+    // Get assistants if available (selectAssistants returns { name, stats, bond, ... } objects)
+    const asstObjA = ep.assistants?.[rA] || null;
+    const asstObjB = ep.assistants?.[rB] || null;
+    const assistantA = asstObjA?.name || null;
+    const assistantB = asstObjB?.name || null;
     const asstSA = assistantA ? pStats(assistantA) : null;
     const asstSB = assistantB ? pStats(assistantB) : null;
 
-    // Get bench sizes
-    const benchA = ep.benchAssignments ? Object.entries(ep.benchAssignments).filter(([, f]) => f === rA).length : 0;
-    const benchB = ep.benchAssignments ? Object.entries(ep.benchAssignments).filter(([, f]) => f === rB).length : 0;
+    // Get bench sizes (benchAssignments format: { finalist: [supporters...] })
+    const benchListA = ep.benchAssignments?.[rA] || [];
+    const benchListB = ep.benchAssignments?.[rB] || [];
+    const benchA = benchListA.length;
+    const benchB = benchListB.length;
 
     let cumulativeA = 0, cumulativeB = 0;
     const phaseResults = [];
     const raceEvents = [];
+    const raceGalleryEvents = [];
+
+    // ── BENCH GALLERY SYSTEM ──
+    const benchMembers = [...benchListA, ...benchListB];
+    const benchFaction = {};
+    for (const m of benchListA) {
+      benchFaction[m] = { supports: rA, archetype: getArchetype(m), bond: getBond(m, rA) };
+    }
+    for (const m of benchListB) {
+      benchFaction[m] = { supports: rB, archetype: getArchetype(m), bond: getBond(m, rB) };
+    }
+    const usedBench = new Set();
+
+    function _benchGalleryEvent(phase, triggerType, triggerTarget) {
+      if (benchMembers.length === 0) return;
+      const pool = benchMembers.filter(m => !usedBench.has(m));
+      const source = pool.length > 0 ? pool : benchMembers;
+
+      let spectator;
+      if (triggerType === 'cheer-leader') {
+        const team = source.filter(m => benchFaction[m]?.supports === triggerTarget);
+        spectator = team.length > 0 ? pick(team) : pick(source);
+      } else if (triggerType === 'heckle') {
+        const enemies = source.filter(m => getBond(m, triggerTarget) <= -1 || benchFaction[m]?.supports !== triggerTarget);
+        spectator = enemies.length > 0 ? pick(enemies) : pick(source);
+      } else if (triggerType === 'panic') {
+        const friends = source.filter(m => benchFaction[m]?.supports === triggerTarget);
+        spectator = friends.length > 0 ? pick(friends) : pick(source);
+      } else {
+        spectator = pick(source);
+      }
+      if (!spectator) return;
+      usedBench.add(spectator);
+
+      const specArch = getArchetype(spectator);
+      const specSupports = benchFaction[spectator]?.supports;
+      const bondWithTarget = getBond(spectator, triggerTarget);
+
+      const evt = {
+        phase, type: triggerType, spectator, target: triggerTarget,
+        specArch, specSupports, bondWithTarget,
+        isSupporter: specSupports === triggerTarget,
+      };
+
+      if (triggerType === 'cheer-leader' || triggerType === 'cheer') { addBond(spectator, triggerTarget, 0.2); }
+      if (triggerType === 'heckle') { addBond(spectator, triggerTarget, -0.2); }
+      if (triggerType === 'argue') {
+        const argueWith = benchMembers.find(m => m !== spectator && benchFaction[m]?.supports !== specSupports);
+        if (argueWith) {
+          evt.argueWith = argueWith;
+          evt.argueWithArch = getArchetype(argueWith);
+          evt.argueWithSupports = benchFaction[argueWith]?.supports;
+          addBond(spectator, argueWith, -0.4);
+        }
+      }
+
+      raceGalleryEvents.push(evt);
+      return evt;
+    }
+
+    const villainTypes = ['villain', 'mastermind', 'schemer'];
+    const niceTypes = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
 
     // ── PHASE 1: Build the Dummy ──
     {
       let p1A = rsA.mental * 0.3 + rsA.strategic * 0.25 + rsA.physical * 0.2 + rsA.intuition * 0.25 + noise(2.5);
       let p1B = rsB.mental * 0.3 + rsB.strategic * 0.25 + rsB.physical * 0.2 + rsB.intuition * 0.25 + noise(2.5);
 
-      // Assistant boost
       if (asstSA) p1A += (asstSA.mental + asstSA.physical) * 0.15;
       if (asstSB) p1B += (asstSB.mental + asstSB.physical) * 0.15;
 
-      const p1Winner = p1A >= p1B ? rA : rB;
       const p1Events = [];
 
-      // Sabotage (villain archetypes)
-      const villainTypes = ['villain', 'mastermind', 'schemer'];
-      if (villainTypes.includes(archA) && Math.random() < 0.35) {
-        p1B -= 1.0;
-        addBond(rA, rB, -0.5);
-        p1Events.push({ type: 'sabotage', player: rA, target: rB });
-      }
-      if (villainTypes.includes(archB) && Math.random() < 0.35) {
-        p1A -= 1.0;
-        addBond(rB, rA, -0.5);
-        p1Events.push({ type: 'sabotage', player: rB, target: rA });
-      }
+      // Beat 1: Material gathering — intuition determines who finds good materials
+      const gatherA = rsA.intuition * 0.4 + rsA.physical * 0.3 + noise(2);
+      const gatherB = rsB.intuition * 0.4 + rsB.physical * 0.3 + noise(2);
+      const gatherWinner = gatherA >= gatherB ? rA : rB;
+      const gatherLoser = gatherWinner === rA ? rB : rA;
+      p1Events.push({ type: 'gather-materials', winner: gatherWinner, loser: gatherLoser, archW: getArchetype(gatherWinner), archL: getArchetype(gatherLoser) });
+      if (gatherWinner === rA) p1A += 0.5; else p1B += 0.5;
 
-      // Assistant chemistry (bond-driven)
+      // Beat 2: Assistant chemistry
       if (assistantA) {
         const asstBond = getBond(rA, assistantA);
         if (asstBond >= 3) {
           p1A += 0.5;
-          p1Events.push({ type: 'assistant-chemistry', finalist: rA, assistant: assistantA, positive: true });
+          p1Events.push({ type: 'assistant-chemistry', finalist: rA, assistant: assistantA, positive: true, bond: asstBond });
         } else if (asstBond <= -2) {
           p1A -= 0.3;
-          p1Events.push({ type: 'assistant-chemistry', finalist: rA, assistant: assistantA, positive: false });
+          p1Events.push({ type: 'assistant-chemistry', finalist: rA, assistant: assistantA, positive: false, bond: asstBond });
+        } else {
+          p1Events.push({ type: 'assistant-working', finalist: rA, assistant: assistantA });
         }
       }
       if (assistantB) {
         const asstBond = getBond(rB, assistantB);
         if (asstBond >= 3) {
           p1B += 0.5;
-          p1Events.push({ type: 'assistant-chemistry', finalist: rB, assistant: assistantB, positive: true });
+          p1Events.push({ type: 'assistant-chemistry', finalist: rB, assistant: assistantB, positive: true, bond: asstBond });
         } else if (asstBond <= -2) {
           p1B -= 0.3;
-          p1Events.push({ type: 'assistant-chemistry', finalist: rB, assistant: assistantB, positive: false });
+          p1Events.push({ type: 'assistant-chemistry', finalist: rB, assistant: assistantB, positive: false, bond: asstBond });
+        } else {
+          p1Events.push({ type: 'assistant-working', finalist: rB, assistant: assistantB });
         }
       }
 
-      // Dummy insult (social check)
-      if (Math.random() < 0.3) {
-        const insulter = rsA.social + noise(1) > rsB.social + noise(1) ? rA : rB;
-        const target = insulter === rA ? rB : rA;
-        if (!gs.popularity) gs.popularity = {};
-        gs.popularity[insulter] = (gs.popularity[insulter] || 0) + 1;
-        p1Events.push({ type: 'dummy-insult', player: insulter, target });
+      // Beat 3: Construction struggles — archetype-driven mishaps
+      for (const [racer, rS, arch] of [[rA, rsA, archA], [rB, rsB, archB]]) {
+        const buildSkill = rS.mental * 0.4 + rS.physical * 0.3 + rS.strategic * 0.3 + noise(2);
+        if (buildSkill < 4.5) {
+          const mishapType = ['hothead', 'chaos-agent'].includes(arch) ? 'rage-break' :
+            ['underdog', 'goat'].includes(arch) ? 'comical-fail' :
+            ['challenge-beast'].includes(arch) ? 'brute-force' : 'fumble';
+          p1Events.push({ type: 'build-mishap', player: racer, mishapType, arch });
+          if (racer === rA) p1A -= 0.4; else p1B -= 0.4;
+        } else if (buildSkill > 7) {
+          p1Events.push({ type: 'build-impressive', player: racer, arch });
+          if (racer === rA) p1A += 0.3; else p1B += 0.3;
+        }
       }
 
-      // Bench rallying
-      if (benchA > 1) {
-        const benchBonus = Math.min(0.6, (benchA - 1) * 0.2);
+      // Beat 4: Sabotage (villain archetypes only)
+      if (villainTypes.includes(archA) && Math.random() < 0.35) {
+        p1B -= 1.0;
+        addBond(rA, rB, -0.5);
+        p1Events.push({ type: 'sabotage', player: rA, target: rB, arch: archA });
+      }
+      if (villainTypes.includes(archB) && Math.random() < 0.35) {
+        p1A -= 1.0;
+        addBond(rB, rA, -0.5);
+        p1Events.push({ type: 'sabotage', player: rB, target: rA, arch: archB });
+      }
+
+      // Beat 5: Dummy insult — archetype shapes the trash talk
+      if (Math.random() < 0.4) {
+        const insulter = rsA.social + rsA.boldness + noise(1.5) > rsB.social + rsB.boldness + noise(1.5) ? rA : rB;
+        const target = insulter === rA ? rB : rA;
+        const insArch = getArchetype(insulter);
+        const targetArch = getArchetype(target);
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[insulter] = (gs.popularity[insulter] || 0) + (villainTypes.includes(insArch) ? -1 : 1);
+        p1Events.push({ type: 'dummy-insult', player: insulter, target, insArch, targetArch });
+        addBond(insulter, target, -0.2);
+      }
+
+      // Beat 6: Bench rallying with specific supporter names
+      if (benchA > 0) {
+        const rallier = pick(benchListA);
+        const benchBonus = Math.min(0.6, benchA * 0.15);
         p1A += benchBonus;
-        p1Events.push({ type: 'bench-rally', finalist: rA, benchSize: benchA, bonus: benchBonus });
+        p1Events.push({ type: 'bench-rally', finalist: rA, rallier, benchSize: benchA, bonus: benchBonus });
       }
-      if (benchB > 1) {
-        const benchBonus = Math.min(0.6, (benchB - 1) * 0.2);
+      if (benchB > 0) {
+        const rallier = pick(benchListB);
+        const benchBonus = Math.min(0.6, benchB * 0.15);
         p1B += benchBonus;
-        p1Events.push({ type: 'bench-rally', finalist: rB, benchSize: benchB, bonus: benchBonus });
+        p1Events.push({ type: 'bench-rally', finalist: rB, rallier, benchSize: benchB, bonus: benchBonus });
       }
+
+      // Beat 7: Dummy quality reveal — who built the better effigy?
+      const p1Winner = p1A >= p1B ? rA : rB;
+      const qualityGap = Math.abs(p1A - p1B);
+      const qualityVerdict = qualityGap > 3 ? 'blowout' : qualityGap > 1.5 ? 'clear' : 'close';
+      p1Events.push({ type: 'dummy-quality', winner: p1Winner, loser: p1Winner === rA ? rB : rA, gap: qualityGap, verdict: qualityVerdict });
+
+      // Gallery events
+      if (benchMembers.length >= 2) _benchGalleryEvent(1, 'cheer-leader', p1Winner);
+      if (p1Events.some(e => e.type === 'sabotage') && benchMembers.length >= 2) {
+        _benchGalleryEvent(1, 'heckle', p1Events.find(e => e.type === 'sabotage').player);
+      }
+      if (benchMembers.length >= 4 && Math.random() < 0.5) _benchGalleryEvent(1, 'argue', rA);
 
       const carry = p1A >= p1B ? { player: rA, amount: 2.0 } : { player: rB, amount: 2.0 };
       cumulativeA += p1A + (carry.player === rA ? 2.0 : 0);
       cumulativeB += p1B + (carry.player === rB ? 2.0 : 0);
 
-      phaseResults.push({ phase: 1, name: 'Build the Dummy', scoreA: p1A, scoreB: p1B, winner: p1Winner, carry, events: p1Events });
+      phaseResults.push({ phase: 1, name: 'Build the Dummy', scoreA: p1A, scoreB: p1B, winner: p1Winner, carry, events: p1Events, qualityVerdict });
       raceEvents.push(...p1Events);
     }
 
@@ -880,63 +1361,119 @@ export function simulateFinale() {
       let p2A = rsA.physical * 0.3 + rsA.endurance * 0.35 + rsA.boldness * 0.15 + rsA.temperament * 0.2 + noise(2.5);
       let p2B = rsB.physical * 0.3 + rsB.endurance * 0.35 + rsB.boldness * 0.15 + rsB.temperament * 0.2 + noise(2.5);
 
-      // Build winner carry-over already added to cumulative
       const p2Events = [];
 
-      // Wheelbarrow: higher-bond assistant gets it
-      if (assistantA && assistantB) {
-        const wheelA = assistantA ? getBond(rA, assistantA) : -99;
-        const wheelB = assistantB ? getBond(rB, assistantB) : -99;
-        if (wheelA > wheelB) {
-          p2A += 1.5;
-          p2Events.push({ type: 'wheelbarrow', finalist: rA, assistant: assistantA });
+      // Beat 1: Wheelbarrow loading — assistant teamwork
+      if (assistantA || assistantB) {
+        if (assistantA && assistantB) {
+          const wheelA = getBond(rA, assistantA) + (asstSA?.physical || 0) * 0.2 + noise(1);
+          const wheelB = getBond(rB, assistantB) + (asstSB?.physical || 0) * 0.2 + noise(1);
+          if (wheelA > wheelB) {
+            p2A += 1.5;
+            p2Events.push({ type: 'wheelbarrow', finalist: rA, assistant: assistantA, advantage: true });
+            p2Events.push({ type: 'wheelbarrow', finalist: rB, assistant: assistantB, advantage: false });
+          } else {
+            p2B += 1.5;
+            p2Events.push({ type: 'wheelbarrow', finalist: rB, assistant: assistantB, advantage: true });
+            p2Events.push({ type: 'wheelbarrow', finalist: rA, assistant: assistantA, advantage: false });
+          }
         } else {
-          p2B += 1.5;
-          p2Events.push({ type: 'wheelbarrow', finalist: rB, assistant: assistantB });
+          const solo = assistantA ? rA : rB;
+          const asst = assistantA || assistantB;
+          if (solo === rA) p2A += 1.5; else p2B += 1.5;
+          p2Events.push({ type: 'wheelbarrow', finalist: solo, assistant: asst, advantage: true });
         }
-      } else if (assistantA) {
-        p2A += 1.5;
-        p2Events.push({ type: 'wheelbarrow', finalist: rA, assistant: assistantA });
-      } else if (assistantB) {
-        p2B += 1.5;
-        p2Events.push({ type: 'wheelbarrow', finalist: rB, assistant: assistantB });
       }
 
-      // Stumble (endurance < 5)
-      if (rsA.endurance < 5 && Math.random() < 0.4) {
-        p2A -= 1.0;
-        p2Events.push({ type: 'stumble', player: rA });
+      // Beat 2: Early climb — first third of volcano, terrain check
+      const climbSegments = [];
+      for (const [racer, rS, arch] of [[rA, rsA, archA], [rB, rsB, archB]]) {
+        const climbScore = rS.physical * 0.4 + rS.endurance * 0.3 + noise(2);
+        const terrain = climbScore > 5.5 ? 'strong' : climbScore > 3.5 ? 'steady' : 'struggling';
+        climbSegments.push({ racer, terrain, arch });
       }
-      if (rsB.endurance < 5 && Math.random() < 0.4) {
-        p2B -= 1.0;
-        p2Events.push({ type: 'stumble', player: rB });
+      p2Events.push({ type: 'early-climb', segments: climbSegments });
+
+      // Beat 3: Stumble / wipeout — endurance-based
+      for (const [racer, rS, arch] of [[rA, rsA, archA], [rB, rsB, archB]]) {
+        const stumbleChance = rS.endurance < 4 ? 0.5 : rS.endurance < 6 ? 0.25 : 0.1;
+        if (Math.random() < stumbleChance) {
+          const severity = rS.physical + noise(1.5) > 5 ? 'minor' : 'major';
+          if (racer === rA) p2A -= (severity === 'major' ? 1.5 : 0.7);
+          else p2B -= (severity === 'major' ? 1.5 : 0.7);
+          const recovery = ['challenge-beast', 'hothead'].includes(arch) ? 'rage-recovery' :
+            niceTypes.includes(arch) ? 'grit-recovery' : 'scramble-recovery';
+          p2Events.push({ type: 'stumble', player: racer, severity, recovery, arch });
+        }
       }
 
-      // Shortcut (intuition check)
-      if (Math.random() < 0.3) {
-        const finder = rsA.intuition + noise(1.5) > rsB.intuition + noise(1.5) ? rA : rB;
-        if (finder === rA) p2A += 1.2;
-        else p2B += 1.2;
-        p2Events.push({ type: 'shortcut', player: finder });
+      // Beat 4: Shortcut discovery — intuition + boldness
+      if (Math.random() < 0.35) {
+        const scoreA = rsA.intuition * 0.5 + rsA.boldness * 0.3 + noise(1.5);
+        const scoreB = rsB.intuition * 0.5 + rsB.boldness * 0.3 + noise(1.5);
+        const finder = scoreA > scoreB ? rA : rB;
+        const finderArch = getArchetype(finder);
+        const risky = pStats(finder).boldness >= 6;
+        if (finder === rA) p2A += (risky ? 1.8 : 1.0); else p2B += (risky ? 1.8 : 1.0);
+        p2Events.push({ type: 'shortcut', player: finder, risky, arch: finderArch });
       }
 
-      // Taunt from above
-      if (Math.random() < 0.25) {
-        const leader = cumulativeA + p2A > cumulativeB + p2B ? rA : rB;
-        const trailer = leader === rA ? rB : rA;
-        addBond(leader, trailer, -0.3);
-        if (!gs.popularity) gs.popularity = {};
-        gs.popularity[leader] = (gs.popularity[leader] || 0) - 1;
-        p2Events.push({ type: 'taunt-from-above', player: leader, target: trailer });
+      // Beat 5: Mid-climb social — taunt, encouragement, or rival staredown
+      const midLeader = cumulativeA + p2A > cumulativeB + p2B ? rA : rB;
+      const midTrailer = midLeader === rA ? rB : rA;
+      if (Math.random() < 0.35) {
+        const leaderArch = getArchetype(midLeader);
+        if (villainTypes.includes(leaderArch) || leaderArch === 'hothead') {
+          addBond(midLeader, midTrailer, -0.3);
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[midLeader] = (gs.popularity[midLeader] || 0) - 1;
+          p2Events.push({ type: 'taunt-from-above', player: midLeader, target: midTrailer, arch: leaderArch });
+        } else if (niceTypes.includes(leaderArch)) {
+          p2Events.push({ type: 'rival-respect', player: midLeader, target: midTrailer, arch: leaderArch });
+        } else {
+          p2Events.push({ type: 'focused-climb', player: midLeader, arch: leaderArch });
+        }
       }
 
-      // Bench interference
-      if (Math.random() < 0.2) {
-        const interferenceTarget = Math.random() < 0.5 ? rA : rB;
-        if (interferenceTarget === rA) p2A -= 0.5;
-        else p2B -= 0.5;
-        p2Events.push({ type: 'bench-interference', target: interferenceTarget });
+      // Beat 6: Bench interference — specific supporter sabotages/helps
+      if (benchMembers.length >= 2 && Math.random() < 0.3) {
+        const interferer = pick(benchMembers);
+        const interfArch = getArchetype(interferer);
+        const supports = benchFaction[interferer]?.supports;
+        const target = supports === rA ? rB : rA;
+        if (villainTypes.includes(interfArch) || getBond(interferer, target) <= -2) {
+          if (target === rA) p2A -= 0.5; else p2B -= 0.5;
+          addBond(interferer, target, -0.3);
+          p2Events.push({ type: 'bench-interference', interferer, target, supports, interfArch, hostile: true });
+        } else {
+          const helped = supports;
+          if (helped === rA) p2A += 0.3; else p2B += 0.3;
+          addBond(interferer, helped, 0.2);
+          p2Events.push({ type: 'bench-interference', interferer, target: helped, supports, interfArch, hostile: false });
+        }
       }
+
+      // Beat 7: Final push — endurance check for the last stretch
+      for (const [racer, rS, arch] of [[rA, rsA, archA], [rB, rsB, archB]]) {
+        const pushScore = rS.endurance * 0.4 + rS.boldness * 0.3 + rS.physical * 0.3 + noise(1.5);
+        if (pushScore > 6) {
+          p2Events.push({ type: 'final-push', player: racer, strong: true, arch });
+          if (racer === rA) p2A += 0.4; else p2B += 0.4;
+        } else if (pushScore < 3.5) {
+          p2Events.push({ type: 'final-push', player: racer, strong: false, arch });
+          if (racer === rA) p2A -= 0.3; else p2B -= 0.3;
+        }
+      }
+
+      // Gallery events
+      if (p2Events.some(e => e.type === 'stumble') && benchMembers.length >= 2) {
+        _benchGalleryEvent(2, 'panic', p2Events.find(e => e.type === 'stumble').player);
+      }
+      if (benchMembers.length >= 2) _benchGalleryEvent(2, 'cheer-leader', p2A >= p2B ? rA : rB);
+      if (p2Events.some(e => e.type === 'taunt-from-above') && benchMembers.length >= 3) {
+        _benchGalleryEvent(2, 'heckle', p2Events.find(e => e.type === 'taunt-from-above').player);
+      }
+      if (benchMembers.length >= 4 && Math.random() < 0.4) _benchGalleryEvent(2, 'argue', pick([rA, rB]));
 
       const p2Winner = p2A >= p2B ? rA : rB;
       cumulativeA += p2A;
@@ -953,12 +1490,18 @@ export function simulateFinale() {
 
       const p3Events = [];
 
-      // Rope-cutting: 4-5 ropes with traps
+      // Beat 1: Approach the lava field — read the ropes
+      for (const [racer, rS, arch] of [[rA, rsA, archA], [rB, rsB, archB]]) {
+        const readScore = rS.intuition * 0.5 + rS.mental * 0.3 + noise(1.5);
+        const approach = readScore > 5 ? 'calculated' : readScore > 3 ? 'cautious' : 'reckless';
+        p3Events.push({ type: 'lava-approach', player: racer, approach, arch });
+      }
+
+      // Beat 2: Rope-cutting — 4-5 ropes with traps, each is its own mini-event
       const numRopes = 4 + Math.floor(Math.random() * 2);
       const traps = ['piano', 'cage', 'boulder', 'net', 'anvil'];
       const ropeResults = [];
 
-      // Each helper gets 1 cut
       const helpersA = assistantA ? [assistantA] : [];
       const helpersB = assistantB ? [assistantB] : [];
 
@@ -968,34 +1511,29 @@ export function simulateFinale() {
         const helpers = targetFinalist === rA ? helpersA : helpersB;
         const helper = helpers.length > 0 && r < helpers.length ? helpers[r] : null;
 
-        // 30% mismatch → hits own finalist
         const mismatch = helper && Math.random() < 0.3;
         const hitTarget = mismatch ? targetFinalist : (targetFinalist === rA ? rB : rA);
 
         if (mismatch || !helper) {
-          // Trap hits
           const penalty = trap === 'cage' ? -3.0 : -2.0;
 
-          // Cage escape with physical >= 6
           if (trap === 'cage') {
             const hitS = pStats(hitTarget);
             if (hitS.physical >= 6 && Math.random() < 0.6) {
-              // Escaped
-              ropeResults.push({ rope: r + 1, trap, hitTarget, mismatch, escaped: true, penalty: 0 });
+              ropeResults.push({ rope: r + 1, trap, hitTarget, mismatch, escaped: true, penalty: 0, arch: getArchetype(hitTarget) });
               continue;
             }
           }
 
-          // Dodge check: intuition + boldness vs difficulty
           const hitS = pStats(hitTarget);
           const dodgeScore = hitS.intuition * 0.5 + hitS.boldness * 0.5 + noise(1.5);
           const difficulty = 4 + Math.random() * 2;
           if (dodgeScore > difficulty) {
-            ropeResults.push({ rope: r + 1, trap, hitTarget, mismatch, dodged: true, penalty: 0 });
+            ropeResults.push({ rope: r + 1, trap, hitTarget, mismatch, dodged: true, penalty: 0, arch: getArchetype(hitTarget) });
           } else {
             if (hitTarget === rA) p3A += penalty;
             else p3B += penalty;
-            ropeResults.push({ rope: r + 1, trap, hitTarget, mismatch, dodged: false, penalty });
+            ropeResults.push({ rope: r + 1, trap, hitTarget, mismatch, dodged: false, penalty, arch: getArchetype(hitTarget) });
           }
         } else {
           ropeResults.push({ rope: r + 1, trap, hitTarget: null, mismatch: false, helper, safe: true });
@@ -1003,11 +1541,23 @@ export function simulateFinale() {
       }
       p3Events.push({ type: 'rope-cutting', ropeResults, numRopes });
 
-      // Distraction play: social vs mental, needs bond >= 3 reference
-      if (Math.random() < 0.35) {
+      // Beat 3: Heat wave — lava intensity spike, temperament check
+      for (const [racer, rS, arch] of [[rA, rsA, archA], [rB, rsB, archB]]) {
+        const heatResist = rS.temperament * 0.4 + rS.endurance * 0.3 + noise(1.5);
+        if (heatResist < 3.5) {
+          if (racer === rA) p3A -= 0.6; else p3B -= 0.6;
+          p3Events.push({ type: 'heat-wave', player: racer, panicked: true, arch });
+        } else if (heatResist > 6) {
+          p3Events.push({ type: 'heat-wave', player: racer, panicked: false, arch });
+        }
+      }
+
+      // Beat 4: Distraction play — social warfare mid-crossing
+      if (Math.random() < 0.4) {
         const attacker = rsA.social + noise(1.5) > rsB.social + noise(1.5) ? rA : rB;
         const defender = attacker === rA ? rB : rA;
         const attackerS = pStats(attacker), defenderS = pStats(defender);
+        const atkArch = getArchetype(attacker);
         const bestBondRef = [...(gs.jury || []), ...(gs.eliminated || [])].find(n => getBond(attacker, n) >= 3);
         if (bestBondRef) {
           const distractScore = attackerS.social * 0.5 + noise(1.5);
@@ -1015,15 +1565,15 @@ export function simulateFinale() {
           if (distractScore > resistScore) {
             if (defender === rA) p3A -= 1.5;
             else p3B -= 1.5;
-            p3Events.push({ type: 'distraction-play', attacker, defender, reference: bestBondRef, success: true });
+            p3Events.push({ type: 'distraction-play', attacker, defender, reference: bestBondRef, success: true, atkArch });
           } else {
-            p3Events.push({ type: 'distraction-play', attacker, defender, reference: bestBondRef, success: false });
+            p3Events.push({ type: 'distraction-play', attacker, defender, reference: bestBondRef, success: false, atkArch });
           }
         }
       }
 
-      // Counter-block: assistants duel physically
-      if (assistantA && assistantB && Math.random() < 0.3) {
+      // Beat 5: Counter-block — assistants duel physically
+      if (assistantA && assistantB && Math.random() < 0.35) {
         const blockA = asstSA.physical + noise(1.5);
         const blockB = asstSB.physical + noise(1.5);
         const blockWinner = blockA >= blockB ? assistantA : assistantB;
@@ -1031,8 +1581,25 @@ export function simulateFinale() {
         const beneficiary = blockWinner === assistantA ? rA : rB;
         if (beneficiary === rA) p3A += 0.5;
         else p3B += 0.5;
+        addBond(blockWinner, blockLoser, -0.3);
         p3Events.push({ type: 'counter-block', winner: blockWinner, loser: blockLoser, beneficiary });
       }
+
+      // Beat 6: Dummy damage check — dummy condition after crossing
+      for (const [racer, rS] of [[rA, rsA], [rB, rsB]]) {
+        const hits = ropeResults.filter(r => r.hitTarget === racer && !r.dodged && !r.escaped);
+        const dummyDamage = hits.length > 0 ? (hits.length >= 2 ? 'heavy' : 'light') : 'intact';
+        p3Events.push({ type: 'dummy-condition', player: racer, damage: dummyDamage, hits: hits.length });
+      }
+
+      // Gallery events
+      if (benchMembers.length >= 2) _benchGalleryEvent(3, 'gallery-coach', pick([rA, rB]));
+      const ropeHits = ropeResults.filter(r => !r.dodged && !r.escaped && !r.safe && r.hitTarget);
+      if (ropeHits.length > 0 && benchMembers.length >= 2) {
+        _benchGalleryEvent(3, 'panic', ropeHits[0].hitTarget);
+      }
+      if (benchMembers.length >= 3 && Math.random() < 0.5) _benchGalleryEvent(3, 'cheer', pick([rA, rB]));
+      if (benchMembers.length >= 4 && Math.random() < 0.4) _benchGalleryEvent(3, 'argue', pick([rA, rB]));
 
       const p3Winner = p3A >= p3B ? rA : rB;
       cumulativeA += p3A;
@@ -1048,13 +1615,30 @@ export function simulateFinale() {
       const leader = cumulativeA >= cumulativeB ? rA : rB;
       const trailer = leader === rA ? rB : rA;
       const leaderS = pStats(leader), trailerS = pStats(trailer);
+      const leaderArch = getArchetype(leader);
       const trailerArch = getArchetype(trailer);
+      const gap = Math.abs(cumulativeA - cumulativeB);
 
       let flipped = false;
       let mindGameResult = null;
 
-      // Mind games (trailing player only)
-      const hasShowmance = (gs.showmances || []).some(sh => !sh.broken && sh.pair.includes(leader) && sh.pair.includes(trailer));
+      // Beat 1: Arrival at the summit — leader/trailer reactions
+      p4Events.push({ type: 'summit-arrival', leader, trailer, leaderArch, trailerArch, gap: gap.toFixed(1) });
+
+      // Beat 2: Bench eruption — crowd goes wild at summit
+      if (benchMembers.length >= 2) {
+        const benchReactions = [];
+        const sampleBench = benchMembers.slice(0, Math.min(4, benchMembers.length));
+        for (const m of sampleBench) {
+          const supports = benchFaction[m]?.supports;
+          const isWinning = supports === leader;
+          benchReactions.push({ name: m, supports, isWinning, arch: getArchetype(m) });
+        }
+        p4Events.push({ type: 'summit-bench-eruption', reactions: benchReactions });
+      }
+
+      // Beat 3: Mind games (trailing player only)
+      const hasShowmance = (gs.showmances || []).some(sh => !sh.broken && sh.players.includes(leader) && sh.players.includes(trailer));
       const pairBond = getBond(leader, trailer);
       const canAttempt = trailerS.social >= 5 || hasShowmance || pairBond >= 4;
 
@@ -1062,7 +1646,6 @@ export function simulateFinale() {
         let attackScore, defendScore;
         let mindGameType;
 
-        // Archetype-driven mind game type
         if (['social-butterfly', 'showmancer', 'schemer'].includes(trailerArch)) {
           mindGameType = 'emotional-manipulation';
           attackScore = trailerS.social * 0.4 + trailerS.strategic * 0.3 + trailerS.boldness * 0.3 + noise(3);
@@ -1071,50 +1654,68 @@ export function simulateFinale() {
           mindGameType = 'taunt-provocation';
           attackScore = trailerS.boldness * 0.4 + trailerS.social * 0.3 + trailerS.strategic * 0.3 + noise(3);
           defendScore = leaderS.temperament * 0.5 + leaderS.mental * 0.3 + leaderS.intuition * 0.2 + noise(2);
+        } else if (['mastermind', 'perceptive-player'].includes(trailerArch)) {
+          mindGameType = 'strategic-doubt';
+          attackScore = trailerS.strategic * 0.4 + trailerS.intuition * 0.3 + trailerS.social * 0.3 + noise(3);
+          defendScore = leaderS.mental * 0.4 + leaderS.temperament * 0.3 + leaderS.loyalty * 0.3 + noise(2);
         } else {
           mindGameType = 'desperate-plea';
           attackScore = trailerS.social * 0.5 + trailerS.loyalty * 0.3 + trailerS.intuition * 0.2 + noise(3);
           defendScore = leaderS.strategic * 0.4 + leaderS.boldness * 0.3 + leaderS.temperament * 0.3 + noise(2);
         }
 
-        // Showmance/bond vulnerability
         if (hasShowmance || pairBond >= 5) {
           defendScore -= 2.0;
+          p4Events.push({ type: 'showmance-vulnerability', leader, trailer, hasShowmance, bond: pairBond });
         }
 
+        // Beat 4: The mind game exchange — attack and defense
+        p4Events.push({ type: 'mind-game-attempt', attacker: trailer, defender: leader, mindGameType, trailerArch, leaderArch });
+
         if (attackScore > defendScore) {
-          // FLIP — trailer wins
           flipped = true;
           if (!gs.popularity) gs.popularity = {};
           gs.popularity[trailer] = (gs.popularity[trailer] || 0) + 3;
           gs.popularity[leader] = (gs.popularity[leader] || 0) - 2;
-          mindGameResult = { type: mindGameType, attacker: trailer, defender: leader, success: true, flipped: true };
+          mindGameResult = { type: mindGameType, attacker: trailer, defender: leader, success: true, flipped: true, hasShowmance };
         } else {
-          // Failed — leader wins
           if (!gs.popularity) gs.popularity = {};
           gs.popularity[trailer] = (gs.popularity[trailer] || 0) - 1;
           gs.popularity[leader] = (gs.popularity[leader] || 0) + 1;
           mindGameResult = { type: mindGameType, attacker: trailer, defender: leader, success: false, flipped: false };
         }
-        p4Events.push({ type: 'mind-game', ...mindGameResult });
+
+        // Beat 5: Mind game result — reaction card
+        p4Events.push({ type: 'mind-game-result', ...mindGameResult, leaderArch, trailerArch });
       } else {
-        // No mind game attempt — sprint check added to cumulative
+        // No mind game — pure sprint finish
         const sprintA = rsA.physical * 0.3 + rsA.endurance * 0.3 + rsA.boldness * 0.2 + noise(2);
         const sprintB = rsB.physical * 0.3 + rsB.endurance * 0.3 + rsB.boldness * 0.2 + noise(2);
         cumulativeA += sprintA;
         cumulativeB += sprintB;
-        p4Events.push({ type: 'sprint-finish', scoreA: sprintA, scoreB: sprintB });
+        p4Events.push({ type: 'sprint-finish', scoreA: sprintA, scoreB: sprintB, leader, trailer, leaderArch, trailerArch });
       }
 
-      // Determine winner
+      // Beat 6: The throw — who throws first
       let raceWinner;
       if (flipped) {
-        raceWinner = trailer; // mind game flip
+        raceWinner = trailer;
       } else if (mindGameResult && !mindGameResult.success) {
-        raceWinner = leader; // leader held
+        raceWinner = leader;
       } else {
-        raceWinner = cumulativeA >= cumulativeB ? rA : rB; // sprint/cumulative
+        raceWinner = cumulativeA >= cumulativeB ? rA : rB;
       }
+      const raceLoser = raceWinner === rA ? rB : rA;
+
+      p4Events.push({ type: 'dummy-throw', winner: raceWinner, loser: raceLoser, winArch: getArchetype(raceWinner), loseArch: getArchetype(raceLoser) });
+
+      // Beat 7: Loser reaction
+      p4Events.push({ type: 'loser-reaction', loser: raceLoser, winner: raceWinner, loseArch: getArchetype(raceLoser), flipped });
+
+      // Gallery events
+      if (benchMembers.length >= 2) _benchGalleryEvent(4, 'cheer-leader', raceWinner);
+      if (benchMembers.length >= 2) _benchGalleryEvent(4, 'panic', raceLoser);
+      if (flipped && benchMembers.length >= 3) _benchGalleryEvent(4, 'cheer', raceWinner);
 
       phaseResults.push({
         phase: 4, name: 'Summit Showdown', leader, trailer, flipped,
@@ -1136,6 +1737,8 @@ export function simulateFinale() {
         finalists: [rA, rB],
         assistants: { [rA]: assistantA, [rB]: assistantB },
         benchSizes: { [rA]: benchA, [rB]: benchB },
+        benchFaction,
+        galleryEvents: raceGalleryEvents,
         phaseResults,
         raceEvents,
         winner: raceWinner,
@@ -1309,6 +1912,7 @@ export function simulateFinale() {
     fanCampaign: ep.fanCampaign || null,
     fanVoteResult: ep.fanVoteResult || null,
     // Hawaiian Punch finale
+    hpFIC: ep.hpFIC || null,
     hpTiebreaker: ep.hpTiebreaker || null,
     hpTiebreakerEliminated: ep.hpTiebreakerEliminated || null,
     hpRaceData: ep.hpRaceData || null,
@@ -1428,7 +2032,7 @@ export function generateFinaleSummaryText(ep) {
       sec('JOUSTING TIEBREAKER');
       const tb = ep.hpTiebreaker;
       ln(`${tb.duelists[0]} and ${tb.duelists[1]} face off in a jousting fire dance duel over shark-infested water.`);
-      ln(`After ${tb.exchanges.length} exchanges, ${tb.winner} prevails${tb.suddenDeath ? ' in sudden death' : ` (${tb.d1Wins}-${tb.d2Wins})`}.`);
+      ln(`After ${tb.exchanges.length} exchanges, ${tb.winner} prevails${tb.suddenDeath ? ' in sudden death' : ` (${tb.winsA}-${tb.winsB})`}.`);
       ln(`${tb.loser} is knocked into the water and eliminated.`);
     }
 
@@ -1436,7 +2040,7 @@ export function generateFinaleSummaryText(ep) {
     const rd = ep.hpRaceData;
     ln(`${rd.finalists[0]} vs ${rd.finalists[1]} — build a dummy, race it up the volcano, throw it in the crater.`);
     ln('');
-    rd.phases.forEach(phase => {
+    (rd.phaseResults || []).forEach(phase => {
       if (phase.scores) ln(`${phase.name}: ${Object.entries(phase.scores).map(([n,s]) => `${n} ${s}`).join(' | ')}`);
       if (phase.mindGames && !phase.mindGames.noAttempt) {
         ln(`  Mind games: ${phase.mindGames.trailer} uses ${phase.mindGames.attackType} — ${phase.mindGames.success ? 'SUCCESS! Race flipped!' : 'Failed.'}`);
@@ -1493,7 +2097,7 @@ export function generateFinaleSummaryText(ep) {
     // Assistants
     if (ep.assistants && Object.keys(ep.assistants).length) {
       ln('ASSISTANTS:');
-      Object.entries(ep.assistants).forEach(([f, a]) => ln(`  ${f} chose ${a}`));
+      Object.entries(ep.assistants).forEach(([f, a]) => ln(`  ${f} chose ${typeof a === 'object' ? a.name : a}`));
       ln('');
     }
 
@@ -1942,8 +2546,8 @@ export function generateFinalChallengeStages(finalists, winner) {
 
 // Eliminated players pick which finalist's bench to sit on
 export function generateBenchAssignments(finalists) {
-  // Pool: jury for jury formats, all eliminated for final-challenge
-  const pool = (seasonConfig.finaleFormat === 'final-challenge' || seasonConfig.finaleFormat === 'olympic-relay') ? [...gs.eliminated] : [...(gs.jury || [])];
+  // Pool: all eliminated for challenge formats, jury for jury formats
+  const pool = (seasonConfig.finaleFormat === 'final-challenge' || seasonConfig.finaleFormat === 'olympic-relay' || seasonConfig.finaleFormat === 'hawaiian-punch') ? [...gs.eliminated] : [...(gs.jury || [])];
   const assignments = Object.fromEntries(finalists.map(f => [f, []]));
   const reasons = {};
 

@@ -1585,7 +1585,7 @@ export function _textOlympicRelay(ep, ln, sec) {
   // Assistants
   if (ep.assistants && Object.keys(ep.assistants).length) {
     ln('ASSISTANTS:');
-    Object.entries(ep.assistants).forEach(([f, a]) => ln(`  ${f} chose ${a}`));
+    Object.entries(ep.assistants).forEach(([f, a]) => ln(`  ${f} chose ${typeof a === 'object' ? a.name : a}`));
   }
 
   // Sabotage plants
@@ -1629,6 +1629,26 @@ export function _textOlympicRelay(ep, ln, sec) {
 
 // ── FINALE: HAWAIIAN PUNCH ──
 export function _textHawaiianPunch(ep, ln, sec) {
+  if (ep.hpFIC) {
+    const fic = ep.hpFIC;
+    sec('HAWAIIAN STYLE — FINAL IMMUNITY CHALLENGE');
+    ln(`Spirit Animals: ${Object.entries(fic.spiritAnimals || {}).map(([n, a]) => `${n} → ${a}`).join(', ')}`);
+    ln('');
+    (fic.phases || []).forEach((phase, i) => {
+      ln(`Phase ${i + 1}: ${phase.name}`);
+      phase.results.forEach(r => {
+        const mishap = r.stumble ? ' (stumbled!)' : r.wipeout ? ' (wiped out!)' : r.animalAttack ? ' (attacked by animal!)' : '';
+        ln(`  ${r.player}: ${r.score.toFixed(1)}${mishap}`);
+      });
+      ln(`  → Phase winner: ${phase.winner}`);
+      ln('');
+    });
+    const stealEvt = (fic.events || []).find(e => e.type === 'lei-steal');
+    if (stealEvt) ln(`Lei Steal: ${stealEvt.attacker} ${stealEvt.success ? 'steals' : 'tries to steal'} ${stealEvt.victim}'s lei!`);
+    ln(`Final Results: ${(fic.placements || []).map((p, i) => `${i + 1}. ${p.player} (${p.score.toFixed(1)})`).join(', ')}`);
+    ln(`${fic.placements[0]?.player} wins Final Immunity!`);
+    ln('');
+  }
   if (ep.hpTiebreaker) {
     const tb = ep.hpTiebreaker;
     sec('JOUSTING TIEBREAKER');
@@ -1638,13 +1658,13 @@ export function _textHawaiianPunch(ep, ln, sec) {
       if (ex.suddenDeath) {
         ln(`SUDDEN DEATH: ${ex.winner} wins the deciding exchange!`);
       } else {
-        ln(`Exchange ${ex.round}: ${ex.winner} wins (${Object.entries(ex.scores).map(([n,s]) => `${n}: ${s}`).join(' vs ')})`);
-        if (ex.d1Rally) ln(`  ${tb.duelists[0]} rallies from behind!`);
-        if (ex.d2Rally) ln(`  ${tb.duelists[1]} rallies from behind!`);
+        ln(`Exchange ${ex.round}: ${ex.winner} wins (${tb.duelists[0]}: ${(ex.scoreA||0).toFixed(1)} vs ${tb.duelists[1]}: ${(ex.scoreB||0).toFixed(1)})`);
+        if (ex.rallyA) ln(`  ${tb.duelists[0]} rallies from behind!`);
+        if (ex.rallyB) ln(`  ${tb.duelists[1]} rallies from behind!`);
       }
     });
     ln('');
-    ln(`Result: ${tb.winner} advances (${tb.d1Wins}-${tb.d2Wins}). ${tb.loser} is knocked into the water and eliminated.`);
+    ln(`Result: ${tb.winner} advances (${tb.winsA}-${tb.winsB}). ${tb.loser} is knocked into the water and eliminated.`);
   }
 
   if (ep.hpRaceData) {

@@ -47,6 +47,7 @@ import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildT
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults, gpRevealNext, gpRevealAll } from './chal/greeces-pieces.js';
 import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults, hbRevealNext, hbRevealAll } from './chal/hangar-black.js';
+import { rpBuildHPTitleCard, rpBuildHPTiebreaker, rpBuildHPJoust, rpBuildHPVolcanoRace, rpBuildHPSummit, rpBuildHPEndings, hpRevealNext, hpRevealAll } from './chal/hawaiian-punch.js';
 import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemFinish, aftermayhemRevealNext, aftermayhemRevealAll } from './chal/aftermayhem.js';
 import { rpBuildSafariColdOpen, rpBuildSafariPhase1, rpBuildSafariPhase2, rpBuildSafariHunt, rpBuildSafariResults, safariRevealNext, safariRevealAll } from './chal/african-lying-safari.js';
 import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPPillarPhase, rpBuildRPResults, rpRevealNext, rpRevealAll } from './chal/rapa-phooey.js';
@@ -11561,6 +11562,18 @@ export function buildVPScreens(epRecord) {
       const _klCampHtml = rpBuildKLCampLife(ep);
       if (_klCampHtml) vpScreens.push({ id:'kl-camp', label:'After the Perch', html: _klCampHtml });
       vpScreens.push({ id:'kl-choice', label:'The Choice', html: rpBuildKLChoice(ep) });
+    }
+
+    // Hawaiian Punch: tiebreaker → joust → volcano race → summit → endings
+    if (ep.hpRaceData) {
+      vpScreens.push({ id: 'hp-title', label: 'Hawaiian Punch', html: rpBuildHPTitleCard(ep) });
+      if (ep.hpTiebreaker) {
+        vpScreens.push({ id: 'hp-tiebreaker', label: 'Tiebreaker', html: rpBuildHPTiebreaker(ep) });
+        vpScreens.push({ id: 'hp-joust', label: 'The Joust', html: rpBuildHPJoust(ep) });
+      }
+      vpScreens.push({ id: 'hp-volcano', label: 'Volcano Race', html: rpBuildHPVolcanoRace(ep) });
+      vpScreens.push({ id: 'hp-summit', label: 'Summit', html: rpBuildHPSummit(ep) });
+      vpScreens.push({ id: 'hp-endings', label: 'Endings', html: rpBuildHPEndings(ep) });
     }
 
     // Fire-Making: camp lobbying → decision → fire duel

@@ -1627,6 +1627,78 @@ export function _textOlympicRelay(ep, ln, sec) {
   }
 }
 
+// ── FINALE: HAWAIIAN PUNCH ──
+export function _textHawaiianPunch(ep, ln, sec) {
+  if (ep.hpTiebreaker) {
+    const tb = ep.hpTiebreaker;
+    sec('JOUSTING TIEBREAKER');
+    ln(`${tb.immunityWinner} is safe with immunity. ${tb.duelists[0]} and ${tb.duelists[1]} duel for the final spot.`);
+    ln('');
+    tb.exchanges.forEach(ex => {
+      if (ex.suddenDeath) {
+        ln(`SUDDEN DEATH: ${ex.winner} wins the deciding exchange!`);
+      } else {
+        ln(`Exchange ${ex.round}: ${ex.winner} wins (${Object.entries(ex.scores).map(([n,s]) => `${n}: ${s}`).join(' vs ')})`);
+        if (ex.d1Rally) ln(`  ${tb.duelists[0]} rallies from behind!`);
+        if (ex.d2Rally) ln(`  ${tb.duelists[1]} rallies from behind!`);
+      }
+    });
+    ln('');
+    ln(`Result: ${tb.winner} advances (${tb.d1Wins}-${tb.d2Wins}). ${tb.loser} is knocked into the water and eliminated.`);
+  }
+
+  if (ep.hpRaceData) {
+    const rd = ep.hpRaceData;
+    sec('HAWAIIAN PUNCH — VOLCANO RACE');
+    ln(`Finalists: ${rd.finalists.join(' vs ')}`);
+    ln('');
+
+    rd.phases.forEach(phase => {
+      ln(`--- ${phase.name} ---`);
+      if (phase.scores) {
+        Object.entries(phase.scores).forEach(([name, score]) => ln(`  ${name}: ${score}`));
+      }
+      if (phase.winner && phase.name !== 'Summit Showdown') ln(`  Phase winner: ${phase.winner}`);
+      if (phase.wheelbarrowHolder) ln(`  Wheelbarrow: ${phase.wheelbarrowHolder} (breaks at lava river)`);
+
+      (phase.events || []).forEach(ev => {
+        if (ev.type === 'sabotage') ln(`  SABOTAGE: ${ev.saboteur} ${ev.success ? 'sabotages' : 'fails to sabotage'} ${ev.target}'s dummy`);
+        if (ev.type === 'stumble') ln(`  ${ev.stumbler} stumbles!${ev.helper ? ` ${ev.helper} helps them up.` : ''}`);
+        if (ev.type === 'shortcut') ln(`  ${ev.player} spots a shortcut — ${ev.success ? 'takes it!' : 'dead end!'}`);
+        if (ev.type === 'taunt') ln(`  ${ev.taunter} taunts ${ev.target}. ${ev.keepsCool ? 'They keep their cool.' : 'They lose their cool!'}`);
+      });
+
+      if (phase.ropeCuts) {
+        phase.ropeCuts.forEach(rc => {
+          const backfire = rc.mismatch ? ' (BACKFIRE — hit own finalist!)' : '';
+          ln(`  Rope cut: ${rc.helper} drops ${rc.trap} on ${rc.actualVictim}${backfire} — ${rc.dodged ? 'DODGED' : `HIT (${rc.damage})`}`);
+        });
+      }
+
+      if (phase.mindGames) {
+        const mg = phase.mindGames;
+        if (mg.noAttempt) {
+          ln(`  No mind games — straight sprint to the rim.`);
+        } else {
+          ln(`  MIND GAMES: ${mg.trailer} attempts ${mg.attackType} on ${mg.leader}`);
+          ln(`  Attack: ${mg.attackRoll} vs Defense: ${mg.defenseRoll}${mg.hasShowmance ? ' (showmance vulnerability!)' : ''}`);
+          ln(`  Result: ${mg.success ? `SUCCESS — ${mg.trailer} FLIPS the race!` : `FAILED — ${mg.leader} stays focused.`}`);
+        }
+      }
+      ln('');
+    });
+
+    ln(`WINNER: ${rd.winner} throws their dummy into the volcano!`);
+    if (rd.feralCameo) ln(`...and ${rd.feralCameo} emerges from the volcano, snatching the prize money!`);
+
+    if (rd.hazardLog?.length) {
+      ln('');
+      ln('HAZARD LOG:');
+      rd.hazardLog.forEach(h => ln(`  ${h.name}: ${h.status}`));
+    }
+  }
+}
+
 // ── FINALE: GRAND CHALLENGE ──
 export function _textGrandChallenge(ep, ln, sec) {
   if (!ep.grandChallenge) return;
@@ -2301,6 +2373,7 @@ export function generateSummaryText(ep) {
 
   // Finale screens
   _textOlympicRelay(ep, ln, sec);
+  _textHawaiianPunch(ep, ln, sec);
   _textGrandChallenge(ep, ln, sec);
   _textFinalCut(ep, ln, sec);
   _textFTCQA(ep, ln, sec);

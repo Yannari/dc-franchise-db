@@ -4377,7 +4377,7 @@ export function rpBuildRILife(ep) {
       <div class="ri-life-body">
         <div class="ri-life-text">${evt.text}</div>
         <div class="ri-life-footer">
-          <span class="ri-pill ri-pill-${badge.cls}" style="font-size:8px;padding:2px 7px">${_riSvgIconSm(badge.icon)} ${badge.text}</span>
+          <span class="ri-pill ri-pill-${badge.cls}">${_riSvgIcon(badge.icon)} ${badge.text}</span>
           ${boostPill}
         </div>
       </div>
@@ -4592,7 +4592,7 @@ export function rpBuildRescueIslandLife(ep) {
       <div class="ri-life-body">
         <div class="ri-life-text">${evt.text}</div>
         <div class="ri-life-footer">
-          <span class="ri-pill ri-pill-${badge.cls}" style="font-size:8px;padding:2px 7px">${_riSvgIconSm(badge.icon)} ${badge.text}</span>
+          <span class="ri-pill ri-pill-${badge.cls}">${_riSvgIcon(badge.icon)} ${badge.text}</span>
           ${boostPill}
         </div>
       </div>

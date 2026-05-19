@@ -3611,8 +3611,8 @@ function _riArenaCSS() {
     }
 
     /* ── Badges / Pills ── */
-    .ri-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:3px;
-      font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+    .ri-pill{display:inline-block;padding:3px 10px;border-radius:3px;
+      font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;line-height:1;white-space:nowrap;}
     .ri-pill-fire{border:1px solid rgba(227,103,43,0.4);color:#e3672b;background:rgba(227,103,43,0.08);}
     .ri-pill-gold{border:1px solid rgba(255,215,0,0.3);color:#ffd700;background:rgba(255,215,0,0.06);}
     .ri-pill-iron{border:1px solid rgba(160,160,170,0.3);color:#a0a0aa;background:rgba(160,160,170,0.06);}
@@ -3633,7 +3633,8 @@ function _riArenaCSS() {
     .ri-ico{width:14px;height:14px;vertical-align:-2px;fill:currentColor;flex-shrink:0;}
     .ri-ico-lg{width:18px;height:18px;}
     .ri-ico-sm{width:10px;height:10px;}
-    .ri-pill .ri-ico{width:10px;height:10px;vertical-align:-1px;}
+    .ri-pill .ri-ico{display:none;}
+    .ri-pill-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;vertical-align:middle;margin-right:4px;opacity:0.7;}
 
     /* ── RI Choice card ── */
     .ri-choice-card{text-align:center;padding:28px 24px;margin:20px auto;max-width:500px;
@@ -3917,7 +3918,7 @@ function _riTrainingPills(name) {
 function _riStreakBadge(name, streakData) {
   const count = streakData?.[name] || gs.riWinStreak?.[name] || 0;
   if (count < 1) return '';
-  return `<span class="ri-pill ri-pill-streak">${_riSvgIconSm('flame')} ${count}W</span>`;
+  return `<span class="ri-pill ri-pill-streak"><span class="ri-pill-dot"></span>${count}W</span>`;
 }
 
 // Host commentary pool
@@ -4306,6 +4307,20 @@ export function rpBuildRILife(ep) {
     if (t === 'ally-arrives') return { text: 'ALLY ARRIVES', cls: 'green', icon: 'shield' };
     if (t === 'trash-talk') return { text: 'TRASH TALK', cls: 'fire', icon: 'flame' };
     if (t === 'intimidation') return { text: 'INTIMIDATION', cls: 'fire', icon: 'sword' };
+    if (t === 'grudge-confrontation') return { text: 'CONFRONTATION', cls: 'danger', icon: 'sword' };
+    if (t === 'cold-war') return { text: 'COLD WAR', cls: 'iron', icon: 'eye' };
+    if (t === 'explosive-fight') return { text: 'BLOW UP', cls: 'danger', icon: 'flame' };
+    if (t === 'bonding-meal') return { text: 'BONDING', cls: 'green', icon: 'shield' };
+    if (t === 'emotional-talk') return { text: 'HEART TO HEART', cls: 'green', icon: 'eye' };
+    if (t === 'bittersweet') return { text: 'BITTERSWEET', cls: 'iron', icon: 'shield' };
+    if (t === 'heartbreak-preview') return { text: 'HEARTBREAK', cls: 'danger', icon: 'eye' };
+    if (t === 'comedy') return { text: 'COMIC RELIEF', cls: 'gold', icon: 'bolt' };
+    if (t === 'midnight-talk') return { text: 'LATE NIGHT', cls: 'iron', icon: 'eye' };
+    if (t === 'resource-conflict') return { text: 'FRICTION', cls: 'fire', icon: 'flame' };
+    if (t === 'alliance-plot') return { text: 'PLOTTING', cls: 'fire', icon: 'brain' };
+    if (t === 'comfort') return { text: 'COMFORT', cls: 'green', icon: 'shield' };
+    if (t === 'mutual-respect') return { text: 'RESPECT', cls: 'iron', icon: 'check' };
+    if (t === 'revenge-talk') return { text: 'REVENGE PACT', cls: 'danger', icon: 'sword' };
     return { text: 'ARENA LIFE', cls: 'fire', icon: 'flame' };
   };
 
@@ -4314,8 +4329,8 @@ export function rpBuildRILife(ep) {
     if (t === 'mental-breakdown') return 'ri-life-card-crack';
     if (t === 'mental-hardened') return 'ri-life-card-iron';
     if (t === 'mental-obsessed') return 'ri-life-card-obsessed';
-    if (['sizing-up','trash-talk','intimidation','enemy-arrives'].includes(t)) return 'ri-life-card-social';
-    if (['ally-arrives','history'].includes(t)) return 'ri-life-card-social';
+    if (['sizing-up','trash-talk','intimidation','enemy-arrives','grudge-confrontation','cold-war','explosive-fight','resource-conflict','revenge-talk'].includes(t)) return 'ri-life-card-social';
+    if (['ally-arrives','history','bonding-meal','emotional-talk','bittersweet','heartbreak-preview','comfort','mutual-respect','midnight-talk','comedy','alliance-plot'].includes(t)) return 'ri-life-card-social';
     return '';
   };
 
@@ -4370,14 +4385,14 @@ export function rpBuildRILife(ep) {
     }
 
     // Social events may have two avatars
-    const isSocial = ['sizing-up','history','enemy-arrives','ally-arrives','trash-talk','intimidation'].includes(evt.type);
+    const isSocial = evt.player && evt.player2;
     html += `<div class="ri-life-card ${cardExtra}">
       <div class="ri-life-avatar">${evt.player ? rpPortrait(evt.player, 'sm') : ''}</div>
-      ${isSocial && evt.player2 ? `<div class="ri-life-avatar" style="margin-left:-8px">${rpPortrait(evt.player2, 'sm')}</div>` : ''}
+      ${isSocial ? `<div class="ri-life-avatar" style="margin-left:-8px">${rpPortrait(evt.player2, 'sm')}</div>` : ''}
       <div class="ri-life-body">
         <div class="ri-life-text">${evt.text}</div>
         <div class="ri-life-footer">
-          <span class="ri-pill ri-pill-${badge.cls}">${_riSvgIcon(badge.icon)} ${badge.text}</span>
+          <span class="ri-pill ri-pill-${badge.cls}"><span class="ri-pill-dot"></span>${badge.text}</span>
           ${boostPill}
         </div>
       </div>
@@ -4592,7 +4607,7 @@ export function rpBuildRescueIslandLife(ep) {
       <div class="ri-life-body">
         <div class="ri-life-text">${evt.text}</div>
         <div class="ri-life-footer">
-          <span class="ri-pill ri-pill-${badge.cls}">${_riSvgIcon(badge.icon)} ${badge.text}</span>
+          <span class="ri-pill ri-pill-${badge.cls}"><span class="ri-pill-dot"></span>${badge.text}</span>
           ${boostPill}
         </div>
       </div>

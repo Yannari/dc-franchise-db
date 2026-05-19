@@ -1,5 +1,5 @@
 // js/rescue-island.js - Rescue Island (RI) lifecycle: duels, life events, reentry
-import { gs, seasonConfig } from './core.js';
+import { gs, players, seasonConfig } from './core.js';
 import { pStats, pronouns, getPlayerState } from './players.js';
 import { getBond, addBond } from './bonds.js';
 import { wRandom } from './alliances.js';
@@ -50,7 +50,7 @@ function _shuffle(arr) {
 // NARRATION — exchange-level text generation
 // ══════════════════════════════════════════════════════════════════════
 
-function _exchangeNarration(exchangeId, winnerName, loserName, margin, isThreeWay) {
+function _exchangeNarration(exchangeId, winnerName, loserName, margin, isThreeWay, bond) {
   const prW = pronouns(winnerName);
   const prL = pronouns(loserName);
   const dominant = margin >= 2.5;
@@ -191,11 +191,46 @@ function _exchangeNarration(exchangeId, winnerName, loserName, margin, isThreeWa
   const pool = narr[exchangeId];
   if (!pool) return `${winnerName} takes the exchange from ${loserName}.`;
 
-  if (dominant) return _pick(pool.winDom);
-  if (margin >= 0.5) return _pick(pool.winClose);
-  // From loser's perspective for flavor variety
-  if (margin >= 1.5) return _pick(pool.loseCollapse);
-  return _pick(pool.loseHard);
+  let base;
+  if (dominant) base = _pick(pool.winDom);
+  else if (margin >= 0.5) base = _pick(pool.winClose);
+  else if (margin >= 1.5) base = _pick(pool.loseCollapse);
+  else base = _pick(pool.loseHard);
+
+  if (bond !== undefined && Math.random() < 0.55) {
+    const prW = pronouns(winnerName);
+    const prL = pronouns(loserName);
+    if (bond <= -3) {
+      base += ' ' + _pick([
+        `${loserName} mouths something unprintable. This is war.`,
+        `You can feel the hatred. Every point is personal.`,
+        `${winnerName} stares ${loserName} down. No words needed.`,
+        `${loserName} slams the ground. ${prL.Sub} want${prL.sub==='they'?'':'s'} this one BAD.`,
+        `There's history here — and none of it is good.`,
+      ]);
+    } else if (bond <= -1) {
+      base += ' ' + _pick([
+        `The tension between them is obvious.`,
+        `${loserName} shoots ${winnerName} a look that could cut glass.`,
+        `Not friends. Not even close. And it shows.`,
+        `${winnerName} can't resist a small smirk. ${loserName} sees it.`,
+      ]);
+    } else if (bond >= 4) {
+      base += ' ' + _pick([
+        `${winnerName} reaches out a hand. ${loserName} takes it. Even here, respect.`,
+        `${loserName} nods — no bitterness. ${prL.Sub} know${prL.sub==='they'?'':'s'} ${winnerName} earned it.`,
+        `Friends on opposite sides. The hardest kind of fight.`,
+        `${winnerName} whispers something to ${loserName} after. ${loserName} almost smiles.`,
+      ]);
+    } else if (bond >= 2) {
+      base += ' ' + _pick([
+        `A respectful nod from ${loserName}. Good game.`,
+        `No hard feelings between them — but no mercy either.`,
+        `${winnerName} checks on ${loserName} after. Old habits.`,
+      ]);
+    }
+  }
+  return base;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -261,7 +296,7 @@ function _runExchanges(duelists, numExchanges) {
 
     // Narration — for 2-way, show winner vs loser. For 3+ way, show winner vs last place.
     const lastPlace = sorted[sorted.length - 1];
-    const narration = _exchangeNarration(ex.id, winner, lastPlace, margin, duelists.length > 2);
+    const narration = _exchangeNarration(ex.id, winner, lastPlace, margin, duelists.length > 2, getBond(winner, lastPlace));
 
     exchanges.push({
       id: ex.id,
@@ -628,27 +663,137 @@ export function generateRILifeEvents(ep) {
     }
   }
 
-  // ── Pre-duel events (2+ residents) ──
+  // ── Social / relationship events (2+ residents) ──
   if (riList.length >= 2) {
-    const preDuelPool = [];
+    const socialPool = [];
     for (let i = 0; i < riList.length; i++) {
       for (let j = i + 1; j < riList.length; j++) {
         const a = riList[i], b = riList[j];
         const prA = pronouns(a), prB = pronouns(b);
         const bond = getBond(a, b);
+        const sA = pStats(a), sB = pStats(b);
+        const archA = players.find(p => p.name === a)?.archetype || '';
+        const archB = players.find(p => p.name === b)?.archetype || '';
         const sameHistory = gs.episodeHistory.some(h => (h.tribesAtStart||[]).some(t => t.members.includes(a) && t.members.includes(b)));
-        if (sameHistory) preDuelPool.push({ type: 'history', text: `${a} and ${b} were on the same tribe. The awkwardness is thick.`, player: a, player2: b });
-        if (bond <= -2) preDuelPool.push({ type: 'enemy-arrives', text: `${a} and ${b} locked eyes. This is personal.`, player: a, player2: b });
-        if (bond >= 3) preDuelPool.push({ type: 'ally-arrives', text: `${a} and ${b} share a look. They know — only one can stay.`, player: a, player2: b });
 
-        // Streak intimidation — if one player has 3+ wins
+        // ── HISTORY & ARRIVAL ──
+        if (sameHistory) socialPool.push(
+          { type: 'history', text: `${a} and ${b} were on the same tribe. The awkwardness is thick.`, player: a, player2: b },
+          { type: 'history', text: `${a} and ${b} keep glancing at each other. Same tribe, different side of the vote. Neither has forgotten.`, player: a, player2: b },
+          { type: 'history', text: `"Funny how things work out," ${a} says to ${b}. ${b} doesn't laugh.`, player: a, player2: b },
+          { type: 'history', text: `${a} and ${b} used to share a shelter. Now they share Redemption Island. The irony isn't lost on either of them.`, player: a, player2: b },
+        );
+
+        // ── ENEMIES (bond <= -2) ──
+        if (bond <= -2) {
+          socialPool.push(
+            { type: 'enemy-arrives', text: `${a} and ${b} locked eyes. This is personal.`, player: a, player2: b },
+            { type: 'grudge-confrontation', text: `${a} finally says what ${prA.sub}'${prA.sub==='they'?'ve':'s'} been holding in. ${b} fires back. The island shakes.`, player: a, player2: b, bondDelta: -0.5 },
+            { type: 'grudge-confrontation', text: `"You know what you did." ${a} blocks ${b}'s path. This has been building for days.`, player: a, player2: b, bondDelta: -0.5 },
+            { type: 'cold-war', text: `${a} and ${b} eat on opposite sides of the shelter. Nobody speaks. The silence is deafening.`, player: a, player2: b },
+            { type: 'cold-war', text: `${a} deliberately takes ${b}'s spot by the fire. ${b} moves without a word. Petty. Effective.`, player: a, player2: b, bondDelta: -0.3 },
+          );
+          if (bond <= -4) socialPool.push(
+            { type: 'explosive-fight', text: `${a} and ${b} finally blow up. Screaming. Pointing. Other residents back away. This was inevitable.`, player: a, player2: b, bondDelta: -1.0 },
+            { type: 'explosive-fight', text: `${b} accuses ${a} of sabotaging ${prB.pos} fire. ${a} accuses ${b} of stealing rice. It devolves from there.`, player: a, player2: b, bondDelta: -1.0 },
+          );
+        }
+
+        // ── FRIENDS (bond >= 3) ──
+        if (bond >= 3) {
+          socialPool.push(
+            { type: 'ally-arrives', text: `${a} and ${b} share a look. They know — only one can stay.`, player: a, player2: b },
+            { type: 'bonding-meal', text: `${a} splits the last coconut with ${b}. "We're still us," ${a} says. Even here.`, player: a, player2: b, bondDelta: 0.5 },
+            { type: 'emotional-talk', text: `${a} and ${b} stay up talking. About home, about the game, about everything. The bond is still there.`, player: a, player2: b, bondDelta: 0.5 },
+            { type: 'bittersweet', text: `${a} helps ${b} practice fire-making. They both know one of them might be using it against the other tomorrow.`, player: a, player2: b },
+          );
+          if (bond >= 5) socialPool.push(
+            { type: 'heartbreak-preview', text: `${a} can't sleep. Tomorrow ${prA.sub} might have to duel ${b}. The person ${prA.sub} trust${prA.sub==='they'?'':'s'} most in this game.`, player: a, player2: b },
+            { type: 'heartbreak-preview', text: `"Promise me something," ${b} says to ${a}. "Whoever wins — no hard feelings." They both know that's a lie.`, player: a, player2: b },
+          );
+        }
+
+        // ── NEUTRAL / MILD BOND — comedy, mundane conflict, bonding ──
+        if (bond > -2 && bond < 3) {
+          socialPool.push(
+            { type: 'comedy', text: `${a} accidentally kicks sand into ${b}'s rice. ${b} stares. ${a} stares back. ${b} starts laughing. Then they both do.`, player: a, player2: b, bondDelta: 0.5 },
+            { type: 'comedy', text: `${a} and ${b} argue about the best way to cook rice. It's the most normal thing that's happened on this island.`, player: a, player2: b, bondDelta: 0.3 },
+            { type: 'comedy', text: `A crab steals ${a}'s sock. ${b} watches the whole chase and does nothing to help. They'll laugh about it later.`, player: a, player2: b, bondDelta: 0.3 },
+            { type: 'midnight-talk', text: `Can't sleep. ${a} and ${b} end up talking at 3 AM. Who they miss. What they'd do differently. The island strips pretense away.`, player: a, player2: b, bondDelta: 0.8 },
+            { type: 'resource-conflict', text: `${a} accuses ${b} of hogging the tarp. ${b} says ${a} snores. It's petty but it's real — the island makes everything bigger.`, player: a, player2: b, bondDelta: -0.3 },
+          );
+        }
+
+        // ── ALLIANCE PLOTTING ──
+        if (sA.strategic >= 6 && sB.strategic >= 6) {
+          socialPool.push(
+            { type: 'alliance-plot', text: `${a} and ${b} whisper by the well. If one of them makes it back... they'd have numbers. A new alliance forms in the ashes.`, player: a, player2: b, bondDelta: 1.0 },
+            { type: 'alliance-plot', text: `"When we get back in," ${a} says, "we go after the same target. Agreed?" ${b} nods. Plans bloom in exile.`, player: a, player2: b, bondDelta: 1.0 },
+          );
+        }
+
+        // ── INTIMIDATION / SIZING UP ──
         const streakA = gs.riWinStreak[a] || 0;
         const streakB = gs.riWinStreak[b] || 0;
         if (streakA >= 3) {
-          preDuelPool.push({ type: 'intimidation', text: `${a} has won ${streakA} duels in a row. ${b} can see it in ${pronouns(a).pos} posture — ${a} expects to win again.`, player: a, player2: b });
+          socialPool.push(
+            { type: 'intimidation', text: `${a} has won ${streakA} duels in a row. ${b} can see it in ${prA.pos} posture — ${a} expects to win again.`, player: a, player2: b },
+            { type: 'intimidation', text: `${b} watches ${a} train. ${streakA} wins. No weakness. No openings. The dread builds.`, player: a, player2: b },
+          );
         }
         if (streakB >= 3) {
-          preDuelPool.push({ type: 'intimidation', text: `${b} has won ${streakB} duels in a row. ${a} can see it in ${pronouns(b).pos} posture — ${b} expects to win again.`, player: b, player2: a });
+          socialPool.push(
+            { type: 'intimidation', text: `${b} has won ${streakB} duels in a row. ${a} can see it in ${prB.pos} posture — ${b} expects to win again.`, player: b, player2: a },
+          );
+        }
+
+        // ── TRASH TALK (bold/villain characters) ──
+        const isVillainA = ['villain','mastermind','schemer'].includes(archA);
+        const isVillainB = ['villain','mastermind','schemer'].includes(archB);
+        if (sA.boldness >= 7 || isVillainA) {
+          socialPool.push(
+            { type: 'trash-talk', text: `${a} tells ${b} exactly how this is going to go. ${b} says nothing. Just stares.`, player: a, player2: b, bondDelta: -0.5 },
+            { type: 'trash-talk', text: `"You know you can't beat me, right?" ${a} says it like ${prA.sub}'${prA.sub==='they'?'re':'s'} commenting on the weather. ${b} grits ${prB.pos} teeth.`, player: a, player2: b, bondDelta: -0.5 },
+          );
+        }
+        if (sB.boldness >= 7 || isVillainB) {
+          socialPool.push(
+            { type: 'trash-talk', text: `${b} leans in close to ${a}. "You're going home." ${a} doesn't blink. But ${prA.sub} heard${prA.sub==='they'?'':'s'} it.`, player: b, player2: a, bondDelta: -0.5 },
+          );
+        }
+
+        // ── EMOTIONAL SUPPORT (nice archetypes) ──
+        const isNiceA = ['hero','loyal-soldier','social-butterfly','showmancer','underdog','goat'].includes(archA);
+        const isNiceB = ['hero','loyal-soldier','social-butterfly','showmancer','underdog','goat'].includes(archB);
+        if (isNiceA && _getMentalState(b) === 'broken') {
+          socialPool.push(
+            { type: 'comfort', text: `${a} sits next to ${b} when ${prB.sub} break${prB.sub==='they'?'':'s'} down. No words. Just presence. Sometimes that's enough.`, player: a, player2: b, bondDelta: 1.5 },
+            { type: 'comfort', text: `${a} brings ${b} water and a freshly cracked coconut. "Eat. You need it." ${b}'s eyes well up.`, player: a, player2: b, bondDelta: 1.5 },
+          );
+        }
+        if (isNiceB && _getMentalState(a) === 'broken') {
+          socialPool.push(
+            { type: 'comfort', text: `${b} won't let ${a} give up. "You didn't come this far to quit." ${a} wipes ${prA.pos} eyes. Maybe not.`, player: b, player2: a, bondDelta: 1.5 },
+          );
+        }
+
+        // ── RESPECT (after close duels / training together) ──
+        const mutualDuels = (gs.riLifeEvents[a] || []).filter(e => (e.type === 'shared-training' || e.type === 'history') && (e.player === b || e.player2 === b));
+        if (mutualDuels.length >= 2 && bond >= 0) {
+          socialPool.push(
+            { type: 'mutual-respect', text: `${a} and ${b} have developed an unspoken respect. Competitors by day, survivors by night.`, player: a, player2: b, bondDelta: 0.5 },
+            { type: 'mutual-respect', text: `${a} compliments ${b}'s fire technique. ${b} returns the favor on ${a}'s puzzle speed. Rivals who recognize each other.`, player: a, player2: b, bondDelta: 0.5 },
+          );
+        }
+
+        // ── REVENGE TALK ──
+        const votersOfA = gs.episodeHistory.flatMap(h => (h.votingLog||[]).filter(v => v.voted === a).map(v => v.voter));
+        const votersOfB = gs.episodeHistory.flatMap(h => (h.votingLog||[]).filter(v => v.voted === b).map(v => v.voter));
+        if (votersOfA.length && votersOfB.length && sA.strategic >= 5 && sB.strategic >= 5) {
+          socialPool.push(
+            { type: 'revenge-talk', text: `${a} and ${b} swap stories of who backstabbed them. Names get repeated. Hit lists get compared.`, player: a, player2: b, bondDelta: 0.5 },
+            { type: 'revenge-talk', text: `"Who voted you out?" ${a} asks. ${b} lists the names. ${a} nods slowly. "Same people." The enemy of my enemy...`, player: a, player2: b, bondDelta: 0.8 },
+          );
         }
       }
     }
@@ -664,30 +809,34 @@ export function generateRILifeEvents(ep) {
       const arrStats = pStats(arrival);
       existingRes.forEach(resident => {
         const prR = pronouns(resident);
-        preDuelPool.push({ type: 'sizing-up', text: `${resident} watches ${arrival} walk onto the beach. ${prR.Sub} know${prR.sub==='they'?'':'s'} what this means.`, player: resident, player2: arrival });
+        socialPool.push(
+          { type: 'sizing-up', text: `${resident} watches ${arrival} walk onto the beach. ${prR.Sub} know${prR.sub==='they'?'':'s'} what this means.`, player: resident, player2: arrival },
+          { type: 'sizing-up', text: `${arrival} drops ${prA.pos} torch and looks around. ${resident} is already watching. Measuring.`, player: arrival, player2: resident },
+        );
       });
-      if (arrStats.boldness >= 7 && existingRes.length > 0) {
-        const target = existingRes[0];
-        preDuelPool.push({ type: 'trash-talk', text: `${arrival} tells ${target} exactly how this is going to go. ${target} says nothing. Just stares.`, player: arrival, player2: target });
-      }
     });
 
-    if (!preDuelPool.length && riList.length >= 2) {
+    if (!socialPool.length && riList.length >= 2) {
       const [a, b] = riList;
-      preDuelPool.push({ type: 'sizing-up', text: `${a} and ${b} size each other up. The duel is coming.`, player: a, player2: b });
+      socialPool.push({ type: 'sizing-up', text: `${a} and ${b} size each other up. The duel is coming.`, player: a, player2: b });
     }
 
-    // Pick 1-2 events
-    if (preDuelPool.length) {
-      const hash = riList.reduce((s, n) => s + [...n].reduce((ss, c) => ss + c.charCodeAt(0), 0), 0) + epNum;
-      const ev1 = preDuelPool[hash % preDuelPool.length];
-      pushEvt({ ep: epNum, text: ev1.text, type: ev1.type, player: ev1.player, player2: ev1.player2 });
+    // Pick 2-4 events (more than before — RI should feel alive)
+    if (socialPool.length) {
+      const _shuffled = _shuffle([...socialPool]);
+      const numEvents = Math.min(_shuffled.length, 2 + (Math.random() < 0.5 ? 1 : 0) + (Math.random() < 0.3 ? 1 : 0));
+      const usedTypes = new Set();
+      let picked = 0;
+      for (const evt of _shuffled) {
+        if (picked >= numEvents) break;
+        const pairKey = [evt.player, evt.player2].sort().join('|');
+        const typeKey = evt.type + '|' + pairKey;
+        if (usedTypes.has(typeKey)) continue;
+        usedTypes.add(typeKey);
 
-      if (preDuelPool.length > 1 && Math.random() < 0.5) {
-        const ev2 = preDuelPool[(hash + 1) % preDuelPool.length];
-        if (ev2.type !== ev1.type || ev2.player !== ev1.player) {
-          pushEvt({ ep: epNum, text: ev2.text, type: ev2.type, player: ev2.player, player2: ev2.player2 });
-        }
+        pushEvt({ ep: epNum, text: evt.text, type: evt.type, player: evt.player, player2: evt.player2 });
+        if (evt.bondDelta) addBond(evt.player, evt.player2, evt.bondDelta);
+        picked++;
       }
     }
   }

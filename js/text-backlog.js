@@ -225,8 +225,17 @@ export function _textColdOpen(ep, ln, sec) {
 // ── RETURNS (RI re-entry, exile duel result) ──
 export function _textReturns(ep, ln, sec) {
   if (ep.isRIReentry && ep.riReentrant) {
-    sec('RETURNS');
-    ln(`${ep.riReentrant} wins the re-entry challenge and rejoins the game.`);
+    sec('THE CHAMPION RETURNS');
+    const _ri = ep.riReentry;
+    if (_ri?.challengeLabel) ln(`Return Challenge: ${_ri.challengeLabel}`);
+    if (_ri?.exchanges?.length) {
+      _ri.exchanges.forEach((ex, i) => {
+        ln(`Exchange ${i + 1} (${ex.name}): ${ex.narration} [${ex.winner} wins, margin ${ex.margin.toFixed(2)}]`);
+      });
+    }
+    if (_ri?.tiebreaker) ln(`TIEBREAKER (${_ri.tiebreaker.stat}): ${_ri.tiebreaker.winner} takes it.`);
+    ln(`${ep.riReentrant} wins the return challenge and rejoins the game.`);
+    if (_ri?.streakCount >= 2) ln(`Win streak: ${_ri.streakCount} — returns as a perceived threat.`);
     if (ep.riReentryLosers?.length) ln(`Permanently eliminated: ${ep.riReentryLosers.join(', ')}`);
   }
   if (ep.exileDuelResult) {
@@ -1447,12 +1456,44 @@ export function _textAmbassadors(ep, ln, sec) {
 
 // ── RI DUEL / RESCUE ISLAND ──
 export function _textRIDuel(ep, ln, sec) {
-  if (ep.riDuel) {
-    sec('REDEMPTION ISLAND DUEL');
-    ln(`Contestants: ${ep.riDuel.winner} vs ${ep.riDuel.loser}`);
-    ln(`Result: ${ep.riDuel.winner} wins — remains on Redemption Island`);
-    ln(`${ep.riDuel.loser} loses — permanently eliminated`);
+  // Life events (training, mental arcs, pre-duel tension)
+  const lifeEvts = (ep.riLifeEvents || []).filter(e =>
+    !['winner-relief','winner-hardened','winner-streak','winner-obsessed',
+      'loser-graceful','loser-bitter','loser-emotional','loser-neutral'].includes(e.type));
+  if (lifeEvts.length) {
+    sec('REDEMPTION ISLAND — LIFE ON THE ISLAND');
+    lifeEvts.forEach(e => ln(`- ${e.text || e.type}`));
   }
+
+  if (ep.riDuel) {
+    const d = ep.riDuel;
+    sec('REDEMPTION ISLAND — THE ARENA');
+    const duelists = d.duelists || [d.winner, d.loser];
+    ln(`Duelists: ${duelists.join(' vs ')}`);
+    if (d.challengeLabel) ln(`Challenge: ${d.challengeLabel}${d.challengeDesc ? ' — ' + d.challengeDesc : ''}`);
+    if (d.streakData) {
+      Object.entries(d.streakData).forEach(([name, count]) => {
+        if (count >= 2) ln(`${name} enters with a ${count}-duel win streak.`);
+      });
+    }
+    if (d.exchanges?.length) {
+      d.exchanges.forEach((ex, i) => {
+        ln(`Exchange ${i + 1} (${ex.name}): ${ex.narration} [${ex.winner} wins, margin ${ex.margin.toFixed(2)}]`);
+      });
+    }
+    if (d.tiebreaker) {
+      ln(`TIEBREAKER (${d.tiebreaker.stat}): ${d.tiebreaker.winner} takes it.`);
+    }
+    ln(`Result: ${d.winner} survives — remains on Redemption Island.`);
+    ln(`${d.loser} is permanently eliminated.`);
+
+    // Post-duel events
+    const postEvts = (ep.riLifeEvents || []).filter(e =>
+      ['winner-relief','winner-hardened','winner-streak','winner-obsessed',
+       'loser-graceful','loser-bitter','loser-emotional','loser-neutral'].includes(e.type));
+    postEvts.forEach(e => ln(`- ${e.text}`));
+  }
+
   if (ep.rescueIslandEvents?.length) {
     sec('RESCUE ISLAND');
     ep.rescueIslandEvents.forEach(e => ln(`- ${e.text || e.type}`));

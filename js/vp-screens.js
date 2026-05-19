@@ -3523,229 +3523,524 @@ export function rpBuildPostElimTwist(ep) {
   return html;
 }
 
+// ── RI Arena Theme CSS (shared across all RI screens) ──
+function _riArenaCSS() {
+  return `<style>
+    .ri-shell{max-width:1100px;margin:0 auto;padding:24px 20px 80px;font-family:'Segoe UI',system-ui,sans-serif;color:#c4a77d;position:relative;overflow:hidden;
+      background:#2a2520;background-image:linear-gradient(180deg,#2a2520 0%,#1e1a16 100%);border-radius:12px;border:1px solid #5a4f44;}
+    .ri-shell::before{content:'';position:absolute;inset:0;pointer-events:none;
+      background:repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(90,79,68,0.08) 40px,rgba(90,79,68,0.08) 41px),
+                 repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(90,79,68,0.06) 40px,rgba(90,79,68,0.06) 41px);z-index:0;}
+    .ri-shell>*{position:relative;z-index:1;}
+    .ri-title{font-family:'Cinzel','Palatino Linotype',serif;font-size:36px;text-align:center;letter-spacing:6px;color:#c4a77d;
+      text-shadow:0 0 20px rgba(227,103,43,0.4),0 2px 4px rgba(0,0,0,0.6);margin-bottom:4px;font-weight:700;}
+    .ri-subtitle{text-align:center;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#8b7355;margin-bottom:20px;}
+    .ri-eyebrow{text-align:center;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8b7355;margin-bottom:12px;}
+    .ri-badge{display:inline-block;padding:3px 10px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+      border:1px solid rgba(196,167,125,0.3);color:#c4a77d;background:rgba(61,53,46,0.6);}
+    .ri-badge-fire{border-color:rgba(227,103,43,0.5);color:#e3672b;background:rgba(227,103,43,0.1);text-shadow:0 0 6px rgba(227,103,43,0.3);}
+    .ri-badge-gold{border-color:rgba(255,215,0,0.4);color:#ffd700;background:rgba(255,215,0,0.08);text-shadow:0 0 6px rgba(255,215,0,0.3);}
+    .ri-badge-danger{border-color:rgba(255,68,68,0.4);color:#ff4444;background:rgba(255,68,68,0.08);}
+    .ri-badge-green{border-color:rgba(63,185,80,0.4);color:#3fb950;background:rgba(63,185,80,0.08);}
+    .ri-badge-iron{border-color:rgba(160,160,170,0.4);color:#a0a0aa;background:rgba(160,160,170,0.08);}
+    .ri-badge-training{display:inline-block;padding:2px 7px;border-radius:3px;font-size:8px;font-weight:700;letter-spacing:1px;
+      border:1px solid rgba(244,166,35,0.3);color:#f4a623;background:rgba(244,166,35,0.08);margin:2px 3px 0 0;}
+    .ri-card{background:#3d352e;border:1px solid #5a4f44;border-radius:6px;padding:14px 16px;margin-bottom:10px;position:relative;overflow:hidden;}
+    .ri-card::before{content:'';position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(135deg,rgba(227,103,43,0.03) 0%,transparent 50%);z-index:0;}
+    .ri-card>*{position:relative;z-index:1;}
+    .ri-card-fire{border-color:rgba(227,103,43,0.4);box-shadow:0 0 12px rgba(227,103,43,0.15),inset 0 0 20px rgba(227,103,43,0.05);}
+    .ri-card-dim{opacity:0.5;border-color:#4a4039;}
+    .ri-card-crack{border-color:rgba(255,68,68,0.3);background:linear-gradient(135deg,#3d352e 0%,rgba(60,40,35,1) 100%);
+      box-shadow:inset 0 0 15px rgba(255,68,68,0.05);}
+    .ri-card-iron{border-color:rgba(160,160,170,0.4);background:linear-gradient(135deg,#3d352e 0%,#3a3a40 100%);}
+    .ri-card-obsessed{border-color:rgba(255,68,68,0.4);box-shadow:0 0 16px rgba(255,68,68,0.12),inset 0 0 20px rgba(255,68,68,0.05);
+      animation:ri-pulse-red 3s ease-in-out infinite;}
+    .ri-card-social{border-style:dashed;border-color:rgba(196,167,125,0.3);background:rgba(61,53,46,0.4);}
+    @keyframes ri-pulse-red{0%,100%{box-shadow:0 0 16px rgba(255,68,68,0.12)}50%{box-shadow:0 0 24px rgba(255,68,68,0.25)}}
+    .ri-vs{font-family:'Cinzel','Palatino Linotype',serif;font-size:32px;color:#e3672b;align-self:center;
+      text-shadow:0 0 16px rgba(227,103,43,0.5),0 0 40px rgba(227,103,43,0.2);font-weight:700;}
+    .ri-combatant{text-align:center;min-width:120px;}
+    .ri-combatant-name{font-family:'Cinzel','Palatino Linotype',serif;font-size:14px;margin-top:8px;color:#c4a77d;}
+    .ri-combatant-arch{font-size:10px;color:#8b7355;margin-top:2px;}
+    .ri-exchange-type{font-family:'Cinzel','Palatino Linotype',serif;font-size:13px;letter-spacing:2px;color:#f4a623;text-transform:uppercase;}
+    .ri-exchange-stats{font-size:9px;color:#8b7355;letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+    .ri-narration{font-size:12px;color:#c4a77d;line-height:1.7;margin-top:8px;}
+    .ri-margin{display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:1px;margin-top:6px;}
+    .ri-margin-dom{color:#e3672b;border:1px solid rgba(227,103,43,0.3);background:rgba(227,103,43,0.08);}
+    .ri-margin-close{color:#f4a623;border:1px solid rgba(244,166,35,0.3);background:rgba(244,166,35,0.08);}
+    .ri-scoreboard{display:flex;justify-content:center;gap:24px;margin:8px 0 4px;padding:8px 0;border-top:1px solid rgba(90,79,68,0.3);}
+    .ri-score-entry{text-align:center;}
+    .ri-score-name{font-size:10px;color:#8b7355;letter-spacing:1px;}
+    .ri-score-val{font-family:'Cinzel','Palatino Linotype',serif;font-size:22px;color:#c4a77d;font-weight:700;}
+    .ri-score-leading{color:#ffd700;text-shadow:0 0 8px rgba(255,215,0,0.4);}
+    .ri-step{opacity:0;max-height:0;overflow:hidden;transition:opacity 0.4s ease,max-height 0.5s ease;margin-bottom:0;}
+    .ri-visible{opacity:1;max-height:2000px;margin-bottom:10px;}
+    .ri-controls{position:fixed;bottom:0;left:0;right:0;z-index:100;display:flex;justify-content:center;align-items:center;gap:12px;
+      padding:10px 20px;background:linear-gradient(0deg,#2a2520 0%,rgba(42,37,32,0.95) 80%,transparent 100%);
+      border-top:1px solid rgba(90,79,68,0.3);}
+    .ri-btn{padding:8px 18px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;
+      font-family:'Cinzel','Palatino Linotype',serif;text-transform:uppercase;transition:opacity 0.2s;}
+    .ri-btn-fire{background:#e3672b;color:#fff;border:1px solid #ff8844;text-shadow:0 1px 2px rgba(0,0,0,0.4);}
+    .ri-btn-fire:hover{background:#ff7733;}
+    .ri-btn-stone{background:rgba(90,79,68,0.4);color:#c4a77d;border:1px solid #5a4f44;}
+    .ri-btn-stone:hover{background:rgba(90,79,68,0.6);}
+    .ri-counter{font-size:11px;color:#8b7355;letter-spacing:1px;font-family:'Cinzel','Palatino Linotype',serif;}
+    .ri-sidebar{position:absolute;top:46px;right:0;width:200px;padding:12px;background:rgba(42,37,32,0.95);border-left:1px solid #5a4f44;
+      border-radius:0 12px 0 0;z-index:10;font-size:10px;color:#8b7355;}
+    .ri-sidebar-title{font-family:'Cinzel','Palatino Linotype',serif;font-size:11px;letter-spacing:2px;color:#c4a77d;
+      text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(90,79,68,0.4);}
+    /* CSS-only icons */
+    .ri-icon{display:inline-block;width:14px;height:14px;position:relative;vertical-align:middle;margin-right:4px;}
+    .ri-icon-flame{width:10px;height:14px;}
+    .ri-icon-flame::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:8px;height:12px;
+      background:radial-gradient(ellipse at center bottom,#e3672b 0%,#f4a623 40%,transparent 70%);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;}
+    .ri-icon-sword{width:14px;height:14px;}
+    .ri-icon-sword::before{content:'';position:absolute;top:1px;left:50%;transform:translateX(-50%) rotate(45deg);width:2px;height:10px;background:#c4a77d;border-radius:1px;}
+    .ri-icon-sword::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:8px;height:2px;background:#c4a77d;border-radius:1px;}
+    .ri-icon-shield{width:12px;height:14px;border:2px solid #c4a77d;border-radius:2px 2px 50% 50%;background:rgba(196,167,125,0.1);}
+    .ri-icon-skull{width:12px;height:12px;border:2px solid #ff4444;border-radius:50%;position:relative;}
+    .ri-icon-skull::after{content:'';position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:6px;height:3px;
+      border-bottom:2px solid #ff4444;border-radius:0 0 3px 3px;}
+    .ri-icon-crown{width:14px;height:10px;}
+    .ri-icon-crown::before{content:'';position:absolute;bottom:0;left:0;right:0;height:5px;background:#ffd700;border-radius:0 0 2px 2px;}
+    .ri-icon-crown::after{content:'';position:absolute;top:0;left:1px;right:1px;height:6px;
+      background:linear-gradient(90deg,transparent 0%,transparent 15%,#ffd700 15%,#ffd700 20%,transparent 20%,transparent 40%,#ffd700 40%,#ffd700 45%,
+      transparent 45%,transparent 55%,#ffd700 55%,#ffd700 60%,transparent 60%,transparent 80%,#ffd700 80%,#ffd700 85%,transparent 85%);}
+    .ri-icon-muscle{width:14px;height:12px;}
+    .ri-icon-muscle::before{content:'';position:absolute;top:2px;left:2px;width:4px;height:8px;background:#f4a623;border-radius:4px 4px 2px 2px;transform:rotate(-15deg);}
+    .ri-icon-muscle::after{content:'';position:absolute;top:2px;right:2px;width:4px;height:8px;background:#f4a623;border-radius:4px 4px 2px 2px;transform:rotate(15deg);}
+    .ri-icon-eye{width:14px;height:10px;border:2px solid #f4a623;border-radius:50%;position:relative;}
+    .ri-icon-eye::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:4px;height:4px;background:#f4a623;border-radius:50%;}
+    .ri-icon-brain{width:12px;height:12px;border:2px solid #e3672b;border-radius:50% 50% 0 0;background:rgba(227,103,43,0.15);position:relative;}
+    .ri-icon-brain::after{content:'';position:absolute;top:3px;left:50%;transform:translateX(-50%);width:6px;height:1px;background:#e3672b;border-radius:1px;}
+    .ri-icon-bolt{width:10px;height:14px;}
+    .ri-icon-bolt::before{content:'';position:absolute;top:0;left:3px;width:6px;height:7px;background:#ffd700;clip-path:polygon(0 0,100% 0,30% 100%);}
+    .ri-icon-bolt::after{content:'';position:absolute;bottom:0;left:1px;width:6px;height:7px;background:#ffd700;clip-path:polygon(70% 0,100% 100%,0 100%);}
+    .ri-streak{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;
+      border:1px solid rgba(227,103,43,0.4);color:#e3672b;background:rgba(227,103,43,0.1);}
+    .ri-mental{display:inline-block;padding:2px 7px;border-radius:3px;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+    .ri-mental-focused{border:1px solid rgba(196,167,125,0.3);color:#c4a77d;background:rgba(196,167,125,0.06);}
+    .ri-mental-broken{border:1px solid rgba(255,68,68,0.3);color:#ff4444;background:rgba(255,68,68,0.06);}
+    .ri-mental-hardened{border:1px solid rgba(160,160,170,0.4);color:#a0a0aa;background:rgba(160,160,170,0.08);}
+    .ri-mental-obsessed{border:1px solid rgba(255,68,68,0.4);color:#ff4444;background:rgba(255,68,68,0.08);animation:ri-pulse-red 3s ease-in-out infinite;}
+    .ri-champion{border:3px solid #ffd700;border-radius:12px;padding:24px 32px;background:rgba(255,215,0,0.04);
+      box-shadow:0 0 40px rgba(255,215,0,0.12),0 0 80px rgba(255,215,0,0.06);text-align:center;}
+    .ri-champion-name{font-family:'Cinzel','Palatino Linotype',serif;font-size:24px;letter-spacing:4px;color:#ffd700;
+      text-shadow:0 0 16px rgba(255,215,0,0.5);margin-top:12px;}
+    .ri-eliminated{text-align:center;opacity:0.5;}
+    .ri-eliminated-name{font-size:11px;color:#8b7355;margin-top:4px;}
+    .ri-torch-snuff{position:relative;display:inline-block;}
+    .ri-torch-snuff::after{content:'';position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:20px;height:20px;
+      background:radial-gradient(circle,rgba(227,103,43,0.6) 0%,rgba(227,103,43,0) 70%);animation:ri-snuff 2s ease-out forwards;}
+    @keyframes ri-snuff{0%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(2) translateY(-20px)}}
+    .ri-verdict{font-family:'Cinzel','Palatino Linotype',serif;font-size:22px;color:#e3672b;text-align:center;
+      text-shadow:0 0 16px rgba(227,103,43,0.4),0 2px 4px rgba(0,0,0,0.5);margin-top:16px;}
+    .ri-life-portrait{position:relative;display:inline-block;}
+    .ri-life-days{position:absolute;bottom:-2px;right:-2px;background:#3d352e;border:1px solid #5a4f44;border-radius:3px;
+      padding:1px 5px;font-size:8px;font-weight:700;color:#c4a77d;letter-spacing:0.5px;}
+    @media(prefers-reduced-motion:reduce){
+      .ri-step{transition:none!important;}
+      .ri-card-obsessed,.ri-mental-obsessed{animation:none!important;}
+      @keyframes ri-snuff{0%,100%{opacity:0}}
+      @keyframes ri-pulse-red{0%,50%,100%{box-shadow:0 0 16px rgba(255,68,68,0.12)}}
+    }
+  </style>`;
+}
+
+// CSS icon helper
+function _riIcon(type) {
+  const map = {
+    flame: 'ri-icon ri-icon-flame',
+    sword: 'ri-icon ri-icon-sword',
+    shield: 'ri-icon ri-icon-shield',
+    skull: 'ri-icon ri-icon-skull',
+    crown: 'ri-icon ri-icon-crown',
+    muscle: 'ri-icon ri-icon-muscle',
+    eye: 'ri-icon ri-icon-eye',
+    brain: 'ri-icon ri-icon-brain',
+    bolt: 'ri-icon ri-icon-bolt',
+  };
+  return `<span class="${map[type] || map.flame}"></span>`;
+}
+
+// Exchange type icon mapping
+function _riExchangeIcon(id) {
+  const map = { grit: 'muscle', precision: 'eye', instinct: 'bolt', willpower: 'shield', cunning: 'brain' };
+  return _riIcon(map[id] || 'sword');
+}
+
+// Mental state badge
+function _riMentalBadge(name) {
+  const state = gs.riMentalState?.[name] || 'focused';
+  const labels = { focused: 'FOCUSED', broken: 'BROKEN', hardened: 'HARDENED', obsessed: 'OBSESSED' };
+  return `<span class="ri-mental ri-mental-${state}">${labels[state] || state.toUpperCase()}</span>`;
+}
+
+// Training pills for a player
+function _riTrainingPills(name) {
+  const training = gs.riTraining?.[name];
+  if (!training) return '';
+  const pills = Object.entries(training).filter(([,v]) => v > 0).map(([stat, val]) =>
+    `<span class="ri-badge-training">${stat} +${val.toFixed(1)}</span>`
+  ).join('');
+  return pills;
+}
+
+// Win streak badge
+function _riStreakBadge(name, streakData) {
+  const count = streakData?.[name] || gs.riWinStreak?.[name] || 0;
+  if (count < 1) return '';
+  return `<span class="ri-streak"><span class="ri-icon ri-icon-flame"></span>${count}W</span>`;
+}
+
+// Reveal helpers for duel screen
+function _riEnsureState(key, total) {
+  if (!_tvState[key]) _tvState[key] = { idx: -1, total };
+  return _tvState[key];
+}
+
+function _riReapplyVisibility(suffix, upToIdx, total) {
+  for (let i = 0; i <= upToIdx; i++) {
+    const el = document.getElementById(`ri-step-${suffix}-${i}`);
+    if (el) el.classList.add('ri-visible');
+  }
+  const counter = document.getElementById(`ri-counter-${suffix}`);
+  if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total}`;
+  if (upToIdx >= total - 1) {
+    const controls = document.getElementById(`ri-controls-${suffix}`);
+    if (controls) { const btns = controls.querySelectorAll('.ri-btn'); btns.forEach(b => b.style.opacity = '0.4'); }
+  }
+}
+
+function _riUpdateDuelSidebar(screenKey) {
+  const sideEl = document.getElementById('ri-sidebar-inner');
+  if (!sideEl) return;
+  const epIdx = window.vpEpNum;
+  const epRecord = gs.episodeHistory?.[epIdx - 1];
+  if (!epRecord?.riDuel) return;
+  const duel = epRecord.riDuel;
+  const allNames = duel.duelists || [duel.winner, duel.loser];
+  const st = _tvState[screenKey];
+  const revealedIdx = st ? st.idx : -1;
+  const exchanges = duel.exchanges || [];
+
+  // Count exchange wins up to revealed idx
+  const wins = {};
+  allNames.forEach(n => { wins[n] = 0; });
+  for (let i = 0; i <= Math.min(revealedIdx, exchanges.length - 1); i++) {
+    if (exchanges[i]?.winner) wins[exchanges[i].winner] = (wins[exchanges[i].winner] || 0) + 1;
+  }
+
+  const maxWins = Math.max(...Object.values(wins), 0);
+
+  let sb = `<div class="ri-sidebar-title">${_riIcon('sword')} SCOREBOARD</div>`;
+  allNames.forEach(n => {
+    const isLeading = wins[n] === maxWins && maxWins > 0;
+    sb += `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(90,79,68,0.2);">
+      <span class="ri-score-name" style="font-size:10px">${n}</span>
+      <span class="ri-score-val" style="font-size:18px;${isLeading ? 'color:#ffd700;text-shadow:0 0 8px rgba(255,215,0,0.4)' : ''}">${wins[n]}</span>
+    </div>`;
+  });
+
+  // Show exchange breakdown
+  if (revealedIdx >= 0) {
+    sb += `<div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(90,79,68,0.3);">`;
+    for (let i = 0; i <= Math.min(revealedIdx, exchanges.length - 1); i++) {
+      const ex = exchanges[i];
+      sb += `<div style="font-size:9px;color:#8b7355;padding:2px 0;">${_riExchangeIcon(ex.id)} ${ex.name}: <span style="color:#c4a77d">${ex.winner}</span></div>`;
+    }
+    sb += `</div>`;
+  }
+
+  sideEl.innerHTML = sb;
+}
+
+export function riDuelRevealNext(screenKey, totalSteps) {
+  const st = _riEnsureState(screenKey, totalSteps);
+  if (st.idx >= st.total - 1) return;
+  st.idx++;
+  const suffix = screenKey;
+  _riReapplyVisibility(suffix, st.idx, st.total);
+  const el = document.getElementById(`ri-step-${suffix}-${st.idx}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  _riUpdateDuelSidebar(screenKey);
+}
+
+export function riDuelRevealAll(screenKey, totalSteps) {
+  const st = _riEnsureState(screenKey, totalSteps);
+  st.idx = st.total - 1;
+  const suffix = screenKey;
+  _riReapplyVisibility(suffix, st.idx, st.total);
+  _riUpdateDuelSidebar(screenKey);
+}
+
 // ── RI Duel Screen ──
 export function rpBuildRIDuel(ep) {
   const duel = ep.riDuel;
   if (!duel) return null;
   const { winner, loser, challengeLabel, challengeDesc, challengeType, isThreeWay, duelists, survivors } = duel;
-  const prW = pronouns(winner);
-  const prL = pronouns(loser);
-
-  // Pre-duel tension events (from riLifeEvents)
-  const preDuelEvts = (ep.riLifeEvents || []).filter(e =>
-    ['sizing-up','history','enemy-arrives','ally-arrives','trash-talk'].includes(e.type));
-  const postDuelEvts = (ep.riLifeEvents || []).filter(e =>
-    ['winner-relief','winner-hardened','loser-graceful','loser-bitter','loser-emotional'].includes(e.type));
-
-  // Suspense narration by challenge type — adapted for 2-way vs 3-way
+  const exchanges = duel.exchanges || [];
+  const streakData = duel.streakData || {};
   const _allNames = duelists || [winner, loser];
-  const _riNarration2 = {
-    'fire-making': [
-      `Both players strike their flint. Sparks fly. Nothing catches.`,
-      `${winner}'s flame flickers to life \u2014 then dies. ${loser} blows gently on a tiny ember.`,
-      `${winner}'s fire grows. The flag burns through. It's over.`,
-    ],
-    'speed-puzzle': [
-      `The pieces scatter across the table. Both players scramble.`,
-      `${loser} jams a piece into place. Wrong fit. ${winner} slides one in smoothly.`,
-      `${winner} slots the final piece. Done.`,
-    ],
-    'endurance-hold': [
-      `Both players lock in. Arms trembling. Neither blinks.`,
-      `Fifteen minutes in. ${loser}'s legs are shaking. ${winner} stares straight ahead.`,
-      `${loser} drops. ${winner} exhales. Still standing.`,
-    ],
-    'precision-toss': [
-      `First ring. Both miss. Second ring. ${winner} lands one.`,
-      `${loser} adjusts ${prL.pos} grip. Close \u2014 but off the post.`,
-      `${winner} lands the final ring. Clean.`,
-    ],
-    'balance-beam': [
-      `Both players step onto the beam. The blocks sway.`,
-      `${loser}'s stack wobbles. ${prL.Sub} steady${prL.sub==='they'?'':'s'} it \u2014 barely.`,
-      `${winner} reaches the end. Blocks intact. ${loser}'s stack falls.`,
-    ],
-    'memory': [
-      `The sequence flashes. Six symbols. Both players study.`,
-      `${loser} hesitates at the fourth symbol. ${winner} moves without pause.`,
-      `${winner} recreates the full sequence. Perfect.`,
-    ],
-  };
-  const _riNarration3 = {
-    'fire-making': [
-      `Three flints strike. Three sets of sparks. The beach is quiet except for the scraping.`,
-      `${winner} gets a flame first. ${loser} is still struggling. The pressure is visible.`,
-      `${winner}'s fire catches the flag. ${loser} never got close.`,
-    ],
-    'speed-puzzle': [
-      `Three puzzle stations. Three players scrambling. The race is on.`,
-      `${winner} finds a rhythm. ${loser} is falling behind \u2014 pieces aren't fitting.`,
-      `${winner} slams the last piece into place. ${loser} stares at an unfinished board.`,
-    ],
-    'endurance-hold': [
-      `Three players locked in. Nobody moves. Nobody speaks.`,
-      `${loser} shifts weight. Tries to recover. It's slipping.`,
-      `${loser} drops. The other two exhale \u2014 but only one of them looked comfortable.`,
-    ],
-    'precision-toss': [
-      `Three players. Three sets of rings. First round \u2014 everyone misses.`,
-      `${winner} lands two in a row. ${loser} can't find the range.`,
-      `${winner} hits the final post. ${loser} walks away from the platform.`,
-    ],
-    'balance-beam': [
-      `Three players step onto the beams. Blocks stacked. The wind picks up.`,
-      `${loser}'s stack lists sideways. ${prL.Sub} grab${prL.sub==='they'?'':'s'} for it \u2014 too late.`,
-      `${winner} crosses clean. ${loser} watches from the sand.`,
-    ],
-    'memory': [
-      `The sequence flashes. Eight symbols this time. Three players study.`,
-      `${winner} moves fast and sure. ${loser} second-guesses the fourth symbol.`,
-      `${winner} finishes first. ${loser}'s board doesn't match.`,
-    ],
-  };
-  const narration = isThreeWay
-    ? (_riNarration3[challengeType] || _riNarration3['fire-making'])
-    : (_riNarration2[challengeType] || _riNarration2['fire-making']);
 
-  const _duelTitle = isThreeWay ? 'THREE-WAY DUEL' : 'REDEMPTION ISLAND DUEL';
+  // Pre/post duel events
+  const preDuelEvts = (ep.riLifeEvents || []).filter(e =>
+    ['sizing-up','history','enemy-arrives','ally-arrives','trash-talk','intimidation'].includes(e.type));
+  const postDuelEvts = (ep.riLifeEvents || []).filter(e =>
+    ['winner-relief','winner-hardened','winner-streak','winner-obsessed','loser-graceful','loser-bitter','loser-emotional','loser-neutral'].includes(e.type));
 
-  let html = `<div class="rp-page tod-arena">
-    <div class="rp-eyebrow">Episode ${ep.num} \u2014 Redemption Island</div>
-    <div style="font-family:var(--font-display);font-size:32px;letter-spacing:2px;text-align:center;margin-bottom:8px">${_duelTitle}</div>`;
+  // Click-to-reveal state
+  const stateKey = `ri-duel-${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const totalSteps = exchanges.length + (duel.tiebreaker ? 1 : 0) + 1; // exchanges + tiebreaker? + result
 
-  // Challenge type badge
+  const _duelTitle = isThreeWay ? 'THREE-WAY DUEL' : 'THE ARENA';
+
+  let html = _riArenaCSS();
+  html += `<div class="ri-shell">`;
+
+  // Sidebar
+  html += `<div class="ri-sidebar"><div id="ri-sidebar-inner">
+    <div class="ri-sidebar-title">${_riIcon('sword')} SCOREBOARD</div>
+    ${_allNames.map(n => `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(90,79,68,0.2);">
+      <span class="ri-score-name">${n}</span>
+      <span class="ri-score-val" style="font-size:18px">0</span>
+    </div>`).join('')}
+  </div></div>`;
+
+  // Eyebrow + Title
+  html += `<div class="ri-eyebrow">Episode ${ep.num} &mdash; Redemption Island</div>
+    <div class="ri-title">${_duelTitle}</div>`;
+
+  // Challenge badge
   if (challengeLabel) {
-    html += `<div style="text-align:center;margin-bottom:20px">
-      <span class="rp-chal-type" style="display:inline-block;background:rgba(227,179,65,0.15);color:#e3b341;padding:4px 14px;border-radius:12px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">${challengeLabel}</span>
-      ${challengeDesc ? `<div style="font-size:12px;color:#8b949e;margin-top:6px">${challengeDesc}</div>` : ''}
+    html += `<div style="text-align:center;margin-bottom:16px">
+      <span class="ri-badge ri-badge-fire">${_riIcon('flame')} ${challengeLabel}</span>
+      ${challengeDesc ? `<div style="font-size:11px;color:#8b7355;margin-top:6px">${challengeDesc}</div>` : ''}
     </div>`;
-  }
-
-  // Face-off layout — 2-way or 3-way
-  if (isThreeWay && _allNames.length >= 3) {
-    html += `<div style="display:flex;justify-content:center;align-items:flex-start;gap:20px;margin-bottom:24px;flex-wrap:wrap">`;
-    _allNames.forEach((name, i) => {
-      const isLoser = name === loser;
-      const isWinner = name === winner;
-      const opacity = isLoser ? 'opacity:0.6;' : '';
-      html += `<div style="text-align:center;${opacity}">
-        ${rpPortrait(name, 'lg')}
-        <div style="font-family:var(--font-display);font-size:13px;margin-top:8px">${name}</div>
-        <div style="font-size:10px;color:#8b949e">${vpArchLabel(name)}</div>
-      </div>`;
-      if (i < _allNames.length - 1) {
-        html += `<div style="font-family:var(--font-display);font-size:24px;color:var(--accent-fire);align-self:center;text-shadow:0 0 8px rgba(218,54,51,0.3)">VS</div>`;
-      }
-    });
-    html += `</div>`;
   } else {
-    html += `<div style="display:flex;justify-content:center;align-items:flex-start;gap:32px;margin-bottom:24px">
-      <div style="text-align:center">
-        ${rpPortrait(winner, 'xl')}
-        <div style="font-family:var(--font-display);font-size:14px;margin-top:8px">${winner}</div>
-        <div style="font-size:10px;color:#8b949e">${vpArchLabel(winner)}</div>
-      </div>
-      <div style="font-family:var(--font-display);font-size:36px;color:var(--accent-fire);align-self:center;text-shadow:0 0 12px rgba(218,54,51,0.4)">VS</div>
-      <div style="text-align:center">
-        ${rpPortrait(loser, 'xl')}
-        <div style="font-family:var(--font-display);font-size:14px;margin-top:8px">${loser}</div>
-        <div style="font-size:10px;color:#8b949e">${vpArchLabel(loser)}</div>
-      </div>
-    </div>`;
+    html += `<div class="ri-subtitle">${_riIcon('sword')} duel to survive</div>`;
   }
 
-  // Pre-duel tension
+  // Combatant face-off
+  html += `<div style="display:flex;justify-content:center;align-items:flex-start;gap:${isThreeWay ? '16' : '28'}px;margin-bottom:20px;flex-wrap:wrap;padding-right:${exchanges.length ? '200' : '0'}px">`;
+  _allNames.forEach((name, i) => {
+    html += `<div class="ri-combatant">
+      ${rpPortrait(name, isThreeWay ? 'lg' : 'xl')}
+      <div class="ri-combatant-name">${name}</div>
+      <div class="ri-combatant-arch">${vpArchLabel(name)}</div>
+      <div style="margin-top:4px">
+        ${_riStreakBadge(name, streakData)}
+        ${_riMentalBadge(name)}
+      </div>
+      ${_riTrainingPills(name) ? `<div style="margin-top:4px">${_riTrainingPills(name)}</div>` : ''}
+    </div>`;
+    if (i < _allNames.length - 1) {
+      html += `<div class="ri-vs">VS</div>`;
+    }
+  });
+  html += `</div>`;
+
+  // Pre-duel tension cards
   if (preDuelEvts.length) {
     preDuelEvts.forEach(evt => {
-      html += `<div class="vp-card" style="border-color:rgba(139,148,158,0.2);margin-bottom:8px">
-        <div style="font-size:12px;color:#cdd9e5;line-height:1.6;font-style:italic">${evt.text}</div>
+      html += `<div class="ri-card ri-card-social" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          ${evt.player ? rpPortrait(evt.player, 'sm') : ''}
+          ${evt.player2 ? rpPortrait(evt.player2, 'sm') : ''}
+          <div style="flex:1">
+            <div style="font-size:11px;color:#c4a77d;line-height:1.6;font-style:italic">${evt.text}</div>
+          </div>
+        </div>
       </div>`;
     });
   }
 
-  // Suspense narration
-  html += `<div style="margin:16px 0;padding:12px 16px;border-left:3px solid var(--accent-fire);background:rgba(218,54,51,0.05);border-radius:0 8px 8px 0">`;
-  narration.forEach((line, i) => {
-    html += `<div style="font-size:12px;color:#cdd9e5;line-height:1.8;${i > 0 ? 'margin-top:8px;' : ''}">${line}</div>`;
-  });
-  html += `</div>`;
+  // Exchange-by-exchange reveal
+  let stepIdx = 0;
+  exchanges.forEach((ex, i) => {
+    const isWinner = (n) => n === ex.winner;
+    const marginLabel = ex.margin >= 2.5 ? 'DOMINANT' : ex.margin >= 1.0 ? 'SOLID' : 'RAZOR THIN';
+    const marginCls = ex.margin >= 2.5 ? 'ri-margin-dom' : 'ri-margin-close';
 
-  // Result badges — survivors stay, loser eliminated
+    // Running score after this exchange
+    const winsAfter = {};
+    _allNames.forEach(n => { winsAfter[n] = 0; });
+    for (let j = 0; j <= i; j++) {
+      if (exchanges[j]?.winner) winsAfter[exchanges[j].winner] = (winsAfter[exchanges[j].winner] || 0) + 1;
+    }
+
+    html += `<div id="ri-step-${stateKey}-${stepIdx}" class="ri-step">
+      <div class="ri-card ${isWinner(ex.winner) ? 'ri-card-fire' : ''}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div>
+            <span style="font-size:9px;color:#8b7355;letter-spacing:1px;margin-right:6px">EXCHANGE ${i + 1}</span>
+            <span class="ri-exchange-type">${_riExchangeIcon(ex.id)} ${ex.name}</span>
+          </div>
+          <span class="ri-badge ${isWinner(ex.winner) ? 'ri-badge-fire' : ''}">${ex.winner} WINS</span>
+        </div>
+        <div class="ri-exchange-stats">${ex.id ? `Primary: ${ex.id === 'grit' ? 'physical' : ex.id === 'precision' ? 'mental' : ex.id === 'instinct' ? 'intuition' : ex.id === 'willpower' ? 'endurance' : 'strategic'} / Secondary: ${ex.id === 'grit' ? 'endurance' : ex.id === 'precision' ? 'temperament' : ex.id === 'instinct' ? 'boldness' : ex.id === 'willpower' ? 'loyalty' : 'social'}` : ''}</div>
+        <div class="ri-narration">${ex.narration}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <span class="ri-margin ${marginCls}">${marginLabel} (${ex.margin.toFixed(2)})</span>
+        </div>
+        <div class="ri-scoreboard">
+          ${_allNames.map(n => {
+            const leading = winsAfter[n] === Math.max(...Object.values(winsAfter)) && winsAfter[n] > 0;
+            return `<div class="ri-score-entry">
+              <div class="ri-score-name">${n}</div>
+              <div class="ri-score-val ${leading ? 'ri-score-leading' : ''}">${winsAfter[n]}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+    stepIdx++;
+  });
+
+  // Tiebreaker (if exists)
+  if (duel.tiebreaker) {
+    const tb = duel.tiebreaker;
+    html += `<div id="ri-step-${stateKey}-${stepIdx}" class="ri-step">
+      <div class="ri-card ri-card-fire" style="border-width:2px;background:linear-gradient(135deg,#3d352e 0%,rgba(227,103,43,0.08) 100%);">
+        <div style="text-align:center;margin-bottom:8px">
+          <span class="ri-badge ri-badge-fire" style="font-size:10px;letter-spacing:2px">${_riIcon('bolt')} SUDDEN DEATH TIEBREAKER</span>
+        </div>
+        <div style="text-align:center;font-size:11px;color:#8b7355;margin-bottom:8px">Stat tested: <span style="color:#f4a623;text-transform:uppercase;letter-spacing:1px">${tb.stat}</span></div>
+        <div style="display:flex;justify-content:center;gap:20px;margin-bottom:8px">
+          ${_allNames.map(n => {
+            const score = tb.scores?.[n];
+            const isWin = n === tb.winner;
+            return `<div style="text-align:center">
+              ${rpPortrait(n, 'sm')}
+              <div style="font-size:10px;color:${isWin ? '#ffd700' : '#8b7355'};margin-top:4px;font-weight:${isWin ? '700' : '400'}">${score != null ? score.toFixed(1) : '?'}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div style="text-align:center;font-size:12px;color:#c4a77d">${tb.winner} takes the tiebreaker.</div>
+      </div>
+    </div>`;
+    stepIdx++;
+  }
+
+  // Result step
   const _survivors = survivors || [winner];
-  html += `<div style="display:flex;justify-content:center;gap:20px;margin:20px 0;flex-wrap:wrap">`;
+  html += `<div id="ri-step-${stateKey}-${stepIdx}" class="ri-step">`;
+
+  // Survivors stay
+  html += `<div style="display:flex;justify-content:center;gap:20px;margin:16px 0;flex-wrap:wrap">`;
   _survivors.forEach(s => {
-    html += `<div class="vp-card" style="border-color:rgba(63,185,80,0.3);background:rgba(63,185,80,0.05);display:flex;flex-direction:column;align-items:center;padding:16px 20px;min-width:120px">
-        ${rpPortrait(s, 'md')}
-        <span class="rp-brant-badge green" style="margin-top:8px;display:inline-block">STAYS</span>
+    html += `<div class="ri-card" style="border-color:rgba(63,185,80,0.3);background:rgba(63,185,80,0.04);display:flex;flex-direction:column;align-items:center;padding:16px 20px;min-width:120px">
+      ${rpPortrait(s, 'md')}
+      <span class="ri-badge ri-badge-green" style="margin-top:8px">${_riIcon('shield')} SURVIVES</span>
     </div>`;
   });
-  html += `<div class="vp-card" style="border-color:rgba(218,54,51,0.3);background:rgba(218,54,51,0.05);display:flex;flex-direction:column;align-items:center;padding:16px 20px;min-width:120px">
-        ${rpPortrait(loser, 'md')}
-        <span class="rp-brant-badge red" style="margin-top:8px;display:inline-block">ELIMINATED</span>
-    </div>`;
+  // Loser eliminated
+  html += `<div class="ri-card" style="border-color:rgba(255,68,68,0.3);background:rgba(255,68,68,0.04);display:flex;flex-direction:column;align-items:center;padding:16px 20px;min-width:120px">
+    ${rpPortrait(loser, 'md')}
+    <span class="ri-badge ri-badge-danger" style="margin-top:8px">${_riIcon('skull')} ELIMINATED</span>
+  </div>`;
   html += `</div>`;
 
-  // Post-duel reaction
+  // Post-duel reactions
   if (postDuelEvts.length) {
     postDuelEvts.forEach(evt => {
-      html += `<div class="vp-card" style="border-color:rgba(139,148,158,0.15);margin-bottom:8px">
-        <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${evt.text}</div>
+      html += `<div class="ri-card ri-card-social" style="margin-bottom:8px">
+        <div style="font-size:11px;color:#c4a77d;line-height:1.6">${evt.text}</div>
       </div>`;
     });
   }
 
-  // Torch snuff for loser
+  // Torch snuff + verdict
   const _stayText = _survivors.length > 1
     ? `${_survivors.join(' and ')} remain on Redemption Island.`
     : `${winner} remains on Redemption Island.`;
-  html += `<div style="text-align:center;margin-top:20px">
-    <div class="torch-snuffed">${rpPortrait(loser, 'xl')}</div>
-    <div style="font-family:var(--font-display);font-size:20px;color:var(--accent-fire);margin-top:12px;text-shadow:0 0 12px var(--accent-fire)">The duel has spoken.</div>
-    <div style="font-size:12px;color:#8b949e;margin-top:6px">${_stayText} ${loser} has been permanently eliminated.</div>
+  html += `<div style="text-align:center;margin-top:16px">
+    <div class="ri-torch-snuff">${rpPortrait(loser, 'xl')}</div>
+    <div class="ri-verdict">The arena has spoken.</div>
+    <div style="font-size:11px;color:#8b7355;margin-top:6px">${_stayText} ${loser} has been permanently eliminated.</div>
   </div>`;
 
-  html += `</div>`;
+  html += `</div>`; // end result step
+
+  // Reveal controls
+  html += `<div id="ri-controls-${stateKey}" class="ri-controls">
+    <button class="ri-btn ri-btn-fire" onclick="riDuelRevealNext('${stateKey}',${totalSteps})">${_riIcon('sword')} Reveal Next</button>
+    <span id="ri-counter-${stateKey}" class="ri-counter">0 / ${totalSteps}</span>
+    <button class="ri-btn ri-btn-stone" onclick="riDuelRevealAll('${stateKey}',${totalSteps})">Reveal All</button>
+  </div>`;
+
+  html += `</div>`; // end ri-shell
   return html;
 }
 
 export function rpBuildRILife(ep) {
   const lifeEvts = ep.riLifeEvents || [];
-  // Only show solo/pre-duel life events (post-duel events are shown on the duel screen)
   const evts = lifeEvts.filter(e =>
-    ['processing','training','reflection','motivation','sizing-up','history','enemy-arrives','ally-arrives','trash-talk'].includes(e.type));
+    ['processing','training','training-injury','shared-training','reflection','motivation',
+     'mental-breakdown','mental-hardened','mental-obsessed',
+     'sizing-up','history','enemy-arrives','ally-arrives','trash-talk','intimidation'].includes(e.type));
   if (!evts.length) return null;
 
-  // Use pre-duel snapshot so portraits don't spoil who wins the duel
   const riPlayers = ep.riPlayersPreDuel || ep.gsSnapshot?.riPlayers || [];
   const epNum = ep.num || 0;
 
   const _badgeForType = t => {
-    if (t === 'processing') return { text: 'Processing', cls: '' };
-    if (t === 'training') return { text: 'Training', cls: 'win' };
-    if (t === 'reflection') return { text: 'Reflection', cls: '' };
-    if (t === 'motivation') return { text: 'Motivation', cls: 'gold' };
-    if (t === 'sizing-up') return { text: 'Sizing Up', cls: 'bad' };
-    if (t === 'history') return { text: 'Shared History', cls: '' };
-    if (t === 'enemy-arrives') return { text: 'Rivals', cls: 'bad' };
-    if (t === 'ally-arrives') return { text: 'Old Friends', cls: 'win' };
-    if (t === 'trash-talk') return { text: 'Trash Talk', cls: 'bad' };
-    return { text: 'RI Life', cls: '' };
+    if (t === 'processing') return { text: 'PROCESSING', cls: '', icon: 'eye' };
+    if (t === 'training') return { text: 'TRAINING', cls: 'fire', icon: 'muscle' };
+    if (t === 'training-injury') return { text: 'INJURY', cls: 'danger', icon: 'skull' };
+    if (t === 'shared-training') return { text: 'SPARRING', cls: 'fire', icon: 'sword' };
+    if (t === 'reflection') return { text: 'REFLECTION', cls: '', icon: 'eye' };
+    if (t === 'motivation') return { text: 'FIRE LIT', cls: 'gold', icon: 'flame' };
+    if (t === 'mental-breakdown') return { text: 'BROKEN', cls: 'danger', icon: 'skull' };
+    if (t === 'mental-hardened') return { text: 'HARDENED', cls: 'iron', icon: 'shield' };
+    if (t === 'mental-obsessed') return { text: 'OBSESSED', cls: 'danger', icon: 'flame' };
+    if (t === 'sizing-up') return { text: 'SIZING UP', cls: 'fire', icon: 'eye' };
+    if (t === 'history') return { text: 'SHARED HISTORY', cls: '', icon: 'shield' };
+    if (t === 'enemy-arrives') return { text: 'RIVAL ARRIVES', cls: 'danger', icon: 'sword' };
+    if (t === 'ally-arrives') return { text: 'ALLY ARRIVES', cls: 'green', icon: 'shield' };
+    if (t === 'trash-talk') return { text: 'TRASH TALK', cls: 'fire', icon: 'flame' };
+    if (t === 'intimidation') return { text: 'INTIMIDATION', cls: 'fire', icon: 'sword' };
+    return { text: 'ARENA LIFE', cls: '', icon: 'flame' };
   };
 
-  let html = `<div class="rp-page tod-deepnight">
-    <div class="rp-eyebrow">Episode ${epNum} \u2014 Redemption Island</div>
-    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:8px;color:#e3b341">REDEMPTION ISLAND</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">Life on the edge of the game</div>`;
+  // Card class by event type
+  const _cardCls = t => {
+    if (t === 'mental-breakdown') return 'ri-card-crack';
+    if (t === 'mental-hardened') return 'ri-card-iron';
+    if (t === 'mental-obsessed') return 'ri-card-obsessed';
+    if (['sizing-up','trash-talk','intimidation','enemy-arrives'].includes(t)) return 'ri-card-social';
+    if (['ally-arrives','history'].includes(t)) return 'ri-card-social';
+    return '';
+  };
 
-  // Show resident portraits
+  let html = _riArenaCSS();
+  html += `<div class="ri-shell">`;
+
+  // Header
+  html += `<div class="ri-eyebrow">Episode ${epNum} &mdash; Redemption Island</div>
+    <div class="ri-title" style="font-size:28px;">THE ARENA</div>
+    <div class="ri-subtitle">${_riIcon('flame')} life on the edge of the game</div>`;
+
+  // Resident portraits
   if (riPlayers.length) {
-    html += `<div style="display:flex;justify-content:center;gap:16px;margin-bottom:20px">`;
+    html += `<div style="display:flex;justify-content:center;gap:20px;margin-bottom:24px;flex-wrap:wrap">`;
     riPlayers.forEach(name => {
       const daysOnRI = (gs.riLifeEvents?.[name] || []).filter(e => e.ep <= epNum).length;
+      const streak = gs.riWinStreak?.[name] || 0;
       html += `<div style="text-align:center">
-        ${rpPortrait(name, 'lg')}
-        <div style="font-family:var(--font-display);font-size:13px;margin-top:6px">${name}</div>
-        <div style="font-size:10px;color:#8b949e">${daysOnRI > 0 ? `Day ${daysOnRI} on RI` : 'Just arrived'}</div>
+        <div class="ri-life-portrait">
+          ${rpPortrait(name, 'lg')}
+          <span class="ri-life-days">${daysOnRI > 0 ? `D${daysOnRI}` : 'NEW'}</span>
+        </div>
+        <div class="ri-combatant-name" style="font-size:13px">${name}</div>
+        <div class="ri-combatant-arch">${vpArchLabel(name)}</div>
+        <div style="margin-top:3px">
+          ${_riMentalBadge(name)}
+          ${streak > 0 ? _riStreakBadge(name, null) : ''}
+        </div>
+        ${_riTrainingPills(name) ? `<div style="margin-top:3px">${_riTrainingPills(name)}</div>` : ''}
       </div>`;
     });
     html += `</div>`;
@@ -3754,81 +4049,132 @@ export function rpBuildRILife(ep) {
   // Life event cards
   evts.forEach(evt => {
     const badge = _badgeForType(evt.type);
-    html += `<div class="vp-card" style="border-color:rgba(227,179,65,0.15);margin-bottom:10px">
+    const cardExtra = _cardCls(evt.type);
+
+    // Training boost pill
+    let boostPill = '';
+    if (evt.type === 'training' && evt.stat && evt.boost) {
+      boostPill = `<span class="ri-badge-training">${evt.stat} +${(typeof evt.boost === 'number' ? evt.boost.toFixed(1) : evt.boost)}</span>`;
+    } else if (evt.type === 'training-injury' && evt.stat) {
+      boostPill = `<span class="ri-badge-training" style="border-color:rgba(255,68,68,0.3);color:#ff4444">${evt.stat} INJURED</span>`;
+    } else if (evt.type === 'shared-training' && evt.stat && evt.boost) {
+      boostPill = `<span class="ri-badge-training">${evt.stat} +${(typeof evt.boost === 'number' ? evt.boost.toFixed(1) : evt.boost)}</span>`;
+    }
+
+    html += `<div class="ri-card ${cardExtra}">
       <div style="display:flex;align-items:flex-start;gap:10px">
         ${evt.player ? rpPortrait(evt.player, 'sm') : ''}
         ${evt.player2 ? rpPortrait(evt.player2, 'sm') : ''}
         <div style="flex:1">
-          <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${evt.text}</div>
-          ${badge.text ? `<span class="rp-brant-badge ${badge.cls}" style="margin-top:6px;font-size:9px">${badge.text}</span>` : ''}
+          <div style="font-size:11px;color:#c4a77d;line-height:1.6">${evt.text}</div>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span class="ri-badge ri-badge-${badge.cls}">${_riIcon(badge.icon)} ${badge.text}</span>
+            ${boostPill}
+          </div>
         </div>
       </div>
     </div>`;
   });
 
-  html += `</div>`;
+  html += `</div>`; // end ri-shell
   return html;
 }
 
-// ── Rescue Island Life VP Screen ──
+// ── RI Return Screen ──
 export function rpBuildRIReturn(ep) {
   const ri = ep.riReentry;
   if (!ri?.winner) return null;
   const winner = ri.winner;
   const losers = ri.losers || [];
   const isRescue = seasonConfig.riFormat === 'rescue';
-  const _wp = pronouns(winner);
+  const exchanges = ri.exchanges || [];
+  const streakData = ri.streakData || {};
+  const streakCount = ri.streakCount || 0;
+  const streakEffects = ri.streakEffects || null;
 
-  let html = `<div class="rp-page tod-golden">
-    <div class="rp-eyebrow">Episode ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:8px;color:#e3b341">
-      ${isRescue ? 'RETURN FROM RESCUE ISLAND' : 'RETURN FROM REDEMPTION ISLAND'}
-    </div>
-    <div style="text-align:center;font-size:14px;color:#8b949e;margin-bottom:24px">
-      ${isRescue ? `${losers.length + 1} players competed. One returns.` : `The last player standing on Redemption Island re-enters the game.`}
-    </div>`;
+  let html = _riArenaCSS();
+  html += `<div class="ri-shell" style="border-color:rgba(255,215,0,0.3);">`;
 
-  // Winner reveal
-  html += `<div style="display:flex;justify-content:center;margin-bottom:24px">
-    <div style="text-align:center;border:3px solid var(--accent-gold);border-radius:16px;padding:20px 32px;background:rgba(227,179,65,0.06);box-shadow:0 0 40px rgba(227,179,65,0.15)">
-      <div style="display:flex;justify-content:center">${rpPortrait(winner, 'xl')}</div>
-      <div style="font-family:var(--font-display);font-size:22px;letter-spacing:2px;color:var(--accent-gold);margin-top:12px">${winner}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">${vpArchLabel(winner)}</div>
-      <span class="rp-brant-badge gold" style="margin-top:8px;display:inline-block">RETURNS TO THE GAME</span>
-    </div>
-  </div>`;
+  // Header
+  html += `<div class="ri-eyebrow">Episode ${ep.num}</div>
+    <div class="ri-title" style="color:#ffd700;text-shadow:0 0 24px rgba(255,215,0,0.4),0 2px 4px rgba(0,0,0,0.6);">THE CHAMPION RETURNS</div>`;
 
-  // Challenge info
-  if (ri.challengeLabel) {
-    html += `<div style="text-align:center;font-size:13px;color:#8b949e;margin-bottom:16px">
-      Return challenge: <strong style="color:#e6edf3">${ri.challengeLabel}</strong>
+  // Streak banner
+  if (streakEffects || streakCount > 0) {
+    const threatLevel = streakCount >= 5 ? 'LEGENDARY' : streakCount >= 3 ? 'HIGH' : 'RISING';
+    html += `<div style="text-align:center;margin-bottom:16px">
+      <div class="ri-card ri-card-fire" style="display:inline-block;padding:8px 24px">
+        <span style="font-size:10px;color:#8b7355;letter-spacing:2px">WIN STREAK:</span>
+        <span style="font-family:'Cinzel','Palatino Linotype',serif;font-size:20px;color:#ffd700;margin:0 8px;text-shadow:0 0 8px rgba(255,215,0,0.4)">${streakCount}</span>
+        <span class="ri-badge ri-badge-${streakCount >= 3 ? 'danger' : 'fire'}">${_riIcon('flame')} THREAT: ${threatLevel}</span>
+      </div>
     </div>`;
   }
 
-  // Winner quote
-  const _quote = vpGenerateQuote(winner, ep, 'returning');
-  html += `<div style="background:rgba(227,179,65,0.05);border:1px solid rgba(227,179,65,0.15);border-radius:10px;padding:14px;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto">
+  html += `<div class="ri-subtitle">${isRescue ? `${losers.length + 1} players competed. One returns.` : 'The last gladiator standing re-enters the game.'}</div>`;
+
+  // Champion reveal
+  html += `<div style="display:flex;justify-content:center;margin-bottom:24px">
+    <div class="ri-champion">
+      <div style="display:flex;justify-content:center">${rpPortrait(winner, 'xl')}</div>
+      <div class="ri-champion-name">${winner}</div>
+      <div style="font-size:10px;color:#8b7355;margin-top:4px">${vpArchLabel(winner)}</div>
+      <div style="margin-top:8px">
+        <span class="ri-badge ri-badge-gold" style="font-size:10px;letter-spacing:2px">${_riIcon('crown')} RETURNS TO THE GAME</span>
+      </div>
+    </div>
+  </div>`;
+
+  // Exchange breakdown (no click-to-reveal, show all)
+  if (exchanges.length) {
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:10px;letter-spacing:2px;color:#8b7355;text-transform:uppercase;margin-bottom:10px;text-align:center">${_riIcon('sword')} Return Challenge Breakdown</div>`;
+    exchanges.forEach((ex, i) => {
+      const marginLabel = ex.margin >= 2.5 ? 'DOMINANT' : ex.margin >= 1.0 ? 'SOLID' : 'RAZOR THIN';
+      const marginCls = ex.margin >= 2.5 ? 'ri-margin-dom' : 'ri-margin-close';
+      html += `<div class="ri-card ${ex.winner === winner ? 'ri-card-fire' : 'ri-card-dim'}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span class="ri-exchange-type" style="font-size:11px">${_riExchangeIcon(ex.id)} ${ex.name}</span>
+          <span class="ri-badge ${ex.winner === winner ? 'ri-badge-gold' : ''}" style="font-size:8px">${ex.winner}</span>
+        </div>
+        <div class="ri-narration" style="font-size:11px">${ex.narration}</div>
+        <span class="ri-margin ${marginCls}" style="margin-top:4px">${marginLabel}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Challenge info
+  if (ri.challengeLabel) {
+    html += `<div style="text-align:center;margin-bottom:16px">
+      <span class="ri-badge ri-badge-fire">${_riIcon('flame')} ${ri.challengeLabel}</span>
+    </div>`;
+  }
+
+  // Confessional
+  html += `<div class="ri-card" style="border-color:rgba(255,215,0,0.2);max-width:500px;margin:0 auto 20px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
       ${rpPortrait(winner, 'sm')}
-      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--accent-gold)">RETURNING CONFESSIONAL</div>
+      <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#ffd700">RETURNING CONFESSIONAL</span>
     </div>
-    <div style="font-size:13px;color:#c9d1d9;line-height:1.7;font-style:italic">"They voted me out. I fought my way back. And now every single person who wrote my name is going to have to look me in the eye."</div>
+    <div style="font-size:12px;color:#c4a77d;line-height:1.7;font-style:italic">"They voted me out. I fought my way back through the arena. And now every single person who wrote my name is going to have to look me in the eye."</div>
   </div>`;
 
   // Losers
   if (losers.length) {
-    html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;text-align:center">
-      ${isRescue ? 'Join the Jury' : 'Eliminated'}
+    html += `<div style="text-align:center;margin-bottom:8px">
+      <span style="font-size:9px;font-weight:700;letter-spacing:2px;color:#8b7355;text-transform:uppercase">${isRescue ? 'Join the Jury' : 'Fallen Gladiators'}</span>
     </div>
-    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:16px">
-      ${losers.map(l => `<div style="text-align:center;opacity:0.6">
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-bottom:16px">
+      ${losers.map(l => `<div class="ri-eliminated">
         ${rpPortrait(l, 'sm elim')}
-        <div style="font-size:10px;color:#8b949e;margin-top:4px">${l}</div>
+        <div class="ri-eliminated-name">${l}</div>
+        <span class="ri-badge ri-badge-danger" style="margin-top:3px;font-size:7px">${_riIcon('skull')} ELIMINATED</span>
       </div>`).join('')}
     </div>`;
   }
 
-  html += `</div>`;
+  html += `</div>`; // end ri-shell
   return html;
 }
 
@@ -3841,32 +4187,59 @@ export function rpBuildRescueIslandLife(ep) {
   const riArrivalEp = ep.gsSnapshot?.riArrivalEp || gs.riArrivalEp || {};
 
   const _badgeForType = t => {
-    if (t === 'processing') return { text: 'PROCESSING', cls: '' };
-    if (t === 'bonding') return { text: 'BONDING', cls: 'win' };
-    if (t === 'rivalry') return { text: 'RIVALRY', cls: 'bad' };
-    if (t === 'game-talk') return { text: 'GAME TALK', cls: 'gold' };
-    if (t === 'struggling') return { text: 'STRUGGLING', cls: 'bad' };
-    if (t === 'thriving') return { text: 'THRIVING', cls: 'win' };
-    if (t === 'quit-temptation') return { text: 'WAVERING', cls: '' };
-    if (t === 'quit') return { text: 'QUIT', cls: 'bad' };
-    return { text: 'RESCUE ISLAND', cls: '' };
+    if (t === 'processing') return { text: 'PROCESSING', cls: '', icon: 'eye' };
+    if (t === 'training-life') return { text: 'TRAINING', cls: 'fire', icon: 'muscle' };
+    if (t === 'training-injury-life') return { text: 'INJURY', cls: 'danger', icon: 'skull' };
+    if (t === 'shared-training-life') return { text: 'SPARRING', cls: 'fire', icon: 'sword' };
+    if (t === 'mental-breakdown-life') return { text: 'BROKEN', cls: 'danger', icon: 'skull' };
+    if (t === 'mental-hardened-life') return { text: 'HARDENED', cls: 'iron', icon: 'shield' };
+    if (t === 'mental-obsessed-life') return { text: 'OBSESSED', cls: 'danger', icon: 'flame' };
+    if (t === 'bonding') return { text: 'BONDING', cls: 'green', icon: 'shield' };
+    if (t === 'rivalry') return { text: 'RIVALRY', cls: 'danger', icon: 'sword' };
+    if (t === 'game-talk') return { text: 'GAME TALK', cls: 'gold', icon: 'brain' };
+    if (t === 'struggling') return { text: 'STRUGGLING', cls: 'danger', icon: 'skull' };
+    if (t === 'thriving') return { text: 'THRIVING', cls: 'green', icon: 'flame' };
+    if (t === 'quit-temptation') return { text: 'WAVERING', cls: 'fire', icon: 'eye' };
+    if (t === 'quit') return { text: 'QUIT', cls: 'danger', icon: 'skull' };
+    return { text: 'ARENA LIFE', cls: '', icon: 'flame' };
   };
 
-  let html = `<div class="rp-page tod-deepnight">
-    <div class="rp-eyebrow">Episode ${epNum} — Rescue Island</div>
-    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:8px;color:#e3b341">RESCUE ISLAND</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">${riPlayers.length} resident${riPlayers.length !== 1 ? 's' : ''} — fighting for one more chance</div>`;
+  const _cardCls = t => {
+    if (t === 'mental-breakdown-life') return 'ri-card-crack';
+    if (t === 'mental-hardened-life') return 'ri-card-iron';
+    if (t === 'mental-obsessed-life') return 'ri-card-obsessed';
+    if (t === 'quit') return 'ri-card-crack';
+    if (['bonding','rivalry','game-talk'].includes(t)) return 'ri-card-social';
+    return '';
+  };
 
-  // Show resident portraits with day counter
+  let html = _riArenaCSS();
+  html += `<div class="ri-shell">`;
+
+  // Header
+  html += `<div class="ri-eyebrow">Episode ${epNum} &mdash; Rescue Island</div>
+    <div class="ri-title" style="font-size:28px;">THE ARENA</div>
+    <div class="ri-subtitle">${_riIcon('flame')} ${riPlayers.length} gladiator${riPlayers.length !== 1 ? 's' : ''} &mdash; fighting for one more chance</div>`;
+
+  // Resident portraits with day counter + mental state
   if (riPlayers.length) {
-    html += `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-bottom:20px">`;
+    html += `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:20px;margin-bottom:24px">`;
     riPlayers.forEach(name => {
       const arrEp = riArrivalEp[name] || epNum;
       const daysOn = Math.max(1, epNum - arrEp + 1);
+      const streak = gs.riWinStreak?.[name] || 0;
       html += `<div style="text-align:center">
-        ${rpPortrait(name, 'lg')}
-        <div style="font-family:var(--font-display);font-size:13px;margin-top:6px">${name}</div>
-        <div style="font-size:10px;color:#8b949e">Day ${daysOn}</div>
+        <div class="ri-life-portrait">
+          ${rpPortrait(name, 'lg')}
+          <span class="ri-life-days">D${daysOn}</span>
+        </div>
+        <div class="ri-combatant-name" style="font-size:13px">${name}</div>
+        <div class="ri-combatant-arch">${vpArchLabel(name)}</div>
+        <div style="margin-top:3px">
+          ${_riMentalBadge(name)}
+          ${streak > 0 ? _riStreakBadge(name, null) : ''}
+        </div>
+        ${_riTrainingPills(name) ? `<div style="margin-top:3px">${_riTrainingPills(name)}</div>` : ''}
       </div>`;
     });
     html += `</div>`;
@@ -3875,21 +4248,33 @@ export function rpBuildRescueIslandLife(ep) {
   // Event cards
   evts.forEach(evt => {
     const badge = _badgeForType(evt.type);
+    const cardExtra = _cardCls(evt.type);
     const isQuit = evt.type === 'quit';
-    const borderColor = isQuit ? 'rgba(239,68,68,0.4)' : 'rgba(227,179,65,0.15)';
-    html += `<div class="vp-card" style="border-color:${borderColor};margin-bottom:10px${isQuit ? ';background:rgba(239,68,68,0.05)' : ''}">
+
+    // Training boost pill
+    let boostPill = '';
+    if ((evt.type === 'training-life' || evt.type === 'shared-training-life') && evt.stat && evt.boost) {
+      boostPill = `<span class="ri-badge-training">${evt.stat} +${(typeof evt.boost === 'number' ? evt.boost.toFixed(1) : evt.boost)}</span>`;
+    } else if (evt.type === 'training-injury-life' && evt.stat) {
+      boostPill = `<span class="ri-badge-training" style="border-color:rgba(255,68,68,0.3);color:#ff4444">${evt.stat} INJURED</span>`;
+    }
+
+    html += `<div class="ri-card ${cardExtra}" ${isQuit ? 'style="border-color:rgba(255,68,68,0.5);background:rgba(255,68,68,0.04)"' : ''}>
       <div style="display:flex;align-items:flex-start;gap:10px">
         ${evt.player ? rpPortrait(evt.player, 'sm') : ''}
         ${evt.player2 ? rpPortrait(evt.player2, 'sm') : ''}
         <div style="flex:1">
-          <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${evt.text}</div>
-          ${badge.text ? `<span class="rp-brant-badge ${badge.cls}" style="margin-top:6px;font-size:9px">${badge.text}</span>` : ''}
+          <div style="font-size:11px;color:#c4a77d;line-height:1.6">${evt.text}</div>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span class="ri-badge ri-badge-${badge.cls}">${_riIcon(badge.icon)} ${badge.text}</span>
+            ${boostPill}
+          </div>
         </div>
       </div>
     </div>`;
   });
 
-  html += `</div>`;
+  html += `</div>`; // end ri-shell
   return html;
 }
 

@@ -1297,6 +1297,22 @@ export function simulateEpisode() {
         if (bond >= 3) addBond(winner, p, 1.0);
         else if (bond <= -2) addBond(winner, p, -0.5);
       });
+      // Win streak return effects: threat perception + confidence boost
+      const _streakCount = _riResult.streakData?.[winner] || 0;
+      if (_streakCount >= 2) {
+        const _threatHeat = 0.3 * _streakCount;
+        gs.activePlayers.forEach(p => {
+          if (p === winner) return;
+          addBond(p, winner, -_threatHeat);
+        });
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[winner] = (gs.popularity[winner] || 0) + _streakCount;
+        ep.riReentry.streakCount = _streakCount;
+        ep.riReentry.streakEffects = { threatHeat: _threatHeat, popBoost: _streakCount };
+      }
+      ep.riReentry.exchanges = _riResult.exchanges;
+      ep.riReentry.tiebreaker = _riResult.tiebreaker;
+      ep.riReentry.streakData = _riResult.streakData;
     }
     // Update tribesAtStart to include the returnee
     ep.tribesAtStart = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));

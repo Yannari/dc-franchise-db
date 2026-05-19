@@ -120,6 +120,7 @@ export function simulateFinale() {
   const cfg = seasonConfig;
   // Fire-making / Koh-Lanta override — ensure F4 even if loaded from save
   if ((cfg.firemaking || cfg.finaleFormat === 'fire-making' || cfg.finaleFormat === 'koh-lanta') && cfg.finaleSize < 4) cfg.finaleSize = 4;
+  if (cfg.finaleFormat === 'hawaiian-punch' && cfg.finaleSize > 3) cfg.finaleSize = 3;
   const epNum = gs.episode + 1;
   const players = [...gs.activePlayers];
   // Save checkpoint before finale so it can be replayed
@@ -504,7 +505,7 @@ export function simulateFinale() {
 
   // If 3 remain and need to cut to F2: finaleSize===2 (always cut), OR winner's-cut format with finaleSize===3 (winner decides who to cut)
   const _needsF3Cut = (cfg.finaleSize === 2) || (cfg.finaleFormat === 'jury-cut' && cfg.finaleSize === 3) || (cfg.finaleFormat === 'fan-vote' && cfg.finaleSize === 3);
-  if (!ep.firemaking && !ep.klChoice && _needsF3Cut && players.length === 3 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'olympic-relay' && cfg.finaleFormat !== 'koh-lanta') {
+  if (!ep.firemaking && !ep.klChoice && _needsF3Cut && players.length === 3 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'olympic-relay' && cfg.finaleFormat !== 'koh-lanta' && cfg.finaleFormat !== 'hawaiian-punch') {
     const others = players.filter(p => p !== ep.immunityWinner);
     let brought, cut;
     // Smart decision: immunity winner projects jury votes for each possible F2 pairing
@@ -545,7 +546,7 @@ export function simulateFinale() {
   }
 
   // If finaleSize === 4: immunity winner cuts 1, top 3 go to FTC
-  if (!ep.firemaking && !ep.klChoice && cfg.finaleSize === 4 && players.length === 4 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'olympic-relay' && cfg.finaleFormat !== 'koh-lanta') {
+  if (!ep.firemaking && !ep.klChoice && cfg.finaleSize === 4 && players.length === 4 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'olympic-relay' && cfg.finaleFormat !== 'koh-lanta' && cfg.finaleFormat !== 'hawaiian-punch') {
     const others4 = players.filter(p => p !== ep.immunityWinner);
     // Smart decision: project jury votes for each possible F3 trio
     const immWinner4 = ep.immunityWinner;
@@ -607,7 +608,7 @@ export function simulateFinale() {
   }
 
   // Bench selection: eliminated players pick sides (final-challenge format ONLY — jury formats don't have benches)
-  const hasFinaleChallenge = cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay';
+  const hasFinaleChallenge = cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay' || cfg.finaleFormat === 'hawaiian-punch';
   if (hasFinaleChallenge && (gs.eliminated.length > 0 || (gs.jury || []).length > 0)) {
     const benchResult = generateBenchAssignments(finalists);
     ep.benchAssignments = benchResult.assignments;
@@ -615,14 +616,539 @@ export function simulateFinale() {
   }
 
   // Assistant selection: final-challenge format only, when setting enabled
-  if ((cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay') && cfg.finaleAssistants && ep.benchAssignments) {
+  if ((cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay' || cfg.finaleFormat === 'hawaiian-punch') && cfg.finaleAssistants && ep.benchAssignments) {
     ep.assistants = selectAssistants(finalists, ep.benchAssignments);
   }
 
   // Generate final challenge reenactment stages (used by VP viewer)
   ep.finalChallengeStages = generateFinalChallengeStages(finalists, ep.immunityWinner);
 
-  if (cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay') {
+  // ── HAWAIIAN PUNCH FINALE: tiebreaker joust → 4-phase volcano race → winner ──
+  if (cfg.finaleFormat === 'hawaiian-punch') {
+    const noise = (range) => (Math.random() * range * 2) - range;
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const getArchetype = (name) => (window.players || []).find(p => p.name === name)?.archetype || 'floater';
+
+    // ── TIEBREAKER (F3 only) ──
+    if (finalists.length >= 3) {
+      const immWinner = ep.immunityWinner;
+      const bottom = finalists.filter(f => f !== immWinner);
+      const [dA, dB] = [bottom[0], bottom[1]];
+      const sA = pStats(dA), sB = pStats(dB);
+      const pA = pronouns(dA), pB = pronouns(dB);
+
+      const numExchanges = 3 + Math.floor(Math.random() * 3); // 3-5
+      const exchanges = [];
+      let winsA = 0, winsB = 0;
+      let consecutiveLossA = 0, consecutiveLossB = 0;
+      let sharkPenaltyA = 0, sharkPenaltyB = 0;
+      const socialEvents = [];
+
+      // Peanut gallery = everyone NOT dueling (immunity winner + bench)
+      const peanutGallery = [immWinner, ...(ep.benchAssignments ? Object.keys(ep.benchAssignments).filter(n => n !== dA && n !== dB) : [])];
+
+      for (let i = 0; i < numExchanges; i++) {
+        // Desperation rally for losing 2+ consecutive
+        const rallyBonusA = consecutiveLossA >= 2 ? sA.boldness * 0.15 : 0;
+        const rallyBonusB = consecutiveLossB >= 2 ? sB.boldness * 0.15 : 0;
+
+        const scoreA = sA.physical * 0.35 + sA.boldness * 0.3 + sA.endurance * 0.2 + sA.intuition * 0.15 + noise(2.5) + rallyBonusA - sharkPenaltyA;
+        const scoreB = sB.physical * 0.35 + sB.boldness * 0.3 + sB.endurance * 0.2 + sB.intuition * 0.15 + noise(2.5) + rallyBonusB - sharkPenaltyB;
+
+        const winnerExch = scoreA >= scoreB ? dA : dB;
+        exchanges.push({ round: i + 1, scoreA, scoreB, winner: winnerExch, rallyA: rallyBonusA > 0, rallyB: rallyBonusB > 0 });
+
+        if (winnerExch === dA) { winsA++; consecutiveLossA = 0; consecutiveLossB++; }
+        else { winsB++; consecutiveLossB = 0; consecutiveLossA++; }
+
+        // Reset shark penalties after they apply
+        sharkPenaltyA = 0;
+        sharkPenaltyB = 0;
+
+        // ── Social events between exchanges (guaranteed at least 1) ──
+        const exchangeEvents = [];
+
+        // Crowd Roar (always attempt)
+        if (peanutGallery.length > 0) {
+          const spectator = pick(peanutGallery);
+          const bondWithA = getBond(spectator, dA);
+          const bondWithB = getBond(spectator, dB);
+          const cheersFor = bondWithA >= bondWithB ? dA : dB;
+          const heckles = cheersFor === dA ? dB : dA;
+          addBond(spectator, cheersFor, 0.5);
+          addBond(spectator, heckles, -0.5);
+          exchangeEvents.push({ type: 'crowd-roar', spectator, cheersFor, heckles, round: i + 1 });
+        }
+
+        // Rival Fire (if duelists have bond <= -1)
+        if (getBond(dA, dB) <= -1 && Math.random() < 0.4) {
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[dA] = (gs.popularity[dA] || 0) + 1;
+          gs.popularity[dB] = (gs.popularity[dB] || 0) + 1;
+          exchangeEvents.push({ type: 'rival-fire', players: [dA, dB], round: i + 1 });
+        }
+
+        // Showmance Tension
+        const showmance = (gs.showmances || []).find(sh => !sh.broken && sh.pair.includes(dA) && sh.pair.includes(dB));
+        if (showmance && Math.random() < 0.35) {
+          addBond(dA, dB, 0.5);
+          exchangeEvents.push({ type: 'showmance-tension', players: [dA, dB], round: i + 1 });
+        }
+
+        // Shark Sighting (boldness check)
+        if (Math.random() < 0.25) {
+          const flincher = sA.boldness + noise(1.5) < sB.boldness + noise(1.5) ? dA : dB;
+          if (flincher === dA) sharkPenaltyA = 0.5;
+          else sharkPenaltyB = 0.5;
+          exchangeEvents.push({ type: 'shark-sighting', flincher, round: i + 1 });
+        }
+
+        // Desperation Plea (trailing fighter)
+        if (i >= 2 && (winsA !== winsB) && Math.random() < 0.3) {
+          const trailer = winsA < winsB ? dA : dB;
+          const trailerS = pStats(trailer);
+          const pleaScore = trailerS.social * 0.5 + noise(2);
+          const success = pleaScore > 4;
+          exchangeEvents.push({ type: 'desperation-plea', player: trailer, success, round: i + 1 });
+        }
+
+        // Immunity Winner Reaction
+        if (Math.random() < 0.3) {
+          const immS = pStats(immWinner);
+          const calculating = immS.strategic >= 6;
+          if (calculating) {
+            if (!gs.popularity) gs.popularity = {};
+            gs.popularity[immWinner] = (gs.popularity[immWinner] || 0) - 1;
+          }
+          exchangeEvents.push({ type: 'imm-winner-reaction', player: immWinner, calculating, round: i + 1 });
+        }
+
+        socialEvents.push(...exchangeEvents);
+      }
+
+      // Resolution
+      let tbWinner, tbLoser;
+      if (winsA !== winsB) {
+        tbWinner = winsA > winsB ? dA : dB;
+        tbLoser = winsA > winsB ? dB : dA;
+      } else {
+        // Sudden death
+        const sdA = sA.physical * 0.35 + sA.boldness * 0.3 + sA.endurance * 0.2 + sA.intuition * 0.15 + noise(4);
+        const sdB = sB.physical * 0.35 + sB.boldness * 0.3 + sB.endurance * 0.2 + sB.intuition * 0.15 + noise(4);
+        tbWinner = sdA >= sdB ? dA : dB;
+        tbLoser = sdA >= sdB ? dB : dA;
+        socialEvents.push({ type: 'sudden-death', winner: tbWinner, loser: tbLoser });
+      }
+
+      // Farewell bonds
+      addBond(tbWinner, tbLoser, -0.5);
+      addBond(immWinner, tbLoser, 0.3);
+
+      // Camp event injection
+      const campKey = gs.mergeName || 'merge';
+      if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+      const campPhase = ep.campEvents[campKey];
+      if (!campPhase.post) campPhase.post = [];
+      campPhase.post.push({
+        type: 'tiebreaker-elimination',
+        text: `${tbLoser} falls in the tiebreaker joust against ${tbWinner}. ${pronouns(tbLoser).Sub} is eliminated just short of the final two.`,
+        players: [tbLoser, tbWinner],
+        badgeText: 'Jousted Out',
+        badgeClass: 'badge-danger',
+      });
+
+      // Handle advantage inheritance before elimination
+      handleAdvantageInheritance(tbLoser, ep);
+
+      // Eliminate loser
+      ep.hpTiebreakerEliminated = tbLoser;
+      gs.eliminated.push(tbLoser);
+      gs.jury.push(tbLoser);
+      gs.activePlayers = gs.activePlayers.filter(p => p !== tbLoser);
+      finalists = finalists.filter(f => f !== tbLoser);
+
+      ep.hpTiebreaker = {
+        immunityWinner: immWinner,
+        duelists: [dA, dB],
+        exchanges,
+        socialEvents,
+        winner: tbWinner,
+        loser: tbLoser,
+        winsA,
+        winsB,
+        suddenDeath: winsA === winsB,
+      };
+    }
+
+    // ── 4-PHASE VOLCANO RACE (always 2 finalists) ──
+    const [rA, rB] = finalists.length >= 2 ? [finalists[0], finalists[1]] : [finalists[0], finalists[0]];
+    const rsA = pStats(rA), rsB = pStats(rB);
+    const archA = getArchetype(rA), archB = getArchetype(rB);
+
+    // Get assistants if available
+    const assistantA = ep.assistants?.[rA] || null;
+    const assistantB = ep.assistants?.[rB] || null;
+    const asstSA = assistantA ? pStats(assistantA) : null;
+    const asstSB = assistantB ? pStats(assistantB) : null;
+
+    // Get bench sizes
+    const benchA = ep.benchAssignments ? Object.entries(ep.benchAssignments).filter(([, f]) => f === rA).length : 0;
+    const benchB = ep.benchAssignments ? Object.entries(ep.benchAssignments).filter(([, f]) => f === rB).length : 0;
+
+    let cumulativeA = 0, cumulativeB = 0;
+    const phaseResults = [];
+    const raceEvents = [];
+
+    // ── PHASE 1: Build the Dummy ──
+    {
+      let p1A = rsA.mental * 0.3 + rsA.strategic * 0.25 + rsA.physical * 0.2 + rsA.intuition * 0.25 + noise(2.5);
+      let p1B = rsB.mental * 0.3 + rsB.strategic * 0.25 + rsB.physical * 0.2 + rsB.intuition * 0.25 + noise(2.5);
+
+      // Assistant boost
+      if (asstSA) p1A += (asstSA.mental + asstSA.physical) * 0.15;
+      if (asstSB) p1B += (asstSB.mental + asstSB.physical) * 0.15;
+
+      const p1Winner = p1A >= p1B ? rA : rB;
+      const p1Events = [];
+
+      // Sabotage (villain archetypes)
+      const villainTypes = ['villain', 'mastermind', 'schemer'];
+      if (villainTypes.includes(archA) && Math.random() < 0.35) {
+        p1B -= 1.0;
+        addBond(rA, rB, -0.5);
+        p1Events.push({ type: 'sabotage', player: rA, target: rB });
+      }
+      if (villainTypes.includes(archB) && Math.random() < 0.35) {
+        p1A -= 1.0;
+        addBond(rB, rA, -0.5);
+        p1Events.push({ type: 'sabotage', player: rB, target: rA });
+      }
+
+      // Assistant chemistry (bond-driven)
+      if (assistantA) {
+        const asstBond = getBond(rA, assistantA);
+        if (asstBond >= 3) {
+          p1A += 0.5;
+          p1Events.push({ type: 'assistant-chemistry', finalist: rA, assistant: assistantA, positive: true });
+        } else if (asstBond <= -2) {
+          p1A -= 0.3;
+          p1Events.push({ type: 'assistant-chemistry', finalist: rA, assistant: assistantA, positive: false });
+        }
+      }
+      if (assistantB) {
+        const asstBond = getBond(rB, assistantB);
+        if (asstBond >= 3) {
+          p1B += 0.5;
+          p1Events.push({ type: 'assistant-chemistry', finalist: rB, assistant: assistantB, positive: true });
+        } else if (asstBond <= -2) {
+          p1B -= 0.3;
+          p1Events.push({ type: 'assistant-chemistry', finalist: rB, assistant: assistantB, positive: false });
+        }
+      }
+
+      // Dummy insult (social check)
+      if (Math.random() < 0.3) {
+        const insulter = rsA.social + noise(1) > rsB.social + noise(1) ? rA : rB;
+        const target = insulter === rA ? rB : rA;
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[insulter] = (gs.popularity[insulter] || 0) + 1;
+        p1Events.push({ type: 'dummy-insult', player: insulter, target });
+      }
+
+      // Bench rallying
+      if (benchA > 1) {
+        const benchBonus = Math.min(0.6, (benchA - 1) * 0.2);
+        p1A += benchBonus;
+        p1Events.push({ type: 'bench-rally', finalist: rA, benchSize: benchA, bonus: benchBonus });
+      }
+      if (benchB > 1) {
+        const benchBonus = Math.min(0.6, (benchB - 1) * 0.2);
+        p1B += benchBonus;
+        p1Events.push({ type: 'bench-rally', finalist: rB, benchSize: benchB, bonus: benchBonus });
+      }
+
+      const carry = p1A >= p1B ? { player: rA, amount: 2.0 } : { player: rB, amount: 2.0 };
+      cumulativeA += p1A + (carry.player === rA ? 2.0 : 0);
+      cumulativeB += p1B + (carry.player === rB ? 2.0 : 0);
+
+      phaseResults.push({ phase: 1, name: 'Build the Dummy', scoreA: p1A, scoreB: p1B, winner: p1Winner, carry, events: p1Events });
+      raceEvents.push(...p1Events);
+    }
+
+    // ── PHASE 2: Uphill Race ──
+    {
+      let p2A = rsA.physical * 0.3 + rsA.endurance * 0.35 + rsA.boldness * 0.15 + rsA.temperament * 0.2 + noise(2.5);
+      let p2B = rsB.physical * 0.3 + rsB.endurance * 0.35 + rsB.boldness * 0.15 + rsB.temperament * 0.2 + noise(2.5);
+
+      // Build winner carry-over already added to cumulative
+      const p2Events = [];
+
+      // Wheelbarrow: higher-bond assistant gets it
+      if (assistantA && assistantB) {
+        const wheelA = assistantA ? getBond(rA, assistantA) : -99;
+        const wheelB = assistantB ? getBond(rB, assistantB) : -99;
+        if (wheelA > wheelB) {
+          p2A += 1.5;
+          p2Events.push({ type: 'wheelbarrow', finalist: rA, assistant: assistantA });
+        } else {
+          p2B += 1.5;
+          p2Events.push({ type: 'wheelbarrow', finalist: rB, assistant: assistantB });
+        }
+      } else if (assistantA) {
+        p2A += 1.5;
+        p2Events.push({ type: 'wheelbarrow', finalist: rA, assistant: assistantA });
+      } else if (assistantB) {
+        p2B += 1.5;
+        p2Events.push({ type: 'wheelbarrow', finalist: rB, assistant: assistantB });
+      }
+
+      // Stumble (endurance < 5)
+      if (rsA.endurance < 5 && Math.random() < 0.4) {
+        p2A -= 1.0;
+        p2Events.push({ type: 'stumble', player: rA });
+      }
+      if (rsB.endurance < 5 && Math.random() < 0.4) {
+        p2B -= 1.0;
+        p2Events.push({ type: 'stumble', player: rB });
+      }
+
+      // Shortcut (intuition check)
+      if (Math.random() < 0.3) {
+        const finder = rsA.intuition + noise(1.5) > rsB.intuition + noise(1.5) ? rA : rB;
+        if (finder === rA) p2A += 1.2;
+        else p2B += 1.2;
+        p2Events.push({ type: 'shortcut', player: finder });
+      }
+
+      // Taunt from above
+      if (Math.random() < 0.25) {
+        const leader = cumulativeA + p2A > cumulativeB + p2B ? rA : rB;
+        const trailer = leader === rA ? rB : rA;
+        addBond(leader, trailer, -0.3);
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[leader] = (gs.popularity[leader] || 0) - 1;
+        p2Events.push({ type: 'taunt-from-above', player: leader, target: trailer });
+      }
+
+      // Bench interference
+      if (Math.random() < 0.2) {
+        const interferenceTarget = Math.random() < 0.5 ? rA : rB;
+        if (interferenceTarget === rA) p2A -= 0.5;
+        else p2B -= 0.5;
+        p2Events.push({ type: 'bench-interference', target: interferenceTarget });
+      }
+
+      const p2Winner = p2A >= p2B ? rA : rB;
+      cumulativeA += p2A;
+      cumulativeB += p2B;
+
+      phaseResults.push({ phase: 2, name: 'Uphill Race', scoreA: p2A, scoreB: p2B, winner: p2Winner, events: p2Events });
+      raceEvents.push(...p2Events);
+    }
+
+    // ── PHASE 3: Lava River Crossing ──
+    {
+      let p3A = rsA.mental * 0.3 + rsA.intuition * 0.3 + rsA.physical * 0.2 + rsA.boldness * 0.2 + noise(2.5);
+      let p3B = rsB.mental * 0.3 + rsB.intuition * 0.3 + rsB.physical * 0.2 + rsB.boldness * 0.2 + noise(2.5);
+
+      const p3Events = [];
+
+      // Rope-cutting: 4-5 ropes with traps
+      const numRopes = 4 + Math.floor(Math.random() * 2);
+      const traps = ['piano', 'cage', 'boulder', 'net', 'anvil'];
+      const ropeResults = [];
+
+      // Each helper gets 1 cut
+      const helpersA = assistantA ? [assistantA] : [];
+      const helpersB = assistantB ? [assistantB] : [];
+
+      for (let r = 0; r < numRopes; r++) {
+        const trap = pick(traps);
+        const targetFinalist = Math.random() < 0.5 ? rA : rB;
+        const helpers = targetFinalist === rA ? helpersA : helpersB;
+        const helper = helpers.length > 0 && r < helpers.length ? helpers[r] : null;
+
+        // 30% mismatch → hits own finalist
+        const mismatch = helper && Math.random() < 0.3;
+        const hitTarget = mismatch ? targetFinalist : (targetFinalist === rA ? rB : rA);
+
+        if (mismatch || !helper) {
+          // Trap hits
+          const penalty = trap === 'cage' ? -3.0 : -2.0;
+
+          // Cage escape with physical >= 6
+          if (trap === 'cage') {
+            const hitS = pStats(hitTarget);
+            if (hitS.physical >= 6 && Math.random() < 0.6) {
+              // Escaped
+              ropeResults.push({ rope: r + 1, trap, hitTarget, mismatch, escaped: true, penalty: 0 });
+              continue;
+            }
+          }
+
+          // Dodge check: intuition + boldness vs difficulty
+          const hitS = pStats(hitTarget);
+          const dodgeScore = hitS.intuition * 0.5 + hitS.boldness * 0.5 + noise(1.5);
+          const difficulty = 4 + Math.random() * 2;
+          if (dodgeScore > difficulty) {
+            ropeResults.push({ rope: r + 1, trap, hitTarget, mismatch, dodged: true, penalty: 0 });
+          } else {
+            if (hitTarget === rA) p3A += penalty;
+            else p3B += penalty;
+            ropeResults.push({ rope: r + 1, trap, hitTarget, mismatch, dodged: false, penalty });
+          }
+        } else {
+          ropeResults.push({ rope: r + 1, trap, hitTarget: null, mismatch: false, helper, safe: true });
+        }
+      }
+      p3Events.push({ type: 'rope-cutting', ropeResults, numRopes });
+
+      // Distraction play: social vs mental, needs bond >= 3 reference
+      if (Math.random() < 0.35) {
+        const attacker = rsA.social + noise(1.5) > rsB.social + noise(1.5) ? rA : rB;
+        const defender = attacker === rA ? rB : rA;
+        const attackerS = pStats(attacker), defenderS = pStats(defender);
+        const bestBondRef = [...(gs.jury || []), ...(gs.eliminated || [])].find(n => getBond(attacker, n) >= 3);
+        if (bestBondRef) {
+          const distractScore = attackerS.social * 0.5 + noise(1.5);
+          const resistScore = defenderS.mental * 0.5 + noise(1.5);
+          if (distractScore > resistScore) {
+            if (defender === rA) p3A -= 1.5;
+            else p3B -= 1.5;
+            p3Events.push({ type: 'distraction-play', attacker, defender, reference: bestBondRef, success: true });
+          } else {
+            p3Events.push({ type: 'distraction-play', attacker, defender, reference: bestBondRef, success: false });
+          }
+        }
+      }
+
+      // Counter-block: assistants duel physically
+      if (assistantA && assistantB && Math.random() < 0.3) {
+        const blockA = asstSA.physical + noise(1.5);
+        const blockB = asstSB.physical + noise(1.5);
+        const blockWinner = blockA >= blockB ? assistantA : assistantB;
+        const blockLoser = blockWinner === assistantA ? assistantB : assistantA;
+        const beneficiary = blockWinner === assistantA ? rA : rB;
+        if (beneficiary === rA) p3A += 0.5;
+        else p3B += 0.5;
+        p3Events.push({ type: 'counter-block', winner: blockWinner, loser: blockLoser, beneficiary });
+      }
+
+      const p3Winner = p3A >= p3B ? rA : rB;
+      cumulativeA += p3A;
+      cumulativeB += p3B;
+
+      phaseResults.push({ phase: 3, name: 'Lava River Crossing', scoreA: p3A, scoreB: p3B, winner: p3Winner, events: p3Events, ropeResults });
+      raceEvents.push(...p3Events);
+    }
+
+    // ── PHASE 4: Summit Showdown ──
+    {
+      const p4Events = [];
+      const leader = cumulativeA >= cumulativeB ? rA : rB;
+      const trailer = leader === rA ? rB : rA;
+      const leaderS = pStats(leader), trailerS = pStats(trailer);
+      const trailerArch = getArchetype(trailer);
+
+      let flipped = false;
+      let mindGameResult = null;
+
+      // Mind games (trailing player only)
+      const hasShowmance = (gs.showmances || []).some(sh => !sh.broken && sh.pair.includes(leader) && sh.pair.includes(trailer));
+      const pairBond = getBond(leader, trailer);
+      const canAttempt = trailerS.social >= 5 || hasShowmance || pairBond >= 4;
+
+      if (canAttempt) {
+        let attackScore, defendScore;
+        let mindGameType;
+
+        // Archetype-driven mind game type
+        if (['social-butterfly', 'showmancer', 'schemer'].includes(trailerArch)) {
+          mindGameType = 'emotional-manipulation';
+          attackScore = trailerS.social * 0.4 + trailerS.strategic * 0.3 + trailerS.boldness * 0.3 + noise(3);
+          defendScore = leaderS.mental * 0.4 + leaderS.intuition * 0.3 + leaderS.temperament * 0.3 + noise(2);
+        } else if (['hothead', 'villain', 'chaos-agent'].includes(trailerArch)) {
+          mindGameType = 'taunt-provocation';
+          attackScore = trailerS.boldness * 0.4 + trailerS.social * 0.3 + trailerS.strategic * 0.3 + noise(3);
+          defendScore = leaderS.temperament * 0.5 + leaderS.mental * 0.3 + leaderS.intuition * 0.2 + noise(2);
+        } else {
+          mindGameType = 'desperate-plea';
+          attackScore = trailerS.social * 0.5 + trailerS.loyalty * 0.3 + trailerS.intuition * 0.2 + noise(3);
+          defendScore = leaderS.strategic * 0.4 + leaderS.boldness * 0.3 + leaderS.temperament * 0.3 + noise(2);
+        }
+
+        // Showmance/bond vulnerability
+        if (hasShowmance || pairBond >= 5) {
+          defendScore -= 2.0;
+        }
+
+        if (attackScore > defendScore) {
+          // FLIP — trailer wins
+          flipped = true;
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[trailer] = (gs.popularity[trailer] || 0) + 3;
+          gs.popularity[leader] = (gs.popularity[leader] || 0) - 2;
+          mindGameResult = { type: mindGameType, attacker: trailer, defender: leader, success: true, flipped: true };
+        } else {
+          // Failed — leader wins
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[trailer] = (gs.popularity[trailer] || 0) - 1;
+          gs.popularity[leader] = (gs.popularity[leader] || 0) + 1;
+          mindGameResult = { type: mindGameType, attacker: trailer, defender: leader, success: false, flipped: false };
+        }
+        p4Events.push({ type: 'mind-game', ...mindGameResult });
+      } else {
+        // No mind game attempt — sprint check added to cumulative
+        const sprintA = rsA.physical * 0.3 + rsA.endurance * 0.3 + rsA.boldness * 0.2 + noise(2);
+        const sprintB = rsB.physical * 0.3 + rsB.endurance * 0.3 + rsB.boldness * 0.2 + noise(2);
+        cumulativeA += sprintA;
+        cumulativeB += sprintB;
+        p4Events.push({ type: 'sprint-finish', scoreA: sprintA, scoreB: sprintB });
+      }
+
+      // Determine winner
+      let raceWinner;
+      if (flipped) {
+        raceWinner = trailer; // mind game flip
+      } else if (mindGameResult && !mindGameResult.success) {
+        raceWinner = leader; // leader held
+      } else {
+        raceWinner = cumulativeA >= cumulativeB ? rA : rB; // sprint/cumulative
+      }
+
+      phaseResults.push({
+        phase: 4, name: 'Summit Showdown', leader, trailer, flipped,
+        mindGameResult, events: p4Events, winner: raceWinner,
+      });
+      raceEvents.push(...p4Events);
+
+      // ── POST-RACE ──
+      const eruption = { triggered: true };
+
+      // Feral cameo (30% if first eliminated exists)
+      let feralCameo = null;
+      const firstEliminated = (gs.eliminated || [])[0] || null;
+      if (firstEliminated && Math.random() < 0.3) {
+        feralCameo = { player: firstEliminated };
+      }
+
+      ep.hpRaceData = {
+        finalists: [rA, rB],
+        assistants: { [rA]: assistantA, [rB]: assistantB },
+        benchSizes: { [rA]: benchA, [rB]: benchB },
+        phaseResults,
+        raceEvents,
+        winner: raceWinner,
+        eruption,
+        feralCameo,
+        cumulativeScores: { [rA]: cumulativeA, [rB]: cumulativeB },
+      };
+
+      ep.winner = raceWinner;
+      ep.juryResult = null;
+      gs.finaleResult = { winner: raceWinner, votes: null, reasoning: null, finalists, hawaiianPunch: true };
+    }
+  } else if (cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay') {
     let chalResult;
     if (cfg.finaleFormat === 'olympic-relay') {
       // Rejected Olympic Relay — TDI-style finale
@@ -782,6 +1308,10 @@ export function simulateFinale() {
     // Fan vote finale
     fanCampaign: ep.fanCampaign || null,
     fanVoteResult: ep.fanVoteResult || null,
+    // Hawaiian Punch finale
+    hpTiebreaker: ep.hpTiebreaker || null,
+    hpTiebreakerEliminated: ep.hpTiebreakerEliminated || null,
+    hpRaceData: ep.hpRaceData || null,
     // All players who entered the finale (before fire-making/koh-lanta eliminations)
     finaleEntrants: ep.finaleEntrants || null,
   });

@@ -3533,11 +3533,11 @@ function _riArenaCSS() {
                    iron scoreboard, war-drum pulse, cindered cards */
 
     /* ── Shell ── */
-    .ri-shell{max-width:1100px;width:100%;position:relative;padding:0 0 100px;overflow:hidden;margin:0 auto;
+    .ri-shell{max-width:760px;width:100%;position:relative;padding:0 28px 100px;overflow:hidden;margin:0 auto;
       font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#d4c4a8;}
 
     /* ── Ambient: ember particles ── */
-    .ri-embers{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+    .ri-embers{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
     .ri-ember{position:absolute;width:3px;height:3px;border-radius:50%;background:#e3672b;
       box-shadow:0 0 6px 2px rgba(227,103,43,0.6),0 0 12px rgba(255,160,60,0.3);
       animation:ri-float-up var(--dur) linear infinite;opacity:0;}

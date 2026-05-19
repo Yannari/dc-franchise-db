@@ -771,6 +771,8 @@ export function saveConfig() {
       if (_fmSel) _fmSel.value = 'traditional';
     }
   }
+  const _riSecGrp = g('ri-second-return-group');
+  if (_riSecGrp) _riSecGrp.style.display = (seasonConfig.ri && seasonConfig.riReturnPoints >= 2) ? 'block' : 'none';
 }
 export function renderConfig() {
   const g = id => document.getElementById(id);
@@ -791,6 +793,8 @@ export function renderConfig() {
   set('cfg-ri-return-points', seasonConfig.riReturnPoints || 1);
   set('cfg-ri-second-return', seasonConfig.riSecondReturnAt || 5);
   if (g('ri-settings')) g('ri-settings').style.display = seasonConfig.ri ? 'flex' : 'none';
+  const _riSecGrp = g('ri-second-return-group');
+  if (_riSecGrp) _riSecGrp.style.display = (seasonConfig.ri && seasonConfig.riReturnPoints >= 2) ? 'block' : 'none';
   chk('cfg-journey',   seasonConfig.journey || false);
   chk('cfg-exile', seasonConfig.exile || false);
   set('cfg-exile-phase', seasonConfig.exilePhase || 'both');

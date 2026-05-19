@@ -1420,7 +1420,36 @@ export function generateFinaleSummaryText(ep) {
     }
 
     return L.join('\n');
-  } else if (cfg.finaleFormat === 'olympic-relay') {
+  }
+
+  // Hawaiian Punch finale
+  if (cfg.finaleFormat === 'hawaiian-punch' && ep.hpRaceData) {
+    if (ep.hpTiebreaker) {
+      sec('JOUSTING TIEBREAKER');
+      const tb = ep.hpTiebreaker;
+      ln(`${tb.duelists[0]} and ${tb.duelists[1]} face off in a jousting fire dance duel over shark-infested water.`);
+      ln(`After ${tb.exchanges.length} exchanges, ${tb.winner} prevails${tb.suddenDeath ? ' in sudden death' : ` (${tb.d1Wins}-${tb.d2Wins})`}.`);
+      ln(`${tb.loser} is knocked into the water and eliminated.`);
+    }
+
+    sec('VOLCANO RACE');
+    const rd = ep.hpRaceData;
+    ln(`${rd.finalists[0]} vs ${rd.finalists[1]} — build a dummy, race it up the volcano, throw it in the crater.`);
+    ln('');
+    rd.phases.forEach(phase => {
+      if (phase.scores) ln(`${phase.name}: ${Object.entries(phase.scores).map(([n,s]) => `${n} ${s}`).join(' | ')}`);
+      if (phase.mindGames && !phase.mindGames.noAttempt) {
+        ln(`  Mind games: ${phase.mindGames.trailer} uses ${phase.mindGames.attackType} — ${phase.mindGames.success ? 'SUCCESS! Race flipped!' : 'Failed.'}`);
+      }
+    });
+    ln('');
+    ln(`${rd.winner} throws their dummy into the volcano and wins the season!`);
+    if (rd.feralCameo) ln(`${rd.feralCameo} steals the prize money from inside the volcano!`);
+
+    return L.join('\n');
+  }
+
+  if (cfg.finaleFormat === 'olympic-relay') {
     // ── Rejected Olympic Relay text backlog ──
     const rd = ep.relayData;
     const winner = ep.finaleChallengeWinner || ep.winner;

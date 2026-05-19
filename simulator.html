@@ -2437,13 +2437,6 @@
                     <label class="form-label">Re-enters at <span class="hint">(players remaining)</span></label>
                     <input type="number" id="cfg-ri-reentry" class="form-input" min="3" max="15" value="12" oninput="saveConfig()">
                   </div>
-                  <div class="form-group">
-                    <label class="form-label">Return Points</label>
-                    <select id="cfg-ri-return-points" class="form-select" onchange="saveConfig()">
-                      <option value="1">1 (at merge)</option>
-                      <option value="2">2 (merge + late game)</option>
-                    </select>
-                  </div>
                   <div class="form-group" id="ri-second-return-group" style="display:none">
                     <label class="form-label">Late-game return at <span class="hint">(players remaining)</span></label>
                     <select id="cfg-ri-second-return" class="form-select" onchange="saveConfig()">
@@ -2453,6 +2446,13 @@
                       <option value="5" selected>5 players left</option>
                       <option value="4">4 players left</option>
                       <option value="3">3 players left</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Return Points</label>
+                    <select id="cfg-ri-return-points" class="form-select" onchange="saveConfig()">
+                      <option value="1">1 (at merge)</option>
+                      <option value="2">2 (merge + late game)</option>
                     </select>
                   </div>
                 </div>

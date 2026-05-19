@@ -662,7 +662,7 @@ export function buildEpisodeMap() {
     if (!merged && active <= mergeAt) merged = true;
 
     const activeWithReturns = active + returns + riReturn;
-    eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: etype });
+    eps.push({ ep, active: activeWithReturns, phase: merged ? 'post-merge' : 'pre-merge', engineType: etype });
     active = Math.max(finale, activeWithReturns - elims);
     ep++;
 

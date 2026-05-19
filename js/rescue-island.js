@@ -355,10 +355,10 @@ export function simulateRIChoice(name) {
   const state = getPlayerState(name);
   const emotional = state?.emotional || 'content';
 
-  // Proportional: fight score determines whether they go to RI
+  // Proportional: fight score determines whether they go to RI (~75-85% for average players)
   const _fightScore = (s.boldness + s.physical + s.strategic + s.loyalty) / 4;
-  const _emotBoost = emotional === 'desperate' ? 2.0 : emotional === 'paranoid' ? 1.0 : 0;
-  const _riChance = Math.min(0.98, (_fightScore + _emotBoost) * 0.10);
+  const _emotBoost = emotional === 'desperate' ? 1.5 : emotional === 'paranoid' ? 0.5 : emotional === 'defeated' ? -1.0 : 0;
+  const _riChance = Math.min(0.98, 0.40 + (_fightScore + _emotBoost) * 0.08);
   return Math.random() < _riChance ? 'REDEMPTION ISLAND' : 'WENT HOME';
 }
 

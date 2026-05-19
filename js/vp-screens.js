@@ -3630,8 +3630,19 @@ function _riArenaCSS() {
     .ri-pill-training{border:1px solid rgba(244,166,35,0.3);color:#f4a623;background:rgba(244,166,35,0.06);font-size:8px;}
 
     /* ── SVG Icons ── */
-    .ri-ico{width:14px;height:14px;vertical-align:middle;fill:currentColor;}
+    .ri-ico{width:14px;height:14px;vertical-align:-2px;fill:currentColor;flex-shrink:0;}
     .ri-ico-lg{width:18px;height:18px;}
+    .ri-ico-sm{width:10px;height:10px;}
+    .ri-pill .ri-ico{width:10px;height:10px;vertical-align:-1px;}
+
+    /* ── RI Choice card ── */
+    .ri-choice-card{text-align:center;padding:28px 24px;margin:20px auto;max-width:500px;
+      background:linear-gradient(135deg,#1a1510 0%,#141210 100%);border:1px solid rgba(90,74,58,0.3);
+      border-radius:8px;position:relative;overflow:hidden;}
+    .ri-choice-accepted{border-color:rgba(227,103,43,0.35);box-shadow:0 0 20px rgba(227,103,43,0.08);}
+    .ri-choice-declined{border-color:rgba(255,68,68,0.25);box-shadow:0 0 20px rgba(255,68,68,0.06);}
+    .ri-choice-quote{font-size:13px;color:rgba(212,196,168,0.65);line-height:1.8;font-style:italic;margin:16px 0;
+      padding:0 16px;border-left:2px solid rgba(227,103,43,0.2);text-align:left;}
 
     /* ── Pre-duel tension card ── */
     .ri-tension{background:rgba(30,24,18,0.6);border:1px dashed rgba(212,196,168,0.12);border-radius:6px;
@@ -3844,7 +3855,7 @@ function _riSvgIconSm(type) {
     warning: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z',
   };
   const p = paths[type] || paths.flame;
-  return `<svg class="ri-ico" viewBox="0 0 24 24" style="width:10px;height:10px"><path d="${p}"/></svg>`;
+  return `<svg class="ri-ico ri-ico-sm" viewBox="0 0 24 24"><path d="${p}"/></svg>`;
 }
 
 // Exchange type icon mapping (returns large SVG)
@@ -3987,6 +3998,71 @@ export function riDuelRevealAll(screenKey, totalSteps) {
   st.idx = st.total - 1;
   const suffix = screenKey;
   _riReapplyVisibility(suffix, st.idx, st.total);
+}
+
+// ── RI Choice Screen — shows whether eliminated player chose RI or went home ──
+export function rpBuildRIChoice(ep) {
+  const name = ep.eliminated;
+  const choice = ep.riChoice;
+  if (!name || !choice) return null;
+  const isRescue = choice === 'RESCUE ISLAND';
+  const accepted = choice === 'REDEMPTION ISLAND' || isRescue;
+  const pn = pronouns(name);
+  const s = pStats(name);
+  const arch = players.find(p => p.name === name)?.archetype || '';
+
+  const acceptQuotes = [
+    `"I didn't come this far to quit. Light the torch — I'm staying."`,
+    `"They think they got rid of me? I'll claw my way back into this game."`,
+    `"I'm not done. Not even close."`,
+    `"Every person who wrote my name is going to regret it."`,
+    `"This isn't over. I've got unfinished business."`,
+    `"You want me out? You'll have to beat me yourself."`,
+  ];
+  const declineQuotes = [
+    `"I've said what I needed to say. I'm at peace with this."`,
+    `"I gave it everything. Time to go home."`,
+    `"There's nothing left for me here. I'm done."`,
+    `"I'd rather leave with my dignity than fight in some gladiator pit."`,
+    `"My torch is snuffed. That's the game."`,
+  ];
+
+  const quote = accepted
+    ? acceptQuotes[Math.floor(Math.random() * acceptQuotes.length)]
+    : declineQuotes[Math.floor(Math.random() * declineQuotes.length)];
+
+  const destLabel = isRescue ? 'RESCUE ISLAND' : accepted ? 'REDEMPTION ISLAND' : 'HOME';
+  const destIcon = accepted ? 'flame' : 'x-mark';
+  const destCls = accepted ? 'fire' : 'danger';
+  const cardCls = accepted ? 'ri-choice-accepted' : 'ri-choice-declined';
+
+  let html = _riArenaCSS();
+  html += `<div class="ri-shell">`;
+  html += _riEmberParticles();
+
+  html += _riArchHeader(
+    `Episode ${ep.num || ''}`,
+    accepted ? 'THE PATH CHOSEN' : 'TORCH SNUFFED',
+    accepted ? `${name} has been voted out — but the game isn't over.` : `${name} walks away from the arena.`,
+    null, null
+  );
+
+  html += `<div class="ri-choice-card ${cardCls}">
+    <div style="display:flex;justify-content:center;margin-bottom:16px">
+      <div class="ri-portrait-ring" ${!accepted ? 'style="background:conic-gradient(from 0deg,rgba(255,68,68,0.4),rgba(120,60,60,0.3),rgba(255,68,68,0.4));animation:none"' : ''}>
+        <div class="ri-portrait-inner">${rpPortrait(name, 'xl')}</div>
+      </div>
+    </div>
+    <div class="ri-combatant-name" style="font-size:20px;letter-spacing:3px">${name}</div>
+    <div class="ri-combatant-arch">${vpArchLabel(name)}</div>
+    <div class="ri-choice-quote">${quote}</div>
+    <div style="margin-top:16px">
+      <span class="ri-pill ri-pill-${destCls}" style="font-size:11px;padding:5px 16px;letter-spacing:2px">${_riSvgIcon(destIcon)} ${destLabel}</span>
+    </div>
+  </div>`;
+
+  html += `</div>`;
+  return html;
 }
 
 // ── RI Duel Screen ──
@@ -11521,6 +11597,7 @@ export function buildVPScreens(epRecord) {
     }
     vpScreens.push({ id:'cs-results', label:'⚖️ The Verdict', html: rpBuildChefshankResults(ep) });
     // RI screens
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _csRiLife = rpBuildRILife(ep);
       if (_csRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _csRiLife });
@@ -11552,6 +11629,7 @@ export function buildVPScreens(epRecord) {
     }
     vpScreens.push({ id:'of-results', label:'⚖️ Final Verdict', html: rpBuildOneFluResults(ep) });
     // RI screens
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _ofRiLife = rpBuildRILife(ep);
       if (_ofRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _ofRiLife });
@@ -11577,6 +11655,7 @@ export function buildVPScreens(epRecord) {
     }
     vpScreens.push({ id:'mod-results', label:'⚖️ Final Verdict', html: rpBuildMastersOfDisastersResults(ep) });
     // RI screens
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _modRiLife = rpBuildRILife(ep);
       if (_modRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _modRiLife });
@@ -11595,6 +11674,7 @@ export function buildVPScreens(epRecord) {
     if (ep.sportsMarathon.halftimeEvents?.length) vpScreens.push({ id:'sm-halftime', label:'Halftime', html: rpBuildSportsMarathonHalftime(ep) });
     vpScreens.push({ id:'sm-sports', label:'Sports', html: rpBuildSportsMarathonSports(ep) });
     vpScreens.push({ id:'sm-results', label:'Results', html: rpBuildSportsMarathonResults(ep) });
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _smRiLife = rpBuildRILife(ep);
       if (_smRiLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _smRiLife });
@@ -11605,6 +11685,7 @@ export function buildVPScreens(epRecord) {
     if (ep.millionBucksBC.breakEvents?.length) vpScreens.push({ id:'bc-break', label:'Break', html: rpBuildMillionBucksBCBreak(ep) });
     if (ep.millionBucksBC.boneBattle) vpScreens.push({ id:'bc-battle', label:'Bone Battle', html: rpBuildMillionBucksBCBattle(ep) });
     vpScreens.push({ id:'bc-results', label:'Results', html: rpBuildMillionBucksBCResults(ep) });
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _bcRiLife = rpBuildRILife(ep);
       if (_bcRiLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _bcRiLife });
@@ -11615,6 +11696,7 @@ export function buildVPScreens(epRecord) {
     if (ep.oceansHeist.heist) vpScreens.push({ id:'oh-heist', label:'The Heist', html: rpBuildOceansHeistHeist(ep) });
     if (ep.oceansHeist.getaway) vpScreens.push({ id:'oh-getaway', label:'Getaway', html: rpBuildOceansHeistGetaway(ep) });
     vpScreens.push({ id:'oh-results', label:'Debrief', html: rpBuildOceansHeistResults(ep) });
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _ohRiLife = rpBuildRILife(ep);
       if (_ohRiLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _ohRiLife });
@@ -11635,6 +11717,7 @@ export function buildVPScreens(epRecord) {
     }
     vpScreens.push({ id:'fmd-results', label:'Debrief', html: rpBuildFullMetalDramaResults(ep) });
     // RI screens
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _fmdRiLife = rpBuildRILife(ep);
       if (_fmdRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _fmdRiLife });
@@ -11883,6 +11966,7 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id: 'tdd-elim', label: 'Eliminated', html: rpBuildTripleDogDareElimination(ep) });
     }
     // RI/Rescue screens
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _tddRiLife = rpBuildRILife(ep);
       if (_tddRiLife) vpScreens.push({ id:'ri-life', label:'RI Life', html: _tddRiLife });
@@ -11919,6 +12003,7 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'slasher-leaderboard', label:'Leaderboard', html: rpBuildSlasherLeaderboard(ep) });
     }
     // RI/Rescue Island screens
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _slRiLife = rpBuildRILife(ep);
       if (_slRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _slRiLife });
@@ -12026,6 +12111,7 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'yeti-elimination', label:'Eliminated', html: rpBuildYetiElimination(ep) });
     }
     // RI/Rescue Island screens
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _ytRiLife = rpBuildRILife(ep);
       if (_ytRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _ytRiLife });
@@ -12068,6 +12154,7 @@ export function buildVPScreens(epRecord) {
     </div>`;
     vpScreens.push({ id:'no-tribal', label:'No Tribal Council', html: _ntHtml });
     // RI/Rescue Island screens
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _ntRiLife = rpBuildRILife(ep);
       if (_ntRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _ntRiLife });
@@ -12125,6 +12212,7 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:`votes-${r.tribe}`,  label:`${r.tribe} Votes`,  html: rpBuildVotes(subEp) });
     });
     // RI/Rescue screens after all multi-tribal votes
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if (ep.riLifeEvents?.length || ep.riDuel) {
       const _mtRiLife = rpBuildRILife(ep);
       if (_mtRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _mtRiLife });
@@ -12163,6 +12251,12 @@ export function buildVPScreens(epRecord) {
       const _vp2Html = rpBuildVotingPlans2(ep);
       if (_vp2Html) vpScreens.push({ id:'voting-plans-2', label:'Voting Plans 2', html: _vp2Html });
       vpScreens.push({ id:'votes-2', label:'Vote 2', html: rpBuildVotes2(ep) });
+    }
+
+    // ── RI Choice (shows whether eliminated player chose RI or went home) ──
+    if (ep.riChoice) {
+      const _riChoiceHtml = rpBuildRIChoice(ep);
+      if (_riChoiceHtml) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _riChoiceHtml });
     }
 
     // ── RI Life (after ALL vote reveals) — Redemption format ──
@@ -12329,7 +12423,8 @@ export function buildVPScreens(epRecord) {
     const _postElimHtml = rpBuildPostElimTwist(ep);
     if (_postElimHtml) vpScreens.push({ id:'post-twist', label:'Post-Vote Twist', html: _postElimHtml });
 
-    // RI Life + Duel (for non-tribal episodes OR jury elimination)
+    // RI Choice + Life + Duel (for non-tribal episodes OR jury elimination)
+    if ((!hasTribal || _isJuryElim) && ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
     if ((!hasTribal || _isJuryElim) && (ep.riLifeEvents?.length || ep.riDuel)) {
       const _riLife2 = rpBuildRILife(ep);
       if (_riLife2) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _riLife2 });

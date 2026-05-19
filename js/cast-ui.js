@@ -673,12 +673,16 @@ export function onFinaleFormatChange() {
   const slider = document.getElementById('cfg-finale');
   const display = document.getElementById('finale-display');
   const needsF4 = format === 'fire-making' || format === 'koh-lanta';
+  const capsF3 = format === 'hawaiian-punch';
   if (needsF4) {
-    if (slider) { slider.value = 4; slider.disabled = true; slider.style.opacity = '0.4'; }
+    if (slider) { slider.max = 4; slider.value = 4; slider.disabled = true; slider.style.opacity = '0.4'; }
     const label = format === 'koh-lanta' ? 'koh-lanta' : 'fire-making';
     if (display) display.textContent = `4 (locked — ${label})`;
+  } else if (capsF3) {
+    if (slider) { slider.max = 3; if (parseInt(slider.value) > 3) slider.value = 3; slider.disabled = false; slider.style.opacity = '1'; }
+    if (display) display.textContent = `${slider?.value || '3'} (max 3 — hawaiian-punch)`;
   } else {
-    if (slider) { slider.disabled = false; slider.style.opacity = '1'; }
+    if (slider) { slider.max = 4; slider.disabled = false; slider.style.opacity = '1'; }
     if (display) display.textContent = slider?.value || '3';
   }
   saveConfig();
@@ -794,16 +798,20 @@ export function renderConfig() {
   if (_exilePhaseRow) _exilePhaseRow.style.display = seasonConfig.exile ? '' : 'none';
   chk('cfg-sid',       seasonConfig.shotInDark || false);
   set('cfg-black-vote', seasonConfig.blackVote || 'off');
-  // Apply finaleFormat lock on render (fire-making and koh-lanta force F4)
+  // Apply finaleFormat lock on render (fire-making and koh-lanta force F4; hawaiian-punch caps at F3)
   const _fmFormat = seasonConfig.finaleFormat;
   const _needsF4 = _fmFormat === 'fire-making' || _fmFormat === 'koh-lanta';
+  const _capsF3 = _fmFormat === 'hawaiian-punch';
   const _fmSlider = g('cfg-finale');
   const _fmDisplay = document.getElementById('finale-display');
   if (_needsF4) {
-    if (_fmSlider) { _fmSlider.value = 4; _fmSlider.disabled = true; _fmSlider.style.opacity = '0.4'; }
+    if (_fmSlider) { _fmSlider.max = 4; _fmSlider.value = 4; _fmSlider.disabled = true; _fmSlider.style.opacity = '0.4'; }
     if (_fmDisplay) _fmDisplay.textContent = `4 (locked — ${_fmFormat})`;
+  } else if (_capsF3) {
+    if (_fmSlider) { _fmSlider.max = 3; if (parseInt(_fmSlider.value) > 3) _fmSlider.value = 3; _fmSlider.disabled = false; _fmSlider.style.opacity = '1'; }
+    if (_fmDisplay) _fmDisplay.textContent = `${_fmSlider?.value || '3'} (max 3 — hawaiian-punch)`;
   } else {
-    if (_fmSlider) { _fmSlider.disabled = false; _fmSlider.style.opacity = '1'; }
+    if (_fmSlider) { _fmSlider.max = 4; _fmSlider.disabled = false; _fmSlider.style.opacity = '1'; }
   }
   set('cfg-tiebreaker-mode', seasonConfig.tiebreakerMode || 'survivor');
   chk('cfg-qem',        seasonConfig.qem || false);

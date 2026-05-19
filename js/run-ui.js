@@ -796,15 +796,9 @@ export function updateSelectedCount() {
 }
 
 export function setTwistFilter(filter) {
+  if (filter === 'challenge') filter = 'all';
   currentTwistFilter = filter;
   document.querySelectorAll('.fd-filter-btn[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
-  // Show/hide challenge series sub-filter row
-  const subRow = document.getElementById('fd-chal-subfilters');
-  if (subRow) subRow.style.display = filter === 'challenge' ? 'flex' : 'none';
-  if (filter !== 'challenge') {
-    currentChalSeries = 'all';
-    document.querySelectorAll('.fd-filter-btn[data-chal-series]').forEach(b => b.classList.toggle('active', b.dataset.chalSeries === 'all'));
-  }
   renderTwistCatalog();
 }
 
@@ -818,34 +812,19 @@ export function renderTwistCatalog() {
   const container = document.getElementById('fd-catalog');
   if (!container) return;
   const search = (document.getElementById('fd-search')?.value || '').toLowerCase();
-  const cats   = ['team','immunity','challenge','elim','returns','advantages','social'];
+  const nonChallenge = TWIST_CATALOG.filter(t => t.category !== 'challenge');
+  const cats   = ['team','immunity','elim','returns','advantages','social'];
 
   // Update category counts
   cats.forEach(cat => {
     const el = document.getElementById('fd-count-' + cat);
-    if (el) el.textContent = TWIST_CATALOG.filter(t => t.category === cat).length;
+    if (el) el.textContent = nonChallenge.filter(t => t.category === cat).length;
   });
   const allEl = document.getElementById('fd-count-all');
-  if (allEl) allEl.textContent = TWIST_CATALOG.length;
+  if (allEl) allEl.textContent = nonChallenge.length;
 
-  // Update challenge series sub-filter counts
-  const chalSeries = ['island','action','world-tour','revenge'];
-  chalSeries.forEach(s => {
-    const el = document.getElementById('fd-chal-count-' + s);
-    if (el) el.textContent = TWIST_CATALOG.filter(t => t.category === 'challenge' && t.chalSeries === s).length;
-  });
-  const chalAllEl = document.getElementById('fd-chal-count-all');
-  if (chalAllEl) chalAllEl.textContent = TWIST_CATALOG.filter(t => t.category === 'challenge').length;
-
-  // Sync sub-filter row visibility
-  const subRow = document.getElementById('fd-chal-subfilters');
-  if (subRow) subRow.style.display = currentTwistFilter === 'challenge' ? 'flex' : 'none';
-
-  let filtered = TWIST_CATALOG;
+  let filtered = nonChallenge;
   if (currentTwistFilter !== 'all') filtered = filtered.filter(t => t.category === currentTwistFilter);
-  if (currentTwistFilter === 'challenge' && currentChalSeries !== 'all') {
-    filtered = filtered.filter(t => t.chalSeries === currentChalSeries);
-  }
   if (search) filtered = filtered.filter(t => t.name.toLowerCase().includes(search) || t.desc.toLowerCase().includes(search));
 
   if (!filtered.length) {
@@ -917,6 +896,7 @@ export function assignTwist(twistId) {
     return;
   }
   const twist    = TWIST_CATALOG.find(t => t.id === twistId);
+  if (twist?.category === 'challenge') return;
   const epMap    = buildEpisodeMap();
   const epLookup = Object.fromEntries(epMap.map(e => [e.ep, e.phase]));
 

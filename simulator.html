@@ -2827,20 +2827,12 @@
               <button class="fd-filter-btn active" data-filter="all" onclick="setTwistFilter('all')">All <span id="fd-count-all"></span></button>
               <button class="fd-filter-btn" data-filter="team" onclick="setTwistFilter('team')">Team Dynamics <span id="fd-count-team"></span></button>
               <button class="fd-filter-btn" data-filter="immunity" onclick="setTwistFilter('immunity')">Immunity <span id="fd-count-immunity"></span></button>
-              <button class="fd-filter-btn" data-filter="challenge" onclick="setTwistFilter('challenge')">Challenge <span id="fd-count-challenge"></span></button>
               <button class="fd-filter-btn" data-filter="elim" onclick="setTwistFilter('elim')">Elimination <span id="fd-count-elim"></span></button>
               <button class="fd-filter-btn" data-filter="returns" onclick="setTwistFilter('returns')">Returns <span id="fd-count-returns"></span></button>
               <button class="fd-filter-btn" data-filter="advantages" onclick="setTwistFilter('advantages')">Advantages <span id="fd-count-advantages"></span></button>
               <button class="fd-filter-btn" data-filter="social" onclick="setTwistFilter('social')">Social <span id="fd-count-social"></span></button>
             </div>
-            <div id="fd-chal-subfilters" class="fd-filters" style="display:none; padding-top:5px; background: color-mix(in srgb, var(--surface) 60%, var(--bg)); border-top: none;">
-              <span style="font-size:10px;color:var(--muted);align-self:center;margin-right:2px;font-weight:600;letter-spacing:.5px">SERIES</span>
-              <button class="fd-filter-btn active" data-chal-series="all" onclick="setChalSeries('all')">All <span id="fd-chal-count-all"></span></button>
-              <button class="fd-filter-btn" data-chal-series="island" onclick="setChalSeries('island')">🏝️ Island <span id="fd-chal-count-island"></span></button>
-              <button class="fd-filter-btn" data-chal-series="action" onclick="setChalSeries('action')">🎬 Action <span id="fd-chal-count-action"></span></button>
-              <button class="fd-filter-btn" data-chal-series="world-tour" onclick="setChalSeries('world-tour')">✈️ World Tour <span id="fd-chal-count-world-tour"></span></button>
-              <button class="fd-filter-btn" data-chal-series="revenge" onclick="setChalSeries('revenge')">☢️ Revenge <span id="fd-chal-count-revenge"></span></button>
-            </div>
+            <div id="fd-chal-subfilters" style="display:none"></div>
             <div class="fd-twist-instructions" id="fd-instructions">Click episodes to select them, then choose twists to apply.</div>
             <div id="fd-catalog" class="fd-catalog"></div>
           </div>

@@ -1081,6 +1081,47 @@ export function simulateEpisode() {
                 tribesAtStart: gs.tribes.map(t => ({ name: t.name, members: [...t.members] })),
                 exileDuelPlayerAtStart: gs.exileDuelPlayer || null };
 
+  // ── HELPER: RI choice + duel for early-return episode paths ──
+  function _handleRIForEliminated(eliminatedName) {
+    if (!eliminatedName) return;
+    if (isRIStillActive()) {
+      if (cfg.riFormat === 'rescue') {
+        ep.riChoice = 'RESCUE ISLAND';
+        gs.riPlayers.push(eliminatedName);
+        if (!gs.riArrivalEp) gs.riArrivalEp = {};
+        gs.riArrivalEp[eliminatedName] = epNum;
+        ep.riArrival = { name: eliminatedName, existingResidents: gs.riPlayers.filter(p => p !== eliminatedName) };
+      } else {
+        const choice = simulateRIChoice(eliminatedName);
+        ep.riChoice = choice;
+        if (choice === 'REDEMPTION ISLAND') gs.riPlayers.push(eliminatedName);
+        else { gs.eliminated.push(eliminatedName); if (gs.isMerged) gs.jury.push(eliminatedName); }
+      }
+    } else {
+      gs.eliminated.push(eliminatedName); ep.riChoice = null;
+      if (gs.isMerged) gs.jury.push(eliminatedName);
+    }
+  }
+  function _handleRIDuelPostElimination() {
+    if (cfg.ri && cfg.riFormat === 'rescue' && gs.riPlayers.length > 0) {
+      generateRescueIslandLife(ep);
+    }
+    if (cfg.ri && cfg.riFormat !== 'rescue' && gs.riPlayers.length > 0 && !ep.riDuel) {
+      ep.riPlayersPreDuel = [...gs.riPlayers];
+      generateRILifeEvents(ep);
+      if (gs.riPlayers.length >= 2) {
+        const duel = simulateRIDuel(gs.riPlayers);
+        ep.riDuel = duel;
+        gs.riPlayers = gs.riPlayers.filter(p => p !== duel.loser);
+        if (gs.isMerged) gs.jury.push(duel.loser);
+        gs.eliminated.push(duel.loser);
+        if (!gs.riDuelHistory) gs.riDuelHistory = [];
+        gs.riDuelHistory.push({ ep: epNum, resident: duel.winner, arrival: duel.loser, winner: duel.winner, loser: duel.loser, challengeType: duel.challengeType, isThreeWay: duel.isThreeWay, duelists: duel.duelists });
+        generateRIPostDuelEvents(ep);
+      }
+    }
+  }
+
   // ── RETURN KIDNAPPED PLAYER to their original tribe ──
   if (gs.kidnappedPlayer) {
     const _kr = gs.kidnappedPlayer;
@@ -1463,6 +1504,7 @@ export function simulateEpisode() {
       gs.advantages = gs.advantages.filter(a => a.holder !== ep.eliminated);
     }
 
+    _handleRIDuelPostElimination();
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
     updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
@@ -1736,6 +1778,7 @@ export function simulateEpisode() {
       }
     }
 
+    _handleRIDuelPostElimination();
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
     updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
@@ -1827,8 +1870,7 @@ export function simulateEpisode() {
       ep.suddenDeathEliminated = _sdLastPlace;
       handleAdvantageInheritance(_sdLastPlace, ep);
       gs.activePlayers = gs.activePlayers.filter(p => p !== _sdLastPlace);
-      gs.eliminated.push(_sdLastPlace);
-      if (gs.isMerged) gs.jury.push(_sdLastPlace);
+      _handleRIForEliminated(_sdLastPlace);
       gs.advantages = gs.advantages.filter(a => a.holder !== _sdLastPlace);
 
       // Provider tracking
@@ -1865,13 +1907,14 @@ export function simulateEpisode() {
       ep.challengeThrowData = ep.challengeThrows;
     }
     generateCampEvents(ep, 'post');
+    _handleRIDuelPostElimination();
     updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
     gs.episodeHistory.push({
-      num: epNum, eliminated: ep.eliminated || null, riChoice: null,
+      num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: 'individual', challengeLabel: ep.challengeLabel,
       challengeCategory: ep.challengeCategory, challengeDesc: ep.challengeDesc,
@@ -2332,8 +2375,7 @@ export function simulateEpisode() {
       const _sdLastPlace = ep.suddenDeathEliminated;
       handleAdvantageInheritance(_sdLastPlace, ep);
       gs.activePlayers = gs.activePlayers.filter(p => p !== _sdLastPlace);
-      gs.eliminated.push(_sdLastPlace);
-      if (gs.isMerged) gs.jury.push(_sdLastPlace);
+      _handleRIForEliminated(_sdLastPlace);
       gs.advantages = gs.advantages.filter(a => a.holder !== _sdLastPlace);
 
       // Provider tracking (parallels generic sudden-death branch)
@@ -2366,13 +2408,14 @@ export function simulateEpisode() {
       // Challenge record + camp events + post-tribal bookkeeping
       updateChalRecord(ep);
       generateCampEvents(ep, 'post');
+      _handleRIDuelPostElimination();
       updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
       updateSurvival(ep);
       gs.episode = epNum;
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
       gs.episodeHistory.push({
-        num: epNum, eliminated: ep.eliminated || _sdLastPlace, riChoice: null,
+        num: epNum, eliminated: ep.eliminated || _sdLastPlace, riChoice: ep.riChoice || null,
         immunityWinner: ep.immunityWinner || null,
         challengeType: ep.challengeType || 'individual',
         challengeLabel: ep.challengeLabel,
@@ -2449,8 +2492,7 @@ export function simulateEpisode() {
     if (_ytElim) {
       handleAdvantageInheritance(_ytElim, ep);
       gs.activePlayers = gs.activePlayers.filter(p => p !== _ytElim);
-      gs.eliminated.push(_ytElim);
-      if (gs.isMerged) gs.jury.push(_ytElim);
+      _handleRIForEliminated(_ytElim);
       gs.advantages = gs.advantages.filter(a => a.holder !== _ytElim);
 
       if (seasonConfig.foodWater === 'enabled' && gs.currentProviders?.includes(_ytElim)) {
@@ -2459,13 +2501,14 @@ export function simulateEpisode() {
       }
     }
 
+    _handleRIDuelPostElimination();
     updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
     gs.episodeHistory.push({
-      num: epNum, eliminated: _ytElim || null, riChoice: null,
+      num: epNum, eliminated: _ytElim || null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: ep.challengeType || 'individual',
       challengeLabel: ep.challengeLabel,
@@ -2648,8 +2691,7 @@ export function simulateEpisode() {
       ep.noTribal = true;
       handleAdvantageInheritance(_sdLastPlace, ep);
       gs.activePlayers = gs.activePlayers.filter(p => p !== _sdLastPlace);
-      gs.eliminated.push(_sdLastPlace);
-      if (gs.isMerged) gs.jury.push(_sdLastPlace);
+      _handleRIForEliminated(_sdLastPlace);
       gs.advantages = gs.advantages.filter(a => a.holder !== _sdLastPlace);
 
       // Provider tracking
@@ -2683,13 +2725,14 @@ export function simulateEpisode() {
       updateChalRecord(ep);
       if (ep.challengeThrows?.length) ep.challengeThrowData = ep.challengeThrows;
       generateCampEvents(ep, 'post');
+      _handleRIDuelPostElimination();
       updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
       updateSurvival(ep);
       gs.episode = epNum;
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
       gs.episodeHistory.push({
-        num: epNum, eliminated: _sdLastPlace, riChoice: null,
+        num: epNum, eliminated: _sdLastPlace, riChoice: ep.riChoice || null,
         immunityWinner: ep.immunityWinner || null,
         challengeType: ep.challengeType || 'individual',
         challengeLabel: ep.challengeLabel,
@@ -3150,6 +3193,7 @@ export function simulateEpisode() {
       ep.campEvents[_lcDest.name].post.unshift({ type: 'tribeArrival', text: _arrLc[Math.floor(Math.random() * _arrLc.length)] });
     }
     ep.alliances = [];
+    _handleRIDuelPostElimination();
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
     updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);

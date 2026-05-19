@@ -807,7 +807,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
   // Resolve engineType from TWIST_CATALOG so catalog aliases work
   const catalogEntry = TWIST_CATALOG.find(t => t.id === twist.type);
   const engineType   = catalogEntry?.engineType || twist.type;
-  const twistObj = { type: engineType, catalogId: twist.type, name: catalogEntry?.name || twist.type };
+  const twistObj = { type: engineType, catalogId: twist.type, name: catalogEntry?.name || twist.type, category: catalogEntry?.category || null };
   ep.twists.push(twistObj);
   if (isPrimary) ep.twist = twistObj; // backward compat for engine checks
   const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -4565,6 +4565,8 @@ export function generateTwistScenes(ep) {
         break;
 
       default: {
+        const _cat = tw.category || TWIST_CATALOG.find(t => t.id === tw.type || t.id === tw.catalogId)?.category;
+        if (_cat === 'challenge') break;
         const lb = tw.type.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
         sc.push({ text: lb, players: [] });
         result.push({ label:lb, type:tw.type, scenes:sc });

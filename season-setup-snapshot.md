@@ -1,0 +1,55 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - img "DC" [ref=e5]
+      - text: DC Franchise Simulator
+    - navigation [ref=e6]:
+      - button "Cast Builder" [ref=e7] [cursor=pointer]
+      - button "Season Setup" [ref=e8] [cursor=pointer]
+      - button "Run Episode" [ref=e9] [cursor=pointer]
+      - button "Results" [ref=e10] [cursor=pointer]
+  - generic [ref=e1326]:
+    - generic [ref=e1327]:
+      - button "Season Setup" [ref=e1328] [cursor=pointer]
+      - button "Episode Format Designer" [ref=e1329] [cursor=pointer]
+      - button "Relationships" [ref=e1330] [cursor=pointer]
+      - button "Alliances" [ref=e1331] [cursor=pointer]
+    - generic [ref=e1333]:
+      - generic [ref=e1334]:
+        - generic [ref=e1335]: SEASON BASICS
+        - generic [ref=e1336]
+        - generic [ref=e1339]
+        - generic [ref=e1346]
+        - generic [ref=e1349]
+        - generic [ref=e1355]: FORMATS & TWISTS
+        - generic [ref=e1357] [cursor=pointer]
+        - generic [ref=e1360]
+        - generic [ref=e1365] [cursor=pointer]
+        - generic [ref=e1369] [cursor=pointer]
+        - generic [ref=e1373] [cursor=pointer]
+        - generic [ref=e1377] [cursor=pointer]
+        - generic [ref=e1381] [cursor=pointer]
+        - generic [ref=e1385] [cursor=pointer]
+        - generic [ref=e1389] [cursor=pointer]
+        - generic [ref=e1393]: Quick load
+        - generic [ref=e1394]
+      - generic [ref=e1398]:
+        - generic [ref=e1399]: TRIBES
+        - generic [ref=e1400]
+        - button "+ Add Tribe" [ref=e1409] [cursor=pointer]
+        - generic [ref=e1411]: SEASON STRUCTURE
+        - generic [ref=e1413]
+        - generic [ref=e1419]: SEASON OPTIONS
+        - generic [ref=e1420]
+        - generic [ref=e1424]
+        - generic [ref=e1428]: END GAME
+        - generic [ref=e1429]
+        - generic [ref=e1433]
+        - generic [ref=e1438]
+        - generic [ref=e1442]: SETTINGS & MECHANICS
+        - generic [ref=e1444] [cursor=pointer]
+        - generic [ref=e1448] [cursor=pointer]
+        - generic [ref=e1452] [cursor=pointer]
+        - generic [ref=e1456] [cursor=pointer]
+        - generic [ref=e1460] [cursor=pointer]
+        - generic [ref=e1464] [cursor=pointer]

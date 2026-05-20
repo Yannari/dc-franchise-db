@@ -325,7 +325,7 @@ Return ONLY valid JSON matching the schema exactly.
 `.trim();
 
   const payload = {
-    model: "gpt-5",
+    model: "gpt-5.5",
     instructions,
     input: episodeSummaries + brantsteeleSection,
     text: { format: { type: "json_schema", name: "season_data", strict: true, schema } },
@@ -811,7 +811,7 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 `.trim();
 
   const payload = {
-    model: "gpt-5",
+    model: "gpt-5.5",
     instructions,
     input: summaryText,
     text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
@@ -1194,7 +1194,7 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 Return complete episode transcript.
 `.trim();
 
-  const payload = { model: "gpt-5", instructions, input: summaryText };
+  const payload = { model: "gpt-5.5", instructions, input: summaryText };
   return await callOpenAI(payload, env);
 }
 

@@ -828,6 +828,19 @@ SIMULATOR INPUT → OUTPUT DESTINATION:
 === IMMUNITY CHALLENGE === → reformat as ## IMMUNITY CHALLENGE with Type, Challenge Title, Winner, Key Moments
   May include LAST CHANCE CHALLENGE (head-to-head duel when tribe is down to 2).
   May include immunity-result twists (HERO DUEL, SHARED IMMUNITY, DOUBLE SAFETY).
+  ⚠️ NOTE: This section ONLY appears for generic (non-twist) challenges. If a twist challenge
+  is active, this section will be ABSENT — the twist challenge outputs its own named sections instead.
+
+=== [TWIST CHALLENGE NAME] === (any named section that appears between CAMP PRE-CHALLENGE and TWISTS/CAMP POST-CHALLENGE)
+  → When a twist challenge fires, there is NO === IMMUNITY CHALLENGE === section. Instead, one or more
+  NAMED sections appear in its place — these are the challenge. They contain the full narration:
+  phases, rounds, scoring, social events, and results. You can recognize them because:
+    1. They appear after === CAMP — PRE-CHALLENGE === and before === TWISTS === or === CAMP — POST-CHALLENGE ===
+    2. They are NOT any of the standard sections (REWARD CHALLENGE, TWISTS, EXILE ISLAND, etc.)
+    3. They contain challenge-specific content (scores, winners, eliminations, phase breakdowns)
+  Treat ALL of these named sections together as the immunity challenge for this episode.
+  Map them to ## IMMUNITY CHALLENGE in the output, preserving all narration, results, and events.
+  Do NOT also look for a separate === IMMUNITY CHALLENGE === section — it won't exist for twist episodes.
 
 === TWISTS === → Contains ALL twist scenes for this episode. Each twist is a SCENE that MUST be shown:
   - THE SUMMIT / THREE GIFTS → SHOW the actual summit scene with nominees choosing gifts. Not just confessionals — show the location, the gifts, the choice, the return to camp.
@@ -1699,10 +1712,22 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
     
     // Extract challenge names from previous episodes to prevent repeats
     const usedChallenges = [];
+    const standardSections = new Set(['meta','cast','tribes','eliminated','on redemption island','on exile','cold open','returns','merge','camp','reward challenge','immunity challenge','twists','exile island','voting plans','tribal council','the votes','why this vote happened','slasher night','ambassadors','redemption island duel','rescue island','jury life','camp overview','aftermath','writer context','grand challenge','final cut','ftc q&a','jury convenes','jury votes','fan campaign','fan vote','winner ceremony','reunion','season stats','chain of command']);
     previousEpisodes.forEach(ep => {
       const t = ep.transcript || '';
       const m = t.match(/##\s*IMMUNITY CHALLENGE[:\s]+([^\n]+)/i) || t.match(/\*\*Challenge Title:\*\*\s*([^\n]+)/i);
       if (m && m[1]) usedChallenges.push(`Episode ${ep.episode}: "${m[1].trim()}"`);
+      // Detect twist challenge names: any === Section === that isn't a standard section
+      const sectionRegex = /===\s*([^=]+?)\s*===/g;
+      let sm;
+      while ((sm = sectionRegex.exec(t)) !== null) {
+        const name = sm[1].trim();
+        const lower = name.toLowerCase().replace(/\s*—.*$/, '').replace(/\s*\(.*$/, '');
+        if (!standardSections.has(lower) && !lower.startsWith('camp') && !lower.startsWith('relationships') && name.length > 3 && name.length < 60) {
+          usedChallenges.push(`Episode ${ep.episode}: "${name}"`);
+          break;
+        }
+      }
     });
     if (usedChallenges.length > 0) {
       previousContext += `\n🚫 CHALLENGES ALREADY USED THIS SEASON — DO NOT REPEAT ANY OF THESE:\n${usedChallenges.join('\n')}\n\n`;
@@ -1911,6 +1936,26 @@ Before inventing a challenge, scan ALL previous episodes in your context. Look f
 Each episode needs a DIFFERENT challenge. If you see "Truth or Nuke" was used in Episode 5, you cannot write "Truth or Nuke" in Episode 8. If you see an endurance challenge was used last episode, vary the format — don't do another endurance challenge.
 
 Make a mental list of used challenges from the context, then pick something new.
+
+═══════════════════════════════════════════════════════════
+⚠️ TWIST CHALLENGES — USE THE SUMMARY'S CHALLENGE, DON'T INVENT ONE
+═══════════════════════════════════════════════════════════
+
+Sometimes the summary contains a TWIST CHALLENGE — a special named challenge with its own detailed sections
+instead of a generic "## IMMUNITY CHALLENGE". You can recognize them because:
+- There is NO === IMMUNITY CHALLENGE === section in the summary
+- Instead, one or more NAMED sections appear after camp events (e.g., "=== One Flu Over the Cuckoos ===",
+  "=== SUPER HERO-LD ===", "=== Lucky Hunt ===") with sub-phases, scoring, and results
+- These sections are NOT any of the standard headers (TWISTS, EXILE ISLAND, REWARD CHALLENGE, etc.)
+- New twist challenges are added regularly — don't rely on recognizing specific names
+
+When the summary has a twist challenge:
+- DO NOT invent a new challenge. The twist challenge IS the immunity challenge for this episode.
+- Use the twist challenge's name, phases, events, scoring, and results as written in the summary.
+- The winner/losers from the twist challenge are the immunity results — don't look for a separate immunity section.
+- Write the challenge scenes using the detailed narration from the twist challenge sections.
+- These challenges have rich multi-phase structures — dramatize each phase as its own scene.
+- Social events within the challenge (taunts, helps, rivalries, sabotage) are factual anchors — include them all.
 
 ═══════════════════════════════════════════════════════════
 ⚠️ THE "KEY EVENTS" SECTION — FACTUAL ANCHORS + YOUR CREATIVE SPACE

@@ -500,8 +500,11 @@ export function _textRewardChallenge(ep, ln, sec) {
 
 // ── IMMUNITY CHALLENGE ──
 export function _textImmunityChallenge(ep, ln, sec) {
+  const standardTypes = new Set(['tribe','team','individual','mixed',undefined,'']);
+  if (!standardTypes.has(ep.challengeType)) return;
   sec('IMMUNITY CHALLENGE');
-  if (ep.challengeType === 'tribe') {
+  const isTribeChallenge = ep.challengeType === 'tribe' || ep.challengeType === 'team' || (ep.winner && ep.loser && !ep.immunityWinner);
+  if (isTribeChallenge) {
     ln(`TRIBE IMMUNITY (${ep.challengeLabel||'Mixed'} challenge — ${ep.challengeCategory||'mixed'})`);
     if (ep.challengeDesc) ln(ep.challengeDesc);
     const _imScores = ep.chalMemberScores || {};

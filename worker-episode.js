@@ -266,7 +266,7 @@ Return ONLY valid JSON matching the schema exactly.
 `.trim();
 
   const payload = {
-    model: "gpt-5",
+    model: "gpt-5.5",
     instructions,
     input: episodeSummaries + brantsteeleSection,
     text: { format: { type: "json_schema", name: "season_data", strict: true, schema } },
@@ -644,7 +644,7 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
   // Try GPT-5 first
   if (env.OPENAI_API_KEY) {
     const payload = {
-      model: "gpt-5",
+      model: "gpt-5.5",
       instructions,
       input: summaryText,
       text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
@@ -4081,14 +4081,10 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 Return complete episode transcript.
 `.trim();
 
-  // Claude streaming first — keeps Cloudflare connection alive so no 524
-  if (env.ANTHROPIC_API_KEY) {
-    return await callAnthropicStreaming(instructions, summaryText, env);
-  }
-  // Fallback: GPT-5
+  // GPT-5.5 first
   if (env.OPENAI_API_KEY) {
     try {
-      const payload = { model: "gpt-5", instructions, input: summaryText };
+      const payload = { model: "gpt-5.5", instructions, input: summaryText };
       const result = await callOpenAI(payload, env);
       if (result.ok !== false) {
         const clone = result.clone();
@@ -4096,8 +4092,12 @@ Return complete episode transcript.
         if (data.episodeTranscript && !data.error) return result;
       }
     } catch (e) {
-      console.error("GPT-5 failed:", e);
+      console.error("GPT-5.5 failed:", e);
     }
+  }
+  // Fallback: Claude streaming — keeps Cloudflare connection alive so no 524
+  if (env.ANTHROPIC_API_KEY) {
+    return await callAnthropicStreaming(instructions, summaryText, env);
   }
   // Last resort: Gemini
   return await callGemini(instructions, summaryText, env);

@@ -158,7 +158,9 @@ export function _textMeta(ep, ln, sec) {
   const cfg = seasonConfig;
   sec('META');
   const epTitle = _generateEpisodeTitle(ep);
-  ln(`Season: ${cfg.name||'Unknown'} | Episode ${ep.num} - "${epTitle}" | Phase: ${gs.phase || 'unknown'} | Players Remaining: ${gs.activePlayers.length}`);
+  ln(`SEASON: ${cfg.name||'Unknown'}`);
+  ln(`EPISODE ${ep.num} - "${epTitle}"`);
+  ln(`Phase: ${gs.phase || 'unknown'} | Players Remaining: ${gs.activePlayers.length}`);
   if (cfg.ri && cfg.riFormat !== 'rescue') ln('Format: Redemption Island — voted out players may fight back via RI duels');
   if (cfg.ri && cfg.riFormat === 'rescue') ln('Format: Rescue Island — all eliminees go to Rescue Island (social game)');
 }
@@ -786,10 +788,13 @@ export function _textCampPost(ep, ln, sec) {
     return (phaseData?.post || []).length > 0;
   });
   if (!hasPostEvs) return;
+  const _stdTypes = new Set(['tribe','team','individual','mixed',undefined,'']);
+  const hasTwistChallenge = !_stdTypes.has(ep.challengeType);
   sec('CAMP — POST-CHALLENGE');
   Object.entries(ep.campEvents).forEach(([campName, phaseData]) => {
     if (Array.isArray(phaseData)) return;
-    const postEvs = phaseData?.post || [];
+    let postEvs = phaseData?.post || [];
+    if (hasTwistChallenge) postEvs = postEvs.filter(e => !e.tag);
     if (!postEvs.length) return;
     if (campName !== 'merge') ln(`${campName.toUpperCase()} CAMP:`);
     postEvs.forEach(e => {

@@ -797,6 +797,7 @@ export function updateSelectedCount() {
 
 export function setTwistFilter(filter) {
   currentTwistFilter = filter;
+  if (filter !== 'challenge') currentChalSeries = 'all';
   document.querySelectorAll('.fd-filter-btn[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
   renderTwistCatalog();
 }
@@ -823,7 +824,29 @@ export function renderTwistCatalog() {
 
   let filtered = TWIST_CATALOG.slice();
   if (currentTwistFilter !== 'all') filtered = filtered.filter(t => t.category === currentTwistFilter);
+  if (currentTwistFilter === 'challenge' && currentChalSeries !== 'all') {
+    filtered = filtered.filter(t => t.chalSeries === currentChalSeries);
+  }
   if (search) filtered = filtered.filter(t => t.name.toLowerCase().includes(search) || t.desc.toLowerCase().includes(search));
+
+  // Series sub-filter row for challenges
+  const seriesRow = document.getElementById('fd-chal-series-row');
+  if (seriesRow) {
+    if (currentTwistFilter === 'challenge') {
+      const seriesLabels = {
+        'island':'Island','action':'Action','world-tour':'World Tour',
+        'revenge':'Revenge','all-stars':'All-Stars','pahkitew':'Pahkitew',
+        'ridonculous':'Ridonculous Race',
+        'dc1':'DC S1','dc2':'DC S2','dc3':'DC S3','dc4':'DC S4','dc5':'DC S5'
+      };
+      const allSeries = [...new Set(TWIST_CATALOG.filter(c => c.category === 'challenge' && c.chalSeries).map(c => c.chalSeries))];
+      seriesRow.innerHTML = `<button class="fd-filter-btn ${currentChalSeries === 'all' ? 'active' : ''}" data-chal-series="all" onclick="setChalSeries('all')">All Series</button>` +
+        allSeries.map(s => `<button class="fd-filter-btn ${currentChalSeries === s ? 'active' : ''}" data-chal-series="${s}" onclick="setChalSeries('${s}')">${seriesLabels[s] || s}</button>`).join('');
+      seriesRow.style.display = 'flex';
+    } else {
+      seriesRow.style.display = 'none';
+    }
+  }
 
   if (!filtered.length) {
     container.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:13px">No twists match your search.</div>';

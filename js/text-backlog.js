@@ -66,6 +66,7 @@ import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildT
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults } from './chal/greeces-pieces.js';
 import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults } from './chal/hangar-black.js';
+import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard } from './chal/alien-egg.js';
 import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemFinish } from './chal/aftermayhem.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
@@ -352,7 +353,11 @@ export function _textCampPre(ep, ln, sec) {
       relPairs.forEach(p => {
         const preRel = relationships.find(r => [r.a,r.b].sort().join('|')===[p.a,p.b].sort().join('|'));
         const note = preRel?.note ? ` (${preRel.note})` : '';
-        ln(`- ${p.a} and ${p.b} ${bondFeeling(p.val)}${note}.`);
+        if (p.hasGap) {
+          ln(`- ${p.a} & ${p.b} — ${p.a} feels ${bondLabel(p.aPerceived)}. ${p.b} feels ${bondLabel(p.bPerceived)}${note}.`);
+        } else {
+          ln(`- ${p.a} and ${p.b} ${bondFeeling(p.val)}${note}.`);
+        }
       });
     } else {
       ln('- No notable bonds established yet.');
@@ -2488,6 +2493,13 @@ export function generateSummaryText(ep) {
   if (ep.challengeData && ep.isHangarBlack) {
     _textTwistChallenge(ep, ln, sec, 'challengeData', 'OPERATION: HANGAR BLACK', [
       rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults
+    ]);
+  }
+  if (ep.alienEgg) {
+    _textTwistChallenge(ep, ln, sec, 'alienEgg', 'ALIEN RESURR-EGGTION', [
+      rpBuildAlienEggTitleCard, rpBuildAlienEggRounds,
+      rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults,
+      rpBuildAlienEggLeaderboard,
     ]);
   }
 

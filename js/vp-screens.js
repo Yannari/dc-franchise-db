@@ -7524,15 +7524,9 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
   if (relPairs.length) {
     relPairs.forEach(p => {
       const v = p.val;
-      // Check for perception gaps — only significant ones where the tier label differs
-      const _snapPB = ep.gsSnapshot?.perceivedBonds || gs.perceivedBonds || {};
-      const _gapAB = _snapPB[p.a + '→' + p.b];
-      const _gapBA = _snapPB[p.b + '→' + p.a];
-      const _aPerceived = _gapAB ? _gapAB.perceived : v;
-      const _bPerceived = _gapBA ? _gapBA.perceived : v;
-      // Only ONE-SIDED if the two sides would show different tier labels
-      const _hasGap = (_gapAB || _gapBA) && bondLabel(_aPerceived) !== bondLabel(_bPerceived);
-      // Use the higher of real or perceived values for badge and sort priority
+      const _hasGap = p.hasGap;
+      const _aPerceived = p.aPerceived;
+      const _bPerceived = p.bPerceived;
       const _displayVal = Math.max(Math.abs(v), Math.abs(_aPerceived), Math.abs(_bPerceived));
       let badgeText = '', badgeClass = '';
       if (_hasGap) {
@@ -13420,8 +13414,12 @@ export function getTribeRelationshipHighlights(members, snapshot) {
       seen.add(k);
       const val = _bonds[k] || 0;
       // Check for perceived bond gap — these pairs are always notable
-      const _hasGap = _percBonds[a + '→' + b] || _percBonds[b + '→' + a];
-      pairs.push({ a, b, val, hasGap: !!_hasGap });
+      const _gapAB = _percBonds[a + '→' + b];
+      const _gapBA = _percBonds[b + '→' + a];
+      const _aPerc = _gapAB ? _gapAB.perceived : val;
+      const _bPerc = _gapBA ? _gapBA.perceived : val;
+      const _hasGap = (_gapAB || _gapBA) && bondLabel(_aPerc) !== bondLabel(_bPerc);
+      pairs.push({ a, b, val, hasGap: _hasGap, aPerceived: _aPerc, bPerceived: _bPerc });
     });
   });
   // Sort by strongest relationship first — gaps use highest perceived/real value

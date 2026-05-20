@@ -796,7 +796,6 @@ export function updateSelectedCount() {
 }
 
 export function setTwistFilter(filter) {
-  if (filter === 'challenge') filter = 'all';
   currentTwistFilter = filter;
   document.querySelectorAll('.fd-filter-btn[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
   renderTwistCatalog();
@@ -812,18 +811,17 @@ export function renderTwistCatalog() {
   const container = document.getElementById('fd-catalog');
   if (!container) return;
   const search = (document.getElementById('fd-search')?.value || '').toLowerCase();
-  const nonChallenge = TWIST_CATALOG.filter(t => t.category !== 'challenge');
-  const cats   = ['team','immunity','elim','returns','advantages','social'];
+  const cats   = ['team','immunity','elim','returns','advantages','social','challenge'];
 
   // Update category counts
   cats.forEach(cat => {
     const el = document.getElementById('fd-count-' + cat);
-    if (el) el.textContent = nonChallenge.filter(t => t.category === cat).length;
+    if (el) el.textContent = TWIST_CATALOG.filter(t => t.category === cat).length;
   });
   const allEl = document.getElementById('fd-count-all');
-  if (allEl) allEl.textContent = nonChallenge.length;
+  if (allEl) allEl.textContent = TWIST_CATALOG.length;
 
-  let filtered = nonChallenge;
+  let filtered = TWIST_CATALOG.slice();
   if (currentTwistFilter !== 'all') filtered = filtered.filter(t => t.category === currentTwistFilter);
   if (search) filtered = filtered.filter(t => t.name.toLowerCase().includes(search) || t.desc.toLowerCase().includes(search));
 
@@ -896,7 +894,6 @@ export function assignTwist(twistId) {
     return;
   }
   const twist    = TWIST_CATALOG.find(t => t.id === twistId);
-  if (twist?.category === 'challenge') return;
   const epMap    = buildEpisodeMap();
   const epLookup = Object.fromEntries(epMap.map(e => [e.ep, e.phase]));
 

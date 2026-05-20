@@ -211,7 +211,8 @@ export function _textCast(ep, ln, sec) {
   }
 
   sec('ELIMINATED (PERMANENT)');
-  ln(gs.eliminated.length ? gs.eliminated.join(', ') : 'None yet.');
+  if (gs.eliminated.length) gs.eliminated.forEach(name => ln(name));
+  else ln('None yet.');
   if (cfg.ri) {
     sec('ON REDEMPTION ISLAND');
     ln(gs.riPlayers.length ? gs.riPlayers.join(', ') : 'None.');

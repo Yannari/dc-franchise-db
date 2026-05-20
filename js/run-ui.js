@@ -840,8 +840,12 @@ export function renderTwistCatalog() {
         'dc1':'DC S1','dc2':'DC S2','dc3':'DC S3','dc4':'DC S4','dc5':'DC S5'
       };
       const allSeries = [...new Set(TWIST_CATALOG.filter(c => c.category === 'challenge' && c.chalSeries).map(c => c.chalSeries))];
-      seriesRow.innerHTML = `<button class="fd-filter-btn ${currentChalSeries === 'all' ? 'active' : ''}" data-chal-series="all" onclick="setChalSeries('all')">All Series</button>` +
-        allSeries.map(s => `<button class="fd-filter-btn ${currentChalSeries === s ? 'active' : ''}" data-chal-series="${s}" onclick="setChalSeries('${s}')">${seriesLabels[s] || s}</button>`).join('');
+      const chalTwists = TWIST_CATALOG.filter(c => c.category === 'challenge');
+      seriesRow.innerHTML = `<button class="fd-filter-btn ${currentChalSeries === 'all' ? 'active' : ''}" data-chal-series="all" onclick="setChalSeries('all')">All Series ${chalTwists.length}</button>` +
+        allSeries.map(s => {
+          const cnt = chalTwists.filter(c => c.chalSeries === s).length;
+          return `<button class="fd-filter-btn ${currentChalSeries === s ? 'active' : ''}" data-chal-series="${s}" onclick="setChalSeries('${s}')">${seriesLabels[s] || s} ${cnt}</button>`;
+        }).join('');
       seriesRow.style.display = 'flex';
     } else {
       seriesRow.style.display = 'none';

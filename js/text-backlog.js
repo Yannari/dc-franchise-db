@@ -157,9 +157,31 @@ export function _textTribeGroups() {
 export function _textMeta(ep, ln, sec) {
   const cfg = seasonConfig;
   sec('META');
-  ln(`Season: ${cfg.name||'Unknown'} | Episode: ${ep.num} | Phase: ${gs.phase || 'unknown'} | Players Remaining: ${gs.activePlayers.length}`);
+  const epTitle = _generateEpisodeTitle(ep);
+  ln(`Season: ${cfg.name||'Unknown'} | Episode ${ep.num} - "${epTitle}" | Phase: ${gs.phase || 'unknown'} | Players Remaining: ${gs.activePlayers.length}`);
   if (cfg.ri && cfg.riFormat !== 'rescue') ln('Format: Redemption Island — voted out players may fight back via RI duels');
   if (cfg.ri && cfg.riFormat === 'rescue') ln('Format: Rescue Island — all eliminees go to Rescue Island (social game)');
+}
+
+function _generateEpisodeTitle(ep) {
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  if (ep.num === 1) {
+    const openers = ['New Arrivals','Welcome to the Jungle','Game On','First Impressions','Day One','Let the Games Begin','Fresh Meat','Ready or Not'];
+    return pick(openers);
+  }
+  if (ep.isFinale) return 'The Final Showdown';
+  if (ep.isMerge) return 'The Merge';
+  if (ep.challengeLabel) return ep.challengeLabel;
+  if (ep.eliminated) {
+    const templates = [
+      `The Fall of ${ep.eliminated}`,
+      `Goodbye, ${ep.eliminated}`,
+      `${ep.eliminated}'s Last Stand`,
+      `End of the Line`,
+    ];
+    return pick(templates);
+  }
+  return `Episode ${ep.num}`;
 }
 
 // ── HEADER: CAST ──
@@ -168,7 +190,6 @@ export function _textCast(ep, ln, sec) {
   // Use CAST (ALL) header — current-season.html parser depends on this exact format
   // Each name on its own line so parseCastFromSummary's cleanNameLine/isProbablyName can read them
   sec('CAST (ALL)');
-  ln(`STARTING CAST (${players.length}):`);
   players.forEach(p => ln(p.name));
 
   // Separate TRIBES section — current-season.html parser looks for === TRIBES header

@@ -2,7 +2,7 @@
 import { gs, seasonConfig, players } from './core.js';
 import { pStats, pronouns, challengeWeakness } from './players.js';
 import { getBond, bondLabel, bondFeeling } from './bonds.js';
-import { buildCrashout } from './vp-screens.js';
+import { buildCrashout, vpGenerateQuote } from './vp-screens.js';
 
 // Challenge-specific text functions
 import { _textCliffDive } from './chal/cliff-dive.js';
@@ -1415,11 +1415,12 @@ export function _textWhyVote(ep, ln, sec) {
   // Exit quote for the eliminated player
   if (elim) {
     const elimP = players.find(p => p.name === elim);
-    const elimS = pStats(elim);
     const arch = elimP?.archetype || '';
     const archLabel = arch ? arch.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '';
     ln('');
     ln(`${elim}${archLabel ? ` (${archLabel})` : ''} — the tribe has spoken.`);
+    const exitQuote = vpGenerateQuote(elim, ep, 'eliminated');
+    if (exitQuote) ln(`"${exitQuote}"`);
   }
 
   // Black vote cast on exit

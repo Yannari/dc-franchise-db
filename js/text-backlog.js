@@ -2,6 +2,7 @@
 import { gs, seasonConfig, players } from './core.js';
 import { pStats, pronouns, challengeWeakness } from './players.js';
 import { getBond, bondLabel, bondFeeling } from './bonds.js';
+import { buildCrashout } from './vp-screens.js';
 
 // Challenge-specific text functions
 import { _textCliffDive } from './chal/cliff-dive.js';
@@ -1399,7 +1400,7 @@ export function _textWhyVote(ep, ln, sec) {
   }
 
   // Crashout (bold eliminated player's last words + reveals)
-  if (!ep.tribalBlowup && typeof buildCrashout === 'function') {
+  if (!ep.tribalBlowup) {
     const crashout = buildCrashout(ep);
     if (crashout) {
       ln('');

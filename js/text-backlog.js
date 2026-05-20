@@ -68,6 +68,7 @@ import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles
 import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults } from './chal/hangar-black.js';
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard } from './chal/alien-egg.js';
 import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemFinish } from './chal/aftermayhem.js';
+import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict, rpBuildYetiElimination } from './chal/are-we-there-yeti.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -2502,6 +2503,12 @@ export function generateSummaryText(ep) {
       rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults,
       rpBuildAlienEggLeaderboard,
     ]);
+  }
+  if (ep.areWeThereYeti) {
+    const ytBuilders = [rpBuildYetiDropOff];
+    (ep.areWeThereYeti.pairs || []).forEach(p => ytBuilders.push((e) => rpBuildYetiTrail(e, p)));
+    ytBuilders.push(rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict, rpBuildYetiElimination);
+    _textTwistChallenge(ep, ln, sec, 'areWeThereYeti', 'ARE WE THERE YETI?', ytBuilders);
   }
 
   // ── CHAIN OF COMMAND ──

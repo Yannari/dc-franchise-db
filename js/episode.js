@@ -1,7 +1,7 @@
 // js/episode.js - Main episode orchestration: simulation loop, survival, popularity, tribal aftermath
 import { gs, seasonConfig, players, repairGsSets } from './core.js';
 import { pStats, pronouns, getPlayerState, updateChalRecord, isAllianceBottom, threatScore } from './players.js';
-import { getBond, addBond, checkPerceivedBondTriggers, updateBonds, updatePerceivedBonds, recoverBonds } from './bonds.js';
+import { getBond, getPerceivedBond, addBond, checkPerceivedBondTriggers, updateBonds, updatePerceivedBonds, recoverBonds } from './bonds.js';
 import { wRandom, computeHeat, formAlliances, detectBetrayals, decayAllianceTrust } from './alliances.js';
 import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote } from './voting.js';
 import { checkIdolPlays, checkIdolPreTribal, checkNonIdolAdvantageUse, findAdvantages, handleAdvantageInheritance } from './advantages.js';
@@ -1571,7 +1571,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stSN = generateSummaryText(ep);
@@ -1846,7 +1846,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stTDD = generateSummaryText(ep);
@@ -1964,7 +1964,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stSD = generateSummaryText(ep);
@@ -2469,7 +2469,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
         summaryText: '',
         gsSnapshot: window.snapshotGameState(),
       });
@@ -2563,7 +2563,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stYT = generateSummaryText(ep);
@@ -2805,7 +2805,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
         summaryText: '',
         gsSnapshot: window.snapshotGameState(),
       });
@@ -3241,7 +3241,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
       summaryText: '', gsSnapshot: window.snapshotGameState() });
     const stLC = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stLC; ep.summaryText = stLC;
@@ -3310,7 +3310,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
         summaryText: '', gsSnapshot: window.snapshotGameState() });
       const stTD = generateSummaryText(ep);
       gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stTD; ep.summaryText = stTD;
@@ -3519,7 +3519,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
       isRewardOnly: ep.isRewardOnly || false, rewardChalData: ep.rewardChalData || null,
       summaryText: '', gsSnapshot: window.snapshotGameState() });
     const stNT = generateSummaryText(ep);
@@ -4464,7 +4464,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stDT = generateSummaryText(ep);
@@ -4668,7 +4668,7 @@ export function simulateEpisode() {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stMT = generateSummaryText(ep);
@@ -5045,7 +5045,7 @@ function simulateJuryRoundtable(ep) {
         isTropicalTakedown: ep.isTropicalTakedown || false, tropicalTakedown: ep.tropicalTakedown || null,
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
-        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false,
+        isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
     });
     const twistScenesJE = generateTwistScenes(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].twistScenes = twistScenesJE;
@@ -5054,6 +5054,229 @@ function simulateJuryRoundtable(ep) {
     gs.episodeHistory[gs.episodeHistory.length-1].tipOffCampEvents = ep.tipOffCampEvents || null;
     const stJE = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stJE; ep.summaryText = stJE;
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updateSurvival(ep);
+    window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
+  }
+
+  // ── CHAIN OF COMMAND — replaces tribal vote ──
+  if (ep.isChainOfCommand && gs.isMerged && gs.activePlayers.length >= 3) {
+    const _cocPick = arr => arr[Math.floor(Math.random() * arr.length)];
+    const _cocActive = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
+    const _cocImmune = ep.immunityWinner;
+    const _cocChain = [];
+    const _cocBondShifts = [];
+    const _cocIdolPlays = [];
+    const _cocUnpicked = new Set(_cocActive.filter(p => p !== _cocImmune));
+
+    // Position 0: immunity winner is safe
+    _cocChain.push({ position: 0, player: _cocImmune, pickedBy: null, type: 'immunity' });
+
+    // Idol plays — players can insert themselves before the chain starts
+    const _cocIdolHolders = gs.advantages.filter(a => a.type === 'idol' && _cocUnpicked.has(a.holder));
+    _cocIdolHolders.forEach(adv => {
+      const willPlay = pStats(adv.holder).strategic * 0.08 + (1 - pStats(adv.holder).boldness * 0.05) < Math.random();
+      if (willPlay || _cocUnpicked.size <= 2) {
+        const pos = _cocChain.length;
+        _cocChain.push({ position: pos, player: adv.holder, pickedBy: null, type: 'idol' });
+        _cocIdolPlays.push({ player: adv.holder, position: pos });
+        _cocUnpicked.delete(adv.holder);
+        gs.advantages = gs.advantages.filter(a => a !== adv);
+        if (!ep.idolPlays) ep.idolPlays = [];
+        ep.idolPlays.push({ player: adv.holder, type: 'idol', context: 'chain-of-command' });
+      }
+    });
+
+    // Build the chain — each picker selects from unpicked pool
+    let _cocCurrentPicker = _cocImmune;
+    while (_cocUnpicked.size > 1) {
+      const pool = [..._cocUnpicked];
+      const picked = wRandom(pool, candidate => {
+        const bond = getPerceivedBond(_cocCurrentPicker, candidate);
+        const allianceBonus = (gs.namedAlliances || []).some(a =>
+          a.members.includes(_cocCurrentPicker) && a.members.includes(candidate)
+        ) ? 3 : 0;
+        return Math.max(0.1, bond + 5 + allianceBonus + (Math.random() - 0.5) * 3);
+      });
+      const pos = _cocChain.length;
+      const totalPicks = _cocActive.length - 1 - _cocIdolPlays.length;
+      const pickFraction = (pos - _cocIdolPlays.length - 1) / Math.max(1, totalPicks - 1);
+
+      // Hesitation check
+      let hesitation = false;
+      let hesitationText = '';
+      const highBondRemaining = pool.filter(p => p !== picked && getBond(_cocCurrentPicker, p) >= 3);
+      if (highBondRemaining.length >= 1 && Math.random() < 0.6) {
+        hesitation = true;
+        const pr = pronouns(_cocCurrentPicker);
+        const agonizeOver = highBondRemaining[0];
+        hesitationText = _cocPick([
+          `${_cocCurrentPicker} freezes. ${pr.Sub} look${pr.sub === 'they' ? '' : 's'} between ${picked} and ${agonizeOver}, visibly torn.`,
+          `A long pause. ${_cocCurrentPicker}'s hand hovers — ${agonizeOver} or ${picked}? The silence is deafening.`,
+          `${_cocCurrentPicker} starts to point at ${agonizeOver}, then stops. Changes direction. Points at ${picked}.`,
+          `"This is the hardest thing I've done in this game." ${_cocCurrentPicker} takes a breath, then finally says ${picked}'s name.`,
+        ]);
+      }
+      const coldBondWith = pool.filter(p => p !== picked && getBond(_cocCurrentPicker, p) <= -2);
+      if (!hesitation && coldBondWith.length > 0 && Math.random() < 0.4) {
+        hesitation = true;
+        const skipped = coldBondWith[0];
+        hesitationText = _cocPick([
+          `${_cocCurrentPicker} doesn't even glance at ${skipped}. The snub is surgical.`,
+          `${skipped} watches ${_cocCurrentPicker}'s eyes. They never land on ${skipped}. Not once.`,
+          `"${picked}." No hesitation. ${skipped} gets the message loud and clear.`,
+          `${_cocCurrentPicker} calls ${picked}'s name instantly — a pointed message to everyone left standing.`,
+        ]);
+      }
+
+      _cocChain.push({ position: pos, player: picked, pickedBy: _cocCurrentPicker, type: 'pick', hesitation, hesitationText });
+      _cocUnpicked.delete(picked);
+
+      // Bond shifts based on position
+      if (pickFraction <= 0.25) {
+        addBond(_cocCurrentPicker, picked, 1);
+        _cocBondShifts.push({ from: _cocCurrentPicker, to: picked, delta: 1, reason: 'early pick — loyalty confirmed' });
+      } else if (_cocUnpicked.size === 1) {
+        addBond(_cocCurrentPicker, picked, -1);
+        _cocBondShifts.push({ from: _cocCurrentPicker, to: picked, delta: -1, reason: 'second-to-last — barely saved' });
+      }
+
+      // Popularity for hesitation
+      if (hesitation) {
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[_cocCurrentPicker] = (gs.popularity[_cocCurrentPicker] || 0) + 1;
+      }
+
+      _cocCurrentPicker = picked;
+    }
+
+    // Last unpicked = eliminated
+    const _cocEliminated = [..._cocUnpicked][0];
+    _cocChain.push({ position: _cocChain.length, player: _cocEliminated, pickedBy: null, type: 'eliminated' });
+
+    // Bond damage for eliminated player
+    addBond(_cocEliminated, _cocCurrentPicker, -2);
+    _cocBondShifts.push({ from: _cocEliminated, to: _cocCurrentPicker, delta: -2, reason: 'last picker — could have saved me' });
+    addBond(_cocEliminated, _cocImmune, -1);
+    _cocBondShifts.push({ from: _cocEliminated, to: _cocImmune, delta: -1, reason: 'blame the one who started it' });
+
+    // Popularity
+    if (!gs.popularity) gs.popularity = {};
+    gs.popularity[_cocImmune] = (gs.popularity[_cocImmune] || 0) + 2;
+    gs.popularity[_cocEliminated] = (gs.popularity[_cocEliminated] || 0) + 3;
+
+    // Store chain data
+    ep.chainOfCommand = {
+      immunityWinner: _cocImmune,
+      idolPlays: _cocIdolPlays,
+      chain: _cocChain,
+      eliminated: _cocEliminated,
+      bondShifts: _cocBondShifts,
+    };
+    ep.eliminated = _cocEliminated;
+
+    // Camp events for next episode
+    gs._chainCampEvents = [];
+    _cocChain.forEach(entry => {
+      if (entry.type !== 'pick') return;
+      const pickFrac = (entry.position - _cocIdolPlays.length - 1) / Math.max(1, _cocActive.length - 2 - _cocIdolPlays.length);
+      if (pickFrac <= 0.25) {
+        gs._chainCampEvents.push({ type: 'chainGratitude', picker: entry.pickedBy, picked: entry.player });
+      } else if (pickFrac >= 0.75) {
+        gs._chainCampEvents.push({ type: 'chainResentment', picker: entry.pickedBy, picked: entry.player });
+      }
+    });
+    if (Math.random() < 0.3) {
+      const closestAlly = gs.activePlayers.filter(p => p !== _cocEliminated && p !== _cocImmune)
+        .sort((a, b) => getBond(_cocEliminated, b) - getBond(_cocEliminated, a))[0];
+      if (closestAlly) {
+        gs._chainCampEvents.push({ type: 'chainBlame', ally: closestAlly, immunityWinner: _cocImmune, eliminated: _cocEliminated });
+      }
+    }
+
+    // Elimination processing (RI, jury, etc.)
+    if (isRIStillActive()) {
+      if (seasonConfig.riFormat === 'rescue') {
+        ep.riChoice = 'RESCUE ISLAND';
+        gs.riPlayers.push(_cocEliminated);
+        if (!gs.riArrivalEp) gs.riArrivalEp = {};
+        gs.riArrivalEp[_cocEliminated] = epNum;
+        ep.riArrival = { name: _cocEliminated, existingResidents: gs.riPlayers.filter(p => p !== _cocEliminated) };
+      } else {
+        const _cocRiChoice = simulateRIChoice(_cocEliminated);
+        ep.riChoice = _cocRiChoice;
+        if (_cocRiChoice === 'REDEMPTION ISLAND') gs.riPlayers.push(_cocEliminated);
+        else { gs.eliminated.push(_cocEliminated); if (gs.isMerged) gs.jury.push(_cocEliminated); }
+      }
+    } else {
+      gs.eliminated.push(_cocEliminated);
+      if (gs.isMerged) gs.jury.push(_cocEliminated);
+    }
+    gs.activePlayers = gs.activePlayers.filter(p => p !== _cocEliminated);
+    gs.tribes = gs.tribes.map(t => ({ ...t, members: t.members.filter(p => p !== _cocEliminated) }));
+    handleAdvantageInheritance(_cocEliminated, ep);
+    gs.advantages = gs.advantages.filter(a => a.holder !== _cocEliminated);
+
+    // Post-tribal processing
+    gs.episode = epNum;
+    ep.bondChanges = updateBonds([], ep.eliminated, alliances);
+    detectBetrayals(ep);
+    applyPostTribalConsequences(ep);
+    checkAllianceRecruitment(ep);
+    if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
+
+    // RI life/duel after chain elimination
+    if (seasonConfig.ri && gs.riPlayers && gs.riPlayers.length > 0 && !ep.riDuel) {
+      ep.riPlayersPreDuel = [...gs.riPlayers];
+      if (seasonConfig.riFormat === 'rescue') {
+        generateRescueIslandLife(ep);
+      } else {
+        generateRILifeEvents(ep);
+      }
+      if (seasonConfig.riFormat !== 'rescue' && gs.riPlayers.length >= 2) {
+        const duel = simulateRIDuel(gs.riPlayers);
+        ep.riDuel = duel;
+        gs.riPlayers = gs.riPlayers.filter(p => p !== duel.loser);
+        if (gs.isMerged) gs.jury.push(duel.loser);
+        gs.eliminated.push(duel.loser);
+        if (!gs.riDuelHistory) gs.riDuelHistory = [];
+        gs.riDuelHistory.push({ ep: epNum, resident: duel.winner, arrival: duel.loser, winner: duel.winner, loser: duel.loser, challengeType: duel.challengeType, isThreeWay: duel.isThreeWay, duelists: duel.duelists });
+        generateRIPostDuelEvents(ep);
+      }
+    }
+
+    gs.episodeHistory.push({
+      num: epNum, eliminated: ep.eliminated || null, firstEliminated: null, riChoice: ep.riChoice || null,
+      immunityWinner: ep.immunityWinner || null,
+      challengeType: ep.challengeType || 'individual', isMerge: ep.isMerge,
+      challengeLabel: ep.challengeLabel || null, challengeCategory: ep.challengeCategory || null,
+      challengeDesc: ep.challengeDesc || '',
+      challengePlacements: ep.challengePlacements ? ep.challengePlacements.map(t => ({ name: t.name, members: [...(t.members || [])] })) : null,
+      chalMemberScores: ep.chalMemberScores || null, chalPlacements: ep.chalPlacements || null,
+      rewardChalData: null,
+      tribalTribe: null, tribalPlayers: ep.tribalPlayers ? [...ep.tribalPlayers] : null,
+      votes: {}, alliances: (ep.alliances || []).map(a => ({ ...a })),
+      tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
+      twistScenes: [], campEvents: null, summaryText: '', gsSnapshot: window.snapshotGameState(),
+      twists: (ep.twists || []).map(t => ({ ...t })),
+      votingLog: [], revoteLog: [],
+      idolPlays: ep.idolPlays || [], shotInDark: null,
+      socialBombs: ep.socialBombs || [], chalThreatEvents: ep.chalThreatEvents || [],
+      goatEvents: ep.goatEvents || [], allianceQuits: ep.allianceQuits || [],
+      allianceRecruits: ep.allianceRecruits || [], chalSitOuts: ep.chalSitOuts || null,
+      riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null,
+      riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null,
+      rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null,
+      riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
+      isChainOfCommand: true, chainOfCommand: ep.chainOfCommand,
+    });
+    const twistScenesCOC = generateTwistScenes(ep);
+    gs.episodeHistory[gs.episodeHistory.length - 1].twistScenes = twistScenesCOC;
+    ep.twistScenes = twistScenesCOC;
+    gs.episodeHistory[gs.episodeHistory.length - 1].campEvents = ep.campEvents || null;
+    gs.episodeHistory[gs.episodeHistory.length - 1].tipOffCampEvents = ep.tipOffCampEvents || null;
+    const stCOC = generateSummaryText(ep);
+    gs.episodeHistory[gs.episodeHistory.length - 1].summaryText = stCOC; ep.summaryText = stCOC;
     updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
     updateSurvival(ep);
     window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
@@ -6160,6 +6383,8 @@ function simulateJuryRoundtable(ep) {
     greecesPieces:        ep.challengeData        || null,
     isHangarBlack:        ep.isHangarBlack        || false,
     hangarBlack:          ep.challengeData        || null,
+    isChainOfCommand:     ep.isChainOfCommand     || false,
+    chainOfCommand:       ep.chainOfCommand       || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,

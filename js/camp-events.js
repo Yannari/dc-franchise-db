@@ -363,6 +363,44 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
     events.push({ type: 'idolFound', advType, text: lines[Math.floor(Math.random() * lines.length)], players: [name], badgeText: 'ADVANTAGE FOUND', badgeClass: 'gold' });
   });
 
+  // Chain of Command aftermath — gratitude, resentment, blame
+  if (gs._chainCampEvents && gs._chainCampEvents.length > 0) {
+    const _cocEvts = gs._chainCampEvents.splice(0);
+    const _cocPk = arr => arr[Math.floor(Math.random() * arr.length)];
+    _cocEvts.forEach(evt => {
+      if (evt.type === 'chainGratitude' && group.includes(evt.picked) && group.includes(evt.picker)) {
+        const pr = pronouns(evt.picked);
+        addBond(evt.picked, evt.picker, 1);
+        events.push({ type: 'chainGratitude', players: [evt.picked, evt.picker], badgeText: 'GRATEFUL', badgeClass: 'green',
+          text: _cocPk([
+            `${evt.picked} pulls ${evt.picker} aside. "You picked me early. I won't forget that." ${pr.PosAdj} loyalty runs deep.`,
+            `${evt.picked} thanks ${evt.picker} quietly at the well. The early pick meant everything — a public declaration of trust.`,
+            `"You saved me when you didn't have to." ${evt.picked} looks at ${evt.picker} with genuine gratitude. Their bond is stronger now.`,
+            `${evt.picked} finds ${evt.picker} alone. "I know what that pick meant. I've got your back." The alliance solidifies.`,
+          ]) });
+      } else if (evt.type === 'chainResentment' && group.includes(evt.picked) && group.includes(evt.picker)) {
+        const pr = pronouns(evt.picked);
+        addBond(evt.picked, evt.picker, -1);
+        events.push({ type: 'chainResentment', players: [evt.picked, evt.picker], badgeText: 'RESENTFUL', badgeClass: 'red',
+          text: _cocPk([
+            `${evt.picked} corners ${evt.picker}. "You picked me LAST. Everyone saw that." The damage is done.`,
+            `"I was your afterthought." ${evt.picked} won't look at ${evt.picker}. The late pick exposed where ${pr.sub} really stand${pr.sub === 'they' ? '' : 's'}.`,
+            `${evt.picked} brings it up at camp. "You had choices and I was at the bottom. That tells me everything." ${evt.picker} has no good answer.`,
+            `The confrontation is quiet but brutal. ${evt.picked} asks ${evt.picker} one question: "Why was I last?" The silence says everything.`,
+          ]) });
+      } else if (evt.type === 'chainBlame' && group.includes(evt.ally) && group.includes(evt.immunityWinner)) {
+        addBond(evt.ally, evt.immunityWinner, -2);
+        events.push({ type: 'chainBlame', players: [evt.ally, evt.immunityWinner], badgeText: 'BLAME', badgeClass: 'red',
+          text: _cocPk([
+            `${evt.ally} gets in ${evt.immunityWinner}'s face. "You started that chain. ${evt.eliminated} is gone because of YOU." The accusation hangs in the air.`,
+            `"You had the power and you used it to destroy someone." ${evt.ally} won't let ${evt.immunityWinner} forget what happened to ${evt.eliminated}.`,
+            `${evt.ally} blames ${evt.immunityWinner} for everything. "That chain was YOUR doing. ${evt.eliminated} never had a chance." The camp goes silent.`,
+            `"You picked first. You set the order. ${evt.eliminated}'s blood is on your hands." ${evt.ally} is furious. ${evt.immunityWinner} has made a permanent enemy.`,
+          ]) });
+      }
+    });
+  }
+
   // Participation tracker — penalises players already featured in loop events (weight ÷ 1.9^appearances).
   // Idol finds are excluded so finding an advantage doesn't burn a player's screentime quota.
   const _parts = {};

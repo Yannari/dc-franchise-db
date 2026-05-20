@@ -4097,6 +4097,709 @@ export function riDuelRevealAll(screenKey, totalSteps) {
   _riReapplyVisibility(suffix, st.idx, st.total);
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// CHAIN OF COMMAND — Military Tribunal VP Screens
+// ══════════════════════════════════════════════════════════════════════
+
+function _cocEnsureState(key, total) {
+  if (!_tvState[key]) _tvState[key] = { idx: -1, total };
+  return _tvState[key];
+}
+
+function _cocReapplyVisibility(suffix, upToIdx, total) {
+  for (let i = 0; i <= upToIdx; i++) {
+    const el = document.getElementById(`coc-step-${suffix}-${i}`);
+    if (el) el.classList.add('coc-visible');
+  }
+  const counter = document.getElementById(`coc-counter-${suffix}`);
+  if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total}`;
+  if (upToIdx >= total - 1) {
+    const controls = document.getElementById(`coc-controls-${suffix}`);
+    if (controls) { const btns = controls.querySelectorAll('.coc-btn'); btns.forEach(b => b.style.opacity = '0.4'); }
+  }
+}
+
+function _cocUpdateSidebar(screenKey) {
+  const sideEl = document.getElementById('coc-sidebar-inner');
+  if (!sideEl) return;
+  const epIdx = window.vpEpNum;
+  const epRecord = gs.episodeHistory?.[epIdx - 1];
+  if (!epRecord) return;
+  const coc = epRecord.chainOfCommand;
+  if (!coc) return;
+  const st = _tvState[screenKey];
+  const revealedIdx = st ? st.idx : -1;
+  const chain = coc.chain || [];
+  let html = `<div style="font-family:'Black Ops One',sans-serif;font-size:11px;letter-spacing:3px;color:#b8860b;text-align:center;margin-bottom:10px">CHAIN TRACKER</div>`;
+  html += `<div style="display:flex;flex-direction:column;gap:2px;align-items:center">`;
+  chain.forEach((link, i) => {
+    const revealed = i <= revealedIdx;
+    if (revealed) {
+      const isElim = link.type === 'eliminated';
+      const borderColor = isElim ? '#cc3333' : (link.type === 'immunity' ? '#b8860b' : (link.type === 'idol' ? '#cc3333' : '#4a5028'));
+      html += `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:4px;background:rgba(74,80,40,0.2);border:1px solid ${borderColor};width:100%">`;
+      html += `<div style="flex-shrink:0">${rpPortrait(link.player, 'pb-xs')}</div>`;
+      html += `<div style="flex:1;min-width:0">`;
+      html += `<div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:${isElim ? '#cc3333' : '#c3b091'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${link.player}</div>`;
+      html += `<div style="font-size:9px;color:#8b949e;font-family:'Share Tech Mono',monospace">#${link.position + 1} ${link.type === 'immunity' ? 'IMMUNITY' : link.type === 'idol' ? 'IDOL' : link.type === 'eliminated' ? 'DENIED' : 'CLEARED'}</div>`;
+      html += `</div></div>`;
+      if (i < chain.length - 1 && !isElim) {
+        html += `<div style="width:2px;height:8px;background:#4a5028"></div>`;
+      }
+    } else {
+      html += `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:4px;background:rgba(42,52,57,0.4);border:1px dashed rgba(195,176,145,0.15);width:100%">`;
+      html += `<div style="width:36px;height:36px;border-radius:50%;background:repeating-linear-gradient(45deg,rgba(42,52,57,0.6),rgba(42,52,57,0.6) 3px,rgba(74,80,40,0.15) 3px,rgba(74,80,40,0.15) 6px);flex-shrink:0"></div>`;
+      html += `<div style="flex:1"><div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(195,176,145,0.3);letter-spacing:2px">CLASSIFIED</div></div>`;
+      html += `</div>`;
+      if (i < chain.length - 1) {
+        html += `<div style="width:2px;height:8px;background:rgba(74,80,40,0.2)"></div>`;
+      }
+    }
+  });
+  html += `</div>`;
+  sideEl.innerHTML = html;
+}
+
+export function cocRevealNext(screenKey, totalSteps) {
+  const st = _cocEnsureState(screenKey, totalSteps);
+  if (st.idx >= st.total - 1) return;
+  st.idx++;
+  _cocReapplyVisibility(screenKey, st.idx, st.total);
+  const el = document.getElementById(`coc-step-${screenKey}-${st.idx}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  _cocUpdateSidebar(screenKey);
+}
+
+export function cocRevealAll(screenKey, totalSteps) {
+  const st = _cocEnsureState(screenKey, totalSteps);
+  st.idx = st.total - 1;
+  _cocReapplyVisibility(screenKey, st.idx, st.total);
+  _cocUpdateSidebar(screenKey);
+}
+
+function _cocIcon(type) {
+  const icons = {
+    'dog-tag': `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="3" ry="3"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="12" x2="14" y2="12"/><circle cx="12" cy="16" r="1.5"/><line x1="12" y1="1" x2="12" y2="3"/></svg>`,
+    'chain-link': `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+    'clearance-stamp': `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 12h10"/><path d="M7 8h10"/><path d="M7 16h6"/><circle cx="17" cy="16" r="2" fill="currentColor"/></svg>`,
+    'crosshairs': `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>`,
+    'star': `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="currentColor" stroke-width="0.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>`,
+    'shield': `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  };
+  return `<span class="coc-icon" style="display:inline-flex;align-items:center;color:currentColor">${icons[type] || ''}</span>`;
+}
+
+function _cocShell(content, title) {
+  return `<div class="coc-shell">
+    <div class="coc-bg-sweep"></div>
+    <div class="coc-content">
+      ${content}
+    </div>
+  </div>`;
+}
+
+function _cocSeedPick(arr, name, ep) {
+  return arr[([...name].reduce((s, c) => s + c.charCodeAt(0), 0) + (ep?.num || 0) * 7) % arr.length];
+}
+
+function _cocCommChatter() {
+  const lines = [
+    'COMMAND POST ALPHA -- ALL UNITS STAND BY FOR CHAIN DIRECTIVE',
+    'PRIORITY TRANSMISSION -- CLEARANCE REVIEW IN PROGRESS',
+    'HQ ADVISORY -- PERSONNEL STATUS UPDATE IMMINENT',
+    'SECURE CHANNEL -- AUTHORIZATION SEQUENCE INITIATED',
+    'FIELD DISPATCH -- CHAIN OF COMMAND PROTOCOL ENGAGED',
+    'COMMS INTERCEPT -- TRIBUNAL PROCEEDINGS ACTIVE',
+    'OPS CENTER -- AWAITING NEXT SELECTION CONFIRMATION',
+    'TACTICAL FEED -- REVIEWING PERSONNEL DOSSIERS',
+    'BATTALION UPDATE -- SAFETY PROTOCOLS PROCESSING',
+    'ENCRYPTED RELAY -- STANDING BY FOR NEXT LINK',
+  ];
+  return lines[Math.floor(Math.random() * lines.length)];
+}
+
+function _cocCSS() {
+  return `<style>
+@import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap');
+.coc-shell {
+  position:relative;max-width:1100px;margin:0 auto;
+  background:#1a1f22;color:#c3b091;font-family:'Share Tech Mono',monospace;
+  border:2px solid #4a5028;border-radius:8px;overflow:hidden;min-height:600px;
+}
+.coc-bg-sweep {
+  position:absolute;top:46px;left:0;right:0;bottom:0;pointer-events:none;
+  background:radial-gradient(circle at 50% 50%,rgba(74,80,40,0.08) 0%,transparent 70%);
+  overflow:hidden;z-index:0;
+}
+.coc-bg-sweep::before {
+  content:'';position:absolute;top:50%;left:50%;width:300%;height:300%;
+  transform-origin:center center;
+  background:conic-gradient(from 0deg,transparent 0%,rgba(74,80,40,0.06) 5%,transparent 10%);
+  animation:coc-radar 6s linear infinite;
+}
+@keyframes coc-radar { from { transform:translate(-50%,-50%) rotate(0deg); } to { transform:translate(-50%,-50%) rotate(360deg); } }
+@media(prefers-reduced-motion:reduce) {
+  .coc-bg-sweep::before { animation:none; }
+  .coc-step { transition:none !important; }
+  .coc-stamp { animation:none !important; }
+}
+.coc-content { position:relative;z-index:1;padding:24px; }
+.coc-header {
+  font-family:'Black Ops One',sans-serif;font-size:32px;letter-spacing:4px;
+  color:#b8860b;text-align:center;text-shadow:0 0 20px rgba(184,134,11,0.3);
+  margin-bottom:4px;
+}
+.coc-subheader {
+  font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:3px;
+  color:#8b949e;text-align:center;margin-bottom:20px;
+}
+.coc-rule-box {
+  background:rgba(74,80,40,0.1);border:1px solid rgba(74,80,40,0.3);border-radius:6px;
+  padding:16px;margin:16px 0;font-size:12px;line-height:1.8;color:#c3b091;
+}
+.coc-rule-box li { margin-bottom:4px; }
+.coc-winner-frame {
+  text-align:center;padding:20px;margin:20px auto;max-width:300px;
+  border:2px solid #b8860b;border-radius:8px;
+  background:linear-gradient(135deg,rgba(184,134,11,0.08),rgba(74,80,40,0.12));
+}
+.coc-star-badge {
+  display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
+  background:rgba(184,134,11,0.15);border:1px solid #b8860b;border-radius:12px;
+  color:#b8860b;font-family:'Black Ops One',sans-serif;font-size:10px;letter-spacing:2px;
+  margin-top:8px;
+}
+.coc-chain-layout { display:flex;gap:20px;margin-top:16px; }
+.coc-chain-main { flex:1;min-width:0; }
+.coc-chain-sidebar {
+  width:200px;flex-shrink:0;
+  background:rgba(42,52,57,0.4);border:1px solid rgba(74,80,40,0.2);border-radius:6px;
+  padding:10px;position:sticky;top:60px;max-height:calc(100vh - 120px);overflow-y:auto;
+}
+.coc-step {
+  opacity:0;max-height:0;overflow:hidden;
+  transition:opacity 0.4s ease,max-height 0.5s ease;margin-bottom:0;
+}
+.coc-step.coc-visible { opacity:1;max-height:3000px;margin-bottom:12px; }
+.coc-card {
+  background:rgba(42,52,57,0.6);border:1px solid rgba(74,80,40,0.3);border-radius:8px;
+  padding:16px;position:relative;overflow:hidden;
+}
+.coc-card-immunity { border-color:#b8860b;background:linear-gradient(135deg,rgba(184,134,11,0.06),rgba(42,52,57,0.6)); }
+.coc-card-idol { border-color:#cc3333;background:linear-gradient(135deg,rgba(204,51,51,0.06),rgba(42,52,57,0.6)); }
+.coc-card-pick { border-color:rgba(74,80,40,0.4); }
+.coc-card-hesitation { border-color:#b8860b;border-style:dashed;background:rgba(184,134,11,0.04); }
+.coc-card-eliminated { border-color:#cc3333;background:linear-gradient(135deg,rgba(204,51,51,0.08),rgba(42,52,57,0.6)); }
+.coc-connector {
+  width:2px;height:24px;background:linear-gradient(to bottom,#4a5028,rgba(74,80,40,0.2));
+  margin:0 auto;position:relative;
+}
+.coc-connector::before,.coc-connector::after {
+  content:'';position:absolute;left:50%;transform:translateX(-50%);
+  width:6px;height:6px;border-radius:50%;background:#4a5028;
+}
+.coc-connector::before { top:-3px; }
+.coc-connector::after { bottom:-3px; }
+.coc-position-tag {
+  display:inline-flex;align-items:center;gap:4px;padding:2px 8px;
+  background:rgba(74,80,40,0.2);border:1px solid rgba(74,80,40,0.4);border-radius:3px;
+  font-family:'Black Ops One',sans-serif;font-size:10px;letter-spacing:2px;color:#c3b091;
+}
+.coc-stamp {
+  position:absolute;top:8px;right:8px;
+  font-family:'Black Ops One',sans-serif;font-size:10px;letter-spacing:3px;
+  padding:4px 10px;border:2px solid;border-radius:3px;
+  transform:rotate(-5deg);animation:coc-stamp-in 0.3s ease-out;
+}
+@keyframes coc-stamp-in { from { transform:rotate(-5deg) scale(1.5);opacity:0; } to { transform:rotate(-5deg) scale(1);opacity:1; } }
+.coc-stamp-cleared { color:#4a5028;border-color:#4a5028;background:rgba(74,80,40,0.1); }
+.coc-stamp-override { color:#cc3333;border-color:#cc3333;background:rgba(204,51,51,0.1); }
+.coc-stamp-denied { color:#cc3333;border-color:#cc3333;background:rgba(204,51,51,0.15); }
+.coc-picker-label {
+  font-size:9px;letter-spacing:2px;color:#8b949e;margin-bottom:4px;
+  font-family:'Share Tech Mono',monospace;
+}
+.coc-player-name {
+  font-family:'Black Ops One',sans-serif;font-size:18px;color:#c3b091;margin-top:6px;
+}
+.coc-reaction {
+  font-size:12px;color:#8b949e;font-style:italic;line-height:1.6;
+  margin-top:10px;padding:8px 12px;
+  border-left:2px solid rgba(74,80,40,0.3);background:rgba(42,52,57,0.3);
+}
+.coc-comm-chatter {
+  font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;
+  color:rgba(74,80,40,0.5);text-align:center;padding:6px 0;
+  text-transform:uppercase;
+}
+.coc-summary-card {
+  display:flex;align-items:center;gap:12px;padding:10px 14px;
+  background:rgba(42,52,57,0.4);border:1px solid rgba(74,80,40,0.2);border-radius:6px;
+  margin-bottom:2px;
+}
+.coc-summary-eliminated {
+  border-color:#cc3333;background:rgba(204,51,51,0.06);
+}
+.coc-bond-shift {
+  display:inline-flex;align-items:center;gap:4px;padding:2px 8px;
+  border-radius:10px;font-size:10px;font-family:'Share Tech Mono',monospace;
+}
+.coc-bond-pos { background:rgba(74,80,40,0.15);color:#7a9a3a;border:1px solid rgba(74,80,40,0.3); }
+.coc-bond-neg { background:rgba(204,51,51,0.08);color:#cc3333;border:1px solid rgba(204,51,51,0.2); }
+.coc-controls {
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:rgba(26,31,34,0.95);border-top:2px solid #4a5028;
+  padding:8px 16px;display:flex;align-items:center;justify-content:center;gap:12px;
+  backdrop-filter:blur(8px);
+}
+.coc-btn {
+  padding:6px 16px;border:1px solid #4a5028;border-radius:4px;
+  background:rgba(74,80,40,0.15);color:#c3b091;cursor:pointer;
+  font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;
+  transition:background 0.2s;
+}
+.coc-btn:hover { background:rgba(74,80,40,0.3); }
+.coc-eyebrow {
+  font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;
+  color:#8b949e;text-align:center;margin-bottom:12px;
+}
+.coc-classified-overlay {
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(45deg,rgba(42,52,57,0.7),rgba(42,52,57,0.7) 4px,rgba(74,80,40,0.08) 4px,rgba(74,80,40,0.08) 8px);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Black Ops One',sans-serif;font-size:14px;letter-spacing:4px;color:rgba(195,176,145,0.2);
+}
+.coc-elim-portrait { filter:grayscale(0.8) brightness(0.6); }
+@media(max-width:700px) {
+  .coc-chain-layout { flex-direction:column; }
+  .coc-chain-sidebar { width:100%;position:static;max-height:none; }
+}
+</style>`;
+}
+
+function _cocPickReaction(name, ep, positionTier, type) {
+  const arch = players.find(p => p.name === name)?.archetype || '';
+  const pr = pronouns(name);
+  const pick = arr => _cocSeedPick(arr, name, ep);
+
+  if (type === 'immunity') {
+    return pick([
+      `${name} stands at the front. The necklace is heavy — but the power it grants is heavier.`,
+      `${name} earned this. Now ${pr.sub} ${pr.sub === 'they' ? 'decide' : 'decides'} who lives and who dies.`,
+      `Safety and authority. ${name} has both tonight. The chain starts here.`,
+      `${name} clips on the necklace. Every eye in camp watches. The first link is forged.`,
+    ]);
+  }
+
+  if (type === 'idol') {
+    return pick([
+      `${name} plays an idol. The chain cannot touch ${pr.obj} — ${pr.sub} ${pr.sub === 'they' ? 'stand' : 'stands'} outside the hierarchy.`,
+      `An idol override. ${name} bypasses the chain entirely. Untouchable.`,
+      `The idol burns bright. ${name} is safe — not because anyone chose ${pr.obj}, but because ${pr.sub} chose ${pr.ref}.`,
+      `${name} reveals the idol. A murmur ripples through the group. The chain just lost a link.`,
+    ]);
+  }
+
+  if (type === 'eliminated') {
+    if (['villain', 'mastermind', 'schemer'].includes(arch)) {
+      return pick([
+        `"You think this chain means anything? Every single person who picked before me made a strategic mistake. I'll remember all of it."`,
+        `"Last picked. Fine. I've been underestimated my whole game. But the jury sees everything — and they'll remember who had the guts to play."`,
+        `"Nobody had the nerve to save me. That tells me everything I need to know about the courage left in this game."`,
+        `"I played harder than anyone here. And this is how it ends — not with a vote, but with silence. The loudest silence I've ever heard."`,
+      ]);
+    }
+    if (['hero', 'loyal-soldier', 'social-butterfly', 'underdog'].includes(arch)) {
+      return pick([
+        `"I trusted people. Maybe too many. But I'd rather go out believing in this game than playing it cynically."`,
+        `"Nobody saved me. That hurts more than any vote. But I hold my head high — I played with integrity."`,
+        `"I gave everything to this tribe. Every challenge, every conversation, every late-night strategy talk. This is the thanks I get."`,
+        `"The chain spoke. I wasn't anyone's priority. That's a hard truth, but at least it's honest."`,
+      ]);
+    }
+    return pick([
+      `"When nobody picks your name, you learn exactly where you stand. Lower than I thought."`,
+      `"I knew I was on the outside. I just didn't know how far outside. Now I do."`,
+      `"No vote. No tribal. Just... passed over. That might be the loneliest way to leave this game."`,
+      `"The chain ran out before it reached me. I always expected to go out fighting. Not like this."`,
+    ]);
+  }
+
+  // Regular picks by position tier
+  if (positionTier === 'early') {
+    if (['hero', 'loyal-soldier'].includes(arch)) {
+      return pick([
+        `${name} breathes out. Picked early — the alliance held. Loyalty rewarded.`,
+        `Relief washes over ${name}. An early pick means trust. That's currency in this game.`,
+        `${name} nods quietly. Saved without drama. Exactly how ${pr.sub} ${pr.sub === 'they' ? 'like' : 'likes'} it.`,
+        `${name} steps forward. The gratitude is visible, but so is the calculation behind ${pr.posAdj} eyes.`,
+      ]);
+    }
+    if (['villain', 'mastermind', 'schemer'].includes(arch)) {
+      return pick([
+        `${name} smirks. Of course ${pr.sub} ${pr.sub === 'they' ? 'were' : 'was'} picked early. ${pr.Sub} made sure of it.`,
+        `${name} accepts the safety with a nod — already calculating what this information means for the next vote.`,
+        `An early pick for ${name}. The web holds. Every thread exactly where ${pr.sub} placed it.`,
+        `${name} masks the relief with confidence. The chain confirms what ${pr.sub} already knew — ${pr.posAdj} position is secure.`,
+      ]);
+    }
+    return pick([
+      `${name} exhales. An early selection. The tension drains from ${pr.posAdj} shoulders.`,
+      `Safety comes quick for ${name}. Picked early — a vote of confidence from the chain.`,
+      `${name} steps into the safe zone. An early pick is a statement: you belong.`,
+      `${name} is selected. Relief and something like pride cross ${pr.posAdj} face.`,
+    ]);
+  }
+
+  if (positionTier === 'middle') {
+    if (['social-butterfly', 'showmancer'].includes(arch)) {
+      return pick([
+        `${name} watches the chain build. Middle of the pack — safe, but not prioritized. ${pr.Sub} ${pr.sub === 'they' ? 'file' : 'files'} that away.`,
+        `A mid-chain pick for ${name}. Not first, not last. The social read is clear — work to do.`,
+        `${name} is saved. Not early enough to feel secure, not late enough to panic. The middle is its own kind of purgatory.`,
+        `${name} joins the chain. ${pr.Sub} ${pr.sub === 'they' ? 'smile' : 'smiles'} politely, but the position tells a story.`,
+      ]);
+    }
+    return pick([
+      `${name} is chosen. Somewhere in the middle — safe but aware of what the order means.`,
+      `The chain reaches ${name}. Not first, not last. A position that invites questions.`,
+      `${name} takes ${pr.posAdj} place in the chain. The relief is tempered by the wait.`,
+      `A measured pick. ${name} is safe, but the delay spoke volumes about ${pr.posAdj} standing.`,
+    ]);
+  }
+
+  // Late picks
+  if (['challenge-beast', 'hothead'].includes(arch)) {
+    return pick([
+      `${name} was almost last. The frustration is barely concealed — ${pr.sub} ${pr.sub === 'they' ? 'know' : 'knows'} what a late pick means.`,
+      `Saved at the last possible moment. ${name} clenches ${pr.posAdj} jaw. This isn't over.`,
+      `${name} slides into safety by a thread. The late pick is a warning shot ${pr.sub} won't forget.`,
+      `Near the bottom of the chain. ${name} stares at the remaining players. That could have been ${pr.obj}.`,
+    ]);
+  }
+  return pick([
+    `${name} is one of the last picked. The sweat is real. The implications are clear.`,
+    `A late save for ${name}. The chain almost ran out before it reached ${pr.obj}.`,
+    `${name} barely made the cut. The chain had one more link — and it was ${pr.posAdj} name on it.`,
+    `The last safe pick. ${name} exhales. Tomorrow, ${pr.sub} ${pr.sub === 'they' ? 'need' : 'needs'} to change ${pr.posAdj} position.`,
+  ]);
+}
+
+export function rpBuildCOCBriefing(ep) {
+  const coc = ep.chainOfCommand;
+  if (!coc) return '';
+  const chain = coc.chain || [];
+  const winner = coc.immunityWinner;
+  const totalPlayers = chain.length;
+  const css = _cocCSS();
+
+  let html = css;
+  html += _cocShell(`
+    <div class="coc-eyebrow">EPISODE ${ep.num} // CHAIN OF COMMAND</div>
+    <div class="coc-header">CHAIN OF COMMAND</div>
+    <div class="coc-subheader">MILITARY TRIBUNAL PROTOCOL</div>
+
+    <div style="position:relative;text-align:center;margin:20px 0">
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);
+        font-family:'Black Ops One',sans-serif;font-size:48px;letter-spacing:6px;
+        color:rgba(204,51,51,0.08);pointer-events:none;white-space:nowrap">CLASSIFIED</div>
+    </div>
+
+    <div class="coc-winner-frame">
+      <div class="coc-picker-label">IMMUNITY WINNER</div>
+      ${rpPortrait(winner, 'xl')}
+      <div class="coc-player-name">${winner}</div>
+      <div style="font-size:10px;color:#8b949e;margin-top:2px">${vpArchLabel(winner)}</div>
+      <div class="coc-star-badge">${_cocIcon('star')} COMMANDING OFFICER</div>
+    </div>
+
+    <div class="coc-rule-box">
+      <div style="font-family:'Black Ops One',sans-serif;font-size:12px;letter-spacing:2px;color:#b8860b;margin-bottom:8px">
+        ${_cocIcon('chain-link')} OPERATIONAL BRIEFING
+      </div>
+      <ul style="margin:0;padding-left:16px;list-style:none">
+        <li style="margin-bottom:6px">${_cocIcon('star')} <strong>${winner}</strong> won immunity and picks one player to save.</li>
+        <li style="margin-bottom:6px">${_cocIcon('chain-link')} That player then picks the next. The chain continues.</li>
+        <li style="margin-bottom:6px">${_cocIcon('crosshairs')} The last player remaining — unpicked by anyone — is eliminated.</li>
+        <li>${_cocIcon('shield')} Idol holders bypass the chain entirely.</li>
+      </ul>
+    </div>
+
+    <div style="display:flex;justify-content:center;gap:20px;margin-top:20px">
+      <div style="text-align:center">
+        <div style="font-family:'Black Ops One',sans-serif;font-size:24px;color:#b8860b">${totalPlayers}</div>
+        <div style="font-size:9px;letter-spacing:2px;color:#8b949e">PERSONNEL</div>
+      </div>
+      <div style="width:1px;background:rgba(74,80,40,0.3)"></div>
+      <div style="text-align:center">
+        <div style="font-family:'Black Ops One',sans-serif;font-size:24px;color:#b8860b">${totalPlayers - 1}</div>
+        <div style="font-size:9px;letter-spacing:2px;color:#8b949e">CHAIN LINKS</div>
+      </div>
+      <div style="width:1px;background:rgba(74,80,40,0.3)"></div>
+      <div style="text-align:center">
+        <div style="font-family:'Black Ops One',sans-serif;font-size:24px;color:#cc3333">1</div>
+        <div style="font-size:9px;letter-spacing:2px;color:#8b949e">DENIED</div>
+      </div>
+    </div>
+
+    <div class="coc-comm-chatter" style="margin-top:20px">${_cocCommChatter()}</div>
+  `, 'CHAIN OF COMMAND');
+
+  return html;
+}
+
+export function rpBuildCOCChain(ep) {
+  const coc = ep.chainOfCommand;
+  if (!coc) return '';
+  const chain = coc.chain || [];
+  const stateKey = `coc-chain-${ep.num}`;
+  const css = _cocCSS();
+
+  // Build the steps — each chain link is a step. Hesitations are their own steps too.
+  const steps = [];
+  chain.forEach((link, i) => {
+    // If hesitation, add a hesitation card first
+    if (link.hesitation && link.hesitationText) {
+      steps.push({ type: 'hesitation', link, index: i });
+    }
+    steps.push({ type: 'link', link, index: i });
+  });
+
+  const totalSteps = steps.length;
+
+  // Determine position tiers
+  const pickLinks = chain.filter(l => l.type === 'pick');
+  const totalPicks = pickLinks.length;
+  const earlyThreshold = Math.ceil(totalPicks * 0.25);
+  const lateThreshold = Math.floor(totalPicks * 0.75);
+
+  function getPositionTier(link) {
+    if (link.type !== 'pick') return null;
+    const pickIdx = pickLinks.indexOf(link);
+    if (pickIdx < earlyThreshold) return 'early';
+    if (pickIdx >= lateThreshold) return 'late';
+    return 'middle';
+  }
+
+  // Store step metadata on window for sidebar
+  window._cocStepMeta = steps.map((s, i) => ({ ...s, stepIdx: i }));
+
+  let html = css;
+  let inner = `
+    <div class="coc-eyebrow">EPISODE ${ep.num} // CHAIN FORMATION</div>
+    <div class="coc-header" style="font-size:24px;margin-bottom:4px">CHAIN FORMATION</div>
+    <div class="coc-subheader">CLICK TO REVEAL EACH LINK</div>
+    <div class="coc-chain-layout">
+      <div class="coc-chain-main">`;
+
+  steps.forEach((step, stepIdx) => {
+    const { type, link, index } = step;
+
+    inner += `<div id="coc-step-${stateKey}-${stepIdx}" class="coc-step">`;
+
+    // Comm chatter between steps (not before first)
+    if (stepIdx > 0 && type === 'link') {
+      inner += `<div class="coc-comm-chatter">${_cocCommChatter()}</div>`;
+    }
+
+    if (type === 'hesitation') {
+      // Hesitation / deliberation card
+      inner += `<div class="coc-card coc-card-hesitation">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="color:#b8860b">${_cocIcon('crosshairs')}</span>
+          <span style="font-family:'Black Ops One',sans-serif;font-size:11px;letter-spacing:2px;color:#b8860b">DELIBERATION</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          ${link.pickedBy ? `<div>${rpPortrait(link.pickedBy, 'pb-xs')}</div>` : ''}
+          <div style="font-size:12px;color:#c3b091;line-height:1.6;font-style:italic">${link.hesitationText}</div>
+        </div>
+      </div>`;
+    } else {
+      // Main link card
+      const cardClass = link.type === 'immunity' ? 'coc-card-immunity'
+        : link.type === 'idol' ? 'coc-card-idol'
+        : link.type === 'eliminated' ? 'coc-card-eliminated'
+        : 'coc-card-pick';
+
+      const stampClass = link.type === 'eliminated' ? 'coc-stamp-denied'
+        : link.type === 'idol' ? 'coc-stamp-override'
+        : 'coc-stamp-cleared';
+
+      const stampText = link.type === 'eliminated' ? 'CLEARANCE DENIED'
+        : link.type === 'idol' ? 'OVERRIDE'
+        : 'CLEARANCE GRANTED';
+
+      // Connector before card (not before first link)
+      if (index > 0 && link.type !== 'eliminated') {
+        inner += `<div class="coc-connector"></div>`;
+      }
+      if (link.type === 'eliminated') {
+        inner += `<div style="width:2px;height:24px;background:linear-gradient(to bottom,#4a5028,#cc3333);margin:0 auto"></div>`;
+      }
+
+      inner += `<div class="coc-card ${cardClass}">`;
+      inner += `<div class="coc-stamp ${stampClass}">${stampText}</div>`;
+
+      // Position tag
+      inner += `<div class="coc-position-tag" style="margin-bottom:10px">
+        ${_cocIcon('dog-tag')} #${link.position + 1}
+        ${link.type === 'immunity' ? ' // IMMUNITY' : link.type === 'idol' ? ' // IDOL OVERRIDE' : link.type === 'eliminated' ? ' // ELIMINATED' : ''}
+      </div>`;
+
+      // Picker label
+      if (link.pickedBy) {
+        inner += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div class="coc-picker-label">SELECTED BY</div>
+          <div>${rpPortrait(link.pickedBy, 'pb-xs')}</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#8b949e">${link.pickedBy}</div>
+        </div>`;
+      } else if (link.type === 'immunity') {
+        inner += `<div class="coc-picker-label" style="margin-bottom:8px">IMMUNITY WINNER — CHAIN ORIGIN</div>`;
+      } else if (link.type === 'idol') {
+        inner += `<div class="coc-picker-label" style="margin-bottom:8px;color:#cc3333">IMMUNITY IDOL — OVERRIDE PROTOCOL</div>`;
+      } else if (link.type === 'eliminated') {
+        inner += `<div class="coc-picker-label" style="margin-bottom:8px;color:#cc3333">UNPICKED — CHAIN TERMINATED</div>`;
+      }
+
+      // Player portrait
+      const portraitClass = link.type === 'eliminated' ? 'xl coc-elim-portrait' : 'xl';
+      inner += `<div style="display:flex;align-items:center;gap:16px">
+        <div>${rpPortrait(link.player, portraitClass)}</div>
+        <div>
+          <div class="coc-player-name" style="${link.type === 'eliminated' ? 'color:#cc3333' : ''}">${link.player}</div>
+          <div style="font-size:10px;color:#8b949e;margin-top:2px">${vpArchLabel(link.player)}</div>
+        </div>
+      </div>`;
+
+      // Reaction text
+      const positionTier = getPositionTier(link);
+      const reaction = _cocPickReaction(link.player, ep, positionTier, link.type);
+      inner += `<div class="coc-reaction">${reaction}</div>`;
+
+      inner += `</div>`; // close card
+    }
+
+    inner += `</div>`; // close step
+  });
+
+  inner += `</div>`; // close main
+  inner += `<div class="coc-chain-sidebar"><div id="coc-sidebar-inner">
+    <div style="font-family:'Black Ops One',sans-serif;font-size:11px;letter-spacing:3px;color:#b8860b;text-align:center;margin-bottom:10px">CHAIN TRACKER</div>
+    <div style="display:flex;flex-direction:column;gap:2px;align-items:center">
+      ${chain.map(() => `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:4px;background:rgba(42,52,57,0.4);border:1px dashed rgba(195,176,145,0.15);width:100%">
+        <div style="width:36px;height:36px;border-radius:50%;background:repeating-linear-gradient(45deg,rgba(42,52,57,0.6),rgba(42,52,57,0.6) 3px,rgba(74,80,40,0.15) 3px,rgba(74,80,40,0.15) 6px);flex-shrink:0"></div>
+        <div style="flex:1"><div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(195,176,145,0.3);letter-spacing:2px">CLASSIFIED</div></div>
+      </div>`).join('<div style="width:2px;height:8px;background:rgba(74,80,40,0.2)"></div>')}
+    </div>
+  </div></div>`; // close sidebar
+  inner += `</div>`; // close layout
+
+  // Controls
+  inner += `<div id="coc-controls-${stateKey}" class="coc-controls">
+    <button class="coc-btn" onclick="cocRevealNext('${stateKey}',${totalSteps})">
+      ${_cocIcon('chain-link')} NEXT LINK
+    </button>
+    <span id="coc-counter-${stateKey}" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#8b949e;min-width:60px;text-align:center">0 / ${totalSteps}</span>
+    <button class="coc-btn" onclick="cocRevealAll('${stateKey}',${totalSteps})">
+      REVEAL ALL
+    </button>
+  </div>`;
+
+  html += _cocShell(inner, 'CHAIN FORMATION');
+  return html;
+}
+
+export function rpBuildCOCSummary(ep) {
+  const coc = ep.chainOfCommand;
+  if (!coc) return '';
+  const chain = coc.chain || [];
+  const bondShifts = coc.bondShifts || [];
+  const eliminated = coc.eliminated;
+  const css = _cocCSS();
+
+  let html = css;
+  let inner = `
+    <div class="coc-eyebrow">EPISODE ${ep.num} // MISSION DEBRIEF</div>
+    <div class="coc-header" style="font-size:24px;margin-bottom:4px">PECKING ORDER</div>
+    <div class="coc-subheader">CHAIN OF COMMAND — FINAL MANIFEST</div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:20px">`;
+
+  chain.forEach((link, i) => {
+    const isElim = link.type === 'eliminated';
+    const cardClass = isElim ? 'coc-summary-card coc-summary-eliminated' : 'coc-summary-card';
+    const relevantShifts = bondShifts.filter(bs => bs.from === link.player || bs.to === link.player);
+
+    inner += `<div class="${cardClass}" style="max-width:600px;width:100%">`;
+
+    // Position number
+    inner += `<div style="font-family:'Black Ops One',sans-serif;font-size:16px;color:${isElim ? '#cc3333' : '#b8860b'};min-width:30px;text-align:center">#${link.position + 1}</div>`;
+
+    // Portrait
+    inner += `<div style="flex-shrink:0" class="${isElim ? 'coc-elim-portrait' : ''}">${rpPortrait(link.player, 'pb-xs')}</div>`;
+
+    // Name + type
+    inner += `<div style="flex:1;min-width:0">
+      <div style="font-family:'Black Ops One',sans-serif;font-size:14px;color:${isElim ? '#cc3333' : '#c3b091'}">${link.player}</div>
+      <div style="font-size:9px;color:#8b949e;font-family:'Share Tech Mono',monospace">
+        ${link.type === 'immunity' ? 'IMMUNITY WINNER' : link.type === 'idol' ? 'IDOL OVERRIDE' : link.type === 'eliminated' ? 'ELIMINATED' : `Picked by ${link.pickedBy}`}
+      </div>
+    </div>`;
+
+    // Bond shifts
+    if (relevantShifts.length) {
+      inner += `<div style="display:flex;flex-wrap:wrap;gap:4px">`;
+      relevantShifts.forEach(bs => {
+        const other = bs.from === link.player ? bs.to : bs.from;
+        const cls = bs.delta > 0 ? 'coc-bond-pos' : 'coc-bond-neg';
+        inner += `<div class="coc-bond-shift ${cls}">${other} ${bs.delta > 0 ? '+' : ''}${bs.delta}</div>`;
+      });
+      inner += `</div>`;
+    }
+
+    inner += `</div>`;
+
+    // Connector
+    if (i < chain.length - 1) {
+      const nextIsElim = chain[i + 1].type === 'eliminated';
+      inner += `<div style="width:2px;height:12px;background:${nextIsElim ? 'linear-gradient(to bottom,#4a5028,#cc3333)' : '#4a5028'};margin:0 auto"></div>`;
+    }
+  });
+
+  inner += `</div>`;
+
+  // Mission Complete footer
+  inner += `<div style="text-align:center;margin-top:30px;padding:20px;border-top:2px solid rgba(74,80,40,0.2)">
+    <div style="font-family:'Black Ops One',sans-serif;font-size:16px;letter-spacing:4px;color:#4a5028;margin-bottom:16px">MISSION COMPLETE</div>
+    <div class="coc-elim-portrait" style="display:inline-block">${rpPortrait(eliminated, 'xl')}</div>
+    <div style="font-family:'Black Ops One',sans-serif;font-size:18px;color:#cc3333;margin-top:8px">${eliminated}</div>
+    <div style="font-size:10px;letter-spacing:2px;color:#8b949e;margin-top:4px">${vpArchLabel(eliminated)}</div>
+    <div style="font-size:10px;letter-spacing:3px;color:#cc3333;margin-top:8px">${_cocIcon('crosshairs')} CLEARANCE DENIED — DISCHARGED</div>
+  </div>`;
+
+  // Bond shifts summary
+  if (bondShifts.length) {
+    inner += `<div style="margin-top:20px;padding:16px;background:rgba(42,52,57,0.3);border:1px solid rgba(74,80,40,0.2);border-radius:6px">
+      <div style="font-family:'Black Ops One',sans-serif;font-size:11px;letter-spacing:2px;color:#b8860b;margin-bottom:10px">${_cocIcon('chain-link')} RELATIONSHIP FALLOUT</div>`;
+    bondShifts.forEach(bs => {
+      const cls = bs.delta > 0 ? 'coc-bond-pos' : 'coc-bond-neg';
+      inner += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="flex-shrink:0">${rpPortrait(bs.from, 'pb-xs')}</div>
+        <span style="color:#8b949e;font-size:12px">&rarr;</span>
+        <div style="flex-shrink:0">${rpPortrait(bs.to, 'pb-xs')}</div>
+        <div class="coc-bond-shift ${cls}">${bs.delta > 0 ? '+' : ''}${bs.delta}</div>
+        <div style="font-size:11px;color:#8b949e;flex:1">${bs.reason || ''}</div>
+      </div>`;
+    });
+    inner += `</div>`;
+  }
+
+  inner += `<div class="coc-comm-chatter" style="margin-top:16px">CHAIN OF COMMAND PROTOCOL CONCLUDED // ALL UNITS DISMISSED</div>`;
+
+  html += _cocShell(inner, 'PECKING ORDER');
+  return html;
+}
+
 // ── RI Choice Screen — shows whether eliminated player chose RI or went home ──
 export function rpBuildRIChoice(ep) {
   const name = ep.eliminated;
@@ -11249,6 +11952,7 @@ export function buildVPScreens(epRecord) {
   delete _tvState[String(vpEpNum) + '_je']; // jury elimination reveal state
   delete _tvState[String(vpEpNum) + '_bench'];
   delete _tvState[String(vpEpNum) + '_slasher']; // slasher night round reveal state
+  delete _tvState[`coc-chain-${vpEpNum}`]; // chain of command reveal state
   delete _reunionRevealed[String(vpEpNum) + '_reunion'];
   delete _gcRevealed[String(vpEpNum) + '_gc'];
   const ep = epRecord;
@@ -12320,6 +13024,39 @@ export function buildVPScreens(epRecord) {
     if (localStorage.getItem('vp_debug') === 'true') {
       const _debugHtml = rpBuildDebug(ep);
       if (_debugHtml) vpScreens.push({ id:'debug', label:'Debug', html: _debugHtml });
+    }
+    return;
+  }
+
+  // ── Chain of Command — replaces tribal council with chain pick elimination ──
+  if (ep.isChainOfCommand || ep.chainOfCommand) {
+    const _cocData = ep.chainOfCommand;
+    if (_cocData) {
+      vpScreens.push({ id:'coc-briefing', label:'Chain of Command', html: rpBuildCOCBriefing(ep) });
+      vpScreens.push({ id:'coc-chain', label:'The Chain', html: rpBuildCOCChain(ep) });
+      vpScreens.push({ id:'coc-summary', label:'Pecking Order', html: rpBuildCOCSummary(ep) });
+    }
+    // RI/Rescue Island screens
+    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
+    if (ep.riLifeEvents?.length || ep.riDuel) {
+      const _cocRiLife = rpBuildRILife(ep);
+      if (_cocRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _cocRiLife });
+    }
+    if (ep.riDuel) {
+      const _cocRiDuel = rpBuildRIDuel(ep);
+      if (_cocRiDuel) vpScreens.push({ id:'ri-duel', label:'RI Duel', html: _cocRiDuel });
+    }
+    if (ep.rescueIslandEvents?.length) {
+      const _cocRescLife = rpBuildRescueIslandLife(ep);
+      if (_cocRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _cocRescLife });
+    }
+    // Camp Overview + Aftermath
+    const _cocRelHtml = rpBuildRelationships(ep);
+    if (_cocRelHtml) vpScreens.push({ id:'relationships', label:'Camp Overview', html: _cocRelHtml });
+    vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });
+    if (localStorage.getItem('vp_debug') === 'true') {
+      const _cocDebugHtml = rpBuildDebug(ep);
+      if (_cocDebugHtml) vpScreens.push({ id:'debug', label:'Debug', html: _cocDebugHtml });
     }
     return;
   }

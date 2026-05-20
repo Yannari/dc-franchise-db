@@ -4082,6 +4082,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
       ]) });
     }
 
+  } else if (engineType === 'chain-of-command') {
+    if (gs.activePlayers.length < 3) return;
+    ep.isChainOfCommand = true;
+
   } else if (engineType === 'aftermath') {
     twistObj.aftermath = true; // generateAftermathShow handles everything in patchEpisodeHistory
   } else if (engineType === 'shot-in-dark') {

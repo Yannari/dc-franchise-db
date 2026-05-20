@@ -1888,6 +1888,42 @@ export function _textSeasonStats(ep, ln, sec) {
 // ── WRITER EXTRAS ──
 // ── THE MOLE: text backlog formatters ──
 
+export function _textChainOfCommand(ep, ln, sec) {
+  const coc = ep.chainOfCommand;
+  if (!coc) return;
+  sec('CHAIN OF COMMAND');
+  ln(`${coc.immunityWinner} holds the power. The chain begins.`);
+  ln('');
+  if (coc.idolPlays.length > 0) {
+    coc.idolPlays.forEach(ip => {
+      ln(`${ip.player} plays a Hidden Immunity Idol — automatically safe at position ${ip.position}.`);
+    });
+    ln('');
+  }
+  coc.chain.forEach(entry => {
+    if (entry.type === 'immunity') {
+      ln(`[IMMUNITY] ${entry.player} — safe as immunity winner.`);
+    } else if (entry.type === 'idol') {
+      ln(`[IDOL] ${entry.player} — safe via idol play.`);
+    } else if (entry.type === 'pick') {
+      const hesText = entry.hesitation && entry.hesitationText ? ` [HESITATION] ${entry.hesitationText}` : '';
+      ln(`Pick ${entry.position}: ${entry.pickedBy} saves ${entry.player}.${hesText}`);
+    } else if (entry.type === 'eliminated') {
+      ln('');
+      ln(`ELIMINATED: ${entry.player}. No one saved them.`);
+    }
+  });
+  if (coc.bondShifts.length > 0) {
+    ln('');
+    ln('Bond shifts:');
+    coc.bondShifts.forEach(bs => {
+      const sign = bs.delta > 0 ? '+' : '';
+      ln(`  ${bs.from} → ${bs.to}: ${sign}${bs.delta} (${bs.reason})`);
+    });
+  }
+  ln('');
+}
+
 export function _textTiedDestinies(ep, ln, sec) {
   const td = (ep.twists || []).find(t => t.tiedDestinies);
   if (!td?.pairs?.length) return;
@@ -2425,6 +2461,9 @@ export function generateSummaryText(ep) {
       rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults
     ]);
   }
+
+  // ── CHAIN OF COMMAND ──
+  _textChainOfCommand(ep, ln, sec);
 
   // ── POST-CHALLENGE ──
   _textCampPost(ep, ln, sec);

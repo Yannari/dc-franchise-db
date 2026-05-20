@@ -12445,20 +12445,6 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'cs-break', label:'🔓 Prison Break', html: rpBuildChefshankPrisonBreak(ep) });
     }
     vpScreens.push({ id:'cs-results', label:'⚖️ The Verdict', html: rpBuildChefshankResults(ep) });
-    // RI screens
-    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
-    if (ep.riLifeEvents?.length || ep.riDuel) {
-      const _csRiLife = rpBuildRILife(ep);
-      if (_csRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _csRiLife });
-    }
-    if (ep.riDuel) {
-      const _csRiDuel = rpBuildRIDuel(ep);
-      if (_csRiDuel) vpScreens.push({ id:'ri-duel', label:'RI Duel', html: _csRiDuel });
-    }
-    if (ep.rescueIslandEvents?.length) {
-      const _csRescLife = rpBuildRescueIslandLife(ep);
-      if (_csRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _csRescLife });
-    }
   } else if (ep.isOneFlu && ep.oneFlu) {
     vpScreens.push({ id:'of-title', label:'🏥 One Flu Over the Cuckoos', html: rpBuildOneFluTitleCard(ep) });
     if (ep.oneFlu.studySleep) {
@@ -12477,20 +12463,6 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'of-disease', label:'☣️ Disease Outbreak', html: rpBuildOneFluDisease(ep) });
     }
     vpScreens.push({ id:'of-results', label:'⚖️ Final Verdict', html: rpBuildOneFluResults(ep) });
-    // RI screens
-    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
-    if (ep.riLifeEvents?.length || ep.riDuel) {
-      const _ofRiLife = rpBuildRILife(ep);
-      if (_ofRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _ofRiLife });
-    }
-    if (ep.riDuel) {
-      const _ofRiDuel = rpBuildRIDuel(ep);
-      if (_ofRiDuel) vpScreens.push({ id:'ri-duel', label:'RI Duel', html: _ofRiDuel });
-    }
-    if (ep.rescueIslandEvents?.length) {
-      const _ofRescLife = rpBuildRescueIslandLife(ep);
-      if (_ofRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _ofRescLife });
-    }
   } else if (ep.isMastersOfDisasters && ep.mastersOfDisasters) {
     vpScreens.push({ id:'mod-title', label:'🌋 Masters of Disasters', html: rpBuildMastersOfDisastersTitleCard(ep) });
     if (ep.mastersOfDisasters.earthquake) {
@@ -12503,20 +12475,6 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'mod-sub', label:'🌊 Submarine', html: rpBuildMastersOfDisastersSubmarine(ep) });
     }
     vpScreens.push({ id:'mod-results', label:'⚖️ Final Verdict', html: rpBuildMastersOfDisastersResults(ep) });
-    // RI screens
-    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
-    if (ep.riLifeEvents?.length || ep.riDuel) {
-      const _modRiLife = rpBuildRILife(ep);
-      if (_modRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _modRiLife });
-    }
-    if (ep.riDuel) {
-      const _modRiDuel = rpBuildRIDuel(ep);
-      if (_modRiDuel) vpScreens.push({ id:'ri-duel', label:'RI Duel', html: _modRiDuel });
-    }
-    if (ep.rescueIslandEvents?.length) {
-      const _modRescLife = rpBuildRescueIslandLife(ep);
-      if (_modRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _modRescLife });
-    }
   } else if ((ep.isSportsMarathon || ep.challengeType === 'sports-marathon') && ep.sportsMarathon) {
     vpScreens.push({ id:'sm-title', label:'Sports Marathon', html: rpBuildSportsMarathonTitleCard(ep) });
     vpScreens.push({ id:'sm-obstacle', label:'Obstacle Course', html: rpBuildSportsMarathonObstacle(ep) });
@@ -12565,20 +12523,6 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'fmd-flag', label:'Capture the Flag', html: rpBuildFullMetalDramaFlag(ep) });
     }
     vpScreens.push({ id:'fmd-results', label:'Debrief', html: rpBuildFullMetalDramaResults(ep) });
-    // RI screens
-    if (ep.riChoice) { const _rcH = rpBuildRIChoice(ep); if (_rcH) vpScreens.push({ id:'ri-choice', label:'RI Choice', html: _rcH }); }
-    if (ep.riLifeEvents?.length || ep.riDuel) {
-      const _fmdRiLife = rpBuildRILife(ep);
-      if (_fmdRiLife) vpScreens.push({ id:'ri-life', label:'Redemption Island', html: _fmdRiLife });
-    }
-    if (ep.riDuel) {
-      const _fmdRiDuel = rpBuildRIDuel(ep);
-      if (_fmdRiDuel) vpScreens.push({ id:'ri-duel', label:'RI Duel', html: _fmdRiDuel });
-    }
-    if (ep.rescueIslandEvents?.length) {
-      const _fmdRescLife = rpBuildRescueIslandLife(ep);
-      if (_fmdRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _fmdRescLife });
-    }
   } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }

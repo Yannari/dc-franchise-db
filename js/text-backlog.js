@@ -2,7 +2,7 @@
 import { gs, seasonConfig, players } from './core.js';
 import { pStats, pronouns, challengeWeakness } from './players.js';
 import { getBond, bondLabel, bondFeeling } from './bonds.js';
-import { buildCrashout, vpGenerateQuote } from './vp-screens.js';
+import { buildCrashout, vpGenerateQuote, _riLastWords } from './vp-screens.js';
 
 // Challenge-specific text functions
 import { _textCliffDive } from './chal/cliff-dive.js';
@@ -1537,6 +1537,8 @@ export function _textRIDuel(ep, ln, sec) {
     }
     ln(`Result: ${d.winner} survives — remains on Redemption Island.`);
     ln(`${d.loser} is permanently eliminated.`);
+    const riWords = _riLastWords(d.loser, d.winner, d, ep);
+    if (riWords) ln(`"${riWords}"`);
 
     // Post-duel events
     const postEvts = (ep.riLifeEvents || []).filter(e =>

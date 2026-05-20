@@ -3924,7 +3924,7 @@ function _riStreakBadge(name, streakData) {
 }
 
 // RI last words — the loser's final statement before permanent elimination
-function _riLastWords(loserName, winnerName, duel, ep) {
+export function _riLastWords(loserName, winnerName, duel, ep) {
   const s = pStats(loserName);
   const arch = players.find(x => x.name === loserName)?.archetype || '';
   const pr = pronouns(loserName);

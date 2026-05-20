@@ -3587,21 +3587,24 @@ function _riArenaCSS() {
     .ri-chal-desc{font-size:12px;color:rgba(212,196,168,0.4);margin-top:8px;text-align:center;}
 
     /* ── Combatant face-off ── */
-    .ri-faceoff{display:flex;justify-content:center;align-items:flex-start;gap:48px;margin:32px 0 28px;flex-wrap:wrap;}
-    .ri-combatant{text-align:center;position:relative;}
+    .ri-faceoff{display:flex;justify-content:center;align-items:flex-start;gap:16px;margin:32px 0 28px;flex-wrap:wrap;}
+    .ri-combatant{text-align:center;position:relative;width:180px;flex-shrink:0;}
     .ri-portrait-ring{width:110px;height:110px;border-radius:50%;padding:4px;
       background:conic-gradient(from 0deg,#e3672b,#ffd700,#e3672b);position:relative;margin:0 auto;
       animation:ri-ring-rotate 8s linear infinite;}
     @keyframes ri-ring-rotate{0%{filter:hue-rotate(0deg);}100%{filter:hue-rotate(15deg);}}
     .ri-portrait-inner{width:100%;height:100%;border-radius:50%;background:#1a1510;
       display:flex;align-items:center;justify-content:center;overflow:hidden;}
-    .ri-portrait-inner img{width:100%;height:100%;object-fit:cover;}
+    .ri-portrait-inner .rp-portrait{width:100%!important;height:100%!important;}
+    .ri-portrait-inner .rp-portrait-img{width:100%!important;height:100%!important;border:none!important;border-radius:50%!important;margin:0!important;}
+    .ri-portrait-inner .rp-portrait-img img{width:100%!important;height:100%!important;border-radius:50%!important;}
+    .ri-portrait-inner .rp-portrait-name,.ri-portrait-inner .rp-portrait-badge{display:none!important;}
     .ri-combatant-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:#d4c4a8;margin-top:10px;}
     .ri-combatant-arch{font-size:10px;color:rgba(212,196,168,0.35);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
     .ri-combatant-badges{display:flex;justify-content:center;gap:6px;margin-top:8px;flex-wrap:wrap;}
 
     /* VS divider */
-    .ri-vs{align-self:center;position:relative;padding:0 8px;}
+    .ri-vs{align-self:flex-start;position:relative;padding:0 8px;margin-top:40px;}
     .ri-vs-text{font-family:'Bebas Neue',sans-serif;font-size:40px;font-weight:700;color:#e3672b;
       text-shadow:0 0 30px rgba(227,103,43,0.6),0 0 60px rgba(227,103,43,0.2);
       animation:ri-vs-pulse 2s ease-in-out infinite;}
@@ -3757,15 +3760,17 @@ function _riArenaCSS() {
        LIFE SCREEN STYLES
        ════════════════════════════════════════ */
     .ri-life-card{background:linear-gradient(135deg,#1a1510 0%,#141210 100%);border:1px solid rgba(90,74,58,0.25);
-      border-radius:8px;padding:16px 20px;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px;}
+      border-radius:8px;padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;gap:14px;}
     .ri-life-card-crack{border-color:rgba(255,68,68,0.25);background:linear-gradient(135deg,#1a1510 0%,#1a1210 100%);
       box-shadow:inset 0 0 20px rgba(255,68,68,0.03);}
     .ri-life-card-iron{border-color:rgba(160,160,170,0.3);background:linear-gradient(135deg,#1a1510 0%,#18181c 100%);}
     .ri-life-card-obsessed{border-color:rgba(255,68,68,0.35);animation:ri-obsess-pulse 2.5s ease-in-out infinite;}
     .ri-life-card-social{border-style:dashed;border-color:rgba(212,196,168,0.12);background:rgba(20,18,16,0.6);}
-    .ri-life-avatar{width:40px;height:40px;border-radius:50%;background:#2a1f18;
-      border:1px solid rgba(212,196,168,0.12);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-    .ri-life-avatar img{width:100%;height:100%;object-fit:cover;}
+    .ri-life-card .rp-portrait{flex-shrink:0;}
+    .ri-life-card .rp-portrait-name{display:none;}
+    .ri-breathing-moment .rp-portrait{flex-shrink:0;}
+    .ri-breathing-moment .rp-portrait-name{display:none;}
+    .ri-exchange-narration .rp-portrait-name{display:none;}
     .ri-life-body{flex:1;}
     .ri-life-text{font-size:12px;color:rgba(212,196,168,0.65);line-height:1.7;}
     .ri-life-footer{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
@@ -3777,7 +3782,10 @@ function _riArenaCSS() {
       background:conic-gradient(from 0deg,rgba(227,103,43,0.4),rgba(212,196,168,0.2),rgba(227,103,43,0.4));margin:0 auto;}
     .ri-resident-inner{width:100%;height:100%;border-radius:50%;background:#1a1510;
       display:flex;align-items:center;justify-content:center;overflow:hidden;}
-    .ri-resident-inner img{width:100%;height:100%;object-fit:cover;}
+    .ri-resident-inner .rp-portrait{width:100%!important;height:100%!important;}
+    .ri-resident-inner .rp-portrait-img{width:100%!important;height:100%!important;border:none!important;border-radius:50%!important;margin:0!important;}
+    .ri-resident-inner .rp-portrait-img img{width:100%!important;height:100%!important;border-radius:50%!important;}
+    .ri-resident-inner .rp-portrait-name,.ri-resident-inner .rp-portrait-badge{display:none!important;}
     .ri-resident-day{position:absolute;bottom:44px;right:-2px;background:#1a1510;
       border:1px solid rgba(90,74,58,0.4);border-radius:3px;padding:1px 6px;
       font-size:8px;font-weight:700;color:#d4c4a8;letter-spacing:0.5px;}
@@ -3859,12 +3867,6 @@ function _riSvgIconSm(type) {
   return `<svg class="ri-ico ri-ico-sm" viewBox="0 0 24 24"><path d="${p}"/></svg>`;
 }
 
-// Exchange type icon mapping (returns large SVG)
-function _riExchangeIcon(id) {
-  const map = { grit: 'sword', precision: 'eye', instinct: 'bolt', willpower: 'shield', cunning: 'brain' };
-  return _riSvgIconLg(map[id] || 'sword');
-}
-
 // Generate ember particle divs (25 embers with inline randomized styles)
 function _riEmberParticles() {
   let embers = '<div class="ri-embers">';
@@ -3916,53 +3918,147 @@ function _riTrainingPills(name) {
 
 // Win streak badge (SVG fire icon)
 function _riStreakBadge(name, streakData) {
-  const count = streakData?.[name] || gs.riWinStreak?.[name] || 0;
+  const count = streakData ? (streakData[name] || 0) : (gs.riWinStreak?.[name] || 0);
   if (count < 1) return '';
   return `<span class="ri-pill ri-pill-streak"><span class="ri-pill-dot"></span>${count}W</span>`;
 }
 
-// Host commentary pool
-const _riHostLines = {
-  close: [
-    '"That was CLOSE. But close doesn\'t keep you in the game."',
-    '"Razor thin. One slip and it goes the other way."',
-    '"You could feel the tension in the air on that one."',
-    '"Neither player wanted to give an inch."',
-  ],
-  dominant: [
-    '"And just like that... it\'s over."',
-    '"That was a STATEMENT."',
-    '"Complete domination. Nothing else to say."',
-    '"I don\'t think the loser even saw it coming."',
-  ],
-  first: [
-    '"Two players. One stays. One goes home forever. This... is the Arena."',
-    '"Let\'s see who wants it more."',
-    '"First blood has been drawn."',
-    '"And we\'re off. This is what Redemption Island is all about."',
-  ],
-  last: [
-    '"And with that... we have our answer."',
-    '"It\'s done. The Arena has spoken."',
-    '"Game. Set. Match."',
-    '"No more chances. No more reprieve."',
-  ],
-  mid: [
-    '"This duel is far from over."',
-    '"Momentum is shifting..."',
-    '"Can they hold on? That\'s the question."',
-    '"The pressure is building."',
-  ],
-};
+// RI last words — the loser's final statement before permanent elimination
+function _riLastWords(loserName, winnerName, duel, ep) {
+  const s = pStats(loserName);
+  const arch = players.find(x => x.name === loserName)?.archetype || '';
+  const pr = pronouns(loserName);
+  const wPr = pronouns(winnerName);
+  const bond = getBond(loserName, winnerName);
+  const phases = duel.phases || [];
+  const phaseWins = phases.filter(p => p.winner === loserName).length;
+  const totalPhases = phases.length;
+  const wasSweep = phaseWins === 0;
+  const wasClose = phaseWins >= totalPhases - 1 && totalPhases > 1;
+  const streak = duel.preStreakData?.[winnerName] || 0;
+  const loserStreak = duel.preStreakData?.[loserName] || 0;
+  const mentalState = gs.riMentalState?.[loserName] || 'focused';
+  const chalName = duel.challenge?.name || 'the duel';
+  const isHot = arch === 'hothead' || s.temperament <= 3;
+  const isBrain = arch === 'mastermind' || arch === 'schemer';
+  const isHeart = arch === 'social-butterfly' || s.social >= 8;
+  const isSoldier = arch === 'loyal-soldier' || s.loyalty >= 8;
+  const isBeast = arch === 'challenge-beast';
+  const isChaos = arch === 'wildcard' || arch === 'chaos-agent';
+  const isVillain = arch === 'villain';
+  const isUnderdog = arch === 'underdog';
+  const isHero = arch === 'hero';
+  const pool = [];
 
-function _riPickHost(exIdx, totalEx, margin) {
-  let pool;
-  if (exIdx === 0) pool = _riHostLines.first;
-  else if (exIdx >= totalEx - 1) pool = _riHostLines.last;
-  else if (margin >= 2.5) pool = _riHostLines.dominant;
-  else if (margin < 1.0) pool = _riHostLines.close;
-  else pool = _riHostLines.mid;
-  return pool[Math.floor(Math.random() * pool.length)];
+  // ═══ SWEPT — lost every phase ═══
+  if (wasSweep) {
+    if (isHot) pool.push(`I didn't win a SINGLE round?! Not ONE?! That's — I can't even — I'm better than that! ${winnerName} didn't beat me, I beat MYSELF! I was in my own head the entire time!`);
+    else if (isBrain) pool.push(`Swept. Completely outclassed in ${chalName}. ${winnerName} read me perfectly — every adjustment I made, ${wPr.sub} already had the counter. I have nothing but respect for that level of preparation.`);
+    else if (isHeart) pool.push(`I couldn't find my rhythm. Not once. ${winnerName} was just... better today. In every phase. I wanted so badly to give this one more fight, but my body wouldn't cooperate.`);
+    else if (isSoldier) pool.push(`I gave everything I had in every round. ${winnerName} just gave more. ${wPr.Sub} earned this — I won't take that away from ${wPr.obj}. But walking out without winning a single phase... that's going to stay with me.`);
+    else if (isUnderdog) pool.push(`I fought to get here. Clawed my way through elimination just to stand in this arena. And I couldn't take a single round. Maybe they were right about me all along. Maybe I don't belong here.`);
+    else pool.push(`Three rounds and I couldn't take one of them. That's a hard way to go out. ${winnerName} was locked in from the jump — I never had a chance to find my footing.`);
+  }
+
+  // ═══ CLOSE LOSS — won all but one phase ═══
+  if (wasClose) {
+    if (isHot) pool.push(`ONE round! I lost by ONE round! I had ${wPr.obj}! I HAD ${wPr.obj}! If I'd just — AAAGH! That last phase I could FEEL it slipping and I couldn't stop it!`);
+    else if (isBrain) pool.push(`That close. I won ${phaseWins} out of ${totalPhases} phases and it still wasn't enough. The margin in that final round was... razor thin. One different decision and I'm the one staying.`);
+    else if (isHeart) pool.push(`We were so evenly matched. I really thought I had it after winning those rounds. But ${winnerName} found something extra when it mattered most. I can't even be mad — just heartbroken.`);
+    else pool.push(`${phaseWins} rounds won. I was right THERE. ${winnerName} just dug deeper in the round that counted. That's the cruelest way to lose — knowing you were good enough to win.`);
+  }
+
+  // ═══ HIGH BOND — friends/allies ═══
+  if (bond >= 3) {
+    if (isHeart) pool.push(`The hardest part isn't losing. It's losing to ${winnerName}. We were close out there — real close. ${wPr.Sub} know${wPr.sub==='they'?'':'s'} that. I hope ${wPr.sub} go${wPr.sub==='they'?'':'es'} all the way back. Win the whole thing. For both of us.`);
+    else if (isSoldier) pool.push(`${winnerName} and I had each other's backs in the game. Having to fight ${wPr.obj} in the arena... that was the worst part of Redemption Island. No hard feelings. ${wPr.Sub} earned the right to keep going.`);
+    else if (isHot) pool.push(`I'm not mad at ${winnerName}. I'm mad at THIS. At the game for making us fight each other. We were supposed to be on the same side! Now ${wPr.sub}'${wPr.sub==='they'?'re':'s'} still here and I'm going home? This game is CRUEL!`);
+    else pool.push(`Losing to ${winnerName} of all people... we were allies. Friends, even. ${wPr.Sub} beat me fair and square. Go win this thing, ${winnerName}. Make it mean something.`);
+  }
+
+  // ═══ LOW BOND — rivals/enemies ═══
+  if (bond <= -3) {
+    if (isHot) pool.push(`${winnerName}. Of COURSE it's ${winnerName}. The one person I wanted to beat more than ANYONE and ${wPr.sub} get${wPr.sub==='they'?'':'s'} to stand there smiling while I walk out! I am going to be SICK!`);
+    else if (isVillain) pool.push(`${winnerName} gets to gloat. Fine. Enjoy it. But we both know ${wPr.sub} only won because the challenge played to ${wPr.posAdj} strengths. Put us in a real test of this game and I eat ${wPr.obj} alive. Every time.`);
+    else if (isBrain) pool.push(`Losing to ${winnerName}. The one outcome I spent every waking hour on Redemption trying to prevent. ${wPr.Sub} knew how much I wanted this. That probably fueled ${wPr.obj}. I underestimated what spite can do for performance.`);
+    else pool.push(`${winnerName}. You know what? Take it. Take the win. But don't pretend this makes you better than me. You won a ${chalName}. That's all. When you're back in the game, remember — I almost had you.`);
+  }
+
+  // ═══ WINNER ON A STREAK ═══
+  if (streak >= 2) {
+    if (isHot) pool.push(`${winnerName}'s been through this arena ${streak} times and keeps winning. ${streak} people couldn't beat ${wPr.obj}! What was I supposed to do against THAT?! ${wPr.Sub}'${wPr.sub==='they'?'re':'s'} a MACHINE!`);
+    else if (isBrain) pool.push(`${streak} consecutive wins. I studied ${winnerName}'s past duels, adjusted my approach, and it still wasn't enough. At ${streak} wins, it's not luck anymore — that's arena mastery.`);
+    else pool.push(`${winnerName} has won ${streak} duels in a row now. I thought I'd be the one to break the streak. I wasn't. Whoever faces ${wPr.obj} next better bring everything they've got, because ${wPr.sub}'${wPr.sub==='they'?'re':'s'} getting stronger.`);
+  }
+
+  // ═══ LOSER HAD A STREAK — broken ═══
+  if (loserStreak >= 2) {
+    if (isHot) pool.push(`I won ${loserStreak} duels! ${loserStreak}! I PROVED I belonged in this arena! And now one bad match and it's over?! All those wins mean NOTHING?! That's not FAIR!`);
+    else if (isBeast) pool.push(`${loserStreak} wins. I built that streak one fight at a time, and ${winnerName} ended it. Just like that. All that momentum, all that confidence — gone in three rounds of ${chalName}.`);
+    else pool.push(`I survived ${loserStreak} duels. ${loserStreak} times I walked into this arena and walked out. I thought the streak would keep going. ${winnerName} had other plans.`);
+  }
+
+  // ═══ MENTAL STATE ═══
+  if (mentalState === 'broken') {
+    pool.push(`I was already breaking before this duel started. The isolation, the waiting, knowing every day could be your last... I couldn't hold it together when it mattered. Redemption Island didn't just beat me — it hollowed me out.`);
+    if (isHeart) pool.push(`I needed people. I needed conversations and connections and something to hold onto. Redemption Island gives you nothing but silence and your own thoughts. By the time the duel came, I was already gone.`);
+  }
+  if (mentalState === 'obsessed') {
+    pool.push(`I wanted this too much. I could feel it in the arena — my hands shaking, my mind racing. I was so focused on winning that I couldn't actually compete. Obsession is not the same as preparation. I learned that the hard way.`);
+  }
+  if (mentalState === 'hardened') {
+    pool.push(`Redemption Island made me tougher. Harder. But it wasn't enough. I'm leaving this arena a different person than the one who walked in — and I'm proud of that, even if I'm not proud of the result.`);
+  }
+
+  // ═══ CHALLENGE-SPECIFIC ═══
+  const chalId = duel.challenge?.id || '';
+  if (chalId.includes('fire') || chalId.includes('endurance') || chalId.includes('hold')) {
+    pool.push(`${chalName}. Of all the challenges they could've given us, they pick the one that tests your will to suffer. ${winnerName} was willing to suffer longer than me. That's... that's all it comes down to.`);
+  }
+  if (chalId.includes('puzzle') || chalId.includes('memory') || chalId.includes('card')) {
+    pool.push(`A mental challenge. I thought that was my edge. I thought I could out-think ${winnerName}. Turns out ${wPr.sub} ${wPr.sub==='they'?'are':'is'} sharper than I gave ${wPr.obj} credit for. Or maybe my nerves fried my brain. Either way — outplayed.`);
+  }
+  if (chalId.includes('physical') || chalId.includes('obstacle') || chalId.includes('climb') || chalId.includes('rope') || chalId.includes('log') || chalId.includes('toss')) {
+    pool.push(`A physical battle. My body gave out before my heart did. I wanted to keep going — I just couldn't. ${winnerName} had more left in the tank and that was the difference.`);
+  }
+
+  // ═══ ARCHETYPE IDENTITY FALLBACKS ═══
+  if (isHot) {
+    pool.push(`THIS IS GARBAGE! I should still be in this game! I should be out there PLAYING, not standing here doing an exit interview! REDEMPTION ISLAND IS SUPPOSED TO BE A SECOND CHANCE AND I GOT ROBBED!`);
+    pool.push(`I hope everyone who voted me out in the first place is watching. You sent me here. And now I'm going home. Are you HAPPY?! Was it WORTH it?!`);
+  }
+  if (isBrain) {
+    pool.push(`I analyzed every angle. Every matchup, every stat advantage, every scenario. But the arena doesn't care about analysis. It cares about performance. And today, ${winnerName} performed.`);
+  }
+  if (isHeart) {
+    pool.push(`The loneliest part of this game is Redemption Island. No tribe, no alliances, no conversations. Just you and the person trying to end your game. I'm almost relieved it's over. Almost.`);
+  }
+  if (isSoldier) {
+    pool.push(`I fought with everything I had. No shortcuts, no excuses. ${winnerName} was simply better today. I walk out of this arena with my head held high knowing I never quit, not for one second.`);
+  }
+  if (isBeast) {
+    pool.push(`I've won challenges my whole life. Competitions, fights, races — I win. But not today. ${winnerName} took it from me and I couldn't stop ${wPr.obj}. That's going to burn for a long, long time.`);
+  }
+  if (isVillain) {
+    pool.push(`I played this game like a villain and I'd do it again. They sent me to Redemption Island because they were afraid of me. And they should be — even now, walking out, they should be afraid of what I said to the jury.`);
+  }
+  if (isHero) {
+    pool.push(`I tried to do it the right way. Fight fair, earn my spot, come back with honor. Sometimes the right way doesn't win. But I'd rather lose with integrity than cheat my way through the arena.`);
+  }
+  if (isUnderdog) {
+    pool.push(`Nobody expected me to last this long. When I got voted out, they wrote me off. And I almost made it back. Almost. I guess 'almost' is my story this whole season.`);
+  }
+  if (isChaos) {
+    pool.push(`The arena is too structured for me. Three rounds, one winner, no room to improvise or cause chaos. In the real game I can flip the script — in here it's just head-to-head and I came up short. Put me back in the chaos and I'd thrive. But this? This isn't my arena.`);
+  }
+
+  // ═══ GENERIC FALLBACKS ═══
+  pool.push(`${winnerName} beat me. Fair and square. No excuses. I came to this arena ready to fight my way back, and ${wPr.sub} was better. That's the game. I just wish the game had given me one more chance.`);
+  pool.push(`This is it. No more duels, no more chances, no more Redemption Island. I gave this game everything and came up short in the end. But I played. I fought. And nobody can take that away from me.`);
+  pool.push(`I wanted to go back so badly. Every night on Redemption Island, I dreamed about walking back into that game. Now I have to dream about something else. That's the hardest part — letting go of what could have been.`);
+
+  const seed = ([...loserName].reduce((a,c) => a+c.charCodeAt(0), 0) + (ep?.num || 0) * 31) % pool.length;
+  return pool[seed % pool.length];
 }
 
 // Reveal helpers for duel screen
@@ -3991,7 +4087,7 @@ export function riDuelRevealNext(screenKey, totalSteps) {
   const suffix = screenKey;
   _riReapplyVisibility(suffix, st.idx, st.total);
   const el = document.getElementById(`ri-step-${suffix}-${st.idx}`);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
 }
 
 export function riDuelRevealAll(screenKey, totalSteps) {
@@ -4070,10 +4166,15 @@ export function rpBuildRIChoice(ep) {
 export function rpBuildRIDuel(ep) {
   const duel = ep.riDuel;
   if (!duel) return null;
-  const { winner, loser, challengeLabel, challengeDesc, challengeType, isThreeWay, duelists, survivors } = duel;
-  const exchanges = duel.exchanges || [];
+  const { winner, loser, isThreeWay, duelists, survivors } = duel;
+  const phases = duel.phases || [];
+  const breathingMoments = duel.breathingMoments || [];
+  const host = duel.host || {};
+  const chalInfo = duel.challenge || {};
   const streakData = duel.streakData || {};
+  const preStreakData = duel.preStreakData || {};
   const _allNames = duelists || [winner, loser];
+  const _capFirst = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
   // Pre/post duel events
   const preDuelEvts = (ep.riLifeEvents || []).filter(e =>
@@ -4081,29 +4182,27 @@ export function rpBuildRIDuel(ep) {
   const postDuelEvts = (ep.riLifeEvents || []).filter(e =>
     ['winner-relief','winner-hardened','winner-streak','winner-obsessed','loser-graceful','loser-bitter','loser-emotional','loser-neutral'].includes(e.type));
 
-  // Click-to-reveal state
+  // Click-to-reveal step count:
+  // challengeCard, phase0, host1, breathing0, phase1, host2, breathing1, phase2, (tiebreaker?), result
+  const breathCount = breathingMoments.filter(Boolean).length;
+  const hostCount = phases.length > 1 ? phases.length - 1 : 0;
+  const totalSteps = 1 + phases.length + hostCount + breathCount + (duel.tiebreaker ? 1 : 0) + 1;
+
   const stateKey = `ri-duel-${ep.num}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
-  // Each exchange = 1 step, host between = 1 step, tiebreaker = 1, result = 1
-  // Steps: exchange0, host0, exchange1, host1, ... exchangeN-1, (tiebreaker?), result
-  const hostSteps = exchanges.length > 0 ? exchanges.length - 1 : 0; // host commentary between exchanges (not after last)
-  const totalSteps = exchanges.length + hostSteps + (duel.tiebreaker ? 1 : 0) + 1;
 
   const _duelTitle = isThreeWay ? 'THREE-WAY DUEL' : 'THE ARENA';
 
   let html = _riArenaCSS();
   html += `<div class="ri-shell">`;
-
-  // Ember particles
   html += _riEmberParticles();
 
-  // Stone arch header
+  // Header
   html += _riArchHeader(
     `Episode ${ep.num} &mdash; Redemption Island`,
     _duelTitle,
-    challengeLabel ? null : 'duel to survive',
-    challengeLabel || null,
-    challengeDesc || null
+    'duel to survive',
+    null, null
   );
 
   // Combatant face-off
@@ -4114,7 +4213,7 @@ export function rpBuildRIDuel(ep) {
       <div class="ri-combatant-name">${name}</div>
       <div class="ri-combatant-arch">${vpArchLabel(name)}</div>
       <div class="ri-combatant-badges">
-        ${_riStreakBadge(name, streakData)}
+        ${_riStreakBadge(name, preStreakData)}
         ${_riMentalBadge(name)}
         ${_riTrainingPills(name)}
       </div>
@@ -4130,8 +4229,8 @@ export function rpBuildRIDuel(ep) {
     preDuelEvts.forEach(evt => {
       html += `<div class="ri-tension">
         <div class="ri-tension-portraits">
-          ${evt.player ? `<div class="ri-tension-avatar">${rpPortrait(evt.player, 'sm')}</div>` : ''}
-          ${evt.player2 ? `<div class="ri-tension-avatar">${rpPortrait(evt.player2, 'sm')}</div>` : ''}
+          ${evt.player ? rpPortrait(evt.player, 'pb-xs') : ''}
+          ${evt.player2 ? rpPortrait(evt.player2, 'pb-xs') : ''}
         </div>
         <div class="ri-tension-text">${evt.text}</div>
       </div>`;
@@ -4139,42 +4238,83 @@ export function rpBuildRIDuel(ep) {
   }
 
   // Host opener
-  html += `<div class="ri-host"><span class="ri-host-name">Chris:</span> ${_riPickHost(0, exchanges.length, 0)}</div>`;
+  html += `<div class="ri-host"><span class="ri-host-name">Chris:</span> ${host.opener || '"Survivors ready? Let\'s go."'}</div>`;
 
-  // Divider before exchanges
-  html += `<div class="ri-divider"><div class="ri-divider-line"></div><div class="ri-divider-text">Exchanges</div><div class="ri-divider-line"></div></div>`;
-
-  // Exchange-by-exchange reveal with host commentary between
+  // Phase-by-phase reveal
   let stepIdx = 0;
-  const _statPrimary = id => ({ grit:'physical', precision:'mental', instinct:'intuition', willpower:'endurance', cunning:'strategic' }[id] || '');
-  const _statSecondary = id => ({ grit:'endurance', precision:'temperament', instinct:'boldness', willpower:'loyalty', cunning:'social' }[id] || '');
 
-  exchanges.forEach((ex, i) => {
-    const isWon = ex.winner != null;
-    const marginVal = ex.margin || 0;
+  // Challenge reveal card — first step
+  const _chalPhaseNames = (chalInfo.phases || []).map(p => p.name).filter(Boolean);
+  html += `<div id="ri-step-${stateKey}-${stepIdx}" class="ri-step">
+    <div class="ri-exchange ri-exchange-won" style="border-color:rgba(244,166,35,0.3);text-align:center">
+      <div style="font-size:9px;font-weight:800;letter-spacing:3px;color:rgba(244,166,35,0.5);margin-bottom:12px">TODAY'S CHALLENGE</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:#f4a623;letter-spacing:2px;text-shadow:0 0 16px rgba(244,166,35,0.3)">${chalInfo.name || 'The Duel'}</div>
+      ${chalInfo.desc ? `<div style="font-size:13px;color:rgba(212,196,168,0.6);margin-top:8px;line-height:1.6;max-width:440px;margin-left:auto;margin-right:auto">${chalInfo.desc}</div>` : ''}
+      <div style="display:flex;justify-content:center;gap:12px;margin-top:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid rgba(244,166,35,0.2);border-radius:6px;background:rgba(244,166,35,0.04)">
+          ${_riSvgIcon('sword')}
+          <span style="font-size:10px;color:rgba(212,196,168,0.5);letter-spacing:1px">PRIMARY</span>
+          <span style="font-size:12px;color:#f4a623;font-weight:700;text-transform:uppercase;letter-spacing:1px">${_capFirst(chalInfo.primary || '?')}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid rgba(212,196,168,0.15);border-radius:6px;background:rgba(212,196,168,0.03)">
+          ${_riSvgIcon('shield')}
+          <span style="font-size:10px;color:rgba(212,196,168,0.5);letter-spacing:1px">SECONDARY</span>
+          <span style="font-size:12px;color:#d4c4a8;font-weight:700;text-transform:uppercase;letter-spacing:1px">${_capFirst(chalInfo.secondary || '?')}</span>
+        </div>
+      </div>
+      ${_chalPhaseNames.length ? `<div style="margin-top:16px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
+        ${_chalPhaseNames.map((name, i) => {
+          const cls = i === 0 ? 'ri-pill-iron' : i === _chalPhaseNames.length - 1 ? 'ri-pill-fire' : 'ri-pill-warn';
+          return `<span class="ri-pill ${cls}" style="font-size:8px;padding:2px 8px">${name}</span>`;
+        }).join(' <span style="color:rgba(212,196,168,0.2)">→</span> ')}
+      </div>` : ''}
+      <div style="font-size:10px;color:rgba(212,196,168,0.25);margin-top:14px;letter-spacing:1px">Best of ${phases.length} rounds</div>
+    </div>
+  </div>`;
+  stepIdx++;
+
+  phases.forEach((phase, i) => {
+    const marginVal = phase.margin || 0;
     const marginLabel = marginVal >= 2.5 ? 'DOMINANT' : marginVal >= 1.0 ? 'SOLID' : 'RAZOR THIN';
     const marginCls = marginVal >= 2.5 ? 'ri-margin-dominant' : marginVal >= 1.0 ? 'ri-margin-solid' : 'ri-margin-razor';
 
-    // Running score after this exchange
+    // Running score
     const winsAfter = {};
     _allNames.forEach(n => { winsAfter[n] = 0; });
     for (let j = 0; j <= i; j++) {
-      if (exchanges[j]?.winner) winsAfter[exchanges[j].winner] = (winsAfter[exchanges[j].winner] || 0) + 1;
+      if (phases[j]?.winner) winsAfter[phases[j].winner] = (winsAfter[phases[j].winner] || 0) + 1;
     }
     const maxWins = Math.max(...Object.values(winsAfter), 0);
 
-    // Exchange card — winner gets ri-exchange-won
+    // Phase tag badge
+    const tagLabel = phase.tag === 'opening' ? 'OPENING' : phase.tag === 'pivot' ? 'PIVOT' : 'CLIMAX';
+    const tagCls = phase.tag === 'climax' ? 'ri-pill-fire' : phase.tag === 'pivot' ? 'ri-pill-warn' : 'ri-pill-iron';
+
+    // Phase card
     html += `<div id="ri-step-${stateKey}-${stepIdx}" class="ri-step">
-      <div class="ri-exchange ${isWon ? 'ri-exchange-won' : ''}">
+      <div class="ri-exchange ri-exchange-won">
         <div class="ri-exchange-header">
           <div>
-            <div class="ri-exchange-num">Exchange ${i + 1}</div>
-            <div class="ri-exchange-type">${_riExchangeIcon(ex.id)} ${ex.name}</div>
-            <div class="ri-exchange-stats">${ex.id ? `Primary: ${_statPrimary(ex.id)} / Secondary: ${_statSecondary(ex.id)}` : ''}</div>
+            <div class="ri-exchange-num" style="display:flex;align-items:center;gap:8px">
+              <span>${phase.name || `Round ${i + 1}`}</span>
+              <span class="ri-pill ${tagCls}" style="font-size:8px;padding:2px 6px">${tagLabel}</span>
+            </div>
           </div>
-          <div class="ri-exchange-winner-tag">${_riSvgIcon('check')} ${ex.winner} wins</div>
+          <div class="ri-exchange-winner-tag">${_riSvgIcon('check')} ${phase.winner} wins</div>
         </div>
-        <div class="ri-exchange-narration">${ex.narration}</div>
+        <div class="ri-exchange-narration">${(() => {
+          const paras = (phase.narration || '').split('\n\n').filter(p => p.trim());
+          return paras.map(p => {
+            const idxW = p.indexOf(phase.winner);
+            const loser = _allNames.find(n => n !== phase.winner) || _allNames[1];
+            const idxL = p.indexOf(loser);
+            const who = (idxW >= 0 && (idxL < 0 || idxW <= idxL)) ? phase.winner : loser;
+            return `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+              <div style="flex-shrink:0">${rpPortrait(who, 'pb-xs')}</div>
+              <div style="flex:1;line-height:1.6">${p.trim()}</div>
+            </div>`;
+          }).join('');
+        })()}</div>
         <div class="ri-exchange-footer">
           <span class="ri-margin-tag ${marginCls}">${marginLabel} (${marginVal.toFixed(2)})</span>
           <div class="ri-scorebar">
@@ -4191,16 +4331,38 @@ export function rpBuildRIDuel(ep) {
     </div>`;
     stepIdx++;
 
-    // Host commentary between exchanges (not after the last one)
-    if (i < exchanges.length - 1) {
-      html += `<div id="ri-step-${stateKey}-${stepIdx}" class="ri-step" style="max-height:0">
-        <div class="ri-host"><span class="ri-host-name">Chris:</span> ${_riPickHost(i + 1, exchanges.length, marginVal)}</div>
+    // Between phases: host + breathing moment
+    if (i < phases.length - 1) {
+      // Host commentary
+      const hostKey = i === 0 ? 'after1' : 'after2';
+      const hostText = host[hostKey] || '"Let\'s keep going."';
+      html += `<div id="ri-step-${stateKey}-${stepIdx}" class="ri-step">
+        <div class="ri-host"><span class="ri-host-name">Chris:</span> ${hostText}</div>
       </div>`;
       stepIdx++;
+
+      // Breathing moment
+      const moment = breathingMoments[i] || null;
+      if (moment) {
+        const momentPlayers = moment.players || [moment.player, moment.target].filter(Boolean);
+        html += `<div id="ri-step-${stateKey}-${stepIdx}" class="ri-step">
+          <div class="ri-breathing-moment" style="border:1px dashed rgba(244,166,35,0.3);background:rgba(244,166,35,0.04);border-radius:8px;padding:16px;margin:8px 0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              ${momentPlayers.map(n => rpPortrait(n, 'pb-xs')).join('')}
+              <span class="ri-pill ${moment.badgeClass || 'ri-pill-warn'}" style="font-size:8px"><span class="ri-pill-dot"></span>${moment.badgeText || moment.type.toUpperCase()}</span>
+            </div>
+            <div style="font-size:13px;color:#d4c4a8;line-height:1.6">${moment.text}</div>
+            ${moment.bondDelta ? `<div style="font-size:10px;color:rgba(212,196,168,0.35);margin-top:8px">Bond ${moment.bondDelta > 0 ? '+' : ''}${moment.bondDelta}</div>` : ''}
+            ${moment.momentumDelta ? `<div style="font-size:10px;color:rgba(212,196,168,0.35);margin-top:4px">Momentum: ${Object.entries(moment.momentumDelta).map(([n, d]) => `${n} ${d > 0 ? '+' : ''}${d}`).join(', ')}</div>` : ''}
+            ${moment.mentalShift ? `<div style="font-size:10px;color:rgba(212,196,168,0.35);margin-top:4px">Mental: ${moment.player} → ${moment.mentalShift}</div>` : ''}
+          </div>
+        </div>`;
+        stepIdx++;
+      }
     }
   });
 
-  // Tiebreaker (if exists)
+  // Tiebreaker
   if (duel.tiebreaker) {
     const tb = duel.tiebreaker;
     html += `<div id="ri-step-${stateKey}-${stepIdx}" class="ri-step">
@@ -4225,14 +4387,13 @@ export function rpBuildRIDuel(ep) {
     stepIdx++;
   }
 
-  // Result step (includes host closer + result cards + verdict)
+  // Result step — host closer
   html += `<div id="ri-step-${stateKey}-${stepIdx}" class="ri-step">
-    <div class="ri-host"><span class="ri-host-name">Chris:</span> ${_riPickHost(exchanges.length, exchanges.length, 0)}</div>`;
+    <div class="ri-host"><span class="ri-host-name">Chris:</span> ${host.closer || '"The arena has spoken."'}</div>`;
 
-  // Result section
   const _survivors = survivors || [winner];
-  html += `<div class="ri-divider"><div class="ri-divider-line"></div><div class="ri-divider-text">Result</div><div class="ri-divider-line"></div></div>`;
 
+  // Survivor cards
   html += `<div class="ri-result-cards">`;
   _survivors.forEach(s => {
     html += `<div class="ri-result-card ri-result-survives">
@@ -4241,35 +4402,35 @@ export function rpBuildRIDuel(ep) {
       <span class="ri-pill ri-pill-green">${_riSvgIconSm('shield')} Survives</span>
     </div>`;
   });
-  html += `<div class="ri-result-card ri-result-eliminated">
-    <div class="ri-result-avatar" style="border:3px solid rgba(255,68,68,0.3)">${rpPortrait(loser, 'md')}</div>
-    <div class="ri-result-name">${loser}</div>
-    <span class="ri-pill ri-pill-danger">${_riSvgIconSm('x-mark')} Eliminated</span>
-  </div>`;
   html += `</div>`;
 
-  // Post-duel reactions
   if (postDuelEvts.length) {
     postDuelEvts.forEach(evt => {
       html += `<div class="ri-reaction">${evt.text}</div>`;
     });
   }
 
-  // Verdict with torch snuff
-  const _stayText = _survivors.length > 1
-    ? `${_survivors.join(' and ')} remain on Redemption Island. ${loser} has been permanently eliminated.`
-    : `${winner} remains on Redemption Island. ${loser} has been permanently eliminated.`;
+  // Elimination card — rp-elim style with torch-snuff
+  const _riElimNum = (gs.episodeHistory || []).filter(h => h.eliminated && h.num < ep.num).length + 1;
+  const _riLastWordsText = _riLastWords(loser, winner, duel, ep);
+  html += `<div class="rp-elim" style="background:radial-gradient(ellipse at 50% 0%,rgba(227,103,43,0.12) 0%,rgba(227,103,43,0.03) 50%,transparent 75%);border-color:rgba(227,103,43,0.2)">
+    <div class="rp-elim-eyebrow" style="color:#e3672b">Permanently Eliminated</div>
+    <div class="torch-snuffed">${rpPortrait(loser, 'xl')}</div>
+    <div class="rp-elim-name">${loser}</div>
+    <div class="rp-elim-arch">${vpArchLabel(loser)}</div>
+    <div class="rp-elim-quote">"${_riLastWordsText}"</div>
+    <div class="rp-elim-place">Arena Elimination — Episode ${ep.num}</div>
+  </div>`;
+
   html += `<div class="ri-verdict-section">
-    <div class="ri-verdict-portrait">
-      <div class="ri-result-avatar" style="border:2px solid rgba(255,68,68,0.3);width:60px;height:60px">${rpPortrait(loser, 'md')}</div>
-    </div>
     <div class="ri-verdict-text">The arena has spoken.</div>
-    <div class="ri-verdict-sub">${_stayText}</div>
+    <div class="ri-verdict-sub">${_survivors.length > 1
+      ? `${_survivors.join(' and ')} remain on Redemption Island. ${loser} has been permanently eliminated.`
+      : `${winner} remains on Redemption Island. ${loser} has been permanently eliminated.`}</div>
   </div>`;
 
   html += `</div>`; // end result step
 
-  // Reveal controls
   html += `<div id="ri-controls-${stateKey}" class="ri-controls">
     <button class="ri-btn ri-btn-fire" onclick="riDuelRevealNext('${stateKey}',${totalSteps})">${_riSvgIcon('sword')} Reveal Next</button>
     <span id="ri-counter-${stateKey}" class="ri-counter">0 / ${totalSteps}</span>
@@ -4348,23 +4509,26 @@ export function rpBuildRILife(ep) {
     null, null
   );
 
-  // Resident bar with portrait rings, day counter, mental + streak pills
+  // Resident bar — use pre-duel streak data to avoid spoiling duel outcome
+  const _lifePreStreak = ep.riDuel?.preStreakData || {};
   if (riPlayers.length) {
-    html += `<div class="ri-residents">`;
-    riPlayers.forEach(name => {
+    html += `<div class="ri-faceoff">`;
+    riPlayers.forEach((name, i) => {
       const daysOnRI = (gs.riLifeEvents?.[name] || []).filter(e => e.ep <= epNum).length;
-      const streak = gs.riWinStreak?.[name] || 0;
-      html += `<div class="ri-resident">
-        <div class="ri-resident-portrait"><div class="ri-resident-inner">${rpPortrait(name, 'lg')}</div></div>
+      html += `<div class="ri-combatant">
+        <div class="ri-portrait-ring"><div class="ri-portrait-inner">${rpPortrait(name, 'lg')}</div></div>
         <div class="ri-resident-day">${daysOnRI > 0 ? `D${daysOnRI}` : 'NEW'}</div>
-        <div class="ri-resident-name">${name}</div>
-        <div class="ri-resident-arch">${vpArchLabel(name)}</div>
-        <div class="ri-resident-badges">
+        <div class="ri-combatant-name">${name}</div>
+        <div class="ri-combatant-arch">${vpArchLabel(name)}</div>
+        <div class="ri-combatant-badges">
           ${_riMentalBadge(name)}
-          ${streak > 0 ? _riStreakBadge(name, null) : ''}
+          ${_riStreakBadge(name, _lifePreStreak)}
           ${_riTrainingPills(name)}
         </div>
       </div>`;
+      if (i < riPlayers.length - 1) {
+        html += `<div class="ri-vs"><div class="ri-vs-text">VS</div></div>`;
+      }
     });
     html += `</div>`;
   }
@@ -4387,8 +4551,8 @@ export function rpBuildRILife(ep) {
     // Social events may have two avatars
     const isSocial = evt.player && evt.player2;
     html += `<div class="ri-life-card ${cardExtra}">
-      <div class="ri-life-avatar">${evt.player ? rpPortrait(evt.player, 'sm') : ''}</div>
-      ${isSocial ? `<div class="ri-life-avatar" style="margin-left:-8px">${rpPortrait(evt.player2, 'sm')}</div>` : ''}
+      ${evt.player ? rpPortrait(evt.player, 'pb-xs') : ''}
+      ${isSocial ? rpPortrait(evt.player2, 'pb-xs') : ''}
       <div class="ri-life-body">
         <div class="ri-life-text">${evt.text}</div>
         <div class="ri-life-footer">
@@ -4410,8 +4574,6 @@ export function rpBuildRIReturn(ep) {
   const winner = ri.winner;
   const losers = ri.losers || [];
   const isRescue = seasonConfig.riFormat === 'rescue';
-  const exchanges = ri.exchanges || [];
-  const streakData = ri.streakData || {};
   const streakCount = ri.streakCount || 0;
   const streakEffects = ri.streakEffects || null;
 
@@ -4458,42 +4620,10 @@ export function rpBuildRIReturn(ep) {
     </div>
   </div>`;
 
-  // Exchange breakdown (no click-to-reveal, show all)
-  if (exchanges.length) {
-    html += `<div class="ri-divider"><div class="ri-divider-line"></div><div class="ri-divider-text">Return Challenge Breakdown</div><div class="ri-divider-line"></div></div>`;
-    exchanges.forEach((ex, i) => {
-      const marginVal = ex.margin || 0;
-      const marginLabel = marginVal >= 2.5 ? 'DOMINANT' : marginVal >= 1.0 ? 'SOLID' : 'RAZOR THIN';
-      const marginCls = marginVal >= 2.5 ? 'ri-margin-dominant' : marginVal >= 1.0 ? 'ri-margin-solid' : 'ri-margin-razor';
-      const isChampWin = ex.winner === winner;
-      html += `<div class="ri-exchange ${isChampWin ? 'ri-exchange-won' : ''}" ${!isChampWin ? 'style="opacity:0.6"' : ''}>
-        <div class="ri-exchange-header">
-          <div>
-            <div class="ri-exchange-num">Exchange ${i + 1}</div>
-            <div class="ri-exchange-type">${_riExchangeIcon(ex.id)} ${ex.name}</div>
-          </div>
-          <div class="ri-exchange-winner-tag" ${isChampWin ? 'style="border-color:rgba(255,215,0,0.4);color:#ffd700;background:rgba(255,215,0,0.08)"' : ''}>${_riSvgIcon('check')} ${ex.winner}</div>
-        </div>
-        <div class="ri-exchange-narration" style="font-size:12px">${ex.narration}</div>
-        <div class="ri-exchange-footer">
-          <span class="ri-margin-tag ${marginCls}">${marginLabel}</span>
-          <div></div>
-        </div>
-      </div>`;
-    });
-  }
-
-  // Challenge info
-  if (ri.challengeLabel) {
-    html += `<div style="text-align:center;margin:20px 0">
-      <span class="ri-pill ri-pill-fire">${_riSvgIcon('flame')} ${ri.challengeLabel}</span>
-    </div>`;
-  }
-
   // Confessional
   html += `<div class="ri-exchange" style="border-color:rgba(255,215,0,0.2);max-width:500px;margin:20px auto">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <div class="ri-tension-avatar">${rpPortrait(winner, 'sm')}</div>
+      ${rpPortrait(winner, 'pb-xs')}
       <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#ffd700;text-transform:uppercase">RETURNING CONFESSIONAL</span>
     </div>
     <div style="font-size:12px;color:rgba(212,196,168,0.7);line-height:1.7;font-style:italic">"They voted me out. I fought my way back through the arena. And now every single person who wrote my name is going to have to look me in the eye."</div>

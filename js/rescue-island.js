@@ -3,33 +3,24 @@ import { gs, players, seasonConfig } from './core.js';
 import { pStats, pronouns, getPlayerState } from './players.js';
 import { getBond, addBond } from './bonds.js';
 import { wRandom } from './alliances.js';
+import { CHALLENGE_BANK } from './ri-challenge-bank.js';
+import { CHALLENGE_BANK_2 } from './ri-challenge-bank-2.js';
 
-export const RI_DUEL_CHALLENGES = [
-  { id: 'fire-making', name: 'Fire-Making', desc: 'First to build a sustainable fire wins.',
-    stat: s => s.endurance * 0.5 + s.physical * 0.4 + s.temperament * 0.1 },
-  { id: 'speed-puzzle', name: 'Speed Puzzle', desc: 'First to complete a slide puzzle wins.',
-    stat: s => s.mental * 0.6 + s.strategic * 0.3 + s.temperament * 0.1 },
-  { id: 'endurance-hold', name: 'Endurance Hold', desc: 'Hold position as long as possible. Last one standing wins.',
-    stat: s => s.endurance * 0.6 + s.physical * 0.2 + s.temperament * 0.2 },
-  { id: 'precision-toss', name: 'Precision Toss', desc: 'Toss rings onto a series of posts. Most accuracy wins.',
-    stat: s => s.physical * 0.4 + s.mental * 0.3 + s.temperament * 0.3 },
-  { id: 'balance-beam', name: 'Balance Beam', desc: 'Navigate a narrow beam while carrying a stack of blocks.',
-    stat: s => s.endurance * 0.3 + s.temperament * 0.4 + s.mental * 0.3 },
-  { id: 'memory', name: 'Memory Challenge', desc: 'Memorize a sequence and recreate it. Precision under pressure.',
-    stat: s => s.mental * 0.5 + s.intuition * 0.3 + s.temperament * 0.2 },
-];
+// Merge both halves of the challenge bank
+const ALL_CHALLENGES = { ...CHALLENGE_BANK, ...CHALLENGE_BANK_2 };
+const ALL_CHALLENGE_IDS = Object.keys(ALL_CHALLENGES);
 
-// ══════════════════════════════════════════════════════════════════════
-// EXCHANGE POOL — multi-beat duel system
-// ══════════════════════════════════════════════════════════════════════
+function _getChallenge(id) { return ALL_CHALLENGES[id]; }
+function _randomChallenge() { return ALL_CHALLENGES[ALL_CHALLENGE_IDS[Math.floor(Math.random() * ALL_CHALLENGE_IDS.length)]]; }
 
-const EXCHANGE_POOL = [
-  { id: 'grit',      name: 'Grit',      primary: 'physical',  secondary: 'endurance' },
-  { id: 'precision', name: 'Precision', primary: 'mental',    secondary: 'temperament' },
-  { id: 'instinct',  name: 'Instinct',  primary: 'intuition', secondary: 'boldness' },
-  { id: 'willpower', name: 'Willpower', primary: 'endurance', secondary: 'loyalty' },
-  { id: 'cunning',   name: 'Cunning',   primary: 'strategic', secondary: 'social' },
-];
+// Backward-compatible export for rescue format (episode.js simple wRandom pick)
+export const RI_DUEL_CHALLENGES = ALL_CHALLENGE_IDS.map(id => {
+  const c = ALL_CHALLENGES[id];
+  return {
+    id: c.id, name: c.name, desc: c.desc,
+    stat: s => s[c.primary] * 0.6 + s[c.secondary] * 0.4,
+  };
+});
 
 const VALID_STATS = ['physical','endurance','mental','social','strategic','loyalty','boldness','intuition','temperament'];
 
@@ -47,161 +38,385 @@ function _shuffle(arr) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// NARRATION — exchange-level text generation
+// SCORE-AWARE HOST COMMENTARY
 // ══════════════════════════════════════════════════════════════════════
 
-function _exchangeNarration(exchangeId, winnerName, loserName, margin, isThreeWay, bond) {
+function _hostLine(slot, context) {
+  const { leader, trailer, winner, loser, margin } = context;
+  const HOST = {
+    opener: [
+      `"This is it. One stays, one goes. Survivors ready?"`,
+      `"You both know what's at stake. Let's get to it."`,
+      `"The arena doesn't lie. It will tell us who deserves to stay."`,
+      `"No alliances out here. No strategy. Just you and the challenge."`,
+      `"Welcome back to the arena. I wish I could say it gets easier. It doesn't."`,
+    ],
+    'after1.leading': [
+      `"${leader} takes the first round! ${trailer} — you need to respond RIGHT NOW."`,
+      `"One round in and ${leader} is looking sharp. ${trailer}, dig deep."`,
+      `"${leader} draws first blood. ${trailer} is on the back foot."`,
+      `"Advantage: ${leader}. But this is far from over."`,
+    ],
+    'after2.matchPoint': [
+      `"Match point. ${leader} wins this next one and it is OVER for ${trailer}."`,
+      `"${leader} is one round away from ending this. ${trailer}, this is do or die."`,
+      `"${trailer} is staring down elimination. One more loss and the dream is over."`,
+      `"Back against the wall for ${trailer}. ${leader} can smell the finish line."`,
+    ],
+    'after2.tied': [
+      `"We are TIED one apiece. This is EVERYTHING right here."`,
+      `"One all! The final round decides it. Winner takes all."`,
+      `"Tied up. It all comes down to this last round. You can feel it."`,
+      `"Dead even. This is why we play three rounds."`,
+    ],
+    'after2.dominant': [
+      `"${leader} is rolling. ${trailer} needs a miracle."`,
+      `"Complete control from ${leader}. ${trailer} looks shaken."`,
+      `"Two rounds in and it hasn't been close. ${trailer} has to find something fast."`,
+      `"Dominant performance from ${leader}. Can ${trailer} make this interesting?"`,
+    ],
+    'closer.sweep': [
+      `"Three for three. That is TOTAL DOMINATION by ${winner}."`,
+      `"A sweep! ${winner} didn't give ${loser} a single round. Ruthless."`,
+      `"${winner} made a statement tonight. ${loser} never had a chance."`,
+      `"Clean sweep. ${winner} is the real deal."`,
+    ],
+    'closer.comeback': [
+      `"WHAT a comeback! Down after round one and ${winner} claws all the way back!"`,
+      `"${winner} was on the ropes — and STILL found a way. Incredible."`,
+      `"You can't teach that kind of fight. ${winner} refused to die."`,
+      `"Down but not out. ${winner} proves why this game is never over."`,
+    ],
+    'closer.close': [
+      `"By the THINNEST of margins. ${winner} survives to fight another day."`,
+      `"That could have gone either way. ${winner} just barely edges it."`,
+      `"Heartbreaking for ${loser}. Inches away. ${winner} lives on."`,
+      `"A razor-thin finish. ${winner} holds on — but only just."`,
+    ],
+    'closer.dominant': [
+      `"${winner} made that look easy. An impressive showing."`,
+      `"Not much ${loser} could do there. ${winner} was simply better today."`,
+      `"${winner} was in control the whole way. Commanding performance."`,
+      `"${winner} leaves no doubt. That's how you survive on Redemption Island."`,
+    ],
+  };
+  const pool = HOST[slot];
+  if (!pool || !pool.length) return `"Let's see what happens next."`;
+  let line = _pick(pool);
+  return line;
+}
+
+function _pickHostSlot(phaseIdx, totalPhases, winsPerPlayer, leader, trailer) {
+  if (phaseIdx === 0) {
+    return 'after1.leading';
+  }
+  if (phaseIdx === totalPhases - 2) {
+    const leaderWins = winsPerPlayer[leader] || 0;
+    const trailerWins = winsPerPlayer[trailer] || 0;
+    if (leaderWins === trailerWins) return 'after2.tied';
+    if (leaderWins >= 2) return 'after2.dominant';
+    return 'after2.matchPoint';
+  }
+  return 'after1.leading';
+}
+
+function _pickCloserSlot(phases, winner, loser) {
+  const winnerPhaseWins = phases.filter(p => p.winner === winner).length;
+  const loserPhaseWins = phases.filter(p => p.winner === loser).length;
+  if (winnerPhaseWins === phases.length) return 'closer.sweep';
+  if (loserPhaseWins > 0 && phases[0].winner === loser) return 'closer.comeback';
+  const avgMargin = phases.reduce((s, p) => s + (p.margin || 0), 0) / phases.length;
+  if (avgMargin < 1.5) return 'closer.close';
+  return 'closer.dominant';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// BREATHING MOMENTS — between phases
+// ══════════════════════════════════════════════════════════════════════
+
+function _pickBreathingMoment(duelists, riList, phaseIdx, winsPerPlayer, challenge) {
+  const eligible = [];
+  const [a, b] = duelists.length >= 2 ? duelists : [duelists[0], null];
+  if (!b) return null;
+
+  const sA = pStats(a), sB = pStats(b);
+  const prA = pronouns(a), prB = pronouns(b);
+  const bond = getBond(a, b);
+  const archA = players.find(p => p.name === a)?.archetype || '';
+  const archB = players.find(p => p.name === b)?.archetype || '';
+  const isVillainA = ['villain','mastermind','schemer'].includes(archA);
+  const isVillainB = ['villain','mastermind','schemer'].includes(archB);
+  const isNiceA = ['hero','loyal-soldier','social-butterfly','showmancer','underdog','goat'].includes(archA);
+  const isNiceB = ['hero','loyal-soldier','social-butterfly','showmancer','underdog','goat'].includes(archB);
+  const wA = winsPerPlayer[a] || 0, wB = winsPerPlayer[b] || 0;
+  const aTrailing = wA < wB, bTrailing = wB < wA;
+
+  // ── STRATEGIC ──
+  if (isVillainA || sA.strategic >= 7) {
+    eligible.push({
+      type: 'psych-out', player: a, target: b,
+      text: _pick([
+        `${a} leans toward ${b} between rounds. "You feel that? That's you losing." ${b} says nothing.`,
+        `${a} makes eye contact with ${b} and slowly shakes ${prA.pos} head. The message is clear.`,
+        `${a} stretches casually, glancing at ${b} like this is beneath ${prA.obj}. The disrespect is deliberate.`,
+        `"You done yet?" ${a} asks ${b}. ${b}'s jaw tightens.`,
+      ]),
+      bondDelta: -1, momentumDelta: { [b]: -0.3 },
+      badgeText: 'PSYCH-OUT', badgeClass: 'ri-pill-danger', players: [a, b],
+    });
+  }
+  if (isVillainB || sB.strategic >= 7) {
+    eligible.push({
+      type: 'psych-out', player: b, target: a,
+      text: _pick([
+        `${b} stares ${a} down during the reset. The silence is louder than any words.`,
+        `${b} lets out a laugh between rounds. Not at anything funny. ${a} notices.`,
+        `"I've beaten better," ${b} mutters loud enough for ${a} to hear.`,
+        `${b} takes ${prB.pos} time resetting. Making ${a} wait. Making ${a} think.`,
+      ]),
+      bondDelta: -1, momentumDelta: { [a]: -0.3 },
+      badgeText: 'PSYCH-OUT', badgeClass: 'ri-pill-danger', players: [b, a],
+    });
+  }
+
+  if (sA.boldness >= 6) {
+    eligible.push({
+      type: 'self-talk', player: a,
+      text: _pick([
+        `${a} mutters to ${prA.ref} between rounds. Fists clenched. Eyes locked forward. ${prA.Sub} ${prA.sub==='they'?'are':'is'} going to a different place mentally.`,
+        `${a} slaps ${prA.pos} own face. Hard. The fire in ${prA.pos} eyes doubles.`,
+        `${a} closes ${prA.pos} eyes. Breathes. When they open, something has shifted.`,
+        `"Come on. COME ON." ${a} pounds ${prA.pos} chest. The self-belief radiates.`,
+      ]),
+      mentalShift: 'obsessed',
+      badgeText: 'FIRED UP', badgeClass: 'ri-pill-fire', players: [a],
+    });
+  }
+  if (sB.boldness >= 6) {
+    eligible.push({
+      type: 'self-talk', player: b,
+      text: _pick([
+        `${b} talks to ${prB.ref}. You can see the words — "I can do this. I CAN do this."`,
+        `${b} takes a deep breath, squares ${prB.pos} shoulders. Something clicks.`,
+        `${b} is pacing between rounds. Muttering. Planning. ${prB.Sub} ${prB.sub==='they'?'are':'is'} building into something.`,
+        `${b} lets out a primal yell between rounds. ${a} looks over. ${b} doesn't care.`,
+      ]),
+      mentalShift: 'obsessed',
+      badgeText: 'FIRED UP', badgeClass: 'ri-pill-fire', players: [b],
+    });
+  }
+
+  if (sA.intuition >= 6) {
+    eligible.push({
+      type: 'read-opponent', player: a, target: b,
+      text: _pick([
+        `${a} watches ${b}'s hands during the reset. The way ${prB.sub} grip${prB.sub==='they'?'':'s'}. The slight tremor. ${a} files it away.`,
+        `${a} studies ${b}'s technique. There — a pattern. ${a} adjust${prA.sub==='they'?'':'s'} ${prA.pos} approach.`,
+        `${a}'s eyes narrow. ${prA.Sub}'s spotted something in ${b}'s rhythm. A weakness to exploit.`,
+        `${a} watches ${b} reset and nods slowly. ${prA.Sub} see${prA.sub==='they'?'':'s'} it now.`,
+      ]),
+      momentumDelta: { [a]: 0.5 },
+      badgeText: 'READ', badgeClass: 'ri-pill-info', players: [a],
+    });
+  }
+  if (sB.intuition >= 6) {
+    eligible.push({
+      type: 'read-opponent', player: b, target: a,
+      text: _pick([
+        `${b} tilts ${prB.pos} head, watching ${a} reset. Something about ${a}'s footwork... there. Found it.`,
+        `${b} catches a tell in ${a}'s approach. A micro-adjustment follows.`,
+        `${b} replays the last round in ${prB.pos} head. ${prB.Sub} see${prB.sub==='they'?'':'s'} where ${a} is weak.`,
+        `Between rounds, ${b} recalibrates. ${prB.Sub}'ve read ${a}'s rhythm now.`,
+      ]),
+      momentumDelta: { [b]: 0.5 },
+      badgeText: 'READ', badgeClass: 'ri-pill-info', players: [b],
+    });
+  }
+
+  // ── SOCIAL ──
+  if (bond >= 1) {
+    eligible.push({
+      type: 'respectful-nod', player: a, target: b,
+      text: _pick([
+        `Between rounds, ${a} and ${b} share a look. A tiny nod. Even here, there's respect.`,
+        `${a} taps ${b}'s shoulder during the reset. No words. Just acknowledgment.`,
+        `${a} and ${b} both pause. For a second, they're not opponents. Then the moment passes.`,
+        `"Good round," ${a} says quietly. ${b} almost smiles. Almost.`,
+      ]),
+      bondDelta: 1,
+      badgeText: 'RESPECT', badgeClass: 'ri-pill-green', players: [a, b],
+    });
+  }
+
+  // Sideline encouragement (3+ residents)
+  const spectators = (riList || []).filter(n => !duelists.includes(n));
+  if (spectators.length > 0) {
+    const spec = _pick(spectators);
+    const prSpec = pronouns(spec);
+    const supported = getBond(spec, a) >= getBond(spec, b) ? a : b;
+    eligible.push({
+      type: 'sideline-encouragement', player: spec, target: supported,
+      text: _pick([
+        `From the sideline, ${spec} shouts: "Come on, ${supported}! You got this!" ${supported} hears it.`,
+        `${spec} is on ${prSpec.pos} feet at the edge of the arena. "DON'T GIVE UP, ${supported}!" The words land.`,
+        `${spec} claps between rounds. ${supported} looks over and ${spec} gives a thumbs up. Small thing. Means everything.`,
+        `"${supported}! ${supported}!" ${spec} is practically in the arena. The support is real.`,
+      ]),
+      bondDelta: 1, bondPair: [spec, supported],
+      momentumDelta: { [supported]: 0.3 },
+      badgeText: 'SUPPORT', badgeClass: 'ri-pill-green', players: [spec, supported],
+    });
+  }
+
+  if (aTrailing && sA.temperament <= 4) {
+    eligible.push({
+      type: 'breakdown', player: a,
+      text: _pick([
+        `${a}'s composure cracks between rounds. ${prA.Sub} wipe${prA.sub==='they'?'':'s'} ${prA.pos} eyes quickly, hoping no one saw.`,
+        `${a} slams the ground. Frustration boiling over. The game is slipping away and ${prA.sub} know${prA.sub==='they'?'':'s'} it.`,
+        `${a}'s shoulders drop. The fight is leaving ${prA.pos} body. You can see it draining out.`,
+        `A shaky exhale from ${a}. ${prA.Sub} ${prA.sub==='they'?'are':'is'} coming apart at the seams.`,
+      ]),
+      mentalShift: 'broken',
+      badgeText: 'BREAKING', badgeClass: 'ri-pill-danger', players: [a],
+    });
+  }
+  if (bTrailing && sB.temperament <= 4) {
+    eligible.push({
+      type: 'breakdown', player: b,
+      text: _pick([
+        `${b} can't hide it anymore. The frustration spills out. ${prB.Sub} kick${prB.sub==='they'?'':'s'} the sand.`,
+        `${b}'s lip trembles between rounds. ${prB.Sub} ${prB.sub==='they'?'are':'is'} losing this and ${prB.sub} know${prB.sub==='they'?'':'s'} it.`,
+        `Something breaks in ${b}'s expression. The hope dims.`,
+        `${b} stares at the ground for a long beat. When ${prB.sub} look${prB.sub==='they'?'':'s'} up, the fight is gone.`,
+      ]),
+      mentalShift: 'broken',
+      badgeText: 'BREAKING', badgeClass: 'ri-pill-danger', players: [b],
+    });
+  }
+
+  if (bond <= -3) {
+    eligible.push({
+      type: 'grudge-flare', player: a, target: b,
+      text: _pick([
+        `${a} and ${b} lock eyes between rounds. Pure fire. The hatred is fuel for both of them.`,
+        `"I'm not done with you," ${a} says. ${b} fires back: "Good. I'm not done either." Both get meaner.`,
+        `The animosity between ${a} and ${b} crackles in the air. They're both playing for blood now.`,
+        `${b} mutters ${a}'s name like a curse. ${a} hears it. Smiles. This just got personal.`,
+      ]),
+      bondDelta: -1,
+      momentumDelta: { [a]: 0.3, [b]: 0.3 },
+      badgeText: 'GRUDGE', badgeClass: 'ri-pill-danger', players: [a, b],
+    });
+  }
+
+  // ── NEUTRAL ──
+  if (Math.random() < 0.15) {
+    const victim = _pick(duelists.slice(0, 2));
+    const prV = pronouns(victim);
+    eligible.push({
+      type: 'equipment-trouble', player: victim,
+      text: _pick([
+        `${victim}'s station shifts during the reset. ${prV.Sub} lose${prV.sub==='they'?'':'s'} precious seconds readjusting.`,
+        `Something jams on ${victim}'s side. ${prV.Sub} fumble${prV.sub==='they'?'':'s'} with it, losing focus.`,
+        `${victim} drops ${prV.pos} gear between rounds. A small setback — but everything matters here.`,
+        `A gust of wind scatters ${victim}'s setup. ${prV.Sub} scramble${prV.sub==='they'?'':'s'} to recover.`,
+      ]),
+      momentumDelta: { [victim]: -0.5 },
+      badgeText: 'TROUBLE', badgeClass: 'ri-pill-warn', players: [victim],
+    });
+  }
+
+  if (aTrailing && (sA.loyalty >= 6 || sA.endurance >= 7)) {
+    eligible.push({
+      type: 'second-wind', player: a,
+      text: _pick([
+        `${a} digs somewhere deep between rounds. The posture changes. The breathing steadies. ${prA.Sub} ${prA.sub==='they'?'are':'is'} not done.`,
+        `Something shifts in ${a}. The desperation turns to determination. A second wind.`,
+        `${a} rolls ${prA.pos} shoulders. Cracks ${prA.pos} neck. Whatever was broken just got fixed.`,
+        `${a} takes one long breath. When ${prA.sub} exhale${prA.sub==='they'?'':'s'}, the fear is gone. ${prA.Sub} ${prA.sub==='they'?'are':'is'} ready.`,
+      ]),
+      mentalShift: 'focused',
+      badgeText: 'SECOND WIND', badgeClass: 'ri-pill-green', players: [a],
+    });
+  }
+  if (bTrailing && (sB.loyalty >= 6 || sB.endurance >= 7)) {
+    eligible.push({
+      type: 'second-wind', player: b,
+      text: _pick([
+        `${b} was fading — but between rounds, something ignites. ${prB.Sub} stand${prB.sub==='they'?'':'s'} taller. Eyes sharper.`,
+        `Down but not broken. ${b} finds a reserve nobody knew was there.`,
+        `${b} shakes off the last round. Literally shakes — arms, legs, head. Fresh start. New fight.`,
+        `${b} looks at the arena. Looks at ${a}. And decides this isn't over. Not yet.`,
+      ]),
+      mentalShift: 'focused',
+      badgeText: 'SECOND WIND', badgeClass: 'ri-pill-green', players: [b],
+    });
+  }
+
+  if (Math.random() < 0.20) {
+    eligible.push({
+      type: 'crowd-energy', player: a, target: b,
+      text: _pick([
+        `The arena seems to pulse between rounds. Both competitors feel it — something electric in the air.`,
+        `A bird calls from the treeline. Both look up. A beat of silence. Then back to war — but sharper now.`,
+        `The wind shifts. The light changes. Something in the atmosphere sharpens both of them.`,
+        `Between rounds, both competitors catch their breath and reset. The brief pause charges them both.`,
+      ]),
+      momentumDelta: { [a]: 0.2, [b]: 0.2 },
+      badgeText: 'ENERGY', badgeClass: 'ri-pill-info', players: [a, b],
+    });
+  }
+
+  if (!eligible.length) return null;
+  return _pick(eligible);
+}
+
+function _applyBreathingMoment(moment, duelists, momentum) {
+  if (!moment) return;
+  if (moment.bondDelta) {
+    const bA = moment.bondPair ? moment.bondPair[0] : moment.player;
+    const bB = moment.bondPair ? moment.bondPair[1] : moment.target;
+    if (bA && bB) addBond(bA, bB, moment.bondDelta);
+  }
+  if (moment.mentalShift) {
+    _setMentalState(moment.player, moment.mentalShift);
+  }
+  if (moment.momentumDelta) {
+    for (const [name, delta] of Object.entries(moment.momentumDelta)) {
+      if (momentum[name] !== undefined) momentum[name] += delta;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// PHASE NARRATION — challenge-specific + bond modifiers
+// ══════════════════════════════════════════════════════════════════════
+
+function _phaseNarration(challenge, phaseTag, winnerName, loserName, margin, bond) {
   const prW = pronouns(winnerName);
   const prL = pronouns(loserName);
   const dominant = margin >= 2.5;
 
-  const narr = {
-    grit: {
-      winDom: [
-        `${winnerName} powers through with raw force. ${loserName} can't match the intensity.`,
-        `Pure physicality from ${winnerName}. ${prW.Sub} grind${prW.sub==='they'?'':'s'} ${loserName} into the dirt.`,
-        `${winnerName} digs deeper than anyone thought possible. ${loserName} has no answer.`,
-        `${winnerName} makes it look effortless — ${loserName} is left gasping.`,
-      ],
-      winClose: [
-        `${winnerName} edges out ${loserName} by sheer willpower. Both are spent.`,
-        `A war of attrition. ${winnerName} survives it. Barely.`,
-        `${winnerName} and ${loserName} go blow for blow — ${winnerName} lands the last one.`,
-        `Neck and neck the whole way. ${winnerName} finds one more gear at the end.`,
-      ],
-      loseHard: [
-        `${loserName} fights until ${prL.pos} body gives out. No quit in ${prL.obj} — but no win either.`,
-        `${loserName} goes down swinging. ${prL.Sub} gave everything and it wasn't enough.`,
-        `A valiant effort from ${loserName}, but ${winnerName} is simply stronger today.`,
-        `${loserName} refuses to stop. ${prL.Pos} legs give out before ${prL.pos} will does.`,
-      ],
-      loseCollapse: [
-        `${loserName} fades fast. The island has taken too much.`,
-        `${loserName} can't keep up. ${prL.Sub} know${prL.sub==='they'?'':'s'} it early and it shows.`,
-        `${loserName} stumbles out of the gate and never recovers.`,
-        `The fire is gone from ${loserName}. ${prL.Sub} go${prL.sub==='they'?'':'es'} through the motions.`,
-      ],
-    },
-    precision: {
-      winDom: [
-        `${winnerName} is surgical. Every move calculated. ${loserName} can't keep pace mentally.`,
-        `${winnerName} locks in with terrifying focus. ${loserName} second-guesses and pays for it.`,
-        `Precision personified. ${winnerName} barely blinks while ${loserName} scrambles.`,
-        `${winnerName} treats it like a chess match — and ${loserName} is three moves behind.`,
-      ],
-      winClose: [
-        `Both razor-sharp, but ${winnerName} makes one fewer mistake than ${loserName}.`,
-        `${winnerName} stays composed when it matters most. ${loserName} flinches first.`,
-        `A battle of minds. ${winnerName} finds the edge by a hair.`,
-        `${loserName} nearly has it. Nearly. ${winnerName} doesn't deal in nearly.`,
-      ],
-      loseHard: [
-        `${loserName} solves it clean but ${winnerName} is just faster. Nothing to be ashamed of.`,
-        `${loserName} puts up a brilliant fight — just outclassed at the final step.`,
-        `${loserName} plays it smart but can't match ${winnerName}'s composure under fire.`,
-        `So close for ${loserName}. One wrong read at the wrong moment.`,
-      ],
-      loseCollapse: [
-        `${loserName} panics. Overthinks. Makes mistakes that compound into disaster.`,
-        `${loserName}'s hands are shaking before the exchange even starts. It's over quickly.`,
-        `${loserName} freezes up. The pressure is too much.`,
-        `${loserName} can't focus. The game in ${prL.pos} head is louder than the one in front of ${prL.obj}.`,
-      ],
-    },
-    instinct: {
-      winDom: [
-        `${winnerName} reads it instantly. ${loserName} is still processing when it's already over.`,
-        `Pure instinct from ${winnerName}. ${prW.Sub} move${prW.sub==='they'?'':'s'} before thinking and it's the right call.`,
-        `${winnerName} trusts ${prW.pos} gut — and ${prW.pos} gut is never wrong today.`,
-        `${winnerName} acts on impulse and it's brilliant. ${loserName} hesitates and it's fatal.`,
-      ],
-      winClose: [
-        `Both go on instinct. ${winnerName}'s instincts are just slightly sharper.`,
-        `A coin flip decided by nerve. ${winnerName} doesn't blink.`,
-        `${winnerName} and ${loserName} both swing wild — ${winnerName} connects.`,
-        `Gut feeling versus gut feeling. ${winnerName}'s wins by a fraction.`,
-      ],
-      loseHard: [
-        `${loserName}'s instincts are good — ${winnerName}'s are just better right now.`,
-        `${loserName} makes the bold play. It almost works. Almost.`,
-        `${loserName} reads it right but reacts a beat too slow.`,
-        `${loserName} trusts ${prL.pos} read and it's not wrong — it's just not enough.`,
-      ],
-      loseCollapse: [
-        `${loserName} second-guesses every impulse. Paralyzed by options.`,
-        `${loserName} overthinks it into oblivion. Instinct abandoned, nothing left.`,
-        `${loserName} looks lost. No read, no plan, no chance.`,
-        `${loserName} goes against ${prL.pos} gut and pays the price immediately.`,
-      ],
-    },
-    willpower: {
-      winDom: [
-        `${winnerName} refuses to break. ${loserName} watches the resolve and knows it's unbeatable.`,
-        `Iron will from ${winnerName}. ${prW.Sub} would rather collapse than lose. ${loserName} can see it.`,
-        `${winnerName} endures what shouldn't be endurable. ${loserName} has no answer for that.`,
-        `${winnerName} sets ${prW.pos} jaw and wills it into existence. ${loserName} can't match that energy.`,
-      ],
-      winClose: [
-        `Both refuse to quit. ${winnerName} simply refuses a tiny bit harder.`,
-        `Willpower against willpower. ${winnerName} outlasts ${loserName} by a breath.`,
-        `${winnerName} finds something deep when it looks like ${prW.sub}'ll break. ${loserName} can't find the same.`,
-        `A test of pure determination. ${winnerName} passes. ${loserName} fails — barely.`,
-      ],
-      loseHard: [
-        `${loserName} doesn't quit. ${prL.Sub} just run${prL.sub==='they'?'':'s'} out of road.`,
-        `${loserName} gives everything. But everything isn't enough against ${winnerName} today.`,
-        `${loserName} holds on longer than anyone expected. Just not long enough.`,
-        `${loserName}'s will is strong. ${winnerName}'s is stronger.`,
-      ],
-      loseCollapse: [
-        `${loserName} breaks early. The island has worn ${prL.obj} down to nothing.`,
-        `${loserName} gives up before ${prL.pos} body does. The fight left days ago.`,
-        `There's nothing left in ${loserName}'s tank. ${prL.Sub} know${prL.sub==='they'?'':'s'} it. Everyone knows it.`,
-        `${loserName} mouths "I'm done" before the exchange is half over.`,
-      ],
-    },
-    cunning: {
-      winDom: [
-        `${winnerName} plays ${loserName} like a fiddle. Feints, misdirection, and a clean finish.`,
-        `${winnerName} outmaneuvers ${loserName} at every turn. It's strategy, not strength.`,
-        `${winnerName} sees three steps ahead. ${loserName} is still on step one.`,
-        `Masterclass in game reading from ${winnerName}. ${loserName} never stood a chance.`,
-      ],
-      winClose: [
-        `A chess match between equals. ${winnerName} finds the one opening ${loserName} leaves.`,
-        `Both playing mind games. ${winnerName} wins the final bluff.`,
-        `${winnerName} and ${loserName} trade moves — ${winnerName} makes the last smart one.`,
-        `Cunning meets cunning. ${winnerName} edges it by reading ${loserName}'s tell.`,
-      ],
-      loseHard: [
-        `${loserName} plays it smart — just runs into someone smarter today.`,
-        `${loserName}'s strategy is sound. ${winnerName}'s is just more ruthless.`,
-        `${loserName} tries to outthink ${winnerName} and nearly pulls it off.`,
-        `${loserName} reads the board well. ${winnerName} reads it better.`,
-      ],
-      loseCollapse: [
-        `${loserName} tries to get clever and outsmarts ${prL.ref}. Badly.`,
-        `${loserName}'s plan falls apart on contact. No backup. No recovery.`,
-        `${loserName} overthinks it into a corner and can't escape.`,
-        `${loserName} has no read on ${winnerName}. Playing blind.`,
-      ],
-    },
-  };
+  const outcome = dominant ? 'winDom' : 'winClose';
+  // Look up narration directly from the challenge object (works for both banks)
+  const phase = challenge.narration?.[phaseTag];
+  const pool = phase?.[outcome];
+  let base = (pool?.length)
+    ? pool[Math.floor(Math.random() * pool.length)](winnerName, loserName, prW, prL)
+    : `${winnerName} takes the round from ${loserName}.`;
 
-  const pool = narr[exchangeId];
-  if (!pool) return `${winnerName} takes the exchange from ${loserName}.`;
+  // Also try loser-perspective outcomes (loseHard / loseCollapse) for variety
+  if (!dominant && phase?.loseHard?.length && Math.random() < 0.4) {
+    base = phase.loseHard[Math.floor(Math.random() * phase.loseHard.length)](winnerName, loserName, prW, prL);
+  } else if (dominant && phase?.loseCollapse?.length && Math.random() < 0.4) {
+    base = phase.loseCollapse[Math.floor(Math.random() * phase.loseCollapse.length)](winnerName, loserName, prW, prL);
+  }
 
-  let base;
-  if (dominant) base = _pick(pool.winDom);
-  else if (margin >= 0.5) base = _pick(pool.winClose);
-  else if (margin >= 1.5) base = _pick(pool.loseCollapse);
-  else base = _pick(pool.loseHard);
-
+  // Bond modifier suffix (55% chance)
   if (bond !== undefined && Math.random() < 0.55) {
-    const prW = pronouns(winnerName);
-    const prL = pronouns(loserName);
     if (bond <= -3) {
-      base += ' ' + _pick([
+      base += '\n\n' + _pick([
         `${loserName} mouths something unprintable. This is war.`,
         `You can feel the hatred. Every point is personal.`,
         `${winnerName} stares ${loserName} down. No words needed.`,
@@ -209,21 +424,21 @@ function _exchangeNarration(exchangeId, winnerName, loserName, margin, isThreeWa
         `There's history here — and none of it is good.`,
       ]);
     } else if (bond <= -1) {
-      base += ' ' + _pick([
+      base += '\n\n' + _pick([
         `The tension between them is obvious.`,
         `${loserName} shoots ${winnerName} a look that could cut glass.`,
         `Not friends. Not even close. And it shows.`,
         `${winnerName} can't resist a small smirk. ${loserName} sees it.`,
       ]);
     } else if (bond >= 4) {
-      base += ' ' + _pick([
+      base += '\n\n' + _pick([
         `${winnerName} reaches out a hand. ${loserName} takes it. Even here, respect.`,
         `${loserName} nods — no bitterness. ${prL.Sub} know${prL.sub==='they'?'':'s'} ${winnerName} earned it.`,
         `Friends on opposite sides. The hardest kind of fight.`,
         `${winnerName} whispers something to ${loserName} after. ${loserName} almost smiles.`,
       ]);
     } else if (bond >= 2) {
-      base += ' ' + _pick([
+      base += '\n\n' + _pick([
         `A respectful nod from ${loserName}. Good game.`,
         `No hard feelings between them — but no mercy either.`,
         `${winnerName} checks on ${loserName} after. Old habits.`,
@@ -259,68 +474,83 @@ function _addTrainingBonus(name, statKey, amount) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// MULTI-BEAT DUEL ENGINE
+// PHASE-BASED DUEL ENGINE
 // ══════════════════════════════════════════════════════════════════════
 
-function _runExchanges(duelists, numExchanges) {
-  // Pick unique exchanges
-  const shuffled = _shuffle(EXCHANGE_POOL);
-  const chosen = shuffled.slice(0, Math.min(numExchanges, EXCHANGE_POOL.length));
-
-  // Fill extra if needed (shouldn't happen with 5 exchanges and 5 pool entries, but safe)
-  while (chosen.length < numExchanges) {
-    chosen.push(_pick(EXCHANGE_POOL));
-  }
+function _runPhases(duelists, challenge, numPhases, riList) {
+  const phaseDefs = challenge.phases;
+  const phaseTags = ['opening', 'pivot', 'climax'];
+  // For 5-phase reentry: opening, pivot, climax, pivot, climax
+  const tagSequence = numPhases <= 3
+    ? phaseTags.slice(0, numPhases)
+    : ['opening', 'pivot', 'climax', 'pivot', 'climax'].slice(0, numPhases);
 
   const momentum = {};
   duelists.forEach(n => { momentum[n] = 0; });
 
-  const exchanges = [];
+  const phases = [];
+  const breathingMoments = [];
+  const winsPerPlayer = {};
+  duelists.forEach(n => { winsPerPlayer[n] = 0; });
 
-  for (const ex of chosen) {
+  for (let i = 0; i < numPhases; i++) {
+    const tag = tagSequence[i];
+    const phaseDef = phaseDefs[Math.min(i, phaseDefs.length - 1)];
+    const phaseName = i < phaseDefs.length ? phaseDef.name : `Round ${i + 1}`;
+
     const scores = {};
     duelists.forEach(name => {
       const s = pStats(name);
-      const primaryVal = s[ex.primary] + _getTrainingBonus(name, ex.primary);
-      const secondaryVal = s[ex.secondary] + _getTrainingBonus(name, ex.secondary);
+      const primaryVal = s[challenge.primary] + _getTrainingBonus(name, challenge.primary);
+      const secondaryVal = s[challenge.secondary] + _getTrainingBonus(name, challenge.secondary);
       const mentalState = _getMentalState(name);
       const mentalBonus = mentalState === 'obsessed' ? 0.5 : mentalState === 'broken' ? -0.5 : 0;
       scores[name] = primaryVal * 0.6 + secondaryVal * 0.4 + _noise(2.5) + (momentum[name] || 0) + mentalBonus;
     });
 
-    // Determine winner and margin
     const sorted = duelists.slice().sort((a, b) => scores[b] - scores[a]);
     const winner = sorted[0];
     const runnerUp = sorted[1];
     const margin = scores[winner] - scores[runnerUp];
-
-    // Narration — for 2-way, show winner vs loser. For 3+ way, show winner vs last place.
     const lastPlace = sorted[sorted.length - 1];
-    const narration = _exchangeNarration(ex.id, winner, lastPlace, margin, duelists.length > 2, getBond(winner, lastPlace));
+    const bond = getBond(winner, lastPlace);
 
-    exchanges.push({
-      id: ex.id,
-      name: ex.name,
+    const narration = _phaseNarration(challenge, tag, winner, lastPlace, margin, bond);
+
+    winsPerPlayer[winner] = (winsPerPlayer[winner] || 0) + 1;
+
+    phases.push({
+      name: phaseName,
+      tag,
       scores: { ...scores },
       winner,
       margin: Math.round(margin * 100) / 100,
       narration,
     });
 
-    // Update momentum: winner gets +0.5, others reset to 0
+    // Momentum: winner gets +0.5, others reset
     duelists.forEach(n => { momentum[n] = n === winner ? 0.5 : 0; });
+
+    // Breathing moment between phases (not after the last)
+    if (i < numPhases - 1) {
+      const moment = _pickBreathingMoment(duelists, riList || [], i, winsPerPlayer, challenge);
+      if (moment) {
+        _applyBreathingMoment(moment, duelists, momentum);
+        breathingMoments.push(moment);
+      } else {
+        breathingMoments.push(null);
+      }
+    }
   }
 
-  return exchanges;
+  return { phases, breathingMoments, winsPerPlayer };
 }
 
-function _resolveExchanges(duelists, exchanges) {
-  // Count exchange wins per player
+function _resolvePhases(duelists, phases) {
   const wins = {};
   duelists.forEach(n => { wins[n] = 0; });
-  exchanges.forEach(ex => { wins[ex.winner] = (wins[ex.winner] || 0) + 1; });
+  phases.forEach(p => { wins[p.winner] = (wins[p.winner] || 0) + 1; });
 
-  // For 2-player: best of N
   if (duelists.length === 2) {
     const [a, b] = duelists;
     if (wins[a] !== wins[b]) {
@@ -328,7 +558,6 @@ function _resolveExchanges(duelists, exchanges) {
       const loser = winner === a ? b : a;
       return { winner, loser, tiebreaker: null };
     }
-    // Tiebreaker
     const tbStat = _pick(VALID_STATS);
     const tbScores = {};
     duelists.forEach(name => {
@@ -338,22 +567,17 @@ function _resolveExchanges(duelists, exchanges) {
     const tbWinner = tbScores[a] >= tbScores[b] ? a : b;
     const tbLoser = tbWinner === a ? b : a;
     return {
-      winner: tbWinner,
-      loser: tbLoser,
+      winner: tbWinner, loser: tbLoser,
       tiebreaker: { stat: tbStat, scores: { ...tbScores }, winner: tbWinner },
     };
   }
 
-  // For 3+ players: most exchange losses = loser. All others survive.
   const losses = {};
   duelists.forEach(n => { losses[n] = 0; });
-  exchanges.forEach(ex => {
-    // Last place in each exchange gets a loss
-    const sorted = duelists.slice().sort((a, b) => ex.scores[b] - ex.scores[a]);
+  phases.forEach(p => {
+    const sorted = duelists.slice().sort((a, b) => p.scores[b] - p.scores[a]);
     losses[sorted[sorted.length - 1]] = (losses[sorted[sorted.length - 1]] || 0) + 1;
   });
-
-  // Most losses = eliminated. Tiebreak: lowest total score across all exchanges.
   const maxLosses = Math.max(...Object.values(losses));
   const lossCandidates = duelists.filter(n => losses[n] === maxLosses);
 
@@ -361,17 +585,16 @@ function _resolveExchanges(duelists, exchanges) {
   if (lossCandidates.length === 1) {
     loser = lossCandidates[0];
   } else {
-    // Tiebreak by total score (lowest eliminated)
     const totals = {};
     lossCandidates.forEach(n => {
-      totals[n] = exchanges.reduce((sum, ex) => sum + (ex.scores[n] || 0), 0);
+      totals[n] = phases.reduce((sum, p) => sum + (p.scores[n] || 0), 0);
     });
     loser = lossCandidates.sort((a, b) => totals[a] - totals[b])[0];
   }
 
   const winner = duelists.slice().sort((a, b) => {
-    const wA = exchanges.filter(ex => ex.winner === a).length;
-    const wB = exchanges.filter(ex => ex.winner === b).length;
+    const wA = phases.filter(p => p.winner === a).length;
+    const wB = phases.filter(p => p.winner === b).length;
     return wB - wA;
   })[0];
 
@@ -398,10 +621,8 @@ export function simulateRIChoice(name) {
 }
 
 export function simulateRIDuel(riPlayers) {
-  // Pick a random legacy challenge for backward-compat labels
-  const challenge = RI_DUEL_CHALLENGES[Math.floor(Math.random() * RI_DUEL_CHALLENGES.length)];
+  const challenge = _randomChallenge();
 
-  // Init tracking if needed
   if (!gs.riWinStreak) gs.riWinStreak = {};
   if (!gs.riMentalState) gs.riMentalState = {};
   if (!gs.riTraining) gs.riTraining = {};
@@ -409,16 +630,31 @@ export function simulateRIDuel(riPlayers) {
   const duelists = [...riPlayers];
   const isThreeWay = duelists.length >= 3;
 
-  // Run 3-exchange duel
-  const exchanges = _runExchanges(duelists, 3);
-  const { winner, loser, tiebreaker } = _resolveExchanges(duelists, exchanges);
+  // Capture pre-duel streaks BEFORE updating (prevents VP spoiler)
+  const preStreakData = {};
+  duelists.forEach(n => {
+    if (gs.riWinStreak[n]) preStreakData[n] = gs.riWinStreak[n];
+  });
+
+  // Run 3-phase duel with breathing moments
+  const { phases, breathingMoments, winsPerPlayer } = _runPhases(duelists, challenge, 3, gs.riPlayers);
+  const { winner, loser, tiebreaker } = _resolvePhases(duelists, phases);
   const survivors = duelists.filter(n => n !== loser);
 
-  // Update win streaks
+  // Build score-aware host commentary
+  const leader = Object.entries(winsPerPlayer).sort((a, b) => b[1] - a[1])[0]?.[0] || winner;
+  const trailer = duelists.find(n => n !== leader) || loser;
+  const hostCtx = { leader, trailer, winner, loser };
+  const host = {
+    opener: _hostLine('opener', hostCtx),
+    after1: _hostLine(_pickHostSlot(0, 3, winsPerPlayer, leader, trailer), hostCtx),
+    after2: _hostLine(_pickHostSlot(1, 3, winsPerPlayer, leader, trailer), hostCtx),
+    closer: _hostLine(_pickCloserSlot(phases, winner, loser), hostCtx),
+  };
+
   gs.riWinStreak[winner] = (gs.riWinStreak[winner] || 0) + 1;
   delete gs.riWinStreak[loser];
 
-  // Clear mental state + training for eliminated player
   if (gs.riMentalState[loser]) delete gs.riMentalState[loser];
   if (gs.riTraining[loser]) delete gs.riTraining[loser];
 
@@ -429,38 +665,39 @@ export function simulateRIDuel(riPlayers) {
 
   return {
     winner, loser, survivors,
+    challenge: { id: challenge.id, name: challenge.name, desc: challenge.desc, primary: challenge.primary, secondary: challenge.secondary },
     challengeType: challenge.id, challengeLabel: challenge.name, challengeDesc: challenge.desc,
     isThreeWay, duelists,
-    exchanges,
+    phases,
+    breathingMoments,
+    host,
     tiebreaker,
     streakData,
+    preStreakData,
   };
 }
 
 export function simulateRIReentry(riPlayers) {
-  // Pick a random legacy challenge for backward-compat labels
-  const challenge = RI_DUEL_CHALLENGES[Math.floor(Math.random() * RI_DUEL_CHALLENGES.length)];
+  const challenge = _randomChallenge();
 
-  // Init tracking if needed
   if (!gs.riWinStreak) gs.riWinStreak = {};
   if (!gs.riMentalState) gs.riMentalState = {};
   if (!gs.riTraining) gs.riTraining = {};
 
   const duelists = [...riPlayers];
 
-  // 5-exchange return challenge
-  const exchanges = _runExchanges(duelists, 5);
+  // 5-phase return challenge
+  const { phases, breathingMoments } = _runPhases(duelists, challenge, 5, gs.riPlayers);
 
-  // For reentry: top scorer wins, everyone else loses
+  // For reentry: top total scorer wins, everyone else loses
   const totalScores = {};
   duelists.forEach(n => {
-    totalScores[n] = exchanges.reduce((sum, ex) => sum + (ex.scores[n] || 0), 0);
+    totalScores[n] = phases.reduce((sum, p) => sum + (p.scores[n] || 0), 0);
   });
   const sorted = duelists.slice().sort((a, b) => totalScores[b] - totalScores[a]);
   const winner = sorted[0];
   const losers = sorted.slice(1);
 
-  // Check for tiebreaker if top 2 are within 0.5
   let tiebreaker = null;
   if (sorted.length >= 2 && Math.abs(totalScores[sorted[0]] - totalScores[sorted[1]]) < 0.5) {
     const tbStat = _pick(VALID_STATS);
@@ -471,24 +708,22 @@ export function simulateRIReentry(riPlayers) {
     });
     const tbWinner = tbScores[sorted[0]] >= tbScores[sorted[1]] ? sorted[0] : sorted[1];
     if (tbWinner !== winner) {
-      // Tiebreaker overturned the result
       const newWinner = tbWinner;
       const newLosers = duelists.filter(n => n !== newWinner);
       tiebreaker = { stat: tbStat, scores: { ...tbScores }, winner: newWinner };
-      // Clean up streaks for all losers
       newLosers.forEach(n => { delete gs.riWinStreak[n]; delete gs.riMentalState[n]; delete gs.riTraining[n]; });
       const streakData = {};
       if (gs.riWinStreak[newWinner]) streakData[newWinner] = gs.riWinStreak[newWinner];
       return {
         winner: newWinner, losers: newLosers,
+        challenge: { id: challenge.id, name: challenge.name, desc: challenge.desc, primary: challenge.primary, secondary: challenge.secondary },
         challengeType: challenge.id, challengeLabel: challenge.name,
-        duelists, exchanges, tiebreaker, streakData,
+        duelists, phases, breathingMoments, tiebreaker, streakData,
       };
     }
     tiebreaker = { stat: tbStat, scores: { ...tbScores }, winner };
   }
 
-  // Clean up streaks for losers
   losers.forEach(n => { delete gs.riWinStreak[n]; delete gs.riMentalState[n]; delete gs.riTraining[n]; });
 
   const streakData = {};
@@ -496,8 +731,9 @@ export function simulateRIReentry(riPlayers) {
 
   return {
     winner, losers,
+    challenge: { id: challenge.id, name: challenge.name, desc: challenge.desc, primary: challenge.primary, secondary: challenge.secondary },
     challengeType: challenge.id, challengeLabel: challenge.name,
-    duelists, exchanges, tiebreaker, streakData,
+    duelists, phases, breathingMoments, tiebreaker, streakData,
   };
 }
 

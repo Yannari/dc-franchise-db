@@ -1310,7 +1310,9 @@ export function simulateEpisode() {
         ep.riReentry.streakCount = _streakCount;
         ep.riReentry.streakEffects = { threatHeat: _threatHeat, popBoost: _streakCount };
       }
-      ep.riReentry.exchanges = _riResult.exchanges;
+      ep.riReentry.phases = _riResult.phases;
+      ep.riReentry.breathingMoments = _riResult.breathingMoments;
+      ep.riReentry.challenge = _riResult.challenge;
       ep.riReentry.tiebreaker = _riResult.tiebreaker;
       ep.riReentry.streakData = _riResult.streakData;
     }

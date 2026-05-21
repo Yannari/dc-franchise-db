@@ -2549,7 +2549,7 @@ export function rpBuildGFOScramble(ep) {
   content += `<div class="gfo-content-area"><div class="gfo-card-feed">`;
 
   // Host announcement divider
-  content += `<div id="gfo-step-scramble-${stepIdx}" class="gfo-segment-divider" style="opacity:0"
+  content += `<div id="gfo-step-scramble-${stepIdx}" class="gfo-segment-divider" style="opacity:0">
     <div class="gfo-segment-label">Host Announcement</div>
     <div class="gfo-segment-flavor">"Today you'll race along the ancient fortress wall to the finish line, and the winner gets&#8212;" *phone rings* "...just go!"</div>
   </div>`;
@@ -2571,7 +2571,7 @@ export function rpBuildGFOScramble(ep) {
     // Drama events before this grab
     if (dramaByGrabOrder[i]) {
       dramaByGrabOrder[i].forEach(d => {
-        content += `<div id="gfo-step-scramble-${stepIdx}" class="gfo-scramble-drama" style="opacity:0"
+        content += `<div id="gfo-step-scramble-${stepIdx}" class="gfo-scramble-drama" style="opacity:0">
           <div class="gfo-scramble-drama-header">
             <div class="gfo-card-player-ring">${portrait(d.actor, 32) || _initial(d.actor)}</div>
             ${d.target ? `<div class="gfo-card-player-ring">${portrait(d.target, 32) || _initial(d.target)}</div>` : ''}

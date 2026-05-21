@@ -201,7 +201,6 @@ export function _textCast(ep, ln, sec) {
   // Format: "TribeName Tribe (N): Name1, Name2" so Pattern 3 in current-season.html matches
   sec('TRIBES (ACTIVE)');
   if (ep.isMerge) {
-    ln('MERGED THIS EPISODE');
     ln(`Remaining (${gs.activePlayers.length}): ${gs.activePlayers.join(', ')}`);
   } else if (ep.tribesAtStart?.length) {
     ep.tribesAtStart.forEach(t => ln(`${t.name} Tribe (${t.members.length}): ${t.members.join(', ')}`));
@@ -253,17 +252,8 @@ export function _textColdOpen(ep, ln, sec) {
 export function _textReturns(ep, ln, sec) {
   if (ep.isRIReentry && ep.riReentrant) {
     sec('THE CHAMPION RETURNS');
-    const _ri = ep.riReentry;
-    if (_ri?.challenge?.name) ln(`Return Challenge: ${_ri.challenge.name}`);
-    else if (_ri?.challengeLabel) ln(`Return Challenge: ${_ri.challengeLabel}`);
-    const _riPhases = _ri?.phases || _ri?.exchanges || [];
-    if (_riPhases.length) {
-      _riPhases.forEach((p, i) => {
-        ln(`${p.name || `Round ${i + 1}`}: ${p.narration} [${p.winner} wins, margin ${p.margin.toFixed(2)}]`);
-      });
-    }
-    if (_ri?.tiebreaker) ln(`TIEBREAKER (${_ri.tiebreaker.stat}): ${_ri.tiebreaker.winner} takes it.`);
     ln(`${ep.riReentrant} wins the return challenge and rejoins the game.`);
+    const _ri = ep.riReentry;
     if (_ri?.streakCount >= 2) ln(`Win streak: ${_ri.streakCount} — returns as a perceived threat.`);
     if (ep.riReentryLosers?.length) ln(`Permanently eliminated: ${ep.riReentryLosers.join(', ')}`);
   }

@@ -458,15 +458,16 @@ export function generateSocialManipulationEvents(group, ep, boostRate) {
     if (showmanceTargets.length && sStats.strategic >= 7) {
       schemeOptions.push({ weight: 2, fn: () => _generateKissTrap(schemer, showmanceTargets[0], group, ep, _rp) });
     }
-    // Spread lies — needs a bond or grudge pair, social-heavy schemer
-    if (bondTargets.length || grudgeTargets.length) {
-      const pairTarget = [...bondTargets, ...grudgeTargets].sort((a, b) => b.score - a.score)[0];
-      if (pairTarget) schemeOptions.push({ weight: 3, fn: () => _generateSpreadLies(schemer, pairTarget, group, ep, _rp) });
+    // Spread lies — needs a bond or grudge pair where the schemer is NOT part of the pair
+    const _pairPool = [...bondTargets, ...grudgeTargets].filter(t => t.a !== schemer && t.b !== schemer);
+    if (_pairPool.length) {
+      const pairTarget = [..._pairPool].sort((a, b) => b.score - a.score)[0];
+      schemeOptions.push({ weight: 3, fn: () => _generateSpreadLies(schemer, pairTarget, group, ep, _rp) });
     }
-    // Forge note — needs any pair target
-    if (bondTargets.length || grudgeTargets.length) {
-      const pairTarget = [...bondTargets, ...grudgeTargets].sort(() => Math.random() - 0.5)[0]; // random pair, not always best
-      if (pairTarget) schemeOptions.push({ weight: 3, fn: () => _generateForgeNote(schemer, pairTarget, group, ep, _rp) });
+    // Forge note — needs any pair target where the schemer is NOT part of the pair
+    if (_pairPool.length) {
+      const pairTarget = [..._pairPool].sort(() => Math.random() - 0.5)[0];
+      schemeOptions.push({ weight: 3, fn: () => _generateForgeNote(schemer, pairTarget, group, ep, _rp) });
     }
     // Whisper campaign — works against anyone
     const whisperTarget = group.find(p => p !== schemer && getBond(schemer, p) <= -1);

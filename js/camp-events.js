@@ -6261,7 +6261,7 @@ export function generateCampEvents(ep, phase = 'both') {
     _disc.filter(e => e.type === 'lost-ally').forEach(evt => {
       const key = evt.ally + '|' + evt.elim;
       if (!_lostAllyGroups[key]) _lostAllyGroups[key] = { ally: evt.ally, elim: evt.elim, voters: [] };
-      if (gs.activePlayers.includes(evt.voter)) _lostAllyGroups[key].voters.push(evt.voter);
+      if (gs.activePlayers.includes(evt.voter) && evt.voter !== evt.ally) _lostAllyGroups[key].voters.push(evt.voter);
     });
     Object.values(_lostAllyGroups).forEach(({ ally, elim: evElim, voters }) => {
       if (!gs.activePlayers.includes(ally) || !voters.length) return;

@@ -4892,7 +4892,7 @@ export function rpBuildRIDuel(ep) {
   const totalSteps = 1 + phases.length + hostCount + breathCount + (duel.tiebreaker ? 1 : 0) + 1;
 
   const stateKey = `ri-duel-${ep.num}`;
-  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1, total: totalSteps };
 
   const _duelTitle = isThreeWay ? 'THREE-WAY DUEL' : 'THE ARENA';
 

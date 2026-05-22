@@ -1322,55 +1322,76 @@ function _buildSidebarContent(ep, screenKey) {
     screenKey?.includes('ctf') ? 'ctf' :
     screenKey?.includes('results') ? 'results' : 'title';
 
+  const revIdx = _tvState[screenKey]?.idx ?? -1;
   let html = '';
 
-  if (phase === 'title' || phase === 'summit') {
-    html += `<div class="iib-sbtitle">SUMMIT PROGRESS</div>`;
+  if (phase === 'title') {
+    html += `<div class="iib-sbtitle">TEAMS</div>`;
     iib.tribes.forEach(tribe => {
       const tc = tribeColor(tribe.name);
       html += `<div class="iib-sb-tribe" style="color:${tc};">${tribe.name.toUpperCase()}</div>`;
-      html += `<div class="iib-sb-stat">Avg Climb: ${(iib.tribeClimbAvg[tribe.name] || 0).toFixed(1)}</div>`;
-      if (tribe.gadget) {
+      tribe.members.forEach(name => {
+        html += `<div class="iib-sbrow">${_av(name, 'xs')} <span class="iib-sbname">${name}</span></div>`;
+      });
+    });
+  } else if (phase === 'summit') {
+    const meta = window._iibSummitMeta;
+    const seen = revIdx >= 0 && meta?.[revIdx] ? meta[revIdx].seen : new Set();
+    html += `<div class="iib-sbtitle">SUMMIT PROGRESS</div>`;
+    iib.tribes.forEach(tribe => {
+      const tc = tribeColor(tribe.name);
+      const tribeRevealed = tribe.members.filter(n => seen.has(n));
+      html += `<div class="iib-sb-tribe" style="color:${tc};">${tribe.name.toUpperCase()}</div>`;
+      if (tribeRevealed.length > 0) {
+        const avg = tribeRevealed.reduce((s, n) => s + (iib.climbScores[n] || 0), 0) / tribeRevealed.length;
+        html += `<div class="iib-sb-stat">Avg Climb: ${avg.toFixed(1)}</div>`;
+      } else {
+        html += `<div class="iib-sb-stat">Avg Climb: ---</div>`;
+      }
+      if (tribe.gadget && seen.size > 0) {
         html += `<div class="iib-sb-gadget">${_iconGadget()} ${tribe.gadget.gadgetName}</div>`;
       }
       tribe.members.forEach(name => {
         html += `<div class="iib-sbrow">${_av(name, 'xs')} <span class="iib-sbname">${name}</span>`;
-        html += `<span class="iib-sb-score">${(iib.climbScores[name] || 0).toFixed(1)}</span></div>`;
+        html += `<span class="iib-sb-score">${seen.has(name) ? (iib.climbScores[name] || 0).toFixed(1) : '---'}</span></div>`;
       });
     });
   } else if (phase === 'fort') {
+    const meta = window._iibFortMeta;
+    const snap = revIdx >= 0 && meta?.[revIdx] ? meta[revIdx] : null;
     html += `<div class="iib-sbtitle">FORT STATUS</div>`;
     iib.tribes.forEach(tribe => {
       const tc = tribeColor(tribe.name);
-      const hp = tribe.fortHP || 0;
       const maxHP = tribe.name === iib.phase1Winner ? 80 : 60;
+      const hp = snap ? (snap.hp[tribe.name] || 0) : 0;
       const hpPct = clamp(hp / (maxHP + 40), 0, 1) * 100;
       const hpColor = hp > maxHP * 0.6 ? '#4fffb0' : hp > maxHP * 0.3 ? '#fbbf24' : '#ef4444';
       html += `<div class="iib-sb-tribe" style="color:${tc};">${tribe.name.toUpperCase()}</div>`;
-      html += `<div class="iib-sb-hpbar"><div class="iib-sb-hpfill" style="width:${hpPct}%;background:${hpColor};"></div></div>`;
+      html += `<div class="iib-sb-hpbar"><div class="iib-sb-hpfill" style="width:${hpPct}%;background:${hpColor};transition:width .4s;"></div></div>`;
       html += `<div class="iib-sb-stat">${hp.toFixed(0)} HP</div>`;
-      if (tribe.saboteur && tribe.saboteur.caught) {
+      if (snap?.caught?.[tribe.name]) {
         html += `<div class="iib-sb-alert">SABOTEUR CAUGHT</div>`;
       }
     });
   } else if (phase === 'ctf') {
+    const meta = window._iibCtfMeta;
+    const snap = revIdx >= 0 && meta?.[revIdx] ? meta[revIdx] : null;
     html += `<div class="iib-sbtitle">BATTLE STATUS</div>`;
     iib.tribes.forEach(tribe => {
       const tc = tribeColor(tribe.name);
-      const hp = iib.fortHP[tribe.name] || 0;
       const maxHP = tribe.name === iib.phase1Winner ? 80 : 60;
+      const hp = snap ? (snap.hp[tribe.name] ?? iib.fortHP[tribe.name] ?? 0) : (iib.fortHP[tribe.name] || 0);
       const hpPct = clamp(hp / (maxHP + 40), 0, 1) * 100;
       const hpColor = hp > maxHP * 0.6 ? '#4fffb0' : hp > maxHP * 0.3 ? '#fbbf24' : '#ef4444';
       html += `<div class="iib-sb-tribe" style="color:${tc};">${tribe.name.toUpperCase()}</div>`;
-      html += `<div class="iib-sb-hpbar"><div class="iib-sb-hpfill" style="width:${hpPct}%;background:${hpColor};"></div></div>`;
+      html += `<div class="iib-sb-hpbar"><div class="iib-sb-hpfill" style="width:${hpPct}%;background:${hpColor};transition:width .4s;"></div></div>`;
       html += `<div class="iib-sb-stat">${hp.toFixed(0)} HP</div>`;
-      const atkCount = (iib.attackers[tribe.name] || []).length;
-      const defCount = (iib.defenders[tribe.name] || []).length;
+      const atkCount = snap ? (snap.atkCount[tribe.name] || 0) : 0;
+      const defCount = snap ? (snap.defCount[tribe.name] || 0) : 0;
       html += `<div class="iib-sb-roles">${_iconSword()} ${atkCount} ATK &nbsp; ${_iconShield()} ${defCount} DEF</div>`;
     });
-    if (iib.ctfResolved) {
-      const capturer = Object.values(iib.flagCaptured)[0];
-      if (capturer) html += `<div class="iib-sb-alert" style="color:#4fffb0;">FLAG CAPTURED BY ${capturer.toUpperCase()}</div>`;
+    if (snap?.flagCaptured) {
+      html += `<div class="iib-sb-alert" style="color:#4fffb0;">FLAG CAPTURED BY ${snap.flagCaptured.toUpperCase()}</div>`;
     }
   } else {
     html += `<div class="iib-sbtitle">FINAL STANDINGS</div>`;
@@ -1533,23 +1554,23 @@ div[id^="iib-step-"].iib-visible{animation:iib-card-in .6s cubic-bezier(.16,1,.3
 
 /* Avatars */
 .iib-av{width:32px;height:32px;border-radius:50%;border:2px solid var(--iib-frost);object-fit:cover;flex-shrink:0;}
-.iib-av-xs{width:18px;height:18px;border-width:1px;}
+.iib-av-xs{width:24px;height:24px;border-width:1px;}
 .iib-av-lg{width:48px;height:48px;}
 
 /* ═══ SIDEBAR ═══ */
-.iib-sidebar{width:240px;flex-shrink:0;position:sticky;top:60px;max-height:calc(100vh - 100px);overflow-y:auto;background:rgba(4,7,15,.85);border:1px solid rgba(90,216,255,.1);border-radius:10px;padding:14px;backdrop-filter:blur(6px);font-size:11px;}
-.iib-sbtitle{font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:2px;color:var(--iib-frost);margin-bottom:10px;border-bottom:1px solid rgba(90,216,255,.15);padding-bottom:6px;}
-.iib-sb-tribe{font-family:'Bebas Neue',cursive;font-size:11px;letter-spacing:2px;margin:10px 0 4px;border-bottom:1px solid currentColor;padding-bottom:2px;opacity:.8;}
-.iib-sb-stat{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(90,216,255,.6);margin:2px 0;}
-.iib-sb-gadget{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--iib-gold);margin:3px 0;}
-.iib-sbrow{display:flex;align-items:center;gap:6px;padding:3px 0;}
-.iib-sbname{font-size:10px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.iib-sb-score{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--iib-aurora-g);}
-.iib-sb-hpbar{width:100%;height:6px;background:rgba(90,216,255,.06);border-radius:3px;overflow:hidden;margin:4px 0;}
-.iib-sb-hpfill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.34,1.56,.64,1);}
-.iib-sb-roles{display:flex;align-items:center;gap:6px;font-size:9px;color:rgba(90,216,255,.5);margin:2px 0;}
-.iib-sb-alert{font-family:'Bebas Neue',cursive;font-size:11px;letter-spacing:1px;color:var(--iib-danger);margin:8px 0;text-align:center;}
-.iib-sb-standing{font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 0;border-bottom:1px solid rgba(90,216,255,.05);}
+.iib-sidebar{width:320px;flex-shrink:0;position:sticky;top:60px;max-height:calc(100vh - 100px);overflow-y:auto;background:rgba(4,7,15,.88);border:1px solid rgba(90,216,255,.15);border-radius:12px;padding:18px;backdrop-filter:blur(8px);font-size:13px;}
+.iib-sbtitle{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:2px;color:var(--iib-frost);margin-bottom:12px;border-bottom:1px solid rgba(90,216,255,.2);padding-bottom:8px;}
+.iib-sb-tribe{font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:2px;margin:12px 0 6px;border-bottom:1px solid currentColor;padding-bottom:3px;opacity:.85;}
+.iib-sb-stat{font-family:'Share Tech Mono',monospace;font-size:12px;color:rgba(90,216,255,.7);margin:3px 0;}
+.iib-sb-gadget{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--iib-gold);margin:4px 0;}
+.iib-sbrow{display:flex;align-items:center;gap:8px;padding:4px 0;}
+.iib-sbname{font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.iib-sb-score{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--iib-aurora-g);font-weight:600;}
+.iib-sb-hpbar{width:100%;height:10px;background:rgba(90,216,255,.08);border-radius:5px;overflow:hidden;margin:5px 0;}
+.iib-sb-hpfill{height:100%;border-radius:5px;transition:width 1s cubic-bezier(.34,1.56,.64,1);}
+.iib-sb-roles{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(90,216,255,.6);margin:3px 0;}
+.iib-sb-alert{font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:1px;color:var(--iib-danger);margin:10px 0;text-align:center;}
+.iib-sb-standing{font-family:'Share Tech Mono',monospace;font-size:14px;padding:5px 0;border-bottom:1px solid rgba(90,216,255,.08);}
 
 /* ═══ CSS ICONS ═══ */
 .iib-icon-snow{width:18px;height:18px;position:relative;flex-shrink:0;filter:drop-shadow(0 0 3px rgba(90,216,255,.4));}
@@ -1686,16 +1707,21 @@ export function rpBuildIIBSummit(ep) {
 
   const screenKey = 'iib-summit';
   const events = iib.phase1Events || [];
-  const total = events.length;
-  _ensureState(screenKey, total);
+  const totalCards = events.length + 1; // +1 for result card
+  _ensureState(screenKey, totalCards);
 
   let content = `<div class="iib-phase-hdr">`;
   content += `<div class="iib-phase-title">PHASE 1: SUMMIT SCRAMBLE</div>`;
   content += `<div class="iib-phase-sub">CLIMB // DODGE // BUILD</div>`;
   content += `</div>`;
 
+  const summitMeta = [];
+  const seenPlayers = new Set();
   let lastBeat = -1;
   events.forEach((evt, idx) => {
+    if (evt.player) seenPlayers.add(evt.player);
+    if (evt.players) evt.players.forEach(p => seenPlayers.add(p));
+    summitMeta.push({ seen: new Set(seenPlayers) });
     // Beat header
     if (evt.beat !== undefined && evt.beat !== lastBeat) {
       lastBeat = evt.beat;
@@ -1707,15 +1733,17 @@ export function rpBuildIIBSummit(ep) {
     }
     content += _card(evt, idx, screenKey);
   });
+  window._iibSummitMeta = summitMeta;
 
-  // Phase 1 result summary
-  content += `<div class="iib-result-card" id="iib-step-summit-${total}" style="display:none;">`;
+  // Phase 1 result summary (included in reveal count)
+  summitMeta.push({ seen: new Set(seenPlayers) });
+  content += `<div class="iib-result-card" id="iib-step-summit-${events.length}">`;
   content += `<div class="iib-result-label">SUMMIT WINNER</div>`;
   content += `<div class="iib-result-tribe" style="color:${tribeColor(iib.phase1Winner)};">${iib.phase1Winner}</div>`;
   content += `<div class="iib-card-txt" style="text-align:center;">Earns the stronger fort (80 HP) and a gadget upgrade!</div>`;
   content += `</div>`;
 
-  content += _buildControls(screenKey, total);
+  content += _buildControls(screenKey, totalCards);
 
   return _iibShell(content, ep, 'phase-summit');
 }
@@ -1736,8 +1764,16 @@ export function rpBuildIIBFortBuild(ep) {
 
   content += `<div class="iib-host-line">${iib.hostPhase2}</div>`;
 
+  const runHP = {};
+  const caught = {};
+  iib.tribes.forEach(t => { runHP[t.name] = t.name === iib.phase1Winner ? 80 : 60; });
+  const fortMeta = [];
   let lastBeat = -1;
   events.forEach((evt, idx) => {
+    if (evt.type === 'wallBuild') runHP[evt.tribe] += parseFloat(evt.hpAdd || 0);
+    else if (evt.type === 'sabotage') runHP[evt.tribe] -= parseFloat(evt.damage || 0);
+    else if (evt.type === 'sabotageCaught') { caught[evt.tribe] = true; runHP[evt.tribe] += parseFloat(iib.saboteurData?.[evt.tribe]?.damage || 0) * 0.5; }
+    fortMeta.push({ hp: { ...runHP }, caught: { ...caught } });
     if (evt.beat !== undefined && evt.beat !== lastBeat) {
       lastBeat = evt.beat;
       content += `<div class="iib-beat-hdr">BUILD BEAT ${evt.beat + 1}</div>`;
@@ -1747,6 +1783,7 @@ export function rpBuildIIBFortBuild(ep) {
     }
     content += _card(evt, idx, screenKey);
   });
+  window._iibFortMeta = fortMeta;
 
   content += _buildControls(screenKey, total);
 
@@ -1769,8 +1806,21 @@ export function rpBuildIIBCtfAssault(ep) {
 
   content += `<div class="iib-host-line">${iib.hostPhase3}</div>`;
 
+  const ctfHP = {};
+  iib.tribes.forEach(t => { ctfHP[t.name] = iib.fortHP[t.name] || 0; });
+  const ctfAtkCount = {};
+  const ctfDefCount = {};
+  iib.tribes.forEach(t => { ctfAtkCount[t.name] = 0; ctfDefCount[t.name] = 0; });
+  const ctfMeta = [];
+  let ctfFlag = null;
   let lastRound = -1;
   events.forEach((evt, idx) => {
+    if (evt.type === 'breach' && evt.targetTribe) ctfHP[evt.targetTribe] = parseFloat(evt.remainingHP || 0);
+    else if (evt.type === 'fortDestroyed' && evt.tribe) ctfHP[evt.tribe] = 0;
+    if (evt.type === 'paintballWin') { ctfAtkCount[evt.tribe] = (ctfAtkCount[evt.tribe] || 0) + 1; }
+    if (evt.type === 'heroicDefense') { ctfDefCount[evt.tribe] = (ctfDefCount[evt.tribe] || 0) + 1; }
+    if (evt.type === 'flagCapture' || evt.type === 'escapeSuccess') ctfFlag = evt.tribe;
+    ctfMeta.push({ hp: { ...ctfHP }, atkCount: { ...ctfAtkCount }, defCount: { ...ctfDefCount }, flagCaptured: ctfFlag });
     if (evt.round !== undefined && evt.round !== lastRound) {
       lastRound = evt.round;
       content += `<div class="iib-beat-hdr">ROUND ${evt.round + 1}</div>`;
@@ -1780,6 +1830,7 @@ export function rpBuildIIBCtfAssault(ep) {
     }
     content += _card(evt, idx, screenKey);
   });
+  window._iibCtfMeta = ctfMeta;
 
   content += _buildControls(screenKey, total);
 

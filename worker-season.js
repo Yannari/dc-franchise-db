@@ -535,7 +535,7 @@ async function generateAnalytics(summaryText, season, episode, env) {
                 formed: { type: "number" },
                 status: { type: "string", enum: ["active", "dissolved"] }
               },
-              required: ["name", "members", "strength", "status"]
+              required: ["name", "members", "strength", "formed", "status"]
             }
           }
         },

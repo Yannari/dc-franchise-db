@@ -398,7 +398,8 @@ export function replayEpisode(epNum) {
 
 export function copyOutput() {
   const ta = document.getElementById('ep-output-text');
-  const text = ta.value;
+  const epRecord = viewingEpNum ? gs.episodeHistory.find(e=>e.num===viewingEpNum) : gs.episodeHistory[gs.episodeHistory.length-1];
+  const text = epRecord?.summaryText || ta.value;
   const btn = event.target;
   if (!text) { btn.textContent = 'Nothing to copy'; setTimeout(()=>btn.textContent='Copy', 1500); return; }
   if (navigator.clipboard?.writeText) {
@@ -406,9 +407,9 @@ export function copyOutput() {
       btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent='Copy', 1500);
     });
   } else {
-    ta.style.display = '';
+    ta.value = text;
     ta.select(); document.execCommand('copy');
-    if (_spoilerFree) ta.style.display = 'none';
+    if (_spoilerFree) ta.value = '';
     btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent='Copy', 1500);
   }
 }

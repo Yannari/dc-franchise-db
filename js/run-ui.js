@@ -170,8 +170,8 @@ export function renderEpisodeView(epRecord) {
       ${epRecord.isMerge?`<span class="ep-result-phase" style="color:#10b981;font-weight:700">MERGE!</span>`:''}
     </div>
     <div class="ep-facts">
-      <div class="ep-fact"><label>Immunity</label><span>${epRecord.immunityWinner||'—'}</span></div>
-      <div class="ep-fact"><label>Tribal</label><span>${epRecord.challengeType==='tribe'?(epRecord.immunityWinner?epRecord.immunityWinner+' wins':(voteEntries.length?'Vote follows':'—')):'All vote'}</span></div>
+      <div class="ep-fact"><label>Immunity</label><span>${_spoilerFree ? '???' : (epRecord.immunityWinner||'—')}</span></div>
+      <div class="ep-fact"><label>Tribal</label><span>${_spoilerFree ? '???' : (epRecord.challengeType==='tribe'?(epRecord.immunityWinner?epRecord.immunityWinner+' wins':(voteEntries.length?'Vote follows':'—')):'All vote')}</span></div>
       <div class="ep-fact ep-eliminated"><label>Eliminated</label><span>${_sfElim} ${_spoilerFree ? '' : riTag}</span></div>
       ${_spoilerFree ? '' : `<div class="ep-fact"><label>Votes</label><span>${Object.values(epRecord.votes||{}).reduce((a,b)=>a+b,0)} cast</span></div>`}
     </div>
@@ -179,8 +179,8 @@ export function renderEpisodeView(epRecord) {
   </div>`;
 
   const _otEl = document.getElementById('ep-output-text');
-  _otEl.value = epRecord.summaryText || '';
-  _otEl.style.display = _spoilerFree ? 'none' : '';
+  _otEl.value = _spoilerFree ? '' : (epRecord.summaryText || '');
+  _otEl.style.display = '';
 }
 
 

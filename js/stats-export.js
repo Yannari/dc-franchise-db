@@ -927,6 +927,12 @@ function _downloadJSON(data, filename) {
 // ── 15. extractSeasonRawStats ───────────────────────────────────────
 
 export function extractSeasonRawStats() {
+  if (!gs || !gs.episodeHistory || gs.episodeHistory.length === 0) {
+    return { error: 'No season data to export. Run a full season first.' };
+  }
+  if (!players || players.length === 0) {
+    return { error: 'No players loaded.' };
+  }
   const { playerData, placements, elimOrder, ftcVotes, winner, finalists } = _extractPlayerData();
   const seasonStats = _extractSeasonStats();
   const voteMatrix = _extractVoteMatrix();
@@ -1016,8 +1022,8 @@ export function extractSeasonTemplate() {
     return counts.join('-');
   })();
 
-  // Runner-up: second finalist
-  const runnerUp = rawStats.finalists.length > 1 ? rawStats.finalists[1].name : null;
+  // Runner-up(s): non-winner finalists joined with ' & '
+  const runnerUp = rawStats.finalists.filter(f => f.name !== rawStats.winner).map(f => f.name).join(' & ') || null;
 
   // Build placements array sorted by placement
   const allNames = Object.keys(rawStats.players);
@@ -1034,7 +1040,7 @@ export function extractSeasonTemplate() {
         story: '[AI_FILL]',
         gameplayStyle: '[AI_FILL]',
         keyMoments: '[AI_FILL]',
-        challengeWins: pd.immunityWins + pd.rewardWins,
+        challengeWins: pd.chalRecord?.wins || 0,
         immunityWins: pd.immunityWins,
         rewardWins: pd.rewardWins,
         idolsFound: pd.idolsFound,
@@ -1084,6 +1090,10 @@ export function downloadSeasonExport() {
   let rawStats;
   try {
     rawStats = extractSeasonRawStats();
+    if (rawStats?.error) {
+      alert(rawStats.error);
+      return;
+    }
   } catch (err) {
     alert('Failed to extract season stats: ' + (err.message || err));
     console.error('extractSeasonRawStats error:', err);

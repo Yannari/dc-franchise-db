@@ -19,6 +19,8 @@ export default {
 
     if (mode === "episode") {
       return await generateEpisode(summaryText, season, episode, env, previousEpisodes);
+    } else if (mode === "narrative-fill") {
+      return await generateNarrativeFill(body, env);
     } else if (mode === "season-data-extraction") {
       return await generateSeasonDataExtraction(body, env);
     } else {
@@ -329,6 +331,162 @@ Return ONLY valid JSON matching the schema exactly.
     instructions,
     input: episodeSummaries + brantsteeleSection,
     text: { format: { type: "json_schema", name: "season_data", strict: true, schema } },
+  };
+
+  return await callOpenAI(payload, env);
+}
+
+async function generateNarrativeFill(body, env) {
+  const { template, episodes, season, seasonTitle } = body;
+
+  if (!template || !episodes) {
+    return new Response(JSON.stringify({ error: "Missing template or episodes" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const canonicalCast = template.placements?.map(p => p.name) || [];
+  const castItemSchema = canonicalCast.length
+    ? { type: "string", enum: canonicalCast }
+    : { type: "string" };
+
+  let episodeSummaries = '';
+  episodes.forEach(ep => {
+    episodeSummaries += `\n\n=== EPISODE ${ep.episode} ===\n${ep.summary}`;
+  });
+
+  const awardEntrySchema = (extra = {}) => ({
+    type: "object", additionalProperties: false,
+    properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" }, ...extra },
+    required: ["name", "playerSlug", "description", ...Object.keys(extra)]
+  });
+  const goldSilverSchema = {
+    type: "object", additionalProperties: false,
+    properties: {
+      gold: awardEntrySchema(),
+      silver: awardEntrySchema()
+    },
+    required: ["gold", "silver"]
+  };
+
+  const schema = {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      title: { type: "string" },
+      subtitle: { type: "string" },
+      winner: {
+        type: "object", additionalProperties: false,
+        properties: {
+          keyStats: { type: "string" },
+          strategy: { type: "string" },
+          legacy: { type: "string" }
+        },
+        required: ["keyStats", "strategy", "legacy"]
+      },
+      placements: {
+        type: "array",
+        items: {
+          type: "object", additionalProperties: false,
+          properties: {
+            name: castItemSchema,
+            notes: { type: "string" },
+            strategicRank: { type: "number" },
+            story: { type: "string" },
+            gameplayStyle: { type: "string" },
+            keyMoments: { type: "array", items: { type: "string" } }
+          },
+          required: ["name", "notes", "strategicRank", "story", "gameplayStyle", "keyMoments"]
+        }
+      },
+      seasonNarrative: { type: "string" },
+      awards: {
+        type: "object", additionalProperties: false,
+        properties: {
+          bestStrategic: awardEntrySchema(),
+          bestSocial: awardEntrySchema(),
+          bestPhysical: awardEntrySchema({ wins: { type: "number" } }),
+          mostClutch: awardEntrySchema(),
+          mostLoyal: awardEntrySchema(),
+          bestUnderdog: awardEntrySchema(),
+          biggestVillain: awardEntrySchema(),
+          mostChaotic: awardEntrySchema(),
+          quietestThreat: awardEntrySchema(),
+          seasonMVP: awardEntrySchema(),
+          mostTragic: awardEntrySchema(),
+          mostUnlucky: awardEntrySchema(),
+          ironPerson: awardEntrySchema(),
+          biggestMeltdown: awardEntrySchema({ episode: { type: "number" } }),
+          playerOfSeason: goldSilverSchema,
+          heroOfSeason: goldSilverSchema,
+          villainOfSeason: goldSilverSchema,
+          compBeast: goldSilverSchema,
+          socialQueenKing: goldSilverSchema,
+          masterStrategist: goldSilverSchema,
+          mostBrutalExit: goldSilverSchema,
+          advantageKing: goldSilverSchema,
+          mostRobbedPlayer: { type: "object", additionalProperties: false, properties: { gold: awardEntrySchema() }, required: ["gold"] },
+          ftcGame: { type: "object", additionalProperties: false, properties: { gold: awardEntrySchema() }, required: ["gold"] },
+          mostRobbedFinalist: { type: "object", additionalProperties: false, properties: { gold: awardEntrySchema() }, required: ["gold"] },
+          messiestFeud: { type: "object", additionalProperties: false, properties: { players: { type: "array", items: castItemSchema, minItems: 2, maxItems: 4 }, description: { type: "string" } }, required: ["players", "description"] },
+          biggestBetrayal: { type: "object", additionalProperties: false, properties: { betrayer: castItemSchema, betrayed: castItemSchema, episode: { type: "number" }, description: { type: "string" } }, required: ["betrayer", "betrayed", "episode", "description"] },
+          secondBiggestBetrayal: { type: "object", additionalProperties: false, properties: { betrayer: castItemSchema, betrayed: castItemSchema, episode: { type: "number" }, description: { type: "string" } }, required: ["betrayer", "betrayed", "episode", "description"] },
+          legacyMoment: { type: "object", additionalProperties: false, properties: { name: { type: "string" }, episode: { type: "number" }, description: { type: "string" } }, required: ["name", "episode", "description"] }
+        },
+        required: [
+          "bestStrategic", "bestSocial", "bestPhysical", "mostClutch", "mostLoyal",
+          "bestUnderdog", "biggestVillain", "mostChaotic", "quietestThreat", "seasonMVP",
+          "mostTragic", "mostUnlucky", "ironPerson", "biggestMeltdown",
+          "playerOfSeason", "heroOfSeason", "villainOfSeason", "compBeast",
+          "socialQueenKing", "masterStrategist", "mostBrutalExit", "advantageKing",
+          "mostRobbedPlayer", "ftcGame", "mostRobbedFinalist",
+          "messiestFeud", "biggestBetrayal", "secondBiggestBetrayal", "legacyMoment"
+        ]
+      }
+    },
+    required: ["title", "subtitle", "winner", "placements", "seasonNarrative", "awards"]
+  };
+
+  const templateSummary = JSON.stringify({
+    seasonNumber: template.seasonNumber,
+    castSize: template.castSize,
+    episodeCount: template.episodeCount,
+    winner: template.winner?.name,
+    finalists: template.finalists?.map(f => `${f.name} (${f.votes} jury votes)`),
+    placements: template.placements?.map(p =>
+      `#${p.placement} ${p.name} (${p.phase}) — ${p.challengeWins} chal wins, ${p.immunityWins} immunity, ${p.votesReceived} votes against, allies: ${(p.alliances || []).join(', ')}, rivals: ${(p.rivalries || []).join(', ')}`
+    )
+  }, null, 2);
+
+  const instructions = `
+You are writing narrative content for a Total Drama season. All STATS are already filled in — you only write NARRATIVE fields.
+
+SEASON DATA (pre-computed, DO NOT change these numbers):
+${templateSummary}
+
+YOUR JOB: Fill in narrative fields ONLY. For each player, write:
+- notes: 1 sentence summary
+- strategicRank: 1-10 number
+- story: 4-8 sentence narrative arc. Write like a sports documentary voiceover — dramatic, specific, present tense.
+- gameplayStyle: 3-6 evocative words (NOT generic like "Strategic player")
+- keyMoments: Array of 3-8 specific moment descriptions with episode numbers
+
+Also write: title, subtitle, seasonNarrative, winner analysis (keyStats/strategy/legacy), and all awards.
+
+IMPORTANT: Use EXACTLY these player names — do not modify, abbreviate, or add suffixes.
+Cast: ${canonicalCast.join(', ')}
+
+${episodeSummaries}
+
+Return ONLY valid JSON matching the schema.
+`.trim();
+
+  const payload = {
+    model: "gpt-5.5",
+    instructions,
+    input: episodeSummaries,
+    text: { format: { type: "json_schema", name: "narrative_fill", strict: true, schema } },
   };
 
   return await callOpenAI(payload, env);

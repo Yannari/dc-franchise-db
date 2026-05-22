@@ -71,6 +71,23 @@ export function renderGameState() {
     const _sfShow = d.phase !== 'complete' && d.phase !== 'finale';
     if (_sf5) _sf5.style.display = _sfShow ? '' : 'none';
     if (_sfAll) _sfAll.style.display = _sfShow ? '' : 'none';
+    if (d.phase === 'complete') {
+      let exportBtn = document.getElementById('export-season-btn');
+      if (!exportBtn) {
+        exportBtn = document.createElement('button');
+        exportBtn.id = 'export-season-btn';
+        exportBtn.className = 'btn';
+        exportBtn.style.cssText = 'margin-top:8px;background:var(--accent);color:#fff;width:100%;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;border:none;';
+        exportBtn.textContent = 'Export Season Data';
+        exportBtn.onclick = () => {
+          window.downloadSeasonExport();
+          exportBtn.textContent = 'Exported!';
+          exportBtn.disabled = true;
+          setTimeout(() => { exportBtn.textContent = 'Export Season Data'; exportBtn.disabled = false; }, 3000);
+        };
+        btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
+      }
+    }
     return;
   }
 
@@ -137,6 +154,22 @@ export function renderGameState() {
     btn.textContent = 'Season Complete'; btn.disabled = true;
     if (sim5Btn) sim5Btn.style.display = 'none';
     if (simAllBtn) simAllBtn.style.display = 'none';
+    // Export Season Data button
+    let exportBtn = document.getElementById('export-season-btn');
+    if (!exportBtn) {
+      exportBtn = document.createElement('button');
+      exportBtn.id = 'export-season-btn';
+      exportBtn.className = 'btn';
+      exportBtn.style.cssText = 'margin-top:8px;background:var(--accent);color:#fff;width:100%;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;border:none;';
+      exportBtn.textContent = 'Export Season Data';
+      exportBtn.onclick = () => {
+        window.downloadSeasonExport();
+        exportBtn.textContent = 'Exported!';
+        exportBtn.disabled = true;
+        setTimeout(() => { exportBtn.textContent = 'Export Season Data'; exportBtn.disabled = false; }, 3000);
+      };
+      btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
+    }
   } else if (gs.phase === 'finale') {
     btn.textContent = `Simulate Finale (Ep. ${gs.episode+1})`; btn.disabled = false;
     if (sim5Btn) sim5Btn.style.display = 'none';

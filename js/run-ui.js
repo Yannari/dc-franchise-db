@@ -178,7 +178,9 @@ export function renderEpisodeView(epRecord) {
     ${_spoilerFree ? `<div style="margin-top:8px;font-size:11px;color:var(--muted);font-style:italic;text-align:center">Spoiler-free mode — open Visual Player to watch the episode</div>` : `<div style="margin-top:4px;margin-bottom:0"><div style="font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">Vote breakdown</div><div class="ep-vote-list">${chips}</div></div>`}
   </div>`;
 
-  document.getElementById('ep-output-text').value = _spoilerFree ? '' : (epRecord.summaryText || '');
+  const _otEl = document.getElementById('ep-output-text');
+  _otEl.value = epRecord.summaryText || '';
+  _otEl.style.display = _spoilerFree ? 'none' : '';
 }
 
 
@@ -395,8 +397,19 @@ export function replayEpisode(epNum) {
 
 export function copyOutput() {
   const ta = document.getElementById('ep-output-text');
-  ta.select(); document.execCommand('copy');
-  const btn = event.target; btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent='Copy', 1500);
+  const text = ta.value;
+  const btn = event.target;
+  if (!text) { btn.textContent = 'Nothing to copy'; setTimeout(()=>btn.textContent='Copy', 1500); return; }
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent='Copy', 1500);
+    });
+  } else {
+    ta.style.display = '';
+    ta.select(); document.execCommand('copy');
+    if (_spoilerFree) ta.style.display = 'none';
+    btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent='Copy', 1500);
+  }
 }
 
 export function exportToEpisodePipeline() {

@@ -1328,7 +1328,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
       const _ccMerging = gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
       if (!_ccMerging) return;
     }
-    if (gs.activePlayers.length < 4) return;
+    if (gs.activePlayers.length < 3) return;
     ep.isCampCastaways = true;
 
   } else if (engineType === 'are-we-there-yeti') {

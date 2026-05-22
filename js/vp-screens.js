@@ -52,6 +52,7 @@ import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemF
 import { rpBuildSafariColdOpen, rpBuildSafariPhase1, rpBuildSafariPhase2, rpBuildSafariHunt, rpBuildSafariResults, safariRevealNext, safariRevealAll } from './chal/african-lying-safari.js';
 import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPPillarPhase, rpBuildRPResults, rpRevealNext, rpRevealAll } from './chal/rapa-phooey.js';
 import { rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults, dhRevealNext, dhRevealAll } from './chal/drumheller.js';
+import { rpBuildIIBTitleCard, rpBuildIIBSummit, rpBuildIIBFortBuild, rpBuildIIBCtfAssault, rpBuildIIBResults, iibRevealNext, iibRevealAll } from './chal/ice-ice-baby.js';
 import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaCrossing, rpBuildPTBeachSprint, rpBuildPTResults, ptRevealNext, ptRevealAll } from './chal/planes-trains.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -12285,6 +12286,12 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'dh-vote', label:'Lie-Detector Vote', html: rpBuildDHVotePhase(dhEp) });
     vpScreens.push({ id:'dh-dig', label:'Barrel Dig', html: rpBuildDHDigPhase(dhEp) });
     vpScreens.push({ id:'dh-results', label:'Results', html: rpBuildDHResults(dhEp) });
+  } else if ((ep.isIceIceBaby || ep.challengeType === 'ice-ice-baby') && ep.iceIceBaby) {
+    vpScreens.push({ id:'iib-title', label:'Ice Ice Baby', html: rpBuildIIBTitleCard(ep) });
+    vpScreens.push({ id:'iib-summit', label:'Summit', html: rpBuildIIBSummit(ep) });
+    vpScreens.push({ id:'iib-fort', label:'Fort Build', html: rpBuildIIBFortBuild(ep) });
+    vpScreens.push({ id:'iib-ctf', label:'CTF Assault', html: rpBuildIIBCtfAssault(ep) });
+    vpScreens.push({ id:'iib-results', label:'Results', html: rpBuildIIBResults(ep) });
   } else if ((ep.isPlanesTrains || ep.challengeType === 'planes-trains') && (ep.planesTrains || ep.challengeData)) {
     const ptEp = ep.planesTrains ? Object.assign({}, ep, { challengeData: ep.planesTrains }) : ep;
     vpScreens.push({ id:'pt-title', label:'Planes Trains & HAM', html: rpBuildPTTitleCard(ptEp) });

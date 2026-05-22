@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ice Ice Baby — Siege & Steal VP Mockup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Inter:wght@400;600;700&display=swap');
+
+:root {
+  --navy: #04070f;
+  --deep: #0a1628;
+  --panel: rgba(12, 24, 48, 0.85);
+  --card: rgba(16, 32, 64, 0.7);
+  --border: rgba(90, 216, 255, 0.2);
+  --frost: #5ad8ff;
+  --aurora-green: #4fffb0;
+  --aurora-purple: #b07cff;
+  --aurora-pink: #ff7ed1;
+  --gold: #ffd84d;
+  --red: #ff4d6a;
+  --green: #4dff91;
+  --orange: #ffaa33;
+  --warm: #ff9966;
+  --ice-white: #e6f6fc;
+  --muted: #7a9bb5;
+  --text: #d0e8f5;
+  --heading: 'Bebas Neue', Impact, sans-serif;
+  --mono: 'Share Tech Mono', monospace;
+  --body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--navy); color: var(--text); font-family: var(--body); font-size: 14px; line-height: 1.5; min-height: 100vh; overflow-x: hidden; }
+
+/* ─── TOP BAR ─── */
+.top-bar { position: fixed; top: 0; left: 0; right: 0; height: 24px; background: rgba(0,0,0,0.9); display: flex; align-items: center; z-index: 1000; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 11px; }
+.on-air { display: flex; align-items: center; gap: 6px; padding: 0 10px; white-space: nowrap; }
+.on-air-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse-dot 1.5s infinite; }
+@keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.on-air-label { color: var(--green); font-weight: 700; letter-spacing: 1px; }
+.ep-tag { background: rgba(90,216,255,0.15); border: 1px solid var(--border); border-radius: 3px; padding: 1px 6px; color: var(--frost); margin-left: 4px; }
+.ticker-wrap { flex: 1; overflow: hidden; margin: 0 12px; }
+.ticker { display: inline-block; white-space: nowrap; animation: ticker-scroll 40s linear infinite; color: var(--muted); }
+.ticker span { color: var(--gold); margin: 0 6px; }
+@keyframes ticker-scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+.chris-tv { padding: 0 12px; color: var(--frost); font-weight: 700; letter-spacing: 2px; white-space: nowrap; }
+
+/* ─── TAB NAV ─── */
+.tab-nav { position: fixed; top: 24px; left: 0; right: 0; height: 40px; background: rgba(10,22,40,0.95); display: flex; align-items: center; justify-content: center; gap: 4px; z-index: 999; border-bottom: 1px solid var(--border); }
+.tab-btn { font-family: var(--mono); font-size: 11px; letter-spacing: 1px; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 4px 12px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+.tab-btn:hover { color: var(--frost); border-color: var(--border); }
+.tab-btn.active { color: #fff; background: rgba(90,216,255,0.15); border-color: var(--frost); }
+.tab-btn .tab-num { font-size: 9px; opacity: 0.6; margin-right: 2px; }
+
+/* ─── LAYOUT ─── */
+.viewport { margin-top: 64px; display: flex; max-width: 1100px; margin-left: auto; margin-right: auto; padding: 20px 16px 80px; gap: 20px; }
+.main-col { flex: 1; min-width: 0; }
+.sidebar-col { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+
+/* ─── SCREEN ─── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ─── SECTION HEADER ─── */
+.section-hdr { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
+.section-hdr h2 { font-family: var(--heading); font-size: 38px; letter-spacing: 2px; color: #fff; }
+.section-hdr h2 .num { color: var(--frost); font-size: 28px; margin-right: 8px; }
+.section-hdr .sub { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; text-align: right; max-width: 300px; }
+
+/* ─── CHRIS BAR ─── */
+.chris-bar { background: rgba(90,216,255,0.08); border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px; margin-bottom: 16px; font-family: var(--mono); font-size: 12px; font-style: italic; color: var(--muted); }
+.chris-bar .chris-name { color: var(--frost); font-weight: 700; font-style: normal; margin-right: 8px; }
+
+/* ─── EVENT CARD ─── */
+.evt-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; position: relative; transition: border-color 0.2s; }
+.evt-card:hover { border-color: rgba(90,216,255,0.4); }
+.evt-card-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.player-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.evt-card-title { font-family: var(--heading); font-size: 18px; letter-spacing: 1px; color: #fff; flex: 1; }
+.badge { font-family: var(--mono); font-size: 9px; letter-spacing: 1px; padding: 2px 8px; border-radius: 3px; white-space: nowrap; }
+.badge-frost { background: rgba(90,216,255,0.2); color: var(--frost); border: 1px solid rgba(90,216,255,0.3); }
+.badge-green { background: rgba(77,255,145,0.15); color: var(--green); border: 1px solid rgba(77,255,145,0.3); }
+.badge-red { background: rgba(255,77,106,0.15); color: var(--red); border: 1px solid rgba(255,77,106,0.3); }
+.badge-gold { background: rgba(255,216,77,0.15); color: var(--gold); border: 1px solid rgba(255,216,77,0.3); }
+.badge-purple { background: rgba(176,124,255,0.15); color: var(--aurora-purple); border: 1px solid rgba(176,124,255,0.3); }
+.badge-orange { background: rgba(255,170,51,0.15); color: var(--orange); border: 1px solid rgba(255,170,51,0.3); }
+.badge-pink { background: rgba(255,126,209,0.15); color: var(--aurora-pink); border: 1px solid rgba(255,126,209,0.3); }
+.evt-card p { color: var(--text); font-size: 13px; }
+.evt-card p .hl { font-weight: 700; }
+.evt-card p .hl-red { color: var(--red); font-weight: 700; }
+.evt-card p .hl-green { color: var(--green); font-weight: 700; }
+.evt-card p .hl-gold { color: var(--gold); font-weight: 700; }
+.evt-card p .hl-frost { color: var(--frost); font-weight: 700; }
+.evt-card p em { color: var(--muted); font-style: italic; }
+
+/* ─── SABOTAGE CARD ─── */
+.evt-card.sabotage { border: 1px dashed rgba(255,77,106,0.4); background: rgba(40,12,20,0.7); }
+
+/* ─── CONFESSIONAL ─── */
+.confessional { background: rgba(20,40,70,0.5); border: 1px solid rgba(90,216,255,0.1); border-radius: 8px; padding: 12px 18px; margin-bottom: 12px; }
+.conf-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.conf-badge { font-family: var(--mono); font-size: 8px; letter-spacing: 1px; background: rgba(255,77,106,0.2); color: var(--red); border: 1px solid rgba(255,77,106,0.3); padding: 1px 6px; border-radius: 3px; }
+.conf-text { font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 14px; color: var(--ice-white); line-height: 1.6; }
+.conf-text::before { content: '\201C'; color: var(--frost); font-size: 24px; margin-right: 2px; }
+.conf-text::after { content: '\201D'; color: var(--frost); font-size: 24px; margin-left: 2px; }
+
+/* ─── DIALOGUE CARD ─── */
+.dialogue { background: rgba(16,32,64,0.5); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+.dialogue .player-side { display: flex; align-items: center; gap: 6px; }
+.dialogue .player-side .name { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--frost); text-transform: uppercase; }
+.dialogue .vs-icon { font-family: var(--heading); font-size: 16px; color: var(--gold); flex-shrink: 0; }
+.dialogue .quote { font-size: 12px; color: var(--muted); font-style: italic; flex: 1; }
+
+/* ─── VS DUEL CARD ─── */
+.duel-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+.duel-left, .duel-right { flex: 1; text-align: center; }
+.duel-left .name, .duel-right .name { font-family: var(--mono); font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase; display: block; margin-top: 4px; }
+.duel-left .role, .duel-right .role { font-family: var(--mono); font-size: 9px; color: var(--muted); text-transform: uppercase; }
+.duel-vs { font-family: var(--heading); font-size: 28px; color: var(--gold); text-shadow: 0 0 12px rgba(255,216,77,0.4); }
+.duel-result { font-family: var(--mono); font-size: 9px; padding: 2px 8px; border-radius: 3px; margin-top: 4px; display: inline-block; }
+
+/* ─── PROGRESS BAR ─── */
+.tracker-panel { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; }
+.tracker-panel h3 { font-family: var(--heading); font-size: 16px; letter-spacing: 2px; color: #fff; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+.tracker-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.tracker-name { font-family: var(--mono); font-size: 10px; color: var(--muted); width: 70px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tracker-bar { flex: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden; position: relative; }
+.tracker-fill { height: 100%; border-radius: 5px; transition: width 0.3s; }
+.tracker-fill.green { background: linear-gradient(90deg, #1a6b3a, var(--green)); }
+.tracker-fill.red { background: linear-gradient(90deg, #6b1a2a, var(--red)); }
+.tracker-fill.frost { background: linear-gradient(90deg, #1a4a6b, var(--frost)); }
+.tracker-fill.gold { background: linear-gradient(90deg, #6b5a1a, var(--gold)); }
+.tracker-pct { font-family: var(--mono); font-size: 10px; color: var(--muted); width: 32px; text-align: right; }
+
+/* ─── RESULT BANNER ─── */
+.result-banner { background: linear-gradient(135deg, rgba(16,40,80,0.9), rgba(8,20,40,0.95)); border: 2px solid var(--frost); border-radius: 12px; padding: 30px 20px; text-align: center; margin: 20px 0; }
+.result-banner .phase-label { font-family: var(--mono); font-size: 11px; letter-spacing: 4px; color: var(--muted); margin-bottom: 8px; }
+.result-banner .winner-name { font-family: var(--heading); font-size: 48px; color: var(--green); text-shadow: 0 0 30px rgba(77,255,145,0.4); letter-spacing: 3px; }
+.result-banner.loss .winner-name { color: var(--red); text-shadow: 0 0 30px rgba(255,77,106,0.4); }
+.result-banner .reward-line { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-top: 8px; text-transform: uppercase; }
+
+/* ─── SIDEBAR PANELS ─── */
+.side-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+.side-panel h4 { font-family: var(--heading); font-size: 14px; letter-spacing: 2px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.side-panel h4 .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+/* Conditions */
+.temp-big { font-family: var(--heading); font-size: 48px; color: #fff; text-align: center; }
+.temp-big sup { font-size: 24px; }
+.temp-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: center; margin-bottom: 10px; }
+.cond-row { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; padding: 3px 0; }
+.cond-row .val { color: var(--frost); }
+.cond-row .val.active { color: var(--green); }
+.cond-row .val.danger { color: var(--red); }
+.cond-row .val.warn { color: var(--orange); }
+
+/* Team roster */
+.roster-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.roster-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 8px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.roster-name { font-family: var(--mono); font-size: 11px; color: var(--text); flex: 1; }
+.roster-tag { font-family: var(--mono); font-size: 8px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
+.roster-tag.captain { color: var(--gold); background: rgba(255,216,77,0.15); padding: 1px 5px; border-radius: 3px; }
+.roster-tag.saboteur { color: var(--red); }
+.roster-tag.gadget { color: var(--frost); }
+
+/* Fort status */
+.fort-bar { margin: 8px 0; }
+.fort-bar-label { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; margin-bottom: 3px; }
+.fort-bar-track { height: 14px; background: rgba(255,255,255,0.05); border-radius: 7px; overflow: hidden; }
+.fort-bar-fill { height: 100%; border-radius: 7px; transition: width 0.5s; }
+.fort-bar-fill.healthy { background: linear-gradient(90deg, #1a6b3a, var(--green)); }
+.fort-bar-fill.damaged { background: linear-gradient(90deg, #6b5a1a, var(--orange)); }
+.fort-bar-fill.critical { background: linear-gradient(90deg, #6b1a2a, var(--red)); }
+
+/* Trap/decoy inventory */
+.inv-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-family: var(--mono); font-size: 11px; }
+.inv-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+.inv-label { flex: 1; color: var(--text); }
+.inv-status { color: var(--muted); font-size: 9px; text-transform: uppercase; }
+.inv-status.ready { color: var(--green); }
+.inv-status.used { color: var(--red); }
+
+/* Battle log */
+.blog-row { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; padding: 2px 0; }
+.blog-row .label { color: var(--text); }
+.blog-row .val { text-transform: uppercase; }
+
+/* Reward card */
+.reward-card { background: linear-gradient(135deg, rgba(255,216,77,0.1), rgba(255,170,51,0.05)); border: 1px solid rgba(255,216,77,0.3); }
+.reward-card .reward-title { font-family: var(--heading); font-size: 22px; color: var(--gold); text-align: center; letter-spacing: 2px; }
+.reward-card .reward-sub { font-family: var(--mono); font-size: 9px; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+
+/* ─── TITLE CARD ─── */
+.title-card { position: relative; border-radius: 12px; overflow: hidden; margin-bottom: 20px; min-height: 350px; display: flex; align-items: center; justify-content: center; }
+.title-card svg { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+.title-overlay { position: relative; z-index: 2; text-align: center; padding: 40px 20px; }
+.title-overlay .ep-info { font-family: var(--mono); font-size: 11px; color: var(--gold); letter-spacing: 4px; margin-bottom: 8px; }
+.title-overlay h1 { font-family: var(--heading); font-size: 80px; color: #fff; text-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 40px rgba(90,216,255,0.3); letter-spacing: 4px; line-height: 0.9; }
+.title-overlay .subtitle { font-family: var(--mono); font-size: 14px; color: var(--frost); letter-spacing: 6px; margin-top: 12px; text-transform: uppercase; }
+.title-overlay .location { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 3px; margin-top: 16px; padding: 4px 16px; border: 1px solid var(--border); border-radius: 4px; display: inline-block; }
+
+/* ─── TEAMS GRID ─── */
+.teams-hdr { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.teams-hdr h3 { font-family: var(--heading); font-size: 22px; color: var(--frost); letter-spacing: 2px; }
+.teams-hdr .meta { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.team-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+.team-box h4 { font-family: var(--heading); font-size: 16px; letter-spacing: 2px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+.team-count { font-family: var(--mono); font-size: 9px; padding: 2px 8px; border-radius: 3px; }
+.player-chip { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; margin: 4px 8px; }
+.player-chip .chip-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; font-weight: 700; color: #fff; }
+.player-chip .chip-name { font-family: var(--mono); font-size: 9px; color: #fff; font-weight: 700; text-transform: uppercase; }
+.player-chip .chip-role { font-family: var(--mono); font-size: 8px; color: var(--muted); text-transform: uppercase; }
+
+/* ─── GADGET CARD ─── */
+.gadget-card { background: rgba(90,216,255,0.05); border: 1px solid rgba(90,216,255,0.25); border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; }
+.gadget-card .gadget-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.gadget-card .blueprint { font-family: var(--mono); font-size: 20px; color: var(--frost); }
+.gadget-card .gadget-name { font-family: var(--heading); font-size: 18px; color: var(--frost); letter-spacing: 1px; }
+.gadget-card .gadget-parts { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+.gadget-card .gadget-effect { font-size: 13px; color: var(--text); }
+
+/* ─── FLAG SEARCH CARD ─── */
+.flag-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; }
+.flag-card.decoy { border-color: rgba(255,170,51,0.4); background: rgba(40,30,10,0.7); }
+.flag-card.real { border-color: rgba(77,255,145,0.4); background: rgba(10,40,20,0.7); }
+
+/* ─── REVEAL CONTROLS ─── */
+.reveal-controls { position: fixed; bottom: 0; left: 0; right: 0; height: 50px; background: rgba(4,7,15,0.95); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 12px; z-index: 998; }
+.reveal-btn { font-family: var(--mono); font-size: 12px; padding: 6px 16px; border-radius: 4px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.2s; }
+.reveal-btn:hover { color: var(--frost); border-color: var(--frost); }
+.reveal-btn.primary { background: rgba(90,216,255,0.15); color: var(--frost); border-color: var(--frost); }
+.reveal-btn.primary:hover { background: rgba(90,216,255,0.25); }
+.reveal-counter { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+/* ─── SNOWFALL ─── */
+.snowfall { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 997; overflow: hidden; }
+.flake { position: absolute; color: rgba(255,255,255,0.3); font-size: 10px; animation: fall linear infinite; }
+@keyframes fall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+/* ─── AURORA BG ─── */
+.aurora-bg { position: fixed; top: 0; left: 0; right: 0; height: 50vh; pointer-events: none; z-index: -1; }
+.aurora-band { position: absolute; width: 200%; height: 120px; opacity: 0.3; filter: blur(40px); }
+.aurora-band.g { background: linear-gradient(90deg, transparent, var(--aurora-green), transparent); top: 15%; animation: aurora-drift 12s ease-in-out infinite alternate; }
+.aurora-band.p { background: linear-gradient(90deg, transparent, var(--aurora-purple), transparent); top: 25%; animation: aurora-drift 15s ease-in-out infinite alternate-reverse; }
+.aurora-band.pk { background: linear-gradient(90deg, transparent, var(--aurora-pink), transparent); top: 20%; animation: aurora-drift 18s ease-in-out infinite alternate; opacity: 0.15; }
+@keyframes aurora-drift { 0% { transform: translateX(-30%); } 100% { transform: translateX(0%); } }
+
+/* Phase-specific atmosphere */
+body.phase-summit .aurora-band { opacity: 0.2; }
+body.phase-fort .aurora-band.g { opacity: 0.15; }
+body.phase-fort .aurora-band.p { opacity: 0.35; background: linear-gradient(90deg, transparent, var(--warm), transparent); }
+body.phase-ctf .aurora-band { opacity: 0.5; }
+body.phase-ctf .aurora-band.g { animation-duration: 6s; }
+
+/* ─── SUSPICION METER ─── */
+.suspicion-meter { margin: 8px 0; }
+.suspicion-label { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 3px; display: flex; justify-content: space-between; }
+.suspicion-track { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+.suspicion-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--green), var(--gold), var(--red)); width: 0%; transition: width 0.5s; }
+
+/* ─── BLUEPRINT ICON (CSS) ─── */
+.icon-shield, .icon-rope, .icon-mirror, .icon-trap, .icon-snowball, .icon-flag, .icon-melt { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; }
+.icon-shield::before { content: ''; width: 14px; height: 16px; border: 2px solid var(--frost); border-radius: 2px 2px 50% 50%; }
+.icon-trap::before { content: ''; width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 12px solid var(--orange); }
+.icon-snowball::before { content: ''; width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, var(--ice-white), var(--frost)); }
+.icon-flag::before { content: ''; width: 12px; height: 10px; background: var(--gold); clip-path: polygon(0 0, 100% 20%, 100% 80%, 0 100%); }
+.icon-melt::before { content: ''; width: 10px; height: 14px; background: var(--red); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+
+/* ─── VOTE CEREMONY ─── */
+.vote-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.vote-status { font-family: var(--mono); font-size: 10px; font-weight: 700; width: 40px; text-transform: uppercase; }
+.vote-status.safe { color: var(--green); }
+.vote-status.low { color: var(--gold); }
+.vote-status.out { color: var(--red); text-decoration: line-through; }
+
+@media (prefers-reduced-motion: reduce) {
+  .flake, .aurora-band, .ticker { animation: none !important; }
+  .aurora-band { opacity: 0.15 !important; }
+}
+
+@media (max-width: 800px) {
+  .viewport { flex-direction: column; }
+  .sidebar-col { width: 100%; }
+}
+</style>
+</head>
+<body class="phase-cold">
+
+<!-- AURORA BACKGROUND -->
+<div class="aurora-bg">
+  <div class="aurora-band g"></div>
+  <div class="aurora-band p"></div>
+  <div class="aurora-band pk"></div>
+</div>
+
+<!-- SNOWFALL -->
+<div class="snowfall" id="snowfall"></div>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="on-air">
+    <div class="on-air-dot"></div>
+    <span class="on-air-label">ON AIR</span>
+    <span class="ep-tag">S05 / EP04</span>
+  </div>
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span>&#10052;</span> ICE ICE BABY &mdash; SIEGE &amp; STEAL EDITION <span>&#10052;</span> MT. LOOMING TRAGEDY OPEN FOR BUSINESS <span>&#10052;</span> THREE-PHASE WINTER WARFARE <span>&#10052;</span> JUNK PILE GADGETS IN PLAY <span>&#10052;</span> SABOTEUR DETECTED? <span>&#10052;</span> FORT HP CRITICAL <span>&#10052;</span> DECOY FLAGS DEPLOYED <span>&#10052;</span> MIRROR REFLECTOR ACTIVATED <span>&#10052;</span> PAINTBALL ROUNDS FIRED: 47 <span>&#10052;</span>
+    </div>
+  </div>
+  <div class="chris-tv">CHRIS.TV</div>
+</div>
+
+<!-- TAB NAV -->
+<div class="tab-nav">
+  <div class="tab-btn active" onclick="switchTab(0)"><span class="tab-num">00</span>COLD OPEN</div>
+  <div class="tab-btn" onclick="switchTab(1)"><span class="tab-num">01</span>SUMMIT SCRAMBLE</div>
+  <div class="tab-btn" onclick="switchTab(2)"><span class="tab-num">02</span>FORT BUILD</div>
+  <div class="tab-btn" onclick="switchTab(3)"><span class="tab-num">03</span>CTF ASSAULT</div>
+  <div class="tab-btn" onclick="switchTab(4)"><span class="tab-num">04</span>RESULTS</div>
+  <div class="tab-btn" onclick="switchTab(5)"><span class="tab-num">05</span>TRIBAL</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCREEN 0: COLD OPEN -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="viewport">
+<div class="main-col">
+
+<div class="screen active" id="screen-0">
+
+  <!-- TITLE CARD -->
+  <div class="title-card">
+    <svg viewBox="0 0 720 350" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#04070f"/><stop offset="1" stop-color="#1a3a66"/></linearGradient>
+        <linearGradient id="aur1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4fffb0" stop-opacity="0"/><stop offset=".5" stop-color="#4fffb0" stop-opacity=".5"/><stop offset="1" stop-color="#5ad8ff" stop-opacity="0"/></linearGradient>
+        <linearGradient id="aur2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b07cff" stop-opacity="0"/><stop offset=".5" stop-color="#b07cff" stop-opacity=".4"/><stop offset="1" stop-color="#ff7ed1" stop-opacity="0"/></linearGradient>
+        <linearGradient id="mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6f6fc"/><stop offset=".5" stop-color="#bfe9f5"/><stop offset="1" stop-color="#3a7fb3"/></linearGradient>
+      </defs>
+      <rect width="720" height="350" fill="url(#sky)"/>
+      <path d="M0 120 Q180 60 360 130 T720 100 L720 220 Q540 200 360 240 T0 220Z" fill="url(#aur1)"/>
+      <path d="M0 145 Q240 100 480 160 T720 140 L720 250 Q480 220 240 270 T0 250Z" fill="url(#aur2)"/>
+      <circle cx="620" cy="90" r="35" fill="#e6f6fc" opacity=".8"/>
+      <!-- mountain -->
+      <path d="M50 350 L220 160 L310 210 L400 90 L490 200 L560 140 L680 350Z" fill="url(#mtn)" stroke="#1a3a66" stroke-width="2"/>
+      <!-- fort left -->
+      <rect x="120" y="280" width="80" height="70" rx="3" fill="#a8d8ea" stroke="#5ad8ff" stroke-width="1.5" opacity=".7"/>
+      <rect x="130" y="270" width="15" height="10" fill="#a8d8ea" opacity=".7"/>
+      <rect x="155" y="270" width="15" height="10" fill="#a8d8ea" opacity=".7"/>
+      <rect x="175" y="270" width="15" height="10" fill="#a8d8ea" opacity=".7"/>
+      <!-- fort right -->
+      <rect x="510" y="280" width="80" height="70" rx="3" fill="#a8d8ea" stroke="#5ad8ff" stroke-width="1.5" opacity=".7"/>
+      <rect x="520" y="270" width="15" height="10" fill="#a8d8ea" opacity=".7"/>
+      <rect x="545" y="270" width="15" height="10" fill="#a8d8ea" opacity=".7"/>
+      <rect x="565" y="270" width="15" height="10" fill="#a8d8ea" opacity=".7"/>
+      <!-- flag on summit -->
+      <line x1="400" y1="90" x2="400" y2="55" stroke="#3a2410" stroke-width="3"/>
+      <polygon points="400,55 430,67 400,79" fill="#ffd84d"/>
+      <!-- paintball splats -->
+      <circle cx="170" cy="300" r="5" fill="#ff4d6a" opacity=".6"/>
+      <circle cx="545" cy="310" r="4" fill="#4fffb0" opacity=".6"/>
+      <circle cx="560" cy="295" r="3" fill="#ff4d6a" opacity=".5"/>
+    </svg>
+    <div class="title-overlay">
+      <div class="ep-info">&#10052; EPISODE 04 &bull; SEASON 05 &#10052;</div>
+      <h1>ICE ICE<br>BABY</h1>
+      <div class="subtitle">Siege &amp; Steal</div>
+      <div class="location">&#10052; MT. LOOMING TRAGEDY &bull; NIGHT 04 &bull; &minus;13&deg;F &#10052;</div>
+    </div>
+  </div>
+
+  <!-- TEAMS -->
+  <div class="teams-hdr">
+    <h3>&#9906; THE TWO TRIBES</h3>
+    <span class="meta">10 CONTESTANTS &bull; 1 ELIMINATION TONIGHT</span>
+  </div>
+  <div class="teams-grid">
+    <div class="team-box">
+      <h4 style="color:#ff6b8a;">CRIMSON FOXES <span class="team-count" style="background:rgba(255,107,138,0.15);color:#ff6b8a;border:1px solid rgba(255,107,138,0.3);">05 PLAYERS</span></h4>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;">
+        <div class="player-chip"><div class="chip-dot" style="background:#c0392b;">MA</div><span class="chip-name">Mara</span><span class="chip-role">Captain &bull; Schemer</span></div>
+        <div class="player-chip"><div class="chip-dot" style="background:#e74c3c;">JX</div><span class="chip-name">Jax</span><span class="chip-role">Challenge-Beast</span></div>
+        <div class="player-chip"><div class="chip-dot" style="background:#d35400;">LN</div><span class="chip-name">Luna</span><span class="chip-role">Social-Butterfly</span></div>
+        <div class="player-chip"><div class="chip-dot" style="background:#c0392b;">RK</div><span class="chip-name">Rook</span><span class="chip-role">Loyal-Soldier</span></div>
+        <div class="player-chip"><div class="chip-dot" style="background:#e74c3c;">IV</div><span class="chip-name">Ivy</span><span class="chip-role">Perceptive</span></div>
+      </div>
+    </div>
+    <div class="team-box">
+      <h4 style="color:#5dade2;">COBALT WOLVES <span class="team-count" style="background:rgba(93,173,226,0.15);color:#5dade2;border:1px solid rgba(93,173,226,0.3);">05 PLAYERS</span></h4>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;">
+        <div class="player-chip"><div class="chip-dot" style="background:#2471a3;">KA</div><span class="chip-name">Kane</span><span class="chip-role">Mastermind</span></div>
+        <div class="player-chip"><div class="chip-dot" style="background:#2e86c1;">SP</div><span class="chip-name">Sage</span><span class="chip-role">Hero</span></div>
+        <div class="player-chip"><div class="chip-dot" style="background:#1a5276;">NV</div><span class="chip-name">Nova</span><span class="chip-role">Wildcard</span></div>
+        <div class="player-chip"><div class="chip-dot" style="background:#2471a3;">FN</div><span class="chip-name">Finn</span><span class="chip-role">Underdog</span></div>
+        <div class="player-chip"><div class="chip-dot" style="background:#2e86c1;">ZR</div><span class="chip-name">Zara</span><span class="chip-role">Hothead</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHALLENGE BRIEFING -->
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="evt-card-title">TONIGHT'S THREE-PART CHALLENGE</div>
+      <span class="badge badge-frost">FROSTBITE</span>
+    </div>
+    <p>Three punishing rounds on the slopes of Mt. Looming Tragedy. <span class="hl">Part one:</span> climb to the summit while Chef hurls ice blocks. A junk pile at the base &mdash; guarded by a <span class="hl-frost">mutant beetle</span> &mdash; holds materials for building gadgets. <span class="hl">Part two:</span> build an ice fortress with walls, traps, and decoy flags. <span class="hl">Part three:</span> a full Capture-the-Flag siege with paintball combat, fort melting, and flag deception. The losers face tribal council.</p>
+  </div>
+
+  <div class="chris-bar">
+    <span class="chris-name">CHRIS</span> &bull; <em>&ldquo;Welcome back to Mt. Looming Tragedy. Three phases. Two forts. One flag each. Infinite suffering. &mdash; your boy, Chris&rdquo;</em>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCREEN 1: SUMMIT SCRAMBLE -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="screen" id="screen-1">
+
+  <div class="section-hdr">
+    <h2><span class="num">01</span> SUMMIT SCRAMBLE</h2>
+    <div class="sub">CLIMB THE CLIFF &bull; DODGE THE BLOCKS &bull; RAID THE JUNK PILE</div>
+  </div>
+
+  <div class="chris-bar">
+    <span class="chris-name">CHRIS</span> &bull; <em>&ldquo;First tribe to get ALL members to the top wins fort pick. Oh, and Chef? Start throwing.&rdquo;</em>
+  </div>
+
+  <!-- LIVE CLIFF TRACKER -->
+  <div class="tracker-panel">
+    <h3>LIVE CLIFF TRACKER <span class="badge badge-frost">PROGRESS</span></h3>
+    <div class="tracker-row"><span class="tracker-name">Jax</span><div class="tracker-bar"><div class="tracker-fill green" style="width:92%"></div></div><span class="tracker-pct">92%</span></div>
+    <div class="tracker-row"><span class="tracker-name">Kane</span><div class="tracker-bar"><div class="tracker-fill green" style="width:85%"></div></div><span class="tracker-pct">85%</span></div>
+    <div class="tracker-row"><span class="tracker-name">Mara</span><div class="tracker-bar"><div class="tracker-fill green" style="width:78%"></div></div><span class="tracker-pct">78%</span></div>
+    <div class="tracker-row"><span class="tracker-name">Sage</span><div class="tracker-bar"><div class="tracker-fill green" style="width:74%"></div></div><span class="tracker-pct">74%</span></div>
+    <div class="tracker-row"><span class="tracker-name">Zara</span><div class="tracker-bar"><div class="tracker-fill frost" style="width:68%"></div></div><span class="tracker-pct">68%</span></div>
+    <div class="tracker-row"><span class="tracker-name">Rook</span><div class="tracker-bar"><div class="tracker-fill frost" style="width:61%"></div></div><span class="tracker-pct">61%</span></div>
+    <div class="tracker-row"><span class="tracker-name">Luna</span><div class="tracker-bar"><div class="tracker-fill frost" style="width:55%"></div></div><span class="tracker-pct">55%</span></div>
+    <div class="tracker-row"><span class="tracker-name">Nova</span><div class="tracker-bar"><div class="tracker-fill gold" style="width:40%"></div></div><span class="tracker-pct">40%</span></div>
+    <div class="tracker-row"><span class="tracker-name" style="color:var(--frost);">Ivy</span><div class="tracker-bar"><div class="tracker-fill" style="width:15%;background:linear-gradient(90deg,#1a4a6b,var(--frost));"></div></div><span class="tracker-pct" style="color:var(--frost);">JUNK</span></div>
+    <div class="tracker-row"><span class="tracker-name">Finn</span><div class="tracker-bar"><div class="tracker-fill red" style="width:22%"></div></div><span class="tracker-pct">22%</span></div>
+  </div>
+
+  <!-- EVENTS -->
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#e74c3c;">JX</div>
+      <div class="evt-card-title">JAX CHARGES AHEAD</div>
+      <span class="badge badge-green">+PHYSICAL</span>
+    </div>
+    <p>Jax launches up the cliff face like he was born on a mountainside. Pure muscle, zero strategy. <span class="hl">Kane</span> keeps pace on the opposite route, calculating handholds three moves ahead. The two lock eyes across the rock face &mdash; neither blinks first.</p>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#c0392b;">MA</div>
+      <div class="player-dot" style="background:#d35400;">LN</div>
+      <div class="evt-card-title">ICE BLOCK COLLISION</div>
+      <span class="badge badge-red">CHEF&rsquo;S FURY</span>
+    </div>
+    <p>Chef launches a massive ice block. It clips <span class="hl-red">Mara</span>, who swings sideways into <span class="hl">Luna</span>. Both slide down two ledges. Luna grabs Mara's wrist at the last second. &ldquo;You owe me,&rdquo; Luna gasps. Mara doesn't disagree.</p>
+  </div>
+
+  <div class="dialogue">
+    <div class="player-side"><div class="player-dot" style="background:#e74c3c;">JX</div><span class="name">Jax</span></div>
+    <div class="quote">&ldquo;First one up. Again.&rdquo;</div>
+    <div class="vs-icon">&#9878;</div>
+    <div class="quote" style="text-align:right;">&ldquo;Congrats. You peaked.&rdquo;</div>
+    <div class="player-side"><span class="name">Kane</span><div class="player-dot" style="background:#2471a3;">KA</div></div>
+  </div>
+
+  <!-- GADGET BUILD -->
+  <div class="gadget-card">
+    <div class="gadget-hdr">
+      <span class="blueprint">&#9881;</span>
+      <span class="gadget-name">IVY RAIDS THE JUNK PILE</span>
+      <span class="badge badge-frost">ENGINEERING</span>
+    </div>
+    <div class="gadget-parts">PARTS: bent mirror + solar reflector + tripod frame + duct tape</div>
+    <p class="gadget-effect"><span class="hl-frost">Ivy</span> skips the climb entirely. The mutant beetle breathes fire &mdash; she dodges, grabs parts, assembles. Result: a <span class="hl-frost">Mirror Reflector</span> (Tier 3 gadget). It can melt enemy fort walls in Phase 3. The beetle watches, impressed.</p>
+  </div>
+
+  <div class="confessional">
+    <div class="conf-hdr">
+      <div class="player-dot" style="background:#e74c3c;">IV</div>
+      <span style="font-family:var(--mono);font-size:11px;color:#fff;font-weight:700;">IVY</span>
+      <span class="conf-badge">CONFESSIONAL</span>
+    </div>
+    <div class="conf-text">Everyone's up there punching ice. I'm down here building a weapon. Let them climb. I'll win this from the ground.</div>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#2e86c1;">SP</div>
+      <div class="player-dot" style="background:#1a5276;">NV</div>
+      <div class="evt-card-title">SAGE PULLS NOVA UP</div>
+      <span class="badge badge-green">+HEROIC</span>
+    </div>
+    <p>Nova's grip fails on a frozen ledge. <span class="hl-green">Sage</span> reaches down without hesitation, hauls her up one-handed. Nova stares. &ldquo;Didn't ask for help.&rdquo; &ldquo;Didn't need you to,&rdquo; Sage replies. Something shifts between them.</p>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-banner">
+    <div class="phase-label">&#10038; PHASE ONE RESULT &#10038;</div>
+    <div class="winner-name">COBALT WOLVES WIN</div>
+    <div class="reward-line">REWARD: PICK THE ICE FORT &bull; GADGET UPGRADED</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCREEN 2: FORT BUILD -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="screen" id="screen-2">
+
+  <div class="section-hdr">
+    <h2><span class="num">02</span> FORT CONSTRUCTION</h2>
+    <div class="sub">WALLS &bull; TRAPS &bull; DECOY FLAGS &bull; SABOTAGE</div>
+  </div>
+
+  <div class="chris-bar">
+    <span class="chris-name">CHRIS</span> &bull; <em>&ldquo;Four construction beats. Build your fort. Set your traps. And for the love of ratings, someone please sabotage something.&rdquo;</em>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#c0392b;">RK</div>
+      <div class="player-dot" style="background:#e74c3c;">JX</div>
+      <div class="evt-card-title">WALL BUILDERS &mdash; CRIMSON FOXES</div>
+      <span class="badge badge-frost">FORTIFY</span>
+    </div>
+    <p><span class="hl">Rook</span> and <span class="hl">Jax</span> haul ice blocks into position. Rook works methodically &mdash; each brick flush. Jax muscles through, stacking fast but sloppy. Together they add <span class="hl-frost">+24 fort HP</span>. The walls hold. For now.</p>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#2471a3;">KA</div>
+      <div class="evt-card-title">KANE ENGINEERS TRAPS</div>
+      <span class="badge badge-purple">STRATEGIC</span>
+    </div>
+    <p><span class="hl">Kane</span> designs three traps for the Wolves' fort: a <span class="hl-frost">Snowball Turret</span> (auto-fires at lead attacker), an <span class="hl-frost">Ice Floor</span> (slows all attackers), and an <span class="hl-frost">Alarm Bell</span> (reveals attacker positions early). Quality: <span class="hl-green">Excellent</span>. His tribe won't know what hit them. Neither will the enemy.</p>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#e74c3c;">IV</div>
+      <div class="evt-card-title">IVY CRAFTS DECOY FLAGS</div>
+      <span class="badge badge-gold">DECEPTION</span>
+    </div>
+    <p><span class="hl">Ivy</span> creates <span class="hl-gold">2 decoy flags</span> for the Foxes. Convincingness: <span class="hl-gold">High</span>. She studies the real flag's fabric, replicates the stitching pattern, even adds a false wear mark. Mental + intuition in overdrive. The attackers will have to <em>really</em> look to tell the difference.</p>
+  </div>
+
+  <!-- SABOTAGE CARD -->
+  <div class="evt-card sabotage">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#c0392b;">MA</div>
+      <div class="evt-card-title">MARA SABOTAGES THE WALLS</div>
+      <span class="badge badge-red">SABOTAGE</span>
+    </div>
+    <p>While Rook carries more ice, <span class="hl-red">Mara</span> loosens three key support blocks on the eastern wall. Structural integrity drops by <span class="hl-red">&minus;18 HP</span> (hidden). She kicks snow over the gaps. When asked, she points at <span class="hl">Rook</span>'s section: &ldquo;His bricks look uneven. Just saying.&rdquo; The frame is planted.</p>
+  </div>
+
+  <div class="confessional">
+    <div class="conf-hdr">
+      <div class="player-dot" style="background:#c0392b;">MA</div>
+      <span style="font-family:var(--mono);font-size:11px;color:#fff;font-weight:700;">MARA</span>
+      <span class="conf-badge">CONFESSIONAL</span>
+    </div>
+    <div class="conf-text">Rook builds walls. I build narratives. Let's see whose construction lasts longer.</div>
+  </div>
+
+  <!-- DETECTION ATTEMPT -->
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#e74c3c;">IV</div>
+      <div class="evt-card-title">IVY SENSES SOMETHING OFF</div>
+      <span class="badge badge-orange">SUSPICION</span>
+    </div>
+    <p><span class="hl">Ivy</span> pauses near the eastern wall. Something about the mortar pattern doesn't match Rook's work. She glances at Mara, who's whistling. Intuition check: <span class="hl-orange">Close but not enough.</span> The doubt lingers, but she can't prove anything. Yet.</p>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#2e86c1;">SP</div>
+      <div class="player-dot" style="background:#2471a3;">FN</div>
+      <div class="evt-card-title">BUILD TEAMWORK &mdash; COBALT WOLVES</div>
+      <span class="badge badge-green">+BOND</span>
+    </div>
+    <p><span class="hl-green">Sage</span> and <span class="hl">Finn</span> fall into a rhythm packing ice. Finn fumbles a block, Sage catches it without looking. They share a nod. No words needed. +2 bond.</p>
+  </div>
+
+  <div class="chris-bar">
+    <span class="chris-name">CHRIS</span> &bull; <em>&ldquo;Time's up! Forts are built. Some... better than others. Now seal them up &mdash; we go live at sundown.&rdquo;</em>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCREEN 3: CTF ASSAULT -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="screen" id="screen-3">
+
+  <div class="section-hdr">
+    <h2><span class="num">03</span> CTF ASSAULT</h2>
+    <div class="sub">PAINTBALL WARFARE &bull; FORT MELTING &bull; FLAG DECEPTION</div>
+  </div>
+
+  <div class="chris-bar">
+    <span class="chris-name">CHRIS</span> &bull; <em>&ldquo;Attackers: breach the enemy fort, find the REAL flag, get it home. Defenders: stop them. Oh, and someone brought a mirror that melts ice. Good luck with that.&rdquo;</em>
+  </div>
+
+  <!-- ROLE SPLIT -->
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="evt-card-title">ROLE ASSIGNMENTS</div>
+      <span class="badge badge-frost">DEPLOY</span>
+    </div>
+    <p><strong style="color:#ff6b8a;">CRIMSON FOXES</strong> &mdash; Attack: <span class="hl">Jax</span>, <span class="hl">Luna</span>, <span class="hl">Mara</span> | Defend: <span class="hl">Rook</span> (flag guard), <span class="hl">Ivy</span> (mirror reflector)<br>
+    <strong style="color:#5dade2;">COBALT WOLVES</strong> &mdash; Attack: <span class="hl">Zara</span>, <span class="hl">Finn</span>, <span class="hl">Nova</span> | Defend: <span class="hl">Kane</span> (traps), <span class="hl">Sage</span> (flag guard)</p>
+  </div>
+
+  <!-- PAINTBALL DUEL -->
+  <div class="duel-card">
+    <div class="duel-left">
+      <div class="player-dot" style="background:#e74c3c;margin:0 auto;">JX</div>
+      <span class="name">Jax</span>
+      <span class="role">Attacker &bull; Foxes</span>
+    </div>
+    <div style="text-align:center;">
+      <div class="duel-vs">VS</div>
+      <div class="duel-result badge-red" style="background:rgba(255,77,106,0.15);color:var(--red);border:1px solid rgba(255,77,106,0.3);">KANE SPLATTERED</div>
+    </div>
+    <div class="duel-right">
+      <div class="player-dot" style="background:#2471a3;margin:0 auto;">KA</div>
+      <span class="name">Kane</span>
+      <span class="role">Defender &bull; Wolves</span>
+    </div>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#e74c3c;">JX</div>
+      <div class="evt-card-title">JAX BREACHES THE WOLVES' FORT</div>
+      <span class="badge badge-red">BREACH</span>
+    </div>
+    <p>Jax powers through the snowball turret (<span class="hl-red">&minus;3 progress</span>), slides across the ice floor, and reaches the fort interior. Three flags. One real. He grabs the first one &mdash;</p>
+  </div>
+
+  <!-- DECOY FLAG -->
+  <div class="flag-card decoy">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#e74c3c;">JX</div>
+      <div class="evt-card-title">JAX GRABS A DECOY</div>
+      <span class="badge badge-orange">DECOY GRABBED</span>
+    </div>
+    <p>He sprints halfway back before the flag <span class="hl-red">dissolves in his hands</span> &mdash; cheap fabric, wrong weight. A decoy. Jax storms back into the fort, furious. &ldquo;WHO MADE THESE?!&rdquo; Round lost.</p>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#e74c3c;">IV</div>
+      <div class="evt-card-title">MIRROR REFLECTOR ACTIVATED</div>
+      <span class="badge badge-frost">MELTING</span>
+    </div>
+    <p><span class="hl-frost">Ivy</span> angles the mirror reflector at the Wolves' fort. Concentrated sunlight hits the western wall. The ice <em>sweats</em>. <span class="hl-red">&minus;15 HP per round.</span> Kane watches from inside as his traps start to puddle. &ldquo;That's... not ideal.&rdquo;</p>
+  </div>
+
+  <!-- HEROIC DEFENSE -->
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#2e86c1;">SP</div>
+      <div class="evt-card-title">SAGE'S LAST STAND</div>
+      <span class="badge badge-green">HEROIC DEFENSE</span>
+    </div>
+    <p><span class="hl-green">Sage</span> stands alone between <span class="hl">Luna</span> and the real flag. Three attackers, one defender. He blocks Luna's paintball shot with a snow shield, ducks Mara's flanking attempt, and body-checks <span class="hl">Jax</span> away from the flag. The crowd (Chris) goes wild. <span class="hl-green">+3 popularity.</span></p>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#2e86c1;">ZR</div>
+      <div class="player-dot" style="background:#c0392b;">RK</div>
+      <div class="evt-card-title">ZARA vs ROOK &mdash; FLAG GUARDIAN DUEL</div>
+      <span class="badge badge-gold">SHOWDOWN</span>
+    </div>
+    <p><span class="hl">Zara</span> reaches the Foxes' flag room. <span class="hl">Rook</span> stands guard. Paintballs fly point-blank. Zara's boldness against Rook's loyalty. A five-second standoff &mdash; then Zara feints left, dives right, and <span class="hl-green">grabs the flag</span>. Rook's shot clips her shoulder but she's already running.</p>
+  </div>
+
+  <!-- FLAG CAPTURE -->
+  <div class="flag-card real">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#2e86c1;">ZR</div>
+      <div class="evt-card-title">ZARA CAPTURES THE REAL FLAG</div>
+      <span class="badge badge-green">FLAG CAPTURED</span>
+    </div>
+    <p>Zara sprints through the snow, flag in hand. <span class="hl">Mara</span> fires a desperate paintball &mdash; it misses by inches. Zara slides across the finish line. <span class="hl-green">The Cobalt Wolves win the challenge.</span></p>
+  </div>
+
+  <div class="confessional">
+    <div class="conf-hdr">
+      <div class="player-dot" style="background:#2e86c1;">ZR</div>
+      <span style="font-family:var(--mono);font-size:11px;color:#fff;font-weight:700;">ZARA</span>
+      <span class="conf-badge">CONFESSIONAL</span>
+    </div>
+    <div class="conf-text">They had traps, decoys, a mirror laser thing. We had me running really fast. Sometimes that's enough.</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCREEN 4: RESULTS -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="screen" id="screen-4">
+
+  <div class="section-hdr">
+    <h2><span class="num">04</span> RESULTS &amp; FALLOUT</h2>
+    <div class="sub">SABOTAGE REVEALED &bull; FRAMING PAYOFF &bull; BLAME GAME</div>
+  </div>
+
+  <div class="result-banner">
+    <div class="phase-label">&#10038; CHALLENGE RESULT &#10038;</div>
+    <div class="winner-name">COBALT WOLVES WIN</div>
+    <div class="reward-line">CRIMSON FOXES &rarr; TRIBAL COUNCIL</div>
+  </div>
+
+  <!-- SABOTAGE REVEAL -->
+  <div class="evt-card sabotage">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#c0392b;">MA</div>
+      <div class="evt-card-title">THE WALLS MARA BUILT &mdash; DIDN'T</div>
+      <span class="badge badge-red">FRAME-UP</span>
+    </div>
+    <p>The Foxes' fort crumbled suspiciously fast. The eastern wall &mdash; the one <span class="hl-red">Mara</span> sabotaged &mdash; collapsed first. But <span class="hl">Mara</span> points at <span class="hl">Rook</span>: &ldquo;His bricks. Look at them. I <em>told</em> you they were uneven.&rdquo; Luna nods slowly. Rook's jaw drops. <span class="hl-red">&minus;2 bond</span> from Luna and Jax toward Rook.</p>
+  </div>
+
+  <div class="confessional">
+    <div class="conf-hdr">
+      <div class="player-dot" style="background:#c0392b;">RK</div>
+      <span style="font-family:var(--mono);font-size:11px;color:#fff;font-weight:700;">ROOK</span>
+      <span class="conf-badge">CONFESSIONAL</span>
+    </div>
+    <div class="conf-text">I built those walls perfectly. PERFECTLY. Something happened and I'm getting blamed for it. This isn't right.</div>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#e74c3c;">IV</div>
+      <div class="evt-card-title">IVY CONNECTS THE DOTS</div>
+      <span class="badge badge-purple">INTUITION</span>
+    </div>
+    <p><span class="hl">Ivy</span> remembers the eastern wall. The mortar pattern. Mara's whistling. She pulls Rook aside: &ldquo;I don't think it was you.&rdquo; Rook: &ldquo;Then who?&rdquo; Ivy glances at Mara. <span class="hl-gold">Pattern detected.</span> But she can't prove it. Not yet. <span class="hl-green">+3 bond</span> between Ivy and Rook.</p>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#d35400;">LN</div>
+      <div class="player-dot" style="background:#e74c3c;">JX</div>
+      <div class="evt-card-title">BLAME SHIFTS AT CAMP</div>
+      <span class="badge badge-orange">HEAT</span>
+    </div>
+    <p><span class="hl">Luna</span> and <span class="hl">Jax</span> discuss the loss. Jax is furious about the decoy flag. Luna suspects Rook's walls. Mara fans the flames: &ldquo;We need people we can trust at tribal.&rdquo; The target settles on <span class="hl-red">Rook</span> &mdash; framed, isolated, heading into tribal with heat from three tribemates.</p>
+  </div>
+
+  <div class="chris-bar">
+    <span class="chris-name">CHRIS</span> &bull; <em>&ldquo;Crimson Foxes. Tribal council awaits. Someone's torch gets snuffed tonight. My money's on drama.&rdquo;</em>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCREEN 5: TRIBAL -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="screen" id="screen-5">
+
+  <div class="section-hdr">
+    <h2><span class="num">05</span> TRIBAL COUNCIL</h2>
+    <div class="sub">ONE TORCH SNUFFED &bull; BLAME UNRESOLVED</div>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="evt-card-title">CEREMONY &mdash; CRIMSON FOXES VOTE</div>
+      <span class="badge badge-red">CAMPFIRE</span>
+    </div>
+    <div class="vote-row"><span class="vote-status safe">SAFE</span><div class="player-dot" style="background:#c0392b;">MA</div><div class="player-dot" style="background:#e74c3c;">JX</div><div class="player-dot" style="background:#d35400;">LN</div><span style="font-family:var(--mono);font-size:10px;color:var(--muted);">Mara, Jax, Luna</span></div>
+    <div class="vote-row"><span class="vote-status low">LOW</span><div class="player-dot" style="background:#e74c3c;">IV</div><span style="font-family:var(--mono);font-size:10px;color:var(--muted);">Ivy &mdash; 1 vote, survived</span></div>
+    <div class="vote-row"><span class="vote-status out">OUT</span><div class="player-dot" style="background:#c0392b;">RK</div><span style="font-family:var(--mono);font-size:10px;color:var(--muted);">Rook &mdash; framed, eliminated</span></div>
+  </div>
+
+  <div class="confessional">
+    <div class="conf-hdr">
+      <div class="player-dot" style="background:#c0392b;">RK</div>
+      <span style="font-family:var(--mono);font-size:11px;color:#fff;font-weight:700;">ROOK</span>
+      <span class="conf-badge">CONFESSIONAL</span>
+    </div>
+    <div class="conf-text">I built those walls with everything I had. Loyalty doesn't mean anything if someone's tearing it down behind you. Whoever did this &mdash; Ivy knows. She'll figure it out.</div>
+  </div>
+
+  <div class="result-banner loss">
+    <div class="phase-label">&#10038; ELIMINATED &#10038;</div>
+    <div class="winner-name">ROOK &mdash; VOTED OUT</div>
+    <div class="reward-line">FRAMED BY MARA &bull; LOYAL TO THE END</div>
+  </div>
+
+  <div class="evt-card">
+    <div class="evt-card-hdr">
+      <div class="player-dot" style="background:#e74c3c;">IV</div>
+      <div class="evt-card-title">IVY&rsquo;S PARTING LOOK</div>
+      <span class="badge badge-purple">PROPHECY</span>
+    </div>
+    <p>Walking back from tribal, <span class="hl">Ivy</span> turns slowly toward <span class="hl-red">Mara</span>. She doesn't say anything. She just <em>looks at her</em>. Mara looks away first. The saboteur and the perceptive player &mdash; this isn't over.</p>
+  </div>
+
+  <div class="chris-bar">
+    <span class="chris-name">CHRIS</span> &bull; <em>&ldquo;And that's a wrap on Ice Ice Baby: Siege &amp; Steal. The walls fell. The frame held. Tune in next week for more frozen betrayal.&rdquo;</em>
+  </div>
+
+</div>
+
+</div><!-- main-col -->
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SIDEBAR -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="sidebar-col">
+
+  <!-- CONDITIONS -->
+  <div class="side-panel">
+    <h4><span class="dot" style="background:var(--frost);"></span> CONDITIONS</h4>
+    <div class="temp-big">&minus;13<sup>&deg;F</sup></div>
+    <div class="temp-sub">WIND CHILL &bull; &minus;34&deg;F</div>
+    <div class="cond-row"><span>Wind</span><span class="val">28 MPH NW</span></div>
+    <div class="cond-row"><span>Visibility</span><span class="val">0.3 MI</span></div>
+    <div class="cond-row"><span>Aurora</span><span class="val active">ACTIVE</span></div>
+    <div class="cond-row"><span>Mt. Looming Tragedy</span><span class="val danger">UNSTABLE</span></div>
+  </div>
+
+  <!-- CRIMSON FOXES ROSTER -->
+  <div class="side-panel">
+    <h4><span class="dot" style="background:#ff6b8a;"></span> CRIMSON FOXES</h4>
+    <div class="roster-row"><div class="roster-dot" style="background:#c0392b;">MA</div><span class="roster-name">Mara</span><span class="roster-tag captain">CAPT</span></div>
+    <div class="roster-row"><div class="roster-dot" style="background:#e74c3c;">JX</div><span class="roster-name">Jax</span><span class="roster-tag">BEAST</span></div>
+    <div class="roster-row"><div class="roster-dot" style="background:#d35400;">LN</div><span class="roster-name">Luna</span><span class="roster-tag">SOCIAL</span></div>
+    <div class="roster-row"><div class="roster-dot" style="background:#c0392b;">RK</div><span class="roster-name">Rook</span><span class="roster-tag">LOYAL</span></div>
+    <div class="roster-row"><div class="roster-dot" style="background:#e74c3c;">IV</div><span class="roster-name">Ivy</span><span class="roster-tag gadget">GADGET</span></div>
+  </div>
+
+  <!-- COBALT WOLVES ROSTER -->
+  <div class="side-panel">
+    <h4><span class="dot" style="background:#5dade2;"></span> COBALT WOLVES</h4>
+    <div class="roster-row"><div class="roster-dot" style="background:#2471a3;">KA</div><span class="roster-name">Kane</span><span class="roster-tag captain">CAPT</span></div>
+    <div class="roster-row"><div class="roster-dot" style="background:#2e86c1;">SP</div><span class="roster-name">Sage</span><span class="roster-tag">HERO</span></div>
+    <div class="roster-row"><div class="roster-dot" style="background:#1a5276;">NV</div><span class="roster-name">Nova</span><span class="roster-tag">WILD</span></div>
+    <div class="roster-row"><div class="roster-dot" style="background:#2471a3;">FN</div><span class="roster-name">Finn</span><span class="roster-tag">UNDER</span></div>
+    <div class="roster-row"><div class="roster-dot" style="background:#2e86c1;">ZR</div><span class="roster-name">Zara</span><span class="roster-tag">HOT</span></div>
+  </div>
+
+  <!-- FORT STATUS -->
+  <div class="side-panel">
+    <h4><span class="dot" style="background:var(--frost);"></span> FORT STATUS</h4>
+    <div class="fort-bar">
+      <div class="fort-bar-label"><span style="color:#ff6b8a;">Crimson Fort</span><span style="color:var(--red);">12 HP</span></div>
+      <div class="fort-bar-track"><div class="fort-bar-fill critical" style="width:15%"></div></div>
+    </div>
+    <div class="fort-bar">
+      <div class="fort-bar-label"><span style="color:#5dade2;">Cobalt Fort</span><span style="color:var(--orange);">38 HP</span></div>
+      <div class="fort-bar-track"><div class="fort-bar-fill damaged" style="width:48%"></div></div>
+    </div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:6px;">
+      MIRROR REFLECTOR: <span style="color:var(--frost);">ACTIVE</span> (&minus;15/rd)
+    </div>
+  </div>
+
+  <!-- TRAP INVENTORY -->
+  <div class="side-panel">
+    <h4><span class="dot" style="background:var(--orange);"></span> TRAP &amp; GADGET LOG</h4>
+    <div class="inv-row"><div class="inv-icon"><div class="icon-snowball"></div></div><span class="inv-label">Snowball Turret</span><span class="inv-status used">FIRED</span></div>
+    <div class="inv-row"><div class="inv-icon"><div class="icon-trap"></div></div><span class="inv-label">Ice Floor</span><span class="inv-status used">TRIGGERED</span></div>
+    <div class="inv-row"><div class="inv-icon"><span style="color:var(--gold);font-size:12px;">&#9888;</span></div><span class="inv-label">Alarm Bell</span><span class="inv-status ready">READY</span></div>
+    <div class="inv-row"><div class="inv-icon"><div class="icon-flag"></div></div><span class="inv-label">Decoy Flags</span><span class="inv-status" style="color:var(--gold);">1 / 2 GRABBED</span></div>
+    <div class="inv-row"><div class="inv-icon"><span style="color:var(--frost);font-size:12px;">&#9681;</span></div><span class="inv-label">Mirror Reflector</span><span class="inv-status" style="color:var(--frost);">MELTING</span></div>
+  </div>
+
+  <!-- BATTLE LOG -->
+  <div class="side-panel">
+    <h4><span class="dot" style="background:var(--red);"></span> BATTLE LOG</h4>
+    <div class="blog-row"><span class="label">Paintball rounds fired</span><span class="val" style="color:var(--frost);">47</span></div>
+    <div class="blog-row"><span class="label">Players splattered</span><span class="val" style="color:var(--red);">3</span></div>
+    <div class="blog-row"><span class="label">Decoys grabbed</span><span class="val" style="color:var(--orange);">1</span></div>
+    <div class="blog-row"><span class="label">Fort HP melted</span><span class="val" style="color:var(--frost);">45</span></div>
+    <div class="blog-row"><span class="label">Traps triggered</span><span class="val" style="color:var(--orange);">2 / 3</span></div>
+    <div class="blog-row"><span class="label">Sabotage damage</span><span class="val" style="color:var(--red);">18 (HIDDEN)</span></div>
+  </div>
+
+  <!-- SUSPICION METER -->
+  <div class="side-panel">
+    <h4><span class="dot" style="background:var(--red);"></span> SABOTEUR SUSPICION</h4>
+    <div class="suspicion-meter">
+      <div class="suspicion-label"><span>Detection Level</span><span style="color:var(--orange);">62%</span></div>
+      <div class="suspicion-track"><div class="suspicion-fill" style="width:62%"></div></div>
+    </div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px;">
+      IVY suspects MARA &bull; NOT YET PROVEN<br>
+      ROOK: FRAMED &bull; TAKING HEAT
+    </div>
+  </div>
+
+  <!-- REWARD -->
+  <div class="side-panel reward-card">
+    <h4><span class="dot" style="background:var(--gold);"></span> TONIGHT'S REWARD</h4>
+    <div class="reward-title">MCLEAN-BRAND</div>
+    <div class="reward-title" style="font-size:28px;">HOT COCOA</div>
+    <div class="reward-sub">98% COCOA-FLAVORED DISAPPOINTMENT</div>
+  </div>
+
+</div><!-- sidebar-col -->
+</div><!-- viewport -->
+
+<!-- REVEAL CONTROLS -->
+<div class="reveal-controls">
+  <button class="reveal-btn" onclick="prevTab()">&laquo; PREV</button>
+  <span class="reveal-counter" id="reveal-counter">00 / 05</span>
+  <button class="reveal-btn primary" onclick="nextTab()">NEXT &raquo;</button>
+</div>
+
+<script>
+// Tab switching
+let currentTab = 0;
+const phases = ['phase-cold','phase-summit','phase-fort','phase-ctf','phase-ctf','phase-cold'];
+
+function switchTab(idx) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + idx).classList.add('active');
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  currentTab = idx;
+  document.getElementById('reveal-counter').textContent =
+    String(idx).padStart(2,'0') + ' / 05';
+  // Phase atmosphere
+  document.body.className = phases[idx] || 'phase-cold';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextTab() { if (currentTab < 5) switchTab(currentTab + 1); }
+function prevTab() { if (currentTab > 0) switchTab(currentTab - 1); }
+
+// Snowfall generator
+(function() {
+  const container = document.getElementById('snowfall');
+  const flakes = ['•','∙','❄','❅','❆'];
+  for (let i = 0; i < 50; i++) {
+    const f = document.createElement('div');
+    f.className = 'flake';
+    f.textContent = flakes[Math.floor(Math.random() * flakes.length)];
+    f.style.left = Math.random() * 100 + '%';
+    f.style.animationDuration = (8 + Math.random() * 12) + 's';
+    f.style.animationDelay = Math.random() * 15 + 's';
+    f.style.fontSize = (6 + Math.random() * 10) + 'px';
+    f.style.opacity = 0.1 + Math.random() * 0.3;
+    container.appendChild(f);
+  }
+})();
+</script>
+
+</body>
+</html>

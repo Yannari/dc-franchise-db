@@ -1579,6 +1579,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'drumheller') {
     ep.isDrumheller = true;
 
+  } else if (engineType === 'ice-ice-baby') {
+    ep.isIceIceBaby = true;
+
   } else if (engineType === 'planes-trains') {
     ep.isPlanesTrains = true;
 
@@ -3939,6 +3942,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'african-lying-safari': 'isAfricanLyingSafari',
         'rapa-phooey': 'isRapaPhooey',
         'drumheller': 'isDrumheller',
+        'ice-ice-baby': 'isIceIceBaby',
         'planes-trains': 'isPlanesTrains',
       };
       const _flag = _engineFlagMap[_rtcEngine];

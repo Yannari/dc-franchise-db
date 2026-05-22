@@ -74,6 +74,7 @@ import * as tropicalTakedownMod from './chal/tropical-takedown.js';
 import * as midnightManhuntMod from './chal/midnight-manhunt.js';
 import * as greecesPiecesMod from './chal/greeces-pieces.js';
 import * as hangarBlackMod from './chal/hangar-black.js';
+import * as iceIceBabyMod from './chal/ice-ice-baby.js';
 import * as hawaiianPunchMod from './chal/hawaiian-punch.js';
 import * as socialManipMod from './social-manipulation.js';
 import * as campEventsMod from './camp-events.js';
@@ -165,7 +166,7 @@ const extractedModules = [
   suckyOutdoorsMod, upTheCreekMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
-  truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
+  truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, iceIceBabyMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
   savestateMod,

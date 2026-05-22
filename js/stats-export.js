@@ -554,3 +554,353 @@ function _extractPlayerData() {
     finalists: sortedFinalists
   };
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// Season-Level Aggregators (Task 2)
+// ══════════════════════════════════════════════════════════════════════
+
+// ── 9. Season Stats ─────────────────────────────────────────────────
+
+function _extractSeasonStats() {
+  const history = gs.episodeHistory || [];
+
+  let totalTribalCouncils = 0;
+  let totalVotesCast = 0;
+  let totalBlowups = 0;
+  let totalIdolsPlayed = 0;
+  let totalBlindsides = 0;
+
+  for (const ep of history) {
+    // Count episodes with an elimination as tribal councils
+    if (ep.eliminated || ep.firstEliminated || ep.suddenDeathEliminated) {
+      totalTribalCouncils++;
+    }
+
+    // Sum all voting log entries
+    const log = ep.votingLog || [];
+    totalVotesCast += log.length;
+
+    // Count blowups
+    if (ep.tribalBlowup) {
+      totalBlowups++;
+    }
+
+    // Count idol plays
+    const plays = ep.idolPlays || [];
+    totalIdolsPlayed += plays.length;
+
+    // Count blindsides: elimination where alliance members voted against
+    const eliminated = ep.eliminated;
+    if (eliminated && log.length > 0) {
+      const snap = ep.gsSnapshot || {};
+      const snapAlliances = snap.namedAlliances || [];
+      const votersAgainst = log.filter(v => v.voted === eliminated).map(v => v.voter);
+      const elimAlliances = snapAlliances.filter(a => a.members?.includes(eliminated));
+      const allyBetrayers = votersAgainst.filter(voter =>
+        elimAlliances.some(a => a.members.includes(voter))
+      );
+      if (allyBetrayers.length > 0) {
+        totalBlindsides++;
+      }
+    }
+  }
+
+  // Idols found (excluding inherited)
+  const totalIdolsFound = (gs.advantages || [])
+    .filter(a => !a.inheritedFrom)
+    .length;
+
+  const totalShowmances = (gs.showmances || []).length;
+  const totalBreakups = (gs.showmances || []).filter(sh => sh.broken).length;
+
+  return {
+    totalTribalCouncils,
+    totalVotesCast,
+    totalBlowups,
+    totalIdolsFound,
+    totalIdolsPlayed,
+    totalShowmances,
+    totalBreakups,
+    totalBlindsides
+  };
+}
+
+// ── 10. Vote Matrix ─────────────────────────────────────────────────
+
+function _extractVoteMatrix() {
+  const history = gs.episodeHistory || [];
+  const matrix = {};
+
+  for (const ep of history) {
+    const log = ep.votingLog || [];
+    if (!log.length) continue;
+
+    const votes = {};
+    for (const v of log) {
+      votes[v.voter] = v.voted;
+    }
+
+    matrix[ep.num] = {
+      votes,
+      eliminated: ep.eliminated || null
+    };
+  }
+
+  return matrix;
+}
+
+// ── 11. Bond Heatmap ────────────────────────────────────────────────
+
+function _extractBondHeatmap() {
+  const allNames = _allPlayerNames();
+  const heatmap = {};
+
+  for (let i = 0; i < allNames.length; i++) {
+    for (let j = i + 1; j < allNames.length; j++) {
+      const a = allNames[i];
+      const b = allNames[j];
+      const val = getBond(a, b);
+      if (val !== 0) {
+        heatmap[bKey(a, b)] = val;
+      }
+    }
+  }
+
+  return heatmap;
+}
+
+// ── 12. Alliance Timeline ───────────────────────────────────────────
+
+function _extractAllianceTimeline() {
+  const timeline = [];
+
+  // Active alliances
+  const active = gs.namedAlliances || [];
+  for (const a of active) {
+    timeline.push({
+      name: a.name,
+      members: [...(a.members || [])],
+      formedEp: a.formed ?? null,
+      dissolvedEp: null,
+      active: true,
+      betrayals: a.betrayals || [],
+      permanence: a.permanence ?? null
+    });
+  }
+
+  // Dissolved alliances
+  const dissolved = gs.allianceDissolutions || [];
+  for (const d of dissolved) {
+    timeline.push({
+      name: d.name,
+      members: [...(d.members || [])],
+      formedEp: null,
+      dissolvedEp: d.ep ?? null,
+      active: false,
+      betrayals: d.betrayals || [],
+      reason: d.reason || null
+    });
+  }
+
+  return timeline;
+}
+
+// ── 13. Challenge Breakdown ─────────────────────────────────────────
+
+function _extractChallengeBreakdown() {
+  const history = gs.episodeHistory || [];
+  const breakdown = {};
+
+  for (const ep of history) {
+    const style = ep.chalStyle || ep.challengeCategory || null;
+    if (!style) continue;
+
+    if (!breakdown[style]) {
+      breakdown[style] = { count: 0, winners: [] };
+    }
+    breakdown[style].count++;
+
+    // Individual immunity winner
+    if (ep.immunityWinner) {
+      breakdown[style].winners.push(ep.immunityWinner);
+    }
+    // Pre-merge tribe winner
+    if (ep.winner && typeof ep.winner === 'object' && ep.winner.tribeName) {
+      breakdown[style].winners.push(ep.winner.tribeName);
+    } else if (ep.winner && typeof ep.winner === 'string') {
+      breakdown[style].winners.push(ep.winner);
+    }
+  }
+
+  return breakdown;
+}
+
+// ── 14. Mole Activity ───────────────────────────────────────────────
+
+function _extractMoleActivity() {
+  const moles = gs.moles || [];
+  if (!moles.length) return null;
+
+  return moles.map(m => ({
+    player: m.player || m.name,
+    sabotageCount: m.sabotageCount || 0,
+    sabotageLog: m.sabotageLog || [],
+    exposed: m.exposed || false,
+    exposedEp: m.exposedEp ?? null,
+    active: m.active || false,
+    layingLow: m.layingLow || false
+  }));
+}
+
+// ── 15. Auto Awards ─────────────────────────────────────────────────
+
+function _computeAutoAwards(playerData) {
+  const awards = {};
+  const names = Object.keys(playerData);
+  const history = gs.episodeHistory || [];
+
+  // Most challenge wins
+  let maxWins = 0;
+  let mostWinsPlayer = null;
+  for (const name of names) {
+    const wins = playerData[name].chalRecord?.wins || 0;
+    if (wins > maxWins) {
+      maxWins = wins;
+      mostWinsPlayer = name;
+    }
+  }
+  awards.mostChallengeWins = mostWinsPlayer
+    ? { player: mostWinsPlayer, wins: maxWins }
+    : null;
+
+  // Fan favorite — highest popularity
+  const pop = gs.popularity || {};
+  let maxPop = -Infinity;
+  let fanFav = null;
+  for (const name of names) {
+    const score = pop[name] || 0;
+    if (score > maxPop) {
+      maxPop = score;
+      fanFav = name;
+    }
+  }
+  awards.fanFavorite = fanFav
+    ? { player: fanFav, score: maxPop }
+    : null;
+
+  // Best social game — highest average final bond
+  let bestAvg = -Infinity;
+  let bestSocial = null;
+  for (const name of names) {
+    const bonds = playerData[name].bondsFinal || {};
+    const vals = Object.values(bonds);
+    if (!vals.length) continue;
+    const avg = vals.reduce((s, v) => s + v, 0) / vals.length;
+    if (avg > bestAvg) {
+      bestAvg = avg;
+      bestSocial = name;
+    }
+  }
+  awards.bestSocialGame = bestSocial
+    ? { player: bestSocial, avgBond: Math.round(bestAvg * 100) / 100 }
+    : null;
+
+  // Biggest blindside — elimination with most ally-voters
+  let maxAllyVoters = 0;
+  let biggestBlindside = null;
+  for (const ep of history) {
+    const eliminated = ep.eliminated;
+    const log = ep.votingLog || [];
+    if (!eliminated || !log.length) continue;
+
+    const snap = ep.gsSnapshot || {};
+    const snapAlliances = snap.namedAlliances || [];
+    const votersAgainst = log.filter(v => v.voted === eliminated).map(v => v.voter);
+    const elimAlliances = snapAlliances.filter(a => a.members?.includes(eliminated));
+    const allyBetrayers = votersAgainst.filter(voter =>
+      elimAlliances.some(a => a.members.includes(voter))
+    );
+    if (allyBetrayers.length > maxAllyVoters) {
+      maxAllyVoters = allyBetrayers.length;
+      biggestBlindside = {
+        player: eliminated,
+        ep: ep.num,
+        allyVotersAgainst: allyBetrayers.length,
+        betrayers: allyBetrayers
+      };
+    }
+  }
+  awards.biggestBlindside = biggestBlindside;
+
+  // Best villain — villain/mastermind/schemer with most schemes + deepest run
+  const villainArchetypes = ['villain', 'mastermind', 'schemer'];
+  let bestVillainScore = -Infinity;
+  let bestVillainPlayer = null;
+  for (const name of names) {
+    const pd = playerData[name];
+    if (!villainArchetypes.includes(pd.archetype)) continue;
+    // Score: schemes launched count + inverse placement (deeper run = higher)
+    const schemeCount = pd.schemesLaunched?.length || 0;
+    const placementBonus = names.length - (pd.placement || names.length);
+    const score = schemeCount + placementBonus;
+    if (score > bestVillainScore) {
+      bestVillainScore = score;
+      bestVillainPlayer = name;
+    }
+  }
+  awards.bestVillain = bestVillainPlayer
+    ? {
+        player: bestVillainPlayer,
+        schemes: playerData[bestVillainPlayer].schemesLaunched?.length || 0,
+        placement: playerData[bestVillainPlayer].placement,
+        description: '[AI_FILL]'
+      }
+    : null;
+
+  // Best underdog — top half by placement with worst early challenge scores
+  const totalPlayers = names.length;
+  const topHalfCutoff = Math.ceil(totalPlayers / 2);
+  const topHalfPlayers = names.filter(n => (playerData[n].placement || Infinity) <= topHalfCutoff);
+
+  let worstEarlyAvg = Infinity;
+  let bestUnderdogPlayer = null;
+  for (const name of topHalfPlayers) {
+    const scores = playerData[name].challengeScores || [];
+    // Early = first 3 challenge appearances
+    const earlyScores = scores.slice(0, 3).map(s => s.score);
+    if (!earlyScores.length) continue;
+    const avg = earlyScores.reduce((s, v) => s + v, 0) / earlyScores.length;
+    if (avg < worstEarlyAvg) {
+      worstEarlyAvg = avg;
+      bestUnderdogPlayer = name;
+    }
+  }
+  awards.bestUnderdog = bestUnderdogPlayer
+    ? {
+        player: bestUnderdogPlayer,
+        placement: playerData[bestUnderdogPlayer].placement,
+        earlyAvgScore: Math.round(worstEarlyAvg * 100) / 100,
+        description: '[AI_FILL]'
+      }
+    : null;
+
+  // Most dramatic — player with most camp events involved
+  let maxEvents = 0;
+  let mostDramaticPlayer = null;
+  for (const name of names) {
+    const count = playerData[name].campEventsInvolved?.length || 0;
+    if (count > maxEvents) {
+      maxEvents = count;
+      mostDramaticPlayer = name;
+    }
+  }
+  awards.mostDramatic = mostDramaticPlayer
+    ? {
+        player: mostDramaticPlayer,
+        eventCount: maxEvents,
+        description: '[AI_FILL]'
+      }
+    : null;
+
+  return awards;
+}

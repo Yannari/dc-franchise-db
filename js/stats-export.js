@@ -904,3 +904,205 @@ function _computeAutoAwards(playerData) {
 
   return awards;
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// Public API — Export Functions (Task 3)
+// ══════════════════════════════════════════════════════════════════════
+
+// ── Download helper ─────────────────────────────────────────────────
+
+function _downloadJSON(data, filename) {
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ── 15. extractSeasonRawStats ───────────────────────────────────────
+
+export function extractSeasonRawStats() {
+  const { playerData, placements, elimOrder, ftcVotes, winner, finalists } = _extractPlayerData();
+  const seasonStats = _extractSeasonStats();
+  const voteMatrix = _extractVoteMatrix();
+  const bondHeatmap = _extractBondHeatmap();
+  const allianceTimeline = _extractAllianceTimeline();
+  const challengeTypeBreakdown = _extractChallengeBreakdown();
+  const moleActivity = _extractMoleActivity();
+  const autoAwards = _computeAutoAwards(playerData);
+
+  // Build finalists array with jury vote counts
+  const finalistData = (finalists || []).map(name => ({
+    name,
+    playerSlug: _slug(name),
+    placement: placements[name]?.placement ?? null,
+    juryVotes: ftcVotes?.[name] ?? 0
+  }));
+
+  // Build elimination order array
+  const eliminationOrder = (elimOrder || []).map(e => ({
+    name: e.name,
+    ep: e.ep ?? null,
+    voteCount: e.voteCount ?? 0,
+    blindside: e.blindside || false
+  }));
+
+  const history = gs.episodeHistory || [];
+  const castSize = _allPlayerNames().length;
+  const episodeCount = history.length;
+  const jurySize = history.filter(ep => ep.phase === 'Juror' || ep.isJuryPhase).length > 0
+    ? (gs.jury || []).length
+    : 0;
+
+  // Clean showmance data
+  const showmances = (gs.showmances || []).map(sh => ({
+    pair: [sh.a, sh.b],
+    formedEp: sh.formedEp ?? null,
+    broken: sh.broken || false,
+    brokenEp: sh.brokenEp ?? null,
+    intensity: sh.intensity ?? 0,
+    reason: sh.reason ?? null
+  }));
+
+  // Clean love triangle data
+  const loveTriangles = (gs.loveTriangles || []).map(lt => ({
+    players: lt.players || [lt.a, lt.b, lt.c].filter(Boolean),
+    formedEp: lt.formedEp ?? null,
+    resolved: lt.resolved || false
+  }));
+
+  return {
+    seasonNumber: seasonConfig?.seasonNumber || 0,
+    castSize,
+    episodeCount,
+    jurySize,
+    winner,
+    finalists: finalistData,
+    eliminationOrder,
+    players: playerData,
+    seasonStats,
+    voteMatrix,
+    bondHeatmap,
+    allianceTimeline,
+    challengeTypeBreakdown,
+    moleActivity,
+    autoAwards,
+    riData: {
+      players: gs.riPlayers || [],
+      duelHistory: gs.riDuelHistory || [],
+      lifeEvents: gs.riLifeEvents || [],
+      quits: gs.riQuits || []
+    },
+    showmances,
+    loveTriangles
+  };
+}
+
+// ── 16. extractSeasonTemplate ───────────────────────────────────────
+
+export function extractSeasonTemplate() {
+  const rawStats = extractSeasonRawStats();
+  const finale = gs.finaleResult || {};
+
+  // Build winner vote string (e.g., "5-3-0")
+  const voteStr = finale.finalVote || (() => {
+    if (!finale.votes) return '';
+    const counts = Object.values(finale.votes).sort((a, b) => b - a);
+    return counts.join('-');
+  })();
+
+  // Runner-up: second finalist
+  const runnerUp = rawStats.finalists.length > 1 ? rawStats.finalists[1].name : null;
+
+  // Build placements array sorted by placement
+  const allNames = Object.keys(rawStats.players);
+  const sortedPlacements = allNames
+    .map(name => {
+      const pd = rawStats.players[name];
+      return {
+        placement: pd.placement,
+        name,
+        playerSlug: pd.playerSlug,
+        phase: pd.phase,
+        notes: '[AI_FILL]',
+        strategicRank: '[AI_FILL]',
+        story: '[AI_FILL]',
+        gameplayStyle: '[AI_FILL]',
+        keyMoments: '[AI_FILL]',
+        challengeWins: pd.immunityWins + pd.rewardWins,
+        immunityWins: pd.immunityWins,
+        rewardWins: pd.rewardWins,
+        idolsFound: pd.idolsFound,
+        votesReceived: pd.totalVotesReceived,
+        alliances: pd.alliances.map(a => a.name),
+        rivalries: pd.rivalries.map(r => r.player)
+      };
+    })
+    .sort((a, b) => (a.placement ?? 999) - (b.placement ?? 999));
+
+  // Build finalists for template
+  const finalistTemplate = rawStats.finalists.map(f => ({
+    name: f.name,
+    playerSlug: f.playerSlug,
+    placement: f.placement,
+    votes: f.juryVotes
+  }));
+
+  return {
+    seasonNumber: rawStats.seasonNumber,
+    title: '[AI_FILL]',
+    subtitle: '[AI_FILL]',
+    castSize: rawStats.castSize,
+    episodeCount: rawStats.episodeCount,
+    jurySize: rawStats.jurySize,
+    winner: {
+      name: rawStats.winner,
+      playerSlug: _slug(rawStats.winner || ''),
+      vote: voteStr,
+      runnerUp,
+      keyStats: '[AI_FILL]',
+      strategy: '[AI_FILL]',
+      legacy: '[AI_FILL]'
+    },
+    finalists: finalistTemplate,
+    placements: sortedPlacements,
+    seasonNarrative: '[AI_FILL]',
+    awards: '[AI_FILL]'
+  };
+}
+
+// ── 17. downloadSeasonExport ────────────────────────────────────────
+
+export function downloadSeasonExport() {
+  const seasonNum = seasonConfig?.seasonNumber || (gs.episodeHistory || []).length || 0;
+
+  let rawStats;
+  try {
+    rawStats = extractSeasonRawStats();
+  } catch (err) {
+    alert('Failed to extract season stats: ' + (err.message || err));
+    console.error('extractSeasonRawStats error:', err);
+    return;
+  }
+
+  let template;
+  try {
+    template = extractSeasonTemplate();
+  } catch (err) {
+    alert('Failed to build season template: ' + (err.message || err));
+    console.error('extractSeasonTemplate error:', err);
+    return;
+  }
+
+  _downloadJSON(rawStats, `season${seasonNum}-raw-stats.json`);
+  setTimeout(() => {
+    _downloadJSON(template, `season${seasonNum}-data-template.json`);
+  }, 500);
+
+  return { rawStats, template };
+}

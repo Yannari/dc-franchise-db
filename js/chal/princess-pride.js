@@ -1120,7 +1120,7 @@ function _simulateDuel(royalName, knightName, result, ep, campKey, fatigue) {
     popDelta(knightName, 3);
 
     return {
-      winner: 'both', royalName, knightName, exchanges, narrow: false,
+      winner: royalName, loser: knightName, royalName, knightName, exchanges, narrow: false,
       happyEnding: true,
       immunityBoth: true,
     };
@@ -1392,9 +1392,13 @@ export function simulatePrincessPride(ep) {
   ep.immunityWinner = result.immunityWinner;
 
   // chalPlacements: duel winner, duel loser, alive (by final push score desc), eliminated in reverse
-  const placements = [duel.winner];
-  if (duel.loser !== duel.winner) placements.push(duel.loser);
-  const restAlive = alive.filter(n => n !== duel.winner && n !== duelistKnight);
+  const placements = [result.immunityWinner];
+  if (duel.happyEnding) {
+    placements.push(duelistKnight);
+  } else if (duel.loser && duel.loser !== duel.winner) {
+    placements.push(duel.loser);
+  }
+  const restAlive = alive.filter(n => n !== result.immunityWinner && n !== duelistKnight);
   placements.push(...restAlive);
   placements.push(...[...result.eliminationOrder].reverse());
   ep.chalPlacements = placements;
@@ -1404,10 +1408,13 @@ export function simulatePrincessPride(ep) {
     const idx = placements.indexOf(name);
     ep.chalMemberScores[name] = (ep.chalMemberScores[name] || 0) + Math.max(1, active.length - (idx >= 0 ? idx : active.length));
   }
-  if (duel.winner) {
-    // Immunity winner MUST be #1 — add enough to guarantee it
-    const maxOtherScore = Math.max(0, ...Object.entries(ep.chalMemberScores).filter(([n]) => n !== duel.winner).map(([, s]) => s));
-    ep.chalMemberScores[duel.winner] = Math.max((ep.chalMemberScores[duel.winner] || 0), maxOtherScore) + active.length + 5;
+  if (result.immunityWinner) {
+    const maxOtherScore = Math.max(0, ...Object.entries(ep.chalMemberScores).filter(([n]) => n !== result.immunityWinner).map(([, s]) => s));
+    ep.chalMemberScores[result.immunityWinner] = Math.max((ep.chalMemberScores[result.immunityWinner] || 0), maxOtherScore) + active.length + 5;
+  }
+  if (duel.happyEnding && duelistKnight) {
+    const maxOther2 = Math.max(0, ...Object.entries(ep.chalMemberScores).filter(([n]) => n !== result.immunityWinner && n !== duelistKnight).map(([, s]) => s));
+    ep.chalMemberScores[duelistKnight] = Math.max((ep.chalMemberScores[duelistKnight] || 0), maxOther2) + active.length + 3;
   }
   // Royal gets points for advantage quality
   if (royalName) {

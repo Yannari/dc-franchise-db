@@ -4705,7 +4705,7 @@ export function simulateEpisode() {
 
   // ── Jury Roundtable: lobbying & persuasion among jurors before jury elimination vote ──
 function simulateJuryRoundtable(ep) {
-  const jurors = [...new Set(gs.eliminated || [])];
+  const jurors = [...new Set([...(gs.eliminated || []), ...(gs.riPlayers || [])])];
   const activePlayers = gs.activePlayers || [];
   if (jurors.length < 3 || activePlayers.length < 2) return null;
 
@@ -4907,13 +4907,14 @@ function simulateJuryRoundtable(ep) {
 
   // ── TWIST: jury-elimination — all eliminated players vote to boot one active player (replaces tribal) ──
   const juryElimTw = ep.twists?.find(t => t.type === 'jury-elimination');
-  if (juryElimTw && gs.eliminated.length > 0) {
+  const _juryPool = [...new Set([...(gs.eliminated || []), ...(gs.riPlayers || [])])];
+  if (juryElimTw && _juryPool.length > 0) {
     // Jury roundtable: lobbying and persuasion among jurors before the vote
     simulateJuryRoundtable(ep);
     const immune = ep.immunityWinner;
     const candidates = gs.activePlayers.filter(p => p !== immune);
     if (candidates.length > 0) {
-      const jurors = gs.eliminated;
+      const jurors = _juryPool;
       const elimVotes = Object.fromEntries(candidates.map(p => [p, 0]));
       const elimLog = [];
       jurors.forEach(juror => {

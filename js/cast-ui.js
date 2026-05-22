@@ -439,7 +439,7 @@ export function renderPresetList() {
 // ── Season Save/Load: saves completed seasons (full gs + config + cast) ──
 export function _buildSeasonSaveData() {
   prepGsForSave(gs);
-  return {
+  const data = {
     version: 1,
     type: 'season-save',
     name: seasonConfig.name || 'Untitled Season',
@@ -451,6 +451,8 @@ export function _buildSeasonSaveData() {
     preGameAlliances: (preGameAlliances || []).map(a => ({ ...a })),
     gs: JSON.parse(JSON.stringify(gs)), // deep clone
   };
+  repairGsSets(gs);
+  return data;
 }
 export function _applySeasonSave(data) {
   if (!data?.gs || !data?.config) { alert('Invalid season save.'); return; }

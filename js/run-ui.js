@@ -79,11 +79,17 @@ export function renderGameState() {
         exportBtn.className = 'btn';
         exportBtn.style.cssText = 'margin-top:8px;background:var(--accent);color:#fff;width:100%;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;border:none;';
         exportBtn.textContent = 'Export Season Data';
-        exportBtn.onclick = () => {
-          window.downloadSeasonExport();
-          exportBtn.textContent = 'Exported!';
+        exportBtn.onclick = async () => {
+          exportBtn.textContent = 'Exporting...';
           exportBtn.disabled = true;
-          setTimeout(() => { exportBtn.textContent = 'Export Season Data'; exportBtn.disabled = false; }, 3000);
+          try {
+            await window.downloadSeasonExport();
+            exportBtn.textContent = 'Exported!';
+            setTimeout(() => { exportBtn.textContent = 'Export Season Data'; exportBtn.disabled = false; }, 3000);
+          } catch (err) {
+            exportBtn.textContent = 'Export Failed';
+            setTimeout(() => { exportBtn.textContent = 'Export Season Data'; exportBtn.disabled = false; }, 3000);
+          }
         };
         btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
       }

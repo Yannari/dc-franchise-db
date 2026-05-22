@@ -1082,9 +1082,199 @@ export function extractSeasonTemplate() {
   };
 }
 
-// ── 17. downloadSeasonExport ────────────────────────────────────────
+// ── 17. Database Merge Functions ────────────────────────────────────
+// Fetch existing databases and merge new season data into them.
 
-export function downloadSeasonExport() {
+function _mergeFranchiseDatabase(existing, rawStats, template) {
+  const db = JSON.parse(JSON.stringify(existing));
+  const seasonNum = rawStats.seasonNumber;
+
+  // Update franchise stats
+  db.franchiseStats.totalSeasons = seasonNum;
+  db.franchiseStats.totalEpisodes = (db.franchiseStats.totalEpisodes || 0) + rawStats.episodeCount;
+  db.franchiseStats.totalAppearances = (db.franchiseStats.totalAppearances || 0) + rawStats.castSize;
+  db.franchiseStats.lastUpdated = new Date().toISOString().split('T')[0];
+
+  // Add champion entry (skip if season already exists)
+  if (!db.champions) db.champions = [];
+  if (!db.champions.some(c => c.season === seasonNum)) {
+    const winnerData = rawStats.players[rawStats.winner] || {};
+    db.champions.push({
+      season: seasonNum,
+      seasonTitle: template.title || `Season ${seasonNum}`,
+      emoji: '',
+      winner: rawStats.winner,
+      playerSlug: _slug(rawStats.winner),
+      finalVote: template.winner?.vote || '',
+      runnerUp: template.winner?.runnerUp || '',
+      keyStats: template.winner?.keyStats || '[AI_FILL]',
+      strategy: template.winner?.strategy || '[AI_FILL]',
+      legacy: template.winner?.legacy || '[AI_FILL]'
+    });
+  }
+
+  // Update records
+  if (!db.records) db.records = {};
+  if (!db.records.challengeRecords) db.records.challengeRecords = {};
+  if (!db.records.votingRecords) db.records.votingRecords = {};
+
+  // Most challenge wins this season
+  const chalWinners = Object.entries(rawStats.players)
+    .map(([name, d]) => ({ name, wins: d.chalRecord?.wins || 0 }))
+    .sort((a, b) => b.wins - a.wins);
+  if (chalWinners[0]?.wins > 0) {
+    const current = db.records.challengeRecords.mostChallengeWins;
+    if (!current || chalWinners[0].wins > (current.wins || 0)) {
+      db.records.challengeRecords.mostChallengeWins = {
+        name: chalWinners[0].name,
+        playerSlug: _slug(chalWinners[0].name),
+        wins: chalWinners[0].wins,
+        season: seasonNum
+      };
+    }
+  }
+
+  // Fan favorites
+  if (!db.fanFavorites) db.fanFavorites = [];
+  if (rawStats.autoAwards?.fanFavorite?.player) {
+    db.fanFavorites.push({
+      season: seasonNum,
+      name: rawStats.autoAwards.fanFavorite.player,
+      playerSlug: _slug(rawStats.autoAwards.fanFavorite.player)
+    });
+  }
+
+  return db;
+}
+
+function _mergePlayersDatabase(existing, rawStats) {
+  const db = JSON.parse(JSON.stringify(existing));
+  const seasonNum = rawStats.seasonNumber;
+
+  if (!db.players) db.players = [];
+
+  for (const [name, pd] of Object.entries(rawStats.players)) {
+    const slug = _slug(name);
+    let player = db.players.find(p => p.id === slug || p.name === name);
+
+    if (!player) {
+      // New player
+      player = {
+        id: slug,
+        name,
+        seasons: [],
+        totalSeasons: 0,
+        bestPlacement: Infinity,
+        wins: 0,
+        totalChallengeWins: 0,
+        totalImmunityWins: 0,
+        totalRewardWins: 0,
+        totalVotesAgainst: 0,
+        totalIdolsFound: 0,
+        totalJuryVotes: 0,
+        tier: '',
+        badges: [],
+        seasonDetails: []
+      };
+      db.players.push(player);
+    }
+
+    // Skip if season already recorded
+    if (player.seasons?.includes(seasonNum)) continue;
+
+    // Update career stats
+    if (!player.seasons) player.seasons = [];
+    player.seasons.push(seasonNum);
+    player.totalSeasons = player.seasons.length;
+    player.bestPlacement = Math.min(player.bestPlacement || Infinity, pd.placement || Infinity);
+    if (pd.phase === 'Winner') player.wins = (player.wins || 0) + 1;
+    player.totalChallengeWins = (player.totalChallengeWins || 0) + (pd.chalRecord?.wins || 0);
+    player.totalImmunityWins = (player.totalImmunityWins || 0) + pd.immunityWins;
+    player.totalRewardWins = (player.totalRewardWins || 0) + pd.rewardWins;
+    player.totalVotesAgainst = (player.totalVotesAgainst || 0) + pd.totalVotesReceived;
+    player.totalIdolsFound = (player.totalIdolsFound || 0) + pd.idolsFound;
+    player.totalJuryVotes = (player.totalJuryVotes || 0) + (pd.juryVotes || 0);
+
+    // Add season detail
+    if (!player.seasonDetails) player.seasonDetails = [];
+    player.seasonDetails.push({
+      season: seasonNum,
+      placement: pd.placement,
+      status: pd.phase,
+      challengeWins: pd.chalRecord?.wins || 0,
+      immunityWins: pd.immunityWins,
+      rewardWins: pd.rewardWins,
+      votesReceived: pd.totalVotesReceived,
+      idolsFound: pd.idolsFound,
+      juryVotes: pd.juryVotes || 0,
+      alliances: pd.alliances.map(a => a.name || a),
+      rivalries: pd.rivalries.map(r => r.player || r),
+      notes: [],
+      keyMoments: []
+    });
+
+    // Update badges
+    if (pd.phase === 'Winner' && !player.badges?.includes(`S${seasonNum} Winner`)) {
+      player.badges = player.badges || [];
+      player.badges.push(`S${seasonNum} Winner`);
+    }
+  }
+
+  // Update franchise metadata
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = seasonNum;
+  db.franchise.totalPlayers = db.players.length;
+
+  return db;
+}
+
+function _mergeSeasonsDatabase(existing, rawStats, template) {
+  const db = JSON.parse(JSON.stringify(existing));
+  const seasonNum = rawStats.seasonNumber;
+
+  if (!db.seasons) db.seasons = [];
+
+  // Skip if season already exists
+  if (db.seasons.some(s => s.seasonNumber === seasonNum)) return db;
+
+  db.seasons.push({
+    seasonNumber: seasonNum,
+    title: template.title || `Season ${seasonNum}`,
+    subtitle: template.subtitle || '',
+    castSize: rawStats.castSize,
+    episodeCount: rawStats.episodeCount,
+    winner: {
+      name: rawStats.winner,
+      playerSlug: _slug(rawStats.winner),
+      vote: template.winner?.vote || '',
+      runnerUp: template.winner?.runnerUp || ''
+    },
+    awards: {
+      fanFavorite: rawStats.autoAwards?.fanFavorite?.player ? {
+        name: rawStats.autoAwards.fanFavorite.player,
+        playerSlug: _slug(rawStats.autoAwards.fanFavorite.player)
+      } : null,
+      bestStrategic: { name: '[AI_FILL]', playerSlug: '' },
+      mostChallengeWins: rawStats.autoAwards?.mostChallengeWins?.player ? {
+        name: rawStats.autoAwards.mostChallengeWins.player,
+        playerSlug: _slug(rawStats.autoAwards.mostChallengeWins.player),
+        detail: `${rawStats.autoAwards.mostChallengeWins.wins} wins`
+      } : null
+    },
+    theme: '[AI_FILL]',
+    status: 'Complete',
+    emoji: ''
+  });
+
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = seasonNum;
+
+  return db;
+}
+
+// ── 18. downloadSeasonExport ────────────────────────────────────────
+
+export async function downloadSeasonExport() {
   const seasonNum = seasonConfig?.seasonNumber || (gs.episodeHistory || []).length || 0;
 
   let rawStats;
@@ -1109,10 +1299,52 @@ export function downloadSeasonExport() {
     return;
   }
 
-  _downloadJSON(rawStats, `season${seasonNum}-raw-stats.json`);
-  setTimeout(() => {
-    _downloadJSON(template, `season${seasonNum}-data-template.json`);
-  }, 500);
+  // Fetch existing databases and merge
+  let franchiseDb, playersDb, seasonsDb;
+  try {
+    const [franchiseResp, playersResp, seasonsResp] = await Promise.all([
+      fetch('franchise_database.json').catch(() => null),
+      fetch('players_database.json').catch(() => null),
+      fetch('seasons_database.json').catch(() => null),
+    ]);
 
-  return { rawStats, template };
+    const franchiseExisting = franchiseResp?.ok ? await franchiseResp.json() : { franchiseStats: {}, champions: [], records: {}, fanFavorites: [] };
+    const playersExisting = playersResp?.ok ? await playersResp.json() : { franchise: {}, players: [] };
+    const seasonsExisting = seasonsResp?.ok ? await seasonsResp.json() : { franchise: {}, seasons: [] };
+
+    franchiseDb = _mergeFranchiseDatabase(franchiseExisting, rawStats, template);
+    playersDb = _mergePlayersDatabase(playersExisting, rawStats);
+    seasonsDb = _mergeSeasonsDatabase(seasonsExisting, rawStats, template);
+    // Sync uniquePlayers from the merged players database
+    if (franchiseDb && playersDb?.players) {
+      franchiseDb.franchiseStats.uniquePlayers = playersDb.players.length;
+    }
+  } catch (err) {
+    console.warn('Could not fetch/merge existing databases, downloading raw files only:', err);
+    franchiseDb = null;
+    playersDb = null;
+    seasonsDb = null;
+  }
+
+  // Download all files with staggered delays so browser handles them
+  let delay = 0;
+  _downloadJSON(rawStats, `season${seasonNum}-raw-stats.json`);
+  delay += 500;
+
+  setTimeout(() => _downloadJSON(template, `season${seasonNum}-data-template.json`), delay);
+  delay += 500;
+
+  if (franchiseDb) {
+    setTimeout(() => _downloadJSON(franchiseDb, 'franchise_database.json'), delay);
+    delay += 500;
+  }
+  if (playersDb) {
+    setTimeout(() => _downloadJSON(playersDb, 'players_database.json'), delay);
+    delay += 500;
+  }
+  if (seasonsDb) {
+    setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), delay);
+  }
+
+  return { rawStats, template, franchiseDb, playersDb, seasonsDb };
 }

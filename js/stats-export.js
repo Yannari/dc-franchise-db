@@ -27,6 +27,9 @@ function _getSeasonNumber() {
 }
 
 function _promptLoadJSON(label = 'Select a JSON file') {
+  if (!window.confirm(label + '\n\nClick OK to pick the file, or Cancel to skip.')) {
+    return Promise.reject(new Error('Cancelled'));
+  }
   return new Promise((resolve, reject) => {
     const input = document.createElement('input');
     input.type = 'file';

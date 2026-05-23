@@ -23,6 +23,8 @@ export default {
       return await generateNarrativeFill(body, env);
     } else if (mode === "season-data-extraction") {
       return await generateSeasonDataExtraction(body, env);
+    } else if (mode === "rankings-narration") {
+      return await generateRankingsNarration(body, env);
     } else {
       return await generateAnalytics(summaryText, season, episode, env);
     }
@@ -1353,6 +1355,84 @@ Return complete episode transcript.
 `.trim();
 
   const payload = { model: "gpt-5.5", instructions, input: summaryText };
+  return await callOpenAI(payload, env);
+}
+
+async function generateRankingsNarration(body, env) {
+  const { players } = body;
+
+  if (!players || !Array.isArray(players) || players.length === 0) {
+    return new Response(JSON.stringify({ error: "Missing players array" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const schema = {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      results: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            name: { type: "string" },
+            title: { type: "string" },
+            emoji: { type: "string" },
+            reasoning: { type: "string" },
+            strengths: { type: "array", items: { type: "string" } },
+            weaknesses: { type: "array", items: { type: "string" } }
+          },
+          required: ["name", "title", "emoji", "reasoning", "strengths", "weaknesses"]
+        }
+      }
+    },
+    required: ["results"]
+  };
+
+  const playerSummaries = players.map(p => {
+    const parts = [];
+    parts.push(`${p.name} — Rank #${p.rank}, Tier ${p.tier}, Score ${p.score}`);
+    parts.push(`${p.seasonsPlayed} season(s), ${p.wins} win(s)`);
+    if (p.placements?.length) parts.push(`Placements: ${p.placements.join(', ')}`);
+    parts.push(`Challenge wins: ${p.challengeWins || 0}, Votes against: ${p.votesAgainst || 0}, Jury votes: ${p.juryVotes || 0}, Idols: ${p.idolsFound || 0}`);
+    if (p.reasoning) parts.push(`Current reasoning: "${p.reasoning}"`);
+    return parts.join('. ');
+  }).join('\n\n');
+
+  const instructions = `
+You write narration for a Total Drama franchise player rankings page. For each player, generate:
+
+1. **title**: A 2-5 word nickname/title that captures their playstyle or legacy (e.g. "The Snake Charmer", "The Anxious Ace", "The Loyal Shield"). Be creative and specific to the player — no generic titles.
+
+2. **emoji**: A single emoji that represents the player's personality or game style. Pick something distinctive.
+
+3. **reasoning**: 2-4 sentences that read like a thoughtful analyst describing this player's legacy. Be specific about what made their game notable. If they're a returning player, weave their career arc together. If they played poorly, be honest but fair. Reference specific moments, stats, or seasons.
+
+4. **strengths**: Array of 2-4 short phrases highlighting their best qualities (e.g. "Three-time finalist", "13 challenge wins (record)", "Perfect social game")
+
+5. **weaknesses**: Array of 1-3 short phrases noting their flaws or shortcomings (e.g. "25 votes (always targeted)", "Needed 3 tries to win", "Early exit both seasons")
+
+PLAYER DATA:
+${playerSummaries}
+
+Match the tone of these examples:
+- Title: "The Snake Charmer" / Reasoning: "The franchise's most decorated player and its only two-time champion. Alejandro's game is built on challenge dominance and social manipulation..."
+- Title: "The Anxious Ace" / Reasoning: "TWO deep runs with real endgame equity. Winner of S5 with a perfect game — zero votes against..."
+- Title: "The Forgotten First Boot" / Reasoning: "Lasted three episodes across two seasons and left zero strategic footprint..."
+
+Return ONLY valid JSON matching the schema.
+`.trim();
+
+  const payload = {
+    model: "gpt-5.5",
+    instructions,
+    input: playerSummaries,
+    text: { format: { type: "json_schema", name: "rankings_narration", strict: true, schema } },
+  };
+
   return await callOpenAI(payload, env);
 }
 

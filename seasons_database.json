@@ -310,8 +310,8 @@
     },
     {
       "seasonNumber": 10,
-      "title": "Champions vs Contenders: The Relay Crown",
-      "subtitle": "A season of broken oaths, public betrayals, Redemption Island legends, and one final sprint that turned Jasmine from survivor into champion.",
+      "title": "Champions vs Contenders",
+      "subtitle": "Performers vs less promising players",
       "castSize": 18,
       "episodeCount": 18,
       "jurySize": 0,
@@ -342,7 +342,7 @@
       "theme": "Season 10 begins as Champions vs Contenders and mutates into a war of information, loyalty, and public exposure. The pre-merge is defined by advantages, tribe swaps, Redemption Island, and Bowie's early rise as the season's architect, while Jasmine quietly collects tools, reads, and relationships. The merge detonates with Priya's return, Stephanie's ambassador elimination, Sanders's first fall, and The Oath becoming the dominant but unstable machine. From there, almost every vote exposes someone: Courtney exposes Cody and Bowie, Scott exposes Bowie, Priya exposes Bowie, and Bowie keeps surviving anyway. Redemption Island becomes its own mythology through Priya's early streak and Sanders's five-duel run. The endgame narrows around visible pairs — Jasmine and Brick, Ryan and Carrie, Bowie and whoever he can still convince — until the jury removes Brick and leaves Bowie and Jasmine in the final. In the end, the season's strategist reaches the finish line, but the season's survivor wins the race.",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s10-cast.png",
-      "emoji": "[AI_FILL]"
+      "emoji": "⚔️"
     }
   ]
 }

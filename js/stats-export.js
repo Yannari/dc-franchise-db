@@ -11,6 +11,10 @@ function _slug(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
+function _clean(val, fallback = '') {
+  return (val && val !== '[AI_FILL]') ? val : fallback;
+}
+
 function _allPlayerNames() {
   return players.map(p => p.name);
 }
@@ -1132,12 +1136,12 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
     const winnerPd = rawStats.players[rawStats.winner] || {};
     db.champions.push({
       season: seasonNum,
-      seasonTitle: template.title || `Season ${seasonNum}`,
-      emoji: template.emoji || '',
+      seasonTitle: _clean(template.title, `Season ${seasonNum}`),
+      emoji: _clean(template.emoji),
       winner: rawStats.winner,
       playerSlug: _slug(rawStats.winner),
-      finalVote: template.winner?.vote || '',
-      runnerUp: template.winner?.runnerUp || '',
+      finalVote: _clean(template.winner?.vote),
+      runnerUp: _clean(template.winner?.runnerUp),
       keyStats: template.winner?.keyStats || '',
       strategy: template.winner?.strategy || '',
       legacy: template.winner?.legacy || '',
@@ -1490,19 +1494,19 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       rewardWins: pd.rewardWins,
       votesReceived: pd.totalVotesReceived,
       idolsFound: pd.idolsFound,
-      strategicRank: filled.strategicRank || 0,
+      strategicRank: _clean(filled.strategicRank, 0),
       juryVotes: pd.juryVotes || 0,
-      finalVote: pd.phase === 'Winner' ? (filledSeasonData?.winner?.vote || rawStats.finalists?.map(f => f.juryVotes ?? 0).sort((a,b) => b-a).join('-') || '') : '',
+      finalVote: pd.phase === 'Winner' ? (_clean(filledSeasonData?.winner?.vote) || rawStats.finalists?.map(f => f.juryVotes ?? 0).sort((a,b) => b-a).join('-') || '') : '',
       advantages: (pd.advantageLifecycle?.held || []).map(a => a.type || a.name || a),
-      notes: filled.notes ? [filled.notes] : [],
-      gameplayStyle: filled.gameplayStyle || '',
-      keyMoments: filled.keyMoments || [],
+      notes: _clean(filled.notes) ? [filled.notes] : [],
+      gameplayStyle: _clean(filled.gameplayStyle),
+      keyMoments: (filled.keyMoments && filled.keyMoments !== '[AI_FILL]') ? filled.keyMoments : [],
       alliances: pd.alliances.map(a => a.name || a),
       rivalries: pd.rivalries.map(r => r.player || r)
     });
 
     // Append season story with separator (strip old version on re-export)
-    if (filled.story) {
+    if (_clean(filled.story)) {
       const header = `\n\nSEASON ${seasonNum} — ${filledSeasonData?.title || `Season ${seasonNum}`}\n────────\n`;
       if (player.story) {
         const seasonTag = `SEASON ${seasonNum} —`;
@@ -1543,19 +1547,19 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
   const bestStr = aiAwards.bestStrategic || aiAwards.masterStrategist?.gold;
   db.seasons.push({
     seasonNumber: seasonNum,
-    title: template.title || `Season ${seasonNum}`,
-    subtitle: template.subtitle || '',
+    title: _clean(template.title, `Season ${seasonNum}`),
+    subtitle: _clean(template.subtitle),
     castSize: rawStats.castSize,
     episodeCount: rawStats.episodeCount,
     jurySize: rawStats.jurySize || 0,
     winner: {
       name: rawStats.winner,
       playerSlug: _slug(rawStats.winner),
-      vote: template.winner?.vote || '',
-      runnerUp: template.winner?.runnerUp || '',
-      keyStats: template.winner?.keyStats || '',
-      strategy: template.winner?.strategy || '',
-      legacy: template.winner?.legacy || ''
+      vote: _clean(template.winner?.vote),
+      runnerUp: _clean(template.winner?.runnerUp),
+      keyStats: _clean(template.winner?.keyStats),
+      strategy: _clean(template.winner?.strategy),
+      legacy: _clean(template.winner?.legacy)
     },
     awards: {
       fanFavorite: rawStats.autoAwards?.fanFavorite?.player ? {
@@ -1572,10 +1576,10 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
         detail: `${rawStats.autoAwards.mostChallengeWins.wins} wins`
       } : null
     },
-    theme: template.seasonNarrative || template.subtitle || '',
+    theme: _clean(template.seasonNarrative, _clean(template.subtitle)),
     status: 'Complete',
     castPhotoPath: `assets/cast/s${seasonNum}-cast.png`,
-    emoji: template.emoji || ''
+    emoji: _clean(template.emoji)
   });
 
   db.franchise = db.franchise || {};

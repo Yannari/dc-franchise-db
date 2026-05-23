@@ -15,6 +15,13 @@ function _allPlayerNames() {
   return players.map(p => p.name);
 }
 
+function _getSeasonNumber() {
+  if (seasonConfig?.seasonNumber) return seasonConfig.seasonNumber;
+  const input = prompt('What season number is this? (e.g. 10)');
+  const num = parseInt(input, 10);
+  return (num && num >= 1) ? num : 0;
+}
+
 // ── 1. Placements ────────────────────────────────────────────────────
 // Walks episodeHistory to build elimination order, derives placement
 // numbers and phase labels (Winner / Finalist / Juror / Pre-Juror / Pre-Merge).
@@ -983,7 +990,7 @@ export function extractSeasonRawStats() {
   }));
 
   return {
-    seasonNumber: seasonConfig?.seasonNumber || 0,
+    seasonNumber: _getSeasonNumber(),
     castSize,
     episodeCount,
     jurySize,
@@ -1095,10 +1102,10 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
   db.franchiseStats.totalAppearances = (db.franchiseStats.totalAppearances || 0) + rawStats.castSize;
   db.franchiseStats.lastUpdated = new Date().toISOString().split('T')[0];
 
-  // Add champion entry (skip if season already exists)
+  // Champion entry
   if (!db.champions) db.champions = [];
   if (!db.champions.some(c => c.season === seasonNum)) {
-    const winnerData = rawStats.players[rawStats.winner] || {};
+    const winnerPd = rawStats.players[rawStats.winner] || {};
     db.champions.push({
       season: seasonNum,
       seasonTitle: template.title || `Season ${seasonNum}`,
@@ -1107,18 +1114,18 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
       playerSlug: _slug(rawStats.winner),
       finalVote: template.winner?.vote || '',
       runnerUp: template.winner?.runnerUp || '',
-      keyStats: template.winner?.keyStats || '[AI_FILL]',
-      strategy: template.winner?.strategy || '[AI_FILL]',
-      legacy: template.winner?.legacy || '[AI_FILL]'
+      keyStats: template.winner?.keyStats || '',
+      strategy: template.winner?.strategy || '',
+      legacy: template.winner?.legacy || '',
+      votesAgainst: winnerPd.totalVotesReceived || 0
     });
   }
 
-  // Update records
+  // Records
   if (!db.records) db.records = {};
   if (!db.records.challengeRecords) db.records.challengeRecords = {};
   if (!db.records.votingRecords) db.records.votingRecords = {};
 
-  // Most challenge wins this season
   const chalWinners = Object.entries(rawStats.players)
     .map(([name, d]) => ({ name, wins: d.chalRecord?.wins || 0 }))
     .sort((a, b) => b.wins - a.wins);
@@ -1136,7 +1143,7 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
 
   // Fan favorites
   if (!db.fanFavorites) db.fanFavorites = [];
-  if (rawStats.autoAwards?.fanFavorite?.player) {
+  if (rawStats.autoAwards?.fanFavorite?.player && !db.fanFavorites.some(f => f.season === seasonNum)) {
     db.fanFavorites.push({
       season: seasonNum,
       name: rawStats.autoAwards.fanFavorite.player,
@@ -1144,21 +1151,113 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
     });
   }
 
+  // Multi-season players — will be recomputed after players DB merge
+  // (see _recomputeMultiSeasonPlayers)
+
+  // Evolution arrays
+  if (!db.evolution) db.evolution = {};
+
+  // Winning strategies
+  if (!db.evolution.winningStrategies) db.evolution.winningStrategies = [];
+  if (!db.evolution.winningStrategies.some(w => w.season === seasonNum)) {
+    db.evolution.winningStrategies.push({
+      season: seasonNum,
+      strategy: template.winner?.strategy || '',
+      winner: rawStats.winner
+    });
+  }
+
+  // Cast composition
+  if (!db.evolution.castComposition) db.evolution.castComposition = [];
+  if (!db.evolution.castComposition.some(c => c.season === seasonNum)) {
+    db.evolution.castComposition.push({
+      season: seasonNum,
+      composition: `${rawStats.castSize} players`
+    });
+  }
+
+  // Finale vote margins
+  if (!db.evolution.finaleVoteMargins) db.evolution.finaleVoteMargins = [];
+  if (!db.evolution.finaleVoteMargins.some(f => f.season === seasonNum)) {
+    const entry = {
+      season: seasonNum,
+      vote: template.winner?.vote || '',
+      winner: rawStats.winner
+    };
+    if (rawStats.finalists?.length) {
+      entry.finalists = rawStats.finalists.map(f => f.name);
+    }
+    db.evolution.finaleVoteMargins.push(entry);
+  }
+
+  // Major twists
+  if (!db.evolution.majorTwists) db.evolution.majorTwists = [];
+  if (!db.evolution.majorTwists.some(t => t.season === seasonNum)) {
+    db.evolution.majorTwists.push({
+      season: seasonNum,
+      twist: template.seasonNarrative || template.subtitle || ''
+    });
+  }
+
+  // Mirror evolution into trends (both exist in the database)
+  if (!db.trends) db.trends = {};
+  for (const key of ['winningStrategies', 'castComposition', 'finaleVoteMargins', 'majorTwists']) {
+    if (!db.trends[key]) db.trends[key] = [];
+    const evoEntry = db.evolution[key]?.find(e => e.season === seasonNum);
+    if (evoEntry && !db.trends[key].some(e => e.season === seasonNum)) {
+      db.trends[key].push(evoEntry);
+    }
+  }
+
   return db;
 }
 
-function _mergePlayersDatabase(existing, rawStats) {
+function _recomputeCareerLeaders(franchiseDb, playersDb) {
+  const ps = playersDb.players || [];
+  const top10 = (arr) => arr.slice(0, 10);
+  const sorted = (key, desc = true) => [...ps]
+    .filter(p => (p[key] || 0) > 0)
+    .sort((a, b) => desc ? (b[key] || 0) - (a[key] || 0) : (a[key] || 0) - (b[key] || 0))
+    .map(p => ({ name: p.name, playerSlug: p.id, total: p[key] || 0 }));
+
+  if (!franchiseDb.careerLeaders) franchiseDb.careerLeaders = {};
+
+  franchiseDb.careerLeaders.challengeDominance = {
+    mostChallengeWins: top10(sorted('totalChallengeWins')),
+    mostImmunityWins: top10(sorted('totalImmunityWins')),
+    mostRewardWins: top10(sorted('totalRewardWins'))
+  };
+
+  franchiseDb.careerLeaders.socialGame = {
+    lowestVotesAgainstCareer_min10Votes: top10(
+      [...ps].filter(p => p.totalSeasons >= 1)
+        .sort((a, b) => (a.totalVotesAgainst || 0) - (b.totalVotesAgainst || 0))
+        .map(p => ({ name: p.name, playerSlug: p.id, votesAgainst: p.totalVotesAgainst || 0 }))
+    ),
+    mostJuryVotes: top10(sorted('totalJuryVotes'))
+  };
+}
+
+function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
   const db = JSON.parse(JSON.stringify(existing));
   const seasonNum = rawStats.seasonNumber;
 
   if (!db.players) db.players = [];
 
+  // Build lookup from AI-filled placements
+  const filledPlacements = {};
+  if (filledSeasonData?.placements) {
+    for (const p of filledSeasonData.placements) {
+      if (p.name) filledPlacements[p.name] = p;
+    }
+  }
+
   for (const [name, pd] of Object.entries(rawStats.players)) {
     const slug = _slug(name);
     let player = db.players.find(p => p.id === slug || p.name === name);
+    const filled = filledPlacements[name] || {};
 
     if (!player) {
-      // New player
       player = {
         id: slug,
         name,
@@ -1195,23 +1294,34 @@ function _mergePlayersDatabase(existing, rawStats) {
     player.totalIdolsFound = (player.totalIdolsFound || 0) + pd.idolsFound;
     player.totalJuryVotes = (player.totalJuryVotes || 0) + (pd.juryVotes || 0);
 
-    // Add season detail
+    // Add season detail with AI narratives
     if (!player.seasonDetails) player.seasonDetails = [];
     player.seasonDetails.push({
       season: seasonNum,
       placement: pd.placement,
       status: pd.phase,
+      tribe: pd.tribe || '',
       challengeWins: pd.chalRecord?.wins || 0,
       immunityWins: pd.immunityWins,
       rewardWins: pd.rewardWins,
       votesReceived: pd.totalVotesReceived,
       idolsFound: pd.idolsFound,
+      strategicRank: filled.strategicRank || 0,
       juryVotes: pd.juryVotes || 0,
+      finalVote: pd.phase === 'Winner' ? (filledSeasonData?.winner?.vote || '') : '',
+      advantages: pd.advantages || [],
+      notes: filled.notes ? [filled.notes] : [],
+      gameplayStyle: filled.gameplayStyle || '',
+      keyMoments: filled.keyMoments || [],
       alliances: pd.alliances.map(a => a.name || a),
-      rivalries: pd.rivalries.map(r => r.player || r),
-      notes: [],
-      keyMoments: []
+      rivalries: pd.rivalries.map(r => r.player || r)
     });
+
+    // Append season story with separator
+    if (filled.story) {
+      const header = `\n\nSEASON ${seasonNum} — ${filledSeasonData?.title || `Season ${seasonNum}`}\n────────\n`;
+      player.story = player.story ? player.story + header + filled.story : filled.story;
+    }
 
     // Update badges
     if (pd.phase === 'Winner' && !player.badges?.includes(`S${seasonNum} Winner`)) {
@@ -1237,6 +1347,8 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
   // Skip if season already exists
   if (db.seasons.some(s => s.seasonNumber === seasonNum)) return db;
 
+  const aiAwards = template.awards || {};
+  const bestStr = aiAwards.bestStrategic || aiAwards.masterStrategist?.gold;
   db.seasons.push({
     seasonNumber: seasonNum,
     title: template.title || `Season ${seasonNum}`,
@@ -1247,21 +1359,27 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
       name: rawStats.winner,
       playerSlug: _slug(rawStats.winner),
       vote: template.winner?.vote || '',
-      runnerUp: template.winner?.runnerUp || ''
+      runnerUp: template.winner?.runnerUp || '',
+      keyStats: template.winner?.keyStats || '',
+      strategy: template.winner?.strategy || '',
+      legacy: template.winner?.legacy || ''
     },
     awards: {
       fanFavorite: rawStats.autoAwards?.fanFavorite?.player ? {
         name: rawStats.autoAwards.fanFavorite.player,
         playerSlug: _slug(rawStats.autoAwards.fanFavorite.player)
       } : null,
-      bestStrategic: { name: '[AI_FILL]', playerSlug: '' },
+      bestStrategic: bestStr?.name ? {
+        name: bestStr.name,
+        playerSlug: bestStr.playerSlug || _slug(bestStr.name)
+      } : null,
       mostChallengeWins: rawStats.autoAwards?.mostChallengeWins?.player ? {
         name: rawStats.autoAwards.mostChallengeWins.player,
         playerSlug: _slug(rawStats.autoAwards.mostChallengeWins.player),
         detail: `${rawStats.autoAwards.mostChallengeWins.wins} wins`
       } : null
     },
-    theme: '[AI_FILL]',
+    theme: template.seasonNarrative || template.subtitle || '',
     status: 'Complete',
     emoji: ''
   });
@@ -1274,19 +1392,23 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
 
 // ── 18. downloadSeasonExport ────────────────────────────────────────
 
-export async function downloadSeasonExport() {
-  const seasonNum = seasonConfig?.seasonNumber || (gs.episodeHistory || []).length || 0;
+// ── 18. Export & Fill Narratives (combined) ─────────────────────────────
+// Extracts stats → calls AI for narratives → merges databases with
+// filled data → downloads everything at the end.
+
+export async function exportAndFillNarratives(onStatus) {
+  const _status = onStatus || (() => {});
+
+  // Step 1: Extract raw stats + template
+  _status('Extracting stats...');
+  const seasonNum = _getSeasonNumber();
 
   let rawStats;
   try {
     rawStats = extractSeasonRawStats();
-    if (rawStats?.error) {
-      alert(rawStats.error);
-      return;
-    }
+    if (rawStats?.error) { alert(rawStats.error); return; }
   } catch (err) {
     alert('Failed to extract season stats: ' + (err.message || err));
-    console.error('extractSeasonRawStats error:', err);
     return;
   }
 
@@ -1295,11 +1417,76 @@ export async function downloadSeasonExport() {
     template = extractSeasonTemplate();
   } catch (err) {
     alert('Failed to build season template: ' + (err.message || err));
-    console.error('extractSeasonTemplate error:', err);
     return;
   }
 
-  // Fetch existing databases and merge
+  // Step 2: Call AI worker for narratives
+  _status('Calling AI Worker...');
+  let workerUrl = localStorage.getItem('SEASON_BUILDER_WORKER_URL');
+  if (!workerUrl) {
+    workerUrl = prompt('Enter your Season Builder Worker URL (Cloudflare Worker):');
+    if (!workerUrl || !workerUrl.trim()) return;
+    workerUrl = workerUrl.trim();
+    localStorage.setItem('SEASON_BUILDER_WORKER_URL', workerUrl);
+  }
+
+  const episodes = (gs.episodeHistory || []).map((ep, i) => ({
+    episode: i + 1,
+    summary: ep.summaryText || ''
+  }));
+
+  let finalSeasonData = template;
+
+  if (episodes.some(e => e.summary)) {
+    const response = await fetch(workerUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'narrative-fill',
+        template,
+        episodes,
+        season: template.seasonNumber,
+        seasonTitle: template.title
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Worker failed (${response.status}): ${errText}`);
+    }
+
+    const aiResult = await response.json();
+
+    finalSeasonData = JSON.parse(JSON.stringify(template));
+    if (aiResult.title && aiResult.title !== '[AI_FILL]') finalSeasonData.title = aiResult.title;
+    if (aiResult.subtitle && aiResult.subtitle !== '[AI_FILL]') finalSeasonData.subtitle = aiResult.subtitle;
+    if (aiResult.seasonNarrative) finalSeasonData.seasonNarrative = aiResult.seasonNarrative;
+
+    if (aiResult.winner) {
+      if (aiResult.winner.keyStats) finalSeasonData.winner.keyStats = aiResult.winner.keyStats;
+      if (aiResult.winner.strategy) finalSeasonData.winner.strategy = aiResult.winner.strategy;
+      if (aiResult.winner.legacy) finalSeasonData.winner.legacy = aiResult.winner.legacy;
+    }
+
+    if (aiResult.placements && Array.isArray(aiResult.placements)) {
+      for (const aiP of aiResult.placements) {
+        const target = finalSeasonData.placements.find(p => p.name === aiP.name);
+        if (!target) continue;
+        if (aiP.notes) target.notes = aiP.notes;
+        if (aiP.strategicRank != null) target.strategicRank = aiP.strategicRank;
+        if (aiP.story) target.story = aiP.story;
+        if (aiP.gameplayStyle) target.gameplayStyle = aiP.gameplayStyle;
+        if (aiP.keyMoments) target.keyMoments = aiP.keyMoments;
+      }
+    }
+
+    if (aiResult.awards && typeof aiResult.awards === 'object') {
+      finalSeasonData.awards = aiResult.awards;
+    }
+  }
+
+  // Step 3: Merge databases AFTER AI fill (so narratives are included)
+  _status('Merging databases...');
   let franchiseDb, playersDb, seasonsDb;
   try {
     const [franchiseResp, playersResp, seasonsResp] = await Promise.all([
@@ -1312,26 +1499,28 @@ export async function downloadSeasonExport() {
     const playersExisting = playersResp?.ok ? await playersResp.json() : { franchise: {}, players: [] };
     const seasonsExisting = seasonsResp?.ok ? await seasonsResp.json() : { franchise: {}, seasons: [] };
 
-    franchiseDb = _mergeFranchiseDatabase(franchiseExisting, rawStats, template);
-    playersDb = _mergePlayersDatabase(playersExisting, rawStats);
-    seasonsDb = _mergeSeasonsDatabase(seasonsExisting, rawStats, template);
-    // Sync uniquePlayers from the merged players database
+    franchiseDb = _mergeFranchiseDatabase(franchiseExisting, rawStats, finalSeasonData);
+    playersDb = _mergePlayersDatabase(playersExisting, rawStats, finalSeasonData);
+    seasonsDb = _mergeSeasonsDatabase(seasonsExisting, rawStats, finalSeasonData);
     if (franchiseDb && playersDb?.players) {
       franchiseDb.franchiseStats.uniquePlayers = playersDb.players.length;
+      _recomputeCareerLeaders(franchiseDb, playersDb);
+      // Recompute multi-season players from players DB
+      franchiseDb.multiSeasonPlayers = playersDb.players
+        .filter(p => p.totalSeasons >= 2)
+        .map(p => ({ name: p.name, playerSlug: p.id, seasons: p.seasons }));
     }
   } catch (err) {
-    console.warn('Could not fetch/merge existing databases, downloading raw files only:', err);
+    console.warn('Could not fetch/merge existing databases:', err);
     franchiseDb = null;
     playersDb = null;
     seasonsDb = null;
   }
 
-  // Download all files with staggered delays so browser handles them
+  // Step 4: Download everything together
+  _status('Downloading files...');
   let delay = 0;
-  _downloadJSON(rawStats, `season${seasonNum}-raw-stats.json`);
-  delay += 500;
-
-  setTimeout(() => _downloadJSON(template, `season${seasonNum}-data-template.json`), delay);
+  _downloadJSON(finalSeasonData, `season${seasonNum}-data.json`);
   delay += 500;
 
   if (franchiseDb) {
@@ -1345,6 +1534,4 @@ export async function downloadSeasonExport() {
   if (seasonsDb) {
     setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), delay);
   }
-
-  return { rawStats, template, franchiseDb, playersDb, seasonsDb };
 }

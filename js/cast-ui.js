@@ -702,7 +702,7 @@ export function saveConfig() {
   const g = id => document.getElementById(id);
   seasonConfig = {
     name:        g('cfg-name')?.value.trim() || '',
-    year:        g('cfg-year')?.value.trim() || '',
+    seasonNumber: parseInt(g('cfg-season-number')?.value) || 0,
     days:        parseInt(g('cfg-days')?.value) || 39,
     gameMode:    seasonConfig.gameMode || 'spectator',
     teams:       parseInt(g('cfg-teams')?.value) || 2,
@@ -781,7 +781,7 @@ export function renderConfig() {
   const set = (id, val) => { const el = g(id); if (el) el.value = val; };
   const chk = (id, val) => { const el = g(id); if (el) el.checked = val; };
   set('cfg-name',    seasonConfig.name || '');
-  set('cfg-year',    seasonConfig.year || '');
+  set('cfg-season-number', seasonConfig.seasonNumber || '');
   set('cfg-days',    seasonConfig.days || 39);
   set('cfg-teams',   seasonConfig.teams || 2);
   set('cfg-merge',   seasonConfig.mergeAt);

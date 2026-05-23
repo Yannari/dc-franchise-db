@@ -77,18 +77,18 @@ export function renderGameState() {
         exportBtn = document.createElement('button');
         exportBtn.id = 'export-season-btn';
         exportBtn.className = 'btn';
-        exportBtn.style.cssText = 'margin-top:8px;background:var(--accent);color:#fff;width:100%;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;border:none;';
-        exportBtn.textContent = 'Export Season Data';
+        exportBtn.style.cssText = 'margin-top:8px;background:linear-gradient(135deg,#9b6dff,#4cffb3);color:#fff;width:100%;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;border:none;';
+        exportBtn.textContent = 'Export & Fill Narratives';
         exportBtn.onclick = async () => {
-          exportBtn.textContent = 'Exporting...';
           exportBtn.disabled = true;
           try {
-            await window.downloadSeasonExport();
-            exportBtn.textContent = 'Exported!';
-            setTimeout(() => { exportBtn.textContent = 'Export Season Data'; exportBtn.disabled = false; }, 3000);
+            await window.exportAndFillNarratives(s => { exportBtn.textContent = s; });
+            exportBtn.textContent = 'All Done!';
+            setTimeout(() => { exportBtn.textContent = 'Export & Fill Narratives'; exportBtn.disabled = false; }, 3000);
           } catch (err) {
-            exportBtn.textContent = 'Export Failed';
-            setTimeout(() => { exportBtn.textContent = 'Export Season Data'; exportBtn.disabled = false; }, 3000);
+            console.error('Export error:', err);
+            exportBtn.textContent = 'Failed — check console';
+            setTimeout(() => { exportBtn.textContent = 'Export & Fill Narratives'; exportBtn.disabled = false; }, 5000);
           }
         };
         btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
@@ -160,19 +160,24 @@ export function renderGameState() {
     btn.textContent = 'Season Complete'; btn.disabled = true;
     if (sim5Btn) sim5Btn.style.display = 'none';
     if (simAllBtn) simAllBtn.style.display = 'none';
-    // Export Season Data button
     let exportBtn = document.getElementById('export-season-btn');
     if (!exportBtn) {
       exportBtn = document.createElement('button');
       exportBtn.id = 'export-season-btn';
       exportBtn.className = 'btn';
-      exportBtn.style.cssText = 'margin-top:8px;background:var(--accent);color:#fff;width:100%;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;border:none;';
-      exportBtn.textContent = 'Export Season Data';
-      exportBtn.onclick = () => {
-        window.downloadSeasonExport();
-        exportBtn.textContent = 'Exported!';
+      exportBtn.style.cssText = 'margin-top:8px;background:linear-gradient(135deg,#9b6dff,#4cffb3);color:#fff;width:100%;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;border:none;';
+      exportBtn.textContent = 'Export & Fill Narratives';
+      exportBtn.onclick = async () => {
         exportBtn.disabled = true;
-        setTimeout(() => { exportBtn.textContent = 'Export Season Data'; exportBtn.disabled = false; }, 3000);
+        try {
+          await window.exportAndFillNarratives(s => { exportBtn.textContent = s; });
+          exportBtn.textContent = 'All Done!';
+          setTimeout(() => { exportBtn.textContent = 'Export & Fill Narratives'; exportBtn.disabled = false; }, 3000);
+        } catch (err) {
+          console.error('Export error:', err);
+          exportBtn.textContent = 'Failed — check console';
+          setTimeout(() => { exportBtn.textContent = 'Export & Fill Narratives'; exportBtn.disabled = false; }, 5000);
+        }
       };
       btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
     }

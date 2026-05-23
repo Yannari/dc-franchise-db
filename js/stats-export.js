@@ -1099,7 +1099,8 @@ export function extractSeasonTemplate() {
     finalists: finalistTemplate,
     placements: sortedPlacements,
     seasonNarrative: '[AI_FILL]',
-    awards: '[AI_FILL]'
+    awards: '[AI_FILL]',
+    emoji: '[AI_FILL]'
   };
 }
 
@@ -1132,7 +1133,7 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
     db.champions.push({
       season: seasonNum,
       seasonTitle: template.title || `Season ${seasonNum}`,
-      emoji: '',
+      emoji: template.emoji || '',
       winner: rawStats.winner,
       playerSlug: _slug(rawStats.winner),
       finalVote: template.winner?.vote || '',
@@ -1248,6 +1249,162 @@ function _recomputeCareerLeaders(franchiseDb, playersDb) {
     ),
     mostJuryVotes: top10(sorted('totalJuryVotes'))
   };
+}
+
+function _recomputeMilestones(franchiseDb, playersDb, seasonsDb) {
+  const ps = playersDb.players || [];
+  const seasons = seasonsDb?.seasons || [];
+  const milestones = [];
+
+  // Most Challenge Wins (Career)
+  const chalLeader = [...ps].sort((a, b) => (b.totalChallengeWins || 0) - (a.totalChallengeWins || 0))[0];
+  if (chalLeader?.totalChallengeWins > 0) {
+    milestones.push({
+      category: 'Most Challenge Wins (Career)',
+      holder: chalLeader.name,
+      stat: `${chalLeader.totalChallengeWins} total`,
+      season: (chalLeader.seasons || []).map(s => `S${s}`).join(', '),
+      playerSlug: chalLeader.id
+    });
+  }
+
+  // Most Challenge Wins (Single Season)
+  let bestSingle = { name: '', wins: 0, season: 0, slug: '' };
+  for (const p of ps) {
+    for (const sd of (p.seasonDetails || [])) {
+      if ((sd.challengeWins || 0) > bestSingle.wins) {
+        bestSingle = { name: p.name, wins: sd.challengeWins, season: sd.season, slug: p.id };
+      }
+    }
+  }
+  if (bestSingle.wins > 0) {
+    milestones.push({
+      category: 'Most Challenge Wins (Single Season)',
+      holder: bestSingle.name,
+      stat: `${bestSingle.wins} total`,
+      season: `S${bestSingle.season}`,
+      playerSlug: bestSingle.slug
+    });
+  }
+
+  // Fewest Votes to Win
+  const winners = ps.filter(p => (p.wins || 0) > 0);
+  let fewestVotesWinner = null;
+  let fewestVotes = Infinity;
+  for (const w of winners) {
+    for (const sd of (w.seasonDetails || [])) {
+      if (sd.status === 'Winner' && (sd.votesReceived || 0) < fewestVotes) {
+        fewestVotes = sd.votesReceived || 0;
+        fewestVotesWinner = { name: w.name, votes: fewestVotes, season: sd.season, slug: w.id };
+      }
+    }
+  }
+  if (fewestVotesWinner) {
+    milestones.push({
+      category: 'Fewest Votes to Win',
+      holder: fewestVotesWinner.name,
+      stat: `${fewestVotesWinner.votes} vote${fewestVotesWinner.votes !== 1 ? 's' : ''}`,
+      season: `S${fewestVotesWinner.season}`,
+      playerSlug: fewestVotesWinner.slug
+    });
+  }
+
+  // Winner with 0 Votes Against
+  for (const w of winners) {
+    for (const sd of (w.seasonDetails || [])) {
+      if (sd.status === 'Winner' && (sd.votesReceived || 0) === 0) {
+        milestones.push({
+          category: 'Winner with 0 Votes Against',
+          holder: w.name,
+          stat: '0 votes (entire season)',
+          season: `S${sd.season}`,
+          playerSlug: w.id
+        });
+      }
+    }
+  }
+
+  // Most Votes Received (Career)
+  const voteLeader = [...ps].sort((a, b) => (b.totalVotesAgainst || 0) - (a.totalVotesAgainst || 0))[0];
+  if (voteLeader?.totalVotesAgainst > 0) {
+    milestones.push({
+      category: 'Most Votes Received',
+      holder: voteLeader.name,
+      stat: `${voteLeader.totalVotesAgainst} total`,
+      season: (voteLeader.seasons || []).map(s => `S${s}`).join(', '),
+      playerSlug: voteLeader.id
+    });
+  }
+
+  // Most Idols Found (Career)
+  const idolLeader = [...ps].sort((a, b) => (b.totalIdolsFound || 0) - (a.totalIdolsFound || 0))[0];
+  if (idolLeader?.totalIdolsFound > 0) {
+    milestones.push({
+      category: 'Most Idols Found',
+      holder: idolLeader.name,
+      stat: `${idolLeader.totalIdolsFound} total`,
+      season: (idolLeader.seasons || []).map(s => `S${s}`).join(', '),
+      playerSlug: idolLeader.id
+    });
+  }
+
+  // Most Finals Appearances
+  const finalsCount = ps.map(p => {
+    const finals = (p.seasonDetails || []).filter(sd => sd.placement && sd.placement <= 3).length;
+    return { name: p.name, slug: p.id, count: finals, seasons: p.seasons || [] };
+  }).sort((a, b) => b.count - a.count)[0];
+  if (finalsCount?.count >= 2) {
+    milestones.push({
+      category: 'Most Finals Appearances',
+      holder: finalsCount.name,
+      stat: `${finalsCount.count} times`,
+      season: finalsCount.seasons.map(s => `S${s}`).join(', '),
+      playerSlug: finalsCount.slug
+    });
+  }
+
+  // Closest Finale (smallest margin in jury vote)
+  let closestFinale = null;
+  let closestMargin = Infinity;
+  for (const s of seasons) {
+    const vote = s.winner?.vote;
+    if (!vote) continue;
+    const counts = vote.split('-').map(Number).filter(n => !isNaN(n));
+    if (counts.length >= 2) {
+      const margin = counts[0] - counts[1];
+      if (margin < closestMargin) {
+        closestMargin = margin;
+        closestFinale = { season: s.seasonNumber, vote, winner: s.winner.name };
+      }
+    }
+  }
+  if (closestFinale && closestMargin <= 2) {
+    milestones.push({
+      category: 'Closest Finale',
+      holder: `S${closestFinale.season}`,
+      stat: closestFinale.vote,
+      season: `${closestFinale.winner} win`
+    });
+  }
+
+  // Largest Jury
+  let largestJury = null;
+  for (const s of seasons) {
+    const size = s.jurySize || 0;
+    if (!largestJury || size > largestJury.size) {
+      largestJury = { season: s.seasonNumber, size };
+    }
+  }
+  if (largestJury?.size > 0) {
+    milestones.push({
+      category: 'Largest Jury',
+      holder: `S${largestJury.season}`,
+      stat: `${largestJury.size} members`,
+      season: ''
+    });
+  }
+
+  franchiseDb.milestones = milestones;
 }
 
 function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
@@ -1390,6 +1547,7 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
     subtitle: template.subtitle || '',
     castSize: rawStats.castSize,
     episodeCount: rawStats.episodeCount,
+    jurySize: rawStats.jurySize || 0,
     winner: {
       name: rawStats.winner,
       playerSlug: _slug(rawStats.winner),
@@ -1416,7 +1574,8 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
     },
     theme: template.seasonNarrative || template.subtitle || '',
     status: 'Complete',
-    emoji: ''
+    castPhotoPath: `assets/cast/s${seasonNum}-cast.png`,
+    emoji: template.emoji || ''
   });
 
   db.franchise = db.franchise || {};
@@ -1518,6 +1677,7 @@ export async function exportAndFillNarratives(onStatus) {
     if (aiResult.awards && typeof aiResult.awards === 'object') {
       finalSeasonData.awards = aiResult.awards;
     }
+    if (aiResult.emoji) finalSeasonData.emoji = aiResult.emoji;
   }
 
   // Step 3: Merge databases AFTER AI fill (so narratives are included)
@@ -1562,6 +1722,9 @@ export async function exportAndFillNarratives(onStatus) {
       seasonsDb.franchise = seasonsDb.franchise || {};
       seasonsDb.franchise.totalPlayers = playersDb.players.length;
       seasonsDb.franchise.totalSeasons = Math.max(seasonsDb.franchise.totalSeasons || 0, rawStats.seasonNumber);
+    }
+    if (franchiseDb && playersDb?.players && seasonsDb) {
+      _recomputeMilestones(franchiseDb, playersDb, seasonsDb);
     }
   } catch (err) {
     console.warn('Could not fetch/merge existing databases:', err);

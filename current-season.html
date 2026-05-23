@@ -6865,7 +6865,15 @@ setTimeout(function() {
         if (row.quit)       parts.push('Quit:\u22126.0');
         if (row.override)   parts.push('Override:' + (row.override>0?'+':'') + row.override.toFixed(1) + (row.overrideReason?' ('+row.overrideReason+')':''));
 
-        const oldScore = existing?(existing.score||0):null;
+        let oldScore = null;
+        if (existing) {
+          const hist = existing.scoreHistory;
+          if (hist && hist.length > 0) {
+            oldScore = Math.round(hist.reduce((a,b)=>a+b,0) / hist.length * 10) / 10;
+          } else {
+            oldScore = existing.score || 0;
+          }
+        }
         const oldTier  = existing?existing.tier:null;
         const newTier  = scoreTier(newScore);
 
@@ -6934,7 +6942,7 @@ setTimeout(function() {
             '<thead><tr style="background:rgba(255,255,255,0.05);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.65;">' +
               '<th style="padding:8px 10px;text-align:left;">Place</th>' +
               '<th style="padding:8px 10px;text-align:left;">Player</th>' +
-              '<th style="padding:8px 10px;text-align:center;">Old</th>' +
+              '<th style="padding:8px 10px;text-align:center;" title="Average of all previous season scores">Avg</th>' +
               '<th style="padding:8px 10px;text-align:center;">New</th>' +
               '<th style="padding:8px 10px;text-align:center;">\u0394</th>' +
               '<th style="padding:8px 10px;text-align:center;">Tier</th>' +
@@ -7037,6 +7045,7 @@ Write ONLY the reasoning text, no labels or quotes.`;
             playerId: r.name.toLowerCase().replace(/[^a-z0-9]/g,'-'),
             name:r.name, rank:maxRank+1, tier:r.newTier, score:r.newScore,
             wins:r.isWinner?1:0, seasonsPlayed:1,
+            scoreHistory:[r.newScore],
             placements:[r.placement], avgPlacement:r.placement,
             challengeWins: row.immWins+row.rewWins,
             votesAgainst:row.votesAgainst, juryVotes:row.juryVotes,
@@ -7049,7 +7058,9 @@ Write ONLY the reasoning text, no labels or quotes.`;
           needsReasoning.push({ entry: newEntry, r, row, isNew: true, totalSeasons: 1, totalWins: r.isWinner?1:0 });
         } else {
           const e = r.existingRef;
+          if (!e.scoreHistory) e.scoreHistory=[e.score];
           e.score=r.newScore; e.tier=r.newTier;
+          e.scoreHistory.push(r.newScore);
           e.wins=(e.wins||0)+(r.isWinner?1:0);
           e.seasonsPlayed=(e.seasonsPlayed||1)+1;
           e.winRate=Math.round((e.wins/e.seasonsPlayed)*100*100)/100;

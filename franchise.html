@@ -498,11 +498,11 @@
         <div class="brand-icon"><span class="brand-logo-text">⚡</span></div>
         <div class="brand-content">
           <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
-          <p class="brand-subtitle">Season <span id="currentSeasonNum">9</span> Live • Click to Explore</p>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">10</span> Live • Click to Explore</p>
         </div>
       </a>
       <div class="stats-badge">
-        <div class="stats-main"><span id="totalSeasons">9</span> Seasons • <span id="totalPlayers">102</span> Players</div>
+        <div class="stats-main"><span id="totalSeasons">10</span> Seasons • <span id="totalPlayers">102</span> Players</div>
         <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
       </div>
     </div>
@@ -544,7 +544,7 @@
 <main class="page-wrap">
   <div class="fran-hero">
     <h1>🏛️ Franchise Analytics</h1>
-    <p>Cross-season statistics and trends across <span id="hero-seasons">9</span> complete seasons</p>
+    <p>Cross-season statistics and trends across <span id="hero-seasons">10</span> complete seasons</p>
   </div>
 
   <!-- STAT COUNTERS -->
@@ -635,7 +635,7 @@
 <footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>
-    <div class="footerSub">Static archive • <span id="footer-seasons">9</span> seasons • <span id="footer-players">102</span> players</div>
+    <div class="footerSub">Static archive • <span id="footer-seasons">10</span> seasons • <span id="footer-players">102</span> players</div>
   </div>
 </footer>
 
@@ -736,27 +736,28 @@ function rankIcon(i) {
       return `<div class="lb-card"><div class="lb-header">${title}</div>${rows}</div>`;
     }
 
+    function sCnt(p) { return p.seasonsPlayed || (Array.isArray(p.seasons) ? p.seasons.length : (p.seasons||0)); }
     const sorted = {
       wins: [...players].sort((a,b) => (b.wins||0)-(a.wins||0)),
-      seasons: [...players].sort((a,b) => (b.seasons||0)-(a.seasons||0)),
+      seasons: [...players].sort((a,b) => sCnt(b)-sCnt(a)),
       chalWins: [...players].sort((a,b) => (b.totalChallengeWins||0)-(a.totalChallengeWins||0)),
       immWins: [...players].sort((a,b) => (b.totalImmunityWins||0)-(a.totalImmunityWins||0)),
       juryVotes: [...players].sort((a,b) => (b.totalJuryVotes||0)-(a.totalJuryVotes||0)),
       votes: [...players].sort((a,b) => (b.totalVotesAgainst||0)-(a.totalVotesAgainst||0)),
       idols: [...players].sort((a,b) => (b.totalIdolsFound||0)-(a.totalIdolsFound||0)),
-      avgPlace: [...players].filter(p => (p.seasons||0) >= 2).sort((a,b) => (a.avgPlacement||99)-(b.avgPlacement||99))
+      avgPlace: [...players].filter(p => sCnt(p) >= 2).sort((a,b) => (a.avgPlacement||99)-(b.avgPlacement||99))
     };
 
     const recordsGrid = document.getElementById('records-grid');
     recordsGrid.innerHTML = [
-      buildLB('🏆 Most Wins', sorted.wins, p=>`${p.wins||0} wins`, p=>`${p.seasons||0} seasons`),
-      buildLB('🔄 Most Seasons', sorted.seasons, p=>`${p.seasons||0}`, p=>`${p.wins||0} wins`),
+      buildLB('🏆 Most Wins', sorted.wins, p=>`${p.wins||0} wins`, p=>`${sCnt(p)} seasons`),
+      buildLB('🔄 Most Seasons', sorted.seasons, p=>`${sCnt(p)}`, p=>`${p.wins||0} wins`),
       buildLB('💪 Most Challenge Wins', sorted.chalWins, p=>`${p.totalChallengeWins||0}`, p=>`${p.totalImmunityWins||0} immunity`),
       buildLB('🛡️ Most Immunity Wins', sorted.immWins, p=>`${p.totalImmunityWins||0}`, p=>`${p.totalChallengeWins||0} total`),
-      buildLB('🗳️ Most Jury Votes', sorted.juryVotes, p=>`${p.totalJuryVotes||0}`, p=>`${p.seasons||0} seasons`),
-      buildLB('🎯 Most Votes Against', sorted.votes, p=>`${p.totalVotesAgainst||0}`, p=>`${p.seasons||0} seasons`),
-      buildLB('💎 Most Idols Found', sorted.idols, p=>`${p.totalIdolsFound||0}`, p=>`${p.seasons||0} seasons`),
-      buildLB('📊 Best Avg Placement (2+ seasons)', sorted.avgPlace, p=>`${(p.avgPlacement||0).toFixed(2)}`, p=>`${p.seasons||0} seasons`)
+      buildLB('🗳️ Most Jury Votes', sorted.juryVotes, p=>`${p.totalJuryVotes||0}`, p=>`${sCnt(p)} seasons`),
+      buildLB('🎯 Most Votes Against', sorted.votes, p=>`${p.totalVotesAgainst||0}`, p=>`${sCnt(p)} seasons`),
+      buildLB('💎 Most Idols Found', sorted.idols, p=>`${p.totalIdolsFound||0}`, p=>`${sCnt(p)} seasons`),
+      buildLB('📊 Best Avg Placement (2+ seasons)', sorted.avgPlace, p=>`${(p.avgPlacement||0).toFixed(2)}`, p=>`${sCnt(p)} seasons`)
     ].join('');
 
     // ── Milestones ───────────────────────────────────────

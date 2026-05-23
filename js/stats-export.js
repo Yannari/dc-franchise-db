@@ -1970,3 +1970,283 @@ export async function generateRankingsNarration(onStatus) {
   _status('Downloading updated rankings...');
   _downloadJSON(rankingsDb, 'rankings_database.json');
 }
+
+// ── 20. PDF Exports ──────────────────────────────────────────────────
+
+function _loadJsPDF() {
+  if (window.jspdf) return Promise.resolve(window.jspdf);
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
+    s.onload = () => resolve(window.jspdf);
+    s.onerror = () => reject(new Error('Failed to load jsPDF'));
+    document.head.appendChild(s);
+  });
+}
+
+export async function exportStatisticsPDF(onStatus) {
+  const _status = onStatus || (() => {});
+  _status('Loading PDF library...');
+  const { jsPDF } = await _loadJsPDF();
+
+  _status('Building statistics...');
+  const history = gs.episodeHistory || [];
+  const seasonNum = seasonConfig?.seasonNumber || _getSeasonNumber();
+  const seasonTitle = seasonConfig?.title || `Total Drama Season ${seasonNum}`;
+  const { playerData, placements, elimOrder, winner, finalists } = _extractPlayerData();
+  const seasonStats = _extractSeasonStats();
+  const allNames = _allPlayerNames();
+
+  const sorted = Object.entries(playerData)
+    .sort((a, b) => (a[1].placement || 99) - (b[1].placement || 99));
+
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 12;
+  let y = 0;
+
+  function header() {
+    doc.setFillColor(30, 30, 46);
+    doc.rect(0, 0, W, 18, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${seasonTitle.toUpperCase()} - SEASON ${seasonNum} STATISTICS`, W / 2, 11, { align: 'center' });
+    y = 24;
+    doc.setTextColor(30, 30, 46);
+  }
+
+  function sectionTitle(title) {
+    if (y > 270) { doc.addPage(); header(); }
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(100, 60, 180);
+    doc.text(title, M, y);
+    y += 1;
+    doc.setDrawColor(100, 60, 180);
+    doc.line(M, y, W - M, y);
+    y += 5;
+    doc.setTextColor(30, 30, 46);
+  }
+
+  function textLine(text, size = 8, style = 'normal') {
+    if (y > 282) { doc.addPage(); header(); }
+    doc.setFontSize(size);
+    doc.setFont('helvetica', style);
+    doc.text(text, M, y);
+    y += size * 0.45 + 1;
+  }
+
+  function wrappedLine(text, size = 8, style = 'normal', indent = 0) {
+    if (y > 282) { doc.addPage(); header(); }
+    doc.setFontSize(size);
+    doc.setFont('helvetica', style);
+    const lines = doc.splitTextToSize(text, W - 2 * M - indent);
+    for (const line of lines) {
+      if (y > 282) { doc.addPage(); header(); }
+      doc.text(line, M + indent, y);
+      y += size * 0.42 + 0.8;
+    }
+  }
+
+  // Page 1
+  header();
+
+  // Season Metadata
+  sectionTitle('Season Metadata');
+  const winnerName = winner || (finalists?.[0]?.name) || '—';
+  const finaleResult = gs.finaleResult || {};
+  const finalVote = finaleResult.votes ? Object.values(finaleResult.votes).sort((a, b) => b - a).join('-') : '—';
+  const fanFav = seasonConfig?.fanFavorite || '—';
+  textLine(`Season Name: ${seasonTitle} (Season ${seasonNum})`, 8, 'normal');
+  textLine(`Winner: ${winnerName}`, 8, 'normal');
+  textLine(`Final Vote: ${finalVote}`, 8, 'normal');
+  y += 2;
+
+  // Placements Table
+  sectionTitle('Placements');
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Place', M, y); doc.text('Player', M + 14, y); doc.text('Phase', M + 52, y); doc.text('Notes', M + 76, y);
+  y += 1;
+  doc.line(M, y, W - M, y);
+  y += 3;
+  doc.setFont('helvetica', 'normal');
+
+  for (const [name, pd] of sorted) {
+    if (y > 278) { doc.addPage(); header(); }
+    const place = pd.placement || '—';
+    const phase = pd.phase || '—';
+    const imm = pd.immunityWins || 0;
+    const votes = pd.totalVotesReceived || 0;
+    let notes = '';
+    if (pd.phase === 'Winner') notes = `${finalVote} / ${imm} Ind. Immunities`;
+    else if (pd.phase === 'Finalist') notes = `Finalist / ${votes} votes against`;
+    else notes = `${votes} votes against${imm ? ` / ${imm} immunity` : ''}`;
+
+    doc.setFontSize(7);
+    doc.text(String(place), M, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(name, M + 14, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(phase, M + 52, y);
+    const noteLines = doc.splitTextToSize(notes, W - M - 76);
+    doc.text(noteLines[0] || '', M + 76, y);
+    y += 4;
+  }
+  y += 2;
+
+  // Challenge Performance
+  sectionTitle('Challenge Performance & Voting');
+  const immWinners = sorted.filter(([, pd]) => pd.immunityWins > 0)
+    .sort((a, b) => b[1].immunityWins - a[1].immunityWins)
+    .map(([n, pd]) => `${n} (${pd.immunityWins})`)
+    .join(', ');
+  if (immWinners) wrappedLine(`Immunity Wins: ${immWinners}`, 7);
+
+  const rewWinners = sorted.filter(([, pd]) => pd.rewardWins > 0)
+    .sort((a, b) => b[1].rewardWins - a[1].rewardWins)
+    .map(([n, pd]) => `${n} (${pd.rewardWins})`)
+    .join(', ');
+  if (rewWinners) wrappedLine(`Reward Wins: ${rewWinners}`, 7);
+  y += 1;
+
+  // Votes received
+  wrappedLine('Votes Received Against:', 7, 'bold');
+  const votesSorted = sorted
+    .filter(([, pd]) => pd.totalVotesReceived > 0)
+    .sort((a, b) => b[1].totalVotesReceived - a[1].totalVotesReceived);
+  const voteLine = votesSorted.map(([n, pd]) => `${n}: ${pd.totalVotesReceived}`).join('  |  ');
+  wrappedLine(voteLine, 6.5);
+  y += 2;
+
+  // Advantages & Idols
+  sectionTitle('Advantages & Awards');
+  const idolHolders = sorted.filter(([, pd]) => pd.idolsFound > 0)
+    .map(([n, pd]) => `${n} (${pd.idolsFound})`).join(', ');
+  if (idolHolders) wrappedLine(`Idols Found: ${idolHolders}`, 7);
+
+  const advPlayers = sorted.filter(([, pd]) => {
+    const plays = pd.advantageLifecycle?.plays?.filter(p => !p.fake && !p.failed) || [];
+    return plays.length > 0;
+  }).map(([n, pd]) => {
+    const plays = pd.advantageLifecycle.plays.filter(p => !p.fake && !p.failed);
+    return `${n} (${plays.length})`;
+  }).join(', ');
+  if (advPlayers) wrappedLine(`Advantages Played: ${advPlayers}`, 7);
+
+  // Challenge stats
+  const chalLeader = sorted
+    .filter(([, pd]) => (pd.chalRecord?.wins || 0) > 0)
+    .sort((a, b) => (b[1].chalRecord?.wins || 0) - (a[1].chalRecord?.wins || 0));
+  if (chalLeader.length) {
+    const best = chalLeader[0];
+    wrappedLine(`Best Physical: ${best[0]} (${best[1].immunityWins || 0} Immunities / ${best[1].chalRecord?.wins || 0} Total Wins)`, 7);
+  }
+  y += 2;
+
+  // Season overview stats
+  sectionTitle('Season Overview');
+  textLine(`Total Episodes: ${history.length}`, 7);
+  textLine(`Total Tribal Councils: ${seasonStats.totalTribalCouncils}`, 7);
+  textLine(`Total Votes Cast: ${seasonStats.totalVotesCast}`, 7);
+  textLine(`Idols Found: ${seasonStats.totalIdolsFound} | Idols Played: ${seasonStats.totalIdolsPlayed}`, 7);
+  textLine(`Blindsides: ${seasonStats.totalBlindsides}`, 7);
+  if (seasonStats.totalShowmances) textLine(`Showmances: ${seasonStats.totalShowmances} (${seasonStats.totalBreakups} breakups)`, 7);
+
+  // Key Narrative Moments (from episodeHistory highlights)
+  if (y < 240) {
+    y += 2;
+    sectionTitle('Key Episodes');
+    for (const ep of history) {
+      if (y > 275) break;
+      const elim = ep.eliminated || ep.firstEliminated || ep.suddenDeathEliminated || '—';
+      const chalType = ep.challengeType || ep.challengeLabel || '';
+      const line = `Ep ${ep.num}: ${chalType ? chalType + ' — ' : ''}Eliminated: ${elim}`;
+      wrappedLine(line, 6.5, 'normal', 2);
+    }
+  }
+
+  _status('Saving Statistics PDF...');
+  doc.save(`Total_Drama_${seasonNum}_Statistics.pdf`);
+}
+
+export async function exportSummaryPDF(onStatus) {
+  const _status = onStatus || (() => {});
+  _status('Loading PDF library...');
+  const { jsPDF } = await _loadJsPDF();
+
+  _status('Building summary...');
+  const history = gs.episodeHistory || [];
+  const seasonNum = seasonConfig?.seasonNumber || _getSeasonNumber();
+  const seasonTitle = seasonConfig?.title || `Total Drama Season ${seasonNum}`;
+
+  if (!history.length) { alert('No episodes to export.'); return; }
+
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 14;
+  let y = 0;
+  let pageNum = 0;
+
+  function newPage(epLabel) {
+    if (pageNum > 0) doc.addPage();
+    pageNum++;
+    doc.setFillColor(30, 30, 46);
+    doc.rect(0, 0, W, 16, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${seasonTitle.toUpperCase()} — ${epLabel}`, W / 2, 10, { align: 'center' });
+    y = 22;
+    doc.setTextColor(30, 30, 46);
+  }
+
+  for (const ep of history) {
+    const epLabel = `EPISODE ${ep.num}`;
+    newPage(epLabel);
+
+    const text = ep.summaryText || '(No summary text generated for this episode)';
+    const lines = text.split('\n');
+
+    doc.setFontSize(7.5);
+    doc.setFont('courier', 'normal');
+
+    for (const rawLine of lines) {
+      const isHeader = rawLine.startsWith('===') || rawLine.startsWith('---') || rawLine.startsWith('~~~');
+      const isSectionLabel = rawLine.match(/^[A-Z ]{4,}$/) || rawLine.startsWith('###');
+
+      if (isHeader) {
+        doc.setFont('courier', 'bold');
+        doc.setTextColor(100, 60, 180);
+      } else if (isSectionLabel) {
+        doc.setFont('courier', 'bold');
+        doc.setTextColor(60, 60, 80);
+      } else {
+        doc.setFont('courier', 'normal');
+        doc.setTextColor(30, 30, 46);
+      }
+
+      const wrapped = doc.splitTextToSize(rawLine || ' ', W - 2 * M);
+      for (const wl of wrapped) {
+        if (y > 284) {
+          doc.addPage();
+          pageNum++;
+          doc.setFillColor(245, 245, 250);
+          doc.rect(0, 0, W, 10, 'F');
+          doc.setTextColor(120, 120, 140);
+          doc.setFontSize(7);
+          doc.setFont('helvetica', 'italic');
+          doc.text(`${seasonTitle} — Episode ${ep.num} (cont.)`, W / 2, 7, { align: 'center' });
+          y = 14;
+          doc.setFontSize(7.5);
+          doc.setTextColor(30, 30, 46);
+          doc.setFont('courier', 'normal');
+        }
+        doc.text(wl, M, y);
+        y += 3.2;
+      }
+    }
+  }
+
+  _status('Saving Summary PDF...');
+  doc.save(`Summary_Episode_Total_Drama_${seasonNum}.pdf`);
+}

@@ -2047,9 +2047,9 @@
         "social": 6,
         "strategic": 5,
         "loyalty": 8,
-        "boldness": 2,
+        "boldness": 5,
         "intuition": 9,
-        "temperament": 8
+        "temperament": 7
       },
       "isReturnee": false
     },

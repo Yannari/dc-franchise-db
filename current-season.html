@@ -1079,13 +1079,6 @@ Dave voted for Mickey
             <input type="file" id="ru-season-file-input" accept=".json" style="display:none;">
             <span id="ru-season-load-status" style="font-size: 13px; opacity: 0.7;">No season file loaded</span>
           </div>
-          <div id="ru-ai-fill-section" style="display:none; margin-top: 12px; padding: 10px 14px; background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2); border-radius: 8px;">
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-              <button id="ru-ai-fill-btn" class="btn" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 12px; padding: 6px 14px;">🤖 AI Fill Advantages</button>
-              <span style="font-size: 11px; opacity: 0.6;">Analyzes stories + key moments to fill Played/Held columns</span>
-              <span id="ru-ai-fill-status" style="font-size: 12px; opacity: 0.7;"></span>
-            </div>
-          </div>
         </div>
 
         <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px;">
@@ -6696,7 +6689,6 @@ setTimeout(function() {
     let rankingsDB     = null;
     let pendingUpdated = null;
     let rowCount       = 0;
-    let loadedSeasonJSON = null;
 
     // ── Scoring formula ──────────────────────────────────────
     function placementPct(placement, castSize) {
@@ -7164,7 +7156,6 @@ Write ONLY the reasoning text, no labels or quotes.`;
     function loadSeasonData(json) {
       const placements = json.placements||json.players||[];
       if (!placements.length) { alert('No placements array found in season JSON'); return; }
-      loadedSeasonJSON = json;
       document.getElementById('ru-placements-body').innerHTML='';
       rowCount=0;
       const sorted=[...placements].sort((a,b)=>(a.placement||99)-(b.placement||99));
@@ -7174,8 +7165,8 @@ Write ONLY the reasoning text, no labels or quotes.`;
         const stats={
           juryVotes:   p.juryVotes||p.jury_votes||0,
           votesVs:     p.votesAgainst||p.votes_against||p.votesReceived||0,
-          idolsFound:  0,
-          idolsPlayed: 0,
+          idolsPlayed: p.advPlayed ?? 0,
+          idolsFound:  p.advHeld ?? 0,
           imm:         p.immunityWins||p.imm||0,
           rew:         p.rewardWins!=null ? p.rewardWins : (p.rew!=null ? p.rew : Math.max(0, (p.challengeWins||0)-(p.immunityWins||0))),
           quit:        p.eliminated==='quit'||p.quit||false,
@@ -7183,89 +7174,8 @@ Write ONLY the reasoning text, no labels or quotes.`;
         addRow(name, placement, stats);
       });
       if (sorted.length) document.getElementById('ru-cast-size').value=sorted.length;
-      document.getElementById('ru-ai-fill-section').style.display='block';
-      document.getElementById('ru-season-load-status').textContent='\u2705 Loaded '+sorted.length+' players \u2014 click AI Fill for Played/Held';
+      document.getElementById('ru-season-load-status').textContent='\u2705 Loaded '+sorted.length+' players';
       document.getElementById('ru-season-load-status').style.color='#4ade80';
-    }
-
-    async function aiAdvFill() {
-      if (!loadedSeasonJSON) { alert('Load a season JSON first'); return; }
-      const btn = document.getElementById('ru-ai-fill-btn');
-      const status = document.getElementById('ru-ai-fill-status');
-      const placements = loadedSeasonJSON.placements||loadedSeasonJSON.players||[];
-      if (!placements.length) { alert('No placements in season data'); return; }
-
-      const sbUrl = document.getElementById('seasonBuilderWorkerUrl');
-      const workerUrl = (sbUrl && sbUrl.value.trim()) || localStorage.getItem('SEASON_BUILDER_WORKER_URL') || '';
-      if (!workerUrl) { alert('Set a Season Builder Worker URL in Settings first'); return; }
-
-      btn.disabled = true;
-      btn.textContent = 'Analyzing...';
-      status.textContent = '';
-
-      try {
-        const resp = await fetch(workerUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            mode: 'rankings-advantage-fill',
-            players: placements.map(p => ({
-              name: p.name || p.playerName,
-              placement: p.placement || p.finalPlacement,
-              phase: p.phase || '',
-              idolsFound: p.idolsFound || 0,
-              story: p.story || '',
-              keyMoments: p.keyMoments || [],
-              notes: p.notes || ''
-            }))
-          })
-        });
-
-        if (!resp.ok) {
-          const err = await resp.text();
-          throw new Error('Worker error ' + resp.status + ': ' + err);
-        }
-
-        const data = await resp.json();
-        if (data.error) throw new Error(data.error);
-        if (!data.results?.length) throw new Error('No results returned');
-
-        const rows = document.querySelectorAll('#ru-placements-body tr');
-        let filled = 0;
-        data.results.forEach(result => {
-          rows.forEach(tr => {
-            const nameInput = tr.querySelector('input[type=text]');
-            if (!nameInput || nameInput.value.trim().toLowerCase() !== result.name.toLowerCase()) return;
-            const nums = tr.querySelectorAll('input[type=number]');
-            if (nums[3]) nums[3].value = result.advPlayed || 0;
-            if (nums[4]) nums[4].value = result.advHeld || 0;
-            filled++;
-          });
-        });
-
-        status.textContent = 'Filled ' + filled + ' players';
-        status.style.color = '#4ade80';
-
-        const reasoningHtml = data.results
-          .filter(r => r.reasoning)
-          .map(r => '<div style="font-size:11px;padding:3px 0;opacity:0.8;"><b>' + r.name + '</b>: P:' + r.advPlayed + ' H:' + r.advHeld + ' — ' + r.reasoning + '</div>')
-          .join('');
-        if (reasoningHtml) {
-          const existing = document.getElementById('ru-ai-fill-section').querySelector('details');
-          if (existing) existing.remove();
-          const details = document.createElement('details');
-          details.style.cssText = 'margin-top:8px;font-size:12px;';
-          details.innerHTML = '<summary style="cursor:pointer;opacity:0.7;">AI reasoning (click to expand)</summary><div style="margin-top:6px;max-height:200px;overflow-y:auto;">' + reasoningHtml + '</div>';
-          document.getElementById('ru-ai-fill-section').appendChild(details);
-        }
-      } catch(err) {
-        status.textContent = err.message;
-        status.style.color = '#f87171';
-        console.error('AI advantage fill error:', err);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '🤖 AI Fill Advantages';
-      }
     }
 
     // ── Init ─────────────────────────────────────────────────
@@ -7307,7 +7217,6 @@ Write ONLY the reasoning text, no labels or quotes.`;
       document.getElementById('ru-add-row-btn').addEventListener('click',()=>addRow());
       document.getElementById('ru-preview-btn').addEventListener('click',buildPreview);
       document.getElementById('ru-apply-btn').addEventListener('click',applyUpdates);
-      document.getElementById('ru-ai-fill-btn').addEventListener('click',aiAdvFill);
     }
 
     if (document.readyState==='loading') {

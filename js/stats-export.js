@@ -1119,6 +1119,8 @@ export function extractSeasonTemplate() {
         immunityWins: pd.immunityWins,
         rewardWins: pd.rewardWins,
         idolsFound: pd.idolsFound,
+        advPlayed: (pd.advantageLifecycle?.plays || []).filter(p => !p.fake && !p.failed).length,
+        advHeld: (pd.advantageLifecycle?.held || []).length,
         votesReceived: pd.totalVotesReceived,
         alliances: pd.alliances.map(a => a.name),
         rivalries: pd.rivalries.map(r => r.player),

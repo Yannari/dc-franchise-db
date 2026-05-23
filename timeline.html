@@ -318,13 +318,8 @@ function cellClass(place, castSize) {
 
 // ── Load data ─────────────────────────────────────────────────
 async function loadData() {
-  let raw = localStorage.getItem('players_database');
-  let db = raw ? JSON.parse(raw) : null;
-  if (!db) {
-    const r = await fetch('players_database.json');
-    db = await r.json();
-    localStorage.setItem('players_database', JSON.stringify(db));
-  }
+  const r = await fetch('players_database.json');
+  const db = await r.json();
   allPlayers = db.players || [];
 
   try {

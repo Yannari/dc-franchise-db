@@ -508,13 +508,8 @@ const MAX_PLAYERS = 4;
 // ── Data loading ──────────────────────────────────────────────
 async function loadData() {
   try {
-    let dbRaw = localStorage.getItem('players_database');
-    let db = dbRaw ? JSON.parse(dbRaw) : null;
-    if (!db) {
-      const r = await fetch('players_database.json');
-      db = await r.json();
-      localStorage.setItem('players_database', JSON.stringify(db));
-    }
+    const r = await fetch('players_database.json');
+    const db = await r.json();
     allPlayers = db.players || [];
 
     const rr = await fetch('rankings_database.json').catch(() => null);

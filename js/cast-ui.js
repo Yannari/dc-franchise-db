@@ -41,7 +41,7 @@ export function setSlider(key, val, resetArchetype) {
   if (el) { el.value = n; el.style.background = `linear-gradient(to right,${stat.color} 0%,${stat.color} ${pct},#334155 ${pct})`; }
   const vEl = document.getElementById('val-' + key);
   if (vEl) vEl.textContent = n;
-  if (resetArchetype) document.getElementById('f-archetype').value = '';
+  // archetype stays locked — slider edits don't clear it
 }
 export function applyArchetype(key) {
   const a = ARCHETYPES[key]; if (!a) return;

@@ -496,10 +496,24 @@ function _extractPlayerData() {
     // Mole status
     const isMole = (gs.moles || []).some(m => m.name === name || m.player === name);
 
+    // Tribe progression: walk episode history to build "Tribe1 → Tribe2 → Merged" string
+    const tribeSeq = [];
+    for (const ep of (gs.episodeHistory || [])) {
+      if (ep.tribesAtStart) {
+        const t = ep.tribesAtStart.find(tr => tr.members?.includes(name));
+        if (t && t.name !== tribeSeq[tribeSeq.length - 1]) tribeSeq.push(t.name);
+      }
+      if (ep.isMerge && !tribeSeq.includes(gs.mergeName || 'Campers')) {
+        tribeSeq.push(gs.mergeName || 'Campers');
+      }
+    }
+    const tribe = tribeSeq.length ? tribeSeq.join(' → ') : '';
+
     playerData[name] = {
       playerSlug: _slug(name),
       placement: placementInfo.placement,
       phase: placementInfo.phase,
+      tribe,
       archetype: p?.archetype || null,
       stats: { ...stats },
 
@@ -1278,12 +1292,27 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       db.players.push(player);
     }
 
-    // Skip if season already recorded
-    if (player.seasons?.includes(seasonNum)) continue;
+    // Check if season already exists — update if placeholder, skip if complete
+    const existingDetail = player.seasonDetails?.find(sd => sd.season === seasonNum);
+    const isPlaceholder = existingDetail && (existingDetail.placement === 99 || existingDetail.status === 'Active' || existingDetail.tribe === 'TBD');
+
+    if (player.seasons?.includes(seasonNum) && !isPlaceholder) continue;
+
+    // If updating a placeholder, remove old career contributions first
+    if (isPlaceholder) {
+      player.totalChallengeWins = (player.totalChallengeWins || 0) - (existingDetail.challengeWins || 0);
+      player.totalImmunityWins = (player.totalImmunityWins || 0) - (existingDetail.immunityWins || 0);
+      player.totalRewardWins = (player.totalRewardWins || 0) - (existingDetail.rewardWins || 0);
+      player.totalVotesAgainst = (player.totalVotesAgainst || 0) - (existingDetail.votesReceived || 0);
+      player.totalIdolsFound = (player.totalIdolsFound || 0) - (existingDetail.idolsFound || 0);
+      player.totalJuryVotes = (player.totalJuryVotes || 0) - (existingDetail.juryVotes || 0);
+      if (existingDetail.status === 'Winner') player.wins = Math.max(0, (player.wins || 0) - 1);
+      player.seasonDetails = player.seasonDetails.filter(sd => sd.season !== seasonNum);
+    }
 
     // Update career stats
     if (!player.seasons) player.seasons = [];
-    player.seasons.push(seasonNum);
+    if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
     player.totalSeasons = player.seasons.length;
     player.bestPlacement = Math.min(player.bestPlacement || Infinity, pd.placement || Infinity);
     if (pd.phase === 'Winner') player.wins = (player.wins || 0) + 1;
@@ -1308,8 +1337,8 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       idolsFound: pd.idolsFound,
       strategicRank: filled.strategicRank || 0,
       juryVotes: pd.juryVotes || 0,
-      finalVote: pd.phase === 'Winner' ? (filledSeasonData?.winner?.vote || '') : '',
-      advantages: pd.advantages || [],
+      finalVote: pd.phase === 'Winner' ? (filledSeasonData?.winner?.vote || rawStats.finalists?.map(f => f.juryVotes ?? 0).sort((a,b) => b-a).join('-') || '') : '',
+      advantages: (pd.advantageLifecycle?.held || []).map(a => a.type || a.name || a),
       notes: filled.notes ? [filled.notes] : [],
       gameplayStyle: filled.gameplayStyle || '',
       keyMoments: filled.keyMoments || [],
@@ -1344,8 +1373,8 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
 
   if (!db.seasons) db.seasons = [];
 
-  // Skip if season already exists
-  if (db.seasons.some(s => s.seasonNumber === seasonNum)) return db;
+  // Remove existing entry for this season (allows re-export to overwrite)
+  db.seasons = db.seasons.filter(s => s.seasonNumber !== seasonNum);
 
   const aiAwards = template.awards || {};
   const bestStr = aiAwards.bestStrategic || aiAwards.masterStrategist?.gold;

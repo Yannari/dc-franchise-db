@@ -2620,6 +2620,37 @@ export function simulateEpisode() {
     ep.challengeThrows   = immResult?.challengeThrows   || null;
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } // end tied-destinies else
+
+    // ── TIED DESTINIES + PAIR CHALLENGE SYNC ──
+    // If tied destinies is active and a pair-based challenge ran, overwrite the random
+    // tied-destinies pairs with the challenge's actual pairs so fates match partners.
+    if (ep.tiedDestinies?.pairs?.length) {
+      let _chalPairs = null;
+      if (ep.triArmedTriathlon?.pairs?.length) {
+        _chalPairs = ep.triArmedTriathlon.pairs.map(p => ({ a: p.members[0], b: p.members[1] }));
+      } else if (ep.isBridalBrawls && ep.challengeData?.pairs?.length) {
+        _chalPairs = ep.challengeData.pairs.map(p => ({ a: p.guide, b: p.blind }));
+      } else if (ep.crouchingCourtney?.phase1?.pairs?.length) {
+        _chalPairs = ep.crouchingCourtney.phase1.pairs.map(p => ({ a: p.trainer, b: p.fighter }));
+      } else if (ep.areWeThereYeti?.pairs?.length) {
+        _chalPairs = ep.areWeThereYeti.pairs.map(p => ({ a: p.members[0], b: p.members[1] }));
+      }
+      if (_chalPairs) {
+        ep.tiedDestinies.pairs = _chalPairs;
+        ep.tiedDestinies.syncedFromChallenge = true;
+        gs._tiedDestiniesActive = _chalPairs;
+        // Re-generate reactions based on actual pairs
+        const _tdReactions = {};
+        _chalPairs.forEach(pair => {
+          const bond = getBond(pair.a, pair.b);
+          const react = bond >= 3 ? 'relieved' : bond >= 0 ? 'cautious' : bond >= -5 ? 'dread' : 'fury';
+          _tdReactions[pair.a] = react;
+          _tdReactions[pair.b] = react;
+        });
+        ep.tiedDestinies.reactions = _tdReactions;
+      }
+    }
+
     // Store standouts/stragglers for voter-specific targeting logic (cleared after tribal)
     const _immune = ep.immunityWinner;
     const _ranked = (ep.chalPlacements || []).filter(n => n !== _immune);

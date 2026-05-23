@@ -37,28 +37,62 @@ function _extractPlayerPlacements() {
   const finale = gs.finaleResult || {};
   const winner = finale.winner || null;
   const finalists = finale.finalists || [];
-  const juryVotes = finale.votes || {}; // {name: voteCount}
+  const juryVotes = finale.votes || {};
 
-  // Build elimination order (earliest eliminated first)
-  const elimOrder = [];
+  // Track permanent exits: { name → epNum } (last episode the player was in the game)
+  // For RI seasons, a player voted out goes to RI and their permanent exit is
+  // when they lose a duel, quit RI, or lose the reentry challenge — NOT when voted out.
+  // Returnees who re-enter then get voted out again: their permanent exit is the later elimination.
+  const permanentExit = {};
+  const returnees = new Set();
+
   for (const ep of history) {
-    // Sudden-death eliminations
-    if (ep.suddenDeathEliminated && !elimOrder.includes(ep.suddenDeathEliminated)) {
-      elimOrder.push(ep.suddenDeathEliminated);
+    // RI reentrants — mark as returned (their earlier exit doesn't count)
+    if (ep.riReentrant) returnees.add(ep.riReentrant);
+
+    // RI duel loser — permanently out
+    if (ep.riDuel?.loser) {
+      permanentExit[ep.riDuel.loser] = ep.num;
     }
-    // Triple-dog-dare / slasher eliminations
-    if (ep.eliminated && !elimOrder.includes(ep.eliminated)) {
-      elimOrder.push(ep.eliminated);
+
+    // RI quit — permanently out
+    if (ep.riQuit?.name) {
+      permanentExit[ep.riQuit.name] = ep.num;
     }
-    // First eliminated in double-elim
-    if (ep.firstEliminated && !elimOrder.includes(ep.firstEliminated)) {
-      elimOrder.push(ep.firstEliminated);
+
+    // RI reentry losers — permanently out at the reentry episode
+    if (ep.riReentryLosers?.length) {
+      for (const loser of ep.riReentryLosers) {
+        permanentExit[loser] = ep.num;
+      }
     }
-    // Tied destinies collateral
-    if (ep.tiedDestiniesCollateral && !elimOrder.includes(ep.tiedDestiniesCollateral)) {
-      elimOrder.push(ep.tiedDestiniesCollateral);
+
+    // Regular eliminations — record as permanent exit
+    // For RI seasons, players voted out go to RI (their exit will be overwritten
+    // by the duel/quit/reentry-loss above). For returnees, a later elimination
+    // overwrites the earlier one since we always update.
+    const elimNames = [
+      ep.suddenDeathEliminated, ep.eliminated,
+      ep.firstEliminated, ep.tiedDestiniesCollateral
+    ].filter(Boolean);
+
+    for (const name of elimNames) {
+      // If this player returned from RI, this is their real final exit
+      // If they haven't returned yet and RI is active, their duel loss will overwrite this
+      // If no RI, this is their permanent exit
+      permanentExit[name] = ep.num;
     }
   }
+
+  // Remove finalists from permanent exit (they made it to the end)
+  for (const name of finalists) {
+    delete permanentExit[name];
+  }
+
+  // Build elimination order sorted by permanent exit episode (earliest exit first)
+  const elimOrder = Object.entries(permanentExit)
+    .sort((a, b) => a[1] - b[1])
+    .map(([name]) => name);
 
   // Finalists sorted by jury votes (winner first, then by vote count desc)
   const sortedFinalists = [...finalists].sort((a, b) => {
@@ -67,37 +101,30 @@ function _extractPlayerPlacements() {
     return (juryVotes[b] || 0) - (juryVotes[a] || 0);
   });
 
-  // Determine merge episode (first episode where isMerge is true)
+  // Determine merge episode
   let mergeEpNum = Infinity;
   for (const ep of history) {
     if (ep.isMerge) { mergeEpNum = ep.num; break; }
   }
 
-  // Build placement map: 1 = winner, 2+ = finalists, then reverse elim order
+  // Build placement map: 1 = winner, 2+ = finalists, then reverse permanent exit order
   const placements = {};
   let place = 1;
 
-  // Winner + finalists
   for (const name of sortedFinalists) {
     placements[name] = { placement: place, phase: place === 1 ? 'Winner' : 'Finalist' };
     place++;
   }
 
-  // Eliminated players in reverse order (last eliminated = next best placement)
   for (let i = elimOrder.length - 1; i >= 0; i--) {
     const name = elimOrder[i];
-    if (placements[name]) continue; // already placed as finalist
+    if (placements[name]) continue;
 
-    // Determine phase
-    const elimEp = history.find(ep =>
-      ep.eliminated === name || ep.firstEliminated === name ||
-      ep.suddenDeathEliminated === name || ep.tiedDestiniesCollateral === name
-    );
-    const elimEpNum = elimEp?.num || 0;
+    const exitEp = permanentExit[name] || 0;
     let phase;
     if (jury.includes(name)) {
       phase = 'Juror';
-    } else if (elimEpNum >= mergeEpNum) {
+    } else if (exitEp >= mergeEpNum) {
       phase = 'Pre-Juror';
     } else {
       phase = 'Pre-Merge';
@@ -107,7 +134,6 @@ function _extractPlayerPlacements() {
     place++;
   }
 
-  // Any remaining players not in elimOrder or finalists (edge case: still active)
   for (const name of allNames) {
     if (!placements[name]) {
       placements[name] = { placement: place, phase: 'Unknown' };
@@ -171,8 +197,8 @@ function _extractChallengeData(name) {
       });
     }
 
-    // Immunity wins
-    if (ep.immunityWinner === name) {
+    // Immunity wins (exclude finale — that's a crown, not a shield)
+    if (ep.immunityWinner === name && !ep.isFinale) {
       immunityWins++;
     }
 
@@ -513,6 +539,29 @@ function _extractPlayerData() {
     }
     const tribe = tribeSeq.length ? tribeSeq.join(' → ') : '';
 
+    // Social score (0-3): harsh — bonds + alliances (and duration) only
+    // Most players get 0-1. Only 1-2 per season earn 3.
+    const allianceCount = playerAlliances.length;
+    const strongBonds = Object.values(bonds.bondsFinal).filter(b => b >= 7).length;
+    const medBonds = Object.values(bonds.bondsFinal).filter(b => b >= 4 && b < 7).length;
+    const hasShowmance = social.showmanceData?.length > 0;
+    // Alliance duration: count alliances that lasted 5+ episodes as "long"
+    const longAlliances = playerAlliances.filter(a => {
+      if (!a.formed) return false;
+      const endEp = placementInfo.phase === 'Winner' || placementInfo.phase === 'Finalist'
+        ? history.length : (permanentExit[name] || history.length);
+      return (endEp - a.formed) >= 5;
+    }).length;
+
+    let rawSocial = 0;
+    rawSocial += Math.min(allianceCount, 3) * 0.35;
+    rawSocial += Math.min(longAlliances, 2) * 0.4;
+    rawSocial += Math.min(strongBonds, 3) * 0.35;
+    rawSocial += Math.min(medBonds, 3) * 0.15;
+    if (hasShowmance) rawSocial += 0.3;
+
+    const socialScore = Math.min(3, Math.floor(rawSocial));
+
     playerData[name] = {
       playerSlug: _slug(name),
       placement: placementInfo.placement,
@@ -566,7 +615,8 @@ function _extractPlayerData() {
       // Misc
       survivalScore,
       juryVotes: juryVotesReceived,
-      isMole
+      isMole,
+      socialScore
     };
   }
 
@@ -1071,7 +1121,8 @@ export function extractSeasonTemplate() {
         idolsFound: pd.idolsFound,
         votesReceived: pd.totalVotesReceived,
         alliances: pd.alliances.map(a => a.name),
-        rivalries: pd.rivalries.map(r => r.player)
+        rivalries: pd.rivalries.map(r => r.player),
+        socialScore: pd.socialScore ?? 0
       };
     })
     .sort((a, b) => (a.placement ?? 999) - (b.placement ?? 999));

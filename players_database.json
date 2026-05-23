@@ -980,7 +980,7 @@
         },
         {
           "season": 10,
-          "placement": 6,
+          "placement": 7,
           "status": "Juror",
           "tribe": "Champions → Campers",
           "challengeWins": 0,
@@ -1108,7 +1108,7 @@
         },
         {
           "season": 10,
-          "placement": 13,
+          "placement": 15,
           "status": "Pre-Merge",
           "tribe": "Champions → Campers",
           "challengeWins": 0,
@@ -2534,7 +2534,7 @@
       "bestPlacement": 1,
       "wins": 1,
       "totalChallengeWins": 3,
-      "totalImmunityWins": 4,
+      "totalImmunityWins": 3,
       "totalRewardWins": 0,
       "totalVotesAgainst": 17,
       "totalIdolsFound": 0,
@@ -2593,7 +2593,7 @@
           "status": "Winner",
           "tribe": "Contenders → Champions → Campers",
           "challengeWins": 3,
-          "immunityWins": 4,
+          "immunityWins": 3,
           "rewardWins": 0,
           "votesReceived": 6,
           "idolsFound": 0,
@@ -3736,7 +3736,7 @@
         },
         {
           "season": 10,
-          "placement": 15,
+          "placement": 17,
           "status": "Pre-Merge",
           "tribe": "Champions → Campers",
           "challengeWins": 0,
@@ -4260,7 +4260,7 @@
         },
         {
           "season": 10,
-          "placement": 17,
+          "placement": 18,
           "status": "Pre-Merge",
           "tribe": "Contenders → Campers",
           "challengeWins": 0,
@@ -4489,7 +4489,7 @@
         },
         {
           "season": 10,
-          "placement": 7,
+          "placement": 9,
           "status": "Juror",
           "tribe": "Contenders → Campers",
           "challengeWins": 1,
@@ -4841,7 +4841,7 @@
         10
       ],
       "totalSeasons": 2,
-      "bestPlacement": 13,
+      "bestPlacement": 11,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -4885,8 +4885,8 @@
         },
         {
           "season": 10,
-          "placement": 18,
-          "status": "Unknown",
+          "placement": 11,
+          "status": "Pre-Juror",
           "tribe": "Contenders → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -5169,7 +5169,7 @@
         10
       ],
       "totalSeasons": 2,
-      "bestPlacement": 11,
+      "bestPlacement": 13,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -5199,7 +5199,7 @@
         },
         {
           "season": 10,
-          "placement": 11,
+          "placement": 13,
           "status": "Pre-Merge",
           "tribe": "Contenders → Champions → Campers",
           "challengeWins": 0,
@@ -5350,7 +5350,7 @@
         },
         {
           "season": 10,
-          "placement": 8,
+          "placement": 10,
           "status": "Juror",
           "tribe": "Champions → Contenders → Campers",
           "challengeWins": 0,
@@ -5441,7 +5441,7 @@
         },
         {
           "season": 10,
-          "placement": 5,
+          "placement": 6,
           "status": "Juror",
           "tribe": "Champions → Contenders → Campers",
           "challengeWins": 0,
@@ -6351,7 +6351,7 @@
         },
         {
           "season": 10,
-          "placement": 9,
+          "placement": 5,
           "status": "Juror",
           "tribe": "Champions → Contenders → Campers",
           "challengeWins": 0,
@@ -6825,7 +6825,7 @@
         10
       ],
       "totalSeasons": 2,
-      "bestPlacement": 10,
+      "bestPlacement": 12,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -6869,7 +6869,7 @@
         },
         {
           "season": 10,
-          "placement": 10,
+          "placement": 12,
           "status": "Pre-Merge",
           "tribe": "Contenders → Campers",
           "challengeWins": 0,
@@ -7175,7 +7175,7 @@
         },
         {
           "season": 10,
-          "placement": 12,
+          "placement": 8,
           "status": "Juror",
           "tribe": "Contenders → Champions → Campers",
           "challengeWins": 1,

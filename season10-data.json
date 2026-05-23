@@ -61,7 +61,8 @@
         "Scott",
         "Cody",
         "Ryan"
-      ]
+      ],
+      "socialScore": 2
     },
     {
       "placement": 2,
@@ -99,7 +100,8 @@
         "Sanders",
         "Priya",
         "Jasmine"
-      ]
+      ],
+      "socialScore": 1
     },
     {
       "placement": 3,
@@ -136,7 +138,8 @@
         "Sanders",
         "Priya",
         "Courtney"
-      ]
+      ],
+      "socialScore": 3
     },
     {
       "placement": 4,
@@ -169,136 +172,11 @@
       "rivalries": [
         "Scott",
         "Jasmine"
-      ]
+      ],
+      "socialScore": 3
     },
     {
       "placement": 5,
-      "name": "Carrie",
-      "playerSlug": "carrie",
-      "phase": "Juror",
-      "notes": "Carrie survives as a relationship player until Bowie correctly identifies her as a quiet jury threat.",
-      "strategicRank": 5.5,
-      "story": "Carrie's season starts with soft bonds and shaky challenge showings, making her look like the kind of player others can drag deep. That perception becomes her cover as she makes side deals, builds with Cody and Ryan, and keeps finding emotional footholds even after alliances expel her. Her rivalry with Bowie hardens into one of the season's coldest personal wars, yet the two repeatedly understand each other's danger better than anyone else does. At merge, Carrie looks weak on paper, but the jury math tells a different story: she has sat beside people, comforted people, and collected goodwill without ever being the obvious target. Ryan becomes her strongest connection and her biggest vulnerability, especially once The Pipeline forms too late to save her. Bowie sees the threat before the field fully catches up, and Carrie leaves at the exact moment her underdog path starts looking viable.",
-      "gameplayStyle": "Underestimated emotional connector",
-      "keyMoments": [
-        "Episode 1: Makes an early final two deal with Cody.",
-        "Episode 4: Carrie and Cody realize she has too many deals in motion.",
-        "Episode 9: Breaks from The Oath and votes Sanders, helping send a hero to Redemption Island.",
-        "Episode 11: Joins The Oath through Ryan after being left outside power.",
-        "Episode 13: Forms a final two deal with Ryan as their bond becomes unmistakable.",
-        "Episode 14: Forms The Pipeline with Ryan but cannot overcome Bowie's anti-Carrie push.",
-        "Episode 14: Loses to Sanders on Redemption Island by a single inch in Bocce Bombs."
-      ],
-      "challengeWins": 0,
-      "immunityWins": 0,
-      "rewardWins": 0,
-      "idolsFound": 0,
-      "votesReceived": 4,
-      "alliances": [
-        "The Movement",
-        "The Pipeline"
-      ],
-      "rivalries": [
-        "Bowie",
-        "Priya",
-        "Brick"
-      ]
-    },
-    {
-      "placement": 6,
-      "name": "Cody",
-      "playerSlug": "cody",
-      "phase": "Juror",
-      "notes": "Cody reads the game brilliantly but cannot convert his reads into enough votes when the endgame tightens.",
-      "strategicRank": 7,
-      "story": "Cody spends the early game as a quiet information collector, hearing things before others realize they have spoken. He survives the Champions fractures by attaching to Ryan, Bowie, Brick, and Zoey at different points, but his refusal to fully submit to any alliance keeps him both flexible and exposed. His idol find at the merge gives him leverage, yet his emotional loyalty to Priya and Brick repeatedly pulls him away from the cleanest strategic line. When Courtney exposes him as a strategic center, Cody's game changes: he can no longer hide behind observation. By the final six, his conflict with Jasmine turns personal, and by the final five he sees the vote coming with painful clarity. He exits not because he misread the room, but because nobody else is willing to move with the same urgency.",
-      "gameplayStyle": "Paranoid read-machine loyalist",
-      "keyMoments": [
-        "Episode 1: Extracts social intel from Bowie without asking direct questions.",
-        "Episode 3: Helps The Zoey Four eliminate Mickey.",
-        "Episode 5: Courtney's blowup exposes Cody as a strategic center.",
-        "Episode 9: Finds the merge Hidden Immunity Idol.",
-        "Episode 10: Loses his vote on the Journey, limiting his power during the open vote.",
-        "Episode 12: Votes Bowie instead of Priya, breaking The Oath for loyalty.",
-        "Episode 13: Loses the tiebreaker against Jasmine and then falls to Sanders on Redemption Island."
-      ],
-      "challengeWins": 0,
-      "immunityWins": 0,
-      "rewardWins": 0,
-      "idolsFound": 1,
-      "votesReceived": 5,
-      "alliances": [],
-      "rivalries": [
-        "Bowie",
-        "Scott",
-        "Jasmine"
-      ]
-    },
-    {
-      "placement": 7,
-      "name": "Scott",
-      "playerSlug": "scott",
-      "phase": "Juror",
-      "notes": "Scott weaponizes chaos, idols, and intimidation until the entire tribe finally agrees he is too dangerous to keep.",
-      "strategicRank": 8,
-      "story": "Scott is rejected on first impressions, swapped immediately, and spends the rest of the game acting like that insult never left his bloodstream. He rebuilds through blunt power, selective loyalty, and dirty information, making people trust him just long enough to become useful. His best move is also his cruelest: convincing Hicks to hand over an idol, then voting Hicks out. At merge, Scott remains the villain everyone fears but also the strategist everyone must account for, surviving one vote through an idol and winning Say Uncle through pure endurance. But his habit of betraying new structures, including The Three Torches, leaves him with enemies in every direction. When The Oath finally unifies, Scott exits loudly, using his last words to put Bowie's fingerprints on the game for the jury.",
-      "gameplayStyle": "Openly ruthless chaos broker",
-      "keyMoments": [
-        "Episode 1: Is voted out by his starting tribe and swapped, setting his revenge tone.",
-        "Episode 4: Leads the Anti-Priya Coalition against Priya.",
-        "Episode 8: Takes Hicks's idol before voting Hicks out.",
-        "Episode 9: Blocks Sanders from better vehicles and pushes merge chaos.",
-        "Episode 10: Wins Say Uncle by outlasting the Dungeon of Misfortune.",
-        "Episode 10: Votes Jasmine while supposedly aligned with The Three Torches.",
-        "Episode 11: Is unanimously targeted and exposes Bowie on the way out.",
-        "Episode 11: Loses his Redemption duel to Sanders and leaves as the season's defining villain."
-      ],
-      "challengeWins": 1,
-      "immunityWins": 1,
-      "rewardWins": 0,
-      "idolsFound": 0,
-      "votesReceived": 13,
-      "alliances": [],
-      "rivalries": [
-        "Bowie",
-        "Mickey",
-        "Cody",
-        "Ryan",
-        "Priya",
-        "Jasmine",
-        "Brick"
-      ]
-    },
-    {
-      "placement": 8,
-      "name": "Zoey",
-      "playerSlug": "zoey",
-      "phase": "Juror",
-      "notes": "Zoey's social bonds and steady challenge record make her look unbeatable just before she is cut down.",
-      "strategicRank": 6.5,
-      "story": "Zoey begins with Gwen in the Marshmallow Mafia, but Gwen's early exit forces her into a sharper, more independent game. She helps build the counterforce that removes Mickey and later becomes one half of a feared pair with Ryan. Her game is not loud; it is consistent, empathetic, and hard to attack without looking threatened. That is exactly why people start saying her name at the merge. The open vote in Episode 10 turns against her despite The Oath trying to protect her, and the margin is brutal enough to haunt her. On Redemption Island, she faces Sanders with grace, loses cleanly, and exits as one of the season's purest jury threats.",
-      "gameplayStyle": "Gentle bond-based contender",
-      "keyMoments": [
-        "Episode 2: Forms the Marshmallow Mafia with Gwen.",
-        "Episode 3: Leads The Zoey Four in the Mickey vote.",
-        "Episode 5: Navigates the sewer phase well in Broadway Baby.",
-        "Episode 9: Joins The Oath after Ryan warns her she is being targeted.",
-        "Episode 10: Is voted out in the public open vote despite deep bonds.",
-        "Episode 10: Loses the Precision Toss duel to Sanders and exits with grace."
-      ],
-      "challengeWins": 0,
-      "immunityWins": 0,
-      "rewardWins": 0,
-      "idolsFound": 0,
-      "votesReceived": 4,
-      "alliances": [
-        "The Marshmallow Mafia",
-        "The Oath"
-      ],
-      "rivalries": []
-    },
-    {
-      "placement": 9,
       "name": "Sanders",
       "playerSlug": "sanders",
       "phase": "Juror",
@@ -329,64 +207,76 @@
       "rivalries": [
         "Bowie",
         "Brick"
-      ]
+      ],
+      "socialScore": 2
     },
     {
-      "placement": 10,
-      "name": "Hicks",
-      "playerSlug": "hicks",
-      "phase": "Pre-Merge",
-      "notes": "Hicks reads people accurately but trusts Scott at the one moment he cannot afford to.",
-      "strategicRank": 6.5,
-      "story": "Hicks begins the game as one of the most observant players on the beach, spotting Jasmine's advantage and later finding an idol of his own. He runs early structure on the Contenders tribe, positioning Tyler and reading alliance cracks before others admit they exist. His problem is that social perception does not always become social control. By Episode 8, he is liked enough to be dangerous and exposed enough to be consensus. Scott offers him a plan that feels clean, and Hicks makes the fatal mistake of turning trust into an object by handing over the idol. The vote lands on him anyway, and Redemption Island confirms that reading the game is not the same as surviving it.",
-      "gameplayStyle": "Perceptive trust gambler",
+      "placement": 6,
+      "name": "Carrie",
+      "playerSlug": "carrie",
+      "phase": "Juror",
+      "notes": "Carrie survives as a relationship player until Bowie correctly identifies her as a quiet jury threat.",
+      "strategicRank": 5.5,
+      "story": "Carrie's season starts with soft bonds and shaky challenge showings, making her look like the kind of player others can drag deep. That perception becomes her cover as she makes side deals, builds with Cody and Ryan, and keeps finding emotional footholds even after alliances expel her. Her rivalry with Bowie hardens into one of the season's coldest personal wars, yet the two repeatedly understand each other's danger better than anyone else does. At merge, Carrie looks weak on paper, but the jury math tells a different story: she has sat beside people, comforted people, and collected goodwill without ever being the obvious target. Ryan becomes her strongest connection and her biggest vulnerability, especially once The Pipeline forms too late to save her. Bowie sees the threat before the field fully catches up, and Carrie leaves at the exact moment her underdog path starts looking viable.",
+      "gameplayStyle": "Underestimated emotional connector",
       "keyMoments": [
-        "Episode 1: Spearheads the Josee side of the first real Contenders vote.",
-        "Episode 3: Finds the Contenders Hidden Immunity Idol.",
-        "Episode 4: Gives Priya an idol as trust made physical.",
-        "Episode 6: Finds another Contenders idol after the swap.",
-        "Episode 8: Notices Stephanie's Vote Steal and keeps tracking advantages.",
-        "Episode 8: Hands his idol to Scott before being voted out by Scott and The Oath.",
-        "Episode 8: Loses the Endurance Hold duel to Priya."
-      ],
-      "challengeWins": 0,
-      "immunityWins": 0,
-      "rewardWins": 0,
-      "idolsFound": 2,
-      "votesReceived": 6,
-      "alliances": [
-        "The Chaos Crew"
-      ],
-      "rivalries": []
-    },
-    {
-      "placement": 11,
-      "name": "Tyler",
-      "playerSlug": "tyler",
-      "phase": "Pre-Merge",
-      "notes": "Tyler plays with loyalty and heart, but his challenge liability makes him the last pre-merge cut from Champions.",
-      "strategicRank": 4.5,
-      "story": "Tyler's game is quiet, earnest, and built around trust that he genuinely means. He forms early bonds with Brick, Stephanie, Jasmine, and Priya, often becoming the person others use as a number because he does not hide where his heart is. That sincerity gives him moments of warmth, especially with Jasmine, but it also makes him readable in a game increasingly run by hidden agendas. After the swap, his bond with Jasmine becomes visible and his dodgeball weakness gives Bowie's trio the excuse it needs. Tyler sees the pattern before he leaves and names Bowie as the true driver. On Redemption Island, he fights hard against Priya but cannot match her precision, exiting with dignity rather than bitterness.",
-      "gameplayStyle": "Earnest loyal soldier",
-      "keyMoments": [
-        "Episode 1: Shares a sunrise talk with Brick that becomes a real bond.",
-        "Episode 2: Rings the bell in Basic Straining, marking him as a quitter to some.",
-        "Episode 3: Makes a final two deal with Stephanie.",
-        "Episode 5: Builds a deeper quiet bond with Jasmine after the swap.",
-        "Episode 6: Is labeled the weakest link in Dodgebrawl.",
-        "Episode 7: Is voted out by Bowie's Three while Jasmine tries to save him.",
-        "Episode 7: Loses the Knot Untying duel to Priya."
+        "Episode 1: Makes an early final two deal with Cody.",
+        "Episode 4: Carrie and Cody realize she has too many deals in motion.",
+        "Episode 9: Breaks from The Oath and votes Sanders, helping send a hero to Redemption Island.",
+        "Episode 11: Joins The Oath through Ryan after being left outside power.",
+        "Episode 13: Forms a final two deal with Ryan as their bond becomes unmistakable.",
+        "Episode 14: Forms The Pipeline with Ryan but cannot overcome Bowie's anti-Carrie push.",
+        "Episode 14: Loses to Sanders on Redemption Island by a single inch in Bocce Bombs."
       ],
       "challengeWins": 0,
       "immunityWins": 0,
       "rewardWins": 0,
       "idolsFound": 0,
-      "votesReceived": 3,
-      "alliances": [],
-      "rivalries": []
+      "votesReceived": 4,
+      "alliances": [
+        "The Movement",
+        "The Pipeline"
+      ],
+      "rivalries": [
+        "Bowie",
+        "Priya",
+        "Brick"
+      ],
+      "socialScore": 1
     },
     {
-      "placement": 12,
+      "placement": 7,
+      "name": "Cody",
+      "playerSlug": "cody",
+      "phase": "Juror",
+      "notes": "Cody reads the game brilliantly but cannot convert his reads into enough votes when the endgame tightens.",
+      "strategicRank": 7,
+      "story": "Cody spends the early game as a quiet information collector, hearing things before others realize they have spoken. He survives the Champions fractures by attaching to Ryan, Bowie, Brick, and Zoey at different points, but his refusal to fully submit to any alliance keeps him both flexible and exposed. His idol find at the merge gives him leverage, yet his emotional loyalty to Priya and Brick repeatedly pulls him away from the cleanest strategic line. When Courtney exposes him as a strategic center, Cody's game changes: he can no longer hide behind observation. By the final six, his conflict with Jasmine turns personal, and by the final five he sees the vote coming with painful clarity. He exits not because he misread the room, but because nobody else is willing to move with the same urgency.",
+      "gameplayStyle": "Paranoid read-machine loyalist",
+      "keyMoments": [
+        "Episode 1: Extracts social intel from Bowie without asking direct questions.",
+        "Episode 3: Helps The Zoey Four eliminate Mickey.",
+        "Episode 5: Courtney's blowup exposes Cody as a strategic center.",
+        "Episode 9: Finds the merge Hidden Immunity Idol.",
+        "Episode 10: Loses his vote on the Journey, limiting his power during the open vote.",
+        "Episode 12: Votes Bowie instead of Priya, breaking The Oath for loyalty.",
+        "Episode 13: Loses the tiebreaker against Jasmine and then falls to Sanders on Redemption Island."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 1,
+      "votesReceived": 5,
+      "alliances": [],
+      "rivalries": [
+        "Bowie",
+        "Scott",
+        "Jasmine"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 8,
       "name": "Priya",
       "playerSlug": "priya",
       "phase": "Juror",
@@ -419,10 +309,189 @@
         "Scott",
         "Carrie",
         "Brick"
-      ]
+      ],
+      "socialScore": 2
+    },
+    {
+      "placement": 9,
+      "name": "Scott",
+      "playerSlug": "scott",
+      "phase": "Juror",
+      "notes": "Scott weaponizes chaos, idols, and intimidation until the entire tribe finally agrees he is too dangerous to keep.",
+      "strategicRank": 8,
+      "story": "Scott is rejected on first impressions, swapped immediately, and spends the rest of the game acting like that insult never left his bloodstream. He rebuilds through blunt power, selective loyalty, and dirty information, making people trust him just long enough to become useful. His best move is also his cruelest: convincing Hicks to hand over an idol, then voting Hicks out. At merge, Scott remains the villain everyone fears but also the strategist everyone must account for, surviving one vote through an idol and winning Say Uncle through pure endurance. But his habit of betraying new structures, including The Three Torches, leaves him with enemies in every direction. When The Oath finally unifies, Scott exits loudly, using his last words to put Bowie's fingerprints on the game for the jury.",
+      "gameplayStyle": "Openly ruthless chaos broker",
+      "keyMoments": [
+        "Episode 1: Is voted out by his starting tribe and swapped, setting his revenge tone.",
+        "Episode 4: Leads the Anti-Priya Coalition against Priya.",
+        "Episode 8: Takes Hicks's idol before voting Hicks out.",
+        "Episode 9: Blocks Sanders from better vehicles and pushes merge chaos.",
+        "Episode 10: Wins Say Uncle by outlasting the Dungeon of Misfortune.",
+        "Episode 10: Votes Jasmine while supposedly aligned with The Three Torches.",
+        "Episode 11: Is unanimously targeted and exposes Bowie on the way out.",
+        "Episode 11: Loses his Redemption duel to Sanders and leaves as the season's defining villain."
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 13,
+      "alliances": [],
+      "rivalries": [
+        "Bowie",
+        "Mickey",
+        "Cody",
+        "Ryan",
+        "Priya",
+        "Jasmine",
+        "Brick"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 10,
+      "name": "Zoey",
+      "playerSlug": "zoey",
+      "phase": "Juror",
+      "notes": "Zoey's social bonds and steady challenge record make her look unbeatable just before she is cut down.",
+      "strategicRank": 6.5,
+      "story": "Zoey begins with Gwen in the Marshmallow Mafia, but Gwen's early exit forces her into a sharper, more independent game. She helps build the counterforce that removes Mickey and later becomes one half of a feared pair with Ryan. Her game is not loud; it is consistent, empathetic, and hard to attack without looking threatened. That is exactly why people start saying her name at the merge. The open vote in Episode 10 turns against her despite The Oath trying to protect her, and the margin is brutal enough to haunt her. On Redemption Island, she faces Sanders with grace, loses cleanly, and exits as one of the season's purest jury threats.",
+      "gameplayStyle": "Gentle bond-based contender",
+      "keyMoments": [
+        "Episode 2: Forms the Marshmallow Mafia with Gwen.",
+        "Episode 3: Leads The Zoey Four in the Mickey vote.",
+        "Episode 5: Navigates the sewer phase well in Broadway Baby.",
+        "Episode 9: Joins The Oath after Ryan warns her she is being targeted.",
+        "Episode 10: Is voted out in the public open vote despite deep bonds.",
+        "Episode 10: Loses the Precision Toss duel to Sanders and exits with grace."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 4,
+      "alliances": [
+        "The Marshmallow Mafia",
+        "The Oath"
+      ],
+      "rivalries": [],
+      "socialScore": 2
+    },
+    {
+      "placement": 11,
+      "name": "Stephanie",
+      "playerSlug": "stephanie",
+      "phase": "Pre-Juror",
+      "notes": "Stephanie collects power early but is erased by Bowie's ambassador deal before her tools can peak.",
+      "strategicRank": 5.5,
+      "story": "Stephanie starts with a Vote Steal and the confidence of someone who wants to matter in every room. She manipulates Priya early, bonds with Tyler, and later steps away from the Chaos Crew when the trust no longer serves her. Her camp value is real: she rallies people, rebuilds shelter, and shows flashes of social control. But she also drifts between structures without securing a stable shield at the exact moment the ambassador twist arrives. Bowie and Zoey's negotiation turns her into the sacrifice, and she is eliminated without a vote, without a duel, and without using the full weight of her advantage. Her exit feels abrupt because her game still had ammunition left.",
+      "gameplayStyle": "Advantage-hoarding free agent",
+      "keyMoments": [
+        "Episode 2: Finds a Vote Steal near the well.",
+        "Episode 3: Plants a forged note for Jasmine about Scott.",
+        "Episode 4: Helps form the Chaos Crew, then watches it fracture immediately.",
+        "Episode 7: Makes a late-night final two pitch to Brick during Awake-A-Thon.",
+        "Episode 8: Leaves the Chaos Crew and joins The Oath for protection.",
+        "Episode 9: Is eliminated by the ambassador agreement between Bowie and Zoey."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 1,
+      "alliances": [
+        "The Oath"
+      ],
+      "rivalries": [
+        "Courtney"
+      ],
+      "socialScore": 1
+    },
+    {
+      "placement": 12,
+      "name": "Hicks",
+      "playerSlug": "hicks",
+      "phase": "Pre-Merge",
+      "notes": "Hicks reads people accurately but trusts Scott at the one moment he cannot afford to.",
+      "strategicRank": 6.5,
+      "story": "Hicks begins the game as one of the most observant players on the beach, spotting Jasmine's advantage and later finding an idol of his own. He runs early structure on the Contenders tribe, positioning Tyler and reading alliance cracks before others admit they exist. His problem is that social perception does not always become social control. By Episode 8, he is liked enough to be dangerous and exposed enough to be consensus. Scott offers him a plan that feels clean, and Hicks makes the fatal mistake of turning trust into an object by handing over the idol. The vote lands on him anyway, and Redemption Island confirms that reading the game is not the same as surviving it.",
+      "gameplayStyle": "Perceptive trust gambler",
+      "keyMoments": [
+        "Episode 1: Spearheads the Josee side of the first real Contenders vote.",
+        "Episode 3: Finds the Contenders Hidden Immunity Idol.",
+        "Episode 4: Gives Priya an idol as trust made physical.",
+        "Episode 6: Finds another Contenders idol after the swap.",
+        "Episode 8: Notices Stephanie's Vote Steal and keeps tracking advantages.",
+        "Episode 8: Hands his idol to Scott before being voted out by Scott and The Oath.",
+        "Episode 8: Loses the Endurance Hold duel to Priya."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 2,
+      "votesReceived": 6,
+      "alliances": [
+        "The Chaos Crew"
+      ],
+      "rivalries": [],
+      "socialScore": 1
     },
     {
       "placement": 13,
+      "name": "Tyler",
+      "playerSlug": "tyler",
+      "phase": "Pre-Merge",
+      "notes": "Tyler plays with loyalty and heart, but his challenge liability makes him the last pre-merge cut from Champions.",
+      "strategicRank": 4.5,
+      "story": "Tyler's game is quiet, earnest, and built around trust that he genuinely means. He forms early bonds with Brick, Stephanie, Jasmine, and Priya, often becoming the person others use as a number because he does not hide where his heart is. That sincerity gives him moments of warmth, especially with Jasmine, but it also makes him readable in a game increasingly run by hidden agendas. After the swap, his bond with Jasmine becomes visible and his dodgeball weakness gives Bowie's trio the excuse it needs. Tyler sees the pattern before he leaves and names Bowie as the true driver. On Redemption Island, he fights hard against Priya but cannot match her precision, exiting with dignity rather than bitterness.",
+      "gameplayStyle": "Earnest loyal soldier",
+      "keyMoments": [
+        "Episode 1: Shares a sunrise talk with Brick that becomes a real bond.",
+        "Episode 2: Rings the bell in Basic Straining, marking him as a quitter to some.",
+        "Episode 3: Makes a final two deal with Stephanie.",
+        "Episode 5: Builds a deeper quiet bond with Jasmine after the swap.",
+        "Episode 6: Is labeled the weakest link in Dodgebrawl.",
+        "Episode 7: Is voted out by Bowie's Three while Jasmine tries to save him.",
+        "Episode 7: Loses the Knot Untying duel to Priya."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 3,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 0
+    },
+    {
+      "placement": 14,
+      "name": "Josee",
+      "playerSlug": "josee",
+      "phase": "Pre-Merge",
+      "notes": "Josee survives on fire and defiance until Redemption Island gives her one last burst before Priya ends it.",
+      "strategicRank": 4.5,
+      "story": "Josee plays the early game with emotion on the surface and loyalty underneath, bonding tightly with Jasmine and Brick while clashing with Stephanie and Hicks. Her outburst at the first tribal exposes Hicks's plan and keeps her alive by the slimmest margin. She becomes the kind of player people both protect and fear, because no conversation around her stays quiet for long. Her Episode 4 vote is chaotic enough to send her to Redemption Island, where she defeats Gwen and Courtney with raw competitiveness. But the island is not a long-term home for her. Priya beats her in Water Carry, and Josee exits furious, convinced the second chance still was not enough.",
+      "gameplayStyle": "Explosive loyal fighter",
+      "keyMoments": [
+        "Episode 1: Calls out Hicks at tribal and survives the Sam tiebreaker.",
+        "Episode 2: Becomes Basic Straining's most defiant player with two acts of insubordination.",
+        "Episode 3: Bonds deeply with Jasmine while confronting Scott publicly.",
+        "Episode 4: Is voted out in a tiebreaker against Scott.",
+        "Episode 4: Beats Gwen in a Hand on Idol duel.",
+        "Episode 5: Beats Courtney on the Log Roll.",
+        "Episode 6: Loses the Water Carry duel to Priya and exits enraged."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 6,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 0
+    },
+    {
+      "placement": 15,
       "name": "Courtney",
       "playerSlug": "courtney",
       "phase": "Pre-Merge",
@@ -450,62 +519,8 @@
       "rivalries": [
         "Brick",
         "Stephanie"
-      ]
-    },
-    {
-      "placement": 14,
-      "name": "Josee",
-      "playerSlug": "josee",
-      "phase": "Pre-Merge",
-      "notes": "Josee survives on fire and defiance until Redemption Island gives her one last burst before Priya ends it.",
-      "strategicRank": 4.5,
-      "story": "Josee plays the early game with emotion on the surface and loyalty underneath, bonding tightly with Jasmine and Brick while clashing with Stephanie and Hicks. Her outburst at the first tribal exposes Hicks's plan and keeps her alive by the slimmest margin. She becomes the kind of player people both protect and fear, because no conversation around her stays quiet for long. Her Episode 4 vote is chaotic enough to send her to Redemption Island, where she defeats Gwen and Courtney with raw competitiveness. But the island is not a long-term home for her. Priya beats her in Water Carry, and Josee exits furious, convinced the second chance still was not enough.",
-      "gameplayStyle": "Explosive loyal fighter",
-      "keyMoments": [
-        "Episode 1: Calls out Hicks at tribal and survives the Sam tiebreaker.",
-        "Episode 2: Becomes Basic Straining's most defiant player with two acts of insubordination.",
-        "Episode 3: Bonds deeply with Jasmine while confronting Scott publicly.",
-        "Episode 4: Is voted out in a tiebreaker against Scott.",
-        "Episode 4: Beats Gwen in a Hand on Idol duel.",
-        "Episode 5: Beats Courtney on the Log Roll.",
-        "Episode 6: Loses the Water Carry duel to Priya and exits enraged."
       ],
-      "challengeWins": 0,
-      "immunityWins": 0,
-      "rewardWins": 0,
-      "idolsFound": 0,
-      "votesReceived": 6,
-      "alliances": [],
-      "rivalries": []
-    },
-    {
-      "placement": 15,
-      "name": "Mickey",
-      "playerSlug": "mickey",
-      "phase": "Pre-Merge",
-      "notes": "Mickey's early strategic paranoia fractures The Movement and makes him Bowie's first major sacrifice.",
-      "strategicRank": 6,
-      "story": "Mickey arrives with the air of someone who has replayed every past mistake and is determined not to repeat them. He joins Bowie's Movement and immediately looks like a player who understands the board, but his fear of Zoey's likability pushes him into an early betrayal. That single vote does not save anyone, but it damages trust inside the alliance and marks him as an unpredictable strategist. In Episode 3, he still believes he knows where the votes are, which is the most dangerous confidence in Total Drama. Bowie decides tribe stability matters more than alliance loyalty and cuts him loose. Mickey leaves not because he lacked a plan, but because everyone could see him planning.",
-      "gameplayStyle": "Restless paranoid planner",
-      "keyMoments": [
-        "Episode 1: Joins Bowie, Sanders, and Carrie to form The Movement.",
-        "Episode 1: Steals a body part during the medical challenge chaos.",
-        "Episode 2: Breaks The Movement by voting Zoey instead of Gwen.",
-        "Episode 3: Shares a personal secret with Bowie that briefly softens their bond.",
-        "Episode 3: Watches trust in The Movement thin around him.",
-        "Episode 3: Is blindsided when Bowie votes him out over Courtney."
-      ],
-      "challengeWins": 0,
-      "immunityWins": 0,
-      "rewardWins": 0,
-      "idolsFound": 0,
-      "votesReceived": 4,
-      "alliances": [
-        "The Movement"
-      ],
-      "rivalries": [
-        "Scott"
-      ]
+      "socialScore": 1
     },
     {
       "placement": 16,
@@ -532,10 +547,41 @@
       "alliances": [
         "The Marshmallow Mafia"
       ],
-      "rivalries": []
+      "rivalries": [],
+      "socialScore": 0
     },
     {
       "placement": 17,
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "phase": "Pre-Merge",
+      "notes": "Mickey's early strategic paranoia fractures The Movement and makes him Bowie's first major sacrifice.",
+      "strategicRank": 6,
+      "story": "Mickey arrives with the air of someone who has replayed every past mistake and is determined not to repeat them. He joins Bowie's Movement and immediately looks like a player who understands the board, but his fear of Zoey's likability pushes him into an early betrayal. That single vote does not save anyone, but it damages trust inside the alliance and marks him as an unpredictable strategist. In Episode 3, he still believes he knows where the votes are, which is the most dangerous confidence in Total Drama. Bowie decides tribe stability matters more than alliance loyalty and cuts him loose. Mickey leaves not because he lacked a plan, but because everyone could see him planning.",
+      "gameplayStyle": "Restless paranoid planner",
+      "keyMoments": [
+        "Episode 1: Joins Bowie, Sanders, and Carrie to form The Movement.",
+        "Episode 1: Steals a body part during the medical challenge chaos.",
+        "Episode 2: Breaks The Movement by voting Zoey instead of Gwen.",
+        "Episode 3: Shares a personal secret with Bowie that briefly softens their bond.",
+        "Episode 3: Watches trust in The Movement thin around him.",
+        "Episode 3: Is blindsided when Bowie votes him out over Courtney."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 4,
+      "alliances": [
+        "The Movement"
+      ],
+      "rivalries": [
+        "Scott"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 18,
       "name": "Sam",
       "playerSlug": "sam",
       "phase": "Pre-Merge",
@@ -556,36 +602,8 @@
       "idolsFound": 0,
       "votesReceived": 4,
       "alliances": [],
-      "rivalries": []
-    },
-    {
-      "placement": 18,
-      "name": "Stephanie",
-      "playerSlug": "stephanie",
-      "phase": "Unknown",
-      "notes": "Stephanie collects power early but is erased by Bowie's ambassador deal before her tools can peak.",
-      "strategicRank": 5.5,
-      "story": "Stephanie starts with a Vote Steal and the confidence of someone who wants to matter in every room. She manipulates Priya early, bonds with Tyler, and later steps away from the Chaos Crew when the trust no longer serves her. Her camp value is real: she rallies people, rebuilds shelter, and shows flashes of social control. But she also drifts between structures without securing a stable shield at the exact moment the ambassador twist arrives. Bowie and Zoey's negotiation turns her into the sacrifice, and she is eliminated without a vote, without a duel, and without using the full weight of her advantage. Her exit feels abrupt because her game still had ammunition left.",
-      "gameplayStyle": "Advantage-hoarding free agent",
-      "keyMoments": [
-        "Episode 2: Finds a Vote Steal near the well.",
-        "Episode 3: Plants a forged note for Jasmine about Scott.",
-        "Episode 4: Helps form the Chaos Crew, then watches it fracture immediately.",
-        "Episode 7: Makes a late-night final two pitch to Brick during Awake-A-Thon.",
-        "Episode 8: Leaves the Chaos Crew and joins The Oath for protection.",
-        "Episode 9: Is eliminated by the ambassador agreement between Bowie and Zoey."
-      ],
-      "challengeWins": 0,
-      "immunityWins": 0,
-      "rewardWins": 0,
-      "idolsFound": 0,
-      "votesReceived": 1,
-      "alliances": [
-        "The Oath"
-      ],
-      "rivalries": [
-        "Courtney"
-      ]
+      "rivalries": [],
+      "socialScore": 0
     }
   ],
   "seasonNarrative": "Season 10 begins as Champions vs Contenders and mutates into a war of information, loyalty, and public exposure. The pre-merge is defined by advantages, tribe swaps, Redemption Island, and Bowie's early rise as the season's architect, while Jasmine quietly collects tools, reads, and relationships. The merge detonates with Priya's return, Stephanie's ambassador elimination, Sanders's first fall, and The Oath becoming the dominant but unstable machine. From there, almost every vote exposes someone: Courtney exposes Cody and Bowie, Scott exposes Bowie, Priya exposes Bowie, and Bowie keeps surviving anyway. Redemption Island becomes its own mythology through Priya's early streak and Sanders's five-duel run. The endgame narrows around visible pairs — Jasmine and Brick, Ryan and Carrie, Bowie and whoever he can still convince — until the jury removes Brick and leaves Bowie and Jasmine in the final. In the end, the season's strategist reaches the finish line, but the season's survivor wins the race.",

@@ -2004,15 +2004,15 @@
       "gender": "f",
       "archetype": "underdog",
       "stats": {
-        "physical": 5,
-        "endurance": 6,
+        "physical": 6,
+        "endurance": 4,
         "mental": 8,
-        "social": 8,
-        "strategic": 2,
-        "loyalty": 8,
+        "social": 6,
+        "strategic": 7,
+        "loyalty": 7,
         "boldness": 9,
-        "intuition": 4,
-        "temperament": 9
+        "intuition": 9,
+        "temperament": 5
       },
       "isReturnee": false
     },

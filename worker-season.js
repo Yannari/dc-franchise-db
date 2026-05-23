@@ -25,6 +25,8 @@ export default {
       return await generateSeasonDataExtraction(body, env);
     } else if (mode === "rankings-narration") {
       return await generateRankingsNarration(body, env);
+    } else if (mode === "rankings-advantage-fill") {
+      return await generateAdvantageAnalysis(body, env);
     } else {
       return await generateAnalytics(summaryText, season, episode, env);
     }
@@ -1431,6 +1433,91 @@ Return ONLY valid JSON matching the schema.
     instructions,
     input: playerSummaries,
     text: { format: { type: "json_schema", name: "rankings_narration", strict: true, schema } },
+  };
+
+  return await callOpenAI(payload, env);
+}
+
+async function generateAdvantageAnalysis(body, env) {
+  const { players } = body;
+
+  if (!players || !Array.isArray(players) || players.length === 0) {
+    return new Response(JSON.stringify({ error: "Missing players array" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const schema = {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      results: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            name: { type: "string" },
+            advPlayed: { type: "number" },
+            advHeld: { type: "number" },
+            reasoning: { type: "string" }
+          },
+          required: ["name", "advPlayed", "advHeld", "reasoning"]
+        }
+      }
+    },
+    required: ["results"]
+  };
+
+  const playerSummaries = players.map(p => {
+    const parts = [`${p.name} — Placement: #${p.placement}, Phase: ${p.phase || 'N/A'}`];
+    parts.push(`idolsFound: ${p.idolsFound || 0}`);
+    if (p.story) parts.push(`Story: ${p.story}`);
+    if (p.keyMoments?.length) parts.push(`Key Moments: ${p.keyMoments.join(' | ')}`);
+    if (p.notes) parts.push(`Notes: ${p.notes}`);
+    return parts.join('\n');
+  }).join('\n\n---\n\n');
+
+  const instructions = `
+You are analyzing a Total Drama season to determine each player's ADVANTAGE usage for a scoring system.
+
+Count ALL advantages and idols:
+- Idols (Hidden Immunity Idols)
+- Extra Votes
+- Vote Steals
+- Safety Without Power
+- Knowledge Is Power
+- Shot in the Dark
+- Inheritance Advantages
+- Any other game advantage that a player found/received
+
+For each player, determine:
+
+1. **advPlayed** — Number of advantages/idols SUCCESSFULLY USED (played at tribal, activated, used strategically). Count each use separately. An idol played = 1. An Extra Vote used = 1. Safety Without Power activated = 1. Knowledge Is Power used = 1. Shot in the Dark that succeeded = 1. A stolen idol that was then played = 1 for the person who played it.
+
+2. **advHeld** — Number of advantages/idols FOUND BUT NEVER PLAYED or WASTED. This means the player found/received the advantage but was eliminated still holding it, OR the advantage expired unused, OR Shot in the Dark that failed. If a player used ALL their advantages, advHeld = 0. If a player found 2 idols and played 1, advHeld = 1.
+
+3. **reasoning** — One sentence explaining what advantages they had and what happened.
+
+IMPORTANT RULES:
+- advPlayed + advHeld should roughly equal the total advantages the player possessed (some may have been stolen from them — that's fine, don't count stolen-away items)
+- A player who found 0 advantages: advPlayed = 0, advHeld = 0
+- Shot in the Dark that FAILED = advHeld (wasted), Shot in the Dark that SUCCEEDED = advPlayed
+- If an idol was stolen from player A by player B, player A loses it (don't count for A), player B gets it (count for B when they use it)
+- Be precise — read the story and key moments carefully
+
+PLAYER DATA:
+${playerSummaries}
+
+Return ONLY valid JSON matching the schema.
+`.trim();
+
+  const payload = {
+    model: "gpt-5.5",
+    instructions,
+    input: playerSummaries,
+    text: { format: { type: "json_schema", name: "advantage_analysis", strict: true, schema } },
   };
 
   return await callOpenAI(payload, env);

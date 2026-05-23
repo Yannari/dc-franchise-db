@@ -1283,21 +1283,21 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
   // Multi-season players — will be recomputed after players DB merge
   // (see _recomputeMultiSeasonPlayers)
 
-  // Evolution arrays (remove old entries for this season first so re-export overwrites)
-  if (!db.evolution) db.evolution = {};
-  const evoKeys = ['winningStrategies', 'castComposition', 'finaleVoteMargins', 'majorTwists'];
-  for (const key of evoKeys) {
-    if (!db.evolution[key]) db.evolution[key] = [];
-    db.evolution[key] = db.evolution[key].filter(e => e.season !== seasonNum);
+  // Trends arrays (remove old entries for this season first so re-export overwrites)
+  if (!db.trends) db.trends = {};
+  const trendKeys = ['winningStrategies', 'castComposition', 'finaleVoteMargins', 'majorTwists'];
+  for (const key of trendKeys) {
+    if (!db.trends[key]) db.trends[key] = [];
+    db.trends[key] = db.trends[key].filter(e => e.season !== seasonNum);
   }
 
-  db.evolution.winningStrategies.push({
+  db.trends.winningStrategies.push({
     season: seasonNum,
     strategy: template.winner?.strategy || '',
     winner: rawStats.winner
   });
 
-  db.evolution.castComposition.push({
+  db.trends.castComposition.push({
     season: seasonNum,
     composition: `${rawStats.castSize} players`
   });
@@ -1310,21 +1310,33 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
   if (rawStats.finalists?.length) {
     voteMarginEntry.finalists = rawStats.finalists.map(f => f.name);
   }
-  db.evolution.finaleVoteMargins.push(voteMarginEntry);
+  db.trends.finaleVoteMargins.push(voteMarginEntry);
 
-  db.evolution.majorTwists.push({
+  db.trends.majorTwists.push({
     season: seasonNum,
     twist: template.seasonNarrative || template.subtitle || ''
   });
 
-  // Mirror evolution into trends (both exist in the database)
-  if (!db.trends) db.trends = {};
-  for (const key of evoKeys) {
-    if (!db.trends[key]) db.trends[key] = [];
-    db.trends[key] = db.trends[key].filter(e => e.season !== seasonNum);
-    const evoEntry = db.evolution[key]?.find(e => e.season === seasonNum);
-    if (evoEntry) db.trends[key].push(evoEntry);
-  }
+  // Evolution timeline — write a seasonN text entry for franchise.html's timeline display
+  if (!db.evolution) db.evolution = {};
+  // Clean stale array keys that may have been written by older export code
+  for (const key of trendKeys) delete db.evolution[key];
+
+  const strategy = template.winner?.strategy || '';
+  const vote = template.winner?.vote || 'no jury vote';
+  const subtitle = template.subtitle || '';
+  const runnerUp = rawStats.finalists?.find(f => f.name !== rawStats.winner)?.name || '';
+  db.evolution[`season${seasonNum}`] =
+    `${subtitle ? subtitle + '. ' : ''}${rawStats.winner} wins${vote ? ` (${vote})` : ''}${runnerUp ? ` over ${runnerUp}` : ''}. ${strategy}`;
+
+  // Update evolution message with all winners
+  const allSeasonKeys = Object.keys(db.evolution).filter(k => k.startsWith('season')).sort((a, b) => {
+    return parseInt(a.replace('season', '')) - parseInt(b.replace('season', ''));
+  });
+  const winnerSummaries = db.trends.winningStrategies
+    .slice().sort((a, b) => a.season - b.season)
+    .map(ws => `${ws.winner} S${ws.season}`).join(', ');
+  db.evolution.message = `The message across ${allSeasonKeys.length} seasons: Different winning strategies — ${winnerSummaries}. Adaptability, jury respect, and understanding when to strike remain essential.`;
 
   return db;
 }
@@ -1440,15 +1452,17 @@ function _recomputeMilestones(franchiseDb, playersDb, seasonsDb) {
     });
   }
 
-  // Most Idols Found (Career)
-  const idolLeader = [...ps].sort((a, b) => (b.totalIdolsFound || 0) - (a.totalIdolsFound || 0))[0];
-  if (idolLeader?.totalIdolsFound > 0) {
+  // Most Idols Found (Career) — show ties
+  const idolSorted = [...ps].sort((a, b) => (b.totalIdolsFound || 0) - (a.totalIdolsFound || 0));
+  const topIdols = idolSorted[0]?.totalIdolsFound || 0;
+  if (topIdols > 0) {
+    const tied = idolSorted.filter(p => (p.totalIdolsFound || 0) === topIdols);
     milestones.push({
       category: 'Most Idols Found',
-      holder: idolLeader.name,
-      stat: `${idolLeader.totalIdolsFound} total`,
-      season: (idolLeader.seasons || []).map(s => `S${s}`).join(', '),
-      playerSlug: idolLeader.id
+      holder: tied.map(p => p.name).join(', '),
+      stat: `${topIdols} total${tied.length > 1 ? ' (tied)' : ''}`,
+      season: tied.length === 1 ? (tied[0].seasons || []).map(s => `S${s}`).join(', ') : 'Multiple',
+      playerSlug: tied[0].id
     });
   }
 

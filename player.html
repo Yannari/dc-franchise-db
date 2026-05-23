@@ -198,7 +198,7 @@
 
 // Replace the formatPlayerStory function in player.html with this fixed version:
 
-function formatPlayerStory(storyText) {
+function formatPlayerStory(storyText, player) {
   if (!storyText) {
     return '<p style="color: #94a3b8; text-align: center; padding: 40px;">No story available</p>';
   }
@@ -206,22 +206,30 @@ function formatPlayerStory(storyText) {
   // Check if story has season separators
   const hasSeparators = storyText.includes('────────') || storyText.match(/SEASON\s+\d+\s+[—\-–]/);
   
-  // If no separators, render as simple formatted text
+  // If no separators, render with season badge from player data
   if (!hasSeparators) {
     const paragraphs = storyText.split(/\n\n+/).filter(p => p.trim());
-    
+
     const formattedParagraphs = paragraphs.map(p => {
       let formatted = p
-        .replace(/(\d+)\s+(immunity wins?|challenge wins?|total wins?|votes?|idols?)/gi, 
+        .replace(/(\d+)\s+(immunity wins?|challenge wins?|total wins?|votes?|idols?)/gi,
           '<span class="stats-highlight">$1 $2</span>')
-        .replace(/(Final Tribal Council?|merge|finale|endgame|jury|fire-making)/gi, 
+        .replace(/(Final Tribal Council?|merge|finale|endgame|jury|fire-making)/gi,
           '<span class="stats-highlight">$1</span>')
-        .replace(/(\d+)[–\-](\d+)(?:[–\-](\d+))?/g, 
+        .replace(/(\d+)[–\-](\d+)(?:[–\-](\d+))?/g,
           '<span class="stats-highlight">$&</span>');
-      
+
       return '<p>' + formatted + '</p>';
     }).join('');
-    
+
+    // Try to get season info from player data
+    const seasonNum = player?.seasons?.[0];
+    if (seasonNum) {
+      const sd = player.seasonDetails?.find(s => s.season === seasonNum);
+      const seasonTitle = getSeasonTitle(seasonNum);
+      return `<div class="season-header"><span class="season-badge">Season ${seasonNum}</span><span class="season-theme">${seasonTitle}</span></div>
+        <div class="season-body">${formattedParagraphs}</div>`;
+    }
     return '<div class="season-body" style="border-left: none;">' + formattedParagraphs + '</div>';
   }
   
@@ -275,25 +283,20 @@ function formatPlayerStory(storyText) {
     // Handle content BEFORE the first season header (for returnees)
     if (seasonHeaders[0].index > 0) {
       const beforeContent = storyText.substring(0, seasonHeaders[0].index).trim();
-      // Remove separators
       const cleanContent = beforeContent.replace(/────────+/g, '').trim();
-      
+
       if (cleanContent) {
-        // Try to detect which season this is from context
-        // Look for "Season X" mentions in the content
-        const seasonMention = cleanContent.match(/(?:Season|S)\s*(\d+)/i);
-        if (seasonMention) {
-          const detectedSeason = seasonMention[1];
-          // Try to get theme from the content itself or use "Unknown"
-          const themeMatch = cleanContent.match(/(?:Season\s*\d+\s+[—\-–]\s+([^.,\n]+)|on\s+([^(,\n]+)\s*\(Season)/i);
-          const theme = themeMatch ? (themeMatch[1] || themeMatch[2] || '').trim() : 'Previous Season';
-          
-          seasonMap.set(detectedSeason, {
-            seasonNum: detectedSeason,
-            seasonTheme: theme,
-            content: cleanContent
-          });
-        }
+        // Find which season this belongs to — it's the earliest season NOT already in a header
+        const headeredSeasons = new Set(seasonHeaders.map(h => h.seasonNum));
+        const firstUnheadered = (player?.seasons || []).map(String).find(s => !headeredSeasons.has(s));
+        const detectedSeason = firstUnheadered || (player?.seasons?.[0]?.toString()) || '?';
+        const theme = getSeasonTitle(parseInt(detectedSeason));
+
+        seasonMap.set(detectedSeason, {
+          seasonNum: detectedSeason,
+          seasonTheme: theme,
+          content: cleanContent
+        });
       }
     }
     
@@ -485,7 +488,8 @@ function getTierInfo(t) { return TIER_CFG[t] || TIER_CFG['D']; }
 
 function getSeasonTitle(n) {
   const t = {1:'Cullhouse',2:'Return',3:'Revenge of the Island',4:'Edge of Extinction',
-    5:'Season 5',6:'Season 6',7:'Season 7',8:'Heroes vs Villains vs Civilians',9:'Land of Power'};
+    5:'Season 5',6:'Season 6',7:'Fan vs Favorites',8:'Heroes vs Villains vs Civilians',
+    9:'Land of Power',10:'Champions vs Contenders'};
   return t[n] || ('Season ' + n);
 }
 
@@ -886,7 +890,7 @@ function renderPlayerProfile(player) {
   // ── STORY ────────────────────────────────────────────────
   if (player.story) {
     html += `<div class="pp-section pp-reveal" style="margin-top:28px"><h2>Player Story</h2></div>
-    <div class="pp-story pp-reveal">${formatPlayerStory(player.story)}</div>`;
+    <div class="pp-story pp-reveal">${formatPlayerStory(player.story, player)}</div>`;
   }
 
   // ppTab defined in outer scope below

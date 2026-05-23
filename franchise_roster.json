@@ -1951,12 +1951,12 @@
       "stats": {
         "physical": 6,
         "endurance": 7,
-        "mental": 7,
+        "mental": 6,
         "social": 5,
         "strategic": 8,
         "loyalty": 4,
         "boldness": 9,
-        "intuition": 8,
+        "intuition": 7,
         "temperament": 2
       },
       "isReturnee": false

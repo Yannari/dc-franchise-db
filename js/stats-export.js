@@ -172,7 +172,7 @@ function _extractPlayerPlacements() {
     }
   }
 
-  return { placements, elimOrder, sortedFinalists, winner, juryVotes };
+  return { placements, elimOrder, sortedFinalists, winner, juryVotes, permanentExit };
 }
 
 // ── 2. Voting Data ───────────────────────────────────────────────────
@@ -510,7 +510,7 @@ function _extractBlindsideData(name) {
 // Combines all sub-extractors for every player into a single export object.
 
 function _extractPlayerData() {
-  const { placements, elimOrder, sortedFinalists, winner, juryVotes } = _extractPlayerPlacements();
+  const { placements, elimOrder, sortedFinalists, winner, juryVotes, permanentExit } = _extractPlayerPlacements();
   const allNames = _allPlayerNames();
   const alliances = gs.namedAlliances || [];
   const playerData = {};

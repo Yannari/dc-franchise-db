@@ -713,15 +713,16 @@ function renderComparison() {
 function renderPlayerCards(players) {
   const row = document.getElementById('cmpPlayersRow');
   row.innerHTML = players.map((p, i) => {
-    const t = tierStyle(p.tier || 'D');
     const r = p.rankEntry;
+    const tier = r?.tier || p.tier || '';
+    const t = tierStyle(tier || 'D');
     const score = r ? r.score : null;
     const rankStr = r ? `#${r.rank || '?'} • Score ${score}` : '';
     return `<div class="cmp-player-card p${i}">
       <img class="cmp-av" src="assets/avatars/${p.id}.png" alt="${p.name}"
            onerror="this.src=''; this.style.background='rgba(255,255,255,.06)'">
       <div class="cmp-pname">${p.name}</div>
-      ${p.tier ? `<div class="cmp-tier-pill" style="color:${t.color};background:${t.bg};border:1px solid ${t.border}">${p.tier} Tier</div>` : ''}
+      ${tier && tier !== 'Unranked' ? `<div class="cmp-tier-pill" style="color:${t.color};background:${t.bg};border:1px solid ${t.border}">${tier} Tier</div>` : ''}
       ${rankStr ? `<div class="cmp-rank">${rankStr}</div>` : ''}
       <a href="player.html?player=${p.id}" style="font-size:11px;color:var(--muted);margin-top:8px;display:inline-block;text-decoration:none;">View Profile →</a>
     </div>`;

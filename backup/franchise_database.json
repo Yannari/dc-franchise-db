@@ -1,10 +1,10 @@
 {
   "franchiseStats": {
-    "totalSeasons": 10,
-    "totalEpisodes": 146,
+    "totalSeasons": 9,
+    "totalEpisodes": 128,
     "uniquePlayers": 102,
-    "totalAppearances": 184,
-    "lastUpdated": "2026-05-23",
+    "totalAppearances": 166,
+    "lastUpdated": "2026-03-03",
     "dataSources": [
       "players_database.json",
       "seasons_database.json",
@@ -104,19 +104,6 @@
       "keyStats": "5–3–0 jury win; 1 individual immunity; 2 votes received; possessed 1 stolen idol, Knowledge is Power, and an Extra Vote; executed the Inheritance Heist.",
       "legacy": "Sets the franchise gold standard for advantage mastery at the merge. Proves that ruthless timing plus airtight social insurance can still earn a largely respectful jury win.",
       "votesAgainst": 2
-    },
-    {
-      "season": 10,
-      "seasonTitle": "Champions vs Contenders: The Relay Crown",
-      "emoji": "[AI_FILL]",
-      "winner": "Jasmine",
-      "playerSlug": "jasmine",
-      "finalVote": "",
-      "runnerUp": "Bowie",
-      "keyStats": "Jasmine wins Season 10 after 3 challenge wins, 4 immunity moments, 6 votes against, and a dominant Rejected Olympic Relay performance in Episode 18.",
-      "strategy": "Jasmine's game is built on pressure reads, loyal shields, and perfectly timed exits from danger. She begins as the human lie detector with Safety Without Power in her pocket, survives the fracture of the Chaos Crew, rebuilds through Brick and Priya, and keeps slipping through votes where bigger strategists think they have her cornered.",
-      "legacy": "Her legacy is the champion who kept being underestimated as merely loyal or emotional, then proved in the finale that loyalty can be fuel. She beats Bowie not by outscheming him, but by outlasting his schemes and outrunning him when there is nowhere left to hide.",
-      "votesAgainst": 6
     }
   ],
   "records": {
@@ -137,12 +124,6 @@
           "playerSlug": "cameron",
           "total": 4
         }
-      },
-      "mostChallengeWins": {
-        "name": "Ryan",
-        "playerSlug": "ryan",
-        "wins": 3,
-        "season": 10
       }
     },
     "votingRecords": {
@@ -326,11 +307,6 @@
       "name": "Brightly",
       "playerSlug": "brightly",
       "description": "Fan favorite"
-    },
-    {
-      "season": 10,
-      "name": "Jasmine",
-      "playerSlug": "jasmine"
     }
   ],
   "multiSeasonPlayers": [
@@ -349,11 +325,220 @@
       "bestPlacement": 1
     },
     {
-      "name": "Bowie",
-      "playerSlug": "bowie",
+      "name": "Heather",
+      "playerSlug": "heather",
       "seasons": [
-        9,
-        10
+        4,
+        2,
+        1,
+        8
+      ],
+      "seasonsPlayed": 4,
+      "wins": 0,
+      "avgPlacement": 9.5,
+      "bestPlacement": 6
+    },
+    {
+      "name": "Cameron",
+      "playerSlug": "cameron",
+      "seasons": [
+        4,
+        3,
+        8
+      ],
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "avgPlacement": 3,
+      "bestPlacement": 1
+    },
+    {
+      "name": "Scott",
+      "playerSlug": "scott",
+      "seasons": [
+        4,
+        3,
+        7
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 4.33,
+      "bestPlacement": 2
+    },
+    {
+      "name": "Sky",
+      "playerSlug": "sky",
+      "seasons": [
+        5,
+        7,
+        8
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 7,
+      "bestPlacement": 2
+    },
+    {
+      "name": "Zoey",
+      "playerSlug": "zoey",
+      "seasons": [
+        4,
+        3,
+        7
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 7,
+      "bestPlacement": 2
+    },
+    {
+      "name": "Duncan",
+      "playerSlug": "duncan",
+      "seasons": [
+        4,
+        2,
+        1
+      ],
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "avgPlacement": 7.33,
+      "bestPlacement": 1
+    },
+    {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "seasons": [
+        2,
+        1,
+        7
+      ],
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "avgPlacement": 8,
+      "bestPlacement": 1
+    },
+    {
+      "name": "Jo",
+      "playerSlug": "jo",
+      "seasons": [
+        4,
+        3,
+        8
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 8.67,
+      "bestPlacement": 7
+    },
+    {
+      "name": "Beth",
+      "playerSlug": "beth",
+      "seasons": [
+        2,
+        1,
+        6
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 9.33,
+      "bestPlacement": 4
+    },
+    {
+      "name": "Emma",
+      "playerSlug": "emma",
+      "seasons": [
+        4,
+        3,
+        6
+      ],
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "avgPlacement": 9.33,
+      "bestPlacement": 1
+    },
+    {
+      "name": "Gwen",
+      "playerSlug": "gwen",
+      "seasons": [
+        4,
+        2,
+        1
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 9.33,
+      "bestPlacement": 4
+    },
+    {
+      "name": "Geoff",
+      "playerSlug": "geoff",
+      "seasons": [
+        4,
+        1,
+        6
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 10.33,
+      "bestPlacement": 5
+    },
+    {
+      "name": "Owen",
+      "playerSlug": "owen",
+      "seasons": [
+        2,
+        1,
+        8
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 11,
+      "bestPlacement": 7
+    },
+    {
+      "name": "Courtney",
+      "playerSlug": "courtney",
+      "seasons": [
+        4,
+        2,
+        1
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 11.33,
+      "bestPlacement": 9
+    },
+    {
+      "name": "Leshawna",
+      "playerSlug": "leshawna",
+      "seasons": [
+        2,
+        1,
+        8
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 11.67,
+      "bestPlacement": 11
+    },
+    {
+      "name": "Brody",
+      "playerSlug": "brody",
+      "seasons": [
+        6,
+        7,
+        8
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 13.67,
+      "bestPlacement": 7
+    },
+    {
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "seasons": [
+        5,
+        6
       ],
       "seasonsPlayed": 2,
       "wins": 1,
@@ -371,31 +556,6 @@
       "wins": 1,
       "avgPlacement": 2.5,
       "bestPlacement": 1
-    },
-    {
-      "name": "Cameron",
-      "playerSlug": "cameron",
-      "seasons": [
-        4,
-        3,
-        8
-      ],
-      "seasonsPlayed": 3,
-      "wins": 1,
-      "avgPlacement": 3,
-      "bestPlacement": 1
-    },
-    {
-      "name": "Carrie",
-      "playerSlug": "carrie",
-      "seasons": [
-        7,
-        10
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 4,
-      "bestPlacement": 3
     },
     {
       "name": "MacArthur",
@@ -426,63 +586,11 @@
       "playerSlug": "ryan",
       "seasons": [
         5,
-        6,
-        10
-      ],
-      "seasonsPlayed": 3,
-      "wins": 0,
-      "avgPlacement": 5,
-      "bestPlacement": 3
-    },
-    {
-      "name": "Scott",
-      "playerSlug": "scott",
-      "seasons": [
-        4,
-        3,
-        7,
-        10
-      ],
-      "seasonsPlayed": 4,
-      "wins": 0,
-      "avgPlacement": 5,
-      "bestPlacement": 2
-    },
-    {
-      "name": "Brick",
-      "playerSlug": "brick",
-      "seasons": [
-        3,
-        10
+        6
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 6,
-      "bestPlacement": 3
-    },
-    {
-      "name": "Mickey",
-      "playerSlug": "mickey",
-      "seasons": [
-        5,
-        6,
-        10
-      ],
-      "seasonsPlayed": 3,
-      "wins": 1,
-      "avgPlacement": 6,
-      "bestPlacement": 1
-    },
-    {
-      "name": "Sanders",
-      "playerSlug": "sanders",
-      "seasons": [
-        8,
-        10
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 6,
+      "avgPlacement": 5.5,
       "bestPlacement": 3
     },
     {
@@ -510,46 +618,6 @@
       "bestPlacement": 6
     },
     {
-      "name": "Sky",
-      "playerSlug": "sky",
-      "seasons": [
-        5,
-        7,
-        8
-      ],
-      "seasonsPlayed": 3,
-      "wins": 0,
-      "avgPlacement": 7,
-      "bestPlacement": 2
-    },
-    {
-      "name": "Zoey",
-      "playerSlug": "zoey",
-      "seasons": [
-        4,
-        3,
-        7,
-        10
-      ],
-      "seasonsPlayed": 4,
-      "wins": 0,
-      "avgPlacement": 7.25,
-      "bestPlacement": 2
-    },
-    {
-      "name": "Duncan",
-      "playerSlug": "duncan",
-      "seasons": [
-        4,
-        2,
-        1
-      ],
-      "seasonsPlayed": 3,
-      "wins": 1,
-      "avgPlacement": 7.33,
-      "bestPlacement": 1
-    },
-    {
       "name": "Sugar",
       "playerSlug": "sugar",
       "seasons": [
@@ -562,19 +630,6 @@
       "bestPlacement": 5
     },
     {
-      "name": "Lindsay",
-      "playerSlug": "lindsay",
-      "seasons": [
-        2,
-        1,
-        7
-      ],
-      "seasonsPlayed": 3,
-      "wins": 1,
-      "avgPlacement": 8,
-      "bestPlacement": 1
-    },
-    {
       "name": "Bridgette",
       "playerSlug": "bridgette",
       "seasons": [
@@ -585,32 +640,6 @@
       "wins": 0,
       "avgPlacement": 8.5,
       "bestPlacement": 3
-    },
-    {
-      "name": "Jo",
-      "playerSlug": "jo",
-      "seasons": [
-        4,
-        3,
-        8
-      ],
-      "seasonsPlayed": 3,
-      "wins": 0,
-      "avgPlacement": 8.67,
-      "bestPlacement": 7
-    },
-    {
-      "name": "Cody",
-      "playerSlug": "cody",
-      "seasons": [
-        1,
-        7,
-        10
-      ],
-      "seasonsPlayed": 3,
-      "wins": 0,
-      "avgPlacement": 9,
-      "bestPlacement": 2
     },
     {
       "name": "Dave",
@@ -649,71 +678,6 @@
       "bestPlacement": 9
     },
     {
-      "name": "Beth",
-      "playerSlug": "beth",
-      "seasons": [
-        2,
-        1,
-        6
-      ],
-      "seasonsPlayed": 3,
-      "wins": 0,
-      "avgPlacement": 9.33,
-      "bestPlacement": 4
-    },
-    {
-      "name": "Emma",
-      "playerSlug": "emma",
-      "seasons": [
-        4,
-        3,
-        6
-      ],
-      "seasonsPlayed": 3,
-      "wins": 1,
-      "avgPlacement": 9.33,
-      "bestPlacement": 1
-    },
-    {
-      "name": "Jasmine",
-      "playerSlug": "jasmine",
-      "seasons": [
-        5,
-        7,
-        10
-      ],
-      "seasonsPlayed": 3,
-      "wins": 1,
-      "avgPlacement": 9.33,
-      "bestPlacement": 1
-    },
-    {
-      "name": "Heather",
-      "playerSlug": "heather",
-      "seasons": [
-        4,
-        2,
-        1,
-        8
-      ],
-      "seasonsPlayed": 4,
-      "wins": 0,
-      "avgPlacement": 9.5,
-      "bestPlacement": 6
-    },
-    {
-      "name": "Priya",
-      "playerSlug": "priya",
-      "seasons": [
-        9,
-        10
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 9.5,
-      "bestPlacement": 7
-    },
-    {
       "name": "Kitty",
       "playerSlug": "kitty",
       "seasons": [
@@ -738,19 +702,6 @@
       "bestPlacement": 8
     },
     {
-      "name": "Geoff",
-      "playerSlug": "geoff",
-      "seasons": [
-        4,
-        1,
-        6
-      ],
-      "seasonsPlayed": 3,
-      "wins": 0,
-      "avgPlacement": 10.33,
-      "bestPlacement": 5
-    },
-    {
       "name": "Anne Maria",
       "playerSlug": "anne-maria",
       "seasons": [
@@ -761,6 +712,18 @@
       "wins": 0,
       "avgPlacement": 10.5,
       "bestPlacement": 5
+    },
+    {
+      "name": "Cody",
+      "playerSlug": "cody",
+      "seasons": [
+        1,
+        7
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 10.5,
+      "bestPlacement": 2
     },
     {
       "name": "Dwayne",
@@ -787,60 +750,6 @@
       "bestPlacement": 10
     },
     {
-      "name": "Gwen",
-      "playerSlug": "gwen",
-      "seasons": [
-        4,
-        2,
-        1,
-        10
-      ],
-      "seasonsPlayed": 4,
-      "wins": 0,
-      "avgPlacement": 11,
-      "bestPlacement": 4
-    },
-    {
-      "name": "Owen",
-      "playerSlug": "owen",
-      "seasons": [
-        2,
-        1,
-        8
-      ],
-      "seasonsPlayed": 3,
-      "wins": 0,
-      "avgPlacement": 11,
-      "bestPlacement": 7
-    },
-    {
-      "name": "Leshawna",
-      "playerSlug": "leshawna",
-      "seasons": [
-        2,
-        1,
-        8
-      ],
-      "seasonsPlayed": 3,
-      "wins": 0,
-      "avgPlacement": 11.67,
-      "bestPlacement": 11
-    },
-    {
-      "name": "Courtney",
-      "playerSlug": "courtney",
-      "seasons": [
-        4,
-        2,
-        1,
-        10
-      ],
-      "seasonsPlayed": 4,
-      "wins": 0,
-      "avgPlacement": 11.75,
-      "bestPlacement": 9
-    },
-    {
       "name": "Lightning",
       "playerSlug": "lightning",
       "seasons": [
@@ -865,18 +774,6 @@
       "bestPlacement": 9
     },
     {
-      "name": "Hicks",
-      "playerSlug": "hicks",
-      "seasons": [
-        9,
-        10
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 12,
-      "bestPlacement": 10
-    },
-    {
       "name": "Harold",
       "playerSlug": "harold",
       "seasons": [
@@ -893,12 +790,11 @@
       "playerSlug": "josee",
       "seasons": [
         5,
-        6,
-        10
+        6
       ],
-      "seasonsPlayed": 3,
+      "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 13,
+      "avgPlacement": 12.5,
       "bestPlacement": 12
     },
     {
@@ -914,17 +810,16 @@
       "bestPlacement": 5
     },
     {
-      "name": "Brody",
-      "playerSlug": "brody",
+      "name": "Jasmine",
+      "playerSlug": "jasmine",
       "seasons": [
-        6,
-        7,
-        8
+        5,
+        7
       ],
-      "seasonsPlayed": 3,
+      "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 13.67,
-      "bestPlacement": 7
+      "avgPlacement": 13.5,
+      "bestPlacement": 13
     },
     {
       "name": "Dakota",
@@ -939,30 +834,6 @@
       "bestPlacement": 12
     },
     {
-      "name": "Sam",
-      "playerSlug": "sam",
-      "seasons": [
-        3,
-        10
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 15,
-      "bestPlacement": 13
-    },
-    {
-      "name": "Stephanie",
-      "playerSlug": "stephanie",
-      "seasons": [
-        6,
-        10
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 15.5,
-      "bestPlacement": 13
-    },
-    {
       "name": "Justin",
       "playerSlug": "justin",
       "seasons": [
@@ -973,18 +844,6 @@
       "wins": 0,
       "avgPlacement": 17,
       "bestPlacement": 10
-    },
-    {
-      "name": "Tyler",
-      "playerSlug": "tyler",
-      "seasons": [
-        1,
-        10
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 17,
-      "bestPlacement": 11
     },
     {
       "name": "Crimson",
@@ -1057,11 +916,6 @@
         "season": 9,
         "strategy": "He built dense social cover, then stockpiled and perfectly timed advantages to control pivotal votes. By weaponizing Inheritance, stealing Julia’s idol, and cutting Priya at peak threat, he removed every rival path while maintaining enough bonds to reach the fire-making tiebreak and win it.",
         "winner": "Bowie"
-      },
-      {
-        "season": 10,
-        "strategy": "Jasmine's game is built on pressure reads, loyal shields, and perfectly timed exits from danger. She begins as the human lie detector with Safety Without Power in her pocket, survives the fracture of the Chaos Crew, rebuilds through Brick and Priya, and keeps slipping through votes where bigger strategists think they have her cornered.",
-        "winner": "Jasmine"
       }
     ],
     "castComposition": [
@@ -1101,10 +955,6 @@
         "season": 9,
         "composition": "18 players",
         "theme": "18 newbies fight for the title of King of Power"
-      },
-      {
-        "season": 10,
-        "composition": "18 players"
       }
     ],
     "finaleVoteMargins": [
@@ -1157,15 +1007,6 @@
           "Millie",
           "Chase"
         ]
-      },
-      {
-        "season": 10,
-        "vote": "",
-        "winner": "Jasmine",
-        "finalists": [
-          "Jasmine",
-          "Bowie"
-        ]
       }
     ],
     "majorTwists": [
@@ -1204,10 +1045,6 @@
       {
         "season": 9,
         "twist": "18 newbies fight for the title of King of Power"
-      },
-      {
-        "season": 10,
-        "twist": "Season 10 begins as Champions vs Contenders and mutates into a war of information, loyalty, and public exposure. The pre-merge is defined by advantages, tribe swaps, Redemption Island, and Bowie's early rise as the season's architect, while Jasmine quietly collects tools, reads, and relationships. The merge detonates with Priya's return, Stephanie's ambassador elimination, Sanders's first fall, and The Oath becoming the dominant but unstable machine. From there, almost every vote exposes someone: Courtney exposes Cody and Bowie, Scott exposes Bowie, Priya exposes Bowie, and Bowie keeps surviving anyway. Redemption Island becomes its own mythology through Priya's early streak and Sanders's five-duel run. The endgame narrows around visible pairs — Jasmine and Brick, Ryan and Carrie, Bowie and whoever he can still convince — until the jury removes Brick and leaves Bowie and Jasmine in the final. In the end, the season's strategist reaches the finish line, but the season's survivor wins the race."
       }
     ]
   },
@@ -1216,27 +1053,41 @@
       "category": "Most Challenge Wins (Career)",
       "holder": "Alejandro",
       "stat": "18 total",
-      "season": "S4, S2, S1, S8",
+      "season": "S1, S2, S4, S8",
       "playerSlug": "alejandro"
+    },
+    {
+      "category": "Longest Immunity Streak",
+      "holder": "Gwen",
+      "stat": "4 consecutive (tied)",
+      "season": "Gwen S4 (Ep 11-14) / Alejandro S8 (Ep 12-16 finale)",
+      "playerSlug": "gwen"
     },
     {
       "category": "Most Challenge Wins (Single Season)",
-      "holder": "Alejandro",
-      "stat": "7 total",
-      "season": "S8",
-      "playerSlug": "alejandro"
+      "holder": "Scott",
+      "stat": "6 total",
+      "season": "S3",
+      "playerSlug": "scott"
     },
     {
       "category": "Fewest Votes to Win",
-      "holder": "Emma",
-      "stat": "0 votes",
-      "season": "S3",
-      "playerSlug": "emma"
+      "holder": "Lindsay",
+      "stat": "1 vote",
+      "season": "S1",
+      "playerSlug": "lindsay"
     },
     {
-      "category": "Winner with 0 Votes Against",
+      "category": "Most Votes Received",
+      "holder": "Geoff",
+      "stat": "29 total",
+      "season": "S4",
+      "playerSlug": "geoff"
+    },
+    {
+      "category": "Perfect Game",
       "holder": "Emma",
-      "stat": "0 votes (entire season)",
+      "stat": "0 votes until F4",
       "season": "S3",
       "playerSlug": "emma"
     },
@@ -1248,31 +1099,125 @@
       "playerSlug": "mickey"
     },
     {
-      "category": "Most Votes Received",
-      "holder": "Geoff",
-      "stat": "54 total",
-      "season": "S4, S1, S6",
-      "playerSlug": "geoff"
-    },
-    {
       "category": "Most Idols Found",
       "holder": "Ezekiel",
       "stat": "3 total",
-      "season": "S2, S1",
+      "season": "S1, S2",
       "playerSlug": "ezekiel"
+    },
+    {
+      "category": "Longest Idol Hold",
+      "holder": "Scott",
+      "stat": "9 tribals",
+      "season": "S4",
+      "playerSlug": "scott"
+    },
+    {
+      "category": "Most Votes Cancelled (Single Play)",
+      "holder": "Sierra, Geoff",
+      "stat": "10, 7",
+      "season": "S4"
+    },
+    {
+      "category": "Most Unbreakable Bonds (Simultaneous)",
+      "holder": "Zoey",
+      "stat": "3 at once",
+      "season": "S4",
+      "playerSlug": "zoey"
     },
     {
       "category": "Most Finals Appearances",
       "holder": "Alejandro",
       "stat": "4 times",
-      "season": "S4, S2, S1, S8",
+      "season": "S1, S2, S4, S8",
       "playerSlug": "alejandro"
     },
     {
       "category": "Closest Finale",
+      "holder": "S4",
+      "stat": "7-6-1",
+      "season": "Alejandro win"
+    },
+    {
+      "category": "Only Tiebreak Finale",
       "holder": "S5",
       "stat": "3-3-2 (tiebreak)",
       "season": "Mickey win"
+    },
+    {
+      "category": "Largest Jury",
+      "holder": "S4",
+      "stat": "14 members",
+      "season": "EoE twist"
+    },
+    {
+      "category": "Most EoE Participants",
+      "holder": "S4",
+      "stat": "12 players",
+      "season": "66% of cast"
+    },
+    {
+      "category": "First Dual Winners",
+      "holder": "Alejandro & Cameron",
+      "stat": "4-4 jury tie",
+      "season": "S8",
+      "playerSlug": "alejandro"
+    },
+    {
+      "category": "First Two-Time Winner",
+      "holder": "Alejandro",
+      "stat": "Won S4 and S8",
+      "season": "S4, S8",
+      "playerSlug": "alejandro"
+    },
+    {
+      "category": "Most Idols Played (Single Season)",
+      "holder": "Sanders",
+      "stat": "2 idols played",
+      "season": "S8",
+      "playerSlug": "sanders"
+    },
+    {
+      "category": "Only Player to Quit Holding Super Idol",
+      "holder": "Heather",
+      "stat": "Quit Ep 13 with Super Idol in pocket",
+      "season": "S8",
+      "playerSlug": "heather"
+    },
+    {
+      "category": "Most Challenge Wins",
+      "holder": "Alejandro",
+      "playerSlug": "alejandro",
+      "stat": "18 wins",
+      "season": "Career"
+    },
+    {
+      "category": "Most Immunity Wins",
+      "holder": "Alejandro",
+      "playerSlug": "alejandro",
+      "stat": "14 wins",
+      "season": "Career"
+    },
+    {
+      "category": "Most Reward Wins",
+      "holder": "Cameron",
+      "playerSlug": "cameron",
+      "stat": "4 wins",
+      "season": "Career"
+    },
+    {
+      "category": "Most Votes Against",
+      "holder": "Geoff",
+      "playerSlug": "geoff",
+      "stat": "54 votes",
+      "season": "Career"
+    },
+    {
+      "category": "Most Jury Votes (Career)",
+      "holder": "Alejandro",
+      "playerSlug": "alejandro",
+      "stat": "12 votes",
+      "season": "Career"
     }
   ],
   "careerLeaders": {
@@ -1289,14 +1234,14 @@
           "total": 10
         },
         {
-          "name": "Scott",
-          "playerSlug": "scott",
-          "total": 8
-        },
-        {
           "name": "Zoey",
           "playerSlug": "zoey",
           "total": 8
+        },
+        {
+          "name": "Scott",
+          "playerSlug": "scott",
+          "total": 7
         },
         {
           "name": "MacArthur",
@@ -1346,11 +1291,6 @@
           "total": 5
         },
         {
-          "name": "Ryan",
-          "playerSlug": "ryan",
-          "total": 5
-        },
-        {
           "name": "Zoey",
           "playerSlug": "zoey",
           "total": 5
@@ -1361,16 +1301,6 @@
           "total": 4
         },
         {
-          "name": "Jasmine",
-          "playerSlug": "jasmine",
-          "total": 4
-        },
-        {
-          "name": "Scott",
-          "playerSlug": "scott",
-          "total": 4
-        },
-        {
           "name": "Heather",
           "playerSlug": "heather",
           "total": 3
@@ -1378,6 +1308,21 @@
         {
           "name": "Mickey",
           "playerSlug": "mickey",
+          "total": 3
+        },
+        {
+          "name": "Scott",
+          "playerSlug": "scott",
+          "total": 3
+        },
+        {
+          "name": "Sky",
+          "playerSlug": "sky",
+          "total": 3
+        },
+        {
+          "name": "Trent",
+          "playerSlug": "trent",
           "total": 3
         }
       ],
@@ -1442,6 +1387,11 @@
           "votesAgainst": 0
         },
         {
+          "name": "Sam",
+          "playerSlug": "sam",
+          "votesAgainst": 0
+        },
+        {
           "name": "Scary Girl",
           "playerSlug": "scary-girl",
           "votesAgainst": 0
@@ -1449,6 +1399,11 @@
         {
           "name": "Samey",
           "playerSlug": "samey",
+          "votesAgainst": 1
+        },
+        {
+          "name": "Sanders",
+          "playerSlug": "sanders",
           "votesAgainst": 1
         },
         {
@@ -1475,16 +1430,6 @@
           "name": "Scarlett",
           "playerSlug": "scarlett",
           "votesAgainst": 2
-        },
-        {
-          "name": "Damien",
-          "playerSlug": "damien",
-          "votesAgainst": 2
-        },
-        {
-          "name": "Raj",
-          "playerSlug": "raj",
-          "votesAgainst": 2
         }
       ],
       "mostJuryVotes": [
@@ -1492,11 +1437,6 @@
           "name": "Alejandro",
           "playerSlug": "alejandro",
           "total": 12
-        },
-        {
-          "name": "Jacques",
-          "playerSlug": "jacques",
-          "total": 7
         },
         {
           "name": "Lindsay",
@@ -1507,16 +1447,6 @@
           "name": "Zoey",
           "playerSlug": "zoey",
           "total": 6
-        },
-        {
-          "name": "MacArthur",
-          "playerSlug": "macarthur",
-          "total": 6
-        },
-        {
-          "name": "Cameron",
-          "playerSlug": "cameron",
-          "total": 5
         },
         {
           "name": "Duncan",
@@ -1534,9 +1464,24 @@
           "total": 4
         },
         {
-          "name": "Emma",
-          "playerSlug": "emma",
+          "name": "Sky",
+          "playerSlug": "sky",
           "total": 3
+        },
+        {
+          "name": "Ryan",
+          "playerSlug": "ryan",
+          "total": 2
+        },
+        {
+          "name": "Cameron",
+          "playerSlug": "cameron",
+          "total": 1
+        },
+        {
+          "name": "Amy",
+          "playerSlug": "amy",
+          "total": 0
         }
       ]
     },
@@ -1782,36 +1727,6 @@
     "season7": "Fans vs Favorites brought back 10 returnees to face 10 superfans. MacArthur's power-social hybrid game won (6-2-1) by operating as the merge switchboard - holding an idol, building cross-faction bonds, and managing public disagreements to preserve agency. Cody's redemption arc (19th → 2nd) showed massive growth. The season demonstrated that balanced menace and loyalty, combined with decisive FTC performance, can defeat both challenge dominance and pure social gameplay.",
     "message": "The message across 8 seasons: Different strategies can win — social mastery (Lindsay S1), survival story (Duncan S2), perfect game (Emma S3), strategic evolution (Alejandro S4), clean positioning (Mickey S5), ice-cold control (Jacques S6), power-social balance (MacArthur S7), and shield management + physical dominance (Alejandro/Cameron S8). But adaptability, jury respect, and understanding when to strike remain essential. S8 proved that even a 'Civilian' with no prior wins can control the entire post-merge — and that the greatest legends still needed each other to survive.",
     "season8": "Heroes vs. Villains vs. Civilians brought 18 returnees into the franchise's most complex tribal format. The Civilian bloc (Gerry/Jen/Sanders) dominated the merge through Unbreakable Relationships, controlling 75% of post-merge votes and systematically eliminating legends Owen, Leshawna, and MacArthur. Alejandro's physical resurrection (4 individual immunities) combined with Cameron's tactical survival produced a historic 4-4 jury deadlock — the franchise's first Dual Win. Sanders played the most decorated non-winner game in history (2 idols found, 2 played, final immunity). Gerry's psychological destruction of Heather — forcing her to quit while holding the Super Idol — stands as the most stunning advantage waste in Total Drama history.",
-    "season9": "18 newbies fight for the title of King of Power — 18 players, won by Bowie over Bowie & Millie & Chase. Sets the franchise gold standard for advantage mastery at the merge. Proves that ruthless timing plus airtight social insurance can still earn a largely respectful jury win.",
-    "winningStrategies": [
-      {
-        "season": 10,
-        "strategy": "Jasmine's game is built on pressure reads, loyal shields, and perfectly timed exits from danger. She begins as the human lie detector with Safety Without Power in her pocket, survives the fracture of the Chaos Crew, rebuilds through Brick and Priya, and keeps slipping through votes where bigger strategists think they have her cornered.",
-        "winner": "Jasmine"
-      }
-    ],
-    "castComposition": [
-      {
-        "season": 10,
-        "composition": "18 players"
-      }
-    ],
-    "finaleVoteMargins": [
-      {
-        "season": 10,
-        "vote": "",
-        "winner": "Jasmine",
-        "finalists": [
-          "Jasmine",
-          "Bowie"
-        ]
-      }
-    ],
-    "majorTwists": [
-      {
-        "season": 10,
-        "twist": "Season 10 begins as Champions vs Contenders and mutates into a war of information, loyalty, and public exposure. The pre-merge is defined by advantages, tribe swaps, Redemption Island, and Bowie's early rise as the season's architect, while Jasmine quietly collects tools, reads, and relationships. The merge detonates with Priya's return, Stephanie's ambassador elimination, Sanders's first fall, and The Oath becoming the dominant but unstable machine. From there, almost every vote exposes someone: Courtney exposes Cody and Bowie, Scott exposes Bowie, Priya exposes Bowie, and Bowie keeps surviving anyway. Redemption Island becomes its own mythology through Priya's early streak and Sanders's five-duel run. The endgame narrows around visible pairs — Jasmine and Brick, Ryan and Carrie, Bowie and whoever he can still convince — until the jury removes Brick and leaves Bowie and Jasmine in the final. In the end, the season's strategist reaches the finish line, but the season's survivor wins the race."
-      }
-    ]
+    "season9": "18 newbies fight for the title of King of Power — 18 players, won by Bowie over Bowie & Millie & Chase. Sets the franchise gold standard for advantage mastery at the merge. Proves that ruthless timing plus airtight social insurance can still earn a largely respectful jury win."
   }
 }

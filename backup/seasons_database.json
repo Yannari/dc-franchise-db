@@ -1,8 +1,8 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 10,
-    "totalPlayers": 102,
+    "totalSeasons": 9,
+    "totalPlayers": 58,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
@@ -307,42 +307,6 @@
       "status": "Complete",
       "castPhotoPath": "assets/cast/s9-cast.png",
       "emoji": "🪬"
-    },
-    {
-      "seasonNumber": 10,
-      "title": "Champions vs Contenders: The Relay Crown",
-      "subtitle": "A season of broken oaths, public betrayals, Redemption Island legends, and one final sprint that turned Jasmine from survivor into champion.",
-      "castSize": 18,
-      "episodeCount": 18,
-      "jurySize": 0,
-      "winner": {
-        "name": "Jasmine",
-        "playerSlug": "jasmine",
-        "vote": "",
-        "runnerUp": "Bowie",
-        "keyStats": "Jasmine wins Season 10 after 3 challenge wins, 4 immunity moments, 6 votes against, and a dominant Rejected Olympic Relay performance in Episode 18.",
-        "strategy": "Jasmine's game is built on pressure reads, loyal shields, and perfectly timed exits from danger. She begins as the human lie detector with Safety Without Power in her pocket, survives the fracture of the Chaos Crew, rebuilds through Brick and Priya, and keeps slipping through votes where bigger strategists think they have her cornered.",
-        "legacy": "Her legacy is the champion who kept being underestimated as merely loyal or emotional, then proved in the finale that loyalty can be fuel. She beats Bowie not by outscheming him, but by outlasting his schemes and outrunning him when there is nowhere left to hide."
-      },
-      "awards": {
-        "fanFavorite": {
-          "name": "Jasmine",
-          "playerSlug": "jasmine"
-        },
-        "bestStrategic": {
-          "name": "Bowie",
-          "playerSlug": "bowie"
-        },
-        "mostChallengeWins": {
-          "name": "Ryan",
-          "playerSlug": "ryan",
-          "detail": "3 wins"
-        }
-      },
-      "theme": "Season 10 begins as Champions vs Contenders and mutates into a war of information, loyalty, and public exposure. The pre-merge is defined by advantages, tribe swaps, Redemption Island, and Bowie's early rise as the season's architect, while Jasmine quietly collects tools, reads, and relationships. The merge detonates with Priya's return, Stephanie's ambassador elimination, Sanders's first fall, and The Oath becoming the dominant but unstable machine. From there, almost every vote exposes someone: Courtney exposes Cody and Bowie, Scott exposes Bowie, Priya exposes Bowie, and Bowie keeps surviving anyway. Redemption Island becomes its own mythology through Priya's early streak and Sanders's five-duel run. The endgame narrows around visible pairs — Jasmine and Brick, Ryan and Carrie, Bowie and whoever he can still convince — until the jury removes Brick and leaves Bowie and Jasmine in the final. In the end, the season's strategist reaches the finish line, but the season's survivor wins the race.",
-      "status": "Complete",
-      "castPhotoPath": "assets/cast/s10-cast.png",
-      "emoji": "[AI_FILL]"
     }
   ]
 }

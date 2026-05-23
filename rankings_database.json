@@ -665,8 +665,8 @@
       "playerId": "sanders",
       "name": "Sanders",
       "rank": 17,
-      "tier": "A",
-      "score": 77.7,
+      "tier": "S",
+      "score": 80.2,
       "wins": 0,
       "seasonsPlayed": 2,
       "placements": [
@@ -744,7 +744,7 @@
     {
       "playerId": "carrie",
       "tier": "A",
-      "score": 76.8,
+      "score": 77.8,
       "rank": 19,
       "avgPlacement": 4.5,
       "winRate": 0,

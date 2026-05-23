@@ -20,6 +20,16 @@ function portrait(name, size = 42) {
   return `<img src="assets/avatars/${s}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 
+const _usedTexts = new Set();
+function _pickUnique(pool, ...args) {
+  const available = pool.filter((_, i) => !_usedTexts.has(pool[i]));
+  const chosen = available.length > 0 ? pick(available) : pick(pool);
+  _usedTexts.add(chosen);
+  return chosen(...args);
+}
+
+const _prevClimbTier = {};
+
 const NICE_ARCHS = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 const VILLAIN_ARCHS = new Set(['villain', 'mastermind', 'schemer']);
 function canSabotage(name) {
@@ -42,18 +52,51 @@ const CLIMB_TEXT = {
     (n, pr) => `Powerful climbing from ${n}. ${pr.Sub} ${pr.sub === 'they' ? 'make' : 'makes'} the icy slope look like a ladder.`,
     (n, pr) => `${n} powers through the ice shelf. ${pr.posAdj} arms aren't even shaking.`,
     (n, pr) => `Clean, efficient climbing from ${n}. Every handhold is deliberate.`,
+    (n, pr) => `${n} launches up three handholds in one fluid motion. Pure momentum.`,
+    (n, pr) => `${n} attacks the rock face like ${pr.sub} ${pr.sub === 'they' ? 'have' : 'has'} something to prove. ${pr.Sub} ${pr.sub === 'they' ? 'do' : 'does'}.`,
+    (n, pr) => `${n} drives ${pr.posAdj} pick into the ice and vaults upward. The gap between ${pr.obj} and the pack widens.`,
+    (n, pr) => `Textbook technique from ${n} — weight centered, legs driving, hands only guiding. ${pr.Sub} ${pr.sub === 'they' ? 'make' : 'makes'} it look effortless.`,
+    (n, pr) => `${n} reaches the next ridge before anyone else on ${pr.posAdj} team. Not even breathing hard.`,
   ],
   mid: [
     (n, pr) => `${n} scrambles upward, slipping once but recovering. Steady progress.`,
     (n, pr) => `${n} grunts with effort, pulling ${pr.ref} over a frozen ledge. Not pretty, but it works.`,
     (n, pr) => `${n} is making progress, inch by frozen inch. Determination over technique.`,
     (n, pr) => `${n} grabs a jutting rock and hauls. ${pr.posAdj} hands are already red from the cold.`,
+    (n, pr) => `${n} wedges ${pr.posAdj} knee into a crack and pushes up. Ugly form, real results.`,
+    (n, pr) => `Slow and steady from ${n}. ${pr.Sub} ${pr.sub === 'they' ? 'find' : 'finds'} a route nobody else spotted.`,
+    (n, pr) => `${n} pauses on a narrow ledge, catches ${pr.posAdj} breath, then keeps going. One section at a time.`,
+    (n, pr) => `${n} tests every handhold before committing. Cautious, but ${pr.sub} ${pr.sub === 'they' ? 'keep' : 'keeps'} moving.`,
+    (n, pr) => `${n} hugs the rock face and shimmies sideways to a better route. Smart detour.`,
+    (n, pr) => `${n} muscles over a bulge in the ice wall. Not graceful, but ${pr.sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} fall.`,
   ],
   weak: [
     (n, pr) => `${n} slips and barely catches ${pr.ref}. The climb is not going well.`,
     (n, pr) => `${n}'s arms are shaking. Every ledge is a battle. The mountain is winning.`,
     (n, pr) => `${n} loses ${pr.posAdj} grip and slides back two feet. Panic flashes across ${pr.posAdj} face.`,
     (n, pr) => `${n} clings to the ice, frozen in place. The summit feels miles away.`,
+    (n, pr) => `${n}'s fingers are numb. ${pr.Sub} ${pr.sub === 'they' ? 'can' : 'can'} barely grip the ice anymore.`,
+    (n, pr) => `${n} puts ${pr.posAdj} foot on a ledge that crumbles. ${pr.Sub} ${pr.sub === 'they' ? 'drop' : 'drops'} a full body length before stopping.`,
+    (n, pr) => `${n} presses ${pr.posAdj} forehead against the ice. Breathing hard. Not moving.`,
+    (n, pr) => `Every inch costs ${n} everything. ${pr.posAdj} muscles are screaming.`,
+    (n, pr) => `${n} reaches for a hold and misses. ${pr.posAdj} boots scrape uselessly against the ice.`,
+    (n, pr) => `${n} makes the mistake of looking down. The color drains from ${pr.posAdj} face.`,
+    (n, pr) => `${n} is stuck. Wedged into a crack with nowhere to go. The clock is ticking.`,
+    (n, pr) => `${n}'s knee buckles on a narrow ledge. ${pr.Sub} ${pr.sub === 'they' ? 'grab' : 'grabs'} the wall with both hands, hanging on by willpower alone.`,
+  ],
+  rally: [
+    (n, pr) => `Something clicks for ${n}. ${pr.Sub} ${pr.sub === 'they' ? 'find' : 'finds'} a second wind and SURGES upward.`,
+    (n, pr) => `${n} was struggling — but not anymore. A burst of adrenaline carries ${pr.obj} past two players.`,
+    (n, pr) => `${n} grits ${pr.posAdj} teeth and digs deep. The climb that was killing ${pr.obj} suddenly gets easier.`,
+    (n, pr) => `${n} looks down, looks up, and chooses up. Renewed fire in ${pr.posAdj} eyes.`,
+    (n, pr) => `${n} shakes out ${pr.posAdj} arms, takes a breath, and attacks the wall with fresh intensity.`,
+    (n, pr) => `"NOT TODAY." ${n} growls it under ${pr.posAdj} breath and hauls ${pr.ref} over a ledge that stopped ${pr.obj} twice before.`,
+  ],
+  fadeOut: [
+    (n, pr) => `${n} was climbing strong but the altitude is catching up. ${pr.posAdj} pace halves.`,
+    (n, pr) => `Fatigue hits ${n} like a wall. ${pr.Sub} ${pr.sub === 'they' ? 'were' : 'was'} a machine earlier — now ${pr.sub}'s grinding gears.`,
+    (n, pr) => `${n}'s earlier burst cost ${pr.obj}. ${pr.posAdj} arms have nothing left. Each pull is agony.`,
+    (n, pr) => `The mountain finally catches up to ${n}. ${pr.Sub} ${pr.sub === 'they' ? 'slow' : 'slows'} to a crawl.`,
   ],
 };
 
@@ -139,21 +182,61 @@ const COMPETITIVE_ONEUP = [
   (a, b) => `${a} and ${b} are neck and neck on the cliff face. Neither will let the other pass.`,
   (a, b) => `"I'm getting to the top before you." ${a} locks eyes with ${b}. The race is on.`,
   (a, b) => `${a} sees ${b} reaching for the same handhold. ${a} gets there first. ${b} seethes.`,
+  (a, b) => `${a} glances sideways at ${b} and immediately doubles ${pronouns(a).posAdj} pace. Pride is a powerful fuel.`,
+  (a, b) => `${b} overtakes ${a}. ${a}'s jaw tightens. This summit isn't big enough for both of them.`,
+];
+
+const ENCOURAGE_CLIMB = [
+  (a, b, aPr) => `"You got this, ${b}!" ${a} shouts from above. ${b} nods and pushes harder.`,
+  (a, b, aPr) => `${a} catches ${b}'s eye and gives a firm nod. No words needed. ${b} keeps going.`,
+  (a, b, aPr) => `"One more ledge, ${b}. Don't quit on me." ${a}'s voice cuts through the wind.`,
+  (a, b, aPr) => `${a} taps the rock above ${b}. "Right here — this hold is solid." The tip helps.`,
+];
+
+const TRASH_TALK_CLIMB = [
+  (a, b, aPr) => `"Enjoy the view from down there, ${b}." ${a} doesn't even look back.`,
+  (a, b, aPr) => `${a} laughs as ${b} slips again. "Maybe try the elevator next time."`,
+  (a, b, aPr) => `"This is embarrassing for you, right?" ${a} asks ${b} with mock concern.`,
+  (a, b, aPr) => `${a} blows on ${aPr.posAdj} nails while ${b} struggles below. The disrespect is intentional.`,
 ];
 
 // ── PHASE 2: FORT CONSTRUCTION ──
-const WALL_BUILD = [
+const WALL_BUILD_STRONG = [
   (n, pr) => `${n} stacks ice blocks with mechanical precision. The wall grows thick and sturdy.`,
-  (n, pr) => `${n} grunts as ${pr.sub} heaves another block into place. The fort is taking shape.`,
   (n, pr) => `${n}'s wall section is solid. Dense. Nobody's getting through this without a fight.`,
-  (n, pr) => `Brick by frozen brick, ${n} builds. ${pr.posAdj} section is the strongest in the fort.`,
+  (n, pr) => `${n} lifts a block that takes most people two hands and slots it in one-armed. Impressive.`,
+  (n, pr) => `${n} finishes ${pr.posAdj} section and it's a fortress within a fortress. Reinforced, angled, brutal.`,
+  (n, pr) => `${n} packs snow between blocks until the wall is practically concrete. ${pr.Sub} steps back, satisfied.`,
+  (n, pr) => `${n}'s section could stop a truck. ${pr.Sub} built it twice as thick as anyone else's.`,
+];
+
+const WALL_BUILD_MID = [
+  (n, pr) => `${n} grunts as ${pr.sub} heaves another block into place. The fort is taking shape.`,
+  (n, pr) => `Block by frozen block, ${n} builds. Steady work, nothing flashy.`,
+  (n, pr) => `${n} finds a rhythm — lift, place, pack. The wall climbs higher.`,
+  (n, pr) => `${n} wipes sweat off ${pr.posAdj} brow and stacks another block. Getting there.`,
+  (n, pr) => `${n}'s section won't win any architecture awards, but it'll hold. Probably.`,
+  (n, pr) => `${n} wrestles a stubborn block into position. It fits. Barely.`,
+];
+
+const WALL_BUILD_WEAK = [
+  (n, pr) => `${n} places a block that immediately slides off. ${pr.Sub} catches it before it crushes ${pr.posAdj} foot.`,
+  (n, pr) => `${n}'s section is... thin. Worryingly thin. A strong wind might do it in.`,
+  (n, pr) => `${n} stacks two blocks and one falls. Stacks again and the other falls. This is painful to watch.`,
+  (n, pr) => `${n} can barely lift the ice blocks. ${pr.posAdj} contribution is more moral support than structural.`,
+  (n, pr) => `${n}'s wall section has visible gaps. ${pr.Sub} tries to fill them with snow. It doesn't help much.`,
+  (n, pr) => `${n} leans a block against the wall and prays. It stays. For now.`,
 ];
 
 const TRAP_BUILD = [
-  (n, pr, trap) => `${n} rigs a ${trap} with ice wire and spring tension. "Try me."`,
+  (n, pr, trap) => `${n} rigs the ${trap} with ice wire and spring tension. "Try me."`,
   (n, pr, trap) => `${n}'s ${trap} is ingenious — hidden under packed snow, triggered by pressure.`,
   (n, pr, trap) => `"Don't step there." ${n} finishes wiring the ${trap}. A nasty surprise awaits.`,
   (n, pr, trap) => `${n} tests the ${trap} on a snowman. The snowman is no more. "Perfect."`,
+  (n, pr, trap) => `${n} calibrates the ${trap} with surgical focus. One wrong step and WHAM.`,
+  (n, pr, trap) => `${n} buries the ${trap} under fresh powder. Invisible. Lethal. Beautiful.`,
+  (n, pr, trap) => `The ${trap} clicks into place under ${n}'s hands. ${pr.Sub} grins. "Armed and dangerous."`,
+  (n, pr, trap) => `${n} steps back from the ${trap} and nods. "Nobody's getting past that without a limp."`,
 ];
 
 const DECOY_BUILD = [
@@ -161,6 +244,10 @@ const DECOY_BUILD = [
   (n, pr) => `${n}'s decoy is a masterpiece of misdirection. It looks exactly like the real flag from twenty feet.`,
   (n, pr) => `"They'll waste so much time on this." ${n} plants the decoy with a satisfied grin.`,
   (n, pr) => `${n}'s decoy is... okay. It might fool someone in a hurry. Maybe.`,
+  (n, pr) => `${n} adds final touches to the decoy — a bit of color, a flutter of fabric. Convincing.`,
+  (n, pr) => `${n} places the decoy in a spot that screams "flag here!" Misdirection is an art.`,
+  (n, pr) => `${n} steps back and squints at ${pr.posAdj} decoy. "Good enough to buy us thirty seconds."`,
+  (n, pr) => `${n} rigs the decoy to collapse when grabbed. The frustration factor alone is worth it.`,
 ];
 
 const SABOTAGE_TEXT = [
@@ -198,12 +285,34 @@ const TRAP_ARGUMENT = [
   (a, b) => `"That won't work." ${a} dismisses ${b}'s design. ${b}'s jaw tightens. The grudge forms quietly.`,
 ];
 
+const BUILD_LEADERSHIP = [
+  (a, b) => `${a} takes charge of the construction. "I need ${b} on reinforcement. Move!" ${b} complies. For now.`,
+  (a, b) => `${a} starts giving orders. ${b} follows them, but the look on ${b}'s face says "we'll discuss this later."`,
+  (a, b) => `"Trust me on this." ${a} overrides ${b}'s design. Confidence or arrogance? Hard to tell.`,
+  (a, b) => `${a} organizes the build crew with military efficiency. ${b} is impressed despite ${pronouns(b).ref}.`,
+];
+
+const BUILD_SLACK = [
+  (a, b) => `${a} takes a break while ${b} does the heavy lifting. ${b} notices. ${b} remembers.`,
+  (a, b) => `${a} is "supervising." ${b} is doing all the work. The resentment builds faster than the fort.`,
+  (a, b) => `"I'm thinking strategically," ${a} says, watching ${b} sweat. ${b} is thinking strategically too — about the vote tonight.`,
+  (a, b) => `${a} disappears for a "bathroom break" during ${b}'s hardest section. ${b} has to cover alone.`,
+];
+
 // ── PHASE 3: CTF ASSAULT ──
 const ADVANCE_TEXT = [
   (n, pr) => `${n} pushes forward through the snow. Low, fast, eyes on the fort ahead.`,
   (n, pr) => `${n} sprints between cover, dodging snowballs and scanning for traps.`,
   (n, pr) => `${n} advances aggressively, using ${pr.posAdj} speed to close the gap.`,
   (n, pr) => `${n} belly-crawls through the snow, inching toward the enemy fort.`,
+  (n, pr) => `${n} darts from snowdrift to snowdrift, closing distance with every burst.`,
+  (n, pr) => `${n} charges straight at the fort. No subtlety. Pure aggression.`,
+  (n, pr) => `${n} flanks wide, approaching the fort from an angle nobody expected.`,
+  (n, pr) => `${n} slides down an icy slope and uses the momentum to close the gap fast.`,
+  (n, pr) => `${n} zigzags through the snow, making ${pr.ref} a difficult target.`,
+  (n, pr) => `${n} uses ${pr.posAdj} teammates as cover, weaving between them toward the fort.`,
+  (n, pr) => `${n} rolls behind a snow mound and pops up ten feet closer. Tactical.`,
+  (n, pr) => `${n} times ${pr.posAdj} advance between paintball volleys. Smart movement.`,
 ];
 
 const TRAP_TRIGGER = [
@@ -232,6 +341,12 @@ const BREACH_TEXT = [
   (n, pr) => `${n} charges the wall shoulder-first. The ice groans and splinters.`,
   (n, pr) => `${n} attacks the fort's weak point. Ice shards fly as the wall begins to give.`,
   (n, pr) => `With a roar, ${n} drives ${pr.posAdj} fist through the fort wall. Daylight appears on the other side.`,
+  (n, pr) => `${n} kicks a support block loose and a whole section sags. The defenders scramble.`,
+  (n, pr) => `${n} pounds the wall in a rhythm — CRACK, CRACK, CRACK. Each hit sends ice dust flying.`,
+  (n, pr) => `${n} finds a hairline fracture and works it wider with ${pr.posAdj} bare hands. The wall won't hold much longer.`,
+  (n, pr) => `${n} tears a block free and throws it aside. The breach is growing.`,
+  (n, pr) => `${n} slams into the weakened section and feels it buckle. Almost through.`,
+  (n, pr) => `The wall crumbles under ${n}'s assault. Chunks of ice scatter across the snow.`,
 ];
 
 const FLAG_SEARCH_REAL = [
@@ -363,6 +478,14 @@ const ATMOSPHERE_FLAVOR = [
   'Breath hangs in the air like smoke signals nobody can read.',
   'The northern lights dance overhead, indifferent to the chaos below.',
   'Somewhere below, a wolf howls. Or maybe that was just the wind.',
+  'Frost creeps across exposed metal like a living thing.',
+  'A sheet of ice cracks somewhere deep in the glacier. The sound echoes for three seconds.',
+  'Snow begins to fall — light, silent, and utterly indifferent to the struggle below.',
+  'The sun dips behind the peak. Shadows stretch across the snow like dark fingers.',
+  'An eagle circles overhead. Even it looks cold.',
+  'The wind dies. The silence is somehow worse.',
+  'Icicles on the cliff face glow like teeth in the aurora light.',
+  'The air is thin enough that every breath feels like a conscious choice.',
 ];
 
 // ══════════════════════════════════════════════════════════════════════
@@ -370,6 +493,9 @@ const ATMOSPHERE_FLAVOR = [
 // ══════════════════════════════════════════════════════════════════════
 
 export function simulateIceIceBaby(ep) {
+  _usedTexts.clear();
+  for (const k in _prevClimbTier) delete _prevClimbTier[k];
+
   const tribes = gs.tribes;
   if (!tribes || tribes.length < 2) return ep;
 
@@ -472,7 +598,7 @@ export function simulateIceIceBaby(ep) {
           ep.chalMemberScores[target] += 1;
           phase1Events.push({
             type: 'iceBlockDodge', player: target, tribe: tribe.name, beat,
-            text: pick(ICE_BLOCK_DODGE)(target, pr),
+            text: _pickUnique(ICE_BLOCK_DODGE, target, pr),
             badge: 'DODGE', badgeClass: 'gold'
           });
         } else {
@@ -481,7 +607,7 @@ export function simulateIceIceBaby(ep) {
           ep.chalMemberScores[target] -= 2;
           phase1Events.push({
             type: 'iceBlockHit', player: target, tribe: tribe.name, beat,
-            text: pick(ICE_BLOCK_HIT)(target, pr),
+            text: _pickUnique(ICE_BLOCK_HIT, target, pr),
             penalty: Math.abs(penalty).toFixed(1),
             badge: 'ICE BLOCK', badgeClass: 'red'
           });
@@ -489,41 +615,64 @@ export function simulateIceIceBaby(ep) {
       });
     });
 
-    // Social events between beats (2-3 per tribe)
+    // Social events between beats (1 guaranteed + 1-2 bonus per tribe)
     tribes.forEach(tribe => {
-      const socialCount = 2 + (Math.random() < 0.4 ? 1 : 0);
+      const socialCount = 1 + (Math.random() < 0.5 ? 1 : 0) + (Math.random() < 0.25 ? 1 : 0);
       const shuffled = [...tribe.members].sort(() => Math.random() - 0.5);
       for (let si = 0; si < Math.min(socialCount, Math.floor(shuffled.length / 2)); si++) {
         const a = shuffled[si * 2];
         const b = shuffled[si * 2 + 1];
         if (!a || !b) continue;
         const aPr = pronouns(a);
-        const roll = Math.random();
         const aArch = arch(a);
+        const bArch = arch(b);
+        const roll = Math.random();
 
-        if (roll < 0.25 && (VILLAIN_ARCHS.has(aArch) || pStats(a).boldness >= 6)) {
+        if (roll < 0.15 && VILLAIN_ARCHS.has(aArch)) {
+          // Trash talk (villain-only)
+          phase1Events.push({
+            type: 'trashTalk', players: [a, b], tribe: tribe.name, beat,
+            text: _pickUnique(TRASH_TALK_CLIMB, a, b, aPr),
+            badge: 'TRASH TALK', badgeClass: 'red'
+          });
+          addBond(a, b, -0.7);
+          popDelta(a, -1);
+          ep.campEvents[tribe.name].post.push({
+            type: 'iib-trash-talk', text: `${a} trash-talked ${b} during the summit climb. ${b} hasn't forgotten.`,
+            players: [a, b], badgeText: 'TRASH TALK', badgeClass: 'badge-negative'
+          });
+        } else if (roll < 0.30 && (VILLAIN_ARCHS.has(aArch) || pStats(a).boldness >= 6)) {
           // Rivalry taunt
           phase1Events.push({
             type: 'rivalryTaunt', players: [a, b], tribe: tribe.name, beat,
-            text: pick(RIVALRY_TAUNT)(a, b, aPr),
+            text: _pickUnique(RIVALRY_TAUNT, a, b, aPr),
             badge: 'TAUNT', badgeClass: 'red'
           });
           addBond(a, b, -0.5);
           if (VILLAIN_ARCHS.has(aArch)) popDelta(a, 1);
-        } else if (roll < 0.5 && (NICE_ARCHS.has(aArch) || pStats(a).loyalty >= 5)) {
+        } else if (roll < 0.50 && (NICE_ARCHS.has(aArch) || pStats(a).loyalty >= 5)) {
           // Helping hand
           phase1Events.push({
             type: 'helpingHand', players: [a, b], tribe: tribe.name, beat,
-            text: pick(HELPING_HAND)(a, b, aPr),
+            text: _pickUnique(HELPING_HAND, a, b, aPr),
             badge: 'HELP', badgeClass: 'gold'
           });
           addBond(a, b, 0.5);
           popDelta(a, 1);
-        } else if (roll < 0.7) {
+        } else if (roll < 0.60 && (NICE_ARCHS.has(aArch) || pStats(a).social >= 5)) {
+          // Encouragement (nice/social players)
+          phase1Events.push({
+            type: 'encourage', players: [a, b], tribe: tribe.name, beat,
+            text: _pickUnique(ENCOURAGE_CLIMB, a, b, aPr),
+            badge: 'ENCOURAGE', badgeClass: 'gold'
+          });
+          addBond(a, b, 0.3);
+          ep.chalMemberScores[b] += 1;
+        } else if (roll < 0.80) {
           // Competitive one-up
           phase1Events.push({
             type: 'competitiveOneUp', players: [a, b], tribe: tribe.name, beat,
-            text: pick(COMPETITIVE_ONEUP)(a, b),
+            text: _pickUnique(COMPETITIVE_ONEUP, a, b),
             badge: 'RIVALRY', badgeClass: 'blue'
           });
           addBond(a, b, -0.2);
@@ -536,7 +685,7 @@ export function simulateIceIceBaby(ep) {
           if (bothHit) {
             phase1Events.push({
               type: 'iceCollision', players: [a, b], tribe: tribe.name, beat,
-              text: pick(ICE_COLLISION)(a, b),
+              text: _pickUnique(ICE_COLLISION, a, b),
               badge: 'ICE BOND', badgeClass: 'blue'
             });
             const tempBonus = pStats(a).temperament >= 5 ? 0.3 : -0.2;
@@ -620,30 +769,32 @@ export function simulateIceIceBaby(ep) {
       roles.walls.forEach(n => {
         const s = pStats(n);
         const pr = pronouns(n);
-        const wallContrib = (s.physical * 0.5 + s.endurance * 0.3 + s.loyalty * 0.2) * noise(2.5);
-        const hpAdd = Math.max(0, wallContrib * 2);
+        const wallContrib = (s.physical * 0.5 + s.endurance * 0.3 + s.loyalty * 0.2) + noise(2.5);
+        const hpAdd = Math.max(0, wallContrib);
         fortHP[tribe.name] += hpAdd;
         ep.chalMemberScores[n] += Math.round(wallContrib);
+        const wallPool = hpAdd >= 8 ? WALL_BUILD_STRONG : hpAdd >= 1 ? WALL_BUILD_MID : WALL_BUILD_WEAK;
+        const badgeClass = hpAdd >= 8 ? 'gold' : hpAdd >= 1 ? 'blue' : 'red';
         phase2Events.push({
           type: 'wallBuild', player: n, tribe: tribe.name, beat,
-          text: pick(WALL_BUILD)(n, pr),
+          text: _pickUnique(wallPool, n, pr),
           hpAdd: hpAdd.toFixed(1),
-          badge: `+${hpAdd.toFixed(0)} HP`, badgeClass: 'gold'
+          badge: `+${hpAdd.toFixed(0)} HP`, badgeClass
         });
       });
 
-      // Trap engineers
+      // Trap engineers — cycle through trap types so the same player doesn't repeat
+      const TRAP_TYPES_CYCLE = ['Snowball Turret', 'Ice Floor', 'Alarm Bell', 'Spike Pit'];
       roles.traps.forEach(n => {
         const s = pStats(n);
         const pr = pronouns(n);
         const trapQuality = (s.strategic * 0.5 + s.mental * 0.4 + s.intuition * 0.1) * noise(2.5);
-        const trapTypes = ['Snowball Turret', 'Ice Floor', 'Alarm Bell'];
-        const trapType = pick(trapTypes);
+        const trapType = TRAP_TYPES_CYCLE[beat % TRAP_TYPES_CYCLE.length];
         traps[tribe.name].push({ type: trapType, quality: trapQuality });
         ep.chalMemberScores[n] += 3;
         phase2Events.push({
           type: 'trapBuild', player: n, tribe: tribe.name, beat,
-          text: pick(TRAP_BUILD)(n, pr, trapType),
+          text: _pickUnique(TRAP_BUILD, n, pr, trapType),
           trapType, quality: trapQuality.toFixed(1),
           badge: trapType.toUpperCase(), badgeClass: 'blue'
         });
@@ -658,7 +809,7 @@ export function simulateIceIceBaby(ep) {
         ep.chalMemberScores[n] += 2;
         phase2Events.push({
           type: 'decoyBuild', player: n, tribe: tribe.name, beat,
-          text: pick(DECOY_BUILD)(n, pr),
+          text: _pickUnique(DECOY_BUILD, n, pr),
           convincingness: convincingness.toFixed(1),
           badge: 'DECOY', badgeClass: 'blue'
         });
@@ -671,7 +822,7 @@ export function simulateIceIceBaby(ep) {
           const saboteur = pick(eligible);
           const s = pStats(saboteur);
           const pr = pronouns(saboteur);
-          const damage = (s.strategic * 0.4 + s.boldness * 0.3) * noise(2.0);
+          const damage = (s.strategic * 0.4 + s.boldness * 0.3) + noise(2.0);
           fortHP[tribe.name] -= Math.max(0, damage);
 
           // Frame lowest-bond teammate
@@ -722,27 +873,58 @@ export function simulateIceIceBaby(ep) {
         }
       }
 
-      // Social events during build
+      // Social events during build (1 guaranteed per beat)
       if (tribe.members.length >= 2) {
         const pair = [...tribe.members].sort(() => Math.random() - 0.5).slice(0, 2);
         const [a, b] = pair;
-        if (Math.random() < 0.6) {
-          if (Math.random() < 0.5) {
-            phase2Events.push({
-              type: 'buildTeamwork', players: [a, b], tribe: tribe.name, beat,
-              text: pick(BUILD_TEAMWORK)(a, b),
-              badge: 'TEAMWORK', badgeClass: 'gold'
-            });
-            addBond(a, b, 0.3);
-          } else {
-            phase2Events.push({
-              type: 'trapArgument', players: [a, b], tribe: tribe.name, beat,
-              text: pick(TRAP_ARGUMENT)(a, b),
-              badge: 'ARGUMENT', badgeClass: 'red'
-            });
-            addBond(a, b, -0.3);
-          }
+        const aArch = arch(a);
+        const roll = Math.random();
+
+        if (roll < 0.25) {
+          phase2Events.push({
+            type: 'buildTeamwork', players: [a, b], tribe: tribe.name, beat,
+            text: _pickUnique(BUILD_TEAMWORK, a, b),
+            badge: 'TEAMWORK', badgeClass: 'gold'
+          });
+          addBond(a, b, 0.3);
+        } else if (roll < 0.45) {
+          phase2Events.push({
+            type: 'trapArgument', players: [a, b], tribe: tribe.name, beat,
+            text: _pickUnique(TRAP_ARGUMENT, a, b),
+            badge: 'ARGUMENT', badgeClass: 'red'
+          });
+          addBond(a, b, -0.3);
+        } else if (roll < 0.65 && (pStats(a).strategic >= 5 || aArch === 'challenge-beast')) {
+          phase2Events.push({
+            type: 'buildLeadership', players: [a, b], tribe: tribe.name, beat,
+            text: _pickUnique(BUILD_LEADERSHIP, a, b),
+            badge: 'LEADERSHIP', badgeClass: 'blue'
+          });
+          ep.chalMemberScores[a] += 1;
+          addBond(a, b, -0.1);
+        } else if (roll < 0.85 && (pStats(a).loyalty <= 4 || VILLAIN_ARCHS.has(aArch))) {
+          phase2Events.push({
+            type: 'buildSlack', players: [a, b], tribe: tribe.name, beat,
+            text: _pickUnique(BUILD_SLACK, a, b),
+            badge: 'SLACKER', badgeClass: 'red'
+          });
+          addBond(a, b, -0.5);
+          popDelta(a, -1);
+          ep.campEvents[tribe.name].post.push({
+            type: 'iib-slacker', text: `${b} did all the work while ${a} took it easy during the fort build. The tribe noticed.`,
+            players: [a, b], badgeText: 'SLACKER', badgeClass: 'badge-negative'
+          });
+        } else {
+          phase2Events.push({
+            type: 'buildTeamwork', players: [a, b], tribe: tribe.name, beat,
+            text: _pickUnique(BUILD_TEAMWORK, a, b),
+            badge: 'TEAMWORK', badgeClass: 'gold'
+          });
+          addBond(a, b, 0.3);
         }
+
+        // Showmance moment during build
+        _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'ice ice baby build', tribe.members);
       }
     });
   }
@@ -785,18 +967,20 @@ export function simulateIceIceBaby(ep) {
       const myAttackers = attackers[tribe.name].filter(n => !sittingOut[n]);
       const theirDefenders = defenders[targetTribe].filter(n => !sittingOut[n]);
 
-      // Attackers advance
+      // Attackers advance (only emit ~40% of routine advances after round 1 to reduce spam)
       myAttackers.forEach(atk => {
         const s = pStats(atk);
         const pr = pronouns(atk);
-        const advanceScore = (s.physical * 0.3 + s.boldness * 0.3 + s.endurance * 0.2 + s.intuition * 0.2) * noise(2.5);
+        const advanceScore = (s.physical * 0.3 + s.boldness * 0.3 + s.endurance * 0.2 + s.intuition * 0.2) + noise(2.5);
         ep.chalMemberScores[atk] += Math.max(0, Math.round(advanceScore));
 
-        phase3Events.push({
-          type: 'advance', player: atk, tribe: tribe.name, targetTribe, round,
-          text: pick(ADVANCE_TEXT)(atk, pr),
-          badge: 'ADVANCE', badgeClass: 'blue'
-        });
+        if (round === 0 || Math.random() < 0.4) {
+          phase3Events.push({
+            type: 'advance', player: atk, tribe: tribe.name, targetTribe, round,
+            text: _pickUnique(ADVANCE_TEXT, atk, pr),
+            badge: 'ADVANCE', badgeClass: 'blue'
+          });
+        }
 
         // Trap trigger (first round only, one-time traps)
         if (round === 0 && traps[targetTribe]?.length > 0) {
@@ -882,12 +1066,13 @@ export function simulateIceIceBaby(ep) {
         }
       });
 
-      // Fort breach damage
+      // Fort breach damage — escalates each round as attackers get organized
       const remainingAtk = activeAtk.filter(n => !sittingOut[n]);
+      const escalation = 1 + round * 0.3;
       remainingAtk.forEach(atk => {
         const s = pStats(atk);
         const pr = pronouns(atk);
-        let breachDmg = (s.physical * 0.5 + s.boldness * 0.3) * noise(2.5);
+        let breachDmg = ((s.physical * 0.5 + s.boldness * 0.3) + noise(2.5)) * escalation;
 
         // Mirror Reflector bonus
         if (gadgets[tribe.name]?.tier === 'high') {
@@ -902,14 +1087,15 @@ export function simulateIceIceBaby(ep) {
           }
         }
 
-        fortHP[targetTribe] = Math.max(0, fortHP[targetTribe] - Math.max(0, breachDmg));
+        const actualDmg = Math.max(0, breachDmg);
+        fortHP[targetTribe] = Math.max(0, fortHP[targetTribe] - actualDmg);
 
-        if (breachDmg > 5) {
+        if (actualDmg > 2) {
           phase3Events.push({
             type: 'breach', player: atk, tribe: tribe.name, targetTribe, round,
-            text: pick(BREACH_TEXT)(atk, pr),
-            damage: breachDmg.toFixed(1), remainingHP: fortHP[targetTribe].toFixed(0),
-            badge: `${breachDmg.toFixed(0)} DMG`, badgeClass: 'red'
+            text: _pickUnique(BREACH_TEXT, atk, pr),
+            damage: actualDmg.toFixed(1), remainingHP: fortHP[targetTribe].toFixed(0),
+            badge: `${actualDmg.toFixed(0)} DMG`, badgeClass: 'red'
           });
         }
       });
@@ -954,8 +1140,9 @@ export function simulateIceIceBaby(ep) {
         });
       }
 
-      // Flag search
-      if (fortDestroyed[targetTribe] || fortHP[targetTribe] <= 20) {
+      // Flag search — threshold rises each round so late rounds can force resolution
+      const searchThreshold = 20 + round * 15;
+      if (fortDestroyed[targetTribe] || fortHP[targetTribe] <= searchThreshold) {
         const searchers = remainingAtk.filter(n => !sittingOut[n]);
         if (searchers.length > 0) {
           const searcher = pick(searchers);
@@ -1043,6 +1230,11 @@ export function simulateIceIceBaby(ep) {
       if (sittingOut[n] > 0) sittingOut[n]--;
       if (sittingOut[n] <= 0) delete sittingOut[n];
     });
+
+    // Showmance moment between rounds
+    if (!ctfResolved) {
+      _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'ice ice baby ctf', allActive);
+    }
   }
 
   // Timeout resolution: most fort HP wins
@@ -1157,14 +1349,42 @@ export function simulateIceIceBaby(ep) {
 function _doClimb(name, tribeName, beat, events, climbScores, ep) {
   const s = pStats(name);
   const pr = pronouns(name);
-  const score = (s.physical * 0.4 + s.endurance * 0.4 + s.boldness * 0.2) * noise(2.5);
+  const fatigueMod = beat >= 3 ? -(beat - 2) * 0.8 : 0;
+  const score = (s.physical * 0.4 + s.endurance * 0.4 + s.boldness * 0.2) * noise(2.5) + fatigueMod;
   climbScores[name] += score;
   ep.chalMemberScores[name] += Math.max(0, Math.round(score));
 
-  const tier = score >= 5 ? 'strong' : score >= 2 ? 'mid' : 'weak';
+  let tier = score >= 5 ? 'strong' : score >= 2 ? 'mid' : 'weak';
+  const prevTier = _prevClimbTier[name];
+
+  // Rally: was weak last beat, now mid/strong → use rally text (30% chance)
+  if (prevTier === 'weak' && tier !== 'weak' && Math.random() < 0.3 && CLIMB_TEXT.rally) {
+    _prevClimbTier[name] = tier;
+    events.push({
+      type: 'climb', player: name, tribe: tribeName, beat,
+      text: _pickUnique(CLIMB_TEXT.rally, name, pr),
+      score: score.toFixed(1),
+      badge: 'RALLY', badgeClass: 'gold'
+    });
+    return;
+  }
+
+  // FadeOut: was strong last beat, now weak → use fadeOut text (40% chance)
+  if (prevTier === 'strong' && tier === 'weak' && Math.random() < 0.4 && CLIMB_TEXT.fadeOut) {
+    _prevClimbTier[name] = tier;
+    events.push({
+      type: 'climb', player: name, tribe: tribeName, beat,
+      text: _pickUnique(CLIMB_TEXT.fadeOut, name, pr),
+      score: score.toFixed(1),
+      badge: 'FADING', badgeClass: 'red'
+    });
+    return;
+  }
+
+  _prevClimbTier[name] = tier;
   events.push({
     type: 'climb', player: name, tribe: tribeName, beat,
-    text: pick(CLIMB_TEXT[tier])(name, pr),
+    text: _pickUnique(CLIMB_TEXT[tier], name, pr),
     score: score.toFixed(1),
     badge: tier === 'strong' ? 'STRONG' : tier === 'mid' ? 'STEADY' : 'STRUGGLING',
     badgeClass: tier === 'strong' ? 'gold' : tier === 'mid' ? 'blue' : 'red'
@@ -1718,6 +1938,8 @@ export function rpBuildIIBSummit(ep) {
   const summitMeta = [];
   const seenPlayers = new Set();
   let lastBeat = -1;
+  const shuffledAtmo = [...ATMOSPHERE_FLAVOR].sort(() => Math.random() - 0.5);
+  let atmoIdx = 0;
   events.forEach((evt, idx) => {
     if (evt.player) seenPlayers.add(evt.player);
     if (evt.players) evt.players.forEach(p => seenPlayers.add(p));
@@ -1727,9 +1949,10 @@ export function rpBuildIIBSummit(ep) {
       lastBeat = evt.beat;
       content += `<div class="iib-beat-hdr">BEAT ${evt.beat + 1}</div>`;
     }
-    // Atmosphere flavor
+    // Atmosphere flavor (shuffled, no repeats until pool exhausted)
     if (idx > 0 && idx % 6 === 0) {
-      content += `<div class="iib-flavor">${pick(ATMOSPHERE_FLAVOR)}</div>`;
+      content += `<div class="iib-flavor">${shuffledAtmo[atmoIdx % shuffledAtmo.length]}</div>`;
+      atmoIdx++;
     }
     content += _card(evt, idx, screenKey);
   });
@@ -1769,6 +1992,8 @@ export function rpBuildIIBFortBuild(ep) {
   iib.tribes.forEach(t => { runHP[t.name] = t.name === iib.phase1Winner ? 80 : 60; });
   const fortMeta = [];
   let lastBeat = -1;
+  const shuffledAtmo2 = [...ATMOSPHERE_FLAVOR].sort(() => Math.random() - 0.5);
+  let atmoIdx2 = 0;
   events.forEach((evt, idx) => {
     if (evt.type === 'wallBuild') runHP[evt.tribe] += parseFloat(evt.hpAdd || 0);
     else if (evt.type === 'sabotage') runHP[evt.tribe] -= parseFloat(evt.damage || 0);
@@ -1779,7 +2004,8 @@ export function rpBuildIIBFortBuild(ep) {
       content += `<div class="iib-beat-hdr">BUILD BEAT ${evt.beat + 1}</div>`;
     }
     if (idx > 0 && idx % 5 === 0) {
-      content += `<div class="iib-flavor">${pick(ATMOSPHERE_FLAVOR)}</div>`;
+      content += `<div class="iib-flavor">${shuffledAtmo2[atmoIdx2 % shuffledAtmo2.length]}</div>`;
+      atmoIdx2++;
     }
     content += _card(evt, idx, screenKey);
   });
@@ -1814,6 +2040,8 @@ export function rpBuildIIBCtfAssault(ep) {
   const ctfMeta = [];
   let ctfFlag = null;
   let lastRound = -1;
+  const shuffledAtmo3 = [...ATMOSPHERE_FLAVOR].sort(() => Math.random() - 0.5);
+  let atmoIdx3 = 0;
   events.forEach((evt, idx) => {
     if (evt.type === 'breach' && evt.targetTribe) ctfHP[evt.targetTribe] = parseFloat(evt.remainingHP || 0);
     else if (evt.type === 'fortDestroyed' && evt.tribe) ctfHP[evt.tribe] = 0;
@@ -1826,7 +2054,8 @@ export function rpBuildIIBCtfAssault(ep) {
       content += `<div class="iib-beat-hdr">ROUND ${evt.round + 1}</div>`;
     }
     if (idx > 0 && idx % 4 === 0) {
-      content += `<div class="iib-flavor">${pick(ATMOSPHERE_FLAVOR)}</div>`;
+      content += `<div class="iib-flavor">${shuffledAtmo3[atmoIdx3 % shuffledAtmo3.length]}</div>`;
+      atmoIdx3++;
     }
     content += _card(evt, idx, screenKey);
   });

@@ -1813,160 +1813,26 @@
       "isReturnee": true
     },
     {
-      "name": "Alec",
-      "slug": "alec",
+      "name": "Thom",
+      "slug": "thom",
       "gender": "m",
-      "archetype": "mastermind",
-      "stats": {
-        "physical": 7,
-        "endurance": 6,
-        "mental": 10,
-        "social": 4,
-        "strategic": 9,
-        "loyalty": 2,
-        "boldness": 7,
-        "intuition": 8,
-        "temperament": 7
-      },
-      "isReturnee": false
-    },
-    {
-      "name": "Ashley",
-      "slug": "ashley",
-      "gender": "f",
       "archetype": "hero",
       "stats": {
-        "physical": 7,
+        "physical": 8,
         "endurance": 8,
-        "mental": 6,
-        "social": 8,
-        "strategic": 3,
+        "mental": 4,
+        "social": 6,
+        "strategic": 5,
         "loyalty": 8,
-        "boldness": 6,
-        "intuition": 6,
+        "boldness": 5,
+        "intuition": 9,
         "temperament": 7
-      },
-      "isReturnee": false
-    },
-    {
-      "name": "Dan",
-      "slug": "dan",
-      "gender": "m",
-      "sexuality": "asexual",
-      "archetype": "mastermind",
-      "stats": {
-        "physical": 4,
-        "endurance": 4,
-        "mental": 9,
-        "social": 4,
-        "strategic": 7,
-        "loyalty": 5,
-        "boldness": 4,
-        "intuition": 8,
-        "temperament": 8
-      },
-      "isReturnee": false
-    },
-    {
-      "name": "Drew",
-      "slug": "drew",
-      "gender": "m",
-      "sexuality": "asexual",
-      "archetype": "goat",
-      "stats": {
-        "physical": 2,
-        "endurance": 3,
-        "mental": 6,
-        "social": 2,
-        "strategic": 1,
-        "loyalty": 9,
-        "boldness": 2,
-        "intuition": 7,
-        "temperament": 10
-      },
-      "isReturnee": false
-    },
-    {
-      "name": "Ellie",
-      "slug": "ellie",
-      "gender": "f",
-      "sexuality": "bi",
-      "archetype": "schemer",
-      "stats": {
-        "physical": 6,
-        "endurance": 6,
-        "mental": 8,
-        "social": 6,
-        "strategic": 8,
-        "loyalty": 4,
-        "boldness": 7,
-        "intuition": 8,
-        "temperament": 5
-      },
-      "isReturnee": false
-    },
-    {
-      "name": "Fiore",
-      "slug": "fiore",
-      "gender": "f",
-      "archetype": "villain",
-      "stats": {
-        "physical": 2,
-        "endurance": 4,
-        "mental": 9,
-        "social": 8,
-        "strategic": 10,
-        "loyalty": 2,
-        "boldness": 10,
-        "intuition": 8,
-        "temperament": 3
-      },
-      "isReturnee": false,
-      "sexuality": "asexual"
-    },
-    {
-      "name": "Gabby",
-      "slug": "gabby",
-      "gender": "f",
-      "sexuality": "lesbian",
-      "archetype": "wildcard",
-      "stats": {
-        "physical": 7,
-        "endurance": 7,
-        "mental": 6,
-        "social": 6,
-        "strategic": 3,
-        "loyalty": 9,
-        "boldness": 6,
-        "intuition": 4,
-        "temperament": 6
-      },
-      "isReturnee": false
-    },
-    {
-      "name": "Grett",
-      "slug": "grett",
-      "gender": "f",
-      "sexuality": "bi",
-      "archetype": "villain",
-      "stats": {
-        "physical": 6,
-        "endurance": 7,
-        "mental": 6,
-        "social": 5,
-        "strategic": 8,
-        "loyalty": 4,
-        "boldness": 9,
-        "intuition": 7,
-        "temperament": 2
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Jake",
       "slug": "jake",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "showmancer",
       "stats": {
         "physical": 5,
@@ -1978,26 +1844,7 @@
         "boldness": 6,
         "intuition": 2,
         "temperament": 4
-      },
-      "isReturnee": false
-    },
-    {
-      "name": "Lill",
-      "slug": "lill",
-      "gender": "f",
-      "archetype": "loyal-soldier",
-      "stats": {
-        "physical": 5,
-        "endurance": 7,
-        "mental": 6,
-        "social": 5,
-        "strategic": 3,
-        "loyalty": 9,
-        "boldness": 3,
-        "intuition": 5,
-        "temperament": 8
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Miriam",
@@ -2014,63 +1861,75 @@
         "boldness": 9,
         "intuition": 9,
         "temperament": 5
-      },
-      "isReturnee": false
+      }
     },
     {
-      "name": "Nick",
-      "slug": "nick",
+      "name": "Grett",
+      "slug": "grett",
+      "gender": "f",
+      "archetype": "villain",
+      "stats": {
+        "physical": 6,
+        "endurance": 7,
+        "mental": 6,
+        "social": 5,
+        "strategic": 8,
+        "loyalty": 4,
+        "boldness": 9,
+        "intuition": 7,
+        "temperament": 2
+      }
+    },
+    {
+      "name": "Dan",
+      "slug": "dan",
       "gender": "m",
-      "archetype": "floater",
+      "archetype": "mastermind",
       "stats": {
         "physical": 4,
         "endurance": 4,
+        "mental": 9,
+        "social": 4,
+        "strategic": 7,
+        "loyalty": 5,
+        "boldness": 4,
+        "intuition": 8,
+        "temperament": 8
+      }
+    },
+    {
+      "name": "Drew",
+      "slug": "drew",
+      "gender": "m",
+      "archetype": "goat",
+      "stats": {
+        "physical": 2,
+        "endurance": 3,
+        "mental": 6,
+        "social": 2,
+        "strategic": 1,
+        "loyalty": 9,
+        "boldness": 2,
+        "intuition": 7,
+        "temperament": 10
+      }
+    },
+    {
+      "name": "Gabby",
+      "slug": "gabby",
+      "gender": "f",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 7,
+        "endurance": 7,
         "mental": 6,
         "social": 6,
-        "strategic": 6,
-        "loyalty": 2,
-        "boldness": 8,
+        "strategic": 3,
+        "loyalty": 9,
+        "boldness": 6,
         "intuition": 4,
-        "temperament": 4
-      },
-      "isReturnee": false
-    },
-    {
-      "name": "Thom",
-      "slug": "thom",
-      "gender": "m",
-      "sexuality": "gay",
-      "archetype": "hero",
-      "stats": {
-        "physical": 8,
-        "endurance": 8,
-        "mental": 4,
-        "social": 6,
-        "strategic": 5,
-        "loyalty": 8,
-        "boldness": 5,
-        "intuition": 9,
-        "temperament": 7
-      },
-      "isReturnee": false
-    },
-    {
-      "name": "Will",
-      "slug": "will",
-      "gender": "m",
-      "archetype": "loyal-soldier",
-      "stats": {
-        "physical": 8,
-        "endurance": 8,
-        "mental": 4,
-        "social": 8,
-        "strategic": 2,
-        "loyalty": 8,
-        "boldness": 4,
-        "intuition": 6,
-        "temperament": 8
-      },
-      "isReturnee": false
+        "temperament": 6
+      }
     },
     {
       "name": "Sterling",
@@ -2087,27 +1946,7 @@
         "boldness": 5,
         "intuition": 4,
         "temperament": 5
-      },
-      "isReturnee": false
-    },
-    {
-      "name": "Wix",
-      "slug": "wix",
-      "gender": "nb",
-      "archetype": "chaos-agent",
-      "stats": {
-        "physical": 4,
-        "endurance": 5,
-        "mental": 6,
-        "social": 8,
-        "strategic": 4,
-        "loyalty": 4,
-        "boldness": 8,
-        "intuition": 7,
-        "temperament": 7
-      },
-      "sexuality": "queer",
-      "isReturnee": false
+      }
     },
     {
       "name": "Eureka",
@@ -2116,7 +1955,7 @@
       "archetype": "social-butterfly",
       "stats": {
         "physical": 5,
-        "endurance": 7,
+        "endurance": 6,
         "mental": 5,
         "social": 9,
         "strategic": 4,
@@ -2124,8 +1963,24 @@
         "boldness": 10,
         "intuition": 9,
         "temperament": 8
-      },
-      "isReturnee": false
+      }
+    },
+    {
+      "name": "Will",
+      "slug": "will",
+      "gender": "m",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 8,
+        "endurance": 8,
+        "mental": 4,
+        "social": 8,
+        "strategic": 2,
+        "loyalty": 8,
+        "boldness": 4,
+        "intuition": 6,
+        "temperament": 8
+      }
     },
     {
       "name": "Seraphine",
@@ -2142,8 +1997,126 @@
         "boldness": 3,
         "intuition": 3,
         "temperament": 4
-      },
-      "isReturnee": false
+      }
+    },
+    {
+      "name": "Ashley",
+      "slug": "ashley",
+      "gender": "f",
+      "archetype": "hero",
+      "stats": {
+        "physical": 7,
+        "endurance": 8,
+        "mental": 6,
+        "social": 8,
+        "strategic": 3,
+        "loyalty": 8,
+        "boldness": 6,
+        "intuition": 6,
+        "temperament": 7
+      }
+    },
+    {
+      "name": "Alec",
+      "slug": "alec",
+      "gender": "m",
+      "archetype": "mastermind",
+      "stats": {
+        "physical": 7,
+        "endurance": 6,
+        "mental": 10,
+        "social": 4,
+        "strategic": 9,
+        "loyalty": 2,
+        "boldness": 7,
+        "intuition": 8,
+        "temperament": 7
+      }
+    },
+    {
+      "name": "Fiore",
+      "slug": "fiore",
+      "gender": "f",
+      "archetype": "villain",
+      "stats": {
+        "physical": 2,
+        "endurance": 4,
+        "mental": 9,
+        "social": 8,
+        "strategic": 10,
+        "loyalty": 2,
+        "boldness": 10,
+        "intuition": 8,
+        "temperament": 3
+      }
+    },
+    {
+      "name": "Ellie",
+      "slug": "ellie",
+      "gender": "f",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 8,
+        "social": 6,
+        "strategic": 8,
+        "loyalty": 4,
+        "boldness": 7,
+        "intuition": 8,
+        "temperament": 5
+      }
+    },
+    {
+      "name": "Nick",
+      "slug": "nick",
+      "gender": "m",
+      "archetype": "floater",
+      "stats": {
+        "physical": 4,
+        "endurance": 4,
+        "mental": 6,
+        "social": 6,
+        "strategic": 6,
+        "loyalty": 2,
+        "boldness": 8,
+        "intuition": 4,
+        "temperament": 4
+      }
+    },
+    {
+      "name": "Wix",
+      "slug": "wix",
+      "gender": "nb",
+      "archetype": "chaos-agent",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 6,
+        "social": 8,
+        "strategic": 4,
+        "loyalty": 4,
+        "boldness": 8,
+        "intuition": 7,
+        "temperament": 7
+      }
+    },
+    {
+      "name": "Lill",
+      "slug": "lill",
+      "gender": "f",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 5,
+        "endurance": 7,
+        "mental": 6,
+        "social": 5,
+        "strategic": 3,
+        "loyalty": 9,
+        "boldness": 3,
+        "intuition": 5,
+        "temperament": 8
+      }
     }
   ]
 }

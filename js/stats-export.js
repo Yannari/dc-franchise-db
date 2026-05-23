@@ -1619,6 +1619,12 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       player.story = player.story ? player.story + header + filled.story : filled.story;
     }
 
+    // Recompute avgPlacement from all seasonDetails
+    const allPlacements = player.seasonDetails.map(sd => sd.placement).filter(p => p && p < 99);
+    player.avgPlacement = allPlacements.length
+      ? Math.round(allPlacements.reduce((s, v) => s + v, 0) / allPlacements.length * 100) / 100
+      : null;
+
     // Update badges
     if (pd.phase === 'Winner' && !player.badges?.includes(`S${seasonNum} Winner`)) {
       player.badges = player.badges || [];

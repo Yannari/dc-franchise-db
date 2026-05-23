@@ -1991,7 +1991,7 @@ function _loadJsPDF() {
   if (window.jspdf) return Promise.resolve(window.jspdf);
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
+    s.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
     s.onload = () => resolve(window.jspdf);
     s.onerror = () => reject(new Error('Failed to load jsPDF'));
     document.head.appendChild(s);

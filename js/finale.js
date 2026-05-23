@@ -6,6 +6,7 @@ import { getBond, addBond } from './bonds.js';
 import { handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge } from './challenges-core.js';
 import { generateCampEvents } from './camp-events.js';
+import { rpBuildWinnerCeremony, rpBuildReunion } from './vp-finale.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   saveGameState, snapshotGameState
@@ -1938,6 +1939,16 @@ export function generateFinaleSummaryText(ep) {
   ln(`Finalists: ${finalists.join(', ')}`);
   ln(`Jury (${jury.length}): ${jury.join(', ')}`);
 
+  sec('CAST (ALL)');
+  players.forEach(p => ln(p.name));
+
+  sec('TRIBES (ACTIVE)');
+  ln(`MERGED (${finalists.length}): ${finalists.join(', ')}`);
+
+  sec('ELIMINATED (PERMANENT)');
+  if (gs.eliminated.length) gs.eliminated.forEach(name => ln(name));
+  else ln('None yet.');
+
   // Camp events
   if (ep.campEvents && Object.keys(ep.campEvents).length) {
     sec('CAMP EVENTS');
@@ -2073,8 +2084,7 @@ export function generateFinaleSummaryText(ep) {
     if (ep.benchAssignments && Object.keys(ep.benchAssignments).length) {
       ln('BENCH ASSIGNMENTS:');
       finalists.forEach(f => {
-        const supporters = Object.entries(ep.benchAssignments)
-          .filter(([, side]) => side === f).map(([name]) => name);
+        const supporters = ep.benchAssignments[f] || [];
         if (supporters.length) ln(`  Team ${f}: ${supporters.join(', ')}`);
       });
       ln('');
@@ -2106,24 +2116,30 @@ export function generateFinaleSummaryText(ep) {
     if (rd?.plantedSabotage2) ln(`SABOTAGE: ${rd.plantedSabotage2.planter} greased the flagpole targeting ${rd.plantedSabotage2.targetFinalist}`);
     if (rd?.plantedSabotage || rd?.plantedSabotage2) ln('');
 
-    // Stage-by-stage results
-    if (ep.finaleChallengeStages?.length) {
+    // Per-phase timeline with stage results
+    if (ep.finaleChallengeStages?.length && rd?.timeline?.length) {
       ep.finaleChallengeStages.forEach(stage => {
         ln(`--- ${stage.name} ---`);
         if (stage.desc) ln(`  ${stage.desc}`);
+        const phaseEvents = rd.timeline.filter(ev => ev.phase === stage.phase);
+        phaseEvents.forEach(ev => {
+          const badge = ev.badgeText || ev.type?.toUpperCase() || '';
+          const players = ev.players?.length ? ev.players.join(', ') + ' — ' : '';
+          ln(`  ${badge} — ${players}${ev.text}`);
+        });
+        if (stage.winner) ln(`  Stage winner: ${stage.winner}`);
         if (stage.scores) {
           const sorted = Object.entries(stage.scores).sort(([,a],[,b]) => b - a);
           sorted.forEach(([name, score]) => ln(`  ${name}: ${typeof score === 'number' ? score.toFixed(1) : score}`));
         }
-        if (stage.winner) ln(`  Stage winner: ${stage.winner}`);
+        ln('');
       });
-      ln('');
-    }
-
-    // Timeline events
-    if (rd?.timeline?.length) {
+    } else if (rd?.timeline?.length) {
       ln('RELAY TIMELINE:');
-      rd.timeline.forEach(ev => ln(`  [${ev.type}] ${ev.text}`));
+      rd.timeline.forEach(ev => {
+        const badge = ev.badgeText || ev.type?.toUpperCase() || '';
+        ln(`  ${badge} — ${ev.text}`);
+      });
       ln('');
     }
 
@@ -2235,6 +2251,34 @@ export function generateFinaleSummaryText(ep) {
       else ln(`${ru} finishes as runner-up with ${ruVotes} jury vote${ruVotes !== 1 ? 's' : ''}.`);
     }
   }
+
+  // VP-rendered winner ceremony + reunion
+  const vpBuilders = [rpBuildWinnerCeremony, rpBuildReunion];
+  const savedState = window._tvState;
+  window._tvState = new Proxy({}, {
+    get(target, key) { if (!(key in target)) target[key] = { idx: 99999 }; return target[key]; },
+    set(target, key, val) { target[key] = val; return true; },
+    has() { return true; }
+  });
+  for (const builder of vpBuilders) {
+    try {
+      const html = builder(ep);
+      if (!html) continue;
+      const text = html
+        .replace(/<style[\s\S]*?<\/style>/gi, '')
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/div>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&middot;/g, '·').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ')
+        .split('\n').map(l => l.trim()).filter(l => l.length > 0)
+        .filter(l => !/^(Next\s*\(|Skip to results|Reveal All)/i.test(l));
+      L.push('');
+      text.forEach(line => L.push(`  ${line}`));
+    } catch (e) {}
+  }
+  window._tvState = savedState;
 
   return L.join('\n');
 }

@@ -71,6 +71,7 @@ import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rp
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard } from './chal/alien-egg.js';
 import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemFinish } from './chal/aftermayhem.js';
 import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict, rpBuildYetiElimination } from './chal/are-we-there-yeti.js';
+import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish } from './vp-finale.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -85,8 +86,16 @@ export function _textTwistChallenge(ep, ln, sec, dataKey, label, vpBuilders) {
   sec(label);
 
   // Force all reveal states to "show everything" so VP renders full content
-  const savedState = window._tvState ? { ...window._tvState } : {};
-  if (!window._tvState) window._tvState = {};
+  const savedState = window._tvState;
+  window._tvState = new Proxy({}, {
+    get(target, key) {
+      if (key === '__isProxy') return true;
+      if (!(key in target)) target[key] = { idx: 99999 };
+      return target[key];
+    },
+    set(target, key, val) { target[key] = val; return true; },
+    has() { return true; }
+  });
 
   for (const builder of vpBuilders) {
     try {
@@ -111,7 +120,7 @@ export function _textTwistChallenge(ep, ln, sec, dataKey, label, vpBuilders) {
         .split('\n')
         .map(l => l.trim())
         .filter(l => l.length > 0)
-        .filter(l => !/^(Investigate|Reveal All|NEXT|SMASH|REVEAL|SHOW ALL|DESTROY ALL|SET COMPLETE|CARPET CLEARED|ROOM DEMOLISHED|SHOW'S OVER|CASE CLOSED|ALL RISE|COLLECTION COMPLETE|INVESTIGATION CLOSED)$/i.test(l));
+        .filter(l => !/^(Investigate|Reveal All|NEXT|SMASH|REVEAL|SHOW ALL|DESTROY ALL|SET COMPLETE|CARPET CLEARED|ROOM DEMOLISHED|SHOW'S OVER|CASE CLOSED|ALL RISE|COLLECTION COMPLETE|INVESTIGATION CLOSED)$/i.test(l) && !/^Next\s*\(/i.test(l) && !/^Skip to results/i.test(l));
 
       for (const line of text) {
         ln(`  ${line}`);
@@ -522,6 +531,7 @@ export function _textRewardChallenge(ep, ln, sec) {
 
 // ── IMMUNITY CHALLENGE ──
 export function _textImmunityChallenge(ep, ln, sec) {
+  if (ep.isFinale) return;
   const standardTypes = new Set(['tribe','team','individual','mixed',undefined,'']);
   if (!standardTypes.has(ep.challengeType)) return;
   sec('IMMUNITY CHALLENGE');
@@ -1630,86 +1640,64 @@ export function _textAftermathStrategic(ep, ln, sec) {
   buildStorylines(ep).forEach(s => ln(`- ${s}`));
 }
 
+// ── FINALE: THE LAST MORNING ──
+export function _textLastMorning(ep, ln, sec) {
+  if (!ep.isFinale) return;
+  const finalists = ep.finaleEntrants || ep.finaleFinalists || [];
+  if (!finalists.length) return;
+  sec('THE LAST MORNING');
+  const day = ep.num > 1 ? (ep.num - 1) * 3 : 1;
+  ln(`Day ${day}. The fire is low. The game is almost over.`);
+  ln('');
+  finalists.forEach(f => {
+    const s = pStats(f);
+    const fp = pronouns(f);
+    const arch = players.find(p => p.name === f)?.archetype || '';
+    const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
+    const votesAgainst = gs.episodeHistory.reduce((sum, e) => {
+      return sum + (e.votingLog || []).filter(v => v.voted === f && v.voter !== 'THE GAME').length;
+    }, 0);
+    const allianceNames = [...new Set(gs.episodeHistory.flatMap(e =>
+      (e.alliances || []).filter(a => a.members?.includes(f) && a.members?.length >= 2).flatMap(a => a.members.filter(m => m !== f))
+    ))].slice(0, 3);
+    const rivalNames = [...gs.episodeHistory.reduce((rivals, e) => {
+      (e.alliances || []).forEach(a => { if (a.target === f && a.members?.length) rivals.add(a.members[0]); });
+      return rivals;
+    }, new Set())];
+
+    let journey;
+    if (arch === 'mastermind' || arch === 'schemer' || s.strategic >= 8)
+      journey = `"I came into this game knowing exactly what I wanted to do. Control the votes. Control the relationships. Control the outcome. And I'm still here — so either I did that, or I got lucky. I don't believe in luck."`;
+    else if (arch === 'challenge-beast' || s.physical >= 8)
+      journey = `"People underestimated me early. They saw a physical player and thought that's all I had. But I learned. I adapted. And every time they came for me, I won the challenge that mattered."`;
+    else if (arch === 'social-butterfly' || s.social >= 8)
+      journey = `"I built something real out here. Every conversation, every late-night talk by the fire — those weren't moves. Those were genuine connections. And somehow, they carried me to the end."`;
+    else if (arch === 'loyal-soldier' || s.loyalty >= 8)
+      journey = `"I gave my word to the people I trusted, and I kept it. In a game full of liars, I tried to be someone you could count on. Maybe that's not flashy. But I'm still here."`;
+    else if (arch === 'underdog')
+      journey = `"Nobody picked me to make it this far. Not the other players, not the audience, probably not even myself. But here I am. I survived every vote they threw at me."`;
+    else if (arch === 'hothead' || s.temperament <= 3)
+      journey = `"I know I'm not easy. I know I burned some people. But I never pretended to be something I wasn't out here. Every emotion was real. Every fight was real. And I'm in the finale."`;
+    else
+      journey = `"If you told me on day one that I'd be sitting here on the last morning, I would have laughed. But here I am. And I earned every single day."`;
+
+    ln(`${f} (${arch}, ${wins} challenge win${wins !== 1 ? 's' : ''})`);
+    ln(journey);
+    if (allianceNames.length >= 2)
+      ln(`${fp.Sub} built ${fp.pos} game around ${allianceNames.slice(0, 2).join(' and ')}. Some of those bonds survived. Some didn't.${rivalNames.length ? ` ${rivalNames[0]} was the rival ${fp.sub} never shook.` : ''}`);
+    if (votesAgainst >= 6) ln(`${f} has survived ${votesAgainst} votes against. The target was always there.`);
+    else if (wins >= 3) ln(`${f} has dominated challenges. The jury knows it.`);
+    ln('');
+  });
+  ln(`Someone looks at the tribe flag one last time. It's faded now. Weathered. Just like them.`);
+}
+
 // ── FINALE: REJECTED OLYMPIC RELAY ──
 export function _textOlympicRelay(ep, ln, sec) {
-  const rd = ep.relayData;
-  if (!rd) return;
-  sec('REJECTED OLYMPIC RELAY');
-
-  const winner = ep.finaleChallengeWinner || ep.winner;
-  const finalists = ep.finaleFinalists || [];
-
-  // Pre-race pitches
-  if (rd.pitches && Object.keys(rd.pitches).length) {
-    ln('PRE-RACE PITCHES:');
-    Object.entries(rd.pitches).forEach(([f, p]) => ln(`  ${f} (${p.type}): ${p.text}`));
-  }
-
-  // Bench assignments
-  if (ep.benchAssignments && Object.keys(ep.benchAssignments).length) {
-    ln('BENCH ASSIGNMENTS:');
-    finalists.forEach(f => {
-      const supporters = Object.entries(ep.benchAssignments)
-        .filter(([, side]) => side === f).map(([name]) => name);
-      if (supporters.length) ln(`  Team ${f}: ${supporters.join(', ')}`);
-    });
-  }
-
-  // Bench flips
-  if (rd.benchFlips?.length) {
-    ln('BENCH FLIPS:');
-    rd.benchFlips.forEach(flip => ln(`  ${flip.supporter} flipped from ${flip.from} to ${flip.to} (${flip.reason})`));
-  }
-
-  // Confessionals
-  if (rd.confessionals?.length) {
-    ln('PRE-RACE CONFESSIONALS:');
-    rd.confessionals.forEach(c => ln(`  ${c.player}: "${c.text}"`));
-  }
-
-  // Assistants
-  if (ep.assistants && Object.keys(ep.assistants).length) {
-    ln('ASSISTANTS:');
-    Object.entries(ep.assistants).forEach(([f, a]) => ln(`  ${f} chose ${typeof a === 'object' ? a.name : a}`));
-  }
-
-  // Sabotage plants
-  if (rd.plantedSabotage) ln(`SABOTAGE: ${rd.plantedSabotage.planter} planted a laxative cupcake targeting ${rd.plantedSabotage.targetFinalist}`);
-  if (rd.plantedSabotage2) ln(`SABOTAGE: ${rd.plantedSabotage2.planter} greased the flagpole targeting ${rd.plantedSabotage2.targetFinalist}`);
-
-  // Stage results
-  if (ep.finaleChallengeStages?.length) {
-    ep.finaleChallengeStages.forEach(stage => {
-      ln(`--- ${stage.name} ---`);
-      if (stage.desc) ln(`  ${stage.desc}`);
-      if (stage.scores) {
-        const sorted = Object.entries(stage.scores).sort(([,a],[,b]) => b - a);
-        sorted.forEach(([name, score]) => ln(`  ${name}: ${typeof score === 'number' ? score.toFixed(1) : score}`));
-      }
-      if (stage.winner) ln(`  Stage winner: ${stage.winner}`);
-    });
-  }
-
-  // Timeline events
-  if (rd.timeline?.length) {
-    ln('RELAY TIMELINE:');
-    rd.timeline.forEach(ev => ln(`  [${ev.type}] ${ev.text}`));
-  }
-
-  // Final scores + placements
-  if (ep.finaleChallengeScores) {
-    ln('FINAL SCORES:');
-    const sorted = Object.entries(ep.finaleChallengeScores).sort(([,a],[,b]) => b - a);
-    sorted.forEach(([name, score], i) => ln(`  ${i + 1}. ${name}: ${score.toFixed(1)}`));
-  }
-
-  if (winner) ln(`WINNER: ${winner}`);
-
-  // Sabotage summary
-  if (ep.finaleSabotageEvents?.length) {
-    ln('SABOTAGE EVENTS:');
-    ep.finaleSabotageEvents.forEach(s => ln(`  ${s.text || `${s.planter || s.saboteur} sabotaged ${s.target || s.victim} (${s.type || 'unknown'})`}`));
-  }
+  if (!ep.relayData) return;
+  _textTwistChallenge(ep, ln, sec, 'relayData', 'REJECTED OLYMPIC RELAY', [
+    rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish
+  ]);
 }
 
 // ── FINALE: HAWAIIAN PUNCH ──
@@ -2534,6 +2522,7 @@ export function generateSummaryText(ep) {
   _textAftermath(ep, ln, sec);
 
   // Finale screens
+  _textLastMorning(ep, ln, sec);
   _textOlympicRelay(ep, ln, sec);
   _textHawaiianPunch(ep, ln, sec);
   _textGrandChallenge(ep, ln, sec);

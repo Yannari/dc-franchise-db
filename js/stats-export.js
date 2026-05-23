@@ -1110,11 +1110,20 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
   const db = JSON.parse(JSON.stringify(existing));
   const seasonNum = rawStats.seasonNumber;
 
-  // Update franchise stats
+  // Update franchise stats (idempotent — subtract old values if re-exporting)
+  const existingChamp = db.champions?.find(c => c.season === seasonNum);
+  if (existingChamp) {
+    const oldEpCount = db.seasons?.find(s => s.seasonNumber === seasonNum)?.episodeCount || 0;
+    const oldCastSize = db.seasons?.find(s => s.seasonNumber === seasonNum)?.castSize || 0;
+    db.franchiseStats.totalEpisodes = (db.franchiseStats.totalEpisodes || 0) - oldEpCount;
+    db.franchiseStats.totalAppearances = (db.franchiseStats.totalAppearances || 0) - oldCastSize;
+    db.champions = db.champions.filter(c => c.season !== seasonNum);
+  }
   db.franchiseStats.totalSeasons = seasonNum;
   db.franchiseStats.totalEpisodes = (db.franchiseStats.totalEpisodes || 0) + rawStats.episodeCount;
   db.franchiseStats.totalAppearances = (db.franchiseStats.totalAppearances || 0) + rawStats.castSize;
   db.franchiseStats.lastUpdated = new Date().toISOString().split('T')[0];
+  // uniquePlayers will be recomputed from players DB after merge
 
   // Champion entry
   if (!db.champions) db.champions = [];
@@ -1155,9 +1164,10 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
     }
   }
 
-  // Fan favorites
+  // Fan favorites (overwrite on re-export)
   if (!db.fanFavorites) db.fanFavorites = [];
-  if (rawStats.autoAwards?.fanFavorite?.player && !db.fanFavorites.some(f => f.season === seasonNum)) {
+  db.fanFavorites = db.fanFavorites.filter(f => f.season !== seasonNum);
+  if (rawStats.autoAwards?.fanFavorite?.player) {
     db.fanFavorites.push({
       season: seasonNum,
       name: rawStats.autoAwards.fanFavorite.player,
@@ -1168,59 +1178,47 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
   // Multi-season players — will be recomputed after players DB merge
   // (see _recomputeMultiSeasonPlayers)
 
-  // Evolution arrays
+  // Evolution arrays (remove old entries for this season first so re-export overwrites)
   if (!db.evolution) db.evolution = {};
-
-  // Winning strategies
-  if (!db.evolution.winningStrategies) db.evolution.winningStrategies = [];
-  if (!db.evolution.winningStrategies.some(w => w.season === seasonNum)) {
-    db.evolution.winningStrategies.push({
-      season: seasonNum,
-      strategy: template.winner?.strategy || '',
-      winner: rawStats.winner
-    });
+  const evoKeys = ['winningStrategies', 'castComposition', 'finaleVoteMargins', 'majorTwists'];
+  for (const key of evoKeys) {
+    if (!db.evolution[key]) db.evolution[key] = [];
+    db.evolution[key] = db.evolution[key].filter(e => e.season !== seasonNum);
   }
 
-  // Cast composition
-  if (!db.evolution.castComposition) db.evolution.castComposition = [];
-  if (!db.evolution.castComposition.some(c => c.season === seasonNum)) {
-    db.evolution.castComposition.push({
-      season: seasonNum,
-      composition: `${rawStats.castSize} players`
-    });
-  }
+  db.evolution.winningStrategies.push({
+    season: seasonNum,
+    strategy: template.winner?.strategy || '',
+    winner: rawStats.winner
+  });
 
-  // Finale vote margins
-  if (!db.evolution.finaleVoteMargins) db.evolution.finaleVoteMargins = [];
-  if (!db.evolution.finaleVoteMargins.some(f => f.season === seasonNum)) {
-    const entry = {
-      season: seasonNum,
-      vote: template.winner?.vote || '',
-      winner: rawStats.winner
-    };
-    if (rawStats.finalists?.length) {
-      entry.finalists = rawStats.finalists.map(f => f.name);
-    }
-    db.evolution.finaleVoteMargins.push(entry);
-  }
+  db.evolution.castComposition.push({
+    season: seasonNum,
+    composition: `${rawStats.castSize} players`
+  });
 
-  // Major twists
-  if (!db.evolution.majorTwists) db.evolution.majorTwists = [];
-  if (!db.evolution.majorTwists.some(t => t.season === seasonNum)) {
-    db.evolution.majorTwists.push({
-      season: seasonNum,
-      twist: template.seasonNarrative || template.subtitle || ''
-    });
+  const voteMarginEntry = {
+    season: seasonNum,
+    vote: template.winner?.vote || '',
+    winner: rawStats.winner
+  };
+  if (rawStats.finalists?.length) {
+    voteMarginEntry.finalists = rawStats.finalists.map(f => f.name);
   }
+  db.evolution.finaleVoteMargins.push(voteMarginEntry);
+
+  db.evolution.majorTwists.push({
+    season: seasonNum,
+    twist: template.seasonNarrative || template.subtitle || ''
+  });
 
   // Mirror evolution into trends (both exist in the database)
   if (!db.trends) db.trends = {};
-  for (const key of ['winningStrategies', 'castComposition', 'finaleVoteMargins', 'majorTwists']) {
+  for (const key of evoKeys) {
     if (!db.trends[key]) db.trends[key] = [];
+    db.trends[key] = db.trends[key].filter(e => e.season !== seasonNum);
     const evoEntry = db.evolution[key]?.find(e => e.season === seasonNum);
-    if (evoEntry && !db.trends[key].some(e => e.season === seasonNum)) {
-      db.trends[key].push(evoEntry);
-    }
+    if (evoEntry) db.trends[key].push(evoEntry);
   }
 
   return db;
@@ -1346,9 +1344,17 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       rivalries: pd.rivalries.map(r => r.player || r)
     });
 
-    // Append season story with separator
+    // Append season story with separator (strip old version on re-export)
     if (filled.story) {
       const header = `\n\nSEASON ${seasonNum} — ${filledSeasonData?.title || `Season ${seasonNum}`}\n────────\n`;
+      if (player.story) {
+        const seasonTag = `SEASON ${seasonNum} —`;
+        const tagIdx = player.story.indexOf(seasonTag);
+        if (tagIdx > 0) {
+          const nextSeasonIdx = player.story.indexOf('\n\nSEASON ', tagIdx + seasonTag.length);
+          player.story = player.story.substring(0, tagIdx - 2) + (nextSeasonIdx >= 0 ? player.story.substring(nextSeasonIdx) : '');
+        }
+      }
       player.story = player.story ? player.story + header + filled.story : filled.story;
     }
 
@@ -1537,7 +1543,25 @@ export async function exportAndFillNarratives(onStatus) {
       // Recompute multi-season players from players DB
       franchiseDb.multiSeasonPlayers = playersDb.players
         .filter(p => p.totalSeasons >= 2)
-        .map(p => ({ name: p.name, playerSlug: p.id, seasons: p.seasons }));
+        .map(p => {
+          const placements = (p.seasonDetails || []).map(sd => sd.placement).filter(pl => pl && pl < 99);
+          const avg = placements.length ? placements.reduce((s, v) => s + v, 0) / placements.length : null;
+          return {
+            name: p.name,
+            playerSlug: p.id,
+            seasons: p.seasons,
+            seasonsPlayed: p.totalSeasons,
+            wins: p.wins || 0,
+            avgPlacement: avg ? Math.round(avg * 100) / 100 : null,
+            bestPlacement: p.bestPlacement || null
+          };
+        })
+        .sort((a, b) => (a.avgPlacement || 999) - (b.avgPlacement || 999));
+    }
+    if (seasonsDb && playersDb?.players) {
+      seasonsDb.franchise = seasonsDb.franchise || {};
+      seasonsDb.franchise.totalPlayers = playersDb.players.length;
+      seasonsDb.franchise.totalSeasons = Math.max(seasonsDb.franchise.totalSeasons || 0, rawStats.seasonNumber);
     }
   } catch (err) {
     console.warn('Could not fetch/merge existing databases:', err);

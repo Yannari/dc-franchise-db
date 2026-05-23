@@ -27,36 +27,49 @@ function _getSeasonNumber() {
 }
 
 function _promptLoadJSON(label = 'Select a JSON file') {
-  if (!window.confirm(label + '\n\nClick OK to pick the file, or Cancel to skip.')) {
-    return Promise.reject(new Error('Cancelled'));
-  }
   return new Promise((resolve, reject) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,application/json';
-    input.style.display = 'none';
-    document.body.appendChild(input);
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:99999;';
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#1e1e2e;border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:28px 32px;text-align:center;max-width:420px;color:#fff;font-family:system-ui,sans-serif;';
+    box.innerHTML = `<p style="margin:0 0 18px;font-size:15px;">${label}</p>`;
 
-    let settled = false;
-    input.addEventListener('change', () => {
-      settled = true;
-      const file = input.files?.[0];
-      if (!file) { input.remove(); return reject(new Error('No file selected')); }
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json,application/json';
+    fileInput.style.display = 'none';
+    box.appendChild(fileInput);
+
+    const pickBtn = document.createElement('button');
+    pickBtn.textContent = '📂 Choose File';
+    pickBtn.style.cssText = 'padding:10px 24px;background:linear-gradient(135deg,#3b82f6,#2563eb);border:none;border-radius:8px;color:#fff;font-size:14px;cursor:pointer;margin-right:12px;';
+    const skipBtn = document.createElement('button');
+    skipBtn.textContent = 'Skip';
+    skipBtn.style.cssText = 'padding:10px 24px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:14px;cursor:pointer;';
+
+    box.appendChild(pickBtn);
+    box.appendChild(skipBtn);
+    wrap.appendChild(box);
+    document.body.appendChild(wrap);
+
+    function cleanup() { wrap.remove(); }
+
+    skipBtn.addEventListener('click', () => { cleanup(); reject(new Error('Cancelled')); });
+
+    pickBtn.addEventListener('click', () => { fileInput.click(); });
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
       const reader = new FileReader();
       reader.onload = () => {
-        input.remove();
+        cleanup();
         try { resolve(JSON.parse(reader.result)); }
-        catch (e) { reject(new Error('Invalid JSON: ' + e.message)); }
+        catch (e) { cleanup(); reject(new Error('Invalid JSON: ' + e.message)); }
       };
-      reader.onerror = () => { input.remove(); reject(reader.error); };
+      reader.onerror = () => { cleanup(); reject(reader.error); };
       reader.readAsText(file);
     });
-
-    window.addEventListener('focus', () => {
-      setTimeout(() => { if (!settled) { input.remove(); reject(new Error('Cancelled')); } }, 500);
-    }, { once: true });
-
-    input.click();
   });
 }
 

@@ -1843,84 +1843,7 @@ export async function exportAndFillNarratives(onStatus) {
     seasonsDb = null;
   }
 
-  // Step 4: Rankings narration (optional — user loads rankings DB)
-  let rankingsDb = null;
-  try {
-    _status('Load rankings_database.json to update narration...');
-    rankingsDb = await _promptLoadJSON('Load rankings_database.json for narration update (Cancel to skip)');
-  } catch { /* user cancelled */ }
-
-  if (rankingsDb?.rankings?.length && workerUrl) {
-    _status('Generating rankings narration...');
-    const seasonPlayers = Object.keys(rawStats.players);
-    const toUpdate = rankingsDb.rankings.filter(r =>
-      seasonPlayers.some(n => n.toLowerCase() === r.name.toLowerCase())
-    );
-
-    if (toUpdate.length) {
-      const playerContext = toUpdate.map(r => {
-        const pd = rawStats.players[Object.keys(rawStats.players).find(n => n.toLowerCase() === r.name.toLowerCase())];
-        const seasonEntry = finalSeasonData.placements?.find(p => p.name.toLowerCase() === r.name.toLowerCase());
-        const parts = [];
-        parts.push(`${r.name} — Rank #${r.rank}, Tier ${r.tier}, Score ${r.score}`);
-        parts.push(`${r.seasonsPlayed || 1} season(s), ${r.wins || 0} win(s)`);
-        if (r.placements?.length) parts.push(`Placements: ${r.placements.join(', ')}`);
-        parts.push(`Challenge wins: ${r.challengeWins || 0}, Votes against: ${r.votesAgainst || 0}, Jury votes: ${r.juryVotes || 0}, Idols: ${r.idolsFound || 0}`);
-        if (seasonEntry?.story && seasonEntry.story !== '[AI_FILL]') parts.push(`This season story: ${seasonEntry.story}`);
-        if (seasonEntry?.keyMoments && Array.isArray(seasonEntry.keyMoments)) parts.push(`Key moments: ${seasonEntry.keyMoments.join(' | ')}`);
-        if (seasonEntry?.gameplayStyle && seasonEntry.gameplayStyle !== '[AI_FILL]') parts.push(`Style: ${seasonEntry.gameplayStyle}`);
-        if (pd) {
-          if (pd.advantageLifecycle?.plays?.length) parts.push(`Advantages played: ${pd.advantageLifecycle.plays.filter(p => !p.fake && !p.failed).length}`);
-          if (pd.showmanceData?.length) parts.push(`Showmances: ${pd.showmanceData.map(s => s.partner || s.with).join(', ')}`);
-        }
-        if (r.reasoning) parts.push(`Previous reasoning: "${r.reasoning}"`);
-        return { ...r, _context: parts.join('. ') };
-      });
-
-      try {
-        const batchSize = 10;
-        for (let i = 0; i < playerContext.length; i += batchSize) {
-          const batch = playerContext.slice(i, i + batchSize);
-          _status(`Narration ${i + 1}-${Math.min(i + batchSize, playerContext.length)} of ${playerContext.length}...`);
-
-          const resp = await fetch(workerUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              mode: 'rankings-narration',
-              players: batch.map(p => ({
-                name: p.name, rank: p.rank, tier: p.tier, score: p.score,
-                seasonsPlayed: p.seasonsPlayed, wins: p.wins,
-                placements: p.placements, challengeWins: p.challengeWins,
-                votesAgainst: p.votesAgainst, juryVotes: p.juryVotes,
-                idolsFound: p.idolsFound, reasoning: p._context
-              }))
-            })
-          });
-
-          if (resp.ok) {
-            const data = await resp.json();
-            if (data.results) {
-              for (const result of data.results) {
-                const entry = rankingsDb.rankings.find(r => r.name.toLowerCase() === result.name.toLowerCase());
-                if (!entry) continue;
-                if (result.title) entry.title = result.title;
-                if (result.emoji) entry.emoji = result.emoji;
-                if (result.reasoning) entry.reasoning = result.reasoning;
-                if (result.strengths?.length) entry.strengths = result.strengths;
-                if (result.weaknesses?.length) entry.weaknesses = result.weaknesses;
-              }
-            }
-          }
-        }
-        if (rankingsDb.metadata) rankingsDb.metadata.lastUpdated = new Date().toISOString().split('T')[0];
-      } catch (err) {
-        console.warn('Rankings narration failed:', err);
-      }
-    }
-  }
-
-  // Step 5: Download everything together
+  // Step 4: Download everything together
   _status('Downloading files...');
   let delay = 0;
   _downloadJSON(finalSeasonData, `season${seasonNum}-data.json`);
@@ -1936,9 +1859,114 @@ export async function exportAndFillNarratives(onStatus) {
   }
   if (seasonsDb) {
     setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), delay);
-    delay += 500;
   }
-  if (rankingsDb) {
-    setTimeout(() => _downloadJSON(rankingsDb, 'rankings_database.json'), delay);
+}
+
+// ── 19. Rankings Narration (standalone) ──────────────────────────────
+// Loads rankings_database.json, uses this season's rich data to generate
+// narration for each player via the worker, then downloads the updated file.
+
+export async function generateRankingsNarration(onStatus) {
+  const _status = onStatus || (() => {});
+
+  _status('Extracting season data...');
+  const rawStats = _extractSeasonStats();
+  if (!rawStats.players || !Object.keys(rawStats.players).length) {
+    alert('No season data — run a season first.');
+    return;
   }
+
+  const workerUrl = localStorage.getItem('SEASON_BUILDER_WORKER_URL') || '';
+  if (!workerUrl) {
+    alert('Set a worker URL first (used by Export & Fill Narratives).');
+    return;
+  }
+
+  let rankingsDb = null;
+  try {
+    rankingsDb = await _promptLoadJSON('Load rankings_database.json for narration update');
+  } catch { return; }
+
+  if (!rankingsDb?.rankings?.length) {
+    alert('Invalid rankings database — no rankings array found.');
+    return;
+  }
+
+  const seasonPlayers = Object.keys(rawStats.players);
+  const toUpdate = rankingsDb.rankings.filter(r =>
+    seasonPlayers.some(n => n.toLowerCase() === r.name.toLowerCase())
+  );
+
+  if (!toUpdate.length) {
+    alert('No matching players found between this season and the rankings database.');
+    return;
+  }
+
+  _status(`Generating narration for ${toUpdate.length} players...`);
+
+  const template = extractSeasonTemplate();
+  const playerContext = toUpdate.map(r => {
+    const pd = rawStats.players[Object.keys(rawStats.players).find(n => n.toLowerCase() === r.name.toLowerCase())];
+    const seasonEntry = template.placements?.find(p => p.name.toLowerCase() === r.name.toLowerCase());
+    const parts = [];
+    parts.push(`${r.name} — Rank #${r.rank}, Tier ${r.tier}, Score ${r.score}`);
+    parts.push(`${r.seasonsPlayed || 1} season(s), ${r.wins || 0} win(s)`);
+    if (r.placements?.length) parts.push(`Placements: ${r.placements.join(', ')}`);
+    parts.push(`Challenge wins: ${r.challengeWins || 0}, Votes against: ${r.votesAgainst || 0}, Jury votes: ${r.juryVotes || 0}, Idols: ${r.idolsFound || 0}`);
+    if (seasonEntry?.story && seasonEntry.story !== '[AI_FILL]') parts.push(`This season story: ${seasonEntry.story}`);
+    if (seasonEntry?.keyMoments && Array.isArray(seasonEntry.keyMoments)) parts.push(`Key moments: ${seasonEntry.keyMoments.join(' | ')}`);
+    if (seasonEntry?.gameplayStyle && seasonEntry.gameplayStyle !== '[AI_FILL]') parts.push(`Style: ${seasonEntry.gameplayStyle}`);
+    if (pd) {
+      if (pd.advantageLifecycle?.plays?.length) parts.push(`Advantages played: ${pd.advantageLifecycle.plays.filter(p => !p.fake && !p.failed).length}`);
+      if (pd.showmanceData?.length) parts.push(`Showmances: ${pd.showmanceData.map(s => s.partner || s.with).join(', ')}`);
+    }
+    if (r.reasoning) parts.push(`Previous reasoning: "${r.reasoning}"`);
+    return { ...r, _context: parts.join('. ') };
+  });
+
+  try {
+    const batchSize = 10;
+    for (let i = 0; i < playerContext.length; i += batchSize) {
+      const batch = playerContext.slice(i, i + batchSize);
+      _status(`Narration ${i + 1}-${Math.min(i + batchSize, playerContext.length)} of ${playerContext.length}...`);
+
+      const resp = await fetch(workerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'rankings-narration',
+          players: batch.map(p => ({
+            name: p.name, rank: p.rank, tier: p.tier, score: p.score,
+            seasonsPlayed: p.seasonsPlayed, wins: p.wins,
+            placements: p.placements, challengeWins: p.challengeWins,
+            votesAgainst: p.votesAgainst, juryVotes: p.juryVotes,
+            idolsFound: p.idolsFound, reasoning: p._context
+          }))
+        })
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.results) {
+          for (const result of data.results) {
+            const entry = rankingsDb.rankings.find(r => r.name.toLowerCase() === result.name.toLowerCase());
+            if (!entry) continue;
+            if (result.title) entry.title = result.title;
+            if (result.emoji) entry.emoji = result.emoji;
+            if (result.reasoning) entry.reasoning = result.reasoning;
+            if (result.strengths?.length) entry.strengths = result.strengths;
+            if (result.weaknesses?.length) entry.weaknesses = result.weaknesses;
+          }
+        }
+      }
+    }
+    if (rankingsDb.metadata) rankingsDb.metadata.lastUpdated = new Date().toISOString().split('T')[0];
+  } catch (err) {
+    console.warn('Rankings narration failed:', err);
+    alert('Narration generation failed — check console.');
+    return;
+  }
+
+  _status('Downloading updated rankings...');
+  _downloadJSON(rankingsDb, 'rankings_database.json');
 }

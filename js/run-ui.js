@@ -93,6 +93,28 @@ export function renderGameState() {
         };
         btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
       }
+      let narrBtn = document.getElementById('rankings-narration-btn');
+      if (!narrBtn) {
+        narrBtn = document.createElement('button');
+        narrBtn.id = 'rankings-narration-btn';
+        narrBtn.className = 'btn';
+        narrBtn.style.cssText = 'margin-top:6px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;width:100%;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;border:none;';
+        narrBtn.textContent = 'Rankings Narration';
+        narrBtn.onclick = async () => {
+          narrBtn.disabled = true;
+          try {
+            await window.generateRankingsNarration(s => { narrBtn.textContent = s; });
+            narrBtn.textContent = 'Done!';
+            setTimeout(() => { narrBtn.textContent = 'Rankings Narration'; narrBtn.disabled = false; }, 3000);
+          } catch (err) {
+            console.error('Narration error:', err);
+            narrBtn.textContent = 'Failed — check console';
+            setTimeout(() => { narrBtn.textContent = 'Rankings Narration'; narrBtn.disabled = false; }, 5000);
+          }
+        };
+        const anchor = document.getElementById('export-season-btn');
+        if (anchor) anchor.parentElement.insertBefore(narrBtn, anchor.nextSibling);
+      }
     }
     return;
   }
@@ -180,6 +202,28 @@ export function renderGameState() {
         }
       };
       btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
+    }
+    let narrBtn = document.getElementById('rankings-narration-btn');
+    if (!narrBtn) {
+      narrBtn = document.createElement('button');
+      narrBtn.id = 'rankings-narration-btn';
+      narrBtn.className = 'btn';
+      narrBtn.style.cssText = 'margin-top:6px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;width:100%;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;border:none;';
+      narrBtn.textContent = 'Rankings Narration';
+      narrBtn.onclick = async () => {
+        narrBtn.disabled = true;
+        try {
+          await window.generateRankingsNarration(s => { narrBtn.textContent = s; });
+          narrBtn.textContent = 'Done!';
+          setTimeout(() => { narrBtn.textContent = 'Rankings Narration'; narrBtn.disabled = false; }, 3000);
+        } catch (err) {
+          console.error('Narration error:', err);
+          narrBtn.textContent = 'Failed — check console';
+          setTimeout(() => { narrBtn.textContent = 'Rankings Narration'; narrBtn.disabled = false; }, 5000);
+        }
+      };
+      const anchor = document.getElementById('export-season-btn');
+      if (anchor) anchor.parentElement.insertBefore(narrBtn, anchor.nextSibling);
     }
   } else if (gs.phase === 'finale') {
     btn.textContent = `Simulate Finale (Ep. ${gs.episode+1})`; btn.disabled = false;

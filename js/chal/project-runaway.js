@@ -502,29 +502,34 @@ export function simulateProjectRunaway(ep) {
     })).sort((a, b) => b.score - a.score);
     const model = modelScores[0].name;
 
-    const handlerScores = members.filter(m => m !== designer && m !== model).map(n => ({
+    const remaining = members.filter(m => m !== designer && m !== model);
+    const handlerScores = remaining.map(n => ({
       name: n, score: pStats(n).intuition * 0.5 + pStats(n).temperament * 0.5 + noise(2.5),
     })).sort((a, b) => b.score - a.score);
-    const handler = handlerScores[0].name;
+    const handlers = handlerScores.slice(0, 2).map(h => h.name);
 
-    const gatherers = members.filter(m => m !== designer && m !== model && m !== handler);
+    const gatherers = remaining.filter(m => !handlers.includes(m));
 
-    tribeRoles[tribe.name] = { designer, model, handler, gatherers };
+    tribeRoles[tribe.name] = { designer, model, handlers, gatherers };
 
-    const dpr = pronouns(designer), mpr = pronouns(model), hpr = pronouns(handler);
+    const dpr = pronouns(designer), mpr = pronouns(model);
+    const narration = [
+      { player: designer, role: 'Designer', text: pick(ROLE_ASSIGN_TEXT.designer)(designer, dpr), badge: 'DESIGNER', badgeClass: 'gold' },
+      { player: model, role: 'Model', text: pick(ROLE_ASSIGN_TEXT.model)(model, mpr), badge: 'MODEL', badgeClass: 'rose' },
+      ...handlers.map(h => {
+        const hpr = pronouns(h);
+        return { player: h, role: 'Handler', text: pick(ROLE_ASSIGN_TEXT.handler)(h, hpr), badge: 'HANDLER', badgeClass: 'blue' };
+      }),
+      ...gatherers.map(g => {
+        const gpr = pronouns(g);
+        return { player: g, role: 'Gatherer', text: pick(ROLE_ASSIGN_TEXT.gatherer)(g, gpr), badge: 'GATHERER', badgeClass: 'gold' };
+      }),
+    ];
     roleEvents.push({
       type: 'roleAssign', tribe: tribe.name,
-      roles: { designer, model, handler, gatherers: [...gatherers] },
+      roles: { designer, model, handlers: [...handlers], gatherers: [...gatherers] },
       theme: tribeThemes[tribe.name],
-      narration: [
-        { player: designer, role: 'Designer', text: pick(ROLE_ASSIGN_TEXT.designer)(designer, dpr), badge: 'DESIGNER', badgeClass: 'gold' },
-        { player: model, role: 'Model', text: pick(ROLE_ASSIGN_TEXT.model)(model, mpr), badge: 'MODEL', badgeClass: 'rose' },
-        { player: handler, role: 'Handler', text: pick(ROLE_ASSIGN_TEXT.handler)(handler, hpr), badge: 'HANDLER', badgeClass: 'blue' },
-        ...gatherers.map(g => {
-          const gpr = pronouns(g);
-          return { player: g, role: 'Gatherer', text: pick(ROLE_ASSIGN_TEXT.gatherer)(g, gpr), badge: 'GATHERER', badgeClass: 'gold' };
-        }),
-      ],
+      narration,
     });
   });
 
@@ -673,7 +678,7 @@ export function simulateProjectRunaway(ep) {
 
     const roles = tribeRoles[tribe.name];
     if (!roles) return;
-    const { designer, model, handler, gatherers } = roles;
+    const { designer, model, handlers, gatherers } = roles;
 
     // Run 4 beats of design work
     let cumulativeDesign = 0;
@@ -722,26 +727,29 @@ export function simulateProjectRunaway(ep) {
         ep.chalMemberScores[designer] += tier === 'inspired' ? 5 : tier === 'steady' ? 3 : 1;
       }
 
-      // Handler keeps creature calm
-      {
+      // Handlers keep creature calm (alternate lead handler each beat)
+      handlers.forEach((handler, hIdx) => {
         const s = pStats(handler);
         const hpr = pronouns(handler);
+        const isLead = (beat % handlers.length) === hIdx;
         const handlerScore = s.intuition * 0.4 + s.temperament * 0.4 + s.social * 0.2 + noise(2.5) - creature.volatility * 0.3;
         const tier = handlerScore >= 5 ? 'calm' : handlerScore >= 1 ? 'agitated' : 'berserk';
         cumulativeHandler += handlerScore;
 
-        if (tier === 'calm') creature.currentCoop = Math.min(10, creature.currentCoop + 0.5);
-        else if (tier === 'berserk') creature.currentCoop = Math.max(1, creature.currentCoop - 2);
-        else creature.currentCoop = Math.max(1, creature.currentCoop - 0.5);
+        if (isLead) {
+          if (tier === 'calm') creature.currentCoop = Math.min(10, creature.currentCoop + 0.5);
+          else if (tier === 'berserk') creature.currentCoop = Math.max(1, creature.currentCoop - 2);
+          else creature.currentCoop = Math.max(1, creature.currentCoop - 0.5);
+        }
 
         designEvents.push({
           type: 'handler', player: handler, tribe: tribe.name, beat,
           text: pick(HANDLER_TEXT[tier])(handler, hpr, creature.name),
-          badge: tier.toUpperCase(), badgeClass: tier === 'calm' ? 'gold' : tier === 'agitated' ? 'blue' : 'rose',
+          badge: (isLead ? 'LEAD ' : '') + tier.toUpperCase(), badgeClass: tier === 'calm' ? 'gold' : tier === 'agitated' ? 'blue' : 'rose',
           creature: creature.name, mood: tier,
         });
         ep.chalMemberScores[handler] += tier === 'calm' ? 4 : tier === 'agitated' ? 2 : 0;
-      }
+      });
 
       // Model practices
       {
@@ -765,7 +773,7 @@ export function simulateProjectRunaway(ep) {
     }
 
     tribeDesignScores[tribe.name] = cumulativeDesign;
-    tribeHandlerScores[tribe.name] = cumulativeHandler;
+    tribeHandlerScores[tribe.name] = cumulativeHandler / Math.max(1, handlers.length);
     tribeModelScores[tribe.name] = cumulativeModel;
     tribeMaterialQuality[tribe.name] = materialTotal / Math.max(1, gatherers.length * 4);
     tribeMaterials[tribe.name] = materialsGathered;
@@ -784,7 +792,7 @@ export function simulateProjectRunaway(ep) {
 
     const modelName = roles.model;
     const designerName = roles.designer;
-    const handlerName = roles.handler;
+    const handlerNames = roles.handlers;
 
     // Calculate scoring components
     const designerScore = tribeDesignScores[tribe.name] || 0;
@@ -897,19 +905,19 @@ export function simulateProjectRunaway(ep) {
         creature: creature.name,
       });
 
-      // Camp event injection: berserk-blame
-      const handler = tribeRoles[tribe.name]?.handler;
-      if (handler) {
+      // Camp event injection: berserk-blame (both handlers share blame)
+      const blameHandlers = tribeRoles[tribe.name]?.handlers || [];
+      if (blameHandlers.length > 0) {
         const campKey = tribe.name;
+        const blameHandler = pick(blameHandlers);
         ep.campEvents[campKey].post.push({
           type: 'berserk-blame',
-          desc: `${creature.name} went berserk during the runway show. ${handler} takes heat for losing control.`,
-          players: [handler],
+          desc: `${creature.name} went berserk during the runway show. ${blameHandler} takes heat for losing control.`,
+          players: [...blameHandlers],
           badgeText: 'Berserk Blame',
           badgeClass: 'badge-negative',
         });
-        popDelta(handler, -2);
-        addBond(handler, tribeRoles[tribe.name]?.designer || handler, -0.5);
+        blameHandlers.forEach(h => { popDelta(h, -2); addBond(h, tribeRoles[tribe.name]?.designer || h, -0.5); });
       }
 
       // Rescue race: 3 beats
@@ -1141,7 +1149,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
       break;
     }
     case 'creatureSpook': {
-      const handler = roles.handler;
+      const handler = pick(roles.handlers);
       if (!creature) break;
       events.push({
         type: 'social', subtype: 'creatureSpook', player: handler, tribe: tribe.name, beat,
@@ -1192,7 +1200,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
       break;
     }
     case 'creatureBond': {
-      const handler = roles.handler;
+      const handler = pick(roles.handlers);
       if (!creature) break;
       events.push({
         type: 'social', subtype: 'creatureBond', player: handler, tribe: tribe.name, beat,
@@ -1382,14 +1390,44 @@ function _buildSidebarContent(ep, screenKey) {
   const revIdx = _tvState[screenKey]?.idx ?? -1;
   let html = '';
 
-  // Tribe editorial spreads
-  (pr.tribes || []).forEach(tribe => {
+  // Tribe editorial spreads — gated by screen to avoid spoiling roles
+  const rolesRevealed = screenKey !== 'pr-title' && screenKey !== 'pr-roles';
+  const rolesPartial = screenKey === 'pr-roles';
+
+  (pr.tribes || []).forEach((tribe, tIdx) => {
     const roles = tribe.roles;
     if (!roles) return;
 
     html += `<div class="mag-page">`;
     html += `<div class="mag-page-header">${tribe.name}</div>`;
     html += `<div class="mag-page-sub">${tribe.theme || 'Theme TBD'}</div>`;
+
+    if (!rolesRevealed && !rolesPartial) {
+      // Title screen — just tribe name, no role details
+      html += `<div style="font-family:var(--editorial);font-size:13px;font-style:italic;color:#7a5a6a;padding:8px 0;">Roles to be assigned...</div>`;
+      html += `</div>`;
+      return;
+    }
+
+    if (rolesPartial) {
+      // On the roles screen — show roles progressively based on reveal index
+      const rolesIdx = _tvState['pr-roles']?.idx ?? -1;
+      const roleEvts = pr.roleEvents || [];
+      // Map stepIdx back to tribes: each roleEvent has N narration cards
+      let cardsBefore = 0;
+      let tribeStartIdx = -1;
+      for (const re of roleEvts) {
+        if (re.tribe === tribe.name) { tribeStartIdx = cardsBefore; break; }
+        cardsBefore += (re.narration || []).length;
+      }
+      if (tribeStartIdx === -1 || rolesIdx < tribeStartIdx) {
+        html += `<div style="font-family:var(--editorial);font-size:13px;font-style:italic;color:#7a5a6a;padding:8px 0;">Awaiting role call...</div>`;
+        html += `</div>`;
+        return;
+      }
+    }
+
+    // Full editorial spread (shown on hunt/design/runway/berserk/results, or on roles screen after reveal)
     html += `<div class="mag-spread">`;
 
     // Model = cover shot
@@ -1399,10 +1437,15 @@ function _buildSidebarContent(ep, screenKey) {
     html += `<div class="mag-player-role"><div class="mag-player-name">${roles.model}</div><div class="mag-player-tag">Model</div></div>`;
     html += `</div>`;
 
-    // Designer + Handler mid row
-    html += `<div class="mag-mid-row">`;
-    html += `<div class="mag-mid-card"><img src="assets/avatars/${slug(roles.designer)}.png" alt="${roles.designer}" onerror="this.parentElement.style.background='#2a3a4a'"><div class="mag-player-role"><div class="mag-player-name">${roles.designer}</div><div class="mag-player-tag">Designer</div></div></div>`;
-    html += `<div class="mag-mid-card"><img src="assets/avatars/${slug(roles.handler)}.png" alt="${roles.handler}" onerror="this.parentElement.style.background='#3a3a2a'"><div class="mag-player-role"><div class="mag-player-name">${roles.handler}</div><div class="mag-player-tag">Handler</div></div></div>`;
+    // Designer + Handlers mid row
+    const midCards = [
+      { name: roles.designer, tag: 'Designer', bg: '#2a3a4a' },
+      ...(roles.handlers || []).map(h => ({ name: h, tag: 'Handler', bg: '#3a3a2a' })),
+    ];
+    html += `<div class="mag-mid-row" style="grid-template-columns:repeat(${midCards.length},1fr);">`;
+    midCards.forEach(c => {
+      html += `<div class="mag-mid-card"><img src="assets/avatars/${slug(c.name)}.png" alt="${c.name}" onerror="this.parentElement.style.background='${c.bg}'"><div class="mag-player-role"><div class="mag-player-name">${c.name}</div><div class="mag-player-tag">${c.tag}</div></div></div>`;
+    });
     html += `</div>`;
 
     // Gatherers headshot row
@@ -1440,7 +1483,7 @@ function _buildSidebarContent(ep, screenKey) {
     html += `<div class="mag-page">`;
     html += `<div class="mag-page-header">Creature Dossier</div>`;
     html += `<div class="mag-page-sub">Volatility monitor</div>`;
-    html += `<div style="font-family:var(--sans);font-size:10px;color:var(--ink);padding:4px 0;">`;
+    html += `<div style="font-family:var(--sans);font-size:12px;color:var(--ink);padding:4px 0;">`;
     (pr.tribes || []).forEach(tribe => {
       const c = tribe.creature;
       if (!c) return;
@@ -1457,7 +1500,7 @@ function _buildSidebarContent(ep, screenKey) {
     html += `<div class="mag-page">`;
     html += `<div class="mag-page-header">Material Rack</div>`;
     html += `<div class="mag-page-sub">Gathered resources</div>`;
-    html += `<div style="font-family:var(--sans);font-size:9px;color:var(--ink);">`;
+    html += `<div style="font-family:var(--sans);font-size:11px;color:var(--ink);">`;
     // Show materials for first tribe as sample
     const firstTribe = pr.tribes?.[0];
     if (firstTribe?.materials) {
@@ -1565,13 +1608,13 @@ function _prShell(content, ep, phaseCls) {
 /* ─── TOP BAR (Magazine Header) ─── */
 .top-bar { position: fixed; top: 46px; left: 0; right: 0; height: 28px; background: rgba(10,6,18,0.97); display: flex; align-items: center; z-index: 1000; border-bottom: 1px solid var(--border); }
 .masthead { display: flex; align-items: center; gap: 8px; padding: 0 14px; }
-.masthead-logo { font-family: var(--heading); font-size: 13px; font-weight: 900; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; }
-.masthead-issue { font-family: var(--sans); font-size: 9px; font-weight: 200; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+.masthead-logo { font-family: var(--heading); font-size: 14px; font-weight: 900; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; }
+.masthead-issue { font-family: var(--sans); font-size: 10px; font-weight: 200; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
 .ticker-wrap { flex: 1; overflow: hidden; margin: 0 12px; }
-.ticker { display: inline-block; white-space: nowrap; animation: ticker-scroll 50s linear infinite; font-family: var(--editorial); font-size: 11px; font-style: italic; color: var(--muted); }
+.ticker { display: inline-block; white-space: nowrap; animation: ticker-scroll 50s linear infinite; font-family: var(--editorial); font-size: 12px; font-style: italic; color: var(--muted); }
 .ticker span { color: var(--gold); margin: 0 8px; font-style: normal; }
 @keyframes ticker-scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-.live-badge { font-family: var(--sans); font-size: 8px; font-weight: 800; letter-spacing: 2px; color: var(--rose); padding: 0 14px; animation: pulse-live 2s infinite; }
+.live-badge { font-family: var(--sans); font-size: 10px; font-weight: 800; letter-spacing: 2px; color: var(--rose); padding: 0 14px; animation: pulse-live 2s infinite; }
 @keyframes pulse-live { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 /* ─── LAYOUT ─── */
@@ -1584,31 +1627,31 @@ function _prShell(content, ep, phaseCls) {
 .mag-page { background: linear-gradient(135deg, #f8f2e8, #f0e8df); border-radius: 3px; padding: 14px 12px; position: relative; overflow: hidden; box-shadow: 2px 4px 20px rgba(0,0,0,0.5), inset 0 0 30px rgba(122,26,74,0.03); border: 1px solid rgba(244,200,66,0.2); }
 .mag-page::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--drape), var(--rose), var(--drape)); }
 .mag-page::after { content: ''; position: absolute; top: 0; right: 0; width: 20px; height: 100%; background: linear-gradient(90deg, transparent, rgba(122,26,74,0.04)); pointer-events: none; }
-.mag-page-header { font-family: var(--heading); font-size: 11px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: var(--drape); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(122,26,74,0.15); }
-.mag-page-sub { font-family: var(--editorial); font-size: 10px; font-style: italic; color: #7a5a6a; margin-bottom: 8px; }
+.mag-page-header { font-family: var(--heading); font-size: 13px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: var(--drape); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(122,26,74,0.15); }
+.mag-page-sub { font-family: var(--editorial); font-size: 12px; font-style: italic; color: #7a5a6a; margin-bottom: 8px; }
 .mag-spread { display: flex; flex-direction: column; gap: 6px; }
 .mag-cover-shot { position: relative; width: 100%; aspect-ratio: 4/3; background: linear-gradient(180deg, #2a0f2a, #1a0a1f); border-radius: 3px; overflow: hidden; border: 2px solid var(--gold); box-shadow: 0 4px 20px rgba(244,200,66,0.15); }
 .mag-cover-shot img { width: 100%; height: 100%; object-fit: contain; filter: contrast(1.1) saturate(1.05); }
-.mag-cover-shot .mag-role-banner { position: absolute; top: 6px; left: 6px; font-family: var(--sans); font-size: 7px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--ink); background: var(--gold); padding: 2px 8px; border-radius: 1px; }
+.mag-cover-shot .mag-role-banner { position: absolute; top: 6px; left: 6px; font-family: var(--sans); font-size: 9px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--ink); background: var(--gold); padding: 2px 8px; border-radius: 1px; }
 .mag-cover-shot .mag-player-role { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(26,10,31,0.95)); padding: 24px 8px 8px; text-align: center; }
-.mag-cover-shot .mag-player-name { font-family: var(--heading); font-size: 14px; font-weight: 700; color: #fff; letter-spacing: 1px; }
-.mag-cover-shot .mag-player-tag { font-family: var(--editorial); font-size: 11px; font-style: italic; color: var(--gold-bright); }
+.mag-cover-shot .mag-player-name { font-family: var(--heading); font-size: 16px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+.mag-cover-shot .mag-player-tag { font-family: var(--editorial); font-size: 13px; font-style: italic; color: var(--gold-bright); }
 .mag-mid-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .mag-mid-card { position: relative; aspect-ratio: 3/4; background: linear-gradient(180deg, #2a0f2a, #1a0a1f); border-radius: 2px; overflow: hidden; border: 1px solid rgba(244,200,66,0.3); transition: transform 0.3s, box-shadow 0.3s; }
 .mag-mid-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(233,30,122,0.2); }
 .mag-mid-card img { width: 100%; height: 100%; object-fit: contain; }
 .mag-mid-card .mag-player-role { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(26,10,31,0.92)); padding: 16px 4px 5px; text-align: center; }
-.mag-mid-card .mag-player-name { font-family: var(--sans); font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #fff; text-transform: uppercase; }
-.mag-mid-card .mag-player-tag { font-family: var(--editorial); font-size: 8px; font-style: italic; color: var(--gold-bright); }
+.mag-mid-card .mag-player-name { font-family: var(--sans); font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #fff; text-transform: uppercase; }
+.mag-mid-card .mag-player-tag { font-family: var(--editorial); font-size: 10px; font-style: italic; color: var(--gold-bright); }
 .mag-headshot-row { display: flex; gap: 5px; }
 .mag-headshot { position: relative; flex: 1; aspect-ratio: 1; background: linear-gradient(180deg, #2a0f2a, #1a0a1f); border-radius: 2px; overflow: hidden; border: 1px solid rgba(244,200,66,0.15); }
 .mag-headshot img { width: 100%; height: 100%; object-fit: contain; }
-.mag-headshot .mag-hs-name { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(26,10,31,0.85); text-align: center; padding: 2px; font-family: var(--sans); font-size: 7px; font-weight: 700; color: #fff; letter-spacing: 0.5px; text-transform: uppercase; }
+.mag-headshot .mag-hs-name { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(26,10,31,0.85); text-align: center; padding: 2px; font-family: var(--sans); font-size: 9px; font-weight: 700; color: #fff; letter-spacing: 0.5px; text-transform: uppercase; }
 .mag-score { background: linear-gradient(135deg, #1a0a1f, #2a0f2a); border-radius: 2px; padding: 10px 12px; border: 1px solid var(--border); }
-.mag-score-title { font-family: var(--heading); font-size: 10px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; }
+.mag-score-title { font-family: var(--heading); font-size: 12px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; }
 .score-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(244,200,66,0.08); }
 .score-row:last-child { border-bottom: none; }
-.score-tribe { font-family: var(--sans); font-size: 10px; font-weight: 600; color: var(--text); }
+.score-tribe { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text); }
 .score-val { font-family: var(--heading); font-size: 16px; color: var(--gold-bright); }
 .score-bar { height: 3px; background: rgba(244,200,66,0.12); border-radius: 2px; margin-top: 3px; }
 .score-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--rose), var(--gold)); transition: width 0.6s ease; }
@@ -1616,18 +1659,18 @@ function _prShell(content, ep, phaseCls) {
 /* ─── PHASE HEADER ─── */
 .phase-hdr { text-align: center; margin-bottom: 28px; padding: 32px 20px 24px; position: relative; }
 .phase-hdr::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(212,175,125,0.06) 0%, transparent 70%); }
-.phase-num { font-family: var(--sans); font-size: 9px; font-weight: 800; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; display: block; }
+.phase-num { font-family: var(--sans); font-size: 11px; font-weight: 800; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; display: block; }
 .phase-title { font-family: var(--heading); font-size: 48px; font-weight: 900; color: var(--champagne); letter-spacing: 2px; line-height: 1.1; }
 .phase-title em { font-style: italic; color: var(--rose); }
-.phase-sub { font-family: var(--editorial); font-size: 15px; font-style: italic; font-weight: 300; color: var(--muted); margin-top: 8px; letter-spacing: 1px; }
+.phase-sub { font-family: var(--editorial); font-size: 17px; font-style: italic; font-weight: 300; color: var(--muted); margin-top: 8px; letter-spacing: 1px; }
 .phase-rule { width: 60px; height: 1px; background: var(--gold); margin: 16px auto 0; }
 
 /* ─── HOST QUOTE ─── */
-.host-quote { background: linear-gradient(135deg, rgba(212,175,125,0.06), transparent); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 14px 20px; margin-bottom: 24px; font-family: var(--editorial); font-size: 14px; font-style: italic; color: var(--text); line-height: 1.6; }
-.host-quote .host-name { font-family: var(--sans); font-size: 9px; font-weight: 800; font-style: normal; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; display: block; margin-bottom: 4px; }
+.host-quote { background: linear-gradient(135deg, rgba(212,175,125,0.06), transparent); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 14px 20px; margin-bottom: 24px; font-family: var(--editorial); font-size: 16px; font-style: italic; color: var(--text); line-height: 1.6; }
+.host-quote .host-name { font-family: var(--sans); font-size: 10px; font-weight: 800; font-style: normal; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; display: block; margin-bottom: 4px; }
 
 /* ─── BEAT HEADER ─── */
-.beat-hdr { font-family: var(--sans); font-size: 9px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); padding: 12px 0 8px; margin-top: 20px; display: flex; align-items: center; gap: 10px; }
+.beat-hdr { font-family: var(--sans); font-size: 11px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); padding: 12px 0 8px; margin-top: 20px; display: flex; align-items: center; gap: 10px; }
 .beat-hdr::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
 
 /* ─── EVENT CARDS ─── */
@@ -1636,12 +1679,12 @@ function _prShell(content, ep, phaseCls) {
 .evt-card:hover { border-color: var(--border-hot); box-shadow: 0 4px 20px rgba(212,175,125,0.08); }
 .evt-card-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .evt-avatar { width: 32px; height: 32px; border-radius: 2px; object-fit: contain; border: 1px solid var(--border); flex-shrink: 0; }
-.evt-name { font-family: var(--heading); font-size: 16px; color: var(--champagne); flex: 1; }
-.evt-badge { font-family: var(--sans); font-size: 8px; font-weight: 800; letter-spacing: 1.5px; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; white-space: nowrap; }
+.evt-name { font-family: var(--heading); font-size: 18px; color: var(--champagne); flex: 1; }
+.evt-badge { font-family: var(--sans); font-size: 10px; font-weight: 800; letter-spacing: 1.5px; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; white-space: nowrap; }
 .badge-gold { background: rgba(212,175,125,0.15); color: var(--gold-bright); border: 1px solid rgba(212,175,125,0.3); }
 .badge-rose { background: var(--rose-soft); color: var(--rose); border: 1px solid rgba(232,72,106,0.3); }
 .badge-blue { background: rgba(100,160,220,0.12); color: #8ac4f0; border: 1px solid rgba(100,160,220,0.25); }
-.evt-text { font-family: var(--editorial); font-size: 13px; line-height: 1.6; color: var(--text); padding-left: 42px; }
+.evt-text { font-family: var(--editorial); font-size: 16px; line-height: 1.6; color: var(--text); padding-left: 42px; }
 
 /* ─── FABRIC SWATCH CARDS ─── */
 .fabric-card { position: relative; overflow: hidden; }
@@ -1658,14 +1701,14 @@ function _prShell(content, ep, phaseCls) {
 .runway-model-img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--gold); object-fit: contain; margin-bottom: 12px; box-shadow: 0 0 30px rgba(212,175,125,0.3); animation: glow-pulse 3s ease-in-out infinite; }
 @keyframes glow-pulse { 0%,100% { box-shadow: 0 0 20px rgba(212,175,125,0.2); } 50% { box-shadow: 0 0 40px rgba(212,175,125,0.5); } }
 .runway-model-name { font-family: var(--heading); font-size: 24px; color: var(--champagne); margin-bottom: 4px; }
-.runway-tribe { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; }
+.runway-tribe { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; }
 
 /* ─── SCORING BREAKDOWN ─── */
 .score-breakdown { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-bottom: 16px; }
 .score-breakdown-title { font-family: var(--heading); font-size: 18px; color: var(--champagne); margin-bottom: 16px; text-align: center; letter-spacing: 1px; }
 .score-criterion { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(212,175,125,0.08); }
 .score-criterion:last-child { border-bottom: none; }
-.score-criterion-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); width: 140px; flex-shrink: 0; }
+.score-criterion-label { font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); width: 140px; flex-shrink: 0; }
 .score-criterion-bar { flex: 1; height: 6px; background: rgba(212,175,125,0.1); border-radius: 3px; overflow: hidden; }
 .score-criterion-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
 .fill-gold { background: linear-gradient(90deg, var(--gold), var(--gold-bright)); }
@@ -1679,21 +1722,21 @@ function _prShell(content, ep, phaseCls) {
 .creature-info { flex: 1; }
 .creature-name { font-family: var(--heading); font-size: 18px; color: var(--champagne); margin-bottom: 4px; }
 .creature-stats { display: flex; gap: 12px; }
-.creature-stat { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+.creature-stat { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
 .creature-stat .stat-val { color: var(--gold-bright); margin-left: 4px; }
 
 /* ─── WINNER CARD ─── */
 .winner-card { background: linear-gradient(135deg, rgba(212,175,125,0.08), rgba(232,72,106,0.05)); border: 2px solid var(--gold); border-radius: 8px; padding: 28px; text-align: center; position: relative; overflow: hidden; animation: winner-glow 2s ease-in-out infinite; }
 @keyframes winner-glow { 0%,100% { box-shadow: 0 0 20px rgba(212,175,125,0.15); } 50% { box-shadow: 0 0 50px rgba(212,175,125,0.3); } }
-.winner-card::before { content: 'IMMUNITY'; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-family: var(--sans); font-size: 8px; font-weight: 800; letter-spacing: 4px; color: var(--gold); }
+.winner-card::before { content: 'IMMUNITY'; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-family: var(--sans); font-size: 10px; font-weight: 800; letter-spacing: 4px; color: var(--gold); }
 .winner-tribe { font-family: var(--heading); font-size: 36px; color: var(--champagne); margin-top: 12px; }
-.winner-sub { font-family: var(--editorial); font-size: 14px; font-style: italic; color: var(--muted); margin-top: 6px; }
+.winner-sub { font-family: var(--editorial); font-size: 16px; font-style: italic; color: var(--muted); margin-top: 6px; }
 .loser-card { background: linear-gradient(135deg, rgba(232,72,106,0.08), rgba(28,14,42,0.85)); border: 2px solid var(--rose); border-radius: 8px; padding: 24px; text-align: center; margin-top: 16px; }
 .loser-tribe { font-family: var(--heading); font-size: 28px; color: var(--rose); margin-bottom: 4px; }
-.loser-sub { font-family: var(--editorial); font-size: 13px; font-style: italic; color: var(--muted); }
+.loser-sub { font-family: var(--editorial); font-size: 15px; font-style: italic; color: var(--muted); }
 
 /* ─── FLAVOR TEXT ─── */
-.flavor { font-family: var(--editorial); font-size: 12px; font-style: italic; color: rgba(232,221,212,0.3); padding: 6px 14px; margin: 8px 0; border-left: 1px solid rgba(212,175,125,0.12); }
+.flavor { font-family: var(--editorial); font-size: 14px; font-style: italic; color: rgba(232,221,212,0.35); padding: 6px 14px; margin: 8px 0; border-left: 1px solid rgba(212,175,125,0.12); }
 
 /* ─── SOCIAL EVENT CARD ─── */
 .social-card { border-left: 3px dashed var(--rose); background: rgba(232,72,106,0.04); }
@@ -1701,7 +1744,7 @@ function _prShell(content, ep, phaseCls) {
 
 /* ─── CONTROLS ─── */
 .controls { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(12,8,16,0.97); border-top: 1px solid var(--border); padding: 10px 20px; display: flex; align-items: center; justify-content: center; gap: 12px; z-index: 1000; backdrop-filter: blur(8px); }
-.ctrl-btn { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 8px 20px; border-radius: 3px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; transition: all 0.3s; }
+.ctrl-btn { font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 8px 20px; border-radius: 3px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; transition: all 0.3s; }
 .ctrl-btn:hover { background: rgba(212,175,125,0.1); border-color: var(--gold); color: var(--champagne); }
 .ctrl-btn.primary { background: var(--gold); color: var(--ink); border-color: var(--gold); }
 .ctrl-btn.primary:hover { background: var(--gold-bright); }
@@ -1860,6 +1903,7 @@ function _prShell(content, ep, phaseCls) {
 }
 </style>
 
+<div style="position:fixed;top:46px;left:0;right:0;bottom:0;background:var(--noir);background-image:radial-gradient(ellipse at 50% 0%, var(--stage) 0%, var(--noir) 70%);z-index:-1;"></div>
 ${_buildAmbient()}
 ${_buildTopBar(ep)}
 <div class="viewport">
@@ -1933,11 +1977,11 @@ export function rpBuildPRRoles(ep) {
   let content = '';
   content += `<div class="phase-hdr"><span class="phase-num">Role Call</span>`;
   content += `<div class="phase-title">The <em>Lineup</em></div>`;
-  content += `<div class="phase-sub">Every tribe assigns their model, designer, handler, and gatherers.</div>`;
+  content += `<div class="phase-sub">Every tribe assigns their model, designer, handlers, and gatherers.</div>`;
   content += `<div class="phase-rule"></div></div>`;
 
   content += `<div class="host-quote"><span class="host-name">${host()}</span>`;
-  content += `"Each tribe needs a model, a designer, a creature handler, and gatherers. Choose wisely — your roles will make or break you on the runway."</div>`;
+  content += `"Each tribe needs a model, a designer, two creature handlers, and gatherers. Choose wisely — your roles will make or break you on the runway."</div>`;
 
   let stepIdx = 0;
   (pr.roleEvents || []).forEach(re => {
@@ -2035,8 +2079,8 @@ export function rpBuildPRDesignStudio(ep) {
       content += `<div id="pr-step-design-${idx}" class="evt-card">`;
       content += `<div class="evt-card-hdr"><span class="evt-name">${evt.tribe} — Role Assignment</span><span class="evt-badge badge-gold">ROLES</span></div>`;
       content += `<div class="evt-text" style="padding-left:0;">`;
-      content += `<strong>Designer:</strong> ${r.designer} &bull; <strong>Model:</strong> ${r.model} &bull; <strong>Handler:</strong> ${r.handler}<br>`;
-      content += `<strong>Gatherers:</strong> ${r.gatherers.join(', ')}<br>`;
+      content += `<strong>Designer:</strong> ${r.designer} &bull; <strong>Model:</strong> ${r.model} &bull; <strong>Handlers:</strong> ${(r.handlers || [r.handler]).join(', ')}<br>`;
+      content += `${r.gatherers.length ? '<strong>Gatherers:</strong> ' + r.gatherers.join(', ') + '<br>' : ''}`;
       content += `<strong>Theme:</strong> ${evt.theme}`;
       content += `</div></div>`;
       return;

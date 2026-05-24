@@ -2500,7 +2500,7 @@ Dave voted for Mickey
 
       // Players placeholder
       els.playersGrid.innerHTML =
-        "<div class='muted'>No cast detected yet. Paste your summary and click “Sync title/players from summary”.</div>";
+        “<div class='muted'>No cast detected yet. Paste your summary and click \”Sync title/players from summary\”.</div>”;
 
       // Reset runtime
       CURRENT.analytics = null;
@@ -2562,7 +2562,7 @@ Dave voted for Mickey
       }
 
       if (!quiet) {
-        setStatus(cached ? "Cached analytics exists for this episode — click “Load Cached” (or enable auto-load)." : "No cached analytics for this season/episode yet.");
+        setStatus(cached ? “Cached analytics exists for this episode — click \”Load Cached\” (or enable auto-load).” : “No cached analytics for this season/episode yet.”);
       }
     }
 
@@ -2597,7 +2597,7 @@ Dave voted for Mickey
       // Friendly status
       const cached = await loadCached(season, episode);
       if (cached && els.autoLoad.checked) setStatus(“Auto-loaded cached analytics.”);
-      else if (cached) setStatus(“Cached analytics found — enable auto-load or click “Load Cached”.”);
+      else if (cached) setStatus(“Cached analytics found — enable auto-load or click \”Load Cached\”.”);
       else setStatus(“Ready — paste summary and generate analytics.”);
     })();
     

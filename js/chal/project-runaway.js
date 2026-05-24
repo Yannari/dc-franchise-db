@@ -76,6 +76,36 @@ const MATERIALS = [
 // NARRATION TEXT POOLS
 // ══════════════════════════════════════════════════════════════════════
 
+// ── ROLE ASSIGNMENT TEXT ──
+const ROLE_ASSIGN_TEXT = {
+  designer: [
+    (n, pr) => `${n} steps forward with a vision already forming. ${pr.Sub} ${pr.sub === 'they' ? 'crack' : 'cracks'} ${pr.posAdj} knuckles — time to create.`,
+    (n, pr) => `The team picks ${n} to lead the design. ${pr.Sub} ${pr.sub === 'they' ? 'nod' : 'nods'} slowly, ideas already racing.`,
+    (n, pr) => `${n} accepts the designer role with quiet confidence. "I know exactly what we're going for."`,
+    (n, pr) => `${n} grabs the sketchpad. ${pr.posAdj} mind is already three steps ahead of the competition.`,
+    (n, pr) => `"Leave the design to me." ${n} says it like a promise, not a request.`,
+  ],
+  model: [
+    (n, pr) => `${n} strikes a pose before anyone even asks. Born for this.`,
+    (n, pr) => `The team selects ${n} as their model. ${pr.Sub} ${pr.sub === 'they' ? 'stand' : 'stands'} a little taller.`,
+    (n, pr) => `${n} flips ${pr.posAdj} hair and steps onto the imaginary runway. "I was made for this moment."`,
+    (n, pr) => `${n} accepts the model role with a grin. The pressure? ${pr.Sub} ${pr.sub === 'they' ? 'live' : 'lives'} for it.`,
+    (n, pr) => `All eyes turn to ${n}. ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} flinch. The runway is ${pr.pos}.`,
+  ],
+  handler: [
+    (n, pr) => `${n} volunteers to handle the creature. ${pr.Sub} ${pr.sub === 'they' ? 'have' : 'has'} a way with animals — or so ${pr.sub} ${pr.sub === 'they' ? 'claim' : 'claims'}.`,
+    (n, pr) => `The team trusts ${n} with the creature. ${pr.Sub} ${pr.sub === 'they' ? 'approach' : 'approaches'} carefully, reading its body language.`,
+    (n, pr) => `${n} kneels near the creature, speaking in low tones. "Easy... I've got you."`,
+    (n, pr) => `Creature handler goes to ${n}. ${pr.Sub} ${pr.sub === 'they' ? 'seem' : 'seems'} to understand what it needs.`,
+  ],
+  gatherer: [
+    (n, pr) => `${n} heads into the jungle to scavenge materials. Time to get creative.`,
+    (n, pr) => `${n} rolls up ${pr.posAdj} sleeves and disappears into the brush. Gathering duty.`,
+    (n, pr) => `"I'll find us something amazing." ${n} vanishes into the foliage.`,
+    (n, pr) => `${n} sets off on the material hunt, eyes scanning every surface for something usable.`,
+  ],
+};
+
 // ── SCOUT TEXT ──
 const SCOUT_TEXT = {
   strong: [
@@ -454,6 +484,50 @@ export function simulateProjectRunaway(ep) {
   const tribeThemes = {};
   tribes.forEach((t, i) => { tribeThemes[t.name] = shuffledThemes[i % shuffledThemes.length]; });
 
+  // ══ ROLE ASSIGNMENT (before any phase) ══
+  const tribeRoles = {};
+  const roleEvents = [];
+
+  tribes.forEach(tribe => {
+    const members = tribe.members.filter(m => allActive.includes(m));
+    if (members.length < 3) return;
+
+    const designerScores = members.map(n => ({
+      name: n, score: pStats(n).mental * 0.5 + pStats(n).strategic * 0.5 + noise(2.5),
+    })).sort((a, b) => b.score - a.score);
+    const designer = designerScores[0].name;
+
+    const modelScores = members.filter(m => m !== designer).map(n => ({
+      name: n, score: pStats(n).social * 0.5 + pStats(n).boldness * 0.5 + noise(2.5),
+    })).sort((a, b) => b.score - a.score);
+    const model = modelScores[0].name;
+
+    const handlerScores = members.filter(m => m !== designer && m !== model).map(n => ({
+      name: n, score: pStats(n).intuition * 0.5 + pStats(n).temperament * 0.5 + noise(2.5),
+    })).sort((a, b) => b.score - a.score);
+    const handler = handlerScores[0].name;
+
+    const gatherers = members.filter(m => m !== designer && m !== model && m !== handler);
+
+    tribeRoles[tribe.name] = { designer, model, handler, gatherers };
+
+    const dpr = pronouns(designer), mpr = pronouns(model), hpr = pronouns(handler);
+    roleEvents.push({
+      type: 'roleAssign', tribe: tribe.name,
+      roles: { designer, model, handler, gatherers: [...gatherers] },
+      theme: tribeThemes[tribe.name],
+      narration: [
+        { player: designer, role: 'Designer', text: pick(ROLE_ASSIGN_TEXT.designer)(designer, dpr), badge: 'DESIGNER', badgeClass: 'gold' },
+        { player: model, role: 'Model', text: pick(ROLE_ASSIGN_TEXT.model)(model, mpr), badge: 'MODEL', badgeClass: 'rose' },
+        { player: handler, role: 'Handler', text: pick(ROLE_ASSIGN_TEXT.handler)(handler, hpr), badge: 'HANDLER', badgeClass: 'blue' },
+        ...gatherers.map(g => {
+          const gpr = pronouns(g);
+          return { player: g, role: 'Gatherer', text: pick(ROLE_ASSIGN_TEXT.gatherer)(g, gpr), badge: 'GATHERER', badgeClass: 'gold' };
+        }),
+      ],
+    });
+  });
+
   // ══ PHASE 1: CREATURE HUNT ══
   const huntEvents = [];
   const tribeCreatures = {};
@@ -587,7 +661,6 @@ export function simulateProjectRunaway(ep) {
 
   // ══ PHASE 2: DESIGN & BUILD ══
   const designEvents = [];
-  const tribeRoles = {};
   const tribeMaterials = {};
   const tribeDesignScores = {};
   const tribeHandlerScores = {};
@@ -598,32 +671,9 @@ export function simulateProjectRunaway(ep) {
     const members = tribe.members.filter(m => allActive.includes(m));
     if (members.length < 3) return;
 
-    // Priority draft: assign roles
-    const designerScores = members.map(n => ({
-      name: n, score: pStats(n).mental * 0.5 + pStats(n).strategic * 0.5 + noise(2.5),
-    })).sort((a, b) => b.score - a.score);
-    const designer = designerScores[0].name;
-
-    const modelScores = members.filter(m => m !== designer).map(n => ({
-      name: n, score: pStats(n).social * 0.5 + pStats(n).boldness * 0.5 + noise(2.5),
-    })).sort((a, b) => b.score - a.score);
-    const model = modelScores[0].name;
-
-    const handlerScores = members.filter(m => m !== designer && m !== model).map(n => ({
-      name: n, score: pStats(n).intuition * 0.5 + pStats(n).temperament * 0.5 + noise(2.5),
-    })).sort((a, b) => b.score - a.score);
-    const handler = handlerScores[0].name;
-
-    const gatherers = members.filter(m => m !== designer && m !== model && m !== handler);
-
-    tribeRoles[tribe.name] = { designer, model, handler, gatherers };
-
-    // Role assignment events
-    designEvents.push({
-      type: 'roleAssign', tribe: tribe.name, beat: -1,
-      roles: { designer, model, handler, gatherers: [...gatherers] },
-      theme: tribeThemes[tribe.name],
-    });
+    const roles = tribeRoles[tribe.name];
+    if (!roles) return;
+    const { designer, model, handler, gatherers } = roles;
 
     // Run 4 beats of design work
     let cumulativeDesign = 0;
@@ -949,6 +999,7 @@ export function simulateProjectRunaway(ep) {
 
   // Store simulation data
   ep.projectRunaway = {
+    roleEvents,
     huntEvents,
     designEvents,
     runwayEvents,
@@ -1872,6 +1923,43 @@ export function rpBuildPRTitleCard(ep) {
   content += `</div>`;
 
   return _prShell(content, ep, 'pr-title');
+}
+
+export function rpBuildPRRoles(ep) {
+  const pr = ep.projectRunaway;
+  if (!pr) return '';
+  const screenKey = 'pr-roles';
+
+  let content = '';
+  content += `<div class="phase-hdr"><span class="phase-num">Role Call</span>`;
+  content += `<div class="phase-title">The <em>Lineup</em></div>`;
+  content += `<div class="phase-sub">Every tribe assigns their model, designer, handler, and gatherers.</div>`;
+  content += `<div class="phase-rule"></div></div>`;
+
+  content += `<div class="host-quote"><span class="host-name">${host()}</span>`;
+  content += `"Each tribe needs a model, a designer, a creature handler, and gatherers. Choose wisely — your roles will make or break you on the runway."</div>`;
+
+  let stepIdx = 0;
+  (pr.roleEvents || []).forEach(re => {
+    content += `<div class="beat-hdr">${re.tribe} — ${re.theme}</div>`;
+    (re.narration || []).forEach(nr => {
+      content += `<div class="evt-card" id="pr-step-roles-${stepIdx}">`;
+      content += `<div class="evt-card-hdr">`;
+      content += _av(nr.player);
+      content += `<span class="evt-name">${nr.player}</span>`;
+      const badgeCls = nr.badgeClass === 'gold' ? 'badge-gold' : nr.badgeClass === 'rose' ? 'badge-rose' : 'badge-blue';
+      content += `<span class="evt-badge ${badgeCls}">${nr.badge}</span>`;
+      content += `</div>`;
+      content += `<div class="evt-text">${nr.text}</div>`;
+      content += `</div>`;
+      stepIdx++;
+    });
+  });
+
+  const total = stepIdx;
+  content += _buildControls(screenKey, total);
+
+  return _prShell(content, ep, screenKey);
 }
 
 export function rpBuildPRCreatureHunt(ep) {

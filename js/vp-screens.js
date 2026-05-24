@@ -54,7 +54,7 @@ import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPP
 import { rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults, dhRevealNext, dhRevealAll } from './chal/drumheller.js';
 import { rpBuildIIBTitleCard, rpBuildIIBSummit, rpBuildIIBFortBuild, rpBuildIIBCtfAssault, rpBuildIIBResults, iibRevealNext, iibRevealAll } from './chal/ice-ice-baby.js';
 import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaCrossing, rpBuildPTBeachSprint, rpBuildPTResults, ptRevealNext, ptRevealAll } from './chal/planes-trains.js';
-import { rpBuildPRTitleCard, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults, prRevealNext, prRevealAll } from './chal/project-runaway.js';
+import { rpBuildPRTitleCard, rpBuildPRRoles, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults, prRevealNext, prRevealAll } from './chal/project-runaway.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -12289,6 +12289,7 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'dh-results', label:'Results', html: rpBuildDHResults(dhEp) });
   } else if ((ep.isProjectRunaway || ep.challengeType === 'project-runaway') && ep.projectRunaway) {
     vpScreens.push({ id:'pr-title', label:'Project Runaway', html: rpBuildPRTitleCard(ep) });
+    vpScreens.push({ id:'pr-roles', label:'Role Call', html: rpBuildPRRoles(ep) });
     vpScreens.push({ id:'pr-hunt', label:'Creature Hunt', html: rpBuildPRCreatureHunt(ep) });
     vpScreens.push({ id:'pr-design', label:'Design Studio', html: rpBuildPRDesignStudio(ep) });
     vpScreens.push({ id:'pr-runway', label:'Runway', html: rpBuildPRRunway(ep) });

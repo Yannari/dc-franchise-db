@@ -15,10 +15,10 @@ export default {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { season, episode, summaryText, mode, previousEpisodes, franchiseContext, seasonSetting } = body;
+    const { season, episode, summaryText, mode, previousEpisodes, franchiseContext, seasonSetting, auditionsText } = body;
 
     if (mode === "episode") {
-      return await generateEpisode(summaryText, season, episode, env, previousEpisodes, franchiseContext, seasonSetting);
+      return await generateEpisode(summaryText, season, episode, env, previousEpisodes, franchiseContext, seasonSetting, auditionsText);
     } else if (mode === "summarize") {
       return await generateSummary(body.rawText, season, episode, env, body.prevSummary || "");
     } else if (mode === "enhance") {
@@ -1683,7 +1683,7 @@ Rules:
   });
 }
 
-async function generateEpisode(summaryText, season, episode, env, previousEpisodes = [], franchiseContext = '', seasonSetting = '') {
+async function generateEpisode(summaryText, season, episode, env, previousEpisodes = [], franchiseContext = '', seasonSetting = '', auditionsText = '') {
   if (!summaryText || typeof summaryText !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
       status: 400,
@@ -3063,6 +3063,31 @@ That's roughly ONE MINUTE per character introduction. Move at that speed.
 
 ⚠️ EPISODE 1 IS DIFFERENT:
 Episode 1 has NO "Previously on..." because nothing has happened yet.
+${auditionsText && (episode === '1' || episode === 1) ? `
+═══════════════════════════════════════════════════════════
+🎬 AUDITION TAPES — PRE-SHOW COLD OPEN (EPISODE 1 ONLY)
+═══════════════════════════════════════════════════════════
+
+The episode opens with a RAPID-FIRE audition tape montage BEFORE the dock arrivals.
+This is the pre-title sequence — viewers meet each contestant through their audition
+tape before they ever set foot on the island.
+
+FORMAT:
+- Each audition tape is 3-6 lines: the contestant talks directly to camera in their
+  home environment. No narration. Just them being themselves.
+- Chris does NOT appear during audition tapes. He appears AFTER the montage.
+- Cut between tapes quickly — this is a montage, not 18 individual scenes.
+- The audition tapes should reveal personality, motivation, and one telling detail.
+- After the last tape, smash cut to: Chris at the dock, grinning.
+  "You just met them at their best. Now watch them at their worst."
+  Then proceed to arrivals as normal.
+
+AUDITION TAPE CONTENT (use these as the basis — dramatize them, don't copy verbatim):
+
+${auditionsText}
+
+═══════════════════════════════════════════════════════════
+` : ''}
 Episode 1 structure:
 1. Chris at the dock — introduces the show, the island, the prize (10-15 lines)
 2. RAPID-FIRE ARRIVALS — each player gets ONE moment as they step off the boat:

@@ -1,8 +1,8 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 10,
-    "totalPlayers": 102,
+    "totalSeasons": 11,
+    "totalPlayers": 120,
     "description": "Total Drama franchise player statistics and performance data"
   },
   "players": [
@@ -613,7 +613,7 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 6.0
+      "avgPlacement": 6
     },
     {
       "id": "bridgette",
@@ -2182,7 +2182,7 @@
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Gwen survived the early chaos by keeping her circle small and her threat level lower than her talent. But Season 1’s tribe swap punished solitary games: a 5–4 vote where one new connection mattered more than everything she’d built before. She didn’t get outplayed in a duel—she got caught in the first real math problem of the season, and the numbers chose her (Result: tribe-swap casualty; 16th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nGwen’s Season 2 on the Screaming Gaffers was played from the edges: selective trust, sharp reads, and constant threat-management. A deadlocked Tribal forced a re-vote around her, showing how evenly the power split had become. She ultimately went out in the season’s double-elimination sequence (Gwen finishes 8th), where tempo beat nuance.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nEdge of Extinction (Season 4) turned Gwen into an endgame machine. After surviving the Yellow → Red → Campers shuffle, she caught fire late with four straight immunity wins (Episodes 11–14), a franchise record that forced everyone to plan around her. With the finale in sight, the run ended at the final hurdle when Alejandro beat her at fire‑making. Result: Gwen was eliminated at Final 4.\n\nSEASON 10 — Champions vs Contenders\n────────\nGwen enters softly, already guarded, and quickly finds herself in a tribe where louder strategists define the pace. She bonds with Zoey and forms the Marshmallow Mafia, a relationship built more on trust than numbers. Losing her Journey vote is disastrous, leaving her unable to help herself at the tribal where Bowie consolidates The Movement's control. Her name becomes inevitable before she can build a counterforce. On Redemption Island, she beats Sam in a gritty endurance duel and briefly looks like she might claw back into the game. Josee ends that run by the narrowest emotional margin, and Gwen leaves as a player the season never allowed to fully ignite.",
       "seasonsPlayed": 3,
       "totalJuryVotes": 0,
-      "avgPlacement": 11.0
+      "avgPlacement": 11
     },
     {
       "id": "harold",
@@ -2900,7 +2900,7 @@
       "story": "SEASON 5 — Rescue Island\nSEASON 6 — Blood vs. Water\nPreviously seen in S5, Josee’s best finish before Blood vs. Water was 13th.\n\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Josee and Jacques arrived with a reputation for aggression—and the cast treated them like a loaded weapon. After surviving the first wave, Josee became the clean ‘separate the Ice Dancers’ target: she was voted out in Episode 5 on a decisive 6–1 and sent to Redemption, where she was eventually eliminated. Her arc was a reminder that intimidation can win challenges, but it also paints a target you can’t always outrun. (Result: voted out 6–1 → RI; 12th.)\n\nSEASON 10 — Champions vs Contenders\n────────\nJosee plays the early game with emotion on the surface and loyalty underneath, bonding tightly with Jasmine and Brick while clashing with Stephanie and Hicks. Her outburst at the first tribal exposes Hicks's plan and keeps her alive by the slimmest margin. She becomes the kind of player people both protect and fear, because no conversation around her stays quiet for long. Her Episode 4 vote is chaotic enough to send her to Redemption Island, where she defeats Gwen and Courtney with raw competitiveness. But the island is not a long-term home for her. Priya beats her in Water Carry, and Josee exits furious, convinced the second chance still was not enough.",
       "totalJuryVotes": 0,
       "seasonsPlayed": 2,
-      "avgPlacement": 13.0
+      "avgPlacement": 13
     },
     {
       "id": "junior",
@@ -4173,7 +4173,7 @@
       "story": "SEASON 5 — Rescue Island\nSEASON 6 — Blood vs. Water\nPreviously seen in S5, Ryan’s best finish before Blood vs. Water was 3th.\n\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Ryan and Stephanie were the combustible pair that everyone could feel coming—the kind that wins moments but fractures rooms. Once the merge arrived, his vote-war fallout with Emma became a season-defining crack, turning strategy into a cycle of retaliation. The house eventually chose stability over chaos: Ryan was voted out in Episode 12 (5–2–1) and sent to Redemption, where his run ended. (Result: voted out 5–2–1 → RI; 8th.)\n\nSEASON 10 — Champions vs Contenders\n────────\nRyan walks into the season like a challenge threat and spends the early game learning that strength alone is never enough. He forms and fractures bonds with Sanders, Cody, Zoey, Carrie, Bowie, and Brick, often sitting at the center of competing emotional commitments. His merge game is strong because people trust him in pairs: Zoey trusts him, Carrie trusts him, Brick trusts him, and Bowie needs him. But every bond becomes a debt, and the Carrie vote exposes how hard it is for Ryan to separate affection from endgame math. He wins repeated immunities when he needs them most, including the Rapa Phooey and Super Hero-ld victories that drag him into the final four. At the last vote before the finale, he flips off Bowie's plan, loses protection, and exits with his integrity intact but the game gone.",
       "totalJuryVotes": 2,
       "seasonsPlayed": 2,
-      "avgPlacement": 5.0
+      "avgPlacement": 5
     },
     {
       "id": "sadie",
@@ -4921,7 +4921,7 @@
       ],
       "story": "On Blood vs. Water (Season 6), Stephanie came in with Ryan as pure intensity—competitive, confrontational, and always one argument away from a blow-up. That edge kept her relevant early, but in a pairs season it also makes you radioactive: once the tribe needed an easy reset vote, she was cut in Episode 6 on a 6–1. Even on Redemption she stayed on-brand, famously throwing an idol clue into the fire—burning information the way she burned bridges. (Result: voted out 6–1 → RI; 13th.)\n\nSEASON 10 — Champions vs Contenders\n────────\nStephanie starts with a Vote Steal and the confidence of someone who wants to matter in every room. She manipulates Priya early, bonds with Tyler, and later steps away from the Chaos Crew when the trust no longer serves her. Her camp value is real: she rallies people, rebuilds shelter, and shows flashes of social control. But she also drifts between structures without securing a stable shield at the exact moment the ambassador twist arrives. Bowie and Zoey's negotiation turns her into the sacrifice, and she is eliminated without a vote, without a duel, and without using the full weight of her advantage. Her exit feels abrupt because her game still had ammunition left.",
       "seasonsPlayed": 1,
-      "avgPlacement": 12.0
+      "avgPlacement": 12
     },
     {
       "id": "sugar",
@@ -5232,7 +5232,7 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 18.0
+      "avgPlacement": 18
     },
     {
       "id": "zoey",
@@ -6389,7 +6389,7 @@
         }
       ],
       "story": "She arrived as one of six Civilians — the season's sacrificial lambs, assembled to be picked off by legends. Her tribe was decimated in three straight tribals. Her closest ally MacArthur was on the other tribe. By the merge she had one idol, zero allies in the majority, and every reason to accept an honorable early jury exit. Instead she ran the post-merge. She built simultaneous Unbreakable bonds with Jen and MacArthur while quietly accumulating influence over Alejandro and Cameron. When the majority came for MacArthur with five votes, she negated every single one. When Jen — her closest ally, her strategic partner, her shield — became the biggest threat to her endgame, she won immunity, found a second idol, played it on her biggest rival, and watched Jen go home on the revote. She called it avenging MacArthur. It was also just brilliant. Won F4 immunity, dictated Gerry's exit, then lost the finale challenge by a thread to the man she'd saved twice. The most complete non-winner game in franchise history.\n\nSEASON 10 — Champions vs Contenders\n────────\nSanders enters as the golden hero trying to finish unfinished business, but her game is repeatedly caught between loyalty and self-preservation. She forms The Oath with Ryan, fractures it, wins Awake-A-Thon for her tribe, and reaches merge as one of the most feared challenge performers in the cast. Her first boot at merge sends her to Redemption Island, where she transforms from fallen hero into final boss. Duel after duel, she beats Zoey, Scott, Priya, Cody, and Carrie, carving a new season inside the season. When she returns with five straight wins, everyone knows she cannot be allowed near the final challenge. The endgame vote against her is almost a compliment: they remove her because if they do not, she may never lose again.",
-      "avgPlacement": 4.0
+      "avgPlacement": 4
     },
     {
       "id": "axel",
@@ -6903,7 +6903,7 @@
         }
       ],
       "story": "The Southern observer becomes Red’s whispering king, reading motive better than anyone. He saves Emmah over Caleb with two quiet votes, cracking his ‘unbreakable’ with Brightly in service of control. The swap strands him across from a unified Yellow bloc and a wary Millie. Idol fireworks erase the initial hit on Chase, and the revote puts Hicks alone at the guillotine. He leaves with the right reads and the wrong numbers, a tactician undone by timing.\n\nSEASON 10 — Champions vs Contenders\n────────\nHicks begins the game as one of the most observant players on the beach, spotting Jasmine's advantage and later finding an idol of his own. He runs early structure on the Contenders tribe, positioning Tyler and reading alliance cracks before others admit they exist. His problem is that social perception does not always become social control. By Episode 8, he is liked enough to be dangerous and exposed enough to be consensus. Scott offers him a plan that feels clean, and Hicks makes the fatal mistake of turning trust into an object by handing over the idol. The vote lands on him anyway, and Redemption Island confirms that reading the game is not the same as surviving it.",
-      "avgPlacement": 13.0
+      "avgPlacement": 13
     },
     {
       "id": "julia",
@@ -7470,6 +7470,672 @@
         }
       ],
       "story": "Laid‑back to a fault, Zee never matches Red’s urgency after losing flint. Brightly and Hicks read his nonchalance as danger, and the tribe makes a clean, unanimous statement. His lone parting shot at Caleb is less a plan than an exhale. On a season of power hoarders, he’s the reminder that Day 3 can be checkmate if you don’t clock the tempo."
+    },
+    {
+      "id": "thom",
+      "name": "Thom",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "jake",
+      "name": "Jake",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "miriam",
+      "name": "Miriam",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "grett",
+      "name": "Grett",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "dan",
+      "name": "Dan",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "drew",
+      "name": "Drew",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "gabby",
+      "name": "Gabby",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "sterling",
+      "name": "Sterling",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "eureka",
+      "name": "Eureka",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "will",
+      "name": "Will",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "seraphine",
+      "name": "Seraphine",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "ashley",
+      "name": "Ashley",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "alec",
+      "name": "Alec",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "fiore",
+      "name": "Fiore",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "ellie",
+      "name": "Ellie",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "nick",
+      "name": "Nick",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "wix",
+      "name": "Wix",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "lill",
+      "name": "Lill",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
     }
   ]
 }

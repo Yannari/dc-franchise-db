@@ -500,7 +500,7 @@
               <div class="compass-points" id="compassPoints"></div>
             </div>
           </div>
-          <div class="muted small">If you want true “Social vs Competition”, I can upgrade your Worker to output compass coordinates directly.</div>
+          <div class="muted small">If you want true "Social vs Competition", I can upgrade your Worker to output compass coordinates directly.</div>
         </div>
 
         <div class="mini-panel gameplay-panel">
@@ -1442,8 +1442,8 @@ Dave voted for Mickey
 
     function parseEpisodeTitle(text) {
       // Episode 2: "Shadows of Doubt"
-      const m = (text || "").match(/Episode\s+(\d+)\s*[:\-\u2013\u2014]\s*[“”]?([^”\n”]+)[“”]?/i);
-      if (m) return { num: parseInt(m[1], 10), title: m[2].trim().replace(/^["""]+|["""]+$/g, "").trim() };
+      const m = (text || "").match(/Episode\s+(\d+)\s*[:\-\u2013\u2014]\s*["\u201c\u201d]?([^"\n\u201c\u201d]+)["\u201c\u201d]?/i);
+      if (m) return { num: parseInt(m[1], 10), title: m[2].trim().replace(/^["\u201c\u201d]+|["\u201c\u201d]+$/g, "").trim() };
       // EPISODE 1 SUMMARY (no title)
       const m2 = (text || "").match(/EPISODE\s+(\d+)/i);
       if (m2) return { num: parseInt(m2[1], 10), title: "" };
@@ -1513,7 +1513,7 @@ Dave voted for Mickey
       const cast = (castNames || []).slice(0, 60);
 
       if (!cast.length) {
-        els.playersGrid.innerHTML = `<div class="muted">No cast detected yet. Click “Sync title/players from summary”.</div>`;
+        els.playersGrid.innerHTML = `<div class="muted">No cast detected yet. Click "Sync title/players from summary".</div>`;
         els.uiRemain.textContent = "—";
         return;
       }
@@ -2228,7 +2228,7 @@ Dave voted for Mickey
       if (ep?.num) els.episode.value = ep.num;
 
       const e = Number(els.episode.value || 1);
-      if (ep?.title) els.uiEpName.textContent = `“${ep.title}”`;
+      if (ep?.title) els.uiEpName.textContent = `"${ep.title}"`;
       els.uiEpNum.textContent = `Episode ${e}`;
 
       // Persist summary + cast for reloads
@@ -2237,8 +2237,8 @@ Dave voted for Mickey
       const cast = parseCastFromSummary(txt);
       const eliminated = parseEliminated(txt);
 
-      // Save cast state even if empty (lets us show “no cast detected” consistently)
-      saveCastState(s, e, cast, eliminated, ep?.title ? `“${ep.title}”` : els.uiEpName.textContent);
+      // Save cast state even if empty (lets us show "no cast detected" consistently)
+      saveCastState(s, e, cast, eliminated, ep?.title ? `"${ep.title}"` : els.uiEpName.textContent);
 
       // Update runtime state
       CURRENT.season = s;
@@ -2379,7 +2379,7 @@ Dave voted for Mickey
       // Keep title as-is unless we can parse one
       if (!els.uiEpName.textContent || els.uiEpName.textContent === "—") {
         const parsed = parseEpisodeTitle(els.summary.value || "");
-        if (parsed?.title) els.uiEpName.textContent = `“${parsed.title}”`;
+        if (parsed?.title) els.uiEpName.textContent = `"${parsed.title}"`;
       }
     }
 
@@ -2448,7 +2448,7 @@ Dave voted for Mickey
         const cast = parseCastFromSummary(summaryText);
         const eliminated = parseEliminated(summaryText);
         const ep = parseEpisodeTitle(summaryText);
-        const epTitle = ep?.title ? `“${ep.title}”` : els.uiEpName.textContent;
+        const epTitle = ep?.title ? `"${ep.title}"` : els.uiEpName.textContent;
         saveCastState(season, episode, cast, eliminated, epTitle);
 
         // 🆕 AUTO-UPDATE PLAYER DATABASE WITH ELIMINATIONS
@@ -2500,7 +2500,7 @@ Dave voted for Mickey
 
       // Players placeholder
       els.playersGrid.innerHTML =
-        “<div class='muted'>No cast detected yet. Paste your summary and click \”Sync title/players from summary\”.</div>”;
+        "<div class='muted'>No cast detected yet. Paste your summary and click \"Sync title/players from summary\".</div>";
 
       // Reset runtime
       CURRENT.analytics = null;
@@ -2562,7 +2562,7 @@ Dave voted for Mickey
       }
 
       if (!quiet) {
-        setStatus(cached ? “Cached analytics exists for this episode — click \”Load Cached\” (or enable auto-load).” : “No cached analytics for this season/episode yet.”);
+        setStatus(cached ? "Cached analytics exists for this episode — click \"Load Cached\" (or enable auto-load)." : "No cached analytics for this season/episode yet.");
       }
     }
 
@@ -2580,7 +2580,7 @@ Dave voted for Mickey
     // ----------------------------
     (async function init() {
       // Load endpoint
-      const savedUrl = localStorage.getItem(“AI_ENDPOINT_URL”);
+      const savedUrl = localStorage.getItem("AI_ENDPOINT_URL");
       if (savedUrl) els.workerUrl.value = savedUrl;
 
       // Restore last selection (so reload returns to the last viewed episode)
@@ -2596,9 +2596,9 @@ Dave voted for Mickey
 
       // Friendly status
       const cached = await loadCached(season, episode);
-      if (cached && els.autoLoad.checked) setStatus(“Auto-loaded cached analytics.”);
-      else if (cached) setStatus(“Cached analytics found — enable auto-load or click \”Load Cached\”.”);
-      else setStatus(“Ready — paste summary and generate analytics.”);
+      if (cached && els.autoLoad.checked) setStatus("Auto-loaded cached analytics.");
+      else if (cached) setStatus("Cached analytics found — enable auto-load or click \"Load Cached\".");
+      else setStatus("Ready — paste summary and generate analytics.");
     })();
     
     // ========== RENDER FUNCTIONS FOR NEW TABS ==========

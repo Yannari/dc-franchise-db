@@ -54,6 +54,7 @@ import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPP
 import { rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults, dhRevealNext, dhRevealAll } from './chal/drumheller.js';
 import { rpBuildIIBTitleCard, rpBuildIIBSummit, rpBuildIIBFortBuild, rpBuildIIBCtfAssault, rpBuildIIBResults, iibRevealNext, iibRevealAll } from './chal/ice-ice-baby.js';
 import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaCrossing, rpBuildPTBeachSprint, rpBuildPTResults, ptRevealNext, ptRevealAll } from './chal/planes-trains.js';
+import { rpBuildPRTitleCard, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults, prRevealNext, prRevealAll } from './chal/project-runaway.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -12286,6 +12287,15 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'dh-vote', label:'Lie-Detector Vote', html: rpBuildDHVotePhase(dhEp) });
     vpScreens.push({ id:'dh-dig', label:'Barrel Dig', html: rpBuildDHDigPhase(dhEp) });
     vpScreens.push({ id:'dh-results', label:'Results', html: rpBuildDHResults(dhEp) });
+  } else if ((ep.isProjectRunaway || ep.challengeType === 'project-runaway') && ep.projectRunaway) {
+    vpScreens.push({ id:'pr-title', label:'Project Runaway', html: rpBuildPRTitleCard(ep) });
+    vpScreens.push({ id:'pr-hunt', label:'Creature Hunt', html: rpBuildPRCreatureHunt(ep) });
+    vpScreens.push({ id:'pr-design', label:'Design Studio', html: rpBuildPRDesignStudio(ep) });
+    vpScreens.push({ id:'pr-runway', label:'Runway', html: rpBuildPRRunway(ep) });
+    if (ep.projectRunaway.berserkTriggered) {
+      vpScreens.push({ id:'pr-berserk', label:'Berserk', html: rpBuildPRBerserk(ep) });
+    }
+    vpScreens.push({ id:'pr-results', label:'Results', html: rpBuildPRResults(ep) });
   } else if ((ep.isIceIceBaby || ep.challengeType === 'ice-ice-baby') && ep.iceIceBaby) {
     vpScreens.push({ id:'iib-title', label:'Ice Ice Baby', html: rpBuildIIBTitleCard(ep) });
     vpScreens.push({ id:'iib-summit', label:'Summit', html: rpBuildIIBSummit(ep) });

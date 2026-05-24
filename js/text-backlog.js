@@ -57,6 +57,7 @@ import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPP
 import { rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults } from './chal/drumheller.js';
 import { rpBuildIIBTitleCard, rpBuildIIBSummit, rpBuildIIBFortBuild, rpBuildIIBCtfAssault, rpBuildIIBResults } from './chal/ice-ice-baby.js';
 import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaCrossing, rpBuildPTBeachSprint, rpBuildPTResults } from './chal/planes-trains.js';
+import { rpBuildPRTitleCard, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults } from './chal/project-runaway.js';
 import { rpBuildHDTitleCard, rpBuildHDEmuWrangling, rpBuildHDEmuRace, rpBuildHDBungeeGrab, rpBuildHDResults } from './chal/picnic-hanging-dork.js';
 import { rpBuildSSRTitleCard, rpBuildSSRGrind, rpBuildSSRDescent, rpBuildSSRHats, rpBuildSSRDraft, rpBuildSSRRound, rpBuildSSRResults } from './chal/slap-slap-revolution.js';
 import { rpBuildBBTitleCard, rpBuildBBPhase1, rpBuildBBPhase2, rpBuildBBPhase3, rpBuildBBResults } from './chal/broadway-baby.js';
@@ -2417,6 +2418,12 @@ export function generateSummaryText(ep) {
     _textTwistChallenge(ep, ln, sec, 'iceIceBaby', 'ICE ICE BABY', [
       rpBuildIIBTitleCard, rpBuildIIBSummit, rpBuildIIBFortBuild, rpBuildIIBCtfAssault, rpBuildIIBResults
     ]);
+  }
+  if (ep.projectRunaway) {
+    const prBuilders = [rpBuildPRTitleCard, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway];
+    if (ep.projectRunaway.berserkTriggered) prBuilders.push(rpBuildPRBerserk);
+    prBuilders.push(rpBuildPRResults);
+    _textTwistChallenge(ep, ln, sec, 'projectRunaway', 'PROJECT RUNAWAY', prBuilders);
   }
   if (ep.isPlanesTrains && (ep.planesTrains || ep.challengeData)) {
     _textTwistChallenge(ep, ln, sec, ep.planesTrains ? 'planesTrains' : 'challengeData', 'PLANES TRAINS & HOT AIR MOBILES', [

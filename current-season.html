@@ -620,8 +620,8 @@ Episode 2: Tribal swap! Belo won immunity. At Reba, Ella was voted out 2-1..."
             <h4 style="margin: 0 0 4px 0; color: #93c5fd; font-size: 14px;">🏆 Franchise Context (Optional — All-Stars / Returning Players)</h4>
             <p style="opacity: 0.7; font-size: 12px; margin: 0 0 8px 0;">
               Paste returning player histories here. The AI will use these to reference prior seasons in episodes. Saved automatically per season.
-              <button onclick="(function(){const s=document.getElementById('aiSeason')?.value||'1';localStorage.removeItem('franchise_context_s'+s);document.getElementById('franchise-context-input').value='';alert('Franchise context cleared for season '+s+'.');})()" style="margin-left:8px;padding:2px 8px;font-size:11px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:4px;color:#fca5a5;cursor:pointer;">Clear Cache</button>
-              <button onclick="(function(){const s=document.getElementById('aiSeason')?.value||'1';const e=document.getElementById('aiEpisode')?.value||document.getElementById('aiEpisode')?.value||'1';localStorage.removeItem('AI_SUMMARY_s'+s+'_e'+e);const ep=document.getElementById('episode-summary-input');if(ep)ep.value='';const ai=document.getElementById('aiSummary');if(ai)ai.value='';alert('Summary cache cleared for S'+s+' E'+e+'. Re-paste your simulator output to re-enhance.');})();" style="margin-left:4px;padding:2px 8px;font-size:11px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:4px;color:#fca5a5;cursor:pointer;">Clear Summary Cache</button>
+              <button onclick="(function(){const s=document.getElementById('aiSeason')?.value||'1';_csDelete('franchise_context_s'+s);document.getElementById('franchise-context-input').value='';alert('Franchise context cleared for season '+s+'.');})()" style="margin-left:8px;padding:2px 8px;font-size:11px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:4px;color:#fca5a5;cursor:pointer;">Clear Cache</button>
+              <button onclick="(function(){const s=document.getElementById('aiSeason')?.value||'1';const e=document.getElementById('aiEpisode')?.value||document.getElementById('aiEpisode')?.value||'1';_csDelete('AI_SUMMARY_s'+s+'_e'+e);const ep=document.getElementById('episode-summary-input');if(ep)ep.value='';const ai=document.getElementById('aiSummary');if(ai)ai.value='';alert('Summary cache cleared for S'+s+' E'+e+'. Re-paste your simulator output to re-enhance.');})();" style="margin-left:4px;padding:2px 8px;font-size:11px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:4px;color:#fca5a5;cursor:pointer;">Clear Summary Cache</button>
             </p>
             <textarea
               id="franchise-context-input"
@@ -1162,6 +1162,92 @@ Dave voted for Mickey
 
   <!-- SCRIPT: AI + RENDERING -->
   <script>
+
+  // ── IndexedDB wrapper (replaces localStorage for large data) ──
+  const CS_DB_NAME = 'dc_current_season';
+  const CS_DB_VERSION = 1;
+  const CS_STORE = 'data';
+  let _csDb = null;
+
+  function _csOpenDB() {
+    if (_csDb) return Promise.resolve(_csDb);
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(CS_DB_NAME, CS_DB_VERSION);
+      req.onupgradeneeded = () => { req.result.createObjectStore(CS_STORE); };
+      req.onsuccess = () => { _csDb = req.result; resolve(_csDb); };
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function _csPut(key, value) {
+    return _csOpenDB().then(db => new Promise((resolve, reject) => {
+      const tx = db.transaction(CS_STORE, 'readwrite');
+      tx.objectStore(CS_STORE).put(value, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    })).catch(e => console.warn('IDB put failed:', e));
+  }
+
+  function _csGet(key) {
+    return _csOpenDB().then(db => new Promise((resolve, reject) => {
+      const tx = db.transaction(CS_STORE, 'readonly');
+      const req = tx.objectStore(CS_STORE).get(key);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    })).catch(e => { console.warn('IDB get failed:', e); return undefined; });
+  }
+
+  function _csDelete(key) {
+    return _csOpenDB().then(db => new Promise((resolve, reject) => {
+      const tx = db.transaction(CS_STORE, 'readwrite');
+      tx.objectStore(CS_STORE).delete(key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    })).catch(e => console.warn('IDB delete failed:', e));
+  }
+
+  function _csKeys() {
+    return _csOpenDB().then(db => new Promise((resolve, reject) => {
+      const tx = db.transaction(CS_STORE, 'readonly');
+      const req = tx.objectStore(CS_STORE).getAllKeys();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    })).catch(e => { console.warn('IDB keys failed:', e); return []; });
+  }
+
+  // Migrate a localStorage key to IndexedDB (one-time, then remove from LS)
+  async function _csMigrate(key) {
+    try {
+      const val = localStorage.getItem(key);
+      if (val !== null) {
+        await _csPut(key, val);
+        localStorage.removeItem(key);
+      }
+    } catch(e) {}
+  }
+
+  // Batch-migrate all heavy keys on first load
+  async function _csMigrateAll() {
+    try {
+      const keys = Object.keys(localStorage).filter(k =>
+        k.startsWith('td_episode_') ||
+        k.startsWith('AI_SUMMARY_') ||
+        k.startsWith('AI_ANALYTICS_') ||
+        k.startsWith('AI_CAST_') ||
+        k.startsWith('season_builder_') ||
+        k.match(/^season\d+_resumes$/) ||
+        k.startsWith('franchise_context_') ||
+        k.startsWith('season_setting_')
+      );
+      for (const k of keys) {
+        await _csMigrate(k);
+      }
+      if (keys.length > 0) console.log(`✅ Migrated ${keys.length} keys from localStorage to IndexedDB`);
+    } catch(e) { console.warn('Migration error:', e); }
+  }
+
+  // Start migration immediately
+  _csMigrateAll();
 
   (function() {
     const $ = (id) => document.getElementById(id);
@@ -1981,7 +2067,7 @@ Dave voted for Mickey
     // ----------------------------
     // Main render from analytics
     // ----------------------------
-    function renderAll(analytics, summaryText) {
+    async function renderAll(analytics, summaryText) {
       if (!analytics || typeof analytics !== "object") return;
 
       // Titles map for quick lookups
@@ -2004,7 +2090,7 @@ Dave voted for Mickey
       const episodeNow = Number(els.episode.value || 1);
 
       if ((!cast || cast.length === 0) || (eliminated && eliminated.size === 0 && !txt)) {
-        const saved = loadCastState(seasonNow, episodeNow);
+        const saved = await loadCastState(seasonNow, episodeNow);
         if (saved) {
           if (!cast || cast.length === 0) cast = Array.isArray(saved.cast) ? saved.cast : [];
           if ((!eliminated || eliminated.size === 0) && Array.isArray(saved.eliminated)) {
@@ -2234,11 +2320,11 @@ Dave voted for Mickey
       return data;
     }
 
-    function loadCached(season, episode) {
+    async function loadCached(season, episode) {
       const key = cacheKey(season, episode);
-      const raw = localStorage.getItem(key);
+      const raw = await _csGet(key);
       if (!raw) return null;
-      try { return JSON.parse(raw); } catch { return null; }
+      try { return typeof raw === 'string' ? JSON.parse(raw) : raw; } catch { return null; }
     }
 
     function summaryKey(season, episode) {
@@ -2252,21 +2338,21 @@ Dave voted for Mickey
     }
 
     function saveSummary(season, episode, text) {
-      try { localStorage.setItem(summaryKey(season, episode), text || ""); } catch {}
+      _csPut(summaryKey(season, episode), text || "");
     }
-    function loadSummary(season, episode) {
-      try { return localStorage.getItem(summaryKey(season, episode)) || ""; } catch { return ""; }
+    async function loadSummary(season, episode) {
+      try { return (await _csGet(summaryKey(season, episode))) || ""; } catch { return ""; }
     }
 
     function saveCastState(season, episode, cast, eliminated, epTitle) {
       const payload = { cast: cast || [], eliminated: Array.from(eliminated || []), title: epTitle || "" };
-      try { localStorage.setItem(castStateKey(season, episode), JSON.stringify(payload)); } catch {}
+      _csPut(castStateKey(season, episode), JSON.stringify(payload));
     }
-    function loadCastState(season, episode) {
+    async function loadCastState(season, episode) {
       try {
-        const raw = localStorage.getItem(castStateKey(season, episode));
+        const raw = await _csGet(castStateKey(season, episode));
         if (!raw) return null;
-        return JSON.parse(raw);
+        return typeof raw === 'string' ? JSON.parse(raw) : raw;
       } catch { return null; }
     }
 
@@ -2283,7 +2369,7 @@ Dave voted for Mickey
 
     function saveCached(season, episode, analytics) {
       const key = cacheKey(season, episode);
-      localStorage.setItem(key, JSON.stringify(analytics));
+      _csPut(key, JSON.stringify(analytics));
       saveLastSelection(season, episode);
     }
 
@@ -2312,14 +2398,14 @@ Dave voted for Mickey
           const workerUrl = normalizeWorkerUrl(els.workerUrl.value || localStorage.getItem("AI_ENDPOINT_URL") || "");
           summaryText = await autoSummarize(season, episode, summaryText, workerUrl);
           els.summary.value = summaryText;
-          localStorage.setItem(cachedKey, summaryText);
+          _csPut(cachedKey, summaryText);
         } catch (e) {
           return setStatus("Error generating summary: " + (e?.message || String(e)));
         }
         setStatus("Step 2/2: Generating analytics…");
       } else if (isSimulatorSummary(summaryText)) {
         // Simulator output — use cached enhanced version if available, otherwise enhance first
-        const cached = localStorage.getItem(cachedKey);
+        const cached = await _csGet(cachedKey);
         if (cached && !isSimulatorSummary(cached)) {
           summaryText = cached;
           els.summary.value = summaryText;
@@ -2330,16 +2416,16 @@ Dave voted for Mickey
           setStatus("Step 1/2: Enhancing summary…");
           const fcEl = document.getElementById('franchise-context-input');
           const ssEl = document.getElementById('season-setting-input');
-          const fc = (fcEl ? fcEl.value.trim() : '') || localStorage.getItem(`franchise_context_s${season}`) || '';
-          const ss = (ssEl ? ssEl.value.trim() : '') || localStorage.getItem(`season_setting_s${season}`) || '';
-          if (fc) localStorage.setItem(`franchise_context_s${season}`, fc);
-          if (ss) localStorage.setItem(`season_setting_s${season}`, ss);
+          const fc = (fcEl ? fcEl.value.trim() : '') || (await _csGet(`franchise_context_s${season}`)) || '';
+          const ss = (ssEl ? ssEl.value.trim() : '') || (await _csGet(`season_setting_s${season}`)) || '';
+          if (fc) _csPut(`franchise_context_s${season}`, fc);
+          if (ss) _csPut(`season_setting_s${season}`, ss);
           try {
             summaryText = await autoEnhance(season, episode, summaryText, null, fc, ss);
             els.summary.value = summaryText;
             const epSummaryEl = document.getElementById('episode-summary-input');
             if (epSummaryEl) epSummaryEl.value = summaryText;
-            localStorage.setItem(cachedKey, summaryText);
+            _csPut(cachedKey, summaryText);
           } catch (e) {
             return setStatus("Error enhancing summary: " + (e?.message || String(e)));
           }
@@ -2379,13 +2465,13 @@ Dave voted for Mickey
       }
     });
 
-    els.loadCached.addEventListener("click", () => {
+    els.loadCached.addEventListener("click", async () => {
       const season = Number(els.season.value || 1);
       const episode = Number(els.episode.value || 1);
       updateEpisodeHeaderFromInputs();
-      const cached = loadCached(season, episode);
+      const cached = await loadCached(season, episode);
       if (!cached) return setStatus("No cached analytics found for this season/episode.");
-      renderAll(cached, els.summary.value || "");
+      await renderAll(cached, els.summary.value || "");
       setStatus("Loaded cached analytics.");
     });
 
@@ -2424,7 +2510,7 @@ Dave voted for Mickey
       CURRENT.titlesMap = {};
     }
 
-    function applySelection(season, episode, opts = {}) {
+    async function applySelection(season, episode, opts = {}) {
       const { quiet=false } = opts;
 
       // Persist last selection (so reload returns here)
@@ -2435,11 +2521,11 @@ Dave voted for Mickey
       els.episode.value = String(episode);
 
       // Restore summary + cast state for this selection
-      const savedSummary = loadSummary(season, episode);
+      const savedSummary = await loadSummary(season, episode);
       els.summary.value = savedSummary || "";
 
       // Restore episode title (from saved cast state) if available
-      const savedCast = loadCastState(season, episode);
+      const savedCast = await loadCastState(season, episode);
       if (savedCast?.title) {
         els.uiEpName.textContent = savedCast.title;
       } else {
@@ -2453,10 +2539,10 @@ Dave voted for Mickey
       showTab(savedTab === "gameplay" ? "gameplay" : "overview");
 
       // If we have cached analytics for this selection, load it (if auto-load enabled)
-      const cached = loadCached(season, episode);
+      const cached = await loadCached(season, episode);
 
       if (cached && els.autoLoad.checked) {
-        renderAll(cached, els.summary.value || "");
+        await renderAll(cached, els.summary.value || "");
         if (!quiet) setStatus("Loaded cached analytics for this season/episode.");
         return;
       }
@@ -2492,9 +2578,9 @@ Dave voted for Mickey
     // ----------------------------
     // Init
     // ----------------------------
-    (function init() {
+    (async function init() {
       // Load endpoint
-      const savedUrl = localStorage.getItem("AI_ENDPOINT_URL");
+      const savedUrl = localStorage.getItem(“AI_ENDPOINT_URL”);
       if (savedUrl) els.workerUrl.value = savedUrl;
 
       // Restore last selection (so reload returns to the last viewed episode)
@@ -2506,23 +2592,24 @@ Dave voted for Mickey
       const episode = Number(els.episode.value || 1);
 
       // Apply selection: restores summary, cast, tab, and (optionally) cached analytics
-      applySelection(season, episode, { quiet: true });
+      await applySelection(season, episode, { quiet: true });
 
       // Friendly status
-      const cached = loadCached(season, episode);
-      if (cached && els.autoLoad.checked) setStatus("Auto-loaded cached analytics.");
-      else if (cached) setStatus("Cached analytics found — enable auto-load or click “Load Cached”.");
-      else setStatus("Ready — paste summary and generate analytics.");
+      const cached = await loadCached(season, episode);
+      if (cached && els.autoLoad.checked) setStatus(“Auto-loaded cached analytics.”);
+      else if (cached) setStatus(“Cached analytics found — enable auto-load or click “Load Cached”.”);
+      else setStatus(“Ready — paste summary and generate analytics.”);
     })();
     
     // ========== RENDER FUNCTIONS FOR NEW TABS ==========
     
     // Accumulate resume stats across episodes
-    function accumulateResumes(currentEpisodeResumes, season, episode) {
+    async function accumulateResumes(currentEpisodeResumes, season, episode) {
       const seasonKey = `season${season}_resumes`;
-      
+
       // Load previous data
-      const previousData = JSON.parse(localStorage.getItem(seasonKey) || '{}');
+      const raw = await _csGet(seasonKey);
+      const previousData = raw ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : {};
       
       const accumulated = {};
       
@@ -2564,12 +2651,12 @@ Dave voted for Mickey
       }
       
       // Save for next episode
-      localStorage.setItem(seasonKey, JSON.stringify(accumulated));
+      _csPut(seasonKey, JSON.stringify(accumulated));
       
       return accumulated;
     }
     
-    function renderResumes(analytics) {
+    async function renderResumes(analytics) {
       const container = document.getElementById('resumesContainer');
       if (!analytics || !analytics.resumes) {
         container.innerHTML = '<p style="grid-column: 1 / -1; color: #94a3b8; text-align: center;">No resume data available yet.</p>';
@@ -2580,7 +2667,7 @@ Dave voted for Mickey
       const episode = Number(els.episode.value || 1);
       
       // Accumulate stats across episodes
-      const resumes = accumulateResumes(analytics.resumes, season, episode);
+      const resumes = await accumulateResumes(analytics.resumes, season, episode);
       const players = Object.keys(resumes);
       
       if (players.length === 0) {
@@ -2737,22 +2824,22 @@ Dave voted for Mickey
     return `td_episode_s${season}_e${episode}`;
   }
   
-  // Save episode to localStorage
-  function saveEpisode() {
+  // Save episode to IndexedDB
+  async function saveEpisode() {
     const transcript = document.getElementById('episode-input').value;
     if (!transcript.trim()) {
       alert('⚠️ Please paste or generate an episode transcript first!');
       return;
     }
-    
-    localStorage.setItem(getEpisodeStorageKey(), transcript);
+
+    await _csPut(getEpisodeStorageKey(), transcript);
     alert('✅ Episode saved successfully!');
     renderEpisode();
   }
-  
-  // Load episode from localStorage
-  function loadEpisode() {
-    const saved = localStorage.getItem(getEpisodeStorageKey());
+
+  // Load episode from IndexedDB
+  async function loadEpisode() {
+    const saved = await _csGet(getEpisodeStorageKey());
     if (saved) {
       document.getElementById('episode-input').value = saved;
       renderEpisode();
@@ -2760,13 +2847,13 @@ Dave voted for Mickey
     }
     return false;
   }
-  
+
   // Clear episode
-  function clearEpisode() {
+  async function clearEpisode() {
     if (confirm('⚠️ Clear the current episode? This cannot be undone.')) {
       document.getElementById('episode-input').value = '';
       document.getElementById('episode-rendered').innerHTML = '';
-      localStorage.removeItem(getEpisodeStorageKey());
+      await _csDelete(getEpisodeStorageKey());
       alert('🗑️ Episode cleared!');
     }
   }
@@ -2791,11 +2878,11 @@ Dave voted for Mickey
     const url = workerUrl || EPISODE_WORKER_URL;
     const prevSummaries = [];
     for (let i = Math.max(1, episode - 3); i < episode; i++) {
-      const s = localStorage.getItem(`AI_SUMMARY_s${season}_e${i}`);
+      const s = await _csGet(`AI_SUMMARY_s${season}_e${i}`);
       if (s) prevSummaries.push({ episode: i, summary: s });
     }
-    if (franchiseContext === undefined) franchiseContext = localStorage.getItem(`franchise_context_s${season}`) || '';
-    if (seasonSetting === undefined) seasonSetting = localStorage.getItem(`season_setting_s${season}`) || '';
+    if (franchiseContext === undefined) franchiseContext = (await _csGet(`franchise_context_s${season}`)) || '';
+    if (seasonSetting === undefined) seasonSetting = (await _csGet(`season_setting_s${season}`)) || '';
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2819,7 +2906,7 @@ Dave voted for Mickey
     // Pass up to 3 previous summaries so ongoing storylines can chain properly
     const prevSummaries = [];
     for (let i = Math.max(1, episode - 3); i < episode; i++) {
-      const s = localStorage.getItem(`AI_SUMMARY_s${season}_e${i}`);
+      const s = await _csGet(`AI_SUMMARY_s${season}_e${i}`);
       if (s) prevSummaries.push(`--- Episode ${i} Summary ---\n${s}`);
     }
     const prevSummary = prevSummaries.join('\n\n');
@@ -2862,7 +2949,7 @@ async function generateEpisodeAI() {
   
   // ── Step 1: Ensure structured summary exists ────────────────────────────────
   const cachedSummaryKey = `AI_SUMMARY_s${season}_e${episodeNum}`;
-  let summary = localStorage.getItem(cachedSummaryKey);
+  let summary = await _csGet(cachedSummaryKey);
 
   const generateBtn = document.getElementById('generate-episode-btn');
   const originalText = generateBtn.innerHTML;
@@ -2875,13 +2962,13 @@ async function generateEpisodeAI() {
   if (episodeNum === 1) {
     const fcEl = document.getElementById('franchise-context-input');
     franchiseContextEarly = fcEl ? fcEl.value.trim() : '';
-    if (franchiseContextEarly) localStorage.setItem(`franchise_context_s${season}`, franchiseContextEarly);
+    if (franchiseContextEarly) _csPut(`franchise_context_s${season}`, franchiseContextEarly);
     const ssEl = document.getElementById('season-setting-input');
     seasonSettingEarly = ssEl ? ssEl.value.trim() : '';
-    if (seasonSettingEarly) localStorage.setItem(`season_setting_s${season}`, seasonSettingEarly);
+    if (seasonSettingEarly) _csPut(`season_setting_s${season}`, seasonSettingEarly);
   } else {
-    franchiseContextEarly = localStorage.getItem(`franchise_context_s${season}`) || '';
-    seasonSettingEarly = localStorage.getItem(`season_setting_s${season}`) || '';
+    franchiseContextEarly = (await _csGet(`franchise_context_s${season}`)) || '';
+    seasonSettingEarly = (await _csGet(`season_setting_s${season}`)) || '';
   }
 
   // Sync summary to both textareas so analytics and episode panels stay in sync
@@ -2898,7 +2985,7 @@ async function generateEpisodeAI() {
     try {
       summary = await autoEnhance(season, episodeNum, rawInput, null, franchiseContextEarly, seasonSettingEarly);
       syncSummaryToAll(summary);
-      localStorage.setItem(cachedSummaryKey, summary);
+      _csPut(cachedSummaryKey, summary);
     } catch (error) {
       generateBtn.innerHTML = originalText;
       generateBtn.disabled = false;
@@ -2909,7 +2996,7 @@ async function generateEpisodeAI() {
     // User pasted an already-enhanced summary — use it as-is
     summary = rawInput;
     syncSummaryToAll(summary);
-    localStorage.setItem(cachedSummaryKey, summary);
+    _csPut(cachedSummaryKey, summary);
   } else if (hasRawInput && !isStructuredSummary(rawInput)) {
     // User pasted raw BrantSteele — always re-summarize, even if cache exists
     generateBtn.innerHTML = '⏳ Step 1/2: Summarizing raw…';
@@ -2917,7 +3004,7 @@ async function generateEpisodeAI() {
     try {
       summary = await autoSummarize(season, episodeNum, rawInput);
       syncSummaryToAll(summary);
-      localStorage.setItem(cachedSummaryKey, summary);
+      _csPut(cachedSummaryKey, summary);
     } catch (error) {
       generateBtn.innerHTML = originalText;
       generateBtn.disabled = false;
@@ -2951,10 +3038,10 @@ async function generateEpisodeAI() {
     const franchiseContextInput = document.getElementById('franchise-context-input');
     franchiseContext = franchiseContextInput ? franchiseContextInput.value.trim() : '';
     if (franchiseContext) {
-      localStorage.setItem(`franchise_context_s${season}`, franchiseContext);
+      _csPut(`franchise_context_s${season}`, franchiseContext);
     }
   } else {
-    franchiseContext = localStorage.getItem(`franchise_context_s${season}`) || '';
+    franchiseContext = (await _csGet(`franchise_context_s${season}`)) || '';
   }
 
   // Get season setting — shown only on ep1; silently reused for all episodes
@@ -2963,10 +3050,10 @@ async function generateEpisodeAI() {
     const seasonSettingInput = document.getElementById('season-setting-input');
     seasonSetting = seasonSettingInput ? seasonSettingInput.value.trim() : '';
     if (seasonSetting) {
-      localStorage.setItem(`season_setting_s${season}`, seasonSetting);
+      _csPut(`season_setting_s${season}`, seasonSetting);
     }
   } else {
-    seasonSetting = localStorage.getItem(`season_setting_s${season}`) || '';
+    seasonSetting = (await _csGet(`season_setting_s${season}`)) || '';
   }
 
   // GATHER PREVIOUS EPISODES FOR CONTEXT
@@ -2981,7 +3068,7 @@ async function generateEpisodeAI() {
     if (isRecent) {
       // Full transcript for recent episodes
       const transcriptKey = `td_episode_s${season}_e${i}`;
-      const savedTranscript = localStorage.getItem(transcriptKey);
+      const savedTranscript = await _csGet(transcriptKey);
       if (savedTranscript) {
         previousEpisodes.push({
           episode: i,
@@ -2993,7 +3080,7 @@ async function generateEpisodeAI() {
     } else {
       // BrantSteele summary for older episodes — already saved when user pasted it
       const summaryKey = `AI_SUMMARY_s${season}_e${i}`;
-      const savedSummary = localStorage.getItem(summaryKey);
+      const savedSummary = await _csGet(summaryKey);
       if (savedSummary) {
         previousEpisodes.push({
           episode: i,
@@ -3004,7 +3091,7 @@ async function generateEpisodeAI() {
       } else {
         // Fallback: no summary saved, try transcript at reduced length
         const transcriptKey = `td_episode_s${season}_e${i}`;
-        const savedTranscript = localStorage.getItem(transcriptKey);
+        const savedTranscript = await _csGet(transcriptKey);
         if (savedTranscript) {
           previousEpisodes.push({
             episode: i,
@@ -3799,8 +3886,8 @@ setTimeout(function() {
         }
         
         const storageKey = getSeasonStorageKey(seasonNumber);
-        localStorage.setItem(storageKey, JSON.stringify(data));
-        
+        _csPut(storageKey, JSON.stringify(data));
+
         // Show save indicator
         const indicator = document.getElementById("sb-save-indicator");
         if (indicator) {
@@ -3840,18 +3927,18 @@ setTimeout(function() {
     }
   }
   
-  function loadSeasonBuilderData(seasonNumber) {
+  async function loadSeasonBuilderData(seasonNumber) {
     try {
       const storageKey = getSeasonStorageKey(seasonNumber);
-      const saved = localStorage.getItem(storageKey);
-      
+      const saved = await _csGet(storageKey);
+
       if (!saved) {
         console.log(`No saved data for Season ${seasonNumber}`);
         return false;
       }
       
-      const data = JSON.parse(saved);
-      
+      const data = typeof saved === 'string' ? JSON.parse(saved) : saved;
+
       // Load metadata
       document.getElementById("sb-season-title").value = data.metadata.title || '';
       document.getElementById("sb-season-subtitle").value = data.metadata.subtitle || '';
@@ -3920,15 +4007,20 @@ setTimeout(function() {
     }
     
     const storageKey = getSeasonStorageKey(seasonNumber);
-    localStorage.removeItem(storageKey);
+    _csDelete(storageKey);
 
-    // Also clear all episode transcripts and analytics for this season
-    const keysToRemove = Object.keys(localStorage).filter(k =>
-      k.includes(`_s${seasonNumber}_e`) || k.includes(`_s${seasonNumber}_`)
-    );
-    keysToRemove.forEach(k => localStorage.removeItem(k));
+    // Also clear all episode transcripts and analytics for this season from IndexedDB
+    _csKeys().then(keys => {
+      keys.filter(k =>
+        k.includes(`_s${seasonNumber}_e`) || k.includes(`_s${seasonNumber}_`)
+      ).forEach(k => _csDelete(k));
+    });
     // Clear franchise context for this season
-    localStorage.removeItem(`franchise_context_s${seasonNumber}`);
+    _csDelete(`franchise_context_s${seasonNumber}`);
+    // Clean up any leftover localStorage keys too
+    Object.keys(localStorage).filter(k =>
+      k.includes(`_s${seasonNumber}_e`) || k.includes(`_s${seasonNumber}_`)
+    ).forEach(k => localStorage.removeItem(k));
 
     // Clear all fields
     document.getElementById("sb-season-title").value = '';
@@ -4049,27 +4141,27 @@ setTimeout(function() {
       // Load saved data if exists
       if (seasonNumber) {
         const storageKey = getSeasonStorageKey(seasonNumber);
-        const saved = localStorage.getItem(storageKey);
-        if (saved) {
-          try {
-            const data = JSON.parse(saved);
-            // Populate episode textareas with saved content
-            if (data.episodes) {
-              for (let i = 1; i <= episodeCount; i++) {
-                const textarea = document.getElementById(`sb-ep${i}-summary`);
-                if (textarea && data.episodes[i]) {
-                  textarea.value = data.episodes[i];
-                  // Trigger status update
-                  textarea.dispatchEvent(new Event('input'));
+        _csGet(storageKey).then(saved => {
+          if (saved) {
+            try {
+              const data = typeof saved === 'string' ? JSON.parse(saved) : saved;
+              if (data.episodes) {
+                for (let i = 1; i <= episodeCount; i++) {
+                  const textarea = document.getElementById(`sb-ep${i}-summary`);
+                  if (textarea && data.episodes[i]) {
+                    textarea.value = data.episodes[i];
+                    textarea.dispatchEvent(new Event('input'));
+                  }
                 }
               }
+            } catch (e) {
+              console.error('Error loading saved episodes:', e);
             }
-          } catch (e) {
-            console.error('Error loading saved episodes:', e);
           }
-        }
+        });
       }
-      
+
+
       // Add change listeners to update status
       for (let i = 1; i <= episodeCount; i++) {
         const textarea = document.getElementById(`sb-ep${i}-summary`);
@@ -7366,14 +7458,14 @@ JOURNEYS: Two players nominated by the losing team are sent to an isolated part 
   }
 
   // Restore franchise context and season setting from localStorage when season input changes
-  function restoreEp1Fields() {
+  async function restoreEp1Fields() {
     const seasonEl = document.getElementById('aiSeason');
     if (!seasonEl) return;
     const s = seasonEl.value;
     const ctxEl = document.getElementById('franchise-context-input');
     const settingEl = document.getElementById('season-setting-input');
-    if (ctxEl) ctxEl.value = localStorage.getItem(`franchise_context_s${s}`) || '';
-    if (settingEl) settingEl.value = localStorage.getItem(`season_setting_s${s}`) || '';
+    if (ctxEl) ctxEl.value = (await _csGet(`franchise_context_s${s}`)) || '';
+    if (settingEl) settingEl.value = (await _csGet(`season_setting_s${s}`)) || '';
   }
   const seasonInput = document.getElementById('aiSeason');
   if (seasonInput) {

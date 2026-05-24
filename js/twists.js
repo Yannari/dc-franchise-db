@@ -1585,6 +1585,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'planes-trains') {
     ep.isPlanesTrains = true;
 
+  } else if (engineType === 'project-runaway') {
+    ep.isProjectRunaway = true;
+
   } else if (engineType === 'cultural-reset') {
     const activePlayers = gs.activePlayers;
     twistObj.revealedAlliances = (gs.namedAlliances||[]).filter(a => a.active).map(a => a.name);
@@ -3944,6 +3947,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'drumheller': 'isDrumheller',
         'ice-ice-baby': 'isIceIceBaby',
         'planes-trains': 'isPlanesTrains',
+        'project-runaway': 'isProjectRunaway',
       };
       const _flag = _engineFlagMap[_rtcEngine];
       const _catEntry = TWIST_CATALOG.find(c => c.id === _rtcEngine);

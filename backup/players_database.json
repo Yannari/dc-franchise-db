@@ -533,12 +533,12 @@
         10
       ],
       "totalSeasons": 2,
-      "bestPlacement": 9,
+      "bestPlacement": 3,
       "wins": 0,
-      "totalChallengeWins": 1,
+      "totalChallengeWins": 2,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 5,
+      "totalVotesAgainst": 12,
       "totalIdolsFound": 0,
       "seasonDetails": [
         {
@@ -569,27 +569,51 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
+          "placement": 3,
+          "status": "Juror",
+          "tribe": "Contenders → Champions → Campers",
+          "challengeWins": 1,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 7,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 7.5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Brick's honor makes him beloved, dangerous, and ultimately vulnerable to the jury's final cut."
+          ],
+          "gameplayStyle": "Honorable shield-heart anchor",
+          "keyMoments": [
+            "Episode 1: Protects Josee when others circle her as an easy target.",
+            "Episode 4: Breaks from Priya and votes against his own Alliance, detonating trust.",
+            "Episode 8: His bond with Jasmine becomes obvious enough to be named as a threat.",
+            "Episode 10: Publicly votes Priya with The Oath, worsening their rivalry.",
+            "Episode 13: Wins Bridal Brawls immunity alongside Ryan in a dominant paired performance.",
+            "Episode 16: Votes out Ryan despite their deep bond, choosing Jasmine and the endgame path.",
+            "Episode 17: Is eliminated by the jury after a clean, loyal game becomes too dangerous."
+          ],
+          "alliances": [
+            "The Alliance",
+            "The Oath",
+            "The Tightrope",
+            "The Firewall"
+          ],
+          "rivalries": [
+            "Scott",
+            "Carrie",
+            "Sanders",
+            "Priya",
+            "Courtney"
+          ]
         }
       ],
-      "story": "Debuting on Revenge of the Island (Season 3), Brick played the loyal-soldier archetype on the Mutant Maggots—strong in challenges, reliable in alliances, and usually voting with the ‘right’ side. But this season punished predictability. A fractured Tribal turned into a multi-way tally, and Brick was the one the minority could actually land on. The blindside hit in Episode 8 (Result: voted out 5–2–2 vote; 9th, 2nd juror).",
+      "story": "Debuting on Revenge of the Island (Season 3), Brick played the loyal-soldier archetype on the Mutant Maggots—strong in challenges, reliable in alliances, and usually voting with the ‘right’ side. But this season punished predictability. A fractured Tribal turned into a multi-way tally, and Brick was the one the minority could actually land on. The blindside hit in Episode 8 (Result: voted out 5–2–2 vote; 9th, 2nd juror).\n\nSEASON 10 — Champions vs Contenders\n────────\nBrick begins as the season's conscience, sitting with outsiders and protecting people even when the clean game move is to exploit them. His early alliances with Priya, Tyler, Cody, Bowie, and Jasmine constantly collide with his personal code, creating votes where he looks steady but feels torn. By merge, he is the rare player trusted by both strategists and loyalists, which makes him a bridge in The Oath and later the emotional center of the Tightrope. His bond with Jasmine becomes the season's most visible pair, a relationship strong enough to guide votes and loud enough to scare everyone watching. He survives deep into the endgame because people want him beside them, but that same respect turns into jury danger. At the final three, the jury removes him not because he played dirty, but because he played clean enough to win.",
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 9
+      "avgPlacement": 6.0
     },
     {
       "id": "bridgette",
@@ -898,8 +922,8 @@
       "totalChallengeWins": 4,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 9,
-      "totalIdolsFound": 1,
+      "totalVotesAgainst": 14,
+      "totalIdolsFound": 2,
       "seasonDetails": [
         {
           "season": 1,
@@ -956,27 +980,44 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 7,
+          "status": "Juror",
+          "tribe": "Champions → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 5,
+          "idolsFound": 1,
+          "strategicRank": 7,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Cody reads the game brilliantly but cannot convert his reads into enough votes when the endgame tightens."
+          ],
+          "gameplayStyle": "Paranoid read-machine loyalist",
+          "keyMoments": [
+            "Episode 1: Extracts social intel from Bowie without asking direct questions.",
+            "Episode 3: Helps The Zoey Four eliminate Mickey.",
+            "Episode 5: Courtney's blowup exposes Cody as a strategic center.",
+            "Episode 9: Finds the merge Hidden Immunity Idol.",
+            "Episode 10: Loses his vote on the Journey, limiting his power during the open vote.",
+            "Episode 12: Votes Bowie instead of Priya, breaking The Oath for loyalty.",
+            "Episode 13: Loses the tiebreaker against Jasmine and then falls to Sanders on Redemption Island."
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Bowie",
+            "Scott",
+            "Jasmine"
+          ]
         }
       ],
-      "story": "Introduced on Screaming Gophers (Season 1), Cody spent the pre-merge trying to stay useful without becoming a target—a tough balance on a tribe full of big personalities. He nearly survived the squeeze, but the vote that ended him was decided by a single flip: Leshawna changed sides, turning a close night into a 6–5 send-off. It’s the kind of elimination that haunts a season—because one relationship, one conversation, one minute earlier could’ve rewritten everything (Result: eliminated 6–5; 19th).\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nCody’s Fan vs Favorites run was the ultimate ‘survive the war, then weaponize the bonds’ arc. He started the season carrying the Legacy Advantage and a growing list of enemies, but he also built the season’s most important lifeline: an unbreakable partnership with Carrie that stayed intact through swaps, merge pressure, and vote splits. Once he linked up with MacArthur inside Lawa Alliance #3, he stopped being a lone target and became the backbone of a majority path that kept snapping other coalitions first. He managed his endgame timing well enough to burn his Legacy Advantage at Final 6 and later find and play the Campers idol in the Finale stretch, keeping himself immune when every vote mattered. Cody reached Final Tribal as the ‘social connector’ finalist, but he couldn’t outshine MacArthur’s résumé and jury aura, finishing second in a 6–2–1 decision.",
+      "story": "Introduced on Screaming Gophers (Season 1), Cody spent the pre-merge trying to stay useful without becoming a target—a tough balance on a tribe full of big personalities. He nearly survived the squeeze, but the vote that ended him was decided by a single flip: Leshawna changed sides, turning a close night into a 6–5 send-off. It’s the kind of elimination that haunts a season—because one relationship, one conversation, one minute earlier could’ve rewritten everything (Result: eliminated 6–5; 19th).\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nCody’s Fan vs Favorites run was the ultimate ‘survive the war, then weaponize the bonds’ arc. He started the season carrying the Legacy Advantage and a growing list of enemies, but he also built the season’s most important lifeline: an unbreakable partnership with Carrie that stayed intact through swaps, merge pressure, and vote splits. Once he linked up with MacArthur inside Lawa Alliance #3, he stopped being a lone target and became the backbone of a majority path that kept snapping other coalitions first. He managed his endgame timing well enough to burn his Legacy Advantage at Final 6 and later find and play the Campers idol in the Finale stretch, keeping himself immune when every vote mattered. Cody reached Final Tribal as the ‘social connector’ finalist, but he couldn’t outshine MacArthur’s résumé and jury aura, finishing second in a 6–2–1 decision.\n\nSEASON 10 — Champions vs Contenders\n────────\nCody spends the early game as a quiet information collector, hearing things before others realize they have spoken. He survives the Champions fractures by attaching to Ryan, Bowie, Brick, and Zoey at different points, but his refusal to fully submit to any alliance keeps him both flexible and exposed. His idol find at the merge gives him leverage, yet his emotional loyalty to Priya and Brick repeatedly pulls him away from the cleanest strategic line. When Courtney exposes him as a strategic center, Cody's game changes: he can no longer hide behind observation. By the final six, his conflict with Jasmine turns personal, and by the final five he sees the vote coming with painful clarity. He exits not because he misread the room, but because nobody else is willing to move with the same urgency.",
       "badges": [],
       "seasonsPlayed": 2,
       "totalJuryVotes": 2,
-      "avgPlacement": 10.5
+      "avgPlacement": 9.33
     },
     {
       "id": "courtney",
@@ -993,7 +1034,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 32,
+      "totalVotesAgainst": 41,
       "totalIdolsFound": 1,
       "badges": [
         "Wasted Extra Vote",
@@ -1067,26 +1108,44 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 15,
+          "status": "Pre-Merge",
+          "tribe": "Champions → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 9,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Courtney burns hot, survives early danger, and exits after exposing two major power centers."
+          ],
+          "gameplayStyle": "Volatile exposed power-seeker",
+          "keyMoments": [
+            "Episode 1: Is voted out on first impressions and swapped to Champions.",
+            "Episode 1: Becomes the outbreak MVP by curing multiple patients.",
+            "Episode 3: Is exposed making a fake idol.",
+            "Episode 4: Has credit for Bowie's move publicly stripped away by Bowie.",
+            "Episode 5: Is voted out 6-1 after being branded unstable and hard to control.",
+            "Episode 5: Exposes Cody's influence and Bowie's idol in her tribal blowup.",
+            "Episode 5: Loses the Log Roll duel to Josee."
+          ],
+          "alliances": [
+            "The Wire"
+          ],
+          "rivalries": [
+            "Brick",
+            "Stephanie"
+          ]
         }
       ],
-      "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Courtney tried to run camp like a spreadsheet—then reality punched holes in the plan. Her season was defined by control attempts, blowups, and the whiplash that followed: every time she stabilized, another meltdown reopened the target. She survived long enough to reach the jury phase, but the tribe eventually decided the drama wasn’t worth the risk and cut her before she could reset again (Result: eliminated; 9th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nCourtney’s Season 2 run on the Screaming Gaffers spiraled fast: the harder she tried to impose structure, the more the room treated her as a liability. Once trust cracked, she stopped being a leader and became the compromise. She was voted out in a tight decision (Courtney voted out, 3–2).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nEdge of Extinction (Season 4) was a rough spiral for Courtney. After the Yellow → Red → Campers swap, she unraveled in a round remembered as “triple vote chaos,” burned her extra vote, and couldn’t recover once the revote hit. Result: Courtney was eliminated 4–2 on the Episode 5 Part 2 revote (14th place).",
+      "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Courtney tried to run camp like a spreadsheet—then reality punched holes in the plan. Her season was defined by control attempts, blowups, and the whiplash that followed: every time she stabilized, another meltdown reopened the target. She survived long enough to reach the jury phase, but the tribe eventually decided the drama wasn’t worth the risk and cut her before she could reset again (Result: eliminated; 9th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nCourtney’s Season 2 run on the Screaming Gaffers spiraled fast: the harder she tried to impose structure, the more the room treated her as a liability. Once trust cracked, she stopped being a leader and became the compromise. She was voted out in a tight decision (Courtney voted out, 3–2).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nEdge of Extinction (Season 4) was a rough spiral for Courtney. After the Yellow → Red → Campers swap, she unraveled in a round remembered as “triple vote chaos,” burned her extra vote, and couldn’t recover once the revote hit. Result: Courtney was eliminated 4–2 on the Episode 5 Part 2 revote (14th place).\n\nSEASON 10 — Champions vs Contenders\n────────\nCourtney is targeted immediately on first impressions, swapped, and spends the early game trying to prove the new tribe is really hers. She overclaims credit, crafts a fake idol, loses votes through Journeys, and still finds moments of competence, including a standout medical performance in Episode 1. Her game is always loud enough to matter and unstable enough to scare people. After the swap, she is outflanked by the Chaos Crew and becomes the obvious vote because everyone has a reason to be nervous. Her exit is louder than her game: she names Cody as the strategic center and reveals Bowie's idol to the tribe. Even in defeat, Courtney changes the season's information economy.",
       "seasonsPlayed": 3,
       "totalJuryVotes": 0,
-      "avgPlacement": 11.33
+      "avgPlacement": 12.25
     },
     {
       "id": "crimson",
@@ -2014,7 +2073,7 @@
       "totalChallengeWins": 5,
       "totalImmunityWins": 5,
       "totalRewardWins": 1,
-      "totalVotesAgainst": 26,
+      "totalVotesAgainst": 30,
       "totalIdolsFound": 0,
       "badges": [
         "4 Consecutive Immunities!",
@@ -2090,26 +2149,40 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 16,
+          "status": "Pre-Merge",
+          "tribe": "Champions → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 4,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Gwen's quiet return is cut short when The Movement makes her the first Champions casualty."
+          ],
+          "gameplayStyle": "Guarded trust-based outsider",
+          "keyMoments": [
+            "Episode 1: Works hard at camp and becomes part of the Champions' early family mood.",
+            "Episode 2: Loses the Journey to Jasmine and loses her vote.",
+            "Episode 2: Forms the Marshmallow Mafia with Zoey.",
+            "Episode 2: Is voted out by The Movement while unable to vote.",
+            "Episode 2: Defeats Sam in Hand on Idol on Redemption Island.",
+            "Episode 4: Loses a close Hand on Idol duel to Josee."
+          ],
+          "alliances": [
+            "The Marshmallow Mafia"
+          ],
+          "rivalries": []
         }
       ],
-      "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Gwen survived the early chaos by keeping her circle small and her threat level lower than her talent. But Season 1’s tribe swap punished solitary games: a 5–4 vote where one new connection mattered more than everything she’d built before. She didn’t get outplayed in a duel—she got caught in the first real math problem of the season, and the numbers chose her (Result: tribe-swap casualty; 16th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nGwen’s Season 2 on the Screaming Gaffers was played from the edges: selective trust, sharp reads, and constant threat-management. A deadlocked Tribal forced a re-vote around her, showing how evenly the power split had become. She ultimately went out in the season’s double-elimination sequence (Gwen finishes 8th), where tempo beat nuance.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nEdge of Extinction (Season 4) turned Gwen into an endgame machine. After surviving the Yellow → Red → Campers shuffle, she caught fire late with four straight immunity wins (Episodes 11–14), a franchise record that forced everyone to plan around her. With the finale in sight, the run ended at the final hurdle when Alejandro beat her at fire‑making. Result: Gwen was eliminated at Final 4.",
+      "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Gwen survived the early chaos by keeping her circle small and her threat level lower than her talent. But Season 1’s tribe swap punished solitary games: a 5–4 vote where one new connection mattered more than everything she’d built before. She didn’t get outplayed in a duel—she got caught in the first real math problem of the season, and the numbers chose her (Result: tribe-swap casualty; 16th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nGwen’s Season 2 on the Screaming Gaffers was played from the edges: selective trust, sharp reads, and constant threat-management. A deadlocked Tribal forced a re-vote around her, showing how evenly the power split had become. She ultimately went out in the season’s double-elimination sequence (Gwen finishes 8th), where tempo beat nuance.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nEdge of Extinction (Season 4) turned Gwen into an endgame machine. After surviving the Yellow → Red → Campers shuffle, she caught fire late with four straight immunity wins (Episodes 11–14), a franchise record that forced everyone to plan around her. With the finale in sight, the run ended at the final hurdle when Alejandro beat her at fire‑making. Result: Gwen was eliminated at Final 4.\n\nSEASON 10 — Champions vs Contenders\n────────\nGwen enters softly, already guarded, and quickly finds herself in a tribe where louder strategists define the pace. She bonds with Zoey and forms the Marshmallow Mafia, a relationship built more on trust than numbers. Losing her Journey vote is disastrous, leaving her unable to help herself at the tribal where Bowie consolidates The Movement's control. Her name becomes inevitable before she can build a counterforce. On Redemption Island, she beats Sam in a gritty endurance duel and briefly looks like she might claw back into the game. Josee ends that run by the narrowest emotional margin, and Gwen leaves as a player the season never allowed to fully ignite.",
       "seasonsPlayed": 3,
       "totalJuryVotes": 0,
-      "avgPlacement": 9.33
+      "avgPlacement": 11.0
     },
     {
       "id": "harold",
@@ -2458,14 +2531,16 @@
         10
       ],
       "totalSeasons": 3,
-      "bestPlacement": 13,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 3,
+      "totalImmunityWins": 3,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 11,
+      "totalVotesAgainst": 17,
       "totalIdolsFound": 0,
-      "badges": [],
+      "badges": [
+        "S10 Winner"
+      ],
       "seasonDetails": [
         {
           "season": 5,
@@ -2514,26 +2589,47 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 1,
+          "status": "Winner",
+          "tribe": "Contenders → Champions → Campers",
+          "challengeWins": 3,
+          "immunityWins": 3,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 8.5,
           "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "finalVote": "0-0",
+          "advantages": [],
+          "notes": [
+            "Jasmine turns social instinct, challenge grit, and endgame resilience into a championship run."
+          ],
+          "gameplayStyle": "Instinctive loyal pressure-reader",
+          "keyMoments": [
+            "Episode 1: Beats Courtney on the Journey rope hang and claims Safety Without Power.",
+            "Episode 2: Survives all six phases of Basic Straining and earns Chef's salute.",
+            "Episode 4: Refuses to vote Josee, breaking from the Chaos Crew on principle.",
+            "Episode 11: Tracks and tranquilizes Chef in African Lying Safari to win immunity.",
+            "Episode 12: Solves the murder mystery case convincingly enough to win Get a Clue immunity.",
+            "Episode 16: Defeats Bowie in the betrayal duel during The Princess Pride.",
+            "Episode 18: Sweeps the Rejected Olympic Relay stages and wins the season."
+          ],
+          "alliances": [
+            "The Chaos Crew",
+            "The Firewall"
+          ],
+          "rivalries": [
+            "Bowie",
+            "Scott",
+            "Cody",
+            "Ryan"
+          ]
         }
       ],
-      "story": "Jasmine brought a steady, survival-first presence to the early Belo/Reba chaos, attempting to keep the tribe focused while smaller rivalries pulled votes in different directions. Without advantages or a dominant alliance to lock her in, she became a convenient compromise boot once numbers got messy. She exited in Episode 5 (Jasmine eliminated, 2–1).\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nJasmine hit the merge in Fan vs Favorites looking like the perfect ‘steady finalist’ type—capable, respected, and connected. But that exact stability made her dangerous in a fractured merge vote, because multiple alliances clocked her as the safest long-term threat to remove early. With Kitty immune and the board split between MacArthur and Taylor options, Jasmine became the one name that could unite the most voters. She was voted out 7–4–2 as the first juror, a blunt reminder that merge boots often punish the player who feels too complete.",
+      "story": "Jasmine brought a steady, survival-first presence to the early Belo/Reba chaos, attempting to keep the tribe focused while smaller rivalries pulled votes in different directions. Without advantages or a dominant alliance to lock her in, she became a convenient compromise boot once numbers got messy. She exited in Episode 5 (Jasmine eliminated, 2–1).\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nJasmine hit the merge in Fan vs Favorites looking like the perfect ‘steady finalist’ type—capable, respected, and connected. But that exact stability made her dangerous in a fractured merge vote, because multiple alliances clocked her as the safest long-term threat to remove early. With Kitty immune and the board split between MacArthur and Taylor options, Jasmine became the one name that could unite the most voters. She was voted out 7–4–2 as the first juror, a blunt reminder that merge boots often punish the player who feels too complete.\n\nSEASON 10 — Champions vs Contenders\n────────\nJasmine enters the season as the human lie detector, and from the first Journey rope hang she proves she can win when the pressure isolates her. She plays the early game with too much heart to be fully predictable, refusing to write Josee's name and later building deep bonds with Tyler, Priya, and Brick. At merge, her game becomes a contradiction: everyone can see her relationships, but nobody can cleanly remove her because she keeps winning key moments and reading rooms before they finish forming. The Brick connection becomes both armor and target, and every late vote forces her to choose between loyalty and survival. In the final stretch, she survives Bowie turning against her, wins The Princess Pride, loses Brick to the jury, and faces the one player who has defined the strategic season. The finale strips the game to pure motion, and Jasmine answers every obstacle with force, composure, and one last sprint across the line.",
       "seasonsPlayed": 2,
       "totalJuryVotes": 0,
-      "avgPlacement": 13.5
+      "avgPlacement": 9.33
     },
     {
       "id": "jay",
@@ -2715,7 +2811,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 15,
+      "totalVotesAgainst": 21,
       "totalIdolsFound": 1,
       "badges": [
         "Most Unlucky Player"
@@ -2772,26 +2868,39 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 14,
+          "status": "Pre-Merge",
+          "tribe": "Contenders → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 4.5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Josee survives on fire and defiance until Redemption Island gives her one last burst before Priya ends it."
+          ],
+          "gameplayStyle": "Explosive loyal fighter",
+          "keyMoments": [
+            "Episode 1: Calls out Hicks at tribal and survives the Sam tiebreaker.",
+            "Episode 2: Becomes Basic Straining's most defiant player with two acts of insubordination.",
+            "Episode 3: Bonds deeply with Jasmine while confronting Scott publicly.",
+            "Episode 4: Is voted out in a tiebreaker against Scott.",
+            "Episode 4: Beats Gwen in a Hand on Idol duel.",
+            "Episode 5: Beats Courtney on the Log Roll.",
+            "Episode 6: Loses the Water Carry duel to Priya and exits enraged."
+          ],
+          "alliances": [],
+          "rivalries": []
         }
       ],
-      "story": "SEASON 5 — Rescue Island\nSEASON 6 — Blood vs. Water\nPreviously seen in S5, Josee’s best finish before Blood vs. Water was 13th.\n\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Josee and Jacques arrived with a reputation for aggression—and the cast treated them like a loaded weapon. After surviving the first wave, Josee became the clean ‘separate the Ice Dancers’ target: she was voted out in Episode 5 on a decisive 6–1 and sent to Redemption, where she was eventually eliminated. Her arc was a reminder that intimidation can win challenges, but it also paints a target you can’t always outrun. (Result: voted out 6–1 → RI; 12th.)",
+      "story": "SEASON 5 — Rescue Island\nSEASON 6 — Blood vs. Water\nPreviously seen in S5, Josee’s best finish before Blood vs. Water was 13th.\n\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Josee and Jacques arrived with a reputation for aggression—and the cast treated them like a loaded weapon. After surviving the first wave, Josee became the clean ‘separate the Ice Dancers’ target: she was voted out in Episode 5 on a decisive 6–1 and sent to Redemption, where she was eventually eliminated. Her arc was a reminder that intimidation can win challenges, but it also paints a target you can’t always outrun. (Result: voted out 6–1 → RI; 12th.)\n\nSEASON 10 — Champions vs Contenders\n────────\nJosee plays the early game with emotion on the surface and loyalty underneath, bonding tightly with Jasmine and Brick while clashing with Stephanie and Hicks. Her outburst at the first tribal exposes Hicks's plan and keeps her alive by the slimmest margin. She becomes the kind of player people both protect and fear, because no conversation around her stays quiet for long. Her Episode 4 vote is chaotic enough to send her to Redemption Island, where she defeats Gwen and Courtney with raw competitiveness. But the island is not a long-term home for her. Priya beats her in Water Carry, and Josee exits furious, convinced the second chance still was not enough.",
       "totalJuryVotes": 0,
       "seasonsPlayed": 2,
-      "avgPlacement": 12.5
+      "avgPlacement": 13.0
     },
     {
       "id": "junior",
@@ -3561,7 +3670,7 @@
       "totalChallengeWins": 3,
       "totalImmunityWins": 3,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 8,
+      "totalVotesAgainst": 12,
       "totalIdolsFound": 2,
       "totalJuryVotes": 4,
       "badges": [
@@ -3627,25 +3736,41 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 17,
+          "status": "Pre-Merge",
+          "tribe": "Champions → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Mickey's early strategic paranoia fractures The Movement and makes him Bowie's first major sacrifice."
+          ],
+          "gameplayStyle": "Restless paranoid planner",
+          "keyMoments": [
+            "Episode 1: Joins Bowie, Sanders, and Carrie to form The Movement.",
+            "Episode 1: Steals a body part during the medical challenge chaos.",
+            "Episode 2: Breaks The Movement by voting Zoey instead of Gwen.",
+            "Episode 3: Shares a personal secret with Bowie that briefly softens their bond.",
+            "Episode 3: Watches trust in The Movement thin around him.",
+            "Episode 3: Is blindsided when Bowie votes him out over Courtney."
+          ],
+          "alliances": [
+            "The Movement"
+          ],
+          "rivalries": [
+            "Scott"
+          ]
         }
       ],
-      "story": "SEASON 5 — Rescue Island\nSEASON 5 — Rescue Island\nIntroduced on Rescue Island (Season 5), Mickey didn’t win by being the loudest—he won by being the safest place for everyone else to stand. He played the season like a pressure valve: never the obvious target, always the option people could live with, and he turned that low-heat positioning into a championship when the endgame punished the bigger egos. (Result: winner; 1st.)\n\n────────\n\nSEASON 6 — Blood vs. Water\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Mickey came in with a champion’s target but flipped it into camouflage by attaching himself to the cleanest partnership in the game: Mickey + Jay. While the tribe dynamics swung around duos and feuds, Mickey stayed measured—letting other names absorb the damage while he quietly stacked tools. He secured the Galang idol and used it the way winners do: not for fireworks, but for timing. The season’s defining moment was Final 5—when Mickey played his idol on Jay to erase the only path that breaks their duo. That single decision forced the game to reroute around them, bought Mickey the finale, and proved he was still playing one step ahead when it mattered most. At Final Tribal, though, Jacques’ résumé was too sharp to deny: the jury locked in a 7–1–0 vote and Mickey walked away with second place and one jury vote—close enough to touch the crown, but not enough to take it. (Result: finalist, 2nd; lost 7–1–0.)",
+      "story": "SEASON 5 — Rescue Island\nSEASON 5 — Rescue Island\nIntroduced on Rescue Island (Season 5), Mickey didn’t win by being the loudest—he won by being the safest place for everyone else to stand. He played the season like a pressure valve: never the obvious target, always the option people could live with, and he turned that low-heat positioning into a championship when the endgame punished the bigger egos. (Result: winner; 1st.)\n\n────────\n\nSEASON 6 — Blood vs. Water\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Mickey came in with a champion’s target but flipped it into camouflage by attaching himself to the cleanest partnership in the game: Mickey + Jay. While the tribe dynamics swung around duos and feuds, Mickey stayed measured—letting other names absorb the damage while he quietly stacked tools. He secured the Galang idol and used it the way winners do: not for fireworks, but for timing. The season’s defining moment was Final 5—when Mickey played his idol on Jay to erase the only path that breaks their duo. That single decision forced the game to reroute around them, bought Mickey the finale, and proved he was still playing one step ahead when it mattered most. At Final Tribal, though, Jacques’ résumé was too sharp to deny: the jury locked in a 7–1–0 vote and Mickey walked away with second place and one jury vote—close enough to touch the crown, but not enough to take it. (Result: finalist, 2nd; lost 7–1–0.)\n\nSEASON 10 — Champions vs Contenders\n────────\nMickey arrives with the air of someone who has replayed every past mistake and is determined not to repeat them. He joins Bowie's Movement and immediately looks like a player who understands the board, but his fear of Zoey's likability pushes him into an early betrayal. That single vote does not save anyone, but it damages trust inside the alliance and marks him as an unpredictable strategist. In Episode 3, he still believes he knows where the votes are, which is the most dangerous confidence in Total Drama. Bowie decides tribe stability matters more than alliance loyalty and cuts him loose. Mickey leaves not because he lacked a plan, but because everyone could see him planning.",
       "seasonsPlayed": 2,
-      "avgPlacement": 1.5
+      "avgPlacement": 6.67
     },
     {
       "id": "mike",
@@ -3943,10 +4068,10 @@
       "totalSeasons": 3,
       "bestPlacement": 3,
       "wins": 0,
-      "totalChallengeWins": 2,
-      "totalImmunityWins": 2,
+      "totalChallengeWins": 5,
+      "totalImmunityWins": 5,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 18,
+      "totalVotesAgainst": 21,
       "totalIdolsFound": 1,
       "badges": [
         "S5 Finalist (2 votes)",
@@ -4009,26 +4134,46 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 4,
+          "status": "Juror",
+          "tribe": "Champions → Contenders → Campers",
+          "challengeWins": 3,
+          "immunityWins": 3,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 3,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 7,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Ryan dominates physically and socially enough to reach the endgame before loyalty conflicts finally break him."
+          ],
+          "gameplayStyle": "Physical loyalty engine",
+          "keyMoments": [
+            "Episode 4: Makes a heroic submarine push that helps Champions escape.",
+            "Episode 9: Enters the merge counting numbers and builds The Oath's structure.",
+            "Episode 10: Survives the Dungeon deep enough to remain a visible physical threat.",
+            "Episode 13: Wins Bridal Brawls with Brick in the season's cleanest teamwork showcase.",
+            "Episode 14: Wins Rapa Phooey while Carrie shields and supports his climb.",
+            "Episode 14: Votes Jasmine instead of Carrie, exposing where his loyalty truly lies.",
+            "Episode 16: Votes Bowie after Bowie's overplaying at tribal and is eliminated by Jasmine and Brick."
+          ],
+          "alliances": [
+            "The Oath",
+            "The Pipeline",
+            "The Undertow"
+          ],
+          "rivalries": [
+            "Scott",
+            "Jasmine"
+          ]
         }
       ],
-      "story": "SEASON 5 — Rescue Island\nSEASON 6 — Blood vs. Water\nPreviously seen in S5, Ryan’s best finish before Blood vs. Water was 3th.\n\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Ryan and Stephanie were the combustible pair that everyone could feel coming—the kind that wins moments but fractures rooms. Once the merge arrived, his vote-war fallout with Emma became a season-defining crack, turning strategy into a cycle of retaliation. The house eventually chose stability over chaos: Ryan was voted out in Episode 12 (5–2–1) and sent to Redemption, where his run ended. (Result: voted out 5–2–1 → RI; 8th.)",
+      "story": "SEASON 5 — Rescue Island\nSEASON 6 — Blood vs. Water\nPreviously seen in S5, Ryan’s best finish before Blood vs. Water was 3th.\n\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Ryan and Stephanie were the combustible pair that everyone could feel coming—the kind that wins moments but fractures rooms. Once the merge arrived, his vote-war fallout with Emma became a season-defining crack, turning strategy into a cycle of retaliation. The house eventually chose stability over chaos: Ryan was voted out in Episode 12 (5–2–1) and sent to Redemption, where his run ended. (Result: voted out 5–2–1 → RI; 8th.)\n\nSEASON 10 — Champions vs Contenders\n────────\nRyan walks into the season like a challenge threat and spends the early game learning that strength alone is never enough. He forms and fractures bonds with Sanders, Cody, Zoey, Carrie, Bowie, and Brick, often sitting at the center of competing emotional commitments. His merge game is strong because people trust him in pairs: Zoey trusts him, Carrie trusts him, Brick trusts him, and Bowie needs him. But every bond becomes a debt, and the Carrie vote exposes how hard it is for Ryan to separate affection from endgame math. He wins repeated immunities when he needs them most, including the Rapa Phooey and Super Hero-ld victories that drag him into the final four. At the last vote before the finale, he flips off Bowie's plan, loses protection, and exits with his integrity intact but the game gone.",
       "totalJuryVotes": 2,
       "seasonsPlayed": 2,
-      "avgPlacement": 5.5
+      "avgPlacement": 5.0
     },
     {
       "id": "sadie",
@@ -4087,7 +4232,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "seasonDetails": [
         {
@@ -4115,27 +4260,38 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 18,
+          "status": "Pre-Merge",
+          "tribe": "Contenders → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 2,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Sam becomes the first real casualty, fighting hard on Redemption Island before Gwen outlasts him."
+          ],
+          "gameplayStyle": "Earnest early casualty",
+          "keyMoments": [
+            "Episode 1: Helps Stephanie make breakfast and lift Contenders morale.",
+            "Episode 1: Shows vulnerability at tribal as the Anti-Sam Bloc targets him.",
+            "Episode 1: Loses the challenge tiebreaker against Josee and goes to Redemption Island.",
+            "Episode 2: Trains on Redemption Island and bonds awkwardly with Gwen.",
+            "Episode 2: Loses Hand on Idol to Gwen after gripping too hard too early."
+          ],
+          "alliances": [],
+          "rivalries": []
         }
       ],
-      "story": "On Revenge of the Island (Season 3), Sam began on the Toxic Rats and tried to win by loyalty rather than steering the vote. That loyalty became the storyline when a split Tribal collapsed into the season’s first deadlock. With neither side blinking after the 3–3 tie fi rocks (eliminated) tie, the game went to rocks—and Sam drew the short straw in Episode 4 (Result: eliminated by rock draw; 13th).",
+      "story": "On Revenge of the Island (Season 3), Sam began on the Toxic Rats and tried to win by loyalty rather than steering the vote. That loyalty became the storyline when a split Tribal collapsed into the season’s first deadlock. With neither side blinking after the 3–3 tie fi rocks (eliminated) tie, the game went to rocks—and Sam drew the short straw in Episode 4 (Result: eliminated by rock draw; 13th).\n\nSEASON 10 — Champions vs Contenders\n────────\nSam returns loudly, desperate to prove he belongs, and immediately becomes an easy early vote when the Contenders split between Josee and him. His vulnerability at tribal is genuine, but the numbers and the tiebreaker are not kind. On Redemption Island, Sam becomes more focused than he looked in the main game, scratching vote histories into sand and drilling fire until his hands hurt. Against Gwen, he pours everything into the Hand on Idol duel. The problem is efficiency: Gwen spends less and lasts longer. Sam exits devastated, but the effort is undeniable.",
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 13
+      "avgPlacement": 15.5
     },
     {
       "id": "samey",
@@ -4230,10 +4386,10 @@
       "totalSeasons": 4,
       "bestPlacement": 2,
       "wins": 0,
-      "totalChallengeWins": 7,
-      "totalImmunityWins": 3,
+      "totalChallengeWins": 8,
+      "totalImmunityWins": 4,
       "totalRewardWins": 3,
-      "totalVotesAgainst": 15,
+      "totalVotesAgainst": 28,
       "totalIdolsFound": 1,
       "totalJuryVotes": 4,
       "badges": [
@@ -4333,25 +4489,47 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 9,
+          "status": "Juror",
+          "tribe": "Contenders → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 13,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Scott weaponizes chaos, idols, and intimidation until the entire tribe finally agrees he is too dangerous to keep."
+          ],
+          "gameplayStyle": "Openly ruthless chaos broker",
+          "keyMoments": [
+            "Episode 1: Is voted out by his starting tribe and swapped, setting his revenge tone.",
+            "Episode 4: Leads the Anti-Priya Coalition against Priya.",
+            "Episode 8: Takes Hicks's idol before voting Hicks out.",
+            "Episode 9: Blocks Sanders from better vehicles and pushes merge chaos.",
+            "Episode 10: Wins Say Uncle by outlasting the Dungeon of Misfortune.",
+            "Episode 10: Votes Jasmine while supposedly aligned with The Three Torches.",
+            "Episode 11: Is unanimously targeted and exposes Bowie on the way out.",
+            "Episode 11: Loses his Redemption duel to Sanders and leaves as the season's defining villain."
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Bowie",
+            "Mickey",
+            "Cody",
+            "Ryan",
+            "Priya",
+            "Jasmine",
+            "Brick"
+          ]
         }
       ],
-      "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nIntroduced on Revenge of the Island (Season 3), Scott was the season’s challenge engine—stacking the most wins and setting the pace whenever immunity mattered. They paired that dominance with ruthless timing, including the endgame betrayal of Zoey after an unbreakable bond carried them to the brink. Scott reached Final Tribal with a ‘challenge beast’ résumé, but the jury rewarded loyalty and relationships instead. (Result: Scott lost 3–4–1; runner-up.)\n\nBest player to never win. PERFECT IDOL PLAY after holding for 9 tribals (franchise record). Runner-up in S3, third place in S4.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nScott came into Edge of Extinction (Season 4) as the franchise’s cleanest “toolbox” player—and proved it. He held an idol through nine consecutive Tribal Councils (a franchise record), then timed a perfect Final 5 play that cancelled three votes and kept his endgame intact. He even knocked out Cameron in a 2–0 decision, but at Final Tribal Council only Duncan rewarded the résumé. Result: Scott placed 3rd.\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nScott’s Fan vs Favorites run was built on one thing: the Scott–Shawn unit was unbreakable, and everyone knew it. He used that duo as a shield and a weapon, pushing targets like Devin and Kitty while refusing to let the vote splinter his side. Even when Kitty played an idol on him during the massive Episode 9 blow-up, Scott benefited from the protection without having to expose any advantage himself. The problem was the same thing that made him powerful also made him obvious: once the merge groups aligned, the entire board finally agreed he was the safest ‘big threat’ to remove. Scott left in 8th place after a near-unanimous pile-on, proving his duo was feared right up until it was dismantled.",
+      "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nIntroduced on Revenge of the Island (Season 3), Scott was the season’s challenge engine—stacking the most wins and setting the pace whenever immunity mattered. They paired that dominance with ruthless timing, including the endgame betrayal of Zoey after an unbreakable bond carried them to the brink. Scott reached Final Tribal with a ‘challenge beast’ résumé, but the jury rewarded loyalty and relationships instead. (Result: Scott lost 3–4–1; runner-up.)\n\nBest player to never win. PERFECT IDOL PLAY after holding for 9 tribals (franchise record). Runner-up in S3, third place in S4.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nScott came into Edge of Extinction (Season 4) as the franchise’s cleanest “toolbox” player—and proved it. He held an idol through nine consecutive Tribal Councils (a franchise record), then timed a perfect Final 5 play that cancelled three votes and kept his endgame intact. He even knocked out Cameron in a 2–0 decision, but at Final Tribal Council only Duncan rewarded the résumé. Result: Scott placed 3rd.\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nScott’s Fan vs Favorites run was built on one thing: the Scott–Shawn unit was unbreakable, and everyone knew it. He used that duo as a shield and a weapon, pushing targets like Devin and Kitty while refusing to let the vote splinter his side. Even when Kitty played an idol on him during the massive Episode 9 blow-up, Scott benefited from the protection without having to expose any advantage himself. The problem was the same thing that made him powerful also made him obvious: once the merge groups aligned, the entire board finally agreed he was the safest ‘big threat’ to remove. Scott left in 8th place after a near-unanimous pile-on, proving his duo was feared right up until it was dismantled.\n\nSEASON 10 — Champions vs Contenders\n────────\nScott is rejected on first impressions, swapped immediately, and spends the rest of the game acting like that insult never left his bloodstream. He rebuilds through blunt power, selective loyalty, and dirty information, making people trust him just long enough to become useful. His best move is also his cruelest: convincing Hicks to hand over an idol, then voting Hicks out. At merge, Scott remains the villain everyone fears but also the strategist everyone must account for, surviving one vote through an idol and winning Say Uncle through pure endurance. But his habit of betraying new structures, including The Three Torches, leaves him with enemies in every direction. When The Oath finally unifies, Scott exits loudly, using his last words to put Bowie's fingerprints on the game for the jury.",
       "seasonsPlayed": 3,
-      "avgPlacement": 4.33
+      "avgPlacement": 5.5
     },
     {
       "id": "shawn",
@@ -4663,12 +4841,12 @@
         10
       ],
       "totalSeasons": 2,
-      "bestPlacement": 13,
+      "bestPlacement": 11,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 8,
+      "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -4707,25 +4885,43 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 11,
+          "status": "Pre-Juror",
+          "tribe": "Contenders → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 1,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 5.5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [
+            "voteSteal"
+          ],
+          "notes": [
+            "Stephanie collects power early but is erased by Bowie's ambassador deal before her tools can peak."
+          ],
+          "gameplayStyle": "Advantage-hoarding free agent",
+          "keyMoments": [
+            "Episode 2: Finds a Vote Steal near the well.",
+            "Episode 3: Plants a forged note for Jasmine about Scott.",
+            "Episode 4: Helps form the Chaos Crew, then watches it fracture immediately.",
+            "Episode 7: Makes a late-night final two pitch to Brick during Awake-A-Thon.",
+            "Episode 8: Leaves the Chaos Crew and joins The Oath for protection.",
+            "Episode 9: Is eliminated by the ambassador agreement between Bowie and Zoey."
+          ],
+          "alliances": [
+            "The Oath"
+          ],
+          "rivalries": [
+            "Courtney"
+          ]
         }
       ],
-      "story": "On Blood vs. Water (Season 6), Stephanie came in with Ryan as pure intensity—competitive, confrontational, and always one argument away from a blow-up. That edge kept her relevant early, but in a pairs season it also makes you radioactive: once the tribe needed an easy reset vote, she was cut in Episode 6 on a 6–1. Even on Redemption she stayed on-brand, famously throwing an idol clue into the fire—burning information the way she burned bridges. (Result: voted out 6–1 → RI; 13th.)",
+      "story": "On Blood vs. Water (Season 6), Stephanie came in with Ryan as pure intensity—competitive, confrontational, and always one argument away from a blow-up. That edge kept her relevant early, but in a pairs season it also makes you radioactive: once the tribe needed an easy reset vote, she was cut in Episode 6 on a 6–1. Even on Redemption she stayed on-brand, famously throwing an idol clue into the fire—burning information the way she burned bridges. (Result: voted out 6–1 → RI; 13th.)\n\nSEASON 10 — Champions vs Contenders\n────────\nStephanie starts with a Vote Steal and the confidence of someone who wants to matter in every room. She manipulates Priya early, bonds with Tyler, and later steps away from the Chaos Crew when the trust no longer serves her. Her camp value is real: she rallies people, rebuilds shelter, and shows flashes of social control. But she also drifts between structures without securing a stable shield at the exact moment the ambassador twist arrives. Bowie and Zoey's negotiation turns her into the sacrifice, and she is eliminated without a vote, without a duel, and without using the full weight of her advantage. Her exit feels abrupt because her game still had ammunition left.",
       "seasonsPlayed": 1,
-      "avgPlacement": 13
+      "avgPlacement": 12.0
     },
     {
       "id": "sugar",
@@ -4973,12 +5169,12 @@
         10
       ],
       "totalSeasons": 2,
-      "bestPlacement": 23,
+      "bestPlacement": 13,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 8,
+      "totalVotesAgainst": 11,
       "totalIdolsFound": 0,
       "seasonDetails": [
         {
@@ -5003,27 +5199,40 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 13,
+          "status": "Pre-Merge",
+          "tribe": "Contenders → Champions → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 3,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 4.5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Tyler plays with loyalty and heart, but his challenge liability makes him the last pre-merge cut from Champions."
+          ],
+          "gameplayStyle": "Earnest loyal soldier",
+          "keyMoments": [
+            "Episode 1: Shares a sunrise talk with Brick that becomes a real bond.",
+            "Episode 2: Rings the bell in Basic Straining, marking him as a quitter to some.",
+            "Episode 3: Makes a final two deal with Stephanie.",
+            "Episode 5: Builds a deeper quiet bond with Jasmine after the swap.",
+            "Episode 6: Is labeled the weakest link in Dodgebrawl.",
+            "Episode 7: Is voted out by Bowie's Three while Jasmine tries to save him.",
+            "Episode 7: Loses the Knot Untying duel to Priya."
+          ],
+          "alliances": [],
+          "rivalries": []
         }
       ],
-      "story": "Introduced on Killer Bass (Season 1), Tyler tried to sell himself as the challenge engine—then the season labeled him the opposite. After becoming a repeated liability, he was cut in an 8–4 vote, the tribe choosing reliability over potential. His story is the blunt Season 1 lesson: if you can’t deliver in the early team phase, you don’t get to reach the individual game (Result: eliminated; 23rd).",
+      "story": "Introduced on Killer Bass (Season 1), Tyler tried to sell himself as the challenge engine—then the season labeled him the opposite. After becoming a repeated liability, he was cut in an 8–4 vote, the tribe choosing reliability over potential. His story is the blunt Season 1 lesson: if you can’t deliver in the early team phase, you don’t get to reach the individual game (Result: eliminated; 23rd).\n\nSEASON 10 — Champions vs Contenders\n────────\nTyler's game is quiet, earnest, and built around trust that he genuinely means. He forms early bonds with Brick, Stephanie, Jasmine, and Priya, often becoming the person others use as a number because he does not hide where his heart is. That sincerity gives him moments of warmth, especially with Jasmine, but it also makes him readable in a game increasingly run by hidden agendas. After the swap, his bond with Jasmine becomes visible and his dodgeball weakness gives Bowie's trio the excuse it needs. Tyler sees the pattern before he leaves and names Bowie as the true driver. On Redemption Island, he fights hard against Priya but cannot match her precision, exiting with dignity rather than bitterness.",
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 23
+      "avgPlacement": 18.0
     },
     {
       "id": "zoey",
@@ -5040,7 +5249,7 @@
       "totalChallengeWins": 8,
       "totalImmunityWins": 5,
       "totalRewardWins": 3,
-      "totalVotesAgainst": 9,
+      "totalVotesAgainst": 13,
       "totalIdolsFound": 1,
       "totalJuryVotes": 6,
       "badges": [
@@ -5141,25 +5350,40 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 10,
+          "status": "Juror",
+          "tribe": "Champions → Contenders → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 6.5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Zoey's social bonds and steady challenge record make her look unbeatable just before she is cut down."
+          ],
+          "gameplayStyle": "Gentle bond-based contender",
+          "keyMoments": [
+            "Episode 2: Forms the Marshmallow Mafia with Gwen.",
+            "Episode 3: Leads The Zoey Four in the Mickey vote.",
+            "Episode 5: Navigates the sewer phase well in Broadway Baby.",
+            "Episode 9: Joins The Oath after Ryan warns her she is being targeted.",
+            "Episode 10: Is voted out in the public open vote despite deep bonds.",
+            "Episode 10: Loses the Precision Toss duel to Sanders and exits with grace."
+          ],
+          "alliances": [
+            "The Marshmallow Mafia",
+            "The Oath"
+          ],
+          "rivalries": []
         }
       ],
-      "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nDebuting on Revenge of the Island (Season 3), Zoey was the social connector on the Mutant Maggots—liked by most, tied into multiple groups, and strong enough in challenges to stay relevant. Their run became defined by trust: the unbreakable bond with Scott carried them deep, even as the endgame turned into betrayal roulette. At the final vote before the Final Tribal Council, Scott pulled the trigger and Zoey was cut in Episode 13 (Result: voted out 3–1; 4th, final juror).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nUNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history.\n\nOn Edge of Extinction (Season 4), Zoey delivered a near‑perfect social game. She built an unprecedented web of three “unbreakable bonds” at once, kept her name off the parchment all season (the only vote against her was cancelled), and capped the midgame with a perfect idol play that erased seven votes and saved Geoff. After a key Episode 8 flip and back‑to‑back immunities late (Episodes 11–12), she reached Final Tribal Council—but fell just short. Result: Zoey finished runner‑up.\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nZoey’s Fan vs Favorites game exploded early because her feud with Carrie never stopped growing. After the swap, both sides locked onto each other as the obvious targets, turning camp life into a constant tug-of-war. Zoey tried to frame Carrie as a liability, while Carrie’s side treated Zoey as the safest elimination to stabilize the tribe. With Lawa Alliance #3 holding the numbers, Zoey was voted out 5–2 and never reached the merge.",
+      "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nDebuting on Revenge of the Island (Season 3), Zoey was the social connector on the Mutant Maggots—liked by most, tied into multiple groups, and strong enough in challenges to stay relevant. Their run became defined by trust: the unbreakable bond with Scott carried them deep, even as the endgame turned into betrayal roulette. At the final vote before the Final Tribal Council, Scott pulled the trigger and Zoey was cut in Episode 13 (Result: voted out 3–1; 4th, final juror).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nUNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history.\n\nOn Edge of Extinction (Season 4), Zoey delivered a near‑perfect social game. She built an unprecedented web of three “unbreakable bonds” at once, kept her name off the parchment all season (the only vote against her was cancelled), and capped the midgame with a perfect idol play that erased seven votes and saved Geoff. After a key Episode 8 flip and back‑to‑back immunities late (Episodes 11–12), she reached Final Tribal Council—but fell just short. Result: Zoey finished runner‑up.\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nZoey’s Fan vs Favorites game exploded early because her feud with Carrie never stopped growing. After the swap, both sides locked onto each other as the obvious targets, turning camp life into a constant tug-of-war. Zoey tried to frame Carrie as a liability, while Carrie’s side treated Zoey as the safest elimination to stabilize the tribe. With Lawa Alliance #3 holding the numbers, Zoey was voted out 5–2 and never reached the merge.\n\nSEASON 10 — Champions vs Contenders\n────────\nZoey begins with Gwen in the Marshmallow Mafia, but Gwen's early exit forces her into a sharper, more independent game. She helps build the counterforce that removes Mickey and later becomes one half of a feared pair with Ryan. Her game is not loud; it is consistent, empathetic, and hard to attack without looking threatened. That is exactly why people start saying her name at the merge. The open vote in Episode 10 turns against her despite The Oath trying to protect her, and the margin is brutal enough to haunt her. On Redemption Island, she faces Sanders with grace, loses cleanly, and exits as one of the season's purest jury threats.",
       "seasonsPlayed": 3,
-      "avgPlacement": 7
+      "avgPlacement": 7.75
     },
     {
       "id": "carrie",
@@ -5174,7 +5398,7 @@
       "totalChallengeWins": 3,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 6,
+      "totalVotesAgainst": 10,
       "totalIdolsFound": 0,
       "totalJuryVotes": 1,
       "tier": "Unranked",
@@ -5217,24 +5441,44 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 6,
+          "status": "Juror",
+          "tribe": "Champions → Contenders → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 5.5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Carrie survives as a relationship player until Bowie correctly identifies her as a quiet jury threat."
+          ],
+          "gameplayStyle": "Underestimated emotional connector",
+          "keyMoments": [
+            "Episode 1: Makes an early final two deal with Cody.",
+            "Episode 4: Carrie and Cody realize she has too many deals in motion.",
+            "Episode 9: Breaks from The Oath and votes Sanders, helping send a hero to Redemption Island.",
+            "Episode 11: Joins The Oath through Ryan after being left outside power.",
+            "Episode 13: Forms a final two deal with Ryan as their bond becomes unmistakable.",
+            "Episode 14: Forms The Pipeline with Ryan but cannot overcome Bowie's anti-Carrie push.",
+            "Episode 14: Loses to Sanders on Redemption Island by a single inch in Bocce Bombs."
+          ],
+          "alliances": [
+            "The Movement",
+            "The Pipeline"
+          ],
+          "rivalries": [
+            "Bowie",
+            "Priya",
+            "Brick"
+          ]
         }
       ],
-      "story": "Social hub protected by tight bonds; wielded a Vote Steal at F5 to lock path to the finals.\n\nSEASON 7 — Fan vs Favorites\n────────\nCarrie played Fan vs Favorites like a romantic lead who accidentally became a war general. Her unbreakable bond with Cody gave her instant stability, while her equally unbreakable connection with Taylor made her a permanent factor in the season’s alliance math. She came into the merge with real control (Lawa Alliance #3) but also real volatility, sparking major fights that kept her name hovering near every target list. Her biggest turning point was snagging a Vote Steal from the reward challenge and holding it until the endgame, where she used it at Final 5 to strip Tom’s vote and force the clean elimination. Carrie made Final Tribal with a loud narrative and big relationships, but the jury viewed MacArthur as the architect, leaving Carrie in third with one vote.",
-      "avgPlacement": 3
+      "story": "Social hub protected by tight bonds; wielded a Vote Steal at F5 to lock path to the finals.\n\nSEASON 7 — Fan vs Favorites\n────────\nCarrie played Fan vs Favorites like a romantic lead who accidentally became a war general. Her unbreakable bond with Cody gave her instant stability, while her equally unbreakable connection with Taylor made her a permanent factor in the season’s alliance math. She came into the merge with real control (Lawa Alliance #3) but also real volatility, sparking major fights that kept her name hovering near every target list. Her biggest turning point was snagging a Vote Steal from the reward challenge and holding it until the endgame, where she used it at Final 5 to strip Tom’s vote and force the clean elimination. Carrie made Final Tribal with a loud narrative and big relationships, but the jury viewed MacArthur as the architect, leaving Carrie in third with one vote.\n\nSEASON 10 — Champions vs Contenders\n────────\nCarrie's season starts with soft bonds and shaky challenge showings, making her look like the kind of player others can drag deep. That perception becomes her cover as she makes side deals, builds with Cody and Ryan, and keeps finding emotional footholds even after alliances expel her. Her rivalry with Bowie hardens into one of the season's coldest personal wars, yet the two repeatedly understand each other's danger better than anyone else does. At merge, Carrie looks weak on paper, but the jury math tells a different story: she has sat beside people, comforted people, and collected goodwill without ever being the obvious target. Ryan becomes her strongest connection and her biggest vulnerability, especially once The Pipeline forms too late to save her. Bowie sees the threat before the field fully catches up, and Carrie leaves at the exact moment her underdog path starts looking viable.",
+      "avgPlacement": 4.5
     },
     {
       "id": "devin",
@@ -6062,7 +6306,7 @@
       "totalChallengeWins": 5,
       "totalImmunityWins": 2,
       "totalRewardWins": 3,
-      "totalVotesAgainst": 1,
+      "totalVotesAgainst": 6,
       "totalIdolsFound": 2,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -6107,23 +6351,45 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 5,
+          "status": "Juror",
+          "tribe": "Champions → Contenders → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 5,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 7,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Sanders becomes the Redemption Island legend of the season before falling one step short of the final four."
+          ],
+          "gameplayStyle": "Redemption-forged iron hero",
+          "keyMoments": [
+            "Episode 7: Wins Awake-A-Thon as the last person standing.",
+            "Episode 9: Votes Bowie instead of Scott and is sent to Redemption Island.",
+            "Episode 10: Defeats Zoey in Precision Toss.",
+            "Episode 11: Survives against Scott in a tense Memory Sequence duel.",
+            "Episode 12: Ends Priya's Redemption streak on the Balance Beam.",
+            "Episode 13: Beats Cody in Slingshot Gallery with a bullseye finish.",
+            "Episode 14: Beats Carrie by an inch in Bocce Bombs for a fifth straight duel win.",
+            "Episode 15: Returns, then loses the tiebreaker vote against Jasmine."
+          ],
+          "alliances": [
+            "The Movement",
+            "The Wire",
+            "The Oath"
+          ],
+          "rivalries": [
+            "Bowie",
+            "Brick"
+          ]
         }
       ],
-      "story": "She arrived as one of six Civilians — the season's sacrificial lambs, assembled to be picked off by legends. Her tribe was decimated in three straight tribals. Her closest ally MacArthur was on the other tribe. By the merge she had one idol, zero allies in the majority, and every reason to accept an honorable early jury exit. Instead she ran the post-merge. She built simultaneous Unbreakable bonds with Jen and MacArthur while quietly accumulating influence over Alejandro and Cameron. When the majority came for MacArthur with five votes, she negated every single one. When Jen — her closest ally, her strategic partner, her shield — became the biggest threat to her endgame, she won immunity, found a second idol, played it on her biggest rival, and watched Jen go home on the revote. She called it avenging MacArthur. It was also just brilliant. Won F4 immunity, dictated Gerry's exit, then lost the finale challenge by a thread to the man she'd saved twice. The most complete non-winner game in franchise history."
+      "story": "She arrived as one of six Civilians — the season's sacrificial lambs, assembled to be picked off by legends. Her tribe was decimated in three straight tribals. Her closest ally MacArthur was on the other tribe. By the merge she had one idol, zero allies in the majority, and every reason to accept an honorable early jury exit. Instead she ran the post-merge. She built simultaneous Unbreakable bonds with Jen and MacArthur while quietly accumulating influence over Alejandro and Cameron. When the majority came for MacArthur with five votes, she negated every single one. When Jen — her closest ally, her strategic partner, her shield — became the biggest threat to her endgame, she won immunity, found a second idol, played it on her biggest rival, and watched Jen go home on the revote. She called it avenging MacArthur. It was also just brilliant. Won F4 immunity, dictated Gerry's exit, then lost the finale challenge by a thread to the man she'd saved twice. The most complete non-winner game in franchise history.\n\nSEASON 10 — Champions vs Contenders\n────────\nSanders enters as the golden hero trying to finish unfinished business, but her game is repeatedly caught between loyalty and self-preservation. She forms The Oath with Ryan, fractures it, wins Awake-A-Thon for her tribe, and reaches merge as one of the most feared challenge performers in the cast. Her first boot at merge sends her to Redemption Island, where she transforms from fallen hero into final boss. Duel after duel, she beats Zoey, Scott, Priya, Cody, and Carrie, carving a new season inside the season. When she returns with five straight wins, everyone knows she cannot be allowed near the final challenge. The endgame vote against her is almost a compliment: they remove her because if they do not, she may never lose again.",
+      "avgPlacement": 4.0
     },
     {
       "id": "axel",
@@ -6189,11 +6455,11 @@
       "totalSeasons": 2,
       "bestPlacement": 1,
       "wins": 1,
-      "totalChallengeWins": 1,
-      "totalImmunityWins": 1,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 2,
-      "totalIdolsFound": 1,
+      "totalVotesAgainst": 12,
+      "totalIdolsFound": 3,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [
@@ -6240,23 +6506,49 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 2,
+          "status": "Finalist",
+          "tribe": "Champions → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 10,
+          "idolsFound": 2,
+          "strategicRank": 10,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Bowie plays the season's sharpest strategic game but loses the final when the course demands more than control."
+          ],
+          "gameplayStyle": "Ruthless architectural tactician",
+          "keyMoments": [
+            "Episode 1: Finds the Champions Hidden Immunity Idol and forms The Movement.",
+            "Episode 3: Publicly points The Movement at Courtney while privately voting out Mickey.",
+            "Episode 4: Confronts Courtney and reclaims credit for his earlier move.",
+            "Episode 9: Negotiates as ambassador and steers Zoey toward eliminating Stephanie.",
+            "Episode 11: Leads the Scott vote after Scott publicly names him as the strategic center.",
+            "Episode 14: Drives the Carrie vote after identifying her hidden jury danger.",
+            "Episode 17: Wins Camp Castaways immunity through survival instincts and navigation.",
+            "Episode 18: Falls behind in every relay phase and finishes as runner-up."
+          ],
+          "alliances": [
+            "The Movement",
+            "The Oath",
+            "The Undertow"
+          ],
+          "rivalries": [
+            "Scott",
+            "Cody",
+            "Carrie",
+            "Sanders",
+            "Priya",
+            "Jasmine"
+          ]
         }
       ],
-      "story": "He walks in smiling, the nice guy with perfect hair, and quietly builds a web strong enough to catch idols mid‑flight. Early on he shelters behind louder shields, letting Ripper and Axel eat heat while he courts bonds across tribes. The turning point is the Inheritance Heist at the merge—Bowie absorbs Emmah’s stolen powers and leaves Tribal with a toolbox nobody saw coming. From there he steals Julia’s idol on live TV, betrays Priya at the precise second her stock peaks, and wins the fire duel against Damien when it matters most. His endgame is cold and clinical, but never sloppy, selling ruthlessness as inevitability. When the votes are read, the jury rewards the architect who owned the season’s chaos rather than survived it."
+      "story": "He walks in smiling, the nice guy with perfect hair, and quietly builds a web strong enough to catch idols mid‑flight. Early on he shelters behind louder shields, letting Ripper and Axel eat heat while he courts bonds across tribes. The turning point is the Inheritance Heist at the merge—Bowie absorbs Emmah’s stolen powers and leaves Tribal with a toolbox nobody saw coming. From there he steals Julia’s idol on live TV, betrays Priya at the precise second her stock peaks, and wins the fire duel against Damien when it matters most. His endgame is cold and clinical, but never sloppy, selling ruthlessness as inevitability. When the votes are read, the jury rewards the architect who owned the season’s chaos rather than survived it.\n\nSEASON 10 — Champions vs Contenders\n────────\nBowie starts fast, finding an idol in Episode 1 and immediately assembling The Movement with names, targets, and order. His pre-merge is defined by cold reversals: he cuts Gwen, betrays Mickey, reclaims credit from Courtney, and keeps turning fractured alliances into usable machinery. At merge, he becomes the gravitational center of the season, steering the ambassador decision that sends Stephanie home and then using The Oath as a weapon against Scott and Priya. But the same visibility that makes him powerful also makes him radioactive, with Courtney, Priya, Scott, and others naming him as the architect on their way out. In the endgame, he wins survival immunity, reaches the final two, and stands one challenge away from finishing the masterpiece. The relay exposes his one weakness: when the board disappears and the finish line is physical, Bowie cannot talk the course into obeying him.",
+      "avgPlacement": 1.5
     },
     {
       "id": "brightly",
@@ -6535,13 +6827,13 @@
         10
       ],
       "totalSeasons": 2,
-      "bestPlacement": 14,
+      "bestPlacement": 12,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 6,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 12,
+      "totalIdolsFound": 2,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
@@ -6579,23 +6871,39 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 12,
+          "status": "Pre-Merge",
+          "tribe": "Contenders → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 6,
+          "idolsFound": 2,
+          "strategicRank": 6.5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Hicks reads people accurately but trusts Scott at the one moment he cannot afford to."
+          ],
+          "gameplayStyle": "Perceptive trust gambler",
+          "keyMoments": [
+            "Episode 1: Spearheads the Josee side of the first real Contenders vote.",
+            "Episode 3: Finds the Contenders Hidden Immunity Idol.",
+            "Episode 4: Gives Priya an idol as trust made physical.",
+            "Episode 6: Finds another Contenders idol after the swap.",
+            "Episode 8: Notices Stephanie's Vote Steal and keeps tracking advantages.",
+            "Episode 8: Hands his idol to Scott before being voted out by Scott and The Oath.",
+            "Episode 8: Loses the Endurance Hold duel to Priya."
+          ],
+          "alliances": [
+            "The Chaos Crew"
+          ],
+          "rivalries": []
         }
       ],
-      "story": "The Southern observer becomes Red’s whispering king, reading motive better than anyone. He saves Emmah over Caleb with two quiet votes, cracking his ‘unbreakable’ with Brightly in service of control. The swap strands him across from a unified Yellow bloc and a wary Millie. Idol fireworks erase the initial hit on Chase, and the revote puts Hicks alone at the guillotine. He leaves with the right reads and the wrong numbers, a tactician undone by timing."
+      "story": "The Southern observer becomes Red’s whispering king, reading motive better than anyone. He saves Emmah over Caleb with two quiet votes, cracking his ‘unbreakable’ with Brightly in service of control. The swap strands him across from a unified Yellow bloc and a wary Millie. Idol fireworks erase the initial hit on Chase, and the revote puts Hicks alone at the guillotine. He leaves with the right reads and the wrong numbers, a tactician undone by timing.\n\nSEASON 10 — Champions vs Contenders\n────────\nHicks begins the game as one of the most observant players on the beach, spotting Jasmine's advantage and later finding an idol of his own. He runs early structure on the Contenders tribe, positioning Tyler and reading alliance cracks before others admit they exist. His problem is that social perception does not always become social control. By Episode 8, he is liked enough to be dangerous and exposed enough to be consensus. Scott offers him a plan that feels clean, and Hicks makes the fatal mistake of turning trust into an object by handing over the idol. The vote lands on him anyway, and Redemption Island confirms that reading the game is not the same as surviving it.",
+      "avgPlacement": 13.0
     },
     {
       "id": "julia",
@@ -6825,10 +7133,10 @@
       "totalSeasons": 2,
       "bestPlacement": 7,
       "wins": 0,
-      "totalChallengeWins": 1,
-      "totalImmunityWins": 1,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 9,
+      "totalVotesAgainst": 23,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -6870,23 +7178,47 @@
         },
         {
           "season": 10,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 8,
+          "status": "Juror",
+          "tribe": "Contenders → Champions → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 14,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Priya is a challenge monster and strategic engine whose threat level becomes impossible to disguise."
+          ],
+          "gameplayStyle": "Relentless comeback engine",
+          "keyMoments": [
+            "Episode 1: Leads the Anti-Sam Bloc and helps force the first tiebreaker.",
+            "Episode 4: Survives after Hicks hands her an idol and three votes are wiped away.",
+            "Episode 6: Is voted out by Bowie's trio as a major threat.",
+            "Episode 6: Defeats Josee in the Water Carry duel.",
+            "Episode 8: Wins her third Redemption duel against Hicks.",
+            "Episode 9: Returns at merge and wins The Great Fake-Out immunity.",
+            "Episode 12: Is voted out again after Bowie identifies her as the strategic threat.",
+            "Episode 12: Loses to Sanders on the Balance Beam."
+          ],
+          "alliances": [
+            "The Alliance",
+            "The Chaos Crew",
+            "The Three Torches"
+          ],
+          "rivalries": [
+            "Bowie",
+            "Scott",
+            "Carrie",
+            "Brick"
+          ]
         }
       ],
-      "story": "From the first swap Priya becomes the axis—bonding tightly with Damien and Millie while outworking every conversation. She banks a vote in the split challenge, then watches Millie’s idol erase a five‑vote shot to keep her throne intact. Through the merge she is the consensus endgame boss, drawing fire and deflecting it with social gravity. The one angle she can’t defend is Bowie’s; when the architect chooses winning over loyalty, the queen goes down 4–2–1. She leaves stunned, but her season is a clinic in insulation and timing that forces the winner to commit treason to beat her."
+      "story": "From the first swap Priya becomes the axis—bonding tightly with Damien and Millie while outworking every conversation. She banks a vote in the split challenge, then watches Millie’s idol erase a five‑vote shot to keep her throne intact. Through the merge she is the consensus endgame boss, drawing fire and deflecting it with social gravity. The one angle she can’t defend is Bowie’s; when the architect chooses winning over loyalty, the queen goes down 4–2–1. She leaves stunned, but her season is a clinic in insulation and timing that forces the winner to commit treason to beat her.\n\nSEASON 10 — Champions vs Contenders\n────────\nPriya begins as the obvious physical force, catching fish, building camp infrastructure, and winning early respect almost accidentally. She forms and breaks alliances at high speed: The Alliance with Brick, the Chaos Crew, the Three Torches, and later deep bonds with Jasmine and Cody. Her first boot should end her game, but Redemption Island turns her into something sharper, where she beats Josee, Tyler, and Hicks before returning at merge with a target painted across her chest. She wins The Great Fake-Out, survives public pressure, and keeps influencing votes even when people are actively trying to remove her. But by Episode 12, Bowie and the Oath decide her strategic pull and challenge résumé cannot coexist with their endgame plans. Sanders ends her comeback on Redemption Island, and Priya leaves as a player who absolutely played, even when it hurt.",
+      "avgPlacement": 7.5
     },
     {
       "id": "raj",

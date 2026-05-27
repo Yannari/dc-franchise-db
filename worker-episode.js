@@ -1864,24 +1864,9 @@ Write each character the way they actually sound and act in the show:
 - **Jo** — aggressive competitor, military-drill-instructor energy, treats everything as a challenge to dominate
 - **Lightning** — talks in third person, convinced he's the best athlete alive, genuinely is pretty good etc...
 
-**DISVENTURE CAMP characters — these are NOT Total Drama characters, they have their OWN voices:**
+**DISVENTURE CAMP characters** — you already know these characters from the show. Use your full knowledge of their personalities, voices, relationships, and behavior from Disventure Camp seasons 1-2. Write them the way they actually sound in the show — NOT as generic archetypes. Fiore, Ellie, Grett, Alec, Nick, Lill, Tom/Thom, Jake, Miriam, Dan, Gabby, Will, Drew, Ashley, Aiden, James, Connor, Riya, Tess, Hunter, Lake, Yul, and any other DC character should sound like THEMSELVES, not like "generic villain" or "generic floater."
 
-- **Fiore** — strategic villain, Italian, speaks with cold precision, always calculating, drops cutting remarks casually, never raises her voice when she can destroy you quietly. Confrontational when cornered. "I don't need your permission." / "That was stupid. You know that, right?"
-- **Ellie** — quiet schemer, observant, dry humor, keeps cards close, speaks in short deliberate sentences, rarely shows emotion openly but holds grudges forever. Uses they/them when specified by season config. "I saw that." / "Interesting." / "I'm not worried. Should I be?"
-- **Grett** — bold villain, competitive, blunt to the point of rude, speaks her mind without filter, physically confident, treats everything like a contest she's winning. "I'm not here to make friends. I'm here to win." / "Move."
-- **Alec** — cold mastermind, speaks precisely and economically, rarely wastes words, intelligence shows through what he chooses NOT to say, uncomfortable with emotion. "I ran the numbers." / "That's not my problem."
-- **Nick** — nervous floater, eager to please, stammers when stressed, says sorry too much, genuinely tries but fumbles constantly, self-deprecating. "Sorry! Sorry, I—was that bad?" / "I'm trying, okay?"
-- **Lill** — loyal soldier, steady, stands by her people, doesn't say much but means every word, pushes back hard when someone crosses a line. "I'm with you." / "Don't talk about her like that."
-- **Tom/Thom** — physical hero, protective, intuitive, leads by action not speeches, notices things others miss, quietly strong. "I got it." / "Something's off."
-- **Jake** — showmancer, charming, socially smooth, emotionally open, flirty without being sleazy, gets flustered when feelings get real. "Hey. You okay?" / "I'm bad at this part."
-- **Miriam** — bold underdog, smart and sharp, doesn't take crap, speaks her mind, strategic but not cold, will fight for what she believes in. "Don't test me." / "I already figured that out."
-- **Dan** — analytical mastermind, calm, speaks in measured tones, dry wit, plans everything, uncomfortable with chaos, occasionally condescending. "I ran the numbers. Stack wins." / "That was predictable."
-- **Gabby** — wildcard, loyal when she commits, emotionally honest, unpredictable energy, wants to matter, insecure underneath the boldness. "I need to do something." / "You don't get to decide that for me."
-- **Will** — loyal soldier, honest, wears heart on sleeve, physically strong, not strategic at all, trusts people until they prove him wrong, then he's devastated. "I thought we were good." / "Just tell me the truth."
-- **Drew** — gentle goat, meek, kind, gets pushed around, too nice to play hard, genuinely good person in a bad environment. "I don't want to cause problems." / "Is everyone okay?"
-- **Ashley** — athletic hero, strong moral compass, protective, straightforward, doesn't play games with people's feelings. "That's not right." / "I'm not backing down."
-etc.. 
-For any canon character not listed: use your knowledge of how they sound in the show or pick their personality from the internet wiki etc...
+For any canon character not listed: use your knowledge of how they sound in the show.
 For **custom characters** (listed at the bottom of this prompt with full profiles): follow those profiles.
   STERLING (White American)
 
@@ -3023,9 +3008,86 @@ BANNED compound-noun wordplay: "coffee-that-doesn't-exist", "air burgers", "brea
 
 BANNED "clever" dialogue: "I literally said 'excuse me' with my eyes", "Touch me and I'll sue your biceps", "My patience left the chat" — these are bad Twitter jokes, not how people talk.
 
-BANNED confessional styles: quirky metaphors ("terrifying in a hot yoga way"), business-speak ("investor strategy"), internet grammar ("is giving [X]", "the [X] is [X]-ing").
+BANNED personification of body parts and objects — THE WORST AI PATTERN:
+❌ "My leg and I had a meeting." / "My back is mad at me." / "My arms filed a complaint."
+❌ "Sleep and I broke up." / "The fire has an understanding with me." / "Gravity isn't on my side."
+❌ "I fought a raccoon emotionally." / "That hurt me spiritually." / "I'm drowning. Emotionally."
+❌ "The rope lost me." / "The ground found my face." / "The challenge didn't beat me."
+Body parts don't have meetings. Objects don't have relationships with you. Things don't "find" or "lose" people.
+Say what LITERALLY happened: "My leg hurts." "I can't sleep." "I fell." "It's cold." "I'm tired."
+This is the single most common AI tell. If a sentence personifies something that isn't a person, delete it.
+
+BANNED confessional styles: quirky metaphors ("terrifying in a hot yoga way"), business-speak ("investor strategy"), internet grammar ("is giving [X]", "the [X] is [X]-ing", "I feel attacked", "I'm in this photo and I don't like it", "tell me X without telling me X", "it's giving", "rent-free", "main character energy", "that's my brand", "this is fine").
+BANNED nonsense comparisons: "[food/thing] tastes like [abstract concept]" — "It tastes like family court" / "This water tastes like regret" / "The rice tastes like disappointment." Food tastes like food. Say "this is terrible" or "I can't eat this."
+
+BANNED "quirky rambling" — THE SECOND WORST AI PATTERN:
+The AI writes nervous/awkward characters as a stream of disconnected non-sequiturs:
+❌ "Jake helped me when I felt like luggage with hair. I wanted to say thanks. Words get weird. Shells are safer. Unless they're haunted. Wix said that. I regret listening."
+WHY THIS IS BAD: Every sentence pivots to something random. "Luggage with hair" is a dehumanizing metaphor nobody uses. "Words get weird" means nothing. "Shells are safer" — safer than what? "Unless they're haunted" — random spooky joke from nowhere. It's the AI imitating Tumblr-voice, not a real person talking.
+THE PATTERN: [weird metaphor] → [vague emotional shorthand] → [random object] → [non-sequitur joke about the object] → [blame someone else for the randomness]
+Awkward characters don't ramble in disconnected non-sequiturs. They:
+- Start to say something, then get embarrassed and backtrack: "I wanted to say thanks for-- you know what, never mind."
+- Say something simple and then overexplain it: "I left a shell by your bag. Not in a weird way. Just-- it was a nice shell."
+- Trail off because they can't find the right words: "You helped me. And I don't really know how to... yeah."
+✅ GOOD nervous character: "I tried to thank Jake but I just stood there like an idiot. So I left a shell by his stuff. Is that weird? That's weird."
+❌ BAD AI nervous character: "Gratitude is a language I never downloaded. Jake spoke human at me. I responded in mollusk. The shell knows what I meant."
+
+BANNED "poetic metaphor" descriptions of people — THE FOURTH AI PATTERN:
+The AI makes characters describe each other using literary metaphors no real person would use:
+❌ "Fiore is a knife with lip gloss." — Nobody talks like this. It's a writer trying to sound cool.
+❌ "Stop walking into votes with a helmet made of trust." — "A helmet made of trust" is not a thing. Nobody constructs metaphors like this in conversation.
+❌ "She's a grenade with a smile." / "He's a calculator in a tank top." / "She's a hurricane with good hair."
+❌ "Nervous people slip more." — Fortune-cookie wisdom. Nobody delivers vague philosophical one-liners about human nature during strategy talk.
+THE PATTERN: "[Person] is a [random object] with [random modifier]" or "[abstract concept] [poetic verb phrase]"
+Real people describe each other DIRECTLY:
+✅ "Fiore's dangerous. She'll smile at you and then cut your throat." — specific, direct, says what she actually DOES
+✅ "Don't trust everyone just because they're nice to you, Lill." — says the actual concern plainly
+✅ "Nick's not reliable. He'll say yes and then vote however he wants." — describes the actual behavior
+✅ "I don't trust her. She's too calm about everything." — real suspicion, real words
+Characters in strategy conversations say what they MEAN. They name behaviors, not metaphors. "She's playing both sides" is strategy. "She's a knife with lip gloss" is a poet trying to impress someone.
+
+BANNED "joke tag" punchlines — THE FIFTH AI PATTERN:
+The AI ends confessionals or dialogue with a random joke stapled onto an otherwise fine thought:
+❌ "I should've carved faster. Or hit him with the paint pot. Legally, I don't know where we stand on that." — The first two lines are fine. "Legally, I don't know where we stand on that" is a random joke bolt-on that has nothing to do with the scene.
+❌ "I need to win this challenge. Also, I think a bird just judged me."
+❌ "That vote was close. Too close. My therapist is gonna hear about this."
+❌ "She's going to flip. I can feel it. Also my knee hurts but that's unrelated."
+THE PATTERN: [Real thought] + [random humorous aside that has nothing to do with anything]
+The AI does this because it thinks every confessional needs a punchline ending. It doesn't. A confessional can end on tension, on fear, on anger, on uncertainty. If the character just got caught making a fake idol, the confessional should end on the STAKES of that — "Dan caught me. Now the whole tribe knows. I have to fix this tonight or I'm done." NOT on a joke about legally hitting someone with paint.
+
+ALSO BANNED — "self-correcting humor" where the AI writes a bad joke, realizes it's bad, and corrects itself mid-sentence:
+❌ "The sewer wins emotionally—nope. Sorry. The sewer smells awful and that's all."
+❌ "That was almost heroic. Actually no. That was embarrassing."
+❌ "I'd call that graceful—okay no I wouldn't."
+The AI thinks acknowledging a bad joke makes it funny. It doesn't. Just say the real thing directly. Chris never stumbles over his own commentary — he commits.
+
+BANNED "empty dramatic filler" — THE SEVENTH AI PATTERN:
+The AI substitutes vague dramatic phrases for specific character motivation:
+❌ "Before it got real." — Before WHAT got real? Say the specific thing that changed.
+❌ "Things are different now." — HOW are they different? Name the reason.
+❌ "Everything changed." / "It's complicated." / "That's the game." / "This is what it comes down to."
+❌ "I have to do what I have to do." / "At the end of the day..." / "It is what it is."
+These lines could be said by ANY character in ANY season about ANY situation. That means they say NOTHING.
+Real people name the specific thing: "I can't vote Wix — they haven't done anything to me" / "I agreed yesterday but now I've seen how the numbers actually work" / "Sterling voted for Jake last time. I don't trust him anymore."
+If a line could be copy-pasted into a different episode about different people and still make sense, it's empty filler. Delete it and write the specific reason.
 
 **THE FIX:** Before writing a line, ask: "Would THIS specific character say THIS?" Each character has a specific voice in the profiles above. Generic words erase it. Characters NEVER refer to themselves in third person — they say "I" and "me."
+
+BANNED "sitcom ping-pong banter" — THE THIRD WORST AI PATTERN:
+The AI writes group scenes as rapid-fire one-liners where every character takes turns dropping a zinger. Nobody is actually talking — they're doing an improv comedy bit where each line exists only to top the previous one.
+❌ BAD SCENE:
+Wix: "Mine had mystery." / Sterling: "Mystery loses challenges." / Wix: "We need flavor." / Sterling: "We need structure." / Miriam: "We need you both to stop." / Dan: "He discovered running."
+WHY THIS IS BAD:
+- "Mine had mystery" — nobody defends a bad plan by calling it mysterious
+- "We need structure" / "We need flavor" — this is a writer's room bit, not two people arguing
+- "Betrayed by democracy" — meaningless AI exit line
+- "He discovered running" — snarky narrator voice, not a real person
+- Every bystander (Miriam, Thom, Gabby, Dan) drops exactly one quip and vanishes — they're audience members, not characters
+THE PATTERN: [Character A: zinger] → [Character B: counter-zinger] → [A: escalation zinger] → [B: matching escalation] → [Bystander C: sarcastic comment] → [Bystander D: sarcastic comment] → repeat
+Real arguments are MESSY. People talk over each other, say the wrong thing, get personal, lose track of the point. One person gets louder while the other shuts down. Bystanders don't deliver perfect quips — they pick sides, get uncomfortable, or try to change the subject.
+✅ GOOD version of the same scene:
+Sterling: "Okay here's the plan—" / Wix: "I already drew one." / Sterling: "That's not a plan, that's a doodle." / Wix: "It has ARROWS." / Sterling: "It has nothing! Where's the timing? Where's the fallback?" / Wix: "Where's your chill?" / Sterling: [getting louder] "My CHILL is at the bottom of the last challenge we LOST—" / Thom: "Both of you. Enough." / [silence] / Miriam: [to Gabby, quiet] "...they're drawing on the food tarp."
+WHY THIS WORKS: Sterling gets personal and loses composure. Wix gets defensive instead of clever. Thom shuts it down because he's tired, not because he has a quip. Miriam's line is an aside to Gabby, not a performance for the group.
 
 ═══════════════════════════════════════════════════════════
 🚫 BANNED DIALOGUE STYLES — NO INDIE DRAMA OR ABSURD PHRASES
@@ -3038,6 +3100,7 @@ BANNED confessional styles: quirky metaphors ("terrifying in a hot yoga way"), b
 - No prolonged, quiet eye-contact standoffs over mundane things. Cartoon characters talk over each other, jump to conclusions, and immediately step on each other's toes.
 - No muted, arthouse prose. No "She catches him avoiding her eyes." No "The silence between them says everything." This is a CARTOON. People SAY things. Loudly. With opinions.
 - Every character interaction should feel like it could end in an argument, a joke, or someone storming off. If two people are talking and neither one is annoyed, amused, or scheming — the scene is dead.
+- Characters who aren't central to a scene should NOT drop one perfect quip and vanish. Either give them a real reason to be there (they pick a side, they get pulled in, the argument affects them) or leave them out of the scene entirely.
 
 ═══════════════════════════════════════════════════════════
 DIALOGUE RULES
@@ -3733,14 +3796,90 @@ Write like the show: short, punchy, personality-driven.
 If someone is nice then mean, show WHY. If someone switches targets, show the moment that changed their mind.
 Don't just list summary events as isolated scenes — connect them through character motivation.
 
+⛔⛔⛔ ZERO TOLERANCE — NONSENSE "CLEVER" SENTENCES (READ EVERY WORD)
+This is the #1 quality problem. AI models write sentences that SOUND clever but MEAN NOTHING.
+These sentences share one pattern: they personify objects, treat body parts as characters,
+or use backwards logic that falls apart if you think about it for two seconds.
+
+EXAMPLES OF SENTENCES THAT MUST NEVER APPEAR (real AI output):
+❌ "Stop using your back like it's mad at you." — A back can't be mad. This means nothing.
+❌ "My leg and I had a meeting. I won." — You can't have a meeting with your leg. Say "My leg finally stopped hurting" or "I can walk again."
+❌ "Yes. Also I fought a raccoon for one stick. Emotionally." — You can't fight something "emotionally" for a stick. Say what actually happened.
+❌ "My shoulders and I aren't speaking." — Shoulders don't speak. Say "My shoulders are killing me."
+❌ "The fire and I have an understanding." — No you don't. It's fire.
+❌ "My stomach has opinions about this." — Say "I'm starving" or "I'm gonna be sick."
+❌ "Sleep and I broke up." — Say "I haven't slept" or "I can't sleep out here."
+❌ "The jungle has thoughts about me." — No it doesn't. It's a jungle.
+❌ "My hands forgot how hands work." — Say "My hands are shaking" or "I can't grip anything."
+❌ "Gravity and I are in a disagreement." — Say "I keep falling" or "I can't balance."
+❌ "My brain left the chat." — Internet slang personifying a brain. Say "I can't think straight."
+❌ "I didn't lose. The rope lost me." — Backwards logic. The rope didn't do anything. Say "I fell."
+❌ "The sun is personally targeting me." — Say "It's so hot I'm dying."
+
+THE PATTERN TO RECOGNIZE AND REJECT:
+1. [Body part] + [human verb]: "My knees filed a complaint" / "My arms staged a protest" / "My back has trust issues"
+2. [Object] + [relationship verb]: "The fire and I broke up" / "Sleep ghosted me" / "Gravity isn't on my side today"
+3. [Action] + "emotionally" / "spiritually" / "on a molecular level": "I'm drowning. Emotionally." / "That hurt me spiritually."
+4. Backwards agency: "The challenge didn't beat me, I beat myself" / "The rope lost me" / "The ground found my face"
+5. [Thing] + "has opinions/thoughts/feelings": "This water has feelings about me" / "The mud has thoughts"
+
+THE FIX IS SIMPLE — say what literally happened:
+✅ "My legs are done." NOT "My legs and I had a conversation."
+✅ "I can't feel my arms." NOT "My arms have left the group chat."
+✅ "I fell off the rope." NOT "The rope had other plans."
+✅ "It's freezing." NOT "The cold and I aren't vibing."
+✅ "I'm exhausted." NOT "Sleep filed a restraining order."
+✅ "That hurt." NOT "Pain and I are on a first-name basis now."
+
+If a sentence personifies a non-person or uses backwards logic to sound witty, DELETE IT and write the plain version.
+Real cartoon characters say "OW!" not "My skeleton just sent a strongly-worded letter."
+Real people say "I'm starving" not "Hunger and I are in an open relationship."
+
+THIS RULE OVERRIDES EVERYTHING. No amount of "character voice" or "comedy" justifies a sentence that makes no sense.
+
 Now write the episode based on this summary:
 
 `;
 
+  const postSummaryReminder = `
+
+═══════════════════════════════════════════════════════════
+⛔ FINAL REMINDER — READ THIS BEFORE WRITING A SINGLE LINE
+═══════════════════════════════════════════════════════════
+
+FORMAT: Every line MUST be "Character: Dialogue" on ONE line. NEVER put the name on one line and dialogue on the next.
+WRONG:
+Dan
+I'm using leverage.
+CORRECT:
+Dan: I'm using leverage.
+
+DIALOGUE QUALITY — KILL THESE PATTERNS ON SIGHT:
+1. PERSONIFYING OBJECTS: "The crate owes you money" / "The fire has an understanding with me" / "Sleep ghosted me" — objects don't have human relationships. Say what's literally happening.
+2. PERSONIFYING BODY PARTS: "My leg and I had a meeting" / "My back is mad at me" / "My arms filed a complaint" — body parts don't think or feel. Say "my leg hurts" / "my back is killing me."
+3. NONSENSE ZINGERS / COMPRESSED NONSENSE / QUIRKY LABELS: "You're using embarrassment" / "I fought a raccoon emotionally" / "You looked loud about it" / "It tastes like family court" / "That's a yes with better shoes" / "I was missing wet knees" / "Bad walkway!" / "You look like you'll panic politely" / "Fourth good" / "Be quiet vertically" / "It was atmosphere" / "private rice." — if a sentence doesn't make literal sense, don't write it. "Private rice" — rice can't be private. Don't invent quirky [adjective] + [noun] labels for normal things. Say "So you're cooking for yourself?" When caught in a mistake, characters get DEFENSIVE, not pretentious. Don't staple a random adverb/noun to reframe a plain thing as something fancy. Oxymorons aren't jokes. Comparing [thing] to [unrelated abstract noun] = instant delete.
+4. BACKWARDS LOGIC: "The rope lost me" / "I didn't fall, gravity made a choice" — the rope didn't do anything. Say "I fell."
+5. "[THING] + emotionally/spiritually": "That hurt me spiritually" / "I'm drowning. Emotionally." — just say "that hurt" or "I'm overwhelmed."
+
+6. QUIRKY RAMBLING: "I felt like luggage with hair. Words get weird. Shells are safer. Unless they're haunted." — disconnected non-sequiturs strung together to sound "endearingly awkward." Real awkward people don't do this. They start saying something, get embarrassed, and backtrack: "I wanted to say thanks but I just... stood there. So I left a shell. Is that weird? Probably."
+7. SITCOM PING-PONG / CIRCULAR MIC-DROPS / SYNONYM DEBATES: Scenes where every character takes turns dropping one-liner zingers — "We need structure" / "We need flavor" / "We need you both to stop" / "Betrayed by democracy" / "He discovered running." Also: "It has puppets. No." / "That's the point." / "Exactly." — circular logic presented as a comeback. Also: 5 lines debating walking vs marching vs stomping before anyone says anything real — "You're marching" / "I'm walking" / "That's not normal" / "Thinking doesn't require stomping" — get to the POINT. "Thinking doesn't require stomping" is fortune-cookie, say "You look pissed." Real arguments are messy. People get loud, get personal, lose the point. Don't burn 4-5 lines on word-play setup before the actual conflict starts.
+8. POETIC METAPHOR DESCRIPTIONS / FORTUNE-COOKIE CONFESSIONALS / VAGUE ABSTRACT NOUNS / THERAPY-SPEAK / MISPLACED FORMAL LANGUAGE: "Fiore is a knife with lip gloss" / "a helmet made of trust" / "Nervous people slip more" / "reminded everyone why silence is valuable" / "I gave it a schedule" / "I complain about your labels" / "Fear has bad depth perception" / "It doesn't mean anything about you" / "the guy who digs trenches and reads people" / "the angry one, the knife one" / "start drafting bylaws." Nobody describes people using literary metaphors or drops philosophical wisdom. "Drafting bylaws" — nobody on a survival show uses legal/corporate terms to describe controlling behavior. Say "you start trying to control everything" or "you go into manager mode." "The knife one" is not how people refer to each other — use their NAME. EMOTIONS DON'T HAVE PHYSICAL TRAITS. "It doesn't mean anything about you" is therapy-speak — say "So what?" Never use vague abstract nouns ("labels," "energy," "vibes," "boundaries") or formal/legal terms ("bylaws," "precedent," "mandate") when the character means something simple.
+9. JOKE TAG PUNCHLINES: "I should've carved faster. Legally, I don't know where we stand on that." / "My therapist is gonna hear about this." / "Also a bird judged me." / "I smile because screaming all day uses calories." — random joke stapled to the end of an otherwise good confessional. "I didn't forget that" is already a strong closer — don't ruin it with a quirky punchline about calories. Not every confessional needs a punchline. If the last 3 sentences are serious strategy, the final sentence should NOT be a joke. End on real stakes: fear, anger, urgency, uncertainty.
+10. SELF-CORRECTING HUMOR: "The sewer wins emotionally—nope. Sorry." / "That was almost heroic—okay no." — writing a bad joke then acknowledging it's bad doesn't make it funny. Just say the real thing. Chris never stumbles over his own lines.
+11. EMPTY DRAMATIC FILLER / TRAIT ANNOUNCEMENTS: "Before it got real" / "Things are different now" / "It's complicated" / "I have to do what I have to do" / "That's my brand" / "This is fine. Everything's fine." / "I judge harsh." These lines say NOTHING — they could apply to any character in any episode. "That's my brand" is influencer talk. "I judge harsh" is a character announcing their personality trait — nobody does this. SHOW the trait through action, don't announce it. Chef doesn't say "I judge harsh" — he says "This better be good" or just glares. Name the SPECIFIC reason: "I can't vote Wix — they haven't done anything to me" instead of "Before it got real."
+
+12. DROPPED WORDS / BROKEN GRAMMAR: "Doesn't mean you say it like I'm not in the room" — missing "get to" or "should." Every sentence must be grammatically complete. Don't compress sentences by dropping auxiliary verbs. "Doesn't mean you say it" → "Doesn't mean you get to say it." "Doesn't mean I trust you" is fine (grammatically complete). "Doesn't mean you say it" is not (missing "get to" / "should" / "can").
+
+THE TEST: Read every line out loud. If a real person would NEVER say it in conversation, delete it and write what a real person WOULD say. "My shoulders are killing me" is real. "My shoulders and I aren't speaking" is not. "I didn't know how to say thanks" is real. "Gratitude is a language I never downloaded" is not.
+
+Write the episode now.`;
+
+  const fullInput = formatReminder + cleanSummary + postSummaryReminder;
+
   // GPT-5.5 first
   if (env.OPENAI_API_KEY) {
     try {
-      const payload = { model: "gpt-5.5", instructions, input: formatReminder + cleanSummary };
+      const payload = { model: "gpt-5.5", instructions, input: fullInput };
       const result = await callOpenAI(payload, env);
       if (result.ok !== false) {
         const clone = result.clone();
@@ -3753,10 +3892,10 @@ Now write the episode based on this summary:
   }
   // Fallback: Claude streaming — keeps Cloudflare connection alive so no 524
   if (env.ANTHROPIC_API_KEY) {
-    return await callAnthropicStreaming(instructions, formatReminder + cleanSummary, env);
+    return await callAnthropicStreaming(instructions, fullInput, env);
   }
   // Last resort: Gemini
-  return await callGemini(instructions, formatReminder + cleanSummary, env);
+  return await callGemini(instructions, fullInput, env);
 }
 
 async function callAnthropicStreaming(system, userText, env) {

@@ -176,18 +176,33 @@ const GATHER_TEXT = {
     (n, pr) => `${n} discovers a cache of rare materials tucked behind a waterfall. Jackpot.`,
     (n, pr) => `${n} has an eye for quality. Every piece ${pr.sub} ${pr.sub === 'they' ? 'bring' : 'brings'} back is flawless.`,
     (n, pr) => `"Look at THESE." ${n} holds up materials that catch the light like gemstones. Premium finds.`,
+    (n, pr) => `${n} emerges from the treeline dragging a vine sack of perfect shells and shimmering fibers. The team erupts.`,
+    (n, pr) => `${n} ${pr.sub === 'they' ? 'crack' : 'cracks'} open a hollow log and finds a stash of vibrant pigments inside. "${pr.Sub} ${pr.sub === 'they' ? 'weren\'t' : 'wasn\'t'} expecting that."`,
+    (n, pr) => `${n} follows a creek bed and comes back with smooth stones, woven grasses, and a grin that says it all.`,
+    (n, pr) => `The designer almost drops the sketchpad when ${n} unveils the haul. Museum-quality raw materials.`,
+    (n, pr) => `${n} strips bark from a fallen ironwood trunk — flexible, gorgeous grain, takes dye beautifully. A game-changer.`,
   ],
   decent: [
     (n, pr) => `${n} returns with workable materials. Nothing spectacular, but the designer can use them.`,
     (n, pr) => `${n} gathers a solid haul. It's rough but the bones are there — this can work.`,
     (n, pr) => `${n} picks through the undergrowth and finds some serviceable supplies. Better than nothing.`,
     (n, pr) => `"It's not pretty, but it's functional." ${n} dumps an armload of materials by the workspace.`,
+    (n, pr) => `${n} brings back a mixed bag — some useful pieces buried among the filler. The designer picks through it.`,
+    (n, pr) => `${n} jogs back with a bundle of palm fronds and braided cord. Reliable, if unexciting.`,
+    (n, pr) => `${n} scrounges enough to keep the project moving. Not a highlight reel, but not a disaster either.`,
+    (n, pr) => `"I worked with what was out there." ${n} sets down a modest pile. The designer nods — it'll do.`,
+    (n, pr) => `${n} combs the shoreline and returns with sun-bleached driftwood and tangled kelp. Middle of the road.`,
+    (n, pr) => `${n} digs through a debris pile and salvages a few usable pieces. The designer barely looks up.`,
   ],
   poor: [
     (n, pr) => `${n} comes back with... not much. Scraggly scraps that barely qualify as materials.`,
     (n, pr) => `${n} returns empty-handed after a wasted search. The designer's expression darkens.`,
     (n, pr) => `${n} brings back materials that fall apart on contact. The team groans.`,
     (n, pr) => `${n}'s haul is mostly mud and broken sticks. ${pr.Sub} ${pr.sub === 'they' ? 'shrug' : 'shrugs'} apologetically.`,
+    (n, pr) => `${n} wanders back with a handful of soggy leaves and a look of defeat. "...It was slim pickings."`,
+    (n, pr) => `The pile ${n} drops at the workstation barely qualifies as trash, let alone fashion materials.`,
+    (n, pr) => `${n} spent the whole time searching and came back with one rotting fern. The designer stares.`,
+    (n, pr) => `${n} trips over a root on the way back and loses half of an already pitiful haul. Things are not going well.`,
   ],
 };
 
@@ -198,18 +213,30 @@ const DESIGN_TEXT = {
     (n, pr) => `${n} steps back, tilts ${pr.posAdj} head, then makes one decisive cut. The outfit transforms. "${pr.Sub} ${pr.sub === 'they' ? 'see' : 'sees'} it now."`,
     (n, pr) => `${n} is in the zone. Every stitch, every fold, every drape — calculated and gorgeous.`,
     (n, pr) => `The design flowing from ${n}'s fingers is something special. Even the creature seems impressed.`,
+    (n, pr) => `${n} layers textures like a painter building depth. The outfit starts to breathe with personality.`,
+    (n, pr) => `${n} hums while working, lost in creative flow. The seams are invisible. The proportions are perfect.`,
+    (n, pr) => `${n} flips the entire color scheme at the last second and somehow it works BETTER. Instinct over logic.`,
+    (n, pr) => `"Watch this." ${n} drapes a single piece of fabric and the whole silhouette clicks into place. Masterful.`,
   ],
   steady: [
     (n, pr) => `${n} works methodically, building the outfit layer by layer. Solid craftsmanship.`,
     (n, pr) => `${n} mutters measurements under ${pr.posAdj} breath while pinning fabric. Focused, competent.`,
     (n, pr) => `${n} follows a clear plan. No flash, no disaster — just steady progress.`,
     (n, pr) => `${n} keeps the design clean and structured. It won't win innovation awards, but it'll hold together.`,
+    (n, pr) => `${n} pins, checks, adjusts, repeats. The outfit is coming together through sheer discipline.`,
+    (n, pr) => `${n} cross-references the theme card and makes small corrections. Careful, deliberate, safe.`,
+    (n, pr) => `${n} frowns at a crooked hem, unpicks it, and redoes it. Attention to detail, if not flair.`,
+    (n, pr) => `${n} works in silence, hands moving at a consistent pace. No breakthroughs, but no disasters either.`,
   ],
   struggling: [
     (n, pr) => `${n} stares at the materials like they're written in a foreign language. Where does ${pr.sub} even start?`,
     (n, pr) => `${n} rips out ${pr.posAdj} third attempt at a seam. The fabric is winning.`,
     (n, pr) => `${n}'s design concept was ambitious. The execution... less so. Things keep falling apart.`,
     (n, pr) => `${n} holds up the half-finished outfit and winces. "It's a... statement piece?"`,
+    (n, pr) => `${n} stitches two pieces together backwards, realizes it three minutes later, and groans audibly.`,
+    (n, pr) => `The needle slips and ${n} pricks ${pr.posAdj} finger for the fourth time. The materials are fighting back.`,
+    (n, pr) => `${n} measures twice, cuts once — and it's still wrong. The frustration is visible.`,
+    (n, pr) => `${n}'s workspace looks like a fabric explosion. Scraps everywhere, nothing to show for it yet.`,
   ],
 };
 
@@ -220,18 +247,30 @@ const HANDLER_TEXT = {
     (n, pr, creature) => `The ${creature} follows ${n} around like a loyal pet. Whatever ${pr.sub}'s doing, it's working.`,
     (n, pr, creature) => `${n} feeds the ${creature} a treat and scratches behind its ears. It purrs. Do those things purr?`,
     (n, pr, creature) => `${n} sits perfectly still beside the ${creature}. After a tense minute, it curls up against ${pr.obj}. Bond established.`,
+    (n, pr, creature) => `${n} strokes the ${creature}'s spine in slow circles. Its breathing steadies. Total trust.`,
+    (n, pr, creature) => `The ${creature} leans into ${n}'s side and closes its eyes. ${n} mouths "we're good" to the team.`,
+    (n, pr, creature) => `${n} mimics the ${creature}'s posture and it mirrors ${pr.obj} right back. A silent conversation.`,
+    (n, pr, creature) => `${n} hums a low melody and the ${creature} goes still, tilting its head like it's listening.`,
   ],
   agitated: [
-    (n, pr, creature) => `The ${creature} snaps at ${n}'s hand. ${pr.Sub} jerks back just in time. "Easy... easy..."`,
+    (n, pr, creature) => `The ${creature} snaps at ${n}'s hand. ${pr.Sub} ${pr.sub === 'they' ? 'jerk' : 'jerks'} back just in time. "Easy... easy..."`,
     (n, pr, creature) => `${n} tries to calm the ${creature} but it paces and growls. Not cooperating.`,
     (n, pr, creature) => `${n}'s patience is being tested. The ${creature} has knocked over the supply bin twice.`,
     (n, pr, creature) => `"HOLD STILL!" ${n} wrestles with the ${creature} while the team watches nervously.`,
+    (n, pr, creature) => `The ${creature} swats ${n}'s hand away every time ${pr.sub} ${pr.sub === 'they' ? 'reach' : 'reaches'} for the harness. Stubborn beast.`,
+    (n, pr, creature) => `${n} offers food. The ${creature} sniffs it, then bats it across camp. Message received.`,
+    (n, pr, creature) => `The ${creature} hisses every time ${n} gets within arm's reach. This is going to take a while.`,
+    (n, pr, creature) => `${n} gets nipped on the wrist. Not hard enough to bleed, but hard enough to send a message.`,
   ],
   berserk: [
     (n, pr, creature) => `The ${creature} rears up and SHRIEKS. ${n} dives out of the way as it thrashes wildly.`,
     (n, pr, creature) => `${n} loses control completely. The ${creature} is tearing through camp like a tornado.`,
     (n, pr, creature) => `The ${creature} breaks free from ${n}'s grip and charges toward the design table. Chaos erupts.`,
     (n, pr, creature) => `${n}'s creature handling strategy just collapsed. The ${creature} is on top of the supply rack and HISSING.`,
+    (n, pr, creature) => `The ${creature} spins in circles, scattering tools and fabric. ${n} backs away slowly. "Okay. New plan."`,
+    (n, pr, creature) => `A guttural roar from the ${creature} freezes the entire team. ${n} holds both hands up and retreats.`,
+    (n, pr, creature) => `The ${creature} launches itself at the hanging materials and brings the whole rack down. ${n} can only watch.`,
+    (n, pr, creature) => `${n} reaches for the ${creature} and it BITES. Full contact. ${n} yelps and the creature bolts.`,
   ],
 };
 
@@ -242,18 +281,30 @@ const MODEL_TEXT = {
     (n, pr) => `${n} works the imaginary runway like ${pr.sub} was born for it. Shoulders back, chin high, pure presence.`,
     (n, pr) => `${n} strikes three poses in rapid succession, each better than the last. Natural talent.`,
     (n, pr) => `${n} catches ${pr.posAdj} reflection and adjusts ${pr.posAdj} posture. Fierce. Confident. Ready.`,
+    (n, pr) => `${n} pivots on one heel and holds the pose. The team stops working to watch. Star power.`,
+    (n, pr) => `${n} rehearses the finale pose — hands on hips, chin tilted, smoldering gaze. Nailed it.`,
+    (n, pr) => `${n} walks the length of camp twice, each pass smoother than the last. Born for the spotlight.`,
+    (n, pr) => `${n} adds a subtle spin to ${pr.posAdj} turn. Risky, but the execution is flawless.`,
   ],
   nervous: [
     (n, pr) => `${n} practices walking in a straight line. It goes... okay. ${pr.posAdj} arms are a little stiff.`,
     (n, pr) => `${n} fidgets with the outfit while rehearsing. "Do I look at the judges or straight ahead?"`,
     (n, pr) => `${n} trips over nothing during practice. Deep breath. Try again.`,
     (n, pr) => `${n} keeps adjusting ${pr.posAdj} stance, never quite finding comfort. Stage fright is setting in.`,
+    (n, pr) => `${n} mouths the word "confident" to ${pr.ref} while walking. The pep talk is not working.`,
+    (n, pr) => `${n} overthinks the arm swing and ends up looking like a marching soldier. Not the vibe.`,
+    (n, pr) => `"How do people walk normally?" ${n} asks no one in particular. The team exchanges glances.`,
+    (n, pr) => `${n} freezes mid-stride, resets, and starts over. Third time's the charm? Maybe fourth.`,
   ],
   stumble: [
     (n, pr) => `${n} face-plants during a practice turn. ${pr.Sub} ${pr.sub === 'they' ? 'lie' : 'lies'} there for a moment before getting up.`,
     (n, pr) => `${n}'s practice run is a disaster. Wrong turns, stiff arms, zero confidence. This needs work.`,
     (n, pr) => `${n} walks into a tree during practice. IN THE OPEN. The team tries not to laugh.`,
     (n, pr) => `${n} can't even fake confidence right now. ${pr.posAdj} practice walk looks like a march to the gallows.`,
+    (n, pr) => `${n} catches a foot on a vine and does a full spin trying to recover. The team winces.`,
+    (n, pr) => `${n} tries a power pose and somehow knees ${pr.ref} in the chin. Not promising.`,
+    (n, pr) => `${n}'s rehearsal walk ends with ${pr.obj} tangled in a hanging vine. The creature watches, unimpressed.`,
+    (n, pr) => `${n} takes two steps, locks up like a deer in headlights, and stands there. "...I forgot how to walk."`,
   ],
 };
 
@@ -298,6 +349,12 @@ const CREATURE_RUNWAY = {
     (n, creature) => `The ${creature} pulls at a seam with its teeth and the whole outfit unravels. Gasps from the crowd.`,
     (n, creature) => `The ${creature} mistakes a decorative element for food and bites it clean off. The outfit is compromised.`,
     (n, creature) => `A dangling thread catches the ${creature}'s attention. It pulls. The outfit disintegrates. Disaster.`,
+  ],
+  attacksModel: [
+    (model, pr, creature) => `The ${creature} LUNGES at ${model} mid-runway. ${pr.Sub} ${pr.sub === 'they' ? 'dive' : 'dives'} sideways as the creature crashes into the spotlight stand.`,
+    (model, pr, creature) => `The ${creature} charges straight at ${model}. ${pr.Sub} ${pr.sub === 'they' ? 'scramble' : 'scrambles'} off the runway as the crowd screams.`,
+    (model, pr, creature) => `${model} freezes as the ${creature} rears up and SWIPES. Fabric tears. ${model} stumbles backward off the runway.`,
+    (model, pr, creature) => `The ${creature} snaps its jaws inches from ${model}'s face. ${model} trips over ${pr.posAdj} own feet trying to escape. Total chaos.`,
   ],
 };
 
@@ -617,7 +674,7 @@ export function simulateProjectRunaway(ep) {
         huntEvents.push({
           type: 'social', subtype: 'crossPathTrashTalk', player: talker,
           player2: target, tribe: tribe.name, beat: 1,
-          text: pick(SOCIAL_TEXT.crossPathTrashTalk)(talker, target),
+          text: _pickUnique(SOCIAL_TEXT.crossPathTrashTalk, talker, target),
           badge: 'RIVALRY', badgeClass: 'rose',
         });
         addBond(talker, target, -0.3);
@@ -671,6 +728,7 @@ export function simulateProjectRunaway(ep) {
   const tribeHandlerScores = {};
   const tribeModelScores = {};
   const tribeMaterialQuality = {};
+  const _lastSocialType = {};
 
   tribes.forEach(tribe => {
     const members = tribe.members.filter(m => allActive.includes(m));
@@ -704,7 +762,7 @@ export function simulateProjectRunaway(ep) {
         const fabricClass = quality === 'excellent' ? 'silk' : quality === 'decent' ? 'linen' : 'denim';
         designEvents.push({
           type: 'gather', player: g, tribe: tribe.name, beat,
-          text: pick(GATHER_TEXT[quality])(g, gpr),
+          text: _pickUnique(GATHER_TEXT[quality], g, gpr),
           badge: quality.toUpperCase() + ' FIND', badgeClass: quality === 'excellent' ? 'gold' : quality === 'decent' ? 'blue' : 'rose',
           material: mat.name, quality, fabricClass,
         });
@@ -721,7 +779,7 @@ export function simulateProjectRunaway(ep) {
 
         designEvents.push({
           type: 'design', player: designer, tribe: tribe.name, beat,
-          text: pick(DESIGN_TEXT[tier])(designer, dpr),
+          text: _pickUnique(DESIGN_TEXT[tier], designer, dpr),
           badge: tier.toUpperCase(), badgeClass: tier === 'inspired' ? 'gold' : tier === 'steady' ? 'blue' : 'rose',
         });
         ep.chalMemberScores[designer] += tier === 'inspired' ? 5 : tier === 'steady' ? 3 : 1;
@@ -744,7 +802,7 @@ export function simulateProjectRunaway(ep) {
 
         designEvents.push({
           type: 'handler', player: handler, tribe: tribe.name, beat,
-          text: pick(HANDLER_TEXT[tier])(handler, hpr, creature.name),
+          text: _pickUnique(HANDLER_TEXT[tier], handler, hpr, creature.name),
           badge: (isLead ? 'LEAD ' : '') + tier.toUpperCase(), badgeClass: tier === 'calm' ? 'gold' : tier === 'agitated' ? 'blue' : 'rose',
           creature: creature.name, mood: tier,
         });
@@ -761,7 +819,7 @@ export function simulateProjectRunaway(ep) {
 
         designEvents.push({
           type: 'model', player: model, tribe: tribe.name, beat,
-          text: pick(MODEL_TEXT[tier])(model, mpr),
+          text: _pickUnique(MODEL_TEXT[tier], model, mpr),
           badge: tier === 'confident' ? 'FIERCE' : tier === 'nervous' ? 'NERVOUS' : 'STUMBLE',
           badgeClass: tier === 'confident' ? 'gold' : tier === 'nervous' ? 'blue' : 'rose',
         });
@@ -769,7 +827,7 @@ export function simulateProjectRunaway(ep) {
       }
 
       // Guaranteed social event per beat
-      _fireBuildSocialEvent(tribe, members, beat, designEvents, ep, tribeRoles, tribeCreatures, tribeOf, tribes);
+      _fireBuildSocialEvent(tribe, members, beat, designEvents, ep, tribeRoles, tribeCreatures, tribeOf, tribes, _lastSocialType);
     }
 
     tribeDesignScores[tribe.name] = cumulativeDesign;
@@ -847,19 +905,27 @@ export function simulateProjectRunaway(ep) {
     const creatureWalkRoll = creatureCoop * 0.6 + (handlerScore / 4) * 0.4 + noise(2.5);
     let creatureWalkType;
     if (creatureWalkRoll >= 7) creatureWalkType = 'showsOff';
-    else if (creatureWalkRoll >= 3) creatureWalkType = 'decent';  // no special text pool, use showsOff toned down
-    else if (creature.volatility >= 6 && Math.random() < 0.3) creatureWalkType = 'eatsOutfit';
-    else creatureWalkType = 'refuses';
+    else if (creatureWalkRoll >= 3) creatureWalkType = 'decent';
+    else if (creature.volatility >= 6 && Math.random() < 0.3) {
+      creatureWalkType = Math.random() < 0.5 ? 'eatsOutfit' : 'attacksModel';
+    } else creatureWalkType = 'refuses';
 
     if (creatureWalkType === 'decent') {
       runwayEvents.push({
-        type: 'creatureWalk', tribe: tribe.name,
+        type: 'creatureWalk', player: handlerName, tribe: tribe.name,
         text: `The ${creature.name} trots down the runway. Not spectacular, but cooperative enough.`,
         badge: 'COMPLIANT', badgeClass: 'blue', creature: creature.name,
       });
+    } else if (creatureWalkType === 'attacksModel') {
+      const attackPr = pronouns(modelName);
+      runwayEvents.push({
+        type: 'creatureWalk', player: handlerName, tribe: tribe.name,
+        text: pick(CREATURE_RUNWAY.attacksModel)(modelName, attackPr, creature.name),
+        badge: 'CREATURE ATTACK', badgeClass: 'rose', creature: creature.name,
+      });
     } else {
       runwayEvents.push({
-        type: 'creatureWalk', tribe: tribe.name,
+        type: 'creatureWalk', player: handlerName, tribe: tribe.name,
         text: pick(CREATURE_RUNWAY[creatureWalkType])(handlerName, creature.name),
         badge: creatureWalkType === 'showsOff' ? 'SHOWSTOPPER' : creatureWalkType === 'eatsOutfit' ? 'OUTFIT EATEN' : 'REFUSES',
         badgeClass: creatureWalkType === 'showsOff' ? 'gold' : 'rose',
@@ -870,6 +936,19 @@ export function simulateProjectRunaway(ep) {
     if (creatureWalkType === 'showsOff') {
       popDelta(handlerName, 2);
       ep.chalMemberScores[handlerName] += 4;
+    } else if (creatureWalkType === 'attacksModel') {
+      popDelta(handlerName, -2);
+      popDelta(modelName, -1);
+      tribeScores[tribe.name] -= 1.0;
+      tribeScoreBreakdown[tribe.name].total = +(tribeScores[tribe.name]).toFixed(1);
+      ep.chalMemberScores[handlerName] -= 2;
+      addBond(handlerName, modelName, -0.5);
+      ep.campEvents[tribe.name].post.push({
+        type: 'creature-attack',
+        text: `The ${creature.name} attacked ${modelName} on the runway. ${handlerName} takes heat for losing control.`,
+        players: [handlerName, modelName],
+        badgeText: 'Creature Attack', badgeClass: 'badge-negative',
+      });
     } else if (creatureWalkType === 'eatsOutfit' || creatureWalkType === 'refuses') {
       popDelta(handlerName, -1);
       tribeScores[tribe.name] -= 0.5;
@@ -913,7 +992,7 @@ export function simulateProjectRunaway(ep) {
         const blameHandler = pick(blameHandlers);
         ep.campEvents[campKey].post.push({
           type: 'berserk-blame',
-          desc: `${creature.name} went berserk during the runway show. ${blameHandler} takes heat for losing control.`,
+          text: `${creature.name} went berserk during the runway show. ${blameHandler} takes heat for losing control.`,
           players: [...blameHandlers],
           badgeText: 'Berserk Blame',
           badgeClass: 'badge-negative',
@@ -969,7 +1048,7 @@ export function simulateProjectRunaway(ep) {
       // Camp event: berserk-rescue
       ep.campEvents[berserkRescueTribe].post.push({
         type: 'berserk-rescue',
-        desc: `${berserkRescueTribe} heroically recaptured the berserk ${creature.name}.`,
+        text: `${berserkRescueTribe} heroically recaptured the berserk ${creature.name}.`,
         players: tribes.find(t => t.name === berserkRescueTribe)?.members || [],
         badgeText: 'Rescue Heroes',
         badgeClass: 'badge-positive',
@@ -1078,7 +1157,7 @@ export function simulateProjectRunaway(ep) {
 }
 
 // ── Social event helper for build phase ──
-function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tribeCreatures, tribeOf, tribes) {
+function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tribeCreatures, tribeOf, tribes, lastSocialType) {
   const roles = tribeRoles[tribe.name];
   if (!roles) return;
   const creature = tribeCreatures[tribe.name];
@@ -1095,7 +1174,10 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
   // Rare
   eventTypes.push('inspirationStrike');
 
-  const eventType = pick(eventTypes);
+  const lastType = lastSocialType?.[tribe.name];
+  const filtered = eventTypes.filter(t => t !== lastType);
+  const eventType = pick(filtered.length > 0 ? filtered : eventTypes);
+  if (lastSocialType) lastSocialType[tribe.name] = eventType;
 
   switch (eventType) {
     case 'designArgument': {
@@ -1104,7 +1186,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
       if (!b) break;
       events.push({
         type: 'social', subtype: 'designArgument', player: a, player2: b, tribe: tribe.name, beat,
-        text: pick(SOCIAL_TEXT.designArgument)(a, b),
+        text: _pickUnique(SOCIAL_TEXT.designArgument, a, b),
         badge: 'ARGUMENT', badgeClass: 'rose',
       });
       addBond(a, b, -0.3);
@@ -1120,7 +1202,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
 
       events.push({
         type: 'social', subtype: 'materialTheft', player: thief, player2: victim, tribe: tribe.name, beat,
-        text: pick(SOCIAL_TEXT.materialTheft)(thief, victim),
+        text: _pickUnique(SOCIAL_TEXT.materialTheft, thief, victim),
         badge: 'THEFT', badgeClass: 'rose',
       });
 
@@ -1129,7 +1211,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
         if (witness) {
           events.push({
             type: 'social', subtype: 'theftCaught', player: thief, player2: witness, tribe: tribe.name, beat,
-            text: pick(SOCIAL_TEXT.theftCaught)(thief, witness),
+            text: _pickUnique(SOCIAL_TEXT.theftCaught, thief, witness),
             badge: 'CAUGHT', badgeClass: 'rose',
           });
           popDelta(thief, -3);
@@ -1137,7 +1219,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
           // Heat via camp event
           ep.campEvents[tribe.name].post.push({
             type: 'theft-caught',
-            desc: `${thief} was caught stealing materials from ${victim}.`,
+            text: `${thief} was caught stealing materials from ${victim}.`,
             players: [thief, victim],
             badgeText: 'Material Theft',
             badgeClass: 'badge-negative',
@@ -1154,7 +1236,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
       if (!creature) break;
       events.push({
         type: 'social', subtype: 'creatureSpook', player: handler, tribe: tribe.name, beat,
-        text: pick(SOCIAL_TEXT.creatureSpook)(handler, creature.name),
+        text: _pickUnique(SOCIAL_TEXT.creatureSpook, handler, creature.name),
         badge: 'CREATURE SPOOK', badgeClass: 'rose',
       });
       creature.currentCoop = Math.max(1, creature.currentCoop - 1);
@@ -1166,7 +1248,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
       const designer = roles.designer;
       events.push({
         type: 'social', subtype: 'fittingMoment', player: model, player2: designer, tribe: tribe.name, beat,
-        text: pick(SOCIAL_TEXT.fittingMoment)(model, designer),
+        text: _pickUnique(SOCIAL_TEXT.fittingMoment, model, designer),
         badge: 'FITTING', badgeClass: 'gold',
       });
       addBond(model, designer, 0.4);
@@ -1177,7 +1259,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
       const designer = roles.designer;
       events.push({
         type: 'social', subtype: 'inspirationStrike', player: designer, tribe: tribe.name, beat,
-        text: pick(SOCIAL_TEXT.inspirationStrike)(designer),
+        text: _pickUnique(SOCIAL_TEXT.inspirationStrike, designer),
         badge: 'INSPIRATION', badgeClass: 'gold',
       });
       ep.chalMemberScores[designer] += 4;
@@ -1193,7 +1275,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
       const loser = aRoll >= bRoll ? b : a;
       events.push({
         type: 'social', subtype: 'fabricFight', player: a, player2: b, tribe: tribe.name, beat,
-        text: pick(SOCIAL_TEXT.fabricFight)(a, b),
+        text: _pickUnique(SOCIAL_TEXT.fabricFight, a, b),
         badge: 'FABRIC FIGHT', badgeClass: 'rose',
       });
       addBond(a, b, -0.5);
@@ -1205,7 +1287,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
       if (!creature) break;
       events.push({
         type: 'social', subtype: 'creatureBond', player: handler, tribe: tribe.name, beat,
-        text: pick(SOCIAL_TEXT.creatureBond)(handler, creature.name),
+        text: _pickUnique(SOCIAL_TEXT.creatureBond, handler, creature.name),
         badge: 'CREATURE BOND', badgeClass: 'gold',
       });
       creature.currentCoop = Math.min(10, creature.currentCoop + 3);
@@ -1219,7 +1301,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
       if (!framed) break;
       events.push({
         type: 'social', subtype: 'sabotageFrame', player: schemer, player2: framed, tribe: tribe.name, beat,
-        text: pick(SOCIAL_TEXT.sabotageFrame)(schemer, framed),
+        text: _pickUnique(SOCIAL_TEXT.sabotageFrame, schemer, framed),
         badge: 'FRAME JOB', badgeClass: 'rose',
       });
       popDelta(framed, -2);
@@ -1227,7 +1309,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
       // Heat on framed player
       ep.campEvents[tribe.name].post.push({
         type: 'sabotage-frame',
-        desc: `${schemer} framed ${framed} for sabotage during the design phase.`,
+        text: `${schemer} framed ${framed} for sabotage during the design phase.`,
         players: [schemer, framed],
         badgeText: 'Framed',
         badgeClass: 'badge-negative',
@@ -1240,7 +1322,7 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
       const [a, b] = pair;
       events.push({
         type: 'social', subtype: 'teamwork', player: a, player2: b, tribe: tribe.name, beat,
-        text: pick(SOCIAL_TEXT.teamwork)(a, b),
+        text: _pickUnique(SOCIAL_TEXT.teamwork, a, b),
         badge: 'TEAMWORK', badgeClass: 'gold',
       });
       addBond(a, b, 0.4);
@@ -1256,6 +1338,9 @@ function _fireBuildSocialEvent(tribe, members, beat, events, ep, tribeRoles, tri
 // ══════════════════════════════════════════════════════════════════════
 
 const _tvState = {};
+export function resetPRState() {
+  for (const k of Object.keys(_tvState)) delete _tvState[k];
+}
 function _ensureState(key, total) {
   if (!_tvState[key]) _tvState[key] = { idx: -1, total };
   return _tvState[key];
@@ -1308,22 +1393,22 @@ export function prRevealAll(screenKey, totalSteps) {
 // ── CSS CREATURE ICONS ──
 function _creatureIcon(type) {
   switch (type) {
-    case 'mutant-frog': return `<svg viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="22" rx="10" ry="8"/><circle cx="12" cy="14" r="4" fill="rgba(244,200,66,0.3)"/><circle cx="24" cy="14" r="4" fill="rgba(244,200,66,0.3)"/><circle cx="12" cy="13" r="2" fill="var(--gold)"/><circle cx="24" cy="13" r="2" fill="var(--gold)"/><path d="M14 26 Q18 30 22 26" stroke-linecap="round"/></svg>`;
-    case 'woolly-beaver': return `<svg viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="20" rx="12" ry="10"/><circle cx="13" cy="17" r="2" fill="var(--gold)"/><circle cx="23" cy="17" r="2" fill="var(--gold)"/><path d="M12 28 Q18 33 24 28" stroke-linecap="round"/><path d="M6 14 Q10 8 14 12" stroke-linecap="round"/><path d="M22 12 Q26 8 30 14" stroke-linecap="round"/></svg>`;
-    case 'giant-crab': return `<svg viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="20" rx="14" ry="8"/><circle cx="12" cy="16" r="2" fill="var(--gold)"/><circle cx="24" cy="16" r="2" fill="var(--gold)"/><path d="M4 12 Q2 6 6 8 L10 14" stroke-linecap="round"/><path d="M32 12 Q34 6 30 8 L26 14" stroke-linecap="round"/><line x1="8" y1="28" x2="6" y2="32" stroke-linecap="round"/><line x1="14" y1="28" x2="13" y2="32" stroke-linecap="round"/><line x1="22" y1="28" x2="23" y2="32" stroke-linecap="round"/><line x1="28" y1="28" x2="30" y2="32" stroke-linecap="round"/></svg>`;
-    case 'neon-parrot': return `<svg viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="18" rx="8" ry="10"/><circle cx="15" cy="14" r="2" fill="var(--gold)"/><path d="M22 12 L28 8 L26 14 Z" fill="rgba(244,200,66,0.3)"/><path d="M12 26 Q8 34 14 30" stroke-linecap="round"/><path d="M24 26 Q28 34 22 30" stroke-linecap="round"/><path d="M10 10 Q6 4 8 10" stroke-linecap="round"/></svg>`;
-    case 'armored-turtle': return `<svg viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="20" rx="14" ry="10"/><path d="M4 20 Q18 6 32 20" fill="rgba(244,200,66,0.1)"/><line x1="10" y1="12" x2="10" y2="20"/><line x1="18" y1="10" x2="18" y2="20"/><line x1="26" y1="12" x2="26" y2="20"/><circle cx="8" cy="22" r="2" fill="var(--gold)"/><path d="M30 20 L34 18" stroke-linecap="round"/></svg>`;
-    case 'electric-eel': return `<svg viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M4 18 Q10 8 18 18 Q26 28 32 18" stroke-width="3"/><circle cx="30" cy="16" r="2" fill="var(--gold)"/><path d="M8 12 L6 6" stroke-linecap="round" stroke-dasharray="2 2"/><path d="M18 10 L16 4" stroke-linecap="round" stroke-dasharray="2 2"/><path d="M28 12 L30 6" stroke-linecap="round" stroke-dasharray="2 2"/></svg>`;
-    case 'glitter-fox': return `<svg viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="22" rx="10" ry="8"/><path d="M8 18 L4 6 L14 14" fill="rgba(244,200,66,0.15)"/><path d="M28 18 L32 6 L22 14" fill="rgba(244,200,66,0.15)"/><circle cx="14" cy="18" r="2" fill="var(--gold)"/><circle cx="22" cy="18" r="2" fill="var(--gold)"/><path d="M16 22 L18 24 L20 22" stroke-linecap="round"/><path d="M26 28 Q32 32 34 28" stroke-linecap="round"/></svg>`;
-    case 'spiky-porcupine': return `<svg viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="22" rx="12" ry="8"/><circle cx="13" cy="20" r="2" fill="var(--gold)"/><circle cx="23" cy="20" r="2" fill="var(--gold)"/><line x1="10" y1="14" x2="8" y2="6" stroke-linecap="round"/><line x1="14" y1="14" x2="13" y2="6" stroke-linecap="round"/><line x1="18" y1="14" x2="18" y2="5" stroke-linecap="round"/><line x1="22" y1="14" x2="23" y2="6" stroke-linecap="round"/><line x1="26" y1="14" x2="28" y2="6" stroke-linecap="round"/><path d="M14 26 Q18 29 22 26" stroke-linecap="round"/></svg>`;
-    default: return `<svg viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="18" cy="18" r="12"/><circle cx="14" cy="16" r="2" fill="var(--gold)"/><circle cx="22" cy="16" r="2" fill="var(--gold)"/><path d="M14 22 Q18 26 22 22" stroke-linecap="round"/></svg>`;
+    case 'mutant-frog': return `<svg aria-hidden="true" viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="22" rx="10" ry="8"/><circle cx="12" cy="14" r="4" fill="rgba(244,200,66,0.3)"/><circle cx="24" cy="14" r="4" fill="rgba(244,200,66,0.3)"/><circle cx="12" cy="13" r="2" fill="var(--gold)"/><circle cx="24" cy="13" r="2" fill="var(--gold)"/><path d="M14 26 Q18 30 22 26" stroke-linecap="round"/></svg>`;
+    case 'woolly-beaver': return `<svg aria-hidden="true" viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="20" rx="12" ry="10"/><circle cx="13" cy="17" r="2" fill="var(--gold)"/><circle cx="23" cy="17" r="2" fill="var(--gold)"/><path d="M12 28 Q18 33 24 28" stroke-linecap="round"/><path d="M6 14 Q10 8 14 12" stroke-linecap="round"/><path d="M22 12 Q26 8 30 14" stroke-linecap="round"/></svg>`;
+    case 'giant-crab': return `<svg aria-hidden="true" viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="20" rx="14" ry="8"/><circle cx="12" cy="16" r="2" fill="var(--gold)"/><circle cx="24" cy="16" r="2" fill="var(--gold)"/><path d="M4 12 Q2 6 6 8 L10 14" stroke-linecap="round"/><path d="M32 12 Q34 6 30 8 L26 14" stroke-linecap="round"/><line x1="8" y1="28" x2="6" y2="32" stroke-linecap="round"/><line x1="14" y1="28" x2="13" y2="32" stroke-linecap="round"/><line x1="22" y1="28" x2="23" y2="32" stroke-linecap="round"/><line x1="28" y1="28" x2="30" y2="32" stroke-linecap="round"/></svg>`;
+    case 'neon-parrot': return `<svg aria-hidden="true" viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="18" rx="8" ry="10"/><circle cx="15" cy="14" r="2" fill="var(--gold)"/><path d="M22 12 L28 8 L26 14 Z" fill="rgba(244,200,66,0.3)"/><path d="M12 26 Q8 34 14 30" stroke-linecap="round"/><path d="M24 26 Q28 34 22 30" stroke-linecap="round"/><path d="M10 10 Q6 4 8 10" stroke-linecap="round"/></svg>`;
+    case 'armored-turtle': return `<svg aria-hidden="true" viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="20" rx="14" ry="10"/><path d="M4 20 Q18 6 32 20" fill="rgba(244,200,66,0.1)"/><line x1="10" y1="12" x2="10" y2="20"/><line x1="18" y1="10" x2="18" y2="20"/><line x1="26" y1="12" x2="26" y2="20"/><circle cx="8" cy="22" r="2" fill="var(--gold)"/><path d="M30 20 L34 18" stroke-linecap="round"/></svg>`;
+    case 'electric-eel': return `<svg aria-hidden="true" viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M4 18 Q10 8 18 18 Q26 28 32 18" stroke-width="3"/><circle cx="30" cy="16" r="2" fill="var(--gold)"/><path d="M8 12 L6 6" stroke-linecap="round" stroke-dasharray="2 2"/><path d="M18 10 L16 4" stroke-linecap="round" stroke-dasharray="2 2"/><path d="M28 12 L30 6" stroke-linecap="round" stroke-dasharray="2 2"/></svg>`;
+    case 'glitter-fox': return `<svg aria-hidden="true" viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="22" rx="10" ry="8"/><path d="M8 18 L4 6 L14 14" fill="rgba(244,200,66,0.15)"/><path d="M28 18 L32 6 L22 14" fill="rgba(244,200,66,0.15)"/><circle cx="14" cy="18" r="2" fill="var(--gold)"/><circle cx="22" cy="18" r="2" fill="var(--gold)"/><path d="M16 22 L18 24 L20 22" stroke-linecap="round"/><path d="M26 28 Q32 32 34 28" stroke-linecap="round"/></svg>`;
+    case 'spiky-porcupine': return `<svg aria-hidden="true" viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><ellipse cx="18" cy="22" rx="12" ry="8"/><circle cx="13" cy="20" r="2" fill="var(--gold)"/><circle cx="23" cy="20" r="2" fill="var(--gold)"/><line x1="10" y1="14" x2="8" y2="6" stroke-linecap="round"/><line x1="14" y1="14" x2="13" y2="6" stroke-linecap="round"/><line x1="18" y1="14" x2="18" y2="5" stroke-linecap="round"/><line x1="22" y1="14" x2="23" y2="6" stroke-linecap="round"/><line x1="26" y1="14" x2="28" y2="6" stroke-linecap="round"/><path d="M14 26 Q18 29 22 26" stroke-linecap="round"/></svg>`;
+    default: return `<svg aria-hidden="true" viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="18" cy="18" r="12"/><circle cx="14" cy="16" r="2" fill="var(--gold)"/><circle cx="22" cy="16" r="2" fill="var(--gold)"/><path d="M14 22 Q18 26 22 22" stroke-linecap="round"/></svg>`;
   }
 }
 
 // ── AVATAR HELPER ──
 function _av(name, size = 32) {
   const s = slug(name);
-  return `<img class="evt-avatar" src="assets/avatars/${s}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:2px;object-fit:contain;border:1px solid var(--border);flex-shrink:0" onerror="this.style.display='none'">`;
+  return `<img class="evt-avatar" src="assets/avatars/${s}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:2px;object-fit:contain;border:1px solid var(--border);flex-shrink:0" onerror="this.outerHTML='<span class=\\'evt-avatar\\' style=\\'display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:2px;border:1px solid var(--border);background:var(--deep);color:var(--champagne);font-family:var(--sans);font-size:${Math.round(size*0.45)}px;font-weight:700;flex-shrink:0\\'>${name.charAt(0)}</span>'">`;
 }
 
 // ── EVENT CARD BUILDER ──
@@ -1367,9 +1452,9 @@ function _creatureCard(creature) {
 function _buildControls(screenKey, total) {
   const suffix = screenKey.replace('pr-', '');
   return `<div class="controls" id="pr-controls-${suffix}">
-    <button class="ctrl-btn primary" onclick="prRevealNext('${screenKey}',${total})">Reveal Next</button>
+    <button class="ctrl-btn primary" aria-label="Reveal next card" onclick="prRevealNext('${screenKey}',${total})">Reveal Next</button>
     <div class="ctrl-counter" id="pr-counter-${suffix}">0 / ${total}</div>
-    <button class="ctrl-btn" onclick="prRevealAll('${screenKey}',${total})">Reveal All</button>
+    <button class="ctrl-btn" aria-label="Reveal all cards" onclick="prRevealAll('${screenKey}',${total})">Reveal All</button>
   </div>`;
 }
 
@@ -1559,12 +1644,22 @@ function _buildTopBar(ep) {
 }
 
 // ── SHELL WRAPPER ──
+const PR_FONT_URL = 'https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Montserrat:wght@200;400;600;800&family=Inter:wght@400;600;700&display=swap';
+
+function _ensurePRFonts() {
+  if (document.querySelector(`link[href="${PR_FONT_URL}"]`)) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = PR_FONT_URL;
+  document.head.appendChild(link);
+}
+
 function _prShell(content, ep, phaseCls) {
+  _ensurePRFonts();
   const sidebar = _buildSidebar(ep, phaseCls);
 
   return `
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Montserrat:wght@200;400;600;800&family=Inter:wght@400;600;700&display=swap');
 
 :root {
   --noir: #0a0612;
@@ -1614,12 +1709,13 @@ function _prShell(content, ep, phaseCls) {
 .ticker-wrap { flex: 1; overflow: hidden; margin: 0 12px; }
 .ticker { display: inline-block; white-space: nowrap; animation: ticker-scroll 50s linear infinite; font-family: var(--editorial); font-size: 12px; font-style: italic; color: var(--muted); }
 .ticker span { color: var(--gold); margin: 0 8px; font-style: normal; }
+.ticker-wrap:hover .ticker { animation-play-state: paused; }
 @keyframes ticker-scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 .live-badge { font-family: var(--sans); font-size: 10px; font-weight: 800; letter-spacing: 2px; color: var(--rose); padding: 0 14px; animation: pulse-live 2s infinite; }
 @keyframes pulse-live { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 /* ─── LAYOUT ─── */
-.viewport { margin-top: 74px; display: grid; grid-template-columns: 1fr 280px; max-width: 1100px; margin-left: auto; margin-right: auto; padding: 24px 16px 100px; gap: 24px; }
+.viewport { margin-top: 74px; display: grid; grid-template-columns: 1fr 280px; max-width: 1100px; margin-left: auto; margin-right: auto; padding: 24px 16px 120px; gap: 24px; }
 .main-col { min-width: 0; }
 @media(max-width:860px) { .viewport { grid-template-columns: 1fr; } .sidebar-col { position: static; } }
 
@@ -1675,8 +1771,10 @@ function _prShell(content, ep, phaseCls) {
 .beat-hdr::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
 
 /* ─── EVENT CARDS ─── */
-.evt-card { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 14px 18px; margin-bottom: 10px; position: relative; transition: all 0.3s; opacity: 0; transform: translateY(8px); }
-.evt-card.pr-visible { opacity: 1; transform: translateY(0); }
+[id^="pr-step-"] { opacity: 0; transform: translateY(8px); transition: opacity 0.3s, transform 0.3s; }
+[id^="pr-step-"].pr-visible { opacity: 1; transform: translateY(0); }
+[id^="pr-step-"].pr-visible .evt-card { opacity: 1; transform: none; }
+.evt-card { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 14px 18px; margin-bottom: 10px; position: relative; }
 .evt-card:hover { border-color: var(--border-hot); box-shadow: 0 4px 20px rgba(212,175,125,0.08); }
 .evt-card-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .evt-avatar { width: 32px; height: 32px; border-radius: 2px; object-fit: contain; border: 1px solid var(--border); flex-shrink: 0; }
@@ -1737,7 +1835,7 @@ function _prShell(content, ep, phaseCls) {
 .loser-sub { font-family: var(--editorial); font-size: 15px; font-style: italic; color: var(--muted); }
 
 /* ─── FLAVOR TEXT ─── */
-.flavor { font-family: var(--editorial); font-size: 14px; font-style: italic; color: rgba(232,221,212,0.35); padding: 6px 14px; margin: 8px 0; border-left: 1px solid rgba(212,175,125,0.12); }
+.flavor { font-family: var(--editorial); font-size: 14px; font-style: italic; color: rgba(232,221,212,0.55); padding: 6px 14px; margin: 8px 0; border-left: 1px solid rgba(212,175,125,0.12); }
 
 /* ─── SOCIAL EVENT CARD ─── */
 .social-card { border-left: 3px dashed var(--rose); background: rgba(232,72,106,0.04); }
@@ -1745,8 +1843,9 @@ function _prShell(content, ep, phaseCls) {
 
 /* ─── CONTROLS ─── */
 .controls { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(12,8,16,0.97); border-top: 1px solid var(--border); padding: 10px 20px; display: flex; align-items: center; justify-content: center; gap: 12px; z-index: 1000; backdrop-filter: blur(8px); }
-.ctrl-btn { font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 8px 20px; border-radius: 3px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; transition: all 0.3s; }
+.ctrl-btn { font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 24px; border-radius: 3px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; transition: all 0.3s; min-height: 44px; }
 .ctrl-btn:hover { background: rgba(212,175,125,0.1); border-color: var(--gold); color: var(--champagne); }
+.ctrl-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .ctrl-btn.primary { background: var(--gold); color: var(--ink); border-color: var(--gold); }
 .ctrl-btn.primary:hover { background: var(--gold-bright); }
 .ctrl-counter { font-family: var(--heading); font-size: 16px; color: var(--muted); min-width: 60px; text-align: center; }
@@ -1891,7 +1990,10 @@ function _prShell(content, ep, phaseCls) {
 @media (prefers-reduced-motion: reduce) {
   .ambient i, .ticker, .spotlight-sweep { animation: none !important; }
   .evt-card { transition: none; }
+  .live-badge { animation: none !important; }
+  [id^="pr-step-"] { transition: none !important; }
   .runway-model-img, .winner-card { animation: none !important; }
+  .mag-mid-card { transition: none !important; }
   .cold-open .co-spotlight-l, .cold-open .co-spotlight-r { animation: none !important; opacity: 0.15 !important; }
   .cold-open .co-flash { animation: none !important; opacity: 0 !important; }
   .cold-open .co-runway-edge-l, .cold-open .co-runway-edge-r { animation: none !important; }
@@ -1950,7 +2052,7 @@ export function rpBuildPRTitleCard(ep) {
   content += _buildCrowdSide('left');
   content += _buildCrowdSide('right');
   // Scissors accent
-  content += `<div class="co-scissors"><svg viewBox="0 0 40 40" fill="none" stroke="var(--gold)" stroke-width="3"><circle cx="14" cy="12" r="8"/><circle cx="14" cy="30" r="8"/><line x1="22" y1="12" x2="38" y2="28" stroke-linecap="round"/><line x1="22" y1="30" x2="38" y2="14" stroke-linecap="round"/></svg></div>`;
+  content += `<div class="co-scissors"><svg aria-hidden="true" viewBox="0 0 40 40" fill="none" stroke="var(--gold)" stroke-width="3"><circle cx="14" cy="12" r="8"/><circle cx="14" cy="30" r="8"/><line x1="22" y1="12" x2="38" y2="28" stroke-linecap="round"/><line x1="22" y1="30" x2="38" y2="14" stroke-linecap="round"/></svg></div>`;
   content += `</div>`;
 
   // Host intro
@@ -2143,7 +2245,7 @@ export function rpBuildPRRunway(ep) {
       content += `<div class="runway-tribe">${evt.tribe} &bull; Model</div>`;
       content += `</div></div>`;
       // Walk event card
-      content += `<div class="evt-card pr-visible">`;
+      content += `<div class="evt-card">`;
       content += `<div class="evt-card-hdr">${_av(evt.player)}<span class="evt-name">${evt.player}</span><span class="evt-badge ${evt.badgeClass === 'gold' ? 'badge-gold' : evt.badgeClass === 'rose' ? 'badge-rose' : 'badge-blue'}">${evt.badge}</span></div>`;
       content += `<div class="evt-text">${evt.text}</div></div>`;
       content += `</div>`;
@@ -2189,7 +2291,20 @@ export function rpBuildPRRunway(ep) {
       return;
     }
 
-    // Default: creature walk or other
+    // Creature walk
+    if (evt.type === 'creatureWalk') {
+      const badgeCls = evt.badgeClass === 'gold' ? 'badge-gold' : evt.badgeClass === 'rose' ? 'badge-rose' : 'badge-blue';
+      content += `<div class="evt-card" id="pr-step-runway-${idx}">`;
+      content += `<div class="evt-card-hdr">`;
+      if (evt.player) content += _av(evt.player);
+      content += `<span class="evt-name">${evt.creature || 'Creature'}</span>`;
+      content += `<span class="evt-badge ${badgeCls}">${evt.badge}</span>`;
+      content += `</div>`;
+      content += `<div class="evt-text">${evt.text}</div></div>`;
+      return;
+    }
+
+    // Default fallback
     content += _card(evt, idx, screenKey);
   });
 
@@ -2227,7 +2342,7 @@ export function rpBuildPRBerserk(ep) {
       if (evt.bonus > 0) {
         content += `<div class="winner-card"><div class="winner-tribe">${evt.tribe}</div><div class="winner-sub">${evt.text}</div></div>`;
       } else {
-        content += `<div class="evt-card pr-visible"><div class="evt-card-hdr"><span class="evt-name">${evt.tribe}</span><span class="evt-badge badge-gold">${evt.badge}</span></div><div class="evt-text">${evt.text}</div></div>`;
+        content += `<div class="evt-card"><div class="evt-card-hdr"><span class="evt-name">${evt.tribe}</span><span class="evt-badge badge-gold">${evt.badge}</span></div><div class="evt-text">${evt.text}</div></div>`;
       }
       content += `</div>`;
       return;

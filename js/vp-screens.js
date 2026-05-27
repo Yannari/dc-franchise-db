@@ -54,7 +54,7 @@ import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPP
 import { rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults, dhRevealNext, dhRevealAll } from './chal/drumheller.js';
 import { rpBuildIIBTitleCard, rpBuildIIBSummit, rpBuildIIBFortBuild, rpBuildIIBCtfAssault, rpBuildIIBResults, iibRevealNext, iibRevealAll } from './chal/ice-ice-baby.js';
 import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaCrossing, rpBuildPTBeachSprint, rpBuildPTResults, ptRevealNext, ptRevealAll } from './chal/planes-trains.js';
-import { rpBuildPRTitleCard, rpBuildPRRoles, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults, prRevealNext, prRevealAll } from './chal/project-runaway.js';
+import { rpBuildPRTitleCard, rpBuildPRRoles, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults, prRevealNext, prRevealAll, resetPRState } from './chal/project-runaway.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -6542,6 +6542,8 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
     <div id="evt-${safeId}" class="rp-camp-toggle-body">`;
   // renderEvt: closure appender — writes one event card to html
   const renderEvt = evt => {
+    if (!evt.text && evt.desc) evt.text = evt.desc;
+    if (!evt.text) return;
     const words = evt.text.split(/\s+/);
     // Use explicit player list when present (allianceForm/allianceCrack etc.)
     // Fallback to text matching for older events or event types without explicit players.
@@ -12288,6 +12290,7 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'dh-dig', label:'Barrel Dig', html: rpBuildDHDigPhase(dhEp) });
     vpScreens.push({ id:'dh-results', label:'Results', html: rpBuildDHResults(dhEp) });
   } else if ((ep.isProjectRunaway || ep.challengeType === 'project-runaway') && ep.projectRunaway) {
+    resetPRState();
     vpScreens.push({ id:'pr-title', label:'Project Runaway', html: rpBuildPRTitleCard(ep) });
     vpScreens.push({ id:'pr-roles', label:'Role Call', html: rpBuildPRRoles(ep) });
     vpScreens.push({ id:'pr-hunt', label:'Creature Hunt', html: rpBuildPRCreatureHunt(ep) });

@@ -2258,6 +2258,10 @@ export function _textWriterContext(ep, ln, sec) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export function generateSummaryText(ep) {
+  // Generate aftermath data before building text (aftermath is created in patchEpisodeHistory,
+  // which runs AFTER this function — so we must generate it here to include it in the text backlog)
+  if (!ep.aftermath && window.generateAftermathShow) window.generateAftermathShow(ep);
+
   const L = [];
   const ln  = s => L.push(s);
   const sec = t => { ln(''); ln(`=== ${t} ===`); };

@@ -3872,25 +3872,94 @@ I'm using leverage.
 CORRECT:
 Dan: I'm using leverage.
 
-DIALOGUE QUALITY — KILL THESE PATTERNS ON SIGHT:
-1. PERSONIFYING OBJECTS: "The crate owes you money" / "The fire has an understanding with me" / "Sleep ghosted me" — objects don't have human relationships. Say what's literally happening.
-2. PERSONIFYING BODY PARTS: "My leg and I had a meeting" / "My back is mad at me" / "My arms filed a complaint" — body parts don't think or feel. Say "my leg hurts" / "my back is killing me."
-3. NONSENSE ZINGERS / COMPRESSED NONSENSE / QUIRKY LABELS: "You're using embarrassment" / "I fought a raccoon emotionally" / "You looked loud about it" / "It tastes like family court" / "That's a yes with better shoes" / "I was missing wet knees" / "Bad walkway!" / "You look like you'll panic politely" / "Fourth good" / "Be quiet vertically" / "It was atmosphere" / "private rice" / "three grains and a sad look." — if a sentence doesn't make literal sense, don't write it. "Three grains and a sad look" is trying to be quippy — say "That's not enough food, man." Don't invent quirky [adjective] + [noun] labels for normal things. When caught in a mistake, characters get DEFENSIVE, not pretentious. Don't staple a random adverb/noun to reframe a plain thing as something fancy. Oxymorons aren't jokes. Comparing [thing] to [unrelated abstract noun] = instant delete.
-4. BACKWARDS LOGIC: "The rope lost me" / "I didn't fall, gravity made a choice" — the rope didn't do anything. Say "I fell."
-5. "[THING] + emotionally/spiritually": "That hurt me spiritually" / "I'm drowning. Emotionally." — just say "that hurt" or "I'm overwhelmed."
+══════════════════════════════════════
+⛔ THE ONE RULE THAT COVERS EVERYTHING
+══════════════════════════════════════
 
-6. QUIRKY RAMBLING: "I felt like luggage with hair. Words get weird. Shells are safer. Unless they're haunted." — disconnected non-sequiturs strung together to sound "endearingly awkward." Real awkward people don't do this. They start saying something, get embarrassed, and backtrack: "I wanted to say thanks but I just... stood there. So I left a shell. Is that weird? Probably."
-7. SITCOM PING-PONG / CIRCULAR MIC-DROPS / SYNONYM DEBATES: Scenes where every character takes turns dropping one-liner zingers — "We need structure" / "We need flavor" / "We need you both to stop" / "Betrayed by democracy" / "He discovered running." Also: "It has puppets. No." / "That's the point." / "Exactly." — circular logic presented as a comeback. Also: 5 lines debating walking vs marching vs stomping before anyone says anything real — "You're marching" / "I'm walking" / "That's not normal" / "Thinking doesn't require stomping" — get to the POINT. "Thinking doesn't require stomping" is fortune-cookie, say "You look pissed." Real arguments are messy. People get loud, get personal, lose the point. Don't burn 4-5 lines on word-play setup before the actual conflict starts.
-8. POETIC METAPHOR DESCRIPTIONS / FORTUNE-COOKIE CONFESSIONALS / VAGUE ABSTRACT NOUNS / THERAPY-SPEAK / MISPLACED FORMAL LANGUAGE: "Fiore is a knife with lip gloss" / "a helmet made of trust" / "Nervous people slip more" / "reminded everyone why silence is valuable" / "I gave it a schedule" / "I complain about your labels" / "Fear has bad depth perception" / "It doesn't mean anything about you" / "the guy who digs trenches and reads people" / "the angry one, the knife one" / "start drafting bylaws" / "He hides it under thinking" / "I invented that trick before he was tall enough to reach the stove." Nobody describes people using literary metaphors or drops philosophical wisdom. "Hides it under thinking" — you can't hide nervousness "under" thinking. Say "He pretends he's calm but he's freaking out." "I invented that trick before he was tall enough to reach the stove" — don't claim ownership of universal behavior with a random specific detail. Say "I know nervous when I see it." Never use vague abstract nouns ("labels," "energy," "vibes," "boundaries") or formal/legal terms ("bylaws," "precedent," "mandate") when the character means something simple.
-9. JOKE TAG PUNCHLINES / FORTUNE-COOKIE CLOSERS: "I should've carved faster. Legally, I don't know where we stand on that." / "My therapist is gonna hear about this." / "Also a bird judged me." / "I smile because screaming all day uses calories." / "Sometimes strategy is just violence with timing." — random joke OR philosophical one-liner stapled to the end of an otherwise good confessional. "He fell." is already a strong closer — don't ruin it with a thesis statement about the nature of strategy. Not every confessional needs a punchline OR a profound closer. If the last 3 sentences are serious strategy, the final sentence should NOT be a joke or a fortune cookie. End on real stakes: fear, anger, urgency, pettiness.
-10. SELF-CORRECTING HUMOR: "The sewer wins emotionally—nope. Sorry." / "That was almost heroic—okay no." — writing a bad joke then acknowledging it's bad doesn't make it funny. Just say the real thing. Chris never stumbles over his own lines.
-11. EMPTY DRAMATIC FILLER / TRAIT ANNOUNCEMENTS: "Before it got real" / "Things are different now" / "It's complicated" / "I have to do what I have to do" / "That's my brand" / "This is fine. Everything's fine." / "I judge harsh" / "I do irritated. There's a difference." These lines say NOTHING — they could apply to any character in any episode. "I do irritated" is a character labeling their own emotion as a personality trait — nobody does this. Say "I'm not sad, I'm annoyed." "That's my brand" is influencer talk. SHOW the trait through action, don't announce it. Name the SPECIFIC reason: "I can't vote Wix — they haven't done anything to me" instead of "Before it got real."
+Every line of dialogue must say WHAT THE CHARACTER LITERALLY MEANS.
+If a line is trying to sound clever instead of communicating, delete it and write the plain version.
+AI dialogue fails because it prioritizes WIT over MEANING. Real people say what they mean — sometimes funny, sometimes boring, sometimes mean. They don't construct wordplay.
 
-12. SUMMARY IS GOSPEL: Follow the summary EXACTLY. Do NOT invent twists, reorder events, or change how advantages work. EXILE ISLAND / RESCUE ISLAND always happens AFTER the challenge, never before. If the summary says "Gabby used Vote Block on Fiore" — write exactly that. Do NOT invent a different mechanic. No hallucinated game mechanics, no surprise twists, no extra advantages. Event order from the summary = episode order.
+THREE TESTS — apply to EVERY line before keeping it:
 
-13. DROPPED WORDS / BROKEN GRAMMAR: "Doesn't mean you say it like I'm not in the room" — missing "get to" or "should." Every sentence must be grammatically complete. Don't compress sentences by dropping auxiliary verbs. "Doesn't mean you say it" → "Doesn't mean you get to say it." "Doesn't mean I trust you" is fine (grammatically complete). "Doesn't mean you say it" is not (missing "get to" / "should" / "can").
+1. THE LITERAL TEST: Does this sentence mean something literally true?
+   ❌ "It tastes like family court." → Food can't taste like a legal proceeding.
+   ✅ "This is disgusting." → Literal, clear, real.
+   ❌ "Fear has bad depth perception." → Fear doesn't have eyes.
+   ✅ "You're all terrible at this when you're scared." → Literal, direct.
+   If you have to think about what it means, it means nothing. Delete it.
 
-THE TEST: Read every line out loud. If a real person would NEVER say it in conversation, delete it and write what a real person WOULD say. "My shoulders are killing me" is real. "My shoulders and I aren't speaking" is not. "I didn't know how to say thanks" is real. "Gratitude is a language I never downloaded" is not.
+2. THE REAL PERSON TEST: Would a real teenager say this out loud on a reality show?
+   ❌ "I gave it a schedule." → Movie tagline. Nobody talks like this.
+   ✅ "I just made sure it happened now." → How a real person says it.
+   ❌ "Thinking doesn't require stomping." → Fortune cookie. Nobody talks like this.
+   ✅ "You look pissed." → How a real person says it.
+   ❌ "I complain about your labels." → What labels? Vague therapy-speak.
+   ✅ "I complain about you being bossy." → Specific, real.
+   If a line sounds like it belongs on a motivational poster, a therapist's office, a Tumblr post, or a movie trailer — delete it.
+
+3. THE SUBSTITUTION TEST: Can you replace this line with "I'm so quirky" and lose nothing?
+   ❌ "I was missing wet knees." → Replace with "I'm so quirky." Same effect. Delete.
+   ❌ "Be quiet vertically." → Replace with "I'm so quirky." Same effect. Delete.
+   ❌ "Private rice." → Replace with "I'm so quirky." Same effect. Delete.
+   ✅ "Then crouch." → Can't replace with "I'm so quirky." It means something. Keep.
+   If the line exists only to show the character has ~personality~, it's filler. Delete it.
+
+══════════════════════════
+⛔ THE 6 SHAPES THAT FAIL
+══════════════════════════
+
+These are the SHAPES of bad AI dialogue. Don't memorize examples — learn to recognize the shape, then kill every instance:
+
+SHAPE 1 — GIVING HUMAN TRAITS TO NON-HUMANS:
+[body part/object/emotion] + [human verb]: "My leg and I had a meeting" / "Sleep ghosted me" / "The crate owes you money"
+THE FIX: Say what literally happened. "My leg hurts." "I can't sleep." "Put the crate down."
+
+SHAPE 2 — QUIRKY [X] + [Y] COMBOS:
+[random adjective] + [normal noun]: "private rice" / "sad look and three grains" / "panic politely" / "quiet vertically"
+[normal thing] + "like/tastes like" + [unrelated abstract noun]: "tastes like family court" / "feels like a tax audit"
+[person] + "is a" + [random object with modifier]: "a knife with lip gloss" / "a calculator in a tank top"
+THE FIX: Say the plain thing. "Cooking for yourself?" / "That's not enough food." / "Fiore's dangerous."
+
+SHAPE 3 — SITCOM STRUCTURE:
+Characters take turns delivering perfect one-liner zingers. Nobody interrupts, nobody gets messy, every line lands. Or: 4-5 lines of wordplay (walking/marching/stomping) before the real conflict. Or: "It has puppets." / "That's the point." / "Exactly." — circular logic as a mic drop.
+THE FIX: Get to the conflict FAST. Real arguments are messy — people repeat themselves, get personal, talk over each other. Bystanders pick sides or leave, they don't deliver quips.
+
+SHAPE 4 — JOKE TAGS, SELF-CORRECTIONS, AND FORTUNE-COOKIE CLOSERS:
+A good confessional followed by a random punchline: "I didn't forget that. I smile because screaming uses calories."
+A good confessional followed by a philosophical thesis: "He fell. Sometimes strategy is just violence with timing." — nobody delivers a thesis statement about strategy after tripping someone.
+Writing a joke then flagging it as bad: "The sewer wins emotionally—nope. Sorry."
+THE FIX: If the confessional is strong, END IT. "He fell." — done. "I didn't forget that." — done. Not every moment needs a joke OR a profound closer. End on stakes: fear, anger, urgency, pettiness.
+
+SHAPE 5 — TRAIT ANNOUNCEMENTS AND FILLER:
+Characters declaring their own personality: "I judge harsh." / "I do irritated." / "That's my brand."
+Empty statements: "Before it got real." / "Things are different now." / "It's complicated."
+THE FIX: SHOW don't tell. Chef glares — he doesn't announce he's harsh. Replace filler with the SPECIFIC thing: "I can't vote Wix — he hasn't done anything to me."
+
+SHAPE 6 — FANCY WORDS FOR SIMPLE THINGS:
+Therapy-speak: "It doesn't mean anything about you." → Say "So what?"
+Legal/corporate: "start drafting bylaws" → Say "trying to control everything"
+Fortune-cookie wisdom: "Nervous people slip more." / "Silence is valuable." → Say the actual observation.
+Movie-pitch descriptions: "the guy who digs trenches and reads people" → Say "You do the work around camp."
+Poetic verbs for plain actions: "He hides it under thinking." → You can't hide nervousness "under" thinking. Say "He pretends he's calm but he's freaking out."
+Claiming ownership of universal behavior: "I invented that trick before he was tall enough to reach the stove." → Nobody "invents" being nervous. Say "I know nervous when I see it."
+THE FIX: Use the simplest words that say what you mean. These are teenagers on a reality show, not writers crafting prose.
+
+═══════════════════════
+⛔ SUMMARY IS GOSPEL
+═══════════════════════
+Follow the summary EXACTLY. Do NOT invent twists, reorder events, or change how advantages work.
+- EXILE ISLAND / RESCUE ISLAND always happens AFTER the challenge, never before.
+- If the summary says "Gabby used Vote Block on Fiore" — write exactly that. Do NOT invent a different mechanic (like "Fiore's votes were removed by a twist"). The summary tells you what happened. Use it.
+- Do NOT hallucinate game mechanics that aren't in the summary. No surprise twists, no extra advantages, no rule changes.
+- Event order from the summary is the episode order. Don't rearrange.
+
+════════════════
+⛔ GRAMMAR CHECK
+════════════════
+Every sentence must be grammatically complete. Don't drop words to sound punchy:
+❌ "Doesn't mean you say it." → Missing "get to." ✅ "Doesn't mean you get to say it."
+❌ "Fourth good." → Not a phrase. ✅ "Fourth isn't good."
 
 Write the episode now.`;
 

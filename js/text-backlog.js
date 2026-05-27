@@ -975,12 +975,41 @@ export function _textTribalCouncil(ep, ln, sec) {
     ln(`Mood: ${moods.join(', ')}`);
   }
 
-  // Advantages being considered
+  // Advantages played at tribal
   const advLines = [];
-  const idolHolders = (ep.idolPlays||[]).map(i => i.player);
-  if (idolHolders.length) advLines.push(`${idolHolders.join(' and ')} entered tribal with ${idolHolders.length > 1 ? 'idols' : 'an idol'}.`);
-  if (ep.shotInDark?.player) advLines.push(`${ep.shotInDark.player} is weighing whether to play a Shot in the Dark.`);
-  if (advLines.length) { ln(''); ln('ADVANTAGES:'); advLines.forEach(l => ln(l)); }
+  (ep.idolPlays||[]).forEach(play => {
+    const { player, type } = play;
+    if (type === 'voteBlock') {
+      advLines.push(`VOTE BLOCK: ${player} blocks ${play.blockedPlayer}'s vote. ${play.blockedPlayer} cannot vote tonight.`);
+    } else if (type === 'voteSteal') {
+      advLines.push(`VOTE STEAL: ${player} steals ${play.stolenFrom ? `${play.stolenFrom}'s vote` : 'a vote'}. The redirect will be read with the others.`);
+    } else if (type === 'extraVote') {
+      advLines.push(`EXTRA VOTE: ${player} plays an Extra Vote${play.forAlly ? ` for ${play.forAlly}` : ''}.`);
+    } else if (type === 'kip') {
+      if (play.failed) advLines.push(`KNOWLEDGE IS POWER: ${player} guesses ${play.stolenFrom} has an advantage — WRONG. The play fizzles.`);
+      else advLines.push(`KNOWLEDGE IS POWER: ${player} takes ${play.stolenFrom}'s ${play.stolenType || 'advantage'}.`);
+    } else if (type === 'soleVote') {
+      advLines.push(`SOLE VOTE: ${player} plays the Sole Vote. All other votes are void — only ${player}'s vote counts.`);
+    } else if (type === 'safetyNoPower') {
+      advLines.push(`SAFETY WITHOUT POWER: ${player} leaves Tribal Council — safe tonight but cannot vote.${play.warned ? ` Warned ${play.warned} before leaving.` : ''}`);
+    } else if (type === 'teamSwap') {
+      if (play.playedFor) advLines.push(`TEAM SWAP: ${player} plays Team Swap for ${play.playedFor}. ${play.playedFor} swaps tribes instead of going home.`);
+      else advLines.push(`TEAM SWAP: ${player} plays Team Swap — swaps tribes instead of going home.`);
+    } else if (play.misplay) {
+      advLines.push(`IDOL MISPLAY: ${player} played a Hidden Immunity Idol${play.playedFor ? ` for ${play.playedFor}` : ''} — wasted. ${play.votesNegated || 0} vote${(play.votesNegated||0) !== 1 ? 's' : ''} cancelled.`);
+    } else if (play.superIdol) {
+      advLines.push(`SUPER IDOL: ${player}${play.playedFor ? ` for ${play.playedFor}` : ''} — ${play.votesNegated} votes cancelled AFTER the read.`);
+    } else if (play.playedFor) {
+      advLines.push(`HIDDEN IMMUNITY IDOL: ${player} plays for ${play.playedFor} — all votes against ${play.playedFor} do not count.`);
+    } else {
+      advLines.push(`HIDDEN IMMUNITY IDOL: ${player} plays — all votes against ${player} do not count.`);
+    }
+  });
+  if (ep.shotInDark?.player) {
+    const sid = ep.shotInDark;
+    advLines.push(`SHOT IN THE DARK: ${sid.player} sacrifices their vote. ${sid.safe ? `SAFE — ${sid.votesNegated||0} votes cancelled.` : 'NOT SAFE — still vulnerable.'}`);
+  }
+  if (advLines.length) { ln(''); ln('ADVANTAGES PLAYED:'); advLines.forEach(l => ln(l)); }
 
   // Word at camp — danger board (top 3 targets)
   const voteCounts = {};
@@ -1078,11 +1107,33 @@ export function _textTheVotes(ep, ln, sec) {
       ep.cascadeSwitches.forEach(c => ln(`- ${c.voter} switched from ${c.originalTarget} to ${c.newTarget} (position #${c.position + 1})`));
     }
   } else {
-    ep.votingLog.forEach(({ voter, voted, reason }) => {
+    const _blockedPlayers = new Set((ep.idolPlays||[]).filter(p => p.type === 'voteBlock').map(p => p.blockedPlayer));
+    const _stolenPlayers = new Set((ep.idolPlays||[]).filter(p => p.type === 'voteSteal').map(p => p.stolenFrom));
+    const _safetyPlayers = new Set((ep.idolPlays||[]).filter(p => p.type === 'safetyNoPower').map(p => p.player));
+    ep.votingLog.forEach(({ voter, voted, reason, voteBlocked }) => {
+      if (voteBlocked || _blockedPlayers.has(voter)) {
+        ln(`${voter} — VOTE BLOCKED (cannot vote)`);
+        return;
+      }
+      if (_safetyPlayers.has(voter)) {
+        ln(`${voter} — LEFT TRIBAL (Safety Without Power)`);
+        return;
+      }
       const rv = ep.revoteLog?.find(r => r.voter === voter);
-      let line = `${voter} voted for ${voted} — ${reason||'strategic read'}`;
+      let line = `${voter} voted for ${voted}`;
+      if (_stolenPlayers.has(voter)) line += ' [VOTE STOLEN]';
+      line += ` — ${reason||'strategic read'}`;
       if (rv) { const rvReason = rv.reason ? ` — ${rv.reason}` : ''; line += `; voted for ${rv.voted} on revote${rvReason}`; }
       ln(line);
+    });
+    // Extra votes and stolen redirects (appear as additional vote entries from the advantage holder)
+    const _extraVotePlays = (ep.idolPlays||[]).filter(p => p.type === 'extraVote');
+    _extraVotePlays.forEach(ev => {
+      if (ev.target) ln(`${ev.player} cast an EXTRA VOTE for ${ev.target}`);
+    });
+    const _stealPlays = (ep.idolPlays||[]).filter(p => p.type === 'voteSteal');
+    _stealPlays.forEach(sv => {
+      if (sv.target) ln(`${sv.player} redirected ${sv.stolenFrom}'s stolen vote to ${sv.target}`);
     });
   }
   if (ep.revoteLog && !ep.sidFreshVote) {
@@ -1119,10 +1170,17 @@ export function _textTheVotes(ep, ln, sec) {
       }
       if (r.idolPlays?.length) {
         r.idolPlays.forEach(p => {
-          if (p.misplay) ln(`IDOL MISPLAY: ${p.player} wasted the idol.`);
+          if (p.type === 'voteBlock') ln(`VOTE BLOCK: ${p.player} blocks ${p.blockedPlayer}'s vote.`);
+          else if (p.type === 'voteSteal') ln(`VOTE STEAL: ${p.player} steals ${p.stolenFrom ? `${p.stolenFrom}'s vote` : 'a vote'}.`);
+          else if (p.type === 'extraVote') ln(`EXTRA VOTE: ${p.player} plays an Extra Vote.`);
+          else if (p.type === 'kip') { if (p.failed) ln(`KNOWLEDGE IS POWER: ${p.player} guesses wrong — play fizzles.`); else ln(`KNOWLEDGE IS POWER: ${p.player} takes ${p.stolenFrom}'s ${p.stolenType || 'advantage'}.`); }
+          else if (p.type === 'soleVote') ln(`SOLE VOTE: ${p.player} — all other votes are void.`);
+          else if (p.type === 'safetyNoPower') ln(`SAFETY WITHOUT POWER: ${p.player} leaves tribal — safe but cannot vote.`);
+          else if (p.type === 'teamSwap') ln(`TEAM SWAP: ${p.player}${p.playedFor ? ` for ${p.playedFor}` : ''} — swaps tribes instead of elimination.`);
+          else if (p.misplay) ln(`IDOL MISPLAY: ${p.player} wasted the idol.`);
           else if (p.superIdol) ln(`SUPER IDOL: ${p.player}${p.playedFor ? ` for ${p.playedFor}` : ''} — ${p.votesNegated} votes cancelled.`);
           else if (p.playedFor) ln(`IDOL: ${p.player} for ${p.playedFor} — ${p.votesNegated} votes cancelled.`);
-          else if (p.type !== 'kip' && p.type !== 'extraVote' && p.type !== 'voteSteal') ln(`IDOL: ${p.player} — ${p.votesNegated} votes cancelled.`);
+          else ln(`IDOL: ${p.player} — ${p.votesNegated} votes cancelled.`);
         });
       }
       const mvg = {};
@@ -1327,7 +1385,12 @@ export function _textWhyVote(ep, ln, sec) {
     }
   } else if (elim) {
     explainBoot(elim, ep.votingLog, ep.alliances);
-    if (ep.isTie && !ep.isRockDraw) ln(`- Went to a revote`);
+    if (ep.isTie && !ep.isRockDraw && !ep.tiebreakerResult) ln(`- Went to a revote`);
+    if (ep.tiebreakerResult && !ep.firstEliminated) {
+      const tr = ep.tiebreakerResult;
+      ln(`- The vote tied between ${tr.participants.join(' and ')} — no revote, straight to a head-to-head ${tr.challengeLabel} challenge.`);
+      ln(`- ${tr.loser} lost the tiebreaker to ${tr.winner}. ${tr.winner} is safe. ${tr.loser} is out.`);
+    }
   } else if (ep.lastChance) {
     const _lc = ep.lastChance;
     const _lcWS = pStats(_lc.winner); const _lcLS = pStats(_lc.loser);

@@ -793,6 +793,7 @@ export function simulateProjectRunaway(ep) {
     const modelName = roles.model;
     const designerName = roles.designer;
     const handlerNames = roles.handlers;
+    const handlerName = handlerNames[0];
 
     // Calculate scoring components
     const designerScore = tribeDesignScores[tribe.name] || 0;

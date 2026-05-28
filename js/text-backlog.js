@@ -70,7 +70,6 @@ import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhun
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults } from './chal/greeces-pieces.js';
 import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults } from './chal/hangar-black.js';
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard } from './chal/alien-egg.js';
-import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemFinish } from './chal/aftermayhem.js';
 import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict, rpBuildYetiElimination } from './chal/are-we-there-yeti.js';
 import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish } from './vp-finale.js';
 
@@ -2111,6 +2110,53 @@ export function _textMoleReveal(ep, ln, sec) {
   ln(`"They never figured it out." — ${mr.player}`);
 }
 
+function _textAftermayhem(am, ln) {
+  // Lottery
+  ln('GOLDEN CAN LOTTERY');
+  ln(`${am.lottery.winners.length} players drew golden Chris heads from ${am.lottery.pool.length} eliminated players.`);
+  am.lottery.winnerReactions.forEach(r => ln(r.text));
+  am.lottery.loserReactions.forEach(r => ln(r.text));
+
+  // Board Race
+  ln('');
+  ln('BOARD RACE');
+  ln(`${am.board.squares.length}-square board with ${am.board.traps.length} booby traps.`);
+
+  am.rounds.forEach(rd => {
+    ln('');
+    ln(`— Round ${rd.roundNum} —`);
+    rd.turns.forEach(t => {
+      ln(t.rollText);
+      if (t.isTrap && t.trapText) ln(t.trapText);
+      if (t.trapSurviveText) ln(t.trapSurviveText);
+      if (t.trapBacktrackText) ln(t.trapBacktrackText);
+      if (t.challengeText) ln(t.challengeText);
+      if (t.dominationText) ln(t.dominationText);
+      if (t.cameo?.text) ln(t.cameo.text);
+      if (t.isWinner) {
+        const winPool = am.winCondition === 'last-standing'
+          ? [`${t.player} is the last one standing! All others have been KO'd!`]
+          : [`${t.player} reaches the Trophy Case! The race is over!`];
+        ln(winPool[0]);
+      }
+    });
+    rd.socialEvents.forEach(se => ln(se.text));
+    rd.eliminations.forEach(el => ln(el.text));
+    if (rd.hostEvents?.length) rd.hostEvents.forEach(he => ln(he.text));
+  });
+
+  // Result
+  ln('');
+  if (am.winner) {
+    ln(`WINNER: ${am.winner} (${am.winCondition === 'last-standing' ? 'last standing' : 'reached Trophy Case'})`);
+    ln(`${am.winner} returns to the game, joining the ${am.returnedTo} group.`);
+  }
+  const eliminated = am.racers.filter(r => !r.alive).sort((a, b) => (b.koRound || 0) - (a.koRound || 0));
+  if (eliminated.length) {
+    ln('Eliminated from board: ' + eliminated.map(r => `${r.name} (Rd ${r.koRound})`).join(', '));
+  }
+}
+
 export function _textAftermath(ep, ln, sec) {
   if (!ep.aftermath) return;
   const a = ep.aftermath;
@@ -2159,9 +2205,7 @@ export function _textAftermath(ep, ln, sec) {
   if (a.aftermayhem) {
     ln('');
     sec('AFTERMATH AFTERMAYHEM');
-    [rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemFinish].forEach(fn => {
-      try { const html = fn(ep); if (html) ln(_textStripHtml(html)); } catch(e) {}
-    });
+    _textAftermayhem(a.aftermayhem, ln);
   }
   // Awards
   if (a.awards?.length) {

@@ -506,41 +506,60 @@ export function importSeason(event) {
   reader.readAsText(file); event.target.value = '';
 }
 
-// Save/load seasons to localStorage
-export function _getSeasonSaves() {
-  try { return JSON.parse(localStorage.getItem('simulator_season_saves') || '[]'); } catch { return []; }
+// Save/load seasons to IndexedDB (migrated from localStorage for unlimited space)
+function _seasonKey(name) { return 'season_' + name; }
+
+async function _getSeasonIndex() {
+  try {
+    return (await _idbGet('season_index')) || [];
+  } catch { return []; }
 }
-export function _saveSeasonSaves(list) {
-  localStorage.setItem('simulator_season_saves', JSON.stringify(list));
-  renderSeasonSaveList();
+
+async function _saveSeasonIndex(index) {
+  await _idbPut('season_index', index);
 }
-export function saveSeasonToStorage() {
+
+export async function _migrateSeasonSavesFromLS() {
+  try {
+    const raw = localStorage.getItem('simulator_season_saves');
+    if (!raw) return;
+    const old = JSON.parse(raw);
+    if (!Array.isArray(old) || !old.length) return;
+    const index = await _getSeasonIndex();
+    for (const save of old) {
+      if (!save.name) continue;
+      if (index.some(e => e.name === save.name)) continue;
+      await _idbPut(_seasonKey(save.name), save);
+      index.push({ name: save.name, date: save.date || '', episode: save.episode || 0 });
+    }
+    await _saveSeasonIndex(index);
+    localStorage.removeItem('simulator_season_saves');
+  } catch (e) { console.warn('Season save migration failed:', e); }
+}
+
+export async function saveSeasonToStorage() {
   if (!gs?.initialized) { alert('No season to save. Initialize first.'); return; }
   const defaultName = (seasonConfig.name || 'Season') + ' (Ep ' + (gs.episode || 0) + ')';
   const name = prompt('Save name:', defaultName);
   if (!name) return;
-  const saves = _getSeasonSaves();
-  const existing = saves.findIndex(s => s.name === name);
+  const index = await _getSeasonIndex();
+  const existing = index.findIndex(e => e.name === name);
   const data = _buildSeasonSaveData();
   data.name = name;
   if (existing >= 0) {
     if (!confirm(`Overwrite "${name}"?`)) return;
-    saves[existing] = data;
+    index[existing] = { name, date: data.date, episode: data.episode };
   } else {
-    saves.push(data);
+    index.push({ name, date: data.date, episode: data.episode });
   }
-  try {
-    _saveSeasonSaves(saves);
-    alert(`Season "${name}" saved.`);
-  } catch (e) {
-    // localStorage might be full — offer export instead
-    alert('localStorage full. Use "Export Season" to save as a file instead.');
-  }
+  await _idbPut(_seasonKey(name), data);
+  await _saveSeasonIndex(index);
+  renderSeasonSaveList();
+  alert(`Season "${name}" saved.`);
 }
-export function loadSeasonFromStorage(name) {
+export async function loadSeasonFromStorage(name) {
   if (!name) { document.getElementById('season-delete-row').style.display = 'none'; return; }
-  const saves = _getSeasonSaves();
-  const data = saves.find(s => s.name === name);
+  const data = await _idbGet(_seasonKey(name));
   if (!data) { alert('Save not found.'); return; }
   if (!confirm(`Load "${name}"? This replaces your current season.`)) {
     document.getElementById('season-save-list').value = '';
@@ -550,24 +569,25 @@ export function loadSeasonFromStorage(name) {
   document.getElementById('season-save-list').value = '';
   document.getElementById('season-delete-row').style.display = 'none';
 }
-export function deleteSeasonSave() {
+export async function deleteSeasonSave() {
   const sel = document.getElementById('season-save-list');
   const name = sel.value;
   if (!name) return;
   if (!confirm(`Delete "${name}"?`)) return;
-  const saves = _getSeasonSaves().filter(s => s.name !== name);
-  _saveSeasonSaves(saves);
+  const index = (await _getSeasonIndex()).filter(e => e.name !== name);
+  await _idbDelete(_seasonKey(name));
+  await _saveSeasonIndex(index);
+  renderSeasonSaveList();
   sel.value = '';
   document.getElementById('season-delete-row').style.display = 'none';
 }
-export function renderSeasonSaveList() {
+export async function renderSeasonSaveList() {
   const sel = document.getElementById('season-save-list');
   if (!sel) return;
-  const saves = _getSeasonSaves();
+  const index = await _getSeasonIndex();
   sel.innerHTML = '<option value="">— Load saved season —</option>' +
-    saves.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+    index.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
   sel.onchange = function() {
-    // Just show load/delete buttons — don't auto-load
     document.getElementById('season-delete-row').style.display = this.value ? 'block' : 'none';
   };
 }

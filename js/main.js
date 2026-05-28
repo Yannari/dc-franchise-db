@@ -273,6 +273,7 @@ async function init() {
   renderRelList();
   renderAllianceList();
   renderPresetList();
+  await _migrateSeasonSavesFromLS();
   renderSeasonSaveList();
   // Restore spoiler-free state BEFORE rendering tabs (so episode history respects it)
   const _sfSaved2 = localStorage.getItem('simulator_spoilerFree') === 'true';

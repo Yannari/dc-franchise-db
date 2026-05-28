@@ -74,7 +74,7 @@ import { rpBuildAftermayhemLottery, rpBuildAftermayhemBoard, rpBuildAftermayhemF
 import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict, rpBuildYetiElimination } from './chal/are-we-there-yeti.js';
 import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish } from './vp-finale.js';
 
-export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
+export function _textStripHtml(s) { return s ? s.replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<[^>]+>/g, '') : ''; }
 
 // ══════════════════════════════════════════════════════════════
 // GENERIC TWIST CHALLENGE TEXT — renders VP screens as plain text

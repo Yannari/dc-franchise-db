@@ -287,6 +287,24 @@ function _pairPlayers(activePlayers) {
   const n = activePlayers.length;
   if (n < 4) return { pairs: [], spectator: null };
 
+  // Tied Destinies — use those exact pairs so fates stay connected
+  if (gs._tiedDestiniesActive?.length) {
+    const tdPairs = gs._tiedDestiniesActive
+      .filter(p => activePlayers.includes(p.a) && activePlayers.includes(p.b))
+      .map(p => [p.a, p.b]);
+    const paired = new Set(tdPairs.flat());
+    let spectator = null;
+    const leftover = activePlayers.filter(p => !paired.has(p));
+    if (leftover.length === 1) spectator = leftover[0];
+    else if (leftover.length >= 2) {
+      for (let i = 0; i < leftover.length; i += 2) {
+        if (i + 1 < leftover.length) tdPairs.push([leftover[i], leftover[i + 1]]);
+        else spectator = leftover[i];
+      }
+    }
+    return { pairs: tdPairs, spectator };
+  }
+
   // Sort descending by total drama (#5 — interleave drama)
   const byDrama = [...activePlayers].sort((a, b) => {
     const dA = activePlayers.reduce((s, p) => p === a ? s : s + Math.abs(getBond(a, p)), 0);

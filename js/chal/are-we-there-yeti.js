@@ -1846,10 +1846,30 @@ export function simulateAreWeThereYeti(ep) {
   // Sasquatchanakwa state
   const sasquatch = { aggression: 0, lastTarget: null, chasesTriggered: 0, isProvoked: false, provokedBy: null };
 
-  // ── PAIR FORMATION ── Bond-aware: showmances together, rivals paired, rest random
-  const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
-  const pairs = [];
+  // ── PAIR FORMATION ──
   const pairLabels = 'ABCDEFGH'.split('');
+  const pairs = [];
+
+  // Tied Destinies — use those exact pairs so fates stay connected
+  if (gs._tiedDestiniesActive?.length) {
+    const assigned = new Set();
+    gs._tiedDestiniesActive
+      .filter(p => activePlayers.includes(p.a) && activePlayers.includes(p.b))
+      .forEach(p => {
+        pairs.push({ label: pairLabels[pairs.length], members: [p.a, p.b] });
+        assigned.add(p.a); assigned.add(p.b);
+      });
+    const leftover = activePlayers.filter(n => !assigned.has(n));
+    for (let i = 0; i < leftover.length; i += 2) {
+      if (i + 1 < leftover.length) {
+        pairs.push({ label: pairLabels[pairs.length], members: [leftover[i], leftover[i + 1]] });
+      } else {
+        pairs[pairs.length - 1].members.push(leftover[i]);
+      }
+    }
+  } else {
+  // Bond-aware: showmances together, rivals paired, rest random
+  const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
   const assigned = new Set();
 
   // First pass: pair showmance partners (if both active)
@@ -1891,6 +1911,7 @@ export function simulateAreWeThereYeti(ep) {
       pairs[pairs.length - 1].members.push(remaining[i]);
     }
   }
+  } // end else (no tied destinies)
 
   // Init firedEvents + supplies per pair (AFTER pair formation)
   const firedEvents = { sasquatchTypes: new Set(), confessionalBuckets: new Set() };

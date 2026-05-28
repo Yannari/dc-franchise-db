@@ -840,6 +840,37 @@ export function simulateBridalBrawls(ep) {
 
 // ── PAIRING ALGORITHM ──
 function _buildPairs(active) {
+  // Tied Destinies — use those exact pairs so fates stay connected
+  if (gs._tiedDestiniesActive?.length) {
+    const pairs = [];
+    const used = new Set();
+    gs._tiedDestiniesActive
+      .filter(p => active.includes(p.a) && active.includes(p.b))
+      .forEach(p => {
+        const guide = _guideScore(p.a) >= _guideScore(p.b) ? p.a : p.b;
+        const blind = guide === p.a ? p.b : p.a;
+        pairs.push({ guide, blind, crasher: null, pairWeight: 1, compat: romanticCompat(p.a, p.b), trustLevel: getBond(guide, blind) });
+        used.add(p.a); used.add(p.b);
+      });
+    const leftover = active.filter(n => !used.has(n));
+    if (leftover.length >= 2) {
+      for (let i = 0; i < leftover.length; i += 2) {
+        if (i + 1 < leftover.length) {
+          const guide = _guideScore(leftover[i]) >= _guideScore(leftover[i + 1]) ? leftover[i] : leftover[i + 1];
+          const blind = guide === leftover[i] ? leftover[i + 1] : leftover[i];
+          pairs.push({ guide, blind, crasher: null, pairWeight: 1, compat: romanticCompat(guide, blind), trustLevel: getBond(guide, blind) });
+        } else {
+          const weakest = pairs.reduce((min, p) => p.pairWeight < min.pairWeight ? p : min, pairs[0]);
+          weakest.crasher = leftover[i];
+        }
+      }
+    } else if (leftover.length === 1) {
+      const weakest = pairs.reduce((min, p) => p.pairWeight < min.pairWeight ? p : min, pairs[0]);
+      weakest.crasher = leftover[0];
+    }
+    return pairs;
+  }
+
   const pool = [...active];
   const allPairs = [];
 

@@ -257,9 +257,40 @@ export function simulateCrouchingCourtney(ep) {
 
   // Form pairs — first half are trainers, they pick fighters
   const numPairs = Math.floor(trainees.length / 2);
+  const pairs = [];
+
+  // Tied Destinies — use those exact pairs so fates stay connected
+  if (gs._tiedDestiniesActive?.length) {
+    const tdUsed = new Set();
+    gs._tiedDestiniesActive
+      .filter(p => trainees.includes(p.a) && trainees.includes(p.b))
+      .forEach(p => {
+        const sA = pStats(p.a), sB = pStats(p.b);
+        const trainer = (sA.strategic + sA.mental) >= (sB.strategic + sB.mental) ? p.a : p.b;
+        const fighter = trainer === p.a ? p.b : p.a;
+        tdUsed.add(p.a); tdUsed.add(p.b);
+        const bond = getBond(trainer, fighter);
+        const tPr = pronouns(trainer);
+        const pickText = bond > 3
+          ? `${trainer} and ${fighter} lock eyes. Tied Destinies made this pair inevitable — but they'd have picked each other anyway.`
+          : bond < -2
+          ? `${trainer} and ${fighter} are chained by fate. Neither looks happy about it. ${tPr.Sub} sizes up ${fighter}. "Let's just get through this."`
+          : `${trainer} nods at ${fighter}. Tied Destinies chose for them. Time to make it work.`;
+        pairs.push({ trainer, fighter, pickText });
+      });
+    const leftover = trainees.filter(n => !tdUsed.has(n));
+    const available = [...leftover];
+    for (let i = 0; i < available.length; i += 2) {
+      if (i + 1 < available.length) {
+        const sA = pStats(available[i]), sB = pStats(available[i+1]);
+        const trainer = (sA.strategic + sA.mental) >= (sB.strategic + sB.mental) ? available[i] : available[i+1];
+        const fighter = trainer === available[i] ? available[i+1] : available[i];
+        pairs.push({ trainer, fighter, pickText: `${trainer} and ${fighter} pair up with whoever's left.` });
+      }
+    }
+  } else {
   const trainers = draftOrder.slice(0, numPairs);
   const available = draftOrder.slice(numPairs);
-  const pairs = [];
 
   for (const trainer of trainers) {
     // Trainer picks fighter — prefer allies/friends, avoid enemies
@@ -315,9 +346,11 @@ export function simulateCrouchingCourtney(ep) {
     }
     pairs.push({ trainer, fighter, pickText });
   }
+  } // end else (no tied destinies)
 
   // Odd player out joins as solo (trains alone)
-  const soloPlayer = available.length ? available[0] : null;
+  const pairedNames = new Set(pairs.flatMap(p => [p.trainer, p.fighter]));
+  const soloPlayer = trainees.find(n => !pairedNames.has(n)) || null;
 
   result.phase1.pairs = pairs;
 

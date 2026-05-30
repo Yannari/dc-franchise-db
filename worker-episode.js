@@ -1694,8 +1694,36 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
   // Build previous episodes context
   let previousContext = '';
   if (previousEpisodes && previousEpisodes.length > 0) {
-    previousContext = '\n\n═══════════════════════════════════════════════════════════\nPREVIOUS EPISODES CONTEXT\n═══════════════════════════════════════════════════════════\n\n';
-    previousContext += 'Use these previous episodes to maintain continuity:\n\n';
+    previousContext = '\n\n═══════════════════════════════════════════════════════════\nPREVIOUS EPISODES — FACTS ONLY, NOT A STYLE TEMPLATE\n═══════════════════════════════════════════════════════════\n\n';
+    previousContext += `🚨 CRITICAL READING INSTRUCTION — READ BEFORE LOOKING AT TRANSCRIPTS BELOW 🚨
+
+The previous-episode transcripts below exist for ONE reason: so you know what HAPPENED.
+They are NOT a style guide. They are NOT a template. They are NOT examples of good writing.
+
+When you read them, extract ONLY these facts:
+  ✅ Who is still in the game / who was eliminated and when
+  ✅ Active alliances, rivalries, showmances, betrayals, grudges
+  ✅ Advantages in play (idols, extras, amulets, etc.)
+  ✅ Ongoing story arcs and unresolved conflicts
+  ✅ Challenge names already used (so you don't repeat them)
+  ✅ Character voice consistency — how a specific player TALKS (their vocabulary, their tics)
+
+DO NOT extract or imitate:
+  ❌ Sentence rhythm or dialogue cadence from prior episodes
+  ❌ Scene structure patterns (e.g. "every scene ends with a deadpan zinger")
+  ❌ Confessional opening formulas
+  ❌ Stage direction style (e.g. "[X almost laughs]", "[X stares]")
+  ❌ Chris's specific phrasing tics or his "I love..." sentence pattern
+  ❌ Any specific jokes, callbacks, or running bits unless they are PLOT-RELEVANT
+  ❌ The overall episode pacing or scene-break rhythm
+
+⚠️ THE FEEDBACK LOOP PROBLEM:
+If you copy the prose style of prior episodes, every new episode reinforces the same robotic patterns and the season collapses into one repetitive voice. Each episode must be its OWN piece of writing with its OWN rhythm, NOT a fanfic continuation of episode 1's style. Treat the transcripts below the way a TV writer treats a series bible: read for facts, then close the binder and write FRESH.
+
+🚫 ACTIVE ANTI-COPYING RULE:
+Before you write any line of dialogue, ask: "Am I writing this because it fits THIS moment, or because it sounds like something from a previous episode?" If the answer is the second one, throw it out and write something different. The previous episodes had voice problems. Do not perpetuate them.
+
+Below are the transcripts — read them for FACTS, not STYLE:\n\n`;
     
     previousEpisodes.forEach(ep => {
       const limit = ep.charLimit || 3000;
@@ -1733,7 +1761,19 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
       previousContext += `\n🚫 CHALLENGES ALREADY USED THIS SEASON — DO NOT REPEAT ANY OF THESE:\n${usedChallenges.join('\n')}\n\n`;
     }
 
-    previousContext += '\n⚠️ CRITICAL: Maintain character consistency, ongoing relationships, alliance dynamics, and story arcs from these previous episodes.\n\n';
+    previousContext += `\n═══════════════════════════════════════════════════════════
+⚠️ END OF PRIOR-EPISODE TRANSCRIPTS — FINAL REMINDER BEFORE YOU WRITE
+═══════════════════════════════════════════════════════════
+
+What you just read was REFERENCE MATERIAL, not a writing sample.
+
+✅ CARRY FORWARD: character relationships, alliance lines, grudges, who has what advantage, ongoing arcs, established character voices (vocabulary + personality, not sentence rhythm), challenges already used.
+
+🚫 DO NOT CARRY FORWARD: prose style, scene cadence, dialogue rhythm, stage-direction tics, Chris's specific phrasings, confessional opening patterns, the way scenes ended, the way arguments resolved, recurring jokes that aren't plot-load-bearing.
+
+This episode is a FRESH PIECE OF WRITING. If it ends up sounding identical to the prior episodes, you failed. The audience should feel a NEW writer took over the script while keeping the same cast and continuity.
+
+Now write the new episode. The summary below tells you what HAPPENS. Everything else — pacing, voice, scene construction, jokes — comes from the writing rules higher in this prompt, NOT from the transcripts above.\n\n`;
   }
 
   const hasRI = seasonSetting && /redemption island/i.test(seasonSetting);
@@ -1825,6 +1865,49 @@ WRONG: "Jake\\nFor me?" — CORRECT: "Jake: For me?"
 Characters are LOUD, BLUNT, PETTY, and FUNNY. No one speaks in poetic metaphors.
 No indie-film prose. No "You looked ready to faint dramatically." No artsy nonsense.
 Write like Disventure Camp / Total Drama — short punchy lines, interruptions, arguments.
+
+⛔ ANTI-ROBOTIC RULE — KILL THE AI CADENCE (READ THIS TWICE):
+The #1 way AI-written episodes give themselves away is a flat, identical, ping-pong rhythm where every character speaks in 2-4 word declarative sentences and every exchange ends in a deadpan zinger. STOP DOING THIS.
+
+🚫 THIS IS ROBOTIC AND BANNED:
+Jake: So Dan's gone.
+Miriam: We were there.
+Jake: I know. I'm just saying it.
+Gabby: Maybe don't.
+
+🚫 ALSO ROBOTIC AND BANNED (declarative + flat reaction):
+Thom: Sorry.
+Eureka: Don't apologize for winning.
+Ellie: Nice move. I hate it.
+Fiore: Move.
+
+Why these are robotic: every line is the same length, same rhythm, same tone. No one interrupts. No one rambles. No one repeats themselves. No one uses filler. Every exchange resolves in a clean punchline. REAL PEOPLE DON'T TALK LIKE THIS, AND CARTOON PEOPLE TALK EVEN LESS LIKE THIS.
+
+✅ FIX IT WITH THESE TECHNIQUES (use 3+ per scene):
+- INTERRUPTIONS: "I just—" "No, listen—" "Are you even—" Lines cut each other off mid-word.
+- RAMBLING: At least one character per scene over-explains, repeats themselves, or talks past the point. "I just— okay, I know how it sounds, but— look, it's not like I planned it, I just, I saw him walk over and I panicked, so—"
+- FILLER: "um", "like", "I mean", "okay so", "wait wait wait", "no but", "honestly"
+- REPETITION UNDER STRESS: "It's fine. It's fine. It's— it's actually not fine."
+- TRAILING OFF: "...I don't even know anymore." "Whatever. Forget it."
+- HALF-FINISHED THOUGHTS: "If she thinks I'm— you know what, never mind."
+- ASYMMETRIC LENGTHS: one character spits 2 words while another vomits a paragraph. NEVER have every line be the same length.
+- NON-SEQUITURS: someone changes the subject because they're hungry / cold / saw a bug / got distracted.
+
+🚫 BANNED STAGE DIRECTION TICS:
+- "[X almost laughs.]" / "[X almost smiles.]" / "[X's jaw tightens.]" — describing micro-expressions is a writer's-room tell. Either they laughed or they didn't. Show action, not editorialized inner state.
+- "[X stares at Y.]" used as a scene closer — overused.
+
+🚫 BANNED CONVERSATIONAL FORMULAS:
+- The setup → punchline → flat deadpan reaction → scene cut. Not every scene ends with a zinger. Some end with someone walking away mid-sentence, someone getting interrupted by Chef's announcement, someone genuinely upset and not having a comeback ready.
+- Two characters trading equally-witty barbs. Only ONE character per scene gets the good lines. Other characters fumble, get owned, repeat their previous point louder, or just look mad. Jake should be visibly worse at comebacks than Fiore. Most contestants are NOT quotable.
+
+🚫 BANNED CONFESSIONAL OPENERS (you overuse these):
+- "I know..." / "I didn't..." / "I'm not..." / "Look,..." — vary openers. Start mid-thought ("—and that's when I knew"), with a question to camera ("Can I be honest?"), with a noise ("Pffft."), with a non-sequitur ("My back hurts. Also, I'm winning."), or jump straight to an emotional reaction.
+
+🚫 BANNED CHRIS TIC:
+- "I love [bad thing happening to contestants]" — you use this in EVERY Chris line. He has other modes. Sometimes he just explains rules deadpan. Sometimes he gets distracted by his hair or the cameraman. Sometimes he mocks ONE specific player by name and ignores the rest. Maximum ONE "I love..." line per episode.
+
+THE TEST: read your scene out loud. If every line lands with the same TA-DA rhythm, it's robotic. Break it. Make someone trail off. Make someone repeat themselves. Make someone say something stupid that doesn't get a clean response.
 
 ⛔ ABSOLUTE COHERENCE RULE — EVENTS MUST MAKE SENSE TOGETHER:
 The summary gives you raw events. Some will seem contradictory (a player is nice in one event, mean in the next). YOUR JOB is to connect them with character motivation so the episode flows logically.
@@ -2499,13 +2582,21 @@ Comedy works because the character is being sincere. The funny part is the gap b
 💬 NATURAL DIALOGUE & SCENE CONSTRUCTION (CRITICAL)
 ═══════════════════════════════════════════════════════════
 
-**THREE RULES FOR DIALOGUE:**
+**SEVEN RULES FOR DIALOGUE:**
 
 1. **No therapy-speak.** Nobody says "I'm processing my emotions" or "You're allowed to not be okay" or "Let's unpack that." People say "You good?" and "Yeah, this sucks." Write how people actually talk to each other, not how a therapist talks to a client.
 
 2. **No writer-y symbolic actions.** Nobody "counts wipes" or "arranges shells in precise lines" or "traces patterns in the sand." People scrub their hands, pace, stare at the fire, fidget with their clothes. Ask: "Would a real person do this, or is a writer trying to be symbolic?"
 
 3. **People don't speak in complete sentences.** They interrupt ("Don't even—"), trail off ("I just—I don't know—"), use filler ("um", "like", "I mean"), repeat themselves when stressed ("It's dirty. It's so dirty."), and ask short questions ("What happened?" not "Could you please elaborate on what happened?").
+
+4. **Break the ping-pong rhythm.** If three consecutive lines are all 2-5 words long and all declarative, you are writing a robot. Make one character ramble, talk over the other, or change the subject. Asymmetric line lengths inside a single scene are MANDATORY — at least one line should be 25+ words, at least one should be 1-3 words.
+
+5. **Only ONE character per scene gets the good lines.** Real cast comedy isn't a room full of equally-witty roast comedians. Most contestants fumble their comebacks, escalate volume instead of cleverness, or just look angry and don't have a response. If both speakers in a scene are landing zingers, cut the weaker one's zinger and replace it with a frustrated noise, a half-thought, or a topic change.
+
+6. **Stop writing "Nice move. I hate it." dialogue.** That two-sentence declarative + flat reaction is the most robotic pattern you have. If you're about to write a line that is one short statement followed by a one-clause reaction, rewrite it: add a hedge, a stammer, a self-correction, a question, or an interruption.
+
+7. **Vary confessional openings.** Do NOT start more than one confessional per episode with "I know," "I didn't," "I'm not," or "Look,". Other valid openers: mid-thought dashes ("—which is INSANE, by the way"), questions to camera, noises (sigh, laugh, groan), non-sequiturs, single-word reactions ("Wow."), or just silence held for a beat described in stage direction.
 
 **GOOD SCENE (copy this style):**
 \`\`\`

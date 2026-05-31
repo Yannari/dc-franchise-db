@@ -1763,18 +1763,44 @@ Before you write any line of dialogue, ask: "Am I writing this because it fits T
 
 Below are the transcripts — read them for FACTS, not STYLE:\n\n`;
     
-    previousEpisodes.forEach(ep => {
-      const limit = ep.charLimit || 3000;
+    // Enforce a total context budget so the prompt never exceeds the model's window (Opus/Sonnet = 200k tokens).
+    // The client sends older summaries at FULL length, which stacks up past the limit by mid-season. So we cap
+    // each older summary, keep the recent full transcripts for voice continuity, and trim the block oldest-first.
+    const PER_SUMMARY_CAP = 3000;      // max chars per older [BRANTSTEELE SUMMARY]
+    const TOTAL_PREV_BUDGET = 120000;  // max chars for the whole previous-episode block (~30k tokens)
+    let prevBudgetUsed = 0;
+    let oldestOmitted = 0;
+    const renderedBlocks = [];
+    // Walk newest -> oldest so recent episodes win the budget; render order is restored afterward.
+    for (let i = previousEpisodes.length - 1; i >= 0; i--) {
+      const ep = previousEpisodes[i];
       const transcript = ep.transcript || '';
+      const typeCap = ep.type === 'summary'
+        ? PER_SUMMARY_CAP
+        : ep.type === 'transcript-compressed'
+          ? (ep.charLimit || 1500)
+          : (ep.charLimit || 3000);
+      const limit = Math.min(transcript.length, typeCap);
       const snippet = transcript.substring(0, limit);
       const truncated = transcript.length > limit;
+      // Always keep at least the most recent episode; drop older ones once the budget is spent.
+      if (renderedBlocks.length > 0 && prevBudgetUsed + snippet.length > TOTAL_PREV_BUDGET) {
+        oldestOmitted++;
+        continue;
+      }
+      prevBudgetUsed += snippet.length;
       const label = ep.type === 'summary'
         ? `--- Episode ${ep.episode} [BRANTSTEELE SUMMARY] ---`
         : ep.type === 'transcript-compressed'
           ? `--- Episode ${ep.episode} [TRANSCRIPT - PARTIAL] ---`
           : `--- Episode ${ep.episode} [FULL TRANSCRIPT] ---`;
-      previousContext += `${label}\n${snippet}${truncated ? '\n...(truncated)' : ''}\n\n`;
-    });
+      renderedBlocks.push(`${label}\n${snippet}${truncated ? '\n...(truncated)' : ''}\n\n`);
+    }
+    renderedBlocks.reverse();
+    if (oldestOmitted > 0) {
+      previousContext += `(The earliest ${oldestOmitted} episode${oldestOmitted > 1 ? 's were' : ' was'} omitted here for length — their key facts carry through later summaries.)\n\n`;
+    }
+    previousContext += renderedBlocks.join('');
     
     // Extract challenge names from previous episodes to prevent repeats
     const usedChallenges = [];

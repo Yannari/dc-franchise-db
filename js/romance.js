@@ -573,9 +573,13 @@ export function updateShowmancePhases(ep) {
     const [a, b] = sh.players;
     if (!active.includes(a) || !active.includes(b)) return; // one eliminated — skip
 
-    // ── NATURAL BREAKUP: bond dropped below -1 → showmance dies organically ──
+    // ── NATURAL BREAKUP: the romantic bond cooled too far → showmance dies organically ──
+    // Showmances form at a bond of ~3.5–6 (solid-to-strong). Once the bond slips below the
+    // "solid bond" line (3) — i.e. down to just a "slight bond" or lower — they're not a couple
+    // anymore, just two people who used to be. No fight or betrayal required. Sparks are exempt
+    // (too new — they form above the line and transition to honeymoon before this can bite).
     const _preBond = getBond(a, b);
-    if (_preBond <= -1 && sh.phase !== 'spark') {
+    if (_preBond < 3 && sh.phase !== 'spark') {
       sh.phase = 'broken-up';
       sh.breakupEp = epNum;
       sh.breakupType = 'faded'; // neither voted the other out — just fell apart
@@ -585,12 +589,25 @@ export function updateShowmancePhases(ep) {
         if (!ep.campEvents[tribeName]) ep.campEvents[tribeName] = { pre: [], post: [] };
         const block = ep.campEvents[tribeName];
         const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
-        evts.push({ type: 'showmanceBreakup', text: _pick([
-          `Whatever ${a} and ${b} had is gone. No fight, no betrayal — just two people who stopped looking at each other the same way. The tribe noticed weeks ago.`,
-          `${a} and ${b} haven't spoken in days. The showmance that started in episode ${sh.sparkEp} ended somewhere between the silence and the distance. Nobody marked the exact moment.`,
-          `It's over between ${a} and ${b}. Not with a bang — with a fade. ${_pA.Sub} moved ${_pA.posAdj} things to the other side of the shelter. ${_pB.Sub} didn't stop ${_pA.obj}.`,
+        // Two tones: an amicable fade (bond cooled to slight/neutral) vs. a soured one (bond went negative)
+        const _fadeAmicable = [
+          `Whatever ${a} and ${b} had has quietly run its course. No fight, no betrayal — just two people who stopped looking at each other the same way. The tribe noticed weeks ago.`,
+          `The spark between ${a} and ${b} that lit up episode ${sh.sparkEp} has dimmed to a flicker. What's left is friendly and distant — the warmth of something that used to be more.`,
+          `${a} and ${b} drift apart without ceremony. The long conversations got shorter, then stopped. By now it's less a breakup than an admission of what already happened.`,
+          `It's over between ${a} and ${b}. Not with a bang — with a fade. ${_pA.Sub} moved ${_pA.posAdj} things to the other side of the shelter, and ${_pB.sub} didn't stop ${_pA.obj}.`,
+          `The showmance between ${a} and ${b} doesn't break so much as evaporate. Long days, game pressure, cooling feelings. What started electric is just two tired people now.`,
+          `${a} and ${b} are still cordial — and that's the tell. The intensity that made them a showmance has worn down to politeness. Out here, politeness is the sound of something ending.`,
           `The showmance died the way most do out here — quietly, between missed conversations and avoided eye contact. ${a} and ${b} are done.`,
-        ]), players: [a, b] });
+        ];
+        const _fadeSoured = [
+          `Whatever ${a} and ${b} had has curdled. The looks that used to linger slide right past each other now. Whatever this is, it isn't a showmance anymore.`,
+          `${a} and ${b} aren't a couple now — they're a cold front. The game got between them, and neither one fought to keep the other. The shelter feels colder where they used to sit.`,
+          `The romance between ${a} and ${b} soured somewhere along the way. The tribe stopped asking about them days ago, and neither one brings the other up.`,
+          `It's done between ${a} and ${b}, and not gently. The affection wore through to friction, and the friction wore through to nothing. They keep their distance now.`,
+          `${a} and ${b} ended the way a fire dies after rain — no drama, just cold ash. Whatever pulled them together stopped pulling. Now they avoid each other's eyes.`,
+          `${a} and ${b} haven't spoken in days. The showmance that started in episode ${sh.sparkEp} ended somewhere between the silence and the distance — nobody marked the exact moment.`,
+        ];
+        evts.push({ type: 'showmanceBreakup', text: _pick(_preBond >= 0 ? _fadeAmicable : _fadeSoured), players: [a, b] });
         ep.showmanceEvents = ep.showmanceEvents || [];
         ep.showmanceEvents.push({ type: 'showmanceBreakup', players: [a, b], phase: 'faded' });
       }

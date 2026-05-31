@@ -886,6 +886,11 @@ export function applyPostTribalConsequences(ep) {
   const elim = ep.eliminated;
   const isOpen = !!ep.openVote;
 
+  // Fewer players left = far fewer suspects and more transparent votes → easier to deduce
+  // who wrote your name. Early game (big tribe) your name is one of many — much harder to trace.
+  const numLeft = active.length;
+  const countAdj = (9 - numLeft) * 3.5; // +14 at final 5, ~0 at 9, ~-17 at 14, ~-31 at 18
+
   if (!gs.discoveredVotesLastEp) gs.discoveredVotesLastEp = [];
   if (!gs.blowupHeatNextEp) gs.blowupHeatNextEp = new Set();
 
@@ -929,8 +934,8 @@ export function applyPostTribalConsequences(ep) {
       survivors.forEach(ally => {
         votersAgainst.forEach(voter => {
           if (voter === ally) return;
-          // Open vote = always knows; closed = 40% + intuition*3%
-          const threshold = 40 + (pStats(ally).intuition || 5) * 3;
+          // Open vote = always knows; closed = base + intuition, scaled by how many players remain
+          const threshold = Math.max(10, Math.min(95, 35 + (pStats(ally).intuition || 5) * 3 + countAdj));
           const knows = isOpen || pctRoll(ally + voter, ep.num) < threshold;
           if (!knows) return;
           addBond(ally, voter, scaledHit(ally, voter));
@@ -953,10 +958,11 @@ export function applyPostTribalConsequences(ep) {
     const votedForBoot = elim && vlog.some(l => l.voter === target && l.voted === elim);
 
     let threshold;
-    if (isOpen)       threshold = 100; // open vote — everyone knows
-    else if (isIsolated)  threshold = 80;  // sole vote — nobody else wrote that name
-    else if (votedForBoot) threshold = 15; // majority voter, not worried about counter-votes
-    else              threshold = 30 + Math.round(intuition * 2); // 30–50% intuition-gated
+    if (isOpen)            threshold = 100; // open vote — everyone knows
+    else if (isIsolated)   threshold = 50 + countAdj;  // sole vote — still has to be traced back
+    else if (votedForBoot) threshold = 10 + countAdj;  // majority voter, barely worried
+    else                   threshold = 18 + Math.round(intuition * 1.5) + countAdj; // intuition-gated
+    if (!isOpen) threshold = Math.max(5, Math.min(95, threshold));
 
     targetVoters.forEach(({ voter }) => {
       if (threshold < 100 && pctRoll(target + voter, ep.num + 7) >= threshold) return;

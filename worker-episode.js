@@ -15,14 +15,14 @@ export default {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { season, episode, summaryText, mode, previousEpisodes, franchiseContext, seasonSetting, auditionsText } = body;
+    const { season, episode, summaryText, mode, previousEpisodes, franchiseContext, seasonSetting, auditionsText, quality } = body;
 
     if (mode === "episode") {
-      return await generateEpisode(summaryText, season, episode, env, previousEpisodes, franchiseContext, seasonSetting, auditionsText);
+      return await generateEpisode(summaryText, season, episode, env, previousEpisodes, franchiseContext, seasonSetting, auditionsText, quality);
     } else if (mode === "summarize") {
-      return await generateSummary(body.rawText, season, episode, env, body.prevSummary || "");
+      return await generateSummary(body.rawText, season, episode, env, body.prevSummary || "", quality);
     } else if (mode === "enhance") {
-      return await enhanceSummary(summaryText, season, episode, env, body.prevSummary || "", franchiseContext, seasonSetting);
+      return await enhanceSummary(summaryText, season, episode, env, body.prevSummary || "", franchiseContext, seasonSetting, quality);
     } else if (mode === "season-data-extraction") {
       return await generateSeasonDataExtraction(body, env);
     } else {
@@ -30,6 +30,27 @@ export default {
     }
   },
 };
+
+// ── Model configuration ──────────────────────────────────────────────
+// Creative writing (episode transcripts, summaries) runs on Claude.
+//   creative = Sonnet 4.6 — primary; best quality-per-dollar at volume
+//   quality  = Opus 4.5   — "flip on" for finales / showcase episodes
+//   fast     = Haiku 4.5  — cheap model for bulk / lower-stakes creative
+// JSON / analytics extraction paths keep their own (GPT + Haiku) models.
+const MODELS = {
+  creative: "claude-sonnet-4-6",
+  quality:  "claude-opus-4-5",
+  fast:     "claude-haiku-4-5-20251001",
+};
+
+// Returns the Claude model id for a tier, upgrading to the quality model
+// when the request asks for it (body.quality) or env.QUALITY_MODE is set.
+function claudeModel(tier, opts = {}, env = {}) {
+  if (opts.quality || env.QUALITY_MODE === "true" || env.QUALITY_MODE === true) {
+    return MODELS.quality;
+  }
+  return MODELS[tier] || MODELS.creative;
+}
 
 function extractCastFromEpisode1(episodes) {
   try {
@@ -1683,7 +1704,7 @@ Rules:
   });
 }
 
-async function generateEpisode(summaryText, season, episode, env, previousEpisodes = [], franchiseContext = '', seasonSetting = '', auditionsText = '') {
+async function generateEpisode(summaryText, season, episode, env, previousEpisodes = [], franchiseContext = '', seasonSetting = '', auditionsText = '', quality = false) {
   if (!summaryText || typeof summaryText !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
       status: 400,

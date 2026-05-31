@@ -413,8 +413,10 @@ export function decayAllianceTrust(epNum) {
         }
       }
       const avgBond = pairs > 0 ? totalBond / pairs : 0;
-      // Only count moderate+ betrayals for dissolution (minor rogue votes don't kill alliances)
-      const _significantBetrayals = (alliance.betrayals || []).filter(b => b.severity !== 'minor').length;
+      // Only count moderate+ betrayals for dissolution (minor rogue votes don't kill alliances).
+      // Betrayals by members who've been eliminated or expelled no longer drag the alliance down —
+      // each member owns their own betrayals; a departed traitor's sins leave with them.
+      const _significantBetrayals = (alliance.betrayals || []).filter(b => b.severity !== 'minor' && activeMembers.includes(b.player)).length;
       const betrayalCount = _significantBetrayals;
       const recentBetrayals = (alliance.betrayals || []).filter(b => b.ep === epNum);
       // Grace period: alliances younger than 3 episodes need 1 extra betrayal before dissolution
@@ -510,8 +512,8 @@ export function decayAllianceTrust(epNum) {
           gs.allianceDissolutions.push({ name: alliance.name, ep: epNum, reason: 'ally-betrayals', members: [...activeMembers], betrayals: recentBetrayals, betrayalCount: Object.keys(_majorByMember).length, avgBond: Math.round(avgBond * 10) / 10 });
           return;
         }
-        // Absolute cap: too much damage from too many sources
-        const _totalBetrayals = alliance.betrayals?.length || 0;
+        // Absolute cap: too much damage from too many sources (only from members still in the game)
+        const _totalBetrayals = (alliance.betrayals || []).filter(b => activeMembers.includes(b.player)).length;
         const _quitCount = alliance.quits?.length || 0;
         if (_totalBetrayals >= 6 || _quitCount >= 4 || (_totalBetrayals + _quitCount) >= 8) {
           alliance.active = false;

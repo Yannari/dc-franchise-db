@@ -439,9 +439,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `Frustration spills over between ${a} and ${b}. It stays controlled, barely.`]
         : [`${a} pushes back on ${b} in a way that surprises everyone — they're usually so composed.`,
            `Even ${a}, who rarely reacts, finally says something to ${b}. That's how you know it's bad.`];
-      events.push({ type: 'fight', text: fightLines[Math.floor(Math.random() * fightLines.length)], players: [a, b], badgeText: 'FIGHT', badgeClass: 'red' });
+      const _fightText = fightLines[Math.floor(Math.random() * fightLines.length)];
+      events.push({ type: 'fight', text: _fightText, players: [a, b], badgeText: 'FIGHT', badgeClass: 'red' });
       if (!gs._blowupPlayers) gs._blowupPlayers = [];
-      if (!gs._blowupPlayers.includes(a)) gs._blowupPlayers.push(a);
+      if (!gs._blowupPlayers.some(r => r.name === a)) gs._blowupPlayers.push({ name: a, type: 'fight', target: b, incident: _fightText });
 
     } else if (eventType === 'bond') {
       // High social = initiates. High temperament = calm enough to open up genuinely.
@@ -483,9 +484,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `The pressure finally gets to ${p}. ${_mpP.Sub} crack${_mpP.sub==='they'?'':'s'}. Not quietly.`]
         : [`${p}'s controlled exterior breaks down for a rare moment. The tribe takes a mental note.`,
            `${p} usually keeps it together. Not today. The cracks are visible now.`];
-      events.push({ type: 'meltdown', text: meltdownLines[Math.floor(Math.random() * meltdownLines.length)], player: p, players: [p], badgeText: 'MELTDOWN', badgeClass: 'red' });
+      const _meltdownText = meltdownLines[Math.floor(Math.random() * meltdownLines.length)];
+      events.push({ type: 'meltdown', text: _meltdownText, player: p, players: [p], badgeText: 'MELTDOWN', badgeClass: 'red' });
       if (!gs._blowupPlayers) gs._blowupPlayers = [];
-      if (!gs._blowupPlayers.includes(p)) gs._blowupPlayers.push(p);
+      if (!gs._blowupPlayers.some(r => r.name === p)) gs._blowupPlayers.push({ name: p, type: 'meltdown', target: null, incident: _meltdownText });
 
     } else if (eventType === 'hardWork') {
       const p = _pick(group, n => Math.max(0.1, pStats(n).loyalty + pStats(n).endurance * 0.2 + 1));
@@ -1397,20 +1399,21 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       events.push({ type: 'readingRoom', text: rrLines[Math.floor(Math.random() * rrLines.length)], players: [p], badgeText: 'READING', badgeClass: '' });
 
     } else if (eventType === 'allianceCrack') {
-      const naMembers = group.filter(n => gs.namedAlliances?.some(a => a.active && a.members.includes(n) && a.members.some(m => group.includes(m) && m !== n)));
-      if (!naMembers.length) continue;
-      const acA = _pick(naMembers, n => {
+      // A crack only makes sense between allies whose trust is actually thinning — NEVER between
+      // members who still genuinely like each other. Bonds >= 3 ("solid" and up) don't crack.
+      // Build the pool of strained ally pairs first; if none exist, the alliance isn't cracking → skip.
+      const CRACK_MAX_BOND = 3; // below "solid bond" — solid/strong/ride-or-die/unbreakable never crack
+      const _crackCandidates = [];
+      group.forEach(n => {
         const na = gs.namedAlliances?.find(al => al.active && al.members.includes(n));
-        if (!na) return 0.1;
-        const allies = na.members.filter(m => group.includes(m) && m !== n);
-        const avgB = allies.reduce((s, o) => s + getBond(n, o), 0) / (allies.length || 1);
-        return Math.max(0.1, (5 - avgB) * 0.4 + (10 - pStats(n).loyalty) * 0.2 + 1);
+        if (!na) return;
+        na.members.filter(m => group.includes(m) && m !== n && getBond(n, m) < CRACK_MAX_BOND)
+          .forEach(m => _crackCandidates.push({ a: n, b: m, na, bond: getBond(n, m) }));
       });
-      const acNa = gs.namedAlliances?.find(al => al.active && al.members.includes(acA));
-      if (!acNa) continue;
-      const acAllies = acNa.members.filter(m => group.includes(m) && m !== acA);
-      if (!acAllies.length) continue;
-      const acB = wRandom(acAllies, n => Math.max(0.1, 5 - getBond(acA, n) + 1));
+      if (!_crackCandidates.length) continue;
+      // Weight toward the weakest bonds and lowest-loyalty instigators
+      const _cc = wRandom(_crackCandidates, c => Math.max(0.1, (CRACK_MAX_BOND - c.bond) * 0.5 + (10 - pStats(c.a).loyalty) * 0.2 + 1));
+      const acA = _cc.a, acB = _cc.b, acNa = _cc.na;
       addBond(acA, acB, -0.25);
       const _acA = pronouns(acA);
       const crackLines = [
@@ -1949,15 +1952,38 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         const unique = [...new Set(allMembers)];
         return unique.length > myAlliances[0].members.length + 1; // overlapping but different groups
       });
-      const _contradictors = _prevEp?.votingLog
-        ? group.filter(n => {
-            const vote = _prevEp.votingLog.find(v => v.voter === n);
-            if (!vote) return false;
-            // Check if they voted against their own alliance's target
-            const myAlliance = (gs.namedAlliances || []).find(a => a.active && a.members.includes(n));
-            return myAlliance && vote.voted !== n && _prevEp.votes?.[vote.voted] !== undefined;
-          })
-        : [];
+      // ── Contradictors: actual vote deviated from their alliance's consensus target ──
+      // Capture the SPECIFIC contradiction (what they were expected to do vs. what they did)
+      // so the narration can name names instead of staying vague.
+      const _contradictorInfo = {};
+      if (_prevEp?.votingLog) {
+        group.forEach(n => {
+          const vote = _prevEp.votingLog.find(v => v.voter === n);
+          if (!vote || !vote.voted || vote.voted === n) return;
+          const myAlliance = (gs.namedAlliances || []).find(al => al.active && al.members.includes(n));
+          if (!myAlliance) return;
+          // Consensus = the name most of the REST of the alliance wrote
+          const allyVotes = {};
+          myAlliance.members.forEach(m => {
+            if (m === n) return;
+            const mv = _prevEp.votingLog.find(v => v.voter === m);
+            if (mv && mv.voted) allyVotes[mv.voted] = (allyVotes[mv.voted] || 0) + 1;
+          });
+          const consensus = Object.entries(allyVotes).sort((x, y) => y[1] - x[1])[0]?.[0];
+          if (consensus && consensus !== vote.voted) {
+            _contradictorInfo[n] = { actual: vote.voted, expected: consensus, alliance: myAlliance.name };
+          }
+        });
+      }
+      const _contradictors = Object.keys(_contradictorInfo);
+
+      // Multi-alliance: capture the two conflicting alliance names for specificity
+      const _multiInfo = {};
+      _multiAlliancePlayers.forEach(n => {
+        const myAlliances = (gs.namedAlliances || []).filter(a => a.active && a.members.includes(n));
+        if (myAlliances.length >= 2) _multiInfo[n] = { names: myAlliances.slice(0, 2).map(a => a.name) };
+      });
+
       const targets = [...new Set([..._multiAlliancePlayers, ..._contradictors])].filter(n => detectors.some(d => d !== n));
       if (!targets.length) continue;
       const b = targets[Math.floor(Math.random() * targets.length)];
@@ -1966,15 +1992,32 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const a = _pick(detectPool, n => Math.max(0.1, pStats(n).intuition * 0.5 + 1));
       addBond(a, b, -0.8);
       const pA = pronouns(a), pB = pronouns(b);
-      const _isMulti = _multiAlliancePlayers.includes(b);
-      const _crackLines = _isMulti
-        ? [`${a} has been doing the math. ${b} is in two alliances that can't both survive. ${a} brings it up — not to ${b}. To someone who matters more.`,
-           `${a} realizes ${b} has been making promises to two different groups. The timelines don't match. ${a} files that information somewhere dangerous.`,
-           `"Who are you actually with?" ${a} asks ${b} directly. ${b}'s answer takes half a second too long. ${a} got what ${pA.sub} needed.`,
-           `${a} compares notes with someone else. ${b}'s story to them doesn't match ${b}'s story to ${a}. The contradiction is undeniable.`]
-        : [`${a} noticed something at the last tribal. ${b}'s vote didn't match what ${pB.sub} said ${pB.sub} ${pB.sub==='they'?'were':'was'} going to do. ${a} hasn't mentioned it yet. But ${pA.sub} will.`,
-           `${a} pulls the voting data apart in ${pA.posAdj} head. ${b} was supposed to vote one way. ${pB.Sub} didn't. ${a} doesn't confront — ${pA.sub} adjust${pA.sub==='they'?'':'s'}.`,
-           `Something ${b} said yesterday contradicts what ${pB.sub} did at tribal. ${a} caught it. The trust between them just cracked.`];
+      const _ci = _contradictorInfo[b];   // concrete vote contradiction (preferred — most specific)
+      const _mi = _multiInfo[b];          // two-timing across named alliances
+      let _crackLines;
+      if (_ci) {
+        const _wasWere = pB.sub === 'they' ? 'were' : 'was';
+        _crackLines = [
+          `${a} noticed something at the last tribal. ${b} was locked in on ${_ci.expected} with the rest of ${_ci.alliance} — but ${pB.sub} wrote ${_ci.actual} instead. ${a} hasn't said anything yet. But ${pA.sub} will.`,
+          `${a} pulls the voting apart in ${pA.posAdj} head. The ${_ci.alliance} plan was ${_ci.expected}. ${b} wrote ${_ci.actual}. ${pB.Sub} broke from the group and assumed nobody would notice. ${a} noticed.`,
+          `${b} told ${_ci.alliance} ${pB.sub} ${_wasWere} voting ${_ci.expected}. At tribal ${pB.posAdj} vote landed on ${_ci.actual}. ${a} caught the contradiction, and the trust between them just cracked.`,
+          `Something ${b} said yesterday doesn't match what ${pB.sub} did at tribal — ${pB.sub} promised ${_ci.expected}, then wrote ${_ci.actual}. ${a} caught it. The trust between them just cracked.`,
+        ];
+      } else if (_mi) {
+        const [_n1, _n2] = _mi.names;
+        _crackLines = [
+          `${a} has been doing the math. ${b} is in both ${_n1} and ${_n2} — two alliances that can't both survive. ${a} brings it up, not to ${b}, but to someone who matters more.`,
+          `${a} realizes ${b} has been making promises to ${_n1} and ${_n2} at the same time. The timelines don't match. ${a} files that information somewhere dangerous.`,
+          `"Who are you actually with — ${_n1} or ${_n2}?" ${a} asks ${b} directly. ${b}'s answer takes half a second too long. ${a} got what ${pA.sub} needed.`,
+          `${a} compares notes with ${_n2}. ${b}'s story there doesn't match what ${pB.sub} told ${_n1}. The contradiction is undeniable.`,
+        ];
+      } else {
+        // Fallback — rare; target qualified but the specifics couldn't be reconstructed
+        _crackLines = [
+          `${a} noticed something at the last tribal. ${b}'s vote didn't match what ${pB.sub} said ${pB.sub} ${pB.sub==='they'?'were':'was'} going to do. ${a} hasn't mentioned it yet. But ${pA.sub} will.`,
+          `${a} pulls the voting data apart in ${pA.posAdj} head. ${b} was supposed to vote one way. ${pB.Sub} didn't. ${a} doesn't confront — ${pA.sub} adjust${pA.sub==='they'?'':'s'}.`,
+        ];
+      }
       events.push({ type: 'trustCrack', text: _crackLines[Math.floor(Math.random() * _crackLines.length)], players: [a, b], badgeText: 'TRUST CRACKED', badgeClass: 'red' });
 
     // ═══════════════════════════════════════════════════════════
@@ -3328,7 +3371,7 @@ export function checkSocialBomb(ep) {
       if (!gs.socialBombHeatThisEp) gs.socialBombHeatThisEp = new Set();
       gs.socialBombHeatThisEp.add(name);
       if (!gs._blowupPlayers) gs._blowupPlayers = [];
-      if (!gs._blowupPlayers.includes(name)) gs._blowupPlayers.push(name);
+      if (!gs._blowupPlayers.some(r => r.name === name)) gs._blowupPlayers.push({ name, type: 'bomb', target: null });
 
       // Tone: arrogant (bold) vs hothead (low temperament)
       const isArrogant = s.boldness >= 8;
@@ -3357,6 +3400,9 @@ export function checkSocialBomb(ep) {
       const lines = isArrogant ? arrogantLines : hotheadLines;
       const hashBase = [...name].reduce((a, c) => a + c.charCodeAt(0), 0);
       const text = lines[(hashBase + epSeed * 3) % lines.length];
+      // Record the actual narration so next episode's apology can link back to it
+      const _bombRec = gs._blowupPlayers.find(r => r.name === name);
+      if (_bombRec && !_bombRec.incident) _bombRec.incident = text;
 
       // Reaction event — most-offended tribemate (highest social stat) clocks it
       const witness = tribemates.length
@@ -5094,7 +5140,10 @@ export function checkSocialPolitics(ep) {
   // ── TEMPERAMENT RECOVERY: high-social players apologize after blowups ──
   const prevEp = gs.episodeHistory?.find(e => e.num === curEp - 1);
   if (prevEp && gs._blowupPlayers?.length) {
-    gs._blowupPlayers.forEach(name => {
+    gs._blowupPlayers.forEach(rec => {
+      // Back-compat: older saves stored bare names instead of records.
+      if (typeof rec === 'string') rec = { name: rec, type: 'blowup', target: null };
+      const name = rec.name;
       if (!gs.activePlayers.includes(name)) return;
       const s = pStats(name);
       // Recovery chance: social determines damage control ability
@@ -5104,30 +5153,66 @@ export function checkSocialPolitics(ep) {
         return;
       }
       const pr = pronouns(name);
+      const sThey = pr.sub === 'they';
+      const sV = sThey ? '' : 's';            // 3rd-person-singular verb suffix
+      const wasWere = sThey ? 'they were' : (pr.sub === 'she' ? 'she was' : 'he was');
       // Find the most damaged relationship from the blowup
       const tribeMembers = gs.isMerged ? gs.activePlayers : (gs.tribes.find(t => t.members.includes(name))?.members || []);
       const damaged = tribeMembers.filter(m => m !== name && getBond(name, m) < 0)
         .sort((a, b) => getBond(name, a) - getBond(name, b));
-      if (!damaged.length) return;
-      // Recover bond with 1-2 most damaged relationships
-      const toRecover = damaged.slice(0, Math.min(2, damaged.length));
+      // The person from the actual blowup takes priority — if the rift is still open.
+      const toRecover = [];
+      const realTarget = rec.target && tribeMembers.includes(rec.target) && getBond(name, rec.target) < 0 ? rec.target : null;
+      if (realTarget) toRecover.push(realTarget);
+      damaged.forEach(m => { if (!toRecover.includes(m) && toRecover.length < 2) toRecover.push(m); });
+      if (!toRecover.length) return;
+      // Recover bond with the apology targets
       const recoveryAmount = s.social * 0.06; // social 10 = +0.6, social 5 = +0.3
       toRecover.forEach(target => addBond(name, target, recoveryAmount));
       const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(name))?.name || 'merge');
       if (ep.campEvents?.[campKey]?.pre) {
         const target = toRecover[0];
+        // Incident-aware text: reference the actual blowup when we're apologizing to the person involved.
+        let lines;
+        if (rec.type === 'fight' && target === realTarget) {
+          lines = [
+            `${name} pulls ${target} aside. "About the fight yesterday — I'm sorry. I was out of line." ${target} doesn't respond immediately. But the wall comes down a little.`,
+            `${name} finds ${target} before anyone else is up. No excuses for blowing up — just an apology. ${target} listens. Something shifts.`,
+            `${name} and ${target} sit by the fire where it all kicked off. Eventually ${name} owns losing ${pr.posAdj} temper. It's not a speech — it's a sentence. It's enough.`,
+            `${name} doesn't rehash the argument. ${pr.Sub} just tell${sV} ${target} ${sThey ? 'they regret' : pr.sub === 'she' ? 'she regrets' : 'he regrets'} how it went. ${target} notices the effort.`,
+          ];
+        } else if (rec.type === 'meltdown') {
+          lines = [
+            `${name} apologizes to ${target} for the meltdown at camp. "That wasn't about you — I just lost it." ${target} listens. Something shifts.`,
+            `${name} owns the breakdown. ${pr.Sub} find${sV} ${target} and admit the pressure got the better of ${pr.obj}. The wall comes down a little.`,
+            `${name} doesn't pretend it didn't happen. ${pr.Sub} tell${sV} ${target} ${wasWere} embarrassed by the outburst. ${target} appreciates the honesty.`,
+            `${name} shows up quieter today after losing it yesterday — more helpful, more present. ${target} notices the effort.`,
+          ];
+        } else if (rec.type === 'bomb') {
+          lines = [
+            `${name} walks back the comments from camp. "I ran my mouth. I'm sorry." ${target} doesn't respond immediately. But the wall comes down a little.`,
+            `${name} finds ${target} before anyone else is up. ${pr.Sub} own${sV} what ${sThey ? 'they said' : pr.sub === 'she' ? 'she said' : 'he said'} yesterday without making excuses. ${target} listens. Something shifts.`,
+            `${name} doesn't bring it up directly. ${pr.Sub} just show${sV} up differently today — quieter, more careful with ${pr.posAdj} words. ${target} notices the effort.`,
+            `${name} and ${target} sit by the fire in silence for a while. Eventually ${name} says something honest about going too far. It's enough.`,
+          ];
+        } else {
+          // Generic fallback (fight where the original rival already patched up, or legacy records).
+          lines = [
+            `${name} finds ${target} before anyone else is up. The conversation is short. ${pr.Sub} ${sThey ? "don't" : "doesn't"} make excuses. ${target} listens. Something shifts.`,
+            `${name} pulls ${target} aside. "About yesterday — I'm sorry." ${target} doesn't respond immediately. But the wall comes down a little.`,
+            `${name} doesn't bring it up directly. ${pr.Sub} just show${sV} up differently today — quieter, more helpful, present. ${target} notices the effort.`,
+            `${name} and ${target} sit by the fire in silence for a while. Eventually ${name} says something honest. It's not a speech — it's a sentence. It's enough.`,
+          ];
+        }
+        // Link back to last episode's actual incident narration when we captured it.
+        const recall = rec.incident ? `Yesterday: "${rec.incident}" — ` : '';
         ep.campEvents[campKey].pre.push({
           type: 'apology', players: [name, target],
-          text: _pick([
-            `${name} finds ${target} before anyone else is up. The conversation is short. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} make excuses. ${target} listens. Something shifts.`,
-            `${name} pulls ${target} aside. "About yesterday — I'm sorry." ${target} doesn't respond immediately. But the wall comes down a little.`,
-            `${name} doesn't bring it up directly. ${pr.Sub} just show${pr.sub==='they'?'':'s'} up differently today — quieter, more helpful, present. ${target} notices the effort.`,
-            `${name} and ${target} sit by the fire in silence for a while. Eventually ${name} says something honest. It's not a speech — it's a sentence. It's enough.`,
-          ]),
+          text: recall + _pick(lines),
           badgeText: 'MAKING AMENDS', badgeClass: 'green'
         });
       }
-      ep._politicsLog.push(`RECOVERY: ${name} apologized to ${toRecover.join(', ')} (+${recoveryAmount.toFixed(1)} bond)`);
+      ep._politicsLog.push(`RECOVERY: ${name} apologized to ${toRecover.join(', ')} for ${rec.type} (+${recoveryAmount.toFixed(1)} bond)`);
     });
     delete gs._blowupPlayers;
   }

@@ -445,6 +445,13 @@ export function generateSocialManipulationEvents(group, ep, boostRate) {
   let schemesThisEp = 0;
   const shuffledSchemers = [...schemers].sort(() => Math.random() - 0.5);
 
+  // Anti-repetition: scheme types used in the last 2 episodes get heavily downweighted so the
+  // same move (e.g. forged notes) doesn't recur episode after episode. Keeps schemes varied.
+  const _epNum = ep?.num || (gs.episode || 0) + 1;
+  if (!gs._recentSchemeTypes) gs._recentSchemeTypes = [];
+  gs._recentSchemeTypes = gs._recentSchemeTypes.filter(r => _epNum - r.ep <= 2);
+  const _recentType = t => gs._recentSchemeTypes.some(r => r.type === t);
+
   for (const schemer of shuffledSchemers) {
     if (schemesThisEp >= 2) break;
     if (Math.random() > boostRate) continue;
@@ -456,33 +463,34 @@ export function generateSocialManipulationEvents(group, ep, boostRate) {
 
     // Kiss trap — needs showmance + high strategic
     if (showmanceTargets.length && sStats.strategic >= 7) {
-      schemeOptions.push({ weight: 2, fn: () => _generateKissTrap(schemer, showmanceTargets[0], group, ep, _rp) });
+      schemeOptions.push({ type: 'kissTrap', weight: 2, fn: () => _generateKissTrap(schemer, showmanceTargets[0], group, ep, _rp) });
     }
     // Spread lies — needs a bond or grudge pair where the schemer is NOT part of the pair
     const _pairPool = [...bondTargets, ...grudgeTargets].filter(t => t.a !== schemer && t.b !== schemer);
     if (_pairPool.length) {
       const pairTarget = [..._pairPool].sort((a, b) => b.score - a.score)[0];
-      schemeOptions.push({ weight: 3, fn: () => _generateSpreadLies(schemer, pairTarget, group, ep, _rp) });
+      schemeOptions.push({ type: 'spreadLies', weight: 3, fn: () => _generateSpreadLies(schemer, pairTarget, group, ep, _rp) });
     }
     // Forge note — needs any pair target where the schemer is NOT part of the pair
     if (_pairPool.length) {
       const pairTarget = [..._pairPool].sort(() => Math.random() - 0.5)[0];
-      schemeOptions.push({ weight: 3, fn: () => _generateForgeNote(schemer, pairTarget, group, ep, _rp) });
+      schemeOptions.push({ type: 'forgeNote', weight: 3, fn: () => _generateForgeNote(schemer, pairTarget, group, ep, _rp) });
     }
     // Whisper campaign — works against anyone
     const whisperTarget = group.find(p => p !== schemer && getBond(schemer, p) <= -1);
     if (whisperTarget) {
-      schemeOptions.push({ weight: 2, fn: () => _generateWhisperCampaign(schemer, whisperTarget, group, ep, _rp) });
+      schemeOptions.push({ type: 'whisperCampaign', weight: 2, fn: () => _generateWhisperCampaign(schemer, whisperTarget, group, ep, _rp) });
     }
 
     if (!schemeOptions.length) continue;
 
-    // Weighted random pick
-    const totalWeight = schemeOptions.reduce((sum, o) => sum + o.weight, 0);
+    // Weighted random pick — recently-used types drop to a quarter weight to force variety
+    const _effWeight = o => o.weight * (_recentType(o.type) ? 0.25 : 1);
+    const totalWeight = schemeOptions.reduce((sum, o) => sum + _effWeight(o), 0);
     let roll = Math.random() * totalWeight;
     let picked = schemeOptions[0];
     for (const opt of schemeOptions) {
-      roll -= opt.weight;
+      roll -= _effWeight(opt);
       if (roll <= 0) { picked = opt; break; }
     }
 
@@ -490,6 +498,7 @@ export function generateSocialManipulationEvents(group, ep, boostRate) {
     if (events.length) {
       events.forEach(e => results.push(e));
       schemesThisEp++;
+      gs._recentSchemeTypes.push({ type: picked.type, ep: _epNum });
     }
   }
 

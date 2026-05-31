@@ -95,6 +95,22 @@ export const CAMP_EVENT_TYPES = [
   { id: 'floaterInvisible',    twoPlayer: false, weight: 6  },
 ];
 
+// Variety control for camp event picking (applied in generateCampEventsForGroup's weight fn):
+// SIGNATURE — loud "story beats" that cheapen when repeated: cross-episode cooldown (last 2 eps
+//   downweighted) + within-episode dedup (don't fire the same beat twice in one camp feed).
+// TEXTURE — conflict events that are fine day-to-day but jarring twice in one feed: within-episode
+//   dedup only, no cross-episode cooldown.
+// 'fight' is deliberately in NEITHER set — real camp brawls are allowed to flare more than once.
+const _CAMP_BEAT_SIGNATURE = new Set([
+  'allianceCrack', 'trustCrack', 'meltdown', 'hotheadExplosion',
+  'mastermindOrchestrates', 'schemerManipulates', 'rumor', 'lie', 'blame',
+  'eavesdrop', 'watchingYou', 'paranoia', 'bigMoveThoughts', 'overconfidence',
+  'prank', 'showboat',
+]);
+const _CAMP_BEAT_TEXTURE = new Set([
+  'dispute', 'jealousy', 'exclusion', 'leadershipClash', 'foodConflict', 'intimidation',
+]);
+
 
 // Flatten campEvents for code that just needs all events (handles both old array and new {pre,post} format)
 export function allCampEvents(ep) {
@@ -416,8 +432,30 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
   const _canBond = (a, b) => (_pairBondCount[_pairKey(a, b)] || 0) < 2; // max 2 bond events per pair per phase
   const _trackBond = (a, b) => { const k = _pairKey(a, b); _pairBondCount[k] = (_pairBondCount[k] || 0) + 1; };
 
+  // ── Variety control: avoid repeating loud beats within a feed or across recent episodes ──
+  // Recency is keyed PER TRIBE (or 'merge' post-merge) so separate tribes stay independent storylines
+  // — a beat in one tribe never suppresses another, and there's no first-tribe ordering bias.
+  const _epNum = ep?.num || (gs.episode || 0) + 1;
+  const _beatKey = gs.isMerged ? 'merge' : (gs.tribes?.find(t => group.some(m => t.members.includes(m)))?.name || 'group');
+  if (!gs._recentCampBeats) gs._recentCampBeats = {};
+  const _beatLog = (gs._recentCampBeats[_beatKey] = (gs._recentCampBeats[_beatKey] || []).filter(r => _epNum - r.ep <= 2)); // keep last 2 eps
+  const _recentBeat = t => _beatLog.some(r => r.type === t);
+  const _firedThisGroup = {};
+
   for (let i = 0; i < numEvents; i++) {
-    const eventType = wRandom(CAMP_EVENT_TYPES, e => e.weight + (boosts[e.id] || 0)).id;
+    const eventType = wRandom(CAMP_EVENT_TYPES, e => {
+      let w = e.weight + (boosts[e.id] || 0);
+      // Within-episode dedup: a loud beat shouldn't fire twice in the same camp feed
+      if (_firedThisGroup[e.id] && (_CAMP_BEAT_SIGNATURE.has(e.id) || _CAMP_BEAT_TEXTURE.has(e.id))) w *= 0.15;
+      // Cross-episode cooldown: signature beats used in the last 2 eps are downweighted
+      if (_CAMP_BEAT_SIGNATURE.has(e.id) && _recentBeat(e.id)) w *= 0.3;
+      return Math.max(0.05, w);
+    }).id;
+    // Record for variety control (cross-episode entry only once per type per episode, per tribe)
+    _firedThisGroup[eventType] = (_firedThisGroup[eventType] || 0) + 1;
+    if (_CAMP_BEAT_SIGNATURE.has(eventType) && !_beatLog.some(r => r.type === eventType && r.ep === _epNum)) {
+      _beatLog.push({ type: eventType, ep: _epNum });
+    }
 
     if (eventType === 'fight') {
       // Low temperament = more likely to snap. Low loyalty = doesn't suppress it for the group.
@@ -2459,7 +2497,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
   }
 
   // ── Social Manipulation Events ──
-  const _schemeBoost = ep?.isLuckyHunt ? 0.40 : 0.15;
+  // Kept deliberately uncommon so ordinary social moments (bonding, side deals, comfort, etc.)
+  // outnumber scheming. Elevated, but not spammy, during Lucky Hunt.
+  const _schemeBoost = ep?.isLuckyHunt ? 0.28 : 0.09;
   const socialEvents = generateSocialManipulationEvents(group, ep, _schemeBoost);
   socialEvents.forEach(evt => events.push(evt));
 

@@ -774,7 +774,7 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
   });
 }
 
-async function enhanceSummary(simulatorSummary, season, episode, env, prevSummary = "", franchiseContext = "", seasonSetting = "") {
+async function enhanceSummary(simulatorSummary, season, episode, env, prevSummary = "", franchiseContext = "", seasonSetting = "", quality = false) {
   if (!simulatorSummary || typeof simulatorSummary !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
       status: 400,
@@ -1173,7 +1173,7 @@ BANNED patterns (do not use):
             "anthropic-version": "2023-06-01",
           },
           body: JSON.stringify({
-            model: "claude-haiku-4-5-20251001",
+            model: claudeModel("fast", { quality }, env),
             max_tokens: 8000,
             stream: true,
             system: instructions,
@@ -1229,7 +1229,7 @@ BANNED patterns (do not use):
   });
 }
 
-async function generateSummary(rawText, season, episode, env, prevSummary = "") {
+async function generateSummary(rawText, season, episode, env, prevSummary = "", quality = false) {
   if (!rawText || typeof rawText !== "string") {
     return new Response(JSON.stringify({ error: "Missing rawText" }), {
       status: 400,
@@ -1646,7 +1646,7 @@ Rules:
             "anthropic-version": "2023-06-01",
           },
           body: JSON.stringify({
-            model: "claude-haiku-4-5-20251001",
+            model: claudeModel("fast", { quality }, env),
             max_tokens: 16000,
             stream: true,
             system: instructions,
@@ -4008,7 +4008,13 @@ Write the episode now.`;
 
   const fullInput = formatReminder + cleanSummary + postSummaryReminder;
 
-  // GPT-5.5 first
+  // Claude first (primary creative model) — streaming keeps the Cloudflare
+  // connection alive so no 524. Episode dialogue is forced to Opus 4.5 for
+  // best creative quality (overrides the quality flag / env).
+  if (env.ANTHROPIC_API_KEY) {
+    return await callAnthropicStreaming(instructions, fullInput, env, MODELS.quality);
+  }
+  // Fallback: GPT-5.5
   if (env.OPENAI_API_KEY) {
     try {
       const payload = { model: "gpt-5.5", instructions, input: fullInput };
@@ -4022,15 +4028,11 @@ Write the episode now.`;
       console.error("GPT-5.5 failed:", e);
     }
   }
-  // Fallback: Claude streaming — keeps Cloudflare connection alive so no 524
-  if (env.ANTHROPIC_API_KEY) {
-    return await callAnthropicStreaming(instructions, fullInput, env);
-  }
   // Last resort: Gemini
   return await callGemini(instructions, fullInput, env);
 }
 
-async function callAnthropicStreaming(system, userText, env) {
+async function callAnthropicStreaming(system, userText, env, model = MODELS.creative) {
   // Dual approach:
   // 1. Anthropic streaming (stream:true) — keeps the Worker→Anthropic subrequest alive (no 524)
   // 2. setInterval heartbeat — keeps the browser→Worker connection alive (no 524)
@@ -4050,10 +4052,9 @@ async function callAnthropicStreaming(system, userText, env) {
             "Content-Type": "application/json",
             "x-api-key": env.ANTHROPIC_API_KEY,
             "anthropic-version": "2023-06-01",
-            "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
           },
           body: JSON.stringify({
-            model: "claude-sonnet-4-6",
+            model,
             max_tokens: 16000,
             stream: true,
             system,
@@ -4148,7 +4149,7 @@ async function callGemini(system, userText, env) {
   });
 }
 
-async function callAnthropic(system, userText, env) {
+async function callAnthropic(system, userText, env, model = MODELS.creative) {
   let resp;
   try {
     resp = await fetch("https://api.anthropic.com/v1/messages", {
@@ -4159,7 +4160,7 @@ async function callAnthropic(system, userText, env) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
+        model,
         max_tokens: 16000,
         system,
         messages: [{ role: "user", content: userText }],

@@ -1614,7 +1614,7 @@ export function simulateLuckyHunt(ep) {
 
   // ── 4. ROUND 4: SOCIAL SCHEMES ──
   timeline.push({ type: 'lhPhase', text: 'SOCIAL SCHEMES', phase: 'social' });
-  const socialEvents = generateSocialManipulationEvents(gs.activePlayers, ep, 0.40);
+  const socialEvents = generateSocialManipulationEvents(gs.activePlayers, ep, 0.28);
   socialEvents.forEach(evt => { timeline.push({ ...evt, type: 'lhSocialScheme' }); });
 
   // ── 5. ROUND 5: LAST CHANCE ──

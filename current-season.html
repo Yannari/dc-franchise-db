@@ -3126,9 +3126,9 @@ async function generateEpisodeAI() {
     
     const data = await response.json();
     const transcript = data.episodeTranscript || data.output_text || '';
-    
+
     if (!transcript) {
-      throw new Error('No episode transcript returned from AI');
+      throw new Error(data.error || 'No episode transcript returned from AI');
     }
     
     document.getElementById('episode-input').value = transcript;

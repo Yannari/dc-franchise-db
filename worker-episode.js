@@ -2460,8 +2460,10 @@ NON-NEGOTIABLE RULES:
 2. NO scene before that elimination moment may refer to a this-episode boot as "gone", "left", "eliminated", or in the past tense. (e.g. if Eureka is voted out at Tribal this episode, NOTHING before Tribal can say "since Eureka left".)
 3. The "Previously on…" recap covers ONLY events from PREVIOUS episodes — use the PREVIOUS EPISODES context for the prior boot(s). It must NEVER mention anyone eliminated THIS episode. The only player whose elimination belongs in the recap is the one who left in the PRIOR episode.
 4. The episode runs in strict order: recap (prior episode only) → camp with the FULL start-of-episode roster → challenge → post-challenge scramble → Tribal → THIS episode's elimination(s). The eliminations are the climax, not the premise.
+5. WITHIN-EPISODE EVENT ORDER — challenge results cannot leak backward. Everything that happens AT or DURING the challenge has NOT happened yet during the cold open or any pre-challenge camp scene. That includes: who won immunity, who sat out / "wimped" / took a key / quit the challenge, handcuff or pairing assignments, idols or advantages found AT the challenge, injuries, and any challenge outcome. Pre-challenge scenes may show players nervous about the day ahead, but must NOT reference how the challenge turns out. No pre-challenge line may say a challenge event happened "yesterday" or earlier — the challenge happens TODAY, after these scenes.
+6. CHALLENGE MECHANICS ARE NOT REMOVALS. Sitting out, taking a "wimp key", forfeiting, or losing a challenge does NOT remove a player from camp or the game. Those players are still in the episode, still at camp, still voting at Tribal. Never write a non-eliminated player as "out", absent, or "sleeping elsewhere" because of a challenge result. The only thing that removes a player is an actual elimination (Tribal vote / duel / twist), and that happens at the END.
 
-Sanity check before you write the cold open: "Who actually left LAST episode?" Put only that name in the recap. "Who leaves THIS episode?" Keep them fully alive until their elimination beat.
+Sanity check before you write the cold open: "Who actually left LAST episode?" Put only that name in the recap. "Who leaves THIS episode?" Keep them fully alive until their elimination beat. "Has the challenge happened yet in this scene?" If not, no challenge result — wimp keys, sit-outs, winners — can be mentioned.
 
 **CHRIS MCLEAN'S "PREVIOUSLY ON" RECAP:**
 
@@ -4068,68 +4070,93 @@ Write the episode now.`;
 }
 
 async function callAnthropicStreaming(system, userText, env, model = MODELS.creative) {
-  // Dual approach:
-  // 1. Anthropic streaming (stream:true) — keeps the Worker→Anthropic subrequest alive (no 524)
-  // 2. setInterval heartbeat — keeps the browser→Worker connection alive (no 524)
-  // 3. Collect raw SSE bytes, parse all at once at the end — avoids per-token CPU limit hit
+  // Resilient streaming:
+  // 1. Anthropic streaming (stream:true) keeps the Worker→Anthropic subrequest alive (no 524)
+  // 2. setInterval heartbeat keeps the browser→Worker connection alive (no 524) across ALL attempts
+  // 3. Collect raw SSE bytes, parse once at the end — avoids per-token CPU limit hit
+  // 4. FALLBACK CHAIN: primary model (e.g. Opus 4.5) → Sonnet 4.6 (stream) → GPT-5.5 (non-stream).
+  //    The primary streaming response can't hand off mid-stream, so the fallback happens HERE,
+  //    inside the same stream, before anything is committed. Only errors if every model fails.
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
     async start(controller) {
       let heartbeat;
+      const errors = [];
+
+      // Stream one Anthropic model; returns extracted text ("" on failure, with reason pushed to errors).
+      async function streamAnthropic(mdl) {
+        try {
+          const resp = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": env.ANTHROPIC_API_KEY,
+              "anthropic-version": "2023-06-01",
+            },
+            body: JSON.stringify({
+              model: mdl,
+              max_tokens: 16000,
+              stream: true,
+              system,
+              messages: [{ role: "user", content: userText }],
+            }),
+          });
+          if (!resp.ok) {
+            const errData = await resp.json().catch(() => ({}));
+            errors.push(`${mdl} ${resp.status}: ${errData?.error?.message || JSON.stringify(errData)}`);
+            return "";
+          }
+          const reader = resp.body.getReader();
+          const decoder = new TextDecoder();
+          let rawBuffer = "";
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            rawBuffer += decoder.decode(value, { stream: true });
+          }
+          let fullText = "";
+          const regex = /"type":"text_delta","text":"((?:[^"\\]|\\.)*)"/g;
+          let m;
+          while ((m = regex.exec(rawBuffer)) !== null) fullText += m[1];
+          fullText = fullText
+            .replace(/\\n/g, "\n").replace(/\\"/g, '"')
+            .replace(/\\\\/g, "\\").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
+          if (!fullText) errors.push(`${mdl}: empty response`);
+          return fullText;
+        } catch (e) {
+          errors.push(`${mdl}: ${String(e)}`);
+          return "";
+        }
+      }
+
       try {
         heartbeat = setInterval(() => {
           try { controller.enqueue(encoder.encode("\n")); } catch (_) {}
         }, 5000);
 
-        const resp = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": env.ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
-          },
-          body: JSON.stringify({
-            model,
-            max_tokens: 16000,
-            stream: true,
-            system,
-            messages: [{ role: "user", content: userText }],
-          }),
-        });
+        // Primary model (Opus 4.5 for episodes).
+        let fullText = await streamAnthropic(model);
 
-        if (!resp.ok) {
-          const errData = await resp.json().catch(() => ({}));
-          clearInterval(heartbeat);
-          controller.enqueue(encoder.encode(JSON.stringify({ error: `Anthropic ${resp.status}: ${errData?.error?.message || JSON.stringify(errData)}` })));
-          controller.close();
-          return;
+        // Fallback 1: Sonnet 4.6 (skip if the primary already was Sonnet).
+        if (!fullText && model !== MODELS.creative) {
+          fullText = await streamAnthropic(MODELS.creative);
         }
 
-        // Collect raw SSE bytes — no per-token parsing
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let rawBuffer = "";
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          rawBuffer += decoder.decode(value, { stream: true });
+        // Fallback 2: GPT-5.5 (non-streaming — last resort if Anthropic is down).
+        if (!fullText && env.OPENAI_API_KEY) {
+          try {
+            const r = await callOpenAI({ model: "gpt-5.5", instructions: system, input: userText }, env);
+            const d = await r.json().catch(() => ({}));
+            if (d.episodeTranscript) fullText = d.episodeTranscript;
+            else errors.push(`gpt-5.5: ${d.error ? (d.error.message || JSON.stringify(d.error)) : "no transcript"}`);
+          } catch (e) {
+            errors.push(`gpt-5.5: ${String(e)}`);
+          }
         }
 
         clearInterval(heartbeat);
-
-        // Single regex pass over the full buffer to extract all text deltas
-        let fullText = "";
-        const regex = /"type":"text_delta","text":"((?:[^"\\]|\\.)*)"/g;
-        let m;
-        while ((m = regex.exec(rawBuffer)) !== null) {
-          fullText += m[1];
-        }
-        fullText = fullText
-          .replace(/\\n/g, "\n").replace(/\\"/g, '"')
-          .replace(/\\\\/g, "\\").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
-
         if (!fullText) {
-          controller.enqueue(encoder.encode(JSON.stringify({ error: "Empty response from Anthropic streaming" })));
+          controller.enqueue(encoder.encode(JSON.stringify({ error: `All models failed. ${errors.join(" | ")}` })));
         } else {
           controller.enqueue(encoder.encode(JSON.stringify({ episodeTranscript: fullText })));
         }

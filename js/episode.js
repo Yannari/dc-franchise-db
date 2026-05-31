@@ -1087,6 +1087,7 @@ export function simulateEpisode() {
                 idolFinds: [], idolPlays: [], idolRehide: false, journey: null, twist: null, twists: [], campEvents: {},
                 revoteVotes: null, revoteLog: null, isRockDraw: false,
                 tribesAtStart: gs.tribes.map(t => ({ name: t.name, members: [...t.members] })),
+                activeAtStart: [...gs.activePlayers],
                 exileDuelPlayerAtStart: gs.exileDuelPlayer || null };
 
   // ── HELPER: RI choice + duel for early-return episode paths ──

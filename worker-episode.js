@@ -820,7 +820,21 @@ SIMULATOR INPUT → OUTPUT DESTINATION:
 === TRIBES (ACTIVE) === → reformat: each tribe gets a # header, players one per line
   (post-merge: list players one per line, no header)
 
-=== ELIMINATED (PERMANENT) === → copy, one per line
+=== ELIMINATED (PERMANENT) === → copy, one per line.
+  ⚠️ CHRONOLOGY: This is the END-OF-EPISODE roster. It INCLUDES anyone voted out / eliminated THIS
+  episode (cross-reference "VOTED OUT THIS EPISODE", the "=== WHY X WAS ELIMINATED ===" sections, duel/twist
+  results, and challenge participation). Those players were ALIVE and present for this ENTIRE episode, right up
+  until the exact moment of their elimination at Tribal Council / duel / twist. NEVER write them as already gone
+  during the cold open, camp, or the challenge. See the ROSTER & CHRONOLOGY DECODING rule below.
+
+=== ROSTER AT EPISODE START === → (present only when someone is eliminated this episode) The exact set of
+  players ALIVE when this episode began. Names tagged "(OUT THIS EPISODE)" leave later today but are fully
+  present in every scene until their elimination beat. This is your authoritative start-of-episode cast —
+  populate camp, the challenge, and confessionals from THIS list, not from the post-episode active roster.
+
+=== ELIMINATED THIS EPISODE === → (present only when someone is eliminated this episode) Players who leave
+  DURING this episode, not before it. They are alive until their elimination. NEVER mention them in the
+  "previously on" recap, and NEVER refer to them in the past tense before their elimination scene.
 
 === ON REDEMPTION ISLAND === → copy if present
 
@@ -828,6 +842,9 @@ SIMULATOR INPUT → OUTPUT DESTINATION:
 
 === COLD OPEN === → contains "previously on" context (last episode's boot, betrayals).
   Feed ## PRE-CHALLENGE STATUS opening paragraph: "Coming into this episode..."
+  ⚠️ If this section is EMPTY, derive the "previously on" recap ONLY from the PREVIOUS EPISODES context
+  (the prior episode's boot and storylines) — NEVER from this episode's eliminations. This episode's boots
+  have not happened yet at the cold open.
 
 === RETURNS === → RI re-entry or exile duel results. Include as a scene before camp.
 
@@ -2427,6 +2444,24 @@ Summary says: "Alejandro had a meltdown to appear less threatening"
 ═══════════════════════════════════════════════════════════
 ✍️ WRITING STYLE RULES
 ═══════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════
+🕐 ROSTER & CHRONOLOGY DECODING (READ BEFORE WRITING THE RECAP OR ANY EARLY SCENE)
+═══════════════════════════════════════════════════════════
+
+The summary's roster lists describe the state AFTER this episode is over. You must reconstruct who was alive AT THE START:
+
+**START-OF-EPISODE ROSTER = the current ACTIVE players + EVERYONE eliminated THIS episode.**
+
+Find who was eliminated THIS episode from: "VOTED OUT THIS EPISODE", the "=== WHY X WAS ELIMINATED ===" sections, duel/twist/collateral results, and the challenge timeline (anyone who competes in the challenge was obviously alive for it).
+
+NON-NEGOTIABLE RULES:
+1. Every player eliminated THIS episode is ALIVE, present, and active from the cold open all the way through to the EXACT moment of their elimination (Tribal Council / fire-making / duel / twist). Write them into camp scenes, the challenge, confessionals, and pre-Tribal strategy. They do NOT vanish early.
+2. NO scene before that elimination moment may refer to a this-episode boot as "gone", "left", "eliminated", or in the past tense. (e.g. if Eureka is voted out at Tribal this episode, NOTHING before Tribal can say "since Eureka left".)
+3. The "Previously on…" recap covers ONLY events from PREVIOUS episodes — use the PREVIOUS EPISODES context for the prior boot(s). It must NEVER mention anyone eliminated THIS episode. The only player whose elimination belongs in the recap is the one who left in the PRIOR episode.
+4. The episode runs in strict order: recap (prior episode only) → camp with the FULL start-of-episode roster → challenge → post-challenge scramble → Tribal → THIS episode's elimination(s). The eliminations are the climax, not the premise.
+
+Sanity check before you write the cold open: "Who actually left LAST episode?" Put only that name in the recap. "Who leaves THIS episode?" Keep them fully alive until their elimination beat.
 
 **CHRIS MCLEAN'S "PREVIOUSLY ON" RECAP:**
 

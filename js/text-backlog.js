@@ -224,6 +224,20 @@ export function _textCast(ep, ln, sec) {
   sec('ELIMINATED (PERMANENT)');
   if (gs.eliminated.length) gs.eliminated.forEach(name => ln(name));
   else ln('None yet.');
+
+  // CHRONOLOGY: the lists above are the END-of-episode state. Make the start-of-episode roster
+  // explicit so the writer keeps this-episode boots alive until their elimination beat (and out of
+  // the "previously on" recap). activeAtStart was snapshotted before any elimination ran this episode.
+  const _activeStart = (ep.activeAtStart && ep.activeAtStart.length) ? ep.activeAtStart : null;
+  const _elimThis = _activeStart ? _activeStart.filter(n => gs.eliminated.includes(n)) : [];
+  if (_elimThis.length) {
+    sec('ROSTER AT EPISODE START');
+    ln('Everyone alive and active when this episode BEGAN. Players marked (OUT THIS EPISODE) are eliminated later THIS episode but are fully present in every scene until their elimination beat — never write them as gone before then.');
+    _activeStart.forEach(name => ln(`${name}${_elimThis.includes(name) ? ' (OUT THIS EPISODE)' : ''}`));
+    sec('ELIMINATED THIS EPISODE');
+    ln('Eliminated DURING this episode (NOT before it). Alive until their elimination at the challenge / Tribal / duel / twist. The "previously on" recap must NEVER mention these names:');
+    _elimThis.forEach(name => ln(name));
+  }
   if (cfg.ri) {
     sec('ON REDEMPTION ISLAND');
     ln(gs.riPlayers.length ? gs.riPlayers.join(', ') : 'None.');

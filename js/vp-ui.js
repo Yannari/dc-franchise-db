@@ -568,6 +568,21 @@ window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',
   if (e.matches) vpStopParticles();
 });
 
+// ── Universal screen → ambient bed + dramatic sting maps (centralized; no per-builder edits) ──
+const _VP_AMBIENT = {
+  tribal: 'tribal-tension', votes: 'tribal-tension', 'votes-2': 'tribal-tension',
+  ftc: 'tribal-tension', 'jury-vote': 'tribal-tension', 'jury-votes': 'tribal-tension',
+  'jury-convenes': 'tribal-tension', 'fan-vote': 'tribal-tension', 'fan-vote-reveal': 'tribal-tension',
+  'cold-open': 'camp-day', merge: 'camp-day',
+  'finale-camp': 'camp-night', 'kl-camp': 'camp-night', 'firemaking-camp': 'camp-night',
+  'fanvote-camp': 'camp-night', 'jury-life': 'camp-night',
+  'winner-ceremony': 'victory', reunion: 'victory',
+};
+const _VP_STING = {
+  'winner-ceremony': 'win-fanfare',
+  'jury-vote': 'tension-drum', 'jury-votes': 'tension-drum', ftc: 'tension-drum',
+};
+
 export function renderVPScreen() {
   const content  = document.getElementById('vp-screen-content');
   const prevBtn  = document.getElementById('vp-prev-btn');
@@ -599,11 +614,14 @@ export function renderVPScreen() {
   // vote reveal state is now stale. Clear it so reveals start fresh.
   Object.keys(_tvState).forEach(k => delete _tvState[k]);
   content.innerHTML = cur.html;
-  // Declarative ambience: read data-ambient on the screen root, swoosh on change.
+  // Ambience: explicit data-ambient on the screen root wins; otherwise fall back
+  // to the universal screen-id → bed map. Plus a one-shot sting for big moments.
   const _screenRootEl = content.firstElementChild;
-  const _bed = _screenRootEl && _screenRootEl.getAttribute && _screenRootEl.getAttribute('data-ambient');
+  const _explicitBed = _screenRootEl && _screenRootEl.getAttribute && _screenRootEl.getAttribute('data-ambient');
+  const _bed = _explicitBed || _VP_AMBIENT[cur.id] || null;
   if (_bed) audio.ambient(_bed);
   audio.sfx('screen-swoosh');
+  if (_VP_STING[cur.id]) audio.sfx(_VP_STING[cur.id]);
   document.querySelector('.rp-main').scrollTop = 0;
   vpUpdateParticleProfile();
   // Beach Blanket Bogus ambient audio switching
@@ -629,7 +647,12 @@ export function renderVPScreen() {
   // Fire torch snuff animation on post-twist screen (Second Life) or slasher elimination
   if (cur.id === 'post-twist' || cur.id === 'slasher-elimination') {
     const _slSnuff = document.querySelector(`#torch-snuff-sl-${vpEpNum} .torch-snuffed`);
-    if (_slSnuff) torchSnuffFx(_slSnuff);
+    if (_slSnuff) { torchSnuffFx(_slSnuff); audio.sfx('torch-snuff'); }
+  }
+  // Regular boot: the votes screen runs the torch-snuff CSS animation on a ~1.5s
+  // delay, so sync the snuff sound to it (engine no-ops if muted/suspended).
+  if (cur.id === 'votes' && content.querySelector('.torch-snuffed')) {
+    setTimeout(() => audio.sfx('torch-snuff'), 1550);
   }
 }
 

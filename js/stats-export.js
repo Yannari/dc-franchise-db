@@ -120,7 +120,12 @@ function _extractPlayerPlacements() {
     // overwrites the earlier one since we always update.
     const elimNames = [
       ep.suddenDeathEliminated, ep.eliminated,
-      ep.firstEliminated, ep.tiedDestiniesCollateral
+      ep.firstEliminated, ep.tiedDestiniesCollateral,
+      ep.hpTiebreakerEliminated,                   // Hawaiian Punch finale: joust loser (3rd place)
+      ep.emissaryEliminated,                       // Emissary Vote: second elimination
+      ep.tiedDestinies?.eliminatedPartner,         // Tied Destinies / Second Life Amulet: collateral partner
+      ep.ambassadorData?.ambassadorEliminated,     // Ambassador twist: ambassador-chosen boot
+      ...(Array.isArray(ep.eliminatedPlayers) ? ep.eliminatedPlayers : []),  // multi-elimination twists
     ].filter(Boolean);
 
     for (const name of elimNames) {
@@ -154,6 +159,13 @@ function _extractPlayerPlacements() {
     if (ep.isMerge) { mergeEpNum = ep.num; break; }
   }
 
+  // Hawaiian Punch (no-jury) finale: the joust loser reached the final round
+  // and is a finalist, not a juror — label them "Finalist" rather than "Juror".
+  const hpFinaleThird = new Set();
+  for (const ep of history) {
+    if (ep.hpTiebreakerEliminated) hpFinaleThird.add(ep.hpTiebreakerEliminated);
+  }
+
   // Build placement map: 1 = winner, 2+ = finalists, then reverse permanent exit order
   const placements = {};
   let place = 1;
@@ -169,7 +181,9 @@ function _extractPlayerPlacements() {
 
     const exitEp = permanentExit[name] || 0;
     let phase;
-    if (jury.includes(name)) {
+    if (hpFinaleThird.has(name)) {
+      phase = 'Finalist';
+    } else if (jury.includes(name)) {
       phase = 'Juror';
     } else if (exitEp >= mergeEpNum) {
       phase = 'Pre-Juror';

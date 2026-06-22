@@ -1,5 +1,5 @@
 // tests/audio.test.js
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { DEFAULT_PREFS, STORAGE_KEY, clampVolume, parsePrefs, serializePrefs } from '../js/audio.js';
 import { CUE_CATALOG, BED_CATALOG, resolveCue, resolveBed } from '../js/audio.js';
 import { duckGain } from '../js/audio.js';

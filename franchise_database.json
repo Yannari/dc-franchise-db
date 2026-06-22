@@ -1,10 +1,10 @@
 {
   "franchiseStats": {
-    "totalSeasons": 10,
-    "totalEpisodes": 162,
-    "uniquePlayers": 102,
-    "totalAppearances": 184,
-    "lastUpdated": "2026-05-23",
+    "totalSeasons": 11,
+    "totalEpisodes": 180,
+    "uniquePlayers": 120,
+    "totalAppearances": 202,
+    "lastUpdated": "2026-06-22",
     "dataSources": [
       "players_database.json",
       "seasons_database.json",
@@ -118,6 +118,19 @@
       "strategy": "Jasmine's game is built on pressure reads, loyal shields, and perfectly timed exits from danger. She begins as the human lie detector with Safety Without Power in her pocket, survives the fracture of the Chaos Crew, rebuilds through Brick and Priya, and keeps slipping through votes where bigger strategists think they have her cornered.",
       "legacy": "Her legacy is the champion who kept being underestimated as merely loyal or emotional, then proved in the finale that loyalty can be fuel. She beats Bowie not by outscheming him, but by outlasting his schemes and outrunning him when there is nowhere left to hide.",
       "votesAgainst": 6
+    },
+    {
+      "season": 11,
+      "seasonTitle": "Cursed Island",
+      "emoji": "",
+      "winner": "Miriam",
+      "playerSlug": "miriam",
+      "finalVote": "",
+      "runnerUp": "Thom",
+      "keyStats": "Miriam wins Cursed Island with 1 challenge win, 1 immunity, 8 votes against, and survival through repeated minority positions, idol scares, revotes, tie pressure, and an endgame where nearly every remaining player saw her as dangerous too late.",
+      "strategy": "Miriam plays a patient pressure game: she lets louder players become shields, builds deep trust with Thom and later Eureka, keeps her Extra Vote long enough to shape early momentum, and repeatedly survives by redirecting attention onto players who appear more volatile. Her best work comes late, when she turns the Thom bond from liability into leverage and beats him at the summit with an emotional mind game instead of raw speed.",
+      "legacy": "Miriam leaves as the season's definitive survivor: underestimated at the dock, painted as a target at merge, nearly cracked by paranoia, and still standing with the million when the volcano erupts. Her win is remembered less as a clean march and more as a stubborn, bruising refusal to be erased.",
+      "votesAgainst": 8
     }
   ],
   "records": {
@@ -172,12 +185,12 @@
         {
           "name": "Tom",
           "playerSlug": "tom",
-          "avgStrategicRank": 10.0
+          "avgStrategicRank": 10
         },
         {
           "name": "Bowie",
           "playerSlug": "bowie",
-          "avgStrategicRank": 10.0
+          "avgStrategicRank": 10
         },
         {
           "name": "Jacques",
@@ -187,17 +200,17 @@
         {
           "name": "Heather",
           "playerSlug": "heather",
-          "avgStrategicRank": 9.0
+          "avgStrategicRank": 9
         },
         {
           "name": "Taylor",
           "playerSlug": "taylor",
-          "avgStrategicRank": 9.0
+          "avgStrategicRank": 9
         },
         {
           "name": "Julia",
           "playerSlug": "julia",
-          "avgStrategicRank": 9.0
+          "avgStrategicRank": 9
         },
         {
           "name": "MacArthur",
@@ -212,12 +225,12 @@
         {
           "name": "Kelly",
           "playerSlug": "kelly",
-          "avgStrategicRank": 8.0
+          "avgStrategicRank": 8
         },
         {
           "name": "Jen",
           "playerSlug": "jen",
-          "avgStrategicRank": 8.0
+          "avgStrategicRank": 8
         }
       ]
     },
@@ -332,6 +345,11 @@
       "season": 10,
       "name": "Jasmine",
       "playerSlug": "jasmine"
+    },
+    {
+      "season": 11,
+      "name": "Thom",
+      "playerSlug": "thom"
     }
   ],
   "multiSeasonPlayers": [
@@ -383,7 +401,7 @@
       ],
       "seasonsPlayed": 3,
       "wins": 1,
-      "avgPlacement": 3.0,
+      "avgPlacement": 3,
       "bestPlacement": 1
     },
     {
@@ -395,7 +413,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 1,
-      "avgPlacement": 4.0,
+      "avgPlacement": 4,
       "bestPlacement": 1
     },
     {
@@ -407,7 +425,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 4.0,
+      "avgPlacement": 4,
       "bestPlacement": 3
     },
     {
@@ -431,7 +449,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 5.0,
+      "avgPlacement": 5,
       "bestPlacement": 4
     },
     {
@@ -444,7 +462,7 @@
       ],
       "seasonsPlayed": 3,
       "wins": 0,
-      "avgPlacement": 5.0,
+      "avgPlacement": 5,
       "bestPlacement": 3
     },
     {
@@ -470,7 +488,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 6.0,
+      "avgPlacement": 6,
       "bestPlacement": 3
     },
     {
@@ -507,7 +525,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 7.0,
+      "avgPlacement": 7,
       "bestPlacement": 6
     },
     {
@@ -520,7 +538,7 @@
       ],
       "seasonsPlayed": 3,
       "wins": 0,
-      "avgPlacement": 7.0,
+      "avgPlacement": 7,
       "bestPlacement": 2
     },
     {
@@ -584,7 +602,7 @@
       ],
       "seasonsPlayed": 3,
       "wins": 1,
-      "avgPlacement": 8.0,
+      "avgPlacement": 8,
       "bestPlacement": 1
     },
     {
@@ -621,7 +639,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 9.0,
+      "avgPlacement": 9,
       "bestPlacement": 6
     },
     {
@@ -633,7 +651,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 9.0,
+      "avgPlacement": 9,
       "bestPlacement": 6
     },
     {
@@ -645,21 +663,8 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 9.0,
+      "avgPlacement": 9,
       "bestPlacement": 9
-    },
-    {
-      "name": "Cody",
-      "playerSlug": "cody",
-      "seasons": [
-        1,
-        7,
-        10
-      ],
-      "seasonsPlayed": 3,
-      "wins": 0,
-      "avgPlacement": 9.33,
-      "bestPlacement": 2
     },
     {
       "name": "Beth",
@@ -673,6 +678,19 @@
       "wins": 0,
       "avgPlacement": 9.33,
       "bestPlacement": 4
+    },
+    {
+      "name": "Cody",
+      "playerSlug": "cody",
+      "seasons": [
+        1,
+        7,
+        10
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 9.33,
+      "bestPlacement": 2
     },
     {
       "name": "Emma",
@@ -723,7 +741,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 10.0,
+      "avgPlacement": 10,
       "bestPlacement": 9
     },
     {
@@ -735,7 +753,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 10.0,
+      "avgPlacement": 10,
       "bestPlacement": 8
     },
     {
@@ -798,7 +816,7 @@
       ],
       "seasonsPlayed": 4,
       "wins": 0,
-      "avgPlacement": 11.0,
+      "avgPlacement": 11,
       "bestPlacement": 4
     },
     {
@@ -811,7 +829,7 @@
       ],
       "seasonsPlayed": 3,
       "wins": 0,
-      "avgPlacement": 11.0,
+      "avgPlacement": 11,
       "bestPlacement": 7
     },
     {
@@ -836,7 +854,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 12.0,
+      "avgPlacement": 12,
       "bestPlacement": 11
     },
     {
@@ -848,7 +866,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 12.0,
+      "avgPlacement": 12,
       "bestPlacement": 9
     },
     {
@@ -860,7 +878,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 12.0,
+      "avgPlacement": 12,
       "bestPlacement": 11
     },
     {
@@ -890,18 +908,6 @@
       "bestPlacement": 8
     },
     {
-      "name": "Hicks",
-      "playerSlug": "hicks",
-      "seasons": [
-        9,
-        10
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 13.0,
-      "bestPlacement": 12
-    },
-    {
       "name": "Josee",
       "playerSlug": "josee",
       "seasons": [
@@ -911,7 +917,19 @@
       ],
       "seasonsPlayed": 3,
       "wins": 0,
-      "avgPlacement": 13.0,
+      "avgPlacement": 13,
+      "bestPlacement": 12
+    },
+    {
+      "name": "Hicks",
+      "playerSlug": "hicks",
+      "seasons": [
+        9,
+        10
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 13,
       "bestPlacement": 12
     },
     {
@@ -948,7 +966,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 15.0,
+      "avgPlacement": 15,
       "bestPlacement": 12
     },
     {
@@ -972,20 +990,8 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 17.0,
+      "avgPlacement": 17,
       "bestPlacement": 10
-    },
-    {
-      "name": "Tyler",
-      "playerSlug": "tyler",
-      "seasons": [
-        1,
-        10
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 18.0,
-      "bestPlacement": 13
     },
     {
       "name": "Crimson",
@@ -996,7 +1002,7 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 18.0,
+      "avgPlacement": 18,
       "bestPlacement": 16
     },
     {
@@ -1008,8 +1014,20 @@
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 18.0,
+      "avgPlacement": 18,
       "bestPlacement": 18
+    },
+    {
+      "name": "Tyler",
+      "playerSlug": "tyler",
+      "seasons": [
+        1,
+        10
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 18,
+      "bestPlacement": 13
     }
   ],
   "trends": {
@@ -1063,6 +1081,11 @@
         "season": 10,
         "strategy": "Jasmine's game is built on pressure reads, loyal shields, and perfectly timed exits from danger. She begins as the human lie detector with Safety Without Power in her pocket, survives the fracture of the Chaos Crew, rebuilds through Brick and Priya, and keeps slipping through votes where bigger strategists think they have her cornered.",
         "winner": "Jasmine"
+      },
+      {
+        "season": 11,
+        "strategy": "Miriam plays a patient pressure game: she lets louder players become shields, builds deep trust with Thom and later Eureka, keeps her Extra Vote long enough to shape early momentum, and repeatedly survives by redirecting attention onto players who appear more volatile. Her best work comes late, when she turns the Thom bond from liability into leverage and beats him at the summit with an emotional mind game instead of raw speed.",
+        "winner": "Miriam"
       }
     ],
     "castComposition": [
@@ -1107,6 +1130,10 @@
         "season": 10,
         "composition": "18 players (9 Champions, 9 Contenders)",
         "theme": "Champions vs Contenders"
+      },
+      {
+        "season": 11,
+        "composition": "18 players"
       }
     ],
     "finaleVoteMargins": [
@@ -1168,6 +1195,15 @@
           "Jasmine",
           "Bowie"
         ]
+      },
+      {
+        "season": 11,
+        "vote": "",
+        "winner": "Miriam",
+        "finalists": [
+          "Miriam",
+          "Thom"
+        ]
       }
     ],
     "majorTwists": [
@@ -1210,6 +1246,10 @@
       {
         "season": 10,
         "twist": "Champions vs Contenders tribes + Redemption Island + ambassador elimination + open vote + no jury (physical finale)"
+      },
+      {
+        "season": 11,
+        "twist": "Cursed Island begins as a survival test and becomes a study in how trust breaks under pressure. The pre-merge is defined by sabotage, swaps, exposed idols, and tribes that never fully stabilize: Ashley is framed, Drew is discarded, Will is betrayed, Eureka is rocked out, Wix is exiled by emissary power, Grett detonates half the game on her way out, Nick exposes alliances, and Sterling falls to a fractured Teal endgame. At the merge, no alliance survives first contact with public voting, idol insurance, or personal grudges. Ellie weaponizes a Super Idol, Dan loses the one read he needed, Jake's heart becomes both shield and target, and Fiore's Second Life Amulet rewrites the final six. Through it all, Miriam and Thom build a bond so visible it should destroy them, but instead it carries them to the finale. The season ends not with a jury speech, but with a volcanic race where Miriam weaponizes that bond one final time and steals the million from the person who trusted her most."
       }
     ]
   },
@@ -1459,6 +1499,11 @@
           "votesAgainst": 1
         },
         {
+          "name": "Thom",
+          "playerSlug": "thom",
+          "votesAgainst": 1
+        },
+        {
           "name": "Ella",
           "playerSlug": "ella",
           "votesAgainst": 2
@@ -1481,11 +1526,6 @@
         {
           "name": "Damien",
           "playerSlug": "damien",
-          "votesAgainst": 2
-        },
-        {
-          "name": "Raj",
-          "playerSlug": "raj",
           "votesAgainst": 2
         }
       ],
@@ -1785,6 +1825,7 @@
     "season8": "Heroes vs. Villains vs. Civilians brought 18 returnees into the franchise's most complex tribal format. The Civilian bloc (Gerry/Jen/Sanders) dominated the merge through Unbreakable Relationships, controlling 75% of post-merge votes and systematically eliminating legends Owen, Leshawna, and MacArthur. Alejandro's physical resurrection (4 individual immunities) combined with Cameron's tactical survival produced a historic 4-4 jury deadlock — the franchise's first Dual Win. Sanders played the most decorated non-winner game in history (2 idols found, 2 played, final immunity). Gerry's psychological destruction of Heather — forcing her to quit while holding the Super Idol — stands as the most stunning advantage waste in Total Drama history.",
     "season9": "18 newbies fight for the title of King of Power — 18 players, won by Bowie over Millie & Chase (5-3-0). Sets the franchise gold standard for advantage mastery at the merge. Proves that ruthless timing plus airtight social insurance can still earn a largely respectful jury win.",
     "season10": "Champions vs Contenders brought 9 returning champions against 9 hungry contenders. Jasmine's pressure reads, loyal shields, and perfectly timed exits from danger carried her past Bowie's relentless scheming. Redemption Island produced its own mythology through Priya's early streak and Sanders's five-duel run. The Oath alliance dominated but fractured as exposure after exposure (Courtney, Scott, Priya) kept unmasking Bowie. The first physical finale (no jury vote) proved that the season's survivor can outrun the season's strategist when there's nowhere left to hide.",
-    "message": "The message across 10 seasons: Different strategies can win — social mastery (Lindsay S1), survival story (Duncan S2), perfect game (Emma S3), strategic evolution (Alejandro S4), clean positioning (Mickey S5), ice-cold control (Jacques S6), power-social balance (MacArthur S7), shield management + physical dominance (Alejandro/Cameron S8), advantage mastery (Bowie S9), and pressure reads + loyal shields (Jasmine S10). But adaptability, jury respect, and understanding when to strike remain essential. S10 proved that even the best schemer in the game can be outrun by someone who simply refuses to stop surviving."
+    "message": "The message across 11 seasons: Different winning strategies — Lindsay S1, Duncan S2, Emma S3, Alejandro S4, Mickey S5, Jacques S6, MacArthur S7, Alejandro & Cameron (Dual Win) S8, Bowie S9, Jasmine S10, Miriam S11. Adaptability, jury respect, and understanding when to strike remain essential.",
+    "season11": "A season of fractured alliances, cursed advantages, comeback ghosts, and one underdog who refused to leave before the volcano answered.. Miriam wins (no jury vote) over Thom. Miriam plays a patient pressure game: she lets louder players become shields, builds deep trust with Thom and later Eureka, keeps her Extra Vote long enough to shape early momentum, and repeatedly survives by redirecting attention onto players who appear more volatile. Her best work comes late, when she turns the Thom bond from liability into leverage and beats him at the summit with an emotional mind game instead of raw speed."
   }
 }

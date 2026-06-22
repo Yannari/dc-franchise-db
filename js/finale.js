@@ -7,6 +7,7 @@ import { handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge } from './challenges-core.js';
 import { generateCampEvents } from './camp-events.js';
 import { rpBuildWinnerCeremony, rpBuildReunion } from './vp-finale.js';
+import { rpBuildHPChallenge, rpBuildHPTiebreaker, rpBuildHPJoust, rpBuildHPVolcanoRace, rpBuildHPSummit, rpBuildHPEndings } from './chal/hawaiian-punch.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   saveGameState, snapshotGameState
@@ -1933,6 +1934,39 @@ export function generateFinaleSummaryText(ep) {
   function sec(title) { L.push(''); L.push(`=== ${title} ===`); }
   function ln(t) { L.push(t); }
 
+  // Render a VP screen builder to plain text — a full retranscription of the
+  // on-screen narration (every beat, gallery reaction, confessional, exchange).
+  // The build functions emit ALL steps into the HTML (reveal only CSS-toggles
+  // visibility), so stripping tags yields the complete narration. Wrapped in
+  // try/catch so a builder that throws degrades gracefully instead of breaking
+  // the whole summary.
+  function vpToText(builder) {
+    let html;
+    try { html = builder(ep); } catch (e) { return; }
+    if (!html) return;
+    const lines = html
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/(div|p|h[1-6]|li|tr)>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&middot;/g, '·').replace(/&bull;/g, '•').replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').replace(/&mdash;/g, '—')
+      .split('\n').map(l => l.trim()).filter(Boolean);
+    let emitted = 0;
+    for (const line of lines) {
+      if (/^NEXT\b/i.test(line) || /^REVEAL ALL$/i.test(line)) continue;        // reveal controls
+      if (/^\d+\s*\/\s*\d+$/.test(line)) continue;                              // step counter "3 / 12"
+      if (/^\d{2}(TITLE|TIEBREAKER|JOUST|VOLCANO RACE|SUMMIT|ENDINGS)$/i.test(line)) continue; // tab nav "00TITLE"
+      if (/^★.*★$/.test(line)) continue;                                        // marquee ticker
+      if (/^(LIVE|PUNCH\.TV|SEASON FINALE)$/i.test(line)) continue;             // broadcast banner chrome
+      ln(`  ${line}`);
+      emitted++;
+    }
+    if (emitted) ln('');
+  }
+
   sec('META');
   ln(`Season: ${cfg.name || 'Untitled'}`);
   ln(`Episode: ${ep.num} — FINALE`);
@@ -1967,21 +2001,9 @@ export function generateFinaleSummaryText(ep) {
     const immS = pStats(ep.immunityWinner);
     if (immS.physical >= 8 || immS.endurance >= 8) ln(`A dominant performance — ${ep.immunityWinner} wanted this one.`);
     else ln(`${ep.immunityWinner} digs deep when it matters most.`);
-    // Hawaiian Punch — detailed Hawaiian Style FIC breakdown
-    if (ep.hpFIC) {
-      const fic = ep.hpFIC;
-      ln('');
-      const animals = Object.entries(fic.spiritAnimals || {}).map(([n, a]) => `${n} → ${a}`).join(', ');
-      if (animals) ln(`Spirit Animals: ${animals}`);
-      (fic.phases || []).forEach((phase, i) => {
-        const order = (phase.results || []).map(r => `${r.player} ${(r.score || 0).toFixed(1)}`).join(' | ');
-        ln(`Phase ${i + 1} — ${phase.name}: ${order} → ${phase.winner} leads.`);
-      });
-      const steal = (fic.events || []).find(e => e.type === 'lei-steal');
-      if (steal) ln(`Lei Steal: ${steal.attacker} ${steal.success ? 'snatches' : 'lunges for'} ${steal.victim}'s lei — ${steal.success ? 'SUCCESS!' : 'blocked!'}`);
-      const standings = (fic.placements || []).map((p, idx) => `${idx + 1}. ${p.player} (${(p.score || 0).toFixed(1)})`).join(', ');
-      if (standings) ln(`Final standings: ${standings}`);
-    }
+    // Hawaiian Punch — full Hawaiian Style FIC narration (beat-by-beat,
+    // spirit-animal draft, gallery reactions, lei steal, confessionals).
+    if (ep.hpFIC) { ln(''); vpToText(rpBuildHPChallenge); }
   }
 
   if (ep.finalCut) {
@@ -2052,36 +2074,24 @@ export function generateFinaleSummaryText(ep) {
     return L.join('\n');
   }
 
-  // Hawaiian Punch finale
+  // Hawaiian Punch finale — full retranscription of the VP narration, in the
+  // same order the on-screen Viewing Party presents it:
+  //   Tiebreaker → Joust → Volcano Race → Summit Showdown → Endings.
+  // (The Final Immunity Challenge / Hawaiian Style screen is dumped above in
+  // the FINAL IMMUNITY CHALLENGE section.)
   if (cfg.finaleFormat === 'hawaiian-punch' && ep.hpRaceData) {
     if (ep.hpTiebreaker) {
       sec('JOUSTING TIEBREAKER');
-      const tb = ep.hpTiebreaker;
-      ln(`${tb.duelists[0]} and ${tb.duelists[1]} face off in a jousting fire dance duel over shark-infested water.`);
-      ln(`After ${tb.exchanges.length} exchanges, ${tb.winner} prevails${tb.suddenDeath ? ' in sudden death' : ` (${tb.winsA}-${tb.winsB})`}.`);
-      ln(`${tb.loser} is knocked into the water and eliminated.`);
+      vpToText(rpBuildHPTiebreaker);
+      sec('THE JOUST');
+      vpToText(rpBuildHPJoust);
     }
-
     sec('VOLCANO RACE');
-    const rd = ep.hpRaceData;
-    const [hpFa, hpFb] = rd.finalists;
-    ln(`${hpFa} vs ${hpFb} — build a dummy, race it up the volcano, throw it in the crater.`);
-    ln('');
-    (rd.phaseResults || []).forEach(phase => {
-      if (phase.scoreA !== undefined && phase.scoreB !== undefined) {
-        ln(`${phase.name}: ${hpFa} ${(phase.scoreA || 0).toFixed(1)} | ${hpFb} ${(phase.scoreB || 0).toFixed(1)} → ${phase.winner} takes the phase.`);
-      } else {
-        ln(`${phase.name}: ${phase.leader} leads, ${phase.trailer} trails into the summit.`);
-      }
-      if (phase.mindGameResult) {
-        const mg = phase.mindGameResult;
-        ln(`  Mind games: ${mg.attacker} attempts ${mg.type.replace(/-/g, ' ')} on ${mg.defender} — ${mg.success ? `SUCCESS! ${mg.attacker} flips the race!` : `Failed — ${mg.defender} holds firm.`}`);
-      }
-    });
-    ln('');
-    ln(`${rd.winner} throws their dummy into the volcano and wins the season!`);
-    if (rd.feralCameo) ln(`${rd.feralCameo.player} steals the prize money from inside the volcano!`);
-
+    vpToText(rpBuildHPVolcanoRace);
+    sec('SUMMIT SHOWDOWN');
+    vpToText(rpBuildHPSummit);
+    sec('ENDINGS');
+    vpToText(rpBuildHPEndings);
     return L.join('\n');
   }
 

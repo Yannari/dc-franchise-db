@@ -1,8 +1,8 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 10,
-    "totalPlayers": 102,
+    "totalSeasons": 11,
+    "totalPlayers": 120,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
@@ -343,6 +343,39 @@
       "status": "Complete",
       "castPhotoPath": "assets/cast/s10-cast.png",
       "emoji": "⚔️"
+    },
+    {
+      "seasonNumber": 11,
+      "title": "Cursed Island",
+      "subtitle": "A season of fractured alliances, cursed advantages, comeback ghosts, and one underdog who refused to leave before the volcano answered.",
+      "castSize": 18,
+      "episodeCount": 18,
+      "jurySize": 0,
+      "winner": {
+        "name": "Miriam",
+        "playerSlug": "miriam",
+        "vote": "",
+        "runnerUp": "Thom",
+        "keyStats": "Miriam wins Cursed Island with 1 challenge win, 1 immunity, 8 votes against, and survival through repeated minority positions, idol scares, revotes, tie pressure, and an endgame where nearly every remaining player saw her as dangerous too late.",
+        "strategy": "Miriam plays a patient pressure game: she lets louder players become shields, builds deep trust with Thom and later Eureka, keeps her Extra Vote long enough to shape early momentum, and repeatedly survives by redirecting attention onto players who appear more volatile. Her best work comes late, when she turns the Thom bond from liability into leverage and beats him at the summit with an emotional mind game instead of raw speed.",
+        "legacy": "Miriam leaves as the season's definitive survivor: underestimated at the dock, painted as a target at merge, nearly cracked by paranoia, and still standing with the million when the volcano erupts. Her win is remembered less as a clean march and more as a stubborn, bruising refusal to be erased."
+      },
+      "awards": {
+        "fanFavorite": null,
+        "bestStrategic": {
+          "name": "Miriam",
+          "playerSlug": "miriam"
+        },
+        "mostChallengeWins": {
+          "name": "Thom",
+          "playerSlug": "thom",
+          "detail": "2 wins"
+        }
+      },
+      "theme": "Cursed Island begins as a survival test and becomes a study in how trust breaks under pressure. The pre-merge is defined by sabotage, swaps, exposed idols, and tribes that never fully stabilize: Ashley is framed, Drew is discarded, Will is betrayed, Eureka is rocked out, Wix is exiled by emissary power, Grett detonates half the game on her way out, Nick exposes alliances, and Sterling falls to a fractured Teal endgame. At the merge, no alliance survives first contact with public voting, idol insurance, or personal grudges. Ellie weaponizes a Super Idol, Dan loses the one read he needed, Jake's heart becomes both shield and target, and Fiore's Second Life Amulet rewrites the final six. Through it all, Miriam and Thom build a bond so visible it should destroy them, but instead it carries them to the finale. The season ends not with a jury speech, but with a volcanic race where Miriam weaponizes that bond one final time and steals the million from the person who trusted her most.",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/s11-cast.png",
+      "emoji": ""
     }
   ]
 }

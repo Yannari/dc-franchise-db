@@ -1565,14 +1565,14 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       db.players.push(player);
     }
 
-    // Check if season already exists — update if placeholder, skip if complete
+    // Re-merge support: if this season was already recorded — whether as a
+    // pre-season placeholder OR a previously-finalized result — strip its old
+    // career contributions and season detail so the fresh data below replaces it.
+    // (Previously an already-finalized season was skipped entirely with `continue`,
+    // so re-exports/corrections never updated existing player records.)
     const existingDetail = player.seasonDetails?.find(sd => sd.season === seasonNum);
-    const isPlaceholder = existingDetail && (existingDetail.placement === 99 || existingDetail.status === 'Active' || existingDetail.tribe === 'TBD');
 
-    if (player.seasons?.includes(seasonNum) && !isPlaceholder) continue;
-
-    // If updating a placeholder, remove old career contributions first
-    if (isPlaceholder) {
+    if (existingDetail) {
       player.totalChallengeWins = (player.totalChallengeWins || 0) - (existingDetail.challengeWins || 0);
       player.totalImmunityWins = (player.totalImmunityWins || 0) - (existingDetail.immunityWins || 0);
       player.totalRewardWins = (player.totalRewardWins || 0) - (existingDetail.rewardWins || 0);
@@ -1633,11 +1633,14 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       player.story = player.story ? player.story + header + filled.story : filled.story;
     }
 
-    // Recompute avgPlacement from all seasonDetails
+    // Recompute avg/best placement from all seasonDetails (authoritative — lets a
+    // re-merge correct stale values; `bestPlacement` via incremental Math.min above
+    // could never be raised when a placement was fixed downward then re-exported).
     const allPlacements = player.seasonDetails.map(sd => sd.placement).filter(p => p && p < 99);
     player.avgPlacement = allPlacements.length
       ? Math.round(allPlacements.reduce((s, v) => s + v, 0) / allPlacements.length * 100) / 100
       : null;
+    player.bestPlacement = allPlacements.length ? Math.min(...allPlacements) : null;
 
     // Update badges
     if (pd.phase === 'Winner' && !player.badges?.includes(`S${seasonNum} Winner`)) {

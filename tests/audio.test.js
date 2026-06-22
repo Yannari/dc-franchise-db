@@ -3,6 +3,13 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_PREFS, STORAGE_KEY, clampVolume, parsePrefs, serializePrefs } from '../js/audio.js';
 import { CUE_CATALOG, BED_CATALOG, resolveCue, resolveBed } from '../js/audio.js';
 import { duckGain } from '../js/audio.js';
+import { AudioEngine } from '../js/audio.js';
+import { FakeAudioContext, fakeStorage } from './helpers/fakeAudioContext.js';
+
+function makeEngine(over = {}) {
+  const ctxFactory = () => new FakeAudioContext();
+  return new AudioEngine({ ctxFactory, storage: fakeStorage(), ...over });
+}
 
 describe('audio prefs', () => {
   it('STORAGE_KEY and defaults', () => {
@@ -59,5 +66,35 @@ describe('duckGain', () => {
   it('clamps amount to [0,1]', () => {
     expect(duckGain(1, true, 2)).toBe(0);
     expect(duckGain(1, true, -1)).toBe(1);
+  });
+});
+
+describe('AudioEngine state', () => {
+  it('loads defaults when storage empty', () => {
+    const e = makeEngine();
+    expect(e.isMuted()).toBe(false);
+    expect(e.getVolume()).toBe(0.7);
+    expect(e.isUnlocked()).toBe(false);
+  });
+  it('loads persisted prefs', () => {
+    const storage = fakeStorage();
+    storage.setItem('dc_audio', '{"muted":true,"volume":0.2}');
+    const e = new AudioEngine({ ctxFactory: () => new FakeAudioContext(), storage });
+    expect(e.isMuted()).toBe(true);
+    expect(e.getVolume()).toBe(0.2);
+  });
+  it('setVolume/setMuted persist and clamp', () => {
+    const storage = fakeStorage();
+    const e = new AudioEngine({ ctxFactory: () => new FakeAudioContext(), storage });
+    e.setVolume(5); expect(e.getVolume()).toBe(1);
+    e.setMuted(true); expect(e.isMuted()).toBe(true);
+    expect(JSON.parse(storage.getItem('dc_audio'))).toEqual({ muted: true, volume: 1 });
+  });
+  it('unlock creates context once and resumes', () => {
+    const e = makeEngine();
+    e.unlock();
+    expect(e.isUnlocked()).toBe(true);
+    e.unlock(); // idempotent
+    expect(e.isUnlocked()).toBe(true);
   });
 });

@@ -50,3 +50,42 @@ export function duckGain(base, ducking, amount = 0.5) {
   const a = Math.max(0, Math.min(1, amount));
   return ducking ? base * (1 - a) : base;
 }
+
+export class AudioEngine {
+  constructor({ ctxFactory, storage } = {}) {
+    this._ctxFactory = ctxFactory || (() => new (globalThis.AudioContext || globalThis.webkitAudioContext)());
+    this._storage = storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+    const prefs = parsePrefs(this._storage ? this._storage.getItem(STORAGE_KEY) : null);
+    this._muted = prefs.muted;
+    this._volume = prefs.volume;
+    this._unlocked = false;
+    this._ctx = null;
+    this._master = null;
+    this._bedGain = null;
+    this._currentBed = null;
+    this._bedNodes = null;
+    this._pendingBed = null;
+    this._warned = new Set();
+  }
+  isMuted() { return this._muted; }
+  getVolume() { return this._volume; }
+  isUnlocked() { return this._unlocked; }
+  _persist() { if (this._storage) this._storage.setItem(STORAGE_KEY, serializePrefs({ muted: this._muted, volume: this._volume })); }
+  _applyMaster() { if (this._master) this._master.gain.value = this._muted ? 0 : this._volume; }
+  setMuted(m) { this._muted = !!m; this._applyMaster(); this._persist(); }
+  setVolume(v) { this._volume = clampVolume(v); this._applyMaster(); this._persist(); }
+  unlock() {
+    if (this._unlocked) return;
+    this._ctx = this._ctxFactory();
+    this._master = this._ctx.createGain();
+    this._applyMaster();
+    this._master.connect(this._ctx.destination);
+    this._bedGain = this._ctx.createGain();
+    this._bedGain.gain.value = 1;
+    this._bedGain.connect(this._master);
+    if (this._ctx.resume) this._ctx.resume();
+    this._unlocked = true;
+    if (this._pendingBed) { const b = this._pendingBed; this._pendingBed = null; this.ambient(b); }
+  }
+  // sfx() and ambient() added in Tasks 5 and 6.
+}

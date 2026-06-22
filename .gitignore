@@ -7,6 +7,9 @@
 # Git worktrees
 .worktrees/
 
+# Superpowers SDD scratch (progress ledgers, etc.)
+.superpowers/
+
 # Playwright test artifacts
 .playwright-mcp/
 

@@ -1819,53 +1819,30 @@ export function _textHawaiianPunch(ep, ln, sec) {
 
   if (ep.hpRaceData) {
     const rd = ep.hpRaceData;
+    const [rdA, rdB] = rd.finalists || [];
     sec('HAWAIIAN PUNCH — VOLCANO RACE');
-    ln(`Finalists: ${rd.finalists.join(' vs ')}`);
+    ln(`Finalists: ${(rd.finalists || []).join(' vs ')}`);
     ln('');
 
-    rd.phases.forEach(phase => {
+    (rd.phaseResults || []).forEach(phase => {
       ln(`--- ${phase.name} ---`);
-      if (phase.scores) {
-        Object.entries(phase.scores).forEach(([name, score]) => ln(`  ${name}: ${score}`));
+      if (phase.scoreA !== undefined && phase.scoreB !== undefined) {
+        ln(`  ${rdA}: ${(phase.scoreA || 0).toFixed(1)}`);
+        ln(`  ${rdB}: ${(phase.scoreB || 0).toFixed(1)}`);
       }
       if (phase.winner && phase.name !== 'Summit Showdown') ln(`  Phase winner: ${phase.winner}`);
-      if (phase.wheelbarrowHolder) ln(`  Wheelbarrow: ${phase.wheelbarrowHolder} (breaks at lava river)`);
+      if (phase.name === 'Summit Showdown' && phase.leader) ln(`  ${phase.leader} leads into the summit; ${phase.trailer} pushes for the flip.`);
 
-      (phase.events || []).forEach(ev => {
-        if (ev.type === 'sabotage') ln(`  SABOTAGE: ${ev.saboteur} ${ev.success ? 'sabotages' : 'fails to sabotage'} ${ev.target}'s dummy`);
-        if (ev.type === 'stumble') ln(`  ${ev.stumbler} stumbles!${ev.helper ? ` ${ev.helper} helps them up.` : ''}`);
-        if (ev.type === 'shortcut') ln(`  ${ev.player} spots a shortcut — ${ev.success ? 'takes it!' : 'dead end!'}`);
-        if (ev.type === 'taunt') ln(`  ${ev.taunter} taunts ${ev.target}. ${ev.keepsCool ? 'They keep their cool.' : 'They lose their cool!'}`);
-      });
-
-      if (phase.ropeCuts) {
-        phase.ropeCuts.forEach(rc => {
-          const backfire = rc.mismatch ? ' (BACKFIRE — hit own finalist!)' : '';
-          ln(`  Rope cut: ${rc.helper} drops ${rc.trap} on ${rc.actualVictim}${backfire} — ${rc.dodged ? 'DODGED' : `HIT (${rc.damage})`}`);
-        });
-      }
-
-      if (phase.mindGames) {
-        const mg = phase.mindGames;
-        if (mg.noAttempt) {
-          ln(`  No mind games — straight sprint to the rim.`);
-        } else {
-          ln(`  MIND GAMES: ${mg.trailer} attempts ${mg.attackType} on ${mg.leader}`);
-          ln(`  Attack: ${mg.attackRoll} vs Defense: ${mg.defenseRoll}${mg.hasShowmance ? ' (showmance vulnerability!)' : ''}`);
-          ln(`  Result: ${mg.success ? `SUCCESS — ${mg.trailer} FLIPS the race!` : `FAILED — ${mg.leader} stays focused.`}`);
-        }
+      if (phase.mindGameResult) {
+        const mg = phase.mindGameResult;
+        ln(`  MIND GAMES: ${mg.attacker} attempts ${mg.type.replace(/-/g, ' ')} on ${mg.defender}${mg.hasShowmance ? ' (showmance vulnerability!)' : ''}`);
+        ln(`  Result: ${mg.success ? `SUCCESS — ${mg.attacker} FLIPS the race!` : `FAILED — ${mg.defender} stays focused.`}`);
       }
       ln('');
     });
 
     ln(`WINNER: ${rd.winner} throws their dummy into the volcano!`);
-    if (rd.feralCameo) ln(`...and ${rd.feralCameo} emerges from the volcano, snatching the prize money!`);
-
-    if (rd.hazardLog?.length) {
-      ln('');
-      ln('HAZARD LOG:');
-      rd.hazardLog.forEach(h => ln(`  ${h.name}: ${h.status}`));
-    }
+    if (rd.feralCameo) ln(`...and ${rd.feralCameo.player} emerges from the volcano, snatching the prize money!`);
   }
 }
 

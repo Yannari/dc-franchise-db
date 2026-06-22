@@ -1967,6 +1967,21 @@ export function generateFinaleSummaryText(ep) {
     const immS = pStats(ep.immunityWinner);
     if (immS.physical >= 8 || immS.endurance >= 8) ln(`A dominant performance — ${ep.immunityWinner} wanted this one.`);
     else ln(`${ep.immunityWinner} digs deep when it matters most.`);
+    // Hawaiian Punch — detailed Hawaiian Style FIC breakdown
+    if (ep.hpFIC) {
+      const fic = ep.hpFIC;
+      ln('');
+      const animals = Object.entries(fic.spiritAnimals || {}).map(([n, a]) => `${n} → ${a}`).join(', ');
+      if (animals) ln(`Spirit Animals: ${animals}`);
+      (fic.phases || []).forEach((phase, i) => {
+        const order = (phase.results || []).map(r => `${r.player} ${(r.score || 0).toFixed(1)}`).join(' | ');
+        ln(`Phase ${i + 1} — ${phase.name}: ${order} → ${phase.winner} leads.`);
+      });
+      const steal = (fic.events || []).find(e => e.type === 'lei-steal');
+      if (steal) ln(`Lei Steal: ${steal.attacker} ${steal.success ? 'snatches' : 'lunges for'} ${steal.victim}'s lei — ${steal.success ? 'SUCCESS!' : 'blocked!'}`);
+      const standings = (fic.placements || []).map((p, idx) => `${idx + 1}. ${p.player} (${(p.score || 0).toFixed(1)})`).join(', ');
+      if (standings) ln(`Final standings: ${standings}`);
+    }
   }
 
   if (ep.finalCut) {
@@ -2049,17 +2064,23 @@ export function generateFinaleSummaryText(ep) {
 
     sec('VOLCANO RACE');
     const rd = ep.hpRaceData;
-    ln(`${rd.finalists[0]} vs ${rd.finalists[1]} — build a dummy, race it up the volcano, throw it in the crater.`);
+    const [hpFa, hpFb] = rd.finalists;
+    ln(`${hpFa} vs ${hpFb} — build a dummy, race it up the volcano, throw it in the crater.`);
     ln('');
     (rd.phaseResults || []).forEach(phase => {
-      if (phase.scores) ln(`${phase.name}: ${Object.entries(phase.scores).map(([n,s]) => `${n} ${s}`).join(' | ')}`);
-      if (phase.mindGames && !phase.mindGames.noAttempt) {
-        ln(`  Mind games: ${phase.mindGames.trailer} uses ${phase.mindGames.attackType} — ${phase.mindGames.success ? 'SUCCESS! Race flipped!' : 'Failed.'}`);
+      if (phase.scoreA !== undefined && phase.scoreB !== undefined) {
+        ln(`${phase.name}: ${hpFa} ${(phase.scoreA || 0).toFixed(1)} | ${hpFb} ${(phase.scoreB || 0).toFixed(1)} → ${phase.winner} takes the phase.`);
+      } else {
+        ln(`${phase.name}: ${phase.leader} leads, ${phase.trailer} trails into the summit.`);
+      }
+      if (phase.mindGameResult) {
+        const mg = phase.mindGameResult;
+        ln(`  Mind games: ${mg.attacker} attempts ${mg.type.replace(/-/g, ' ')} on ${mg.defender} — ${mg.success ? `SUCCESS! ${mg.attacker} flips the race!` : `Failed — ${mg.defender} holds firm.`}`);
       }
     });
     ln('');
     ln(`${rd.winner} throws their dummy into the volcano and wins the season!`);
-    if (rd.feralCameo) ln(`${rd.feralCameo} steals the prize money from inside the volcano!`);
+    if (rd.feralCameo) ln(`${rd.feralCameo.player} steals the prize money from inside the volcano!`);
 
     return L.join('\n');
   }

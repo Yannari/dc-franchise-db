@@ -219,6 +219,23 @@ export function _audioToastOnce() {
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 500); }, 3500);
 }
 
+// ── App-wide subtle UI sounds + dev/test panel ──
+export function installUiSounds() {
+  document.addEventListener('click', (e) => {
+    const btn = e.target && e.target.closest && e.target.closest('.btn, .tab-btn');
+    if (btn) audio.sfx('button-tick');
+  }, true);
+}
+export function audioPlay(name) { audio.sfx(name); }
+export function audioBed(name) { audio.ambient(name || null); }
+export function buildAudioDebugPanel() {
+  const cues = Object.keys(CUE_CATALOG).map(n => `<button class="btn btn-sm" onclick="audioPlay('${n}')">${n}</button>`).join(' ');
+  const beds = Object.keys(BED_CATALOG).map(n => `<button class="btn btn-sm" onclick="audioBed('${n}')">${n}</button>`).join(' ')
+    + ` <button class="btn btn-sm" onclick="audioBed(null)">stop bed</button>`;
+  return `<div style="padding:12px"><h3>Audio cues</h3><div style="display:flex;flex-wrap:wrap;gap:6px">${cues}</div>
+    <h3 style="margin-top:14px">Ambient beds</h3><div style="display:flex;flex-wrap:wrap;gap:6px">${beds}</div></div>`;
+}
+
 let _initDone = false;
 export function initAudio() {
   if (_initDone) return audio;
@@ -232,6 +249,7 @@ export function initAudio() {
   };
   document.addEventListener('pointerdown', unlock);
   document.addEventListener('keydown', unlock);
+  installUiSounds();
   // Reflect persisted state on the control immediately on load.
   _syncAudioControl();
   return audio;

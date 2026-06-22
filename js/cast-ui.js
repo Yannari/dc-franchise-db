@@ -2,7 +2,10 @@
 // cast-ui.js — Cast builder, roster, presets, config, relationships, alliances UI
 // ══════════════════════════════════════════════════════════════════════
 
+import { audio } from './audio.js';
+
 export function showTab(name) {
+  audio.sfx('tab-swoosh');
   activeTab = name;
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
@@ -555,6 +558,7 @@ export async function saveSeasonToStorage() {
   await _idbPut(_seasonKey(name), data);
   await _saveSeasonIndex(index);
   renderSeasonSaveList();
+  try { audio.sfx('save-chime'); } catch (e) {}
   alert(`Season "${name}" saved.`);
 }
 export async function loadSeasonFromStorage(name) {

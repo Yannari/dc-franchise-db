@@ -19,21 +19,60 @@ export function serializePrefs(prefs) {
   return JSON.stringify({ muted: !!prefs.muted, volume: clampVolume(prefs.volume) });
 }
 
-// --- Synth voice + bed builders (real graphs filled in Tasks 6-7) ---
+// --- Synth voice + bed builders ---
 function _stub() { /* replaced with real synth graph later */ }
 
+// js/audio.js — synth voice helpers
+function _env(ctx, dest, { type='sine', f0, f1, dur, peak=0.3, now }) {
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(f0, now);
+  if (f1 != null) osc.frequency.exponentialRampToValueAtTime(Math.max(1, f1), now + dur);
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.exponentialRampToValueAtTime(peak, now + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+  osc.connect(g); g.connect(dest);
+  osc.start(now); osc.stop(now + dur + 0.02);
+}
+function _noise(ctx, dest, { dur, peak=0.25, type='lowpass', cutoff=1200, now }) {
+  const len = Math.max(1, Math.floor(ctx.sampleRate * dur));
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const filt = ctx.createBiquadFilter(); filt.type = type; filt.frequency.setValueAtTime(cutoff, now);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(peak, now);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+  src.connect(filt); filt.connect(g); g.connect(dest);
+  src.start(now); src.stop(now + dur + 0.02);
+}
+
+function voiceWhoosh(ctx, d, now)    { _noise(ctx, d, { dur: 0.35, peak: 0.18, type: 'bandpass', cutoff: 900, now }); }
+function voiceTorchSnuff(ctx, d, now){ _noise(ctx, d, { dur: 0.5, peak: 0.3, type: 'lowpass', cutoff: 700, now }); _env(ctx, d, { type:'sine', f0: 140, f1: 50, dur: 0.45, peak: 0.25, now }); }
+function voiceIdolSting(ctx, d, now) { [523,659,784,1047].forEach((f,i)=>_env(ctx,d,{type:'triangle',f0:f,dur:0.4,peak:0.18,now:now+i*0.06})); }
+function voiceVoteTick(ctx, d, now)  { _env(ctx, d, { type:'square', f0: 880, f1: 660, dur: 0.07, peak: 0.16, now }); }
+function voiceTensionDrum(ctx, d, now){ _env(ctx, d, { type:'sine', f0: 70, f1: 45, dur: 0.6, peak: 0.32, now }); _noise(ctx, d, { dur: 0.2, peak: 0.12, cutoff: 400, now }); }
+function voiceWinFanfare(ctx, d, now){ [392,523,659,784].forEach((f,i)=>_env(ctx,d,{type:'sawtooth',f0:f,dur:0.5,peak:0.16,now:now+i*0.1})); }
+function voiceGong(ctx, d, now)      { [60,121,183,247].forEach((f)=>_env(ctx,d,{type:'sine',f0:f,dur:1.4,peak:0.12,now})); _noise(ctx,d,{dur:0.3,peak:0.15,cutoff:500,now}); }
+function voiceSwoosh(ctx, d, now)    { _noise(ctx, d, { dur: 0.28, peak: 0.12, type: 'highpass', cutoff: 600, now }); }
+function voiceTabSwoosh(ctx, d, now) { _noise(ctx, d, { dur: 0.18, peak: 0.08, type: 'bandpass', cutoff: 1500, now }); }
+function voiceButtonTick(ctx, d, now){ _env(ctx, d, { type:'square', f0: 1200, dur: 0.04, peak: 0.07, now }); }
+function voiceSaveChime(ctx, d, now) { [784,1047].forEach((f,i)=>_env(ctx,d,{type:'triangle',f0:f,dur:0.25,peak:0.12,now:now+i*0.08})); }
+
 export const CUE_CATALOG = {
-  'reveal-whoosh':     { duck: false, build: _stub },
-  'torch-snuff':       { duck: true,  build: _stub },
-  'idol-sting':        { duck: true,  build: _stub },
-  'vote-tick':         { duck: false, build: _stub },
-  'tension-drum':      { duck: false, build: _stub },
-  'win-fanfare':       { duck: true,  build: _stub },
-  'elimination-gong':  { duck: true,  build: _stub },
-  'screen-swoosh':     { duck: false, build: _stub },
-  'tab-swoosh':        { duck: false, build: _stub },
-  'button-tick':       { duck: false, build: _stub },
-  'save-chime':        { duck: false, build: _stub },
+  'reveal-whoosh':     { duck: false, build: voiceWhoosh },
+  'torch-snuff':       { duck: true,  build: voiceTorchSnuff },
+  'idol-sting':        { duck: true,  build: voiceIdolSting },
+  'vote-tick':         { duck: false, build: voiceVoteTick },
+  'tension-drum':      { duck: false, build: voiceTensionDrum },
+  'win-fanfare':       { duck: true,  build: voiceWinFanfare },
+  'elimination-gong':  { duck: true,  build: voiceGong },
+  'screen-swoosh':     { duck: false, build: voiceSwoosh },
+  'tab-swoosh':        { duck: false, build: voiceTabSwoosh },
+  'button-tick':       { duck: false, build: voiceButtonTick },
+  'save-chime':        { duck: false, build: voiceSaveChime },
 };
 
 export const BED_CATALOG = {

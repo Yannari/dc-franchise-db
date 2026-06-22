@@ -3,8 +3,11 @@ export function makeFakeParam(value = 0) {
   return {
     value,
     setValueAtTime(v) { this.value = v; return this; },
-    linearRampToValueAtTime(v) { this.value = v; return this; },
-    exponentialRampToValueAtTime(v) { this.value = v; return this; },
+    // Real Web Audio ramps are scheduled for a future time and do NOT mutate
+    // .value synchronously; the fake mirrors that so an immediate setValueAtTime
+    // (e.g. ducking) is observable on .value while the ramp target is recorded.
+    linearRampToValueAtTime(v) { this.target = v; return this; },
+    exponentialRampToValueAtTime(v) { this.target = v; return this; },
     cancelScheduledValues() { return this; },
   };
 }

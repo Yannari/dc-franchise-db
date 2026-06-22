@@ -98,3 +98,39 @@ describe('AudioEngine state', () => {
     expect(e.isUnlocked()).toBe(true);
   });
 });
+
+describe('AudioEngine.sfx', () => {
+  it('no-op when not unlocked', () => {
+    const e = makeEngine();
+    let called = 0; e._ctxFactory = () => new FakeAudioContext();
+    e.sfx('reveal-whoosh'); // not unlocked
+    expect(e.isUnlocked()).toBe(false);
+  });
+  it('no-op when muted', () => {
+    const e = makeEngine(); e.setMuted(true); e.unlock();
+    const before = e._ctx.created.length;
+    e.sfx('reveal-whoosh');
+    expect(e._ctx.created.length).toBe(before); // built nothing
+  });
+  it('invokes the cue build fn when unlocked + unmuted', () => {
+    const e = makeEngine(); e.unlock();
+    const spy = vi.fn();
+    e._catalogOverride = { 'spy-cue': { duck: false, build: spy } };
+    e.sfx('spy-cue');
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+  it('warns once on unknown cue, never throws', () => {
+    const e = makeEngine(); e.unlock();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(() => { e.sfx('does-not-exist'); e.sfx('does-not-exist'); }).not.toThrow();
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+  it('ducks bed gain for duck cues', () => {
+    const e = makeEngine(); e.unlock();
+    e._bedGain.gain.value = 1;
+    e._catalogOverride = { 'duck-cue': { duck: true, build: () => {} } };
+    e.sfx('duck-cue');
+    expect(e._bedGain.gain.value).toBeLessThan(1);
+  });
+});

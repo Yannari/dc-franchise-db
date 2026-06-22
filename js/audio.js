@@ -87,5 +87,27 @@ export class AudioEngine {
     this._unlocked = true;
     if (this._pendingBed) { const b = this._pendingBed; this._pendingBed = null; this.ambient(b); }
   }
-  // sfx() and ambient() added in Tasks 5 and 6.
+  _resolveCue(name) {
+    if (this._catalogOverride && this._catalogOverride[name]) return this._catalogOverride[name];
+    return resolveCue(name);
+  }
+  sfx(name) {
+    if (this._muted || !this._unlocked || !this._ctx) return;
+    const cue = this._resolveCue(name);
+    if (!cue) {
+      if (!this._warned.has(name)) { this._warned.add(name); console.warn('[audio] unknown cue:', name); }
+      return;
+    }
+    const now = this._ctx.currentTime;
+    if (cue.duck) this._duck(now);
+    try { cue.build(this._ctx, this._master, now); } catch (e) { /* a bad voice must never break the app */ }
+  }
+  _duck(now) {
+    if (!this._bedGain) return;
+    const g = this._bedGain.gain;
+    if (g.cancelScheduledValues) g.cancelScheduledValues(now);
+    if (g.setValueAtTime) g.setValueAtTime(duckGain(1, true), now); else g.value = duckGain(1, true);
+    if (g.linearRampToValueAtTime) g.linearRampToValueAtTime(1, now + 0.8);
+  }
+  // ambient() added in Task 7.
 }

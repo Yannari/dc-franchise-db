@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_PREFS, STORAGE_KEY, clampVolume, parsePrefs, serializePrefs } from '../js/audio.js';
 import { CUE_CATALOG, BED_CATALOG, resolveCue, resolveBed } from '../js/audio.js';
+import { duckGain } from '../js/audio.js';
 
 describe('audio prefs', () => {
   it('STORAGE_KEY and defaults', () => {
@@ -49,5 +50,14 @@ describe('audio catalogs', () => {
     expect(resolveCue('nope')).toBeNull();
     expect(resolveBed('camp-day')).toBe(BED_CATALOG['camp-day']);
     expect(resolveBed('nope')).toBeNull();
+  });
+});
+
+describe('duckGain', () => {
+  it('returns base when not ducking', () => { expect(duckGain(1, false)).toBe(1); });
+  it('reduces by amount when ducking', () => { expect(duckGain(1, true, 0.5)).toBe(0.5); });
+  it('clamps amount to [0,1]', () => {
+    expect(duckGain(1, true, 2)).toBe(0);
+    expect(duckGain(1, true, -1)).toBe(1);
   });
 });

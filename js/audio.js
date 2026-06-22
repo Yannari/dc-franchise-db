@@ -45,3 +45,8 @@ export const BED_CATALOG = {
 
 export function resolveCue(name) { return CUE_CATALOG[name] || null; }
 export function resolveBed(name) { return BED_CATALOG[name] || null; }
+
+export function duckGain(base, ducking, amount = 0.5) {
+  const a = Math.max(0, Math.min(1, amount));
+  return ducking ? base * (1 - a) : base;
+}

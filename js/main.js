@@ -93,6 +93,7 @@ import * as vpFinaleMod from './vp-finale.js';
 import * as vpUiMod from './vp-ui.js';
 import * as savestateMod from './savestate.js';
 import * as statsExportMod from './stats-export.js';
+import * as audioMod from './audio.js';
 
 // ── Expose mutable state as getters/setters on window ──
 // This is critical: window.gs must always return the CURRENT module-scoped value.
@@ -173,6 +174,7 @@ const extractedModules = [
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
   savestateMod,
   statsExportMod,
+  audioMod,
 ];
 
 for (const mod of extractedModules) {
@@ -187,6 +189,9 @@ for (const mod of extractedModules) {
 // Objects/constants — direct assignment (mutated in place, not reassigned)
 window._tvState = vpScreensMod._tvState;
 window._ftcState = vpUiMod._ftcState;
+window.audio = audioMod.audio;          // audio engine singleton (object, not a function)
+window.CUE_CATALOG = audioMod.CUE_CATALOG;
+window.BED_CATALOG = audioMod.BED_CATALOG;
 window._vpa = vpUiMod._vpa;
 window._alliancePermDesc = castUiMod._alliancePermDesc;
 window.TRIBE_PALETTE = castUiMod.TRIBE_PALETTE;
@@ -286,6 +291,9 @@ async function init() {
   if (_savedTab && ['cast','setup','run','results'].includes(_savedTab)) {
     showTab(_savedTab);
   }
+
+  // Initialize the audio engine (first-gesture unlock + window exposure)
+  audioMod.initAudio();
 }
 
 await init();

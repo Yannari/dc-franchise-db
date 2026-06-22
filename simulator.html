@@ -1550,6 +1550,13 @@
     .tab-btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
     .tab-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
     .tab-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .audio-ctrl { display:flex; align-items:center; gap:6px; margin-left:auto; padding-left:12px; }
+    .audio-btn { background:none; border:none; font-size:16px; cursor:pointer; color:var(--text); line-height:1; }
+    .audio-ctrl input[type=range] { width:80px; accent-color:var(--accent); }
+    .audio-toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:var(--surface2);
+      border:1px solid var(--border); color:var(--text); padding:10px 16px; border-radius:8px; font-size:13px;
+      box-shadow:0 6px 24px rgba(0,0,0,.4); z-index:9999; opacity:0; transition:opacity .4s; }
+    .audio-toast.show { opacity:1; }
 
     /* ── TAB LAYOUT ── */
     .sim-body { display: flex; height: calc(100vh - 49px); overflow: hidden; }
@@ -2221,6 +2228,10 @@
       <button class="tab-btn"         onclick="showTab('run')">Run Episode</button>
       <button class="tab-btn" onclick="showTab('results')">Results</button>
     </nav>
+    <div class="audio-ctrl" id="audio-ctrl">
+      <button class="audio-btn" id="audio-toggle" title="Mute / unmute" onclick="toggleAudioMute()">🔊</button>
+      <input type="range" id="audio-vol" min="0" max="100" value="70" oninput="setAudioVolume(this.value/100)" title="Volume">
+    </div>
   </header>
 
   <div class="sim-body">

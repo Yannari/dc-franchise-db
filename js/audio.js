@@ -188,16 +188,45 @@ export class AudioEngine {
 // ── Singleton + first-gesture unlock ──
 export const audio = new AudioEngine();
 
+// ── Header mute/volume control + one-time toast ──
+export function toggleAudioMute() {
+  audio.setMuted(!audio.isMuted());
+  const btn = document.getElementById('audio-toggle');
+  if (btn) btn.textContent = audio.isMuted() ? '🔇' : '🔊';
+}
+export function setAudioVolume(v) { audio.setVolume(Number(v)); }
+
+export function _syncAudioControl() {
+  const btn = document.getElementById('audio-toggle');
+  const vol = document.getElementById('audio-vol');
+  if (btn) btn.textContent = audio.isMuted() ? '🔇' : '🔊';
+  if (vol) vol.value = String(Math.round(audio.getVolume() * 100));
+}
+export function _audioToastOnce() {
+  if (audio.isMuted()) return;
+  if (audio._storage && audio._storage.getItem('dc_audio_toast')) return;
+  if (audio._storage) audio._storage.setItem('dc_audio_toast', '1');
+  const t = document.createElement('div');
+  t.className = 'audio-toast'; t.textContent = '🔊 Sound on — click the speaker to mute';
+  document.body.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 500); }, 3500);
+}
+
 let _initDone = false;
 export function initAudio() {
   if (_initDone) return audio;
   _initDone = true;
   const unlock = () => {
     audio.unlock();
+    _syncAudioControl();
+    _audioToastOnce();
     document.removeEventListener('pointerdown', unlock);
     document.removeEventListener('keydown', unlock);
   };
   document.addEventListener('pointerdown', unlock);
   document.addEventListener('keydown', unlock);
+  // Reflect persisted state on the control immediately on load.
+  _syncAudioControl();
   return audio;
 }

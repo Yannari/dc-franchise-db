@@ -5,6 +5,7 @@ import { CUE_CATALOG, BED_CATALOG, resolveCue, resolveBed } from '../js/audio.js
 import { duckGain } from '../js/audio.js';
 import { AudioEngine } from '../js/audio.js';
 import { initAudio, audio } from '../js/audio.js';
+import { cueFromElement } from '../js/audio.js';
 import { FakeAudioContext, fakeStorage } from './helpers/fakeAudioContext.js';
 
 function makeEngine(over = {}) {
@@ -171,5 +172,16 @@ describe('initAudio', () => {
     expect(audio.isUnlocked()).toBe(false);
     document.dispatchEvent(new window.Event('pointerdown'));
     expect(audio.isUnlocked()).toBe(true);
+  });
+});
+
+describe('cueFromElement', () => {
+  it('reads data-sfx', () => {
+    const el = document.createElement('div'); el.setAttribute('data-sfx', 'idol-sting');
+    expect(cueFromElement(el)).toBe('idol-sting');
+  });
+  it('returns null when absent', () => {
+    expect(cueFromElement(document.createElement('div'))).toBe(null);
+    expect(cueFromElement(null)).toBe(null);
   });
 });

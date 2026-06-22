@@ -185,6 +185,12 @@ export class AudioEngine {
   }
 }
 
+// ── Declarative cue helper ──
+export function cueFromElement(el) {
+  if (!el || !el.getAttribute) return null;
+  return el.getAttribute('data-sfx') || null;
+}
+
 // ── Singleton + first-gesture unlock ──
 export const audio = new AudioEngine();
 

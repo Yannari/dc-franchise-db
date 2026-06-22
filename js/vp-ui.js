@@ -2,6 +2,8 @@
 // vp-ui.js — VP navigation, interaction, particles, search, reveal helpers
 // ══════════════════════════════════════════════════════════════════════
 
+import { audio, cueFromElement } from './audio.js';
+
 export function vpAnimateTallies(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -124,6 +126,7 @@ export function vpRevealNextPlacement(containerId) {
   `;
   slot.style.animation = 'staggerIn 0.35s var(--ease-broadcast) both';
   if (isWinner) slot.style.boxShadow = '0 0 0 1px var(--accent-gold)';
+  audio.sfx(cueFromElement(slot) || (isWinner ? 'win-fanfare' : 'reveal-whoosh'));
 
   el.dataset.revealed = revealed + 1;
 
@@ -341,6 +344,7 @@ export function ftcRevealNext(epNum, total) {
   card.style.display = 'flex';
   card.classList.add('tv-revealed', 'tv-latest');
   if (state.revealed > 0) cards[state.revealed - 1].classList.remove('tv-latest');
+  audio.sfx(cueFromElement(card) || 'vote-tick');
 
   // Update tally counter
   const voted = card.dataset.voted;
@@ -595,6 +599,11 @@ export function renderVPScreen() {
   // vote reveal state is now stale. Clear it so reveals start fresh.
   Object.keys(_tvState).forEach(k => delete _tvState[k]);
   content.innerHTML = cur.html;
+  // Declarative ambience: read data-ambient on the screen root, swoosh on change.
+  const _screenRootEl = content.firstElementChild;
+  const _bed = _screenRootEl && _screenRootEl.getAttribute && _screenRootEl.getAttribute('data-ambient');
+  if (_bed) audio.ambient(_bed);
+  audio.sfx('screen-swoosh');
   document.querySelector('.rp-main').scrollTop = 0;
   vpUpdateParticleProfile();
   // Beach Blanket Bogus ambient audio switching

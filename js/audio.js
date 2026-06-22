@@ -61,6 +61,23 @@ function voiceTabSwoosh(ctx, d, now) { _noise(ctx, d, { dur: 0.18, peak: 0.08, t
 function voiceButtonTick(ctx, d, now){ _env(ctx, d, { type:'square', f0: 1200, dur: 0.04, peak: 0.07, now }); }
 function voiceSaveChime(ctx, d, now) { [784,1047].forEach((f,i)=>_env(ctx,d,{type:'triangle',f0:f,dur:0.25,peak:0.12,now:now+i*0.08})); }
 
+// --- Ambient bed builders (looping pad) ---
+function _padBed(ctx, dest, freqs) {
+  const oscs = freqs.map(f => { const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f; return o; });
+  const g = ctx.createGain(); g.gain.value = 0.0001;
+  oscs.forEach(o => { o.connect(g); o.start(); });
+  g.connect(dest);
+  return { gain: g, stop: (now, t = 1.2) => {
+    if (g.gain.setValueAtTime) g.gain.setValueAtTime(g.gain.value, now);
+    if (g.gain.linearRampToValueAtTime) g.gain.linearRampToValueAtTime(0.0001, now + t); else g.gain.value = 0.0001;
+    oscs.forEach(o => o.stop && o.stop(now + t + 0.05));
+  } };
+}
+function bedCampDay(ctx, d)      { return _padBed(ctx, d, [196, 294, 392]); }
+function bedCampNight(ctx, d)    { return _padBed(ctx, d, [110, 146, 220]); }
+function bedTribalTension(ctx, d){ return _padBed(ctx, d, [98, 103, 147]); }
+function bedVictory(ctx, d)      { return _padBed(ctx, d, [262, 330, 392, 523]); }
+
 export const CUE_CATALOG = {
   'reveal-whoosh':     { duck: false, build: voiceWhoosh },
   'torch-snuff':       { duck: true,  build: voiceTorchSnuff },
@@ -76,10 +93,10 @@ export const CUE_CATALOG = {
 };
 
 export const BED_CATALOG = {
-  'camp-day':       { build: _stub, file: null },
-  'camp-night':     { build: _stub, file: null },
-  'tribal-tension': { build: _stub, file: null },
-  'victory':        { build: _stub, file: null },
+  'camp-day':       { build: bedCampDay, file: null },
+  'camp-night':     { build: bedCampNight, file: null },
+  'tribal-tension': { build: bedTribalTension, file: null },
+  'victory':        { build: bedVictory, file: null },
 };
 
 export function resolveCue(name) { return CUE_CATALOG[name] || null; }
@@ -148,5 +165,22 @@ export class AudioEngine {
     if (g.setValueAtTime) g.setValueAtTime(duckGain(1, true), now); else g.value = duckGain(1, true);
     if (g.linearRampToValueAtTime) g.linearRampToValueAtTime(1, now + 0.8);
   }
-  // ambient() added in Task 7.
+  ambient(name) {
+    if (!this._unlocked || !this._ctx) { this._pendingBed = name; return; }
+    if (this._currentBed === name) return;
+    const now = this._ctx.currentTime;
+    if (this._bedNodes) { try { this._bedNodes.stop(now); } catch (e) {} this._bedNodes = null; }
+    this._currentBed = null;
+    if (!name) return;
+    const bed = resolveBed(name);
+    if (!bed) return;
+    const nodes = bed.build(this._ctx, this._bedGain);
+    if (nodes && nodes.gain) {
+      const g = nodes.gain.gain;
+      if (g.setValueAtTime) g.setValueAtTime(0.0001, now);
+      if (g.linearRampToValueAtTime) g.linearRampToValueAtTime(0.18, now + 1.2); else g.value = 0.18;
+    }
+    this._bedNodes = nodes;
+    this._currentBed = name;
+  }
 }

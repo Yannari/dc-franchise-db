@@ -134,3 +134,30 @@ describe('AudioEngine.sfx', () => {
     expect(e._bedGain.gain.value).toBeLessThan(1);
   });
 });
+
+describe('AudioEngine.ambient', () => {
+  it('queues bed when not unlocked, plays on unlock', () => {
+    const e = makeEngine();
+    e.ambient('camp-day');
+    expect(e._currentBed).toBe(null);
+    e.unlock();
+    expect(e._currentBed).toBe('camp-day');
+  });
+  it('switching beds updates currentBed; same bed is a no-op', () => {
+    const e = makeEngine(); e.unlock();
+    e.ambient('camp-day'); expect(e._currentBed).toBe('camp-day');
+    const builtA = e._ctx.created.length;
+    e.ambient('camp-day'); // no-op
+    expect(e._ctx.created.length).toBe(builtA);
+    e.ambient('tribal-tension'); expect(e._currentBed).toBe('tribal-tension');
+  });
+  it('ambient(null) clears current bed', () => {
+    const e = makeEngine(); e.unlock();
+    e.ambient('victory'); expect(e._currentBed).toBe('victory');
+    e.ambient(null); expect(e._currentBed).toBe(null);
+  });
+  it('unknown bed is ignored', () => {
+    const e = makeEngine(); e.unlock();
+    e.ambient('nope'); expect(e._currentBed).toBe(null);
+  });
+});

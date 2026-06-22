@@ -4,6 +4,7 @@ import { DEFAULT_PREFS, STORAGE_KEY, clampVolume, parsePrefs, serializePrefs } f
 import { CUE_CATALOG, BED_CATALOG, resolveCue, resolveBed } from '../js/audio.js';
 import { duckGain } from '../js/audio.js';
 import { AudioEngine } from '../js/audio.js';
+import { initAudio, audio } from '../js/audio.js';
 import { FakeAudioContext, fakeStorage } from './helpers/fakeAudioContext.js';
 
 function makeEngine(over = {}) {
@@ -159,5 +160,16 @@ describe('AudioEngine.ambient', () => {
   it('unknown bed is ignored', () => {
     const e = makeEngine(); e.unlock();
     e.ambient('nope'); expect(e._currentBed).toBe(null);
+  });
+});
+
+describe('initAudio', () => {
+  it('unlocks the singleton on first document gesture', () => {
+    // singleton has no fake ctx; give it one for the test
+    audio._ctxFactory = () => new FakeAudioContext();
+    initAudio();
+    expect(audio.isUnlocked()).toBe(false);
+    document.dispatchEvent(new window.Event('pointerdown'));
+    expect(audio.isUnlocked()).toBe(true);
   });
 });

@@ -184,3 +184,20 @@ export class AudioEngine {
     this._currentBed = name;
   }
 }
+
+// ── Singleton + first-gesture unlock ──
+export const audio = new AudioEngine();
+
+let _initDone = false;
+export function initAudio() {
+  if (_initDone) return audio;
+  _initDone = true;
+  const unlock = () => {
+    audio.unlock();
+    document.removeEventListener('pointerdown', unlock);
+    document.removeEventListener('keydown', unlock);
+  };
+  document.addEventListener('pointerdown', unlock);
+  document.addEventListener('keydown', unlock);
+  return audio;
+}

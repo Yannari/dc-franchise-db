@@ -1,6 +1,7 @@
 // js/audio.js — Web Audio soundscape (zero files, synthesized). Imports nothing from the project.
 export const DEFAULT_PREFS = { muted: false, volume: 0.7 };
 export const STORAGE_KEY = 'dc_audio';
+export const MUSIC_KEY = 'dc_audio_music';   // background-music on/off (separate from master mute)
 
 export function clampVolume(v) {
   if (typeof v !== 'number' || Number.isNaN(v)) return DEFAULT_PREFS.volume;
@@ -117,6 +118,10 @@ export class AudioEngine {
     const prefs = parsePrefs(this._storage ? this._storage.getItem(STORAGE_KEY) : null);
     this._muted = prefs.muted;
     this._volume = prefs.volume;
+    // Background music (ambient beds) on/off — independent of master mute, so the
+    // user can keep SFX while silencing beds. Stored under its own key (default ON).
+    this._musicOn = this._storage ? this._storage.getItem(MUSIC_KEY) !== '0' : true;
+    this._desiredBed = null;   // last bed requested, played only while _musicOn
     this._unlocked = false;
     this._ctx = null;
     this._master = null;
@@ -129,10 +134,16 @@ export class AudioEngine {
   isMuted() { return this._muted; }
   getVolume() { return this._volume; }
   isUnlocked() { return this._unlocked; }
+  isMusicEnabled() { return this._musicOn; }
   _persist() { if (this._storage) this._storage.setItem(STORAGE_KEY, serializePrefs({ muted: this._muted, volume: this._volume })); }
   _applyMaster() { if (this._master) this._master.gain.value = this._muted ? 0 : this._volume; }
   setMuted(m) { this._muted = !!m; this._applyMaster(); this._persist(); }
   setVolume(v) { this._volume = clampVolume(v); this._applyMaster(); this._persist(); }
+  setMusicEnabled(on) {
+    this._musicOn = !!on;
+    if (this._storage) this._storage.setItem(MUSIC_KEY, this._musicOn ? '1' : '0');
+    this._applyAmbient();   // start the current scene's bed, or stop it
+  }
   unlock() {
     if (this._unlocked) return;
     this._ctx = this._ctxFactory();
@@ -169,7 +180,16 @@ export class AudioEngine {
     if (g.linearRampToValueAtTime) g.linearRampToValueAtTime(1, now + 0.8);
   }
   ambient(name) {
-    if (!this._unlocked || !this._ctx) { this._pendingBed = name; return; }
+    this._desiredBed = name;   // remember the scene's bed even if music is off
+    this._applyAmbient();
+  }
+
+  // Reconcile playback with the desired bed + music-on state. When music is off,
+  // the effective bed is null (silence) but _desiredBed is retained so toggling
+  // music back on resumes the current scene's bed.
+  _applyAmbient() {
+    const name = this._musicOn ? this._desiredBed : null;
+    if (!this._unlocked || !this._ctx) { this._pendingBed = this._desiredBed; return; }
     if (this._currentBed === name) return;
     const now = this._ctx.currentTime;
     if (this._bedNodes) { try { this._bedNodes.stop(now); } catch (e) {} this._bedNodes = null; }
@@ -259,11 +279,27 @@ export function toggleAudioMute() {
 }
 export function setAudioVolume(v) { audio.setVolume(Number(v)); }
 
+// Background-music on/off — independent of the master mute. Keeps SFX, toggles beds.
+export function toggleAudioMusic() {
+  audio.setMusicEnabled(!audio.isMusicEnabled());
+  _syncMusicControl();
+}
+export function _syncMusicControl() {
+  const btn = document.getElementById('audio-music');
+  if (btn) {
+    const on = audio.isMusicEnabled();
+    btn.textContent = '🎵';              // state shown via the .off class (dimmed + struck through)
+    btn.classList.toggle('off', !on);
+    btn.title = on ? 'Background music: on (click to mute music only)' : 'Background music: off (SFX still play)';
+  }
+}
+
 export function _syncAudioControl() {
   const btn = document.getElementById('audio-toggle');
   const vol = document.getElementById('audio-vol');
   if (btn) btn.textContent = audio.isMuted() ? '🔇' : '🔊';
   if (vol) vol.value = String(Math.round(audio.getVolume() * 100));
+  _syncMusicControl();
 }
 export function _audioToastOnce() {
   if (audio.isMuted()) return;

@@ -201,6 +201,52 @@ describe('AudioEngine.ambient — file beds (mp3)', () => {
   });
 });
 
+describe('AudioEngine — music toggle (independent of mute)', () => {
+  it('defaults on; persists off/on under its own key', () => {
+    const storage = fakeStorage();
+    const e = new AudioEngine({ ctxFactory: () => new FakeAudioContext(), storage });
+    expect(e.isMusicEnabled()).toBe(true);
+    e.setMusicEnabled(false);
+    expect(e.isMusicEnabled()).toBe(false);
+    expect(storage.getItem('dc_audio_music')).toBe('0');
+    // does NOT touch the master-mute prefs
+    expect(e.isMuted()).toBe(false);
+    // a fresh engine reads the persisted music pref
+    const e2 = new AudioEngine({ ctxFactory: () => new FakeAudioContext(), storage });
+    expect(e2.isMusicEnabled()).toBe(false);
+  });
+
+  it('music off stops the bed but keeps the desired bed; on resumes it', () => {
+    const e = makeEngine(); e.unlock();
+    e.ambient('camp-day');                 // synth bed (camp-day.file is set, but in jsdom fetch fails -> still tracks)
+    expect(e._currentBed).toBe('camp-day');
+    e.setMusicEnabled(false);
+    expect(e._currentBed).toBe(null);      // silenced
+    expect(e._desiredBed).toBe('camp-day'); // remembered
+    e.setMusicEnabled(true);
+    expect(e._currentBed).toBe('camp-day'); // resumed
+  });
+
+  it('while music is off, new ambient() calls do not play but are remembered', () => {
+    const e = makeEngine(); e.unlock();
+    e.setMusicEnabled(false);
+    e.ambient('victory');
+    expect(e._currentBed).toBe(null);
+    expect(e._desiredBed).toBe('victory');
+    e.setMusicEnabled(true);
+    expect(e._currentBed).toBe('victory');
+  });
+
+  it('music toggle does not affect sfx', () => {
+    const e = makeEngine(); e.unlock();
+    e.setMusicEnabled(false);
+    const spy = vi.fn();
+    e._catalogOverride = { 'spy-cue': { duck: false, build: spy } };
+    e.sfx('spy-cue');
+    expect(spy).toHaveBeenCalledTimes(1); // SFX still fire with music off
+  });
+});
+
 describe('initAudio', () => {
   it('unlocks the singleton on first document gesture', () => {
     // singleton has no fake ctx; give it one for the test

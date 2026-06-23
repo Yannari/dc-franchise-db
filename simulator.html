@@ -1553,6 +1553,10 @@
     .audio-ctrl { display:flex; align-items:center; gap:6px; margin-left:auto; padding-left:12px; }
     .audio-btn { background:none; border:none; font-size:16px; cursor:pointer; color:var(--text); line-height:1; }
     .audio-ctrl input[type=range] { width:80px; accent-color:var(--accent); }
+    .audio-music-btn { position:relative; font-size:14px; }
+    .audio-music-btn.off { opacity:0.4; }
+    .audio-music-btn.off::after { content:''; position:absolute; left:50%; top:50%; width:20px; height:2px;
+      background:var(--accent-fire,#e8873a); transform:translate(-50%,-50%) rotate(-45deg); border-radius:2px; }
     .audio-toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:var(--surface2);
       border:1px solid var(--border); color:var(--text); padding:10px 16px; border-radius:8px; font-size:13px;
       box-shadow:0 6px 24px rgba(0,0,0,.4); z-index:9999; opacity:0; transition:opacity .4s; }
@@ -2231,6 +2235,7 @@
     <div class="audio-ctrl" id="audio-ctrl">
       <button class="audio-btn" id="audio-toggle" title="Mute / unmute" onclick="toggleAudioMute()">🔊</button>
       <input type="range" id="audio-vol" min="0" max="100" value="70" oninput="setAudioVolume(this.value/100)" title="Volume">
+      <button class="audio-btn audio-music-btn" id="audio-music" title="Background music: on (click to mute music only)" onclick="toggleAudioMusic()">🎵</button>
     </div>
   </header>
 

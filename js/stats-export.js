@@ -1922,7 +1922,17 @@ export async function generateRankingsNarration(onStatus) {
   const _status = onStatus || (() => {});
 
   _status('Extracting season data...');
-  const rawStats = _extractSeasonStats();
+  // NOTE: must use extractSeasonRawStats() (has a `.players` map), NOT
+  // _extractSeasonStats() (season-level totals only — no `.players`, which made
+  // this always report "No season data" even with a full season loaded).
+  let rawStats;
+  try {
+    rawStats = extractSeasonRawStats();
+    if (rawStats?.error) { alert(rawStats.error); return; }
+  } catch (err) {
+    alert('Failed to extract season stats: ' + (err.message || err));
+    return;
+  }
   if (!rawStats.players || !Object.keys(rawStats.players).length) {
     alert('No season data — run a season first.');
     return;

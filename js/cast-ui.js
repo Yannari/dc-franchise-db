@@ -42,7 +42,7 @@ export function setSlider(key, val, resetArchetype) {
   const n = parseInt(val), stat = STATS.find(s => s.key === key);
   const pct = ((n-1)/9*100).toFixed(1) + '%';
   const el = document.getElementById('slider-' + key);
-  if (el) { el.value = n; el.style.background = `linear-gradient(to right,${stat.color} 0%,${stat.color} ${pct},#334155 ${pct})`; }
+  if (el) { el.value = n; el.style.background = `linear-gradient(to right,${stat.color} 0%,${stat.color} ${pct},var(--slider-track) ${pct})`; }
   const vEl = document.getElementById('val-' + key);
   if (vEl) vEl.textContent = n;
   // archetype stays locked — slider edits don't clear it

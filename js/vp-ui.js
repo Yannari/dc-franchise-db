@@ -568,46 +568,67 @@ window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',
   if (e.matches) vpStopParticles();
 });
 
-// ── Universal screen → ambient bed + dramatic sting maps (centralized; no per-builder edits) ──
-const _VP_AMBIENT = {
-  tribal: 'tribal-tension', votes: 'tribal-tension', 'votes-2': 'tribal-tension',
-  ftc: 'tribal-tension', 'jury-vote': 'tribal-tension', 'jury-votes': 'tribal-tension',
-  'jury-convenes': 'tribal-tension', 'fan-vote': 'tribal-tension', 'fan-vote-reveal': 'tribal-tension',
-  'cold-open': 'camp-day', merge: 'camp-day',
-  'finale-camp': 'camp-night', 'kl-camp': 'camp-night', 'firemaking-camp': 'camp-night',
-  'fanvote-camp': 'camp-night', 'jury-life': 'camp-night',
-  'winner-ceremony': 'victory', reunion: 'victory',
-};
 const _VP_STING = {
   'winner-ceremony': 'win-fanfare',
   'jury-vote': 'tension-drum', 'jury-votes': 'tension-drum', ftc: 'tension-drum',
 };
 
-// Challenge screens get their own ambient bed. They greatly outnumber other
-// screens and use stable id families; non-challenge screens are handled by the
-// explicit maps above (camp/tribal/victory) or fall through to no change.
-// When adding a new twist challenge, add its screen-id prefix here.
-const _CHALLENGE_IDS = new Set([
-  'challenge', 'reward-challenge', 'finale-challenge', 'grand-challenge',
-  'cliff-dive', 'awake-a-thon', 'sucky-outdoors', 'up-the-creek', 'paintball-hunt',
+// ── Phase-based ambient bed mapping ──
+// Every VP screen is classified into one of five phases, so the music follows
+// the episode arc deterministically (no matter how you navigate):
+//   camp-day → challenge → camp-night (post-challenge wind-down) → tribal → aftermath,
+//   plus a victory bed for the finale crowning.
+// Checked in PRIORITY ORDER (first match wins) so overlapping names resolve right.
+const _BED_VICTORY = new Set(['winner-ceremony', 'reunion', 'season-stats']);
+// Tribal phase: the council, the votes, the jury vote, double-boot re-votes.
+const _BED_TRIBAL_EXACT = new Set([
+  'tribal', 'votes', 'votes-2', 'voting-plans-2', 'ftc', 'jury-vote', 'jury-votes',
+  'jury-convenes', 'fan-vote', 'fan-vote-reveal', 'fan-campaign', 'no-tribal',
+  'emissary-choice', 'surprise',
+]);
+const _BED_TRIBAL_PREFIX = ['tribal-', 'votes-'];     // multi-tribal per-tribe screens
+// Challenge phase: generic + reward/finale + every twist-challenge id family.
+const _BED_CHALLENGE_IDS = new Set([
+  'challenge', 'reward-challenge', 'finale-challenge', 'grand-challenge', 'reward-reveal',
+  'benches', 'cliff-dive', 'awake-a-thon', 'sucky-outdoors', 'up-the-creek', 'paintball-hunt',
   'hells-kitchen', 'trust-challenge', 'dodgebrawl', 'lucky-hunt', 'xtreme-torture',
   'hide-seek', 'off-the-chain', 'wawanakwa-gone-wild', 'tri-armed-triathlon', 'tdd',
+  'kl-orienteering', 'kl-perch',
 ]);
-const _CHALLENGE_PREFIXES = [
+const _BED_CHALLENGE_PREFIXES = [
   'talent-', 'pf-', 'bs-', 'su-', 'br-', 'cc-', 'yeti-', 'mc-', 'oc-', 'sh-', 'pp-',
   'gc-', 'rr-', 'kf-', 'so-', 'td-', 'eg-', 'bb-', 'cft-', 'fc-', 'brb-', 'gfo-',
   'rp-', 'dh-', 'pr-', 'iib-', 'pt-', 'als-', 'vs-', 'hd-', 'ssr-', 'az-', 'nm-',
   'tls-', 'rtd-', 'tt-', 'mm-', 'gp-', 'hb-', 'ae-', 'bbb-', 'ct-', 'cs-', 'of-',
   'mod-', 'sm-', 'bc-', 'oh-', 'fmd-', 'slasher-', 'hp-', 'relay-', 'tdd-',
 ];
+// Camp-night phase: post-challenge social/wind-down + finale camp life.
+const _BED_CAMPNIGHT_EXACT = new Set([
+  'voting-plans', 'mole-exposed', 'emissary-scouting', 'relationships',
+  'ri-choice', 'ri-life', 'ri-duel', 'rescue-life', 'post-twist',
+  'finale-camp', 'kl-camp', 'kl-choice', 'firemaking-camp', 'firemaking-decision',
+  'fanvote-camp', 'jury-life', 'final-cut',
+]);
+const _BED_CAMPNIGHT_PREFIX = ['voting-plans-'];      // multi-tribal plans (voting-plans-2 already tribal)
+// Camp-day phase: pre-challenge / general daytime camp & early-game twists.
+const _BED_CAMPDAY_EXACT = new Set([
+  'cold-open', 'pf-confessions', 'first-impressions', 'second-chance', 'rescue-return',
+  'ri-return', 'ambassadors', 'merge', 'twist', 'schoolyard-pick', 'fan-vote-return',
+  'tied-destinies', 'spirit-island', 'feast', 'exile-island', 'exile-format', 'kidnapping',
+  'shared-immunity', 'double-safety', 'hero-duel', 'guardian-angel', 'firemaking-duel',
+]);
 
 // Resolve the ambient bed for a screen id. Pure + exported for testing.
+// Returns null only for genuinely unclassified screens (keeps the prior bed).
 export function bedForScreen(id, explicitBed) {
   if (explicitBed) return explicitBed;
   if (!id) return null;
   if (id === 'aftermath' || id.startsWith('aftermath-') || id.startsWith('aftermayhem-')) return 'aftermath';
-  if (_VP_AMBIENT[id]) return _VP_AMBIENT[id];
-  if (_CHALLENGE_IDS.has(id) || _CHALLENGE_PREFIXES.some(p => id.startsWith(p))) return 'challenge';
+  if (_BED_VICTORY.has(id)) return 'victory';
+  if (_BED_TRIBAL_EXACT.has(id) || _BED_TRIBAL_PREFIX.some(p => id.startsWith(p))) return 'tribal-tension';
+  if (_BED_CHALLENGE_IDS.has(id) || _BED_CHALLENGE_PREFIXES.some(p => id.startsWith(p))) return 'challenge';
+  if (_BED_CAMPNIGHT_EXACT.has(id) || _BED_CAMPNIGHT_PREFIX.some(p => id.startsWith(p))) return 'camp-night';
+  if (_BED_CAMPDAY_EXACT.has(id)) return 'camp-day';
   return null;
 }
 
@@ -809,6 +830,7 @@ export function closeVisualPlayer() {
   // Stop challenge audio if running
   if (typeof window._slasherAudioDestroy === 'function') window._slasherAudioDestroy();
   if (typeof window._aeAudioDestroy === 'function') window._aeAudioDestroy();
+  audio.ambient(null);   // stop the ambient bed when leaving the Viewing Party
   document.getElementById('visual-player').style.display = 'none';
   document.body.style.overflow = '';
 }

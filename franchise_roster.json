@@ -2160,7 +2160,7 @@
         "strategic": 8,
         "loyalty": 6,
         "boldness": 7,
-        "intuition": 9,
+        "intuition": 7,
         "temperament": 5
       },
       "isReturnee": false
@@ -2172,15 +2172,15 @@
       "archetype": "social-butterfly",
       "sexuality": "bi",
       "stats": {
-        "physical": 4,
-        "endurance": 5,
-        "mental": 8,
-        "social": 8,
-        "strategic": 5,
-        "loyalty": 7,
+        "physical": 5,
+        "endurance": 7,
+        "mental": 7,
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 6,
         "boldness": 5,
-        "intuition": 6,
-        "temperament": 7
+        "intuition": 7,
+        "temperament": 6
       },
       "isReturnee": false
     },
@@ -2190,15 +2190,15 @@
       "gender": "m",
       "archetype": "hero",
       "stats": {
-        "physical": 6,
-        "endurance": 6,
-        "mental": 6,
-        "social": 9,
-        "strategic": 5,
+        "physical": 7,
+        "endurance": 7,
+        "mental": 4,
+        "social": 6,
+        "strategic": 3,
         "loyalty": 9,
         "boldness": 6,
-        "intuition": 7,
-        "temperament": 9
+        "intuition": 6,
+        "temperament": 8
       },
       "isReturnee": false
     },
@@ -2206,17 +2206,17 @@
       "name": "Hunter",
       "slug": "hunter",
       "gender": "m",
-      "archetype": "schemer",
+      "archetype": "showmancer",
       "stats": {
-        "physical": 6,
-        "endurance": 6,
+        "physical": 7,
+        "endurance": 7,
         "mental": 7,
-        "social": 8,
-        "strategic": 9,
-        "loyalty": 4,
-        "boldness": 7,
-        "intuition": 8,
-        "temperament": 6
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 8,
+        "boldness": 2,
+        "intuition": 4,
+        "temperament": 8
       },
       "isReturnee": false
     },
@@ -2224,17 +2224,17 @@
       "name": "James",
       "slug": "james",
       "gender": "m",
-      "archetype": "mastermind",
+      "archetype": "schemer",
       "sexuality": "gay",
       "stats": {
-        "physical": 6,
-        "endurance": 7,
-        "mental": 9,
-        "social": 9,
-        "strategic": 10,
+        "physical": 7,
+        "endurance": 6,
+        "mental": 5,
+        "social": 6,
+        "strategic": 8,
         "loyalty": 3,
-        "boldness": 8,
-        "intuition": 9,
+        "boldness": 9,
+        "intuition": 6,
         "temperament": 5
       },
       "isReturnee": false
@@ -2245,13 +2245,13 @@
       "gender": "m",
       "archetype": "floater",
       "stats": {
-        "physical": 6,
+        "physical": 4,
         "endurance": 6,
         "mental": 5,
         "social": 6,
-        "strategic": 3,
-        "loyalty": 6,
-        "boldness": 3,
+        "strategic": 1,
+        "loyalty": 10,
+        "boldness": 2,
         "intuition": 5,
         "temperament": 9
       },
@@ -2264,14 +2264,14 @@
       "archetype": "hothead",
       "sexuality": "lesbian",
       "stats": {
-        "physical": 5,
+        "physical": 6,
         "endurance": 6,
-        "mental": 5,
+        "mental": 6,
         "social": 3,
-        "strategic": 4,
-        "loyalty": 5,
-        "boldness": 8,
-        "intuition": 4,
+        "strategic": 6,
+        "loyalty": 3,
+        "boldness": 9,
+        "intuition": 7,
         "temperament": 2
       },
       "isReturnee": false
@@ -2299,17 +2299,17 @@
       "name": "Maggy",
       "slug": "maggy",
       "gender": "f",
-      "archetype": "challenge-beast",
+      "archetype": "goat",
       "stats": {
-        "physical": 10,
-        "endurance": 9,
-        "mental": 5,
+        "physical": 8,
+        "endurance": 4,
+        "mental": 4,
         "social": 5,
-        "strategic": 4,
-        "loyalty": 7,
-        "boldness": 5,
-        "intuition": 5,
-        "temperament": 7
+        "strategic": 2,
+        "loyalty": 9,
+        "boldness": 1,
+        "intuition": 3,
+        "temperament": 8
       },
       "isReturnee": false
     },
@@ -2320,14 +2320,14 @@
       "archetype": "underdog",
       "stats": {
         "physical": 4,
-        "endurance": 4,
-        "mental": 6,
-        "social": 5,
-        "strategic": 4,
+        "endurance": 5,
+        "mental": 4,
+        "social": 4,
+        "strategic": 5,
         "loyalty": 6,
         "boldness": 2,
         "intuition": 5,
-        "temperament": 4
+        "temperament": 8
       },
       "isReturnee": false
     },
@@ -2335,17 +2335,17 @@
       "name": "Riya",
       "slug": "riya",
       "gender": "f",
-      "archetype": "underdog",
+      "archetype": "schemer",
       "stats": {
-        "physical": 6,
-        "endurance": 7,
-        "mental": 6,
+        "physical": 5,
+        "endurance": 6,
+        "mental": 7,
         "social": 4,
-        "strategic": 7,
-        "loyalty": 5,
-        "boldness": 6,
-        "intuition": 6,
-        "temperament": 5
+        "strategic": 9,
+        "loyalty": 3,
+        "boldness": 8,
+        "intuition": 8,
+        "temperament": 4
       },
       "isReturnee": false
     },
@@ -2355,14 +2355,14 @@
       "gender": "f",
       "archetype": "social-butterfly",
       "stats": {
-        "physical": 5,
-        "endurance": 5,
+        "physical": 6,
+        "endurance": 6,
         "mental": 6,
-        "social": 8,
+        "social": 9,
         "strategic": 5,
         "loyalty": 8,
-        "boldness": 5,
-        "intuition": 6,
+        "boldness": 8,
+        "intuition": 3,
         "temperament": 7
       },
       "isReturnee": false
@@ -2373,15 +2373,15 @@
       "gender": "f",
       "archetype": "perceptive-player",
       "stats": {
-        "physical": 5,
-        "endurance": 6,
+        "physical": 4,
+        "endurance": 5,
         "mental": 7,
-        "social": 5,
-        "strategic": 8,
-        "loyalty": 5,
+        "social": 4,
+        "strategic": 4,
+        "loyalty": 8,
         "boldness": 5,
-        "intuition": 8,
-        "temperament": 6
+        "intuition": 9,
+        "temperament": 7
       },
       "isReturnee": false
     },
@@ -2391,15 +2391,15 @@
       "gender": "m",
       "archetype": "villain",
       "stats": {
-        "physical": 5,
+        "physical": 6,
         "endurance": 5,
-        "mental": 7,
-        "social": 5,
-        "strategic": 7,
-        "loyalty": 2,
-        "boldness": 8,
+        "mental": 6,
+        "social": 3,
+        "strategic": 8,
+        "loyalty": 1,
+        "boldness": 10,
         "intuition": 4,
-        "temperament": 3
+        "temperament": 2
       },
       "isReturnee": false
     }

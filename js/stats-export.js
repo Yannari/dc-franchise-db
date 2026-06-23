@@ -1221,10 +1221,52 @@ export function extractSeasonTemplate() {
     },
     finalists: finalistTemplate,
     placements: sortedPlacements,
+    votingHistory: _extractVotingHistory(),
+    finalTribalCouncil: _extractFinalTribalCouncil(),
     seasonNarrative: '[AI_FILL]',
     awards: '[AI_FILL]',
     emoji: '[AI_FILL]'
   };
+}
+
+// Per-episode vote breakdown for the Vote History tab + Voting Analytics page.
+// Shape matches what season_ref.html / voting-analytics.html consume.
+function _extractVotingHistory() {
+  const history = gs.episodeHistory || [];
+  const out = [];
+  for (const ep of history) {
+    const log = ep.votingLog || [];
+    if (!log.length) continue; // skip episodes with no tribal vote (rewards, finale race, etc.)
+    const boot = ep.eliminated || ep.firstEliminated || ep.suddenDeathEliminated
+      || ep.emissaryEliminated || ep.hpTiebreakerEliminated || ep.tiedDestiniesCollateral || null;
+    out.push({
+      episode: ep.num,
+      eliminated: boot,
+      eliminatedSlug: boot ? _slug(boot) : '',
+      votes: log.map(v => ({
+        voter: v.voter, voterSlug: _slug(v.voter),
+        target: v.voted, targetSlug: _slug(v.voted)
+      }))
+    });
+  }
+  return out;
+}
+
+// Final tribal council jury vote. Empty for no-jury finales (fan vote, final
+// challenge, Hawaiian Punch) — recorded with a note so pages don't show a gap.
+function _extractFinalTribalCouncil() {
+  const fin = gs.finaleResult || {};
+  const reasoning = Array.isArray(fin.reasoning) ? fin.reasoning : [];
+  if (reasoning.length) {
+    return { votes: reasoning.map(r => ({
+      juror: r.juror, jurorSlug: _slug(r.juror || ''),
+      votedFor: r.votedFor, votedForSlug: _slug(r.votedFor || '')
+    })) };
+  }
+  const noteMap = { hawaiianPunch: 'No jury — winner decided by the final volcano race and joust (Hawaiian Punch finale).',
+    finalChallenge: 'No jury — winner decided by the final challenge.', fanVote: 'No jury — winner decided by fan vote.' };
+  const noteKey = Object.keys(noteMap).find(k => fin[k]);
+  return { votes: [], note: noteKey ? noteMap[noteKey] : undefined };
 }
 
 // ── 17. Database Merge Functions ────────────────────────────────────

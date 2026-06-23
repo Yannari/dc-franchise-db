@@ -2235,9 +2235,82 @@
 function showSeason(season) {
   document.querySelectorAll('.voting-table').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(`season${season}-table`).classList.add('active');
-  document.querySelectorAll('.season-btn')[season-1].classList.add('active');
+  const table = document.getElementById(`season${season}-table`);
+  if (table) table.classList.add('active');
+  // Match by label so static (index-based) and dynamically-added buttons both work.
+  const btn = [...document.querySelectorAll('.season-btn')].find(b => b.textContent.trim() === `Season ${season}`);
+  if (btn) btn.classList.add('active');
 }
+
+// ── Dynamically append voting charts for seasons beyond the static set (S10+) ──
+// Static tables above cover S1–S9. Newer seasons are rendered from their
+// season<N>-data.json `votingHistory` so they show up automatically — no manual
+// HTML needed. Seasons whose data has no recorded votes are skipped.
+(async function loadRecentSeasonCharts() {
+  const STATIC_MAX = 9;
+  const toggle = document.querySelector('.season-toggle');
+  const tablesParent = document.querySelector('.voting-table')?.parentNode;
+  if (!toggle || !tablesParent) return;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  for (let n = STATIC_MAX + 1; n <= STATIC_MAX + 25; n++) {
+    let data;
+    try {
+      const r = await fetch(`season${n}-data.json`, { cache: 'no-store' });
+      if (!r.ok) break;                 // no more season files — stop probing
+      data = await r.json();
+    } catch { break; }
+    if (!data || document.getElementById(`season${n}-table`)) continue;
+    const vh = Array.isArray(data.votingHistory) ? data.votingHistory : [];
+    if (!vh.length) continue;           // no recorded votes for this season — skip
+
+    const placements = [...(data.placements || [])].sort((a,b)=>(a.placement||99)-(b.placement||99));
+    const eps = [...vh].sort((a,b)=>(a.episode||0)-(b.episode||0));
+    const winner = data.winner?.name || placements[0]?.name || '';
+
+    let epHead = '', elimHead = '';
+    eps.forEach(e => {
+      epHead += `<th>Episode ${esc(e.episode)}</th>`;
+      elimHead += `<th class="eliminated">${esc(e.eliminated || 'N/A')}</th>`;
+    });
+
+    let body = '';
+    placements.forEach(p => {
+      let cells = '';
+      eps.forEach(e => {
+        const v = (e.votes || []).find(x => (x.voter||'').toLowerCase() === (p.name||'').toLowerCase());
+        cells += `<td>${v ? esc(v.target) : '—'}</td>`;
+      });
+      body += `<tr class="${p.placement === 1 ? 'winner-row' : ''}">`
+        + `<td class="rank-col">${esc(p.placement)}</td>`
+        + `<td class="player-name">${esc(p.name)}</td>${cells}</tr>`;
+    });
+
+    const note = data.finalTribalCouncil?.note ? `<div class="callout">${esc(data.finalTribalCouncil.note)}</div>` : '';
+    const div = document.createElement('div');
+    div.id = `season${n}-table`;
+    div.className = 'voting-table';
+    div.innerHTML = `
+      <h2 style="text-align:center; margin: 20px 0;">📊 Season ${n} Voting Chart</h2>
+      <div class="callout">${esc(data.castSize || placements.length)} players • ${eps.length} voting episodes • Winner: ${esc(winner)}</div>
+      ${note}
+      <div class="scroll-hint">⬅️ SCROLL RIGHT TO SEE ALL EPISODES ➡️</div>
+      <div class="panel"><div class="table-wrapper"><table class="vote-table">
+        <thead>
+          <tr><th rowspan="2" class="rank-col">Rank</th><th rowspan="2" class="player-name">Castaway</th>${epHead}</tr>
+          <tr>${elimHead}</tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table></div></div>`;
+    tablesParent.appendChild(div);
+
+    const btn = document.createElement('button');
+    btn.className = 'season-btn';
+    btn.textContent = `Season ${n}`;
+    btn.addEventListener('click', () => showSeason(n));
+    toggle.appendChild(btn);
+  }
+})();
 </script>
 
 <div class="footer">Complete voting charts with finales • Drag scrollbar to see all episodes • 8 seasons • 76 players</div>

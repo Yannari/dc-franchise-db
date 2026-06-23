@@ -878,5 +878,733 @@
       "description": "Thom was the seasons clear fan favorite — the heart-led protector everyone rooted for, from saving Gabby in the ocean to his heartbreaking runner-up finish at the volcano."
     }
   },
-  "emoji": "[AI_FILL]"
+  "emoji": "[AI_FILL]",
+  "votingHistory": [
+    {
+      "episode": 1,
+      "eliminated": "Ashley",
+      "eliminatedSlug": "ashley",
+      "votes": [
+        {
+          "voter": "Will",
+          "voterSlug": "will",
+          "target": "Ashley",
+          "targetSlug": "ashley"
+        },
+        {
+          "voter": "Seraphine",
+          "voterSlug": "seraphine",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Ashley",
+          "voterSlug": "ashley",
+          "target": "Nick",
+          "targetSlug": "nick"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Ashley",
+          "targetSlug": "ashley"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Ashley",
+          "targetSlug": "ashley"
+        },
+        {
+          "voter": "Nick",
+          "voterSlug": "nick",
+          "target": "Lill",
+          "targetSlug": "lill"
+        },
+        {
+          "voter": "Lill",
+          "voterSlug": "lill",
+          "target": "Will",
+          "targetSlug": "will"
+        },
+        {
+          "voter": "Grett",
+          "voterSlug": "grett",
+          "target": "Ashley",
+          "targetSlug": "ashley"
+        }
+      ]
+    },
+    {
+      "episode": 2,
+      "eliminated": "Drew",
+      "eliminatedSlug": "drew",
+      "votes": [
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Drew",
+          "targetSlug": "drew"
+        },
+        {
+          "voter": "Miriam",
+          "voterSlug": "miriam",
+          "target": "Wix",
+          "targetSlug": "wix"
+        },
+        {
+          "voter": "Dan",
+          "voterSlug": "dan",
+          "target": "Drew",
+          "targetSlug": "drew"
+        },
+        {
+          "voter": "Drew",
+          "voterSlug": "drew",
+          "target": "Wix",
+          "targetSlug": "wix"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Dan",
+          "targetSlug": "dan"
+        },
+        {
+          "voter": "Eureka",
+          "voterSlug": "eureka",
+          "target": "Dan",
+          "targetSlug": "dan"
+        },
+        {
+          "voter": "Wix",
+          "voterSlug": "wix",
+          "target": "Drew",
+          "targetSlug": "drew"
+        },
+        {
+          "voter": "Sterling",
+          "voterSlug": "sterling",
+          "target": "Drew",
+          "targetSlug": "drew"
+        }
+      ]
+    },
+    {
+      "episode": 3,
+      "eliminated": "Will",
+      "eliminatedSlug": "will",
+      "votes": [
+        {
+          "voter": "Will",
+          "voterSlug": "will",
+          "target": "Seraphine",
+          "targetSlug": "seraphine"
+        },
+        {
+          "voter": "Seraphine",
+          "voterSlug": "seraphine",
+          "target": "Will",
+          "targetSlug": "will"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Will",
+          "targetSlug": "will"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Will",
+          "targetSlug": "will"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        },
+        {
+          "voter": "Nick",
+          "voterSlug": "nick",
+          "target": "Seraphine",
+          "targetSlug": "seraphine"
+        },
+        {
+          "voter": "Lill",
+          "voterSlug": "lill",
+          "target": "Will",
+          "targetSlug": "will"
+        },
+        {
+          "voter": "Grett",
+          "voterSlug": "grett",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        }
+      ]
+    },
+    {
+      "episode": 5,
+      "eliminated": "Eureka",
+      "eliminatedSlug": "eureka",
+      "votes": [
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        },
+        {
+          "voter": "Eureka",
+          "voterSlug": "eureka",
+          "target": "Wix",
+          "targetSlug": "wix"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Eureka",
+          "targetSlug": "eureka"
+        },
+        {
+          "voter": "Sterling",
+          "voterSlug": "sterling",
+          "target": "Jake",
+          "targetSlug": "jake"
+        },
+        {
+          "voter": "Miriam",
+          "voterSlug": "miriam",
+          "target": "Sterling",
+          "targetSlug": "sterling"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Miriam",
+          "targetSlug": "miriam"
+        },
+        {
+          "voter": "Dan",
+          "voterSlug": "dan",
+          "target": "Wix",
+          "targetSlug": "wix"
+        },
+        {
+          "voter": "Wix",
+          "voterSlug": "wix",
+          "target": "Miriam",
+          "targetSlug": "miriam"
+        }
+      ]
+    },
+    {
+      "episode": 6,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "votes": [
+        {
+          "voter": "Seraphine",
+          "voterSlug": "seraphine",
+          "target": "Grett",
+          "targetSlug": "grett"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Nick",
+          "targetSlug": "nick"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Grett",
+          "targetSlug": "grett"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Grett",
+          "targetSlug": "grett"
+        },
+        {
+          "voter": "Nick",
+          "voterSlug": "nick",
+          "target": "Grett",
+          "targetSlug": "grett"
+        },
+        {
+          "voter": "Lill",
+          "voterSlug": "lill",
+          "target": "Grett",
+          "targetSlug": "grett"
+        },
+        {
+          "voter": "Grett",
+          "voterSlug": "grett",
+          "target": "Lill",
+          "targetSlug": "lill"
+        }
+      ]
+    },
+    {
+      "episode": 7,
+      "eliminated": "Grett",
+      "eliminatedSlug": "grett",
+      "votes": [
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Grett",
+          "targetSlug": "grett"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Grett",
+          "targetSlug": "grett"
+        },
+        {
+          "voter": "Sterling",
+          "voterSlug": "sterling",
+          "target": "Jake",
+          "targetSlug": "jake"
+        },
+        {
+          "voter": "Miriam",
+          "voterSlug": "miriam",
+          "target": "Dan",
+          "targetSlug": "dan"
+        },
+        {
+          "voter": "Dan",
+          "voterSlug": "dan",
+          "target": "Grett",
+          "targetSlug": "grett"
+        },
+        {
+          "voter": "Grett",
+          "voterSlug": "grett",
+          "target": "Miriam",
+          "targetSlug": "miriam"
+        }
+      ]
+    },
+    {
+      "episode": 8,
+      "eliminated": "Nick",
+      "eliminatedSlug": "nick",
+      "votes": [
+        {
+          "voter": "Seraphine",
+          "voterSlug": "seraphine",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Nick",
+          "targetSlug": "nick"
+        },
+        {
+          "voter": "Nick",
+          "voterSlug": "nick",
+          "target": "Alec",
+          "targetSlug": "alec"
+        },
+        {
+          "voter": "Lill",
+          "voterSlug": "lill",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Nick",
+          "targetSlug": "nick"
+        }
+      ]
+    },
+    {
+      "episode": 9,
+      "eliminated": "Sterling",
+      "eliminatedSlug": "sterling",
+      "votes": [
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Sterling",
+          "targetSlug": "sterling"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Sterling",
+          "targetSlug": "sterling"
+        },
+        {
+          "voter": "Sterling",
+          "voterSlug": "sterling",
+          "target": "Jake",
+          "targetSlug": "jake"
+        },
+        {
+          "voter": "Miriam",
+          "voterSlug": "miriam",
+          "target": "Sterling",
+          "targetSlug": "sterling"
+        },
+        {
+          "voter": "Dan",
+          "voterSlug": "dan",
+          "target": "Miriam",
+          "targetSlug": "miriam"
+        }
+      ]
+    },
+    {
+      "episode": 10,
+      "eliminated": "Seraphine",
+      "eliminatedSlug": "seraphine",
+      "votes": [
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Seraphine",
+          "targetSlug": "seraphine"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Jake",
+          "targetSlug": "jake"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Miriam",
+          "voterSlug": "miriam",
+          "target": "Jake",
+          "targetSlug": "jake"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Seraphine",
+          "targetSlug": "seraphine"
+        },
+        {
+          "voter": "Lill",
+          "voterSlug": "lill",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        },
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Dan",
+          "voterSlug": "dan",
+          "target": "Seraphine",
+          "targetSlug": "seraphine"
+        },
+        {
+          "voter": "Seraphine",
+          "voterSlug": "seraphine",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        }
+      ]
+    },
+    {
+      "episode": 11,
+      "eliminated": "Lill",
+      "eliminatedSlug": "lill",
+      "votes": [
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Miriam",
+          "targetSlug": "miriam"
+        },
+        {
+          "voter": "Miriam",
+          "voterSlug": "miriam",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Dan",
+          "voterSlug": "dan",
+          "target": "Lill",
+          "targetSlug": "lill"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Lill",
+          "targetSlug": "lill"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Jake",
+          "targetSlug": "jake"
+        },
+        {
+          "voter": "Lill",
+          "voterSlug": "lill",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        }
+      ]
+    },
+    {
+      "episode": 12,
+      "eliminated": "Dan",
+      "eliminatedSlug": "dan",
+      "votes": [
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Alec",
+          "targetSlug": "alec"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        },
+        {
+          "voter": "Miriam",
+          "voterSlug": "miriam",
+          "target": "Alec",
+          "targetSlug": "alec"
+        },
+        {
+          "voter": "Dan",
+          "voterSlug": "dan",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Dan",
+          "targetSlug": "dan"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Thom",
+          "targetSlug": "thom"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Dan",
+          "targetSlug": "dan"
+        }
+      ]
+    },
+    {
+      "episode": 13,
+      "eliminated": "Ellie",
+      "eliminatedSlug": "ellie",
+      "votes": [
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Eureka",
+          "targetSlug": "eureka"
+        },
+        {
+          "voter": "Miriam",
+          "voterSlug": "miriam",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Alec",
+          "targetSlug": "alec"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Jake",
+          "targetSlug": "jake"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Eureka",
+          "targetSlug": "eureka"
+        },
+        {
+          "voter": "Eureka",
+          "voterSlug": "eureka",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        }
+      ]
+    },
+    {
+      "episode": 16,
+      "eliminated": "Eureka",
+      "eliminatedSlug": "eureka",
+      "votes": [
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        },
+        {
+          "voter": "Miriam",
+          "voterSlug": "miriam",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Miriam",
+          "targetSlug": "miriam"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Eureka",
+          "targetSlug": "eureka"
+        },
+        {
+          "voter": "Eureka",
+          "voterSlug": "eureka",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        }
+      ]
+    },
+    {
+      "episode": 17,
+      "eliminated": "Alec",
+      "eliminatedSlug": "alec",
+      "votes": [
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Alec",
+          "targetSlug": "alec"
+        },
+        {
+          "voter": "Miriam",
+          "voterSlug": "miriam",
+          "target": "Alec",
+          "targetSlug": "alec"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Miriam",
+          "targetSlug": "miriam"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Miriam",
+          "targetSlug": "miriam"
+        }
+      ]
+    }
+  ],
+  "finalTribalCouncil": {
+    "votes": [],
+    "note": "No jury — winner decided by the final volcano race and joust (Hawaiian Punch finale)."
+  }
 }

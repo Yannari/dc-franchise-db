@@ -1,5 +1,5 @@
 // tests/audio.test.js
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { DEFAULT_PREFS, STORAGE_KEY, clampVolume, parsePrefs, serializePrefs } from '../js/audio.js';
 import { CUE_CATALOG, BED_CATALOG, resolveCue, resolveBed } from '../js/audio.js';
 import { duckGain } from '../js/audio.js';
@@ -161,6 +161,43 @@ describe('AudioEngine.ambient', () => {
   it('unknown bed is ignored', () => {
     const e = makeEngine(); e.unlock();
     e.ambient('nope'); expect(e._currentBed).toBe(null);
+  });
+});
+
+describe('AudioEngine.ambient — file beds (mp3)', () => {
+  const realFetch = globalThis.fetch;
+  afterEach(() => { globalThis.fetch = realFetch; });
+
+  it('loads, plays, and caches a bed mp3 when the file is reachable', async () => {
+    let fetchCount = 0;
+    globalThis.fetch = (url) => { fetchCount++; return Promise.resolve({ ok: true, arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)) }); };
+    const e = makeEngine(); e.unlock();
+    e.ambient('camp-day');                 // BED_CATALOG['camp-day'].file is set
+    expect(e._currentBed).toBe('camp-day'); // state set synchronously
+    await new Promise(r => setTimeout(r, 0)); // let fetch->decode->start resolve
+    expect(fetchCount).toBe(1);
+    expect(e._bedNodes).toBeTruthy();       // a looping source is playing
+    expect(e._bedBufCache['camp-day']).toBeTruthy(); // decoded buffer cached
+    // Switch away then back — should reuse the cache, not refetch
+    e.ambient('victory'); await new Promise(r => setTimeout(r, 0));
+    e.ambient('camp-day'); await new Promise(r => setTimeout(r, 0));
+    expect(fetchCount).toBe(2);             // victory fetched once; camp-day reused from cache
+  });
+
+  it('stays silent and never throws when the file is missing (no synth fallback)', async () => {
+    globalThis.fetch = () => Promise.resolve({ ok: false, status: 404 });
+    const e = makeEngine(); e.unlock();
+    expect(() => e.ambient('tribal-tension')).not.toThrow();
+    expect(e._currentBed).toBe('tribal-tension');
+    await new Promise(r => setTimeout(r, 0));
+    expect(e._bedNodes).toBeNull();          // nothing playing — silence, not the synth pad
+  });
+
+  it('stays silent when fetch itself is unavailable', async () => {
+    globalThis.fetch = undefined;
+    const e = makeEngine(); e.unlock();
+    expect(() => e.ambient('victory')).not.toThrow();
+    expect(e._bedNodes).toBeNull();
   });
 });
 

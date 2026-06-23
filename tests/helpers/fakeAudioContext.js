@@ -26,6 +26,7 @@ export class FakeAudioContext {
   createBufferSource() { return this._node('buffersource', { buffer: null, loop: false, start() {}, stop() {} }); }
   createBuffer() { return { getChannelData: () => new Float32Array(1) }; }
   createBiquadFilter() { return this._node('filter', { frequency: makeFakeParam(800), Q: makeFakeParam(1), type: 'lowpass' }); }
+  decodeAudioData(buf) { return Promise.resolve({ _decoded: true, byteLength: (buf && buf.byteLength) || 0 }); }
 }
 export function fakeStorage() {
   const m = new Map();

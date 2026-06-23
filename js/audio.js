@@ -92,11 +92,14 @@ export const CUE_CATALOG = {
   'save-chime':        { duck: false, build: voiceSaveChime },
 };
 
+// Each bed prefers its mp3 file (looped). Drop the files in assets/audio/ to
+// enable them. If a file is set but missing/unloadable, the bed plays SILENCE
+// (not the synth pad) — `build` is kept only as an opt-in fallback when file is null.
 export const BED_CATALOG = {
-  'camp-day':       { build: bedCampDay, file: null },
-  'camp-night':     { build: bedCampNight, file: null },
-  'tribal-tension': { build: bedTribalTension, file: null },
-  'victory':        { build: bedVictory, file: null },
+  'camp-day':       { build: bedCampDay,       file: 'assets/audio/bed-camp-day.mp3',   volume: 0.40 },
+  'camp-night':     { build: bedCampNight,     file: 'assets/audio/bed-camp-night.mp3', volume: 0.40 },
+  'tribal-tension': { build: bedTribalTension, file: 'assets/audio/bed-tribal.mp3',     volume: 0.42 },
+  'victory':        { build: bedVictory,       file: 'assets/audio/bed-victory.mp3',    volume: 0.45 },
 };
 
 export function resolveCue(name) { return CUE_CATALOG[name] || null; }
@@ -174,14 +177,68 @@ export class AudioEngine {
     if (!name) return;
     const bed = resolveBed(name);
     if (!bed) return;
+    this._currentBed = name;
+    // Prefer the bed's mp3 file; only fall back to the synth pad when no file is set.
+    if (bed.file) this._playBedFile(name, bed);
+    else this._playBedSynth(now, bed, 0.18);
+  }
+
+  // Build the synth pad bed and fade it in to `target`.
+  _playBedSynth(now, bed, target = 0.18) {
     const nodes = bed.build(this._ctx, this._bedGain);
     if (nodes && nodes.gain) {
       const g = nodes.gain.gain;
       if (g.setValueAtTime) g.setValueAtTime(0.0001, now);
-      if (g.linearRampToValueAtTime) g.linearRampToValueAtTime(0.18, now + 1.2); else g.value = 0.18;
+      if (g.linearRampToValueAtTime) g.linearRampToValueAtTime(target, now + 1.2); else g.value = target;
     }
     this._bedNodes = nodes;
-    this._currentBed = name;
+  }
+
+  // Fetch + decode + loop the bed's mp3 through the bed-gain channel. Decoded
+  // buffers are cached. On any failure (missing file, decode error, no fetch),
+  // the bed stays SILENT — never throws, never falls back to the synth pad.
+  _playBedFile(name, bed) {
+    const ctx = this._ctx;
+    const target = typeof bed.volume === 'number' ? bed.volume : 0.4;
+    const start = (buffer) => {
+      if (this._currentBed !== name || !this._ctx) return; // user switched beds mid-load
+      try {
+        const src = ctx.createBufferSource();
+        src.buffer = buffer; src.loop = true;
+        const g = ctx.createGain();
+        const now = ctx.currentTime;
+        if (g.gain.setValueAtTime) g.gain.setValueAtTime(0.0001, now); else g.gain.value = 0.0001;
+        if (g.gain.linearRampToValueAtTime) g.gain.linearRampToValueAtTime(target, now + 1.2); else g.gain.value = target;
+        src.connect(g); g.connect(this._bedGain);
+        src.start(0);
+        this._bedNodes = {
+          gain: g,
+          stop: (t0, fade = 1.2) => {
+            try {
+              if (g.gain.cancelScheduledValues) g.gain.cancelScheduledValues(t0);
+              if (g.gain.setValueAtTime) g.gain.setValueAtTime(g.gain.value, t0);
+              if (g.gain.linearRampToValueAtTime) g.gain.linearRampToValueAtTime(0.0001, t0 + fade); else g.gain.value = 0.0001;
+              if (src.stop) src.stop(t0 + fade + 0.05);
+            } catch (e) { /* node already stopped */ }
+          },
+        };
+      } catch (e) { /* node graph unavailable — stay silent */ }
+    };
+    if (this._bedBufCache && this._bedBufCache[name]) { start(this._bedBufCache[name]); return; }
+    let p;
+    try { p = fetch(bed.file); } catch (e) { this._warnBedOnce(name, bed.file); return; }
+    if (!p || !p.then) { this._warnBedOnce(name, bed.file); return; }
+    p.then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.arrayBuffer(); })
+      .then(buf => ctx.decodeAudioData(buf))
+      .then(decoded => { if (!this._bedBufCache) this._bedBufCache = {}; this._bedBufCache[name] = decoded; start(decoded); })
+      .catch(() => this._warnBedOnce(name, bed.file)); // missing/undecodable → silence
+  }
+
+  _warnBedOnce(name, file) {
+    if (!this._warnedBeds) this._warnedBeds = new Set();
+    if (this._warnedBeds.has(name)) return;
+    this._warnedBeds.add(name);
+    console.warn(`[audio] ambient bed "${name}" file not loaded (${file}) — playing silence. Drop the mp3 in to enable it.`);
   }
 }
 

@@ -18,3 +18,6 @@ node_modules/
 
 # Test screenshots
 *-test-*.png
+
+# Uncompressed audio — convert to .mp3 before committing (keeps the repo lean)
+assets/audio/*.wav

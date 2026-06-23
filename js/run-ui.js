@@ -1413,6 +1413,12 @@ export function renderResultsTab() {
 
   let html = '';
 
+  // Season Recap launcher — only on a completed season (winner crowned).
+  if (typeof recapAvailable === 'function' && recapAvailable(gs)) {
+    html += `<button class="btn btn-primary" style="width:auto;align-self:flex-start;padding:10px 22px;font-size:14px;letter-spacing:.5px"
+      onclick="openSeasonRecap()">▶ Watch Season Recap</button>`;
+  }
+
   // Winner block
   if (juryResult && Object.values(juryResult.votes).some(v => v > 0)) {
     const sorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);

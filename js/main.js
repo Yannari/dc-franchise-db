@@ -94,6 +94,7 @@ import * as vpUiMod from './vp-ui.js';
 import * as savestateMod from './savestate.js';
 import * as statsExportMod from './stats-export.js';
 import * as audioMod from './audio.js';
+import * as recapMod from './recap.js';
 
 // ── Expose mutable state as getters/setters on window ──
 // This is critical: window.gs must always return the CURRENT module-scoped value.
@@ -175,6 +176,7 @@ const extractedModules = [
   savestateMod,
   statsExportMod,
   audioMod,
+  recapMod,
 ];
 
 for (const mod of extractedModules) {

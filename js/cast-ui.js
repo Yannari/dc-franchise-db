@@ -17,6 +17,7 @@ export function showTab(name) {
   if (name === 'setup')   { populateRelDropdowns(); updateCastSizeDisplay(); renderTimeline(); renderTwistCatalog(); }
   if (name === 'run')     initRunTab();
   if (name === 'results') renderResultsTab();
+  if (typeof updateBroadcastBar === 'function') updateBroadcastBar();   // refresh ON-AIR / season / episode
   // Remember active tab across reloads
   try { localStorage.setItem('simulator_activeTab', name); } catch(e) {}
 }

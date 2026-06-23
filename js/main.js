@@ -95,6 +95,7 @@ import * as savestateMod from './savestate.js';
 import * as statsExportMod from './stats-export.js';
 import * as audioMod from './audio.js';
 import * as recapMod from './recap.js';
+import * as broadcastMod from './broadcast.js';
 
 // ── Expose mutable state as getters/setters on window ──
 // This is critical: window.gs must always return the CURRENT module-scoped value.
@@ -177,6 +178,7 @@ const extractedModules = [
   statsExportMod,
   audioMod,
   recapMod,
+  broadcastMod,
 ];
 
 for (const mod of extractedModules) {
@@ -296,6 +298,8 @@ async function init() {
 
   // Initialize the audio engine (first-gesture unlock + window exposure)
   audioMod.initAudio();
+  // Broadcast channel bar: ON-AIR state, live clock, theme (light/dark)
+  broadcastMod.initBroadcastBar();
 }
 
 await init();

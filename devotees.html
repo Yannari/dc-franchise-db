@@ -438,7 +438,7 @@
         <div class="brand">DC <span>Franchise</span> Database</div>
         <div class="meta">Dynamic player profiles • Powered by JSON • Search & sort enabled</div>
       </div>
-      <div class="meta">68 total players • 68 appearances</div>
+      <div class="meta" id="metaCounts">68 total players • 68 appearances</div>
     </div>
     
    
@@ -516,7 +516,7 @@
       <!-- Player cards will be inserted here by JavaScript -->
     </div>
 
-    <div class="footer">84 total players across 8 seasons • 68 total appearances</div>
+    <div class="footer" id="footerCounts">84 total players across 8 seasons • 68 total appearances</div>
   </div>
 </main>
 
@@ -632,6 +632,27 @@ function loadPlayerData() {
     });
 }
 
+// Compute the header/footer totals from the live player data so they always
+// reflect the current database (players, seasons, and total appearances).
+function updateHeaderStats() {
+  if (!Array.isArray(allPlayers) || !allPlayers.length) return;
+  const totalPlayers = allPlayers.length;
+  const totalAppearances = allPlayers.reduce((sum, p) => {
+    const apps = Number(p.totalSeasons ?? (Array.isArray(p.seasons) ? p.seasons.length : 0)) || 0;
+    return sum + apps;
+  }, 0);
+  const seasonNums = allPlayers.flatMap(p => Array.isArray(p.seasons) ? p.seasons.map(Number) : []);
+  const totalSeasons = seasonNums.length ? Math.max(...seasonNums) : 0;
+
+  const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+  setText('totalPlayers', totalPlayers);
+  if (totalSeasons) setText('totalSeasons', totalSeasons);
+  setText('footer-players', totalPlayers);
+  if (totalSeasons) setText('footer-seasons', totalSeasons);
+  setText('metaCounts', `${totalPlayers} total players • ${totalAppearances} appearances`);
+  setText('footerCounts', `${totalPlayers} total players across ${totalSeasons} seasons • ${totalAppearances} total appearances`);
+}
+
 // ✅ CALL THE FUNCTION AND CHAIN PROMISES
 loadPlayerData()
   .then(data => {
@@ -645,6 +666,7 @@ loadPlayerData()
 
     renderPlayers(allPlayers);
     updateDisplay();
+    updateHeaderStats();
 
     console.log('🔄 Player data loaded successfully');
   })

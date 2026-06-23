@@ -826,116 +826,62 @@
   "votingHistory": [
     {
       "episode": 1,
-      "eliminated": null,
-      "eliminatedSlug": "",
+      "eliminated": "Sam",
+      "eliminatedSlug": "sam",
       "votes": [
-        {
-          "voter": "Bowie",
-          "voterSlug": "bowie",
-          "target": "Scott",
-          "targetSlug": "scott"
-        },
-        {
-          "voter": "Mickey",
-          "voterSlug": "mickey",
-          "target": "Scott",
-          "targetSlug": "scott"
-        },
-        {
-          "voter": "Scott",
-          "voterSlug": "scott",
-          "target": "Sanders",
-          "targetSlug": "sanders"
-        },
-        {
-          "voter": "Zoey",
-          "voterSlug": "zoey",
-          "target": "Scott",
-          "targetSlug": "scott"
-        },
-        {
-          "voter": "Gwen",
-          "voterSlug": "gwen",
-          "target": "Scott",
-          "targetSlug": "scott"
-        },
-        {
-          "voter": "Cody",
-          "voterSlug": "cody",
-          "target": "Scott",
-          "targetSlug": "scott"
-        },
-        {
-          "voter": "Carrie",
-          "voterSlug": "carrie",
-          "target": "Scott",
-          "targetSlug": "scott"
-        },
-        {
-          "voter": "Ryan",
-          "voterSlug": "ryan",
-          "target": "Scott",
-          "targetSlug": "scott"
-        },
-        {
-          "voter": "Sanders",
-          "voterSlug": "sanders",
-          "target": "Scott",
-          "targetSlug": "scott"
-        },
         {
           "voter": "Priya",
           "voterSlug": "priya",
-          "target": "Courtney",
-          "targetSlug": "courtney"
+          "target": "Sam",
+          "targetSlug": "sam"
         },
         {
           "voter": "Hicks",
           "voterSlug": "hicks",
-          "target": "Courtney",
-          "targetSlug": "courtney"
+          "target": "Josee",
+          "targetSlug": "josee"
         },
         {
           "voter": "Jasmine",
           "voterSlug": "jasmine",
-          "target": "Courtney",
-          "targetSlug": "courtney"
+          "target": "Sam",
+          "targetSlug": "sam"
         },
         {
           "voter": "Josee",
           "voterSlug": "josee",
-          "target": "Courtney",
-          "targetSlug": "courtney"
+          "target": "Sam",
+          "targetSlug": "sam"
         },
         {
           "voter": "Sam",
           "voterSlug": "sam",
-          "target": "Courtney",
-          "targetSlug": "courtney"
+          "target": "Josee",
+          "targetSlug": "josee"
         },
         {
           "voter": "Brick",
           "voterSlug": "brick",
-          "target": "Courtney",
-          "targetSlug": "courtney"
+          "target": "Sam",
+          "targetSlug": "sam"
         },
         {
           "voter": "Stephanie",
           "voterSlug": "stephanie",
-          "target": "Courtney",
-          "targetSlug": "courtney"
-        },
-        {
-          "voter": "Courtney",
-          "voterSlug": "courtney",
-          "target": "Priya",
-          "targetSlug": "priya"
+          "target": "Josee",
+          "targetSlug": "josee"
         },
         {
           "voter": "Tyler",
           "voterSlug": "tyler",
-          "target": "Courtney",
-          "targetSlug": "courtney"
+          "target": "Josee",
+          "targetSlug": "josee"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Stephanie",
+          "targetSlug": "stephanie"
         }
       ]
     },

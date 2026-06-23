@@ -4847,17 +4847,8 @@ setTimeout(function() {
         rivalries: p.rivalries || []
       })),
       
-      votingHistory: aiData.votingHistory.map(vh => ({
-        episode: vh.episode,
-        eliminated: vh.eliminated,
-        eliminatedSlug: vh.eliminated ? slugify(vh.eliminated) : null,
-        votes: vh.votes.map(v => ({
-          voter: v.voter,
-          voterSlug: slugify(v.voter),
-          target: v.target,
-          targetSlug: slugify(v.target)
-        }))
-      })),
+      // Deterministic — parsed from the episode summaries, not AI-extracted.
+      votingHistory: buildVotingHistoryFromEpisodes(inputData.episodes, aiData.cast),
       
       finalTribalCouncil: {
         votes: finale.juryVotes.map(jv => ({
@@ -4903,6 +4894,65 @@ setTimeout(function() {
     return parsedEpisodes;
   }
   
+  // ── Deterministic vote extraction (source of truth for votingHistory) ──────
+  // Parses votes ONLY from the simulator's structured `=== THE VOTES ===` tribal
+  // blocks — ignoring First Impressions swaps and narration — and keeps one
+  // ballot per voter per episode. Never rely on AI-extracted vote tallies.
+  function parseTribalVotesFromText(text, castNames) {
+    const cast = (castNames || []).filter(Boolean);
+    const esc = c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const nameAlt = cast.map(esc).join('|');
+    if (!nameAlt) return [];
+    const voteRe = new RegExp('\\b(' + nameAlt + ')\\b voted (?:for )?\\b(' + nameAlt + ')\\b', 'gi');
+    const norm = s => (s || '').toLowerCase();
+    const canon = s => cast.find(c => norm(c) === norm(s)) || s;
+    const blocks = [];
+    const bRe = /=== THE VOTES ===([\s\S]*?)(?:===|$)/g; let bm;
+    while ((bm = bRe.exec(text))) blocks.push(bm[1]);
+    const src = blocks.join('\n');               // only the structured tribal blocks
+    const seen = new Set(); const votes = [];
+    let m; voteRe.lastIndex = 0;
+    while ((m = voteRe.exec(src))) {
+      const voter = canon(m[1]), target = canon(m[2]);
+      if (norm(voter) === norm(target)) continue;
+      if (seen.has(norm(voter))) continue;        // first ballot per voter (handles revotes/multi-tribal)
+      seen.add(norm(voter));
+      votes.push({ voter, voterSlug: slugify(voter), target, targetSlug: slugify(target) });
+    }
+    return votes;
+  }
+
+  // Build the full votingHistory array from raw episode summaries. Skips episodes
+  // with no tribal vote (rewards, finale, RI-duel-only). Boot is read from the
+  // episode's elimination line, falling back to the top vote-getter.
+  function buildVotingHistoryFromEpisodes(episodes, castNames) {
+    const cast = (castNames || []).filter(Boolean);
+    const esc = c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const nameAlt = cast.map(esc).join('|');
+    const norm = s => (s || '').toLowerCase();
+    const canon = s => cast.find(c => norm(c) === norm(s)) || s;
+    const elimRe = nameAlt ? new RegExp('\\b(' + nameAlt + ')\\b (?:was|is|has been|gets|are) (?:permanently |finally )?(?:voted out|eliminated)', 'i') : null;
+    const out = [];
+    for (const ep of (episodes || [])) {
+      const text = ep.summary || ep.text || '';
+      const epNum = ep.episode || ep.num;
+      if (!text || epNum == null) continue;
+      const votes = parseTribalVotesFromText(text, cast);
+      if (!votes.length) continue;
+      let boot = null;
+      const lastIdx = text.lastIndexOf('=== THE VOTES ===');
+      const tail = lastIdx >= 0 ? text.slice(lastIdx) : text;
+      const em = (elimRe && (tail.match(elimRe) || text.match(elimRe))) || null;
+      if (em) boot = canon(em[1]);
+      if (!boot) {
+        const tally = {}; votes.forEach(v => tally[v.target] = (tally[v.target] || 0) + 1);
+        boot = Object.entries(tally).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+      }
+      out.push({ episode: epNum, eliminated: boot, eliminatedSlug: boot ? slugify(boot) : '', votes });
+    }
+    return out;
+  }
+
   function parseEpisodeSummary(text, episodeNum, activePlayers) {
     const result = {
       episode: episodeNum,
@@ -4939,24 +4989,10 @@ setTimeout(function() {
       }
     }
     
-    // Parse voting chart
-    // Format: "Player1 voted Player2" or "Votes: Player1->Player2, ..."
-    const votePattern = /([A-Z][a-z]+)\s+voted\s+(?:for\s+)?([A-Z][a-z]+)/gi;
-    let voteMatch;
-    while ((voteMatch = votePattern.exec(text)) !== null) {
-      const voter = voteMatch[1].trim();
-      const target = voteMatch[2].trim();
-      
-      // Only add if both are active players or in cast
-      if (activePlayers.has(voter)) {
-        result.votes.push({
-          voter: voter,
-          voterSlug: slugify(voter),
-          target: target,
-          targetSlug: slugify(target)
-        });
-      }
-    }
+    // Parse voting chart — scoped to the structured `=== THE VOTES ===` tribal
+    // blocks via the shared deterministic parser (ignores First Impressions
+    // swaps and narration; one ballot per voter).
+    result.votes = parseTribalVotesFromText(text, [...activePlayers]);
     
     // Parse challenge winners
     const challengePattern = /(?:Challenge Winner|won (?:the )?challenge):\s*([A-Z][a-z]+)/gi;
@@ -5026,12 +5062,7 @@ setTimeout(function() {
       },
       finalists: finalists,
       placements: placements,
-      votingHistory: parsedEpisodes.map(ep => ({
-        episode: ep.episode,
-        eliminated: ep.eliminated,
-        eliminatedSlug: ep.eliminatedSlug,
-        votes: ep.votes
-      })),
+      votingHistory: buildVotingHistoryFromEpisodes(episodes, cast),
       finalTribalCouncil: {
         votes: finale.juryVotes.map(jv => ({
           juror: jv.juror,

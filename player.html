@@ -448,19 +448,23 @@ if (!playerId) {
   });
 }
 
-// Load database: try localStorage first, then project file
+// Load database: prefer the project file (source of truth), fall back to a cached
+// copy only if the fetch fails. Previously localStorage was preferred, which made
+// the page show STALE data after players_database.json was updated.
 async function loadPlayerDatabase() {
   try {
-    const raw = localStorage.getItem("players_database");
-    if (raw) return JSON.parse(raw);
-    const response = await fetch('players_database.json');
-    const data = await response.json();
-    localStorage.setItem("players_database", JSON.stringify(data, null, 2));
-    return data;
+    const response = await fetch('players_database.json', { cache: 'no-store' });
+    if (response.ok) {
+      const data = await response.json();
+      try { localStorage.setItem("players_database", JSON.stringify(data)); } catch {}
+      return data;
+    }
   } catch (error) {
-    console.error("❌ Error loading players database:", error);
-    throw error;
+    console.warn("⚠️ Could not fetch players_database.json, falling back to cache:", error);
   }
+  const raw = localStorage.getItem("players_database");
+  if (raw) return JSON.parse(raw);
+  throw new Error("players_database.json unavailable and no cached copy");
 }
 
 async function loadRankingsDatabase() {

@@ -1,0 +1,704 @@
+{
+  "version": 1,
+  "name": "Total Drama: Generations",
+  "date": "2026-06-23",
+  "config": {
+    "name": "Generations",
+    "seasonNumber": 12,
+    "days": 39,
+    "gameMode": "spectator",
+    "teams": 2,
+    "mergeAt": 12,
+    "finaleSize": 4,
+    "finaleFormat": "koh-lanta",
+    "finaleAssistants": true,
+    "jurySize": 9,
+    "ri": false,
+    "riReentryAt": 14,
+    "riFormat": "redemption",
+    "riReturnPoints": 1,
+    "riSecondReturnAt": 5,
+    "journey": true,
+    "exile": true,
+    "exilePhase": "pre",
+    "shotInDark": false,
+    "blackVote": "off",
+    "firemaking": false,
+    "tiebreakerMode": "challenge",
+    "qem": false,
+    "idolRehide": false,
+    "idolsPerTribe": 1,
+    "idolsAtMerge": 1,
+    "advExpire": 4,
+    "foodWater": "disabled",
+    "survivalDifficulty": "casual",
+    "aftermath": "enabled",
+    "fanVoteFrequency": "disabled",
+    "aftermayhemReturn": "9",
+    "mole": "disabled",
+    "molePlayers": [],
+    "moleCoordination": "independent",
+    "romance": "enabled",
+    "autoRewardChallenges": false,
+    "replacementOnMedevac": false,
+    "rewardSharing": false,
+    "host": "Chris",
+    "advantages": {
+      "idol": {
+        "enabled": true,
+        "count": 3
+      },
+      "beware": {
+        "enabled": false,
+        "count": 0,
+        "oncePer": "",
+        "sources": [
+          "camp"
+        ]
+      },
+      "voteSteal": {
+        "enabled": true,
+        "count": 1,
+        "oncePer": "",
+        "sources": [
+          "camp",
+          "journey",
+          "auction",
+          "exile"
+        ]
+      },
+      "extraVote": {
+        "enabled": true,
+        "count": 1,
+        "oncePer": "",
+        "sources": [
+          "camp",
+          "journey",
+          "auction",
+          "exile"
+        ]
+      },
+      "kip": {
+        "enabled": true,
+        "count": 1,
+        "oncePer": "",
+        "sources": [
+          "camp"
+        ]
+      },
+      "legacy": {
+        "enabled": false,
+        "count": 0,
+        "oncePer": "",
+        "sources": [
+          "camp"
+        ]
+      },
+      "amulet": {
+        "enabled": false,
+        "count": 0,
+        "oncePer": "",
+        "sources": []
+      },
+      "secondLife": {
+        "enabled": false,
+        "count": 0,
+        "oncePer": "",
+        "sources": [
+          "camp",
+          "auction",
+          "exile"
+        ]
+      },
+      "teamSwap": {
+        "enabled": false,
+        "count": 0,
+        "oncePer": "",
+        "sources": [
+          "camp"
+        ]
+      },
+      "voteBlock": {
+        "enabled": true,
+        "count": 1,
+        "oncePer": "",
+        "sources": [
+          "camp",
+          "journey",
+          "auction",
+          "exile"
+        ]
+      },
+      "safetyNoPower": {
+        "enabled": true,
+        "count": 1,
+        "oncePer": "",
+        "sources": [
+          "journey",
+          "auction"
+        ]
+      },
+      "soleVote": {
+        "enabled": false,
+        "count": 0,
+        "oncePer": "",
+        "sources": []
+      }
+    },
+    "legacyActivatesAt": 0,
+    "twistSchedule": [
+      {
+        "id": "tw-1782245005802-1-1",
+        "episode": 1,
+        "type": "phobia-factor"
+      },
+      {
+        "id": "tw-1782245005802-1-17",
+        "episode": 1,
+        "type": "first-impressions"
+      },
+      {
+        "id": "tw-1782245005802-2-2",
+        "episode": 2,
+        "type": "cliff-dive"
+      },
+      {
+        "id": "tw-1782245005802-3-3",
+        "episode": 3,
+        "type": "awake-a-thon"
+      },
+      {
+        "id": "tw-1782245005802-4-4",
+        "episode": 4,
+        "type": "dodgebrawl"
+      },
+      {
+        "id": "tw-1782245005802-4-18",
+        "episode": 4,
+        "type": "hero-duel"
+      },
+      {
+        "id": "tw-1782245005802-5-5",
+        "episode": 5,
+        "type": "up-the-creek"
+      },
+      {
+        "id": "tw-1782245005802-5-19",
+        "episode": 5,
+        "type": "elimination-swap"
+      },
+      {
+        "id": "tw-1782245005802-6-6",
+        "episode": 6,
+        "type": "paintball-hunt"
+      },
+      {
+        "id": "tw-1782245005802-7-7",
+        "episode": 7,
+        "type": "talent-show"
+      },
+      {
+        "id": "tw-1782245005802-8-8",
+        "episode": 8,
+        "type": "sucky-outdoors"
+      },
+      {
+        "id": "tw-1782245005802-9-9",
+        "episode": 9,
+        "type": "brunch-of-disgustingness"
+      },
+      {
+        "id": "tw-1782245005802-9-20",
+        "episode": 9,
+        "type": "merge-reward"
+      },
+      {
+        "id": "tw-1782245005802-10-10",
+        "episode": 10,
+        "type": "monster-cash"
+      },
+      {
+        "id": "tw-1782245005802-10-21",
+        "episode": 10,
+        "type": "auction"
+      },
+      {
+        "id": "tw-1782245005802-11-11",
+        "episode": 11,
+        "type": "crouching-courtney"
+      },
+      {
+        "id": "tw-1782245005802-12-12",
+        "episode": 12,
+        "type": "tri-armed-triathlon"
+      },
+      {
+        "id": "tw-1782245005802-12-22",
+        "episode": 12,
+        "type": "journey"
+      },
+      {
+        "id": "tw-1782245005802-13-13",
+        "episode": 13,
+        "type": "lucky-hunt"
+      },
+      {
+        "id": "tw-1782245005802-14-14",
+        "episode": 14,
+        "type": "super-hero-ld"
+      },
+      {
+        "id": "tw-1782245005802-14-23",
+        "episode": 14,
+        "type": "loved-ones"
+      },
+      {
+        "id": "tw-1782245005802-15-15",
+        "episode": 15,
+        "type": "camp-castaways"
+      },
+      {
+        "id": "tw-1782245005802-15-24",
+        "episode": 15,
+        "type": "tied-destinies"
+      },
+      {
+        "id": "tw-1782245005802-16-16",
+        "episode": 16,
+        "type": "are-we-there-yeti"
+      }
+    ],
+    "tribes": [
+      {
+        "name": "Embers",
+        "color": "#f59e0b"
+      },
+      {
+        "name": "Saplings",
+        "color": "#22c55e"
+      }
+    ],
+    "popularityEnabled": true,
+    "hidePopularity": false
+  },
+  "players": [
+    {
+      "id": "prw40z34b6",
+      "name": "James",
+      "slug": "james",
+      "tribe": "Embers",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 7,
+        "endurance": 6,
+        "mental": 5,
+        "social": 6,
+        "strategic": 8,
+        "loyalty": 3,
+        "boldness": 9,
+        "intuition": 6,
+        "temperament": 5
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "p2rjclwuzan",
+      "name": "Maggy",
+      "slug": "maggy",
+      "tribe": "Embers",
+      "gender": "f",
+      "archetype": "goat",
+      "stats": {
+        "physical": 8,
+        "endurance": 4,
+        "mental": 4,
+        "social": 5,
+        "strategic": 2,
+        "loyalty": 9,
+        "boldness": 1,
+        "intuition": 3,
+        "temperament": 8
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "pjup3k93fdj",
+      "name": "Karol",
+      "slug": "karol",
+      "tribe": "Embers",
+      "gender": "f",
+      "sexuality": "lesbian",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 6,
+        "social": 3,
+        "strategic": 6,
+        "loyalty": 3,
+        "boldness": 9,
+        "intuition": 7,
+        "temperament": 2
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "pngyejfhwap",
+      "name": "Kai",
+      "slug": "kai",
+      "tribe": "Embers",
+      "gender": "m",
+      "archetype": "floater",
+      "stats": {
+        "physical": 4,
+        "endurance": 6,
+        "mental": 5,
+        "social": 6,
+        "strategic": 1,
+        "loyalty": 10,
+        "boldness": 2,
+        "intuition": 5,
+        "temperament": 9
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "pz1x5cljog1",
+      "name": "Riya",
+      "slug": "riya",
+      "tribe": "Embers",
+      "gender": "f",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 5,
+        "endurance": 6,
+        "mental": 7,
+        "social": 4,
+        "strategic": 9,
+        "loyalty": 3,
+        "boldness": 8,
+        "intuition": 8,
+        "temperament": 4
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "pxvz60fawse",
+      "name": "Rosa-María",
+      "slug": "rosa-maria",
+      "tribe": "Embers",
+      "gender": "f",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 6,
+        "social": 9,
+        "strategic": 5,
+        "loyalty": 8,
+        "boldness": 8,
+        "intuition": 3,
+        "temperament": 7
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "pbuhxp43qgt",
+      "name": "Connor",
+      "slug": "connor",
+      "tribe": "Embers",
+      "gender": "m",
+      "archetype": "hero",
+      "stats": {
+        "physical": 7,
+        "endurance": 7,
+        "mental": 4,
+        "social": 6,
+        "strategic": 3,
+        "loyalty": 9,
+        "boldness": 6,
+        "intuition": 6,
+        "temperament": 8
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "p8hvbtgrcj4",
+      "name": "Jacques",
+      "slug": "jacques",
+      "tribe": "Embers",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 8,
+        "endurance": 8,
+        "mental": 6,
+        "social": 8,
+        "strategic": 10,
+        "loyalty": 2,
+        "boldness": 9,
+        "intuition": 7,
+        "temperament": 4
+      },
+      "isReturnee": true
+    },
+    {
+      "id": "p5bji8qkaqo",
+      "name": "Jen",
+      "slug": "jen",
+      "tribe": "Embers",
+      "gender": "f",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 4,
+        "endurance": 6,
+        "mental": 6,
+        "social": 8,
+        "strategic": 4,
+        "loyalty": 8,
+        "boldness": 4,
+        "intuition": 7,
+        "temperament": 8
+      },
+      "isReturnee": true
+    },
+    {
+      "id": "p22fc7iipum",
+      "name": "Ezekiel",
+      "slug": "ezekiel",
+      "tribe": "Embers",
+      "gender": "m",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 2,
+        "endurance": 4,
+        "mental": 2,
+        "social": 4,
+        "strategic": 6,
+        "loyalty": 6,
+        "boldness": 5,
+        "intuition": 3,
+        "temperament": 6
+      },
+      "isReturnee": true
+    },
+    {
+      "id": "p1lv57hqfwt",
+      "name": "Aiden",
+      "slug": "aiden",
+      "tribe": "Saplings",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 7,
+        "social": 9,
+        "strategic": 8,
+        "loyalty": 6,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 5
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "pww4yo7jx3n",
+      "name": "Hunter",
+      "slug": "hunter",
+      "tribe": "Saplings",
+      "gender": "m",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 7,
+        "endurance": 7,
+        "mental": 7,
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 8,
+        "boldness": 2,
+        "intuition": 4,
+        "temperament": 8
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "pkocrqe4muv",
+      "name": "Yul",
+      "slug": "yul",
+      "tribe": "Saplings",
+      "gender": "m",
+      "archetype": "villain",
+      "stats": {
+        "physical": 6,
+        "endurance": 5,
+        "mental": 6,
+        "social": 3,
+        "strategic": 8,
+        "loyalty": 1,
+        "boldness": 10,
+        "intuition": 4,
+        "temperament": 2
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "pnqo3gighw0",
+      "name": "Lake",
+      "slug": "lake",
+      "tribe": "Saplings",
+      "gender": "f",
+      "sexuality": "lesbian",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 9,
+        "social": 5,
+        "strategic": 6,
+        "loyalty": 9,
+        "boldness": 4,
+        "intuition": 7,
+        "temperament": 8
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "przn1w6nmh8",
+      "name": "Tess",
+      "slug": "tess",
+      "tribe": "Saplings",
+      "gender": "f",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 7,
+        "social": 4,
+        "strategic": 4,
+        "loyalty": 8,
+        "boldness": 5,
+        "intuition": 9,
+        "temperament": 7
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "pw0u2n3v0ab",
+      "name": "Ally",
+      "slug": "ally",
+      "tribe": "Saplings",
+      "gender": "f",
+      "sexuality": "bi",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 5,
+        "endurance": 7,
+        "mental": 7,
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 6,
+        "boldness": 5,
+        "intuition": 7,
+        "temperament": 6
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "pyniuazei78",
+      "name": "Oliver",
+      "slug": "oliver",
+      "tribe": "Saplings",
+      "gender": "m",
+      "archetype": "underdog",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 4,
+        "social": 4,
+        "strategic": 5,
+        "loyalty": 6,
+        "boldness": 2,
+        "intuition": 5,
+        "temperament": 8
+      },
+      "isReturnee": false
+    },
+    {
+      "id": "pkyhhjxwo1o",
+      "name": "Ellie",
+      "slug": "ellie",
+      "tribe": "Saplings",
+      "gender": "f",
+      "sexuality": "bi",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 8,
+        "social": 6,
+        "strategic": 8,
+        "loyalty": 4,
+        "boldness": 7,
+        "intuition": 8,
+        "temperament": 5
+      },
+      "isReturnee": true
+    },
+    {
+      "id": "pi10knus9cp",
+      "name": "Emmah",
+      "slug": "emmah",
+      "tribe": "Saplings",
+      "gender": "f",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 6,
+        "social": 6,
+        "strategic": 8,
+        "loyalty": 6,
+        "boldness": 8,
+        "intuition": 6,
+        "temperament": 2
+      },
+      "isReturnee": true
+    },
+    {
+      "id": "p97g65k9mjh",
+      "name": "Chase",
+      "slug": "chase",
+      "tribe": "Saplings",
+      "gender": "m",
+      "archetype": "floater",
+      "stats": {
+        "physical": 4,
+        "endurance": 4,
+        "mental": 4,
+        "social": 8,
+        "strategic": 2,
+        "loyalty": 4,
+        "boldness": 5,
+        "intuition": 6,
+        "temperament": 8
+      },
+      "isReturnee": true
+    }
+  ],
+  "relationships": [
+    {
+      "id": "vet-s9-chase-emmah",
+      "a": "Chase",
+      "b": "Emmah",
+      "type": "ally",
+      "bond": 3,
+      "note": "S9 Misfits allies — rode the same merge wave. Chase outlasted her to the finale (3rd) while Emmah went 5th, so the warmth carries a thread of unfinished business."
+    }
+  ],
+  "preGameAlliances": []
+}

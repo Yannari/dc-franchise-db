@@ -1419,23 +1419,31 @@ export function renderResultsTab() {
       onclick="openSeasonRecap()">▶ Watch Season Recap</button>`;
   }
 
-  // Winner block
-  if (juryResult && Object.values(juryResult.votes).some(v => v > 0)) {
-    const sorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
-    const winner = finaleResult?.winner || sorted[0][0];
-    const tally = sorted.map(([n,v]) => `<span class="results-jury-chip">${n}: ${v}</span>`).join('');
+  // Winner block. Some finale formats (Hawaiian Punch, fan vote, final
+  // challenge) crown a winner with no jury tally — finaleResult.votes is null.
+  // Guard every votes/reasoning access so those formats render instead of crashing.
+  const _juryVotes = (juryResult && juryResult.votes && typeof juryResult.votes === 'object') ? juryResult.votes : null;
+  const _hasTally = _juryVotes && Object.values(_juryVotes).some(v => v > 0);
+  const _resultWinner = finaleResult?.winner || (_hasTally ? Object.entries(_juryVotes).sort(([,a],[,b]) => b-a)[0][0] : null);
+  if (_resultWinner) {
+    const tally = _hasTally
+      ? Object.entries(_juryVotes).sort(([,a],[,b]) => b-a).map(([n,v]) => `<span class="results-jury-chip">${n}: ${v}</span>`).join('')
+      : '';
     html += `<div class="results-winner-card">
       <div class="results-crown">&#127942;</div>
       <div>
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">${isProjected ? 'Projected Winner' : 'Season Winner'}</div>
-        <div class="results-winner-name">${winner}</div>
-        <div class="results-jury-tally">${tally}</div>
+        <div class="results-winner-name">${_resultWinner}</div>
+        ${tally ? `<div class="results-jury-tally">${tally}</div>` : ''}
       </div></div>`;
-    html += `<div style="font-size:13px;font-weight:600;color:var(--muted);margin-top:4px">${isProjected ? 'Projected Jury Vote' : 'Final Jury Vote'}</div>`;
-    html += `<div class="jury-breakdown">
-      <div class="jury-breakdown-header"><span class="jb-juror">Juror</span><span class="jb-voted">Votes For</span></div>
-      ${juryResult.reasoning.map(r => `<div class="jury-breakdown-row"><span class="jb-juror">${r.juror}</span><span class="jb-voted">${r.votedFor}</span></div>`).join('')}
-    </div>`;
+    if (_hasTally) {
+      html += `<div style="font-size:13px;font-weight:600;color:var(--muted);margin-top:4px">${isProjected ? 'Projected Jury Vote' : 'Final Jury Vote'}</div>`;
+      const _reasoning = Array.isArray(juryResult.reasoning) ? juryResult.reasoning : [];
+      html += `<div class="jury-breakdown">
+        <div class="jury-breakdown-header"><span class="jb-juror">Juror</span><span class="jb-voted">Votes For</span></div>
+        ${_reasoning.map(r => `<div class="jury-breakdown-row"><span class="jb-juror">${r.juror}</span><span class="jb-voted">${r.votedFor}</span></div>`).join('')}
+      </div>`;
+    }
   }
 
   // Placement list

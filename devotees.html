@@ -449,7 +449,7 @@
     </div>
 
     <div class="controls">
-      <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:16px;">
+      <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:16px;">
         <input 
           type="search" 
           id="search" 
@@ -493,6 +493,17 @@
           <option value="7">Season 7</option>
           <option value="8">Season 8</option>
           <option value="9">Season 9</option>
+        </select>
+        <select
+          id="countFilter"
+          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
+          title="Filter by how many seasons a player has appeared in"
+        >
+          <option value="all">🔁 Any # of Seasons</option>
+          <option value="1">1 Season</option>
+          <option value="2">2 Seasons</option>
+          <option value="3">3 Seasons</option>
+          <option value="4+">4+ Seasons</option>
         </select>
       </div>
     </div>
@@ -571,7 +582,15 @@ const emojiMap = {
   'chase': '🦊', 'damien': '🎲', 'emmah': '🃏', 'hicks': '🤠',
   'julia': '🧊', 'mk': '💻', 'millie': '📖', 'nichelle': '🌟',
   'priya': '🌺', 'raj': '🏒', 'ripper': '🪲', 'scary girl': '🩸',
-  'wayne': '🏒', 'zee': '😴'
+  'wayne': '🏒', 'zee': '😴',
+  // Original cast
+  'dj': '🐰',
+  // Season 11 — Disventure Camp
+  'thom': '🛡️', 'jake': '🌹', 'miriam': '🦉', 'grett': '🐍',
+  'dan': '♟️', 'drew': '🐐', 'gabby': '🪞', 'sterling': '🦾',
+  'eureka': '💡', 'will': '🐶', 'seraphine': '😇', 'ashley': '💫',
+  'alec': '🧐', 'fiore': '👿', 'ellie': '🥊', 'nick': '🦥',
+  'wix': '🌀', 'lill': '🏕️'
 };
 
 
@@ -716,21 +735,41 @@ function updateDisplay() {
   const query = (search.value || '').toLowerCase().trim();
   const sortValue = sortSelect.value;
   const seasonFilterValue = document.getElementById('seasonFilter')?.value || 'all';
+  const countFilterValue = document.getElementById('countFilter')?.value || 'all';
+
+  // Let the search box double as a season-count filter: typing "2 seasons"
+  // (or "2 season") shows only players who have appeared in exactly that many.
+  const typedCount = query.match(/^(\d+)\s*seasons?$/);
 
   // ✅ Always filter from the original data (not from DOM cards)
   let filteredPlayers = allPlayers.filter(p => {
-    // Name search filter
-    const matchesName = (p.name || '').toLowerCase().includes(query);
-    
-    // Season filter
+    const totalSeasons = Number(p.totalSeasons ?? 0);
+
+    // Name search filter — OR season-count when the query is "N season(s)"
+    let matchesName;
+    if (typedCount) {
+      matchesName = totalSeasons === Number(typedCount[1]);
+    } else {
+      matchesName = (p.name || '').toLowerCase().includes(query);
+    }
+
+    // Which-season filter (existing)
     let matchesSeason = true;
     if (seasonFilterValue !== 'all') {
       const seasonNum = Number(seasonFilterValue);
       const playerSeasons = p.seasons || [];
       matchesSeason = playerSeasons.includes(seasonNum);
     }
-    
-    return matchesName && matchesSeason;
+
+    // Season-count filter (dropdown): exact count, or 4+ bucket
+    let matchesCount = true;
+    if (countFilterValue !== 'all') {
+      matchesCount = countFilterValue === '4+'
+        ? totalSeasons >= 4
+        : totalSeasons === Number(countFilterValue);
+    }
+
+    return matchesName && matchesSeason && matchesCount;
   });
 
   filteredPlayers.sort((a, b) => {
@@ -786,6 +825,12 @@ sortSelect.addEventListener('change', updateDisplay);
 const seasonFilter = document.getElementById('seasonFilter');
 if (seasonFilter) {
   seasonFilter.addEventListener('change', updateDisplay);
+}
+
+// Season-count filter event listener
+const countFilter = document.getElementById('countFilter');
+if (countFilter) {
+  countFilter.addEventListener('change', updateDisplay);
 }
 </script>
 

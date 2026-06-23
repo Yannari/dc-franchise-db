@@ -466,6 +466,8 @@
           <option value="name-desc">🔤 Name (Z → A)</option>
           <option value="seasons-desc">📅 Seasons (Most → Fewest)</option>
           <option value="seasons-asc">📅 Seasons (Fewest → Most)</option>
+          <option value="debut-asc">🎬 Debut Season (S1 → Latest)</option>
+          <option value="debut-desc">🎬 Debut Season (Latest → S1)</option>
           <option value="votes-desc">🗳️ Votes Against (Most → Fewest)</option>
           <option value="votes-asc">🗳️ Votes Against (Fewest → Most)</option>
           <option value="chwins-desc">🏅 Challenge Wins (Most → Fewest)</option>
@@ -813,6 +815,9 @@ function updateDisplay() {
     const bJuryVotes = Number(b.totalJuryVotes ?? 0);
     const aIdols = Number(a.totalIdolsFound ?? 0);
     const bIdols = Number(b.totalIdolsFound ?? 0);
+    // Debut season = the earliest season a player appeared in (S1, S2, ...).
+    const aDebut = Array.isArray(a.seasons) && a.seasons.length ? Math.min(...a.seasons.map(Number)) : 9999;
+    const bDebut = Array.isArray(b.seasons) && b.seasons.length ? Math.min(...b.seasons.map(Number)) : 9999;
 
     if (sortValue === 'place-asc') return aPlace - bPlace || aName.localeCompare(bName);
     if (sortValue === 'place-desc') return bPlace - aPlace || aName.localeCompare(bName);
@@ -820,6 +825,8 @@ function updateDisplay() {
     if (sortValue === 'name-desc') return bName.localeCompare(aName);
     if (sortValue === 'seasons-desc') return (bSeasons - aSeasons) || aName.localeCompare(bName);
     if (sortValue === 'seasons-asc') return (aSeasons - bSeasons) || aName.localeCompare(bName);
+    if (sortValue === 'debut-asc') return (aDebut - bDebut) || aName.localeCompare(bName);
+    if (sortValue === 'debut-desc') return (bDebut - aDebut) || aName.localeCompare(bName);
     if (sortValue === 'votes-desc') return (bVotes - aVotes) || aName.localeCompare(bName);
     if (sortValue === 'votes-asc') return (aVotes - bVotes) || aName.localeCompare(bName);
     if (sortValue === 'chwins-desc') return (bChWins - aChWins) || aName.localeCompare(bName);

@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "name": "\ud83c\udfc6 Total Drama Franchise Rankings - Complete Cast",
+    "name": "🏆 Total Drama Franchise Rankings - Complete Cast",
     "version": "11.0_ASCII_SAFE_TITLE_EMOJI_REFRESH",
-    "lastUpdated": "2026-03-13",
+    "lastUpdated": "2026-05-23",
     "totalPlayers": 78,
     "seasons": 7,
     "improvements": [
@@ -16,7 +16,7 @@
   "tiers": {
     "S+": {
       "name": "TIER S+ - Elite Winners",
-      "description": "90+ \u2022 Franchise legends",
+      "description": "90+ • Franchise legends",
       "scoreRange": [
         90,
         100
@@ -24,7 +24,7 @@
     },
     "S": {
       "name": "TIER S - Championship Caliber",
-      "description": "80-89 \u2022 Top-tier threats",
+      "description": "80-89 • Top-tier threats",
       "scoreRange": [
         80,
         89
@@ -32,7 +32,7 @@
     },
     "A": {
       "name": "TIER A - Elite Threats",
-      "description": "71-79 \u2022 Deep runs",
+      "description": "71-79 • Deep runs",
       "scoreRange": [
         71,
         79
@@ -40,7 +40,7 @@
     },
     "B": {
       "name": "TIER B - Above Average",
-      "description": "61-70 \u2022 Solid gameplay",
+      "description": "61-70 • Solid gameplay",
       "scoreRange": [
         61,
         70
@@ -48,7 +48,7 @@
     },
     "C": {
       "name": "TIER C - Average",
-      "description": "51-60 \u2022 Mid-game players",
+      "description": "51-60 • Mid-game players",
       "scoreRange": [
         51,
         60
@@ -56,7 +56,7 @@
     },
     "D": {
       "name": "TIER D - Below Average",
-      "description": "0-50 \u2022 Early exits",
+      "description": "0-50 • Early exits",
       "scoreRange": [
         0,
         50
@@ -71,7 +71,7 @@
       "tier": "S+",
       "score": 100,
       "title": "The Snake Charmer",
-      "emoji": "\ud83d\udc0d",
+      "emoji": "🐍",
       "reasoning": "3 FINALS APPEARANCES (franchise rarity). WINNER of S4 (7-6-1). MOST challenge wins in the franchise (13). Constant heat all game (25 votes against). Top jury pull in the database (12 finalist votes). Strategic mastermind (ranked #1). Saved by Ezekiel's idol play (Ep 8). (S2).",
       "strengths": [
         "Three-time finalist (ONLY ever)",
@@ -104,69 +104,47 @@
       "strategicPercentile": 97.01
     },
     {
-      "playerId": "mickey",
-      "name": "Mickey",
+      "playerId": "bowie",
+      "name": "Bowie",
       "rank": 2,
       "tier": "S+",
-      "score": 96,
-      "title": "The Anxious Ace",
-      "emoji": "\ud83e\ude79",
-      "reasoning": "TWO deep runs with real endgame equity. WINNER of S5 (4-3 (tiebreak)). Strong advantage game (2 idols/advantages found). Found Galang idol. (S6). Played idol on Jay at Final 5. (S6). Across 2 season(s): avg placement 1.50.",
-      "strengths": [
-        "Perfect game S5 (0 votes)",
-        "Two-time finalist",
-        "Idol mastery",
-        "Invisible dominance"
-      ],
-      "weaknesses": [
-        "Weak challenges (3 wins)",
-        "S6: only 1 jury vote"
-      ],
-      "avgPlacement": 1.5,
-      "winRate": 50,
+      "score": 94,
       "wins": 1,
       "seasonsPlayed": 2,
       "placements": [
         1,
         2
       ],
-      "challengeWins": 3,
-      "votesAgainst": 8,
-      "juryVotes": 4,
-      "idolsFound": 2,
-      "placementPercentile": 98.51,
-      "winPercentile": 97.76,
-      "challengePercentile": 81.34,
-      "socialPercentile": 95.52,
-      "strategicPercentile": 85.07
-    },
-    {
-      "playerId": "bowie",
-      "name": "Bowie",
-      "rank": 3,
-      "tier": "S+",
-      "score": 94,
-      "wins": 1,
-      "seasonsPlayed": 1,
-      "placements": [
-        1
-      ],
-      "avgPlacement": 1,
-      "challengeWins": 1,
-      "votesAgainst": 2,
+      "avgPlacement": 1.5,
+      "challengeWins": 2,
+      "votesAgainst": 12,
       "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "The Social Schemer",
-      "emoji": "\ud83d\udc51",
-      "reasoning": "S9's dominant winner and the franchise's most advantage-literate player. Bowie played a social spider game from day one, allying with Chase, Damien, Priya, and Millie while quietly hoarding power. He used the Inheritance advantage to strip Julia's idol at Tribal, broke his Unbreakable Bond to blindside Priya, then silenced Julia with a double-vote at F4. He beat Damien at fire to seal a flawless endgame.",
-      "strengths": [],
-      "weaknesses": []
+      "idolsFound": 3,
+      "title": "The Velvet Guillotine",
+      "emoji": "♟️",
+      "reasoning": "Bowie has become the franchise's cleanest modern strategist: a winner, a runner-up, and the most advantage-literate player on the board. His S9 win was a masterpiece of hoarded power and surgical betrayal, and S10 nearly repeated the trick as he formed The Movement, cut Mickey early, steered Stephanie's ambassador boot, buried Scott at merge, and still reached the finale with five advantages played. The only flaw is visibility: by the end, too many jurors could point to him as the architect, and Jasmine turned his chess match into a footrace he could not control.",
+      "strengths": [
+        "Winner and runner-up",
+        "3 idols found/held",
+        "5 advantages played in S10",
+        "Elite vote architect"
+      ],
+      "weaknesses": [
+        "12 votes against",
+        "Highly visible threat",
+        "Finale loss to Jasmine"
+      ],
+      "scoreHistory": [
+        94,
+        99
+      ],
+      "winRate": 50
     },
     {
       "playerId": "jacques",
       "tier": "S+",
       "score": 92,
-      "rank": 4,
+      "rank": 3,
       "avgPlacement": 2.5,
       "winRate": 50,
       "placements": [
@@ -179,7 +157,7 @@
       "idolsFound": 0,
       "status": "Competed in 2/7 seasons",
       "title": "The Ice Prince",
-      "emoji": "\ud83e\uddca",
+      "emoji": "🧊",
       "reasoning": "S6 was a clinic: calm threat management, 4 late immunities, and a 7-1-0 crowning. In S7 he stacked 6 total wins (5 immunities), ran the board with Taylor, then combusted at F4 and quit-turning a near-lock into collapse. With a 50% win rate, 10 challenge wins, and only 2 votes against over two seasons, he's a proven closer when composed. His feud with Carrie and the season's pressure exposed a volatile side that cost him the end.",
       "strengths": [
         "Elite challenge streaks to dictate late votes",
@@ -200,6 +178,49 @@
       "wins": 1
     },
     {
+      "playerId": "mickey",
+      "name": "Mickey",
+      "rank": 4,
+      "tier": "S+",
+      "score": 91.1,
+      "title": "The Nervous Mastermind",
+      "emoji": "🧠",
+      "reasoning": "Mickey's legacy is still enormous: a champion, a runner-up, and one of the rare players with multiple seasons of real endgame equity. His S10 was the first true blemish, as he joined Bowie's Movement but overplayed his fear of Zoey's likability and gave Bowie the excuse to cut him in Episode 3. Even that early exit reads less like incompetence than two masterminds recognizing each other too quickly; Mickey saw the game, but Bowie moved first.",
+      "strengths": [
+        "S5 winner",
+        "Two deep runs before S10",
+        "2 idols/advantages found",
+        "Strong strategic instincts"
+      ],
+      "weaknesses": [
+        "S10 placement: 17th",
+        "Broke alliance discipline early",
+        "Outmaneuvered by Bowie"
+      ],
+      "avgPlacement": 6.666666666666667,
+      "winRate": 33.33,
+      "wins": 1,
+      "seasonsPlayed": 3,
+      "placements": [
+        1,
+        2,
+        17
+      ],
+      "challengeWins": 3,
+      "votesAgainst": 12,
+      "juryVotes": 4,
+      "idolsFound": 2,
+      "placementPercentile": 98.51,
+      "winPercentile": 97.76,
+      "challengePercentile": 81.34,
+      "socialPercentile": 95.52,
+      "strategicPercentile": 85.07,
+      "scoreHistory": [
+        96,
+        91.1
+      ]
+    },
+    {
       "playerId": "macarthur",
       "tier": "S+",
       "score": 90.7,
@@ -216,7 +237,7 @@
       "idolsFound": 1,
       "status": "Competed in Season 7 only",
       "title": "The Enforcer",
-      "emoji": "\ud83d\udc6e\u200d\u2640\ufe0f",
+      "emoji": "👮‍♀️",
       "reasoning": "MacArthur's S7 was a power-social showcase: she found the Mauhu idol, bridged across blocs, steered key boots, and won the jury with controlled force. She kept her idol holstered correctly through joint tribals and late storms, then locked the endgame with Cody and Carrie. With 4 challenge wins, 1 idol found, and only 5 votes against, her run was efficient and respected. A fiery rivalry with Sky never derailed her path to the crown.",
       "strengths": [
         "Cross-tribe relationship building that scales to merge",
@@ -242,7 +263,7 @@
       "tier": "S+",
       "score": 90.2,
       "title": "The Brainiac",
-      "emoji": "\ud83e\uddea",
+      "emoji": "🧪",
       "reasoning": "Reliable challenge contributor (6 total wins). Strong advantage game (2 idols/advantages found). High-end strategist (best rank: #3). Cast tiebreaker for Emma. (S3). Voted Zoey at FTC. (S4). Across 2 season(s): avg placement 4.00.",
       "strengths": [
         "Consistent deep runs",
@@ -273,26 +294,49 @@
       "strategicPercentile": 50
     },
     {
-      "playerId": "sanders",
-      "name": "Sanders",
-      "rank": 7,
+      "playerId": "scott",
       "tier": "S",
-      "score": 86.1,
-      "wins": 0,
-      "seasonsPlayed": 1,
+      "score": 87.4,
+      "rank": 7,
+      "avgPlacement": 5.5,
+      "winRate": 0,
       "placements": [
-        3
+        3,
+        2,
+        8,
+        9
       ],
-      "avgPlacement": 3,
-      "challengeWins": 5,
-      "votesAgainst": 1,
-      "juryVotes": 0,
-      "idolsFound": 2,
-      "title": "The By-the-Book Cop",
-      "emoji": "\ud83d\ude94",
-      "reasoning": "S8's most complete non-winner. Sanders found the Civilian idol pre-merge, saved MacArthur with it against a five-vote majority at F8, then played a second idol at F5 to force Jen out via the Double Shield \u2014 one of the season's most surgical double-plays. She won F4 immunity and dictated the Gerry boot. She lost a 4-4 jury tie to Alejandro by the narrowest possible margin. The most dangerous first-time player in franchise history.",
-      "strengths": [],
-      "weaknesses": []
+      "challengeWins": 8,
+      "votesAgainst": 28,
+      "juryVotes": 4,
+      "idolsFound": 1,
+      "status": "Competed in 3/7 seasons",
+      "title": "The Chaos Engine",
+      "emoji": "🦂",
+      "reasoning": "Scott remains one of the franchise's most dangerous non-winners: four seasons, four merge-level runs, 8 challenge wins, and a résumé built on lies, leverage, and survival. In S10, he turned a first-impression rejection into fuel, convinced Hicks to hand over an idol, won Say Uncle, and blew up The Three Torches by betraying Jasmine. The problem is that Scott's games leave fingerprints and enemies everywhere; once he exposed Bowie as the power center, Bowie and The Oath had every reason to make him the next warning shot.",
+      "strengths": [
+        "Four-time deep runner",
+        "8 challenge wins",
+        "Elite chaos manipulation",
+        "4 jury votes"
+      ],
+      "weaknesses": [
+        "28 votes against",
+        "Never won",
+        "Threat level always obvious"
+      ],
+      "name": "Scott",
+      "seasonsList": [
+        4,
+        3,
+        7
+      ],
+      "seasonsPlayed": 4,
+      "wins": 0,
+      "scoreHistory": [
+        80,
+        87.4
+      ]
     },
     {
       "playerId": "millie",
@@ -311,16 +355,59 @@
       "juryVotes": 0,
       "idolsFound": 1,
       "title": "The Overachiever",
-      "emoji": "\ud83d\udcd4",
-      "reasoning": "S9's most complete non-winner. Millie converted a Beware package into the Red Idol, used it at F8 to nullify a five-vote strike on Priya, and held her alliances together through one of the season's messiest post-merges. She won F5 immunity and was the last woman standing going into the finale. Her game had everything a winning r\u00e9sum\u00e9 needs \u2014 she just ran into Bowie.",
+      "emoji": "📔",
+      "reasoning": "S9's most complete non-winner. Millie converted a Beware package into the Red Idol, used it at F8 to nullify a five-vote strike on Priya, and held her alliances together through one of the season's messiest post-merges. She won F5 immunity and was the last woman standing going into the finale. Her game had everything a winning résumé needs — she just ran into Bowie.",
       "strengths": [],
       "weaknesses": []
+    },
+    {
+      "playerId": "jasmine",
+      "tier": "S",
+      "score": 85.3,
+      "rank": 9,
+      "avgPlacement": 9.333333333333334,
+      "winRate": 33.33,
+      "placements": [
+        14,
+        13,
+        1
+      ],
+      "challengeWins": 3,
+      "votesAgainst": 17,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "status": "Competed in 2/7 seasons",
+      "title": "The Truth-Serum Titan",
+      "emoji": "🏁",
+      "reasoning": "Jasmine turned two forgettable mid-game exits into one of the franchise's most satisfying winner arcs. S10 showcased everything her earlier games only hinted at: elite reads, stubborn loyalty, late challenge power, and the ability to stand beside strategists without becoming their pawn. She won Safety Without Power, claimed an Extra Vote, took key immunities in African Lying Safari, Get a Clue, and The Princess Pride, then beat Bowie's architecture outright in the Rejected Olympic Relay. Her game was not the cleanest strategically, but it had the strongest finish and the clearest soul.",
+      "strengths": [
+        "S10 winner",
+        "3 immunity wins",
+        "Excellent social reads",
+        "Loyal but adaptable"
+      ],
+      "weaknesses": [
+        "17 votes against",
+        "Two prior early exits",
+        "Loyalty limited options"
+      ],
+      "name": "Jasmine",
+      "seasonsList": [
+        5,
+        7
+      ],
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "scoreHistory": [
+        47,
+        85.3
+      ]
     },
     {
       "playerId": "lindsay",
       "tier": "S",
       "score": 84,
-      "rank": 9,
+      "rank": 10,
       "avgPlacement": 8,
       "winRate": 33.33,
       "placements": [
@@ -334,8 +421,8 @@
       "idolsFound": 0,
       "status": "Competed in 3/7 seasons",
       "title": "The Glow-Up Queen",
-      "emoji": "\ud83d\udc96",
-      "reasoning": "Lindsay won S1 with pure social grace and timing, beating Alejandro 5-4 while taking only 1 vote all season. She returned to reach the S2 Finale (lost 1-5-1 to Duncan) and then suffered a brutal S7 first boot (6-2-2). With a 33.3% win rate and 6 lifetime jury votes, her r\u00e9sum\u00e9 is built on likability and trust webs. Rivalries with Jasmine/Shawn in S7 and minimal advantage play left her exposed in fast starts.",
+      "emoji": "💖",
+      "reasoning": "Lindsay won S1 with pure social grace and timing, beating Alejandro 5-4 while taking only 1 vote all season. She returned to reach the S2 Finale (lost 1-5-1 to Duncan) and then suffered a brutal S7 first boot (6-2-2). With a 33.3% win rate and 6 lifetime jury votes, her résumé is built on likability and trust webs. Rivalries with Jasmine/Shawn in S7 and minimal advantage play left her exposed in fast starts.",
       "strengths": [
         "Universal likability and low-parchment gameplay",
         "Durable alliance webs that scale to the endgame",
@@ -358,7 +445,7 @@
     {
       "playerId": "chase",
       "name": "Chase",
-      "rank": 10,
+      "rank": 11,
       "tier": "S",
       "score": 83.3,
       "wins": 0,
@@ -372,20 +459,63 @@
       "juryVotes": 0,
       "idolsFound": 1,
       "title": "The Vlogger",
-      "emoji": "\ud83d\udcf1",
+      "emoji": "📱",
       "reasoning": "S9's quiet closer. Chase arrived as the vlogger no one took seriously and finished as a finalist who made the right call in nearly every vote. He idoled himself at the revote that toppled Hicks, won the Vote Stopper to silence Julia at F4, and won F5 immunity to punch his ticket to the finale.",
       "strengths": [],
       "weaknesses": []
     },
     {
+      "playerId": "ryan",
+      "name": "Ryan",
+      "rank": 12,
+      "tier": "S",
+      "score": 83.1,
+      "title": "The Gentle Wrecking Ball",
+      "emoji": "💪",
+      "reasoning": "Ryan's franchise profile is power with a conscience: three strong placements, 5 challenge wins, and enough social gravity to keep finding endgame lanes. In S10, he built The Oath, bonded deeply with Zoey, Carrie, and Brick, and stacked late immunities in Bridal Brawls, Rapa Phooey, and Super Hero-ld. But his heart pulled him in too many directions, especially as his loyalty to Carrie damaged trust elsewhere. By final four, he was too strong to drag and too exposed to save.",
+      "strengths": [
+        "Three top-eight finishes",
+        "5 challenge wins",
+        "Strong loyal bonds",
+        "S10 final four run"
+      ],
+      "weaknesses": [
+        "No wins",
+        "Emotional loyalties fractured game",
+        "No clean endgame coalition"
+      ],
+      "avgPlacement": 5,
+      "winRate": 0,
+      "wins": 0,
+      "seasonsPlayed": 3,
+      "placements": [
+        3,
+        8,
+        4
+      ],
+      "challengeWins": 5,
+      "votesAgainst": 14,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 80.6,
+      "winPercentile": 45.52,
+      "challengePercentile": 75.37,
+      "socialPercentile": 57.46,
+      "strategicPercentile": 94.03,
+      "scoreHistory": [
+        75.5,
+        83.1
+      ]
+    },
+    {
       "playerId": "duncan",
       "name": "Duncan",
-      "rank": 11,
+      "rank": 13,
       "tier": "S",
       "score": 83,
       "title": "The Delinquent",
-      "emoji": "\ud83d\udde1\ufe0f",
-      "reasoning": "CHAMPION season on the r\u00e9sum\u00e9. WINNER of S2. Legit jury respect (5 finalist votes). 5-3 vote. (S1). Won Final Tribal 5-1-1. (S2). Across 3 season(s): avg placement 7.33.",
+      "emoji": "🗡️",
+      "reasoning": "CHAMPION season on the résumé. WINNER of S2. Legit jury respect (5 finalist votes). 5-3 vote. (S1). Won Final Tribal 5-1-1. (S2). Across 3 season(s): avg placement 7.33.",
       "strengths": [
         "S2 winner",
         "Beat Alejandro S2",
@@ -417,12 +547,12 @@
     {
       "playerId": "emma",
       "name": "Emma",
-      "rank": 12,
+      "rank": 14,
       "tier": "S",
       "score": 81,
       "title": "The Comeback Kid",
-      "emoji": "\ud83d\udd01",
-      "reasoning": "CHAMPION season on the r\u00e9sum\u00e9. WINNER of S3. Reliable challenge contributor (5 total wins). High-end strategist (best rank: #2). 4-3-1 tiebreaker victory. (S3). Lost via rocks in a deadlock. (S6). Across 3 season(s): avg placement 9.33.",
+      "emoji": "🔁",
+      "reasoning": "CHAMPION season on the résumé. WINNER of S3. Reliable challenge contributor (5 total wins). High-end strategist (best rank: #2). 4-3-1 tiebreaker victory. (S3). Lost via rocks in a deadlock. (S6). Across 3 season(s): avg placement 9.33.",
       "strengths": [
         "S3 winner",
         "Three seasons",
@@ -452,52 +582,58 @@
       "strategicPercentile": 88.06
     },
     {
-      "playerId": "scott",
+      "playerId": "zoey",
       "tier": "S",
-      "score": 80,
-      "rank": 13,
-      "avgPlacement": 4.33,
+      "score": 80.8,
+      "rank": 15,
+      "avgPlacement": 7.75,
       "winRate": 0,
       "placements": [
-        3,
         2,
-        8
+        4,
+        15,
+        10
       ],
-      "challengeWins": 7,
-      "votesAgainst": 15,
-      "juryVotes": 4,
+      "challengeWins": 8,
+      "votesAgainst": 13,
+      "juryVotes": 6,
       "idolsFound": 1,
       "status": "Competed in 3/7 seasons",
-      "title": "The Saboteur",
-      "emoji": "\ud83e\udd8a",
-      "reasoning": "Scott is a perennial endgamer: S3 runner-up after a challenge-heavy run and S4 third with a record-setting idol hold and perfect F5 play. In S7 he rode an unbreakable duo with Shawn and even got covered by Kitty's idol before a consensus at 8th took him down. Across 3 seasons he tallied 7 challenge wins, 1 idol, and 4 jury votes. His power is obvious-and that's both his weapon and his curse.",
+      "title": "The Soft-Power Magnet",
+      "emoji": "🌸",
+      "reasoning": "Zoey is one of the franchise's purest jury threats, with a runner-up finish, a fourth place, 8 challenge wins, and 6 jury votes proving her ceiling. Her S10 game was quieter but familiar: people trusted her instinctively, from Gwen to Ryan to Cody to Sanders, which made her both protected and terrifying. Mickey targeted her early for exactly that reason, and the merge open vote confirmed the danger of being everyone's favorite person. She left gracefully after losing to Sanders, but her championship case remains one betrayal or immunity away.",
       "strengths": [
-        "Elite challenge output to steer tempo",
-        "Patience with idols, timing them for maximum swing",
-        "Ride-or-die partnerships that serve as shields"
+        "8 challenge wins",
+        "6 jury votes",
+        "Elite social trust",
+        "Multiple deep runs"
       ],
       "weaknesses": [
-        "High visibility invites broad consensus votes",
-        "Duo tunnel-vision narrows endgame options",
-        "Jury warmth fluctuates after ruthless moves"
+        "Still winless",
+        "Often labeled a jury threat",
+        "Trust breaks derail endgames"
       ],
-      "name": "Scott",
+      "name": "Zoey",
       "seasonsList": [
         4,
         3,
         7
       ],
-      "seasonsPlayed": 3,
-      "wins": 0
+      "seasonsPlayed": 4,
+      "wins": 0,
+      "scoreHistory": [
+        77,
+        80.8
+      ]
     },
     {
       "playerId": "scarlett",
       "name": "Scarlett",
-      "rank": 14,
+      "rank": 16,
       "tier": "A",
       "score": 77.9,
       "title": "The Puppetmaster",
-      "emoji": "\ud83e\udde0",
+      "emoji": "🧠",
       "reasoning": "Across 1 season(s): avg placement 4.00.",
       "strengths": [
         "#1 strategic rank S5",
@@ -526,87 +662,134 @@
       "strategicPercentile": 98.51
     },
     {
-      "playerId": "carrie",
+      "playerId": "sanders",
+      "name": "Sanders",
+      "rank": 17,
+      "tier": "S",
+      "score": 80.2,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        3,
+        5
+      ],
+      "avgPlacement": 4,
+      "challengeWins": 5,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 2,
+      "title": "The Redemption Final Boss",
+      "emoji": "🎯",
+      "reasoning": "Sanders has now delivered two high-end non-winning games with completely different flavors. S8 was her complete-player showcase, with two idol plays, a MacArthur save against a five-vote majority, and a 4-4 jury tie loss to Alejandro. S10 turned her into a Redemption Island legend after a messy merge vote: five straight duel wins in precision, memory, balance, slingshot, and bocce before returning as the player nobody wanted at the end. Her honor is real, but so is the target it creates once momentum gathers.",
+      "strengths": [
+        "Two top-five finishes",
+        "5 S10 Redemption wins",
+        "2 idols in career",
+        "Strong challenge performer"
+      ],
+      "weaknesses": [
+        "No win despite elite runs",
+        "Merge vote misfire in S10",
+        "Honor can limit flexibility"
+      ],
+      "scoreHistory": [
+        86.1,
+        77.7
+      ],
+      "winRate": 0
+    },
+    {
+      "playerId": "cody",
       "tier": "A",
-      "score": 77,
-      "rank": 15,
-      "avgPlacement": 3,
+      "score": 77.2,
+      "rank": 18,
+      "avgPlacement": 9.333333333333334,
       "winRate": 0,
       "placements": [
-        3
+        19,
+        2,
+        7
+      ],
+      "challengeWins": 4,
+      "votesAgainst": 14,
+      "juryVotes": 0,
+      "idolsFound": 2,
+      "status": "Competed in 2/7 seasons",
+      "title": "The Reluctant Radar",
+      "emoji": "📡",
+      "reasoning": "Cody's gift is awareness: he hears secrets, spots fractures, and usually knows where the game is heading before the vote proves him right. His S7 runner-up game was a connector masterclass with well-timed Legacy and idol plays, while S10 showed the same instincts through his Bowie intel, Mickey vote, merge idol find, and refusal to abandon Priya. The issue is conversion; too often his reads become warnings instead of commands. By final six, he had the information, but not the coalition, and Sanders ended his Redemption shot.",
+      "strengths": [
+        "S7 finalist",
+        "Strong social intel",
+        "2 idols found/played",
+        "Accurate strategic reads"
+      ],
+      "weaknesses": [
+        "Winless across 3 seasons",
+        "Hesitant commitment",
+        "Reads do not always become control"
+      ],
+      "name": "Cody",
+      "seasonsList": [
+        1,
+        7
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "scoreHistory": [
+        72.6,
+        77.2
+      ]
+    },
+    {
+      "playerId": "carrie",
+      "tier": "A",
+      "score": 77.8,
+      "rank": 19,
+      "avgPlacement": 4.5,
+      "winRate": 0,
+      "placements": [
+        3,
+        6
       ],
       "challengeWins": 3,
-      "votesAgainst": 6,
+      "votesAgainst": 10,
       "juryVotes": 0,
       "idolsFound": 0,
       "status": "Competed in Season 7 only",
-      "title": "The Hopeless Romantic",
-      "emoji": "\ud83d\udc98",
-      "reasoning": "Carrie was the S7 hub: she built Lawa #3, balanced Cody/MacArthur, and used a Vote Steal at F5 to engineer Tom's exit en route to FTC (1 vote). She managed early heat as a decoy, navigated Zoey and Pete feuds, and won 3 challenges with just 6 votes against. Her game emphasized shields, connectors, and timing over flash. The jury respected her control but favored MacArthur's power-social blend.",
+      "title": "The Underestimated Hub",
+      "emoji": "🪢",
+      "reasoning": "Carrie's best games are built on making herself look softer than her position actually is. In S7, she was the social hub who balanced Cody and MacArthur, used a Vote Steal at final five, and reached FTC with a credible connector résumé. In S10, she again stayed in rooms where decisions happened, but her bond with Ryan became both her shield and her spotlight. Bowie recognized too late that her kindness could matter to a jury, then cut her before that story could reach the finale.",
       "strengths": [
-        "Alliance architecture and cross-lane brokerage",
-        "Endgame leverage with precise advantage usage",
-        "Threat assessment that sets up safe, repeatable votes"
+        "Two deep runs",
+        "S7 finalist",
+        "Strong connector game",
+        "3 challenge wins"
       ],
       "weaknesses": [
-        "Perceived as manipulative by some opponents",
-        "Feud management (Zoey, Pete) can polarize jurors",
-        "Lower challenge intimidation than top-tier beasts"
+        "No win",
+        "Often underestimated until too late",
+        "Ryan bond became a target"
       ],
       "name": "Carrie",
       "seasonsList": [
         7
       ],
-      "seasonsPlayed": 1,
-      "wins": 0
-    },
-    {
-      "playerId": "zoey",
-      "tier": "A",
-      "score": 77,
-      "rank": 16,
-      "avgPlacement": 7,
-      "winRate": 0,
-      "placements": [
-        2,
-        4,
-        15
-      ],
-      "challengeWins": 8,
-      "votesAgainst": 9,
-      "juryVotes": 6,
-      "idolsFound": 1,
-      "status": "Competed in 3/7 seasons",
-      "title": "The Indie Girl",
-      "emoji": "\ud83c\udf38",
-      "reasoning": "Zoey nearly perfected social play in S4, losing the closest finale 6-7 after building multiple 'unbreakable' bonds and nailing a massive idol save. In S3 she connected her way to 4th before Scott's betrayal, and in S7 a feud with Carrie led to a 5-2 pre-merge exit. With 8 challenge wins, 1 idol, and 6 jury votes, her ceiling is championship-level. Feud entanglements and late-game trust breaks have been her undoing.",
-      "strengths": [
-        "Unrivaled multi-bond social networks",
-        "Spot-on protection timing (idol saves, midgame flips)",
-        "Consistent challenge value without overexposure"
-      ],
-      "weaknesses": [
-        "Vulnerable to betrayal by close allies",
-        "Feuds (Carrie) create tunnel-vision targets",
-        "Can be targeted as a 'perfect finalist' archetype"
-      ],
-      "name": "Zoey",
-      "seasonsList": [
-        4,
-        3,
-        7
-      ],
-      "seasonsPlayed": 3,
-      "wins": 0
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "scoreHistory": [
+        77,
+        76.8
+      ]
     },
     {
       "playerId": "jay",
       "name": "Jay",
-      "rank": 17,
+      "rank": 20,
       "tier": "A",
       "score": 76.7,
       "title": "The Loyal Heart",
-      "emoji": "\u2764\ufe0f",
+      "emoji": "❤️",
       "reasoning": "Navigated the merge rock draw. (S6). Finalist - 0 jury votes. (S6). Across 1 season(s): avg placement 3.00.",
       "strengths": [
         "Made F3",
@@ -638,7 +821,7 @@
     {
       "playerId": "damien",
       "name": "Damien",
-      "rank": 18,
+      "rank": 21,
       "tier": "A",
       "score": 76.3,
       "wins": 0,
@@ -652,8 +835,8 @@
       "juryVotes": 0,
       "idolsFound": 1,
       "title": "The Anxious One",
-      "emoji": "\ud83d\ude30",
-      "reasoning": "S9's endurance anchor. Damien played calm and precise all season \u2014 engineering Ripper as the merge shield target, winning F9 horror immunity, finding the Campers Hidden Idol at F7, and reaching F6 with a late Power Trio. He played his idol in a F5 double-idol standoff and only lost when Bowie beat him at fire.",
+      "emoji": "😰",
+      "reasoning": "S9's endurance anchor. Damien played calm and precise all season — engineering Ripper as the merge shield target, winning F9 horror immunity, finding the Campers Hidden Idol at F7, and reaching F6 with a late Power Trio. He played his idol in a F5 double-idol standoff and only lost when Bowie beat him at fire.",
       "strengths": [],
       "weaknesses": []
     },
@@ -661,7 +844,7 @@
       "playerId": "sky",
       "tier": "A",
       "score": 75.7,
-      "rank": 19,
+      "rank": 22,
       "avgPlacement": 7,
       "winRate": 0,
       "placements": [
@@ -675,7 +858,7 @@
       "idolsFound": 2,
       "status": "Competed in 2/7 seasons",
       "title": "The Athlete",
-      "emoji": "\ud83c\udfc3\u200d\u2640\ufe0f",
+      "emoji": "🏃‍♀️",
       "reasoning": "Sky's S5 was a challenge-forward run to a tied FTC loss, and in S7 she co-piloted with MacArthur before a late split and a 6th-place cut. She owns 4 total challenge wins and 2 idols across her career, with only 6 votes against. Her Mauhu backbone role helped shape merge plans like targeting Pete and Kitty. The late fracture with MacArthur and muted jury sway kept her off the podium in S7.",
       "strengths": [
         "Clutch immunity wins under pressure",
@@ -684,7 +867,7 @@
       ],
       "weaknesses": [
         "Endgame fractures with close allies",
-        "Can be overshadowed by louder r\u00e9sum\u00e9s",
+        "Can be overshadowed by louder résumés",
         "Limited control of final jury narratives"
       ],
       "name": "Sky",
@@ -696,50 +879,55 @@
       "wins": 0
     },
     {
-      "playerId": "ryan",
-      "name": "Ryan",
-      "rank": 20,
+      "playerId": "brick",
+      "name": "Brick",
+      "rank": 23,
       "tier": "A",
-      "score": 75.5,
-      "title": "The Gentle Giant",
-      "emoji": "\ud83c\udfc5",
-      "reasoning": "Found and misplayed Galang idol. (S6). Won Pesky Palate immunity. (S6). Across 2 season(s): avg placement 5.50.",
+      "score": 75.1,
+      "title": "The Noble Shield",
+      "emoji": "🛡️",
+      "reasoning": "Brick's S10 run transformed him from a respectable merge boot into a legitimate endgame character. He played with decency in a season full of knives, protecting Josee, forming key bonds with Tyler and Jasmine, and staying central enough to influence votes without looking like the obvious commander. His late partnership with Jasmine helped remove Ryan and reshape the finale path, but it also made his jury appeal impossible to ignore. At final three, the jury did not eliminate a goat; they eliminated the person who might win on character alone.",
       "strengths": [
-        "Fan Favorite S4",
-        "Unbreakable with Mickey",
-        "Social connector"
+        "S10 third place",
+        "High social respect",
+        "Trusted endgame shield",
+        "Key Ryan vote"
       ],
       "weaknesses": [
-        "Wasted idol",
-        "Emma hatred war",
-        "11 votes S6"
+        "Only 1 challenge win",
+        "No idols or advantages",
+        "Jury threat cut before finale"
       ],
-      "avgPlacement": 5.5,
+      "avgPlacement": 6,
       "winRate": 0,
       "wins": 0,
       "seasonsPlayed": 2,
       "placements": [
-        3,
-        8
+        9,
+        3
       ],
-      "challengeWins": 2,
-      "votesAgainst": 11,
+      "challengeWins": 1,
+      "votesAgainst": 12,
       "juryVotes": 0,
-      "idolsFound": 1,
-      "placementPercentile": 80.6,
+      "idolsFound": 0,
+      "placementPercentile": 63.43,
       "winPercentile": 45.52,
       "challengePercentile": 75.37,
-      "socialPercentile": 57.46,
-      "strategicPercentile": 94.03
+      "socialPercentile": 48.51,
+      "strategicPercentile": 18.66,
+      "scoreHistory": [
+        59,
+        75.1
+      ]
     },
     {
       "playerId": "kelly",
       "name": "Kelly",
-      "rank": 21,
+      "rank": 24,
       "tier": "A",
       "score": 74.3,
       "title": "The Protective Mom",
-      "emoji": "\ud83e\udde1",
+      "emoji": "🧡",
       "reasoning": "Lost Final 4 fire-making. (S6). Found and correctly played Tadhana idol at swap. (S6). Across 1 season(s): avg placement 4.00.",
       "strengths": [
         "Perfect idol play",
@@ -770,11 +958,11 @@
     {
       "playerId": "trent",
       "name": "Trent",
-      "rank": 22,
+      "rank": 25,
       "tier": "A",
       "score": 73.1,
       "title": "The Guitar Guy",
-      "emoji": "\ud83c\udfb8",
+      "emoji": "🎸",
       "reasoning": "Reliable challenge contributor (4 total wins). High-end strategist (best rank: #3). 5-2 vote. (S2). Extreme hatred with Heather. (S1). Across 2 season(s): avg placement 6.50.",
       "strengths": [
         "Two seasons",
@@ -804,7 +992,7 @@
     {
       "playerId": "gerry",
       "name": "Gerry",
-      "rank": 23,
+      "rank": 26,
       "tier": "A",
       "score": 72.7,
       "wins": 0,
@@ -818,53 +1006,16 @@
       "juryVotes": 0,
       "idolsFound": 1,
       "title": "The Wily Elder",
-      "emoji": "\ud83d\udc74",
-      "reasoning": "S8's most volatile power broker. Gerry survived multiple pre-merge ties through sheer force of personality, formed an Unbreakable Bond with Jen, and found the merged idol at F9. His masterpiece was psychological \u2014 episode by episode he dismantled Heather until she quit mid-game with the Super Idol unused in her pocket. He played his idol at F5 and fell at F4, one round short of the finale.",
+      "emoji": "👴",
+      "reasoning": "S8's most volatile power broker. Gerry survived multiple pre-merge ties through sheer force of personality, formed an Unbreakable Bond with Jen, and found the merged idol at F9. His masterpiece was psychological — episode by episode he dismantled Heather until she quit mid-game with the Super Idol unused in her pocket. He played his idol at F5 and fell at F4, one round short of the finale.",
       "strengths": [],
       "weaknesses": []
-    },
-    {
-      "playerId": "cody",
-      "tier": "A",
-      "score": 72.6,
-      "rank": 24,
-      "avgPlacement": 10.5,
-      "winRate": 0,
-      "placements": [
-        19,
-        2
-      ],
-      "challengeWins": 4,
-      "votesAgainst": 9,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "status": "Competed in 2/7 seasons",
-      "title": "The Geek",
-      "emoji": "\ud83d\udcbb",
-      "reasoning": "Cody's S7 was a connector masterclass: he stabilized under fire with Carrie, helped form Lawa #3, and timed the Legacy at F6 and an idol at F5 to reach FTC (2 votes). His S1 showed early social chops before a razor-thin 6-5 exit. Across 2 seasons he tallied 4 challenge wins and 1 idol found with only 9 votes against, but lost to MacArthur's r\u00e9sum\u00e9. Rivalries with Laurie and Pete tested him, yet his bonds with Carrie and MacArthur kept him alive.",
-      "strengths": [
-        "Cross-tribe bridging and coalition maintenance",
-        "Advantage timing under endgame pressure (Legacy + idol)",
-        "Reads that convert scattered votes into a stable majority"
-      ],
-      "weaknesses": [
-        "Jury comparison problem versus dominant allies",
-        "Can attract early-game heat before relationships stick",
-        "Public feuds (e.g., Laurie) bleed social capital"
-      ],
-      "name": "Cody",
-      "seasonsList": [
-        1,
-        7
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0
     },
     {
       "playerId": "tom",
       "tier": "A",
       "score": 72,
-      "rank": 25,
+      "rank": 27,
       "avgPlacement": 5,
       "winRate": 0,
       "placements": [
@@ -876,15 +1027,15 @@
       "idolsFound": 1,
       "status": "Competed in Season 7 only",
       "title": "The Spy",
-      "emoji": "\ud83d\udd75\ufe0f",
-      "reasoning": "Tom played low-visibility until it mattered: he found the merge idol and fired it at F7 to cancel five votes and bounce Taylor, then was boxed out at F5 by a vote-steal plus double-idol wall. With 0 challenge wins, 1 idol found, and 13 votes against, his r\u00e9sum\u00e9 hinged on timing, not volume. His bridges with Sky and MacArthur bought space even when he was out of step. The jury-facing story just wasn't big enough by F5.",
+      "emoji": "🕵️",
+      "reasoning": "Tom played low-visibility until it mattered: he found the merge idol and fired it at F7 to cancel five votes and bounce Taylor, then was boxed out at F5 by a vote-steal plus double-idol wall. With 0 challenge wins, 1 idol found, and 13 votes against, his résumé hinged on timing, not volume. His bridges with Sky and MacArthur bought space even when he was out of step. The jury-facing story just wasn't big enough by F5.",
       "strengths": [
         "Patience and precision with idol timing",
         "Under-the-radar positioning alongside power players",
         "Social links that reduce early and midgame exposure"
       ],
       "weaknesses": [
-        "Reactive gameplay limits jury r\u00e9sum\u00e9 breadth",
+        "Reactive gameplay limits jury résumé breadth",
         "Becomes an easy consensus when shields are gone",
         "Few marquee moves beyond the F7 idol shot"
       ],
@@ -898,7 +1049,7 @@
     {
       "playerId": "jen",
       "name": "Jen",
-      "rank": 26,
+      "rank": 28,
       "tier": "A",
       "score": 71.7,
       "wins": 0,
@@ -912,19 +1063,19 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Photographer",
-      "emoji": "\ud83d\udcf8",
-      "reasoning": "S8's social monarch. Jen led the Civilians, built the widest coalition of any player in her season, won merge immunity, and helped blindside MacArthur on a revote at F6. She fell at F5 as the first victim of the Double Shield \u2014 Sanders and Alejandro played idols simultaneously to force a revote that ended her game. A dominant r\u00e9sum\u00e9 cut one round short.",
+      "emoji": "📸",
+      "reasoning": "S8's social monarch. Jen led the Civilians, built the widest coalition of any player in her season, won merge immunity, and helped blindside MacArthur on a revote at F6. She fell at F5 as the first victim of the Double Shield — Sanders and Alejandro played idols simultaneously to force a revote that ended her game. A dominant résumé cut one round short.",
       "strengths": [],
       "weaknesses": []
     },
     {
       "playerId": "geoff",
       "name": "Geoff",
-      "rank": 27,
+      "rank": 29,
       "tier": "A",
       "score": 71,
       "title": "The Party Surfer",
-      "emoji": "\ud83c\udf89",
+      "emoji": "🎉",
       "reasoning": "7-2 vote. (S1). Won EoE return Ep 13. (S4). Across 3 season(s): avg placement 10.33.",
       "strengths": [
         "Won RI return",
@@ -956,11 +1107,11 @@
     {
       "playerId": "bridgette",
       "name": "Bridgette",
-      "rank": 28,
+      "rank": 30,
       "tier": "A",
       "score": 70.8,
       "title": "The Surfer Sweetheart",
-      "emoji": "\ud83c\udfc4\u200d\u2640\ufe0f",
+      "emoji": "🏄‍♀️",
       "reasoning": "Reliable challenge contributor (5 total wins). First boot - 4-3 vote. (S2). Used Safety Without Power (Ep 22). (S1). Across 2 season(s): avg placement 8.50.",
       "strengths": [
         "Consistent challenge output (wins/season)."
@@ -989,11 +1140,11 @@
     {
       "playerId": "ezekiel",
       "name": "Ezekiel",
-      "rank": 29,
+      "rank": 31,
       "tier": "A",
       "score": 70.5,
       "title": "The Farm Kid",
-      "emoji": "\ud83c\udf3e",
+      "emoji": "🌾",
       "reasoning": "Advantage king/queen (3 idols/advantages found). Lost fire-making to Alejandro at F4. (S1). Legendary idol play on Alejandro at merge. (S2). Across 2 season(s): avg placement 5.00.",
       "strengths": [
         "S4: 4th place",
@@ -1023,11 +1174,11 @@
     {
       "playerId": "blaineley",
       "name": "Blaineley",
-      "rank": 30,
+      "rank": 32,
       "tier": "B",
       "score": 70.4,
       "title": "The Media Maven",
-      "emoji": "\ud83c\udfa4",
+      "emoji": "🎤",
       "reasoning": "Rock-draw survival at merge. (S6). Final 5 consensus boot. (S6). Across 2 season(s): avg placement 7.00.",
       "strengths": [
         "Made F6 S6",
@@ -1058,7 +1209,7 @@
     {
       "playerId": "emmah",
       "name": "Emmah",
-      "rank": 31,
+      "rank": 33,
       "tier": "B",
       "score": 70.4,
       "wins": 0,
@@ -1072,52 +1223,16 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Pop Star",
-      "emoji": "\ud83c\udfa4",
-      "reasoning": "S9's most fearless player. Emmah used Knowledge is Power to steal Wayne's Extra Vote and double-voted Ripper out in one of the season's boldest moves. She helped blindside Raj while he sat on an idol and won immunity at F7. She got caught in the F5 double-idol crossfire \u2014 the only vote she couldn't escape all season.",
+      "emoji": "🎤",
+      "reasoning": "S9's most fearless player. Emmah used Knowledge is Power to steal Wayne's Extra Vote and double-voted Ripper out in one of the season's boldest moves. She helped blindside Raj while he sat on an idol and won immunity at F7. She got caught in the F5 double-idol crossfire — the only vote she couldn't escape all season.",
       "strengths": [],
       "weaknesses": []
-    },
-    {
-      "playerId": "gwen",
-      "name": "Gwen",
-      "rank": 32,
-      "tier": "B",
-      "score": 70.2,
-      "title": "The Goth Icon",
-      "emoji": "\ud83d\udda4",
-      "reasoning": "Elite challenge engine (9 total wins). Constant heat all game (26 votes against). 4 CONSECUTIVE immunities (Ep 11-14) - FRANCHISE RECORD!. (S4). Lost fire-making to Alejandro. (S4). Across 3 season(s): avg placement 9.33.",
-      "strengths": [
-        "4 consecutive immunities (record)",
-        "Three seasons"
-      ],
-      "weaknesses": [
-        "Lost fire-making F4",
-        "26 votes total"
-      ],
-      "avgPlacement": 9.33,
-      "winRate": 0,
-      "wins": 0,
-      "seasonsPlayed": 3,
-      "placements": [
-        4,
-        8,
-        16
-      ],
-      "challengeWins": 9,
-      "votesAgainst": 26,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 58.21,
-      "winPercentile": 45.52,
-      "challengePercentile": 92.54,
-      "socialPercentile": 20.15,
-      "strategicPercentile": 77.61
     },
     {
       "playerId": "taylor",
       "tier": "B",
       "score": 70,
-      "rank": 33,
+      "rank": 34,
       "avgPlacement": 7,
       "winRate": 0,
       "placements": [
@@ -1129,7 +1244,7 @@
       "idolsFound": 0,
       "status": "Competed in Season 7 only",
       "title": "The Spoiled Princess",
-      "emoji": "\ud83d\udc85",
+      "emoji": "💅",
       "reasoning": "Taylor ran S7 social lanes with Jacques and Carrie, flipped to form Lawa #3, and survived repeated shots from Scott/Shawn. She won two immunities and still got idol'd out at F7 despite the majority. With 3 challenge wins and 11 votes against, her threat level was obvious. Rivalries with Tom and the enforcer duo kept her in the crosshairs all merge.",
       "strengths": [
         "Cross-lane brokerage and majority formation (Lawa #3)",
@@ -1151,11 +1266,11 @@
     {
       "playerId": "mike",
       "name": "Mike",
-      "rank": 34,
+      "rank": 35,
       "tier": "B",
       "score": 69,
       "title": "The Many Faces",
-      "emoji": "\ud83c\udfad",
+      "emoji": "🎭",
       "reasoning": "Eliminated 2-0 (Sierra's perfect idol). (S4). Blindsided while Zoey held immunity. (S3). Across 2 season(s): avg placement 9.00.",
       "strengths": [
         "Improved S4",
@@ -1185,11 +1300,11 @@
     {
       "playerId": "beth",
       "name": "Beth",
-      "rank": 35,
+      "rank": 36,
       "tier": "B",
       "score": 68.4,
       "title": "The Sweetheart",
-      "emoji": "\ud83e\uddc1",
+      "emoji": "🧁",
       "reasoning": "Constant heat all game (26 votes against). Opening rocks send to RI. (S6). Sent to RI on opening rocks; eliminated Episode 3 duel. (S6). Across 3 season(s): avg placement 9.33.",
       "strengths": [
         "Consistent challenge output (wins/season)."
@@ -1220,11 +1335,11 @@
     {
       "playerId": "dwayne",
       "name": "Dwayne",
-      "rank": 36,
+      "rank": 37,
       "tier": "B",
       "score": 67.6,
       "title": "The Dad",
-      "emoji": "\ud83d\udc68\u200d\ud83d\udc66",
+      "emoji": "👨‍👦",
       "reasoning": "Early stability bonds with Geoff/Mickey. (S6). First juror. (S3). Across 2 season(s): avg placement 10.50.",
       "strengths": [
         "Dad leader",
@@ -1253,10 +1368,54 @@
       "strategicPercentile": 28.36
     },
     {
+      "playerId": "gwen",
+      "name": "Gwen",
+      "rank": 38,
+      "tier": "B",
+      "score": 67.2,
+      "title": "The Shadow Marathoner",
+      "emoji": "🖤",
+      "reasoning": "Gwen's legacy is a strange mix of elite endurance and constant exposure: 9 challenge wins, 30 votes against, and a franchise-record four consecutive immunities in S4. Her best games came when she could stay quiet, observe the room, and let her physical game carry her deep, but her threat level kept catching up before the finale. S10 was a harsh epilogue, with a lost Journey vote making her Bowie's clean early target before Josee ended her Redemption run by inches.",
+      "strengths": [
+        "9 challenge wins",
+        "Four straight immunities in S4",
+        "Four-season veteran",
+        "Strong Redemption duel win over Sam"
+      ],
+      "weaknesses": [
+        "30 votes against",
+        "No finals across 4 seasons",
+        "Back-to-back 16th-place finishes"
+      ],
+      "avgPlacement": 11,
+      "winRate": 0,
+      "wins": 0,
+      "seasonsPlayed": 4,
+      "placements": [
+        4,
+        8,
+        16,
+        16
+      ],
+      "challengeWins": 9,
+      "votesAgainst": 30,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 58.21,
+      "winPercentile": 45.52,
+      "challengePercentile": 92.54,
+      "socialPercentile": 20.15,
+      "strategicPercentile": 77.61,
+      "scoreHistory": [
+        70.2,
+        67.2
+      ]
+    },
+    {
       "playerId": "shawn",
       "tier": "B",
       "score": 67,
-      "rank": 37,
+      "rank": 39,
       "avgPlacement": 9,
       "winRate": 0,
       "placements": [
@@ -1269,7 +1428,7 @@
       "idolsFound": 1,
       "status": "Competed in 2/7 seasons",
       "title": "The Zombie Guy",
-      "emoji": "\ud83e\udddf",
+      "emoji": "🧟",
       "reasoning": "Shawn plays intense: S5's Beware Idol/Shot in the Dark gamble backfired, and S7 centered on a feared duo with Scott and a loud feud with Kitty. He exited 9th both times, including a 5-4 knife-edge in S7. With 2 challenge wins, 1 idol found, and 17 votes against, he's a force in motion more than a long-term manager. His rivalry heat made him a message boot once the board stabilized.",
       "strengths": [
         "Drives targets and momentum alongside a loyal partner",
@@ -1292,11 +1451,11 @@
     {
       "playerId": "amy",
       "name": "Amy",
-      "rank": 38,
+      "rank": 40,
       "tier": "B",
       "score": 66.4,
       "title": "The Mean Twin",
-      "emoji": "\ud83d\ude08",
+      "emoji": "😈",
       "reasoning": "Across 1 season(s): avg placement 7.00.",
       "strengths": [
         "Made F7"
@@ -1324,7 +1483,7 @@
     {
       "playerId": "julia",
       "name": "Julia",
-      "rank": 39,
+      "rank": 41,
       "tier": "B",
       "score": 65.4,
       "wins": 0,
@@ -1338,19 +1497,19 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Ice Queen",
-      "emoji": "\ud83d\udca1",
-      "reasoning": "S9's ice-cold tactician. Julia manipulated Raj into leaving with an idol in his pocket and joined the Misfits to take down Ripper. She was a genuine endgame threat until Bowie ripped her idol at Tribal with Knowledge is Power. She still helped pull the Priya blindside \u2014 then went out at F4 when Bowie and Chase combined their extras to silence her entirely.",
+      "emoji": "💡",
+      "reasoning": "S9's ice-cold tactician. Julia manipulated Raj into leaving with an idol in his pocket and joined the Misfits to take down Ripper. She was a genuine endgame threat until Bowie ripped her idol at Tribal with Knowledge is Power. She still helped pull the Priya blindside — then went out at F4 when Bowie and Chase combined their extras to silence her entirely.",
       "strengths": [],
       "weaknesses": []
     },
     {
       "playerId": "sugar",
       "name": "Sugar",
-      "rank": 40,
+      "rank": 42,
       "tier": "B",
       "score": 65.2,
       "title": "The Pageant Menace",
-      "emoji": "\ud83d\udc78",
+      "emoji": "👸",
       "reasoning": "Across 1 season(s): avg placement 5.00.",
       "strengths": [
         "Made F5 despite 10 votes"
@@ -1380,11 +1539,11 @@
     {
       "playerId": "jo",
       "name": "Jo",
-      "rank": 41,
+      "rank": 43,
       "tier": "B",
       "score": 64.7,
       "title": "The Alpha Athlete",
-      "emoji": "\ud83d\udcaa",
+      "emoji": "💪",
       "reasoning": "5-3 revote at F9. (S4). Voted Emma at FTC. (S3). Across 2 season(s): avg placement 8.50.",
       "strengths": [
         "Fan Favorite",
@@ -1415,29 +1574,44 @@
     {
       "playerId": "priya",
       "name": "Priya",
-      "rank": 42,
+      "rank": 44,
       "tier": "B",
-      "score": 64.7,
+      "score": 63.9,
       "wins": 0,
-      "seasonsPlayed": 1,
+      "seasonsPlayed": 2,
       "placements": [
-        7
+        7,
+        8
       ],
-      "avgPlacement": 7,
-      "challengeWins": 1,
-      "votesAgainst": 9,
+      "avgPlacement": 7.5,
+      "challengeWins": 2,
+      "votesAgainst": 23,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "The Analyst",
-      "emoji": "\ud83d\udcca",
-      "reasoning": "S9's golden core. Priya built the New Red majority through cross-tribe bridging and was the strategic heartbeat of the post-merge. She survived a five-vote strike at F8 only because Millie played an idol on her and she burned an Extra Vote simultaneously. She fell in a coordinated 4-2-1 blindside at F6 that Bowie built specifically around removing her.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Relentless Reboot",
+      "emoji": "🏋️",
+      "reasoning": "Priya has become one of the franchise's most persistent mid-to-endgame threats, finishing 7th and 8th while constantly forcing majorities to account for her. In S9 she was the strategic heartbeat of the New Red majority, and in S10 she added a rugged Redemption arc with three straight duel wins plus an immediate merge immunity. Her problem is visibility: Bowie built two different exits around removing her, and her 23 votes against show how often the game identified her as too dangerous to leave alive.",
+      "strengths": [
+        "Back-to-back top 8 finishes",
+        "Three straight Redemption wins",
+        "Built S9 New Red majority",
+        "2 challenge wins"
+      ],
+      "weaknesses": [
+        "23 votes against in 2 seasons",
+        "Twice removed by Bowie plans",
+        "No finale appearance"
+      ],
+      "scoreHistory": [
+        64.7,
+        63.9
+      ],
+      "winRate": 0
     },
     {
       "playerId": "mk",
       "name": "MK",
-      "rank": 43,
+      "rank": 45,
       "tier": "B",
       "score": 62.3,
       "wins": 0,
@@ -1451,7 +1625,7 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Sly Schemer",
-      "emoji": "\ud83d\ude0f",
+      "emoji": "😏",
       "reasoning": "S9's stealthiest player. MK stayed low, kept her name off ballots, and won the F8 horror immunity when she needed it most. She never had a bad vote until Bowie's bloc went against her at F7 in a 4-2. A composed, analytical game that went further than it looked from the outside.",
       "strengths": [],
       "weaknesses": []
@@ -1459,11 +1633,11 @@
     {
       "playerId": "dave",
       "name": "Dave",
-      "rank": 44,
+      "rank": 46,
       "tier": "B",
       "score": 61.9,
       "title": "The Neurotic Strategist",
-      "emoji": "\ud83d\ude2c",
+      "emoji": "😬",
       "reasoning": "Across 1 season(s): avg placement 6.00.",
       "strengths": [
         "Made F6",
@@ -1494,11 +1668,11 @@
     {
       "playerId": "heather",
       "name": "Heather",
-      "rank": 45,
+      "rank": 47,
       "tier": "B",
       "score": 61.1,
       "title": "The Queen Bee",
-      "emoji": "\ud83d\udc51",
+      "emoji": "👑",
       "reasoning": "Constant heat all game (27 votes against). Strong advantage game (2 idols/advantages found). 7-2 vote. (S2). 3-2 at Episode 5. (S4). Across 3 season(s): avg placement 10.67.",
       "strengths": [
         "Above-average strategic impact and positioning.",
@@ -1530,11 +1704,11 @@
     {
       "playerId": "dawn",
       "name": "Dawn",
-      "rank": 46,
+      "rank": 48,
       "tier": "C",
       "score": 60,
       "title": "The Mystic",
-      "emoji": "\ud83d\udd2e",
+      "emoji": "🔮",
       "reasoning": "Voted Scott at FTC. (S3). Consensus target Episode 9. (S3). Across 1 season(s): avg placement 8.00.",
       "strengths": [
         "Strong average placement across seasons (deep runs)."
@@ -1564,11 +1738,11 @@
     {
       "playerId": "owen",
       "name": "Owen",
-      "rank": 47,
+      "rank": 49,
       "tier": "C",
       "score": 59.5,
       "title": "The Big Buddy",
-      "emoji": "\ud83c\udf57",
+      "emoji": "🍗",
       "reasoning": "Third boot after idol play. (S2). 5-1* vote. (S2). Across 2 season(s): avg placement 9.50.",
       "strengths": [
         "Consistent challenge output (wins/season)."
@@ -1598,43 +1772,52 @@
     {
       "playerId": "courtney",
       "name": "Courtney",
-      "rank": 48,
+      "rank": 50,
       "tier": "C",
-      "score": 59.2,
-      "title": "The Type-A Captain",
-      "emoji": "\ud83d\udccb",
-      "reasoning": "Constant heat all game (32 votes against). 3-2 vote. (S2). Major meltdown. (S4). Across 3 season(s): avg placement 11.33.",
+      "score": 59.1,
+      "title": "The Courtroom Wildfire",
+      "emoji": "⚖️",
+      "reasoning": "Courtney plays like every tribal is a closing argument, but across four seasons that intensity has produced more heat than control. She has 41 votes against, no challenge wins, and placements that keep stalling in the early-to-mid game despite flashes of usefulness like her S10 outbreak MVP work. Her latest run captured the full Courtney experience: fake idol chaos, credit-stealing, a landslide boot, and one last exit speech that detonated Cody and Bowie's idol on the way out.",
       "strengths": [
-        "Above-average strategic impact and positioning."
+        "Four-season veteran",
+        "Found/held an idol",
+        "S10 outbreak MVP",
+        "Fearless information bomber"
       ],
       "weaknesses": [
-        "Takes too many votes / limited jury support.",
-        "Limited challenge contribution compared to the field."
+        "41 votes against",
+        "0 challenge wins",
+        "Average placement outside top 10"
       ],
-      "avgPlacement": 11.33,
+      "avgPlacement": 12.25,
       "winRate": 0,
       "wins": 0,
-      "seasonsPlayed": 3,
+      "seasonsPlayed": 4,
       "placements": [
         14,
         11,
-        9
+        9,
+        15
       ],
       "challengeWins": 0,
-      "votesAgainst": 32,
+      "votesAgainst": 41,
       "juryVotes": 0,
       "idolsFound": 1,
       "placementPercentile": 43.28,
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 5.97,
-      "strategicPercentile": 77.61
+      "strategicPercentile": 77.61,
+      "scoreHistory": [
+        59.2,
+        59.1
+      ]
     },
     {
       "playerId": "kitty",
       "tier": "C",
       "score": 59,
-      "rank": 49,
+      "rank": 51,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -1647,7 +1830,7 @@
       "idolsFound": 3,
       "status": "Competed in 2/7 seasons",
       "title": "The Sunshine",
-      "emoji": "\ud83d\ude3a",
+      "emoji": "😺",
       "reasoning": "Kitty thrives in chaos: 3 idols found across seasons and the S7 double-idol masterstroke that erased eight votes and boomeranged Pete out. In S6 she burned protection trying to shape power and got split-voted out; in S7 her feud with Shawn made every round volatile before she was cut at 11th. With 2 challenge wins and 28 votes against, she weaponizes fear and timing more than safety. She can be a loyal spark, but the blowback is immediate once the smoke clears.",
       "strengths": [
         "Top-tier idol hunting and high-pressure reads",
@@ -1671,7 +1854,7 @@
       "playerId": "laurie",
       "tier": "C",
       "score": 59,
-      "rank": 50,
+      "rank": 52,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -1683,7 +1866,7 @@
       "idolsFound": 0,
       "status": "Competed in Season 7 only",
       "title": "The Nature Girl",
-      "emoji": "\ud83c\udf3f",
+      "emoji": "🌿",
       "reasoning": "Laurie lived in conflict and chaos in S7, feuding with Cody and drifting as a minority vote before serving as a merge number. She was finally cut 5-3-2 at 10th when the tribe wanted the heat to cool. With 3 challenge wins and 8 votes against, her presence was loud but rarely central. Ties to Taylor helped, but the Cody war defined her arc.",
       "strengths": [
         "Fearless confrontation that can force clarity",
@@ -1705,11 +1888,11 @@
     {
       "playerId": "max",
       "name": "Max",
-      "rank": 51,
+      "rank": 53,
       "tier": "C",
       "score": 57.8,
       "title": "The Evil Genius",
-      "emoji": "\ud83e\uddea",
+      "emoji": "🧪",
       "reasoning": "Across 1 season(s): avg placement 10.00.",
       "strengths": [
         "Strong average placement across seasons (deep runs)."
@@ -1737,11 +1920,11 @@
     {
       "playerId": "leshawna",
       "name": "Leshawna",
-      "rank": 52,
+      "rank": 54,
       "tier": "C",
       "score": 57.8,
       "title": "The Real One",
-      "emoji": "\u2728",
+      "emoji": "✨",
       "reasoning": "6-1 vote. (S2). Second boot. (S2). Across 2 season(s): avg placement 12.00.",
       "strengths": [
         "Consistent challenge output (wins/season)."
@@ -1772,7 +1955,7 @@
     {
       "playerId": "axel",
       "name": "Axel",
-      "rank": 53,
+      "rank": 55,
       "tier": "C",
       "score": 57,
       "wins": 0,
@@ -1786,8 +1969,8 @@
       "juryVotes": 2,
       "idolsFound": 0,
       "title": "The Lumberjack",
-      "emoji": "\ud83e\ude93",
-      "reasoning": "S9's physical force. Axel survived the Ep2 rock draw, helped execute a clean 3-0 on Nichelle, and won merge immunity in Ep8. She was tight with Bowie and Ripper but found herself on the wrong side of the numbers post-merge and fell 4-1 at F9. Left with a stronger r\u00e9sum\u00e9 than her placement shows.",
+      "emoji": "🪓",
+      "reasoning": "S9's physical force. Axel survived the Ep2 rock draw, helped execute a clean 3-0 on Nichelle, and won merge immunity in Ep8. She was tight with Bowie and Ripper but found herself on the wrong side of the numbers post-merge and fell 4-1 at F9. Left with a stronger résumé than her placement shows.",
       "strengths": [],
       "weaknesses": []
     },
@@ -1795,7 +1978,7 @@
       "playerId": "pete",
       "tier": "C",
       "score": 56.8,
-      "rank": 54,
+      "rank": 56,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -1808,7 +1991,7 @@
       "idolsFound": 1,
       "status": "Competed in Season 7 only",
       "title": "The Old-School Coach",
-      "emoji": "\ud83e\uddd3",
+      "emoji": "🧓",
       "reasoning": "Pete played the S7 middle with an Exile extra vote, clashed with Carrie/Kitty, and took a swing at Kitty on Idol Night-only to be the fallback when her double-idol detonated. He left at 12th despite 1 challenge win and 5 votes against. His reads were bold; the board just broke perfectly against him. Links with Taylor and Tom couldn't overcome the post-firewall pivot.",
       "strengths": [
         "Grabs and uses advantages to press edges",
@@ -1830,11 +2013,11 @@
     {
       "playerId": "topher",
       "name": "Topher",
-      "rank": 55,
+      "rank": 57,
       "tier": "C",
       "score": 56.6,
       "title": "The Host Wannabe",
-      "emoji": "\ud83c\udfac",
+      "emoji": "🎬",
       "reasoning": "Across 1 season(s): avg placement 11.00.",
       "strengths": [
         "Above-average strategic impact and positioning."
@@ -1862,7 +2045,7 @@
     {
       "playerId": "wayne",
       "name": "Wayne",
-      "rank": 56,
+      "rank": 58,
       "tier": "C",
       "score": 56.5,
       "wins": 0,
@@ -1876,54 +2059,61 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Hockey Bro",
-      "emoji": "\ud83c\udfd2",
-      "reasoning": "S9's loyal bruiser who drew the wrong cards at the wrong time. He won the Ep2 summit and picked up an Extra Vote \u2014 then lost it when Emmah lifted it with Knowledge is Power. He missed his Shot in the Dark at F9 and went out 5-0 the same episode Millie's idol and Priya's Extra Vote rewrote the ballot.",
+      "emoji": "🏒",
+      "reasoning": "S9's loyal bruiser who drew the wrong cards at the wrong time. He won the Ep2 summit and picked up an Extra Vote — then lost it when Emmah lifted it with Knowledge is Power. He missed his Shot in the Dark at F9 and went out 5-0 the same episode Millie's idol and Priya's Extra Vote rewrote the ballot.",
       "strengths": [],
       "weaknesses": []
     },
     {
-      "playerId": "josee",
-      "name": "Josee",
-      "rank": 57,
+      "playerId": "stephanie",
+      "name": "Stephanie",
+      "rank": 59,
       "tier": "C",
-      "score": 55.2,
-      "title": "The Ice Queen",
-      "emoji": "\u26f8\ufe0f",
-      "reasoning": "Booted 6-1 as a consensus. (S6). Multiple meltdowns on Galang. (S6). Across 2 season(s): avg placement 12.50.",
+      "score": 55.1,
+      "title": "The Unspent Fuse",
+      "emoji": "🧨",
+      "reasoning": "Stephanie's game is defined by weapons she almost gets to use and relationships she almost stabilizes. In S10 she found a Vote Steal, helped form the Chaos Crew, and built enough one-on-one bonds to look dangerous, but her fights and shifting loyalties left her without a firm home. Being eliminated by ambassador agreement instead of a vote feels fitting: the room saw the possible explosion and cut the wire before she could light it.",
       "strengths": [
-        "Low target profile and/or strong jury appeal."
+        "Found a Vote Steal",
+        "Only 1 vote against across 2 seasons",
+        "Strong one-on-one dealmaking",
+        "Helped form Chaos Crew"
       ],
       "weaknesses": [
-        "Little evidence of consistent strategic control.",
-        "Limited challenge contribution compared to the field.",
-        "Inconsistent results / early exits drag down average placement."
+        "Never reached top 10",
+        "Unused advantage legacy",
+        "Social game frays under pressure"
       ],
-      "avgPlacement": 12.5,
+      "avgPlacement": 12,
       "winRate": 0,
       "wins": 0,
       "seasonsPlayed": 2,
       "placements": [
         13,
-        12
+        11
       ],
       "challengeWins": 0,
-      "votesAgainst": 6,
+      "votesAgainst": 1,
       "juryVotes": 0,
-      "idolsFound": 1,
-      "placementPercentile": 33.58,
+      "idolsFound": 0,
+      "placementPercentile": 29.85,
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
-      "socialPercentile": 65.67,
-      "strategicPercentile": 24.63
+      "socialPercentile": 87.31,
+      "strategicPercentile": 24.63,
+      "scoreHistory": [
+        49,
+        55.1
+      ]
     },
     {
       "playerId": "noah",
       "name": "Noah",
-      "rank": 58,
+      "rank": 60,
       "tier": "C",
       "score": 54.6,
       "title": "The Snark King",
-      "emoji": "\ud83d\ude43",
+      "emoji": "🙃",
       "reasoning": "TRIPLE IDOL TRIBAL (played idol). (S4). 4-3 vote. (S1). Across 2 season(s): avg placement 12.00.",
       "strengths": [
         "Above-average strategic impact and positioning."
@@ -1955,7 +2145,7 @@
       "playerId": "brody",
       "tier": "C",
       "score": 54.5,
-      "rank": 59,
+      "rank": 61,
       "avgPlacement": 13.666666666666666,
       "winRate": 0,
       "placements": [
@@ -1969,7 +2159,7 @@
       "idolsFound": 0,
       "status": "Competed in 2/7 seasons",
       "title": "The Hunky Helper",
-      "emoji": "\ud83c\udfcb\ufe0f\u200d\u2642\ufe0f",
+      "emoji": "🏋️‍♂️",
       "reasoning": "Brody's game leaned on grit: in S6 he outlasted heat, returned from Redemption, and even snagged an immunity before getting cut 4-2 at 7th. In S7 he never found structure and became the easy consensus boot at 18th. With 1 challenge win, 33 votes against, and zero idols, his threat came from endurance more than position. Loyal to Geoff and the Surfers vibe, he struggled to shake rival heat from Ryan and Mickey and later MacArthur.",
       "strengths": [
         "Endurance-based performance under harsh conditions",
@@ -1992,11 +2182,11 @@
     {
       "playerId": "dj",
       "name": "DJ",
-      "rank": 60,
+      "rank": 62,
       "tier": "C",
       "score": 54,
       "title": "The Gentle Giant",
-      "emoji": "\ud83d\udc3b",
+      "emoji": "🐻",
       "reasoning": "9 votes in Episode 3. (S1). 4-1 vote at Final Five. (S2). Across 2 season(s): avg placement 13.50.",
       "strengths": [
         "Above-average strategic impact and positioning."
@@ -2027,11 +2217,11 @@
     {
       "playerId": "harold",
       "name": "Harold",
-      "rank": 61,
+      "rank": 63,
       "tier": "C",
       "score": 54,
       "title": "The Ninja Nerd",
-      "emoji": "\ud83e\udd77",
+      "emoji": "🥷",
       "reasoning": "Held idol without playing it. (S1). 4-3-2 vote. (S1). Across 2 season(s): avg placement 12.50.",
       "strengths": [
         "Consistent challenge output (wins/season).",
@@ -2060,9 +2250,89 @@
       "strategicPercentile": 77.61
     },
     {
+      "playerId": "josee",
+      "name": "Josee",
+      "rank": 64,
+      "tier": "C",
+      "score": 53.6,
+      "title": "The Fury Duelist",
+      "emoji": "🔥",
+      "reasoning": "Josee has never been a clean strategic operator, but she is rarely boring and never soft. Across three seasons, her placements remain stuck in the teens, yet S10 gave her a real fighting chapter: surviving a tiebreak scare, bonding hard with Jasmine and Brick, then beating Gwen and Courtney on Redemption Island. The issue is that her fire makes her visible before it makes her powerful, and Priya finally exposed the ceiling of Josee's rage-fueled survival game.",
+      "strengths": [
+        "Two S10 Redemption wins",
+        "Ride-or-die loyalty",
+        "Idol possession across career",
+        "High competitive grit"
+      ],
+      "weaknesses": [
+        "No top 10 finishes",
+        "Combustible social game",
+        "0 challenge wins"
+      ],
+      "avgPlacement": 13,
+      "winRate": 0,
+      "wins": 0,
+      "seasonsPlayed": 3,
+      "placements": [
+        13,
+        12,
+        14
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 12,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 33.58,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 65.67,
+      "strategicPercentile": 24.63,
+      "scoreHistory": [
+        55.2,
+        53.6
+      ]
+    },
+    {
+      "playerId": "hicks",
+      "name": "Hicks",
+      "rank": 65,
+      "tier": "C",
+      "score": 53.2,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        14,
+        12
+      ],
+      "avgPlacement": 13,
+      "challengeWins": 0,
+      "votesAgainst": 12,
+      "juryVotes": 0,
+      "idolsFound": 3,
+      "title": "The Trusting Scanner",
+      "emoji": "🔎",
+      "reasoning": "Hicks reads the board better than most players ranked around him, spotting idols, tells, cracks, and vote structures before the room fully catches up. His S9 early game had real promise, and S10 doubled down on his information-first style with another idol find and a central role in Contender politics. But his career keeps ending as collateral damage, and handing an idol to Scott before being voted out is the clearest symbol of his gap between awareness and self-protection.",
+      "strengths": [
+        "3 career idols",
+        "Sharp early-game reads",
+        "Strong information network",
+        "Led early consensus plans"
+      ],
+      "weaknesses": [
+        "Trusting with advantages",
+        "No top 10 finishes",
+        "0 challenge wins"
+      ],
+      "scoreHistory": [
+        44.4,
+        53.2
+      ],
+      "winRate": 0
+    },
+    {
       "playerId": "ripper",
       "name": "Ripper",
-      "rank": 62,
+      "rank": 66,
       "tier": "C",
       "score": 53,
       "wins": 0,
@@ -2076,19 +2346,19 @@
       "juryVotes": 2,
       "idolsFound": 1,
       "title": "The Wild Card",
-      "emoji": "\ud83d\udca8",
-      "reasoning": "S9's chaos engine. Ripper idoled four votes in Ep2 and caused the season's rock draw \u2014 one of the franchise's most dramatic early-game moments. He survived Ep3 when both he and Nichelle burned Shot in the Dark simultaneously, then coasted under Bowie's wing until Emmah double-voted him out at the merge.",
+      "emoji": "💨",
+      "reasoning": "S9's chaos engine. Ripper idoled four votes in Ep2 and caused the season's rock draw — one of the franchise's most dramatic early-game moments. He survived Ep3 when both he and Nichelle burned Shot in the Dark simultaneously, then coasted under Bowie's wing until Emmah double-voted him out at the merge.",
       "strengths": [],
       "weaknesses": []
     },
     {
       "playerId": "katie",
       "name": "Katie",
-      "rank": 63,
+      "rank": 67,
       "tier": "C",
       "score": 52.8,
       "title": "The BFF",
-      "emoji": "\ud83d\udc6d",
+      "emoji": "👭",
       "reasoning": "5-3-3*-1 vote. (S1). Part of MAPLV. (S1). Across 1 season(s): avg placement 12.00.",
       "strengths": [
         "Above-average strategic impact and positioning."
@@ -2117,11 +2387,11 @@
     {
       "playerId": "sadie",
       "name": "Sadie",
-      "rank": 64,
+      "rank": 68,
       "tier": "C",
       "score": 52.2,
       "title": "The BFF",
-      "emoji": "\ud83d\udc97",
+      "emoji": "💗",
       "reasoning": "PERFECT GAME: ZERO votes against. Rock draw elimination. (S1). Part of MAPLV. (S1). Across 1 season(s): avg placement 13.00.",
       "strengths": [
         "Low target profile and/or strong jury appeal."
@@ -2150,11 +2420,11 @@
     {
       "playerId": "rodney",
       "name": "Rodney",
-      "rank": 65,
+      "rank": 69,
       "tier": "C",
       "score": 51,
       "title": "The Loverboy",
-      "emoji": "\ud83d\udc9e",
+      "emoji": "💞",
       "reasoning": "Across 1 season(s): avg placement 12.00.",
       "strengths": [
         "Above-average strategic impact and positioning."
@@ -2184,11 +2454,11 @@
     {
       "playerId": "sierra",
       "name": "Sierra",
-      "rank": 66,
+      "rank": 70,
       "tier": "D",
       "score": 50.1,
       "title": "The Superfan",
-      "emoji": "\ud83d\udce3",
+      "emoji": "📣",
       "reasoning": "BIGGEST target profile in the cast (39 votes against). Perfect idol play (10 votes cancelled!). (S4). 6-4 vote. (S1). Across 2 season(s): avg placement 10.50.",
       "strengths": [
         "Strong average placement across seasons (deep runs)."
@@ -2219,11 +2489,11 @@
     {
       "playerId": "anne-maria",
       "name": "Anne Maria",
-      "rank": 67,
+      "rank": 71,
       "tier": "D",
       "score": 50,
       "title": "The Jersey Diva",
-      "emoji": "\ud83d\udc84",
+      "emoji": "💄",
       "reasoning": "WASTED idol on Zoey (0 votes!). (S4). Voted Emma at FTC. (S3). Across 2 season(s): avg placement 10.50.",
       "strengths": [
         "Consistent challenge output (wins/season)."
@@ -2253,11 +2523,11 @@
     {
       "playerId": "lightning",
       "name": "Lightning",
-      "rank": 68,
+      "rank": 72,
       "tier": "D",
       "score": 50,
       "title": "The Jock",
-      "emoji": "\u26a1",
+      "emoji": "⚡",
       "reasoning": "Constant heat all game (25 votes against). Strong advantage game (2 idols/advantages found). TRIPLE IDOL TRIBAL (Ep 5 Part 2). (S4). WORST idol play ever (wasted on Emma). (S3). Across 2 season(s): avg placement 12.00.",
       "strengths": [
         "High win conversion rate when they play."
@@ -2286,43 +2556,9 @@
       "strategicPercentile": 11.19
     },
     {
-      "playerId": "stephanie",
-      "name": "Stephanie",
-      "rank": 69,
-      "tier": "D",
-      "score": 49,
-      "title": "The Control Freak",
-      "emoji": "\ud83d\udca2",
-      "reasoning": "ZERO votes against across appearances. Voted out Episode 6 (6-1); threw an idol clue into the fire on RI. (S6). Burned an idol clue on RI. (S6). Across 1 season(s): avg placement 13.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Little evidence of consistent strategic control.",
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 13,
-      "winRate": 0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        13
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 29.85,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 87.31,
-      "strategicPercentile": 24.63
-    },
-    {
       "playerId": "brightly",
       "name": "Brightly",
-      "rank": 70,
+      "rank": 73,
       "tier": "D",
       "score": 48.8,
       "wins": 0,
@@ -2336,19 +2572,60 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Mad Scientist",
-      "emoji": "\ud83d\udd2c",
-      "reasoning": "S9's most underrated player. Brightly orchestrated the Zee boot on Day 1 and moved immediately to target Emmah as a liability \u2014 Hicks flipped and saved Emmah instead, ending Brightly's game at F13. She had the clearest read on the season's social dynamics of any pre-merger but left too early for the r\u00e9sum\u00e9 to reflect it.",
+      "emoji": "🔬",
+      "reasoning": "S9's most underrated player. Brightly orchestrated the Zee boot on Day 1 and moved immediately to target Emmah as a liability — Hicks flipped and saved Emmah instead, ending Brightly's game at F13. She had the clearest read on the season's social dynamics of any pre-merger but left too early for the résumé to reflect it.",
       "strengths": [],
       "weaknesses": []
     },
     {
+      "playerId": "sam",
+      "name": "Sam",
+      "rank": 74,
+      "tier": "D",
+      "score": 47.6,
+      "title": "The Eager Underdog",
+      "emoji": "🎮",
+      "reasoning": "Sam's ranking still gets a little lift from his odd S3 stat line, where he left by rock draw without ever receiving a vote. S10 was much rougher: he tried to provide camp value and prove he belonged, but one vulnerable tribal turned into a tie, a tiebreak loss, and a first boot trajectory through Redemption. His effort against Gwen in Hand on Idol was sincere, but Sam's game has usually been more heart than leverage.",
+      "strengths": [
+        "S3 never voted for",
+        "Camp morale contributor",
+        "Nearly outlasted Gwen on Redemption"
+      ],
+      "weaknesses": [
+        "S10 first boot",
+        "No challenge wins",
+        "Limited strategic footprint"
+      ],
+      "avgPlacement": 15.5,
+      "winRate": 0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        13,
+        18
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 4,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 29.85,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 6.72,
+      "scoreHistory": [
+        45,
+        47.6
+      ]
+    },
+    {
       "playerId": "izzy",
       "name": "Izzy",
-      "rank": 71,
+      "rank": 75,
       "tier": "D",
       "score": 47.4,
       "title": "The Chaos Gremlin",
-      "emoji": "\ud83e\udd2a",
+      "emoji": "🤪",
       "reasoning": "5-4 vote. (S1). Tribe swap casualty. (S1). Across 1 season(s): avg placement 18.00.",
       "strengths": [
         "Above-average strategic impact and positioning."
@@ -2377,11 +2654,11 @@
     {
       "playerId": "mary",
       "name": "Mary",
-      "rank": 72,
+      "rank": 76,
       "tier": "D",
       "score": 47,
       "title": "The Brain",
-      "emoji": "\ud83d\udcda",
+      "emoji": "📚",
       "reasoning": "ZERO votes against across appearances. Idoled out at swap vote. (S6). Idol casualty Episode 7 (Kelly's idol negated majority). (S6). Across 1 season(s): avg placement 14.00.",
       "strengths": [
         "Low target profile and/or strong jury appeal."
@@ -2408,46 +2685,9 @@
       "strategicPercentile": 50
     },
     {
-      "playerId": "jasmine",
-      "tier": "D",
-      "score": 47,
-      "rank": 73,
-      "avgPlacement": 13.5,
-      "winRate": 0,
-      "placements": [
-        14,
-        13
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 11,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "status": "Competed in 2/7 seasons",
-      "title": "The Jungle Queen",
-      "emoji": "\ud83d\udc0a",
-      "reasoning": "Jasmine played steady and respected, but twice got clipped as the easy compromise: a mid-early exit in S5 and the first juror in S7 (7-4-2). She entered S7 merge looking like a stable finalist type, which made her the safest 'unity' boot. With 0 challenge wins, no idols, and 11 votes against, her capital was social, not flashy. Bonds with Cody/Brody helped, but a simmering dislike with Lindsay and split boards made her expendable.",
-      "strengths": [
-        "Calm campsite leadership that lowers tribe friction",
-        "Respected presence that earns middle-position trust",
-        "Consistent reads without overplaying advantages"
-      ],
-      "weaknesses": [
-        "Early-merge 'safe boot' aura in fractured votes",
-        "No advantages or immunity runs to deter consensus",
-        "Limited late-game leverage against strong blocs"
-      ],
-      "name": "Jasmine",
-      "seasonsList": [
-        5,
-        7
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0
-    },
-    {
       "playerId": "raj",
       "name": "Raj",
-      "rank": 74,
+      "rank": 77,
       "tier": "D",
       "score": 46.8,
       "wins": 0,
@@ -2461,50 +2701,16 @@
       "juryVotes": 0,
       "idolsFound": 1,
       "title": "The Gentle Giant",
-      "emoji": "\ud83d\udee1\ufe0f",
-      "reasoning": "S9's most painful exit. Raj secured the Blue Beware advantage in Ep2 and completed his idol \u2014 then walked out of Ep7 tribal with it untouched after Julia manipulated the vote around him. He never saw it coming. An unfortunate end to a player with the social tools to go much deeper.",
+      "emoji": "🛡️",
+      "reasoning": "S9's most painful exit. Raj secured the Blue Beware advantage in Ep2 and completed his idol — then walked out of Ep7 tribal with it untouched after Julia manipulated the vote around him. He never saw it coming. An unfortunate end to a player with the social tools to go much deeper.",
       "strengths": [],
       "weaknesses": []
-    },
-    {
-      "playerId": "sam",
-      "name": "Sam",
-      "rank": 75,
-      "tier": "D",
-      "score": 45,
-      "title": "The Gamer",
-      "emoji": "\ud83c\udfae",
-      "reasoning": "PERFECT GAME: ZERO votes against. Rock draw elimination. (S3). NEVER voted for. (S3). Across 1 season(s): avg placement 13.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Little evidence of consistent strategic control.",
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 13,
-      "winRate": 0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        13
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 29.85,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 87.31,
-      "strategicPercentile": 6.72
     },
     {
       "playerId": "devin",
       "tier": "D",
       "score": 45,
-      "rank": 76,
+      "rank": 78,
       "avgPlacement": 14,
       "winRate": 0,
       "placements": [
@@ -2516,7 +2722,7 @@
       "idolsFound": 0,
       "status": "Competed in Season 7 only",
       "title": "The Loyal Boyfriend",
-      "emoji": "\ud83d\udc8d",
+      "emoji": "💍",
       "reasoning": "Devin's S7 started with real social traction among the Fans (Carrie, Taylor), but swap attitudes from Favorites hardened and he fell 4-3. With 0 challenge wins, no idols, and 4 votes against, he lacked the shield or advantage to survive Scott/Shawn's push and Jacques' flip. His instincts to connect were sound; the cover wasn't. Once the board framed him as expendable, the window shut fast.",
       "strengths": [
         "Quick to build early trust and soft alliances",
@@ -2536,35 +2742,55 @@
       "wins": 0
     },
     {
-      "playerId": "hicks",
-      "name": "Hicks",
-      "rank": 77,
+      "playerId": "tyler",
+      "name": "Tyler",
+      "rank": 79,
       "tier": "D",
-      "score": 44.4,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        14
+      "score": 43.4,
+      "title": "The Heartfirst Liability",
+      "emoji": "💪",
+      "reasoning": "Tyler's S10 run gave him more emotional texture than his disastrous S1 showing, with real bonds to Brick and Jasmine and a clearer sense of loyalty. Unfortunately, the same sincerity that made him likable also made his position easy to map, especially once the Tyler-Jasmine duo became public. Add in Dodgebrawl weakness, a Basic Straining quit, and 11 votes against, and his franchise story remains that of a good-hearted player the game keeps outpacing.",
+      "strengths": [
+        "Loyal social bonds",
+        "Improved from 23rd to 13th",
+        "Called out Bowie's control",
+        "Showmance shield potential"
       ],
-      "avgPlacement": 14,
+      "weaknesses": [
+        "Challenge liability label",
+        "0 challenge wins",
+        "Obvious pair with Jasmine"
+      ],
+      "avgPlacement": 18,
+      "winRate": 0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        23,
+        13
+      ],
       "challengeWins": 0,
-      "votesAgainst": 6,
+      "votesAgainst": 11,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "The Country Boy",
-      "emoji": "\ud83e\udd20",
-      "reasoning": "S9's sharp early game cut short by bad timing. Hicks led the Day 1 consensus on Zee without taking any heat, then saved Emmah in a risky Ep4 pivot that blindsided Caleb. He fell at F14 in a revote triggered by Chase's idol \u2014 exactly the kind of collateral damage that ends good games fast.",
-      "strengths": [],
-      "weaknesses": []
+      "placementPercentile": 0,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 24.63,
+      "strategicPercentile": 50,
+      "scoreHistory": [
+        22,
+        43.4
+      ]
     },
     {
       "playerId": "samey",
       "name": "Samey",
-      "rank": 78,
+      "rank": 80,
       "tier": "D",
       "score": 42,
       "title": "The Sweet Twin",
-      "emoji": "\ud83d\ude07",
+      "emoji": "😇",
       "reasoning": "Across 1 season(s): avg placement 15.00.",
       "strengths": [
         "Low target profile and/or strong jury appeal."
@@ -2594,7 +2820,7 @@
       "playerId": "lorenzo",
       "tier": "D",
       "score": 42,
-      "rank": 79,
+      "rank": 81,
       "avgPlacement": 16,
       "winRate": 0,
       "placements": [
@@ -2606,7 +2832,7 @@
       "idolsFound": 0,
       "status": "Competed in Season 7 only",
       "title": "The Hothead",
-      "emoji": "\ud83e\udd4a",
+      "emoji": "🥊",
       "reasoning": "Lorenzo survived the S7 swap by flipping to help boot Brody, but the disciplined Mauhu trio (MacArthur/Sky/Tom) snuffed him 3-2 next. With 0 challenge wins, no idols, and 4 votes against, his opportunism bought only a brief extension. Bonding with Pete was real, but not enough to break structure. Once the majority solidified, he had no wedge.",
       "strengths": [
         "Willingness to flip early for survival",
@@ -2628,7 +2854,7 @@
     {
       "playerId": "caleb",
       "name": "Caleb",
-      "rank": 80,
+      "rank": 82,
       "tier": "D",
       "score": 41.4,
       "wins": 0,
@@ -2642,19 +2868,19 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Cool Kid",
-      "emoji": "\ud83d\ude0e",
-      "reasoning": "S9's first real elimination. Caleb never found his footing before the numbers turned \u2014 he missed the Ep4 SID play that could have saved him when Hicks and Emmah flipped his way. Left before his game had a chance to develop.",
+      "emoji": "😎",
+      "reasoning": "S9's first real elimination. Caleb never found his footing before the numbers turned — he missed the Ep4 SID play that could have saved him when Hicks and Emmah flipped his way. Left before his game had a chance to develop.",
       "strengths": [],
       "weaknesses": []
     },
     {
       "playerId": "junior",
       "name": "Junior",
-      "rank": 81,
+      "rank": 83,
       "tier": "D",
       "score": 41,
       "title": "The Kid",
-      "emoji": "\ud83e\uddd2",
+      "emoji": "🧒",
       "reasoning": "ZERO votes against across appearances. Survived early RI duels. (S6). Initial 6-2 vote amid liability framing. (S6). Across 1 season(s): avg placement 15.00.",
       "strengths": [
         "Low target profile and/or strong jury appeal."
@@ -2684,7 +2910,7 @@
     {
       "playerId": "chet",
       "name": "Chet",
-      "rank": 82,
+      "rank": 84,
       "tier": "D",
       "score": 40.1,
       "wins": 0,
@@ -2698,7 +2924,7 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Nice Guy",
-      "emoji": "\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1",
+      "emoji": "🧑‍🤝‍🧑",
       "reasoning": "S8's steady pre-merge presence. Chet survived the opening 3-3 tie against Miles and stayed under the radar as a provider, but fell on a 2-0 revote in Ep4. He never found his strategic footing but left without enemies.",
       "strengths": [],
       "weaknesses": []
@@ -2706,11 +2932,11 @@
     {
       "playerId": "ennui",
       "name": "Ennui",
-      "rank": 83,
+      "rank": 85,
       "tier": "D",
       "score": 40,
       "title": "The Deadpan Goth",
-      "emoji": "\ud83d\ude11",
+      "emoji": "😑",
       "reasoning": "ZERO votes against across appearances. Voted out 6-3. (S6). Feuded with Jay pre-tribal. (S6). Across 1 season(s): avg placement 16.00.",
       "strengths": [
         "Low target profile and/or strong jury appeal."
@@ -2740,11 +2966,11 @@
     {
       "playerId": "beardo",
       "name": "Beardo",
-      "rank": 84,
+      "rank": 86,
       "tier": "D",
       "score": 39,
       "title": "The Soundboard",
-      "emoji": "\ud83d\udd0a",
+      "emoji": "🔊",
       "reasoning": "Across 1 season(s): avg placement 16.00.",
       "strengths": [
         "Low target profile and/or strong jury appeal."
@@ -2773,7 +2999,7 @@
     {
       "playerId": "nichelle",
       "name": "Nichelle",
-      "rank": 85,
+      "rank": 87,
       "tier": "D",
       "score": 38.1,
       "wins": 0,
@@ -2787,19 +3013,19 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Actress",
-      "emoji": "\ud83c\udfac",
-      "reasoning": "S9's unluckiest exit. Nichelle was on the wrong end of the Ep2 rock draw through no fault of her own, then tried to fight back with Shot in the Dark in Ep3 and lost \u2014 going 3-0 as both she and Ripper burned their advantages simultaneously.",
+      "emoji": "🎬",
+      "reasoning": "S9's unluckiest exit. Nichelle was on the wrong end of the Ep2 rock draw through no fault of her own, then tried to fight back with Shot in the Dark in Ep3 and lost — going 3-0 as both she and Ripper burned their advantages simultaneously.",
       "strengths": [],
       "weaknesses": []
     },
     {
       "playerId": "justin",
       "name": "Justin",
-      "rank": 86,
+      "rank": 88,
       "tier": "D",
       "score": 38,
       "title": "The Model",
-      "emoji": "\ud83d\ude0e",
+      "emoji": "😎",
       "reasoning": "Found idol early but didn't play it. (S1). First juror after Ezekiel's idol play. (S2). Across 2 season(s): avg placement 17.00.",
       "strengths": [
         "Above-average strategic impact and positioning."
@@ -2830,11 +3056,11 @@
     {
       "playerId": "ella",
       "name": "Ella",
-      "rank": 87,
+      "rank": 89,
       "tier": "D",
       "score": 38,
       "title": "The Disney Princess",
-      "emoji": "\ud83d\udc26",
+      "emoji": "🐦",
       "reasoning": "Across 1 season(s): avg placement 17.00.",
       "strengths": [
         "Low target profile and/or strong jury appeal."
@@ -2863,11 +3089,11 @@
     {
       "playerId": "tammy",
       "name": "Tammy",
-      "rank": 88,
+      "rank": 90,
       "tier": "D",
       "score": 37,
       "title": "The Cosplayer",
-      "emoji": "\ud83c\udfb2",
+      "emoji": "🎲",
       "reasoning": "ZERO votes against across appearances. High-end strategist (best rank: #3). Eliminated on RI. (S6). Swapped with Leonard. (S6). Across 1 season(s): avg placement 17.00.",
       "strengths": [
         "Low target profile and/or strong jury appeal."
@@ -2898,7 +3124,7 @@
       "playerId": "spud",
       "tier": "D",
       "score": 37,
-      "rank": 89,
+      "rank": 91,
       "avgPlacement": 17,
       "winRate": 0,
       "placements": [
@@ -2910,7 +3136,7 @@
       "idolsFound": 0,
       "status": "Competed in Season 7 only",
       "title": "The Sleepy One",
-      "emoji": "\ud83d\ude34",
+      "emoji": "😴",
       "reasoning": "Spud's S7 ended in joint-tribal crossfire where overlapping groups converged and he became the cleanest consensus (5-3-3). He had early bonds with Devin and light ties to MacArthur, but no protection or leverage. With 0 challenge wins, no idols, and 5 votes against, he couldn't rise above the chaos. His game was more vibes than vectors.",
       "strengths": [
         "Generally likable and low-conflict presence",
@@ -2932,7 +3158,7 @@
     {
       "playerId": "scary-girl",
       "name": "Scary Girl",
-      "rank": 90,
+      "rank": 92,
       "tier": "D",
       "score": 36.5,
       "wins": 0,
@@ -2946,15 +3172,15 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Goth",
-      "emoji": "\ud83d\udda4",
-      "reasoning": "S9's wildcard gone too soon. Scary Girl pulled the short rock at the Ep2 0-0 idol council \u2014 the season's most chaotic early moment \u2014 and was gone before she had a chance to show what her game was. Impossible to evaluate fairly on placement alone.",
+      "emoji": "🖤",
+      "reasoning": "S9's wildcard gone too soon. Scary Girl pulled the short rock at the Ep2 0-0 idol council — the season's most chaotic early moment — and was gone before she had a chance to show what her game was. Impossible to evaluate fairly on placement alone.",
       "strengths": [],
       "weaknesses": []
     },
     {
       "playerId": "rock",
       "name": "Rock",
-      "rank": 91,
+      "rank": 93,
       "tier": "D",
       "score": 36.1,
       "wins": 0,
@@ -2968,15 +3194,15 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Rocker",
-      "emoji": "\ud83c\udfb8",
-      "reasoning": "S8's unlucky early exit. Rock got caught in Civilian feud crossfire and was voted out 3-2 in Ep2 \u2014 a victim of tribal politics more than anything he did wrong. Left before his game had a chance to open up.",
+      "emoji": "🎸",
+      "reasoning": "S8's unlucky early exit. Rock got caught in Civilian feud crossfire and was voted out 3-2 in Ep2 — a victim of tribal politics more than anything he did wrong. Left before his game had a chance to open up.",
       "strengths": [],
       "weaknesses": []
     },
     {
       "playerId": "zee",
       "name": "Zee",
-      "rank": 92,
+      "rank": 94,
       "tier": "D",
       "score": 33.2,
       "wins": 0,
@@ -2990,19 +3216,19 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Surfer",
-      "emoji": "\ud83c\udf0a",
-      "reasoning": "S9's first boot. Zee came in with the right attitude and the wrong tempo \u2014 Brightly and Hicks read him as a liability on Day 1 and the tribe agreed 5-1. The most amicable departure of the season.",
+      "emoji": "🌊",
+      "reasoning": "S9's first boot. Zee came in with the right attitude and the wrong tempo — Brightly and Hicks read him as a liability on Day 1 and the tribe agreed 5-1. The most amicable departure of the season.",
       "strengths": [],
       "weaknesses": []
     },
     {
       "playerId": "b",
       "name": "B",
-      "rank": 93,
+      "rank": 95,
       "tier": "D",
       "score": 33,
       "title": "The Silent Genius",
-      "emoji": "\ud83e\udd2b",
+      "emoji": "🤫",
       "reasoning": "Unanimous target Episode 3. (S3). Socially isolated. (S3). Across 1 season(s): avg placement 14.00.",
       "strengths": [
         "High win conversion rate when they play."
@@ -3032,7 +3258,7 @@
     {
       "playerId": "miles",
       "name": "Miles",
-      "rank": 94,
+      "rank": 96,
       "tier": "D",
       "score": 33,
       "wins": 0,
@@ -3046,7 +3272,7 @@
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "The Eco-Warrior",
-      "emoji": "\ud83c\udf3f",
+      "emoji": "🌿",
       "reasoning": "S8's first boot. Miles fell on the Ep1 revote 3-1 after a 3-3 tie with Chet. The kind of opening-night exit that says more about the numbers than the player.",
       "strengths": [],
       "weaknesses": []
@@ -3054,11 +3280,11 @@
     {
       "playerId": "staci",
       "name": "Staci",
-      "rank": 95,
+      "rank": 97,
       "tier": "D",
       "score": 32,
       "title": "The Storyteller",
-      "emoji": "\ud83e\udd25",
+      "emoji": "🤥",
       "reasoning": "6-2 vote. (S3). Second boot (Episode 2). (S3). Across 1 season(s): avg placement 15.00.",
       "strengths": [
         "High win conversion rate when they play."
@@ -3089,7 +3315,7 @@
       "playerId": "ellody",
       "tier": "D",
       "score": 32,
-      "rank": 96,
+      "rank": 98,
       "avgPlacement": 19,
       "winRate": 0,
       "placements": [
@@ -3101,7 +3327,7 @@
       "idolsFound": 0,
       "status": "Competed in Season 7 only",
       "title": "The Puzzle Nerd",
-      "emoji": "\ud83e\udde9",
+      "emoji": "🧩",
       "reasoning": "Ellody's S7 read was right but late; the newly formed Lawa majority targeted her as the cleaner outsider and sent her out 7-3 over Carrie. With 0 challenge wins, no idols, and 7 votes against, she never got the numbers to test her ideas. Bonds with Carrie formed under fire but couldn't flip Taylor/Spud/Tom. Her analytical game needed earlier social roots.",
       "strengths": [
         "Analytical approach to early vote paths",
@@ -3121,45 +3347,13 @@
       "wins": 0
     },
     {
-      "playerId": "brick",
-      "name": "Brick",
-      "rank": 97,
-      "tier": "C",
-      "score": 59,
-      "title": "The Cadet",
-      "emoji": "\ud83e\ude96",
-      "reasoning": "Won merge immunity (Episode 7). (S3). Voted Scott at FTC. (S3). Across 1 season(s): avg placement 9.00.",
-      "strengths": [
-        "Consistent challenge output (wins/season)."
-      ],
-      "weaknesses": [
-        "Little evidence of consistent strategic control."
-      ],
-      "avgPlacement": 9,
-      "winRate": 0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        9
-      ],
-      "challengeWins": 1,
-      "votesAgainst": 5,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 63.43,
-      "winPercentile": 45.52,
-      "challengePercentile": 75.37,
-      "socialPercentile": 48.51,
-      "strategicPercentile": 18.66
-    },
-    {
       "playerId": "leonard",
       "name": "Leonard",
-      "rank": 98,
+      "rank": 99,
       "tier": "D",
       "score": 28,
       "title": "The Wizard",
-      "emoji": "\ud83e\uddd9",
+      "emoji": "🧙",
       "reasoning": "High-end strategist (best rank: #2). Volunteered swap to RI. (S6). Voted out 5-3 on Galang. (S6). Across 2 season(s): avg placement 18.00.",
       "strengths": [
         "Low target profile and/or strong jury appeal."
@@ -3190,11 +3384,11 @@
     {
       "playerId": "dakota",
       "name": "Dakota",
-      "rank": 99,
+      "rank": 100,
       "tier": "D",
       "score": 26,
       "title": "The Celebrity",
-      "emoji": "\ud83d\udcf8",
+      "emoji": "📸",
       "reasoning": "Swap casualty. (S3). FAN FAVORITE winner!. (S3). Across 2 season(s): avg placement 15.00.",
       "strengths": [
         "High win conversion rate when they play."
@@ -3225,11 +3419,11 @@
     {
       "playerId": "eva",
       "name": "Eva",
-      "rank": 100,
+      "rank": 101,
       "tier": "D",
       "score": 23,
       "title": "The Rage Machine",
-      "emoji": "\ud83d\udca5",
+      "emoji": "💥",
       "reasoning": "6-4 vote. (S1). Across 1 season(s): avg placement 21.00.",
       "strengths": [
         "Above-average strategic impact and positioning."
@@ -3257,47 +3451,13 @@
       "strategicPercentile": 50
     },
     {
-      "playerId": "tyler",
-      "name": "Tyler",
-      "rank": 101,
-      "tier": "D",
-      "score": 22,
-      "title": "The Himbo Athlete",
-      "emoji": "\ud83c\udfc8",
-      "reasoning": "8-4 vote. (S1). Challenge liability. (S1). Across 1 season(s): avg placement 23.00.",
-      "strengths": [
-        "Above-average strategic impact and positioning."
-      ],
-      "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
-        "Takes too many votes / limited jury support.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 23,
-      "winRate": 0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        23
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 8,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 0,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 24.63,
-      "strategicPercentile": 50
-    },
-    {
       "playerId": "crimson",
       "name": "Crimson",
       "rank": 102,
       "tier": "D",
       "score": 21,
       "title": "The Goth Twin",
-      "emoji": "\ud83e\udd87",
+      "emoji": "🦇",
       "reasoning": "High-end strategist (best rank: #3). 7-1 vote. (S3). Medevac in Episode 1. (S6). Across 2 season(s): avg placement 18.00.",
       "strengths": [
         "Low target profile and/or strong jury appeal."

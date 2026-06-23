@@ -98,23 +98,50 @@ export function applyAvatarSlug(p) {
   p.slug = resolveAvatarSlug(p);
 }
 
-// For each returnee, preload {base}-returnee.png; on success mark it OK and use
-// the variant, on failure fall back to the base icon. Re-renders + persists when
-// a slug actually changes. Browser-only (uses Image); no-op without a DOM.
+// Manifest of base slugs that have a {base}-returnee.png variant. Loaded once and
+// cached. Lets us use variants WITHOUT probing every returnee (which 404s for the
+// majority that have no variant). Regenerate with tools/gen-returnee-manifest.mjs.
+let _returneeManifest = null;        // Set once loaded; null = not yet loaded
+let _returneeManifestPromise = null; // de-dupes concurrent loads
+function _loadReturneeManifest() {
+  if (_returneeManifest) return Promise.resolve(_returneeManifest);
+  if (_returneeManifestPromise) return _returneeManifestPromise;
+  if (typeof fetch === 'undefined') return Promise.resolve(null); // non-browser: signal "unknown"
+  _returneeManifestPromise = fetch('assets/avatars/returnee-manifest.json')
+    .then(r => (r.ok ? r.json() : []))
+    .then(arr => { _returneeManifest = new Set(Array.isArray(arr) ? arr : []); return _returneeManifest; })
+    .catch(() => null); // manifest missing → caller falls back to legacy probe
+  return _returneeManifestPromise;
+}
+
+// For each returnee, use the {base}-returnee.png variant only when it actually
+// exists. With the manifest present we know this up front, so no request is made
+// for variants that don't exist (no 404 noise). If the manifest can't be loaded we
+// fall back to the legacy per-image probe so behavior degrades gracefully.
+// Re-renders + persists when a slug changes. Browser-only; no-op without a DOM.
 export function refreshReturneeAvatars(list = players) {
   if (!Array.isArray(list)) return;
   // 1. Apply synchronously from any cached _returneeAvatarOk so renders are correct now.
   list.forEach(applyAvatarSlug);
   if (typeof Image === 'undefined') return;
-  // 2. Confirm each returnee's variant file asynchronously.
-  list.filter(p => p && p.isReturnee).forEach(p => {
-    const base = baseAvatarSlug(p);
-    if (!base) return;
-    const prev = !!p._returneeAvatarOk;
-    const img = new Image();
-    img.onload  = () => { if (!prev) { p._returneeAvatarOk = true;  applyAvatarSlug(p); _afterAvatarChange(); } };
-    img.onerror = () => { if (prev)  { p._returneeAvatarOk = false; applyAvatarSlug(p); _afterAvatarChange(); } };
-    img.src = `assets/avatars/${base}-returnee.png`;
+  // 2. Resolve each returnee's variant once the manifest is known.
+  _loadReturneeManifest().then(manifest => {
+    list.filter(p => p && p.isReturnee).forEach(p => {
+      const base = baseAvatarSlug(p);
+      if (!base) return;
+      if (manifest) {
+        // Manifest is authoritative: set state directly, never request a missing file.
+        const ok = manifest.has(base);
+        if (ok !== !!p._returneeAvatarOk) { p._returneeAvatarOk = ok; applyAvatarSlug(p); _afterAvatarChange(); }
+        return;
+      }
+      // No manifest available → legacy probe (may 404, but keeps variants working).
+      const prev = !!p._returneeAvatarOk;
+      const img = new Image();
+      img.onload  = () => { if (!prev) { p._returneeAvatarOk = true;  applyAvatarSlug(p); _afterAvatarChange(); } };
+      img.onerror = () => { if (prev)  { p._returneeAvatarOk = false; applyAvatarSlug(p); _afterAvatarChange(); } };
+      img.src = `assets/avatars/${base}-returnee.png`;
+    });
   });
 }
 

@@ -67,6 +67,65 @@ export function getGender() {
   return document.querySelector('#f-gender-seg .gm-btn.active')?.dataset.g || 'nb';
 }
 
+// ── Returnee avatars ──────────────────────────────────────────────────
+// A player's icon is assets/avatars/{slug}.png. When isReturnee is set AND a
+// {base}-returnee.png file exists, that variant is used everywhere. We achieve
+// this WITHOUT touching the ~50 scattered render sites by resolving the effective
+// slug onto player.slug (what every render reads), keeping the canonical slug in
+// player.baseSlug (what identity/exports read).
+
+// Canonical slug (user's input) — strip any resolved -returnee suffix defensively.
+export function baseAvatarSlug(p) {
+  if (!p) return '';
+  if (p.baseSlug) return p.baseSlug;
+  const s = p.slug || '';
+  return s.endsWith('-returnee') ? s.slice(0, -'-returnee'.length) : s;
+}
+
+// The slug to actually render: the -returnee variant only when flagged returnee
+// AND its image has been confirmed to exist (p._returneeAvatarOk).
+export function resolveAvatarSlug(p) {
+  const base = baseAvatarSlug(p);
+  if (!base) return base;
+  return (p.isReturnee && p._returneeAvatarOk) ? `${base}-returnee` : base;
+}
+
+// Write the canonical + effective slug onto the player. renders read .slug;
+// identity/exports read .baseSlug.
+export function applyAvatarSlug(p) {
+  if (!p) return;
+  p.baseSlug = baseAvatarSlug(p);
+  p.slug = resolveAvatarSlug(p);
+}
+
+// For each returnee, preload {base}-returnee.png; on success mark it OK and use
+// the variant, on failure fall back to the base icon. Re-renders + persists when
+// a slug actually changes. Browser-only (uses Image); no-op without a DOM.
+export function refreshReturneeAvatars(list = players) {
+  if (!Array.isArray(list)) return;
+  // 1. Apply synchronously from any cached _returneeAvatarOk so renders are correct now.
+  list.forEach(applyAvatarSlug);
+  if (typeof Image === 'undefined') return;
+  // 2. Confirm each returnee's variant file asynchronously.
+  list.filter(p => p && p.isReturnee).forEach(p => {
+    const base = baseAvatarSlug(p);
+    if (!base) return;
+    const prev = !!p._returneeAvatarOk;
+    const img = new Image();
+    img.onload  = () => { if (!prev) { p._returneeAvatarOk = true;  applyAvatarSlug(p); _afterAvatarChange(); } };
+    img.onerror = () => { if (prev)  { p._returneeAvatarOk = false; applyAvatarSlug(p); _afterAvatarChange(); } };
+    img.src = `assets/avatars/${base}-returnee.png`;
+  });
+}
+
+function _afterAvatarChange() {
+  // Re-render the cast + persist, via the window hooks (avoids a circular import).
+  if (typeof window !== 'undefined') {
+    if (typeof window.renderCast === 'function') window.renderCast();
+    if (typeof window.saveCast === 'function') window.saveCast();
+  }
+}
+
 export function miniAvatar(name, size = 28) {
   const p = players.find(x => x.name === name);
   const slug = p?.slug || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');

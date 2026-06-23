@@ -300,6 +300,8 @@ async function init() {
   audioMod.initAudio();
   // Broadcast channel bar: ON-AIR state, live clock, theme (light/dark)
   broadcastMod.initBroadcastBar();
+  // Resolve returnee avatars for the loaded cast (uses -returnee.png when present)
+  playersMod.refreshReturneeAvatars();
 }
 
 await init();

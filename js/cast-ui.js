@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import { audio } from './audio.js';
+import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug } from './players.js';
 
 export function showTab(name) {
   audio.sfx('tab-swoosh');
@@ -144,24 +145,27 @@ export function submitPlayer() {
   const name = document.getElementById('f-name').value.trim();
   if (!name) { alert('Enter a player name.'); return; }
   const sexuality = document.getElementById('f-sexuality')?.value || 'straight';
+  const baseSlug = document.getElementById('f-slug').value.trim() || name.toLowerCase().replace(/\s+/g,'-');
   const player = {
     id: editingId || Date.now().toString(36)+Math.random().toString(36).slice(2,5),
-    name, slug: document.getElementById('f-slug').value.trim() || name.toLowerCase().replace(/\s+/g,'-'),
+    name, baseSlug, slug: baseSlug,
     tribe: document.getElementById('f-tribe').value,
     gender: getGender(),
     sexuality: sexuality !== 'straight' ? sexuality : undefined,
     archetype: document.getElementById('f-archetype').value, stats: getStats(),
     isReturnee: document.getElementById('f-returnee')?.checked || false,
   };
+  applyAvatarSlug(player); // set effective .slug from base + returnee state
   if (editingId) { const i = players.findIndex(p=>p.id===editingId); if(i!==-1) players[i]=player; cancelEdit(); }
   else { players.push(player); resetForm(); }
   saveCast(); renderCast();
+  refreshReturneeAvatars([player]); // async-confirm the -returnee image exists
 }
 export function editPlayer(id) {
   const p = players.find(p=>p.id===id); if (!p) return;
   editingId = id;
   document.getElementById('f-name').value = p.name;
-  document.getElementById('f-slug').value = p.slug||'';
+  document.getElementById('f-slug').value = baseAvatarSlug(p);
   const tribeEl = document.getElementById('f-tribe'); if (tribeEl) tribeEl.value = p.tribe||'';
   setGender(p.gender || 'nb');
   const sexEl = document.getElementById('f-sexuality'); if (sexEl) sexEl.value = p.sexuality||'straight';
@@ -242,7 +246,7 @@ export function fillFromRoster(p) {
   document.getElementById('roster-search').value = '';
   document.getElementById('roster-dropdown').style.display = 'none';
   document.getElementById('f-name').value = p.name;
-  document.getElementById('f-slug').value = p.slug || p.name.toLowerCase().replace(/\s+/g, '-');
+  document.getElementById('f-slug').value = baseAvatarSlug(p) || p.name.toLowerCase().replace(/\s+/g, '-');
   setGender(p.gender || 'nb');
   const sexEl = document.getElementById('f-sexuality'); if (sexEl) sexEl.value = p.sexuality || 'straight';
   document.getElementById('f-archetype').value = p.archetype || '';
@@ -319,14 +323,14 @@ export function syncCastToRoster() {
   if (!players.length) { alert('No cast to sync.'); return; }
   let updated = 0;
   players.forEach(p => {
-    const ri = FRANCHISE_ROSTER.findIndex(r => r.name === p.name || r.slug === p.slug);
+    const ri = FRANCHISE_ROSTER.findIndex(r => r.name === p.name || r.slug === baseAvatarSlug(p));
     if (ri !== -1) {
       FRANCHISE_ROSTER[ri] = { ...FRANCHISE_ROSTER[ri], archetype: p.archetype, stats: { ...p.stats }, gender: p.gender };
       if (p.sexuality) FRANCHISE_ROSTER[ri].sexuality = p.sexuality;
       if (p.isReturnee !== undefined) FRANCHISE_ROSTER[ri].isReturnee = p.isReturnee;
       updated++;
     } else {
-      FRANCHISE_ROSTER.push({ name: p.name, slug: p.slug, gender: p.gender, archetype: p.archetype, stats: { ...p.stats } });
+      FRANCHISE_ROSTER.push({ name: p.name, slug: baseAvatarSlug(p), gender: p.gender, archetype: p.archetype, stats: { ...p.stats } });
       updated++;
     }
   });
@@ -351,6 +355,7 @@ export function _applyPreset(data) {
   seasonConfig = data.config;
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   players = data.players;
+  refreshReturneeAvatars(players);   // resolve returnee icons for the loaded cast
   saveCast();
   relationships = data.relationships || [];
   localStorage.setItem('simulator_relationships', JSON.stringify(relationships));

@@ -3008,7 +3008,7 @@ export function copySeasonJSON() {
     jurySize: jury.length,
     winner: {
       name: winner,
-      playerSlug: players.find(p => p.name === winner)?.slug || winner?.toLowerCase().replace(/\s+/g, '-'),
+      playerSlug: baseAvatarSlug(players.find(p => p.name === winner)) || winner?.toLowerCase().replace(/\s+/g, '-'),
       vote: voteStr,
       runnerUp: finalists.filter(f => f !== winner).join(' & '),
       keyStats: '',
@@ -3017,7 +3017,7 @@ export function copySeasonJSON() {
     },
     finalists: finalists.map((f, i) => ({
       name: f,
-      playerSlug: players.find(p => p.name === f)?.slug || f.toLowerCase().replace(/\s+/g, '-'),
+      playerSlug: baseAvatarSlug(players.find(p => p.name === f)) || f.toLowerCase().replace(/\s+/g, '-'),
       placement: placementOrder.indexOf(f) + 1,
       votes: juryResult?.votes?.[f] || 0,
     })),
@@ -3056,7 +3056,7 @@ export function copySeasonJSON() {
       return {
         placement: place,
         name,
-        playerSlug: players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'),
+        playerSlug: baseAvatarSlug(players.find(p => p.name === name)) || name.toLowerCase().replace(/\s+/g, '-'),
         phase,
         notes: isWinner ? `${voteStr} jury vote` : elimEp ? `Ep ${elimEp.num}` : '',
         strategicRank,

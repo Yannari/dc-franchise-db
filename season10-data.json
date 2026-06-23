@@ -822,5 +822,825 @@
       "description": "After a season of being targeted, underestimated, and dragged through every kind of chaos, Jasmine sweeps the flagpole, gorge, and sprint to claim the crown."
     }
   },
-  "emoji": "[AI_FILL]"
+  "emoji": "[AI_FILL]",
+  "votingHistory": [
+    {
+      "episode": 1,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Sanders",
+          "targetSlug": "sanders"
+        },
+        {
+          "voter": "Zoey",
+          "voterSlug": "zoey",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Gwen",
+          "voterSlug": "gwen",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Sanders",
+          "voterSlug": "sanders",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Priya",
+          "voterSlug": "priya",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Hicks",
+          "voterSlug": "hicks",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Josee",
+          "voterSlug": "josee",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Sam",
+          "voterSlug": "sam",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Stephanie",
+          "voterSlug": "stephanie",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Courtney",
+          "voterSlug": "courtney",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Tyler",
+          "voterSlug": "tyler",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        }
+      ]
+    },
+    {
+      "episode": 2,
+      "eliminated": "Gwen",
+      "eliminatedSlug": "gwen",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Gwen",
+          "targetSlug": "gwen"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        },
+        {
+          "voter": "Zoey",
+          "voterSlug": "zoey",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Sanders",
+          "targetSlug": "sanders"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Gwen",
+          "targetSlug": "gwen"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Gwen",
+          "targetSlug": "gwen"
+        },
+        {
+          "voter": "Sanders",
+          "voterSlug": "sanders",
+          "target": "Gwen",
+          "targetSlug": "gwen"
+        }
+      ]
+    },
+    {
+      "episode": 3,
+      "eliminated": "Mickey",
+      "eliminatedSlug": "mickey",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Mickey",
+          "targetSlug": "mickey"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Zoey",
+          "voterSlug": "zoey",
+          "target": "Mickey",
+          "targetSlug": "mickey"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Mickey",
+          "targetSlug": "mickey"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Mickey",
+          "targetSlug": "mickey"
+        },
+        {
+          "voter": "Sanders",
+          "voterSlug": "sanders",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Courtney",
+          "voterSlug": "courtney",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        }
+      ]
+    },
+    {
+      "episode": 4,
+      "eliminated": "Josee",
+      "eliminatedSlug": "josee",
+      "votes": [
+        {
+          "voter": "Priya",
+          "voterSlug": "priya",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Hicks",
+          "voterSlug": "hicks",
+          "target": "Josee",
+          "targetSlug": "josee"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Brick",
+          "targetSlug": "brick"
+        },
+        {
+          "voter": "Josee",
+          "voterSlug": "josee",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Stephanie",
+          "voterSlug": "stephanie",
+          "target": "Josee",
+          "targetSlug": "josee"
+        },
+        {
+          "voter": "Tyler",
+          "voterSlug": "tyler",
+          "target": "Hicks",
+          "targetSlug": "hicks"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Priya",
+          "targetSlug": "priya"
+        }
+      ]
+    },
+    {
+      "episode": 5,
+      "eliminated": "Courtney",
+      "eliminatedSlug": "courtney",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Priya",
+          "voterSlug": "priya",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Tyler",
+          "voterSlug": "tyler",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Courtney",
+          "voterSlug": "courtney",
+          "target": "Brick",
+          "targetSlug": "brick"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Courtney",
+          "targetSlug": "courtney"
+        }
+      ]
+    },
+    {
+      "episode": 6,
+      "eliminated": "Priya",
+      "eliminatedSlug": "priya",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Priya",
+          "voterSlug": "priya",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Tyler",
+          "voterSlug": "tyler",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Priya",
+          "targetSlug": "priya"
+        }
+      ]
+    },
+    {
+      "episode": 7,
+      "eliminated": "Tyler",
+      "eliminatedSlug": "tyler",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Tyler",
+          "targetSlug": "tyler"
+        },
+        {
+          "voter": "Tyler",
+          "voterSlug": "tyler",
+          "target": "Cody",
+          "targetSlug": "cody"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Cody",
+          "targetSlug": "cody"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Tyler",
+          "targetSlug": "tyler"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Tyler",
+          "targetSlug": "tyler"
+        }
+      ]
+    },
+    {
+      "episode": 8,
+      "eliminated": "Hicks",
+      "eliminatedSlug": "hicks",
+      "votes": [
+        {
+          "voter": "Stephanie",
+          "voterSlug": "stephanie",
+          "target": "Hicks",
+          "targetSlug": "hicks"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Hicks",
+          "targetSlug": "hicks"
+        },
+        {
+          "voter": "Hicks",
+          "voterSlug": "hicks",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Hicks",
+          "targetSlug": "hicks"
+        },
+        {
+          "voter": "Sanders",
+          "voterSlug": "sanders",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Hicks",
+          "targetSlug": "hicks"
+        },
+        {
+          "voter": "Zoey",
+          "voterSlug": "zoey",
+          "target": "Hicks",
+          "targetSlug": "hicks"
+        }
+      ]
+    },
+    {
+      "episode": 9,
+      "eliminated": "Sanders",
+      "eliminatedSlug": "sanders",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Brick",
+          "targetSlug": "brick"
+        },
+        {
+          "voter": "Zoey",
+          "voterSlug": "zoey",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Sanders",
+          "targetSlug": "sanders"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Sanders",
+          "targetSlug": "sanders"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Sanders",
+          "voterSlug": "sanders",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Priya",
+          "voterSlug": "priya",
+          "target": "Brick",
+          "targetSlug": "brick"
+        }
+      ]
+    },
+    {
+      "episode": 10,
+      "eliminated": "Zoey",
+      "eliminatedSlug": "zoey",
+      "votes": [
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Zoey",
+          "voterSlug": "zoey",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Priya",
+          "voterSlug": "priya",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        }
+      ]
+    },
+    {
+      "episode": 11,
+      "eliminated": "Scott",
+      "eliminatedSlug": "scott",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Priya",
+          "voterSlug": "priya",
+          "target": "Scott",
+          "targetSlug": "scott"
+        }
+      ]
+    },
+    {
+      "episode": 12,
+      "eliminated": "Priya",
+      "eliminatedSlug": "priya",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Cody",
+          "targetSlug": "cody"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Priya",
+          "targetSlug": "priya"
+        },
+        {
+          "voter": "Priya",
+          "voterSlug": "priya",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        }
+      ]
+    },
+    {
+      "episode": 13,
+      "eliminated": "Cody",
+      "eliminatedSlug": "cody",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Cody",
+          "targetSlug": "cody"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Cody",
+          "targetSlug": "cody"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Carrie",
+          "targetSlug": "carrie"
+        }
+      ]
+    },
+    {
+      "episode": 14,
+      "eliminated": "Carrie",
+      "eliminatedSlug": "carrie",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Carrie",
+          "targetSlug": "carrie"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Brick",
+          "targetSlug": "brick"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Carrie",
+          "targetSlug": "carrie"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Carrie",
+          "targetSlug": "carrie"
+        }
+      ]
+    },
+    {
+      "episode": 15,
+      "eliminated": "Sanders",
+      "eliminatedSlug": "sanders",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Sanders",
+          "targetSlug": "sanders"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Sanders",
+          "targetSlug": "sanders"
+        },
+        {
+          "voter": "Sanders",
+          "voterSlug": "sanders",
+          "target": "Brick",
+          "targetSlug": "brick"
+        }
+      ]
+    },
+    {
+      "episode": 16,
+      "eliminated": "Ryan",
+      "eliminatedSlug": "ryan",
+      "votes": [
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Brick",
+          "targetSlug": "brick"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        },
+        {
+          "voter": "Brick",
+          "voterSlug": "brick",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        }
+      ]
+    }
+  ],
+  "finalTribalCouncil": {
+    "votes": [],
+    "note": "Final jury vote not recorded for this season."
+  }
 }

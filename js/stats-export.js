@@ -327,6 +327,25 @@ function _extractAdvantageData(name) {
         });
       }
     }
+
+    // Second Life Amulet activations aren't in idolPlays — they're recorded on
+    // ep.fireMaking with fromAmulet=true (the amulet forces a duel instead of a
+    // vote-out). Credit the play to whoever used it (an ally if played for the
+    // eliminated player, otherwise the holder who triggered it themselves).
+    if (ep.fireMaking?.fromAmulet) {
+      const _amuletUser = ep.fireMaking.allyPlayer || ep.fireMaking.player;
+      if (_amuletUser === name) {
+        plays.push({
+          ep: ep.num,
+          type: 'secondLife',
+          playedFor: ep.fireMaking.player || name,
+          votesNegated: 0,
+          misplay: false,
+          failed: false,
+          fake: false
+        });
+      }
+    }
   }
 
   // Idol finds across episodes

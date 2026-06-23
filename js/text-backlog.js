@@ -56,6 +56,7 @@ import { rpBuildSafariColdOpen, rpBuildSafariPhase1, rpBuildSafariPhase2, rpBuil
 import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPPillarPhase, rpBuildRPResults } from './chal/rapa-phooey.js';
 import { rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults } from './chal/drumheller.js';
 import { rpBuildIIBTitleCard, rpBuildIIBSummit, rpBuildIIBFortBuild, rpBuildIIBCtfAssault, rpBuildIIBResults } from './chal/ice-ice-baby.js';
+import { rpBuildFCRTitleCard, rpBuildFCRForest, rpBuildFCRCemetery, rpBuildFCRCave, rpBuildFCRResults } from './chal/finders-creepers.js';
 import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaCrossing, rpBuildPTBeachSprint, rpBuildPTResults } from './chal/planes-trains.js';
 import { rpBuildPRTitleCard, rpBuildPRRoles, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults } from './chal/project-runaway.js';
 import { rpBuildHDTitleCard, rpBuildHDEmuWrangling, rpBuildHDEmuRace, rpBuildHDBungeeGrab, rpBuildHDResults } from './chal/picnic-hanging-dork.js';
@@ -2519,6 +2520,11 @@ export function generateSummaryText(ep) {
   if (ep.iceIceBaby) {
     _textTwistChallenge(ep, ln, sec, 'iceIceBaby', 'ICE ICE BABY', [
       rpBuildIIBTitleCard, rpBuildIIBSummit, rpBuildIIBFortBuild, rpBuildIIBCtfAssault, rpBuildIIBResults
+    ]);
+  }
+  if (ep.findersCreepers) {
+    _textTwistChallenge(ep, ln, sec, 'findersCreepers', 'FINDERS CREEPERS', [
+      rpBuildFCRTitleCard, rpBuildFCRForest, rpBuildFCRCemetery, rpBuildFCRCave, rpBuildFCRResults
     ]);
   }
   if (ep.projectRunaway) {

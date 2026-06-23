@@ -2203,7 +2203,7 @@ export function generateFinaleSummaryText(ep) {
     ln('');
     finalists.forEach(f => {
       const fs = pStats(f);
-      const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
+      const wins = (gs.episodeHistory || []).filter(e => e.immunityWinner === f).length;
       ln(`${f}: ${wins} individual immunity win${wins !== 1 ? 's' : ''} — ${fs.physical >= 8 ? 'physical threat' : fs.endurance >= 8 ? 'endurance specialist' : fs.mental >= 8 ? 'mental powerhouse' : 'all-around competitor'}`);
     });
     ln('');
@@ -2223,7 +2223,7 @@ export function generateFinaleSummaryText(ep) {
     ln('');
     finalists.forEach(f => {
       const fs = pStats(f);
-      const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
+      const wins = (gs.episodeHistory || []).filter(e => e.immunityWinner === f).length;
       const votes = gs.episodeHistory.reduce((sum, e) => sum + (e.votes?.[f] || 0), 0);
       ln(`${f}:`);
       if (fs.strategic >= 8 && fs.social >= 7) ln(`  - Complete player. Dominated strategy and maintained relationships.`);

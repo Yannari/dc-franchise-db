@@ -161,9 +161,9 @@
       "idolsFound": 1,
       "title": "The Idol Matriarch",
       "emoji": "🦉",
-      "reasoning": "Miriam turned a single season into a legacy case, winning S8 with just enough immunity, advantage timing, and alliance coverage to survive a dangerous endgame. Her résumé is not spotless — 8 votes against shows she was never invisible — but she converted pressure into control when it mattered. One idol play, three alliances, and the win make her the season’s defining strategist.",
+      "reasoning": "Miriam turned a single season into a legacy case, winning S11 with just enough immunity, advantage timing, and alliance coverage to survive a dangerous endgame. Her résumé is not spotless — 8 votes against shows she was never invisible — but she converted pressure into control when it mattered. One idol play, three alliances, and the win make her the season’s defining strategist.",
       "strengths": [
-        "S8 winner",
+        "S11 winner",
         "Rank #3 overall",
         "Played 1 idol",
         "Three alliance connections"
@@ -394,7 +394,7 @@
       "emoji": "🛡️",
       "reasoning": "Thom played one of the cleanest losing games in the field, reaching 2nd with only a single vote cast against him all season. His mix of two immunity wins, an idol play, four alliances, and fan-favorite appeal made him feel protected from nearly every angle. The Jake showmance gave him emotional stakes, but Miriam ultimately edged him out at the finish line.",
       "strengths": [
-        "S8 runner-up",
+        "S11 runner-up",
         "2 immunity wins",
         "Only 1 vote against",
         "Played 1 idol"
@@ -631,9 +631,9 @@
       "idolsFound": 2,
       "title": "The Tiny Arsonist",
       "emoji": "🔥",
-      "reasoning": "Fiore’s S8 game was pure volatility: dangerous enough to reach 3rd, targeted enough to collect 7 votes, and resourceful enough to burn through two idols. She never had the cleanest social positioning, but she consistently found ways to stay alive while bigger plans collapsed around her. A finalist-adjacent finish with two successful advantage plays gives her a sharp, memorable legacy.",
+      "reasoning": "Fiore’s S11 game was pure volatility: dangerous enough to reach 3rd, targeted enough to collect 7 votes, and resourceful enough to burn through two idols. She never had the cleanest social positioning, but she consistently found ways to stay alive while bigger plans collapsed around her. A finalist-adjacent finish with two successful advantage plays gives her a sharp, memorable legacy.",
       "strengths": [
-        "S8 3rd place",
+        "S11 3rd place",
         "Played 2 idols",
         "1 immunity win",
         "Three alliances"
@@ -1225,9 +1225,9 @@
       "idolsFound": 0,
       "title": "The Quiet Endgamer",
       "emoji": "♟️",
-      "reasoning": "Alec made 4th in S8 with a restrained, efficient game built more on positioning than spectacle. His one immunity win helped validate the run, but with only one listed alliance and no idol safety, he often seemed to be navigating with limited protection. Still, a top-four finish in a strong season gives him real credibility.",
+      "reasoning": "Alec made 4th in S11 with a restrained, efficient game built more on positioning than spectacle. His one immunity win helped validate the run, but with only one listed alliance and no idol safety, he often seemed to be navigating with limited protection. Still, a top-four finish in a strong season gives him real credibility.",
       "strengths": [
-        "S8 4th place",
+        "S11 4th place",
         "1 immunity win",
         "Top-tier placement",
         "Low-flash positioning"
@@ -1385,7 +1385,7 @@
       "emoji": "🎭",
       "reasoning": "Gabby’s 5th-place run was messy, loud, and hard to kill. She absorbed 9 votes and had no challenge wins, but two idol plays kept her game alive far longer than her threat level suggested it should have lasted. Her legacy is less about control and more about survival instinct under constant fire.",
       "strengths": [
-        "S8 5th place",
+        "S11 5th place",
         "Played 2 idols",
         "Survived heavy targeting",
         "Endgame presence"
@@ -1691,9 +1691,9 @@
       "idolsFound": 0,
       "title": "The Reward Sparkplug",
       "emoji": "⚡",
-      "reasoning": "Eureka landed in the middle of the S8 endgame, finishing 6th with a respectable but not dominant profile. Her one reward win and two alliances suggest she had enough social and challenge utility to matter, even if she never fully seized strategic command. With only 4 votes against, she avoided becoming a constant target until her runway simply ran out.",
+      "reasoning": "Eureka landed in the middle of the S11 endgame, finishing 6th with a respectable but not dominant profile. Her one reward win and two alliances suggest she had enough social and challenge utility to matter, even if she never fully seized strategic command. With only 4 votes against, she avoided becoming a constant target until her runway simply ran out.",
       "strengths": [
-        "S8 6th place",
+        "S11 6th place",
         "1 reward win",
         "Two alliances",
         "Only 4 votes against"
@@ -1888,9 +1888,9 @@
       "idolsFound": 0,
       "title": "The Heart-On-Sleeve Pawn",
       "emoji": "💔",
-      "reasoning": "Jake’s S8 game was defined as much by emotion as strategy, with the Thom showmance shaping both his story and his exposure. He made it to 7th and held two alliances, but 7 votes against and zero challenge wins point to a player who was often vulnerable. His social bonds mattered, just not enough to turn him into a true endgame driver.",
+      "reasoning": "Jake’s S11 game was defined as much by emotion as strategy, with the Thom showmance shaping both his story and his exposure. He made it to 7th and held two alliances, but 7 votes against and zero challenge wins point to a player who was often vulnerable. His social bonds mattered, just not enough to turn him into a true endgame driver.",
       "strengths": [
-        "S8 7th place",
+        "S11 7th place",
         "Two alliances",
         "Strong personal bonds",
         "Showmance storyline"
@@ -2142,7 +2142,7 @@
       "idolsFound": 1,
       "title": "The Perpetual Target",
       "emoji": "🎯",
-      "reasoning": "Ellie’s S8 run was defined by heat: 15 votes against is a staggering number for an 8th-place finisher. She did play an idol, which kept her from being a simple casualty, but she never found stable enough footing to turn survival into control. Her game is memorable for resilience, yet the target on her back overwhelmed everything else.",
+      "reasoning": "Ellie’s S11 run was defined by heat: 15 votes against is a staggering number for an 8th-place finisher. She did play an idol, which kept her from being a simple casualty, but she never found stable enough footing to turn survival into control. Her game is memorable for resilience, yet the target on her back overwhelmed everything else.",
       "strengths": [
         "Played 1 idol",
         "Survived 15 votes against",
@@ -2265,7 +2265,7 @@
       "idolsFound": 0,
       "title": "The Middle-Rung Broker",
       "emoji": "📎",
-      "reasoning": "Dan’s S8 showing was a modest but functional midgame run, ending in 9th with two alliances and only 5 votes against. He was connected enough to avoid being an immediate outsider, but he lacked the challenge wins or advantages needed to change his trajectory. His legacy is that of a decent social piece who never became the board’s main player.",
+      "reasoning": "Dan’s S11 showing was a modest but functional midgame run, ending in 9th with two alliances and only 5 votes against. He was connected enough to avoid being an immediate outsider, but he lacked the challenge wins or advantages needed to change his trajectory. His legacy is that of a decent social piece who never became the board’s main player.",
       "strengths": [
         "Two alliances",
         "Only 5 votes against",
@@ -2688,10 +2688,10 @@
       "idolsFound": 0,
       "title": "The Alliance Collector",
       "emoji": "🎼",
-      "reasoning": "Seraphine is the highest-ranked of this Season 8 early-game cluster, largely because she at least had visible social scaffolding. Three alliances gave her more narrative and strategic texture than most of the boots around her, but an 11th-place finish with 5 votes against shows those connections never translated into real control. She leaves as a C-tier almost-player: present in the game, but not powerful enough to survive the squeeze.",
+      "reasoning": "Seraphine is the highest-ranked of this Season 11 early-game cluster, largely because she at least had visible social scaffolding. Three alliances gave her more narrative and strategic texture than most of the boots around her, but an 11th-place finish with 5 votes against shows those connections never translated into real control. She leaves as a C-tier almost-player: present in the game, but not powerful enough to survive the squeeze.",
       "strengths": [
         "Best finish of this group",
-        "3 alliances in S8",
+        "3 alliances in S11",
         "Some social positioning"
       ],
       "weaknesses": [
@@ -2947,7 +2947,7 @@
       "idolsFound": 0,
       "title": "The One-Link Optimist",
       "emoji": "🪙",
-      "reasoning": "Sterling's Season 8 game had the outline of a strategy but not the force to make it matter. A single alliance helped keep him from being totally isolated, yet 12th place and 4 votes against point to a player who was included more than protected. His legacy is modest: socially aware enough to survive the very bottom, but never close to driving the season.",
+      "reasoning": "Sterling's Season 11 game had the outline of a strategy but not the force to make it matter. A single alliance helped keep him from being totally isolated, yet 12th place and 4 votes against point to a player who was included more than protected. His legacy is modest: socially aware enough to survive the very bottom, but never close to driving the season.",
       "strengths": [
         "Made one alliance",
         "Avoided last-place finish",
@@ -3109,7 +3109,7 @@
       "idolsFound": 0,
       "title": "The Quiet Passenger",
       "emoji": "🎧",
-      "reasoning": "Nick's Season 8 run reads like someone who was around the action without becoming the action. He had one alliance and only 4 votes against, but a 13th-place exit makes it hard to credit him with meaningful leverage. Not a disaster, just a low-impact game that ended before he could prove there was more underneath.",
+      "reasoning": "Nick's Season 11 run reads like someone who was around the action without becoming the action. He had one alliance and only 4 votes against, but a 13th-place exit makes it hard to credit him with meaningful leverage. Not a disaster, just a low-impact game that ended before he could prove there was more underneath.",
       "strengths": [
         "Had an alliance",
         "Only 4 votes against",
@@ -3364,7 +3364,7 @@
       "idolsFound": 0,
       "title": "The Vanishing Spark",
       "emoji": "✨",
-      "reasoning": "Wix's Season 8 game never really caught fire. A 15th-place finish with 0 challenge wins and 4 votes against suggests a player who did not build enough protection or momentum before the vote found them. There is not much to indict beyond the exit itself, but there is also not much to celebrate.",
+      "reasoning": "Wix's Season 11 game never really caught fire. A 15th-place finish with 0 challenge wins and 4 votes against suggests a player who did not build enough protection or momentum before the vote found them. There is not much to indict beyond the exit itself, but there is also not much to celebrate.",
       "strengths": [
         "Only 4 votes against",
         "Avoided total blowup",
@@ -3487,9 +3487,9 @@
       "idolsFound": 0,
       "title": "The Fragile Connector",
       "emoji": "🧩",
-      "reasoning": "Will at least tried to plug into the social structure, forming 2 alliances in Season 8. The problem is that those bonds did not harden into safety, and he still went out in 16th with 5 votes against. His game has a little more intentionality than the boots below him, but the execution was too flimsy to matter.",
+      "reasoning": "Will at least tried to plug into the social structure, forming 2 alliances in Season 11. The problem is that those bonds did not harden into safety, and he still went out in 16th with 5 votes against. His game has a little more intentionality than the boots below him, but the execution was too flimsy to matter.",
       "strengths": [
-        "2 alliances in S8",
+        "2 alliances in S11",
         "Some social initiative",
         "Not completely isolated"
       ],
@@ -3756,7 +3756,7 @@
       "idolsFound": 0,
       "title": "The Penultimate Flameout",
       "emoji": "🕯️",
-      "reasoning": "Drew's Season 8 stay was short and strategically thin. Finishing 17th with 4 votes against leaves him just above the basement, but with no challenge wins, idols, or alliance notes to build a stronger case. His ranking reflects a game that ended before it produced a defining move.",
+      "reasoning": "Drew's Season 11 stay was short and strategically thin. Finishing 17th with 4 votes against leaves him just above the basement, but with no challenge wins, idols, or alliance notes to build a stronger case. His ranking reflects a game that ended before it produced a defining move.",
       "strengths": [
         "Avoided first boot",
         "Only 4 votes against",
@@ -3789,11 +3789,11 @@
       "idolsFound": 0,
       "title": "The Opening Casualty",
       "emoji": "🚪",
-      "reasoning": "Ashley sits at the bottom of this Season 8 group because an 18th-place finish gives her almost no runway. With 4 votes against, no challenge wins, and no recorded alliance structure, her game was over before it could develop an identity. It is a harsh legacy, but first boots rarely get the chance to be anything else.",
+      "reasoning": "Ashley sits at the bottom of this Season 11 group because an 18th-place finish gives her almost no runway. With 4 votes against, no challenge wins, and no recorded alliance structure, her game was over before it could develop an identity. It is a harsh legacy, but first boots rarely get the chance to be anything else.",
       "strengths": [
         "Only 4 votes against",
         "No wasted idol",
-        "Brief S8 presence"
+        "Brief S11 presence"
       ],
       "weaknesses": [
         "18th place finish",

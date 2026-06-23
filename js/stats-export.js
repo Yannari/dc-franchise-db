@@ -1629,6 +1629,11 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       rewardWins: pd.rewardWins,
       votesReceived: pd.totalVotesReceived,
       idolsFound: pd.idolsFound,
+      // advPlayed counts every advantage actually played (idols, extra votes, vote
+      // steals/blocks, the Second Life Amulet, …); advHeld counts advantages still
+      // in hand at exit. The player page's "Advantages" stat reads these.
+      advPlayed: (pd.advantageLifecycle?.plays || []).filter(p => !p.fake && !p.failed).length,
+      advHeld: (pd.advantageLifecycle?.held || []).length,
       strategicRank: _clean(filled.strategicRank, 0),
       juryVotes: pd.juryVotes || 0,
       finalVote: pd.phase === 'Winner' ? (_clean(filledSeasonData?.winner?.vote) || rawStats.finalists?.map(f => f.juryVotes ?? 0).sort((a,b) => b-a).join('-') || '') : '',

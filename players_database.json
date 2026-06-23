@@ -7529,7 +7529,9 @@
             "Grett",
             "Alec",
             "Fiore"
-          ]
+          ],
+          "advPlayed": 1,
+          "advHeld": 0
         }
       ],
       "story": "Thom starts as the teammate everyone wants, and that becomes both his gift and his curse. He rescues people, protects people, feeds people, and quietly becomes the center of too many hearts at once. His bonds with Jake, Dan, Sterling, Miriam, and Eureka carry him deep, but they also make his decisions heavier than everyone else's. As the merge turns colder, Thom learns to cut names he cares about, but never completely shuts the door on feeling. He wins when he has to, survives repeated target spikes, and takes out Fiore in the final joust. At the volcano, he is ahead, but Miriam reaches the one place his game is vulnerable: the part of him that still cares.",
@@ -7590,7 +7592,9 @@
             "Eureka",
             "Fiore",
             "Ellie"
-          ]
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Jake is liked immediately, and for a while that is enough to move through the game. His bond with Thom becomes the season's defining showmance, a source of protection, suspicion, and eventually heartbreak. Jake tries to build structures around himself, from The Firewall to temporary merge coalitions, but he often cannot fully commit when votes hit people he cares about. His name becomes synonymous with overplaying, whispered side deals, and emotional reactions that other players learn to exploit. By the end, he is isolated from old allies and too tangled in personal feuds with Miriam, Ellie, and Fiore. His exit is absurd and painful: Chef, not the tribe, ends his story after a survival challenge full of fear, loyalty, and humiliation.",
@@ -7653,7 +7657,9 @@
             "Gabby",
             "Alec",
             "Fiore"
-          ]
+          ],
+          "advPlayed": 1,
+          "advHeld": 0
         }
       ],
       "story": "Miriam arrives with the posture of someone who has already survived worse than Cursed Island. Early on, she is abrasive, guarded, and constantly one bad vote away from disaster, but every time the numbers move against her she finds another route through. Her game sharpens after the merge, where she stops chasing control openly and starts letting other players expose themselves first. The Outwit Club gives her structure, Thom gives her protection, and her own reads give her timing. By the finale, she is exhausted but still calculating, and when Thom reaches the summit ahead of her she does not beat him with strength. She beats him with history, memory, and one perfect plea before throwing the dummy first.",
@@ -7708,7 +7714,9 @@
           "rivalries": [
             "Thom",
             "Fiore"
-          ]
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Grett is targeted before camp even begins, survives through the swap twist, and immediately turns resentment into fuel. Her biggest early move is invisible: sabotaging Purple's fort and framing Ashley, a dirty play that sets the season's tone. She talks like she controls the room even when the room is already turning on her, and her reads are often strong enough to scare people. The elimination swap gives her one more life, but it also leaves her surrounded by people she has burned. On Teal, she tries to scramble through too many doors at once. At tribal, the whispering becomes the reason everyone needs.",
@@ -7767,7 +7775,9 @@
             "Gabby",
             "Seraphine",
             "Fiore"
-          ]
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Dan arrives calling the game chess, and for a long stretch he plays like he believes it. He helps engineer Drew's exit, becomes Thom's quiet strategic partner, and repeatedly positions himself as the person with the best read in the room. But the same confidence that makes him dangerous also blinds him to emotional fallout. His relationships with Gabby and Miriam fray as he treats votes like math problems that should solve cleanly. At merge, he keeps trying to hold shifting coalitions together, but the island has become too personal for pure calculation. In the fire-making tiebreaker against Alec, Dan's game finally runs out of oxygen.",
@@ -7819,7 +7829,9 @@
             "Ep.2: Leaves naming Dan as the player pulling strings."
           ],
           "alliances": [],
-          "rivalries": []
+          "rivalries": [],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Drew enters unsure how intense he is supposed to be, and that uncertainty becomes his defining problem. Around camp, he works harder than most and earns quiet notice, but he is rarely in the room where the vote is shaped. His Rock the Dock decipher performance is genuinely strong, yet Teal remembers the weak swim, the overconfidence, and the fact that cutting him costs almost nobody socially. Drew's biggest mistake is landing between blocs without firm protection. When The Firewall needs a target, he becomes the simple name. His exit gives Dan credit and exposes the early power structure, but it comes too late to help him.",
@@ -7878,7 +7890,9 @@
             "Dan",
             "Alec",
             "Fiore"
-          ]
+          ],
+          "advPlayed": 2,
+          "advHeld": 0
         }
       ],
       "story": "Gabby plays sideways from the start, finding a Vote Block, later a Vote Steal, and rarely moving in the same direction as the room. She is emotional, observant, and dangerous when underestimated, but her relationships constantly swing between warmth and rupture. Her rivalry with Miriam becomes one of the season's nastiest personal threads, while her bonds with Jake and Eureka give her late-game life. She makes the move that sends Dan out, proving she can cut a supposed number when the relationship breaks. But the endgame twist is cruel: she is not the target, not the central threat, not even the duel loser. She is chained to Eureka's fate and leaves because Fiore beats someone else.",
@@ -7934,7 +7948,9 @@
           ],
           "rivalries": [
             "Jake"
-          ]
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Sterling enters with the confidence of a challenge beast, and early on he looks like the kind of player tribes keep because they need muscle. He bonds with Jake, Eureka, Wix, Thom, and Dan, but those connections never settle into a stable alliance. The Firewall gives him structure, then collapses under miscommunication, betrayal, and quiet resentment. His challenge résumé grows just as his social safety shrinks. By the time Teal hits one last pre-merge tribal, Sterling is no longer just useful; he is threatening, disliked by Jake, and distrusted by Miriam. Miriam's Extra Vote turns a bad night into a decisive one.",
@@ -7992,7 +8008,9 @@
           "rivalries": [
             "Jake",
             "Fiore"
-          ]
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Eureka begins as warmth, energy, and glue, the kind of player people underestimate because they enjoy being around her. Her first exit is one of the season's cruelest: a rock draw sends her out without a single original vote against her. But Cursed Island refuses to let ghosts stay buried, and Eureka fights through Aftermayhem to return with sharper instincts. Back in the game, she becomes a crucial Outwit Club number and a social force nobody can comfortably attack head-on. Her bond with Thom and Miriam makes her powerful, but it also makes her obvious. At final six, she aims at Fiore and gets hit by the one advantage that can rewrite the ending.",
@@ -8049,7 +8067,9 @@
           ],
           "rivalries": [
             "Fiore"
-          ]
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Will begins as the steady worker, the one who calls practical challenge plans and notices when other people are lying. He sees through Fiore before most do, and he reads Grett's wrong answers with unnerving calm. His problem is that being useful makes him visible and being likeable makes him dangerous. He builds enough trust with Alec to believe the relationship might carry weight. Instead, Alec cuts him as a jury threat while Fiore drives the personal tension into a vote. Will leaves feeling betrayed less by the game than by the person he thought was real with him.",
@@ -8107,7 +8127,9 @@
           ],
           "rivalries": [
             "Dan"
-          ]
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Seraphine opens as a smiling schemer who wants to be three steps ahead, but her best game is not strategy; it is loyalty with Lill. She hides in plain sight, gathers information, and lets louder players make themselves targets. Her pre-merge run includes sabotage, social reads, and alliances that work until they become too visible. At the merge, she is pulled between The Three Headed Snake, The Circle, and survival instinct, and the open vote gives her nowhere to hide. She ties with Ellie and loses the strength tiebreaker, a brutal end for a player who had avoided direct confrontation for so long. Her final words are not about strategy, but about leaving Lill alone.",
@@ -8161,7 +8183,9 @@
           "alliances": [],
           "rivalries": [
             "Fiore"
-          ]
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Ashley arrives ready to compete, but Purple becomes a storm before she can find shelter. Her immediate feud with Fiore turns personal fast, and Grett's hidden sabotage turns a challenge failure into evidence against her. She builds enough warmth to scare people and enough vulnerability to make betrayal hurt. The first real vote becomes less about what Ashley did and more about what others can make the tribe believe. Fiore talks around her, Grett hides the knife, and Ellie votes based on future jury danger. Ashley leaves with the pain of someone who was lied to face-to-face before she ever had a chance to recover.",
@@ -8222,7 +8246,9 @@
             "Fiore",
             "Ellie",
             "Nick"
-          ]
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Alec enters already mapping alliance structures before most players know where camp is. He builds gadgets, reads conversations he was never part of, and keeps finding ways to make the vote pass through him without looking obvious enough to stop. But every clean move leaves fingerprints, and by the time Grett publicly calls him the strategic center, the target never fully leaves his back. His rivalry with Thom hardens into open hostility, and his relationship with Miriam becomes a chess match played with smiles that never reach the eyes. He survives several spots where he should go home, including a fire-making tiebreaker against Dan. At final four, though, the board is too small, Thom holds firm, and Fiore cuts her losses.",
@@ -8290,7 +8316,9 @@
             "Ashley",
             "Alec",
             "Ellie"
-          ]
+          ],
+          "advPlayed": 2,
+          "advHeld": 0
         }
       ],
       "story": "Fiore enters promising to enjoy watching people leave, and she delivers. She steals credit, plants doubts, forges notes, weaponizes grudges, and somehow keeps crawling back from spots where the numbers should finish her. Her rivalry with Ellie burns across the season, while her shifting partnerships with Alec, Gabby, Seraphine, and Miriam are always temporary and always useful. The Second Life Amulet is her masterpiece of survival, turning a majority against her into Eureka's elimination and taking Gabby with it. But Fiore's game has a cost: by the finale, the jury and players alike know exactly what she is. She fights Thom in the joust, asks the crowd for support, gets silence, and falls smiling like a villain who knows she made the season.",
@@ -8346,7 +8374,9 @@
             "Jake",
             "Alec",
             "Fiore"
-          ]
+          ],
+          "advPlayed": 1,
+          "advHeld": 0
         }
       ],
       "story": "Ellie finds the season's first idol and immediately becomes a player everyone talks around, not through. Her game is sharp, paranoid, and relentless; she plants notes, steals keys, pushes whisper campaigns, and keeps trying to collapse Fiore's position. Her Super Idol play is one of the season's defining advantage moments, turning a pile of votes into someone else's funeral. But her constant motion exhausts the camp, and the jury math around her becomes impossible to ignore. She keeps surviving by narrow margins until Eureka, Miriam, Thom, and even Alec decide the same thing at once. When she leaves, she does not leave quietly; she names the power structure and makes sure the jury knows who took her out.",
@@ -8402,7 +8432,9 @@
           ],
           "rivalries": [
             "Alec"
-          ]
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Nick starts as the relaxed, slightly unfiltered player nobody quite knows how to handle. He finds moments of real usefulness, including a perfect fish-kiss leg and strong early challenge flashes, but his strategic loyalty is never trusted. He moves around The Circle and The Bloc without ever seeming fully inside either one. His vote lies and side deals keep him alive briefly, but every alliance eventually labels him a flipper. In his final vote, the tribe cannot agree whether Fiore or Nick should go, and the tiebreaker becomes the season's way of punishing drift. Even leaving, Nick makes noise by exposing The Bloc and Gabby's advantage history.",
@@ -8454,7 +8486,9 @@
             "Ep.5: Is removed by Fiore's emissary pick after surviving the vote itself."
           ],
           "alliances": [],
-          "rivalries": []
+          "rivalries": [],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Wix arrives promising to change the mood, and for a while they do exactly that. They are messy, funny, occasionally useful, and frequently in the wrong place at the wrong time. Their high point is enormous: finding the real flag in Ice Ice Baby and delivering Teal's first immunity win. But Rock the Dock damages their credibility badly when they get lost at sea and then captain poorly. Their rivalry with Miriam grows, their camp schemes wear thin, and the tribe starts treating them as both social threat and challenge liability. Even after surviving the vote chaos, Fiore's emissary pick finishes the job.",
@@ -8510,7 +8544,9 @@
             "The Circle",
             "The Bloc"
           ],
-          "rivalries": []
+          "rivalries": [],
+          "advPlayed": 0,
+          "advHeld": 0
         }
       ],
       "story": "Lill begins as the reliable one, the player whose word feels heavier than most people's promises. Her bonds with Seraphine and Ellie become defining pillars, and for a while they give her cover in a volatile Purple tribe. She sees more than people expect, reads body language well, and often steadies allies who are spiraling. But Lill's loyalty also makes her predictable, and predictability is deadly when the merge turns into idol insurance and split-vote math. After Seraphine leaves, she loses the emotional shield that kept her grounded. When Ellie's Super Idol detonates the plan, Lill becomes the cleanest casualty.",

@@ -498,6 +498,14 @@ function renderPlayerProfile(player) {
   const sorted = player.seasonDetails.slice().sort((a,b) => b.season - a.season);
   const isWinner = player.wins > 0;
   const winSeason = isWinner ? (player.seasonDetails.find(s => s.placement===1)||{}).season : null;
+  // Advantages = idols + non-idol advantages (extra vote, vote steal, amulet, etc.)
+  // Per season: prefer advPlayed+advHeld when tracked (advPlayed already counts idol
+  // plays, so don't add idolsFound on top); fall back to idolsFound for older seasons
+  // that didn't record advantage usage.
+  const advantagesPlayed = (player.seasonDetails || []).reduce((sum, sd) => {
+    const tracked = (sd.advPlayed != null) || (sd.advHeld != null);
+    return sum + (tracked ? ((sd.advPlayed || 0) + (sd.advHeld || 0)) : (sd.idolsFound || 0));
+  }, 0);
   const tier = player.tier || 'D';
   const tc = getTierInfo(tier);
   const score = player.score != null ? player.score : '—';
@@ -759,7 +767,7 @@ function renderPlayerProfile(player) {
   const _bars = [
     { label:'Challenge Wins', val: player.totalChallengeWins||0, max:20, color:'' },
     { label:'Immunity Wins',  val: player.totalImmunityWins||0,  max:12, color:'' },
-    { label:'Idols Found',    val: player.totalIdolsFound||0,    max:6,  color:'' },
+    { label:'Advantages',     val: advantagesPlayed,             max:6,  color:'' },
     { label:'Jury Votes',     val: player.totalJuryVotes||0,     max:10, color:'' },
     { label:'Votes Against',  val: player.totalVotesAgainst||0,  max:30, color:'danger', invert:true },
   ];
@@ -818,12 +826,12 @@ function renderPlayerProfile(player) {
     const vals = [
       clamp01(_num(player.totalChallengeWins) / maxChal),
       clamp01(1 - _num(player.totalVotesAgainst) / maxVotes),
-      clamp01(_num(player.totalIdolsFound) / maxIdols),
+      clamp01(_num(advantagesPlayed) / maxIdols),
       clamp01(_num(score) / maxScore),
       clamp01(_num(player.wins) / 3),
       clamp01(_num(player.totalSeasons) / maxSeasons),
     ];
-    const labels = ['Challenges','Low Target','Idols','Score','Wins','Experience'];
+    const labels = ['Challenges','Low Target','Advantages','Score','Wins','Experience'];
     const cx=130, cy=120, r=80, n=6;
     const pts = vals.map((v,i) => {
       const a = (i * 2 * Math.PI / n) - Math.PI/2;
@@ -1041,6 +1049,7 @@ function renderSeasonDetails(season) {
   if(season.immunityWins)  chips.push(`<span class="pc imm">🛡️ ${season.immunityWins} Immunity${season.immunityWins>1?' Wins':' Win'}</span>`);
   if(season.rewardWins)    chips.push(`<span class="pc rew">🎁 ${season.rewardWins} Reward${season.rewardWins>1?' Wins':' Win'}</span>`);
   if(season.idolsFound)    chips.push(`<span class="pc idol">💎 ${season.idolsFound} Idol${season.idolsFound>1?'s':''} Found</span>`);
+  if(season.advPlayed)     chips.push(`<span class="pc idol">🃏 ${season.advPlayed} Advantage${season.advPlayed>1?'s':''} Played</span>`);
   if(season.votesReceived) chips.push(`<span class="pc votes">🎯 ${season.votesReceived} Votes Against</span>`);
   if(season.challengeWins) chips.push(`<span class="pc">⚡ ${season.challengeWins} Challenge${season.challengeWins>1?' Wins':' Win'}</span>`);
   if(season.strategicRank) chips.push(`<span class="pc rank">📐 Strategic Rank #${season.strategicRank}</span>`);

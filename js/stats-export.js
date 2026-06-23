@@ -1269,14 +1269,16 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
     }
   }
 
-  // Fan favorites (overwrite on re-export)
+  // Fan favorites (overwrite on re-export) — prefer the editorial pick from the
+  // season template, else the popularity leader from autoAwards (gs.popularity).
   if (!db.fanFavorites) db.fanFavorites = [];
   db.fanFavorites = db.fanFavorites.filter(f => f.season !== seasonNum);
-  if (rawStats.autoAwards?.fanFavorite?.player) {
+  const _ffName = template?.awards?.fanFavorite?.name || rawStats.autoAwards?.fanFavorite?.player;
+  if (_ffName) {
     db.fanFavorites.push({
       season: seasonNum,
-      name: rawStats.autoAwards.fanFavorite.player,
-      playerSlug: _slug(rawStats.autoAwards.fanFavorite.player)
+      name: _ffName,
+      playerSlug: _slug(_ffName)
     });
   }
 
@@ -1685,9 +1687,9 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
       legacy: _clean(template.winner?.legacy)
     },
     awards: {
-      fanFavorite: rawStats.autoAwards?.fanFavorite?.player ? {
-        name: rawStats.autoAwards.fanFavorite.player,
-        playerSlug: _slug(rawStats.autoAwards.fanFavorite.player)
+      fanFavorite: (template.awards?.fanFavorite?.name || rawStats.autoAwards?.fanFavorite?.player) ? {
+        name: template.awards?.fanFavorite?.name || rawStats.autoAwards.fanFavorite.player,
+        playerSlug: _slug(template.awards?.fanFavorite?.name || rawStats.autoAwards.fanFavorite.player)
       } : null,
       bestStrategic: bestStr?.name ? {
         name: bestStr.name,
@@ -1805,6 +1807,20 @@ export async function exportAndFillNarratives(onStatus) {
       finalSeasonData.awards = aiResult.awards;
     }
     if (aiResult.emoji) finalSeasonData.emoji = aiResult.emoji;
+  }
+
+  // Guarantee a Fan Favorite award so the awards section is never blank. Prefer
+  // an editorial pick already present in the awards; otherwise fall back to the
+  // popularity leader from autoAwards (gs.popularity). Runs whether or not the
+  // AI narrative fill ran (awards may still be the '[AI_FILL]' placeholder here).
+  if (!finalSeasonData.awards || typeof finalSeasonData.awards !== 'object') finalSeasonData.awards = {};
+  if (!finalSeasonData.awards.fanFavorite?.name && rawStats.autoAwards?.fanFavorite?.player) {
+    const _ffName = rawStats.autoAwards.fanFavorite.player;
+    finalSeasonData.awards.fanFavorite = {
+      name: _ffName,
+      playerSlug: _slug(_ffName),
+      description: `${_ffName} was the season's most popular player with the fans.`
+    };
   }
 
   // Step 3: Merge databases AFTER AI fill (so narratives are included)

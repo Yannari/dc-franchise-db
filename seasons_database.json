@@ -361,10 +361,13 @@
         "legacy": "Miriam leaves as the season's definitive survivor: underestimated at the dock, painted as a target at merge, nearly cracked by paranoia, and still standing with the million when the volcano erupts. Her win is remembered less as a clean march and more as a stubborn, bruising refusal to be erased."
       },
       "awards": {
-        "fanFavorite": null,
+        "fanFavorite": {
+          "name": "Thom",
+          "playerSlug": "thom"
+        },
         "bestStrategic": {
-          "name": "Miriam",
-          "playerSlug": "miriam"
+          "name": "Fiore",
+          "playerSlug": "fiore"
         },
         "mostChallengeWins": {
           "name": "Thom",

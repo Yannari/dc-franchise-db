@@ -1115,7 +1115,7 @@ Dave voted for Mickey
             <span style="color:#a78bfa; margin-left:8px;">🧠 <b>STRATEGIC</b></span>
             <span>🗿 Adv Played +2.0</span>
             <span>💀 Adv Held + Eliminated −3.0 · Survived = 0</span>
-            <span>🤝 Allies +0.5 each (cap 4) · Unbreakable/named alliances only — not auto-filled</span>
+            <span>🤝 Allies +0.5 each (cap 4) · Unbreakable/named alliances only — auto-filled from season JSON</span>
             <span style="color:#34d399; margin-left:8px;">💞 <b>SOCIAL</b></span>
             <span></span>
             <span>❤️ Fan Fav +2.0</span>
@@ -7207,10 +7207,21 @@ Write ONLY the reasoning text, no labels or quotes.`;
       if (!placements.length) { alert('No placements array found in season JSON'); return; }
       document.getElementById('ru-placements-body').innerHTML='';
       rowCount=0;
+      // Self-contained name normalizer (this IIFE has no slugify in scope).
+      const norm = s => (s||'').toLowerCase().trim().replace(/['".]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+      // Fan Favorite lives in the awards block, not in the placements array — map
+      // it to a normalized name so we can tick the FANFAV box for that player.
+      const ffRaw = json.awards?.fanFavorite;
+      const fanFavKey = ffRaw ? norm(typeof ffRaw === 'string' ? ffRaw : ffRaw.name) : null;
       const sorted=[...placements].sort((a,b)=>(a.placement||99)-(b.placement||99));
       sorted.forEach(p=>{
         const name=p.name||p.playerName||'';
         const placement=p.placement||p.finalPlacement||'';
+        // Named/unbreakable alliances — exported as an array; count them for the
+        // "Allies +0.5 each (cap 4)" bonus. Falls back to a numeric count field.
+        const allianceCount = Array.isArray(p.alliances) ? p.alliances.length
+                            : (typeof p.alliances === 'number' ? p.alliances
+                            : (p.allianceCount ?? p.namedAlliances?.length ?? 0));
         const stats={
           juryVotes:   p.juryVotes||p.jury_votes||0,
           votesVs:     p.votesAgainst||p.votes_against||p.votesReceived||0,
@@ -7218,6 +7229,8 @@ Write ONLY the reasoning text, no labels or quotes.`;
           idolsFound:  p.advHeld ?? 0,
           imm:         p.immunityWins||p.imm||0,
           rew:         p.rewardWins!=null ? p.rewardWins : (p.rew!=null ? p.rew : Math.max(0, (p.challengeWins||0)-(p.immunityWins||0))),
+          alliances:   allianceCount,
+          fanFav:      !!fanFavKey && norm(name) === fanFavKey,
           quit:        p.eliminated==='quit'||p.quit||false,
         };
         addRow(name, placement, stats);

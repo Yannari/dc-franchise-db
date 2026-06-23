@@ -809,13 +809,19 @@ function renderPlayerProfile(player) {
   // ── RADAR CHART ──────────────────────────────────────────
   {
     const maxChal = 15, maxVotes = 30, maxIdols = 5, maxScore = 100, maxSeasons = 6;
+    // `score` is the string '—' for unranked players (e.g. a brand-new season's
+    // cast). Coerce every input to a finite number and clamp each axis to [0,1]
+    // so a missing score (NaN) or a veteran with >30 votes against (negative
+    // "Low Target") can't break or flip the value polygon.
+    const _num = (x) => (typeof x === 'number' && isFinite(x)) ? x : 0;
+    const clamp01 = (x) => Math.max(0, Math.min(1, x));
     const vals = [
-      Math.min((player.totalChallengeWins||0) / maxChal, 1),
-      Math.min(1 - (player.totalVotesAgainst||0) / maxVotes, 1),
-      Math.min((player.totalIdolsFound||0) / maxIdols, 1),
-      Math.min((score||0) / maxScore, 1),
-      Math.min((player.wins||0) / 3, 1),
-      Math.min((player.totalSeasons||0) / maxSeasons, 1),
+      clamp01(_num(player.totalChallengeWins) / maxChal),
+      clamp01(1 - _num(player.totalVotesAgainst) / maxVotes),
+      clamp01(_num(player.totalIdolsFound) / maxIdols),
+      clamp01(_num(score) / maxScore),
+      clamp01(_num(player.wins) / 3),
+      clamp01(_num(player.totalSeasons) / maxSeasons),
     ];
     const labels = ['Challenges','Low Target','Idols','Score','Wins','Experience'];
     const cx=130, cy=120, r=80, n=6;

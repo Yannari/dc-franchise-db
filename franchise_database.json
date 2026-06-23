@@ -345,6 +345,11 @@
       "season": 10,
       "name": "Jasmine",
       "playerSlug": "jasmine"
+    },
+    {
+      "season": 11,
+      "name": "Thom",
+      "playerSlug": "thom"
     }
   ],
   "multiSeasonPlayers": [

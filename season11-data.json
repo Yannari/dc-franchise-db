@@ -660,9 +660,9 @@
   "seasonNarrative": "Cursed Island begins as a survival test and becomes a study in how trust breaks under pressure. The pre-merge is defined by sabotage, swaps, exposed idols, and tribes that never fully stabilize: Ashley is framed, Drew is discarded, Will is betrayed, Eureka is rocked out, Wix is exiled by emissary power, Grett detonates half the game on her way out, Nick exposes alliances, and Sterling falls to a fractured Teal endgame. At the merge, no alliance survives first contact with public voting, idol insurance, or personal grudges. Ellie weaponizes a Super Idol, Dan loses the one read he needed, Jake's heart becomes both shield and target, and Fiore's Second Life Amulet rewrites the final six. Through it all, Miriam and Thom build a bond so visible it should destroy them, but instead it carries them to the finale. The season ends not with a jury speech, but with a volcanic race where Miriam weaponizes that bond one final time and steals the million from the person who trusted her most.",
   "awards": {
     "bestStrategic": {
-      "name": "Miriam",
-      "playerSlug": "miriam",
-      "description": "Miriam did not always control the board, but she consistently knew when to let someone else look like they did. Her endgame management of Thom, Eureka, and the Alec vote put her in position to win."
+      "name": "Fiore",
+      "playerSlug": "fiore",
+      "description": "Fiore out-schemed the entire island: forging notes, flipping votes, and weaponizing the Second Life Amulet to rewrite the final six. No one moved the game more."
     },
     "bestSocial": {
       "name": "Thom",
@@ -793,9 +793,9 @@
     },
     "masterStrategist": {
       "gold": {
-        "name": "Miriam",
-        "playerSlug": "miriam",
-        "description": "Miriam's strategy peaked when she let others underestimate the emotional leverage she held over Thom."
+        "name": "Fiore",
+        "playerSlug": "fiore",
+        "description": "Fiores game was relentless and theatrical — she manufactured chaos, then steered it, surviving spots where the numbers should have ended her."
       },
       "silver": {
         "name": "Alec",
@@ -871,6 +871,11 @@
       "name": "Miriam's Summit Plea",
       "episode": 18,
       "description": "At the crater, Thom reaches the summit first, but Miriam appeals to their entire journey, freezes him for one fatal second, and throws her dummy into the volcano to win Cursed Island."
+    },
+    "fanFavorite": {
+      "name": "Thom",
+      "playerSlug": "thom",
+      "description": "Thom was the seasons clear fan favorite — the heart-led protector everyone rooted for, from saving Gabby in the ocean to his heartbreaking runner-up finish at the volcano."
     }
   },
   "emoji": "[AI_FILL]"

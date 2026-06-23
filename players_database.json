@@ -7487,7 +7487,9 @@
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
-      "badges": [],
+      "badges": [
+        "S11 Fan Favorite"
+      ],
       "seasonDetails": [
         {
           "season": 11,

@@ -39,7 +39,7 @@ describe('audio prefs', () => {
 
 describe('audio catalogs', () => {
   const cueNames = ['reveal-whoosh','torch-snuff','idol-sting','vote-tick','tension-drum','win-fanfare','elimination-gong','screen-swoosh','tab-swoosh','button-tick','save-chime'];
-  const bedNames = ['camp-day','camp-night','tribal-tension','victory'];
+  const bedNames = ['camp-day','camp-night','tribal-tension','victory','challenge','aftermath'];
   it('every required cue exists with build fn + duck flag', () => {
     for (const n of cueNames) {
       expect(CUE_CATALOG[n], n).toBeDefined();

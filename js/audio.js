@@ -78,6 +78,8 @@ function bedCampDay(ctx, d)      { return _padBed(ctx, d, [196, 294, 392]); }
 function bedCampNight(ctx, d)    { return _padBed(ctx, d, [110, 146, 220]); }
 function bedTribalTension(ctx, d){ return _padBed(ctx, d, [98, 103, 147]); }
 function bedVictory(ctx, d)      { return _padBed(ctx, d, [262, 330, 392, 523]); }
+function bedChallenge(ctx, d)    { return _padBed(ctx, d, [131, 165, 196, 247]); } // driving, energetic
+function bedAftermath(ctx, d)    { return _padBed(ctx, d, [220, 277, 330]); }      // bright talk-show lounge
 
 export const CUE_CATALOG = {
   'reveal-whoosh':     { duck: false, build: voiceWhoosh },
@@ -101,6 +103,8 @@ export const BED_CATALOG = {
   'camp-night':     { build: bedCampNight,     file: 'assets/audio/bed-camp-night.mp3', volume: 0.40 },
   'tribal-tension': { build: bedTribalTension, file: 'assets/audio/bed-tribal.mp3',     volume: 0.42 },
   'victory':        { build: bedVictory,       file: 'assets/audio/bed-victory.mp3',    volume: 0.45 },
+  'challenge':      { build: bedChallenge,     file: 'assets/audio/bed-challenge.mp3',  volume: 0.40 },
+  'aftermath':      { build: bedAftermath,     file: 'assets/audio/bed-aftermath.mp3',  volume: 0.40 },
 };
 
 export function resolveCue(name) { return CUE_CATALOG[name] || null; }

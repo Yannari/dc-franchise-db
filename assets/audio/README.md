@@ -16,6 +16,8 @@ in the mix under its scene. Any file you omit simply stays silent.
 | `bed-camp-night.mp3`   | Nighttime camp / jury life / finale camp      |
 | `bed-tribal.mp3`       | Tribal council, votes, jury vote, fan vote    |
 | `bed-victory.mp3`      | Winner ceremony / reunion                     |
+| `bed-challenge.mp3`    | Immunity / reward / finale & all challenges   |
+| `bed-aftermath.mp3`    | The Aftermath / Aftermayhem show              |
 
 ## File tips
 

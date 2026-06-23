@@ -583,6 +583,34 @@ const _VP_STING = {
   'jury-vote': 'tension-drum', 'jury-votes': 'tension-drum', ftc: 'tension-drum',
 };
 
+// Challenge screens get their own ambient bed. They greatly outnumber other
+// screens and use stable id families; non-challenge screens are handled by the
+// explicit maps above (camp/tribal/victory) or fall through to no change.
+// When adding a new twist challenge, add its screen-id prefix here.
+const _CHALLENGE_IDS = new Set([
+  'challenge', 'reward-challenge', 'finale-challenge', 'grand-challenge',
+  'cliff-dive', 'awake-a-thon', 'sucky-outdoors', 'up-the-creek', 'paintball-hunt',
+  'hells-kitchen', 'trust-challenge', 'dodgebrawl', 'lucky-hunt', 'xtreme-torture',
+  'hide-seek', 'off-the-chain', 'wawanakwa-gone-wild', 'tri-armed-triathlon', 'tdd',
+]);
+const _CHALLENGE_PREFIXES = [
+  'talent-', 'pf-', 'bs-', 'su-', 'br-', 'cc-', 'yeti-', 'mc-', 'oc-', 'sh-', 'pp-',
+  'gc-', 'rr-', 'kf-', 'so-', 'td-', 'eg-', 'bb-', 'cft-', 'fc-', 'brb-', 'gfo-',
+  'rp-', 'dh-', 'pr-', 'iib-', 'pt-', 'als-', 'vs-', 'hd-', 'ssr-', 'az-', 'nm-',
+  'tls-', 'rtd-', 'tt-', 'mm-', 'gp-', 'hb-', 'ae-', 'bbb-', 'ct-', 'cs-', 'of-',
+  'mod-', 'sm-', 'bc-', 'oh-', 'fmd-', 'slasher-', 'hp-', 'relay-', 'tdd-',
+];
+
+// Resolve the ambient bed for a screen id. Pure + exported for testing.
+export function bedForScreen(id, explicitBed) {
+  if (explicitBed) return explicitBed;
+  if (!id) return null;
+  if (id === 'aftermath' || id.startsWith('aftermath-') || id.startsWith('aftermayhem-')) return 'aftermath';
+  if (_VP_AMBIENT[id]) return _VP_AMBIENT[id];
+  if (_CHALLENGE_IDS.has(id) || _CHALLENGE_PREFIXES.some(p => id.startsWith(p))) return 'challenge';
+  return null;
+}
+
 export function renderVPScreen() {
   const content  = document.getElementById('vp-screen-content');
   const prevBtn  = document.getElementById('vp-prev-btn');
@@ -618,7 +646,7 @@ export function renderVPScreen() {
   // to the universal screen-id → bed map. Plus a one-shot sting for big moments.
   const _screenRootEl = content.firstElementChild;
   const _explicitBed = _screenRootEl && _screenRootEl.getAttribute && _screenRootEl.getAttribute('data-ambient');
-  const _bed = _explicitBed || _VP_AMBIENT[cur.id] || null;
+  const _bed = bedForScreen(cur.id, _explicitBed);
   if (_bed) audio.ambient(_bed);
   audio.sfx('screen-swoosh');
   if (_VP_STING[cur.id]) audio.sfx(_VP_STING[cur.id]);

@@ -2282,17 +2282,18 @@
       "gender": "f",
       "archetype": "loyal-soldier",
       "stats": {
-        "physical": 4,
+        "physical": 5,
         "endurance": 5,
         "mental": 9,
         "social": 5,
-        "strategic": 7,
-        "loyalty": 7,
+        "strategic": 6,
+        "loyalty": 9,
         "boldness": 4,
-        "intuition": 6,
-        "temperament": 7
+        "intuition": 7,
+        "temperament": 8
       },
-      "isReturnee": false
+      "isReturnee": false,
+      "sexuality": "lesbian"
     },
     {
       "name": "Maggy",

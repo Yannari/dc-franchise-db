@@ -1944,23 +1944,41 @@ export async function generateRankingsNarration(onStatus) {
     return;
   }
 
+  const seasonPlayers = Object.keys(rawStats.players);
+  const _matchCount = db => (db?.rankings || []).filter(r =>
+    seasonPlayers.some(n => n.toLowerCase() === r.name.toLowerCase())
+  ).length;
+
+  // Auto-load rankings_database.json from the project folder first. If it has no
+  // players from THIS season (e.g. you ranked them in current-season.html but
+  // haven't copied that file back into the project yet — the updated copy is in
+  // your Downloads folder), fall back to a manual picker so you can grab it.
   let rankingsDb = null;
   try {
-    rankingsDb = await _promptLoadJSON('Load rankings_database.json for narration update');
-  } catch { return; }
+    const resp = await fetch('rankings_database.json').catch(() => null);
+    if (resp?.ok) rankingsDb = await resp.json().catch(() => null);
+  } catch { /* project file unavailable — fall through to picker */ }
+
+  if (!rankingsDb?.rankings?.length || _matchCount(rankingsDb) === 0) {
+    const _hadProjectFile = !!rankingsDb?.rankings?.length;
+    try {
+      rankingsDb = await _promptLoadJSON(_hadProjectFile
+        ? 'Project rankings_database.json has no players from this season — pick the updated copy (e.g. from your Downloads folder)'
+        : 'Load rankings_database.json for narration update');
+    } catch { return; }
+  }
 
   if (!rankingsDb?.rankings?.length) {
     alert('Invalid rankings database — no rankings array found.');
     return;
   }
 
-  const seasonPlayers = Object.keys(rawStats.players);
   const toUpdate = rankingsDb.rankings.filter(r =>
     seasonPlayers.some(n => n.toLowerCase() === r.name.toLowerCase())
   );
 
   if (!toUpdate.length) {
-    alert('No matching players found between this season and the rankings database.');
+    alert('No matching players found between this season and the rankings database.\n\nAdd this season’s players to the rankings first (current-season.html → Final Placements & Stats → Apply Updates), then run narration on THAT file.');
     return;
   }
 
@@ -1986,6 +2004,7 @@ export async function generateRankingsNarration(onStatus) {
     return { ...r, _context: parts.join('. ') };
   });
 
+  let narratedCount = 0;
   try {
     const batchSize = 10;
     for (let i = 0; i < playerContext.length; i += batchSize) {
@@ -2007,30 +2026,42 @@ export async function generateRankingsNarration(onStatus) {
         })
       });
 
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data.results) {
-          for (const result of data.results) {
-            const entry = rankingsDb.rankings.find(r => r.name.toLowerCase() === result.name.toLowerCase());
-            if (!entry) continue;
-            if (result.title) entry.title = result.title;
-            if (result.emoji) entry.emoji = result.emoji;
-            if (result.reasoning) entry.reasoning = result.reasoning;
-            if (result.strengths?.length) entry.strengths = result.strengths;
-            if (result.weaknesses?.length) entry.weaknesses = result.weaknesses;
-          }
-        }
+      // Surface worker failures instead of silently producing nothing.
+      if (!resp.ok) {
+        const errText = await resp.text().catch(() => '');
+        throw new Error(`Worker responded ${resp.status}. ${errText.slice(0, 300)}`);
+      }
+      const data = await resp.json();
+      if (!data.results?.length) {
+        console.warn('Worker returned no results for batch:', data);
+        continue;
+      }
+      for (const result of data.results) {
+        const entry = rankingsDb.rankings.find(r => r.name.toLowerCase() === result.name.toLowerCase());
+        if (!entry) continue;
+        if (result.title) entry.title = result.title;
+        if (result.emoji) entry.emoji = result.emoji;
+        if (result.reasoning) entry.reasoning = result.reasoning;
+        if (result.strengths?.length) entry.strengths = result.strengths;
+        if (result.weaknesses?.length) entry.weaknesses = result.weaknesses;
+        narratedCount++;
       }
     }
     if (rankingsDb.metadata) rankingsDb.metadata.lastUpdated = new Date().toISOString().split('T')[0];
   } catch (err) {
     console.warn('Rankings narration failed:', err);
-    alert('Narration generation failed — check console.');
+    alert('Narration generation failed — ' + (err.message || err) + '\n(See console for details.)');
     return;
   }
 
-  _status('Downloading updated rankings...');
+  if (!narratedCount) {
+    alert(`Matched ${toUpdate.length} player(s), but the worker returned no narration for any of them. Check the worker URL and that it supports "rankings-narration" mode (see console).`);
+    return;
+  }
+
+  _status(`Downloading updated rankings (${narratedCount} narrated)...`);
   _downloadJSON(rankingsDb, 'rankings_database.json');
+  alert(`✅ Generated narration for ${narratedCount} player(s). Updated rankings_database.json downloaded — replace your project copy with it.`);
 }
 
 // ── 20. PDF Exports ──────────────────────────────────────────────────

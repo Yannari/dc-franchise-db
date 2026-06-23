@@ -1366,7 +1366,7 @@ export function rpBuildOperationClassifiedTitleCard(ep) {
 }
 
 export function rpBuildOperationClassifiedScan(ep) {
-  const events = ep.operationClassified.timeline.scan || [];
+  const events = ep.operationClassified?.timeline?.scan || [];
   const stateKey = `oc-${ep.num}-scan`;
   if (!window._tvState) window._tvState = {};
   if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };
@@ -1419,7 +1419,7 @@ export function rpBuildOperationClassifiedScan(ep) {
   return shell(ep, html, 'scan', events);
 }
 export function rpBuildOperationClassifiedLaser(ep) {
-  const events = ep.operationClassified.timeline.laser || [];
+  const events = ep.operationClassified?.timeline?.laser || [];
   const oc = ep.operationClassified;
   const stateKey = `oc-${ep.num}-laser`;
   if (!window._tvState) window._tvState = {};
@@ -1541,7 +1541,7 @@ export function rpBuildOperationClassifiedLaser(ep) {
 }
 
 function _renderWiretapScreen(ep, timelineKey, stateKeySuffix, btnLabel) {
-  const events = ep.operationClassified.timeline[timelineKey] || [];
+  const events = ep.operationClassified?.timeline?.[timelineKey] || [];
   const stateKey = `oc-${ep.num}-${stateKeySuffix}`;
   if (!window._tvState) window._tvState = {};
   if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };
@@ -1586,7 +1586,7 @@ export function rpBuildOperationClassifiedWiretap2(ep) {
   return _renderWiretapScreen(ep, 'wiretap2', 'wiretap2', 'Intercept');
 }
 export function rpBuildOperationClassifiedDefusal(ep) {
-  const events = ep.operationClassified.timeline.defusal || [];
+  const events = ep.operationClassified?.timeline?.defusal || [];
   const stateKey = `oc-${ep.num}-defusal`;
   if (!window._tvState) window._tvState = {};
   if (!window._tvState[stateKey]) window._tvState[stateKey] = { idx: -1 };

@@ -609,7 +609,8 @@ const _BED_CAMPNIGHT_EXACT = new Set([
   'finale-camp', 'kl-camp', 'kl-choice', 'firemaking-camp', 'firemaking-decision',
   'fanvote-camp', 'jury-life', 'final-cut',
 ]);
-const _BED_CAMPNIGHT_PREFIX = ['voting-plans-'];      // multi-tribal plans (voting-plans-2 already tribal)
+// camp-post-<tribe> = the "After The Challenge" / "After TC" camp-life screens.
+const _BED_CAMPNIGHT_PREFIX = ['voting-plans-', 'camp-post-'];
 // Camp-day phase: pre-challenge / general daytime camp & early-game twists.
 const _BED_CAMPDAY_EXACT = new Set([
   'cold-open', 'pf-confessions', 'first-impressions', 'second-chance', 'rescue-return',
@@ -628,7 +629,7 @@ export function bedForScreen(id, explicitBed) {
   if (_BED_TRIBAL_EXACT.has(id) || _BED_TRIBAL_PREFIX.some(p => id.startsWith(p))) return 'tribal-tension';
   if (_BED_CHALLENGE_IDS.has(id) || _BED_CHALLENGE_PREFIXES.some(p => id.startsWith(p))) return 'challenge';
   if (_BED_CAMPNIGHT_EXACT.has(id) || _BED_CAMPNIGHT_PREFIX.some(p => id.startsWith(p))) return 'camp-night';
-  if (_BED_CAMPDAY_EXACT.has(id)) return 'camp-day';
+  if (_BED_CAMPDAY_EXACT.has(id) || id.startsWith('camp-pre-')) return 'camp-day';
   return null;
 }
 

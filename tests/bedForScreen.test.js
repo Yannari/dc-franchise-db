@@ -21,11 +21,13 @@ describe('bedForScreen', () => {
     expect(bedForScreen('aftermayhem-board')).toBe('aftermath');
   });
 
-  it('camp-day covers cold-open and pre-challenge screens', () => {
+  it('camp-day covers cold-open, pre-challenge screens, and per-tribe camp-pre life', () => {
     expect(bedForScreen('cold-open')).toBe('camp-day');
     expect(bedForScreen('first-impressions')).toBe('camp-day');
     expect(bedForScreen('merge')).toBe('camp-day');
     expect(bedForScreen('twist')).toBe('camp-day');
+    expect(bedForScreen('camp-pre-Sharks')).toBe('camp-day');   // pre-challenge camp life
+    expect(bedForScreen('camp-pre-merge')).toBe('camp-day');
   });
 
   it('generic + twist challenge screens map to the challenge bed', () => {
@@ -48,6 +50,8 @@ describe('bedForScreen', () => {
     expect(bedForScreen('ri-choice')).toBe('camp-night');
     expect(bedForScreen('post-twist')).toBe('camp-night');
     expect(bedForScreen('final-cut')).toBe('camp-night');   // must NOT match the 'fc-' challenge prefix
+    expect(bedForScreen('camp-post-Sharks')).toBe('camp-night'); // "After The Challenge" camp life
+    expect(bedForScreen('camp-post-merge')).toBe('camp-night');
   });
 
   it('tribal phase covers council, votes, jury vote, and double-boot re-votes', () => {

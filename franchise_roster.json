@@ -2153,15 +2153,15 @@
       "archetype": "perceptive-player",
       "sexuality": "gay",
       "stats": {
-        "physical": 5,
-        "endurance": 6,
-        "mental": 8,
+        "physical": 4,
+        "endurance": 5,
+        "mental": 7,
         "social": 9,
         "strategic": 8,
         "loyalty": 6,
-        "boldness": 6,
+        "boldness": 7,
         "intuition": 9,
-        "temperament": 7
+        "temperament": 5
       },
       "isReturnee": false
     },

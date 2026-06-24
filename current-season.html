@@ -3234,6 +3234,7 @@ async function generateEpisodeAI() {
     let body = '';
     let currentScene = '';
     let inConfessional = false;
+    let confSpeaker = '';
     let inTribal = false;
     let sceneIdx = 0;
     let confIdx = 0;
@@ -3247,7 +3248,7 @@ async function generateEpisodeAI() {
         if (low.includes('title card') || low.startsWith('title:')) return;
 
         const isConf = low.includes('confessional');
-        if (inConfessional) { body += '</div>'; inConfessional = false; }
+        if (inConfessional) { body += '</div>'; inConfessional = false; confSpeaker = ''; }
 
         if (isConf) {
           confIdx++;
@@ -3256,6 +3257,7 @@ async function generateEpisodeAI() {
           body += `<div class="conf-header"><span class="conf-rec">⏺ REC</span><span class="conf-num">Confessional #${confIdx}</span></div>`;
           body += `<div class="confessional-label">🎥 ${escapeHtml(who.toUpperCase())}</div>`;
           inConfessional = true;
+          confSpeaker = who.toLowerCase().trim();
           delay++;
           return;
         }
@@ -3286,6 +3288,19 @@ async function generateEpisodeAI() {
       if (dlg) {
         let [, character, speech] = dlg;
         character = character.trim();
+        // A confessional is a monologue by one subject. When a different person
+        // starts speaking, close the confessional box so it doesn't swallow the
+        // scene that follows (e.g. tribal-council Q&A after a confessional).
+        if (inConfessional) {
+          const spk = character.toLowerCase();
+          if (!confSpeaker || confSpeaker === 'confessional') {
+            confSpeaker = spk; // generic header — first speaker defines the subject
+          } else if (spk !== confSpeaker) {
+            body += '</div>';
+            inConfessional = false;
+            confSpeaker = '';
+          }
+        }
         const color = getCharacterColor(character);
         const avatar = getCharacterAvatar(character.toLowerCase());
         body += `<div class="dialogue-line chat-bubble" style="animation-delay:${delay * 0.04}s">`;

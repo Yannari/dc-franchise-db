@@ -2226,11 +2226,17 @@ export function _textAftermath(ep, ln, sec) {
     ln('UNSEEN FOOTAGE:');
     a.unseenFootage.forEach(clip => ln(`Ep ${clip.sourceEp}: ${clip.description}`));
   }
-  // Fan Call
+  // Fan Call — a fan video-calls in for a 3-round Q&A with one player
   if (a.fanCall) {
+    const fc = a.fanCall;
+    const _fanTypeLabels = { superfan: 'Superfan', drama: 'Drama Fan', hater: 'The Hater', supporter: 'Biggest Fan' };
     ln('');
-    ln(`FAN CALL: ${a.fanCall.fanName} asks ${a.fanCall.target}: "${a.fanCall.question}"`);
-    ln(`Answer: ${a.fanCall.answer}`);
+    ln(`FAN CALL: ${fc.fanName}${fc.fanType ? ` (${_fanTypeLabels[fc.fanType] || fc.fanType})` : ''} takes a call with ${fc.target}.`);
+    (fc.exchanges || []).forEach((ex, i) => {
+      ln(`${fc.fanName}: "${ex.q}"`);
+      ln(`${fc.target}: "${ex.a}"`);
+      if (fc.hostReactions?.[i] && i < (fc.exchanges.length - 1)) ln(fc.hostReactions[i]);
+    });
   }
   // Fan Vote
   if (a.fanVote) {

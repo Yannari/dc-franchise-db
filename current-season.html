@@ -3187,7 +3187,7 @@ async function generateEpisodeAI() {
           totalScenes++;
         }
       } else {
-        const dlg = line.match(/^([A-Z][a-zA-Z\s']+):\s*(.+)$/);
+        const dlg = line.match(/^([A-Z][a-zA-Z\s'\-]+):\s*(.+)$/);
         if (dlg) dialogueCounts[dlg[1].trim()] = (dialogueCounts[dlg[1].trim()] || 0) + 1;
       }
     });
@@ -3282,7 +3282,7 @@ async function generateEpisodeAI() {
         return;
       }
 
-      const dlg = line.match(/^([A-Z][a-zA-Z\s']+):\s*(.+)$/);
+      const dlg = line.match(/^([A-Z][a-zA-Z\s'\-]+):\s*(.+)$/);
       if (dlg) {
         let [, character, speech] = dlg;
         character = character.trim();

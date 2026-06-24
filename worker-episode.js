@@ -2359,6 +2359,13 @@ If this episode's summary says MERGED, you are in the individual game — full s
 - The challenge is a team competition
 - Write separate camp scenes per tribe
 
+🚨 TRIBE BOUNDARIES ARE ABSOLUTE (pre-merge) — getting this wrong breaks continuity:
+- The eliminated player is ALWAYS a member of the LOSING tribe (the one that went to Tribal). Never write the winning tribe voting anyone out. Cross-check: the boot's name MUST appear in the losing tribe's roster.
+- The post-Tribal "return to camp" / debrief scene contains ONLY the losing tribe's surviving members — the EXACT people listed as Tribal Council "Attendees", minus the eliminated player. NEVER put a winning-tribe member in this scene. If you are about to write Player X reacting to the vote, confirm X was at that Tribal.
+- A player may only mourn / react to / strategize about an elimination if the eliminated player was on THEIR OWN tribe. "X's spot is empty," "we lost X," "after losing X" — the people saying it MUST be X's tribemates. A different tribe's members do NOT know and do NOT react.
+- The WINNING tribe does NOT know who was voted out. They are at their OWN camp with zero information about the other tribe's Tribal. They learn WHO is gone ONLY at the NEXT challenge, when they see who is missing — never at camp, never in a confessional, never the same night.
+- Cross-tribe friendships/old bonds still exist, but a player CANNOT reference another tribe's vote result until it is revealed at the next challenge. Someone whose cross-tribe friend was just voted out finds out at the next challenge, and reacts THEN — not before.
+
 **If MERGED / Individual:**
 - There are NO tribes. Everyone is playing individually.
 - ONE person wins immunity. ALL others are vulnerable.

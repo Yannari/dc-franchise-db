@@ -256,10 +256,20 @@ export function _textColdOpen(ep, ln, sec) {
   if (!prev) return;
   sec('COLD OPEN');
   if (prev.eliminated) {
+    // Pre-merge: name the boot's tribe so the worker only has THAT tribe react.
+    // The other tribe doesn't know yet — they find out at the next challenge.
+    const wasMerged = prev.isMerge || gs.isMerged;
+    let bootTribe = null;
+    if (!wasMerged) {
+      bootTribe = (prev.tribesAtStart || []).find(t => (t.members || []).includes(prev.eliminated))?.name || null;
+    }
     if (prev.lastChance) {
       ln(`Ep.${prev.num}: Last Chance Challenge. ${prev.eliminated} was eliminated in a head-to-head duel.`);
     } else {
-      ln(`Ep.${prev.num}: ${prev.immunityWinner ? prev.immunityWinner + ' won immunity. ' : ''}${prev.eliminated} was voted out${prev.riChoice === 'REDEMPTION ISLAND' ? ' and chose Redemption Island' : ''}.`);
+      ln(`Ep.${prev.num}: ${prev.immunityWinner ? prev.immunityWinner + ' won immunity. ' : ''}${prev.eliminated} was voted out${bootTribe ? ` at ${bootTribe}'s Tribal Council` : ''}${prev.riChoice === 'REDEMPTION ISLAND' ? ' and chose Redemption Island' : ''}.`);
+    }
+    if (bootTribe) {
+      ln(`NOTE: ${prev.eliminated} was on ${bootTribe}. ONLY ${bootTribe} attended that Tribal and knows ${prev.eliminated} is gone — the post-Tribal debrief is ${bootTribe} members ONLY. The other tribe has NOT learned this yet and finds out at the next challenge.`);
     }
   }
   const recentBetrayals = gs.namedAlliances?.flatMap(a => a.betrayals.filter(b => b.ep === prev.num)) || [];

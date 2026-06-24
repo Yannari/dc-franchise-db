@@ -54,6 +54,7 @@ import { rpBuildRPTitleCard, rpBuildRPFieldPhase, rpBuildRPCavePhase, rpBuildRPP
 import { rpBuildDHTitleCard, rpBuildDHBuildPhase, rpBuildDHVotePhase, rpBuildDHDigPhase, rpBuildDHResults, dhRevealNext, dhRevealAll } from './chal/drumheller.js';
 import { rpBuildIIBTitleCard, rpBuildIIBSummit, rpBuildIIBFortBuild, rpBuildIIBCtfAssault, rpBuildIIBResults, iibRevealNext, iibRevealAll } from './chal/ice-ice-baby.js';
 import { rpBuildFCRTitleCard, rpBuildFCRForest, rpBuildFCRCemetery, rpBuildFCRCave, rpBuildFCRResults, fcrRevealNext, fcrRevealAll } from './chal/finders-creepers.js';
+import { rpBuildBATitleCard, rpBuildBADive, rpBuildBARace, rpBuildBAResults, baRevealNext, baRevealAll } from './chal/backstabbers-ahoy.js';
 import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaCrossing, rpBuildPTBeachSprint, rpBuildPTResults, ptRevealNext, ptRevealAll } from './chal/planes-trains.js';
 import { rpBuildPRTitleCard, rpBuildPRRoles, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults, prRevealNext, prRevealAll, resetPRState } from './chal/project-runaway.js';
 
@@ -12314,6 +12315,11 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'fcr-cemetery', label:'Pet Cemetery', html: rpBuildFCRCemetery(ep) });
     vpScreens.push({ id:'fcr-cave', label:'The Cave', html: rpBuildFCRCave(ep) });
     vpScreens.push({ id:'fcr-results', label:'Results', html: rpBuildFCRResults(ep) });
+  } else if ((ep.isBackstabbersAhoy || ep.challengeType === 'backstabbers-ahoy') && ep.backstabbersAhoy) {
+    vpScreens.push({ id:'ba-title', label:'Backstabbers Ahoy', html: rpBuildBATitleCard(ep) });
+    vpScreens.push({ id:'ba-dive', label:'The Deep Dive', html: rpBuildBADive(ep) });
+    vpScreens.push({ id:'ba-race', label:'The Gull Run', html: rpBuildBARace(ep) });
+    vpScreens.push({ id:'ba-results', label:'Results', html: rpBuildBAResults(ep) });
   } else if ((ep.isPlanesTrains || ep.challengeType === 'planes-trains') && (ep.planesTrains || ep.challengeData)) {
     const ptEp = ep.planesTrains ? Object.assign({}, ep, { challengeData: ep.planesTrains }) : ep;
     vpScreens.push({ id:'pt-title', label:'Planes Trains & HAM', html: rpBuildPTTitleCard(ptEp) });

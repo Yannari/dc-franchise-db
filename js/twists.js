@@ -1618,6 +1618,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'finders-creepers') {
     ep.isFindersCreepers = true;
 
+  } else if (engineType === 'backstabbers-ahoy') {
+    ep.isBackstabbersAhoy = true;
+
   } else if (engineType === 'cultural-reset') {
     const activePlayers = gs.activePlayers;
     twistObj.revealedAlliances = (gs.namedAlliances||[]).filter(a => a.active).map(a => a.name);
@@ -3979,6 +3982,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'planes-trains': 'isPlanesTrains',
         'project-runaway': 'isProjectRunaway',
         'finders-creepers': 'isFindersCreepers',
+        'backstabbers-ahoy': 'isBackstabbersAhoy',
       };
       const _flag = _engineFlagMap[_rtcEngine];
       const _catEntry = TWIST_CATALOG.find(c => c.id === _rtcEngine);

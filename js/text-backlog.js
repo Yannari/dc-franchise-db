@@ -609,10 +609,50 @@ export function _textImmunityChallenge(ep, ln, sec) {
 }
 
 // ── TWISTS ──
+// Roster-changing twists fire at the START of an episode (before camp life and
+// the challenge), so their announcement must appear BEFORE camp events — otherwise
+// the backlog describes camp life on the new tribes before ever saying the swap
+// happened. Emitted in its own early section; skipped in _textTwists below.
+const ROSTER_TWIST_TYPES = new Set(['producer-swap','tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction']);
+
+export function _textRosterSwaps(ep, ln, sec) {
+  const allTwists = ep.twists?.length ? ep.twists : (ep.twist ? [ep.twist] : []);
+  const swaps = allTwists.filter(t => ROSTER_TWIST_TYPES.has(t.type));
+  if (!swaps.length) return;
+  sec('TRIBE SHAKE-UP');
+  swaps.forEach(tw => {
+    if (tw.type === 'producer-swap') {
+      ln('PRODUCER SWAP — before anything else this episode, Chris McLean invoked a production override (NOT a vote, NOT random, NOT a reward). He personally reassigned players between tribes.');
+      (tw.producerMoves || []).forEach(m => ln(`- ${m.player} reassigned: ${m.from} → ${m.to} (effective immediately).`));
+      ln('This happened FIRST — all camp life and the challenge below take place on these NEW tribes:');
+      if (tw.newTribes) tw.newTribes.forEach(t => ln(`${t.name.toUpperCase()}: ${t.members.join(', ')}`));
+    } else if (tw.type === 'tribe-swap') {
+      ln('TRIBE SWAP — before the challenge, all players were redistributed into new tribes. Everything below happens on these NEW tribes:');
+      if (tw.newTribes) tw.newTribes.forEach(t => ln(`${t.name.toUpperCase()}: ${t.members.join(', ')}`));
+      ln('New idols hidden for each tribe after the swap.');
+    } else if (tw.type === 'tribe-dissolve') {
+      ln(`TRIBE DISSOLVE — ${tw.dissolvedTribe || 'a tribe'} was dissolved and players reshuffled. Everything below happens on these NEW tribes:`);
+      if (tw.newTribes) tw.newTribes.forEach(t => ln(`${t.name.toUpperCase()}: ${t.members.join(', ')}`));
+    } else if (tw.type === 'tribe-expansion') {
+      ln(`TRIBE EXPANSION — a new tribe "${tw.newTribeName || 'New Tribe'}" was formed and players split into ${tw.newTribes?.length || '?'} groups. Everything below happens on these NEW tribes:`);
+      if (tw.newTribes) tw.newTribes.forEach(t => ln(`${t.name.toUpperCase()}: ${t.members.join(', ')}`));
+    } else if (tw.type === 'mutiny') {
+      if (tw.mutineers?.length) {
+        ln(`MUTINY — before the challenge, ${tw.mutineers.length} player(s) voluntarily switched tribes:`);
+        tw.mutineers.forEach(m => ln(`- ${m.name} left ${m.from} to join ${m.to}`));
+      } else ln('MUTINY — players were offered the chance to switch tribes; nobody took it.');
+    } else if (tw.type === 'abduction') {
+      if (tw.stolen?.length) { ln('ABDUCTION — before the challenge, each tribe kidnapped one player from a rival:'); tw.stolen.forEach(s => ln(`- ${s.name} taken from ${s.from} by ${s.to}`)); }
+      else ln('ABDUCTION — no players stolen (tribes too small).');
+    }
+  });
+}
+
 export function _textTwists(ep, ln, sec) {
   const allTwists = ep.twists?.length ? ep.twists : (ep.twist ? [ep.twist] : []);
-  // Filter out types handled by other sections
-  const skipTypes = new Set(['reward-challenge','hero-duel','shared-immunity','double-safety','elimination-swap','exile-duel','fire-making','jury-elimination','tiebreaker-challenge']);
+  // Filter out types handled by other sections (roster swaps render early via _textRosterSwaps)
+  const skipTypes = new Set(['reward-challenge','hero-duel','shared-immunity','double-safety','elimination-swap','exile-duel','fire-making','jury-elimination','tiebreaker-challenge',
+    ...ROSTER_TWIST_TYPES]);
   const twists = allTwists.filter(t => !skipTypes.has(t.type));
   if (!twists.length && !ep.journey) return;
   sec('TWISTS');
@@ -2383,6 +2423,7 @@ export function generateSummaryText(ep) {
   _textSecondChanceVote(ep, ln, sec);
   _textMerge(ep, ln, sec);
   _textFeast(ep, ln, sec);
+  _textRosterSwaps(ep, ln, sec); // tribe swaps fire first — announce BEFORE camp life
   _textCampPre(ep, ln, sec);
   _textRewardChallenge(ep, ln, sec);
   _textImmunityChallenge(ep, ln, sec);

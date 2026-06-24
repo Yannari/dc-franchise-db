@@ -529,12 +529,20 @@ export function simulateFindersCreepers(ep) {
       }
     });
 
-    // Mark cave completion order (finish line)
+    // Mark cave completion order (finish line). Rank tribes that completed the
+    // cave by how well they performed there (avg member score in this phase),
+    // NOT by tribe-array order — otherwise tribes[0] always "finishes first" and
+    // wins every tie. Random jitter breaks exact ties without favoring anyone.
     if (loc.key === 'cave') {
-      // tribes that completed the cave, ranked by survivors then by random tiebreak earlier
+      const caveScore = {};
       tribes.forEach(t => {
-        if (progress[t.name].cave && !finishOrder.includes(t.name)) finishOrder.push(t.name);
+        const ms = t.members.map(m => ep.chalMemberScores[m] || 0);
+        caveScore[t.name] = (ms.reduce((a, b) => a + b, 0) / Math.max(1, ms.length)) + (Math.random() - 0.5);
       });
+      tribes
+        .filter(t => progress[t.name].cave && !finishOrder.includes(t.name))
+        .sort((a, b) => caveScore[b.name] - caveScore[a.name])
+        .forEach(t => finishOrder.push(t.name));
     }
   });
 
@@ -544,21 +552,30 @@ export function simulateFindersCreepers(ep) {
       _challengeRomanceSpark(allActive[i], allActive[j], ep, null, null, ep.chalMemberScores || {}, 'finders creepers');
   _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'finders creepers', allActive);
 
-  // ══ DETERMINE WINNER: FEWEST MEMBERS LOST ══
+  // ══ DETERMINE WINNER: FEWEST MEMBERS LOST (size-fair) ══
+  // Rank by the FRACTION of the team lost, not the raw count — otherwise a bigger
+  // tribe is unfairly penalized (captures are per-member rolls, so expected raw
+  // losses scale with size, while expected fraction lost is size-independent).
+  // For equal-size tribes this ranks identically to raw count, so the common case
+  // is unchanged and still reads as "fewest lost."
   const standings = tribes.map(t => {
     const lost = webbed[t.name].size;
+    const size = Math.max(1, t.members.length);
+    const lostFraction = lost / size;
     const remaining = t.members.length - lost;
     const completed = Object.values(progress[t.name]).filter(Boolean).length;
     const finishRank = finishOrder.indexOf(t.name);
     return {
-      name: t.name, lost, remaining, completed,
+      name: t.name, lost, size, lostFraction, remaining, completed,
       // finishRank: -1 if never finished the cave → worst; otherwise 0 = first
       finishRank: finishRank === -1 ? 99 : finishRank,
     };
   });
 
-  // Sort: fewest lost first; tie → most locations completed; tie → finished cave earliest
+  // Sort: smallest fraction lost first; tie → fewest raw lost; tie → most
+  // locations completed; tie → finished cave earliest.
   standings.sort((a, b) =>
+    (a.lostFraction - b.lostFraction) ||
     (a.lost - b.lost) ||
     (b.completed - a.completed) ||
     (a.finishRank - b.finishRank));

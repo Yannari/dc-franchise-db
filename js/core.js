@@ -954,6 +954,55 @@ export function prepGsForSave(g) {
   return g;
 }
 
+// ── Accented-name self-heal ──────────────────────────────────────────
+// Player names must be plain ASCII (the roster/slug pipeline can't round-trip
+// accents through clipboard → worker → LLM). A season started before a name was
+// de-accented keeps the old form baked into the loaded cast + gs + episode
+// history. This deep-replaces those strings (values AND name-keyed object keys)
+// on load so the whole simulator self-heals — no manual save-editing needed.
+const ACCENTED_NAME_FIXES = { 'Rosa-María': 'Rosa-Maria', 'Rosa María': 'Rosa Maria' };
+
+function _fixAccentedDeep(obj, fixes) {
+  if (typeof obj === 'string') {
+    let s = obj;
+    for (const [from, to] of Object.entries(fixes)) if (s.includes(from)) s = s.split(from).join(to);
+    return s;
+  }
+  if (Array.isArray(obj)) return obj.map(v => _fixAccentedDeep(v, fixes));
+  if (obj && typeof obj === 'object') {
+    for (const key of Object.keys(obj)) {
+      const val = _fixAccentedDeep(obj[key], fixes);
+      let newKey = key;
+      for (const [from, to] of Object.entries(fixes)) if (newKey.includes(from)) newKey = newKey.split(from).join(to);
+      if (newKey !== key) { delete obj[key]; obj[newKey] = val; }
+      else obj[key] = val;
+    }
+    return obj;
+  }
+  return obj;
+}
+
+// Cheap guard: only deep-walk when an accented form is actually present.
+function _hasAccented(obj) {
+  try { const s = JSON.stringify(obj); return Object.keys(ACCENTED_NAME_FIXES).some(k => s.includes(k)); }
+  catch { return false; }
+}
+
+export function normalizeAccentedNames() {
+  if (Array.isArray(players) && _hasAccented(players)) {
+    players = _fixAccentedDeep(players, ACCENTED_NAME_FIXES);
+    try { localStorage.setItem('simulator_cast', JSON.stringify(players)); } catch {}
+  }
+  if (gs && _hasAccented(gs)) _fixAccentedDeep(gs, ACCENTED_NAME_FIXES);
+  if (Array.isArray(relationships) && _hasAccented(relationships)) {
+    relationships = _fixAccentedDeep(relationships, ACCENTED_NAME_FIXES);
+    try { localStorage.setItem('simulator_rels', JSON.stringify(relationships)); } catch {}
+  }
+  for (const k of Object.keys(gsCheckpoints || {})) {
+    if (_hasAccented(gsCheckpoints[k])) _fixAccentedDeep(gsCheckpoints[k], ACCENTED_NAME_FIXES);
+  }
+}
+
 export async function loadAll() {
   // These small items stay in localStorage
   try { const c = localStorage.getItem('simulator_cast'); if (c) players = JSON.parse(c); } catch(e) { players = []; }
@@ -1020,6 +1069,9 @@ export async function loadAll() {
       }
     } catch(e2) {}
   }
+
+  // Self-heal any pre-rename accented player names across cast + gs + checkpoints.
+  try { normalizeAccentedNames(); } catch(e) { console.warn('name normalization failed:', e); }
 }
 
 

@@ -621,6 +621,10 @@ export function _textTwists(ep, ln, sec) {
       ln('TRIBE SWAP — all players redistributed into new tribes.');
       if (tw.newTribes) tw.newTribes.forEach(t => ln(`${t.name.toUpperCase()}: ${t.members.join(', ')}`));
       ln('New idols hidden for each tribe after the swap.');
+    } else if (tw.type === 'producer-swap') {
+      ln('PRODUCER SWAP — Chris McLean invoked a production override (not a vote, not random).');
+      (tw.producerMoves || []).forEach(m => ln(`${m.player} reassigned: ${m.from} → ${m.to}.`));
+      if (tw.newTribes) tw.newTribes.forEach(t => ln(`${t.name.toUpperCase()}: ${t.members.join(', ')}`));
     } else if (tw.type === 'double-elim') {
       ln('DOUBLE ELIMINATION — two players voted out this episode.');
     } else if (tw.type === 'no-tribal') {

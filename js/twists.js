@@ -874,6 +874,33 @@ export function applyTwist(ep, twist, isPrimary = true) {
     twistObj.expansion  = true;
     twistObj.newTribeName = newName;
 
+  } else if (engineType === 'producer-swap') {
+    // Production override — a NON-random, you-decide swap. Chris reassigns the
+    // configured player to the configured tribe; optionally a second player is
+    // sent back the other way (keeps counts balanced for a clean 1-for-1).
+    if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;
+    const p1   = twist.swapPlayer;
+    const dest  = twist.swapToTribe;
+    const p2   = twist.swapPlayer2; // optional swap-back
+    const destTribe = gs.tribes.find(t => t.name === dest);
+    const fromTribe = gs.tribes.find(t => t.members.includes(p1));
+    if (!p1 || !destTribe || !fromTribe || fromTribe === destTribe) return; // invalid/no-op config
+    const moves = [];
+    fromTribe.members = fromTribe.members.filter(n => n !== p1);
+    destTribe.members.push(p1);
+    moves.push({ player: p1, from: fromTribe.name, to: destTribe.name });
+    if (p2 && p2 !== p1) {
+      const p2Tribe = gs.tribes.find(t => t.members.includes(p2));
+      if (p2Tribe && p2Tribe !== fromTribe) {
+        p2Tribe.members = p2Tribe.members.filter(n => n !== p2);
+        fromTribe.members.push(p2);
+        moves.push({ player: p2, from: p2Tribe.name, to: fromTribe.name });
+      }
+    }
+    gs.sitOutHistory = {}; // back-to-back sit-out rule resets after a roster change
+    twistObj.producerMoves = moves;
+    twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
+
   } else if (engineType === 'kidnapping') {
     // Challenge winner tribe kidnaps a player from the losing tribe for one episode.
     // The kidnapped player skips tribal (safe) and spends the episode with the winner tribe.
@@ -4148,6 +4175,18 @@ export function generateTwistScenes(ep) {
         (tw.newTribes||[]).forEach(t => sc.push({ text: t.name, players: t.members, tribeLabel: t.name }));
         sc.push({ text: 'New Hidden Immunity Idols have been hidden at each tribe\'s camp.', players: [] });
         result.push({ label:'Tribe Expansion', type:tw.type, scenes:sc }); break;
+
+      case 'producer-swap': {
+        const moves = tw.producerMoves || [];
+        sc.push({ text: 'Chris McLean gathers both tribes on the mat. "Production has made a decision. This is not a vote. This is not a reward. This is happening because I said so."', players: (tw.newTribes||[]).flatMap(t=>t.members) });
+        if (moves.length) {
+          moves.forEach(m => sc.push({ text: `${m.player}, drop your buff. You're reassigned: ${m.from} → ${m.to}. Effective immediately.`, players: [m.player], badge: 'Reassigned', badgeClass: 'gold' }));
+        } else {
+          sc.push({ text: 'Chris smirks — but no reassignment was actually configured. The tribes stay put.', players: [] });
+        }
+        (tw.newTribes||[]).forEach(t => sc.push({ text: t.name, players: t.members, tribeLabel: t.name }));
+        result.push({ label:'Producer Swap', type:tw.type, scenes:sc }); break;
+      }
 
       case 'mutiny': {
         const mut = tw.mutineers||[];

@@ -1185,7 +1185,7 @@ export function rpBuildTribes(ep) {
   const tribeGroups = deriveTribeGroups();
 
   // Toggle: tribe history strips (colored vertical bars showing past tribes)
-  const _swapTypes = ['tribe-swap','tribe-expansion','abduction','kidnapping','mutiny','tribe-dissolve'];
+  const _swapTypes = ['tribe-swap','tribe-expansion','abduction','kidnapping','mutiny','tribe-dissolve','producer-swap'];
   const _hadSwap = (gs.episodeHistory || []).some(h =>
     (h.twist?.type && _swapTypes.includes(h.twist.type)) ||
     (h.twists || []).some(t => _swapTypes.includes(t.type))
@@ -1340,6 +1340,7 @@ export function buildTwistDesc(tw) {
   switch (tw.type) {
     case 'double-tribal':      L.push('Both tribes attend Tribal Council tonight. Two players voted out.'); break;
     case 'mutiny':             (tw.mutineers?.length ? tw.mutineers.map(m=>`${m.name||m} left ${m.from} to join ${m.to}.`) : ['No players switched tribes.']).forEach(l=>L.push(l)); break;
+    case 'producer-swap':      (tw.producerMoves?.length ? tw.producerMoves.map(m=>`Production reassigned ${m.player}: ${m.from} → ${m.to}.`) : ['Production override — no reassignment configured.']).forEach(l=>L.push(l)); break;
     case 'exile-island':       if (tw.exiled) L.push(`${tw.exiled} sent to Exile Island — misses tribal council.`); break;
     case 'hero-duel':          if (tw.duelParticipants) L.push(`${tw.duelParticipants.join(' vs ')} compete head-to-head for immunity. Result revealed after the challenge.`); break;
     case 'shared-immunity':    L.push('The immunity winner may share the necklace with one other player. Result after the challenge.'); break;
@@ -3427,7 +3428,7 @@ export function rpBuildPreTwist(ep) {
       <div class="rp-scene"><div class="rp-scene-text">${lines.join('<br>')}</div></div>
     </div>`;
   }
-  const _swapTypes = ['tribe-swap','tribe-dissolve','tribe-expansion','abduction','kidnapping','mutiny'];
+  const _swapTypes = ['tribe-swap','tribe-dissolve','tribe-expansion','abduction','kidnapping','mutiny','producer-swap'];
   const _hasSwap = (ep.twists||[]).some(t => _swapTypes.includes(t.type)) || _swapTypes.includes(ep.twist?.type);
   let html = `<div class="rp-page rp-twist-page tod-dusk"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
   if (_hasSwap) {

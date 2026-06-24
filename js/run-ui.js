@@ -880,6 +880,20 @@ export function renderTimeline() {
         _rtcHtml += `</div></div>`;
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} Reward: ${_rtcHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      if (t.type === 'producer-swap') {
+        const tribeNames = (seasonConfig.tribes || []).map(tr => tr.name).filter(Boolean);
+        const allNames = (players || []).map(p => p.name);
+        const _ps = (field, val, opts, placeholder) => {
+          let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','${field}',this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 3px;margin-left:2px" title="${placeholder}">`;
+          h += `<option value="" ${!val ? 'selected' : ''}>${placeholder}</option>`;
+          opts.forEach(o => h += `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`);
+          return h + `</select>`;
+        };
+        let cfg = _ps('swapPlayer', t.swapPlayer || '', allNames, 'move player');
+        cfg += ` <span style="color:#a5b4fc">→</span> ` + _ps('swapToTribe', t.swapToTribe || '', tribeNames, 'to tribe');
+        cfg += ` <span style="opacity:.45">swap back:</span>` + _ps('swapPlayer2', t.swapPlayer2 || '', allNames, 'none');
+        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${cfg} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.spoilerFree) {
         const phaseTag = cat?.phase === 'pre-merge' ? 'Pre-merge challenge' : cat?.phase === 'post-merge' ? 'Post-merge challenge' : 'Challenge';
         return `<span class="fd-ep-twist-tag" style="font-style:italic;opacity:0.7" onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')">🔒 ${phaseTag} ×</span>`;

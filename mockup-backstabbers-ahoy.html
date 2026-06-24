@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Backstabbers Ahoy! — VP Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Special+Elite&family=VT323&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ba-deep:#04141a;     --ba-sea:#072830;     --ba-teal:#0e6c6c;     --ba-teal-lt:#1aa7a7;
+  --ba-brass:#caa45a;    --ba-brass-lt:#e7c98a; --ba-brass-dk:#7a6336;
+  --ba-bone:#eaf2ee;     --ba-mute:#8aa0a0;     --ba-rust:#c45a3a;
+  --ba-radar:#5fe39a;    --ba-mine:#e23b3b;     --ba-gull:#dfe6ee;
+  --ba-rats:#5fe39a;     --ba-maggots:#b98cff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--ba-bone);font-family:'Inter',system-ui,sans-serif}
+.ba-wrap{max-width:1100px;margin:0 auto;position:relative;min-height:100vh;overflow:hidden;padding:0 0 96px;
+  background:radial-gradient(ellipse at 50% 0%, #0a3038 0%, var(--ba-sea) 40%, var(--ba-deep) 100%)}
+
+/* ===== ambient: caustic light, bubbles, drifting Fang ===== */
+.ba-amb{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.ba-caustic{position:absolute;inset:-20%;opacity:.10;mix-blend-mode:screen;
+  background:radial-gradient(circle at 30% 20%, #2fd0d0, transparent 40%),radial-gradient(circle at 70% 60%, #1aa7a7, transparent 45%);
+  animation:caustic 22s ease-in-out infinite}
+@keyframes caustic{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(3%,2%) scale(1.06)}}
+.ba-bub{position:absolute;bottom:-12px;border-radius:50%;background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.5), rgba(120,200,200,.18));
+  box-shadow:0 0 6px rgba(120,220,220,.25);opacity:0;animation:bub linear infinite}
+@keyframes bub{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:.7}90%{opacity:.4}100%{transform:translateY(-106vh) translateX(16px);opacity:0}}
+.ba-fang{position:absolute;top:30%;left:-120px;font-size:40px;opacity:.16;filter:blur(.5px);animation:fang 34s linear infinite}
+@keyframes fang{0%{left:-120px;top:30%}50%{left:106%;top:46%}50.01%{left:-120px;top:64%}100%{left:106%;top:38%}}
+@media(prefers-reduced-motion:reduce){.ba-caustic,.ba-bub,.ba-fang,.ba-sweep,.ba-needle{animation:none}}
+
+/* ===== HUD ===== */
+.ba-hud{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;
+  padding:9px 16px;font-family:'VT323',monospace;font-size:19px;letter-spacing:1px;
+  background:linear-gradient(180deg,rgba(4,20,26,.96),rgba(4,20,26,.35));border-bottom:1px solid var(--ba-brass-dk);color:var(--ba-brass-lt)}
+.ba-hud .dot{width:10px;height:10px;border-radius:50%;background:var(--ba-rust);box-shadow:0 0 8px var(--ba-rust);display:inline-block;margin-right:6px;animation:bk 1.4s steps(2) infinite}
+@keyframes bk{50%{opacity:.2}}
+
+/* ===== title ===== */
+.ba-title{text-align:center;padding:34px 16px 12px;position:relative;z-index:2}
+.ba-title .kick{font-family:'VT323',monospace;color:var(--ba-rust);letter-spacing:5px;font-size:17px}
+.ba-title h1{font-family:'Pirata One',cursive;font-size:clamp(46px,9vw,90px);margin:4px 0;color:var(--ba-brass-lt);
+  text-shadow:0 2px 0 #2a1c0a,0 0 24px rgba(202,164,90,.35);letter-spacing:1px}
+.ba-title .sub{font-family:'Special Elite',serif;color:var(--ba-mute);font-size:14px}
+.ba-title .host{font-family:'Special Elite',serif;color:var(--ba-brass-lt);margin-top:12px;font-size:14px;
+  border:1px dashed var(--ba-brass-dk);display:inline-block;padding:8px 16px;border-radius:4px;max-width:680px}
+.ba-lineup{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:16px auto 0;max-width:760px}
+.ba-lineup-lbl{font-family:'VT323',monospace;color:var(--ba-mute);letter-spacing:3px;font-size:14px;margin-top:12px}
+
+/* avatar */
+.ba-iav{width:34px;height:34px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;background:#0c2a30;
+  border:2px solid var(--ba-brass-dk);display:inline-flex;align-items:center;justify-content:center}
+.ba-iav img{width:100%;height:100%;object-fit:cover}
+.ba-iav b{display:none;font-family:'Special Elite',serif;color:var(--ba-brass-lt);font-size:14px}
+.ba-iav.sm{width:24px;height:24px;border-width:1px}.ba-iav.sm b{font-size:11px}
+.ba-iav.big{width:46px;height:46px}
+
+/* ===== phase banners ===== */
+.ba-phase{position:relative;z-index:2;text-align:center;margin:26px 16px 14px;padding:14px;border-radius:12px;
+  border:1px solid var(--ba-brass-dk);background:linear-gradient(180deg,rgba(12,42,48,.7),rgba(7,40,48,.5))}
+.ba-phase .pn{font-family:'VT323',monospace;color:var(--ba-rust);letter-spacing:3px;font-size:16px}
+.ba-phase h2{font-family:'Pirata One',cursive;font-size:30px;margin:4px 0 2px;color:var(--ba-brass-lt)}
+.ba-phase .pd{font-family:'Special Elite',serif;color:var(--ba-mute);font-size:13px}
+
+/* ===== layout ===== */
+.ba-body{display:grid;grid-template-columns:1fr 280px;gap:18px;padding:0 18px;position:relative;z-index:2}
+@media(max-width:820px){.ba-body{grid-template-columns:1fr}}
+
+/* ===== PHASE 1: brass porthole instrument ===== */
+.ba-instr{background:radial-gradient(ellipse at 50% 40%, #0c3a44, #062028);border:6px solid var(--ba-brass);border-radius:18px;
+  padding:16px;margin-bottom:16px;position:relative;box-shadow:inset 0 0 40px rgba(0,0,0,.6),0 6px 20px rgba(0,0,0,.5)}
+.ba-instr::before{content:'';position:absolute;inset:0;border-radius:12px;border:2px solid rgba(231,201,138,.25);pointer-events:none;margin:4px}
+.ba-gauges{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.ba-gauge{width:150px;text-align:center}
+.ba-gauge .lbl{font-family:'VT323',monospace;color:var(--ba-brass-lt);letter-spacing:2px;font-size:14px;margin-bottom:4px}
+.ba-dial{width:120px;height:120px;margin:0 auto;border-radius:50%;background:radial-gradient(circle,#0a2a30,#04161c);
+  border:4px solid var(--ba-brass-dk);position:relative;box-shadow:inset 0 0 16px #000}
+.ba-dial .tick{position:absolute;left:50%;top:6px;width:2px;height:8px;background:var(--ba-mute);transform-origin:50% 54px}
+.ba-needle{position:absolute;left:50%;bottom:50%;width:3px;height:48px;background:var(--ba-rust);transform-origin:bottom center;
+  border-radius:2px;box-shadow:0 0 6px var(--ba-rust);transform:rotate(38deg);animation:needle 3.5s ease-in-out infinite}
+@keyframes needle{0%,100%{transform:rotate(20deg)}50%{transform:rotate(64deg)}}
+.ba-needle.depth{background:var(--ba-teal-lt);box-shadow:0 0 6px var(--ba-teal-lt);animation:needle2 5s ease-in-out infinite}
+@keyframes needle2{0%,100%{transform:rotate(-50deg)}50%{transform:rotate(30deg)}}
+.ba-dial .zone{position:absolute;inset:0;border-radius:50%;pointer-events:none}
+.ba-dial .center{position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;background:var(--ba-brass);transform:translate(-50%,-50%);box-shadow:0 0 4px #000}
+.ba-airwarn{font-family:'VT323',monospace;font-size:12px;margin-top:4px}
+.ba-airwarn.over{color:var(--ba-rust)}.ba-airwarn.ok{color:var(--ba-radar)}
+.ba-sonar{position:absolute;top:10px;right:12px;width:54px;height:54px;border-radius:50%;border:1px solid var(--ba-teal);overflow:hidden;opacity:.8}
+.ba-sweep{position:absolute;inset:0;background:conic-gradient(from 0deg, rgba(95,227,154,.45), transparent 40%);animation:sweep 2.6s linear infinite}
+@keyframes sweep{to{transform:rotate(360deg)}}
+
+/* ===== PHASE 2: naval radar ===== */
+.ba-radar{background:radial-gradient(circle at 50% 50%, #06241c, #03120e);border:4px solid var(--ba-brass-dk);border-radius:14px;
+  padding:12px;margin-bottom:16px;position:relative;overflow:hidden}
+.ba-radar .rlbl{font-family:'VT323',monospace;color:var(--ba-radar);letter-spacing:2px;font-size:15px;margin-bottom:4px}
+.ba-radarface{position:relative;height:200px;border-radius:10px;background:repeating-radial-gradient(circle at 50% 100%, rgba(95,227,154,.08) 0 1px, transparent 1px 34px);overflow:hidden}
+.ba-radarface::after{content:'';position:absolute;left:50%;bottom:0;width:240%;height:240%;transform:translateX(-50%);
+  background:conic-gradient(from 200deg, rgba(95,227,154,.22), transparent 30%);animation:rsweep 4s linear infinite}
+@keyframes rsweep{to{transform:translateX(-50%) rotate(360deg)}}
+.ba-blip{position:absolute;font-family:'VT323',monospace;font-size:13px;font-weight:700;transform:translate(-50%,-50%)}
+.ba-blip .pip{display:block;width:12px;height:12px;border-radius:50%;margin:0 auto 2px;box-shadow:0 0 8px currentColor}
+.ba-blip.rats{color:var(--ba-rats)}.ba-blip.rats .pip{background:var(--ba-rats)}
+.ba-blip.maggots{color:var(--ba-maggots)}.ba-blip.maggots .pip{background:var(--ba-maggots)}
+.ba-mine{position:absolute;color:var(--ba-mine);font-size:18px;transform:translate(-50%,-50%);text-shadow:0 0 8px var(--ba-mine)}
+.ba-mine.hit{opacity:.3;text-decoration:line-through}
+.ba-gullarc{position:absolute;width:60px;height:2px;background:linear-gradient(90deg,var(--ba-gull),transparent);transform-origin:left;opacity:.5}
+.ba-scoreboard{display:flex;justify-content:space-around;margin-top:8px;font-family:'VT323',monospace}
+.ba-sb{text-align:center}.ba-sb .n{font-size:13px;letter-spacing:1px}.ba-sb .v{font-size:26px}
+.ba-sb.rats .v{color:var(--ba-rats)}.ba-sb.maggots .v{color:var(--ba-maggots)}
+
+/* ===== event cards ===== */
+.ba-feed{display:flex;flex-direction:column;gap:13px}
+.ba-card{position:relative;background:linear-gradient(180deg,rgba(8,32,38,.92),rgba(5,22,28,.92));border:1px solid #16414a;border-radius:12px;
+  padding:13px 15px;box-shadow:0 8px 22px rgba(0,0,0,.45)}
+.ba-card .who{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.ba-name{font-family:'Special Elite',serif;font-size:15px}
+.ba-team{font-family:'VT323',monospace;font-size:13px;letter-spacing:1px;margin-left:auto;padding:2px 8px;border-radius:4px}
+.ba-team.rats{color:var(--ba-rats);background:rgba(95,227,154,.1);border:1px solid rgba(95,227,154,.3)}
+.ba-team.maggots{color:var(--ba-maggots);background:rgba(185,140,255,.1);border:1px solid rgba(185,140,255,.3)}
+.ba-card .body{font-size:14px;line-height:1.6;color:#cfe0e0;font-family:'Special Elite',serif}
+.ba-badge{display:inline-block;font-family:'VT323',monospace;font-size:13px;letter-spacing:1px;padding:2px 8px;border-radius:4px;margin-top:7px}
+.ba-b-good{color:var(--ba-radar);background:rgba(95,227,154,.12);border:1px solid rgba(95,227,154,.35)}
+.ba-b-air{color:var(--ba-brass-lt);background:rgba(202,164,90,.12);border:1px solid var(--ba-brass-dk)}
+.ba-b-fang{color:var(--ba-teal-lt);background:rgba(26,167,167,.12);border:1px solid rgba(26,167,167,.4)}
+.ba-b-stab{color:var(--ba-mine);background:rgba(226,59,59,.12);border:1px solid rgba(226,59,59,.4)}
+.ba-b-host{color:var(--ba-rust);background:rgba(196,90,58,.12);border:1px solid rgba(196,90,58,.4);letter-spacing:2px}
+.ba-host{border-left:3px solid var(--ba-rust)}
+
+/* BACKSTAB card */
+.ba-stab{position:relative;border:2px solid var(--ba-mine);background:#1a0808;border-radius:12px;padding:18px 16px;overflow:hidden;text-align:center}
+.ba-stab .knife{font-family:'Pirata One',cursive;font-size:38px;color:var(--ba-mine);letter-spacing:2px;text-shadow:0 0 12px rgba(226,59,59,.5)}
+.ba-stab .cap-who{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px}
+.ba-stab .body{font-family:'Special Elite',serif;color:#e7cfcf;font-size:14px;margin-top:6px}
+.ba-stab .ba-badge{margin-top:10px}
+
+/* EXPOSE card */
+.ba-expose{border:2px dashed var(--ba-brass);background:rgba(20,42,48,.7);border-radius:12px;padding:16px;text-align:center}
+.ba-expose .tag{font-family:'VT323',monospace;color:var(--ba-brass-lt);letter-spacing:3px}
+.ba-expose h3{font-family:'Pirata One',cursive;font-size:24px;margin:6px 0;color:var(--ba-bone)}
+.ba-expose .body{font-family:'Special Elite',serif;color:var(--ba-mute);font-size:13px}
+
+/* ===== sidebar ===== */
+.ba-side{align-self:start;position:sticky;top:50px}
+.ba-track{background:rgba(8,32,38,.9);border:1px solid #16414a;border-radius:12px;padding:12px;margin-bottom:13px}
+.ba-track h3{font-family:'VT323',monospace;font-size:15px;letter-spacing:2px;color:var(--ba-mute);margin:0 0 8px;text-align:center}
+.ba-team-head{display:flex;align-items:center;justify-content:space-between;font-family:'Special Elite',serif;font-size:13px;margin:9px 0 5px;padding-bottom:4px;border-bottom:1px solid #16414a}
+.ba-team-head.rats{color:var(--ba-rats)}.ba-team-head.maggots{color:var(--ba-maggots)}
+.ba-score{font-family:'VT323',monospace;font-size:18px}
+.ba-role{display:flex;align-items:center;gap:8px;padding:3px 2px;font-family:'Special Elite',serif;font-size:12px}
+.ba-role .tag{margin-left:auto;font-family:'VT323',monospace;font-size:11px;color:var(--ba-brass-lt)}
+.ba-bars{margin-top:6px}
+.ba-bar{height:8px;border-radius:4px;background:#0c2a30;overflow:hidden;margin:4px 0}
+.ba-bar i{display:block;height:100%}
+.ba-bar.rats i{background:var(--ba-rats)}.ba-bar.maggots i{background:var(--ba-maggots)}
+
+/* ===== reveal / winner ===== */
+.ba-reveal{margin:16px 18px;padding:18px;border:2px solid var(--ba-rats);border-radius:12px;text-align:center;background:linear-gradient(180deg,rgba(95,227,154,.08),transparent);position:relative;z-index:2}
+.ba-reveal .tag{font-family:'VT323',monospace;color:var(--ba-rats);letter-spacing:3px}
+.ba-reveal h2{font-family:'Pirata One',cursive;font-size:30px;margin:6px 0;color:var(--ba-rats)}
+.ba-reveal .body{font-family:'Special Elite',serif;color:#cfe0e0;font-size:14px}
+
+/* ===== controls ===== */
+.ba-ctrl{position:fixed;bottom:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:center;gap:14px;
+  padding:12px;background:linear-gradient(0deg,rgba(4,20,26,.98),rgba(4,20,26,.4))}
+.ba-btn{font-family:'VT323',monospace;font-size:18px;letter-spacing:1px;padding:8px 22px;border-radius:6px;cursor:pointer;
+  background:#0c2a30;color:var(--ba-bone);border:1px solid var(--ba-brass-dk)}
+.ba-btn.primary{background:var(--ba-rust);color:#fff;border-color:var(--ba-rust)}
+.ba-counter{font-family:'VT323',monospace;color:var(--ba-mute);font-size:18px}
+</style>
+</head>
+<body>
+<div class="ba-wrap">
+  <div class="ba-amb" id="amb">
+    <div class="ba-caustic"></div>
+    <div class="ba-fang">🦈</div>
+  </div>
+
+  <!-- HUD -->
+  <div class="ba-hud">
+    <span><span class="dot"></span>DIVE FEED — LIVE</span>
+    <span>SONAR ACTIVE · DEPTH 14m</span>
+    <span>⚓ WAWANAKWA BAY</span>
+  </div>
+
+  <!-- TITLE -->
+  <div class="ba-title">
+    <div class="kick">⚓ TWO-PART AQUATIC CHALLENGE ⚓</div>
+    <h1>Backstabbers Ahoy!</h1>
+    <div class="sub">Dive for the skis, then race the gulls — and watch your own crew</div>
+    <div class="host">"Two divers go down. The rest pump air. Then we race boats and shoot mutant gulls at mines. First to blow the last one wins. Try not to sabotage each other. Or do. Great TV." — Chris</div>
+    <div class="ba-lineup-lbl">— TODAY'S CREW —</div>
+    <div class="ba-lineup" id="lineup"></div>
+  </div>
+
+  <!-- ===== PHASE 1 ===== -->
+  <div class="ba-phase">
+    <div class="pn">PHASE 1</div><h2>The Deep Dive</h2>
+    <div class="pd">One diver per team in a brass suit · the crew works the air pump · Fang is hungry</div>
+  </div>
+
+  <div class="ba-body">
+    <div>
+      <!-- instrument panel -->
+      <div class="ba-instr">
+        <div class="ba-sonar"><div class="ba-sweep"></div></div>
+        <div class="ba-gauges">
+          <div class="ba-gauge">
+            <div class="lbl">DEPTH</div>
+            <div class="ba-dial"><span class="ba-needle depth"></span><span class="center"></span></div>
+          </div>
+          <div class="ba-gauge">
+            <div class="lbl">AIR PRESSURE</div>
+            <div class="ba-dial"><span class="ba-needle"></span><span class="center"></span></div>
+            <div class="ba-airwarn over">⚠ OVER-INFLATING</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ba-feed">
+        <div class="ba-card ba-host">
+          <div class="who" id="host1"></div>
+          <div class="body">"Divers down!" Chris yells. Two brass-helmeted figures sink into the murk while their crews crank the air pumps on the dock. Somewhere below, Fang circles.</div>
+          <span class="ba-badge ba-b-host">PHASE 1 · THE DEEP DIVE</span>
+        </div>
+
+        <div class="ba-card" data-av="bridgette">
+          <div class="who"><span class="ba-iav big" data-img="bridgette"></span><div class="ba-name">Bridgette</div><span class="ba-team rats">TOXIC RATS</span></div>
+          <div class="body">Bridgette sinks fast and clean, reading the current like she was born in it. She spots the water-skis glinting on the seabed and kicks toward them.</div>
+          <span class="ba-badge ba-b-good">★ SKIS IN SIGHT</span>
+        </div>
+
+        <div class="ba-card" data-av="owen">
+          <div class="who"><span class="ba-iav big" data-img="owen"></span><div class="ba-name">Owen</div><span class="ba-team rats">TOXIC RATS</span></div>
+          <div class="body">Owen leans on the air pump with his whole body — way too much. Bridgette's suit balloons up like a parade float and she bobs helplessly toward the surface.</div>
+          <span class="ba-badge ba-b-air">⚠ OVER-INFLATED · DIVER LOST CONTROL</span>
+        </div>
+
+        <div class="ba-card" data-av="duncan">
+          <div class="who"><span class="ba-iav big" data-img="duncan"></span><div class="ba-name">Duncan</div><span class="ba-team maggots">MUTANT MAGGOTS</span></div>
+          <div class="body">Fang clamps onto Duncan's air line and thrashes. Duncan stares the shark dead in the eye, yanks the line free, and keeps swimming. Ice cold.</div>
+          <span class="ba-badge ba-b-fang">🦈 FANG ATTACK · RESISTED</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- sidebar -->
+    <div class="ba-side">
+      <div class="ba-track">
+        <h3>⚓ DIVE BOARD ⚓</h3>
+        <div class="ba-team-head rats"><span>TOXIC RATS</span><span class="ba-score">6.4</span></div>
+        <div class="ba-role"><span class="ba-iav sm" data-img="bridgette"></span>Bridgette<span class="tag">DIVER</span></div>
+        <div class="ba-role"><span class="ba-iav sm" data-img="owen"></span>Owen<span class="tag">PUMP</span></div>
+        <div class="ba-role"><span class="ba-iav sm" data-img="alejandro"></span>Alejandro<span class="tag">PUMP</span></div>
+        <div class="ba-bar rats"><i style="width:64%"></i></div>
+
+        <div class="ba-team-head maggots"><span>MUTANT MAGGOTS</span><span class="ba-score">5.1</span></div>
+        <div class="ba-role"><span class="ba-iav sm" data-img="duncan"></span>Duncan<span class="tag">DIVER</span></div>
+        <div class="ba-role"><span class="ba-iav sm" data-img="courtney"></span>Courtney<span class="tag">PUMP</span></div>
+        <div class="ba-role"><span class="ba-iav sm" data-img="heather"></span>Heather<span class="tag">PUMP</span></div>
+        <div class="ba-bar maggots"><i style="width:51%"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PHASE 2 ===== -->
+  <div class="ba-phase">
+    <div class="pn">PHASE 2</div><h2>The Gull Run</h2>
+    <div class="pd">Race the boats · shoot mutant gulls at the mines · blow the last one to win</div>
+  </div>
+
+  <div class="ba-body">
+    <div>
+      <!-- radar -->
+      <div class="ba-radar">
+        <div class="rlbl">◣ NAVAL RADAR — RACE COURSE</div>
+        <div class="ba-radarface">
+          <span class="ba-mine" style="left:30%;top:30%">✕</span>
+          <span class="ba-mine hit" style="left:62%;top:24%">✕</span>
+          <span class="ba-mine" style="left:80%;top:55%">✕</span>
+          <span class="ba-gullarc" style="left:40%;top:60%;transform:rotate(-32deg)"></span>
+          <span class="ba-blip rats" style="left:46%;top:62%"><span class="pip"></span>RATS</span>
+          <span class="ba-blip maggots" style="left:38%;top:70%"><span class="pip"></span>MAG</span>
+        </div>
+        <div class="ba-scoreboard">
+          <div class="ba-sb rats"><div class="n">RATS · MINES HIT</div><div class="v">1</div></div>
+          <div class="ba-sb maggots"><div class="n">MAGGOTS · MINES HIT</div><div class="v">1</div></div>
+        </div>
+      </div>
+
+      <div class="ba-feed">
+        <div class="ba-card" data-av="leshawna">
+          <div class="who"><span class="ba-iav big" data-img="leshawna"></span><div class="ba-name">Leshawna</div><span class="ba-team maggots">MUTANT MAGGOTS</span></div>
+          <div class="body">Leshawna lines up the gull cannon, leads the target, and BLAM — direct hit on the first mine. The blast rocks both boats. "That's how it's DONE!"</div>
+          <span class="ba-badge ba-b-good">💥 MINE DETONATED</span>
+        </div>
+
+        <!-- BACKSTAB -->
+        <div class="ba-stab">
+          <div class="cap-who"><span class="ba-iav big" data-img="alejandro"></span></div>
+          <div class="knife">BACKSTAB</div>
+          <div class="body">"No way we can win. Winning ruins my plan." <strong>Alejandro</strong> swings the cannon a few degrees off and fires a gull straight into his own driver's back. The Rats' boat veers into the weeds. <span style="color:var(--ba-mine)">RATS — THROW IN PROGRESS</span></div>
+          <span class="ba-badge ba-b-stab">⚠ THREW THE CHALLENGE · −4 PTS</span>
+        </div>
+
+        <!-- EXPOSE -->
+        <div class="ba-expose">
+          <div class="tag">◤ SUSPICION ◢</div>
+          <h3>Bridgette reads the angles</h3>
+          <div class="body">"Jo's cannon was jammed — that gull could only have come from OUR boat." Bridgette's eyes lock onto Alejandro. The crew goes quiet. <strong>Exposure check…</strong></div>
+          <span class="ba-badge ba-b-stab">⚖ SCHEMER EXPOSED · HEAT +2 ON ALEJANDRO</span>
+        </div>
+
+        <div class="ba-card" data-av="duncan">
+          <div class="who"><span class="ba-iav big" data-img="duncan"></span><div class="ba-name">Duncan</div><span class="ba-team maggots">MUTANT MAGGOTS</span></div>
+          <div class="body">Duncan guns the dinghy through the chop, dodges a venom-gull, and lines the Maggots up on the final mine while the Rats untangle from the weeds.</div>
+          <span class="ba-badge ba-b-good">⛵ FINAL MINE IN RANGE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- sidebar -->
+    <div class="ba-side">
+      <div class="ba-track">
+        <h3>⚓ RACE BOARD ⚓</h3>
+        <div class="ba-team-head rats"><span>TOXIC RATS</span><span class="ba-score">9.8</span></div>
+        <div class="ba-role"><span class="ba-iav sm" data-img="bridgette"></span>Bridgette<span class="tag">DRIVER</span></div>
+        <div class="ba-role"><span class="ba-iav sm" data-img="alejandro"></span>Alejandro<span class="tag">GUNNER ⚠</span></div>
+        <div class="ba-bars"><div class="ba-bar rats"><i style="width:55%"></i></div></div>
+
+        <div class="ba-team-head maggots"><span>MUTANT MAGGOTS</span><span class="ba-score">13.2</span></div>
+        <div class="ba-role"><span class="ba-iav sm" data-img="duncan"></span>Duncan<span class="tag">DRIVER</span></div>
+        <div class="ba-role"><span class="ba-iav sm" data-img="leshawna"></span>Leshawna<span class="tag">GUNNER</span></div>
+        <div class="ba-bars"><div class="ba-bar maggots"><i style="width:74%"></i></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WINNER -->
+  <div class="ba-reveal">
+    <div class="tag">⚓ CHALLENGE RESULT ⚓</div>
+    <h2>Mutant Maggots win</h2>
+    <div class="body">Maggots <strong>13.2</strong> to Rats <strong>9.8</strong>. The Rats had the lead — until Alejandro threw it into the weeds. The schemer's plan worked: immunity to the Maggots, and the Rats sail to tribal with a traitor aboard.</div>
+  </div>
+</div>
+
+<div class="ba-ctrl">
+  <button class="ba-btn">◀ BACK</button>
+  <span class="ba-counter">8 / 22</span>
+  <button class="ba-btn primary">NEXT ▶</button>
+  <button class="ba-btn">REVEAL ALL</button>
+</div>
+
+<script>
+// avatars
+function av(slug){ return `<img src="assets/avatars/${slug}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>${slug[0].toUpperCase()}</b>`; }
+document.querySelectorAll('[data-img]').forEach(el=>{ el.innerHTML=av(el.getAttribute('data-img')); });
+// host cards
+const host=['bridgette','duncan']; // placeholder, host avatar
+document.getElementById('host1').innerHTML = `<span class="ba-iav big"><img src="assets/avatars/chris.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>C</b></span><div class="ba-name">Chris</div>`;
+// lineup
+const crew=['bridgette','owen','alejandro','duncan','courtney','heather','leshawna','gwen','noah','trent','geoff'];
+document.getElementById('lineup').innerHTML = crew.map(s=>`<span class="ba-iav">${av(s)}</span>`).join('');
+// bubbles
+const amb=document.getElementById('amb');
+for(let i=0;i<24;i++){const b=document.createElement('div');b.className='ba-bub';b.style.left=(Math.random()*100)+'%';const d=8+Math.random()*10;b.style.animationDuration=d+'s';b.style.animationDelay=(-Math.random()*d)+'s';const sz=3+Math.random()*5;b.style.width=b.style.height=sz+'px';amb.appendChild(b);}
+</script>
+</body>
+</html>

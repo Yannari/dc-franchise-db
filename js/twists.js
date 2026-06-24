@@ -1453,6 +1453,12 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 4) return;
     ep.isMonsterCash = true;
 
+  } else if (engineType === 'mine-over-matter') {
+    // Both phases: pre-merge = tribe gem haul, post-merge = individual immunity
+    if (!gs.isMerged && gs.tribes.length < 2) return;
+    if (gs.activePlayers.length < 4) return;
+    ep.isMineOverMatter = true;
+
   } else if (engineType === 'alien-egg') {
     // Both phases: pre-merge = tribe egg count, post-merge = individual egg count
     if (!gs.isMerged && gs.tribes.length < 2) return;
@@ -3950,7 +3956,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'trust-challenge': 'isTrustChallenge', 'basic-straining': 'isBasicStraining', 'x-treme-torture': 'isXtremeTorture',
         'sudden-death': 'isSuddenDeath', 'slasher-night': 'isSlasherNight', 'triple-dog-dare': 'isTripleDogDare',
         'say-uncle': 'isSayUncle', 'brunch-of-disgustingness': 'isBrunchOfDisgustingness',
-        'monster-cash': 'isMonsterCash', 'operation-classified': 'isOperationClassified',
+        'monster-cash': 'isMonsterCash', 'mine-over-matter': 'isMineOverMatter', 'operation-classified': 'isOperationClassified',
         'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride',
         'get-a-clue': 'isGetAClue', 'rock-n-rule': 'isRockNRule',
         'crouching-courtney': 'isCrouchingCourtney', 'houston': 'isHouston', 'top-dog': 'isTopDog',
@@ -4275,6 +4281,17 @@ export function generateTwistScenes(ep) {
           sc.push({ text: 'All tribes scatter across the film lot. The tribe with the best survival average wins immunity. The losers go to tribal council.', players: [] });
         }
         result.push({ label:'Monster Cash', type:tw.type, scenes:sc }); break;
+      }
+
+      case 'mine-over-matter': {
+        const _mnAll = gs.activePlayers;
+        sc.push({ text: 'Chef hauls everyone to the mouth of an abandoned radioactive mine, hands out Geiger counters and suspiciously heavy backpacks, and points down into the dark.', players: _mnAll });
+        if (gs.isMerged) {
+          sc.push({ text: 'Dig out your gems, run the cart tunnels past the mutant gophers and giant scorpions, and climb out before detonation. Whoever surfaces with the richest bag wins individual immunity — if their bag doesn\'t leak first.', players: [] });
+        } else {
+          sc.push({ text: 'Each tribe digs for gems and races to the surface. The tribe that hauls out the most gems wins immunity. The lightest haul goes to tribal council.', players: [] });
+        }
+        result.push({ label:'Mine Over Matter', type:tw.type, scenes:sc }); break;
       }
 
       case 'alien-egg': {

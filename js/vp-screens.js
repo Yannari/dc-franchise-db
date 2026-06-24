@@ -11,6 +11,7 @@ import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNigh
 import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/triple-dog-dare.js';
 import { rpBuildSlasherTitleCard, rpBuildSlasherActI, rpBuildSlasherActII, rpBuildSlasherActIII, rpBuildSlasherCredits, rpBuildSlasherAnnouncement, rpBuildSlasherRounds, rpBuildSlasherShowdown, rpBuildSlasherImmunity, rpBuildSlasherElimination, rpBuildSlasherLeaderboard, slasherRevealNextRound, slasherRevealAllRounds, slasherRevealNextScene, slasherRevealAllScenes } from './chal/slasher-night.js';
 import { rpBuildMonsterCashTitleCard, rpBuildMonsterCashRounds, rpBuildMonsterCashShowdown, rpBuildMonsterCashImmunity, rpBuildMonsterCashTribeResults, rpBuildMonsterCashLeaderboard, monsterCashRevealNext, monsterCashRevealAll } from './chal/monster-cash.js';
+import { rpBuildMineTitleCard, rpBuildMinePhase1, rpBuildMinePhase2, rpBuildMinePhase3, rpBuildMineResults, rpBuildMineLeaderboard, mineRevealNext, mineRevealAll } from './chal/mine-over-matter.js';
 import { rpBuildOperationClassifiedTitleCard, rpBuildOperationClassifiedScan, rpBuildOperationClassifiedWiretap1, rpBuildOperationClassifiedLaser, rpBuildOperationClassifiedWiretap2, rpBuildOperationClassifiedDefusal, rpBuildOperationClassifiedDebrief, operationClassifiedRevealNext, operationClassifiedRevealAll } from './chal/operation-classified.js';
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard, alienEggRevealNext, alienEggRevealAll } from './chal/alien-egg.js';
 import { rpBuildBeachBlanketBogusTitleCard, rpBuildBeachBlanketBogusSurf, rpBuildBeachBlanketBogusSandcastle, rpBuildBeachBlanketBogusHalftime, rpBuildBeachBlanketBogusDanceOff, rpBuildBeachBlanketBogusResults, beachBogusRevealNext, beachBogusRevealAll } from './chal/beach-blanket-bogus.js';
@@ -12178,6 +12179,13 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'mc-tribes', label:'Tribe Results', html: rpBuildMonsterCashTribeResults(ep) });
     }
     vpScreens.push({ id:'mc-leaderboard', label:'Incident Report', html: rpBuildMonsterCashLeaderboard(ep) });
+  } else if ((ep.isMineOverMatter || ep.challengeType === 'mine-over-matter') && ep.mineData) {
+    vpScreens.push({ id:'mn-title', label:'⛏️ Mine Over Matter', html: rpBuildMineTitleCard(ep) });
+    vpScreens.push({ id:'mn-p1', label:'Descent & Dig', html: rpBuildMinePhase1(ep) });
+    vpScreens.push({ id:'mn-p2', label:'Cart Tunnels', html: rpBuildMinePhase2(ep) });
+    vpScreens.push({ id:'mn-p3', label:'The Escape', html: rpBuildMinePhase3(ep) });
+    vpScreens.push({ id:'mn-results', label:ep.mineData.isMerged ? 'Immunity' : 'Tribe Results', html: rpBuildMineResults(ep) });
+    vpScreens.push({ id:'mn-leaderboard', label:'Gem Haul Report', html: rpBuildMineLeaderboard(ep) });
   } else if (ep.isOperationClassified && ep.operationClassified) {
     vpScreens.push({ id:'oc-title', label:'Operation: Classified', html: rpBuildOperationClassifiedTitleCard(ep) });
     vpScreens.push({ id:'oc-scan', label:'Face Scan', html: rpBuildOperationClassifiedScan(ep) });
@@ -12552,7 +12560,7 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'fmd-flag', label:'Capture the Flag', html: rpBuildFullMetalDramaFlag(ep) });
     }
     vpScreens.push({ id:'fmd-results', label:'Debrief', html: rpBuildFullMetalDramaResults(ep) });
-  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isOperationClassified) {
+  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isMineOverMatter && !ep.isOperationClassified) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
 

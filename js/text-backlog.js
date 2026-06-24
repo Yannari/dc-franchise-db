@@ -23,6 +23,7 @@ import { _textSayUncle } from './chal/say-uncle.js';
 import { _textTripleDogDare } from './chal/triple-dog-dare.js';
 import { _textSlasherNight } from './chal/slasher-night.js';
 import { _textMonsterCash } from './chal/monster-cash.js';
+import { _textMineOverMatter } from './chal/mine-over-matter.js';
 import { _textOperationClassified } from './chal/operation-classified.js';
 import { _textHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { _textOffTheChain } from './chal/off-the-chain.js';
@@ -2449,6 +2450,7 @@ export function generateSummaryText(ep) {
   // ── TWIST CHALLENGES — before camp post since they ARE the immunity challenge ──
   _textSlasherNight(ep, ln, sec);
   _textMonsterCash(ep, ln, sec);
+  _textMineOverMatter(ep, ln, sec);
   _textOperationClassified(ep, ln, sec);
   _textAwakeAThon(ep, ln, sec);
   _textDodgebrawl(ep, ln, sec);

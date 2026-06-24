@@ -1734,6 +1734,19 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
     }
 
     previousContext += '\n⚠️ CRITICAL: Maintain character consistency, ongoing relationships, alliance dynamics, and story arcs from these previous episodes.\n\n';
+
+    previousContext += `🛑 ANTI-DUPLICATION — THIS IS THE #1 FAILURE MODE. READ CAREFULLY.
+The transcripts above are REFERENCE for continuity ONLY — they are NOT a template. The worst thing you can do is regenerate the previous episode with the names swapped. You must NOT reuse the prior episode's SCENES, BEATS, or CONFESSIONAL LINES — not even reworded. Specifically BANNED:
+
+1. THE OPENING. Do NOT open with the same beat as last episode. The post-Tribal "the tribe returns in silence, [X]'s torch is gone, the fire has burned low, [character] sits down heavily, [character] hovers near the shelter" opening may be used AT MOST ONCE PER SEASON. If you used a quiet post-Tribal debrief last episode, open this one a COMPLETELY different way (mid-argument, a challenge-day scramble, a confessional cold-open, a comedic camp moment, weather, a strategy ambush). Vary the time of day, the location, and who speaks first.
+
+2. RECURRING CAMP VIGNETTES. Each "set piece" may appear AT MOST ONCE PER SEASON, not every episode: the early-morning fire chat between the same two people; the walk-to-the-water-well strategy talk; a character telling the camp about a dream; two players inventing nicknames; the "I got swapped on and don't trust anyone" confessional; the cooking-bad-food bonding scene. If it appeared in a prior transcript, DO NOT write it again.
+
+3. CONFESSIONAL LINES. No confessional may repeat a line, metaphor, or framing from a prior episode. A returning idea must be expressed with new words, new angle, new emotion — or not at all.
+
+4. IDENTICAL DIALOGUE EXCHANGES. Do not reproduce a back-and-forth ("You're up early." / "Couldn't sleep.") from a prior episode.
+
+BEFORE YOU WRITE: recall the opening beat and camp vignettes of the PREVIOUS episode. Yours must be DIFFERENT. If a scene "feels familiar," replace it. If this episode structurally matches the prior one, you failed.\n\n`;
   }
 
   const hasRI = seasonSetting && /redemption island/i.test(seasonSetting);

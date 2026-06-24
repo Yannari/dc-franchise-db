@@ -1835,7 +1835,20 @@ What you just read was REFERENCE MATERIAL, not a writing sample.
 
 🚫 DO NOT CARRY FORWARD: prose style, scene cadence, dialogue rhythm, stage-direction tics, Chris's specific phrasings, confessional opening patterns, the way scenes ended, the way arguments resolved, recurring jokes that aren't plot-load-bearing.
 
-This episode is a FRESH PIECE OF WRITING. If it ends up sounding identical to the prior episodes, you failed. The audience should feel a NEW writer took over the script while keeping the same cast and continuity.
+🛑 ANTI-DUPLICATION — THIS IS THE #1 FAILURE MODE. READ CAREFULLY.
+The worst thing you can do is regenerate the previous episode with the names swapped. This has happened before and it RUINS the season. You must NOT reuse the prior episode's SCENES, BEATS, or CONFESSIONAL LINES — not even reworded. Specifically BANNED (these are real examples of what went wrong):
+
+1. THE OPENING. Do NOT open with the same beat as last episode. The post-Tribal "the tribe returns in silence, [X]'s torch is gone, the fire has burned low, [character] sits down heavily, [character] hovers near the shelter" opening may be used AT MOST ONCE PER SEASON. If you used a quiet post-Tribal debrief last episode, open this one a COMPLETELY different way (mid-argument, a challenge-day scramble, a confessional cold-open, a comedic camp moment, a strategy ambush, weather, a flashback beat). Vary the time of day, the location, and who speaks first.
+
+2. RECURRING CAMP VIGNETTES. Each of these "set pieces" may appear AT MOST ONCE PER SEASON, not every episode: the early-morning fire chat between the same two people; the walk-to-the-water-well strategy talk; a character telling the camp about a dream; two players inventing nicknames for the tribe; the "I got swapped onto this tribe and don't trust anyone" confessional; the cooking-bad-food bonding scene. If it appeared in a prior transcript, DO NOT write it again. Invent new situations from the camp events in THIS episode's summary.
+
+3. CONFESSIONAL LINES. No confessional may repeat a line, metaphor, or framing from a prior episode. If last episode someone said "I have a Vote Steal and every morning I think today's the day" — that exact confessional is now BURNED. A returning idea must be expressed with new words, new angle, new emotion, or not at all.
+
+4. IDENTICAL DIALOGUE EXCHANGES. Do not reproduce a back-and-forth ("You're up early." / "Couldn't sleep.") from a prior episode. New episode = new conversations.
+
+BEFORE YOU WRITE: recall the opening beat and the camp vignettes of the PREVIOUS episode above. Whatever they were, yours must be DIFFERENT. If you catch yourself writing a scene that "feels familiar," stop and replace it.
+
+This episode is a FRESH PIECE OF WRITING. If it ends up structurally matching the prior episode — same opening, same vignettes, same confessional framings — you failed. The audience should feel a NEW writer took over the script while keeping the same cast and continuity.
 
 Now write the new episode. The summary below tells you what HAPPENS. Everything else — pacing, voice, scene construction, jokes — comes from the writing rules higher in this prompt, NOT from the transcripts above.\n\n`;
   }

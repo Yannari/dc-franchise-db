@@ -227,17 +227,40 @@ const ATMOSPHERE_FLAVOR = [
   'Static washes the feed. When it clears, one more spot in the lineup is empty.',
 ];
 
+// ── EXPLORATION / NAVIGATION (per-location, between the find + capture beats) ──
+const FOREST_NAV = [
+  (n, pr) => `${n} pushes deeper into the pines, flashlight carving a narrow tunnel through the black. Every trunk looks like it has too many arms.`,
+  (n, pr) => `${n} reads the clue again by the dying beam: "a knothole, guarded by a pest." ${pr.Sub} scans the bark for the team-color markings.`,
+  (n, pr) => `Branches claw at ${n} as ${pr.sub} sweep${pr.sub === 'they' ? '' : 's'} the canopy overhead. Something up there is sweeping back.`,
+  (n, pr) => `${n} steps over a root, freezes at a wet clicking sound, and waves the team forward in total silence.`,
+  (n, pr) => `The forest floor is a minefield of leaves and trip-wires. ${n} picks a careful path, one boot at a time.`,
+];
+const CEM_NAV = [
+  (n, pr) => `${n} moves between the leaning headstones, phone-light skimming chiseled dates: 1806… 1818… "The math is here somewhere."`,
+  (n, pr) => `Fog pools around ${n}'s ankles as ${pr.sub} count${pr.sub === 'they' ? '' : 's'} the rows of graves. Something shifts behind the mausoleum.`,
+  (n, pr) => `${n} kneels at a fresh-looking plot, brushes off the dirt, and squints at the worn numbers. The coffin's close.`,
+  (n, pr) => `A grease-grave yawns open three feet from ${n}. ${pr.Sub} gives it a wide berth and keeps reading dates.`,
+  (n, pr) => `${n} paces off the grave rows like a treasure map, muttering the date code under ${pr.posAdj} breath.`,
+];
+const CAVE_NAV = [
+  (n, pr) => `${n} edges into the cave, mist so thick the flashlight only lights ${pr.posAdj} own hand. Six hooks. Somewhere in here.`,
+  (n, pr) => `Water drips in the dark and every drop makes ${n} flinch. ${pr.Sub} sweep${pr.sub === 'they' ? '' : 's'} the walls for a glint of metal.`,
+  (n, pr) => `${n} finds the first grappling hook wedged in a crevice and clips it to ${pr.posAdj} belt. Five to go.`,
+  (n, pr) => `The zipline cable hums somewhere overhead. ${n} follows it deeper, counting hooks as ${pr.sub} go${pr.sub === 'they' ? '' : 'es'}.`,
+  (n, pr) => `Eight legs scrape stone behind ${n}. ${pr.Sub} doesn't look back — just hunts faster for the last hook.`,
+];
+
 // ══════════════════════════════════════════════════════════════════════
 // SIMULATION
 // ══════════════════════════════════════════════════════════════════════
 
 const LOCATIONS = [
   { key: 'forest', name: 'The Haunted Forest', souvenir: 'Knothole Key', icon: 'forest',
-    find: FOREST_FIND, fumble: FOREST_FUMBLE, trapDodge: MINE_DODGE, trap: 'trip-mine', findStat: ['boldness', 'physical'] },
+    find: FOREST_FIND, fumble: FOREST_FUMBLE, trapDodge: MINE_DODGE, nav: FOREST_NAV, trap: 'trip-mine', findStat: ['boldness', 'physical'] },
   { key: 'cemetery', name: 'The Pet Cemetery', souvenir: 'Coffin of Flashlights', icon: 'cemetery',
-    find: CEM_FIND, fumble: CEM_FUMBLE, trapDodge: GREASE_DODGE, trap: 'grease-grave', findStat: ['mental', 'intuition'] },
+    find: CEM_FIND, fumble: CEM_FUMBLE, trapDodge: GREASE_DODGE, nav: CEM_NAV, trap: 'grease-grave', findStat: ['mental', 'intuition'] },
   { key: 'cave', name: 'The Cave', souvenir: 'Six Hooks + Zipline', icon: 'cave',
-    find: CAVE_FIND, fumble: CAVE_FUMBLE, trapDodge: GREASE_DODGE, trap: 'snare', findStat: ['endurance', 'intuition'] },
+    find: CAVE_FIND, fumble: CAVE_FUMBLE, trapDodge: GREASE_DODGE, nav: CAVE_NAV, trap: 'snare', findStat: ['endurance', 'intuition'] },
 ];
 
 // Per-player capture-risk: high intuition/boldness/temperament resist; panic (skittish arch / low temperament) raises risk.
@@ -291,9 +314,29 @@ export function simulateFindersCreepers(ep) {
   LOCATIONS.forEach((loc, locIdx) => {
     const events = phaseEvents[loc.key];
 
-    tribes.forEach(tribe => {
+    // 0) HOST PHASE INTRO — Chris sets up the location
+    events.push({
+      type: 'host', player: host(), loc: loc.key,
+      text: pick(HOST_PHASE[loc.key])(host()),
+      badge: `PHASE ${locIdx + 1} · ${loc.name.toUpperCase()}`, badgeClass: 'host'
+    });
+
+    tribes.forEach((tribe, tribeIdx) => {
       const survivors = tribe.members.filter(m => !webbed[tribe.name].has(m));
       if (survivors.length === 0) return;
+
+      // 0b) EXPLORATION — 1-2 navigation/atmosphere cards as the team pushes in
+      const navCount = 1 + (Math.random() < 0.6 ? 1 : 0);
+      const navPool = [...survivors];
+      for (let nv = 0; nv < navCount && navPool.length; nv++) {
+        const explorer = navPool.splice(Math.floor(Math.random() * navPool.length), 1)[0];
+        ep.chalMemberScores[explorer] += 1;
+        events.push({
+          type: 'nav', player: explorer, tribe: tribe.name, loc: loc.key,
+          text: _pickUnique(loc.nav, explorer, pronouns(explorer)),
+          badge: 'IN THE DARK', badgeClass: 'nav'
+        });
+      }
 
       // 1) FIND the souvenir — best-suited survivor leads the attempt
       const [s1, s2] = loc.findStat;
@@ -323,10 +366,13 @@ export function simulateFindersCreepers(ep) {
         ep.chalMemberScores[finder] += 2;
       }
 
-      // 2) TRAP DODGE flavor for a random other survivor
+      // 2) TRAP DODGE flavor — up to 2 other survivors thread the booby traps
       const others = survivors.filter(m => m !== finder);
-      if (others.length > 0 && Math.random() < 0.6) {
-        const dodger = pick(others);
+      const dodgeCount = others.length >= 2 ? 2 : others.length;
+      const dodgePool = [...others];
+      for (let dd = 0; dd < dodgeCount; dd++) {
+        if (dd === 1 && Math.random() > 0.55) break; // 2nd dodge is ~55% likely
+        const dodger = dodgePool.splice(Math.floor(Math.random() * dodgePool.length), 1)[0];
         ep.chalMemberScores[dodger] += 1;
         events.push({
           type: 'trapDodge', player: dodger, tribe: tribe.name, loc: loc.key,
@@ -433,9 +479,11 @@ export function simulateFindersCreepers(ep) {
         }
       }
 
-      // 6) BRAVE / PANIC / BOND social beat (always at least one per tribe per location)
-      const socialUp = tribe.members.filter(m => !webbed[tribe.name].has(m));
-      if (socialUp.length > 0) {
+      // 6) BRAVE / PANIC / BOND social beat — up to 2 per tribe per location
+      for (let sb = 0; sb < 2; sb++) {
+        if (sb === 1 && Math.random() > 0.6) break; // 2nd social beat ~60% likely
+        const socialUp = tribe.members.filter(m => !webbed[tribe.name].has(m));
+        if (socialUp.length === 0) break;
         const roll = Math.random();
         const a = pick(socialUp);
         const aS = pStats(a);
@@ -469,7 +517,16 @@ export function simulateFindersCreepers(ep) {
       }
 
       // 7) Showmance moment (uses romance.js — respects romance toggle + cap internally)
-      _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, `finders creepers ${loc.key}`, socialUp);
+      const stillStanding = tribe.members.filter(m => !webbed[tribe.name].has(m));
+      _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, `finders creepers ${loc.key}`, stillStanding);
+
+      // 8) ATMOSPHERE interstitial — found-footage dread between teams (~65%)
+      if (Math.random() < 0.65) {
+        events.push({
+          type: 'atmosphere', loc: loc.key,
+          text: pick(ATMOSPHERE_FLAVOR),
+        });
+      }
     });
 
     // Mark cave completion order (finish line)
@@ -641,7 +698,8 @@ function _av(name, cls = '') {
 
 function _badgeClass(cls) {
   return cls === 'find' ? 'fc-b-find' : cls === 'save' ? 'fc-b-save' : cls === 'sab' ? 'fc-b-sab' :
-    cls === 'cap' ? 'fc-b-cap' : cls === 'love' ? 'fc-b-love' : 'fc-b-find';
+    cls === 'cap' ? 'fc-b-cap' : cls === 'love' ? 'fc-b-love' : cls === 'nav' ? 'fc-b-nav' :
+    cls === 'host' ? 'fc-b-host' : 'fc-b-find';
 }
 
 // ── SIDEBAR CONTENT (live "MEMBERS REMAINING") ──
@@ -719,6 +777,20 @@ function _card(event, idx, screenKey) {
   const badge = event.badge ? `<span class="fc-badge ${_badgeClass(event.badgeClass)}">${event.badge}</span>` : '';
   const tc = _playerTribeColor(event.tribe);
   const teamCls = event.tribe ? `<span class="fc-team" style="color:${tc};border-color:${tc}55;background:${tc}1a;">${(event.tribe || '').toUpperCase()}</span>` : '';
+
+  // Atmosphere interstitial — centered, italic found-footage dread (no player)
+  if (event.type === 'atmosphere') {
+    return `<div class="fc-atmos" id="fc-step-${suffix}-${idx}">${event.text}</div>`;
+  }
+
+  // Host phase-intro card — host avatar + distinct framing
+  if (event.type === 'host') {
+    return `<div class="fc-card fc-host beam" id="fc-step-${suffix}-${idx}">
+      <div class="who">${_av(event.player, 'big')}<div class="fc-name">${event.player}</div>
+        ${event.badge ? `<span class="fc-badge ${_badgeClass(event.badgeClass)}">${event.badge}</span>` : ''}</div>
+      <div class="body">${event.text}</div>
+    </div>`;
+  }
 
   // Special glitch CAPTURE card
   if (event.type === 'capture') {
@@ -879,6 +951,16 @@ function _fcShell(content, ep, screenKey, hudLoc) {
 .fc-b-sab{color:var(--fc-rec);background:rgba(226,59,59,.12);border:1px solid rgba(226,59,59,.35)}
 .fc-b-cap{color:var(--fc-rec);background:rgba(226,59,59,.12);border:1px solid rgba(226,59,59,.35)}
 .fc-b-love{color:#ff8fd0;background:rgba(255,143,208,.12);border:1px solid rgba(255,143,208,.35)}
+.fc-b-nav{color:var(--fc-mute);background:rgba(125,133,147,.12);border:1px solid rgba(125,133,147,.35)}
+.fc-b-host{color:var(--fc-rec);background:rgba(226,59,59,.1);border:1px solid rgba(226,59,59,.4);letter-spacing:2px}
+/* host phase-intro card */
+.fc-host{border-left:3px solid var(--fc-rec);background:linear-gradient(180deg,rgba(28,12,14,.55),rgba(11,15,22,.92))}
+/* atmosphere interstitial — found-footage dread strip */
+.fc-atmos{position:relative;text-align:center;font-family:'Special Elite',serif;font-style:italic;color:var(--fc-mute);
+  font-size:13px;letter-spacing:.5px;padding:12px 18px;margin:2px 0;opacity:0;transform:translateY(14px);
+  border-top:1px dashed rgba(125,133,147,.22);border-bottom:1px dashed rgba(125,133,147,.22)}
+.fc-atmos::before{content:'◦ ';color:var(--fc-rec)}.fc-atmos::after{content:' ◦';color:var(--fc-rec)}
+.fc-atmos.fc-visible{animation:fc-card-in .5s ease forwards}
 .fc-card.beam::after{content:'';position:absolute;top:-30px;left:30px;width:120px;height:160px;pointer-events:none;background:radial-gradient(ellipse at top, rgba(255,207,107,.16), transparent 70%);transform:rotate(8deg)}
 
 /* capture card */

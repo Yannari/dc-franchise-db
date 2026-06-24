@@ -1,8 +1,8 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 11,
-    "totalPlayers": 120,
+    "totalSeasons": 12,
+    "totalPlayers": 134,
     "description": "Total Drama franchise player statistics and performance data"
   },
   "players": [
@@ -1887,9 +1887,10 @@
       "name": "Ezekiel",
       "seasons": [
         2,
-        1
+        1,
+        12
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 4,
       "wins": 0,
       "totalChallengeWins": 1,
@@ -1939,6 +1940,23 @@
             "Reached the Final 4 — the deepest run of any first-boot archetype in franchise history.",
             "Lost fire-making to Alejandro at F4 — one clutch moment ending a long journey."
           ]
+        },
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Ezekiel was the definition of 'scrappy survives.' He found 2 idols over the season and kept slipping through danger windows with just enough information and just enough nerve. Even without a big challenge résumé (1 total wins), he played the advantage game like a veteran and made it all the way to Final 4. There, the season ended in the most brutal way possible: fire-making, where he lost to Alejandro and watched the title disappear in smoke (Result: fire-making loss; 4th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nEzekiel’s Season 2 on Killer Grips became legendary at the merge when his idol play protected Alejandro and erased a pile of votes, rewiring the entire post-merge. That move turned him into a kingmaker — and a must-remove threat. He was taken out at Final 6 once the cast agreed the window to beat him was closing (Ezekiel voted out, 4–2).",
@@ -2434,9 +2452,10 @@
       "name": "Jacques",
       "seasons": [
         6,
-        7
+        7,
+        12
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 1,
       "wins": 1,
       "totalChallengeWins": 10,
@@ -2516,6 +2535,23 @@
           "rivalries": [
             "Carrie"
           ]
+        },
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "On Blood vs. Water (Season 6), Jacques turned the Ice Dancers pairing with Josee into a masterclass in controlled threat management. While louder duos burned trust and idols, he stayed ‘useful’—competent in challenges, calm in camp, and quietly steering the merge vote map by weaponizing other people’s feuds. He survived the season’s chaos points (tribe re-draw, Redemption returns, rock-draw fallout) and arrived at the end with the cleanest résumé left. In the finale, the jury didn’t debate—they crowned him in a 7–1–0 landslide. (Result: Season 6 champion, 1st.)\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nJacques’ Fan vs Favorites story was domination… until the pressure snapped him. He stacked wins early and often (season-best 6 total challenge wins, including 5 immunities), while locking an unbreakable strategic duo with Taylor that shaped the merge vote map. Even when he wasn’t beloved, he was unavoidable: he kept collecting allies through the numbers game and used immunity streaks to force everyone else to cannibalize instead. But the deeper the game went, the more personal it became, especially his escalating feud with Carrie that eventually hit extreme hatred. At Final 4, a meltdown wiped out the last stretch of his endgame, and he quit the game outright—turning what looked like a potential winner run into the season’s most dramatic collapse.",
@@ -6145,9 +6181,10 @@
       "id": "jen",
       "name": "Jen",
       "seasons": [
-        8
+        8,
+        12
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 5,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -6193,6 +6230,23 @@
           "rivalries": [
             "Sanders"
           ]
+        },
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "The Civilians were supposed to be cannon fodder. Nobody told Jen. From Episode 1 she ran her tribe like a social director — managing the Gerry-Chet blood feud, identifying Sanders as her long-term partner, and positioning herself as the one face every faction trusted. She entered the merge holding three simultaneous Unbreakable Relationships and a Strong Bond with Alejandro, a social portfolio nobody in the franchise had ever assembled at once. She won merge immunity when it mattered most, helped orchestrate the systematic dismantling of every major legend — Owen, Leshawna, MacArthur — and for six consecutive episodes was never seriously targeted. The jury respected her. Her allies loved her. And then Sanders played an idol on the one person Jen had voted to protect, and the revote took everything. She was betrayed by her Unbreakable partner using the exact move Jen had pioneered. Voted for Cameron at FTC anyway. The Black Widow who got caught in her own web."
@@ -6654,9 +6708,10 @@
       "id": "chase",
       "name": "Chase",
       "seasons": [
-        9
+        9,
+        12
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 3,
       "wins": 0,
       "totalChallengeWins": 3,
@@ -6702,6 +6757,23 @@
           "rivalries": [
             "Ripper"
           ]
+        },
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Chase begins as Bowie’s pliable lieutenant on a starving Yellow, but his pocket game is real—he finds the tribe idol and detonates it in the swap to topple Hicks. The merge casts him as swing between the Misfits and the Core, and he stockpiles leverage with a secret Vote Stopper. His late surge defines him: advantage sprint, obstacle‑course immunity, then the dare‑soaked finale necklace to seize final agency. Choosing Millie as his goat backfires when Bowie wins fire, turning Chase from kingmaker to runner‑up. The jury respects the fight but not the steering wheel, leaving his resume a highlight reel without authorship."
@@ -6767,9 +6839,10 @@
       "id": "emmah",
       "name": "Emmah",
       "seasons": [
-        9
+        9,
+        12
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 5,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -6815,6 +6888,23 @@
             "Wayne",
             "Priya"
           ]
+        },
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Written off as a pawn on Red, Emmah flips the board by turning information into theft. She fractures from Hicks/Brightly, then reaches the merge and publicly rips Wayne’s Extra Vote with Knowledge is Power, doubling her own ballot to erase Ripper. That swagger paints her as the new boss, and she rides the Misfits’ wave while sparring with Wayne’s allies and surviving as a visible threat. Her downfall is the idol storm at five—both big totems get flashed and Emmah is the only blade left bare. The robber who emptied pockets gets ushered to the jury with nothing left to steal."
@@ -8328,9 +8418,10 @@
       "id": "ellie",
       "name": "Ellie",
       "seasons": [
-        11
+        11,
+        12
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 8,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -8377,6 +8468,23 @@
           ],
           "advPlayed": 1,
           "advHeld": 0
+        },
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Ellie finds the season's first idol and immediately becomes a player everyone talks around, not through. Her game is sharp, paranoid, and relentless; she plants notes, steals keys, pushes whisper campaigns, and keeps trying to collapse Fiore's position. Her Super Idol play is one of the season's defining advantage moments, turning a pile of votes into someone else's funeral. But her constant motion exhausts the camp, and the jury math around her becomes impossible to ignore. She keeps surviving by narrow margins until Eureka, Miriam, Thom, and even Alec decide the same thing at once. When she leaves, she does not leave quietly; she names the power structure and makes sure the jury knows who took her out.",
@@ -8551,6 +8659,524 @@
       ],
       "story": "Lill begins as the reliable one, the player whose word feels heavier than most people's promises. Her bonds with Seraphine and Ellie become defining pillars, and for a while they give her cover in a volatile Purple tribe. She sees more than people expect, reads body language well, and often steadies allies who are spiraling. But Lill's loyalty also makes her predictable, and predictability is deadly when the merge turns into idol insurance and split-vote math. After Seraphine leaves, she loses the emotional shield that kept her grounded. When Ellie's Super Idol detonates the plan, Lill becomes the cleanest casualty.",
       "avgPlacement": 10
+    },
+    {
+      "id": "james",
+      "name": "James",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "maggy",
+      "name": "Maggy",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "karol",
+      "name": "Karol",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "kai",
+      "name": "Kai",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "riya",
+      "name": "Riya",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "rosa-mar-a",
+      "name": "Rosa-María",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "connor",
+      "name": "Connor",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "aiden",
+      "name": "Aiden",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "hunter",
+      "name": "Hunter",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "yul",
+      "name": "Yul",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "lake",
+      "name": "Lake",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "tess",
+      "name": "Tess",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "ally",
+      "name": "Ally",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "oliver",
+      "name": "Oliver",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
     }
   ]
 }

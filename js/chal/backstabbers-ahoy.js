@@ -317,13 +317,13 @@ export function simulateBackstabbersAhoy(ep) {
         ? pumpCrew.reduce((acc, m) => { const s = pStats(m); return acc + (s.social + s.temperament + s.intuition) / 3; }, 0) / pumpCrew.length
         : 5;
       // pumpQuality centered ~0; over = >2, under = <-2, good in between
-      const pumpQuality = (crewSkill - 5) * 0.6 + noise(3.0);
+      const pumpQuality = (crewSkill - 5) * 0.6 + noise(4.0);
       const dStats = pStats(diver);
       const dPr = pronouns(diver);
       let diveBase = 0;
       let pumpedBy = pumpCrew.length ? pick(pumpCrew) : diver;
 
-      if (pumpQuality > 2.2) {
+      if (pumpQuality > 1.2) {
         // OVER-inflate
         diveBase = 4 + dStats.physical * 0.25 + noise(1.5);
         ep.chalMemberScores[pumpedBy] -= 1;
@@ -332,7 +332,7 @@ export function simulateBackstabbersAhoy(ep) {
           text: pick(DIVE_OVER)(diver, pumpedBy, dPr),
           badge: '⚠ OVER-INFLATED · DIVER LOST CONTROL', badgeClass: 'air'
         });
-      } else if (pumpQuality < -2.2) {
+      } else if (pumpQuality < -1.2) {
         // UNDER-inflate
         diveBase = 3.5 + dStats.endurance * 0.25 + noise(1.5);
         ep.chalMemberScores[pumpedBy] -= 1;
@@ -356,7 +356,7 @@ export function simulateBackstabbersAhoy(ep) {
 
       // Fang harassment — boldness + intuition resist
       const fangResist = (dStats.boldness * 0.4 + dStats.intuition * 0.4 + dStats.temperament * 0.2) + noise(2.5);
-      if (fangResist > 6) {
+      if (fangResist > 6.5) {
         diveBase += 2;
         ep.chalMemberScores[diver] += 2;
         popDelta(diver, 2);
@@ -365,7 +365,7 @@ export function simulateBackstabbersAhoy(ep) {
           text: pick(FANG_RESIST)(diver, dPr),
           badge: '🦈 FANG ATTACK · RESISTED', badgeClass: 'fang'
         });
-      } else if (fangResist < 3.5) {
+      } else if (fangResist < 5.5) {
         diveBase -= 2.5;
         ep.chalMemberScores[diver] -= 1;
         events.push({
@@ -478,8 +478,8 @@ export function simulateBackstabbersAhoy(ep) {
             badge: 'GULL MISSED', badgeClass: 'air'
           });
         }
-        // venom-gull knockout interrupt (~22% per attempt, on a random crew member)
-        if (Math.random() < 0.22 && members.length > 0) {
+        // venom-gull knockout interrupt (~30% per attempt, on a random crew member)
+        if (Math.random() < 0.30 && members.length > 0) {
           const victim = pick(members);
           raceBase -= 1.5;
           ep.chalMemberScores[victim] -= 1;

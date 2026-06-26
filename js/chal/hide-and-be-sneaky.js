@@ -1046,6 +1046,7 @@ export function simulateHideAndBeSneaky(ep) {
 
   const primaryWinner = immunityWinners[0] || null;
   ep.immunityWinner = primaryWinner;
+  ep.immunityWinners = [...immunityWinners]; // all winners credited with a Win in updateChalRecord
   if (immunityWinners.length > 1) {
     ep.extraImmune = [...new Set([...(ep.extraImmune || []), ...immunityWinners.slice(1)])];
   }
@@ -1054,11 +1055,6 @@ export function simulateHideAndBeSneaky(ep) {
   ep.challengeCategory = 'mixed';
   ep.challengeDesc = 'An extreme hide-and-seek game with a water gun-wielding Chef Hatchet.';
   ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-
-  immunityWinners.forEach(w => updateChalRecord(w, 'win'));
-  if (caught.length) {
-    updateChalRecord(caught[0].name, 'loss');
-  }
 
   // Build chalMemberScores for debug ranking: hiding quality + survival rounds + chase score
   ep.chalMemberScores = {};
@@ -1077,6 +1073,10 @@ export function simulateHideAndBeSneaky(ep) {
     ep.chalMemberScores[name] = score;
   });
   ep.chalPlacements = Object.entries(ep.chalMemberScores).sort(([,a],[,b]) => b - a).map(([n]) => n);
+
+  // Credit challenge record (Win to immunity winner(s), top-2 podium, bottom-2 bomb).
+  // Must run AFTER chalMemberScores + immunityWinners are set so updateChalRecord can rank.
+  updateChalRecord(ep);
 
   // Cold open hook — pick most dramatic moment
   let coldOpen = null;

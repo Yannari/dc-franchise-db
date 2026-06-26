@@ -340,7 +340,7 @@ export function simulateMineOverMatter(ep) {
 
   // GOPHER ambushes — ~35% of players get dragged; rescuers can intervene
   const ambushOrder = [...active].sort(() => Math.random() - 0.5);
-  const ambushed = ambushOrder.filter(() => Math.random() < 0.35);
+  const ambushed = ambushOrder.filter(() => Math.random() < 0.45);
   for (const n of ambushed) {
     const p = pronouns(n), s = pStats(n);
     push(phaseTunnels, { type: 'gopher', player: n, bad: true, text: _pick(GOPHER_DRAG, n + 'gd')(n, p),
@@ -443,7 +443,7 @@ export function simulateMineOverMatter(ep) {
     badge: 'SCORPIONS RELEASED', badgeClass: 'red' });
   for (const n of active) {
     const s = pStats(n), p = pronouns(n);
-    const dodge = (s.boldness * 0.35 + s.intuition * 0.35 + s.physical * 0.2 + noise(3)) > 4.0;
+    const dodge = (s.boldness * 0.35 + s.intuition * 0.35 + s.physical * 0.2 + noise(3)) > 5.4;
     if (dodge) {
       // chance for a save of a teammate
       const saveTarget = active.find(o => o !== n && pStats(o).boldness < 5 && getBond(n, o) >= 4);

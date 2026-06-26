@@ -2756,6 +2756,27 @@ export function simulateEpisode() {
     }
   }
 
+  // ── DOUBLE-SAFETY fallback for twist challenges that bypass the generic path ──
+  // Post-merge "replaces immunity" challenges (hide-and-be-sneaky, off-the-chain,
+  // lucky-hunt, say-uncle, brunch, basic-straining, etc.) are dispatched in earlier
+  // else-if branches and never reach the double-safety resolver in the final else.
+  // Resolve it here once if still pending so the runner-up earns safety.
+  {
+    const _dblSafeTw = ep.twists?.find(t => t.type === 'double-safety');
+    if (_dblSafeTw && ep.immunityWinner && !ep.secondImmune) {
+      const _alreadyImmune = [ep.immunityWinner, ...(ep.extraImmune || [])];
+      const _runnerUp = (ep.chalPlacements || []).find(p => !_alreadyImmune.includes(p)) || null;
+      const _second = _runnerUp || gs.activePlayers.filter(p => !_alreadyImmune.includes(p))[0] || null;
+      if (_second) {
+        _dblSafeTw.secondImmune = _second;
+        _dblSafeTw.reason = _runnerUp
+          ? `${_second} finished near the top of the challenge — close enough to earn safety.`
+          : `${_second} earned safety as the next-best performer.`;
+        ep.secondImmune = _second;
+      }
+    }
+  }
+
   // ── SUDDEN DEATH + TWIST CHALLENGE: eliminate last place from challenge results ──
   // When SD co-fires with a twist challenge, the twist ran above and populated its data.
   // We read chalPlacements (or derive from chalMemberScores) to find last place.

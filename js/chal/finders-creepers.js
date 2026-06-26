@@ -269,7 +269,7 @@ function captureRisk(name, phobiaActive) {
   const a = arch(name);
   // base resistance from composure stats (proportional)
   const resist = s.intuition * 0.4 + s.boldness * 0.35 + s.temperament * 0.35;
-  let risk = 6.5 - resist * 0.45 + noise(2.5);
+  let risk = 6.6 - resist * 0.42 + noise(3.0);
   // phobia amplifiers — fear of the dark / arachnophobia
   if (phobiaActive) {
     if (SKITTISH_ARCHS.has(a)) risk += 1.8;
@@ -387,7 +387,7 @@ export function simulateFindersCreepers(ep) {
         // phobia amplifier is location-driven: dark forest & cave + spider presence
         const phobiaActive = loc.key === 'forest' || loc.key === 'cave';
         const risk = captureRisk(member, phobiaActive);
-        const captureThreshold = 5.5 + locIdx * 0.6; // escalates as the hunt goes on
+        const captureThreshold = 5.0 + locIdx * 0.55; // escalates as the hunt goes on
         if (risk > captureThreshold) {
           // CAPTURED
           webbed[tribe.name].add(member);

@@ -2506,7 +2506,8 @@ NON-NEGOTIABLE RULES:
 2. NO scene before that elimination moment may refer to a this-episode boot as "gone", "left", "eliminated", or in the past tense. (e.g. if Eureka is voted out at Tribal this episode, NOTHING before Tribal can say "since Eureka left".)
 3. The "Previously on…" recap covers ONLY events from PREVIOUS episodes — use the PREVIOUS EPISODES context for the prior boot(s). It must NEVER mention anyone eliminated THIS episode. The only player whose elimination belongs in the recap is the one who left in the PRIOR episode.
 4. The episode runs in strict order: recap (prior episode only) → camp with the FULL start-of-episode roster → challenge → post-challenge scramble → Tribal → THIS episode's elimination(s). The eliminations are the climax, not the premise.
-5. WITHIN-EPISODE EVENT ORDER — challenge results cannot leak backward. Everything that happens AT or DURING the challenge has NOT happened yet during the cold open or any pre-challenge camp scene. That includes: who won immunity, who sat out / "wimped" / took a key / quit the challenge, handcuff or pairing assignments, idols or advantages found AT the challenge, injuries, and any challenge outcome. Pre-challenge scenes may show players nervous about the day ahead, but must NOT reference how the challenge turns out. No pre-challenge line may say a challenge event happened "yesterday" or earlier — the challenge happens TODAY, after these scenes.
+5. WITHIN-EPISODE EVENT ORDER — results cannot leak backward. Everything that happens AT or DURING the challenge has NOT happened yet during the cold open or any pre-challenge camp scene. That includes: who won immunity, who sat out / "wimped" / took a key / quit the challenge, handcuff or pairing assignments, idols or advantages found AT the challenge, injuries, and any challenge outcome. Pre-challenge scenes may show players nervous about the day ahead, but must NOT reference how the challenge turns out. No pre-challenge line may say a challenge event happened "yesterday" or earlier — the challenge happens TODAY, after these scenes.
+   THE SAME RULE APPLIES TO TWIST SCENES (Summit / Three Gifts / Journey / Exile Island / Auction). Any advantage, idol, totem, vote-steal, vote-block, or item a player obtains AT a summit/journey/exile/auction does NOT exist in their hands until that scene is written and resolved. If Riya finds a Totem at the Summit, then in EVERY scene before the Summit she has NO Totem — the cold open, morning camp, and pre-Summit confessionals CANNOT mention, hint at, or have her thinking about "her Totem." She acquires it on screen, at the Summit, in chronological order. A player can be nervous/hopeful about an upcoming journey, but cannot possess or reference its reward beforehand.
 6. CHALLENGE MECHANICS ARE NOT REMOVALS. Sitting out, taking a "wimp key", forfeiting, or losing a challenge does NOT remove a player from camp or the game. Those players are still in the episode, still at camp, still voting at Tribal. Never write a non-eliminated player as "out", absent, or "sleeping elsewhere" because of a challenge result. The only thing that removes a player is an actual elimination (Tribal vote / duel / twist), and that happens at the END.
 
 Sanity check before you write the cold open: "Who actually left LAST episode?" Put only that name in the recap. "Who leaves THIS episode?" Keep them fully alive until their elimination beat. "Has the challenge happened yet in this scene?" If not, no challenge result — wimp keys, sit-outs, winners — can be mentioned.
@@ -3046,14 +3047,16 @@ says "yesterday" or "this week." Check your timeline before every scene.
    Chris gathers everyone, announces the merge, new tribe name. Players react.
    Keep it punchy — the merge is exciting, not a ceremony.
 
-3. **TWIST SCENES — Summit/Journey/Exile (20-40 lines, if present)**
-   These are QUICK scenes. The Summit is not a 10-minute character study:
-   - Players arrive at location (2-3 lines)
-   - Chris/Chef explains the options (3-5 lines)
-   - Each player picks, quick reaction (2-3 lines each)
-   - Consequence shown (returning to camp, idol found) (3-5 lines)
+3. **TWIST SCENES — Summit/Journey/Exile (20-40 lines) — MANDATORY when present in the summary**
+   🚨 If the summary's === TWISTS === / === EXILE ISLAND === section contains a Summit, Three Gifts, Journey, or Exile, you MUST WRITE IT AS A FULL ON-SCREEN SCENE. This is the #1 thing writers wrongly skip. NEVER compress it into a single result line or a confessional that just states the outcome ("Riya came back from the journey with a Totem"). The audience has to WATCH it happen — the travel, the location, the choice, the win/loss, the return. The journey/summit IS part of the episode, not a footnote. A summary line like "Travelers: Rosa-Maria, Tess. Both struck a deal, both return with their votes." is your instruction to DRAMATIZE that deal as a scene, not to report it.
+   These are QUICK but REAL scenes (not a 10-minute character study, but never zero):
+   - Players travel to / arrive at the location (2-3 lines)
+   - Chris/Chef explains the options or the mini-challenge (3-5 lines)
+   - The actual event plays out — the choice, the mini-challenge, the deal, the search (5-10 lines)
+   - Consequence shown ON SCREEN: the idol/totem/advantage is found HERE, the return to camp (3-5 lines)
    - One confessional from someone who made a big choice (2-4 lines)
-   EXILE: Player arrives, searches, finds something or doesn't. 10-15 lines MAX.
+   EXILE: Player arrives, searches, finds something or doesn't — shown, not summarized. 10-15 lines.
+   Chronology lock: whatever is won here is acquired in THIS scene. Nothing earlier in the episode may reference it (see NON-NEGOTIABLE RULE 5).
 
 4. **REWARD CHALLENGE (30-50 lines, if present)**
    Chris explains, quick play-by-play, result, move on.

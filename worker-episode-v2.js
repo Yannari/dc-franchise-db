@@ -2855,6 +2855,12 @@ The episode follows real time. Events happen in THIS order:
 Characters cannot reference things that haven't happened yet. If the challenge
 hasn't occurred, nobody discusses "after the challenge." If it's day 1, nobody
 says "yesterday" or "this week." Check your timeline before every scene.
+🚨 ADVANTAGES ARE ACQUIRED ON SCREEN, IN ORDER. Any idol, totem, vote-steal, vote-block,
+or item won at a Summit/Journey/Exile/Auction/Challenge does NOT exist in a player's hands
+until that scene is written and resolved. If Riya finds a Totem at the Summit, then the cold
+open, morning camp, and every pre-Summit scene must show her with NO Totem — she cannot mention,
+hint at, or think about "her Totem" before she acquires it on screen at the Summit. A player may
+be nervous/hopeful about an upcoming journey, but cannot possess or reference its reward beforehand.
 
 1. **COLD OPEN (15-25 lines)**
    - Episode 1: Chris intro + first boat arrival
@@ -2871,14 +2877,16 @@ says "yesterday" or "this week." Check your timeline before every scene.
    Chris gathers everyone, announces the merge, new tribe name. Players react.
    Keep it punchy — the merge is exciting, not a ceremony.
 
-3. **TWIST SCENES — Summit/Journey/Exile (20-40 lines, if present)**
-   These are QUICK scenes. The Summit is not a 10-minute character study:
-   - Players arrive at location (2-3 lines)
-   - Chris/Chef explains the options (3-5 lines)
-   - Each player picks, quick reaction (2-3 lines each)
-   - Consequence shown (returning to camp, idol found) (3-5 lines)
+3. **TWIST SCENES — Summit/Journey/Exile (20-40 lines) — MANDATORY when present in the summary**
+   🚨 If the summary's === TWISTS === / === EXILE ISLAND === section contains a Summit, Three Gifts, Journey, or Exile, you MUST WRITE IT AS A FULL ON-SCREEN SCENE. This is the #1 thing writers wrongly skip. NEVER compress it into a single result line or a confessional that just states the outcome ("Riya came back from the journey with a Totem"). The audience has to WATCH it happen — the travel, the location, the choice, the win/loss, the return. A summary line like "Travelers: Rosa-Maria, Tess. Both struck a deal, both return with their votes." is your instruction to DRAMATIZE that deal as a scene, not to report it.
+   These are QUICK but REAL scenes (never zero):
+   - Players travel to / arrive at the location (2-3 lines)
+   - Chris/Chef explains the options or the mini-challenge (3-5 lines)
+   - The actual event plays out — the choice, the mini-challenge, the deal, the search (5-10 lines)
+   - Consequence shown ON SCREEN: the idol/totem/advantage is found HERE, the return to camp (3-5 lines)
    - One confessional from someone who made a big choice (2-4 lines)
-   EXILE: Player arrives, searches, finds something or doesn't. 10-15 lines MAX.
+   EXILE: Player arrives, searches, finds something or doesn't — shown, not summarized. 10-15 lines.
+   Chronology lock: whatever is won here is acquired in THIS scene. Nothing earlier in the episode may reference it.
 
 4. **REWARD CHALLENGE (30-50 lines, if present)**
    Chris explains, quick play-by-play, result, move on.

@@ -5,6 +5,18 @@
 export let _spoilerFree = false;
 export function set_spoilerFree(v) { _spoilerFree = v; }
 
+// Sudden Death is a format modifier that may co-fire with ONE scoring twist
+// challenge (it eliminates that challenge's last-place finisher). The runtime
+// allows that pairing, so the scheduler UI shouldn't flag it as incompatible.
+// (SD stays incompatible with the other auto-elimination formats.)
+function _sdChalPair(a, b) {
+  const isScoringChal = id => {
+    if (id === 'sudden-death' || id === 'slasher-night' || id === 'triple-dog-dare') return false;
+    return (TWIST_CATALOG.find(c => c.id === id) || {}).category === 'challenge';
+  };
+  return (a === 'sudden-death' && isScoringChal(b)) || (b === 'sudden-death' && isScoringChal(a));
+}
+
 export function initRunTab() {
   if (!gs) {
     if (players.length > 0) initGameState();
@@ -1034,7 +1046,7 @@ export function renderTwistCatalog() {
   container.innerHTML = filtered.map(t => {
     const phaseBlocked = canAssign && t.phase !== 'any' &&
       [...selPhases].every(ph => ph !== t.phase);
-    const incompBlocked = canAssign && (t.incompatible || []).some(ic => _existingOnSelected.has(ic));
+    const incompBlocked = canAssign && (t.incompatible || []).some(ic => _existingOnSelected.has(ic) && !_sdChalPair(t.id, ic));
     const tribeBlocked = canAssign && t.minTribes && (seasonConfig.teams || 2) < t.minTribes;
     const riBlocked = canAssign && (t.id === 'exile-duel' || t.id === 'second-chance') && seasonConfig.ri;
     const popBlocked = canAssign && t.id === 'second-chance' && !seasonConfig.popularityEnabled;
@@ -1101,7 +1113,7 @@ export function assignTwist(twistId) {
     if (existingOnEp.some(t => t.type === twistId)) return;
     // Incompatibility check: silently skip conflicting episodes
     if (twist?.incompatible?.length) {
-      if (existingOnEp.some(t => twist.incompatible.includes(t.type))) {
+      if (existingOnEp.some(t => twist.incompatible.includes(t.type) && !_sdChalPair(twistId, t.type))) {
         blocked.push(ep); return;
       }
     }

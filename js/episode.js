@@ -1344,10 +1344,26 @@ export function simulateEpisode() {
   }
   const _rawScheduled = (cfg.twistSchedule||[]).filter(t => t && Number(t.episode) === epNum);
   const _usedTypes = new Set();
+  // Sudden Death is both a standalone challenge AND a format modifier: it can
+  // co-fire with ONE scoring twist challenge and eliminate that challenge's
+  // last-place finisher (see the SD + twist-challenge handler further below).
+  // The blanket "all challenges are mutually incompatible" rule would otherwise
+  // drop the challenge from an SD + twist pairing, leaving SD to run a generic
+  // challenge instead. Exempt that specific pairing here. (SD still stays
+  // incompatible with the other auto-elimination formats — slasher-night,
+  // triple-dog-dare — and with everything else.)
+  const _sdCompatibleChal = new Set(
+    TWIST_CATALOG.filter(c => c.category === 'challenge'
+      && !['sudden-death', 'slasher-night', 'triple-dog-dare'].includes(c.id)
+    ).map(c => c.id)
+  );
+  const _sdChalException = (a, b) =>
+    (a === 'sudden-death' && _sdCompatibleChal.has(b)) ||
+    (b === 'sudden-death' && _sdCompatibleChal.has(a));
   const scheduledTwists = _rawScheduled.filter(twist => {
     const cat = TWIST_CATALOG.find(c => c.id === twist.type);
     const incomp = cat?.incompatible || [];
-    if (incomp.some(ic => _usedTypes.has(ic))) return false; // blocked by already-scheduled twist
+    if (incomp.some(ic => _usedTypes.has(ic) && !_sdChalException(twist.type, ic))) return false; // blocked by already-scheduled twist
     _usedTypes.add(twist.type);
     return true;
   });
@@ -2856,7 +2872,6 @@ export function simulateEpisode() {
         advantagesPreTribal: ep.advantagesPreTribal || null,
         // Twist challenge data
         isMonsterCash: ep.isMonsterCash || false, monsterCash: ep.monsterCash || null,
-      isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null,
         isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null,
         isOperationClassified: ep.isOperationClassified || false, operationClassified: ep.operationClassified || null,
         isAlienEgg: ep.isAlienEgg || false, alienEgg: ep.alienEgg || null,

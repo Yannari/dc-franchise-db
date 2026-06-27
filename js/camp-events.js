@@ -885,19 +885,34 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const sA = pStats(a), sB = pStats(b);
       const tdBondLines = (sA.boldness >= 8 && sB.boldness >= 8)
         ? [`${a} and ${b} somehow get into a competition about who can go the longest without blinking. The tribe has no idea what they're watching.`,
-           `${a} and ${b} challenge each other to something ridiculous. Somehow it makes them closer.`]
+           `${a} and ${b} challenge each other to something ridiculous. Somehow it makes them closer.`,
+           `${a} dares ${b} to eat something questionable from the jungle. ${b} does it. A friendship is forged in nausea.`,
+           `${a} and ${b} race to the top of the nearest tree for no reason at all. ${b} wins. ${a} demands a rematch.`,
+           `${a} and ${b} invent a stupidly dangerous game involving the fire pit. The tribe makes them stop. They're already best friends.`]
         : (sA.social >= 8 || sB.social >= 8)
         ? [`${a} does a dead-on impression of the host. ${b} loses it completely. The whole camp is laughing.`,
-           `${a} and ${b} spend an hour making up nicknames for everyone on the tribe. Half of them stick.`]
+           `${a} and ${b} spend an hour making up nicknames for everyone on the tribe. Half of them stick.`,
+           `${a} gets ${b} talking about home, and for a while neither of them is playing a game — they're just two people on a beach.`,
+           `${a} and ${b} fall into an easy rhythm doing chores, trading life stories the whole time. It doesn't feel like strategy. It feels real.`,
+           `${a} pulls ${b} into a long, rambling debate about something pointless — best snack, worst movie — and they don't stop until dark.`,
+           `${b} is having a rough day and ${a} just... sits with ${pronouns(b).obj}. Says the right thing. ${b} won't forget that.`,
+           `${a} and ${b} start a bit that only the two of them find funny. By nightfall it's an inside joke nobody else understands.`]
         : (sA.temperament <= 4 || sB.temperament <= 4)
         ? [`${a} and ${b} get into a huge fight — and then immediately start laughing about it. The tribe has no idea how to process this.`,
-           `${a} snaps at ${b}, then immediately apologizes. ${b} waves it off. Somehow it broke the ice.`]
+           `${a} snaps at ${b}, then immediately apologizes. ${b} waves it off. Somehow it broke the ice.`,
+           `${a} and ${b} argue loudly over nothing, realize how dumb it is mid-sentence, and end up closer than before.`,
+           `${b} pushes ${a}'s buttons on purpose, ${a} pushes back, and the whole thing dissolves into reluctant respect.`]
         : (sA.loyalty >= 8 || sB.loyalty >= 8)
         ? [`${a} covers for ${b} when someone else asks a pointed question. ${b} notices. Doesn't forget.`,
-           `${a} and ${b} make a quiet agreement — nothing formal, no name for it. Just understood.`]
+           `${a} and ${b} make a quiet agreement — nothing formal, no name for it. Just understood.`,
+           `${a} quietly gives ${b} the bigger share of the food and pretends not to. ${b} catches it anyway.`,
+           `${a} stays up to keep the fire going so ${b} can sleep. Nothing is said. It doesn't need to be.`]
         : [`${a} and ${b} end up on the same shift and bond over how exhausting this is. It's the most honest conversation either has had out here.`,
            `${a} teaches ${b} something random — a card trick, a knot, a song. By sunset they feel like old friends.`,
-           `${a} and ${b} get stuck on a camp task together and it takes twice as long as it should. Neither minds.`];
+           `${a} and ${b} get stuck on a camp task together and it takes twice as long as it should. Neither minds.`,
+           `${a} and ${b} go looking for firewood and come back with none, having talked the whole time instead.`,
+           `${a} and ${b} discover they both can't stand the same person. Nothing bonds people faster.`,
+           `${a} shows ${b} a hidden spot on the beach ${pronouns(a).sub} found. It becomes "their" place to actually talk.`];
       events.push({ type: 'tdBond', text: tdBondLines[Math.floor(Math.random() * tdBondLines.length)], players: [a, b], badgeText: 'BONDING', badgeClass: 'green' });
 
     } else if (eventType === 'groupLaugh') {

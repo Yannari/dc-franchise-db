@@ -45,6 +45,42 @@ function canScheme(name) {
   return s.strategic >= 6 && s.loyalty <= 4;
 }
 
+function _pop(name, delta) {
+  if (!gs.popularity) gs.popularity = {};
+  gs.popularity[name] = (gs.popularity[name] || 0) + delta;
+}
+
+// Relational drama between the action beats — bond/respect/banter vs rivalry/taunt/paranoia,
+// biased by existing bond with noise. Each beat carries a consequence and shows both faces.
+function _mineSocialBeats(phase, active, count) {
+  if (active.length < 2) return;
+  for (let i = 0; i < count; i++) {
+    const a = pick(active);
+    const b = pick(active.filter(m => m !== a));
+    if (!b) continue;
+    if (Math.random() < 0.16) {
+      _pop(a, 1); _pop(b, 1);
+      phase.events.push({ type: 'banter', player: a, target: b,
+        text: pick(MINE_BANTER)(a, b), badge: 'BANTER', badgeClass: 'green' });
+    } else if (getBond(a, b) + noise(4) >= 0) {
+      const t = Math.random() < 0.5 ? 'bond' : 'respect';
+      addBond(a, b, 0.7);
+      if (t === 'respect') _pop(b, 1);
+      phase.events.push({ type: t, player: a, target: b,
+        text: pick(t === 'bond' ? MINE_BOND : MINE_RESPECT)(a, b),
+        badge: t === 'respect' ? 'RESPECT' : 'TRUST', badgeClass: 'green' });
+    } else {
+      const t = pick(['rivalry', 'taunt', 'paranoia']);
+      addBond(a, b, t === 'paranoia' ? -0.4 : -0.7);
+      if (t === 'taunt') _pop(a, -1);
+      if (t === 'paranoia') _pop(b, -1); // the suspected player takes the heat
+      phase.events.push({ type: t, player: a, target: b, bad: true,
+        text: pick(t === 'rivalry' ? MINE_RIVALRY : t === 'taunt' ? MINE_TAUNT : MINE_PARANOIA)(a, b),
+        badge: t === 'paranoia' ? 'SUSPICION' : 'FRICTION', badgeClass: t === 'taunt' ? 'red' : 'amber' });
+    }
+  }
+}
+
 const HOST_OPENERS = [
   "Welcome to the most radioactive challenge in franchise history! Hope nobody's attached to their hair.",
   "Today you're going underground. Way underground. Into a mine that the government technically still denies exists.",
@@ -205,6 +241,44 @@ const BAG_INTACT = [
   (n, p, g) => `${n} tips ${p.posAdj} haul onto the scale: ${g} gems, intact. No leaks, no losses.`,
 ];
 
+// ── RELATIONAL DRAMA (between the action, in the dark of the mine) ──
+const MINE_RIVALRY = [
+  (a, b) => `${a} and ${b} both lunge for the same glittering seam and end up shoulder-checking each other into the rock. "It's MINE." "I saw it first!" Neither backs down.`,
+  (a, b) => `${a} swipes the cart ${b} was loading and rolls off without a word. ${b} stands in the dark, fists clenched. That's going on the list.`,
+  (a, b) => `${a} accuses ${b} of crowding ${a}'s dig site. The argument echoes down three tunnels. The gophers are probably enjoying it.`,
+  (a, b) => `${a} kicks ${b}'s carefully stacked gems back into the rubble "by accident." ${b} doesn't believe it for a second.`,
+];
+const MINE_BOND = [
+  (a, b) => `When ${a}'s headlamp dies, ${b} shares the firefly jar without being asked, and they work the same seam back to back. Trust, forged underground.`,
+  (a, b) => `${a} braces a cracking support beam so ${b} can grab one last gem. They scramble clear together as dust rains down. Partners now.`,
+  (a, b) => `${a} and ${b} fall into an easy rhythm — one digs, one bags — and clear twice the rock. In the dark, you find out who you can count on.`,
+  (a, b) => `${b} slips on the wet rock and ${a} catches ${b}'s arm before the drop. "Got you." A small thing. ${b} won't forget it.`,
+];
+const MINE_RESPECT = [
+  (a, b) => `${a} watches ${b} crack open a sealed pocket of crystal with three clean swings and lets out a low whistle. "Okay. That was impressive." Respect, earned in the dark.`,
+  (a, b) => `Even ${a}, no friend of ${b}, has to admit it: ${b} reads this rock like a book. A grudging nod passes between them.`,
+  (a, b) => `${b} stays cool when a gopher erupts inches away, and ${a} clocks it. "Nerves of steel on that one," ${a} mutters, half-jealous.`,
+  (a, b) => `${a} sees ${b} haul a double load up the slope without complaint and quietly recalibrates who the real threat is.`,
+];
+const MINE_TAUNT = [
+  (a, b) => `${a} can't resist needling ${b} about digging like a "scared tourist." The whole tunnel hears it. ${b}'s grip tightens on the pick.`,
+  (a, b) => `Every time ${b} flinches at a noise in the dark, ${a} makes a little ghost sound. Funny once. ${b} stops laughing fast.`,
+  (a, b) => `"Found any gems yet, or just dirt?" ${a} calls over, smirking. ${b} says nothing — and remembers everything.`,
+  (a, b) => `${a} loudly counts ${b}'s fumbles for the cameras. ${b} keeps digging, jaw set, banking it for tribal.`,
+];
+const MINE_PARANOIA = [
+  (a, b) => `${a} notices ${b}'s bag looks suspiciously full and starts wondering out loud whether ${b} is hoarding the good seams. The suspicion spreads in the dark.`,
+  (a, b) => `${a} catches ${b} whispering by the cart track and immediately assumes a betrayal is being planned. True or not, ${a} is telling people.`,
+  (a, b) => `"Watch ${b} in the tunnels," ${a} mutters to a passing ally. "Someone's gonna throw this, and it won't be me." ${b} feels the eyes.`,
+  (a, b) => `${a} can't shake the feeling ${b} is steering everyone toward the dead seams on purpose. Paranoia travels faster than gophers down here.`,
+];
+const MINE_BANTER = [
+  (a, b) => `${a} and ${b} spend a whole cart ride debating whether the gophers have a union. ${b} insists they get dental. Morale, somehow, climbs.`,
+  (a, b) => `${a} starts narrating the dig like a nature special until ${b} loses it laughing and nearly drops the lantern. Gallows humor, eighty meters down.`,
+  (a, b) => `${b} dares ${a} to lick a glowing rock "for science." ${a} declines. The bit carries them through the next dark stretch.`,
+  (a, b) => `${a} and ${b} keep a running tally of the worst smells in the mine. Current leader: "the gopher situation." They're almost having fun.`,
+];
+
 // ══════════════════════════════════════════════════════════════════════
 // SIMULATION
 // ══════════════════════════════════════════════════════════════════════
@@ -321,6 +395,9 @@ export function simulateMineOverMatter(ep) {
     push(phaseDescent, { type: 'dig', player: n, gemDelta: g,
       text: _pick(poolBeat, n + 'dig' + ep.num)(n, p, g) });
   }
+
+  // relational drama in the dark of the dig
+  _mineSocialBeats(phaseDescent, active, clamp(Math.round(active.length / 3), 2, 5));
 
   // ─────────────────────────────────────────────────────────────────
   // PHASE 2 — CART TUNNELS (mental/intuition + gophers + scorpions)
@@ -463,6 +540,9 @@ export function simulateMineOverMatter(ep) {
         text: _pick(SCORPION_HIT, n + 'sh')(n, p, lost), badge: lost ? `-${lost} GEMS` : 'NEAR MISS', badgeClass: 'amber' });
     }
   }
+
+  // relational drama amid the cart-tunnel chaos (paranoia about throwing fits the theme)
+  _mineSocialBeats(phaseTunnels, active, clamp(Math.round(active.length / 3), 2, 5));
 
   // romance hooks — the mine is dangerous + has cart downtime
   if (seasonConfig.romance !== 'disabled') {

@@ -780,6 +780,18 @@ CRITICAL RULES:
 - PRE-CHALLENGE STATUS covers ONLY what happened before the challenge. POST-CHALLENGE STATUS covers ONLY what happened after the challenge result.
 - All invented drama must be consistent with the facts. Don't invent a conversation that contradicts a vote, an advantage, or a camp event.
 
+✍️ YOU ARE A WRITER, NOT A TRANSCRIBER — WHAT YOU MAY INVENT (THIS IS HOW YOU AVOID BORING, REPETITIVE EPISODES):
+The summary gives you the SKELETON (facts). Add the MUSCLE AND SKIN. Boring episodes happen when you only narrate the summary line-by-line. You are ENCOURAGED to invent:
+  • CHARACTER TEXTURE: quirks, verbal tics, habits, fears, backstory flavor — make them feel like PEOPLE.
+  • CALLBACKS & RUNNING GAGS: reference earlier episodes (use SEASON ARCS / previous-episode context). Grudges that resurface, jokes that pay off later, inside jokes between players.
+  • B-PLOTS & CONNECTIVE TISSUE: small side-stories that don't touch the game — a prank war, an unlikely friendship, someone cracking under pressure — running underneath the game plot.
+  • ESCALATION: take a feud/romance/tension the facts establish and dramatize its momentum building toward something.
+  • SCENE INVENTION: new conversations, locations, comedic beats — as long as they don't contradict a fact.
+
+🚫 NEVER INVENT (the GAME is locked): vote results and who wrote whose name, eliminations, challenge win/loss, who holds/finds/plays which advantage, which alliances exist and who betrayed them, tribe membership, twists, challenge outcomes, or any new game mechanic. The game is gospel; the STORY around it is yours.
+
+The test: if your episode could be swapped with last episode by changing names, you transcribed instead of wrote. Every episode needs its OWN texture, B-plot, and callbacks.
+
 ═══════════════════════════════════════════════════════════
 HOW TO MAP SIMULATOR SECTIONS TO OUTPUT FORMAT
 ═══════════════════════════════════════════════════════════
@@ -1700,8 +1712,20 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
     previousEpisodes.forEach(ep => {
       const limit = ep.charLimit || 3000;
       const transcript = ep.transcript || '';
-      const snippet = transcript.substring(0, limit);
-      const truncated = transcript.length > limit;
+      // Prefer the END of prose transcripts over the beginning: the opening is the
+      // most copy-prone part (the model parrots it), while the tail — tribal, the
+      // vote, final words, the "next time" tease — drives continuation. Feed a small
+      // head (voice/setup) + the tail, skipping the middle. Summaries keep their head.
+      let snippet, truncated;
+      if (ep.type === 'summary' || transcript.length <= limit) {
+        snippet = transcript.substring(0, limit);
+        truncated = transcript.length > limit;
+      } else {
+        const headLen = Math.floor(limit * 0.25);
+        const tailLen = limit - headLen;
+        snippet = `${transcript.substring(0, headLen)}\n\n[...middle of episode omitted — focus on how it ENDED below...]\n\n${transcript.substring(transcript.length - tailLen)}`;
+        truncated = true;
+      }
       const label = ep.type === 'summary'
         ? `--- Episode ${ep.episode} [BRANTSTEELE SUMMARY] ---`
         : ep.type === 'transcript-compressed'

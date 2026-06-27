@@ -204,6 +204,54 @@ const SHOWMANCE_TEXT = [
   (a, b) => `${a} and ${b} share a look over the gull cannon and forget to fire for a full ten seconds. The mine drifts past.`,
 ];
 
+// ── SOCIAL: respect earned ──
+const RESPECT_TEXT = [
+  (a, b) => `${b} watches ${a} hold the line under pressure and gives a single, respectful nod. "Didn't think you had it in you." It lands.`,
+  (a, b) => `${a} pulls off something nobody expected on the dive line, and even ${b} — no fan of ${a} — has to admit it was clutch.`,
+  (a, b) => `When the spray cleared, ${a} was still standing and ${b} was the first to say it: "That was the real deal." Respect, earned the hard way.`,
+  (a, b) => `${a} carries the crew through a rough stretch and ${b} claps ${a} on the shoulder. No words needed — the look says enough.`,
+];
+
+// ── SOCIAL: quiet alliance forming ──
+const ALLIANCE_TEXT = [
+  (a, b) => `Behind the air pumps where the cameras barely reach, ${a} and ${b} trade a few low words. "After this — you and me." A number is born.`,
+  (a, b) => `${a} and ${b} keep finding each other between beats, comparing notes on who's a threat. By the end of the dive they're thinking like a pair.`,
+  (a, b) => `${b} mutters something to ${a} about "handling the schemer later." ${a} just nods. The alliance is unspoken but very real.`,
+  (a, b) => `In the chaos, ${a} covers for ${b} twice without being asked. ${b} notices. That's how the strongest pairs start.`,
+];
+
+// ── SOCIAL: banter / comedy ──
+const BANTER_TEXT = [
+  (a, b) => `${a} and ${b} spend a whole reload arguing about whether Fang has a name. (${b} insists it's "Gary.") The crew is in stitches.`,
+  (a, b) => `${a} cracks a joke about the diving suit smelling like ${b}'s gym bag. ${b} fires back. The whole dock is laughing now.`,
+  (a, b) => `${b} keeps narrating the dive like a nature documentary until ${a} loses it laughing. Morale: surprisingly high.`,
+  (a, b) => `${a} dares ${b} to salute the mutant gull. ${b} does. The gull is not amused. Everyone else is.`,
+];
+
+// ── SOCIAL: blame ──
+const BLAME_TEXT = [
+  (a, b) => `The line fouls and ${a} wheels on ${b}. "That was YOUR job." ${b}'s jaw tightens. The blame sticks whether it's fair or not.`,
+  (a, b) => `A mine drifts past unhit and ${a} points straight at ${b}. "You called it left." ${b} did not call it left. ${b} remembers this.`,
+  (a, b) => `${a} loudly blames ${b} for the slow pump, conveniently forgetting ${a} dropped the count first. ${b} files it away.`,
+  (a, b) => `When the dive goes sideways, ${a} needs someone to pin it on, and ${b} is closest. "Thanks for nothing." Cold.`,
+];
+
+// ── SOCIAL: taunt ──
+const TAUNT_TEXT = [
+  (a, b) => `${a} can't resist needling ${b} about choking last challenge. "Don't freeze up on us again, yeah?" ${b}'s knuckles go white.`,
+  (a, b) => `${a} mock-salutes ${b} every time ${b} fumbles the cannon. It's funny exactly once. ${b} stops finding it funny fast.`,
+  (a, b) => `"Try to keep up," ${a} sneers as ${b} struggles with the pump. The whole crew hears it. So does ${b}.`,
+  (a, b) => `${a} starts a running tally of ${b}'s mistakes, out loud, for everyone's benefit. ${b} says nothing. ${b} forgets nothing.`,
+];
+
+// ── SOCIAL: paranoia / suspicion (ties to the backstab theme) ──
+const PARANOIA_TEXT = [
+  (a, b) => `${a} catches ${b} hesitating at exactly the wrong moment and starts to wonder out loud: "Were you... slowing us down on purpose?" The seed is planted.`,
+  (a, b) => `${a} pulls a teammate aside and nods toward ${b}. "Watch ${b === a ? 'them' : 'em'}. Something's off." Suspicion spreads faster than water.`,
+  (a, b) => `Every fumble ${b} makes, ${a} clocks it — and starts building a theory that ${b} is throwing the whole thing. True or not, it's loud now.`,
+  (a, b) => `${a} whispers to anyone who'll listen that ${b} can't be trusted on the cannon. By the next beat, half the crew is side-eyeing ${b}.`,
+];
+
 // ── ATMOSPHERE / FLAVOR ──
 const ATMOSPHERE_FLAVOR = [
   'A foghorn moans somewhere out in the bay. Nobody answers it.',
@@ -390,7 +438,7 @@ export function simulateBackstabbersAhoy(ep) {
       td.diveScore = clamp(diveBase, 0, 15);
 
       // SOCIAL beat (guaranteed 1, ~55% for a 2nd)
-      _diveSocialBeats(ep, tribe, td, events);
+      _socialBeats(ep, tribe, td, events, 'dive');
 
       // Showmance moment on the dock
       _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'backstabbers dive', members);
@@ -495,7 +543,7 @@ export function simulateBackstabbersAhoy(ep) {
       td.raceScore = clamp(raceBase, 0, 15);
 
       // SOCIAL beats
-      _raceSocialBeats(ep, tribe, td, events);
+      _socialBeats(ep, tribe, td, events, 'race');
 
       // Showmance moment on the boat
       _checkShowmanceChalMoment(ep, null, null, ep.chalMemberScores || {}, 'backstabbers race', members);
@@ -616,89 +664,83 @@ export function simulateBackstabbersAhoy(ep) {
   return ep;
 }
 
-// ── DIVE social beats ──
-function _diveSocialBeats(ep, tribe, td, events) {
-  for (let sb = 0; sb < 2; sb++) {
-    if (sb === 1 && Math.random() > 0.55) break;
-    const members = tribe.members;
-    if (members.length === 0) break;
-    const roll = Math.random();
-    const a = pick(members);
-    const aS = pStats(a);
-    if (roll < 0.30 && (aS.boldness >= 6 || arch(a) === 'hero' || arch(a) === 'challenge-beast')) {
-      ep.chalMemberScores[a] += 2;
-      popDelta(a, 1);
-      events.push({
-        type: 'brave', player: a, tribe: tribe.name, phase: 'dive',
-        text: _pickUnique(BRAVE_TEXT, a, pronouns(a)),
-        badge: 'STEADY HANDS', badgeClass: 'good'
-      });
-    } else if (roll < 0.52 && (aS.boldness <= 4 || aS.temperament <= 4)) {
-      ep.chalMemberScores[a] -= 1;
-      popDelta(a, -2);
-      events.push({
-        type: 'panic', player: a, tribe: tribe.name, phase: 'dive',
-        text: _pickUnique(PANIC_TEXT, a, pronouns(a)),
-        badge: 'PANIC', badgeClass: 'air'
-      });
-    } else if (members.length >= 2) {
-      const b = members.filter(m => m !== a)[Math.floor(Math.random() * (members.length - 1))];
-      if (b) {
-        if (getBond(a, b) < -1 || Math.random() < 0.2) {
-          addBond(a, b, -0.6);
-          events.push({
-            type: 'rivalry', players: [a, b], tribe: tribe.name, phase: 'dive',
-            text: _pickUnique(RIVALRY_TEXT, a, b),
-            badge: 'FRICTION', badgeClass: 'air'
-          });
-        } else {
-          addBond(a, b, 0.6);
-          events.push({
-            type: 'bond', players: [a, b], tribe: tribe.name, phase: 'dive',
-            text: _pickUnique(BOND_TEXT, a, b),
-            badge: 'TRUST', badgeClass: 'good'
-          });
-        }
-      }
-    }
-  }
-}
+// ── SOCIAL BEATS — drama between the action ──
+// Guarantees several varied, consequence-bearing beats per tribe per phase
+// (brave, panic, bond, respect, alliance, banter, rivalry, blame, taunt,
+// paranoia, showmance). More crew = more drama.
+function _socialBeats(ep, tribe, td, events, phase) {
+  const members = tribe.members;
+  if (!members.length) return;
+  const beats = members.length >= 6 ? 6 : members.length >= 4 ? 5 : members.length >= 2 ? 4 : 1;
+  const braveBadge = phase === 'dive' ? 'STEADY HANDS' : 'NERVES OF STEEL';
 
-// ── RACE social beats ──
-function _raceSocialBeats(ep, tribe, td, events) {
-  for (let sb = 0; sb < 2; sb++) {
-    if (sb === 1 && Math.random() > 0.55) break;
-    const members = tribe.members;
-    if (members.length === 0) break;
-    const roll = Math.random();
+  // Active showmance pair on this tribe (romance toggle respected)
+  const smEntry = (seasonConfig.romance !== 'disabled')
+    ? (gs.showmances || []).find(s => s.phase !== 'broken-up' && s.players?.length === 2 && s.players.every(m => members.includes(m)))
+    : null;
+  let smUsed = false;
+
+  for (let sb = 0; sb < beats; sb++) {
     const a = pick(members);
     const aS = pStats(a);
-    if (roll < 0.30 && (aS.boldness >= 6 || arch(a) === 'hero' || arch(a) === 'challenge-beast')) {
-      ep.chalMemberScores[a] += 2;
-      popDelta(a, 1);
-      events.push({
-        type: 'brave', player: a, tribe: tribe.name, phase: 'race',
-        text: _pickUnique(BRAVE_TEXT, a, pronouns(a)),
-        badge: 'NERVES OF STEEL', badgeClass: 'good'
-      });
-    } else if (roll < 0.52 && (aS.boldness <= 4 || aS.temperament <= 4)) {
-      ep.chalMemberScores[a] -= 1;
-      popDelta(a, -2);
-      events.push({
-        type: 'panic', player: a, tribe: tribe.name, phase: 'race',
-        text: _pickUnique(PANIC_TEXT, a, pronouns(a)),
-        badge: 'PANIC', badgeClass: 'air'
-      });
-    } else if (members.length >= 2) {
-      const b = members.filter(m => m !== a)[Math.floor(Math.random() * (members.length - 1))];
-      if (b) {
-        addBond(a, b, 0.6);
-        events.push({
-          type: 'bond', players: [a, b], tribe: tribe.name, phase: 'race',
-          text: _pickUnique(BOND_TEXT, a, b),
-          badge: 'TRUST', badgeClass: 'good'
-        });
-      }
+    const b = members.length >= 2 ? pick(members.filter(m => m !== a)) : null;
+    const roll = Math.random();
+
+    // ~one showmance beat per phase if a couple is aboard
+    if (smEntry && !smUsed && Math.random() < 0.5) {
+      smUsed = true;
+      const [x, y] = smEntry.players;
+      addBond(x, y, 0.4);
+      events.push({ type: 'showmance', players: [x, y], tribe: tribe.name, phase,
+        text: _pickUnique(SHOWMANCE_TEXT, x, y), badge: 'SHOWMANCE', badgeClass: 'air' });
+      continue;
+    }
+
+    // Solo courage / panic (stat-gated)
+    if (roll < 0.16 && (aS.boldness >= 6 || arch(a) === 'hero' || arch(a) === 'challenge-beast')) {
+      ep.chalMemberScores[a] += 2; popDelta(a, 1);
+      events.push({ type: 'brave', player: a, tribe: tribe.name, phase,
+        text: _pickUnique(BRAVE_TEXT, a, pronouns(a)), badge: braveBadge, badgeClass: 'good' });
+      continue;
+    }
+    if (roll < 0.28 && (aS.boldness <= 4 || aS.temperament <= 4)) {
+      ep.chalMemberScores[a] -= 1; popDelta(a, -2);
+      events.push({ type: 'panic', player: a, tribe: tribe.name, phase,
+        text: _pickUnique(PANIC_TEXT, a, pronouns(a)), badge: 'PANIC', badgeClass: 'air' });
+      continue;
+    }
+
+    if (!b) {
+      // solo fallback so every beat emits a card
+      ep.chalMemberScores[a] += 1; popDelta(a, 1);
+      events.push({ type: 'brave', player: a, tribe: tribe.name, phase,
+        text: _pickUnique(BRAVE_TEXT, a, pronouns(a)), badge: braveBadge, badgeClass: 'good' });
+      continue;
+    }
+
+    // Relational drama — ~18% light banter, otherwise split positive/negative
+    // by existing bond (with noise so enemies can still bond and vice-versa).
+    if (Math.random() < 0.18) {
+      popDelta(a, 1); popDelta(b, 1);
+      events.push({ type: 'banter', players: [a, b], tribe: tribe.name, phase,
+        text: _pickUnique(BANTER_TEXT, a, b), badge: 'BANTER', badgeClass: 'good' });
+    } else if (getBond(a, b) + noise(4) >= 0) {
+      const t = pick(['bond', 'respect', 'alliance']);
+      const pool = t === 'bond' ? BOND_TEXT : t === 'respect' ? RESPECT_TEXT : ALLIANCE_TEXT;
+      addBond(a, b, 0.7);
+      if (t === 'respect') popDelta(b, 1);
+      events.push({ type: t, players: [a, b], tribe: tribe.name, phase,
+        text: _pickUnique(pool, a, b),
+        badge: t === 'alliance' ? 'ALLIANCE' : 'TRUST', badgeClass: 'good' });
+    } else {
+      const t = pick(['rivalry', 'blame', 'taunt', 'paranoia']);
+      const pool = t === 'rivalry' ? RIVALRY_TEXT : t === 'blame' ? BLAME_TEXT : t === 'taunt' ? TAUNT_TEXT : PARANOIA_TEXT;
+      addBond(a, b, t === 'paranoia' ? -0.4 : -0.7);
+      if (t === 'taunt') popDelta(a, -1);
+      if (t === 'paranoia') popDelta(b, -1); // the suspected player takes the heat
+      events.push({ type: t, players: [a, b], tribe: tribe.name, phase,
+        text: _pickUnique(pool, a, b),
+        badge: t === 'paranoia' ? 'SUSPICION' : 'FRICTION', badgeClass: 'air' });
     }
   }
 }
@@ -1001,10 +1043,10 @@ function _card(event, idx, screenKey) {
     </div>`;
   }
 
-  // BACKSTAB hero card
+  // BACKSTAB hero card — show the saboteur AND the teammate they undermined
   if (event.type === 'backstab') {
     return `<div class="ba-stab" id="ba-step-${suffix}-${idx}">
-      <div class="cap-who">${_av(event.player, 'big')}</div>
+      <div class="cap-who">${_av(event.player, 'big')}${event.victim ? _av(event.victim, 'big') : ''}</div>
       <div class="knife">BACKSTAB</div>
       <div class="body">${event.text}</div>
       ${badge}
@@ -1022,11 +1064,11 @@ function _card(event, idx, screenKey) {
     </div>`;
   }
 
-  // standard card
-  const who = event.player
-    ? `${_av(event.player, 'big')}<div class="ba-name">${event.player}</div>${teamCls}`
-    : event.players
-      ? `${_av(event.players[0], 'big')}<div class="ba-name">${event.players.join(' & ')}</div>${teamCls}`
+  // standard card — multi-person events render ALL participant avatars
+  const who = event.players
+    ? `${event.players.map(p => _av(p, 'big')).join('')}<div class="ba-name">${event.players.join(' & ')}</div>${teamCls}`
+    : event.player
+      ? `${_av(event.player, 'big')}<div class="ba-name">${event.player}</div>${teamCls}`
       : `<div class="ba-name">${event.tribe || ''}</div>`;
   return `<div class="ba-card" id="ba-step-${suffix}-${idx}">
     <div class="who">${who}</div>

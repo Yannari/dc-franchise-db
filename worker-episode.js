@@ -801,6 +801,18 @@ CRITICAL RULES:
 - PRE-CHALLENGE STATUS covers ONLY what happened before the challenge. POST-CHALLENGE STATUS covers ONLY what happened after the challenge result.
 - All invented drama must be consistent with the facts. Don't invent a conversation that contradicts a vote, an advantage, or a camp event.
 
+✍️ YOU ARE A WRITER, NOT A TRANSCRIBER — WHAT YOU MAY INVENT (THIS IS HOW YOU AVOID BORING, REPETITIVE EPISODES):
+The summary gives you the SKELETON (the facts). Your job is to add the MUSCLE AND SKIN — the storytelling that makes it feel like a real Total Drama / Disventure Camp episode instead of a list of events read aloud. Boring episodes happen when you only narrate the summary line-by-line. DON'T DO THAT. You are ENCOURAGED to invent:
+  • CHARACTER TEXTURE: specific personality quirks, verbal tics, habits, fears, backstory flavor, the way a character eats/moves/reacts. Make them feel like PEOPLE.
+  • CALLBACKS & RUNNING GAGS: reference earlier episodes (use the SEASON ARCS / previous-episode context). A joke that pays off 3 episodes later. A grudge that keeps resurfacing. An inside joke between two players.
+  • B-PLOTS & CONNECTIVE TISSUE: small side-stories that don't touch the game — a cooking disaster, a prank war, an unlikely friendship forming, someone slowly cracking under pressure. These run UNDERNEATH the game plot and give the episode life.
+  • ESCALATION: take a feud/romance/alliance-tension the facts establish and DRAMATIZE its momentum — show it getting worse/closer/more fragile than last episode, building toward something.
+  • SCENE INVENTION: new conversations, new locations, new comedic beats — as long as they don't contradict a fact.
+
+🚫 WHAT YOU MUST NEVER INVENT (these are the GAME, and they are locked): vote results and who wrote whose name, who was eliminated, who won/lost the challenge, who holds which advantage and when it's found/played, which alliances exist and who betrayed them, tribe membership, twists, and challenge outcomes. Never invent a NEW game mechanic, advantage, or twist. The game is gospel; the STORY around it is yours to build.
+
+The test: if your episode could be swapped with last episode by changing the names, you transcribed instead of wrote. Every episode needs its OWN texture, its OWN B-plot, its OWN callbacks. Build the SERIES, not a sequence of identical summaries.
+
 ═══════════════════════════════════════════════════════════
 HOW TO MAP SIMULATOR SECTIONS TO OUTPUT FORMAT
 ═══════════════════════════════════════════════════════════
@@ -1781,8 +1793,24 @@ Below are the transcripts — read them for FACTS, not STYLE:\n\n`;
           ? (ep.charLimit || 1500)
           : (ep.charLimit || 3000);
       const limit = Math.min(transcript.length, typeCap);
-      const snippet = transcript.substring(0, limit);
-      const truncated = transcript.length > limit;
+      // For prose transcripts, prefer the END over the beginning. The opening of an
+      // episode is the most copy-prone part (and the model parrots it) while the TAIL
+      // — tribal council, the vote, final words, the "next time" tease — is what
+      // actually drives continuation. So we feed a small head (for voice/setup) plus
+      // the tail (for narrative momentum), skipping the middle. Summaries are
+      // structured backlogs, so they keep their head as-is.
+      let snippet, truncated;
+      if (ep.type === 'summary' || transcript.length <= limit) {
+        snippet = transcript.substring(0, limit);
+        truncated = transcript.length > limit;
+      } else {
+        const headLen = Math.floor(limit * 0.25);
+        const tailLen = limit - headLen;
+        const head = transcript.substring(0, headLen);
+        const tail = transcript.substring(transcript.length - tailLen);
+        snippet = `${head}\n\n[...middle of episode omitted — focus on how it ENDED below...]\n\n${tail}`;
+        truncated = true;
+      }
       // Always keep at least the most recent episode; drop older ones once the budget is spent.
       if (renderedBlocks.length > 0 && prevBudgetUsed + snippet.length > TOTAL_PREV_BUDGET) {
         oldestOmitted++;

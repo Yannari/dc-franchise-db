@@ -1768,10 +1768,101 @@ export function _textAftermathStrategic(ep, ln, sec) {
     if (!wasTargeted && _saElim) ln(`${_saElim} was not the stated target of any alliance — this elimination was unplanned.`);
   }
 
+  // Season-long arcs (multi-episode continuity) — feeds "continuation" feel
+  const arcs = buildSeasonArcs(ep);
+  if (arcs.length) {
+    ln('');
+    ln('SEASON ARCS (multi-episode threads to CONTINUE and ESCALATE — these have been building; reference and advance them, do not reset them each episode):');
+    arcs.forEach(s => ln(`- ${s}`));
+  }
+
   // Ongoing storylines
   ln('');
   ln('ONGOING STORYLINES:');
   buildStorylines(ep).forEach(s => ln(`- ${s}`));
+}
+
+// ── SEASON ARCS: multi-episode narrative threads derived from history ──
+// Unlike buildStorylines (which reads the CURRENT episode's state), this reads
+// ACROSS gs.episodeHistory + votingHistory + popularity + showmances to surface
+// threads that have been BUILDING over time — so the writer can continue and
+// escalate them instead of treating every episode as a fresh start. Returns a
+// capped list of plain-string arc beats. No-op early in the season.
+export function buildSeasonArcs(ep) {
+  const lines = [];
+  const hist = (gs.episodeHistory || []).filter(h => h && h.num < ep.num);
+  if (hist.length < 2) return lines; // need a couple episodes of history for arcs
+  const active = new Set(gs.activePlayers || []);
+  const bKey = (a, b) => [a, b].sort().join('|');
+
+  // 1. PERENNIAL TARGETS — players whose name keeps coming up at tribal but who survive.
+  const voteCounts = {}; // name -> number of episodes they received >=1 vote
+  hist.forEach(h => {
+    const v = h.votes || {};
+    Object.keys(v).forEach(n => { if (v[n] > 0 && n !== h.eliminated) voteCounts[n] = (voteCounts[n] || 0) + 1; });
+  });
+  Object.entries(voteCounts)
+    .filter(([n, c]) => active.has(n) && c >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .forEach(([n, c]) => lines.push(`${n} has had votes cast against them at ${c} different Tribals and is STILL here — a survivor/escape-artist arc. The tribe keeps coming for ${pronouns(n).obj} and keeps failing. That tension should be acknowledged and is overdue for a payoff.`));
+
+  // 2. CHALLENGE THREAT — repeat immunity winners.
+  const immCounts = {};
+  hist.forEach(h => { if (h.immunityWinner) immCounts[h.immunityWinner] = (immCounts[h.immunityWinner] || 0) + 1; });
+  Object.entries(immCounts)
+    .filter(([n, c]) => active.has(n) && c >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .forEach(([n, c]) => lines.push(`${n} has won immunity ${c} times — an established challenge threat. Allies value it; rivals fear what happens if ${pronouns(n).sub} keeps winning when the numbers tighten.`));
+
+  // 3. SHOWMANCE PROGRESSION — active romances with longevity, and recent breakups.
+  (gs.showmances || []).forEach(sh => {
+    const [a, b] = sh.players || [];
+    if (!a || !b) return;
+    if (!sh.broken && active.has(a) && active.has(b)) {
+      const eps = sh.episodesActive || 0;
+      if (eps >= 2) lines.push(`${a} and ${b} have been a showmance for ${eps} episode(s) now — it's no longer a secret. The longer it lasts, the bigger the target on both of them, and the harder the eventual "the game vs. the relationship" choice gets.`);
+      else lines.push(`${a} and ${b}'s showmance is still new and fragile — others are starting to notice. Show it deepening or straining, not static.`);
+    } else if (sh.broken && sh.breakupEp && sh.breakupEp >= ep.num - 2 && (active.has(a) || active.has(b))) {
+      lines.push(`The ${a}/${b} showmance recently fell apart${sh.breakupVoter ? ` (${sh.breakupVoter} was involved)` : ''}. That wreckage is still fresh — the fallout shapes how they move now.`);
+    }
+  });
+
+  // 4. POPULARITY POLES — the season's emerging hero and its emerging villain.
+  const pop = gs.popularity || {};
+  const ranked = Object.entries(pop).filter(([n]) => active.has(n)).sort((a, b) => b[1] - a[1]);
+  if (ranked.length >= 3) {
+    const [topN, topV] = ranked[0];
+    const [botN, botV] = ranked[ranked.length - 1];
+    if (topV >= 4) lines.push(`${topN} has quietly become the season's fan-favorite/hero figure — the camp gravitates to ${pronouns(topN).obj}. That likability is itself a late-game threat worth seeding now.`);
+    if (botV <= -4) lines.push(`${botN} has hardened into the season's villain in the eyes of the others — moves keep landing badly for ${pronouns(botN).posAdj} reputation. Lean into that heel arc.`);
+  }
+
+  // 5. ESCALATING FEUD — the deepest-running rivalry among active players.
+  const feuds = [];
+  active.forEach(a => active.forEach(b => {
+    if (a >= b) return;
+    const v = gs.bonds?.[bKey(a, b)] || 0;
+    if (v <= -4) feuds.push({ a, b, v });
+  }));
+  feuds.sort((x, y) => x.v - y.v);
+  if (feuds[0]) lines.push(`${feuds[0].a} vs ${feuds[0].b} is the season's nastiest running feud and it has only gotten worse. This needs to keep escalating toward a head — don't let it quietly reset to civil.`);
+
+  // 6. POWER PLAYER — alliance leader who has steered multiple votes.
+  const ctrl = {};
+  hist.forEach(h => {
+    (h.alliances || []).forEach(al => {
+      if (al.target && al.target === h.eliminated && al.members?.length) {
+        const lead = al.spearhead || al.members[0];
+        if (lead) ctrl[lead] = (ctrl[lead] || 0) + 1;
+      }
+    });
+  });
+  const topCtrl = Object.entries(ctrl).filter(([n, c]) => active.has(n) && c >= 2).sort((a, b) => b[1] - a[1])[0];
+  if (topCtrl) lines.push(`${topCtrl[0]} has gotten ${pronouns(topCtrl[0]).posAdj} way at ${topCtrl[1]}+ votes now — a quiet kingmaker arc. At some point the others realize ${pronouns(topCtrl[0]).sub} ${pronouns(topCtrl[0]).sub === 'they' ? 'have' : 'has'} been running things. Build toward that reckoning.`);
+
+  return lines.slice(0, 8);
 }
 
 // ── FINALE: THE LAST MORNING ──

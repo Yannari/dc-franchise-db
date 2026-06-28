@@ -732,6 +732,13 @@ export function _textTwists(ep, ln, sec) {
       else ln('ABDUCTION — no players stolen (tribes too small).');
     } else if (tw.type === 'guardian-angel') {
       if (tw.guardianAngel) ln(`GUARDIAN ANGEL — ${tw.guardianAngel} earned automatic immunity through the strength of their bonds.`);
+    } else if (tw.type === 'sudden-death') {
+      ln('SUDDEN DEATH — no tribal council, no vote. Whoever finishes last in the immunity challenge is automatically eliminated on the spot.');
+      const _sdOut = ep.suddenDeathEliminated || ep.eliminated;
+      if (_sdOut) {
+        ln(`${_sdOut} finished last in the challenge and was eliminated — no second chance.`);
+        if (ep.immunityWinner) ln(`${ep.immunityWinner} won the challenge and immunity.`);
+      }
     } else if (tw.type === 'slasher-night') {
       ln('SLASHER NIGHT — a slasher hunts the tribe. Last one standing wins immunity. Lowest scorer eliminated.');
     } else if (tw.type === 'cultural-reset') {

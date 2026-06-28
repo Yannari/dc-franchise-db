@@ -2803,9 +2803,18 @@ export function simulateEpisode() {
         .sort(([,a],[,b]) => b - a).map(([n]) => n);
     }
 
-    const _sdLastPlace = ep.chalPlacements?.length
-      ? ep.chalPlacements[ep.chalPlacements.length - 1]
-      : null;
+    // Last place = lowest challenge score. This matches the leaderboard and the
+    // podium/bomb logic (both rank by chalMemberScores). Some challenges order
+    // ep.chalPlacements by something other than score (e.g. Top Dog uses the
+    // forest-race finish order), so trusting chalPlacements[last] could eliminate
+    // someone who isn't actually last overall. Use the score directly.
+    let _sdLastPlace = null;
+    if (ep.chalMemberScores && Object.keys(ep.chalMemberScores).length) {
+      _sdLastPlace = Object.entries(ep.chalMemberScores)
+        .sort(([, a], [, b]) => a - b)[0][0];
+    } else if (ep.chalPlacements?.length) {
+      _sdLastPlace = ep.chalPlacements[ep.chalPlacements.length - 1];
+    }
 
     if (_sdLastPlace) {
       ep.eliminated = _sdLastPlace;

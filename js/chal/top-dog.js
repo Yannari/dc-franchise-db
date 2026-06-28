@@ -2078,11 +2078,17 @@ export function simulateTopDog(ep) {
   ep.challengeLabel = 'Top Dog';
   ep.challengeCategory = 'mixed';
   ep.immunityWinner = result.immunityWinner;
-  ep.chalPlacements = result.phase2.finishOrder;
 
   // Ensure immunity winner is #1 in chalMemberScores
   const maxOther = Math.max(0, ...Object.entries(ep.chalMemberScores).filter(([n]) => n !== result.immunityWinner).map(([, s]) => s));
   ep.chalMemberScores[result.immunityWinner] = Math.max(ep.chalMemberScores[result.immunityWinner] || 0, maxOther) + active.length + 5;
+
+  // Rank placements by final score (best→worst) so the leaderboard, podium/bomb,
+  // standouts/stragglers, and Sudden Death last-place elimination all agree. The
+  // raw forest-race finish order does NOT match the score leaderboard.
+  ep.chalPlacements = Object.entries(ep.chalMemberScores)
+    .sort(([, a], [, b]) => b - a)
+    .map(([n]) => n);
 
   ep.tribalPlayers = active;
   updateChalRecord(ep);

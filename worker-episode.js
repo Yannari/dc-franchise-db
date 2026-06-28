@@ -4118,7 +4118,22 @@ DIALOGUE QUALITY — KILL THESE PATTERNS ON SIGHT:
 
 THE TEST: Read every line out loud. If a real person would NEVER say it in conversation, delete it and write what a real person WOULD say. "My shoulders are killing me" is real. "My shoulders and I aren't speaking" is not. "I didn't know how to say thanks" is real. "Gratitude is a language I never downloaded" is not.
 
-Write the episode now.`;
+═══════════════════════════════════════════════════════════
+🎬 MANDATORY STORYTELLING QUOTA — NON-NEGOTIABLE. THIS IS THE #1 REJECT REASON.
+═══════════════════════════════════════════════════════════
+Most failed episodes are not "wrong" — they're BORING. They just narrate the summary's events in order, like reading a police report. That is an automatic FAILURE. You are writing an episode of a CARTOON DRAMA SERIES, not transcribing a log. Before you write "Write the episode now," you are REQUIRED to deliver ALL of the following in this episode — not optional, not "if it fits":
+
+  ☑ AT LEAST ONE B-PLOT that threads through 2+ separate scenes — a side story that is NOT about the vote (a prank war, a slow-forming friendship, someone unraveling, a petty rivalry over camp life, a comedic obsession). Plant it early, pay it off later in the episode.
+  ☑ AT LEAST TWO CALLBACKS to earlier episodes — use the SEASON ARCS and previous-episode context. Reference a past grudge, a running joke, something a character said before, a betrayal that still stings. The audience must feel this is episode N of an ongoing story, not a standalone.
+  ☑ ADVANCE AT LEAST ONE SEASON ARC — take a thread from the SEASON ARCS section and visibly move it forward / escalate it. Do not let it sit static.
+  ☑ TWO-PLUS CHARACTER TEXTURE BEATS — give specific characters a distinct habit, fixation, fear, or way of reacting that's uniquely THEM (shown through action/dialogue, not announced).
+  ☑ A DISTINCT OPENING — do not open the way the previous episode opened (see anti-duplication rules).
+
+IMPORTANT — what "creative" means here: it means PLOT, CHARACTER, and CONTINUITY (B-plots, callbacks, escalation, personality) — NOT flowery language. Everything in the "KILL THESE PATTERNS" list above still applies. Be a great TV writer (story + character), never a poet (metaphors/zingers). Dry-but-clean is a fail; vivid-story-with-plain-dialogue is the goal.
+
+SELF-CHECK before you output: "Could this episode be swapped with last episode by changing the names? Did I include a B-plot, 2 callbacks, and advance an arc? Or did I just narrate the summary?" If you only narrated, STOP and rewrite it with the quota above.
+
+Write the episode now — and make it a STORY, not a report.`;
 
   const fullInput = formatReminder + cleanSummary + postSummaryReminder;
 

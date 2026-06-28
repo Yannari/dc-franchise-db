@@ -4013,7 +4013,22 @@ Every sentence must be grammatically complete. Don't drop words to sound punchy:
 ❌ "Doesn't mean you say it." → Missing "get to." ✅ "Doesn't mean you get to say it."
 ❌ "Fourth good." → Not a phrase. ✅ "Fourth isn't good."
 
-Write the episode now.`;
+═══════════════════════════════════════════════════════════
+🎬 MANDATORY STORYTELLING QUOTA — NON-NEGOTIABLE. THIS IS THE #1 REJECT REASON.
+═══════════════════════════════════════════════════════════
+Most failed episodes are not "wrong" — they're BORING. They just narrate the summary's events in order, like reading a report. That is an automatic FAILURE. You're writing an episode of a CARTOON DRAMA SERIES, not transcribing a log. Before you write, you are REQUIRED to deliver ALL of the following — not optional:
+
+  ☑ AT LEAST ONE B-PLOT threading through 2+ scenes — a side story NOT about the vote (prank war, slow friendship, someone unraveling, petty camp rivalry, a comedic obsession). Plant early, pay off later.
+  ☑ AT LEAST TWO CALLBACKS to earlier episodes — use SEASON ARCS / previous-episode context (a past grudge, running joke, an old line, a betrayal that still stings). Make it feel like episode N of an ongoing story.
+  ☑ ADVANCE AT LEAST ONE SEASON ARC — move a thread from the SEASON ARCS section forward / escalate it. Don't let it sit static.
+  ☑ TWO-PLUS CHARACTER TEXTURE BEATS — give characters a distinct habit, fixation, fear, or reaction that's uniquely theirs (shown, not announced).
+  ☑ A DISTINCT OPENING — don't open the way last episode opened.
+
+"Creative" here = PLOT, CHARACTER, CONTINUITY (B-plots, callbacks, escalation, personality) — NOT flowery language. Everything in the "KILL THESE PATTERNS" list still applies. Be a great TV writer, never a poet. Dry-but-clean is a fail; vivid-story-with-plain-dialogue is the goal.
+
+SELF-CHECK before output: "Could this be swapped with last episode by changing names? Did I include a B-plot, 2 callbacks, and advance an arc?" If you only narrated, rewrite it.
+
+Write the episode now — and make it a STORY, not a report.`;
 
   const fullInput = formatReminder + cleanSummary + postSummaryReminder;
 

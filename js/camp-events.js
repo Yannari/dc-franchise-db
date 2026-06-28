@@ -43,7 +43,7 @@ export const CAMP_EVENT_TYPES = [
   { id: 'sunriseTalk',         twoPlayer: true,  weight: 11 }, // early morning honest conversation
   { id: 'celebrateTogether',   twoPlayer: false, weight: 10 }, // tribe bonds over a win/milestone
   { id: 'mentorBond',          twoPlayer: true,  weight: 10 }, // emotional guidance (not skill teaching)
-  { id: 'forgiveness',         twoPlayer: true,  weight: 10 }, // apology accepted, bond recovery
+  { id: 'forgiveness',         twoPlayer: true,  weight: 4  }, // apology accepted, bond recovery (kept rare — apologies were over-firing)
   { id: 'silentSolidarity',    twoPlayer: true,  weight: 9  }, // standing together without words
   { id: 'campImprovement',     twoPlayer: false, weight: 10 }, // builds something for the tribe
   // ═══ NEGATIVE (~35%) — conflict, damage, drama, scheming, suspicion ═══
@@ -5194,17 +5194,20 @@ export function checkSocialPolitics(ep) {
 
   // ── TEMPERAMENT RECOVERY: high-social players apologize after blowups ──
   const prevEp = gs.episodeHistory?.find(e => e.num === curEp - 1);
+  let _apologiesThisEp = 0; // hard cap: at most ONE temperament-recovery apology per episode
   if (prevEp && gs._blowupPlayers?.length) {
     gs._blowupPlayers.forEach(rec => {
+      if (_apologiesThisEp >= 1) return; // already used this episode's apology slot
       // Back-compat: older saves stored bare names instead of records.
       if (typeof rec === 'string') rec = { name: rec, type: 'blowup', target: null };
       const name = rec.name;
       if (!gs.activePlayers.includes(name)) return;
       const s = pStats(name);
-      // Recovery chance: social determines damage control ability
-      const recoveryChance = s.social * 0.07 + s.loyalty * 0.02;
+      // Recovery chance: social determines damage control ability. Kept low on
+      // purpose — apologies were over-firing and making everyone sound contrite.
+      const recoveryChance = s.social * 0.035 + s.loyalty * 0.01;
       if (Math.random() >= recoveryChance) {
-        // No recovery — the damage stands. Low social players can't fix it.
+        // No recovery — the damage stands. Most blowups simply don't get patched up.
         return;
       }
       const pr = pronouns(name);
@@ -5216,10 +5219,13 @@ export function checkSocialPolitics(ep) {
       const damaged = tribeMembers.filter(m => m !== name && getBond(name, m) < 0)
         .sort((a, b) => getBond(name, a) - getBond(name, b));
       // The person from the actual blowup takes priority — if the rift is still open.
+      // Apologize to only ONE person — the actual blowup target if the rift is still
+      // open, otherwise the single most-damaged relationship. (Multi-target apologies
+      // made players sound like they were on an apology tour every episode.)
       const toRecover = [];
       const realTarget = rec.target && tribeMembers.includes(rec.target) && getBond(name, rec.target) < 0 ? rec.target : null;
       if (realTarget) toRecover.push(realTarget);
-      damaged.forEach(m => { if (!toRecover.includes(m) && toRecover.length < 2) toRecover.push(m); });
+      else if (damaged.length) toRecover.push(damaged[0]);
       if (!toRecover.length) return;
       // Recover bond with the apology targets
       const recoveryAmount = s.social * 0.06; // social 10 = +0.6, social 5 = +0.3
@@ -5266,6 +5272,7 @@ export function checkSocialPolitics(ep) {
           text: recall + _pick(lines),
           badgeText: 'MAKING AMENDS', badgeClass: 'green'
         });
+        _apologiesThisEp++; // consume this episode's single apology slot
       }
       ep._politicsLog.push(`RECOVERY: ${name} apologized to ${toRecover.join(', ')} for ${rec.type} (+${recoveryAmount.toFixed(1)} bond)`);
     });

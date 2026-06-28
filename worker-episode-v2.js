@@ -1919,6 +1919,29 @@ Write each character the way they actually sound and act in the show:
 - **Ashley** — kind, genuine, strong. Not fake-sweet — actually caring. Competitive when it matters. "We can do this." / "I'm not letting you go out there alone." / "That was wrong and someone needs to say it."
 - **Seraphine** — organized, detail-oriented, bossy about small things (chores, camp setup). Thinks her way is the right way. Gets defensive when challenged. "I moved them because they were in the way." / "My system works." / "You're welcome, by the way."
 
+**DISVENTURE CAMP 2 / GENERATIONS cast** — voice profiles (how they TALK). These characters are NOT well-known — you MUST use these profiles, do not default to generic reality-contestant voice. Each must sound DISTINCT:
+- **James** — smooth, calculating, always reasonable-sounding. Frames manipulation as plain logic. Never raises his voice; the more in control he is, the calmer he gets. "I counted. He doesn't have the numbers." / "I'm not asking you to trust me. Look at the math." / "Plans change. I don't."
+- **Aiden** — warm but hyper-observant; narrates what everyone else is doing, out loud. Reads people three layers deep. "Three people here are already lying and it's been five minutes." / "I just like people. That's not a strategy, it's a problem." / "You're doing the thing again."
+- **Riya** — guarded, clipped, keeps score and admits it. Holds grudges; cold when crossed, hurting underneath. "I'm keeping a list. It's getting shorter." / "You voted for me. I don't just forget that." / "Don't. Touch me. At all."
+- **Hunter** — smooth influencer, image-first, deflects with charm. Slippery, not nervous, when cornered. "Nice camp. Better company, though." / "I barely touched you." / "I'm just paying attention."
+- **Tess** — watchful aloner. Says little, sees everything, unsettlingly accurate. "I see everything. I just don't say everything." / "He trusted the wrong people." / "I'm fine where I am."
+- **Connor** — warm peacekeeper, genuinely kind, defuses fights, checks on people. Decent, not naïve. "Hey — you okay? Actually okay?" / "We don't have to do this." / "That's half the fun, right?"
+- **Ally** — bubbly nerd/gamer, enthusiastic, finds the bright side, game/pop-culture references. Sharper than she lets on. "This is giving summer-camp-horror-movie and I am HERE for it." / "Okay tactically? We're fine. Probably." / "I've done worse. You're good."
+- **Karol** — demanding, short-fused, complains loudly, talks down to people. "Manager" energy, zero patience. "This is unacceptable." / "I'm not yelling, I'm being CLEAR." / "They'll hear about it. Loudly."
+- **Maggy** — huge and strong but shy and self-conscious; soft-spoken, kind, blurts when flustered, over-apologizes. "Sorry— sorry, I panicked, I always panic." / "I don't want to be a problem." / "So excited. ...Where's the bathroom?"
+- **Lake** — studious prodigy: measured, analytical, loyal, deadpan. Talks like she's already solved it. "Just point me at the work." / "That's not a plan, that's a hope." / "I ran the numbers. I don't love them."
+- **Yul** — snide bully, superior and condescending, enjoys watching people fail. Everything backhanded. "Bold choice. Bold." / "Already see a few people I'll enjoy watching leave." / "Nothing personal." (it's always personal)
+- **Oliver** — anxious, panic-prone, self-deprecating, underestimated, secretly big-hearted. Spirals out loud, then surprises everyone. "Everyone always underestimates me. Keep doing it." / "Okay don't panic don't panic—" / "I survived. Barely. But I survived."
+- **Rosa-Maria** — warm, expressive, sunny with a real strategic streak underneath. Apologizes for HOW she said something, never what she meant. "I already love this place. Seriously." / "I voted how I voted." / "I didn't lie. I just let the truth do what it does."
+- **Kai** — calm pacifist, easygoing to a fault, conflict-averse, shrugs everything off. "I'm just gonna see how this plays out." / "We don't need to fight about it." / "It's fine. It's all fine."
+
+**GENERATIONS returning vets:**
+- **Jacques** — theatrical ex-figure-skater ego, dramatic, image-obsessed, smooth competitor, fallen champion with something to prove. "NATURALLY talented." / "Patience wins games." / "I learned a lot last time. Mostly what not to get caught doing."
+- **Jen** — warm, perceptive social manager; keeps the peace while quietly positioning. Upbeat but counting. "Last time was amazing. This time is going to be BETTER." / "I've got your back. I mean it." / "I see what you're doing. It's fine. For now."
+- **Ezekiel** — earnest, awkward homeschool kid proving he's grown; "eh" tic, a step behind socially but trying. "Everyone told me I'd never come back. Well, here I am, eh." / "I didn't mean it like that." / "Still processing, eh."
+- **Emmah** — scrappy, sharp-tongued, underestimated and FURIOUS about it; turns info into weapons, swagger. "Written off again. Watch what I do with that." / "Same camp, same game. Different me." / "SEE? I told you."
+- **Chase** — quiet, smooth, easygoing surface over a real pocket game; dangerous because underestimated. "Back again. Still quiet. Still dangerous." / "I'm good where I am." / "Trust gets you voted out."
+
 For any DC character not listed: write them as direct, personality-driven, specific to their situation — NOT quirky, NOT poetic, NOT philosophical.
 
 For any canon character not listed: use your knowledge of how they sound in the show.

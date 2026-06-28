@@ -2487,7 +2487,8 @@ export function simulateEpisode() {
       }
 
       // Challenge record + camp events + post-tribal bookkeeping
-      updateChalRecord(ep);
+      // NOTE: simulateOffTheChain already called updateChalRecord internally, so
+      // calling it again here would double-credit the winner (2 wins). Skip it.
       generateCampEvents(ep, 'post');
       _handleRIDuelPostElimination();
       updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
@@ -2843,7 +2844,9 @@ export function simulateEpisode() {
       }
 
       // Post-elimination bookkeeping
-      updateChalRecord(ep);
+      // NOTE: the twist challenge's own simulate already called updateChalRecord
+      // (every _hasTwistChallenge challenge does), so do NOT call it again here or
+      // the winner is credited 2 wins / double podium-bomb.
       if (ep.challengeThrows?.length) ep.challengeThrowData = ep.challengeThrows;
       generateCampEvents(ep, 'post');
       _handleRIDuelPostElimination();

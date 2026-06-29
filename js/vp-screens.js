@@ -12,6 +12,7 @@ import { rpBuildTripleDogDare, rpBuildTripleDogDareElimination } from './chal/tr
 import { rpBuildSlasherTitleCard, rpBuildSlasherActI, rpBuildSlasherActII, rpBuildSlasherActIII, rpBuildSlasherCredits, rpBuildSlasherAnnouncement, rpBuildSlasherRounds, rpBuildSlasherShowdown, rpBuildSlasherImmunity, rpBuildSlasherElimination, rpBuildSlasherLeaderboard, slasherRevealNextRound, slasherRevealAllRounds, slasherRevealNextScene, slasherRevealAllScenes } from './chal/slasher-night.js';
 import { rpBuildMonsterCashTitleCard, rpBuildMonsterCashRounds, rpBuildMonsterCashShowdown, rpBuildMonsterCashImmunity, rpBuildMonsterCashTribeResults, rpBuildMonsterCashLeaderboard, monsterCashRevealNext, monsterCashRevealAll } from './chal/monster-cash.js';
 import { rpBuildMineTitleCard, rpBuildMinePhase1, rpBuildMinePhase2, rpBuildMinePhase3, rpBuildMineResults, rpBuildMineLeaderboard, mineRevealNext, mineRevealAll } from './chal/mine-over-matter.js';
+import { rpBuildTreasureTitleCard, rpBuildTreasurePaddle, rpBuildTreasureDive, rpBuildTreasureCrisis, rpBuildTreasureResults, rpBuildTreasureLeaderboard, treasureRevealNext, treasureRevealAll } from './chal/treasure-island.js';
 import { rpBuildOperationClassifiedTitleCard, rpBuildOperationClassifiedScan, rpBuildOperationClassifiedWiretap1, rpBuildOperationClassifiedLaser, rpBuildOperationClassifiedWiretap2, rpBuildOperationClassifiedDefusal, rpBuildOperationClassifiedDebrief, operationClassifiedRevealNext, operationClassifiedRevealAll } from './chal/operation-classified.js';
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard, alienEggRevealNext, alienEggRevealAll } from './chal/alien-egg.js';
 import { rpBuildBeachBlanketBogusTitleCard, rpBuildBeachBlanketBogusSurf, rpBuildBeachBlanketBogusSandcastle, rpBuildBeachBlanketBogusHalftime, rpBuildBeachBlanketBogusDanceOff, rpBuildBeachBlanketBogusResults, beachBogusRevealNext, beachBogusRevealAll } from './chal/beach-blanket-bogus.js';
@@ -9173,12 +9174,18 @@ export function buildTribalQA(ep, tribal) {
     const h = _tcnh(topTarget, ep.num);
     const questions = s.strategic >= 8
       ? [`${hostName} studies the group, then settles on ${topTarget}. "You've been in the middle of every conversation this week. Does that help you or hurt you tonight?"`,
-         `${hostName} looks at ${topTarget}. "You're not the type to sit still out here. Is all that movement a liability right now?"`]
+         `${hostName} looks at ${topTarget}. "You're not the type to sit still out here. Is all that movement a liability right now?"`,
+         `${hostName} tilts his head at ${topTarget}. "Smart players are the first ones people want gone. Are you too good for your own survival right now?"`,
+         `${hostName} fixes on ${topTarget}. "If I asked everyone here to write down the biggest threat, how many torches end up pointed at you?"`]
       : s.social >= 7
       ? [`${hostName} nods at ${topTarget}. "You've made connections with almost everyone here. Does that make you safe — or does it make you a threat?"`,
-         `${hostName} turns to ${topTarget}. "You've played this game with your heart. Is that going to be enough tonight?"`]
+         `${hostName} turns to ${topTarget}. "You've played this game with your heart. Is that going to be enough tonight?"`,
+         `${hostName} leans toward ${topTarget}. "Everyone says they like you. Out here, isn't 'likeable' just a polite word for 'beatable at the end'?"`,
+         `${hostName} studies ${topTarget}. "You've got friends on both sides. When the knives come out, do friends actually vote with you?"`]
       : [`${hostName} leans forward toward ${topTarget}. "I want to ask you directly — how are you feeling right now?"`,
-         `${hostName} watches ${topTarget} for a beat. "You've been in a tough spot more than once. How is tonight different?"`];
+         `${hostName} watches ${topTarget} for a beat. "You've been in a tough spot more than once. How is tonight different?"`,
+         `${hostName} looks ${topTarget} dead in the eye. "Be honest — do you know if you're safe tonight, or are you guessing?"`,
+         `${hostName} settles on ${topTarget}. "Nobody's said your name to your face. That usually means they've said it everywhere else. Worried?"`];
     const q = questions[h % questions.length];
     let ans, consequence, consequenceType;
     if (arch === 'mastermind' || arch === 'schemer' || s.strategic >= 8) {
@@ -9236,9 +9243,13 @@ export function buildTribalQA(ep, tribal) {
       && alliances.some(a => a.members?.includes(swingVoter) && a.target !== topTarget);
     const qs = isSwing
       ? [`${hostName} focuses on ${swingVoter}. "You've been described as unpredictable this week. Is that fair?"`,
-         `${hostName} pauses on ${swingVoter}. "If I'm reading the room right, you've been pulled in a couple directions. Where do you actually land tonight?"`]
+         `${hostName} pauses on ${swingVoter}. "If I'm reading the room right, you've been pulled in a couple directions. Where do you actually land tonight?"`,
+         `${hostName} raises an eyebrow at ${swingVoter}. "Two different people told me they have your vote. They can't both be right. Who's lying — them, or you?"`,
+         `${hostName} leans toward ${swingVoter}. "You're the swing tonight, whether you wanted it or not. Does that feel like power, or like a target?"`]
       : [`${hostName} asks ${swingVoter} directly: "Does tonight feel like a game move to you, or does it feel personal?"`,
-         `${hostName} checks in with ${swingVoter}. "How has this week changed your read on this tribe?"`];
+         `${hostName} checks in with ${swingVoter}. "How has this week changed your read on this tribe?"`,
+         `${hostName} turns to ${swingVoter}. "When you write a name down tonight, is it the name you wanted to write — or the one you got talked into?"`,
+         `${hostName} studies ${swingVoter}. "Everybody at this fire is performing a little. What's the part of your game you're not saying out loud?"`];
     const question = qs[h % qs.length];
     let ans, consequence;
     if (isSwing) {
@@ -9301,6 +9312,8 @@ export function buildTribalQA(ep, tribal) {
         `${hostName} leans back, scanning the fire. "There's clearly something unspoken between some of you. Anyone want to put it on the table?"`,
         `${hostName} studies the group for a long moment. "${topTarget}, ${spear} — there's tension there. Are you two actually okay?"`,
         `${hostName} smiles. "Every tribal has one moment where the real game shows up. I feel like we're about to have that moment. ${topTarget}?"`,
+        `${hostName} points between ${topTarget} and ${spear}. "I've been watching you two not look at each other for ten minutes. Somebody say the thing."`,
+        `${hostName} grins. "${topTarget}, ${spear} keeps glancing at you like there's history. Care to fill me in before the vote does?"`,
       ];
       const question = qs[h % qs.length];
       // Target speaks first
@@ -12186,6 +12199,13 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'mn-p3', label:'The Escape', html: rpBuildMinePhase3(ep) });
     vpScreens.push({ id:'mn-results', label:ep.mineData.isMerged ? 'Immunity' : 'Tribe Results', html: rpBuildMineResults(ep) });
     vpScreens.push({ id:'mn-leaderboard', label:'Gem Haul Report', html: rpBuildMineLeaderboard(ep) });
+  } else if ((ep.isTreasureIsland || ep.challengeType === 'treasure-island') && ep.treasureData) {
+    vpScreens.push({ id:'ti-title', label:'🏴‍☠️ Treasure Island', html: rpBuildTreasureTitleCard(ep) });
+    vpScreens.push({ id:'ti-p1', label:'Cut & Paddle', html: rpBuildTreasurePaddle(ep) });
+    vpScreens.push({ id:'ti-p2', label:'The Dive', html: rpBuildTreasureDive(ep) });
+    vpScreens.push({ id:'ti-p3', label:'The Crisis', html: rpBuildTreasureCrisis(ep) });
+    vpScreens.push({ id:'ti-results', label:ep.treasureData.isMerged ? 'Immunity' : 'Tribe Results', html: rpBuildTreasureResults(ep) });
+    vpScreens.push({ id:'ti-leaderboard', label:'Crew Haul Report', html: rpBuildTreasureLeaderboard(ep) });
   } else if (ep.isOperationClassified && ep.operationClassified) {
     vpScreens.push({ id:'oc-title', label:'Operation: Classified', html: rpBuildOperationClassifiedTitleCard(ep) });
     vpScreens.push({ id:'oc-scan', label:'Face Scan', html: rpBuildOperationClassifiedScan(ep) });
@@ -12560,7 +12580,7 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'fmd-flag', label:'Capture the Flag', html: rpBuildFullMetalDramaFlag(ep) });
     }
     vpScreens.push({ id:'fmd-results', label:'Debrief', html: rpBuildFullMetalDramaResults(ep) });
-  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isMineOverMatter && !ep.isOperationClassified) {
+  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isMineOverMatter && !ep.isTreasureIsland && !ep.isOperationClassified) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
 

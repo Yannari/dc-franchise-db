@@ -39,7 +39,7 @@ export default {
 // JSON / analytics extraction paths keep their own (GPT + Haiku) models.
 const MODELS = {
   creative: "claude-sonnet-4-6",
-  quality:  "claude-opus-4-5",
+  quality:  "claude-opus-4-8",
   fast:     "claude-haiku-4-5-20251001",
 };
 
@@ -923,7 +923,17 @@ SIMULATOR INPUT → OUTPUT DESTINATION:
 === TRIBAL COUNCIL === → Attendees, emotional states (mood), advantages being considered,
   WORD AT CAMP (top 3 targets with reasoning), tribal Q&A dialogue (host questions, player answers, consequences),
   TRIBAL DISRUPTION (blowups), OVERPLAYING detection, BLINDSPOT flags.
-  → Feed ## TRIBAL COUNCIL / VOTE ANALYSIS — use the actual dialogue, don't invent new Q&A.
+  → Feed ## TRIBAL COUNCIL / VOTE ANALYSIS.
+  🚨 THE TRIBAL Q&A IS A SKELETON — REWRITE IT, DO NOT COPY IT. The questions and answers in the summary are
+  generic placeholder templates ("Does tonight feel like a game move or personal?" / "I've played clean, I've kept my
+  commitments" / "Plans change, what matters is the work you did"). They REPEAT every episode and they sound like
+  nobody in particular. You MUST rewrite every Chris question and every player answer FRESH, in that character's
+  specific VOICE (use the voice profiles), about THIS episode's specific situation, names, grudges, and advantages.
+  PRESERVE only the substance: WHO Chris questions, the rough strategic point of their answer, who's the target, and
+  any confrontation beat. CHANGE all the wording. Chris should ask sharp, situation-specific, sometimes mean questions —
+  not the same four stock prompts. A scared floater, a cocky schemer, and a furious hothead must answer NOTHING alike.
+  Never reuse a tribal question or answer line from a previous episode. If your tribal council could be pasted into
+  last episode unchanged, you failed it. (The VOTES and the result remain locked — only the spoken Q&A is yours to rewrite.)
 
 === THE VOTES === → Per-player vote reasoning, live tally, revotes, rock draws, multi-tribal results.
   → Feed ## TRIBAL COUNCIL / VOTE ANALYSIS vote breakdown.

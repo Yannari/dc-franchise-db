@@ -1459,6 +1459,12 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 4) return;
     ep.isMineOverMatter = true;
 
+  } else if (engineType === 'treasure-island') {
+    // Both phases: pre-merge = tribe avg crew haul, post-merge = winning crew immunity
+    if (!gs.isMerged && gs.tribes.length < 2) return;
+    if (gs.activePlayers.length < 4) return;
+    ep.isTreasureIsland = true;
+
   } else if (engineType === 'alien-egg') {
     // Both phases: pre-merge = tribe egg count, post-merge = individual egg count
     if (!gs.isMerged && gs.tribes.length < 2) return;
@@ -3956,7 +3962,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'trust-challenge': 'isTrustChallenge', 'basic-straining': 'isBasicStraining', 'x-treme-torture': 'isXtremeTorture',
         'sudden-death': 'isSuddenDeath', 'slasher-night': 'isSlasherNight', 'triple-dog-dare': 'isTripleDogDare',
         'say-uncle': 'isSayUncle', 'brunch-of-disgustingness': 'isBrunchOfDisgustingness',
-        'monster-cash': 'isMonsterCash', 'mine-over-matter': 'isMineOverMatter', 'operation-classified': 'isOperationClassified',
+        'monster-cash': 'isMonsterCash', 'mine-over-matter': 'isMineOverMatter', 'treasure-island': 'isTreasureIsland', 'operation-classified': 'isOperationClassified',
         'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride',
         'get-a-clue': 'isGetAClue', 'rock-n-rule': 'isRockNRule',
         'crouching-courtney': 'isCrouchingCourtney', 'houston': 'isHouston', 'top-dog': 'isTopDog',
@@ -4292,6 +4298,17 @@ export function generateTwistScenes(ep) {
           sc.push({ text: 'Each tribe digs for gems and races to the surface. The tribe that hauls out the most gems wins immunity. The lightest haul goes to tribal council.', players: [] });
         }
         result.push({ label:'Mine Over Matter', type:tw.type, scenes:sc }); break;
+      }
+
+      case 'treasure-island': {
+        const _tiAll = gs.activePlayers;
+        sc.push({ text: 'The teams are scrapped. Everyone pairs off, cuts a lifeboat loose, and paddles out over the lake where Dr. McLean\'s lost treasure chest lies sunk in a cave.', players: _tiAll });
+        if (gs.isMerged) {
+          sc.push({ text: 'One of each pair dives while the other guides from the surface. First crew to surface with the chest wins immunity for both — but a diver going down hard may force the leaders to choose between the win and a rescue.', players: [] });
+        } else {
+          sc.push({ text: 'Each tribe pairs up internally and dives for the chest. The tribe with the richest average crew haul wins immunity. The lightest goes to the Elimination Trial.', players: [] });
+        }
+        result.push({ label:'The Treasure Island of Dr. McLean', type:tw.type, scenes:sc }); break;
       }
 
       case 'alien-egg': {

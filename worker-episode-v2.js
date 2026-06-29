@@ -885,7 +885,14 @@ SIMULATOR INPUT → OUTPUT DESTINATION:
 === TRIBAL COUNCIL === → Attendees, emotional states (mood), advantages being considered,
   WORD AT CAMP (top 3 targets with reasoning), tribal Q&A dialogue (host questions, player answers, consequences),
   TRIBAL DISRUPTION (blowups), OVERPLAYING detection, BLINDSPOT flags.
-  → Feed ## TRIBAL COUNCIL / VOTE ANALYSIS — use the actual dialogue, don't invent new Q&A.
+  → Feed ## TRIBAL COUNCIL / VOTE ANALYSIS.
+  🚨 THE TRIBAL Q&A IS A SKELETON — REWRITE IT, DO NOT COPY IT. The questions and answers in the summary are generic
+  placeholder templates ("Does tonight feel like a game move or personal?" / "I've played clean, I've kept my commitments")
+  that REPEAT every episode and sound like nobody in particular. REWRITE every Chris question and player answer FRESH,
+  in that character's specific VOICE (use the voice profiles), about THIS episode's names, grudges, and advantages.
+  PRESERVE only: WHO Chris questions, the rough strategic point, who's targeted, any confrontation beat. CHANGE all wording.
+  A scared floater, a cocky schemer, and a furious hothead must answer NOTHING alike. Never reuse a tribal line from a
+  previous episode. (The VOTES and result stay locked — only the spoken Q&A is yours to rewrite.)
 
 === THE VOTES === → Per-player vote reasoning, live tally, revotes, rock draws, multi-tribal results.
   → Feed ## TRIBAL COUNCIL / VOTE ANALYSIS vote breakdown.
@@ -4100,7 +4107,7 @@ async function callAnthropicStreaming(system, userText, env) {
             "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
           },
           body: JSON.stringify({
-            model: "claude-sonnet-4-6",
+            model: "claude-opus-4-8",
             max_tokens: 16000,
             stream: true,
             system,

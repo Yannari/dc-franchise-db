@@ -129,6 +129,18 @@ function _extractPlayerPlacements() {
       // If no RI, this is their permanent exit
       permanentExit[name] = ep.num;
     }
+
+    // Koh-Lanta finale eliminates TWO players before FTC in a single episode:
+    // 4th place in the orienteering race, then 3rd place at "the choice". Only the
+    // choice cut lands in ep.eliminated above; the orienteering boot is recorded
+    // only in ep.klOrienteering.eliminated. Record it here at a fractional exit
+    // value just before the finale so reverse-elimination ordering assigns the
+    // correct placements (orienteering boot = 4th, choice boot = 3rd). Without
+    // this, the orienteering boot falls through to the 'Unknown' bucket and is
+    // dumped at the worst placement number.
+    if (ep.isFinale && ep.klOrienteering?.eliminated) {
+      permanentExit[ep.klOrienteering.eliminated] = ep.num - 0.5;
+    }
   }
 
   // Remove finalists from permanent exit (they made it to the end)

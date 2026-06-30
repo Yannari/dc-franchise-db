@@ -2,7 +2,7 @@
   "metadata": {
     "name": "🏆 Total Drama Franchise Rankings - Complete Cast",
     "version": "11.0_ASCII_SAFE_TITLE_EMOJI_REFRESH",
-    "lastUpdated": "2026-06-23",
+    "lastUpdated": "2026-06-30",
     "totalPlayers": 78,
     "seasons": 7,
     "improvements": [
@@ -176,22 +176,23 @@
     {
       "playerId": "jacques",
       "tier": "S+",
-      "score": 92,
+      "score": 93.7,
       "rank": 4,
-      "avgPlacement": 2.5,
-      "winRate": 50,
+      "avgPlacement": 3,
+      "winRate": 33.33,
       "placements": [
         1,
+        4,
         4
       ],
-      "challengeWins": 10,
-      "votesAgainst": 2,
+      "challengeWins": 11,
+      "votesAgainst": 12,
       "juryVotes": 0,
-      "idolsFound": 0,
+      "idolsFound": 2,
       "status": "Competed in 2/7 seasons",
       "title": "The Ice Prince",
       "emoji": "🧊",
-      "reasoning": "S6 was a clinic: calm threat management, 4 late immunities, and a 7-1-0 crowning. In S7 he stacked 6 total wins (5 immunities), ran the board with Taylor, then combusted at F4 and quit-turning a near-lock into collapse. With a 50% win rate, 10 challenge wins, and only 2 votes against over two seasons, he's a proven closer when composed. His feud with Carrie and the season's pressure exposed a volatile side that cost him the end.",
+      "reasoning": "S6 was a clinic: calm threat management, 4 late immunities, and a 7-1-0 crowning. In S7 he stacked 6 total wins (5 immunities), ran the board with Taylor, then combusted at F4 and quit-turning a near-lock into collapse. With a 50% win rate, 10 challenge wins, and only 2 votes against over two seasons, he's a proven closer when composed. His feud with Carrie and the season's pressure exposed a volatile side that cost him the end. S12 P4. Narrative override -4: equalize. 1 immunity win, played 2 idols, 1 alliance.",
       "strengths": [
         "Elite challenge streaks to dictate late votes",
         "Ice-cold strategic steering without overexposure",
@@ -207,13 +208,49 @@
         6,
         7
       ],
-      "seasonsPlayed": 2,
-      "wins": 1
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "scoreHistory": [
+        92,
+        93.7
+      ],
+      "overrides": [
+        {
+          "season": 12,
+          "value": -4,
+          "reason": "equalize"
+        }
+      ]
+    },
+    {
+      "playerId": "james",
+      "name": "James",
+      "rank": 5,
+      "tier": "S+",
+      "score": 92.9,
+      "wins": 1,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        92.9
+      ],
+      "placements": [
+        1
+      ],
+      "avgPlacement": 1,
+      "challengeWins": 1,
+      "votesAgainst": 9,
+      "juryVotes": 7,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "👑",
+      "reasoning": "S12 Winner. 1 immunity win, played 1 idol, 3 alliances.",
+      "strengths": [],
+      "weaknesses": []
     },
     {
       "playerId": "mickey",
       "name": "Mickey",
-      "rank": 5,
+      "rank": 6,
       "tier": "S+",
       "score": 91.1,
       "title": "The Nervous Mastermind",
@@ -257,7 +294,7 @@
       "playerId": "macarthur",
       "tier": "S+",
       "score": 90.7,
-      "rank": 6,
+      "rank": 7,
       "avgPlacement": 4,
       "winRate": 50,
       "placements": [
@@ -292,7 +329,7 @@
     {
       "playerId": "cameron",
       "name": "Cameron",
-      "rank": 7,
+      "rank": 8,
       "tier": "S+",
       "score": 90.2,
       "title": "The Brainiac",
@@ -330,7 +367,7 @@
       "playerId": "scott",
       "tier": "S",
       "score": 87.4,
-      "rank": 8,
+      "rank": 9,
       "avgPlacement": 5.5,
       "winRate": 0,
       "placements": [
@@ -374,7 +411,7 @@
     {
       "playerId": "thom",
       "name": "Thom",
-      "rank": 9,
+      "rank": 10,
       "tier": "S",
       "score": 86.2,
       "wins": 0,
@@ -407,7 +444,7 @@
     {
       "playerId": "millie",
       "name": "Millie",
-      "rank": 10,
+      "rank": 11,
       "tier": "S",
       "score": 85.8,
       "wins": 0,
@@ -430,7 +467,7 @@
       "playerId": "jasmine",
       "tier": "S",
       "score": 85.3,
-      "rank": 11,
+      "rank": 12,
       "avgPlacement": 9.333333333333334,
       "winRate": 33.33,
       "placements": [
@@ -473,7 +510,7 @@
       "playerId": "lindsay",
       "tier": "S",
       "score": 84,
-      "rank": 12,
+      "rank": 13,
       "avgPlacement": 8,
       "winRate": 33.33,
       "placements": [
@@ -507,28 +544,6 @@
       ],
       "seasonsPlayed": 3,
       "wins": 1
-    },
-    {
-      "playerId": "chase",
-      "name": "Chase",
-      "rank": 13,
-      "tier": "S",
-      "score": 83.3,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        3
-      ],
-      "avgPlacement": 3,
-      "challengeWins": 3,
-      "votesAgainst": 7,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "The Vlogger",
-      "emoji": "📱",
-      "reasoning": "S9's quiet closer. Chase arrived as the vlogger no one took seriously and finished as a finalist who made the right call in nearly every vote. He idoled himself at the revote that toppled Hicks, won the Vote Stopper to silence Julia at F4, and won F5 immunity to punch his ticket to the finale.",
-      "strengths": [],
-      "weaknesses": []
     },
     {
       "playerId": "ryan",
@@ -611,9 +626,34 @@
       "strategicPercentile": 77.61
     },
     {
+      "playerId": "ally",
+      "name": "Ally",
+      "rank": 16,
+      "tier": "S",
+      "score": 82.3,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        82.3
+      ],
+      "placements": [
+        3
+      ],
+      "avgPlacement": 3,
+      "challengeWins": 2,
+      "votesAgainst": 4,
+      "juryVotes": 0,
+      "idolsFound": 2,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P3. 2 immunity wins, played 2 idols, 3 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "fiore",
       "name": "Fiore",
-      "rank": 16,
+      "rank": 17,
       "tier": "S",
       "score": 81.3,
       "wins": 0,
@@ -647,7 +687,7 @@
     {
       "playerId": "emma",
       "name": "Emma",
-      "rank": 17,
+      "rank": 18,
       "tier": "S",
       "score": 81,
       "title": "The Comeback Kid",
@@ -685,7 +725,7 @@
       "playerId": "zoey",
       "tier": "S",
       "score": 80.8,
-      "rank": 18,
+      "rank": 19,
       "avgPlacement": 7.75,
       "winRate": 0,
       "placements": [
@@ -727,9 +767,34 @@
       ]
     },
     {
+      "playerId": "riya",
+      "name": "Riya",
+      "rank": 20,
+      "tier": "S",
+      "score": 80.3,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        80.3
+      ],
+      "placements": [
+        2
+      ],
+      "avgPlacement": 2,
+      "challengeWins": 2,
+      "votesAgainst": 14,
+      "juryVotes": 2,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P2. 2 immunity wins, played 1 idol, 2 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "sanders",
       "name": "Sanders",
-      "rank": 19,
+      "rank": 21,
       "tier": "S",
       "score": 80.2,
       "wins": 0,
@@ -766,7 +831,7 @@
     {
       "playerId": "scarlett",
       "name": "Scarlett",
-      "rank": 20,
+      "rank": 22,
       "tier": "A",
       "score": 77.9,
       "title": "The Puppetmaster",
@@ -802,7 +867,7 @@
       "playerId": "carrie",
       "tier": "A",
       "score": 77.8,
-      "rank": 21,
+      "rank": 23,
       "avgPlacement": 4.5,
       "winRate": 0,
       "placements": [
@@ -843,7 +908,7 @@
       "playerId": "cody",
       "tier": "A",
       "score": 77.2,
-      "rank": 22,
+      "rank": 24,
       "avgPlacement": 9.333333333333334,
       "winRate": 0,
       "placements": [
@@ -885,7 +950,7 @@
     {
       "playerId": "jay",
       "name": "Jay",
-      "rank": 23,
+      "rank": 25,
       "tier": "A",
       "score": 76.7,
       "title": "The Loyal Heart",
@@ -921,7 +986,7 @@
     {
       "playerId": "damien",
       "name": "Damien",
-      "rank": 24,
+      "rank": 26,
       "tier": "A",
       "score": 76.3,
       "wins": 0,
@@ -944,7 +1009,7 @@
       "playerId": "sky",
       "tier": "A",
       "score": 75.7,
-      "rank": 25,
+      "rank": 27,
       "avgPlacement": 7,
       "winRate": 0,
       "placements": [
@@ -981,7 +1046,7 @@
     {
       "playerId": "brick",
       "name": "Brick",
-      "rank": 26,
+      "rank": 28,
       "tier": "A",
       "score": 75.1,
       "title": "The Noble Shield",
@@ -1023,7 +1088,7 @@
     {
       "playerId": "kelly",
       "name": "Kelly",
-      "rank": 27,
+      "rank": 29,
       "tier": "A",
       "score": 74.3,
       "title": "The Protective Mom",
@@ -1058,7 +1123,7 @@
     {
       "playerId": "trent",
       "name": "Trent",
-      "rank": 28,
+      "rank": 30,
       "tier": "A",
       "score": 73.1,
       "title": "The Guitar Guy",
@@ -1092,7 +1157,7 @@
     {
       "playerId": "gerry",
       "name": "Gerry",
-      "rank": 29,
+      "rank": 31,
       "tier": "A",
       "score": 72.7,
       "wins": 0,
@@ -1112,10 +1177,35 @@
       "weaknesses": []
     },
     {
+      "playerId": "aiden",
+      "name": "Aiden",
+      "rank": 32,
+      "tier": "A",
+      "score": 72.6,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        72.6
+      ],
+      "placements": [
+        5
+      ],
+      "avgPlacement": 5,
+      "challengeWins": 1,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P5. 1 immunity win, played 1 idol, 4 alliances, fan favorite.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "tom",
       "tier": "A",
       "score": 72,
-      "rank": 30,
+      "rank": 33,
       "avgPlacement": 5,
       "winRate": 0,
       "placements": [
@@ -1147,31 +1237,9 @@
       "wins": 0
     },
     {
-      "playerId": "jen",
-      "name": "Jen",
-      "rank": 31,
-      "tier": "A",
-      "score": 71.7,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        5
-      ],
-      "avgPlacement": 5,
-      "challengeWins": 2,
-      "votesAgainst": 7,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "The Photographer",
-      "emoji": "📸",
-      "reasoning": "S8's social monarch. Jen led the Civilians, built the widest coalition of any player in her season, won merge immunity, and helped blindside MacArthur on a revote at F6. She fell at F5 as the first victim of the Double Shield — Sanders and Alejandro played idols simultaneously to force a revote that ended her game. A dominant résumé cut one round short.",
-      "strengths": [],
-      "weaknesses": []
-    },
-    {
       "playerId": "geoff",
       "name": "Geoff",
-      "rank": 32,
+      "rank": 34,
       "tier": "A",
       "score": 71,
       "title": "The Party Surfer",
@@ -1207,7 +1275,7 @@
     {
       "playerId": "alec",
       "name": "Alec",
-      "rank": 33,
+      "rank": 35,
       "tier": "A",
       "score": 71,
       "wins": 0,
@@ -1241,7 +1309,7 @@
     {
       "playerId": "bridgette",
       "name": "Bridgette",
-      "rank": 34,
+      "rank": 36,
       "tier": "A",
       "score": 70.8,
       "title": "The Surfer Sweetheart",
@@ -1272,43 +1340,9 @@
       "strategicPercentile": 50
     },
     {
-      "playerId": "ezekiel",
-      "name": "Ezekiel",
-      "rank": 35,
-      "tier": "A",
-      "score": 70.5,
-      "title": "The Farm Kid",
-      "emoji": "🌾",
-      "reasoning": "Advantage king/queen (3 idols/advantages found). Lost fire-making to Alejandro at F4. (S1). Legendary idol play on Alejandro at merge. (S2). Across 2 season(s): avg placement 5.00.",
-      "strengths": [
-        "S4: 4th place",
-        "Improved across seasons"
-      ],
-      "weaknesses": [
-        "Never reached F3"
-      ],
-      "avgPlacement": 5,
-      "winRate": 0,
-      "wins": 0,
-      "seasonsPlayed": 2,
-      "placements": [
-        6,
-        4
-      ],
-      "challengeWins": 1,
-      "votesAgainst": 12,
-      "juryVotes": 0,
-      "idolsFound": 3,
-      "placementPercentile": 82.84,
-      "winPercentile": 45.52,
-      "challengePercentile": 65.67,
-      "socialPercentile": 38.06,
-      "strategicPercentile": 50
-    },
-    {
       "playerId": "blaineley",
       "name": "Blaineley",
-      "rank": 36,
+      "rank": 37,
       "tier": "B",
       "score": 70.4,
       "title": "The Media Maven",
@@ -1339,28 +1373,6 @@
       "challengePercentile": 29.85,
       "socialPercentile": 53.73,
       "strategicPercentile": 77.61
-    },
-    {
-      "playerId": "emmah",
-      "name": "Emmah",
-      "rank": 37,
-      "tier": "B",
-      "score": 70.4,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        5
-      ],
-      "avgPlacement": 5,
-      "challengeWins": 2,
-      "votesAgainst": 4,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "The Pop Star",
-      "emoji": "🎤",
-      "reasoning": "S9's most fearless player. Emmah used Knowledge is Power to steal Wayne's Extra Vote and double-voted Ripper out in one of the season's boldest moves. She helped blindside Raj while he sat on an idol and won immunity at F7. She got caught in the F5 double-idol crossfire — the only vote she couldn't escape all season.",
-      "strengths": [],
-      "weaknesses": []
     },
     {
       "playerId": "gabby",
@@ -1466,9 +1478,62 @@
       "strategicPercentile": 77.61
     },
     {
+      "playerId": "rosa-maria",
+      "name": "Rosa-Maria",
+      "rank": 41,
+      "tier": "B",
+      "score": 69,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        69
+      ],
+      "placements": [
+        6
+      ],
+      "avgPlacement": 6,
+      "challengeWins": 0,
+      "votesAgainst": 8,
+      "juryVotes": 0,
+      "idolsFound": 2,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P6. played 2 idols, 4 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "chase",
+      "name": "Chase",
+      "rank": 42,
+      "tier": "B",
+      "score": 68.5,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        3,
+        16
+      ],
+      "avgPlacement": 9.5,
+      "challengeWins": 3,
+      "votesAgainst": 11,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "The Vlogger",
+      "emoji": "📱",
+      "reasoning": "S9's quiet closer. Chase arrived as the vlogger no one took seriously and finished as a finalist who made the right call in nearly every vote. He idoled himself at the revote that toppled Hicks, won the Vote Stopper to silence Julia at F4, and won F5 immunity to punch his ticket to the finale. S12 P16. 1 alliance.",
+      "strengths": [],
+      "weaknesses": [],
+      "scoreHistory": [
+        83.3,
+        68.5
+      ],
+      "winRate": 0
+    },
+    {
       "playerId": "beth",
       "name": "Beth",
-      "rank": 41,
+      "rank": 43,
       "tier": "B",
       "score": 68.4,
       "title": "The Sweetheart",
@@ -1501,9 +1566,74 @@
       "strategicPercentile": 14.18
     },
     {
+      "playerId": "jen",
+      "name": "Jen",
+      "rank": 44,
+      "tier": "B",
+      "score": 68.2,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        5,
+        9
+      ],
+      "avgPlacement": 7,
+      "challengeWins": 2,
+      "votesAgainst": 9,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "The Photographer",
+      "emoji": "📸",
+      "reasoning": "S8's social monarch. Jen led the Civilians, built the widest coalition of any player in her season, won merge immunity, and helped blindside MacArthur on a revote at F6. She fell at F5 as the first victim of the Double Shield — Sanders and Alejandro played idols simultaneously to force a revote that ended her game. A dominant résumé cut one round short. S12 P9. 1 alliance.",
+      "strengths": [],
+      "weaknesses": [],
+      "scoreHistory": [
+        71.7,
+        68.2
+      ],
+      "winRate": 0
+    },
+    {
+      "playerId": "ellie",
+      "name": "Ellie",
+      "rank": 45,
+      "tier": "B",
+      "score": 67.7,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "scoreHistory": [
+        58.7,
+        67.7
+      ],
+      "placements": [
+        8,
+        8
+      ],
+      "avgPlacement": 8,
+      "challengeWins": 1,
+      "votesAgainst": 21,
+      "juryVotes": 0,
+      "idolsFound": 2,
+      "title": "The Perpetual Target",
+      "emoji": "🎯",
+      "reasoning": "Ellie’s S11 run was defined by heat: 15 votes against is a staggering number for an 8th-place finisher. She did play an idol, which kept her from being a simple casualty, but she never found stable enough footing to turn survival into control. Her game is memorable for resilience, yet the target on her back overwhelmed everything else. S12 P8. 1 immunity win, played 1 idol, 1 alliance.",
+      "strengths": [
+        "Played 1 idol",
+        "Survived 15 votes against",
+        "Memorable survival arc",
+        "Reached 8th place"
+      ],
+      "weaknesses": [
+        "15 votes against",
+        "0 challenge wins",
+        "No listed alliances"
+      ],
+      "winRate": 0
+    },
+    {
       "playerId": "dwayne",
       "name": "Dwayne",
-      "rank": 42,
+      "rank": 46,
       "tier": "B",
       "score": 67.6,
       "title": "The Dad",
@@ -1536,9 +1666,48 @@
       "strategicPercentile": 28.36
     },
     {
+      "playerId": "ezekiel",
+      "name": "Ezekiel",
+      "rank": 47,
+      "tier": "B",
+      "score": 67.3,
+      "title": "The Farm Kid",
+      "emoji": "🌾",
+      "reasoning": "Advantage king/queen (3 idols/advantages found). Lost fire-making to Alejandro at F4. (S1). Legendary idol play on Alejandro at merge. (S2). Across 2 season(s): avg placement 5.00. S12 P19..",
+      "strengths": [
+        "S4: 4th place",
+        "Improved across seasons"
+      ],
+      "weaknesses": [
+        "Never reached F3"
+      ],
+      "avgPlacement": 9.666666666666666,
+      "winRate": 0,
+      "wins": 0,
+      "seasonsPlayed": 3,
+      "placements": [
+        6,
+        4,
+        19
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 18,
+      "juryVotes": 0,
+      "idolsFound": 3,
+      "placementPercentile": 82.84,
+      "winPercentile": 45.52,
+      "challengePercentile": 65.67,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 50,
+      "scoreHistory": [
+        70.5,
+        67.3
+      ]
+    },
+    {
       "playerId": "gwen",
       "name": "Gwen",
-      "rank": 43,
+      "rank": 48,
       "tier": "B",
       "score": 67.2,
       "title": "The Shadow Marathoner",
@@ -1583,7 +1752,7 @@
       "playerId": "shawn",
       "tier": "B",
       "score": 67,
-      "rank": 44,
+      "rank": 49,
       "avgPlacement": 9,
       "winRate": 0,
       "placements": [
@@ -1619,7 +1788,7 @@
     {
       "playerId": "amy",
       "name": "Amy",
-      "rank": 45,
+      "rank": 50,
       "tier": "B",
       "score": 66.4,
       "title": "The Mean Twin",
@@ -1651,7 +1820,7 @@
     {
       "playerId": "julia",
       "name": "Julia",
-      "rank": 46,
+      "rank": 51,
       "tier": "B",
       "score": 65.4,
       "wins": 0,
@@ -1673,7 +1842,7 @@
     {
       "playerId": "eureka",
       "name": "Eureka",
-      "rank": 47,
+      "rank": 52,
       "tier": "B",
       "score": 65.4,
       "wins": 0,
@@ -1707,7 +1876,7 @@
     {
       "playerId": "sugar",
       "name": "Sugar",
-      "rank": 48,
+      "rank": 53,
       "tier": "B",
       "score": 65.2,
       "title": "The Pageant Menace",
@@ -1739,9 +1908,34 @@
       "strategicPercentile": 50
     },
     {
+      "playerId": "lake",
+      "name": "Lake",
+      "rank": 54,
+      "tier": "B",
+      "score": 64.9,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        64.9
+      ],
+      "placements": [
+        7
+      ],
+      "avgPlacement": 7,
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P7. played 1 idol, 5 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "jo",
       "name": "Jo",
-      "rank": 49,
+      "rank": 55,
       "tier": "B",
       "score": 64.7,
       "title": "The Alpha Athlete",
@@ -1776,7 +1970,7 @@
     {
       "playerId": "priya",
       "name": "Priya",
-      "rank": 50,
+      "rank": 56,
       "tier": "B",
       "score": 63.9,
       "wins": 0,
@@ -1813,7 +2007,7 @@
     {
       "playerId": "mk",
       "name": "MK",
-      "rank": 51,
+      "rank": 57,
       "tier": "B",
       "score": 62.3,
       "wins": 0,
@@ -1835,7 +2029,7 @@
     {
       "playerId": "dave",
       "name": "Dave",
-      "rank": 52,
+      "rank": 58,
       "tier": "B",
       "score": 61.9,
       "title": "The Neurotic Strategist",
@@ -1870,7 +2064,7 @@
     {
       "playerId": "jake",
       "name": "Jake",
-      "rank": 53,
+      "rank": 59,
       "tier": "B",
       "score": 61.9,
       "wins": 0,
@@ -1904,7 +2098,7 @@
     {
       "playerId": "heather",
       "name": "Heather",
-      "rank": 54,
+      "rank": 60,
       "tier": "B",
       "score": 61.1,
       "title": "The Queen Bee",
@@ -1940,7 +2134,7 @@
     {
       "playerId": "dawn",
       "name": "Dawn",
-      "rank": 55,
+      "rank": 61,
       "tier": "C",
       "score": 60,
       "title": "The Mystic",
@@ -1974,7 +2168,7 @@
     {
       "playerId": "owen",
       "name": "Owen",
-      "rank": 56,
+      "rank": 62,
       "tier": "C",
       "score": 59.5,
       "title": "The Big Buddy",
@@ -2008,7 +2202,7 @@
     {
       "playerId": "courtney",
       "name": "Courtney",
-      "rank": 57,
+      "rank": 63,
       "tier": "C",
       "score": 59.1,
       "title": "The Courtroom Wildfire",
@@ -2053,7 +2247,7 @@
       "playerId": "kitty",
       "tier": "C",
       "score": 59,
-      "rank": 58,
+      "rank": 64,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -2090,7 +2284,7 @@
       "playerId": "laurie",
       "tier": "C",
       "score": 59,
-      "rank": 59,
+      "rank": 65,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -2122,43 +2316,9 @@
       "wins": 0
     },
     {
-      "playerId": "ellie",
-      "name": "Ellie",
-      "rank": 60,
-      "tier": "C",
-      "score": 58.7,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        58.7
-      ],
-      "placements": [
-        8
-      ],
-      "avgPlacement": 8,
-      "challengeWins": 0,
-      "votesAgainst": 15,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "The Perpetual Target",
-      "emoji": "🎯",
-      "reasoning": "Ellie’s S11 run was defined by heat: 15 votes against is a staggering number for an 8th-place finisher. She did play an idol, which kept her from being a simple casualty, but she never found stable enough footing to turn survival into control. Her game is memorable for resilience, yet the target on her back overwhelmed everything else.",
-      "strengths": [
-        "Played 1 idol",
-        "Survived 15 votes against",
-        "Memorable survival arc",
-        "Reached 8th place"
-      ],
-      "weaknesses": [
-        "15 votes against",
-        "0 challenge wins",
-        "No listed alliances"
-      ]
-    },
-    {
       "playerId": "max",
       "name": "Max",
-      "rank": 61,
+      "rank": 66,
       "tier": "C",
       "score": 57.8,
       "title": "The Evil Genius",
@@ -2190,7 +2350,7 @@
     {
       "playerId": "leshawna",
       "name": "Leshawna",
-      "rank": 62,
+      "rank": 67,
       "tier": "C",
       "score": 57.8,
       "title": "The Real One",
@@ -2223,9 +2383,37 @@
       "strategicPercentile": 50
     },
     {
+      "playerId": "emmah",
+      "name": "Emmah",
+      "rank": 68,
+      "tier": "C",
+      "score": 57,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        5,
+        20
+      ],
+      "avgPlacement": 12.5,
+      "challengeWins": 2,
+      "votesAgainst": 11,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "The Pop Star",
+      "emoji": "🎤",
+      "reasoning": "S9's most fearless player. Emmah used Knowledge is Power to steal Wayne's Extra Vote and double-voted Ripper out in one of the season's boldest moves. She helped blindside Raj while he sat on an idol and won immunity at F7. She got caught in the F5 double-idol crossfire — the only vote she couldn't escape all season. S12 P20..",
+      "strengths": [],
+      "weaknesses": [],
+      "scoreHistory": [
+        70.4,
+        57
+      ],
+      "winRate": 0
+    },
+    {
       "playerId": "axel",
       "name": "Axel",
-      "rank": 63,
+      "rank": 69,
       "tier": "C",
       "score": 57,
       "wins": 0,
@@ -2247,7 +2435,7 @@
     {
       "playerId": "dan",
       "name": "Dan",
-      "rank": 64,
+      "rank": 70,
       "tier": "C",
       "score": 57,
       "wins": 0,
@@ -2282,7 +2470,7 @@
       "playerId": "pete",
       "tier": "C",
       "score": 56.8,
-      "rank": 65,
+      "rank": 71,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -2317,7 +2505,7 @@
     {
       "playerId": "topher",
       "name": "Topher",
-      "rank": 66,
+      "rank": 72,
       "tier": "C",
       "score": 56.6,
       "title": "The Host Wannabe",
@@ -2349,7 +2537,7 @@
     {
       "playerId": "wayne",
       "name": "Wayne",
-      "rank": 67,
+      "rank": 73,
       "tier": "C",
       "score": 56.5,
       "wins": 0,
@@ -2371,7 +2559,7 @@
     {
       "playerId": "stephanie",
       "name": "Stephanie",
-      "rank": 68,
+      "rank": 74,
       "tier": "C",
       "score": 55.1,
       "title": "The Unspent Fuse",
@@ -2413,7 +2601,7 @@
     {
       "playerId": "lill",
       "name": "Lill",
-      "rank": 69,
+      "rank": 75,
       "tier": "C",
       "score": 55,
       "wins": 0,
@@ -2445,9 +2633,34 @@
       ]
     },
     {
+      "playerId": "hunter",
+      "name": "Hunter",
+      "rank": 76,
+      "tier": "C",
+      "score": 55,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        55
+      ],
+      "placements": [
+        10
+      ],
+      "avgPlacement": 10,
+      "challengeWins": 0,
+      "votesAgainst": 8,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P10. 3 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "noah",
       "name": "Noah",
-      "rank": 70,
+      "rank": 77,
       "tier": "C",
       "score": 54.6,
       "title": "The Snark King",
@@ -2483,7 +2696,7 @@
       "playerId": "brody",
       "tier": "C",
       "score": 54.5,
-      "rank": 71,
+      "rank": 78,
       "avgPlacement": 13.666666666666666,
       "winRate": 0,
       "placements": [
@@ -2520,7 +2733,7 @@
     {
       "playerId": "dj",
       "name": "DJ",
-      "rank": 72,
+      "rank": 79,
       "tier": "C",
       "score": 54,
       "title": "The Gentle Giant",
@@ -2555,7 +2768,7 @@
     {
       "playerId": "harold",
       "name": "Harold",
-      "rank": 73,
+      "rank": 80,
       "tier": "C",
       "score": 54,
       "title": "The Ninja Nerd",
@@ -2590,7 +2803,7 @@
     {
       "playerId": "josee",
       "name": "Josee",
-      "rank": 74,
+      "rank": 81,
       "tier": "C",
       "score": 53.6,
       "title": "The Fury Duelist",
@@ -2631,9 +2844,34 @@
       ]
     },
     {
+      "playerId": "karol",
+      "name": "Karol",
+      "rank": 82,
+      "tier": "C",
+      "score": 53.6,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        53.6
+      ],
+      "placements": [
+        11
+      ],
+      "avgPlacement": 11,
+      "challengeWins": 0,
+      "votesAgainst": 8,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P11. played 1 idol, 1 alliance.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "hicks",
       "name": "Hicks",
-      "rank": 75,
+      "rank": 83,
       "tier": "C",
       "score": 53.2,
       "wins": 0,
@@ -2670,7 +2908,7 @@
     {
       "playerId": "seraphine",
       "name": "Seraphine",
-      "rank": 76,
+      "rank": 84,
       "tier": "C",
       "score": 53.2,
       "wins": 0,
@@ -2703,7 +2941,7 @@
     {
       "playerId": "ripper",
       "name": "Ripper",
-      "rank": 77,
+      "rank": 85,
       "tier": "C",
       "score": 53,
       "wins": 0,
@@ -2725,7 +2963,7 @@
     {
       "playerId": "katie",
       "name": "Katie",
-      "rank": 78,
+      "rank": 86,
       "tier": "C",
       "score": 52.8,
       "title": "The BFF",
@@ -2758,7 +2996,7 @@
     {
       "playerId": "sadie",
       "name": "Sadie",
-      "rank": 79,
+      "rank": 87,
       "tier": "C",
       "score": 52.2,
       "title": "The BFF",
@@ -2789,9 +3027,34 @@
       "strategicPercentile": 50
     },
     {
+      "playerId": "yul",
+      "name": "Yul",
+      "rank": 88,
+      "tier": "C",
+      "score": 51.2,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        51.2
+      ],
+      "placements": [
+        12
+      ],
+      "avgPlacement": 12,
+      "challengeWins": 0,
+      "votesAgainst": 8,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P12. played 1 idol, 1 alliance.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "rodney",
       "name": "Rodney",
-      "rank": 80,
+      "rank": 89,
       "tier": "C",
       "score": 51,
       "title": "The Loverboy",
@@ -2825,7 +3088,7 @@
     {
       "playerId": "sierra",
       "name": "Sierra",
-      "rank": 81,
+      "rank": 90,
       "tier": "D",
       "score": 50.1,
       "title": "The Superfan",
@@ -2860,7 +3123,7 @@
     {
       "playerId": "anne-maria",
       "name": "Anne Maria",
-      "rank": 82,
+      "rank": 91,
       "tier": "D",
       "score": 50,
       "title": "The Jersey Diva",
@@ -2894,7 +3157,7 @@
     {
       "playerId": "lightning",
       "name": "Lightning",
-      "rank": 83,
+      "rank": 92,
       "tier": "D",
       "score": 50,
       "title": "The Jock",
@@ -2929,7 +3192,7 @@
     {
       "playerId": "sterling",
       "name": "Sterling",
-      "rank": 84,
+      "rank": 93,
       "tier": "D",
       "score": 49.7,
       "wins": 0,
@@ -2962,7 +3225,7 @@
     {
       "playerId": "brightly",
       "name": "Brightly",
-      "rank": 85,
+      "rank": 94,
       "tier": "D",
       "score": 48.8,
       "wins": 0,
@@ -2984,7 +3247,7 @@
     {
       "playerId": "sam",
       "name": "Sam",
-      "rank": 86,
+      "rank": 95,
       "tier": "D",
       "score": 47.6,
       "title": "The Eager Underdog",
@@ -3025,7 +3288,7 @@
     {
       "playerId": "izzy",
       "name": "Izzy",
-      "rank": 87,
+      "rank": 96,
       "tier": "D",
       "score": 47.4,
       "title": "The Chaos Gremlin",
@@ -3058,7 +3321,7 @@
     {
       "playerId": "mary",
       "name": "Mary",
-      "rank": 88,
+      "rank": 97,
       "tier": "D",
       "score": 47,
       "title": "The Brain",
@@ -3091,7 +3354,7 @@
     {
       "playerId": "nick",
       "name": "Nick",
-      "rank": 89,
+      "rank": 98,
       "tier": "D",
       "score": 47,
       "wins": 0,
@@ -3124,7 +3387,7 @@
     {
       "playerId": "raj",
       "name": "Raj",
-      "rank": 90,
+      "rank": 99,
       "tier": "D",
       "score": 46.8,
       "wins": 0,
@@ -3144,10 +3407,60 @@
       "weaknesses": []
     },
     {
+      "playerId": "tess",
+      "name": "Tess",
+      "rank": 100,
+      "tier": "D",
+      "score": 45.8,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        45.8
+      ],
+      "placements": [
+        13
+      ],
+      "avgPlacement": 13,
+      "challengeWins": 0,
+      "votesAgainst": 11,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P13..",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "oliver",
+      "name": "Oliver",
+      "rank": 101,
+      "tier": "D",
+      "score": 45.8,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        45.8
+      ],
+      "placements": [
+        14
+      ],
+      "avgPlacement": 14,
+      "challengeWins": 0,
+      "votesAgainst": 3,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P14. 2 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "devin",
       "tier": "D",
       "score": 45,
-      "rank": 91,
+      "rank": 102,
       "avgPlacement": 14,
       "winRate": 0,
       "placements": [
@@ -3179,9 +3492,34 @@
       "wins": 0
     },
     {
+      "playerId": "kai",
+      "name": "Kai",
+      "rank": 103,
+      "tier": "D",
+      "score": 43.5,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        43.5
+      ],
+      "placements": [
+        15
+      ],
+      "avgPlacement": 15,
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P15. 3 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "tyler",
       "name": "Tyler",
-      "rank": 92,
+      "rank": 104,
       "tier": "D",
       "score": 43.4,
       "title": "The Heartfirst Liability",
@@ -3223,7 +3561,7 @@
     {
       "playerId": "grett",
       "name": "Grett",
-      "rank": 93,
+      "rank": 105,
       "tier": "D",
       "score": 43.2,
       "wins": 0,
@@ -3256,7 +3594,7 @@
     {
       "playerId": "samey",
       "name": "Samey",
-      "rank": 94,
+      "rank": 106,
       "tier": "D",
       "score": 42,
       "title": "The Sweet Twin",
@@ -3290,7 +3628,7 @@
       "playerId": "lorenzo",
       "tier": "D",
       "score": 42,
-      "rank": 95,
+      "rank": 107,
       "avgPlacement": 16,
       "winRate": 0,
       "placements": [
@@ -3324,7 +3662,7 @@
     {
       "playerId": "caleb",
       "name": "Caleb",
-      "rank": 96,
+      "rank": 108,
       "tier": "D",
       "score": 41.4,
       "wins": 0,
@@ -3346,7 +3684,7 @@
     {
       "playerId": "wix",
       "name": "Wix",
-      "rank": 97,
+      "rank": 109,
       "tier": "D",
       "score": 41.2,
       "wins": 0,
@@ -3379,7 +3717,7 @@
     {
       "playerId": "junior",
       "name": "Junior",
-      "rank": 98,
+      "rank": 110,
       "tier": "D",
       "score": 41,
       "title": "The Kid",
@@ -3413,7 +3751,7 @@
     {
       "playerId": "chet",
       "name": "Chet",
-      "rank": 99,
+      "rank": 111,
       "tier": "D",
       "score": 40.1,
       "wins": 0,
@@ -3435,7 +3773,7 @@
     {
       "playerId": "ennui",
       "name": "Ennui",
-      "rank": 100,
+      "rank": 112,
       "tier": "D",
       "score": 40,
       "title": "The Deadpan Goth",
@@ -3469,7 +3807,7 @@
     {
       "playerId": "will",
       "name": "Will",
-      "rank": 101,
+      "rank": 113,
       "tier": "D",
       "score": 39.4,
       "wins": 0,
@@ -3502,7 +3840,7 @@
     {
       "playerId": "beardo",
       "name": "Beardo",
-      "rank": 102,
+      "rank": 114,
       "tier": "D",
       "score": 39,
       "title": "The Soundboard",
@@ -3535,7 +3873,7 @@
     {
       "playerId": "nichelle",
       "name": "Nichelle",
-      "rank": 103,
+      "rank": 115,
       "tier": "D",
       "score": 38.1,
       "wins": 0,
@@ -3555,9 +3893,34 @@
       "weaknesses": []
     },
     {
+      "playerId": "maggy",
+      "name": "Maggy",
+      "rank": 116,
+      "tier": "D",
+      "score": 38.1,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        38.1
+      ],
+      "placements": [
+        17
+      ],
+      "avgPlacement": 17,
+      "challengeWins": 0,
+      "votesAgainst": 4,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P17. 1 alliance.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "justin",
       "name": "Justin",
-      "rank": 104,
+      "rank": 117,
       "tier": "D",
       "score": 38,
       "title": "The Model",
@@ -3592,7 +3955,7 @@
     {
       "playerId": "ella",
       "name": "Ella",
-      "rank": 105,
+      "rank": 118,
       "tier": "D",
       "score": 38,
       "title": "The Disney Princess",
@@ -3625,7 +3988,7 @@
     {
       "playerId": "tammy",
       "name": "Tammy",
-      "rank": 106,
+      "rank": 119,
       "tier": "D",
       "score": 37,
       "title": "The Cosplayer",
@@ -3660,7 +4023,7 @@
       "playerId": "spud",
       "tier": "D",
       "score": 37,
-      "rank": 107,
+      "rank": 120,
       "avgPlacement": 17,
       "winRate": 0,
       "placements": [
@@ -3694,7 +4057,7 @@
     {
       "playerId": "scary-girl",
       "name": "Scary Girl",
-      "rank": 108,
+      "rank": 121,
       "tier": "D",
       "score": 36.5,
       "wins": 0,
@@ -3716,7 +4079,7 @@
     {
       "playerId": "rock",
       "name": "Rock",
-      "rank": 109,
+      "rank": 122,
       "tier": "D",
       "score": 36.1,
       "wins": 0,
@@ -3738,7 +4101,7 @@
     {
       "playerId": "drew",
       "name": "Drew",
-      "rank": 110,
+      "rank": 123,
       "tier": "D",
       "score": 35.9,
       "wins": 0,
@@ -3769,9 +4132,34 @@
       ]
     },
     {
+      "playerId": "connor",
+      "name": "Connor",
+      "rank": 124,
+      "tier": "D",
+      "score": 35.6,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        35.6
+      ],
+      "placements": [
+        18
+      ],
+      "avgPlacement": 18,
+      "challengeWins": 0,
+      "votesAgainst": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S12 P18. voted against once.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "ashley",
       "name": "Ashley",
-      "rank": 111,
+      "rank": 125,
       "tier": "D",
       "score": 33.3,
       "wins": 0,
@@ -3804,7 +4192,7 @@
     {
       "playerId": "zee",
       "name": "Zee",
-      "rank": 112,
+      "rank": 126,
       "tier": "D",
       "score": 33.2,
       "wins": 0,
@@ -3826,7 +4214,7 @@
     {
       "playerId": "b",
       "name": "B",
-      "rank": 113,
+      "rank": 127,
       "tier": "D",
       "score": 33,
       "title": "The Silent Genius",
@@ -3860,7 +4248,7 @@
     {
       "playerId": "miles",
       "name": "Miles",
-      "rank": 114,
+      "rank": 128,
       "tier": "D",
       "score": 33,
       "wins": 0,
@@ -3882,7 +4270,7 @@
     {
       "playerId": "staci",
       "name": "Staci",
-      "rank": 115,
+      "rank": 129,
       "tier": "D",
       "score": 32,
       "title": "The Storyteller",
@@ -3917,7 +4305,7 @@
       "playerId": "ellody",
       "tier": "D",
       "score": 32,
-      "rank": 116,
+      "rank": 130,
       "avgPlacement": 19,
       "winRate": 0,
       "placements": [
@@ -3951,7 +4339,7 @@
     {
       "playerId": "leonard",
       "name": "Leonard",
-      "rank": 117,
+      "rank": 131,
       "tier": "D",
       "score": 28,
       "title": "The Wizard",
@@ -3986,7 +4374,7 @@
     {
       "playerId": "dakota",
       "name": "Dakota",
-      "rank": 118,
+      "rank": 132,
       "tier": "D",
       "score": 26,
       "title": "The Celebrity",
@@ -4021,7 +4409,7 @@
     {
       "playerId": "eva",
       "name": "Eva",
-      "rank": 119,
+      "rank": 133,
       "tier": "D",
       "score": 23,
       "title": "The Rage Machine",
@@ -4055,7 +4443,7 @@
     {
       "playerId": "crimson",
       "name": "Crimson",
-      "rank": 120,
+      "rank": 134,
       "tier": "D",
       "score": 21,
       "title": "The Goth Twin",

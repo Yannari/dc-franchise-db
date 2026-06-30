@@ -486,15 +486,6 @@
           style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
         >
           <option value="all">🎬 All Seasons</option>
-          <option value="1">Season 1</option>
-          <option value="2">Season 2</option>
-          <option value="3">Season 3</option>
-          <option value="4">Season 4</option>
-          <option value="5">Season 5</option>
-          <option value="6">Season 6</option>
-          <option value="7">Season 7</option>
-          <option value="8">Season 8</option>
-          <option value="9">Season 9</option>
         </select>
         <select
           id="countFilter"
@@ -645,6 +636,16 @@ function updateHeaderStats() {
   }, 0);
   const seasonNums = allPlayers.flatMap(p => Array.isArray(p.seasons) ? p.seasons.map(Number) : []);
   const totalSeasons = seasonNums.length ? Math.max(...seasonNums) : 0;
+
+  // Populate the season filter dropdown from the live data so it never goes stale.
+  const seasonFilter = document.getElementById('seasonFilter');
+  if (seasonFilter) {
+    const distinct = [...new Set(seasonNums.filter(n => Number.isFinite(n)))].sort((a, b) => a - b);
+    const prev = seasonFilter.value;
+    seasonFilter.innerHTML = '<option value="all">🎬 All Seasons</option>' +
+      distinct.map(n => `<option value="${n}">Season ${n}</option>`).join('');
+    if (prev && [...seasonFilter.options].some(o => o.value === prev)) seasonFilter.value = prev;
+  }
 
   const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
   setText('totalPlayers', totalPlayers);

@@ -921,35 +921,42 @@ export function applyTwist(ep, twist, isPrimary = true) {
     const allActive = [...gs.activePlayers];
     const tribeNames = gs.tribes.map(t => t.name);
 
-    // ── Select captains: top 2 individual challenge performers, fallback random ──
+    // ── Select one captain per tribe: top individual challenge performer, fallback random ──
+    const numTeams = tribeNames.length;
     let captains, captainSource;
     const _prevEp = gs.episodeHistory[gs.episodeHistory.length - 1];
     const _chalScores = _prevEp?.chalMemberScores;
-    if (_chalScores && Object.keys(_chalScores).length >= 2) {
-      const _ranked = Object.entries(_chalScores).filter(([n]) => allActive.includes(n)).sort((a, b) => b[1] - a[1]);
-      // Pick best from each tribe if possible
-      const _t1 = gs.tribes[0]?.name, _t2 = gs.tribes[1]?.name;
-      const _best1 = _ranked.find(([n]) => gs.tribes.find(t => t.name === _t1)?.members.includes(n));
-      const _best2 = _ranked.find(([n]) => gs.tribes.find(t => t.name === _t2)?.members.includes(n));
-      captains = [_best1?.[0] || _ranked[0][0], _best2?.[0] || _ranked[1]?.[0] || _ranked[0][0]];
-      if (captains[0] === captains[1]) captains[1] = _ranked.find(([n]) => n !== captains[0])?.[0] || allActive.find(n => n !== captains[0]);
+    const _rankedNames = _chalScores
+      ? Object.entries(_chalScores).filter(([n]) => allActive.includes(n)).sort((a, b) => b[1] - a[1]).map(e => e[0])
+      : [];
+    if (_rankedNames.length >= 2) {
+      captains = gs.tribes.map(t => _rankedNames.find(n => t.members.includes(n)));
       captainSource = 'challenge';
     } else {
-      const _shuffled = [...allActive].sort(() => Math.random() - 0.5);
-      captains = [_shuffled[0], _shuffled[1]];
+      captains = [...allActive].sort(() => Math.random() - 0.5);
       captainSource = 'random';
     }
+    // Ensure exactly numTeams distinct, defined captains (fill gaps from ranking then roster)
+    {
+      const _seen = new Set();
+      captains = (captains || []).filter(c => c && !_seen.has(c) && _seen.add(c));
+      for (const n of [..._rankedNames, ...allActive]) {
+        if (captains.length >= numTeams) break;
+        if (!_seen.has(n)) { captains.push(n); _seen.add(n); }
+      }
+      captains = captains.slice(0, numTeams);
+    }
 
-    // ── Draft: alternating picks, mix-based on captain personality ──
+    // ── Draft: round-robin picks across the captains, weighted by captain personality ──
     const pool = allActive.filter(n => !captains.includes(n));
-    const teams = [[], []];
-    teams[0].push(captains[0]);
-    teams[1].push(captains[1]);
+    const teams = captains.map(c => [c]);
     const picks = [];
     let pickNum = 1;
+    // Exile exactly one player only when there's a single odd-one-out across K teams.
+    const exileCount = (allActive.length % numTeams === 1) ? 1 : 0;
 
-    while (pool.length > 1) { // leave 1 for potential exile (odd)
-      const capIdx = (pickNum - 1) % 2;
+    while (pool.length > exileCount) {
+      const capIdx = (pickNum - 1) % numTeams;
       const cap = captains[capIdx];
       const capS = pStats(cap);
       // Score each available player based on captain's personality
@@ -969,23 +976,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
       teams[capIdx].push(picked);
       picks.push({ captain: cap, picked, pickNumber: pickNum });
       pickNum++;
-
-      // If only 1 left and odd total, stop (that's the exile)
-      if (pool.length === 1 && allActive.length % 2 !== 0) break;
-      // If even, keep going until pool is empty
-      if (pool.length === 1 && allActive.length % 2 === 0) {
-        const lastCapIdx = pickNum % 2 === 1 ? 0 : 1;
-        const lastPicked = pool[0];
-        pool.splice(0, 1);
-        teams[lastCapIdx].push(lastPicked);
-        picks.push({ captain: captains[lastCapIdx], picked: lastPicked, pickNumber: pickNum });
-        break;
-      }
     }
 
     // ── Handle last picked / exile ──
-    const isOdd = allActive.length % 2 !== 0;
-    const exiled = isOdd && pool.length === 1 ? pool[0] : null;
+    const exiled = exileCount === 1 && pool.length ? pool[0] : null;
     const lastPicked = picks[picks.length - 1]?.picked;
 
     // Emotional reaction (proportional + archetype)

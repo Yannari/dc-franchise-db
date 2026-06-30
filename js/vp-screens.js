@@ -1959,16 +1959,14 @@ export function rpBuildSchoolyardPick(ep) {
   let html = `<div class="rp-page tod-dusk">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:var(--accent-gold);text-shadow:0 0 20px var(--accent-gold);margin-bottom:6px;animation:scrollDrop 0.5s var(--ease-broadcast) both">SCHOOLYARD PICK</div>
-    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:24px;line-height:1.5">Two captains. One draft. Every pick creates a pecking order.</div>`;
+    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:24px;line-height:1.5">${(sp.captains?.length || 2)} captains. One draft. Every pick creates a pecking order.</div>`;
 
   visibleSteps.forEach(step => {
     if (step.type === 'captains') {
       html += `<div style="padding:14px;margin-bottom:16px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.2);border-radius:10px;animation:scrollDrop 0.4s var(--ease-broadcast) both">
         <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--accent-gold);text-align:center;margin-bottom:10px">CAPTAINS</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:24px;margin-bottom:8px">
-          <div style="text-align:center">${rpPortrait(sp.captains[0], 'lg')}<div style="font-size:13px;color:#e6edf3;margin-top:4px;font-weight:700">${sp.captains[0]}</div></div>
-          <div style="font-size:18px;color:var(--accent-gold)">vs</div>
-          <div style="text-align:center">${rpPortrait(sp.captains[1], 'lg')}<div style="font-size:13px;color:#e6edf3;margin-top:4px;font-weight:700">${sp.captains[1]}</div></div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:8px;flex-wrap:wrap">
+          ${(sp.captains || []).map((c, i) => `${i ? '<div style="font-size:18px;color:var(--accent-gold)">vs</div>' : ''}<div style="text-align:center">${rpPortrait(c, 'lg')}<div style="font-size:13px;color:#e6edf3;margin-top:4px;font-weight:700">${c}</div></div>`).join('')}
         </div>
         <div style="font-size:11px;color:#8b949e;text-align:center">${_capSourceLabel}</div>
       </div>`;

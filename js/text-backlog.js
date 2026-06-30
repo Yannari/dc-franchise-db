@@ -2373,7 +2373,7 @@ export function _textSchoolyardPick(ep, ln, sec) {
   const sp = ep.schoolyardPick;
   if (!sp?.picks?.length) return;
   sec('SCHOOLYARD PICK');
-  ln(`Captains: ${sp.captains[0]} and ${sp.captains[1]} (${sp.captainSource === 'challenge' ? 'top challenge performers' : 'randomly selected'})`);
+  ln(`Captains: ${(sp.captains || []).join(', ')} (${sp.captainSource === 'challenge' ? 'top challenge performers' : 'randomly selected'})`);
   ln('Draft order:');
   sp.picks.forEach(p => ln(`  #${p.pickNumber} — ${p.captain} picks ${p.picked}`));
   if (sp.lastPicked) ln(`Last picked: ${sp.lastPicked} (dominant emotion: ${sp.dominantEmotion})`);

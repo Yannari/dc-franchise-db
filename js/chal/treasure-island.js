@@ -752,9 +752,10 @@ function _icon(type, size = 24) {
 function _css() {
   return `<style>
   @import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=IM+Fell+English:ital@0;1&family=Share+Tech+Mono&display=swap');
-  .ti-shell{--abyss:#04111a;--sea:#0a2c3c;--sea2:#0e3a4f;--parch:#e7d3a1;--parch-d:#cdb47a;--ink:#3a2611;--wood:#5b3a20;--wood-d:#3a2412;
-    --gold:#e7b53c;--gold-l:#ffd877;--teal:#2bd0b0;--cyan:#56d8ff;--blood:#d63a3a;--bone:#f2e6c8;
-    font-family:'IM Fell English',serif;color:var(--bone);max-width:1100px;margin:0 auto;position:relative;min-height:420px;overflow:hidden;
+  /* palette — shared by the frame AND the external sidebar (which now lives outside .ti-shell) */
+  .ti-layout,.ti-shell,.ti-side,.ti-controls{--abyss:#04111a;--sea:#0a2c3c;--sea2:#0e3a4f;--parch:#e7d3a1;--parch-d:#cdb47a;--ink:#3a2611;--wood:#5b3a20;--wood-d:#3a2412;
+    --gold:#e7b53c;--gold-l:#ffd877;--teal:#2bd0b0;--cyan:#56d8ff;--blood:#d63a3a;--bone:#f2e6c8;}
+  .ti-shell{font-family:'IM Fell English',serif;color:var(--bone);max-width:1100px;margin:0 auto;position:relative;min-height:420px;overflow:hidden;
     background:radial-gradient(800px 420px at 50% -6%,rgba(86,216,255,.10),transparent 60%),linear-gradient(180deg,#06202c,#05131c 50%,#02080d);
     border:3px solid var(--wood);box-shadow:inset 0 0 70px rgba(0,0,0,.7);}
   .ti-shell::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
@@ -777,11 +778,13 @@ function _css() {
   .ti-pchip{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 3px;border-radius:5px;font-family:'Share Tech Mono';font-size:9px;letter-spacing:1px;border:1px solid var(--sea2);color:var(--parch-d);background:rgba(10,44,60,.5);}
   .ti-pchip.active{border-color:var(--gold);color:var(--gold-l);background:rgba(231,181,60,.1);box-shadow:0 0 12px rgba(231,181,60,.25);}
   .ti-pchip.crisis.active{border-color:var(--blood);color:#ff8a8a;background:rgba(214,58,58,.12);box-shadow:0 0 14px rgba(214,58,58,.4);}
-  /* body — sonar map runs full width on top, then log + manifest sidebar side-by-side */
+  /* layout — the dark frame (shell) and the manifest sidebar sit side by side.
+     The sidebar lives OUTSIDE the frame and sticks while you scroll/reveal. */
+  .ti-layout{display:flex;gap:14px;width:100%;margin:0 auto;align-items:flex-start;}
+  .ti-layout .ti-shell{flex:1 1 auto;min-width:0;max-width:none;margin:0;}
+  @media(max-width:860px){.ti-layout{flex-direction:column;}}
+  /* body — sonar map full width on top, then the log cards beneath it */
   .ti-body{display:block;padding:12px 14px;}
-  .ti-cols{display:grid;grid-template-columns:minmax(0,1fr) 272px;gap:14px;align-items:start;}
-  .ti-logcol{min-width:0;}
-  @media(max-width:720px){.ti-cols{grid-template-columns:1fr;}}
   /* scope */
   .ti-scope{position:relative;aspect-ratio:1/.58;border-radius:9px;overflow:hidden;margin-bottom:12px;border:3px solid var(--wood);
     background:radial-gradient(circle at 50% 60%,rgba(43,208,176,.10),transparent 58%),repeating-radial-gradient(circle at 50% 60%,rgba(43,208,176,.10) 0 1px,transparent 1px 38px),linear-gradient(180deg,#073040,#041820);box-shadow:inset 0 0 50px rgba(0,0,0,.75);}
@@ -829,10 +832,11 @@ function _css() {
   .ti-card.event{justify-content:center;text-align:center;border-left:none;border:1px dashed var(--gold);padding-left:12px;background:rgba(20,14,7,.6);}
   .ti-crisisbanner{text-align:center;font-family:'Pirata One';letter-spacing:4px;font-size:22px;color:#ff8a8a;border:2px dashed var(--blood);border-radius:6px;padding:7px;margin:5px 0 11px;background:rgba(214,58,58,.08);animation:ti-pr 1.4s infinite;}
   .ti-chatter{font-size:11px;color:var(--teal);text-align:center;margin:5px 0 8px;font-style:italic;opacity:.85;}
-  /* manifest — a true sticky sidebar beside the log; cards keep the rest of the width.
+  /* manifest — sticky panel OUTSIDE the frame, beside it. top:52px clears the 46px rp-nav.
      Pre-merge each tribe gets its own banner band of crew rows. */
-  .ti-side{position:sticky;top:6px;align-self:start;max-height:calc(100vh - 24px);overflow:auto;border:3px solid var(--wood);border-radius:8px;color:var(--ink);
+  .ti-side{flex:0 0 272px;width:272px;position:sticky;top:52px;align-self:flex-start;max-height:calc(100vh - 64px);overflow:auto;border:3px solid var(--wood);border-radius:8px;color:var(--ink);
     background:repeating-linear-gradient(0deg,rgba(0,0,0,.03) 0 14px,transparent 14px 28px),linear-gradient(180deg,#e7d3a1,#d3ba83);box-shadow:0 0 18px rgba(0,0,0,.5),inset 0 0 36px rgba(90,58,32,.3);}
+  @media(max-width:860px){.ti-side{flex:none;width:auto;position:static;max-height:none;}}
   .ti-side h3{position:sticky;top:0;z-index:2;font-family:'Pirata One';letter-spacing:2px;font-size:16px;padding:8px 11px;display:flex;align-items:center;gap:7px;color:var(--bone);background:linear-gradient(90deg,var(--wood),#6b4426);border-bottom:2px solid var(--gold);}
   .ti-side .upd{position:sticky;top:35px;z-index:1;font-family:'Share Tech Mono';font-size:8px;color:var(--wood-d);text-align:center;padding:3px;letter-spacing:1px;background:#ddc187;}
   .ti-rows{padding:7px;}
@@ -859,7 +863,7 @@ function _css() {
   /* controls */
   /* sticky (NOT fixed): .rp-page keeps a persisted transform from its entry animation,
      which would trap position:fixed inside the page. Sticky pins to the scroll viewport. */
-  .ti-controls{position:sticky;bottom:0;width:100%;max-width:1100px;margin:0 auto;z-index:50;display:flex;align-items:center;gap:9px;padding:9px 14px;background:linear-gradient(0deg,#3a2412,#5b3a20);border-top:3px solid var(--gold);box-shadow:0 -6px 22px rgba(0,0,0,.6);}
+  .ti-controls{position:sticky;bottom:0;width:100%;max-width:1060px;margin:0 auto;z-index:50;display:flex;align-items:center;gap:9px;padding:9px 14px;background:linear-gradient(0deg,#3a2412,#5b3a20);border-top:3px solid var(--gold);box-shadow:0 -6px 22px rgba(0,0,0,.6);}
   .ti-controls button{font-family:'Pirata One';font-size:15px;letter-spacing:2px;cursor:pointer;padding:6px 18px;border-radius:5px;border:1px solid var(--gold);background:rgba(231,181,60,.12);color:var(--gold-l);}
   .ti-controls .ctr{margin-left:auto;font-family:'Share Tech Mono';font-size:10px;letter-spacing:2px;color:var(--parch);}
   @media(prefers-reduced-motion:reduce){.ti-shell::before,.ti-scope .sweep,.ti-card.crisis,.ti-crisisbanner,.ti-chestping,.ti-diver.crisis .ic,.ti-st.crisis{animation:none!important;}}
@@ -1009,10 +1013,18 @@ function _phaseScreen(ep, phaseIdx, suffix) {
     <button onclick="window.treasureRevealAll('${stateKey}', ${steps.length})">⊕ REVEAL ALL</button>
     <div class="ctr" id="ti-ctr-${stateKey}">${Math.max(0, state.idx + 1)} / ${steps.length} LOGGED</div></div>`;
 
-  const body = `<div class="ti-body">${scope}<div class="ti-cols"><div class="ti-logcol">${log}</div>${_buildCrewSidebar(ep, phaseIdx, state.idx)}</div></div>`;
+  const body = `<div class="ti-body">${scope}${log}</div>`;
+  const sidebar = _buildCrewSidebar(ep, phaseIdx, state.idx);
 
-  return `<div class="rp-page" style="padding:0;background:#02080d;">${_svgDefs()}${_css()}
-    <div class="ti-shell"><div class="ti-inner">${_hud(ep, phaseIdx)}${body}</div></div>${controls}</div>`;
+  // frame (shell) and the manifest sidebar sit SIDE BY SIDE inside .ti-layout —
+  // the sidebar is sticky and lives OUTSIDE the dark pirate frame. The inline
+  // max-width breaks out of the global .rp-page 760px cap so the frame keeps its
+  // full size and the sidebar is ADDED beside it (rather than splitting 760).
+  return `<div class="rp-page" style="padding:0;background:#02080d;max-width:1060px;">${_svgDefs()}${_css()}
+    <div class="ti-layout">
+      <div class="ti-shell"><div class="ti-inner">${_hud(ep, phaseIdx)}${body}</div></div>
+      ${sidebar}
+    </div>${controls}</div>`;
 }
 
 export function rpBuildTreasureTitleCard(ep) {

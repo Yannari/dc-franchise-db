@@ -761,7 +761,7 @@ function _css() {
     background-image:radial-gradient(2px 2px at 18% 92%,rgba(180,235,255,.5),transparent),radial-gradient(1.5px 1.5px at 62% 94%,rgba(180,235,255,.45),transparent),radial-gradient(1.5px 1.5px at 84% 90%,rgba(180,235,255,.4),transparent);
     animation:ti-bub 9s linear infinite;}
   @keyframes ti-bub{from{transform:translateY(0);opacity:.7}to{transform:translateY(-90vh);opacity:0}}
-  .ti-inner{position:relative;z-index:3;padding:0 0 70px;}
+  .ti-inner{position:relative;z-index:3;padding:0 0 14px;}
   /* HUD */
   .ti-hud{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 14px;
     background:repeating-linear-gradient(90deg,rgba(0,0,0,.12) 0 2px,transparent 2px 26px),linear-gradient(180deg,#6b4426,#4a2d16);
@@ -777,8 +777,11 @@ function _css() {
   .ti-pchip{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 3px;border-radius:5px;font-family:'Share Tech Mono';font-size:9px;letter-spacing:1px;border:1px solid var(--sea2);color:var(--parch-d);background:rgba(10,44,60,.5);}
   .ti-pchip.active{border-color:var(--gold);color:var(--gold-l);background:rgba(231,181,60,.1);box-shadow:0 0 12px rgba(231,181,60,.25);}
   .ti-pchip.crisis.active{border-color:var(--blood);color:#ff8a8a;background:rgba(214,58,58,.12);box-shadow:0 0 14px rgba(214,58,58,.4);}
-  /* body — cards now use the FULL shell width; manifest is docked outside (see .ti-side) */
+  /* body — sonar map runs full width on top, then log + manifest sidebar side-by-side */
   .ti-body{display:block;padding:12px 14px;}
+  .ti-cols{display:grid;grid-template-columns:minmax(0,1fr) 272px;gap:14px;align-items:start;}
+  .ti-logcol{min-width:0;}
+  @media(max-width:720px){.ti-cols{grid-template-columns:1fr;}}
   /* scope */
   .ti-scope{position:relative;aspect-ratio:1/.58;border-radius:9px;overflow:hidden;margin-bottom:12px;border:3px solid var(--wood);
     background:radial-gradient(circle at 50% 60%,rgba(43,208,176,.10),transparent 58%),repeating-radial-gradient(circle at 50% 60%,rgba(43,208,176,.10) 0 1px,transparent 1px 38px),linear-gradient(180deg,#073040,#041820);box-shadow:inset 0 0 50px rgba(0,0,0,.75);}
@@ -826,15 +829,15 @@ function _css() {
   .ti-card.event{justify-content:center;text-align:center;border-left:none;border:1px dashed var(--gold);padding-left:12px;background:rgba(20,14,7,.6);}
   .ti-crisisbanner{text-align:center;font-family:'Pirata One';letter-spacing:4px;font-size:22px;color:#ff8a8a;border:2px dashed var(--blood);border-radius:6px;padding:7px;margin:5px 0 11px;background:rgba(214,58,58,.08);animation:ti-pr 1.4s infinite;}
   .ti-chatter{font-size:11px;color:var(--teal);text-align:center;margin:5px 0 8px;font-style:italic;opacity:.85;}
-  /* manifest — full-width panel BELOW the log so the cards get the full shell width.
-     Crews lay out in a responsive grid; pre-merge each tribe is its own row band. */
-  .ti-side{margin:4px 14px 14px;border:3px solid var(--wood);border-radius:8px;overflow:hidden;color:var(--ink);
+  /* manifest — a true sticky sidebar beside the log; cards keep the rest of the width.
+     Pre-merge each tribe gets its own banner band of crew rows. */
+  .ti-side{position:sticky;top:6px;align-self:start;max-height:calc(100vh - 24px);overflow:auto;border:3px solid var(--wood);border-radius:8px;color:var(--ink);
     background:repeating-linear-gradient(0deg,rgba(0,0,0,.03) 0 14px,transparent 14px 28px),linear-gradient(180deg,#e7d3a1,#d3ba83);box-shadow:0 0 18px rgba(0,0,0,.5),inset 0 0 36px rgba(90,58,32,.3);}
-  .ti-side h3{font-family:'Pirata One';letter-spacing:2px;font-size:17px;padding:8px 11px;display:flex;align-items:center;gap:7px;color:var(--bone);background:linear-gradient(90deg,var(--wood),#6b4426);border-bottom:2px solid var(--gold);}
-  .ti-side .upd{font-family:'Share Tech Mono';font-size:8px;color:var(--wood-d);text-align:center;padding:3px;letter-spacing:1px;background:rgba(90,58,32,.12);}
-  .ti-rows{padding:9px;display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:7px;}
-  .ti-tribehd{grid-column:1/-1;font-family:'Pirata One';font-size:13px;letter-spacing:1px;color:var(--wood-d);margin:3px 0 1px;padding:3px 8px;border-left:3px solid var(--gold);background:rgba(90,58,32,.14);display:flex;align-items:center;gap:5px;}
-  .ti-prow{padding:7px;border-radius:5px;background:rgba(255,250,235,.4);border:1px solid var(--parch-d);}
+  .ti-side h3{position:sticky;top:0;z-index:2;font-family:'Pirata One';letter-spacing:2px;font-size:16px;padding:8px 11px;display:flex;align-items:center;gap:7px;color:var(--bone);background:linear-gradient(90deg,var(--wood),#6b4426);border-bottom:2px solid var(--gold);}
+  .ti-side .upd{position:sticky;top:35px;z-index:1;font-family:'Share Tech Mono';font-size:8px;color:var(--wood-d);text-align:center;padding:3px;letter-spacing:1px;background:#ddc187;}
+  .ti-rows{padding:7px;}
+  .ti-tribehd{font-family:'Pirata One';font-size:13px;letter-spacing:1px;color:var(--wood-d);margin:4px 0 5px;padding:3px 8px;border-left:3px solid var(--gold);background:rgba(90,58,32,.14);display:flex;align-items:center;gap:5px;}
+  .ti-prow{padding:7px;border-radius:5px;margin-bottom:6px;background:rgba(255,250,235,.4);border:1px solid var(--parch-d);}
   .ti-prow .ptop{display:flex;align-items:center;gap:6px;}
   .ti-prow .pfaces{display:flex;}
   .ti-prow .pfaces img{margin-right:-8px;box-shadow:0 0 0 2px #e7d3a1;}
@@ -854,7 +857,9 @@ function _css() {
   .ti-air.low .bar i{background:linear-gradient(90deg,var(--blood),var(--gold));}
   .ti-air b{font-family:'Share Tech Mono';font-size:8px;min-width:26px;text-align:right;color:var(--wood-d);}
   /* controls */
-  .ti-controls{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:1100px;z-index:50;display:flex;align-items:center;gap:9px;padding:9px 14px;background:linear-gradient(0deg,#3a2412,#5b3a20);border-top:3px solid var(--gold);box-shadow:0 -6px 22px rgba(0,0,0,.6);}
+  /* sticky (NOT fixed): .rp-page keeps a persisted transform from its entry animation,
+     which would trap position:fixed inside the page. Sticky pins to the scroll viewport. */
+  .ti-controls{position:sticky;bottom:0;width:100%;max-width:1100px;margin:0 auto;z-index:50;display:flex;align-items:center;gap:9px;padding:9px 14px;background:linear-gradient(0deg,#3a2412,#5b3a20);border-top:3px solid var(--gold);box-shadow:0 -6px 22px rgba(0,0,0,.6);}
   .ti-controls button{font-family:'Pirata One';font-size:15px;letter-spacing:2px;cursor:pointer;padding:6px 18px;border-radius:5px;border:1px solid var(--gold);background:rgba(231,181,60,.12);color:var(--gold-l);}
   .ti-controls .ctr{margin-left:auto;font-family:'Share Tech Mono';font-size:10px;letter-spacing:2px;color:var(--parch);}
   @media(prefers-reduced-motion:reduce){.ti-shell::before,.ti-scope .sweep,.ti-card.crisis,.ti-crisisbanner,.ti-chestping,.ti-diver.crisis .ic,.ti-st.crisis{animation:none!important;}}
@@ -1004,7 +1009,7 @@ function _phaseScreen(ep, phaseIdx, suffix) {
     <button onclick="window.treasureRevealAll('${stateKey}', ${steps.length})">⊕ REVEAL ALL</button>
     <div class="ctr" id="ti-ctr-${stateKey}">${Math.max(0, state.idx + 1)} / ${steps.length} LOGGED</div></div>`;
 
-  const body = `<div class="ti-body"><div class="main">${scope}${log}</div>${_buildCrewSidebar(ep, phaseIdx, state.idx)}</div>`;
+  const body = `<div class="ti-body">${scope}<div class="ti-cols"><div class="ti-logcol">${log}</div>${_buildCrewSidebar(ep, phaseIdx, state.idx)}</div></div>`;
 
   return `<div class="rp-page" style="padding:0;background:#02080d;">${_svgDefs()}${_css()}
     <div class="ti-shell"><div class="ti-inner">${_hud(ep, phaseIdx)}${body}</div></div>${controls}</div>`;

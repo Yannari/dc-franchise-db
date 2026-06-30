@@ -2554,8 +2554,8 @@
         },
         {
           "season": 12,
-          "placement": 20,
-          "status": "Unknown",
+          "placement": 4,
+          "status": "Juror",
           "tribe": "Embers → Campers",
           "challengeWins": 1,
           "immunityWins": 1,
@@ -2569,7 +2569,7 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Jacques is the season’s strategic ghost: credited, feared, robbed, and officially marked by an unresolved placement anomaly."
+            "4th place / final juror — eliminated in the finale orienteering race after a dominant strategic run."
           ],
           "gameplayStyle": "Elegant schemes, poisoned bridges",
           "keyMoments": [
@@ -2580,7 +2580,7 @@
             "Episode 10: Finds Knowledge is Power and steals Ellie’s idol at the merge Tribal.",
             "Episode 12: Plays an idol and negates four votes, causing James’s first elimination.",
             "Episode 14: Wins African Lying Safari by tranquilizing Chef with the decisive dart.",
-            "Episode 18: In the aired finale, returns empty-handed from the orienteering race and becomes the final juror."
+            "Episode 18: Returns empty-handed from the finale orienteering race, finishing 4th and becoming the final member of the jury."
           ],
           "alliances": [
             "The Camp Takeover"
@@ -2599,7 +2599,7 @@
       ],
       "story": "On Blood vs. Water (Season 6), Jacques turned the Ice Dancers pairing with Josee into a masterclass in controlled threat management. While louder duos burned trust and idols, he stayed ‘useful’—competent in challenges, calm in camp, and quietly steering the merge vote map by weaponizing other people’s feuds. He survived the season’s chaos points (tribe re-draw, Redemption returns, rock-draw fallout) and arrived at the end with the cleanest résumé left. In the finale, the jury didn’t debate—they crowned him in a 7–1–0 landslide. (Result: Season 6 champion, 1st.)\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nJacques’ Fan vs Favorites story was domination… until the pressure snapped him. He stacked wins early and often (season-best 6 total challenge wins, including 5 immunities), while locking an unbreakable strategic duo with Taylor that shaped the merge vote map. Even when he wasn’t beloved, he was unavoidable: he kept collecting allies through the numbers game and used immunity streaks to force everyone else to cannibalize instead. But the deeper the game went, the more personal it became, especially his escalating feud with Carrie that eventually hit extreme hatred. At Final 4, a meltdown wiped out the last stretch of his endgame, and he quit the game outright—turning what looked like a potential winner run into the season’s most dramatic collapse.\n\nSEASON 12 — Total Drama: Generations\n────────\nJacques plays one of the most aggressive strategic games on the island, whether or not the official board ever knows where to put him. He dominates early challenges, builds and betrays blocs, steals credit from James, and turns advantages into public theater. His Knowledge is Power play against Ellie becomes the biggest advantage swing of the season, and his idol play later wipes out four votes, resetting the endgame around him. Yet Jacques is also the architect of his own isolation: he alienates Rosa-Maria, Riya, Ellie, James, and nearly every late-game path. By the finale, he is still dangerous enough that the jungle itself becomes his last opponent. He returns empty-handed at final four in the aired story, but the season’s official ledger preserves him as something stranger — the most robbed, most strategic unresolved figure of Generations.",
       "seasonsPlayed": 2,
-      "avgPlacement": 8.33
+      "avgPlacement": 3.0
     },
     {
       "id": "jasmine",

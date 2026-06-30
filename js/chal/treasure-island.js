@@ -376,10 +376,21 @@ export function simulateTreasureIsland(ep) {
   const phaseDive   = { key:'dive',   title:'THE DIVE',    events:[] };
   const phaseCrisis = { key:'crisis', title:'THE CRISIS',  events:[] };
 
+  // duo designation label (human-readable pairing type)
+  const DUO_LABEL = { showmance:'SHOWMANCE DUO', allies:'ALLIED DUO', rivals:'RIVAL DUO',
+    villain_hero:'ODD COUPLE', strangers:'STRANGER DUO', default:'DUO', solo:'SOLO DIVER' };
+
   // ── PHASE 1: CUT & PADDLE (physical/endurance pair-avg + bond chemistry) ──
   for (const c of C) {
     const memNames = c.solo ? c.members[0] : `${c.members[0]} & ${c.members[1]}`;
-    phasePaddle.events.push({ type:'cut', crewId:c.id, players:c.members, text:_pick(CUT_OK, memNames + ep.num)(memNames), icon:'paddle' });
+    // DUO DESIGNATION — formally name the pair before they shove off
+    phasePaddle.events.push({ type:'formation', crewId:c.id, players:c.members, solo:c.solo,
+      duo:DUO_LABEL[c.solo ? 'solo' : c.archPair] || 'DUO', tribe:c.tribe,
+      text:c.solo
+        ? `${c.members[0]} draws the short straw — no partner. A solo diver from the first horn.`
+        : _pick(PAIR_FLAVOR[c.archPair] || PAIR_FLAVOR.default, memNames + 'f'),
+      badge:c.solo ? 'SOLO CREW' : 'DUO FORMED', badgeClass:c.archPair === 'rivals' ? 'amber' : 'cyan', icon:'anchor' });
+    phasePaddle.events.push({ type:'cut', crewId:c.id, players:c.members, duo:DUO_LABEL[c.solo ? 'solo' : c.archPair], text:_pick(CUT_OK, memNames + ep.num)(memNames), icon:'paddle' });
     const sd = pStats(c.diver), sg = pStats(c.guide);
     const avgPE = c.solo ? (sd.physical + sd.endurance) : ((sd.physical + sd.endurance + sg.physical + sg.endurance) / 2);
     // bond chemistry: allies/showmance sync, rivals clash
@@ -389,16 +400,17 @@ export function simulateTreasureIsland(ep) {
     else chem = c.bond * 0.18;
     c.paddleScore = avgPE * 0.5 + chem + (c.solo ? -2.5 : 0) /* solo handicap */ + noise(2.5);
     if (!c.solo) {
+      const duoTag = DUO_LABEL[c.archPair] || 'DUO';
       if (c.archPair === 'rivals' || (chem < -1 && Math.random() < 0.6)) {
-        phasePaddle.events.push({ type:'paddleClash', crewId:c.id, players:c.members, bad:true,
+        phasePaddle.events.push({ type:'paddleClash', crewId:c.id, players:c.members, bad:true, duo:duoTag,
           text:pick(PADDLE_CLASH)(c.members[0], c.members[1]), badge:'OUT OF SYNC', badgeClass:'amber', icon:'wave' });
         addBond(c.members[0], c.members[1], -0.5);
       } else if (chem > 1 || Math.random() < 0.5) {
-        phasePaddle.events.push({ type:'paddleSync', crewId:c.id, players:c.members,
+        phasePaddle.events.push({ type:'paddleSync', crewId:c.id, players:c.members, duo:duoTag,
           text:pick(PADDLE_SYNC)(c.members[0], c.members[1]), badge:'IN SYNC', badgeClass:'green', icon:'wave' });
         addBond(c.members[0], c.members[1], 0.5);
       } else if (Math.random() < 0.3) {
-        phasePaddle.events.push({ type:'nearTip', crewId:c.id, players:c.members,
+        phasePaddle.events.push({ type:'nearTip', crewId:c.id, players:c.members, duo:duoTag,
           text:pick(PADDLE_NEARTIP)(c.members[0], c.members[1]), badge:'CLOSE CALL', badgeClass:'amber', icon:'wave' });
         addBond(c.members[0], c.members[1], 0.4);
       }
@@ -765,9 +777,8 @@ function _css() {
   .ti-pchip{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 3px;border-radius:5px;font-family:'Share Tech Mono';font-size:9px;letter-spacing:1px;border:1px solid var(--sea2);color:var(--parch-d);background:rgba(10,44,60,.5);}
   .ti-pchip.active{border-color:var(--gold);color:var(--gold-l);background:rgba(231,181,60,.1);box-shadow:0 0 12px rgba(231,181,60,.25);}
   .ti-pchip.crisis.active{border-color:var(--blood);color:#ff8a8a;background:rgba(214,58,58,.12);box-shadow:0 0 14px rgba(214,58,58,.4);}
-  /* body grid */
-  .ti-body{display:grid;grid-template-columns:1fr 272px;gap:14px;padding:12px 14px;}
-  @media(max-width:760px){.ti-body{grid-template-columns:1fr}}
+  /* body — cards now use the FULL shell width; manifest is docked outside (see .ti-side) */
+  .ti-body{display:block;padding:12px 14px;}
   /* scope */
   .ti-scope{position:relative;aspect-ratio:1/.58;border-radius:9px;overflow:hidden;margin-bottom:12px;border:3px solid var(--wood);
     background:radial-gradient(circle at 50% 60%,rgba(43,208,176,.10),transparent 58%),repeating-radial-gradient(circle at 50% 60%,rgba(43,208,176,.10) 0 1px,transparent 1px 38px),linear-gradient(180deg,#073040,#041820);box-shadow:inset 0 0 50px rgba(0,0,0,.75);}
@@ -784,11 +795,18 @@ function _css() {
   @keyframes ti-blink{50%{opacity:.3}}
   /* log */
   .ti-loghead{font-family:'Pirata One';font-size:20px;letter-spacing:1px;color:var(--gold-l);margin:2px 0 9px;display:flex;align-items:center;gap:8px;}
-  .ti-card{position:relative;border:1px solid var(--sea2);border-left:4px solid var(--teal);border-radius:6px;padding:10px 12px 10px 44px;margin-bottom:8px;animation:ti-rise .5s ease both;background:linear-gradient(180deg,rgba(9,40,55,.78),rgba(4,20,28,.72));}
+  .ti-card{position:relative;border:1px solid var(--sea2);border-left:4px solid var(--teal);border-radius:6px;padding:10px 12px;margin-bottom:8px;animation:ti-rise .5s ease both;background:linear-gradient(180deg,rgba(9,40,55,.78),rgba(4,20,28,.72));}
   @keyframes ti-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .ti-card .cic{position:absolute;left:10px;top:11px;}
-  .ti-card .who{font-family:'Pirata One';font-size:15px;letter-spacing:.4px;color:var(--bone);}
+  .ti-card .who{display:flex;align-items:center;gap:8px;font-family:'Pirata One';font-size:15px;letter-spacing:.4px;color:var(--bone);flex-wrap:wrap;}
+  .ti-card .who .whotx{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .ti-card .who em{color:var(--gold-l);font-style:normal;}
+  .ti-evport{display:inline-flex;}
+  .ti-evport img{margin-right:-9px;box-shadow:0 0 0 2px #04111a;position:relative;}
+  .ti-evport img:last-child{margin-right:0;}
+  .ti-duo{display:inline-flex;align-items:center;gap:3px;font-family:'Share Tech Mono';font-size:8px;letter-spacing:1px;color:var(--cyan);border:1px solid rgba(86,216,255,.4);background:rgba(86,216,255,.07);padding:2px 6px;border-radius:10px;}
+  .ti-card.formation{border-left-color:var(--cyan);background:linear-gradient(180deg,rgba(9,40,55,.82),rgba(4,24,34,.72));}
+  .ti-card.formation .who{font-size:16px;}
   .ti-card .bd{font-size:13.5px;line-height:1.5;color:#cfe2e0;margin-top:2px;}
   .ti-badge{position:absolute;top:9px;right:10px;font-family:'Share Tech Mono';font-size:8px;letter-spacing:1px;padding:2px 6px;border-radius:3px;border:1px solid;}
   .ti-badge.green{color:var(--teal);border-color:rgba(43,208,176,.5);background:rgba(43,208,176,.08);}
@@ -808,16 +826,22 @@ function _css() {
   .ti-card.event{justify-content:center;text-align:center;border-left:none;border:1px dashed var(--gold);padding-left:12px;background:rgba(20,14,7,.6);}
   .ti-crisisbanner{text-align:center;font-family:'Pirata One';letter-spacing:4px;font-size:22px;color:#ff8a8a;border:2px dashed var(--blood);border-radius:6px;padding:7px;margin:5px 0 11px;background:rgba(214,58,58,.08);animation:ti-pr 1.4s infinite;}
   .ti-chatter{font-size:11px;color:var(--teal);text-align:center;margin:5px 0 8px;font-style:italic;opacity:.85;}
-  /* sidebar */
-  .ti-side{align-self:start;position:sticky;top:6px;border:3px solid var(--wood);border-radius:8px;overflow:hidden;color:var(--ink);
+  /* manifest — full-width panel BELOW the log so the cards get the full shell width.
+     Crews lay out in a responsive grid; pre-merge each tribe is its own row band. */
+  .ti-side{margin:4px 14px 14px;border:3px solid var(--wood);border-radius:8px;overflow:hidden;color:var(--ink);
     background:repeating-linear-gradient(0deg,rgba(0,0,0,.03) 0 14px,transparent 14px 28px),linear-gradient(180deg,#e7d3a1,#d3ba83);box-shadow:0 0 18px rgba(0,0,0,.5),inset 0 0 36px rgba(90,58,32,.3);}
   .ti-side h3{font-family:'Pirata One';letter-spacing:2px;font-size:17px;padding:8px 11px;display:flex;align-items:center;gap:7px;color:var(--bone);background:linear-gradient(90deg,var(--wood),#6b4426);border-bottom:2px solid var(--gold);}
   .ti-side .upd{font-family:'Share Tech Mono';font-size:8px;color:var(--wood-d);text-align:center;padding:3px;letter-spacing:1px;background:rgba(90,58,32,.12);}
-  .ti-rows{padding:7px;}
-  .ti-prow{padding:7px;border-radius:5px;margin-bottom:6px;background:rgba(255,250,235,.4);border:1px solid var(--parch-d);}
+  .ti-rows{padding:9px;display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:7px;}
+  .ti-tribehd{grid-column:1/-1;font-family:'Pirata One';font-size:13px;letter-spacing:1px;color:var(--wood-d);margin:3px 0 1px;padding:3px 8px;border-left:3px solid var(--gold);background:rgba(90,58,32,.14);display:flex;align-items:center;gap:5px;}
+  .ti-prow{padding:7px;border-radius:5px;background:rgba(255,250,235,.4);border:1px solid var(--parch-d);}
   .ti-prow .ptop{display:flex;align-items:center;gap:6px;}
-  .ti-prow .pnm{font-size:13px;font-weight:bold;line-height:1.1;flex:1;}
-  .ti-prow .role{font-family:'Share Tech Mono';font-size:7.5px;color:var(--wood);letter-spacing:.4px;font-weight:normal;display:flex;align-items:center;gap:3px;margin-top:1px;}
+  .ti-prow .pfaces{display:flex;}
+  .ti-prow .pfaces img{margin-right:-8px;box-shadow:0 0 0 2px #e7d3a1;}
+  .ti-prow .pfaces img:last-child{margin-right:0;}
+  .ti-prow .pnm{font-size:12.5px;font-weight:bold;line-height:1.1;flex:1;color:var(--ink);}
+  .ti-prow .role{font-family:'Share Tech Mono';font-size:7.5px;color:var(--wood);letter-spacing:.4px;font-weight:normal;display:flex;align-items:center;gap:3px;margin-top:2px;}
+  .ti-prow .role img{vertical-align:middle;}
   .ti-st{font-family:'Share Tech Mono';font-size:8px;letter-spacing:.4px;padding:2px 5px;border-radius:3px;display:flex;align-items:center;gap:3px;white-space:nowrap;}
   .ti-st.dive{color:#0a4a5a;background:rgba(86,216,255,.25);border:1px solid #2a90a8;}
   .ti-st.surf{color:var(--wood-d);background:rgba(90,58,32,.12);border:1px solid var(--parch-d);}
@@ -856,6 +880,30 @@ function _hud(ep, phaseIdx) {
     <div class="ti-phases">${chips}</div>`;
 }
 
+// single crew row — player portraits for the duo + live status/air
+function _crewRow(c, air, statusMap, phaseIdx) {
+  const a = air ? air[c.id] : (phaseIdx === 0 ? 100 : c.finalAir);
+  const stRaw = statusMap ? statusMap[c.id] : (phaseIdx === 0 ? 'paddling' : c.status);
+  const stMap = { paddling:['paddle', 'paddle', 'PADDLING'], diving:['dive', 'wave', 'DIVING'], surfaced:['surf', 'anchor', 'SURFACED'],
+    crisis:['crisis', 'skull', 'CRISIS'], rescued:['crisis', 'skull', 'RESCUED'], won:['won', 'coin', 'CHEST'] };
+  const [stCls, stIcon, stTxt] = stMap[stRaw] || ['surf', 'anchor', 'STANDBY'];
+  const faces = c.members.map(m => _portrait(m, 26)).join('');
+  const lowAir = a <= 25;
+  const roleLine = c.solo
+    ? `${_portrait(c.diver, 14)} ${c.diver} · SOLO`
+    : `${_portrait(c.diver, 14)} ${c.diver} <span style="opacity:.6">dives</span> · ${_portrait(c.guide, 14)} ${c.guide} <span style="opacity:.6">guides</span>`;
+  return `<div class="ti-prow">
+      <div class="ptop">
+        <div class="pfaces">${faces}</div>
+        <div class="pnm">${c.solo ? c.members[0] : c.members[0] + ' & ' + c.members[1]}
+          <div class="role">${roleLine}</div>
+        </div>
+        <div class="ti-st ${stCls}">${_icon(stIcon, 11)}${stTxt}</div>
+      </div>
+      <div class="ti-air ${lowAir ? 'low' : ''}">${_icon('bell', 13)}<div class="bar"><i style="width:${clamp(a, 0, 100)}%"></i></div><b>${Math.round(a)}%</b></div>
+    </div>`;
+}
+
 // crew sidebar — live, gated by reveal idx via airSnap on the latest revealed event
 function _buildCrewSidebar(ep, phaseIdx, revealedIdx) {
   const td = ep.treasureData;
@@ -867,30 +915,33 @@ function _buildCrewSidebar(ep, phaseIdx, revealedIdx) {
   }
   const phaseName = ['PADDLE', 'THE DIVE', 'THE CRISIS', 'THE HAUL'][phaseIdx];
   let rows = '';
-  td.crews.forEach(c => {
-    const a = air ? air[c.id] : (phaseIdx === 0 ? 100 : c.finalAir);
-    const stRaw = statusMap ? statusMap[c.id] : (phaseIdx === 0 ? 'paddling' : c.status);
-    const stMap = { paddling:['paddle', 'paddle', 'PADDLING'], diving:['dive', 'wave', 'DIVING'], surfaced:['surf', 'anchor', 'SURFACED'],
-      crisis:['crisis', 'skull', 'CRISIS'], rescued:['crisis', 'skull', 'RESCUED'], won:['won', 'coin', 'CHEST'] };
-    const [stCls, stIcon, stTxt] = stMap[stRaw] || ['surf', 'anchor', 'STANDBY'];
-    const lead = c.solo ? c.members[0] : c.members[0];
-    const second = c.solo ? '(solo)' : c.members[1];
-    const lowAir = a <= 25;
-    rows += `<div class="ti-prow">
-      <div class="ptop">
-        ${_icon(c.won ? 'chest' : c.drowned ? 'skull' : 'helmet', 22)}
-        <div class="pnm">${lead}${c.solo ? '' : ' & ' + second}
-          <div class="role">${_icon('helmet', 11)}${c.diver}${c.solo ? ' SOLO' : ' · ' + _icon('spyglass', 11) + c.guide}</div>
-        </div>
-        <div class="ti-st ${stCls}">${_icon(stIcon, 11)}${stTxt}</div>
-      </div>
-      <div class="ti-air ${lowAir ? 'low' : ''}">${_icon('bell', 13)}<div class="bar"><i style="width:${clamp(a, 0, 100)}%"></i></div><b>${Math.round(a)}%</b></div>
-    </div>`;
-  });
+  if (!td.isMerged) {
+    // PRE-MERGE: group crews under their tribe banner
+    const tribes = [];
+    td.crews.forEach(c => { const t = c.tribe || 'CREWS'; if (!tribes.includes(t)) tribes.push(t); });
+    tribes.forEach(t => {
+      const crewsHere = td.crews.filter(c => (c.tribe || 'CREWS') === t);
+      rows += `<div class="ti-tribehd">${_icon('anchor', 12)}${t}</div>`;
+      crewsHere.forEach(c => { rows += _crewRow(c, air, statusMap, phaseIdx); });
+    });
+  } else {
+    td.crews.forEach(c => { rows += _crewRow(c, air, statusMap, phaseIdx); });
+  }
   return `<div class="ti-side" id="ti-side-${ep.num}">
     <h3>${_icon('bottle', 18)}CREW MANIFEST</h3>
     <div class="upd">↻ UPDATES EACH REVEAL · ${phaseName}</div>
     <div class="ti-rows" id="ti-side-inner-${ep.num}">${rows}</div></div>`;
+}
+
+// portrait strip for an event's involved players
+function _evPortraits(ev) {
+  let names = [];
+  if (ev.players && ev.players.length === 2 && !ev.target) names = ev.players;
+  else if (ev.player && ev.target) names = [ev.player, ev.target];
+  else if (ev.player) names = [ev.player];
+  else if (ev.players && ev.players.length) names = ev.players.slice(0, 3);
+  if (!names.length) return '';
+  return `<span class="ti-evport">${names.map(n => _portrait(n, 30)).join('')}</span>`;
 }
 
 function _cardHtml(ev) {
@@ -898,15 +949,19 @@ function _cardHtml(ev) {
     ev.type === 'chestSteal' || ev.type === 'chestBlock' || ev.type === 'chestGrab' || ev.type === 'gift' ? 'steal' :
     ev.type === 'cpr' || ev.type === 'cprWake' || ev.type === 'rescue' || ev.type === 'rescueOther' ? 'cpr' :
     ev.bad && (ev.type === 'wedge' || ev.type === 'airCritical' || ev.type === 'choice' || ev.type === 'keepDiving') ? 'crisis' :
+    ev.type === 'formation' ? 'formation' :
     ev.type === 'checkpoint' || ev.type === 'noCrisis' ? 'event' : '';
   const badge = ev.badge ? `<span class="ti-badge ${ev.badgeClass || 'amber'}">${ev.badge}</span>` : '';
-  const ic = ev.icon ? `<span class="cic">${_icon(ev.icon, 26)}</span>` : '';
+  const ports = _evPortraits(ev);
+  const duo = ev.duo ? `<span class="ti-duo">${_icon('anchor', 9)}${ev.duo}</span>` : '';
   let who = '';
-  if (ev.players && ev.players.length === 2 && !ev.target) who = `<div class="who"><em>${ev.players[0]} &amp; ${ev.players[1]}</em></div>`;
-  else if (ev.player && ev.target) who = `<div class="who"><em>${ev.player}</em> → ${ev.target}</div>`;
-  else if (ev.player) who = `<div class="who"><em>${ev.player}</em></div>`;
+  if (ev.players && ev.players.length === 2 && !ev.target) who = `<em>${ev.players[0]} &amp; ${ev.players[1]}</em>`;
+  else if (ev.player && ev.target) who = `<em>${ev.player}</em> → ${ev.target}`;
+  else if (ev.player) who = `<em>${ev.player}</em>`;
   if (cls === 'event') return `<div class="ti-card event">${badge}<div class="bd" style="font-family:'Pirata One';font-size:15px;color:var(--gold-l)">${ev.text}</div></div>`;
-  return `<div class="ti-card ${cls}">${ic}${badge}${who}<div class="bd">${ev.text}</div></div>`;
+  const head = (ports || who || duo)
+    ? `<div class="who">${ports}<span class="whotx">${who}${duo}</span></div>` : '';
+  return `<div class="ti-card ${cls} ${ports ? 'hasport' : ''}">${badge}${head}<div class="bd">${ev.text}</div></div>`;
 }
 
 function _phaseScreen(ep, phaseIdx, suffix) {
@@ -929,8 +984,7 @@ function _phaseScreen(ep, phaseIdx, suffix) {
     const markers = td.crews.slice(0, 8).map((c, i) => {
       const [l, t] = positions[i % positions.length];
       const crisisCls = c.drowned ? ' crisis' : '';
-      const icon = c.drowned ? 'skull' : 'helmet';
-      return `<div class="ti-diver${crisisCls}" style="left:${l}%;top:${t}%"><span class="ic">${_icon(icon, 18)}</span><div class="nm">${c.diver}${c.drowned ? ' ⚠' : ''}</div></div>`;
+      return `<div class="ti-diver${crisisCls}" style="left:${l}%;top:${t}%"><span class="ic">${_portrait(c.diver, 26)}</span><div class="nm">${c.diver}${c.drowned ? ' ⚠' : c.won ? ' ✦' : ''}</div></div>`;
     }).join('');
     scope = `<div class="ti-scope"><div class="cross"></div><div class="sweep"></div>
       <div class="stag" style="top:7px;left:9px;color:var(--teal)">SOUNDING · ACTIVE</div>

@@ -4,7 +4,7 @@
   "subtitle": "A season of fractured alliances, public betrayals, advantage warfare, and one cold-blooded winner who turned chaos into a résumé.",
   "castSize": 20,
   "episodeCount": 18,
-  "jurySize": 0,
+  "jurySize": 9,
   "winner": {
     "name": "James",
     "playerSlug": "james",
@@ -155,6 +155,47 @@
     },
     {
       "placement": 4,
+      "name": "Jacques",
+      "playerSlug": "jacques",
+      "phase": "Juror",
+      "notes": "Jacques is the season's strategic engine: a dominant challenge threat and advantage artist who outplays the field but burns every bridge on his way to a fourth-place finish.",
+      "strategicRank": 10,
+      "story": "Jacques plays one of the most aggressive strategic games on the island. He dominates early challenges, builds and betrays blocs, steals credit from James, and turns advantages into public theater. His Knowledge is Power play against Ellie becomes the biggest advantage swing of the season, and his idol play later wipes out four votes, resetting the endgame around him. Yet Jacques is also the architect of his own isolation: he alienates Rosa-Maria, Riya, Ellie, James, and nearly every late-game path. He fights all the way to the final four, but in the finale's orienteering race the jungle becomes his last opponent — he returns empty-handed, finishing 4th and becoming the final member of the jury, the most strategic player never to reach the Final Tribal Council.",
+      "gameplayStyle": "Elegant schemes, poisoned bridges",
+      "keyMoments": [
+        "Episode 1: Tops the opening expedition with a massive individual score and summit shortcut.",
+        "Episode 2: Captures the Giant Crab and quietly pivots against Ezekiel despite his own bloc.",
+        "Episode 5: Steals credit for James’s Maggy move, creating a rivalry that shadows the season.",
+        "Episode 6: Captures the flag for Embers in Full Metal Drama.",
+        "Episode 10: Finds Knowledge is Power and steals Ellie’s idol at the merge Tribal.",
+        "Episode 12: Plays an idol and negates four votes, causing James’s first elimination.",
+        "Episode 14: Wins African Lying Safari by tranquilizing Chef with the decisive dart.",
+        "Episode 18: Returns empty-handed from the finale orienteering race, finishing 4th and becoming the final member of the jury."
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 2,
+      "advHeld": 0,
+      "votesReceived": 10,
+      "alliances": [
+        "The Camp Takeover"
+      ],
+      "rivalries": [
+        "Kai",
+        "Riya",
+        "Rosa-Maria",
+        "Jen",
+        "Aiden",
+        "Hunter",
+        "Lake",
+        "Ellie"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 5,
       "name": "Aiden",
       "playerSlug": "aiden",
       "phase": "Juror",
@@ -194,7 +235,7 @@
       "socialScore": 3
     },
     {
-      "placement": 5,
+      "placement": 6,
       "name": "Rosa-Maria",
       "playerSlug": "rosa-maria",
       "phase": "Juror",
@@ -235,7 +276,7 @@
       "socialScore": 2
     },
     {
-      "placement": 6,
+      "placement": 7,
       "name": "Lake",
       "playerSlug": "lake",
       "phase": "Juror",
@@ -275,7 +316,7 @@
       "socialScore": 3
     },
     {
-      "placement": 7,
+      "placement": 8,
       "name": "Ellie",
       "playerSlug": "ellie",
       "phase": "Juror",
@@ -314,7 +355,7 @@
       "socialScore": 0
     },
     {
-      "placement": 8,
+      "placement": 9,
       "name": "Jen",
       "playerSlug": "jen",
       "phase": "Juror",
@@ -349,7 +390,7 @@
       "socialScore": 1
     },
     {
-      "placement": 9,
+      "placement": 10,
       "name": "Hunter",
       "playerSlug": "hunter",
       "phase": "Juror",
@@ -388,7 +429,7 @@
       "socialScore": 2
     },
     {
-      "placement": 10,
+      "placement": 11,
       "name": "Karol",
       "playerSlug": "karol",
       "phase": "Juror",
@@ -426,7 +467,7 @@
       "socialScore": 0
     },
     {
-      "placement": 11,
+      "placement": 12,
       "name": "Yul",
       "playerSlug": "yul",
       "phase": "Pre-Merge",
@@ -468,7 +509,7 @@
       "socialScore": 0
     },
     {
-      "placement": 12,
+      "placement": 13,
       "name": "Tess",
       "playerSlug": "tess",
       "phase": "Pre-Merge",
@@ -502,7 +543,7 @@
       "socialScore": 0
     },
     {
-      "placement": 13,
+      "placement": 14,
       "name": "Oliver",
       "playerSlug": "oliver",
       "phase": "Pre-Merge",
@@ -537,7 +578,7 @@
       "socialScore": 2
     },
     {
-      "placement": 14,
+      "placement": 15,
       "name": "Kai",
       "playerSlug": "kai",
       "phase": "Pre-Merge",
@@ -574,7 +615,7 @@
       "socialScore": 1
     },
     {
-      "placement": 15,
+      "placement": 16,
       "name": "Chase",
       "playerSlug": "chase",
       "phase": "Pre-Merge",
@@ -608,7 +649,7 @@
       "socialScore": 0
     },
     {
-      "placement": 16,
+      "placement": 17,
       "name": "Maggy",
       "playerSlug": "maggy",
       "phase": "Pre-Merge",
@@ -640,7 +681,7 @@
       "socialScore": 0
     },
     {
-      "placement": 17,
+      "placement": 18,
       "name": "Connor",
       "playerSlug": "connor",
       "phase": "Pre-Merge",
@@ -672,7 +713,7 @@
       "socialScore": 0
     },
     {
-      "placement": 18,
+      "placement": 19,
       "name": "Ezekiel",
       "playerSlug": "ezekiel",
       "phase": "Pre-Merge",
@@ -702,7 +743,7 @@
       "socialScore": 0
     },
     {
-      "placement": 19,
+      "placement": 20,
       "name": "Emmah",
       "playerSlug": "emmah",
       "phase": "Pre-Merge",
@@ -729,47 +770,6 @@
       "votesReceived": 7,
       "alliances": [],
       "rivalries": [],
-      "socialScore": 0
-    },
-    {
-      "placement": 20,
-      "name": "Jacques",
-      "playerSlug": "jacques",
-      "phase": "Unknown",
-      "notes": "Jacques is the season’s strategic ghost: credited, feared, robbed, and officially marked by an unresolved placement anomaly.",
-      "strategicRank": 10,
-      "story": "Jacques plays one of the most aggressive strategic games on the island, whether or not the official board ever knows where to put him. He dominates early challenges, builds and betrays blocs, steals credit from James, and turns advantages into public theater. His Knowledge is Power play against Ellie becomes the biggest advantage swing of the season, and his idol play later wipes out four votes, resetting the endgame around him. Yet Jacques is also the architect of his own isolation: he alienates Rosa-Maria, Riya, Ellie, James, and nearly every late-game path. By the finale, he is still dangerous enough that the jungle itself becomes his last opponent. He returns empty-handed at final four in the aired story, but the season’s official ledger preserves him as something stranger — the most robbed, most strategic unresolved figure of Generations.",
-      "gameplayStyle": "Elegant schemes, poisoned bridges",
-      "keyMoments": [
-        "Episode 1: Tops the opening expedition with a massive individual score and summit shortcut.",
-        "Episode 2: Captures the Giant Crab and quietly pivots against Ezekiel despite his own bloc.",
-        "Episode 5: Steals credit for James’s Maggy move, creating a rivalry that shadows the season.",
-        "Episode 6: Captures the flag for Embers in Full Metal Drama.",
-        "Episode 10: Finds Knowledge is Power and steals Ellie’s idol at the merge Tribal.",
-        "Episode 12: Plays an idol and negates four votes, causing James’s first elimination.",
-        "Episode 14: Wins African Lying Safari by tranquilizing Chef with the decisive dart.",
-        "Episode 18: In the aired finale, returns empty-handed from the orienteering race and becomes the final juror."
-      ],
-      "challengeWins": 1,
-      "immunityWins": 1,
-      "rewardWins": 0,
-      "idolsFound": 0,
-      "advPlayed": 2,
-      "advHeld": 0,
-      "votesReceived": 10,
-      "alliances": [
-        "The Camp Takeover"
-      ],
-      "rivalries": [
-        "Kai",
-        "Riya",
-        "Rosa-Maria",
-        "Jen",
-        "Aiden",
-        "Hunter",
-        "Lake",
-        "Ellie"
-      ],
       "socialScore": 0
     }
   ],

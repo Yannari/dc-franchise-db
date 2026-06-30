@@ -2063,49 +2063,72 @@ export async function generateRankingsNarration(onStatus) {
     return { ...r, _context: parts.join('. ') };
   });
 
-  let narratedCount = 0;
+  // Apply one worker response into the rankings DB. Returns the set of player
+  // names (lowercased) that were actually narrated, so callers can detect — and
+  // retry — players the model silently skipped (LLMs under-produce array items).
+  const _applyResults = (results) => {
+    const done = new Set();
+    for (const result of (results || [])) {
+      const entry = rankingsDb.rankings.find(r => r.name.toLowerCase() === result.name.toLowerCase());
+      if (!entry) continue;
+      if (result.title) entry.title = result.title;
+      if (result.emoji) entry.emoji = result.emoji;
+      if (result.reasoning) entry.reasoning = result.reasoning;
+      if (result.strengths?.length) entry.strengths = result.strengths;
+      if (result.weaknesses?.length) entry.weaknesses = result.weaknesses;
+      done.add(result.name.toLowerCase());
+    }
+    return done;
+  };
+
+  const _callWorker = async (batch) => {
+    const resp = await fetch(workerUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'rankings-narration',
+        players: batch.map(p => ({
+          name: p.name, rank: p.rank, tier: p.tier, score: p.score,
+          seasonsPlayed: p.seasonsPlayed, wins: p.wins,
+          placements: p.placements, challengeWins: p.challengeWins,
+          votesAgainst: p.votesAgainst, juryVotes: p.juryVotes,
+          idolsFound: p.idolsFound, reasoning: p._context
+        }))
+      })
+    });
+    if (!resp.ok) {
+      const errText = await resp.text().catch(() => '');
+      throw new Error(`Worker responded ${resp.status}. ${errText.slice(0, 300)}`);
+    }
+    return (await resp.json())?.results || [];
+  };
+
+  const narrated = new Set();
   try {
-    const batchSize = 10;
+    // Smaller batches narrate far more reliably — the model is much more likely
+    // to return a complete array of 4 than of 10.
+    const batchSize = 4;
     for (let i = 0; i < playerContext.length; i += batchSize) {
       const batch = playerContext.slice(i, i + batchSize);
       _status(`Narration ${i + 1}-${Math.min(i + batchSize, playerContext.length)} of ${playerContext.length}...`);
+      const done = _applyResults(await _callWorker(batch));
+      done.forEach(n => narrated.add(n));
+    }
 
-      const resp = await fetch(workerUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'rankings-narration',
-          players: batch.map(p => ({
-            name: p.name, rank: p.rank, tier: p.tier, score: p.score,
-            seasonsPlayed: p.seasonsPlayed, wins: p.wins,
-            placements: p.placements, challengeWins: p.challengeWins,
-            votesAgainst: p.votesAgainst, juryVotes: p.juryVotes,
-            idolsFound: p.idolsFound, reasoning: p._context
-          }))
-        })
-      });
-
-      // Surface worker failures instead of silently producing nothing.
-      if (!resp.ok) {
-        const errText = await resp.text().catch(() => '');
-        throw new Error(`Worker responded ${resp.status}. ${errText.slice(0, 300)}`);
-      }
-      const data = await resp.json();
-      if (!data.results?.length) {
-        console.warn('Worker returned no results for batch:', data);
-        continue;
-      }
-      for (const result of data.results) {
-        const entry = rankingsDb.rankings.find(r => r.name.toLowerCase() === result.name.toLowerCase());
-        if (!entry) continue;
-        if (result.title) entry.title = result.title;
-        if (result.emoji) entry.emoji = result.emoji;
-        if (result.reasoning) entry.reasoning = result.reasoning;
-        if (result.strengths?.length) entry.strengths = result.strengths;
-        if (result.weaknesses?.length) entry.weaknesses = result.weaknesses;
-        narratedCount++;
+    // Retry anyone the model skipped (under-produced results). Two passes, one
+    // player at a time so a single skipped name can't drag others down with it.
+    for (let pass = 0; pass < 2; pass++) {
+      const missing = playerContext.filter(p => !narrated.has(p.name.toLowerCase()));
+      if (!missing.length) break;
+      _status(`Retrying ${missing.length} skipped player(s)...`);
+      for (const p of missing) {
+        try {
+          const done = _applyResults(await _callWorker([p]));
+          done.forEach(n => narrated.add(n));
+        } catch (e) { console.warn('Retry failed for', p.name, e); }
       }
     }
+
     if (rankingsDb.metadata) rankingsDb.metadata.lastUpdated = new Date().toISOString().split('T')[0];
   } catch (err) {
     console.warn('Rankings narration failed:', err);
@@ -2113,14 +2136,23 @@ export async function generateRankingsNarration(onStatus) {
     return;
   }
 
+  const narratedCount = narrated.size;
   if (!narratedCount) {
     alert(`Matched ${toUpdate.length} player(s), but the worker returned no narration for any of them. Check the worker URL and that it supports "rankings-narration" mode (see console).`);
     return;
   }
 
+  const stillMissing = playerContext
+    .filter(p => !narrated.has(p.name.toLowerCase()))
+    .map(p => p.name);
+
   _status(`Downloading updated rankings (${narratedCount} narrated)...`);
   _downloadJSON(rankingsDb, 'rankings_database.json');
-  alert(`✅ Generated narration for ${narratedCount} player(s). Updated rankings_database.json downloaded — replace your project copy with it.`);
+  alert(
+    `✅ Generated narration for ${narratedCount} of ${toUpdate.length} matched player(s).` +
+    (stillMissing.length ? `\n\n⚠️ The worker skipped ${stillMissing.length}: ${stillMissing.join(', ')}. Run again to fill them.` : '') +
+    `\n\nUpdated rankings_database.json downloaded — replace your project copy with it.`
+  );
 }
 
 // ── 20. PDF Exports ──────────────────────────────────────────────────

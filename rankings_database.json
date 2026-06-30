@@ -190,18 +190,19 @@
       "juryVotes": 0,
       "idolsFound": 2,
       "status": "Competed in 2/7 seasons",
-      "title": "The Ice Prince",
-      "emoji": "🧊",
-      "reasoning": "S6 was a clinic: calm threat management, 4 late immunities, and a 7-1-0 crowning. In S7 he stacked 6 total wins (5 immunities), ran the board with Taylor, then combusted at F4 and quit-turning a near-lock into collapse. With a 50% win rate, 10 challenge wins, and only 2 votes against over two seasons, he's a proven closer when composed. His feud with Carrie and the season's pressure exposed a volatile side that cost him the end. S12 P4. Narrative override -4: equalize. 1 immunity win, played 2 idols, 1 alliance.",
+      "title": "The Ice-Cold Closer",
+      "emoji": "⛸️",
+      "reasoning": "Jacques owns one of the cleanest résumés in the franchise: a win, two more Final 4 finishes, 11 challenge wins, and two idols across three seasons. His S6 run was a clinic in composure, using late immunities and calm threat management to secure a dominant 7-1-0 crown. The only thing keeping him out of the very top tier of legacies is volatility — his S7 Final 4 collapse and quit turned a near-lock endgame into a cautionary tale, and S12 showed he could still be hit with votes when the room hardened against him.",
       "strengths": [
-        "Elite challenge streaks to dictate late votes",
-        "Ice-cold strategic steering without overexposure",
-        "Builds durable duos (Taylor) to anchor coalitions"
+        "Winner with two more Final 4s",
+        "11 challenge wins",
+        "Two idols played",
+        "Elite endgame closer"
       ],
       "weaknesses": [
-        "Emotional volatility under endgame pressure",
-        "High threat profile invites coalition shots",
-        "Personal feuds (Carrie) distract strategic focus"
+        "S7 Final 4 collapse",
+        "12 votes against career",
+        "Can unravel under pressure"
       ],
       "name": "Jacques",
       "seasonsList": [
@@ -241,11 +242,20 @@
       "votesAgainst": 9,
       "juryVotes": 7,
       "idolsFound": 1,
-      "title": "",
-      "emoji": "👑",
-      "reasoning": "S12 Winner. 1 immunity win, played 1 idol, 3 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Spotlight Survivor",
+      "emoji": "📸",
+      "reasoning": "James turned one season into an S+ legacy by winning S12 with a 7-vote jury finish despite taking 9 votes against along the way. He was not a pure challenge steamroller, but his idol play, alliance flexibility, and ability to survive sustained targeting made the win feel earned rather than accidental. As a one-time player, the sample is smaller than the legends around him, but his single-season peak is undeniable.",
+      "strengths": [
+        "S12 champion",
+        "7 jury votes",
+        "Survived 9 votes against",
+        "Played 1 idol"
+      ],
+      "weaknesses": [
+        "Only 1 challenge win",
+        "One-season sample",
+        "Frequently targeted"
+      ]
     },
     {
       "playerId": "mickey",
@@ -644,11 +654,20 @@
       "votesAgainst": 4,
       "juryVotes": 0,
       "idolsFound": 2,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P3. 2 immunity wins, played 2 idols, 3 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Pixel Shieldmaiden",
+      "emoji": "🎮",
+      "reasoning": "Ally’s S12 game was a strong near-miss: 3rd place, two immunity wins, two idols played, and enough alliance coverage to stay relevant deep into the endgame. Her connection with Hunter gave her a visible emotional anchor, but she was more than a showmance accessory — she had real tools, real protection, and real late-game equity. The flaw is that she could not convert that positioning into a finalist seat, leaving her résumé excellent but unfinished.",
+      "strengths": [
+        "S12 3rd place",
+        "2 immunity wins",
+        "Two idols played",
+        "Strong alliance coverage"
+      ],
+      "weaknesses": [
+        "Fell just short of finals",
+        "No jury votes",
+        "Showmance added visibility"
+      ]
     },
     {
       "playerId": "fiore",
@@ -785,11 +804,20 @@
       "votesAgainst": 14,
       "juryVotes": 2,
       "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P2. 2 immunity wins, played 1 idol, 2 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Red-Carpet Lightning Rod",
+      "emoji": "🎬",
+      "reasoning": "Riya’s S12 runner-up game was loud, resilient, and constantly under fire, with a massive 14 votes against and still a seat at the end. She backed up the chaos with two immunity wins, an idol play, and enough strategic traction to outlast nearly everyone. But the same polarizing style that kept the season orbiting around her also capped her win equity, ending in only 2 jury votes against James.",
+      "strengths": [
+        "S12 runner-up",
+        "Survived 14 votes against",
+        "2 immunity wins",
+        "Played 1 idol"
+      ],
+      "weaknesses": [
+        "Only 2 jury votes",
+        "Extremely polarizing",
+        "Constantly targeted"
+      ]
     },
     {
       "playerId": "sanders",
@@ -1195,11 +1223,20 @@
       "votesAgainst": 5,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P5. 1 immunity win, played 1 idol, 4 alliances, fan favorite.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Fan Favorite Firewall",
+      "emoji": "🛡️",
+      "reasoning": "Aiden turned a single S12 run into a clean Tier A résumé, finishing 5th with enough social coverage to sit inside four different alliances. His idol play and one immunity win gave him just enough hard power to survive the heat, while his fan-favorite status speaks to how well he connected beyond the vote count. The knock is that he reached the endgame without jury votes or a finalist seat, leaving his legacy as a strong supporting force rather than a proven closer.",
+      "strengths": [
+        "S12 5th place",
+        "Played 1 idol",
+        "4 alliances",
+        "Fan favorite"
+      ],
+      "weaknesses": [
+        "No jury votes",
+        "Only 1 challenge win",
+        "Fell short of finale"
+      ]
     },
     {
       "playerId": "tom",
@@ -1496,11 +1533,20 @@
       "votesAgainst": 8,
       "juryVotes": 0,
       "idolsFound": 2,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P6. played 2 idols, 4 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Double Idol Matriarch",
+      "emoji": "🌹",
+      "reasoning": "Rosa-Maria's S12 game was defined by resilience: 8 votes against her, 2 idols played, and still a 6th-place finish. She was constantly in the line of fire but kept finding ways to buy another round, using advantages and relationships — including her showmance with Oliver — to stay relevant. Without challenge wins or jury traction, though, her run reads more like survival artistry than a winning blueprint.",
+      "strengths": [
+        "S12 6th place",
+        "Played 2 idols",
+        "Survived 8 votes against",
+        "4 alliances"
+      ],
+      "weaknesses": [
+        "0 challenge wins",
+        "No jury votes",
+        "Often targeted"
+      ]
     },
     {
       "playerId": "chase",
@@ -1519,11 +1565,20 @@
       "votesAgainst": 11,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "The Vlogger",
-      "emoji": "📱",
-      "reasoning": "S9's quiet closer. Chase arrived as the vlogger no one took seriously and finished as a finalist who made the right call in nearly every vote. He idoled himself at the revote that toppled Hicks, won the Vote Stopper to silence Julia at F4, and won F5 immunity to punch his ticket to the finale. S12 P16. 1 alliance.",
-      "strengths": [],
-      "weaknesses": [],
+      "title": "The Quiet Closer",
+      "emoji": "📹",
+      "reasoning": "Chase's S9 run remains one of the better underdog finalist arcs: the vlogger no one took seriously became a late-game operator who made the right call again and again. He idoled himself at the revote that toppled Hicks, won the Vote Stopper to silence Julia at F4, and grabbed F5 immunity to lock in his finale spot. His S12 return was a hard crash at 16th, but the original run still gives him real legacy weight.",
+      "strengths": [
+        "S9 finalist",
+        "3 challenge wins",
+        "Idoled himself correctly",
+        "Won Vote Stopper at F4"
+      ],
+      "weaknesses": [
+        "S12 16th place",
+        "11 votes against",
+        "No jury votes"
+      ],
       "scoreHistory": [
         83.3,
         68.5
@@ -1582,11 +1637,20 @@
       "votesAgainst": 9,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "The Photographer",
-      "emoji": "📸",
-      "reasoning": "S8's social monarch. Jen led the Civilians, built the widest coalition of any player in her season, won merge immunity, and helped blindside MacArthur on a revote at F6. She fell at F5 as the first victim of the Double Shield — Sanders and Alejandro played idols simultaneously to force a revote that ended her game. A dominant résumé cut one round short. S12 P9. 1 alliance.",
-      "strengths": [],
-      "weaknesses": [],
+      "title": "The Civilian Queenpin",
+      "emoji": "👑",
+      "reasoning": "Jen's S8 game was a textbook social power run, leading the Civilians and building one of the season's widest coalitions. She won merge immunity, helped engineer the MacArthur revote blindside at F6, and looked positioned for the finale before the Double Shield idol sequence sent her out at F5. Her S12 return to 9th was quieter, but across two seasons she remains one of the stronger non-winning social architects.",
+      "strengths": [
+        "S8 5th place",
+        "Led the Civilians",
+        "2 challenge wins",
+        "MacArthur revote blindside"
+      ],
+      "weaknesses": [
+        "No idols or advantages",
+        "Cut at F5 by Double Shield",
+        "Quieter S12 return"
+      ],
       "scoreHistory": [
         71.7,
         68.2
@@ -1614,19 +1678,19 @@
       "votesAgainst": 21,
       "juryVotes": 0,
       "idolsFound": 2,
-      "title": "The Perpetual Target",
-      "emoji": "🎯",
-      "reasoning": "Ellie’s S11 run was defined by heat: 15 votes against is a staggering number for an 8th-place finisher. She did play an idol, which kept her from being a simple casualty, but she never found stable enough footing to turn survival into control. Her game is memorable for resilience, yet the target on her back overwhelmed everything else. S12 P8. 1 immunity win, played 1 idol, 1 alliance.",
+      "title": "The Heat Magnet",
+      "emoji": "🔥",
+      "reasoning": "Ellie has now finished 8th twice, and both runs tell the same story: she is tough enough to survive danger, but never insulated enough to control it. Her S11 game was especially chaotic, taking 15 votes against while still finding an idol play to keep herself alive. With 21 career votes against and two idols, her legacy is resilience under pressure more than clean positioning.",
       "strengths": [
-        "Played 1 idol",
-        "Survived 15 votes against",
-        "Memorable survival arc",
-        "Reached 8th place"
+        "Two straight 8th-place finishes",
+        "2 idols found/played",
+        "Survived heavy targeting",
+        "1 immunity win"
       ],
       "weaknesses": [
-        "15 votes against",
-        "0 challenge wins",
-        "No listed alliances"
+        "21 votes against",
+        "Never gained stable control",
+        "0 jury votes"
       ],
       "winRate": 0
     },
@@ -1671,15 +1735,19 @@
       "rank": 47,
       "tier": "B",
       "score": 67.3,
-      "title": "The Farm Kid",
-      "emoji": "🌾",
-      "reasoning": "Advantage king/queen (3 idols/advantages found). Lost fire-making to Alejandro at F4. (S1). Legendary idol play on Alejandro at merge. (S2). Across 2 season(s): avg placement 5.00. S12 P19..",
+      "title": "The Idol Gambler",
+      "emoji": "🎲",
+      "reasoning": "Ezekiel’s career is a strange mix of legitimate endgame danger and sudden collapse. His first two runs were strong — 6th and 4th, including a fire-making loss to Alejandro and a memorable idol play on Alejandro at the merge. But the S12 19th-place crash badly dents the résumé, turning him from a sneaky advantage threat into one of the franchise’s more volatile returnees.",
       "strengths": [
-        "S4: 4th place",
-        "Improved across seasons"
+        "3 idols/advantages",
+        "Reached Final 4",
+        "Legendary merge idol play",
+        "Average 5.0 placement across first two seasons"
       ],
       "weaknesses": [
-        "Never reached F3"
+        "S12 19th-place finish",
+        "18 votes against",
+        "Lost fire-making at F4"
       ],
       "avgPlacement": 9.666666666666666,
       "winRate": 0,
@@ -1926,11 +1994,20 @@
       "votesAgainst": 6,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P7. played 1 idol, 5 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Alliance Hopper",
+      "emoji": "🌊",
+      "reasoning": "Lake’s lone run to 7th was quietly busy: no challenge wins, but an idol play and five alliances show someone constantly trying to reposition. That activity kept her relevant deep into S12, though it never translated into a firm power base or jury respect. She lands as a solid one-season player with tools, but not yet a defining move.",
+      "strengths": [
+        "7th place debut",
+        "Played 1 idol",
+        "5 alliances",
+        "Only 6 votes against"
+      ],
+      "weaknesses": [
+        "0 challenge wins",
+        "No jury votes",
+        "Limited control"
+      ]
     },
     {
       "playerId": "jo",
@@ -2399,11 +2476,20 @@
       "votesAgainst": 11,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "The Pop Star",
-      "emoji": "🎤",
-      "reasoning": "S9's most fearless player. Emmah used Knowledge is Power to steal Wayne's Extra Vote and double-voted Ripper out in one of the season's boldest moves. She helped blindside Raj while he sat on an idol and won immunity at F7. She got caught in the F5 double-idol crossfire — the only vote she couldn't escape all season. S12 P20..",
-      "strengths": [],
-      "weaknesses": [],
+      "title": "The Fearless Thief",
+      "emoji": "🗝️",
+      "reasoning": "Emmah’s S9 run remains one of the boldest non-winning games on the board. She stole Wayne’s Extra Vote with Knowledge is Power, double-voted Ripper out, helped blindside Raj while he held an idol, and won immunity at Final 7 before finally falling in the Final 5 double-idol crossfire. The S12 first boot hurts badly, but her peak still has real strategic bite.",
+      "strengths": [
+        "S9 5th place",
+        "2 challenge wins",
+        "Stole and used Extra Vote",
+        "Helped blindside idol-holder Raj"
+      ],
+      "weaknesses": [
+        "S12 20th-place finish",
+        "0 idols found",
+        "0 jury votes"
+      ],
       "scoreHistory": [
         70.4,
         57
@@ -2651,11 +2737,19 @@
       "votesAgainst": 8,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P10. 3 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Alliance Collector",
+      "emoji": "🎯",
+      "reasoning": "Hunter’s S12 run had more structure than payoff: three alliances and a showmance with Ally gave him plenty of social coverage, but none of it translated into real control. A 10th-place finish with 8 votes against paints the picture of a player who was connected, but never quite protected. He had the pieces of a mid-game mover, just not the challenge wins or leverage to make them matter.",
+      "strengths": [
+        "3 alliances in S12",
+        "Showmance with Ally",
+        "Decent social positioning"
+      ],
+      "weaknesses": [
+        "10th-place finish",
+        "0 challenge wins",
+        "8 votes against"
+      ]
     },
     {
       "playerId": "noah",
@@ -2862,11 +2956,19 @@
       "votesAgainst": 8,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P11. played 1 idol, 1 alliance.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Idol Underdog",
+      "emoji": "🦔",
+      "reasoning": "Karol at least left S12 with a tool in hand, playing an idol in a season where many lower-tier players never found that kind of agency. The problem is that the advantage did not change her trajectory much: she still landed 11th, took 8 votes, and had only one alliance to lean on. Her game had flashes of resourcefulness, but not enough social insulation to survive the early-middle squeeze.",
+      "strengths": [
+        "Found and played 1 idol",
+        "1 alliance",
+        "Showed some survival instincts"
+      ],
+      "weaknesses": [
+        "11th-place finish",
+        "8 votes against",
+        "Limited alliance network"
+      ]
     },
     {
       "playerId": "hicks",
@@ -3045,11 +3147,19 @@
       "votesAgainst": 8,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P12. played 1 idol, 1 alliance.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Fallen Idol Bet",
+      "emoji": "🃏",
+      "reasoning": "Yul’s S12 game has the same surface-level assets as a more dangerous player: an idol, an alliance, and enough presence to draw attention. But the execution never caught up to the threat level, and his idol play could not keep him from sliding out in 12th. With 8 votes against and no challenge wins, he looked more like a target with a trinket than a strategist with a plan.",
+      "strengths": [
+        "Found and played 1 idol",
+        "1 alliance",
+        "Had visible game presence"
+      ],
+      "weaknesses": [
+        "12th-place finish",
+        "0 challenge wins",
+        "8 votes against"
+      ]
     },
     {
       "playerId": "rodney",
@@ -3425,11 +3535,19 @@
       "votesAgainst": 11,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P13..",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Overexposed Outsider",
+      "emoji": "🌧️",
+      "reasoning": "Tess’s S12 run was defined less by moves and more by how quickly the vote count piled up against her. Finishing 13th with 11 votes against is a brutal statistical marker, especially without an idol, challenge win, or alliance note to soften the landing. She was not invisible, but visibility without protection made her one of the season’s easier names to write down.",
+      "strengths": [
+        "Made it past the opening phase",
+        "High visibility",
+        "Survived multiple votes"
+      ],
+      "weaknesses": [
+        "13th-place finish",
+        "11 votes against",
+        "No idols or challenge wins"
+      ]
     },
     {
       "playerId": "oliver",
@@ -3450,11 +3568,19 @@
       "votesAgainst": 3,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P14. 2 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Brief Romantic",
+      "emoji": "🌹",
+      "reasoning": "Oliver's S12 run had a little more texture than the average early boot thanks to his Rosa-Maria showmance and a pair of alliance connections. But the résumé never really materialized: 14th place, no challenge wins, no idols, and only three votes against before the game moved on without him. He ranks as someone who had social threads, just not enough control or staying power to turn them into traction.",
+      "strengths": [
+        "Rosa-Maria showmance",
+        "2 alliances in S12",
+        "Only 3 votes against"
+      ],
+      "weaknesses": [
+        "14th-place finish",
+        "0 challenge wins",
+        "No strategic payoff"
+      ]
     },
     {
       "playerId": "devin",
@@ -3510,11 +3636,19 @@
       "votesAgainst": 6,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P15. 3 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Overconnected Flameout",
+      "emoji": "🕸️",
+      "reasoning": "Kai managed to get into three alliances in S12, which suggests he was at least trying to build options rather than drift. The problem is that none of those bonds protected him when it mattered, and six votes against is a loud signal that he became an easy target early. A 15th-place finish with no wins or idols leaves him as a player with activity, but very little effectiveness.",
+      "strengths": [
+        "3 alliances in S12",
+        "Played socially active",
+        "Avoided total isolation"
+      ],
+      "weaknesses": [
+        "15th-place finish",
+        "6 votes against",
+        "0 challenge wins"
+      ]
     },
     {
       "playerId": "tyler",
@@ -3911,11 +4045,19 @@
       "votesAgainst": 4,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P17. 1 alliance.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Early Spark",
+      "emoji": "🕯️",
+      "reasoning": "Maggy's S12 game barely got room to breathe, ending in 17th with just one alliance on the board. Four votes against that early points to a player who never found stable footing or a strong enough shield. There may have been a hint of social structure, but her legacy is mostly defined by how quickly the game closed around her.",
+      "strengths": [
+        "Had 1 alliance",
+        "Not completely disconnected",
+        "Low-drama profile"
+      ],
+      "weaknesses": [
+        "17th-place finish",
+        "4 early votes against",
+        "0 challenge wins"
+      ]
     },
     {
       "playerId": "justin",
@@ -4150,11 +4292,19 @@
       "votesAgainst": 1,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S12 P18. voted against once.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Vanishing Opener",
+      "emoji": "🚪",
+      "reasoning": "Connor's S12 appearance was the definition of a blink-and-you-miss-it run: 18th place, one vote against, and no measurable game impact. The low vote total suggests he may not have been aggressively targeted so much as simply expendable at the first opportunity. With no alliances listed, no challenge wins, and no idols, his ranking reflects a contestant who never got to launch.",
+      "strengths": [
+        "Only 1 vote against",
+        "Minimal target profile",
+        "No major blowup"
+      ],
+      "weaknesses": [
+        "18th-place finish",
+        "No alliances listed",
+        "0 challenge wins"
+      ]
     },
     {
       "playerId": "ashley",

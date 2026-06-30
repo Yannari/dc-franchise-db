@@ -1395,10 +1395,17 @@ export function generateRescueIslandLife(ep) {
       const mentalState = _getMentalState(name);
       // Broken mental state increases quit temptation
       const mentalQuitBoost = mentalState === 'broken' ? 0.10 : 0;
-      if (s.boldness <= 3 && daysOn >= 3 && (emotional === 'desperate' || mentalState === 'broken')) {
-        pool.push({ weight: 4, type: 'quit-temptation', player: name,
+      // Quit temptation — physical depletion (endurance) is the dominant driver of leaving the Edge,
+      // with weak will (low boldness) as a secondary push, and the toll compounding the longer you're stranded.
+      // No hard cutoff: even a bold, rested player can crack if truly broken, just rarely.
+      if (daysOn >= 3 && (emotional === 'desperate' || mentalState === 'broken')) {
+        const wornDown = (11 - s.endurance) / 10;   // primary: the island grinds the body down
+        const timidity = (11 - s.boldness) / 10;    // secondary: weak will to keep fighting
+        const frailty  = wornDown * 0.65 + timidity * 0.35;
+        const timeToll = Math.min(0.12, (daysOn - 3) * 0.025);  // +2.5%/episode stranded, capped at +12%
+        pool.push({ weight: 5 * frailty, type: 'quit-temptation', player: name,
           text: `${name} stares at the path off the island for a long time today.`,
-          quitChance: 0.15 + mentalQuitBoost });
+          quitChance: 0.16 * frailty + timeToll + mentalQuitBoost });
       }
     });
 

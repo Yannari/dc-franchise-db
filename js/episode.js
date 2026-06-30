@@ -14,7 +14,8 @@ import {
 } from './camp-events.js';
 import {
   isRIStillActive, simulateRIChoice, simulateRIDuel, simulateRIReentry,
-  generateRILifeEvents, generateRIPostDuelEvents, generateRescueIslandLife
+  generateRILifeEvents, generateRIPostDuelEvents, generateRescueIslandLife,
+  RI_DUEL_CHALLENGES
 } from './rescue-island.js';
 import { generateSummaryText } from './text-backlog.js';
 import { _idbPut } from './savestate.js';

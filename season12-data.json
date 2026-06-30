@@ -1,0 +1,1950 @@
+{
+  "seasonNumber": 12,
+  "title": "Total Drama: Generations",
+  "subtitle": "A season of fractured alliances, public betrayals, advantage warfare, and one cold-blooded winner who turned chaos into a résumé.",
+  "castSize": 20,
+  "episodeCount": 18,
+  "jurySize": 0,
+  "winner": {
+    "name": "James",
+    "playerSlug": "james",
+    "vote": "7-2",
+    "runnerUp": "Riya",
+    "keyStats": "James wins 7-2 over Riya after surviving 9 votes against, winning 1 individual immunity, returning through the Aftermayhem, and claiming final immunity at the last possible moment.",
+    "strategy": "James plays a restless, opportunistic game: he builds alliances quickly, abandons them before they can trap him, weaponizes misinformation, and repeatedly turns personal tension into strategic cover. His greatest strength is timing — he knows when to hide behind louder players, when to expose a threat, and when to make the vote feel inevitable.",
+    "legacy": "James leaves as one of the season’s defining schemers: messy, polarizing, and frequently distrusted, but impossible for the jury to deny. His win becomes the signature case study for how a player can be voted out, fight back in, and still control the ending."
+  },
+  "finalists": [
+    {
+      "name": "James",
+      "playerSlug": "james",
+      "placement": 1,
+      "votes": 7
+    },
+    {
+      "name": "Riya",
+      "playerSlug": "riya",
+      "placement": 2,
+      "votes": 2
+    }
+  ],
+  "placements": [
+    {
+      "placement": 1,
+      "name": "James",
+      "playerSlug": "james",
+      "phase": "Winner",
+      "notes": "James wins by turning paranoia, precision, and a late-game comeback into a dominant 7-2 jury victory.",
+      "strategicRank": 9.6,
+      "story": "James enters Generations already narrating the game in his head, and for most of the season, the island struggles to keep up with the speed of his calculations. He is rarely comfortable, often exposed, and repeatedly accused of overplaying, but he keeps finding new rooms to enter and new people to use. His first run ends in humiliation when Jacques’s idol play and a fractured Double Edge vote send him out, but the Aftermayhem gives him a second life and he treats it like proof of destiny. From there, James plays sharper: he survives tiebreaker fire against Aiden, watches Jacques fall at final four, then wins the final perch when it matters most. At Final Tribal, he does not ask the jury to like him; he asks them to respect the body of work. Seven jurors do.",
+      "gameplayStyle": "Cold math, public chaos",
+      "keyMoments": [
+        "Episode 2: Leads the Ezekiel vote under The Ride or Die banner, establishing himself as an early architect.",
+        "Episode 3: Becomes the last unpainted deer and steals a hunter’s gun, winning Paintball Hunt for Embers.",
+        "Episode 10: Wins Say Uncle immunity and publicly casts the open vote that helps bury Karol.",
+        "Episode 12: Gets voted out after Jacques plays an idol, then exposes The Double Edge in his crashout.",
+        "Episode 12 Aftermayhem: Wins the board race and returns to the game by reaching the Trophy Case.",
+        "Episode 17: Beats Aiden in fire-making after a tied vote, saving his season by inches.",
+        "Episode 18: Wins final immunity on The Perch and chooses Riya for Final Tribal.",
+        "Episode 18: Defeats Riya 7-2 after selling a ruthless, calculated winner’s case."
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 9,
+      "alliances": [
+        "The Ride or Die",
+        "The Double Edge",
+        "The Tribal Terrors"
+      ],
+      "rivalries": [
+        "Karol",
+        "Aiden",
+        "Yul",
+        "Ally",
+        "Oliver",
+        "Ellie"
+      ],
+      "socialScore": 1
+    },
+    {
+      "placement": 2,
+      "name": "Riya",
+      "playerSlug": "riya",
+      "phase": "Finalist",
+      "notes": "Riya reaches the end as the season’s most feared villain, but her bruising social game costs her the crown.",
+      "strategicRank": 9.2,
+      "story": "Riya plays like every campfire is a courtroom and every smile is evidence. From the opening days, she cuts corners, tests loyalty, frames allies, and makes enemies faster than anyone can count them. Her game is explosive but resilient: she survives public blowups, direct hatred from Hunter, Ellie, Ally, Rosa-Maria, and Jacques, and even a failed plan that should have buried her at final seven. When she wins immunity late and claws through the finale, she proves that her survival was never accidental. But Final Tribal is not just about reach — it is about reception. The jury sees her power, but too many also feel the burns she left behind.",
+      "gameplayStyle": "Venom, velocity, control",
+      "keyMoments": [
+        "Episode 1: Breaks The Camp Takeover immediately by voting Tess instead of Emmah.",
+        "Episode 1: Pushes Emmah toward a crocodile and sabotages Embers’s boat, setting her villain tone.",
+        "Episode 8: Takes the Immunity Totem at The Summit and openly defends the selfish choice.",
+        "Episode 9: Plays an idol during the double elimination and survives the Anti-Yul chaos.",
+        "Episode 13: Wins Top Dog with the Parrot, dominating the wilderness race.",
+        "Episode 15: Survives a Shot in the Dark when the vote turns against her.",
+        "Episode 17: Wins Camp Castaways immunity after out-surviving the flood night.",
+        "Episode 18: Reaches Final Tribal but loses 7-2 to James."
+      ],
+      "challengeWins": 2,
+      "immunityWins": 2,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 14,
+      "alliances": [
+        "The Camp Takeover",
+        "The Merge Mob"
+      ],
+      "rivalries": [
+        "Kai",
+        "Rosa-Maria",
+        "Jacques",
+        "Aiden",
+        "Hunter",
+        "Yul",
+        "Lake",
+        "Tess",
+        "Ally",
+        "Ellie"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 3,
+      "name": "Ally",
+      "playerSlug": "ally",
+      "phase": "Juror",
+      "notes": "Ally turns early overplaying into a deep run, winning key immunities before James cuts her at the final choice.",
+      "strategicRank": 8.4,
+      "story": "Ally begins too loud, too fast, and too visible, but she adapts before the game can fully punish her. She runs the first vote, survives being exposed by Emmah, and gradually becomes a bridge between fractured groups. Her game is marked by social bursts, advantage plays, and surprising challenge strength, from Truth or Shark to Drumheller. Yet her alliances rarely stay stable; The Barricade, The Merge Mob, and The Movement all bend or break under pressure. At final three, Ally is one perch away from controlling the ending. She falls, and James makes the coldest possible read: she cannot be allowed to face the jury.",
+      "gameplayStyle": "Social sparks, late steel",
+      "keyMoments": [
+        "Episode 1: Spearheads the Emmah vote and is exposed as the strategic center at Tribal.",
+        "Episode 4: Finds a Vote Steal and later survives Gross Food Gauntlet in Truth or Shark.",
+        "Episode 5: Steals Chase’s vote and redirects it onto Yul during the non-elimination swap vote.",
+        "Episode 6: Helps form The Barricade with Kai, then immediately fractures it by voting Tess.",
+        "Episode 9: Kisses Hunter, making their bond public and strategically dangerous.",
+        "Episode 15: Wins Get a Clue by delivering the most convincing courtroom case.",
+        "Episode 16: Wins Drumheller immunity by unearthing the barrel with the Post Digger.",
+        "Episode 18: Outlasts Jacques in the orienteering race but falls from The Perch and is cut at final three."
+      ],
+      "challengeWins": 2,
+      "immunityWins": 2,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 2,
+      "advHeld": 0,
+      "votesReceived": 4,
+      "alliances": [
+        "The Merge Mob",
+        "The Barricade",
+        "The Movement"
+      ],
+      "rivalries": [
+        "James",
+        "Riya",
+        "Tess",
+        "Chase"
+      ],
+      "socialScore": 2
+    },
+    {
+      "placement": 4,
+      "name": "Aiden",
+      "playerSlug": "aiden",
+      "phase": "Juror",
+      "notes": "Aiden becomes the fan-favorite strategist whose reads are sharp, but whose alliances collapse one round before the finale.",
+      "strategicRank": 8.8,
+      "story": "Aiden arrives reading lies before most players have unpacked, and that instinct carries him deeper than almost anyone expects. He is a workhorse, a social fixer, and a quiet danger who keeps finding the pulse of camp before the vote lands. His bonds with Jen, Lake, Ally, and others give him protection, but they also make his game emotionally expensive. Late in the season, Aiden becomes the hub of The Movement, steals votes, redirects pressure, and survives by making himself necessary. But at final five, his enemies finally align with the fire-making gods against him. He loses the tiebreaker to James, and the jury gains its most dramatic witness.",
+      "gameplayStyle": "Soft heart, sharp radar",
+      "keyMoments": [
+        "Episode 1: Touches the mummified dog and becomes the cursed basket-weaving prodigy of Embers.",
+        "Episode 2: Votes Jen to hold Jacques’s bloc while the Ezekiel vote flips around him.",
+        "Episode 7: Pivots from the Anti-Jacques plan and votes Kai, helping send him out.",
+        "Episode 10: Is named by Karol as a vote driver during the open merge Tribal.",
+        "Episode 12: Wins Hide and Be Sneaky immunity with an early lead and Chef fake-out.",
+        "Episode 14: Forms The Movement with Lake during the endgame scramble.",
+        "Episode 15: Uses a Vote Steal on Ally’s vote during the chaotic Riya/Lake/Jacques tangle.",
+        "Episode 17: Loses the fire-making tiebreaker to James and exits one step from the final four."
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 5,
+      "alliances": [
+        "The Double Edge",
+        "The Tribal Terrors",
+        "The Movement",
+        "The Pipeline"
+      ],
+      "rivalries": [
+        "James",
+        "Riya",
+        "Jacques",
+        "Yul"
+      ],
+      "socialScore": 3
+    },
+    {
+      "placement": 5,
+      "name": "Rosa-Maria",
+      "playerSlug": "rosa-maria",
+      "phase": "Juror",
+      "notes": "Rosa-Maria’s loyal, social game makes her beloved enough to become dangerous and conflicted enough to fall at final six.",
+      "strategicRank": 7.8,
+      "story": "Rosa-Maria begins with water runs, impressions, and a secret amulet tucked away from the tribe. She builds real bonds, especially with Oliver and Lake, while also nursing rivalries that become impossible to bury. Her story is one of warmth undercut by grudges: she can comfort a player at sunrise and vote from pure hostility by nightfall. As the merge tightens, people stop seeing her as harmless and start seeing the jury threat hiding in plain sight. She weaponizes advantages at the Ellie vote, then loses Lake and her footing soon after. At final six, her plan splinters, her vote lands on Jacques instead of Riya, and the tiebreaker ends her run.",
+      "gameplayStyle": "Warmth, grudges, hidden knives",
+      "keyMoments": [
+        "Episode 1: Finds the Amulet Advantage and keeps it secret while carrying water for Embers.",
+        "Episode 5: Protects Aiden in the standoff by taking a hit for him.",
+        "Episode 8: Survives the Oliver tie by beating him in the endurance tiebreaker.",
+        "Episode 10: Votes Karol at the open merge vote, choosing hatred over alliance discipline.",
+        "Episode 13: Forms The Oath with Lake after both recognize their shared survival math.",
+        "Episode 14: Plays an Extra Vote and steals Jacques’s vote to help eliminate Ellie.",
+        "Episode 15: Watches Lake fall in a tiebreaker, leaving her exposed.",
+        "Episode 16: Crashes out by exposing The Movement and James’s advantage history after losing the puzzle tiebreaker."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 2,
+      "advHeld": 0,
+      "votesReceived": 8,
+      "alliances": [
+        "The Double Edge",
+        "The Collective",
+        "The Oath",
+        "The Pipeline"
+      ],
+      "rivalries": [
+        "Karol",
+        "Riya",
+        "Jacques",
+        "Hunter",
+        "Ellie"
+      ],
+      "socialScore": 2
+    },
+    {
+      "placement": 6,
+      "name": "Lake",
+      "playerSlug": "lake",
+      "phase": "Juror",
+      "notes": "Lake is the season’s loyal soldier, protected by deep bonds until one brutal tiebreaker cuts her endgame short.",
+      "strategicRank": 7.6,
+      "story": "Lake finds power early with the amulet, but her defining weapon is steadiness. She designs, weaves, covers for people, shares quiet meals, and builds bonds that turn into alliances. Her loyalties to Jen, Rosa-Maria, Aiden, and Ally shape the middle of the game, even when they put her in impossible positions. She repeatedly chooses relationship over pure optimization, and that makes her trusted — and predictable. By final seven, she is woven into too many hearts and too many plans. Jacques strikes preemptively, the vote tangles, and Lake loses the endurance tiebreaker that decides her fate.",
+      "gameplayStyle": "Loyal spine, quiet leverage",
+      "keyMoments": [
+        "Episode 1: Finds the Saplings Amulet Advantage and keeps it hidden.",
+        "Episode 2: Moves to Embers in the producer swap and designs the Tiki Royalty runway look.",
+        "Episode 7: Blocks Karol’s vote, helping The Double Edge send Kai home.",
+        "Episode 8: Forms an amulet understanding with Rosa-Maria and deepens her loyalty network.",
+        "Episode 10: Votes Karol at the merge, helping remove a physical and emotional threat.",
+        "Episode 13: Forms The Oath with Rosa-Maria as her clearest late-game pair.",
+        "Episode 14: Has her vote stolen by Ellie and redirected to James during Ellie’s elimination.",
+        "Episode 15: Loses the endurance tiebreaker to Jacques after a tied vote."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 6,
+      "alliances": [
+        "The Camp Takeover",
+        "The Undertow",
+        "The Double Edge",
+        "The Oath",
+        "The Movement"
+      ],
+      "rivalries": [
+        "Karol",
+        "Riya",
+        "Jacques"
+      ],
+      "socialScore": 3
+    },
+    {
+      "placement": 7,
+      "name": "Ellie",
+      "playerSlug": "ellie",
+      "phase": "Juror",
+      "notes": "Ellie plays a ruthless, advantage-heavy schemer’s game until the very tools she loves fail her at final eight.",
+      "strategicRank": 8.5,
+      "story": "Ellie’s season is defined by control attempts that look quiet until they are not. She finds an idol, builds coalitions, sabotages Yul into jellyfish, and repeatedly tries to define the vote before anyone else realizes there is a vote. Her relationship map becomes scorched earth: Riya, Jacques, Aiden, Karol, and James all find reasons to distrust her. Still, she keeps surviving because she is useful, perceptive, and willing to make the ugly move. At final eight, she reaches for every lever — Vote Steal, stolen vote redirection, Shot in the Dark. None of it saves her, and the player who lived by the margins is finally buried by them.",
+      "gameplayStyle": "Quiet blade, advantage hunger",
+      "keyMoments": [
+        "Episode 2: Designs Saplings’ winning Island Getaway look and builds early credibility.",
+        "Episode 3: Casts the lone Connor vote that becomes fatal after Tess’s Shot in the Dark cancels seven votes.",
+        "Episode 5: Finds the Saplings Hidden Immunity Idol and tells no one.",
+        "Episode 9: Sabotages Yul on the trapeze, sending him into jellyfish and igniting the Anti-Yul vote.",
+        "Episode 10: Has her idol stolen by Jacques through Knowledge is Power.",
+        "Episode 11: Wins Alien Resurr-Eggtion immunity with two delivered eggs.",
+        "Episode 13: Finds a Vote Steal near the well.",
+        "Episode 14: Plays Shot in the Dark, steals Lake’s vote, but is eliminated anyway."
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 1,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 6,
+      "alliances": [
+        "The Double Edge"
+      ],
+      "rivalries": [
+        "James",
+        "Karol",
+        "Riya",
+        "Rosa-Maria",
+        "Jacques",
+        "Yul"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 8,
+      "name": "Jen",
+      "playerSlug": "jen",
+      "phase": "Juror",
+      "notes": "Jen’s loyalty and social warmth make her indispensable until the jury threat label finally catches up.",
+      "strategicRank": 7.3,
+      "story": "Jen plays the game through attention: checking in, noticing details, and making people feel seen. She saves Ezekiel from a crocodile, bonds deeply with Aiden and Lake, and repeatedly becomes the person others trust in the dark. But her loyalty game is complicated by messy votes and alliance expulsions, especially as The Double Edge mutates around her. By the merge, her social capital is both shield and target. She is not the loudest strategist, but she is the kind of finalist jurors reward. That realization seals her fate at Top Dog.",
+      "gameplayStyle": "Open hands, hidden reads",
+      "keyMoments": [
+        "Episode 1: Throws herself between Ezekiel and a crocodile during the Nile crossing.",
+        "Episode 2: Helps send Ezekiel home while checking in on everyone socially.",
+        "Episode 4: Loses her vote on the Journey and watches Maggy fall in the fractured Ride or Die vote.",
+        "Episode 7: Takes the selfless Summit Survival Kit, boosting the whole Embers tribe.",
+        "Episode 8: Votes Rosa-Maria instead of Karol, cracking both The Double Edge and The Tribal Terrors.",
+        "Episode 10: Publicly votes Hunter while her old alliance disintegrates around her.",
+        "Episode 12: Votes James and helps send him out before his Aftermayhem return.",
+        "Episode 13: Is voted out as a jury threat with genuine relationships everywhere."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 2,
+      "alliances": [
+        "The Tribal Terrors"
+      ],
+      "rivalries": [
+        "Jacques",
+        "Yul"
+      ],
+      "socialScore": 1
+    },
+    {
+      "placement": 9,
+      "name": "Hunter",
+      "playerSlug": "hunter",
+      "phase": "Juror",
+      "notes": "Hunter survives on social capital and stubborn loyalty until the merge majority finally treats him as expendable.",
+      "strategicRank": 6.7,
+      "story": "Hunter starts as a physical presence and an emotional connector, but his game is always tangled in other people’s wars. His early bond with Yul becomes a trap, his hatred with Riya becomes radioactive, and his showmance with Ally becomes a bright red warning light. He has moments of real support — comforting Tess, protecting Ally, rowing hard, keeping people steady. Yet he rarely controls the final direction of the vote. At the merge, the consensus finally lands on him because he has already been named too many times. He exits furious at Riya, but the truth is harsher: everyone knew he could be cut.",
+      "gameplayStyle": "Loyal muscle, exposed heart",
+      "keyMoments": [
+        "Episode 1: Shakes on a final three with Yul, a deal later exposed as unstable.",
+        "Episode 1: Helps row Saplings through the Nile crossing and bonds with Kai.",
+        "Episode 4: Confesses the dating spreadsheet secret during Truth or Shark.",
+        "Episode 6: Votes Riya over alliance discipline, showing Ally has become his priority.",
+        "Episode 7: Shares a sunrise conversation with Ally that pushes them toward a showmance.",
+        "Episode 9: Kisses Ally after the trust challenge and becomes visibly vulnerable.",
+        "Episode 9: Helps vote out Yul, then loses Tess in the second vote.",
+        "Episode 11: Is voted out by the Double Edge majority after surviving on social capital too long."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 8,
+      "alliances": [
+        "The Camp Takeover",
+        "The Iron Four",
+        "The Merge Mob"
+      ],
+      "rivalries": [
+        "Riya",
+        "Rosa-Maria",
+        "Jacques",
+        "Yul"
+      ],
+      "socialScore": 2
+    },
+    {
+      "placement": 10,
+      "name": "Karol",
+      "playerSlug": "karol",
+      "phase": "Juror",
+      "notes": "Karol is a volatile challenge threat whose idol play buys one more round before the merge removes her.",
+      "strategicRank": 7.1,
+      "story": "Karol plays Generations with force: force in challenges, force in arguments, force in every room she enters. She is brilliant in bursts, deadly in competitions, and terrible at hiding contempt. Her rivalry web — James, Rosa-Maria, Lake, Ellie, Yul — turns her into both weapon and target. The pre-merge sees her stack a résumé, find and play an idol, and survive votes that should have ended her. But the merge is unforgiving to players everyone has already discussed. When the open vote arrives, Karol can feel the floor moving; no one listens until her torch is already gone.",
+      "gameplayStyle": "Impact, pride, combustion",
+      "keyMoments": [
+        "Episode 1: Summits the pyramid in record time and taunts Maggy from above.",
+        "Episode 3: Becomes top hunter in Paintball Hunt while repeatedly shooting Lake, her own teammate.",
+        "Episode 5: Forms a final two with Aiden while secretly keeping options open.",
+        "Episode 7: Finds the Embers Hidden Immunity Idol during a paranoid camp stretch.",
+        "Episode 8: Plays the idol, voiding votes against her and forcing the Oliver/Rosa-Maria tiebreaker.",
+        "Episode 10: Enters the merge with a challenge-threat reputation everyone already knows.",
+        "Episode 10: Is voted out in the open vote by James, Rosa-Maria, Lake, and Ellie.",
+        "Episode 10: Leaves furious, insisting she knew something was wrong all day."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 1,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 8,
+      "alliances": [
+        "The Tribal Terrors"
+      ],
+      "rivalries": [
+        "James",
+        "Rosa-Maria",
+        "Yul",
+        "Lake",
+        "Ellie"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 11,
+      "name": "Yul",
+      "playerSlug": "yul",
+      "phase": "Pre-Merge",
+      "notes": "Yul schemes early and loudly, but his fake deals and public cruelty make him impossible to keep.",
+      "strategicRank": 7.4,
+      "story": "Yul enters with a plan for everyone and an honest loyalty to almost no one. He builds The Iron Four, tests Hunter with false information, protects Chase in ways that reveal a softer center, and collects a Vote Block that should have made him dangerous. But every move leaves residue. He shoves Tess, shoots Connor, refuses truths, and turns allies into liabilities. The elimination swap gives him a strange second life, but by the double elimination, the coalition against him is too clean. Yul exits as a villain with flashes of brilliance and a trail of burned deals.",
+      "gameplayStyle": "Sharp tongue, false pacts",
+      "keyMoments": [
+        "Episode 1: Forms a secret final three with Hunter while feeding him false information.",
+        "Episode 3: Creates The Iron Four with Kai and Hunter, then repeatedly shoots Connor in Paintball Hunt.",
+        "Episode 4: Wins the Journey puzzle and takes the Vote Block.",
+        "Episode 5: Blocks Tess’s vote and plays Shot in the Dark, only to be swapped instead of eliminated.",
+        "Episode 6: Panics after learning Hunter wrote his name and overplays on Embers.",
+        "Episode 7: Is abducted to Saplings and tries to build a new home with limited loyalty.",
+        "Episode 9: Suffers Ellie’s trapeze sabotage and lands in jellyfish.",
+        "Episode 9: Is voted out by Hunter, Tess, Ellie, and James in the first half of the double elimination."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 8,
+      "alliances": [
+        "The Iron Four"
+      ],
+      "rivalries": [
+        "James",
+        "Karol",
+        "Riya",
+        "Connor",
+        "Jen",
+        "Aiden",
+        "Hunter",
+        "Tess",
+        "Ellie"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 12,
+      "name": "Tess",
+      "playerSlug": "tess",
+      "phase": "Pre-Merge",
+      "notes": "Tess is perceptive and resilient, but constant target heat and physical doubt finally overwhelm her.",
+      "strategicRank": 6.9,
+      "story": "Tess spends the season seeing more than she says, and that is both gift and curse. She survives early weakness labels, a failed tribe consensus, and one miraculous Shot in the Dark that rewrites the game. Her bonds with Hunter and James give her cover, while her hostilities with Yul and Ally keep her name alive. She is often right about people, but rarely positioned to make the room follow her. In the double elimination, Ellie decides the injury is too much and the numbers slide away. Tess leaves worried less about herself than about Hunter, which says everything about her game.",
+      "gameplayStyle": "Quiet reads, brittle cover",
+      "keyMoments": [
+        "Episode 1: Goes on the Journey with Rosa-Maria and returns safely after striking a no-competition deal.",
+        "Episode 3: Plays Shot in the Dark successfully, canceling seven votes and causing Connor’s elimination.",
+        "Episode 4: Confesses the mannequin secret during Truth or Shark and earns respect for honesty.",
+        "Episode 5: Has her vote blocked by Yul during the non-elimination swap Tribal.",
+        "Episode 7: Bonds with Riya at sunrise after weeks of tension.",
+        "Episode 9: Hits the perfect William Tell shot with James as her target.",
+        "Episode 9: Votes Yul out in the first double-elimination vote.",
+        "Episode 9: Is eliminated second after Ellie pivots onto her injury."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 11,
+      "alliances": [],
+      "rivalries": [
+        "Riya",
+        "Yul",
+        "Ally"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 13,
+      "name": "Oliver",
+      "playerSlug": "oliver",
+      "phase": "Pre-Merge",
+      "notes": "Oliver’s underdog social game produces deep bonds, but his double-agent position collapses in a tiebreaker.",
+      "strategicRank": 6.6,
+      "story": "Oliver begins underestimated, and for a while, that is exactly where he wants to be. He bonds with Maggy, Jacques, Jen, and most powerfully Rosa-Maria, turning quiet loyalty into emotional armor. But he also lies, tests people, and drifts between The Ride or Die and The Double Edge until both worlds become dangerous. His betrayal of Maggy stains him, and his closeness with Rosa-Maria becomes impossible for the tribe to ignore. At the Finders Creepers vote, the target is supposed to be elsewhere, but Oliver becomes the answer to a tribe that cannot afford more losses. He loses the endurance tiebreaker to Rosa-Maria, and the season loses its purest underdog romance.",
+      "gameplayStyle": "Underdog bonds, double cover",
+      "keyMoments": [
+        "Episode 1: Saves Maggy from a collapse in the pyramid tunnels.",
+        "Episode 2: Forms The Ride or Die with Maggy and James.",
+        "Episode 4: Votes Maggy instead of Jacques, fracturing The Ride or Die beyond repair.",
+        "Episode 4: Survives Slime Bucket Balance in Truth or Shark and rallies Embers afterward.",
+        "Episode 6: Deepens his ride-or-die bond with Jacques and Rosa-Maria on swapped Embers.",
+        "Episode 8: Reaches for Rosa-Maria’s hand in a quiet moment everyone notices.",
+        "Episode 8: Is targeted as a challenge liability and tied against Rosa-Maria.",
+        "Episode 8: Loses the endurance tiebreaker and exits as the season’s underdog heartbreak."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 3,
+      "alliances": [
+        "The Ride or Die",
+        "The Double Edge"
+      ],
+      "rivalries": [
+        "James"
+      ],
+      "socialScore": 2
+    },
+    {
+      "placement": 14,
+      "name": "Kai",
+      "playerSlug": "kai",
+      "phase": "Pre-Merge",
+      "notes": "Kai’s quiet loyalty game is undone when a swap drops him into hostile numbers and Aiden pivots against him.",
+      "strategicRank": 5.8,
+      "story": "Kai starts as the observer, the player hanging back while louder people cut each other. He builds strong bonds with Hunter, Chase, Ally, and Riya, but the alliances around him repeatedly implode. His loyalty to Yul and The Iron Four pulls him away from The Camp Takeover, and by the time he sees the truth about Yul, the damage is done. The abduction twist places him on Embers, where he is useful socially but exposed strategically. At Tribal, he trusts Aiden to hold the line against Jacques. Aiden writes Kai instead, and Kai leaves with the kind of betrayal that lingers.",
+      "gameplayStyle": "Quiet trust, late alarm",
+      "keyMoments": [
+        "Episode 1: Joins The Camp Takeover with Riya, Lake, and Hunter.",
+        "Episode 3: Becomes part of The Iron Four with Yul and Hunter.",
+        "Episode 5: Votes Riya to protect Yul, fracturing The Camp Takeover and The Barricade.",
+        "Episode 6: Votes Riya again during the Camp Takeover collapse.",
+        "Episode 7: Is abducted from Saplings to Embers before the challenge.",
+        "Episode 7: Realizes the truth about Yul too late.",
+        "Episode 7: Votes Jacques while the majority piles onto him.",
+        "Episode 7: Is voted out 5-1 after Aiden flips onto him."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 6,
+      "alliances": [
+        "The Camp Takeover",
+        "The Iron Four",
+        "The Barricade"
+      ],
+      "rivalries": [
+        "Riya",
+        "Jacques"
+      ],
+      "socialScore": 1
+    },
+    {
+      "placement": 15,
+      "name": "Chase",
+      "playerSlug": "chase",
+      "phase": "Pre-Merge",
+      "notes": "Chase’s low-key social game keeps him alive until a fractured vote forces him into a tiebreaker he cannot win.",
+      "strategicRank": 5.5,
+      "story": "Chase plays like a shadow: quiet, likable, and hard to pin down. He builds real early loyalty with Yul and a strong bond with Kai, then detaches from alliances when they become too heavy. That instinct keeps him fluid, but it also leaves him without enough structure when Saplings implodes. He is frequently in conversations, rarely the loudest voice, and often the person others want nearby until they need a name. At the Full Metal Drama Tribal, the whole tribe scatters and no bloc lands cleanly. Chase loses the obstacle-course tiebreaker to Riya, a brutal end for a player who nearly slipped through.",
+      "gameplayStyle": "Quiet charm, loose footing",
+      "keyMoments": [
+        "Episode 1: Shares a sunrise talk with Yul that gives him early protection.",
+        "Episode 1: Votes Emmah despite discomfort, choosing safety over loyalty.",
+        "Episode 2: Models Saplings’ runway look and helps secure immunity.",
+        "Episode 3: Leaves The Iron Four quietly and drifts back toward Kai’s Camp Takeover orbit.",
+        "Episode 4: Confesses the reply-all email secret during Truth or Shark.",
+        "Episode 5: Refuses to write Yul’s name and has his vote stolen by Ally.",
+        "Episode 6: Votes Ellie while every alliance around him collapses.",
+        "Episode 6: Loses the tiebreaker to Riya and exits by the narrowest margin."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 4,
+      "alliances": [
+        "The Camp Takeover"
+      ],
+      "rivalries": [
+        "Ally"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 16,
+      "name": "Maggy",
+      "playerSlug": "maggy",
+      "phase": "Pre-Merge",
+      "notes": "Maggy’s loyalty to Oliver becomes her defining strength and her fatal blind spot.",
+      "strategicRank": 4.8,
+      "story": "Maggy brings sincerity into a game that treats sincerity like a weakness. She bonds quickly with Oliver, Rosa-Maria, James, and Aiden, finding comfort in people before she fully understands their agendas. Her challenge struggles put early heat on her, but her real danger is misplaced trust. The Ride or Die gives her purpose, then collapses around her in one of the ugliest pre-merge votes. Maggy walks into Tribal ready to protect Oliver, only to discover he has already written her name. Her exit is less a blindside than a heartbreak with parchment attached.",
+      "gameplayStyle": "Open heart, wrong allies",
+      "keyMoments": [
+        "Episode 1: Gets saved by Oliver from the pyramid trap collapse.",
+        "Episode 1: Bonds with Rosa-Maria over camp laughter and gets defended by Maggy’s social circle.",
+        "Episode 2: Forms The Ride or Die with Oliver and James.",
+        "Episode 4: Confesses the superglue secret during Truth or Shark.",
+        "Episode 4: Loses Full Slime Endurance after Oliver refuses to confess.",
+        "Episode 4: Votes Lake by miscommunication instead of holding the Jacques plan.",
+        "Episode 4: Is betrayed by Oliver, who votes her out.",
+        "Episode 4: Leaves calling Oliver’s betrayal the cruelest part."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 4,
+      "alliances": [
+        "The Ride or Die"
+      ],
+      "rivalries": [],
+      "socialScore": 0
+    },
+    {
+      "placement": 17,
+      "name": "Connor",
+      "playerSlug": "connor",
+      "phase": "Pre-Merge",
+      "notes": "Connor’s steady hero game is cut short by one stray vote after Tess’s Shot in the Dark detonates the plan.",
+      "strategicRank": 5.2,
+      "story": "Connor is the person everyone leans on before anyone realizes he has no one leaning back. He enters warm, reliable, and useful, creating easy bonds with Jacques, Aiden, Kai, Ellie, and the tribe’s quieter players. The producer swap puts him on Saplings, where he becomes both comfort and quiet threat. He dodges paintball shots all day and looks far more capable than the target list suggests. Then Tess hits safety with the Shot in the Dark, seven votes vanish, and Ellie’s lone vote becomes a guillotine. Connor leaves on one vote, the purest robbed pre-merge exit of the season.",
+      "gameplayStyle": "Steady hero, exposed luck",
+      "keyMoments": [
+        "Episode 1: Bonds with Jacques through tribe nicknames and with Oliver at arrival.",
+        "Episode 1: Climbs the pyramid cleanly before wiping out on the descent.",
+        "Episode 2: Is swapped to Saplings in the producer override.",
+        "Episode 2: Bonds with Kai at dawn after the swap.",
+        "Episode 3: Dodges repeated shots throughout Paintball Hunt, becoming impossible to catch.",
+        "Episode 3: Clashes with Yul after being repeatedly ignored and targeted in challenge chaos.",
+        "Episode 3: Votes Tess with the majority plan.",
+        "Episode 3: Is eliminated by Ellie’s single Connor vote after Tess’s successful Shot in the Dark cancels seven votes."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 1,
+      "alliances": [],
+      "rivalries": [
+        "Yul"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 18,
+      "name": "Ezekiel",
+      "playerSlug": "ezekiel",
+      "phase": "Pre-Merge",
+      "notes": "Ezekiel returns loudly, but poor challenge perception and fractured allies send him out before he can stabilize.",
+      "strategicRank": 3.9,
+      "story": "Ezekiel comes back determined to prove the old story wrong, but the game punishes him quickly. He lies to Oliver, makes small bonds, and tries to attach himself to Jacques’s plans, but challenge mistakes become the headline. In Egypt, the desert blame spiral finds him; on the runway, his weak contribution gives everyone an easy reason. Even Jacques, who promised him something, pivots when the vote demands it. Ezekiel sees the knife late, and the numbers are already gone. His jury-bench warning becomes sharper than his in-game résumé.",
+      "gameplayStyle": "Loud return, weak footing",
+      "keyMoments": [
+        "Episode 1: Arrives defiantly and immediately catches Ellie’s predatory attention.",
+        "Episode 1: Fabricates a rumor that Maggy mentioned Oliver’s name.",
+        "Episode 1: Struggles in rowing and gets blamed for slowing Embers down.",
+        "Episode 1: Is saved from a crocodile by Jen during the Nile crossing.",
+        "Episode 2: Makes a final two deal with Jacques that Jacques never intends to honor.",
+        "Episode 2: Contributes poor materials during Project Runaway.",
+        "Episode 2: Votes Lake while his bloc fractures.",
+        "Episode 2: Is voted out 6-2-2 as a challenge liability."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 6,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 0
+    },
+    {
+      "placement": 19,
+      "name": "Emmah",
+      "playerSlug": "emmah",
+      "phase": "Pre-Merge",
+      "notes": "Emmah burns bright for one episode, exposes Ally’s early control, and exits in a spectacular first Tribal blowup.",
+      "strategicRank": 4.4,
+      "story": "Emmah arrives saying this time might be different, but the island gets quiet for a reason. She performs well in the opening challenge and looks like someone who could matter, maybe more than people expected. Around camp, though, confidence becomes ammunition, and her name gains speed. Riya distrusts her, Ally centers the vote against her, and the Shot in the Dark gives her no rescue. At Tribal, Emmah keeps her composure until the votes land. Then she leaves by torchlight and detonates the truth: Ally ran the first vote, and everyone should remember it.",
+      "gameplayStyle": "Hot fuse, exposed truth",
+      "keyMoments": [
+        "Episode 1: Arrives to a noticeably quiet dock and immediate social tension.",
+        "Episode 1: Bonds uneasily with Ally while also making people nervous with confidence.",
+        "Episode 1: Performs well on the pyramid summit path and earns cross-tribe respect from Jacques.",
+        "Episode 1: Gets pushed toward crocodiles by Riya during the Nile crossing.",
+        "Episode 1: Is targeted by The Camp Takeover as the first vote.",
+        "Episode 1: Plays Shot in the Dark but is not safe.",
+        "Episode 1: Calls out Ally as the strategic center at Tribal.",
+        "Episode 1: Leaves in a fiery blowup, condemning the tribe’s safe play."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 7,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 0
+    },
+    {
+      "placement": 20,
+      "name": "Jacques",
+      "playerSlug": "jacques",
+      "phase": "Unknown",
+      "notes": "Jacques is the season’s strategic ghost: credited, feared, robbed, and officially marked by an unresolved placement anomaly.",
+      "strategicRank": 10,
+      "story": "Jacques plays one of the most aggressive strategic games on the island, whether or not the official board ever knows where to put him. He dominates early challenges, builds and betrays blocs, steals credit from James, and turns advantages into public theater. His Knowledge is Power play against Ellie becomes the biggest advantage swing of the season, and his idol play later wipes out four votes, resetting the endgame around him. Yet Jacques is also the architect of his own isolation: he alienates Rosa-Maria, Riya, Ellie, James, and nearly every late-game path. By the finale, he is still dangerous enough that the jungle itself becomes his last opponent. He returns empty-handed at final four in the aired story, but the season’s official ledger preserves him as something stranger — the most robbed, most strategic unresolved figure of Generations.",
+      "gameplayStyle": "Elegant schemes, poisoned bridges",
+      "keyMoments": [
+        "Episode 1: Tops the opening expedition with a massive individual score and summit shortcut.",
+        "Episode 2: Captures the Giant Crab and quietly pivots against Ezekiel despite his own bloc.",
+        "Episode 5: Steals credit for James’s Maggy move, creating a rivalry that shadows the season.",
+        "Episode 6: Captures the flag for Embers in Full Metal Drama.",
+        "Episode 10: Finds Knowledge is Power and steals Ellie’s idol at the merge Tribal.",
+        "Episode 12: Plays an idol and negates four votes, causing James’s first elimination.",
+        "Episode 14: Wins African Lying Safari by tranquilizing Chef with the decisive dart.",
+        "Episode 18: In the aired finale, returns empty-handed from the orienteering race and becomes the final juror."
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 2,
+      "advHeld": 0,
+      "votesReceived": 10,
+      "alliances": [
+        "The Camp Takeover"
+      ],
+      "rivalries": [
+        "Kai",
+        "Riya",
+        "Rosa-Maria",
+        "Jen",
+        "Aiden",
+        "Hunter",
+        "Lake",
+        "Ellie"
+      ],
+      "socialScore": 0
+    }
+  ],
+  "votingHistory": [
+    {
+      "episode": 1,
+      "eliminated": "Emmah",
+      "eliminatedSlug": "emmah",
+      "votes": [
+        {
+          "voter": "Kai",
+          "voterSlug": "kai",
+          "target": "Emmah",
+          "targetSlug": "emmah"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Tess",
+          "targetSlug": "tess"
+        },
+        {
+          "voter": "Hunter",
+          "voterSlug": "hunter",
+          "target": "Emmah",
+          "targetSlug": "emmah"
+        },
+        {
+          "voter": "Yul",
+          "voterSlug": "yul",
+          "target": "Emmah",
+          "targetSlug": "emmah"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Emmah",
+          "targetSlug": "emmah"
+        },
+        {
+          "voter": "Tess",
+          "voterSlug": "tess",
+          "target": "Ally",
+          "targetSlug": "ally"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Emmah",
+          "targetSlug": "emmah"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Emmah",
+          "targetSlug": "emmah"
+        },
+        {
+          "voter": "Emmah",
+          "voterSlug": "emmah",
+          "target": "Tess",
+          "targetSlug": "tess"
+        },
+        {
+          "voter": "Chase",
+          "voterSlug": "chase",
+          "target": "Emmah",
+          "targetSlug": "emmah"
+        }
+      ]
+    },
+    {
+      "episode": 2,
+      "eliminated": "Ezekiel",
+      "eliminatedSlug": "ezekiel",
+      "votes": [
+        {
+          "voter": "James",
+          "voterSlug": "james",
+          "target": "Ezekiel",
+          "targetSlug": "ezekiel"
+        },
+        {
+          "voter": "Maggy",
+          "voterSlug": "maggy",
+          "target": "Ezekiel",
+          "targetSlug": "ezekiel"
+        },
+        {
+          "voter": "Karol",
+          "voterSlug": "karol",
+          "target": "Lake",
+          "targetSlug": "lake"
+        },
+        {
+          "voter": "Rosa-Maria",
+          "voterSlug": "rosa-maria",
+          "target": "Ezekiel",
+          "targetSlug": "ezekiel"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Ezekiel",
+          "targetSlug": "ezekiel"
+        },
+        {
+          "voter": "Jen",
+          "voterSlug": "jen",
+          "target": "Ezekiel",
+          "targetSlug": "ezekiel"
+        },
+        {
+          "voter": "Ezekiel",
+          "voterSlug": "ezekiel",
+          "target": "Lake",
+          "targetSlug": "lake"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Jen",
+          "targetSlug": "jen"
+        },
+        {
+          "voter": "Oliver",
+          "voterSlug": "oliver",
+          "target": "Ezekiel",
+          "targetSlug": "ezekiel"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Jen",
+          "targetSlug": "jen"
+        }
+      ]
+    },
+    {
+      "episode": 3,
+      "eliminated": "Connor",
+      "eliminatedSlug": "connor",
+      "votes": [
+        {
+          "voter": "Kai",
+          "voterSlug": "kai",
+          "target": "Tess",
+          "targetSlug": "tess"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Tess",
+          "targetSlug": "tess"
+        },
+        {
+          "voter": "Hunter",
+          "voterSlug": "hunter",
+          "target": "Tess",
+          "targetSlug": "tess"
+        },
+        {
+          "voter": "Yul",
+          "voterSlug": "yul",
+          "target": "Tess",
+          "targetSlug": "tess"
+        },
+        {
+          "voter": "Tess",
+          "voterSlug": "tess",
+          "target": "Chase",
+          "targetSlug": "chase"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Tess",
+          "targetSlug": "tess"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Connor",
+          "targetSlug": "connor"
+        },
+        {
+          "voter": "Chase",
+          "voterSlug": "chase",
+          "target": "Tess",
+          "targetSlug": "tess"
+        },
+        {
+          "voter": "Connor",
+          "voterSlug": "connor",
+          "target": "Tess",
+          "targetSlug": "tess"
+        }
+      ]
+    },
+    {
+      "episode": 4,
+      "eliminated": "Maggy",
+      "eliminatedSlug": "maggy",
+      "votes": [
+        {
+          "voter": "James",
+          "voterSlug": "james",
+          "target": "Oliver",
+          "targetSlug": "oliver"
+        },
+        {
+          "voter": "Maggy",
+          "voterSlug": "maggy",
+          "target": "Lake",
+          "targetSlug": "lake"
+        },
+        {
+          "voter": "Karol",
+          "voterSlug": "karol",
+          "target": "Maggy",
+          "targetSlug": "maggy"
+        },
+        {
+          "voter": "Rosa-Maria",
+          "voterSlug": "rosa-maria",
+          "target": "Jacques",
+          "targetSlug": "jacques"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Maggy",
+          "targetSlug": "maggy"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Lake",
+          "targetSlug": "lake"
+        },
+        {
+          "voter": "Oliver",
+          "voterSlug": "oliver",
+          "target": "Maggy",
+          "targetSlug": "maggy"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Maggy",
+          "targetSlug": "maggy"
+        }
+      ]
+    },
+    {
+      "episode": 5,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "votes": [
+        {
+          "voter": "Kai",
+          "voterSlug": "kai",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Chase",
+          "targetSlug": "chase"
+        },
+        {
+          "voter": "Hunter",
+          "voterSlug": "hunter",
+          "target": "Yul",
+          "targetSlug": "yul"
+        },
+        {
+          "voter": "Yul",
+          "voterSlug": "yul",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Tess",
+          "voterSlug": "tess",
+          "target": "Yul",
+          "targetSlug": "yul"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Yul",
+          "targetSlug": "yul"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Yul",
+          "targetSlug": "yul"
+        },
+        {
+          "voter": "Chase",
+          "voterSlug": "chase",
+          "target": "Ally",
+          "targetSlug": "ally"
+        }
+      ]
+    },
+    {
+      "episode": 6,
+      "eliminated": "Chase",
+      "eliminatedSlug": "chase",
+      "votes": [
+        {
+          "voter": "Kai",
+          "voterSlug": "kai",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Kai",
+          "targetSlug": "kai"
+        },
+        {
+          "voter": "Hunter",
+          "voterSlug": "hunter",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Tess",
+          "voterSlug": "tess",
+          "target": "Chase",
+          "targetSlug": "chase"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Tess",
+          "targetSlug": "tess"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Chase",
+          "targetSlug": "chase"
+        },
+        {
+          "voter": "Chase",
+          "voterSlug": "chase",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "James",
+          "voterSlug": "james",
+          "target": "Ally",
+          "targetSlug": "ally"
+        }
+      ]
+    },
+    {
+      "episode": 7,
+      "eliminated": "Kai",
+      "eliminatedSlug": "kai",
+      "votes": [
+        {
+          "voter": "Karol",
+          "voterSlug": "karol",
+          "target": "Rosa-Maria",
+          "targetSlug": "rosa-maria"
+        },
+        {
+          "voter": "Rosa-Maria",
+          "voterSlug": "rosa-maria",
+          "target": "Karol",
+          "targetSlug": "karol"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Kai",
+          "targetSlug": "kai"
+        },
+        {
+          "voter": "Jen",
+          "voterSlug": "jen",
+          "target": "Kai",
+          "targetSlug": "kai"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Kai",
+          "targetSlug": "kai"
+        },
+        {
+          "voter": "Oliver",
+          "voterSlug": "oliver",
+          "target": "Kai",
+          "targetSlug": "kai"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Kai",
+          "targetSlug": "kai"
+        },
+        {
+          "voter": "Kai",
+          "voterSlug": "kai",
+          "target": "Jacques",
+          "targetSlug": "jacques"
+        }
+      ]
+    },
+    {
+      "episode": 8,
+      "eliminated": "Oliver",
+      "eliminatedSlug": "oliver",
+      "votes": [
+        {
+          "voter": "Karol",
+          "voterSlug": "karol",
+          "target": "Oliver",
+          "targetSlug": "oliver"
+        },
+        {
+          "voter": "Rosa-Maria",
+          "voterSlug": "rosa-maria",
+          "target": "Karol",
+          "targetSlug": "karol"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Rosa-Maria",
+          "targetSlug": "rosa-maria"
+        },
+        {
+          "voter": "Jen",
+          "voterSlug": "jen",
+          "target": "Rosa-Maria",
+          "targetSlug": "rosa-maria"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Oliver",
+          "targetSlug": "oliver"
+        },
+        {
+          "voter": "Oliver",
+          "voterSlug": "oliver",
+          "target": "Karol",
+          "targetSlug": "karol"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Karol",
+          "targetSlug": "karol"
+        }
+      ]
+    },
+    {
+      "episode": 9,
+      "eliminated": "Tess",
+      "eliminatedSlug": "tess",
+      "votes": [
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Hunter",
+          "voterSlug": "hunter",
+          "target": "Yul",
+          "targetSlug": "yul"
+        },
+        {
+          "voter": "Tess",
+          "voterSlug": "tess",
+          "target": "Yul",
+          "targetSlug": "yul"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Tess",
+          "targetSlug": "tess"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Yul",
+          "targetSlug": "yul"
+        },
+        {
+          "voter": "James",
+          "voterSlug": "james",
+          "target": "Yul",
+          "targetSlug": "yul"
+        },
+        {
+          "voter": "Yul",
+          "voterSlug": "yul",
+          "target": "James",
+          "targetSlug": "james"
+        }
+      ]
+    },
+    {
+      "episode": 10,
+      "eliminated": "Karol",
+      "eliminatedSlug": "karol",
+      "votes": [
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Rosa-Maria",
+          "targetSlug": "rosa-maria"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        },
+        {
+          "voter": "James",
+          "voterSlug": "james",
+          "target": "Karol",
+          "targetSlug": "karol"
+        },
+        {
+          "voter": "Rosa-Maria",
+          "voterSlug": "rosa-maria",
+          "target": "Karol",
+          "targetSlug": "karol"
+        },
+        {
+          "voter": "Karol",
+          "voterSlug": "karol",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Karol",
+          "targetSlug": "karol"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Karol",
+          "targetSlug": "karol"
+        },
+        {
+          "voter": "Hunter",
+          "voterSlug": "hunter",
+          "target": "Rosa-Maria",
+          "targetSlug": "rosa-maria"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Jen",
+          "voterSlug": "jen",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        }
+      ]
+    },
+    {
+      "episode": 11,
+      "eliminated": "Hunter",
+      "eliminatedSlug": "hunter",
+      "votes": [
+        {
+          "voter": "James",
+          "voterSlug": "james",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Jacques",
+          "targetSlug": "jacques"
+        },
+        {
+          "voter": "Rosa-Maria",
+          "voterSlug": "rosa-maria",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "James",
+          "targetSlug": "james"
+        },
+        {
+          "voter": "Jen",
+          "voterSlug": "jen",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Hunter",
+          "voterSlug": "hunter",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Riya",
+          "targetSlug": "riya"
+        }
+      ]
+    },
+    {
+      "episode": 12,
+      "eliminated": "James",
+      "eliminatedSlug": "james",
+      "votes": [
+        {
+          "voter": "James",
+          "voterSlug": "james",
+          "target": "Ally",
+          "targetSlug": "ally"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "James",
+          "targetSlug": "james"
+        },
+        {
+          "voter": "Rosa-Maria",
+          "voterSlug": "rosa-maria",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Rosa-Maria",
+          "targetSlug": "rosa-maria"
+        },
+        {
+          "voter": "Jen",
+          "voterSlug": "jen",
+          "target": "James",
+          "targetSlug": "james"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Jacques",
+          "targetSlug": "jacques"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Jacques",
+          "targetSlug": "jacques"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Jacques",
+          "targetSlug": "jacques"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "Jacques",
+          "targetSlug": "jacques"
+        }
+      ]
+    },
+    {
+      "episode": 14,
+      "eliminated": "Ellie",
+      "eliminatedSlug": "ellie",
+      "votes": [
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        },
+        {
+          "voter": "Rosa-Maria",
+          "voterSlug": "rosa-maria",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Lake",
+          "targetSlug": "lake"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "James",
+          "targetSlug": "james"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        },
+        {
+          "voter": "Ellie",
+          "voterSlug": "ellie",
+          "target": "James",
+          "targetSlug": "james"
+        },
+        {
+          "voter": "James",
+          "voterSlug": "james",
+          "target": "Ellie",
+          "targetSlug": "ellie"
+        }
+      ]
+    },
+    {
+      "episode": 15,
+      "eliminated": "Lake",
+      "eliminatedSlug": "lake",
+      "votes": [
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Rosa-Maria",
+          "targetSlug": "rosa-maria"
+        },
+        {
+          "voter": "Rosa-Maria",
+          "voterSlug": "rosa-maria",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Lake",
+          "targetSlug": "lake"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "James",
+          "voterSlug": "james",
+          "target": "Jacques",
+          "targetSlug": "jacques"
+        }
+      ]
+    },
+    {
+      "episode": 16,
+      "eliminated": "Rosa-Maria",
+      "eliminatedSlug": "rosa-maria",
+      "votes": [
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Rosa-Maria",
+          "targetSlug": "rosa-maria"
+        },
+        {
+          "voter": "Rosa-Maria",
+          "voterSlug": "rosa-maria",
+          "target": "Jacques",
+          "targetSlug": "jacques"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "James",
+          "targetSlug": "james"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "James",
+          "voterSlug": "james",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        }
+      ]
+    },
+    {
+      "episode": 17,
+      "eliminated": "Aiden",
+      "eliminatedSlug": "aiden",
+      "votes": [
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "James",
+          "targetSlug": "james"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Jacques",
+          "targetSlug": "jacques"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "James",
+          "targetSlug": "james"
+        },
+        {
+          "voter": "James",
+          "voterSlug": "james",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        }
+      ]
+    }
+  ],
+  "finalTribalCouncil": {
+    "votes": [
+      {
+        "juror": "Karol",
+        "jurorSlug": "karol",
+        "votedFor": "Riya",
+        "votedForSlug": "riya"
+      },
+      {
+        "juror": "Hunter",
+        "jurorSlug": "hunter",
+        "votedFor": "James",
+        "votedForSlug": "james"
+      },
+      {
+        "juror": "Jen",
+        "jurorSlug": "jen",
+        "votedFor": "James",
+        "votedForSlug": "james"
+      },
+      {
+        "juror": "Ellie",
+        "jurorSlug": "ellie",
+        "votedFor": "James",
+        "votedForSlug": "james"
+      },
+      {
+        "juror": "Lake",
+        "jurorSlug": "lake",
+        "votedFor": "James",
+        "votedForSlug": "james"
+      },
+      {
+        "juror": "Rosa-Maria",
+        "jurorSlug": "rosa-maria",
+        "votedFor": "James",
+        "votedForSlug": "james"
+      },
+      {
+        "juror": "Aiden",
+        "jurorSlug": "aiden",
+        "votedFor": "Riya",
+        "votedForSlug": "riya"
+      },
+      {
+        "juror": "Jacques",
+        "jurorSlug": "jacques",
+        "votedFor": "James",
+        "votedForSlug": "james"
+      },
+      {
+        "juror": "Ally",
+        "jurorSlug": "ally",
+        "votedFor": "James",
+        "votedForSlug": "james"
+      }
+    ]
+  },
+  "seasonNarrative": "Generations is a season about unstable power. The early game belongs to tribes that cannot keep their own alliances intact: The Camp Takeover fractures immediately, The Ride or Die collapses in betrayal, and nearly every bloc becomes a temporary shelter rather than a home. The pre-merge is defined by chaos mechanisms — swaps, journeys, Shot in the Dark saves, vote steals, vote blocks, and tiebreakers that turn simple votes into disasters. At the merge, the game becomes openly predatory: Jacques steals Ellie’s idol, Karol is removed in a public vote, Hunter and Jen are cut for their social danger, and James is eliminated only to fight his way back through the Aftermayhem. The endgame is a knife fight among players nobody fully trusts: Riya survives by force, Aiden by perception, Ally by social maneuvering, Jacques by advantage terror, and James by refusing to stay dead. By the finale, the jury rewards not the cleanest game, but the player who best explains the wreckage. James wins because he makes every betrayal sound like architecture.",
+  "awards": {
+    "bestStrategic": {
+      "name": "Jacques",
+      "playerSlug": "jacques",
+      "description": "Jacques drove the season’s most complex strategic architecture: early blocs, vote pivots, Knowledge is Power, an idol play that erased four votes, and repeated attempts to dictate endgame threat priority."
+    },
+    "bestSocial": {
+      "name": "Oliver",
+      "playerSlug": "oliver",
+      "description": "Oliver built the season’s strongest bond profile, especially with Rosa-Maria and Jacques, turning underdog warmth into real protection even when his strategy collapsed."
+    },
+    "bestPhysical": {
+      "name": "Riya",
+      "playerSlug": "riya",
+      "description": "Riya’s two immunity wins and late-game survival performances made her the season’s top physical finisher, especially in Top Dog and Camp Castaways.",
+      "wins": 2
+    },
+    "mostClutch": {
+      "name": "James",
+      "playerSlug": "james",
+      "description": "James won the Aftermayhem to return, survived fire against Aiden, won the final perch, and chose the matchup that secured the season."
+    },
+    "mostLoyal": {
+      "name": "Lake",
+      "playerSlug": "lake",
+      "description": "Lake’s game repeatedly bent toward loyalty — to Jen, Rosa-Maria, Aiden, and Ally — even when pure strategy demanded colder choices."
+    },
+    "bestUnderdog": {
+      "name": "Oliver",
+      "playerSlug": "oliver",
+      "description": "Oliver was underestimated from the dock onward and still built ride-or-die bonds strong enough to define the pre-merge emotional story."
+    },
+    "biggestVillain": {
+      "name": "Riya",
+      "playerSlug": "riya",
+      "description": "Riya shoved, framed, stole, mocked, lied, and still made Final Tribal; her villainy was not a side effect of her game, it was the engine."
+    },
+    "mostChaotic": {
+      "name": "James",
+      "playerSlug": "james",
+      "description": "James turned nearly every alliance into a crime scene, got voted out, returned, and somehow made the chaos look like a route to victory."
+    },
+    "quietestThreat": {
+      "name": "Connor",
+      "playerSlug": "connor",
+      "description": "Connor was liked, steady, and capable enough that one stray vote could plausibly be justified as removing a winner threat."
+    },
+    "seasonMVP": {
+      "name": "James",
+      "playerSlug": "james",
+      "description": "James is the season’s central force: early architect, merge immunity winner, Aftermayhem returnee, final immunity holder, and eventual champion."
+    },
+    "mostTragic": {
+      "name": "Maggy",
+      "playerSlug": "maggy",
+      "description": "Maggy’s loyalty to Oliver was sincere to the final second, which made his vote against her one of the season’s cruelest emotional blows."
+    },
+    "mostUnlucky": {
+      "name": "Connor",
+      "playerSlug": "connor",
+      "description": "Connor leaves because Tess hits a Shot in the Dark and seven votes vanish, turning Ellie’s lone vote into a season-ending strike."
+    },
+    "ironPerson": {
+      "name": "Riya",
+      "playerSlug": "riya",
+      "description": "Riya absorbs hatred, failed plans, idol fallout, tiebreaker danger, and direct targeting, yet keeps standing until Final Tribal."
+    },
+    "biggestMeltdown": {
+      "name": "Emmah",
+      "playerSlug": "emmah",
+      "description": "Emmah detonates at the first Tribal, calling out Ally’s control and torching the tribe’s safe-game mentality on her way out.",
+      "episode": 1
+    },
+    "playerOfSeason": {
+      "gold": {
+        "name": "James",
+        "playerSlug": "james",
+        "description": "Winner, returnee, final immunity holder, and narrator of the season’s strategic violence."
+      },
+      "silver": {
+        "name": "Riya",
+        "playerSlug": "riya",
+        "description": "Runner-up, two-time immunity winner, and the season’s most durable villain."
+      }
+    },
+    "heroOfSeason": {
+      "gold": {
+        "name": "Rosa-Maria",
+        "playerSlug": "rosa-maria",
+        "description": "Rosa-Maria’s loyalty, camp work, and emotional bonds made her the season’s strongest heroic presence despite messy votes."
+      },
+      "silver": {
+        "name": "Aiden",
+        "playerSlug": "aiden",
+        "description": "Aiden’s empathy, reads, and fan-favorite energy kept the game human even when he was scheming."
+      }
+    },
+    "villainOfSeason": {
+      "gold": {
+        "name": "Riya",
+        "playerSlug": "riya",
+        "description": "Riya weaponized selfishness, sabotage, and personal grudges all the way to the final two."
+      },
+      "silver": {
+        "name": "Jacques",
+        "playerSlug": "jacques",
+        "description": "Jacques’s schemes were elegant but ruthless, and his advantage plays made him the strategic villain behind several collapses."
+      }
+    },
+    "compBeast": {
+      "gold": {
+        "name": "Riya",
+        "playerSlug": "riya",
+        "description": "Two individual immunity wins and repeated high-leverage performances give Riya the edge as the top competitor."
+      },
+      "silver": {
+        "name": "Ally",
+        "playerSlug": "ally",
+        "description": "Ally’s two immunity wins came exactly when her name was most dangerous."
+      }
+    },
+    "socialQueenKing": {
+      "gold": {
+        "name": "Oliver",
+        "playerSlug": "oliver",
+        "description": "Oliver’s average bond and unbreakable connection with Rosa-Maria made him the season’s social standout."
+      },
+      "silver": {
+        "name": "Jen",
+        "playerSlug": "jen",
+        "description": "Jen’s check-ins, loyalty, and genuine care made her a jury threat before she could reach the end."
+      }
+    },
+    "masterStrategist": {
+      "gold": {
+        "name": "Jacques",
+        "playerSlug": "jacques",
+        "description": "The season’s highest strategic profile belongs to Jacques, whose Knowledge is Power and idol play reshaped the merge."
+      },
+      "silver": {
+        "name": "James",
+        "playerSlug": "james",
+        "description": "James’s strategy was messier but ultimately more successful, converting chaos into the winning case."
+      }
+    },
+    "mostBrutalExit": {
+      "gold": {
+        "name": "Aiden",
+        "playerSlug": "aiden",
+        "description": "Aiden leaves at final five after a tied vote and fire-making loss to James, one round from the finale structure he helped create."
+      },
+      "silver": {
+        "name": "Connor",
+        "playerSlug": "connor",
+        "description": "Connor’s one-vote elimination after Tess’s Shot in the Dark remains the season’s harshest luck-based pre-merge exit."
+      }
+    },
+    "advantageKing": {
+      "gold": {
+        "name": "Jacques",
+        "playerSlug": "jacques",
+        "description": "Jacques turns Knowledge is Power into an idol theft, then turns that idol into a four-vote negation."
+      },
+      "silver": {
+        "name": "Rosa-Maria",
+        "playerSlug": "rosa-maria",
+        "description": "Rosa-Maria’s amulet, extra vote, and vote steal usage fuel one of the season’s most complicated late-game Tribals."
+      }
+    },
+    "mostRobbedPlayer": {
+      "gold": {
+        "name": "Jacques",
+        "playerSlug": "jacques",
+        "description": "Jacques plays the strongest strategic game on paper and still falls short of the Final Tribal stage, leaving as the season’s most debated player."
+      }
+    },
+    "ftcGame": {
+      "gold": {
+        "name": "James",
+        "playerSlug": "james",
+        "description": "James owns the coldness of his game at Final Tribal and frames every betrayal as intentional architecture, earning seven jury votes."
+      }
+    },
+    "mostRobbedFinalist": {
+      "gold": {
+        "name": "Riya",
+        "playerSlug": "riya",
+        "description": "Riya reaches the end with more immunity wins than James and a ruthless strategic résumé, but her social damage caps her at two votes."
+      }
+    },
+    "messiestFeud": {
+      "players": [
+        "Riya",
+        "Hunter"
+      ],
+      "description": "Riya and Hunter’s hatred becomes so visible that the tribe physically routes around them at camp, and their votes repeatedly target each other long after strategy says to move on."
+    },
+    "biggestBetrayal": {
+      "betrayer": "James",
+      "betrayed": "Aiden",
+      "episode": 17,
+      "description": "James survives the tied final-five vote by beating Aiden in fire, ending the game of the player who had spent weeks reading everyone else before he could read this ending."
+    },
+    "secondBiggestBetrayal": {
+      "betrayer": "Oliver",
+      "betrayed": "Maggy",
+      "episode": 4,
+      "description": "Oliver writes Maggy’s name while she still believes The Ride or Die is real, turning her loyalty into one of the season’s most painful exits."
+    },
+    "legacyMoment": {
+      "name": "Jacques steals Ellie’s idol with Knowledge is Power",
+      "episode": 10,
+      "description": "At the merge Tribal, Jacques takes Ellie’s idol in public, detonating the advantage economy and setting up the idol play that later sends James out before his comeback."
+    },
+    "fanFavorite": {
+      "name": "Aiden",
+      "playerSlug": "aiden",
+      "description": "Aiden was the season's most popular player with the fans."
+    }
+  },
+  "emoji": "[AI_FILL]"
+}

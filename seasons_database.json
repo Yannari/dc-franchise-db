@@ -1,8 +1,8 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 11,
-    "totalPlayers": 120,
+    "totalSeasons": 12,
+    "totalPlayers": 134,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
@@ -378,6 +378,42 @@
       "theme": "Cursed Island begins as a survival test and becomes a study in how trust breaks under pressure. The pre-merge is defined by sabotage, swaps, exposed idols, and tribes that never fully stabilize: Ashley is framed, Drew is discarded, Will is betrayed, Eureka is rocked out, Wix is exiled by emissary power, Grett detonates half the game on her way out, Nick exposes alliances, and Sterling falls to a fractured Teal endgame. At the merge, no alliance survives first contact with public voting, idol insurance, or personal grudges. Ellie weaponizes a Super Idol, Dan loses the one read he needed, Jake's heart becomes both shield and target, and Fiore's Second Life Amulet rewrites the final six. Through it all, Miriam and Thom build a bond so visible it should destroy them, but instead it carries them to the finale. The season ends not with a jury speech, but with a volcanic race where Miriam weaponizes that bond one final time and steals the million from the person who trusted her most.",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s11-cast.png",
+      "emoji": ""
+    },
+    {
+      "seasonNumber": 12,
+      "title": "Total Drama: Generations",
+      "subtitle": "A season of fractured alliances, public betrayals, advantage warfare, and one cold-blooded winner who turned chaos into a résumé.",
+      "castSize": 20,
+      "episodeCount": 18,
+      "jurySize": 0,
+      "winner": {
+        "name": "James",
+        "playerSlug": "james",
+        "vote": "7-2",
+        "runnerUp": "Riya",
+        "keyStats": "James wins 7-2 over Riya after surviving 9 votes against, winning 1 individual immunity, returning through the Aftermayhem, and claiming final immunity at the last possible moment.",
+        "strategy": "James plays a restless, opportunistic game: he builds alliances quickly, abandons them before they can trap him, weaponizes misinformation, and repeatedly turns personal tension into strategic cover. His greatest strength is timing — he knows when to hide behind louder players, when to expose a threat, and when to make the vote feel inevitable.",
+        "legacy": "James leaves as one of the season’s defining schemers: messy, polarizing, and frequently distrusted, but impossible for the jury to deny. His win becomes the signature case study for how a player can be voted out, fight back in, and still control the ending."
+      },
+      "awards": {
+        "fanFavorite": {
+          "name": "Aiden",
+          "playerSlug": "aiden"
+        },
+        "bestStrategic": {
+          "name": "Jacques",
+          "playerSlug": "jacques"
+        },
+        "mostChallengeWins": {
+          "name": "Riya",
+          "playerSlug": "riya",
+          "detail": "2 wins"
+        }
+      },
+      "theme": "Generations is a season about unstable power. The early game belongs to tribes that cannot keep their own alliances intact: The Camp Takeover fractures immediately, The Ride or Die collapses in betrayal, and nearly every bloc becomes a temporary shelter rather than a home. The pre-merge is defined by chaos mechanisms — swaps, journeys, Shot in the Dark saves, vote steals, vote blocks, and tiebreakers that turn simple votes into disasters. At the merge, the game becomes openly predatory: Jacques steals Ellie’s idol, Karol is removed in a public vote, Hunter and Jen are cut for their social danger, and James is eliminated only to fight his way back through the Aftermayhem. The endgame is a knife fight among players nobody fully trusts: Riya survives by force, Aiden by perception, Ally by social maneuvering, Jacques by advantage terror, and James by refusing to stay dead. By the finale, the jury rewards not the cleanest game, but the player who best explains the wreckage. James wins because he makes every betrayal sound like architecture.",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/s12-cast.png",
       "emoji": ""
     }
   ]

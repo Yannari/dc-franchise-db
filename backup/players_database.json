@@ -1,8 +1,8 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 10,
-    "totalPlayers": 102,
+    "totalSeasons": 12,
+    "totalPlayers": 134,
     "description": "Total Drama franchise player statistics and performance data"
   },
   "players": [
@@ -613,7 +613,7 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 6.0
+      "avgPlacement": 6
     },
     {
       "id": "bridgette",
@@ -1887,9 +1887,10 @@
       "name": "Ezekiel",
       "seasons": [
         2,
-        1
+        1,
+        12
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 4,
       "wins": 0,
       "totalChallengeWins": 1,
@@ -1939,6 +1940,23 @@
             "Reached the Final 4 — the deepest run of any first-boot archetype in franchise history.",
             "Lost fire-making to Alejandro at F4 — one clutch moment ending a long journey."
           ]
+        },
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Ezekiel was the definition of 'scrappy survives.' He found 2 idols over the season and kept slipping through danger windows with just enough information and just enough nerve. Even without a big challenge résumé (1 total wins), he played the advantage game like a veteran and made it all the way to Final 4. There, the season ended in the most brutal way possible: fire-making, where he lost to Alejandro and watched the title disappear in smoke (Result: fire-making loss; 4th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nEzekiel’s Season 2 on Killer Grips became legendary at the merge when his idol play protected Alejandro and erased a pile of votes, rewiring the entire post-merge. That move turned him into a kingmaker — and a must-remove threat. He was taken out at Final 6 once the cast agreed the window to beat him was closing (Ezekiel voted out, 4–2).",
@@ -2182,7 +2200,7 @@
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Gwen survived the early chaos by keeping her circle small and her threat level lower than her talent. But Season 1’s tribe swap punished solitary games: a 5–4 vote where one new connection mattered more than everything she’d built before. She didn’t get outplayed in a duel—she got caught in the first real math problem of the season, and the numbers chose her (Result: tribe-swap casualty; 16th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nGwen’s Season 2 on the Screaming Gaffers was played from the edges: selective trust, sharp reads, and constant threat-management. A deadlocked Tribal forced a re-vote around her, showing how evenly the power split had become. She ultimately went out in the season’s double-elimination sequence (Gwen finishes 8th), where tempo beat nuance.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nEdge of Extinction (Season 4) turned Gwen into an endgame machine. After surviving the Yellow → Red → Campers shuffle, she caught fire late with four straight immunity wins (Episodes 11–14), a franchise record that forced everyone to plan around her. With the finale in sight, the run ended at the final hurdle when Alejandro beat her at fire‑making. Result: Gwen was eliminated at Final 4.\n\nSEASON 10 — Champions vs Contenders\n────────\nGwen enters softly, already guarded, and quickly finds herself in a tribe where louder strategists define the pace. She bonds with Zoey and forms the Marshmallow Mafia, a relationship built more on trust than numbers. Losing her Journey vote is disastrous, leaving her unable to help herself at the tribal where Bowie consolidates The Movement's control. Her name becomes inevitable before she can build a counterforce. On Redemption Island, she beats Sam in a gritty endurance duel and briefly looks like she might claw back into the game. Josee ends that run by the narrowest emotional margin, and Gwen leaves as a player the season never allowed to fully ignite.",
       "seasonsPlayed": 3,
       "totalJuryVotes": 0,
-      "avgPlacement": 11.0
+      "avgPlacement": 11
     },
     {
       "id": "harold",
@@ -2434,9 +2452,10 @@
       "name": "Jacques",
       "seasons": [
         6,
-        7
+        7,
+        12
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 1,
       "wins": 1,
       "totalChallengeWins": 10,
@@ -2516,6 +2535,23 @@
           "rivalries": [
             "Carrie"
           ]
+        },
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "On Blood vs. Water (Season 6), Jacques turned the Ice Dancers pairing with Josee into a masterclass in controlled threat management. While louder duos burned trust and idols, he stayed ‘useful’—competent in challenges, calm in camp, and quietly steering the merge vote map by weaponizing other people’s feuds. He survived the season’s chaos points (tribe re-draw, Redemption returns, rock-draw fallout) and arrived at the end with the cleanest résumé left. In the finale, the jury didn’t debate—they crowned him in a 7–1–0 landslide. (Result: Season 6 champion, 1st.)\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nJacques’ Fan vs Favorites story was domination… until the pressure snapped him. He stacked wins early and often (season-best 6 total challenge wins, including 5 immunities), while locking an unbreakable strategic duo with Taylor that shaped the merge vote map. Even when he wasn’t beloved, he was unavoidable: he kept collecting allies through the numbers game and used immunity streaks to force everyone else to cannibalize instead. But the deeper the game went, the more personal it became, especially his escalating feud with Carrie that eventually hit extreme hatred. At Final 4, a meltdown wiped out the last stretch of his endgame, and he quit the game outright—turning what looked like a potential winner run into the season’s most dramatic collapse.",
@@ -2900,7 +2936,7 @@
       "story": "SEASON 5 — Rescue Island\nSEASON 6 — Blood vs. Water\nPreviously seen in S5, Josee’s best finish before Blood vs. Water was 13th.\n\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Josee and Jacques arrived with a reputation for aggression—and the cast treated them like a loaded weapon. After surviving the first wave, Josee became the clean ‘separate the Ice Dancers’ target: she was voted out in Episode 5 on a decisive 6–1 and sent to Redemption, where she was eventually eliminated. Her arc was a reminder that intimidation can win challenges, but it also paints a target you can’t always outrun. (Result: voted out 6–1 → RI; 12th.)\n\nSEASON 10 — Champions vs Contenders\n────────\nJosee plays the early game with emotion on the surface and loyalty underneath, bonding tightly with Jasmine and Brick while clashing with Stephanie and Hicks. Her outburst at the first tribal exposes Hicks's plan and keeps her alive by the slimmest margin. She becomes the kind of player people both protect and fear, because no conversation around her stays quiet for long. Her Episode 4 vote is chaotic enough to send her to Redemption Island, where she defeats Gwen and Courtney with raw competitiveness. But the island is not a long-term home for her. Priya beats her in Water Carry, and Josee exits furious, convinced the second chance still was not enough.",
       "totalJuryVotes": 0,
       "seasonsPlayed": 2,
-      "avgPlacement": 13.0
+      "avgPlacement": 13
     },
     {
       "id": "junior",
@@ -4173,7 +4209,7 @@
       "story": "SEASON 5 — Rescue Island\nSEASON 6 — Blood vs. Water\nPreviously seen in S5, Ryan’s best finish before Blood vs. Water was 3th.\n\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Ryan and Stephanie were the combustible pair that everyone could feel coming—the kind that wins moments but fractures rooms. Once the merge arrived, his vote-war fallout with Emma became a season-defining crack, turning strategy into a cycle of retaliation. The house eventually chose stability over chaos: Ryan was voted out in Episode 12 (5–2–1) and sent to Redemption, where his run ended. (Result: voted out 5–2–1 → RI; 8th.)\n\nSEASON 10 — Champions vs Contenders\n────────\nRyan walks into the season like a challenge threat and spends the early game learning that strength alone is never enough. He forms and fractures bonds with Sanders, Cody, Zoey, Carrie, Bowie, and Brick, often sitting at the center of competing emotional commitments. His merge game is strong because people trust him in pairs: Zoey trusts him, Carrie trusts him, Brick trusts him, and Bowie needs him. But every bond becomes a debt, and the Carrie vote exposes how hard it is for Ryan to separate affection from endgame math. He wins repeated immunities when he needs them most, including the Rapa Phooey and Super Hero-ld victories that drag him into the final four. At the last vote before the finale, he flips off Bowie's plan, loses protection, and exits with his integrity intact but the game gone.",
       "totalJuryVotes": 2,
       "seasonsPlayed": 2,
-      "avgPlacement": 5.0
+      "avgPlacement": 5
     },
     {
       "id": "sadie",
@@ -4921,7 +4957,7 @@
       ],
       "story": "On Blood vs. Water (Season 6), Stephanie came in with Ryan as pure intensity—competitive, confrontational, and always one argument away from a blow-up. That edge kept her relevant early, but in a pairs season it also makes you radioactive: once the tribe needed an easy reset vote, she was cut in Episode 6 on a 6–1. Even on Redemption she stayed on-brand, famously throwing an idol clue into the fire—burning information the way she burned bridges. (Result: voted out 6–1 → RI; 13th.)\n\nSEASON 10 — Champions vs Contenders\n────────\nStephanie starts with a Vote Steal and the confidence of someone who wants to matter in every room. She manipulates Priya early, bonds with Tyler, and later steps away from the Chaos Crew when the trust no longer serves her. Her camp value is real: she rallies people, rebuilds shelter, and shows flashes of social control. But she also drifts between structures without securing a stable shield at the exact moment the ambassador twist arrives. Bowie and Zoey's negotiation turns her into the sacrifice, and she is eliminated without a vote, without a duel, and without using the full weight of her advantage. Her exit feels abrupt because her game still had ammunition left.",
       "seasonsPlayed": 1,
-      "avgPlacement": 12.0
+      "avgPlacement": 12
     },
     {
       "id": "sugar",
@@ -5232,7 +5268,7 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 18.0
+      "avgPlacement": 18
     },
     {
       "id": "zoey",
@@ -6145,9 +6181,10 @@
       "id": "jen",
       "name": "Jen",
       "seasons": [
-        8
+        8,
+        12
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 5,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -6193,6 +6230,23 @@
           "rivalries": [
             "Sanders"
           ]
+        },
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "The Civilians were supposed to be cannon fodder. Nobody told Jen. From Episode 1 she ran her tribe like a social director — managing the Gerry-Chet blood feud, identifying Sanders as her long-term partner, and positioning herself as the one face every faction trusted. She entered the merge holding three simultaneous Unbreakable Relationships and a Strong Bond with Alejandro, a social portfolio nobody in the franchise had ever assembled at once. She won merge immunity when it mattered most, helped orchestrate the systematic dismantling of every major legend — Owen, Leshawna, MacArthur — and for six consecutive episodes was never seriously targeted. The jury respected her. Her allies loved her. And then Sanders played an idol on the one person Jen had voted to protect, and the revote took everything. She was betrayed by her Unbreakable partner using the exact move Jen had pioneered. Voted for Cameron at FTC anyway. The Black Widow who got caught in her own web."
@@ -6389,7 +6443,7 @@
         }
       ],
       "story": "She arrived as one of six Civilians — the season's sacrificial lambs, assembled to be picked off by legends. Her tribe was decimated in three straight tribals. Her closest ally MacArthur was on the other tribe. By the merge she had one idol, zero allies in the majority, and every reason to accept an honorable early jury exit. Instead she ran the post-merge. She built simultaneous Unbreakable bonds with Jen and MacArthur while quietly accumulating influence over Alejandro and Cameron. When the majority came for MacArthur with five votes, she negated every single one. When Jen — her closest ally, her strategic partner, her shield — became the biggest threat to her endgame, she won immunity, found a second idol, played it on her biggest rival, and watched Jen go home on the revote. She called it avenging MacArthur. It was also just brilliant. Won F4 immunity, dictated Gerry's exit, then lost the finale challenge by a thread to the man she'd saved twice. The most complete non-winner game in franchise history.\n\nSEASON 10 — Champions vs Contenders\n────────\nSanders enters as the golden hero trying to finish unfinished business, but her game is repeatedly caught between loyalty and self-preservation. She forms The Oath with Ryan, fractures it, wins Awake-A-Thon for her tribe, and reaches merge as one of the most feared challenge performers in the cast. Her first boot at merge sends her to Redemption Island, where she transforms from fallen hero into final boss. Duel after duel, she beats Zoey, Scott, Priya, Cody, and Carrie, carving a new season inside the season. When she returns with five straight wins, everyone knows she cannot be allowed near the final challenge. The endgame vote against her is almost a compliment: they remove her because if they do not, she may never lose again.",
-      "avgPlacement": 4.0
+      "avgPlacement": 4
     },
     {
       "id": "axel",
@@ -6654,9 +6708,10 @@
       "id": "chase",
       "name": "Chase",
       "seasons": [
-        9
+        9,
+        12
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 3,
       "wins": 0,
       "totalChallengeWins": 3,
@@ -6702,6 +6757,23 @@
           "rivalries": [
             "Ripper"
           ]
+        },
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Chase begins as Bowie’s pliable lieutenant on a starving Yellow, but his pocket game is real—he finds the tribe idol and detonates it in the swap to topple Hicks. The merge casts him as swing between the Misfits and the Core, and he stockpiles leverage with a secret Vote Stopper. His late surge defines him: advantage sprint, obstacle‑course immunity, then the dare‑soaked finale necklace to seize final agency. Choosing Millie as his goat backfires when Bowie wins fire, turning Chase from kingmaker to runner‑up. The jury respects the fight but not the steering wheel, leaving his resume a highlight reel without authorship."
@@ -6767,9 +6839,10 @@
       "id": "emmah",
       "name": "Emmah",
       "seasons": [
-        9
+        9,
+        12
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 5,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -6815,6 +6888,23 @@
             "Wayne",
             "Priya"
           ]
+        },
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Written off as a pawn on Red, Emmah flips the board by turning information into theft. She fractures from Hicks/Brightly, then reaches the merge and publicly rips Wayne’s Extra Vote with Knowledge is Power, doubling her own ballot to erase Ripper. That swagger paints her as the new boss, and she rides the Misfits’ wave while sparring with Wayne’s allies and surviving as a visible threat. Her downfall is the idol storm at five—both big totems get flashed and Emmah is the only blade left bare. The robber who emptied pockets gets ushered to the jury with nothing left to steal."
@@ -6903,7 +6993,7 @@
         }
       ],
       "story": "The Southern observer becomes Red’s whispering king, reading motive better than anyone. He saves Emmah over Caleb with two quiet votes, cracking his ‘unbreakable’ with Brightly in service of control. The swap strands him across from a unified Yellow bloc and a wary Millie. Idol fireworks erase the initial hit on Chase, and the revote puts Hicks alone at the guillotine. He leaves with the right reads and the wrong numbers, a tactician undone by timing.\n\nSEASON 10 — Champions vs Contenders\n────────\nHicks begins the game as one of the most observant players on the beach, spotting Jasmine's advantage and later finding an idol of his own. He runs early structure on the Contenders tribe, positioning Tyler and reading alliance cracks before others admit they exist. His problem is that social perception does not always become social control. By Episode 8, he is liked enough to be dangerous and exposed enough to be consensus. Scott offers him a plan that feels clean, and Hicks makes the fatal mistake of turning trust into an object by handing over the idol. The vote lands on him anyway, and Redemption Island confirms that reading the game is not the same as surviving it.",
-      "avgPlacement": 13.0
+      "avgPlacement": 13
     },
     {
       "id": "julia",
@@ -7470,6 +7560,1623 @@
         }
       ],
       "story": "Laid‑back to a fault, Zee never matches Red’s urgency after losing flint. Brightly and Hicks read his nonchalance as danger, and the tribe makes a clean, unanimous statement. His lone parting shot at Caleb is less a plan than an exhale. On a season of power hoarders, he’s the reminder that Day 3 can be checkmate if you don’t clock the tempo."
+    },
+    {
+      "id": "thom",
+      "name": "Thom",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 2,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 2,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 1,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [
+        "S11 Fan Favorite"
+      ],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 2,
+          "status": "Finalist",
+          "tribe": "Teal → Campers",
+          "challengeWins": 2,
+          "immunityWins": 2,
+          "rewardWins": 0,
+          "votesReceived": 1,
+          "idolsFound": 0,
+          "strategicRank": 8.1,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Thom reaches the final two as the season's emotional anchor and physical workhorse, only to lose when compassion slows his hand at the summit."
+          ],
+          "gameplayStyle": "protective, physical, heart-led, steady",
+          "keyMoments": [
+            "Ep.2: Saves Gabby from drowning during Rock the Dock, cementing his hero image.",
+            "Ep.5: Exposes Seraphine's backstage sabotage after his Talent Show disaster.",
+            "Ep.7: Helps flip the vote onto Grett despite The Firewall collapsing around him.",
+            "Ep.13: Wins Monster Cash immunity by outlasting Eureka in the final showdown.",
+            "Ep.16: Wins invincibility while handcuffed to rival Alec in the Tri-Armed Triathlon.",
+            "Ep.17: Wins immunity in Planes, Trains & Hot Air Mobiles and protects Miriam at the vote.",
+            "Ep.18: Beats Fiore in the joust, then loses the million after hesitating against Miriam at the crater."
+          ],
+          "alliances": [
+            "The Three Headed Snake",
+            "The Outwit Club",
+            "The Bridge",
+            "The Collective",
+            "The Tribal Terrors"
+          ],
+          "rivalries": [
+            "Grett",
+            "Alec",
+            "Fiore"
+          ],
+          "advPlayed": 1,
+          "advHeld": 0
+        }
+      ],
+      "story": "Thom starts as the teammate everyone wants, and that becomes both his gift and his curse. He rescues people, protects people, feeds people, and quietly becomes the center of too many hearts at once. His bonds with Jake, Dan, Sterling, Miriam, and Eureka carry him deep, but they also make his decisions heavier than everyone else's. As the merge turns colder, Thom learns to cut names he cares about, but never completely shuts the door on feeling. He wins when he has to, survives repeated target spikes, and takes out Fiore in the final joust. At the volcano, he is ahead, but Miriam reaches the one place his game is vulnerable: the part of him that still cares.",
+      "avgPlacement": 2
+    },
+    {
+      "id": "jake",
+      "name": "Jake",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 7,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 7,
+          "status": "Juror",
+          "tribe": "Teal → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 7,
+          "idolsFound": 0,
+          "strategicRank": 6.2,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Jake's emotional game creates deep bonds and deep resentment, ending when Chef cuts him for cowardice in the woods."
+          ],
+          "gameplayStyle": "emotional, charming, volatile, tangled",
+          "keyMoments": [
+            "Ep.2: Forms The Firewall with Sterling after a shared early bond.",
+            "Ep.5: Refuses to vote Wix and helps trigger the chaos that sends Eureka out by rocks.",
+            "Ep.7: Flips onto Grett after her overplaying becomes impossible to ignore.",
+            "Ep.10: Overplays during the open merge vote and receives flipped votes from Fiore and Miriam.",
+            "Ep.11: Breaks The Outwit Club by voting Miriam instead of Ellie.",
+            "Ep.12: Is betrayed by Thom in the mountain climb when Thom shoves his water away.",
+            "Ep.14: Is eliminated by Chef after the Are We There Yeti survival ordeal."
+          ],
+          "alliances": [
+            "The Firewall",
+            "The Bridge"
+          ],
+          "rivalries": [
+            "Miriam",
+            "Sterling",
+            "Eureka",
+            "Fiore",
+            "Ellie"
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Jake is liked immediately, and for a while that is enough to move through the game. His bond with Thom becomes the season's defining showmance, a source of protection, suspicion, and eventually heartbreak. Jake tries to build structures around himself, from The Firewall to temporary merge coalitions, but he often cannot fully commit when votes hit people he cares about. His name becomes synonymous with overplaying, whispered side deals, and emotional reactions that other players learn to exploit. By the end, he is isolated from old allies and too tangled in personal feuds with Miriam, Ellie, and Fiore. His exit is absurd and painful: Chef, not the tribe, ends his story after a survival challenge full of fear, loyalty, and humiliation.",
+      "avgPlacement": 7
+    },
+    {
+      "id": "miriam",
+      "name": "Miriam",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 8,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [
+        "S11 Winner"
+      ],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 1,
+          "status": "Winner",
+          "tribe": "Teal → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 8,
+          "idolsFound": 0,
+          "strategicRank": 9.4,
+          "juryVotes": 0,
+          "finalVote": "0-0",
+          "advantages": [],
+          "notes": [
+            "Miriam wins by turning survival into strategy and using her bond with Thom as both shield and final weapon."
+          ],
+          "gameplayStyle": "weathered, patient, ruthless, resilient",
+          "keyMoments": [
+            "Ep.2: Finds an Extra Vote while collecting water and hides it from everyone.",
+            "Ep.4: Forms The Camp Takeover with Gabby after realizing both are socially exposed.",
+            "Ep.9: Plays her Extra Vote to bury Sterling and survive another fractured Teal vote.",
+            "Ep.12: Wins Way of the Warrior immunity by stealing the bonsai from Sasquatchanakwa.",
+            "Ep.13: Helps drive the Ellie vote after reading the jury danger correctly.",
+            "Ep.17: Survives a 2-2 tie when Fiore flips on the revote to eliminate Alec.",
+            "Ep.18: Wins Final Immunity and then defeats Thom at the volcano through a final emotional mind game."
+          ],
+          "alliances": [
+            "The Camp Takeover",
+            "The Outwit Club",
+            "The Tribal Terrors"
+          ],
+          "rivalries": [
+            "Jake",
+            "Gabby",
+            "Alec",
+            "Fiore"
+          ],
+          "advPlayed": 1,
+          "advHeld": 0
+        }
+      ],
+      "story": "Miriam arrives with the posture of someone who has already survived worse than Cursed Island. Early on, she is abrasive, guarded, and constantly one bad vote away from disaster, but every time the numbers move against her she finds another route through. Her game sharpens after the merge, where she stops chasing control openly and starts letting other players expose themselves first. The Outwit Club gives her structure, Thom gives her protection, and her own reads give her timing. By the finale, she is exhausted but still calculating, and when Thom reaches the summit ahead of her she does not beat him with strength. She beats him with history, memory, and one perfect plea before throwing the dummy first.",
+      "avgPlacement": 1
+    },
+    {
+      "id": "grett",
+      "name": "Grett",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 14,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 8,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 14,
+          "status": "Pre-Merge",
+          "tribe": "Purple → Teal → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 8,
+          "idolsFound": 0,
+          "strategicRank": 6.3,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Grett brings sabotage, grudges, and chaos, but overplaying makes her impossible to keep."
+          ],
+          "gameplayStyle": "vengeful, chaotic, sharp, overplayed",
+          "keyMoments": [
+            "Ep.1: Is first-impression voted out but swapped to Purple instead of eliminated.",
+            "Ep.1: Sabotages Purple's fort and frames Ashley for the collapse.",
+            "Ep.3: Helps target Fiore from inside a fractured anti-Seraphine bloc.",
+            "Ep.5: Is voted out but saved by the elimination swap, choosing Gabby in exchange.",
+            "Ep.6: Blows up tribal by exposing Alec's control, Ellie's idol, and The Circle.",
+            "Ep.7: Overplays with too many side deals and becomes the consensus boot.",
+            "Ep.7: Leaves with a furious crashout speech about everyone playing safe."
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Thom",
+            "Fiore"
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Grett is targeted before camp even begins, survives through the swap twist, and immediately turns resentment into fuel. Her biggest early move is invisible: sabotaging Purple's fort and framing Ashley, a dirty play that sets the season's tone. She talks like she controls the room even when the room is already turning on her, and her reads are often strong enough to scare people. The elimination swap gives her one more life, but it also leaves her surrounded by people she has burned. On Teal, she tries to scramble through too many doors at once. At tribal, the whispering becomes the reason everyone needs.",
+      "avgPlacement": 14
+    },
+    {
+      "id": "dan",
+      "name": "Dan",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 9,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 9,
+          "status": "Juror",
+          "tribe": "Teal → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 0,
+          "strategicRank": 8,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Dan controls important early votes and plays like a technician, but his social misread of Gabby sends him into a fatal tiebreaker."
+          ],
+          "gameplayStyle": "analytical, dry, controlling, brittle",
+          "keyMoments": [
+            "Ep.2: Helps drive Drew's vote-out and is named by Drew as the one pulling strings.",
+            "Ep.3: Designs Teal's Human Stack plan and gets them first to cut the totem.",
+            "Ep.4: Builds deep trust with Thom during the jungle night and dawn conversations.",
+            "Ep.10: Joins the unstable Three Headed Snake at merge.",
+            "Ep.11: Finds Lucky Hunt game intel at the auction but cannot convert it into safety.",
+            "Ep.12: Votes Gabby against the Outwit Club plan, triggering the feud that burns him.",
+            "Ep.12: Loses the fire-making tiebreaker to Alec and exits admitting he misread Gabby."
+          ],
+          "alliances": [
+            "The Three Headed Snake",
+            "The Outwit Club"
+          ],
+          "rivalries": [
+            "Gabby",
+            "Seraphine",
+            "Fiore"
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Dan arrives calling the game chess, and for a long stretch he plays like he believes it. He helps engineer Drew's exit, becomes Thom's quiet strategic partner, and repeatedly positions himself as the person with the best read in the room. But the same confidence that makes him dangerous also blinds him to emotional fallout. His relationships with Gabby and Miriam fray as he treats votes like math problems that should solve cleanly. At merge, he keeps trying to hold shifting coalitions together, but the island has become too personal for pure calculation. In the fire-making tiebreaker against Alec, Dan's game finally runs out of oxygen.",
+      "avgPlacement": 9
+    },
+    {
+      "id": "drew",
+      "name": "Drew",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 17,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 4,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 17,
+          "status": "Pre-Merge",
+          "tribe": "Teal → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": 3.2,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Drew works hard and performs well once, but gets labeled a liability early and never builds the protection to survive it."
+          ],
+          "gameplayStyle": "earnest, exposed, hardworking, adrift",
+          "keyMoments": [
+            "Ep.1: Works harder than anyone at Teal camp but remains outside key talks.",
+            "Ep.1: Gets excluded from a strategy meeting and visibly pretends not to care.",
+            "Ep.2: Crushes the decipher leg in Rock the Dock.",
+            "Ep.2: Is targeted by The Firewall as the cleanest threat/liability compromise.",
+            "Ep.2: Votes Wix instead of Dan, failing to protect himself within the Anti-Dan Bloc.",
+            "Ep.2: Is voted out 4-2-2-1 after Jake, Dan, Wix, and Sterling align.",
+            "Ep.2: Leaves naming Dan as the player pulling strings."
+          ],
+          "alliances": [],
+          "rivalries": [],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Drew enters unsure how intense he is supposed to be, and that uncertainty becomes his defining problem. Around camp, he works harder than most and earns quiet notice, but he is rarely in the room where the vote is shaped. His Rock the Dock decipher performance is genuinely strong, yet Teal remembers the weak swim, the overconfidence, and the fact that cutting him costs almost nobody socially. Drew's biggest mistake is landing between blocs without firm protection. When The Firewall needs a target, he becomes the simple name. His exit gives Dan credit and exposes the early power structure, but it comes too late to help him.",
+      "avgPlacement": 17
+    },
+    {
+      "id": "gabby",
+      "name": "Gabby",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 5,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 9,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 5,
+          "status": "Juror",
+          "tribe": "Teal → Purple → Campers",
+          "challengeWins": 1,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "strategicRank": 6.8,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Gabby stockpiles advantages and survives through chaos, but the Tied Destinies twist removes her as collateral beside Eureka."
+          ],
+          "gameplayStyle": "advantage-rich, reactive, fierce, volatile",
+          "keyMoments": [
+            "Ep.1: Finds the Vote Block near the Teal shelter.",
+            "Ep.2: Is rescued from drowning by Thom during Rock the Dock.",
+            "Ep.5: Finds the Vote Steal and hides it from the tribe.",
+            "Ep.7: Sets the pace for Purple in Up the Creek and earns MVP paddler status.",
+            "Ep.12: Steals Alec's vote and redirects it to Dan, helping force Dan into the tiebreaker.",
+            "Ep.13: Votes Alec while trying to protect Eureka from the Jake Core collapse.",
+            "Ep.16: Is eliminated as collateral when Eureka loses Fiore's Second Life duel."
+          ],
+          "alliances": [
+            "The Camp Takeover"
+          ],
+          "rivalries": [
+            "Miriam",
+            "Dan",
+            "Alec",
+            "Fiore"
+          ],
+          "advPlayed": 2,
+          "advHeld": 0
+        }
+      ],
+      "story": "Gabby plays sideways from the start, finding a Vote Block, later a Vote Steal, and rarely moving in the same direction as the room. She is emotional, observant, and dangerous when underestimated, but her relationships constantly swing between warmth and rupture. Her rivalry with Miriam becomes one of the season's nastiest personal threads, while her bonds with Jake and Eureka give her late-game life. She makes the move that sends Dan out, proving she can cut a supposed number when the relationship breaks. But the endgame twist is cruel: she is not the target, not the central threat, not even the duel loser. She is chained to Eureka's fate and leaves because Fiore beats someone else.",
+      "avgPlacement": 5
+    },
+    {
+      "id": "sterling",
+      "name": "Sterling",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 12,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 4,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 12,
+          "status": "Pre-Merge",
+          "tribe": "Teal → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": 5.4,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Sterling flashes as a physical force and emotional connector before personal tension with Jake and Miriam turns him into the final pre-merge boot."
+          ],
+          "gameplayStyle": "physical, proud, guarded, combustible",
+          "keyMoments": [
+            "Ep.1: Is voted out by first impressions but saved by the swap twist onto Teal.",
+            "Ep.2: Finishes as Teal's fastest swimmer in Rock the Dock.",
+            "Ep.4: Powers through the Colossus and bonds with Wix and Thom.",
+            "Ep.5: Misvotes Jake instead of Wix, damaging The Firewall beyond repair.",
+            "Ep.8: Wins a Bone Battle round against Seraphine for Teal.",
+            "Ep.9: Finds a Teal brand in the bungee sheep hunt.",
+            "Ep.9: Is eliminated after Miriam uses an Extra Vote to seal the numbers."
+          ],
+          "alliances": [
+            "The Firewall"
+          ],
+          "rivalries": [
+            "Jake"
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Sterling enters with the confidence of a challenge beast, and early on he looks like the kind of player tribes keep because they need muscle. He bonds with Jake, Eureka, Wix, Thom, and Dan, but those connections never settle into a stable alliance. The Firewall gives him structure, then collapses under miscommunication, betrayal, and quiet resentment. His challenge résumé grows just as his social safety shrinks. By the time Teal hits one last pre-merge tribal, Sterling is no longer just useful; he is threatening, disliked by Jake, and distrusted by Miriam. Miriam's Extra Vote turns a bad night into a decisive one.",
+      "avgPlacement": 12
+    },
+    {
+      "id": "eureka",
+      "name": "Eureka",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 4,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 6,
+          "status": "Juror",
+          "tribe": "Teal → Campers",
+          "challengeWins": 1,
+          "immunityWins": 0,
+          "rewardWins": 1,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": 7.7,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Eureka is eliminated twice: first by pure chance, then by Fiore's Second Life Amulet after becoming too trusted and too visible."
+          ],
+          "gameplayStyle": "bright, loyal, perceptive, doomed",
+          "keyMoments": [
+            "Ep.5: Is eliminated by rock draw despite receiving no votes.",
+            "Ep.12: Wins the Aftermayhem board race and returns to the game.",
+            "Ep.13: Rejoins the Outwit Club and helps eliminate Ellie.",
+            "Ep.14: Wins the Greece's Pieces reward and chooses Thom, straining other bonds.",
+            "Ep.16: Targets Fiore with The Collective at the Tied Destinies vote.",
+            "Ep.16: Loses the Speed Puzzle duel after Fiore activates the Second Life Amulet.",
+            "Ep.16: Her elimination also takes Gabby out as collateral."
+          ],
+          "alliances": [
+            "The Outwit Club",
+            "The Collective"
+          ],
+          "rivalries": [
+            "Jake",
+            "Fiore"
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Eureka begins as warmth, energy, and glue, the kind of player people underestimate because they enjoy being around her. Her first exit is one of the season's cruelest: a rock draw sends her out without a single original vote against her. But Cursed Island refuses to let ghosts stay buried, and Eureka fights through Aftermayhem to return with sharper instincts. Back in the game, she becomes a crucial Outwit Club number and a social force nobody can comfortably attack head-on. Her bond with Thom and Miriam makes her powerful, but it also makes her obvious. At final six, she aims at Fiore and gets hit by the one advantage that can rewrite the ending.",
+      "avgPlacement": 6
+    },
+    {
+      "id": "will",
+      "name": "Will",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 16,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 16,
+          "status": "Pre-Merge",
+          "tribe": "Purple → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 0,
+          "strategicRank": 5.6,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Will plays loyal, useful, and perceptive, but Alec's pivot cuts him before his social game can mature."
+          ],
+          "gameplayStyle": "steady, loyal, perceptive, expendable",
+          "keyMoments": [
+            "Ep.1: Finds calm in camp by sitting with a turtle while Purple fractures around him.",
+            "Ep.1: Joins The Barricade's Ashley vote before the alliance immediately cracks.",
+            "Ep.2: Crushes the chug leg in Rock the Dock for Purple.",
+            "Ep.2: Notices Fiore stealing credit and quietly boils over it.",
+            "Ep.3: Pushes Saw & Climb as Purple's totem method and gets the tribe moving.",
+            "Ep.3: Is voted out by Seraphine, Alec, Fiore, and Lill after Alec pivots.",
+            "Ep.3: Calls out Alec in his final words for making their bond feel fake."
+          ],
+          "alliances": [
+            "The Barricade",
+            "The Merge Mob"
+          ],
+          "rivalries": [
+            "Fiore"
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Will begins as the steady worker, the one who calls practical challenge plans and notices when other people are lying. He sees through Fiore before most do, and he reads Grett's wrong answers with unnerving calm. His problem is that being useful makes him visible and being likeable makes him dangerous. He builds enough trust with Alec to believe the relationship might carry weight. Instead, Alec cuts him as a jury threat while Fiore drives the personal tension into a vote. Will leaves feeling betrayed less by the game than by the person he thought was real with him.",
+      "avgPlacement": 16
+    },
+    {
+      "id": "seraphine",
+      "name": "Seraphine",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 11,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 11,
+          "status": "Juror",
+          "tribe": "Purple → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 0,
+          "strategicRank": 6.8,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Seraphine schemes, bonds hard with Lill, and loses at merge after a public tie exposes every fragile faction."
+          ],
+          "gameplayStyle": "subtle, loyal, evasive, scheming",
+          "keyMoments": [
+            "Ep.2: Captains Purple to a Rock the Dock win despite questionable assignments.",
+            "Ep.4: Forms an unbreakable bond with Lill and helps create The Circle.",
+            "Ep.5: Sabotages Thom's Talent Show props, causing his stage disaster.",
+            "Ep.7: Helps form The Bloc with Fiore, Lill, and Nick.",
+            "Ep.10: Votes Gabby in the open vote while caught between competing plans.",
+            "Ep.10: Loses a head-to-head strength tiebreaker to Ellie and becomes the first merge juror.",
+            "Ep.10: Exits worried about Lill surviving without her."
+          ],
+          "alliances": [
+            "The Circle",
+            "The Bloc",
+            "The Three Headed Snake"
+          ],
+          "rivalries": [
+            "Dan"
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Seraphine opens as a smiling schemer who wants to be three steps ahead, but her best game is not strategy; it is loyalty with Lill. She hides in plain sight, gathers information, and lets louder players make themselves targets. Her pre-merge run includes sabotage, social reads, and alliances that work until they become too visible. At the merge, she is pulled between The Three Headed Snake, The Circle, and survival instinct, and the open vote gives her nowhere to hide. She ties with Ellie and loses the strength tiebreaker, a brutal end for a player who had avoided direct confrontation for so long. Her final words are not about strategy, but about leaving Lill alone.",
+      "avgPlacement": 11
+    },
+    {
+      "id": "ashley",
+      "name": "Ashley",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 18,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 4,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 18,
+          "status": "Pre-Merge",
+          "tribe": "Purple → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": 3,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Ashley is the first true boot, framed by sabotage and cut as an early social threat before her game can begin."
+          ],
+          "gameplayStyle": "open-hearted, physical, trusting, targeted",
+          "keyMoments": [
+            "Ep.1: Clashes with Fiore almost immediately after arriving at Purple camp.",
+            "Ep.1: Builds one of Purple's strongest wall sections during Ice Ice Baby.",
+            "Ep.1: Is framed when Grett plants her tools near the sabotaged fort foundation.",
+            "Ep.1: Confronts Fiore at tribal as the tension becomes public.",
+            "Ep.1: Receives votes from Will, Alec, Ellie, and Grett.",
+            "Ep.1: Is voted out as a likeable jury threat after the fort-collapse blame sticks.",
+            "Ep.1: Leaves furious that Fiore lied to her after a seemingly genuine talk."
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Fiore"
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Ashley arrives ready to compete, but Purple becomes a storm before she can find shelter. Her immediate feud with Fiore turns personal fast, and Grett's hidden sabotage turns a challenge failure into evidence against her. She builds enough warmth to scare people and enough vulnerability to make betrayal hurt. The first real vote becomes less about what Ashley did and more about what others can make the tribe believe. Fiore talks around her, Grett hides the knife, and Ellie votes based on future jury danger. Ashley leaves with the pain of someone who was lied to face-to-face before she ever had a chance to recover.",
+      "avgPlacement": 18
+    },
+    {
+      "id": "alec",
+      "name": "Alec",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 4,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 4,
+          "status": "Juror",
+          "tribe": "Purple → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "strategicRank": 8.7,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Alec plays one of the sharpest strategic games on the island but becomes too visible as the endgame narrows."
+          ],
+          "gameplayStyle": "clinical, inventive, calculating, exposed",
+          "keyMoments": [
+            "Ep.1: Builds the Mirror Reflector and gives Purple a major tactical edge in Ice Ice Baby.",
+            "Ep.3: Votes Will out despite their bond, proving he will cut allies for position.",
+            "Ep.6: Is exposed by Grett as the player calling votes behind the scenes.",
+            "Ep.11: Breaks from The Outwit Club by voting Gabby while publicly committing to Ellie.",
+            "Ep.12: Beats Dan in a fire-making tiebreaker to stay alive.",
+            "Ep.13: Uses the Miriam cover plan to quietly help eliminate Ellie.",
+            "Ep.17: Loses the revote to Miriam after Fiore flips to avoid rocks."
+          ],
+          "alliances": [
+            "The Thread"
+          ],
+          "rivalries": [
+            "Thom",
+            "Miriam",
+            "Gabby",
+            "Fiore",
+            "Ellie",
+            "Nick"
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Alec enters already mapping alliance structures before most players know where camp is. He builds gadgets, reads conversations he was never part of, and keeps finding ways to make the vote pass through him without looking obvious enough to stop. But every clean move leaves fingerprints, and by the time Grett publicly calls him the strategic center, the target never fully leaves his back. His rivalry with Thom hardens into open hostility, and his relationship with Miriam becomes a chess match played with smiles that never reach the eyes. He survives several spots where he should go home, including a fire-making tiebreaker against Dan. At final four, though, the board is too small, Thom holds firm, and Fiore cuts her losses.",
+      "avgPlacement": 4
+    },
+    {
+      "id": "fiore",
+      "name": "Fiore",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 3,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 7,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 3,
+          "status": "Finalist",
+          "tribe": "Purple → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 7,
+          "idolsFound": 0,
+          "strategicRank": 8.2,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Fiore is the season's central villain, surviving on manipulation and one huge advantage before losing the final joust inches from the final two."
+          ],
+          "gameplayStyle": "venomous, adaptive, theatrical, ruthless",
+          "keyMoments": [
+            "Ep.1: Drives the Ashley vote while secretly voting Ellie, fracturing The Barricade immediately.",
+            "Ep.3: Helps vote out Will after a simmering feud becomes the tribe's decision.",
+            "Ep.8: Survives a tied vote when Nick loses the tiebreaker.",
+            "Ep.11: Wins Lucky Hunt immunity after grabbing the right chest.",
+            "Ep.12: Finds the Second Life Amulet on Exile Island and tells nobody.",
+            "Ep.16: Activates the Second Life Amulet, defeats Eureka in a Speed Puzzle, and survives the vote.",
+            "Ep.18: Loses the final joust to Thom 2-1 and finishes third."
+          ],
+          "alliances": [
+            "The Barricade",
+            "The Three Headed Snake",
+            "The Thread"
+          ],
+          "rivalries": [
+            "Thom",
+            "Jake",
+            "Miriam",
+            "Grett",
+            "Dan",
+            "Gabby",
+            "Eureka",
+            "Will",
+            "Ashley",
+            "Alec",
+            "Ellie"
+          ],
+          "advPlayed": 2,
+          "advHeld": 0
+        }
+      ],
+      "story": "Fiore enters promising to enjoy watching people leave, and she delivers. She steals credit, plants doubts, forges notes, weaponizes grudges, and somehow keeps crawling back from spots where the numbers should finish her. Her rivalry with Ellie burns across the season, while her shifting partnerships with Alec, Gabby, Seraphine, and Miriam are always temporary and always useful. The Second Life Amulet is her masterpiece of survival, turning a majority against her into Eureka's elimination and taking Gabby with it. But Fiore's game has a cost: by the finale, the jury and players alike know exactly what she is. She fights Thom in the joust, asks the crowd for support, gets silence, and falls smiling like a villain who knows she made the season.",
+      "avgPlacement": 3
+    },
+    {
+      "id": "ellie",
+      "name": "Ellie",
+      "seasons": [
+        11,
+        12
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 8,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 15,
+      "totalIdolsFound": 1,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 8,
+          "status": "Juror",
+          "tribe": "Purple → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 15,
+          "idolsFound": 1,
+          "strategicRank": 8.3,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Ellie plays aggressively with an idol, survives a massive vote with a Super Idol, and finally falls when the island unites against her strategic threat level."
+          ],
+          "gameplayStyle": "paranoid, advantage-driven, surgical, relentless",
+          "keyMoments": [
+            "Ep.1: Finds the Purple Hidden Immunity Idol before anyone can clock her game.",
+            "Ep.5: Gets caught crafting a fake idol by Dan, damaging her credibility.",
+            "Ep.8: Breaks from The Bloc plan and helps send Nick into the tiebreaker.",
+            "Ep.10: Wins the Idol Wager and upgrades her idol into a Super Idol.",
+            "Ep.11: Plays the Super Idol after votes are read, canceling four votes against her.",
+            "Ep.11: Steals Gabby's key during Lucky Hunt in front of the entire camp.",
+            "Ep.13: Is voted out 4-2-1-1 after the Outwit Club identifies her as the strategic center."
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Jake",
+            "Alec",
+            "Fiore"
+          ],
+          "advPlayed": 1,
+          "advHeld": 0
+        },
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ],
+      "story": "Ellie finds the season's first idol and immediately becomes a player everyone talks around, not through. Her game is sharp, paranoid, and relentless; she plants notes, steals keys, pushes whisper campaigns, and keeps trying to collapse Fiore's position. Her Super Idol play is one of the season's defining advantage moments, turning a pile of votes into someone else's funeral. But her constant motion exhausts the camp, and the jury math around her becomes impossible to ignore. She keeps surviving by narrow margins until Eureka, Miriam, Thom, and even Alec decide the same thing at once. When she leaves, she does not leave quietly; she names the power structure and makes sure the jury knows who took her out.",
+      "avgPlacement": 8
+    },
+    {
+      "id": "nick",
+      "name": "Nick",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 4,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 13,
+          "status": "Pre-Merge",
+          "tribe": "Purple → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": 4.7,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Nick floats, flips, and occasionally shocks the tribe with competence before losing a tiebreaker after The Bloc fractures."
+          ],
+          "gameplayStyle": "loose, funny, slippery, impulsive",
+          "keyMoments": [
+            "Ep.2: Crushes the fish-kiss leg and declares people underestimated him.",
+            "Ep.3: Gets shoved off the totem by Seraphine, a move Alec catches.",
+            "Ep.5: Quietly detaches from The Circle and goes solo.",
+            "Ep.6: Is targeted by Alec despite the public Grett plan.",
+            "Ep.8: Votes Alec instead of Fiore, breaking The Bloc.",
+            "Ep.8: Loses the challenge tiebreaker after tying with Fiore.",
+            "Ep.8: Exposes The Bloc and Gabby's advantage history on the way out."
+          ],
+          "alliances": [
+            "The Bloc"
+          ],
+          "rivalries": [
+            "Alec"
+          ],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Nick starts as the relaxed, slightly unfiltered player nobody quite knows how to handle. He finds moments of real usefulness, including a perfect fish-kiss leg and strong early challenge flashes, but his strategic loyalty is never trusted. He moves around The Circle and The Bloc without ever seeming fully inside either one. His vote lies and side deals keep him alive briefly, but every alliance eventually labels him a flipper. In his final vote, the tribe cannot agree whether Fiore or Nick should go, and the tiebreaker becomes the season's way of punishing drift. Even leaving, Nick makes noise by exposing The Bloc and Gabby's advantage history.",
+      "avgPlacement": 13
+    },
+    {
+      "id": "wix",
+      "name": "Wix",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 15,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 4,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 15,
+          "status": "Pre-Merge",
+          "tribe": "Teal → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": 4.2,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Wix creates noise, finds one heroic flag moment, and then gets cut by Fiore's emissary power after Teal turns on them."
+          ],
+          "gameplayStyle": "chaotic, buoyant, erratic, exposed",
+          "keyMoments": [
+            "Ep.1: Captures Purple's real flag and wins Ice Ice Baby for Teal.",
+            "Ep.2: Gets lost at sea during Rock the Dock and misses the relay.",
+            "Ep.2: Serves as a bad captain with questionable assignments that help sink Teal.",
+            "Ep.3: Clashes with Miriam during the totem race, deepening their rivalry.",
+            "Ep.4: Is sent to Exile Island and finds nothing.",
+            "Ep.5: Lands in a tie with Miriam after a fractured Teal vote.",
+            "Ep.5: Is removed by Fiore's emissary pick after surviving the vote itself."
+          ],
+          "alliances": [],
+          "rivalries": [],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Wix arrives promising to change the mood, and for a while they do exactly that. They are messy, funny, occasionally useful, and frequently in the wrong place at the wrong time. Their high point is enormous: finding the real flag in Ice Ice Baby and delivering Teal's first immunity win. But Rock the Dock damages their credibility badly when they get lost at sea and then captain poorly. Their rivalry with Miriam grows, their camp schemes wear thin, and the tribe starts treating them as both social threat and challenge liability. Even after surviving the vote chaos, Fiore's emissary pick finishes the job.",
+      "avgPlacement": 15
+    },
+    {
+      "id": "lill",
+      "name": "Lill",
+      "seasons": [
+        11
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 10,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 4,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 11,
+          "placement": 10,
+          "status": "Juror",
+          "tribe": "Purple → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": 6.6,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Lill's loyalty carries her deep, but her honest game becomes expendable once idols and split votes take over."
+          ],
+          "gameplayStyle": "loyal, observant, grounded, sacrificial",
+          "keyMoments": [
+            "Ep.1: Reads that Fiore's name is floating without being told directly.",
+            "Ep.2: Bonds with Ellie on the dock after Rock the Dock.",
+            "Ep.4: Forms The Circle with Seraphine and Nick before Fiore drifts away.",
+            "Ep.8: Stands by Seraphine and Ellie as The Bloc begins cracking.",
+            "Ep.10: Protects Seraphine by voting Gabby instead of following anti-Seraphine pressure.",
+            "Ep.11: Is voted out after Ellie's Super Idol cancels the main plan.",
+            "Ep.11: Leaves saying loyalty gets you a jury seat, not Final Tribal."
+          ],
+          "alliances": [
+            "The Barricade",
+            "The Circle",
+            "The Bloc"
+          ],
+          "rivalries": [],
+          "advPlayed": 0,
+          "advHeld": 0
+        }
+      ],
+      "story": "Lill begins as the reliable one, the player whose word feels heavier than most people's promises. Her bonds with Seraphine and Ellie become defining pillars, and for a while they give her cover in a volatile Purple tribe. She sees more than people expect, reads body language well, and often steadies allies who are spiraling. But Lill's loyalty also makes her predictable, and predictability is deadly when the merge turns into idol insurance and split-vote math. After Seraphine leaves, she loses the emotional shield that kept her grounded. When Ellie's Super Idol detonates the plan, Lill becomes the cleanest casualty.",
+      "avgPlacement": 10
+    },
+    {
+      "id": "james",
+      "name": "James",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "maggy",
+      "name": "Maggy",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "karol",
+      "name": "Karol",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "kai",
+      "name": "Kai",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "riya",
+      "name": "Riya",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "rosa-maria",
+      "name": "Rosa-Maria",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "connor",
+      "name": "Connor",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "aiden",
+      "name": "Aiden",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "hunter",
+      "name": "Hunter",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "yul",
+      "name": "Yul",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "lake",
+      "name": "Lake",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "tess",
+      "name": "Tess",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "ally",
+      "name": "Ally",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "oliver",
+      "name": "Oliver",
+      "seasons": [
+        12
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 12,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
     }
   ]
 }

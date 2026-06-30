@@ -1896,7 +1896,7 @@
       "totalChallengeWins": 1,
       "totalImmunityWins": 0,
       "totalRewardWins": 1,
-      "totalVotesAgainst": 12,
+      "totalVotesAgainst": 18,
       "totalIdolsFound": 3,
       "seasonDetails": [
         {
@@ -1943,27 +1943,43 @@
         },
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 18,
+          "status": "Pre-Merge",
+          "tribe": "Embers → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 3.9,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Ezekiel returns loudly, but poor challenge perception and fractured allies send him out before he can stabilize."
+          ],
+          "gameplayStyle": "Loud return, weak footing",
+          "keyMoments": [
+            "Episode 1: Arrives defiantly and immediately catches Ellie’s predatory attention.",
+            "Episode 1: Fabricates a rumor that Maggy mentioned Oliver’s name.",
+            "Episode 1: Struggles in rowing and gets blamed for slowing Embers down.",
+            "Episode 1: Is saved from a crocodile by Jen during the Nile crossing.",
+            "Episode 2: Makes a final two deal with Jacques that Jacques never intends to honor.",
+            "Episode 2: Contributes poor materials during Project Runaway.",
+            "Episode 2: Votes Lake while his bloc fractures.",
+            "Episode 2: Is voted out 6-2-2 as a challenge liability."
+          ],
+          "alliances": [],
+          "rivalries": []
         }
       ],
-      "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Ezekiel was the definition of 'scrappy survives.' He found 2 idols over the season and kept slipping through danger windows with just enough information and just enough nerve. Even without a big challenge résumé (1 total wins), he played the advantage game like a veteran and made it all the way to Final 4. There, the season ended in the most brutal way possible: fire-making, where he lost to Alejandro and watched the title disappear in smoke (Result: fire-making loss; 4th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nEzekiel’s Season 2 on Killer Grips became legendary at the merge when his idol play protected Alejandro and erased a pile of votes, rewiring the entire post-merge. That move turned him into a kingmaker — and a must-remove threat. He was taken out at Final 6 once the cast agreed the window to beat him was closing (Ezekiel voted out, 4–2).",
+      "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Ezekiel was the definition of 'scrappy survives.' He found 2 idols over the season and kept slipping through danger windows with just enough information and just enough nerve. Even without a big challenge résumé (1 total wins), he played the advantage game like a veteran and made it all the way to Final 4. There, the season ended in the most brutal way possible: fire-making, where he lost to Alejandro and watched the title disappear in smoke (Result: fire-making loss; 4th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nEzekiel’s Season 2 on Killer Grips became legendary at the merge when his idol play protected Alejandro and erased a pile of votes, rewiring the entire post-merge. That move turned him into a kingmaker — and a must-remove threat. He was taken out at Final 6 once the cast agreed the window to beat him was closing (Ezekiel voted out, 4–2).\n\nSEASON 12 — Total Drama: Generations\n────────\nEzekiel comes back determined to prove the old story wrong, but the game punishes him quickly. He lies to Oliver, makes small bonds, and tries to attach himself to Jacques’s plans, but challenge mistakes become the headline. In Egypt, the desert blame spiral finds him; on the runway, his weak contribution gives everyone an easy reason. Even Jacques, who promised him something, pivots when the vote demands it. Ezekiel sees the knife late, and the numbers are already gone. His jury-bench warning becomes sharper than his in-game résumé.",
       "badges": [],
       "seasonsPlayed": 2,
       "totalJuryVotes": 0,
-      "avgPlacement": 5
+      "avgPlacement": 9.33
     },
     {
       "id": "geoff",
@@ -2458,10 +2474,10 @@
       "totalSeasons": 3,
       "bestPlacement": 1,
       "wins": 1,
-      "totalChallengeWins": 10,
-      "totalImmunityWins": 9,
+      "totalChallengeWins": 11,
+      "totalImmunityWins": 10,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 2,
+      "totalVotesAgainst": 12,
       "totalIdolsFound": 0,
       "totalJuryVotes": 7,
       "tier": "Unranked",
@@ -2538,25 +2554,52 @@
         },
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 20,
+          "status": "Unknown",
+          "tribe": "Embers → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 10,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 2,
+          "advHeld": 0,
+          "strategicRank": 10,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Jacques is the season’s strategic ghost: credited, feared, robbed, and officially marked by an unresolved placement anomaly."
+          ],
+          "gameplayStyle": "Elegant schemes, poisoned bridges",
+          "keyMoments": [
+            "Episode 1: Tops the opening expedition with a massive individual score and summit shortcut.",
+            "Episode 2: Captures the Giant Crab and quietly pivots against Ezekiel despite his own bloc.",
+            "Episode 5: Steals credit for James’s Maggy move, creating a rivalry that shadows the season.",
+            "Episode 6: Captures the flag for Embers in Full Metal Drama.",
+            "Episode 10: Finds Knowledge is Power and steals Ellie’s idol at the merge Tribal.",
+            "Episode 12: Plays an idol and negates four votes, causing James’s first elimination.",
+            "Episode 14: Wins African Lying Safari by tranquilizing Chef with the decisive dart.",
+            "Episode 18: In the aired finale, returns empty-handed from the orienteering race and becomes the final juror."
+          ],
+          "alliances": [
+            "The Camp Takeover"
+          ],
+          "rivalries": [
+            "Kai",
+            "Riya",
+            "Rosa-Maria",
+            "Jen",
+            "Aiden",
+            "Hunter",
+            "Lake",
+            "Ellie"
+          ]
         }
       ],
-      "story": "On Blood vs. Water (Season 6), Jacques turned the Ice Dancers pairing with Josee into a masterclass in controlled threat management. While louder duos burned trust and idols, he stayed ‘useful’—competent in challenges, calm in camp, and quietly steering the merge vote map by weaponizing other people’s feuds. He survived the season’s chaos points (tribe re-draw, Redemption returns, rock-draw fallout) and arrived at the end with the cleanest résumé left. In the finale, the jury didn’t debate—they crowned him in a 7–1–0 landslide. (Result: Season 6 champion, 1st.)\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nJacques’ Fan vs Favorites story was domination… until the pressure snapped him. He stacked wins early and often (season-best 6 total challenge wins, including 5 immunities), while locking an unbreakable strategic duo with Taylor that shaped the merge vote map. Even when he wasn’t beloved, he was unavoidable: he kept collecting allies through the numbers game and used immunity streaks to force everyone else to cannibalize instead. But the deeper the game went, the more personal it became, especially his escalating feud with Carrie that eventually hit extreme hatred. At Final 4, a meltdown wiped out the last stretch of his endgame, and he quit the game outright—turning what looked like a potential winner run into the season’s most dramatic collapse.",
+      "story": "On Blood vs. Water (Season 6), Jacques turned the Ice Dancers pairing with Josee into a masterclass in controlled threat management. While louder duos burned trust and idols, he stayed ‘useful’—competent in challenges, calm in camp, and quietly steering the merge vote map by weaponizing other people’s feuds. He survived the season’s chaos points (tribe re-draw, Redemption returns, rock-draw fallout) and arrived at the end with the cleanest résumé left. In the finale, the jury didn’t debate—they crowned him in a 7–1–0 landslide. (Result: Season 6 champion, 1st.)\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nJacques’ Fan vs Favorites story was domination… until the pressure snapped him. He stacked wins early and often (season-best 6 total challenge wins, including 5 immunities), while locking an unbreakable strategic duo with Taylor that shaped the merge vote map. Even when he wasn’t beloved, he was unavoidable: he kept collecting allies through the numbers game and used immunity streaks to force everyone else to cannibalize instead. But the deeper the game went, the more personal it became, especially his escalating feud with Carrie that eventually hit extreme hatred. At Final 4, a meltdown wiped out the last stretch of his endgame, and he quit the game outright—turning what looked like a potential winner run into the season’s most dramatic collapse.\n\nSEASON 12 — Total Drama: Generations\n────────\nJacques plays one of the most aggressive strategic games on the island, whether or not the official board ever knows where to put him. He dominates early challenges, builds and betrays blocs, steals credit from James, and turns advantages into public theater. His Knowledge is Power play against Ellie becomes the biggest advantage swing of the season, and his idol play later wipes out four votes, resetting the endgame around him. Yet Jacques is also the architect of his own isolation: he alienates Rosa-Maria, Riya, Ellie, James, and nearly every late-game path. By the finale, he is still dangerous enough that the jungle itself becomes his last opponent. He returns empty-handed at final four in the aired story, but the season’s official ledger preserves him as something stranger — the most robbed, most strategic unresolved figure of Generations.",
       "seasonsPlayed": 2,
-      "avgPlacement": 2.5
+      "avgPlacement": 8.33
     },
     {
       "id": "jasmine",
@@ -6190,7 +6233,7 @@
       "totalChallengeWins": 2,
       "totalImmunityWins": 1,
       "totalRewardWins": 1,
-      "totalVotesAgainst": 7,
+      "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -6233,23 +6276,45 @@
         },
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 8,
+          "status": "Juror",
+          "tribe": "Embers → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 2,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 7.3,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Jen’s loyalty and social warmth make her indispensable until the jury threat label finally catches up."
+          ],
+          "gameplayStyle": "Open hands, hidden reads",
+          "keyMoments": [
+            "Episode 1: Throws herself between Ezekiel and a crocodile during the Nile crossing.",
+            "Episode 2: Helps send Ezekiel home while checking in on everyone socially.",
+            "Episode 4: Loses her vote on the Journey and watches Maggy fall in the fractured Ride or Die vote.",
+            "Episode 7: Takes the selfless Summit Survival Kit, boosting the whole Embers tribe.",
+            "Episode 8: Votes Rosa-Maria instead of Karol, cracking both The Double Edge and The Tribal Terrors.",
+            "Episode 10: Publicly votes Hunter while her old alliance disintegrates around her.",
+            "Episode 12: Votes James and helps send him out before his Aftermayhem return.",
+            "Episode 13: Is voted out as a jury threat with genuine relationships everywhere."
+          ],
+          "alliances": [
+            "The Tribal Terrors"
+          ],
+          "rivalries": [
+            "Jacques",
+            "Yul"
+          ]
         }
       ],
-      "story": "The Civilians were supposed to be cannon fodder. Nobody told Jen. From Episode 1 she ran her tribe like a social director — managing the Gerry-Chet blood feud, identifying Sanders as her long-term partner, and positioning herself as the one face every faction trusted. She entered the merge holding three simultaneous Unbreakable Relationships and a Strong Bond with Alejandro, a social portfolio nobody in the franchise had ever assembled at once. She won merge immunity when it mattered most, helped orchestrate the systematic dismantling of every major legend — Owen, Leshawna, MacArthur — and for six consecutive episodes was never seriously targeted. The jury respected her. Her allies loved her. And then Sanders played an idol on the one person Jen had voted to protect, and the revote took everything. She was betrayed by her Unbreakable partner using the exact move Jen had pioneered. Voted for Cameron at FTC anyway. The Black Widow who got caught in her own web."
+      "story": "The Civilians were supposed to be cannon fodder. Nobody told Jen. From Episode 1 she ran her tribe like a social director — managing the Gerry-Chet blood feud, identifying Sanders as her long-term partner, and positioning herself as the one face every faction trusted. She entered the merge holding three simultaneous Unbreakable Relationships and a Strong Bond with Alejandro, a social portfolio nobody in the franchise had ever assembled at once. She won merge immunity when it mattered most, helped orchestrate the systematic dismantling of every major legend — Owen, Leshawna, MacArthur — and for six consecutive episodes was never seriously targeted. The jury respected her. Her allies loved her. And then Sanders played an idol on the one person Jen had voted to protect, and the revote took everything. She was betrayed by her Unbreakable partner using the exact move Jen had pioneered. Voted for Cameron at FTC anyway. The Black Widow who got caught in her own web.\n\nSEASON 12 — Total Drama: Generations\n────────\nJen plays the game through attention: checking in, noticing details, and making people feel seen. She saves Ezekiel from a crocodile, bonds deeply with Aiden and Lake, and repeatedly becomes the person others trust in the dark. But her loyalty game is complicated by messy votes and alliance expulsions, especially as The Double Edge mutates around her. By the merge, her social capital is both shield and target. She is not the loudest strategist, but she is the kind of finalist jurors reward. That realization seals her fate at Top Dog.",
+      "avgPlacement": 6.5
     },
     {
       "id": "miles",
@@ -6717,7 +6782,7 @@
       "totalChallengeWins": 3,
       "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 7,
+      "totalVotesAgainst": 11,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -6760,23 +6825,44 @@
         },
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 15,
+          "status": "Pre-Merge",
+          "tribe": "Saplings → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 5.5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Chase’s low-key social game keeps him alive until a fractured vote forces him into a tiebreaker he cannot win."
+          ],
+          "gameplayStyle": "Quiet charm, loose footing",
+          "keyMoments": [
+            "Episode 1: Shares a sunrise talk with Yul that gives him early protection.",
+            "Episode 1: Votes Emmah despite discomfort, choosing safety over loyalty.",
+            "Episode 2: Models Saplings’ runway look and helps secure immunity.",
+            "Episode 3: Leaves The Iron Four quietly and drifts back toward Kai’s Camp Takeover orbit.",
+            "Episode 4: Confesses the reply-all email secret during Truth or Shark.",
+            "Episode 5: Refuses to write Yul’s name and has his vote stolen by Ally.",
+            "Episode 6: Votes Ellie while every alliance around him collapses.",
+            "Episode 6: Loses the tiebreaker to Riya and exits by the narrowest margin."
+          ],
+          "alliances": [
+            "The Camp Takeover"
+          ],
+          "rivalries": [
+            "Ally"
+          ]
         }
       ],
-      "story": "Chase begins as Bowie’s pliable lieutenant on a starving Yellow, but his pocket game is real—he finds the tribe idol and detonates it in the swap to topple Hicks. The merge casts him as swing between the Misfits and the Core, and he stockpiles leverage with a secret Vote Stopper. His late surge defines him: advantage sprint, obstacle‑course immunity, then the dare‑soaked finale necklace to seize final agency. Choosing Millie as his goat backfires when Bowie wins fire, turning Chase from kingmaker to runner‑up. The jury respects the fight but not the steering wheel, leaving his resume a highlight reel without authorship."
+      "story": "Chase begins as Bowie’s pliable lieutenant on a starving Yellow, but his pocket game is real—he finds the tribe idol and detonates it in the swap to topple Hicks. The merge casts him as swing between the Misfits and the Core, and he stockpiles leverage with a secret Vote Stopper. His late surge defines him: advantage sprint, obstacle‑course immunity, then the dare‑soaked finale necklace to seize final agency. Choosing Millie as his goat backfires when Bowie wins fire, turning Chase from kingmaker to runner‑up. The jury respects the fight but not the steering wheel, leaving his resume a highlight reel without authorship.\n\nSEASON 12 — Total Drama: Generations\n────────\nChase plays like a shadow: quiet, likable, and hard to pin down. He builds real early loyalty with Yul and a strong bond with Kai, then detaches from alliances when they become too heavy. That instinct keeps him fluid, but it also leaves him without enough structure when Saplings implodes. He is frequently in conversations, rarely the loudest voice, and often the person others want nearby until they need a name. At the Full Metal Drama Tribal, the whole tribe scatters and no bloc lands cleanly. Chase loses the obstacle-course tiebreaker to Riya, a brutal end for a player who nearly slipped through.",
+      "avgPlacement": 9
     },
     {
       "id": "damien",
@@ -6848,7 +6934,7 @@
       "totalChallengeWins": 2,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 4,
+      "totalVotesAgainst": 11,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -6891,23 +6977,40 @@
         },
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 19,
+          "status": "Pre-Merge",
+          "tribe": "Saplings → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 7,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 4.4,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Emmah burns bright for one episode, exposes Ally’s early control, and exits in a spectacular first Tribal blowup."
+          ],
+          "gameplayStyle": "Hot fuse, exposed truth",
+          "keyMoments": [
+            "Episode 1: Arrives to a noticeably quiet dock and immediate social tension.",
+            "Episode 1: Bonds uneasily with Ally while also making people nervous with confidence.",
+            "Episode 1: Performs well on the pyramid summit path and earns cross-tribe respect from Jacques.",
+            "Episode 1: Gets pushed toward crocodiles by Riya during the Nile crossing.",
+            "Episode 1: Is targeted by The Camp Takeover as the first vote.",
+            "Episode 1: Plays Shot in the Dark but is not safe.",
+            "Episode 1: Calls out Ally as the strategic center at Tribal.",
+            "Episode 1: Leaves in a fiery blowup, condemning the tribe’s safe play."
+          ],
+          "alliances": [],
+          "rivalries": []
         }
       ],
-      "story": "Written off as a pawn on Red, Emmah flips the board by turning information into theft. She fractures from Hicks/Brightly, then reaches the merge and publicly rips Wayne’s Extra Vote with Knowledge is Power, doubling her own ballot to erase Ripper. That swagger paints her as the new boss, and she rides the Misfits’ wave while sparring with Wayne’s allies and surviving as a visible threat. Her downfall is the idol storm at five—both big totems get flashed and Emmah is the only blade left bare. The robber who emptied pockets gets ushered to the jury with nothing left to steal."
+      "story": "Written off as a pawn on Red, Emmah flips the board by turning information into theft. She fractures from Hicks/Brightly, then reaches the merge and publicly rips Wayne’s Extra Vote with Knowledge is Power, doubling her own ballot to erase Ripper. That swagger paints her as the new boss, and she rides the Misfits’ wave while sparring with Wayne’s allies and surviving as a visible threat. Her downfall is the idol storm at five—both big totems get flashed and Emmah is the only blade left bare. The robber who emptied pockets gets ushered to the jury with nothing left to steal.\n\nSEASON 12 — Total Drama: Generations\n────────\nEmmah arrives saying this time might be different, but the island gets quiet for a reason. She performs well in the opening challenge and looks like someone who could matter, maybe more than people expected. Around camp, though, confidence becomes ammunition, and her name gains speed. Riya distrusts her, Ally centers the vote against her, and the Shot in the Dark gives her no rescue. At Tribal, Emmah keeps her composure until the votes land. Then she leaves by torchlight and detonates the truth: Ally ran the first vote, and everyone should remember it.",
+      "avgPlacement": 12
     },
     {
       "id": "hicks",
@@ -8422,13 +8525,13 @@
         12
       ],
       "totalSeasons": 2,
-      "bestPlacement": 8,
+      "bestPlacement": 7,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 15,
-      "totalIdolsFound": 1,
+      "totalVotesAgainst": 21,
+      "totalIdolsFound": 2,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
@@ -8471,24 +8574,49 @@
         },
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 7,
+          "status": "Juror",
+          "tribe": "Saplings → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 6,
+          "idolsFound": 1,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 8.5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Ellie plays a ruthless, advantage-heavy schemer’s game until the very tools she loves fail her at final eight."
+          ],
+          "gameplayStyle": "Quiet blade, advantage hunger",
+          "keyMoments": [
+            "Episode 2: Designs Saplings’ winning Island Getaway look and builds early credibility.",
+            "Episode 3: Casts the lone Connor vote that becomes fatal after Tess’s Shot in the Dark cancels seven votes.",
+            "Episode 5: Finds the Saplings Hidden Immunity Idol and tells no one.",
+            "Episode 9: Sabotages Yul on the trapeze, sending him into jellyfish and igniting the Anti-Yul vote.",
+            "Episode 10: Has her idol stolen by Jacques through Knowledge is Power.",
+            "Episode 11: Wins Alien Resurr-Eggtion immunity with two delivered eggs.",
+            "Episode 13: Finds a Vote Steal near the well.",
+            "Episode 14: Plays Shot in the Dark, steals Lake’s vote, but is eliminated anyway."
+          ],
+          "alliances": [
+            "The Double Edge"
+          ],
+          "rivalries": [
+            "James",
+            "Karol",
+            "Riya",
+            "Rosa-Maria",
+            "Jacques",
+            "Yul"
+          ]
         }
       ],
-      "story": "Ellie finds the season's first idol and immediately becomes a player everyone talks around, not through. Her game is sharp, paranoid, and relentless; she plants notes, steals keys, pushes whisper campaigns, and keeps trying to collapse Fiore's position. Her Super Idol play is one of the season's defining advantage moments, turning a pile of votes into someone else's funeral. But her constant motion exhausts the camp, and the jury math around her becomes impossible to ignore. She keeps surviving by narrow margins until Eureka, Miriam, Thom, and even Alec decide the same thing at once. When she leaves, she does not leave quietly; she names the power structure and makes sure the jury knows who took her out.",
-      "avgPlacement": 8
+      "story": "Ellie finds the season's first idol and immediately becomes a player everyone talks around, not through. Her game is sharp, paranoid, and relentless; she plants notes, steals keys, pushes whisper campaigns, and keeps trying to collapse Fiore's position. Her Super Idol play is one of the season's defining advantage moments, turning a pile of votes into someone else's funeral. But her constant motion exhausts the camp, and the jury math around her becomes impossible to ignore. She keeps surviving by narrow margins until Eureka, Miriam, Thom, and even Alec decide the same thing at once. When she leaves, she does not leave quietly; she names the power structure and makes sure the jury knows who took her out.\n\nSEASON 12 — Total Drama: Generations\n────────\nEllie’s season is defined by control attempts that look quiet until they are not. She finds an idol, builds coalitions, sabotages Yul into jellyfish, and repeatedly tries to define the vote before anyone else realizes there is a vote. Her relationship map becomes scorched earth: Riya, Jacques, Aiden, Karol, and James all find reasons to distrust her. Still, she keeps surviving because she is useful, perceptive, and willing to make the ugly move. At final eight, she reaches for every lever — Vote Steal, stolen vote redirection, Shot in the Dark. None of it saves her, and the player who lived by the margins is finally buried by them.",
+      "avgPlacement": 7.5
     },
     {
       "id": "nick",
@@ -8667,35 +8795,66 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
+      "totalJuryVotes": 7,
       "tier": "Unranked",
-      "badges": [],
+      "badges": [
+        "S12 Winner"
+      ],
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 1,
+          "status": "Winner",
+          "tribe": "Embers → Saplings → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 9,
           "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 9.6,
+          "juryVotes": 7,
+          "finalVote": "7-2",
+          "advantages": [],
+          "notes": [
+            "James wins by turning paranoia, precision, and a late-game comeback into a dominant 7-2 jury victory."
+          ],
+          "gameplayStyle": "Cold math, public chaos",
+          "keyMoments": [
+            "Episode 2: Leads the Ezekiel vote under The Ride or Die banner, establishing himself as an early architect.",
+            "Episode 3: Becomes the last unpainted deer and steals a hunter’s gun, winning Paintball Hunt for Embers.",
+            "Episode 10: Wins Say Uncle immunity and publicly casts the open vote that helps bury Karol.",
+            "Episode 12: Gets voted out after Jacques plays an idol, then exposes The Double Edge in his crashout.",
+            "Episode 12 Aftermayhem: Wins the board race and returns to the game by reaching the Trophy Case.",
+            "Episode 17: Beats Aiden in fire-making after a tied vote, saving his season by inches.",
+            "Episode 18: Wins final immunity on The Perch and chooses Riya for Final Tribal.",
+            "Episode 18: Defeats Riya 7-2 after selling a ruthless, calculated winner’s case."
+          ],
+          "alliances": [
+            "The Ride or Die",
+            "The Double Edge",
+            "The Tribal Terrors"
+          ],
+          "rivalries": [
+            "Karol",
+            "Aiden",
+            "Yul",
+            "Ally",
+            "Oliver",
+            "Ellie"
+          ]
         }
-      ]
+      ],
+      "story": "James enters Generations already narrating the game in his head, and for most of the season, the island struggles to keep up with the speed of his calculations. He is rarely comfortable, often exposed, and repeatedly accused of overplaying, but he keeps finding new rooms to enter and new people to use. His first run ends in humiliation when Jacques’s idol play and a fractured Double Edge vote send him out, but the Aftermayhem gives him a second life and he treats it like proof of destiny. From there, James plays sharper: he survives tiebreaker fire against Aiden, watches Jacques fall at final four, then wins the final perch when it matters most. At Final Tribal, he does not ask the jury to like him; he asks them to respect the body of work. Seven jurors do.",
+      "avgPlacement": 1
     },
     {
       "id": "maggy",
@@ -8704,12 +8863,12 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 16,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8717,22 +8876,42 @@
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 16,
+          "status": "Pre-Merge",
+          "tribe": "Embers → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 4.8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Maggy’s loyalty to Oliver becomes her defining strength and her fatal blind spot."
+          ],
+          "gameplayStyle": "Open heart, wrong allies",
+          "keyMoments": [
+            "Episode 1: Gets saved by Oliver from the pyramid trap collapse.",
+            "Episode 1: Bonds with Rosa-Maria over camp laughter and gets defended by Maggy’s social circle.",
+            "Episode 2: Forms The Ride or Die with Oliver and James.",
+            "Episode 4: Confesses the superglue secret during Truth or Shark.",
+            "Episode 4: Loses Full Slime Endurance after Oliver refuses to confess.",
+            "Episode 4: Votes Lake by miscommunication instead of holding the Jacques plan.",
+            "Episode 4: Is betrayed by Oliver, who votes her out.",
+            "Episode 4: Leaves calling Oliver’s betrayal the cruelest part."
+          ],
+          "alliances": [
+            "The Ride or Die"
+          ],
+          "rivalries": []
         }
-      ]
+      ],
+      "story": "Maggy brings sincerity into a game that treats sincerity like a weakness. She bonds quickly with Oliver, Rosa-Maria, James, and Aiden, finding comfort in people before she fully understands their agendas. Her challenge struggles put early heat on her, but her real danger is misplaced trust. The Ride or Die gives her purpose, then collapses around her in one of the ugliest pre-merge votes. Maggy walks into Tribal ready to protect Oliver, only to discover he has already written her name. Her exit is less a blindside than a heartbreak with parchment attached.",
+      "avgPlacement": 16
     },
     {
       "id": "karol",
@@ -8741,35 +8920,61 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 10,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 8,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 10,
+          "status": "Juror",
+          "tribe": "Embers → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 8,
+          "idolsFound": 1,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 7.1,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Karol is a volatile challenge threat whose idol play buys one more round before the merge removes her."
+          ],
+          "gameplayStyle": "Impact, pride, combustion",
+          "keyMoments": [
+            "Episode 1: Summits the pyramid in record time and taunts Maggy from above.",
+            "Episode 3: Becomes top hunter in Paintball Hunt while repeatedly shooting Lake, her own teammate.",
+            "Episode 5: Forms a final two with Aiden while secretly keeping options open.",
+            "Episode 7: Finds the Embers Hidden Immunity Idol during a paranoid camp stretch.",
+            "Episode 8: Plays the idol, voiding votes against her and forcing the Oliver/Rosa-Maria tiebreaker.",
+            "Episode 10: Enters the merge with a challenge-threat reputation everyone already knows.",
+            "Episode 10: Is voted out in the open vote by James, Rosa-Maria, Lake, and Ellie.",
+            "Episode 10: Leaves furious, insisting she knew something was wrong all day."
+          ],
+          "alliances": [
+            "The Tribal Terrors"
+          ],
+          "rivalries": [
+            "James",
+            "Rosa-Maria",
+            "Yul",
+            "Lake",
+            "Ellie"
+          ]
         }
-      ]
+      ],
+      "story": "Karol plays Generations with force: force in challenges, force in arguments, force in every room she enters. She is brilliant in bursts, deadly in competitions, and terrible at hiding contempt. Her rivalry web — James, Rosa-Maria, Lake, Ellie, Yul — turns her into both weapon and target. The pre-merge sees her stack a résumé, find and play an idol, and survive votes that should have ended her. But the merge is unforgiving to players everyone has already discussed. When the open vote arrives, Karol can feel the floor moving; no one listens until her torch is already gone.",
+      "avgPlacement": 10
     },
     {
       "id": "kai",
@@ -8778,12 +8983,12 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 14,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 6,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8791,22 +8996,47 @@
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 14,
+          "status": "Pre-Merge",
+          "tribe": "Saplings → Embers → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 5.8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Kai’s quiet loyalty game is undone when a swap drops him into hostile numbers and Aiden pivots against him."
+          ],
+          "gameplayStyle": "Quiet trust, late alarm",
+          "keyMoments": [
+            "Episode 1: Joins The Camp Takeover with Riya, Lake, and Hunter.",
+            "Episode 3: Becomes part of The Iron Four with Yul and Hunter.",
+            "Episode 5: Votes Riya to protect Yul, fracturing The Camp Takeover and The Barricade.",
+            "Episode 6: Votes Riya again during the Camp Takeover collapse.",
+            "Episode 7: Is abducted from Saplings to Embers before the challenge.",
+            "Episode 7: Realizes the truth about Yul too late.",
+            "Episode 7: Votes Jacques while the majority piles onto him.",
+            "Episode 7: Is voted out 5-1 after Aiden flips onto him."
+          ],
+          "alliances": [
+            "The Camp Takeover",
+            "The Iron Four",
+            "The Barricade"
+          ],
+          "rivalries": [
+            "Riya",
+            "Jacques"
+          ]
         }
-      ]
+      ],
+      "story": "Kai starts as the observer, the player hanging back while louder people cut each other. He builds strong bonds with Hunter, Chase, Ally, and Riya, but the alliances around him repeatedly implode. His loyalty to Yul and The Iron Four pulls him away from The Camp Takeover, and by the time he sees the truth about Yul, the damage is done. The abduction twist places him on Embers, where he is useful socially but exposed strategically. At Tribal, he trusts Aiden to hold the line against Jacques. Aiden writes Kai instead, and Kai leaves with the kind of betrayal that lingers.",
+      "avgPlacement": 14
     },
     {
       "id": "riya",
@@ -8815,35 +9045,67 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 2,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 14,
       "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
+      "totalJuryVotes": 2,
       "tier": "Unranked",
       "badges": [],
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 2,
+          "status": "Finalist",
+          "tribe": "Saplings → Campers",
+          "challengeWins": 2,
+          "immunityWins": 2,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 14,
           "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 9.2,
+          "juryVotes": 2,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Riya reaches the end as the season’s most feared villain, but her bruising social game costs her the crown."
+          ],
+          "gameplayStyle": "Venom, velocity, control",
+          "keyMoments": [
+            "Episode 1: Breaks The Camp Takeover immediately by voting Tess instead of Emmah.",
+            "Episode 1: Pushes Emmah toward a crocodile and sabotages Embers’s boat, setting her villain tone.",
+            "Episode 8: Takes the Immunity Totem at The Summit and openly defends the selfish choice.",
+            "Episode 9: Plays an idol during the double elimination and survives the Anti-Yul chaos.",
+            "Episode 13: Wins Top Dog with the Parrot, dominating the wilderness race.",
+            "Episode 15: Survives a Shot in the Dark when the vote turns against her.",
+            "Episode 17: Wins Camp Castaways immunity after out-surviving the flood night.",
+            "Episode 18: Reaches Final Tribal but loses 7-2 to James."
+          ],
+          "alliances": [
+            "The Camp Takeover",
+            "The Merge Mob"
+          ],
+          "rivalries": [
+            "Kai",
+            "Rosa-Maria",
+            "Jacques",
+            "Aiden",
+            "Hunter",
+            "Yul",
+            "Lake",
+            "Tess",
+            "Ally",
+            "Ellie"
+          ]
         }
-      ]
+      ],
+      "story": "Riya plays like every campfire is a courtroom and every smile is evidence. From the opening days, she cuts corners, tests loyalty, frames allies, and makes enemies faster than anyone can count them. Her game is explosive but resilient: she survives public blowups, direct hatred from Hunter, Ellie, Ally, Rosa-Maria, and Jacques, and even a failed plan that should have buried her at final seven. When she wins immunity late and claws through the finale, she proves that her survival was never accidental. But Final Tribal is not just about reach — it is about reception. The jury sees her power, but too many also feel the burns she left behind.",
+      "avgPlacement": 2
     },
     {
       "id": "rosa-maria",
@@ -8852,12 +9114,12 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 5,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8865,22 +9127,51 @@
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 5,
+          "status": "Juror",
+          "tribe": "Embers → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 8,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 2,
+          "advHeld": 0,
+          "strategicRank": 7.8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Rosa-Maria’s loyal, social game makes her beloved enough to become dangerous and conflicted enough to fall at final six."
+          ],
+          "gameplayStyle": "Warmth, grudges, hidden knives",
+          "keyMoments": [
+            "Episode 1: Finds the Amulet Advantage and keeps it secret while carrying water for Embers.",
+            "Episode 5: Protects Aiden in the standoff by taking a hit for him.",
+            "Episode 8: Survives the Oliver tie by beating him in the endurance tiebreaker.",
+            "Episode 10: Votes Karol at the open merge vote, choosing hatred over alliance discipline.",
+            "Episode 13: Forms The Oath with Lake after both recognize their shared survival math.",
+            "Episode 14: Plays an Extra Vote and steals Jacques’s vote to help eliminate Ellie.",
+            "Episode 15: Watches Lake fall in a tiebreaker, leaving her exposed.",
+            "Episode 16: Crashes out by exposing The Movement and James’s advantage history after losing the puzzle tiebreaker."
+          ],
+          "alliances": [
+            "The Double Edge",
+            "The Collective",
+            "The Oath",
+            "The Pipeline"
+          ],
+          "rivalries": [
+            "Karol",
+            "Riya",
+            "Jacques",
+            "Hunter",
+            "Ellie"
+          ]
         }
-      ]
+      ],
+      "story": "Rosa-Maria begins with water runs, impressions, and a secret amulet tucked away from the tribe. She builds real bonds, especially with Oliver and Lake, while also nursing rivalries that become impossible to bury. Her story is one of warmth undercut by grudges: she can comfort a player at sunrise and vote from pure hostility by nightfall. As the merge tightens, people stop seeing her as harmless and start seeing the jury threat hiding in plain sight. She weaponizes advantages at the Ellie vote, then loses Lake and her footing soon after. At final six, her plan splinters, her vote lands on Jacques instead of Riya, and the tiebreaker ends her run.",
+      "avgPlacement": 5
     },
     {
       "id": "connor",
@@ -8889,12 +9180,12 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 17,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 1,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8902,22 +9193,42 @@
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 17,
+          "status": "Pre-Merge",
+          "tribe": "Embers → Saplings → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 1,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 5.2,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Connor’s steady hero game is cut short by one stray vote after Tess’s Shot in the Dark detonates the plan."
+          ],
+          "gameplayStyle": "Steady hero, exposed luck",
+          "keyMoments": [
+            "Episode 1: Bonds with Jacques through tribe nicknames and with Oliver at arrival.",
+            "Episode 1: Climbs the pyramid cleanly before wiping out on the descent.",
+            "Episode 2: Is swapped to Saplings in the producer override.",
+            "Episode 2: Bonds with Kai at dawn after the swap.",
+            "Episode 3: Dodges repeated shots throughout Paintball Hunt, becoming impossible to catch.",
+            "Episode 3: Clashes with Yul after being repeatedly ignored and targeted in challenge chaos.",
+            "Episode 3: Votes Tess with the majority plan.",
+            "Episode 3: Is eliminated by Ellie’s single Connor vote after Tess’s successful Shot in the Dark cancels seven votes."
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Yul"
+          ]
         }
-      ]
+      ],
+      "story": "Connor is the person everyone leans on before anyone realizes he has no one leaning back. He enters warm, reliable, and useful, creating easy bonds with Jacques, Aiden, Kai, Ellie, and the tribe’s quieter players. The producer swap puts him on Saplings, where he becomes both comfort and quiet threat. He dodges paintball shots all day and looks far more capable than the target list suggests. Then Tess hits safety with the Shot in the Dark, seven votes vanish, and Ellie’s lone vote becomes a guillotine. Connor leaves on one vote, the purest robbed pre-merge exit of the season.",
+      "avgPlacement": 17
     },
     {
       "id": "aiden",
@@ -8926,12 +9237,12 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 4,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8939,22 +9250,50 @@
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 4,
+          "status": "Juror",
+          "tribe": "Embers → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 5,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 8.8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Aiden becomes the fan-favorite strategist whose reads are sharp, but whose alliances collapse one round before the finale."
+          ],
+          "gameplayStyle": "Soft heart, sharp radar",
+          "keyMoments": [
+            "Episode 1: Touches the mummified dog and becomes the cursed basket-weaving prodigy of Embers.",
+            "Episode 2: Votes Jen to hold Jacques’s bloc while the Ezekiel vote flips around him.",
+            "Episode 7: Pivots from the Anti-Jacques plan and votes Kai, helping send him out.",
+            "Episode 10: Is named by Karol as a vote driver during the open merge Tribal.",
+            "Episode 12: Wins Hide and Be Sneaky immunity with an early lead and Chef fake-out.",
+            "Episode 14: Forms The Movement with Lake during the endgame scramble.",
+            "Episode 15: Uses a Vote Steal on Ally’s vote during the chaotic Riya/Lake/Jacques tangle.",
+            "Episode 17: Loses the fire-making tiebreaker to James and exits one step from the final four."
+          ],
+          "alliances": [
+            "The Double Edge",
+            "The Tribal Terrors",
+            "The Movement",
+            "The Pipeline"
+          ],
+          "rivalries": [
+            "James",
+            "Riya",
+            "Jacques",
+            "Yul"
+          ]
         }
-      ]
+      ],
+      "story": "Aiden arrives reading lies before most players have unpacked, and that instinct carries him deeper than almost anyone expects. He is a workhorse, a social fixer, and a quiet danger who keeps finding the pulse of camp before the vote lands. His bonds with Jen, Lake, Ally, and others give him protection, but they also make his game emotionally expensive. Late in the season, Aiden becomes the hub of The Movement, steals votes, redirects pressure, and survives by making himself necessary. But at final five, his enemies finally align with the fire-making gods against him. He loses the tiebreaker to James, and the jury gains its most dramatic witness.",
+      "avgPlacement": 4
     },
     {
       "id": "hunter",
@@ -8963,12 +9302,12 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 9,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8976,22 +9315,49 @@
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 9,
+          "status": "Juror",
+          "tribe": "Saplings → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 8,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 6.7,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Hunter survives on social capital and stubborn loyalty until the merge majority finally treats him as expendable."
+          ],
+          "gameplayStyle": "Loyal muscle, exposed heart",
+          "keyMoments": [
+            "Episode 1: Shakes on a final three with Yul, a deal later exposed as unstable.",
+            "Episode 1: Helps row Saplings through the Nile crossing and bonds with Kai.",
+            "Episode 4: Confesses the dating spreadsheet secret during Truth or Shark.",
+            "Episode 6: Votes Riya over alliance discipline, showing Ally has become his priority.",
+            "Episode 7: Shares a sunrise conversation with Ally that pushes them toward a showmance.",
+            "Episode 9: Kisses Ally after the trust challenge and becomes visibly vulnerable.",
+            "Episode 9: Helps vote out Yul, then loses Tess in the second vote.",
+            "Episode 11: Is voted out by the Double Edge majority after surviving on social capital too long."
+          ],
+          "alliances": [
+            "The Camp Takeover",
+            "The Iron Four",
+            "The Merge Mob"
+          ],
+          "rivalries": [
+            "Riya",
+            "Rosa-Maria",
+            "Jacques",
+            "Yul"
+          ]
         }
-      ]
+      ],
+      "story": "Hunter starts as a physical presence and an emotional connector, but his game is always tangled in other people’s wars. His early bond with Yul becomes a trap, his hatred with Riya becomes radioactive, and his showmance with Ally becomes a bright red warning light. He has moments of real support — comforting Tess, protecting Ally, rowing hard, keeping people steady. Yet he rarely controls the final direction of the vote. At the merge, the consensus finally lands on him because he has already been named too many times. He exits furious at Riya, but the truth is harsher: everyone knew he could be cut.",
+      "avgPlacement": 9
     },
     {
       "id": "yul",
@@ -9000,12 +9366,12 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 11,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -9013,22 +9379,52 @@
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 11,
+          "status": "Pre-Merge",
+          "tribe": "Saplings → Embers → Saplings → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 8,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 7.4,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Yul schemes early and loudly, but his fake deals and public cruelty make him impossible to keep."
+          ],
+          "gameplayStyle": "Sharp tongue, false pacts",
+          "keyMoments": [
+            "Episode 1: Forms a secret final three with Hunter while feeding him false information.",
+            "Episode 3: Creates The Iron Four with Kai and Hunter, then repeatedly shoots Connor in Paintball Hunt.",
+            "Episode 4: Wins the Journey puzzle and takes the Vote Block.",
+            "Episode 5: Blocks Tess’s vote and plays Shot in the Dark, only to be swapped instead of eliminated.",
+            "Episode 6: Panics after learning Hunter wrote his name and overplays on Embers.",
+            "Episode 7: Is abducted to Saplings and tries to build a new home with limited loyalty.",
+            "Episode 9: Suffers Ellie’s trapeze sabotage and lands in jellyfish.",
+            "Episode 9: Is voted out by Hunter, Tess, Ellie, and James in the first half of the double elimination."
+          ],
+          "alliances": [
+            "The Iron Four"
+          ],
+          "rivalries": [
+            "James",
+            "Karol",
+            "Riya",
+            "Connor",
+            "Jen",
+            "Aiden",
+            "Hunter",
+            "Tess",
+            "Ellie"
+          ]
         }
-      ]
+      ],
+      "story": "Yul enters with a plan for everyone and an honest loyalty to almost no one. He builds The Iron Four, tests Hunter with false information, protects Chase in ways that reveal a softer center, and collects a Vote Block that should have made him dangerous. But every move leaves residue. He shoves Tess, shoots Connor, refuses truths, and turns allies into liabilities. The elimination swap gives him a strange second life, but by the double elimination, the coalition against him is too clean. Yul exits as a villain with flashes of brilliance and a trail of burned deals.",
+      "avgPlacement": 11
     },
     {
       "id": "lake",
@@ -9037,12 +9433,12 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 6,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 6,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -9050,22 +9446,50 @@
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 6,
+          "status": "Juror",
+          "tribe": "Saplings → Embers → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 7.6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Lake is the season’s loyal soldier, protected by deep bonds until one brutal tiebreaker cuts her endgame short."
+          ],
+          "gameplayStyle": "Loyal spine, quiet leverage",
+          "keyMoments": [
+            "Episode 1: Finds the Saplings Amulet Advantage and keeps it hidden.",
+            "Episode 2: Moves to Embers in the producer swap and designs the Tiki Royalty runway look.",
+            "Episode 7: Blocks Karol’s vote, helping The Double Edge send Kai home.",
+            "Episode 8: Forms an amulet understanding with Rosa-Maria and deepens her loyalty network.",
+            "Episode 10: Votes Karol at the merge, helping remove a physical and emotional threat.",
+            "Episode 13: Forms The Oath with Rosa-Maria as her clearest late-game pair.",
+            "Episode 14: Has her vote stolen by Ellie and redirected to James during Ellie’s elimination.",
+            "Episode 15: Loses the endurance tiebreaker to Jacques after a tied vote."
+          ],
+          "alliances": [
+            "The Camp Takeover",
+            "The Undertow",
+            "The Double Edge",
+            "The Oath",
+            "The Movement"
+          ],
+          "rivalries": [
+            "Karol",
+            "Riya",
+            "Jacques"
+          ]
         }
-      ]
+      ],
+      "story": "Lake finds power early with the amulet, but her defining weapon is steadiness. She designs, weaves, covers for people, shares quiet meals, and builds bonds that turn into alliances. Her loyalties to Jen, Rosa-Maria, Aiden, and Ally shape the middle of the game, even when they put her in impossible positions. She repeatedly chooses relationship over pure optimization, and that makes her trusted — and predictable. By final seven, she is woven into too many hearts and too many plans. Jacques strikes preemptively, the vote tangles, and Lake loses the endurance tiebreaker that decides her fate.",
+      "avgPlacement": 6
     },
     {
       "id": "tess",
@@ -9074,12 +9498,12 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 12,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 11,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -9087,22 +9511,44 @@
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 12,
+          "status": "Pre-Merge",
+          "tribe": "Saplings → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 11,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 6.9,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Tess is perceptive and resilient, but constant target heat and physical doubt finally overwhelm her."
+          ],
+          "gameplayStyle": "Quiet reads, brittle cover",
+          "keyMoments": [
+            "Episode 1: Goes on the Journey with Rosa-Maria and returns safely after striking a no-competition deal.",
+            "Episode 3: Plays Shot in the Dark successfully, canceling seven votes and causing Connor’s elimination.",
+            "Episode 4: Confesses the mannequin secret during Truth or Shark and earns respect for honesty.",
+            "Episode 5: Has her vote blocked by Yul during the non-elimination swap Tribal.",
+            "Episode 7: Bonds with Riya at sunrise after weeks of tension.",
+            "Episode 9: Hits the perfect William Tell shot with James as her target.",
+            "Episode 9: Votes Yul out in the first double-elimination vote.",
+            "Episode 9: Is eliminated second after Ellie pivots onto her injury."
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Riya",
+            "Yul",
+            "Ally"
+          ]
         }
-      ]
+      ],
+      "story": "Tess spends the season seeing more than she says, and that is both gift and curse. She survives early weakness labels, a failed tribe consensus, and one miraculous Shot in the Dark that rewrites the game. Her bonds with Hunter and James give her cover, while her hostilities with Yul and Ally keep her name alive. She is often right about people, but rarely positioned to make the room follow her. In the double elimination, Ellie decides the injury is too much and the numbers slide away. Tess leaves worried less about herself than about Hunter, which says everything about her game.",
+      "avgPlacement": 12
     },
     {
       "id": "ally",
@@ -9111,12 +9557,12 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 3,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -9124,22 +9570,49 @@
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 3,
+          "status": "Juror",
+          "tribe": "Saplings → Campers",
+          "challengeWins": 2,
+          "immunityWins": 2,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 2,
+          "advHeld": 0,
+          "strategicRank": 8.4,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Ally turns early overplaying into a deep run, winning key immunities before James cuts her at the final choice."
+          ],
+          "gameplayStyle": "Social sparks, late steel",
+          "keyMoments": [
+            "Episode 1: Spearheads the Emmah vote and is exposed as the strategic center at Tribal.",
+            "Episode 4: Finds a Vote Steal and later survives Gross Food Gauntlet in Truth or Shark.",
+            "Episode 5: Steals Chase’s vote and redirects it onto Yul during the non-elimination swap vote.",
+            "Episode 6: Helps form The Barricade with Kai, then immediately fractures it by voting Tess.",
+            "Episode 9: Kisses Hunter, making their bond public and strategically dangerous.",
+            "Episode 15: Wins Get a Clue by delivering the most convincing courtroom case.",
+            "Episode 16: Wins Drumheller immunity by unearthing the barrel with the Post Digger.",
+            "Episode 18: Outlasts Jacques in the orienteering race but falls from The Perch and is cut at final three."
+          ],
+          "alliances": [
+            "The Merge Mob",
+            "The Barricade",
+            "The Movement"
+          ],
+          "rivalries": [
+            "James",
+            "Riya",
+            "Tess",
+            "Chase"
+          ]
         }
-      ]
+      ],
+      "story": "Ally begins too loud, too fast, and too visible, but she adapts before the game can fully punish her. She runs the first vote, survives being exposed by Emmah, and gradually becomes a bridge between fractured groups. Her game is marked by social bursts, advantage plays, and surprising challenge strength, from Truth or Shark to Drumheller. Yet her alliances rarely stay stable; The Barricade, The Merge Mob, and The Movement all bend or break under pressure. At final three, Ally is one perch away from controlling the ending. She falls, and James makes the coldest possible read: she cannot be allowed to face the jury.",
+      "avgPlacement": 3
     },
     {
       "id": "oliver",
@@ -9148,12 +9621,12 @@
         12
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 13,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 3,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -9161,22 +9634,45 @@
       "seasonDetails": [
         {
           "season": 12,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 13,
+          "status": "Pre-Merge",
+          "tribe": "Embers → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 3,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 6.6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Oliver’s underdog social game produces deep bonds, but his double-agent position collapses in a tiebreaker."
+          ],
+          "gameplayStyle": "Underdog bonds, double cover",
+          "keyMoments": [
+            "Episode 1: Saves Maggy from a collapse in the pyramid tunnels.",
+            "Episode 2: Forms The Ride or Die with Maggy and James.",
+            "Episode 4: Votes Maggy instead of Jacques, fracturing The Ride or Die beyond repair.",
+            "Episode 4: Survives Slime Bucket Balance in Truth or Shark and rallies Embers afterward.",
+            "Episode 6: Deepens his ride-or-die bond with Jacques and Rosa-Maria on swapped Embers.",
+            "Episode 8: Reaches for Rosa-Maria’s hand in a quiet moment everyone notices.",
+            "Episode 8: Is targeted as a challenge liability and tied against Rosa-Maria.",
+            "Episode 8: Loses the endurance tiebreaker and exits as the season’s underdog heartbreak."
+          ],
+          "alliances": [
+            "The Ride or Die",
+            "The Double Edge"
+          ],
+          "rivalries": [
+            "James"
+          ]
         }
-      ]
+      ],
+      "story": "Oliver begins underestimated, and for a while, that is exactly where he wants to be. He bonds with Maggy, Jacques, Jen, and most powerfully Rosa-Maria, turning quiet loyalty into emotional armor. But he also lies, tests people, and drifts between The Ride or Die and The Double Edge until both worlds become dangerous. His betrayal of Maggy stains him, and his closeness with Rosa-Maria becomes impossible for the tribe to ignore. At the Finders Creepers vote, the target is supposed to be elsewhere, but Oliver becomes the answer to a tribe that cannot afford more losses. He loses the endurance tiebreaker to Rosa-Maria, and the season loses its purest underdog romance.",
+      "avgPlacement": 13
     }
   ]
 }

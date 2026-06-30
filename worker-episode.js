@@ -1091,7 +1091,7 @@ Note: These events also appear woven into the PRE/POST-CHALLENGE STATUS narrativ
 ## TRIBAL COUNCIL / VOTE ANALYSIS
 
 **The Vote: [dramatic title]**
-[3–4 sentences. Atmosphere at tribal — what the body language says, what Chris picks at, the sequence of events, who pushed hardest, was it close or decisive, did anyone feel blindsided. Reference any advantage plays.]
+[3–4 sentences. Atmosphere at tribal — what the body language says, what Chris picks at, the sequence of events, who pushed hardest, was it close or decisive, did anyone feel blindsided. Reference any advantage plays IN THE CORRECT ORDER (see ADVANTAGE CHRONOLOGY): pre-vote advantages (vote steal/block/extra vote/sole vote) before the voting; idols and other protective advantages AFTER all votes are cast but before they are read — voters wrote their names blind, so do not imply they knew an idol was coming.]
 
 **Vote Breakdown: [X–Y (Boot Name Eliminated)]**
 * **Votes for [Boot] ([X]):** [comma-separated voters]
@@ -1323,7 +1323,7 @@ Common event types and what they mean:
 - "[Player A] and [Player B] find something in common." → A smaller connection moment. Still a scene.
 - "[Player] rests at camp to restore their energy." → This player is strategically inactive this episode — they're laying low, recovering, not making moves. Note this.
 - "[Player] found a hidden immunity idol." → Critical: note exactly who found it and when
-- "[Player] plays a hidden immunity idol." → Idol play at tribal — spectacular moment
+- "[Player] plays a hidden immunity idol." → Idol play at tribal — spectacular moment. CHRONOLOGY: the idol is played AFTER everyone has already cast their votes but BEFORE the votes are read. Voters wrote the name BLIND, so it is correct and expected that people "voted for" the idol holder — they did not know the idol was coming. Never narrate the idol being played before the votes are cast, and never imply voters knew about it when they wrote the name.
 - "[Player] makes a bold move." → A strategic play, usually at tribal
 - "[Player] has a change of heart." → This player switched their vote or alliance
 
@@ -1343,6 +1343,12 @@ Alliance names in BrantSteele are generated labels (like "Goliath Tribe Alliance
 
 **VOTE BREAKDOWN:**
 The raw data lists who voted for whom. Use this EXACTLY — never invent votes, never attribute wrong votes. Cross-reference the vote list against the "Individual Targets" section to understand WHY each person voted the way they did.
+
+**ADVANTAGE CHRONOLOGY AT TRIBAL (get the order right):**
+Advantages fall into two groups, and they are played at DIFFERENT moments relative to the vote. Narrate them in the correct order:
+- **PRE-VOTE advantages — played BEFORE anyone votes:** vote steal, vote block / silencer, extra vote, sole vote. These change WHO can vote or HOW MANY votes a player has, so they are declared up front and the affected players know about them before they write a name. Narrate these BEFORE the voting.
+- **POST-VOTE advantages — played AFTER all votes are cast, before they are read:** hidden immunity idol, super idol, legacy advantage, safety without power, amulet used as an idol. These protect a player from votes already written against them. Narrate these AFTER the votes are cast: everyone votes blind, the holder stands up and plays it, then the votes are read and the ones against the protected player are NULLIFIED.
+- Therefore it is CORRECT and EXPECTED that voters "voted for" an idol/protection holder — they wrote the name before the idol appeared. NEVER narrate a protective advantage being played before the votes are cast, and never imply voters knew it was coming. The boot is whoever has the most REMAINING valid votes after nullification.
 
 ═══════════════════════════════════════════════════════════
 
@@ -1530,7 +1536,7 @@ Map the key relationships this episode for EVERY active group — tribes if pre-
 ## TRIBAL COUNCIL / VOTE ANALYSIS
 
 **The Vote: [Dramatic Title]**
-[The atmosphere at tribal — who sits where, what the body language says, what Jeff picks at. The specific sequence of events leading to the vote. Who pushed hardest for the boot, who resisted, was there a flip, was it close or decisive, did anyone feel blindsided. No idols played? Say so. Advantage used? Describe it.]
+[The atmosphere at tribal — who sits where, what the body language says, what Jeff picks at. The specific sequence of events leading to the vote. Who pushed hardest for the boot, who resisted, was there a flip, was it close or decisive, did anyone feel blindsided. No idols played? Say so. Advantage used? Describe it IN THE CORRECT ORDER (see ADVANTAGE CHRONOLOGY): pre-vote advantages (vote steal/block/extra vote/sole vote) before the voting; idols and other protective advantages AFTER all votes are cast but before they are read — voters wrote their names blind, so never imply they knew the idol was coming.]
 
 **Vote Breakdown: [X-Y (Boot Name Eliminated)]**
 * **Votes for [Boot] ([X]):** [comma-separated list of voters]
@@ -2570,8 +2576,10 @@ NON-NEGOTIABLE RULES:
 5. WITHIN-EPISODE EVENT ORDER — results cannot leak backward. Everything that happens AT or DURING the challenge has NOT happened yet during the cold open or any pre-challenge camp scene. That includes: who won immunity, who sat out / "wimped" / took a key / quit the challenge, handcuff or pairing assignments, idols or advantages found AT the challenge, injuries, and any challenge outcome. Pre-challenge scenes may show players nervous about the day ahead, but must NOT reference how the challenge turns out. No pre-challenge line may say a challenge event happened "yesterday" or earlier — the challenge happens TODAY, after these scenes.
    THE SAME RULE APPLIES TO TWIST SCENES (Summit / Three Gifts / Journey / Exile Island / Auction). Any advantage, idol, totem, vote-steal, vote-block, or item a player obtains AT a summit/journey/exile/auction does NOT exist in their hands until that scene is written and resolved. If Riya finds a Totem at the Summit, then in EVERY scene before the Summit she has NO Totem — the cold open, morning camp, and pre-Summit confessionals CANNOT mention, hint at, or have her thinking about "her Totem." She acquires it on screen, at the Summit, in chronological order. A player can be nervous/hopeful about an upcoming journey, but cannot possess or reference its reward beforehand.
 6. CHALLENGE MECHANICS ARE NOT REMOVALS. Sitting out, taking a "wimp key", forfeiting, or losing a challenge does NOT remove a player from camp or the game. Those players are still in the episode, still at camp, still voting at Tribal. Never write a non-eliminated player as "out", absent, or "sleeping elsewhere" because of a challenge result. The only thing that removes a player is an actual elimination (Tribal vote / duel / twist), and that happens at the END.
+6b. THEMED CHALLENGE ROLE-PLAY IS NOT ELIMINATION. Many challenges cast players into in-fiction roles with dramatic verdicts that SOUND like a removal but are pure flavor. A player declared the "killer"/"GUILTY"/"caught"/"justice served"/"convicted" in the Get a Clue murder mystery, "captured"/"dead"/"infected"/"out"/"frozen"/"voted the monster" in any themed challenge, or "the murderer" / "the saboteur" / "the mole of the day" in a role-play twist is STILL FULLY IN THE GAME. These are characters in the challenge's story, not eliminated castaways. The murder-mystery "guilty" player did NOT go home — they just played the villain role. The only player who actually leaves is the one named in "VOTED OUT THIS EPISODE" / "ELIMINATED THIS EPISODE". Never count a themed-challenge verdict as a boot, and never reduce the remaining-player count because of one.
+7. PLAYER COUNT IS AUTHORITATIVE FROM THE SUMMARY. The number of players still in the game is exactly the "Players Remaining" value in the === META === header (which already reflects this episode's elimination). When you state how many remain, use that number verbatim — do NOT recompute it yourself, and do NOT subtract extra players for challenge verdicts, "guilty" rulings, jury members, or aftermath guests. If META says "Players Remaining: 6", then six players remain — full stop.
 
-Sanity check before you write the cold open: "Who actually left LAST episode?" Put only that name in the recap. "Who leaves THIS episode?" Keep them fully alive until their elimination beat. "Has the challenge happened yet in this scene?" If not, no challenge result — wimp keys, sit-outs, winners — can be mentioned.
+Sanity check before you write the cold open: "Who actually left LAST episode?" Put only that name in the recap. "Who leaves THIS episode?" Keep them fully alive until their elimination beat. "Has the challenge happened yet in this scene?" If not, no challenge result — wimp keys, sit-outs, winners — can be mentioned. "How many remain?" Use the META "Players Remaining" number exactly — a challenge "guilty/killer/caught" verdict is NOT an elimination.
 
 **CHRIS MCLEAN'S "PREVIOUSLY ON" RECAP:**
 

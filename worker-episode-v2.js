@@ -1050,7 +1050,7 @@ Note: These events also appear woven into the PRE/POST-CHALLENGE STATUS narrativ
 ## TRIBAL COUNCIL / VOTE ANALYSIS
 
 **The Vote: [dramatic title]**
-[3–4 sentences. Atmosphere at tribal — what the body language says, what Chris picks at, the sequence of events, who pushed hardest, was it close or decisive, did anyone feel blindsided. Reference any advantage plays.]
+[3–4 sentences. Atmosphere at tribal — what the body language says, what Chris picks at, the sequence of events, who pushed hardest, was it close or decisive, did anyone feel blindsided. Reference any advantage plays IN THE CORRECT ORDER (see ADVANTAGE CHRONOLOGY): pre-vote advantages (vote steal/block/extra vote/sole vote) before the voting; idols and other protective advantages AFTER all votes are cast but before they are read — voters wrote their names blind, so do not imply they knew an idol was coming.]
 
 **Vote Breakdown: [X–Y (Boot Name Eliminated)]**
 * **Votes for [Boot] ([X]):** [comma-separated voters]
@@ -1282,7 +1282,7 @@ Common event types and what they mean:
 - "[Player A] and [Player B] find something in common." → A smaller connection moment. Still a scene.
 - "[Player] rests at camp to restore their energy." → This player is strategically inactive this episode — they're laying low, recovering, not making moves. Note this.
 - "[Player] found a hidden immunity idol." → Critical: note exactly who found it and when
-- "[Player] plays a hidden immunity idol." → Idol play at tribal — spectacular moment
+- "[Player] plays a hidden immunity idol." → Idol play at tribal — spectacular moment. CHRONOLOGY: the idol is played AFTER everyone has already cast their votes but BEFORE the votes are read. Voters wrote the name BLIND, so it is correct and expected that people "voted for" the idol holder — they did not know the idol was coming. Never narrate the idol being played before the votes are cast, and never imply voters knew about it when they wrote the name.
 - "[Player] makes a bold move." → A strategic play, usually at tribal
 - "[Player] has a change of heart." → This player switched their vote or alliance
 
@@ -1302,6 +1302,12 @@ Alliance names in BrantSteele are generated labels (like "Goliath Tribe Alliance
 
 **VOTE BREAKDOWN:**
 The raw data lists who voted for whom. Use this EXACTLY — never invent votes, never attribute wrong votes. Cross-reference the vote list against the "Individual Targets" section to understand WHY each person voted the way they did.
+
+**ADVANTAGE CHRONOLOGY AT TRIBAL (get the order right):**
+Advantages fall into two groups, and they are played at DIFFERENT moments relative to the vote. Narrate them in the correct order:
+- **PRE-VOTE advantages — played BEFORE anyone votes:** vote steal, vote block / silencer, extra vote, sole vote. These change WHO can vote or HOW MANY votes a player has, so they are declared up front and the affected players know about them before they write a name. Narrate these BEFORE the voting.
+- **POST-VOTE advantages — played AFTER all votes are cast, before they are read:** hidden immunity idol, super idol, legacy advantage, safety without power, amulet used as an idol. These protect a player from votes already written against them. Narrate these AFTER the votes are cast: everyone votes blind, the holder stands up and plays it, then the votes are read and the ones against the protected player are NULLIFIED.
+- Therefore it is CORRECT and EXPECTED that voters "voted for" an idol/protection holder — they wrote the name before the idol appeared. NEVER narrate a protective advantage being played before the votes are cast, and never imply voters knew it was coming. The boot is whoever has the most REMAINING valid votes after nullification.
 
 ═══════════════════════════════════════════════════════════
 
@@ -1489,7 +1495,7 @@ Map the key relationships this episode for EVERY active group — tribes if pre-
 ## TRIBAL COUNCIL / VOTE ANALYSIS
 
 **The Vote: [Dramatic Title]**
-[The atmosphere at tribal — who sits where, what the body language says, what Jeff picks at. The specific sequence of events leading to the vote. Who pushed hardest for the boot, who resisted, was there a flip, was it close or decisive, did anyone feel blindsided. No idols played? Say so. Advantage used? Describe it.]
+[The atmosphere at tribal — who sits where, what the body language says, what Jeff picks at. The specific sequence of events leading to the vote. Who pushed hardest for the boot, who resisted, was there a flip, was it close or decisive, did anyone feel blindsided. No idols played? Say so. Advantage used? Describe it IN THE CORRECT ORDER (see ADVANTAGE CHRONOLOGY): pre-vote advantages (vote steal/block/extra vote/sole vote) before the voting; idols and other protective advantages AFTER all votes are cast but before they are read — voters wrote their names blind, so never imply they knew the idol was coming.]
 
 **Vote Breakdown: [X-Y (Boot Name Eliminated)]**
 * **Votes for [Boot] ([X]):** [comma-separated list of voters]

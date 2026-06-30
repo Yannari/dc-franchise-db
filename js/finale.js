@@ -1995,7 +1995,7 @@ export function generateFinaleSummaryText(ep) {
     });
   }
 
-  if (ep.immunityWinner) {
+  if (ep.immunityWinner && cfg.finaleFormat !== 'koh-lanta') {
     sec('FINAL IMMUNITY CHALLENGE');
     ln(`${ep.immunityWinner} wins the Final Immunity Challenge (${ep.challengeLabel||'Mixed'}).`);
     const immS = pStats(ep.immunityWinner);
@@ -2004,6 +2004,36 @@ export function generateFinaleSummaryText(ep) {
     // Hawaiian Punch — full Hawaiian Style FIC narration (beat-by-beat,
     // spirit-animal draft, gallery reactions, lei steal, confessionals).
     if (ep.hpFIC) { ln(''); vpToText(rpBuildHPChallenge); }
+  }
+
+  // Koh-Lanta finale — the only Final 4 format: orienteering race (F4→F3) →
+  // the perch (F3→Final Immunity) → the choice (winner picks who joins them at
+  // F2). Full retranscription of the narration generated in the finale engine.
+  if (cfg.finaleFormat === 'koh-lanta' && (ep.klOrienteering || ep.klPerch || ep.klChoice)) {
+    if (ep.klOrienteering) {
+      const orr = ep.klOrienteering;
+      sec('ORIENTEERING RACE (Final 4 → Final 3)');
+      (orr.stages || []).forEach(st => { if (st && st.text) { ln(st.text); ln(''); } });
+      if (orr.placements?.length) ln(`Finish order: ${orr.placements.map((p, i) => `${i + 1}. ${p}`).join(', ')}.`);
+      if (orr.eliminated) ln(`${orr.eliminated} returns empty-handed and is eliminated, finishing in 4th place and becoming the final member of the jury.`);
+    }
+    if (ep.klPerch) {
+      const pc = ep.klPerch;
+      sec('THE PERCH (Final 3 → Final Immunity)');
+      (pc.phases || []).forEach(ph => { if (ph && ph.text) { ln(ph.text); ln(''); } });
+      if (pc.winner) ln(`${pc.winner} is the last one standing and wins Final Immunity — plus the power to choose who sits beside them at Final Tribal Council.`);
+      if (pc.dropOrder?.length) ln(`Off the perch, in order: ${pc.dropOrder.join(', then ')}.`);
+    }
+    if (ep.klChoice) {
+      const ch = ep.klChoice;
+      const _wPr = pronouns(ch.winner);
+      sec('THE CHOICE (Final 3 → Final 2)');
+      if (ch.reason === 'strategic') ln(`${ch.winner} thinks it through like a résumé case: sitting next to ${ch.chosen} gives ${_wPr.obj} the best shot in front of the jury. ${ch.chosen} is taken to the Final 2.`);
+      else ln(`${ch.winner} chooses loyalty. ${ch.chosen} has been ${_wPr.posAdj} closest ally, and that earns the seat at the Final 2.`);
+      if (ch.betrayal) ln(`Cutting ${ch.eliminated} stings — they were genuinely close. ${ch.eliminated} joins the jury carrying that betrayal to the final vote.`);
+      else if (ch.eliminated) ln(`${ch.eliminated} is sent to the jury, finishing in 3rd place.`);
+      ln(`FINAL 2: ${ch.winner} and ${ch.chosen}.`);
+    }
   }
 
   if (ep.finalCut) {

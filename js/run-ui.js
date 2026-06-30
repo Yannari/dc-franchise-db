@@ -327,29 +327,32 @@ window.addEventListener('DOMContentLoaded', () => {
   const _sfCb = document.getElementById('cfg-spoiler-free');
   if (_sfCb) { _sfCb.checked = _sfSaved; }
   _spoilerFree = _sfSaved;
-  // Load roster: localStorage edits > fetched JSON > embedded fallback
+  // Load roster: fetch the canonical JSON, then layer any localStorage edits on top BY NAME.
+  // (Previously a saved localStorage roster fully shadowed the JSON, so players added to the
+  //  JSON later — e.g. Ally, Aiden — never appeared for anyone with a stale cache.)
+  let _lsRoster = null;
   const _savedRoster = localStorage.getItem('simulator_franchise_roster');
   if (_savedRoster) {
-    try {
-      const _parsed = JSON.parse(_savedRoster);
-      if (Array.isArray(_parsed) && _parsed.length) {
-        FRANCHISE_ROSTER = _parsed;
-        console.log(`Roster loaded from localStorage: ${_parsed.length} players`);
+    try { const p = JSON.parse(_savedRoster); if (Array.isArray(p) && p.length) _lsRoster = p; } catch(e) {}
+  }
+  if (_lsRoster) FRANCHISE_ROSTER = _lsRoster;   // show cached edits immediately while the fetch resolves
+  fetch('franchise_roster.json')
+    .then(r => r.json())
+    .then(data => {
+      const base = data?.players?.length ? data.players : null;
+      if (!base) return;
+      if (_lsRoster) {
+        // JSON is the base so new players always appear; user's local edits override by name.
+        const byName = new Map(base.map(p => [p.name, p]));
+        _lsRoster.forEach(p => { if (p && p.name) byName.set(p.name, p); });
+        FRANCHISE_ROSTER = [...byName.values()];
+        console.log(`Roster merged: ${base.length} JSON + ${_lsRoster.length} local = ${FRANCHISE_ROSTER.length}`);
+      } else {
+        FRANCHISE_ROSTER = base;
+        console.log(`Roster loaded from JSON: ${base.length} players`);
       }
-    } catch(e) {}
-  }
-  // Also try fetching the JSON (GitHub Pages) — but localStorage edits take priority
-  if (!_savedRoster) {
-    fetch('franchise_roster.json')
-      .then(r => r.json())
-      .then(data => {
-        if (data?.players?.length) {
-          FRANCHISE_ROSTER = data.players;
-          console.log(`Roster loaded from JSON: ${data.players.length} players`);
-        }
-      })
-      .catch(() => {}); // silent fallback to embedded copy
-  }
+    })
+    .catch(() => {}); // silent fallback to localStorage / embedded copy
 });
 export function toggleSpoilerFree() {
   _spoilerFree = document.getElementById('cfg-spoiler-free')?.checked || false;

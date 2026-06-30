@@ -454,6 +454,9 @@ function _phaseNarration(challenge, phaseTag, winnerName, loserName, margin, bon
 
 function _getMentalState(name) {
   if (!gs.riMentalState) gs.riMentalState = {};
+  // The mental meter is authoritative for the broken state when well-being is tracked
+  const mh = gs.riWellbeing?.[name]?.mh;
+  if (mh !== undefined && mh < 25) return 'broken';
   return gs.riMentalState[name] || 'focused';
 }
 
@@ -467,11 +470,25 @@ function _getTrainingBonus(name, statKey) {
   return gs.riTraining[name][statKey] || 0;
 }
 
+const RI_TRAINING_CAP = 3.0;  // max total banked positive bonus per resident (spec §4)
+function _trainingTotal(name) {
+  const t = gs.riTraining?.[name]; if (!t) return 0;
+  return Object.values(t).reduce((s, v) => s + Math.max(0, v), 0);
+}
 function _addTrainingBonus(name, statKey, amount) {
   if (!gs.riTraining) gs.riTraining = {};
   if (!gs.riTraining[name]) gs.riTraining[name] = {};
+  if (amount > 0) amount = Math.min(amount, Math.max(0, RI_TRAINING_CAP - _trainingTotal(name)));
   gs.riTraining[name][statKey] = (gs.riTraining[name][statKey] || 0) + amount;
 }
+
+// ── Well-being meters (Edge of Extinction) — pw = physical, mh = mental, 0–100 ──
+function _initWB(name) {
+  if (!gs.riWellbeing) gs.riWellbeing = {};
+  if (!gs.riWellbeing[name]) gs.riWellbeing[name] = { pw: 100, mh: 85 };  // arrive rattled, not fresh
+  return gs.riWellbeing[name];
+}
+function _clampWB(w) { w.pw = Math.max(0, Math.min(100, w.pw)); w.mh = Math.max(0, Math.min(100, w.mh)); }
 
 // ══════════════════════════════════════════════════════════════════════
 // PHASE-BASED DUEL ENGINE
@@ -735,6 +752,103 @@ export function simulateRIReentry(riPlayers) {
     challengeType: challenge.id, challengeLabel: challenge.name,
     duelists, phases, breathingMoments, tiebreaker, streakData,
   };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// EDGE OF EXTINCTION — multi-phase return challenge (spec §7)
+// ══════════════════════════════════════════════════════════════════════
+export const RESCUE_RETURN_PHASES = [
+  { name: 'The Climb',     stat: 'physical',  meter: 'pw', blurb: 'scale the cliff wall' },
+  { name: 'The Vigil',     stat: 'endurance', meter: 'pw', blurb: 'hold the line' },
+  { name: 'The Cipher',    stat: 'mental',    meter: 'mh', blurb: 'decode the totem' },
+  { name: 'The Reckoning', stat: 'social',    meter: 'mh', blurb: 'sway the watchers' },
+  { name: 'The Leap',      stat: 'boldness',  meter: 'mh', blurb: 'nerve over the chasm' },
+];
+
+// Runs the gauntlet, eliminating worst performer(s) phase by phase with farewells.
+// Pure of game-state side effects except popularity + Edge-tracking cleanup; the caller
+// (episode.js) handles re-entry, jury, and riPlayers mutation.
+export function simulateRescueReturnChallenge(riPlayers, epNum) {
+  if (!gs.riWellbeing) gs.riWellbeing = {};
+  if (!gs.riTraining) gs.riTraining = {};
+  if (!gs.riWinStreak) gs.riWinStreak = {};
+  if (!gs.riMentalState) gs.riMentalState = {};
+
+  const all = [...riPlayers];
+  let phaseDefs = RESCUE_RETURN_PHASES;
+  if (all.length <= 2) phaseDefs = [RESCUE_RETURN_PHASES[0], RESCUE_RETURN_PHASES[2], RESCUE_RETURN_PHASES[4]];
+
+  // Snapshot meters/bonuses for VP/text before any cleanup
+  const snapshot = {};
+  all.forEach(n => {
+    const w = _initWB(n);
+    snapshot[n] = { pw: Math.round(w.pw), mh: Math.round(w.mh),
+      bonus: +(_trainingTotal(n).toFixed(1)), days: epNum - (gs.riArrivalEp?.[n] || epNum) };
+  });
+
+  let remaining = [...all];
+  const phases = [];
+  const eliminations = [];
+
+  for (let pi = 0; pi < phaseDefs.length && remaining.length > 1; pi++) {
+    const pd = phaseDefs[pi];
+    const scores = {};
+    remaining.forEach(name => {
+      const s = pStats(name);
+      const w = _initWB(name);
+      const meterMod = (w[pd.meter] / 100 - 0.5) * 2.0;   // ±1.0 from the matching meter
+      scores[name] = s[pd.stat] + _getTrainingBonus(name, pd.stat) + meterMod + _noise(3.0);
+    });
+
+    // Give-up override — a competitor near breakdown may collapse early (phases 1–2)
+    let gaveUpName = null;
+    if (pi < 2) {
+      for (const n of remaining) {
+        if (_initWB(n).mh < 20 && Math.random() < 0.5) { gaveUpName = n; break; }
+      }
+    }
+
+    let cut = (remaining.length > 6 && pi < 2) ? 2 : 1;
+    cut = Math.min(cut, remaining.length - 1);   // never empty the pool
+
+    const ordered = [...remaining].sort((a, b) => scores[a] - scores[b]);
+    const cutList = [];
+    if (gaveUpName) cutList.push({ name: gaveUpName, gaveUp: true });
+    for (const n of ordered) {
+      if (cutList.length >= cut) break;
+      if (cutList.some(e => e.name === n)) continue;
+      cutList.push({ name: n, gaveUp: false });
+    }
+
+    const events = [];
+    cutList.forEach(({ name, gaveUp }) => {
+      const days = snapshot[name].days;
+      const farewell = _edgeFarewell(name, days, gaveUp);
+      eliminations.push({ name, phase: pd.name, phaseIndex: pi, gaveUp, daysOnEdge: days, farewell });
+      events.push({ name, gaveUp, text: gaveUp
+        ? `${name} crumbles in ${pd.name} — body and mind give out at once. ${farewell}`
+        : `${name} falls in ${pd.name}. ${farewell}` });
+      remaining = remaining.filter(r => r !== name);
+    });
+
+    phases.push({ name: pd.name, stat: pd.stat, blurb: pd.blurb,
+      scores: { ...scores }, eliminated: cutList.map(e => e.name), events });
+  }
+
+  const winner = remaining[0] || all[0];
+  const finalStandings = [winner, ...eliminations.slice().reverse().map(e => e.name)];
+
+  if (!gs.popularity) gs.popularity = {};
+  if (winner) gs.popularity[winner] = (gs.popularity[winner] || 0) + 2;   // fighting back in earns respect
+
+  // The gauntlet is over — everyone leaves the Edge. Clean Edge tracking for all competitors.
+  all.forEach(n => {
+    delete gs.riWinStreak[n]; delete gs.riMentalState[n];
+    delete gs.riTraining[n]; delete gs.riWellbeing[n];
+    if (gs.riActionLog) delete gs.riActionLog[n];
+  });
+
+  return { winner, finalStandings, phases, eliminations, snapshot, competitors: all };
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1179,6 +1293,128 @@ export function generateRIPostDuelEvents(ep) {
 // ENGINE: RESCUE ISLAND LIFE (Edge of Extinction format)
 // ══════════════════════════════════════════════════════════════════════
 
+// ── Edge of Extinction action model (spec §4–§6) ──
+const _ARCH_TRAIN  = { 'challenge-beast':1.8, 'hothead':1.4, 'villain':1.2, 'schemer':1.2, 'mastermind':1.2, 'wildcard':1.1, 'social-butterfly':0.7, 'showmancer':0.7, 'goat':0.6 };
+const _ARCH_SOCIAL = { 'social-butterfly':1.6, 'showmancer':1.6, 'hero':1.4, 'loyal-soldier':1.2, 'villain':0.8, 'schemer':0.8, 'challenge-beast':0.7 };
+const _EDGE_DRILLS = [
+  { label: 'beach sprints',      stat: 'physical',  textFn: n => `${n} runs the beach until ${pronouns(n).pos} legs give out, then runs it again. The body adapts.` },
+  { label: 'dead hangs',         stat: 'endurance', textFn: n => `${n} hangs off the cliff ledge until ${pronouns(n).pos} grip screams, then holds it longer. Building iron.` },
+  { label: 'driftwood puzzles',  stat: 'mental',    textFn: n => `${n} solves driftwood puzzles over and over, shaving seconds off every attempt.` },
+  { label: 'shadow debates',     stat: 'social',    textFn: n => `${n} rehearses pleas to an imaginary jury, sharpening every word.` },
+  { label: 'cliff-edge nerves',  stat: 'boldness',  textFn: n => `${n} stands at the cliff edge staring down the drop until the fear goes quiet.` },
+  { label: 'reading the others', stat: 'intuition', textFn: n => `${n} studies how the others move and lie, learning to read the unspoken.` },
+];
+function _archOf(name) { return players.find(p => p.name === name)?.archetype || 'floater'; }
+
+function _edgeFarewell(name, daysOn, gaveUp) {
+  const pr = pronouns(name);
+  const arch = _archOf(name);
+  const longHaul = daysOn >= 5;
+  if (gaveUp) return _pick([
+    `${pr.Sub} ${pr.sub==='they'?'are':'is'} done. "I left everything out here. There's nothing left to give."`,
+    `"I'm not quitting on myself," ${name} says quietly. "I'm choosing to be okay again." Then ${pr.sub} walk${pr.sub==='they'?'':'s'} away.`,
+    `${name} can't do it anymore. ${longHaul ? `${daysOn} days on this island took more than the game ever did.` : `The island won this one.`} ${pr.Sub} go${pr.sub==='they'?'':'es'} home.`,
+  ]);
+  if (['villain','schemer','mastermind'].includes(arch)) return _pick([
+    `"Enjoy it while it lasts." ${name} spits the words at the others. "I'll be watching from the jury."`,
+    `${name} says nothing kind — just a cold look and a colder walk off the sand.`,
+  ]);
+  if (['hero','loyal-soldier','social-butterfly','showmancer','underdog','goat'].includes(arch)) return _pick([
+    `"I gave it everything," ${name} says, hugging whoever's closest. "No regrets. Go win it."`,
+    `${name} shakes every hand on the way out. "Proud of myself. Proud of all of you."`,
+  ]);
+  return _pick([
+    `"That's the game," ${name} shrugs. "I fought my way back as far as I could."`,
+    `${name} nods once, picks up ${pr.pos} bag, and walks. No drama. Just done.`,
+  ]);
+}
+
+// Daily Train / Rest / Socialize resolution + meter economy. Mutates gs.riPlayers/riList on quit.
+function _resolveEdgeActions(ep, riList, epNum, pushEvt) {
+  riList.slice().forEach(name => {
+    if (!gs.riPlayers.includes(name)) return;
+    const s = pStats(name);
+    const pr = pronouns(name);
+    const w = _initWB(name);
+    const daysOn = epNum - (gs.riArrivalEp[name] || epNum);
+    const arch = _archOf(name);
+
+    // 1) Passive time toll on the mind — COMPOUNDS with every day stranded (uncapped); boldness = resilience.
+    //    Long-haul residents erode toward breakdown unless they keep spending actions on social contact —
+    //    which means sacrificing training time. Winning the return early is its own reward.
+    let timeToll = 3 + daysOn * 1.0;
+    timeToll *= Math.max(0.65, Math.min(1.35, 1 - (s.boldness - 5) * 0.05));
+    w.mh -= timeToll;
+
+    // 2) Pick an action — hard survival gates first, then personality × stats × meters (Blend)
+    let action;
+    if (w.mh < 25 && w.pw >= 25)      action = 'social';
+    else if (w.pw < 25)               action = 'rest';
+    else {
+      const trainW  = 1.0 * (_ARCH_TRAIN[arch]  || 1.0) * (1 + (s.endurance - 5) * 0.08 + (s.boldness - 5) * 0.06) * (w.pw / 100);
+      const restW   = 0.8 * (1 + (100 - w.pw) / 100 * 1.5);
+      const socialW = 1.0 * (_ARCH_SOCIAL[arch] || 1.0) * (1 + (s.social - 5) * 0.08) * (1 + (100 - w.mh) / 100 * 1.2);
+      action = wRandom(['train','rest','social'], a => a === 'train' ? Math.max(0.05, trainW) : a === 'rest' ? restW : socialW);
+    }
+
+    // 3) Apply effects
+    if (action === 'train') {
+      const drill = _pick(_EDGE_DRILLS);
+      const accidentChance = 0.12 + (1 - w.pw / 100) * 0.30 + Math.max(0, s.boldness - 6) * 0.03;
+      if (Math.random() < accidentChance) {
+        w.pw -= 25; w.mh -= 4;
+        pushEvt({ ep: epNum, type: 'edge-injury', player: name,
+          text: `${name} pushes too hard at ${drill.label}. Something gives — a wound, a wasted day. ${pr.Sub} limp${pr.sub==='they'?'':'s'} back to camp with nothing to show.` });
+      } else {
+        w.pw -= 8;
+        _addTrainingBonus(name, drill.stat, 0.4);
+        pushEvt({ ep: epNum, type: 'edge-train', player: name, stat: drill.stat, text: drill.textFn(name) });
+      }
+    } else if (action === 'rest') {
+      w.pw += 18; w.mh += 3;
+      pushEvt({ ep: epNum, type: 'edge-rest', player: name, text: _pick([
+        `${name} does nothing today but heal — sleeping in the shade, letting the body knit back together.`,
+        `${name} rests. No drills, no drama. Just recovery. The return challenge needs a working body.`,
+        `${name} tends ${pr.pos} wounds and sleeps through the heat of the day. Tomorrow ${pr.sub} can push again.`,
+      ]) });
+    } else {
+      w.mh += 12; w.pw += 2;
+      const others = riList.filter(o => o !== name && gs.riPlayers.includes(o));
+      const friend = others.length ? _pick(others) : null;
+      if (friend) addBond(name, friend, 0.8);
+      pushEvt({ ep: epNum, type: 'edge-social', player: name, player2: friend, text: friend ? _pick([
+        `${name} and ${friend} sit by the fire trading stories until the dark feels smaller. The mind steadies.`,
+        `${name} talks it out with ${friend}. No strategy — just two people keeping each other sane out here.`,
+        `${name} leans on ${friend} today. The weight gets lighter when it's shared.`,
+      ]) : _pick([
+        `${name} walks the shore and lets the rhythm of the waves do the work. The noise in ${pr.pos} head quiets.`,
+        `${name} carves a tally into driftwood, one mark per day survived. A small ritual. It helps.`,
+      ]) });
+    }
+    _clampWB(w);
+    if (!gs.riActionLog) gs.riActionLog = {};
+    (gs.riActionLog[name] ??= []).push(action);
+
+    // 4) Breakdown / quit — meter-driven
+    if (w.mh < 30) {
+      let quitChance = (0.08 + (30 - w.mh) / 30 * 0.32) * (1 + (5 - s.boldness) * 0.06);
+      if (w.pw < 25) quitChance += 0.05;
+      if (Math.random() < quitChance) {
+        pushEvt({ ep: epNum, type: 'quit', player: name, text: `${name} raises the sail. ${_edgeFarewell(name, daysOn, true)}` });
+        gs.riPlayers = gs.riPlayers.filter(p => p !== name);
+        gs.riQuits.push(name);
+        if (!gs.eliminated.includes(name)) gs.eliminated.push(name);
+        ep.riQuit = { name, daysOnIsland: daysOn };
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[name] = (gs.popularity[name] || 0) + 1;
+        delete gs.riWinStreak[name]; delete gs.riMentalState[name];
+        delete gs.riTraining[name]; delete gs.riWellbeing[name];
+        const idx = riList.indexOf(name); if (idx >= 0) riList.splice(idx, 1);
+      }
+    }
+  });
+}
+
 export function generateRescueIslandLife(ep) {
   if (!gs.riPlayers || !gs.riPlayers.length) return;
   if (!ep.rescueIslandEvents) ep.rescueIslandEvents = [];
@@ -1213,6 +1449,11 @@ export function generateRescueIslandLife(ep) {
     });
   }
 
+  // ── Daily action model + meter economy (Train / Rest / Socialize). Authoritative for
+  //    training bonuses, well-being, and quits. Runs once per resident per episode. ──
+  _resolveEdgeActions(ep, riList, epNum, pushEvt);
+
+  // Remaining events below are supplementary colour (processing, social, survival) — no training/quit.
   // Determine how many events: 2-4 based on population
   const eventCount = riList.length <= 2 ? 2 : riList.length <= 4 ? 3 : 4;
   const usedTypes = new Set();
@@ -1249,27 +1490,7 @@ export function generateRescueIslandLife(ep) {
       }
     });
 
-    // ── Training events (solo — integrated into life event pool) ──
-    const trainingTypes = [
-      { label: 'running the beach',          stat: 'physical',    textFn: n => `${n} pushes through another beach run. The body adapts. The body has to.` },
-      { label: 'puzzle practice',             stat: 'mental',      textFn: n => `${n} builds puzzles out of driftwood and solves them over and over. Faster each time.` },
-      { label: 'endurance holds',             stat: 'endurance',   textFn: n => `${n} holds a plank until ${pronouns(n).pos} arms shake. Then holds it longer. Building iron.` },
-      { label: 'meditation',                  stat: 'temperament', textFn: n => `${n} practices breathing exercises as the waves crash. Finding the calm before the storm.` },
-      { label: 'vote analysis',               stat: 'strategic',   textFn: n => `${n} maps out vote patterns in the sand. The picture of the game gets clearer from out here.` },
-      { label: 'confidence drills',           stat: 'boldness',    textFn: n => `${n} stands on the highest rock and screams at the ocean. ${pronouns(n).Sub} ${pronouns(n).sub==='they'?'are':'is'}n't afraid anymore.` },
-      { label: 'body language study',         stat: 'intuition',   textFn: n => `${n} watches the others eat, argue, sleep. Learning to read what people don't say.` },
-    ];
-
-    riList.forEach(name => {
-      if (usedTypes.has('ril-training-' + name)) return;
-      const s = pStats(name);
-      const training = _pick(trainingTypes);
-      const statVal = s[training.stat];
-      pool.push({ weight: 1.5, type: 'training-life', player: name,
-        text: training.textFn(name), stat: training.stat,
-        boost: 0.3 + statVal * 0.02,
-        injuryChance: (10 - s.endurance) * 0.02 });
-    });
+    // (Training is now handled by _resolveEdgeActions above — no training events in this colour pool.)
 
     // ── Mental arc events (integrated into pool) ──
     riList.forEach(name => {
@@ -1385,29 +1606,7 @@ export function generateRescueIslandLife(ep) {
       }
     });
 
-    // ── Quit temptation ──
-    riList.forEach(name => {
-      const pr = pronouns(name);
-      const s = pStats(name);
-      const state = getPlayerState(name);
-      const emotional = state?.emotional || 'content';
-      const daysOn = epNum - (gs.riArrivalEp[name] || epNum);
-      const mentalState = _getMentalState(name);
-      // Broken mental state increases quit temptation
-      const mentalQuitBoost = mentalState === 'broken' ? 0.10 : 0;
-      // Quit temptation — physical depletion (endurance) is the dominant driver of leaving the Edge,
-      // with weak will (low boldness) as a secondary push, and the toll compounding the longer you're stranded.
-      // No hard cutoff: even a bold, rested player can crack if truly broken, just rarely.
-      if (daysOn >= 3 && (emotional === 'desperate' || mentalState === 'broken')) {
-        const wornDown = (11 - s.endurance) / 10;   // primary: the island grinds the body down
-        const timidity = (11 - s.boldness) / 10;    // secondary: weak will to keep fighting
-        const frailty  = wornDown * 0.65 + timidity * 0.35;
-        const timeToll = Math.min(0.12, (daysOn - 3) * 0.025);  // +2.5%/episode stranded, capped at +12%
-        pool.push({ weight: 5 * frailty, type: 'quit-temptation', player: name,
-          text: `${name} stares at the path off the island for a long time today.`,
-          quitChance: 0.16 * frailty + timeToll + mentalQuitBoost });
-      }
-    });
+    // (Quitting is now meter-driven in _resolveEdgeActions above.)
 
     if (!pool.length) break;
 
@@ -1447,19 +1646,6 @@ export function generateRescueIslandLife(ep) {
       gs.riAlliancesFormed.push({ members: [picked.player, picked.player2], formedOnRI: true, ep: epNum });
     }
 
-    // Apply training from life events
-    if (picked.type === 'training-life' && picked.stat && picked.player) {
-      const isInjury = Math.random() < (picked.injuryChance || 0);
-      if (isInjury) {
-        const pr = pronouns(picked.player);
-        picked.text = `${picked.player} pushes too hard during training. ${pr.Sub} tweak${pr.sub==='they'?'':'s'} something. A setback.`;
-        picked.type = 'training-injury-life';
-        _addTrainingBonus(picked.player, picked.stat, -0.3);
-      } else {
-        _addTrainingBonus(picked.player, picked.stat, picked.boost || 0.3);
-      }
-    }
-
     // Apply shared training from life events
     if (picked.type === 'shared-training-life' && picked.sharedStat && picked.player && picked.player2) {
       _addTrainingBonus(picked.player, picked.sharedStat, 0.2);
@@ -1482,30 +1668,6 @@ export function generateRescueIslandLife(ep) {
         picked.text = `${picked.player} has a rough moment but pulls through. The island tests, but doesn't break.`;
         picked.type = 'processing';
       }
-    }
-
-    // Handle quit temptation
-    if (picked.type === 'quit-temptation') {
-      const evt = { ep: epNum, text: picked.text, type: 'quit-temptation', player: picked.player };
-      pushEvt(evt);
-      if (Math.random() < picked.quitChance) {
-        const pr = pronouns(picked.player);
-        const quitEvt = { ep: epNum, type: 'quit',
-          text: `${picked.player} raises the sail. ${pr.Sub} ${pr.sub==='they'?'are':'is'} done. The island loses one more.`,
-          player: picked.player };
-        pushEvt(quitEvt);
-        gs.riPlayers = gs.riPlayers.filter(p => p !== picked.player);
-        gs.riQuits.push(picked.player);
-        gs.eliminated.push(picked.player);
-        ep.riQuit = { name: picked.player, daysOnIsland: epNum - (gs.riArrivalEp[picked.player] || epNum) };
-        // Clean up tracking for quitter
-        delete gs.riWinStreak[picked.player];
-        delete gs.riMentalState[picked.player];
-        delete gs.riTraining[picked.player];
-        const idx = riList.indexOf(picked.player);
-        if (idx >= 0) riList.splice(idx, 1);
-      }
-      continue;
     }
 
     const evt = { ep: epNum, text: picked.text, type: picked.type, player: picked.player, player2: picked.player2 || null };

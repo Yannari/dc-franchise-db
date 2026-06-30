@@ -15,7 +15,7 @@ import {
 import {
   isRIStillActive, simulateRIChoice, simulateRIDuel, simulateRIReentry,
   generateRILifeEvents, generateRIPostDuelEvents, generateRescueIslandLife,
-  RI_DUEL_CHALLENGES
+  RI_DUEL_CHALLENGES, simulateRescueReturnChallenge
 } from './rescue-island.js';
 import { generateSummaryText } from './text-backlog.js';
 import { _idbPut } from './savestate.js';
@@ -1267,17 +1267,14 @@ export function simulateEpisode() {
   if (isReentry) {
     ep.isRIReentry = true;
     if (cfg.riFormat === 'rescue') {
-      const challenge = RI_DUEL_CHALLENGES[Math.floor(Math.random() * RI_DUEL_CHALLENGES.length)];
       const _rescuePlayers = [...gs.riPlayers];
-      const winner = wRandom(_rescuePlayers, n => {
-        const base = Math.max(0.1, challenge.stat(pStats(n)) + Math.random() * 3);
-        const daysOn = epNum - (gs.riArrivalEp?.[n] || epNum);
-        return base + daysOn * 0.5;
-      });
+      const _rr = simulateRescueReturnChallenge(_rescuePlayers, epNum);
+      const winner = _rr.winner;
       const losers = _rescuePlayers.filter(p => p !== winner);
       ep.riReentrant = winner; ep.riReentryLosers = losers;
-      ep.riReentry = { winner, losers, challengeType: challenge.id, challengeLabel: challenge.name };
-      ep.rescueReturnChallenge = { winner, losers, challengeType: challenge.id, challengeLabel: challenge.name };
+      ep.rescueReturn = _rr;   // full phase / elimination / farewell data (VP + text)
+      ep.riReentry = { winner, losers, challengeType: 'rescue-return', challengeLabel: 'Edge of Extinction: The Return' };
+      ep.rescueReturnChallenge = { winner, losers, challengeType: 'rescue-return', challengeLabel: 'Edge of Extinction: The Return' };
       if (gs.riReturnCount === 0) { gs.riPlayers = []; } else { gs.riPlayers = gs.riPlayers.filter(p => !_rescuePlayers.includes(p)); }
       losers.forEach(l => { gs.eliminated.push(l); gs.jury.push(l); });
       gs.activePlayers.push(winner);
@@ -1585,7 +1582,7 @@ export function simulateEpisode() {
       riLifeEvents: ep.riLifeEvents || [],
       riReentry: ep.riReentry || null,
       rescueIslandEvents: ep.rescueIslandEvents || [],
-      rescueReturnChallenge: ep.rescueReturnChallenge || null,
+      rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null,
       riArrival: ep.riArrival || null,
       riQuit: ep.riQuit || null,
       advantagesPreTribal: ep.advantagesPreTribal || null,
@@ -1880,7 +1877,7 @@ export function simulateEpisode() {
       riLifeEvents: ep.riLifeEvents || [],
       riReentry: ep.riReentry || null,
       rescueIslandEvents: ep.rescueIslandEvents || [],
-      rescueReturnChallenge: ep.rescueReturnChallenge || null,
+      rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null,
       riArrival: ep.riArrival || null,
       riQuit: ep.riQuit || null,
       advantagesPreTribal: ep.advantagesPreTribal || null,
@@ -3361,7 +3358,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null, immunityWinner: null,
       challengeType: ep.challengeType, isMerge: ep.isMerge, votes: {}, alliances: [],
-      lastChance: true, riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
+      lastChance: true, riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
       advantagesPreTribal: ep.advantagesPreTribal || null,
       isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
         isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
@@ -3434,7 +3431,7 @@ export function simulateEpisode() {
       gs.episode = epNum;
       gs.episodeHistory.push({ num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
         challengeType: ep.challengeType, isMerge: ep.isMerge, votes: {}, alliances: [],
-        riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
+        riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
         advantagesPreTribal: ep.advantagesPreTribal || null,
         isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
         isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
@@ -3626,7 +3623,7 @@ export function simulateEpisode() {
       chalMemberScores: ep.chalMemberScores || null, chalSitOuts: ep.chalSitOuts || null,
       winner: ep.winner ? { name: ep.winner.name, members: [...ep.winner.members] } : null,
       loser: ep.loser ? { name: ep.loser.name, members: [...ep.loser.members] } : null,
-      riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
+      riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
       spiritIslandEvents: ep.spiritIslandEvents || null,
       shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [],
       advantagesPreTribal: ep.advantagesPreTribal || null,
@@ -4597,7 +4594,7 @@ export function simulateEpisode() {
       fireMaking: ep.fireMaking || null,
       doubleTribalLosingTribes: (ep.doubleTribalLosingTribes || []).map(t => ({ name: t.name, members: [...t.members] })),
       allianceQuits: ep.allianceQuits || [], allianceRecruits: ep.allianceRecruits || [],
-      riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
+      riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
       advantagesPreTribal: ep.advantagesPreTribal || null,
       isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
         isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
@@ -4805,7 +4802,7 @@ export function simulateEpisode() {
       sidFreshVote: ep.sidFreshVote || false,
       bewareLostVotes: ep.bewareLostVotes || [],
       allianceQuits: ep.allianceQuits || [], allianceRecruits: ep.allianceRecruits || [],
-      riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
+      riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
       advantagesPreTribal: ep.advantagesPreTribal || null,
       isTruthOrShark: ep.isTruthOrShark || false, truthOrShark: ep.truthOrShark || null,
         isCrazyFunTime: ep.isCrazyFunTime || false, crazyFunTime: ep.crazyFunTime || null,
@@ -5205,7 +5202,7 @@ function simulateJuryRoundtable(ep) {
       advantagesPreTribal: ep.advantagesPreTribal || null,
       secondImmune: ep.secondImmune || null,
       extraImmune: ep.extraImmune || null,
-      riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
+      riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
       isDodgebrawl: ep.isDodgebrawl || false, dodgebrawl: ep.dodgebrawl || null,
       isTalentShow: ep.isTalentShow || false, talentShow: ep.talentShow || null,
       isSuckyOutdoors: ep.isSuckyOutdoors || false, suckyOutdoors: ep.suckyOutdoors || null,
@@ -5478,7 +5475,7 @@ function simulateJuryRoundtable(ep) {
       allianceRecruits: ep.allianceRecruits || [], chalSitOuts: ep.chalSitOuts || null,
       riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null,
       riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null,
-      rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null,
+      rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null,
       riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
       isChainOfCommand: true, chainOfCommand: ep.chainOfCommand,
     });
@@ -6654,7 +6651,7 @@ function simulateJuryRoundtable(ep) {
     riLifeEvents:  ep.riLifeEvents  || [],
     riReentry:     ep.riReentry     || null,
     rescueIslandEvents: ep.rescueIslandEvents || [],
-    rescueReturnChallenge: ep.rescueReturnChallenge || null,
+    rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null,
     riArrival:     ep.riArrival     || null,
     riQuit:        ep.riQuit        || null,
   });

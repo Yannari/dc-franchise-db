@@ -5456,8 +5456,139 @@ export function rpBuildRescueIslandLife(ep) {
   return html;
 }
 
+// ── Edge of Extinction multi-phase return challenge (rework) ──
+function _rrMeterBar(label, val, color) {
+  const v = Math.max(0, Math.min(100, val || 0));
+  return `<div style="display:flex;align-items:center;gap:6px;font-size:10px;color:#8b949e;margin:2px 0">
+    <span style="width:34px">${label}</span>
+    <span style="flex:1;height:6px;background:#21262d;border-radius:3px;overflow:hidden;display:inline-block">
+      <span style="display:block;height:100%;width:${v}%;background:${color}"></span></span>
+    <span style="width:24px;text-align:right;color:#cdd9e5">${Math.round(v)}</span></div>`;
+}
+// reveal-state + live sidebar for the return gauntlet
+function _rrEnsureState(key, total) { if (!_tvState[key]) _tvState[key] = { idx: -1, total }; return _tvState[key]; }
+function _rrSidebarHtml(competitors, fallen) {
+  let h = `<div style="font-family:var(--font-display);font-size:11px;letter-spacing:2px;color:#e3b341;text-align:center;margin-bottom:8px">STILL FIGHTING</div>`;
+  competitors.forEach(n => {
+    const out = fallen.has(n);
+    h += `<div style="display:flex;align-items:center;gap:6px;padding:3px 6px;margin:2px 0;border-radius:4px;border:1px solid ${out?'#6e2a2a':'#2d6a35'};background:${out?'rgba(110,42,42,0.12)':'rgba(45,106,53,0.12)'};${out?'opacity:0.55':''}">
+      <span style="flex:1;font-size:11px;color:${out?'#f85149':'#cdd9e5'}">${n}</span>
+      <span style="font-size:9px;color:#8b949e">${out?'OUT':'IN'}</span></div>`;
+  });
+  return h;
+}
+function _rrUpdateSidebar(suffix) {
+  const side = document.getElementById(`rr-side-${suffix}`); if (!side) return;
+  const rec = gs.episodeHistory?.[window.vpEpNum - 1]; const data = rec?.rescueReturn; if (!data) return;
+  const st = _tvState[`rr-${suffix}`]; const idx = st ? st.idx : -1;
+  const fallen = new Set();
+  for (let i = 0; i <= idx && i < (data.phases||[]).length; i++) (data.phases[i].eliminated||[]).forEach(n => fallen.add(n));
+  side.innerHTML = _rrSidebarHtml(data.competitors || [], fallen);
+}
+function _rrReapply(suffix, upToIdx, total) {
+  for (let i = 0; i <= upToIdx; i++) { const el = document.getElementById(`rr-step-${suffix}-${i}`); if (el) el.classList.add('rr-visible'); }
+  const counter = document.getElementById(`rr-counter-${suffix}`);
+  if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total}`;
+  if (upToIdx >= total - 1) { const c = document.getElementById(`rr-controls-${suffix}`); if (c) c.querySelectorAll('.rr-btn').forEach(b => b.style.opacity = '0.4'); }
+  _rrUpdateSidebar(suffix);
+}
+export function rescueReturnRevealNext(key, total) {
+  const st = _rrEnsureState(key, total); if (st.idx >= st.total - 1) return; st.idx++;
+  const suffix = key.replace(/^rr-/, '');
+  _rrReapply(suffix, st.idx, st.total);
+  const el = document.getElementById(`rr-step-${suffix}-${st.idx}`);
+  if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+}
+export function rescueReturnRevealAll(key, total) {
+  const st = _rrEnsureState(key, total); st.idx = st.total - 1;
+  _rrReapply(key.replace(/^rr-/, ''), st.idx, st.total);
+}
+
+function _rpRescueReturnRich(ep) {
+  const rr = ep.rescueReturn;
+  const epNum = ep.num || 0;
+  const suffix = `${epNum}`;
+  const key = `rr-${epNum}`;
+  const winner = rr.winner;
+  const competitors = rr.competitors || [winner];
+  const snap = rr.snapshot || {};
+  const phases = rr.phases || [];
+  const total = phases.length + 1;
+
+  let html = `<style>
+    #rr-wrap-${suffix} .rr-step{display:none}
+    #rr-wrap-${suffix} .rr-step.rr-visible{display:block;animation:rrFade .45s ease}
+    @keyframes rrFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  </style>
+  <div id="rr-wrap-${suffix}" class="rp-page tod-deepnight">
+    <div class="rp-eyebrow">Episode ${epNum} — Edge of Extinction</div>
+    <div style="font-family:var(--font-display);font-size:30px;letter-spacing:3px;text-align:center;margin:4px 0 2px;color:#e3b341">THE RETURN</div>
+    <div style="text-align:center;font-size:13px;color:#cdd9e5;margin-bottom:4px">${competitors.length} castaway${competitors.length!==1?'s':''} who refused to quit face a five-stage gauntlet for one way back in.</div>
+    <div style="text-align:center;font-size:11px;color:#8b949e;margin-bottom:16px">Reveal the stages one at a time. How they spent their days on the Edge decides everything.</div>
+    <div style="font-family:var(--font-display);font-size:13px;color:#e3b341;letter-spacing:1px;margin-bottom:8px">CONDITION AT THE STARTING LINE</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px">`;
+  competitors.forEach(name => {
+    const sp = snap[name] || {};
+    html += `<div class="vp-card" style="flex:1 1 200px;min-width:180px;padding:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">${rpPortrait(name,'sm')}
+        <div><div style="font-family:var(--font-display);font-size:13px">${name}</div>
+        <div style="font-size:10px;color:#8b949e">${sp.days||0} day${sp.days===1?'':'s'} on the Edge · +${(sp.bonus||0).toFixed(1)} trained</div></div></div>
+      ${_rrMeterBar('Body', sp.pw, '#3fb950')}${_rrMeterBar('Mind', sp.mh, '#58a6ff')}</div>`;
+  });
+  html += `</div>
+    <div style="display:flex;gap:16px;align-items:flex-start">
+      <div style="flex:1;min-width:0">`;
+
+  phases.forEach((ph, i) => {
+    const ordered = Object.keys(ph.scores).sort((a,b)=>ph.scores[b]-ph.scores[a]);
+    const max = Math.max(...ordered.map(n=>ph.scores[n]), 1);
+    html += `<div class="rr-step" id="rr-step-${suffix}-${i}"><div class="vp-card" style="margin-bottom:12px;border-color:rgba(227,179,65,0.2)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <div style="font-family:var(--font-display);font-size:16px;color:#e3b341">Stage ${i+1} · ${ph.name}</div>
+        <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:1px">${ph.stat}</div></div>
+      <div style="font-size:11px;color:#8b949e;font-style:italic;margin-bottom:8px">${ph.blurb}</div>`;
+    ordered.forEach(n => {
+      const fell = ph.eliminated.includes(n);
+      const w = Math.max(4, ph.scores[n]/max*100);
+      html += `<div style="display:flex;align-items:center;gap:6px;margin:3px 0;font-size:11px;${fell?'opacity:0.6':''}">
+        <span style="width:78px;${fell?'color:#f85149':'color:#cdd9e5'}">${n}${fell?' ✗':''}</span>
+        <span style="flex:1;height:7px;background:#21262d;border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:${w}%;background:${fell?'#6e2a2a':'#3fb950'}"></span></span>
+        <span style="width:30px;text-align:right;color:#8b949e">${ph.scores[n].toFixed(1)}</span></div>`;
+    });
+    (ph.events || []).forEach(evt => {
+      html += `<div style="margin-top:8px;padding:8px 10px;background:rgba(248,81,73,0.06);border-left:3px solid ${evt.gaveUp?'#d29922':'#f85149'};border-radius:4px">
+        <div style="font-size:11px;color:#cdd9e5;line-height:1.5">${evt.text}</div></div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  const wPr = pronouns(winner);
+  html += `<div class="rr-step" id="rr-step-${suffix}-${phases.length}"><div class="vp-card" style="border-color:rgba(227,179,65,0.4);box-shadow:0 0 16px rgba(227,179,65,0.15);margin-top:6px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="border-radius:50%;overflow:hidden;border:3px solid #e3b341;box-shadow:0 0 12px rgba(227,179,65,0.4)">${rpPortrait(winner,'lg')}</div>
+      <div style="flex:1">
+        <div style="font-size:10px;color:#8b949e;letter-spacing:1px">LAST ONE STANDING</div>
+        <div style="font-family:var(--font-display);font-size:22px;color:#e3b341;margin:2px 0">${winner}</div>
+        <div style="font-size:12px;color:#cdd9e5;font-style:italic;line-height:1.5">"They sent me to the Edge to break me. Instead I got back up. ${wPr.Sub} ${wPr.sub==='they'?'are':'is'} back in this game."</div>
+        <span class="rp-brant-badge gold" style="margin-top:6px;font-size:10px">RETURNS TO THE GAME</span></div></div></div></div>`;
+
+  html += `</div>
+      <div style="width:170px;flex-shrink:0;position:sticky;top:56px">
+        <div id="rr-side-${suffix}" class="vp-card" style="padding:10px">${_rrSidebarHtml(competitors, new Set())}</div>
+      </div>
+    </div>
+    <div id="rr-controls-${suffix}" style="position:sticky;bottom:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:10px;margin-top:8px;background:linear-gradient(transparent,rgba(13,17,23,0.92) 45%)">
+      <button class="rr-btn" onclick="rescueReturnRevealNext('${key}',${total})" style="padding:8px 22px;background:#e3b341;border:none;border-radius:6px;color:#1a1a1a;font-family:var(--font-display);font-size:13px;letter-spacing:1px;cursor:pointer">REVEAL STAGE</button>
+      <button class="rr-btn" onclick="rescueReturnRevealAll('${key}',${total})" style="padding:6px 14px;background:transparent;border:1px solid #30363d;border-radius:6px;color:#8b949e;font-size:11px;cursor:pointer">Reveal all</button>
+      <span id="rr-counter-${suffix}" style="font-size:11px;color:#8b949e;min-width:48px;text-align:center">0 / ${total}</span>
+    </div>
+  </div>`;
+  return html;
+}
+
 // ── Rescue Island Return Challenge VP Screen ──
 export function rpBuildRescueReturnChallenge(ep) {
+  if (ep.rescueReturn?.phases) return _rpRescueReturnRich(ep);
   const rc = ep.rescueReturnChallenge;
   if (!rc) return null;
 

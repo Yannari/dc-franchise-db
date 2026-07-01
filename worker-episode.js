@@ -39,7 +39,7 @@ export default {
 // JSON / analytics extraction paths keep their own (GPT + Haiku) models.
 const MODELS = {
   creative: "claude-sonnet-4-6",
-  quality:  "claude-opus-4-8",
+  quality:  "claude-opus-4-7",
   fast:     "claude-haiku-4-5-20251001",
 };
 

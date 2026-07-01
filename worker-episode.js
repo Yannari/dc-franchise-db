@@ -1812,7 +1812,9 @@ Be specific. Name players. This plan is the writer's marching orders — decisiv
 
   const user = `SEASON SETTING:\n${seasonSetting || '(none provided)'}\n\nRETURNING PLAYER HISTORIES (all cast — use these for arcs, grudges, and callbacks):\n${franchiseContext || '(none)'}\n${previousContext || ''}\n\nEPISODE EVENT SUMMARY (raw — turn this into a story):\n${summaryText}`;
 
-  return await callAnthropicText(system, user, env, MODELS.quality, 1600);
+  // Sonnet (not Opus) for the plan: it's reasoning, not prose, and a faster pass here keeps the
+  // pre-stream delay short so Cloudflare doesn't truncate the response before the episode streams.
+  return await callAnthropicText(system, user, env, MODELS.creative, 1600);
 }
 
 // STORY SO FAR — compress the prior episodes into a compact continuity digest (a running

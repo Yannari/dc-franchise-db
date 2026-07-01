@@ -462,8 +462,8 @@ const DISASTER_DRAMA_EVENTS = {
   },
   crossTribeRespect: {
     check: (a, b, ep) => {
-      const tA = tribeMembers.find(t => t.members.includes(a))?.name;
-      const tB = tribeMembers.find(t => t.members.includes(b))?.name;
+      const tA = gs.tribes.find(t => t.members.includes(a))?.name;
+      const tB = gs.tribes.find(t => t.members.includes(b))?.name;
       return tA !== tB && getBond(a, b) >= 0;
     },
     apply: (a, b, ep, rp) => {

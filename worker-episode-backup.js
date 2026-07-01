@@ -2157,12 +2157,6 @@ Eureka: Don't apologize for winning.
 Ellie: Nice move. I hate it.
 Fiore: Move.
 
-🚫 ALSO ROBOTIC AND BANNED — THE TIDY ARGUMENT (this keeps slipping through):
-Eva: I broke the pot because Damien put it where people walk!
-Damien: It was next to the fire.
-Eva: People walk near fire!
-Why it's robotic: it's a neat little debate where each person lands exactly one clean rebuttal and politely waits their turn. REAL fights are messy. People talk over each other, repeat themselves LOUDER, refuse to let the other finish, veer onto something unrelated, or just huff and drop it. One person should be winning while the other sputters. Rewrite this as Eva ranting and steamrolling Damien mid-sentence, Damien giving up halfway ("okay, you know what, forget it"), and someone else cutting in about something totally different because they're hungry. NEVER write an argument as balanced alternating one-liners.
-
 Why these are robotic: every line is the same length, same rhythm, same tone. No one interrupts. No one rambles. No one repeats themselves. No one uses filler. Every exchange resolves in a clean punchline. REAL PEOPLE DON'T TALK LIKE THIS, AND CARTOON PEOPLE TALK EVEN LESS LIKE THIS.
 
 ✅ FIX IT WITH THESE TECHNIQUES (use 3+ per scene):

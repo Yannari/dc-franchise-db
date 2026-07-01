@@ -1039,8 +1039,9 @@ export function handleExileFormat(ep) {
 
   let _exiled = null, _chooser = null, _chooserTribe = null, _chooserMembers = null;
 
-  if (!gs.isMerged && ep.winner && ep.loser) {
+  if (!gs.isMerged && ep.winner?.members?.length && ep.loser?.members?.length) {
     // Pre-merge: winning tribe picks from losing tribe
+    // (guard: some challenges leave ep.winner/ep.loser as non-tribe values — skip exile then)
     const _winM = ep.winner.members.filter(m => gs.activePlayers.includes(m));
     const _losM = ep.loser.members.filter(m => gs.activePlayers.includes(m));
     if (_winM.length && _losM.length) {

@@ -15,10 +15,10 @@ export default {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { season, episode, summaryText, mode, previousEpisodes, franchiseContext, seasonSetting, auditionsText, quality } = body;
+    const { season, episode, summaryText, mode, previousEpisodes, franchiseContext, seasonSetting, auditionsText, quality, storyBible } = body;
 
     if (mode === "episode") {
-      return await generateEpisode(summaryText, season, episode, env, previousEpisodes, franchiseContext, seasonSetting, auditionsText, quality);
+      return await generateEpisode(summaryText, season, episode, env, previousEpisodes, franchiseContext, seasonSetting, auditionsText, quality, storyBible);
     } else if (mode === "summarize") {
       return await generateSummary(body.rawText, season, episode, env, body.prevSummary || "", quality);
     } else if (mode === "enhance") {
@@ -1813,7 +1813,30 @@ Be specific. Name players. This plan is the writer's marching orders — decisiv
   return await callAnthropicText(system, user, env, MODELS.quality, 1600);
 }
 
-async function generateEpisode(summaryText, season, episode, env, previousEpisodes = [], franchiseContext = '', seasonSetting = '', auditionsText = '', quality = false) {
+// STORY SO FAR — compress the prior episodes into a compact continuity digest (a running
+// "bible") so the architect and writer get clean continuity state instead of a growing wall
+// of raw transcripts drowning out the rules. Cheap (Haiku). Degrades gracefully.
+async function generateStorySoFar(previousContext, env) {
+  if (!env.ANTHROPIC_API_KEY || !previousContext || !previousContext.trim()) return "";
+  const system = `You compress a reality-competition season's prior episodes into a tight STORY SO FAR — the continuity state the next episode's writers need. Output terse STATE, MAX ~250 words, under these headers:
+- ALLIANCES: who's aligned, named alliances, how solid.
+- RIVALRIES / GRUDGES: active tensions, who's targeting whom.
+- ONGOING ARCS: each character storyline mid-flight and where it stands (e.g. "Jake's grudge with Thom is thawing"; "Aiden is building a manipulation résumé and Bridgette has clocked it").
+- SHOWMANCES / KEY BONDS worth continuing.
+- RESCUE ISLAND: who's out there and why they were cut.
+- LAST BOOT(S): who left last and the fallout.
+- OPEN THREADS: setups planted but not yet paid off.
+Be specific with names. No prose, no scene descriptions, no style notes — just the current state of the game and its stories, so the next episode can build on it.`;
+  const user = `PRIOR EPISODES (facts):\n${previousContext}`;
+  try {
+    return await callAnthropicText(system, user, env, MODELS.fast, 700);
+  } catch (e) {
+    console.error("Story-so-far digest (pass 0) failed:", e);
+    return "";
+  }
+}
+
+async function generateEpisode(summaryText, season, episode, env, previousEpisodes = [], franchiseContext = '', seasonSetting = '', auditionsText = '', quality = false, storyBible = '') {
   if (!summaryText || typeof summaryText !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
       status: 400,
@@ -1823,6 +1846,7 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
 
   // Build previous episodes context
   let previousContext = '';
+  let usedChallengesBlock = '';  // kept separate so it survives when we swap in the story-so-far digest
   if (previousEpisodes && previousEpisodes.length > 0) {
     previousContext = '\n\n═══════════════════════════════════════════════════════════\nPREVIOUS EPISODES — FACTS ONLY, NOT A STYLE TEMPLATE\n═══════════════════════════════════════════════════════════\n\n';
     previousContext += `🚨 CRITICAL READING INSTRUCTION — READ BEFORE LOOKING AT TRANSCRIPTS BELOW 🚨
@@ -1930,7 +1954,8 @@ Below are the transcripts — read them for FACTS, not STYLE:\n\n`;
       }
     });
     if (usedChallenges.length > 0) {
-      previousContext += `\n🚫 CHALLENGES ALREADY USED THIS SEASON — DO NOT REPEAT ANY OF THESE:\n${usedChallenges.join('\n')}\n\n`;
+      usedChallengesBlock = `\n🚫 CHALLENGES ALREADY USED THIS SEASON — DO NOT REPEAT ANY OF THESE:\n${usedChallenges.join('\n')}\n\n`;
+      previousContext += usedChallengesBlock;
     }
 
     previousContext += `\n═══════════════════════════════════════════════════════════
@@ -2046,10 +2071,26 @@ WORLD CONSISTENCY — NON-NEGOTIABLE
 - HONOR EVERY TWIST PRESENT IN THE SUMMARY — BLANKET RULE, NO EXCEPTIONS. If the summary labels a twist/special event (a TWISTS section, a tagged event) or something changes the game's structure, it HAPPENS ON SCREEN as a real scene — never skipped, never reduced to a confessional aside or a line of Chris narration. This covers ALL twists, listed or not. Examples of how (apply the same to any twist not named here): SCHOOLYARD PICK = dramatize the draft — captains picking one at a time, the sting of last pick, the unpicked player exiled (do NOT just have Chris announce finished tribes). JOURNEY = show the chosen players leaving camp, the trek, and the gamble (risk your vote for an advantage, or take the safe nothing) — the vote lost or advantage won happens ON SCREEN, never "came back with nothing." MUTINY = the agonized choice to defect. Also: tribe swap/dissolve/expansion, advantage & hidden-idol hunts and plays, Rescue Island arrivals/returns, abduction/kidnapping, producer swaps, hero duels, exile. If the summary flags it, you show it.
 `;
 
+  // ── PASS 0: Story-so-far digest. Prefer a client-supplied rolling bible; else compress the
+  //    prior episodes with Haiku. Used by BOTH passes in place of the raw transcript wall so the
+  //    rules and the plan aren't drowned out by a growing block of previous episodes. ──
+  let storySoFar = (storyBible && storyBible.trim()) ? storyBible.trim() : "";
+  if (!storySoFar && previousContext && previousContext.trim()) {
+    storySoFar = await generateStorySoFar(previousContext, env);
+  }
+  const storySoFarBlock = storySoFar
+    ? `═══════════════════════════════════════════════════════════
+STORY SO FAR — CONTINUITY STATE (build on this, never reset it)
+═══════════════════════════════════════════════════════════
+
+${storySoFar}
+${usedChallengesBlock}`
+    : previousContext;  // fall back to raw prior episodes only if no digest could be produced (guard already inline)
+
   // ── PASS 1: Story Architect — plan the story before writing it. Degrades gracefully. ──
   let episodePlan = "";
   try {
-    episodePlan = await generateEpisodePlan(summaryText, seasonSetting, franchiseContext, previousContext, env);
+    episodePlan = await generateEpisodePlan(summaryText, seasonSetting, franchiseContext, storySoFarBlock, env);
   } catch (e) {
     console.error("Story Architect (pass 1) failed — writing without a plan:", e);
   }
@@ -2137,7 +2178,7 @@ Before the merge, tribes are separate. A player only lived their OWN tribe's cam
 - Never write "we lost [a rival-tribe boot]" (not their tribe's loss) or reference a camp they weren't on. A cross-tribe boot is framed from the outside ("heard the Villains torched Kelly") and only by someone who'd care.
 Example error to avoid: Bridgette (Civilians) mourning Kelly (Villains) — no bond, and she wouldn't even know yet. But if Thom's prior-season ally got voted out on another tribe, Thom CAN be gutted about it — once Chris reveals it at the challenge.
 
-${settingBlock}${worldRules}${planBlock}${franchiseContextBlock}${previousContext}
+${settingBlock}${worldRules}${planBlock}${franchiseContextBlock}${storySoFarBlock}
 
 ═══════════════════════════════════════════════════════════
 ⚠️ THESE ARE REAL TOTAL DRAMA CHARACTERS — USE YOUR KNOWLEDGE

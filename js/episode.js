@@ -2144,17 +2144,24 @@ export function simulateEpisode() {
 
   // ── CHALLENGE ──
   if (ep.isDoubleTribal && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
-    // Double tribal: challenge runs, winner safe, losing tribes merge into ONE council, one elimination
-    const _dtResult = simulateTribeChallenge(gs.tribes);
+    // Double tribal: run the COUPLED twist challenge if scheduled (else generic), THEN overlay —
+    // winner safe, ALL losing tribes merge into ONE combined council for a single elimination.
+    let _dtResult;
+    if (ep.isBackstabbersAhoy) {
+      simulateBackstabbersAhoy(ep);
+      _dtResult = { winner: ep.winner, loser: ep.loser, placements: ep.challengePlacements };
+    } else {
+      _dtResult = simulateTribeChallenge(gs.tribes);
+      ep.challengeLabel    = _dtResult.challengeLabel    || 'Immunity Challenge';
+      ep.challengeCategory = _dtResult.challengeCategory || 'mixed';
+      ep.challengeDesc     = _dtResult.challengeDesc     || '';
+      ep.challengePlacements = (_dtResult.placements || []).map(t => ({ ...t, members: [...t.members] }));
+      ep.chalMemberScores  = _dtResult.memberScores || {};
+      ep.chalSitOuts       = _dtResult.sitOuts      || {};
+      ep.prevChalSitOuts   = _dtResult.prevSitOuts  || {};
+    }
     ep.challengeType = 'double-tribal';
     ep.winner = _dtResult.winner;
-    ep.challengeLabel    = _dtResult.challengeLabel    || 'Immunity Challenge';
-    ep.challengeCategory = _dtResult.challengeCategory || 'mixed';
-    ep.challengeDesc     = _dtResult.challengeDesc     || '';
-    ep.challengePlacements = (_dtResult.placements || []).map(t => ({ ...t, members: [...t.members] }));
-    ep.chalMemberScores  = _dtResult.memberScores || {};
-    ep.chalSitOuts       = _dtResult.sitOuts      || {};
-    ep.prevChalSitOuts   = _dtResult.prevSitOuts  || {};
     ep.safeTribes = [_dtResult.winner];
     // All losing tribe members merge into one combined tribal
     const _dtLosingTribes = gs.tribes.filter(t => t.name !== _dtResult.winner?.name);
@@ -2162,17 +2169,25 @@ export function simulateEpisode() {
     ep.tribalPlayers = _dtLosingTribes.flatMap(t => [...t.members]);
     ep.doubleTribalLosingTribes = _dtLosingTribes; // track for VP display
   } else if (ep.isMultiTribal && gs.phase === 'pre-merge' && gs.tribes.length >= 3) {
-    // Multi-tribal: challenge runs, winner safe, ALL OTHER tribes (2+) each vote someone out
-    const result = simulateTribeChallenge(gs.tribes);
+    // Multi-tribal: run the COUPLED twist challenge if one is scheduled (else a generic tribe
+    // challenge), THEN overlay multi-tribal voting — winner safe, ALL other tribes each vote.
+    // (To couple another pre-merge twist challenge, add its flag/simulate here.)
+    let result;
+    if (ep.isBackstabbersAhoy) {
+      simulateBackstabbersAhoy(ep);   // sets ep.winner/loser/challengePlacements; ep.isBackstabbersAhoy stays true for VP
+      result = { winner: ep.winner, loser: ep.loser, placements: ep.challengePlacements, memberScores: ep.chalMemberScores || {} };
+    } else {
+      result = simulateTribeChallenge(gs.tribes);
+      ep.challengeLabel    = result.challengeLabel    || 'Immunity Challenge';
+      ep.challengeCategory = result.challengeCategory || 'mixed';
+      ep.challengeDesc     = result.challengeDesc     || '';
+      ep.challengePlacements = (result.placements || []).map(t => ({ ...t, members: [...t.members] }));
+      ep.chalMemberScores  = result.memberScores || {};
+      ep.chalSitOuts       = result.sitOuts      || {};
+      ep.prevChalSitOuts   = result.prevSitOuts  || {};
+    }
     ep.challengeType = 'multi-tribal';
     ep.winner = result.winner;
-    ep.challengeLabel    = result.challengeLabel    || 'Immunity Challenge';
-    ep.challengeCategory = result.challengeCategory || 'mixed';
-    ep.challengeDesc     = result.challengeDesc     || '';
-    ep.challengePlacements = (result.placements || []).map(t => ({ ...t, members: [...t.members] }));
-    ep.chalMemberScores  = result.memberScores || {};
-    ep.chalSitOuts       = result.sitOuts      || {};
-    ep.prevChalSitOuts   = result.prevSitOuts  || {};
     // Safe tribe = winner; losing tribes = all others
     ep.safeTribes = [result.winner];
     ep.multiTribalLosingTribes = gs.tribes.filter(t => t.name !== result.winner?.name);

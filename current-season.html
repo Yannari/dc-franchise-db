@@ -3116,7 +3116,8 @@ async function generateEpisodeAI() {
         auditionsText: auditionsText,
         franchiseContext: franchiseContext,
         seasonSetting: seasonSetting,
-        previousEpisodes: previousEpisodes
+        previousEpisodes: previousEpisodes,
+        storyBible: localStorage.getItem('STORY_BIBLE_s' + season) || ''
       })
     });
     
@@ -3134,7 +3135,21 @@ async function generateEpisodeAI() {
     document.getElementById('episode-input').value = transcript;
     saveEpisode();
     alert('✅ Episode generated successfully!');
-    
+
+    // Update the rolling STORY BIBLE with this episode (background; preserves long-season
+    // continuity so the architect/writer don't lose early history when transcripts scroll off).
+    try {
+      const _priorBible = localStorage.getItem('STORY_BIBLE_s' + season) || '';
+      fetch(EPISODE_WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'story-digest', season, episode, storyBible: _priorBible, episodeText: transcript })
+      })
+        .then(r => r.json())
+        .then(d => { if (d && d.bible) localStorage.setItem('STORY_BIBLE_s' + season, d.bible); })
+        .catch(() => {});  // bible update is best-effort; never blocks the episode
+    } catch (_e) {}
+
   } catch (error) {
     console.error('Error generating episode:', error);
     alert('❌ Error generating episode: ' + error.message);

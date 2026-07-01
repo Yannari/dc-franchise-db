@@ -23,6 +23,8 @@ export default {
       return await generateSummary(body.rawText, season, episode, env, body.prevSummary || "", quality);
     } else if (mode === "enhance") {
       return await enhanceSummary(summaryText, season, episode, env, body.prevSummary || "", franchiseContext, seasonSetting, quality);
+    } else if (mode === "story-digest") {
+      return await generateBibleUpdate(body.storyBible || "", body.episodeText || body.summaryText || "", episode, env);
     } else if (mode === "season-data-extraction") {
       return await generateSeasonDataExtraction(body, env);
     } else {
@@ -1833,6 +1835,24 @@ Be specific with names. No prose, no scene descriptions, no style notes — just
   } catch (e) {
     console.error("Story-so-far digest (pass 0) failed:", e);
     return "";
+  }
+}
+
+// Incremental rolling-bible update (mode: "story-digest"). Folds the latest episode into the
+// prior bible, keeping it compact and PRESERVING early-season history even after old episodes
+// scroll out of the context budget. Returns JSON { bible }.
+async function generateBibleUpdate(priorBible, newEpisode, episode, env) {
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  if (!env.ANTHROPIC_API_KEY || !newEpisode || !newEpisode.trim()) {
+    return new Response(JSON.stringify({ bible: priorBible || "" }), { headers: cors });
+  }
+  const system = `You maintain a running STORY BIBLE for a reality-competition season — a compact continuity state, MAX ~320 words. You are given the CURRENT bible and the LATEST episode. Return ONLY the updated bible (no preamble): fold in what changed and DROP dead threads (an eliminated player's finished storylines). Keep this terse format under headers: ALLIANCES / RIVALRIES / ONGOING ARCS / SHOWMANCES & BONDS / RESCUE ISLAND / RECENT BOOTS / OPEN THREADS. CRUCIAL: preserve important EARLY-season history — grudges, debts, betrayals, promises — even after those episodes are long gone; that is the whole point of a bible. Compress to stay under ~320 words. Names, specific, no prose, no scene descriptions.`;
+  const user = `CURRENT BIBLE:\n${priorBible || '(none yet — start of the season)'}\n\nLATEST EPISODE (episode ${episode || '?'}):\n${(newEpisode || '').slice(0, 30000)}`;
+  try {
+    const bible = await callAnthropicText(system, user, env, MODELS.fast, 900);
+    return new Response(JSON.stringify({ bible: bible || priorBible || "" }), { headers: cors });
+  } catch (e) {
+    return new Response(JSON.stringify({ bible: priorBible || "", error: String(e) }), { headers: cors });
   }
 }
 

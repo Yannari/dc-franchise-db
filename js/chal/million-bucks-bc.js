@@ -390,8 +390,10 @@ function _simulateFireMaking(ep, tribeMembers, result) {
       }
     }
 
+    // Average per member so tribe SIZE doesn't decide the fire winner (tribe scores are
+    // averages, never raw sums — a 4-person tribe competes evenly with a 7-person tribe).
     result.fireMaking.tribes.push({
-      tribe: tribe.name, fireScore: Math.max(0, fireScore), events,
+      tribe: tribe.name, fireScore: Math.max(0, fireScore / Math.max(1, members.length)), events,
       members: [...members],
     });
   }

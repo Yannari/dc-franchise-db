@@ -1973,6 +1973,15 @@ ${defaultFormatRules}
     ? `═══════════════════════════════════════════════════════════\nRETURNING PLAYER HISTORIES (PRIOR SEASONS)\n═══════════════════════════════════════════════════════════\n\nThese players are returning from previous seasons. Reference their history naturally in confessionals, rivalries, and reactions. Do NOT ignore this context.\n\n${franchiseContext.trim()}\n\n`
     : '';
 
+  const worldRules = `═══════════════════════════════════════════════════════════
+WORLD CONSISTENCY — NON-NEGOTIABLE
+═══════════════════════════════════════════════════════════
+- The season's world is defined by the SEASON SETTING above and the season's own name/identity — NEVER by an individual challenge. Every scene, camp, and confessional lives in THAT world.
+- Challenges are often borrowed from other Total Drama settings (a plane race, a movie lot, a pyramid dig, an alpine slap-fight, etc.). When they are, you ADAPT the challenge into THIS season's location. You do NOT relocate the season to the challenge's origin. Example: on an ISLAND season, a "Slap Slap Revolution" alpine/plane challenge takes place on a cold peak or slope ON THE ISLAND — there is NO jumbo jet, NO flight, NO first-class cabin, NO parachute-out-the-door elimination. Contestants live at their island camps, not plane cabins.
+- NEVER use real-world geography or real country/place names (no Alps, Egypt, Japan, Hawaii, etc.). Invent in-universe names ("the North Ridge," "the frozen pass," "Mount Doom"). This universe has its own geography.
+- HONOR EVERY TWIST PRESENT IN THE SUMMARY. If the summary contains a SCHOOLYARD PICK / captain draft, you MUST dramatize the draft on screen — captains picking players one at a time, the sting of being picked last, the unpicked player sent to exile — do NOT skip it and simply have Chris announce finished tribes. The same applies to tribe swaps, mutinies, returns from Rescue Island, and advantage plays: if it's in the summary, it happens on screen.
+`;
+
   const instructions = `
 You are writing a full episode transcript of a Total Drama season.
 
@@ -2038,7 +2047,7 @@ The summary gives you raw events. Some will seem contradictory (a player is nice
 - When two events contradict, pick the one that fits the character better and use the other as a reaction or consequence. Example: if the summary says "Dan helped Thom" then "Dan targeted Thom" — show Dan helping to build trust, then targeting him BECAUSE he now trusts Dan. That's coherent.
 - Ask for EVERY scene: "Why is this character doing this RIGHT NOW?" If you can't answer, invent the reason before writing the scene.
 
-${settingBlock}${franchiseContextBlock}${previousContext}
+${settingBlock}${worldRules}${franchiseContextBlock}${previousContext}
 
 ═══════════════════════════════════════════════════════════
 ⚠️ THESE ARE REAL TOTAL DRAMA CHARACTERS — USE YOUR KNOWLEDGE

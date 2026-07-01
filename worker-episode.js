@@ -1798,7 +1798,7 @@ Output a decisive plan, MAX ~600 words, with these sections:
 
 Be specific. Name players. This plan is the writer's marching orders — decisive, not wishy-washy.`;
 
-  const user = `SEASON SETTING:\n${seasonSetting || '(none provided)'}\n\nRETURNING PLAYER HISTORIES:\n${(franchiseContext || '(none)').slice(0, 6000)}\n${previousContext || ''}\n\nEPISODE EVENT SUMMARY (raw — turn this into a story):\n${summaryText}`;
+  const user = `SEASON SETTING:\n${seasonSetting || '(none provided)'}\n\nRETURNING PLAYER HISTORIES (all cast — use these for arcs, grudges, and callbacks):\n${franchiseContext || '(none)'}\n${previousContext || ''}\n\nEPISODE EVENT SUMMARY (raw — turn this into a story):\n${summaryText}`;
 
   return await callAnthropicText(system, user, env, MODELS.quality, 1600);
 }

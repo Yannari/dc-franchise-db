@@ -1784,6 +1784,8 @@ The summary is a flat list of discrete events (a camp moment here, an alliance t
 
 CONTINUITY IS EVERYTHING — READ THE PREVIOUS EPISODES FIRST. This is NOT a standalone episode; it is the next chapter of an ongoing season. Before you plan anything, study what already happened: which alliances exist, which rivalries are simmering, who owes whom, what was set up but not yet paid off, whose arc is mid-flight and where it was heading. Your plan MUST continue those threads — pay off earlier setups, escalate established rivalries, evolve relationships in the direction they were already moving, and call back to SPECIFIC earlier moments by name. NEVER reset a relationship or reintroduce a player as if it's episode one. If a storyline was planted last episode (a softening grudge, someone quietly building leverage, a betrayal being set up), this episode is where you advance or pay it off. Treat recurring players' arcs as one continuous line across the whole season, not a fresh start each week.
 
+PRE-MERGE TRIBE BOUNDARIES — DO NOT VIOLATE. Before the merge, tribes live, camp, and vote SEPARATELY. A player only experiences their OWN tribe's camp life and their OWN tribe's eliminations. They may KNOW a rival tribe lost someone, but they did NOT lose them and had no bond with them. NEVER plan a player treating another tribe's boot as "we lost ___", grieving someone they never shared a tribe with, or referencing camp events from a tribe they weren't on. (Kelly leaving the Villains is NOT the Civilians' loss — a Civilian like Bridgette would be focused on her OWN tribe's fallout, not Kelly.) Anchor every player's grief, strategy, and relationships to their own tribe until the merge.
+
 Output a decisive plan, MAX ~650 words, with these sections:
 
 1. THROUGHLINE — 1-2 sentences: what is THIS episode actually about? The emotional/thematic spine (e.g., "Day-one paranoia: everyone tests who's real, and the one who trusts too fast gets burned").
@@ -2117,6 +2119,9 @@ The summary gives you raw events. Some will seem contradictory (a player is nice
 - Every action must fit the character's established personality. A loyal player doesn't betray without a reason the audience can see. A villain doesn't help someone without an ulterior motive.
 - When two events contradict, pick the one that fits the character better and use the other as a reaction or consequence. Example: if the summary says "Dan helped Thom" then "Dan targeted Thom" — show Dan helping to build trust, then targeting him BECAUSE he now trusts Dan. That's coherent.
 - Ask for EVERY scene: "Why is this character doing this RIGHT NOW?" If you can't answer, invent the reason before writing the scene.
+
+⛔ PRE-MERGE TRIBE BOUNDARIES — HARD RULE:
+Before the merge, tribes are separate. A player only lived their OWN tribe's camp and only "lost" people voted out at their OWN tribe's council. A player on one tribe must NEVER say "we lost [someone from another tribe]", mourn a rival-tribe boot they had no bond with, or reference camp moments from a tribe they weren't on. They may know a rival tribe lost someone (it's visible), but frame it as an outsider ("heard the Villains torched Kelly") and ONLY if they'd care. Example error to avoid: Bridgette (Civilians) saying "we lost Kelly" — Kelly was a Villain; that's not Bridgette's loss and not her tribe's. Keep confessionals anchored to the player's own tribe until the merge.
 
 ${settingBlock}${worldRules}${planBlock}${franchiseContextBlock}${previousContext}
 

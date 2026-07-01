@@ -1749,6 +1749,60 @@ Rules:
   });
 }
 
+// Non-streaming Anthropic text call (used for the short Story Architect pass).
+async function callAnthropicText(system, userText, env, model, maxTokens = 1600) {
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": env.ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      system,
+      messages: [{ role: "user", content: userText }],
+    }),
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(`Anthropic ${resp.status}: ${err?.error?.message || JSON.stringify(err)}`);
+  }
+  const data = await resp.json();
+  return (data.content || []).map(b => b.text || "").join("").trim();
+}
+
+// PASS 1 — STORY ARCHITECT. Turns the raw event summary into a tight story plan the
+// screenwriter (pass 2) writes TO. This is where "soul" comes from: motivation,
+// causality, arcs, cuts, and twist-as-scene decisions the writer would otherwise skip.
+async function generateEpisodePlan(summaryText, seasonSetting, franchiseContext, previousContext, env) {
+  if (!env.ANTHROPIC_API_KEY) return "";
+  const system = `You are the SHOWRUNNER and story architect for a Total Drama season. You do NOT write the episode. You read the machine-generated event summary and turn it into a tight STORY PLAN the screenwriter will follow.
+
+The summary is a flat list of discrete events (a camp moment here, an alliance there, a vote, a challenge). Rendered literally it produces a soulless report where things "just happen." Your job is to find the STORY inside it and make the deliberate creative decisions the writer needs.
+
+Output a decisive plan, MAX ~600 words, with these sections:
+
+1. THROUGHLINE — 1-2 sentences: what is THIS episode actually about? The emotional/thematic spine (e.g., "Day-one paranoia: everyone tests who's real, and the one who trusts too fast gets burned").
+
+2. CHARACTER ARCS — pick the 2-4 players with the richest material. For each: their WANT this episode, their MOTIVATION, and how their scattered summary beats connect into ONE arc with a beginning and a payoff. INVENT motivation wherever the summary only gives a bare mechanic. (If the summary says "Aiden ran a loyalty test on Wayne," DECIDE why — scouting a shield? manufacturing a debt so Wayne owes him? insecurity? — and thread it so the scene MEANS something and pays off later, e.g. someone clocks it and it seeds his downfall.)
+
+3. CAUSALITY FIXES — list the beats that would feel random if rendered literally, and give each a reason or a connection to another beat. Nothing "just happens."
+
+4. SPINE / TEXTURE / CUT — which events get a full dramatized scene (spine), which get a single line (texture), and which to DROP entirely because they're boring or redundant. Be willing to cut.
+
+5. TWISTS AS DRAMA — for every twist in the summary (schoolyard pick, advantage found, Rescue Island arrival, swap), describe the SCENE it becomes and the conflict/emotion to mine. A twist is never a checkbox — e.g. a schoolyard draft is a scene of captains snubbing people and the sting of being picked last.
+
+6. COLD OPEN & BUTTON — a strong opening image/hook, and a closing tag that lands the throughline.
+
+Be specific. Name players. This plan is the writer's marching orders — decisive, not wishy-washy.`;
+
+  const user = `SEASON SETTING:\n${seasonSetting || '(none provided)'}\n\nRETURNING PLAYER HISTORIES:\n${(franchiseContext || '(none)').slice(0, 6000)}\n${previousContext || ''}\n\nEPISODE EVENT SUMMARY (raw — turn this into a story):\n${summaryText}`;
+
+  return await callAnthropicText(system, user, env, MODELS.quality, 1600);
+}
+
 async function generateEpisode(summaryText, season, episode, env, previousEpisodes = [], franchiseContext = '', seasonSetting = '', auditionsText = '', quality = false) {
   if (!summaryText || typeof summaryText !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
@@ -1982,6 +2036,21 @@ WORLD CONSISTENCY — NON-NEGOTIABLE
 - HONOR EVERY TWIST PRESENT IN THE SUMMARY. If the summary contains a SCHOOLYARD PICK / captain draft, you MUST dramatize the draft on screen — captains picking players one at a time, the sting of being picked last, the unpicked player sent to exile — do NOT skip it and simply have Chris announce finished tribes. The same applies to tribe swaps, mutinies, returns from Rescue Island, and advantage plays: if it's in the summary, it happens on screen.
 `;
 
+  // ── PASS 1: Story Architect — plan the story before writing it. Degrades gracefully. ──
+  let episodePlan = "";
+  try {
+    episodePlan = await generateEpisodePlan(summaryText, seasonSetting, franchiseContext, previousContext, env);
+  } catch (e) {
+    console.error("Story Architect (pass 1) failed — writing without a plan:", e);
+  }
+  const planBlock = episodePlan ? `═══════════════════════════════════════════════════════════
+EPISODE PLAN — THIS IS THE STORY YOU ARE TELLING. FOLLOW IT.
+═══════════════════════════════════════════════════════════
+A story architect has already turned the raw summary into the plan below. The SUMMARY is your source material; this PLAN is the STORY. Write TO the plan: honor the throughline, play each character's arc and stated motivation, make the causality land (nothing "just happens"), stage the twists as scenes, and CUT what the plan says to cut. Do NOT re-narrate the summary top to bottom — dramatize the plan.
+
+${episodePlan}
+` : '';
+
   const instructions = `
 You are writing a full episode transcript of a Total Drama season.
 
@@ -2047,7 +2116,7 @@ The summary gives you raw events. Some will seem contradictory (a player is nice
 - When two events contradict, pick the one that fits the character better and use the other as a reaction or consequence. Example: if the summary says "Dan helped Thom" then "Dan targeted Thom" — show Dan helping to build trust, then targeting him BECAUSE he now trusts Dan. That's coherent.
 - Ask for EVERY scene: "Why is this character doing this RIGHT NOW?" If you can't answer, invent the reason before writing the scene.
 
-${settingBlock}${worldRules}${franchiseContextBlock}${previousContext}
+${settingBlock}${worldRules}${planBlock}${franchiseContextBlock}${previousContext}
 
 ═══════════════════════════════════════════════════════════
 ⚠️ THESE ARE REAL TOTAL DRAMA CHARACTERS — USE YOUR KNOWLEDGE

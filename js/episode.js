@@ -1022,6 +1022,51 @@ export function applyPostTribalConsequences(ep) {
   }
 }
 
+// Run whichever pre-merge TWIST challenge is coupled with a double/multi-tribal twist, so the
+// coupled challenge actually fires (its own mechanics + VP) instead of being skipped for a
+// generic one. Returns true if a twist ran (each sets ep.winner/ep.loser as tribe objects).
+function _runCoupledPreMergeTwist(ep) {
+  if (ep.isCliffDive)            { simulateCliffDive(ep); return true; }
+  if (ep.isAwakeAThon)           { simulateAwakeAThon(ep); return true; }
+  if (ep.isDodgebrawl)           { simulateDodgebrawl(ep); return true; }
+  if (ep.isTalentShow)           { simulateTalentShow(ep); return true; }
+  if (ep.isSuckyOutdoors)        { simulateSuckyOutdoors(ep); return true; }
+  if (ep.isUpTheCreek)           { simulateUpTheCreek(ep); return true; }
+  if (ep.isPaintballHunt)        { simulatePaintballHunt(ep); return true; }
+  if (ep.isHellsKitchen)         { simulateHellsKitchen(ep); return true; }
+  if (ep.isTrustChallenge)       { simulateTrustChallenge(ep); return true; }
+  if (ep.isMonsterCash)          { simulateMonsterCash(ep); return true; }
+  if (ep.isMineOverMatter)       { simulateMineOverMatter(ep); return true; }
+  if (ep.isTreasureIsland)       { simulateTreasureIsland(ep); return true; }
+  if (ep.isAlienEgg)             { simulateAlienEgg(ep); return true; }
+  if (ep.isBeachBlanketBogus)    { simulateBeachBlanketBogus(ep); return true; }
+  if (ep.isCrazytown)            { simulateCrazytown(ep); return true; }
+  if (ep.isChefshank)            { simulateChefshank(ep); return true; }
+  if (ep.isOneFlu)               { simulateOneFlu(ep); return true; }
+  if (ep.isMastersOfDisasters)   { simulateMastersOfDisasters(ep); return true; }
+  if (ep.isSportsMarathon)       { simulateSportsMarathon(ep, gs.tribes); return true; }
+  if (ep.isMillionBucksBC)       { simulateMillionBucksBC(ep, gs.tribes); return true; }
+  if (ep.isOceansHeist)          { simulateOceansHeist(ep, gs.tribes); return true; }
+  if (ep.isFullMetalDrama)       { simulateFullMetalDrama(ep); return true; }
+  if (ep.isBasicStraining)       { simulateBasicStraining(ep); return true; }
+  if (ep.isWalkEgypt)            { simulateWalkLikeAnEgyptian(ep); return true; }
+  if (ep.isCrazyFunTime)         { simulateCrazyFunTime(ep); return true; }
+  if (ep.isFrozenCrossing)       { simulateFrozenCrossing(ep); return true; }
+  if (ep.isVikingSour)           { simulateVikingSour(ep); return true; }
+  if (ep.isSlapRevolution)       { simulateSlapSlapRevolution(ep); return true; }
+  if (ep.isBroadwayBaby)         { simulateBroadwayBaby(ep); return true; }
+  if (ep.isAmazonRace)           { simulateAmazonRace(ep); return true; }
+  if (ep.isBiggerBadderBrutaler) { simulateBiggerBadderBrutaler(ep); return true; }
+  if (ep.isTruthOrShark)         { simulateTruthOrShark(ep); return true; }
+  if (ep.isProjectRunaway)       { simulateProjectRunaway(ep); return true; }
+  if (ep.isIceIceBaby)           { simulateIceIceBaby(ep); return true; }
+  if (ep.isFindersCreepers)      { simulateFindersCreepers(ep); return true; }
+  if (ep.isBackstabbersAhoy)     { simulateBackstabbersAhoy(ep); return true; }
+  if (ep.isXtremeTorture)        { simulateXtremeTorture(ep); return true; }
+  if (ep.isPhobiaFactor)         { simulatePhobiaFactor(ep); return true; }
+  return false;
+}
+
 export function handleExileFormat(ep) {
   const cfg = seasonConfig;
   if (!cfg.exile || gs.activePlayers.length <= 4) return;
@@ -2148,9 +2193,8 @@ export function simulateEpisode() {
     // Double tribal: run the COUPLED twist challenge if scheduled (else generic), THEN overlay —
     // winner safe, ALL losing tribes merge into ONE combined council for a single elimination.
     let _dtResult;
-    if (ep.isBackstabbersAhoy) {
-      simulateBackstabbersAhoy(ep);
-      _dtResult = { winner: ep.winner, loser: ep.loser, placements: ep.challengePlacements };
+    if (_runCoupledPreMergeTwist(ep)) {
+      _dtResult = { winner: ep.winner, loser: ep.loser };  // twist set ep.winner/loser + its own VP flag
     } else {
       _dtResult = simulateTribeChallenge(gs.tribes);
       ep.challengeLabel    = _dtResult.challengeLabel    || 'Immunity Challenge';
@@ -2161,22 +2205,23 @@ export function simulateEpisode() {
       ep.chalSitOuts       = _dtResult.sitOuts      || {};
       ep.prevChalSitOuts   = _dtResult.prevSitOuts  || {};
     }
-    ep.challengeType = 'double-tribal';
-    ep.winner = _dtResult.winner;
-    ep.safeTribes = [_dtResult.winner];
-    // All losing tribe members merge into one combined tribal
-    const _dtLosingTribes = gs.tribes.filter(t => t.name !== _dtResult.winner?.name);
-    ep.loser = _dtResult.loser || _dtLosingTribes[_dtLosingTribes.length - 1];
-    ep.tribalPlayers = _dtLosingTribes.flatMap(t => [...t.members]);
-    ep.doubleTribalLosingTribes = _dtLosingTribes; // track for VP display
+    if (_dtResult.winner?.members) {
+      ep.challengeType = 'double-tribal';
+      ep.winner = _dtResult.winner;
+      ep.safeTribes = [_dtResult.winner];
+      // All losing tribe members merge into one combined tribal
+      const _dtLosingTribes = gs.tribes.filter(t => t.name !== _dtResult.winner?.name);
+      ep.loser = (_dtResult.loser?.members) ? _dtResult.loser : _dtLosingTribes[_dtLosingTribes.length - 1];
+      ep.tribalPlayers = _dtLosingTribes.flatMap(t => [...t.members]);
+      ep.doubleTribalLosingTribes = _dtLosingTribes; // track for VP display
+    }
   } else if (ep.isMultiTribal && gs.phase === 'pre-merge' && gs.tribes.length >= 3) {
     // Multi-tribal: run the COUPLED twist challenge if one is scheduled (else a generic tribe
     // challenge), THEN overlay multi-tribal voting — winner safe, ALL other tribes each vote.
     // (To couple another pre-merge twist challenge, add its flag/simulate here.)
     let result;
-    if (ep.isBackstabbersAhoy) {
-      simulateBackstabbersAhoy(ep);   // sets ep.winner/loser/challengePlacements; ep.isBackstabbersAhoy stays true for VP
-      result = { winner: ep.winner, loser: ep.loser, placements: ep.challengePlacements, memberScores: ep.chalMemberScores || {} };
+    if (_runCoupledPreMergeTwist(ep)) {
+      result = { winner: ep.winner, loser: ep.loser };  // twist set ep.winner/loser + its own VP flag
     } else {
       result = simulateTribeChallenge(gs.tribes);
       ep.challengeLabel    = result.challengeLabel    || 'Immunity Challenge';
@@ -2187,14 +2232,16 @@ export function simulateEpisode() {
       ep.chalSitOuts       = result.sitOuts      || {};
       ep.prevChalSitOuts   = result.prevSitOuts  || {};
     }
-    ep.challengeType = 'multi-tribal';
-    ep.winner = result.winner;
-    // Safe tribe = winner; losing tribes = all others
-    ep.safeTribes = [result.winner];
-    ep.multiTribalLosingTribes = gs.tribes.filter(t => t.name !== result.winner?.name);
-    ep.loser = result.loser || ep.multiTribalLosingTribes[ep.multiTribalLosingTribes.length - 1]; // worst performer
-    ep.multiTribalResults = [];
-    ep.tribalPlayers = ep.multiTribalLosingTribes.flatMap(t => [...t.members]); // combined for display
+    if (result.winner?.members) {
+      ep.challengeType = 'multi-tribal';
+      ep.winner = result.winner;
+      ep.safeTribes = [result.winner];
+      ep.multiTribalLosingTribes = gs.tribes.filter(t => t.name !== result.winner?.name);
+      ep.loser = (result.loser?.members) ? result.loser : ep.multiTribalLosingTribes[ep.multiTribalLosingTribes.length - 1];
+      ep.multiTribalResults = [];
+      ep.tribalPlayers = ep.multiTribalLosingTribes.flatMap(t => [...t.members]);
+    }
+    // else: a coupled twist ran but produced no clean tribe winner — keep its own result.
   } else if (ep.isCliffDive && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateCliffDive(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateCliffDive

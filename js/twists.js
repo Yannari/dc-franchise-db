@@ -1393,10 +1393,8 @@ export function applyTwist(ep, twist, isPrimary = true) {
     ep.brunchTeams = { boys: [..._brBoys], girls: [..._brGirls], crossovers: _brCrossovers };
 
   } else if (engineType === 'phobia-factor') {
-    // Pre-merge only, not episode 1, need 2+ tribes
+    // Pre-merge only, need 2+ tribes (no episode-1 restriction — the challenge is self-contained)
     if (gs.isMerged || gs.tribes.length < 2) return;
-    const epNum = (gs.episode || 0) + 1;
-    if (epNum < 2) return;
     ep.isPhobiaFactor = true;
 
   } else if (engineType === 'cliff-dive') {

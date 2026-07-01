@@ -2192,8 +2192,11 @@ export function simulateEpisode() {
   if (ep.isDoubleTribal && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     // Double tribal: run the COUPLED twist challenge if scheduled (else generic), THEN overlay —
     // winner safe, ALL losing tribes merge into ONE combined council for a single elimination.
+    try { console.log('[DT-DIAG] is* flags on ep:', Object.keys(ep).filter(k => k.startsWith('is') && ep[k] === true).join(',') || '(none)', '| tribes:', gs.tribes.length); } catch(e){}
     let _dtResult;
-    if (_runCoupledPreMergeTwist(ep)) {
+    const _dtCoupled = _runCoupledPreMergeTwist(ep);
+    try { console.log('[DT-DIAG] coupled twist ran?', _dtCoupled, '| challengeType:', ep.challengeType, '| winner:', ep.winner?.name || ep.winner); } catch(e){}
+    if (_dtCoupled) {
       _dtResult = { winner: ep.winner, loser: ep.loser };  // twist set ep.winner/loser + its own VP flag
     } else {
       _dtResult = simulateTribeChallenge(gs.tribes);

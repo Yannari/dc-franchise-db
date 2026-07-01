@@ -1786,6 +1786,10 @@ CONTINUITY IS EVERYTHING — READ THE PREVIOUS EPISODES FIRST. This is NOT a sta
 
 PRE-MERGE TRIBE BOUNDARIES & KNOWLEDGE — DO NOT VIOLATE. Before the merge, tribes camp and vote SEPARATELY, and a player only experiences their OWN tribe's camp life and their OWN tribe's tribal. TIMING: a player does NOT learn who a rival tribe voted out until the tribes reunite and Chris announces it at the next challenge (or a twist forces a combined tribal) — so nobody references or reacts to another tribe's elimination BEFORE that reveal. RELATIONSHIP: after it's revealed, a player MAY feel real sadness about a rival-tribe boot ONLY if they genuinely knew and liked that person (a cross-tribe friendship or a prior-season bond); with no relationship there's no grief and usually no comment at all. Never plan a player calling a rival tribe's boot "we lost ___" (it wasn't their tribe's loss), and never reference camp moments from a tribe they weren't on. (Bridgette/Civilians had no bond with Kelly/Villains AND wouldn't even know until the next challenge — so no mourning. But a player who was close to the boot CAN grieve, once they've learned of it.) Anchor every player's grief, strategy, and relationships to their own tribe until the merge.
 
+CHRONOLOGY — PLAN FOR REAL-TIME UNFOLDING. The episode is written in strict chronological order and must NOT spoil later beats. You know the whole outcome (who wins the challenge, who's voted out) — the writer does too, and that's the danger. Keep those reveals in their LATE beats: do NOT design a cold open, camp scene, or early confessional that references, foreshadows, or reacts to the challenge result or the elimination. Pre-challenge scenes are written from what players know THEN — they do not yet know who wins immunity or who's going home. Explicitly note in your plan that early scenes stay ignorant of the ending; the immunity result exists only from the challenge scene on, the boot only from Tribal on.
+
+FRESHNESS — NO TWO EPISODES ALIKE. You can see the previous episodes; use them for continuity of STORY (advancing arcs), but NEVER repeat their FORM. Do not reuse the same scene types, beat order, throughline shape, or opening as the last 1-2 episodes — if the previous episode opened on a sunrise heart-to-heart or hinged on a "loyalty test," deliberately pick a different structure, opening, and emotional register this time. Advancing arcs = required; recycling beats/rhythm = banned. Pick a throughline that CONTRASTS with recent episodes.
+
 Output a decisive plan, MAX ~650 words, with these sections:
 
 1. THROUGHLINE — 1-2 sentences: what is THIS episode actually about? The emotional/thematic spine (e.g., "Day-one paranoia: everyone tests who's real, and the one who trusts too fast gets burned").
@@ -2051,6 +2055,7 @@ WORLD CONSISTENCY — NON-NEGOTIABLE
 EPISODE PLAN — THIS IS THE STORY YOU ARE TELLING. FOLLOW IT.
 ═══════════════════════════════════════════════════════════
 A story architect has already turned the raw summary into the plan below. The SUMMARY is your source material; this PLAN is the STORY. Write TO the plan: honor the throughline, play each character's arc and stated motivation, make the causality land (nothing "just happens"), stage the twists as scenes, and CUT what the plan says to cut. Do NOT re-narrate the summary top to bottom — dramatize the plan.
+CHRONOLOGY STILL OVERRIDES THE PLAN: the plan tells you the whole episode including the ENDING (who wins the challenge, who's voted out). You must NOT reveal, reference, or foreshadow the challenge result or the elimination before those scenes actually arrive. Write in strict chronological order — the cold open and camp scenes are ignorant of who wins immunity or who's going home.
 
 ${episodePlan}
 ` : '';

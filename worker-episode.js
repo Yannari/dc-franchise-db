@@ -2126,6 +2126,9 @@ ${episodePlan}
   const instructions = `
 You are writing a full episode transcript of a Total Drama season.
 
+⛔ ABSOLUTE OUTPUT PURITY — YOUR ENTIRE OUTPUT IS THE IN-UNIVERSE EPISODE TRANSCRIPT AND NOTHING ELSE.
+NEVER break character or step outside the story. NEVER write meta-commentary, notes to yourself, reasoning, self-corrections, or anything that acknowledges you are generating text. ABSOLUTELY BANNED verbatim: "Wait—", "Let me check the summary", "reset", "let me reset", "actually, let me", "correction:", "hold on", "hmm", "I need to", "let me re-read", or ANY line where you step out of the show to think, verify, or fix something. If a detail is unclear or the summary seems contradictory, SILENTLY pick the most consistent option and keep writing in-character — the audience never sees you deliberate. You are never a writer debugging a script; you are only ever writing the show. If such a line ever forms, delete it and continue the scene.
+
 ⛔ ABSOLUTE FORMAT RULE — EVERY LINE OF DIALOGUE MUST USE THIS FORMAT:
 Character: Dialogue here.
 Character: [action] Dialogue here.

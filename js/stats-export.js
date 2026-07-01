@@ -113,6 +113,13 @@ function _extractPlayerPlacements() {
         permanentExit[loser] = ep.num;
       }
     }
+    // Edge of Extinction return gauntlet: order the losers among themselves by how far
+    // they got (finalStandings = [winner, best...worst]) so their placements aren't tied.
+    // Better performers exit fractionally later → better placement.
+    if (ep.rescueReturn?.finalStandings?.length) {
+      const losers = ep.rescueReturn.finalStandings.slice(1); // drop the winner
+      losers.forEach((name, i) => { permanentExit[name] = ep.num - (i + 1) * 0.001; });
+    }
 
     // Regular eliminations — record as permanent exit
     // For RI seasons, players voted out go to RI (their exit will be overwritten
@@ -120,7 +127,8 @@ function _extractPlayerPlacements() {
     // overwrites the earlier one since we always update.
     const elimNames = [
       ep.suddenDeathEliminated, ep.eliminated,
-      ep.firstEliminated, ep.tiedDestiniesCollateral
+      ep.firstEliminated, ep.tiedDestiniesCollateral,
+      ep.firemakingResult?.loser   // fire-making duel loser (else falls to 'Unknown' — the Jacques bug)
     ].filter(Boolean);
 
     for (const name of elimNames) {

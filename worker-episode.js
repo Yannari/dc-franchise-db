@@ -552,7 +552,7 @@ BOOT PREDICTIONS (bootPredictions):
 - Sort descending by prob (highest risk first, so 35% at top, 1% at bottom)
 
 POWER RANKINGS (powerRankings):
-- Generate for ALL active players
+- Generate for ALL active players — the array MUST contain exactly one entry for EVERY active player listed in the summary, with NO omissions. Count the active players first; the powerRankings array length must equal that count. Omitting anyone (this includes players on Exile or Rescue Island who are still in the game) is a critical error — re-check the roster before finishing.
 - score: MUST be 0-100 (NOT 0-10)
   * 90-100: Dominant position
   * 75-89: Strong position

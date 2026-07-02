@@ -7522,7 +7522,8 @@ JOURNEYS: Two players nominated by the losing team are sent to an isolated part 
     const episodeNum = parseInt(episodeInput.value) || 1;
     const isEp1 = episodeNum === 1;
     auditionsSection.style.display = isEp1 ? 'block' : 'none';
-    if (franchiseContextSection) franchiseContextSection.style.display = isEp1 ? 'block' : 'none';
+    // Franchise context stays available EVERY episode so voice profiles can be updated mid-season
+    if (franchiseContextSection) franchiseContextSection.style.display = 'block';
     if (seasonSettingSection) seasonSettingSection.style.display = isEp1 ? 'block' : 'none';
   }
   

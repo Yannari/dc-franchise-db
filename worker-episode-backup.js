@@ -2215,9 +2215,9 @@ ${settingBlock}${worldRules}${planBlock}${franchiseContextBlock}${storySoFarBloc
 ⚠️ EACH CHARACTER HAS A DISTINCT VOICE — USE THE VOICE PROFILES
 ═══════════════════════════════════════════════════════════
 
-MOST of this cast are ORIGINAL characters, NOT canonical Total Drama contestants. Do NOT invent a personality from a name you half-recognize, and do NOT default anyone to a generic "mean strategist" or "nervous pushover" — that is the #1 cause of soulless, interchangeable dialogue. The authority on how every character talks is the "Voice:" line in the FRANCHISE CONTEXT above. Read that line and write the character's dialogue, humor, and reactions FROM it: their register, their verbal tics, how they sound winning vs. cornered. A villain, a goof, and a mastermind must sound NOTHING alike — if you could swap two characters' lines without noticing, you've failed. When a character IS a real Total Drama contestant and has no Voice: profile, you may use their canon voice; otherwise the Voice: profile always wins over anything below.
+These are canonical Total Drama characters, and each one has a "Voice:" line in the FRANCHISE CONTEXT above that pins down exactly how they talk: their register, their verbal tics, how they sound winning vs. cornered. USE IT. Even for characters you think you already know, do NOT let anyone collapse into a generic "mean strategist" or "nervous pushover" — that flat, interchangeable default is the #1 cause of soulless dialogue. The Voice: profile is the definitive guide: write each character's dialogue, humor, and reactions FROM it. A villain, a goof, and a mastermind must sound NOTHING alike — if you could swap two characters' lines without noticing, you've failed. The Voice: profile always wins over the canon references below if they ever conflict.
 
-Canon references for the few real Total Drama characters who may appear:
+Canon references (the Voice: profile takes priority):
 
 - **Courtney** — controlling, type-A, ex-CIT, speaks in sharp commands, furious when ignored or underestimated
 - **Mickey** — anxious, physically clumsy, breathes fast when stressed, always waiting for something to go wrong

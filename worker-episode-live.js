@@ -2252,28 +2252,46 @@ Same length every line. Everyone waits their turn. Everyone lands a clean quip. 
 3. NO CLEAN TOPPER: most scenes do NOT end on a joke. They end on someone walking off, getting cut off, giving a non-answer, or simply not responding. Silence is an ending.
 4. FEWER, LONGER SCENES: do NOT chop the episode into dozens of tiny 4-line bits — that fragmentation IS the metronome. Scenes run 8-16 lines and are a real conversation that wanders, stalls, or derails before it resolves. Aim for ~25-35 scenes total, NOT 100+.
 
-THIS is the rhythm to MATCH — messy, asymmetric, unresolved:
+THESE ARE REAL SCENES FROM THE ACTUAL SHOWS (Disventure Camp + Total Drama). MATCH THIS rhythm — varied line lengths, interruptions, trailing off, and none of them ending on a clean zinger:
 
-  [SCENE: Villains camp. Julia scrapes mud off her arms. Eva pokes the fire.]
-  Julia: Okay so IF we lose — and we won't, but if we do — it's obviously not me, it's not you, so realistically it comes down to—
-  Eva: Hunter.
-  Julia: I was GETTING there. You can't just SAY the name, you build to the name, that's the whole—
-  Eva: You've been building to it since breakfast.
-  Julia: Because it MATTERS how you—
-  Eva: Hunter. Done. [gets up, walks toward the water]
-  Julia: [to no one] ...I had a whole thing.
+REAL — a warm, messy reconciliation (interruptions, backtracking, asymmetry):
+  Zaid: I, um... [clears throat] I hope you don't think less of me.
+  Ivy: What, for the overused movie reference? [giggles] It's OK. I forgive you.
+  Zaid: Oh! No, no, no! The, um-- [sighs] The koala thing... I'm really sorry. I regret it. It was just a stupid decision, but I needed the--
+  Ivy: Oh, no! No no no no no! I'm sorry! I'm the one who overreacted.
+  Zaid: [chuckles] A little?
 
-  [SCENE: The fire. Damien sits down next to Alec, who's watching the treeline.]
-  Damien: You good?
-  Alec: Define good.
-  Damien: [doesn't answer, just looks at him]
-  Alec: I'm fine. I'm watching. There's a difference between fine and not fine and I am firmly in the—
-  Damien: You're doing the thing.
-  Alec: What thing.
-  Damien: The one where you talk a lot and say nothing. [pokes the coals]
-  [Alec doesn't answer. The fire cracks.]
+REAL — natural strategy talk (a real read, not a quip contest):
+  Jade: What do you do if you... like someone?
+  Diego: Oh, quite the bombshell, Miss Tanko.
+  Jade: Maybe, but I'm worried pursuing someone could ruin my game.
+  Diego: Don't be silly!
+  Jade: Think about it. Love makes you reckless. Protecting your partner over yourself — it ruins the whole point of being here.
+  Diego: Is there no way to fall in love, and be good at this game?
 
-Notice: nobody lands a clean zinger, lines are wildly different lengths, someone rambles while someone else gives one word or no answer, and both scenes end UNRESOLVED — not on a punchline. Humor comes from character collision, not from everyone being quotable. MATCH THIS, never the metronome.
+REAL — a fight that escalates and gets personal (NOT alternating one-liners):
+  Sadie: You're not exactly the best with, like, directions.
+  Katie: Yuh-huh, I am.
+  Sadie: Nuh-uh. Apparently you're NOT, because we are L-O-S-T, lost!
+  Katie: You lean on me. If it wasn't for me, you wouldn't even be on this show.
+  Katie: [gasps] You're just saying that because I'm prettier than you.
+  Sadie: [gasps] I knew you thought that!
+
+REAL — an emotional beat landed plainly (no wordplay):
+  Hannah: I've just been weird since Amelie left. Kind of... reminded me of my mom, and how it felt losing her so soon. Lost and alone.
+  Diego: But you're not alone. It's a game. There's no goodbyes, only see-you-laters. So make sure you do them proud, alright?
+
+REAL — confessionals with a SPECIFIC voice (a scheme, an obsessive rant, a real hurt). A confessional is one person REACTING — never a list of who's good and who's bad:
+  Benji: So, Spencer wants Diego to lose interest. Maybe if I help, this puts me on Spencer's good side! Man, you're a genius, Benji! A genius!
+  Courtney: He's totally unmotivated. And he never washed his hands. He's so obnoxious. [fast-forward] Owning sunglasses doesn't automatically make you cool. [fast-forward] And don't even get me started on his hair.
+  Richard: Don't get me wrong, we need this win... but Lynda shouldn't have mentioned my daughter.
+
+REAL — challenge scene: over-the-top character comedy riding ON TOP of the real game (Tristan takes a paintball for Zaid and plays it like a war death):
+  Tristan: [covering Zaid, gets shot] Noooo!
+  Zaid: Tristan! Why did you do that?
+  Tristan: [grunts] Zaid... is that you? You gotta carry on, soldier... Don't let my death be in vain. [wheezing] I'm seeing the light... make it back, man. For... Ivy... [dying noises]
+
+TAKEAWAYS you MUST copy: lines are wildly different lengths; people interrupt, backtrack, and trail off; nobody wins every exchange with a clean topper; confessionals are a specific person reacting or scheming, not a trait list; and comedy rides ON TOP of real emotion and real game stakes — it never replaces them. Write scenes that feel like these, NEVER the metronome.
 
 ═══════════════════════════════════════════════════════════
 ⛔ FINAL CHECK — FACTS OVERRIDE STYLE

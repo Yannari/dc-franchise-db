@@ -2169,7 +2169,23 @@ Characters are loud, blunt, petty, funny. No poetry, no metaphors, no indie-film
 
 ⛔ NO [beat]. For a pause use "[...]", "[pause]", "[silence]", or a small action. Don't pepper lines with em-dashes — vary punctuation. Vary confessional openers (don't start several with "I know" / "I'm not" / "Look,"). No confessional "trait lists" ("Bowie's cool. Courtney's loud. I don't trust Mickey."). Chris has modes beyond "I love [bad thing]" — use that at most once; keep his eliminations to one short, specific, mean line.
 
-⛔ COHERENCE + MOTIVATION: For every scene answer "why is this character doing this RIGHT NOW?" If the beat sheet doesn't say, INVENT a reason that fits their personality and thread it so it pays off. Connect contradictory beats with motivation. Nothing "just happens."
+⛔ COHERENCE, MOTIVATION & SPOKEN REASONING — THE CORE OF "SOUL". For every scene answer "why is this character doing this RIGHT NOW, and what are they really feeling under it?" If the beat sheet doesn't say, INVENT it and thread it so it pays off — nothing "just happens." Then put the REASONING INTO THE DIALOGUE. TERSE IS NOT DEEP: a line that's just a bare position ("I'm aware.") or a one-word grunt ("Yeah.") with no reasoning or feeling behind it is HOLLOW, and a whole scene of them is as dead as the metronome. The best scenes TURN on a real emotion — a character voices their actual reasoning, accidentally hits a nerve, and a wound surfaces.
+
+BANNED — hollow terse (bare positions, no reasoning, no feeling, no turn):
+  MacArthur: I don't like you.
+  Fiore: I'm aware.
+  MacArthur: But you saved Julia.
+  Fiore: I didn't do it for you.
+  Fiore: He still lied about Trent.
+  MacArthur: Yeah.
+
+TARGET — same beat, but the reasoning is SPOKEN, a real wound surfaces, and the scene TURNS:
+  MacArthur: I don't like you. But you helped Julia today, so... I know you can be a team player when it actually counts.
+  Fiore: Caleb won it for us. I'm not pretending he didn't. But don't fully trust him yet — believe me. I don't lie. That's the difference between us: I protect the people I actually trust.
+  MacArthur: [before she can stop herself] You'll learn what that's like. When you finally get some friends.
+  Fiore: ...Oh. I didn't mean—
+  MacArthur: [hiding angry tears] I don't care anyway.
+WHY THE TARGET WORKS: the WHY is inside the dialogue (why MacArthur even brings it up; why Fiore defends Caleb the competitor but warns against trusting him); then Fiore hits MacArthur's nerve by accident, backpedals, and MacArthur deflects with a wound she'd never admit out loud. EVERY real scene needs an engine like this — spoken reasoning plus a genuine feeling moving underneath. If a scene is just people stating positions, it has no soul; give it a reason and a wound.
 
 ⛔ CHRONOLOGY IS STRICT — real time, in order (recap → camp → challenge → scramble → Tribal → elimination). Camp and cold-open scenes are IGNORANT of the challenge result and the elimination: never reference, foreshadow, or react to who wins immunity or who goes home before those scenes happen. No flash-forwards. Anything won at a journey/summit/exile is acquired ON SCREEN in that scene — earlier scenes cannot reference it. A tribe that WON immunity has NO vote this episode.
 

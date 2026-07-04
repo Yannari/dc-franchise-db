@@ -2291,6 +2291,31 @@ REAL — challenge scene: over-the-top character comedy riding ON TOP of the rea
   Zaid: Tristan! Why did you do that?
   Tristan: [grunts] Zaid... is that you? You gotta carry on, soldier... Don't let my death be in vain. [wheezing] I'm seeing the light... make it back, man. For... Ivy... [dying noises]
 
+REAL — a LONGER scene that BREATHES (two rivals slowly connecting: it runs a dozen lines, carries real backstory, and lands emotion with ZERO quips. NOT every scene is a 4-line bit — let the good ones stretch out):
+  Marissa: [to herself, after Lynda storms off] Be nice, Marissa. Be nice. You know, when I was younger, I was a picky eater.
+  Lynda: [sniffles] Huh?
+  Marissa: My dad would get so peeved. He'd say, "Eat, Marissa! Would you rather eat the slop down at the base?" So my mom's idea was for me to help her cook. Figured I'd be less picky if I had a sense of control.
+  Lynda: And did it work?
+  Marissa: Nope, not at all. I was such a brat.
+  Lynda: [chuckles] Sounds like a headache.
+  Marissa: I sure was. Mom was still patient. She never stopped trying to find meals I liked.
+  Lynda: Well, that's what moms do.
+  Marissa: It is. Just like how — you know — you don't love your sons any less, even when they say horrible things.
+  Lynda: I'm not sorry for playing the game.
+  Marissa: Never said you had to be.
+  Lynda: And I know coming from me may not mean much... but your parents raised a wonderful daughter.
+
+REAL — challenge play-by-play (the host calls the action in short bursts; players grunt, react, and a joke lands mid-chaos — it is NOT a tidy conversation. Your host is Chris, but copy this RHYTHM):
+  Derek: Round 1 starts now!
+  Richard: [grunts, throwing] Thanks, son!
+  Ivy: Ow! How was that fair? Gravity did the work!
+  Lynda: [grunts] Ah, oh, jeez! Warn me before you throw!
+  Marissa: Lynda, focus! That was your slip-up!
+  Isabel: [kisses the ball] Hiya! [Zaid groans]
+  Tristan: Yeah, go, Zaid! You're killing it, man!
+  Isabel: Damn it! This is rigged! No one told me you're allowed to dodge!
+  Derek: Zaid is out! Blue Team wins round 1.
+
 TAKEAWAYS you MUST copy: lines are wildly different lengths; people interrupt, backtrack, and trail off; nobody wins every exchange with a clean topper; confessionals are a specific person reacting or scheming, not a trait list; and comedy rides ON TOP of real emotion and real game stakes — it never replaces them. Write scenes that feel like these, NEVER the metronome.
 
 ═══════════════════════════════════════════════════════════

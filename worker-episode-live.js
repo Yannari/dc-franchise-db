@@ -2237,37 +2237,43 @@ Canon references (the Voice: profile takes priority):
 For any character not listed AND without a Voice: profile: write them direct, personality-driven, specific to their situation — NOT quirky, poetic, or philosophical. For custom characters with full profiles in the franchise context, follow those.
 
 ═══════════════════════════════════════════════════════════
-THIS IS WHAT THE SHOW SOUNDS LIKE — MATCH THIS.
+⛔ THE #1 PROBLEM TO FIX — METRONOME DIALOGUE. READ THIS TWICE.
 ═══════════════════════════════════════════════════════════
 
-SCENE — Morning awkwardness:
-  James: Are you going to get breakfast? I can go with--
-  Aiden: No.
-  James: [sighs] So, uh… you're still mad?
-  Aiden: [grumbles]
-  [Confessional: James] Yup… He's still mad.
+Your DEFAULT failure is a metronome: every scene is 4-5 lines, every line is ONE clean complete sentence of similar length, and every exchange ends on a little topper. THIS IS THE BANNED PATTERN:
+  Julia: Stop staring.
+  Hunter: I'm not staring. I'm supervising.
+  Eva: You're six inches off the ground.
+  Julia: I am conserving energy.
+Same length every line. Everyone waits their turn. Everyone lands a clean quip. It is soulless and robotic and it is what you do unless you fight it. FIGHT IT in EVERY scene:
 
-SCENE — Someone getting shut down:
-  Hunter: I wonder why people are avoiding us. Hehe!
-  Tess: Whatever. Nothing new for me.
-  Hunter: Uh… same! But socializing is overrated, right? Gotta spend time on more important things, like--
-  Tess: It's overrated.
-  Hunter: Yeah… but since I'm here, I guess we might as well-- And she's gone.
-  [Confessional: Hunter] Great start, Hunter. [sighs] At this rate, everyone's gonna know how much I suck at socializing.
+1. ASYMMETRY (mandatory): at least one line per scene is LONG — 20-40+ words, someone rambling, over-explaining, or spiraling — and at least one is 1-2 words. NEVER a run of same-length lines.
+2. INTERRUPTION: people cut each other off mid-word (--) and talk OVER each other. Someone starts a thought and never finishes it.
+3. NO CLEAN TOPPER: most scenes do NOT end on a joke. They end on someone walking off, getting cut off, giving a non-answer, or simply not responding. Silence is an ending.
+4. FEWER, LONGER SCENES: do NOT chop the episode into dozens of tiny 4-line bits — that fragmentation IS the metronome. Scenes run 8-16 lines and are a real conversation that wanders, stalls, or derails before it resolves. Aim for ~25-35 scenes total, NOT 100+.
 
-SCENE — Strategy, no theatrics:
-  Aiden: Vote Oliver with us.
-  James: Uh, why?
-  Aiden: It's a good strategy. Trust me. And you already agreed.
-  James: [sighs] Fine.
+THIS is the rhythm to MATCH — messy, asymmetric, unresolved:
 
-SCENE — Routine interaction with character flavor:
-  Miriam: [slams a plate of sketchy camp food onto a log] Eat. Before I throw it in the lake.
-  Jake: Wait, seriously? For me? What's the catch?
-  Miriam: The catch is you've been whining about your blood sugar for two hours and your voice is grating on my last nerve.
-  Jake: [insulted, grabbing the plate anyway] I do not whine! ...But thanks.
+  [SCENE: Villains camp. Julia scrapes mud off her arms. Eva pokes the fire.]
+  Julia: Okay so IF we lose — and we won't, but if we do — it's obviously not me, it's not you, so realistically it comes down to—
+  Eva: Hunter.
+  Julia: I was GETTING there. You can't just SAY the name, you build to the name, that's the whole—
+  Eva: You've been building to it since breakfast.
+  Julia: Because it MATTERS how you—
+  Eva: Hunter. Done. [gets up, walks toward the water]
+  Julia: [to no one] ...I had a whole thing.
 
-WHAT THESE HAVE IN COMMON: lines are SHORT, nobody monologues, nobody's trying to be clever, humor comes from character collision not wordplay, and characters DON'T have catchphrases — personality shows through what they choose to say.
+  [SCENE: The fire. Damien sits down next to Alec, who's watching the treeline.]
+  Damien: You good?
+  Alec: Define good.
+  Damien: [doesn't answer, just looks at him]
+  Alec: I'm fine. I'm watching. There's a difference between fine and not fine and I am firmly in the—
+  Damien: You're doing the thing.
+  Alec: What thing.
+  Damien: The one where you talk a lot and say nothing. [pokes the coals]
+  [Alec doesn't answer. The fire cracks.]
+
+Notice: nobody lands a clean zinger, lines are wildly different lengths, someone rambles while someone else gives one word or no answer, and both scenes end UNRESOLVED — not on a punchline. Humor comes from character collision, not from everyone being quotable. MATCH THIS, never the metronome.
 
 ═══════════════════════════════════════════════════════════
 ⛔ FINAL CHECK — FACTS OVERRIDE STYLE

@@ -1775,6 +1775,39 @@ async function callAnthropicText(system, userText, env, model, maxTokens = 1600)
   return (data.content || []).map(b => b.text || "").join("").trim();
 }
 
+// FINAL PASS — DE-CLEVER. Reads the finished episode and rewrites ONLY the lines that use the
+// model's "clever" tics (personified objects, neat antithesis/before-after parallelism, poetic
+// metaphors, fortune-cookie one-liners) into plain human speech — everything else is left
+// byte-for-byte. This is a mechanical guarantee that catches what the writer prompt can't
+// suppress. Returns the ORIGINAL transcript on any failure or if the edit looks unsafe.
+async function decleverTranscript(transcript, env) {
+  if (!env.ANTHROPIC_API_KEY || !transcript || transcript.length < 200) return transcript;
+  const system = `You are a strict line editor for a cartoon-comedy reality-show script. Return the ENTIRE script back UNCHANGED, except for ONE job: find every DIALOGUE line that uses a "writerly clever" tic and rewrite ONLY that line into plain, blunt, human speech a real person would actually say. Change NOTHING else — keep every [SCENE:] header, every [stage direction], every [Confessional: X] tag, every character name, the exact format and order, and every line that is already plain EXACTLY as written. Do NOT shorten scenes, cut content, change who says what, change the plot, or "improve" pacing.
+
+REWRITE ONLY these tics into plain speech (keep the character's meaning and voice, just strip the cleverness):
+- PERSONIFIED objects/body parts for a joke: "you'd have told the shelter to get over itself" -> "you'd have been complaining about the shelter"; "my leg and I had a meeting" -> "my leg is killing me"; "sleep ghosted me" -> "I couldn't sleep"; "the fire has an understanding with me" -> cut it.
+- NEAT ANTITHESIS / before-after parallelism for a rhythmic zing: "Yesterday I lost it. Today I'm tying knots." -> "Yesterday was bad. I'm calmer now, I'm just tying knots."; "It's not a plan, it's a prayer." -> "That's not a plan, that's a hope."; "I don't play the game, the game plays me." -> cut or say the plain point.
+- POETIC METAPHOR descriptions of people: "she's a knife with lip gloss" -> "she's dangerous — she'll smile at you and then cut you."
+- FORTUNE-COOKIE aphorisms / fake-deep one-liners: "nervous people slip more" / "trust gets you voted out" -> cut, or make it a plain specific point.
+- "[X] emotionally/spiritually" and BACKWARDS logic ("the rope lost me") -> plain ("that really hurt" / "I fell").
+- A clever joke-tag stapled onto an otherwise serious/emotional line -> delete just the tag.
+
+If a line is already plain and human, leave it exactly as it is. Output ONLY the full edited script — no preamble, no notes, no explanation.`;
+  try {
+    const cleaned = await callAnthropicText(system, transcript, env, MODELS.creative, 16000);
+    // Safety guard: only accept the edit if it's roughly the same size as the original. A much
+    // shorter result means it summarized/truncated instead of line-editing — reject and keep original.
+    if (cleaned && cleaned.length >= transcript.length * 0.75 && cleaned.length <= transcript.length * 1.4) {
+      return cleaned;
+    }
+    console.error(`De-clever pass rejected (size ${cleaned ? cleaned.length : 0} vs ${transcript.length}) — keeping original.`);
+    return transcript;
+  } catch (e) {
+    console.error("De-clever pass failed — returning original:", e);
+    return transcript;
+  }
+}
+
 // PASS 1 — STORY ARCHITECT. Turns the raw event summary into a tight story plan the
 // screenwriter (pass 2) writes TO. This is where "soul" comes from: motivation,
 // causality, arcs, cuts, and twist-as-scene decisions the writer would otherwise skip.
@@ -2495,6 +2528,12 @@ async function callAnthropicStreaming(system, userText, env, model = MODELS.crea
           }
         }
 
+        // FINAL PASS: strip the model's "clever" tics into plain speech. Runs BEFORE we clear the
+        // heartbeat, so the browser->Worker connection stays alive during the extra call. Falls back
+        // to the original transcript on any failure, so it can never break generation.
+        if (fullText) {
+          try { fullText = await decleverTranscript(fullText, env); } catch (e) { console.error("de-clever pass errored:", e); }
+        }
         clearInterval(heartbeat);
         if (!fullText) {
           controller.enqueue(encoder.encode(JSON.stringify({ error: `All models failed. ${errors.join(" | ")}` })));

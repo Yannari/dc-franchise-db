@@ -1792,6 +1792,10 @@ REWRITE ONLY these tics into plain speech (keep the character's meaning and voic
 - "[X] emotionally/spiritually" and BACKWARDS logic ("the rope lost me") -> plain ("that really hurt" / "I fell").
 - A clever joke-tag stapled onto an otherwise serious/emotional line -> delete just the tag.
 
+⛔ DO NOT TOUCH — PRESERVE THESE (this is the MOST important rule; over-editing is worse than missing a tic): genuine emotion, vulnerability, a character explaining how they actually feel, real strategy talk, and BLUNT, EARNED turns of phrase a real person would truly say when venting or joking. A vivid image is FINE when it's how that specific character would really talk. For example, KEEP this line EXACTLY as written — do not flatten it:
+  "Eva: Everyone thinks I just yell through stuff. I do. That's the thing. I yell and I push and then my leg hurts and my chest hurts and I still have to act like I'm not scared because if I look scared, they start treating me like a target with arms."
+That line STAYS untouched: it's plain, real, and emotional, and "a target with arms" is authentic blunt Eva, not a decorative flourish. You are ONLY removing HOLLOW, decorative cleverness — personified objects, empty before/after symmetry, fortune-cookie aphorisms, and poetic metaphors no real person would say. If a line carries real feeling or sounds like something a person would actually say, LEAVE IT ALONE. WHEN IN DOUBT, DO NOT EDIT — it is far worse to flatten a genuine, emotional line than to let one clever tic slip through.
+
 If a line is already plain and human, leave it exactly as it is. Output ONLY the full edited script — no preamble, no notes, no explanation.`;
   try {
     const cleaned = await callAnthropicText(system, transcript, env, MODELS.creative, 16000);

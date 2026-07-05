@@ -2378,6 +2378,8 @@ REAL — challenge play-by-play (the host calls the action in short bursts; play
 
 TAKEAWAYS you MUST copy: lines are wildly different lengths; people interrupt, backtrack, and trail off; nobody wins every exchange with a clean topper; confessionals are a specific person reacting or scheming, not a trait list; and comedy rides ON TOP of real emotion and real game stakes — it never replaces them. Write scenes that feel like these, NEVER the metronome.
 
+⛔ PLAIN ≠ FLAT — DO NOT OVERCORRECT INTO LOBOTOMIZED, CHILDISH WRITING. Cutting the AI tics (metaphors, clever parallels, composed monologues) does NOT mean writing short, dull, affectless, baby-simple dialogue. Look again at the REAL examples above — they are WITTY, WARM, genuinely FUNNY, and emotional. THAT is your bar. Characters banter and one-up each other, tell stories, get heated, crack real jokes, land real feelings; the show is SMART and alive. Aim for dialogue a great, funny human TV writer would be proud of — NOT dialogue so scrubbed of personality a child could have written it. When you cut a tic, REPLACE it with something real and alive, never something flat. "Natural and human" is the goal; "simple and empty" is a DIFFERENT failure and just as bad. Rich, sharp, funny, and human all at once — like the transcripts.
+
 ═══════════════════════════════════════════════════════════
 ⛔ FINAL CHECK — FACTS OVERRIDE STYLE
 ═══════════════════════════════════════════════════════════

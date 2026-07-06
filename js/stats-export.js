@@ -149,6 +149,16 @@ function _extractPlayerPlacements() {
     if (ep.isFinale && ep.klOrienteering?.eliminated) {
       permanentExit[ep.klOrienteering.eliminated] = ep.num - 0.5;
     }
+
+    // Ambassadors eliminate a player during the twist phase (before the challenge). Without this,
+    // that boot was never recorded as an exit and got dumped at the worst placement with no episode
+    // label. If a challenge also eliminated someone this episode (e.g. slasher night), the ambassador
+    // boot left FIRST → slightly earlier fractional exit so it isn't tied with the main boot. If
+    // ambassadors was the only elimination, this is simply their exit episode.
+    const _ambBoot = ep.ambassadorData?.ambassadorEliminated;
+    if (_ambBoot) {
+      permanentExit[_ambBoot] = ep.num - (ep.eliminated && ep.eliminated !== _ambBoot ? 0.5 : 0);
+    }
   }
 
   // Remove finalists from permanent exit (they made it to the end)

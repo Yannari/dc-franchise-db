@@ -3117,6 +3117,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
       handleAdvantageInheritance(eliminated, ep);
       gs.activePlayers = gs.activePlayers.filter(p => p !== eliminated);
       gs.eliminated.push(eliminated);
+      // Ambassadors fire at/around the merge, so their boot is a jury-stage elimination.
+      // (gs._mergingThisEp covers the merge episode, where gs.isMerged hasn't flipped yet.)
+      gs.jury = gs.jury || [];
+      if ((gs.isMerged || gs._mergingThisEp) && !gs.jury.includes(eliminated)) gs.jury.push(eliminated);
       gs.tribes.forEach(t => { t.members = t.members.filter(m => m !== eliminated); });
 
       // ── RETURN EVENTS — multi-beat per tribe, expanded variants ──
@@ -3351,6 +3355,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
       handleAdvantageInheritance(eliminated, ep);
       gs.activePlayers = gs.activePlayers.filter(p => p !== eliminated);
       gs.eliminated.push(eliminated);
+      // Ambassadors fire at/around the merge, so their boot is a jury-stage elimination.
+      // (gs._mergingThisEp covers the merge episode, where gs.isMerged hasn't flipped yet.)
+      gs.jury = gs.jury || [];
+      if ((gs.isMerged || gs._mergingThisEp) && !gs.jury.includes(eliminated)) gs.jury.push(eliminated);
       gs.tribes.forEach(t => { t.members = t.members.filter(m => m !== eliminated); });
 
       const _returnEvents = _ambSelections.map(sel => {

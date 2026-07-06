@@ -2250,6 +2250,7 @@ ${settingBlock}${worldRules}${planBlock}${franchiseContextBlock}${storySoFarBloc
 ═══════════════════════════════════════════════════════════
 
 Each character has a "Voice:" line in the FRANCHISE CONTEXT above that pins down how they talk. USE IT. Do NOT let anyone collapse into a generic "mean strategist" or "nervous pushover" — that flat, interchangeable default is the #1 cause of soulless dialogue. Write each character's dialogue, humor, and reactions FROM their profile. A villain, a goof, and a mastermind must sound NOTHING alike — if you could swap two characters' lines without noticing, you've failed. The Voice: profile always wins over the canon references below.
+⛔ DO NOT INVENT BIOGRAPHY. Use ONLY the traits and history each profile actually gives you. Never invent a character's family, kids, spouse, job, hometown, or backstory that isn't stated — do NOT call someone a "dad," a "mom," a "cop," etc., or nickname them by a fact the profile doesn't contain (e.g. calling Wayne "the sad dad" when nothing says he's a father). If a biographical detail isn't in the profile, it does not exist — do not make one up. Attack and mock characters using what IS given (their game history, their behavior, their voice), never a fabricated fact.
 
 Canon references (the Voice: profile takes priority):
 - **Courtney** — controlling, type-A, sharp commands, furious when ignored.

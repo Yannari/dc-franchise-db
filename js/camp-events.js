@@ -823,10 +823,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const tmpT = pStats(target).temperament;
       const _rP = pronouns(target);
       const rumorLines = tmpT <= 3
-        ? [`${target} finds out ${_rP.posAdj} name has been floating. ${_rP.Sub} do${_rP.sub==='they'?'':'es'} not take it calmly.`,
-           `Word gets back to ${target} that ${spreader} has been talking. ${_rP.Sub} file${_rP.sub==='they'?'':'s'} it away. For now.`]
+        ? [`${target} finds out ${spreader} has been floating ${_rP.posAdj} name as a vote. ${_rP.Sub} do${_rP.sub==='they'?'':'es'} not take it calmly.`,
+           `Word gets back to ${target} that ${spreader} has been pushing ${_rP.posAdj} name around camp. ${_rP.Sub} file${_rP.sub==='they'?'':'s'} it away. For now.`]
         : tmpT <= 6
-        ? [`${target} hears ${_rP.posAdj} name came up in a conversation ${_rP.sub} wasn't part of. The paranoia sets in quietly.`,
+        ? [`${target} hears ${_rP.posAdj} name came up as a target in a conversation with ${spreader} that ${_rP.sub} wasn't part of. The paranoia sets in quietly.`,
            `${target} realizes people are talking about them without them. ${_rP.Sub} smile${_rP.sub==='they'?'':'s'} at camp. Internally, ${_rP.sub} ${_rP.sub==='they'?'are':'is'} already rethinking everything.`]
         : [`${target} gets wind that ${_rP.posAdj} name was thrown out. ${_rP.Sub} brush${_rP.sub==='they'?'':'es'} it off in public — but quietly starts paying closer attention.`,
            `Someone lets it slip that ${target}'s name was mentioned. ${_rP.Sub} tuck${_rP.sub==='they'?'':'s'} that information away and say nothing.`];

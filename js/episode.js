@@ -1470,6 +1470,12 @@ export function simulateEpisode() {
     const bOrder = b.type === 'first-impressions' ? -1 : bCat === 'returns' ? 0 : bCat === 'elim' ? 1 : 2;
     return aOrder - bOrder;
   });
+  // Determine up front whether the merge happens THIS episode. applyTwist runs before the merge
+  // body below flips gs.isMerged, so post-merge-only twist challenges (slasher-night, triple-dog-dare)
+  // need this flag to avoid being silently dropped to a generic challenge on the merge episode.
+  // Returnees aren't in gs.activePlayers yet (applyTwist adds them), so the current count is already
+  // the pre-return count.
+  gs._mergingThisEp = !gs.isMerged && (gs.activePlayers.length - (isReentry ? 1 : 0)) <= cfg.mergeAt;
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));
   // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)
   const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction','first-impressions','schoolyard-pick'];

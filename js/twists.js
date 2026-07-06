@@ -1281,14 +1281,15 @@ export function applyTwist(ep, twist, isPrimary = true) {
     ep.noTribal = true; // skip tribal council
 
   } else if (engineType === 'slasher-night') {
-    // Post-merge only (or the merge episode — twists fire before the merge check flips gs.isMerged).
-    // Old strict guard rejected the merge episode, silently dropping slasher to a generic challenge.
-    if ((!gs.isMerged && gs.activePlayers.length > (seasonConfig.mergeAt || 12)) || gs.activePlayers.length < 3) return;
+    // Post-merge only (or the merge episode — twists fire before the merge check flips gs.isMerged,
+    // so we rely on gs._mergingThisEp set by episode.js). Old strict guard silently dropped slasher
+    // to a generic challenge on the merge episode.
+    if ((!gs.isMerged && !gs._mergingThisEp) || gs.activePlayers.length < 3) return;
     ep.isSlasherNight = true;
 
   } else if (engineType === 'triple-dog-dare') {
     // Post-merge only (or the merge episode) — same merge-timing fix as slasher-night above.
-    if ((!gs.isMerged && gs.activePlayers.length > (seasonConfig.mergeAt || 12)) || gs.activePlayers.length < 3) return;
+    if ((!gs.isMerged && !gs._mergingThisEp) || gs.activePlayers.length < 3) return;
     ep.isTripleDogDare = true;
 
   } else if (engineType === 'say-uncle') {

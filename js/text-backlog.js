@@ -1649,7 +1649,12 @@ export function _textAmbassadors(ep, ln, sec) {
   if (am.agreed) ln(`AGREED: ${am.target} eliminated. ${am.targetReason}`);
   else ln(`DEADLOCKED: Rock draw. ${am.rockDrawLoser} eliminated.`);
   ln('RETURN:');
-  am.returnEvents?.forEach(re => { re.beats?.forEach(b => ln(`  [${re.tribe}] ${b}`)); });
+  am.returnEvents?.forEach(re => {
+    // 2-tribe negotiations carry a multi-beat dramatic scene; 3+-tribe coalitions carry a
+    // single text line. Render whichever exists so the full detail always appears.
+    if (re.beats?.length) re.beats.forEach(b => ln(`  [${re.tribe}] ${b}`));
+    else if (re.text) ln(`  [${re.tribe}] ${re.text}`);
+  });
 }
 
 // ── RI DUEL / RESCUE ISLAND ──

@@ -1281,13 +1281,14 @@ export function applyTwist(ep, twist, isPrimary = true) {
     ep.noTribal = true; // skip tribal council
 
   } else if (engineType === 'slasher-night') {
-    // Post-merge only; need at least 3 players for a meaningful slasher night
-    if (!gs.isMerged || gs.activePlayers.length < 3) return;
+    // Post-merge only (or the merge episode — twists fire before the merge check flips gs.isMerged).
+    // Old strict guard rejected the merge episode, silently dropping slasher to a generic challenge.
+    if ((!gs.isMerged && gs.activePlayers.length > (seasonConfig.mergeAt || 12)) || gs.activePlayers.length < 3) return;
     ep.isSlasherNight = true;
 
   } else if (engineType === 'triple-dog-dare') {
-    // Post-merge only; need at least 3 players (original TDI episode had 3)
-    if (!gs.isMerged || gs.activePlayers.length < 3) return;
+    // Post-merge only (or the merge episode) — same merge-timing fix as slasher-night above.
+    if ((!gs.isMerged && gs.activePlayers.length > (seasonConfig.mergeAt || 12)) || gs.activePlayers.length < 3) return;
     ep.isTripleDogDare = true;
 
   } else if (engineType === 'say-uncle') {

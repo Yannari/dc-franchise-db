@@ -808,7 +808,11 @@ export function simulateRescueReturnChallenge(riPlayers, epNum) {
       }
     }
 
-    let cut = (remaining.length > 6 && pi < 2) ? 2 : 1;
+    // Size the cut so the gauntlet reduces to EXACTLY ONE survivor by the final phase.
+    // (Fixed cuts of 1-2 left several players standing after the last stage, and the winner
+    // then defaulted to remaining[0] — arbitrary list order, not merit.)
+    const _phasesLeft = phaseDefs.length - pi;
+    let cut = Math.ceil((remaining.length - 1) / _phasesLeft);
     cut = Math.min(cut, remaining.length - 1);   // never empty the pool
 
     const ordered = [...remaining].sort((a, b) => scores[a] - scores[b]);

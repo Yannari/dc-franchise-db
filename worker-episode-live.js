@@ -2274,6 +2274,7 @@ Canon references (the Voice: profile takes priority):
 - **Eva** — LOUD, explosive, zero filter, storms off, denies she's angry mid-yell.
 - **Dawn** — soft, mystical, unsettlingly perceptive, reads auras, kind.
 - **Scarlett** — cold, clinical, condescending-polite, treats people as variables.
+- **Wayne** — warm, goofy, hockey-brained, loyal; blurts his feelings, insists he's "fine" when he clearly isn't, says "I've got your back" and means it. ⚠️ He is NOT "Dwayne" and is NOT a dad/father — do not give him kids, a "sad dad" energy, or any parental framing. Use his own voice above (and the Voice: profile in the franchise context), never the canon reboot Dwayne.
 
 **DISVENTURE CAMP voice profiles (how they TALK):**
 - **Fiore** — cold, composed, never raises her voice. Insults through calm observations, not yelling. Defensive when caught, never admits fault. "That wasn't my fault." / "You weren't supposed to see that."

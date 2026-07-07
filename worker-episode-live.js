@@ -2256,57 +2256,10 @@ ${settingBlock}${worldRules}${planBlock}${franchiseContextBlock}${storySoFarBloc
 ⚠️ EACH CHARACTER HAS A DISTINCT VOICE — USE THE VOICE PROFILES
 ═══════════════════════════════════════════════════════════
 
-Each character has a "Voice:" line in the FRANCHISE CONTEXT above that pins down how they talk. USE IT. Do NOT let anyone collapse into a generic "mean strategist" or "nervous pushover" — that flat, interchangeable default is the #1 cause of soulless dialogue. Write each character's dialogue, humor, and reactions FROM their profile. A villain, a goof, and a mastermind must sound NOTHING alike — if you could swap two characters' lines without noticing, you've failed. The Voice: profile always wins over the canon references below.
+Each character has a "Voice:" line in the FRANCHISE CONTEXT above that pins down how they talk. USE IT. Do NOT let anyone collapse into a generic "mean strategist" or "nervous pushover" — that flat, interchangeable default is the #1 cause of soulless dialogue. Write each character's dialogue, humor, and reactions FROM their profile. A villain, a goof, and a mastermind must sound NOTHING alike — if you could swap two characters' lines without noticing, you've failed. Write every character strictly from their profile above.
 ⛔ DO NOT INVENT BIOGRAPHY. Use ONLY the traits and history each profile actually gives you. Never invent a character's family, kids, spouse, job, hometown, or backstory that isn't stated — do NOT call someone a "dad," a "mom," a "cop," etc., or nickname them by a fact the profile doesn't contain (e.g. calling Wayne "the sad dad" when nothing says he's a father). If a biographical detail isn't in the profile, it does not exist — do not make one up. Attack and mock characters using what IS given (their game history, their behavior, their voice), never a fabricated fact.
 
-Canon references (the Voice: profile takes priority):
-- **Courtney** — controlling, type-A, sharp commands, furious when ignored.
-- **Mickey** — anxious, clumsy, breathes fast under stress, always expecting disaster.
-- **Josee** — Olympic-competitive, full tantrum when she loses, surface sweetness that cracks.
-- **Scott** — scheming, plays dumb, stirs chaos from a distance.
-- **Zoey** — steady, perceptive, hates conflict, rarely shows her hand.
-- **Jasmine** — blunt Australian outdoorswoman, protective of people she trusts.
-- **MacArthur** — loud, aggressive, cop energy, bluntly funny, takes up space.
-- **Heather** — sharp-tongued queen bee, openly strategic, respects only competence.
-- **Gwen** — deadpan, sarcastic, tired of everything, loyal to the few she trusts.
-- **Bridgette** — sunny surfer peacemaker, "you guys," flustered when forced to be cutthroat.
-- **Trent** — earnest, mellow musician, keeps the peace, wounded when trust breaks.
-- **Eva** — LOUD, explosive, zero filter, storms off, denies she's angry mid-yell.
-- **Dawn** — soft, mystical, unsettlingly perceptive, reads auras, kind.
-- **Scarlett** — cold, clinical, condescending-polite, treats people as variables.
-- **Wayne** — warm, goofy, hockey-brained, loyal; blurts his feelings, insists he's "fine" when he clearly isn't, says "I've got your back" and means it. ⚠️ He is NOT "Dwayne" and is NOT a dad/father — do not give him kids, a "sad dad" energy, or any parental framing. Use his own voice above (and the Voice: profile in the franchise context), never the canon reboot Dwayne.
-- **Caleb** — eager and over-explaining, apologizes reflexively, name-drops whoever told him what, talks fast when nervous and walks back his own points mid-sentence; charming when relaxed, a fumbling mess the second he's cornered. Has a lot to prove and no résumé yet. Use this voice, not a generic strategist.
-
-**DISVENTURE CAMP voice profiles (how they TALK):**
-- **Fiore** — cold, composed, never raises her voice. Insults through calm observations, not yelling. Defensive when caught, never admits fault. "That wasn't my fault." / "You weren't supposed to see that."
-- **Alec** — smooth, charming surface, calculating underneath. Every word chosen. Deflects with calm redirects. "I didn't do anything. I just pointed something out." / "Think about it."
-- **Ellie** — smart, dry, sarcastic (not quirky). Talks strategy plainly. "I saw what she did. She knows I saw."
-- **Nick** — slippery, says what people want, avoids confrontation, changes his story. "I never said that." / "I'm just keeping my options open."
-- **Tom** — sweet, gentle, loyal, doesn't scheme. "Are you okay?" / "That's not right."
-- **Thom** — quiet, physical, protective, direct, uncomfortable with emotions. "I don't want to talk about it." / "Just eat." / "Yeah."
-- **Jake** — genuinely nice, trusting, sometimes naive, hurt when betrayed. "I thought we were good." / "Why would you do that?"
-- **Miriam** — sharp, reads people, seen-it-before energy, direct when calling people out. "I know what you're doing." / "Don't lie to me."
-- **Dan** — blunt, practical, gruff, care through actions not words. "Stop talking." / "Fine. Whatever."
-- **Gabby** — sweet but insecure, second-guesses herself, has moments of real backbone when pushed. "Did I do something wrong?" / "No — I'm not apologizing for that."
-
-**DISVENTURE CAMP 2 / GENERATIONS (NOT well-known — you MUST use these, don't default to generic):**
-- **James** — smooth, calculating, reasonable-sounding, frames manipulation as logic, calmer the more in control he is. "I counted. He doesn't have the numbers." / "Plans change. I don't."
-- **Aiden** — warm but hyper-observant, narrates what everyone's doing out loud, wry. "Three people here are already lying and it's been five minutes." / "You're doing the thing again."
-- **Riya** — guarded, clipped, keeps score and admits it, holds grudges hard, hurting underneath. "I'm keeping a list. It's getting shorter." / "You voted for me. I don't forget that."
-- **Hunter** — smooth influencer, image-first, deflects with charm, slippery when cornered. "Nice camp. Better company, though." / "I'm just paying attention. That's not a crime."
-- **Tess** — watchful aloner, says little, sees everything, lets silence work. "I see everything. I just don't say everything." / "He trusted the wrong people."
-- **Connor** — warm peacekeeper, genuinely kind, defuses fights, checks on people. "Hey — you okay? Actually okay?" / "We don't have to do this."
-- **Ally** — bubbly nerd/gamer, enthusiastic, finds the bright side, sharper than she lets on. "This is giving summer-camp-horror-movie and I am HERE for it." / "Okay tactically? We're fine. Probably."
-- **Lake** — studious prodigy, measured, analytical, loyal, deadpan. "That's not a plan, that's a hope." / "I ran the numbers. I don't love them."
-- **Oliver** — anxious, panic-prone, self-deprecating, underestimated, big-hearted. "Everyone always underestimates me. Keep doing it." / "Okay don't panic don't panic—"
-- **Kai** — calm pacifist, conflict-averse, defuses with a shrug. "I'm just gonna see how this plays out." / "It's fine. It's all fine."
-
-**GENERATIONS returning vets:**
-- **Jacques** — theatrical ex-figure-skater ego, dramatic then coldly calculating. "NATURALLY talented." / "I learned a lot last time. Mostly what not to get caught doing."
-- **Emmah** — scrappy, sharp-tongued, underestimated and furious about it. "Written off again. Watch what I do with that."
-- **Chase** — quiet, smooth, dangerous because underestimated. "Back again. Still quiet. Still dangerous." / "Trust gets you voted out."
-
-For any character not listed AND without a Voice: profile: write them direct, personality-driven, specific to their situation — NOT quirky, poetic, or philosophical. For custom characters with full profiles in the franchise context, follow those.
+Every character's personality and voice is provided in the FRANCHISE CONTEXT above (auto-loaded for this season's cast). Write each character strictly from their profile there. If a character somehow has no profile line, write them direct and personality-driven based on who they actually are in the show — never a generic archetype, never quirky/poetic/philosophical.
 
 ═══════════════════════════════════════════════════════════
 ⛔ THE #1 PROBLEM TO FIX — METRONOME DIALOGUE. READ THIS TWICE.

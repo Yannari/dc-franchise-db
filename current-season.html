@@ -1230,6 +1230,27 @@ Dave voted for Mickey
     return (vp.note ? vp.note + '\n\n' : '') + lines.join('\n');
   }
 
+  // Quick console check: how many voice profiles are loaded + a sample, and whether it's the
+  // in-memory cached copy or a fresh fetch. Run window.checkVoiceProfiles() in the console.
+  window.checkVoiceProfiles = async function () {
+    const wasCached = !!_voiceProfilesCache;
+    const vp = await _loadVoiceProfiles();
+    const profiles = (vp && vp.profiles) || {};
+    const count = Object.keys(profiles).length;
+    // Also do a cache-busted fetch to report the CURRENT file on disk/server for comparison.
+    let liveCount = '?';
+    try {
+      const r = await fetch('voice-profiles.json?_=' + Date.now());
+      const d = await r.json();
+      liveCount = Object.keys((d && d.profiles) || {}).length;
+    } catch (e) {}
+    const sampleName = Object.keys(profiles)[0];
+    console.log(`🎭 Voice profiles loaded: ${count} (${wasCached ? 'from in-memory cache — hard-refresh to reload' : 'freshly fetched this session'})`);
+    console.log(`   Current file on disk/server: ${liveCount} profiles${liveCount !== '?' && liveCount !== count ? '  ⚠️ DIFFERS from loaded — hard-refresh to pick up changes' : ''}`);
+    if (sampleName) console.log(`   Sample — ${sampleName}: ${String(profiles[sampleName]).slice(0, 60)}…`);
+    return { loaded: count, onDisk: liveCount, cached: wasCached };
+  };
+
   function _csDelete(key) {
     return _csOpenDB().then(db => new Promise((resolve, reject) => {
       const tx = db.transaction(CS_STORE, 'readwrite');

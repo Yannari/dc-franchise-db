@@ -3490,6 +3490,152 @@ async function generateEpisodeAI() {
     lorenzo:'m',jay:'m'
   };
 
+  // Hand-tuned voices for the mains. bucket forces gender; pitch/rate are absolute
+  // (skip auto-derivation); voiceName is an optional regex to lock a specific
+  // installed system voice. Everyone not listed still gets auto-derived voices.
+  const VOICE_OVERRIDES = {
+    chris:{ bucket:'m', pitch:0.98, rate:1.06 },      // slick host cadence
+    chef:{ bucket:'m', pitch:0.6,  rate:0.9  },       // deep, booming
+    owen:{ bucket:'m', pitch:1.08, rate:1.14 },       // big, loud, goofy
+    duncan:{ bucket:'m', pitch:0.72, rate:0.98 },     // gruff punk
+    alejandro:{ bucket:'m', pitch:0.84, rate:0.9 },   // silky, low, unhurried
+    noah:{ bucket:'m', pitch:0.9,  rate:1.0  },       // flat sarcasm
+    cody:{ bucket:'m', pitch:1.16, rate:1.08 },       // nasal, eager
+    harold:{ bucket:'m', pitch:1.12, rate:1.0 },      // nerdy
+    geoff:{ bucket:'m', pitch:1.0,  rate:1.06 },      // party chill
+    trent:{ bucket:'m', pitch:0.95, rate:0.98 },
+    justin:{ bucket:'m', pitch:0.95, rate:0.9 },      // smooth vain
+    ezekiel:{ bucket:'m', pitch:1.02, rate:1.0 },
+    max:{ bucket:'m', pitch:0.9,  rate:1.06 },        // theatrical villain
+    scott:{ bucket:'m', pitch:0.95, rate:1.0 },
+    lightning:{ bucket:'m', pitch:0.9, rate:1.12 },   // loud jock
+    brick:{ bucket:'m', pitch:0.85, rate:1.0 },       // military bark
+    cameron:{ bucket:'m', pitch:1.22, rate:1.06 },    // timid, small
+    mike:{ bucket:'m', pitch:1.0,  rate:1.03 },
+    sam:{ bucket:'m', pitch:1.05, rate:1.05 },
+    shawn:{ bucket:'m', pitch:1.0,  rate:1.02 },
+    dave:{ bucket:'m', pitch:1.06, rate:1.1 },        // anxious
+    topher:{ bucket:'m', pitch:1.0,  rate:1.06 },     // Chris wannabe
+    heather:{ bucket:'f', pitch:1.04, rate:1.02 },    // sharp, cold
+    gwen:{ bucket:'f', pitch:0.92, rate:0.95 },       // dry, deadpan
+    courtney:{ bucket:'f', pitch:1.08, rate:1.14 },   // uptight, clipped
+    lindsay:{ bucket:'f', pitch:1.32, rate:1.0 },     // airy, ditzy
+    izzy:{ bucket:'f', pitch:1.35, rate:1.26 },       // manic
+    sierra:{ bucket:'f', pitch:1.3,  rate:1.2 },      // hyper superfan
+    leshawna:{ bucket:'f', pitch:1.0,  rate:1.06 },   // bold, brassy
+    bridgette:{ bucket:'f', pitch:1.08, rate:0.98 },  // mellow surfer
+    eva:{ bucket:'f', pitch:0.85, rate:1.06 },        // aggressive
+    beth:{ bucket:'f', pitch:1.16, rate:1.0 },
+    katie:{ bucket:'f', pitch:1.3,  rate:1.12 },
+    sadie:{ bucket:'f', pitch:1.28, rate:1.12 },
+    scarlett:{ bucket:'f', pitch:1.0,  rate:0.94 },   // cold, precise
+    dawn:{ bucket:'f', pitch:1.1,  rate:0.86 },       // soft, mystical
+    zoey:{ bucket:'f', pitch:1.16, rate:1.02 },       // sweet
+    sky:{ bucket:'f', pitch:1.1,  rate:1.06 },
+    jasmine:{ bucket:'f', pitch:1.0,  rate:0.98 },
+    ella:{ bucket:'f', pitch:1.36, rate:0.95 },       // sing-song
+    sugar:{ bucket:'f', pitch:1.06, rate:1.06 },      // brash pageant
+    blaineley:{ bucket:'f', pitch:1.0,  rate:1.02 }
+  };
+
+  // Emotive cues that get PERFORMED (spoken as a vocalization in-character),
+  // not read aloud. pitch is an additive nudge, rateMul a multiplier.
+  const WM_GESTURE = [
+    { re:/laugh|chuckl|giggl|cackl|guffaw|snicker|\blol\b|heh/, say:'ha ha ha', pitch:0.1,  rateMul:1.05, emoji:'😄' },
+    { re:/sigh/,                          say:'haaah',        pitch:-0.1,  rateMul:0.82, emoji:'😮‍💨' },
+    { re:/gasp/,                          say:'hah!',         pitch:0.15,  rateMul:1.1,  emoji:'😲' },
+    { re:/scream|shriek/,                 say:'aaah!',        pitch:0.2,   rateMul:1.12, emoji:'😱' },
+    { re:/cry|cries|sob|weep|blubber/,    say:'boo hoo hoo',  pitch:-0.05, rateMul:0.85, emoji:'😢' },
+    { re:/snort|scoff|smirk|sneer/,       say:'hmph',         pitch:-0.05, rateMul:0.9,  emoji:'😏' },
+    { re:/groan|moan/,                    say:'ughhh',        pitch:-0.1,  rateMul:0.82, emoji:'😩' },
+    { re:/grunt/,                         say:'hnngh',        pitch:-0.1,  rateMul:0.9,  emoji:'😤' },
+    { re:/gulp|swallow/,                  say:'gulp',         pitch:0,     rateMul:0.9,  emoji:'😰' },
+    { re:/clears throat|ahem|cough/,      say:'ahem',         pitch:0,     rateMul:0.9,  emoji:'😦' },
+    { re:/yawn/,                          say:'haaaaw',       pitch:-0.05, rateMul:0.78, emoji:'🥱' },
+    { re:/cheer|whoop|\bwoo|hooray/,      say:'woo hoo!',     pitch:0.15,  rateMul:1.1,  emoji:'🎉' },
+    { re:/\bhum|hmm|thinking|ponder/,     say:'hmmm',         pitch:0,     rateMul:0.9,  emoji:'🤔' },
+    { re:/scream|screech|wail/,           say:'aaaah!',       pitch:0.2,   rateMul:1.12, emoji:'😱' }
+  ];
+
+  // Delivery cues that reshape the FOLLOWING spoken line (no sound of their own).
+  const WM_TONE = [
+    { re:/whisper|quiet|soft|under.*breath|mutter|hush/, volume:0.35, rateMul:0.92, pitch:0,     emoji:'🤫' },
+    { re:/shout|loud|yell|holler|bellow/,               volume:1,    rateMul:1.05, pitch:0.1,   emoji:'📢' },
+    { re:/angr|furious|snap|growl|seeth|snarl|rage/,    volume:1,    rateMul:1.08, pitch:-0.05, emoji:'😠' },
+    { re:/sarcast|\bdry\b|deadpan|flat|monotone/,       volume:1,    rateMul:0.9,  pitch:-0.03, emoji:'🙄' },
+    { re:/nervous|anxious|shaky|stammer|stutter/,       volume:1,    rateMul:1.05, pitch:0.05,  emoji:'😬' },
+    { re:/\bsad\b|glum|dejected|mournful/,              volume:1,    rateMul:0.9,  pitch:-0.05, emoji:'😔' },
+    { re:/excit|eager|thrill|giddy/,                    volume:1,    rateMul:1.12, pitch:0.1,   emoji:'🤩' },
+    { re:/sing|melod|song/,                             volume:1,    rateMul:0.95, pitch:0.15,  emoji:'🎶' }
+  ];
+
+  function _wmClamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  // Split a dialogue line into an ordered sequence of speak/gesture actions.
+  // Tone cues attach to the next spoken segment; unknown cues are dropped from speech.
+  function _wmVoiceActions(beat) {
+    const parts = [];
+    const re = /\[([^\]]+)\]/g;
+    let last = 0, m;
+    const pushText = (seg) => { const t = (seg || '').replace(/\s+/g, ' ').trim(); if (t) parts.push({ kind: 'text', text: t }); };
+    while ((m = re.exec(beat.text))) {
+      pushText(beat.text.slice(last, m.index));
+      parts.push({ kind: 'cue', word: m[1].trim().toLowerCase() });
+      last = m.index + m[0].length;
+    }
+    pushText(beat.text.slice(last));
+
+    const out = [];
+    let pendingTone = null;
+    parts.forEach(p => {
+      if (p.kind === 'text') { out.push({ kind: 'speak', text: p.text, tone: pendingTone }); pendingTone = null; return; }
+      const g = WM_GESTURE.find(x => x.re.test(p.word));
+      if (g) { out.push({ kind: 'gesture', text: g.say, pitch: g.pitch, rateMul: g.rateMul }); return; }
+      const tn = WM_TONE.find(x => x.re.test(p.word));
+      if (tn) { pendingTone = tn; return; }
+      // unknown cue → performed visually only, dropped from narration
+    });
+    return out;
+  }
+
+  // Spoken (cue-stripped) text of a beat, for reading-time estimates.
+  function _wmSpokenText(beat) {
+    if (beat.kind === 'dialogue') return beat.text.replace(/\[[^\]]+\]/g, ' ').replace(/\s+/g, ' ').trim();
+    return _wmNarration(beat).text;
+  }
+
+  // Format a dialogue line for display: escape, then turn [cues] into action chips.
+  function _wmFormatDialogue(text) {
+    return escapeHtml(text).replace(/\[([^\]]+)\]/g, (mm, inner) => {
+      const w = inner.trim().toLowerCase();
+      const g = WM_GESTURE.find(x => x.re.test(w));
+      const tn = WM_TONE.find(x => x.re.test(w));
+      const emoji = (g && g.emoji) || (tn && tn.emoji) || '🎬';
+      return `<span class="wm-cue">${emoji} ${inner.trim()}</span>`;
+    });
+  }
+
+  // Build the ordered utterance queue for a beat (dialogue may be several).
+  function _wmBuildUtterances(beat) {
+    const list = [];
+    if (beat.kind === 'dialogue') {
+      const base = _wmVoiceParams(beat.speaker);
+      _wmVoiceActions(beat).forEach(a => {
+        if (a.kind === 'gesture') {
+          list.push({ text: a.text, params: { voice: base.voice, pitch: _wmClamp(base.pitch + (a.pitch || 0), 0.4, 1.8), rate: _wmClamp(base.rate * (a.rateMul || 1), 0.6, 1.6), volume: 1 } });
+        } else if (a.text) {
+          let pitch = base.pitch, rate = base.rate, volume = 1;
+          if (a.tone) { pitch = _wmClamp(pitch + (a.tone.pitch || 0), 0.4, 1.8); rate = _wmClamp(rate * (a.tone.rateMul || 1), 0.6, 1.6); volume = a.tone.volume != null ? a.tone.volume : 1; }
+          list.push({ text: a.text, params: { voice: base.voice, pitch, rate, volume } });
+        }
+      });
+    } else {
+      const n = _wmNarration(beat);
+      if (n.text) list.push({ text: n.text, params: { voice: (_wmBuildVoiceBuckets(), _wmNarratorVoice), pitch: n.drama ? 0.85 : 0.95, rate: n.drama ? 0.9 : 0.98, volume: 1 } });
+    }
+    return list;
+  }
+
   // Lazily-populated caches
   let _wmVoiceProfiles = null;      // name(lower) -> personality prose
   let _wmVoiceProfilesLoaded = false;
@@ -3548,22 +3694,35 @@ async function generateEpisodeAI() {
     const key = (name || '').toLowerCase().trim();
     if (_wmParamCache[key]) return _wmParamCache[key];
     const buckets = _wmBuildVoiceBuckets();
-    const gender = WM_GENDER[key] || (_wmHash(key) % 2 ? 'm' : 'f');
+    const ov = VOICE_OVERRIDES[key];
+    const gender = (ov && ov.bucket) || WM_GENDER[key] || (_wmHash(key) % 2 ? 'm' : 'f');
     const bucket = (gender === 'f' ? buckets.f : buckets.m);
     const h = _wmHash(key);
-    const voice = bucket.length ? bucket[h % bucket.length] : (buckets.n[0] || null);
-    let pitch = 1.0, rate = 1.0;
-    const prof = _wmVoiceProfiles && _wmVoiceProfiles[key];
-    if (prof) {
-      if (/calm|smooth|silky|soft|gentle|slow|monotone|deadpan|dry|mellow/.test(prof)) { rate -= 0.12; pitch -= 0.08; }
-      if (/hyper|manic|loud|energetic|excited|fast|shrill|squeal|bubbly|peppy|chipper/.test(prof)) { rate += 0.15; pitch += 0.14; }
-      if (/gruff|deep|gravel|booming|low|menacing|growl|brooding/.test(prof)) { pitch -= 0.2; }
-      if (/high|squeaky|nasal|whiny|shrill/.test(prof)) { pitch += 0.2; }
-      if (/sultry|seductive|sarcastic|smug|smirk/.test(prof)) { rate -= 0.05; pitch -= 0.05; }
+    let voice = bucket.length ? bucket[h % bucket.length] : (buckets.n[0] || null);
+    if (ov && ov.voiceName) {
+      const all = [].concat(buckets.f, buckets.m, buckets.n);
+      const match = all.find(v => v && new RegExp(ov.voiceName, 'i').test(v.name));
+      if (match) voice = match;
     }
-    // Per-name jitter so two same-gender voices still differ
-    pitch += (((h % 7) - 3) * 0.03);
-    rate  += ((((h >> 3) % 7) - 3) * 0.02);
+    let pitch, rate;
+    if (ov && (ov.pitch != null || ov.rate != null)) {
+      // Hand-tuned override: use absolute values, skip auto-derivation + jitter
+      pitch = ov.pitch != null ? ov.pitch : 1.0;
+      rate  = ov.rate  != null ? ov.rate  : 1.0;
+    } else {
+      pitch = 1.0; rate = 1.0;
+      const prof = _wmVoiceProfiles && _wmVoiceProfiles[key];
+      if (prof) {
+        if (/calm|smooth|silky|soft|gentle|slow|monotone|deadpan|dry|mellow/.test(prof)) { rate -= 0.12; pitch -= 0.08; }
+        if (/hyper|manic|loud|energetic|excited|fast|shrill|squeal|bubbly|peppy|chipper/.test(prof)) { rate += 0.15; pitch += 0.14; }
+        if (/gruff|deep|gravel|booming|low|menacing|growl|brooding/.test(prof)) { pitch -= 0.2; }
+        if (/high|squeaky|nasal|whiny|shrill/.test(prof)) { pitch += 0.2; }
+        if (/sultry|seductive|sarcastic|smug|smirk/.test(prof)) { rate -= 0.05; pitch -= 0.05; }
+      }
+      // Per-name jitter so two same-gender voices still differ
+      pitch += (((h % 7) - 3) * 0.03);
+      rate  += ((((h >> 3) % 7) - 3) * 0.02);
+    }
     pitch = Math.max(0.4, Math.min(1.8, pitch));
     rate  = Math.max(0.6, Math.min(1.6, rate));
     const params = { voice, pitch, rate };
@@ -3670,7 +3829,7 @@ async function generateEpisodeAI() {
       <div class="wm-avatar" style="border-color:${color};box-shadow:0 0 12px ${color}44">${avatar}</div>
       <div class="wm-bubble" style="border-color:${color}44">
         <div class="wm-speaker" style="color:${color}">${escapeHtml(beat.speaker)}</div>
-        <div class="wm-speech">${escapeHtml(beat.text)}</div>
+        <div class="wm-speech">${_wmFormatDialogue(beat.text)}</div>
       </div>
     </div>`;
   }
@@ -3817,8 +3976,7 @@ async function generateEpisodeAI() {
   }
 
   function _wmReadingMs(beat) {
-    const n = _wmNarration(beat);
-    const words = (n.text || '').split(/\s+/).filter(Boolean).length;
+    const words = (_wmSpokenText(beat) || '').split(/\s+/).filter(Boolean).length;
     let secs = Math.max(1.2, words / 3.0) / _wm.speed;      // ~180 wpm baseline
     if (beat.kind === 'elimination') secs = Math.max(secs, 2.6 / _wm.speed);
     if (beat.kind === 'scene' || beat.kind === 'confHeader') secs = Math.max(1.0, secs * 0.7);
@@ -3832,19 +3990,25 @@ async function generateEpisodeAI() {
     const advance = () => { if (done) return; done = true; if (_wm && _wm.playing) _wmStep(1); };
 
     if (_wm.narrate && _wm.ttsOk) {
-      const n = _wmNarration(beat);
-      if (!n.text) { _wm.timer = setTimeout(advance, 500); return; }
-      const u = new SpeechSynthesisUtterance(n.text);
-      const p = n.who ? _wmVoiceParams(n.who)
-                      : { voice: (_wmBuildVoiceBuckets(), _wmNarratorVoice), pitch: n.drama ? 0.85 : 0.95, rate: n.drama ? 0.9 : 0.98 };
-      if (p.voice) u.voice = p.voice;
-      u.pitch = p.pitch;
-      u.rate = Math.max(0.6, Math.min(1.6, (p.rate || 1) * _wm.speed));
-      u.onend = advance;
-      u.onerror = advance;
-      // Safety net: if TTS silently stalls, fall back to a timer
-      _wm.timer = setTimeout(advance, _wmReadingMs(beat) + 4000);
-      window.speechSynthesis.speak(u);
+      const queue = _wmBuildUtterances(beat);
+      if (!queue.length) { _wm.timer = setTimeout(advance, 500); return; }
+      // One safety net covering the whole queue in case TTS stalls
+      _wm.timer = setTimeout(advance, _wmReadingMs(beat) + 5000);
+      let qi = 0;
+      const speakNext = () => {
+        if (done || !_wm || !_wm.playing) return;
+        if (qi >= queue.length) { advance(); return; }
+        const it = queue[qi++];
+        const u = new SpeechSynthesisUtterance(it.text);
+        if (it.params.voice) u.voice = it.params.voice;
+        u.pitch = it.params.pitch;
+        u.rate = Math.max(0.6, Math.min(1.6, (it.params.rate || 1) * _wm.speed));
+        u.volume = it.params.volume != null ? it.params.volume : 1;
+        u.onend = speakNext;
+        u.onerror = speakNext;
+        window.speechSynthesis.speak(u);
+      };
+      speakNext();
     } else {
       _wm.timer = setTimeout(advance, _wmReadingMs(beat));
     }
@@ -3978,7 +4142,10 @@ async function generateEpisodeAI() {
       .wm-bubble{background:rgba(255,255,255,.045);border:1px solid;border-radius:4px 16px 16px 16px;padding:10px 15px;max-width:640px}
       .wm-active .wm-bubble{box-shadow:0 0 0 1.5px currentColor,0 10px 34px rgba(0,0,0,.45)}
       .wm-speaker{font-weight:800;font-size:13px;letter-spacing:.4px;margin-bottom:3px}
-      .wm-speech{color:#e8ecf4;font-size:15.5px;line-height:1.5}
+      .wm-speech{color:#e8ecf4;font-size:15.5px;line-height:1.6}
+      .wm-cue{display:inline-block;font-size:12px;font-style:italic;font-weight:600;letter-spacing:.3px;
+        color:#c9b3ff;background:rgba(150,110,255,.14);border:1px solid rgba(160,120,255,.3);
+        border-radius:6px;padding:0 7px;margin:0 2px;vertical-align:middle;opacity:.9}
       .wm-ctx-confessional{margin-left:20px}
       .wm-ctx-confessional .wm-bubble{background:linear-gradient(135deg,rgba(40,20,60,.5),rgba(20,10,35,.5));border-style:dashed}
       .wm-conf-head{align-self:flex-start;display:flex;align-items:center;gap:12px;background:rgba(30,15,45,.6);

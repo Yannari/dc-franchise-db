@@ -76,6 +76,8 @@ import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rp
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard } from './chal/alien-egg.js';
 import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict, rpBuildYetiElimination } from './chal/are-we-there-yeti.js';
 import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish } from './vp-finale.js';
+// rpBuildAftermath is read off window (not statically imported) — aftermath.js already imports from
+// this module, so a static import here would create a circular dependency.
 
 export function _textStripHtml(s) { return s ? s.replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<[^>]+>/g, '') : ''; }
 
@@ -2490,8 +2492,46 @@ export function _textFanVoteReturn(ep, ln, sec) {
   if (_elimEp) ln(`Originally eliminated: Episode ${_elimEp.num}`);
 }
 
+// Renders the post-tribal "Aftermath" VP screen (Power Shifts / Threads to Watch / Next Episode)
+// as plain text. Reuses the VP builder as the single source of truth, then strips HTML — filtering
+// out portrait initials (lone single chars) and collapsing the doubled portrait name into one line.
+export function _textAftermathScreen(ep, ln) {
+  if (ep.isFinale) return; // finale has no post-tribal Aftermath screen
+  if (typeof window === 'undefined' || typeof window.rpBuildAftermath !== 'function') return;
+  let html;
+  try { html = window.rpBuildAftermath(ep); } catch (e) { return; }
+  if (!html) return;
+
+  const rawLines = html
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ')
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 0)
+    .filter(l => !/^[A-Z]$/.test(l)); // drop portrait initials ("A", "B", ...)
+
+  // Collapse consecutive duplicate lines (portrait name + card name render the name twice)
+  const lines = rawLines.filter((l, i) => l !== rawLines[i - 1]);
+  if (!lines.length) return;
+
+  ln('');
+  ln('AFTERMATH SCREEN:');
+  lines.forEach(l => ln(`  ${l}`));
+}
+
 export function _textWriterContext(ep, ln, sec) {
   sec('WRITER CONTEXT');
+
+  // Aftermath screen — Power Shifts / Gained-Lost Ground / Threads to Watch / Next Episode.
+  // Rendered straight from the VP builder (rpBuildAftermath) and stripped to clean text so the
+  // writer sees the exact strategic read the viewer gets. Skipped on finale/aftermath-show episodes.
+  _textAftermathScreen(ep, ln);
 
   // Stolen credit
   if (ep.stolenCreditEvents?.length) {

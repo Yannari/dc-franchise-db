@@ -1198,6 +1198,38 @@ Dave voted for Mickey
     })).catch(e => { console.warn('IDB get failed:', e); return undefined; });
   }
 
+  // ── VOICE PROFILES: reusable per-player franchise histories + voice, loaded once from
+  // voice-profiles.json and auto-assembled into the franchise context from a season's cast,
+  // so you never have to paste it per season. Add new players (incl. customs) to that file.
+  let _voiceProfilesCache = null;
+  async function _loadVoiceProfiles() {
+    if (_voiceProfilesCache) return _voiceProfilesCache;
+    try {
+      const r = await fetch('voice-profiles.json');
+      _voiceProfilesCache = await r.json();
+    } catch (e) {
+      console.warn('voice-profiles.json load failed:', e);
+      _voiceProfilesCache = { note: '', profiles: {} };
+    }
+    return _voiceProfilesCache;
+  }
+  // Build a franchise-context string from a cast list using the stored voice profiles.
+  // Returns '' if none of the cast have a profile.
+  async function buildFranchiseContextFromCast(cast) {
+    if (!Array.isArray(cast) || !cast.length) return '';
+    const vp = await _loadVoiceProfiles();
+    const profiles = (vp && vp.profiles) || {};
+    const names = cast.map(c => typeof c === 'string' ? c : (c && (c.name || c.player))).filter(Boolean);
+    const seen = new Set();
+    const lines = [];
+    names.forEach(n => {
+      if (seen.has(n)) return; seen.add(n);
+      if (profiles[n]) lines.push(`- ${n} ${profiles[n]}`);
+    });
+    if (!lines.length) return '';
+    return (vp.note ? vp.note + '\n\n' : '') + lines.join('\n');
+  }
+
   function _csDelete(key) {
     return _csOpenDB().then(db => new Promise((resolve, reject) => {
       const tx = db.transaction(CS_STORE, 'readwrite');
@@ -2970,6 +3002,19 @@ async function generateEpisodeAI() {
   } else {
     franchiseContextEarly = (await _csGet(`franchise_context_s${season}`)) || '';
     seasonSettingEarly = (await _csGet(`season_setting_s${season}`)) || '';
+  }
+
+  // AUTO voice profiles: if no franchise context was provided/stored, build it automatically
+  // from the season's cast using voice-profiles.json — no manual copy-paste needed.
+  if (!franchiseContextEarly) {
+    try {
+      const _autoFC = await buildFranchiseContextFromCast(CURRENT.cast);
+      if (_autoFC) {
+        franchiseContextEarly = _autoFC;
+        _csPut(`franchise_context_s${season}`, _autoFC);
+        console.log(`✅ Auto-built franchise context from voice profiles (${_autoFC.length} chars).`);
+      }
+    } catch (e) { console.warn('Auto franchise-context build failed:', e); }
   }
 
   // Sync summary to both textareas so analytics and episode panels stay in sync

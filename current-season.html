@@ -1115,9 +1115,11 @@ Dave voted for Mickey
             <span>🏆 Imm +0.8</span>
             <span>🎁 Rew +0.3</span>
             <span style="color:#a78bfa; margin-left:8px;">🧠 <b>STRATEGIC</b></span>
-            <span>🗿 Adv Played +2.0</span>
+            <span>🗿 Adv Played (effective) +2.0</span>
+            <span>💥 Adv Wasted/misfired −1.5</span>
             <span>💀 Adv Held + Eliminated −3.0 · Survived = 0</span>
             <span>🤝 Allies +0.5 each (cap 4) · Unbreakable/named alliances only — auto-filled from season JSON</span>
+            <span>♟️ Strategic score ×0.15 — derived from schemes, blindsides, correct votes, big moves (auto-filled from season JSON)</span>
             <span style="color:#34d399; margin-left:8px;">💞 <b>SOCIAL</b></span>
             <span></span>
             <span>❤️ Fan Fav +2.0</span>
@@ -7634,9 +7636,11 @@ setTimeout(function() {
       // STRATEGIC
       // Idol found not played: 0 if survived (irrelevant), −3 if eliminated holding it
       const idolWastedPen = p.isFinalist ? 0 : (p.idolsFound * 3.0);
-      const stratBonus = (p.idolsPlayed * 2.0)
-                       - idolWastedPen
-                       + (Math.min(p.alliances, 4) * 0.5);
+      const stratBonus = (p.idolsPlayed * 2.0)          // effective plays
+                       - ((p.advWasted || 0) * 1.5)      // played to no effect / misfired
+                       - idolWastedPen                   // held & eliminated with it
+                       + (Math.min(p.alliances, 4) * 0.5)
+                       + ((p.strategicScore || 0) * 0.15); // overall strategic gameplay (schemes, blindsides, correct votes, big moves)
 
       // SOCIAL — co-winner jury votes ×0.75 (4-4 tie ≠ 4 decisive votes)
       const castAvgVotes = Math.round(p.castSize / 3);
@@ -7683,6 +7687,10 @@ setTimeout(function() {
       const tbody = document.getElementById('ru-placements-body');
       const tr = document.createElement('tr');
       tr.dataset.row = rowCount;
+      // Computed-from-season values that aren't editable table columns — carried on the row
+      // so computeScore() can use them (default 0 for manually added rows).
+      tr.dataset.advWasted = stats.advWasted || 0;
+      tr.dataset.strategicScore = stats.strategicScore || 0;
       tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
       tr.innerHTML =
         '<td style="padding:5px 5px;">' +
@@ -7735,6 +7743,8 @@ setTimeout(function() {
           overrideReason:txt[1] ? txt[1].value.trim() : '',
           fanFav: chks[0]?chks[0].checked:false,
           quit:   chks[1]?chks[1].checked:false,
+          advWasted:      parseFloat(tr.dataset.advWasted)||0,
+          strategicScore: parseFloat(tr.dataset.strategicScore)||0,
         });
       });
       return rows;
@@ -7794,6 +7804,7 @@ setTimeout(function() {
           allPcts, wins:totalWins, nonWinFinals, numSeasons, coWin:isCoWin,
           immWins:row.immWins, rewWins:row.rewWins,
           idolsPlayed:row.idolsPlayed, idolsFound:row.idolsFound,
+          advWasted:row.advWasted, strategicScore:row.strategicScore,
           alliances:row.alliances,
           juryVotes:row.juryVotes, votesAgainst:row.votesAgainst,
           fanFav:row.fanFav, quit:row.quit,
@@ -8090,6 +8101,8 @@ Write ONLY the reasoning text, no labels or quotes.`;
           votesVs:     p.votesAgainst||p.votes_against||p.votesReceived||0,
           idolsPlayed: p.advPlayed ?? 0,
           idolsFound:  p.advHeld ?? 0,
+          advWasted:      p.advWasted ?? 0,
+          strategicScore: p.strategicScore ?? 0,
           imm:         p.immunityWins||p.imm||0,
           rew:         p.rewardWins!=null ? p.rewardWins : (p.rew!=null ? p.rew : Math.max(0, (p.challengeWins||0)-(p.immunityWins||0))),
           alliances:   allianceCount,

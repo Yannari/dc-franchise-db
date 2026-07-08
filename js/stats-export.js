@@ -664,7 +664,7 @@ function _extractPlayerData() {
     const longAlliances = playerAlliances.filter(a => {
       if (!a.formed) return false;
       const endEp = placementInfo.phase === 'Winner' || placementInfo.phase === 'Finalist'
-        ? history.length : (permanentExit[name] || history.length);
+        ? (gs.episodeHistory || []).length : (permanentExit[name] || (gs.episodeHistory || []).length);
       return (endEp - a.formed) >= 5;
     }).length;
 
@@ -676,6 +676,47 @@ function _extractPlayerData() {
     if (hasShowmance) rawSocial += 0.3;
 
     const socialScore = Math.min(3, Math.floor(rawSocial));
+
+    // ── Advantage breakdown: played EFFECTIVELY vs WASTED vs HELD-unused ──────
+    // Effective play = not fake/failed/misplayed, and (for idols) actually negated votes.
+    // Wasted play = an advantage burned to no effect (misfire, negated 0 votes, fake, failed).
+    // Held = advantages found but never played (dead weight if the player was eliminated).
+    const _plays = advantages.plays || [];
+    const _isEffectivePlay = pl => !pl.fake && !pl.failed && !pl.misplay
+      && (pl.type === 'idol' ? (pl.votesNegated || 0) > 0 : true);
+    const advPlayed = _plays.filter(_isEffectivePlay).length;
+    const advWasted = _plays.length - advPlayed;
+    const advHeld = (advantages.held || []).length;
+    const _madeEnd = placementInfo.phase === 'Winner' || placementInfo.phase === 'Finalist';
+
+    // ── Strategic score: a derived measure of strategic GAMEPLAY (independent of
+    // placement). Rewards moves that actually happened; penalizes wasted resources. ──
+    const _hist = gs.episodeHistory || [];
+    let correctVotes = 0;
+    for (const vc of voting.votesCast) {
+      const _vep = _hist.find(h => h.num === vc.ep);
+      const _boot = _vep && (_vep.eliminated || _vep.firstEliminated || _vep.suddenDeathEliminated);
+      if (_boot && vc.target === _boot) correctVotes++;
+    }
+    let bigMoves = gs.playerStates?.[name]?.bigMoves || 0;
+    if (!bigMoves) {
+      for (let i = _hist.length - 1; i >= 0; i--) {
+        const _bm = _hist[i].gsSnapshot?.playerStates?.[name]?.bigMoves;
+        if (_bm != null) { bigMoves = _bm; break; }
+      }
+    }
+    let _strat = 3.0
+      + correctVotes * 0.5
+      + blindside.blindsidesOrchestrated * 2.0
+      + (social.schemesLaunched?.length || 0) * 1.0
+      + advPlayed * 2.5
+      - advWasted * 1.5
+      + (advantages.finds?.length || 0) * 0.5
+      + bigMoves * 1.0
+      + Math.min(playerAlliances.length, 3) * 0.5
+      + challenge.immunityWins * 0.3;
+    if (!_madeEnd) _strat -= advHeld * 1.0; // never cashed in an advantage before going home
+    const strategicScore = Math.max(0, Math.round(_strat * 2) / 2); // 0.5-step scale
 
     playerData[name] = {
       playerSlug: _slug(name),
@@ -706,6 +747,11 @@ function _extractPlayerData() {
 
       // Advantages
       idolsFound,
+      advPlayed,   // played effectively (+ points)
+      advWasted,   // played to no effect / misfired (− points)
+      advHeld,     // found but never used (dead weight if eliminated)
+      correctVotes,
+      strategicScore,
       advantageLifecycle: {
         held: advantages.held,
         plays: advantages.plays,
@@ -1234,12 +1280,14 @@ export function extractSeasonTemplate() {
         immunityWins: pd.immunityWins,
         rewardWins: pd.rewardWins,
         idolsFound: pd.idolsFound,
-        advPlayed: (pd.advantageLifecycle?.plays || []).filter(p => !p.fake && !p.failed).length,
-        advHeld: (pd.advantageLifecycle?.held || []).length,
+        advPlayed: pd.advPlayed ?? 0,   // effective plays (+ in ranking)
+        advWasted: pd.advWasted ?? 0,   // wasted/misfired plays (− in ranking)
+        advHeld: pd.advHeld ?? 0,       // found but never used
         votesReceived: pd.totalVotesReceived,
         alliances: pd.alliances.map(a => a.name),
         rivalries: pd.rivalries.map(r => r.player),
-        socialScore: pd.socialScore ?? 0
+        socialScore: pd.socialScore ?? 0,
+        strategicScore: pd.strategicScore ?? 0
       };
     })
     .sort((a, b) => (a.placement ?? 999) - (b.placement ?? 999));
@@ -2340,20 +2388,24 @@ export async function exportStatisticsPDF(onStatus) {
   wrappedLine(voteLine, 6.5);
   y += 2;
 
-  // Advantages & Idols
+  // Advantages & Idols — found vs played-effectively vs wasted vs held-unused
   sectionTitle('Advantages & Awards');
   const idolHolders = sorted.filter(([, pd]) => pd.idolsFound > 0)
     .map(([n, pd]) => `${n} (${pd.idolsFound})`).join(', ');
-  if (idolHolders) wrappedLine(`Idols Found: ${idolHolders}`, 7);
+  if (idolHolders) wrappedLine(`Idols/Advantages Found: ${idolHolders}`, 7);
 
-  const advPlayers = sorted.filter(([, pd]) => {
-    const plays = pd.advantageLifecycle?.plays?.filter(p => !p.fake && !p.failed) || [];
-    return plays.length > 0;
-  }).map(([n, pd]) => {
-    const plays = pd.advantageLifecycle.plays.filter(p => !p.fake && !p.failed);
-    return `${n} (${plays.length})`;
-  }).join(', ');
-  if (advPlayers) wrappedLine(`Advantages Played: ${advPlayers}`, 7);
+  const advEffective = sorted.filter(([, pd]) => (pd.advPlayed || 0) > 0)
+    .map(([n, pd]) => `${n} (${pd.advPlayed})`).join(', ');
+  if (advEffective) wrappedLine(`Played Effectively: ${advEffective}`, 7);
+
+  const advWastedList = sorted.filter(([, pd]) => (pd.advWasted || 0) > 0)
+    .map(([n, pd]) => `${n} (${pd.advWasted})`).join(', ');
+  if (advWastedList) wrappedLine(`Wasted / Misfired: ${advWastedList}`, 7);
+
+  // Held & never used — only a real waste for players who were eliminated with it
+  const advHeldList = sorted.filter(([, pd]) => (pd.advHeld || 0) > 0 && pd.phase !== 'Winner' && pd.phase !== 'Finalist')
+    .map(([n, pd]) => `${n} (${pd.advHeld})`).join(', ');
+  if (advHeldList) wrappedLine(`Held & Never Used (eliminated with it): ${advHeldList}`, 7);
 
   // Challenge stats
   const chalLeader = sorted
@@ -2363,6 +2415,22 @@ export async function exportStatisticsPDF(onStatus) {
     const best = chalLeader[0];
     wrappedLine(`Best Physical: ${best[0]} (${best[1].immunityWins || 0} Immunities / ${best[1].chalRecord?.wins || 0} Total Wins)`, 7);
   }
+  y += 2;
+
+  // Strategic Rankings (Full) — derived strategic-gameplay score, best to worst
+  sectionTitle('Strategic Rankings');
+  const stratSorted = [...sorted].sort((a, b) => (b[1].strategicScore || 0) - (a[1].strategicScore || 0));
+  stratSorted.forEach(([n, pd], i) => {
+    if (y > 278) { doc.addPage(); header(); }
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(i + 1), M, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(n, M + 14, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text((pd.strategicScore ?? 0).toFixed(1), M + 60, y);
+    y += 3.6;
+  });
   y += 2;
 
   // Season overview stats

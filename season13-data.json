@@ -67,7 +67,9 @@
         "Riya",
         "Hunter"
       ],
-      "socialScore": 2
+      "socialScore": 2,
+      "advWasted": 0,
+      "strategicScore": 40
     },
     {
       "placement": 2,
@@ -105,7 +107,9 @@
         "Ripper",
         "MacArthur"
       ],
-      "socialScore": 2
+      "socialScore": 2,
+      "advWasted": 0,
+      "strategicScore": 28
     },
     {
       "placement": 3,
@@ -143,7 +147,9 @@
         "Riya",
         "MacArthur"
       ],
-      "socialScore": 3
+      "socialScore": 3,
+      "advWasted": 0,
+      "strategicScore": 29.5
     },
     {
       "placement": 4,
@@ -178,7 +184,9 @@
         "Hunter",
         "MacArthur"
       ],
-      "socialScore": 1
+      "socialScore": 1,
+      "advWasted": 0,
+      "strategicScore": 34
     },
     {
       "placement": 5,
@@ -213,7 +221,9 @@
         "Fiore",
         "Riya"
       ],
-      "socialScore": 2
+      "socialScore": 2,
+      "advWasted": 0,
+      "strategicScore": 16
     },
     {
       "placement": 6,
@@ -246,7 +256,9 @@
         "Miriam",
         "Fiore"
       ],
-      "socialScore": 1
+      "socialScore": 1,
+      "advWasted": 0,
+      "strategicScore": 20.5
     },
     {
       "placement": 7,
@@ -282,7 +294,9 @@
         "Caleb",
         "Jake"
       ],
-      "socialScore": 2
+      "socialScore": 2,
+      "advWasted": 0,
+      "strategicScore": 38.5
     },
     {
       "placement": 8,
@@ -316,7 +330,9 @@
         "Julia",
         "Scarlett"
       ],
-      "socialScore": 2
+      "socialScore": 2,
+      "advWasted": 0,
+      "strategicScore": 13.5
     },
     {
       "placement": 9,
@@ -348,7 +364,9 @@
         "Wayne",
         "Riya"
       ],
-      "socialScore": 2
+      "socialScore": 2,
+      "advWasted": 0,
+      "strategicScore": 12.5
     },
     {
       "placement": 10,
@@ -383,7 +401,9 @@
         "Riya",
         "Jake"
       ],
-      "socialScore": 2
+      "socialScore": 2,
+      "advWasted": 0,
+      "strategicScore": 5.5
     },
     {
       "placement": 11,
@@ -412,7 +432,9 @@
         "The Anchor"
       ],
       "rivalries": [],
-      "socialScore": 1
+      "socialScore": 1,
+      "advWasted": 0,
+      "strategicScore": 3.5
     },
     {
       "placement": 12,
@@ -445,7 +467,9 @@
         "Damien",
         "Julia"
       ],
-      "socialScore": 1
+      "socialScore": 1,
+      "advWasted": 0,
+      "strategicScore": 6.5
     },
     {
       "placement": 13,
@@ -474,7 +498,9 @@
         "The Engine"
       ],
       "rivalries": [],
-      "socialScore": 1
+      "socialScore": 1,
+      "advWasted": 0,
+      "strategicScore": 5
     },
     {
       "placement": 14,
@@ -508,7 +534,9 @@
         "Jake",
         "MacArthur"
       ],
-      "socialScore": 0
+      "socialScore": 0,
+      "advWasted": 0,
+      "strategicScore": 7.5
     },
     {
       "placement": 15,
@@ -538,7 +566,9 @@
         "Fiore",
         "Ripper"
       ],
-      "socialScore": 0
+      "socialScore": 0,
+      "advWasted": 0,
+      "strategicScore": 3.5
     },
     {
       "placement": 16,
@@ -565,7 +595,9 @@
       "votesReceived": 6,
       "alliances": [],
       "rivalries": [],
-      "socialScore": 0
+      "socialScore": 0,
+      "advWasted": 0,
+      "strategicScore": 12
     },
     {
       "placement": 17,
@@ -595,7 +627,9 @@
         "The Merge Mob"
       ],
       "rivalries": [],
-      "socialScore": 1
+      "socialScore": 1,
+      "advWasted": 0,
+      "strategicScore": 4
     },
     {
       "placement": 18,
@@ -622,7 +656,9 @@
       "votesReceived": 3,
       "alliances": [],
       "rivalries": [],
-      "socialScore": 0
+      "socialScore": 0,
+      "advWasted": 0,
+      "strategicScore": 3
     },
     {
       "placement": 19,
@@ -651,7 +687,9 @@
       "rivalries": [
         "Alec"
       ],
-      "socialScore": 0
+      "socialScore": 0,
+      "advWasted": 0,
+      "strategicScore": 3.5
     },
     {
       "placement": 20,
@@ -681,7 +719,9 @@
         "Aiden",
         "Ally"
       ],
-      "socialScore": 0
+      "socialScore": 0,
+      "advWasted": 0,
+      "strategicScore": 9.5
     },
     {
       "placement": 21,
@@ -708,7 +748,9 @@
       "votesReceived": 3,
       "alliances": [],
       "rivalries": [],
-      "socialScore": 0
+      "socialScore": 0,
+      "advWasted": 0,
+      "strategicScore": 3
     },
     {
       "placement": 22,
@@ -735,7 +777,9 @@
       "votesReceived": 4,
       "alliances": [],
       "rivalries": [],
-      "socialScore": 0
+      "socialScore": 0,
+      "advWasted": 0,
+      "strategicScore": 3
     }
   ],
   "votingHistory": [

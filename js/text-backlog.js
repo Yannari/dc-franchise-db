@@ -75,7 +75,7 @@ import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles
 import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rpBuildHBResults } from './chal/hangar-black.js';
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard } from './chal/alien-egg.js';
 import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict, rpBuildYetiElimination } from './chal/are-we-there-yeti.js';
-import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish } from './vp-finale.js';
+import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish, rpBuildJuryVotes } from './vp-finale.js';
 // rpBuildAftermath is read off window (not statically imported) — aftermath.js already imports from
 // this module, so a static import here would create a circular dependency.
 
@@ -1535,7 +1535,6 @@ export function _textWhyVote(ep, ln, sec) {
   const _elimSwapTw = (ep.twists||[]).find(t => t.type === 'elimination-swap');
   const _exileDuelTw = (ep.twists||[]).find(t => t.type === 'exile-duel');
   const _fireMakingTw = (ep.twists||[]).find(t => t.type === 'fire-making');
-  const _juryElimTw = (ep.twists||[]).find(t => t.type === 'jury-elimination');
   const _tiebrkTw = (ep.twists||[]).find(t => t.type === 'tiebreaker-challenge');
   if (_elimSwapTw && ep.swapResult) {
     const sr = ep.swapResult;
@@ -1545,7 +1544,7 @@ export function _textWhyVote(ep, ln, sec) {
   }
   if (_exileDuelTw && ep.exilePlayer) { ln(''); ln(`EXILE DUEL — ${ep.exilePlayer} voted out but sent to exile. Next episode: duel whoever gets voted out.`); }
   if (_fireMakingTw && ep.fireMaking) { const fm = ep.fireMaking; ln(''); ln(`SECOND LIFE — ${fm.player} was voted out but gets a second chance. Picks ${fm.opponent}. ${fm.winner} wins. ${fm.loser} eliminated.`); }
-  if (_juryElimTw?.juryBooted) { ln(''); ln(`JURY ELIMINATION — ${_juryElimTw.juryBooted} was eliminated by the jury.`); }
+  // Jury elimination is transcribed in full by _textJuryElimination() (tribal-council slot), not here.
   if (_tiebrkTw && ep.tiebreakerResult) { const tr = ep.tiebreakerResult; ln(''); ln(`CHALLENGE TIEBREAKER — vote tied. ${tr.participants.join(', ')} competed. ${tr.loser} lost. ${tr.winner} survived.`); }
 
   // Tribal blowup (high-boldness exit explosion)
@@ -1723,6 +1722,71 @@ export function _textJuryLife(ep, ln, sec) {
   if (!ep.juryLife?.length) return;
   sec('JURY LIFE');
   ep.juryLife.forEach(j => ln(`- ${j.text || j}`));
+}
+
+// ── JURY ELIMINATION TWIST (mid-game): the eliminated players vote out an active player ──
+// Full retranscription of the VP screens (Jury Convenes + Jury Votes). Vote reasons are pulled
+// straight from the pure rpBuildJuryVotes builder (via its data- attributes), so the text matches
+// the VP narration exactly without re-running rpBuildJuryLife (which mutates bonds).
+export function _textJuryElimination(ep, ln, sec) {
+  const tw = (ep.twists || []).find(t => t.type === 'jury-elimination' && t.juryBooted);
+  if (!tw) return;
+  const jBooted = tw.juryBooted;
+  const jLog = tw.elimLog || [];
+  const jVotes = tw.elimVotes || {};
+  const jurors = [...new Set(jLog.map(e => e.juror))];
+
+  sec('JURY ELIMINATION');
+  ln('The eliminated players convene. Tonight the jury votes to remove one active player from the game — no tribal council.');
+  if (jurors.length) ln(`The Jury: ${jurors.join(', ')}.`);
+  if (ep.immunityWinner) ln(`Immune (cannot be targeted): ${ep.immunityWinner}.`);
+
+  const candidates = Object.keys(jVotes);
+  if (candidates.length) {
+    ln('');
+    ln('Vulnerable:');
+    candidates.forEach(c => {
+      const avg = jurors.length ? jurors.reduce((s, j) => s + getBond(j, c), 0) / jurors.length : 0;
+      const label = avg <= -1 ? 'burned bridges with the jury' : avg <= 1 ? 'mixed relationships with the jury' : 'well-liked by the jury';
+      ln(`- ${c} — ${label}`);
+    });
+  }
+
+  // Exact vote reasons from the VP builder (pure — no side effects)
+  const reasonMap = {};
+  try {
+    const html = rpBuildJuryVotes(ep) || '';
+    const dec = s => s.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').trim();
+    const re = /data-voted="([^"]+)"\s+data-voter="([^"]+)"[\s\S]*?class="tv-vote-reason">([\s\S]*?)<\/div>/g;
+    let m;
+    while ((m = re.exec(html))) reasonMap[dec(m[2]) + '||' + dec(m[1])] = dec(m[3]);
+  } catch (e) { /* VP builder unavailable — fall back to reason-less lines */ }
+
+  if (jLog.length) {
+    ln('');
+    ln('The Jury Votes:');
+    jLog.forEach(({ juror, votedOut }) => {
+      const reason = reasonMap[juror + '||' + votedOut];
+      ln(`${juror} → ${votedOut}${reason ? `: "${reason}"` : ''}`);
+    });
+  }
+
+  const tally = Object.entries(jVotes).sort((a, b) => b[1] - a[1]);
+  if (tally.length) {
+    ln('');
+    ln('Jury Tally:');
+    tally.forEach(([name, count]) => ln(`  ${name}: ${count}`));
+  }
+
+  if (tw.juryTie && (tw.juryTiedPlayers || []).length > 1) {
+    ln('');
+    ln(`Jury deadlock — ${tw.juryTiedPlayers.join(' and ')} tied. After further deliberation, the jury settled on ${jBooted}.`);
+  }
+
+  const place = (ep.gsSnapshot?.activePlayers ?? gs.activePlayers ?? []).length + 1;
+  const ord = n => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+  ln('');
+  ln(`JURY ELIMINATION — ${jBooted} was eliminated by the jury (${ord(place)} place).`);
 }
 
 // ── CAMP OVERVIEW ──
@@ -2850,6 +2914,7 @@ export function generateSummaryText(ep) {
   _textCampPost(ep, ln, sec);
   _textMoleExposed(ep, ln, sec);
   _textTiedDestinies(ep, ln, sec);
+  _textJuryElimination(ep, ln, sec); // mid-game jury-elimination twist replaces the tribal-council block
   _textVotingPlans(ep, ln, sec);
   _textTribalCouncil(ep, ln, sec);
   _textTheVotes(ep, ln, sec);

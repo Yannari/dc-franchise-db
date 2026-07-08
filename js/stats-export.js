@@ -689,33 +689,44 @@ function _extractPlayerData() {
     const advHeld = (advantages.held || []).length;
     const _madeEnd = placementInfo.phase === 'Winner' || placementInfo.phase === 'Finalist';
 
-    // ── Strategic score: a derived measure of strategic GAMEPLAY (independent of
-    // placement). Rewards moves that actually happened; penalizes wasted resources. ──
-    const _hist = gs.episodeHistory || [];
-    let correctVotes = 0;
-    for (const vc of voting.votesCast) {
-      const _vep = _hist.find(h => h.num === vc.ep);
-      const _boot = _vep && (_vep.eliminated || _vep.firstEliminated || _vep.suddenDeathEliminated);
-      if (_boot && vc.target === _boot) correctVotes++;
-    }
-    let bigMoves = gs.playerStates?.[name]?.bigMoves || 0;
-    if (!bigMoves) {
-      for (let i = _hist.length - 1; i >= 0; i--) {
-        const _bm = _hist[i].gsSnapshot?.playerStates?.[name]?.bigMoves;
-        if (_bm != null) { bigMoves = _bm; break; }
+    // ── Strategic-impact "big moves" ──────────────────────────────────────────
+    // The raw gs.playerStates.bigMoves counter is unusable here: it's awarded for ~20
+    // conditions, many of which are pure survival/challenge (survived being the top target,
+    // clutch immunity, survived a rock draw, challenge beast, won fire-making…). Those balloon
+    // with longevity, so a passive winner tops the list. Instead we re-derive only the moves
+    // that reflect the player PERSONALLY driving an outcome: breaking alliance consensus (a
+    // deliberate flip) and betraying a close ally / showmance. (Orchestrated blindsides and
+    // effective advantage plays are scored separately below, so they aren't double-counted.)
+    let impactfulMoves = 0;
+    for (const ep of (gs.episodeHistory || [])) {
+      const log = ep.votingLog || [];
+      if (!log.length) continue;
+      const myVote = log.find(e => e.voter === name);
+      if (!myVote) continue;
+      const boot = ep.eliminated || ep.firstEliminated || ep.suddenDeathEliminated;
+      let impactful = /\bbroke\b/.test(myVote.reason || ''); // flipped on the group
+      if (boot && myVote.voted === boot) {
+        const _bondAtEp = ep.gsSnapshot?.bonds?.[bKey(name, boot)];
+        const _wasShowmance = (gs.showmances || []).some(sm => sm.players?.includes(name) && sm.players?.includes(boot));
+        if ((_bondAtEp != null && _bondAtEp >= 5) || _wasShowmance) impactful = true; // cut a tight ally
       }
+      if (impactful) impactfulMoves++;
     }
-    let _strat = 3.0
-      + correctVotes * 0.5
-      + blindside.blindsidesOrchestrated * 2.0
+
+    // ── Strategic score: a measure of strategic SKILL, deliberately independent of how
+    // long the player lasted or whether they won. Anchored on the player's strategic
+    // ability (the designed stat) plus what they actually DID strategically. ──
+    let _strat =
+        (stats.strategic || 0) * 2.0      // primary anchor: how strong a strategist (0–20)
+      + (stats.intuition || 0) * 0.5      // reading the game (0–5)
+      + (stats.boldness  || 0) * 0.5      // willingness to make moves (0–5)
+      + impactfulMoves * 1.5              // filtered big moves: flips + cutting a tight ally
+      + blindside.blindsidesOrchestrated * 1.5
       + (social.schemesLaunched?.length || 0) * 1.0
-      + advPlayed * 2.5
-      - advWasted * 1.5
-      + (advantages.finds?.length || 0) * 0.5
-      + bigMoves * 1.0
-      + Math.min(playerAlliances.length, 3) * 0.5
-      + challenge.immunityWins * 0.3;
-    if (!_madeEnd) _strat -= advHeld * 1.0; // never cashed in an advantage before going home
+      + advPlayed * 2.0                   // idols/advantages used effectively
+      - advWasted * 1.5                   // burned to no effect
+      + (advantages.finds?.length || 0) * 1.0;
+    if (!_madeEnd) _strat -= advHeld * 1.5; // went home holding an advantage — bad strategy
     const strategicScore = Math.max(0, Math.round(_strat * 2) / 2); // 0.5-step scale
 
     playerData[name] = {
@@ -750,7 +761,6 @@ function _extractPlayerData() {
       advPlayed,   // played effectively (+ points)
       advWasted,   // played to no effect / misfired (− points)
       advHeld,     // found but never used (dead weight if eliminated)
-      correctVotes,
       strategicScore,
       advantageLifecycle: {
         held: advantages.held,

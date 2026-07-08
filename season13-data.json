@@ -69,7 +69,7 @@
       ],
       "socialScore": 2,
       "advWasted": 0,
-      "strategicScore": 40
+      "strategicScore": 24.5
     },
     {
       "placement": 2,
@@ -109,7 +109,7 @@
       ],
       "socialScore": 2,
       "advWasted": 0,
-      "strategicScore": 28
+      "strategicScore": 38.5
     },
     {
       "placement": 3,
@@ -149,7 +149,7 @@
       ],
       "socialScore": 3,
       "advWasted": 0,
-      "strategicScore": 29.5
+      "strategicScore": 28
     },
     {
       "placement": 4,
@@ -186,7 +186,7 @@
       ],
       "socialScore": 1,
       "advWasted": 0,
-      "strategicScore": 34
+      "strategicScore": 40
     },
     {
       "placement": 5,
@@ -223,7 +223,7 @@
       ],
       "socialScore": 2,
       "advWasted": 0,
-      "strategicScore": 16
+      "strategicScore": 23.5
     },
     {
       "placement": 6,
@@ -258,7 +258,7 @@
       ],
       "socialScore": 1,
       "advWasted": 0,
-      "strategicScore": 20.5
+      "strategicScore": 31.5
     },
     {
       "placement": 7,
@@ -296,7 +296,7 @@
       ],
       "socialScore": 2,
       "advWasted": 0,
-      "strategicScore": 38.5
+      "strategicScore": 39
     },
     {
       "placement": 8,
@@ -332,7 +332,7 @@
       ],
       "socialScore": 2,
       "advWasted": 0,
-      "strategicScore": 13.5
+      "strategicScore": 21.5
     },
     {
       "placement": 9,
@@ -366,7 +366,7 @@
       ],
       "socialScore": 2,
       "advWasted": 0,
-      "strategicScore": 12.5
+      "strategicScore": 19.5
     },
     {
       "placement": 10,
@@ -403,7 +403,7 @@
       ],
       "socialScore": 2,
       "advWasted": 0,
-      "strategicScore": 5.5
+      "strategicScore": 20.5
     },
     {
       "placement": 11,
@@ -434,7 +434,7 @@
       "rivalries": [],
       "socialScore": 1,
       "advWasted": 0,
-      "strategicScore": 3.5
+      "strategicScore": 9
     },
     {
       "placement": 12,
@@ -469,7 +469,7 @@
       ],
       "socialScore": 1,
       "advWasted": 0,
-      "strategicScore": 6.5
+      "strategicScore": 11
     },
     {
       "placement": 13,
@@ -500,7 +500,7 @@
       "rivalries": [],
       "socialScore": 1,
       "advWasted": 0,
-      "strategicScore": 5
+      "strategicScore": 17
     },
     {
       "placement": 14,
@@ -536,7 +536,7 @@
       ],
       "socialScore": 0,
       "advWasted": 0,
-      "strategicScore": 7.5
+      "strategicScore": 32
     },
     {
       "placement": 15,
@@ -568,7 +568,7 @@
       ],
       "socialScore": 0,
       "advWasted": 0,
-      "strategicScore": 3.5
+      "strategicScore": 18
     },
     {
       "placement": 16,
@@ -597,7 +597,7 @@
       "rivalries": [],
       "socialScore": 0,
       "advWasted": 0,
-      "strategicScore": 12
+      "strategicScore": 12.5
     },
     {
       "placement": 17,
@@ -629,7 +629,7 @@
       "rivalries": [],
       "socialScore": 1,
       "advWasted": 0,
-      "strategicScore": 4
+      "strategicScore": 9
     },
     {
       "placement": 18,
@@ -658,7 +658,7 @@
       "rivalries": [],
       "socialScore": 0,
       "advWasted": 0,
-      "strategicScore": 3
+      "strategicScore": 13.5
     },
     {
       "placement": 19,
@@ -689,7 +689,7 @@
       ],
       "socialScore": 0,
       "advWasted": 0,
-      "strategicScore": 3.5
+      "strategicScore": 23
     },
     {
       "placement": 20,
@@ -721,7 +721,7 @@
       ],
       "socialScore": 0,
       "advWasted": 0,
-      "strategicScore": 9.5
+      "strategicScore": 28.5
     },
     {
       "placement": 21,
@@ -750,7 +750,7 @@
       "rivalries": [],
       "socialScore": 0,
       "advWasted": 0,
-      "strategicScore": 3
+      "strategicScore": 18
     },
     {
       "placement": 22,
@@ -779,7 +779,7 @@
       "rivalries": [],
       "socialScore": 0,
       "advWasted": 0,
-      "strategicScore": 3
+      "strategicScore": 29
     }
   ],
   "votingHistory": [

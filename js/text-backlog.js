@@ -1959,6 +1959,119 @@ export function buildSeasonArcs(ep) {
   return lines.slice(0, 8);
 }
 
+// ── TRACKED ARCS: reader-facing, status-gated, mortal storyline threads ──
+// Unlike buildSeasonArcs (always-on writer instructions), this returns STRUCTURED arcs and only
+// surfaces a thread when it actually MOVED this episode or is DUE FOR PAYOFF — dormant threads
+// stay silent (anti-repetition). Arcs resolve and retire once paid off. Capped at 3/episode,
+// prioritised payoffs > peaks > builds so no episode is a checklist of every thread.
+// Returns [{ type, players, status:'building'|'peaking'|'resolved', intensity, summary, payoff }].
+export function buildTrackedArcs(ep) {
+  const arcs = [];
+  const hist = (gs.episodeHistory || []).filter(h => h && h.num < ep.num);
+  if (hist.length < 2 && !ep.isFinale) return arcs; // need a little history before threads exist
+  const active = new Set(gs.activePlayers || []);
+  const bKey = (a, b) => [a, b].sort().join('|');
+  const elimThis = new Set([ep.eliminated, ep.firstEliminated, ep.suddenDeathEliminated].filter(Boolean));
+  const votesThis = ep.votes || {};
+  const vlogThis = ep.votingLog || [];
+  const isFinale = !!ep.isFinale;
+  const pr = n => pronouns(n);
+
+  // 1. SURVIVOR / ESCAPE-ARTIST — kept getting votes and kept surviving.
+  const voteCounts = {};
+  hist.forEach(h => { const v = h.votes || {}; Object.keys(v).forEach(n => { if (v[n] > 0 && n !== h.eliminated) voteCounts[n] = (voteCounts[n] || 0) + 1; }); });
+  Object.entries(voteCounts).filter(([, c]) => c >= 2).forEach(([n, c]) => {
+    if (elimThis.has(n)) arcs.push({ type: 'survivor', players: [n], status: 'resolved', intensity: c,
+      summary: `${n} dodged the vote at ${c} tribals — and the tribe finally caught up.`,
+      payoff: `The escape artist's run ended.` });
+    else if (active.has(n) && ((votesThis[n] || 0) > 0 || isFinale)) arcs.push({ type: 'survivor', players: [n], status: isFinale ? 'peaking' : 'building', intensity: c + ((votesThis[n] || 0) > 0 ? 1 : 0),
+      summary: `${n} keeps landing in danger — ${c}${(votesThis[n] || 0) > 0 ? '+' : ''} tribals with votes cast, still standing.` });
+  });
+
+  // 2. CHALLENGE THREAT — repeat immunity winners.
+  const immCounts = {};
+  hist.forEach(h => { if (h.immunityWinner) immCounts[h.immunityWinner] = (immCounts[h.immunityWinner] || 0) + 1; });
+  Object.entries(immCounts).filter(([, c]) => c >= 2).forEach(([n, c]) => {
+    if (elimThis.has(n)) arcs.push({ type: 'challenge', players: [n], status: 'resolved', intensity: c,
+      summary: `${n} won immunity ${c} times — but got cut the moment ${pr(n).sub} couldn't.`,
+      payoff: `The challenge threat is gone.` });
+    else if (active.has(n) && (ep.immunityWinner === n || isFinale)) arcs.push({ type: 'challenge', players: [n], status: 'peaking', intensity: c + (ep.immunityWinner === n ? 1 : 0),
+      summary: `${n} is a proven challenge threat — ${c}${ep.immunityWinner === n ? '+' : ''} immunity wins and rivals can't touch ${pr(n).obj} at tribal.` });
+  });
+
+  // 3. SHOWMANCE — surface only when it MOVES (forms, breaks, or a partner is cut this ep).
+  (gs.showmances || []).forEach(sh => {
+    const [a, b] = sh.players || [];
+    if (!a || !b) return;
+    const partnerCut = elimThis.has(a) || elimThis.has(b);
+    // Retire-once: the "game ended it" beat may only fire on the FIRST time a partner is cut
+    // (a returnee getting re-eliminated must not re-resolve the same thread).
+    const _elimEpOf = nm => { const h = (gs.episodeHistory || []).find(e => e && (e.eliminated === nm || e.firstEliminated === nm || e.suddenDeathEliminated === nm)); return h ? h.num : Infinity; };
+    const _firstCutEp = Math.min(_elimEpOf(a), _elimEpOf(b), elimThis.has(a) || elimThis.has(b) ? ep.num : Infinity);
+    if (sh.broken && sh.breakupEp === ep.num) arcs.push({ type: 'showmance', players: [a, b], status: 'resolved', intensity: sh.episodesActive || 1,
+      summary: `${a} and ${b}'s showmance fell apart${sh.breakupVoter ? ` — ${sh.breakupVoter} pulled the trigger` : ''}.`, payoff: `The relationship didn't survive the game.` });
+    else if (partnerCut && !sh.broken && _firstCutEp === ep.num) arcs.push({ type: 'showmance', players: [a, b], status: 'resolved', intensity: sh.episodesActive || 1,
+      summary: `The ${a}/${b} showmance ended the only way the game allows — one of them went home.`, payoff: `Game beat the relationship.` });
+    else if (!sh.broken && active.has(a) && active.has(b) && (sh.sparkEp === ep.num || sh.formedEp === ep.num)) arcs.push({ type: 'showmance', players: [a, b], status: 'building', intensity: 1,
+      summary: `${a} and ${b} are becoming a thing — and a target.` });
+  });
+
+  // 4. VILLAIN / HERO POLE — conservative: only at payoff (eliminated / finale), never ambient.
+  const pop = gs.popularity || {};
+  const ranked = Object.entries(pop).sort((x, y) => x[1] - y[1]);
+  const villain = ranked[0] && ranked[0][1] <= -4 ? ranked[0][0] : null;
+  const hero = ranked.length && ranked[ranked.length - 1][1] >= 4 ? ranked[ranked.length - 1][0] : null;
+  if (villain) {
+    if (elimThis.has(villain)) arcs.push({ type: 'villain', players: [villain], status: 'resolved', intensity: -pop[villain],
+      summary: `${villain} played the season's heel — and the others finally made ${pr(villain).obj} pay.`, payoff: `Comeuppance.` });
+    else if (isFinale && active.has(villain)) arcs.push({ type: 'villain', players: [villain], status: 'peaking', intensity: -pop[villain],
+      summary: `${villain} is the villain the jury loves to hate — and ${pr(villain).sub} made the end anyway.` });
+  }
+  if (hero && isFinale && active.has(hero)) arcs.push({ type: 'hero', players: [hero], status: 'peaking', intensity: pop[hero],
+    summary: `${hero} became the season's fan favorite and rode that goodwill to the finale.` });
+
+  // 5. FEUD — surface only when the pair CLASH this episode (one votes the other, or one is cut).
+  const feuds = [];
+  active.forEach(a => active.forEach(b => { if (a >= b) return; const v = gs.bonds?.[bKey(a, b)] || 0; if (v <= -4) feuds.push({ a, b, v }); }));
+  feuds.sort((x, y) => x.v - y.v);
+  feuds.slice(0, 2).forEach(f => {
+    const clashed = vlogThis.some(l => (l.voter === f.a && l.voted === f.b) || (l.voter === f.b && l.voted === f.a));
+    const oneCut = elimThis.has(f.a) || elimThis.has(f.b);
+    if (oneCut) arcs.push({ type: 'feud', players: [f.a, f.b], status: 'resolved', intensity: -f.v,
+      summary: `The ${f.a}–${f.b} feud settled the hard way: ${elimThis.has(f.a) ? f.b : f.a} outlasted ${elimThis.has(f.a) ? f.a : f.b}.`, payoff: `One rival sent the other home (or watched them fall).` });
+    else if (clashed) arcs.push({ type: 'feud', players: [f.a, f.b], status: 'peaking', intensity: -f.v,
+      summary: `${f.a} and ${f.b} went at each other again at tribal — the season's nastiest feud isn't cooling.` });
+  });
+
+  // 6. KINGMAKER — steered multiple votes; surface when they steer THIS ep or get dethroned.
+  const ctrl = {};
+  hist.forEach(h => { (h.alliances || []).forEach(al => { if (al.target && al.target === h.eliminated && al.members?.length) { const lead = al.spearhead || al.members[0]; if (lead) ctrl[lead] = (ctrl[lead] || 0) + 1; } }); });
+  Object.entries(ctrl).filter(([, c]) => c >= 2).forEach(([n, c]) => {
+    const steeredThis = (ep.alliances || []).some(al => al.target && elimThis.has(al.target) && (al.spearhead === n || al.members?.[0] === n));
+    if (elimThis.has(n)) arcs.push({ type: 'kingmaker', players: [n], status: 'resolved', intensity: c,
+      summary: `${n} quietly ran ${c}+ votes — until the tribe woke up and dethroned the kingmaker.`, payoff: `The puppetmaster got cut.` });
+    else if (active.has(n) && (steeredThis || isFinale)) arcs.push({ type: 'kingmaker', players: [n], status: 'peaking', intensity: c,
+      summary: `${n} has steered ${c}${steeredThis ? '+' : ''} votes now — a kingmaker hiding in plain sight.` });
+  });
+
+  // Prioritise payoffs, then peaks, then builds; cap at 3 so no episode is a full checklist.
+  const rank = { resolved: 0, peaking: 1, building: 2 };
+  arcs.sort((a, b) => (rank[a.status] - rank[b.status]) || (b.intensity - a.intensity));
+  return arcs.slice(0, 3);
+}
+
+// Emits the tracked threads into the episode summary. This is (a) human-readable in the
+// aftermath and (b) the story spine the worker's beat sheet builds from — see generateBeatSheet
+// in worker-episode-live.js, which advances BUILDING/PEAKING threads and pays off PAID OFF ones.
+// Status-gated + capped in buildTrackedArcs, so it can't spam the same thread every episode.
+export function _textSeasonThreads(ep, ln, sec) {
+  const tracked = buildTrackedArcs(ep);
+  if (!tracked.length) return;
+  sec('SEASON THREADS');
+  ln('The season\'s ongoing storylines and where each stands this episode:');
+  tracked.forEach(t => ln(`- [${t.status.toUpperCase()}] ${t.summary}${t.status === 'resolved' && t.payoff ? ` (${t.payoff})` : ''}`));
+}
+
 // ── FINALE: THE LAST MORNING ──
 export function _textLastMorning(ep, ln, sec) {
   if (!ep.isFinale) return;
@@ -2924,6 +3037,7 @@ export function generateSummaryText(ep) {
   _textVolunteerDuel(ep, ln, sec);
   _textSchoolyardPick(ep, ln, sec);
   _textAftermath(ep, ln, sec);
+  _textSeasonThreads(ep, ln, sec); // tracked story threads — worker beat-sheet spine + reader recap
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
   _textJuryLife(ep, ln, sec);

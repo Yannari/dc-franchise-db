@@ -806,7 +806,7 @@ CRITICAL RULES:
 ✍️ YOU ARE A WRITER, NOT A TRANSCRIBER — WHAT YOU MAY INVENT (THIS IS HOW YOU AVOID BORING, REPETITIVE EPISODES):
 The summary gives you the SKELETON (the facts). Your job is to add the MUSCLE AND SKIN — the storytelling that makes it feel like a real Total Drama / Disventure Camp episode instead of a list of events read aloud. Boring episodes happen when you only narrate the summary line-by-line. DON'T DO THAT. You are ENCOURAGED to invent:
   • CHARACTER TEXTURE: specific personality quirks, verbal tics, habits, fears, backstory flavor, the way a character eats/moves/reacts. Make them feel like PEOPLE.
-  • CALLBACKS & RUNNING GAGS: reference earlier episodes (use the SEASON ARCS / previous-episode context). A joke that pays off 3 episodes later. A grudge that keeps resurfacing. An inside joke between two players.
+  • CALLBACKS & RUNNING GAGS: reference earlier episodes (use the SEASON THREADS / previous-episode context). A joke that pays off 3 episodes later. A grudge that keeps resurfacing. An inside joke between two players.
   • B-PLOTS & CONNECTIVE TISSUE: small side-stories that don't touch the game — a cooking disaster, a prank war, an unlikely friendship forming, someone slowly cracking under pressure. These run UNDERNEATH the game plot and give the episode life.
   • ESCALATION: take a feud/romance/alliance-tension the facts establish and DRAMATIZE its momentum — show it getting worse/closer/more fragile than last episode, building toward something.
   • SCENE INVENTION: new conversations, new locations, new comedic beats — as long as they don't contradict a fact.
@@ -1874,6 +1874,11 @@ async function generateBeatSheet(summaryText, seasonSetting, env) {
 LOCKED FACTS (the writer may NOT change these): tribes/teams and who is on each; who won immunity/reward; who was voted out and the vote count; EVERY twist that fired (tribe swap, journey, mutiny, idol found/played, exile, Rescue Island arrival/return, abduction, double/multi tribal, etc.) and its outcome; advantages held or played; whether there is an elimination at all. Be exact and terse — names and numbers, one item per line.
 
 STORY BEATS (what the episode is actually ABOUT): the memorable moments only, in chronological order, ONE line each. Collapse mechanical detail HARD — a 40-event challenge becomes 4-6 beats ("Jake keeps falling in", "Caleb rescues Julia", "MacArthur knocks Fiore into the water", "Civilians barely lose"). Keep the camp/social moments that carry CHARACTER (a bond forming, a rivalry flaring, a scheme, a meltdown, a grudge resurfacing). CUT anything a viewer would not remember: every individual score, every minor stat, every repeated micro-action. The challenge should be ~6 beats, never 60.
+
+SEASON THREADS are the SPINE — use them, do not restate them. If the summary has a "SEASON THREADS:" section, it lists the season's ongoing storylines with a status tag. Build the STORY BEATS to serve these threads:
+- [BUILDING] / [PEAKING] — give this thread at least one concrete beat that ADVANCES it this episode (a new development, not a recap). Do not resolve it.
+- [PAID OFF] — this thread RESOLVES this episode; make its payoff a clear emotional beat (the escape artist finally caught, the villain's comeuppance, the kingmaker dethroned, the showmance's end).
+Weave threads INTO the episode's real events — never add a beat that contradicts LOCKED FACTS. Only work the threads listed; do NOT invent new season-long arcs or force a thread that isn't there. If there is no SEASON THREADS section, just write the beats normally.
 
 Under ~500 words total. This is an OUTLINE, not prose — no dialogue, no scene writing. Preserve the twist names and the challenge name so the writer can dramatize them.`;
   const user = `SEASON SETTING: ${seasonSetting || '(none)'}\n\nRAW EPISODE SUMMARY:\n${summaryText}`;

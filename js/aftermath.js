@@ -2,7 +2,7 @@
 import { gs, seasonConfig, players } from './core.js';
 import { pStats, pronouns } from './players.js';
 import { getBond, addBond } from './bonds.js';
-import { buildNextEpQs } from './text-backlog.js';
+import { buildNextEpQs, buildTrackedArcs } from './text-backlog.js';
 import { simulateAftermayhem } from './chal/aftermayhem.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
@@ -2173,6 +2173,36 @@ export function rpBuildAftermath(ep) {
       </div>`;
     });
     html += `</div>`;
+  }
+
+  // ── Section 2.5: Season Threads (multi-episode storyline arcs, status-tagged) ──
+  // Distinct from "Threads to Watch" (single-episode, forward-looking): these are the season's
+  // ongoing arcs — building, peaking, or paying off. Status-gated + capped in buildTrackedArcs,
+  // so this only shows threads that actually moved this episode (no repetition).
+  let _seasonArcs = [];
+  try { _seasonArcs = buildTrackedArcs(ep) || []; } catch (_) {}
+  if (_seasonArcs.length) {
+    const _arcStyle = {
+      resolved: { color: '#3fb950', pill: 'PAID OFF' },
+      peaking:  { color: '#f0883e', pill: 'PEAKING' },
+      building: { color: '#58a6ff', pill: 'BUILDING' },
+    };
+    const _arcIcon = { survivor: '↻', challenge: '★', showmance: '♥', villain: '☹', hero: '☺', feud: '⚔', kingmaker: '♛' };
+    html += `<div style="margin-bottom:28px">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#484f58;margin-bottom:14px">SEASON THREADS</div>
+      ${_seasonArcs.map(a => {
+        const s = _arcStyle[a.status] || _arcStyle.building;
+        const _portraits = (a.players || []).slice(0, 2).map(p => window.rpPortrait ? window.rpPortrait(p, 'sm') : '').join('');
+        return `<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;padding:10px 12px;background:#161b22;border-left:3px solid ${s.color};border-radius:0 6px 6px 0">
+          <span style="font-size:16px;color:${s.color};line-height:1.3">${_arcIcon[a.type] || '◆'}</span>
+          ${_portraits}
+          <div style="flex:1">
+            <span style="display:inline-block;font-size:8px;font-weight:800;letter-spacing:1px;color:${s.color};background:${s.color}22;padding:2px 6px;border-radius:3px;margin-bottom:4px">${s.pill}</span>
+            <div style="font-size:12px;color:#cdd9e5;line-height:1.5">${a.summary}${a.status === 'resolved' && a.payoff ? ` <span style="color:${s.color};font-weight:600">${a.payoff}</span>` : ''}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
   }
 
   // ── Section 3: Threads to Watch ──

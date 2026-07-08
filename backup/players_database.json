@@ -1,7 +1,7 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 12,
+    "totalSeasons": 13,
     "totalPlayers": 134,
     "description": "Total Drama franchise player statistics and performance data"
   },
@@ -620,9 +620,10 @@
       "name": "Bridgette",
       "seasons": [
         2,
-        1
+        1,
+        13
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 3,
       "wins": 0,
       "totalChallengeWins": 5,
@@ -674,6 +675,23 @@
             "Survived to the Final 3, only to be cut by Alejandro as a jury threat.",
             "Left the game with 5 total challenge wins — the most dominant physical run of the season."
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Bridgette somehow turned 'permanent target' into a deep run. She was hammered with votes all season (20 total against), but kept answering with performance—4 immunity wins and 5 total challenge wins forced the tribe to keep her around even when they didn’t want to.  She also found an idol and stayed fearless about holding it for the right moment. The Safety Without Power twist (Ep 22) became her lifeline—she used it to dodge a vote that was finally ready to land. The endgame was built around unbreakable ties with Trent and Alejandro. She finally fell just one step from the endgame, leaving as a battle-tested juror and the season’s toughest out (Result: eliminated; 3rd).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nReturning for Season 2 on Killer Grips, Bridgette tried to steady the tribe’s mood after the premiere, but the first vote snapped into a tight numbers battle driven by Heather’s push and early fear of \"big\" names. With no one willing to take a risk on a major target yet, Bridgette became the consensus compromise and was cut immediately (Result: Bridgette eliminated, 4–3).",
@@ -1365,9 +1383,10 @@
       "id": "dawn",
       "name": "Dawn",
       "seasons": [
-        3
+        3,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 8,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -1396,6 +1415,23 @@
             "Became a consensus target when ALL factions agreed she was the cleanest cut at F8.",
             "Eliminated 5-3 — even Jo voted against her, making it one of the most unified tribals of the season."
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "On Revenge of the Island (Season 3), Dawn came in on the Toxic Rats with a reputation for reading people—soft-spoken, observant, and socially disarming. As alliances hardened, that perception started to look like danger: if Dawn can see through you, they can expose you. When the majority needed a clean, consensus boot, Dawn became the pick in Episode 9 (Result: voted out 5–3 vote; 8th, 3rd juror).",
@@ -1845,9 +1881,10 @@
       "id": "eva",
       "name": "Eva",
       "seasons": [
-        1
+        1,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 21,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -1874,6 +1911,23 @@
             "Multiple mild-to-medium conflicts across the Killer Bass tribe.",
             "Eliminated 6-4 in Episode 4 when alliances converged on the 'chaos player' boot."
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Introduced on Killer Bass (Season 1), Eva arrived as pure volatility—strength, pride, and a fuse that never looked long. She fought her way through the opening stretch, but the tribe eventually chose stability: a 6–4 vote that removed the person most likely to explode the plan the moment it formed. In a season obsessed with numbers, she was the one player who could make numbers meaningless—and that’s why they took the shot (Result: eliminated; 21st).",
@@ -2599,7 +2653,7 @@
       ],
       "story": "On Blood vs. Water (Season 6), Jacques turned the Ice Dancers pairing with Josee into a masterclass in controlled threat management. While louder duos burned trust and idols, he stayed ‘useful’—competent in challenges, calm in camp, and quietly steering the merge vote map by weaponizing other people’s feuds. He survived the season’s chaos points (tribe re-draw, Redemption returns, rock-draw fallout) and arrived at the end with the cleanest résumé left. In the finale, the jury didn’t debate—they crowned him in a 7–1–0 landslide. (Result: Season 6 champion, 1st.)\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nJacques’ Fan vs Favorites story was domination… until the pressure snapped him. He stacked wins early and often (season-best 6 total challenge wins, including 5 immunities), while locking an unbreakable strategic duo with Taylor that shaped the merge vote map. Even when he wasn’t beloved, he was unavoidable: he kept collecting allies through the numbers game and used immunity streaks to force everyone else to cannibalize instead. But the deeper the game went, the more personal it became, especially his escalating feud with Carrie that eventually hit extreme hatred. At Final 4, a meltdown wiped out the last stretch of his endgame, and he quit the game outright—turning what looked like a potential winner run into the season’s most dramatic collapse.\n\nSEASON 12 — Total Drama: Generations\n────────\nJacques plays one of the most aggressive strategic games on the island, whether or not the official board ever knows where to put him. He dominates early challenges, builds and betrays blocs, steals credit from James, and turns advantages into public theater. His Knowledge is Power play against Ellie becomes the biggest advantage swing of the season, and his idol play later wipes out four votes, resetting the endgame around him. Yet Jacques is also the architect of his own isolation: he alienates Rosa-Maria, Riya, Ellie, James, and nearly every late-game path. By the finale, he is still dangerous enough that the jungle itself becomes his last opponent. He returns empty-handed at final four in the aired story, but the season’s official ledger preserves him as something stranger — the most robbed, most strategic unresolved figure of Generations.",
       "seasonsPlayed": 2,
-      "avgPlacement": 3.0
+      "avgPlacement": 3
     },
     {
       "id": "jasmine",
@@ -3147,9 +3201,10 @@
       "id": "kelly",
       "name": "Kelly",
       "seasons": [
-        6
+        6,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 4,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -3193,6 +3248,23 @@
             "Brody",
             "Mickey"
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "On Blood vs. Water (Season 6), Kelly played the ‘tough mom’ half of her duo with Blaineley—steady, protective, and far more strategic than people wanted to admit. Her idol timing helped shape the midgame (including the Episode 7 swing that took out Mary), and she navigated all the way to the Final 4. There, the season’s chaos returned one last time: a 2–2 tie, a 1–1 revote, and then fire-making—where she fell just short of the finale. (Result: Final 4 fire-making loss; 4th.)",
@@ -4415,9 +4487,10 @@
       "id": "scarlett",
       "name": "Scarlett",
       "seasons": [
-        5
+        5,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 4,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -4446,6 +4519,23 @@
             "Rebuilt as a free agent after the swap reset power dynamics.",
             "Reached Final 4 and lost fire-making — the closest she got to a finals seat."
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Top strategic rank of Season 5 and a late power player, but lost the Final 4 fire-making duel.",
@@ -5173,9 +5263,10 @@
       "name": "Trent",
       "seasons": [
         2,
-        1
+        1,
+        13
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 6,
       "wins": 0,
       "totalChallengeWins": 4,
@@ -5232,6 +5323,23 @@
             "Extreme hatred with Heather defined several key tribal dynamics.",
             "Eliminated at Final 6 when Alejandro's idol play on Beth redirected all votes onto him."
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Trent played a steady, alliance-first game—until it turned personal. His partnership network kept him insulated early, but the season’s defining tension was his escalating war with Heather—openly toxic and impossible to hide. He still stacked 2 immunity wins and 3 total challenge wins, looking like a real finals threat, before the game hit a sudden double-elimination. In that snap Tribal, he was clipped 5–2, proving that even solid positioning can vanish in one twist (Result: double-elimination; 6th).\n\nTrent returned on the Screaming Gaffers with relationships everywhere, but also friction brewing — especially with Duncan. As the midgame tightened, his social reach stopped looking harmless and started looking dangerous. He was voted out when the numbers finally converged (Trent voted out, 5–2), setting up the season’s ruthless double-boot stretch.",
@@ -5770,9 +5878,10 @@
       "name": "MacArthur",
       "seasons": [
         7,
-        8
+        8,
+        13
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 1,
       "wins": 1,
       "totalChallengeWins": 7,
@@ -5857,6 +5966,23 @@
           "rivalries": [
             "Cameron"
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Idol-holding enforcer who bridged factions across swaps and merge. Weathered public fights, steered multiple votes, and arrived at FTC with broad respect.\n\nSEASON 7 — Fan vs Favorites\n────────\nMacArthur hit Fan vs Favorites like a wrecking ball with a safety net: she locked down the Mauhu Hidden Immunity Idol early and instantly became the player everyone had to negotiate with. After the tribe swap, she fused into Carrie and Cody’s core (Lawa Alliance #3), giving her a second power lane while still keeping her old Mauhu connections alive. At the merge, she took fire from multiple directions (Episode 8’s multi-target vote) but survived the chaos as Jasmine became the first juror instead. Her game turned into a tug-of-war with Sky and later a loud endgame presence, yet she kept landing on the right side of the vote when it mattered most. By Finale night, she played the ‘final-round armor’ perfectly, then closed with a decisive 6–2–1 jury win that rewarded her mix of challenge credibility, alliance reach, and pure intimidation.\n\n────────\n\nSEASON 8 — Heroes VS Villains VS Civilians\n────────\n\nSEASON 8 — Heroes VS Villains VS Civilians\nCame in as reigning champ, forged a powerful S7 bond with Sanders, and was saved by an idol before being toppled on a late revote led by Jen and Alejandro.",
@@ -6168,9 +6294,10 @@
       "id": "gerry",
       "name": "Gerry",
       "seasons": [
-        8
+        8,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 4,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -6216,6 +6343,23 @@
             "Heather",
             "Alejandro"
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "A 70-year-old tennis legend who arrived as the tribe's biggest liability and left as its most dangerous weapon. Pre-merge, he turned a petty stepbrother feud with Chet into a calculated blood war — surviving two ties and a revote through sheer force of personality while Jen and Sanders used him as a battering ram. At the merge he found the idol and immediately became untouchable, pairing with Jen in the season's most unbreakable duo and controlling 75% of post-merge votes. But his masterpiece was psychological: episode by episode he dismantled Heather — four-time veteran, Super Idol holder, the franchise's greatest villain — through relentless provocation until she quit mid-game, surrendering the most powerful advantage ever seen without playing it. He didn't find her idol. He didn't outplay her strategically. He broke her. Fell at Final 4 when Sanders' immunity win removed his last shield, but his shadow hung over every vote that followed. (Result: Vote 3-1; 4th)."
@@ -6314,7 +6458,7 @@
         }
       ],
       "story": "The Civilians were supposed to be cannon fodder. Nobody told Jen. From Episode 1 she ran her tribe like a social director — managing the Gerry-Chet blood feud, identifying Sanders as her long-term partner, and positioning herself as the one face every faction trusted. She entered the merge holding three simultaneous Unbreakable Relationships and a Strong Bond with Alejandro, a social portfolio nobody in the franchise had ever assembled at once. She won merge immunity when it mattered most, helped orchestrate the systematic dismantling of every major legend — Owen, Leshawna, MacArthur — and for six consecutive episodes was never seriously targeted. The jury respected her. Her allies loved her. And then Sanders played an idol on the one person Jen had voted to protect, and the revote took everything. She was betrayed by her Unbreakable partner using the exact move Jen had pioneered. Voted for Cameron at FTC anyway. The Black Widow who got caught in her own web.\n\nSEASON 12 — Total Drama: Generations\n────────\nJen plays the game through attention: checking in, noticing details, and making people feel seen. She saves Ezekiel from a crocodile, bonds deeply with Aiden and Lake, and repeatedly becomes the person others trust in the dark. But her loyalty game is complicated by messy votes and alliance expulsions, especially as The Double Edge mutates around her. By the merge, her social capital is both shield and target. She is not the loudest strategist, but she is the kind of finalist jurors reward. That realization seals her fate at Top Dog.",
-      "avgPlacement": 7.0
+      "avgPlacement": 7
     },
     {
       "id": "miles",
@@ -6725,9 +6869,10 @@
       "id": "caleb",
       "name": "Caleb",
       "seasons": [
-        9
+        9,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 15,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -6765,6 +6910,23 @@
             "Millie"
           ],
           "rivalries": []
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "A physical pillar on Red, Caleb never finds the same footing socially. When fear becomes the challenge, paranoia takes the wheel; he and Millie both fire Shot in the Dark, but only Millie hits. Hicks chooses loyalty over horsepower and sends Caleb home 2–1. He’s the pre‑merge reminder that in a game of feelings, muscles only carry you so far."
@@ -6868,9 +7030,10 @@
       "id": "damien",
       "name": "Damien",
       "seasons": [
-        9
+        9,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 4,
       "wins": 0,
       "totalChallengeWins": 5,
@@ -6917,6 +7080,23 @@
             "Ripper",
             "Emmah"
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Damien is the season’s steady heartbeat—calm in storms, a competitor when it counts. He anchors Blue early, then the merge, stacking wins while cultivating Unbreakables with Priya and Bowie that make him the safest smart guy in the room. He finds the Campers idol quietly and uses restraint as a weapon, surviving crossfires and winning sanctuary when everyone else is starving. The late game forces a choice between heart and heat; he backs Millie and still protects Bowie in Idol Armageddon, only to meet him at the rope. Fire decides what politics couldn’t—Damien’s spark comes late, Bowie’s rope snaps first, and the season’s conscience becomes its final heartbreak."
@@ -7102,9 +7282,10 @@
       "id": "julia",
       "name": "Julia",
       "seasons": [
-        9
+        9,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 6,
       "wins": 0,
       "totalChallengeWins": 3,
@@ -7151,6 +7332,23 @@
             "Bowie",
             "Raj"
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "She enters as the Ice Queen and never warms. On Blue she weaponizes disdain into control, then at the three-tribe twist she springs the season’s coldest trap—seducing Raj into pocketing an idol as she votes him out 2–1. At the merge she sides with the outcasts, then endures a public stripping when Bowie robs her idol with Knowledge is Power. Spite becomes fuel; she flips between blocs, helps oust Priya, and still commands attention until the house finally unites. Silenced by Chase’s Vote Stopper and buried 6–0, Julia exits as the villain the story needed—loud, lethal, unforgettable."
@@ -7467,9 +7665,10 @@
       "id": "ripper",
       "name": "Ripper",
       "seasons": [
-        9
+        9,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 11,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -7514,6 +7713,23 @@
             "Nichelle",
             "Chase"
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "From day one he is gasoline—fighting Scary Girl, needling Nichelle, and yet never quite dying. He idols away a unanimous hit, survives a rock draw he created, and watches Bowie flip Chase to save him over Nichelle. Post‑swap he rides the New Red majority but stays the chew toy, until the merge finally unites the beach on removing the last physical shield. His nine lives run out only when Emmah doubles her vote. Chaos kept him alive; structure finally kills him."
@@ -7571,9 +7787,10 @@
       "id": "wayne",
       "name": "Wayne",
       "seasons": [
-        9
+        9,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 9,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -7615,6 +7832,23 @@
           "rivalries": [
             "Emmah"
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Half of the season’s beating heart, Wayne loses Raj and then everything that protected him. He starts by winning the summit, stealing Ripper’s vote and an Extra Vote of his own, only to watch Emmah rip that power away at the merge on live TV. He scrapes along on grit and a bond with Julia, but a perfect shield by Millie and an extra ballot of Priya’s erase him in a 5–0 shutout. Unlucky to the end, Wayne is the jury’s folk hero—robbed three times and still smiling."
@@ -7668,9 +7902,10 @@
       "id": "thom",
       "name": "Thom",
       "seasons": [
-        11
+        11,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 2,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -7725,6 +7960,23 @@
           ],
           "advPlayed": 1,
           "advHeld": 0
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Thom starts as the teammate everyone wants, and that becomes both his gift and his curse. He rescues people, protects people, feeds people, and quietly becomes the center of too many hearts at once. His bonds with Jake, Dan, Sterling, Miriam, and Eureka carry him deep, but they also make his decisions heavier than everyone else's. As the merge turns colder, Thom learns to cut names he cares about, but never completely shuts the door on feeling. He wins when he has to, survives repeated target spikes, and takes out Fiore in the final joust. At the volcano, he is ahead, but Miriam reaches the one place his game is vulnerable: the part of him that still cares.",
@@ -7734,9 +7986,10 @@
       "id": "jake",
       "name": "Jake",
       "seasons": [
-        11
+        11,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 7,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -7788,6 +8041,23 @@
           ],
           "advPlayed": 0,
           "advHeld": 0
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Jake is liked immediately, and for a while that is enough to move through the game. His bond with Thom becomes the season's defining showmance, a source of protection, suspicion, and eventually heartbreak. Jake tries to build structures around himself, from The Firewall to temporary merge coalitions, but he often cannot fully commit when votes hit people he cares about. His name becomes synonymous with overplaying, whispered side deals, and emotional reactions that other players learn to exploit. By the end, he is isolated from old allies and too tangled in personal feuds with Miriam, Ellie, and Fiore. His exit is absurd and painful: Chef, not the tribe, ends his story after a survival challenge full of fear, loyalty, and humiliation.",
@@ -7797,9 +8067,10 @@
       "id": "miriam",
       "name": "Miriam",
       "seasons": [
-        11
+        11,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 1,
       "wins": 1,
       "totalChallengeWins": 1,
@@ -7853,6 +8124,23 @@
           ],
           "advPlayed": 1,
           "advHeld": 0
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Miriam arrives with the posture of someone who has already survived worse than Cursed Island. Early on, she is abrasive, guarded, and constantly one bad vote away from disaster, but every time the numbers move against her she finds another route through. Her game sharpens after the merge, where she stops chasing control openly and starts letting other players expose themselves first. The Outwit Club gives her structure, Thom gives her protection, and her own reads give her timing. By the finale, she is exhausted but still calculating, and when Thom reaches the summit ahead of her she does not beat him with strength. She beats him with history, memory, and one perfect plea before throwing the dummy first.",
@@ -8388,9 +8676,10 @@
       "id": "alec",
       "name": "Alec",
       "seasons": [
-        11
+        11,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 4,
       "wins": 0,
       "totalChallengeWins": 1,
@@ -8442,6 +8731,23 @@
           ],
           "advPlayed": 0,
           "advHeld": 0
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Alec enters already mapping alliance structures before most players know where camp is. He builds gadgets, reads conversations he was never part of, and keeps finding ways to make the vote pass through him without looking obvious enough to stop. But every clean move leaves fingerprints, and by the time Grett publicly calls him the strategic center, the target never fully leaves his back. His rivalry with Thom hardens into open hostility, and his relationship with Miriam becomes a chess match played with smiles that never reach the eyes. He survives several spots where he should go home, including a fire-making tiebreaker against Dan. At final four, though, the board is too small, Thom holds firm, and Fiore cuts her losses.",
@@ -8451,9 +8757,10 @@
       "id": "fiore",
       "name": "Fiore",
       "seasons": [
-        11
+        11,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 3,
       "wins": 0,
       "totalChallengeWins": 1,
@@ -8512,6 +8819,23 @@
           ],
           "advPlayed": 2,
           "advHeld": 0
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Fiore enters promising to enjoy watching people leave, and she delivers. She steals credit, plants doubts, forges notes, weaponizes grudges, and somehow keeps crawling back from spots where the numbers should finish her. Her rivalry with Ellie burns across the season, while her shifting partnerships with Alec, Gabby, Seraphine, and Miriam are always temporary and always useful. The Second Life Amulet is her masterpiece of survival, turning a majority against her into Eureka's elimination and taking Gabby with it. But Fiore's game has a cost: by the finale, the jury and players alike know exactly what she is. She fights Thom in the joust, asks the crowd for support, gets silence, and falls smiling like a villain who knows she made the season.",
@@ -8616,7 +8940,7 @@
         }
       ],
       "story": "Ellie finds the season's first idol and immediately becomes a player everyone talks around, not through. Her game is sharp, paranoid, and relentless; she plants notes, steals keys, pushes whisper campaigns, and keeps trying to collapse Fiore's position. Her Super Idol play is one of the season's defining advantage moments, turning a pile of votes into someone else's funeral. But her constant motion exhausts the camp, and the jury math around her becomes impossible to ignore. She keeps surviving by narrow margins until Eureka, Miriam, Thom, and even Alec decide the same thing at once. When she leaves, she does not leave quietly; she names the power structure and makes sure the jury knows who took her out.\n\nSEASON 12 — Total Drama: Generations\n────────\nEllie’s season is defined by control attempts that look quiet until they are not. She finds an idol, builds coalitions, sabotages Yul into jellyfish, and repeatedly tries to define the vote before anyone else realizes there is a vote. Her relationship map becomes scorched earth: Riya, Jacques, Aiden, Karol, and James all find reasons to distrust her. Still, she keeps surviving because she is useful, perceptive, and willing to make the ugly move. At final eight, she reaches for every lever — Vote Steal, stolen vote redirection, Shot in the Dark. None of it saves her, and the player who lived by the margins is finally buried by them.",
-      "avgPlacement": 8.0
+      "avgPlacement": 8
     },
     {
       "id": "nick",
@@ -8854,7 +9178,7 @@
         }
       ],
       "story": "James enters Generations already narrating the game in his head, and for most of the season, the island struggles to keep up with the speed of his calculations. He is rarely comfortable, often exposed, and repeatedly accused of overplaying, but he keeps finding new rooms to enter and new people to use. His first run ends in humiliation when Jacques’s idol play and a fractured Double Edge vote send him out, but the Aftermayhem gives him a second life and he treats it like proof of destiny. From there, James plays sharper: he survives tiebreaker fire against Aiden, watches Jacques fall at final four, then wins the final perch when it matters most. At Final Tribal, he does not ask the jury to like him; he asks them to respect the body of work. Seven jurors do.",
-      "avgPlacement": 1.0
+      "avgPlacement": 1
     },
     {
       "id": "maggy",
@@ -8911,7 +9235,7 @@
         }
       ],
       "story": "Maggy brings sincerity into a game that treats sincerity like a weakness. She bonds quickly with Oliver, Rosa-Maria, James, and Aiden, finding comfort in people before she fully understands their agendas. Her challenge struggles put early heat on her, but her real danger is misplaced trust. The Ride or Die gives her purpose, then collapses around her in one of the ugliest pre-merge votes. Maggy walks into Tribal ready to protect Oliver, only to discover he has already written her name. Her exit is less a blindside than a heartbreak with parchment attached.",
-      "avgPlacement": 17.0
+      "avgPlacement": 17
     },
     {
       "id": "karol",
@@ -8974,7 +9298,7 @@
         }
       ],
       "story": "Karol plays Generations with force: force in challenges, force in arguments, force in every room she enters. She is brilliant in bursts, deadly in competitions, and terrible at hiding contempt. Her rivalry web — James, Rosa-Maria, Lake, Ellie, Yul — turns her into both weapon and target. The pre-merge sees her stack a résumé, find and play an idol, and survive votes that should have ended her. But the merge is unforgiving to players everyone has already discussed. When the open vote arrives, Karol can feel the floor moving; no one listens until her torch is already gone.",
-      "avgPlacement": 11.0
+      "avgPlacement": 11
     },
     {
       "id": "kai",
@@ -9036,15 +9360,16 @@
         }
       ],
       "story": "Kai starts as the observer, the player hanging back while louder people cut each other. He builds strong bonds with Hunter, Chase, Ally, and Riya, but the alliances around him repeatedly implode. His loyalty to Yul and The Iron Four pulls him away from The Camp Takeover, and by the time he sees the truth about Yul, the damage is done. The abduction twist places him on Embers, where he is useful socially but exposed strategically. At Tribal, he trusts Aiden to hold the line against Jacques. Aiden writes Kai instead, and Kai leaves with the kind of betrayal that lingers.",
-      "avgPlacement": 15.0
+      "avgPlacement": 15
     },
     {
       "id": "riya",
       "name": "Riya",
       "seasons": [
-        12
+        12,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 2,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -9102,10 +9427,27 @@
             "Ally",
             "Ellie"
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Riya plays like every campfire is a courtroom and every smile is evidence. From the opening days, she cuts corners, tests loyalty, frames allies, and makes enemies faster than anyone can count them. Her game is explosive but resilient: she survives public blowups, direct hatred from Hunter, Ellie, Ally, Rosa-Maria, and Jacques, and even a failed plan that should have buried her at final seven. When she wins immunity late and claws through the finale, she proves that her survival was never accidental. But Final Tribal is not just about reach — it is about reception. The jury sees her power, but too many also feel the burns she left behind.",
-      "avgPlacement": 2.0
+      "avgPlacement": 2
     },
     {
       "id": "rosa-maria",
@@ -9171,7 +9513,7 @@
         }
       ],
       "story": "Rosa-Maria begins with water runs, impressions, and a secret amulet tucked away from the tribe. She builds real bonds, especially with Oliver and Lake, while also nursing rivalries that become impossible to bury. Her story is one of warmth undercut by grudges: she can comfort a player at sunrise and vote from pure hostility by nightfall. As the merge tightens, people stop seeing her as harmless and start seeing the jury threat hiding in plain sight. She weaponizes advantages at the Ellie vote, then loses Lake and her footing soon after. At final six, her plan splinters, her vote lands on Jacques instead of Riya, and the tiebreaker ends her run.",
-      "avgPlacement": 6.0
+      "avgPlacement": 6
     },
     {
       "id": "connor",
@@ -9228,15 +9570,16 @@
         }
       ],
       "story": "Connor is the person everyone leans on before anyone realizes he has no one leaning back. He enters warm, reliable, and useful, creating easy bonds with Jacques, Aiden, Kai, Ellie, and the tribe’s quieter players. The producer swap puts him on Saplings, where he becomes both comfort and quiet threat. He dodges paintball shots all day and looks far more capable than the target list suggests. Then Tess hits safety with the Shot in the Dark, seven votes vanish, and Ellie’s lone vote becomes a guillotine. Connor leaves on one vote, the purest robbed pre-merge exit of the season.",
-      "avgPlacement": 18.0
+      "avgPlacement": 18
     },
     {
       "id": "aiden",
       "name": "Aiden",
       "seasons": [
-        12
+        12,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 5,
       "wins": 0,
       "totalChallengeWins": 1,
@@ -9290,18 +9633,36 @@
             "Jacques",
             "Yul"
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Aiden arrives reading lies before most players have unpacked, and that instinct carries him deeper than almost anyone expects. He is a workhorse, a social fixer, and a quiet danger who keeps finding the pulse of camp before the vote lands. His bonds with Jen, Lake, Ally, and others give him protection, but they also make his game emotionally expensive. Late in the season, Aiden becomes the hub of The Movement, steals votes, redirects pressure, and survives by making himself necessary. But at final five, his enemies finally align with the fire-making gods against him. He loses the tiebreaker to James, and the jury gains its most dramatic witness.",
-      "avgPlacement": 5.0
+      "avgPlacement": 5
     },
     {
       "id": "hunter",
       "name": "Hunter",
       "seasons": [
-        12
+        12,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 10,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -9354,10 +9715,27 @@
             "Jacques",
             "Yul"
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Hunter starts as a physical presence and an emotional connector, but his game is always tangled in other people’s wars. His early bond with Yul becomes a trap, his hatred with Riya becomes radioactive, and his showmance with Ally becomes a bright red warning light. He has moments of real support — comforting Tess, protecting Ally, rowing hard, keeping people steady. Yet he rarely controls the final direction of the vote. At the merge, the consensus finally lands on him because he has already been named too many times. He exits furious at Riya, but the truth is harsher: everyone knew he could be cut.",
-      "avgPlacement": 10.0
+      "avgPlacement": 10
     },
     {
       "id": "yul",
@@ -9424,7 +9802,7 @@
         }
       ],
       "story": "Yul enters with a plan for everyone and an honest loyalty to almost no one. He builds The Iron Four, tests Hunter with false information, protects Chase in ways that reveal a softer center, and collects a Vote Block that should have made him dangerous. But every move leaves residue. He shoves Tess, shoots Connor, refuses truths, and turns allies into liabilities. The elimination swap gives him a strange second life, but by the double elimination, the coalition against him is too clean. Yul exits as a villain with flashes of brilliance and a trail of burned deals.",
-      "avgPlacement": 12.0
+      "avgPlacement": 12
     },
     {
       "id": "lake",
@@ -9489,7 +9867,7 @@
         }
       ],
       "story": "Lake finds power early with the amulet, but her defining weapon is steadiness. She designs, weaves, covers for people, shares quiet meals, and builds bonds that turn into alliances. Her loyalties to Jen, Rosa-Maria, Aiden, and Ally shape the middle of the game, even when they put her in impossible positions. She repeatedly chooses relationship over pure optimization, and that makes her trusted — and predictable. By final seven, she is woven into too many hearts and too many plans. Jacques strikes preemptively, the vote tangles, and Lake loses the endurance tiebreaker that decides her fate.",
-      "avgPlacement": 7.0
+      "avgPlacement": 7
     },
     {
       "id": "tess",
@@ -9548,15 +9926,16 @@
         }
       ],
       "story": "Tess spends the season seeing more than she says, and that is both gift and curse. She survives early weakness labels, a failed tribe consensus, and one miraculous Shot in the Dark that rewrites the game. Her bonds with Hunter and James give her cover, while her hostilities with Yul and Ally keep her name alive. She is often right about people, but rarely positioned to make the room follow her. In the double elimination, Ellie decides the injury is too much and the numbers slide away. Tess leaves worried less about herself than about Hunter, which says everything about her game.",
-      "avgPlacement": 13.0
+      "avgPlacement": 13
     },
     {
       "id": "ally",
       "name": "Ally",
       "seasons": [
-        12
+        12,
+        13
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 3,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -9609,10 +9988,27 @@
             "Tess",
             "Chase"
           ]
+        },
+        {
+          "season": 13,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Ally begins too loud, too fast, and too visible, but she adapts before the game can fully punish her. She runs the first vote, survives being exposed by Emmah, and gradually becomes a bridge between fractured groups. Her game is marked by social bursts, advantage plays, and surprising challenge strength, from Truth or Shark to Drumheller. Yet her alliances rarely stay stable; The Barricade, The Merge Mob, and The Movement all bend or break under pressure. At final three, Ally is one perch away from controlling the ending. She falls, and James makes the coldest possible read: she cannot be allowed to face the jury.",
-      "avgPlacement": 3.0
+      "avgPlacement": 3
     },
     {
       "id": "oliver",
@@ -9672,7 +10068,7 @@
         }
       ],
       "story": "Oliver begins underestimated, and for a while, that is exactly where he wants to be. He bonds with Maggy, Jacques, Jen, and most powerfully Rosa-Maria, turning quiet loyalty into emotional armor. But he also lies, tests people, and drifts between The Ride or Die and The Double Edge until both worlds become dangerous. His betrayal of Maggy stains him, and his closeness with Rosa-Maria becomes impossible for the tribe to ignore. At the Finders Creepers vote, the target is supposed to be elsewhere, but Oliver becomes the answer to a tribe that cannot afford more losses. He loses the endurance tiebreaker to Rosa-Maria, and the season loses its purest underdog romance.",
-      "avgPlacement": 14.0
+      "avgPlacement": 14
     }
   ]
 }

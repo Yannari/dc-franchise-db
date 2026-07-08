@@ -1,7 +1,7 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 12,
+    "totalSeasons": 13,
     "totalPlayers": 134,
     "description": "Total Drama franchise statistics and season data"
   },
@@ -414,6 +414,42 @@
       "theme": "Generations is a season about unstable power. The early game belongs to tribes that cannot keep their own alliances intact: The Camp Takeover fractures immediately, The Ride or Die collapses in betrayal, and nearly every bloc becomes a temporary shelter rather than a home. The pre-merge is defined by chaos mechanisms — swaps, journeys, Shot in the Dark saves, vote steals, vote blocks, and tiebreakers that turn simple votes into disasters. At the merge, the game becomes openly predatory: Jacques steals Ellie’s idol, Karol is removed in a public vote, Hunter and Jen are cut for their social danger, and James is eliminated only to fight his way back through the Aftermayhem. The endgame is a knife fight among players nobody fully trusts: Riya survives by force, Aiden by perception, Ally by social maneuvering, Jacques by advantage terror, and James by refusing to stay dead. By the finale, the jury rewards not the cleanest game, but the player who best explains the wreckage. James wins because he makes every betrayal sound like architecture.",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s12-cast.png",
+      "emoji": ""
+    },
+    {
+      "seasonNumber": 13,
+      "title": "Total Drama Doom Island",
+      "subtitle": "A season of rescue roads, broken alliances, and one final race where heart outran control.",
+      "castSize": 22,
+      "episodeCount": 20,
+      "jurySize": 0,
+      "winner": {
+        "name": "Wayne",
+        "playerSlug": "wayne",
+        "vote": "",
+        "runnerUp": "Julia",
+        "keyStats": "Wayne wins Season 13 after surviving 8 votes against, one individual immunity, multiple alliance fractures, and a finale decided on the course instead of by jury vote.",
+        "strategy": "Wayne's game is built less on command than gravity: people keep orbiting him because he listens, protects, and makes them feel seen. He loses allies, misfires votes, and gets targeted repeatedly, but his relationships keep opening escape lanes when strategy alone would have failed.",
+        "legacy": "Wayne leaves Doom Island as the rare winner whose biggest weapon is sincerity. In a season dominated by schemers, idols, and revotes, he proves that loyalty can be messy, imperfect, and still strong enough to win."
+      },
+      "awards": {
+        "fanFavorite": {
+          "name": "Wayne",
+          "playerSlug": "wayne"
+        },
+        "bestStrategic": {
+          "name": "Julia",
+          "playerSlug": "julia"
+        },
+        "mostChallengeWins": {
+          "name": "Julia",
+          "playerSlug": "julia",
+          "detail": "4 wins"
+        }
+      },
+      "theme": "Total Drama Doom Island begins as a three-tribe scramble and slowly becomes a referendum on what survives longer: control or connection. The pre-merge is dominated by unstable tribes, Rescue Island pressure, repeated revotes, and advantage chaos, with Julia, Fiore, Aiden, and Alec constantly trying to write the story before someone else can. The merge detonates every old alliance; returnees reshape the numbers, public bonds become liabilities, and the biggest threats fall in a brutal sequence of revotes, twists, and social betrayals. By the end, Julia has the cleaner strategic résumé and the bigger challenge count, but Wayne has the louder coalition of lived relationships. The season's final image is not a jury vote but a race: Julia sprinting with everything she engineered behind her, Wayne stumbling forward with everyone he cared for screaming him home.",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/s13-cast.png",
       "emoji": ""
     }
   ]

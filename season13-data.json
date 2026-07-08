@@ -1,0 +1,1760 @@
+{
+  "seasonNumber": 13,
+  "title": "Total Drama Doom Island",
+  "subtitle": "A season of rescue roads, broken alliances, and one final race where heart outran control.",
+  "castSize": 22,
+  "episodeCount": 20,
+  "jurySize": 0,
+  "winner": {
+    "name": "Wayne",
+    "playerSlug": "wayne",
+    "vote": "",
+    "runnerUp": "Julia",
+    "keyStats": "Wayne wins Season 13 after surviving 8 votes against, one individual immunity, multiple alliance fractures, and a finale decided on the course instead of by jury vote.",
+    "strategy": "Wayne's game is built less on command than gravity: people keep orbiting him because he listens, protects, and makes them feel seen. He loses allies, misfires votes, and gets targeted repeatedly, but his relationships keep opening escape lanes when strategy alone would have failed.",
+    "legacy": "Wayne leaves Doom Island as the rare winner whose biggest weapon is sincerity. In a season dominated by schemers, idols, and revotes, he proves that loyalty can be messy, imperfect, and still strong enough to win."
+  },
+  "finalists": [
+    {
+      "name": "Wayne",
+      "playerSlug": "wayne",
+      "placement": 1,
+      "votes": 0
+    },
+    {
+      "name": "Julia",
+      "playerSlug": "julia",
+      "placement": 2,
+      "votes": 0
+    }
+  ],
+  "placements": [
+    {
+      "placement": 1,
+      "name": "Wayne",
+      "playerSlug": "wayne",
+      "phase": "Winner",
+      "notes": "Wayne turns a season of social debt and moral pressure into a finale win built on loyalty, endurance, and one last burst of competitive nerve.",
+      "strategicRank": 7.4,
+      "story": "Wayne begins as the guy everyone wants near the fire, not the one everyone fears at tribal. He protects Bridgette, bonds with Aiden, and keeps choosing people even when the game punishes him for it. Through the merge, his votes are rarely clean, but his relationships keep saving him when the numbers turn ugly. At the end, with Julia charging behind him, Wayne wins the Rejected Olympic Relay because the people he cared for all season drag him emotionally across the line.",
+      "gameplayStyle": "Loyal heart, late steel",
+      "keyMoments": [
+        "Ep.1 — Sits with Bridgette when she is on the outside, beginning his defining social bond.",
+        "Ep.4 — Wins the Journey and claims the Vote Block, proving he can grab power when forced.",
+        "Ep.12 — Plays an idol for Aiden and blocks Hunter's vote, reshaping the merge vote.",
+        "Ep.16 — Wins Super Hero-ld with the final blow against Mega Pythonicus.",
+        "Ep.20 — Beats Julia in the Rejected Olympic Relay to win the season."
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 3,
+      "advHeld": 0,
+      "votesReceived": 8,
+      "alliances": [
+        "The Nerve Center",
+        "The Merge Mob",
+        "The Coalition",
+        "The Elimination Squad",
+        "The Web",
+        "The Firewall",
+        "The Campfire Crew"
+      ],
+      "rivalries": [
+        "Julia",
+        "Fiore",
+        "Riya",
+        "Hunter"
+      ],
+      "socialScore": 2
+    },
+    {
+      "placement": 2,
+      "name": "Julia",
+      "playerSlug": "julia",
+      "phase": "Finalist",
+      "notes": "Julia plays the most strategically aggressive game of the season, but her control finally meets Wayne's coalition of real relationships.",
+      "strategicRank": 9.8,
+      "story": "Julia arrives with a Beware Advantage, an idol trail, and the confidence of someone who expects chaos to bend around her. She engineers safety through ambassadors, sabotage, immunity wins, and carefully placed information. Her game is relentless: she cuts threats, courts shields, and turns even a volleyball named Wilson into a psychological landmark. But the same sharpness that gets her to the finale leaves too many people bruised, and in the final race, Wayne's bench screams louder than hers.",
+      "gameplayStyle": "Ruthless precision, public fire",
+      "keyMoments": [
+        "Ep.2 — Finds the Villains idol and keeps the secret close.",
+        "Ep.5 — Outlasts everyone in Awake-A-Thon, announcing herself as a physical force.",
+        "Ep.9 — Sabotages the Lava Gulch track to help Heroes win Tropical Takedown.",
+        "Ep.13 — Wins Greece's Pieces with the Icarus tiebreaker.",
+        "Ep.19 — Wins Rapa Phooey immunity, forcing Jake out before the finale."
+      ],
+      "challengeWins": 4,
+      "immunityWins": 4,
+      "rewardWins": 0,
+      "idolsFound": 3,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 3,
+      "alliances": [
+        "The Guard",
+        "The Anchor",
+        "The Elimination Squad"
+      ],
+      "rivalries": [
+        "Wayne",
+        "Aiden",
+        "Ally",
+        "Jake",
+        "Ripper",
+        "MacArthur"
+      ],
+      "socialScore": 2
+    },
+    {
+      "placement": 3,
+      "name": "Jake",
+      "playerSlug": "jake",
+      "phase": "Juror",
+      "notes": "Jake's emotional bonds carry him deep, but his late-game visibility makes him too dangerous to sit beside at the finish.",
+      "strategicRank": 8.1,
+      "story": "Jake spends the early game locked to Thom, then has to learn what he is without that anchor. He finds idols, protects Ally, survives exile, and builds new late-game trust with Wayne. His social game becomes a weapon almost by accident: every conversation leaves someone feeling closer to him. By the final three, that warmth is exactly why the jury removes him, because a finalist Jake could turn memories into votes.",
+      "gameplayStyle": "Open heart, hidden knife",
+      "keyMoments": [
+        "Ep.5 — Finds the Heroes Hidden Immunity Idol and keeps his face unreadable.",
+        "Ep.10 — Plays an idol for Ally, wiping votes and saving his closest ally.",
+        "Ep.17 — Returns from the Edge and forms the Campfire Crew with Wayne.",
+        "Ep.18 — Beats Riya in the Second Life Balancing Act duel.",
+        "Ep.19 — Gives Wayne a basket and key intel before being eliminated by the jury."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 1,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 5,
+      "alliances": [
+        "The Engine",
+        "The Guard",
+        "The Web",
+        "The Campfire Crew"
+      ],
+      "rivalries": [
+        "Aiden",
+        "Julia",
+        "Fiore",
+        "Riya",
+        "MacArthur"
+      ],
+      "socialScore": 3
+    },
+    {
+      "placement": 4,
+      "name": "Riya",
+      "playerSlug": "riya",
+      "phase": "Juror",
+      "notes": "Riya returns from Rescue Island and nearly weaponizes the entire endgame before one duel ends her run.",
+      "strategicRank": 8.7,
+      "story": "Riya is voted out early, but Rescue Island sharpens rather than softens her. When she returns at the merge, she brings a colder, cleaner game: vote steals, false trust, and precision betrayals. She plays between factions and repeatedly escapes positions that should be fatal. Her final mistake is letting Jake get one more life, and the Balancing Act turns her strategic résumé into a jury seat.",
+      "gameplayStyle": "Cold reads, sharper exits",
+      "keyMoments": [
+        "Ep.3 — Voted out on a revote, beginning her Rescue Island rebuild.",
+        "Ep.11 — Wins the Edge return gauntlet and re-enters at the merge.",
+        "Ep.14 — Buys and plays the Vote Steal to redirect Wayne's vote onto Ally.",
+        "Ep.17 — Helps take out Caleb while tied destinies destroy Alec too.",
+        "Ep.18 — Loses the Second Life Balancing Act duel to Jake."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 11,
+      "alliances": [
+        "The Wildcard Pact"
+      ],
+      "rivalries": [
+        "Wayne",
+        "Caleb",
+        "Jake",
+        "Hunter",
+        "MacArthur"
+      ],
+      "socialScore": 1
+    },
+    {
+      "placement": 5,
+      "name": "Caleb",
+      "playerSlug": "caleb",
+      "phase": "Juror",
+      "notes": "Caleb grows from social misfires into a major endgame threat before Tied Destinies turns his popularity into a liability.",
+      "strategicRank": 7.6,
+      "story": "Caleb starts strong in challenges but messy in conversations, often saying too much at the wrong time. Over the season, he becomes a bridge between camps, especially through MacArthur, Jake, and later Riya. His immunity win at That's Off the Chain! proves he can dominate when the spotlight hits him. At final six, everyone understands the same truth: Caleb has too many friends, and that makes him too dangerous to keep.",
+      "gameplayStyle": "Physical charm, loose tongue",
+      "keyMoments": [
+        "Ep.1 — Reaches the Slap Slap Revolution final before losing to MacArthur.",
+        "Ep.5 — Misvotes Trent out, fracturing trust but keeping himself alive.",
+        "Ep.6 — Saves Heroes from the bridge collapse in Frozen Crossing.",
+        "Ep.12 — Wins That's Off the Chain! wire to wire.",
+        "Ep.17 — Voted out under Tied Destinies, dragging Alec out with him."
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 7,
+      "alliances": [
+        "The Guard",
+        "The Coalition",
+        "The Elimination Squad"
+      ],
+      "rivalries": [
+        "Aiden",
+        "Fiore",
+        "Riya"
+      ],
+      "socialScore": 2
+    },
+    {
+      "placement": 6,
+      "name": "Alec",
+      "playerSlug": "alec",
+      "phase": "Juror",
+      "notes": "Alec is the season's exposed chess player, consistently useful until the twist takes him out beside Caleb.",
+      "strategicRank": 8.4,
+      "story": "Alec enters with old grudges and a reputation for calculating faster than the room. He wins Slasher Night, builds short-lived blocs, and survives multiple moments where people openly identify him as the strategist. His biggest problem is that everyone eventually sees the map in his hands. When Caleb becomes the target under Tied Destinies, Alec does not lose by vote count so much as by proximity.",
+      "gameplayStyle": "Measured knives, visible map",
+      "keyMoments": [
+        "Ep.1 — His Anti-Fiore Front collapses immediately, exposing early instability.",
+        "Ep.6 — Gets caught making a fake idol, damaging his credibility.",
+        "Ep.11 — Wins Slasher Night by outsmarting the final showdown.",
+        "Ep.14 — Joins The Firewall after Wayne offers him shelter.",
+        "Ep.17 — Eliminated as collateral when Caleb is voted out."
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 6,
+      "alliances": [
+        "The Guard",
+        "The Wildcard Pact"
+      ],
+      "rivalries": [
+        "Miriam",
+        "Fiore"
+      ],
+      "socialScore": 1
+    },
+    {
+      "placement": 7,
+      "name": "Aiden",
+      "playerSlug": "aiden",
+      "phase": "Juror",
+      "notes": "Aiden plays hard, wins key safety, and inspires loyalty, but his rivalry with Ally and volatility finally catch up.",
+      "strategicRank": 7.9,
+      "story": "Aiden spends the season constantly in motion, building plans before the rest of camp finishes breakfast. He finds and plays idols, survives a major merge scare, and becomes Wayne's central bond. Yet his game carries heat: Ally hates him, Caleb distrusts him, and his outbursts make people question the long-term risk. At final seven, even Wayne's loyalty cannot keep the revote from breaking against him.",
+      "gameplayStyle": "Sharp eyes, fraying fuse",
+      "keyMoments": [
+        "Ep.6 — Finds the Civilians Beware Advantage, activating the idol network.",
+        "Ep.7 — Plays his idol and survives three votes against him.",
+        "Ep.11 — Forms The Coalition with Wayne, MacArthur, and Caleb.",
+        "Ep.14 — Wins Camp Castaways immunity after surviving the flood chaos.",
+        "Ep.15 — Voted out on a revote against Wayne."
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 2,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 9,
+      "alliances": [
+        "The Merge Mob",
+        "The Firewall"
+      ],
+      "rivalries": [
+        "Ally",
+        "Julia",
+        "Scarlett",
+        "Caleb",
+        "Jake"
+      ],
+      "socialScore": 2
+    },
+    {
+      "placement": 8,
+      "name": "Ally",
+      "playerSlug": "ally",
+      "phase": "Juror",
+      "notes": "Ally's social reach makes her central for most of the merge, but old hatred and a stolen vote seal her fall.",
+      "strategicRank": 7.2,
+      "story": "Ally mutinies early, adapts quickly, and keeps finding new rooms to enter. She builds with Aiden, Thom, Jake, and later the Guard, but nearly every bond comes with a counterweight. Her Extra Vote signals ambition, and her name keeps surfacing until the tribe stops treating it as a warning and starts treating it as a plan. Riya's Vote Steal turns the final math against her, and Ally leaves knowing she was one conversation away from safety.",
+      "gameplayStyle": "Social sparks, unstable bridges",
+      "keyMoments": [
+        "Ep.3 — Mutinies from Villains to Civilians, changing the pre-merge map.",
+        "Ep.8 — Wins the Coconut Weight journey and earns an Extra Vote.",
+        "Ep.10 — Jake plays an idol for her, proving her protection network.",
+        "Ep.12 — Uses her Extra Vote against MacArthur.",
+        "Ep.14 — Voted out after Riya steals Wayne's vote and redirects it."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 11,
+      "alliances": [
+        "The Merge Mob",
+        "The Guard"
+      ],
+      "rivalries": [
+        "Aiden",
+        "Julia",
+        "Scarlett"
+      ],
+      "socialScore": 2
+    },
+    {
+      "placement": 9,
+      "name": "Hunter",
+      "playerSlug": "hunter",
+      "phase": "Juror",
+      "notes": "Hunter survives on loyalty and proximity more than dominance, but his bond with Julia becomes impossible to ignore.",
+      "strategicRank": 5.8,
+      "story": "Hunter's game is quiet until it suddenly isn't. He holds a Beware idol, gives up protection for Julia, and becomes the emotional half of a visible pair. People underestimate him because his challenge record is uneven, but his loyalty makes him hard to move and harder to read. Once Julia and Hunter become a named threat, the merge majority cuts him before that story can reach the finale.",
+      "gameplayStyle": "Quiet loyalty, late target",
+      "keyMoments": [
+        "Ep.3 — Finds the Heroes Beware Advantage, gaining a dangerous delayed idol.",
+        "Ep.10 — Plays an idol for Julia, proving the bond publicly.",
+        "Ep.12 — Survives the MacArthur revote when the tribe splits around him.",
+        "Ep.13 — Gets vote-blocked by Wayne and loses his chance to respond.",
+        "Ep.13 — Voted out as the Julia-Hunter pair becomes too visible."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 1,
+      "advPlayed": 1,
+      "advHeld": 0,
+      "votesReceived": 7,
+      "alliances": [
+        "The Elimination Squad"
+      ],
+      "rivalries": [
+        "Wayne",
+        "Riya"
+      ],
+      "socialScore": 2
+    },
+    {
+      "placement": 10,
+      "name": "MacArthur",
+      "playerSlug": "macarthur",
+      "phase": "Juror",
+      "notes": "MacArthur dominates early challenges and builds real bonds, but the merge punishes her as the obvious jury and physical threat.",
+      "strategicRank": 6.4,
+      "story": "MacArthur opens the season like a machine, carrying Heroes through Slap Slap Revolution. She tries to show a social game, and for a while it works through Hunter, Caleb, Ripper, and Wayne. But every fish caught, every challenge performance, and every loyal bond becomes evidence against her. At the merge, the tribe splits over whether to cut Hunter or MacArthur, and the revote finally breaks toward the more visible threat.",
+      "gameplayStyle": "Brute force, guarded loyalty",
+      "keyMoments": [
+        "Ep.1 — Wins the Slap Slap Revolution tournament as the season's first challenge monster.",
+        "Ep.8 — Receives trust from Ripper in The Double Edge bond.",
+        "Ep.9 — Loses captaincy to Wayne, beginning a rivalry of leadership styles.",
+        "Ep.12 — Ties with Hunter before the revote flips against her.",
+        "Ep.12 — Exposes Alec's role in her crashout speech."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 1,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 3,
+      "alliances": [
+        "The Double Edge",
+        "The Coalition"
+      ],
+      "rivalries": [
+        "Julia",
+        "Fiore",
+        "Riya",
+        "Jake"
+      ],
+      "socialScore": 2
+    },
+    {
+      "placement": 11,
+      "name": "Eva",
+      "playerSlug": "eva",
+      "phase": "Juror",
+      "notes": "Eva's quieter second act shows restraint and flashes of growth, but Slasher Night punishes one bad horror-movie instinct.",
+      "strategicRank": 4.6,
+      "story": "Eva begins on exile, misses the first vote, and returns into a tribe that never fully knows where to place her. She has bursts of power, especially in physical challenges, and a complicated bond with Julia. Her game is quieter than her reputation, sometimes by design and sometimes because others forget to include her. At the merge, one wrong turn in Slasher Night sends her out with unfinished fire.",
+      "gameplayStyle": "Contained rage, fading shadow",
+      "keyMoments": [
+        "Ep.1 — Sent to Exile Island before tribal and finds nothing.",
+        "Ep.3 — Wins her Bone Battle round against MacArthur and Ally.",
+        "Ep.10 — Posts a strong skydiving score for Heroes in X-Treme Torture.",
+        "Ep.11 — Gets caught first in Slasher Night with the lowest score.",
+        "Ep.11 — Leaves calling her waves the thing that made the game interesting."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 0,
+      "alliances": [
+        "The Anchor"
+      ],
+      "rivalries": [],
+      "socialScore": 1
+    },
+    {
+      "placement": 12,
+      "name": "Ripper",
+      "playerSlug": "ripper",
+      "phase": "Juror",
+      "notes": "Ripper builds unexpected loyalty and finds power, only to be removed by an ambassador deal he never gets to fight.",
+      "strategicRank": 5.7,
+      "story": "Ripper starts as comic relief with surprising challenge bite, knocking out Julia and surviving brutal physical rounds. He bonds with MacArthur into The Double Edge and even finds the Villains idol. But his game is interrupted before the merge can fully test him. Julia and Aiden agree on his elimination at the ambassador table, making Ripper the season's cruelest procedural casualty.",
+      "gameplayStyle": "Raw force, unlucky loyalty",
+      "keyMoments": [
+        "Ep.1 — Knocks out Julia in Slap Slap Revolution's opening grudge match.",
+        "Ep.6 — Forms The Ride or Die with Jake before the game pulls them apart.",
+        "Ep.8 — Finds the Villains Hidden Immunity Idol.",
+        "Ep.9 — Forms The Double Edge with MacArthur.",
+        "Ep.11 — Eliminated by ambassador agreement without a vote."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 1,
+      "votesReceived": 1,
+      "alliances": [
+        "The Ride or Die",
+        "The Double Edge"
+      ],
+      "rivalries": [
+        "Damien",
+        "Julia"
+      ],
+      "socialScore": 1
+    },
+    {
+      "placement": 13,
+      "name": "Thom",
+      "playerSlug": "thom",
+      "phase": "Juror",
+      "notes": "Thom plays the clean hero game and becomes beloved enough that the tribe decides they cannot let him reach the merge.",
+      "strategicRank": 6.6,
+      "story": "Thom is useful from day one: building shelters, winning fights, and anchoring Jake emotionally. His loyalty is reflexive, and that makes him inspiring to allies and terrifying to opponents. He keeps proving value in challenge after challenge while building bonds with Ally and Jake. By Episode 10, the tribe doesn't vote him out because he failed; they vote him out because he could win clean.",
+      "gameplayStyle": "Pure heart, visible threat",
+      "keyMoments": [
+        "Ep.1 — Beats Kelly in Slap Slap Revolution and strengthens the Heroes surge.",
+        "Ep.3 — Wins his Bone Battle round against Miriam and Aiden.",
+        "Ep.6 — Becomes Civilians' sled puller in Frozen Crossing.",
+        "Ep.8 — Carries Heroes socially through Truth or Shark with repeated confessions.",
+        "Ep.10 — Voted out after being labeled a long-term jury threat."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 1,
+      "alliances": [
+        "The Engine"
+      ],
+      "rivalries": [],
+      "socialScore": 1
+    },
+    {
+      "placement": 14,
+      "name": "Fiore",
+      "playerSlug": "fiore",
+      "phase": "Juror",
+      "notes": "Fiore weaponizes distrust all pre-merge, but once her threat level becomes common knowledge, nobody gives her another runway.",
+      "strategicRank": 8,
+      "story": "Fiore arrives as a known villain and still finds ways to make people listen. She engineers early votes, throws challenge pieces, stores secrets as leverage, and confronts Caleb when he steals her credit. Her game is often brilliant and rarely safe, which means every camp eventually starts treating her like a live grenade. When the Villains lose Tropical Takedown, the tribe finally removes the player they no longer believe they can control.",
+      "gameplayStyle": "Needle smile, open sabotage",
+      "keyMoments": [
+        "Ep.1 — Leads the Anti-Kelly vote that sends Kelly to Rescue Island.",
+        "Ep.4 — Sabotages the dive by flooding Alec's air line.",
+        "Ep.6 — Rescues Julia from icy water, complicating her villain image.",
+        "Ep.8 — Survives a revote against Damien by a single vote.",
+        "Ep.9 — Voted out after the Double Edge and Aiden converge on her."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 8,
+      "alliances": [],
+      "rivalries": [
+        "Damien",
+        "Wayne",
+        "Alec",
+        "Caleb",
+        "Jake",
+        "MacArthur"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 15,
+      "name": "Damien",
+      "playerSlug": "damien",
+      "phase": "Juror",
+      "notes": "Damien's honest underdog game wins sympathy but not enough protection once revotes and lost votes stack against him.",
+      "strategicRank": 5.2,
+      "story": "Damien comes in determined to prove he belongs, but the early game keeps putting him on the wrong side of power. He bonds deeply with Julia, survives humiliation, and repeatedly tries to play straight in a crooked season. His honesty earns respect, especially on Truth or Shark, but it also makes him easy to map and easier to cut. When the Episode 8 revote arrives, Damien has no vote, no shield, and no way to stop the tide.",
+      "gameplayStyle": "Honest grit, bad timing",
+      "keyMoments": [
+        "Ep.1 — Endures the Lederhosen of Shame after Villains lose Slap Slap Revolution.",
+        "Ep.2 — Fails Paper Cuts in Phobia Factor, exposing vulnerability.",
+        "Ep.5 — Benefits from Julia's idol loyalty, deepening their bond.",
+        "Ep.8 — Survives one Truth or Shark stunt and confesses with underdog defiance.",
+        "Ep.8 — Voted out on a revote after losing his vote on the journey."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 6,
+      "alliances": [],
+      "rivalries": [
+        "Fiore",
+        "Ripper"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 16,
+      "name": "Bridgette",
+      "playerSlug": "bridgette",
+      "phase": "Juror",
+      "notes": "Bridgette builds the season's strongest emotional bond with Wayne, and that jury-threat glow gets her cut before merge.",
+      "strategicRank": 6.1,
+      "story": "Bridgette starts angry, last-picked, and underestimated, then quickly becomes one of the most emotionally connected players on the island. Her bond with Wayne becomes both shelter and target. She protects Scarlett when others want her gone, pulls tribes back from spirals, and keeps showing up physically. By Episode 7, too many people can see how many votes she would have at the end, and that is enough to send her out.",
+      "gameplayStyle": "Protective fire, open heart",
+      "keyMoments": [
+        "Ep.1 — Becomes Wayne's first major bond after he sits with her on the outside.",
+        "Ep.2 — Refuses to vote Scarlett and helps send Gerry home on the revote.",
+        "Ep.4 — Makes a clutch ski grab during Backstabbers Ahoy!",
+        "Ep.6 — Survives the Dawn revote with Aiden and Wayne protecting her.",
+        "Ep.7 — Voted out after overplaying and being labeled a jury favorite."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 6,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 0
+    },
+    {
+      "placement": 17,
+      "name": "Dawn",
+      "playerSlug": "dawn",
+      "phase": "Juror",
+      "notes": "Dawn's integrity is real, but her social position erodes after challenge failures and alliance fractures.",
+      "strategicRank": 4.7,
+      "story": "Dawn starts inside The Nerve Center with Wayne, a quiet planner trying to keep the Civilians steady. She contributes at camp and reads people well, but the game repeatedly exposes her as outside the true emotional core. Failing the Maggots fear and later getting blamed in Frozen Crossing puts pressure on her name. At Episode 6 tribal, the revote breaks against Dawn, and she leaves with dignity intact but numbers gone.",
+      "gameplayStyle": "Quiet conscience, brittle footing",
+      "keyMoments": [
+        "Ep.1 — Forms The Nerve Center with Wayne before Scarlett drifts away.",
+        "Ep.2 — Fails Maggots in Phobia Factor, contributing to Civilians' loss.",
+        "Ep.4 — Builds a drying rack that quietly improves camp life.",
+        "Ep.6 — Gets blamed after Frozen Crossing and tangled in Merge Mob fallout.",
+        "Ep.6 — Voted out on a revote against Bridgette."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 3,
+      "alliances": [
+        "The Nerve Center",
+        "The Merge Mob"
+      ],
+      "rivalries": [],
+      "socialScore": 1
+    },
+    {
+      "placement": 18,
+      "name": "Trent",
+      "playerSlug": "trent",
+      "phase": "Juror",
+      "notes": "Trent's kindness and camp work make him liked, but a misvote and fractured trust turn him into the first Heroes casualty.",
+      "strategicRank": 4.9,
+      "story": "Trent comes in trying to be useful instead of distracted, and early on he is exactly that. He chops wood, bonds with Jake and Hunter, and keeps the Heroes camp emotionally breathable. But the tribe never fully becomes his tribe, and Caleb's misfire helps turn a close vote into Trent's exit. His departure lands as heartbreak more than strategy because Trent thought the relationships were sturdier than they were.",
+      "gameplayStyle": "Soft workhorse, fragile trust",
+      "keyMoments": [
+        "Ep.1 — Works before sunrise and wins his slap fight against Scarlett.",
+        "Ep.2 — Faces Earwigs while sharing the fear with Hunter.",
+        "Ep.3 — Clashes with Caleb over camp organization.",
+        "Ep.5 — Becomes target as Fiore, MacArthur, and Ripper line up against him.",
+        "Ep.5 — Voted out when Caleb's wrong-name vote seals the margin."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 3,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 0
+    },
+    {
+      "placement": 19,
+      "name": "Miriam",
+      "playerSlug": "miriam",
+      "phase": "Juror",
+      "notes": "Miriam starts as a protected veteran voice, but old grudges and new power plays swallow her before she can rebuild control.",
+      "strategicRank": 5.3,
+      "story": "Miriam returns with history, especially with Alec and Fiore, and immediately becomes part of the Villains' emotional architecture. She believes Fiore's promise enough to move with her early. But the tribe is unstable, Julia is collecting leverage, and Alec's hostility never fully cools. Episode 4 finally catches her in a Villains vote where the story is moving faster than she can redirect it.",
+      "gameplayStyle": "Old-school grit, fading leverage",
+      "keyMoments": [
+        "Ep.1 — Votes Kelly out while following Fiore's early coalition.",
+        "Ep.2 — Clashes with Alec after Fiore lies about him.",
+        "Ep.3 — Her distrust of Julia grows after catching a test.",
+        "Ep.4 — Breaks down in front of Fiore, showing the emotional cost.",
+        "Ep.4 — Voted out at Villains tribal."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 1,
+      "alliances": [],
+      "rivalries": [
+        "Alec"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 20,
+      "name": "Scarlett",
+      "playerSlug": "scarlett",
+      "phase": "Juror",
+      "notes": "Scarlett schemes hard, frames faster, and exits loudly after warning everyone about Julia's advantage game.",
+      "strategicRank": 7.3,
+      "story": "Scarlett begins with a clean strategic map but burns through trust almost immediately. She exits The Nerve Center, manipulates Bridgette, frames Ally, and keeps trying to turn chaos into ownership. Her problem is visibility: every clever move makes the tribe more certain she is dangerous. When she finally goes, she leaves a warning shot about Julia that echoes long after her torch is gone.",
+      "gameplayStyle": "Cold plans, hot collapse",
+      "keyMoments": [
+        "Ep.1 — Helps form The Nerve Center, then pulls away as relationships sour.",
+        "Ep.2 — Survives a revote against Gerry after being a primary target.",
+        "Ep.3 — Survives another tie when Riya goes instead.",
+        "Ep.4 — Frames Ally after sabotaging the Civilians' boat run.",
+        "Ep.4 — Voted out and publicly flags Julia's advantage history."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 6,
+      "alliances": [],
+      "rivalries": [
+        "Aiden",
+        "Ally"
+      ],
+      "socialScore": 0
+    },
+    {
+      "placement": 21,
+      "name": "Gerry",
+      "playerSlug": "gerry",
+      "phase": "Juror",
+      "notes": "Gerry's quiet comfort becomes complacency, and a revote teaches him the oldest lesson in the game.",
+      "strategicRank": 3.6,
+      "story": "Gerry starts as the understated veteran nobody wants to overreact to. He rallies Civilians at key moments and quietly helps camp, but his game never gains enough active protection. When Scarlett becomes the obvious target, Gerry's name still sits there as the clean counterweight. The revote flips toward him, and his exit becomes the season's first real warning that comfort is not safety.",
+      "gameplayStyle": "Quiet utility, sleepy danger",
+      "keyMoments": [
+        "Ep.1 — Rallies Civilians after the opening challenge and earns early goodwill.",
+        "Ep.2 — Passes his Being a Baby fear as Civilians struggle overall.",
+        "Ep.2 — Becomes the counter-target against Scarlett.",
+        "Ep.2 — Voted out on a 4-1 revote after a 3-3 tie.",
+        "Ep.3 — Begins building iron on Rescue Island with Kelly."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 3,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 0
+    },
+    {
+      "placement": 22,
+      "name": "Kelly",
+      "playerSlug": "kelly",
+      "phase": "Juror",
+      "notes": "Kelly sees the board early but loses the numbers immediately, becoming the first casualty of a scattered Villains tribe.",
+      "strategicRank": 7.6,
+      "story": "Kelly enters smiling like she already knows where every vote will land. She is right about the dangers, but wrong about the loyalty holding her bloc together. Her Anti-Fiore Front collapses so completely that nobody in it votes Fiore. As the first boot, she turns Rescue Island into a training ground and leaves behind a warning about Ally that colors the early jury narrative.",
+      "gameplayStyle": "Early schemer, no army",
+      "keyMoments": [
+        "Ep.1 — Captains Villains in Slap Slap Revolution but loses to Thom.",
+        "Ep.1 — Tries to organize the Anti-Fiore Front.",
+        "Ep.1 — Watches her bloc scatter into Kelly, Ally, and Damien votes.",
+        "Ep.1 — Calls out Ally and exposes the Anti-Fiore Front in her crashout.",
+        "Ep.2 — Trains hard on Rescue Island and bonds with Gerry."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advHeld": 0,
+      "votesReceived": 4,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 0
+    }
+  ],
+  "votingHistory": [
+    {
+      "episode": 1,
+      "eliminated": "Kelly",
+      "eliminatedSlug": "kelly",
+      "votes": [
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Ally",
+          "targetSlug": "ally"
+        },
+        {
+          "voter": "Damien",
+          "voterSlug": "damien",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        },
+        {
+          "voter": "Miriam",
+          "voterSlug": "miriam",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Damien",
+          "targetSlug": "damien"
+        }
+      ]
+    },
+    {
+      "episode": 2,
+      "eliminated": "Gerry",
+      "eliminatedSlug": "gerry",
+      "votes": [
+        {
+          "voter": "Dawn",
+          "voterSlug": "dawn",
+          "target": "Scarlett",
+          "targetSlug": "scarlett"
+        },
+        {
+          "voter": "Gerry",
+          "voterSlug": "gerry",
+          "target": "Scarlett",
+          "targetSlug": "scarlett"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Gerry",
+          "targetSlug": "gerry"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Gerry",
+          "targetSlug": "gerry"
+        },
+        {
+          "voter": "Scarlett",
+          "voterSlug": "scarlett",
+          "target": "Gerry",
+          "targetSlug": "gerry"
+        },
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Scarlett",
+          "targetSlug": "scarlett"
+        },
+        {
+          "voter": "Bridgette",
+          "voterSlug": "bridgette",
+          "target": "Riya",
+          "targetSlug": "riya"
+        }
+      ]
+    },
+    {
+      "episode": 3,
+      "eliminated": "Riya",
+      "eliminatedSlug": "riya",
+      "votes": [
+        {
+          "voter": "Dawn",
+          "voterSlug": "dawn",
+          "target": "Scarlett",
+          "targetSlug": "scarlett"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Scarlett",
+          "targetSlug": "scarlett"
+        },
+        {
+          "voter": "Scarlett",
+          "voterSlug": "scarlett",
+          "target": "Dawn",
+          "targetSlug": "dawn"
+        },
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Bridgette",
+          "voterSlug": "bridgette",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Scarlett",
+          "targetSlug": "scarlett"
+        }
+      ]
+    },
+    {
+      "episode": 4,
+      "eliminated": "Scarlett",
+      "eliminatedSlug": "scarlett",
+      "votes": [
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Damien",
+          "targetSlug": "damien"
+        },
+        {
+          "voter": "Miriam",
+          "voterSlug": "miriam",
+          "target": "Damien",
+          "targetSlug": "damien"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Miriam",
+          "targetSlug": "miriam"
+        },
+        {
+          "voter": "Eva",
+          "voterSlug": "eva",
+          "target": "Damien",
+          "targetSlug": "damien"
+        }
+      ]
+    },
+    {
+      "episode": 5,
+      "eliminated": "Trent",
+      "eliminatedSlug": "trent",
+      "votes": [
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        },
+        {
+          "voter": "Ripper",
+          "voterSlug": "ripper",
+          "target": "Trent",
+          "targetSlug": "trent"
+        },
+        {
+          "voter": "Trent",
+          "voterSlug": "trent",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Trent",
+          "targetSlug": "trent"
+        },
+        {
+          "voter": "Caleb",
+          "voterSlug": "caleb",
+          "target": "Trent",
+          "targetSlug": "trent"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "MacArthur",
+          "targetSlug": "macarthur"
+        }
+      ]
+    },
+    {
+      "episode": 6,
+      "eliminated": "Dawn",
+      "eliminatedSlug": "dawn",
+      "votes": [
+        {
+          "voter": "Dawn",
+          "voterSlug": "dawn",
+          "target": "Bridgette",
+          "targetSlug": "bridgette"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Dawn",
+          "targetSlug": "dawn"
+        },
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Ally",
+          "targetSlug": "ally"
+        },
+        {
+          "voter": "Bridgette",
+          "voterSlug": "bridgette",
+          "target": "Dawn",
+          "targetSlug": "dawn"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Bridgette",
+          "targetSlug": "bridgette"
+        }
+      ]
+    },
+    {
+      "episode": 7,
+      "eliminated": "Bridgette",
+      "eliminatedSlug": "bridgette",
+      "votes": [
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Bridgette",
+          "targetSlug": "bridgette"
+        },
+        {
+          "voter": "Ripper",
+          "voterSlug": "ripper",
+          "target": "Wayne",
+          "targetSlug": "wayne"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        },
+        {
+          "voter": "Caleb",
+          "voterSlug": "caleb",
+          "target": "Bridgette",
+          "targetSlug": "bridgette"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Bridgette",
+          "targetSlug": "bridgette"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Caleb",
+          "targetSlug": "caleb"
+        },
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        },
+        {
+          "voter": "Bridgette",
+          "voterSlug": "bridgette",
+          "target": "Jake",
+          "targetSlug": "jake"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        },
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Bridgette",
+          "targetSlug": "bridgette"
+        }
+      ]
+    },
+    {
+      "episode": 8,
+      "eliminated": "Damien",
+      "eliminatedSlug": "damien",
+      "votes": [
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Caleb",
+          "targetSlug": "caleb"
+        },
+        {
+          "voter": "Ripper",
+          "voterSlug": "ripper",
+          "target": "Damien",
+          "targetSlug": "damien"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Ripper",
+          "targetSlug": "ripper"
+        },
+        {
+          "voter": "Caleb",
+          "voterSlug": "caleb",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Damien",
+          "targetSlug": "damien"
+        }
+      ]
+    },
+    {
+      "episode": 9,
+      "eliminated": "Fiore",
+      "eliminatedSlug": "fiore",
+      "votes": [
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        },
+        {
+          "voter": "Ripper",
+          "voterSlug": "ripper",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        },
+        {
+          "voter": "Fiore",
+          "voterSlug": "fiore",
+          "target": "Caleb",
+          "targetSlug": "caleb"
+        },
+        {
+          "voter": "Caleb",
+          "voterSlug": "caleb",
+          "target": "Wayne",
+          "targetSlug": "wayne"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Fiore",
+          "targetSlug": "fiore"
+        }
+      ]
+    },
+    {
+      "episode": 10,
+      "eliminated": "Thom",
+      "eliminatedSlug": "thom",
+      "votes": [
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Julia",
+          "targetSlug": "julia"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Julia",
+          "targetSlug": "julia"
+        },
+        {
+          "voter": "Hunter",
+          "voterSlug": "hunter",
+          "target": "Ally",
+          "targetSlug": "ally"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Ally",
+          "targetSlug": "ally"
+        },
+        {
+          "voter": "Eva",
+          "voterSlug": "eva",
+          "target": "Ally",
+          "targetSlug": "ally"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Julia",
+          "targetSlug": "julia"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Thom",
+          "targetSlug": "thom"
+        }
+      ]
+    },
+    {
+      "episode": 12,
+      "eliminated": "MacArthur",
+      "eliminatedSlug": "macarthur",
+      "votes": [
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Ally",
+          "targetSlug": "ally"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "MacArthur",
+          "targetSlug": "macarthur"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "MacArthur",
+          "targetSlug": "macarthur"
+        },
+        {
+          "voter": "Caleb",
+          "voterSlug": "caleb",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Hunter",
+          "voterSlug": "hunter",
+          "target": "Ally",
+          "targetSlug": "ally"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        }
+      ]
+    },
+    {
+      "episode": 13,
+      "eliminated": "Hunter",
+      "eliminatedSlug": "hunter",
+      "votes": [
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Wayne",
+          "targetSlug": "wayne"
+        },
+        {
+          "voter": "Caleb",
+          "voterSlug": "caleb",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Hunter",
+          "targetSlug": "hunter"
+        },
+        {
+          "voter": "Hunter",
+          "voterSlug": "hunter",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Alec",
+          "targetSlug": "alec"
+        }
+      ]
+    },
+    {
+      "episode": 14,
+      "eliminated": "Ally",
+      "eliminatedSlug": "ally",
+      "votes": [
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Ally",
+          "targetSlug": "ally"
+        },
+        {
+          "voter": "Ally",
+          "voterSlug": "ally",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Ally",
+          "targetSlug": "ally"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Ally",
+          "targetSlug": "ally"
+        },
+        {
+          "voter": "Caleb",
+          "voterSlug": "caleb",
+          "target": "Alec",
+          "targetSlug": "alec"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Alec",
+          "targetSlug": "alec"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Ally",
+          "targetSlug": "ally"
+        }
+      ]
+    },
+    {
+      "episode": 15,
+      "eliminated": "Aiden",
+      "eliminatedSlug": "aiden",
+      "votes": [
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Alec",
+          "targetSlug": "alec"
+        },
+        {
+          "voter": "Aiden",
+          "voterSlug": "aiden",
+          "target": "Caleb",
+          "targetSlug": "caleb"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Wayne",
+          "targetSlug": "wayne"
+        },
+        {
+          "voter": "Caleb",
+          "voterSlug": "caleb",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Aiden",
+          "targetSlug": "aiden"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Wayne",
+          "targetSlug": "wayne"
+        }
+      ]
+    },
+    {
+      "episode": 16,
+      "eliminated": "Jake",
+      "eliminatedSlug": "jake",
+      "votes": [
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Caleb",
+          "targetSlug": "caleb"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Jake",
+          "targetSlug": "jake"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Jake",
+          "targetSlug": "jake"
+        },
+        {
+          "voter": "Caleb",
+          "voterSlug": "caleb",
+          "target": "Alec",
+          "targetSlug": "alec"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Jake",
+          "targetSlug": "jake"
+        }
+      ]
+    },
+    {
+      "episode": 17,
+      "eliminated": "Caleb",
+      "eliminatedSlug": "caleb",
+      "votes": [
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Caleb",
+          "targetSlug": "caleb"
+        },
+        {
+          "voter": "Alec",
+          "voterSlug": "alec",
+          "target": "Wayne",
+          "targetSlug": "wayne"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Jake",
+          "targetSlug": "jake"
+        },
+        {
+          "voter": "Caleb",
+          "voterSlug": "caleb",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Caleb",
+          "targetSlug": "caleb"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Alec",
+          "targetSlug": "alec"
+        }
+      ]
+    },
+    {
+      "episode": 18,
+      "eliminated": "Riya",
+      "eliminatedSlug": "riya",
+      "votes": [
+        {
+          "voter": "Wayne",
+          "voterSlug": "wayne",
+          "target": "Riya",
+          "targetSlug": "riya"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Wayne",
+          "targetSlug": "wayne"
+        },
+        {
+          "voter": "Riya",
+          "voterSlug": "riya",
+          "target": "Wayne",
+          "targetSlug": "wayne"
+        },
+        {
+          "voter": "Jake",
+          "voterSlug": "jake",
+          "target": "Riya",
+          "targetSlug": "riya"
+        }
+      ]
+    }
+  ],
+  "finalTribalCouncil": {
+    "votes": [],
+    "note": "No jury — winner decided by the final challenge."
+  },
+  "seasonNarrative": "Total Drama Doom Island begins as a three-tribe scramble and slowly becomes a referendum on what survives longer: control or connection. The pre-merge is dominated by unstable tribes, Rescue Island pressure, repeated revotes, and advantage chaos, with Julia, Fiore, Aiden, and Alec constantly trying to write the story before someone else can. The merge detonates every old alliance; returnees reshape the numbers, public bonds become liabilities, and the biggest threats fall in a brutal sequence of revotes, twists, and social betrayals. By the end, Julia has the cleaner strategic résumé and the bigger challenge count, but Wayne has the louder coalition of lived relationships. The season's final image is not a jury vote but a race: Julia sprinting with everything she engineered behind her, Wayne stumbling forward with everyone he cared for screaming him home.",
+  "awards": {
+    "bestStrategic": {
+      "name": "Julia",
+      "playerSlug": "julia",
+      "description": "Julia controlled more levers than anyone: idols, sabotage, ambassador negotiations, late immunities, and repeated vote framing."
+    },
+    "bestSocial": {
+      "name": "Thom",
+      "playerSlug": "thom",
+      "description": "Thom's average bond strength and hero reputation made him the cleanest social player until that exact strength got him cut."
+    },
+    "bestPhysical": {
+      "name": "Julia",
+      "playerSlug": "julia",
+      "description": "Julia stacked four challenge wins and repeatedly turned immunity into agency at the most dangerous points of the game.",
+      "wins": 4
+    },
+    "mostClutch": {
+      "name": "Wayne",
+      "playerSlug": "wayne",
+      "description": "Wayne survived repeated danger spots, protected allies with advantages, and delivered in the finale when there was no vote left to save him."
+    },
+    "mostLoyal": {
+      "name": "Wayne",
+      "playerSlug": "wayne",
+      "description": "Even when his votes got messy, Wayne's defining instinct was protection: Bridgette, Aiden, MacArthur, Jake, and finally his whole bench."
+    },
+    "bestUnderdog": {
+      "name": "Damien",
+      "playerSlug": "damien",
+      "description": "Damien kept surviving with honesty, vulnerability, and grit in a game that constantly punished all three."
+    },
+    "biggestVillain": {
+      "name": "Fiore",
+      "playerSlug": "fiore",
+      "description": "Fiore lied, leveraged secrets, threw challenge pieces, and still made people listen long enough to matter."
+    },
+    "mostChaotic": {
+      "name": "Damien",
+      "playerSlug": "damien",
+      "description": "Between fears, confession moments, lizard screams, revote danger, and brutal timing, Damien's path was emotional whiplash."
+    },
+    "quietestThreat": {
+      "name": "Eva",
+      "playerSlug": "eva",
+      "description": "Eva played far quieter than expected, with enough physical flashes and restrained relationships that her game almost hid in plain sight."
+    },
+    "seasonMVP": {
+      "name": "Wayne",
+      "playerSlug": "wayne",
+      "description": "Wayne is the season's emotional center and final champion, turning social capital into the decisive edge."
+    },
+    "mostTragic": {
+      "name": "Ripper",
+      "playerSlug": "ripper",
+      "description": "Ripper had an idol, a loyal partner, and a real path, then was removed by an ambassador deal without ever casting a defensive vote."
+    },
+    "mostUnlucky": {
+      "name": "Ripper",
+      "playerSlug": "ripper",
+      "description": "No exit was more structurally cruel than Ripper hearing he was gone because two ambassadors agreed on his name."
+    },
+    "ironPerson": {
+      "name": "Julia",
+      "playerSlug": "julia",
+      "description": "Julia's Awake-A-Thon win, late-game immunities, and repeated recovery from public heat made her the season's endurance icon."
+    },
+    "biggestMeltdown": {
+      "name": "Scarlett",
+      "playerSlug": "scarlett",
+      "description": "Scarlett's Episode 4 spiral turned from control to collapse, ending with a loud warning about Julia that nobody could ignore.",
+      "episode": 4
+    },
+    "playerOfSeason": {
+      "gold": {
+        "name": "Wayne",
+        "playerSlug": "wayne",
+        "description": "Winner, fan favorite, social nucleus, and finale performer."
+      },
+      "silver": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "Best strategist and strongest challenge résumé, stopped only by the final relay."
+      }
+    },
+    "heroOfSeason": {
+      "gold": {
+        "name": "Wayne",
+        "playerSlug": "wayne",
+        "description": "Wayne repeatedly chooses protection over convenience and wins with that identity intact."
+      },
+      "silver": {
+        "name": "Thom",
+        "playerSlug": "thom",
+        "description": "Thom's clean game and loyalty to Jake made him the pre-merge's clearest hero figure."
+      }
+    },
+    "villainOfSeason": {
+      "gold": {
+        "name": "Fiore",
+        "playerSlug": "fiore",
+        "description": "Fiore embraces villainy openly and weaponizes every secret she can find."
+      },
+      "silver": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "Julia's villainy is more surgical: sabotage, manipulation, and perfectly timed immunity."
+      }
+    },
+    "compBeast": {
+      "gold": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "Four wins and multiple late-game saves through performance."
+      },
+      "silver": {
+        "name": "MacArthur",
+        "playerSlug": "macarthur",
+        "description": "MacArthur's opening tournament dominance defined the season's first power image."
+      }
+    },
+    "socialQueenKing": {
+      "gold": {
+        "name": "Thom",
+        "playerSlug": "thom",
+        "description": "Thom's bonds were so strong that players feared his endgame before he got there."
+      },
+      "silver": {
+        "name": "Wayne",
+        "playerSlug": "wayne",
+        "description": "Wayne's web of loyalty delivered the season's final push."
+      }
+    },
+    "masterStrategist": {
+      "gold": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "Julia dictated more vote conversations and twist outcomes than any other player."
+      },
+      "silver": {
+        "name": "Alec",
+        "playerSlug": "alec",
+        "description": "Alec's orchestration was strong enough that multiple jurors left naming him as the hidden operator."
+      }
+    },
+    "mostBrutalExit": {
+      "gold": {
+        "name": "Ripper",
+        "playerSlug": "ripper",
+        "description": "Eliminated by ambassador agreement while holding an idol and without a normal vote."
+      },
+      "silver": {
+        "name": "Alec",
+        "playerSlug": "alec",
+        "description": "Taken out as collateral by Tied Destinies despite not being the target."
+      }
+    },
+    "advantageKing": {
+      "gold": {
+        "name": "Wayne",
+        "playerSlug": "wayne",
+        "description": "Wayne won and used major advantages, including the Vote Block and an idol play for Aiden."
+      },
+      "silver": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "Julia found multiple idols and leveraged advantage fear even when she did not play them directly."
+      }
+    },
+    "mostRobbedPlayer": {
+      "gold": {
+        "name": "Alec",
+        "playerSlug": "alec",
+        "description": "Alec had strategic traction deep into the game but was eliminated as collateral, not by a direct majority against him."
+      }
+    },
+    "ftcGame": {
+      "gold": {
+        "name": "Wayne",
+        "playerSlug": "wayne",
+        "description": "With no jury vote, Wayne's final case became physical execution backed by visible social support in the relay."
+      }
+    },
+    "mostRobbedFinalist": {
+      "gold": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "Julia had the superior strategic and physical résumé, but the format rewarded Wayne's final-course performance."
+      }
+    },
+    "messiestFeud": {
+      "players": [
+        "Aiden",
+        "Ally"
+      ],
+      "description": "Their old Vote Steal history curdled into pure hatred, shaping multiple merge votes and finally helping sink Ally."
+    },
+    "biggestBetrayal": {
+      "betrayer": "Julia",
+      "betrayed": "Ripper",
+      "episode": 11,
+      "description": "Julia steered the ambassador meeting toward Ripper, removing him without a vote while he held an idol and trusted his tribe position."
+    },
+    "secondBiggestBetrayal": {
+      "betrayer": "Riya",
+      "betrayed": "Alec",
+      "episode": 13,
+      "description": "Riya used the Wildcard Pact's Hunter plan as cover and wrote Alec, proving the pact was already dead."
+    },
+    "legacyMoment": {
+      "name": "Wayne's Bench Erupts",
+      "episode": 20,
+      "description": "As Wayne crosses the finale course, the allies he protected all season become the sound of his victory."
+    },
+    "fanFavorite": {
+      "name": "Wayne",
+      "playerSlug": "wayne",
+      "description": "Wayne was the season's most popular player with the fans."
+    }
+  },
+  "emoji": "[AI_FILL]"
+}

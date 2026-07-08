@@ -629,7 +629,7 @@
       "totalChallengeWins": 5,
       "totalImmunityWins": 4,
       "totalRewardWins": 1,
-      "totalVotesAgainst": 24,
+      "totalVotesAgainst": 30,
       "totalIdolsFound": 1,
       "seasonDetails": [
         {
@@ -678,27 +678,40 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 16,
+          "status": "Juror",
+          "tribe": "Civilians → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 6.1,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Bridgette builds the season's strongest emotional bond with Wayne, and that jury-threat glow gets her cut before merge."
+          ],
+          "gameplayStyle": "Protective fire, open heart",
+          "keyMoments": [
+            "Ep.1 — Becomes Wayne's first major bond after he sits with her on the outside.",
+            "Ep.2 — Refuses to vote Scarlett and helps send Gerry home on the revote.",
+            "Ep.4 — Makes a clutch ski grab during Backstabbers Ahoy!",
+            "Ep.6 — Survives the Dawn revote with Aiden and Wayne protecting her.",
+            "Ep.7 — Voted out after overplaying and being labeled a jury favorite."
+          ],
+          "alliances": [],
+          "rivalries": []
         }
       ],
-      "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Bridgette somehow turned 'permanent target' into a deep run. She was hammered with votes all season (20 total against), but kept answering with performance—4 immunity wins and 5 total challenge wins forced the tribe to keep her around even when they didn’t want to.  She also found an idol and stayed fearless about holding it for the right moment. The Safety Without Power twist (Ep 22) became her lifeline—she used it to dodge a vote that was finally ready to land. The endgame was built around unbreakable ties with Trent and Alejandro. She finally fell just one step from the endgame, leaving as a battle-tested juror and the season’s toughest out (Result: eliminated; 3rd).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nReturning for Season 2 on Killer Grips, Bridgette tried to steady the tribe’s mood after the premiere, but the first vote snapped into a tight numbers battle driven by Heather’s push and early fear of \"big\" names. With no one willing to take a risk on a major target yet, Bridgette became the consensus compromise and was cut immediately (Result: Bridgette eliminated, 4–3).",
+      "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Bridgette somehow turned 'permanent target' into a deep run. She was hammered with votes all season (20 total against), but kept answering with performance—4 immunity wins and 5 total challenge wins forced the tribe to keep her around even when they didn’t want to.  She also found an idol and stayed fearless about holding it for the right moment. The Safety Without Power twist (Ep 22) became her lifeline—she used it to dodge a vote that was finally ready to land. The endgame was built around unbreakable ties with Trent and Alejandro. She finally fell just one step from the endgame, leaving as a battle-tested juror and the season’s toughest out (Result: eliminated; 3rd).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nReturning for Season 2 on Killer Grips, Bridgette tried to steady the tribe’s mood after the premiere, but the first vote snapped into a tight numbers battle driven by Heather’s push and early fear of \"big\" names. With no one willing to take a risk on a major target yet, Bridgette became the consensus compromise and was cut immediately (Result: Bridgette eliminated, 4–3).\n\nSEASON 13 — Total Drama Doom Island\n────────\nBridgette starts angry, last-picked, and underestimated, then quickly becomes one of the most emotionally connected players on the island. Her bond with Wayne becomes both shelter and target. She protects Scarlett when others want her gone, pulls tribes back from spirals, and keeps showing up physically. By Episode 7, too many people can see how many votes she would have at the end, and that is enough to send her out.",
       "badges": [],
       "seasonsPlayed": 2,
       "totalJuryVotes": 0,
-      "avgPlacement": 8.5
+      "avgPlacement": 11
     },
     {
       "id": "brody",
@@ -1392,7 +1405,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 10,
+      "totalVotesAgainst": 13,
       "totalIdolsFound": 0,
       "seasonDetails": [
         {
@@ -1418,27 +1431,43 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 17,
+          "status": "Juror",
+          "tribe": "Civilians → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 3,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 4.7,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Dawn's integrity is real, but her social position erodes after challenge failures and alliance fractures."
+          ],
+          "gameplayStyle": "Quiet conscience, brittle footing",
+          "keyMoments": [
+            "Ep.1 — Forms The Nerve Center with Wayne before Scarlett drifts away.",
+            "Ep.2 — Fails Maggots in Phobia Factor, contributing to Civilians' loss.",
+            "Ep.4 — Builds a drying rack that quietly improves camp life.",
+            "Ep.6 — Gets blamed after Frozen Crossing and tangled in Merge Mob fallout.",
+            "Ep.6 — Voted out on a revote against Bridgette."
+          ],
+          "alliances": [
+            "The Nerve Center",
+            "The Merge Mob"
+          ],
+          "rivalries": []
         }
       ],
-      "story": "On Revenge of the Island (Season 3), Dawn came in on the Toxic Rats with a reputation for reading people—soft-spoken, observant, and socially disarming. As alliances hardened, that perception started to look like danger: if Dawn can see through you, they can expose you. When the majority needed a clean, consensus boot, Dawn became the pick in Episode 9 (Result: voted out 5–3 vote; 8th, 3rd juror).",
+      "story": "On Revenge of the Island (Season 3), Dawn came in on the Toxic Rats with a reputation for reading people—soft-spoken, observant, and socially disarming. As alliances hardened, that perception started to look like danger: if Dawn can see through you, they can expose you. When the majority needed a clean, consensus boot, Dawn became the pick in Episode 9 (Result: voted out 5–3 vote; 8th, 3rd juror).\n\nSEASON 13 — Total Drama Doom Island\n────────\nDawn starts inside The Nerve Center with Wayne, a quiet planner trying to keep the Civilians steady. She contributes at camp and reads people well, but the game repeatedly exposes her as outside the true emotional core. Failing the Maggots fear and later getting blamed in Frozen Crossing puts pressure on her name. At Episode 6 tribal, the revote breaks against Dawn, and she leaves with dignity intact but numbers gone.",
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 8
+      "avgPlacement": 12.5
     },
     {
       "id": "dj",
@@ -1885,7 +1914,7 @@
         13
       ],
       "totalSeasons": 2,
-      "bestPlacement": 21,
+      "bestPlacement": 11,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -1914,27 +1943,42 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 11,
+          "status": "Juror",
+          "tribe": "Villains → Heroes → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
           "votesReceived": 0,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 4.6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Eva's quieter second act shows restraint and flashes of growth, but Slasher Night punishes one bad horror-movie instinct."
+          ],
+          "gameplayStyle": "Contained rage, fading shadow",
+          "keyMoments": [
+            "Ep.1 — Sent to Exile Island before tribal and finds nothing.",
+            "Ep.3 — Wins her Bone Battle round against MacArthur and Ally.",
+            "Ep.10 — Posts a strong skydiving score for Heroes in X-Treme Torture.",
+            "Ep.11 — Gets caught first in Slasher Night with the lowest score.",
+            "Ep.11 — Leaves calling her waves the thing that made the game interesting."
+          ],
+          "alliances": [
+            "The Anchor"
+          ],
+          "rivalries": []
         }
       ],
-      "story": "Introduced on Killer Bass (Season 1), Eva arrived as pure volatility—strength, pride, and a fuse that never looked long. She fought her way through the opening stretch, but the tribe eventually chose stability: a 6–4 vote that removed the person most likely to explode the plan the moment it formed. In a season obsessed with numbers, she was the one player who could make numbers meaningless—and that’s why they took the shot (Result: eliminated; 21st).",
+      "story": "Introduced on Killer Bass (Season 1), Eva arrived as pure volatility—strength, pride, and a fuse that never looked long. She fought her way through the opening stretch, but the tribe eventually chose stability: a 6–4 vote that removed the person most likely to explode the plan the moment it formed. In a season obsessed with numbers, she was the one player who could make numbers meaningless—and that’s why they took the shot (Result: eliminated; 21st).\n\nSEASON 13 — Total Drama Doom Island\n────────\nEva begins on exile, misses the first vote, and returns into a tribe that never fully knows where to place her. She has bursts of power, especially in physical challenges, and a complicated bond with Julia. Her game is quieter than her reputation, sometimes by design and sometimes because others forget to include her. At the merge, one wrong turn in Slasher Night sends her out with unfinished fire.",
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 21
+      "avgPlacement": 16
     },
     {
       "id": "ezekiel",
@@ -3210,7 +3254,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 11,
+      "totalVotesAgainst": 15,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -3251,25 +3295,38 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 22,
+          "status": "Juror",
+          "tribe": "Villains → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 7.6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Kelly sees the board early but loses the numbers immediately, becoming the first casualty of a scattered Villains tribe."
+          ],
+          "gameplayStyle": "Early schemer, no army",
+          "keyMoments": [
+            "Ep.1 — Captains Villains in Slap Slap Revolution but loses to Thom.",
+            "Ep.1 — Tries to organize the Anti-Fiore Front.",
+            "Ep.1 — Watches her bloc scatter into Kelly, Ally, and Damien votes.",
+            "Ep.1 — Calls out Ally and exposes the Anti-Fiore Front in her crashout.",
+            "Ep.2 — Trains hard on Rescue Island and bonds with Gerry."
+          ],
+          "alliances": [],
+          "rivalries": []
         }
       ],
-      "story": "On Blood vs. Water (Season 6), Kelly played the ‘tough mom’ half of her duo with Blaineley—steady, protective, and far more strategic than people wanted to admit. Her idol timing helped shape the midgame (including the Episode 7 swing that took out Mary), and she navigated all the way to the Final 4. There, the season’s chaos returned one last time: a 2–2 tie, a 1–1 revote, and then fire-making—where she fell just short of the finale. (Result: Final 4 fire-making loss; 4th.)",
+      "story": "On Blood vs. Water (Season 6), Kelly played the ‘tough mom’ half of her duo with Blaineley—steady, protective, and far more strategic than people wanted to admit. Her idol timing helped shape the midgame (including the Episode 7 swing that took out Mary), and she navigated all the way to the Final 4. There, the season’s chaos returned one last time: a 2–2 tie, a 1–1 revote, and then fire-making—where she fell just short of the finale. (Result: Final 4 fire-making loss; 4th.)\n\nSEASON 13 — Total Drama Doom Island\n────────\nKelly enters smiling like she already knows where every vote will land. She is right about the dangers, but wrong about the loyalty holding her bloc together. Her Anti-Fiore Front collapses so completely that nobody in it votes Fiore. As the first boot, she turns Rescue Island into a training ground and leaves behind a warning about Ally that colors the early jury narrative.",
       "seasonsPlayed": 1,
-      "avgPlacement": 4
+      "avgPlacement": 13
     },
     {
       "id": "kitty",
@@ -4496,7 +4553,7 @@
       "totalChallengeWins": 2,
       "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 2,
+      "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "badges": [
         "Strategic #1 (S5)"
@@ -4522,26 +4579,42 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 20,
+          "status": "Juror",
+          "tribe": "Civilians → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 7.3,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Scarlett schemes hard, frames faster, and exits loudly after warning everyone about Julia's advantage game."
+          ],
+          "gameplayStyle": "Cold plans, hot collapse",
+          "keyMoments": [
+            "Ep.1 — Helps form The Nerve Center, then pulls away as relationships sour.",
+            "Ep.2 — Survives a revote against Gerry after being a primary target.",
+            "Ep.3 — Survives another tie when Riya goes instead.",
+            "Ep.4 — Frames Ally after sabotaging the Civilians' boat run.",
+            "Ep.4 — Voted out and publicly flags Julia's advantage history."
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Aiden",
+            "Ally"
+          ]
         }
       ],
-      "story": "Top strategic rank of Season 5 and a late power player, but lost the Final 4 fire-making duel.",
+      "story": "Top strategic rank of Season 5 and a late power player, but lost the Final 4 fire-making duel.\n\nSEASON 13 — Total Drama Doom Island\n────────\nScarlett begins with a clean strategic map but burns through trust almost immediately. She exits The Nerve Center, manipulates Bridgette, frames Ally, and keeps trying to turn chaos into ownership. Her problem is visibility: every clever move makes the tribe more certain she is dangerous. When she finally goes, she leaves a warning shot about Julia that echoes long after her torch is gone.",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 4
+      "avgPlacement": 12
     },
     {
       "id": "scott",
@@ -5272,7 +5345,7 @@
       "totalChallengeWins": 4,
       "totalImmunityWins": 3,
       "totalRewardWins": 1,
-      "totalVotesAgainst": 12,
+      "totalVotesAgainst": 15,
       "totalIdolsFound": 0,
       "seasonDetails": [
         {
@@ -5326,27 +5399,40 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 18,
+          "status": "Juror",
+          "tribe": "Heroes → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 3,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 4.9,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Trent's kindness and camp work make him liked, but a misvote and fractured trust turn him into the first Heroes casualty."
+          ],
+          "gameplayStyle": "Soft workhorse, fragile trust",
+          "keyMoments": [
+            "Ep.1 — Works before sunrise and wins his slap fight against Scarlett.",
+            "Ep.2 — Faces Earwigs while sharing the fear with Hunter.",
+            "Ep.3 — Clashes with Caleb over camp organization.",
+            "Ep.5 — Becomes target as Fiore, MacArthur, and Ripper line up against him.",
+            "Ep.5 — Voted out when Caleb's wrong-name vote seals the margin."
+          ],
+          "alliances": [],
+          "rivalries": []
         }
       ],
-      "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Trent played a steady, alliance-first game—until it turned personal. His partnership network kept him insulated early, but the season’s defining tension was his escalating war with Heather—openly toxic and impossible to hide. He still stacked 2 immunity wins and 3 total challenge wins, looking like a real finals threat, before the game hit a sudden double-elimination. In that snap Tribal, he was clipped 5–2, proving that even solid positioning can vanish in one twist (Result: double-elimination; 6th).\n\nTrent returned on the Screaming Gaffers with relationships everywhere, but also friction brewing — especially with Duncan. As the midgame tightened, his social reach stopped looking harmless and started looking dangerous. He was voted out when the numbers finally converged (Trent voted out, 5–2), setting up the season’s ruthless double-boot stretch.",
+      "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Trent played a steady, alliance-first game—until it turned personal. His partnership network kept him insulated early, but the season’s defining tension was his escalating war with Heather—openly toxic and impossible to hide. He still stacked 2 immunity wins and 3 total challenge wins, looking like a real finals threat, before the game hit a sudden double-elimination. In that snap Tribal, he was clipped 5–2, proving that even solid positioning can vanish in one twist (Result: double-elimination; 6th).\n\nTrent returned on the Screaming Gaffers with relationships everywhere, but also friction brewing — especially with Duncan. As the midgame tightened, his social reach stopped looking harmless and started looking dangerous. He was voted out when the numbers finally converged (Trent voted out, 5–2), setting up the season’s ruthless double-boot stretch.\n\nSEASON 13 — Total Drama Doom Island\n────────\nTrent comes in trying to be useful instead of distracted, and early on he is exactly that. He chops wood, bonds with Jake and Hunter, and keeps the Heroes camp emotionally breathable. But the tribe never fully becomes his tribe, and Caleb's misfire helps turn a close vote into Trent's exit. His departure lands as heartbreak more than strategy because Trent thought the relationships were sturdier than they were.",
       "badges": [],
       "seasonsPlayed": 2,
       "totalJuryVotes": 0,
-      "avgPlacement": 6.5
+      "avgPlacement": 10.33
     },
     {
       "id": "tyler",
@@ -5887,8 +5973,8 @@
       "totalChallengeWins": 7,
       "totalImmunityWins": 3,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 20,
-      "totalIdolsFound": 1,
+      "totalVotesAgainst": 23,
+      "totalIdolsFound": 2,
       "totalJuryVotes": 6,
       "tier": "Unranked",
       "badges": [
@@ -5969,24 +6055,45 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 10,
+          "status": "Juror",
+          "tribe": "Heroes → Villains → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 3,
+          "idolsFound": 1,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 6.4,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "MacArthur dominates early challenges and builds real bonds, but the merge punishes her as the obvious jury and physical threat."
+          ],
+          "gameplayStyle": "Brute force, guarded loyalty",
+          "keyMoments": [
+            "Ep.1 — Wins the Slap Slap Revolution tournament as the season's first challenge monster.",
+            "Ep.8 — Receives trust from Ripper in The Double Edge bond.",
+            "Ep.9 — Loses captaincy to Wayne, beginning a rivalry of leadership styles.",
+            "Ep.12 — Ties with Hunter before the revote flips against her.",
+            "Ep.12 — Exposes Alec's role in her crashout speech."
+          ],
+          "alliances": [
+            "The Double Edge",
+            "The Coalition"
+          ],
+          "rivalries": [
+            "Julia",
+            "Fiore",
+            "Riya",
+            "Jake"
+          ]
         }
       ],
-      "story": "Idol-holding enforcer who bridged factions across swaps and merge. Weathered public fights, steered multiple votes, and arrived at FTC with broad respect.\n\nSEASON 7 — Fan vs Favorites\n────────\nMacArthur hit Fan vs Favorites like a wrecking ball with a safety net: she locked down the Mauhu Hidden Immunity Idol early and instantly became the player everyone had to negotiate with. After the tribe swap, she fused into Carrie and Cody’s core (Lawa Alliance #3), giving her a second power lane while still keeping her old Mauhu connections alive. At the merge, she took fire from multiple directions (Episode 8’s multi-target vote) but survived the chaos as Jasmine became the first juror instead. Her game turned into a tug-of-war with Sky and later a loud endgame presence, yet she kept landing on the right side of the vote when it mattered most. By Finale night, she played the ‘final-round armor’ perfectly, then closed with a decisive 6–2–1 jury win that rewarded her mix of challenge credibility, alliance reach, and pure intimidation.\n\n────────\n\nSEASON 8 — Heroes VS Villains VS Civilians\n────────\n\nSEASON 8 — Heroes VS Villains VS Civilians\nCame in as reigning champ, forged a powerful S7 bond with Sanders, and was saved by an idol before being toppled on a late revote led by Jen and Alejandro.",
-      "avgPlacement": 4
+      "story": "Idol-holding enforcer who bridged factions across swaps and merge. Weathered public fights, steered multiple votes, and arrived at FTC with broad respect.\n\nSEASON 7 — Fan vs Favorites\n────────\nMacArthur hit Fan vs Favorites like a wrecking ball with a safety net: she locked down the Mauhu Hidden Immunity Idol early and instantly became the player everyone had to negotiate with. After the tribe swap, she fused into Carrie and Cody’s core (Lawa Alliance #3), giving her a second power lane while still keeping her old Mauhu connections alive. At the merge, she took fire from multiple directions (Episode 8’s multi-target vote) but survived the chaos as Jasmine became the first juror instead. Her game turned into a tug-of-war with Sky and later a loud endgame presence, yet she kept landing on the right side of the vote when it mattered most. By Finale night, she played the ‘final-round armor’ perfectly, then closed with a decisive 6–2–1 jury win that rewarded her mix of challenge credibility, alliance reach, and pure intimidation.\n\n────────\n\nSEASON 8 — Heroes VS Villains VS Civilians\n────────\n\nSEASON 8 — Heroes VS Villains VS Civilians\nCame in as reigning champ, forged a powerful S7 bond with Sanders, and was saved by an idol before being toppled on a late revote led by Jen and Alejandro.\n\nSEASON 13 — Total Drama Doom Island\n────────\nMacArthur opens the season like a machine, carrying Heroes through Slap Slap Revolution. She tries to show a social game, and for a while it works through Hunter, Caleb, Ripper, and Wayne. But every fish caught, every challenge performance, and every loyal bond becomes evidence against her. At the merge, the tribe splits over whether to cut Hunter or MacArthur, and the revote finally breaks toward the more visible threat.",
+      "avgPlacement": 6
     },
     {
       "id": "pete",
@@ -6303,7 +6410,7 @@
       "totalChallengeWins": 2,
       "totalImmunityWins": 0,
       "totalRewardWins": 2,
-      "totalVotesAgainst": 10,
+      "totalVotesAgainst": 13,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -6346,23 +6453,37 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 21,
+          "status": "Juror",
+          "tribe": "Civilians → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 3,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 3.6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Gerry's quiet comfort becomes complacency, and a revote teaches him the oldest lesson in the game."
+          ],
+          "gameplayStyle": "Quiet utility, sleepy danger",
+          "keyMoments": [
+            "Ep.1 — Rallies Civilians after the opening challenge and earns early goodwill.",
+            "Ep.2 — Passes his Being a Baby fear as Civilians struggle overall.",
+            "Ep.2 — Becomes the counter-target against Scarlett.",
+            "Ep.2 — Voted out on a 4-1 revote after a 3-3 tie.",
+            "Ep.3 — Begins building iron on Rescue Island with Kelly."
+          ],
+          "alliances": [],
+          "rivalries": []
         }
       ],
-      "story": "A 70-year-old tennis legend who arrived as the tribe's biggest liability and left as its most dangerous weapon. Pre-merge, he turned a petty stepbrother feud with Chet into a calculated blood war — surviving two ties and a revote through sheer force of personality while Jen and Sanders used him as a battering ram. At the merge he found the idol and immediately became untouchable, pairing with Jen in the season's most unbreakable duo and controlling 75% of post-merge votes. But his masterpiece was psychological: episode by episode he dismantled Heather — four-time veteran, Super Idol holder, the franchise's greatest villain — through relentless provocation until she quit mid-game, surrendering the most powerful advantage ever seen without playing it. He didn't find her idol. He didn't outplay her strategically. He broke her. Fell at Final 4 when Sanders' immunity win removed his last shield, but his shadow hung over every vote that followed. (Result: Vote 3-1; 4th)."
+      "story": "A 70-year-old tennis legend who arrived as the tribe's biggest liability and left as its most dangerous weapon. Pre-merge, he turned a petty stepbrother feud with Chet into a calculated blood war — surviving two ties and a revote through sheer force of personality while Jen and Sanders used him as a battering ram. At the merge he found the idol and immediately became untouchable, pairing with Jen in the season's most unbreakable duo and controlling 75% of post-merge votes. But his masterpiece was psychological: episode by episode he dismantled Heather — four-time veteran, Super Idol holder, the franchise's greatest villain — through relentless provocation until she quit mid-game, surrendering the most powerful advantage ever seen without playing it. He didn't find her idol. He didn't outplay her strategically. He broke her. Fell at Final 4 when Sanders' immunity win removed his last shield, but his shadow hung over every vote that followed. (Result: Vote 3-1; 4th).\n\nSEASON 13 — Total Drama Doom Island\n────────\nGerry starts as the understated veteran nobody wants to overreact to. He rallies Civilians at key moments and quietly helps camp, but his game never gains enough active protection. When Scarlett becomes the obvious target, Gerry's name still sits there as the clean counterweight. The revote flips toward him, and his exit becomes the season's first real warning that comfort is not safety.",
+      "avgPlacement": 12.5
     },
     {
       "id": "jen",
@@ -6873,12 +6994,12 @@
         13
       ],
       "totalSeasons": 2,
-      "bestPlacement": 15,
+      "bestPlacement": 5,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 3,
+      "totalVotesAgainst": 10,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -6913,23 +7034,45 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 5,
+          "status": "Juror",
+          "tribe": "Heroes → Villains → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 7,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 7.6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Caleb grows from social misfires into a major endgame threat before Tied Destinies turns his popularity into a liability."
+          ],
+          "gameplayStyle": "Physical charm, loose tongue",
+          "keyMoments": [
+            "Ep.1 — Reaches the Slap Slap Revolution final before losing to MacArthur.",
+            "Ep.5 — Misvotes Trent out, fracturing trust but keeping himself alive.",
+            "Ep.6 — Saves Heroes from the bridge collapse in Frozen Crossing.",
+            "Ep.12 — Wins That's Off the Chain! wire to wire.",
+            "Ep.17 — Voted out under Tied Destinies, dragging Alec out with him."
+          ],
+          "alliances": [
+            "The Guard",
+            "The Coalition",
+            "The Elimination Squad"
+          ],
+          "rivalries": [
+            "Aiden",
+            "Fiore",
+            "Riya"
+          ]
         }
       ],
-      "story": "A physical pillar on Red, Caleb never finds the same footing socially. When fear becomes the challenge, paranoia takes the wheel; he and Millie both fire Shot in the Dark, but only Millie hits. Hicks chooses loyalty over horsepower and sends Caleb home 2–1. He’s the pre‑merge reminder that in a game of feelings, muscles only carry you so far."
+      "story": "A physical pillar on Red, Caleb never finds the same footing socially. When fear becomes the challenge, paranoia takes the wheel; he and Millie both fire Shot in the Dark, but only Millie hits. Hicks chooses loyalty over horsepower and sends Caleb home 2–1. He’s the pre‑merge reminder that in a game of feelings, muscles only carry you so far.\n\nSEASON 13 — Total Drama Doom Island\n────────\nCaleb starts strong in challenges but messy in conversations, often saying too much at the wrong time. Over the season, he becomes a bridge between camps, especially through MacArthur, Jake, and later Riya. His immunity win at That's Off the Chain! proves he can dominate when the spotlight hits him. At final six, everyone understands the same truth: Caleb has too many friends, and that makes him too dangerous to keep.",
+      "avgPlacement": 10
     },
     {
       "id": "chase",
@@ -7039,7 +7182,7 @@
       "totalChallengeWins": 5,
       "totalImmunityWins": 1,
       "totalRewardWins": 4,
-      "totalVotesAgainst": 2,
+      "totalVotesAgainst": 8,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -7083,23 +7226,40 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 15,
+          "status": "Juror",
+          "tribe": "Villains → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 5.2,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Damien's honest underdog game wins sympathy but not enough protection once revotes and lost votes stack against him."
+          ],
+          "gameplayStyle": "Honest grit, bad timing",
+          "keyMoments": [
+            "Ep.1 — Endures the Lederhosen of Shame after Villains lose Slap Slap Revolution.",
+            "Ep.2 — Fails Paper Cuts in Phobia Factor, exposing vulnerability.",
+            "Ep.5 — Benefits from Julia's idol loyalty, deepening their bond.",
+            "Ep.8 — Survives one Truth or Shark stunt and confesses with underdog defiance.",
+            "Ep.8 — Voted out on a revote after losing his vote on the journey."
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Fiore",
+            "Ripper"
+          ]
         }
       ],
-      "story": "Damien is the season’s steady heartbeat—calm in storms, a competitor when it counts. He anchors Blue early, then the merge, stacking wins while cultivating Unbreakables with Priya and Bowie that make him the safest smart guy in the room. He finds the Campers idol quietly and uses restraint as a weapon, surviving crossfires and winning sanctuary when everyone else is starving. The late game forces a choice between heart and heat; he backs Millie and still protects Bowie in Idol Armageddon, only to meet him at the rope. Fire decides what politics couldn’t—Damien’s spark comes late, Bowie’s rope snaps first, and the season’s conscience becomes its final heartbreak."
+      "story": "Damien is the season’s steady heartbeat—calm in storms, a competitor when it counts. He anchors Blue early, then the merge, stacking wins while cultivating Unbreakables with Priya and Bowie that make him the safest smart guy in the room. He finds the Campers idol quietly and uses restraint as a weapon, surviving crossfires and winning sanctuary when everyone else is starving. The late game forces a choice between heart and heat; he backs Millie and still protects Bowie in Idol Armageddon, only to meet him at the rope. Fire decides what politics couldn’t—Damien’s spark comes late, Bowie’s rope snaps first, and the season’s conscience becomes its final heartbreak.\n\nSEASON 13 — Total Drama Doom Island\n────────\nDamien comes in determined to prove he belongs, but the early game keeps putting him on the wrong side of power. He bonds deeply with Julia, survives humiliation, and repeatedly tries to play straight in a crooked season. His honesty earns respect, especially on Truth or Shark, but it also makes him easy to map and easier to cut. When the Episode 8 revote arrives, Damien has no vote, no shield, and no way to stop the tide.",
+      "avgPlacement": 9.5
     },
     {
       "id": "emmah",
@@ -7286,13 +7446,13 @@
         13
       ],
       "totalSeasons": 2,
-      "bestPlacement": 6,
+      "bestPlacement": 2,
       "wins": 0,
-      "totalChallengeWins": 3,
-      "totalImmunityWins": 1,
+      "totalChallengeWins": 7,
+      "totalImmunityWins": 5,
       "totalRewardWins": 2,
-      "totalVotesAgainst": 10,
-      "totalIdolsFound": 1,
+      "totalVotesAgainst": 13,
+      "totalIdolsFound": 4,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
@@ -7335,23 +7495,48 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 2,
+          "status": "Finalist",
+          "tribe": "Villains → Heroes → Campers",
+          "challengeWins": 4,
+          "immunityWins": 4,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 3,
+          "idolsFound": 3,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 9.8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Julia plays the most strategically aggressive game of the season, but her control finally meets Wayne's coalition of real relationships."
+          ],
+          "gameplayStyle": "Ruthless precision, public fire",
+          "keyMoments": [
+            "Ep.2 — Finds the Villains idol and keeps the secret close.",
+            "Ep.5 — Outlasts everyone in Awake-A-Thon, announcing herself as a physical force.",
+            "Ep.9 — Sabotages the Lava Gulch track to help Heroes win Tropical Takedown.",
+            "Ep.13 — Wins Greece's Pieces with the Icarus tiebreaker.",
+            "Ep.19 — Wins Rapa Phooey immunity, forcing Jake out before the finale."
+          ],
+          "alliances": [
+            "The Guard",
+            "The Anchor",
+            "The Elimination Squad"
+          ],
+          "rivalries": [
+            "Wayne",
+            "Aiden",
+            "Ally",
+            "Jake",
+            "Ripper",
+            "MacArthur"
+          ]
         }
       ],
-      "story": "She enters as the Ice Queen and never warms. On Blue she weaponizes disdain into control, then at the three-tribe twist she springs the season’s coldest trap—seducing Raj into pocketing an idol as she votes him out 2–1. At the merge she sides with the outcasts, then endures a public stripping when Bowie robs her idol with Knowledge is Power. Spite becomes fuel; she flips between blocs, helps oust Priya, and still commands attention until the house finally unites. Silenced by Chase’s Vote Stopper and buried 6–0, Julia exits as the villain the story needed—loud, lethal, unforgettable."
+      "story": "She enters as the Ice Queen and never warms. On Blue she weaponizes disdain into control, then at the three-tribe twist she springs the season’s coldest trap—seducing Raj into pocketing an idol as she votes him out 2–1. At the merge she sides with the outcasts, then endures a public stripping when Bowie robs her idol with Knowledge is Power. Spite becomes fuel; she flips between blocs, helps oust Priya, and still commands attention until the house finally unites. Silenced by Chase’s Vote Stopper and buried 6–0, Julia exits as the villain the story needed—loud, lethal, unforgettable.\n\nSEASON 13 — Total Drama Doom Island\n────────\nJulia arrives with a Beware Advantage, an idol trail, and the confidence of someone who expects chaos to bend around her. She engineers safety through ambassadors, sabotage, immunity wins, and carefully placed information. Her game is relentless: she cuts threats, courts shields, and turns even a volleyball named Wilson into a psychological landmark. But the same sharpness that gets her to the finale leaves too many people bruised, and in the final race, Wayne's bench screams louder than hers.",
+      "avgPlacement": 4
     },
     {
       "id": "mk",
@@ -7674,7 +7859,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 10,
+      "totalVotesAgainst": 11,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -7716,23 +7901,45 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 12,
+          "status": "Juror",
+          "tribe": "Heroes → Villains → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 1,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 1,
+          "strategicRank": 5.7,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [
+            "idol"
+          ],
+          "notes": [
+            "Ripper builds unexpected loyalty and finds power, only to be removed by an ambassador deal he never gets to fight."
+          ],
+          "gameplayStyle": "Raw force, unlucky loyalty",
+          "keyMoments": [
+            "Ep.1 — Knocks out Julia in Slap Slap Revolution's opening grudge match.",
+            "Ep.6 — Forms The Ride or Die with Jake before the game pulls them apart.",
+            "Ep.8 — Finds the Villains Hidden Immunity Idol.",
+            "Ep.9 — Forms The Double Edge with MacArthur.",
+            "Ep.11 — Eliminated by ambassador agreement without a vote."
+          ],
+          "alliances": [
+            "The Ride or Die",
+            "The Double Edge"
+          ],
+          "rivalries": [
+            "Damien",
+            "Julia"
+          ]
         }
       ],
-      "story": "From day one he is gasoline—fighting Scary Girl, needling Nichelle, and yet never quite dying. He idols away a unanimous hit, survives a rock draw he created, and watches Bowie flip Chase to save him over Nichelle. Post‑swap he rides the New Red majority but stays the chew toy, until the merge finally unites the beach on removing the last physical shield. His nine lives run out only when Emmah doubles her vote. Chaos kept him alive; structure finally kills him."
+      "story": "From day one he is gasoline—fighting Scary Girl, needling Nichelle, and yet never quite dying. He idols away a unanimous hit, survives a rock draw he created, and watches Bowie flip Chase to save him over Nichelle. Post‑swap he rides the New Red majority but stays the chew toy, until the merge finally unites the beach on removing the last physical shield. His nine lives run out only when Emmah doubles her vote. Chaos kept him alive; structure finally kills him.\n\nSEASON 13 — Total Drama Doom Island\n────────\nRipper starts as comic relief with surprising challenge bite, knocking out Julia and surviving brutal physical rounds. He bonds with MacArthur into The Double Edge and even finds the Villains idol. But his game is interrupted before the merge can fully test him. Julia and Aiden agree on his elimination at the ambassador table, making Ripper the season's cruelest procedural casualty.",
+      "avgPlacement": 11.5
     },
     {
       "id": "scary-girl",
@@ -7791,16 +7998,18 @@
         13
       ],
       "totalSeasons": 2,
-      "bestPlacement": 9,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 9,
+      "totalVotesAgainst": 17,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
-      "badges": [],
+      "badges": [
+        "S13 Winner"
+      ],
       "seasonDetails": [
         {
           "season": 9,
@@ -7835,23 +8044,50 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 1,
+          "status": "Winner",
+          "tribe": "Civilians → Villains → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 8,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 3,
+          "advHeld": 0,
+          "strategicRank": 7.4,
           "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "finalVote": "0-0",
+          "advantages": [],
+          "notes": [
+            "Wayne turns a season of social debt and moral pressure into a finale win built on loyalty, endurance, and one last burst of competitive nerve."
+          ],
+          "gameplayStyle": "Loyal heart, late steel",
+          "keyMoments": [
+            "Ep.1 — Sits with Bridgette when she is on the outside, beginning his defining social bond.",
+            "Ep.4 — Wins the Journey and claims the Vote Block, proving he can grab power when forced.",
+            "Ep.12 — Plays an idol for Aiden and blocks Hunter's vote, reshaping the merge vote.",
+            "Ep.16 — Wins Super Hero-ld with the final blow against Mega Pythonicus.",
+            "Ep.20 — Beats Julia in the Rejected Olympic Relay to win the season."
+          ],
+          "alliances": [
+            "The Nerve Center",
+            "The Merge Mob",
+            "The Coalition",
+            "The Elimination Squad",
+            "The Web",
+            "The Firewall",
+            "The Campfire Crew"
+          ],
+          "rivalries": [
+            "Julia",
+            "Fiore",
+            "Riya",
+            "Hunter"
+          ]
         }
       ],
-      "story": "Half of the season’s beating heart, Wayne loses Raj and then everything that protected him. He starts by winning the summit, stealing Ripper’s vote and an Extra Vote of his own, only to watch Emmah rip that power away at the merge on live TV. He scrapes along on grit and a bond with Julia, but a perfect shield by Millie and an extra ballot of Priya’s erase him in a 5–0 shutout. Unlucky to the end, Wayne is the jury’s folk hero—robbed three times and still smiling."
+      "story": "Half of the season’s beating heart, Wayne loses Raj and then everything that protected him. He starts by winning the summit, stealing Ripper’s vote and an Extra Vote of his own, only to watch Emmah rip that power away at the merge on live TV. He scrapes along on grit and a bond with Julia, but a perfect shield by Millie and an extra ballot of Priya’s erase him in a 5–0 shutout. Unlucky to the end, Wayne is the jury’s folk hero—robbed three times and still smiling.\n\nSEASON 13 — Total Drama Doom Island\n────────\nWayne begins as the guy everyone wants near the fire, not the one everyone fears at tribal. He protects Bridgette, bonds with Aiden, and keeps choosing people even when the game punishes him for it. Through the merge, his votes are rarely clean, but his relationships keep saving him when the numbers turn ugly. At the end, with Julia charging behind him, Wayne wins the Rejected Olympic Relay because the people he cared for all season drag him emotionally across the line.",
+      "avgPlacement": 5
     },
     {
       "id": "zee",
@@ -7911,7 +8147,7 @@
       "totalChallengeWins": 2,
       "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 1,
+      "totalVotesAgainst": 2,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -7963,24 +8199,39 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 13,
+          "status": "Juror",
+          "tribe": "Heroes → Civilians → Heroes → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 1,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 6.6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Thom plays the clean hero game and becomes beloved enough that the tribe decides they cannot let him reach the merge."
+          ],
+          "gameplayStyle": "Pure heart, visible threat",
+          "keyMoments": [
+            "Ep.1 — Beats Kelly in Slap Slap Revolution and strengthens the Heroes surge.",
+            "Ep.3 — Wins his Bone Battle round against Miriam and Aiden.",
+            "Ep.6 — Becomes Civilians' sled puller in Frozen Crossing.",
+            "Ep.8 — Carries Heroes socially through Truth or Shark with repeated confessions.",
+            "Ep.10 — Voted out after being labeled a long-term jury threat."
+          ],
+          "alliances": [
+            "The Engine"
+          ],
+          "rivalries": []
         }
       ],
-      "story": "Thom starts as the teammate everyone wants, and that becomes both his gift and his curse. He rescues people, protects people, feeds people, and quietly becomes the center of too many hearts at once. His bonds with Jake, Dan, Sterling, Miriam, and Eureka carry him deep, but they also make his decisions heavier than everyone else's. As the merge turns colder, Thom learns to cut names he cares about, but never completely shuts the door on feeling. He wins when he has to, survives repeated target spikes, and takes out Fiore in the final joust. At the volcano, he is ahead, but Miriam reaches the one place his game is vulnerable: the part of him that still cares.",
-      "avgPlacement": 2
+      "story": "Thom starts as the teammate everyone wants, and that becomes both his gift and his curse. He rescues people, protects people, feeds people, and quietly becomes the center of too many hearts at once. His bonds with Jake, Dan, Sterling, Miriam, and Eureka carry him deep, but they also make his decisions heavier than everyone else's. As the merge turns colder, Thom learns to cut names he cares about, but never completely shuts the door on feeling. He wins when he has to, survives repeated target spikes, and takes out Fiore in the final joust. At the volcano, he is ahead, but Miriam reaches the one place his game is vulnerable: the part of him that still cares.\n\nSEASON 13 — Total Drama Doom Island\n────────\nThom is useful from day one: building shelters, winning fights, and anchoring Jake emotionally. His loyalty is reflexive, and that makes him inspiring to allies and terrifying to opponents. He keeps proving value in challenge after challenge while building bonds with Ally and Jake. By Episode 10, the tribe doesn't vote him out because he failed; they vote him out because he could win clean.",
+      "avgPlacement": 7.5
     },
     {
       "id": "jake",
@@ -7990,13 +8241,13 @@
         13
       ],
       "totalSeasons": 2,
-      "bestPlacement": 7,
+      "bestPlacement": 3,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 7,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 12,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
@@ -8044,24 +8295,48 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 3,
+          "status": "Juror",
+          "tribe": "Heroes → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 5,
+          "idolsFound": 1,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 8.1,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Jake's emotional bonds carry him deep, but his late-game visibility makes him too dangerous to sit beside at the finish."
+          ],
+          "gameplayStyle": "Open heart, hidden knife",
+          "keyMoments": [
+            "Ep.5 — Finds the Heroes Hidden Immunity Idol and keeps his face unreadable.",
+            "Ep.10 — Plays an idol for Ally, wiping votes and saving his closest ally.",
+            "Ep.17 — Returns from the Edge and forms the Campfire Crew with Wayne.",
+            "Ep.18 — Beats Riya in the Second Life Balancing Act duel.",
+            "Ep.19 — Gives Wayne a basket and key intel before being eliminated by the jury."
+          ],
+          "alliances": [
+            "The Engine",
+            "The Guard",
+            "The Web",
+            "The Campfire Crew"
+          ],
+          "rivalries": [
+            "Aiden",
+            "Julia",
+            "Fiore",
+            "Riya",
+            "MacArthur"
+          ]
         }
       ],
-      "story": "Jake is liked immediately, and for a while that is enough to move through the game. His bond with Thom becomes the season's defining showmance, a source of protection, suspicion, and eventually heartbreak. Jake tries to build structures around himself, from The Firewall to temporary merge coalitions, but he often cannot fully commit when votes hit people he cares about. His name becomes synonymous with overplaying, whispered side deals, and emotional reactions that other players learn to exploit. By the end, he is isolated from old allies and too tangled in personal feuds with Miriam, Ellie, and Fiore. His exit is absurd and painful: Chef, not the tribe, ends his story after a survival challenge full of fear, loyalty, and humiliation.",
-      "avgPlacement": 7
+      "story": "Jake is liked immediately, and for a while that is enough to move through the game. His bond with Thom becomes the season's defining showmance, a source of protection, suspicion, and eventually heartbreak. Jake tries to build structures around himself, from The Firewall to temporary merge coalitions, but he often cannot fully commit when votes hit people he cares about. His name becomes synonymous with overplaying, whispered side deals, and emotional reactions that other players learn to exploit. By the end, he is isolated from old allies and too tangled in personal feuds with Miriam, Ellie, and Fiore. His exit is absurd and painful: Chef, not the tribe, ends his story after a survival challenge full of fear, loyalty, and humiliation.\n\nSEASON 13 — Total Drama Doom Island\n────────\nJake spends the early game locked to Thom, then has to learn what he is without that anchor. He finds idols, protects Ally, survives exile, and builds new late-game trust with Wayne. His social game becomes a weapon almost by accident: every conversation leaves someone feeling closer to him. By the final three, that warmth is exactly why the jury removes him, because a finalist Jake could turn memories into votes.",
+      "avgPlacement": 5
     },
     {
       "id": "miriam",
@@ -8076,7 +8351,7 @@
       "totalChallengeWins": 1,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 8,
+      "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8127,24 +8402,39 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 19,
+          "status": "Juror",
+          "tribe": "Villains → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 1,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 5.3,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Miriam starts as a protected veteran voice, but old grudges and new power plays swallow her before she can rebuild control."
+          ],
+          "gameplayStyle": "Old-school grit, fading leverage",
+          "keyMoments": [
+            "Ep.1 — Votes Kelly out while following Fiore's early coalition.",
+            "Ep.2 — Clashes with Alec after Fiore lies about him.",
+            "Ep.3 — Her distrust of Julia grows after catching a test.",
+            "Ep.4 — Breaks down in front of Fiore, showing the emotional cost.",
+            "Ep.4 — Voted out at Villains tribal."
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Alec"
+          ]
         }
       ],
-      "story": "Miriam arrives with the posture of someone who has already survived worse than Cursed Island. Early on, she is abrasive, guarded, and constantly one bad vote away from disaster, but every time the numbers move against her she finds another route through. Her game sharpens after the merge, where she stops chasing control openly and starts letting other players expose themselves first. The Outwit Club gives her structure, Thom gives her protection, and her own reads give her timing. By the finale, she is exhausted but still calculating, and when Thom reaches the summit ahead of her she does not beat him with strength. She beats him with history, memory, and one perfect plea before throwing the dummy first.",
-      "avgPlacement": 1
+      "story": "Miriam arrives with the posture of someone who has already survived worse than Cursed Island. Early on, she is abrasive, guarded, and constantly one bad vote away from disaster, but every time the numbers move against her she finds another route through. Her game sharpens after the merge, where she stops chasing control openly and starts letting other players expose themselves first. The Outwit Club gives her structure, Thom gives her protection, and her own reads give her timing. By the finale, she is exhausted but still calculating, and when Thom reaches the summit ahead of her she does not beat him with strength. She beats him with history, memory, and one perfect plea before throwing the dummy first.\n\nSEASON 13 — Total Drama Doom Island\n────────\nMiriam returns with history, especially with Alec and Fiore, and immediately becomes part of the Villains' emotional architecture. She believes Fiore's promise enough to move with her early. But the tribe is unstable, Julia is collecting leverage, and Alec's hostility never fully cools. Episode 4 finally catches her in a Villains vote where the story is moving faster than she can redirect it.",
+      "avgPlacement": 10
     },
     {
       "id": "grett",
@@ -8682,10 +8972,10 @@
       "totalSeasons": 2,
       "bestPlacement": 4,
       "wins": 0,
-      "totalChallengeWins": 1,
-      "totalImmunityWins": 1,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 6,
+      "totalVotesAgainst": 12,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8734,24 +9024,43 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 6,
+          "status": "Juror",
+          "tribe": "Villains → Heroes → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 8.4,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Alec is the season's exposed chess player, consistently useful until the twist takes him out beside Caleb."
+          ],
+          "gameplayStyle": "Measured knives, visible map",
+          "keyMoments": [
+            "Ep.1 — His Anti-Fiore Front collapses immediately, exposing early instability.",
+            "Ep.6 — Gets caught making a fake idol, damaging his credibility.",
+            "Ep.11 — Wins Slasher Night by outsmarting the final showdown.",
+            "Ep.14 — Joins The Firewall after Wayne offers him shelter.",
+            "Ep.17 — Eliminated as collateral when Caleb is voted out."
+          ],
+          "alliances": [
+            "The Guard",
+            "The Wildcard Pact"
+          ],
+          "rivalries": [
+            "Miriam",
+            "Fiore"
+          ]
         }
       ],
-      "story": "Alec enters already mapping alliance structures before most players know where camp is. He builds gadgets, reads conversations he was never part of, and keeps finding ways to make the vote pass through him without looking obvious enough to stop. But every clean move leaves fingerprints, and by the time Grett publicly calls him the strategic center, the target never fully leaves his back. His rivalry with Thom hardens into open hostility, and his relationship with Miriam becomes a chess match played with smiles that never reach the eyes. He survives several spots where he should go home, including a fire-making tiebreaker against Dan. At final four, though, the board is too small, Thom holds firm, and Fiore cuts her losses.",
-      "avgPlacement": 4
+      "story": "Alec enters already mapping alliance structures before most players know where camp is. He builds gadgets, reads conversations he was never part of, and keeps finding ways to make the vote pass through him without looking obvious enough to stop. But every clean move leaves fingerprints, and by the time Grett publicly calls him the strategic center, the target never fully leaves his back. His rivalry with Thom hardens into open hostility, and his relationship with Miriam becomes a chess match played with smiles that never reach the eyes. He survives several spots where he should go home, including a fire-making tiebreaker against Dan. At final four, though, the board is too small, Thom holds firm, and Fiore cuts her losses.\n\nSEASON 13 — Total Drama Doom Island\n────────\nAlec enters with old grudges and a reputation for calculating faster than the room. He wins Slasher Night, builds short-lived blocs, and survives multiple moments where people openly identify him as the strategist. His biggest problem is that everyone eventually sees the map in his hands. When Caleb becomes the target under Tied Destinies, Alec does not lose by vote count so much as by proximity.",
+      "avgPlacement": 5
     },
     {
       "id": "fiore",
@@ -8766,7 +9075,7 @@
       "totalChallengeWins": 1,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 7,
+      "totalVotesAgainst": 15,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8822,24 +9131,44 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 14,
+          "status": "Juror",
+          "tribe": "Villains → Heroes → Villains → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 8,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Fiore weaponizes distrust all pre-merge, but once her threat level becomes common knowledge, nobody gives her another runway."
+          ],
+          "gameplayStyle": "Needle smile, open sabotage",
+          "keyMoments": [
+            "Ep.1 — Leads the Anti-Kelly vote that sends Kelly to Rescue Island.",
+            "Ep.4 — Sabotages the dive by flooding Alec's air line.",
+            "Ep.6 — Rescues Julia from icy water, complicating her villain image.",
+            "Ep.8 — Survives a revote against Damien by a single vote.",
+            "Ep.9 — Voted out after the Double Edge and Aiden converge on her."
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Damien",
+            "Wayne",
+            "Alec",
+            "Caleb",
+            "Jake",
+            "MacArthur"
+          ]
         }
       ],
-      "story": "Fiore enters promising to enjoy watching people leave, and she delivers. She steals credit, plants doubts, forges notes, weaponizes grudges, and somehow keeps crawling back from spots where the numbers should finish her. Her rivalry with Ellie burns across the season, while her shifting partnerships with Alec, Gabby, Seraphine, and Miriam are always temporary and always useful. The Second Life Amulet is her masterpiece of survival, turning a majority against her into Eureka's elimination and taking Gabby with it. But Fiore's game has a cost: by the finale, the jury and players alike know exactly what she is. She fights Thom in the joust, asks the crowd for support, gets silence, and falls smiling like a villain who knows she made the season.",
-      "avgPlacement": 3
+      "story": "Fiore enters promising to enjoy watching people leave, and she delivers. She steals credit, plants doubts, forges notes, weaponizes grudges, and somehow keeps crawling back from spots where the numbers should finish her. Her rivalry with Ellie burns across the season, while her shifting partnerships with Alec, Gabby, Seraphine, and Miriam are always temporary and always useful. The Second Life Amulet is her masterpiece of survival, turning a majority against her into Eureka's elimination and taking Gabby with it. But Fiore's game has a cost: by the finale, the jury and players alike know exactly what she is. She fights Thom in the joust, asks the crowd for support, gets silence, and falls smiling like a villain who knows she made the season.\n\nSEASON 13 — Total Drama Doom Island\n────────\nFiore arrives as a known villain and still finds ways to make people listen. She engineers early votes, throws challenge pieces, stores secrets as leverage, and confronts Caleb when he steals her credit. Her game is often brilliant and rarely safe, which means every camp eventually starts treating her like a live grenade. When the Villains lose Tropical Takedown, the tribe finally removes the player they no longer believe they can control.",
+      "avgPlacement": 8.5
     },
     {
       "id": "ellie",
@@ -9375,7 +9704,7 @@
       "totalChallengeWins": 2,
       "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 14,
+      "totalVotesAgainst": 25,
       "totalIdolsFound": 0,
       "totalJuryVotes": 2,
       "tier": "Unranked",
@@ -9430,24 +9759,45 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 4,
+          "status": "Juror",
+          "tribe": "Civilians → Villains → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 11,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 8.7,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Riya returns from Rescue Island and nearly weaponizes the entire endgame before one duel ends her run."
+          ],
+          "gameplayStyle": "Cold reads, sharper exits",
+          "keyMoments": [
+            "Ep.3 — Voted out on a revote, beginning her Rescue Island rebuild.",
+            "Ep.11 — Wins the Edge return gauntlet and re-enters at the merge.",
+            "Ep.14 — Buys and plays the Vote Steal to redirect Wayne's vote onto Ally.",
+            "Ep.17 — Helps take out Caleb while tied destinies destroy Alec too.",
+            "Ep.18 — Loses the Second Life Balancing Act duel to Jake."
+          ],
+          "alliances": [
+            "The Wildcard Pact"
+          ],
+          "rivalries": [
+            "Wayne",
+            "Caleb",
+            "Jake",
+            "Hunter",
+            "MacArthur"
+          ]
         }
       ],
-      "story": "Riya plays like every campfire is a courtroom and every smile is evidence. From the opening days, she cuts corners, tests loyalty, frames allies, and makes enemies faster than anyone can count them. Her game is explosive but resilient: she survives public blowups, direct hatred from Hunter, Ellie, Ally, Rosa-Maria, and Jacques, and even a failed plan that should have buried her at final seven. When she wins immunity late and claws through the finale, she proves that her survival was never accidental. But Final Tribal is not just about reach — it is about reception. The jury sees her power, but too many also feel the burns she left behind.",
-      "avgPlacement": 2
+      "story": "Riya plays like every campfire is a courtroom and every smile is evidence. From the opening days, she cuts corners, tests loyalty, frames allies, and makes enemies faster than anyone can count them. Her game is explosive but resilient: she survives public blowups, direct hatred from Hunter, Ellie, Ally, Rosa-Maria, and Jacques, and even a failed plan that should have buried her at final seven. When she wins immunity late and claws through the finale, she proves that her survival was never accidental. But Final Tribal is not just about reach — it is about reception. The jury sees her power, but too many also feel the burns she left behind.\n\nSEASON 13 — Total Drama Doom Island\n────────\nRiya is voted out early, but Rescue Island sharpens rather than softens her. When she returns at the merge, she brings a colder, cleaner game: vote steals, false trust, and precision betrayals. She plays between factions and repeatedly escapes positions that should be fatal. Her final mistake is letting Jake get one more life, and the Balancing Act turns her strategic résumé into a jury seat.",
+      "avgPlacement": 3
     },
     {
       "id": "rosa-maria",
@@ -9582,11 +9932,11 @@
       "totalSeasons": 2,
       "bestPlacement": 5,
       "wins": 0,
-      "totalChallengeWins": 1,
-      "totalImmunityWins": 1,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 5,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 14,
+      "totalIdolsFound": 2,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
@@ -9636,24 +9986,46 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 7,
+          "status": "Juror",
+          "tribe": "Civilians → Villains → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 9,
+          "idolsFound": 2,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 7.9,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Aiden plays hard, wins key safety, and inspires loyalty, but his rivalry with Ally and volatility finally catch up."
+          ],
+          "gameplayStyle": "Sharp eyes, fraying fuse",
+          "keyMoments": [
+            "Ep.6 — Finds the Civilians Beware Advantage, activating the idol network.",
+            "Ep.7 — Plays his idol and survives three votes against him.",
+            "Ep.11 — Forms The Coalition with Wayne, MacArthur, and Caleb.",
+            "Ep.14 — Wins Camp Castaways immunity after surviving the flood chaos.",
+            "Ep.15 — Voted out on a revote against Wayne."
+          ],
+          "alliances": [
+            "The Merge Mob",
+            "The Firewall"
+          ],
+          "rivalries": [
+            "Ally",
+            "Julia",
+            "Scarlett",
+            "Caleb",
+            "Jake"
+          ]
         }
       ],
-      "story": "Aiden arrives reading lies before most players have unpacked, and that instinct carries him deeper than almost anyone expects. He is a workhorse, a social fixer, and a quiet danger who keeps finding the pulse of camp before the vote lands. His bonds with Jen, Lake, Ally, and others give him protection, but they also make his game emotionally expensive. Late in the season, Aiden becomes the hub of The Movement, steals votes, redirects pressure, and survives by making himself necessary. But at final five, his enemies finally align with the fire-making gods against him. He loses the tiebreaker to James, and the jury gains its most dramatic witness.",
-      "avgPlacement": 5
+      "story": "Aiden arrives reading lies before most players have unpacked, and that instinct carries him deeper than almost anyone expects. He is a workhorse, a social fixer, and a quiet danger who keeps finding the pulse of camp before the vote lands. His bonds with Jen, Lake, Ally, and others give him protection, but they also make his game emotionally expensive. Late in the season, Aiden becomes the hub of The Movement, steals votes, redirects pressure, and survives by making himself necessary. But at final five, his enemies finally align with the fire-making gods against him. He loses the tiebreaker to James, and the jury gains its most dramatic witness.\n\nSEASON 13 — Total Drama Doom Island\n────────\nAiden spends the season constantly in motion, building plans before the rest of camp finishes breakfast. He finds and plays idols, survives a major merge scare, and becomes Wayne's central bond. Yet his game carries heat: Ally hates him, Caleb distrusts him, and his outbursts make people question the long-term risk. At final seven, even Wayne's loyalty cannot keep the revote from breaking against him.",
+      "avgPlacement": 6
     },
     {
       "id": "hunter",
@@ -9663,13 +10035,13 @@
         13
       ],
       "totalSeasons": 2,
-      "bestPlacement": 10,
+      "bestPlacement": 9,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 8,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 15,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
@@ -9718,24 +10090,42 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 9,
+          "status": "Juror",
+          "tribe": "Heroes → Villains → Heroes → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 7,
+          "idolsFound": 1,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 5.8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Hunter survives on loyalty and proximity more than dominance, but his bond with Julia becomes impossible to ignore."
+          ],
+          "gameplayStyle": "Quiet loyalty, late target",
+          "keyMoments": [
+            "Ep.3 — Finds the Heroes Beware Advantage, gaining a dangerous delayed idol.",
+            "Ep.10 — Plays an idol for Julia, proving the bond publicly.",
+            "Ep.12 — Survives the MacArthur revote when the tribe splits around him.",
+            "Ep.13 — Gets vote-blocked by Wayne and loses his chance to respond.",
+            "Ep.13 — Voted out as the Julia-Hunter pair becomes too visible."
+          ],
+          "alliances": [
+            "The Elimination Squad"
+          ],
+          "rivalries": [
+            "Wayne",
+            "Riya"
+          ]
         }
       ],
-      "story": "Hunter starts as a physical presence and an emotional connector, but his game is always tangled in other people’s wars. His early bond with Yul becomes a trap, his hatred with Riya becomes radioactive, and his showmance with Ally becomes a bright red warning light. He has moments of real support — comforting Tess, protecting Ally, rowing hard, keeping people steady. Yet he rarely controls the final direction of the vote. At the merge, the consensus finally lands on him because he has already been named too many times. He exits furious at Riya, but the truth is harsher: everyone knew he could be cut.",
-      "avgPlacement": 10
+      "story": "Hunter starts as a physical presence and an emotional connector, but his game is always tangled in other people’s wars. His early bond with Yul becomes a trap, his hatred with Riya becomes radioactive, and his showmance with Ally becomes a bright red warning light. He has moments of real support — comforting Tess, protecting Ally, rowing hard, keeping people steady. Yet he rarely controls the final direction of the vote. At the merge, the consensus finally lands on him because he has already been named too many times. He exits furious at Riya, but the truth is harsher: everyone knew he could be cut.\n\nSEASON 13 — Total Drama Doom Island\n────────\nHunter's game is quiet until it suddenly isn't. He holds a Beware idol, gives up protection for Julia, and becomes the emotional half of a visible pair. People underestimate him because his challenge record is uneven, but his loyalty makes him hard to move and harder to read. Once Julia and Hunter become a named threat, the merge majority cuts him before that story can reach the finale.",
+      "avgPlacement": 9.5
     },
     {
       "id": "yul",
@@ -9941,7 +10331,7 @@
       "totalChallengeWins": 2,
       "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 4,
+      "totalVotesAgainst": 15,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -9991,24 +10381,44 @@
         },
         {
           "season": 13,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 8,
+          "status": "Juror",
+          "tribe": "Villains → Civilians → Heroes → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 11,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 7.2,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Ally's social reach makes her central for most of the merge, but old hatred and a stolen vote seal her fall."
+          ],
+          "gameplayStyle": "Social sparks, unstable bridges",
+          "keyMoments": [
+            "Ep.3 — Mutinies from Villains to Civilians, changing the pre-merge map.",
+            "Ep.8 — Wins the Coconut Weight journey and earns an Extra Vote.",
+            "Ep.10 — Jake plays an idol for her, proving her protection network.",
+            "Ep.12 — Uses her Extra Vote against MacArthur.",
+            "Ep.14 — Voted out after Riya steals Wayne's vote and redirects it."
+          ],
+          "alliances": [
+            "The Merge Mob",
+            "The Guard"
+          ],
+          "rivalries": [
+            "Aiden",
+            "Julia",
+            "Scarlett"
+          ]
         }
       ],
-      "story": "Ally begins too loud, too fast, and too visible, but she adapts before the game can fully punish her. She runs the first vote, survives being exposed by Emmah, and gradually becomes a bridge between fractured groups. Her game is marked by social bursts, advantage plays, and surprising challenge strength, from Truth or Shark to Drumheller. Yet her alliances rarely stay stable; The Barricade, The Merge Mob, and The Movement all bend or break under pressure. At final three, Ally is one perch away from controlling the ending. She falls, and James makes the coldest possible read: she cannot be allowed to face the jury.",
-      "avgPlacement": 3
+      "story": "Ally begins too loud, too fast, and too visible, but she adapts before the game can fully punish her. She runs the first vote, survives being exposed by Emmah, and gradually becomes a bridge between fractured groups. Her game is marked by social bursts, advantage plays, and surprising challenge strength, from Truth or Shark to Drumheller. Yet her alliances rarely stay stable; The Barricade, The Merge Mob, and The Movement all bend or break under pressure. At final three, Ally is one perch away from controlling the ending. She falls, and James makes the coldest possible read: she cannot be allowed to face the jury.\n\nSEASON 13 — Total Drama Doom Island\n────────\nAlly mutinies early, adapts quickly, and keeps finding new rooms to enter. She builds with Aiden, Thom, Jake, and later the Guard, but nearly every bond comes with a counterweight. Her Extra Vote signals ambition, and her name keeps surfacing until the tribe stops treating it as a warning and starts treating it as a plan. Riya's Vote Steal turns the final math against her, and Ally leaves knowing she was one conversation away from safety.",
+      "avgPlacement": 5.5
     },
     {
       "id": "oliver",

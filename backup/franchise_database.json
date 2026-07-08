@@ -1,10 +1,10 @@
 {
   "franchiseStats": {
-    "totalSeasons": 11,
-    "totalEpisodes": 180,
-    "uniquePlayers": 120,
-    "totalAppearances": 202,
-    "lastUpdated": "2026-06-22",
+    "totalSeasons": 12,
+    "totalEpisodes": 198,
+    "uniquePlayers": 134,
+    "totalAppearances": 222,
+    "lastUpdated": "2026-06-30",
     "dataSources": [
       "players_database.json",
       "seasons_database.json",
@@ -131,6 +131,19 @@
       "strategy": "Miriam plays a patient pressure game: she lets louder players become shields, builds deep trust with Thom and later Eureka, keeps her Extra Vote long enough to shape early momentum, and repeatedly survives by redirecting attention onto players who appear more volatile. Her best work comes late, when she turns the Thom bond from liability into leverage and beats him at the summit with an emotional mind game instead of raw speed.",
       "legacy": "Miriam leaves as the season's definitive survivor: underestimated at the dock, painted as a target at merge, nearly cracked by paranoia, and still standing with the million when the volcano erupts. Her win is remembered less as a clean march and more as a stubborn, bruising refusal to be erased.",
       "votesAgainst": 8
+    },
+    {
+      "season": 12,
+      "seasonTitle": "Total Drama: Generations",
+      "emoji": "",
+      "winner": "James",
+      "playerSlug": "james",
+      "finalVote": "7-2",
+      "runnerUp": "Riya",
+      "keyStats": "James wins 7-2 over Riya after surviving 9 votes against, winning 1 individual immunity, returning through the Aftermayhem, and claiming final immunity at the last possible moment.",
+      "strategy": "James plays a restless, opportunistic game: he builds alliances quickly, abandons them before they can trap him, weaponizes misinformation, and repeatedly turns personal tension into strategic cover. His greatest strength is timing — he knows when to hide behind louder players, when to expose a threat, and when to make the vote feel inevitable.",
+      "legacy": "James leaves as one of the season’s defining schemers: messy, polarizing, and frequently distrusted, but impossible for the jury to deny. His win becomes the signature case study for how a player can be voted out, fight back in, and still control the ending.",
+      "votesAgainst": 9
     }
   ],
   "records": {
@@ -350,6 +363,11 @@
       "season": 11,
       "name": "Thom",
       "playerSlug": "thom"
+    },
+    {
+      "season": 12,
+      "name": "Aiden",
+      "playerSlug": "aiden"
     }
   ],
   "multiSeasonPlayers": [
@@ -377,18 +395,6 @@
       "seasonsPlayed": 2,
       "wins": 1,
       "avgPlacement": 1.5,
-      "bestPlacement": 1
-    },
-    {
-      "name": "Jacques",
-      "playerSlug": "jacques",
-      "seasons": [
-        6,
-        7
-      ],
-      "seasonsPlayed": 2,
-      "wins": 1,
-      "avgPlacement": 2.5,
       "bestPlacement": 1
     },
     {
@@ -441,18 +447,6 @@
       "bestPlacement": 3
     },
     {
-      "name": "Ezekiel",
-      "playerSlug": "ezekiel",
-      "seasons": [
-        2,
-        1
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 5,
-      "bestPlacement": 4
-    },
-    {
       "name": "Ryan",
       "playerSlug": "ryan",
       "seasons": [
@@ -502,6 +496,18 @@
       "wins": 0,
       "avgPlacement": 6.5,
       "bestPlacement": 6
+    },
+    {
+      "name": "Jen",
+      "playerSlug": "jen",
+      "seasons": [
+        8,
+        12
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 7.0,
+      "bestPlacement": 5
     },
     {
       "name": "Mickey",
@@ -579,6 +585,18 @@
       "bestPlacement": 7
     },
     {
+      "name": "Ellie",
+      "playerSlug": "ellie",
+      "seasons": [
+        11,
+        12
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 8.0,
+      "bestPlacement": 8
+    },
+    {
       "name": "Zoey",
       "playerSlug": "zoey",
       "seasons": [
@@ -603,6 +621,19 @@
       "seasonsPlayed": 3,
       "wins": 1,
       "avgPlacement": 8,
+      "bestPlacement": 1
+    },
+    {
+      "name": "Jacques",
+      "playerSlug": "jacques",
+      "seasons": [
+        6,
+        7,
+        12
+      ],
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "avgPlacement": 3.0,
       "bestPlacement": 1
     },
     {
@@ -667,6 +698,18 @@
       "bestPlacement": 9
     },
     {
+      "name": "Chase",
+      "playerSlug": "chase",
+      "seasons": [
+        9,
+        12
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 9.5,
+      "bestPlacement": 3
+    },
+    {
       "name": "Beth",
       "playerSlug": "beth",
       "seasons": [
@@ -704,6 +747,19 @@
       "wins": 1,
       "avgPlacement": 9.33,
       "bestPlacement": 1
+    },
+    {
+      "name": "Ezekiel",
+      "playerSlug": "ezekiel",
+      "seasons": [
+        2,
+        1,
+        12
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 9.67,
+      "bestPlacement": 4
     },
     {
       "name": "Jasmine",
@@ -880,6 +936,18 @@
       "wins": 0,
       "avgPlacement": 12,
       "bestPlacement": 11
+    },
+    {
+      "name": "Emmah",
+      "playerSlug": "emmah",
+      "seasons": [
+        9,
+        12
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 12.5,
+      "bestPlacement": 5
     },
     {
       "name": "Courtney",
@@ -1086,6 +1154,11 @@
         "season": 11,
         "strategy": "Miriam plays a patient pressure game: she lets louder players become shields, builds deep trust with Thom and later Eureka, keeps her Extra Vote long enough to shape early momentum, and repeatedly survives by redirecting attention onto players who appear more volatile. Her best work comes late, when she turns the Thom bond from liability into leverage and beats him at the summit with an emotional mind game instead of raw speed.",
         "winner": "Miriam"
+      },
+      {
+        "season": 12,
+        "strategy": "James plays a restless, opportunistic game: he builds alliances quickly, abandons them before they can trap him, weaponizes misinformation, and repeatedly turns personal tension into strategic cover. His greatest strength is timing — he knows when to hide behind louder players, when to expose a threat, and when to make the vote feel inevitable.",
+        "winner": "James"
       }
     ],
     "castComposition": [
@@ -1134,6 +1207,10 @@
       {
         "season": 11,
         "composition": "18 players"
+      },
+      {
+        "season": 12,
+        "composition": "20 players"
       }
     ],
     "finaleVoteMargins": [
@@ -1204,6 +1281,15 @@
           "Miriam",
           "Thom"
         ]
+      },
+      {
+        "season": 12,
+        "vote": "7-2",
+        "winner": "James",
+        "finalists": [
+          "James",
+          "Riya"
+        ]
       }
     ],
     "majorTwists": [
@@ -1250,6 +1336,10 @@
       {
         "season": 11,
         "twist": "Cursed Island begins as a survival test and becomes a study in how trust breaks under pressure. The pre-merge is defined by sabotage, swaps, exposed idols, and tribes that never fully stabilize: Ashley is framed, Drew is discarded, Will is betrayed, Eureka is rocked out, Wix is exiled by emissary power, Grett detonates half the game on her way out, Nick exposes alliances, and Sterling falls to a fractured Teal endgame. At the merge, no alliance survives first contact with public voting, idol insurance, or personal grudges. Ellie weaponizes a Super Idol, Dan loses the one read he needed, Jake's heart becomes both shield and target, and Fiore's Second Life Amulet rewrites the final six. Through it all, Miriam and Thom build a bond so visible it should destroy them, but instead it carries them to the finale. The season ends not with a jury speech, but with a volcanic race where Miriam weaponizes that bond one final time and steals the million from the person who trusted her most."
+      },
+      {
+        "season": 12,
+        "twist": "Generations is a season about unstable power. The early game belongs to tribes that cannot keep their own alliances intact: The Camp Takeover fractures immediately, The Ride or Die collapses in betrayal, and nearly every bloc becomes a temporary shelter rather than a home. The pre-merge is defined by chaos mechanisms — swaps, journeys, Shot in the Dark saves, vote steals, vote blocks, and tiebreakers that turn simple votes into disasters. At the merge, the game becomes openly predatory: Jacques steals Ellie’s idol, Karol is removed in a public vote, Hunter and Jen are cut for their social danger, and James is eliminated only to fight his way back through the Aftermayhem. The endgame is a knife fight among players nobody fully trusts: Riya survives by force, Aiden by perception, Ally by social maneuvering, Jacques by advantage terror, and James by refusing to stay dead. By the finale, the jury rewards not the cleanest game, but the player who best explains the wreckage. James wins because he makes every betrayal sound like architecture."
       }
     ]
   },
@@ -1328,7 +1418,7 @@
         {
           "name": "Jacques",
           "playerSlug": "jacques",
-          "total": 10
+          "total": 11
         },
         {
           "name": "Scott",
@@ -1380,7 +1470,7 @@
         {
           "name": "Jacques",
           "playerSlug": "jacques",
-          "total": 9
+          "total": 10
         },
         {
           "name": "Gwen",
@@ -1504,13 +1594,13 @@
           "votesAgainst": 1
         },
         {
-          "name": "Ella",
-          "playerSlug": "ella",
-          "votesAgainst": 2
+          "name": "Connor",
+          "playerSlug": "connor",
+          "votesAgainst": 1
         },
         {
-          "name": "Jacques",
-          "playerSlug": "jacques",
+          "name": "Ella",
+          "playerSlug": "ella",
           "votesAgainst": 2
         },
         {
@@ -1538,6 +1628,11 @@
         {
           "name": "Jacques",
           "playerSlug": "jacques",
+          "total": 7
+        },
+        {
+          "name": "James",
+          "playerSlug": "james",
           "total": 7
         },
         {
@@ -1574,11 +1669,6 @@
           "name": "Scott",
           "playerSlug": "scott",
           "total": 4
-        },
-        {
-          "name": "Emma",
-          "playerSlug": "emma",
-          "total": 3
         }
       ]
     },
@@ -1825,7 +1915,8 @@
     "season8": "Heroes vs. Villains vs. Civilians brought 18 returnees into the franchise's most complex tribal format. The Civilian bloc (Gerry/Jen/Sanders) dominated the merge through Unbreakable Relationships, controlling 75% of post-merge votes and systematically eliminating legends Owen, Leshawna, and MacArthur. Alejandro's physical resurrection (4 individual immunities) combined with Cameron's tactical survival produced a historic 4-4 jury deadlock — the franchise's first Dual Win. Sanders played the most decorated non-winner game in history (2 idols found, 2 played, final immunity). Gerry's psychological destruction of Heather — forcing her to quit while holding the Super Idol — stands as the most stunning advantage waste in Total Drama history.",
     "season9": "18 newbies fight for the title of King of Power — 18 players, won by Bowie over Millie & Chase (5-3-0). Sets the franchise gold standard for advantage mastery at the merge. Proves that ruthless timing plus airtight social insurance can still earn a largely respectful jury win.",
     "season10": "Champions vs Contenders brought 9 returning champions against 9 hungry contenders. Jasmine's pressure reads, loyal shields, and perfectly timed exits from danger carried her past Bowie's relentless scheming. Redemption Island produced its own mythology through Priya's early streak and Sanders's five-duel run. The Oath alliance dominated but fractured as exposure after exposure (Courtney, Scott, Priya) kept unmasking Bowie. The first physical finale (no jury vote) proved that the season's survivor can outrun the season's strategist when there's nowhere left to hide.",
-    "message": "The message across 11 seasons: Different winning strategies — Lindsay S1, Duncan S2, Emma S3, Alejandro S4, Mickey S5, Jacques S6, MacArthur S7, Alejandro & Cameron (Dual Win) S8, Bowie S9, Jasmine S10, Miriam S11. Adaptability, jury respect, and understanding when to strike remain essential.",
-    "season11": "A season of fractured alliances, cursed advantages, comeback ghosts, and one underdog who refused to leave before the volcano answered.. Miriam wins (no jury vote) over Thom. Miriam plays a patient pressure game: she lets louder players become shields, builds deep trust with Thom and later Eureka, keeps her Extra Vote long enough to shape early momentum, and repeatedly survives by redirecting attention onto players who appear more volatile. Her best work comes late, when she turns the Thom bond from liability into leverage and beats him at the summit with an emotional mind game instead of raw speed."
+    "message": "The message across 12 seasons: Different winning strategies — Lindsay S1, Duncan S2, Emma S3, Alejandro S4, Mickey S5, Jacques S6, MacArthur S7, Alejandro & Cameron (Dual Win) S8, Bowie S9, Jasmine S10, Miriam S11, James S12. Adaptability, jury respect, and understanding when to strike remain essential.",
+    "season11": "A season of fractured alliances, cursed advantages, comeback ghosts, and one underdog who refused to leave before the volcano answered.. Miriam wins (no jury vote) over Thom. Miriam plays a patient pressure game: she lets louder players become shields, builds deep trust with Thom and later Eureka, keeps her Extra Vote long enough to shape early momentum, and repeatedly survives by redirecting attention onto players who appear more volatile. Her best work comes late, when she turns the Thom bond from liability into leverage and beats him at the summit with an emotional mind game instead of raw speed.",
+    "season12": "A season of fractured alliances, public betrayals, advantage warfare, and one cold-blooded winner who turned chaos into a résumé.. James wins (7-2) over Riya. James plays a restless, opportunistic game: he builds alliances quickly, abandons them before they can trap him, weaponizes misinformation, and repeatedly turns personal tension into strategic cover. His greatest strength is timing — he knows when to hide behind louder players, when to expose a threat, and when to make the vote feel inevitable."
   }
 }

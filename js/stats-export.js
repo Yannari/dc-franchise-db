@@ -107,24 +107,18 @@ function _extractPlayerPlacements() {
       permanentExit[ep.riQuit.name] = ep.num;
     }
 
-    // RI/Edge reentry losers leave the game for good at the return challenge, but their
-    // PLACEMENT is set by when they ORIGINALLY left the main game (their vote-out episode,
-    // already recorded from ep.eliminated in an earlier iteration) — NOT this return episode.
-    // Overwriting collapses every Edge loser onto the same episode and scrambles placements.
-    // Keep the earlier exit; only fall back to the return episode if their vote-out was somehow
-    // never recorded. This works from episodeHistory alone, so it is also correct for
-    // saved/reloaded seasons (gs.riArrivalEp is runtime-only and not persisted).
-    if (ep.riReentryLosers?.length) {
-      for (const loser of ep.riReentryLosers) {
+    // Edge / Rescue Island return challenge: the losers leave for good, but their PLACEMENT is
+    // set by when they ORIGINALLY left the main game (their vote-out episode, already recorded
+    // from ep.eliminated in an earlier iteration) — NOT this return episode, and NOT how they did
+    // in the return challenge. Do NOT overwrite an existing exit: doing so collapses every Edge
+    // dweller onto one episode and scrambles the whole board (ordering by rescueReturn.finalStandings
+    // was exactly that bug). Only record the return episode as a last-resort fallback if a loser's
+    // vote-out was somehow never captured. Reads both the flat and nested reentry-loser field shapes.
+    const _reentryLosers = ep.riReentryLosers || ep.riReentry?.losers || ep.rescueReturn?.losers;
+    if (_reentryLosers?.length) {
+      for (const loser of _reentryLosers) {
         if (permanentExit[loser] == null) permanentExit[loser] = ep.num;
       }
-    }
-    // Edge of Extinction return gauntlet: order the losers among themselves by how far
-    // they got (finalStandings = [winner, best...worst]) so their placements aren't tied.
-    // Better performers exit fractionally later → better placement.
-    if (ep.rescueReturn?.finalStandings?.length) {
-      const losers = ep.rescueReturn.finalStandings.slice(1); // drop the winner
-      losers.forEach((name, i) => { permanentExit[name] = ep.num - (i + 1) * 0.001; });
     }
 
     // Regular eliminations — record as permanent exit
@@ -170,6 +164,15 @@ function _extractPlayerPlacements() {
     if (_ambBoot) {
       permanentExit[_ambBoot] = ep.num - (ep.eliminated && ep.eliminated !== _ambBoot ? 0.5 : 0);
     }
+
+    // Tied Destinies twist: two players are linked, so when one is voted out the other goes with
+    // them as collateral (ep.tiedDestinies.eliminatedPartner). The target lands in ep.eliminated,
+    // but the partner was never recorded → dumped at 'Unknown'. Record the partner just below the
+    // target (same episode, fractional) so it isn't tied with the main boot.
+    const _tdPartner = ep.tiedDestinies?.eliminatedPartner;
+    if (_tdPartner && _tdPartner !== ep.eliminated) {
+      permanentExit[_tdPartner] = ep.num - 0.5;
+    }
   }
 
   // Remove finalists from permanent exit (they made it to the end)
@@ -177,26 +180,10 @@ function _extractPlayerPlacements() {
     delete permanentExit[name];
   }
 
-  // ── Edge of Extinction / Rescue Island placement authority ──────────────
-  // In the rescue (EoE) format a voted-out player goes to the Edge, and gs.riArrivalEp
-  // records the episode they LAST left the main game (it's overwritten each time they
-  // return and get voted out again, and is set for jury-elimination boots too). This is
-  // the correct basis for placement. The per-episode fields are unreliable here: the
-  // return-challenge block stamps EVERY Edge loser with the SAME return-episode number,
-  // collapsing their vote-out order and scrambling placements. Override with the true
-  // per-player arrival episode. Skip finalists and anyone who returned and is still active.
-  if (seasonConfig?.riFormat === 'rescue' && gs.riArrivalEp) {
-    const stillActive = new Set(gs.activePlayers || []);
-    for (const [name, arrivalEp] of Object.entries(gs.riArrivalEp)) {
-      if (finalists.includes(name) || stillActive.has(name)) continue;
-      // Preserve any deliberate fractional tie-break already assigned this run (e.g. an
-      // ambassador or Koh-Lanta boot that left slightly earlier within an episode); only
-      // correct integer / flattened exit values.
-      const cur = permanentExit[name];
-      if (cur != null && !Number.isInteger(cur)) continue;
-      permanentExit[name] = arrivalEp;
-    }
-  }
+  // NOTE: do NOT override permanentExit from gs.riArrivalEp. That field records a player's FIRST
+  // Edge arrival and is not updated when a returnee is voted out again after the Edge has closed
+  // (they go straight to jury) — so using it reverts returnees to their first boot. The per-episode
+  // ep.eliminated chain above already yields each player's true LAST departure.
 
   // Build elimination order sorted by permanent exit episode (earliest exit first)
   const elimOrder = Object.entries(permanentExit)

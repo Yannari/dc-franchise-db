@@ -321,11 +321,20 @@
       "votesAgainst": 17,
       "juryVotes": 0,
       "idolsFound": 3,
-      "title": "The Hockey Bro",
+      "title": "The Golden Goofball",
       "emoji": "🏒",
-      "reasoning": "S9's loyal bruiser who drew the wrong cards at the wrong time. He won the Ep2 summit and picked up an Extra Vote — then lost it when Emmah lifted it with Knowledge is Power. He missed his Shot in the Dark at F9 and went out 5-0 the same episode Millie's idol and Priya's Extra Vote rewrote the ballot. S13 Winner. Narrative override +1: equalizer. 1 immunity win, played 3 idols effectively, 7 alliances, fan favorite.",
-      "strengths": [],
-      "weaknesses": [],
+      "reasoning": "Wayne’s career arc is the cleanest glow-up in the top tier: a loyal S9 bruiser who got advantage-whacked at F9, then came back in S13 and won the whole thing. His first run was defined by bad timing — losing an Extra Vote to Knowledge is Power, missing Shot in the Dark, and watching idols and extras rewrite his boot — but his winning season turned that chaos into resilience. With 3 effective idol plays, 7 alliances, and fan-favorite equity, Wayne proved the lovable shield could also be the endgame equalizer.",
+      "strengths": [
+        "S13 champion",
+        "3 effective idol plays",
+        "7 alliances",
+        "Fan favorite winner"
+      ],
+      "weaknesses": [
+        "17 votes against",
+        "Only 2 challenge wins",
+        "S9 advantage victim"
+      ],
       "scoreHistory": [
         56.5,
         89.6
@@ -356,11 +365,20 @@
       "votesAgainst": 13,
       "juryVotes": 0,
       "idolsFound": 3,
-      "title": "The Ice Queen",
-      "emoji": "💡",
-      "reasoning": "S9's ice-cold tactician. Julia manipulated Raj into leaving with an idol in his pocket and joined the Misfits to take down Ripper. She was a genuine endgame threat until Bowie ripped her idol at Tribal with Knowledge is Power. She still helped pull the Priya blindside — then went out at F4 when Bowie and Chase combined their extras to silence her entirely. S13 P2. Narrative override +1: equalizer. 4 immunity wins, played 1 idol effectively, 3 alliances.",
-      "strengths": [],
-      "weaknesses": [],
+      "title": "The Ice-Cold Influencer",
+      "emoji": "💅",
+      "reasoning": "Julia remains one of the franchise’s sharpest non-winners, combining ruthless social reads with real challenge power across two deep runs. In S9, she manipulated Raj into leaving with an idol, helped form the Misfits to topple Ripper, and still had enough pull to assist the Priya blindside after Bowie stripped her idol with Knowledge is Power. Her S13 runner-up finish cemented her as an elite endgame threat, though her flashiness and threat level kept her from turning dominance into a crown.",
+      "strengths": [
+        "S13 runner-up",
+        "6 challenge wins",
+        "3 idols found",
+        "Major blindside architect"
+      ],
+      "weaknesses": [
+        "No wins in 2 seasons",
+        "13 votes against",
+        "Threat level hard to hide"
+      ],
       "scoreHistory": [
         65.4,
         88.1
@@ -624,19 +642,19 @@
       "votesAgainst": 25,
       "juryVotes": 2,
       "idolsFound": 2,
-      "title": "The Red-Carpet Lightning Rod",
-      "emoji": "🎬",
-      "reasoning": "Riya’s S12 runner-up game was loud, resilient, and constantly under fire, with a massive 14 votes against and still a seat at the end. She backed up the chaos with two immunity wins, an idol play, and enough strategic traction to outlast nearly everyone. But the same polarizing style that kept the season orbiting around her also capped her win equity, ending in only 2 jury votes against James. S13 P4. Narrative override +1: equalizer. played 1 idol effectively, 1 alliance.",
+      "title": "The Polarizing Survivor",
+      "emoji": "🎭",
+      "reasoning": "Riya’s legacy is built on surviving heat that would have cooked almost anyone else. Her S12 runner-up game absorbed 14 votes against, produced two immunity wins and an idol play, and still carried her to the finals — but the same confrontational style limited her to 2 jury votes against James. Returning for S13 and finishing 4th reinforced the pattern: dangerous, durable, always central, but rarely easy for a jury to reward.",
       "strengths": [
         "S12 runner-up",
-        "Survived 14 votes against",
+        "Two deep runs",
         "2 immunity wins",
-        "Played 1 idol"
+        "Survived 25 total votes"
       ],
       "weaknesses": [
-        "Only 2 jury votes",
-        "Extremely polarizing",
-        "Constantly targeted"
+        "0 wins",
+        "Polarizing jury management",
+        "Only 2 jury votes"
       ],
       "winRate": 0,
       "overrides": [
@@ -664,18 +682,19 @@
       "juryVotes": 0,
       "idolsFound": 2,
       "status": "Competed in Season 7 only",
-      "title": "The Enforcer",
-      "emoji": "👮‍♀️",
-      "reasoning": "MacArthur's S7 was a power-social showcase: she found the Mauhu idol, bridged across blocs, steered key boots, and won the jury with controlled force. She kept her idol holstered correctly through joint tribals and late storms, then locked the endgame with Cody and Carrie. With 4 challenge wins, 1 idol found, and only 5 votes against, her run was efficient and respected. A fiery rivalry with Sky never derailed her path to the crown. S13 P10. Narrative override +1: equalizer. 2 alliances.",
+      "title": "The Badge-Wielding Bulldozer",
+      "emoji": "🚓",
+      "reasoning": "MacArthur’s S7 win was a controlled power-social run, blending idol security, cross-bloc relationships, and blunt-force command of the endgame. She found the Mauhu idol, managed the Sky rivalry without letting it consume her, and closed with Cody and Carrie while taking only 5 votes that season. Later returns were messier, with 7th and 10th place finishes adding more target equity than trophy equity, but her peak remains one of the franchise’s most respected winning games.",
       "strengths": [
-        "Cross-tribe relationship building that scales to merge",
-        "Excellent idol discipline and timing (pocketing under pressure)",
-        "Independent agency on votes that juries reward",
-        "Endgame coordination without overexposure"
+        "S7 champion",
+        "7 challenge wins",
+        "Efficient winning game",
+        "Strong cross-bloc control"
       ],
       "weaknesses": [
-        "Direct style risks conflicts with strong-willed allies",
-        "High visibility makes her an immediate returnee target"
+        "Declining return placements",
+        "23 total votes against",
+        "Big personality creates heat"
       ],
       "name": "MacArthur",
       "seasonsList": [
@@ -716,19 +735,19 @@
       "votesAgainst": 12,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "The Heart-On-Sleeve Pawn",
+      "title": "The Heartline Survivor",
       "emoji": "💔",
-      "reasoning": "Jake’s S11 game was defined as much by emotion as strategy, with the Thom showmance shaping both his story and his exposure. He made it to 7th and held two alliances, but 7 votes against and zero challenge wins point to a player who was often vulnerable. His social bonds mattered, just not enough to turn him into a true endgame driver. S13 P3. Narrative override +1: equalizer. played 1 idol effectively, 4 alliances.",
+      "reasoning": "Jake’s legacy is built on emotional gravity: the Thom showmance made him one of S11’s central characters, but also kept a spotlight on every vulnerability. He improved from 7th to 3rd in S13, using social bonds, four alliances, and an effective idol play to become a real endgame presence despite never winning a challenge. The résumé is messy — 12 votes against and zero jury votes — but his arc from exposed romantic player to finalist-adjacent survivor gives him undeniable franchise weight.",
       "strengths": [
-        "S11 7th place",
-        "Two alliances",
-        "Strong personal bonds",
-        "Showmance storyline"
+        "3rd place peak",
+        "Effective idol play",
+        "Six total alliance ties",
+        "Two deep runs"
       ],
       "weaknesses": [
-        "7 votes against",
         "0 challenge wins",
-        "No idols played"
+        "12 votes against",
+        "No jury votes"
       ],
       "winRate": 0,
       "overrides": [
@@ -879,17 +898,18 @@
       "votesAgainst": 9,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "The Idol Matriarch",
-      "emoji": "🦉",
-      "reasoning": "Miriam turned a single season into a legacy case, winning S11 with just enough immunity, advantage timing, and alliance coverage to survive a dangerous endgame. Her résumé is not spotless — 8 votes against shows she was never invisible — but she converted pressure into control when it mattered. One idol play, three alliances, and the win make her the season’s defining strategist. S13 P19. Narrative override +5: equalizer. voted against once.",
+      "title": "The Grandmother Gambit",
+      "emoji": "🧶",
+      "reasoning": "Miriam’s S11 win remains one of the franchise’s sharpest single-season achievements, built on timing, alliance coverage, and just enough advantage power to survive a dangerous endgame. She was never a ghost — 9 total votes against shows opponents saw her coming — but she converted pressure into the season’s defining victory. Her S13 flameout in 19th damages the career average, yet the win, idol, and strategist reputation still keep her comfortably in S-tier territory.",
       "strengths": [
-        "S11 winner",
-        "Rank #3 overall",
-        "Played 1 idol",
-        "Three alliance connections"
+        "S11 champion",
+        "One idol found/played",
+        "Three-alliance winning game",
+        "Converted pressure into control"
       ],
       "weaknesses": [
-        "8 votes against",
+        "19th in return season",
+        "9 votes against",
         "Only 1 challenge win"
       ],
       "winRate": 50,
@@ -1006,19 +1026,19 @@
       "votesAgainst": 15,
       "juryVotes": 0,
       "idolsFound": 3,
-      "title": "The Pixel Shieldmaiden",
+      "title": "The Idol-Cached Almost",
       "emoji": "🎮",
-      "reasoning": "Ally’s S12 game was a strong near-miss: 3rd place, two immunity wins, two idols played, and enough alliance coverage to stay relevant deep into the endgame. Her connection with Hunter gave her a visible emotional anchor, but she was more than a showmance accessory — she had real tools, real protection, and real late-game equity. The flaw is that she could not convert that positioning into a finalist seat, leaving her résumé excellent but unfinished. S13 P8. Narrative override +1: equalizer. played 1 idol effectively, 2 alliances.",
+      "reasoning": "Ally’s two-season résumé is loaded with tools: a 3rd-place S12 finish, an 8th-place S13 follow-up, two challenge wins, and three idols overall. Her Hunter connection gave her story a personal anchor, but her game was more than a showmance — she repeatedly had protection, options, and legitimate late-game equity. The issue is finishing power: for all the idols and positioning, she never turned a strong setup into a finalist seat or jury support.",
       "strengths": [
-        "S12 3rd place",
-        "2 immunity wins",
-        "Two idols played",
-        "Strong alliance coverage"
+        "3rd place peak",
+        "3 idols",
+        "2 challenge wins",
+        "Back-to-back deep-ish runs"
       ],
       "weaknesses": [
-        "Fell just short of finals",
-        "No jury votes",
-        "Showmance added visibility"
+        "15 votes against",
+        "Never reached finals",
+        "No jury votes"
       ],
       "winRate": 0,
       "overrides": [
@@ -1166,19 +1186,19 @@
       "votesAgainst": 14,
       "juryVotes": 0,
       "idolsFound": 3,
-      "title": "The Fan Favorite Firewall",
-      "emoji": "🛡️",
-      "reasoning": "Aiden turned a single S12 run into a clean Tier A résumé, finishing 5th with enough social coverage to sit inside four different alliances. His idol play and one immunity win gave him just enough hard power to survive the heat, while his fan-favorite status speaks to how well he connected beyond the vote count. The knock is that he reached the endgame without jury votes or a finalist seat, leaving his legacy as a strong supporting force rather than a proven closer. S13 P7. Narrative override +1: equalizer. 1 immunity win, played 1 idol effectively, 2 alliances.",
+      "title": "The Social Safety Net",
+      "emoji": "🛟",
+      "reasoning": "Aiden’s game is defined by survivability: 5th in S12 and 7th in S13, with enough social coverage to keep finding lanes through dangerous votes. He paired likability with practical protection, adding two challenge wins, three idols, and an effective advantage play across his career. Still, his legacy sits just below the true closers — 14 votes against, no finalist seat, and no jury votes make him feel more like an excellent connector than a winning architect.",
       "strengths": [
-        "S12 5th place",
-        "Played 1 idol",
-        "4 alliances",
-        "Fan favorite"
+        "5th and 7th placements",
+        "3 idols",
+        "2 challenge wins",
+        "Strong alliance coverage"
       ],
       "weaknesses": [
-        "No jury votes",
-        "Only 1 challenge win",
-        "Fell short of finale"
+        "14 votes against",
+        "Never made finals",
+        "No jury votes"
       ],
       "winRate": 0,
       "overrides": [
@@ -1210,18 +1230,19 @@
       "votesAgainst": 2,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "The Beloved Runner-Up",
-      "emoji": "🛡️",
-      "reasoning": "Thom played one of the cleanest losing games in the field, reaching 2nd with only a single vote cast against him all season. His mix of two immunity wins, an idol play, four alliances, and fan-favorite appeal made him feel protected from nearly every angle. The Jake showmance gave him emotional stakes, but Miriam ultimately edged him out at the finish line. S13 P13. Narrative override +2: equalizer. 1 alliance, voted against once.",
+      "title": "The Clean Runner-Up",
+      "emoji": "💞",
+      "reasoning": "Thom’s peak game was one of the cleanest losses on the board: a 2nd-place finish with only a single vote against him that season. He combined two challenge wins, an idol, multiple alliances, and the Jake showmance into a run that felt socially insulated and emotionally central. His S13 return was much shorter at 13th, but even then he only picked up one vote, reinforcing how rarely people actually wanted him gone.",
       "strengths": [
-        "S11 runner-up",
-        "2 immunity wins",
-        "Only 1 vote against",
+        "2nd-place finish",
+        "Only 2 total votes against",
+        "2 challenge wins",
         "Played 1 idol"
       ],
       "weaknesses": [
-        "Lost at the end",
-        "Showmance exposure"
+        "No win despite finalist run",
+        "S13 drop to 13th",
+        "0 jury votes"
       ],
       "winRate": 0,
       "overrides": [
@@ -1255,17 +1276,17 @@
       "idolsFound": 0,
       "title": "The Quiet Endgamer",
       "emoji": "♟️",
-      "reasoning": "Alec made 4th in S11 with a restrained, efficient game built more on positioning than spectacle. His one immunity win helped validate the run, but with only one listed alliance and no idol safety, he often seemed to be navigating with limited protection. Still, a top-four finish in a strong season gives him real credibility. S13 P6. Narrative override +1: equalizer. 1 immunity win, 2 alliances.",
+      "reasoning": "Alec’s legacy is built on steady positioning rather than fireworks, with a 4th-place finish in S11 and a solid 6th-place return in S13. He was rarely the loudest force in the game, but he consistently survived deep into competitive seasons without idol protection. The downside is that 12 votes against and no jury support suggest he was respected more as a survivor than as a closer.",
       "strengths": [
-        "S11 4th place",
-        "1 immunity win",
-        "Top-tier placement",
-        "Low-flash positioning"
+        "Two deep runs",
+        "4th and 6th placements",
+        "2 challenge wins",
+        "Strong positioning game"
       ],
       "weaknesses": [
-        "Only 1 alliance",
-        "6 votes against",
-        "No idols played"
+        "12 votes against",
+        "No idols or jury votes",
+        "Never reached the finale"
       ],
       "winRate": 0,
       "overrides": [
@@ -1298,18 +1319,18 @@
       "juryVotes": 0,
       "idolsFound": 2,
       "title": "The Tiny Arsonist",
-      "emoji": "🔥",
-      "reasoning": "Fiore’s S11 game was pure volatility: dangerous enough to reach 3rd, targeted enough to collect 7 votes, and resourceful enough to burn through two idols. She never had the cleanest social positioning, but she consistently found ways to stay alive while bigger plans collapsed around her. A finalist-adjacent finish with two successful advantage plays gives her a sharp, memorable legacy. S13 P14. Narrative override +2: equalizer..",
+      "emoji": "🧨",
+      "reasoning": "Fiore’s S11 run was chaos with purpose: she reached 3rd while absorbing heavy heat, burning through two idols, and staying alive when cleaner social players might have collapsed. Her game was never subtle, but it was resourceful, fearless, and impossible to ignore. S13 exposed the limits of that threat level with a 14th-place exit, leaving her as a dangerous almost-finalist whose reputation became hard to outrun.",
       "strengths": [
-        "S11 3rd place",
-        "Played 2 idols",
-        "1 immunity win",
-        "Three alliances"
+        "3rd-place peak",
+        "2 idols played",
+        "Elite survival instincts",
+        "Memorable strategic volatility"
       ],
       "weaknesses": [
-        "7 votes against",
-        "High-threat reputation",
-        "Fell just short of finals"
+        "15 votes against",
+        "S13 early exit",
+        "Messy social threat level"
       ],
       "winRate": 0,
       "overrides": [
@@ -1432,14 +1453,19 @@
       "rank": 35,
       "tier": "B",
       "score": 70.3,
-      "title": "The Surfer Sweetheart",
-      "emoji": "🏄‍♀️",
-      "reasoning": "Reliable challenge contributor (5 total wins). First boot - 4-3 vote. (S2). Used Safety Without Power (Ep 22). (S1). Across 2 season(s): avg placement 8.50. S13 P16. Narrative override +2: equalizer..",
+      "title": "The Surfboard Shield",
+      "emoji": "🏄",
+      "reasoning": "Bridgette’s résumé is uneven, but her best season showed real endgame value: a 3rd-place finish backed by strong challenge utility and an advantage play. Across three appearances, she stacked up 5 challenge wins, proving she could be more than just a social presence when the game demanded performance. The problem is durability — placements of 14th and 16th around that peak, plus 30 votes against, make her career feel like one great run surrounded by rough wipeouts.",
       "strengths": [
-        "Consistent challenge output (wins/season)."
+        "3rd-place peak",
+        "5 challenge wins",
+        "Used Safety Without Power",
+        "Three-season veteran"
       ],
       "weaknesses": [
-        "Takes too many votes / limited jury support."
+        "30 votes against",
+        "Two early exits",
+        "No win or jury votes"
       ],
       "avgPlacement": 11,
       "winRate": 0,
@@ -1806,11 +1832,20 @@
       "votesAgainst": 10,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "The Cool Kid",
-      "emoji": "😎",
-      "reasoning": "S9's first real elimination. Caleb never found his footing before the numbers turned — he missed the Ep4 SID play that could have saved him when Hicks and Emmah flipped his way. Left before his game had a chance to develop. S13 P5. Narrative override +2: equalizer. 1 immunity win, 3 alliances.",
-      "strengths": [],
-      "weaknesses": [],
+      "title": "The Late Blooming Shield",
+      "emoji": "🛡️",
+      "reasoning": "Caleb’s ranking is carried by the rebound: after being S9’s first true elimination, he came back in S13 and pushed all the way to 5th. His first run ended before he could establish control, especially after missing the Ep4 SID play that might have saved him, but the return showed real social traction with three alliances and an immunity win. He still has no finalist equity or jury votes, but he turned a near-nonfactor debut into a credible endgame résumé.",
+      "strengths": [
+        "S13 5th-place finish",
+        "Three alliances in return season",
+        "1 immunity win",
+        "Strong recovery arc"
+      ],
+      "weaknesses": [
+        "15th-place debut",
+        "10 votes against",
+        "No jury votes"
+      ],
       "scoreHistory": [
         41.4,
         67.4
@@ -1954,15 +1989,19 @@
       "rank": 49,
       "tier": "B",
       "score": 66.6,
-      "title": "The Guitar Guy",
+      "title": "The Bruised Strategist",
       "emoji": "🎸",
-      "reasoning": "Reliable challenge contributor (4 total wins). High-end strategist (best rank: #3). 5-2 vote. (S2). Extreme hatred with Heather. (S1). Across 2 season(s): avg placement 6.50. S13 P18. Narrative override +3: equalizer..",
+      "reasoning": "Trent has always been more useful than flashy: a reliable challenge contributor with 4 total wins and enough strategic respect to peak as a high-end planner. His first two outings were sturdy, finishing 7th and 6th with an average placement of 6.5, but his S13 return cratered at 18th and dragged down the legacy. Add in 15 votes against and the Heather animosity from S1, and Trent reads as a solid B-tier player who could never fully stabilize his social position.",
       "strengths": [
-        "Two seasons",
-        "Consistent"
+        "4 challenge wins",
+        "Back-to-back deep-ish runs",
+        "Best strategic rank: #3",
+        "Average 6.5 placement pre-return"
       ],
       "weaknesses": [
-        "Never reached endgame"
+        "S13 18th-place collapse",
+        "15 votes against",
+        "No finals appearance"
       ],
       "avgPlacement": 10.333333333333334,
       "winRate": 0,
@@ -2043,11 +2082,20 @@
       "votesAgainst": 8,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "The Anxious One",
-      "emoji": "😰",
-      "reasoning": "S9's endurance anchor. Damien played calm and precise all season — engineering Ripper as the merge shield target, winning F9 horror immunity, finding the Campers Hidden Idol at F7, and reaching F6 with a late Power Trio. He played his idol in a F5 double-idol standoff and only lost when Bowie beat him at fire. S13 P15. Narrative override +3: equalizer..",
-      "strengths": [],
-      "weaknesses": [],
+      "title": "The Calm Endgame Engineer",
+      "emoji": "🧠",
+      "reasoning": "Damien’s S9 game was one of the cleanest non-winning arcs in this range: he used Ripper as a merge shield, won the F9 horror immunity, found the Campers Hidden Idol at F7, and reached the fire-making endgame. His F5 double-idol standoff showed nerve, and losing to Bowie at fire is a respectable way to fall just short. The S13 15th-place finish hurts, but 5 challenge wins and an idol across two seasons keep him framed as a dangerous, composed player when he gets runway.",
+      "strengths": [
+        "S9 4th-place finish",
+        "5 challenge wins",
+        "Found and played an idol",
+        "Strong shield management"
+      ],
+      "weaknesses": [
+        "S13 15th-place exit",
+        "Lost at fire-making",
+        "No jury votes"
+      ],
       "scoreHistory": [
         76.3,
         66.3
@@ -2169,17 +2217,18 @@
       "rank": 55,
       "tier": "B",
       "score": 64.7,
-      "title": "The Puppetmaster",
-      "emoji": "🧠",
-      "reasoning": "Across 1 season(s): avg placement 4.00. S13 P20. Narrative override +4: equalizer..",
+      "title": "The Volatile Mastermind",
+      "emoji": "🧪",
+      "reasoning": "Scarlett’s legacy is split between genuine upside and a disastrous return. A 4th-place finish proves she can navigate deep into a season, and her 2 challenge wins show she was not just a background schemer. But S13’s 20th-place finish is a brutal counterweight, turning her into one of the clearest boom-or-bust players in the B tier.",
       "strengths": [
-        "#1 strategic rank S5",
-        "Low votes (3)",
-        "Mastermind reputation"
+        "4th-place peak",
+        "2 challenge wins",
+        "Clear strategic upside"
       ],
       "weaknesses": [
-        "Lost fire-making",
-        "Only one season"
+        "S13 20th-place finish",
+        "9 votes against",
+        "Unstable career arc"
       ],
       "avgPlacement": 12,
       "winRate": 0,
@@ -2266,18 +2315,18 @@
       "votesAgainst": 15,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "The Alliance Collector",
-      "emoji": "🎯",
-      "reasoning": "Hunter’s S12 run had more structure than payoff: three alliances and a showmance with Ally gave him plenty of social coverage, but none of it translated into real control. A 10th-place finish with 8 votes against paints the picture of a player who was connected, but never quite protected. He had the pieces of a mid-game mover, just not the challenge wins or leverage to make them matter. S13 P9. Narrative override +1: equalizer. played 1 idol effectively, 1 alliance.",
+      "title": "The Covered Connector",
+      "emoji": "🧩",
+      "reasoning": "Hunter’s two-season résumé is built on access more than authority: he had alliances, a showmance with Julia, and even an effectively played idol, but never converted those pieces into real command. Back-to-back middling finishes at 10th and 9th show a player consistently in the game, yet rarely driving it. With 15 votes against and zero challenge wins, his legacy is of someone socially plugged in but strategically underpowered.",
       "strengths": [
-        "3 alliances in S12",
-        "Showmance with Ally",
-        "Decent social positioning"
+        "Effective idol play",
+        "Multiple alliance connections",
+        "Two straight mid-game appearances"
       ],
       "weaknesses": [
-        "10th-place finish",
         "0 challenge wins",
-        "8 votes against"
+        "15 votes against",
+        "Never reached endgame"
       ],
       "winRate": 0,
       "overrides": [
@@ -2331,17 +2380,18 @@
       "rank": 59,
       "tier": "B",
       "score": 63.6,
-      "title": "The Protective Mom",
-      "emoji": "🧡",
-      "reasoning": "Lost Final 4 fire-making. (S6). Found and correctly played Tadhana idol at swap. (S6). Across 1 season(s): avg placement 4.00. S13 P22. Narrative override +4: equalizer..",
+      "title": "The Fireline Fallen",
+      "emoji": "🔥",
+      "reasoning": "Kelly’s S6 game had legitimate endgame shape: she found and correctly played the Tadhana idol at the swap, then made it all the way to Final 4 before losing fire-making. That single deep run still carries most of her ranking, because her S13 return was a brutal 22nd-place crash that flattened the momentum. She remains a strong what-if — close enough to the finale to matter, but without the repeat performance to prove it was sustainable.",
       "strengths": [
-        "Perfect idol play",
-        "Made F4",
-        "Strategic player"
+        "S6 Final 4 finish",
+        "Correct Tadhana idol play",
+        "Reached fire-making"
       ],
       "weaknesses": [
-        "Lost fire-making",
-        "Multiple meltdowns"
+        "S13 22nd-place exit",
+        "0 challenge wins",
+        "15 votes against"
       ],
       "avgPlacement": 13,
       "winRate": 0,
@@ -2389,11 +2439,20 @@
       "votesAgainst": 13,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "The Wily Elder",
-      "emoji": "👴",
-      "reasoning": "S8's most volatile power broker. Gerry survived multiple pre-merge ties through sheer force of personality, formed an Unbreakable Bond with Jen, and found the merged idol at F9. His masterpiece was psychological — episode by episode he dismantled Heather until she quit mid-game with the Super Idol unused in her pocket. He played his idol at F5 and fell at F4, one round short of the finale. S13 P21. Narrative override +4: equalizer..",
-      "strengths": [],
-      "weaknesses": [],
+      "title": "The Volatile Puppeteer",
+      "emoji": "🧨",
+      "reasoning": "Gerry’s S8 run was chaotic, forceful, and genuinely memorable: he survived pre-merge ties, bonded tightly with Jen, found the merged idol at Final 9, and psychologically wore Heather down until she quit with the Super Idol unused. He played his own idol at Final 5 and came up one round short of the finale, giving him one of the messiest but most active fourth-place games on the board. His S13 21st-place exit hurts the career arc, but the peak remains too explosive to ignore.",
+      "strengths": [
+        "S8 Final 4 finish",
+        "2 challenge wins",
+        "Merged idol finder",
+        "Major influence over Heather quit"
+      ],
+      "weaknesses": [
+        "S13 early exit",
+        "13 votes against",
+        "Volatile threat level"
+      ],
       "scoreHistory": [
         72.7,
         63.2
@@ -2506,16 +2565,18 @@
       "rank": 64,
       "tier": "C",
       "score": 60.6,
-      "title": "The Mystic",
-      "emoji": "🔮",
-      "reasoning": "Voted Scott at FTC. (S3). Consensus target Episode 9. (S3). Across 1 season(s): avg placement 8.00. S13 P17. Narrative override +3: equalizer. 2 alliances.",
+      "title": "The Aura Casualty",
+      "emoji": "🌙",
+      "reasoning": "Dawn’s game has always been more about presence than power: she made the S3 jury phase, voted for Scott at FTC, and had enough social positioning to be part of multiple alliances. But her exits tell the harsher story — a consensus target in S3 and only 17th on return in S13. With no idols, no challenge wins, and 13 votes against, she reads as a perceptive player who could see the game better than she could control it.",
       "strengths": [
-        "Strong average placement across seasons (deep runs)."
+        "S3 8th-place finish",
+        "FTC jury vote cast",
+        "Part of 2 alliances"
       ],
       "weaknesses": [
-        "Takes too many votes / limited jury support.",
-        "Little evidence of consistent strategic control.",
-        "Limited challenge contribution compared to the field."
+        "0 challenge wins",
+        "No idols or advantages",
+        "Consensus target exit"
       ],
       "avgPlacement": 12.5,
       "winRate": 0,
@@ -2713,11 +2774,20 @@
       "votesAgainst": 11,
       "juryVotes": 2,
       "idolsFound": 2,
-      "title": "The Wild Card",
-      "emoji": "💨",
-      "reasoning": "S9's chaos engine. Ripper idoled four votes in Ep2 and caused the season's rock draw — one of the franchise's most dramatic early-game moments. He survived Ep3 when both he and Nichelle burned Shot in the Dark simultaneously, then coasted under Bowie's wing until Emmah double-voted him out at the merge. S13 P12. Narrative override +2: equalizer. held 1 idol (unused), 2 alliances, voted against once.",
-      "strengths": [],
-      "weaknesses": [],
+      "title": "The Flatulent Firestarter",
+      "emoji": "💥",
+      "reasoning": "Ripper's legacy is less about clean strategy and more about detonating the board around him. In S9, he idoled out four votes in Episode 2, helped trigger a rock draw, survived a chaotic Shot in the Dark clash with Nichelle, then rode Bowie's protection until Emmah double-voted him out at the merge. His S13 return added another idol and more alliance utility, but a 12th-place finish kept him firmly in the messy middle tier.",
+      "strengths": [
+        "Two idols found/held",
+        "Iconic S9 rock-draw catalyst",
+        "2 jury votes",
+        "Useful alliance piece"
+      ],
+      "weaknesses": [
+        "11 votes against",
+        "Never placed higher than 11th",
+        "More chaos than control"
+      ],
       "scoreHistory": [
         53,
         58.7
@@ -3260,16 +3330,19 @@
       "rank": 85,
       "tier": "C",
       "score": 53.4,
-      "title": "The Rage Machine",
-      "emoji": "💥",
-      "reasoning": "6-4 vote. (S1). Across 1 season(s): avg placement 21.00. S13 P11. Narrative override +2: equalizer. 1 alliance, never received a vote.",
+      "title": "The Tempered Equalizer",
+      "emoji": "🏋️",
+      "reasoning": "Eva's first run was a near-nonfactor, ending in a 21st-place boot on a 6-4 vote before she could turn intensity into leverage. Her S13 return gave her a better finish at 11th and a small narrative boost as an equalizer, but she still left without a challenge win, idol, or jury impact. Across two seasons, she feels like a player with obvious physical presence who never quite translated it into game power.",
       "strengths": [
-        "Above-average strategic impact and positioning."
+        "Improved to 11th in S13",
+        "Physical threat aura",
+        "Never received a vote in S13",
+        "Alliance utility"
       ],
       "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field.",
-        "Takes too many votes / limited jury support."
+        "Zero challenge wins",
+        "No jury votes",
+        "Minimal strategic footprint"
       ],
       "avgPlacement": 16,
       "winRate": 0,

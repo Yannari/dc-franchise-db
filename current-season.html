@@ -1115,11 +1115,12 @@ Dave voted for Mickey
             <span>🏆 Imm +0.8</span>
             <span>🎁 Rew +0.3</span>
             <span style="color:#a78bfa; margin-left:8px;">🧠 <b>STRATEGIC</b></span>
-            <span>🗿 Adv Played (effective) +2.0</span>
-            <span>💥 Adv Wasted/misfired −1.5</span>
-            <span>💀 Adv Held + Eliminated −3.0 · Survived = 0</span>
+            <span>🔍 Adv Found +0.4 (located it)</span>
+            <span>🗿 Adv Played effectively +1.2 (on top of found)</span>
+            <span>💥 Adv Wasted/misfired −1.2</span>
+            <span>💀 Adv Held & Eliminated −1.8 · Survived = 0</span>
             <span>🤝 Allies +0.5 each (cap 4) · Unbreakable/named alliances only — auto-filled from season JSON</span>
-            <span>♟️ Strategic score ×0.15 — derived from schemes, blindsides, correct votes, big moves (auto-filled from season JSON)</span>
+            <span>♟️ Strategic score ×0.12 — ability + real moves (flips, blindsides, schemes, effective plays) · auto-filled from season JSON</span>
             <span style="color:#34d399; margin-left:8px;">💞 <b>SOCIAL</b></span>
             <span></span>
             <span>❤️ Fan Fav +2.0</span>
@@ -1136,9 +1137,12 @@ Dave voted for Mickey
                   <th style="padding: 6px 5px; text-align: center; width: 50px;" title="Final placement (1 = winner)">Place</th>
                   <th style="padding: 6px 5px; text-align: center; width: 40px; color:#60a5fa;" title="+0.8 per individual immunity win">Imm</th>
                   <th style="padding: 6px 5px; text-align: center; width: 40px; color:#60a5fa;" title="+0.3 per reward win">Rew</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols + advantages successfully played/used · +2.0 each">Played</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols + advantages found but NOT played (held/wasted) · 0 if survived · −3.0 if eliminated holding it">Held</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 44px; color:#a78bfa;" title="Total idols/advantages FOUND · +0.4 each (credit for locating them)">Found</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols/advantages PLAYED EFFECTIVELY (negated votes / worked) · +1.2 each on top of the found bonus">Played</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols/advantages PLAYED but WASTED (misfired / negated 0 votes / failed) · −1.2 each">Wasted</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 44px; color:#a78bfa;" title="Idols/advantages HELD & never used · 0 if survived to the end · −1.8 if eliminated still holding it">Held</th>
                   <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Real alliances only — Unbreakable bonds or named alliances · +0.5 each, max 4 · do NOT include casual relationships">Allies</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 52px; color:#a78bfa;" title="Strategic-gameplay score (ability + real moves: flips, blindsides, schemes, effective plays) · ×0.12 · auto-filled from season JSON">Strat</th>
                   <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="not counted in score">Jury ⭐</th>
                   <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below cast avg">Votes vs</th>
                   <th style="padding: 6px 5px; text-align: center; width: 42px; color:#f59e0b;" title="Won Fan Favorite · +2.0">FanFav</th>
@@ -6904,8 +6908,9 @@ setTimeout(function() {
     const highlights = [];
     if (row.immWins > 0) highlights.push(`${row.immWins} immunity win${row.immWins>1?'s':''}`);
     if (row.rewWins > 0) highlights.push(`${row.rewWins} reward win${row.rewWins>1?'s':''}`);
-    if (row.idolsPlayed > 0) highlights.push(`played ${row.idolsPlayed} idol${row.idolsPlayed>1?'s':''}`);
-    if (row.idolsFound > 0 && !row.idolsPlayed) highlights.push(`found ${row.idolsFound} idol${row.idolsFound>1?'s':''} (unused)`);
+    if (row.advPlayed > 0) highlights.push(`played ${row.advPlayed} idol${row.advPlayed>1?'s':''} effectively`);
+    if (row.advWasted > 0) highlights.push(`wasted ${row.advWasted} advantage${row.advWasted>1?'s':''}`);
+    if (row.advHeld > 0) highlights.push(`held ${row.advHeld} idol${row.advHeld>1?'s':''} (unused)`);
     if (row.alliances > 0) highlights.push(`${row.alliances} alliance${row.alliances>1?'s':''}`);
     if (row.fanFav) highlights.push('fan favorite');
     if (row.votesAgainst === 0) highlights.push('never received a vote');
@@ -7633,14 +7638,16 @@ setTimeout(function() {
       // PHYSICAL
       const physBonus = (p.immWins * 0.8) + (p.rewWins * 0.3);
 
-      // STRATEGIC
-      // Idol found not played: 0 if survived (irrelevant), −3 if eliminated holding it
-      const idolWastedPen = p.isFinalist ? 0 : (p.idolsFound * 3.0);
-      const stratBonus = (p.idolsPlayed * 2.0)          // effective plays
-                       - ((p.advWasted || 0) * 1.5)      // played to no effect / misfired
-                       - idolWastedPen                   // held & eliminated with it
+      // STRATEGIC — advantages scored by lifecycle: found (located it) < played effectively,
+      // while wasting or dying with one costs you. Plus a strategic-gameplay term.
+      const advFoundBonus  = (p.advFound  || 0) * 0.4;                 // located an advantage
+      const advPlayedBonus = (p.advPlayed || 0) * 1.2;                 // used it effectively (on top of found)
+      const advWastedPen   = (p.advWasted || 0) * 1.2;                 // burned to no effect
+      const advHeldPen     = p.isFinalist ? 0 : ((p.advHeld || 0) * 1.8); // eliminated still holding it
+      const stratBonus = advFoundBonus + advPlayedBonus
+                       - advWastedPen - advHeldPen
                        + (Math.min(p.alliances, 4) * 0.5)
-                       + ((p.strategicScore || 0) * 0.15); // overall strategic gameplay (schemes, blindsides, correct votes, big moves)
+                       + ((p.strategicScore || 0) * 0.12); // ability + real moves (flips, blindsides, schemes, effective plays)
 
       // SOCIAL — co-winner jury votes ×0.75 (4-4 tie ≠ 4 decisive votes)
       const castAvgVotes = Math.round(p.castSize / 3);
@@ -7687,10 +7694,6 @@ setTimeout(function() {
       const tbody = document.getElementById('ru-placements-body');
       const tr = document.createElement('tr');
       tr.dataset.row = rowCount;
-      // Computed-from-season values that aren't editable table columns — carried on the row
-      // so computeScore() can use them (default 0 for manually added rows).
-      tr.dataset.advWasted = stats.advWasted || 0;
-      tr.dataset.strategicScore = stats.strategicScore || 0;
       tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
       tr.innerHTML =
         '<td style="padding:5px 5px;">' +
@@ -7699,9 +7702,12 @@ setTimeout(function() {
         '<td style="padding:5px 4px;text-align:center;">' + numCell(placement,'44px') + '</td>' +
         '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.imm,       '36px','#60a5fa') + '</td>' +
         '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.rew,       '36px','#60a5fa') + '</td>' +
-        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.idolsPlayed,'40px','#a78bfa') + '</td>' +
-        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.idolsFound,  '40px','#a78bfa') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.advFound,   '38px','#a78bfa') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.advPlayed,  '40px','#a78bfa') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.advWasted,  '40px','#a78bfa') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.advHeld,    '38px','#a78bfa') + '</td>' +
         '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.alliances,   '40px','#a78bfa') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.strategicScore, '46px','#a78bfa') + '</td>' +
         '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.juryVotes,   '40px','#34d399') + '</td>' +
         '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.votesVs,    '44px','#34d399') + '</td>' +
         '<td style="padding:5px 4px;text-align:center;">' + chkCell(stats.fanFav,'#f59e0b') + '</td>' +
@@ -7734,17 +7740,18 @@ setTimeout(function() {
           placement,
           immWins:       parseInt(nums[1]?nums[1].value:'')||0,
           rewWins:       parseInt(nums[2]?nums[2].value:'')||0,
-          idolsPlayed:   parseInt(nums[3]?nums[3].value:'')||0,
-          idolsFound:    parseInt(nums[4]?nums[4].value:'')||0,
-          alliances:     parseInt(nums[5]?nums[5].value:'')||0,
-          juryVotes:     parseInt(nums[6]?nums[6].value:'')||0,
-          votesAgainst:  parseInt(nums[7]?nums[7].value:'')||0,
-          override:      parseFloat(nums[8]?nums[8].value:'')||0,
+          advFound:      parseInt(nums[3]?nums[3].value:'')||0,
+          advPlayed:     parseInt(nums[4]?nums[4].value:'')||0,
+          advWasted:     parseInt(nums[5]?nums[5].value:'')||0,
+          advHeld:       parseInt(nums[6]?nums[6].value:'')||0,
+          alliances:     parseInt(nums[7]?nums[7].value:'')||0,
+          strategicScore:parseFloat(nums[8]?nums[8].value:'')||0,
+          juryVotes:     parseInt(nums[9]?nums[9].value:'')||0,
+          votesAgainst:  parseInt(nums[10]?nums[10].value:'')||0,
+          override:      parseFloat(nums[11]?nums[11].value:'')||0,
           overrideReason:txt[1] ? txt[1].value.trim() : '',
           fanFav: chks[0]?chks[0].checked:false,
           quit:   chks[1]?chks[1].checked:false,
-          advWasted:      parseFloat(tr.dataset.advWasted)||0,
-          strategicScore: parseFloat(tr.dataset.strategicScore)||0,
         });
       });
       return rows;
@@ -7803,8 +7810,8 @@ setTimeout(function() {
         const newScore = computeScore({
           allPcts, wins:totalWins, nonWinFinals, numSeasons, coWin:isCoWin,
           immWins:row.immWins, rewWins:row.rewWins,
-          idolsPlayed:row.idolsPlayed, idolsFound:row.idolsFound,
-          advWasted:row.advWasted, strategicScore:row.strategicScore,
+          advFound:row.advFound, advPlayed:row.advPlayed, advWasted:row.advWasted, advHeld:row.advHeld,
+          strategicScore:row.strategicScore,
           alliances:row.alliances,
           juryVotes:row.juryVotes, votesAgainst:row.votesAgainst,
           fanFav:row.fanFav, quit:row.quit,
@@ -7816,15 +7823,11 @@ setTimeout(function() {
         const parts   = [];
         if (row.immWins)    parts.push('Imm:+' + (row.immWins*0.8).toFixed(1));
         if (row.rewWins)    parts.push('Rew:+' + (row.rewWins*0.3).toFixed(1));
-        if (row.idolsPlayed)parts.push('AdvPlay:+' + (row.idolsPlayed*2).toFixed(1));
-        if (row.idolsFound) {
-          if (!isFinalist)  parts.push('AdvHeld:\u2212'+(row.idolsFound*3).toFixed(1));
-          // survived with unplayed idol = 0, no entry shown
-        }
-        if (isFinalist&&row.juryVotes) {
-          const jb = isCoWin ? 0 : 0;
-          parts.push('Jury:+'+jb.toFixed(1));
-        }
+        if (row.advFound)   parts.push('AdvFound:+' + (row.advFound*0.4).toFixed(1));
+        if (row.advPlayed)  parts.push('AdvPlay:+' + (row.advPlayed*1.2).toFixed(1));
+        if (row.advWasted)  parts.push('AdvWasted:\u2212' + (row.advWasted*1.2).toFixed(1));
+        if (row.advHeld && !isFinalist) parts.push('AdvHeld:\u2212' + (row.advHeld*1.8).toFixed(1));
+        if (row.strategicScore) parts.push('Strat:+' + (row.strategicScore*0.12).toFixed(1));
         if (row.alliances)   parts.push('Allies:+' + (Math.min(row.alliances,4)*0.5).toFixed(1));
         if (row.fanFav)     parts.push('FanFav:+2.0');
         const vDiff = row.votesAgainst - castAvg;
@@ -7945,8 +7948,9 @@ setTimeout(function() {
       const statParts  = [];
       if (row.immWins)    statParts.push(`${row.immWins} immunity win${row.immWins>1?'s':''}`);
       if (row.rewWins)    statParts.push(`${row.rewWins} reward win${row.rewWins>1?'s':''}`);
-      if (row.idolsPlayed) statParts.push(`played ${row.idolsPlayed} advantage${row.idolsPlayed>1?'s':''}`);
-      if (row.idolsFound && !row.idolsPlayed) statParts.push(`held ${row.idolsFound} advantage${row.idolsFound>1?'s':''} (unused)`);
+      if (row.advPlayed) statParts.push(`played ${row.advPlayed} advantage${row.advPlayed>1?'s':''} effectively`);
+      if (row.advWasted) statParts.push(`wasted ${row.advWasted} advantage${row.advWasted>1?'s':''}`);
+      if (row.advHeld) statParts.push(`held ${row.advHeld} advantage${row.advHeld>1?'s':''} (unused)`);
       if (row.alliances)  statParts.push(`${row.alliances} real alliance${row.alliances>1?'s':''}`);
       if (row.votesAgainst===0) statParts.push('never received a vote');
       else if (row.votesAgainst===1) statParts.push('voted against once');
@@ -8017,7 +8021,7 @@ Write ONLY the reasoning text, no labels or quotes.`;
             placements:[r.placement], avgPlacement:r.placement,
             challengeWins: row.immWins+row.rewWins,
             votesAgainst:row.votesAgainst, juryVotes:row.juryVotes,
-            idolsFound:row.idolsPlayed+row.idolsFound,
+            idolsFound:row.advFound || (row.advPlayed+row.advWasted+row.advHeld),
             title:'', emoji:r.isWinner?'\ud83d\udc51':'\u2b50',
             reasoning: buildSeasonReasoning(r.name, seasonNum, r.placement, row, r.isWinner, true, ''),
             strengths:[], weaknesses:[]
@@ -8038,7 +8042,7 @@ Write ONLY the reasoning text, no labels or quotes.`;
           e.challengeWins=(e.challengeWins||0)+row.immWins+row.rewWins;
           e.votesAgainst=(e.votesAgainst||0)+row.votesAgainst;
           e.juryVotes=(e.juryVotes||0)+row.juryVotes;
-          e.idolsFound=(e.idolsFound||0)+row.idolsPlayed+row.idolsFound;
+          e.idolsFound=(e.idolsFound||0)+(row.advFound || (row.advPlayed+row.advWasted+row.advHeld));
           if (row.override) {
             if (!e.overrides) e.overrides=[];
             e.overrides.push({season:seasonNum, value:row.override, reason:row.overrideReason});
@@ -8099,9 +8103,10 @@ Write ONLY the reasoning text, no labels or quotes.`;
         const stats={
           juryVotes:   p.juryVotes||p.jury_votes||0,
           votesVs:     p.votesAgainst||p.votes_against||p.votesReceived||0,
-          idolsPlayed: p.advPlayed ?? 0,
-          idolsFound:  p.advHeld ?? 0,
-          advWasted:      p.advWasted ?? 0,
+          advFound:    p.idolsFound ?? p.advFound ?? 0,   // total found
+          advPlayed:   p.advPlayed ?? 0,                  // played effectively
+          advWasted:   p.advWasted ?? 0,                  // played but wasted
+          advHeld:     p.advHeld ?? 0,                    // held & never used
           strategicScore: p.strategicScore ?? 0,
           imm:         p.immunityWins||p.imm||0,
           rew:         p.rewardWins!=null ? p.rewardWins : (p.rew!=null ? p.rew : Math.max(0, (p.challengeWins||0)-(p.immunityWins||0))),

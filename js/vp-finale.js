@@ -2651,14 +2651,24 @@ export function rpBuildReunion(ep) {
   const awards = [];
 
   // Best Strategic — full ranking
+  // Uses the SAME shared formula as the season export/PDF (computeStrategicScore in
+  // stats-export.js): strategic ability + real moves (filtered flips/ally-cuts, blindsides,
+  // effective advantage plays), NOT survival. Falls back to the old survival heuristic only
+  // if the shared function isn't loaded.
   const stratRank = allPlayers.map(n => {
-    const s = pStats(n);
-    const placement = history.findIndex(e => e.eliminated === n || e.firstEliminated === n);
-    const survivalBonus = placement === -1 ? allPlayers.length : (allPlayers.length - placement);
-    const advCount = history.reduce((sum, e) => sum + ((e.idolPlays||[]).filter(p => p.player === n).length), 0);
-    return { name: n, score: s.strategic * 2 + survivalBonus * 0.5 + advCount * 1.5 };
+    let score;
+    if (typeof computeStrategicScore === 'function') {
+      score = computeStrategicScore(n).strategicScore;
+    } else {
+      const s = pStats(n);
+      const placement = history.findIndex(e => e.eliminated === n || e.firstEliminated === n);
+      const survivalBonus = placement === -1 ? allPlayers.length : (allPlayers.length - placement);
+      const advCount = history.reduce((sum, e) => sum + ((e.idolPlays||[]).filter(p => p.player === n).length), 0);
+      score = s.strategic * 2 + survivalBonus * 0.5 + advCount * 1.5;
+    }
+    return { name: n, score };
   }).sort((a,b) => b.score - a.score);
-  awards.push({ label: 'Best Strategic', icon: '\ud83e\udde0', winner: stratRank[0].name, detail: `Full ranking: ${stratRank.slice(0,5).map((r,i) => `${i+1}. ${r.name}`).join(', ')}${stratRank.length > 5 ? `, ... (${stratRank.length} total)` : ''}` });
+  awards.push({ label: 'Best Strategic', icon: '\ud83e\udde0', winner: stratRank[0].name, detail: `Full ranking: ${stratRank.slice(0,5).map((r,i) => `${i+1}. ${r.name} (${r.score.toFixed(1)})`).join(', ')}${stratRank.length > 5 ? `, ... (${stratRank.length} total)` : ''}` });
 
   // Best Physical
   const physRank = allPlayers.map(n => ({ name: n, wins: gs.chalRecord?.[n]?.wins || 0 })).sort((a,b) => b.wins - a.wins);

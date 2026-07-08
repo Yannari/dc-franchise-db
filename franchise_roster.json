@@ -2410,16 +2410,17 @@
       "sexuality": "straight",
       "archetype": "floater",
       "stats": {
-        "physical": 5,
-        "endurance": 6,
-        "mental": 8,
-        "social": 4,
-        "strategic": 4,
-        "loyalty": 6,
-        "boldness": 3,
-        "intuition": 8,
-        "temperament": 9
-      }
+        "physical": 4,
+        "endurance": 4,
+        "mental": 7,
+        "social": 3,
+        "strategic": 3,
+        "loyalty": 7,
+        "boldness": 6,
+        "intuition": 9,
+        "temperament": 8
+      },
+      "isReturnee": false
     },
     {
       "name": "Amelie",
@@ -2428,16 +2429,17 @@
       "sexuality": "straight",
       "archetype": "mastermind",
       "stats": {
-        "physical": 5,
-        "endurance": 6,
+        "physical": 3,
+        "endurance": 4,
         "mental": 9,
-        "social": 8,
-        "strategic": 9,
-        "loyalty": 2,
-        "boldness": 8,
-        "intuition": 8,
-        "temperament": 8
-      }
+        "social": 4,
+        "strategic": 8,
+        "loyalty": 4,
+        "boldness": 9,
+        "intuition": 9,
+        "temperament": 2
+      },
+      "isReturnee": false
     },
     {
       "name": "Anastasia",
@@ -2446,16 +2448,17 @@
       "sexuality": "lesbian",
       "archetype": "hothead",
       "stats": {
-        "physical": 8,
+        "physical": 7,
         "endurance": 8,
         "mental": 6,
-        "social": 7,
-        "strategic": 6,
+        "social": 5,
+        "strategic": 8,
         "loyalty": 5,
-        "boldness": 9,
+        "boldness": 10,
         "intuition": 6,
         "temperament": 2
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Benji",
@@ -2464,16 +2467,17 @@
       "sexuality": "pan",
       "archetype": "goat",
       "stats": {
-        "physical": 4,
-        "endurance": 5,
-        "mental": 7,
+        "physical": 6,
+        "endurance": 4,
+        "mental": 4,
         "social": 6,
-        "strategic": 4,
-        "loyalty": 8,
-        "boldness": 4,
-        "intuition": 5,
-        "temperament": 7
-      }
+        "strategic": 3,
+        "loyalty": 9,
+        "boldness": 2,
+        "intuition": 4,
+        "temperament": 9
+      },
+      "isReturnee": false
     },
     {
       "name": "Diego",
@@ -2485,13 +2489,14 @@
         "physical": 8,
         "endurance": 8,
         "mental": 6,
-        "social": 9,
-        "strategic": 6,
+        "social": 7,
+        "strategic": 2,
         "loyalty": 8,
-        "boldness": 7,
-        "intuition": 7,
-        "temperament": 7
-      }
+        "boldness": 4,
+        "intuition": 2,
+        "temperament": 9
+      },
+      "isReturnee": false
     },
     {
       "name": "Hannah",
@@ -2501,15 +2506,16 @@
       "archetype": "social-butterfly",
       "stats": {
         "physical": 6,
-        "endurance": 7,
-        "mental": 7,
-        "social": 9,
+        "endurance": 6,
+        "mental": 6,
+        "social": 8,
         "strategic": 6,
         "loyalty": 7,
         "boldness": 7,
-        "intuition": 8,
-        "temperament": 8
-      }
+        "intuition": 6,
+        "temperament": 6
+      },
+      "isReturnee": false
     },
     {
       "name": "Isabel",
@@ -2518,16 +2524,17 @@
       "sexuality": "asexual",
       "archetype": "villain",
       "stats": {
-        "physical": 5,
-        "endurance": 7,
+        "physical": 4,
+        "endurance": 4,
         "mental": 8,
-        "social": 10,
+        "social": 8,
         "strategic": 9,
         "loyalty": 2,
-        "boldness": 6,
+        "boldness": 8,
         "intuition": 9,
-        "temperament": 9
-      }
+        "temperament": 6
+      },
+      "isReturnee": false
     },
     {
       "name": "Ivy",
@@ -2536,16 +2543,17 @@
       "sexuality": "straight",
       "archetype": "showmancer",
       "stats": {
-        "physical": 6,
-        "endurance": 7,
+        "physical": 4,
+        "endurance": 4,
         "mental": 6,
         "social": 8,
-        "strategic": 5,
+        "strategic": 6,
         "loyalty": 8,
-        "boldness": 6,
-        "intuition": 6,
-        "temperament": 8
-      }
+        "boldness": 7,
+        "intuition": 5,
+        "temperament": 7
+      },
+      "isReturnee": false
     },
     {
       "name": "Jade",
@@ -2555,15 +2563,16 @@
       "archetype": "perceptive-player",
       "stats": {
         "physical": 5,
-        "endurance": 6,
+        "endurance": 3,
         "mental": 9,
-        "social": 6,
+        "social": 4,
         "strategic": 9,
-        "loyalty": 7,
-        "boldness": 5,
+        "loyalty": 4,
+        "boldness": 8,
         "intuition": 10,
-        "temperament": 8
-      }
+        "temperament": 10
+      },
+      "isReturnee": false
     },
     {
       "name": "Logan",
@@ -2574,32 +2583,34 @@
       "stats": {
         "physical": 8,
         "endurance": 8,
-        "mental": 6,
+        "mental": 4,
         "social": 10,
-        "strategic": 6,
-        "loyalty": 8,
-        "boldness": 7,
-        "intuition": 5,
-        "temperament": 7
-      }
+        "strategic": 5,
+        "loyalty": 7,
+        "boldness": 6,
+        "intuition": 3,
+        "temperament": 8
+      },
+      "isReturnee": false
     },
     {
       "name": "Lynda",
       "slug": "lynda",
       "gender": "f",
       "sexuality": "straight",
-      "archetype": "schemer",
+      "archetype": "wildcard",
       "stats": {
-        "physical": 5,
-        "endurance": 6,
-        "mental": 8,
-        "social": 8,
-        "strategic": 8,
-        "loyalty": 3,
-        "boldness": 7,
-        "intuition": 8,
-        "temperament": 5
-      }
+        "physical": 3,
+        "endurance": 5,
+        "mental": 5,
+        "social": 4,
+        "strategic": 7,
+        "loyalty": 2,
+        "boldness": 9,
+        "intuition": 5,
+        "temperament": 3
+      },
+      "isReturnee": false
     },
     {
       "name": "Marissa",
@@ -2610,14 +2621,15 @@
       "stats": {
         "physical": 9,
         "endurance": 9,
-        "mental": 7,
+        "mental": 6,
         "social": 7,
-        "strategic": 6,
+        "strategic": 2,
         "loyalty": 9,
         "boldness": 6,
-        "intuition": 7,
+        "intuition": 2,
         "temperament": 9
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Natalia",
@@ -2627,15 +2639,16 @@
       "archetype": "chaos-agent",
       "stats": {
         "physical": 5,
-        "endurance": 6,
-        "mental": 6,
+        "endurance": 3,
+        "mental": 5,
         "social": 9,
-        "strategic": 5,
-        "loyalty": 4,
-        "boldness": 8,
-        "intuition": 7,
-        "temperament": 6
-      }
+        "strategic": 9,
+        "loyalty": 3,
+        "boldness": 9,
+        "intuition": 8,
+        "temperament": 4
+      },
+      "isReturnee": false
     },
     {
       "name": "Richard",
@@ -2646,14 +2659,15 @@
       "stats": {
         "physical": 6,
         "endurance": 7,
-        "mental": 8,
-        "social": 8,
-        "strategic": 6,
+        "mental": 6,
+        "social": 5,
+        "strategic": 4,
         "loyalty": 10,
         "boldness": 5,
-        "intuition": 8,
-        "temperament": 10
-      }
+        "intuition": 3,
+        "temperament": 8
+      },
+      "isReturnee": false
     },
     {
       "name": "Spencer",
@@ -2663,15 +2677,16 @@
       "archetype": "mastermind",
       "stats": {
         "physical": 5,
-        "endurance": 6,
+        "endurance": 5,
         "mental": 10,
-        "social": 6,
+        "social": 4,
         "strategic": 10,
         "loyalty": 2,
-        "boldness": 6,
+        "boldness": 7,
         "intuition": 10,
-        "temperament": 8
-      }
+        "temperament": 6
+      },
+      "isReturnee": false
     },
     {
       "name": "Ted",
@@ -2680,16 +2695,17 @@
       "sexuality": "straight",
       "archetype": "schemer",
       "stats": {
-        "physical": 6,
-        "endurance": 7,
+        "physical": 3,
+        "endurance": 4,
         "mental": 8,
-        "social": 8,
-        "strategic": 9,
-        "loyalty": 2,
+        "social": 6,
+        "strategic": 7,
+        "loyalty": 3,
         "boldness": 8,
-        "intuition": 9,
-        "temperament": 7
-      }
+        "intuition": 7,
+        "temperament": 5
+      },
+      "isReturnee": false
     },
     {
       "name": "Tristan",
@@ -2700,14 +2716,15 @@
       "stats": {
         "physical": 4,
         "endurance": 5,
-        "mental": 8,
-        "social": 7,
-        "strategic": 6,
+        "mental": 7,
+        "social": 8,
+        "strategic": 3,
         "loyalty": 9,
         "boldness": 4,
-        "intuition": 8,
+        "intuition": 7,
         "temperament": 9
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Zaid",
@@ -2716,16 +2733,17 @@
       "sexuality": "straight",
       "archetype": "loyal-soldier",
       "stats": {
-        "physical": 8,
-        "endurance": 8,
+        "physical": 7,
+        "endurance": 6,
         "mental": 6,
-        "social": 8,
+        "social": 7,
         "strategic": 5,
         "loyalty": 9,
         "boldness": 8,
-        "intuition": 5,
-        "temperament": 4
-      }
+        "intuition": 4,
+        "temperament": 3
+      },
+      "isReturnee": false
     }
   ]
 }

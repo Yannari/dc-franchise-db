@@ -107,10 +107,16 @@ function _extractPlayerPlacements() {
       permanentExit[ep.riQuit.name] = ep.num;
     }
 
-    // RI reentry losers — permanently out at the reentry episode
+    // RI/Edge reentry losers leave the game for good at the return challenge, but their
+    // PLACEMENT is set by when they ORIGINALLY left the main game (their vote-out episode,
+    // already recorded from ep.eliminated in an earlier iteration) — NOT this return episode.
+    // Overwriting collapses every Edge loser onto the same episode and scrambles placements.
+    // Keep the earlier exit; only fall back to the return episode if their vote-out was somehow
+    // never recorded. This works from episodeHistory alone, so it is also correct for
+    // saved/reloaded seasons (gs.riArrivalEp is runtime-only and not persisted).
     if (ep.riReentryLosers?.length) {
       for (const loser of ep.riReentryLosers) {
-        permanentExit[loser] = ep.num;
+        if (permanentExit[loser] == null) permanentExit[loser] = ep.num;
       }
     }
     // Edge of Extinction return gauntlet: order the losers among themselves by how far

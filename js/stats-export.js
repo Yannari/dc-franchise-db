@@ -125,9 +125,13 @@ function _extractPlayerPlacements() {
     // For RI seasons, players voted out go to RI (their exit will be overwritten
     // by the duel/quit/reentry-loss above). For returnees, a later elimination
     // overwrites the earlier one since we always update.
+    // Twist boots that don't always flow through ep.eliminated — capture them so the
+    // player is never dumped into the 'Unknown' bucket at the worst placement.
+    const _juryBoot = (ep.twists || []).find(t => t.type === 'jury-elimination' && t.juryBooted)?.juryBooted;
     const elimNames = [
       ep.suddenDeathEliminated, ep.eliminated,
       ep.firstEliminated, ep.tiedDestiniesCollateral,
+      ep.emissaryEliminated, ep.hpTiebreakerEliminated, _juryBoot,
       ep.firemakingResult?.loser   // fire-making duel loser (else falls to 'Unknown' — the Jacques bug)
     ].filter(Boolean);
 
@@ -164,6 +168,22 @@ function _extractPlayerPlacements() {
   // Remove finalists from permanent exit (they made it to the end)
   for (const name of finalists) {
     delete permanentExit[name];
+  }
+
+  // ── Edge of Extinction / Rescue Island placement authority ──────────────
+  // In the rescue (EoE) format a voted-out player goes to the Edge, and gs.riArrivalEp
+  // records the episode they LAST left the main game (it's overwritten each time they
+  // return and get voted out again, and is set for jury-elimination boots too). This is
+  // the correct basis for placement. The per-episode fields are unreliable here: the
+  // return-challenge block stamps EVERY Edge loser with the SAME return-episode number,
+  // collapsing their vote-out order and scrambling placements. Override with the true
+  // per-player arrival episode. Skip finalists and anyone who returned and is still active.
+  if (seasonConfig?.riFormat === 'rescue' && gs.riArrivalEp) {
+    const stillActive = new Set(gs.activePlayers || []);
+    for (const [name, arrivalEp] of Object.entries(gs.riArrivalEp)) {
+      if (finalists.includes(name) || stillActive.has(name)) continue;
+      permanentExit[name] = arrivalEp;
+    }
   }
 
   // Build elimination order sorted by permanent exit episode (earliest exit first)

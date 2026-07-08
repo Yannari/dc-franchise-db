@@ -665,7 +665,7 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
   }
 
   // Try GPT-5 first
-  if (env.DPSK_API_KEY) {
+  if (env.OPENAI_API_KEY) {
     const payload = {
       model: "gpt-5.5",
       instructions,
@@ -2403,7 +2403,7 @@ Write the episode now — a STORY, not a report.`;
     return await callAnthropicStreaming(instructions, fullInput, env, MODELS.quality);
   }
   // Fallback: GPT-5.5
-  if (env.DPSK_API_KEY) {
+  if (env.OPENAI_API_KEY) {
     try {
       const payload = { model: "gpt-5.5", instructions, input: fullInput };
       const result = await callOpenAI(payload, env);
@@ -2491,7 +2491,7 @@ async function callAnthropicStreaming(system, userText, env, model = MODELS.crea
         }
 
         // Fallback 2: GPT-5.5 (non-streaming — last resort if Anthropic is down).
-        if (!fullText && env.DPSK_API_KEY) {
+        if (!fullText && env.OPENAI_API_KEY) {
           try {
             const r = await callOpenAI({ model: "gpt-5.5", instructions: system, input: userText }, env);
             const d = await r.json().catch(() => ({}));
@@ -2635,37 +2635,16 @@ function repairTruncatedJson(str) {
   return s;
 }
 
-// Switched the OpenAI fallback to DeepSeek (OpenAI-compatible /chat/completions) to cut cost.
-// Keeps the SAME name, arguments, and return shape so all callers work unchanged: it accepts a
-// Responses-API-style payload ({ model, instructions, input, [text.format.schema] }) and returns
-// a Response whose .json() is either the parsed JSON (for schema calls) or { episodeTranscript }.
 async function callOpenAI(payload, env) {
-  // Responses-API "instructions"/"input" → chat/completions system/user messages.
-  let system = payload.instructions || "";
-  const schema = payload?.text?.format?.schema;
-  const wantJson = !!schema || payload?.text?.format?.type === "json_object";
-  if (schema) {
-    // DeepSeek has no strict json_schema; describe the schema in the prompt + use JSON mode.
-    system += `\n\nReturn ONLY valid JSON matching this exact schema — no markdown, no code block:\n${JSON.stringify(schema)}`;
-  }
-  const messages = [];
-  if (system) messages.push({ role: "system", content: system });
-  messages.push({ role: "user", content: payload.input || "" });
-
   let resp;
   try {
-    resp = await fetch("https://api.deepseek.com/chat/completions", {
+    resp = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${env.DPSK_API_KEY}`,
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
       },
-      body: JSON.stringify({
-        model: "deepseek-chat", // maps any requested model (e.g. gpt-5.5) to DeepSeek
-        max_tokens: 8192,        // DeepSeek's ceiling
-        messages,
-        ...(wantJson ? { response_format: { type: "json_object" } } : {}),
-      }),
+      body: JSON.stringify(payload),
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
@@ -2683,8 +2662,9 @@ async function callOpenAI(payload, env) {
     });
   }
 
-  const outText = (data?.choices?.[0]?.message?.content || "").trim();
+  const outText = typeof data?.output_text === "string" ? data.output_text.trim() : "";
   let outJson = null;
+
   if (outText) {
     try {
       outJson = JSON.parse(outText);
@@ -2693,7 +2673,19 @@ async function callOpenAI(payload, env) {
     }
   }
 
+  if (!outJson && Array.isArray(data?.output)) {
+    const joined = data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("").trim();
+    if (joined) {
+      try {
+        outJson = JSON.parse(joined);
+      } catch {
+        outJson = { episodeTranscript: joined };
+      }
+    }
+  }
+
   const finalOut = outJson || data;
+
   return new Response(JSON.stringify(finalOut), {
     headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
   });

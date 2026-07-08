@@ -132,6 +132,7 @@ function _extractPlayerPlacements() {
       ep.suddenDeathEliminated, ep.eliminated,
       ep.firstEliminated, ep.tiedDestiniesCollateral,
       ep.emissaryEliminated, ep.hpTiebreakerEliminated, _juryBoot,
+      ...(ep.multiTribalElims || []), // double/multi-tribal boots (ep.eliminated only holds the last)
       ep.firemakingResult?.loser   // fire-making duel loser (else falls to 'Unknown' — the Jacques bug)
     ].filter(Boolean);
 
@@ -182,6 +183,11 @@ function _extractPlayerPlacements() {
     const stillActive = new Set(gs.activePlayers || []);
     for (const [name, arrivalEp] of Object.entries(gs.riArrivalEp)) {
       if (finalists.includes(name) || stillActive.has(name)) continue;
+      // Preserve any deliberate fractional tie-break already assigned this run (e.g. an
+      // ambassador or Koh-Lanta boot that left slightly earlier within an episode); only
+      // correct integer / flattened exit values.
+      const cur = permanentExit[name];
+      if (cur != null && !Number.isInteger(cur)) continue;
       permanentExit[name] = arrivalEp;
     }
   }

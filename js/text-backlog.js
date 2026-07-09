@@ -76,6 +76,7 @@ import { rpBuildHBTitleCard, rpBuildHBEntry, rpBuildHBHunt, rpBuildHBExtract, rp
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard } from './chal/alien-egg.js';
 import { rpBuildYetiDropOff, rpBuildYetiTrail, rpBuildYetiTraps, rpBuildYetiNight, rpBuildYetiSprint, rpBuildYetiVerdict, rpBuildYetiElimination } from './chal/are-we-there-yeti.js';
 import { rpBuildTDTTitleCard, rpBuildTDTRace, rpBuildTDTResults } from './chal/truth-or-dare-train.js';
+import { rpBuildAMGTitleCard, rpBuildAMGRace, rpBuildAMGResults } from './chal/a-maze-ing-grip.js';
 import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish, rpBuildJuryVotes } from './vp-finale.js';
 // rpBuildAftermath is read off window (not statically imported) — aftermath.js already imports from
 // this module, so a static import here would create a circular dependency.
@@ -3024,6 +3025,9 @@ export function generateSummaryText(ep) {
   }
   if (ep.truthOrDareTrain) {
     _textTwistChallenge(ep, ln, sec, 'truthOrDareTrain', 'TRUTH OR DARE TRAIN', [rpBuildTDTTitleCard, rpBuildTDTRace, rpBuildTDTResults]);
+  }
+  if (ep.aMazeInGrip) {
+    _textTwistChallenge(ep, ln, sec, 'aMazeInGrip', 'A-MAZE-ING GRIP', [rpBuildAMGTitleCard, rpBuildAMGRace, rpBuildAMGResults]);
   }
 
   // ── CHAIN OF COMMAND ──

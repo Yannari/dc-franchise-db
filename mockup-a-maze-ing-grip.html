@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A-Maze-ing Grip — VP Mockup v2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rye&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', system-ui, sans-serif;
+  color: #f6ead2;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 50% 116%, #c9662f 0%, transparent 40%),
+    linear-gradient(180deg, #201233 0%, #35204a 34%, #6a3a3a 72%, #8a5326 100%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+/* ── ambient: a real corn field silhouette along the bottom ── */
+.amg-field { position: fixed; left: 0; right: 0; bottom: 0; height: 150px; z-index: 0; pointer-events: none; }
+.amg-field svg { width: 100%; height: 100%; display: block; }
+.amg-firefly { position: fixed; width: 4px; height: 4px; border-radius: 50%;
+  background: #ffe08a; box-shadow: 0 0 8px 2px rgba(255,224,138,.8); pointer-events: none; z-index: 0;
+  animation: amgFloat 6s ease-in-out infinite; opacity: 0; }
+@keyframes amgFloat { 0%,100%{ transform: translateY(0); opacity: 0; } 50%{ transform: translateY(-26px); opacity: .9; } }
+@media(prefers-reduced-motion: reduce){ .amg-firefly{ animation: none; } }
+
+.amg-shell { max-width: 1120px; margin: 0 auto; padding: 16px 16px 130px; position: relative; z-index: 1; }
+
+/* ── hero ── */
+.amg-hero { text-align: center; padding: 10px 0 14px; }
+.amg-eyebrow { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #e8b944; font-weight: 800; }
+.amg-title { font-family: 'Rye', cursive; font-size: clamp(34px, 6vw, 56px); line-height: .95; letter-spacing: 1px; margin-top: 6px;
+  color: #f2c94c; text-shadow: 0 2px 0 #7a4a10, 0 4px 0 #5a3608, 0 0 34px rgba(242,201,76,.5); }
+.amg-sub { font-size: 13px; color: #e7cfa0; margin-top: 8px; max-width: 680px; margin-left: auto; margin-right: auto; }
+
+/* ── avatar portrait (real image + initials fallback) ── */
+.amg-pf { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; overflow: hidden;
+  position: relative; flex-shrink: 0; vertical-align: middle; border: 2px solid rgba(0,0,0,.35); background: #4a3320; }
+.amg-pf img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.amg-pf b { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; font-family: 'Rye'; font-size: 10px; color: #f6ead2; }
+.amg-pf.sm { width: 24px; height: 24px; } .amg-pf.sm b { font-size: 9px; }
+.amg-pf.md { width: 34px; height: 34px; }
+.amg-pf.lg { width: 48px; height: 48px; border-width: 3px; }
+
+/* ── the nets panel (sticky top) ── */
+.amg-nets { position: sticky; top: 8px; z-index: 6; display: grid; gap: 12px; margin: 8px 0 18px; grid-template-columns: 1fr 1fr; }
+@media(max-width: 720px){ .amg-nets{ grid-template-columns: 1fr; } }
+.amg-net-card { background: linear-gradient(180deg, rgba(40,26,20,.93), rgba(28,16,12,.93)); border: 1px solid rgba(232,185,68,.28);
+  border-radius: 14px; padding: 12px 14px 14px; backdrop-filter: blur(6px); box-shadow: 0 8px 26px rgba(0,0,0,.45); }
+.amg-net-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.amg-team-name { font-family: 'Rye', cursive; font-size: 18px; letter-spacing: 1px; }
+.amg-team-tag { font-size: 10px; font-weight: 800; letter-spacing: 1px; padding: 2px 8px; border-radius: 20px; }
+.amg-net-vis { position: relative; height: 74px; margin: 4px 0 8px; }
+.amg-net-vis svg { width: 100%; height: 100%; display: block; }
+.amg-cocos { position: absolute; left: 0; right: 0; bottom: 6px; display: flex; justify-content: center; gap: 3px; flex-wrap: wrap; padding: 0 26px; }
+.amg-coco { width: 13px; height: 13px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #a3703f, #5a3316 70%); box-shadow: inset -2px -2px 3px rgba(0,0,0,.5); }
+.amg-strain-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.amg-strain-track { flex: 1; height: 9px; border-radius: 6px; background: rgba(255,255,255,.08); overflow: hidden; }
+.amg-strain-fill { height: 100%; border-radius: 6px; transition: width .6s cubic-bezier(.5,0,.3,1), background .4s; }
+.amg-strain-pct { font-family: 'Rye', cursive; font-size: 13px; min-width: 42px; text-align: right; }
+.amg-holders { display: flex; gap: 8px; margin-top: 10px; }
+.amg-holder { flex: 1; display: flex; align-items: center; gap: 7px; background: rgba(255,255,255,.04); border-radius: 9px; padding: 5px 8px; border: 1px solid rgba(255,255,255,.06); }
+.amg-holder-info { min-width: 0; }
+.amg-holder-name { font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.amg-holder-grip { font-size: 9px; color: #b79a6a; letter-spacing: .5px; }
+.amg-grip-bar { height: 3px; border-radius: 2px; margin-top: 2px; }
+
+/* ── body: feed + sidebar ── */
+.amg-body { display: grid; grid-template-columns: 1fr 300px; gap: 16px; }
+@media(max-width: 860px){ .amg-body{ grid-template-columns: 1fr; } }
+
+.amg-card { background: linear-gradient(180deg, rgba(46,30,20,.9), rgba(30,20,14,.9)); border: 1px solid rgba(232,185,68,.16);
+  border-radius: 13px; padding: 12px 14px; margin-bottom: 11px; box-shadow: 0 4px 14px rgba(0,0,0,.35);
+  animation: amgIn .4s cubic-bezier(.22,1,.36,1) both; }
+@keyframes amgIn { from{ opacity: 0; transform: translateY(14px); } to{ opacity: 1; transform: none; } }
+.amg-card-head { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; }
+.amg-badge { font-size: 9px; font-weight: 900; letter-spacing: 1px; padding: 3px 9px; border-radius: 5px; }
+.b-role { background: rgba(232,185,68,.22); color: #f2c94c; }
+.b-hunt { background: rgba(106,143,74,.22); color: #a6d178; }
+.b-hit  { background: rgba(232,185,68,.22); color: #f2c94c; }
+.b-miss { background: rgba(120,120,130,.2); color: #b9bcc6; }
+.b-swap { background: rgba(87,166,232,.2); color: #7fbcf0; }
+.b-clutch{ background: rgba(255,120,90,.2); color: #ff9b6b; }
+.amg-card-body { display: flex; align-items: flex-start; gap: 11px; }
+.amg-card-txt { font-size: 13.5px; line-height: 1.55; color: #efdcb8; }
+.amg-card-txt b { color: #f2c94c; }
+.amg-card-meta { font-size: 11px; color: #b79a6a; margin-top: 5px; }
+.amg-icon { flex-shrink: 0; }
+
+/* role-assignment lineup */
+.amg-lineup { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media(max-width: 560px){ .amg-lineup{ grid-template-columns: 1fr; } }
+.amg-lineup-team { background: rgba(255,255,255,.03); border-radius: 10px; padding: 9px 10px; }
+.amg-lineup-role { display: flex; align-items: center; gap: 6px; font-size: 12px; margin: 4px 0; }
+.amg-role-tag { font-size: 8px; font-weight: 900; letter-spacing: .5px; padding: 1px 5px; border-radius: 4px; margin-left: auto; }
+
+/* social card */
+.amg-social { border: 1px dashed rgba(214,120,180,.5); background: linear-gradient(180deg, rgba(50,26,42,.85), rgba(30,16,26,.85)); }
+.amg-social .amg-badge.s-romance { background: rgba(232,90,150,.22); color: #ff8ac0; }
+.amg-social .amg-badge.s-alliance{ background: rgba(120,200,120,.2); color: #9ae59a; }
+.amg-social .amg-badge.s-suspect { background: rgba(232,110,90,.2); color: #ff9b7a; }
+.amg-social-avas { display: flex; }
+.amg-social-avas .amg-pf { margin-left: -8px; border: 2px solid #2a1626; }
+.amg-social-avas .amg-pf:first-child { margin-left: 0; }
+
+/* sidebar */
+.amg-side { align-self: start; position: sticky; top: 8px; display: flex; flex-direction: column; gap: 12px; }
+.amg-side-card { background: linear-gradient(180deg, rgba(36,24,18,.92), rgba(24,16,12,.92)); border: 1px solid rgba(232,185,68,.2); border-radius: 13px; padding: 12px; }
+.amg-side-h { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #b79a6a; margin-bottom: 9px; font-weight: 800; }
+.amg-side-team { margin-bottom: 12px; }
+.amg-side-team-bar { display: flex; align-items: center; justify-content: space-between; padding: 5px 9px; border-radius: 8px; font-weight: 800; font-size: 12px; margin-bottom: 5px; }
+.amg-side-row { display: flex; align-items: center; gap: 7px; font-size: 11.5px; padding: 3px 6px; }
+.amg-side-dot { width: 7px; height: 7px; border-radius: 50%; margin-left: auto; }
+.amg-legend { font-size: 10px; color: #9c855f; display: flex; flex-wrap: wrap; gap: 5px 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.06); }
+.amg-legend span { display: flex; align-items: center; gap: 4px; }
+
+/* mini maze map */
+.amg-maze { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; border: 2px solid #5a4020;
+  background: #2e441a; }
+.amg-maze svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.amg-maze-scare { position: absolute; transform: translate(-50%,-50%); z-index: 2; }
+.amg-maze-runner { position: absolute; width: 16px; height: 16px; border-radius: 50%; transform: translate(-50%,-50%); z-index: 3;
+  border: 2px solid #fff; box-shadow: 0 0 6px currentColor; transition: left .6s, top .6s; display: flex; align-items: center; justify-content: center;
+  font-size: 7px; font-weight: 900; color: #fff; }
+
+/* controls */
+.amg-controls { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 30;
+  display: flex; gap: 10px; align-items: center; background: rgba(28,16,12,.94); border: 1px solid rgba(232,185,68,.3);
+  border-radius: 13px; padding: 10px 14px; box-shadow: 0 8px 26px rgba(0,0,0,.5); backdrop-filter: blur(8px); }
+.amg-btn { font-family: 'Nunito'; font-weight: 800; font-size: 13px; border: none; border-radius: 10px; padding: 10px 18px; cursor: pointer;
+  background: linear-gradient(135deg, #e8b944, #b5822f); color: #2a1608; display: flex; align-items: center; gap: 6px; box-shadow: 0 3px 12px rgba(232,185,68,.35); }
+.amg-btn.ghost { background: linear-gradient(135deg, #6a7280, #4b5563); color: #fff; }
+.amg-counter { font-family: 'Rye', cursive; font-size: 13px; color: #e8b944; }
+
+/* results */
+.amg-result-row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 11px; margin-bottom: 8px; border-left: 4px solid; }
+.amg-rank { font-family: 'Rye', cursive; font-size: 20px; width: 30px; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ambient corn field -->
+<div class="amg-field">
+  <svg viewBox="0 0 400 150" preserveAspectRatio="none">
+    <defs>
+      <pattern id="cornBack" width="26" height="150" patternUnits="userSpaceOnUse">
+        <g fill="#243d14">
+          <rect x="12" y="40" width="2.4" height="110"/>
+          <path d="M13 60 Q2 54 -3 64 Q6 62 13 70 Z"/>
+          <path d="M13 60 Q24 54 29 64 Q20 62 13 70 Z"/>
+          <path d="M13 78 Q1 74 -4 86 Q7 82 13 88 Z"/>
+          <path d="M13 78 Q25 74 30 86 Q19 82 13 88 Z"/>
+          <path d="M13 40 Q9 30 13 24 Q17 30 13 40 Z"/>
+        </g>
+      </pattern>
+      <pattern id="cornFront" width="34" height="150" patternUnits="userSpaceOnUse">
+        <g fill="#152a09">
+          <rect x="16" y="20" width="3.2" height="130"/>
+          <path d="M17 46 Q2 38 -4 52 Q8 48 17 58 Z"/>
+          <path d="M17 46 Q32 38 38 52 Q26 48 17 58 Z"/>
+          <path d="M17 70 Q1 62 -5 78 Q9 72 17 82 Z"/>
+          <path d="M17 70 Q33 62 39 78 Q25 72 17 82 Z"/>
+          <path d="M17 96 Q3 90 -3 104 Q10 98 17 106 Z"/>
+          <path d="M17 96 Q31 90 37 104 Q24 98 17 106 Z"/>
+          <path d="M17 20 Q11 8 17 0 Q23 8 17 20 Z"/>
+          <ellipse cx="17" cy="6" rx="4" ry="8" fill="#3a5320"/>
+        </g>
+      </pattern>
+    </defs>
+    <rect x="0" y="0" width="400" height="150" fill="url(#cornBack)" opacity="0.75"/>
+    <rect x="0" y="0" width="400" height="150" fill="url(#cornFront)"/>
+  </svg>
+</div>
+<div class="amg-firefly" style="left:12%;top:30%;animation-delay:0s"></div>
+<div class="amg-firefly" style="left:78%;top:22%;animation-delay:1.4s"></div>
+<div class="amg-firefly" style="left:46%;top:44%;animation-delay:2.8s"></div>
+<div class="amg-firefly" style="left:88%;top:52%;animation-delay:3.6s"></div>
+<div class="amg-firefly" style="left:26%;top:60%;animation-delay:2.1s"></div>
+
+<div class="amg-shell">
+
+  <div class="amg-hero">
+    <div class="amg-eyebrow">Carnival of Chaos · Immunity Challenge</div>
+    <div class="amg-title">A-Maze-ing Grip</div>
+    <div class="amg-sub">Two hold the net. The rest raid the maze and sink coconuts into a rival's net until their grip gives out. Last net standing takes immunity.</div>
+  </div>
+
+  <!-- ══ THE NETS (sticky) ══ -->
+  <div class="amg-nets">
+
+    <!-- RED -->
+    <div class="amg-net-card">
+      <div class="amg-net-head">
+        <div class="amg-team-name" style="color:#e0524a">RED TEAM</div>
+        <div class="amg-team-tag" style="background:rgba(224,82,74,.2);color:#ff8a80">7 coconuts on net</div>
+      </div>
+      <div class="amg-net-vis">
+        <svg viewBox="0 0 300 74" preserveAspectRatio="none">
+          <line x1="14" y1="6" x2="14" y2="70" stroke="#6b4423" stroke-width="5"/>
+          <line x1="286" y1="6" x2="286" y2="70" stroke="#6b4423" stroke-width="5"/>
+          <path d="M14 12 Q150 62 286 12" fill="none" stroke="#d9c9a8" stroke-width="2.5"/>
+          <path d="M14 12 Q150 62 286 12 L286 20 Q150 70 14 20 Z" fill="rgba(217,201,168,.10)"/>
+          <g stroke="#d9c9a8" stroke-width="1" opacity=".6">
+            <path d="M50 20 Q150 63 250 20" fill="none"/>
+            <path d="M14 12 L20 30 M70 26 L74 46 M150 33 L150 55 M226 26 L230 46 M286 12 L280 30" fill="none"/>
+          </g>
+        </svg>
+        <div class="amg-cocos"><span class="amg-coco"></span><span class="amg-coco"></span><span class="amg-coco"></span><span class="amg-coco"></span><span class="amg-coco"></span><span class="amg-coco"></span><span class="amg-coco"></span></div>
+      </div>
+      <div class="amg-strain-row">
+        <div class="amg-strain-track"><div class="amg-strain-fill" style="width:82%;background:linear-gradient(90deg,#e8b944,#e0524a)"></div></div>
+        <div class="amg-strain-pct" style="color:#ff6a5a">82%</div>
+      </div>
+      <div class="amg-holders">
+        <div class="amg-holder">
+          <span class="amg-pf md" style="background:#c98a2e"><img src="assets/avatars/aiden.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AI</b></span>
+          <div class="amg-holder-info"><div class="amg-holder-name">Aiden</div><div class="amg-holder-grip">GRIP 7 · holding</div><div class="amg-grip-bar" style="width:60%;background:#e8b944"></div></div>
+        </div>
+        <div class="amg-holder">
+          <span class="amg-pf md" style="background:#9ac36a"><img src="assets/avatars/amelie.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AM</b></span>
+          <div class="amg-holder-info"><div class="amg-holder-name">Amelie <span style="font-size:8px;color:#7fbcf0">⇄ swapped in</span></div><div class="amg-holder-grip">GRIP 6 · holding</div><div class="amg-grip-bar" style="width:74%;background:#6a8f4a"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLUE -->
+    <div class="amg-net-card">
+      <div class="amg-net-head">
+        <div class="amg-team-name" style="color:#4a86e0">BLUE TEAM</div>
+        <div class="amg-team-tag" style="background:rgba(74,134,224,.2);color:#8fb8ff">5 coconuts on net</div>
+      </div>
+      <div class="amg-net-vis">
+        <svg viewBox="0 0 300 74" preserveAspectRatio="none">
+          <line x1="14" y1="6" x2="14" y2="70" stroke="#6b4423" stroke-width="5"/>
+          <line x1="286" y1="6" x2="286" y2="70" stroke="#6b4423" stroke-width="5"/>
+          <path d="M14 12 Q150 44 286 12" fill="none" stroke="#d9c9a8" stroke-width="2.5"/>
+          <path d="M14 12 Q150 44 286 12 L286 20 Q150 52 14 20 Z" fill="rgba(217,201,168,.10)"/>
+          <g stroke="#d9c9a8" stroke-width="1" opacity=".6">
+            <path d="M50 18 Q150 45 250 18" fill="none"/>
+            <path d="M14 12 L20 28 M70 22 L74 38 M150 26 L150 42 M226 22 L230 38 M286 12 L280 28" fill="none"/>
+          </g>
+        </svg>
+        <div class="amg-cocos"><span class="amg-coco"></span><span class="amg-coco"></span><span class="amg-coco"></span><span class="amg-coco"></span><span class="amg-coco"></span></div>
+      </div>
+      <div class="amg-strain-row">
+        <div class="amg-strain-track"><div class="amg-strain-fill" style="width:54%;background:linear-gradient(90deg,#6a8f4a,#e8b944)"></div></div>
+        <div class="amg-strain-pct" style="color:#e8b944">54%</div>
+      </div>
+      <div class="amg-holders">
+        <div class="amg-holder">
+          <span class="amg-pf md" style="background:#d98fb0"><img src="assets/avatars/anastasia.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AN</b></span>
+          <div class="amg-holder-info"><div class="amg-holder-name">Anastasia</div><div class="amg-holder-grip">GRIP 5 · holding</div><div class="amg-grip-bar" style="width:66%;background:#6a8f4a"></div></div>
+        </div>
+        <div class="amg-holder">
+          <span class="amg-pf md" style="background:#6ab0e0"><img src="assets/avatars/brody.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>BR</b></span>
+          <div class="amg-holder-info"><div class="amg-holder-name">Brody</div><div class="amg-holder-grip">GRIP 8 · holding</div><div class="amg-grip-bar" style="width:88%;background:#6a8f4a"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="amg-body">
+
+    <div>
+
+      <!-- ROLE ASSIGNMENT (phase 0) -->
+      <div class="amg-card">
+        <div class="amg-card-head"><span class="amg-badge b-role">🪢 THE LINEUP</span><span style="font-size:11px;color:#b79a6a">Each team locks in 2 holders + a designated dunker</span></div>
+        <div class="amg-lineup">
+          <div class="amg-lineup-team">
+            <div style="font-family:'Rye';color:#e0524a;font-size:14px;margin-bottom:4px">RED</div>
+            <div class="amg-lineup-role"><span class="amg-pf sm" style="background:#c98a2e"><img src="assets/avatars/aiden.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AI</b></span> Aiden <span class="amg-role-tag" style="background:rgba(232,185,68,.25);color:#f2c94c">HOLDER · grip 7</span></div>
+            <div class="amg-lineup-role"><span class="amg-pf sm" style="background:#a06ad0"><img src="assets/avatars/andre.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AN</b></span> Andre <span class="amg-role-tag" style="background:rgba(232,185,68,.25);color:#f2c94c">HOLDER · grip 6</span></div>
+            <div class="amg-lineup-role"><span class="amg-pf sm" style="background:#e0a06a"><img src="assets/avatars/alec.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AL</b></span> Alec <span class="amg-role-tag" style="background:rgba(232,90,90,.2);color:#ff8a80">DUNKER · throw 9</span></div>
+            <div class="amg-lineup-role" style="opacity:.6"><span class="amg-pf sm" style="background:#7fd0c0"><img src="assets/avatars/amy.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AM</b></span> Amy <span class="amg-role-tag" style="background:rgba(150,150,160,.2);color:#c9ccd6">SITTING OUT</span></div>
+          </div>
+          <div class="amg-lineup-team">
+            <div style="font-family:'Rye';color:#4a86e0;font-size:14px;margin-bottom:4px">BLUE</div>
+            <div class="amg-lineup-role"><span class="amg-pf sm" style="background:#d98fb0"><img src="assets/avatars/anastasia.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AN</b></span> Anastasia <span class="amg-role-tag" style="background:rgba(232,185,68,.25);color:#f2c94c">HOLDER · grip 5</span></div>
+            <div class="amg-lineup-role"><span class="amg-pf sm" style="background:#6ab0e0"><img src="assets/avatars/brody.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>BR</b></span> Brody <span class="amg-role-tag" style="background:rgba(232,185,68,.25);color:#f2c94c">HOLDER · grip 8</span></div>
+            <div class="amg-lineup-role"><span class="amg-pf sm" style="background:#c9a060"><img src="assets/avatars/avery.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AV</b></span> Avery <span class="amg-role-tag" style="background:rgba(232,90,90,.2);color:#ff8a80">DUNKER · throw 8</span></div>
+            <div class="amg-lineup-role" style="opacity:.6"><span class="amg-pf sm" style="background:#8fb0e0"><img src="assets/avatars/bowie.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>BO</b></span> Bowie <span class="amg-role-tag" style="background:rgba(150,150,160,.2);color:#c9ccd6">SITTING OUT</span></div>
+          </div>
+        </div>
+        <div class="amg-card-meta" style="margin-top:8px">Uneven teams equalized — the bigger team sits out its weakest hunter down to matching scorer counts.</div>
+      </div>
+
+      <!-- HUNT -->
+      <div class="amg-card">
+        <div class="amg-card-head"><span class="amg-badge b-hunt">🌽 SCARECROW FOUND</span><span style="font-size:11px;color:#b79a6a">Blue Team · the maze</span></div>
+        <div class="amg-card-body">
+          <span class="amg-icon"><svg width="40" height="52" viewBox="0 0 40 52"><g stroke="#7a4a24" stroke-width="3" stroke-linecap="round"><line x1="20" y1="14" x2="20" y2="40"/><line x1="6" y1="22" x2="34" y2="22"/></g><circle cx="20" cy="10" r="7" fill="#d6a45a"/><path d="M13 6 L20 -1 L27 6 Z" fill="#c98a2e"/><circle cx="17" cy="9" r="1.3" fill="#3a2410"/><circle cx="23" cy="9" r="1.3" fill="#3a2410"/><path d="M16 13 Q20 16 24 13" stroke="#3a2410" stroke-width="1.2" fill="none"/><circle cx="8" cy="42" r="6" fill="#6b4423"/></svg></span>
+          <div>
+            <div class="amg-card-txt"><b>Bowie</b> reads the maze like a map and beelines to a marked scarecrow, shaking two coconuts loose from its straw arms before anyone else even finds the row.</div>
+            <div class="amg-card-meta">Navigation: intuition 7 + mental 6 → found fast · +2 coconuts to carry</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOCIAL: suspicion (generic, no idol) -->
+      <div class="amg-card amg-social">
+        <div class="amg-card-head"><span class="amg-badge s-suspect">👀 SUSPICION</span><span style="font-size:11px;color:#b79a6a">Blue Team</span></div>
+        <div class="amg-card-body">
+          <div class="amg-social-avas"><span class="amg-pf md" style="background:#c98fd0"><img src="assets/avatars/avery.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AV</b></span><span class="amg-pf md" style="background:#6ab0e0"><img src="assets/avatars/bowie.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>BO</b></span></div>
+          <div>
+            <div class="amg-card-txt"><b>Avery</b> notices how fast <b>Bowie</b> moved through the maze and slipped off alone. "Nobody knows it that well by accident. What's he really doing out there?" The seed is planted.</div>
+            <div class="amg-card-meta">−0.6 bond Avery→Bowie · Bowie +1 threat perception</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHOT: hit (generic, stat-flavored) -->
+      <div class="amg-card">
+        <div class="amg-card-head"><span class="amg-badge b-hit">🥥 SCORED</span><span style="font-size:11px;color:#b79a6a">Blue → Red's net · designated dunker</span></div>
+        <div class="amg-card-body">
+          <span class="amg-icon"><svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="none" stroke="#e8b944" stroke-width="2.5" stroke-dasharray="4 3"/><circle cx="20" cy="20" r="7" fill="#7a4a24"/></svg></span>
+          <div>
+            <div class="amg-card-txt"><b>Avery</b> takes the coconut Bowie couldn't land, sizes up the rival net, and calls it before it even leaves her hand — straight into the <b>Red</b> net.</div>
+            <div class="amg-card-meta">Throw: physical 8 + boldness 7 → +12% strain on Red · Avery +1 popularity (crowd pop)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHOT: miss -->
+      <div class="amg-card">
+        <div class="amg-card-head"><span class="amg-badge b-miss">✗ OVERSHOT</span><span style="font-size:11px;color:#b79a6a">Red → Blue's net</span></div>
+        <div class="amg-card-body">
+          <span class="amg-icon"><svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="none" stroke="#7a7a86" stroke-width="2.5" stroke-dasharray="4 3"/><path d="M12 12 L28 28 M28 12 L12 28" stroke="#b9bcc6" stroke-width="2.5" stroke-linecap="round"/></svg></span>
+          <div>
+            <div class="amg-card-txt"><b>Amy</b> winds up too big and sends it sailing clean over the net — it bounces off the far post and rolls back into the corn. No score.</div>
+            <div class="amg-card-meta">Throw failed (boldness high, aim low) · comic beat · no strain added</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOCIAL: romance (generic template) -->
+      <div class="amg-card amg-social">
+        <div class="amg-card-head"><span class="amg-badge s-romance">💘 SPARK</span><span style="font-size:11px;color:#b79a6a">Red Team · the maze</span></div>
+        <div class="amg-card-body">
+          <div class="amg-social-avas"><span class="amg-pf md" style="background:#7fd0c0"><img src="assets/avatars/amy.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AM</b></span><span class="amg-pf md" style="background:#e0a06a"><img src="assets/avatars/alec.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AL</b></span></div>
+          <div>
+            <div class="amg-card-txt">Lost between the same two rows, <b>Amy</b> and <b>Alec</b> keep finding excuses to double back to each other. By the time they find the coconut, neither's thinking about the challenge.</div>
+            <div class="amg-card-meta">+1.2 bond Amy/Alec · possible showmance (romance enabled + compatible)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SWAP -->
+      <div class="amg-card">
+        <div class="amg-card-head"><span class="amg-badge b-swap">⇄ HOLDER SWAP</span><span style="font-size:11px;color:#b79a6a">Red Team</span></div>
+        <div class="amg-card-body">
+          <div class="amg-social-avas"><span class="amg-pf md" style="background:#a06ad0"><img src="assets/avatars/andre.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AN</b></span><span class="amg-pf md" style="background:#9ac36a"><img src="assets/avatars/amelie.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AM</b></span></div>
+          <div>
+            <div class="amg-card-txt"><b>Andre</b>'s arms are shaking and he calls for relief. <b>Aiden</b> gives the nod, and <b>Amelie</b> steps in to take the rope. Both agreed, so the swap is clean.</div>
+            <div class="amg-card-meta">Red strain −18% (fresh grip) · Amelie GRIP 6 now holding · Andre → maze</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLUTCH -->
+      <div class="amg-card">
+        <div class="amg-card-head"><span class="amg-badge b-clutch">💪 PULLED THROUGH</span><span style="font-size:11px;color:#b79a6a">Red Team</span></div>
+        <div class="amg-card-body">
+          <span class="amg-icon"><svg width="40" height="46" viewBox="0 0 40 46"><path d="M20 4 L20 34" stroke="#e0524a" stroke-width="5" stroke-linecap="round"/><path d="M20 12 L8 24 M20 12 L32 24" stroke="#e0524a" stroke-width="5" stroke-linecap="round"/><circle cx="8" cy="26" r="4" fill="#6b4423"/><circle cx="32" cy="26" r="4" fill="#6b4423"/></svg></span>
+          <div>
+            <div class="amg-card-txt">The coconuts are dragging the Red net toward the dirt — but <b>Aiden</b> plants his feet, knuckles white, and <b>refuses to let it fall</b>. The net holds by an inch.</div>
+            <div class="amg-card-meta">Endurance check: endurance 7 + boldness 6 → survived · Red strain capped at 82%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOCIAL: alliance -->
+      <div class="amg-card amg-social">
+        <div class="amg-card-head"><span class="amg-badge s-alliance">🤝 OLIVE BRANCH</span><span style="font-size:11px;color:#b79a6a">Blue Team · the maze</span></div>
+        <div class="amg-card-body">
+          <div class="amg-social-avas"><span class="amg-pf md" style="background:#d98fb0"><img src="assets/avatars/anastasia.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AN</b></span><span class="amg-pf md" style="background:#e8b070"><img src="assets/avatars/avery.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AV</b></span></div>
+          <div>
+            <div class="amg-card-txt">Between scarecrows, <b>Anastasia</b> catches <b>Avery</b> alone and extends a hand — a fresh start, no vote against her if they lose. Avery's been waiting for exactly this opening.</div>
+            <div class="amg-card-meta">+1.5 bond Anastasia/Avery · alliance repair flagged for targeting</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ SIDEBAR ══ -->
+    <div class="amg-side">
+      <div class="amg-side-card">
+        <div class="amg-side-h">🪢 Net Status — live</div>
+
+        <div class="amg-side-team">
+          <div class="amg-side-team-bar" style="background:linear-gradient(90deg,rgba(224,82,74,.25),transparent);color:#ff8a80;border:1px solid rgba(224,82,74,.3)">
+            <span>🔴 RED</span><span style="font-family:'Rye'">82% strain</span>
+          </div>
+          <div class="amg-side-row"><span class="amg-pf sm" style="background:#c98a2e"><img src="assets/avatars/aiden.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AI</b></span> Aiden <span style="font-size:9px;color:#b79a6a">holder</span><span class="amg-side-dot" style="background:#e8b944"></span></div>
+          <div class="amg-side-row"><span class="amg-pf sm" style="background:#9ac36a"><img src="assets/avatars/amelie.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AM</b></span> Amelie <span style="font-size:9px;color:#b79a6a">holder</span><span class="amg-side-dot" style="background:#6a8f4a"></span></div>
+          <div class="amg-side-row" style="opacity:.7"><span class="amg-pf sm" style="background:#e0a06a"><img src="assets/avatars/alec.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AL</b></span> Alec <span style="font-size:9px;color:#ff9b6b">dunker</span></div>
+          <div class="amg-side-row" style="opacity:.7"><span class="amg-pf sm" style="background:#a06ad0"><img src="assets/avatars/andre.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AN</b></span> Andre <span style="font-size:9px;color:#7fbcf0">in maze</span></div>
+        </div>
+
+        <div class="amg-side-team">
+          <div class="amg-side-team-bar" style="background:linear-gradient(90deg,rgba(74,134,224,.25),transparent);color:#8fb8ff;border:1px solid rgba(74,134,224,.3)">
+            <span>🔵 BLUE</span><span style="font-family:'Rye'">54% strain</span>
+          </div>
+          <div class="amg-side-row"><span class="amg-pf sm" style="background:#d98fb0"><img src="assets/avatars/anastasia.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AN</b></span> Anastasia <span style="font-size:9px;color:#b79a6a">holder</span><span class="amg-side-dot" style="background:#6a8f4a"></span></div>
+          <div class="amg-side-row"><span class="amg-pf sm" style="background:#6ab0e0"><img src="assets/avatars/brody.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>BR</b></span> Brody <span style="font-size:9px;color:#b79a6a">holder</span><span class="amg-side-dot" style="background:#6a8f4a"></span></div>
+          <div class="amg-side-row" style="opacity:.7"><span class="amg-pf sm" style="background:#c9a060"><img src="assets/avatars/avery.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AV</b></span> Avery <span style="font-size:9px;color:#ff9b6b">dunker</span></div>
+          <div class="amg-side-row" style="opacity:.7"><span class="amg-pf sm" style="background:#8fb0e0"><img src="assets/avatars/bowie.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>BO</b></span> Bowie <span style="font-size:9px;color:#7fbcf0">in maze</span></div>
+        </div>
+
+        <div class="amg-legend">
+          <span><span class="amg-side-dot" style="background:#6a8f4a"></span>fresh grip</span>
+          <span><span class="amg-side-dot" style="background:#e8b944"></span>straining</span>
+          <span><span class="amg-side-dot" style="background:#e0524a"></span>failing</span>
+        </div>
+      </div>
+
+      <div class="amg-side-card">
+        <div class="amg-side-h">🌽 The Maze</div>
+        <div class="amg-maze">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+            <!-- maze corridors (lighter paths on the dark field) -->
+            <g stroke="#4a6b26" stroke-width="7" fill="none" stroke-linecap="square" opacity=".8">
+              <path d="M10 10 H90 V40 H30 V70 H90"/>
+              <path d="M10 40 V90 H60"/>
+              <path d="M50 10 V30"/>
+            </g>
+          </svg>
+          <!-- scarecrows -->
+          <div class="amg-maze-scare" style="left:28%;top:24%"><svg width="18" height="24" viewBox="0 0 40 52"><g stroke="#7a4a24" stroke-width="3"><line x1="20" y1="14" x2="20" y2="40"/><line x1="6" y1="22" x2="34" y2="22"/></g><circle cx="20" cy="10" r="7" fill="#d6a45a"/><path d="M13 6 L20 -1 L27 6 Z" fill="#c98a2e"/></svg></div>
+          <div class="amg-maze-scare" style="left:74%;top:52%"><svg width="18" height="24" viewBox="0 0 40 52"><g stroke="#7a4a24" stroke-width="3"><line x1="20" y1="14" x2="20" y2="40"/><line x1="6" y1="22" x2="34" y2="22"/></g><circle cx="20" cy="10" r="7" fill="#d6a45a"/><path d="M13 6 L20 -1 L27 6 Z" fill="#c98a2e"/></svg></div>
+          <div class="amg-maze-scare" style="left:44%;top:80%"><svg width="18" height="24" viewBox="0 0 40 52"><g stroke="#7a4a24" stroke-width="3"><line x1="20" y1="14" x2="20" y2="40"/><line x1="6" y1="22" x2="34" y2="22"/></g><circle cx="20" cy="10" r="7" fill="#d6a45a"/><path d="M13 6 L20 -1 L27 6 Z" fill="#c98a2e"/></svg></div>
+          <!-- runners (team-colored, initials) -->
+          <div class="amg-maze-runner" style="left:30%;top:40%;background:#4a86e0;color:#4a86e0">BO</div>
+          <div class="amg-maze-runner" style="left:70%;top:52%;background:#e0524a;color:#e0524a">AN</div>
+        </div>
+        <div style="font-size:10px;color:#9c855f;margin-top:7px">Runners hunt scarecrows for coconuts, then race back to sink them. Positions move each reveal.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- results preview -->
+  <div style="margin-top:22px" class="amg-side-card">
+    <div style="font-family:'Rye';color:#e8b944;font-size:16px;margin-bottom:10px">🏆 LAST NET STANDING</div>
+    <div class="amg-result-row" style="border-color:#4a86e0;background:rgba(74,134,224,.12)">
+      <span class="amg-rank" style="color:#4a86e0">1</span>
+      <div style="flex:1"><div style="font-weight:800;color:#8fb8ff">BLUE TEAM</div><div style="font-size:11px;color:#b79a6a">Net held to the end · 54% final strain · Brody's fresh grip carried it</div></div>
+      <span style="font-weight:800;font-size:11px;color:#9ae59a">WINS IMMUNITY</span>
+    </div>
+    <div class="amg-result-row" style="border-color:#e0524a;background:rgba(224,82,74,.12)">
+      <span class="amg-rank" style="color:#e0524a">2</span>
+      <div style="flex:1"><div style="font-weight:800;color:#ff8a80">RED TEAM</div><div style="font-size:11px;color:#b79a6a">Net hit the dirt on the last barrage · 100% strain</div></div>
+      <span style="font-weight:800;font-size:11px;color:#ff6a5a">GOES TO TRIBAL</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="amg-controls">
+  <button class="amg-btn">🌽 Next Beat</button>
+  <span class="amg-counter">7 / 26</span>
+  <button class="amg-btn ghost">Skip to result</button>
+</div>
+
+</body>
+</html>

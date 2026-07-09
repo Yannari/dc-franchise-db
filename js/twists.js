@@ -1427,6 +1427,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isTruthOrDareTrain = true;
 
+  } else if (engineType === 'a-maze-ing-grip') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isAMazeInGrip = true;
+
   } else if (engineType === 'paintball-hunt') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isPaintballHunt = true;
@@ -3964,7 +3968,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
       const _engineFlagMap = {
         'phobia-factor': 'isPhobiaFactor', 'cliff-dive': 'isCliffDive', 'awake-a-thon': 'isAwakeAThon',
         'dodgebrawl': 'isDodgebrawl', 'talent-show': 'isTalentShow', 'sucky-outdoors': 'isSuckyOutdoors',
-        'up-the-creek': 'isUpTheCreek', 'paintball-hunt': 'isPaintballHunt', 'hells-kitchen': 'isHellsKitchen',
+        'up-the-creek': 'isUpTheCreek', 'paintball-hunt': 'isPaintballHunt', 'hells-kitchen': 'isHellsKitchen', 'a-maze-ing-grip': 'isAMazeInGrip',
         'trust-challenge': 'isTrustChallenge', 'basic-straining': 'isBasicStraining', 'x-treme-torture': 'isXtremeTorture',
         'sudden-death': 'isSuddenDeath', 'slasher-night': 'isSlasherNight', 'triple-dog-dare': 'isTripleDogDare',
         'say-uncle': 'isSayUncle', 'brunch-of-disgustingness': 'isBrunchOfDisgustingness',

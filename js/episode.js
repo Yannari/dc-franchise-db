@@ -28,6 +28,7 @@ import { simulateTalentShow } from './chal/talent-show.js';
 import { simulateSuckyOutdoors } from './chal/sucky-outdoors.js';
 import { simulateUpTheCreek } from './chal/up-the-creek.js';
 import { simulateTruthOrDareTrain } from './chal/truth-or-dare-train.js';
+import { simulateAMazeInGrip } from './chal/a-maze-ing-grip.js';
 import { simulatePaintballHunt } from './chal/paintball-hunt.js';
 import { simulateHellsKitchen } from './chal/hells-kitchen.js';
 import { simulateTrustChallenge } from './chal/trust.js';
@@ -1034,6 +1035,7 @@ function _runCoupledPreMergeTwist(ep) {
   if (ep.isSuckyOutdoors)        { simulateSuckyOutdoors(ep); return true; }
   if (ep.isUpTheCreek)           { simulateUpTheCreek(ep); return true; }
   if (ep.isTruthOrDareTrain)     { simulateTruthOrDareTrain(ep); return true; }
+  if (ep.isAMazeInGrip)          { simulateAMazeInGrip(ep); return true; }
   if (ep.isPaintballHunt)        { simulatePaintballHunt(ep); return true; }
   if (ep.isHellsKitchen)         { simulateHellsKitchen(ep); return true; }
   if (ep.isTrustChallenge)       { simulateTrustChallenge(ep); return true; }
@@ -2281,6 +2283,9 @@ export function simulateEpisode() {
   } else if (ep.isTruthOrDareTrain && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateTruthOrDareTrain(ep);
     // winner, loser, safeTribes, challengeType, tribalPlayers already set by simulateTruthOrDareTrain
+  } else if (ep.isAMazeInGrip && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateAMazeInGrip(ep);
+    // winner, loser, safeTribes, challengeType, tribalPlayers already set by simulateAMazeInGrip
   } else if (ep.isPaintballHunt && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulatePaintballHunt(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulatePaintballHunt
@@ -4682,6 +4687,7 @@ export function simulateEpisode() {
       isSuckyOutdoors: ep.isSuckyOutdoors || false, suckyOutdoors: ep.suckyOutdoors || null,
       isUpTheCreek: ep.isUpTheCreek || false, upTheCreek: ep.upTheCreek || null,
       isTruthOrDareTrain: ep.isTruthOrDareTrain || false, truthOrDareTrain: ep.truthOrDareTrain || null,
+      isAMazeInGrip: ep.isAMazeInGrip || false, aMazeInGrip: ep.aMazeInGrip || null,
       isPaintballHunt: ep.isPaintballHunt || false, paintballHunt: ep.paintballHunt || null,
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
@@ -4917,6 +4923,7 @@ export function simulateEpisode() {
       isSuckyOutdoors: ep.isSuckyOutdoors || false, suckyOutdoors: ep.suckyOutdoors || null,
       isUpTheCreek: ep.isUpTheCreek || false, upTheCreek: ep.upTheCreek || null,
       isTruthOrDareTrain: ep.isTruthOrDareTrain || false, truthOrDareTrain: ep.truthOrDareTrain || null,
+      isAMazeInGrip: ep.isAMazeInGrip || false, aMazeInGrip: ep.aMazeInGrip || null,
       isPaintballHunt: ep.isPaintballHunt || false, paintballHunt: ep.paintballHunt || null,
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
@@ -5356,6 +5363,7 @@ function simulateJuryRoundtable(ep) {
       isSuckyOutdoors: ep.isSuckyOutdoors || false, suckyOutdoors: ep.suckyOutdoors || null,
       isUpTheCreek: ep.isUpTheCreek || false, upTheCreek: ep.upTheCreek || null,
       isTruthOrDareTrain: ep.isTruthOrDareTrain || false, truthOrDareTrain: ep.truthOrDareTrain || null,
+      isAMazeInGrip: ep.isAMazeInGrip || false, aMazeInGrip: ep.aMazeInGrip || null,
       isPaintballHunt: ep.isPaintballHunt || false, paintballHunt: ep.paintballHunt || null,
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
@@ -6661,6 +6669,8 @@ function simulateJuryRoundtable(ep) {
     upTheCreek:         ep.upTheCreek         || null,
     isTruthOrDareTrain: ep.isTruthOrDareTrain || false,
     truthOrDareTrain:   ep.truthOrDareTrain   || null,
+    isAMazeInGrip:      ep.isAMazeInGrip       || false,
+    aMazeInGrip:        ep.aMazeInGrip         || null,
     isPaintballHunt:    ep.isPaintballHunt    || false,
     paintballHunt:      ep.paintballHunt      || null,
     isHellsKitchen:     ep.isHellsKitchen     || false,

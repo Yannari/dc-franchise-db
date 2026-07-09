@@ -10,7 +10,17 @@ import {
 } from './romance.js';
 import { generateSocialManipulationEvents } from './social-manipulation.js';
 import { simulateTribeChallenge } from './challenges-core.js';
-import { eventAllowedInSetting, settingWeightMod, settingProfile, fillVocab, currentSetting } from './settings.js';
+import { eventAllowedInSetting, settingWeightMod, settingProfile, fillVocab, currentSetting, settingReskin } from './settings.js';
+
+// Fill a reskin/atmosphere template: player tokens first, then vocab tokens.
+// {a}/{b} = the two players, {p} = single featured player, {po} = possessive.
+function _reskinFill(tpl, a, b) {
+  const pa = a ? pronouns(a) : null;
+  let s = String(tpl)
+    .replace(/\{a\}/g, a || '').replace(/\{b\}/g, b || '')
+    .replace(/\{p\}/g, a || '').replace(/\{po\}/g, pa ? pa.posAdj : 'their');
+  return fillVocab(s);
+}
 
 export const CAMP_EVENT_TYPES = [
   // ═══ POSITIVE (~55%) — bonding, comfort, growth, alliance building ═══
@@ -379,7 +389,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       ],
       voteSteal: [
         `${name} uncovers a Vote Steal advantage hidden at camp. One vote, taken from someone else at tribal. ${_fp.Sub} keep${_fp.sub==='they'?'':'s'} it quiet.`,
-        `${name} finds a note near the fire pit. Vote Steal. The power to take someone else's voice — ${_fp.posAdj} now.`,
+        `${name} finds a note tucked out of sight. Vote Steal. The power to take someone else's voice — ${_fp.posAdj} now.`,
       ],
       legacy: [
         `${name} finds the Legacy Advantage buried at camp. It can only be used at a specific moment near the end. ${_fp.Sub} tuck${_fp.sub==='they'?'':'s'} it away silently.`,
@@ -571,14 +581,14 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       group.filter(x => x !== p).forEach(other => addBond(p, other, 0.08)); // was 0.15 — hardWork to ALL tribe is too much
       const _hwP = pronouns(p);
       const hwLines = [
-        `${p} is up before sunrise chopping wood and keeping the fire going. Nobody asked. Everyone noticed.`,
-        `${p} handles camp entirely while others rest. It earns quiet respect from the tribe.`,
-        `${p} refuses to sit still — fishing, fixing the shelter, hauling water. ${_hwP.Sub} ${_hwP.sub==='they'?'are':'is'} making ${_hwP.ref} indispensable.`,
+        `${p} is up before everyone else, handling the worst chores without a word. Nobody asked. Everyone noticed.`,
+        `${p} handles the grunt work entirely while others rest. It earns quiet respect from the group.`,
+        `${p} refuses to sit still — always working, always useful. ${_hwP.Sub} ${_hwP.sub==='they'?'are':'is'} making ${_hwP.ref} indispensable.`,
         `${p} works harder than anyone else today. It does not go unnoticed.`,
-        `${p} rebuilds the fire pit without being asked. By the time the tribe wakes up, camp looks different. Better.`,
-        `${p} spends the afternoon patching holes in the shelter roof. It's thankless work. ${_hwP.Sub} ${_hwP.sub==='they'?'do':'does'} it anyway.`,
-        `${p} catches three fish before anyone else has left their shelter. ${_hwP.Sub} ${_hwP.sub==='they'?'don\'t':'doesn\'t'} brag about it. The fish speak for themselves.`,
-        `${p} carries water for the entire tribe today. Two trips. Nobody else offered. The gesture isn't lost on anyone.`,
+        `${p} quietly fixes the thing everyone else keeps complaining about. By the time the group notices, it's already done.`,
+        `${p} takes on the thankless jobs nobody else will touch. ${_hwP.Sub} ${_hwP.sub==='they'?'do':'does'} it anyway, no complaints.`,
+        `${p} gets more done before breakfast than most manage all day. ${_hwP.Sub} ${_hwP.sub==='they'?'don\'t':'doesn\'t'} brag about it. The work speaks for itself.`,
+        `${p} covers a chore for the whole group today. Twice. Nobody else offered. The gesture isn't lost on anyone.`,
       ];
       events.push({ type: 'hardWork', text: hwLines[Math.floor(Math.random() * hwLines.length)], player: p, players: [p], badgeText: 'HARD WORK', badgeClass: 'green' });
 
@@ -925,13 +935,13 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const tdBondLines = (sA.boldness >= 8 && sB.boldness >= 8)
         ? [`${a} and ${b} somehow get into a competition about who can go the longest without blinking. The tribe has no idea what they're watching.`,
            `${a} and ${b} challenge each other to something ridiculous. Somehow it makes them closer.`,
-           `${a} dares ${b} to eat something questionable from the jungle. ${b} does it. A friendship is forged in nausea.`,
+           `${a} dares ${b} to eat something questionable ${b} really shouldn't. ${b} does it. A friendship is forged in nausea.`,
            `${a} and ${b} race to the top of the nearest tree for no reason at all. ${b} wins. ${a} demands a rematch.`,
-           `${a} and ${b} invent a stupidly dangerous game involving the fire pit. The tribe makes them stop. They're already best friends.`]
+           `${a} and ${b} invent a stupidly dangerous game they definitely shouldn't. The tribe makes them stop. They're already best friends.`]
         : (sA.social >= 8 || sB.social >= 8)
         ? [`${a} does a dead-on impression of the host. ${b} loses it completely. The whole camp is laughing.`,
            `${a} and ${b} spend an hour making up nicknames for everyone on the tribe. Half of them stick.`,
-           `${a} gets ${b} talking about home, and for a while neither of them is playing a game — they're just two people on a beach.`,
+           `${a} gets ${b} talking about home, and for a while neither of them is playing a game — just two people a long way from it.`,
            `${a} and ${b} fall into an easy rhythm doing chores, trading life stories the whole time. It doesn't feel like strategy. It feels real.`,
            `${a} pulls ${b} into a long, rambling debate about something pointless — best snack, worst movie — and they don't stop until dark.`,
            `${b} is having a rough day and ${a} just... sits with ${pronouns(b).obj}. Says the right thing. ${b} won't forget that.`,
@@ -949,9 +959,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`${a} and ${b} end up on the same shift and bond over how exhausting this is. It's the most honest conversation either has had out here.`,
            `${a} teaches ${b} something random — a card trick, a knot, a song. By sunset they feel like old friends.`,
            `${a} and ${b} get stuck on a camp task together and it takes twice as long as it should. Neither minds.`,
-           `${a} and ${b} go looking for firewood and come back with none, having talked the whole time instead.`,
+           `${a} and ${b} get sent off on the same errand and come back having done none of it, talked the whole time instead.`,
            `${a} and ${b} discover they both can't stand the same person. Nothing bonds people faster.`,
-           `${a} shows ${b} a hidden spot on the beach ${pronouns(a).sub} found. It becomes "their" place to actually talk.`,
+           `${a} shows ${b} a quiet spot ${pronouns(a).sub} found away from everyone. It becomes "their" place to actually talk.`,
            `${a} and ${b} try to name every constellation and get all of them wrong, confidently. The stargazing turns into two hours of nonsense and one real friendship.`,
            `${a} and ${b} split the last of the good water without discussing it, each trying to give the other more. They notice each other noticing. That's the whole thing.`,
            `${a} catches ${b} humming and joins in without thinking. Neither knows the words. It doesn't matter — camp feels a little less like a game for a minute.`];
@@ -994,7 +1004,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         ? [`${a} and ${b} are both running on empty. They don't say much — but they don't leave each other's side either. Something about surviving this together changes things.`,
            `${a} hits a wall. ${b} notices before anyone else does and stays close without making it a big deal. ${_ssA.Sub} ${_ssA.sub==='they'?'don\'t':'doesn\'t'} forget it.`]
         : (getBond(a, b) < 0)
-        ? [`${a} and ${b} have barely spoken. But when the shelter floods at night, they're the only two who get up and fix it. They work in silence. It counts.`,
+        ? [`${a} and ${b} have barely spoken. But when disaster strikes in the middle of the night, they're the only two who get up and deal with it. They work in silence. It counts.`,
            `${a} and ${b} haven't agreed on much. But out here, right now, they're the only two still pushing. Neither says anything about the game.`]
         : [`${a} and ${b} spend the day dealing with the same misery — rain, hunger, cold — and come out the other side closer than they expected.`,
            `A hard day at camp leaves ${a} and ${b} sitting together in silence. The kind of silence where nothing needs to be said.`,
@@ -1071,7 +1081,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const _sA = pronouns(a), _sB = pronouns(b);
       const isCouple = gs.showmances?.some(sh => sh.players.includes(a) && sh.players.includes(b) && sh.phase !== 'broken-up');
       const smLines = isCouple ? [
-        `${a} and ${b} aren't hiding it anymore. They walk back from the well holding hands and nobody says a word.`,
+        `${a} and ${b} aren't hiding it anymore. They slip away together holding hands and nobody says a word.`,
         `${b} leans in and ${a} meets them halfway. The kiss is quick, easy — like they've done it before. The tribe tactfully looks elsewhere.`,
         `${a} falls asleep on ${b}'s shoulder by the fire. Nobody wakes them up. Nobody dares.`,
         `${a} and ${b} are spotted kissing near the treeline. They don't seem particularly embarrassed. The tribe is a different story.`,
@@ -1119,10 +1129,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       group.filter(x => x !== p).forEach(other => addBond(p, other, 0.12)); // was 0.25
       const _ucP = pronouns(p);
       const ucLines = [
-        `${p} fixes the shelter from scratch while everyone else argues about how. Nobody expected that.`,
-        `${p} catches more fish before breakfast than the tribe has seen all week. The tribe does a quiet recount of who they thought ${p} was.`,
-        `${p} solves a camp problem nobody else could crack. The looks around the fire shift.`,
-        `${p} carries more than their body weight back from the well without a word. ${_ucP.Sub} ${_ucP.sub==='they'?'drop':'drops'} it at camp and go${_ucP.sub==='they'?'':'es'} back for more.`,
+        `${p} fixes the thing everyone else was arguing about how to fix. Nobody expected that.`,
+        `${p} gets more done before breakfast than the group has managed all week. Everyone does a quiet recount of who they thought ${p} was.`,
+        `${p} solves a problem nobody else could crack. The looks around the group shift.`,
+        `${p} hauls more than their body weight without a word. ${_ucP.Sub} ${_ucP.sub==='they'?'drop':'drops'} it and go${_ucP.sub==='they'?'':'es'} back for more.`,
         `${p} navigates something the tribe's been struggling with all day in about thirty seconds. The silence after is respectful.`,
         `Everyone underestimated ${p}. That was a mistake. The tribe is starting to figure that out.`,
       ];
@@ -1391,7 +1401,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           `${p} and ${b} start a camp tradition that makes no sense to anyone else. They commit to it fully.`,
           `${p} challenges ${b} to a staring contest. It goes on for an uncomfortable length of time. The tribe can't stop watching.`,
           `${p} and ${b} overhear the host say something they weren't meant to hear. Neither of them brings it up. It haunts them both — and brings them closer.`,
-          `${p} and ${b} spend an hour building something out of coconuts. It's terrible. They're proud of it. The tribe lets them have this.`,
+          `${p} and ${b} spend an hour building something out of whatever junk is lying around. It's terrible. They're proud of it. The tribe lets them have this.`,
         ];
         events.push({ type: 'weirdMoment', text: bondLines[Math.floor(Math.random() * bondLines.length)], players: [p, b], badgeText: 'WEIRD', badgeClass: '' });
 
@@ -1412,7 +1422,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           // Shy/low-temperament players get embarrassed — slight social friction
           others.slice(0, 2).forEach(o => addBond(o, p, -0.2));
           const shyLines = [
-            `The shelter partially collapses. ${p} is somehow to blame. This is disputed — but not loudly enough.`,
+            `Something around camp breaks. ${p} is somehow to blame. This is disputed — but not loudly enough.`,
             `A raccoon walks into camp and takes ${p}'s shoes. No one helps. Everyone watches. ${p} does not recover socially.`,
             `${p} gets into a one-sided argument with a seagull. The seagull wins. The tribe pretends not to notice.`,
             `${p} talks to the camera for ten minutes when no one is filming. Someone catches ${_pPr.obj}. It's awkward.`,
@@ -1545,7 +1555,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${sdA} makes a quiet move toward ${sdB}. ${_sdA.Sub} ${_sdA.sub==='they'?'don\'t':'doesn\'t'} need permission from anyone. That's the point.`,
         `${sdA} tests the waters with ${sdB}. Nothing committed. But the door is open now.`,
         `${sdA} has been thinking about a different path. ${sdB} is the first person ${_sdA.sub} bring${_sdA.sub==='they'?'':'s'} it to.`,
-        `${sdA} whispers something to ${sdB} on the walk back from the well. ${sdB} doesn't react publicly. Privately, the gears start turning.`,
+        `${sdA} whispers something to ${sdB} off to the side, out of earshot. ${sdB} doesn't react publicly. Privately, the gears start turning.`,
         `${sdA} and ${sdB} have a conversation the rest of the tribe doesn't see. By tomorrow, the game might look different.`,
         `${sdA} pulls ${sdB} aside with a pitch that's either brilliant or desperate. ${sdB} is going to sleep on it.`,
       ];
@@ -1609,7 +1619,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const _tmP = pronouns(tmP);
       const moodLines = [
         `A quiet morning at camp. For one hour, nobody talks about the game.`,
-        tmB ? `The tribe reaches an unspoken agreement to just exist today. ${tmP} and ${tmB} fish. Nobody makes a move.` : `For once, camp feels like a place people are living — not just surviving.`,
+        tmB ? `The tribe reaches an unspoken agreement to just exist today. ${tmP} and ${tmB} hang back and talk about nothing. Nobody makes a move.` : `For once, the place feels like somewhere people are living — not just competing.`,
         `The collective exhaustion sets in. Everyone feels it. Nobody wants to be the first to say so.`,
         tmB ? `${tmP} and ${tmB} exchange a look across camp that says everything the game won't let them say out loud.` : `${tmP} stands at the edge of camp watching the water for a long time. Nobody disturbs ${_tmP.obj}.`,
         `There's a moment at sunset where the game disappears — for everyone, briefly. Then it comes back.`,
@@ -1872,7 +1882,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${b} was struggling with the physical demands. ${a} pulled ${pB.obj} aside and worked through it. No judgment. Just help.`]
         : _teachStat === 'strategic'
         ? [`${a} walks ${b} through the vote math — who's with who, where the cracks are. ${b}'s eyes widen. ${pB.Sub} didn't see it before.`,
-           `${a} and ${b} sit on the beach and ${a} breaks down the game in a way ${b} has never heard. Teacher and student. The tribe doesn't know this is happening.`,
+           `${a} and ${b} slip off on their own and ${a} breaks down the game in a way ${b} has never heard. Teacher and student. The tribe doesn't know this is happening.`,
            `${a} doesn't tell ${b} what to do — ${pA.sub} ask${pA.sub==='they'?'':'s'} questions until ${b} figures it out. It's more effective than any alliance pitch.`]
         : [`${a} helps ${b} with a puzzle technique. Something clicks. ${b} solves it twice as fast the second time.`,
            `${a} shows ${b} a memory trick for keeping track of camp conversations. Small thing. But ${b} starts catching things ${pB.sub} missed before.`,
@@ -1916,7 +1926,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${a} and ${b} have a bit going. Nobody else gets it. Every time they make eye contact across camp, one of them breaks.`,
         `${a} says two words and ${b} is gone. Full tears laughing. The tribe watches, confused. "You had to be there" doesn't cover it.`,
         `${a} and ${b} have been doing a running impression of the host all day. It's gotten worse. It's gotten funnier.`,
-        `There's a noise from the jungle and ${a} and ${b} say the exact same thing at the exact same time. The tribe stares. They lose it.`,
+        `There's a sudden noise nearby and ${a} and ${b} say the exact same thing at the exact same time. The tribe stares. They lose it.`,
         `${a} and ${b} invented a handshake. It's stupid. They do it every time they pass each other. The tribe is either charmed or annoyed.`,
       ];
       events.push({ type: 'insideJoke', text: _jokeLines[Math.floor(Math.random() * _jokeLines.length)], players: [a, b], badgeText: 'INSIDE JOKE', badgeClass: 'green' });
@@ -2180,14 +2190,15 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       addBond(b, a, 0.4);
       _trackBond(a, b);
       const pA = pronouns(a), pB = pronouns(b);
+      // setting-specific meal flavor (funnel cake at a carnival, tray on a plane…) plus
+      // a few venue-neutral lines that read fine anywhere
       const _mealLines = [
-        `${a} and ${b} cook together tonight — something improvised from whatever's left. The food is terrible. The company makes up for it.`,
-        `${a} catches a fish and brings it straight to ${b}. They eat it together by the shore without saying much. The silence is comfortable.`,
-        `${a} splits ${pA.posAdj} ration with ${b} after noticing ${pB.sub} gave ${pB.pos} away earlier. The tribe doesn't see it. ${b} does.`,
-        `${a} and ${b} wake up before the others and make breakfast for the tribe. By the time anyone stirs, the fire is going and the mood is lifted.`,
-        `${a} forages something edible from the treeline and shares it with ${b} first. It's not strategic. It's instinct. ${b} reads it correctly.`,
-        `${a} and ${b} sit away from camp to eat. The conversation that happens over the meal is worth more than the food.`,
-        `${a} notices ${b} hasn't eaten all day and brings over the last of the coconut. No words. Just the offering. ${b} takes it.`,
+        _reskinFill(settingReskin('meal'), a, b),
+        _reskinFill(settingReskin('meal'), a, b),
+        `${a} splits ${pA.posAdj} portion with ${b} after noticing ${pB.sub} gave ${pB.pos} away earlier. The others don't see it. ${b} does.`,
+        `${a} and ${b} sit apart from everyone to eat. The conversation over the meal is worth more than the food.`,
+        `${a} notices ${b} hasn't eaten all day and quietly hands over the last of ${pA.posAdj} own. No words. Just the offering.`,
+        `${a} and ${b} eat in comfortable silence, too tired to talk. It says more than talking would.`,
       ];
       events.push({ type: 'sharedMeal', text: _mealLines[Math.floor(Math.random() * _mealLines.length)], players: [a, b], badgeText: 'SHARED MEAL', badgeClass: 'green' });
 
@@ -2265,7 +2276,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `The tribe collectively loses it after the win. Screaming, hugging, someone picks someone else up. For five minutes the game doesn't exist.`,
         `${instigator} starts cheering and it's contagious. Within seconds the entire camp is celebrating. Alliances don't matter right now. Nothing does except this.`,
         `The tribe builds a bigger fire tonight. They earned it. Stories flow, people relax, guards come down. Tomorrow the game resumes. Tonight they're a family.`,
-        `${instigator} proposes a toast with coconut water. It's ridiculous. Everyone does it anyway. The camp hasn't felt this good in days.`,
+        `${instigator} proposes a toast with whatever passes for a drink around here. It's ridiculous. Everyone does it anyway. The mood hasn't felt this good in days.`,
         `Something clicks at camp — a collective exhale, a shared relief. The tribe eats together, laughs together, exists together. It won't last. But right now it's real.`,
         `${instigator} drags the whole tribe into an impromptu celebration. Half of them were planning to strategize tonight. Nobody does. They're too busy being human.`,
       ];
@@ -2347,17 +2358,17 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       gs.popularity[a] = (gs.popularity[a] || 0) + 0.5;
       const pA = pronouns(a);
       const phA = pStats(a).physical, loA = pStats(a).loyalty;
-      const _improveLines = (phA >= 8)
-        ? [`${a} rebuilds the entire shelter support structure in an afternoon. The tribe sleeps better tonight. Nobody questions ${pA.posAdj} value.`,
-           `${a} constructs a rain catch system from scratch. When the downpour hits that night, the tribe has fresh water. ${pA.Sub} earned that.`,
-           `${a} reinforces the fire pit with rocks hauled from the beach. It takes hours. The next morning, the fire holds through the wind for the first time.`]
-        : (loA >= 7)
-        ? [`${a} spends the entire afternoon making camp livable. New seating, fixed roof, organized supplies. By evening the tribe feels like a home.`,
-           `${a} weaves a proper drying rack for clothes. It's not flashy. But for the next week, everyone is a little less miserable because of it.`]
-        : [`${a} figures out a better way to store food. Simple but effective. The tribe loses less to ants and rain going forward.`,
-           `${a} builds a crude table near the fire. It's not pretty. But having a surface to prep food on changes camp life in a way nobody expected.`,
-           `${a} digs a drainage channel around the sleeping area. That night when it rains, the shelter stays dry for the first time. The tribe takes note.`,
-           `${a} patches every gap in the roof. Takes all day. ${pA.Sub} ${pA.sub==='they'?'don\'t':'doesn\'t'} announce it — the tribe just notices they're not getting rained on anymore.`];
+      // setting-specific "fixing up the space" flavor (shelter on an island, tents at a
+      // carnival, trailers on a lot…) plus a tier-flavored venue-neutral line
+      const _improveLines = [
+        _reskinFill(settingReskin('improve'), a),
+        _reskinFill(settingReskin('improve'), a),
+        phA >= 8
+          ? `${a} throws real muscle into fixing up the place — hours of hauling and hammering. By nightfall everyone's better off, and nobody questions ${pA.posAdj} value.`
+          : loA >= 7
+          ? `${a} spends the whole afternoon quietly making the place livable. By evening it feels less like a dump and more like a home.`
+          : `${a} figures out a small fix that makes daily life easier. Not flashy — but everyone notices they're a little less miserable now.`,
+      ];
       events.push({ type: 'campImprovement', text: _improveLines[Math.floor(Math.random() * _improveLines.length)], player: a, players: [a], badgeText: 'CAMP BUILD', badgeClass: 'green' });
 
     // ═══════════════════════════════════════════════════════════
@@ -2374,21 +2385,21 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${a} wakes up on the wrong side. Literally — ${pA.sub} slept facing the other direction and is convinced the whole day is cursed now.`,
         `${a} won't eat before a challenge. ${pA.Sub} say${pA.sub==='they'?'':'s'} it threw off ${pA.posAdj} rhythm last time. The tribe humors it.`,
         `${a} touches the same tree every morning on the way to the water well. ${pA.Sub} started doing it on Day 3 and now ${pA.sub} can't stop.`,
-        `${a} has been counting things. Steps to the fire. Coconuts on the tree. Votes at tribal. ${pA.Sub} won't say why. The tribe has stopped asking.`,
+        `${a} has been counting things. Steps to the door. Cracks in the ceiling. Votes at tribal. ${pA.Sub} won't say why. The tribe has stopped asking.`,
       ];
       events.push({ type: 'superstition', text: _superLines[Math.floor(Math.random() * _superLines.length)], player: a, players: [a], badgeText: 'SUPERSTITION', badgeClass: '' });
 
     } else if (eventType === 'animalEncounter') {
       const a = _pick(group, n => Math.max(0.1, Math.random() * 3 + 1));
+      const b2 = group.filter(p => p !== a)[0] || a;
       const pA = pronouns(a);
+      // setting-specific critter (a loon on the lake, a midway pigeon, a lot cat, a
+      // stowaway bug at altitude…) plus a couple venue-neutral animal beats
       const _animalLines = [
-        `A bird lands on ${a}'s shoulder at camp. ${pA.Sub} freeze${pA.sub==='they'?'':'s'}. The tribe watches in disbelief. It stays for ten seconds then flies off. ${a} takes it as a sign.`,
-        `A crab walks directly through camp during dinner. The tribe watches its entire journey in silence. Nobody explains why it mattered. It just did.`,
-        `${a} is convinced an iguana has been watching ${pA.obj} for three days. The tribe thinks ${pA.sub}'s losing it. The iguana is definitely there though.`,
-        `A group of fish jump near the shore while the tribe is talking. Everyone stops mid-sentence to watch. For thirty seconds, nothing else exists.`,
-        `${a} finds a turtle near camp and spends twenty minutes just sitting with it. The tribe lets ${pA.obj} have the moment. Everyone needs one.`,
-        `Something rustles in the trees above camp. The tribe goes silent. It's a monkey. It throws a coconut. It misses. Camp erupts.`,
-        `${a} wakes up with a lizard on ${pA.posAdj} chest. The scream wakes up the entire tribe. Nobody lets ${pA.obj} forget it.`,
+        _reskinFill(settingReskin('wildlife'), a, b2),
+        _reskinFill(settingReskin('wildlife'), a, b2),
+        `A bird lands on ${a}'s shoulder out of nowhere. ${pA.Sub} freeze${pA.sub==='they'?'':'s'}. Everyone watches in disbelief. It stays ten seconds, then flies off. ${a} takes it as a sign.`,
+        `${a} befriends a stray animal that's been hanging around and spends twenty minutes just sitting with it. Everyone lets ${pA.obj} have the moment. Everyone needs one.`,
       ];
       events.push({ type: 'animalEncounter', text: _animalLines[Math.floor(Math.random() * _animalLines.length)], player: a, players: [a], badgeText: 'WILDLIFE', badgeClass: '' });
 
@@ -2401,7 +2412,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${a} dreamed about the challenge before it happened — or at least ${pA.sub} claim${pA.sub==='they'?'':'s'} ${pA.sub} did. The tribe files it under "unsettling."`,
            `${a} wakes up certain about something. Won't say what. Won't say why. Just — certain. The tribe notices the confidence shift.`]
         : [`${a} had a dream about home last night and tells the whole story over breakfast. Half the tribe tears up. The other half pretends not to.`,
-           `${a} woke up laughing from a dream ${pA.sub} can't fully explain. Something about a coconut and the host. The tribe demands details.`,
+           `${a} woke up laughing from a dream ${pA.sub} can't fully explain. Something about the host and a llama. The tribe demands details.`,
            `${a} tells ${pA.posAdj} dream at the fire and it makes no sense. Absolutely none. The tribe loves it anyway.`,
            `${a} dreamed ${pA.sub} won. ${pA.Sub} tell${pA.sub==='they'?'':'s'} one person. That person tells three. By noon the whole tribe knows.`];
       events.push({ type: 'dreaming', text: _dreamLines[Math.floor(Math.random() * _dreamLines.length)], player: a, players: [a], badgeText: 'DREAM', badgeClass: '' });
@@ -2409,15 +2420,16 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
     } else if (eventType === 'weatherShift') {
       const shuffled = [...group].sort(() => Math.random() - 0.5);
       const featured = shuffled[0];
+      const b2 = shuffled[1] || featured;
       const pF = pronouns(featured);
+      // setting-specific environmental beats (rain on the shelter, mud on the midway,
+      // turbulence on the plane…) plus venue-neutral mood shifts
       const _weatherLines = [
-        `The rain starts at midday and doesn't stop. The tribe huddles under the shelter. Conversations happen that wouldn't have happened in sunshine.`,
-        `A perfect sunset tonight. The tribe gathers to watch it without anyone suggesting it. Nobody talks about the game for ten minutes. A small miracle.`,
-        `The wind picks up after dark. The fire fights to stay lit. ${featured} stays up feeding it all night. In the morning the tribe doesn't know who to thank.`,
-        `The heat today is oppressive. Camp slows to a crawl. Conversations get shorter. Tempers hover near the surface but never quite break through.`,
-        `A clear night after days of clouds. The tribe lies on the beach looking up. Someone points out a constellation. For a moment this doesn't feel like a game.`,
-        `Thunder in the distance keeps the tribe on edge all afternoon. It never hits camp. But the tension from waiting changes the conversations.`,
-        `The temperature drops sharply after sunset. The tribe clusters closer at the fire than they have all season. Proximity creates conversation creates connection.`,
+        _reskinFill(settingReskin('weather'), featured, b2),
+        _reskinFill(settingReskin('weather'), featured, b2),
+        `The heat today is oppressive. Everything slows to a crawl. Conversations get shorter. Tempers hover near the surface but never quite break.`,
+        `Thunder rumbles in the distance all afternoon. It never quite arrives — but the tension from waiting changes every conversation.`,
+        `The temperature drops sharply after dark and everyone clusters closer than they have all season. Proximity creates conversation creates connection.`,
       ];
       events.push({ type: 'weatherShift', text: _weatherLines[Math.floor(Math.random() * _weatherLines.length)], player: featured, players: [featured], badgeText: 'WEATHER', badgeClass: '' });
 
@@ -2458,7 +2470,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         gs.popularity[clapper] = (gs.popularity[clapper] || 0) + 1;
         group.filter(p => p !== clapper).forEach(p => addBond(clapper, p, 0.2));
         const lines = [
-          `The host blasts an airhorn into the shelter at 5 a.m. "just because." ${clapper} rolls out and fires back a roast so clean the whole camp is howling. The host retreats.`,
+          `The host blasts an airhorn through ${fillVocab('{shelter}')} at 5 a.m. "just because." ${clapper} rolls out and fires back a roast so clean the whole camp is howling. The host retreats.`,
           `A pointless 6 a.m. chore, courtesy of the host. ${clapper} does it in a dead-on impression of ${pC.posAdj} tormentor, and camp loses it. Even the host almost cracks.`,
           `The host kicks camp awake with a bucket of cold water. ${clapper} stands up dripping, deadpans one perfect line, and turns the humiliation into the funniest moment of the week.`,
           `The host announces "mandatory sunrise calisthenics." ${clapper} leads them — sarcastically, gloriously — and the tribe follows along cackling. The bit's better than the punishment.`,
@@ -2471,7 +2483,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         addBond(clapper, b, -0.3);
         const lines = [
           `The host's dawn airhorn leaves the whole camp raw and sleepless. ${clapper} snaps at ${b} over nothing before the sun's even up. Neither means it; both remember it.`,
-          `A 5 a.m. "surprise inspection" from the host frays everyone. ${clapper} and ${b} bicker through breakfast about whose turn it was to bank the fire.`,
+          `A 5 a.m. "surprise inspection" from the host frays everyone. ${clapper} and ${b} bicker through breakfast about whose turn it was to deal with the mess.`,
           `Robbed of sleep by the host's antics, ${clapper} is short with ${b} all morning. It's exhaustion, not malice — but the edge is real.`,
           `The host makes them break camp and rebuild it "for time." ${clapper} and ${b} grind through it snapping at each other, too tired to be kind.`,
         ];
@@ -2565,7 +2577,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         }
         const lines = [
           `Camp truth-or-dare, no stakes, all chaos. ${b} dares ${a} to belly-flop into the lake at midnight. ${a} does it without blinking. Legend status, minor hypothermia.`,
-          `${b} dares ${a} to serenade the shelter. ${a} commits so hard to the bit that the whole camp is wheezing. Nobody's sleeping now, and nobody minds.`,
+          `${b} dares ${a} to serenade everyone. ${a} commits so hard to the bit that the whole camp is wheezing. Nobody's sleeping now, and nobody minds.`,
           `The dare is to eat whatever Chef left in the pot. ${a} takes it on for ${b}'s amusement, gags theatrically, and earns a standing ovation.`,
           `${b} dares ${a} to do an impression of every single camper. ${a} nails ${b}'s last, and the circle can't breathe from laughing.`,
         ];
@@ -2885,7 +2897,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         addBond(a, b, -0.3);
         const lines = [
           `There's one hot meal left on the cart and both ${a} and ${b} want it. The flight attendant gives it to first class. Now they're mad at each other instead.`,
-          `${a} takes the last edible tray and ${b} gets the mystery fish. The pettiness reaches cruising altitude.`,
+          `${a} takes the last edible tray and ${b} gets the mystery entrée. The pettiness reaches cruising altitude.`,
           `${a} and ${b} argue over whose turn it was for the window seat AND the good snack. Neither wins. The cabin gets colder than the food.`,
         ];
         events.push({ type: 'planeFood', players: [a, b], badgeText: 'CART FIGHT', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });

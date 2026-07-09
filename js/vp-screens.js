@@ -550,16 +550,22 @@ export function _rpBuildDockArrival(ep) {
   const isAllReturnees = newbieCount === 0;
   const isMixed = returneeCount > 0 && newbieCount > 0;
 
+  // setting-driven arrival framing (boat→dock, bus→gates, plane, shuttle…)
+  const _arr = (typeof settingArrival === 'function') ? settingArrival() : { vehicle:'boat', point:'the dock', onPoint:'on the dock', headline:'One camp. No idea what they signed up for.', groupCall:'Everybody on the dock!' };
+  const _fv = (s) => (typeof fillVocab === 'function') ? fillVocab(s) : s;
+  const _place = _fv('{place}');
+
   const hostMonologue = isAllReturnees
     ? `"They've played before. They've won, they've lost, they've been blindsided and betrayed. And they all came back for more. I'm ${host}, and this is ${seasonName} — All Stars. ${arrivals.length} returning players. One winner. Let's see who learned from their mistakes... and who's about to make new ones."`
     : isMixed
     ? `"Tonight, ${returneeCount} returning player${returneeCount>1?'s':''} face${returneeCount===1?'s':''} off against ${newbieCount} brand new competitor${newbieCount>1?'s':''}. The veterans think they know this game. The rookies think they can beat it. I'm ${host}, and this is ${seasonName}. Let's find out who's right."`
-    : `"Yo! We're coming at you live from Camp Wawanakwa! I'm your host, ${host}. ${arrivals.length} players have signed up to spend eight weeks at this crummy old summer camp. They'll compete in challenges, vote each other out at tribal council, and the last one standing wins the prize. Every moment will be caught on camera. Who will crumble? Who will rise? Find out right here on... ${seasonName}!"`;
+    : `"Welcome to ${_place}! I'm your host, ${host}. ${arrivals.length} players have signed up for the ride of their lives. They'll compete in challenges, vote each other out, and the last one standing wins the prize. Every moment caught on camera. Who will crumble? Who will rise? Find out right here on... ${seasonName}!"`;
 
   let html = `<div class="rp-page tod-dawn">
     <div class="rp-co-eyebrow">${seasonName}</div>
     <div style="font-family:var(--font-display);font-size:32px;letter-spacing:3px;text-align:center;color:var(--accent-gold);text-shadow:0 0 20px var(--accent-gold);margin:10px 0 6px;animation:scrollDrop 0.5s var(--ease-broadcast) both">THE ARRIVAL</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">${arrivals.length} players. One island. No idea what they signed up for.</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:4px">${arrivals.length} players arrive by ${_arr.vehicle} ${_arr.onPoint}.</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">${_arr.headline}</div>
     <div style="padding:14px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.15);border-radius:10px;text-align:center;margin-bottom:20px">
       <div style="font-size:10px;color:#f0a500;font-weight:700;letter-spacing:1px;margin-bottom:4px">${host.toUpperCase()}</div>
       <div style="font-size:13px;color:#e6edf3;line-height:1.7;font-style:italic">${hostMonologue}</div>
@@ -594,7 +600,7 @@ export function _rpBuildDockArrival(ep) {
   } else {
     html += `<div style="text-align:center;margin-top:20px;padding:16px;border:1px solid rgba(227,179,65,0.15);border-radius:10px;background:rgba(227,179,65,0.04)">
       <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f0a500;margin-bottom:10px">GROUP PHOTO</div>
-      <div style="font-size:12px;color:#8b949e;font-style:italic;margin-bottom:12px">"Everybody on the dock! ...try not to break it this time."</div>
+      <div style="font-size:12px;color:#8b949e;font-style:italic;margin-bottom:12px">"${_arr.groupCall} ...try not to break anything this time."</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">${arrivals.map(a => rpPortrait(a.name, 'sm')).join('')}</div>
     </div>`;
 

@@ -248,11 +248,11 @@ export const DOCK_HOST_LINES = {
 };
 
 export const DOCK_STAT_FLAVOR = [
-  { stat: 'physical', min: 8, fn: (n,pr) => `"${n} just stepped off the boat looking like ${pr.sub} could flip it over."` },
+  { stat: 'physical', min: 8, fn: (n,pr) => `"${n} just showed up looking like ${pr.sub} could bench-press half the cast."` },
   { stat: 'strategic', min: 8, fn: (n,pr) => `"${n} is here. I give it ten minutes before ${pr.sub} ${pr.sub==='they'?'have':'has'} a plan."` },
-  { stat: 'social', min: 8, fn: (n,pr) => `"${n} just arrived, and somehow half the dock already likes ${pr.obj}."` },
+  { stat: 'social', min: 8, fn: (n,pr) => `"${n} just arrived, and somehow half the room already likes ${pr.obj}."` },
   { stat: 'endurance', min: 8, fn: (n,pr) => `"${n} is here. Good luck outlasting this one."` },
-  { stat: 'mental', min: 8, fn: (n,pr) => `"${n} just docked. The smartest person on this island might have just arrived."` },
+  { stat: 'mental', min: 8, fn: (n,pr) => `"${n} just showed up. The smartest person here might have just arrived."` },
   { stat: 'boldness', min: 8, fn: (n,pr) => `"${n} is here. ${pr.Sub} ${pr.sub==='they'?"don't":"doesn't"} do subtle."` },
   { stat: 'intuition', min: 8, fn: (n,pr) => `"${n} is here. ${pr.Sub} can read a room before ${pr.sub} even ${pr.sub==='they'?'walk':'walks'} into it."` },
   { stat: 'temperament', min: -1, max: 3, fn: (n,pr) => `"${n} just arrived. Let's hope nobody makes ${pr.obj} angry."` },
@@ -260,7 +260,7 @@ export const DOCK_STAT_FLAVOR = [
 
 export const DOCK_PLAYER_LINES = {
   villain: [
-    `"Cute camp. I give it a week before I run this place."`,
+    `"Cute little setup. I give it a week before I run this place."`,
     `"So this is the competition? This'll be easier than I thought."`,
     `"Already see a few people I can work with. And a few I'll enjoy watching leave."`,
     `"Don't worry, everyone. I'll be nice. For now."`,
@@ -268,7 +268,7 @@ export const DOCK_PLAYER_LINES = {
   ],
   hero: [
     `"Hey everyone! This is going to be amazing."`,
-    `"Camp looks rough, but that's half the fun, right?"`,
+    `"This place looks rough, but that's half the fun, right?"`,
     `"I'm here to compete, make friends, and do this the right way."`,
     `"Whatever this place throws at us, we handle it together."`,
     `"Let's go! I've been waiting for this."`,
@@ -282,8 +282,8 @@ export const DOCK_PLAYER_LINES = {
   ],
   mastermind: [
     `"Interesting. I've already identified four potential alliance structures."`,
-    `"The game started the moment I stepped off that boat."`,
-    `"Camp's fine. The people are what matter. And I'm watching."`,
+    `"The game started the moment I arrived."`,
+    `"This place is fine. The people are what matter. And I'm watching."`,
     `"Let's not pretend this isn't a chess match. I'm ready."`,
     `"Everyone's playing checkers. I brought a chess set."`,
   ],
@@ -303,7 +303,7 @@ export const DOCK_PLAYER_LINES = {
   ],
   'loyal-soldier': [
     `"Hey, good to be here. Let's do this."`,
-    `"Camp looks solid. I've seen worse."`,
+    `"This place looks solid. I've seen worse."`,
     `"Just point me to my team and I'm ready to work."`,
     `"I'm here to compete hard and keep my word. Simple as that."`,
     `"Tell me what needs doing and I'll do it."`,

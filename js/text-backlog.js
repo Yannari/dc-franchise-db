@@ -2606,6 +2606,8 @@ export function _textDockArrivals(ep, ln, sec) {
   if (!ep.dockArrivals?.length) return;
   sec('THE ARRIVAL');
   const host = seasonConfig.host || 'Chris';
+  const _arr = (typeof settingArrival === 'function') ? settingArrival() : null;
+  if (_arr) ln(`The ${ep.dockArrivals.length} players arrive by ${_arr.vehicle} ${_arr.onPoint}. ${_arr.headline}`);
   ep.dockArrivals.forEach(a => {
     ln(`[${host}] ${a.hostLine}`);
     ln(`[${a.name}] ${a.playerLine}`);

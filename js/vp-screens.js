@@ -7361,7 +7361,8 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isPos && isPersonal  ? '+ Bond formed'
                      : isPos                ? '+ Bond boost'
                      : isNeg && isPersonal  ? '\u2212 Personal tension'
-                     : isNeg                ? '\u2212 Camp tension' : '';
+                     : isNeg                ? '\u2212 Camp tension'
+                     : (evt.badgeText || '');
     const badgeClass = isHothead || isLie || isPrankBad || isScramble || isInjury ? 'red'
                      : isPrankGood ? 'green'
                      : isMastermind || isBeastD ? 'gold'
@@ -7498,7 +7499,7 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'rumor' || evt.type === 'watchingYou' || evt.type === 'perceptiveReads' || evt.type === 'doubt' || evt.type === 'overplay' || evt.type === 'overconfidence' ? 'gold'
                      : evt.type === 'homesick' || evt.type === 'showboat' || evt.type === 'loneWolf' ? ''
                      : evt.type === 'floaterInvisible' || evt.type === 'tribeMood' || evt.type === 'weirdMoment' ? ''
-                     : isPos ? 'green' : isNeg ? 'red' : '';
+                     : isPos ? 'green' : isNeg ? 'red' : (evt.badgeClass || '');
 
     html += `<div class="rp-brant-entry">`;
     if (mentioned.length >= 3) {

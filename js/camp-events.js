@@ -2362,7 +2362,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `When the vote comes up, ${a} and ${b} already know where they stand. No meeting needed. No check-in. The understanding between them is older than today.`,
         `${a} takes a seat next to ${b} when the tribe gathers. Nothing dramatic. But in the geometry of camp, proximity is a statement. Everyone has one.`,
         `${b} is catching heat. ${a} doesn't defend ${pB.obj} out loud — just quietly steers two conversations in a different direction. ${b} doesn't know. Doesn't need to.`,
-        `${a} covers for ${b}'s absence without being asked. When ${b} returns, ${pB.sub} find${pB.sub==='they'?'':'s'} the story already told. ${a} shrugs. "I handled it."`,
+        `${b} slips away from camp and ${a} quietly covers — telling anyone who asks that ${pB.sub} ${pB.sub==='they'?'are':'is'} off gathering firewood. By the time ${pB.sub} ${pB.sub==='they'?'get':'gets'} back, the questions have already been answered. ${a} just shrugs. "I've got you."`,
         `The tribe splits into conversations. ${a} and ${b} are never in the same group — by design. They don't need to be together to be aligned.`,
       ];
       events.push({ type: 'silentSolidarity', text: _solidLines[Math.floor(Math.random() * _solidLines.length)], players: [a, b], badgeText: 'SOLIDARITY', badgeClass: 'green' });
@@ -2549,7 +2549,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           const b = wRandom(compat, n => Math.max(0.1, getBond(a, n) * 0.4 + pStats(n).social * 0.3 + 1));
           addBond(a, b, 1.0);
           const lines = [
-            `Somebody produces a bottle after dark and the game escalates fast. It lands on ${a} and ${b}. The kiss is quick — but the way neither of them looks away after is the real story.`,
+            `Someone starts a game of spin-the-bottle after lights-out and it escalates fast. The bottle stops on ${a} and ${b}. The kiss is quick — but the way neither of them looks away after is the real story.`,
             `Spin-the-bottle by firelight. ${a} spins; it points dead at ${b}. The camp whoops, the two of them go red, and something that wasn't there this morning is there now.`,
             `The bottle picks ${a} and ${b}. It's "just a game" right up until the kiss lands a beat too long and the whole circle goes quiet.`,
             `${a} swears they'll keep it casual. Then the bottle names ${b}, and casual goes out the window. The tribe has a new thing to gossip about.`,
@@ -2592,9 +2592,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           gs.popularity[a] = (gs.popularity[a] || 0) + 0.5;
         }
         const lines = [
-          `Camp truth-or-dare, no stakes, all chaos. ${b} dares ${a} to belly-flop into the lake at midnight. ${a} does it without blinking. Legend status, minor hypothermia.`,
+          `Truth-or-dare, no stakes, all chaos. ${b} dares ${a} to run a full lap of camp at midnight in nothing but ${_pron(a).posAdj} underwear. ${a} does it without blinking. Legend status.`,
           `${b} dares ${a} to serenade everyone. ${a} commits so hard to the bit that the whole camp is wheezing. Nobody's sleeping now, and nobody minds.`,
-          `The dare is to eat whatever Chef left in the pot. ${a} takes it on for ${b}'s amusement, gags theatrically, and earns a standing ovation.`,
+          `The dare is to eat the single most disgusting thing anyone can scrounge up. ${a} takes it on for ${b}'s amusement, gags theatrically, and earns a standing ovation.`,
           `${b} dares ${a} to do an impression of every single camper. ${a} nails ${b}'s last, and the circle can't breathe from laughing.`,
         ];
         events.push({ type: 'nightGame', players: [a, b], badgeText: 'TRUTH OR DARE', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
@@ -7084,15 +7084,16 @@ export function generateCampEvents(ep, phase = 'both') {
       const _p = pronouns(save.player);
       const vn = save.votesNegated;
       const voteWord = vn === 1 ? 'vote' : 'votes';
+      const _saveBadge = { sitd: 'SHOT IN THE DARK', kip: 'POWER SHIFT', 'super-idol': 'SUPER IDOL', 'idol-for-ally': 'IDOL SAVE' }[save.type] || 'IDOL PLAY';
 
       if (save.type === 'sitd') {
         if (save.safe) {
-          pre.push({ type: 'saveReaction', text: _rp([
+          pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
             `The morning after is quiet — not the comfortable kind. ${save.player} rolled the Shot in the Dark and it landed safe. ${vn > 0 ? `${vn} ${voteWord} just gone.` : ''} Nobody has processed it yet.`,
             `${save.player} is still here. That's the fact everyone woke up to. The Shot in the Dark isn't supposed to work. It did. The people who voted are recalibrating.`,
             `Camp feels different this morning. ${save.player} survived on a 1-in-6 chance. ${_p.Sub} ${_p.sub==='they'?'know':'knows'} ${_p.sub} ${_p.sub==='they'?'are':'is'} still a target — and so does everyone else.`,
           ]) });
-          pre.push({ type: 'saveScramble', text: _rp([
+          pre.push({ type: 'saveScramble', badgeText: 'SCRAMBLE', badgeClass: 'red', text: _rp([
             `The plan from last night is dead. Whatever comes next has to account for the fact that ${save.player} is still in the game and now knows exactly who voted for ${_p.obj}.`,
             `Someone needs to rebuild the numbers. The vote failed, the target survived, and the game has a new variable: ${save.player} playing with nothing left to lose.`,
           ]) });
@@ -7100,14 +7101,14 @@ export function generateCampEvents(ep, phase = 'both') {
           // SITD played but didn't save them — check if they actually went home or survived
           const _sitdWentHome = prevEp.eliminated === save.player || (Array.isArray(prevEp.eliminated) && prevEp.eliminated.includes(save.player));
           if (_sitdWentHome) {
-            pre.push({ type: 'saveReaction', text: _rp([
+            pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
               `${save.player} rolled the Shot in the Dark last night. It didn't land. ${_p.Sub} ${_p.sub==='they'?'are':'is'} gone — but the fact that ${_p.sub} tried it is all anyone is talking about this morning.`,
               `The Shot in the Dark failed. ${save.player} sacrificed their vote and still went home. The move didn't work, but it told everyone something about how ${_p.sub} ${_p.sub==='they'?'play':'plays'} this game.`,
               `${save.player} gambled last night. The dice came up wrong. The camp is quiet about it — not because they don't care, but because it could have been any of them reaching for that slip of paper.`,
           ]) });
           } else {
             // SITD failed but they survived anyway (someone else went home)
-            pre.push({ type: 'saveReaction', text: _rp([
+            pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
               `${save.player} rolled the Shot in the Dark last night and it didn't land. ${_p.Sub} survived anyway — but ${_p.sub} wasted ${_p.pos} vote for nothing. The tribe knows ${_p.sub} panicked.`,
               `The Shot in the Dark failed, but ${save.player} is still here. Someone else went home instead. The desperation move didn't matter — but the tribe saw ${_p.obj} reach for it.`,
               `${save.player} sacrificed ${_p.pos} vote on a 1-in-6 gamble. It missed. ${_p.Sub} ${_p.sub==='they'?'are':'is'} still in the game, but everyone knows ${_p.sub} felt cornered enough to try.`,
@@ -7116,31 +7117,31 @@ export function generateCampEvents(ep, phase = 'both') {
         }
       } else if (save.type === 'kip') {
         const stolenLine = save.stolenFrom ? `${save.stolenFrom} woke up without the idol they had. ` : '';
-        pre.push({ type: 'saveReaction', text: _rp([
+        pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
           `${stolenLine}${save.player} has an idol that wasn't ${_p.posAdj} 24 hours ago. The camp is still absorbing what happened last night.`,
           `The Knowledge Is Power play worked. ${save.player} comes to camp this morning with leverage nobody saw coming. The people who thought they understood the game are starting over.`,
           `${save.player} made a move at tribal that changed the board entirely. ${stolenLine}This morning, the math is different.`,
         ]) });
-        pre.push({ type: 'saveScramble', text: _rp([
+        pre.push({ type: 'saveScramble', badgeText: 'SCRAMBLE', badgeClass: 'red', text: _rp([
           `${save.stolenFrom ? save.stolenFrom + ' needs a new plan' : 'Someone lost their insurance last night'}. The idol is gone, and the person who has it is a threat in a different way now.`,
           `Everyone knows what ${save.player} did. The question is what ${_p.sub} ${_p.sub==='they'?'do':'does'} next — and who ${_p.sub} ${_p.sub==='they'?'use':'uses'} it on.`,
         ]) });
       } else if (save.type === 'super-idol') {
         // Super Idol: played AFTER votes — the most dramatic play possible
         if (save.playedFor) {
-          pre.push({ type: 'saveReaction', text: _rp([
+          pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
             `Nobody can stop talking about it. The votes were read. ${save.playedFor} was done. Then ${save.player} stood up with the Super Idol. ${vn} ${voteWord} — erased. After the read. That's never happened before.`,
             `${save.player} waited until the host read every single vote. Then pulled out the Super Idol for ${save.playedFor}. The camp hasn't recovered. You don't see that kind of loyalty — or that kind of nerve.`,
           ]) });
           addBond(save.player, save.playedFor, 1.5); // lingering gratitude on top of the engine's +3
         } else {
-          pre.push({ type: 'saveReaction', text: _rp([
+          pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
             `The Super Idol play is all anyone is talking about this morning. ${save.player} sat through every vote being read — ${_p.posAdj} name, over and over — and then pulled it out. ${vn} ${voteWord} gone. After the read.`,
             `${save.player} let the votes happen. Watched ${_p.posAdj} own name pile up. Then played the Super Idol. The camp woke up to a different game. That wasn't just an advantage play — that was a statement.`,
             `Nobody sleeps well after a Super Idol play. ${save.player} is still here, the idol is gone, and everyone who voted for ${_p.obj} knows they were outplayed in a way they couldn't have predicted.`,
           ]) });
         }
-        pre.push({ type: 'saveScramble', text: _rp([
+        pre.push({ type: 'saveScramble', badgeText: 'SCRAMBLE', badgeClass: 'red', text: _rp([
           `The coalition that put ${vn} ${voteWord} on ${save.playedFor || save.player}? Still exists. Still wants them gone. But now they know what they're up against — someone who waits, watches, and strikes at the last possible moment.`,
           `The Super Idol is gone. That's the consolation. But the player who held it just proved they're willing to play the most dangerous game possible. That changes how everyone plans from here.`,
         ]) });
@@ -7157,7 +7158,7 @@ export function generateCampEvents(ep, phase = 'both') {
           `${save.player} spent their protection. Whether it was the right move depends on how loyal ${save.playedFor} turns out to be from here.`,
           `The idol is gone. But a proven ally willing to sacrifice? That's a different kind of threat.`,
         ]);
-        pre.push({ type: 'saveReaction', players: [save.player, save.playedFor], text: `${_allyReact} ${_allyAfter}` });
+        pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', players: [save.player, save.playedFor], text: `${_allyReact} ${_allyAfter}` });
       } else {
         // Consolidated self-idol event — one event covering reaction + empowerment + scramble
         const _selfIdolReact = _rp([
@@ -7170,7 +7171,7 @@ export function generateCampEvents(ep, phase = 'both') {
           `${vn} ${voteWord} went nowhere. That coalition still exists. It just needs a new shot. ${save.player} bought one episode — everybody knows it.`,
           `There's something different about ${save.player} this morning. ${_p.Sub} ${_p.sub==='they'?'survive':'survives'} with ${_p.posAdj} own hand. But ${_p.sub} ${_p.sub==='they'?'are':'is'} still the target.`,
         ]);
-        pre.push({ type: 'saveReaction', text: `${_selfIdolReact} ${_selfIdolAfter}` });
+        pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: `${_selfIdolReact} ${_selfIdolAfter}` });
       }
     });
   }
@@ -7189,7 +7190,7 @@ export function generateCampEvents(ep, phase = 'both') {
       if (!ep.campEvents[campKey]) return;
       const pre = ep.campEvents[campKey].pre;
       // General open vote aftermath
-      pre.push({ type: 'saveReaction', text: _rp([
+      pre.push({ type: 'saveReaction', badgeText: _saveBadge, badgeClass: 'gold', text: _rp([
         `The open vote is all anyone is talking about. Every name that was called last night is still hanging in the air this morning. There's no way to pretend it didn't happen.`,
         `Last night's public declarations changed the camp. People were named out loud, and the ones who heard it woke up in a different position than they went to sleep in.`,
         `An open vote leaves marks. You can't take back a name you said out loud — and the people who heard it haven't forgotten.`,

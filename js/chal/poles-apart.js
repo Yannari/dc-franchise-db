@@ -83,7 +83,7 @@ function _socialEvent(team, allTeams, ep) {
       return { type: 'paSpark', players: [a, b], badgeText: 'SPARK', badgeClass: 'romance',
         text: _vary([
           `${a} pries a puller off ${b} and the two of them collapse in the sand laughing. Something clicks that has nothing to do with the challenge.`,
-          `${b} catches ${a} before ${_pron(a).sub} hits the sand and doesn't quite let go. The beach suddenly feels very warm.`,
+          `${b} grabs ${a}'s arm just as ${_pron(a).sub} ${_pron(a).sub === 'they' ? 'lose' : 'loses'} ${_pron(a).posAdj} footing — and doesn't quite let go once ${_pron(a).sub}${_pron(a).sub === 'they' ? "'re" : "'s"} steady again. Neither of them mentions it.`,
           `${a} and ${b} keep ending up back to back defending the same pole. Neither minds the excuse to stay close.`,
         ], 'spark'),
         consequences: `+1.2 bond ${a}/${b} · possible showmance` };

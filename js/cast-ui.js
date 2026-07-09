@@ -745,6 +745,7 @@ export function saveConfig() {
     riReentryAt: parseInt(g('cfg-ri-reentry')?.value) || 12,
     riFormat:    g('cfg-ri-format')?.value || 'redemption',
     riReturnPoints: parseInt(g('cfg-ri-return-points')?.value) || 1,
+    riReturnPerEvent: parseInt(g('cfg-ri-per-event')?.value) || 1,
     riSecondReturnAt: parseInt(g('cfg-ri-second-return')?.value) || 5,
     journey:     g('cfg-journey')?.checked || false,
     exile:       g('cfg-exile')?.checked || false,
@@ -823,6 +824,7 @@ export function renderConfig() {
   set('cfg-ri-reentry', seasonConfig.riReentryAt);
   set('cfg-ri-format', seasonConfig.riFormat || 'redemption');
   set('cfg-ri-return-points', seasonConfig.riReturnPoints || 1);
+  set('cfg-ri-per-event', seasonConfig.riReturnPerEvent || 1);
   set('cfg-ri-second-return', seasonConfig.riSecondReturnAt || 5);
   if (g('ri-settings')) g('ri-settings').style.display = seasonConfig.ri ? 'flex' : 'none';
   const _riSecGrp = g('ri-second-return-group');

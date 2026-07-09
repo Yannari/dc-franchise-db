@@ -14,10 +14,9 @@
     "finaleAssistants": false,
     "jurySize": 9,
     "ri": true,
-    "riReentryAt": 13,
+    "riReentryAt": 11,
     "riFormat": "rescue",
-    "riReturnPoints": 2,
-    "riSecondReturnAt": 11,
+    "riReturnPoints": 1,
     "journey": false,
     "shotInDark": false,
     "firemaking": false,
@@ -160,7 +159,8 @@
         "type": "jury-elimination"
       }
     ],
-    "popularityEnabled": true
+    "popularityEnabled": true,
+    "riReturnPerEvent": 2
   },
   "relationships": [],
   "preGameAlliances": [],

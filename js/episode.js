@@ -1315,30 +1315,40 @@ export function simulateEpisode() {
     if (cfg.riFormat === 'rescue') {
       const _rescuePlayers = [...gs.riPlayers];
       const _rr = simulateRescueReturnChallenge(_rescuePlayers, epNum);
-      const winner = _rr.winner;
-      const losers = _rescuePlayers.filter(p => p !== winner);
-      ep.riReentrant = winner; ep.riReentryLosers = losers;
+      // How many rejoin from THIS return challenge (cfg.riReturnPerEvent, default 1). The top N
+      // of the return challenge's final standings all come back together — e.g. DC4's two
+      // Rescue Island returnees rejoining at the same time. Always leave at least one loser.
+      const _perEvent = Math.max(1, Math.min(cfg.riReturnPerEvent || 1, _rescuePlayers.length - 1));
+      const _standings = (_rr.finalStandings && _rr.finalStandings.length)
+        ? _rr.finalStandings
+        : [_rr.winner, ..._rescuePlayers.filter(p => p !== _rr.winner)];
+      const winners = _standings.slice(0, _perEvent);
+      const winner = winners[0]; // primary returnee — VP/stats read the single field for back-compat
+      const losers = _rescuePlayers.filter(p => !winners.includes(p));
+      ep.riReentrant = winner; ep.riReentrants = winners; ep.riReentryLosers = losers;
       ep.rescueReturn = _rr;   // full phase / elimination / farewell data (VP + text)
-      ep.riReentry = { winner, losers, challengeType: 'rescue-return', challengeLabel: 'Edge of Extinction: The Return' };
-      ep.rescueReturnChallenge = { winner, losers, challengeType: 'rescue-return', challengeLabel: 'Edge of Extinction: The Return' };
+      ep.riReentry = { winner, winners, losers, challengeType: 'rescue-return', challengeLabel: 'Edge of Extinction: The Return' };
+      ep.rescueReturnChallenge = { winner, winners, losers, challengeType: 'rescue-return', challengeLabel: 'Edge of Extinction: The Return' };
       if (gs.riReturnCount === 0) { gs.riPlayers = []; } else { gs.riPlayers = gs.riPlayers.filter(p => !_rescuePlayers.includes(p)); }
       losers.forEach(l => { gs.eliminated.push(l); gs.jury.push(l); });
-      gs.activePlayers.push(winner);
       gs.riReturnCount++;
-      if (!gs.isMerged && gs.tribes.length) {
-        const smallest = [...gs.tribes].sort((a,b) => a.members.length-b.members.length)[0];
-        smallest.members.push(winner);
-      }
-      if (gs.playerStates?.[winner]) gs.playerStates[winner].emotional = 'confident';
-      gs.activePlayers.forEach(p => {
-        if (p === winner) return;
-        const bond = getBond(winner, p);
-        if (bond >= 3) addBond(winner, p, 1.0);
-        else if (bond <= -2) addBond(winner, p, -0.5);
-      });
-      (gs.riAlliancesFormed || []).filter(a => a.members.includes(winner)).forEach(a => {
-        const allyInGame = a.members.find(m => m !== winner && gs.activePlayers.includes(m));
-        if (allyInGame) addBond(winner, allyInGame, 1.5);
+      winners.forEach(w => {
+        gs.activePlayers.push(w);
+        if (!gs.isMerged && gs.tribes.length) {
+          const smallest = [...gs.tribes].sort((a, b) => a.members.length - b.members.length)[0];
+          smallest.members.push(w);
+        }
+        if (gs.playerStates?.[w]) gs.playerStates[w].emotional = 'confident';
+        gs.activePlayers.forEach(p => {
+          if (p === w || winners.includes(p)) return;
+          const bond = getBond(w, p);
+          if (bond >= 3) addBond(w, p, 1.0);
+          else if (bond <= -2) addBond(w, p, -0.5);
+        });
+        (gs.riAlliancesFormed || []).filter(a => a.members.includes(w)).forEach(a => {
+          const allyInGame = a.members.find(m => m !== w && gs.activePlayers.includes(m));
+          if (allyInGame) addBond(w, allyInGame, 1.5);
+        });
       });
     } else {
       const _riResult = simulateRIReentry(gs.riPlayers);

@@ -51,17 +51,119 @@ function _throw(n) { const s = pStats(n); return s.physical * 0.5 + s.boldness *
 function _nav(n)   { const s = pStats(n); return s.mental * 0.4 + s.intuition * 0.4 + s.physical * 0.2; }
 
 // ── SOCIAL EVENTS between rounds (guaranteed density, real consequences) ──
-// romance spark · suspicion · olive branch (alliance) · encouragement · rivalry
+// Mix of POSITIVE intra-team (spark / olive branch / encouragement), NEGATIVE
+// intra-team (blame / suspicion), and INTER-TRIBE (steal / taunt / collision /
+// trash talk). Schemes/steals/taunts are archetype-gated per the rules.
+function _canScheme(n) {
+  const a = _archOf(n), s = pStats(n);
+  if (['villain', 'mastermind', 'schemer'].includes(a)) return true;
+  if (['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(a)) return false;
+  return s.strategic >= 6 && s.loyalty <= 4;
+}
 function _socialEvent(team, allTeams, ep) {
-  const roster = team.rest.length ? team.rest.concat(team.holders) : team.members;
-  const pool = [...new Set(roster)].filter(m => gs.activePlayers.includes(m));
-  if (pool.length < 2) return null;
+  const own = [...new Set([...(team.holders || []), ...(team.scorers || [])])].filter(m => gs.activePlayers.includes(m));
+  if (own.length < 2) return null;
+  if (!gs.popularity) gs.popularity = {};
+  const rivals = (allTeams || []).filter(t => t !== team && !t.dropped);
+  const rivalTeam = rivals.length ? _rp(rivals) : null;
+  const rivalPool = rivalTeam ? [...new Set([...(rivalTeam.holders || []), ...(rivalTeam.scorers || [])])].filter(m => gs.activePlayers.includes(m)) : [];
   const roll = Math.random();
 
-  // 1) ROMANCE spark (only if enabled + a compatible pair exists)
-  if (seasonConfig.romance !== 'disabled' && roll < 0.28) {
-    const a = _rp(pool);
-    const b = pool.find(m => m !== a && romanticCompat(a, m));
+  // ══ INTER-TRIBE (~38%, needs a live rival team) ══
+  if (rivalTeam && rivalPool.length && roll < 0.38) {
+    const r2 = Math.random();
+    const schemers = own.filter(_canScheme);
+    // STEAL / SABOTAGE — schemer archetypes only
+    if (r2 < 0.30 && schemers.length) {
+      const thief = _rp(schemers), victim = _rp(rivalPool);
+      addBond(thief, victim, -1.1);
+      gs.popularity[thief] = (gs.popularity[thief] || 0) - 0.6;
+      gs.popularity[victim] = (gs.popularity[victim] || 0) + 0.4;
+      return { type: 'amgSteal', players: [thief, victim], colors: [team.color, rivalTeam.color], badgeText: 'COCONUT SWIPED', badgeClass: 'steal',
+        text: _pick([
+          `${thief} spots ${victim} of ${rivalTeam.name} carrying a coconut and snatches it clean out of ${_pron(victim).posAdj} arms in the corn. Dirty — and effective.`,
+          `${thief} ambushes ${victim} at a blind corner and makes off with ${rivalTeam.name}'s coconut. ${victim} is left grasping at air.`,
+          `${thief} shadows ${victim} through the rows, waits for the fumble, and swipes the coconut with a grin. ${rivalTeam.name} is furious.`,
+        ], thief + victim + 'steal'),
+        consequences: `-1.1 bond ${thief}/${victim} (cross-team) · ${thief} -0.6 pop · ${victim} +0.4 pop` };
+    }
+    // TAUNT — a bold player heckles the rival holders
+    if (r2 < 0.58) {
+      const taunter = own.slice().sort((x, y) => pStats(y).boldness - pStats(x).boldness)[0];
+      const target = (rivalTeam.holders || [])[0] || _rp(rivalPool);
+      addBond(taunter, target, -0.7);
+      if (pStats(taunter).boldness >= 6) gs.popularity[taunter] = (gs.popularity[taunter] || 0) + 0.5;
+      return { type: 'amgTaunt', players: [taunter, target], colors: [team.color, rivalTeam.color], badgeText: 'TAUNT', badgeClass: 'taunt',
+        text: _pick([
+          `${taunter} cups ${_pron(taunter).posAdj} hands and bellows across the maze at ${target}: "Your net's already kissing the dirt — give it up!" ${rivalTeam.name}'s holders grit their teeth.`,
+          `${taunter} struts past ${rivalTeam.name}'s net just to tell ${target} exactly how bad the sag looks from over here.`,
+          `${taunter} keeps up a running commentary on ${target}'s shaking arms. It's obnoxious — and it's getting in ${_pron(target).posAdj} head.`,
+        ], taunter + target + 'taunt'),
+        consequences: `-0.7 bond ${taunter}/${target} (cross-team) · ${taunter} +0.5 pop` };
+    }
+    // COLLISION — two rival scorers crash in the maze
+    if (r2 < 0.80) {
+      const a = _rp(own), b = _rp(rivalPool);
+      addBond(a, b, -0.6);
+      return { type: 'amgCollision', players: [a, b], colors: [team.color, rivalTeam.color], badgeText: 'COLLISION', badgeClass: 'suspect',
+        text: _pick([
+          `${a} (${team.name}) and ${b} (${rivalTeam.name}) come barreling around the same blind corner and crash in a heap of elbows and coconuts. Both stagger up glaring.`,
+          `${a} and ${b} hit the same dead end at a full sprint from opposite teams. The pile-up gets heated fast.`,
+          `${a} and ${b} both claim the row — and the shoulder-check that follows is no accident.`,
+        ], a + b + 'coll'),
+        consequences: `-0.6 bond ${a}/${b} (cross-team)` };
+    }
+    // TRASH TALK
+    const a = _rp(own), b = _rp(rivalPool);
+    addBond(a, b, -0.5);
+    return { type: 'amgTrash', players: [a, b], colors: [team.color, rivalTeam.color], badgeText: 'TRASH TALK', badgeClass: 'suspect',
+      text: _pick([
+        `${a} and ${b} trade barbs across the corn — ${team.name} versus ${rivalTeam.name}, nothing but attitude. Neither backs down.`,
+        `${a} lobs an insult at ${b}; ${b} fires back twice as hard. This rivalry's got legs now.`,
+        `${a} and ${b} turn the whole thing into a grudge match. The coconuts are almost an afterthought.`,
+      ], a + b + 'trash'),
+      consequences: `-0.5 bond ${a}/${b} (cross-team)` };
+  }
+
+  // ══ NEGATIVE intra-team (~30%) ══
+  if (roll < 0.68) {
+    // BLAME after a miss / penalty
+    if (Math.random() < 0.5) {
+      const a = _rp(own);
+      const b = own.filter(m => m !== a).slice().sort((x, y) => getBond(a, x) - getBond(a, y))[0];
+      if (b) {
+        addBond(a, b, -0.7);
+        gs.popularity[b] = (gs.popularity[b] || 0) - 0.3;
+        return { type: 'amgBlame', players: [a, b], badgeText: 'BLAME', badgeClass: 'suspect',
+          text: _pick([
+            `A coconut sails wide and ${a} rounds on ${b}: "That's on YOU — quit rushing the throws." The row goes cold.`,
+            `${a} snaps at ${b} for wandering off while the net sags. ${b} doesn't take it quietly.`,
+            `${a} pins the last miss on ${b}. It might even be fair. It doesn't help the mood.`,
+            `${a} and ${b} argue over who blew the easy score. Voices carry across the corn.`,
+          ], a + b + 'blame'),
+          consequences: `-0.7 bond ${a}→${b} · ${b} -0.3 pop` };
+      }
+    }
+    // SUSPICION / paranoia
+    const watcher = _rp(own);
+    const suspect = own.filter(m => m !== watcher).slice().sort((x, y) => getBond(watcher, x) - getBond(watcher, y))[0];
+    if (suspect) {
+      addBond(watcher, suspect, -0.6);
+      return { type: 'amgSuspect', players: [watcher, suspect], badgeText: 'SUSPICION', badgeClass: 'suspect',
+        text: _pick([
+          `${watcher} notices how fast ${suspect} slipped off alone. "Nobody knows this maze that well by accident. What's ${_pron(suspect).sub} really doing out there?" The seed is planted.`,
+          `${suspect} keeps vanishing between the rows. ${watcher} clocks it — and starts counting how often ${_pron(suspect).sub} comes back empty-handed.`,
+          `${watcher} can't shake it: ${suspect} is spending an awful lot of time in the corn for so few coconuts. Something doesn't add up.`,
+        ], watcher + suspect + 'sus'),
+        consequences: `-0.6 bond ${watcher}→${suspect}` };
+    }
+  }
+
+  // ══ POSITIVE intra-team (~32%) ══
+  // romance spark
+  if (seasonConfig.romance !== 'disabled' && Math.random() < 0.4) {
+    const a = _rp(own);
+    const b = own.find(m => m !== a && romanticCompat(a, m));
     if (b) {
       addBond(a, b, 1.2);
       try { _challengeRomanceSpark(a, b, ep, null, null); } catch (e) {}
@@ -70,72 +172,35 @@ function _socialEvent(team, allTeams, ep) {
           `Lost between the same two rows, ${a} and ${b} keep finding excuses to double back to each other. By the time they find the coconut, neither's thinking about the challenge.`,
           `${a} and ${b} get turned around in the maze together — and don't seem in any hurry to find the way out. Something's brewing in the corn.`,
           `${b} steadies ${a} over a tangle of stalks, hand lingering a beat too long. The maze is suddenly a lot more interesting.`,
-          `${a} shares a coconut and a laugh with ${b} in a dead-end row. Whatever this is, it isn't strategy.`,
         ], a + b + 'spark'),
-        consequences: `+1.2 bond ${a}/${b}; possible showmance.` };
+        consequences: `+1.2 bond ${a}/${b} · possible showmance` };
     }
   }
-
-  // 2) SUSPICION (generic paranoia — a fast/quiet player draws eyes)
-  if (roll < 0.5) {
-    const watcher = _rp(pool);
-    const suspect = pool.slice().sort((x, y) => getBond(watcher, x) - getBond(watcher, y))[0];
-    if (suspect && suspect !== watcher) {
-      addBond(watcher, suspect, -0.6);
-      if (!gs.popularity) gs.popularity = {};
-      return { type: 'amgSuspect', players: [watcher, suspect], badgeText: 'SUSPICION', badgeClass: 'suspect',
-        text: _pick([
-          `${watcher} notices how fast ${suspect} moved through the maze and slipped off alone. "Nobody knows it that well by accident. What's ${_pron(suspect).sub} really doing out there?" The seed is planted.`,
-          `${suspect} keeps vanishing between the rows. ${watcher} clocks it — and starts counting how often ${_pron(suspect).sub} comes back empty-handed.`,
-          `${watcher} can't shake it: ${suspect} is spending an awful lot of time in the corn for so few coconuts. Something doesn't add up.`,
-          `${suspect} takes the long way back every single time. ${watcher} decides that's worth remembering after the challenge.`,
-        ], watcher + suspect + 'sus'),
-        consequences: `-0.6 bond ${watcher}→${suspect}; ${suspect} +1 threat perception.` };
-    }
-  }
-
-  // 3) OLIVE BRANCH (alliance repair — a loyal/social player mends a low bond)
-  if (roll < 0.72) {
-    const mender = pool.slice().sort((x, y) => (pStats(y).social + pStats(y).loyalty) - (pStats(x).social + pStats(x).loyalty))[0];
-    const target = pool.filter(m => m !== mender).slice().sort((x, y) => getBond(mender, x) - getBond(mender, y))[0];
-    if (mender && target && getBond(mender, target) < 3) {
-      addBond(mender, target, 1.5);
-      return { type: 'amgAlliance', players: [mender, target], badgeText: 'OLIVE BRANCH', badgeClass: 'alliance',
-        text: _pick([
-          `Between scarecrows, ${mender} catches ${target} alone and extends a hand — a fresh start, no vote between them if they lose. ${target}'s been waiting for exactly this opening.`,
-          `${mender} pulls ${target} aside in the corn and squashes the old grudge. "Clean slate. We need each other." ${target} takes the branch.`,
-          `In the quiet of the maze, ${mender} and ${target} finally talk it out. Whatever was broken feels a little more fixable now.`,
-          `${mender} offers ${target} a way back in — loyalty for loyalty. The handshake happens where no one can see it.`,
-        ], mender + target + 'olive'),
-        consequences: `+1.5 bond ${mender}/${target}; alliance repair flagged.` };
-    }
-  }
-
-  // 4) ENCOURAGEMENT / RIVALRY fallback (always fires — keeps density)
-  const a = _rp(pool);
-  const b = pool.filter(m => m !== a)[0];
-  if (!b) return null;
-  if (getBond(a, b) >= 0) {
-    addBond(a, b, 0.5);
-    return { type: 'amgCheer', players: [a, b], badgeText: 'HYPED UP', badgeClass: 'cheer',
+  // olive branch (alliance repair)
+  const mender = own.slice().sort((x, y) => (pStats(y).social + pStats(y).loyalty) - (pStats(x).social + pStats(x).loyalty))[0];
+  const mtarget = own.filter(m => m !== mender).slice().sort((x, y) => getBond(mender, x) - getBond(mender, y))[0];
+  if (mender && mtarget && getBond(mender, mtarget) < 3 && Math.random() < 0.5) {
+    addBond(mender, mtarget, 1.5);
+    return { type: 'amgAlliance', players: [mender, mtarget], badgeText: 'OLIVE BRANCH', badgeClass: 'alliance',
       text: _pick([
-        `${a} hollers across the maze that ${b}'s holders are one drop from folding — the whole team surges on the news.`,
-        `${a} and ${b} sync up on a plan: flood one net, ignore the rest. It's working, and they know it.`,
-        `${a} tosses ${b} a found coconut mid-sprint and yells for the dunker. Small play, real chemistry.`,
-        `${a} keeps ${b}'s spirits up when the rows all start to look the same. They push on together.`,
-      ], a + b + 'cheer'),
-      consequences: `+0.5 bond ${a}/${b}.` };
+        `Between scarecrows, ${mender} catches ${mtarget} alone and extends a hand — a fresh start, no vote between them if they lose. ${mtarget}'s been waiting for exactly this opening.`,
+        `${mender} pulls ${mtarget} aside in the corn and squashes the old grudge. "Clean slate. We need each other." ${mtarget} takes the branch.`,
+        `In the quiet of the maze, ${mender} and ${mtarget} finally talk it out. Whatever was broken feels a little more fixable now.`,
+      ], mender + mtarget + 'olive'),
+      consequences: `+1.5 bond ${mender}/${mtarget} · alliance repair flagged` };
   }
-  addBond(a, b, -0.5);
-  if (!gs.popularity) gs.popularity = {};
-  return { type: 'amgRival', players: [a, b], badgeText: 'FRICTION', badgeClass: 'suspect',
+  // encouragement (default — keeps density)
+  const a = _rp(own), b = own.filter(m => m !== a)[0];
+  if (!b) return null;
+  addBond(a, b, 0.5);
+  return { type: 'amgCheer', players: [a, b], badgeText: 'HYPED UP', badgeClass: 'cheer',
     text: _pick([
-      `${a} and ${b} both lunge for the same coconut and neither lets go. The maze echoes with the argument.`,
-      `${a} blames ${b} for a missed shot; ${b} blames the wind. Neither's really talking about the coconut.`,
-      `${a} accuses ${b} of hogging the good rows. It's petty. It sticks anyway.`,
-      `${a} and ${b} collide at a corner and the old tension flares right back up.`,
-    ], a + b + 'rival'),
-    consequences: `-0.5 bond ${a}/${b}.` };
+      `${a} hollers across the maze that the rival net is one drop from folding — the whole team surges on the news.`,
+      `${a} and ${b} sync up on a plan: flood one net, ignore the rest. It's working, and they know it.`,
+      `${a} tosses ${b} a found coconut mid-sprint and yells for the dunker. Small play, real chemistry.`,
+      `${a} keeps ${b}'s spirits up when the rows all start to look the same. They push on together.`,
+    ], a + b + 'cheer'),
+    consequences: `+0.5 bond ${a}/${b}` };
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -570,7 +635,14 @@ export function aMazeInGripRevealNext(screenKey, total) {
   const s = _amgEnsure(screenKey, total); if (s.idx >= s.total - 1) return; s.idx++;
   const suffix = screenKey.replace('amg-', '');
   _reapplyVisibility(suffix, s.idx, s.total);
-  const el = document.getElementById(`amg-step-${suffix}-${s.idx}`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // scroll to the just-revealed card AFTER layout settles. block:'start' + the card's
+  // scroll-margin-top (set in CSS to clear the sticky net panel) keeps the card's top
+  // in view even while it's still expanding (max-height animates downward).
+  const idx = s.idx;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const el = document.getElementById(`amg-step-${suffix}-${idx}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
   try { _amgLiveUpdate(s.idx); } catch (e) {}
 }
 export function aMazeInGripRevealAll(screenKey, total) {
@@ -618,7 +690,7 @@ function _amgCSS() {
   .amg-body{display:grid;grid-template-columns:1fr 300px;gap:16px}
   @media(max-width:860px){.amg-body{grid-template-columns:1fr}}
   .amg-stage{display:flex;flex-direction:column}
-  .amg-step{max-height:0;overflow:hidden;opacity:0;transform:translateY(14px);transition:max-height .5s ease,opacity .5s,transform .5s}
+  .amg-step{max-height:0;overflow:hidden;opacity:0;transform:translateY(14px);transition:max-height .5s ease,opacity .5s,transform .5s;scroll-margin-top:250px}
   .amg-step.amg-visible{max-height:1400px;opacity:1;transform:none;margin-bottom:11px}
   @media(prefers-reduced-motion:reduce){.amg-step{transition:max-height .2s,opacity .2s}.amg-firefly{animation:none}.amg-maze-runner{transition:none}}
   .amg-card{background:linear-gradient(180deg,rgba(46,30,20,.9),rgba(30,20,14,.9));border:1px solid rgba(232,185,68,.16);border-radius:13px;padding:12px 14px;box-shadow:0 4px 14px rgba(0,0,0,.35)}
@@ -643,6 +715,7 @@ function _amgCSS() {
   .amg-social{border:1px dashed rgba(214,120,180,.5);background:linear-gradient(180deg,rgba(50,26,42,.85),rgba(30,16,26,.85))}
   .badge-romance{background:rgba(232,90,150,.22);color:#ff8ac0}.badge-alliance{background:rgba(120,200,120,.2);color:#9ae59a}
   .badge-suspect{background:rgba(232,110,90,.2);color:#ff9b7a}.badge-cheer{background:rgba(106,143,74,.22);color:#a6d178}
+  .badge-taunt{background:rgba(232,150,60,.22);color:#ffb86b}.badge-steal{background:rgba(200,90,200,.2);color:#e58ae5}
   .amg-social-avas{display:flex}.amg-social-avas .amg-pf{margin-left:-8px;border:2px solid #2a1626}.amg-social-avas .amg-pf:first-child{margin-left:0}
   .amg-side{align-self:start;position:sticky;top:160px;display:flex;flex-direction:column;gap:12px}
   .amg-side-card{background:linear-gradient(180deg,rgba(36,24,18,.92),rgba(24,16,12,.92));border:1px solid rgba(232,185,68,.2);border-radius:13px;padding:12px}
@@ -802,8 +875,9 @@ export function rpBuildAMGRace(ep) {
       inner = `<div class="amg-card" style="border-color:${s.color}66"><div class="amg-card-head"><span class="amg-badge b-drop">🪂 NET DOWN</span><span style="font-size:11px;color:#b79a6a">${s.team}</span></div>
         <div class="amg-card-body"><div class="amg-actor-duo">${duo || `<span class="amg-icon">${_amgGripSVG()}</span>`}</div><div><div class="amg-card-txt">${s.text}</div><div class="amg-card-meta">${s.meta || ''}</div></div></div></div>`;
     } else { // event
-      const avas = (s.players || []).slice(0, 2).map(p => _amgPortrait(p, 'md', s.color)).join('');
-      inner = `<div class="amg-card amg-social"><div class="amg-card-head"><span class="amg-badge badge-${s.badgeClass || 'cheer'}">${s.badgeText || 'MOMENT'}</span><span style="font-size:11px;color:#b79a6a">${s.team} · the maze</span></div>
+      const avas = (s.players || []).slice(0, 2).map((p, ai) => _amgPortrait(p, 'md', (s.colors && s.colors[ai]) || s.color)).join('');
+      const scope = s.colors ? 'cross-team' : `${s.team} · the maze`;
+      inner = `<div class="amg-card amg-social"><div class="amg-card-head"><span class="amg-badge badge-${s.badgeClass || 'cheer'}">${s.badgeText || 'MOMENT'}</span><span style="font-size:11px;color:#b79a6a">${scope}</span></div>
         <div class="amg-card-body"><div class="amg-social-avas">${avas}</div><div><div class="amg-card-txt">${s.text || ''}</div><div class="amg-card-meta">${s.consequences || ''}</div></div></div></div>`;
     }
     return `<div class="amg-step" id="amg-step-${suffix}-${i}">${inner}</div>`;
@@ -811,6 +885,7 @@ export function rpBuildAMGRace(ep) {
 
   return _shell(`<div class="amg-body">
     <div><div class="amg-stage">${cards}</div>
+      <div class="amg-scroll-spacer" style="height:50vh;pointer-events:none"></div>
       <div class="amg-controls" id="amg-controls-${suffix}">
         <button class="amg-btn" onclick="aMazeInGripRevealNext('amg-${suffix}',${steps.length})">🌽 Next Beat</button>
         <span class="amg-counter" id="amg-counter-${suffix}">0 / ${steps.length}</span>

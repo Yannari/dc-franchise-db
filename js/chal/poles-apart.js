@@ -168,6 +168,7 @@ export function simulatePolesApart(ep) {
 
   let roundNum = 0;
   const roundResults = [];
+  const heldCount = {};   // how many rounds each player has held — drives role ROTATION
   const majority = tribes.length === 2 ? 2 : Math.ceil(3 / 1); // 2-team: first to 2; else play 3
 
   while (roundNum < 3) {
@@ -191,8 +192,14 @@ export function simulatePolesApart(ep) {
         if (start % 2 === 1 && ranked.length > nSit + 1) sitOuts = [ranked[ranked.length - nSit - 1], ...ranked.slice(ranked.length - nSit + 1)];
         playing = order.filter(m => !sitOuts.includes(m));
       }
-      const byHold = [...playing].sort((a, b) => _hold(b) - _hold(a));
+      // ROLE PICK: favor good grippers, but ROTATE — noise + a penalty for anyone who
+      // already held, so holding gets shared round-to-round (matches the show; nobody
+      // is stuck pulling all game) and different faces defend each round.
+      const holdRoll = {};
+      playing.forEach(m => { holdRoll[m] = _hold(m) + _noise(2.4) - (heldCount[m] || 0) * 2.0; });
+      const byHold = [...playing].sort((a, b) => holdRoll[b] - holdRoll[a]);
       const holders = byHold.slice(0, HOLDERS_PER).map(p => ({ player: p, slip: 0, downed: false, attackers: [], survives: 0 }));
+      holders.forEach(h => { heldCount[h.player] = (heldCount[h.player] || 0) + 1; });
       const pullers = playing.filter(m => !holders.some(h => h.player === m));
       // per-round FORM (±23%): a team can catch a hot round or a flat one, so a
       // weaker team can steal a round and best-of-3 upsets happen (MD rule).

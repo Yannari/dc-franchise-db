@@ -2448,6 +2448,16 @@
               </select>
             </div>
             <div class="form-group">
+              <label class="form-label">Setting</label>
+              <select id="cfg-setting" onchange="saveConfig()" class="form-input">
+                <option value="hosted-camp">🏕️ Hosted Camp (Chef cooks, host meddles)</option>
+                <option value="survival-island">🏝️ Survival Island (forage, build, weather)</option>
+                <option value="carnival">🎪 Carnival of Chaos (midway, rides, funhouse)</option>
+                <option value="film-lot">🎬 Film Lot (trailers, catering, stunts)</option>
+                <option value="world-tour">✈️ World Tour (the plane, class divide, new sets)</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label class="form-label">Game Mode</label>
               <div class="game-mode-seg">
                 <button class="gm-btn active" id="gm-spectator" onclick="setGameMode('spectator')">Spectator</button>

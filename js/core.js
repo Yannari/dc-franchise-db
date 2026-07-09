@@ -883,6 +883,7 @@ export function defaultConfig() {
     fanVoteFrequency: 'disabled',
     aftermayhemReturn: 'disabled',
     host: 'Chris',
+    setting: 'hosted-camp',   // venue flavor: hosted-camp | survival-island | carnival | film-lot | world-tour
     advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, { enabled: a.default > 0, count: a.default }])),
     twistSchedule: [],
     tribes: [],  // [{ name, color }]

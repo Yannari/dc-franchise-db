@@ -10,6 +10,7 @@ import {
 } from './romance.js';
 import { generateSocialManipulationEvents } from './social-manipulation.js';
 import { simulateTribeChallenge } from './challenges-core.js';
+import { eventAllowedInSetting, settingWeightMod, settingProfile, fillVocab, currentSetting } from './settings.js';
 
 export const CAMP_EVENT_TYPES = [
   // ═══ POSITIVE (~55%) — bonding, comfort, growth, alliance building ═══
@@ -100,6 +101,26 @@ export const CAMP_EVENT_TYPES = [
   { id: 'fakeReward',          twoPlayer: true,  weight: 7  }, // "reward" that's a punishment → bond over the prank
   // ═══ CASUAL NIGHT GAMES (the cast's own after-dark spin-the-bottle etc.) ═══
   { id: 'nightGame',           twoPlayer: true,  weight: 11 }, // spin-the-bottle / never-have-I-ever / truth-or-dare
+  // ═══ SETTING-EXCLUSIVE (gated by seasonConfig.setting via SETTING_EXCLUSIVE) ═══
+  { id: 'settingAtmosphere',   twoPlayer: true,  weight: 14 }, // scene-setting flavor per venue (always on)
+  // survival island
+  { id: 'forage',              twoPlayer: true,  weight: 12 },
+  { id: 'shelterStorm',        twoPlayer: true,  weight: 10 },
+  { id: 'fireStruggle',        twoPlayer: true,  weight: 10 },
+  { id: 'rationLow',           twoPlayer: true,  weight: 10 },
+  // carnival
+  { id: 'midwayGames',         twoPlayer: true,  weight: 12 },
+  { id: 'rideDare',            twoPlayer: true,  weight: 11 },
+  { id: 'funhouse',            twoPlayer: true,  weight: 10 },
+  { id: 'carnivalTreat',       twoPlayer: true,  weight: 10 },
+  // film lot
+  { id: 'craftServices',       twoPlayer: true,  weight: 11 },
+  { id: 'stuntWrong',          twoPlayer: true,  weight: 11 },
+  { id: 'trailerEnvy',         twoPlayer: true,  weight: 10 },
+  // world tour
+  { id: 'classDivide',         twoPlayer: true,  weight: 12 },
+  { id: 'jetLag',              twoPlayer: true,  weight: 10 },
+  { id: 'planeFood',           twoPlayer: true,  weight: 10 },
 ];
 
 // Variety control for camp event picking (applied in generateCampEventsForGroup's weight fn):
@@ -117,6 +138,11 @@ const _CAMP_BEAT_SIGNATURE = new Set([
 const _CAMP_BEAT_TEXTURE = new Set([
   'dispute', 'jealousy', 'exclusion', 'leadershipClash', 'foodConflict', 'intimidation',
   'chefSlop', 'rudeWakeup', 'fakeReward',
+  // setting-exclusive venue beats — fine day-to-day, jarring twice in one feed
+  'forage', 'shelterStorm', 'fireStruggle', 'rationLow',
+  'midwayGames', 'rideDare', 'funhouse', 'carnivalTreat',
+  'craftServices', 'stuntWrong', 'trailerEnvy',
+  'classDivide', 'jetLag', 'planeFood',
 ]);
 
 
@@ -450,9 +476,14 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
   const _recentBeat = t => _beatLog.some(r => r.type === t);
   const _firedThisGroup = {};
 
+  // SETTING GATE: hard-filter to events valid for this venue BEFORE weighting.
+  // (wRandom clamps every weight to >=0.01, so a zero weight would still leak —
+  // exclusion has to happen by removing the item from the pool.)
+  const _settingPool = CAMP_EVENT_TYPES.filter(e => eventAllowedInSetting(e.id));
+
   for (let i = 0; i < numEvents; i++) {
-    const eventType = wRandom(CAMP_EVENT_TYPES, e => {
-      let w = e.weight + (boosts[e.id] || 0);
+    const eventType = wRandom(_settingPool, e => {
+      let w = (e.weight + (boosts[e.id] || 0)) * settingWeightMod(e.id);
       // Within-episode dedup: a loud beat shouldn't fire twice in the same camp feed
       if (_firedThisGroup[e.id] && (_CAMP_BEAT_SIGNATURE.has(e.id) || _CAMP_BEAT_TEXTURE.has(e.id))) w *= 0.15;
       // Cross-episode cooldown: signature beats used in the last 2 eps are downweighted
@@ -2539,6 +2570,325 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           `${b} dares ${a} to do an impression of every single camper. ${a} nails ${b}'s last, and the circle can't breathe from laughing.`,
         ];
         events.push({ type: 'nightGame', players: [a, b], badgeText: 'TRUTH OR DARE', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    // ═══════════════ SETTING ATMOSPHERE (per-venue scene flavor) ═══════════════
+    } else if (eventType === 'settingAtmosphere') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.2 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      addBond(a, b, 0.2);
+      const pool = settingProfile().atmosphere || [];
+      let line = pool.length ? pool[Math.floor(Math.random() * pool.length)] : `${a} and ${b} pass a quiet hour together at camp.`;
+      line = fillVocab(line).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+      const _atmosBadge = { 'hosted-camp': 'CAMP LIFE', 'survival-island': 'ISLAND LIFE', 'carnival': 'CARNIVAL', 'film-lot': 'ON SET', 'world-tour': 'IN FLIGHT' }[currentSetting()] || 'ATMOSPHERE';
+      events.push({ type: 'settingAtmosphere', players: [a, b], badgeText: _atmosBadge, badgeClass: '', text: line });
+
+    // ═══════════════ SURVIVAL ISLAND ═══════════════
+    } else if (eventType === 'forage') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).physical * 0.2 + pStats(n).intuition * 0.2 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + 2));
+      const success = (pStats(a).physical + pStats(a).intuition) / 2 + (Math.random() - 0.5) * 6 >= 5.5;
+      if (success) {
+        addBond(a, b, 0.6);
+        const lines = [
+          `${a} and ${b} wade out at low tide and come back with a haul — crabs, a few fish, enough for everyone. The whole camp eats tonight.`,
+          `${a} spots a coconut palm ${b} can climb, and between them they bring down a dozen. Real food, for once. It bonds them.`,
+          `${a} and ${b} spend hours over the fishing line and finally land a big one. They carry it back like a trophy.`,
+          `${a} finds a fruit tree upstream and shows only ${b}. They fill their arms and share the credit at camp.`,
+        ];
+        events.push({ type: 'forage', players: [a, b], badgeText: 'GOOD HAUL', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        addBond(a, b, -0.3);
+        const lines = [
+          `${a} and ${b} spend all day on the reef and come back with nothing. The tribe's faces say it all. The two of them barely speak on the walk back.`,
+          `The fishing line snaps and ${a}'s only catch gets away. ${b} sighs loud enough to sting. Empty hands, short tempers.`,
+          `${a} swears there were crabs here yesterday. ${b} is done looking. They return with nothing but sunburn and frustration.`,
+          `${a} and ${b} lose the afternoon to a tide that never cooperates. Another night hungry, and each blames the other a little.`,
+        ];
+        events.push({ type: 'forage', players: [a, b], badgeText: 'CAME UP EMPTY', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    } else if (eventType === 'shelterStorm') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).loyalty * 0.2 + pStats(n).physical * 0.2 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      if (getBond(a, b) >= 0 || pStats(a).loyalty >= 6) {
+        addBond(a, b, 0.6);
+        const lines = [
+          `A squall tears the roof off the shelter at midnight. ${a} and ${b} are the only two who get up, and they rebuild it in the rain, soaked and laughing by the end.`,
+          `The storm floods the shelter. ${a} and ${b} bail water and re-lash the frame together until dawn. Nobody else moved. They won't forget that about each other.`,
+          `Wind rips the palm-thatch loose. ${a} holds the frame while ${b} re-ties it, both of them shivering, both of them staying. It counts.`,
+          `The rain comes sideways all night. ${a} and ${b} share the one dry corner and take turns holding the tarp down. Misery, shared, becomes trust.`,
+        ];
+        events.push({ type: 'shelterStorm', players: [a, b], badgeText: 'WEATHERED IT', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        addBond(a, b, -0.4);
+        const lines = [
+          `The storm caves in the shelter. ${a} is out there fixing it alone while ${b} stays curled up dry. ${a} says nothing. ${a} remembers everything.`,
+          `Rain floods the camp and only ${a} gets up to bail. ${b} sleeps through it — or pretends to. The resentment sets in with the damp.`,
+          `${a} re-lashes the frame in the downpour while ${b} watches from the dry side. "Thanks for the help," ${a} mutters. The bond takes on water.`,
+          `The shelter half-collapses and ${a} handles it solo. ${b}'s absence is noted, filed, and not forgiven.`,
+        ];
+        events.push({ type: 'shelterStorm', players: [a, b], badgeText: 'LEFT IN THE RAIN', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    } else if (eventType === 'fireStruggle') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).mental * 0.2 + pStats(n).endurance * 0.2 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      const got = pStats(a).mental * 0.3 + pStats(a).endurance * 0.2 + (Math.random() - 0.5) * 6 >= 3;
+      if (got) {
+        addBond(a, b, 0.5);
+        const lines = [
+          `The fire's been dead for a day. ${a} works the flint for hours while ${b} shields the tinder from the wind — and it finally catches. The camp erupts.`,
+          `${a} refuses to give up on the fire. ${b} stays up feeding it slivers of dry bark until the first flame takes. They did that together.`,
+          `After a dozen failures, ${a} coaxes an ember to life and ${b} nurses it into a blaze. Warmth, at last — and a small unbreakable thing between them.`,
+        ];
+        events.push({ type: 'fireStruggle', players: [a, b], badgeText: 'FIRE!', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        addBond(a, b, -0.2);
+        const lines = [
+          `${a} works the fire kit until ${a}'s hands blister — nothing. ${b} takes over and does no better. Another cold, dark night at camp.`,
+          `The tinder's too damp and ${a} knows it. ${b} keeps insisting ${a} try again. The fire stays dead; the mood colder.`,
+          `${a} and ${b} trade the flint back and forth for an hour with nothing to show. The camp goes to sleep hungry and unlit.`,
+        ];
+        events.push({ type: 'fireStruggle', players: [a, b], badgeText: 'NO SPARK', badgeClass: '', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    } else if (eventType === 'rationLow') {
+      const a = _pick(group, n => Math.max(0.1, 2));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, (5 - getBond(a, n)) * 0.3 + 2));
+      if (pStats(a).loyalty >= 6 && pStats(b).loyalty >= 5) {
+        addBond(a, b, 0.6);
+        const lines = [
+          `Down to the last scoop of rice, ${a} quietly gives ${b} the bigger half and takes the burnt bottom of the pot. ${b} notices. ${b} always notices.`,
+          `There's barely enough to go around. ${a} skips ${a}'s portion so ${b} can eat, and pretends it's because ${a} isn't hungry. It's not true, and they both know it.`,
+          `${a} and ${b} split the last handful of beans grain by grain, laughing at how little it is. Starving together, but together.`,
+        ];
+        events.push({ type: 'rationLow', players: [a, b], badgeText: 'SHARED THE LAST', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        addBond(a, b, -0.5);
+        const lines = [
+          `The rice is almost gone and ${a} catches ${b} taking more than a share. The argument that follows is about food. It's not really about food.`,
+          `${a} accuses ${b} of sneaking rations at night. ${b} denies it. The pot's emptier than it should be, and so is the trust.`,
+          `Hunger makes everyone mean. ${a} and ${b} snap over who ate what, and neither backs down. The camp goes quiet around them.`,
+        ];
+        events.push({ type: 'rationLow', players: [a, b], badgeText: 'RATION FIGHT', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    // ═══════════════ CARNIVAL ═══════════════
+    } else if (eventType === 'midwayGames') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).physical * 0.2 + pStats(n).boldness * 0.2 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      addBond(a, b, 0.4);
+      const aWins = pStats(a).physical + (Math.random() - 0.5) * 8 >= pStats(b).physical;
+      const winner = aWins ? a : b;
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[winner] = (gs.popularity[winner] || 0) + 0.4;
+      const lines = [
+        `${a} and ${b} sink their tickets into the ring toss and go bust together. ${winner} lands the only decent throw and wins a giant stuffed banana. Worth it.`,
+        `The whirl-a-ball game is obviously rigged. ${a} and ${b} figure out the trick together and ${winner} cleans up. They split the prize tickets.`,
+        `${a} challenges ${b} to the strongman hammer. ${winner} rings the bell; the loser demands three rematches. Best afternoon of the week.`,
+        `${a} and ${b} team up against the balloon-dart barker and slowly bankrupt him. ${winner} takes the top prize. The barker is not amused.`,
+      ];
+      events.push({ type: 'midwayGames', players: [a, b], badgeText: 'MIDWAY', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+
+    } else if (eventType === 'rideDare') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).boldness * 0.3 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      if (pStats(b).boldness >= 5 || Math.random() < 0.5) {
+        addBond(a, b, 0.5);
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[b] = (gs.popularity[b] || 0) + 0.4;
+        const lines = [
+          `${a} dares ${b} onto the rustiest coaster in the park. ${b} does it, screaming the whole way, and stumbles off a legend. The two of them can't stop laughing.`,
+          `${a} bets ${b} won't ride the Zipper twice in a row. ${b} rides it three times out of spite and wins the whole camp's respect.`,
+          `${a} points at the drop tower and raises an eyebrow. ${b} marches straight on. They come off wobbly, grinning, closer.`,
+        ];
+        events.push({ type: 'rideDare', players: [a, b], badgeText: 'THRILL RIDE', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        addBond(a, b, 0.2);
+        const lines = [
+          `${a} dares ${b} onto the coaster. ${b} takes one look at the loose bolts and hard-passes. ${a} rides it alone and reports back that ${b} was right.`,
+          `${a} tries to talk ${b} onto the Ferris wheel that's visibly missing a car. ${b} declines with dignity. They split a lemonade instead.`,
+          `${a} bets ${b} won't ride the Gravitron. ${b} politely values ${b}'s stomach more than ${b}'s pride. No hard feelings.`,
+        ];
+        events.push({ type: 'rideDare', players: [a, b], badgeText: 'HARD PASS', badgeClass: '', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    } else if (eventType === 'funhouse') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.2 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      addBond(a, b, 0.5);
+      const lines = [
+        `${a} and ${b} get lost in the mirror maze and give up trying to escape, just narrating their own distorted reflections until security fishes them out.`,
+        `A mechanical clown lunges out of the funhouse dark and ${a} shrieks and grabs ${b}. They laugh about it for the rest of the night.`,
+        `${a} and ${b} go through the funhouse backwards for no reason and befriend the bored guy running it. Now they have an inside man.`,
+        `The tilted room in the funhouse defeats ${a} completely. ${b} has to drag ${a} out by the collar, both of them wheezing.`,
+      ];
+      events.push({ type: 'funhouse', players: [a, b], badgeText: 'FUNHOUSE', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+
+    } else if (eventType === 'carnivalTreat') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.2 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + 2));
+      if (Math.random() < 0.5) {
+        addBond(a, b, 0.5);
+        const lines = [
+          `${a} splurges the last tickets on a funnel cake and splits it with ${b}. Powdered sugar everywhere, zero regrets.`,
+          `${a} and ${b} share a corn dog of dubious origin and rate it far too highly. Carnival food hits different at midnight.`,
+          `${a} wins a candy apple at the ring toss and hands it straight to ${b}. Small thing. ${b} keeps the stick.`,
+        ];
+        events.push({ type: 'carnivalTreat', players: [a, b], badgeText: 'SWEET TOOTH', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        addBond(a, b, -0.3);
+        const lines = [
+          `The snack stand's "meat" is a mystery even to the vendor. ${a} dares ${b} to finish it; ${b} does, then spends the night regretting everything and blaming ${a}.`,
+          `${a} and ${b} split a corn dog that was clearly fried last season. Neither feels right after, and each says it was the other's idea.`,
+          `The cotton candy is somehow both stale and wet. ${a} gags, ${b} laughs at ${a}, and it curdles into a real spat.`,
+        ];
+        events.push({ type: 'carnivalTreat', players: [a, b], badgeText: 'BAD BATCH', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    // ═══════════════ FILM LOT ═══════════════
+    } else if (eventType === 'craftServices') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.2 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + 2));
+      if (getBond(a, b) >= 0 && Math.random() < 0.55) {
+        addBond(a, b, 0.5);
+        const lines = [
+          `Craft services finally restocks and ${a} and ${b} raid the good snacks together before anyone else wakes up. Loot split evenly, alliance of the stomach sealed.`,
+          `${a} saves ${b} the last real coffee from the catering table. On a film lot, that's practically a blood oath.`,
+          `${a} and ${b} build absurd sandwiches from the craft-services spread and hold a private tasting. It's the best either has felt all week.`,
+        ];
+        events.push({ type: 'craftServices', players: [a, b], badgeText: 'CRAFT SERVICES', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        addBond(a, b, -0.4);
+        const lines = [
+          `The craft-services table runs dry and ${a} finds out ${b} took the last of everything. On an empty lot, that's a declaration of war.`,
+          `${a} was saving that donut. ${b} ate it. The catering table becomes a battlefield.`,
+          `Nothing's been restocked in days and ${a} catches ${b} hoarding snacks in ${b}'s trailer. The resentment is fully catered.`,
+        ];
+        events.push({ type: 'craftServices', players: [a, b], badgeText: "TABLE'S BARE", badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    } else if (eventType === 'stuntWrong') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).boldness * 0.3 + pStats(n).physical * 0.2 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      const nailedIt = pStats(a).physical + pStats(a).boldness * 0.5 + (Math.random() - 0.5) * 6 >= 8;
+      if (nailedIt) {
+        addBond(a, b, 0.4);
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[a] = (gs.popularity[a] || 0) + 0.6;
+        const lines = [
+          `${a} takes on an old stunt rig left on the lot and absolutely nails the landing. ${b} filmed the whole thing. It's going to be replayed for weeks.`,
+          `The wire gag looks lethal. ${a} does it anyway, sticks it clean, and takes a bow. ${b} leads the applause.`,
+          `${a} rides the runaway prop cart down the back lot and dismounts like an action hero. ${b} can't believe ${a} survived. Neither can ${a}.`,
+        ];
+        events.push({ type: 'stuntWrong', players: [a, b], badgeText: 'TAKE ONE', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        addBond(a, b, 0.6);
+        const lines = [
+          `${a} tries a stunt off the old set and it goes wrong fast. ${b} is first to reach ${a}, hauls ${a} up, checks ${a} over. ${a} won't forget who showed up.`,
+          `The prop rig collapses mid-stunt and ${a} goes down hard. ${b} drops everything to help. Bruised pride, deepened bond.`,
+          `${a}'s big stunt ends in a heap of collapsed scenery. ${b} digs ${a} out, more worried than ${b} expected to be.`,
+        ];
+        events.push({ type: 'stuntWrong', players: [a, b], badgeText: 'CUT!', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    } else if (eventType === 'trailerEnvy') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.3 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const jealous = wRandom(others, n => Math.max(0.1, (3 - getBond(a, n)) * 0.4 + pStats(n).boldness * 0.1 + 1));
+      addBond(jealous, a, -0.5);
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[a] = (gs.popularity[a] || 0) + 0.3;
+      const lines = [
+        `${a} somehow scored the star trailer with the working A/C while everyone else shares a hot double-wide. ${jealous} has done the math and does not like the result.`,
+        `Production keeps treating ${a} like the lead — private trailer, name on the door. ${jealous} is stuck in the shared unit and stewing.`,
+        `${a} gets the trailer with the couch and the mini-fridge. ${jealous} gets a folding chair. The set has a class system now, and ${jealous} is on the wrong side.`,
+      ];
+      events.push({ type: 'trailerEnvy', players: [jealous, a], badgeText: 'STAR TREATMENT', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+
+    // ═══════════════ WORLD TOUR ═══════════════
+    } else if (eventType === 'classDivide') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.2 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + 2));
+      addBond(a, b, 0.5);
+      const lines = [
+        `Stuck back in economy class while the winners lounge up front, ${a} and ${b} split a stale pretzel and quietly promise each other they'll be the ones behind the curtain next time.`,
+        `The first-class curtain stays shut the whole flight. ${a} and ${b} bond over the shared indignity of the loser cabin — nothing unites people like a common enemy.`,
+        `${a} and ${b} press against the economy divider trying to see what the winners are eating. They can't. They plot instead.`,
+        `A flight attendant waves ${a} and ${b} back from the first-class aisle. Humiliated together, they trade seats to sit next to each other and scheme.`,
+      ];
+      events.push({ type: 'classDivide', players: [a, b], badgeText: 'LOSER CLASS', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+
+    } else if (eventType === 'jetLag') {
+      const a = _pick(group, n => Math.max(0.1, (10 - pStats(n).endurance) * 0.3 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + 2));
+      if (pStats(b).loyalty >= 5 || getBond(a, b) >= 1) {
+        addBond(a, b, 0.5);
+        const lines = [
+          `Three time zones in two days has wrecked ${a}. ${b} takes ${a}'s shift on the cabin watch without being asked and lets ${a} sleep. Small mercy, long memory.`,
+          `${a} is a jet-lagged zombie and can barely form words. ${b} quietly covers for ${a} all day. ${a} clocks every bit of it.`,
+          `${a} hasn't slept since the last set. ${b} makes ${a} lie down and stands guard over the seat. Loyalty, at 30,000 feet.`,
+        ];
+        events.push({ type: 'jetLag', players: [a, b], badgeText: 'RUNNING ON EMPTY', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        addBond(a, b, -0.4);
+        const lines = [
+          `Jet-lagged and raw, ${a} snaps at ${b} over the armrest, the window shade, everything. It's the exhaustion talking — but ${b} hears it anyway.`,
+          `${a} hasn't slept in what feels like days and takes it out on ${b} across the aisle. Nobody's at their best at this altitude.`,
+          `${a} is too tired to be kind and ${b} is the nearest target. The bickering lasts the whole flight.`,
+        ];
+        events.push({ type: 'jetLag', players: [a, b], badgeText: 'FRAYED', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    } else if (eventType === 'planeFood') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.2 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + 2));
+      if (Math.random() < 0.55) {
+        addBond(a, b, 0.5);
+        const lines = [
+          `Economy gets a foil tray of something beige and unidentifiable. ${a} and ${b} trade the edible bits back and forth and make a whole bit out of it.`,
+          `The drink cart skips their row entirely. ${a} and ${b} split one warm soda and toast to better days up front.`,
+          `${a} saves ${b} the only roll that isn't rock-hard. On this flight, that's romance-adjacent.`,
+        ];
+        events.push({ type: 'planeFood', players: [a, b], badgeText: 'TRAY TABLE', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        addBond(a, b, -0.3);
+        const lines = [
+          `There's one hot meal left on the cart and both ${a} and ${b} want it. The flight attendant gives it to first class. Now they're mad at each other instead.`,
+          `${a} takes the last edible tray and ${b} gets the mystery fish. The pettiness reaches cruising altitude.`,
+          `${a} and ${b} argue over whose turn it was for the window seat AND the good snack. Neither wins. The cabin gets colder than the food.`,
+        ];
+        events.push({ type: 'planeFood', players: [a, b], badgeText: 'CART FIGHT', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
       }
     }
   }

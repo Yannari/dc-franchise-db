@@ -772,6 +772,7 @@ export function saveConfig() {
     replacementOnMedevac: g('cfg-replacement')?.checked ?? false,
     rewardSharing: g('cfg-reward-sharing')?.checked ?? false,
     host:        g('cfg-host')?.value || 'Chris',
+    setting:     g('cfg-setting')?.value || 'hosted-camp',
     advantages: Object.fromEntries(ADVANTAGES.map(a => {
       if (a.key === 'idol') {
         const en = g('adv-idol-enabled');
@@ -882,6 +883,7 @@ export function renderConfig() {
   if (_rsRow) _rsRow.style.display = _fwOn ? '' : 'none';
   if (_rsDesc) _rsDesc.style.display = _fwOn ? '' : 'none';
   set('cfg-host', seasonConfig.host || 'Chris');
+  set('cfg-setting', seasonConfig.setting || 'hosted-camp');
   // Aftermath
   set('cfg-aftermath', seasonConfig.aftermath || 'disabled');
   set('cfg-fan-vote-frequency', seasonConfig.fanVoteFrequency || 'disabled');

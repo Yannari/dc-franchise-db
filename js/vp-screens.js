@@ -25,6 +25,7 @@ import { rpBuildOceansHeistTitleCard, rpBuildOceansHeistVault, rpBuildOceansHeis
 import { rpBuildMillionBucksBCTitleCard, rpBuildMillionBucksBCFire, rpBuildMillionBucksBCBreak, rpBuildMillionBucksBCBattle, rpBuildMillionBucksBCResults, millionBucksBCRevealNext, millionBucksBCRevealAll } from './chal/million-bucks-bc.js';
 import { rpBuildSportsMarathonTitleCard, rpBuildSportsMarathonObstacle, rpBuildSportsMarathonHalftime, rpBuildSportsMarathonSports, rpBuildSportsMarathonResults, sportsMarathonRevealNext, sportsMarathonRevealAll } from './chal/sports-marathon.js';
 import { rpBuildSuperHeroldTitleCard, rpBuildSuperHeroldCostume, rpBuildSuperHeroldPrizes, rpBuildSuperHeroldRound1, rpBuildSuperHeroldRound2, rpBuildSuperHeroldRound, rpBuildSuperHeroldBoss, superHeroldRevealNext, superHeroldRevealAll } from './chal/super-hero-ld.js';
+import { rpBuildHauntedTitleCard, rpBuildHauntedLibrary, rpBuildHauntedKeys, rpBuildHauntedBoss, hauntedRevealNext, hauntedRevealAll } from './chal/haunted-house.js';
 import { rpBuildPrincessPrideTitleCard, rpBuildPrincessPrideCeremony, rpBuildPrincessPrideForest, rpBuildPrincessPrideBridge, rpBuildPrincessPrideDragon, rpBuildPrincessPrideTower, rpBuildPrincessPrideDuel, princessPrideRevealNext, princessPrideRevealAll } from './chal/princess-pride.js';
 import { rpBuildGetAClueTitleCard, rpBuildGetAClueCollection, rpBuildGetAClueTrain, rpBuildGetAClueTrial, rpBuildGetAClueVerdict, getAClueRevealNext, getAClueRevealAll } from './chal/get-a-clue.js';
 import { rpBuildRockNRuleTitleCard, rpBuildRockNRuleGuitar, rpBuildRockNRuleCarpet, rpBuildRockNRuleHotel, rpBuildRockNRuleResults, rockNRuleRevealNext, rockNRuleRevealAll } from './chal/rock-n-rule.js';
@@ -12383,6 +12384,11 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:`sh-round${i+1}`, label: brRounds[i].label || `Round ${i+1}`, html: rpBuildSuperHeroldRound(ep, i) });
     }
     vpScreens.push({ id:'sh-boss', label:'Boss Fight', html: rpBuildSuperHeroldBoss(ep) });
+  } else if ((ep.isHauntedHouse || ep.challengeType === 'haunted-house') && ep.hauntedHouse) {
+    vpScreens.push({ id:'hh-title', label:'Haunted House', html: rpBuildHauntedTitleCard(ep) });
+    vpScreens.push({ id:'hh-library', label:'The Library', html: rpBuildHauntedLibrary(ep) });
+    vpScreens.push({ id:'hh-keys', label:'Three Keys', html: rpBuildHauntedKeys(ep) });
+    vpScreens.push({ id:'hh-boss', label:'The Doll', html: rpBuildHauntedBoss(ep) });
   } else if ((ep.isPrincessPride || ep.challengeType === 'princess-pride') && ep.princessPride) {
     vpScreens.push({ id:'pp-title', label:'The Princess Pride', html: rpBuildPrincessPrideTitleCard(ep) });
     vpScreens.push({ id:'pp-ceremony', label:'Glass Slipper', html: rpBuildPrincessPrideCeremony(ep) });

@@ -41,6 +41,7 @@ import { _textOceansHeist } from './chal/oceans-heist.js';
 import { _textMillionBucksBC } from './chal/million-bucks-bc.js';
 import { _textSportsMarathon } from './chal/sports-marathon.js';
 import { _textSuperHerold, rpBuildSuperHeroldTitleCard, rpBuildSuperHeroldCostume, rpBuildSuperHeroldPrizes, rpBuildSuperHeroldRound, rpBuildSuperHeroldBoss } from './chal/super-hero-ld.js';
+import { rpBuildHauntedTitleCard, rpBuildHauntedLibrary, rpBuildHauntedKeys, rpBuildHauntedBoss } from './chal/haunted-house.js';
 import { _textPrincessPride, rpBuildPrincessPrideTitleCard, rpBuildPrincessPrideCeremony, rpBuildPrincessPrideForest, rpBuildPrincessPrideBridge, rpBuildPrincessPrideDragon, rpBuildPrincessPrideTower, rpBuildPrincessPrideDuel } from './chal/princess-pride.js';
 import { _textGetAClue, rpBuildGetAClueTitleCard, rpBuildGetAClueCollection, rpBuildGetAClueTrain, rpBuildGetAClueTrial, rpBuildGetAClueVerdict } from './chal/get-a-clue.js';
 import { _textRockNRule, rpBuildRockNRuleTitleCard, rpBuildRockNRuleGuitar, rpBuildRockNRuleCarpet, rpBuildRockNRuleHotel, rpBuildRockNRuleResults } from './chal/rock-n-rule.js';
@@ -2832,6 +2833,11 @@ export function generateSummaryText(ep) {
     shBuilders.push(rpBuildSuperHeroldBoss);
     _textTwistChallenge(ep, ln, sec, 'superHerold', 'SUPER HERO-LD', shBuilders);
   } else _textSuperHerold(ep, ln, sec);
+  if (ep.hauntedHouse) {
+    _textTwistChallenge(ep, ln, sec, 'hauntedHouse', 'HAUNTED HOUSE', [
+      rpBuildHauntedTitleCard, rpBuildHauntedLibrary, rpBuildHauntedKeys, rpBuildHauntedBoss,
+    ]);
+  }
   if (ep.princessPride) {
     _textTwistChallenge(ep, ln, sec, 'princessPride', 'THE PRINCESS PRIDE', [
       rpBuildPrincessPrideTitleCard, rpBuildPrincessPrideCeremony,

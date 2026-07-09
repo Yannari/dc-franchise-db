@@ -1512,6 +1512,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
     }
     ep.isSuperHerold = true;
 
+  } else if (engineType === 'haunted-house') {
+    ep.isHauntedHouse = true;
+
   } else if (engineType === 'princess-pride') {
     ep.isPrincessPride = true;
 
@@ -3977,7 +3980,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'sudden-death': 'isSuddenDeath', 'slasher-night': 'isSlasherNight', 'triple-dog-dare': 'isTripleDogDare',
         'say-uncle': 'isSayUncle', 'brunch-of-disgustingness': 'isBrunchOfDisgustingness',
         'monster-cash': 'isMonsterCash', 'mine-over-matter': 'isMineOverMatter', 'treasure-island': 'isTreasureIsland', 'operation-classified': 'isOperationClassified',
-        'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride',
+        'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride', 'haunted-house': 'isHauntedHouse',
         'get-a-clue': 'isGetAClue', 'rock-n-rule': 'isRockNRule',
         'crouching-courtney': 'isCrouchingCourtney', 'houston': 'isHouston', 'top-dog': 'isTopDog',
         'walk-like-an-egyptian': 'isWalkEgypt', 'crazy-fun-time': 'isCrazyFunTime',

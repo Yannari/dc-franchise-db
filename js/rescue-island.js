@@ -768,13 +768,16 @@ export const RESCUE_RETURN_PHASES = [
 // Runs the gauntlet, eliminating worst performer(s) phase by phase with farewells.
 // Pure of game-state side effects except popularity + Edge-tracking cleanup; the caller
 // (episode.js) handles re-entry, jury, and riPlayers mutation.
-export function simulateRescueReturnChallenge(riPlayers, epNum) {
+export function simulateRescueReturnChallenge(riPlayers, epNum, returnCount = 1) {
   if (!gs.riWellbeing) gs.riWellbeing = {};
   if (!gs.riTraining) gs.riTraining = {};
   if (!gs.riWinStreak) gs.riWinStreak = {};
   if (!gs.riMentalState) gs.riMentalState = {};
 
   const all = [...riPlayers];
+  // How many survive the gauntlet together (DC4 brought back TWO at once). Always leave
+  // at least one loser so the gauntlet actually eliminates someone.
+  const rc = Math.max(1, Math.min(returnCount, Math.max(1, all.length - 1)));
   let phaseDefs = RESCUE_RETURN_PHASES;
   if (all.length <= 2) phaseDefs = [RESCUE_RETURN_PHASES[0], RESCUE_RETURN_PHASES[2], RESCUE_RETURN_PHASES[4]];
 
@@ -789,8 +792,9 @@ export function simulateRescueReturnChallenge(riPlayers, epNum) {
   let remaining = [...all];
   const phases = [];
   const eliminations = [];
+  let lastScores = {};
 
-  for (let pi = 0; pi < phaseDefs.length && remaining.length > 1; pi++) {
+  for (let pi = 0; pi < phaseDefs.length && remaining.length > rc; pi++) {
     const pd = phaseDefs[pi];
     const scores = {};
     remaining.forEach(name => {
@@ -799,6 +803,7 @@ export function simulateRescueReturnChallenge(riPlayers, epNum) {
       const meterMod = (w[pd.meter] / 100 - 0.5) * 2.0;   // ±1.0 from the matching meter
       scores[name] = s[pd.stat] + _getTrainingBonus(name, pd.stat) + meterMod + _noise(3.0);
     });
+    lastScores = scores;
 
     // Give-up override — a competitor near breakdown may collapse early (phases 1–2)
     let gaveUpName = null;
@@ -808,16 +813,16 @@ export function simulateRescueReturnChallenge(riPlayers, epNum) {
       }
     }
 
-    // Size the cut so the gauntlet reduces to EXACTLY ONE survivor by the final phase.
-    // (Fixed cuts of 1-2 left several players standing after the last stage, and the winner
+    // Size the cut so the gauntlet reduces to EXACTLY `rc` survivor(s) by the final phase.
+    // (Fixed cuts left several players standing after the last stage, and the winner
     // then defaulted to remaining[0] — arbitrary list order, not merit.)
     const _phasesLeft = phaseDefs.length - pi;
-    let cut = Math.ceil((remaining.length - 1) / _phasesLeft);
-    cut = Math.min(cut, remaining.length - 1);   // never empty the pool
+    let cut = Math.ceil((remaining.length - rc) / _phasesLeft);
+    cut = Math.max(0, Math.min(cut, remaining.length - rc));   // never cut below the return count
 
     const ordered = [...remaining].sort((a, b) => scores[a] - scores[b]);
     const cutList = [];
-    if (gaveUpName) cutList.push({ name: gaveUpName, gaveUp: true });
+    if (gaveUpName && cut > 0) cutList.push({ name: gaveUpName, gaveUp: true });
     for (const n of ordered) {
       if (cutList.length >= cut) break;
       if (cutList.some(e => e.name === n)) continue;
@@ -839,11 +844,14 @@ export function simulateRescueReturnChallenge(riPlayers, epNum) {
       scores: { ...scores }, eliminated: cutList.map(e => e.name), events });
   }
 
-  const winner = remaining[0] || all[0];
-  const finalStandings = [winner, ...eliminations.slice().reverse().map(e => e.name)];
+  // Order the survivor(s) best-first by their score in the last contested stage.
+  const winners = (remaining.length ? [...remaining] : [all[0]])
+    .sort((a, b) => (lastScores[b] || 0) - (lastScores[a] || 0));
+  const winner = winners[0];
+  const finalStandings = [...winners, ...eliminations.slice().reverse().map(e => e.name)];
 
   if (!gs.popularity) gs.popularity = {};
-  if (winner) gs.popularity[winner] = (gs.popularity[winner] || 0) + 2;   // fighting back in earns respect
+  winners.forEach(w => { if (w) gs.popularity[w] = (gs.popularity[w] || 0) + 2; });   // fighting back in earns respect
 
   // The gauntlet is over — everyone leaves the Edge. Clean Edge tracking for all competitors.
   all.forEach(n => {
@@ -852,7 +860,7 @@ export function simulateRescueReturnChallenge(riPlayers, epNum) {
     if (gs.riActionLog) delete gs.riActionLog[n];
   });
 
-  return { winner, finalStandings, phases, eliminations, snapshot, competitors: all };
+  return { winner, winners, returnCount: rc, finalStandings, phases, eliminations, snapshot, competitors: all };
 }
 
 // ══════════════════════════════════════════════════════════════════════

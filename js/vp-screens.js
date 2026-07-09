@@ -5525,6 +5525,7 @@ function _rpRescueReturnRich(ep) {
   const suffix = `${epNum}`;
   const key = `rr-${epNum}`;
   const winner = rr.winner;
+  const winners = (rr.winners && rr.winners.length) ? rr.winners : [winner];
   const competitors = rr.competitors || [winner];
   const snap = rr.snapshot || {};
   const phases = rr.phases || [];
@@ -5538,7 +5539,7 @@ function _rpRescueReturnRich(ep) {
   <div id="rr-wrap-${suffix}" class="rp-page tod-deepnight">
     <div class="rp-eyebrow">Episode ${epNum} — Edge of Extinction</div>
     <div style="font-family:var(--font-display);font-size:30px;letter-spacing:3px;text-align:center;margin:4px 0 2px;color:#e3b341">THE RETURN</div>
-    <div style="text-align:center;font-size:13px;color:#cdd9e5;margin-bottom:4px">${competitors.length} castaway${competitors.length!==1?'s':''} who refused to quit face a five-stage gauntlet for one way back in.</div>
+    <div style="text-align:center;font-size:13px;color:#cdd9e5;margin-bottom:4px">${competitors.length} castaway${competitors.length!==1?'s':''} who refused to quit face a five-stage gauntlet for ${winners.length>1?`${winners.length} ways`:'one way'} back in.</div>
     <div style="text-align:center;font-size:11px;color:#8b949e;margin-bottom:16px">Reveal the stages one at a time. How they spent their days on the Edge decides everything.</div>
     <div style="font-family:var(--font-display);font-size:13px;color:#e3b341;letter-spacing:1px;margin-bottom:8px">CONDITION AT THE STARTING LINE</div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px">`;
@@ -5577,15 +5578,19 @@ function _rpRescueReturnRich(ep) {
     html += `</div></div>`;
   });
 
-  const wPr = pronouns(winner);
-  html += `<div class="rr-step" id="rr-step-${suffix}-${phases.length}"><div class="vp-card" style="border-color:rgba(227,179,65,0.4);box-shadow:0 0 16px rgba(227,179,65,0.15);margin-top:6px">
-    <div style="display:flex;align-items:center;gap:12px">
-      <div style="border-radius:50%;overflow:hidden;border:3px solid #e3b341;box-shadow:0 0 12px rgba(227,179,65,0.4)">${rpPortrait(winner,'lg')}</div>
+  const _standLabel = winners.length > 1 ? `LAST ${winners.length === 2 ? 'TWO' : winners.length} STANDING` : 'LAST ONE STANDING';
+  const _winnerCards = winners.map(w => {
+    const wPr = pronouns(w);
+    return `<div style="display:flex;align-items:center;gap:12px;margin:6px 0">
+      <div style="border-radius:50%;overflow:hidden;border:3px solid #e3b341;box-shadow:0 0 12px rgba(227,179,65,0.4)">${rpPortrait(w,'lg')}</div>
       <div style="flex:1">
-        <div style="font-size:10px;color:#8b949e;letter-spacing:1px">LAST ONE STANDING</div>
-        <div style="font-family:var(--font-display);font-size:22px;color:#e3b341;margin:2px 0">${winner}</div>
+        <div style="font-family:var(--font-display);font-size:22px;color:#e3b341;margin:2px 0">${w}</div>
         <div style="font-size:12px;color:#cdd9e5;font-style:italic;line-height:1.5">"They sent me to the Edge to break me. Instead I got back up. ${wPr.Sub} ${wPr.sub==='they'?'are':'is'} back in this game."</div>
-        <span class="rp-brant-badge gold" style="margin-top:6px;font-size:10px">RETURNS TO THE GAME</span></div></div></div></div>`;
+        <span class="rp-brant-badge gold" style="margin-top:6px;font-size:10px">RETURNS TO THE GAME</span></div></div>`;
+  }).join('');
+  html += `<div class="rr-step" id="rr-step-${suffix}-${phases.length}"><div class="vp-card" style="border-color:rgba(227,179,65,0.4);box-shadow:0 0 16px rgba(227,179,65,0.15);margin-top:6px">
+    <div style="font-size:10px;color:#8b949e;letter-spacing:1px;margin-bottom:2px">${_standLabel}</div>
+    ${_winnerCards}</div></div>`;
 
   html += `</div>
       <div style="width:170px;flex-shrink:0;position:sticky;top:56px">

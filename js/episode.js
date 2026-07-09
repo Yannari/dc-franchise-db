@@ -1321,15 +1321,14 @@ export function simulateEpisode() {
     ep.isRIReentry = true;
     if (cfg.riFormat === 'rescue') {
       const _rescuePlayers = [...gs.riPlayers];
-      const _rr = simulateRescueReturnChallenge(_rescuePlayers, epNum);
-      // How many rejoin from THIS return challenge (cfg.riReturnPerEvent, default 1). The top N
-      // of the return challenge's final standings all come back together — e.g. DC4's two
-      // Rescue Island returnees rejoining at the same time. Always leave at least one loser.
+      // How many rejoin from THIS return challenge (cfg.riReturnPerEvent, default 1) — e.g. DC4's
+      // two Rescue Island returnees rejoining at the same time. The gauntlet is told to leave that
+      // many LAST-STANDING survivors (all crowned as returning), never eliminating below it.
       const _perEvent = Math.max(1, Math.min(cfg.riReturnPerEvent || 1, _rescuePlayers.length - 1));
-      const _standings = (_rr.finalStandings && _rr.finalStandings.length)
-        ? _rr.finalStandings
-        : [_rr.winner, ..._rescuePlayers.filter(p => p !== _rr.winner)];
-      const winners = _standings.slice(0, _perEvent);
+      const _rr = simulateRescueReturnChallenge(_rescuePlayers, epNum, _perEvent);
+      const winners = (_rr.winners && _rr.winners.length)
+        ? _rr.winners.slice(0, _perEvent)
+        : (_rr.finalStandings || [_rr.winner]).slice(0, _perEvent);
       const winner = winners[0]; // primary returnee — VP/stats read the single field for back-compat
       const losers = _rescuePlayers.filter(p => !winners.includes(p));
       ep.riReentrant = winner; ep.riReentrants = winners; ep.riReentryLosers = losers;

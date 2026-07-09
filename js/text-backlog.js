@@ -297,8 +297,9 @@ export function _textReturns(ep, ln, sec) {
   if (ep.isRIReentry && ep.riReentrant) {
     sec('THE CHAMPION RETURNS');
     const _rr = ep.rescueReturn;
+    const _returnees = ep.riReentrants && ep.riReentrants.length ? ep.riReentrants : [ep.riReentrant];
     if (_rr?.phases) {
-      ln(`EDGE OF EXTINCTION — THE RETURN: ${(_rr.competitors||[]).length} castaways who refused to quit fight a five-stage gauntlet for one spot back in the game.`);
+      ln(`EDGE OF EXTINCTION — THE RETURN: ${(_rr.competitors||[]).length} castaways who refused to quit fight a five-stage gauntlet for ${_returnees.length>1?`${_returnees.length} spots`:'one spot'} back in the game.`);
       (_rr.competitors||[]).forEach(n => {
         const sp = (_rr.snapshot||{})[n] || {};
         ln(`  ${n}: ${sp.days||0} day(s) on the Edge — body ${sp.pw??'?'}/100, mind ${sp.mh??'?'}/100, +${(sp.bonus||0).toFixed(1)} banked in training.`);
@@ -308,9 +309,9 @@ export function _textReturns(ep, ln, sec) {
         ln(`STAGE ${i+1} — ${ph.name} (${ph.stat}): ${ordered.map(n => `${n} ${ph.scores[n].toFixed(1)}`).join(', ')}.`);
         (ph.events||[]).forEach(evt => ln(`  ${evt.text}`));
       });
-      ln(`${ep.riReentrant} is the last one standing and returns to the game.`);
+      ln(`${_returnees.join(' and ')} ${_returnees.length>1?'are the last ones':'is the last one'} standing and ${_returnees.length>1?'return':'returns'} to the game.`);
     } else {
-      ln(`${ep.riReentrant} wins the return challenge and rejoins the game.`);
+      ln(`${_returnees.join(' and ')} ${_returnees.length>1?'win':'wins'} the return challenge and ${_returnees.length>1?'rejoin':'rejoins'} the game.`);
     }
     const _ri = ep.riReentry;
     if (_ri?.streakCount >= 2) ln(`Win streak: ${_ri.streakCount} — returns as a perceived threat.`);

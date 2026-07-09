@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poles Apart — VP Mockup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Righteous&family=Nunito:wght@400;600;700;800;900&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', system-ui, sans-serif; color: #123; min-height: 100vh;
+  /* bright beach: sky → sea → sand */
+  background:
+    linear-gradient(180deg, #7ec8f0 0%, #a8e0f5 30%, #ffe9a8 56%, #f5d98a 100%);
+  background-attachment: fixed; overflow-x: hidden;
+}
+/* ambient: sun + gulls + heat shimmer */
+.pa-sun { position: fixed; top: 34px; right: 8%; width: 90px; height: 90px; border-radius: 50%;
+  background: radial-gradient(circle, #fff6c0, #ffd75e 60%, transparent 72%); box-shadow: 0 0 60px 20px rgba(255,220,90,.45); z-index: 0; animation: paSun 6s ease-in-out infinite; }
+@keyframes paSun { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.05); } }
+.pa-gull { position: fixed; font-size: 16px; color: #33506a; z-index: 0; opacity: .5; animation: paGull 14s linear infinite; }
+@keyframes paGull { from{ transform: translateX(-40px); } to{ transform: translateX(105vw); } }
+@media(prefers-reduced-motion:reduce){ .pa-sun,.pa-gull{ animation: none; } }
+
+.pa-shell { max-width: 1120px; margin: 0 auto; padding: 14px 14px 130px; position: relative; z-index: 1; }
+.pa-hero { text-align: center; padding: 8px 0 12px; }
+.pa-eyebrow { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #0a6ba8; font-weight: 800; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+.pa-title { font-family: 'Righteous', cursive; font-size: clamp(34px, 6.5vw, 60px); line-height: 1; letter-spacing: 1px; margin-top: 4px;
+  color: #fff; text-shadow: 0 2px 0 #0a6ba8, 0 4px 0 #075a8e, 0 6px 14px rgba(0,0,0,.25); }
+.pa-sub { font-size: 13px; color: #0b4c72; margin-top: 8px; font-weight: 600; }
+
+/* avatar */
+.pa-pf { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; overflow: hidden; position: relative; flex-shrink: 0; vertical-align: middle; border: 2px solid #fff; background: #cbe; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.pa-pf img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pa-pf b { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; font-family: 'Righteous'; font-size: 10px; color: #fff; }
+.pa-pf.sm { width: 24px; height: 24px; } .pa-pf.sm b { font-size: 9px; }
+.pa-pf.md { width: 34px; height: 34px; }
+.pa-pf.lg { width: 48px; height: 48px; border-width: 3px; }
+
+/* ── SCOREBOARD (sticky): best-of-3 round pips + team names ── */
+.pa-score { position: sticky; top: 8px; z-index: 6; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+  background: rgba(255,255,255,.82); backdrop-filter: blur(8px); border: 2px solid rgba(255,255,255,.9); border-radius: 16px; padding: 10px 16px; box-shadow: 0 6px 20px rgba(11,76,114,.2); margin-bottom: 16px; }
+.pa-score-team { display: flex; align-items: center; gap: 8px; font-family: 'Righteous'; font-size: 18px; }
+.pa-score-team.right { justify-content: flex-end; }
+.pa-pips { display: flex; gap: 5px; }
+.pa-pip { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(0,0,0,.15); background: rgba(255,255,255,.5); }
+.pa-pip.won-red { background: #e0524a; border-color: #b83a33; box-shadow: 0 0 8px rgba(224,82,74,.5); }
+.pa-pip.won-blue { background: #4a86e0; border-color: #3466b8; box-shadow: 0 0 8px rgba(74,134,224,.5); }
+.pa-vs { font-family: 'Righteous'; font-size: 22px; color: #0a6ba8; text-shadow: 0 1px 0 #fff; }
+.pa-round-label { grid-column: 1 / -1; text-align: center; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #0b4c72; font-weight: 800; margin-top: 2px; }
+
+/* ── BATTLEFIELD: the sand arena with poles + center line ── */
+.pa-arena { position: relative; height: 150px; border-radius: 14px; overflow: hidden; margin-bottom: 16px;
+  background: linear-gradient(180deg, #ffe9a8, #f0cf7e); border: 2px solid #e0b95e; box-shadow: inset 0 0 30px rgba(180,130,40,.25); }
+.pa-arena-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; transform: translateX(-50%); background: repeating-linear-gradient(180deg, #d8532e 0 8px, transparent 8px 16px); opacity: .7; }
+.pa-arena-label { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); font-size: 8px; letter-spacing: 1px; color: #b8642a; font-weight: 800; }
+.pa-side-tag { position: absolute; top: 6px; font-family: 'Righteous'; font-size: 11px; opacity: .7; }
+.pa-side-tag.l { left: 8px; color: #b83a33; } .pa-side-tag.r { right: 8px; color: #3466b8; }
+/* a pole with a holder */
+.pa-pole { position: absolute; bottom: 14px; display: flex; flex-direction: column; align-items: center; transition: left .6s cubic-bezier(.5,0,.3,1); }
+.pa-pole-stick { width: 5px; height: 46px; background: linear-gradient(180deg, #c9a15a, #8a6a30); border-radius: 3px; box-shadow: 1px 0 2px rgba(0,0,0,.2); }
+.pa-pole .pa-pf { margin-bottom: -6px; z-index: 2; }
+.pa-holder-nm { font-size: 8px; font-weight: 800; margin-top: 2px; color: #123; background: rgba(255,255,255,.7); padding: 0 4px; border-radius: 3px; }
+.pa-pole.downed { opacity: .4; filter: grayscale(.7); }
+.pa-pole.downed .pa-holder-nm::after { content: ' ✗'; color: #d8532e; }
+/* a puller marker (small, advancing) */
+.pa-puller { position: absolute; bottom: 20px; width: 20px; height: 20px; border-radius: 50%; transform: translateX(-50%); transition: left .6s; z-index: 1; opacity: .9; }
+
+/* body */
+.pa-body { display: grid; grid-template-columns: 1fr 290px; gap: 16px; }
+@media(max-width: 860px){ .pa-body{ grid-template-columns: 1fr; } }
+
+.pa-card { background: rgba(255,255,255,.9); border: 1px solid rgba(11,76,114,.12); border-radius: 13px; padding: 12px 14px; margin-bottom: 11px; box-shadow: 0 4px 12px rgba(11,76,114,.12); animation: paIn .4s cubic-bezier(.22,1,.36,1) both; }
+@keyframes paIn { from{ opacity: 0; transform: translateY(14px); } to{ opacity: 1; transform: none; } }
+.pa-card-head { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; flex-wrap: wrap; }
+.pa-badge { font-size: 9px; font-weight: 900; letter-spacing: 1px; padding: 3px 9px; border-radius: 5px; color: #fff; }
+.b-round { background: #0a6ba8; } .b-grab { background: #e0894a; } .b-down { background: #d8532e; }
+.b-resist { background: #2ba36a; } .b-escape { background: #7a5ad0; } .b-win { background: #e0a91a; }
+.pa-card-body { display: flex; align-items: flex-start; gap: 11px; }
+.pa-card-txt { font-size: 13.5px; line-height: 1.5; color: #1a2b38; }
+.pa-card-txt b { color: #0a6ba8; }
+.pa-card-meta { font-size: 11px; color: #5a7488; margin-top: 5px; }
+.pa-actor { position: relative; flex-shrink: 0; }
+.pa-actor-badge { position: absolute; bottom: -5px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 2px solid #e0b95e; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.pa-actor-duo { display: flex; } .pa-actor-duo .pa-pf { margin-left: -10px; } .pa-actor-duo .pa-pf:first-child { margin-left: 0; }
+
+/* lineup card */
+.pa-lineup { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media(max-width:560px){ .pa-lineup{ grid-template-columns: 1fr; } }
+.pa-lineup-team { background: rgba(11,76,114,.05); border-radius: 10px; padding: 9px 10px; }
+.pa-lineup-role { display: flex; align-items: center; gap: 6px; font-size: 12px; margin: 4px 0; }
+.pa-role-tag { font-size: 8px; font-weight: 900; padding: 1px 5px; border-radius: 4px; margin-left: auto; color: #fff; }
+
+/* social */
+.pa-social { border: 1px dashed rgba(214,120,180,.5); background: rgba(255,240,248,.85); }
+.b-romance { background: #e05a96; } .b-alliance { background: #3aa85a; } .b-suspect { background: #d87a4a; }
+
+/* sidebar */
+.pa-side { align-self: start; position: sticky; top: 8px; display: flex; flex-direction: column; gap: 12px; }
+.pa-side-card { background: rgba(255,255,255,.9); border: 1px solid rgba(11,76,114,.12); border-radius: 13px; padding: 12px; box-shadow: 0 4px 12px rgba(11,76,114,.1); }
+.pa-side-h { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #5a7488; margin-bottom: 9px; font-weight: 800; }
+.pa-side-team { margin-bottom: 12px; }
+.pa-side-team-bar { display: flex; align-items: center; justify-content: space-between; padding: 5px 9px; border-radius: 8px; font-weight: 800; font-size: 12px; margin-bottom: 5px; color: #fff; }
+.pa-side-row { display: flex; align-items: center; gap: 7px; font-size: 11.5px; padding: 3px 6px; color: #1a2b38; }
+.pa-side-dot { width: 7px; height: 7px; border-radius: 50%; margin-left: auto; }
+.pa-legend { font-size: 10px; color: #5a7488; display: flex; flex-wrap: wrap; gap: 5px 10px; padding-top: 8px; border-top: 1px solid rgba(11,76,114,.1); }
+.pa-legend span { display: flex; align-items: center; gap: 4px; }
+
+/* controls */
+.pa-controls { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; gap: 10px; align-items: center;
+  background: rgba(255,255,255,.94); border: 2px solid #fff; border-radius: 14px; padding: 10px 14px; box-shadow: 0 8px 24px rgba(11,76,114,.3); }
+.pa-btn { font-family: 'Nunito'; font-weight: 800; font-size: 13px; border: none; border-radius: 10px; padding: 10px 18px; cursor: pointer; color: #fff;
+  background: linear-gradient(135deg, #ffb02e, #f08a2a); display: flex; align-items: center; gap: 6px; box-shadow: 0 3px 10px rgba(240,138,42,.4); }
+.pa-btn.ghost { background: linear-gradient(135deg, #7aa0b8, #5a7d96); }
+.pa-counter { font-family: 'Righteous'; font-size: 13px; color: #0a6ba8; }
+
+/* results */
+.pa-result-row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 11px; margin-bottom: 8px; border-left: 5px solid; }
+.pa-rank { font-family: 'Righteous'; font-size: 20px; width: 30px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="pa-sun"></div>
+<div class="pa-gull" style="top:80px;animation-delay:0s">〰️</div>
+<div class="pa-gull" style="top:120px;animation-delay:6s">〰️</div>
+
+<div class="pa-shell">
+  <div class="pa-hero">
+    <div class="pa-eyebrow">Carnival of Chaos · Immunity Challenge</div>
+    <div class="pa-title">POLES APART</div>
+    <div class="pa-sub">Three grip the poles; the rest drag the rivals across the line. Down all three enemy holders to take the round — best of three wins immunity.</div>
+  </div>
+
+  <!-- ══ SCOREBOARD ══ -->
+  <div class="pa-score">
+    <div class="pa-score-team" style="color:#e0524a">
+      <span class="pa-pf md" style="background:#e0524a"><img src="assets/avatars/julia.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>RE</b></span> RED
+      <div class="pa-pips"><span class="pa-pip won-red"></span><span class="pa-pip"></span><span class="pa-pip"></span></div>
+    </div>
+    <div class="pa-vs">VS</div>
+    <div class="pa-score-team right" style="color:#4a86e0">
+      <div class="pa-pips"><span class="pa-pip won-blue"></span><span class="pa-pip"></span><span class="pa-pip"></span></div>
+      BLUE <span class="pa-pf md" style="background:#4a86e0"><img src="assets/avatars/anastasia.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>BL</b></span>
+    </div>
+    <div class="pa-round-label">Round 2 of 3 · Red 1 — Blue 1 · win the round to take the lead</div>
+  </div>
+
+  <!-- ══ BATTLEFIELD ══ -->
+  <div class="pa-arena">
+    <div class="pa-side-tag l">RED SIDE</div><div class="pa-side-tag r">BLUE SIDE</div>
+    <div class="pa-arena-line"></div><div class="pa-arena-label">DRAG LINE</div>
+    <!-- red holders (left-ish), blue trying to drag them right -->
+    <div class="pa-pole" style="left:20%"><span class="pa-pf sm" style="background:#e0524a"><img src="assets/avatars/raj.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>RA</b></span><div class="pa-pole-stick"></div><div class="pa-holder-nm">Raj</div></div>
+    <div class="pa-pole" style="left:34%"><span class="pa-pf sm" style="background:#e0524a"><img src="assets/avatars/zaid.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>ZA</b></span><div class="pa-pole-stick"></div><div class="pa-holder-nm">Zaid</div></div>
+    <div class="pa-pole downed" style="left:62%"><span class="pa-pf sm" style="background:#e0524a"><img src="assets/avatars/isabel.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>IS</b></span><div class="pa-pole-stick"></div><div class="pa-holder-nm">Isabel</div></div>
+    <!-- blue holders (right-ish), red dragging them left -->
+    <div class="pa-pole" style="left:80%"><span class="pa-pf sm" style="background:#4a86e0"><img src="assets/avatars/logan.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>LO</b></span><div class="pa-pole-stick"></div><div class="pa-holder-nm">Logan</div></div>
+    <div class="pa-pole" style="left:66%"><span class="pa-pf sm" style="background:#4a86e0"><img src="assets/avatars/marissa.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>MA</b></span><div class="pa-pole-stick"></div><div class="pa-holder-nm">Marissa</div></div>
+    <div class="pa-pole downed" style="left:40%"><span class="pa-pf sm" style="background:#4a86e0"><img src="assets/avatars/natalia.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>NA</b></span><div class="pa-pole-stick"></div><div class="pa-holder-nm">Natalia</div></div>
+    <!-- pullers as small dots -->
+    <div class="pa-puller" style="left:56%;background:#e0524a"></div>
+    <div class="pa-puller" style="left:70%;background:#4a86e0"></div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="pa-body">
+    <div>
+
+      <!-- LINEUP -->
+      <div class="pa-card">
+        <div class="pa-card-head"><span class="pa-badge b-round">🏖️ ROUND 2 · THE LINEUP</span><span style="font-size:11px;color:#5a7488">3 holders per team · Red sits one out</span></div>
+        <div class="pa-lineup">
+          <div class="pa-lineup-team">
+            <div style="font-family:'Righteous';color:#e0524a;font-size:14px;margin-bottom:4px">RED</div>
+            <div class="pa-lineup-role"><span class="pa-pf sm" style="background:#e0524a"><img src="assets/avatars/raj.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>RA</b></span> Raj <span class="pa-role-tag" style="background:#2ba36a">HOLDER · grip 8</span></div>
+            <div class="pa-lineup-role"><span class="pa-pf sm" style="background:#e0524a"><img src="assets/avatars/zaid.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>ZA</b></span> Zaid <span class="pa-role-tag" style="background:#2ba36a">HOLDER · grip 6</span></div>
+            <div class="pa-lineup-role"><span class="pa-pf sm" style="background:#e0524a"><img src="assets/avatars/isabel.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>IS</b></span> Isabel <span class="pa-role-tag" style="background:#2ba36a">HOLDER · grip 5</span></div>
+            <div class="pa-lineup-role"><span class="pa-pf sm" style="background:#e0524a"><img src="assets/avatars/jade.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>JA</b></span> Jade <span class="pa-role-tag" style="background:#e0894a">PULLER · pull 8</span></div>
+            <div class="pa-lineup-role" style="opacity:.55"><span class="pa-pf sm" style="background:#e0524a"><img src="assets/avatars/benji.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>BE</b></span> Benji <span class="pa-role-tag" style="background:#8896a4">SITTING OUT</span></div>
+          </div>
+          <div class="pa-lineup-team">
+            <div style="font-family:'Righteous';color:#4a86e0;font-size:14px;margin-bottom:4px">BLUE</div>
+            <div class="pa-lineup-role"><span class="pa-pf sm" style="background:#4a86e0"><img src="assets/avatars/logan.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>LO</b></span> Logan <span class="pa-role-tag" style="background:#2ba36a">HOLDER · grip 8</span></div>
+            <div class="pa-lineup-role"><span class="pa-pf sm" style="background:#4a86e0"><img src="assets/avatars/marissa.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>MA</b></span> Marissa <span class="pa-role-tag" style="background:#2ba36a">HOLDER · grip 6</span></div>
+            <div class="pa-lineup-role"><span class="pa-pf sm" style="background:#4a86e0"><img src="assets/avatars/natalia.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>NA</b></span> Natalia <span class="pa-role-tag" style="background:#2ba36a">HOLDER · grip 5</span></div>
+            <div class="pa-lineup-role"><span class="pa-pf sm" style="background:#4a86e0"><img src="assets/avatars/spencer.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>SP</b></span> Spencer <span class="pa-role-tag" style="background:#e0894a">PULLER · pull 7</span></div>
+          </div>
+        </div>
+        <div class="pa-card-meta" style="margin-top:8px"><b style="color:#2ba36a">Grip</b> (endurance + physical + grit, /10) = how long a holder resists. <b style="color:#e0894a">Pull</b> (physical + boldness + teamwork, /10) = drag power. Bigger team sits one out each round.</div>
+      </div>
+
+      <!-- GRAB -->
+      <div class="pa-card">
+        <div class="pa-card-head"><span class="pa-badge b-grab">🫳 GRAB</span><span style="font-size:11px;color:#5a7488">Blue on Red · Natalia's pole</span></div>
+        <div class="pa-card-body">
+          <span class="pa-actor"><span class="pa-pf lg" style="background:#4a86e0"><img src="assets/avatars/logan.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>LO</b></span><span class="pa-actor-badge">🫳</span></span>
+          <div>
+            <div class="pa-card-txt"><b>Logan</b> and <b>Spencer</b> latch onto <b>Natalia</b> and start hauling her toward the line, sand spraying under her heels.</div>
+            <div class="pa-card-meta">Combined pull 15 vs Natalia's grip 5 — she's slipping</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESIST (comedic move) -->
+      <div class="pa-card">
+        <div class="pa-card-head"><span class="pa-badge b-resist">💪 RESIST</span><span style="font-size:11px;color:#5a7488">Red · Zaid's pole</span></div>
+        <div class="pa-card-body">
+          <span class="pa-actor"><span class="pa-pf lg" style="background:#e0524a"><img src="assets/avatars/zaid.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>ZA</b></span><span class="pa-actor-badge">🦵</span></span>
+          <div>
+            <div class="pa-card-txt"><b>Zaid</b> wraps both legs around the pole and <b>kicks free</b> of the two pullers on him — they tumble back into the sand empty-handed.</div>
+            <div class="pa-card-meta">Grip 6 + boldness holds · 2 pullers knocked loose · Zaid +0.5 pop (crowd loves it)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ESCAPE (bite/tickle) -->
+      <div class="pa-card">
+        <div class="pa-card-head"><span class="pa-badge b-escape">🏃 SHAKEN LOOSE</span><span style="font-size:11px;color:#5a7488">Red · on Blue's Logan</span></div>
+        <div class="pa-card-body">
+          <div class="pa-actor-duo"><span class="pa-pf lg" style="background:#e0524a"><img src="assets/avatars/isabel.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>IS</b></span><span class="pa-pf lg" style="background:#4a86e0"><img src="assets/avatars/logan.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>LO</b></span></div>
+          <div>
+            <div class="pa-card-txt"><b>Isabel</b> resorts to biting <b>Logan</b>'s leg to break his grip — it almost works, until he yelps, kicks free, and clings back on.</div>
+            <div class="pa-card-meta">Dirty tactic! −0.4 bond Logan/Isabel · Logan survives the grab</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOWN -->
+      <div class="pa-card">
+        <div class="pa-card-head"><span class="pa-badge b-down">❌ DRAGGED ACROSS</span><span style="font-size:11px;color:#5a7488">Blue downs Red's Natalia</span></div>
+        <div class="pa-card-body">
+          <span class="pa-actor"><span class="pa-pf lg" style="background:#4a86e0"><img src="assets/avatars/natalia.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>NA</b></span><span class="pa-actor-badge">❌</span></span>
+          <div>
+            <div class="pa-card-txt">Natalia's grip finally gives — <b>Logan</b> and <b>Spencer</b> haul her across the line. <b>Blue downs 1 of 3.</b></div>
+            <div class="pa-card-meta">Red holders left: 2 · Blue holders left: 3</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOCIAL (throw-the-challenge, straight from transcript flavor) -->
+      <div class="pa-card pa-social">
+        <div class="pa-card-head"><span class="pa-badge b-suspect">🎭 THROWING IT</span><span style="font-size:11px;color:#5a7488">Blue Team</span></div>
+        <div class="pa-card-body">
+          <div class="pa-actor-duo"><span class="pa-pf md" style="background:#4a86e0"><img src="assets/avatars/spencer.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>SP</b></span><span class="pa-pf md" style="background:#4a86e0"><img src="assets/avatars/anastasia.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>AN</b></span></div>
+          <div>
+            <div class="pa-card-txt"><b>Spencer</b> fakes getting overpowered and flops early — but <b>Anastasia</b> sees right through the act. "You're not fooling anyone."</div>
+            <div class="pa-card-meta">−0.5 bond Anastasia/Spencer · Spencer −0.5 pop · Blue loses ground</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROUND WIN -->
+      <div class="pa-card">
+        <div class="pa-card-head"><span class="pa-badge b-win">🏁 ROUND 2 — RED</span><span style="font-size:11px;color:#5a7488">Red downs all 3 Blue holders</span></div>
+        <div class="pa-card-body">
+          <span class="pa-actor"><span class="pa-pf lg" style="background:#e0524a"><img src="assets/avatars/jade.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>JA</b></span><span class="pa-actor-badge">🏁</span></span>
+          <div>
+            <div class="pa-card-txt"><b>Jade</b> chases down the last Blue holder and drags them over the line. <b>Red takes Round 2 — and a 2-1 lead. Immunity!</b></div>
+            <div class="pa-card-meta">Red 2 rounds — Blue 1 · Red wins immunity, Blue heads to tribal</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ SIDEBAR ══ -->
+    <div class="pa-side">
+      <div class="pa-side-card">
+        <div class="pa-side-h">🏖️ Round Status — live</div>
+        <div class="pa-side-team">
+          <div class="pa-side-team-bar" style="background:#e0524a"><span>🔴 RED</span><span style="font-family:'Righteous'">3 holders up</span></div>
+          <div class="pa-side-row"><span class="pa-pf sm" style="background:#e0524a"><img src="assets/avatars/raj.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>RA</b></span> Raj <span style="font-size:9px;color:#2ba36a">holding</span><span class="pa-side-dot" style="background:#2ba36a"></span></div>
+          <div class="pa-side-row"><span class="pa-pf sm" style="background:#e0524a"><img src="assets/avatars/zaid.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>ZA</b></span> Zaid <span style="font-size:9px;color:#2ba36a">holding</span><span class="pa-side-dot" style="background:#2ba36a"></span></div>
+          <div class="pa-side-row"><span class="pa-pf sm" style="background:#e0524a"><img src="assets/avatars/isabel.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>IS</b></span> Isabel <span style="font-size:9px;color:#e0894a">under attack</span><span class="pa-side-dot" style="background:#e0894a"></span></div>
+          <div class="pa-side-row" style="opacity:.7"><span class="pa-pf sm" style="background:#e0524a"><img src="assets/avatars/jade.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>JA</b></span> Jade <span style="font-size:9px;color:#e0894a">puller</span></div>
+        </div>
+        <div class="pa-side-team">
+          <div class="pa-side-team-bar" style="background:#4a86e0"><span>🔵 BLUE</span><span style="font-family:'Righteous'">2 holders up</span></div>
+          <div class="pa-side-row"><span class="pa-pf sm" style="background:#4a86e0"><img src="assets/avatars/logan.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>LO</b></span> Logan <span style="font-size:9px;color:#2ba36a">holding</span><span class="pa-side-dot" style="background:#2ba36a"></span></div>
+          <div class="pa-side-row"><span class="pa-pf sm" style="background:#4a86e0"><img src="assets/avatars/marissa.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>MA</b></span> Marissa <span style="font-size:9px;color:#2ba36a">holding</span><span class="pa-side-dot" style="background:#2ba36a"></span></div>
+          <div class="pa-side-row" style="opacity:.45"><span class="pa-pf sm" style="background:#4a86e0"><img src="assets/avatars/natalia.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>NA</b></span> Natalia <span style="font-size:9px;color:#d8532e">dragged ✗</span><span class="pa-side-dot" style="background:#d8532e"></span></div>
+          <div class="pa-side-row" style="opacity:.7"><span class="pa-pf sm" style="background:#4a86e0"><img src="assets/avatars/spencer.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>SP</b></span> Spencer <span style="font-size:9px;color:#e0894a">puller</span></div>
+        </div>
+        <div class="pa-legend">
+          <span><span class="pa-side-dot" style="background:#2ba36a"></span>holding</span>
+          <span><span class="pa-side-dot" style="background:#e0894a"></span>under attack</span>
+          <span><span class="pa-side-dot" style="background:#d8532e"></span>dragged out</span>
+        </div>
+      </div>
+
+      <div class="pa-side-card">
+        <div class="pa-side-h">🏁 Rounds</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+          <div style="display:flex;justify-content:space-between"><span>Round 1</span><b style="color:#e0524a">RED ✓</b></div>
+          <div style="display:flex;justify-content:space-between"><span>Round 2</span><b style="color:#4a86e0">BLUE ✓</b></div>
+          <div style="display:flex;justify-content:space-between"><span>Round 3</span><b style="color:#0a6ba8">in progress…</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- results -->
+  <div style="margin-top:20px" class="pa-side-card">
+    <div style="font-family:'Righteous';color:#0a6ba8;font-size:16px;margin-bottom:10px">🏆 BEST OF THREE</div>
+    <div class="pa-result-row" style="border-color:#e0524a;background:rgba(224,82,74,.1)">
+      <span class="pa-rank" style="color:#e0524a">1</span>
+      <div style="flex:1"><div style="font-weight:800;color:#e0524a">RED TEAM</div><div style="font-size:11px;color:#5a7488">Won rounds 1 & 3 · Jade's pull carried it</div></div>
+      <span style="font-weight:800;font-size:11px;color:#2ba36a">WINS IMMUNITY</span>
+    </div>
+    <div class="pa-result-row" style="border-color:#4a86e0;background:rgba(74,134,224,.1)">
+      <span class="pa-rank" style="color:#4a86e0">2</span>
+      <div style="flex:1"><div style="font-weight:800;color:#4a86e0">BLUE TEAM</div><div style="font-size:11px;color:#5a7488">Won round 2 · Spencer's thrown effort cost them</div></div>
+      <span style="font-weight:800;font-size:11px;color:#d8532e">GOES TO TRIBAL</span>
+    </div>
+  </div>
+</div>
+
+<div class="pa-controls">
+  <button class="pa-btn">🏖️ Next Beat</button>
+  <span class="pa-counter">7 / 22</span>
+  <button class="pa-btn ghost">Skip to result</button>
+</div>
+</body>
+</html>

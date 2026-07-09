@@ -390,6 +390,7 @@ export function renderEpisodeHistory() {
     const utcTag = ep.isUpTheCreek ? `<span class="ep-hist-tag" style="background:rgba(88,166,255,0.15);color:#58a6ff">Up the Creek</span>` : '';
     const tdtTag = ep.isTruthOrDareTrain ? `<span class="ep-hist-tag" style="background:rgba(224,169,74,0.15);color:#e0a94a">🚂 Truth or Dare Train</span>` : '';
     const amgTag = ep.isAMazeInGrip ? `<span class="ep-hist-tag" style="background:rgba(232,185,68,0.15);color:#e8b944">🌽 A-Maze-ing Grip</span>` : '';
+    const paTag = ep.isPolesApart ? `<span class="ep-hist-tag" style="background:rgba(74,134,224,0.15);color:#4a86e0">🏖️ Poles Apart</span>` : '';
     const phTag = ep.isPaintballHunt ? `<span class="ep-hist-tag" style="background:rgba(63,185,80,0.15);color:#3fb950">Paintball Hunt</span>` : '';
     const hkTag = ep.isHellsKitchen ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">Hell's Kitchen</span>` : '';
     const tcTag = ep.isTrustChallenge ? `<span class="ep-hist-tag" style="background:rgba(56,189,248,0.15);color:#38bdf8">Trust Challenge</span>` : '';
@@ -455,7 +456,7 @@ export function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${mnTag}${tiTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${tdtTag}${amgTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${iibTag}${fcrTag}${baTag}${ptTag}${prwTag}${amhTag}${cocTag}${rtcTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${mnTag}${tiTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${tdtTag}${amgTag}${paTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${iibTag}${fcrTag}${baTag}${ptTag}${prwTag}${amhTag}${cocTag}${rtcTag}</div>
     </div>`;
   }).join('');
 }

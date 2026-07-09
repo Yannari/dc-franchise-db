@@ -144,7 +144,7 @@ export function simulatePolesApart(ep) {
     ep.campEvents[r.name] = ep.campEvents[r.name] || { pre: [], post: [] };
     r.members.forEach(m => { personalScores[m] = 0; });
     return { tribe: r.tribe, name: r.name, color: r.color, members: r.members, ti,
-      roundWins: 0, sitRot: 0, roster: r.members };
+      roundWins: 0, downsDealt: 0, holdersLost: 0, sitRot: 0, roster: r.members };
   });
 
   const _push = (step, bf) => { if (bf) step.bf = bf; steps.push(step); };
@@ -268,6 +268,7 @@ export function simulatePolesApart(ep) {
           target.slip = Math.min(100, target.slip + dmg);
           if (target.slip >= 100) {
             target.downed = true;
+            atk.tref.downsDealt++; targetTeam.tref.holdersLost++;   // tiebreak metrics
             const downer = committed[0];
             personalScores[downer] = (personalScores[downer] || 0) + 3;
             committed.slice(1).forEach(p => { personalScores[p] = (personalScores[p] || 0) + 1.2; });
@@ -351,21 +352,30 @@ export function simulatePolesApart(ep) {
 
   try { _checkShowmanceChalMoment(ep, null, null, personalScores, 'danger', tribes); } catch (e) {}
 
-  // ── RANK: most round wins. tiebreak by total scores ──
+  // ── RANK: most round wins; ties broken by TOTAL RIVALS DRAGGED ACROSS, then
+  //   fewest of your own holders lost, then total scores. All thematic + shown. ──
+  const _tieActive = new Set();
+  const _byWins = {}; teamData.forEach(t => { _byWins[t.roundWins] = (_byWins[t.roundWins] || 0) + 1; });
+  teamData.forEach(t => { if (_byWins[t.roundWins] > 1) _tieActive.add(t.roundWins); });
   teamData.sort((a, b) => (b.roundWins - a.roundWins) ||
+    (b.downsDealt - a.downsDealt) || (a.holdersLost - b.holdersLost) ||
     (b.members.reduce((s, m) => s + (personalScores[m] || 0), 0) - a.members.reduce((s, m) => s + (personalScores[m] || 0), 0)));
   const winner = teamData[0].tribe;
   const loser = teamData[teamData.length - 1].tribe;
   const safeTribes = teamData.slice(1, -1).map(t => t.tribe);
+  // note which placements were decided by the tiebreak (for the VP results screen)
+  const tiebreakWinner = _tieActive.has(teamData[0].roundWins) ? teamData[0].name : null;
+  const tiebreakLoser = _tieActive.has(teamData[teamData.length - 1].roundWins) ? teamData[teamData.length - 1].name : null;
   // winning team finish bonus
   teamData[0].members.forEach(m => { personalScores[m] = (personalScores[m] || 0) + 4; });
 
   ep.polesApart = {
-    teams: teamData.map(t => ({ name: t.name, color: t.color, members: t.members, roundWins: t.roundWins })),
+    teams: teamData.map(t => ({ name: t.name, color: t.color, members: t.members, roundWins: t.roundWins, downsDealt: t.downsDealt, holdersLost: t.holdersLost })),
     rounds: roundResults,
     steps,
     holdersPer: HOLDERS_PER,
     winner: winner.name, loser: loser.name,
+    tiebreakWinner, tiebreakLoser,
   };
   ep.winner = winner;
   ep.loser = loser;
@@ -755,20 +765,23 @@ function _cardActor(s, cls, badge, sub, actorHtml) {
 // ── SCREEN 3: results ──
 export function rpBuildPolesApartResults(ep) {
   const data = ep.polesApart; if (!data) return '';
-  const ranked = (data.teams || []).slice().sort((a, b) => b.roundWins - a.roundWins);
+  const ranked = (data.teams || []).slice().sort((a, b) => (b.roundWins - a.roundWins) || (b.downsDealt - a.downsDealt) || (a.holdersLost - b.holdersLost));
   const rows = ranked.map((t, i) => {
     const isWin = t.name === data.winner, isLose = t.name === data.loser;
     const tag = isWin ? 'WINS IMMUNITY' : isLose ? 'GOES TO TRIBAL' : 'SAFE';
     const tagCol = isWin ? '#2ba36a' : isLose ? '#d8532e' : '#5a7488';
     const wonRounds = (data.rounds || []).filter(r => r.winner === t.name).map(r => r.round);
+    const tbNote = (t.name === data.tiebreakWinner || t.name === data.tiebreakLoser)
+      ? ` · <b style="color:#0a6ba8">${t.downsDealt} rivals dragged</b>` : '';
     return `<div class="pa-result-row" style="border-color:${t.color};background:${t.color}14">
       <span class="pa-rank" style="color:${t.color}">${i + 1}</span>
       <div style="flex:1"><div style="font-weight:800;color:${t.color}">${t.name.toUpperCase()}</div>
-        <div style="font-size:11px;color:#5a7488">${t.roundWins} round${t.roundWins === 1 ? '' : 's'} won${wonRounds.length ? ` (${wonRounds.map(r => 'R' + r).join(', ')})` : ''}</div></div>
+        <div style="font-size:11px;color:#5a7488">${t.roundWins} round${t.roundWins === 1 ? '' : 's'} won${wonRounds.length ? ` (${wonRounds.map(r => 'R' + r).join(', ')})` : ''}${tbNote}</div></div>
       <span style="font-weight:800;font-size:11px;color:${tagCol}">${tag}</span></div>`;
   }).join('');
+  const tiebroke = data.tiebreakWinner || data.tiebreakLoser;
   return _shell(`<div class="pa-body"><div><div class="pa-side-card">
       <div style="font-family:'Righteous';color:#0a6ba8;font-size:16px;margin-bottom:10px">🏆 BEST OF THREE</div>${rows}
-      <div style="font-size:12px;color:#5a7488;margin-top:8px;line-height:1.5">Most rounds won takes immunity. The team left in the sand heads to tribal council.</div></div></div>
+      <div style="font-size:12px;color:#5a7488;margin-top:8px;line-height:1.5">Most rounds won takes immunity. The team left in the sand heads to tribal council.${tiebroke ? ` <b style="color:#0a6ba8">Rounds were tied</b> — broken by total rivals dragged across the line.` : ''}</div></div></div>
     <div class="pa-side"><div class="pa-side-card"><div class="pa-side-h">🏁 Rounds</div><div id="pa-rounds-inner">${_paRoundsInner(data, (data.steps || []).length - 1)}</div></div></div></div>`, ep, data);
 }

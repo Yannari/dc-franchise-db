@@ -405,7 +405,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       ],
       secondLife: [
         `${name} finds the Second Life Amulet hidden at camp. If ${_fp.sub} ${_fp.sub==='they'?'are':'is'} voted out, ${_fp.sub} can activate it — pick an opponent and duel for survival.`,
-        `${name} discovers a glowing amulet buried near the well. The Second Life Amulet. One chance to cheat elimination. ${_fp.Sub} hide${_fp.sub==='they'?'':'s'} it deep.`,
+        `${name} discovers a glowing amulet stashed out of sight. The Second Life Amulet. One chance to cheat elimination. ${_fp.Sub} hide${_fp.sub==='they'?'':'s'} it deep.`,
       ],
       'idol-totem': [
         `${name} unwraps the third gift. Inside: a fully-operative Immunity Totem. An idol — no searching required. Just a decision, and a secret. ${_fp.Sub} close${_fp.sub==='they'?'':'s'} the box, pocket${_fp.sub==='they'?'':'s'} it, and head${_fp.sub==='they'?'':'s'} back to camp with the cover story ready.`,
@@ -434,7 +434,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         events.push({ type: 'chainGratitude', players: [evt.picked, evt.picker], badgeText: 'GRATEFUL', badgeClass: 'green',
           text: _cocPk([
             `${evt.picked} pulls ${evt.picker} aside. "You picked me early. I won't forget that." ${pr.PosAdj} loyalty runs deep.`,
-            `${evt.picked} thanks ${evt.picker} quietly at the well. The early pick meant everything — a public declaration of trust.`,
+            `${evt.picked} thanks ${evt.picker} quietly, off to the side. The early pick meant everything — a public declaration of trust.`,
             `"You saved me when you didn't have to." ${evt.picked} looks at ${evt.picker} with genuine gratitude. Their bond is stronger now.`,
             `${evt.picked} finds ${evt.picker} alone. "I know what that pick meant. I've got your back." The alliance solidifies.`,
           ]) });
@@ -1084,7 +1084,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `${a} and ${b} aren't hiding it anymore. They slip away together holding hands and nobody says a word.`,
         `${b} leans in and ${a} meets them halfway. The kiss is quick, easy — like they've done it before. The tribe tactfully looks elsewhere.`,
         `${a} falls asleep on ${b}'s shoulder by the fire. Nobody wakes them up. Nobody dares.`,
-        `${a} and ${b} are spotted kissing near the treeline. They don't seem particularly embarrassed. The tribe is a different story.`,
+        `${a} and ${b} are spotted kissing where they thought no one could see. They don't seem particularly embarrassed. The tribe is a different story.`,
         `${b} fixes ${a}'s hair without thinking about it. ${a} lets ${_sA.sub==='they'?'them':_sA.sub==='she'?'her':'him'}. It's the kind of small thing that makes everyone else feel like they're intruding.`,
         `${a} wraps an arm around ${b} at the fire and ${b} doesn't move away. The tribe watches with a mix of warmth and mild strategic dread.`,
         `They whisper to each other until the fire goes down to embers. Whatever they're saying, it's not about the game.`,
@@ -2922,11 +2922,11 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           `${a} moves ${pA.pos} things to the other side of camp. Nobody asks why. Everyone already knows — ${b} is the reason.`,
           `${a} refuses to eat if ${b} is at the fire. It's not strategy. It's not a move. It's personal in a way this game rarely sees.`,
           `The hatred between ${a} and ${b} is so visible that the rest of the tribe routes around it. Nobody sits between them. Nobody mediates. They just survive it.`,
-          `${b} says something and ${a} stands up and walks into the jungle without a word. ${pA.Sub} ${pA.sub==='they'?'don\'t':'doesn\'t'} come back for an hour.`,
+          `${b} says something and ${a} stands up and walks off without a word. ${pA.Sub} ${pA.sub==='they'?'don\'t':'doesn\'t'} come back for an hour.`,
           `${a} talks about ${b} to the confessional like ${pB.sub} ${pB.sub==='they'?'aren\'t':'isn\'t'} even a person anymore. Just a problem to solve. The contempt is total.`,
           `The tribe tried to have a group conversation. ${a} walked away the moment ${b} sat down. Nobody even pretended to be surprised.`,
           `${a} won't say ${b}'s name. Not at tribal, not at camp, not in confessional. ${pA.Sub} just ${pA.sub==='they'?'say':'says'} "that person." The tribe knows exactly who ${pA.sub} ${pA.sub==='they'?'mean':'means'}.`,
-          `${b} accidentally brushes past ${a} on the way to the well. ${a} recoils like ${pA.sub} ${pA.sub==='they'?'were':'was'} burned. The rest of the tribe freezes.`,
+          `${b} accidentally brushes past ${a} in passing. ${a} recoils like ${pA.sub} ${pA.sub==='they'?'were':'was'} burned. The rest of the tribe freezes.`,
           `Someone makes the mistake of sitting between ${a} and ${b} at the fire. The temperature on both sides drops. They don't make that mistake again.`,
         ]) });
       }
@@ -2963,7 +2963,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           `${a} gives ${b} the last of the rice without being asked. ${b} doesn't say thank you — ${pB.sub} just ${pB.sub==='they'?'nod':'nods'}. They're past words.`,
           `${a} falls asleep at the fire. ${b} stays up and keeps it going. In the morning, neither mentions it. They don't have to.`,
           `Someone tries to pull ${a} into a side conversation about ${b}. ${a} shuts it down so fast the other person apologizes. The loyalty isn't strategic — it's reflexive.`,
-          `${a} and ${b} build the shelter together in silence. It takes half the time it took the rest of the tribe. They've been in sync since the beginning and everyone knows it.`,
+          `${a} and ${b} get a job done together in silence. It takes half the time it took the rest of the tribe. They've been in sync since the beginning and everyone knows it.`,
           `The tribe debates the plan. ${a} looks at ${b}. ${b} nods. That's the vote. Nobody questions it because nobody can compete with what those two have.`,
           `${a} gets emotional at the fire tonight. ${b} doesn't say "it's okay" or "stay strong." ${pB.Sub} just ${pB.sub==='they'?'sit':'sits'} closer. That's enough.`,
         ]) });
@@ -2998,9 +2998,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
             `${initiator} sits down next to ${receiver} for the first time in days. Neither says anything for a while. Then ${initiator} speaks — about home. ${receiver} listens. Something cracks open.`,
             `${initiator} catches ${receiver} alone at the water well. "I know we've had our issues. I'm just saying — we don't have to keep doing this." ${receiver} doesn't walk away.`,
             `The game stripped everything back today. ${initiator} and ${receiver} had a conversation that was raw, uncomfortable, and longer than either expected. Not forgiveness. But something.`,
-            `It starts with a shared task — firewood, water, something neither can do alone. By the end, ${initiator} and ${receiver} have talked more than they have in a week.`,
+            `It starts with a shared task — hauling, fetching, something neither can do alone. By the end, ${initiator} and ${receiver} have talked more than they have in a week.`,
             `${initiator} apologizes. Not for everything — just for one specific thing. ${receiver} wasn't expecting it. The silence that follows isn't awkward for the first time.`,
-            `${receiver} is struggling with the shelter. ${initiator} helps without being asked, without making it a thing. ${receiver} looks up, surprised. The wall between them feels thinner.`,
+            `${receiver} is struggling with a task. ${initiator} helps without being asked, without making it a thing. ${receiver} looks up, surprised. The wall between them feels thinner.`,
             `Rain drives everyone under the same tarp. ${initiator} and ${receiver} end up side by side. Neither moves. By morning, the coldness has thawed — just slightly.`,
             `${initiator} makes a joke at the fire. ${receiver} laughs before ${pR.sub} can stop ${pR.ref}. It's the first real laugh between them in a long time. The tribe notices.`,
             `${initiator} passes ${receiver} during a challenge and mutters "nice move." Two words. But from ${initiator} to ${receiver}, after everything? That's a lot.`,
@@ -3708,7 +3708,7 @@ export function checkStolenCredit(ep) {
           // Hothead — explosive
           calloutText = _pick([
             `${architect} snaps. It's been building since last tribal. "You sat there and did NOTHING and then you told everyone it was YOUR move? Say it to my face, ${stealer}. Say it right now." The camp goes dead silent.`,
-            `${architect} doesn't plan it. It just comes out — at the well, in front of three people. "You want to know who ACTUALLY flipped the vote? Because it wasn't ${stealer}. Ask me. Ask anyone who was actually paying attention." ${stealer} puts down ${sPr.pos} canteen.`,
+            `${architect} doesn't plan it. It just comes out — right in the open, in front of three people. "You want to know who ACTUALLY flipped the vote? Because it wasn't ${stealer}. Ask me. Ask anyone who was actually paying attention." ${stealer} goes still.`,
             `${architect} explodes at the fire. "I am DONE watching ${stealer} walk around this camp like ${sPr.sub} ${sPr.sub==='they'?'run':'runs'} this game. That was MY move. MINE. And every single person here knows it." ${stealer} doesn't blink.`,
           ], architect + stealer + 'hothead');
         } else if (aS.boldness >= 7) {
@@ -3887,7 +3887,7 @@ export function checkStolenCredit(ep) {
     } else if (aS.temperament <= 4) {
       reactionText = _pick([
         `${architect}'s jaw clenches. ${aPr.Sub} ${aPr.sub==='they'?'stand':'stands'} up, ${aPr.sub==='they'?'walk':'walks'} away from the fire. Everyone notices. The tension is thick enough to cut.`,
-        `${architect} slams a pot down and walks into the jungle. The tribe exchanges looks. Something just broke — they're just not sure what yet.`,
+        `${architect} slams something down and storms off alone. The tribe exchanges looks. Something just broke — they're just not sure what yet.`,
       ], architect + 'hothead');
     } else {
       reactionText = _pick([
@@ -4272,9 +4272,9 @@ export function checkFakeIdolPlant(ep) {
       if (!gs.challengeThrowHeat) gs.challengeThrowHeat = {};
       // Reuse heat mechanism — schemer exposed
       const evtText = _pick([
-        `${_caughtBy} catches ${planter} behind the shelter, carving something out of wood and paint. "What is that?" ${planter} freezes. "Nothing." It's not nothing — it's a fake idol. ${_caughtBy} tells the tribe. ${planter}'s credibility evaporates.`,
-        `${_caughtBy} follows ${planter} into the jungle and watches ${pPr.obj} bury something near the water well. ${cPr.Sub} digs it up later — a fake idol, crudely made but convincing enough. "You tried to play us." Word spreads by morning.`,
-        `${_caughtBy} notices ${planter} working on something at night. A carved coconut shell, wrapped in string, painted with charcoal. It looks like an idol. It's not. "${planter} was making a fake idol. I SAW it." The tribe turns. ${planter} has nowhere to hide.`,
+        `${_caughtBy} catches ${planter} tucked out of sight, carving something out of wood and paint. "What is that?" ${planter} freezes. "Nothing." It's not nothing — it's a fake idol. ${_caughtBy} tells the tribe. ${planter}'s credibility evaporates.`,
+        `${_caughtBy} follows ${planter} off alone and watches ${pPr.obj} bury something out of the way. ${cPr.Sub} digs it up later — a fake idol, crudely made but convincing enough. "You tried to play us." Word spreads by morning.`,
+        `${_caughtBy} notices ${planter} working on something at night. A carved trinket, wrapped in string, painted dark. It looks like an idol. It's not. "${planter} was making a fake idol. I SAW it." The tribe turns. ${planter} has nowhere to hide.`,
       ], planter + _caughtBy + 'caught');
 
       if (ep.campEvents?.[campKey]) {
@@ -5185,7 +5185,7 @@ export function checkMoleSabotage(ep) {
       if (_moleTribe && ep.campEvents[_moleTribe]) {
         const mp = pronouns(mole.player);
         const _layLowTexts = [
-          `${mole.player} is unusually helpful today — carrying firewood, fetching water, staying out of strategy talks. ${mp.Sub} ${mp.sub === 'they' ? 'seem' : 'seems'} to be making a point of being useful.`,
+          `${mole.player} is unusually helpful today — pitching in on chores, fetching water, staying out of strategy talks. ${mp.Sub} ${mp.sub === 'they' ? 'seem' : 'seems'} to be making a point of being useful.`,
           `${mole.player} spends the day bonding with anyone who'll listen. Jokes, stories, camp chores. No game talk. Just vibes.`,
           `${mole.player} keeps ${mp.posAdj} head down. No scheming, no whispering. Just another day at camp. Nobody notices — which is exactly the point.`,
           `${mole.player} volunteers to cook for the tribe. It's a small gesture, but it lands. ${mp.Sub} ${mp.sub === 'they' ? 'know' : 'knows'} the heat is on — and the best move is no move at all.`,
@@ -6424,7 +6424,7 @@ export function generateCampEvents(ep, phase = 'both') {
             `The mood at ${tribe.name} is heavy. They lost last time and everyone knows what another loss means. ${_cpSpeaker} says it out loud: "We can't afford to go back there."`,
             `${_cpSpeaker} addresses the tribe. "We lose again, one of us goes home. That's the reality." Nobody argues. Nobody has to.`,
             `${tribe.name} is on edge. The last vote is still fresh. ${_cpSpeaker} tries to rally the group: "We need this one. No excuses." The tribe nods. Whether they believe it is another question.`,
-            `The shelter is quiet this morning. Last tribal took something out of ${tribe.name}. ${_cpSpeaker} breaks the silence: "We're not going back. Not tonight."`,
+            `Camp is quiet this morning. Last tribal took something out of ${tribe.name}. ${_cpSpeaker} breaks the silence: "We're not going back. Not tonight."`,
           ]) });
         }
 
@@ -6474,7 +6474,7 @@ export function generateCampEvents(ep, phase = 'both') {
                 `New tribe. New faces. The first day at ${tribe.name} is a chess match disguised as small talk. Everyone is sizing each other up.`,
                 `${tribe.name} camp feels different with the new blood. Old alliances mean nothing here — or everything. Nobody knows which yet.`,
                 `The swap changed the numbers, the relationships, and the pecking order at ${tribe.name}. The first conversations are careful. Nobody shows their hand.`,
-                `${tribe.name} is a brand new tribe in everything but name. The shelter is the same. The people aren't. The game starts over.`,
+                `${tribe.name} is a brand new tribe in everything but name. The camp is the same. The people aren't. The game starts over.`,
               ]) });
             }
             // Originals vs newcomers tension — originals bond tighter, newcomers scramble
@@ -7620,7 +7620,7 @@ export function generateCampEvents(ep, phase = 'both') {
             text: _rp([
               `The losing pair comes back to camp exhausted and quiet. ${l1} and ${l2} can barely look at each other. The forest took something out of them.`,
               `${weaker} keeps replaying the race in ${prW.posAdj} head. Every wrong turn. Every hesitation. Chef saw all of it.`,
-              `${l1} and ${l2} sit on opposite sides of the shelter. Neither wants to talk about what happened out there.`,
+              `${l1} and ${l2} sit on opposite sides of camp. Neither wants to talk about what happened out there.`,
               `The others give ${l1} and ${l2} space. You can see it on their faces — they know Chef is watching, and one of them is going home.`,
             ]) });
         }

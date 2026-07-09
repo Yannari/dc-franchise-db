@@ -217,6 +217,70 @@ export function eventAllowedInSetting(id) {
 }
 export function settingWeightMod(id) { return settingProfile().weightMods?.[id] ?? 1; }
 export function settingArrival() { return settingProfile().arrival || SEASON_SETTINGS['hosted-camp'].arrival; }
+
+// ── Inline-SVG hero art for the themed key screens (arrival / cold open / results).
+// viewBox 0 0 800 150; `ac` = the setting accent. Stylized icons, not scenes. ──
+const _SETTING_HERO = {
+  'hosted-camp': (ac) => `
+    <rect x="0" y="96" width="800" height="54" fill="#12324a"/>
+    <path d="M0 104 Q200 96 400 104 T800 104 V150 H0 Z" fill="#164a63" opacity=".6"/>
+    <circle cx="690" cy="40" r="26" fill="${ac}" opacity=".85"/>
+    <rect x="120" y="92" width="150" height="9" rx="2" fill="#6b4a22"/>
+    <rect x="140" y="100" width="6" height="30" fill="#4a3216"/><rect x="244" y="100" width="6" height="30" fill="#4a3216"/>
+    <g transform="translate(430 46)"><path d="M0 46 L96 46 L84 66 L12 66 Z" fill="#7a5a2e"/><rect x="44" y="-2" width="5" height="50" fill="#caa"/><path d="M49 0 L92 34 L49 34 Z" fill="${ac}"/></g>`,
+  'survival-island': (ac) => `
+    <rect x="0" y="100" width="800" height="50" fill="#0f3b40"/>
+    <path d="M0 108 Q200 100 400 108 T800 108 V150 H0 Z" fill="${ac}" opacity=".28"/>
+    <path d="M520 130 Q560 128 640 132 Q600 118 560 120 Q540 122 520 130 Z" fill="#c9a86a"/>
+    <g transform="translate(150 40)"><rect x="26" y="0" width="8" height="86" rx="3" fill="#6b4a2a"/>
+      <path d="M30 4 Q-20 -8 -34 18 Q-4 6 30 14 Z" fill="${ac}"/><path d="M30 4 Q80 -8 94 18 Q64 6 30 14 Z" fill="${ac}"/>
+      <path d="M30 6 Q6 -28 -18 -30 Q14 -14 30 16 Z" fill="${ac}" opacity=".85"/><path d="M30 6 Q54 -28 78 -30 Q46 -14 30 16 Z" fill="${ac}" opacity=".85"/></g>
+    <g transform="translate(470 78)"><path d="M0 40 L110 40 L96 60 L14 60 Z" fill="#8a6a3a"/><rect x="50" y="2" width="5" height="40" fill="#bbb"/><path d="M55 4 L96 34 L55 34 Z" fill="#e8e0d0"/></g>`,
+  'carnival': (ac) => `
+    <g transform="translate(120 20)" stroke="${ac}" stroke-width="3" fill="none" opacity=".9">
+      <circle cx="60" cy="60" r="52"/><circle cx="60" cy="60" r="6" fill="${ac}"/>
+      ${[0,45,90,135].map(a=>`<line x1="60" y1="60" x2="${60+52*Math.cos(a*Math.PI/180)}" y2="${60+52*Math.sin(a*Math.PI/180)}"/><line x1="60" y1="60" x2="${60-52*Math.cos(a*Math.PI/180)}" y2="${60-52*Math.sin(a*Math.PI/180)}"/>`).join('')}
+      ${[0,45,90,135,180,225,270,315].map(a=>`<circle cx="${60+52*Math.cos(a*Math.PI/180)}" cy="${60+52*Math.sin(a*Math.PI/180)}" r="6" fill="${ac}" stroke="none"/>`).join('')}</g>
+    <g transform="translate(430 40)"><path d="M0 100 L0 20 Q90 -14 180 20 L180 100" fill="none" stroke="${ac}" stroke-width="6"/>
+      ${[0,1,2,3,4,5,6,7,8].map(i=>`<path d="M${i*20} ${20+Math.abs(i-4.5)*3} l10 16 l-20 0 Z" fill="${i%2?ac:'#ffcf40'}" opacity=".9"/>`).join('')}
+      <text x="90" y="70" text-anchor="middle" fill="${ac}" font-family="Bungee,sans-serif" font-size="22">FUN</text></g>
+    <rect x="0" y="120" width="800" height="30" fill="#2a1830"/>`,
+  'film-lot': (ac) => `
+    <rect x="0" y="0" width="800" height="150" fill="none"/>
+    <g transform="translate(120 30)"><rect x="0" y="26" width="150" height="70" rx="4" fill="#1a1e28" stroke="${ac}" stroke-width="2"/>
+      <rect x="0" y="8" width="150" height="22" rx="3" fill="#242a36" stroke="${ac}" stroke-width="2"/>
+      ${[0,1,2,3,4,5].map(i=>`<path d="M${6+i*24} 8 l14 22 l-14 0 Z" fill="${i%2?ac:'#e6ebf5'}"/>`).join('')}</g>
+    <g transform="translate(560 20)" stroke="${ac}" stroke-width="3" fill="none">
+      <circle cx="40" cy="30" r="20" fill="${ac}" opacity=".3"/><path d="M40 30 L-30 120 M40 30 L110 120" opacity=".35" stroke-width="10" stroke-linecap="round"/></g>
+    <text x="400" y="140" text-anchor="middle" fill="${ac}" font-family="Anton,sans-serif" font-size="16" letter-spacing="4" opacity=".5">SCENE 1 · TAKE 1</text>`,
+  'world-tour': (ac) => `
+    <path d="M0 90 Q120 70 260 88 Q360 60 470 86 Q600 66 800 84" fill="none" stroke="${ac}" stroke-width="2" stroke-dasharray="3 10" opacity=".7"/>
+    <ellipse cx="150" cy="52" rx="60" ry="20" fill="#ffffff" opacity=".10"/><ellipse cx="620" cy="40" rx="70" ry="22" fill="#ffffff" opacity=".10"/>
+    <g transform="translate(360 40)" fill="${ac}"><path d="M120 30 L40 40 L-30 34 L-30 46 L40 52 L20 84 L34 84 L74 54 L110 56 L96 78 L108 78 L140 52 Q150 46 140 40 Z"/>
+      <circle cx="150" cy="46" r="4" fill="#fff" opacity=".8"/></g>`,
+};
+
+// Slim decorative banner strip for cold-open / results headers (viewBox 0 0 800 26).
+const _SETTING_BANNER = {
+  'hosted-camp': (ac) => `<g fill="${ac}">${[...Array(20)].map((_,i)=>`<path d="M${i*40} 22 l12 -16 l12 16 Z" opacity=".5"/>`).join('')}</g>`,
+  'survival-island': (ac) => `<path d="M0 16 Q100 6 200 16 T400 16 T600 16 T800 16" fill="none" stroke="${ac}" stroke-width="3" opacity=".7"/>`,
+  'carnival': (ac) => `<g>${[...Array(27)].map((_,i)=>`<rect x="${i*30}" y="0" width="15" height="26" fill="${i%2?ac:'#ffcf40'}" opacity=".55"/>`).join('')}</g>`,
+  'film-lot': (ac) => `<g fill="${ac}" opacity=".6">${[...Array(32)].map((_,i)=>`<rect x="${i*25+4}" y="7" width="14" height="12" rx="2"/>`).join('')}</g>`,
+  'world-tour': (ac) => `<line x1="0" y1="13" x2="800" y2="13" stroke="${ac}" stroke-width="2" stroke-dasharray="4 14" opacity=".7"/>`,
+};
+
+export function settingHeroSVG(kind = 'arrival', setting = currentSetting()) {
+  const ac = (SEASON_SETTINGS[setting]?.accentHex) || _SETTING_ACCENT[setting] || '#f0c040';
+  if (kind === 'banner') {
+    const b = (_SETTING_BANNER[setting] || _SETTING_BANNER['hosted-camp'])(ac);
+    return `<svg viewBox="0 0 800 26" preserveAspectRatio="none" style="width:100%;height:18px;display:block">${b}</svg>`;
+  }
+  const h = (_SETTING_HERO[setting] || _SETTING_HERO['hosted-camp'])(ac);
+  return `<svg viewBox="0 0 800 150" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;max-height:150px;display:block">${h}</svg>`;
+}
+// accent hex per setting (mirrors the CSS .rp-set-* --set-accent values)
+const _SETTING_ACCENT = { 'hosted-camp':'#f0c040', 'survival-island':'#46c7b4', 'carnival':'#ff5a7a', 'film-lot':'#cdd2df', 'world-tour':'#57a6e8' };
+export function settingAccent(setting = currentSetting()) { return _SETTING_ACCENT[setting] || '#f0c040'; }
 // Pull a setting-appropriate line for a "texture" category (meal/improve/wildlife/weather).
 // Falls back to hosted-camp so a setting missing a pool never breaks. Returns raw
 // text with {a}/{b}/{p}/{po}/vocab tokens still in place — caller fills names, then fillVocab().

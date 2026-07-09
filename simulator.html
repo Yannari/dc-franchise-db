@@ -71,6 +71,59 @@
     .tod-posttribal { background: linear-gradient(to bottom, #080c11, #0d1018); }
     .tod-arena      { background: linear-gradient(to bottom, #0d1318, #131a20); }
 
+    /* ── VP: per-SETTING skin (applied to #vp-screen-content as .rp-set-<x>) ──
+       Retints the reader's gold accent + lays a faint venue motif behind each
+       .rp-page screen. Scoped to .rp-page so twist-challenge shells (own themes)
+       are untouched. Motifs are low-opacity CSS textures; hero art is inline SVG. */
+    .rp-set-hosted-camp   { --set-accent:#f0c040; }
+    .rp-set-survival-island { --set-accent:#46c7b4; }
+    .rp-set-carnival      { --set-accent:#ff5a7a; }
+    .rp-set-film-lot      { --set-accent:#cdd2df; }
+    .rp-set-world-tour    { --set-accent:#57a6e8; }
+    /* retint the reader accent to the setting accent */
+    [class*="rp-set-"] .rp-page { --accent-gold: var(--set-accent, #f0c040); }
+    /* motif layer + keep content above it */
+    [class*="rp-set-"] .rp-page { position: relative; }
+    [class*="rp-set-"] .rp-page > * { position: relative; z-index: 1; }
+    [class*="rp-set-"] .rp-page::before {
+      content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+      opacity:.5; mix-blend-mode:screen; background-size:cover; }
+    @media (prefers-reduced-motion: reduce) { [class*="rp-set-"] .rp-page::before { animation:none; } }
+    /* 🏝️ survival island — teal wave bands */
+    .rp-set-survival-island .rp-page::before {
+      opacity:.10;
+      background:
+        repeating-linear-gradient(115deg, transparent 0 34px, rgba(70,199,180,.35) 34px 35px),
+        radial-gradient(ellipse at 50% 120%, rgba(70,199,180,.18), transparent 60%); }
+    /* 🎪 carnival — tent stripes + string lights */
+    .rp-set-carnival .rp-page::before {
+      opacity:.10;
+      background:
+        repeating-linear-gradient(60deg, rgba(255,90,122,.30) 0 22px, transparent 22px 44px),
+        radial-gradient(circle at 12px 8px, rgba(255,207,64,.55) 2px, transparent 3px);
+      background-size: auto, 60px 60px; }
+    /* 🎬 film lot — sprocket rails + spotlight */
+    .rp-set-film-lot .rp-page::before {
+      opacity:.12;
+      background:
+        repeating-linear-gradient(to bottom, rgba(205,210,223,.30) 0 10px, transparent 10px 26px),
+        radial-gradient(ellipse at 50% -10%, rgba(230,235,245,.20), transparent 55%);
+      background-size: 14px 26px, auto;
+      background-position: left top, center; }
+    /* ✈️ world tour — dotted flight path + clouds */
+    .rp-set-world-tour .rp-page::before {
+      opacity:.10;
+      background:
+        repeating-linear-gradient(90deg, rgba(87,166,232,.5) 0 6px, transparent 6px 26px),
+        radial-gradient(ellipse at 80% 15%, rgba(120,180,240,.16), transparent 45%),
+        radial-gradient(ellipse at 20% 70%, rgba(120,180,240,.12), transparent 45%);
+      background-size: 26px 2px, auto, auto;
+      background-position: 0 30%, 0 0, 0 0; }
+    /* 🏕️ hosted camp — faint pine chevrons (keeps default gold) */
+    .rp-set-hosted-camp .rp-page::before {
+      opacity:.07;
+      background: repeating-linear-gradient(135deg, rgba(240,192,64,.25) 0 2px, transparent 2px 20px); }
+
     /* ── VP: Component classes ── */
     .vp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
     .vp-card.fire  { border-color: var(--accent-fire); }

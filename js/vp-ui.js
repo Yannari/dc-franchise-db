@@ -663,6 +663,11 @@ export function renderVPScreen() {
   // Content — innerHTML is fully rebuilt each navigation, so any in-progress
   // vote reveal state is now stale. Clear it so reveals start fresh.
   Object.keys(_tvState).forEach(k => delete _tvState[k]);
+  // Per-setting skin: retint accent + venue motif on the reader (scoped to .rp-page).
+  try {
+    const _set = (typeof currentSetting === 'function') ? currentSetting() : 'hosted-camp';
+    content.className = (content.className || '').replace(/\brp-set-[\w-]+/g, '').trim() + ` rp-set-${_set}`;
+  } catch (e) {}
   content.innerHTML = cur.html;
   // Ambience: explicit data-ambient on the screen root wins; otherwise fall back
   // to the universal screen-id → bed map. Plus a one-shot sting for big moments.

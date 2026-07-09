@@ -561,9 +561,11 @@ export function _rpBuildDockArrival(ep) {
     ? `"Tonight, ${returneeCount} returning player${returneeCount>1?'s':''} face${returneeCount===1?'s':''} off against ${newbieCount} brand new competitor${newbieCount>1?'s':''}. The veterans think they know this game. The rookies think they can beat it. I'm ${host}, and this is ${seasonName}. Let's find out who's right."`
     : `"Welcome to ${_place}! I'm your host, ${host}. ${arrivals.length} players have signed up for the ride of their lives. They'll compete in challenges, vote each other out, and the last one standing wins the prize. Every moment caught on camera. Who will crumble? Who will rise? Find out right here on... ${seasonName}!"`;
 
+  const _hero = (typeof settingHeroSVG === 'function') ? settingHeroSVG('arrival') : '';
   let html = `<div class="rp-page tod-dawn">
     <div class="rp-co-eyebrow">${seasonName}</div>
     <div style="font-family:var(--font-display);font-size:32px;letter-spacing:3px;text-align:center;color:var(--accent-gold);text-shadow:0 0 20px var(--accent-gold);margin:10px 0 6px;animation:scrollDrop 0.5s var(--ease-broadcast) both">THE ARRIVAL</div>
+    ${_hero ? `<div style="margin:4px auto 8px;max-width:560px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.5));animation:scrollDrop 0.6s var(--ease-broadcast) both">${_hero}</div>` : ''}
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:4px">${arrivals.length} players arrive by ${_arr.vehicle} ${_arr.onPoint}.</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">${_arr.headline}</div>
     <div style="padding:14px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.15);border-radius:10px;text-align:center;margin-bottom:20px">
@@ -655,10 +657,12 @@ export function rpBuildColdOpen(ep) {
     : ep.isRIReentry ? 'RI Re-entry Episode'
     : (prevSnap.phase === 'post-merge' ? 'Post-Merge' : 'Pre-Merge');
 
+  const _coBanner = (typeof settingHeroSVG === 'function') ? settingHeroSVG('banner') : '';
   let html = `<div class="rp-page rp-cold-open tod-dawn">
     <div class="rp-co-eyebrow">${seasonConfig.name || 'Season'}</div>
     <div class="rp-co-epnum">Episode ${ep.num}</div>
     <div class="rp-co-phase">${phaseLabel} &mdash; ${countActive} of ${allPlayers.length} players remain</div>
+    ${_coBanner ? `<div style="max-width:420px;margin:6px auto 2px;opacity:.85">${_coBanner}</div>` : ''}
     <div class="rp-co-divider"></div>`;
 
   // ── Active players grouped by tribe ──
@@ -10154,9 +10158,11 @@ export function rpBuildVotes(ep) {
   const revoteLog = ep.revoteLog || [];
 
   const _voteTribeLabel = ep.tribalTribe ? ` \u00b7 ${ep.tribalTribe}` : '';
+  const _votesBanner = (typeof settingHeroSVG === 'function') ? settingHeroSVG('banner') : '';
   let html = `<div class="rp-page tod-deepnight">
     <div class="rp-eyebrow">Episode ${epNum} — Tribal Council${_voteTribeLabel}</div>
-    <div class="rp-title">The Votes</div>`;
+    <div class="rp-title">The Votes</div>
+    ${_votesBanner ? `<div style="max-width:380px;margin:2px auto 12px;opacity:.8">${_votesBanner}</div>` : ''}`;
 
   // ── Open Vote header banner ──
   if (ep.openVote && ep.openVoteOrder?.length) {

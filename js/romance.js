@@ -14,15 +14,16 @@ export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScore
   if (gs.showmances.some(sh => sh.players.includes(a) && sh.players.includes(b))) return false;
   // Romantic compatibility
   if (typeof romanticCompat === 'function' && !romanticCompat(a, b)) return false;
-  // Bond check — challenge moments use lower threshold since the moment itself is romantic
   const bond = getBond(a, b);
   const aArch = players.find(p => p.name === a)?.archetype || '';
   const bArch = players.find(p => p.name === b)?.archetype || '';
   const isShowmancer = aArch === 'showmancer' || bArch === 'showmancer';
-  const threshold = isShowmancer ? 3.5 : 4.5; // lower than normal (5-6) because the moment is charged
-  if (bond < threshold) return false;
-  // Proportional spark chance
-  const sparkChance = (bond - threshold) * 0.08 + (isShowmancer ? 0.10 : 0.03);
+  // The challenge moment (a kiss, spin-the-bottle, a save) IS the romantic beat — so
+  // unlike camp flirtation this does NOT require an existing bond. Even strangers can
+  // spark here (that's the whole point of these events); an existing bond just raises
+  // the odds. Rare enough to feel special, but no longer literally impossible pre-merge.
+  const base = isShowmancer ? 0.30 : 0.17;
+  const sparkChance = Math.min(0.62, base + Math.max(0, bond) * 0.04);
   if (Math.random() >= sparkChance) return false;
 
   // SPARK! Create a romantic spark — not a showmance yet (slow burn)

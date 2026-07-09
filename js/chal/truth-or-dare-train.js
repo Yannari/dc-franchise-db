@@ -412,6 +412,7 @@ export function truthOrDareTrainRevealAll(screenKey, total) {
 
 function _tdtCSS() {
   return `<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@400;600;700;800&display=swap');
   .tdt-shell{--brass:#e0a94a;--brass2:#b9822f;--pass:#3fb950;--fail:#f85149;--skip:#a371f7;--now:#f0b429;--wait:#5a4c66;
     max-width:1100px;margin:0 auto;font-family:'Nunito',system-ui,sans-serif;color:#f5ead6;position:relative;padding-bottom:20px}
   .tdt-ic{width:1em;height:1em;fill:currentColor;vertical-align:-.12em}
@@ -493,6 +494,37 @@ function _tdtCSS() {
   .tdt-counter{font-size:12px;color:#c9a86a;font-weight:700}
   .tdt-results-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;margin-bottom:8px;border-left:4px solid}
   .tdt-rank{font-family:'Bungee';font-size:18px;width:30px;text-align:center}
+  /* ── COLD OPEN (grandiose animated intro) ── */
+  .tdt-coldopen{padding:18px 10px 44px;text-align:center;position:relative;overflow:hidden;min-height:520px}
+  .tdt-co-lights{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+  .tdt-co-lights::before,.tdt-co-lights::after{content:'';position:absolute;top:0;bottom:0;left:0;width:200%;
+    background-image:radial-gradient(circle,rgba(255,200,90,.5) 2px,transparent 3px);background-size:58px 58px;animation:tdtLights 2.4s linear infinite;opacity:.22}
+  .tdt-co-lights::after{background-image:radial-gradient(circle,rgba(120,200,255,.5) 2px,transparent 3px);background-size:74px 74px;animation-duration:1.6s;opacity:.16}
+  @keyframes tdtLights{from{transform:translateX(0)}to{transform:translateX(-74px)}}
+  .tdt-co-title{font-family:'Bungee';font-size:clamp(30px,6vw,52px);line-height:1;letter-spacing:2px;margin-top:6px;position:relative;z-index:2;
+    background:linear-gradient(180deg,#fff0c4,#e0a94a 50%,#b9822f);-webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 3px 0 rgba(0,0,0,.4),0 0 44px rgba(224,169,74,.45);animation:tdtTitlePulse 2.6s ease-in-out infinite}
+  @keyframes tdtTitlePulse{0%,100%{filter:drop-shadow(0 0 0 transparent)}50%{filter:drop-shadow(0 0 16px rgba(240,180,41,.4))}}
+  .tdt-co-scene{position:relative;margin-top:40px;z-index:2}
+  .tdt-co-train{display:inline-flex;align-items:flex-end;gap:8px;animation:tdtChug 1.3s ease-in-out infinite}
+  @keyframes tdtChug{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .tdt-co-loco{position:relative;color:var(--brass);font-size:66px;line-height:.9;filter:drop-shadow(0 0 12px rgba(224,169,74,.6))}
+  .tdt-co-steam{position:absolute;top:-6px;left:16px}
+  .tdt-co-steam span{position:absolute;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.28);animation:tdtSteam 1.7s ease-out infinite}
+  @keyframes tdtSteam{0%{transform:translate(0,0) scale(.4);opacity:.7}100%{transform:translate(-34px,-46px) scale(1.7);opacity:0}}
+  .tdt-co-car{background:linear-gradient(180deg,#4a2f1c,#2e1a0f);border:2px solid var(--brass2);border-radius:8px 8px 4px 4px;padding:8px 10px 10px;position:relative;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+  .tdt-co-car-roof{height:6px;background:linear-gradient(90deg,#6a4a2a,#3a2414);border-radius:7px 7px 0 0;margin:-8px -10px 8px}
+  .tdt-co-car-lbl{font-size:9px;font-weight:800;letter-spacing:1px;padding:1px 9px;border-radius:10px;margin-bottom:8px;display:inline-block}
+  .tdt-co-windows{display:flex;gap:5px;flex-wrap:wrap;max-width:210px;justify-content:center}
+  .tdt-co-win{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bungee';font-size:10px;color:#fff;border:2px solid #1a0f10;box-shadow:inset 0 0 6px rgba(0,0,0,.5)}
+  .tdt-co-wheels{display:flex;gap:16px;justify-content:center;margin-top:8px}
+  .tdt-co-wheel{width:12px;height:12px;border-radius:50%;background:#1a0f10;border:2px solid var(--brass2);position:relative;animation:tdtWheel .5s linear infinite}
+  .tdt-co-wheel::after{content:'';position:absolute;top:1px;left:50%;width:2px;height:4px;background:var(--brass2);transform:translateX(-50%)}
+  @keyframes tdtWheel{to{transform:rotate(360deg)}}
+  .tdt-co-rail{height:5px;background:repeating-linear-gradient(90deg,#5a4021 0 16px,#2a1c10 16px 24px);margin-top:3px;border-radius:2px;animation:tdtRail .35s linear infinite}
+  @keyframes tdtRail{to{background-position:-24px 0}}
+  .tdt-co-cta{margin-top:30px;font-size:13px;color:#c9b48f;z-index:2;position:relative;font-weight:700}
+  @media(prefers-reduced-motion:reduce){.tdt-co-train,.tdt-co-lights::before,.tdt-co-lights::after,.tdt-co-steam span,.tdt-co-wheel,.tdt-co-rail,.tdt-co-title{animation:none}}
   </style>`;
 }
 
@@ -510,18 +542,30 @@ function _shell(content, ep) {
   </div>`;
 }
 
-// ── SCREEN 1: title card ──
+// ── SCREEN 1: grandiose animated cold open ──
 export function rpBuildTDTTitleCard(ep) {
   const data = ep.truthOrDareTrain; if (!data) return '';
-  const teamsHtml = (data.teams || []).map(t =>
-    `<div class="tdt-cartcard" style="padding:12px 14px">
-      <div class="tdt-cart-team" style="background:${t.color}22;color:${t.color};border:1px solid ${t.color}55;margin-bottom:8px">${_tdtIcon('loco')} ${t.name.toUpperCase()}</div>
-      <div style="font-size:12px;color:#c9b48f;line-height:1.6">${(t.members || []).join(' · ')}</div></div>`).join('');
-  return _shell(`<div class="tdt-body"><div><div class="tdt-cartcard" style="padding:16px">
-      <div style="font-family:'Bungee';color:var(--brass);font-size:15px;margin-bottom:8px">ALL ABOARD</div>
-      <div style="font-size:13px;color:#e8d6b4;line-height:1.6">The train pulls out of the station. ${(data.teams||[]).length} teams, one gauntlet of carts, and a Truth or Dare waiting in every one. Bold players will dare. Cautious players will pick truth. And the moment a prompt hits a nerve — vanity, loyalty, a secret — even the toughest camper might just… refuse.</div>
-    </div><div style="height:12px"></div>${teamsHtml}</div>
-    <div class="tdt-side"><div class="tdt-side-h">Live status — by team</div><div id="tdt-sidebar-inner">${_tdtSidebarInner(data, -1)}</div></div></div>`, ep);
+  const cars = (data.teams || []).map(t => `
+    <div class="tdt-co-car">
+      <div class="tdt-co-car-roof"></div>
+      <div class="tdt-co-car-lbl" style="background:${t.color}22;color:${t.color};border:1px solid ${t.color}55">${t.name.toUpperCase()}</div>
+      <div class="tdt-co-windows">${(t.members || []).map(m => `<div class="tdt-co-win" style="background:${t.color}" title="${m}">${m.slice(0, 2).toUpperCase()}</div>`).join('')}</div>
+      <div class="tdt-co-wheels"><div class="tdt-co-wheel"></div><div class="tdt-co-wheel"></div></div>
+    </div>`).join('');
+  return `${_tdtCSS()}<div class="tdt-shell tdt-coldopen">
+    <div class="tdt-co-lights"></div>
+    <div class="tdt-eyebrow" style="position:relative;z-index:2">Carnival of Chaos · Immunity Challenge</div>
+    <div class="tdt-co-title">TRUTH OR DARE TRAIN</div>
+    <div class="tdt-sub" style="position:relative;z-index:2;max-width:660px;margin:6px auto 0">Reach the front of the train. Every camper takes one hot seat — Truth or Dare. Complete it to roll on; refuse, and your team eats a 5-minute penalty.</div>
+    <div class="tdt-co-scene">
+      <div class="tdt-co-train">
+        <div class="tdt-co-loco">${_tdtIcon('loco')}<div class="tdt-co-steam"><span style="animation-delay:0s"></span><span style="animation-delay:.55s;left:9px"></span><span style="animation-delay:1.1s;left:-5px"></span></div></div>
+        ${cars}
+      </div>
+      <div class="tdt-co-rail"></div>
+    </div>
+    <div class="tdt-co-cta">▶ All aboard — the race to the front begins.</div>
+  </div>`;
 }
 
 // ── SCREEN 2: the race (main reveal) ──

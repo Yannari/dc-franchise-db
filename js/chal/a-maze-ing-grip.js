@@ -158,17 +158,22 @@ export function simulateAMazeInGrip(ep) {
   const teamData = rosters.map(r => {
     const key = r.name;
     ep.campEvents[key] = ep.campEvents[key] || { pre: [], post: [] };
-    const byGrip = [...r.members].sort((a, b) => _grip(b) - _grip(a));
+    // Role picks are NOISY (noise ~1.6 on the ~10 stat scale) — the team doesn't always
+    // pick the mathematically-optimal holders/dunker, and a bold volunteer can step up.
+    const gripRoll = {}; r.members.forEach(m => gripRoll[m] = _grip(m) + _noise(1.6));
+    const byGrip = [...r.members].sort((a, b) => gripRoll[b] - gripRoll[a]);
     const holders = byGrip.slice(0, 2);
     let rest = r.members.filter(m => !holders.includes(m));
     let sitOuts = [];
     if (rest.length > K) {
-      const ranked = [...rest].sort((a, b) => (_nav(b) + _throw(b)) - (_nav(a) + _throw(a)));
+      const useRoll = {}; rest.forEach(m => useRoll[m] = _nav(m) + _throw(m) + _noise(1.8));
+      const ranked = [...rest].sort((a, b) => useRoll[b] - useRoll[a]);
       sitOuts = ranked.slice(K);
       rest = ranked.slice(0, K);
     }
-    const dunker = [...rest].sort((a, b) => _throw(b) - _throw(a))[0] || null;
-    const capacity = (_grip(holders[0]) + _grip(holders[1])) * CAP_FACTOR + _noise(8);
+    const throwRoll = {}; rest.forEach(m => throwRoll[m] = _throw(m) + _noise(1.6));
+    const dunker = [...rest].sort((a, b) => throwRoll[b] - throwRoll[a])[0] || null;
+    const capacity = (_grip(holders[0]) + _grip(holders[1])) * CAP_FACTOR + _noise(14);
     const avgEnd = (pStats(holders[0]).endurance + pStats(holders[1]).endurance) / 2;
     holders.concat(rest).forEach(m => { personalScores[m] = 0; });
     return {
@@ -254,10 +259,12 @@ export function simulateAMazeInGrip(ep) {
         if (tgt) {
           const useDunker = team.dunker && team.dunker !== hunter && Math.random() < 0.45 && !team.holders.includes(team.dunker);
           const shooter = useDunker ? team.dunker : hunter;
-          const hitChance = Math.min(0.94, Math.max(0.12, 0.30 + _throw(shooter) * 0.062 + _noise(0.14)));
+          const hitChance = Math.min(0.92, Math.max(0.14, 0.32 + _throw(shooter) * 0.055 + _noise(0.19)));
           const hit = Math.random() < hitChance;
+          let add = 0;
           if (hit) {
-            const add = COCO_WEIGHT * (1 + (K - 1) * 0.45);
+            // each landed coconut's weight varies ±22% (a heavy one strains more)
+            add = COCO_WEIGHT * (1 + (K - 1) * 0.45) * (0.78 + Math.random() * 0.44);
             tgt.weight += add;
             tgt.coconuts += 1;
             personalScores[shooter] = (personalScores[shooter] || 0) + (useDunker ? 5 : 4);
@@ -295,7 +302,7 @@ export function simulateAMazeInGrip(ep) {
                   `${shooter}'s throw wobbles wide and disappears back into the rows. Nothing gained.`,
                   `${shooter} double-clutches and the coconut squirts out of ${_pron(shooter).posAdj} hands. Airballed.`,
                 ], 'score-miss'),
-            meta: hit ? `+${Math.round(COCO_WEIGHT * (1 + (K - 1) * 0.45) / tgt.capacity * 100)}% strain on ${tgt.name} · ${shooter} +0.5 pop`
+            meta: hit ? `+${Math.max(1, Math.round(add / tgt.capacity * 100))}% strain on ${tgt.name} · ${shooter} +0.5 pop`
                       : `Throw failed · no strain added` }, featured);
         }
       }
@@ -310,7 +317,9 @@ export function simulateAMazeInGrip(ep) {
     // ── FATIGUE + DROP checks ──
     const roundAlive = teamData.filter(t => !t.dropped);
     roundAlive.forEach(team => {
-      team.capacity *= team.fatigue;
+      // fatigue is noisy — some rounds the holders lose more grip than others (±6%),
+      // so a weaker team can catch a lucky stretch and a favorite can slip.
+      team.capacity *= team.fatigue * (1 + _noise(0.06));
       team.strainPct = team.weight / team.capacity * 100;
       // holders score for HOLDING — holding a heavily-loaded net is worth more than an
       // empty one, so a holder who endures near-collapse can top the chart. Kept in
@@ -320,7 +329,7 @@ export function simulateAMazeInGrip(ep) {
     });
     // teams past the drop line this round — but NEVER drop the last net standing (it wins).
     // If several cross together, the highest-strain nets hit the dirt; the lowest survives.
-    const overLine = roundAlive.filter(t => t.strainPct >= DROP_AT + _noise(2.5)).sort((a, b) => b.strainPct - a.strainPct);
+    const overLine = roundAlive.filter(t => t.strainPct >= DROP_AT + _noise(6)).sort((a, b) => b.strainPct - a.strainPct);
     const maxDrops = Math.max(0, roundAlive.length - 1);
     overLine.slice(0, maxDrops).forEach(team => {
       team.dropped = true; team.dropOrder = ++dropCounter; team.strainPct = 100;

@@ -641,7 +641,13 @@ export function aMazeInGripRevealNext(screenKey, total) {
   const idx = s.idx;
   requestAnimationFrame(() => requestAnimationFrame(() => {
     const el = document.getElementById(`amg-step-${suffix}-${idx}`);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!el) return;
+    // clear the sticky net panel by its ACTUAL height (varies with team count: a
+    // 3-team panel is much taller than a 2-team one, so a fixed margin hid cards).
+    const panel = document.querySelector('.amg-nets');
+    const h = panel ? panel.getBoundingClientRect().height : 200;
+    el.style.scrollMarginTop = Math.round(h + 60) + 'px';
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }));
   try { _amgLiveUpdate(s.idx); } catch (e) {}
 }
@@ -671,7 +677,16 @@ function _amgCSS() {
   .amg-pf.md{width:34px;height:34px}
   .amg-pf.lg{width:48px;height:48px;border-width:3px}
   .amg-nets{position:sticky;top:50px;z-index:6;display:grid;gap:12px;margin:8px 0 18px;grid-template-columns:1fr 1fr}
-  @media(max-width:720px){.amg-nets{grid-template-columns:1fr}}
+  /* compact cards when 3+ teams share one row */
+  .amg-nets.compact{gap:9px}
+  .amg-nets.compact .amg-net-card{padding:9px 11px 11px}
+  .amg-nets.compact .amg-net-vis{height:56px}
+  .amg-nets.compact .amg-team-name{font-size:16px}
+  .amg-nets.compact .amg-team-tag{font-size:9px;padding:2px 6px}
+  .amg-nets.compact .amg-holder{padding:4px 6px;gap:5px}
+  .amg-nets.compact .amg-pf.md{width:28px;height:28px}
+  .amg-nets.compact .amg-holder-name{font-size:11px}
+  @media(max-width:860px){.amg-nets{grid-template-columns:1fr !important}}
   .amg-net-card{background:linear-gradient(180deg,rgba(40,26,20,.94),rgba(28,16,12,.94));border:1px solid rgba(232,185,68,.28);border-radius:14px;padding:12px 14px 14px;backdrop-filter:blur(6px);box-shadow:0 8px 26px rgba(0,0,0,.45)}
   .amg-net-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
   .amg-team-name{font-family:'Rye',cursive;font-size:18px;letter-spacing:1px}
@@ -786,7 +801,7 @@ function _shell(content, ep, data) {
     <div class="amg-hero"><div class="amg-eyebrow">Carnival of Chaos · Immunity Challenge</div>
       <div class="amg-title">A-Maze-ing Grip</div>
       <div class="amg-sub">Two hold the net. The rest raid the maze and sink coconuts into a rival's net until their grip gives out. Last net standing takes immunity.</div></div>
-    <div class="amg-nets" id="amg-nets-inner">${_amgNetPanelInner(data, -1)}</div>
+    <div class="amg-nets${(data.teams || []).length >= 3 ? ' compact' : ''}" style="grid-template-columns:repeat(${Math.min((data.teams || []).length || 2, 3)},1fr)" id="amg-nets-inner">${_amgNetPanelInner(data, -1)}</div>
     ${content}</div>`;
 }
 

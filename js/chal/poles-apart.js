@@ -44,6 +44,13 @@ function _canScheme(n) {
   if (['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(a)) return false;
   return s.strategic >= 6 && s.loyalty <= 4;
 }
+// "Emmah" / "Emmah and MK" / "Emmah, MK and Chase"
+function _names(arr) {
+  if (!arr || !arr.length) return '';
+  if (arr.length === 1) return arr[0];
+  if (arr.length === 2) return `${arr[0]} and ${arr[1]}`;
+  return `${arr.slice(0, -1).join(', ')} and ${arr[arr.length - 1]}`;
+}
 
 // ── SOCIAL EVENTS between rounds (guaranteed density, real consequences) ──
 function _socialEvent(team, allTeams, ep) {
@@ -237,6 +244,8 @@ export function simulatePolesApart(ep) {
         // scrappy holders (low temper / bold / wildcard) can pull off a resist MOVE
         const scrap = (10 - pStats(target.player).temperament) * 0.5 + pStats(target.player).boldness * 0.4;
         const resistMove = Math.random() < Math.min(0.5, scrap * 0.045) && !coordinated;
+        const atkNames = _names(committed);           // every attacker, named
+        const lead = committed[0];
 
         if (resistMove || resistForce > pullForce) {
           // holder survives — knocks pullers loose / escapes
@@ -246,9 +255,8 @@ export function simulatePolesApart(ep) {
           if (!gs.popularity) gs.popularity = {};
           if (resistMove) gs.popularity[target.player] = (gs.popularity[target.player] || 0) + 0.5;
           const move = _rp(['kicks free of', 'bites the arm of', 'tickles loose', 'twists out of the grip of', 'headbutts back at']);
-          const lead = committed[0];
           _push({ stepType: resistMove ? 'escape' : 'resist', round: roundNum, team: targetTeam.name, color: targetTeam.color,
-            player: target.player, attackers: committed, atkColor: atk.color,
+            player: target.player, attackers: committed, atkTeam: atk.name, atkColor: atk.color,
             text: resistMove
               ? _vary([
                   `${target.player} ${move} ${lead} and clings back to the pole — the crowd on the beach loses it.`,
@@ -257,11 +265,11 @@ export function simulatePolesApart(ep) {
                   `${target.player} wraps a leg around the pole and ${move} ${lead}. Not today.`,
                 ], 'escape')
               : _vary([
-                  `${lead}${committed.length > 1 ? ' and the pack' : ''} heave, but ${target.player}'s grip holds. The pole doesn't budge.`,
-                  `${target.player} grits through the pull. ${lead} can't break ${_pron(target.player).obj} loose yet.`,
-                  `Sand flies but ${target.player} stays planted. ${lead} resets for another go.`,
+                  `${atkNames} (${atk.name}) heave, but ${target.player}'s grip holds. The pole doesn't budge.`,
+                  `${target.player} grits through the pull. ${atkNames} can't break ${_pron(target.player).obj} loose yet.`,
+                  `Sand flies but ${target.player} stays planted. ${atkNames} reset for another go.`,
                 ], 'resist'),
-            meta: resistMove ? `${target.player} shakes loose (${committed.length} puller${committed.length > 1 ? 's' : ''}) · +0.5 pop` : `Grip ${Math.round(_hold(target.player))} holds vs pull ${Math.round(pullForce)}` },
+            meta: resistMove ? `${target.player} shakes off ${atkNames} · +0.5 pop` : `${target.player}'s grip ${Math.round(_hold(target.player))} holds vs ${atk.name}'s pull ${Math.round(pullForce)}` },
             _bfSnap(roundNum, state));
         } else {
           const dmg = Math.max(14, (pullForce - resistForce) * 4 + 18 + _noise(6));
@@ -276,22 +284,22 @@ export function simulatePolesApart(ep) {
             _push({ stepType: 'down', round: roundNum, team: targetTeam.name, color: targetTeam.color, player: target.player,
               attackers: committed, atkTeam: atk.name, atkColor: atk.color, coordinated,
               text: _vary([
-                `${target.player}'s grip finally gives — ${coordinated ? `${downer} and the pack` : downer} haul ${_pron(target.player).obj} across the line. ${targetTeam.name} down to ${left}.`,
-                `${coordinated ? 'Ganged up and overpowered' : downer + ' rips ' + _pron(target.player).obj + ' free'} — ${target.player} is dragged over. ${targetTeam.name}: ${left} holder${left === 1 ? '' : 's'} left.`,
-                `Heels dig, sand sprays, but ${target.player} goes over the line. ${downer} plants the drag. ${left} to go for ${targetTeam.name}.`,
+                `${target.player}'s grip finally gives — ${atkNames} haul ${_pron(target.player).obj} across the line for ${atk.name}. ${targetTeam.name} down to ${left}.`,
+                `${atkNames} overpower ${target.player} and drag ${_pron(target.player).obj} over. ${targetTeam.name}: ${left} holder${left === 1 ? '' : 's'} left.`,
+                `Heels dig, sand sprays, but ${atkNames} plant the drag and ${target.player} goes across. ${left} to go for ${targetTeam.name}.`,
               ], 'down'),
-              meta: `${coordinated ? 'Coordinated gang-up' : 'Solo drag'} · ${downer} +3${coordinated ? ' (+assists)' : ''} · ${targetTeam.name} ${left}/${HOLDERS_PER} up` },
+              meta: `${coordinated ? `Coordinated gang-up by ${atkNames}` : `${downer} solo`} · ${atk.name} +1 down · ${targetTeam.name} ${left}/${HOLDERS_PER} up` },
               _bfSnap(roundNum, state));
           } else {
             // progress grab (dragging, not yet over)
             _push({ stepType: 'grab', round: roundNum, team: targetTeam.name, color: targetTeam.color, player: target.player,
-              attackers: committed, atkColor: atk.color, coordinated,
+              attackers: committed, atkTeam: atk.name, atkColor: atk.color, coordinated,
               text: _vary([
-                `${committed[0]}${coordinated ? ' and a teammate' : ''} latch onto ${target.player} and start hauling — heels plowing through the sand.`,
-                `${target.player} slides toward the line, ${coordinated ? 'two pullers' : committed[0]} dragging hard. Not over yet.`,
-                `${committed[0]} gets a grip and drags ${target.player} closer to the line. ${target.player} scrambles for the pole.`,
+                `${atkNames} latch onto ${target.player} and start hauling toward ${atk.name}'s side — heels plowing through the sand.`,
+                `${target.player} slides toward the line, ${atkNames} dragging hard. Not over yet.`,
+                `${atkNames} get a grip and drag ${target.player} closer to the line. ${target.player} scrambles for the pole.`,
               ], 'grab'),
-              meta: `${coordinated ? 'Gang-up (' + committed.length + ')' : 'Solo pull'} · ${target.player} at ${Math.round(target.slip)}% dragged` },
+              meta: `${coordinated ? `Gang-up: ${atkNames}` : `${lead} solo`} · ${target.player} at ${Math.round(target.slip)}% dragged` },
               _bfSnap(roundNum, state));
           }
         }
@@ -414,6 +422,20 @@ function _paEmblem(name, cls, color) {
   const init = String(name).slice(0, 2).toUpperCase();
   return `<span class="pa-pf ${cls || ''}" style="background:${color || '#88a'}"><b style="display:flex">${init}</b></span>`;
 }
+// clash visual for grab/down/resist/escape: attacker avatars → rope → target holder.
+// `winning` = attackers overpowering (grab/down) vs target holding them off (resist/escape).
+function _paClash(attackers, atkColor, atkTeam, target, targetColor, targetTeam, badge, winning) {
+  const atk = (attackers || []).slice(0, 3).map((p, i) => `<span class="pa-cl-av" style="${i ? 'margin-left:-12px' : ''}">${_paPortrait(p, 'md', atkColor)}</span>`).join('');
+  return `<div class="pa-clash">
+    <div class="pa-clash-atk" title="${atkTeam}: ${(attackers || []).join(', ')}">${atk}<div class="pa-cl-tag" style="color:${atkColor}">${atkTeam}</div></div>
+    <div class="pa-clash-rope ${winning ? 'win' : 'block'}">${winning ? '⟶' : '⊘'}</div>
+    <div class="pa-clash-tgt"><span class="pa-actor">${_paPortrait(target, 'lg', targetColor)}<span class="pa-actor-badge">${badge}</span></span><div class="pa-cl-tag" style="color:${targetColor}">${target}</div></div>
+  </div>`;
+}
+function _clashCard(s, cls, badge, tgtBadge, winning) {
+  return `<div class="pa-card"><div class="pa-card-head"><span class="pa-badge ${cls}">${badge}</span><span style="font-size:11px;color:#5a7488">${s.atkTeam || ''} → ${s.team}'s ${s.player}</span></div>
+    <div class="pa-card-body">${_paClash(s.attackers, s.atkColor, s.atkTeam, s.player, s.color, s.team, tgtBadge, winning)}<div><div class="pa-card-txt">${s.text}</div><div class="pa-card-meta">${s.meta || ''}</div></div></div></div>`;
+}
 
 // walk steps back to the last one carrying a battlefield snapshot
 function _paBfAt(data, idx) {
@@ -478,17 +500,23 @@ function _paBattlefieldInner(data, idx) {
     });
     return html + poleEls.join('') + pullerEls.join('');
   }
-  // 3+ teams strip
+  // 3+ teams: per-team strip; each holder pole shows the ATTACKER avatars pulling it
   return `<div class="pa-strips">` + bf.teams.map(t => `<div class="pa-strip"><div class="pa-strip-name" style="color:${t.color}">${t.name}</div>${
-    t.holders.map(h => `<div class="pa-strip-pole ${h.downed ? 'downed' : ''}">${_paPortrait(h.player, 'sm', t.color)}<div class="pa-strip-bar"><div class="pa-strip-fill" style="width:${h.slip}%;background:${h.downed ? '#d8532e' : '#e0894a'}"></div></div></div>`).join('')
+    t.holders.map(h => {
+      const atk = (h.attackers || []).slice(0, 3).map((p, i) => `<span class="pa-strip-atk" style="${i ? 'margin-left:-9px' : ''}">${_paPortrait(p, 'sm', '#d8532e')}</span>`).join('');
+      return `<div class="pa-strip-pole ${h.downed ? 'downed' : ''}">${_paPortrait(h.player, 'sm', t.color)}
+        <div class="pa-strip-bar"><div class="pa-strip-fill" style="width:${h.downed ? 100 : h.slip}%;background:${h.downed ? '#d8532e' : (h.attackers && h.attackers.length ? '#e0894a' : '#2ba36a')}"></div></div>
+        <div class="pa-strip-atks">${h.downed ? '<span style="font-size:9px;color:#d8532e">dragged ✗</span>' : atk}</div></div>`;
+    }).join('')
   }</div>`).join('') + `</div>`;
 }
 function _poleEl(h, x, color, downed) {
   return `<div class="pa-pole ${downed ? 'downed' : ''}" style="left:${Math.max(4, Math.min(96, x))}%">
     ${_paPortrait(h.player, 'sm', color)}<div class="pa-pole-stick"></div><div class="pa-holder-nm">${h.player}</div></div>`;
 }
+// a puller on the map = a small AVATAR (identifiable), pulsing when ganging up
 function _pullerEl(name, x, color, ganged) {
-  return `<div class="pa-puller ${ganged ? 'ganged' : ''}" style="left:${Math.max(3, Math.min(97, x))}%;background:${color}" title="${name}${ganged ? ' (ganging up)' : ''}"></div>`;
+  return `<div class="pa-puller ${ganged ? 'ganged' : ''}" style="left:${Math.max(3, Math.min(97, x))}%;border-color:${color}" title="${name}${ganged ? ' (ganging up)' : ''}">${_paPortrait(name, 'sm', color)}</div>`;
 }
 
 function _paSidebarInner(data, idx) {
@@ -594,15 +622,29 @@ function _paCSS() {
   .pa-pole .pa-pf{margin-bottom:-6px;z-index:2}
   .pa-holder-nm{font-size:8px;font-weight:800;margin-top:2px;color:#123;background:rgba(255,255,255,.7);padding:0 4px;border-radius:3px;white-space:nowrap}
   .pa-pole.downed{opacity:.4;filter:grayscale(.7)}.pa-pole.downed .pa-holder-nm::after{content:' ✗';color:#d8532e}
-  .pa-puller{position:absolute;bottom:18px;width:18px;height:18px;border-radius:50%;transform:translateX(-50%);transition:left .6s;z-index:1;opacity:.9;border:2px solid rgba(255,255,255,.7)}
-  .pa-puller.ganged{box-shadow:0 0 0 2px #fff,0 0 8px 2px rgba(216,83,46,.7);animation:paGang .8s ease-in-out infinite}
-  @keyframes paGang{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.22)}}
+  .pa-puller{position:absolute;bottom:16px;transform:translateX(-50%);transition:left .6s;z-index:3;border-radius:50%;border:2px solid;box-shadow:0 1px 4px rgba(0,0,0,.3);line-height:0}
+  .pa-puller .pa-pf{width:22px;height:22px;border:none;box-shadow:none}
+  .pa-puller.ganged{box-shadow:0 0 0 2px #fff,0 0 9px 3px rgba(216,83,46,.85);animation:paGang .8s ease-in-out infinite}
+  @keyframes paGang{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.2)}}
   @media(prefers-reduced-motion:reduce){.pa-puller.ganged{animation:none}}
-  .pa-strips{display:flex;gap:8px;padding:8px 10px;height:100%;align-items:center}
-  .pa-strip{flex:1;background:rgba(255,255,255,.4);border-radius:8px;padding:5px 7px}
+  .pa-strips{display:flex;gap:8px;padding:6px 10px;height:100%;align-items:stretch}
+  .pa-strip{flex:1;background:rgba(255,255,255,.45);border-radius:8px;padding:5px 7px;display:flex;flex-direction:column;justify-content:center}
   .pa-strip-name{font-family:'Righteous';font-size:11px;margin-bottom:3px}
-  .pa-strip-pole{display:flex;align-items:center;gap:5px;margin:2px 0}.pa-strip-pole.downed{opacity:.4}
+  .pa-strip-pole{display:flex;align-items:center;gap:5px;margin:2px 0}.pa-strip-pole.downed{opacity:.45}
   .pa-strip-bar{flex:1;height:6px;border-radius:4px;background:rgba(0,0,0,.1);overflow:hidden}.pa-strip-fill{height:100%;border-radius:4px;transition:width .5s}
+  .pa-strip-atks{display:flex;align-items:center;min-width:44px;justify-content:flex-end}
+  .pa-strip-atk .pa-pf{width:20px;height:20px;border-width:2px}
+  /* clash card visual: attackers → target */
+  .pa-clash{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .pa-clash-atk{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .pa-clash-atk .pa-cl-av{display:inline-block}
+  .pa-cl-tag{font-size:8px;font-weight:800;max-width:64px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pa-clash-rope{font-size:18px;font-weight:900}
+  .pa-clash-rope.win{color:#d8532e;animation:paPull 1s ease-in-out infinite}
+  .pa-clash-rope.block{color:#2ba36a}
+  @keyframes paPull{0%,100%{transform:translateX(0)}50%{transform:translateX(-3px)}}
+  .pa-clash-tgt{display:flex;flex-direction:column;align-items:center;gap:2px}
+  @media(prefers-reduced-motion:reduce){.pa-clash-rope.win{animation:none}}
   .pa-body{display:grid;grid-template-columns:1fr 290px;gap:16px}
   @media(max-width:860px){.pa-body{grid-template-columns:1fr}}
   .pa-stage{display:flex;flex-direction:column}
@@ -723,13 +765,13 @@ export function rpBuildPolesApartArena(ep) {
         <div class="pa-lineup">${cols}</div>
         <div class="pa-card-meta" style="margin-top:8px"><b style="color:#2ba36a">Grip</b> (endurance + physical + scrappiness, /10) = how long a holder resists — hot-heads grip hardest. <b style="color:#e0894a">Pull</b> (physical + boldness + teamwork, /10) = drag power; 2+ pullers ganging one holder get a coordination bonus.</div></div>`;
     } else if (s.stepType === 'grab') {
-      inner = _cardActor(s, 'b-grab', '🫳 GRAB', `${s.atkTeam || ''}${s.coordinated ? ' gang-up' : ''} on ${s.team} · ${s.player}`, _paActor(s.player, s.color, s.coordinated ? '👥' : '🫳'));
+      inner = _clashCard(s, 'b-grab', s.coordinated ? '👥 GANG-UP GRAB' : '🫳 GRAB', s.coordinated ? '👥' : '🫳', true);
     } else if (s.stepType === 'resist') {
-      inner = _cardActor(s, 'b-resist', '💪 HELD', `${s.team} · ${s.player}`, _paActor(s.player, s.color, '💪'));
+      inner = _clashCard(s, 'b-resist', '💪 HELD', '💪', false);
     } else if (s.stepType === 'escape') {
-      inner = _cardActor(s, 'b-escape', '🏃 SHAKEN LOOSE', `${s.team} · ${s.player}`, _paActor(s.player, s.color, '🦵'));
+      inner = _clashCard(s, 'b-escape', '🏃 SHAKEN LOOSE', '🦵', false);
     } else if (s.stepType === 'down') {
-      inner = _cardActor(s, 'b-down', '❌ DRAGGED ACROSS', `${s.atkTeam} downs ${s.team}'s ${s.player}`, _paActor(s.player, s.color, '❌'));
+      inner = _clashCard(s, 'b-down', '❌ DRAGGED ACROSS', '❌', true);
     } else if (s.stepType === 'rally') {
       inner = `<div class="pa-card"><div class="pa-card-head"><span class="pa-badge b-rally">📣 SECOND WIND</span><span style="font-size:11px;color:#5a7488">${s.rallier} → ${s.player} · ${s.team}</span></div>
         <div class="pa-card-body"><div class="pa-actor-duo">${_paPortrait(s.rallier, 'lg', s.color)}${_paPortrait(s.player, 'lg', s.color)}</div><div><div class="pa-card-txt">${s.text}</div><div class="pa-card-meta">${s.meta || ''}</div></div></div></div>`;

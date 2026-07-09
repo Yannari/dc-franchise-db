@@ -317,6 +317,14 @@ function _tdtIcon(t) {
 const _statIcon = { pass: 'check', fail: 'x', skip: 'skip', now: 'target', wait: 'wait' };
 const _statCls = { pass: 'st-pass', fail: 'st-fail', skip: 'st-skip', now: 'st-now', wait: 'st-wait' };
 
+// Real player portrait (assets/avatars/{slug}.png) with an initials fallback.
+function _tdtPortrait(name, color, cls) {
+  const p = players.find(x => x.name === name);
+  const slug = p?.slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const init = String(name).slice(0, 2).toUpperCase();
+  return `<span class="tdt-pf ${cls}" style="background:${color}"><img src="assets/avatars/${slug}.png" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><b>${init}</b></span>`;
+}
+
 // Cumulative race state up to a reveal index (drives map + sidebar).
 function _tdtStateAt(data, idx) {
   const teams = {}; (data.teams || []).forEach(t => teams[t.name] = { cart: 0, penalty: 0, color: t.color });
@@ -361,7 +369,7 @@ function _tdtSidebarInner(data, idx) {
       if (m === st.curPlayer) s = 'now';
       const cls = _statCls[s], icid = _statIcon[s];
       const nameCls = s === 'now' ? '' : (s === 'wait' ? 'wait' : 'done');
-      rows += `<div class="tdt-row ${s === 'now' ? 'now' : ''}"><div class="tdt-ava" style="background:${t.color}">${(m.slice(0, 2)).toUpperCase()}</div><span class="tdt-rname ${nameCls}">${m}</span><span class="tdt-rstat ${cls}">${_tdtIcon(icid)}</span></div>`;
+      rows += `<div class="tdt-row ${s === 'now' ? 'now' : ''}">${_tdtPortrait(m, t.color, 'sm')}<span class="tdt-rname ${nameCls}">${m}</span><span class="tdt-rstat ${cls}">${_tdtIcon(icid)}</span></div>`;
     });
     html += `<div class="tdt-team-block">
       <div class="tdt-team-bar" style="background:linear-gradient(90deg,${t.color}33,${t.color}11);color:${t.color};border:1px solid ${t.color}44">
@@ -437,10 +445,21 @@ function _tdtCSS() {
   .tdt-mcart{font-size:8px;opacity:.75}
   .tdt-body{display:grid;grid-template-columns:1fr 288px;gap:16px}
   @media(max-width:820px){.tdt-body{grid-template-columns:1fr}}
-  .tdt-stage-steps{display:flex;flex-direction:column;gap:12px}
-  .tdt-step{opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s}
-  .tdt-step.tdt-visible{opacity:1;transform:none}
-  @media(prefers-reduced-motion:reduce){.tdt-step{transition:opacity .2s}.tdt-marker{transition:none}}
+  .tdt-stage-steps{display:flex;flex-direction:column}
+  /* hidden steps COLLAPSE (max-height:0) so they don't take space and bury the controls */
+  .tdt-step{max-height:0;overflow:hidden;opacity:0;transform:translateY(16px);transition:max-height .5s ease,opacity .5s,transform .5s}
+  .tdt-step.tdt-visible{max-height:1600px;opacity:1;transform:none;margin-bottom:12px}
+  @media(prefers-reduced-motion:reduce){.tdt-step{transition:max-height .2s,opacity .2s}.tdt-marker{transition:none}}
+  /* full-bleed themed background so the challenge never looks bare */
+  .tdt-bgfx{position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% -10%,#2a1c34 0%,#140b1c 55%,#0a0610 100%)}
+  /* avatar portraits (real assets/avatars images, initials fallback) */
+  .tdt-pf{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;position:relative;flex-shrink:0;vertical-align:middle}
+  .tdt-pf img{width:100%;height:100%;object-fit:cover;display:block}
+  .tdt-pf b{display:none;width:100%;height:100%;align-items:center;justify-content:center;color:#fff;font-family:'Bungee';font-weight:400;letter-spacing:0}
+  .tdt-pf.sm{width:24px;height:24px;font-size:9px;border:1.5px solid #443}
+  .tdt-pf.md{width:30px;height:30px;font-size:10px;border:2px solid #1a0f10}
+  .tdt-pf.lg{width:66px;height:66px;font-size:22px;border:3px solid var(--now);box-shadow:0 0 16px rgba(240,180,41,.5)}
+  .tdt-pf.stack{margin-left:-8px;border:2px solid #170d18}
   .tdt-cartcard{background:linear-gradient(180deg,#3a2418,#241309);border:1px solid var(--brass2);border-radius:14px;overflow:hidden;box-shadow:inset 0 0 40px rgba(0,0,0,.5)}
   .tdt-cart-head{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:linear-gradient(90deg,#4a2f1c,#2e1a0f);border-bottom:2px solid var(--brass2)}
   .tdt-cart-no{font-family:'Bungee';font-size:13px;color:var(--brass);letter-spacing:1px}
@@ -488,7 +507,7 @@ function _tdtCSS() {
   .st-pass{color:var(--pass)}.st-fail{color:var(--fail)}.st-skip{color:var(--skip)}.st-now{color:var(--now)}.st-wait{color:var(--wait)}
   .tdt-legend{font-size:10px;color:#9c8db0;display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:4px;padding-top:8px;border-top:1px solid #2a1e33}
   .tdt-legend span{display:flex;align-items:center;gap:3px}
-  .tdt-controls{display:flex;gap:10px;justify-content:center;align-items:center;padding:14px 0 4px}
+  .tdt-controls{display:flex;gap:10px;justify-content:center;align-items:center;padding:12px;margin-top:14px;position:sticky;bottom:10px;z-index:6;background:rgba(20,11,20,.9);backdrop-filter:blur(6px);border:1px solid rgba(224,169,74,.25);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.5)}
   .tdt-btn{background:linear-gradient(135deg,var(--brass),var(--brass2));color:#231204;border:none;padding:10px 20px;border-radius:10px;font-weight:800;cursor:pointer;font-size:13px;box-shadow:0 4px 14px rgba(224,169,74,.35);display:flex;align-items:center;gap:6px}
   .tdt-btn.ghost{background:linear-gradient(135deg,#6b7280,#4b5563);color:#fff}
   .tdt-counter{font-size:12px;color:#c9a86a;font-weight:700}
@@ -530,7 +549,7 @@ function _tdtCSS() {
 
 function _shell(content, ep) {
   const data = ep.truthOrDareTrain || {};
-  return `${_tdtCSS()}<div class="tdt-shell">
+  return `${_tdtCSS()}<div class="tdt-shell"><div class="tdt-bgfx"></div>
     <div class="tdt-hero">
       <div class="tdt-eyebrow">Carnival of Chaos</div>
       <div class="tdt-title">TRUTH OR DARE TRAIN</div>
@@ -549,10 +568,10 @@ export function rpBuildTDTTitleCard(ep) {
     <div class="tdt-co-car">
       <div class="tdt-co-car-roof"></div>
       <div class="tdt-co-car-lbl" style="background:${t.color}22;color:${t.color};border:1px solid ${t.color}55">${t.name.toUpperCase()}</div>
-      <div class="tdt-co-windows">${(t.members || []).map(m => `<div class="tdt-co-win" style="background:${t.color}" title="${m}">${m.slice(0, 2).toUpperCase()}</div>`).join('')}</div>
+      <div class="tdt-co-windows">${(t.members || []).map(m => _tdtPortrait(m, t.color, 'md')).join('')}</div>
       <div class="tdt-co-wheels"><div class="tdt-co-wheel"></div><div class="tdt-co-wheel"></div></div>
     </div>`).join('');
-  return `${_tdtCSS()}<div class="tdt-shell tdt-coldopen">
+  return `${_tdtCSS()}<div class="tdt-shell tdt-coldopen"><div class="tdt-bgfx"></div>
     <div class="tdt-co-lights"></div>
     <div class="tdt-eyebrow" style="position:relative;z-index:2">Carnival of Chaos · Immunity Challenge</div>
     <div class="tdt-co-title">TRUTH OR DARE TRAIN</div>
@@ -589,14 +608,14 @@ export function rpBuildTDTRace(ep) {
         <div class="tdt-cart-head"><span class="tdt-cart-no">CART ${s.cart} — HOT SEAT</span>
           <span class="tdt-cart-team" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}55">${_tdtIcon('loco')} ${s.team.toUpperCase()}</span></div>
         <div class="tdt-window"><div class="tdt-streak"></div><div class="tdt-streak" style="animation-delay:.4s;background:radial-gradient(ellipse,rgba(120,200,255,.8),transparent 70%)"></div><div class="tdt-streak" style="animation-delay:.75s;background:radial-gradient(ellipse,rgba(255,120,180,.8),transparent 70%)"></div></div>
-        <div class="tdt-duel"><div class="tdt-hotseat"><div class="tdt-portrait" style="background:${s.color}">${s.player.slice(0,2).toUpperCase()}</div><div class="tdt-hs-name">${s.player}</div><div class="tdt-hs-tag">${s.team}</div></div>
+        <div class="tdt-duel"><div class="tdt-hotseat">${_tdtPortrait(s.player, s.color, 'lg')}<div class="tdt-hs-name">${s.player}</div><div class="tdt-hs-tag">${s.team}</div></div>
           <div class="tdt-card"><div class="tdt-kind ${s.kind}">${_tdtIcon(s.kind === 'dare' ? 'dare' : 'truth')} ${s.kind.toUpperCase()}</div>
             <div class="tdt-prompt">${s.player} is asked to ${s.prompt}.</div>
             <span class="tdt-verdict ${vcls}">${_tdtIcon(vic)} ${vtxt}</span></div></div>
         <div class="tdt-beat">${beat}</div></div></div>`;
     }
     // social event card
-    const avas = (s.players || []).slice(0, 2).map(p => `<div class="tdt-social-ava" style="background:${s.color || '#a371f7'}">${p.slice(0,2).toUpperCase()}</div>`).join('');
+    const avas = (s.players || []).slice(0, 2).map((p, ai) => _tdtPortrait(p, s.color || '#a371f7', ai === 0 ? 'md' : 'md stack')).join('');
     const badgeCls = s.badgeClass === 'gold' ? 'badge-gold' : s.badgeClass === 'red' ? 'badge-red' : 'badge-green';
     return `<div class="tdt-step" id="tdt-step-${suffix}-${i}"><div class="tdt-social">
       <div class="tdt-social-avas">${avas}</div>

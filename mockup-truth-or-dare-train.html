@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Truth or Dare Train — VP Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@400;600;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --brass:#e0a94a;--brass2:#b9822f;--ink:#f5ead6;
+    --pass:#3fb950;--fail:#f85149;--skip:#a371f7;--now:#f0b429;--wait:#5a4c66;
+  }
+  body{font-family:'Nunito',sans-serif;color:var(--ink);
+    background:radial-gradient(ellipse at 50% -10%,#2a1c34 0%,#140b1c 60%,#0a0610 100%);
+    min-height:100vh;padding:14px;overflow-x:hidden}
+  .shell{max-width:1120px;margin:0 auto;position:relative;z-index:2}
+  .bulbs{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5}
+  .bulbs span{position:absolute;width:6px;height:6px;border-radius:50%;animation:blink 1.8s infinite}
+  @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+  @media(prefers-reduced-motion:reduce){.bulbs span,.streak{animation:none!important}.marker{transition:none!important}}
+  svg.ic{width:1em;height:1em;fill:currentColor;vertical-align:-.12em}
+
+  .top{text-align:center;padding:6px 0 12px}
+  .eyebrow{font-size:11px;letter-spacing:4px;color:var(--brass);text-transform:uppercase}
+  .title{font-family:'Bungee';font-size:34px;line-height:1;
+    background:linear-gradient(180deg,#ffe6a7,#e0a94a 55%,#b9822f);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+  .sub{font-size:12px;color:#c9b48f;margin-top:4px}
+
+  /* ── LIVE TRAIN MAP (sticky) ── */
+  .map{background:linear-gradient(180deg,#20131b,#160c14);border:1px solid rgba(224,169,74,.28);
+    border-radius:14px;padding:12px 16px 14px;margin-bottom:14px;position:sticky;top:8px;z-index:4;
+    box-shadow:0 6px 22px rgba(0,0,0,.4)}
+  .map-h{font-size:9px;letter-spacing:2px;color:#8a6f4a;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+  .train-map{position:relative;height:96px}
+  .carts{position:absolute;left:0;right:60px;top:34px;display:flex;gap:4px}
+  .cart{flex:1;height:26px;border-radius:4px;background:linear-gradient(180deg,#4a2f1c,#2e1a0f);
+    border:1px solid #5a4021;position:relative}
+  .cart .cnum{position:absolute;bottom:-14px;left:0;right:0;text-align:center;font-size:8px;color:#7a6144}
+  .cart .win{position:absolute;top:5px;left:5px;right:5px;height:3px;border-radius:2px;background:#5a4021}
+  .loco-front{position:absolute;right:0;top:26px;color:var(--brass);font-size:40px;filter:drop-shadow(0 0 8px rgba(224,169,74,.5))}
+  .front-lbl{position:absolute;right:2px;top:2px;font-size:8px;letter-spacing:1px;color:var(--brass);font-weight:800}
+  .marker{position:absolute;display:flex;align-items:center;gap:4px;transition:left .55s cubic-bezier(.5,0,.3,1);z-index:3}
+  .marker .mtrain{font-size:22px;filter:drop-shadow(0 0 6px currentColor)}
+  .marker .mlbl{font-size:9px;font-weight:800;letter-spacing:1px;background:#000a;padding:1px 6px;border-radius:4px;white-space:nowrap}
+  .marker .mcart{font-size:8px;opacity:.75}
+
+  .body{display:grid;grid-template-columns:1fr 296px;gap:16px}
+
+  /* ── STAGE ── */
+  .stage{background:linear-gradient(180deg,#3a2418,#241309);border:1px solid var(--brass2);
+    border-radius:16px;overflow:hidden;box-shadow:inset 0 0 60px rgba(0,0,0,.5)}
+  .cart-head{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;
+    background:linear-gradient(90deg,#4a2f1c,#2e1a0f);border-bottom:2px solid var(--brass2)}
+  .cart-no{font-family:'Bungee';font-size:14px;color:var(--brass);letter-spacing:1px}
+  .cart-team{font-size:11px;font-weight:800;letter-spacing:1px;padding:3px 11px;border-radius:20px;display:flex;align-items:center;gap:5px}
+  .window{height:92px;margin:14px 16px 4px;border-radius:10px;overflow:hidden;position:relative;
+    background:linear-gradient(180deg,#0a0812,#160a1e);border:3px solid #1a0f10;box-shadow:inset 0 0 30px #000}
+  .streak{position:absolute;top:0;bottom:0;width:60px;border-radius:40%;
+    background:radial-gradient(ellipse,rgba(255,180,80,.9),transparent 70%);animation:streak 1.1s linear infinite}
+  @keyframes streak{from{left:110%}to{left:-20%}}
+  .duel{display:flex;align-items:center;gap:16px;padding:12px 18px 16px}
+  .hotseat{text-align:center;flex-shrink:0;width:92px}
+  .portrait{width:76px;height:76px;border-radius:50%;border:3px solid var(--now);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:26px;font-family:'Bungee';
+    box-shadow:0 0 18px rgba(240,180,41,.5);margin:0 auto;color:#fff}
+  .hs-name{font-weight:800;font-size:14px;margin-top:6px}
+  .hs-tag{font-size:10px;color:#c9a86a}
+  .card{flex:1;background:linear-gradient(160deg,#fff7e6,#f3dfae);color:#3a2012;border-radius:12px;
+    padding:14px 16px;position:relative;box-shadow:0 8px 24px rgba(0,0,0,.5);border:2px dashed #b9822f}
+  .card::before,.card::after{content:'';position:absolute;top:50%;width:16px;height:16px;background:#241309;border-radius:50%;transform:translateY(-50%)}
+  .card::before{left:-9px}.card::after{right:-9px}
+  .card-kind{font-family:'Bungee';font-size:17px;letter-spacing:2px;display:flex;align-items:center;gap:7px}
+  .card-kind.dare{color:#c0392b}.card-kind.truth{color:#2874a6}
+  .card-prompt{font-size:14px;font-weight:700;margin-top:5px;line-height:1.35}
+  .verdict{margin-top:10px;display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:12px;letter-spacing:.5px;padding:4px 12px;border-radius:6px}
+  .verdict.pass{background:#3fb95022;color:#1e7a32;border:1px solid #3fb95055}
+  .verdict.fail{background:#f8514922;color:#a52016;border:1px solid #f8514955}
+  .beat{margin:0 16px 14px;padding:10px 14px;background:#0006;border-left:3px solid var(--brass2);border-radius:0 8px 8px 0;font-size:12.5px;line-height:1.5;color:#e8d6b4;font-style:italic}
+  .beat b{color:var(--brass);font-style:normal}
+
+  /* ── SIDEBAR ── */
+  .side{background:linear-gradient(180deg,#1c1220,#120a16);border:1px solid rgba(224,169,74,.22);
+    border-radius:14px;padding:12px;align-self:start;position:sticky;top:118px}
+  .side-h{font-size:9px;letter-spacing:2px;color:#8a6f4a;text-transform:uppercase;margin-bottom:8px}
+  .team-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:8px;margin-bottom:6px;font-weight:800;font-size:12px}
+  .team-bar .tname{display:flex;align-items:center;gap:6px}
+  .clock{font-family:'Bungee';font-size:12px}.clock small{font-family:'Nunito';font-size:8px;opacity:.7;font-weight:600}
+  .team-block{margin-bottom:12px}
+  .row{display:flex;align-items:center;gap:8px;padding:4px 7px;border-radius:7px;margin-bottom:2px;font-size:12px;transition:background .2s}
+  .row.now{background:rgba(240,180,41,.14);box-shadow:inset 0 0 0 1px rgba(240,180,41,.5)}
+  .ava{width:23px;height:23px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;color:#fff;font-family:'Bungee'}
+  .rname{flex:1;font-weight:600}.rname.done{opacity:.85}.rname.wait{opacity:.45}
+  .rstat{width:18px;text-align:center;font-size:14px}
+  .st-pass{color:var(--pass)}.st-fail{color:var(--fail)}.st-skip{color:var(--skip)}.st-now{color:var(--now)}.st-wait{color:var(--wait)}
+  .legend{font-size:10px;color:#9c8db0;display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:4px;padding-top:8px;border-top:1px solid #2a1e33}
+  .legend span{display:flex;align-items:center;gap:3px}
+
+  .controls{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:10px;justify-content:center;align-items:center;padding:12px;background:linear-gradient(to top,#0a0610f5,#0a061000)}
+  .btn{background:linear-gradient(135deg,var(--brass),var(--brass2));color:#231204;border:none;padding:11px 22px;border-radius:10px;font-weight:800;cursor:pointer;font-size:13px;box-shadow:0 4px 14px rgba(224,169,74,.35);display:flex;align-items:center;gap:6px}
+  .btn.ghost{background:linear-gradient(135deg,#6b7280,#4b5563);color:#fff}
+  .counter{font-size:12px;color:#c9a86a;font-weight:700}
+  .note{text-align:center;font-size:11px;color:#8a6f4a;margin:10px 0 74px}
+</style>
+</head>
+<body>
+<!-- SVG ICON SET (no emoji) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-loco" viewBox="0 0 24 24"><path d="M4 4h9a5 5 0 0 1 5 5v4h2a2 2 0 0 1 2 2v3H2v-6a8 8 0 0 1 2-8Zm2 3v4h5V7Zm-2 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3 10.6 10.6 16.9 4.3z"/></symbol>
+  <symbol id="i-skip" viewBox="0 0 24 24"><path d="M4 5v14l8-7zm9 0v14l8-7z"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12Zm0 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></symbol>
+  <symbol id="i-wait" viewBox="0 0 24 24"><path d="M6 2h12v6l-4 4 4 4v6H6v-6l4-4-4-4zm2 2v3l4 4 4-4V4zm0 16h8v-3l-4-4-4 4z"/></symbol>
+  <symbol id="i-dare" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></symbol>
+  <symbol id="i-truth" viewBox="0 0 24 24"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4V5a2 2 0 0 1 2-2Zm7 3v6h2V6zm0 8v2h2v-2z"/></symbol>
+</defs></svg>
+
+<div class="bulbs" id="bulbs"></div>
+<div class="shell">
+  <div class="top">
+    <div class="eyebrow">Episode 8 · Carnival of Chaos</div>
+    <div class="title">TRUTH OR DARE TRAIN</div>
+    <div class="sub">Reach the front of the train. Every camper takes one hot seat. Refuse, and your team eats a 5-minute penalty.</div>
+  </div>
+
+  <!-- LIVE STICKY TRAIN MAP -->
+  <div class="map">
+    <div class="map-h"><svg class="ic" style="font-size:14px;color:var(--brass)"><use href="#i-loco"/></svg> THE RACE — each team's position on the train &nbsp;·&nbsp; front ▶</div>
+    <div class="train-map" id="trainMap">
+      <div class="carts" id="carts"></div>
+      <div class="loco-front"><svg class="ic"><use href="#i-loco"/></svg></div>
+      <div class="front-lbl">FRONT</div>
+      <!-- team markers injected -->
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="stage" id="stage"><!-- filled by JS --></div>
+    <div class="side">
+      <div class="side-h">Live status — by team</div>
+      <div id="rosters"></div>
+      <div class="legend">
+        <span><svg class="ic st-pass"><use href="#i-check"/></svg> passed</span>
+        <span><svg class="ic st-fail"><use href="#i-x"/></svg> refused +5m</span>
+        <span><svg class="ic st-skip"><use href="#i-skip"/></svg> skip pass</span>
+        <span><svg class="ic st-now"><use href="#i-target"/></svg> hot seat</span>
+        <span><svg class="ic st-wait"><use href="#i-wait"/></svg> waiting</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">MOCKUP — 3 teams shown to prove it scales past 2. Click “Next Hot Seat” to watch the map + sidebar update live and stick.</div>
+</div>
+
+<div class="controls">
+  <button class="btn" id="next"><svg class="ic"><use href="#i-target"/></svg> Next Hot Seat</button>
+  <span class="counter" id="counter"></span>
+  <button class="btn ghost" id="all"><svg class="ic"><use href="#i-skip"/></svg> Skip to result</button>
+</div>
+
+<script>
+const TEAMS = {
+  Red:   {color:'#ef4444', glow:'#ff6b6b', cart:0, penalty:0, members:['Amelie','Marissa','Zaid','Hannah','Anastasia','Ivy']},
+  Blue:  {color:'#3b82f6', glow:'#60a5fa', cart:0, penalty:0, members:['Richard','Ted','Lynda','Isabel','Natalia','Logan']},
+  Green: {color:'#22c55e', glow:'#4ade80', cart:0, penalty:0, members:['Diego','Spencer','Tristan','Alessio','Benji','Jade']},
+};
+const CARTS = 6;
+const ic = id => `<svg class="ic"><use href="#${id}"/></svg>`;
+const initials = n => n.slice(0,2).toUpperCase();
+const avaColor = t => TEAMS[t].color;
+
+// scripted turn order (interleaved teams) with outcomes for the demo
+const TURNS = [
+  {team:'Red',  who:'Amelie',   kind:'dare', prompt:'Read your company’s one-star reviews aloud.', verdict:'pass', quote:'Ugh — fine. These are FAKE, obviously.', beat:'<b>Amelie</b> grits through it — Hannah swears the reviews are fake. Red advances a cart.'},
+  {team:'Blue', who:'Richard',  kind:'dare', prompt:'Shave your head on camera.', verdict:'pass', quote:'At least I still have my pride…', beat:'<b>Richard</b> lets them shave it — devastated but done. Blue rolls forward.'},
+  {team:'Green',who:'Spencer',  kind:'truth',prompt:'Name the teammate you trust least.', verdict:'pass', quote:'Easy. It’s a strategy game.', beat:'<b>Spencer</b> answers coldly — a bond with the named player takes a hit. Green advances.'},
+  {team:'Red',  who:'Marissa',  kind:'truth',prompt:'Rank your teammates, most to least valuable.', verdict:'fail', quote:'I can’t put a divide on our team. It’s not worth it.', beat:'<b>Marissa</b> refuses — <b>weak spot: loyalty</b>. Red eats a <b>+5:00 penalty</b>.'},
+  {team:'Blue', who:'Ted',      kind:'dare', prompt:'Take an ice-water bath.', verdict:'pass', quote:'Twenty years of poker. This is nothing.', beat:'<b>Ted</b> submerges without a flinch. Blue advances.'},
+  {team:'Green',who:'Tristan',  kind:'dare', prompt:'Pick a camper and punch them.', verdict:'pass', quote:'Don’t do unto others… but okay.', beat:'<b>Tristan</b> punches Zaid (who volunteered) — a bond forms out of the chaos. Green advances.'},
+  {team:'Red',  who:'Anastasia',kind:'dare', prompt:'Shave off your eyebrows on camera.', verdict:'fail', quote:'I’m a model. Looks are everything.', beat:'<b>Anastasia</b> won’t — <b>weak spot: vanity</b>. Red takes another <b>+5:00 penalty</b>.'},
+  {team:'Blue', who:'Isabel',   kind:'truth',prompt:'What really led you to the church?', verdict:'pass', quote:'It’s just one question. How hard can it be?', beat:'<b>Isabel</b> tells all — the team is stunned. Blue advances.'},
+  {team:'Green',who:'Diego',    kind:'dare', prompt:'Fight a chicken named Freckles Jr.', verdict:'skip', quote:'', beat:'<b>Diego</b> uses Green’s <b>skip pass</b> — Emily waves him through the cart, no risk.'},
+  {team:'Blue', who:'Logan',    kind:'dare', prompt:'Kiss a stranger for the crowd.', verdict:'pass', quote:'Bro, who gets this lucky?', beat:'<b>Logan</b> goes for it — a spark with the stranger. Blue reaches the front first!'},
+];
+
+let idx = -1;
+
+function renderMap(){
+  const carts = document.getElementById('carts'); carts.innerHTML='';
+  for(let c=0;c<CARTS;c++){ carts.insertAdjacentHTML('beforeend',
+    `<div class="cart"><div class="win"></div><div class="cnum">${c+1}</div></div>`); }
+  document.querySelectorAll('.marker').forEach(m=>m.remove());
+  const map = document.getElementById('trainMap');
+  const names = Object.keys(TEAMS);
+  names.forEach((t,i)=>{
+    const T=TEAMS[t];
+    const pct = (T.cart/CARTS)*100;
+    const el = document.createElement('div');
+    el.className='marker'; el.style.color=T.glow;
+    el.style.left = `calc(${Math.min(pct,92)}% )`;
+    el.style.top = (2 + i*30)+'px';
+    el.innerHTML = `<span class="mtrain">${ic('i-loco')}</span><span class="mlbl" style="color:${T.glow}">${t.toUpperCase()}</span><span class="mcart">cart ${T.cart}/${CARTS}</span>`;
+    map.appendChild(el);
+  });
+}
+
+const status = {}; // player -> pass/fail/skip/now/wait
+function renderRosters(){
+  const box=document.getElementById('rosters'); box.innerHTML='';
+  for(const t of Object.keys(TEAMS)){
+    const T=TEAMS[t];
+    let rows='';
+    for(const m of T.members){
+      const st = status[m] || 'wait';
+      const icid = {pass:'i-check',fail:'i-x',skip:'i-skip',now:'i-target',wait:'i-wait'}[st];
+      const cls = {pass:'st-pass',fail:'st-fail',skip:'st-skip',now:'st-now',wait:'st-wait'}[st];
+      const nmeCls = st==='now'?'':(st==='wait'?'wait':'done');
+      rows+=`<div class="row ${st==='now'?'now':''}"><div class="ava" style="background:${T.color}">${initials(m)}</div><span class="rname ${nmeCls}">${m}</span><span class="rstat ${cls}">${ic(icid)}</span></div>`;
+    }
+    box.insertAdjacentHTML('beforeend',
+      `<div class="team-block">
+         <div class="team-bar" style="background:linear-gradient(90deg,${T.color}33,${T.color}11);color:${T.glow};border:1px solid ${T.color}44">
+           <span class="tname">${ic('i-loco')} ${t.toUpperCase()} TEAM</span>
+           <span class="clock">+${String(Math.floor(T.penalty)).padStart(2,'0')}:00<small> pen.</small></span>
+         </div>${rows}
+       </div>`);
+  }
+}
+
+function renderStage(turn){
+  const T=TEAMS[turn.team];
+  const kindCls = turn.kind;
+  const vClass = turn.verdict==='fail'?'fail':'pass';
+  const vIcon = turn.verdict==='fail'?'i-x':(turn.verdict==='skip'?'i-skip':'i-check');
+  const vText = turn.verdict==='fail'?`REFUSED${turn.quote?` — “${turn.quote}”`:''}`
+    : turn.verdict==='skip'?'SKIP PASS USED — waved through'
+    : `DONE${turn.quote?` — “${turn.quote}”`:''}`;
+  document.getElementById('stage').innerHTML=`
+    <div class="cart-head">
+      <span class="cart-no">CART ${T.cart+1} — THE HOT SEAT</span>
+      <span class="cart-team" style="background:${T.color}22;color:${T.glow};border:1px solid ${T.color}55">${ic('i-loco')} ${turn.team.toUpperCase()} TEAM</span>
+    </div>
+    <div class="window">
+      <div class="streak"></div>
+      <div class="streak" style="animation-delay:.35s;background:radial-gradient(ellipse,rgba(120,200,255,.8),transparent 70%)"></div>
+      <div class="streak" style="animation-delay:.7s;background:radial-gradient(ellipse,rgba(255,120,180,.8),transparent 70%)"></div>
+    </div>
+    <div class="duel">
+      <div class="hotseat">
+        <div class="portrait" style="background:${T.color}">${initials(turn.who)}</div>
+        <div class="hs-name">${turn.who}</div><div class="hs-tag">${turn.team} team</div>
+      </div>
+      <div class="card">
+        <div class="card-kind ${kindCls}">${ic(turn.kind==='dare'?'i-dare':'i-truth')} ${turn.kind.toUpperCase()}</div>
+        <div class="card-prompt">${turn.prompt}</div>
+        <span class="verdict ${vClass}">${ic(vIcon)} ${vText}</span>
+      </div>
+    </div>
+    <div class="beat">${turn.beat}</div>`;
+}
+
+function step(){
+  if(idx>=TURNS.length-1) return;
+  idx++;
+  const turn=TURNS[idx]; const T=TEAMS[turn.team];
+  // clear previous "now"
+  for(const k in status){ if(status[k]==='now') delete status[k]; }
+  status[turn.who]='now';
+  renderStage(turn); renderRosters();
+  // resolve + advance map (sticks)
+  setTimeout(()=>{
+    status[turn.who]= turn.verdict==='fail'?'fail':(turn.verdict==='skip'?'skip':'pass');
+    if(turn.verdict==='fail') T.penalty+=5;
+    T.cart=Math.min(T.cart+1,CARTS);
+    renderRosters(); renderMap();
+  },400);
+  document.getElementById('counter').textContent=`hot seat ${idx+1} of ${TURNS.length}`;
+}
+function all(){ while(idx<TURNS.length-1) step(); }
+
+document.getElementById('next').onclick=step;
+document.getElementById('all').onclick=all;
+renderMap(); renderRosters();
+document.getElementById('stage').innerHTML=`<div style="padding:40px 20px;text-align:center;color:#8a6f4a">${ic('i-loco')} The train pulls out of the station… click <b style="color:var(--brass)">Next Hot Seat</b> to begin.</div>`;
+document.getElementById('counter').textContent=`0 of ${TURNS.length}`;
+
+// bulbs
+const b=document.getElementById('bulbs');const cols=['#ffcf5c','#ff6b6b','#60a5fa','#a371f7','#4ade80'];
+for(let i=0;i<48;i++){const s=document.createElement('span');s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.background=cols[i%cols.length];s.style.animationDelay=(Math.random()*1.8)+'s';s.style.boxShadow='0 0 8px '+cols[i%cols.length];b.appendChild(s);}
+</script>
+</body>
+</html>

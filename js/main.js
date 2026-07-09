@@ -16,6 +16,7 @@ import * as dodgebrawlMod from './chal/dodgebrawl.js';
 import * as talentShowMod from './chal/talent-show.js';
 import * as suckyOutdoorsMod from './chal/sucky-outdoors.js';
 import * as upTheCreekMod from './chal/up-the-creek.js';
+import * as truthOrDareTrainMod from './chal/truth-or-dare-train.js';
 import * as paintballHuntMod from './chal/paintball-hunt.js';
 import * as hellsKitchenMod from './chal/hells-kitchen.js';
 import * as trustMod from './chal/trust.js';
@@ -172,7 +173,7 @@ const extractedModules = [
   playersMod, bondsMod, alliancesMod, votingMod,
   advantagesMod, romanceMod, challengesCoreMod,
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
-  suckyOutdoorsMod, upTheCreekMod, paintballHuntMod, hellsKitchenMod,
+  suckyOutdoorsMod, upTheCreekMod, truthOrDareTrainMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, mineOverMatterMod, treasureIslandMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
   truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, iceIceBabyMod, findersCreepersMod, backstabbersAhoyMod, projectRunawayMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, campEventsMod, twistsMod, rescueIslandMod,

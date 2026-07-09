@@ -1423,6 +1423,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isUpTheCreek = true;
 
+  } else if (engineType === 'truth-or-dare-train') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isTruthOrDareTrain = true;
+
   } else if (engineType === 'paintball-hunt') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isPaintballHunt = true;

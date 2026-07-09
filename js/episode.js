@@ -27,6 +27,7 @@ import { simulateDodgebrawl } from './chal/dodgebrawl.js';
 import { simulateTalentShow } from './chal/talent-show.js';
 import { simulateSuckyOutdoors } from './chal/sucky-outdoors.js';
 import { simulateUpTheCreek } from './chal/up-the-creek.js';
+import { simulateTruthOrDareTrain } from './chal/truth-or-dare-train.js';
 import { simulatePaintballHunt } from './chal/paintball-hunt.js';
 import { simulateHellsKitchen } from './chal/hells-kitchen.js';
 import { simulateTrustChallenge } from './chal/trust.js';
@@ -1032,6 +1033,7 @@ function _runCoupledPreMergeTwist(ep) {
   if (ep.isTalentShow)           { simulateTalentShow(ep); return true; }
   if (ep.isSuckyOutdoors)        { simulateSuckyOutdoors(ep); return true; }
   if (ep.isUpTheCreek)           { simulateUpTheCreek(ep); return true; }
+  if (ep.isTruthOrDareTrain)     { simulateTruthOrDareTrain(ep); return true; }
   if (ep.isPaintballHunt)        { simulatePaintballHunt(ep); return true; }
   if (ep.isHellsKitchen)         { simulateHellsKitchen(ep); return true; }
   if (ep.isTrustChallenge)       { simulateTrustChallenge(ep); return true; }
@@ -2276,6 +2278,9 @@ export function simulateEpisode() {
   } else if (ep.isUpTheCreek && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateUpTheCreek(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateUpTheCreek
+  } else if (ep.isTruthOrDareTrain && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateTruthOrDareTrain(ep);
+    // winner, loser, safeTribes, challengeType, tribalPlayers already set by simulateTruthOrDareTrain
   } else if (ep.isPaintballHunt && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulatePaintballHunt(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulatePaintballHunt
@@ -3116,7 +3121,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isMineOverMatter && !ep.isTreasureIsland && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari && !ep.isRapaPhooey && !ep.isDrumheller && !ep.isPlanesTrains && !ep.isIceIceBaby && !ep.isFindersCreepers && !ep.isBackstabbersAhoy && !ep.isProjectRunaway) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isTruthOrDareTrain && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isMineOverMatter && !ep.isTreasureIsland && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari && !ep.isRapaPhooey && !ep.isDrumheller && !ep.isPlanesTrains && !ep.isIceIceBaby && !ep.isFindersCreepers && !ep.isBackstabbersAhoy && !ep.isProjectRunaway) {
     updateChalRecord(ep);
   }
 
@@ -4676,6 +4681,7 @@ export function simulateEpisode() {
       isTalentShow: ep.isTalentShow || false, talentShow: ep.talentShow || null,
       isSuckyOutdoors: ep.isSuckyOutdoors || false, suckyOutdoors: ep.suckyOutdoors || null,
       isUpTheCreek: ep.isUpTheCreek || false, upTheCreek: ep.upTheCreek || null,
+      isTruthOrDareTrain: ep.isTruthOrDareTrain || false, truthOrDareTrain: ep.truthOrDareTrain || null,
       isPaintballHunt: ep.isPaintballHunt || false, paintballHunt: ep.paintballHunt || null,
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
@@ -4910,6 +4916,7 @@ export function simulateEpisode() {
       isTalentShow: ep.isTalentShow || false, talentShow: ep.talentShow || null,
       isSuckyOutdoors: ep.isSuckyOutdoors || false, suckyOutdoors: ep.suckyOutdoors || null,
       isUpTheCreek: ep.isUpTheCreek || false, upTheCreek: ep.upTheCreek || null,
+      isTruthOrDareTrain: ep.isTruthOrDareTrain || false, truthOrDareTrain: ep.truthOrDareTrain || null,
       isPaintballHunt: ep.isPaintballHunt || false, paintballHunt: ep.paintballHunt || null,
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
@@ -5348,6 +5355,7 @@ function simulateJuryRoundtable(ep) {
       isTalentShow: ep.isTalentShow || false, talentShow: ep.talentShow || null,
       isSuckyOutdoors: ep.isSuckyOutdoors || false, suckyOutdoors: ep.suckyOutdoors || null,
       isUpTheCreek: ep.isUpTheCreek || false, upTheCreek: ep.upTheCreek || null,
+      isTruthOrDareTrain: ep.isTruthOrDareTrain || false, truthOrDareTrain: ep.truthOrDareTrain || null,
       isPaintballHunt: ep.isPaintballHunt || false, paintballHunt: ep.paintballHunt || null,
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
@@ -6651,6 +6659,8 @@ function simulateJuryRoundtable(ep) {
     suckyOutdoors:      ep.suckyOutdoors      || null,
     isUpTheCreek:       ep.isUpTheCreek       || false,
     upTheCreek:         ep.upTheCreek         || null,
+    isTruthOrDareTrain: ep.isTruthOrDareTrain || false,
+    truthOrDareTrain:   ep.truthOrDareTrain   || null,
     isPaintballHunt:    ep.isPaintballHunt    || false,
     paintballHunt:      ep.paintballHunt      || null,
     isHellsKitchen:     ep.isHellsKitchen     || false,

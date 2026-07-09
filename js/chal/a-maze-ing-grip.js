@@ -665,13 +665,31 @@ function _amgCSS() {
   .amg-result-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;margin-bottom:8px;border-left:4px solid}
   .amg-rank{font-family:'Rye',cursive;font-size:20px;width:30px;text-align:center}
   /* cold open */
-  .amg-co{padding:24px 12px 40px;text-align:center;position:relative;min-height:460px}
-  .amg-co-title{font-family:'Rye',cursive;font-size:clamp(34px,7vw,64px);line-height:.95;color:#f2c94c;text-shadow:0 3px 0 #7a4a10,0 6px 0 #5a3608,0 0 44px rgba(242,201,76,.5);animation:amgPulse 2.6s ease-in-out infinite}
+  .amg-co{padding:20px 12px 52px;text-align:center;position:relative;min-height:540px;overflow:hidden}
+  .amg-co-title{font-family:'Rye',cursive;font-size:clamp(36px,7.5vw,68px);line-height:.95;color:#f2c94c;position:relative;z-index:2;
+    text-shadow:0 3px 0 #7a4a10,0 6px 0 #5a3608,0 0 44px rgba(242,201,76,.5);animation:amgPulse 2.6s ease-in-out infinite}
   @keyframes amgPulse{0%,100%{filter:drop-shadow(0 0 0 transparent)}50%{filter:drop-shadow(0 0 18px rgba(242,201,76,.4))}}
-  .amg-co-scene{margin-top:28px;display:flex;justify-content:center;gap:30px;flex-wrap:wrap}
-  .amg-co-net{position:relative;width:220px}
-  .amg-co-cta{margin-top:26px;font-size:13px;color:#e7cfa0;font-weight:700}
-  @media(prefers-reduced-motion:reduce){.amg-co-title{animation:none}}
+  .amg-co-stage{display:flex;align-items:center;justify-content:center;gap:min(4vw,36px);margin-top:26px;position:relative;z-index:2;flex-wrap:nowrap}
+  @media(max-width:640px){.amg-co-stage{gap:10px}}
+  .amg-co-team{display:flex;flex-direction:column;align-items:center;gap:8px;flex:0 1 auto;animation:amgTeamIn .6s cubic-bezier(.22,1,.36,1) both}
+  .amg-co-team.t0{animation-delay:.1s}.amg-co-team.t1{animation-delay:.28s}.amg-co-team.t2{animation-delay:.46s}
+  @keyframes amgTeamIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+  .amg-co-team-name{font-family:'Rye',cursive;font-size:clamp(15px,3vw,22px);letter-spacing:1px}
+  .amg-co-net-mini{width:clamp(120px,24vw,210px);height:52px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+  .amg-co-net-mini svg{width:100%;height:100%;display:block}
+  .amg-co-roster{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;max-width:clamp(150px,26vw,230px)}
+  .amg-co-av{display:inline-block;animation:amgBob 2.6s ease-in-out infinite}
+  @keyframes amgBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .amg-co-av .amg-pf{box-shadow:0 3px 8px rgba(0,0,0,.5)}
+  .amg-co-center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:0 0 auto}
+  .amg-co-scarecrow{width:clamp(78px,15vw,124px);transform-origin:50% 92%;animation:amgSway 4.2s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5))}
+  .amg-co-scarecrow svg{width:100%;height:auto;display:block;overflow:visible}
+  @keyframes amgSway{0%,100%{transform:rotate(-2.6deg)}50%{transform:rotate(2.6deg)}}
+  .amg-co-vs{font-family:'Rye',cursive;font-size:clamp(20px,4vw,32px);color:#e8b944;text-shadow:0 0 20px rgba(232,185,68,.6);animation:amgVs 1.7s ease-in-out infinite}
+  @keyframes amgVs{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.14);opacity:1}}
+  .amg-co-cta{margin-top:30px;font-size:13px;color:#e7cfa0;font-weight:700;position:relative;z-index:2;animation:amgCta 2.2s ease-in-out infinite}
+  @keyframes amgCta{0%,100%{opacity:.7}50%{opacity:1}}
+  @media(prefers-reduced-motion:reduce){.amg-co-title,.amg-co-scarecrow,.amg-co-av,.amg-co-vs,.amg-co-team,.amg-co-cta{animation:none}}
   </style>`;
 }
 
@@ -699,17 +717,51 @@ function _shell(content, ep, data) {
     ${content}</div>`;
 }
 
-// ── SCREEN 1: cold open ──
+// big, detailed, sway-animated scarecrow for the cold open
+function _amgBigScarecrow() {
+  return `<svg viewBox="0 0 120 152" aria-hidden="true">
+    <rect x="56" y="54" width="8" height="94" rx="2" fill="#6b4423"/>
+    <rect x="14" y="73" width="92" height="7" rx="3" fill="#5a3a1e"/>
+    <path d="M30 78 L90 78 L84 122 L36 122 Z" fill="#a8452e"/>
+    <g stroke="#7a2e1c" stroke-width="2" opacity=".55"><line x1="45" y1="78" x2="42" y2="122"/><line x1="60" y1="78" x2="60" y2="122"/><line x1="75" y1="78" x2="78" y2="122"/><line x1="32" y1="92" x2="88" y2="92"/><line x1="34" y1="106" x2="86" y2="106"/></g>
+    <g stroke="#e0b44a" stroke-width="2.6" stroke-linecap="round"><line x1="16" y1="76" x2="4" y2="68"/><line x1="16" y1="76" x2="5" y2="80"/><line x1="16" y1="76" x2="3" y2="74"/><line x1="104" y1="76" x2="116" y2="68"/><line x1="104" y1="76" x2="115" y2="80"/><line x1="104" y1="76" x2="117" y2="74"/></g>
+    <g stroke="#e0b44a" stroke-width="2" stroke-linecap="round" opacity=".9"><line x1="52" y1="78" x2="48" y2="69"/><line x1="60" y1="78" x2="60" y2="68"/><line x1="68" y1="78" x2="72" y2="69"/></g>
+    <circle cx="60" cy="43" r="20" fill="#d6a45a"/><circle cx="60" cy="43" r="20" fill="none" stroke="#b5843a" stroke-width="1.5"/>
+    <g stroke="#3a2410" stroke-width="2" stroke-linecap="round"><line x1="49" y1="39" x2="55" y2="45"/><line x1="55" y1="39" x2="49" y2="45"/><line x1="65" y1="39" x2="71" y2="45"/><line x1="71" y1="39" x2="65" y2="45"/></g>
+    <path d="M50 53 Q60 59 70 53" fill="none" stroke="#3a2410" stroke-width="2" stroke-linecap="round"/>
+    <g stroke="#3a2410" stroke-width="1.2"><line x1="52" y1="54" x2="52" y2="58"/><line x1="56" y1="55" x2="56" y2="59"/><line x1="60" y1="56" x2="60" y2="60"/><line x1="64" y1="55" x2="64" y2="59"/><line x1="68" y1="54" x2="68" y2="58"/></g>
+    <ellipse cx="60" cy="26" rx="27" ry="6" fill="#7a4a24"/><path d="M44 26 Q46 5 60 3 Q74 5 76 26 Z" fill="#8a5628"/><rect x="44" y="23" width="32" height="5" rx="2" fill="#5a3418"/>
+    <g stroke="#e0b44a" stroke-width="2" stroke-linecap="round"><line x1="44" y1="27" x2="37" y2="23"/><line x1="76" y1="27" x2="83" y2="23"/></g>
+  </svg>`;
+}
+
+// ── SCREEN 1: cold open (animated corn-maze face-off) ──
 export function rpBuildAMGTitleCard(ep) {
   const data = ep.aMazeInGrip; if (!data) return '';
-  const nets = (data.teams || []).slice(0, 2).map(t => `<div class="amg-co-net">
-    <div class="amg-net-vis" style="height:80px">${_amgNetSVG(20)}</div>
-    <div style="font-family:'Rye';font-size:16px;color:${t.color};text-align:center;margin-top:4px">${t.name.toUpperCase()}</div></div>`).join('');
+  const teams = data.teams || [];
+  const _teamBlock = (t, i) => {
+    const roster = [...new Set([...(t.holderStart || []), ...(t.scorers || []), ...(t.sitOuts || [])])];
+    const avs = roster.map((m, j) => `<span class="amg-co-av" style="animation-delay:${(j * 0.16).toFixed(2)}s">${_amgPortrait(m, 'md', t.color)}</span>`).join('');
+    return `<div class="amg-co-team t${i}">
+      <div class="amg-co-team-name" style="color:${t.color}">${t.name.toUpperCase()}</div>
+      <div class="amg-co-net-mini">${_amgNetSVG(16)}</div>
+      <div class="amg-co-roster">${avs}</div></div>`;
+  };
+  const center = `<div class="amg-co-center"><div class="amg-co-scarecrow">${_amgBigScarecrow()}</div><div class="amg-co-vs">VS</div></div>`;
+  let stage;
+  if (teams.length === 2) {
+    stage = `${_teamBlock(teams[0], 0)}${center}${_teamBlock(teams[1], 1)}`;
+  } else {
+    // 3+ teams: scarecrow presides at the top, teams line up below
+    stage = `<div style="display:flex;flex-direction:column;align-items:center;gap:16px;width:100%">
+      <div class="amg-co-center">${`<div class="amg-co-scarecrow">${_amgBigScarecrow()}</div>`}</div>
+      <div style="display:flex;justify-content:center;gap:min(3vw,24px);flex-wrap:wrap">${teams.map((t, i) => _teamBlock(t, Math.min(i, 2))).join('')}</div></div>`;
+  }
   return `${_amgCSS()}<div class="amg-shell amg-co">${_amgField()}
     <div class="amg-eyebrow" style="position:relative;z-index:2">Carnival of Chaos · Immunity Challenge</div>
     <div class="amg-co-title">A-Maze-ing Grip</div>
-    <div class="amg-sub" style="max-width:640px">Derek and Trevor gather the teams at the corn maze. Two hold the net; the rest raid the rows for coconuts and sink them into a rival's net. Hold on longest and you're safe — drop first and it's off to tribal.</div>
-    <div class="amg-co-scene">${nets}</div>
+    <div class="amg-sub" style="max-width:640px;position:relative;z-index:2">Derek and Trevor gather the teams at the corn maze. Two hold the net; the rest raid the rows for coconuts and sink them into a rival's net. Hold on longest and you're safe — drop first, and it's off to tribal.</div>
+    <div class="amg-co-stage">${stage}</div>
     <div class="amg-co-cta">🌽 Ropes up. Into the corn.</div></div>`;
 }
 

@@ -3031,6 +3031,12 @@ async function generateEpisodeAI() {
     franchiseContextEarly = (await _csGet(`franchise_context_s${season}`)) || '';
     seasonSettingEarly = (await _csGet(`season_setting_s${season}`)) || '';
   }
+  // If still no season setting (e.g. generating a later episode before ever saving one),
+  // inherit the venue from the simulator config so the worker still knows where it is.
+  if (!seasonSettingEarly && typeof _simulatorSettingPreset === 'function') {
+    const _simSet = _simulatorSettingPreset();
+    if (_simSet) { seasonSettingEarly = _simSet.text; _csPut(`season_setting_s${season}`, seasonSettingEarly); }
+  }
 
   // AUTO voice profiles: if no franchise context was provided/stored, build it automatically
   // from the season's cast using voice-profiles.json — no manual copy-paste needed.
@@ -3128,6 +3134,11 @@ async function generateEpisodeAI() {
     }
   } else {
     seasonSetting = (await _csGet(`season_setting_s${season}`)) || '';
+  }
+  // Fall back to the simulator's venue if nothing was typed/saved (keeps the worker in-setting).
+  if (!seasonSetting && typeof _simulatorSettingPreset === 'function') {
+    const _simSet2 = _simulatorSettingPreset();
+    if (_simSet2) { seasonSetting = _simSet2.text; _csPut(`season_setting_s${season}`, seasonSetting); }
   }
 
   // GATHER PREVIOUS EPISODES FOR CONTEXT
@@ -8336,6 +8347,25 @@ JOURNEYS: Two players nominated by the losing team are sent to an isolated part 
     });
   }
 
+  // Bridge: the simulator's seasonConfig.setting enum → this worker's Season Setting preset.
+  // Lets you set the venue once in the simulator and have the AI worker inherit it, instead of
+  // re-typing it here. Only used to AUTO-FILL when the worker field is empty (never overwrites
+  // a saved/typed setting). Reads the simulator config from shared localStorage.
+  const SETTING_ENUM_TO_PRESET = {
+    'hosted-camp': 'td-island',
+    'survival-island': 'survivor',
+    'carnival': 'dc-carnival',
+    'film-lot': 'td-action',
+    'world-tour': 'td-worldtour',
+  };
+  function _simulatorSettingPreset() {
+    try {
+      const cfg = JSON.parse(localStorage.getItem('simulator_config') || '{}');
+      const preset = SETTING_ENUM_TO_PRESET[cfg.setting];
+      return (preset && SEASON_SETTING_PRESETS[preset]) ? { preset, text: SEASON_SETTING_PRESETS[preset] } : null;
+    } catch (e) { return null; }
+  }
+
   const franchiseContextSection = document.getElementById('episode-1-franchise-context');
   const seasonSettingSection = document.getElementById('episode-1-season-setting');
   function toggleAuditions() {
@@ -8362,7 +8392,22 @@ JOURNEYS: Two players nominated by the losing team are sent to an isolated part 
     const ctxEl = document.getElementById('franchise-context-input');
     const settingEl = document.getElementById('season-setting-input');
     if (ctxEl) ctxEl.value = (await _csGet(`franchise_context_s${s}`)) || '';
-    if (settingEl) settingEl.value = (await _csGet(`season_setting_s${s}`)) || '';
+    if (settingEl) {
+      const saved = (await _csGet(`season_setting_s${s}`)) || '';
+      if (saved) {
+        settingEl.value = saved;
+      } else {
+        // no saved setting yet — inherit the venue from the simulator config if one is set
+        const sim = _simulatorSettingPreset();
+        if (sim) {
+          settingEl.value = sim.text;
+          if (settingPresetEl) settingPresetEl.value = sim.preset;
+          settingEl.placeholder = 'Auto-filled from the simulator’s season setting — edit freely.';
+        } else {
+          settingEl.value = '';
+        }
+      }
+    }
   }
   const seasonInput = document.getElementById('aiSeason');
   if (seasonInput) {

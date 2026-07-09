@@ -190,7 +190,7 @@ export function simulateAMazeInGrip(ep) {
 
   const _snap = () => teamData.map(t => ({
     name: t.name, color: t.color, coconuts: t.coconuts, strainPct: Math.round(Math.min(t.strainPct, 100)),
-    dropped: t.dropped, holders: [...t.holders], dunker: t.dunker,
+    dropped: t.dropped, holders: [...t.holders], dunker: t.dunker, swaps: t.swaps,
     inMaze: t.scorers.filter(s => !t.holders.includes(s)),
     sitOuts: [...t.sitOuts],
   }));
@@ -381,7 +381,7 @@ export function simulateAMazeInGrip(ep) {
           `${fresh} taps in for a spent ${tired} — fresh grip on the rope just when ${team.name} needed it.`,
           `${tired} can't hold anymore. ${fresh} volunteers, hands ready. ${team.name}'s net steadies.`,
         ], team.name + round + 'sw'),
-        meta: `${team.name} strain −18% (fresh grip) · ${fresh} now holding · ${tired} → maze` }, featured);
+        meta: `${team.name} strain −18% (fresh grip) · ${fresh} now holding · ${tired} → maze · swap ${team.swaps} of 2${team.swaps >= 2 ? ' (no swaps left)' : ''}` }, featured);
     });
 
     // ── SOCIAL EVENT (guaranteed 1 per round, rotate teams) ──
@@ -533,8 +533,10 @@ function _amgSidebarInner(data, idx) {
       rows += `<div class="amg-side-row" style="opacity:.7">${_amgPortrait(m, 'sm', t.color)} ${m} <span style="font-size:9px;color:#7fbcf0">in maze</span></div>`;
     });
     (t.sitOuts || []).slice(0, 1).forEach(m => { rows += `<div class="amg-side-row" style="opacity:.5">${_amgPortrait(m, 'sm', t.color)} ${m} <span style="font-size:9px;color:#9c9c9c">sitting out</span></div>`; });
+    const swapsLeft = 2 - (t.swaps || 0);
     html += `<div class="amg-side-team"><div class="amg-side-team-bar" style="background:linear-gradient(90deg,${t.color}33,transparent);color:${t.color};border:1px solid ${t.color}44">
-      <span>${t.name.toUpperCase()}</span><span style="font-family:'Rye'">${t.dropped ? 'net DOWN' : pct + '% strain'}</span></div>${rows}</div>`;
+      <span>${t.name.toUpperCase()}</span><span style="font-family:'Rye'">${t.dropped ? 'net DOWN' : pct + '% strain'}</span></div>
+      ${!t.dropped ? `<div style="font-size:9px;color:#9c855f;padding:0 6px 4px">🔄 ${swapsLeft} swap${swapsLeft === 1 ? '' : 's'} left</div>` : ''}${rows}</div>`;
   });
   html += `<div class="amg-legend"><span><span class="amg-side-dot" style="background:#6a8f4a"></span>fresh grip</span>
     <span><span class="amg-side-dot" style="background:#e8b944"></span>straining</span>
@@ -728,7 +730,7 @@ export function rpBuildAMGRace(ep) {
       }).join('');
       inner = `<div class="amg-card"><div class="amg-card-head"><span class="amg-badge b-role">🪢 THE LINEUP</span><span style="font-size:11px;color:#b79a6a">Each team locks in 2 holders + a designated dunker</span></div>
         <div class="amg-lineup">${teamCols}</div>
-        <div class="amg-card-meta" style="margin-top:8px"><b style="color:#e8b944">Grip</b> (endurance + physical + a little boldness, out of 10) = how much coconut-weight a holder can bear before the net drops. <b style="color:#ff8a80">Throw</b> (out of 10) = how reliably a dunker sinks it. Uneven teams equalized — the bigger team sits out its weakest hunters down to matching scorer counts.</div></div>`;
+        <div class="amg-card-meta" style="margin-top:8px"><b style="color:#e8b944">Grip</b> (endurance + physical + a little boldness, out of 10) = how much coconut-weight a holder can bear before the net drops. <b style="color:#ff8a80">Throw</b> (out of 10) = how reliably a dunker sinks it. Holders <b>tire every round</b> — endurance slows the fade, and each team may <b>swap in a fresh holder up to twice</b>. Uneven teams equalized — the bigger team sits out its weakest hunters down to matching scorer counts.</div></div>`;
     } else if (s.stepType === 'hunt') {
       inner = `<div class="amg-card"><div class="amg-card-head"><span class="amg-badge b-hunt">🌽 ${s.found ? 'SCARECROW FOUND' : 'LOST IN THE CORN'}</span><span style="font-size:11px;color:#b79a6a">${s.player} · ${s.team} · the maze</span></div>
         <div class="amg-card-body">${_amgActor(s.player, s.color, _amgScarecrowSVG(16))}<div><div class="amg-card-txt">${s.text}</div><div class="amg-card-meta">${s.meta || ''}</div></div></div></div>`;

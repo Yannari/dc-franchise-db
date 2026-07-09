@@ -1,11 +1,16 @@
 // ══════════════════════════════════════════════════════════════════════
 // truth-or-dare-train.js — "Truth or Dare Train" (pre-merge team race)
-// Both teams race cart-to-cart to the front of a moving train. Each camper
-// takes ONE hot seat (Truth or Dare). Completing advances the team; REFUSING
-// costs the team a 5-minute penalty. Lowest total time wins tribe immunity.
-// Personality-driven: bold players dare, cautious players pick truth, and a
-// prompt that hits a personal WEAK SPOT (vanity, loyalty, a secret) can make
-// even a bold player refuse. Rich social events fire BETWEEN every hot seat.
+// Teams race cart-to-cart to the front of a moving train, taking hot seats in
+// ROUND-ROBIN order (one team, then the next, then back around) so the lead
+// swings back and forth. Each hot seat resolves on a THREE-TIER clock:
+//   • go straight for it (confident) → fast, barely any time lost
+//   • hesitate (nervous but does it)  → completes, but bleeds time
+//   • refuse                          → full 5-minute penalty
+// LOWEST TOTAL TIME wins immunity — so the race resolves cleanly even when
+// nobody flat-out refuses. Personality-driven: bold players attack the clock,
+// cautious players stall, and a prompt that hits a personal WEAK SPOT (vanity,
+// loyalty, a secret, a fear) makes even a bold player hesitate or balk.
+// Rich social events fire BETWEEN every hot seat.
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns, updateChalRecord } from '../players.js';
@@ -71,9 +76,20 @@ function _fill(t, name) {
   return t.replace(/%r/g, p.posAdj).replace(/%o/g, p.obj).replace(/%s/g, p.sub);
 }
 
+// ── time model (seconds) — lower total time wins ────────────────────────
+const T_CONFIDENT = 45;   // "went straight for it" — barely a stumble
+const T_HESITANT = 110;   // did it, but froze up and bled the clock
+const T_REFUSE = 300;     // full 5-minute penalty
+function _fmtTime(sec) {
+  sec = Math.max(0, Math.round(sec));
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
 // ── the per-camper hot-seat resolution ─────────────────────────────────
-// Returns { kind, prompt, weak, verdict, quote, targetPlayer, score }.
-function _resolveTurn(name, team, skipAvailable) {
+// Returns { kind, prompt, weak, outcome, timeCost, quote, targetPlayer, score }.
+// outcome ∈ 'confident' | 'hesitant' | 'refused'.
+function _resolveTurn(name, team) {
   const s = pStats(name);
   const weak = _weakSpots(name);
   // choose lane: boldness/archetype leans dare; caution/mental leans truth
@@ -102,33 +118,31 @@ function _resolveTurn(name, team, skipAvailable) {
   const prompt = _fill(promptObj.text, name);
   const hitsWeakSpot = promptObj.weak && weak.has(promptObj.weak);
 
-  // completion chance: grit (boldness+temperament) vs the sting of a weak-spot hit
-  let complete = s.boldness * 0.5 + s.temperament * 0.35 + 1.0 + _noise(2.5);
-  if (hitsWeakSpot) complete -= 5.5;              // the thing that makes them balk
-  if (kind === 'truth') complete += 0.8;          // truths are usually easier to survive
-  // one team skip pass can save a likely refusal
-  let verdict, usedSkip = false;
-  if (complete < 0 && skipAvailable && (hitsWeakSpot || s.boldness <= 4)) {
-    verdict = 'skip'; usedSkip = true;
-  } else {
-    verdict = complete >= 0 ? 'pass' : 'fail';
-  }
+  // GRIT: nerve to attack the clock. Higher = faster; a weak-spot hit tanks it.
+  let grit = s.boldness * 0.5 + s.temperament * 0.35 + 1.0 + _noise(2.5);
+  if (hitsWeakSpot) grit -= 5.5;          // the thing that makes them freeze or balk
+  if (kind === 'truth') grit += 0.8;      // truths are a little easier to blurt out
 
-  // in-character quote
-  const quote = _quoteFor(name, kind, verdict, promptObj.weak);
+  // three tiers on the clock
+  let outcome, timeCost;
+  if (grit >= 4) { outcome = 'confident'; timeCost = T_CONFIDENT + _noise(18); }
+  else if (grit >= -0.5) { outcome = 'hesitant'; timeCost = T_HESITANT + _noise(30); }
+  else { outcome = 'refused'; timeCost = T_REFUSE; }
+  timeCost = Math.max(20, Math.round(timeCost));
 
-  // per-player score: nailing a hard (weak-spot) dare scores big; refusing hurts
-  let score = 0;
-  if (verdict === 'pass') score = (hitsWeakSpot ? 8 : 5) + (kind === 'dare' ? 2 : 0) + Math.round(s.boldness * 0.2);
-  else if (verdict === 'skip') score = 2;
-  else score = -3; // refusal — cost the team time
+  const quote = _quoteFor(name, kind, outcome, promptObj.weak);
 
-  return { kind, prompt, weak: promptObj.weak, hitsWeakSpot, verdict, quote, targetPlayer, targetKind: promptObj.targetKind || null, usedSkip, score };
+  // per-player score (MVP / chalMemberScores): fast + hard = best; refusing hurts
+  let score;
+  if (outcome === 'confident') score = (hitsWeakSpot ? 9 : 6) + (kind === 'dare' ? 2 : 0) + Math.round(s.boldness * 0.2);
+  else if (outcome === 'hesitant') score = (hitsWeakSpot ? 6 : 4) + (kind === 'dare' ? 1 : 0);
+  else score = -3;
+
+  return { kind, prompt, weak: promptObj.weak, hitsWeakSpot, outcome, timeCost, quote, targetPlayer, targetKind: promptObj.targetKind || null, score };
 }
 
-function _quoteFor(name, kind, verdict, weak) {
-  const p = _pron(name);
-  if (verdict === 'fail') {
+function _quoteFor(name, kind, outcome, weak) {
+  if (outcome === 'refused') {
     const pool = {
       vanity: [`I'm not touching my face for a game. Looks are everything.`, `Absolutely not. Do you know what I do for a living?`, `No. I've worked too hard on this look.`, `I'll take the penalty. My image is not up for debate.`],
       loyalty: [`I can't put a divide on this team. It's not worth the time.`, `No — I'm not ranking the people I'm fighting beside.`, `Ask me anything else. I won't turn on them.`, `Forget it. I'd rather eat the penalty than sell out my team.`],
@@ -136,14 +150,20 @@ function _quoteFor(name, kind, verdict, weak) {
       fear: [`Nope. Nope. I can't — I physically can't.`, `That is a hard no from me.`, `I'd rather lose than do THAT.`, `You've got the wrong person for this one.`],
       temper: [`This is humiliating and I won't do it.`, `Absolutely not, find someone else.`, `No. I have some dignity left.`, `I'm out. Take the penalty.`],
     };
-    return _pick(pool[weak] || pool.temper, name + 'fail');
+    return _pick(pool[weak] || pool.temper, name + 'refuse');
   }
-  if (verdict === 'skip') return _pick([`Saved by the pass — I'm walking through this one.`, `Thank god for the skip. I owe the team.`, `Not today. I'm taking the free pass.`, `Emily, you're a lifesaver.`], name + 'skip');
-  // pass
+  if (outcome === 'hesitant') {
+    // did it, but froze / stalled / talked themselves into it — burned the clock
+    const pool = kind === 'dare'
+      ? [`Oh god — okay — okay, give me a second... fine. FINE.`, `I hate this. I really hate this... ugh, going, I'm going.`, `Don't watch me. Don't — ...okay, doing it, doing it.`, `My hands are shaking. Just... one, two — there. Done. Barely.`]
+      : [`...Do I have to? ...Fine. But you didn't hear it from me.`, `That's... a lot to admit. Give me a sec... okay.`, `Ugh. You're really making me say it out loud?`, `I— ...yeah. Okay. There. Can we move on now?`];
+    return _pick(pool, name + 'hesit');
+  }
+  // confident — attacked it, no hesitation
   const pool = kind === 'dare'
-    ? [`Ugh — fine. Let's get it over with.`, `You think this scares me? Watch.`, `For the team. Deep breath. Go.`, `Okay, that was actually kind of fun.`]
-    : [`It's one question. How hard can it be?`, `Fine — you want the truth? Here it is.`, `I've got nothing to hide. Ask away.`, `Honestly? Yeah. I'll say it.`];
-  return _pick(pool, name + 'pass');
+    ? [`You think this scares me? Watch.`, `For the team. Deep breath. Go.`, `Easy. Next cart.`, `Okay, that was actually kind of fun.`]
+    : [`It's one question. How hard can it be?`, `You want the truth? Here it is. No hesitation.`, `I've got nothing to hide. Ask away.`, `Honestly? Yeah. Said it. Moving on.`];
+  return _pick(pool, name + 'conf');
 }
 
 // ── SOCIAL EVENTS between hot seats (guaranteed density, real consequences) ──
@@ -176,8 +196,8 @@ function _socialEvent(team, hotName, ctx, ep, key) {
       badgeText: 'THAT HURT', badgeClass: 'red', consequences: `-1.2 bond ${hotName}/${tgt}; ${hotName} -1 popularity.` };
   }
 
-  // 2) REACTION to the hot player's verdict
-  if (ctx.verdict === 'fail') {
+  // 2) REACTION to the hot player's outcome
+  if (ctx.outcome === 'refused') {
     // a schemer/rival needles them (sabotage), OR a loyal mate comforts
     const rival = mates.slice().sort((a, b) => getBond(hotName, a) - getBond(hotName, b))[0];
     const friend = mates.slice().sort((a, b) => getBond(hotName, b) - getBond(hotName, a))[0];
@@ -195,9 +215,10 @@ function _socialEvent(team, hotName, ctx, ep, key) {
       badgeText: 'HAD YOUR BACK', badgeClass: 'green', consequences: `+0.7 bond ${friend}/${hotName}.` };
   }
 
-  // 3) PASS reactions — cheer / respect / bonding-over-misery / trash-talk across teams
-  if (ctx.verdict === 'pass') {
-    if (ctx.hitsWeakSpot && roll < 0.6) {
+  // 3) COMPLETED reactions — cheer / respect / bonding-over-misery
+  if (ctx.outcome === 'confident' || ctx.outcome === 'hesitant') {
+    // only a CONFIDENT weak-spot clear earns awed respect; a shaky one gets a hug
+    if (ctx.hitsWeakSpot && ctx.outcome === 'confident' && roll < 0.6) {
       const admirer = mates[Math.floor(Math.random() * mates.length)];
       addBond(admirer, hotName, 0.6);
       if (!gs.popularity) gs.popularity = {};
@@ -222,57 +243,63 @@ export function simulateTruthOrDareTrain(ep) {
   if (tribes.length < 2) return; // needs teams
 
   const personalScores = {};
-  const teamData = [];
   const allTurns = [];   // flat, in reveal order: {stepType:'turn'|'event', ...}
   ep.campEvents = ep.campEvents || {};
 
-  tribes.forEach(tribe => {
+  // ── set up each team's hot-seat queue (bold-first tends to draw fire) ──
+  const teamData = tribes.map(tribe => {
     const key = tribe.name;
     ep.campEvents[key] = ep.campEvents[key] || { pre: [], post: [] };
     const members = tribe.members.filter(m => active.includes(m));
-    // hot-seat order: bold first tends to draw fire; shuffle-ish by name hash
     const order = members.slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness);
-    let skipAvailable = true; // one skip-the-hot-seat pass per team
-    let penalties = 0;
-    let cart = 0;
-    const turns = [];
+    return { tribe, key, name: tribe.name, color: tribe.color, members: order,
+      cart: 0, timeSec: 0, refusals: 0, turns: [] };
+  });
 
-    order.forEach((name, i) => {
-      const r = _resolveTurn(name, tribe, skipAvailable);
-      if (r.usedSkip) skipAvailable = false;
-      if (r.verdict === 'fail') penalties += 5;
-      cart += 1;
+  // ── ROUND-ROBIN: one hot seat per team per round, alternating team to team ──
+  const maxLen = Math.max(...teamData.map(t => t.members.length));
+  for (let round = 0; round < maxLen; round++) {
+    teamData.forEach(t => {
+      const name = t.members[round];
+      if (!name) return;                    // this team is shorter — skip its slot
+      const r = _resolveTurn(name, t.tribe);
+      t.cart += 1;
+      t.timeSec += r.timeCost;
+      if (r.outcome === 'refused') t.refusals += 1;
       personalScores[name] = r.score;
-      const turn = { team: tribe.name, color: tribe.color, player: name, cart, ...r };
-      turns.push(turn);
+      const turn = { team: t.name, color: t.color, player: name, cart: t.cart, ...r };
+      t.turns.push(turn);
       allTurns.push({ stepType: 'turn', ...turn });
 
       // guaranteed social event after each hot seat (density)
-      const evt = _socialEvent(tribe, name, r, ep, key);
+      const evt = _socialEvent(t.tribe, name, r, ep, t.key);
       if (evt) {
-        ep.campEvents[key].post.push(evt);
-        allTurns.push({ stepType: 'event', team: tribe.name, color: tribe.color, ...evt });
+        ep.campEvents[t.key].post.push(evt);
+        allTurns.push({ stepType: 'event', team: t.name, color: t.color, ...evt });
       }
     });
+  }
 
-    const baseTime = members.length * 2;           // base minutes to clear the carts
-    const totalTime = baseTime + penalties;         // lower = better
-    const avgScore = members.length ? members.reduce((s, m) => s + (personalScores[m] || 0), 0) / members.length : 0;
-    teamData.push({ tribe, name: tribe.name, color: tribe.color, members: order, cart, penalties, totalTime, avgScore, skipUsed: !skipAvailable, turns });
+  teamData.forEach(t => {
+    t.penalties = t.refusals * 5;   // minutes of penalty (for display)
+    t.totalTime = t.timeSec;        // seconds — lower wins
+    t.avgScore = t.members.length ? t.members.reduce((s, m) => s + (personalScores[m] || 0), 0) / t.members.length : 0;
   });
 
   // showmance moment if a showmance pair is racing (pass tribe objects, null phases)
   try { _checkShowmanceChalMoment(ep, null, null, personalScores, 'danger', tribes); } catch (e) {}
 
   // ── RANK TEAMS: fastest (lowest total time) wins; break ties by avg score ──
-  teamData.sort((a, b) => (a.totalTime - b.totalTime) || (b.avgScore - a.avgScore));
+  teamData.sort((a, b) => (a.timeSec - b.timeSec) || (b.avgScore - a.avgScore));
   const winner = teamData[0].tribe;
   const loser = teamData[teamData.length - 1].tribe;
   const safeTribes = teamData.slice(1, -1).map(t => t.tribe);
 
   // ── FINALIZE (pre-merge: NO ep.immunityWinner; losing tribe → tribal) ──
   ep.truthOrDareTrain = {
-    teams: teamData.map(t => ({ name: t.name, color: t.color, members: t.members, cart: t.cart, penalties: t.penalties, totalTime: t.totalTime, avgScore: Math.round(t.avgScore * 10) / 10, skipUsed: t.skipUsed })),
+    teams: teamData.map(t => ({ name: t.name, color: t.color, members: t.members, cart: t.cart,
+      penalties: t.penalties, refusals: t.refusals, timeSec: Math.round(t.timeSec),
+      timeLabel: _fmtTime(t.timeSec), avgScore: Math.round(t.avgScore * 10) / 10 })),
     turns: teamData.flatMap(t => t.turns),
     steps: allTurns,
     winner: winner.name, loser: loser.name,
@@ -311,11 +338,13 @@ function _tdtIcon(t) {
     wait: 'M6 2h12v6l-4 4 4 4v6H6v-6l4-4-4-4zm2 2v3l4 4 4-4V4zm0 16h8v-3l-4-4-4 4z',
     dare: 'M13 2 4 14h6l-1 8 9-12h-6z',
     truth: 'M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4V5a2 2 0 0 1 2-2Zm7 3v6h2V6zm0 8v2h2v-2z',
+    dot: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z',
   };
   return `<svg class="tdt-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="${p[t] || ''}"/></svg>`;
 }
-const _statIcon = { pass: 'check', fail: 'x', skip: 'skip', now: 'target', wait: 'wait' };
-const _statCls = { pass: 'st-pass', fail: 'st-fail', skip: 'st-skip', now: 'st-now', wait: 'st-wait' };
+// status keys: confident/hesitant/refused (outcomes) + now/wait (live cursor)
+const _statIcon = { confident: 'check', hesitant: 'wait', refused: 'x', now: 'target', wait: 'dot' };
+const _statCls = { confident: 'st-pass', hesitant: 'st-slow', refused: 'st-fail', now: 'st-now', wait: 'st-wait' };
 
 // Real player portrait (assets/avatars/{slug}.png) with an initials fallback.
 function _tdtPortrait(name, color, cls) {
@@ -327,14 +356,14 @@ function _tdtPortrait(name, color, cls) {
 
 // Cumulative race state up to a reveal index (drives map + sidebar).
 function _tdtStateAt(data, idx) {
-  const teams = {}; (data.teams || []).forEach(t => teams[t.name] = { cart: 0, penalty: 0, color: t.color });
+  const teams = {}; (data.teams || []).forEach(t => teams[t.name] = { cart: 0, timeSec: 0, refusals: 0, color: t.color });
   const status = {}; let curPlayer = null, curTeam = null;
   const steps = data.steps || [];
   for (let i = 0; i <= idx && i < steps.length; i++) {
     const s = steps[i];
     if (s.stepType === 'turn') {
-      if (teams[s.team]) { teams[s.team].cart++; if (s.verdict === 'fail') teams[s.team].penalty += 5; }
-      status[s.player] = s.verdict; curPlayer = s.player; curTeam = s.team;
+      if (teams[s.team]) { teams[s.team].cart++; teams[s.team].timeSec += (s.timeCost || 0); if (s.outcome === 'refused') teams[s.team].refusals++; }
+      status[s.player] = s.outcome; curPlayer = s.player; curTeam = s.team;
     }
   }
   return { teams, status, curPlayer, curTeam };
@@ -348,11 +377,12 @@ function _tdtMapInner(data, idx) {
   let markers = '';
   (data.teams || []).forEach((t, i) => {
     const cart = st.teams[t.name]?.cart || 0;
+    const tsec = st.teams[t.name]?.timeSec || 0;
     const pct = Math.min((cart / total) * 100, 92);
-    markers += `<div class="tdt-marker" style="left:${pct}%;top:${2 + i * 28}px;color:${t.color}">
+    markers += `<div class="tdt-marker" id="tdt-marker-${_slug(t.name)}" style="left:${pct}%;top:${2 + i * 28}px;color:${t.color}">
       <span class="tdt-mtrain">${_tdtIcon('loco')}</span>
       <span class="tdt-mlbl" style="color:${t.color}">${t.name.toUpperCase()}</span>
-      <span class="tdt-mcart">cart ${cart}/${total}</span></div>`;
+      <span class="tdt-mcart">cart ${cart}/${total} · ${_fmtTime(tsec)}</span></div>`;
   });
   return `<div class="tdt-carts">${carts}</div>
     <div class="tdt-loco-front">${_tdtIcon('loco')}</div><div class="tdt-front-lbl">FRONT ▶</div>${markers}`;
@@ -360,9 +390,12 @@ function _tdtMapInner(data, idx) {
 
 function _tdtSidebarInner(data, idx) {
   const st = _tdtStateAt(data, idx);
+  // rank teams by current elapsed time so the leader floats to the top
+  const teams = (data.teams || []).slice().sort((a, b) => (st.teams[a.name]?.timeSec || 0) - (st.teams[b.name]?.timeSec || 0));
   let html = '';
-  (data.teams || []).forEach(t => {
-    const pen = st.teams[t.name]?.penalty || 0;
+  teams.forEach((t, ti) => {
+    const tsec = st.teams[t.name]?.timeSec || 0;
+    const refs = st.teams[t.name]?.refusals || 0;
     let rows = '';
     (t.members || []).forEach(m => {
       let s = st.status[m] || 'wait';
@@ -371,18 +404,19 @@ function _tdtSidebarInner(data, idx) {
       const nameCls = s === 'now' ? '' : (s === 'wait' ? 'wait' : 'done');
       rows += `<div class="tdt-row ${s === 'now' ? 'now' : ''}">${_tdtPortrait(m, t.color, 'sm')}<span class="tdt-rname ${nameCls}">${m}</span><span class="tdt-rstat ${cls}">${_tdtIcon(icid)}</span></div>`;
     });
+    const lead = ti === 0 && idx >= 0 ? '<span class="tdt-lead">◀ LEAD</span>' : '';
     html += `<div class="tdt-team-block">
       <div class="tdt-team-bar" style="background:linear-gradient(90deg,${t.color}33,${t.color}11);color:${t.color};border:1px solid ${t.color}44">
-        <span class="tdt-tname">${_tdtIcon('loco')} ${t.name.toUpperCase()}</span>
-        <span class="tdt-clock">+${String(Math.floor(pen)).padStart(2, '0')}:00<small> pen.</small></span>
+        <span class="tdt-tname">${_tdtIcon('loco')} ${t.name.toUpperCase()}${lead}</span>
+        <span class="tdt-clock">${_fmtTime(tsec)}${refs ? `<small> ${refs}✕ refused</small>` : '<small> elapsed</small>'}</span>
       </div>${rows}</div>`;
   });
   html += `<div class="tdt-legend">
-    <span><span class="st-pass">${_tdtIcon('check')}</span>passed</span>
+    <span><span class="st-pass">${_tdtIcon('check')}</span>straight for it</span>
+    <span><span class="st-slow">${_tdtIcon('wait')}</span>hesitated +time</span>
     <span><span class="st-fail">${_tdtIcon('x')}</span>refused +5m</span>
-    <span><span class="st-skip">${_tdtIcon('skip')}</span>skip</span>
     <span><span class="st-now">${_tdtIcon('target')}</span>hot seat</span>
-    <span><span class="st-wait">${_tdtIcon('wait')}</span>waiting</span></div>`;
+    <span><span class="st-wait">${_tdtIcon('dot')}</span>waiting</span></div>`;
   return html;
 }
 
@@ -481,8 +515,8 @@ function _tdtCSS() {
   .tdt-prompt{font-size:13.5px;font-weight:700;margin-top:4px;line-height:1.35}
   .tdt-verdict{margin-top:9px;display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:12px;padding:4px 11px;border-radius:6px}
   .tdt-verdict.pass{background:#3fb95022;color:#1e7a32;border:1px solid #3fb95055}
+  .tdt-verdict.slow{background:#e0a94a22;color:#8a5a12;border:1px solid #e0a94a66}
   .tdt-verdict.fail{background:#f8514922;color:#a52016;border:1px solid #f8514955}
-  .tdt-verdict.skip{background:#a371f722;color:#6b3fb9;border:1px solid #a371f755}
   .tdt-beat{margin:0 14px 12px;padding:9px 13px;background:#0006;border-left:3px solid var(--brass2);border-radius:0 8px 8px 0;font-size:12px;line-height:1.5;color:#e8d6b4;font-style:italic}
   .tdt-beat b{color:var(--brass);font-style:normal}
   /* social event card (distinct: dashed border, side-tint) */
@@ -504,7 +538,10 @@ function _tdtCSS() {
   .tdt-ava{width:23px;height:23px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;color:#fff;font-family:'Bungee'}
   .tdt-rname{flex:1;font-weight:600}.tdt-rname.done{opacity:.85}.tdt-rname.wait{opacity:.45}
   .tdt-rstat{width:18px;text-align:center;font-size:14px}
-  .st-pass{color:var(--pass)}.st-fail{color:var(--fail)}.st-skip{color:var(--skip)}.st-now{color:var(--now)}.st-wait{color:var(--wait)}
+  .st-pass{color:var(--pass)}.st-slow{color:var(--brass)}.st-fail{color:var(--fail)}.st-skip{color:var(--skip)}.st-now{color:var(--now)}.st-wait{color:var(--wait)}
+  .tdt-lead{font-size:8px;font-weight:800;letter-spacing:1px;color:var(--pass);margin-left:6px;animation:tdtLeadPulse 1.4s ease-in-out infinite}
+  @keyframes tdtLeadPulse{0%,100%{opacity:.5}50%{opacity:1}}
+  @media(prefers-reduced-motion:reduce){.tdt-lead{animation:none}}
   .tdt-legend{font-size:10px;color:#9c8db0;display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:4px;padding-top:8px;border-top:1px solid #2a1e33}
   .tdt-legend span{display:flex;align-items:center;gap:3px}
   .tdt-controls{display:flex;gap:10px;justify-content:center;align-items:center;padding:12px;margin-top:14px;position:sticky;bottom:10px;z-index:6;background:rgba(20,11,20,.9);backdrop-filter:blur(6px);border:1px solid rgba(224,169,74,.25);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.5)}
@@ -594,16 +631,25 @@ export function rpBuildTDTRace(ep) {
   const suffix = 'race';
   const stepCards = steps.map((s, i) => {
     if (s.stepType === 'turn') {
-      const vcls = s.verdict === 'fail' ? 'fail' : (s.verdict === 'skip' ? 'skip' : 'pass');
-      const vic = s.verdict === 'fail' ? 'x' : (s.verdict === 'skip' ? 'skip' : 'check');
-      const vtxt = s.verdict === 'fail' ? `REFUSED${s.quote ? ` — “${s.quote}”` : ''}`
-        : s.verdict === 'skip' ? 'SKIP PASS — waved through the cart'
-        : `DONE${s.quote ? ` — “${s.quote}”` : ''}`;
-      const beat = s.hitsWeakSpot && s.verdict === 'fail'
-        ? `<b>${s.player}</b> won't do it — <b>weak spot hit</b>. ${s.team} takes a <b>+5:00 penalty</b>.`
-        : s.verdict === 'pass' && s.hitsWeakSpot ? `<b>${s.player}</b> grits through the one thing ${_pron(s.player).sub} swore ${_pron(s.player).sub} never would. The cart erupts.`
-        : s.verdict === 'skip' ? `The skip pass saves <b>${s.player}</b> — ${s.team} rolls on with no risk.`
-        : `<b>${s.player}</b> clears the cart. ${s.team} advances.`;
+      const o = s.outcome;
+      const vcls = o === 'refused' ? 'fail' : (o === 'hesitant' ? 'slow' : 'pass');
+      const vic = o === 'refused' ? 'x' : (o === 'hesitant' ? 'wait' : 'check');
+      const tlabel = _fmtTime(s.timeCost);
+      const vtxt = o === 'refused' ? `REFUSED · +5:00${s.quote ? ` — “${s.quote}”` : ''}`
+        : o === 'hesitant' ? `DONE (shaky) · +${tlabel}${s.quote ? ` — “${s.quote}”` : ''}`
+        : `DONE · +${tlabel}${s.quote ? ` — “${s.quote}”` : ''}`;
+      const pr = _pron(s.player);
+      const beat = o === 'refused'
+        ? (s.hitsWeakSpot
+            ? _pick([`<b>${s.player}</b> won't do it — <b>weak spot hit</b>. ${s.team} eats a <b>+5:00 penalty</b>.`, `It's the one thing <b>${s.player}</b> won't touch. Flat refusal — <b>+5:00</b> onto ${s.team}'s clock.`, `<b>${s.player}</b> freezes on ${pr.posAdj} weak spot and walks. <b>+5:00</b>, and ${s.team} bleeds.`], s.player + 'brf')
+            : _pick([`<b>${s.player}</b> flat-out refuses. ${s.team} swallows a <b>+5:00 penalty</b>.`, `No chance. <b>${s.player}</b> passes on principle — <b>+5:00</b> onto ${s.team}.`, `<b>${s.player}</b> shakes ${pr.posAdj} head and sits. That's <b>+5:00</b> for ${s.team}.`], s.player + 'brf'))
+        : o === 'hesitant'
+          ? (s.hitsWeakSpot
+              ? _pick([`<b>${s.player}</b> nearly balks on ${pr.posAdj} weak spot — then forces it through. But the clock bled <b>+${tlabel}</b>.`, `Agony. <b>${s.player}</b> stares it down, hates it, does it anyway. <b>+${tlabel}</b> gone.`, `<b>${s.player}</b> almost walks, then grits it out shaking. Costly — <b>+${tlabel}</b>.`], s.player + 'bh')
+              : _pick([`<b>${s.player}</b> freezes up, second-guesses, finally goes. <b>+${tlabel}</b> off the pace.`, `<b>${s.player}</b> fumbles it, stalls, gets there in the end — <b>+${tlabel}</b>.`, `Shaky hands, long pause. <b>${s.player}</b> clears it but loses <b>+${tlabel}</b>.`], s.player + 'bh'))
+          : (s.hitsWeakSpot
+              ? _pick([`<b>${s.player}</b> attacks the one thing ${pr.sub} swore ${pr.sub}'d never do — and the cart erupts. Only <b>+${tlabel}</b>.`, `No flinch. <b>${s.player}</b> nails ${pr.posAdj} own weak spot cold — <b>+${tlabel}</b>. ${s.team} surges.`, `Everyone braced for a refusal. <b>${s.player}</b> just... did it. <b>+${tlabel}</b>.`], s.player + 'bc')
+              : _pick([`<b>${s.player}</b> goes straight for it — clean, <b>+${tlabel}</b>. ${s.team} surges up the train.`, `No hesitation. <b>${s.player}</b> clears the cart in <b>+${tlabel}</b>.`, `<b>${s.player}</b> doesn't blink — <b>+${tlabel}</b> and gone. ${s.team} rolls on.`], s.player + 'bc'));
       return `<div class="tdt-step" id="tdt-step-${suffix}-${i}"><div class="tdt-cartcard">
         <div class="tdt-cart-head"><span class="tdt-cart-no">CART ${s.cart} — HOT SEAT</span>
           <span class="tdt-cart-team" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}55">${_tdtIcon('loco')} ${s.team.toUpperCase()}</span></div>
@@ -637,20 +683,21 @@ export function rpBuildTDTRace(ep) {
 // ── SCREEN 3: results ──
 export function rpBuildTDTResults(ep) {
   const data = ep.truthOrDareTrain; if (!data) return '';
-  const ranked = (data.teams || []).slice().sort((a, b) => a.totalTime - b.totalTime);
+  const ranked = (data.teams || []).slice().sort((a, b) => (a.timeSec || 0) - (b.timeSec || 0));
   const rows = ranked.map((t, i) => {
     const isWin = t.name === data.winner, isLose = t.name === data.loser;
     const tag = isWin ? 'WINS IMMUNITY' : isLose ? 'GOES TO TRIBAL' : 'SAFE';
     const tagCol = isWin ? 'var(--pass)' : isLose ? 'var(--fail)' : '#c9b48f';
+    const refTxt = t.refusals ? `${t.refusals} refusal${t.refusals > 1 ? 's' : ''} (+${t.penalties}:00)` : 'no refusals';
     return `<div class="tdt-results-row" style="border-color:${t.color};background:${t.color}14">
       <span class="tdt-rank" style="color:${t.color}">${i + 1}</span>
       <div style="flex:1"><div style="font-weight:800;font-size:14px;color:${t.color};display:flex;align-items:center;gap:6px">${_tdtIcon('loco')} ${t.name.toUpperCase()}</div>
-        <div style="font-size:11px;color:#c9b48f;margin-top:2px">${t.penalties} min in penalties · total time ${t.totalTime} min${t.skipUsed ? ' · used skip pass' : ''}</div></div>
+        <div style="font-size:11px;color:#c9b48f;margin-top:2px">final time <b style="color:#f5ead6">${t.timeLabel || _fmtTime(t.timeSec)}</b> · ${refTxt}</div></div>
       <span style="font-weight:800;font-size:11px;letter-spacing:1px;color:${tagCol}">${tag}</span></div>`;
   }).join('');
   return _shell(`<div class="tdt-body"><div><div class="tdt-cartcard" style="padding:16px">
       <div style="font-family:'Bungee';color:var(--brass);font-size:15px;margin-bottom:10px">FRONT OF THE TRAIN</div>${rows}
-      <div style="font-size:12px;color:#c9b48f;margin-top:8px;line-height:1.5">Fastest team to the front — fewest refusals — takes immunity. The slowest team heads to tribal council.</div>
+      <div style="font-size:12px;color:#c9b48f;margin-top:8px;line-height:1.5">Lowest total time to the front takes immunity — every hesitation and refusal added to the clock. The slowest team heads to tribal council.</div>
     </div></div>
     <div class="tdt-side"><div class="tdt-side-h">Final status — by team</div><div id="tdt-sidebar-inner">${_tdtSidebarInner(data, (data.steps || []).length - 1)}</div></div></div>`, ep);
 }

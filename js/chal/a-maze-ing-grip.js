@@ -260,7 +260,7 @@ export function simulateAMazeInGrip(ep) {
             const add = COCO_WEIGHT * (1 + (K - 1) * 0.45);
             tgt.weight += add;
             tgt.coconuts += 1;
-            personalScores[shooter] = (personalScores[shooter] || 0) + (useDunker ? 4 : 3);
+            personalScores[shooter] = (personalScores[shooter] || 0) + (useDunker ? 5 : 4);
             if (!gs.popularity) gs.popularity = {};
             gs.popularity[shooter] = (gs.popularity[shooter] || 0) + 0.5;
           } else {
@@ -301,13 +301,22 @@ export function simulateAMazeInGrip(ep) {
       }
     });
 
+    // every maze scorer earns a little each round for working the rows (not just the
+    // featured one) so the offense accumulates across rounds like the holders do.
+    alive.forEach(team => {
+      team.scorers.filter(s => !team.holders.includes(s)).forEach(s => { personalScores[s] = (personalScores[s] || 0) + 0.9 + _throw(s) * 0.09; });
+    });
+
     // ── FATIGUE + DROP checks ──
     const roundAlive = teamData.filter(t => !t.dropped);
     roundAlive.forEach(team => {
-      // holders score for surviving the round (endurance MVP)
-      team.holders.forEach(h => { personalScores[h] = (personalScores[h] || 0) + 1 + pStats(h).endurance * 0.12; });
       team.capacity *= team.fatigue;
       team.strainPct = team.weight / team.capacity * 100;
+      // holders score for HOLDING — holding a heavily-loaded net is worth more than an
+      // empty one, so a holder who endures near-collapse can top the chart. Kept in
+      // rough parity with a strong scorer's offensive game.
+      const load = Math.min(team.strainPct, 100);
+      team.holders.forEach(h => { personalScores[h] = (personalScores[h] || 0) + 0.8 + pStats(h).endurance * 0.10 + load * 0.013; });
     });
     // teams past the drop line this round — but NEVER drop the last net standing (it wins).
     // If several cross together, the highest-strain nets hit the dirt; the lowest survives.
@@ -315,7 +324,7 @@ export function simulateAMazeInGrip(ep) {
     const maxDrops = Math.max(0, roundAlive.length - 1);
     overLine.slice(0, maxDrops).forEach(team => {
       team.dropped = true; team.dropOrder = ++dropCounter; team.strainPct = 100;
-      _push({ stepType: 'drop', team: team.name, color: team.color, order: team.dropOrder,
+      _push({ stepType: 'drop', team: team.name, color: team.color, order: team.dropOrder, holders: [...team.holders],
         text: _pick([
           `It's too much. ${team.name}'s holders can't hold the sag any longer — the net hits the dirt with a final coconut thud.`,
           `The rope burns through their grip and ${team.name}'s net collapses into the corn. That's the end for them.`,
@@ -327,7 +336,7 @@ export function simulateAMazeInGrip(ep) {
     roundAlive.filter(t => !t.dropped && t.strainPct >= 84).forEach(team => {
       const clutch = team.holders.slice().sort((a, b) => pStats(b).endurance - pStats(a).endurance)[0];
       if (Math.random() < 0.7) {
-        personalScores[clutch] = (personalScores[clutch] || 0) + 3;
+        personalScores[clutch] = (personalScores[clutch] || 0) + 4;
         if (!gs.popularity) gs.popularity = {};
         gs.popularity[clutch] = (gs.popularity[clutch] || 0) + 0.6;
         _push({ stepType: 'clutch', team: team.name, color: team.color, player: clutch,
@@ -390,6 +399,8 @@ export function simulateAMazeInGrip(ep) {
 
   // team win bonus to member scores (keeps winner MVP near the top)
   teamData[0].holders.concat(teamData[0].scorers).forEach(m => { personalScores[m] = (personalScores[m] || 0) + 4; });
+  // the winning team's final holders literally held the net to the end — reward that
+  teamData[0].holders.forEach(h => { personalScores[h] = (personalScores[h] || 0) + 2; });
 
   ep.aMazeInGrip = {
     teams: teamData.map(t => ({
@@ -432,6 +443,10 @@ function _amgPortrait(name, cls, color) {
 }
 
 function _amgScarecrowSVG(w) { const s = w || 40; return `<svg width="${s}" height="${s * 1.3}" viewBox="0 0 40 52"><g stroke="#7a4a24" stroke-width="3" stroke-linecap="round"><line x1="20" y1="14" x2="20" y2="40"/><line x1="6" y1="22" x2="34" y2="22"/></g><circle cx="20" cy="10" r="7" fill="#d6a45a"/><path d="M13 6 L20 -1 L27 6 Z" fill="#c98a2e"/><circle cx="17" cy="9" r="1.3" fill="#3a2410"/><circle cx="23" cy="9" r="1.3" fill="#3a2410"/><path d="M16 13 Q20 16 24 13" stroke="#3a2410" stroke-width="1.2" fill="none"/></svg>`; }
+// the actor of a card = their avatar + a small themed corner badge (scarecrow / coconut / …)
+function _amgActor(name, color, accentSvg) {
+  return `<span class="amg-actor">${_amgPortrait(name, 'lg', color)}${accentSvg ? `<span class="amg-actor-badge">${accentSvg}</span>` : ''}</span>`;
+}
 function _amgCocoSVG() { return `<svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="none" stroke="#e8b944" stroke-width="2.5" stroke-dasharray="4 3"/><circle cx="20" cy="20" r="7" fill="#7a4a24"/></svg>`; }
 function _amgMissSVG() { return `<svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="none" stroke="#7a7a86" stroke-width="2.5" stroke-dasharray="4 3"/><path d="M12 12 L28 28 M28 12 L12 28" stroke="#b9bcc6" stroke-width="2.5" stroke-linecap="round"/></svg>`; }
 function _amgGripSVG() { return `<svg width="40" height="46" viewBox="0 0 40 46"><path d="M20 4 L20 34" stroke="#e0524a" stroke-width="5" stroke-linecap="round"/><path d="M20 12 L8 24 M20 12 L32 24" stroke="#e0524a" stroke-width="5" stroke-linecap="round"/><circle cx="8" cy="26" r="4" fill="#6b4423"/><circle cx="32" cy="26" r="4" fill="#6b4423"/></svg>`; }
@@ -485,7 +500,7 @@ function _amgNetPanelInner(data, idx) {
       const swapped = (data.teams.find(x => x.name === t.name)?.holderStart || []).includes(h) ? '' : ' <span style="font-size:8px;color:#7fbcf0">⇄ in</span>';
       return `<div class="amg-holder">${_amgPortrait(h, 'md', t.color)}
         <div class="amg-holder-info"><div class="amg-holder-name">${h}${swapped}</div>
-          <div class="amg-holder-grip">GRIP ${Math.round(g)} · ${t.dropped ? 'dropped' : 'holding'}</div>
+          <div class="amg-holder-grip">GRIP ${Math.round(g)}/10 · ${t.dropped ? 'dropped' : 'holding'}</div>
           <div class="amg-grip-bar" style="width:${Math.min(100, g * 6)}%;background:${_strainColor(pct)}"></div></div></div>`;
     }).join('');
     return `<div class="amg-net-card">
@@ -521,8 +536,8 @@ function _amgSidebarInner(data, idx) {
 function _amgMazeInner(data, idx) {
   const scares = data.scarecrows || [];
   const runners = _amgMazeAt(data, idx);
-  const scareEls = scares.map(s => `<div class="amg-maze-scare" style="left:${s.x}%;top:${s.y}%">${_amgScarecrowSVG(18)}</div>`).join('');
-  const runEls = runners.map(r => `<div class="amg-maze-runner" style="left:${Math.max(6, Math.min(94, r.x))}%;top:${Math.max(6, Math.min(94, r.y))}%;background:${r.color};color:${r.color}">${String(r.name).slice(0, 2).toUpperCase()}</div>`).join('');
+  const scareEls = scares.map(s => `<div class="amg-maze-scare" style="left:${s.x}%;top:${s.y}%">${_amgScarecrowSVG(20)}</div>`).join('');
+  const runEls = runners.map(r => `<div class="amg-maze-runner" style="left:${Math.max(7, Math.min(93, r.x))}%;top:${Math.max(7, Math.min(93, r.y))}%;border-color:${r.color};color:${r.color}" title="${r.name}">${_amgPortrait(r.name, 'sm', r.color)}</div>`).join('');
   return `<svg viewBox="0 0 100 100" preserveAspectRatio="none"><g stroke="#4a6b26" stroke-width="7" fill="none" stroke-linecap="square" opacity=".8">
     <path d="M10 10 H90 V40 H30 V70 H90"/><path d="M10 40 V90 H60"/><path d="M50 10 V30"/></g></svg>${scareEls}${runEls}`;
 }
@@ -605,6 +620,10 @@ function _amgCSS() {
   .amg-card-body{display:flex;align-items:flex-start;gap:11px}
   .amg-card-txt{font-size:13.5px;line-height:1.55;color:#efdcb8}.amg-card-txt b{color:#f2c94c}
   .amg-card-meta{font-size:11px;color:#b79a6a;margin-top:5px}.amg-icon{flex-shrink:0}
+  .amg-actor{position:relative;flex-shrink:0;display:inline-block}
+  .amg-actor-badge{position:absolute;bottom:-5px;right:-6px;background:#241309;border:2px solid #3a2414;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+  .amg-actor-badge svg{width:16px;height:16px}
+  .amg-actor-duo{display:flex;flex-shrink:0}.amg-actor-duo .amg-pf{margin-left:-10px}.amg-actor-duo .amg-pf:first-child{margin-left:0}
   .amg-lineup{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   @media(max-width:560px){.amg-lineup{grid-template-columns:1fr}}
   .amg-lineup-team{background:rgba(255,255,255,.03);border-radius:10px;padding:9px 10px}
@@ -626,7 +645,8 @@ function _amgCSS() {
   .amg-maze{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:2px solid #5a4020;background:#2e441a}
   .amg-maze svg{position:absolute;inset:0;width:100%;height:100%}
   .amg-maze-scare{position:absolute;transform:translate(-50%,-50%);z-index:2}
-  .amg-maze-runner{position:absolute;width:16px;height:16px;border-radius:50%;transform:translate(-50%,-50%);z-index:3;border:2px solid #fff;box-shadow:0 0 6px currentColor;transition:left .6s,top .6s;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900;color:#fff}
+  .amg-maze-runner{position:absolute;width:28px;height:28px;border-radius:50%;transform:translate(-50%,-50%);z-index:3;border:2px solid currentColor;box-shadow:0 0 8px currentColor;transition:left .6s,top .6s;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#241309}
+  .amg-maze-runner .amg-pf{width:100%;height:100%;border:none}
   .amg-controls{display:flex;gap:10px;justify-content:center;align-items:center;padding:11px;margin-top:14px;position:sticky;bottom:10px;z-index:8;background:rgba(28,16,12,.94);border:1px solid rgba(232,185,68,.3);border-radius:13px;box-shadow:0 6px 22px rgba(0,0,0,.5);backdrop-filter:blur(8px)}
   .amg-btn{font-family:'Nunito';font-weight:800;font-size:13px;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;background:linear-gradient(135deg,#e8b944,#b5822f);color:#2a1608;display:flex;align-items:center;gap:6px;box-shadow:0 3px 12px rgba(232,185,68,.35)}
   .amg-btn.ghost{background:linear-gradient(135deg,#6a7280,#4b5563);color:#fff}
@@ -692,31 +712,32 @@ export function rpBuildAMGRace(ep) {
     if (s.stepType === 'lineup') {
       const teamCols = (data.teams || []).map(t => {
         const rows = [];
-        (t.holderStart || t.holders).forEach(h => rows.push(`<div class="amg-lineup-role">${_amgPortrait(h, 'sm', t.color)} ${h} <span class="amg-role-tag" style="background:rgba(232,185,68,.25);color:#f2c94c">HOLDER · grip ${Math.round(_grip(h))}</span></div>`));
-        if (t.dunker) rows.push(`<div class="amg-lineup-role">${_amgPortrait(t.dunker, 'sm', t.color)} ${t.dunker} <span class="amg-role-tag" style="background:rgba(232,90,90,.2);color:#ff8a80">DUNKER · throw ${Math.round(_throw(t.dunker))}</span></div>`);
+        (t.holderStart || t.holders).forEach(h => rows.push(`<div class="amg-lineup-role">${_amgPortrait(h, 'sm', t.color)} ${h} <span class="amg-role-tag" style="background:rgba(232,185,68,.25);color:#f2c94c">HOLDER · grip ${Math.round(_grip(h))}/10</span></div>`));
+        if (t.dunker) rows.push(`<div class="amg-lineup-role">${_amgPortrait(t.dunker, 'sm', t.color)} ${t.dunker} <span class="amg-role-tag" style="background:rgba(232,90,90,.2);color:#ff8a80">DUNKER · throw ${Math.round(_throw(t.dunker))}/10</span></div>`);
         (t.sitOuts || []).forEach(so => rows.push(`<div class="amg-lineup-role" style="opacity:.6">${_amgPortrait(so, 'sm', t.color)} ${so} <span class="amg-role-tag" style="background:rgba(150,150,160,.2);color:#c9ccd6">SITTING OUT</span></div>`));
         return `<div class="amg-lineup-team"><div style="font-family:'Rye';color:${t.color};font-size:14px;margin-bottom:4px">${t.name.toUpperCase()}</div>${rows.join('')}</div>`;
       }).join('');
       inner = `<div class="amg-card"><div class="amg-card-head"><span class="amg-badge b-role">🪢 THE LINEUP</span><span style="font-size:11px;color:#b79a6a">Each team locks in 2 holders + a designated dunker</span></div>
         <div class="amg-lineup">${teamCols}</div>
-        <div class="amg-card-meta" style="margin-top:8px">Uneven teams equalized — the bigger team sits out its weakest hunters down to matching scorer counts.</div></div>`;
+        <div class="amg-card-meta" style="margin-top:8px"><b style="color:#e8b944">Grip</b> (endurance + physical + a little boldness, out of 10) = how much coconut-weight a holder can bear before the net drops. <b style="color:#ff8a80">Throw</b> (out of 10) = how reliably a dunker sinks it. Uneven teams equalized — the bigger team sits out its weakest hunters down to matching scorer counts.</div></div>`;
     } else if (s.stepType === 'hunt') {
-      inner = `<div class="amg-card"><div class="amg-card-head"><span class="amg-badge b-hunt">🌽 ${s.found ? 'SCARECROW FOUND' : 'LOST IN THE CORN'}</span><span style="font-size:11px;color:#b79a6a">${s.team} · the maze</span></div>
-        <div class="amg-card-body"><span class="amg-icon">${_amgScarecrowSVG(40)}</span><div><div class="amg-card-txt">${s.text}</div><div class="amg-card-meta">${s.meta || ''}</div></div></div></div>`;
+      inner = `<div class="amg-card"><div class="amg-card-head"><span class="amg-badge b-hunt">🌽 ${s.found ? 'SCARECROW FOUND' : 'LOST IN THE CORN'}</span><span style="font-size:11px;color:#b79a6a">${s.player} · ${s.team} · the maze</span></div>
+        <div class="amg-card-body">${_amgActor(s.player, s.color, _amgScarecrowSVG(16))}<div><div class="amg-card-txt">${s.text}</div><div class="amg-card-meta">${s.meta || ''}</div></div></div></div>`;
     } else if (s.stepType === 'score') {
       const badge = s.hit ? `<span class="amg-badge b-hit">🥥 SCORED</span>` : `<span class="amg-badge b-miss">✗ OVERSHOT</span>`;
-      const dir = `${s.team} → ${s.targetTeam}'s net${s.dunker ? ' · designated dunker' : ''}`;
+      const dir = `${s.player} · ${s.team} → ${s.targetTeam}'s net${s.dunker ? ' · dunker' : ''}`;
       inner = `<div class="amg-card"><div class="amg-card-head">${badge}<span style="font-size:11px;color:#b79a6a">${dir}</span></div>
-        <div class="amg-card-body"><span class="amg-icon">${s.hit ? _amgCocoSVG() : _amgMissSVG()}</span><div><div class="amg-card-txt">${s.text}</div><div class="amg-card-meta">${s.meta || ''}</div></div></div></div>`;
+        <div class="amg-card-body">${_amgActor(s.player, s.color, s.hit ? _amgCocoSVG() : _amgMissSVG())}<div><div class="amg-card-txt">${s.text}</div><div class="amg-card-meta">${s.meta || ''}</div></div></div></div>`;
     } else if (s.stepType === 'swap') {
-      inner = `<div class="amg-card"><div class="amg-card-head"><span class="amg-badge b-swap">⇄ HOLDER SWAP</span><span style="font-size:11px;color:#b79a6a">${s.team}</span></div>
-        <div class="amg-card-body"><div class="amg-social-avas">${_amgPortrait(s.out, 'md', s.color)}${_amgPortrait(s.in, 'md', s.color)}</div><div><div class="amg-card-txt">${s.text}</div><div class="amg-card-meta">${s.meta || ''}</div></div></div></div>`;
+      inner = `<div class="amg-card"><div class="amg-card-head"><span class="amg-badge b-swap">⇄ HOLDER SWAP</span><span style="font-size:11px;color:#b79a6a">${s.out} → ${s.in} · ${s.team}</span></div>
+        <div class="amg-card-body"><div class="amg-actor-duo">${_amgPortrait(s.out, 'lg', s.color)}${_amgPortrait(s.in, 'lg', s.color)}</div><div><div class="amg-card-txt">${s.text}</div><div class="amg-card-meta">${s.meta || ''}</div></div></div></div>`;
     } else if (s.stepType === 'clutch') {
-      inner = `<div class="amg-card"><div class="amg-card-head"><span class="amg-badge b-clutch">💪 PULLED THROUGH</span><span style="font-size:11px;color:#b79a6a">${s.team}</span></div>
-        <div class="amg-card-body"><span class="amg-icon">${_amgGripSVG()}</span><div><div class="amg-card-txt">${s.text}</div><div class="amg-card-meta">${s.meta || ''}</div></div></div></div>`;
+      inner = `<div class="amg-card"><div class="amg-card-head"><span class="amg-badge b-clutch">💪 PULLED THROUGH</span><span style="font-size:11px;color:#b79a6a">${s.player} · ${s.team}</span></div>
+        <div class="amg-card-body">${_amgActor(s.player, s.color, _amgGripSVG())}<div><div class="amg-card-txt">${s.text}</div><div class="amg-card-meta">${s.meta || ''}</div></div></div></div>`;
     } else if (s.stepType === 'drop') {
+      const duo = (s.holders || []).slice(0, 2).map(h => _amgPortrait(h, 'lg', s.color)).join('');
       inner = `<div class="amg-card" style="border-color:${s.color}66"><div class="amg-card-head"><span class="amg-badge b-drop">🪂 NET DOWN</span><span style="font-size:11px;color:#b79a6a">${s.team}</span></div>
-        <div class="amg-card-body"><span class="amg-icon">${_amgGripSVG()}</span><div><div class="amg-card-txt">${s.text}</div><div class="amg-card-meta">${s.meta || ''}</div></div></div></div>`;
+        <div class="amg-card-body"><div class="amg-actor-duo">${duo || `<span class="amg-icon">${_amgGripSVG()}</span>`}</div><div><div class="amg-card-txt">${s.text}</div><div class="amg-card-meta">${s.meta || ''}</div></div></div></div>`;
     } else { // event
       const avas = (s.players || []).slice(0, 2).map(p => _amgPortrait(p, 'md', s.color)).join('');
       inner = `<div class="amg-card amg-social"><div class="amg-card-head"><span class="amg-badge badge-${s.badgeClass || 'cheer'}">${s.badgeText || 'MOMENT'}</span><span style="font-size:11px;color:#b79a6a">${s.team} · the maze</span></div>

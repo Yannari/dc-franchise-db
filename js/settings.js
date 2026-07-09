@@ -181,24 +181,38 @@ export const SETTING_EXCLUSIVE = {
   rudeWakeup:      ['hosted-camp', 'carnival', 'film-lot', 'world-tour'],       // any hosted venue (not survival)
   hostFavoritism:  ['hosted-camp', 'carnival', 'film-lot', 'world-tour'],
   fakeReward:      ['hosted-camp', 'carnival', 'film-lot', 'world-tour'],
+  // ── hosted-camp exclusives ──
+  messHallDrama:   ['hosted-camp'],
+  cabinRaid:       ['hosted-camp'],
+  campfireStory:   ['hosted-camp'],
   // ── survival-island exclusives ──
   forage:          ['survival-island'],
   shelterStorm:    ['survival-island'],
   fireStruggle:    ['survival-island'],
   rationLow:       ['survival-island'],
+  waterRun:        ['survival-island'],
+  exhaustion:      ['survival-island'],
+  wildlifeScare:   ['survival-island'],
   // ── carnival exclusives ──
   midwayGames:     ['carnival'],
   rideDare:        ['carnival'],
   funhouse:        ['carnival'],
   carnivalTreat:   ['carnival'],
+  dunkTank:        ['carnival'],
+  prizeBooth:      ['carnival'],
   // ── film-lot exclusives ──
   craftServices:   ['film-lot'],
   stuntWrong:      ['film-lot'],
   trailerEnvy:     ['film-lot'],
+  wardrobeVanity:  ['film-lot'],
+  divaFit:         ['film-lot'],
+  bloopers:        ['film-lot'],
   // ── world-tour exclusives ──
   classDivide:     ['world-tour'],
   jetLag:          ['world-tour'],
   planeFood:       ['world-tour'],
+  layover:         ['world-tour'],
+  souvenirGrab:    ['world-tour'],
 };
 
 export function currentSetting() {

@@ -109,6 +109,10 @@ export const CAMP_EVENT_TYPES = [
   { id: 'rudeWakeup',          twoPlayer: false, weight: 8  }, // dawn airhorn / chores → clap back or camp stews
   { id: 'hostFavoritism',      twoPlayer: true,  weight: 8  }, // host plays favorites → jealousy
   { id: 'fakeReward',          twoPlayer: true,  weight: 7  }, // "reward" that's a punishment → bond over the prank
+  // hosted-camp exclusives
+  { id: 'messHallDrama',       twoPlayer: true,  weight: 10 },
+  { id: 'cabinRaid',           twoPlayer: true,  weight: 9  },
+  { id: 'campfireStory',       twoPlayer: true,  weight: 10 },
   // ═══ CASUAL NIGHT GAMES (the cast's own after-dark spin-the-bottle etc.) ═══
   { id: 'nightGame',           twoPlayer: true,  weight: 11 }, // spin-the-bottle / never-have-I-ever / truth-or-dare
   // ═══ SETTING-EXCLUSIVE (gated by seasonConfig.setting via SETTING_EXCLUSIVE) ═══
@@ -118,19 +122,29 @@ export const CAMP_EVENT_TYPES = [
   { id: 'shelterStorm',        twoPlayer: true,  weight: 10 },
   { id: 'fireStruggle',        twoPlayer: true,  weight: 10 },
   { id: 'rationLow',           twoPlayer: true,  weight: 10 },
+  { id: 'waterRun',            twoPlayer: true,  weight: 10 },
+  { id: 'exhaustion',          twoPlayer: true,  weight: 10 },
+  { id: 'wildlifeScare',       twoPlayer: true,  weight: 9  },
   // carnival
   { id: 'midwayGames',         twoPlayer: true,  weight: 12 },
   { id: 'rideDare',            twoPlayer: true,  weight: 11 },
   { id: 'funhouse',            twoPlayer: true,  weight: 10 },
   { id: 'carnivalTreat',       twoPlayer: true,  weight: 10 },
+  { id: 'dunkTank',            twoPlayer: true,  weight: 10 },
+  { id: 'prizeBooth',          twoPlayer: true,  weight: 9  },
   // film lot
   { id: 'craftServices',       twoPlayer: true,  weight: 11 },
   { id: 'stuntWrong',          twoPlayer: true,  weight: 11 },
   { id: 'trailerEnvy',         twoPlayer: true,  weight: 10 },
+  { id: 'wardrobeVanity',      twoPlayer: true,  weight: 10 },
+  { id: 'divaFit',             twoPlayer: true,  weight: 9  },
+  { id: 'bloopers',            twoPlayer: true,  weight: 10 },
   // world tour
   { id: 'classDivide',         twoPlayer: true,  weight: 12 },
   { id: 'jetLag',              twoPlayer: true,  weight: 10 },
   { id: 'planeFood',           twoPlayer: true,  weight: 10 },
+  { id: 'layover',             twoPlayer: true,  weight: 10 },
+  { id: 'souvenirGrab',        twoPlayer: true,  weight: 9  },
 ];
 
 // Variety control for camp event picking (applied in generateCampEventsForGroup's weight fn):
@@ -147,12 +161,12 @@ const _CAMP_BEAT_SIGNATURE = new Set([
 ]);
 const _CAMP_BEAT_TEXTURE = new Set([
   'dispute', 'jealousy', 'exclusion', 'leadershipClash', 'foodConflict', 'intimidation',
-  'chefSlop', 'rudeWakeup', 'fakeReward',
+  'chefSlop', 'rudeWakeup', 'fakeReward', 'messHallDrama', 'cabinRaid', 'campfireStory',
   // setting-exclusive venue beats — fine day-to-day, jarring twice in one feed
-  'forage', 'shelterStorm', 'fireStruggle', 'rationLow',
-  'midwayGames', 'rideDare', 'funhouse', 'carnivalTreat',
-  'craftServices', 'stuntWrong', 'trailerEnvy',
-  'classDivide', 'jetLag', 'planeFood',
+  'forage', 'shelterStorm', 'fireStruggle', 'rationLow', 'waterRun', 'exhaustion', 'wildlifeScare',
+  'midwayGames', 'rideDare', 'funhouse', 'carnivalTreat', 'dunkTank', 'prizeBooth',
+  'craftServices', 'stuntWrong', 'trailerEnvy', 'wardrobeVanity', 'divaFit', 'bloopers',
+  'classDivide', 'jetLag', 'planeFood', 'layover', 'souvenirGrab',
 ]);
 
 
@@ -469,6 +483,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
     if (typeof r === 'string') _parts[r] = (_parts[r]||0)+1;
     return r;
   };
+  // plain uniform pick from a line pool (used by the newer setting-exclusive events)
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+  const _pron = n => pronouns(n);
 
   // Track per-pair bond events to prevent the same pair from stacking too many in one phase
   const _pairBondCount = {};
@@ -2900,6 +2917,275 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           `${a} and ${b} argue over whose turn it was for the window seat AND the good snack. Neither wins. The cabin gets colder than the food.`,
         ];
         events.push({ type: 'planeFood', players: [a, b], badgeText: 'CART FIGHT', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    // ═══════════════ HOSTED-CAMP (more) ═══════════════
+    } else if (eventType === 'messHallDrama') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.2 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      if (getBond(a, b) < 0 || Math.min(pStats(a).temperament, pStats(b).temperament) <= 4) {
+        addBond(a, b, -0.6);
+        events.push({ type: 'messHallDrama', players: [a, b], badgeText: 'MESS HALL', badgeClass: 'red', text: _rp([
+          `${a} catches ${b} cutting the mess-hall line and calls it out loud. Chef watches, delighted, as the whole hall picks a side.`,
+          `${a} swears ${b} took a double portion while others went short. The argument over cold slop gets loud fast.`,
+          `${a} and ${b} both reach for the last decent tray at the counter. Neither backs off. Trays get slammed.`,
+        ]) });
+      } else {
+        addBond(a, b, 0.5);
+        events.push({ type: 'messHallDrama', players: [a, b], badgeText: 'MESS HALL', badgeClass: 'green', text: _rp([
+          `${a} saves ${b} a seat and the one edible thing on the menu. Mess-hall loyalty is a real thing out here.`,
+          `${a} and ${b} turn the sad cafeteria dinner into a two-person comedy roast of Chef's cooking. The table's the warmest it's been.`,
+          `${a} quietly slides ${b} half a portion after noticing ${b} came up short. No words. ${b} clocks it.`,
+        ]) });
+      }
+
+    } else if (eventType === 'cabinRaid') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).boldness * 0.2 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, 2));
+      const _arch = m => players.find(p => p.name === m)?.archetype || '';
+      const _villainish = m => { const ar = _arch(m), s = pStats(m); return ['villain','mastermind','schemer'].includes(ar) || (!['hero','loyal-soldier','social-butterfly','showmancer','underdog','goat'].includes(ar) && s.strategic >= 6 && s.loyalty <= 4); };
+      if (_villainish(a) && getBond(a, b) < 4) {
+        addBond(a, b, -0.8);
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[a] = (gs.popularity[a] || 0) - 0.4;
+        events.push({ type: 'cabinRaid', players: [a, b], badgeText: 'CABIN RAID', badgeClass: 'red', text: _rp([
+          `${a} slips into the cabin while ${b} is out and pockets ${b}'s stashed snacks. ${b} finds the empty wrappers later and knows exactly who.`,
+          `${a} short-sheets ${b}'s bunk and hides ${b}'s stuff across camp "as a joke." ${b} doesn't find it funny at all.`,
+          `${a} rifles through ${b}'s bag looking for an idol or a clue. Comes up empty — but ${b} notices the mess.`,
+        ]) });
+      } else {
+        addBond(a, b, 0.5);
+        events.push({ type: 'cabinRaid', players: [a, b], badgeText: 'MIDNIGHT RUN', badgeClass: 'green', text: _rp([
+          `${a} and ${b} sneak to the mess hall after lights-out for a midnight snack raid. They get away clean and giggling.`,
+          `${a} dares ${b} into a harmless cabin prank on the neighbors. They pull it off together and swear each other to secrecy.`,
+          `${a} and ${b} stay up whispering across the bunks long after lights-out. The kind of talk that makes an alliance feel real.`,
+        ]) });
+      }
+
+    } else if (eventType === 'campfireStory') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.3 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      addBond(a, b, 0.5);
+      if (!gs.popularity) gs.popularity = {};
+      if (pStats(a).social >= 6) gs.popularity[a] = (gs.popularity[a] || 0) + 0.4;
+      events.push({ type: 'campfireStory', players: [a, b], badgeText: 'CAMPFIRE', badgeClass: 'green', text: _rp([
+        `${a} spins a ghost story by the fire so good that ${b} refuses to walk to the washroom alone after. The whole camp is hooked.`,
+        `Around the campfire ${a} gets everyone telling secrets they'd never share in daylight. ${b} shares one that changes how the camp sees ${_pron(b).obj}.`,
+        `${a} and ${b} stay at the dying campfire after everyone turns in, talking about home. The fire's almost out before either moves.`,
+        `${a} leads a dumb campfire singalong and ${b} is the first to join. By the end the whole camp is howling. Best night in a while.`,
+      ]) });
+
+    // ═══════════════ SURVIVAL-ISLAND (more) ═══════════════
+    } else if (eventType === 'waterRun') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).endurance * 0.2 + pStats(n).loyalty * 0.2 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      if (pStats(b).loyalty >= 5 || getBond(a, b) >= 1) {
+        addBond(a, b, 0.5);
+        events.push({ type: 'waterRun', players: [a, b], badgeText: 'WATER RUN', badgeClass: 'green', text: _rp([
+          `${a} and ${b} haul water together up the long trail from the well, trading the heavy jug back and forth without a word of complaint.`,
+          `${b} takes the second trip so ${a} can rest. Nobody made ${_pron(b).obj}. ${a} won't forget it.`,
+          `${a} and ${b} boil and ration the day's water side by side. Thirsty, tired, but in it together.`,
+        ]) });
+      } else {
+        addBond(a, b, -0.5);
+        events.push({ type: 'waterRun', players: [a, b], badgeText: 'DEAD WEIGHT', badgeClass: 'red', text: _rp([
+          `${a} does the whole water run alone while ${b} lounges in the shade. ${a} says nothing and remembers everything.`,
+          `${b} "forgets" it's ${_pron(b).posAdj} turn to fetch water. ${a} hauls it solo, again, and the resentment builds with every trip.`,
+          `${a} calls out ${b} for never carrying ${_pron(b).posAdj} share of the water. ${b} shrugs. It sticks.`,
+        ]) });
+      }
+
+    } else if (eventType === 'exhaustion') {
+      const a = _pick(group, n => Math.max(0.1, (10 - pStats(n).endurance) * 0.3 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + 2));
+      if (!gs.popularity) gs.popularity = {};
+      if (pStats(b).loyalty >= 5 || getBond(a, b) >= 0) {
+        addBond(b, a, 0.6);
+        gs.popularity[b] = (gs.popularity[b] || 0) + 0.4;
+        events.push({ type: 'exhaustion', players: [b, a], badgeText: 'CARRIED', badgeClass: 'green', text: _rp([
+          `Days of no food catch up with ${a}, who nearly faints at camp. ${b} gets ${_pron(a).obj} water and shade and sits with ${_pron(a).obj} until the color comes back.`,
+          `${a} is running on empty and can barely stand. ${b} quietly takes over ${_pron(a).posAdj} chores for the day. ${a} won't forget who showed up.`,
+          `${b} notices ${a} hasn't eaten and splits ${_pron(b).posAdj} own ration without being asked. Out here, that's everything.`,
+        ]) });
+      } else {
+        addBond(a, b, -0.4);
+        events.push({ type: 'exhaustion', players: [a, b], badgeText: 'RUNNING ON FUMES', badgeClass: 'red', text: _rp([
+          `${a} is wrecked from hunger and asks ${b} to cover a chore. ${b} refuses. ${a} does it anyway, hollow-eyed and quietly furious.`,
+          `${a} nearly collapses and ${b} barely looks up. Camp notices who helped and who didn't.`,
+          `${a} snaps at ${b} out of pure exhaustion. It's not really about ${b} — but the fight is real anyway.`,
+        ]) });
+      }
+
+    } else if (eventType === 'wildlifeScare') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).boldness * 0.3 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, 2));
+      if (!gs.popularity) gs.popularity = {};
+      if (pStats(a).boldness >= 6) {
+        addBond(a, b, 0.5);
+        gs.popularity[a] = (gs.popularity[a] || 0) + 0.6;
+        events.push({ type: 'wildlifeScare', players: [a, b], badgeText: 'STOOD GUARD', badgeClass: 'green', text: _rp([
+          `A wild boar crashes through camp and ${a} steps between it and a frozen ${b}, waving a stick until it bolts. ${b} owes ${_pron(a).obj} one.`,
+          `Something big moves in the treeline at night. ${a} stays up on watch so ${b} and the others can sleep. A quiet kind of brave.`,
+          `A snake turns up in the shelter and ${a} calmly carries it out while ${b} stands on a log shrieking. Camp has a new hero and a new punchline.`,
+        ]) });
+      } else {
+        addBond(a, b, -0.3);
+        gs.popularity[a] = (gs.popularity[a] || 0) - 0.4;
+        events.push({ type: 'wildlifeScare', players: [a, b], badgeText: 'EVERY MAN FOR HIMSELF', badgeClass: 'red', text: _rp([
+          `A boar charges through camp and ${a} bolts first, leaving ${b} scrambling. ${b} makes a mental note about who runs when it counts.`,
+          `Something rustles in the dark and ${a} shoves past ${b} to get away. Camp saw it. Camp remembers it.`,
+          `A rat gets into the food and ${a} shrieks and abandons the whole ration pile. ${b} has to save the food alone.`,
+        ]) });
+      }
+
+    // ═══════════════ CARNIVAL (more) ═══════════════
+    } else if (eventType === 'dunkTank') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).boldness * 0.2 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, (4 - getBond(a, n)) * 0.2 + 2));
+      const hit = pStats(a).physical + (Math.random() - 0.5) * 6 >= 4;
+      if (!gs.popularity) gs.popularity = {};
+      if (hit) {
+        addBond(a, b, getBond(a, b) < 0 ? -0.4 : 0.3);
+        gs.popularity[a] = (gs.popularity[a] || 0) + 0.4;
+        events.push({ type: 'dunkTank', players: [a, b], badgeText: 'DUNKED!', badgeClass: getBond(a, b) < 0 ? 'red' : 'green', text: _rp([
+          `${a} winds up at the dunk-tank lever and drops ${b} straight into the cold water on the first throw. ${b} comes up sputtering; the midway roars.`,
+          `${b} volunteers for the dunk tank and instantly regrets it — ${a} has deadly aim. Splash. The crowd loves it.`,
+          `${a} nails the target and ${b} plunges under. Whether it's friendly or payback depends entirely on who you ask.`,
+        ]) });
+      } else {
+        addBond(a, b, 0.3);
+        events.push({ type: 'dunkTank', players: [a, b], badgeText: 'MISSED', badgeClass: '', text: _rp([
+          `${a} throws everything at the dunk-tank target and can't land one. ${b} heckles from the dry seat until they're both laughing.`,
+          `${a} misses the dunk-tank target ten straight times. ${b} offers pointers that are actively unhelpful. Good time, though.`,
+        ]) });
+      }
+
+    } else if (eventType === 'prizeBooth') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).physical * 0.2 + pStats(n).boldness * 0.2 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + 2));
+      const won = pStats(a).physical + pStats(a).intuition + (Math.random() - 0.5) * 8 >= 9;
+      if (!gs.popularity) gs.popularity = {};
+      if (won && (pStats(a).loyalty >= 5 || getBond(a, b) >= 1)) {
+        addBond(a, b, 0.6);
+        gs.popularity[a] = (gs.popularity[a] || 0) + 0.4;
+        events.push({ type: 'prizeBooth', players: [a, b], badgeText: 'GIANT PRIZE', badgeClass: 'green', text: _rp([
+          `${a} finally beats the rigged ring toss, wins a giant stuffed banana the size of a person — and hands it straight to ${b}. ${b} names it.`,
+          `${a} cleans out the balloon-dart booth and gives the top prize to ${b} without a second thought. Small gesture, big deal.`,
+          `${a} wins the strongman hammer game and dedicates the prize to ${b} in front of the whole midway. ${b} pretends to hate it and secretly loves it.`,
+        ]) });
+      } else if (won) {
+        gs.popularity[a] = (gs.popularity[a] || 0) + 0.3;
+        addBond(a, b, -0.2);
+        events.push({ type: 'prizeBooth', players: [a, b], badgeText: 'GLOATING', badgeClass: '', text: _rp([
+          `${a} wins the giant prize and will not stop talking about it. ${b} is one victory lap away from snapping.`,
+          `${a} cleans out the prize booth and rubs it in ${b}'s face all afternoon. Impressive. Insufferable.`,
+        ]) });
+      } else {
+        addBond(a, b, 0.3);
+        events.push({ type: 'prizeBooth', players: [a, b], badgeText: 'RIGGED', badgeClass: '', text: _rp([
+          `${a} and ${b} pour their tickets into the ring toss and figure out too late that it's rigged. They lose together and roast the barker on the way out.`,
+          `${a} swears the prize booth is fixed. ${b} agrees. They bankrupt themselves proving it. No prize, good bit.`,
+        ]) });
+      }
+
+    // ═══════════════ FILM-LOT (more) ═══════════════
+    } else if (eventType === 'wardrobeVanity') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.3 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      if (getBond(a, b) >= 0 && Math.random() < 0.6) {
+        addBond(a, b, 0.5);
+        events.push({ type: 'wardrobeVanity', players: [a, b], badgeText: 'WARDROBE', badgeClass: 'green', text: _rp([
+          `${a} and ${b} raid the costume department and put on an impromptu fashion show for no one. The trailers have never been this fun.`,
+          `${a} does ${b}'s makeup with the set kit and it actually looks incredible. ${b} won't stop admiring it. A little vanity, a lot of bonding.`,
+          `${a} and ${b} claim the good mirror and gossip through the whole makeup call. Two hours vanish. Worth it.`,
+        ]) });
+      } else {
+        addBond(a, b, -0.4);
+        events.push({ type: 'wardrobeVanity', players: [a, b], badgeText: 'MIRROR HOG', badgeClass: 'red', text: _rp([
+          `${a} hogs the one good lit mirror for an hour while ${b} waits and steams. On a film lot, vanity is a competitive sport.`,
+          `${a} takes the best costume before ${b} can and won't trade. ${b} is stuck in the ridiculous one and it's personal now.`,
+          `${a} rearranges the whole shared trailer around ${_pron(a).posAdj} own look. ${b} liked it the old way and says so.`,
+        ]) });
+      }
+
+    } else if (eventType === 'divaFit') {
+      const a = _pick(group, n => Math.max(0.1, (['villain','hothead','mastermind'].includes(players.find(p=>p.name===n)?.archetype) ? 3 : 0) + (10 - pStats(n).temperament) * 0.2 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, 2));
+      addBond(a, b, -0.6);
+      group.filter(x => x !== a && x !== b).forEach(o => addBond(o, a, -0.2));
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[a] = (gs.popularity[a] || 0) - 0.6;
+      events.push({ type: 'divaFit', players: [a, b], badgeText: 'DIVA FIT', badgeClass: 'red', text: _rp([
+        `${a} decides ${_pron(a).sub}'${_pron(a).sub==='they'?'re':'s'} the star of this season and throws a full tantrum when ${b} gets the better trailer. The lot hears every second of it.`,
+        `${a} demands a bigger role in the challenge and storms off the "set" when ${b} disagrees. Very dramatic. Not a good look.`,
+        `${a} treats ${b} like a personal assistant on the lot. ${b} is done being ordered around, and everyone watching agrees.`,
+      ]) });
+
+    } else if (eventType === 'bloopers') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.2 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      addBond(a, b, 0.5);
+      events.push({ type: 'bloopers', players: [a, b], badgeText: 'BLOOPER', badgeClass: 'green', text: _rp([
+        `${a} flubs a "line" during the challenge so badly that ${b} breaks character laughing, and then neither of them can stop. Best take of the day, for the wrong reasons.`,
+        `A prop falls apart mid-scene and ${a} and ${b} improvise something so dumb the whole lot cracks up. An inside joke is born.`,
+        `${a} trips over the fake set and takes ${b} down too. They lie in the wreckage wheezing. Production keeps the footage.`,
+        `${a} and ${b} keep corpsing every time they make eye contact on set. The bit that ruins the take is the bit that makes them friends.`,
+      ]) });
+
+    // ═══════════════ WORLD-TOUR (more) ═══════════════
+    } else if (eventType === 'layover') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.2 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      if (getBond(a, b) >= 0 || Math.random() < 0.55) {
+        addBond(a, b, 0.5);
+        events.push({ type: 'layover', players: [a, b], badgeText: 'LAYOVER', badgeClass: 'green', text: _rp([
+          `Stuck waiting on the tarmac for hours, ${a} and ${b} invent a game with a deck of cards and one bad snack. The delay flies by.`,
+          `The plane's grounded between sets and ${a} and ${b} explore the empty terminal, narrating everything like tour guides. Boredom, defeated.`,
+          `A long layover turns into ${a} and ${b} trading life stories on the terminal floor. By boarding call they're a unit.`,
+        ]) });
+      } else {
+        addBond(a, b, -0.4);
+        events.push({ type: 'layover', players: [a, b], badgeText: 'DELAYED', badgeClass: 'red', text: _rp([
+          `A five-hour delay frays everyone. ${a} and ${b} snipe at each other over the last outlet and the good bench. Neither wins.`,
+          `Trapped in a dead terminal with no sleep, ${a} takes it out on ${b}. It's the delay talking — but ${b} hears it anyway.`,
+          `${a} and ${b} argue about whose fault the missed connection was. It was nobody's. The grudge is real regardless.`,
+        ]) });
+      }
+
+    } else if (eventType === 'souvenirGrab') {
+      const a = _pick(group, n => Math.max(0.1, pStats(n).boldness * 0.2 + 1));
+      const others = group.filter(p => p !== a); if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, 2));
+      const _arch2 = m => players.find(p => p.name === m)?.archetype || '';
+      const _vill2 = m => { const ar = _arch2(m), s = pStats(m); return ['villain','mastermind','schemer'].includes(ar) || (!['hero','loyal-soldier','social-butterfly','showmancer','underdog','goat'].includes(ar) && s.strategic >= 6 && s.loyalty <= 4); };
+      if (_vill2(a) && getBond(a, b) < 4) {
+        addBond(a, b, -0.7);
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[a] = (gs.popularity[a] || 0) - 0.4;
+        events.push({ type: 'souvenirGrab', players: [a, b], badgeText: 'STICKY FINGERS', badgeClass: 'red', text: _rp([
+          `${a} pockets the little trinket ${b} grabbed from the last set as a keepsake. ${b} notices it's gone and does the math.`,
+          `${a} "borrows" ${b}'s souvenir from the themed set and conveniently forgets to give it back. ${b} won't forget.`,
+          `${a} swipes a prop off the set and lets ${b} take the blame when a producer asks. Cold.`,
+        ]) });
+      } else {
+        addBond(a, b, 0.5);
+        events.push({ type: 'souvenirGrab', players: [a, b], badgeText: 'KEEPSAKE', badgeClass: 'green', text: _rp([
+          `${a} sneaks a tiny keepsake off the themed set and gives a matching one to ${b}. A dumb little bond nobody else gets.`,
+          `${a} and ${b} each grab a ridiculous souvenir from the set and swear to keep them forever. It's silly. It sticks.`,
+          `${a} pockets a prop as a memento and shows ${b} first. Their inside joke has a physical form now.`,
+        ]) });
       }
     }
   }

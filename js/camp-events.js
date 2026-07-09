@@ -2487,7 +2487,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           `Robbed of sleep by the host's antics, ${clapper} is short with ${b} all morning. It's exhaustion, not malice — but the edge is real.`,
           `The host makes them break camp and rebuild it "for time." ${clapper} and ${b} grind through it snapping at each other, too tired to be kind.`,
         ];
-        events.push({ type: 'rudeWakeup', players: [clapper, b], badgeText: 'RUDE AWAKENING', badgeClass: '', text: lines[Math.floor(Math.random() * lines.length)] });
+        events.push({ type: 'rudeWakeup', players: [clapper, b], badgeText: 'RUDE AWAKENING', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
       }
 
     } else if (eventType === 'hostFavoritism') {
@@ -2504,7 +2504,6 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `The host keeps singling ${fav} out for praise — "now THAT'S a competitor" — and slips ${pF.obj} an extra snack on camera. ${jealous} watches the whole thing and files it away.`,
         `${fav} gets the host's laugh, the host's nod, the host's "you get it." ${jealous} gets ignored, and the resentment sets in fast.`,
         `The host jokes with ${fav} like they're old friends and barely learns ${jealous}'s name. ${pJ.Sub} ${pJ.sub==='they'?'notice':'notices'}. ${pJ.Sub} ${pJ.sub==='they'?"don't":"doesn't"} forget.`,
-        `When the host hands out a tiny "reward" for no reason, ${fav} gets it. ${jealous} does the math on why — and the answer stings.`,
       ];
       events.push({ type: 'hostFavoritism', players: [jealous, fav], badgeText: 'PLAYING FAVORITES', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
 
@@ -2521,7 +2520,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `The host wheels out a "feast." The lids come off to reveal more of Chef's slop. ${a} and ${b} toast the betrayal with mystery stew and gallows humor.`,
         `A "helicopter reward" turns out to be the host filming them run in circles for nothing. ${a} and ${b} give up, flop in the dirt, and bond over being had.`,
       ];
-      events.push({ type: 'fakeReward', players: [a, b], badgeText: 'GOTCHA', badgeClass: '', text: lines[Math.floor(Math.random() * lines.length)] });
+      events.push({ type: 'fakeReward', players: [a, b], badgeText: 'GOTCHA', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
 
     // ═══════════════ CASUAL NIGHT GAMES ═══════════════
     } else if (eventType === 'nightGame') {
@@ -2549,7 +2548,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
             `${a} and ${b} get picked by the bottle, declare it "a bro thing," shake hands, and the whole circle roasts them for an hour. Good night, all told.`,
             `The bottle points at ${a} and ${b}. They dodge the kiss, invent an elaborate secret handshake instead, and it becomes the tribe's thing for days.`,
           ];
-          events.push({ type: 'nightGame', players: [a, b], badgeText: 'SPIN THE BOTTLE', badgeClass: '', text: lines[Math.floor(Math.random() * lines.length)] });
+          events.push({ type: 'nightGame', players: [a, b], badgeText: 'SPIN THE BOTTLE', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
         }
       } else if (mode === 'never') {
         const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.3 + 1));
@@ -2595,7 +2594,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       let line = pool.length ? pool[Math.floor(Math.random() * pool.length)] : `${a} and ${b} pass a quiet hour together at camp.`;
       line = fillVocab(line).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
       const _atmosBadge = { 'hosted-camp': 'CAMP LIFE', 'survival-island': 'ISLAND LIFE', 'carnival': 'CARNIVAL', 'film-lot': 'ON SET', 'world-tour': 'IN FLIGHT' }[currentSetting()] || 'ATMOSPHERE';
-      events.push({ type: 'settingAtmosphere', players: [a, b], badgeText: _atmosBadge, badgeClass: '', text: line });
+      events.push({ type: 'settingAtmosphere', players: [a, b], badgeText: _atmosBadge, badgeClass: 'gold', text: line });
 
     // ═══════════════ SURVIVAL ISLAND ═══════════════
     } else if (eventType === 'forage') {
@@ -2670,7 +2669,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           `The tinder's too damp and ${a} knows it. ${b} keeps insisting ${a} try again. The fire stays dead; the mood colder.`,
           `${a} and ${b} trade the flint back and forth for an hour with nothing to show. The camp goes to sleep hungry and unlit.`,
         ];
-        events.push({ type: 'fireStruggle', players: [a, b], badgeText: 'NO SPARK', badgeClass: '', text: lines[Math.floor(Math.random() * lines.length)] });
+        events.push({ type: 'fireStruggle', players: [a, b], badgeText: 'NO SPARK', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
       }
 
     } else if (eventType === 'rationLow') {
@@ -2737,7 +2736,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           `${a} tries to talk ${b} onto the Ferris wheel that's visibly missing a car. ${b} declines with dignity. They split a lemonade instead.`,
           `${a} bets ${b} won't ride the Gravitron. ${b} politely values ${b}'s stomach more than ${b}'s pride. No hard feelings.`,
         ];
-        events.push({ type: 'rideDare', players: [a, b], badgeText: 'HARD PASS', badgeClass: '', text: lines[Math.floor(Math.random() * lines.length)] });
+        events.push({ type: 'rideDare', players: [a, b], badgeText: 'HARD PASS', badgeClass: 'gold', text: lines[Math.floor(Math.random() * lines.length)] });
       }
 
     } else if (eventType === 'funhouse') {

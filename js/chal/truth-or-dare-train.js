@@ -60,7 +60,7 @@ const DARES = [
 // targeted dares pull ANOTHER player in — must have consequences
 const TARGET_DARES = [
   { text: 'pick a camper and punch them', kind: 'punch' },
-  { text: 'kiss a stranger the host drags in', kind: 'kiss' },
+  { text: 'kiss whoever the host points to', kind: 'kiss' },
 ];
 const TRUTHS = [
   { text: 'rank %r teammates most to least valuable', weak: 'loyalty' },
@@ -85,6 +85,15 @@ function _fmtTime(sec) {
   const m = Math.floor(sec / 60), s = sec % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
 }
+// how likely a camper is to freeze/refuse — drives who takes Emily's equalizer pass
+function _fragility(name) {
+  const s = pStats(name);
+  return -(s.boldness * 0.5 + s.temperament * 0.35) + _weakSpots(name).size * 0.6;
+}
+
+// nice/loyal archetypes talk teammates into it; bold/villain ones force them
+const _NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
+const _FORCEFUL = ['villain', 'mastermind', 'schemer', 'hothead'];
 
 // ── the per-camper hot-seat resolution ─────────────────────────────────
 // Returns { kind, prompt, weak, outcome, timeCost, quote, targetPlayer, score }.
@@ -236,6 +245,60 @@ function _socialEvent(team, hotName, ctx, ep, key) {
   return null;
 }
 
+// ── PEER INTERVENTION on a would-be refusal ─────────────────────────────
+// A teammate can save the +5:00 penalty by talking the player into it
+// (PERSUADE, +bond) or physically forcing them (FORCE, -bond + drama). On
+// success it MUTATES the turn (refused → hesitant) and returns the event card.
+// Returns null if no one intervenes / it fails → the refusal stands.
+function _tryInterveneRefusal(team, hotName, r) {
+  const mates = team.members.filter(m => m !== hotName);
+  if (!mates.length) return null;
+  if (Math.random() < 0.28) return null;   // sometimes the cart just lets them walk
+
+  const pr = _pron(hotName);
+  const persuaders = mates.filter(m => (_NICE.includes(_archOf(m)) || pStats(m).social >= 7) && getBond(m, hotName) >= 0)
+    .sort((a, b) => (getBond(b, hotName) - getBond(a, hotName)) || (pStats(b).social - pStats(a).social));
+  const forcers = mates.filter(m => _FORCEFUL.includes(_archOf(m)) || pStats(m).boldness >= 7)
+    .sort((a, b) => pStats(b).boldness - pStats(a).boldness);
+
+  // convert the turn to a shaky completion (keeps a time cost — not free)
+  const _convert = (by, type) => {
+    r.outcome = 'hesitant';
+    r.timeCost = Math.max(20, Math.round(T_HESITANT + 25 + _noise(30))); // a hair slower than a self-driven hesitation
+    r.score = 3;                 // pushed through — credit, but less than doing it themselves
+    r.pushedBy = by; r.pushType = type;
+    r.quote = type === 'persuade'
+      ? _pick([`...okay. Okay! ${by} — fine, I'm doing it.`, `${by}'s right. Ugh. Here goes nothing.`, `For ${by}. Only because it's ${by}.`], hotName + 'psq')
+      : _pick([`Get your hands— fine! FINE! I'm going!`, `Okay okay OKAY — put me down!`, `I hate all of you. ...Doing it.`], hotName + 'fcq');
+  };
+
+  // prefer a friendly persuade; success scales with their social
+  if (persuaders.length) {
+    const by = persuaders[0];
+    const ok = Math.random() < Math.min(0.9, 0.45 + pStats(by).social * 0.055);
+    if (ok) {
+      _convert(by, 'persuade');
+      addBond(by, hotName, 0.8);
+      return { type: 'tdtPersuade', players: [by, hotName],
+        text: _pick([`${by} gets in ${pr.posAdj} ear — "you've got this, it's nothing" — and talks ${hotName} off the ledge. ${hotName} does it.`, `${by} reassures ${hotName} it's no big deal. It works — the penalty is saved.`, `${by} coaxes a shaking ${hotName} through it. Barely, but done — no penalty.`, `"Hey. Look at me. You can do this." ${by} steadies ${hotName}, who finally goes.`], by + hotName + 'prs'),
+        badgeText: 'TALKED THROUGH', badgeClass: 'green', consequences: `saved +5:00 (+time); +0.8 bond ${by}/${hotName}.` };
+    }
+  }
+  // otherwise a bold/villain mate just forces the issue
+  if (forcers.length) {
+    const by = forcers[0];
+    _convert(by, 'force');
+    addBond(by, hotName, -0.9);
+    if (!gs.popularity) gs.popularity = {};
+    gs.popularity[by] = (gs.popularity[by] || 0) - 0.5;   // forcing a teammate reads badly
+    gs.popularity[hotName] = (gs.popularity[hotName] || 0) + 0.5; // crowd sympathy for the forced camper
+    return { type: 'tdtForce', players: [by, hotName],
+      text: _pick([`${by} isn't having the penalty — grabs ${hotName} and forces the issue. It gets done, but ${pr.sub} won't forget it.`, `${by} drags a protesting ${hotName} into the chair. Penalty saved; a grudge made.`, `No vote, no debate — ${by} shoves ${hotName} through it. The team advances; the bond does not.`, `${by} strong-arms ${hotName} into doing it. Effective. Ugly.`], by + hotName + 'frc'),
+      badgeText: 'FORCED', badgeClass: 'red', consequences: `saved +5:00 (+time); -0.9 bond ${by}/${hotName}; ${by} -0.5 pop, ${hotName} +0.5 pop.` };
+  }
+  return null;   // nobody able to intervene — refusal stands
+}
+
 // ══════════════════════════════════════════════════════════════════════
 export function simulateTruthOrDareTrain(ep) {
   const active = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
@@ -253,28 +316,49 @@ export function simulateTruthOrDareTrain(ep) {
     const members = tribe.members.filter(m => active.includes(m));
     const order = members.slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness);
     return { tribe, key, name: tribe.name, color: tribe.color, members: order,
-      cart: 0, timeSec: 0, refusals: 0, turns: [] };
+      passed: [], active: order.slice(), cart: 0, timeSec: 0, refusals: 0, turns: [] };
+  });
+
+  // ── EMILY'S FREE PASS — equalize uneven teams down to the smallest team's ──
+  // size so every team does the same number of hot seats. No pass when equal.
+  const minLen = Math.min(...teamData.map(t => t.members.length));
+  teamData.forEach(t => {
+    const nPass = t.members.length - minLen;
+    if (nPass <= 0) return;
+    // give the passes to the campers most likely to freeze (protect the weak links)
+    t.passed = t.members.slice().sort((a, b) => _fragility(b) - _fragility(a)).slice(0, nPass);
+    t.active = t.members.filter(m => !t.passed.includes(m));   // exactly minLen active
+    t.passed.forEach(pn => {
+      const evt = { type: 'tdtFreePass', team: t.name, color: t.color, players: [pn],
+        text: _pick([`Emily offers ${t.name} a free pass to even the teams — ${pn} volunteers, and skips the hot seat entirely.`, `To balance the numbers, Emily waves ${pn} through. No hot seat for ${t.name}'s ${pn}.`, `${t.name} has more campers, so Emily gifts a skip — ${pn} takes it, no questions asked.`], t.name + pn + 'fp'),
+        badgeText: "EMILY'S FREE PASS", badgeClass: 'gold' };
+      ep.campEvents[t.key].post.push(evt);
+      allTurns.push({ stepType: 'freepass', team: t.name, color: t.color, player: pn });
+    });
   });
 
   // ── ROUND-ROBIN: one hot seat per team per round, alternating team to team ──
-  const maxLen = Math.max(...teamData.map(t => t.members.length));
-  for (let round = 0; round < maxLen; round++) {
+  for (let round = 0; round < minLen; round++) {
     teamData.forEach(t => {
-      const name = t.members[round];
-      if (!name) return;                    // this team is shorter — skip its slot
+      const name = t.active[round];
+      if (!name) return;
       const r = _resolveTurn(name, t.tribe);
+      // a would-be refusal can be saved by a teammate (persuade / force)
+      let ivEvt = null;
+      if (r.outcome === 'refused') ivEvt = _tryInterveneRefusal(t.tribe, name, r);
       t.cart += 1;
       t.timeSec += r.timeCost;
-      if (r.outcome === 'refused') t.refusals += 1;
+      if (r.outcome === 'refused') t.refusals += 1;   // still refused? (intervention converts to hesitant)
       personalScores[name] = r.score;
       const turn = { team: t.name, color: t.color, player: name, cart: t.cart, ...r };
       t.turns.push(turn);
       allTurns.push({ stepType: 'turn', ...turn });
 
-      // guaranteed social event after each hot seat (density)
-      const evt = _socialEvent(t.tribe, name, r, ep, t.key);
+      // guaranteed social event after each hot seat — the intervention IS the
+      // event when it fired; otherwise the normal reaction fires (density kept)
+      const evt = ivEvt || _socialEvent(t.tribe, name, r, ep, t.key);
       if (evt) {
-        ep.campEvents[t.key].post.push(evt);
+        if (ivEvt) ep.campEvents[t.key].post.push(evt);
         allTurns.push({ stepType: 'event', team: t.name, color: t.color, ...evt });
       }
     });
@@ -297,13 +381,13 @@ export function simulateTruthOrDareTrain(ep) {
 
   // ── FINALIZE (pre-merge: NO ep.immunityWinner; losing tribe → tribal) ──
   ep.truthOrDareTrain = {
-    teams: teamData.map(t => ({ name: t.name, color: t.color, members: t.members, cart: t.cart,
+    teams: teamData.map(t => ({ name: t.name, color: t.color, members: t.members, passed: t.passed, cart: t.cart,
       penalties: t.penalties, refusals: t.refusals, timeSec: Math.round(t.timeSec),
       timeLabel: _fmtTime(t.timeSec), avgScore: Math.round(t.avgScore * 10) / 10 })),
     turns: teamData.flatMap(t => t.turns),
     steps: allTurns,
     winner: winner.name, loser: loser.name,
-    cartsTotal: Math.max(...teamData.map(t => t.members.length)),
+    cartsTotal: minLen,
   };
   ep.winner = winner;
   ep.loser = loser;
@@ -342,9 +426,9 @@ function _tdtIcon(t) {
   };
   return `<svg class="tdt-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="${p[t] || ''}"/></svg>`;
 }
-// status keys: confident/hesitant/refused (outcomes) + now/wait (live cursor)
-const _statIcon = { confident: 'check', hesitant: 'wait', refused: 'x', now: 'target', wait: 'dot' };
-const _statCls = { confident: 'st-pass', hesitant: 'st-slow', refused: 'st-fail', now: 'st-now', wait: 'st-wait' };
+// status keys: confident/hesitant/refused (outcomes) + freepass + now/wait (cursor)
+const _statIcon = { confident: 'check', hesitant: 'wait', refused: 'x', freepass: 'skip', now: 'target', wait: 'dot' };
+const _statCls = { confident: 'st-pass', hesitant: 'st-slow', refused: 'st-fail', freepass: 'st-skip', now: 'st-now', wait: 'st-wait' };
 
 // Real player portrait (assets/avatars/{slug}.png) with an initials fallback.
 function _tdtPortrait(name, color, cls) {
@@ -364,6 +448,8 @@ function _tdtStateAt(data, idx) {
     if (s.stepType === 'turn') {
       if (teams[s.team]) { teams[s.team].cart++; teams[s.team].timeSec += (s.timeCost || 0); if (s.outcome === 'refused') teams[s.team].refusals++; }
       status[s.player] = s.outcome; curPlayer = s.player; curTeam = s.team;
+    } else if (s.stepType === 'freepass') {
+      status[s.player] = 'freepass';
     }
   }
   return { teams, status, curPlayer, curTeam };
@@ -415,6 +501,7 @@ function _tdtSidebarInner(data, idx) {
     <span><span class="st-pass">${_tdtIcon('check')}</span>straight for it</span>
     <span><span class="st-slow">${_tdtIcon('wait')}</span>hesitated +time</span>
     <span><span class="st-fail">${_tdtIcon('x')}</span>refused +5m</span>
+    <span><span class="st-skip">${_tdtIcon('skip')}</span>Emily pass</span>
     <span><span class="st-now">${_tdtIcon('target')}</span>hot seat</span>
     <span><span class="st-wait">${_tdtIcon('dot')}</span>waiting</span></div>`;
   return html;
@@ -521,6 +608,7 @@ function _tdtCSS() {
   .tdt-beat b{color:var(--brass);font-style:normal}
   /* social event card (distinct: dashed border, side-tint) */
   .tdt-social{display:flex;align-items:flex-start;gap:11px;padding:11px 14px;background:linear-gradient(180deg,#231524,#170d18);border:1px dashed rgba(163,113,247,.4);border-radius:12px}
+  .tdt-freepass{background:linear-gradient(180deg,#2a2014,#1a130a);border:1px dashed rgba(224,169,74,.55)}
   .tdt-social-badge{font-size:8px;font-weight:800;letter-spacing:1px;padding:2px 7px;border-radius:4px;margin-bottom:4px;display:inline-block}
   .badge-gold{background:#e0a94a22;color:#e0a94a}.badge-green{background:#3fb95022;color:#3fb950}.badge-red{background:#f8514922;color:#f85149}
   .tdt-social-text{font-size:12.5px;line-height:1.5;color:#e0d3ea}
@@ -659,6 +747,12 @@ export function rpBuildTDTRace(ep) {
             <div class="tdt-prompt">${s.player} is asked to ${s.prompt}.</div>
             <span class="tdt-verdict ${vcls}">${_tdtIcon(vic)} ${vtxt}</span></div></div>
         <div class="tdt-beat">${beat}</div></div></div>`;
+    }
+    if (s.stepType === 'freepass') {
+      return `<div class="tdt-step" id="tdt-step-${suffix}-${i}"><div class="tdt-social tdt-freepass">
+        <div class="tdt-social-avas">${_tdtPortrait(s.player, s.color, 'md')}</div>
+        <div><span class="tdt-social-badge badge-gold">${_tdtIcon('skip')} EMILY'S FREE PASS</span>
+          <div class="tdt-social-text"><b>${s.player}</b> takes Emily's free pass — waved past the hot seat to even the teams. No risk, no time lost.</div></div></div></div>`;
     }
     // social event card
     const avas = (s.players || []).slice(0, 2).map((p, ai) => _tdtPortrait(p, s.color || '#a371f7', ai === 0 ? 'md' : 'md stack')).join('');

@@ -1719,7 +1719,8 @@ export function rpBuildMergeAnnouncement(ep) {
   let html = `<div class="rp-page tod-merge-am">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:48px;letter-spacing:2px;text-align:center;color:${tc};margin-bottom:8px;animation:bannerUnfurl 0.6s var(--ease-broadcast) both;transform-origin:center">${mergedTribe.name.toUpperCase()}</div>
-    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:24px">The merge. ${_mergeParticipants.length} players enter the individual game.</div>
+    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:10px">The merge. ${_mergeParticipants.length} players enter the individual game.</div>
+    ${(typeof settingHeroSVG === 'function') ? `<div style="max-width:440px;margin:0 auto 18px;opacity:.85">${settingHeroSVG('banner')}</div>` : ''}
     <div class="rp-portrait-row" style="flex-wrap:wrap;justify-content:center;margin-bottom:28px">
       ${_mergeParticipants.map((n, i) => `<div style="animation:staggerIn 0.4s var(--ease-broadcast) ${i * 80}ms both">${rpPortrait(n)}</div>`).join('')}
     </div>`;
@@ -5786,10 +5787,12 @@ export function rpBuildFeast(ep) {
   const _title = isMerge ? 'THE MERGE FEAST' : 'THE FEAST';
   const _subtitle = isMerge ? 'The tribes are one. The game begins anew.' : 'All tribes. One table. No rules.';
 
+  const _feastBanner = (typeof settingHeroSVG === 'function') ? settingHeroSVG('banner') : '';
   let html = `<div class="rp-page tod-golden">
     <div class="rp-eyebrow">Episode ${epNum}</div>
     <div style="font-family:var(--font-display);font-size:32px;letter-spacing:2px;text-align:center;margin-bottom:4px;color:#e3b341;text-shadow:0 0 20px rgba(227,179,65,0.3)">${_title}</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:24px">${_subtitle}</div>`;
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:8px">${_subtitle}</div>
+    ${_feastBanner ? `<div style="max-width:420px;margin:0 auto 20px;opacity:.85">${_feastBanner}</div>` : ''}`;
 
   evts.forEach(evt => {
     const badge = evt.badgeText ? { text: evt.badgeText, cls: evt.badgeClass || '' } : { text: '', cls: '' };

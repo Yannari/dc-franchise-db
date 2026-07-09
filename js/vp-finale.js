@@ -899,11 +899,13 @@ export function rpBuildFinaleGrandChallenge(ep) {
   const epNum = ep.num;
   const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+epNum*7)%arr.length];
 
+  const _gcBanner = (typeof settingHeroSVG === 'function') ? settingHeroSVG('banner') : '';
   let html = `<div class="rp-page tod-arena">
     <div class="rp-eyebrow">Episode ${epNum} \u2014 Finale</div>
     <div style="font-family:var(--font-display);font-size:30px;letter-spacing:3px;text-align:center;margin-bottom:6px;text-transform:uppercase;color:var(--accent-gold);text-shadow:0 0 30px rgba(227,179,65,0.3)">The Final Challenge</div>
     <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:1.5px;text-transform:uppercase">Three stages. One winner. No jury. No vote.</div>
-    <div style="text-align:center;font-size:12px;color:#484f58;font-style:italic;margin-bottom:24px">The last challenge of the season will decide everything.</div>`;
+    <div style="text-align:center;font-size:12px;color:#484f58;font-style:italic;margin-bottom:10px">The last challenge of the season will decide everything.</div>
+    ${_gcBanner ? `<div style="max-width:420px;margin:0 auto 20px;opacity:.8">${_gcBanner}</div>` : ''}`;
 
   // Finalist + assistant lineup
   html += `<div style="display:flex;justify-content:center;gap:28px;margin-bottom:24px;flex-wrap:wrap">`;
@@ -1118,10 +1120,12 @@ export function rpBuildFTC(ep) {
   const epNum = ep.num;
   const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+epNum*7)%arr.length];
 
+  const _ftcBanner = (typeof settingHeroSVG === 'function') ? settingHeroSVG('banner') : '';
   let html = `<div class="rp-page tod-deepnight">
     <div class="rp-eyebrow">Episode ${epNum} \u2014 Finale</div>
     <div style="font-family:var(--font-display);font-size:30px;letter-spacing:3px;text-align:center;margin-bottom:6px;text-transform:uppercase;color:var(--accent-gold);text-shadow:0 0 30px rgba(227,179,65,0.2)">Final Tribal Council</div>
-    <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:24px;letter-spacing:1.5px">The jury of ${jury.length} will decide the winner</div>`;
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:10px;letter-spacing:1.5px">The jury of ${jury.length} will decide the winner</div>
+    ${_ftcBanner ? `<div style="max-width:420px;margin:0 auto 20px;opacity:.8">${_ftcBanner}</div>` : ''}`;
 
   // ═══ PHASE 1: THE WALK IN ═══
   html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:12px;border-bottom:1px solid rgba(227,179,65,0.15);padding-bottom:6px">Phase 1 \u2014 The Walk In</div>`;
@@ -2058,8 +2062,10 @@ export function rpBuildWinner(ep) {
   else if (wins >= 3 || ws.physical >= 8) subLine = `Won immunity when it counted. A champion who earned every single day.`;
   else subLine = `Outlasted, outplayed, and outwitted everyone. A win built entirely on resilience.`;
 
+  const _winBanner = (typeof settingHeroSVG === 'function') ? settingHeroSVG('banner') : '';
   let html = `<div class="rp-page tod-deepnight" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:400px">
-    <div class="rp-eyebrow" style="margin-bottom:32px">Episode ${ep.num} \u2014 ${seasonConfig.name || 'Season Finale'}</div>
+    <div class="rp-eyebrow" style="margin-bottom:16px">Episode ${ep.num} \u2014 ${seasonConfig.name || 'Season Finale'}</div>
+    ${_winBanner ? `<div style="width:100%;max-width:460px;margin-bottom:16px;opacity:.85">${_winBanner}</div>` : ''}
     <div style="font-family:var(--font-display);font-size:11px;letter-spacing:3px;color:#e3b341;text-transform:uppercase;margin-bottom:16px">Sole Survivor</div>
     ${rpPortrait(winner, 'xl')}
     <div style="font-family:var(--font-display);font-size:38px;color:#e3b341;margin:16px 0 4px;text-shadow:0 0 40px rgba(227,179,65,0.35)">${winner}</div>

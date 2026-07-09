@@ -811,14 +811,17 @@ export function buildEpisodeMap() {
     }
 
     // RI return: fires when the episode STARTS with <= riReentryAt players.
+    // Each return event brings back cfg.riReturnPerEvent people (rescue format only —
+    // duel/redemption formats always return exactly the 1 winner). Matches engine
+    // episode.js _perEvent logic so the projected "X LEFT" count is accurate.
     const _riReentryAt = seasonConfig.riReentryAt || seasonConfig.mergeAt || mergeAt;
+    const _riPerEvent = (seasonConfig.riFormat === 'rescue') ? Math.max(1, seasonConfig.riReturnPerEvent || 1) : 1;
     let riReturn = 0;
     if (riActive && !_riReturn1Used && active <= _riReentryAt) {
-      riReturn = 1;
+      riReturn = _riPerEvent;
       _riReturn1Used = true;
-    }
-    if (riActive && _riReturn1Used && !_riReturn2Used && (seasonConfig.riReturnPoints || 1) >= 2 && active <= (seasonConfig.riSecondReturnAt || 5)) {
-      riReturn++;
+    } else if (riActive && _riReturn1Used && !_riReturn2Used && (seasonConfig.riReturnPoints || 1) >= 2 && active <= (seasonConfig.riSecondReturnAt || 5)) {
+      riReturn += _riPerEvent;
       _riReturn2Used = true;
     }
 

@@ -143,8 +143,17 @@ export function simulateFinale() {
   // ── Override camp events with finale-themed "last day" events ──
   generateFinaleCampOverride(ep, players);
 
-  // Final immunity challenge — skip for fan-vote F2 (no one to cut)
-  const _skipImmunity = cfg.finaleFormat === 'fan-vote' && cfg.finaleSize <= 2;
+  // Final immunity challenge. Skip it when the finale format decides its own winner and doesn't
+  // use a separate immunity holder to cut/pick F2 — running a generic immunity there is redundant
+  // (it shadows the format's real challenge and pollutes the immunity-win counts):
+  //   • final-challenge / olympic-relay — the finale challenge itself crowns the winner
+  //   • koh-lanta — the orienteering + perch challenge sets immunity below
+  //   • hawaiian-punch — runs its own themed FIC (handled in the branch below)
+  //   • fan-vote F2 — nobody to cut
+  // Kept for traditional / jury-cut / fan-vote(F3) / fire-making, where the immunity winner is
+  // safe and chooses who joins them at Final Tribal (or who's spared the fire duel).
+  const _formatDecidesOwnWinner = ['final-challenge', 'olympic-relay', 'koh-lanta'].includes(cfg.finaleFormat);
+  const _skipImmunity = (cfg.finaleFormat === 'fan-vote' && cfg.finaleSize <= 2) || _formatDecidesOwnWinner;
   if (!_skipImmunity) {
     if (cfg.finaleFormat === 'hawaiian-punch' && players.length >= 3) {
       // ── HAWAIIAN STYLE: volcano sprint → surf descent → spirit animal lei ──
@@ -985,8 +994,10 @@ export function simulateFinale() {
     ep.assistants = selectAssistants(finalists, ep.benchAssignments);
   }
 
-  // Generate final challenge reenactment stages (used by VP viewer)
-  ep.finalChallengeStages = generateFinalChallengeStages(finalists, ep.immunityWinner);
+  // Generate final challenge reenactment stages (used by VP viewer). Only meaningful when an
+  // immunity holder exists — final-challenge/olympic-relay render their own challenge stages
+  // instead, and koh-lanta sets its immunity via the perch above.
+  if (ep.immunityWinner) ep.finalChallengeStages = generateFinalChallengeStages(finalists, ep.immunityWinner);
 
   // ── HAWAIIAN PUNCH FINALE: tiebreaker joust → 4-phase volcano race → winner ──
   if (cfg.finaleFormat === 'hawaiian-punch') {

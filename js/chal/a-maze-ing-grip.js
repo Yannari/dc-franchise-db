@@ -392,19 +392,47 @@ export function simulateAMazeInGrip(ep) {
       const load = Math.min(team.strainPct, 100);
       team.holders.forEach(h => { personalScores[h] = (personalScores[h] || 0) + 0.8 + pStats(h).endurance * 0.10 + load * 0.013; });
     });
+    // ── SWAP (runs BEFORE the drop check so a fresh holder can actually save the net) ──
+    // A straining team subs a fresh holder — rare when comfortable, but NEAR-CERTAIN
+    // when the net is about to collapse. This is why a team only "wastes" a swap when
+    // it never got in trouble, and why a team about to drop will spend one if it can.
+    roundAlive.forEach(team => {
+      if (team.dropped || team.swaps >= 2 || team.strainPct < 70) return;
+      const bench = team.scorers.filter(s => !team.holders.includes(s));
+      if (!bench.length) return;                                   // no one to tap in
+      const critical = team.strainPct >= DROP_AT - 6;              // one bad round from the dirt
+      const chance = critical ? 0.97 : Math.min(0.9, (team.strainPct - 66) / 30);
+      if (Math.random() > chance) return;
+      const tired = team.holders.slice().sort((a, b) => pStats(a).endurance - pStats(b).endurance)[0];
+      const fresh = bench.slice().sort((a, b) => _grip(b) - _grip(a))[0];
+      team.holders[team.holders.indexOf(tired)] = fresh;
+      team.swaps += 1;
+      team.weight *= 0.82;                                         // fresh grip relieves strain
+      team.capacity = (_grip(team.holders[0]) + _grip(team.holders[1])) * CAP_FACTOR;
+      team.strainPct = team.weight / team.capacity * 100;
+      addBond(tired, fresh, 0.6);
+      _push({ stepType: 'swap', team: team.name, color: team.color, out: tired, in: fresh,
+        text: _pick([
+          `${tired}'s arms are shaking and ${_pron(tired).sub} calls for relief. The team gives the nod, and ${fresh} steps in to take the rope. Both agreed, so the swap is clean.`,
+          `${fresh} taps in for a spent ${tired} — fresh grip on the rope just when ${team.name} needed it.`,
+          `${tired} can't hold anymore. ${fresh} volunteers, hands ready. ${team.name}'s net steadies.`,
+        ], team.name + round + 'sw'),
+        meta: `${team.name} strain −18% (fresh grip) · ${fresh} now holding · ${tired} → maze · swap ${team.swaps} of 2${team.swaps >= 2 ? ' (no swaps left)' : ''}` }, featured);
+    });
+
     // teams past the drop line this round — but NEVER drop the last net standing (it wins).
     // If several cross together, the highest-strain nets hit the dirt; the lowest survives.
-    const overLine = roundAlive.filter(t => t.strainPct >= DROP_AT + _noise(6)).sort((a, b) => b.strainPct - a.strainPct);
-    const maxDrops = Math.max(0, roundAlive.length - 1);
+    const overLine = roundAlive.filter(t => !t.dropped && t.strainPct >= DROP_AT + _noise(6)).sort((a, b) => b.strainPct - a.strainPct);
+    const maxDrops = Math.max(0, roundAlive.filter(t => !t.dropped).length - 1);
     overLine.slice(0, maxDrops).forEach(team => {
       team.dropped = true; team.dropOrder = ++dropCounter; team.strainPct = 100;
       _push({ stepType: 'drop', team: team.name, color: team.color, order: team.dropOrder, holders: [...team.holders],
         text: _pick([
           `It's too much. ${team.name}'s holders can't hold the sag any longer — the net hits the dirt with a final coconut thud.`,
           `The rope burns through their grip and ${team.name}'s net collapses into the corn. That's the end for them.`,
-          `${team.holders[0]} and ${team.holders[1]} give everything they've got, but ${team.name}'s net finally folds. Down it goes.`,
+          `${team.holders[0]} and ${team.holders[1]} give everything they've got${team.swaps >= 2 ? ', swaps and all' : ''}, but ${team.name}'s net finally folds. Down it goes.`,
         ], team.name + 'drop'),
-        meta: `${team.name} net DOWN · ${team.coconuts} coconuts too many` });
+        meta: `${team.name} net DOWN · ${team.coconuts} coconuts too many${team.swaps >= 2 ? ' · both swaps spent' : ''}` });
     });
     // survivors clinging near the line get a clutch beat
     roundAlive.filter(t => !t.dropped && t.strainPct >= 84).forEach(team => {
@@ -422,31 +450,6 @@ export function simulateAMazeInGrip(ep) {
           meta: `Endurance check: ${clutch} survived · ${team.name} at ${Math.round(Math.min(team.strainPct, 99))}% strain`,
           snap: null }, {});
       }
-    });
-
-    // ── SWAP (a straining team may sub a fresh holder, mutual agreement) ──
-    const straining = teamData.filter(t => !t.dropped && t.strainPct >= 70 && t.swaps < 2);
-    straining.forEach(team => {
-      if (Math.random() > 0.5) return;
-      const bench = team.scorers.filter(s => !team.holders.includes(s));
-      if (!bench.length) return;
-      const tired = team.holders.slice().sort((a, b) => pStats(a).endurance - pStats(b).endurance)[0];
-      const fresh = bench.slice().sort((a, b) => _grip(b) - _grip(a))[0];
-      const outIdx = team.holders.indexOf(tired);
-      team.holders[outIdx] = fresh;
-      team.swaps += 1;
-      // fresh grip relieves strain
-      team.weight *= 0.82;
-      team.capacity = (_grip(team.holders[0]) + _grip(team.holders[1])) * CAP_FACTOR;
-      team.strainPct = team.weight / team.capacity * 100;
-      addBond(tired, fresh, 0.6);
-      _push({ stepType: 'swap', team: team.name, color: team.color, out: tired, in: fresh,
-        text: _pick([
-          `${tired}'s arms are shaking and ${_pron(tired).sub} calls for relief. The team gives the nod, and ${fresh} steps in to take the rope. Both agreed, so the swap is clean.`,
-          `${fresh} taps in for a spent ${tired} — fresh grip on the rope just when ${team.name} needed it.`,
-          `${tired} can't hold anymore. ${fresh} volunteers, hands ready. ${team.name}'s net steadies.`,
-        ], team.name + round + 'sw'),
-        meta: `${team.name} strain −18% (fresh grip) · ${fresh} now holding · ${tired} → maze · swap ${team.swaps} of 2${team.swaps >= 2 ? ' (no swaps left)' : ''}` }, featured);
     });
 
     // ── SOCIAL EVENT (guaranteed 1 per round, rotate teams) ──

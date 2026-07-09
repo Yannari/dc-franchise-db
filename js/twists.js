@@ -1513,6 +1513,13 @@ export function applyTwist(ep, twist, isPrimary = true) {
     ep.isSuperHerold = true;
 
   } else if (engineType === 'haunted-house') {
+    // Post-merge only. If scheduled before the merge (and the merge isn't happening this
+    // episode either), bail so we don't set a dangling flag that suppresses the normal
+    // challenge and leaves a generic one in its place.
+    if (!gs.isMerged) {
+      const merging = gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
+      if (!merging) return;
+    }
     ep.isHauntedHouse = true;
 
   } else if (engineType === 'princess-pride') {

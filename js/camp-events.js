@@ -93,6 +93,13 @@ export const CAMP_EVENT_TYPES = [
   { id: 'bigMoveThoughts',     twoPlayer: false, weight: 6  },
   { id: 'perceptiveReads',     twoPlayer: true,  weight: 8  },
   { id: 'floaterInvisible',    twoPlayer: false, weight: 6  },
+  // ═══ HOST & CHEF meddling (camp antagonists torment the campers) ═══
+  { id: 'chefSlop',            twoPlayer: true,  weight: 9  }, // inedible food → bond over misery or turn on each other
+  { id: 'rudeWakeup',          twoPlayer: false, weight: 8  }, // dawn airhorn / chores → clap back or camp stews
+  { id: 'hostFavoritism',      twoPlayer: true,  weight: 8  }, // host plays favorites → jealousy
+  { id: 'fakeReward',          twoPlayer: true,  weight: 7  }, // "reward" that's a punishment → bond over the prank
+  // ═══ CASUAL NIGHT GAMES (the cast's own after-dark spin-the-bottle etc.) ═══
+  { id: 'nightGame',           twoPlayer: true,  weight: 11 }, // spin-the-bottle / never-have-I-ever / truth-or-dare
 ];
 
 // Variety control for camp event picking (applied in generateCampEventsForGroup's weight fn):
@@ -105,10 +112,11 @@ const _CAMP_BEAT_SIGNATURE = new Set([
   'allianceCrack', 'trustCrack', 'meltdown', 'hotheadExplosion',
   'mastermindOrchestrates', 'schemerManipulates', 'rumor', 'lie', 'blame',
   'eavesdrop', 'watchingYou', 'paranoia', 'bigMoveThoughts', 'overconfidence',
-  'prank', 'showboat',
+  'prank', 'showboat', 'nightGame', 'hostFavoritism',
 ]);
 const _CAMP_BEAT_TEXTURE = new Set([
   'dispute', 'jealousy', 'exclusion', 'leadershipClash', 'foodConflict', 'intimidation',
+  'chefSlop', 'rudeWakeup', 'fakeReward',
 ]);
 
 
@@ -912,7 +920,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
            `${a} and ${b} get stuck on a camp task together and it takes twice as long as it should. Neither minds.`,
            `${a} and ${b} go looking for firewood and come back with none, having talked the whole time instead.`,
            `${a} and ${b} discover they both can't stand the same person. Nothing bonds people faster.`,
-           `${a} shows ${b} a hidden spot on the beach ${pronouns(a).sub} found. It becomes "their" place to actually talk.`];
+           `${a} shows ${b} a hidden spot on the beach ${pronouns(a).sub} found. It becomes "their" place to actually talk.`,
+           `${a} and ${b} try to name every constellation and get all of them wrong, confidently. The stargazing turns into two hours of nonsense and one real friendship.`,
+           `${a} and ${b} split the last of the good water without discussing it, each trying to give the other more. They notice each other noticing. That's the whole thing.`,
+           `${a} catches ${b} humming and joins in without thinking. Neither knows the words. It doesn't matter — camp feels a little less like a game for a minute.`];
       events.push({ type: 'tdBond', text: tdBondLines[Math.floor(Math.random() * tdBondLines.length)], players: [a, b], badgeText: 'BONDING', badgeClass: 'green' });
 
     } else if (eventType === 'groupLaugh') {
@@ -932,7 +943,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         : [`Someone makes a joke at just the right moment and camp completely loses it. The tension that's been building all day just — breaks.`,
            `An argument about something dumb devolves into everyone laughing. Nobody even remembers what started it.`,
            `Camp has a rare good evening. People are talking, laughing, not thinking about the vote. These moments don't last long out here.`,
-           `${p} says something that catches the whole tribe off guard. The laughter is genuine. Real. A reminder that these are actual people.`];
+           `${p} says something that catches the whole tribe off guard. The laughter is genuine. Real. A reminder that these are actual people.`,
+           `The tribe invents a game with a rock and a stick and rules nobody can explain. It's the best two hours anyone's had out here.`,
+           `${p} tells a story that goes nowhere for ten minutes and then lands the dumbest possible ending. Camp is wrecked. ${_glP.Sub} ${_glP.sub==='they'?'have':'has'} never looked prouder.`];
       events.push({ type: 'groupLaugh', text: groupLaughLines[Math.floor(Math.random() * groupLaughLines.length)], player: p, players: [p], badgeText: 'GOOD VIBES', badgeClass: 'green' });
 
     } else if (eventType === 'sharedStruggle') {
@@ -2376,6 +2389,157 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
         `The temperature drops sharply after sunset. The tribe clusters closer at the fire than they have all season. Proximity creates conversation creates connection.`,
       ];
       events.push({ type: 'weatherShift', text: _weatherLines[Math.floor(Math.random() * _weatherLines.length)], player: featured, players: [featured], badgeText: 'WEATHER', badgeClass: '' });
+
+    // ═══════════════ HOST & CHEF MEDDLING ═══════════════
+    } else if (eventType === 'chefSlop') {
+      // Chef serves something inedible — a pair either bonds over the misery or turns on each other
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.3 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, 6 - Math.abs(getBond(a, n)) * 0.2));
+      const pA = pronouns(a), pB = pronouns(b);
+      if (Math.min(pStats(a).temperament, pStats(b).temperament) <= 4 && getBond(a, b) < 3) {
+        addBond(a, b, -0.6);
+        const lines = [
+          `Chef ladles out something gray and faintly moving. ${a} gags; ${b} laughs at ${pA.obj} — and it curdles into a real fight about who's being dramatic.`,
+          `Dinner is Chef's "protein surprise." ${a} won't touch it and ${b} calls ${pA.obj} spoiled and precious. The slop wins; neither of them is speaking after.`,
+          `${a} swears ${b} took the only edible scoop of Chef's stew. ${pB.Sub} ${pB.sub==='they'?'deny':'denies'} it. The pot's empty either way, and now so is the goodwill.`,
+          `Chef bangs the ladle and says "eat or starve." ${a} pushes the bowl at ${b}; ${b} shoves it back. A dumb argument over inedible food becomes a real one.`,
+        ];
+        events.push({ type: 'chefSlop', players: [a, b], badgeText: "CHEF'S SLOP", badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        addBond(a, b, 0.5);
+        const lines = [
+          `Chef's slop is genuinely inedible. ${a} and ${b} choke it down shoulder to shoulder, crying-laughing, united by pure suffering.`,
+          `${a} dares ${b} to eat a second bowl of Chef's mystery stew. ${pB.Sub} actually ${pB.sub==='they'?'do':'does'} it. A friendship is forged in nausea.`,
+          `Nobody can identify what Chef served tonight. ${a} and ${b} rank it against every bad meal of their lives until the fire burns down. Misery, it turns out, is good company.`,
+          `${a} and ${b} split the one ration Chef didn't ruin, half each, no argument. Small thing. It sticks.`,
+        ];
+        events.push({ type: 'chefSlop', players: [a, b], badgeText: 'SHARED MISERY', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    } else if (eventType === 'rudeWakeup') {
+      // The host torments camp at dawn — a bold camper claps back, or everyone just stews
+      const clapper = _pick(group, n => Math.max(0.1, pStats(n).boldness * 0.4 + 1));
+      const pC = pronouns(clapper);
+      if (pStats(clapper).boldness >= 6) {
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[clapper] = (gs.popularity[clapper] || 0) + 1;
+        group.filter(p => p !== clapper).forEach(p => addBond(clapper, p, 0.2));
+        const lines = [
+          `The host blasts an airhorn into the shelter at 5 a.m. "just because." ${clapper} rolls out and fires back a roast so clean the whole camp is howling. The host retreats.`,
+          `A pointless 6 a.m. chore, courtesy of the host. ${clapper} does it in a dead-on impression of ${pC.posAdj} tormentor, and camp loses it. Even the host almost cracks.`,
+          `The host kicks camp awake with a bucket of cold water. ${clapper} stands up dripping, deadpans one perfect line, and turns the humiliation into the funniest moment of the week.`,
+          `The host announces "mandatory sunrise calisthenics." ${clapper} leads them — sarcastically, gloriously — and the tribe follows along cackling. The bit's better than the punishment.`,
+        ];
+        events.push({ type: 'rudeWakeup', players: [clapper], player: clapper, badgeText: 'CLAPPED BACK', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        const others = group.filter(p => p !== clapper);
+        if (!others.length) continue;
+        const b = others[Math.floor(Math.random() * others.length)];
+        addBond(clapper, b, -0.3);
+        const lines = [
+          `The host's dawn airhorn leaves the whole camp raw and sleepless. ${clapper} snaps at ${b} over nothing before the sun's even up. Neither means it; both remember it.`,
+          `A 5 a.m. "surprise inspection" from the host frays everyone. ${clapper} and ${b} bicker through breakfast about whose turn it was to bank the fire.`,
+          `Robbed of sleep by the host's antics, ${clapper} is short with ${b} all morning. It's exhaustion, not malice — but the edge is real.`,
+          `The host makes them break camp and rebuild it "for time." ${clapper} and ${b} grind through it snapping at each other, too tired to be kind.`,
+        ];
+        events.push({ type: 'rudeWakeup', players: [clapper, b], badgeText: 'RUDE AWAKENING', badgeClass: '', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
+
+    } else if (eventType === 'hostFavoritism') {
+      // The host visibly favors one camper — breeds resentment from a rival
+      const fav = _pick(group, n => Math.max(0.1, pStats(n).social * 0.4 + 1));
+      const others = group.filter(p => p !== fav);
+      if (!others.length) continue;
+      const jealous = wRandom(others, n => Math.max(0.1, (3 - getBond(fav, n)) * 0.4 + pStats(n).boldness * 0.1 + 1));
+      addBond(jealous, fav, -0.6);
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[fav] = (gs.popularity[fav] || 0) + 0.5;
+      const pF = pronouns(fav), pJ = pronouns(jealous);
+      const lines = [
+        `The host keeps singling ${fav} out for praise — "now THAT'S a competitor" — and slips ${pF.obj} an extra snack on camera. ${jealous} watches the whole thing and files it away.`,
+        `${fav} gets the host's laugh, the host's nod, the host's "you get it." ${jealous} gets ignored, and the resentment sets in fast.`,
+        `The host jokes with ${fav} like they're old friends and barely learns ${jealous}'s name. ${pJ.Sub} ${pJ.sub==='they'?'notice':'notices'}. ${pJ.Sub} ${pJ.sub==='they'?"don't":"doesn't"} forget.`,
+        `When the host hands out a tiny "reward" for no reason, ${fav} gets it. ${jealous} does the math on why — and the answer stings.`,
+      ];
+      events.push({ type: 'hostFavoritism', players: [jealous, fav], badgeText: 'PLAYING FAVORITES', badgeClass: 'red', text: lines[Math.floor(Math.random() * lines.length)] });
+
+    } else if (eventType === 'fakeReward') {
+      // A "reward" that turns out to be a punishment — camp bonds over the shared gotcha
+      const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.2 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.2 + 2));
+      addBond(a, b, 0.4);
+      const lines = [
+        `The host promises a "spa afternoon." It's a mud pit behind the outhouse. ${a} and ${b} sit in it laughing at their own gullibility.`,
+        `"Letters from home!" the host announces. The envelopes contain the campers' own unpaid bills. ${a} reads ${b}'s out loud and they both lose it.`,
+        `The host wheels out a "feast." The lids come off to reveal more of Chef's slop. ${a} and ${b} toast the betrayal with mystery stew and gallows humor.`,
+        `A "helicopter reward" turns out to be the host filming them run in circles for nothing. ${a} and ${b} give up, flop in the dirt, and bond over being had.`,
+      ];
+      events.push({ type: 'fakeReward', players: [a, b], badgeText: 'GOTCHA', badgeClass: '', text: lines[Math.floor(Math.random() * lines.length)] });
+
+    // ═══════════════ CASUAL NIGHT GAMES ═══════════════
+    } else if (eventType === 'nightGame') {
+      const mode = ['spin', 'never', 'dare'][Math.floor(Math.random() * 3)];
+      if (mode === 'spin') {
+        const a = _pick(group, n => Math.max(0.1, pStats(n).boldness * 0.3 + pStats(n).social * 0.2 + 1));
+        const compat = group.filter(p => p !== a && romanticCompat(a, p) && seasonConfig.romance !== 'disabled');
+        if (compat.length) {
+          const b = wRandom(compat, n => Math.max(0.1, getBond(a, n) * 0.4 + pStats(n).social * 0.3 + 1));
+          addBond(a, b, 1.0);
+          const lines = [
+            `Somebody produces a bottle after dark and the game escalates fast. It lands on ${a} and ${b}. The kiss is quick — but the way neither of them looks away after is the real story.`,
+            `Spin-the-bottle by firelight. ${a} spins; it points dead at ${b}. The camp whoops, the two of them go red, and something that wasn't there this morning is there now.`,
+            `The bottle picks ${a} and ${b}. It's "just a game" right up until the kiss lands a beat too long and the whole circle goes quiet.`,
+            `${a} swears they'll keep it casual. Then the bottle names ${b}, and casual goes out the window. The tribe has a new thing to gossip about.`,
+          ];
+          events.push({ type: 'nightGame', players: [a, b], badgeText: 'SPIN THE BOTTLE', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+        } else {
+          const others = group.filter(p => p !== a);
+          if (!others.length) continue;
+          const b = others[Math.floor(Math.random() * others.length)];
+          addBond(a, b, 0.3);
+          const lines = [
+            `The bottle lands on ${a} and ${b} — no spark there, just a mortified high-five and a lot of laughing. Camp morale, weirdly, goes up.`,
+            `${a} and ${b} get picked by the bottle, declare it "a bro thing," shake hands, and the whole circle roasts them for an hour. Good night, all told.`,
+            `The bottle points at ${a} and ${b}. They dodge the kiss, invent an elaborate secret handshake instead, and it becomes the tribe's thing for days.`,
+          ];
+          events.push({ type: 'nightGame', players: [a, b], badgeText: 'SPIN THE BOTTLE', badgeClass: '', text: lines[Math.floor(Math.random() * lines.length)] });
+        }
+      } else if (mode === 'never') {
+        const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.3 + 1));
+        const others = group.filter(p => p !== a);
+        if (!others.length) continue;
+        const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + 2));
+        addBond(a, b, 0.5);
+        const pA = pronouns(a);
+        const lines = [
+          `Never-Have-I-Ever gets out of hand. ${a} loses a round and has to explain a story ${pA.sub} clearly never meant to tell. ${b} will absolutely be bringing it up again.`,
+          `The game peels back a layer nobody expected. ${a} admits something real, ${b} matches it, and the two of them end the night closer than the game intended.`,
+          `"Never have I ever lied to someone in this camp." Half the fingers go down. ${a} and ${b} catch each other's eye and start laughing before anyone can ask.`,
+          `${a} loses badly and spills a genuinely embarrassing secret. ${b} promises to keep it. Whether ${b} does is a different game entirely.`,
+        ];
+        events.push({ type: 'nightGame', players: [a, b], badgeText: 'NEVER HAVE I EVER', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      } else {
+        const a = _pick(group, n => Math.max(0.1, pStats(n).boldness * 0.4 + 1));
+        const others = group.filter(p => p !== a);
+        if (!others.length) continue;
+        const b = others[Math.floor(Math.random() * others.length)];
+        addBond(a, b, 0.3);
+        if (pStats(a).boldness >= 6) {
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[a] = (gs.popularity[a] || 0) + 0.5;
+        }
+        const lines = [
+          `Camp truth-or-dare, no stakes, all chaos. ${b} dares ${a} to belly-flop into the lake at midnight. ${a} does it without blinking. Legend status, minor hypothermia.`,
+          `${b} dares ${a} to serenade the shelter. ${a} commits so hard to the bit that the whole camp is wheezing. Nobody's sleeping now, and nobody minds.`,
+          `The dare is to eat whatever Chef left in the pot. ${a} takes it on for ${b}'s amusement, gags theatrically, and earns a standing ovation.`,
+          `${b} dares ${a} to do an impression of every single camper. ${a} nails ${b}'s last, and the circle can't breathe from laughing.`,
+        ];
+        events.push({ type: 'nightGame', players: [a, b], badgeText: 'TRUTH OR DARE', badgeClass: 'green', text: lines[Math.floor(Math.random() * lines.length)] });
+      }
     }
   }
 

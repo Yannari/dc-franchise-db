@@ -415,6 +415,7 @@ export function renderEpisodeHistory() {
     const ocTag = ep.isOperationClassified ? `<span class="ep-hist-tag" style="background:rgba(255,45,45,0.15);color:#ff2d2d">Spy</span>` : '';
     const shTag = ep.isSuperHerold ? `<span class="ep-hist-tag" style="background:rgba(239,68,68,0.15);color:#ef4444">Hero</span>` : '';
     const hhTag = ep.isHauntedHouse ? `<span class="ep-hist-tag" style="background:rgba(139,214,106,0.15);color:#8bd66a">🏚️ Haunted</span>` : '';
+    const hodTag = ep.isHungOut ? `<span class="ep-hist-tag" style="background:rgba(34,224,230,0.15);color:#22e0e6">🪢 Lie Detector</span>` : '';
     const ppTag = ep.isPrincessPride ? `<span class="ep-hist-tag" style="background:rgba(236,72,153,0.15);color:#ec4899">Princess</span>` : '';
     const gcTag = ep.isGetAClue ? `<span class="ep-hist-tag" style="background:rgba(196,149,106,0.15);color:#c4956a">Mystery</span>` : '';
     const rrTag = ep.isRockNRule ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8b5cf6">Rock</span>` : '';
@@ -457,7 +458,7 @@ export function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${mnTag}${tiTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${tdtTag}${amgTag}${paTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${hhTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${iibTag}${fcrTag}${baTag}${ptTag}${prwTag}${amhTag}${cocTag}${rtcTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${mnTag}${tiTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${tdtTag}${amgTag}${paTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${hhTag}${hodTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${iibTag}${fcrTag}${baTag}${ptTag}${prwTag}${amhTag}${cocTag}${rtcTag}</div>
     </div>`;
   }).join('');
 }

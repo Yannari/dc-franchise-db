@@ -215,6 +215,304 @@ export const SETTING_EXCLUSIVE = {
   souvenirGrab:    ['world-tour'],
 };
 
+// ── Survival-mechanic narration, per venue. When the food/water survival system
+// (seasonConfig.foodWater) is on, episode.js draws its provider/slacker/hunger/
+// collapse beats from here so they read native to the venue instead of always
+// assuming a forage-and-fish island. Templates use {a}/{b} (two players),
+// {p} (featured player), {po} (possessive) — venue nouns are written inline
+// (no vocab tokens needed; each pool is venue-specific by construction).
+// episode.js fills the tokens (it has pronouns + fillVocab). Any event type a
+// venue omits falls back to survival-island, then hosted-camp, so nothing breaks.
+export const SETTING_SURVIVAL = {
+  'hosted-camp': {
+    providerFood: [
+      `{p} sweet-talks Chef out of an extra tray and hauls it back to the cabins. The camp eats better tonight — and everyone knows who to thank.`,
+      `While the others argue strategy, {p} pulls kitchen duty in the mess hall in exchange for seconds. {po} plate feeds three people. Nobody forgets that.`,
+      `{p} finds the pantry Chef forgot to lock and quietly restocks the cabin. Not stealing, exactly — redistributing. The camp eats.`,
+    ],
+    providerPraised: [
+      `"I don't know what we'd do without {p}," someone says at the campfire. Nobody disagrees. {po} kitchen runs have been keeping the whole camp fed.`,
+      `The camp's running on cafeteria scraps — but {p} keeps talking Chef into extra rations. {po} doesn't make a thing of it. The camp notices anyway.`,
+    ],
+    slackerCalledOut: [
+      `{a} pulls {b} aside by the mess hall: "People notice you skip every chore. It's going to be a problem." {b} shrugs. That shrug costs {b} more than {b} knows.`,
+      `"Hey {b}, when's the last time you did a dish?" {a} asks it light, but the message lands. The camp's keeping score of who works and who coasts.`,
+    ],
+    slackerConfrontation: [
+      `{a} finally snaps. "We're all pulling chores and {b} is napping in the cabin. I'm done covering for {b}." The mess hall goes dead silent.`,
+      `{a} slams a tray down on the table. "Sweep, haul, dishes — anything. {b} does NOTHING." {b} doesn't look up. Somehow that's worse.`,
+    ],
+    slackerBonding: [
+      `While the rest of the camp hauls firewood, {a} and {b} are sprawled on the good bunks comparing mosquito bites. Nobody says anything. Everyone notices.`,
+      `{a} and {b} have a rhythm: sleep through chores, show up for meals, avoid eye contact with the people working. It's not a strategy. It's a lifestyle.`,
+    ],
+    foodConflict: [
+      `The good snacks are almost gone. {a} catches {b} taking a second helping in the mess hall. "That's not yours." What follows isn't pretty.`,
+      `{a} and {b} argue over who finished the last of the camp rations. It's not about the food. It's about everything. Hunger makes it all worse.`,
+    ],
+    foodHoarding: [
+      `{a} finds a stash of snacks hidden under {b}'s bunk. The look on {a}'s face says everything. {b}'s been skimming from the whole cabin.`,
+      `{a} catches {b} sneaking food from the mess-hall stores after lights-out. Word's all over camp by breakfast. The cabin is furious.`,
+    ],
+    starvationBond: [
+      `{a} and {b} sit at the empty mess table splitting one sad ration between them. Nobody speaks. Hunger has a way of stripping everything down to what matters.`,
+      `It's been two days of thin camp meals. {a} and {b} share the last decent roll in silence. The game feels very far away right now.`,
+    ],
+    foodRationing: [
+      `{p} takes charge of the camp stores. "We portion this out or we're eating pine needles by Friday." Nobody argues. {po} counts every packet.`,
+      `{p} sets up a rationing board on the mess-hall wall. Equal shares, no exceptions. The camp doesn't love it — but they're still eating.`,
+    ],
+    foodCrisis: [
+      `The mess hall's locked and Chef's "gone home." The camp sits in the dark cabins, too tired to scheme, too hungry to sleep. This is the game when the host stops feeding you.`,
+      `No rations left, and the fire in the pit's gone cold. Eyes are hollow. Conversation's stopped. The game is secondary now — getting fed is the game.`,
+    ],
+    survivalCollapse: [
+      `{p} goes down at the washroom taps, legs buckling. The camp rushes over. {po} tries to wave them off — "I'm fine" — but {p} isn't fine. The body's had enough.`,
+      `Mid-sentence, {p} goes pale and sits down hard at the mess table, breathing heavy. This isn't strategy. This isn't the game. This is the camp running {p} into the ground.`,
+    ],
+    medevac: [
+      `Medical rolls a cart into camp at dawn. {p} is pulled from the game. {po} fights it — of course {p} does — but the call's been made. The camp watches {p} go.`,
+      `{p} can't stand this morning. The medics check vitals as the camp gathers. The verdict comes fast: "{p} is done." Tears all around. Nobody wanted it to end like this.`,
+    ],
+    providerVotedOut: [
+      `The camp feels different without {p}. Nobody's charming Chef for extras. Nobody's covering kitchen duty. The tribe voted out the one person keeping them fed — and now the bill's due.`,
+      `First morning without {p}. The rations are thin and nobody knows how to stretch them. "We really messed up," someone mutters. The silence after is deafening.`,
+    ],
+  },
+  'survival-island': {
+    providerFood: [
+      `{p} is up before dawn, waist-deep in the surf with a makeshift spear. Two hours later {po} haul is three fish. The tribe eats tonight.`,
+      `{p} disappears into the treeline and comes back with an armful of coconuts and wild fruit. Not glamorous — but it keeps the tribe going.`,
+      `Nobody asked {p} to fish. {p} just went. Came back with enough to feed the shelter and didn't say a word about it. Everyone saw.`,
+    ],
+    providerPraised: [
+      `"I don't know what we'd do without {p}," someone says at the fire. Nobody disagrees. {po} has been carrying this camp on {po} back.`,
+      `The tribe's running on fumes — but {p} keeps showing up. Fishing, firewood, water runs. {po} doesn't complain. The tribe notices.`,
+    ],
+    slackerCalledOut: [
+      `{a} pulls {b} aside: "People are noticing you don't help around camp. It's going to be a problem." {b} shrugs. That shrug costs {b} more than {b} knows.`,
+      `"Hey {b}, when's the last time you went to the well?" {a} asks it casually, but the message is clear. The tribe is watching who works and who doesn't.`,
+    ],
+    slackerConfrontation: [
+      `{a} finally snaps. "We're out here starving and {b} is lying in the shelter doing NOTHING. I'm done carrying {b}." The whole camp goes still.`,
+      `{a} throws a coconut shell at the shelter wall. "Get up. We need water. We need firewood. We need someone who actually DOES something." {b} doesn't move.`,
+    ],
+    slackerBonding: [
+      `While the rest of the tribe hauls water, {a} and {b} are sitting in the shelter comparing bug bites. Nobody says anything. But everyone notices.`,
+      `{a} and {b} have found a rhythm: wake up late, eat whatever's left, avoid the people working. It's not a strategy. It's a lifestyle. And somehow it's working.`,
+    ],
+    foodConflict: [
+      `The rice is almost gone. {a} catches {b} taking a second scoop. "That's not yours." What follows isn't pretty.`,
+      `{a} and {b} argue over who ate the last of the coconut. It's not about the coconut. It's about everything. The hunger makes everything worse.`,
+    ],
+    foodHoarding: [
+      `{a} finds a stash of coconut meat hidden under {b}'s sleeping mat. The look on {a}'s face says everything. {b} has been stealing from the tribe.`,
+      `{a} catches {b} sneaking food from the supply at night. Word spreads by morning. The tribe is furious.`,
+    ],
+    starvationBond: [
+      `{a} and {b} sit by a dying fire, splitting the last handful of rice between them. Nobody speaks. Hunger strips everything down to what matters.`,
+      `It's been two days since a real meal. {a} and {b} share a coconut in silence. The game feels very far away right now.`,
+    ],
+    foodRationing: [
+      `{p} takes charge of the food. "We portion this out or we starve in three days." Nobody argues. {po} counts every grain of rice.`,
+      `{p} sets up a rationing system. Equal portions, no exceptions. The tribe doesn't love it — but they're still eating.`,
+    ],
+    foodCrisis: [
+      `The rice is gone. The coconuts are gone. The tribe sits in silence, too tired to strategize, too hungry to sleep. This is what it looks like when the island wins.`,
+      `No food left. The fire went out and nobody has the energy to relight it. Eyes are hollow. Conversation's stopped. Survival is the game now.`,
+    ],
+    survivalCollapse: [
+      `{p} collapses at the water well, legs buckling. The tribe rushes over. {po} tries to stand — "I'm fine" — but {p} isn't fine. The body is giving out.`,
+      `Mid-conversation, {p} goes pale and sits down hard, staring at the ground, breathing heavy. This isn't the game. This is the island saying: you're running out of time.`,
+    ],
+    medevac: [
+      `The medical team arrives at dawn. {p} is pulled from the game. {po} fights it — of course {p} does — but the decision is made. The stretcher. The boat. The game goes on without {p}.`,
+      `{p} can't stand up this morning. The tribe gathers as the medics check vitals. The verdict comes fast: "{p} is done." {po} cries. The tribe cries. Nobody wanted to see this.`,
+    ],
+    providerVotedOut: [
+      `The camp feels different without {p}. Nobody's fishing. Nobody's starting the fire at dawn. The tribe voted out the one person who kept them fed — and now the island is collecting the debt.`,
+      `First morning without {p}. The rice is almost gone and nobody knows how to catch fish. "We really messed up," someone mutters. The silence that follows is deafening.`,
+    ],
+  },
+  'carnival': {
+    providerFood: [
+      `{p} gets the deep-fryer at the abandoned snack stand sputtering back to life and fries up a batch of questionable corn dogs. The crew eats tonight — nobody asks about the expiration date.`,
+      `{p} jimmies the padlock on the stockroom behind the funnel-cake truck and hauls out enough stale mix to feed the tents. Grease never tasted so much like loyalty.`,
+      `{p} works the ring-toss booth solo until {po} wins the whole shelf of candy prizes, then splits the haul at the tents. Dinner is entirely sugar. Nobody complains.`,
+    ],
+    providerPraised: [
+      `"I don't know what we'd do without {p}," someone says by the ticket booth. Nobody disagrees. {po} keeps getting the dead snack stands running again.`,
+      `The crew's living on prize candy and fryer scraps — but {p} keeps the food coming out of the empty midway. {po} doesn't brag. The crew notices.`,
+    ],
+    slackerCalledOut: [
+      `{a} pulls {b} aside by the carousel: "People notice you never help scrounge. It's going to be a problem." {b} shrugs. That shrug costs {b} more than {b} knows.`,
+      `"Hey {b}, when's the last time you cranked a fryer?" {a} asks it light, but the message lands. The crew's tracking who scavenges and who just eats.`,
+    ],
+    slackerConfrontation: [
+      `{a} finally snaps. "We're all out prying open stands and {b} is asleep on the bumper cars. I'm done covering for {b}." The midway goes dead quiet.`,
+      `{a} kicks over an empty popcorn tub. "Fry something. Scrounge something. Do ANYTHING." {b} doesn't move. Somehow that's worse.`,
+    ],
+    slackerBonding: [
+      `While the rest of the crew pries open snack stands, {a} and {b} are riding the carousel in slow circles. Nobody says anything. Everyone notices.`,
+      `{a} and {b} have a rhythm: sleep in the funhouse, eat whatever the others scrounge, avoid the work entirely. It's not a strategy. It's a lifestyle.`,
+    ],
+    foodConflict: [
+      `The prize candy is almost gone. {a} catches {b} pocketing a second candy apple. "That's not yours." What follows isn't pretty.`,
+      `{a} and {b} argue over the last bag of fryer corn dogs. It's not about the corn dogs. It's about everything. The hunger makes it all worse.`,
+    ],
+    foodHoarding: [
+      `{a} finds a stash of candy apples hidden under {b}'s cot in the tents. The look on {a}'s face says everything. {b}'s been skimming the scrounge.`,
+      `{a} catches {b} sneaking off to the funnel-cake stockroom alone at night. Word's all over the midway by morning. The crew is furious.`,
+    ],
+    starvationBond: [
+      `{a} and {b} sit under the dead Ferris wheel splitting one cold corn dog between them. Nobody speaks. Hunger strips everything down to what matters.`,
+      `Two days of nothing but prize candy. {a} and {b} share the last funnel cake in silence. The game feels very far away right now.`,
+    ],
+    foodRationing: [
+      `{p} takes over the scrounge. "We ration what we pull from these stands or we're licking cotton-candy sticks by Friday." Nobody argues. {po} counts every corn dog.`,
+      `{p} sets up a share-out at the ticket booth. Equal portions of whatever the midway coughs up. The crew doesn't love it — but they're still eating.`,
+    ],
+    foodCrisis: [
+      `Every stand is stripped bare and the last candy apple's long gone. The crew slumps around the dead midway, too drained to talk. The carnival always takes more than it gives.`,
+      `Nothing left in any booth. The Ferris wheel's gone dark and nobody has the energy to scrounge again. Eyes are hollow. The game is secondary now — getting fed is the game.`,
+    ],
+    survivalCollapse: [
+      `{p} goes down by the soda fountain, legs buckling. The crew rushes over. {po} waves them off — "I'm fine" — but {p} isn't fine. The body's had enough.`,
+      `Mid-sentence, {p} goes pale and sinks onto the carousel platform, breathing heavy. This isn't strategy. This isn't the game. This is the carnival wearing {p} down.`,
+    ],
+    medevac: [
+      `Medical arrives through the front gates at dawn. {p} is pulled from the game. {po} fights it — of course {p} does — but the call's been made. The crew watches {p} go.`,
+      `{p} can't stand this morning. The medics check vitals as the crew gathers by the tents. The verdict comes fast: "{p} is done." Tears all around. Nobody wanted this.`,
+    ],
+    providerVotedOut: [
+      `The midway feels emptier without {p}. Nobody's cranking the fryers. Nobody's picking padlocks for food. The crew voted out the one person keeping them fed — and now the bill's due.`,
+      `First morning without {p}. The scrounge is thin and nobody else knows how to work the stands. "We really messed up," someone mutters. The silence after is deafening.`,
+    ],
+  },
+  'film-lot': {
+    providerFood: [
+      `{p} raids craft services the second the caterers turn their backs and comes back to the trailers with real food. On a film lot, that's heroism.`,
+      `{p} sweet-talks the catering crew into the leftover craft-services spread. {po} pile of sandwiches feeds the team for a day. The others finally learn {po} name.`,
+      `{p} stakes out the craft-services table until the donuts restock, then hauls an armful back to the trailers. Not glamorous — but the team eats.`,
+    ],
+    providerPraised: [
+      `"I don't know what we'd do without {p}," someone says at craft services. Nobody disagrees. {po} craft-services runs have been feeding the whole cast.`,
+      `The team's living on stale donuts — but {p} keeps charming the caterers for the good stuff. {po} doesn't make a thing of it. The cast notices.`,
+    ],
+    slackerCalledOut: [
+      `{a} pulls {b} aside behind the sound stage: "People notice you never help haul the catering. It's going to be a problem." {b} shrugs. That shrug costs {b} more than {b} knows.`,
+      `"Hey {b}, when's the last time you made a coffee run?" {a} asks it light, but the message lands. The cast's tracking who works and who just poses.`,
+    ],
+    slackerConfrontation: [
+      `{a} finally snaps. "We're all running catering and hauling gear and {b} is napping in a trailer. I'm done covering for {b}." The sound stage goes dead quiet.`,
+      `{a} slams a clipboard down. "Fetch, haul, ANYTHING. {b} does nothing but hit {po} marks for the camera." {b} doesn't look up. Somehow that's worse.`,
+    ],
+    slackerBonding: [
+      `While the rest of the cast hauls gear off the sound stage, {a} and {b} are lounging in the star trailer eating the good snacks. Nobody says anything. Everyone notices.`,
+      `{a} and {b} have a rhythm: sleep in the trailers, raid craft services, avoid every call sheet. It's not a strategy. It's a lifestyle.`,
+    ],
+    foodConflict: [
+      `The real food at craft services is almost gone. {a} catches {b} taking a second sandwich. "That's not yours." What follows isn't pretty.`,
+      `{a} and {b} argue over the last decent coffee at the catering table. It's not about the coffee. It's about everything. The hunger makes it all worse.`,
+    ],
+    foodHoarding: [
+      `{a} finds a stash of craft-services snacks hidden in {b}'s trailer. The look on {a}'s face says everything. {b}'s been skimming the catering.`,
+      `{a} catches {b} sneaking back to craft services after wrap to load up alone. Word's all over the lot by morning. The cast is furious.`,
+    ],
+    starvationBond: [
+      `{a} and {b} sit on the edge of a dead set splitting the last real sandwich between them. Nobody speaks. Hunger strips everything down to what matters.`,
+      `Two days of nothing but stale donuts. {a} and {b} share the last edible thing at craft services in silence. The game feels very far away right now.`,
+    ],
+    foodRationing: [
+      `{p} takes over craft services. "We ration the real food or we're eating prop fruit by Friday." Nobody argues. {po} counts every sandwich.`,
+      `{p} sets up a share-out at the catering table. Equal portions, no exceptions. The cast doesn't love it — but they're still eating.`,
+    ],
+    foodCrisis: [
+      `Craft services is picked clean — not a stale donut left. The cast sprawls across the empty sound stage, too hungry to fake a smile for the camera. Even the show has to eat.`,
+      `The catering's gone and the caterers with it. The lot goes quiet, everyone too wrung-out to move. The game is secondary now — getting fed is the game.`,
+    ],
+    survivalCollapse: [
+      `{p} goes down by the water cooler, legs buckling. The cast rushes over. {po} waves them off — "I'm fine" — but {p} isn't fine. The body's had enough.`,
+      `Mid-take, {p} goes pale and drops onto an apple box, breathing heavy. This isn't strategy. This isn't the game. This is the shoot grinding {p} down.`,
+    ],
+    medevac: [
+      `Medical drives onto the lot at dawn. {p} is pulled from the game. {po} fights it — of course {p} does — but the call's been made. The cast watches {p} go.`,
+      `{p} can't stand this morning. The medics check vitals as the cast gathers by the trailers. The verdict comes fast: "{p} is done." Tears all around. Nobody wanted this.`,
+    ],
+    providerVotedOut: [
+      `The lot feels different without {p}. Nobody's charming the caterers. Nobody's stocking the trailers. The cast voted out the one person keeping them fed — and now the bill's due.`,
+      `First morning without {p}. Craft services is thin and nobody else can work the catering crew. "We really messed up," someone mutters. The silence after is deafening.`,
+    ],
+  },
+  'world-tour': {
+    providerFood: [
+      `{p} corners the flight attendant and talks the cart into a second pass through economy. {po} stack of foil trays feeds the back rows. Small mercy at altitude.`,
+      `The cart skipped their rows again, so {p} raids the galley when no one's looking and comes back with pretzels and warm sodas. Economy eats tonight because of {p}.`,
+      `{p} charms the crew out of the untouched first-class leftovers and smuggles them back to the cheap seats. Nobody in economy asks how. They just eat.`,
+    ],
+    providerPraised: [
+      `"I don't know what we'd do without {p}," someone says across the aisle. Nobody disagrees. {po} galley runs have been feeding the whole back of the plane.`,
+      `Economy's living on pretzel dust — but {p} keeps talking the crew into extra trays. {po} doesn't make a thing of it. The cabin notices.`,
+    ],
+    slackerCalledOut: [
+      `{a} pulls {b} aside by the galley: "People notice you never help pass the trays back. It's going to be a problem." {b} shrugs. That shrug costs {b} more than {b} knows.`,
+      `"Hey {b}, when's the last time you flagged down the cart for anyone but yourself?" {a} asks it light, but the message lands. The cabin's tracking who shares and who hoards.`,
+    ],
+    slackerConfrontation: [
+      `{a} finally snaps. "We're all rationing trays and {b} is reclined across three seats. I'm done covering for {b}." The whole cabin goes dead quiet.`,
+      `{a} smacks the tray table shut. "Pass something back. Save someone a roll. Do ANYTHING." {b} doesn't stir. Somehow that's worse.`,
+    ],
+    slackerBonding: [
+      `While the rest of the cabin rations the cart, {a} and {b} are stretched across the exit row swapping the good snacks. Nobody says anything. Everyone notices.`,
+      `{a} and {b} have a rhythm: sleep through the drink service, eat whatever's passed back, avoid every chore in the cabin. It's not a strategy. It's a lifestyle.`,
+    ],
+    foodConflict: [
+      `The edible trays are almost gone. {a} catches {b} grabbing a second roll off the cart. "That's not yours." What follows isn't pretty.`,
+      `{a} and {b} argue over the last warm soda in the galley. It's not about the soda. It's about everything. The hunger makes it all worse.`,
+    ],
+    foodHoarding: [
+      `{a} finds a stash of galley snacks jammed in {b}'s seat-back pocket. The look on {a}'s face says everything. {b}'s been skimming the cart.`,
+      `{a} catches {b} slipping up to the galley mid-flight to load up alone. Word's all down the aisle by the next meal service. The cabin is furious.`,
+    ],
+    starvationBond: [
+      `{a} and {b} share one foil tray between them, seat to seat, splitting the beige mystery meal. Nobody speaks. Hunger strips everything down to what matters.`,
+      `Two flights with nothing but pretzels. {a} and {b} split the last stale roll in silence. The game feels very far away right now.`,
+    ],
+    foodRationing: [
+      `{p} takes charge of the cart. "We ration these trays or we're chewing seat cushions by the next city." Nobody argues. {po} counts every roll.`,
+      `{p} organizes a share-out down the aisle. Equal trays, no exceptions. The cabin doesn't love it — but they're still eating.`,
+    ],
+    foodCrisis: [
+      `The cart's empty, the galley's bare, no next city for hours. The back of the plane goes quiet, everyone too wrung-out to move. Economy always runs out first.`,
+      `Nothing left to serve and the crew's stopped pretending otherwise. The cabin lights buzz over rows of hollow stares. The game is secondary now — getting fed is the game.`,
+    ],
+    survivalCollapse: [
+      `{p} goes down in the aisle, legs buckling. The cabin crowds in. {po} waves them off — "I'm fine" — but {p} isn't fine. The body's had enough.`,
+      `Mid-sentence, {p} goes gray and slumps against the window, breathing heavy. This isn't strategy. This isn't the game. This is the endless flight grinding {p} down.`,
+    ],
+    medevac: [
+      `The plane diverts and medical boards at the gate. {p} is pulled from the game. {po} fights it — of course {p} does — but the call's been made. The cabin watches {p} go.`,
+      `{p} can't get up this morning. The medics check vitals as the cabin gathers in the aisle. The verdict comes fast: "{p} is done." Tears all around. Nobody wanted this.`,
+    ],
+    providerVotedOut: [
+      `The cabin feels different without {p}. Nobody's charming the crew for extra trays. Nobody's raiding the galley for the back rows. They voted out the one person keeping them fed — and now the bill's due.`,
+      `First morning without {p}. The trays are thin and nobody else can work the cart. "We really messed up," someone mutters. The silence after is deafening.`,
+    ],
+  },
+};
+
+// Pick a venue-appropriate survival narration line for an event type. Returns a
+// raw template ({a}/{b}/{p}/{po} + optional vocab tokens) for the caller to fill.
+// Falls back survival-island → hosted-camp so a missing entry never breaks.
+export function survivalFlavor(eventType) {
+  const s = currentSetting();
+  const pool = SETTING_SURVIVAL[s]?.[eventType]
+    || SETTING_SURVIVAL['survival-island']?.[eventType]
+    || SETTING_SURVIVAL['hosted-camp']?.[eventType]
+    || [];
+  return pool.length ? pool[Math.floor(Math.random() * pool.length)] : '';
+}
+
 export function currentSetting() {
   const s = seasonConfig?.setting;
   return (s && SEASON_SETTINGS[s]) ? s : 'hosted-camp';

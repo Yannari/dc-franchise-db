@@ -6,7 +6,7 @@ import { wRandom, computeHeat, formAlliances, detectBetrayals, decayAllianceTrus
 import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote } from './voting.js';
 import { checkIdolPlays, checkIdolPreTribal, checkNonIdolAdvantageUse, findAdvantages, handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, simulateLastChance } from './challenges-core.js';
-import { applyTwist, generateTwistScenes, generateDockArrivals, simulateJourney } from './twists.js';
+import { applyTwist, generateTwistScenes, generateDockArrivals, simulateJourney, applyRewardSocialEffects } from './twists.js';
 import {
   generateCampEvents, checkAllianceRecruitment, executeEmissarySelection,
   generateEmissaryScoutEvents, checkVolunteerExileDuel, checkMoleSabotage,
@@ -19,6 +19,7 @@ import {
 } from './rescue-island.js';
 import { generateSummaryText } from './text-backlog.js';
 import { _idbPut } from './savestate.js';
+import { survivalFlavor, fillVocab } from './settings.js';
 
 // Challenge simulate functions
 import { simulateCliffDive } from './chal/cliff-dive.js';
@@ -57,6 +58,7 @@ import { simulateMillionBucksBC } from './chal/million-bucks-bc.js';
 import { simulateSportsMarathon } from './chal/sports-marathon.js';
 import { simulateSuperHerold } from './chal/super-hero-ld.js';
 import { simulateHauntedHouse } from './chal/haunted-house.js';
+import { simulateHungOutToDry } from './chal/hung-out-to-dry.js';
 import { simulatePrincessPride } from './chal/princess-pride.js';
 import { simulateGetAClue } from './chal/get-a-clue.js';
 import { simulateRockNRule } from './chal/rock-n-rule.js';
@@ -420,6 +422,21 @@ export function updateSurvival(ep) {
   ep.tribeFoodSnapshot = { ...gs.tribeFood };
 }
 
+// Fill a survival-flavor template with players + vocab. {a}/{b} = two players,
+// {p} = featured player, {po} = featured player's possessive adjective. Venue
+// vocab tokens (via fillVocab) are supported too, though the pools mostly write
+// venue nouns inline. Falls back gracefully when a token's player is absent.
+function _survivalFill(tpl, a, b) {
+  const pa = a ? pronouns(a) : null;
+  let s = String(tpl)
+    .replace(/\{a\}/g, a || '').replace(/\{b\}/g, b || '')
+    .replace(/\{p\}/g, a || '').replace(/\{po\}/g, pa ? pa.posAdj : 'their');
+  return fillVocab(s);
+}
+// Venue-aware survival narration: pull a setting-appropriate line for `type` and
+// fill it. `a` is the featured/first player (fills {p}/{a}/{po}), `b` the second.
+function _survText(type, a, b) { return _survivalFill(survivalFlavor(type), a, b); }
+
 export function generateSurvivalEvents(ep) {
   if (seasonConfig.foodWater !== 'enabled') return;
   const difficulty = seasonConfig.survivalDifficulty || 'casual';
@@ -448,19 +465,12 @@ export function generateSurvivalEvents(ep) {
         gs.survival[provider] = Math.max(0, (gs.survival[provider] || 80) + 5);
         members.filter(m => m !== provider).forEach(m => addBond(m, provider, 0.5));
         ep.campEvents[campKey].pre.push({ type: 'providerFishing', players: [provider],
-          text: _pick([
-            `${provider} is up before dawn, waist-deep in the ocean with a makeshift spear. Two hours later, ${pr.sub} ${pr.sub==='they'?'come':'comes'} back with three fish. The tribe eats tonight.`,
-            `Nobody asked ${provider} to go fishing. ${pr.Sub} just went. Came back with enough to feed the camp. ${pr.Sub} didn't say a word about it — didn't need to. Everyone saw.`,
-            `${provider} catches a fish the size of ${pr.pos} forearm. The camp erupts. It's been two days since anyone had protein. ${pr.Sub} ${pr.sub==='they'?'grin':'grins'}: "Dinner's on me."`,
-          ], provider + 'fishing'), badgeText: 'PROVIDER', badgeClass: 'gold' });
+          text: _survText('providerFood', provider), badgeText: 'PROVIDER', badgeClass: 'gold' });
       } else {
         gs.tribeFood[campKey] = Math.min(100, tribeFood + 5);
         members.filter(m => m !== provider).forEach(m => addBond(m, provider, 0.3));
         ep.campEvents[campKey].pre.push({ type: 'providerForaging', players: [provider],
-          text: _pick([
-            `${provider} disappears into the jungle and comes back with an armful of coconuts and wild fruit. Not glamorous, but it keeps the tribe going.`,
-            `While everyone else debates strategy, ${provider} is out collecting firewood and cracking coconuts. ${pronouns(provider).Sub} ${pronouns(provider).sub==='they'?'know':'knows'} what actually matters out here.`,
-          ], provider + 'forage'), badgeText: 'FORAGING', badgeClass: 'gold' });
+          text: _survText('providerFood', provider), badgeText: 'FORAGING', badgeClass: 'gold' });
       }
     }
 
@@ -470,10 +480,7 @@ export function generateSurvivalEvents(ep) {
       const pr = pronouns(provider);
       members.filter(m => m !== provider).forEach(m => addBond(m, provider, 0.3));
       ep.campEvents[campKey].pre.push({ type: 'providerPraised', players: [provider],
-        text: _pick([
-          `"I don't know what we'd do without ${provider}," someone says at the fire. Nobody disagrees. ${pr.Sub} ${pr.sub==='they'?'have':'has'} been carrying this camp.`,
-          `The tribe is running on fumes — but ${provider} keeps showing up. Fishing, firewood, water runs. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} complain. The tribe notices.`,
-        ], provider + 'praised'), badgeText: 'PRAISED', badgeClass: 'gold' });
+        text: _survText('providerPraised', provider), badgeText: 'PRAISED', badgeClass: 'gold' });
     }
 
     // ── Slacker events ──
@@ -491,13 +498,7 @@ export function generateSurvivalEvents(ep) {
         addBond(caller, slacker, isEscalated ? -1.5 : -1.0);
         ep.campEvents[campKey].pre.push({ type: isEscalated ? 'slackerConfrontation' : 'slackerCalledOut',
           players: [caller, slacker],
-          text: isEscalated ? _pick([
-            `${caller} finally snaps. "We're out here starving and ${slacker} is lying in the shelter doing NOTHING. I'm done carrying ${spr.obj}." ${slacker} ${sS.temperament <= 4 ? `fires back: "You want to go? Let's go."` : `says nothing. The silence is worse.`}`,
-            `${caller} throws a coconut shell at the shelter wall. "Get up. We need water. We need firewood. We need someone who actually DOES something." ${slacker} doesn't move. ${caller} walks away shaking ${cPr.pos} head.`,
-          ], caller + slacker + 'escalated') : _pick([
-            `${caller} pulls ${slacker} aside: "People are noticing that you don't help around camp. It's going to be a problem." ${slacker} shrugs. That shrug costs ${spr.obj} more than ${spr.sub} ${spr.sub==='they'?'know':'knows'}.`,
-            `"Hey ${slacker}, when's the last time you went to the well?" ${caller} asks it casually, but the message is clear. The tribe is watching who works and who doesn't.`,
-          ], caller + slacker + 'callout'),
+          text: isEscalated ? _survText('slackerConfrontation', caller, slacker) : _survText('slackerCalledOut', caller, slacker),
           badgeText: isEscalated ? 'CONFRONTATION' : 'CALLED OUT', badgeClass: 'red' });
       }
     }
@@ -507,11 +508,7 @@ export function generateSurvivalEvents(ep) {
       const [s1, s2] = slackers.slice(0, 2);
       addBond(s1, s2, 0.2);
       ep.campEvents[campKey].pre.push({ type: 'slackerBonding', players: [s1, s2],
-        text: _pick([
-          `While the rest of the tribe hauls water, ${s1} and ${s2} are sitting in the shelter comparing bug bites. Nobody says anything. But everyone notices.`,
-          `${s1} and ${s2} have found a rhythm: wake up late, eat whatever's left, avoid eye contact with the people working. It's not a strategy. It's a lifestyle. And somehow, it's working.`,
-          `"You know what? Let them fish," ${s1} says to ${s2}. "We'll handle the strategy." ${s2} nods. Neither of them has handled any strategy either. But at least they have each other.`,
-        ], s1 + s2 + 'lazy'), badgeText: 'LAZY ALLIANCE', badgeClass: 'green' });
+        text: _survText('slackerBonding', s1, s2), badgeText: 'LAZY ALLIANCE', badgeClass: 'green' });
     }
 
     // ── Food crisis events ──
@@ -522,10 +519,7 @@ export function generateSurvivalEvents(ep) {
         const f2 = members.find(o => o !== f1 && getBond(f1, o) < 0) || fighters[1];
         addBond(f1, f2, -1.5);
         ep.campEvents[campKey].pre.push({ type: 'foodConflict', players: [f1, f2],
-          text: _pick([
-            `The rice is almost gone. ${f1} catches ${f2} taking a second scoop. "That's not yours." What follows isn't pretty.`,
-            `${f1} and ${f2} argue over who ate the last of the coconut. It's not about the coconut. It's about everything. The hunger makes everything worse.`,
-          ], f1 + f2 + 'food'), badgeText: 'FOOD FIGHT', badgeClass: 'red' });
+          text: _survText('foodConflict', f1, f2), badgeText: 'FOOD FIGHT', badgeClass: 'red' });
       }
     }
 
@@ -538,10 +532,7 @@ export function generateSurvivalEvents(ep) {
         addBond(discoverer, hoarder, -2.0);
         members.filter(m => m !== hoarder).forEach(m => addBond(m, hoarder, -1.0));
         ep.campEvents[campKey].pre.push({ type: 'foodHoarding', players: [discoverer, hoarder],
-          text: _pick([
-            `${discoverer} finds a stash of coconut meat hidden under ${hoarder}'s bag. The look on ${pronouns(discoverer).pos} face says everything. ${hoarder} has been stealing from the tribe.`,
-            `${discoverer} catches ${hoarder} sneaking food from the supply at night. Word spreads by morning. The tribe is furious.`,
-          ], hoarder + discoverer + 'hoard'), badgeText: 'HOARDING', badgeClass: 'red' });
+          text: _survText('foodHoarding', discoverer, hoarder), badgeText: 'HOARDING', badgeClass: 'red' });
       }
     }
 
@@ -555,10 +546,7 @@ export function generateSurvivalEvents(ep) {
         const [a, b] = bondPairs[Math.floor(Math.random() * bondPairs.length)];
         addBond(a, b, 1.0);
         ep.campEvents[campKey].pre.push({ type: 'starvationBond', players: [a, b],
-          text: _pick([
-            `${a} and ${b} sit by a dying fire, splitting the last handful of rice between them. Nobody speaks. They don't need to. Hunger has a way of stripping everything down to what matters.`,
-            `It's been two days since the tribe had a real meal. ${a} and ${b} share a coconut in silence. The game feels very far away right now.`,
-          ], a + b + 'starve'), badgeText: 'SHARED SUFFERING', badgeClass: 'green' });
+          text: _survText('starvationBond', a, b), badgeText: 'SHARED SUFFERING', badgeClass: 'green' });
       }
     }
 
@@ -570,10 +558,7 @@ export function generateSurvivalEvents(ep) {
         gs.tribeFood[campKey] = Math.min(100, tribeFood + 3);
         members.filter(m => m !== mgr).forEach(m => addBond(m, mgr, 0.5));
         ep.campEvents[campKey].pre.push({ type: 'foodRationing', players: [mgr],
-          text: _pick([
-            `${mgr} takes charge of the food. "We portion this out or we starve in three days." Nobody argues. ${pronouns(mgr).Sub} ${pronouns(mgr).sub==='they'?'count':'counts'} every grain of rice.`,
-            `${mgr} implements a rationing system. Equal portions, no exceptions. The tribe doesn't love it — but they're still eating on day ${(ep.num || 1) * 3}.`,
-          ], mgr + 'ration'), badgeText: 'RATIONING', badgeClass: 'gold' });
+          text: _survText('foodRationing', mgr), badgeText: 'RATIONING', badgeClass: 'gold' });
       }
     }
 
@@ -585,10 +570,7 @@ export function generateSurvivalEvents(ep) {
         gs.playerStates[m] = state;
       });
       ep.campEvents[campKey].pre.push({ type: 'foodCrisis', players: members.slice(0, 3),
-        text: _pick([
-          `The rice is gone. The coconuts are gone. The tribe sits in silence, too tired to strategize, too hungry to sleep. This is what the game looks like when the island wins.`,
-          `Day ${(ep.num || 1) * 3}. No food left. The fire went out and nobody has the energy to restart it. Eyes are hollow. Conversations have stopped. The game is secondary now — survival is the game.`,
-        ], campKey + 'crisis'), badgeText: 'FOOD CRISIS', badgeClass: 'red' });
+        text: _survText('foodCrisis'), badgeText: 'FOOD CRISIS', badgeClass: 'red' });
     }
 
     // ── Collapse warning (survival < 25, realistic/brutal only) ──
@@ -601,11 +583,7 @@ export function generateSurvivalEvents(ep) {
           const pr = pronouns(name);
           const s = pStats(name);
           ep.campEvents[campKey].pre.push({ type: 'survivalCollapse', players: [name],
-            text: _pick([
-              `${name} collapses at the water well. ${pr.Sub} ${pr.sub==='they'?'try':'tries'} to stand — legs buckle. The tribe rushes over. ${s.temperament >= 7 ? `"I'm fine," ${pr.sub} ${pr.sub==='they'?'say':'says'}. ${pr.Sub} ${pr.sub==='they'?'are':'is'}n't fine.` : `${pr.Sub} can't hide it anymore. The body is giving out.`}`,
-              `${name}'s hands are shaking too hard to hold a coconut. ${pr.Sub} ${pr.sub==='they'?'haven\'t':'hasn\'t'} eaten properly in days. The medical team is called for a check. ${s.social >= 7 ? `"Don't pull me. Please. I can do this." The medic hesitates.` : `The tribe watches in silence. Nobody knows what to say.`}`,
-              `In the middle of a conversation, ${name} goes pale and sits down hard. ${pr.Sub} ${pr.sub==='they'?'stare':'stares'} at the ground, breathing heavy. This isn't strategy. This isn't the game. This is the island saying: you're running out of time.`,
-            ], name + 'collapse'), badgeText: 'COLLAPSE', badgeClass: 'red' });
+            text: _survText('survivalCollapse', name), badgeText: 'COLLAPSE', badgeClass: 'red' });
           // Empathetic tribemates bond
           members.filter(m => m !== name && getBond(m, name) >= 0).forEach(m => addBond(m, name, 0.5));
         }
@@ -625,10 +603,7 @@ export function generateSurvivalEvents(ep) {
           const isPostMerge = gs.isMerged;
 
           ep.campEvents[campKey].pre.push({ type: 'medevac', players: [name],
-            text: _pick([
-              `The medical team arrives at dawn. ${name} is pulled from the game. ${pr.Sub} ${pr.sub==='they'?'fight':'fights'} it — of course ${pr.sub} ${pr.sub==='they'?'do':'does'} — but the decision is made. The stretcher. The helicopter. The game goes on without ${pr.obj}.`,
-              `${name} can't stand up this morning. The tribe gathers around as the medics check vitals. The verdict comes fast: "${name} is done." ${pr.Sub} ${pr.sub==='they'?'cry':'cries'}. The tribe cries. This is the part of Survivor nobody wants to see.`,
-            ], name + 'medevac'), badgeText: 'MEDEVAC', badgeClass: 'red' });
+            text: _survText('medevac', name), badgeText: 'MEDEVAC', badgeClass: 'red' });
 
           // Remove from game
           gs.activePlayers = gs.activePlayers.filter(p => p !== name);
@@ -701,7 +676,7 @@ export function generateSurvivalEvents(ep) {
                 // Default — mixed emotions
                 _returnText = _pick([
                   `${_replacement} walks back into a game ${_rPr.sub} thought was over. The tribe stares. "Yeah," ${_rPr.sub} ${_rPr.sub==='they'?'say':'says'}. "I'm back." Nobody knows what that means yet — including ${_replacement}.`,
-                  `${_replacement} returns to camp. It's the same shelter, the same fire, the same people — but everything feels different. ${_rPr.Sub} ${_rPr.sub==='they'?'sit':'sits'} down quietly. The game gave ${_rPr.obj} a second chance. Now ${_rPr.sub} has to figure out what to do with it.`,
+                  `${_replacement} returns to ${fillVocab('{place}')}. It's the same faces, the same game — but everything feels different. ${_rPr.Sub} ${_rPr.sub==='they'?'sit':'sits'} down quietly. The game gave ${_rPr.obj} a second chance. Now ${_rPr.sub} has to figure out what to do with it.`,
                 ], _replacement + 'default');
               }
 
@@ -728,10 +703,7 @@ export function generateSurvivalEvents(ep) {
       gs.tribeFood[campKey] = Math.max(0, (gs.tribeFood[campKey] || 0) - 15);
       const provider = gs.providerVotedOutLastEp.name;
       ep.campEvents[campKey].pre.push({ type: 'providerVotedOut', players: members.slice(0, 3),
-        text: _pick([
-          `The camp feels different without ${provider}. Nobody's fishing. Nobody's starting the fire at dawn. The tribe voted out the one person who kept them fed — and now the island is collecting the debt.`,
-          `First morning without ${provider}. The rice is almost gone and nobody knows how to catch fish. "We really messed up," someone mutters. The silence that follows is deafening.`,
-        ], provider + 'gone'), badgeText: 'FOOD CRISIS', badgeClass: 'red' });
+        text: _survText('providerVotedOut', provider), badgeText: 'FOOD CRISIS', badgeClass: 'red' });
       gs.providerVotedOutLastEp = null; // consume
     }
   });
@@ -1775,6 +1747,13 @@ export function simulateEpisode() {
     ep.challengeType = 'haunted-house';
   }
 
+  // ── HUNG OUT TO DRY (post-merge) — lie-detector hang determines immunity, normal tribal follows ──
+  if (ep.isHungOut && gs.isMerged) {
+    simulateHungOutToDry(ep);
+    ep.immunityWinner = ep.hungOut?.winner || ep.immunityWinner;
+    ep.challengeType = 'hung-out-to-dry';
+  }
+
   // ── PRINCESS PRIDE (post-merge) — fairy tale quest determines immunity, normal tribal follows ──
   if (ep.isPrincessPride && gs.isMerged) {
     simulatePrincessPride(ep);
@@ -2000,7 +1979,7 @@ export function simulateEpisode() {
     || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isSayUncle
     || ep.isBrunchOfDisgustingness || ep.isBasicStraining
     || ep.isMonsterCash || ep.isMineOverMatter || ep.isTreasureIsland || ep.isOperationClassified || ep.isAlienEgg
-    || ep.isSuperHerold || ep.isHauntedHouse || ep.isPrincessPride || ep.isGetAClue
+    || ep.isSuperHerold || ep.isHauntedHouse || ep.isHungOut || ep.isPrincessPride || ep.isGetAClue
     || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains || ep.isIceIceBaby || ep.isFindersCreepers || ep.isBackstabbersAhoy || ep.isProjectRunaway;
   if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
     simulateJourney(ep); findAdvantages(ep);
@@ -2793,7 +2772,7 @@ export function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (ep.isMonsterCash || ep.isMineOverMatter || ep.isTreasureIsland || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isHauntedHouse || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains || ep.isIceIceBaby || ep.isFindersCreepers || ep.isBackstabbersAhoy || ep.isProjectRunaway) {
+    } else if (ep.isMonsterCash || ep.isMineOverMatter || ep.isTreasureIsland || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isHauntedHouse || ep.isHungOut || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains || ep.isIceIceBaby || ep.isFindersCreepers || ep.isBackstabbersAhoy || ep.isProjectRunaway) {
     // Special challenge already ran and set immunityWinner + chalMemberScores — skip generic challenge
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
@@ -3020,7 +2999,7 @@ export function simulateEpisode() {
         isMastersOfDisasters: ep.isMastersOfDisasters || false, mastersOfDisasters: ep.mastersOfDisasters || null,
         isFullMetalDrama: ep.isFullMetalDrama || false, fullMetalDrama: ep.fullMetalDrama || null,
         isSuperHerold: ep.isSuperHerold || false, superHerold: ep.superHerold || null,
-        isHauntedHouse: ep.isHauntedHouse || false, hauntedHouse: ep.hauntedHouse || null,
+        isHauntedHouse: ep.isHauntedHouse || false, hauntedHouse: ep.hauntedHouse || null, isHungOut: ep.isHungOut || false, hungOut: ep.hungOut || null,
         isPrincessPride: ep.isPrincessPride || false, princessPride: ep.princessPride || null,
         isGetAClue: ep.isGetAClue || false, getAClue: ep.getAClue || null,
         isRockNRule: ep.isRockNRule || false, rockNRule: ep.rockNRule || null,
@@ -3146,7 +3125,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isTruthOrDareTrain && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isMineOverMatter && !ep.isTreasureIsland && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isHauntedHouse && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari && !ep.isRapaPhooey && !ep.isDrumheller && !ep.isPlanesTrains && !ep.isIceIceBaby && !ep.isFindersCreepers && !ep.isBackstabbersAhoy && !ep.isProjectRunaway) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isTruthOrDareTrain && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isMineOverMatter && !ep.isTreasureIsland && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isHauntedHouse && !ep.isHungOut && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari && !ep.isRapaPhooey && !ep.isDrumheller && !ep.isPlanesTrains && !ep.isIceIceBaby && !ep.isFindersCreepers && !ep.isBackstabbersAhoy && !ep.isProjectRunaway) {
     updateChalRecord(ep);
   }
 
@@ -3579,89 +3558,29 @@ export function simulateEpisode() {
     if (_rtcTwist) {
       // Determine winner: post-merge = immunityWinner, pre-merge = winning tribe
       const _rtcIsMerged = gs.isMerged;
+      // Build placements first — the shared social engine reads rewardChalPlacements
+      // ([winnerObj, ...loserObjs]) for the pre-merge cross-tribal share invite.
+      const _rtcPlacements = [];
       if (_rtcIsMerged && ep.immunityWinner) {
-        // Individual reward — winner picks companions (reuse logic from reward-challenge)
-        const _w = ep.immunityWinner;
-        const _ws = pStats(_w);
-        const _wArch = players.find(p => p.name === _w)?.archetype || '';
-        const _others = gs.activePlayers.filter(p => p !== _w);
-        const _maxCompanions = gs.activePlayers.length >= 7 ? 2 : 1;
-        const _brainWeight = _ws.strategic * 0.08 + _ws.boldness * 0.03
-          + (['schemer','mastermind'].includes(_wArch) ? 0.25 : _wArch === 'villain' ? 0.15 : 0);
-        const _heartWeight = _ws.loyalty * 0.06 + _ws.social * 0.04;
-        const _useStrategy = Math.random() < _brainWeight / (_brainWeight + _heartWeight + 0.01);
-        const _scored = _others.map(p => {
-          const bond = getBond(_w, p);
-          const ps = pStats(p);
-          const heartScore = bond * 1.0;
-          const _sharedAlliance = (gs.namedAlliances || []).find(a =>
-            a.active !== false && a.members.includes(_w) && a.members.includes(p));
-          const _notAllied = !_sharedAlliance && bond < 2;
-          const brainScore = (_notAllied ? 2.0 : 0) + ps.strategic * 0.1 + (bond <= 0 ? 1.0 : 0);
-          const score = _useStrategy
-            ? brainScore * 0.7 + heartScore * 0.3 + Math.random() * 0.5
-            : heartScore * 0.8 + brainScore * 0.2 + Math.random() * 0.5;
-          const reason = _useStrategy
-            ? (_notAllied ? 'strategic-court' : _sharedAlliance ? 'strategic-strengthen' : 'strategic-read')
-            : (bond >= 5 ? 'heart-closest' : bond >= 2 ? 'heart-ally' : 'heart-connection');
-          return { name: p, score, bond, reason };
-        }).sort((a, b) => b.score - a.score);
-        const _companions = [];
-        const _pickReasons = [];
-        if (_scored.length) {
-          _companions.push(_scored[0].name);
-          _pickReasons.push({ name: _scored[0].name, reason: _scored[0].reason, bond: _scored[0].bond });
-        }
-        if (_maxCompanions >= 2 && _scored.length >= 2) {
-          _companions.push(_scored[1].name);
-          _pickReasons.push({ name: _scored[1].name, reason: _scored[1].reason, bond: _scored[1].bond });
-        }
-        // Bond boost from shared reward
-        _companions.forEach(c => addBond(_w, c, 1.0));
-        for (let _ci = 0; _ci < _companions.length; _ci++)
-          for (let _cj = _ci + 1; _cj < _companions.length; _cj++)
-            addBond(_companions[_ci], _companions[_cj], 0.5);
-        // Snub damage
-        const _snubs = [];
-        _others.filter(p => !_companions.includes(p)).forEach(p => {
-          const _snubBond = getBond(_w, p);
-          if (_snubBond <= 0) return;
-          const _pTemp = pStats(p).temperament;
-          const _tempMult = 1.0 + (5 - _pTemp) * 0.08;
-          const _snubDamage = -(_snubBond * 0.08 * _tempMult);
-          if (Math.abs(_snubDamage) > 0.1) {
-            addBond(p, _w, _snubDamage);
-            if (_snubBond >= 3) _snubs.push({ player: p, bond: _snubBond, damage: Math.round(_snubDamage * 10) / 10 });
-          }
-        });
-        _rtcTwist.rewardWinner = _w;
+        _rtcTwist.rewardWinner = ep.immunityWinner;
         _rtcTwist.rewardWinnerType = 'individual';
-        _rtcTwist.rewardCompanions = _companions;
-        _rtcTwist.rewardPickReasons = _pickReasons;
-        _rtcTwist.rewardPickStrategy = _useStrategy ? 'brain' : 'heart';
-        _rtcTwist.rewardSnubs = _snubs;
+        const _indPlacements = ep.chalPlacements || (ep.immunityWinner ? [ep.immunityWinner] : []);
+        _rtcPlacements.push(..._indPlacements);
       } else if (!_rtcIsMerged && ep.winner) {
-        // Tribe reward — winning tribe bonds, no companion selection
-        const _winMembers = ep.winner.members || [];
-        for (let _i = 0; _i < _winMembers.length; _i++)
-          for (let _j = _i + 1; _j < _winMembers.length; _j++)
-            addBond(_winMembers[_i], _winMembers[_j], 0.5);
         _rtcTwist.rewardWinner = ep.winner.name;
         _rtcTwist.rewardWinnerType = 'tribe';
-      }
-      // Build rewardChalData for VP screen
-      const _rtcPlacements = [];
-      if (_rtcTwist.rewardWinnerType === 'tribe') {
         const _scores = ep.chalMemberScores || {};
         gs.tribes.forEach(t => {
           _rtcPlacements.push({ name: t.tribeName || t.name, members: [...t.members], memberScores: Object.fromEntries(t.members.map(m => [m, _scores[m] || 0])) });
         });
         const _winName = _rtcTwist.rewardWinner;
         _rtcPlacements.sort((a, b) => (a.name === _winName ? -1 : b.name === _winName ? 1 : 0));
-      } else {
-        const _indPlacements = ep.chalPlacements || (ep.immunityWinner ? [ep.immunityWinner] : []);
-        _rtcPlacements.push(..._indPlacements);
       }
+      _rtcTwist.rewardChalPlacements = _rtcPlacements;
+      // Full social suite (companions, bonds, alliance pitch/form/strengthen, pitch leaks,
+      // snubs, backfire alliance/bloc, pre-merge cross-tribal share invite) — parity with generic reward.
+      if (_rtcTwist.rewardWinner) applyRewardSocialEffects(ep, _rtcTwist);
+      // Build rewardChalData for VP screen
       ep.rewardChalData = {
         winner: _rtcTwist.rewardWinner,
         winnerType: _rtcTwist.rewardWinnerType || 'individual',
@@ -3675,7 +3594,17 @@ export function simulateEpisode() {
         rewardCompanions: _rtcTwist.rewardCompanions || null,
         rewardPickReasons: _rtcTwist.rewardPickReasons || null,
         rewardPickStrategy: _rtcTwist.rewardPickStrategy || null,
+        rewardMaxCompanions: _rtcTwist.rewardMaxCompanions || null,
         rewardSnubs: _rtcTwist.rewardSnubs || null,
+        rewardAlliancePitched: _rtcTwist.rewardAlliancePitched || false,
+        rewardAllianceFormed: _rtcTwist.rewardAllianceFormed || null,
+        rewardAllianceMembers: _rtcTwist.rewardAllianceMembers || null,
+        rewardAllianceFailed: _rtcTwist.rewardAllianceFailed || false,
+        rewardAllianceStrengthened: _rtcTwist.rewardAllianceStrengthened || null,
+        rewardFailedPairs: _rtcTwist.rewardFailedPairs || null,
+        rewardPitchLeaks: _rtcTwist.rewardPitchLeaks || null,
+        rewardBackfire: _rtcTwist.rewardBackfire || null,
+        rewardShareInvite: _rtcTwist.rewardShareInvite || null,
         isRewardOnly: true,
       };
       // Survival food restoration
@@ -3748,7 +3677,7 @@ export function simulateEpisode() {
       isMastersOfDisasters: ep.isMastersOfDisasters || false, mastersOfDisasters: ep.mastersOfDisasters || null,
       isFullMetalDrama: ep.isFullMetalDrama || false, fullMetalDrama: ep.fullMetalDrama || null,
       isSuperHerold: ep.isSuperHerold || false, superHerold: ep.superHerold || null,
-      isHauntedHouse: ep.isHauntedHouse || false, hauntedHouse: ep.hauntedHouse || null,
+      isHauntedHouse: ep.isHauntedHouse || false, hauntedHouse: ep.hauntedHouse || null, isHungOut: ep.isHungOut || false, hungOut: ep.hungOut || null,
       isPrincessPride: ep.isPrincessPride || false, princessPride: ep.princessPride || null,
       isGetAClue: ep.isGetAClue || false, getAClue: ep.getAClue || null,
       isRockNRule: ep.isRockNRule || false, rockNRule: ep.rockNRule || null,
@@ -4724,7 +4653,7 @@ export function simulateEpisode() {
       isMastersOfDisasters: ep.isMastersOfDisasters || false, mastersOfDisasters: ep.mastersOfDisasters || null,
       isFullMetalDrama: ep.isFullMetalDrama || false, fullMetalDrama: ep.fullMetalDrama || null,
       isSuperHerold: ep.isSuperHerold || false, superHerold: ep.superHerold || null,
-      isHauntedHouse: ep.isHauntedHouse || false, hauntedHouse: ep.hauntedHouse || null,
+      isHauntedHouse: ep.isHauntedHouse || false, hauntedHouse: ep.hauntedHouse || null, isHungOut: ep.isHungOut || false, hungOut: ep.hungOut || null,
       isPrincessPride: ep.isPrincessPride || false, princessPride: ep.princessPride || null,
       isGetAClue: ep.isGetAClue || false, getAClue: ep.getAClue || null,
       isRockNRule: ep.isRockNRule || false, rockNRule: ep.rockNRule || null,
@@ -4962,7 +4891,7 @@ export function simulateEpisode() {
       isMastersOfDisasters: ep.isMastersOfDisasters || false, mastersOfDisasters: ep.mastersOfDisasters || null,
       isFullMetalDrama: ep.isFullMetalDrama || false, fullMetalDrama: ep.fullMetalDrama || null,
       isSuperHerold: ep.isSuperHerold || false, superHerold: ep.superHerold || null,
-      isHauntedHouse: ep.isHauntedHouse || false, hauntedHouse: ep.hauntedHouse || null,
+      isHauntedHouse: ep.isHauntedHouse || false, hauntedHouse: ep.hauntedHouse || null, isHungOut: ep.isHungOut || false, hungOut: ep.hungOut || null,
       isPrincessPride: ep.isPrincessPride || false, princessPride: ep.princessPride || null,
       isGetAClue: ep.isGetAClue || false, getAClue: ep.getAClue || null,
       isRockNRule: ep.isRockNRule || false, rockNRule: ep.rockNRule || null,
@@ -5404,7 +5333,7 @@ function simulateJuryRoundtable(ep) {
       isMastersOfDisasters: ep.isMastersOfDisasters || false, mastersOfDisasters: ep.mastersOfDisasters || null,
       isFullMetalDrama: ep.isFullMetalDrama || false, fullMetalDrama: ep.fullMetalDrama || null,
       isSuperHerold: ep.isSuperHerold || false, superHerold: ep.superHerold || null,
-      isHauntedHouse: ep.isHauntedHouse || false, hauntedHouse: ep.hauntedHouse || null,
+      isHauntedHouse: ep.isHauntedHouse || false, hauntedHouse: ep.hauntedHouse || null, isHungOut: ep.isHungOut || false, hungOut: ep.hungOut || null,
       isPrincessPride: ep.isPrincessPride || false, princessPride: ep.princessPride || null,
       isGetAClue: ep.isGetAClue || false, getAClue: ep.getAClue || null,
       isRockNRule: ep.isRockNRule || false, rockNRule: ep.rockNRule || null,
@@ -6479,6 +6408,18 @@ function simulateJuryRoundtable(ep) {
       });
       if (!Object.keys(gs._trustHeat).length) delete gs._trustHeat;
     }
+    if (gs._hungHeat) {
+      Object.keys(gs._hungHeat).forEach(k => {
+        if (((gs.episode || 0) + 1) >= gs._hungHeat[k].expiresEp) delete gs._hungHeat[k];
+      });
+      if (!Object.keys(gs._hungHeat).length) delete gs._hungHeat;
+    }
+    if (gs._hungBetrayHeat) {
+      Object.keys(gs._hungBetrayHeat).forEach(k => {
+        if (((gs.episode || 0) + 1) >= gs._hungBetrayHeat[k].expiresEp) delete gs._hungBetrayHeat[k];
+      });
+      if (!Object.keys(gs._hungBetrayHeat).length) delete gs._hungBetrayHeat;
+    }
 
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──
     if (cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
@@ -6732,6 +6673,8 @@ function simulateJuryRoundtable(ep) {
     superHerold:          ep.superHerold           || null,
     isHauntedHouse:       ep.isHauntedHouse       || false,
     hauntedHouse:         ep.hauntedHouse          || null,
+    isHungOut:            ep.isHungOut            || false,
+    hungOut:              ep.hungOut               || null,
     isPrincessPride:      ep.isPrincessPride      || false,
     princessPride:        ep.princessPride         || null,
     isGetAClue:           ep.isGetAClue           || false,

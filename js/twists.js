@@ -803,6 +803,412 @@ export function executeFirstImpressions(ep, twistObj) {
   gs.sitOutHistory = {}; // reset sit-out tracking after roster change
 }
 
+// ── Shared reward social-effects engine (used by BOTH generic reward-challenge and reward-twist-challenge) ──
+// Reads from twistObj: rewardWinner, rewardWinnerType, rewardItemLabel, rewardChalPlacements ([winnerObj,...loserObjs] for tribe).
+// Writes to twistObj: rewardCompanions, rewardPickReasons, rewardPickStrategy, rewardMaxCompanions, rewardSnubs,
+//   rewardAllianceStrengthened, rewardAlliancePitched, rewardAllianceFormed, rewardAllianceMembers,
+//   rewardAllianceFailed, rewardFailedPairs, rewardPitchLeaks, rewardBackfire, rewardShareInvite.
+// Applies bonds, forms/strengthens alliances, snub damage, backfire alliance/bloc, and pre-merge cross-tribal share invite.
+export function applyRewardSocialEffects(ep, twistObj) {
+    // ── Companion selection (post-merge individual: winner picks companions to share) ──
+    if (twistObj.rewardWinnerType === 'individual') {
+      const _w = twistObj.rewardWinner;
+      const _ws = pStats(_w);
+      const _wArch = players.find(p => p.name === _w)?.archetype || '';
+      const _others = gs.activePlayers.filter(p => p !== _w);
+      const _wPr = pronouns(_w);
+      // F7+: pick 2 companions. F6 and below: pick 1 (fewer people, more intimate)
+      const _maxCompanions = gs.activePlayers.length >= 7 ? 2 : 1;
+
+      // ── Decision model: heart vs brain ──
+      // Heart = pick closest bonds (loyalty-driven). Brain = pick strategically useful people.
+      // Blend is proportional: higher strategic/boldness → more brain. Higher loyalty/social → more heart.
+      const _brainWeight = _ws.strategic * 0.08 + _ws.boldness * 0.03
+        + (['schemer','mastermind'].includes(_wArch) ? 0.25 : _wArch === 'villain' ? 0.15 : 0);
+      const _heartWeight = _ws.loyalty * 0.06 + _ws.social * 0.04;
+      const _useStrategy = Math.random() < _brainWeight / (_brainWeight + _heartWeight + 0.01);
+
+      // Score each candidate
+      const _scored = _others.map(p => {
+        const bond = getBond(_w, p);
+        const ps = pStats(p);
+        // Heart score: bond strength (pick people you like)
+        const heartScore = bond * 1.0;
+        // Brain score: strategic value (pick people you need to work with)
+        const _sharedAlliance = (gs.namedAlliances || []).find(a =>
+          a.active !== false && a.members.includes(_w) && a.members.includes(p));
+        const _notAllied = !_sharedAlliance && bond < 2; // someone you NEED to court
+        const brainScore = (_notAllied ? 2.0 : 0) + ps.strategic * 0.1 + (bond <= 0 ? 1.0 : 0); // court enemies/neutrals
+        const score = _useStrategy
+          ? brainScore * 0.7 + heartScore * 0.3 + Math.random() * 0.5
+          : heartScore * 0.8 + brainScore * 0.2 + Math.random() * 0.5;
+        const reason = _useStrategy
+          ? (_notAllied ? 'strategic-court' : _sharedAlliance ? 'strategic-strengthen' : 'strategic-read')
+          : (bond >= 5 ? 'heart-closest' : bond >= 2 ? 'heart-ally' : 'heart-connection');
+        return { name: p, score, bond, reason };
+      }).sort((a, b) => b.score - a.score);
+
+      const _companions = [];
+      const _pickReasons = [];
+      // First companion: best scoring candidate
+      if (_scored.length) {
+        _companions.push(_scored[0].name);
+        _pickReasons.push({ name: _scored[0].name, reason: _scored[0].reason, bond: _scored[0].bond });
+      }
+      // Second companion: factor in compatibility with first pick
+      // Strategic pickers consider whether the pair can work together (for alliance pitch)
+      if (_maxCompanions >= 2 && _scored.length >= 2) {
+        const _c1 = _companions[0];
+        const _bondFloorPick = 0.5 - _ws.strategic * 0.15;
+        const _c2Scored = _scored.slice(1).map(c => {
+          const _pairBond = getBond(_c1, c.name);
+          // Compatibility bonus: if c1 and c2 get along, the reward group works better
+          // Strategic pickers weight this more — they're thinking about the alliance pitch
+          const _compatBonus = _useStrategy ? _pairBond * 0.3 : _pairBond * 0.1;
+          // Penalty if pair bond is below floor — strategic pickers avoid this (pitch will fail)
+          const _compatPenalty = (_useStrategy && _pairBond < _bondFloorPick) ? -2.0 : 0;
+          return { ...c, adjustedScore: c.score + _compatBonus + _compatPenalty, pairBond: _pairBond };
+        }).sort((a, b) => b.adjustedScore - a.adjustedScore);
+        if (_c2Scored.length) {
+          const _pick2 = _c2Scored[0];
+          _companions.push(_pick2.name);
+          _pickReasons.push({ name: _pick2.name, reason: _pick2.reason, bond: _pick2.bond, pairBond: Math.round(_pick2.pairBond * 10) / 10 });
+        }
+      }
+
+      // Bond boost: reward time together strengthens relationships
+      _companions.forEach(c => addBond(_w, c, 0.5));
+      // Companions also bond with each other (they're sharing the experience)
+      if (_companions.length >= 2) addBond(_companions[0], _companions[1], 0.3);
+
+      // Strategic talk during reward — proportional chance to strengthen alliance or pitch new one
+      const _rewardGroup = [_w, ..._companions];
+      const _existingAlliance = (gs.namedAlliances || []).find(a =>
+        a.active !== false && _rewardGroup.every(m => a.members.includes(m)));
+      // Strategic talk chance — proportional to stats + emotional state
+      // Desperate/paranoid players are MORE likely to use reward time for strategy (they need it)
+      const _emotionalBoost = ['desperate','paranoid','calculating'].includes(getPlayerState(_w).emotional) ? 0.15 : 0;
+      const _stratTalkChance = _ws.strategic * 0.08 + _ws.social * 0.04 + _emotionalBoost + 0.10;
+      // base 10% + stat 5+5 = 60%, stat 8+8 = 86%, stat 3+3 = 46%, + desperate = +15%
+      if (_existingAlliance && Math.random() < _stratTalkChance) {
+        const _strengthenBoost = _ws.strategic * 0.025; // stat 5 = 0.125, stat 10 = 0.25
+        _rewardGroup.forEach(m1 => _rewardGroup.filter(m2 => m2 !== m1).forEach(m2 => addBond(m1, m2, _strengthenBoost)));
+        twistObj.rewardAllianceStrengthened = _existingAlliance.name;
+      } else if (!_existingAlliance && Math.random() < _stratTalkChance) {
+        // Pitch fires — check if bonds support actual alliance formation
+        // Avg bond between all reward group members determines success
+        let _totalBond = 0, _bondPairs = 0;
+        for (let _ri = 0; _ri < _rewardGroup.length; _ri++) {
+          for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++) {
+            _totalBond += getBond(_rewardGroup[_ri], _rewardGroup[_rj]);
+            _bondPairs++;
+          }
+        }
+        const _avgGroupBond = _bondPairs > 0 ? _totalBond / _bondPairs : 0;
+        // Strategic players can bridge lower bonds (same bondFloor pattern as formAlliances)
+        const _bondFloor = 0.5 - _ws.strategic * 0.15;
+        // All pairs must tolerate each other to form an alliance
+        const _allAboveFloor = (() => {
+          for (let _ri = 0; _ri < _rewardGroup.length; _ri++)
+            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++)
+              if (getBond(_rewardGroup[_ri], _rewardGroup[_rj]) < _bondFloor) return false;
+          return true;
+        })();
+        // Check they're not already all in an alliance together
+        const _alreadyAllied = (gs.namedAlliances || []).some(a =>
+          a.active !== false && _rewardGroup.every(m => a.members.includes(m)));
+        // Check global alliance cap
+        const _activeAlliances = (gs.namedAlliances || []).filter(a => a.active !== false).length;
+        const _globalCap = Math.max(2, Math.floor(gs.activePlayers.length * 0.4));
+
+        if (_allAboveFloor && !_alreadyAllied && _activeAlliances < _globalCap) {
+          // Alliance forms! Away from camp, private setting — perfect conditions
+          const _rwAllianceName = nameNewAlliance(_rewardGroup.length);
+          gs.namedAlliances.push({
+            id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`,
+            name: _rwAllianceName, members: [..._rewardGroup],
+            formed: (gs.episode || 0) + 1, betrayals: [], active: true,
+          });
+          // Bonus bond from forming away from camp (private, intimate setting)
+          for (let _ri = 0; _ri < _rewardGroup.length; _ri++)
+            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++)
+              addBond(_rewardGroup[_ri], _rewardGroup[_rj], 0.5);
+          twistObj.rewardAlliancePitched = true;
+          twistObj.rewardAllianceFormed = _rwAllianceName;
+          twistObj.rewardAllianceMembers = [..._rewardGroup];
+        } else if (!_allAboveFloor) {
+          // Pitch failed — bonds too weak
+          twistObj.rewardAlliancePitched = true;
+          twistObj.rewardAllianceFailed = true;
+
+          // Bond damage scales with how far below the floor each pair is
+          const _failedPairs = [];
+          for (let _ri = 0; _ri < _rewardGroup.length; _ri++) {
+            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++) {
+              const _pairBond = getBond(_rewardGroup[_ri], _rewardGroup[_rj]);
+              if (_pairBond < _bondFloor) {
+                const _gap = _bondFloor - _pairBond;
+                const _damage = -(0.1 + _gap * 0.15);
+                addBond(_rewardGroup[_ri], _rewardGroup[_rj], _damage);
+                _failedPairs.push({ a: _rewardGroup[_ri], b: _rewardGroup[_rj], bond: Math.round(_pairBond * 10) / 10, damage: Math.round(_damage * 10) / 10 });
+              }
+            }
+          }
+
+          // Chance the rejected person leaks the pitch back at camp
+          // Low loyalty = more likely to tell. High loyalty = keeps it quiet.
+          const _rejecters = _rewardGroup.filter(p => p !== _w && _failedPairs.some(fp => fp.a === p || fp.b === p));
+          _rejecters.forEach(rejecter => {
+            const _rjS = pStats(rejecter);
+            const _leakChance = (10 - _rjS.loyalty) * 0.06 + _rjS.social * 0.03;
+            // loyalty 3, social 7 = 42+21 = 63%. loyalty 8, social 4 = 12+12 = 24%.
+            if (Math.random() < _leakChance) {
+              // Pick who they tell — closest bond outside the reward group
+              const _tellTarget = gs.activePlayers
+                .filter(p => !_rewardGroup.includes(p))
+                .sort((a, b) => getBond(rejecter, b) - getBond(rejecter, a))[0];
+              if (_tellTarget) {
+                // The person told now knows the winner is scheming
+                addBond(_tellTarget, _w, -0.3); // suspicion toward the pitcher
+                if (!twistObj.rewardPitchLeaks) twistObj.rewardPitchLeaks = [];
+                twistObj.rewardPitchLeaks.push({ leaker: rejecter, toldTo: _tellTarget });
+              }
+            }
+          });
+          twistObj.rewardFailedPairs = _failedPairs;
+        }
+      }
+
+      twistObj.rewardCompanions = _companions;
+      twistObj.rewardPickReasons = _pickReasons;
+      twistObj.rewardPickStrategy = _useStrategy ? 'brain' : 'heart';
+      twistObj.rewardMaxCompanions = _maxCompanions;
+
+      // ── Snub/alienation: not being picked hurts proportional to bond + temperament ──
+      _others.filter(p => !_companions.includes(p)).forEach(p => {
+        const _snubBond = getBond(_w, p);
+        if (_snubBond <= 0) return; // didn't expect to be picked — no damage
+        const _pTemp = pStats(p).temperament;
+        // Damage scales with bond (stronger bond = bigger betrayal) AND temperament (hotheads take it harder)
+        // Bond 2 = mild, bond 5 = significant, bond 8+ = devastating
+        // Low temperament amplifies: temp 2 = 1.4x, temp 5 = 1.0x, temp 10 = 0.75x
+        const _tempMult = 1.0 + (5 - _pTemp) * 0.08;
+        const _snubDamage = -(_snubBond * 0.08 * _tempMult); // bond 2, temp 5 = -0.16. bond 6, temp 2 = -0.67. bond 8, temp 2 = -0.90
+        if (Math.abs(_snubDamage) > 0.1) {
+          addBond(p, _w, _snubDamage);
+          // Track significant snubs for camp events
+          if (_snubBond >= 3) {
+            if (!twistObj.rewardSnubs) twistObj.rewardSnubs = [];
+            twistObj.rewardSnubs.push({ player: p, bond: _snubBond, damage: Math.round(_snubDamage * 10) / 10 });
+          }
+        }
+      });
+      // ── Reward Trip Bonding Backfire: left-behind players organize against reward group ──
+      const _snubbedPlayers = (twistObj.rewardSnubs || []).map(s => s.player);
+      if (_snubbedPlayers.length >= 1) {
+        const _leftBehind = _others.filter(p => !_companions.includes(p));
+        let _hasCohesion = false;
+        for (let _bi = 0; _bi < _leftBehind.length && !_hasCohesion; _bi++) {
+          for (let _bj = _bi + 1; _bj < _leftBehind.length && !_hasCohesion; _bj++) {
+            if (getBond(_leftBehind[_bi], _leftBehind[_bj]) >= 1.5) _hasCohesion = true;
+          }
+        }
+        if (_hasCohesion && Math.random() < 0.15) {
+          let _lbTotalBond = 0, _lbPairs = 0;
+          for (let _bi = 0; _bi < _leftBehind.length; _bi++) {
+            for (let _bj = _bi + 1; _bj < _leftBehind.length; _bj++) {
+              _lbTotalBond += getBond(_leftBehind[_bi], _leftBehind[_bj]);
+              _lbPairs++;
+            }
+          }
+          const _lbAvgBond = _lbPairs > 0 ? _lbTotalBond / _lbPairs : 0;
+          const _curEp = (gs.episode || 0) + 1;
+          const _campKey = gs.mergeName || 'merge';
+          if (!ep.campEvents) ep.campEvents = {};
+
+          if (_lbAvgBond >= 2.0) {
+            // ── Path A: Counter-Alliance ──
+            const _maxMembers = Math.floor(gs.activePlayers.length / 2) - 1;
+            const _allianceMembers = _leftBehind.filter(p =>
+              _snubbedPlayers.some(sp => getBond(p, sp) >= 1.0) || _snubbedPlayers.includes(p)
+            ).slice(0, Math.max(2, _maxMembers));
+
+            if (_allianceMembers.length >= 2) {
+              for (let _ai = 0; _ai < _allianceMembers.length; _ai++) {
+                for (let _aj = _ai + 1; _aj < _allianceMembers.length; _aj++) {
+                  addBond(_allianceMembers[_ai], _allianceMembers[_aj], 0.4);
+                }
+              }
+              const _bfAllianceName = nameNewAlliance(_allianceMembers.length);
+              gs.namedAlliances.push({
+                id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`,
+                name: _bfAllianceName, members: [..._allianceMembers],
+                formed: _curEp, betrayals: [], active: true,
+              });
+              gs._rewardBackfireHeat = {
+                targets: { [_w]: 1.5 },
+                expiresEp: _curEp + 1
+              };
+              _companions.forEach(c => { gs._rewardBackfireHeat.targets[c] = 0.8; });
+
+              const _bfMemberList = _allianceMembers.length <= 3
+                ? _allianceMembers.join(' and ')
+                : _allianceMembers.slice(0, -1).join(', ') + ', and ' + _allianceMembers[_allianceMembers.length - 1];
+              if (!ep.campEvents[_campKey]) ep.campEvents[_campKey] = { pre: [], post: [] };
+              if (!ep.campEvents[_campKey].post) ep.campEvents[_campKey].post = [];
+              ep.campEvents[_campKey].post.push({
+                type: 'rewardBackfireAlliance',
+                players: [..._allianceMembers],
+                text: `While ${_w} was off enjoying the ${twistObj.rewardItemLabel || 'reward'}, the ones left behind started talking. Really talking. By sundown, ${_bfMemberList} had something — not just anger, but a plan.`,
+                consequences: `Alliance "${_bfAllianceName}" formed. Heat on ${_w} +1.5.`,
+                badgeText: 'BACKFIRE', badgeClass: 'red-orange'
+              });
+
+              twistObj.rewardBackfire = {
+                fired: true, path: 'alliance',
+                snubbedPlayers: [..._snubbedPlayers],
+                leftBehindGroup: [..._leftBehind],
+                allianceName: _bfAllianceName,
+                allianceMembers: [..._allianceMembers],
+                blocPair: null,
+                heatTarget: _w,
+                heatCompanions: [..._companions],
+              };
+            }
+          } else {
+            // ── Path B: Voting Bloc ──
+            for (let _si = 0; _si < _snubbedPlayers.length; _si++) {
+              for (let _sj = _si + 1; _sj < _snubbedPlayers.length; _sj++) {
+                addBond(_snubbedPlayers[_si], _snubbedPlayers[_sj], 0.3);
+              }
+            }
+            gs._rewardBackfireHeat = {
+              targets: { [_w]: 1.0 },
+              expiresEp: _curEp + 1
+            };
+            let _blocPair = null;
+            if (_snubbedPlayers.length >= 2) {
+              let _bestPair = null, _bestBond = -Infinity;
+              for (let _si = 0; _si < _snubbedPlayers.length; _si++) {
+                for (let _sj = _si + 1; _sj < _snubbedPlayers.length; _sj++) {
+                  const _pBond = getBond(_snubbedPlayers[_si], _snubbedPlayers[_sj]);
+                  if (_pBond > _bestBond) { _bestBond = _pBond; _bestPair = [_snubbedPlayers[_si], _snubbedPlayers[_sj]]; }
+                }
+              }
+              if (_bestPair) {
+                const _initiator = _bestPair[0];
+                const _partner = _bestPair[1];
+                const _initS = pStats(_initiator);
+                const _genuineChance = _initS.loyalty * 0.09 + getBond(_initiator, _partner) * 0.06
+                  - (10 - _initS.loyalty) * 0.02
+                  - ((gs.sideDeals || []).filter(d => d.active && d.players.includes(_initiator)).length) * 0.2;
+                const _genuine = Math.random() < Math.max(0.15, Math.min(0.95, _genuineChance));
+                if (!gs.sideDeals) gs.sideDeals = [];
+                gs.sideDeals.push({
+                  players: [_initiator, _partner], initiator: _initiator, madeEp: _curEp,
+                  type: 'f2', active: true, genuine: _genuine
+                });
+                addBond(_initiator, _partner, 1.0);
+                _blocPair = [..._bestPair];
+              }
+            }
+            const _bfP1 = _snubbedPlayers[0];
+            const _bfP2 = _snubbedPlayers.length >= 2 ? _snubbedPlayers[1] : null;
+            const _bfCompName = _companions[0] || 'someone';
+            if (!ep.campEvents[_campKey]) ep.campEvents[_campKey] = { pre: [], post: [] };
+            if (!ep.campEvents[_campKey].post) ep.campEvents[_campKey].post = [];
+            ep.campEvents[_campKey].post.push({
+              type: 'rewardBackfireBloc',
+              players: _bfP2 ? [_bfP1, _bfP2] : [_bfP1],
+              text: _bfP2
+                ? `${_bfP1} and ${_bfP2} sat by the fire, watching the empty shelter. "Funny how ${_w} picks ${_bfCompName} over us." The conversation didn't end there.`
+                : `${_bfP1} sat alone by the fire while ${_w} was off on the reward. The sting of not being picked turned into something else — a plan.`,
+              consequences: `Bonds strengthened. Heat on ${_w} +1.0.${_blocPair ? ` F2 deal between ${_blocPair[0]} and ${_blocPair[1]}.` : ''}`,
+              badgeText: 'LEFT BEHIND', badgeClass: 'red'
+            });
+
+            twistObj.rewardBackfire = {
+              fired: true, path: 'bloc',
+              snubbedPlayers: [..._snubbedPlayers],
+              leftBehindGroup: [..._leftBehind],
+              allianceName: null,
+              allianceMembers: null,
+              blocPair: _blocPair,
+              heatTarget: _w,
+              heatCompanions: [..._companions],
+            };
+          }
+        }
+      }
+    } else {
+      // Tribe: winners bond with each other
+      const _winMembers = twistObj.rewardChalPlacements[0]?.members || [];
+      for (let _i = 0; _i < _winMembers.length; _i++) {
+        for (let _j = _i + 1; _j < _winMembers.length; _j++) {
+          addBond(_winMembers[_i], _winMembers[_j], 0.5);
+        }
+      }
+    }
+
+    // ── Pre-merge reward sharing: winning tribe invites one person from losing tribe ──
+    if (twistObj.rewardWinnerType === 'tribe' && seasonConfig.rewardSharing && !gs.isMerged) {
+      const _winTribeObj = twistObj.rewardChalPlacements[0];
+      const _losingTribes = twistObj.rewardChalPlacements.slice(1);
+      const _winMembers = _winTribeObj?.members || [];
+      if (_winMembers.length >= 2 && _losingTribes.length >= 1) {
+        // Roll: tribe decides together — weighted by avg social + strategic of winning tribe
+        const _avgSocial = _winMembers.reduce((s, m) => s + pStats(m).social, 0) / _winMembers.length;
+        const _avgStrategic = _winMembers.reduce((s, m) => s + pStats(m).strategic, 0) / _winMembers.length;
+        const _shareChance = _avgSocial * 0.05 + _avgStrategic * 0.03 + 0.05;
+        if (Math.random() < _shareChance) {
+          // Tribe decides who to invite — consensus based on bonds across tribal lines
+          const _losingPlayers = _losingTribes.flatMap(t => t.members || []);
+          if (_losingPlayers.length) {
+            // Score each losing player: avg bond with ALL winning tribe members (tribe decision)
+            const _inviteScored = _losingPlayers.map(p => {
+              const avgBondWithWinners = _winMembers.reduce((s, w) => s + getBond(w, p), 0) / _winMembers.length;
+              const isStrategicPick = pStats(p).strategic >= 6 || pStats(p).social >= 6;
+              return {
+                name: p,
+                score: avgBondWithWinners * 0.6 + (isStrategicPick ? 1.0 : 0) + Math.random() * 0.5,
+                avgBond: avgBondWithWinners,
+                reason: avgBondWithWinners >= 1.5 ? 'cross-tribal-bond' : isStrategicPick ? 'strategic-invite' : 'goodwill',
+              };
+            }).sort((a, b) => b.score - a.score);
+            const _invited = _inviteScored[0];
+
+            // Effects
+            // Bond boost: invited + each winning tribe member (shared experience)
+            _winMembers.forEach(w => addBond(w, _invited.name, 0.4));
+            // Losing tribemates: mild resentment toward the invited (why YOU?)
+            const _invTribe = _losingTribes.find(t => (t.members || []).includes(_invited.name));
+            (_invTribe?.members || []).filter(m => m !== _invited.name).forEach(m => {
+              if (Math.random() < 0.3) addBond(m, _invited.name, -0.15);
+            });
+            // Survival boost for invited (they ate)
+            if (seasonConfig.foodWater === 'enabled' && gs.survival) {
+              gs.survival[_invited.name] = Math.min(100, (gs.survival[_invited.name] || 80) + 8);
+            }
+
+            const _reasonText = _invited.reason === 'cross-tribal-bond'
+              ? `The tribe had connections with ${_invited.name} from swaps and shared challenges. This was personal.`
+              : _invited.reason === 'strategic-invite'
+              ? `${_invited.name} is someone the tribe wants to work with after the merge. This was strategic.`
+              : `A goodwill gesture. ${_invited.name} looked like ${pronouns(_invited.name).sub} needed it.`;
+
+            twistObj.rewardShareInvite = {
+              invited: _invited.name, invitedBy: _winTribeObj.name,
+              reason: _invited.reason, reasonText: _reasonText,
+              avgBond: Math.round(_invited.avgBond * 10) / 10,
+            };
+            // Also save directly on ep for patchEpisodeHistory (some push paths don't build rewardChalData)
+            ep.rewardShareInvite = twistObj.rewardShareInvite;
+          }
+        }
+      }
+    }
+}
+
 export function applyTwist(ep, twist, isPrimary = true) {
   // Resolve engineType from TWIST_CATALOG so catalog aliases work
   const catalogEntry = TWIST_CATALOG.find(t => t.id === twist.type);
@@ -1519,6 +1925,11 @@ export function applyTwist(ep, twist, isPrimary = true) {
     // for this episode's rescue returnees (a raw count would miss the merge episode).
     if (!gs.isMerged && !gs._mergingThisEp) return;
     ep.isHauntedHouse = true;
+
+  } else if (engineType === 'hung-out-to-dry') {
+    // Post-merge only. gs._mergingThisEp accounts for this episode's rescue returnees.
+    if (!gs.isMerged && !gs._mergingThisEp) return;
+    ep.isHungOut = true;
 
   } else if (engineType === 'princess-pride') {
     ep.isPrincessPride = true;
@@ -3535,402 +3946,8 @@ export function applyTwist(ep, twist, isPrimary = true) {
     twistObj.rewardItemLabel = _reward.label;
     twistObj.rewardItemDesc  = _reward.desc;
 
-    // ── Companion selection (post-merge individual: winner picks companions to share) ──
-    if (twistObj.rewardWinnerType === 'individual') {
-      const _w = twistObj.rewardWinner;
-      const _ws = pStats(_w);
-      const _wArch = players.find(p => p.name === _w)?.archetype || '';
-      const _others = gs.activePlayers.filter(p => p !== _w);
-      const _wPr = pronouns(_w);
-      // F7+: pick 2 companions. F6 and below: pick 1 (fewer people, more intimate)
-      const _maxCompanions = gs.activePlayers.length >= 7 ? 2 : 1;
-
-      // ── Decision model: heart vs brain ──
-      // Heart = pick closest bonds (loyalty-driven). Brain = pick strategically useful people.
-      // Blend is proportional: higher strategic/boldness → more brain. Higher loyalty/social → more heart.
-      const _brainWeight = _ws.strategic * 0.08 + _ws.boldness * 0.03
-        + (['schemer','mastermind'].includes(_wArch) ? 0.25 : _wArch === 'villain' ? 0.15 : 0);
-      const _heartWeight = _ws.loyalty * 0.06 + _ws.social * 0.04;
-      const _useStrategy = Math.random() < _brainWeight / (_brainWeight + _heartWeight + 0.01);
-
-      // Score each candidate
-      const _scored = _others.map(p => {
-        const bond = getBond(_w, p);
-        const ps = pStats(p);
-        // Heart score: bond strength (pick people you like)
-        const heartScore = bond * 1.0;
-        // Brain score: strategic value (pick people you need to work with)
-        const _sharedAlliance = (gs.namedAlliances || []).find(a =>
-          a.active !== false && a.members.includes(_w) && a.members.includes(p));
-        const _notAllied = !_sharedAlliance && bond < 2; // someone you NEED to court
-        const brainScore = (_notAllied ? 2.0 : 0) + ps.strategic * 0.1 + (bond <= 0 ? 1.0 : 0); // court enemies/neutrals
-        const score = _useStrategy
-          ? brainScore * 0.7 + heartScore * 0.3 + Math.random() * 0.5
-          : heartScore * 0.8 + brainScore * 0.2 + Math.random() * 0.5;
-        const reason = _useStrategy
-          ? (_notAllied ? 'strategic-court' : _sharedAlliance ? 'strategic-strengthen' : 'strategic-read')
-          : (bond >= 5 ? 'heart-closest' : bond >= 2 ? 'heart-ally' : 'heart-connection');
-        return { name: p, score, bond, reason };
-      }).sort((a, b) => b.score - a.score);
-
-      const _companions = [];
-      const _pickReasons = [];
-      // First companion: best scoring candidate
-      if (_scored.length) {
-        _companions.push(_scored[0].name);
-        _pickReasons.push({ name: _scored[0].name, reason: _scored[0].reason, bond: _scored[0].bond });
-      }
-      // Second companion: factor in compatibility with first pick
-      // Strategic pickers consider whether the pair can work together (for alliance pitch)
-      if (_maxCompanions >= 2 && _scored.length >= 2) {
-        const _c1 = _companions[0];
-        const _bondFloorPick = 0.5 - _ws.strategic * 0.15;
-        const _c2Scored = _scored.slice(1).map(c => {
-          const _pairBond = getBond(_c1, c.name);
-          // Compatibility bonus: if c1 and c2 get along, the reward group works better
-          // Strategic pickers weight this more — they're thinking about the alliance pitch
-          const _compatBonus = _useStrategy ? _pairBond * 0.3 : _pairBond * 0.1;
-          // Penalty if pair bond is below floor — strategic pickers avoid this (pitch will fail)
-          const _compatPenalty = (_useStrategy && _pairBond < _bondFloorPick) ? -2.0 : 0;
-          return { ...c, adjustedScore: c.score + _compatBonus + _compatPenalty, pairBond: _pairBond };
-        }).sort((a, b) => b.adjustedScore - a.adjustedScore);
-        if (_c2Scored.length) {
-          const _pick2 = _c2Scored[0];
-          _companions.push(_pick2.name);
-          _pickReasons.push({ name: _pick2.name, reason: _pick2.reason, bond: _pick2.bond, pairBond: Math.round(_pick2.pairBond * 10) / 10 });
-        }
-      }
-
-      // Bond boost: reward time together strengthens relationships
-      _companions.forEach(c => addBond(_w, c, 0.5));
-      // Companions also bond with each other (they're sharing the experience)
-      if (_companions.length >= 2) addBond(_companions[0], _companions[1], 0.3);
-
-      // Strategic talk during reward — proportional chance to strengthen alliance or pitch new one
-      const _rewardGroup = [_w, ..._companions];
-      const _existingAlliance = (gs.namedAlliances || []).find(a =>
-        a.active !== false && _rewardGroup.every(m => a.members.includes(m)));
-      // Strategic talk chance — proportional to stats + emotional state
-      // Desperate/paranoid players are MORE likely to use reward time for strategy (they need it)
-      const _emotionalBoost = ['desperate','paranoid','calculating'].includes(getPlayerState(_w).emotional) ? 0.15 : 0;
-      const _stratTalkChance = _ws.strategic * 0.08 + _ws.social * 0.04 + _emotionalBoost + 0.10;
-      // base 10% + stat 5+5 = 60%, stat 8+8 = 86%, stat 3+3 = 46%, + desperate = +15%
-      if (_existingAlliance && Math.random() < _stratTalkChance) {
-        const _strengthenBoost = _ws.strategic * 0.025; // stat 5 = 0.125, stat 10 = 0.25
-        _rewardGroup.forEach(m1 => _rewardGroup.filter(m2 => m2 !== m1).forEach(m2 => addBond(m1, m2, _strengthenBoost)));
-        twistObj.rewardAllianceStrengthened = _existingAlliance.name;
-      } else if (!_existingAlliance && Math.random() < _stratTalkChance) {
-        // Pitch fires — check if bonds support actual alliance formation
-        // Avg bond between all reward group members determines success
-        let _totalBond = 0, _bondPairs = 0;
-        for (let _ri = 0; _ri < _rewardGroup.length; _ri++) {
-          for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++) {
-            _totalBond += getBond(_rewardGroup[_ri], _rewardGroup[_rj]);
-            _bondPairs++;
-          }
-        }
-        const _avgGroupBond = _bondPairs > 0 ? _totalBond / _bondPairs : 0;
-        // Strategic players can bridge lower bonds (same bondFloor pattern as formAlliances)
-        const _bondFloor = 0.5 - _ws.strategic * 0.15;
-        // All pairs must tolerate each other to form an alliance
-        const _allAboveFloor = (() => {
-          for (let _ri = 0; _ri < _rewardGroup.length; _ri++)
-            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++)
-              if (getBond(_rewardGroup[_ri], _rewardGroup[_rj]) < _bondFloor) return false;
-          return true;
-        })();
-        // Check they're not already all in an alliance together
-        const _alreadyAllied = (gs.namedAlliances || []).some(a =>
-          a.active !== false && _rewardGroup.every(m => a.members.includes(m)));
-        // Check global alliance cap
-        const _activeAlliances = (gs.namedAlliances || []).filter(a => a.active !== false).length;
-        const _globalCap = Math.max(2, Math.floor(gs.activePlayers.length * 0.4));
-
-        if (_allAboveFloor && !_alreadyAllied && _activeAlliances < _globalCap) {
-          // Alliance forms! Away from camp, private setting — perfect conditions
-          const _rwAllianceName = nameNewAlliance(_rewardGroup.length);
-          gs.namedAlliances.push({
-            id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`,
-            name: _rwAllianceName, members: [..._rewardGroup],
-            formed: (gs.episode || 0) + 1, betrayals: [], active: true,
-          });
-          // Bonus bond from forming away from camp (private, intimate setting)
-          for (let _ri = 0; _ri < _rewardGroup.length; _ri++)
-            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++)
-              addBond(_rewardGroup[_ri], _rewardGroup[_rj], 0.5);
-          twistObj.rewardAlliancePitched = true;
-          twistObj.rewardAllianceFormed = _rwAllianceName;
-          twistObj.rewardAllianceMembers = [..._rewardGroup];
-        } else if (!_allAboveFloor) {
-          // Pitch failed — bonds too weak
-          twistObj.rewardAlliancePitched = true;
-          twistObj.rewardAllianceFailed = true;
-
-          // Bond damage scales with how far below the floor each pair is
-          const _failedPairs = [];
-          for (let _ri = 0; _ri < _rewardGroup.length; _ri++) {
-            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++) {
-              const _pairBond = getBond(_rewardGroup[_ri], _rewardGroup[_rj]);
-              if (_pairBond < _bondFloor) {
-                const _gap = _bondFloor - _pairBond;
-                const _damage = -(0.1 + _gap * 0.15);
-                addBond(_rewardGroup[_ri], _rewardGroup[_rj], _damage);
-                _failedPairs.push({ a: _rewardGroup[_ri], b: _rewardGroup[_rj], bond: Math.round(_pairBond * 10) / 10, damage: Math.round(_damage * 10) / 10 });
-              }
-            }
-          }
-
-          // Chance the rejected person leaks the pitch back at camp
-          // Low loyalty = more likely to tell. High loyalty = keeps it quiet.
-          const _rejecters = _rewardGroup.filter(p => p !== _w && _failedPairs.some(fp => fp.a === p || fp.b === p));
-          _rejecters.forEach(rejecter => {
-            const _rjS = pStats(rejecter);
-            const _leakChance = (10 - _rjS.loyalty) * 0.06 + _rjS.social * 0.03;
-            // loyalty 3, social 7 = 42+21 = 63%. loyalty 8, social 4 = 12+12 = 24%.
-            if (Math.random() < _leakChance) {
-              // Pick who they tell — closest bond outside the reward group
-              const _tellTarget = gs.activePlayers
-                .filter(p => !_rewardGroup.includes(p))
-                .sort((a, b) => getBond(rejecter, b) - getBond(rejecter, a))[0];
-              if (_tellTarget) {
-                // The person told now knows the winner is scheming
-                addBond(_tellTarget, _w, -0.3); // suspicion toward the pitcher
-                if (!twistObj.rewardPitchLeaks) twistObj.rewardPitchLeaks = [];
-                twistObj.rewardPitchLeaks.push({ leaker: rejecter, toldTo: _tellTarget });
-              }
-            }
-          });
-          twistObj.rewardFailedPairs = _failedPairs;
-        }
-      }
-
-      twistObj.rewardCompanions = _companions;
-      twistObj.rewardPickReasons = _pickReasons;
-      twistObj.rewardPickStrategy = _useStrategy ? 'brain' : 'heart';
-      twistObj.rewardMaxCompanions = _maxCompanions;
-
-      // ── Snub/alienation: not being picked hurts proportional to bond + temperament ──
-      _others.filter(p => !_companions.includes(p)).forEach(p => {
-        const _snubBond = getBond(_w, p);
-        if (_snubBond <= 0) return; // didn't expect to be picked — no damage
-        const _pTemp = pStats(p).temperament;
-        // Damage scales with bond (stronger bond = bigger betrayal) AND temperament (hotheads take it harder)
-        // Bond 2 = mild, bond 5 = significant, bond 8+ = devastating
-        // Low temperament amplifies: temp 2 = 1.4x, temp 5 = 1.0x, temp 10 = 0.75x
-        const _tempMult = 1.0 + (5 - _pTemp) * 0.08;
-        const _snubDamage = -(_snubBond * 0.08 * _tempMult); // bond 2, temp 5 = -0.16. bond 6, temp 2 = -0.67. bond 8, temp 2 = -0.90
-        if (Math.abs(_snubDamage) > 0.1) {
-          addBond(p, _w, _snubDamage);
-          // Track significant snubs for camp events
-          if (_snubBond >= 3) {
-            if (!twistObj.rewardSnubs) twistObj.rewardSnubs = [];
-            twistObj.rewardSnubs.push({ player: p, bond: _snubBond, damage: Math.round(_snubDamage * 10) / 10 });
-          }
-        }
-      });
-      // ── Reward Trip Bonding Backfire: left-behind players organize against reward group ──
-      const _snubbedPlayers = (twistObj.rewardSnubs || []).map(s => s.player);
-      if (_snubbedPlayers.length >= 1) {
-        const _leftBehind = _others.filter(p => !_companions.includes(p));
-        let _hasCohesion = false;
-        for (let _bi = 0; _bi < _leftBehind.length && !_hasCohesion; _bi++) {
-          for (let _bj = _bi + 1; _bj < _leftBehind.length && !_hasCohesion; _bj++) {
-            if (getBond(_leftBehind[_bi], _leftBehind[_bj]) >= 1.5) _hasCohesion = true;
-          }
-        }
-        if (_hasCohesion && Math.random() < 0.15) {
-          let _lbTotalBond = 0, _lbPairs = 0;
-          for (let _bi = 0; _bi < _leftBehind.length; _bi++) {
-            for (let _bj = _bi + 1; _bj < _leftBehind.length; _bj++) {
-              _lbTotalBond += getBond(_leftBehind[_bi], _leftBehind[_bj]);
-              _lbPairs++;
-            }
-          }
-          const _lbAvgBond = _lbPairs > 0 ? _lbTotalBond / _lbPairs : 0;
-          const _curEp = (gs.episode || 0) + 1;
-          const _campKey = gs.mergeName || 'merge';
-
-          if (_lbAvgBond >= 2.0) {
-            // ── Path A: Counter-Alliance ──
-            const _maxMembers = Math.floor(gs.activePlayers.length / 2) - 1;
-            const _allianceMembers = _leftBehind.filter(p =>
-              _snubbedPlayers.some(sp => getBond(p, sp) >= 1.0) || _snubbedPlayers.includes(p)
-            ).slice(0, Math.max(2, _maxMembers));
-
-            if (_allianceMembers.length >= 2) {
-              for (let _ai = 0; _ai < _allianceMembers.length; _ai++) {
-                for (let _aj = _ai + 1; _aj < _allianceMembers.length; _aj++) {
-                  addBond(_allianceMembers[_ai], _allianceMembers[_aj], 0.4);
-                }
-              }
-              const _bfAllianceName = nameNewAlliance(_allianceMembers.length);
-              gs.namedAlliances.push({
-                id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`,
-                name: _bfAllianceName, members: [..._allianceMembers],
-                formed: _curEp, betrayals: [], active: true,
-              });
-              gs._rewardBackfireHeat = {
-                targets: { [_w]: 1.5 },
-                expiresEp: _curEp + 1
-              };
-              _companions.forEach(c => { gs._rewardBackfireHeat.targets[c] = 0.8; });
-
-              const _bfMemberList = _allianceMembers.length <= 3
-                ? _allianceMembers.join(' and ')
-                : _allianceMembers.slice(0, -1).join(', ') + ', and ' + _allianceMembers[_allianceMembers.length - 1];
-              if (!ep.campEvents[_campKey]) ep.campEvents[_campKey] = { pre: [], post: [] };
-              if (!ep.campEvents[_campKey].post) ep.campEvents[_campKey].post = [];
-              ep.campEvents[_campKey].post.push({
-                type: 'rewardBackfireAlliance',
-                players: [..._allianceMembers],
-                text: `While ${_w} was off enjoying the ${twistObj.rewardItemLabel || 'reward'}, the ones left behind started talking. Really talking. By sundown, ${_bfMemberList} had something — not just anger, but a plan.`,
-                consequences: `Alliance "${_bfAllianceName}" formed. Heat on ${_w} +1.5.`,
-                badgeText: 'BACKFIRE', badgeClass: 'red-orange'
-              });
-
-              twistObj.rewardBackfire = {
-                fired: true, path: 'alliance',
-                snubbedPlayers: [..._snubbedPlayers],
-                leftBehindGroup: [..._leftBehind],
-                allianceName: _bfAllianceName,
-                allianceMembers: [..._allianceMembers],
-                blocPair: null,
-                heatTarget: _w,
-                heatCompanions: [..._companions],
-              };
-            }
-          } else {
-            // ── Path B: Voting Bloc ──
-            for (let _si = 0; _si < _snubbedPlayers.length; _si++) {
-              for (let _sj = _si + 1; _sj < _snubbedPlayers.length; _sj++) {
-                addBond(_snubbedPlayers[_si], _snubbedPlayers[_sj], 0.3);
-              }
-            }
-            gs._rewardBackfireHeat = {
-              targets: { [_w]: 1.0 },
-              expiresEp: _curEp + 1
-            };
-            let _blocPair = null;
-            if (_snubbedPlayers.length >= 2) {
-              let _bestPair = null, _bestBond = -Infinity;
-              for (let _si = 0; _si < _snubbedPlayers.length; _si++) {
-                for (let _sj = _si + 1; _sj < _snubbedPlayers.length; _sj++) {
-                  const _pBond = getBond(_snubbedPlayers[_si], _snubbedPlayers[_sj]);
-                  if (_pBond > _bestBond) { _bestBond = _pBond; _bestPair = [_snubbedPlayers[_si], _snubbedPlayers[_sj]]; }
-                }
-              }
-              if (_bestPair) {
-                const _initiator = _bestPair[0];
-                const _partner = _bestPair[1];
-                const _initS = pStats(_initiator);
-                const _genuineChance = _initS.loyalty * 0.09 + getBond(_initiator, _partner) * 0.06
-                  - (10 - _initS.loyalty) * 0.02
-                  - ((gs.sideDeals || []).filter(d => d.active && d.players.includes(_initiator)).length) * 0.2;
-                const _genuine = Math.random() < Math.max(0.15, Math.min(0.95, _genuineChance));
-                if (!gs.sideDeals) gs.sideDeals = [];
-                gs.sideDeals.push({
-                  players: [_initiator, _partner], initiator: _initiator, madeEp: _curEp,
-                  type: 'f2', active: true, genuine: _genuine
-                });
-                addBond(_initiator, _partner, 1.0);
-                _blocPair = [..._bestPair];
-              }
-            }
-            const _bfP1 = _snubbedPlayers[0];
-            const _bfP2 = _snubbedPlayers.length >= 2 ? _snubbedPlayers[1] : null;
-            const _bfCompName = _companions[0] || 'someone';
-            if (!ep.campEvents[_campKey]) ep.campEvents[_campKey] = { pre: [], post: [] };
-            if (!ep.campEvents[_campKey].post) ep.campEvents[_campKey].post = [];
-            ep.campEvents[_campKey].post.push({
-              type: 'rewardBackfireBloc',
-              players: _bfP2 ? [_bfP1, _bfP2] : [_bfP1],
-              text: _bfP2
-                ? `${_bfP1} and ${_bfP2} sat by the fire, watching the empty shelter. "Funny how ${_w} picks ${_bfCompName} over us." The conversation didn't end there.`
-                : `${_bfP1} sat alone by the fire while ${_w} was off on the reward. The sting of not being picked turned into something else — a plan.`,
-              consequences: `Bonds strengthened. Heat on ${_w} +1.0.${_blocPair ? ` F2 deal between ${_blocPair[0]} and ${_blocPair[1]}.` : ''}`,
-              badgeText: 'LEFT BEHIND', badgeClass: 'red'
-            });
-
-            twistObj.rewardBackfire = {
-              fired: true, path: 'bloc',
-              snubbedPlayers: [..._snubbedPlayers],
-              leftBehindGroup: [..._leftBehind],
-              allianceName: null,
-              allianceMembers: null,
-              blocPair: _blocPair,
-              heatTarget: _w,
-              heatCompanions: [..._companions],
-            };
-          }
-        }
-      }
-    } else {
-      // Tribe: winners bond with each other
-      const _winMembers = twistObj.rewardChalPlacements[0]?.members || [];
-      for (let _i = 0; _i < _winMembers.length; _i++) {
-        for (let _j = _i + 1; _j < _winMembers.length; _j++) {
-          addBond(_winMembers[_i], _winMembers[_j], 0.5);
-        }
-      }
-    }
-
-    // ── Pre-merge reward sharing: winning tribe invites one person from losing tribe ──
-    if (twistObj.rewardWinnerType === 'tribe' && seasonConfig.rewardSharing && !gs.isMerged) {
-      const _winTribeObj = twistObj.rewardChalPlacements[0];
-      const _losingTribes = twistObj.rewardChalPlacements.slice(1);
-      const _winMembers = _winTribeObj?.members || [];
-      if (_winMembers.length >= 2 && _losingTribes.length >= 1) {
-        // Roll: tribe decides together — weighted by avg social + strategic of winning tribe
-        const _avgSocial = _winMembers.reduce((s, m) => s + pStats(m).social, 0) / _winMembers.length;
-        const _avgStrategic = _winMembers.reduce((s, m) => s + pStats(m).strategic, 0) / _winMembers.length;
-        const _shareChance = _avgSocial * 0.05 + _avgStrategic * 0.03 + 0.05;
-        if (Math.random() < _shareChance) {
-          // Tribe decides who to invite — consensus based on bonds across tribal lines
-          const _losingPlayers = _losingTribes.flatMap(t => t.members || []);
-          if (_losingPlayers.length) {
-            // Score each losing player: avg bond with ALL winning tribe members (tribe decision)
-            const _inviteScored = _losingPlayers.map(p => {
-              const avgBondWithWinners = _winMembers.reduce((s, w) => s + getBond(w, p), 0) / _winMembers.length;
-              const isStrategicPick = pStats(p).strategic >= 6 || pStats(p).social >= 6;
-              return {
-                name: p,
-                score: avgBondWithWinners * 0.6 + (isStrategicPick ? 1.0 : 0) + Math.random() * 0.5,
-                avgBond: avgBondWithWinners,
-                reason: avgBondWithWinners >= 1.5 ? 'cross-tribal-bond' : isStrategicPick ? 'strategic-invite' : 'goodwill',
-              };
-            }).sort((a, b) => b.score - a.score);
-            const _invited = _inviteScored[0];
-
-            // Effects
-            // Bond boost: invited + each winning tribe member (shared experience)
-            _winMembers.forEach(w => addBond(w, _invited.name, 0.4));
-            // Losing tribemates: mild resentment toward the invited (why YOU?)
-            const _invTribe = _losingTribes.find(t => (t.members || []).includes(_invited.name));
-            (_invTribe?.members || []).filter(m => m !== _invited.name).forEach(m => {
-              if (Math.random() < 0.3) addBond(m, _invited.name, -0.15);
-            });
-            // Survival boost for invited (they ate)
-            if (seasonConfig.foodWater === 'enabled' && gs.survival) {
-              gs.survival[_invited.name] = Math.min(100, (gs.survival[_invited.name] || 80) + 8);
-            }
-
-            const _reasonText = _invited.reason === 'cross-tribal-bond'
-              ? `The tribe had connections with ${_invited.name} from swaps and shared challenges. This was personal.`
-              : _invited.reason === 'strategic-invite'
-              ? `${_invited.name} is someone the tribe wants to work with after the merge. This was strategic.`
-              : `A goodwill gesture. ${_invited.name} looked like ${pronouns(_invited.name).sub} needed it.`;
-
-            twistObj.rewardShareInvite = {
-              invited: _invited.name, invitedBy: _winTribeObj.name,
-              reason: _invited.reason, reasonText: _reasonText,
-              avgBond: Math.round(_invited.avgBond * 10) / 10,
-            };
-            // Also save directly on ep for patchEpisodeHistory (some push paths don't build rewardChalData)
-            ep.rewardShareInvite = twistObj.rewardShareInvite;
-          }
-        }
-      }
-    }
+    // ── Reward social effects (companions, alliances, snubs, backfire, share-invite) ──
+    applyRewardSocialEffects(ep, twistObj);
 
     // ── Survival food restoration from reward ──
     if (seasonConfig.foodWater === 'enabled') {
@@ -3985,7 +4002,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'sudden-death': 'isSuddenDeath', 'slasher-night': 'isSlasherNight', 'triple-dog-dare': 'isTripleDogDare',
         'say-uncle': 'isSayUncle', 'brunch-of-disgustingness': 'isBrunchOfDisgustingness',
         'monster-cash': 'isMonsterCash', 'mine-over-matter': 'isMineOverMatter', 'treasure-island': 'isTreasureIsland', 'operation-classified': 'isOperationClassified',
-        'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride', 'haunted-house': 'isHauntedHouse',
+        'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride', 'haunted-house': 'isHauntedHouse', 'hung-out-to-dry': 'isHungOut',
         'get-a-clue': 'isGetAClue', 'rock-n-rule': 'isRockNRule',
         'crouching-courtney': 'isCrouchingCourtney', 'houston': 'isHouston', 'top-dog': 'isTopDog',
         'walk-like-an-egyptian': 'isWalkEgypt', 'crazy-fun-time': 'isCrazyFunTime',

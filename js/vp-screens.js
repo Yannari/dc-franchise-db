@@ -26,6 +26,7 @@ import { rpBuildMillionBucksBCTitleCard, rpBuildMillionBucksBCFire, rpBuildMilli
 import { rpBuildSportsMarathonTitleCard, rpBuildSportsMarathonObstacle, rpBuildSportsMarathonHalftime, rpBuildSportsMarathonSports, rpBuildSportsMarathonResults, sportsMarathonRevealNext, sportsMarathonRevealAll } from './chal/sports-marathon.js';
 import { rpBuildSuperHeroldTitleCard, rpBuildSuperHeroldCostume, rpBuildSuperHeroldPrizes, rpBuildSuperHeroldRound1, rpBuildSuperHeroldRound2, rpBuildSuperHeroldRound, rpBuildSuperHeroldBoss, superHeroldRevealNext, superHeroldRevealAll } from './chal/super-hero-ld.js';
 import { rpBuildHauntedTitleCard, rpBuildHauntedLibrary, rpBuildHauntedKeys, rpBuildHauntedBoss, hauntedRevealNext, hauntedRevealAll } from './chal/haunted-house.js';
+import { rpBuildHungTitleCard, rpBuildHungWarmup, rpBuildHungKnife, rpBuildHungFinal, hungRevealNext, hungRevealAll } from './chal/hung-out-to-dry.js';
 import { rpBuildPrincessPrideTitleCard, rpBuildPrincessPrideCeremony, rpBuildPrincessPrideForest, rpBuildPrincessPrideBridge, rpBuildPrincessPrideDragon, rpBuildPrincessPrideTower, rpBuildPrincessPrideDuel, princessPrideRevealNext, princessPrideRevealAll } from './chal/princess-pride.js';
 import { rpBuildGetAClueTitleCard, rpBuildGetAClueCollection, rpBuildGetAClueTrain, rpBuildGetAClueTrial, rpBuildGetAClueVerdict, getAClueRevealNext, getAClueRevealAll } from './chal/get-a-clue.js';
 import { rpBuildRockNRuleTitleCard, rpBuildRockNRuleGuitar, rpBuildRockNRuleCarpet, rpBuildRockNRuleHotel, rpBuildRockNRuleResults, rockNRuleRevealNext, rockNRuleRevealAll } from './chal/rock-n-rule.js';
@@ -12394,6 +12395,11 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'hh-library', label:'The Library', html: rpBuildHauntedLibrary(ep) });
     vpScreens.push({ id:'hh-keys', label:'Three Keys', html: rpBuildHauntedKeys(ep) });
     vpScreens.push({ id:'hh-boss', label:'The Doll', html: rpBuildHauntedBoss(ep) });
+  } else if ((ep.isHungOut || ep.challengeType === 'hung-out-to-dry') && ep.hungOut) {
+    vpScreens.push({ id:'hd-title', label:'Hung Out to Dry', html: rpBuildHungTitleCard(ep) });
+    vpScreens.push({ id:'hd-warmup', label:'Warm-Up', html: rpBuildHungWarmup(ep) });
+    vpScreens.push({ id:'hd-knife', label:'The Knife', html: rpBuildHungKnife(ep) });
+    vpScreens.push({ id:'hd-final', label:'Final Interrogation', html: rpBuildHungFinal(ep) });
   } else if ((ep.isPrincessPride || ep.challengeType === 'princess-pride') && ep.princessPride) {
     vpScreens.push({ id:'pp-title', label:'The Princess Pride', html: rpBuildPrincessPrideTitleCard(ep) });
     vpScreens.push({ id:'pp-ceremony', label:'Glass Slipper', html: rpBuildPrincessPrideCeremony(ep) });

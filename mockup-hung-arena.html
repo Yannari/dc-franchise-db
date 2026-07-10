@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!-- MOCKUP v2: Hung Out to Dry — BIGGER / GRITTIER live "Hang Arena" banner.
+     Large shirtless puppets white-knuckling a wooden bar over a menacing shark tank; sweat flies,
+     arms tremble, and eliminated hangers FALL into the water and bob greyed-out. Live per reveal. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hang Arena mockup v2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap');
+  body{margin:0;background:#070f12;font-family:'Rajdhani',sans-serif;color:#dbeef2;padding:18px}
+  .wrap{max-width:1080px;margin:0 auto}
+  h2{font-family:'Bangers';letter-spacing:2px;color:#ffd7a0;text-shadow:2px 2px 0 #000}
+
+  /* ── ARENA BANNER (sits atop each round screen) ── */
+  .arena{position:relative;height:360px;border:5px solid #0c2027;border-radius:10px;overflow:hidden;
+    background:linear-gradient(180deg,#1c4650 0%,#154049 30%,#0e2f39 52%,#08222b 68%,#04141b 100%);
+    box-shadow:inset 0 0 120px rgba(0,0,0,0.7)}
+  .arena::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+    background:radial-gradient(ellipse at 50% 18%,rgba(150,240,245,0.12),transparent 42%),
+      radial-gradient(circle at 12% 88%,rgba(0,0,0,0.6),transparent 42%),radial-gradient(circle at 88% 90%,rgba(0,0,0,0.6),transparent 42%)}
+  /* grain */
+  .arena::after{content:'';position:absolute;inset:0;z-index:1;opacity:.5;pointer-events:none;
+    background-image:radial-gradient(rgba(0,0,0,.4) 1px,transparent 1px);background-size:4px 4px}
+
+  .rig{position:absolute;top:0;height:60px;width:6px;background:linear-gradient(180deg,#6b4a2a,#3a2410);left:12%;z-index:2}
+  .rig.r{left:auto;right:12%}
+  .bar{position:absolute;top:54px;left:5%;right:5%;height:28px;border-radius:6px;z-index:3;
+    background:linear-gradient(180deg,#9a6530,#5c3a18 70%,#43290f);border:2px solid #2a1a0a;
+    box-shadow:0 6px 14px rgba(0,0,0,0.55),inset 0 -5px 10px rgba(0,0,0,0.4)}
+  .bar::after{content:'';position:absolute;inset:4px 10px;border-radius:3px;
+    background:repeating-linear-gradient(90deg,rgba(0,0,0,0.14) 0 4px,transparent 4px 26px)}
+
+  .hangers{position:absolute;top:66px;left:0;right:0;height:210px;z-index:4}
+  .hanger{position:absolute;width:128px;transform-origin:50% 8px;animation:sway 3s ease-in-out infinite}
+  .hanger.trem{animation:sway 3s ease-in-out infinite, tremble .12s linear infinite}
+  @keyframes sway{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+  @keyframes tremble{0%,100%{margin-left:0}25%{margin-left:-2.5px}75%{margin-left:2.5px}}
+  .hanger .face{position:absolute;top:44px;left:50%;transform:translateX(-50%);width:52px;height:52px;border-radius:9px;
+    object-fit:cover;border:2px solid #1c120a;z-index:3;background:#0d1a1f}
+  .helm{position:absolute;top:32px;left:50%;transform:translateX(-50%);width:60px;height:26px;border-radius:15px 15px 5px 5px;z-index:4;
+    background:linear-gradient(180deg,#3f3475,#231c46);border:2px solid #6a5acd;box-shadow:0 0 10px rgba(106,90,205,0.5)}
+  .helm .scr{position:absolute;top:5px;left:50%;transform:translateX(-50%);width:20px;height:12px;border-radius:2px;
+    background:#a01226;box-shadow:0 0 9px #ff3b5c;display:flex;align-items:center;justify-content:center;font-size:9px;color:#ffd;animation:flicker 2s steps(2) infinite}
+  @keyframes flicker{0%,90%,100%{opacity:1}95%{opacity:.4}}
+  .nm{position:absolute;top:150px;left:50%;transform:translateX(-50%);font-family:'Share Tech Mono';font-size:10px;
+    color:#d8f0f4;white-space:nowrap;text-shadow:0 1px 3px #000;z-index:6;background:rgba(6,20,26,0.6);padding:1px 5px;border-radius:3px}
+  .ropes{position:absolute;top:132px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:5}
+  .strand{width:4px;height:30px;background:linear-gradient(180deg,#e6b45a,#8a5a2b);border-radius:2px;box-shadow:0 0 3px rgba(230,180,90,0.5)}
+  .strand.cut{height:10px;opacity:.55;background:#5a3a18;box-shadow:none}
+  /* sweat drops flying */
+  .sweat{position:absolute;width:5px;height:7px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#bfe9f2;opacity:.85;z-index:6}
+  .hanger .sweat.s1{top:40px;left:24px;animation:swf 1.3s ease-in infinite}
+  .hanger .sweat.s2{top:44px;right:24px;animation:swf 1.6s ease-in .4s infinite}
+  @keyframes swf{0%{transform:translateY(0) scale(1);opacity:.85}100%{transform:translateY(30px) scale(.6);opacity:0}}
+
+  .hanger.falling{animation:fall 1.15s cubic-bezier(.5,0,.9,.4) forwards;z-index:9}
+  @keyframes fall{0%{transform:translateY(0) rotate(0)}30%{transform:translateY(30px) rotate(-12deg)}100%{transform:translateY(260px) rotate(60deg);opacity:.12}}
+
+  /* ── MENACING WATER ── */
+  .water{position:absolute;left:0;right:0;bottom:0;height:120px;z-index:5;
+    background:linear-gradient(180deg,rgba(8,50,60,0.25),#0a2f38 34%,#06222b 70%,#031017);border-top:2px solid rgba(150,240,245,0.3)}
+  .water::before{content:'';position:absolute;top:-2px;left:0;right:0;height:14px;
+    background:repeating-linear-gradient(90deg,transparent 0 22px,rgba(170,240,245,0.22) 22px 27px);animation:ripple 4s linear infinite}
+  @keyframes ripple{to{background-position:54px 0}}
+  /* big lurking shark shadow gliding under the surface */
+  .shark{position:absolute;bottom:34px;width:150px;height:44px;z-index:5;opacity:.5;animation:glide 11s ease-in-out infinite}
+  @keyframes glide{0%{left:-18%}50%{left:70%}100%{left:-18%}}
+  .fin{position:absolute;bottom:78px;width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;
+    border-bottom:24px solid #0d3a44;filter:drop-shadow(0 3px 3px rgba(0,0,0,.5));animation:swim 8s linear infinite;z-index:6}
+  @keyframes swim{0%{left:-6%}100%{left:106%}}
+  .bubble{position:absolute;bottom:0;width:6px;height:6px;border-radius:50%;background:rgba(170,240,245,0.4);animation:rise 4s linear infinite}
+  @keyframes rise{0%{transform:translateY(0);opacity:0}20%{opacity:.7}100%{transform:translateY(-90px);opacity:0}}
+  .bob{position:absolute;bottom:22px;width:40px;height:40px;border-radius:7px;object-fit:cover;filter:grayscale(1) brightness(.6);
+    border:2px solid #0a2b33;z-index:7;animation:bobbing 2.4s ease-in-out infinite}
+  @keyframes bobbing{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-5px) rotate(6deg)}}
+  .splash{position:absolute;bottom:96px;width:44px;height:20px;z-index:7;opacity:0}
+  .splash.go{animation:splasher .7s ease-out}
+  @keyframes splasher{0%{opacity:1;transform:scaleY(.4)}100%{opacity:0;transform:scaleY(1.4) translateY(-14px)}}
+
+  .hud{position:absolute;top:10px;left:14px;right:14px;display:flex;justify-content:space-between;z-index:8;
+    font-family:'Bangers';letter-spacing:1px;color:#ffd7a0;text-shadow:2px 2px 0 #000;font-size:22px}
+  .hud .r{color:#8af0f7}
+  .cap{margin-top:10px;font-family:'Share Tech Mono';font-size:11px;color:#7fa7b0;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h2>🪢 HUNG OUT TO DRY — Hang Arena v2 (bigger / grittier)</h2>
+  <div class="arena" id="arena">
+    <div class="hud"><span>STILL HANGING · <span id="cnt">7</span></span><span class="r">ROUND II · THE KNIFE</span></div>
+    <div class="rig"></div><div class="rig r"></div>
+    <div class="bar"></div>
+    <div class="hangers" id="hangers"></div>
+    <div class="water">
+      <svg class="shark" viewBox="0 0 150 44"><path d="M2 30 Q40 8 96 22 Q120 26 148 14 Q132 34 116 34 Q126 44 108 42 Q96 34 78 36 Q40 40 2 30 Z" fill="#0a2c34"/></svg>
+      <div class="fin" style="animation-delay:0s"></div>
+      <div class="fin" style="animation-delay:-3.5s"></div>
+      <div class="bubble" style="left:30%;animation-delay:0s"></div>
+      <div class="bubble" style="left:55%;animation-delay:-2s"></div>
+      <div class="bubble" style="left:72%;animation-delay:-1s"></div>
+    </div>
+  </div>
+  <div class="cap">v2: bigger shirtless puppets, sweat flies off straining arms, low-grip hangers TREMBLE, a shark shadow glides under the surface. Eliminated hangers FALL + splash, then bob greyed. This banner pins to the top of each round screen; the interrogation transcript scrolls below.</div>
+</div>
+<script>
+  const hangers = [
+    {n:'Zaid',slug:'zaid',ropes:2,trem:false},{n:'Logan',slug:'logan',ropes:3,trem:false},
+    {n:'Marissa',slug:'marissa',ropes:3,trem:true},{n:'Spencer',slug:'spencer',ropes:1,trem:true},
+    {n:'Hannah',slug:'hannah',ropes:3,trem:false},{n:'Jade',slug:'jade',ropes:2,trem:true},
+    {n:'Natalia',slug:'natalia',ropes:2,trem:false},
+  ];
+  const fallen=[{n:'Amelie',slug:'amelie'},{n:'Isabel',slug:'isabel'}];
+  const AV=s=>`assets/avatars/${s}.png`;
+  const hg=document.getElementById('hangers'), N=hangers.length;
+  hangers.forEach((h,i)=>{
+    const left=8+i*(84/(N-1));
+    const el=document.createElement('div');
+    el.className='hanger'+(h.trem?' trem':''); el.style.left=left+'%'; el.style.animationDelay=(-i*0.35)+'s';
+    const strands=[0,1,2].map(s=>`<div class="strand${s<h.ropes?'':' cut'}"></div>`).join('');
+    el.innerHTML=`
+      <svg width="128" height="180" viewBox="0 0 128 180" style="position:absolute;top:0;left:0">
+        <!-- straining arms up to the bar -->
+        <path d="M52 60 C40 42 40 20 46 6" stroke="#e8b48a" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path d="M76 60 C88 42 88 20 82 6" stroke="#e8b48a" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <!-- bicep bulge shading -->
+        <path d="M44 34 q6 -8 10 0" stroke="#c88a58" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M74 34 q6 -8 10 0" stroke="#c88a58" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- white-knuckle fists gripping bar -->
+        <circle cx="45" cy="5" r="8" fill="#f0c096" stroke="#a06a3a" stroke-width="2"/>
+        <circle cx="83" cy="5" r="8" fill="#f0c096" stroke="#a06a3a" stroke-width="2"/>
+        <!-- shirtless torso with ab/pec shading -->
+        <path d="M48 82 Q64 76 80 82 L77 128 Q64 134 51 128 Z" fill="#e8b48a" stroke="#b07a4a" stroke-width="1.5"/>
+        <path d="M64 86 L64 122" stroke="#c88a58" stroke-width="1.5" opacity=".7"/>
+        <path d="M54 100 h20 M55 110 h18" stroke="#c88a58" stroke-width="1.2" opacity=".55"/>
+        <!-- shorts + dangling legs -->
+        <path d="M50 126 h28 v8 h-28 Z" fill="#2a4a8a"/>
+        <path d="M57 134 L54 166" stroke="#e8b48a" stroke-width="8" stroke-linecap="round"/>
+        <path d="M71 134 L74 166" stroke="#e8b48a" stroke-width="8" stroke-linecap="round"/>
+        <!-- strain bursts -->
+        <g stroke="#fff" stroke-width="2" opacity="0.55" stroke-linecap="round">
+          <path d="M34 24 l-8 -4"/><path d="M94 24 l8 -4"/><path d="M36 40 l-7 2"/>
+        </g>
+      </svg>
+      <div class="helm"><div class="scr">☠</div></div>
+      <img class="face" src="${AV(h.slug)}" onerror="this.style.background='#2a4';this.src=''">
+      <div class="sweat s1"></div><div class="sweat s2"></div>
+      <div class="ropes">${strands}</div>
+      <div class="nm">${h.n}</div>`;
+    hg.appendChild(el);
+  });
+  const water=document.querySelector('.water');
+  fallen.forEach((f,i)=>{const b=document.createElement('img');b.className='bob';b.src=AV(f.slug);b.style.left=(18+i*22)+'%';b.style.animationDelay=(-i*0.8)+'s';b.onerror=function(){this.style.background='#2a4';this.src='';};water.appendChild(b);});
+  // demo fall
+  setTimeout(()=>{const sp=[...document.querySelectorAll('.hanger')].find(e=>e.querySelector('.nm')?.textContent==='Spencer');
+    if(sp){sp.classList.add('falling');setTimeout(()=>{const b=document.createElement('img');b.className='bob';b.src=AV('spencer');b.style.left='60%';water.appendChild(b);document.getElementById('cnt').textContent='6';},1050);}},1800);
+</script>
+</body>
+</html>

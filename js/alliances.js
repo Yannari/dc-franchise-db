@@ -3,6 +3,41 @@ import { gs, players, ARCHETYPES, seasonConfig } from './core.js';
 import { pStats, pronouns, threatScore, isAllianceBottom, getPlayerState, challengeWeakness, threat } from './players.js';
 import { getBond, getPerceivedBond, addBond, addPerceivedBond } from './bonds.js';
 
+const _arch = (n) => players.find(p => p.name === n)?.archetype || 'floater';
+const _VILLAINY = ['villain', 'mastermind', 'schemer'];
+// How likely a player is to jump to conclusions and blame the WRONG person for a flip. Driven by a hot
+// temper, boldness, and a poor read (low intuition); perceptive/careful minds rarely misfire.
+function _impulsiveness(name) {
+  const s = pStats(name), a = _arch(name);
+  let v = (6 - s.temperament) * 0.10 + (s.boldness - 5) * 0.03 + (5 - s.intuition) * 0.04;
+  if (a === 'hothead') v += 0.22;
+  else if (a === 'chaos-agent' || a === 'wildcard') v += 0.10;
+  else if (a === 'perceptive-player') v -= 0.15;
+  else if (a === 'mastermind' || a === 'schemer') v -= 0.08;
+  return Math.max(0.03, Math.min(0.9, v));
+}
+// SPICY MISATTRIBUTION: an undetected flip left the alliance paranoid. The most impulsive loyal member
+// may lash out at the WRONG person — a plausible suspect they already distrust — instead of the real
+// (undetected) traitor. The grudge is real: bond crashes, steering their next vote onto an innocent.
+function _misattributeBlame(ep, alliance, realBetrayer, realTarget, loyalReaders) {
+  if (!loyalReaders.length) return null;
+  const reactor = [...loyalReaders].sort((a, b) => _impulsiveness(b) - _impulsiveness(a))[0];
+  if (Math.random() >= _impulsiveness(reactor)) return null; // kept a cool head — quiet paranoia, no wrong-blame
+  // a plausible wrong suspect: not the reactor / real traitor / boot; bias to someone already distrusted
+  // or a shifty archetype (villain/schemer reads as guilty), preferring inside the alliance for the irony.
+  const insiders = alliance.members.filter(p => p !== reactor && p !== realBetrayer && gs.activePlayers.includes(p) && p !== realTarget);
+  const outsiders = gs.activePlayers.filter(p => p !== reactor && p !== realBetrayer && p !== realTarget && !alliance.members.includes(p));
+  const pool = (insiders.length && Math.random() < 0.6) ? insiders : (insiders.concat(outsiders));
+  if (!pool.length) return null;
+  const suspectScore = (p) => getBond(reactor, p) - (_VILLAINY.includes(_arch(p)) ? 2 : 0) + (Math.random() * 2 - 1);
+  const wrongSuspect = [...pool].sort((a, b) => suspectScore(a) - suspectScore(b))[0]; // lowest = most suspected
+  if (!wrongSuspect) return null;
+  addBond(reactor, wrongSuspect, -2.0); // a real grudge — drives targeting via perceived bond next vote
+  if (!gs.blowupHeatNextEp) gs.blowupHeatNextEp = new Set();
+  gs.blowupHeatNextEp.add(reactor);
+  return { reactor, wrongSuspect };
+}
+
 export function computeHeat(name, tribalPlayers, alliances) {
   const s = pStats(name);
   let heat = 0;
@@ -592,6 +627,19 @@ export function detectBetrayals(ep) {
       consensusVote = sorted[0][0];
     }
     const formedThisEp = alliance.formed === ep.num;
+    // ── who actually deviated this round (drives lone-vs-bloc detection + who can read it) ──
+    const _deviators = voters.filter(v => {
+      const e = ep.votingLog.find(l => l.voter === v);
+      if (!e || e.voted === consensusVote) return false;
+      const sp = (ep.splitVotePlans || []).find(s => s.alliance === alliance.name);
+      if (sp && e.voted === sp.secondary && sp.secondaryVoters.includes(v)) return false;
+      return true;
+    });
+    const _numLeft = gs.activePlayers.length;
+    const _isLone = _deviators.length === 1;
+    const _loyalReaders = alliance.members.filter(m => !_deviators.includes(m) && gs.activePlayers.includes(m));
+    const _bestRead = _loyalReaders.length ? Math.max(..._loyalReaders.map(m => pStats(m).intuition + (_arch(m) === 'perceptive-player' ? 4 : 0))) : 0;
+
     voters.forEach(voter => {
       const entry = ep.votingLog.find(l => l.voter === voter);
       if (!entry || entry.voted === consensusVote) return;
@@ -604,6 +652,44 @@ export function detectBetrayals(ep) {
       const betrayerVotedForEliminated = betrayerVotedFor === ep.eliminated;
       const votedForAllyMember = alliance.members.includes(betrayerVotedFor);
       const _betrayalSeverity = votedForAllyMember ? 'major' : (consensusTargetEliminated || betrayerVotedForEliminated) ? 'minor' : 'moderate';
+
+      // ── DETECTION GATE: does the alliance actually pin the flip on THEM? (open votes are public.)
+      // Fewer players left = obvious (matches "when there's not a lot left, they know"); sharp allies
+      // read it; a known flipper is the first suspect; a lone rogue vote is glaring while a bloc diffuses
+      // blame; and a smooth operator (high social+strategic) covers their tracks. ──
+      const _bs = pStats(voter);
+      const _knownFlips = (gs.namedAlliances || []).reduce((n, a) => n + (a.betrayals || []).filter(b => b.player === voter).length, 0);
+      // FIELD SIZE is the dominant lever: at the final few a flip is near-impossible to hide; in a big
+      // tribe your vote is one of many. Cover (social+strategic), a sharp ally's read, a repeat-flipper
+      // reputation, lone-vs-bloc, and voting an ally all nudge it from there.
+      let _detectP = 0.45
+        + (8 - _numLeft) * 0.07                        // final 4: +0.28 · 8 left: 0 · 12: -0.28 · 16: -0.56
+        + (_isLone ? 0.15 : -0.12)                      // a lone rogue vote is glaring; a bloc diffuses blame
+        + _knownFlips * 0.10                             // known flipper = first suspect
+        + (votedForAllyMember ? 0.12 : 0)               // voting an ally is more noticeable
+        + _bestRead * 0.02                              // a sharp/perceptive ally reads it
+        - (_bs.social + _bs.strategic - 10) * 0.022;    // smooth operator covers tracks (avg-5 = no effect)
+      _detectP = Math.max(0.05, Math.min(0.97, _detectP));
+      const _detected = !!ep.openVote || Math.random() < _detectP;
+
+      if (!_detected) {
+        // ── UNDETECTED: the flip got away with it. No punishment to the betrayer; log as a secret for
+        // history/VP — the alliance ledger only tracks betrayals it actually KNOWS about (so dissolution
+        // and track-record stay honest). Then an impulsive loyal member may blame the WRONG person. ──
+        (ep._secretBetrayals = ep._secretBetrayals || []).push({ player: voter, alliance: alliance.name, votedFor: betrayerVotedFor, severity: _betrayalSeverity, ep: ep.num });
+        const _mis = _misattributeBlame(ep, alliance, voter, betrayerVotedFor, _loyalReaders);
+        // Surface it to the VIEWER next episode (dramatic irony — the cast never learns it). Only
+        // meaningful flips (voting an ally, or breaking unity while the target survived); a minor
+        // "went rogue but voted the boot anyway" isn't worth a reveal.
+        if (_betrayalSeverity !== 'minor') {
+          if (!gs.secretFlipsLastEp) gs.secretFlipsLastEp = [];
+          gs.secretFlipsLastEp.push({ traitor: voter, alliance: alliance.name, votedFor: betrayerVotedFor,
+            severity: _betrayalSeverity, reactor: _mis?.reactor || null, wrongSuspect: _mis?.wrongSuspect || null });
+        }
+        return;
+      }
+
+      // ── DETECTED: recorded + punished (original behavior) ──
       alliance.betrayals.push({ player: voter, ep: ep.num, votedFor: entry.voted, consensusWas: consensusVote, formedThisEp, reason: entry.reason || '', severity: _betrayalSeverity });
       // Scale bond cost by impact + severity
       let bondCost;

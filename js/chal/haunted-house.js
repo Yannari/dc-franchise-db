@@ -69,9 +69,12 @@ const LIB_INTRO = [
 const DIGIT_FIND = [
   (n, pr, d) => `${n} rips open a mildewed tome — the number <b>${d}</b> is scrawled inside. "GOT ONE!"`,
   (n, pr, d) => `${n} spots <b>${d}</b> carved into a candlestick as it floats past. Quick hands. "There!"`,
-  (n, pr, d) => `A portrait's eyes follow ${n}; behind it, the digit <b>${d}</b>. ${pr.Sub} yanks it free.`,
+  (n, pr, d) => `A portrait's eyes follow ${n}; behind it, the digit <b>${d}</b> — pried loose in a heartbeat.`,
   (n, pr, d) => `${n} presses an ear to the wall, hears a click, and finds <b>${d}</b> etched under the sconce.`,
   (n, pr, d) => `Dodging a swooping candle, ${n} pries a floorboard loose. Number <b>${d}</b>. "Come to mama."`,
+  (n, pr, d) => `${n} tips a suit of armor and a slip of paper flutters out: <b>${d}</b>. "Gotcha."`,
+  (n, pr, d) => `Behind a cracked mirror, ${n} finds <b>${d}</b> written in dust. "One down."`,
+  (n, pr, d) => `${n} solves the riddle on a lectern — the answer's a number: <b>${d}</b>.`,
 ];
 const UNLOCK_TEXT = [
   (n, combo) => `${n} spins the dial — <b>${combo}</b> — and the lock CLUNKS open. "GO GO GO!"`,
@@ -84,9 +87,9 @@ const LOCKED_IN = [
   (s, t) => `${s} lets ${t} pass first — then yanks the door shut behind them, locking ${t} inside with the floating candles.`,
 ];
 const KNOCKED_OUT = [
-  (n, pr) => `A tower of books avalanches onto ${n}, burying ${pr.obj}. By the time ${pr.sub} digs out, the door's sealed. Out of the challenge.`,
+  (n, pr) => `A tower of books avalanches onto ${n}, burying ${pr.obj}. By the time the dust settles, the door's sealed. Out of the challenge.`,
   (n, pr) => `${n} trips on the buckling floor and a candelabra clips ${pr.obj} on the temple. Lights out — challenge over.`,
-  (n, pr) => `The floor gives way under ${n} and ${pr.sub} drops through into the dark. No coming back from that one.`,
+  (n, pr) => `The floor gives way under ${n} — a drop into the dark, and no coming back from that one.`,
 ];
 const LEAVE_BEHIND = [
   (s, t) => `${t} wants to dig ${s} out, but ${s} — thinking only of the win — hisses "Leave ${pronouns(t).obj}!" and drags ${t} onward.`,
@@ -101,14 +104,14 @@ const ROOMS = [
   { key: 'toy', name: 'The Toy Room', emoji: '🧸', hazard: 'a swarm of rats', icon: 'rat',
     entry: (names) => `${names} creep into a nursery of cracked porcelain dolls. A key dangles from the ceiling — then the floorboards seethe with rats.`,
     survive: [
-      (n, pr) => `${n} kicks through the rat swarm and snatches the key. "GET OFF ME!" — but ${pr.sub} holds on.`,
+      (n, pr) => `${n} kicks through the rat swarm and snatches the key. "GET OFF ME!" — but the grip holds.`,
       (n, pr) => `${n} wades through the squealing tide, one hand up, and comes out clutching the key.`,
       (n, pr) => `Rats swarm ${pr.posAdj} legs but ${n} just grits ${pr.posAdj} teeth and rips the key loose.`,
     ],
     fall: [
-      (n, pr) => `The rats overwhelm ${n}; ${pr.sub} goes down thrashing and loses the room.`,
+      (n, pr) => `The rats overwhelm ${n} — down thrashing, out of the room.`,
       (n, pr) => `${n} panics as the swarm surges up ${pr.posAdj} arms and stumbles back, out of it.`,
-      (n, pr) => `A rat runs up ${n}'s sleeve — ${pr.sub} shrieks, drops, and doesn't get up in time.`,
+      (n, pr) => `A rat runs up ${n}'s sleeve — a shriek, a stumble, and no getting up in time.`,
     ] },
   { key: 'chandelier', name: 'The Chandelier Hall', emoji: '🕯️', hazard: 'a rotted chandelier', icon: 'chandelier',
     entry: (names) => `${names} enter a grand hall. The key hangs from a colossal chandelier swaying forty feet up.`,
@@ -118,8 +121,8 @@ const ROOMS = [
       (n, pr) => `${n} rides the chandelier's swing and grabs the key at the peak of the arc.`,
     ],
     fall: [
-      (n, pr) => `${n} reaches too far; the chandelier lurches and ${pr.sub} plummets through a trapdoor.`,
-      (n, pr) => `The chain snaps under ${n} and ${pr.sub} rides the falling drape into the dark.`,
+      (n, pr) => `${n} reaches too far; the chandelier lurches and drops ${pr.obj} through a trapdoor.`,
+      (n, pr) => `The chain snaps under ${n}, and the falling drape carries ${pr.obj} into the dark.`,
       (n, pr) => `${n} loses ${pr.posAdj} grip near the top and drops out of the running.`,
     ] },
   { key: 'egyptian', name: 'The Cursed Tomb', emoji: '⚱️', hazard: 'glass panels over a pit', icon: 'tomb',
@@ -130,9 +133,9 @@ const ROOMS = [
       (n, pr) => `Whispering a prayer, ${n} crosses the glass gauntlet and lifts the key clear.`,
     ],
     fall: [
-      (n, pr) => `${n} trusts the wrong panel; it shatters and ${pr.sub} drops through into blackness.`,
+      (n, pr) => `${n} trusts the wrong panel; it shatters and drops ${pr.obj} into blackness.`,
       (n, pr) => `A hairline crack spiders out under ${n} and the glass gives way beneath ${pr.obj}.`,
-      (n, pr) => `${n} hesitates a beat too long; the panel splinters and ${pr.sub} is gone.`,
+      (n, pr) => `${n} hesitates a beat too long; the panel splinters, and ${n} is gone.`,
     ] },
   { key: 'mirror', name: 'The Mirror Maze', emoji: '🪞', hazard: 'shattering mirrors', icon: 'mirror',
     entry: (names) => `${names} vanish into a maze of mirrors, a hundred reflections grinning back. The real key is somewhere in the glass.`,
@@ -142,9 +145,9 @@ const ROOMS = [
       (n, pr) => `${n} tracks the one reflection that moves wrong — and grabs the key behind it.`,
     ],
     fall: [
-      (n, pr) => `${n} punches a mirror that isn't a mirror; the floor tips and ${pr.sub} slides out.`,
+      (n, pr) => `${n} punches a mirror that isn't a mirror; the floor tips and slides ${pr.obj} out.`,
       (n, pr) => `${n} chases a fake key into the glass and gets hopelessly turned around, out of the room.`,
-      (n, pr) => `The mirrors close in on ${n}; ${pr.sub} panics and loses the path entirely.`,
+      (n, pr) => `The mirrors close in on ${n} — panic sets in, and the path is lost entirely.`,
     ] },
   { key: 'clock', name: 'The Clockwork Attic', emoji: '⚙️', hazard: 'grinding gears', icon: 'gear',
     entry: (names) => `${names} climb into an attic of turning gears. The key rides a rotating cog above a grinding drop.`,
@@ -171,12 +174,20 @@ const BOSS_WAKE = [
   `Skulls, black candles, and one knife between the finalists and freedom. The moment someone grabs it, the throne bursts into flame and the broken doll lurches upright. "Nobody... leaves."`,
 ];
 const BOSS_ATTACK = [
-  (n, pr) => `The doll flings ${n} across the room; ${pr.sub} slams into the skull pile, dazed and out of the scramble for a beat.`,
+  (n, pr) => `The doll flings ${n} across the room and into the skull pile — dazed and out of the scramble for a beat.`,
   (n, pr) => `A voodoo doll pierces the air and ${n} drops the knife, clutching ${pr.posAdj} arm. "IT MOVED!"`,
   (n, pr) => `${n} lunges recklessly and the doll tosses ${pr.obj} aside like a rag. Sarcastic slow-clap from the others.`,
-  (n, pr) => `The Ordinary Girl doll shrieks and hurls ${n} into the burning throne's shadow. ${pr.Sub} rolls clear, singed.`,
-  (n, pr) => `A skull whips off the shelf and cracks ${n} in the ribs; ${pr.sub} folds over, wheezing.`,
-  (n, pr) => `The doll's stitched grin widens as it yanks the rug from under ${n}. Down ${pr.sub} goes.`,
+  (n, pr) => `The Ordinary Girl doll shrieks and hurls ${n} into the burning throne's shadow — ${pr.obj} rolling clear, singed.`,
+  (n, pr) => `A skull whips off the shelf and cracks ${n} in the ribs, folding ${pr.obj} over, wheezing.`,
+  (n, pr) => `The doll's stitched grin widens as it yanks the rug out from under ${n} — down in a heap.`,
+];
+const BOSS_GRAPPLE = [ // coverage for finalists who fought for the knife but came up short
+  (n, pr) => `${n} throws voodoo dolls back at the thing and claws toward the blade, but can't break through the pile-up.`,
+  (n, pr) => `${n} gets a hand on the knife for half a second before the scrum rips it away. So close.`,
+  (n, pr) => `${n} circles wide, waiting for an opening — but the doll's chaos never gives ${pr.obj} the clean shot.`,
+  (n, pr) => `${n} wrestles a voodoo doll off ${pr.posAdj} back and dives in, a step behind the leaders.`,
+  (n, pr) => `${n} fights like mad but the fire and the flying skulls keep ${pr.obj} pinned to the wall.`,
+  (n, pr) => `${n} makes a desperate lunge for the rope and misses by inches as someone faster gets there first.`,
 ];
 const BOSS_TACKLE = [
   (s, t) => `${s} tackles ${t} off the knife. "Sorry — not sorry." ${t} hits the floor.`,
@@ -193,25 +204,45 @@ const ESCAPE_TEXT = [
   (n) => `${n} cuts free, shoulders the door, and escapes the mansion first. Immunity, and a heartbeat to spare.`,
 ];
 
-// Social beats between phases
+// Per-player "search" beats — coverage for players who don't find a digit. They still contribute.
+const SEARCH_BEATS = [
+  (n, pr) => `${n} rifles through a stack of mildewed books — blank page after blank page. "Come ON."`,
+  (n, pr) => `${n} shoulders a groaning bookcase aside looking for a hidden number. Nothing, but the effort buys the others time.`,
+  (n, pr) => `${n} bats the floating candles back so the searchers can work. "I've got the fire, you find the numbers!"`,
+  (n, pr) => `${n} swears there was a digit in the chandelier's shadow — but it's gone a blink later.`,
+  (n, pr) => `${n} pries open a locked drawer. Empty. Just a dead moth and a bad smell.`,
+  (n, pr) => `${n} runs ${pr.posAdj} hands along the shelves feeling for a false spine. So close — but no.`,
+  (n, pr) => `${n} sounds out the walls for a hollow panel, knuckles rapping in the dark. No luck this round.`,
+  (n, pr) => `${n} flips a portrait off the wall hunting for a number behind it. Just cobwebs and a spider the size of a fist.`,
+  (n, pr) => `${n} tears through a globe, a clock, a vase — anything that might hide a digit. The room fights back.`,
+  (n, pr) => `${n} keeps a cool head while the house screams, methodically clearing a shelf. Contributes, but comes up empty.`,
+  (n, pr) => `A candle singes ${n}'s sleeve — a yelp, a dropped book, and a lost place in the search.`,
+  (n, pr) => `${n} calls out false numbers half-seen in the gloom, more panic than help. "Was that a three? An eight?!"`,
+];
+
+// Social beats — chosen by the pair's REAL bond, so the text stays honest (no invented backstory).
+// `reconcile` fires only between players with friction; `scheme` only between allies vs a real threat.
 const SOCIAL_BEATS = {
-  apology: [
-    (a, b) => ({ t: `${a} pulls ${b} aside in the dark. "About that vote — I'm sorry. You were the first person who actually saw me here." ${b} softens. Something mends.`, d: () => { addBond(a, b, 2); popDelta(a, 0.4); } }),
-    (a, b) => ({ t: `${a} finally owns it. "I blindsided you and it wasn't personal — it was the only way to keep us safe." ${b} nods slowly. Bridge rebuilt.`, d: () => { addBond(a, b, 2); } }),
+  reconcile: [ // pair has a negative bond — a wary truce, no fabricated specifics
+    (a, b) => ({ t: `${a} and ${b} have been circling each other all game. In the dark, ${a} mutters, "Whatever's between us — truce till we're out of here." ${b} gives a wary nod.`, d: () => { addBond(a, b, 2); popDelta(a, 0.3); } }),
+    (a, b) => ({ t: `${a} catches ${b}'s eye across the shaking room. "We don't have to like each other to get through this." ${b}: "...Fine. Tonight only."`, d: () => { addBond(a, b, 2); } }),
+    (a, b) => ({ t: `Cornered by the floating candles together, ${a} and ${b} put the feud on ice — for now. "After this, we go back to hating each other." "Deal."`, d: () => { addBond(a, b, 1.5); } }),
   ],
-  target: [
-    (a, b, tgt) => ({ t: `${a} murmurs to ${b} between screams: "${tgt} is the next target. Whatever it takes, they don't win this." A plan hardens.`, d: () => { addBond(a, b, 1); addBond(a, tgt, -1); } }),
-    (a, b, tgt) => ({ t: `${a} and ${b} trade a look. "${tgt}'s getting too comfortable. After tonight, they go." The alliance tightens.`, d: () => { addBond(a, b, 1); addBond(a, tgt, -1); } }),
+  scheme: [ // pair are allies — plotting against a genuinely high-threat third player
+    (a, b, tgt) => ({ t: `${a} murmurs to ${b} between screams: "${tgt}'s the biggest threat left. Whatever it takes tonight, they don't walk out first." A plan hardens.`, d: () => { addBond(a, b, 1); addBond(a, tgt, -1); } }),
+    (a, b, tgt) => ({ t: `${a} and ${b} trade a look while the house groans. "${tgt}'s too dangerous to let win immunity. We box ${pronouns(tgt).obj} out." The alliance tightens.`, d: () => { addBond(a, b, 1); addBond(a, tgt, -1); } }),
   ],
-  blame: [
-    (a, b) => ({ t: `${a} rounds on ${b}. "You LEFT me back there!" ${b} shrugs it off, but the resentment sticks.`, d: () => { addBond(a, b, -2); popDelta(b, -0.3); } }),
-    (a, b) => ({ t: `${a} won't let it go. "You'd have walked over my body for that key." ${b}: "...Yeah. I would." Cold.`, d: () => { addBond(a, b, -2); } }),
+  friction: [ // pair has a negative bond — it flares under pressure
+    (a, b) => ({ t: `${a} snaps at ${b} in the chaos. "Stay out of my way in here." ${b} bristles right back. The bad blood only thickens.`, d: () => { addBond(a, b, -1.5); popDelta(a, -0.2); } }),
+    (a, b) => ({ t: `${a} and ${b} both lunge for the same book and collide. "Back OFF." "You back off." Neither gives an inch.`, d: () => { addBond(a, b, -1.5); } }),
   ],
-  olive: [
-    (a, b) => ({ t: `${a} catches ${b} shaking and steadies ${pronouns(b).obj}. "Breathe. We get out of here together." A small trust forms.`, d: () => { addBond(a, b, 2); popDelta(a, 0.3); } }),
+  bond: [ // pair are already friendly — teamwork under fire
+    (a, b) => ({ t: `${a} steadies ${b} when a shelf topples toward ${pronouns(b).obj}. "I've got you — keep looking." The trust between them deepens.`, d: () => { addBond(a, b, 2); popDelta(a, 0.3); } }),
+    (a, b) => ({ t: `${a} and ${b} fall into a rhythm — one holds the candles off, the other digs. "We make a good team." They mean it.`, d: () => { addBond(a, b, 1.5); popDelta(a, 0.2); } }),
   ],
-  cheer: [
-    (a, b) => ({ t: `${a} whoops as ${b} clears a hazard. "THAT'S how you do it!" ${b} grins despite the terror.`, d: () => { addBond(a, b, 1); } }),
+  banter: [ // neutral pair — nervous gallows humor, keeps morale
+    (a, b) => ({ t: `${a} whispers to ${b}, "If a ghost grabs me, avenge me." ${b}: "I'll write a strongly-worded confessional." A shaky laugh cuts the tension.`, d: () => { addBond(a, b, 1); } }),
+    (a, b) => ({ t: `${a} and ${b} keep up a running commentary of terror to stay sane. "Was that the wind?" "That was DEFINITELY not the wind."`, d: () => { addBond(a, b, 1); } }),
   ],
 };
 
@@ -223,27 +254,46 @@ function _escapeScore(n) { const s = pStats(n); return s.endurance * 0.5 + s.bol
 function _roomScore(n) { const s = pStats(n); return s.physical * 0.4 + s.endurance * 0.3 + s.boldness * 0.3 + noise(3.0); }
 function _knifeScore(n) { const s = pStats(n); return s.boldness * 0.4 + s.physical * 0.4 + s.strategic * 0.2 + noise(3.0); }
 
-function _addSocial(events, active, done, kind, tgtPool) {
-  // pick a compatible pair from `active` not already used this beat
-  const pool = active.filter(n => !done.has(n));
-  if (pool.length < 2) return;
-  const a = pick(pool);
-  const rest = pool.filter(n => n !== a);
-  if (!rest.length) return;
-  const b = pick(rest);
-  done.add(a); done.add(b);
-  let beat;
-  if (kind === 'target') {
-    const tgts = (tgtPool || active).filter(n => n !== a && n !== b);
-    if (!tgts.length) { kind = 'apology'; }
-    else { beat = pick(SOCIAL_BEATS.target)(a, b, pick(tgts)); }
+// Fire ONE grounded social beat: pick a pair with the strongest existing relationship
+// (either direction), then let their REAL bond decide what kind of moment it is — so the
+// narration never invents history that didn't happen.
+function _addSocial(events, pool, used, tgtPool, usedBeats) {
+  const avail = pool.filter(n => !used.has(n));
+  if (avail.length < 2) return false;
+  // rank candidate pairs by |bond| so players who actually have a relationship interact first
+  let best = null, bestMag = -1;
+  for (let i = 0; i < avail.length; i++) {
+    for (let j = i + 1; j < avail.length; j++) {
+      const mag = Math.abs(getBond(avail[i], avail[j])) + Math.random() * 1.5; // noise breaks ties
+      if (mag > bestMag) { bestMag = mag; best = [avail[i], avail[j]]; }
+    }
   }
-  if (!beat) {
-    const fn = pick(SOCIAL_BEATS[kind] || SOCIAL_BEATS.cheer);
-    beat = fn(a, b);
+  if (!best) return false;
+  const [a, b] = best;
+  used.add(a); used.add(b);
+  const bond = getBond(a, b);
+
+  let kind, beat;
+  if (bond <= -2) {
+    kind = Math.random() < 0.55 ? 'reconcile' : 'friction';
+  } else if (bond >= 3) {
+    // allies: scheme against a real threat if one exists, else bonding teamwork
+    const tgts = (tgtPool || pool).filter(n => n !== a && n !== b);
+    if (tgts.length && Math.random() < 0.6) {
+      const tgt = [...tgts].sort((x, y) => (pStats(y).strategic + Math.max(0, -getBond(a, y))) - (pStats(x).strategic + Math.max(0, -getBond(a, x))))[0];
+      beat = pickUniq(SOCIAL_BEATS.scheme, usedBeats || new Set())(a, b, tgt);
+      beat.d();
+      events.push({ type: 'social', kind: 'scheme', players: [a, b], target: tgt, icon: '🗣️', text: beat.t });
+      return true;
+    }
+    kind = 'bond';
+  } else {
+    kind = bond < 0 ? 'friction' : (bond > 0 ? 'bond' : 'banter');
   }
+  beat = pickUniq(SOCIAL_BEATS[kind], usedBeats || new Set())(a, b);
   beat.d();
   events.push({ type: 'social', kind, players: [a, b], icon: '🗣️', text: beat.t });
+  return true;
 }
 
 export function simulateHauntedHouse(ep) {
@@ -272,11 +322,7 @@ export function simulateHauntedHouse(ep) {
 
   // ══ INTRO ══
   result.open = pick(OPEN_TEXT)(host());
-  // one nostalgia, one fear (personality-driven)
-  const bold = [...active].sort((a, b) => pStats(b).boldness - pStats(a).boldness);
-  const timid = [...active].sort((a, b) => (pStats(a).boldness + pStats(a).temperament) - (pStats(b).boldness + pStats(b).temperament));
-  result.nostalgia = bold[0] ? pick(NOSTALGIA_TEXT)(bold[0]) : '';
-  result.fear = (timid[0] && timid[0] !== bold[0]) ? pick(FEAR_TEXT)(timid[0]) : (timid[1] ? pick(FEAR_TEXT)(timid[1]) : '');
+  // (nostalgia/fear reactions are now generated as avatar cards inside _simLibrary)
 
   // ══ PHASE 1 — THE LIBRARY ══
   _simLibrary(active, alive, result, eliminate, ep, campKey);
@@ -334,87 +380,107 @@ function _simLibrary(active, aliveRef, result, eliminate, ep, campKey) {
   const p1 = result.phase1;
   const combo = String(Math.floor(1000 + Math.random() * 9000));
   result.combo = combo;
-
-  // rank searchers
-  const ranked = [...active].sort((a, b) => _libScore(b) - _libScore(a));
-  const finders = ranked.slice(0, Math.min(4, ranked.length));
   const digits = combo.split('');
-  finders.forEach((n, i) => {
-    p1.finders.push({ name: n, digit: digits[i] });
-    p1.events.push({ type: 'find', player: n, icon: '🔢', text: pick(DIGIT_FIND)(n, pronouns(n), digits[i]) });
-    ep.chalMemberScores[n] = (ep.chalMemberScores[n] || 0) + 2;
-  });
-  // social beat mid-search
-  const done = new Set();
-  _addSocial(p1.events, active, done, Math.random() < 0.5 ? 'apology' : 'target', active);
 
-  // unlocker = best finder present
-  const unlocker = finders[0];
-  p1.unlocker = unlocker;
-  p1.events.push({ type: 'unlock', player: unlocker, icon: '🗝️', text: pick(UNLOCK_TEXT)(unlocker, combo) });
-  ep.chalMemberScores[unlocker] = (ep.chalMemberScores[unlocker] || 0) + 2;
+  // ── reactions (personality-driven) as avatar cards ──
+  const bold = [...active].sort((a, b) => pStats(b).boldness - pStats(a).boldness);
+  const timid = [...active].sort((a, b) => (pStats(a).boldness + pStats(a).temperament) - (pStats(b).boldness + pStats(b).temperament));
+  const nostalgiaP = bold[0];
+  const fearP = timid.find(n => n !== nostalgiaP) || timid[0];
 
-  // ── the scramble out: eliminate 1-2 ──
+  // ── decide the scramble outcome FIRST (names only) so search coverage skips the eliminated ──
   const elimCount = active.length >= 9 ? 2 : 1;
   const schemers = active.filter(canScheme);
-  const usedKO = new Set();
-  let firstOut = null;
+  const scramble = []; // ordered {type, player, by?, reason?}
+  const outNames = new Set();
 
-  // First elimination — locked-in (if a schemer can target a threat) else knocked-out
+  // First elimination — schemer lock-in (targets biggest threat) or a books knockout
   if (schemers.length && Math.random() < 0.6) {
     const schemer = pick(schemers);
-    // target: highest strategic threat that isn't the schemer
-    const threats = active.filter(n => n !== schemer).sort((a, b) => pStats(b).strategic - pStats(a).strategic);
-    const target = threats[0];
-    if (target) {
-      firstOut = target;
-      p1.events.push({ type: 'lockin', player: target, by: schemer, icon: '🔒', text: pick(LOCKED_IN)(schemer, target) });
-      addBond(target, schemer, -3); popDelta(schemer, -0.5); popDelta(target, 0.4);
-      eliminate(target, 1, 'locked in');
-    }
+    const target = active.filter(n => n !== schemer).sort((a, b) => pStats(b).strategic - pStats(a).strategic)[0];
+    if (target) { scramble.push({ type: 'lockin', player: target, by: schemer }); outNames.add(target); }
   }
-  if (!firstOut) {
+  if (!scramble.length) {
     const weakest = [...active].sort((a, b) => _escapeScore(a) - _escapeScore(b))[0];
-    firstOut = weakest;
-    p1.events.push({ type: 'knockout', player: weakest, icon: '📚', text: pickUniq(KNOCKED_OUT, usedKO)(weakest, pronouns(weakest)) });
-    eliminate(weakest, 1, 'knocked out');
+    scramble.push({ type: 'knockout', player: weakest }); outNames.add(weakest);
   }
-
-  // Second elimination (knocked out) with a help / leave-behind beat
+  // Second elimination — knockout, with a help (cancels) or leave-behind beat
   if (elimCount >= 2) {
-    const remaining = active.filter(n => !result.outOrder.find(o => o.name === n));
+    const remaining = active.filter(n => !outNames.has(n));
     const victim = [...remaining].sort((a, b) => _escapeScore(a) - _escapeScore(b))[0];
     if (victim) {
-      // a nearby teammate may try to help
-      const helpers = remaining.filter(n => n !== victim && getBond(n, victim) >= 3);
-      const rescuer = helpers.length ? [...helpers].sort((a, b) => _escapeScore(b) - _escapeScore(a))[0] : null;
+      const rescuer = remaining.filter(n => n !== victim && getBond(n, victim) >= 3)
+        .sort((a, b) => _escapeScore(b) - _escapeScore(a))[0];
       if (rescuer && Math.random() < 0.45) {
-        // rescue succeeds — victim survives, no elimination
-        p1.events.push({ type: 'help', player: victim, by: rescuer, icon: '🤝', text: pick(HELP_OUT)(rescuer, victim) });
-        addBond(rescuer, victim, 2); popDelta(rescuer, 0.6);
+        scramble.push({ type: 'help', player: victim, by: rescuer }); // survives
       } else {
-        // knocked out; if a self-interested ally is near, leave-behind beat
         const abandoner = remaining.find(n => n !== victim && canScheme(n) && getBond(n, victim) >= 1);
-        if (abandoner) {
-          p1.events.push({ type: 'leave', player: victim, by: abandoner, icon: '🏃', text: pick(LEAVE_BEHIND)(abandoner, victim) });
-          addBond(abandoner, victim, -2); popDelta(abandoner, -0.4);
-        }
-        p1.events.push({ type: 'knockout', player: victim, icon: '📚', text: pickUniq(KNOCKED_OUT, usedKO)(victim, pronouns(victim)) });
-        eliminate(victim, 1, 'knocked out');
+        if (abandoner) scramble.push({ type: 'leave', player: victim, by: abandoner });
+        scramble.push({ type: 'knockout', player: victim }); outNames.add(victim);
       }
     }
   }
 
-  // camp event summarizing the sabotage (consequence-bearing)
-  if (firstOut) {
-    const ev = p1.events.find(e => e.type === 'lockin');
-    if (ev) {
-      ep.campEvents[campKey].post.push({
-        icon: '🔒', badgeText: 'SABOTAGE', badgeClass: 'bad',
-        players: [ev.by, ev.player],
-        text: `${ev.by} locked ${ev.player} inside the haunted library to steal a shot at immunity. ${ev.player} won't forget it.`,
-      });
+  // ── finders (top 4 by search skill) ──
+  const ranked = [...active].sort((a, b) => _libScore(b) - _libScore(a));
+  const finders = ranked.slice(0, Math.min(4, ranked.length));
+  const unlocker = finders[0];
+  p1.unlocker = unlocker;
+
+  // ══ BUILD THE CARD ORDER: reactions → finds → searches → socials → unlock → scramble ══
+  if (nostalgiaP) p1.events.push({ type: 'reaction', player: nostalgiaP, players: [nostalgiaP], icon: '🕯️', text: pick(NOSTALGIA_TEXT)(nostalgiaP) });
+  if (fearP) p1.events.push({ type: 'reaction', player: fearP, players: [fearP], icon: '😱', text: pick(FEAR_TEXT)(fearP) });
+
+  const usedFind = new Set();
+  finders.forEach((n, i) => {
+    p1.finders.push({ name: n, digit: digits[i] });
+    p1.events.push({ type: 'find', player: n, players: [n], icon: '🔢', text: pickUniq(DIGIT_FIND, usedFind)(n, pronouns(n), digits[i]) });
+    ep.chalMemberScores[n] = (ep.chalMemberScores[n] || 0) + 2;
+  });
+
+  // search coverage — every non-finder who ISN'T eliminated in the scramble gets a beat + a point
+  const usedSearch = new Set();
+  active.filter(n => !finders.includes(n) && !outNames.has(n)).forEach(n => {
+    p1.events.push({ type: 'search', player: n, players: [n], icon: '🔦', text: pickUniq(SEARCH_BEATS, usedSearch)(n, pronouns(n)) });
+    ep.chalMemberScores[n] = (ep.chalMemberScores[n] || 0) + 1;
+  });
+
+  // grounded social beats (2-3)
+  const socialUsed = new Set(), usedBeats = new Set();
+  const nSocial = active.length >= 8 ? 3 : 2;
+  for (let i = 0; i < nSocial; i++) _addSocial(p1.events, active, socialUsed, active, usedBeats);
+
+  // unlock
+  p1.events.push({ type: 'unlock', player: unlocker, players: [unlocker], icon: '🗝️', text: pick(UNLOCK_TEXT)(unlocker, combo) });
+  ep.chalMemberScores[unlocker] = (ep.chalMemberScores[unlocker] || 0) + 2;
+
+  // ── scramble cards (with side effects + eliminations), both avatars on two-person cards ──
+  const usedKO = new Set();
+  scramble.forEach(s => {
+    if (s.type === 'lockin') {
+      p1.events.push({ type: 'lockin', player: s.player, by: s.by, players: [s.by, s.player], icon: '🔒', text: pick(LOCKED_IN)(s.by, s.player) });
+      addBond(s.player, s.by, -3); popDelta(s.by, -0.5); popDelta(s.player, 0.4);
+      eliminate(s.player, 1, 'locked in');
+    } else if (s.type === 'help') {
+      p1.events.push({ type: 'help', player: s.player, by: s.by, players: [s.by, s.player], icon: '🤝', text: pick(HELP_OUT)(s.by, s.player) });
+      addBond(s.by, s.player, 2); popDelta(s.by, 0.6);
+    } else if (s.type === 'leave') {
+      p1.events.push({ type: 'leave', player: s.player, by: s.by, players: [s.by, s.player], icon: '🏃', text: pick(LEAVE_BEHIND)(s.by, s.player) });
+      addBond(s.by, s.player, -2); popDelta(s.by, -0.4);
+    } else if (s.type === 'knockout') {
+      p1.events.push({ type: 'knockout', player: s.player, players: [s.player], icon: '📚', text: pickUniq(KNOCKED_OUT, usedKO)(s.player, pronouns(s.player)) });
+      eliminate(s.player, 1, 'knocked out');
     }
+  });
+
+  // camp event summarizing the sabotage (consequence-bearing)
+  const lockEv = p1.events.find(e => e.type === 'lockin');
+  if (lockEv) {
+    ep.campEvents[campKey].post.push({
+      icon: '🔒', badgeText: 'SABOTAGE', badgeClass: 'bad',
+      players: [lockEv.by, lockEv.player],
+      text: `${lockEv.by} locked ${lockEv.player} inside the haunted library to steal a shot at immunity. ${lockEv.player} won't forget it.`,
+    });
   }
 }
 
@@ -426,7 +492,7 @@ function _simKeys(alive, result, eliminate, ep, campKey) {
   shuffled.forEach((n, i) => groups[i % nGroups].push(n));
 
   const roomPool = [...ROOMS].sort(() => Math.random() - 0.5);
-  const done = new Set();
+  const usedBeats = new Set();
 
   groups.forEach((members, gi) => {
     const room = roomPool[gi % roomPool.length];
@@ -456,11 +522,12 @@ function _simKeys(alive, result, eliminate, ep, campKey) {
     g.events.push({ type: 'key', player: topRoller, icon: '🔑', room: room.key, text: pick(KEY_GRAB)(topRoller) });
     ep.chalMemberScores[topRoller] = (ep.chalMemberScores[topRoller] || 0) + 2;
 
-    // one social beat per group among survivors
+    // grounded social beat(s) per group among survivors
     const survPool = g.survivors;
     if (survPool.length >= 2) {
-      const kinds = ['cheer', 'blame', 'target', 'olive'];
-      _addSocial(g.events, survPool, done, pick(kinds), alive);
+      const groupUsed = new Set();
+      _addSocial(g.events, survPool, groupUsed, alive, usedBeats);
+      if (survPool.length >= 4) _addSocial(g.events, survPool, groupUsed, alive, usedBeats);
     }
 
     result.phase2.groups.push(g);
@@ -497,7 +564,7 @@ function _simBoss(alive, result, ep, campKey) {
   const usedAtk = new Set();
   reckless.slice(0, attackN).forEach(n => {
     scores[n] -= 1.6;
-    p3.events.push({ type: 'attack', player: n, icon: '🎃', text: pickUniq(BOSS_ATTACK, usedAtk)(n, pronouns(n)) });
+    p3.events.push({ type: 'attack', player: n, players: [n], icon: '🎃', text: pickUniq(BOSS_ATTACK, usedAtk)(n, pronouns(n)) });
     popDelta(n, 0.2);
   });
 
@@ -509,7 +576,7 @@ function _simBoss(alive, result, ep, campKey) {
     const t = rivals[0];
     if (t) {
       scores[t] -= 1.8; scores[s] += 0.6;
-      p3.events.push({ type: 'tackle', player: t, by: s, icon: '🤼', text: pick(BOSS_TACKLE)(s, t) });
+      p3.events.push({ type: 'tackle', player: t, by: s, players: [s, t], icon: '🤼', text: pick(BOSS_TACKLE)(s, t) });
       addBond(t, s, -2); popDelta(s, -0.3);
     }
   }
@@ -523,12 +590,21 @@ function _simBoss(alive, result, ep, campKey) {
   const helper = helpers.find(h => getBond(h, runnerUp) >= 4 && runnerUp);
   if (helper && runnerUp && Math.random() < 0.4) {
     scores[runnerUp] += 2.2; scores[helper] -= 0.5;
-    p3.events.push({ type: 'assist', player: runnerUp, by: helper, icon: '🛡️', text: BOSS_ASSIST[0](helper, winner, runnerUp) });
+    p3.events.push({ type: 'assist', player: runnerUp, by: helper, players: [helper, runnerUp], icon: '🛡️', text: BOSS_ASSIST[0](helper, winner, runnerUp) });
     addBond(helper, runnerUp, 2); popDelta(helper, 0.7);
   }
 
   // resolve
   winner = [...alive].sort((a, b) => scores[b] - scores[a])[0];
+
+  // coverage: every finalist who fought for the knife but isn't already featured (and isn't the
+  // winner) gets a grapple beat, so no one at the boss is left without a card.
+  const featured = new Set(p3.events.filter(e => e.player).map(e => e.player));
+  const usedGrapple = new Set();
+  alive.filter(n => n !== winner && !featured.has(n)).forEach(n => {
+    p3.events.push({ type: 'grapple', player: n, players: [n], icon: '🔪', text: pickUniq(BOSS_GRAPPLE, usedGrapple)(n, pronouns(n)) });
+  });
+
   p3.knife = scores;
   p3.immunityWinner = winner;
   result.immunityWinner = winner;
@@ -597,6 +673,8 @@ function css() {
   .hh-card.bad{border-left:4px solid var(--blood);background:linear-gradient(180deg,rgba(60,16,16,0.55),rgba(14,9,22,0.9))}
   .hh-card.key{border-left:4px solid var(--gold);background:linear-gradient(180deg,rgba(60,48,16,0.4),rgba(14,9,22,0.9))}
   .hh-card.social{border:1px dashed #5a4a72;background:rgba(40,26,58,0.5)}
+  .hh-card.reaction{border-left:4px solid #6a5acd;background:linear-gradient(180deg,rgba(48,40,72,0.5),rgba(14,9,22,0.9));font-style:italic}
+  .hh-card.search{border-left:3px solid #4a4560;background:rgba(20,16,30,0.75);opacity:0.94}
   .hh-card.escape{border-left:5px solid var(--candle);background:linear-gradient(90deg,rgba(139,214,106,0.18),rgba(14,9,22,0.9));animation:hh-glow 1.4s ease-in-out infinite alternate}
   @keyframes hh-glow{from{box-shadow:0 0 8px rgba(139,214,106,0.3)}to{box-shadow:0 0 22px rgba(139,214,106,0.6)}}
   .hh-card.boss{border:2px solid var(--blood);background:linear-gradient(180deg,rgba(50,10,10,0.7),rgba(20,6,6,0.95));animation:hh-shake .5s}
@@ -705,18 +783,22 @@ export function rpBuildHauntedLibrary(ep) {
   const steps = [];
   const meta = []; // cumulative out-set per step
   const outSet = new Set();
-  if (r.nostalgia) { steps.push(`<div class="hh-intro">${r.nostalgia}</div>`); meta.push(new Set(outSet)); }
-  if (r.fear) { steps.push(`<div class="hh-intro" style="border-color:var(--blood)">${r.fear}</div>`); meta.push(new Set(outSet)); }
   for (const ev of r.phase1.events) {
     let cls = 'find';
     if (ev.type === 'unlock') cls = 'unlock';
     else if (ev.type === 'lockin' || ev.type === 'knockout' || ev.type === 'leave') cls = 'bad';
     else if (ev.type === 'help') cls = 'unlock';
     else if (ev.type === 'social') cls = 'social';
+    else if (ev.type === 'reaction') cls = 'reaction';
+    else if (ev.type === 'search') cls = 'search';
     let extra = '';
     if (ev.type === 'lockin') extra = `<span class="hh-pill" style="background:var(--blood);color:#fff">SABOTAGE</span><br>`;
     else if (ev.type === 'knockout') extra = `<span class="hh-pill" style="background:#5a2020;color:#fff">KNOCKED OUT</span><br>`;
-    else if (ev.type === 'social') extra = `<span class="hh-pill" style="background:var(--purple);color:#ddd">SOCIAL</span><br>`;
+    else if (ev.type === 'leave') extra = `<span class="hh-pill" style="background:#5a2020;color:#fff">LEFT BEHIND</span><br>`;
+    else if (ev.type === 'help') extra = `<span class="hh-pill" style="background:var(--candle);color:#111">RESCUE</span><br>`;
+    else if (ev.type === 'find') extra = `<span class="hh-pill" style="background:var(--gold);color:#111">DIGIT ${ev.text.match(/<b>(\d)<\/b>/)?.[1] || '✦'}</span><br>`;
+    else if (ev.type === 'unlock') extra = `<span class="hh-pill" style="background:var(--candle);color:#111">UNLOCKED</span><br>`;
+    else if (ev.type === 'social') extra = `<span class="hh-pill" style="background:var(--purple);color:#ddd">${(ev.kind === 'scheme' || ev.kind === 'friction') ? 'TENSION' : 'SOCIAL'}</span><br>`;
     steps.push(_card(cls, { ...ev, text: extra + ev.text }));
     if (ev.type === 'lockin' || ev.type === 'knockout') outSet.add(ev.player);
     meta.push(new Set(outSet));
@@ -754,15 +836,16 @@ export function rpBuildHauntedKeys(ep) {
     meta.push(new Set(outSet));
     for (const ev of g.events) {
       let cls = 'find';
-      if (ev.type === 'entry') cls = 'social';
+      if (ev.type === 'entry') cls = 'reaction';
       else if (ev.type === 'survive') cls = 'find';
       else if (ev.type === 'fall') cls = 'bad';
       else if (ev.type === 'key') cls = 'key';
       else if (ev.type === 'social') cls = 'social';
       let extra = '';
       if (ev.type === 'fall') extra = `<span class="hh-pill" style="background:#5a2020;color:#fff">FELL</span><br>`;
-      else if (ev.type === 'key') extra = `<span class="hh-pill" style="background:var(--gold);color:#111">KEY ${'✦'}</span><br>`;
-      else if (ev.type === 'social') extra = `<span class="hh-pill" style="background:var(--purple);color:#ddd">SOCIAL</span><br>`;
+      else if (ev.type === 'survive') extra = `<span class="hh-pill" style="background:#2d5a3a;color:#dfe">CLEARED</span><br>`;
+      else if (ev.type === 'key') extra = `<span class="hh-pill" style="background:var(--gold);color:#111">KEY ✦</span><br>`;
+      else if (ev.type === 'social') extra = `<span class="hh-pill" style="background:var(--purple);color:#ddd">${(ev.kind === 'scheme' || ev.kind === 'friction') ? 'TENSION' : 'SOCIAL'}</span><br>`;
       steps.push(_card(cls, { ...ev, text: extra + ev.text }));
       if (ev.type === 'fall') outSet.add(ev.player);
       meta.push(new Set(outSet));
@@ -800,9 +883,11 @@ export function rpBuildHauntedBoss(ep) {
     else if (ev.type === 'attack') cls = 'bad';
     else if (ev.type === 'tackle') cls = 'bad';
     else if (ev.type === 'assist') cls = 'unlock';
+    else if (ev.type === 'grapple') cls = 'search';
     else if (ev.type === 'escape') cls = 'escape';
     let extra = '';
     if (ev.type === 'escape') extra = `<span class="hh-pill" style="background:var(--candle);color:#111">IMMUNITY ✦</span><br>`;
+    else if (ev.type === 'attack') extra = `<span class="hh-pill" style="background:#5a2020;color:#fff">DOLL STRIKE</span><br>`;
     else if (ev.type === 'tackle') extra = `<span class="hh-pill" style="background:var(--blood);color:#fff">TACKLE</span><br>`;
     else if (ev.type === 'assist') extra = `<span class="hh-pill" style="background:var(--candle);color:#111">ASSIST</span><br>`;
     steps.push(_card(cls, { ...ev, text: extra + ev.text }));

@@ -1491,7 +1491,9 @@ export function simulateEpisode() {
   // need this flag to avoid being silently dropped to a generic challenge on the merge episode.
   // Returnees aren't in gs.activePlayers yet (applyTwist adds them), so the current count is already
   // the pre-return count.
-  gs._mergingThisEp = !gs.isMerged && (gs.activePlayers.length - (isReentry ? 1 : 0)) <= cfg.mergeAt;
+  // Subtract this episode's actual returnee count (a rescue return can bring back >1) so the
+  // "merging this episode?" flag matches the merge check below and the format designer's projection.
+  gs._mergingThisEp = !gs.isMerged && (gs.activePlayers.length - (isReentry ? (ep.riReentrants?.length || 1) : 0)) <= cfg.mergeAt;
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));
   // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)
   const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction','first-impressions','schoolyard-pick'];
@@ -1529,7 +1531,12 @@ export function simulateEpisode() {
     if (t.type === 'returning-player' && t.returnees?.length) return sum + t.returnees.length;
     return sum;
   }, 0);
-  const _preReturnActive = gs.activePlayers.length - (isReentry ? 1 : 0) - _twistReturns;
+  // Exclude THIS episode's returnees from the merge count so returns don't block the merge.
+  // A rescue return can bring back MORE than one player (cfg.riReturnPerEvent), so subtract the
+  // actual number that came back this episode — not a hardcoded 1, which left the count too high
+  // and pushed the merge later than the format designer projected (it counts every returnee).
+  const _reentryCount = isReentry ? (ep.riReentrants?.length || 1) : 0;
+  const _preReturnActive = gs.activePlayers.length - _reentryCount - _twistReturns;
   const isMerge = !gs.isMerged && _preReturnActive <= cfg.mergeAt;
   if (isMerge) {
     ep.isMerge = true; gs.isMerged = true; gs.phase = 'post-merge'; gs.tribes = [];

@@ -222,27 +222,39 @@ const SEARCH_BEATS = [
 
 // Social beats — chosen by the pair's REAL bond, so the text stays honest (no invented backstory).
 // `reconcile` fires only between players with friction; `scheme` only between allies vs a real threat.
+// Text is ENVIRONMENT-NEUTRAL so a beat reads correctly in any room (library, key room, boss).
 const SOCIAL_BEATS = {
   reconcile: [ // pair has a negative bond — a wary truce, no fabricated specifics
     (a, b) => ({ t: `${a} and ${b} have been circling each other all game. In the dark, ${a} mutters, "Whatever's between us — truce till we're out of here." ${b} gives a wary nod.`, d: () => { addBond(a, b, 2); popDelta(a, 0.3); } }),
-    (a, b) => ({ t: `${a} catches ${b}'s eye across the shaking room. "We don't have to like each other to get through this." ${b}: "...Fine. Tonight only."`, d: () => { addBond(a, b, 2); } }),
-    (a, b) => ({ t: `Cornered by the floating candles together, ${a} and ${b} put the feud on ice — for now. "After this, we go back to hating each other." "Deal."`, d: () => { addBond(a, b, 1.5); } }),
+    (a, b) => ({ t: `${a} catches ${b}'s eye across the room. "We don't have to like each other to get through this." ${b}: "...Fine. Tonight only."`, d: () => { addBond(a, b, 2); } }),
+    (a, b) => ({ t: `Cornered by the same danger, ${a} and ${b} put the feud on ice — for now. "After this, we go back to hating each other." "Deal."`, d: () => { addBond(a, b, 1.5); } }),
+    (a, b) => ({ t: `"Truce?" ${a} offers, hand out. ${b} stares at it, then shakes. "Truce. Till we're out." The tension eases a notch.`, d: () => { addBond(a, b, 1.5); } }),
+    (a, b) => ({ t: `Forced back to back by the house, ${a} and ${b} call an uneasy ceasefire. Neither trusts it — but it holds through the room.`, d: () => { addBond(a, b, 1.5); } }),
   ],
   scheme: [ // pair are allies — plotting against a genuinely high-threat third player
-    (a, b, tgt) => ({ t: `${a} murmurs to ${b} between screams: "${tgt}'s the biggest threat left. Whatever it takes tonight, they don't walk out first." A plan hardens.`, d: () => { addBond(a, b, 1); addBond(a, tgt, -1); } }),
-    (a, b, tgt) => ({ t: `${a} and ${b} trade a look while the house groans. "${tgt}'s too dangerous to let win immunity. We box ${pronouns(tgt).obj} out." The alliance tightens.`, d: () => { addBond(a, b, 1); addBond(a, tgt, -1); } }),
+    (a, b, tgt) => ({ t: `${a} murmurs to ${b}: "${tgt}'s the biggest threat left. Whatever it takes tonight, ${tgt} doesn't walk out first." A plan hardens.`, d: () => { addBond(a, b, 1); addBond(a, tgt, -1); } }),
+    (a, b, tgt) => ({ t: `${a} and ${b} trade a look. "${tgt}'s too dangerous to let win immunity. We box ${pronouns(tgt).obj} out." The alliance tightens.`, d: () => { addBond(a, b, 1); addBond(a, tgt, -1); } }),
+    (a, b, tgt) => ({ t: `Under the noise, ${a} leans to ${b}. "If ${tgt} grabs immunity we're both in trouble. Slow ${pronouns(tgt).obj} down." ${b} nods.`, d: () => { addBond(a, b, 1); addBond(a, tgt, -1); } }),
+    (a, b, tgt) => ({ t: `${a} and ${b} quietly agree: "${tgt} first. Then we sort out us." The pact holds — for now.`, d: () => { addBond(a, b, 1); addBond(a, tgt, -1); } }),
   ],
   friction: [ // pair has a negative bond — it flares under pressure
-    (a, b) => ({ t: `${a} snaps at ${b} in the chaos. "Stay out of my way in here." ${b} bristles right back. The bad blood only thickens.`, d: () => { addBond(a, b, -1.5); popDelta(a, -0.2); } }),
-    (a, b) => ({ t: `${a} and ${b} both lunge for the same book and collide. "Back OFF." "You back off." Neither gives an inch.`, d: () => { addBond(a, b, -1.5); } }),
+    (a, b) => ({ t: `${a} snaps at ${b} in the chaos. "Stay out of my way." ${b} bristles right back. The bad blood only thickens.`, d: () => { addBond(a, b, -1.5); popDelta(a, -0.2); } }),
+    (a, b) => ({ t: `${a} and ${b} both lunge for the same spot and collide. "Back OFF." "You back off." Neither gives an inch.`, d: () => { addBond(a, b, -1.5); } }),
+    (a, b) => ({ t: `${a} shoves past ${b} hard enough to send a message. ${b} files it away. This isn't over.`, d: () => { addBond(a, b, -1.5); } }),
+    (a, b) => ({ t: `"You're seriously in MY way right now?" ${a} snarls. ${b} just smirks. The rivalry sharpens.`, d: () => { addBond(a, b, -1.5); } }),
   ],
   bond: [ // pair are already friendly — teamwork under fire
-    (a, b) => ({ t: `${a} steadies ${b} when a shelf topples toward ${pronouns(b).obj}. "I've got you — keep looking." The trust between them deepens.`, d: () => { addBond(a, b, 2); popDelta(a, 0.3); } }),
-    (a, b) => ({ t: `${a} and ${b} fall into a rhythm — one holds the candles off, the other digs. "We make a good team." They mean it.`, d: () => { addBond(a, b, 1.5); popDelta(a, 0.2); } }),
+    (a, b) => ({ t: `${a} steadies ${b} when the floor pitches beneath them. "I've got you — keep going." The trust between them deepens.`, d: () => { addBond(a, b, 2); popDelta(a, 0.3); } }),
+    (a, b) => ({ t: `${a} and ${b} fall into a rhythm, covering each other's blind spots. "We make a good team." They mean it.`, d: () => { addBond(a, b, 1.5); popDelta(a, 0.2); } }),
+    (a, b) => ({ t: `When ${b} freezes up, ${a} grabs ${pronouns(b).posAdj} hand. "With me. We move together." And they do.`, d: () => { addBond(a, b, 2); popDelta(a, 0.2); } }),
+    (a, b) => ({ t: `${a} pulls ${b} clear of a close call without thinking; ${b} returns the favor a beat later. Even.`, d: () => { addBond(a, b, 1.5); } }),
+    (a, b) => ({ t: `${a} and ${b} watch each other's backs through the worst of it. "Wouldn't want anyone else in here." A real bond.`, d: () => { addBond(a, b, 1.5); popDelta(a, 0.2); } }),
   ],
   banter: [ // neutral pair — nervous gallows humor, keeps morale
-    (a, b) => ({ t: `${a} whispers to ${b}, "If a ghost grabs me, avenge me." ${b}: "I'll write a strongly-worded confessional." A shaky laugh cuts the tension.`, d: () => { addBond(a, b, 1); } }),
+    (a, b) => ({ t: `${a} whispers to ${b}, "If something grabs me, avenge me." ${b}: "I'll write a strongly-worded confessional." A shaky laugh cuts the tension.`, d: () => { addBond(a, b, 1); } }),
     (a, b) => ({ t: `${a} and ${b} keep up a running commentary of terror to stay sane. "Was that the wind?" "That was DEFINITELY not the wind."`, d: () => { addBond(a, b, 1); } }),
+    (a, b) => ({ t: `"On a scale of one to haunted," ${a} mutters, "this is a solid nope." ${b} snorts despite ${pronouns(b).ref}.`, d: () => { addBond(a, b, 1); } }),
+    (a, b) => ({ t: `${a} and ${b} crack nervous jokes to keep their nerve. It's barely working — but it's working.`, d: () => { addBond(a, b, 1); } }),
   ],
 };
 
@@ -323,13 +335,15 @@ export function simulateHauntedHouse(ep) {
   // ══ INTRO ══
   result.open = pick(OPEN_TEXT)(host());
   // (nostalgia/fear reactions are now generated as avatar cards inside _simLibrary)
+  // shared beat-text dedup across every phase so no social line repeats in one challenge
+  const socialUsed = new Set();
 
   // ══ PHASE 1 — THE LIBRARY ══
-  _simLibrary(active, alive, result, eliminate, ep, campKey);
+  _simLibrary(active, alive, result, eliminate, ep, campKey, socialUsed);
   alive = active.filter(n => !result.outOrder.find(o => o.name === n));
 
   // ══ PHASE 2 — THREE KEYS ══
-  _simKeys(alive, result, eliminate, ep, campKey);
+  _simKeys(alive, result, eliminate, ep, campKey, socialUsed);
   alive = active.filter(n => !result.outOrder.find(o => o.name === n));
 
   // ══ PHASE 3 — THE ORDINARY GIRL DOLL ══
@@ -376,7 +390,7 @@ export function simulateHauntedHouse(ep) {
   return ep;
 }
 
-function _simLibrary(active, aliveRef, result, eliminate, ep, campKey) {
+function _simLibrary(active, aliveRef, result, eliminate, ep, campKey, socialUsed = new Set()) {
   const p1 = result.phase1;
   const combo = String(Math.floor(1000 + Math.random() * 9000));
   result.combo = combo;
@@ -446,9 +460,9 @@ function _simLibrary(active, aliveRef, result, eliminate, ep, campKey) {
   });
 
   // grounded social beats (2-3)
-  const socialUsed = new Set(), usedBeats = new Set();
+  const socialPlayers = new Set();
   const nSocial = active.length >= 8 ? 3 : 2;
-  for (let i = 0; i < nSocial; i++) _addSocial(p1.events, active, socialUsed, active, usedBeats);
+  for (let i = 0; i < nSocial; i++) _addSocial(p1.events, active, socialPlayers, active, socialUsed);
 
   // unlock
   p1.events.push({ type: 'unlock', player: unlocker, players: [unlocker], icon: '🗝️', text: pick(UNLOCK_TEXT)(unlocker, combo) });
@@ -484,7 +498,7 @@ function _simLibrary(active, aliveRef, result, eliminate, ep, campKey) {
   }
 }
 
-function _simKeys(alive, result, eliminate, ep, campKey) {
+function _simKeys(alive, result, eliminate, ep, campKey, socialUsed = new Set()) {
   // split into up to 3 groups (one per key)
   const nGroups = alive.length >= 6 ? 3 : alive.length >= 4 ? 2 : 1;
   const shuffled = [...alive].sort(() => Math.random() - 0.5);
@@ -492,7 +506,6 @@ function _simKeys(alive, result, eliminate, ep, campKey) {
   shuffled.forEach((n, i) => groups[i % nGroups].push(n));
 
   const roomPool = [...ROOMS].sort(() => Math.random() - 0.5);
-  const usedBeats = new Set();
 
   groups.forEach((members, gi) => {
     const room = roomPool[gi % roomPool.length];
@@ -525,9 +538,9 @@ function _simKeys(alive, result, eliminate, ep, campKey) {
     // grounded social beat(s) per group among survivors
     const survPool = g.survivors;
     if (survPool.length >= 2) {
-      const groupUsed = new Set();
-      _addSocial(g.events, survPool, groupUsed, alive, usedBeats);
-      if (survPool.length >= 4) _addSocial(g.events, survPool, groupUsed, alive, usedBeats);
+      const groupPlayers = new Set();
+      _addSocial(g.events, survPool, groupPlayers, alive, socialUsed);
+      if (survPool.length >= 4) _addSocial(g.events, survPool, groupPlayers, alive, socialUsed);
     }
 
     result.phase2.groups.push(g);

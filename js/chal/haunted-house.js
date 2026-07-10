@@ -168,40 +168,62 @@ const KEY_GRAB = [
   (n) => `${n} pockets the key and sprints for the reunion door.`,
 ];
 
+// ── THE ORDINARY GIRL DOLL — escalating boss siege ──
+// The doll doesn't just swat people; she DRAGS them into the pit one by one, growing more monstrous
+// each stage, until only one soul cuts the rope and escapes. Each level is an atmosphere beat.
 const BOSS_WAKE = [
-  `In the final room — voodoo dolls, skulls, a fire licking up a rotten throne — a discarded Ordinary Girl doll lies broken in the corner. The last survivors reach for the knife lashing the exit rope... and the doll's head snaps up. It's ALIVE.`,
-  `The escape rope is bound tight, and only the doll's rusted knife can cut it. As hands close on the blade, the ragged Ordinary Girl doll rises, cackling, and hurls voodoo dolls at the room.`,
-  `Skulls, black candles, and one knife between the finalists and freedom. The moment someone grabs it, the throne bursts into flame and the broken doll lurches upright. "Nobody... leaves."`,
+  `In the final room — voodoo dolls, black candles, a fire licking up a rotten throne — a discarded Ordinary Girl doll lies broken in the corner. The only way out is a rope, and only the doll's rusted knife can cut it. As hands close on the blade, her head snaps up with a wooden CRACK. Button eyes glow. "Nobody... leaves."`,
+  `The escape rope hangs across the room, lashed tight; the knife to cut it rests in the lap of a ragged Ordinary Girl doll slumped on a burning throne. The moment someone reaches for it, her stitched mouth splits into a grin and she rises. "You'll all stay. Forever."`,
+  `Skulls line the walls and a cold green fire climbs the throne. Between the last survivors and freedom: one rope, one knife, and the broken doll cradling it. Her head lolls up. "Down here... we play FOREVER."`,
 ];
-const BOSS_ATTACK = [
-  (n, pr) => `The doll flings ${n} across the room and into the skull pile — dazed and out of the scramble for a beat.`,
-  (n, pr) => `A voodoo doll pierces the air and ${n} drops the knife, clutching ${pr.posAdj} arm. "IT MOVED!"`,
-  (n, pr) => `${n} lunges recklessly and the doll tosses ${pr.obj} aside like a rag. Sarcastic slow-clap from the others.`,
-  (n, pr) => `The Ordinary Girl doll shrieks and hurls ${n} into the burning throne's shadow — ${pr.obj} rolling clear, singed.`,
-  (n, pr) => `A skull whips off the shelf and cracks ${n} in the ribs, folding ${pr.obj} over, wheezing.`,
-  (n, pr) => `The doll's stitched grin widens as it yanks the rug out from under ${n} — down in a heap.`,
+const BOSS_LEVELS = [
+  { title: 'THE WAKING', text: `The doll drags herself upright, joints snapping backward. The throne erupts in green flame and the candles gutter black. This isn't a prop anymore.` },
+  { title: 'THE HUNT', text: `Her limbs crack and lengthen. She drops to all fours and skitters up the wall, head swiveling to track the warmest heartbeat in the room. The temperature plunges.` },
+  { title: 'THE INFERNO', text: `The floorboards blacken and curl. A red glow bleeds up through the cracks — and something down there is breathing. The doll laughs, and the sound is far too deep for her little wooden chest.` },
+  { title: "HELL'S MAW", text: `The floor tears open with a groan. A pit of embers and reaching shadow-hands yawns across the room, and the doll's laughter drops an octave into something ancient and hungry.` },
+  { title: 'THE LAST SOUL', text: `The mansion itself is screaming now. The maw is everywhere, the walls peeling into smoke. Only the rope, the knife, and one desperate way out remain.` },
 ];
-const BOSS_GRAPPLE = [ // coverage for finalists who fought for the knife but came up short
-  (n, pr) => `${n} throws voodoo dolls back at the thing and claws toward the blade, but can't break through the pile-up.`,
-  (n, pr) => `${n} gets a hand on the knife for half a second before the scrum rips it away. So close.`,
-  (n, pr) => `${n} circles wide, waiting for an opening — but the doll's chaos never gives ${pr.obj} the clean shot.`,
-  (n, pr) => `${n} wrestles a voodoo doll off ${pr.posAdj} back and dives in, a step behind the leaders.`,
-  (n, pr) => `${n} fights like mad but the fire and the flying skulls keep ${pr.obj} pinned to the wall.`,
-  (n, pr) => `${n} makes a desperate lunge for the rope and misses by inches as someone faster gets there first.`,
+// Drag-to-hell eliminations — generic pool + archetype-flavored finishers.
+const BOSS_DRAG = [
+  (n, pr) => `The doll's arm shoots out impossibly far and closes around ${n}'s ankle — clawing at the boards, but the pit swallows ${pr.obj} whole. Gone.`,
+  (n, pr) => `Shadow-hands erupt from the maw and drag ${n} down by the legs. The embers close over ${pr.obj} with a hiss.`,
+  (n, pr) => `${n} looks the doll dead in her button eyes — a mistake. She reels ${pr.obj} off ${pr.posAdj} feet and flings ${pr.obj} into the glow below.`,
+  (n, pr) => `${n} almost reaches the rope, but the floor dissolves underfoot and ${pr.sub === 'they' ? 'they drop' : pr.sub + ' drops'} into the red light with a cry.`,
+  (n, pr) => `The doll points one cracked finger and the shadows take ${n}, pulling ${pr.obj} screaming into the pit.`,
 ];
-const BOSS_TACKLE = [
-  (s, t) => `${s} tackles ${t} off the knife. "Sorry — not sorry." ${t} hits the floor.`,
-  (s, t) => `${s} rips the blade from ${t}'s hands mid-cut. "I need this more than you."`,
-  (s, t) => `${s} throws a voodoo doll to stagger ${t}, then dives for the rope.`,
+const BOSS_DRAG_ARCH = {
+  villain: (n, pr) => `${n} snarls a curse even as the hands drag ${pr.obj} under — "This isn't OVER—" The maw eats the rest.`,
+  mastermind: (n, pr) => `${n} is still calculating an angle when the floor opens; there's no scheming your way out of hell. Down ${pr.sub === 'they' ? 'they go' : pr.sub + ' goes'}.`,
+  hero: (n, pr) => `${n} shoves someone else clear of the edge — and the doll takes ${pr.obj} instead. A hero to the very last breath.`,
+  'loyal-soldier': (n, pr) => `${n} plants ${pr.posAdj} feet and covers a teammate's back, and the pit claims ${pr.obj} for it. No regrets.`,
+  goat: (n, pr) => `${n} scrambles and pleads with the doll, offering to hold the door open forever — she just grins wider and reels ${pr.obj} in.`,
+  coward: (n, pr) => `${n} freezes at the wrong instant; the shadow-hands find ${pr.obj} first and drag ${pr.obj} shrieking into the dark.`,
+  showmancer: (n, pr) => `${n} reaches for someone's hand across the widening pit — misses by an inch — and the maw takes ${pr.obj}.`,
+};
+// Between-drag scramble beats — survivors clawing for the knife as the room falls apart.
+const BOSS_SCRAMBLE = [
+  (n, pr) => `${n} vaults a widening crack and gets a hand on the knife — before the heat drives ${pr.obj} back a step.`,
+  (n, pr) => `${n} fights toward the rope over buckling boards, eyes on the blade, ignoring the screaming walls.`,
+  (n, pr) => `${n} snatches the knife, saws once at the rope — then has to leap clear as a shadow-hand lunges. Still in it.`,
+  (n, pr) => `${n} circles the maw, waiting for the doll to look away, coiled to make the run.`,
 ];
-const BOSS_ASSIST = [
-  (h, t, w) => `${h} slams into ${t}, knocking them clear so ${w} can reach the rope. Loyalty over the win.`,
-  (h, w) => `${h} wrestles the doll long enough for ${w} to grab the knife. "GO! I've got the ugly thing!"`,
+// Heroic save (pull an ally back from the edge) / villain shove (feed a rival to the pit).
+const BOSS_SAVE = [
+  (h, v) => `${h} catches ${v}'s wrist at the very lip of the pit and HAULS ${pronouns(v).obj} back. "Not today. Not you."`,
+  (h, v) => `${h} throws a candle-stand across the maw like a bridge and drags ${v} across it to safety.`,
+];
+const BOSS_SHOVE = [
+  (s, v) => `${s} plants a boot on ${v}'s back and shoves ${pronouns(v).obj} a step toward the maw to buy ${pronouns(s).obj}self room. Ice cold.`,
+  (s, v) => `${s} rips the knife from ${v}'s hand and lets the shadows take ${pronouns(v).obj} instead. "Better you than me."`,
 ];
 const ESCAPE_TEXT = [
-  (n) => `${n} saws the rope in one desperate stroke, kicks the front door open, and stumbles into the moonlight — IMMUNITY.`,
-  (n) => `The rope snaps under ${n}'s blade. ${n} bolts through the door and collapses on the lawn, safe. The doll's shriek dies behind ${pronouns(n).obj}.`,
-  (n) => `${n} cuts free, shoulders the door, and escapes the mansion first. Immunity, and a heartbeat to spare.`,
+  (n, pr) => `As the maw closes on the last of them, ${n} saws through the rope with the doll's own knife, kicks the front door off its hinges, and throws ${pr.ref} into the moonlight. Behind ${pr.obj}, the mansion folds into the pit and is GONE. IMMUNITY.`,
+  (n, pr) => `The doll's fingers graze ${n}'s collar — and the rope PARTS. ${n} spills out the front door as the whole house caves into hell behind ${pr.obj}. Alive. Safe. Immune.`,
+  (n, pr) => `One stroke. The rope snaps, ${n} dives through the door, and the mansion implodes into the glowing pit at ${pr.posAdj} heels. ${n} lands on the wet lawn, gasping — the only soul to make it out. IMMUNITY.`,
+];
+const ESCAPE_NEARMISS = [ // the doll nearly takes the winner too, right at the threshold
+  (n, pr) => `A shadow-hand locks around ${n}'s ankle in the doorway — ${pr.sub === 'they' ? 'they kick' : pr.sub + ' kicks'} free at the last possible second and tumbles into the night.`,
+  (n, pr) => `The doll's shriek is inches from ${n}'s ear as ${pr.sub === 'they' ? 'they clear' : pr.sub + ' clears'} the threshold. A half-second slower and the pit would have ${pr.obj}.`,
 ];
 
 // Per-player "search" beats — coverage for players who don't find a digit. They still contribute.
@@ -348,7 +370,7 @@ export function simulateHauntedHouse(ep) {
 
   // ══ PHASE 3 — THE ORDINARY GIRL DOLL ══
   result.reachedBoss = [...alive];
-  _simBoss(alive, result, ep, campKey);
+  _simBoss(alive, result, eliminate, ep, campKey, socialUsed);
 
   // ══ ROMANCE HOOKS ══
   const romActive = active;
@@ -367,12 +389,12 @@ export function simulateHauntedHouse(ep) {
   ep.immunityWinner = winner;
   ep.tribalPlayers = active;
 
-  // placements: winner → other finalists by knife → eliminated (later = better)
-  const finalistsRanked = result.reachedBoss
-    .filter(n => n !== winner)
-    .sort((a, b) => (result.phase3.knife[b] || 0) - (result.phase3.knife[a] || 0));
-  const elimBetterFirst = result.outOrder.map(o => o.name).reverse();
-  ep.chalPlacements = [winner, ...finalistsRanked, ...elimBetterFirst].filter(Boolean);
+  // Placements: winner is #1; everyone else ranks by how long they lasted. outOrder is worst-first
+  // (phase 1 knockouts/lock-ins → phase 2 falls → phase 3 drags-to-hell, weakest dragged first), so
+  // reversing it puts the last soul taken (the runner-up) right behind the winner. Every non-winner
+  // is in outOrder exactly once, so this covers the whole cast with no duplicates.
+  const _elimBetterFirst = result.outOrder.map(o => o.name).reverse();
+  ep.chalPlacements = [...new Set([winner, ..._elimBetterFirst].filter(Boolean))];
 
   // scores
   const N = active.length;
@@ -547,82 +569,136 @@ function _simKeys(alive, result, eliminate, ep, campKey, socialUsed = new Set())
   });
 }
 
-function _simBoss(alive, result, ep, campKey) {
+// Archetype-appropriate drag finisher (falls back to the generic pool).
+function _dragText(n, usedDrag) {
+  const a = arch(n);
+  const pr = pronouns(n);
+  const coward = ['floater', 'goat'].includes(a) && pStats(n).boldness <= 4;
+  let key = a;
+  if (coward && !BOSS_DRAG_ARCH[a]) key = 'coward';
+  const fn = BOSS_DRAG_ARCH[key];
+  if (fn && !usedDrag.has(fn)) { usedDrag.add(fn); return fn(n, pr); }
+  return pickUniq(BOSS_DRAG, usedDrag)(n, pr);
+}
+
+function _simBoss(alive, result, eliminate, ep, campKey, socialUsed = new Set()) {
   const p3 = result.phase3;
   p3.finalists = [...alive];
+  p3.levels = [];
 
   if (alive.length <= 1) {
-    // trivial escape
     const w = alive[0];
     p3.immunityWinner = w || null;
     result.immunityWinner = w || null;
     if (w) {
       p3.knife[w] = 99;
       p3.events.push({ type: 'wake', icon: '🎎', text: p3.intro });
-      p3.events.push({ type: 'escape', player: w, icon: '🚪', text: pick(ESCAPE_TEXT)(w) });
+      p3.events.push({ type: 'level', title: BOSS_LEVELS[BOSS_LEVELS.length - 1].title, icon: '🔥', text: BOSS_LEVELS[BOSS_LEVELS.length - 1].text });
+      p3.events.push({ type: 'escape', player: w, players: [w], icon: '🚪', text: pick(ESCAPE_TEXT)(w, pronouns(w)) });
       popDelta(w, 1.0);
     }
     return;
   }
 
-  p3.events.push({ type: 'wake', icon: '🎎', text: p3.intro });
-
-  // base knife scores
+  // ── knife scores decide who holds out longest; lowest gets dragged first ──
   const scores = {};
   alive.forEach(n => { scores[n] = _knifeScore(n); });
+  const winner = [...alive].sort((a, b) => scores[b] - scores[a])[0];
 
-  // doll attacks the 1-2 most reckless (high boldness, low temperament)
-  const reckless = [...alive].sort((a, b) => (pStats(b).boldness - pStats(b).temperament) - (pStats(a).boldness - pStats(a).temperament));
-  const attackN = alive.length >= 4 ? 2 : 1;
-  const usedAtk = new Set();
-  reckless.slice(0, attackN).forEach(n => {
-    scores[n] -= 1.6;
-    p3.events.push({ type: 'attack', player: n, players: [n], icon: '🎃', text: pickUniq(BOSS_ATTACK, usedAtk)(n, pronouns(n)) });
-    popDelta(n, 0.2);
-  });
+  // A loyal ally can lift a bonded runner-up (they hold the knife longer — climbs the order).
+  const runnerUpProv = [...alive].filter(n => n !== winner).sort((a, b) => scores[b] - scores[a])[0];
+  const savedByLoyalty = alive.find(h => NICE.includes(arch(h)) && h !== winner && h !== runnerUpProv && getBond(h, runnerUpProv) >= 4);
 
-  // villain tackles: a schemer knocks a rival off the knife
-  const schemers = alive.filter(canScheme);
-  if (schemers.length) {
-    const s = [...schemers].sort((a, b) => scores[b] - scores[a])[0];
-    const rivals = alive.filter(n => n !== s).sort((a, b) => scores[b] - scores[a]);
-    const t = rivals[0];
-    if (t) {
-      scores[t] -= 1.8; scores[s] += 0.6;
-      p3.events.push({ type: 'tackle', player: t, by: s, players: [s, t], icon: '🤼', text: pick(BOSS_TACKLE)(s, t) });
-      addBond(t, s, -2); popDelta(s, -0.3);
-    }
-  }
-
-  // provisional leader
-  let winner = [...alive].sort((a, b) => scores[b] - scores[a])[0];
-
-  // loyal assist: a nice ally may knock the leader's rival aside to boost a bonded friend
-  const runnerUp = [...alive].filter(n => n !== winner).sort((a, b) => scores[b] - scores[a])[0];
-  const helpers = alive.filter(n => NICE.includes(arch(n)) && n !== winner);
-  const helper = helpers.find(h => getBond(h, runnerUp) >= 4 && runnerUp);
-  if (helper && runnerUp && Math.random() < 0.4) {
-    scores[runnerUp] += 2.2; scores[helper] -= 0.5;
-    p3.events.push({ type: 'assist', player: runnerUp, by: helper, players: [helper, runnerUp], icon: '🛡️', text: BOSS_ASSIST[0](helper, winner, runnerUp) });
-    addBond(helper, runnerUp, 2); popDelta(helper, 0.7);
-  }
-
-  // resolve
-  winner = [...alive].sort((a, b) => scores[b] - scores[a])[0];
-
-  // coverage: every finalist who fought for the knife but isn't already featured (and isn't the
-  // winner) gets a grapple beat, so no one at the boss is left without a card.
-  const featured = new Set(p3.events.filter(e => e.player).map(e => e.player));
-  const usedGrapple = new Set();
-  alive.filter(n => n !== winner && !featured.has(n)).forEach(n => {
-    p3.events.push({ type: 'grapple', player: n, players: [n], icon: '🔪', text: pickUniq(BOSS_GRAPPLE, usedGrapple)(n, pronouns(n)) });
-  });
+  // Drag order = everyone but the winner, weakest first. Villains can shove a rival earlier;
+  // a hero can pull a bonded ally back a slot (someone else goes first).
+  let order = [...alive].filter(n => n !== winner).sort((a, b) => scores[a] - scores[b]);
 
   p3.knife = scores;
   p3.immunityWinner = winner;
   result.immunityWinner = winner;
-  p3.events.push({ type: 'escape', player: winner, icon: '🚪', text: pick(ESCAPE_TEXT)(winner) });
-  popDelta(winner, 1.2);
+
+  // ══ BUILD THE SIEGE ══
+  p3.events.push({ type: 'wake', icon: '🎎', text: p3.intro });
+
+  const usedDrag = new Set(), usedScr = new Set();
+  const nNonWinners = order.length;               // people the doll takes
+  const levelCount = Math.min(BOSS_LEVELS.length, Math.max(3, nNonWinners)); // 3-5 escalation beats
+  // distribute the escalation levels across the drags
+  const dragsPerLevel = Math.max(1, Math.ceil(nNonWinners / (levelCount - 1)));
+  let levelIdx = 0;
+  const pushLevel = () => {
+    if (levelIdx >= BOSS_LEVELS.length) return;
+    const L = BOSS_LEVELS[levelIdx];
+    p3.levels.push(L.title);
+    p3.events.push({ type: 'level', title: L.title, icon: ['🎃', '🕷️', '🔥', '🕳️', '💀'][levelIdx] || '🔥', text: L.text });
+    levelIdx++;
+  };
+
+  // Level 1 fires immediately (the waking horror)
+  pushLevel();
+
+  let dragsSinceLevel = 0;
+  let shoveUsed = false, saveUsed = false;
+  const dragged = [];
+
+  for (let i = 0; i < order.length; i++) {
+    const victim = order[i];
+
+    // Villain shove: a schemer still in the race feeds the current victim's would-be savior... simpler —
+    // a schemer shoves the NEXT-strongest rival toward the maw to climb. Fires once, mid-siege.
+    if (!shoveUsed && i < order.length - 1) {
+      const schemer = alive.find(s => canScheme(s) && s !== victim && !dragged.includes(s) && s !== winner);
+      if (schemer && Math.random() < 0.5) {
+        p3.events.push({ type: 'shove', player: victim, by: schemer, players: [schemer, victim], icon: '🤛', text: pick(BOSS_SHOVE)(schemer, victim) });
+        addBond(victim, schemer, -2); popDelta(schemer, -0.4);
+        shoveUsed = true;
+      }
+    }
+
+    // Hero save: a nice ally yanks a bonded victim back from the edge — skip this drag, take the next.
+    if (!saveUsed) {
+      const saver = alive.find(h => NICE.includes(arch(h)) && h !== victim && !dragged.includes(h) && h !== winner && getBond(h, victim) >= 3);
+      if (saver && i < order.length - 1 && Math.random() < 0.45) {
+        p3.events.push({ type: 'save', player: victim, by: saver, players: [saver, victim], icon: '🛡️', text: pick(BOSS_SAVE)(saver, victim) });
+        addBond(saver, victim, 2); popDelta(saver, 0.8);
+        saveUsed = true;
+        // swap victim with the next in line — someone else is taken first
+        [order[i], order[i + 1]] = [order[i + 1], order[i]];
+        i--; // re-run this slot with the swapped-in victim
+        continue;
+      }
+    }
+
+    // the doll drags this soul into the pit
+    p3.events.push({ type: 'drag', player: victim, players: [victim], icon: '🕳️', text: _dragText(victim, usedDrag) });
+    eliminate(victim, 3, 'dragged to hell');
+    dragged.push(victim);
+    popDelta(victim, 0.3); // going down fighting earns a little sympathy
+    dragsSinceLevel++;
+
+    // escalate the horror as the pit claims more souls
+    if (dragsSinceLevel >= dragsPerLevel && levelIdx < levelCount - 1 && (order.length - 1 - i) > 0) {
+      pushLevel();
+      dragsSinceLevel = 0;
+    }
+
+    // a survivor scrambles for the knife between drags (not every beat, to keep pace)
+    const stillIn = alive.filter(n => !dragged.includes(n) && n !== winner);
+    if (stillIn.length && Math.random() < 0.6) {
+      const scr = stillIn[Math.floor(Math.random() * stillIn.length)];
+      p3.events.push({ type: 'scramble', player: scr, players: [scr], icon: '🔪', text: pickUniq(BOSS_SCRAMBLE, usedScr)(scr, pronouns(scr)) });
+    }
+  }
+
+  // Final escalation + the winner's escape (with a near-miss for tension)
+  while (levelIdx < levelCount) pushLevel();
+  const wpr = pronouns(winner);
+  if (savedByLoyalty && Math.random() < 0.5) {
+    p3.events.push({ type: 'nearmiss', player: winner, players: [winner], icon: '⛓️', text: pick(ESCAPE_NEARMISS)(winner, wpr) });
+  }
+  p3.events.push({ type: 'escape', player: winner, players: [winner], icon: '🚪', text: pick(ESCAPE_TEXT)(winner, wpr) });
+  popDelta(winner, 1.4); // surviving hell is a legend-maker
+  if (savedByLoyalty) { addBond(savedByLoyalty, winner, 1); }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -688,6 +764,14 @@ function css() {
   .hh-card.social{border:1px dashed #5a4a72;background:rgba(40,26,58,0.5)}
   .hh-card.reaction{border-left:4px solid #6a5acd;background:linear-gradient(180deg,rgba(48,40,72,0.5),rgba(14,9,22,0.9));font-style:italic}
   .hh-card.search{border-left:3px solid #4a4560;background:rgba(20,16,30,0.75);opacity:0.94}
+  .hh-card.hell{border:2px solid #ff3b3b;background:linear-gradient(180deg,rgba(70,8,8,0.85),rgba(30,2,2,0.97));box-shadow:0 0 16px rgba(255,40,40,0.25) inset;animation:hh-shake .5s}
+  .hh-card.hell .hh-txt{color:#ffd7d0}
+  .hh-level{position:relative;z-index:2;margin:16px 0;padding:14px 16px;border-radius:8px;text-align:center;
+    background:radial-gradient(ellipse at 50% 0%,rgba(255,60,30,0.28),rgba(20,4,4,0.95));
+    border:1px solid #ff5a2a;box-shadow:0 0 26px rgba(255,70,20,0.3);animation:hh-pulse 2.4s ease-in-out infinite}
+  @keyframes hh-pulse{0%,100%{box-shadow:0 0 18px rgba(255,70,20,0.25)}50%{box-shadow:0 0 34px rgba(255,90,30,0.5)}}
+  .hh-level-t{font-family:'Creepster',cursive;font-size:26px;letter-spacing:2px;color:#ff7a3a;text-shadow:0 0 14px rgba(255,90,30,0.6),2px 2px 0 #000}
+  .hh-level-x{font-size:13px;line-height:1.55;color:#ffcfc2;margin-top:6px;font-style:italic}
   .hh-card.escape{border-left:5px solid var(--candle);background:linear-gradient(90deg,rgba(139,214,106,0.18),rgba(14,9,22,0.9));animation:hh-glow 1.4s ease-in-out infinite alternate}
   @keyframes hh-glow{from{box-shadow:0 0 8px rgba(139,214,106,0.3)}to{box-shadow:0 0 22px rgba(139,214,106,0.6)}}
   .hh-card.boss{border:2px solid var(--blood);background:linear-gradient(180deg,rgba(50,10,10,0.7),rgba(20,6,6,0.95));animation:hh-shake .5s}
@@ -887,49 +971,65 @@ export function rpBuildHauntedBoss(ep) {
   const revIdx = window._tvState['hh-boss'].idx;
   window.hhData = r; r._active = ep.tribalPlayers || [];
 
-  const allOut = new Set(r.outOrder.map(o => o.name));
   const steps = [];
-  const meta = []; // {out, escaped}
+  const meta = []; // per-step: cumulative {taken:[], escaped}
+  const taken = [];
+  let escaped = null;
   r.phase3.events.forEach(ev => {
-    let cls = 'boss';
-    if (ev.type === 'wake') cls = 'boss';
-    else if (ev.type === 'attack') cls = 'bad';
-    else if (ev.type === 'tackle') cls = 'bad';
-    else if (ev.type === 'assist') cls = 'unlock';
-    else if (ev.type === 'grapple') cls = 'search';
-    else if (ev.type === 'escape') cls = 'escape';
-    let extra = '';
-    if (ev.type === 'escape') extra = `<span class="hh-pill" style="background:var(--candle);color:#111">IMMUNITY ✦</span><br>`;
-    else if (ev.type === 'attack') extra = `<span class="hh-pill" style="background:#5a2020;color:#fff">DOLL STRIKE</span><br>`;
-    else if (ev.type === 'tackle') extra = `<span class="hh-pill" style="background:var(--blood);color:#fff">TACKLE</span><br>`;
-    else if (ev.type === 'assist') extra = `<span class="hh-pill" style="background:var(--candle);color:#111">ASSIST</span><br>`;
-    steps.push(_card(cls, { ...ev, text: extra + ev.text }));
-    meta.push({ escaped: ev.type === 'escape' ? ev.player : null });
+    let html;
+    if (ev.type === 'level') {
+      // full-width escalation banner — the doll grows, the room descends toward hell
+      html = `<div class="hh-level"><div class="hh-level-t">${ev.icon || '🔥'} ${ev.title}</div><div class="hh-level-x">${ev.text}</div></div>`;
+    } else {
+      let cls = 'boss', pill = '';
+      if (ev.type === 'wake') cls = 'boss';
+      else if (ev.type === 'drag') { cls = 'hell'; pill = `<span class="hh-pill" style="background:#000;color:#ff5555;border:1px solid #ff5555">DRAGGED TO HELL 🔥</span><br>`; }
+      else if (ev.type === 'shove') { cls = 'bad'; pill = `<span class="hh-pill" style="background:var(--blood);color:#fff">SHOVED</span><br>`; }
+      else if (ev.type === 'save') { cls = 'unlock'; pill = `<span class="hh-pill" style="background:var(--candle);color:#111">PULLED BACK</span><br>`; }
+      else if (ev.type === 'scramble') { cls = 'search'; }
+      else if (ev.type === 'nearmiss') { cls = 'bad'; pill = `<span class="hh-pill" style="background:#5a2020;color:#fff">SO CLOSE</span><br>`; }
+      else if (ev.type === 'escape') { cls = 'escape'; pill = `<span class="hh-pill" style="background:var(--candle);color:#111">IMMUNITY ✦ — THE LAST SOUL</span><br>`; }
+      html = _card(cls, { ...ev, text: pill + ev.text });
+    }
+    steps.push(html);
+    if (ev.type === 'drag') taken.push(ev.player);
+    if (ev.type === 'escape') escaped = ev.player;
+    meta.push({ taken: [...taken], escaped });
   });
   window.hhBossMeta = meta;
 
-  const curEscaped = (revIdx >= 0 && meta[revIdx] && meta[revIdx].escaped) ||
-    (meta.slice(0, revIdx + 1).find(m => m.escaped) || {}).escaped || null;
-
-  // finalists shown as "at the boss"
-  const finalists = r.reachedBoss || [];
-  let finSide = `<div class="hh-side-h">🎎 FINALISTS</div>`;
-  finalists.forEach(n => {
-    const esc = n === curEscaped;
-    finSide += `<div class="hh-srow ${esc ? 'esc' : ''}">${portrait(n, 20)}<span class="hh-nm">${n}</span>${esc ? '<span class="hh-mini">ESCAPED ✦</span>' : ''}</div>`;
-  });
-  finSide += _sideStatus(r, allOut, curEscaped);
+  const cur = meta[Math.max(0, revIdx)] || { taken: [], escaped: null };
+  const finSide = _bossSidebar(r, cur.taken, cur.escaped);
 
   return _shell(`
     <div class="hh-layout">
       <div class="hh-feed">
         <div class="hh-phase-h" style="color:var(--blood)">Room III · The Ordinary Girl Doll</div>
+        <div class="hh-intro" style="border-color:var(--blood)">${r.phase3.intro}</div>
         ${_steps(suffix, steps, revIdx)}
         ${_ctrl(suffix, steps.length, revIdx)}
       </div>
       <div class="hh-side" id="hh-side-${suffix}">${finSide}</div>
     </div>
   `);
+}
+
+// Boss sidebar: finalists still fighting → those the doll has TAKEN → the one who ESCAPED.
+function _bossSidebar(r, takenList, escaped) {
+  const finalists = r.reachedBoss || [];
+  const takenSet = new Set(takenList);
+  const stillIn = finalists.filter(n => !takenSet.has(n) && n !== escaped);
+  let h = `<div class="hh-side-h" style="color:var(--blood)">🎎 THE DOLL'S GAME</div>`;
+  if (escaped) {
+    h += `<div class="hh-srow esc">${portrait(escaped, 20)}<span class="hh-nm">${escaped}</span><span class="hh-mini">ESCAPED ✦</span></div>`;
+  }
+  h += `<div class="hh-side-h">STILL FIGHTING (${stillIn.length})</div>`;
+  stillIn.forEach(n => { h += `<div class="hh-srow">${portrait(n, 20)}<span class="hh-nm">${n}</span></div>`; });
+  if (takenList.length) {
+    h += `<div class="hh-side-h" style="color:#ff5555">🔥 DRAGGED TO HELL (${takenList.length})</div>`;
+    takenList.forEach(n => { h += `<div class="hh-srow out">${portrait(n, 20)}<span class="hh-nm">${n}</span><span class="hh-mini" style="color:#ff5555">TAKEN</span></div>`; });
+  }
+  return h;
 }
 
 // ── Reveal handlers ──
@@ -947,15 +1047,8 @@ function _hhUpdateSidebar(screenKey, revIdx) {
     sideEl.innerHTML = _sideStatus(r, out, null);
   } else if (suffix === 'boss') {
     const meta = window.hhBossMeta || [];
-    const escaped = (meta.slice(0, revIdx + 1).find(m => m.escaped) || {}).escaped || null;
-    const allOut = new Set(r.outOrder.map(o => o.name));
-    let h = `<div class="hh-side-h">🎎 FINALISTS</div>`;
-    (r.reachedBoss || []).forEach(n => {
-      const esc = n === escaped;
-      h += `<div class="hh-srow ${esc ? 'esc' : ''}">${portrait(n, 20)}<span class="hh-nm">${n}</span>${esc ? '<span class="hh-mini">ESCAPED ✦</span>' : ''}</div>`;
-    });
-    h += _sideStatus(r, allOut, escaped);
-    sideEl.innerHTML = h;
+    const cur = meta[Math.max(0, revIdx)] || { taken: [], escaped: null };
+    sideEl.innerHTML = _bossSidebar(r, cur.taken, cur.escaped);
   }
 }
 

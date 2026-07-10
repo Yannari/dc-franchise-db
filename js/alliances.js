@@ -291,6 +291,13 @@ export function computeHeat(name, tribalPlayers, alliances) {
       if (data.target === name && tribalPlayers.includes(victim) && ((gs.episode || 0) + 1) < data.expiresEp) heat += data.amount;
     });
   }
+  // Merry-Go-Round-Up: a schemer's carousel blindside was overheard by the target, who now hunts them.
+  if (gs._spinHeat?.[name] && ((gs.episode || 0) + 1) < gs._spinHeat[name].expiresEp) heat += gs._spinHeat[name].amount;
+  if (gs._spinBetrayHeat) {
+    Object.entries(gs._spinBetrayHeat).forEach(([victim, data]) => {
+      if (data.target === name && tribalPlayers.includes(victim) && ((gs.episode || 0) + 1) < data.expiresEp) heat += data.amount;
+    });
+  }
   // Basic Straining: bullied players target the bully's ally
   if (gs._basicStrainingHeat) {
     Object.entries(gs._basicStrainingHeat).forEach(([victim, data]) => {

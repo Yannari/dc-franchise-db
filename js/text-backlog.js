@@ -24,6 +24,7 @@ import { _textTripleDogDare } from './chal/triple-dog-dare.js';
 import { _textSlasherNight } from './chal/slasher-night.js';
 import { _textMonsterCash } from './chal/monster-cash.js';
 import { _textMineOverMatter } from './chal/mine-over-matter.js';
+import { _textMerryGoRoundUp } from './chal/merry-go-round-up.js';
 import { _textTreasureIsland } from './chal/treasure-island.js';
 import { _textOperationClassified } from './chal/operation-classified.js';
 import { _textHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
@@ -2795,6 +2796,7 @@ export function generateSummaryText(ep) {
   _textSlasherNight(ep, ln, sec);
   _textMonsterCash(ep, ln, sec);
   _textMineOverMatter(ep, ln, sec);
+  _textMerryGoRoundUp(ep, ln, sec);
   _textTreasureIsland(ep, ln, sec);
   _textOperationClassified(ep, ln, sec);
   _textAwakeAThon(ep, ln, sec);

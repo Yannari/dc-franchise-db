@@ -53,6 +53,7 @@ import * as sportsMarathonMod from './chal/sports-marathon.js';
 import * as superHeroldMod from './chal/super-hero-ld.js';
 import * as hauntedHouseMod from './chal/haunted-house.js';
 import * as hungOutMod from './chal/hung-out-to-dry.js';
+import * as merryGoRoundMod from './chal/merry-go-round-up.js';
 import * as princessPrideMod from './chal/princess-pride.js';
 import * as getAClueMod from './chal/get-a-clue.js';
 import * as rockNRuleMod from './chal/rock-n-rule.js';
@@ -180,7 +181,7 @@ const extractedModules = [
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, truthOrDareTrainMod, aMazeInGripMod, polesApartMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
-  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, mineOverMatterMod, treasureIslandMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, hauntedHouseMod, hungOutMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
+  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, mineOverMatterMod, treasureIslandMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, hauntedHouseMod, hungOutMod, merryGoRoundMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
   truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, iceIceBabyMod, findersCreepersMod, backstabbersAhoyMod, projectRunawayMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, settingsMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
@@ -269,6 +270,7 @@ window.CHALLENGES = {
   'slasher-night': { simulate: slasherNightMod.simulateSlasherNight, rpBuild: slasherNightMod.rpBuildSlasherTitleCard, text: slasherNightMod._textSlasherNight },
   'monster-cash': { simulate: monsterCashMod.simulateMonsterCash, rpBuild: monsterCashMod.rpBuildMonsterCashTitleCard, text: monsterCashMod._textMonsterCash },
   'mine-over-matter': { simulate: mineOverMatterMod.simulateMineOverMatter, rpBuild: mineOverMatterMod.rpBuildMineTitleCard, text: mineOverMatterMod._textMineOverMatter },
+  'merry-go-round-up': { simulate: merryGoRoundMod.simulateMerryGoRoundUp, rpBuild: merryGoRoundMod.rpBuildMerryTitleCard, text: merryGoRoundMod._textMerryGoRoundUp },
   'treasure-island': { simulate: treasureIslandMod.simulateTreasureIsland, rpBuild: treasureIslandMod.rpBuildTreasureTitleCard, text: treasureIslandMod._textTreasureIsland },
   'operation-classified': { simulate: operationClassifiedMod.simulateOperationClassified, rpBuild: operationClassifiedMod.rpBuildOperationClassifiedTitleCard, text: operationClassifiedMod._textOperationClassified },
   'hide-and-be-sneaky': { simulate: hideAndBeSneakyMod.simulateHideAndBeSneaky, rpBuild: hideAndBeSneakyMod.rpBuildHideAndBeSneaky, text: hideAndBeSneakyMod._textHideAndBeSneaky },

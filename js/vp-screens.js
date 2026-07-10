@@ -27,6 +27,7 @@ import { rpBuildSportsMarathonTitleCard, rpBuildSportsMarathonObstacle, rpBuildS
 import { rpBuildSuperHeroldTitleCard, rpBuildSuperHeroldCostume, rpBuildSuperHeroldPrizes, rpBuildSuperHeroldRound1, rpBuildSuperHeroldRound2, rpBuildSuperHeroldRound, rpBuildSuperHeroldBoss, superHeroldRevealNext, superHeroldRevealAll } from './chal/super-hero-ld.js';
 import { rpBuildHauntedTitleCard, rpBuildHauntedLibrary, rpBuildHauntedKeys, rpBuildHauntedBoss, hauntedRevealNext, hauntedRevealAll } from './chal/haunted-house.js';
 import { rpBuildHungTitleCard, rpBuildHungWarmup, rpBuildHungKnife, rpBuildHungFinal, hungRevealNext, hungRevealAll } from './chal/hung-out-to-dry.js';
+import { rpBuildMerryTitleCard, rpBuildMerryLevel1, rpBuildMerryLevel2, rpBuildMerryFinal, merryRevealNext, merryRevealAll } from './chal/merry-go-round-up.js';
 import { rpBuildPrincessPrideTitleCard, rpBuildPrincessPrideCeremony, rpBuildPrincessPrideForest, rpBuildPrincessPrideBridge, rpBuildPrincessPrideDragon, rpBuildPrincessPrideTower, rpBuildPrincessPrideDuel, princessPrideRevealNext, princessPrideRevealAll } from './chal/princess-pride.js';
 import { rpBuildGetAClueTitleCard, rpBuildGetAClueCollection, rpBuildGetAClueTrain, rpBuildGetAClueTrial, rpBuildGetAClueVerdict, getAClueRevealNext, getAClueRevealAll } from './chal/get-a-clue.js';
 import { rpBuildRockNRuleTitleCard, rpBuildRockNRuleGuitar, rpBuildRockNRuleCarpet, rpBuildRockNRuleHotel, rpBuildRockNRuleResults, rockNRuleRevealNext, rockNRuleRevealAll } from './chal/rock-n-rule.js';
@@ -3006,7 +3007,7 @@ export function rpBuildDebug(ep) {
       });
     }
     const _chalLabel = ep.challengeLabel || 'Challenge';
-    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isTruthOrDareTrain ? 'Truth or Dare Train' : ep.isAMazeInGrip ? 'A-Maze-ing Grip' : ep.isPolesApart ? 'Poles Apart' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : ep.isBasicStraining ? 'Basic Straining' : ep.isXtremeTorture ? 'X-Treme Torture' : ep.isLuckyHunt ? 'Lucky Hunt' : ep.isHideAndBeSneaky ? 'Hide and Be Sneaky' : ep.isOffTheChain ? "That's Off the Chain!" : ep.isWawanakwaGoneWild ? 'Wawanakwa Gone Wild!' : ep.isTriArmedTriathlon ? 'Trial by Tri-Armed Triathlon' : ep.isCampCastaways ? 'Camp Castaways' : ep.isAreWeThereYeti ? 'Are We There Yeti?' : ep.isBridalBrawls ? 'Bridal Brawls' : _chalLabel;
+    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isTruthOrDareTrain ? 'Truth or Dare Train' : ep.isAMazeInGrip ? 'A-Maze-ing Grip' : ep.isPolesApart ? 'Poles Apart' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : ep.isBasicStraining ? 'Basic Straining' : ep.isXtremeTorture ? 'X-Treme Torture' : ep.isLuckyHunt ? 'Lucky Hunt' : ep.isHideAndBeSneaky ? 'Hide and Be Sneaky' : ep.isOffTheChain ? "That's Off the Chain!" : ep.isWawanakwaGoneWild ? 'Wawanakwa Gone Wild!' : ep.isTriArmedTriathlon ? 'Trial by Tri-Armed Triathlon' : ep.isCampCastaways ? 'Camp Castaways' : ep.isAreWeThereYeti ? 'Are We There Yeti?' : ep.isBridalBrawls ? 'Bridal Brawls' : ep.isMerryGoRound ? 'Merry-Go-Round-Up' : _chalLabel;
 
     html += `<div style="margin-bottom:12px">
       <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
@@ -12400,6 +12401,11 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'hd-warmup', label:'Warm-Up', html: rpBuildHungWarmup(ep) });
     vpScreens.push({ id:'hd-knife', label:'The Knife', html: rpBuildHungKnife(ep) });
     vpScreens.push({ id:'hd-final', label:'Final Interrogation', html: rpBuildHungFinal(ep) });
+  } else if ((ep.isMerryGoRound || ep.challengeType === 'merry-go-round-up') && ep.merryData) {
+    vpScreens.push({ id:'mgr-title', label:'🎠 Merry-Go-Round-Up', html: rpBuildMerryTitleCard(ep) });
+    vpScreens.push({ id:'mgr-l1', label:'Draft & Warm-Up', html: rpBuildMerryLevel1(ep) });
+    vpScreens.push({ id:'mgr-l2', label:'The Push', html: rpBuildMerryLevel2(ep) });
+    vpScreens.push({ id:'mgr-final', label:ep.merryData.isMerged ? 'The Blur · Immunity' : 'The Blur · Results', html: rpBuildMerryFinal(ep) });
   } else if ((ep.isPrincessPride || ep.challengeType === 'princess-pride') && ep.princessPride) {
     vpScreens.push({ id:'pp-title', label:'The Princess Pride', html: rpBuildPrincessPrideTitleCard(ep) });
     vpScreens.push({ id:'pp-ceremony', label:'Glass Slipper', html: rpBuildPrincessPrideCeremony(ep) });

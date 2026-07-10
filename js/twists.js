@@ -1931,6 +1931,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (!gs.isMerged && !gs._mergingThisEp) return;
     ep.isHungOut = true;
 
+  } else if (engineType === 'merry-go-round-up') {
+    // Both-phase — no merge check; episode.js branches on gs.isMerged.
+    ep.isMerryGoRound = true;
+
   } else if (engineType === 'princess-pride') {
     ep.isPrincessPride = true;
 
@@ -4002,7 +4006,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'sudden-death': 'isSuddenDeath', 'slasher-night': 'isSlasherNight', 'triple-dog-dare': 'isTripleDogDare',
         'say-uncle': 'isSayUncle', 'brunch-of-disgustingness': 'isBrunchOfDisgustingness',
         'monster-cash': 'isMonsterCash', 'mine-over-matter': 'isMineOverMatter', 'treasure-island': 'isTreasureIsland', 'operation-classified': 'isOperationClassified',
-        'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride', 'haunted-house': 'isHauntedHouse', 'hung-out-to-dry': 'isHungOut',
+        'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride', 'haunted-house': 'isHauntedHouse', 'hung-out-to-dry': 'isHungOut', 'merry-go-round-up': 'isMerryGoRound',
         'get-a-clue': 'isGetAClue', 'rock-n-rule': 'isRockNRule',
         'crouching-courtney': 'isCrouchingCourtney', 'houston': 'isHouston', 'top-dog': 'isTopDog',
         'walk-like-an-egyptian': 'isWalkEgypt', 'crazy-fun-time': 'isCrazyFunTime',

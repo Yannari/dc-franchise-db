@@ -1506,20 +1506,18 @@ export function applyTwist(ep, twist, isPrimary = true) {
     ep.isMillionBucksBC = true;
 
   } else if (engineType === 'super-hero-ld') {
-    if (!gs.isMerged) {
-      const merging = gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
-      if (!merging) return;
-    }
+    // Post-merge only. Use gs._mergingThisEp (set by episode.js) — a raw activePlayers count
+    // is wrong on the merge episode when a rescue return already added its returnees, pushing
+    // the count back above mergeAt and dropping the challenge to a generic one.
+    if (!gs.isMerged && !gs._mergingThisEp) return;
     ep.isSuperHerold = true;
 
   } else if (engineType === 'haunted-house') {
     // Post-merge only. If scheduled before the merge (and the merge isn't happening this
     // episode either), bail so we don't set a dangling flag that suppresses the normal
-    // challenge and leaves a generic one in its place.
-    if (!gs.isMerged) {
-      const merging = gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
-      if (!merging) return;
-    }
+    // challenge and leaves a generic one in its place. gs._mergingThisEp correctly accounts
+    // for this episode's rescue returnees (a raw count would miss the merge episode).
+    if (!gs.isMerged && !gs._mergingThisEp) return;
     ep.isHauntedHouse = true;
 
   } else if (engineType === 'princess-pride') {

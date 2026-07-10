@@ -569,6 +569,17 @@ function _simKeys(alive, result, eliminate, ep, campKey, socialUsed = new Set())
   });
 }
 
+// Popularity swing for being dragged under, by HOW you go: selfless heroes earn fan love,
+// villains get no sympathy, cowards who plead/freeze lose face. (popularity rule.)
+function _dragPop(n) {
+  const a = arch(n);
+  if (['hero', 'loyal-soldier'].includes(a)) return 1.0;          // died protecting someone
+  if (a === 'showmancer') return 0.5;                              // reaching for a loved one
+  if (['villain', 'mastermind'].includes(a)) return 0;            // went down cursing — no sympathy
+  if (['floater', 'goat'].includes(a) && pStats(n).boldness <= 4) return -0.3; // begged/froze
+  return 0.3;                                                      // went down fighting
+}
+
 // Archetype-appropriate drag finisher (falls back to the generic pool).
 function _dragText(n, usedDrag) {
   const a = arch(n);
@@ -644,13 +655,22 @@ function _simBoss(alive, result, eliminate, ep, campKey, socialUsed = new Set())
   for (let i = 0; i < order.length; i++) {
     const victim = order[i];
 
-    // Villain shove: a schemer still in the race feeds the current victim's would-be savior... simpler —
-    // a schemer shoves the NEXT-strongest rival toward the maw to climb. Fires once, mid-siege.
+    // Villain shove: a schemer feeds the soul about to be taken to the maw to buy survival.
+    // CHALLENGE EFFECT: the schemer climbs the order (outlasts rivals → better placement); the
+    // victim goes down now and is owed a little sympathy. Fires once, mid-siege.
     if (!shoveUsed && i < order.length - 1) {
       const schemer = alive.find(s => canScheme(s) && s !== victim && !dragged.includes(s) && s !== winner);
       if (schemer && Math.random() < 0.5) {
         p3.events.push({ type: 'shove', player: victim, by: schemer, players: [schemer, victim], icon: '🤛', text: pick(BOSS_SHOVE)(schemer, victim) });
-        addBond(victim, schemer, -2); popDelta(schemer, -0.4);
+        addBond(victim, schemer, -2);
+        popDelta(schemer, -0.4);   // villainy costs fan goodwill
+        popDelta(victim, 0.3);     // being shoved earns a little sympathy
+        // the schemer buys survival — climb two slots later in the drag order (better placement)
+        const si = order.indexOf(schemer);
+        if (si > i) {
+          order.splice(si, 1);
+          order.splice(Math.min(order.length, si + 2), 0, schemer);
+        }
         shoveUsed = true;
       }
     }
@@ -669,11 +689,11 @@ function _simBoss(alive, result, eliminate, ep, campKey, socialUsed = new Set())
       }
     }
 
-    // the doll drags this soul into the pit
+    // the doll drags this soul into the pit — popularity swings by HOW they go down
     p3.events.push({ type: 'drag', player: victim, players: [victim], icon: '🕳️', text: _dragText(victim, usedDrag) });
     eliminate(victim, 3, 'dragged to hell');
     dragged.push(victim);
-    popDelta(victim, 0.3); // going down fighting earns a little sympathy
+    popDelta(victim, _dragPop(victim));
     dragsSinceLevel++;
 
     // escalate the horror as the pit claims more souls
@@ -687,6 +707,7 @@ function _simBoss(alive, result, eliminate, ep, campKey, socialUsed = new Set())
     if (stillIn.length && Math.random() < 0.6) {
       const scr = stillIn[Math.floor(Math.random() * stillIn.length)];
       p3.events.push({ type: 'scramble', player: scr, players: [scr], icon: '🔪', text: pickUniq(BOSS_SCRAMBLE, usedScr)(scr, pronouns(scr)) });
+      ep.chalMemberScores[scr] = (ep.chalMemberScores[scr] || 0) + 1; // fought for the knife
     }
   }
 

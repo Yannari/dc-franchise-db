@@ -26,6 +26,7 @@ import { _textMonsterCash } from './chal/monster-cash.js';
 import { _textMineOverMatter } from './chal/mine-over-matter.js';
 import { _textMerryGoRoundUp } from './chal/merry-go-round-up.js';
 import { _textMazeOfTheFallen } from './chal/maze-of-the-fallen.js';
+import { _textDemonsPlainer } from './chal/demons-plainer.js';
 import { _textTreasureIsland } from './chal/treasure-island.js';
 import { _textOperationClassified } from './chal/operation-classified.js';
 import { _textHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
@@ -707,6 +708,8 @@ export function _textTwists(ep, ln, sec) {
       ln('DOUBLE ELIMINATION — two players voted out this episode.');
     } else if (tw.type === 'no-tribal') {
       ln('NO TRIBAL COUNCIL this episode. No one is voted out.');
+    } else if (tw.type === 'no-challenge') {
+      ln('NO CHALLENGE this episode — no immunity was contested. Nobody wins safety; everyone is vulnerable heading into a normal tribal council decided purely by social play.');
     } else if (tw.type === 'exile-island') {
       if (tw.exiled) {
         const _chooserNote = tw.exileChooser ? ` (chosen by ${tw.exileChooser})` : tw.exileChooserTribe ? ` (chosen by ${tw.exileChooserTribe} tribe)` : '';
@@ -832,8 +835,28 @@ export function _textTwists(ep, ln, sec) {
     } else if (tw.type === 'journey') {
       ln('JOURNEY — players sent on a journey for a chance at an advantage.');
     } else if (tw.type === 'auction') {
-      ln('SURVIVOR AUCTION — players received $500 each to bid on items.');
-      if (tw.auctionResults?.length) tw.auctionResults.forEach(r => ln(`${r.winner} won: ${r.label} — bid $${r.bid}${r.isPool ? ' (pooled)' : ''}.`));
+      const a = tw.auction;
+      ln('THE AUCTION ("Hell of a Deal") — each player got $500 to bid in $20 increments. Lend money, never share the goods. Ends without warning.');
+      if (a) {
+        if (a.hostOpener) ln(`"${a.hostOpener}"`);
+        a.items.forEach(it => {
+          if (!it.offered) { ln(`LOT ${it.order}: never came up — the auction ended without warning first (${it.blind ? 'a covered mystery item' : it.label}).`); return; }
+          const head = it.blind ? 'a covered BLIND lot' : it.label;
+          if (!it.sold) { ln(`LOT ${it.order} (${head}): no bids — the lot passed untouched.`); return; }
+          ln(`LOT ${it.order} — ${it.blind ? `a BLIND lot (revealed: ${it.revealedLabel})` : it.label}:`);
+          (it.narration || []).forEach(t => ln(`   ${t}`));
+          const trail = it.bidLog.map(bd => `${bd.bidder} $${bd.amount}${bd.failed ? '✗' : bd.lent ? `(loan from ${bd.lent.from})` : bd.jump ? '(jump)' : ''}`).join(' → ');
+          ln(`   [bid trail: ${trail}]`);
+          if (it.confessional) ln(`   ${it.winner} (confessional): "${it.confessional}"`);
+        });
+        ln('');
+        if (a.immunityMode && !a.immuneWinner) ln('RESULT: immunity never sold — NOBODY is immune. Everyone is vulnerable at the vote.');
+        else if (a.immuneWinner) ln(`RESULT: ${a.immuneWinner} bought individual immunity and is safe tonight.`);
+        else ln('RESULT: a reward night — immunity is still decided at the challenge.');
+        ln(`Final banks: ${a.roster.map(n => `${n} $${a.budgetsRemaining[n] ?? 0}`).join(', ')}.`);
+      } else if (tw.auctionResults?.length) {
+        tw.auctionResults.forEach(r => ln(`${r.winner} won: ${r.label} — bid $${r.bid}.`));
+      }
     } else if (tw.type === 'three-gifts') {
       ln('THE SUMMIT — one nominee per tribe chose one of three gifts.');
       if (tw.nominationDrama?.length) { ln(''); tw.nominationDrama.forEach(({ player, tribe, event }) => ln(`[${tribe}] ${event.text}`)); }
@@ -2799,6 +2822,7 @@ export function generateSummaryText(ep) {
   _textMineOverMatter(ep, ln, sec);
   _textMerryGoRoundUp(ep, ln, sec);
   _textMazeOfTheFallen(ep, ln, sec);
+  _textDemonsPlainer(ep, ln, sec);
   _textTreasureIsland(ep, ln, sec);
   _textOperationClassified(ep, ln, sec);
   _textAwakeAThon(ep, ln, sec);

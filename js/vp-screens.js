@@ -29,6 +29,7 @@ import { rpBuildHauntedTitleCard, rpBuildHauntedLibrary, rpBuildHauntedKeys, rpB
 import { rpBuildHungTitleCard, rpBuildHungWarmup, rpBuildHungKnife, rpBuildHungFinal, hungRevealNext, hungRevealAll } from './chal/hung-out-to-dry.js';
 import { rpBuildMerryTitleCard, rpBuildMerryLevel1, rpBuildMerryLevel2, rpBuildMerryFinal, merryRevealNext, merryRevealAll } from './chal/merry-go-round-up.js';
 import { rpBuildMazeTitleCard, rpBuildMazeEarly, rpBuildMazeMid, rpBuildMazeFinal, mazeRevealNext, mazeRevealAll } from './chal/maze-of-the-fallen.js';
+import { rpBuildDemonsPlainerTitle, rpBuildDemonsPlainerShelter, rpBuildDemonsPlainerCoaster, rpBuildDemonsPlainerResults } from './chal/demons-plainer-vp.js';
 import { rpBuildPrincessPrideTitleCard, rpBuildPrincessPrideCeremony, rpBuildPrincessPrideForest, rpBuildPrincessPrideBridge, rpBuildPrincessPrideDragon, rpBuildPrincessPrideTower, rpBuildPrincessPrideDuel, princessPrideRevealNext, princessPrideRevealAll } from './chal/princess-pride.js';
 import { rpBuildGetAClueTitleCard, rpBuildGetAClueCollection, rpBuildGetAClueTrain, rpBuildGetAClueTrial, rpBuildGetAClueVerdict, getAClueRevealNext, getAClueRevealAll } from './chal/get-a-clue.js';
 import { rpBuildRockNRuleTitleCard, rpBuildRockNRuleGuitar, rpBuildRockNRuleCarpet, rpBuildRockNRuleHotel, rpBuildRockNRuleResults, rockNRuleRevealNext, rockNRuleRevealAll } from './chal/rock-n-rule.js';
@@ -66,6 +67,7 @@ import { rpBuildFCRTitleCard, rpBuildFCRForest, rpBuildFCRCemetery, rpBuildFCRCa
 import { rpBuildBATitleCard, rpBuildBADive, rpBuildBARace, rpBuildBAResults, baRevealNext, baRevealAll } from './chal/backstabbers-ahoy.js';
 import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaCrossing, rpBuildPTBeachSprint, rpBuildPTResults, ptRevealNext, ptRevealAll } from './chal/planes-trains.js';
 import { rpBuildPRTitleCard, rpBuildPRRoles, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults, prRevealNext, prRevealAll, resetPRState } from './chal/project-runaway.js';
+import { rpBuildAuctionTitle, rpBuildAuctionFloor, rpBuildAuctionResults } from './auction-vp.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -3443,7 +3445,7 @@ export function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 export function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt' && t.type !== 'hells-kitchen' && t.type !== 'trust-challenge' && t.type !== 'hide-and-be-sneaky' && t.type !== 'off-the-chain'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt' && t.type !== 'hells-kitchen' && t.type !== 'trust-challenge' && t.type !== 'hide-and-be-sneaky' && t.type !== 'off-the-chain' && t.type !== 'auction'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -6331,90 +6333,6 @@ export function _buildPostTwistBlocks(ep) {
   return blocks;
 }
 
-// ── Signal card helper for rpBuildCampTribe ──
-export function buildSignalCards(ep, tribePlayers) {
-  const cards = [];
-  const playerSet = new Set(tribePlayers);
-  // Build per-player mention tracking (precise — avoids false positives from string search)
-  const existingLines = Object.values(ep.campEvents || {})
-    .flatMap(e => [...(e.pre||[]), ...(e.post||[])]).map(e => e.text || '');
-  const mentionedPairs = new Set();
-  const mentionedSolo  = new Set();
-  existingLines.forEach(txt => {
-    const named = tribePlayers.filter(n => txt.includes(n));
-    if (named.length >= 2) {
-      for (let i = 0; i < named.length; i++)
-        for (let j = i+1; j < named.length; j++)
-          mentionedPairs.add([named[i], named[j]].sort().join('|'));
-    } else if (named.length === 1) {
-      mentionedSolo.add(named[0]);
-    }
-  });
-  const alreadyMentioned = (a, b) =>
-    b ? mentionedPairs.has([a,b].sort().join('|'))
-      : mentionedSolo.has(a);
-
-  // Bond rupture (delta < -1.5, both in tribe)
-  (ep.bondChanges || [])
-    .filter(c => c.delta < -1.5 && playerSet.has(c.a) && playerSet.has(c.b) && !alreadyMentioned(c.a, c.b))
-    .forEach(c => cards.push({ weight: 3, type: 'bondRupture', players: [c.a, c.b],
-      text: `Something cracked between ${c.a} and ${c.b} this episode. The numbers on the surface look the same — but the dynamic isn't.`,
-      badge: '− Bond broken', badgeClass: 'red' }));
-
-  // Betrayal aftermath
-  (ep.gsSnapshot?.namedAlliances || []).forEach(a => {
-    (a.betrayals || []).filter(b => b.ep === ep.num && playerSet.has(b.player)).forEach(b => {
-      if (!alreadyMentioned(b.player)) {
-        cards.push({ weight: 3, type: 'betrayal', players: [b.player],
-          text: `${b.player} voted against the alliance. Everyone noticed.`,
-          badge: 'Betrayal', badgeClass: 'red' });
-      }
-    });
-  });
-
-  // Close vote survivor (received votes but not eliminated)
-  const _votes = ep.votes || {};
-  const _votesAgainst = {};
-  Object.values(_votes).forEach(v => { _votesAgainst[v] = (_votesAgainst[v] || 0) + 1; });
-  Object.entries(_votesAgainst)
-    .filter(([p, n]) => n > 0 && p !== ep.eliminated && playerSet.has(p))
-    .forEach(([p]) => {
-      if (!alreadyMentioned(p)) {
-        cards.push({ weight: 2, type: 'closeVote', players: [p],
-          text: `${p} had their name written down tonight. They're still here — but they know it now.`,
-          badge: 'Close call', badgeClass: 'gold' });
-      }
-    });
-
-  // Idol play aftermath
-  (ep.idolPlays || [])
-    .filter(ip => playerSet.has(ip.player) && !alreadyMentioned(ip.player))
-    .forEach(ip => cards.push({ weight: 2, type: 'idolPlay', players: [ip.player],
-      text: `${ip.player} played an idol tonight. Camp tomorrow will not be the same.`,
-      badge: 'Idol played', badgeClass: 'gold' }));
-
-  // Alliance shift — show even if player was later eliminated (recruitment happened before the vote)
-  const _quitSet = new Set((ep.allianceQuits || []).map(q => `${q.player}:${q.alliance}`));
-  (ep.allianceRecruits || [])
-    .forEach(r => {
-      const _wasReRecruit = _quitSet.has(`${r.player}:${r.toAlliance}`);
-      cards.push({ weight: 2, type: 'allianceShift', players: [r.player],
-        text: _wasReRecruit
-          ? `${r.player} left ${r.toAlliance} — then got pulled back in. The alliance is shaky, but holding.`
-          : `${r.player} just got absorbed into ${r.toAlliance}. The alliance map just got redrawn.`,
-        badge: _wasReRecruit ? 'Alliance — shaky' : 'Alliance shift', badgeClass: 'gold' });
-    });
-
-  // Bond spike (delta > 2, both in tribe)
-  (ep.bondChanges || [])
-    .filter(c => c.delta > 2 && playerSet.has(c.a) && playerSet.has(c.b) && !alreadyMentioned(c.a, c.b))
-    .forEach(c => cards.push({ weight: 1, type: 'bondSpike', players: [c.a, c.b],
-      text: `${c.a} and ${c.b} got closer this episode. On a tribe this small, that matters.`,
-      badge: '+ Bond', badgeClass: 'green' }));
-
-  return cards.sort((a,b) => b.weight - a.weight).slice(0, 5);
-}
-
 // ── Screen: Relationships / Alliance State ──
 export function rpBuildRelationships(ep) {
   const alliances = (ep.alliancesPreTribal || ep.gsSnapshot?.namedAlliances || []).filter(a => a.active !== false);
@@ -7588,23 +7506,8 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
     html += `<div style="font-size:12px;color:#484f58;text-align:center;padding:12px 0">No notable events at ${displayName} camp.</div>`;
   }
 
-  // Signal cards: distilled story beats (capped at 5, injected after events list)
-  const _signals = buildSignalCards(ep, portraitMembers);
-  if (_signals.length) {
-    html += `<div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:1.2px;color:#8b949e;text-transform:uppercase;margin-bottom:2px">KEY STORY BEATS</div>`;
-    _signals.forEach(s => {
-      const _sc = s.badgeClass === 'red' ? '#f85149' : s.badgeClass === 'green' ? '#3fb950' : '#e3b341';
-      html += `<div style="display:flex;align-items:flex-start;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-left:3px solid ${_sc};border-radius:4px;padding:8px 10px">
-        ${(s.players||[]).length ? `<div style="display:flex;gap:4px;flex-shrink:0">${s.players.slice(0,2).map(n => rpPortrait(n)).join('')}</div>` : ''}
-        <div>
-          <div style="font-size:11px;font-weight:700;letter-spacing:0.8px;color:${_sc};text-transform:uppercase;margin-bottom:2px">${s.badge}</div>
-          <div style="font-size:12px;color:#c9d1d9;line-height:1.4">${s.text}</div>
-        </div>
-      </div>`;
-    });
-    html += `</div>`;
-  }
+  // KEY STORY BEATS (betrayals, idol plays, bond ruptures, etc.) are post-tribal outcomes — they live on the
+  // "Camp Overview" screen (shown after the vote) and in the Aftermath, NOT in the per-tribe camp events.
 
   html += `</div></div>`;
 
@@ -12464,6 +12367,11 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'mgr-l1', label:'Draft & Warm-Up', html: rpBuildMerryLevel1(ep) });
     vpScreens.push({ id:'mgr-l2', label:'The Push', html: rpBuildMerryLevel2(ep) });
     vpScreens.push({ id:'mgr-final', label:ep.merryData.isMerged ? 'The Blur · Immunity' : 'The Blur · Results', html: rpBuildMerryFinal(ep) });
+  } else if ((ep.isDemonsPlainer || ep.challengeType === 'demons-plainer') && ep.demonsPlainer) {
+    vpScreens.push({ id:'dp-title', label:"🎢 Demon's Plainer", html: rpBuildDemonsPlainerTitle(ep) });
+    if (ep.demonsPlainer.shelter) vpScreens.push({ id:'dp-shelter', label:'Shelter Scramble', html: rpBuildDemonsPlainerShelter(ep) });
+    vpScreens.push({ id:'dp-coaster', label:'The Coaster', html: rpBuildDemonsPlainerCoaster(ep) });
+    vpScreens.push({ id:'dp-results', label: ep.demonsPlainer.isMerged ? 'The Sort · Immunity' : 'The Sort · Results', html: rpBuildDemonsPlainerResults(ep) });
   } else if ((ep.isMazeOfTheFallen || ep.challengeType === 'maze-of-the-fallen') && ep.mazeData) {
     vpScreens.push({ id:'mtf-title', label:'🌽 Maze of the Fallen', html: rpBuildMazeTitleCard(ep) });
     vpScreens.push({ id:'mtf-early', label:'Into the Maze', html: rpBuildMazeEarly(ep) });
@@ -12828,6 +12736,35 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'fmd-results', label:'Debrief', html: rpBuildFullMetalDramaResults(ep) });
   } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isMineOverMatter && !ep.isTreasureIsland && !ep.isOperationClassified) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
+  }
+
+  // ── 5a-auc. The Auction — dedicated dramatic screens (replaces the challenge slot in immunity mode) ──
+  const _aucTw = (ep.twists || []).find(t => t.type === 'auction' && t.auction);
+  if (_aucTw) {
+    vpScreens.push({ id: 'auction-title', label: 'The Auction', html: rpBuildAuctionTitle(ep) });
+    vpScreens.push({ id: 'auction-floor', label: 'Bidding War', html: rpBuildAuctionFloor(ep) });
+    vpScreens.push({ id: 'auction-results', label: 'Closing Books', html: rpBuildAuctionResults(ep) });
+  }
+
+  // ── 5a-bis. No Challenge twist — no immunity was contested; everyone is vulnerable
+  //            (skip when an auction drove it — the auction screens already explain it) ──
+  if (ep.noChallenge && !_aucTw) {
+    const _ncActive = ep.tribalPlayers || ep.gsSnapshot?.activePlayers || gs.activePlayers;
+    const _ncHtml = `<div class="rp-page tod-dusk">
+      <div class="rp-eyebrow">Episode ${ep.num}</div>
+      <div class="rp-title">No Challenge</div>
+      <div style="text-align:center;margin:40px 0 30px">
+        <div style="font-size:48px;margin-bottom:16px">⛔</div>
+        <div style="font-size:18px;color:#e6edf3;font-weight:700;margin-bottom:12px">No immunity challenge tonight.</div>
+        <div style="font-size:13px;color:#8b949e;max-width:420px;margin:0 auto;line-height:1.7">
+          No necklace is up for grabs — nobody wins safety. Camp life and scheming decide everything, and tonight <b>everyone</b> walks into tribal council wide open. Pure social game.
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:30px">
+        ${_ncActive.map(n => `<div style="text-align:center">${rpPortrait(n)}<div style="font-size:10px;color:#f0a35a;margin-top:4px">Vulnerable</div></div>`).join('')}
+      </div>
+    </div>`;
+    vpScreens.push({ id:'no-challenge', label:'No Challenge', html: _ncHtml });
   }
 
   // ── 5b. Exile Island (post-challenge — shown AFTER challenge to avoid spoiling winner) ──

@@ -377,6 +377,7 @@ export function renderEpisodeHistory() {
     const mnTag = ep.isMineOverMatter ? `<span class="ep-hist-tag" style="background:rgba(240,168,48,0.15);color:#f0a830">Mine Over Matter</span>` : '';
     const mgrTag = ep.isMerryGoRound ? `<span class="ep-hist-tag" style="background:rgba(255,211,90,0.15);color:#ffd35a">🎠 Carousel</span>` : '';
     const mtfTag = ep.isMazeOfTheFallen ? `<span class="ep-hist-tag" style="background:rgba(255,207,106,0.15);color:#ffcf6a">🌽 Maze</span>` : '';
+    const dpTag = ep.isDemonsPlainer ? `<span class="ep-hist-tag" style="background:rgba(255,217,74,0.15);color:#ffd94a">🎢 Demon's Plainer</span>` : '';
     const tiTag = ep.isTreasureIsland ? `<span class="ep-hist-tag" style="background:rgba(231,181,60,0.15);color:#e7b53c">Treasure Island</span>` : '';
     const tddTag = ep.isTripleDogDare ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Triple Dog Dare</span>` : '';
     const suTag = ep.isSayUncle ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Say Uncle</span>` : '';
@@ -453,6 +454,9 @@ export function renderEpisodeHistory() {
     const amhTag = ep.isAftermayhem ? `<span class="ep-hist-tag" style="background:rgba(255,209,60,0.15);color:#ffd13c">Aftermayhem</span>` : '';
     const cocTag = ep.isChainOfCommand ? `<span class="ep-hist-tag" style="background:rgba(74,80,40,0.25);color:#b8860b">Chain</span>` : '';
     const rtcTag = ep.isRewardOnly ? `<span class="ep-hist-tag" style="background:rgba(240,165,0,0.15);color:#f0a500">Reward</span>` : '';
+    const _hasAuction = (ep.twists || []).some(t => t.type === 'auction');
+    const aucTag = _hasAuction ? `<span class="ep-hist-tag" style="background:rgba(233,196,106,0.15);color:#e9c46a">Auction</span>` : '';
+    const ncTag = ep.noChallenge && !_hasAuction ? `<span class="ep-hist-tag" style="background:rgba(240,163,90,0.15);color:#f0a35a">No Challenge</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -460,7 +464,7 @@ export function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${mnTag}${mgrTag}${mtfTag}${tiTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${tdtTag}${amgTag}${paTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${hhTag}${hodTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${iibTag}${fcrTag}${baTag}${ptTag}${prwTag}${amhTag}${cocTag}${rtcTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${mnTag}${mgrTag}${mtfTag}${dpTag}${tiTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${tdtTag}${amgTag}${paTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${hhTag}${hodTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${iibTag}${fcrTag}${baTag}${ptTag}${prwTag}${amhTag}${cocTag}${rtcTag}${aucTag}${ncTag}</div>
     </div>`;
   }).join('');
 }
@@ -923,6 +927,14 @@ export function renderTimeline() {
         cfg += ` <span style="color:#a5b4fc">→</span> ` + _ps('swapToTribe', t.swapToTribe || '', tribeNames, 'to tribe');
         cfg += ` <span style="opacity:.45">swap back:</span>` + _ps('swapPlayer2', t.swapPlayer2 || '', allNames, 'none');
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${cfg} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
+      if (t.type === 'auction') {
+        const _mode = t.auctionImmunity === 'reward' ? 'reward' : 'immunity';
+        let _aSel = `<select onchange="event.stopPropagation();updateTwist('${t.id}','auctionImmunity',this.value)" onclick="event.stopPropagation()" title="Immunity: auction is the only source of immunity (no challenge). Reward: auction is a reward alongside a normal immunity challenge." style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 3px;margin-left:2px">`;
+        _aSel += `<option value="immunity" ${_mode==='immunity'?'selected':''}>Immunity</option>`;
+        _aSel += `<option value="reward" ${_mode==='reward'?'selected':''}>Reward</option>`;
+        _aSel += `</select>`;
+        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${_aSel} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.spoilerFree) {
         const phaseTag = cat?.phase === 'pre-merge' ? 'Pre-merge challenge' : cat?.phase === 'post-merge' ? 'Post-merge challenge' : 'Challenge';

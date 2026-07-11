@@ -395,7 +395,7 @@ export function simulateMazeOfTheFallen(ep) {
       let wentA, correct, mode, ldr = null;
       if (n === saboteur) { correct = true; mode = 'sabotaging'; wentA = correctIsA; }
       else if (n === sabVictim && saboteur) { correct = false; mode = 'sabotaged'; ldr = saboteur; wentA = !correctIsA; }
-      else if (n === honestLeader && kn >= EXPERT) { correct = ownCorrect(kn); mode = 'knew'; wentA = correct ? correctIsA : !correctIsA; }
+      else if (n === honestLeader && kn >= EXPERT) { correct = leaderRight; mode = 'knew'; wentA = correct ? correctIsA : !correctIsA; }
       else if (leaderKnows && n !== honestLeader && kn < EXPERT && getBond(n, honestLeader) >= -1 && Math.random() < 0.7) {
         correct = leaderRight; mode = 'followed'; ldr = honestLeader; wentA = correct ? correctIsA : !correctIsA;
       } else {
@@ -757,7 +757,42 @@ function mtfCss() {
   .mtf-fcard img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #4a3a24;filter:grayscale(.6)}
   .mtf-fcard .nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
   .mtf-fcard .rip{font-family:'Share Tech Mono';font-size:8px;color:#c9a978}
-  @media(prefers-reduced-motion:reduce){.mtf-fog,.mtf-fly,.mtf-tok,.mtf-card.sabotage{animation:none!important;transition:none!important}}
+  /* ── ANIMATED TITLE / ESTABLISHING SHOT ── */
+  .mtf-estab{position:relative;overflow:hidden;border:3px solid #14261a;border-radius:14px;min-height:360px;padding:26px 18px 20px;
+    background:radial-gradient(ellipse at 50% -20%,#2a4a63 0%,#16304a 32%,#0c1c2c 62%,#081016 100%);box-shadow:inset 0 -40px 60px rgba(0,0,0,.5)}
+  .mtf-estab .mtf-moon{top:20px;right:8%;animation:mtfRise 2.2s ease-out both}
+  @keyframes mtfRise{0%{transform:translateY(44px);opacity:0}100%{transform:translateY(0);opacity:1}}
+  .mtf-estab-hedges{z-index:1;opacity:.85}
+  .mtf-estab .mtf-fog{opacity:.45;z-index:2}
+  .mtf-estab .mtf-flies{z-index:3}
+  .mtf-estab-inner{position:relative;z-index:5;text-align:center}
+  .mtf-flick{animation:mtfFlick 4.5s ease-in-out infinite}
+  @keyframes mtfFlick{0%,100%{text-shadow:3px 3px 0 #000,0 0 30px rgba(255,207,106,.45)}
+    7%{text-shadow:3px 3px 0 #000,0 0 8px rgba(255,207,106,.18)}9%{text-shadow:3px 3px 0 #000,0 0 36px rgba(255,207,106,.65)}
+    22%{text-shadow:3px 3px 0 #000,0 0 20px rgba(255,207,106,.38)}}
+  /* glowing maze mouth + runners assembling */
+  .mtf-mouth{position:relative;z-index:5;margin:20px auto 4px;max-width:660px;padding-top:18px;border-top:2px solid rgba(255,207,106,.45)}
+  .mtf-mouth-gate{position:absolute;left:50%;top:-2px;transform:translateX(-50%);width:220px;height:30px;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 0%,rgba(255,207,106,.6),transparent 72%);animation:mtfGate 3s ease-in-out infinite}
+  @keyframes mtfGate{0%,100%{opacity:.75}50%{opacity:1}}
+  .mtf-mouth-lbl{font-family:'Share Tech Mono';font-size:10px;letter-spacing:2px;color:var(--lantern);text-shadow:0 0 10px rgba(255,207,106,.5);margin-bottom:12px}
+  .mtf-runners-mouth{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+  .mtf-runner{width:78px;text-align:center;opacity:0;animation:mtfRunnerUp .6s ease-out forwards}
+  .mtf-runner img{width:54px;height:54px;border-radius:50%;object-fit:cover;border:3px solid #888;background:#16304a}
+  .mtf-runner .rn{font-family:'Cormorant Garamond';font-weight:700;font-size:14px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  @keyframes mtfRunnerUp{0%{transform:translateY(28px);opacity:0}100%{transform:translateY(0);opacity:1}}
+  /* compact roster band */
+  .mtf-roster{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px auto 2px;max-width:760px}
+  .mtf-rchip{display:flex;align-items:center;gap:6px;background:rgba(18,40,26,.72);border:1px solid #23472e;border-radius:20px;padding:3px 11px 3px 3px}
+  .mtf-rchip img{width:24px;height:24px;border-radius:50%;object-fit:cover;border:2px solid #23472e}
+  .mtf-rchip .rn{font-size:13px;font-weight:700;color:#e9f2e6}
+  .mtf-rdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  /* ghost fallen fade-in */
+  .mtf-ghost{opacity:0;animation:mtfGhostIn 1s ease-out forwards}
+  @keyframes mtfGhostIn{0%{opacity:0;transform:translateY(-10px) scale(.93)}100%{opacity:.85;transform:translateY(0) scale(1)}}
+  @media(prefers-reduced-motion:reduce){
+    .mtf-fog,.mtf-fly,.mtf-tok,.mtf-card.sabotage,.mtf-estab .mtf-moon,.mtf-flick,.mtf-mouth-gate,.mtf-runner,.mtf-ghost{animation:none!important;transition:none!important}
+    .mtf-runner,.mtf-ghost{opacity:1!important;transform:none!important}}
   </style>`;
 }
 
@@ -914,20 +949,37 @@ function _priorSnap(r, evs) {
 // ── screen builders ──
 function rpBuildMazeTitleCard(ep) {
   const r = ep.mazeData; if (!r) return '';
-  const fallen = (r.fallen || []).map(n =>
-    `<div class="mtf-fcard"><img src="assets/avatars/${slugOf(n)}.png" onerror="this.style.visibility='hidden'"><div class="nm">${n}</div><div class="rip">THE FALLEN</div></div>`).join('');
+  const fallen = (r.fallen || []).map((n, i) =>
+    `<div class="mtf-fcard mtf-ghost" style="animation-delay:${(0.15 * i).toFixed(2)}s"><img src="assets/avatars/${slugOf(n)}.png" onerror="this.style.visibility='hidden'"><div class="nm">${n}</div><div class="rip">THE FALLEN</div></div>`).join('');
+  // runners assembling at the glowing maze mouth — pod-colored, staggered slide-up
+  const mouth = r.roster.map((x, i) =>
+    `<div class="mtf-runner" style="animation-delay:${(0.25 + 0.12 * i).toFixed(2)}s"><img src="assets/avatars/${slugOf(x.name)}.png" style="border-color:${podColor(x.pod)};box-shadow:0 0 12px ${podColor(x.pod)}66,0 3px 10px rgba(0,0,0,.6)" onerror="this.style.visibility='hidden'"><div class="rn" style="color:${podColor(x.pod)}">${x.name}</div></div>`).join('');
+  // compact roster band restating the full field
   const roster = r.roster.map(x =>
-    `<div class="mtf-fcard" style="opacity:1"><img src="assets/avatars/${slugOf(x.name)}.png" style="filter:none;border-color:${podColor(x.pod)}" onerror="this.style.visibility='hidden'"><div class="nm">${x.name}</div><div class="rip" style="color:${podColor(x.pod)}">RUNNER</div></div>`).join('');
-  return _mtfShell(`<div class="mtf-cover">
-    <div class="mtf-sub">STAWAKI CARNIVAL · THE MOONLIT HEDGE MAZE</div>
-    <div class="mtf-title">MAZE OF<br>THE FALLEN</div>
-    <div class="mtf-sub">${r.roster.length} RUNNERS · QUESTIONS ABOUT THE ELIMINATED · TWO STRIKES AND YOU'RE OUT</div>
+    `<div class="mtf-rchip"><img src="assets/avatars/${slugOf(x.name)}.png" style="border-color:${podColor(x.pod)}" onerror="this.style.visibility='hidden'"><span class="mtf-rdot" style="background:${podColor(x.pod)}"></span><span class="rn">${x.name}</span></div>`).join('');
+  const hedges = mtfHedgesSVG().replace('class="mtf-hedges"', 'class="mtf-hedges mtf-estab-hedges"');
+  return _mtfShell(`<div class="mtf-cover" style="padding-top:6px">
+    <div class="mtf-estab">
+      <div class="mtf-moon"></div>
+      <div class="mtf-fog"></div>
+      <div class="mtf-flies">${mtfFlies()}</div>
+      ${hedges}
+      <div class="mtf-estab-inner">
+        <div class="mtf-sub">STAWAKI CARNIVAL · THE MOONLIT HEDGE MAZE</div>
+        <div class="mtf-title mtf-flick">MAZE OF<br>THE FALLEN</div>
+        <div class="mtf-sub">${r.roster.length} RUNNERS · QUESTIONS ABOUT THE ELIMINATED · TWO STRIKES AND YOU'RE OUT</div>
+        <div class="mtf-mouth">
+          <div class="mtf-mouth-gate"></div>
+          <div class="mtf-mouth-lbl">🕯️ THE RUNNERS ENTER THE MAZE</div>
+          <div class="mtf-runners-mouth">${mouth}</div>
+        </div>
+      </div>
+    </div>
+    <div class="mtf-roster">${roster}</div>
     <div class="mtf-tag">"${r.hostOpener}"</div>
     <div class="mtf-tag" style="color:var(--fog)">At every crossroad, a question about a camper you already sent home. If you <b>listened</b> to them — bonded with them — you'll <b>know</b>. If you didn't, you guess, or you follow the pack. First to the exit wins immunity. If <b>nobody</b> escapes, it's a free-for-all vote.</div>
     <div class="mtf-shdr" style="justify-content:center;color:#e0b878">🕯️ THE FALLEN — TONIGHT'S SUBJECTS</div>
     <div class="mtf-fallen">${fallen}</div>
-    <div class="mtf-shdr" style="justify-content:center;color:#8affb0;margin-top:14px">🌿 THE RUNNERS</div>
-    <div class="mtf-fallen">${roster}</div>
   </div>`);
 }
 function rpBuildMazeEarly(ep) {

@@ -61,6 +61,7 @@ import { simulateHauntedHouse } from './chal/haunted-house.js';
 import { simulateHungOutToDry } from './chal/hung-out-to-dry.js';
 import { simulateMerryGoRoundUp } from './chal/merry-go-round-up.js';
 import { simulateMazeOfTheFallen } from './chal/maze-of-the-fallen.js';
+import { simulateDemonsPlainer } from './chal/demons-plainer.js';
 import { simulatePrincessPride } from './chal/princess-pride.js';
 import { simulateGetAClue } from './chal/get-a-clue.js';
 import { simulateRockNRule } from './chal/rock-n-rule.js';
@@ -1020,6 +1021,7 @@ function _runCoupledPreMergeTwist(ep) {
   if (ep.isMineOverMatter)       { simulateMineOverMatter(ep); return true; }
   if (ep.isMerryGoRound)         { simulateMerryGoRoundUp(ep); return true; }
   if (ep.isMazeOfTheFallen)      { simulateMazeOfTheFallen(ep); return true; }
+  if (ep.isDemonsPlainer)        { simulateDemonsPlainer(ep); return true; }
   if (ep.isTreasureIsland)       { simulateTreasureIsland(ep); return true; }
   if (ep.isAlienEgg)             { simulateAlienEgg(ep); return true; }
   if (ep.isBeachBlanketBogus)    { simulateBeachBlanketBogus(ep); return true; }
@@ -1700,6 +1702,14 @@ export function simulateEpisode() {
     // Fall through to normal tribal flow — no auto-elimination, no early return
   }
 
+  // ── DEMON'S PLAINER (post-merge) — flag-memory coaster determines immunity, normal tribal follows ──
+  if (ep.isDemonsPlainer && gs.isMerged) {
+    simulateDemonsPlainer(ep);
+    ep.immunityWinner = ep.demonsPlainer?.immunityWinner || ep.immunityWinner;
+    ep.challengeType = 'demons-plainer';
+    // Fall through to normal tribal flow — no auto-elimination, no early return
+  }
+
   // ── MINE OVER MATTER (post-merge) — gem haul determines immunity, normal tribal follows ──
   if (ep.isMineOverMatter && gs.isMerged) {
     simulateMineOverMatter(ep);
@@ -1997,7 +2007,7 @@ export function simulateEpisode() {
   const _hasTwistChallenge = ep.isCampCastaways || ep.isAreWeThereYeti || ep.isLuckyHunt || ep.isHideAndBeSneaky
     || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isSayUncle
     || ep.isBrunchOfDisgustingness || ep.isBasicStraining
-    || ep.isMonsterCash || ep.isMineOverMatter || ep.isMerryGoRound || ep.isMazeOfTheFallen || ep.isTreasureIsland || ep.isOperationClassified || ep.isAlienEgg
+    || ep.isMonsterCash || ep.isDemonsPlainer || ep.isMineOverMatter || ep.isMerryGoRound || ep.isMazeOfTheFallen || ep.isTreasureIsland || ep.isOperationClassified || ep.isAlienEgg
     || ep.isSuperHerold || ep.isHauntedHouse || ep.isHungOut || ep.isPrincessPride || ep.isGetAClue
     || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains || ep.isIceIceBaby || ep.isFindersCreepers || ep.isBackstabbersAhoy || ep.isProjectRunaway;
   if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
@@ -2315,6 +2325,9 @@ export function simulateEpisode() {
   } else if (ep.isMonsterCash && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateMonsterCash(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateMonsterCash
+  } else if (ep.isDemonsPlainer && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateDemonsPlainer(ep);
+    // winner, loser, challengeType, tribalPlayers already set by simulateDemonsPlainer
   } else if (ep.isMineOverMatter && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateMineOverMatter(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateMineOverMatter
@@ -2773,7 +2786,18 @@ export function simulateEpisode() {
   } else {
     // ── TIED DESTINIES: paired immunity challenge ──
     const _tdTwist = ep.tiedDestinies;
-    if (_tdTwist?.pairs?.length) {
+    if (ep.noChallenge) {
+      // ── NO CHALLENGE TWIST: skip the immunity challenge entirely. Nobody wins safety —
+      // everyone remains vulnerable and a normal tribal council still resolves the vote. ──
+      ep.challengeType = null;
+      ep.immunityWinner = null;
+      ep.challengeLabel = 'No Challenge';
+      ep.challengeCategory = null;
+      ep.challengeDesc = '';
+      ep.chalPlacements = [];
+      ep.chalMemberScores = {};
+      ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
+    } else if (_tdTwist?.pairs?.length) {
       const chal = pickChallenge('individual');
       const _pairScores = _tdTwist.pairs.map(pair => {
         const sA = chal.stat(pStats(pair.a)), sB = chal.stat(pStats(pair.b));
@@ -2794,7 +2818,7 @@ export function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (ep.isMonsterCash || ep.isMineOverMatter || ep.isMerryGoRound || ep.isMazeOfTheFallen || ep.isTreasureIsland || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isHauntedHouse || ep.isHungOut || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains || ep.isIceIceBaby || ep.isFindersCreepers || ep.isBackstabbersAhoy || ep.isProjectRunaway) {
+    } else if (ep.isMonsterCash || ep.isDemonsPlainer || ep.isMineOverMatter || ep.isMerryGoRound || ep.isMazeOfTheFallen || ep.isTreasureIsland || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isHauntedHouse || ep.isHungOut || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains || ep.isIceIceBaby || ep.isFindersCreepers || ep.isBackstabbersAhoy || ep.isProjectRunaway) {
     // Special challenge already ran and set immunityWinner + chalMemberScores — skip generic challenge
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
@@ -3010,7 +3034,7 @@ export function simulateEpisode() {
         advantagesPreTribal: ep.advantagesPreTribal || null,
         // Twist challenge data
         isMonsterCash: ep.isMonsterCash || false, monsterCash: ep.monsterCash || null,
-        isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null, isMerryGoRound: ep.isMerryGoRound || false, merryData: ep.merryData || null, isMazeOfTheFallen: ep.isMazeOfTheFallen || false, mazeData: ep.mazeData || null,
+        isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null, isMerryGoRound: ep.isMerryGoRound || false, merryData: ep.merryData || null, isMazeOfTheFallen: ep.isMazeOfTheFallen || false, mazeData: ep.mazeData || null, isDemonsPlainer: ep.isDemonsPlainer || false, demonsPlainer: ep.demonsPlainer || null,
         isTreasureIsland: ep.isTreasureIsland || false, treasureData: ep.treasureData || null,
         isOperationClassified: ep.isOperationClassified || false, operationClassified: ep.operationClassified || null,
         isAlienEgg: ep.isAlienEgg || false, alienEgg: ep.alienEgg || null,
@@ -3147,7 +3171,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isTruthOrDareTrain && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isMineOverMatter && !ep.isMerryGoRound && !ep.isMazeOfTheFallen && !ep.isTreasureIsland && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isHauntedHouse && !ep.isHungOut && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari && !ep.isRapaPhooey && !ep.isDrumheller && !ep.isPlanesTrains && !ep.isIceIceBaby && !ep.isFindersCreepers && !ep.isBackstabbersAhoy && !ep.isProjectRunaway) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isTruthOrDareTrain && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isDemonsPlainer && !ep.isMineOverMatter && !ep.isMerryGoRound && !ep.isMazeOfTheFallen && !ep.isTreasureIsland && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isHauntedHouse && !ep.isHungOut && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari && !ep.isRapaPhooey && !ep.isDrumheller && !ep.isPlanesTrains && !ep.isIceIceBaby && !ep.isFindersCreepers && !ep.isBackstabbersAhoy && !ep.isProjectRunaway) {
     updateChalRecord(ep);
   }
 
@@ -3689,7 +3713,7 @@ export function simulateEpisode() {
       advantagesPreTribal: ep.advantagesPreTribal || null,
       // Twist challenge data (must mirror the normal history push)
       isMonsterCash: ep.isMonsterCash || false, monsterCash: ep.monsterCash || null,
-      isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null, isMerryGoRound: ep.isMerryGoRound || false, merryData: ep.merryData || null, isMazeOfTheFallen: ep.isMazeOfTheFallen || false, mazeData: ep.mazeData || null,
+      isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null, isMerryGoRound: ep.isMerryGoRound || false, merryData: ep.merryData || null, isMazeOfTheFallen: ep.isMazeOfTheFallen || false, mazeData: ep.mazeData || null, isDemonsPlainer: ep.isDemonsPlainer || false, demonsPlainer: ep.demonsPlainer || null,
       isOperationClassified: ep.isOperationClassified || false, operationClassified: ep.operationClassified || null,
       isAlienEgg: ep.isAlienEgg || false, alienEgg: ep.alienEgg || null,
       isBeachBlanketBogus: ep.isBeachBlanketBogus || false, beachBlanketBogus: ep.beachBlanketBogus || null,
@@ -4665,7 +4689,7 @@ export function simulateEpisode() {
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
       isMonsterCash: ep.isMonsterCash || false, monsterCash: ep.monsterCash || null,
-      isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null, isMerryGoRound: ep.isMerryGoRound || false, merryData: ep.merryData || null, isMazeOfTheFallen: ep.isMazeOfTheFallen || false, mazeData: ep.mazeData || null,
+      isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null, isMerryGoRound: ep.isMerryGoRound || false, merryData: ep.merryData || null, isMazeOfTheFallen: ep.isMazeOfTheFallen || false, mazeData: ep.mazeData || null, isDemonsPlainer: ep.isDemonsPlainer || false, demonsPlainer: ep.demonsPlainer || null,
       isOperationClassified: ep.isOperationClassified || false, operationClassified: ep.operationClassified || null,
       isAlienEgg: ep.isAlienEgg || false, alienEgg: ep.alienEgg || null,
       isBeachBlanketBogus: ep.isBeachBlanketBogus || false, beachBlanketBogus: ep.beachBlanketBogus || null,
@@ -4903,7 +4927,7 @@ export function simulateEpisode() {
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
       isMonsterCash: ep.isMonsterCash || false, monsterCash: ep.monsterCash || null,
-      isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null, isMerryGoRound: ep.isMerryGoRound || false, merryData: ep.merryData || null, isMazeOfTheFallen: ep.isMazeOfTheFallen || false, mazeData: ep.mazeData || null,
+      isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null, isMerryGoRound: ep.isMerryGoRound || false, merryData: ep.merryData || null, isMazeOfTheFallen: ep.isMazeOfTheFallen || false, mazeData: ep.mazeData || null, isDemonsPlainer: ep.isDemonsPlainer || false, demonsPlainer: ep.demonsPlainer || null,
       isOperationClassified: ep.isOperationClassified || false, operationClassified: ep.operationClassified || null,
       isAlienEgg: ep.isAlienEgg || false, alienEgg: ep.alienEgg || null,
       isBeachBlanketBogus: ep.isBeachBlanketBogus || false, beachBlanketBogus: ep.beachBlanketBogus || null,
@@ -5345,7 +5369,7 @@ function simulateJuryRoundtable(ep) {
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
       isMonsterCash: ep.isMonsterCash || false, monsterCash: ep.monsterCash || null,
-      isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null, isMerryGoRound: ep.isMerryGoRound || false, merryData: ep.merryData || null, isMazeOfTheFallen: ep.isMazeOfTheFallen || false, mazeData: ep.mazeData || null,
+      isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null, isMerryGoRound: ep.isMerryGoRound || false, merryData: ep.merryData || null, isMazeOfTheFallen: ep.isMazeOfTheFallen || false, mazeData: ep.mazeData || null, isDemonsPlainer: ep.isDemonsPlainer || false, demonsPlainer: ep.demonsPlainer || null,
       isOperationClassified: ep.isOperationClassified || false, operationClassified: ep.operationClassified || null,
       isAlienEgg: ep.isAlienEgg || false, alienEgg: ep.alienEgg || null,
       isBeachBlanketBogus: ep.isBeachBlanketBogus || false, beachBlanketBogus: ep.beachBlanketBogus || null,
@@ -5391,6 +5415,7 @@ function simulateJuryRoundtable(ep) {
       isAftermayhem: ep.isAftermayhem || false,
       isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
       isRewardOnly: ep.isRewardOnly || false, rewardChalData: ep.rewardChalData || null,
+      noChallenge: ep.noChallenge || false,
     });
     const twistScenesJE = generateTwistScenes(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].twistScenes = twistScenesJE;
@@ -6688,6 +6713,8 @@ function simulateJuryRoundtable(ep) {
     isMerryGoRound:     ep.isMerryGoRound     || false,
     merryData:          ep.merryData          || null,
     isMazeOfTheFallen:  ep.isMazeOfTheFallen  || false,
+    isDemonsPlainer:    ep.isDemonsPlainer    || false,
+    demonsPlainer:      ep.demonsPlainer      || null,
     mazeData:           ep.mazeData           || null,
     isTreasureIsland:   ep.isTreasureIsland   || false,
     treasureData:       ep.treasureData       || null,

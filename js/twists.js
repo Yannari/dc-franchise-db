@@ -3,6 +3,7 @@ import { gs, seasonConfig, players, TWIST_CATALOG } from './core.js';
 import { pStats, pronouns, getPlayerState } from './players.js';
 import { getBond, addBond } from './bonds.js';
 import { wRandom, computeHeat, formAlliances, nameNewAlliance } from './alliances.js';
+import { runAuction } from './auction.js';
 
 export const JOURNEY_CHALLENGES = [
   { label:'Coconut Weight',  stat:'physical', desc:'Each player held a platform on one outstretched arm while opponents loaded it with coconuts. The last person still holding wins.' },
@@ -1865,6 +1866,13 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 4) return;
     ep.isMonsterCash = true;
 
+  } else if (engineType === 'demons-plainer') {
+    // Schedule-adaptive: ep1 = shelter + coaster (tribes), other pre-merge = coaster (tribes),
+    // post-merge = coaster (individual immunity). episode.js handles phase branching.
+    if (!gs.isMerged && gs.tribes.length < 2) return;
+    if (gs.activePlayers.length < 4) return;
+    ep.isDemonsPlainer = true;
+
   } else if (engineType === 'mine-over-matter') {
     // Both phases: pre-merge = tribe gem haul, post-merge = individual immunity
     if (!gs.isMerged && gs.tribes.length < 2) return;
@@ -2877,176 +2885,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
   // ── AUCTION ──────────────────────────────────────────────────────
   } else if (engineType === 'auction') {
     if (!gs.isMerged) return; // merge-only twist
-    // Item pool: always include one food, one blind advantage, one blind immunity
-    const AUCTION_POOL = [
-      { id:'meal',        label:'Full Meal',              type:'food',      blind:false, baseCost:60,  interest: s => s.endurance * 0.8 + 3 },
-      { id:'snacks',      label:'Assorted Snacks',        type:'food',      blind:false, baseCost:40,  interest: s => s.endurance * 0.6 + 2 },
-      { id:'comfort-kit', label:'Comfort Kit',            type:'comfort',   blind:false, baseCost:80,  interest: s => s.social * 0.5 + 2 },
-      { id:'letter',      label:'Letter from Home',       type:'comfort',   blind:false, baseCost:50,  interest: s => s.loyalty * 0.7 + 2 },
-      { id:'advantage',   label:'Game Advantage',         type:'advantage', blind:true,  baseCost:100, interest: s => s.strategic * 0.9 + s.intuition * 0.5 },
-      { id:'idol-clue',   label:'Idol Clue',              type:'advantage', blind:true,  baseCost:80,  interest: s => s.intuition * 1.0 + s.strategic * 0.6 },
-      { id:'immunity',    label:'Individual Immunity',    type:'immunity',  blind:true,  baseCost:200, interest: s => s.strategic * 0.8 + s.boldness * 0.4 + 2 },
-      { id:'info',        label:'Game Intel',             type:'advantage', blind:true,  baseCost:70,  interest: s => s.intuition * 1.1 },
-      { id:'sl-amulet',   label:'Second Life Amulet',     type:'advantage', blind:true,  baseCost:150, interest: s => s.boldness * 0.7 + s.strategic * 0.5 + 2 },
-    ];
-    // Always auction: 1 food, 1 comfort, 1 blind advantage, 1 blind immunity + 1-2 extras
-    const required = ['meal','comfort-kit','advantage','immunity'];
-    let extras = ['snacks','letter','idol-clue','info'].sort(() => Math.random()-0.5).slice(0,1+Math.floor(Math.random()*2));
-    // Rare chance to include SL Amulet as an extra item (~20% if enabled and none in play)
-    if (seasonConfig.advantages?.secondLife?.enabled && !gs.advantages.some(a => a.type === 'secondLife') && Math.random() < 0.20) {
-      extras.push('sl-amulet');
-    }
-    const auctionItems = [...required, ...extras].map(id => AUCTION_POOL.find(it => it.id === id)).filter(Boolean);
+    twistObj.auctionImmunity = twist.auctionImmunity; // per-episode setting from the designer ('immunity' | 'reward' | undefined→immunity)
+    runAuction(ep, twistObj);
 
-    const budgets = {};
-    gs.activePlayers.forEach(p => { budgets[p] = 500; });
-    const results = [];
-
-    auctionItems.forEach(item => {
-      // Pooling: strongest bond pair in the group may pool for blind items
-      let poolPair = null;
-      if (item.blind && gs.activePlayers.length >= 3) {
-        let bestBond = 0, bestA = null, bestB = null;
-        for (let i = 0; i < gs.activePlayers.length; i++) {
-          for (let j = i+1; j < gs.activePlayers.length; j++) {
-            const b = getBond(gs.activePlayers[i], gs.activePlayers[j]);
-            if (b > bestBond && budgets[gs.activePlayers[i]] >= 50 && budgets[gs.activePlayers[j]] >= 50) {
-              bestBond = b; bestA = gs.activePlayers[i]; bestB = gs.activePlayers[j];
-            }
-          }
-        }
-        if (bestA && bestBond >= 2 && Math.random() < 0.25) poolPair = [bestA, bestB];
-      }
-
-      // Each active player bids up to their remaining budget
-      const bids = gs.activePlayers.map(p => {
-        if (poolPair && poolPair.includes(p)) return 0; // handled as pool bid
-        const s = pStats(p);
-        const interest = item.interest(s);
-        const maxBid = Math.min(budgets[p], Math.round(interest * 30 + Math.random() * 60));
-        return { player: p, bid: maxBid };
-      });
-      if (poolPair) {
-        const [pA, pB] = poolPair;
-        const sA = pStats(pA), sB = pStats(pB);
-        const poolInterest = (item.interest(sA) + item.interest(sB)) / 2;
-        const poolBid = Math.min(budgets[pA] + budgets[pB], Math.round(poolInterest * 50 + Math.random() * 100));
-        bids.push({ player: `${pA}+${pB}`, bid: poolBid, isPool: true, players: [pA, pB] });
-      }
-
-      const topBid = bids.sort((a,b) => b.bid - a.bid)[0];
-      if (!topBid || topBid.bid <= 0) return;
-
-      const winnerName = topBid.isPool ? topBid.players[0] : topBid.player;
-      // Deduct budget
-      if (topBid.isPool) {
-        const share = Math.ceil(topBid.bid / 2);
-        topBid.players.forEach(p => { budgets[p] = Math.max(0, budgets[p] - share); });
-      } else {
-        budgets[topBid.player] = Math.max(0, budgets[topBid.player] - topBid.bid);
-      }
-
-      // Apply effect
-      let effect = item.type; let effectLabel = item.label;
-      if (item.blind) {
-        // Revealed when opened
-        if (item.id === 'advantage') {
-          const advTypes = ['extraVote','voteSteal','voteBlock','safetyNoPower','soleVote'].filter(t => {
-            const _src = seasonConfig.advantages?.[t]?.sources || ADVANTAGES.find(a => a.key === t)?.defaultSources || [];
-            if (!_src.includes('auction')) return false;
-            const tc = seasonConfig.advantages?.[t];
-            if (!tc?.enabled) return false;
-            const max = tc.count || 1;
-            if (gs.advantages.filter(a => a.type === t).length >= max) return false;
-            if (tc.oncePer === 'season' && (gs.advantagesFoundThisSeason?.[t] || 0) >= max) return false;
-            if (tc.oncePer === 'phase' && (gs.advantagesFoundThisPhase?.[t] || 0) >= max) return false;
-            return true;
-          });
-          if (!advTypes.length) advTypes.push('extraVote','voteSteal');
-          const pick = advTypes[Math.floor(Math.random() * advTypes.length)];
-          const advMax = seasonConfig.advantages?.[pick]?.count || 1;
-          if (gs.advantages.filter(a => a.type === pick).length < advMax) {
-            gs.advantages.push({ holder: winnerName, type: pick, foundEp: ep.num, fromAuction: true });
-            const _oncePer = seasonConfig.advantages?.[pick]?.oncePer;
-            if (_oncePer) {
-              const _ck = _oncePer === 'phase' ? 'advantagesFoundThisPhase' : 'advantagesFoundThisSeason';
-              if (!gs[_ck]) gs[_ck] = {};
-              gs[_ck][pick] = (gs[_ck][pick] || 0) + 1;
-            }
-            effect = pick; effectLabel = pick === 'extraVote' ? 'Extra Vote' : pick === 'voteSteal' ? 'Vote Steal' : 'Vote Block';
-          } else {
-            effect = 'food'; effectLabel = '(advantage not available — consolation snack)';
-          }
-        } else if (item.id === 'idol-clue') {
-          const tribeName = gs.tribes.find(t => t.members.includes(winnerName))?.name;
-          if (tribeName && gs.idolSlots?.[tribeName] && Math.random() < 0.80) {
-            gs.advantages.push({ holder: winnerName, type: 'idol', foundEp: ep.num, fromAuction: true });
-            gs.idolSlots[tribeName] = Math.max(0, (gs.idolSlots[tribeName] || 1) - 1);
-            ep.idolFinds.push({ finder: winnerName, type: 'idol', tribe: tribeName, fromAuction: true });
-            effect = 'idol'; effectLabel = 'Idol Clue (found the idol!)';
-          } else {
-            effect = 'idolClue'; effectLabel = 'Idol Clue (didn\'t find it this episode)';
-          }
-        } else if (item.id === 'immunity') {
-          gs.guaranteedImmuneThisEp = winnerName;
-          effect = 'immunity'; effectLabel = 'Individual Immunity';
-        } else if (item.id === 'info') {
-          effect = 'info'; effectLabel = 'Game Intel (knows a strategic secret)';
-        } else if (item.id === 'sl-amulet') {
-          if (!gs.advantages.some(a => a.type === 'secondLife')) {
-            gs.advantages.push({ holder: winnerName, type: 'secondLife', foundEp: ep.num, fromAuction: true });
-            ep.idolFinds.push({ finder: winnerName, type: 'secondLife', tribe: 'auction' });
-            effect = 'secondLife'; effectLabel = 'Second Life Amulet';
-          } else {
-            effect = 'food'; effectLabel = '(Second Life Amulet already in play — consolation snack)';
-          }
-        }
-      }
-
-      results.push({
-        item: item.id, label: item.blind ? `Blind Bid (revealed: ${effectLabel})` : item.label,
-        winner: topBid.isPool ? `${topBid.players.join(' + ')} (pooled)` : topBid.player,
-        winnerName, bid: topBid.bid, isBlind: item.blind, effect, isPool: !!topBid.isPool
-      });
-    });
-
-    twistObj.auctionResults = results;
-    twistObj.budgetsRemaining = budgets;
-    // Inject camp narrative based on what happened at the auction
-    ep.twistNarrativeEvents = ep.twistNarrativeEvents || {};
-    const letterWinner = results.find(r => r.item === 'letter')?.winnerName;
-    const advantageBuyer = results.find(r => r.effect === 'extraVote' || r.effect === 'voteSteal' || r.effect === 'idol' || r.effect === 'idolClue')?.winnerName;
-    const immunityBuyer = results.find(r => r.effect === 'immunity')?.winnerName;
-    if (letterWinner) {
-      ep.twistNarrativeEvents['merge'] = { type: 'homesick', text: _pick([
-        `${letterWinner} read the letter from home alone and came back to camp with red eyes. Nobody asked. Everyone noticed. Some things don't need explaining.`,
-        `${letterWinner} spent $50 on a letter from home. That moment — the silence after they finished reading it — said everything about what this game costs.`,
-        `When ${letterWinner} opened the letter, the auction stopped. Some people looked away. The rest of the game still had to happen, but it felt smaller for a few minutes.`,
-      ]) };
-    } else if (advantageBuyer) {
-      // 40% chance others noticed the blind bid was strategic
-      if (Math.random() < 0.40) {
-        gs.activePlayers.filter(p => p !== advantageBuyer).forEach(p => {
-          if (pStats(p).intuition >= 6) addBond(advantageBuyer, p, -0.5); // perceptive players noted the move
-        });
-        ep.twistNarrativeEvents['merge'] = { type: 'rumor', text: _pick([
-          `${advantageBuyer} went hard on the blind bid. Everyone at the auction table saw it. Strategic players file away that kind of thing.`,
-          `${advantageBuyer} didn't hesitate on the advantage. The bid told the whole group exactly how they were thinking — and it wasn't about food.`,
-          `${advantageBuyer} spent big on the unknown item. A few players exchanged glances. That bid will come up again before the season is over.`,
-        ]) };
-      } else {
-        ep.twistNarrativeEvents['merge'] = { type: 'confessional', text: `${advantageBuyer} left the auction with something nobody else knows about. That kind of information gap is exactly how games get won.` };
-      }
-    } else if (immunityBuyer) {
-      ep.twistNarrativeEvents['merge'] = { type: 'confessional', text: _pick([
-        `${immunityBuyer} bought immunity outright. Practical. Strategic. Also the kind of thing that tells everyone you were scared of tonight.`,
-        `${immunityBuyer} didn't even pause before bidding on immunity. It's not the flashiest move — but it works.`,
-      ]) };
-    } else {
-      ep.twistNarrativeEvents['merge'] = { type: 'tdBond', text: `The auction gave everyone something to eat and not much else. Camp was relaxed tonight — which, at this point in the game, might be the most dangerous thing of all.` };
-    }
-
-  // ── ELIMINATION SWAP ─────────────────────────────────────────────
+    // ── ELIMINATION SWAP ─────────────────────────────────────────────
   } else if (engineType === 'elimination-swap') {
     ep.eliminationSwap = true;
 
@@ -4010,7 +3852,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'trust-challenge': 'isTrustChallenge', 'basic-straining': 'isBasicStraining', 'x-treme-torture': 'isXtremeTorture',
         'sudden-death': 'isSuddenDeath', 'slasher-night': 'isSlasherNight', 'triple-dog-dare': 'isTripleDogDare',
         'say-uncle': 'isSayUncle', 'brunch-of-disgustingness': 'isBrunchOfDisgustingness',
-        'monster-cash': 'isMonsterCash', 'mine-over-matter': 'isMineOverMatter', 'treasure-island': 'isTreasureIsland', 'operation-classified': 'isOperationClassified',
+        'monster-cash': 'isMonsterCash', 'demons-plainer': 'isDemonsPlainer', 'mine-over-matter': 'isMineOverMatter', 'treasure-island': 'isTreasureIsland', 'operation-classified': 'isOperationClassified',
         'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride', 'haunted-house': 'isHauntedHouse', 'hung-out-to-dry': 'isHungOut', 'merry-go-round-up': 'isMerryGoRound', 'maze-of-the-fallen': 'isMazeOfTheFallen',
         'get-a-clue': 'isGetAClue', 'rock-n-rule': 'isRockNRule',
         'crouching-courtney': 'isCrouchingCourtney', 'houston': 'isHouston', 'top-dog': 'isTopDog',
@@ -4198,6 +4040,11 @@ export function applyTwist(ep, twist, isPrimary = true) {
   if (engineType === 'no-tribal') {
     ep.noTribal = true;
   }
+  // 'no-challenge' — flag the episode so simulateEpisode skips the immunity challenge
+  // (no immunity winner; a normal tribal is still held with everyone vulnerable)
+  if (engineType === 'no-challenge') {
+    ep.noChallenge = true;
+  }
 }
 
 export function generateTwistScenes(ep) {
@@ -4335,6 +4182,22 @@ export function generateTwistScenes(ep) {
           sc.push({ text: 'All tribes scatter across the film lot. The tribe with the best survival average wins immunity. The losers go to tribal council.', players: [] });
         }
         result.push({ label:'Monster Cash', type:tw.type, scenes:sc }); break;
+      }
+
+      case 'demons-plainer': {
+        const _dpAll = gs.activePlayers;
+        const _dpEp1 = !gs.isMerged && (gs.episodeHistory?.length || 0) === 0;
+        if (_dpEp1) {
+          sc.push({ text: 'First challenge of the season! First things first: find your camp and build a shelter from whatever scrap you can drag home. Best shelter wins the tarp — the rest of you meet the storm.', players: _dpAll });
+          sc.push({ text: 'Then it\'s onto the Demon\'s Plainer — the number one coaster on the lot. Memorize the colored flags on the way down and rebuild the order. First team to nail it wins the sleeping bags; the losing team goes to tribal.', players: [] });
+        } else if (gs.isMerged) {
+          sc.push({ text: 'Everybody onto the Demon\'s Plainer. Watch the colored flags as you scream downhill, then rebuild the order at the bottom. Fewest mistakes wins individual immunity — mess it up and you ride again.', players: _dpAll });
+          sc.push({ text: 'Sharpest set of eyes takes the necklace. Everyone else is fair game at tribal.', players: [] });
+        } else {
+          sc.push({ text: 'Load the tribes onto the Demon\'s Plainer. Memorize the flag order on the ride, then reassemble it. Fastest correct tribe wins immunity; the losers head to tribal council.', players: _dpAll });
+          sc.push({ text: 'Get the order wrong and two of you climb back up the coaster to try again. Stomachs optional.', players: [] });
+        }
+        result.push({ label:"Demon's Plainer", type:tw.type, scenes:sc }); break;
       }
 
       case 'mine-over-matter': {

@@ -6161,8 +6161,19 @@ function simulateJuryRoundtable(ep) {
     ep.exileDuelResult = { exilePlayer, newBoot, winner: _edResult.winner, loser: _edResult.loser, challengeLabel: _edResult.challengeLabel, challengeCategory: _edResult.challengeCategory, challengeDesc: _edResult.challengeDesc };
     gs.exileDuelPlayer = null;
     const _edLoser = _edResult.loser; const _edWinner = _edResult.winner;
-    gs.eliminated.push(_edLoser);
-    if (gs.isMerged) gs.jury.push(_edLoser);
+    // DC4-style: when Rescue Island is active, the duel LOSER goes to Rescue Island
+    // instead of being permanently eliminated. With RI off, normal exile-duel elimination.
+    const _edToRescue = seasonConfig.ri && isRIStillActive();
+    if (_edToRescue) {
+      gs.riPlayers.push(_edLoser);
+      gs.riArrivalEp = gs.riArrivalEp || {};
+      gs.riArrivalEp[_edLoser] = epNum;
+      ep.exileDuelToRescue = true;
+      ep.riArrival = { name: _edLoser, existingResidents: gs.riPlayers.filter(p => p !== _edLoser) };
+    } else {
+      gs.eliminated.push(_edLoser);
+      if (gs.isMerged) gs.jury.push(_edLoser);
+    }
     gs.activePlayers = gs.activePlayers.filter(p => p !== _edLoser);
     gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== _edLoser)}));
     handleAdvantageInheritance(_edLoser, ep);
@@ -6179,7 +6190,7 @@ function simulateJuryRoundtable(ep) {
       gs.advantages = gs.advantages.filter(a => a.holder !== newBoot);
     }
     ep.eliminated = _edLoser;
-    ep.riChoice = null;
+    ep.riChoice = _edToRescue ? 'RESCUE ISLAND' : null;
 
     // ── Volunteer Exile Duel: apply grudge bonus if the volunteer won ──
     // Check previous episode's volunteerDuel (the volunteer was voted out last ep, duel happens this ep)
@@ -6808,6 +6819,7 @@ function simulateJuryRoundtable(ep) {
     chainOfCommand:       ep.chainOfCommand       || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
+    exileDuelToRescue: ep.exileDuelToRescue || false,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,
     fireMaking:       ep.fireMaking       || null,
     tiebreakerResult:  ep.tiebreakerResult  || null,

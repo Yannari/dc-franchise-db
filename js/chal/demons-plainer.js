@@ -640,22 +640,29 @@ function _sortTribes(active, memory, scores, riders, campEvents) {
   const tribeResults = [];
   for (const tribe of tribes) {
     const arranger = tribe.members.slice().sort((a, b) => pStats(b).mental - pStats(a).mental)[0];
-    const tribeMem = tribe.members.reduce((s, m) => s + memory[m], 0) / tribe.members.length;
-    const arrangerMem = memory[arranger];
-    let retries = 0;
-    let errChance = clamp(0.65 - (tribeMem * 0.3 + arrangerMem * 0.7) * 0.05, 0.05, 0.65);
+    // working copy of each member's read of the flag order — re-rides refresh it
+    const mem = {}; tribe.members.forEach(m => { mem[m] = memory[m]; });
+    const startMem = tribe.members.reduce((s, m) => s + memory[m], 0) / tribe.members.length;
     const rounds = [];
-    // first attempt + up to 3 retries
-    for (let attempt = 0; attempt <= 3; attempt++) {
-      const wrong = Math.random() < errChance;
-      rounds.push({ attempt: attempt + 1, arranger, wrong });
-      if (!wrong) break;
+    let retries = 0;
+    let gotIt = false;
+    // source rule: rearrange → if WRONG, two members re-ride before the next try. Repeat until correct.
+    for (let attempt = 0; attempt < 6 && !gotIt; attempt++) {
+      const tribeMem = tribe.members.reduce((s, m) => s + mem[m], 0) / tribe.members.length;
+      const arrangerMem = mem[arranger];
+      const errChance = clamp(0.62 - (tribeMem * 0.35 + arrangerMem * 0.65) * 0.05, 0.03, 0.62);
+      const wrong = Math.random() < errChance && attempt < 5; // 6th attempt always resolves (they'd never actually give up)
+      if (!wrong) { rounds.push({ attempt: attempt + 1, wrong: false, reRiders: [] }); gotIt = true; break; }
+      // WRONG → the two members who remember least go back up the coaster for another look
       retries++;
-      errChance = clamp(errChance - 0.12, 0.03, 0.65); // learning
+      const pool = tribe.members.filter(m => m !== arranger);
+      const reRiders = (pool.length >= 2 ? pool : tribe.members).slice()
+        .sort((a, b) => mem[a] - mem[b]).slice(0, 2);
+      reRiders.forEach(m => { mem[m] = clamp(mem[m] + 2.5 + noise(1), 0, 20); }); // fresh look at the flags
+      rounds.push({ attempt: attempt + 1, wrong: true, reRiders });
     }
-    const gotIt = !rounds[rounds.length - 1].wrong;
-    const solveTime = 45 + retries * 20 + noise(5) - arrangerMem * 1.5;
-    tribeResults.push({ name: tribe.name, color: tribe.color, members: tribe.members, arranger, tribeMem: Math.round(tribeMem * 10) / 10, retries, rounds, gotIt, solveTime: Math.round(solveTime * 10) / 10 });
+    const solveTime = 45 + retries * 20 + noise(5) - memory[arranger] * 1.5;
+    tribeResults.push({ name: tribe.name, color: tribe.color, members: tribe.members, arranger, tribeMem: Math.round(startMem * 10) / 10, retries, rounds, gotIt, solveTime: Math.round(solveTime * 10) / 10 });
   }
 
   // winner = got it correct with lowest solve time
@@ -791,10 +798,14 @@ export function _textDemonsPlainer(ep, ln, sec) {
   ln('');
 
   if (dp.coaster.sortMode === 'tribe') {
-    ln('THE SORT:');
+    ln('THE SORT (rearrange the flags; wrong = two members re-ride):');
     for (const tr of dp.coaster.tribeResults) {
-      const retryTxt = tr.retries > 0 ? ` — got it wrong ${tr.retries}x, sent members back to ride again` : ' — nailed it first try';
-      ln(`  ${tr.name}: arranger ${tr.arranger}${retryTxt}. ${tr.gotIt ? 'Solved.' : 'Never solved it.'} (time ${tr.solveTime}s)`);
+      ln(`  ${tr.name} — arranger ${tr.arranger}:`);
+      for (const rd of (tr.rounds || [])) {
+        if (rd.wrong) ln(`    Try ${rd.attempt}: WRONG — ${(rd.reRiders || []).join(' & ')} ride the coaster again.`);
+        else ln(`    Try ${rd.attempt}: CORRECT.`);
+      }
+      ln(`    ${tr.gotIt ? `Solved after ${tr.retries} re-ride${tr.retries === 1 ? '' : 's'}` : 'Never solved it'} (time ${tr.solveTime}s)`);
     }
     ln('');
     ln(`★ ${dp.coaster.winnerTribeName} wins the sleeping bags. ${dp.coaster.loserTribeName} heads to tribal council.`);

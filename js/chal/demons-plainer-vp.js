@@ -420,11 +420,16 @@ export function rpBuildDemonsPlainerResults(ep) {
     pushStep(`<div class="dp-card neutral"><div class="txt">Each tribe's sharpest mind rebuilds the flag order. Get it wrong and two riders go back up the coaster. Fastest correct tribe wins the sleeping bags.</div></div>`);
     for (const tr of (co.tribeResults || [])) {
       sortResult.set(tr.name, { solveTime: tr.solveTime, gotIt: tr.gotIt, retries: tr.retries });
-      const retryTxt = tr.retries > 0
-        ? `${esc(tr.arranger)} sets the order… <b style="color:#ff8f88">WRONG.</b> Two ${esc(tr.name)} riders trudge back up — ${tr.retries} time${tr.retries > 1 ? 's' : ''} total.`
-        : `${esc(tr.arranger)} sets the order… <b style="color:#7ee08a">CORRECT, first try.</b>`;
+      // play-by-play from the actual attempt sequence: each wrong try names the two who re-ride
+      const beats = (tr.rounds || []).map((rd, i) => {
+        const label = tr.rounds.length > 1 ? `Try ${rd.attempt}: ` : '';
+        if (!rd.wrong) return `${i === 0 ? esc(tr.arranger) + ' sets the order' : label + esc(tr.arranger) + ' rebuilds it'}… <b style="color:#7ee08a">CORRECT.</b>`;
+        const rr = (rd.reRiders || []).map(esc).join(' & ');
+        return `${i === 0 ? esc(tr.arranger) + ' sets the order' : label + 'again'}… <b style="color:#ff8f88">WRONG.</b> ${rr} climb back up the coaster for another look.`;
+      });
       const kind = tr.gotIt ? (tr.retries === 0 ? 'good' : 'neutral') : 'bad';
-      steps.push({ html: _card(kind, `${esc(tr.name)} · ${tr.gotIt ? tr.solveTime + 's' : 'DID NOT SOLVE'}`, `${retryTxt} ${tr.gotIt ? 'Order locked in.' : 'Time called before they cracked it.'}`, av(tr.arranger, 24)) });
+      const tail = tr.gotIt ? (tr.retries === 0 ? 'Nailed on the first try.' : `Order finally locked in after ${tr.retries} re-ride${tr.retries > 1 ? 's' : ''}.`) : 'Time called before they cracked it.';
+      steps.push({ html: _card(kind, `${esc(tr.name)} · ${tr.gotIt ? tr.solveTime + 's' : 'DID NOT SOLVE'}`, `${beats.join(' ')} ${tail}`, av(tr.arranger, 24)) });
       sideSnaps.push(renderSide());
     }
     steps.push({ html: `<div class="dp-stamp">${esc(co.winnerTribeName)} WINS · SLEEPING BAGS</div>` });

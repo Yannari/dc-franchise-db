@@ -93,6 +93,16 @@ describe("Demon's Plainer — schedule-adaptive", () => {
     expect(coasterHtml).toContain('Blue Team');
     expect(coasterHtml).toContain('Red Team');
     expect(coasterHtml).toContain('SORTS:');
+    // source mechanic: wrong sort → exactly two named members re-ride; teams always eventually solve
+    for (const tr of ep.demonsPlainer.coaster.tribeResults) {
+      expect(tr.gotIt).toBe(true);
+      for (const rd of tr.rounds) {
+        if (rd.wrong) {
+          expect(rd.reRiders).toHaveLength(2);
+          rd.reRiders.forEach(m => expect(tr.members).toContain(m));
+        }
+      }
+    }
     expect(runText(ep)).not.toContain('SHELTER SCRAMBLE');
     expect(runText(ep)).toContain("DEMON'S PLAINER");
   });

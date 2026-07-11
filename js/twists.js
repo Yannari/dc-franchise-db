@@ -2892,9 +2892,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'elimination-swap') {
     ep.eliminationSwap = true;
 
-  // ── EXILE DUEL — incompatible with RI/Rescue Island (both are return mechanics) ──
+  // ── EXILE DUEL — voted-out waits on exile; next boot duels them.
+  // Normally the loser is permanently eliminated. If Rescue Island is ALSO on
+  // (DC4-style), the duel loser is routed to Rescue Island instead (see episode.js). ──
   } else if (engineType === 'exile-duel') {
-    if (seasonConfig.ri) return; // RI is active — exile duel doesn't fire
     ep.exileDuelActive = true;
 
   // ── SOCIAL ─────────────────────────────────────────────────────────

@@ -326,7 +326,7 @@ export function _textReturns(ep, ln, sec) {
     const _ed = ep.exileDuelResult;
     ln(`EXILE DUEL: ${_ed.exilePlayer} (exile) vs ${_ed.newBoot} (just voted out) — ${_ed.challengeLabel} duel.`);
     ln(`Winner: ${_ed.winner} — ${_ed.winner === _ed.exilePlayer ? 'returns to the game' : 'stays in the game'}.`);
-    ln(`Loser: ${_ed.loser} — permanently eliminated.`);
+    ln(`Loser: ${_ed.loser} — ${ep.exileDuelToRescue ? 'sent to Rescue Island.' : 'permanently eliminated.'}`);
   }
 }
 
@@ -1347,7 +1347,7 @@ export function _textWhyVote(ep, ln, sec) {
     }
     if (ep.exileDuelResult && name === ep.eliminated) {
       const _ed = ep.exileDuelResult;
-      ln(`${_ed.loser} was eliminated via Exile Duel. ${_ed.exilePlayer} faced ${_ed.newBoot} in a ${_ed.challengeLabel} challenge. ${_ed.winner} won. ${_ed.loser} is permanently out.`);
+      ln(`${_ed.exilePlayer} faced ${_ed.newBoot} in a ${_ed.challengeLabel} Exile Duel. ${_ed.winner} won. ${_ed.loser} ${ep.exileDuelToRescue ? 'was sent to Rescue Island.' : 'is permanently out.'}`);
       return;
     }
     if (ep.tiebreakerResult && name === ep.eliminated && !ep.firstEliminated) {

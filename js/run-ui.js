@@ -1075,7 +1075,7 @@ export function renderTwistCatalog() {
       [...selPhases].every(ph => ph !== t.phase);
     const incompBlocked = canAssign && (t.incompatible || []).some(ic => _existingOnSelected.has(ic) && !_sdChalPair(t.id, ic));
     const tribeBlocked = canAssign && t.minTribes && (seasonConfig.teams || 2) < t.minTribes;
-    const riBlocked = canAssign && (t.id === 'exile-duel' || t.id === 'second-chance') && seasonConfig.ri;
+    const riBlocked = canAssign && (t.id === 'second-chance') && seasonConfig.ri;
     const popBlocked = canAssign && t.id === 'second-chance' && !seasonConfig.popularityEnabled;
     const exileBlocked = canAssign && t.id === 'exile-island' && seasonConfig.exile;
     // Tied Destinies: requires even number of active players

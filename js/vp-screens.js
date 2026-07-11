@@ -28,6 +28,7 @@ import { rpBuildSuperHeroldTitleCard, rpBuildSuperHeroldCostume, rpBuildSuperHer
 import { rpBuildHauntedTitleCard, rpBuildHauntedLibrary, rpBuildHauntedKeys, rpBuildHauntedBoss, hauntedRevealNext, hauntedRevealAll } from './chal/haunted-house.js';
 import { rpBuildHungTitleCard, rpBuildHungWarmup, rpBuildHungKnife, rpBuildHungFinal, hungRevealNext, hungRevealAll } from './chal/hung-out-to-dry.js';
 import { rpBuildMerryTitleCard, rpBuildMerryLevel1, rpBuildMerryLevel2, rpBuildMerryFinal, merryRevealNext, merryRevealAll } from './chal/merry-go-round-up.js';
+import { rpBuildMazeTitleCard, rpBuildMazeEarly, rpBuildMazeMid, rpBuildMazeFinal, mazeRevealNext, mazeRevealAll } from './chal/maze-of-the-fallen.js';
 import { rpBuildPrincessPrideTitleCard, rpBuildPrincessPrideCeremony, rpBuildPrincessPrideForest, rpBuildPrincessPrideBridge, rpBuildPrincessPrideDragon, rpBuildPrincessPrideTower, rpBuildPrincessPrideDuel, princessPrideRevealNext, princessPrideRevealAll } from './chal/princess-pride.js';
 import { rpBuildGetAClueTitleCard, rpBuildGetAClueCollection, rpBuildGetAClueTrain, rpBuildGetAClueTrial, rpBuildGetAClueVerdict, getAClueRevealNext, getAClueRevealAll } from './chal/get-a-clue.js';
 import { rpBuildRockNRuleTitleCard, rpBuildRockNRuleGuitar, rpBuildRockNRuleCarpet, rpBuildRockNRuleHotel, rpBuildRockNRuleResults, rockNRuleRevealNext, rockNRuleRevealAll } from './chal/rock-n-rule.js';
@@ -2628,6 +2629,29 @@ export function rpBuildDebug(ep) {
         </div>`;
       });
     } else { html += `<div style="color:#484f58;font-size:11px">No vote pitches this episode.</div>`; }
+    html += `</div>`;
+
+    // Betrayal Detection — the TRUE story: who flipped, and whether the alliance caught it
+    const _epFlips = ep._flipDetectionLog || [];
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#a78bfa;margin-bottom:8px">BETRAYAL DETECTION</div>`;
+    if (_epFlips.length) {
+      _epFlips.forEach(f => {
+        const statusCol = f.detected ? '#f47067' : '#3fb950';
+        const statusTxt = f.open ? 'DETECTED (open vote)' : f.detected ? `DETECTED (${Math.round(f.detectP * 100)}% odds)` : `GOT AWAY WITH IT (${Math.round(f.detectP * 100)}% detect odds)`;
+        const sevCol = f.severity === 'major' ? '#f47067' : f.severity === 'moderate' ? '#d29922' : '#6e7681';
+        html += `<div style="padding:4px 8px;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <div>
+            <span style="color:#e6edf3;font-weight:600">${f.player}</span>
+            <span style="color:#8b949e"> flipped ${f.alliance} → voted ${f.votedFor}</span>
+            <span style="color:${sevCol};font-size:9px;font-weight:700;letter-spacing:.5px"> ${f.severity.toUpperCase()}</span>
+          </div>
+          <div style="color:${statusCol};font-weight:600">${statusTxt}</div>
+          ${f.wrongSuspect ? `<div style="margin-top:3px;padding:3px 6px;background:rgba(167,139,250,0.12);border-left:2px solid #a78bfa;border-radius:3px;font-size:10px;color:#c9a9e4">
+            <span style="font-weight:800;letter-spacing:.5px;color:#a78bfa">MISATTRIBUTED</span> — <strong style="color:#e6edf3">${f.reactor}</strong> blames the wrong person: <strong style="color:#e6edf3">${f.wrongSuspect}</strong> (the real flipper walks free)</div>` : ''}
+        </div>`;
+      });
+    } else { html += `<div style="color:#484f58;font-size:11px">No alliance flips this episode.</div>`; }
     html += `</div>`;
 
     // Social Politics — this episode
@@ -6811,7 +6835,8 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
                    'chaosAgentStirsUp','idolBetrayal','socialBomb','socialBombReaction',
                    'showboat','overconfidence','floaterInvisible',
                    'jealousy','exclusion','blame','passiveAggressive','trustCrack',
-                   'triangleConfrontation','trianglePublicFight',
+                   'triangleConfrontation','trianglePublicFight','misattribution','betrayalReckoning',
+                   'mazeSabotage','mazePitIntel',
                    'affairExposed','affairCaught'].includes(evt.type);
     const isPersonal = isRelEvt && mentioned.length === 2;
     const badgeText  = isHothead      ? '💥 \u2212 Bond damage'
@@ -11043,17 +11068,29 @@ export function rpBuildVotes(ep) {
   }
 
   // ── Alliance fallout: betrayals + quits that happened this episode ──
-  const _allSnapAlliances = ep.gsSnapshot?.namedAlliances || [];
+  // Include DISSOLVED alliances too — a betrayal severe enough to collapse the alliance is the biggest
+  // fallout of all, but the snapshot moves dead alliances to a separate `dissolvedAlliances` field.
+  const _allSnapAlliances = [
+    ...(ep.gsSnapshot?.namedAlliances || []),
+    ...(ep.gsSnapshot?.dissolvedAlliances || []),
+  ];
   const _epQuitMap = {};
   (ep.allianceQuits || []).forEach(q => {
     if (!_epQuitMap[q.alliance]) _epQuitMap[q.alliance] = [];
     _epQuitMap[q.alliance].push(q);
   });
-  const _tribalSet = new Set(ep.tribalPlayers || []);
+  // "At this tribal" = anyone who cast a vote here (the most reliable source — covers revotes where the
+  // tied players can't vote in round 2 but DID flip in round 1) + the eliminated player + tribalPlayers.
+  const _tribalSet = new Set([
+    ...(ep.tribalPlayers || []),
+    ...(ep.eliminated ? [ep.eliminated] : []),
+    ...((ep.votingLog || []).filter(v => v.voter && v.voter !== 'THE GAME').map(v => v.voter)),
+  ]);
+  const _atThisTribal = (name) => _tribalSet.size === 0 || _tribalSet.has(name);
   const _alliancesWithFallout = _allSnapAlliances.filter(a => {
     // Only show fallout for betrayals/quits by players who were at THIS tribal
-    const hasBetrayal = (a.betrayals || []).some(b => b.ep === ep.num && (_tribalSet.size === 0 || _tribalSet.has(b.player)));
-    const hasQuit     = (_epQuitMap[a.name] || []).some(q => _tribalSet.size === 0 || _tribalSet.has(q.player));
+    const hasBetrayal = (a.betrayals || []).some(b => b.ep === ep.num && _atThisTribal(b.player));
+    const hasQuit     = (_epQuitMap[a.name] || []).some(q => _atThisTribal(q.player));
     return hasBetrayal || hasQuit;
   });
   // Helper: distil a votingLog reason string into a short "why they didn't vote consensus" note
@@ -11079,13 +11116,16 @@ export function rpBuildVotes(ep) {
     return firstClause.length <= 70 ? firstClause : null;
   };
 
-  if (_alliancesWithFallout.length) {
+  // UNDETECTED flips — the room never caught them. Viewer-only dramatic irony, shown right here so the
+  // audience gets immediate closure ("broke rank AND got away with it") instead of only in debug.
+  const _undetectedFlips = (ep._flipDetectionLog || []).filter(f => !f.detected && !f.open && _atThisTribal(f.player));
+
+  if (_alliancesWithFallout.length || _undetectedFlips.length) {
     html += `<div style="margin-top:20px">
       <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#484f58;margin-bottom:12px">ALLIANCE FALLOUT</div>`;
     _alliancesWithFallout.forEach(alliance => {
-      const _tribalMembers = new Set(ep.tribalPlayers || []);
-      const betrayalsThisEp = (alliance.betrayals || []).filter(b => b.ep === ep.num && (_tribalMembers.size === 0 || _tribalMembers.has(b.player)));
-      const quitsThisEp     = (_epQuitMap[alliance.name] || []).filter(q => _tribalMembers.size === 0 || _tribalMembers.has(q.player));
+      const betrayalsThisEp = (alliance.betrayals || []).filter(b => b.ep === ep.num && _atThisTribal(b.player));
+      const quitsThisEp     = (_epQuitMap[alliance.name] || []).filter(q => _atThisTribal(q.player));
       html += `<div style="background:#161b22;border:1px solid #21262d;border-radius:8px;padding:12px 14px;margin-bottom:10px">
         <div style="font-size:11px;font-weight:700;color:#e6edf3;margin-bottom:8px">${alliance.name}</div>`;
       betrayalsThisEp.forEach(b => {
@@ -11117,6 +11157,24 @@ export function rpBuildVotes(ep) {
       });
       html += `</div>`;
     });
+    // UNDETECTED flips — grouped into one "slipped by the room" card (the cast never noticed)
+    if (_undetectedFlips.length) {
+      html += `<div style="background:#161b22;border:1px dashed #3f2352;border-radius:8px;padding:12px 14px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:#c9a9e4;margin-bottom:8px">Slipped Past the Room <span style="font-weight:400;color:#6e7681">— the tribe never caught these</span></div>`;
+      _undetectedFlips.forEach(f => {
+        const allyNote = f.votedAlly ? ` — their own ally` : '';
+        const sevNote  = f.severity === 'major' ? '' : f.severity === 'minor' ? ` <span style="color:#6e7681">(a stray vote — didn't change the outcome)</span>` : '';
+        const instead  = (f.consensusWas && f.consensusWas !== f.votedFor) ? ` instead of <strong style="color:#c9d1d9">${f.consensusWas}</strong>` : ` off the plan`;
+        html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          ${rpPortrait(f.player, 'sm')}
+          <div>
+            <span style="font-size:9px;font-weight:800;letter-spacing:1px;color:#a78bfa;margin-right:6px">GOT AWAY WITH IT</span>
+            <span style="font-size:11px;color:#8b949e">flipped <strong style="color:#c9d1d9">${f.alliance}</strong> — voted <strong style="color:#c9d1d9">${f.votedFor}</strong>${instead}${allyNote}, and nobody pinned it on ${(players.find(p=>p.name===f.player)?.gender==='F')?'her':'them'}.${sevNote}</span>
+          </div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
     html += `</div>`;
   }
 
@@ -12406,6 +12464,11 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'mgr-l1', label:'Draft & Warm-Up', html: rpBuildMerryLevel1(ep) });
     vpScreens.push({ id:'mgr-l2', label:'The Push', html: rpBuildMerryLevel2(ep) });
     vpScreens.push({ id:'mgr-final', label:ep.merryData.isMerged ? 'The Blur · Immunity' : 'The Blur · Results', html: rpBuildMerryFinal(ep) });
+  } else if ((ep.isMazeOfTheFallen || ep.challengeType === 'maze-of-the-fallen') && ep.mazeData) {
+    vpScreens.push({ id:'mtf-title', label:'🌽 Maze of the Fallen', html: rpBuildMazeTitleCard(ep) });
+    vpScreens.push({ id:'mtf-early', label:'Into the Maze', html: rpBuildMazeEarly(ep) });
+    vpScreens.push({ id:'mtf-mid', label:'Deeper In', html: rpBuildMazeMid(ep) });
+    vpScreens.push({ id:'mtf-final', label: ep.mazeData.freeForAll ? 'Final Stretch · Free-for-All' : 'Final Stretch · Immunity', html: rpBuildMazeFinal(ep) });
   } else if ((ep.isPrincessPride || ep.challengeType === 'princess-pride') && ep.princessPride) {
     vpScreens.push({ id:'pp-title', label:'The Princess Pride', html: rpBuildPrincessPrideTitleCard(ep) });
     vpScreens.push({ id:'pp-ceremony', label:'Glass Slipper', html: rpBuildPrincessPrideCeremony(ep) });

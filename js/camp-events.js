@@ -7258,41 +7258,104 @@ export function generateCampEvents(ep, phase = 'both') {
         `There are people at this camp ${target} trusts less this morning. ${voterList}. They wrote ${_tP.posAdj} name. That doesn't disappear.`,
       ]) });
     });
+    // ── MISATTRIBUTION: a flip went undetected and an impulsive player turned on the WRONG suspect. Its
+    // own confrontation beat (the traitor's clean getaway is the separate "Got Away With It" event).
+    // Names specifics: which alliance's plan broke, who they were supposed to vote, who actually went home. ──
+    _disc.filter(e => e.type === 'misattribution').forEach(({ reactor, wrongSuspect, alliance, plannedTarget, actualBoot, votedAlly }) => {
+      if (!gs.activePlayers.includes(reactor) || !gs.activePlayers.includes(wrongSuspect)) return;
+      const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(reactor))?.name;
+      if (!_campKey || !ep.campEvents[_campKey]) return;
+      const _rP = pronouns(reactor), _wP = pronouns(wrongSuspect);
+      const _allw = alliance ? `${alliance}'s` : 'the';
+      // what the reactor SAW go wrong: either the plan target survived, or a wrong name went home
+      const _whatBroke = votedAlly
+        ? (actualBoot ? `${actualBoot}, one of their own, went home instead of ${plannedTarget || 'the target'}` : `an ally's name came up instead of ${plannedTarget || 'the plan'}`)
+        : (plannedTarget && actualBoot && plannedTarget !== actualBoot
+          ? `${plannedTarget} was supposed to go, and ${actualBoot} went instead`
+          : plannedTarget ? `the vote on ${plannedTarget} came apart` : `the plan came apart`);
+      const _planShort = plannedTarget ? `the plan to vote ${plannedTarget}` : `the plan`;
+      ep.campEvents[_campKey].pre.push({ type: 'misattribution', players: [reactor, wrongSuspect], badgeText: 'Wrong Suspect', badgeClass: 'red', text: _rp([
+        `${_allw} vote fell apart last tribal — ${_whatBroke} — and ${reactor} has decided ${wrongSuspect} was the one who broke ranks. ${_wP.Sub} didn't; ${_wP.sub === 'they' ? "they held" : _wP.sub + " held"} the line. But ${_rP.posAdj} certainty doesn't care, and ${wrongSuspect} is blindsided by the accusation.`,
+        `${reactor} corners ${wrongSuspect}: "You broke ${_planShort}. Don't lie to me." Except ${wrongSuspect} voted exactly where ${_wP.sub} said ${_wP.sub} would — ${_whatBroke}, and someone else did it. ${_rP.Sub} ${_rP.sub === 'they' ? "aren't" : "isn't"} listening. A rift opens along a line that isn't even real.`,
+        `Something went wrong with ${_allw} plan — ${_whatBroke} — and ${reactor} needs a name for it. ${_rP.Sub} ${_rP.sub === 'they' ? "land" : "lands"} on ${wrongSuspect}. Wrong read entirely: ${wrongSuspect} stayed loyal. But the cold shoulder is real now, and ${wrongSuspect} has no idea what ${_wP.sub} supposedly did.`,
+        `${wrongSuspect} wakes up to a colder camp. ${reactor} has pinned it on ${_wP.obj} — sure that ${wrongSuspect} sank ${_planShort} when ${_whatBroke}. ${_wP.Sub} ${_wP.sub === 'they' ? "did no such thing" : "did no such thing"}, and now ${_wP.sub} ${_wP.sub === 'they' ? "are" : "is"} defending a move ${_wP.sub} never made while the real flipper sits quiet.`,
+        `The paranoia found a target: ${wrongSuspect}. ${reactor} is convinced ${_wP.sub} torched ${_planShort} — ${_whatBroke}. ${_wP.Sub} ${_wP.sub === 'they' ? "protest" : "protests"}, honestly, but ${reactor} has already made up ${_rP.posAdj} mind. The one who actually flipped never even comes up.`,
+      ]) });
+    });
   }
 
   // ── SECRET FLIP (VIEWER-ONLY DRAMATIC IRONY): a betrayal that went UNDETECTED. The audience is let in
-  // on it — the cast never is (no bonds change here; it's pure narration). Two flavors: the traitor got
-  // away clean, or they got away WHILE an impulsive ally blames the wrong person. Reads gs.secretFlipsLastEp
-  // set by detectBetrayals() last episode. Cap 2/episode (juiciest first) so it stays a special beat. ──
+  // on it — the cast never is (no bonds change here; it's pure narration). So the viewer ALWAYS knows a
+  // rank was broken even with debug off. This beat is purely the TRAITOR'S clean getaway; any wrong-blame
+  // fallout is its OWN 'misattribution' event (above). Severity scales it: MAJOR/MODERATE = full "Got Away
+  // With It", MINOR (target went home anyway) = lighter "Loose Vote" aside. Cap 2 big + 1 minor/ep. ──
   if (gs.secretFlipsLastEp?.length && (phase === 'pre' || phase === 'both')) {
     const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
-    const _flips = [...gs.secretFlipsLastEp]
-      .filter(f => gs.activePlayers.includes(f.traitor))
-      .sort((a, b) => (b.severity === 'major' ? 1 : 0) - (a.severity === 'major' ? 1 : 0)) // major first
-      .slice(0, 2);
+    const _all = [...gs.secretFlipsLastEp].filter(f => gs.activePlayers.includes(f.traitor));
     gs.secretFlipsLastEp = []; // consume
-    _flips.forEach(({ traitor, wrongSuspect, reactor }) => {
+    const _big = _all.filter(f => f.severity !== 'minor').slice(0, 2);        // real betrayals — full beat
+    const _minor = _all.filter(f => f.severity === 'minor').slice(0, 1);      // one stray-vote aside
+    _big.forEach(({ traitor, alliance, votedFor, consensusWas, votedAlly }) => {
       const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(traitor))?.name;
       if (!_campKey || !ep.campEvents[_campKey]) return;
       const _tPr = pronouns(traitor);
-      if (wrongSuspect && reactor && gs.activePlayers.includes(wrongSuspect) && gs.activePlayers.includes(reactor)) {
-        // PAIRED: real traitor walks free, wrong person takes the heat
-        ep.campEvents[_campKey].pre.push({ type: 'secretFlip', players: [traitor, wrongSuspect, reactor], badgeText: 'Got Away With It', badgeClass: 'gold', text: _rp([
-          `Here's what the camp doesn't know: ${traitor} slid the knife in last tribal, clean, and nobody caught it. ${reactor} is busy blaming ${wrongSuspect} — the wrong name entirely — while ${traitor} just... watches it happen.`,
-          `${traitor} pulled off the flip and walked away spotless. The fallout landed on ${wrongSuspect} instead, ${reactor} convinced they've found the traitor. They haven't. ${_tPr.Sub} ${_tPr.sub === 'they' ? "are" : "is"} sitting right there, quiet as anything.`,
-          `The vote's read, the blame's set — on ${wrongSuspect}. But it was ${traitor} who turned, and not one person is looking ${_tPr.posAdj} way. ${reactor}'s anger is pointed at a ghost. ${traitor} lets it ride.`,
-          `Nobody suspects ${traitor}. ${reactor} has decided it was ${wrongSuspect}, and the camp is fracturing along a line that isn't even real. ${traitor} keeps ${_tPr.posAdj} head down and ${_tPr.posAdj} mouth shut. That's how you get away with it.`,
-        ]) });
-      } else {
-        // SOLO: the traitor simply got away clean
-        ep.campEvents[_campKey].pre.push({ type: 'secretFlip', players: [traitor], badgeText: 'Got Away With It', badgeClass: 'gold', text: _rp([
-          `The camp thinks that vote went exactly as planned. It didn't — ${traitor} flipped, and nobody noticed. ${_tPr.Sub} ${_tPr.sub === 'they' ? "played" : "played"} it clean and walked away without a scratch.`,
-          `${traitor} turned on the plan last tribal and got away with it completely. No suspicion, no fallout, no cost. The best kind of betrayal is the one nobody knows happened.`,
-          `Little does the tribe know — ${traitor} was the one who moved the vote. The blame never landed anywhere. ${_tPr.Sub} ${_tPr.sub === 'they' ? "are" : "is"} still sitting inside the alliance ${_tPr.sub === 'they' ? "they" : _tPr.sub} just quietly gutted.`,
-          `${traitor} made a move last tribal that should have cost ${_tPr.obj} everything — and it cost nothing, because not a soul figured it out. Smooth. Dangerous. Unseen.`,
+      // name the specifics: which alliance, who the plan was, who they secretly wrote
+      const _allw = alliance ? alliance : 'the alliance';
+      const _wrote = (votedFor && consensusWas && votedFor !== consensusWas)
+        ? `wrote ${votedFor}${votedAlly ? ', an ally,' : ''} instead of ${consensusWas}`
+        : votedFor ? `quietly wrote ${votedFor}` : `flipped the vote`;
+      ep.campEvents[_campKey].pre.push({ type: 'secretFlip', players: votedAlly && gs.activePlayers.includes(votedFor) ? [traitor, votedFor] : [traitor], badgeText: 'Got Away With It', badgeClass: 'gold', text: _rp([
+        `The camp thinks that vote went exactly as planned. It didn't — ${traitor} broke from ${_allw} and ${_wrote}, and nobody noticed. ${_tPr.Sub} played it clean and walked away without a scratch.`,
+        `${traitor} turned on ${_allw} last tribal, ${_wrote}, and got away with it completely. No suspicion, no fallout, no cost. The best kind of betrayal is the one nobody knows happened.`,
+        `Little does the tribe know — ${traitor} was the one who moved the vote, breaking ${_allw} to ${_wrote}. The blame never landed anywhere. ${_tPr.Sub} ${_tPr.sub === 'they' ? "are" : "is"} still sitting inside the alliance ${_tPr.sub === 'they' ? "they" : _tPr.sub} just quietly gutted.`,
+        `${traitor} ${_wrote} against ${_allw}'s call last tribal — a move that should have cost ${_tPr.obj} everything. It cost nothing, because not a soul figured it out. Smooth. Dangerous. Unseen.`,
+      ]) });
+    });
+    // MINOR: a lighter "loose vote" aside — a stray vote that didn't change anything doesn't need a beat
+    // every time, so it only fires ~35% of the time (the viewer occasionally catches the hairline crack).
+    _minor.forEach(({ traitor, votedFor, alliance }) => {
+      if (Math.random() > 0.35) return;
+      const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(traitor))?.name;
+      if (!_campKey || !ep.campEvents[_campKey]) return;
+      const _tPr = pronouns(traitor);
+      const _tgtActive = gs.activePlayers.includes(votedFor);
+      ep.campEvents[_campKey].pre.push({ type: 'secretFlip', players: _tgtActive ? [traitor, votedFor] : [traitor], badgeText: 'Loose Vote', badgeClass: 'gold', text: _rp([
+        `Something the tribe missed: ${traitor} didn't vote with ${alliance} last night — a stray name on the parchment${_tgtActive ? ` (${votedFor})` : ''} that didn't change a thing. It slipped by unnoticed, but it says ${_tPr.sub === 'they' ? "they aren't" : _tPr.sub + " isn't"} as locked in as ${_tPr.posAdj} allies think.`,
+        `${traitor} quietly broke from ${alliance}'s plan and threw a vote elsewhere. The boot went home anyway, so nobody blinked — but the crack is there, and only the cameras saw it.`,
+        `Nobody caught it, but ${traitor} went off-script last tribal${_tgtActive ? ` — a loose vote on ${votedFor}` : ''}. It cost nothing this time. Next time it might.`,
+        `A small thing the alliance never noticed: ${traitor}'s vote wasn't where it was supposed to be. ${_tPr.Sub} ${_tPr.sub === 'they' ? "are" : "is"} testing the leash — quietly, for now.`,
+      ]) });
+    });
+  }
+
+  // ── DETECTED BETRAYAL RECKONING: a MAJOR/MODERATE flip the alliance CAUGHT. The caught traitor faces
+  // the group next episode — isolated, marked, on the outs. (The sneaky undetected version is the separate
+  // "Got Away With It" beat.) One per episode, most severe first, so it stays a headline moment. ──
+  if (gs.detectedFlipsLastEp?.length && (phase === 'pre' || phase === 'both')) {
+    const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+    const _caught = [...gs.detectedFlipsLastEp]
+      .filter(f => gs.activePlayers.includes(f.traitor))
+      .sort((a, b) => (b.severity === 'major' ? 1 : 0) - (a.severity === 'major' ? 1 : 0))[0];
+    gs.detectedFlipsLastEp = []; // consume
+    if (_caught) {
+      const { traitor, alliance, votedFor, consensusWas, votedAlly, allyEliminated } = _caught;
+      const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(traitor))?.name;
+      if (_campKey && ep.campEvents[_campKey]) {
+        const _tPr = pronouns(traitor);
+        const _allw = alliance || 'the alliance';
+        const _what = (votedFor && consensusWas && votedFor !== consensusWas)
+          ? `wrote ${votedFor}${votedAlly ? ', one of their own,' : ''} instead of ${consensusWas}`
+          : votedFor ? `wrote ${votedFor}` : `broke ranks`;
+        // partner card: the ally they voted (if still around), else solo
+        const _partner = votedAlly && gs.activePlayers.includes(votedFor) && votedFor !== traitor ? votedFor : null;
+        ep.campEvents[_campKey].pre.push({ type: 'betrayalReckoning', players: _partner ? [traitor, _partner] : [traitor], badgeText: 'Caught Flipping', badgeClass: 'red', text: _rp([
+          `Everyone knows. ${traitor} ${_what} at tribal, and ${_allw} caught it. ${allyEliminated ? `${votedFor} went home because of it.` : ''} ${_tPr.Sub} ${_tPr.sub === 'they' ? "walk" : "walks"} into camp a marked player — the trust is gone, and nobody's pretending otherwise.`,
+          `${traitor} got caught. ${_allw} knows ${_tPr.sub} ${_what}, and the reckoning is immediate — cold shoulders, hushed conversations that stop when ${_tPr.sub} ${_tPr.sub === 'they' ? "walk" : "walks"} up. ${_tPr.Sub} ${_tPr.sub === 'they' ? "are" : "is"} on the outside now.`,
+          `No hiding this one. ${traitor} ${_what} against ${_allw}, ${_tPr.posAdj} own alliance, and got made for it. ${allyEliminated ? `${votedFor} paid the price. ` : ''}The group is already talking about who's next, and the name at the top of the list is ${_tPr.posAdj} own.`,
+          `${traitor} broke ${_allw} — ${_what} — and it wasn't subtle enough. Now ${_tPr.sub} ${_tPr.sub === 'they' ? "have" : "has"} a target painted on ${_tPr.posAdj} back and no alliance to hide behind. The betrayal bought ${_tPr.obj} nothing but enemies.`,
         ]) });
       }
-    });
+    }
   }
 
   // ── KiP steal aftermath: victim reaction + tribe awareness ──

@@ -19,10 +19,14 @@ function _impulsiveness(name) {
 // SPICY MISATTRIBUTION: an undetected flip left the alliance paranoid. The most impulsive loyal member
 // may lash out at the WRONG person — a plausible suspect they already distrust — instead of the real
 // (undetected) traitor. The grudge is real: bond crashes, steering their next vote onto an innocent.
-function _misattributeBlame(ep, alliance, realBetrayer, realTarget, loyalReaders) {
+function _misattributeBlame(ep, alliance, realBetrayer, realTarget, loyalReaders, severity, plannedTarget, actualBoot) {
   if (!loyalReaders.length) return null;
   const reactor = [...loyalReaders].sort((a, b) => _impulsiveness(b) - _impulsiveness(a))[0];
-  if (Math.random() >= _impulsiveness(reactor)) return null; // kept a cool head — quiet paranoia, no wrong-blame
+  // A MAJOR undetected betrayal (an ally's name written) ALWAYS demands a culprit — the fallout is big
+  // enough that someone always ends up pointing a finger. Moderate/minor stay gated by the reactor's
+  // impulsiveness: a stray vote doesn't necessarily start a witch hunt, and calm heads don't jump.
+  const _fireChance = severity === 'major' ? 1.0 : _impulsiveness(reactor);
+  if (Math.random() >= _fireChance) return null; // kept a cool head — quiet paranoia, no wrong-blame
   // a plausible wrong suspect: not the reactor / real traitor / boot; bias to someone already distrusted
   // or a shifty archetype (villain/schemer reads as guilty), preferring inside the alliance for the irony.
   const insiders = alliance.members.filter(p => p !== reactor && p !== realBetrayer && gs.activePlayers.includes(p) && p !== realTarget);
@@ -35,6 +39,14 @@ function _misattributeBlame(ep, alliance, realBetrayer, realTarget, loyalReaders
   addBond(reactor, wrongSuspect, -2.0); // a real grudge — drives targeting via perceived bond next vote
   if (!gs.blowupHeatNextEp) gs.blowupHeatNextEp = new Set();
   gs.blowupHeatNextEp.add(reactor);
+  // Dedicated camp-event channel for the wrong-blame confrontation (its own beat next episode),
+  // separate from the traitor's "got away with it" reveal. Fires for any flip severity. Carries the plan
+  // context (what the alliance was voting, who actually went home) so the beat can name specifics —
+  // the reactor is blaming wrongSuspect for THAT disruption.
+  if (!gs.discoveredVotesLastEp) gs.discoveredVotesLastEp = [];
+  gs.discoveredVotesLastEp.push({ type: 'misattribution', reactor, wrongSuspect, realBetrayer,
+    alliance: alliance.name, plannedTarget: plannedTarget || null, actualBoot: actualBoot || null,
+    votedAlly: alliance.members.includes(realTarget) });
   return { reactor, wrongSuspect };
 }
 
@@ -635,7 +647,11 @@ export function detectBetrayals(ep) {
       if (sp && e.voted === sp.secondary && sp.secondaryVoters.includes(v)) return false;
       return true;
     });
-    const _numLeft = gs.activePlayers.length;
+    // FIELD SIZE = the suspect pool at THIS tribal (who actually cast a vote), NOT the whole season.
+    // Pre-merge this is the attending tribe (~6), so a flip in a small tribe is very visible; post-merge
+    // everyone attends so it's the full merged field. A flip hides behind SUSPECTS, not distant tribes.
+    const _numLeft = new Set((ep.votingLog || []).filter(v => v.voter && v.voter !== 'THE GAME').map(v => v.voter)).size
+      || gs.activePlayers.length;
     const _isLone = _deviators.length === 1;
     const _loyalReaders = alliance.members.filter(m => !_deviators.includes(m) && gs.activePlayers.includes(m));
     const _bestRead = _loyalReaders.length ? Math.max(..._loyalReaders.map(m => pStats(m).intuition + (_arch(m) === 'perceptive-player' ? 4 : 0))) : 0;
@@ -670,27 +686,46 @@ export function detectBetrayals(ep) {
         + _bestRead * 0.02                              // a sharp/perceptive ally reads it
         - (_bs.social + _bs.strategic - 10) * 0.022;    // smooth operator covers tracks (avg-5 = no effect)
       _detectP = Math.max(0.05, Math.min(0.97, _detectP));
+      // GRADUAL FLOOR as the field thins: fewer suspects = harder to hide, climbing smoothly rather than
+      // in a cliff. Starts easing in around 11, reaches ~nearly-impossible by 6-7 even for a smooth operator.
+      const _detectFloor = Math.max(0, Math.min(0.96, (11.5 - _numLeft) * 0.15));
+      _detectP = Math.max(_detectP, _detectFloor);
       const _detected = !!ep.openVote || Math.random() < _detectP;
+
+      // ── DEBUG LOG: record every flip's detection outcome for the Hidden Moves tab (the true story) ──
+      const _dbg = { player: voter, alliance: alliance.name, votedFor: betrayerVotedFor, consensusWas: consensusVote,
+        votedAlly: votedForAllyMember, severity: _betrayalSeverity,
+        detected: _detected, detectP: +_detectP.toFixed(2), open: !!ep.openVote, reactor: null, wrongSuspect: null };
+      (ep._flipDetectionLog = ep._flipDetectionLog || []).push(_dbg);
 
       if (!_detected) {
         // ── UNDETECTED: the flip got away with it. No punishment to the betrayer; log as a secret for
         // history/VP — the alliance ledger only tracks betrayals it actually KNOWS about (so dissolution
         // and track-record stay honest). Then an impulsive loyal member may blame the WRONG person. ──
         (ep._secretBetrayals = ep._secretBetrayals || []).push({ player: voter, alliance: alliance.name, votedFor: betrayerVotedFor, severity: _betrayalSeverity, ep: ep.num });
-        const _mis = _misattributeBlame(ep, alliance, voter, betrayerVotedFor, _loyalReaders);
-        // Surface it to the VIEWER next episode (dramatic irony — the cast never learns it). Only
-        // meaningful flips (voting an ally, or breaking unity while the target survived); a minor
-        // "went rogue but voted the boot anyway" isn't worth a reveal.
-        if (_betrayalSeverity !== 'minor') {
-          if (!gs.secretFlipsLastEp) gs.secretFlipsLastEp = [];
-          gs.secretFlipsLastEp.push({ traitor: voter, alliance: alliance.name, votedFor: betrayerVotedFor,
-            severity: _betrayalSeverity, reactor: _mis?.reactor || null, wrongSuspect: _mis?.wrongSuspect || null });
-        }
+        const _mis = _misattributeBlame(ep, alliance, voter, betrayerVotedFor, _loyalReaders, _betrayalSeverity, consensusVote, ep.eliminated);
+        if (_mis) { _dbg.reactor = _mis.reactor; _dbg.wrongSuspect = _mis.wrongSuspect; }
+        // Surface it to the VIEWER next episode (dramatic irony — the cast never learns it). ALL
+        // undetected flips are surfaced so the viewer always knows a rank was broken, even with debug off;
+        // the camp-event handler scales the treatment by severity (full betrayal vs a lighter stray vote).
+        if (!gs.secretFlipsLastEp) gs.secretFlipsLastEp = [];
+        gs.secretFlipsLastEp.push({ traitor: voter, alliance: alliance.name, votedFor: betrayerVotedFor,
+          consensusWas: consensusVote, votedAlly: votedForAllyMember,
+          severity: _betrayalSeverity, reactor: _mis?.reactor || null, wrongSuspect: _mis?.wrongSuspect || null });
         return;
       }
 
       // ── DETECTED: recorded + punished (original behavior) ──
       alliance.betrayals.push({ player: voter, ep: ep.num, votedFor: entry.voted, consensusWas: consensusVote, formedThisEp, reason: entry.reason || '', severity: _betrayalSeverity });
+      // Queue a dedicated camp confrontation for MAJOR/MODERATE detected betrayals (the caught traitor
+      // faces the alliance's reckoning next episode). Minor stray votes don't warrant a confrontation.
+      // Skip if the traitor was themselves voted out (nothing to confront). Consumed in camp-events.js.
+      if (_betrayalSeverity !== 'minor' && gs.activePlayers.includes(voter)) {
+        if (!gs.detectedFlipsLastEp) gs.detectedFlipsLastEp = [];
+        gs.detectedFlipsLastEp.push({ traitor: voter, alliance: alliance.name, votedFor: betrayerVotedFor,
+          consensusWas: consensusVote, votedAlly: votedForAllyMember, severity: _betrayalSeverity,
+          allyEliminated: votedForAllyMember && betrayerVotedForEliminated });
+      }
       // Scale bond cost by impact + severity
       let bondCost;
       if (votedForAllyMember) {

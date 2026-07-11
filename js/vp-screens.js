@@ -3503,15 +3503,16 @@ export function rpBuildPostElimTwist(ep) {
   if (ep.exileDuelResult) {
     const _dr = ep.exileDuelResult;
     const _toRescue = ep.exileDuelToRescue;
+    const _riLabel = ep.exileDuelRILabel || 'Rescue Island';
     const _place = (ep.gsSnapshot?.activePlayers ?? gs.activePlayers).length + 1;
     const _elimQ = vpGenerateQuote(_dr.loser, ep, 'eliminated');
     html += `<hr class="rp-twist-divider"><div class="rp-elim">
-      <div class="rp-elim-eyebrow">${_toRescue ? 'Lost the duel — sent to Rescue Island' : ordinal(_place) + ' player eliminated'}</div>
+      <div class="rp-elim-eyebrow">${_toRescue ? 'Lost the duel — sent to ' + _riLabel : ordinal(_place) + ' player eliminated'}</div>
       ${rpPortrait(_dr.loser, 'xl elim')}
       <div class="rp-elim-name">${_dr.loser}</div>
       <div class="rp-elim-arch">${vpArchLabel(_dr.loser)}</div>
       <div class="rp-elim-quote">"${_elimQ}"</div>
-      <div class="rp-elim-place">${_toRescue ? 'Duel lost → Rescue Island' : 'Eliminated via Duel'} — Episode ${ep.num}</div>
+      <div class="rp-elim-place">${_toRescue ? 'Duel lost → ' + _riLabel : 'Eliminated via Duel'} — Episode ${ep.num}</div>
     </div>`;
   }
   // ── Second Life (fire-making) loser elimination card + WHY ──
@@ -6142,7 +6143,7 @@ export function _buildPostTwistBlocks(ep) {
     const _eEdge = _edgeStat(_eS) > _edgeStat(_nS);
     sc.unshift({ text: '', players: [dr.exilePlayer, dr.newBoot], faceOff: true });
     sc.push({ text: `${dr.exilePlayer} has been waiting on 2nd Chance Isle. Tonight's vote produced a challenger: ${dr.newBoot}.`, players: [dr.exilePlayer, dr.newBoot] });
-    sc.push({ text: ep.exileDuelToRescue ? `One re-enters the game. One is sent to Rescue Island.` : `One re-enters the game. One goes home for good.`, players: [dr.exilePlayer, dr.newBoot] });
+    sc.push({ text: ep.exileDuelToRescue ? `One re-enters the game. One is sent to ${ep.exileDuelRILabel || 'Rescue Island'}.` : `One re-enters the game. One goes home for good.`, players: [dr.exilePlayer, dr.newBoot] });
     if (dr.challengeLabel) sc.push({ text: `The duel: ${dr.challengeLabel}.${dr.challengeDesc ? ' ' + dr.challengeDesc : ''}`, players: [dr.exilePlayer, dr.newBoot] });
     // Suspense build-up — text varies by challenge type
     if (_cat === 'endurance') {
@@ -6181,7 +6182,7 @@ export function _buildPostTwistBlocks(ep) {
     }
     sc.push({ text: `The challenge hangs in the balance. Then the tipping point.`, players: [dr.exilePlayer, dr.newBoot] });
     sc.push({ text: `${dr.winner} pulls ahead and doesn't look back.`, players: [dr.winner], badge: dr.winner === dr.exilePlayer ? 'Returns to the Game' : 'Stays in the Game', badgeClass: 'win' });
-    sc.push({ text: ep.exileDuelToRescue ? `${dr.loser} loses the duel and is sent to Rescue Island — still alive, but one step from the jury.` : `${dr.loser} is permanently eliminated.`, players: [dr.loser], badge: ep.exileDuelToRescue ? 'Rescue Island' : 'Eliminated', badgeClass: ep.exileDuelToRescue ? 'neutral' : 'bad' });
+    sc.push({ text: ep.exileDuelToRescue ? `${dr.loser} loses the duel and is sent to ${ep.exileDuelRILabel || 'Rescue Island'} — still alive, but one step from the jury.` : `${dr.loser} is permanently eliminated.`, players: [dr.loser], badge: ep.exileDuelToRescue ? (ep.exileDuelRILabel || 'Rescue Island') : 'Eliminated', badgeClass: ep.exileDuelToRescue ? 'neutral' : 'bad' });
     // Aftermath — return or survivor
     if (dr.winner === dr.exilePlayer) {
       sc.push({ text: `${dr.winner} re-enters the game. The people who voted them out are still here. This is no longer just a game for them.`, players: [dr.winner] });
@@ -10921,7 +10922,7 @@ export function rpBuildVotes(ep) {
         <div style="text-align:center">${rpPortrait(_dr.newBoot,'xl')}<div style="font-size:10px;color:#8b949e;margin-top:6px;font-weight:700;letter-spacing:0.5px">Just Voted Out</div></div>
       </div>
       <div style="font-size:13px;color:#cdd9e5;line-height:1.6;text-align:center;margin:0 0 8px">${_dr.exilePlayer} has been waiting. ${_dr.newBoot} just joined them.</div>
-      <div style="font-size:12px;color:#8b949e;text-align:center">One challenge. One re-enters the game; ${ep.exileDuelToRescue ? 'the loser is sent to Rescue Island' : 'one goes home for good'}. Continue to find out who.</div>
+      <div style="font-size:12px;color:#8b949e;text-align:center">One challenge. One re-enters the game; ${ep.exileDuelToRescue ? 'the loser is sent to ' + (ep.exileDuelRILabel || 'Rescue Island') : 'one goes home for good'}. Continue to find out who.</div>
     </div>`;
   }
 
@@ -13320,6 +13321,15 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id:'votes-2', label:'Vote 2', html: rpBuildVotes2(ep) });
     }
 
+    // ── Post-Vote Twist: exile-duel RESULT reveal ──
+    // Must come BEFORE the RI/Rescue screens — those show the loser arriving at the
+    // return island, which would spoil who lost the duel. (The tribal branch otherwise
+    // never renders the post-twist screen; the else-branch handles non-tribal episodes.)
+    if (ep.exileDuelResult) {
+      const _exPostHtml = rpBuildPostElimTwist(ep);
+      if (_exPostHtml) vpScreens.push({ id:'post-twist', label:'Post-Vote Twist', html: _exPostHtml });
+    }
+
     // ── RI Choice (shows whether eliminated player chose RI or went home) ──
     if (ep.riChoice) {
       const _riChoiceHtml = rpBuildRIChoice(ep);
@@ -13487,7 +13497,10 @@ export function buildVPScreens(epRecord) {
     }
 
     // Post-elimination twists (fire-making, exile duel, etc.)
-    const _postElimHtml = rpBuildPostElimTwist(ep);
+    // Skip the exile-duel result here if the tribal branch already rendered it BEFORE
+    // the RI screens (so it isn't shown twice, and never after the RI/rescue arrival).
+    const _exileAlreadyShown = ep.exileDuelResult && (ep.alliances?.some(a => a.target) || ep.votingLog?.length) && !_isJuryElim;
+    const _postElimHtml = _exileAlreadyShown ? null : rpBuildPostElimTwist(ep);
     if (_postElimHtml) vpScreens.push({ id:'post-twist', label:'Post-Vote Twist', html: _postElimHtml });
 
     // RI Choice + Life + Duel (for non-tribal episodes OR jury elimination)

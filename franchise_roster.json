@@ -2408,7 +2408,7 @@
       "slug": "alessio",
       "gender": "m",
       "sexuality": "straight",
-      "archetype": "floater",
+      "archetype": "wildcard",
       "stats": {
         "physical": 4,
         "endurance": 4,
@@ -2598,7 +2598,7 @@
       "slug": "lynda",
       "gender": "f",
       "sexuality": "straight",
-      "archetype": "wildcard",
+      "archetype": "hothead",
       "stats": {
         "physical": 3,
         "endurance": 5,

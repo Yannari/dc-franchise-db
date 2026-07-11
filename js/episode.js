@@ -6161,15 +6161,20 @@ function simulateJuryRoundtable(ep) {
     ep.exileDuelResult = { exilePlayer, newBoot, winner: _edResult.winner, loser: _edResult.loser, challengeLabel: _edResult.challengeLabel, challengeCategory: _edResult.challengeCategory, challengeDesc: _edResult.challengeDesc };
     gs.exileDuelPlayer = null;
     const _edLoser = _edResult.loser; const _edWinner = _edResult.winner;
-    // DC4-style: when Rescue Island is active, the duel LOSER goes to Rescue Island
-    // instead of being permanently eliminated. With RI off, normal exile-duel elimination.
-    const _edToRescue = seasonConfig.ri && isRIStillActive();
-    if (_edToRescue) {
+    // DC4-style: when a return island (Rescue OR Redemption) is active, the duel
+    // LOSER goes to that island instead of being permanently eliminated. With no
+    // return island (or it's already closed), normal exile-duel elimination.
+    const _edToRI = seasonConfig.ri && isRIStillActive();
+    const _edIsRescue = cfg.riFormat === 'rescue';
+    if (_edToRI) {
       gs.riPlayers.push(_edLoser);
-      gs.riArrivalEp = gs.riArrivalEp || {};
-      gs.riArrivalEp[_edLoser] = epNum;
-      ep.exileDuelToRescue = true;
-      ep.riArrival = { name: _edLoser, existingResidents: gs.riPlayers.filter(p => p !== _edLoser) };
+      ep.exileDuelToRescue = true; // flag: loser routed to a return island (not eliminated)
+      ep.exileDuelRILabel = _edIsRescue ? 'Rescue Island' : 'Redemption Island';
+      if (_edIsRescue) {
+        gs.riArrivalEp = gs.riArrivalEp || {};
+        gs.riArrivalEp[_edLoser] = epNum;
+        ep.riArrival = { name: _edLoser, existingResidents: gs.riPlayers.filter(p => p !== _edLoser) };
+      }
     } else {
       gs.eliminated.push(_edLoser);
       if (gs.isMerged) gs.jury.push(_edLoser);
@@ -6190,7 +6195,7 @@ function simulateJuryRoundtable(ep) {
       gs.advantages = gs.advantages.filter(a => a.holder !== newBoot);
     }
     ep.eliminated = _edLoser;
-    ep.riChoice = _edToRescue ? 'RESCUE ISLAND' : null;
+    ep.riChoice = _edToRI ? (_edIsRescue ? 'RESCUE ISLAND' : 'REDEMPTION ISLAND') : null;
 
     // ── Volunteer Exile Duel: apply grudge bonus if the volunteer won ──
     // Check previous episode's volunteerDuel (the volunteer was voted out last ep, duel happens this ep)
@@ -6820,6 +6825,7 @@ function simulateJuryRoundtable(ep) {
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelToRescue: ep.exileDuelToRescue || false,
+    exileDuelRILabel: ep.exileDuelRILabel || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,
     fireMaking:       ep.fireMaking       || null,
     tiebreakerResult:  ep.tiebreakerResult  || null,

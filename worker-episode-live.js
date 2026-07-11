@@ -664,15 +664,15 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
     return data;
   }
 
-  // Try GPT-5 first
-  if (env.DPSK_API_KEY) {
+  // Try GPT-5 first (analytics runs on OpenAI, not the DeepSeek episode-writing path)
+  if (env.OPENAI_API_KEY) {
     const payload = {
       model: "gpt-5.5",
       instructions,
       input: summaryText,
       text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
     };
-    const response = await callOpenAI(payload, env);
+    const response = await callOpenAI(payload, env, { provider: "openai" });
     if (response.ok) {
       const data = await response.json();
       if (!data.error) {
@@ -2644,7 +2644,55 @@ function repairTruncatedJson(str) {
 // Keeps the SAME name, arguments, and return shape so all callers work unchanged: it accepts a
 // Responses-API-style payload ({ model, instructions, input, [text.format.schema] }) and returns
 // a Response whose .json() is either the parsed JSON (for schema calls) or { episodeTranscript }.
-async function callOpenAI(payload, env) {
+async function callOpenAI(payload, env, opts = {}) {
+  // Analytics (and any caller passing { provider: "openai" }) hit the real OpenAI Responses API.
+  if (opts.provider === "openai") {
+    let resp;
+    try {
+      resp = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
+        status: 502,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    const data = await resp.json().catch(() => ({}));
+
+    if (!resp.ok) {
+      return new Response(JSON.stringify(data), {
+        status: resp.status,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    const outText = typeof data?.output_text === "string" ? data.output_text.trim() : "";
+    let outJson = null;
+    if (outText) {
+      try { outJson = JSON.parse(outText); }
+      catch { outJson = { episodeTranscript: outText }; }
+    }
+    if (!outJson && Array.isArray(data?.output)) {
+      const joined = data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("").trim();
+      if (joined) {
+        try { outJson = JSON.parse(joined); }
+        catch { outJson = { episodeTranscript: joined }; }
+      }
+    }
+
+    const finalOut = outJson || data;
+    return new Response(JSON.stringify(finalOut), {
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
   // Responses-API "instructions"/"input" → chat/completions system/user messages.
   let system = payload.instructions || "";
   const schema = payload?.text?.format?.schema;

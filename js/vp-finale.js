@@ -3626,6 +3626,95 @@ export function rpBuildJuryLife(ep) {
   return html;
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// INTERLUDE VP — non-elimination "check in on the out-of-game cast" screens.
+// Renders ep.interlude (from generateInterludeLife). Two venues: survival camp
+// (Rescue Island) / furnished motel (Jury House). Warm, story-driven — not the
+// Edge-of-Extinction arena HUD.
+// ══════════════════════════════════════════════════════════════════════
+function _interludeData(ep) { return ep.interlude || ep.juryHouse || null; }
+
+export function rpBuildJuryHouseTitle(ep) {
+  const d = _interludeData(ep); if (!d) return null;
+  const jury = d.venue === 'jury';
+  const residents = d.residents || [];
+  const bg = jury ? 'tod-golden' : 'tod-dusk';
+  const title = jury ? 'The Jury Motel' : 'Rescue Island';
+  const sub = jury ? 'No torches. No challenges. Just the ones the game spat out.' : 'Marooned, and waiting for a second chance.';
+  const blurb = jury
+    ? `${residents.length} eliminated player${residents.length === 1 ? '' : 's'} share a run-down motel — a stocked kitchen, a questionable pool, and a lot of unfinished business. They process, they feud, they patch things up, and they argue about who deserves the win.`
+    : `${residents.length} eliminated player${residents.length === 1 ? '' : 's'} scrape out a living on Rescue Island — no host catering, just a shelter and a fire. They survive the storms, mend old grudges, and train for the one challenge that could put them back in the game.`;
+  return `<div class="rp-page ${bg}">
+    <div class="rp-eyebrow">Episode ${ep.num} — Interlude · No Elimination</div>
+    <div style="font-family:var(--font-display);font-size:30px;letter-spacing:2px;text-align:center;margin-bottom:4px;text-transform:uppercase">${title}</div>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:22px;letter-spacing:1.5px;text-transform:uppercase">${sub}</div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:18px">
+      ${residents.map(j => `<div style="text-align:center">${rpPortrait(j)}<div style="font-size:9px;color:var(--muted);margin-top:2px">${j}</div></div>`).join('')}
+    </div>
+    <div style="text-align:center;font-size:13px;color:#cdd9e5;line-height:1.6;max-width:580px;margin:0 auto">${blurb}</div>
+  </div>`;
+}
+
+export function rpBuildJuryHouse(ep) {
+  const d = _interludeData(ep); if (!d || (!d.acts?.length && !d.events?.length)) return null;
+  const jury = d.venue === 'jury';
+  const badgeColors = {
+    danger: 'color:var(--accent-fire);background:rgba(248,81,73,0.1);border-color:rgba(248,81,73,0.25)',
+    green: 'color:#3fb950;background:rgba(63,185,80,0.1);border-color:rgba(63,185,80,0.25)',
+    gold: 'color:#e3b341;background:rgba(227,179,65,0.1);border-color:rgba(227,179,65,0.25)',
+    iron: 'color:#8b98a5;background:rgba(139,152,165,0.1);border-color:rgba(139,152,165,0.25)',
+  };
+  const beatCard = (evt) => {
+    const st = badgeColors[evt.cls] || badgeColors.iron;
+    const who = (evt.players && evt.players.length) ? evt.players : [evt.player, evt.player2].filter(Boolean);
+    return `<div style="margin-bottom:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        ${who.map(p => rpPortrait(p, 'sm')).join('')}
+        <span style="font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:4px;border:1px solid;${st}">${evt.badge}</span>
+      </div>
+      <div style="font-size:13px;color:#cdd9e5;line-height:1.6">${evt.text}</div>
+    </div>`;
+  };
+  const roundtableHtml = (rt) => {
+    if (!rt?.lines?.length) return '';
+    let h = `<div style="text-align:center;font-size:11px;color:var(--muted);margin:-6px 0 16px;letter-spacing:1.5px;text-transform:uppercase">The jury debates who deserves the win</div>`;
+    rt.lines.forEach(l => {
+      h += `<div style="margin-bottom:14px;background:rgba(227,179,65,0.04);border:1px solid rgba(227,179,65,0.15);border-radius:8px;padding:12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">${rpPortrait(l.finalist, 'sm')}<span style="font-size:12px;font-weight:700;color:#e3b341;letter-spacing:1px;text-transform:uppercase">On ${l.finalist}</span></div>
+        <div style="font-size:12.5px;color:#7ee08a;line-height:1.55;margin-bottom:6px">${l.backText}</div>
+        <div style="font-size:12.5px;color:#ff8f88;line-height:1.55">${l.doubtText}</div>
+      </div>`;
+    });
+    return h;
+  };
+
+  let html = `<div class="rp-page ${jury ? 'tod-golden' : 'tod-dusk'}">
+    <div class="rp-eyebrow">Episode ${ep.num} — ${jury ? 'The Jury Motel' : 'Rescue Island'}</div>`;
+
+  if (d.acts?.length) {
+    d.acts.forEach((act, i) => {
+      html += `<div style="text-align:center;margin:${i === 0 ? '4px' : '30px'} 0 16px">
+        <div style="font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase">Act ${i + 1}</div>
+        <div style="font-family:var(--font-display);font-size:24px;letter-spacing:2px;text-transform:uppercase">${act.title}</div>
+      </div>`;
+      (act.beats || []).forEach(evt => { html += beatCard(evt); });
+      if (act.roundtable) html += roundtableHtml(act.roundtable);
+    });
+  } else {
+    // legacy flat fallback
+    html += `<div style="font-family:var(--font-display);font-size:24px;letter-spacing:2px;text-align:center;margin-bottom:18px;text-transform:uppercase">${jury ? 'Life at the Motel' : 'Life on the Island'}</div>`;
+    (d.events || []).forEach(evt => { html += beatCard(evt); });
+    if (d.roundtable) { html += `<div style="margin-top:20px"></div>` + roundtableHtml(d.roundtable); }
+  }
+
+  if (d.teaser) {
+    html += `<div style="margin-top:26px;border-top:1px solid rgba(255,255,255,0.12);padding-top:18px;text-align:center;font-size:13px;color:#e3b341;line-height:1.6;font-style:italic">${d.teaser}</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+export function rpBuildRescueInterludeTitle(ep) { return rpBuildJuryHouseTitle(ep); }
 // ── Jury Convenes: announcement screen showing jury + vulnerable players ──
 export function rpBuildJuryConvenes(ep) {
   const tw = (ep.twists||[]).find(t => t.type === 'jury-elimination' && t.juryBooted);

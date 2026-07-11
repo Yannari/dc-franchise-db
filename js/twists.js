@@ -2898,6 +2898,18 @@ export function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'exile-duel') {
     ep.exileDuelActive = true;
 
+  // ── INTERLUDE EPISODES (non-elimination): check in on the out-of-game cast ──
+  } else if (engineType === 'rescue-island-life') {
+    // Only if Rescue Island is on and there are at least 2 residents to check in on.
+    if (!seasonConfig.ri || (gs.riPlayers?.length || 0) < 2) return;
+    ep.isInterlude = true;
+    ep.interludeMode = 'rescue-island';
+  } else if (engineType === 'jury-house') {
+    // Needs at least 2 eliminated players to fill the lodge.
+    if ((gs.eliminated?.length || 0) < 2) return;
+    ep.isInterlude = true;
+    ep.interludeMode = 'jury-house';
+
   // ── SOCIAL ─────────────────────────────────────────────────────────
   } else if (engineType === 'the-feast' || engineType === 'merge-reward') {
     const all = gs.activePlayers;

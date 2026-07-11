@@ -1686,3 +1686,520 @@ export function generateRescueIslandLife(ep) {
     pushEvt(evt);
   }
 }
+// ══════════════════════════════════════════════════════════════════════
+// INTERLUDE LIFE — a full non-elimination "check in on the out-of-game cast"
+// EPISODE. Because this segment IS the whole episode, it's built as 4 acts with
+// multi-beat storylines and a dramatic centerpiece.
+//
+// The two venues are fundamentally different situations:
+//   • RESCUE ISLAND — the cast is STILL IN THE GAME. They can come back and win,
+//     so they're RIVALS: training for the return, sizing each other up as
+//     threats, forming fragile comeback pacts, weathering the island. The
+//     centerpiece is a storm-and-rescue setpiece. (No jury rooting — they want
+//     to win it themselves.)
+//   • JURY HOUSE — the cast is OUT FOR GOOD (the jury). They process, feud, find
+//     closure, and DEBATE who deserves the win. The centerpiece is the Roundtable.
+//
+// Output: ep.interlude = { venue, residents, acts:[{title,beats:[...]}],
+//   events (flattened), roundtable, teaser }. (+ ep.juryHouse alias.)
+// ══════════════════════════════════════════════════════════════════════
+export function generateInterludeLife(ep) {
+  const venue = ep.interludeMode === 'jury-house' ? 'jury' : 'rescue';
+  const residents = [...(venue === 'jury' ? (gs.eliminated || []) : (gs.riPlayers || []))];
+  if (residents.length < 2) return;
+  const epNum = ep.num || (gs.episode || 0) + 1;
+  const active = [...gs.activePlayers];
+
+  const P = (n) => pronouns(n);
+  const archOf = (n) => players.find(p => p.name === n)?.archetype || 'floater';
+  const shuffle = (a) => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]);
+  const allNames = residents.concat(active);
+  const strip = (t) => allNames.reduce((s, n) => n ? s.split(n).join('~') : s, t);
+  const usedTpl = new Set();
+  const draw = (pool, ...ctx) => {
+    const built = pool.map(f => f(...ctx));
+    const fresh = built.filter(t => !usedTpl.has(strip(t)));
+    const from = fresh.length ? fresh : built;
+    const chosen = from[Math.floor(Math.random() * from.length)];
+    usedTpl.add(strip(chosen));
+    return chosen;
+  };
+  const elimInfo = (name) => {
+    const h = (gs.episodeHistory || []).find(e => e.eliminated === name || e.firstEliminated === name);
+    const voters = (h?.votingLog || []).filter(v => v.voted === name && v.voter !== 'THE GAME').map(v => v.voter);
+    const alliance = (h?.alliances || []).find(a => a.members?.includes(name));
+    return { epsSince: epNum - (h?.num || 0), voters, betrayedBy: alliance ? alliance.members.filter(m => voters.includes(m)) : [] };
+  };
+
+  const V = venue === 'jury'
+    ? { home: 'the motel', spot: 'the pool deck', kitchen: 'the motel kitchen', comm: 'the lounge' }
+    : { home: 'camp', spot: 'the fire', kitchen: 'the cook pit', comm: 'the shelter' };
+
+  const appeared = {}; // name -> count, to guarantee coverage
+  const featured = new Set(); // names carrying a storyline (get fewer color beats)
+  const mark = (ppl) => ppl.forEach(n => { appeared[n] = (appeared[n] || 0) + 1; });
+  const beat = (badge, cls, ppl, text, bondDelta) => { mark(ppl); return { badge, cls, player: ppl[0], player2: ppl[1] || null, players: ppl, text, bondDelta: bondDelta || 0 }; };
+
+  // ────────────────────────────────────────────────────────────
+  // STORYLINE BUILDERS — each returns { a1, a2, a3, a4 } beat-arrays keyed by act,
+  // and applies its own bond consequences. They FEATURE specific residents.
+  // ────────────────────────────────────────────────────────────
+  const S = { a1: [], a2: [], a3: [], a4: [] }; // storyline beats bucketed by act
+  const put = (act, b) => S[act].push(b);
+
+  // — RESCUE: THE STORM (centerpiece) — weather builds, someone is stranded, the camp rescues them —
+  function storyStorm() {
+    const pool = shuffle(residents);
+    const victim = pool.find(n => pStats(n).boldness >= 6) || pool[0];
+    const rescuer = pool.find(n => n !== victim && (archOf(n) === 'hero' || pStats(n).loyalty >= 6)) || pool.find(n => n !== victim);
+    const buddy = pool.find(n => n !== victim && n !== rescuer);
+    if (!victim || !rescuer) return;
+    [victim, rescuer, buddy].filter(Boolean).forEach(n => featured.add(n));
+    put('a2', beat('STORM WARNING', 'iron', [victim, buddy].filter(Boolean), draw([
+      (v, b) => `The sky over the island turns the color of a bruise. ${v}${b ? ` and ${b}` : ''} lash the shelter down while everyone eyes the horizon. "That's not blowing over. That's coming for us."`,
+    ], victim, buddy)));
+    put('a2', beat('BATTEN DOWN', 'iron', [rescuer, buddy].filter(Boolean), draw([
+      (r, b) => `Old rivalries get shelved fast when the wind picks up. ${r}${b ? `, ${b},` : ''} and half the camp haul the canoe up the beach and pile rocks on the food stores. "Save the fighting for tomorrow. Tonight we just don't want to die out here."`,
+    ], rescuer, buddy)));
+    put('a3', beat('SWEPT AWAY', 'danger', [victim].filter(Boolean), draw([
+      (v) => `The storm hits like a wall. ${v} goes out to drag in the last of the firewood — and doesn't come back. A shout, a snapped branch, then nothing but rain.`,
+      (v) => `Mid-squall the ridge gives way and ${v} drops out of sight into a gully. The wind eats ${P(v).posAdj} scream. Camp realizes too late that someone's missing.`,
+    ], victim)));
+    put('a3', beat('MISSING', 'danger', [rescuer, buddy].filter(Boolean), draw([
+      (r, b) => `A headcount comes up one short. ${r}${b ? ` and ${b}` : ''} scream ${victim}'s name into the dark and hear nothing but the surf. "We are not losing somebody out here. Not like this. Grab a rope."`,
+    ], rescuer, buddy)));
+    put('a3', beat('THE RESCUE', 'green', [rescuer, victim].filter(Boolean), draw([
+      (r, v) => `${r} goes out into the teeth of it, roped to the shelter post, and finds ${v} half-buried and shaking. ${P(r).Sub} ${P(r).sub === 'they' ? 'haul' : 'hauls'} ${P(v).obj} back hand over hand. Nobody breathes until they're both under cover.`,
+      (r, v) => `It's ${r} who won't wait it out. ${P(r).Sub} ${P(r).sub === 'they' ? 'wade' : 'wades'} into the flood, grabs ${v} by the collar, and drags ${P(v).obj} up the bank inch by inch as the others form a chain. They make it. Barely.`,
+    ], rescuer, victim), 3.0));
+    if (buddy) put('a4', beat('AFTER THE STORM', 'green', [victim, rescuer], draw([
+      (v, r) => `Dawn comes gray and quiet. ${v} can't look at ${r} without ${P(v).posAdj} eyes going wet. "You didn't have to come out there for me. We're supposed to be fighting each other for that spot." ${r} just shrugs. "Not last night we weren't."`,
+    ], victim, rescuer), 2.0));
+    addBond(victim, rescuer, 3.0);
+  }
+
+  // — RESCUE: THREAT RIVALRY — two strongest circle each other as the biggest danger to the return —
+  function storyRivalry() {
+    const threats = residents.slice().sort((a, b) => (pStats(b).physical + pStats(b).boldness + pStats(b).endurance) - (pStats(a).physical + pStats(a).boldness + pStats(a).endurance));
+    const a = threats[0], b = threats[1];
+    if (!a || !b || featured.has(a) && featured.has(b)) return;
+    featured.add(a); featured.add(b);
+    put('a1', beat('SIZING UP', 'gold', [a, b], draw([
+      (x, y) => `${x} clocks ${y} the second ${P(y).sub} ${P(y).sub === 'they' ? 'arrive' : 'arrives'}. Two of the biggest threats in the game, now fighting for one ticket back. "If anybody in this camp beats me to that return, it's ${y}. So I'm watching."`,
+    ], a, b)));
+    put('a2', beat('THE NEEDLE', 'danger', [a, b], draw([
+      (x, y) => `${x} and ${y} turn every chore into a contest — who hauls more, who lasts longer at the fire. A "friendly" arm-wrestle at ${V.kitchen} ends with a table nearly flipped and the whole camp watching.`,
+      (x, y) => `${y} "jokes" that ${x} only made it this far on luck. ${x} doesn't laugh. The temperature at ${V.spot} drops ten degrees.`,
+    ], a, b), -1.0));
+    put('a4', beat('FLASHPOINT', 'danger', [a, b], draw([
+      (x, y) => `It nearly comes to blows when ${x} accuses ${y} of hoarding the good training gear. Camp gets between them before it lands. "One of us is going back and one of us is going home. I'm done pretending we're friends."`,
+    ], a, b), -1.0));
+    put('a4', beat('UNEASY TRUCE', 'iron', [a, b], draw([
+      (x, y) => `After the worst of it, ${x} finds ${y} training alone at the water's edge and joins in without a word. "We're gonna be the last two standing for that spot. Might as well make each other sharper." It isn't friendship. It's respect — the dangerous kind.`,
+    ], a, b), 1.0));
+    addBond(a, b, -0.5);
+  }
+
+  // — RESCUE: COMEBACK — someone bottoms out, another lifts them, they refire for the return —
+  function storyComeback() {
+    const low = residents.slice().sort((a, b) => (pStats(a).temperament + pStats(a).boldness) - (pStats(b).temperament + pStats(b).boldness))[0];
+    const lifter = residents.slice().sort((a, b) => getBond(b, low) - getBond(a, low)).find(n => n !== low);
+    if (!low || !lifter || featured.has(low)) return;
+    featured.add(low); featured.add(lifter);
+    put('a1', beat('ROCK BOTTOM', 'danger', [low], draw([
+      (n) => `${n} sits apart from everyone, staring at the surf. "What's the point of training? I got voted out for a reason. They'll just do it again." The fire in ${P(n).obj} is out.`,
+    ], low)));
+    put('a2', beat('A HAND UP', 'green', [lifter, low], draw([
+      (l, n) => `${l} sits down next to ${n} and doesn't say anything smart — just stays. Then: "You're not out here because you're weak. You're out here because you're a threat. Big difference. Now get up." ${n} gets up.`,
+    ], lifter, low), 2.0));
+    put('a4', beat('REFIRED', 'green', [low], draw([
+      (n) => `By nightfall ${n} is the last one still drilling in the dark, jaw set. "I'm not coming back to make friends. I'm coming back to finish it." The camp feels the shift.`,
+    ], low)));
+    addBond(low, lifter, 2.0);
+  }
+
+  // — RESCUE: THE PACT — two allies weigh a fragile comeback alliance for after the return —
+  function storyPact() {
+    const pair = shuffle(residents).filter(n => !featured.has(n));
+    let a = pair[0], b = pair.slice(1).sort((x, y) => getBond(a, y) - getBond(a, x))[0];
+    if (!a || !b) return;
+    featured.add(a); featured.add(b);
+    put('a2', beat('THE OFFER', 'gold', [a, b], draw([
+      (x, y) => `${x} pulls ${y} down the beach, out of earshot. "If we both make it back in, we're targets — unless we're a two. Ride together till the end?" ${y} doesn't say yes. Doesn't say no. Just listens.`,
+    ], a, b)));
+    put('a3', beat('COLD FEET', 'danger', [a, b], draw([
+      (x, y) => `Doubt creeps in overnight. ${y} watches ${x} charm the whole camp and wonders out loud: "Am I ${P(x).posAdj} number one — or ${P(x).posAdj} insurance? Out here everybody's smiling. That's exactly what scares me."`,
+    ], a, b)));
+    put('a4', beat('SEALED IN THE SAND', 'green', [a, b], draw([
+      (x, y) => `They shake on it at ${V.spot}, low and quiet so the rivals don't see. "First one back holds the door for the other. No matter who's got the numbers." A pact made by two people the game already burned once.`,
+    ], a, b), 1.5));
+    addBond(a, b, 1.5);
+  }
+
+  // — RESCUE: THE ANCHOR — someone becomes camp's backbone; leadership breeds friction and respect —
+  function storyProvider() {
+    const anchor = residents.slice().sort((a, b) => (pStats(b).physical + pStats(b).endurance + pStats(b).loyalty) - (pStats(a).physical + pStats(a).endurance + pStats(a).loyalty)).find(n => !featured.has(n));
+    if (!anchor) return;
+    const doubter = residents.slice().sort((a, b) => getBond(a, anchor) - getBond(b, anchor)).find(n => n !== anchor);
+    featured.add(anchor); if (doubter) featured.add(doubter);
+    put('a1', beat('THE ANCHOR', 'green', [anchor], draw([
+      (n) => `While everyone else licks their wounds, ${n} just... gets to work. Fire lit, fish smoked, shelter re-roofed. By midday the whole camp runs on ${P(n).posAdj} rhythm without anyone deciding it should.`,
+    ], anchor)));
+    if (doubter) put('a2', beat('WHO PUT YOU IN CHARGE', 'danger', [anchor, doubter], draw([
+      (n, d) => `${d} bristles at ${n} calling the shots. "This isn't your camp. We're all fighting for the same seat back." ${n} keeps stacking firewood. "Then help me stack. Or don't eat. Your call."`,
+    ], anchor, doubter), -0.5));
+    put('a4', beat('EARNED IT', 'green', [anchor], draw([
+      (n) => `By nightfall even the doubters are eating ${n}'s fish and warming at ${P(n).posAdj} fire. Nobody says thank you. But when the return challenge comes, everyone already knows who the camp would follow.`,
+    ], anchor)));
+    addBond(anchor, doubter || anchor, 0.5);
+  }
+
+  // — JURY: THE ROUNDTABLE (centerpiece) — the jury debates the finalists —
+  let roundtable = null;
+  function storyRoundtable() {
+    if (!(gs.isMerged && active.length >= 2)) return;
+    const finalists = active.slice().sort((a, b) => (gs.episodeHistory || []).filter(e => e.immunityWinner === b).length - (gs.episodeHistory || []).filter(e => e.immunityWinner === a).length).slice(0, 4);
+    const backerUse = {}, doubterUse = {};
+    const leastUsed = (cands, use, dir) => cands.slice().sort((a, c) => ((use[a.n] || 0) - a.b * dir * 0.15) - ((use[c.n] || 0) - c.b * dir * 0.15) || Math.random() - 0.5)[0].n;
+    const lines = finalists.map(fin => {
+      const ranked = residents.map(n => ({ n, b: getBond(n, fin) }));
+      const backer = leastUsed(ranked.filter(x => x.b >= 0).length ? ranked.filter(x => x.b >= 0) : ranked, backerUse, 1);
+      const dCands = ranked.filter(x => x.n !== backer);
+      const doubter = leastUsed(dCands.filter(x => x.b <= 0).length ? dCands.filter(x => x.b <= 0) : dCands, doubterUse, -1);
+      backerUse[backer] = (backerUse[backer] || 0) + 1; doubterUse[doubter] = (doubterUse[doubter] || 0) + 1;
+      const backText = draw([
+        (f, s) => `${s} makes the case for ${f}: "${f} actually played. Owned the moves, took the shots. That's a résumé."`,
+        (f, s) => `${s} won't stop championing ${f}. "${f} is still in there and we're out here. That's the whole argument."`,
+        (f, s) => `${s} leans in on ${f}: "Every big move this season had ${f}'s fingerprints on it. That's a winner."`,
+        (f, s) => `${s} goes to bat for ${f}: "${f} played the people, not just the board. Hardest part of this game — and ${f} nailed it."`,
+      ], fin, backer);
+      const doubtText = draw([
+        (f, d) => `${d} isn't sold. "${f} hid behind other people's plans all game. Now it's a 'résumé'? Convenient."`,
+        (f, d) => `${d} pushes back. "${f} floated. I'm not rewarding somebody who never put their own neck out."`,
+        (f, d) => `${d} scoffs. "${f} rode other people's numbers to the end. Being there isn't the same as earning it."`,
+        (f, d) => `${d} shakes ${P(d).posAdj} head. "${f} never had to make the hard call. Easy to look clean when someone else does the dirty work."`,
+      ], fin, doubter);
+      return { finalist: fin, backer, doubter, backText, doubtText };
+    });
+    roundtable = { finalists, lines };
+    // pre-roundtable tension in act 2
+    const hot = residents[Math.floor(Math.random() * residents.length)];
+    put('a2', beat('THE VOTE LOOMS', 'gold', [hot], draw([
+      (n) => `${n} keeps steering every conversation back to the finale. "Whatever we say at the roundtable — that's the last power we've got in this game. I'm not wasting it."`,
+    ], hot)));
+  }
+
+  // — JURY: GRUDGE → CLOSURE — two who clashed in the game hash it out —
+  function storyGrudge() {
+    let best = null;
+    for (let i = 0; i < residents.length; i++) for (let j = i + 1; j < residents.length; j++) {
+      const b = getBond(residents[i], residents[j]);
+      if (b <= -3 && (!best || b < best.b)) best = { a: residents[i], c: residents[j], b };
+    }
+    if (!best) return;
+    const { a, c } = best;
+    featured.add(a); featured.add(c);
+    put('a1', beat('OLD WOUNDS', 'danger', [a, c], draw([
+      (x, y) => `${x} and ${y} arrive at ${V.home} still carrying the game with them. One shared glance across ${V.comm} and everyone can feel it: this isn't over.`,
+    ], a, c)));
+    put('a2', beat('IT BOILS OVER', 'danger', [a, c], draw([
+      (x, y) => `It erupts at ${V.kitchen} — ${x} finally says what ${P(x).sub}${P(x).sub === 'they' ? "'ve" : "'s"} been holding, ${y} fires back, and the others clear the room. "You looked me in the eye and lied. In here I've got nothing but time to remember that."`,
+    ], a, c), -1.0));
+    put('a3', beat('THE RECKONING', 'iron', [a, c], draw([
+      (x, y) => `${y} is the one who finally crosses the room. No cameras rolling in their heads anymore — just two people who lost. They talk for an hour. It's ugly, then it isn't.`,
+    ], a, c)));
+    put('a4', beat('BURIED IT', 'green', [a, c], draw([
+      (x, y) => `By the last night ${x} and ${y} are sharing a bottle ${y} swiped from the kitchen, laughing about how petty it all got. "We gave this game everything and it spat us both out. No sense hating each other over it now."`,
+    ], a, c), 2.5));
+    addBond(a, c, 1.5);
+  }
+
+  // — JURY: OUTSIDER — someone feels out of place until another pulls them in —
+  function storyOutsider() {
+    const outsider = residents.slice().sort((a, b) => {
+      const sa = active.concat(residents).reduce((s, o) => s + Math.max(0, getBond(a, o)), 0);
+      const sb = active.concat(residents).reduce((s, o) => s + Math.max(0, getBond(b, o)), 0);
+      return sa - sb;
+    }).find(n => !featured.has(n));
+    if (!outsider) return;
+    const includer = residents.slice().sort((a, b) => (getBond(b, outsider) - getBond(a, outsider)))[0] === outsider
+      ? residents.find(n => n !== outsider) : residents.slice().sort((a, b) => getBond(b, outsider) - getBond(a, outsider)).find(n => n !== outsider);
+    if (!includer) return;
+    featured.add(outsider); featured.add(includer);
+    put('a1', beat('ON THE OUTSIDE', 'iron', [outsider], draw([
+      (n) => `${n} keeps to the edge of every room, watching the others fall back into old friendships. "Even here, I don't quite fit. Same as the game, honestly." ${P(n).Sub} ${P(n).sub === 'they' ? 'say' : 'says'} it like a joke. It isn't.`,
+    ], outsider)));
+    put('a2', beat('A SEAT AT THE TABLE', 'green', [includer, outsider], draw([
+      (i, n) => `${i} notices ${n} eating alone again and just... sits down. Pulls ${P(n).obj} into the card game, the cooking, the dumb argument about the TV. Small thing. It lands like a lifeline.`,
+    ], includer, outsider), 2.0));
+    put('a4', beat('BELONGING', 'green', [outsider, includer], draw([
+      (n, i) => `By nightfall ${n} is in the middle of the crowd at ${V.spot}, actually laughing. "${i} didn't have to do that. Nobody in the game ever did. Maybe that's the difference out here."`,
+    ], outsider, includer)));
+    addBond(outsider, includer, 2.0);
+  }
+
+  // — JURY: UNLIKELY FRIENDSHIP — two who never connected in the game become thick as thieves —
+  function storyFriendship() {
+    const pool = shuffle(residents).filter(n => !featured.has(n));
+    let a = pool[0];
+    let b = pool.slice(1).sort((x, y) => Math.abs(getBond(a, x)) - Math.abs(getBond(a, y)))[0];
+    if (!a || !b) return;
+    featured.add(a); featured.add(b);
+    put('a2', beat('STRANGE BEDFELLOWS', 'green', [a, b], draw([
+      (x, y) => `${x} and ${y} were never on the same page in the game — different tribes, different plans, barely a word. A 2 a.m. kitchen raid changes that. Turns out they've got the same terrible taste in everything.`,
+    ], a, b)));
+    put('a4', beat('THICK AS THIEVES', 'green', [a, b], draw([
+      (x, y) => `By the last night ${x} and ${y} are finishing each other's sentences and planning a road trip after the finale. "Weird, right? The game never let us find out we'd actually be friends. Took getting voted out."`,
+    ], a, b), 2.0));
+    addBond(a, b, 2.0);
+  }
+
+  // — JURY: THE BITTER JUROR — someone can't let go of how they went out; it will drive their vote —
+  function storyBitter() {
+    const bitter = residents.slice().sort((a, b) => (pStats(a).temperament) - (pStats(b).temperament)).find(n => !featured.has(n) && elimInfo(n).voters.length);
+    if (!bitter) return;
+    const info = elimInfo(bitter);
+    const target = info.betrayedBy[0] || info.voters.find(v => active.includes(v)) || null;
+    featured.add(bitter);
+    put('a1', beat("CAN'T LET GO", 'danger', [bitter], draw([
+      (n) => target
+        ? `${n} brings up ${target}'s name at every meal like picking a scab. "${target} looked me dead in the eye and lied. I'm on that jury now, and I've got a long memory."`
+        : `${n} replays ${P(n).posAdj} exit on a loop, jaw tight. "Everybody says 'it's just a game.' Easy to say when you're not the one they lied to."`,
+    ], bitter)));
+    put('a4', beat('THE GRUDGE VOTE', 'gold', [bitter], draw([
+      (n) => target
+        ? `Whatever the others argue at the roundtable, ${n} has already decided: ${target} will never get ${P(n).posAdj} vote. "Play the game, fine. But don't insult me and then ask me to reward you for it."`
+        : `${n} tells the house flat out: nobody who smiled in ${P(n).posAdj} face on the way out is getting this vote. "I earned my seat on this jury the hard way. I'm spending it on principle."`,
+    ], bitter)));
+  }
+
+  // ── choose storylines by venue ──
+  // Fire ALL applicable storylines so the episode is dense (each features distinct
+  // residents via the `featured` set; builders bail if their people are taken).
+  if (venue === 'rescue') {
+    storyStorm();
+    if (residents.length >= 4) storyRivalry();
+    if (residents.length >= 4) storyProvider();
+    if (residents.length >= 5) storyPact();
+    if (residents.length >= 3) storyComeback();
+  } else {
+    storyRoundtable();
+    storyGrudge();
+    if (residents.length >= 4) storyOutsider();
+    if (residents.length >= 5) storyBitter();
+    if (residents.length >= 6) storyFriendship();
+  }
+
+  // ────────────────────────────────────────────────────────────
+  // COLOR BEATS — venue-specific solo/pair flavor, spread across residents not
+  // already carrying a storyline. RESCUE = competitive/survival; JURY = processing.
+  // ────────────────────────────────────────────────────────────
+  const RESCUE_SOLO = {
+    training: { badge: 'TRAINING', cls: 'gold', pool: [
+      (n) => `${n} builds a rig from driftwood and vines and drills on it till ${P(n).posAdj} hands bleed. "That return challenge is the only thing between me and a second life. I'm not showing up soft."`,
+      (n) => `${n} swims the cove end to end, over and over, timing ${P(n).ref} against the tide. Every rep is a message: whoever comes back, it's going to be ${P(n).obj}.`,
+      (n) => `${n} memorizes the shoreline, the currents, the wind — treating the whole island like a puzzle for the challenge ${P(n).sub} ${P(n).sub === 'they' ? 'know' : 'knows'} is coming.`,
+      (n) => `${n} runs the ridge at dawn before anyone's up, banking miles nobody sees. "Let them think I'm resting. I'll let my legs do the talking at the challenge."`,
+      (n) => `${n} practices holding ${P(n).posAdj} breath underwater, timing it by heartbeats. "Half these return challenges come down to who can suffer longest. So I'm learning to suffer."`,
+    ] },
+    provider: { badge: 'THE BACKBONE', cls: 'green', pool: [
+      (n) => `${n} quietly becomes the reason the camp runs — fire lit, fish caught, shelter patched. "Out here you earn respect the old way. And respect might be the thing that carries me back in."`,
+      (n) => `While others rest, ${n} is hauling water and re-lashing the roof. Nobody asked. Everyone notices. In a camp full of rivals, being needed is its own kind of power.`,
+      (n) => `${n} splits the last of the food fair and even, down to the crumb — even for the people ${P(n).sub}'ll have to beat. "We can be enemies at the challenge. Tonight everybody eats."`,
+    ] },
+    surviving: { badge: 'THE TOLL', cls: 'iron', pool: [
+      (n) => `The island is grinding ${n} down — thinner, quieter, ${P(n).posAdj} eyes ringed dark. "Nobody tells you the wait is its own challenge. Some of us won't make it to the return in one piece."`,
+      (n) => `${n} lies awake listening to the surf, running the vote back. "You come out here to fight your way in. Then you realize the first thing you have to survive is your own head."`,
+      (n) => `${n} pushes through a rough patch — a cut gone sour, no sleep, less food — but won't say a word about it. "Show weakness out here and you've already lost the return."`,
+    ] },
+    homesick: { badge: 'HOMESICK', cls: 'iron', pool: [
+      (n) => `${n} goes quiet talking about home. "I miss the noise. My people. Out here it's too calm and my head gets loud." ${P(n).Sub} ${P(n).sub === 'they' ? 'laugh' : 'laughs'} it off, barely.`,
+      (n) => `${n} scratches a tally into a piece of driftwood — one mark a day since the vote. "I just want back in before I forget why I came."`,
+      (n) => `${n} tells a long story about someone back home and the whole camp goes quiet, everyone thinking of their own.`,
+    ] },
+  };
+  const JURY_SOLO = {
+    processing: { badge: 'PROCESSING', cls: 'iron', pool: [
+      (n) => `${n} sits apart at ${V.spot} and finally lets it out — not about the game, about everything it cost ${P(n).obj}. ${P(n).Sub} ${P(n).sub === 'they' ? 'wipe' : 'wipes'} ${P(n).posAdj} eyes and ${P(n).sub === 'they' ? 'stay' : 'stays'} put.`,
+      (n) => `${n} has stopped picking at the wound. Somewhere between the pool and the quiet, the anger cooled into something like peace.`,
+      (n) => `${n} admits the hardest part isn't losing — it's not knowing if ${P(n).sub} would've done it differently. Nobody has an answer. They just nod.`,
+      (n) => `${n} writes a long, rambling note to ${P(n).posAdj} game self and then laughs at it. "Dear me: you got too comfortable. Love, the jury."`,
+      (n) => `${n} finally sleeps through the night for the first time since the vote. "Turns out the game was the nightmare. This is just... quiet."`,
+      (n) => `${n} watches ${P(n).posAdj} own blindside replay on the lounge TV and, to everyone's surprise, claps. "Okay. That was good. I'd have voted me out too."`,
+    ] },
+    rooting: { badge: 'ROOTING', cls: 'green', need: (n) => { const f = active.map(p => ({ p, b: getBond(n, p) })).sort((a, b) => b.b - a.b)[0]; return f && f.b >= 3 ? f.p : null; }, pool: [
+      (n, f) => `${n} — a lock for ${f}'s jury vote — talks ${f} up to the whole house. "I'm out. Fine. But my vote's still live, and it's got ${f}'s name on it."`,
+      (n, f) => `${n} watches ${f}'s every move on the feeds and grins. "When I get to that jury seat, I already know who's earned it. Go on, ${f}."`,
+      (n, f) => `${n} defends ${f} hard when the house piles on. "Say what you want. ${f} is the only one left playing a game I'd vote for."`,
+    ] },
+    observing: { badge: 'WATCHING', cls: 'gold', pool: [
+      (n) => `${n} says little but misses nothing, filing away every finale rumor that drifts into ${V.home}. "The game's not done with me yet. I've still got a vote — and I'm going to spend it right."`,
+      (n) => `${n} watches the feeds in ${V.comm} like film study, muttering reads under ${P(n).posAdj} breath. "I lost. Doesn't mean I stopped seeing the board."`,
+      (n) => `${n} stays out of the house drama and just observes who's really who now the masks are off. "You learn a lot about people once the game can't reward them for lying."`,
+      (n) => `${n} keeps a mental scorecard on the finalists and shares it with nobody. "Everyone in here is campaigning. I'm just... watching who's worth a vote."`,
+      (n) => `${n} notices which jurors are already locked in and which are still winnable. "The finale's not just their game anymore. It's ours too, now."`,
+    ] },
+    restless: { badge: 'RESTLESS', cls: 'danger', need: (n) => (archOf(n) === 'hothead' || pStats(n).boldness >= 7) ? true : null, pool: [
+      (n) => `${n} can't sit still — laps in the pool, pacing the lobby — anything to burn off being out. "If I stop moving I start thinking. So I don't stop."`,
+      (n) => `${n} snaps at the TV, the food, the weather — anything but the real thing. An hour later ${P(n).sub} ${P(n).sub === 'they' ? 'apologize' : 'apologizes'} to the room. "It's not you. It's that I should still be in there."`,
+      (n) => `${n} keeps trying to turn ${V.home} into a competition — who swims faster, who stays up latest — because being out with nothing to win eats at ${P(n).obj}.`,
+    ] },
+  };
+
+  const SOLO = venue === 'rescue' ? RESCUE_SOLO : JURY_SOLO;
+  const PAIR = {
+    bond: { badge: 'COMMON GROUND', cls: 'green', delta: 1.0, pool: [
+      (a, b) => `${a} and ${b} barely spoke in the game. Over ${venue === 'jury' ? 'dishes and bad TV' : 'firewood and fishing'}, they find they actually get along.`,
+      (a, b) => `Stuck on ${venue === 'jury' ? 'kitchen duty' : 'shelter repair'} together, ${a} and ${b} turn out funnier than either expected. The ice breaks.`,
+      (a, b) => `${a} catches ${b} having a rough night and sits with ${P(b).obj} at ${V.spot} until it passes. Neither mentions it again.`,
+      (a, b) => `${a} and ${b} trade stories about home until the ${venue === 'jury' ? 'motel' : 'island'} feels a little less lonely. Two strangers, suddenly not.`,
+      (a, b) => `${a} teaches ${b} some ${venue === 'jury' ? 'card trick' : 'knot'} nobody asked about, and an hour vanishes. The kind of easy that never happened in the game.`,
+      (a, b) => `${a} and ${b} discover they were each other's biggest misread all season. "I had you completely wrong." "Yeah. Same." They laugh about it now.`,
+    ] },
+    talk: { badge: venue === 'jury' ? 'GAME TALK' : 'WAR COUNCIL', cls: 'gold', delta: 0, pool: venue === 'jury' ? [
+      (a, b) => `${a} and ${b} sprawl by ${V.spot} comparing reads on the finale. The picture of who deserves it gets sharper — and thornier.`,
+      (a, b) => `${a} walks ${b} through the vote that got ${P(a).obj} out, beat by beat. ${b} spots a read ${a} missed.`,
+      (a, b) => `${a} and ${b} argue for an hour over which finalist has the real winner's résumé. Neither budges; both take notes for the jury vote.`,
+      (a, b) => `${a} and ${b} rank the whole cast worst-to-first over cold coffee. It gets heated. It gets honest. It gets personal.`,
+    ] : [
+      (a, b) => `${a} and ${b} whisper by ${V.spot} about the return — who's the one to beat, whether to work together or cut each other's throats. No deal yet. Just circling.`,
+      (a, b) => `${a} floats a comeback pact to ${b}: back each other if they both make it in. ${b} nods slow. In here, even a handshake has a catch.`,
+      (a, b) => `${a} and ${b} war-game the return challenge — who's fast, who's fading, who to target first if they both get back. Cold-blooded, and a little thrilling.`,
+      (a, b) => `${a} sizes ${b} up over the fire, half-friendly. "If it's you and me at the end of that challenge, no hard feelings?" ${b} smiles. Doesn't answer.`,
+    ] },
+  };
+
+  const colorBeats = { a1: [], a2: [], a4: [] };
+  const catUsage = {};
+  const soloKeys = Object.keys(SOLO);
+  const soloFor = (n, act) => {
+    const opts = soloKeys.filter(k => !SOLO[k].need || SOLO[k].need(n)).map(k => ({ k, arg: SOLO[k].need ? SOLO[k].need(n) : undefined }));
+    if (!opts.length) opts.push({ k: soloKeys[0] });
+    opts.sort((x, y) => ((catUsage[x.k] || 0)) - ((catUsage[y.k] || 0)) || Math.random() - 0.5);
+    const pick = opts[0]; catUsage[pick.k] = (catUsage[pick.k] || 0) + 1;
+    const def = SOLO[pick.k];
+    colorBeats[act].push(beat(def.badge, def.cls, [n], draw(def.pool, n, pick.arg)));
+  };
+  // every un-storylined resident gets a solo beat; distribute across acts
+  const uncovered = shuffle(residents.filter(n => !featured.has(n)));
+  uncovered.forEach((n, i) => soloFor(n, i % 3 === 0 ? 'a1' : i % 3 === 1 ? 'a2' : 'a4'));
+  // give a handful of residents a SECOND beat so acts stay full (bigger casts = more)
+  shuffle(residents).slice(0, Math.max(2, Math.round(residents.length / 2))).forEach((n, i) => soloFor(n, i % 2 === 0 ? 'a2' : 'a4'));
+
+  // pair color beats spread across acts (scale with cast)
+  const usedPairs = new Set();
+  const pairTarget = Math.max(2, Math.floor(residents.length / 2));
+  for (let k = 0, g = 0; k < pairTarget && g < 60; g++) {
+    const a = residents[Math.floor(Math.random() * residents.length)];
+    const b = residents.filter(n => n !== a)[Math.floor(Math.random() * (residents.length - 1))];
+    if (!a || !b) break; const key = [a, b].sort().join('|');
+    if (usedPairs.has(key)) continue; usedPairs.add(key); k++;
+    const bd = getBond(a, b);
+    const kind = (bd > -2) ? 'bond' : 'talk';
+    const def = PAIR[kind];
+    colorBeats[k % 2 === 0 ? 'a2' : 'a1'].push(beat(def.badge, def.cls, [a, b], draw(def.pool, a, b), def.delta));
+    if (def.delta) addBond(a, b, def.delta);
+  }
+
+  // ── CONFESSIONALS — to-camera voice, the show's signature. One per act (1/2/4). ──
+  const CONF = venue === 'rescue' ? [
+    (n) => `<b>${n}, confessional:</b> "People think getting voted out is the hard part. Nah. The hard part is out here, every day, staring at the one door back in — and knowing everybody around that fire wants it as bad as I do."`,
+    (n) => `<b>${n}, confessional:</b> "I'm not here to make friends. I made that mistake the first time. This time I train, I watch, and when that return challenge drops, I'm walking back into that game and finishing what I started."`,
+    (n) => `<b>${n}, confessional:</b> "Funny thing about this place — it strips the game away and you finally see who people really are. Which is exactly the intel I'll need when one of us claws back in."`,
+    (n) => `<b>${n}, confessional:</b> "Every rep, every fish, every night I don't quit — that's me buying a ticket. I got sent here to disappear. I'm gonna use it to come back scarier."`,
+  ] : [
+    (n) => `<b>${n}, confessional:</b> "For nine weeks this game was my whole life. Now I'm sitting in a motel with the people who took it from me. And the wild part? I've got one thing left — my vote — and I plan to make it count."`,
+    (n) => `<b>${n}, confessional:</b> "You'd think out here we'd all be at each other's throats. Some of us are. But some of us are becoming friends I never would've made inside the game. The mask comes off once there's nothing left to win."`,
+    (n) => `<b>${n}, confessional:</b> "I keep replaying my vote-out. Everybody says let it go. But that jury seat is the last power I've got, and I'm not spending it on somebody who lied to my face and smiled."`,
+    (n) => `<b>${n}, confessional:</b> "The finale's coming and we all know it. So yeah — I'm watching every move those finalists make on the feeds. When I get to that seat, I want to know exactly who earned it."`,
+  ];
+  const confActs = ['a1', 'a2', 'a4'];
+  const confVoices = shuffle(residents);
+  confActs.forEach((act, i) => {
+    const voice = confVoices[i % confVoices.length];
+    if (voice) colorBeats[act].push(beat('CONFESSIONAL', '', [voice], draw(CONF, voice)));
+  });
+
+  // ── group setpieces (act 2 + a lighter one in act 4) — mode-specific shared scenes ──
+  const cast3 = shuffle(residents).slice(0, Math.min(3, residents.length));
+  if (cast3.length >= 3) {
+    const GROUP = venue === 'jury' ? [
+      () => `${cast3[0]} appoints ${P(cast3[0]).ref} activities director and railroads ${V.home} into water aerobics. ${cast3[1]} threatens to "set ${P(cast3[1]).ref} aflame" if there's one more shuffleboard round. ${cast3[2]} is, inexplicably, having the time of ${P(cast3[2]).posAdj} life.`,
+      () => `Bingo night turns cutthroat. ${cast3[0]} calls the numbers, ${cast3[1]} accuses ${P(cast3[0]).obj} of rigging it, and ${cast3[2]} wins on a card ${P(cast3[2]).sub} swears ${P(cast3[2]).sub} ${P(cast3[2]).sub === 'they' ? "weren't" : "wasn't"} even watching.`,
+      () => `Someone digs up a guitar and ${cast3[0]} turns out to actually play. ${cast3[1]} and ${cast3[2]} drift over, and for one night the lounge sounds less like a waiting room and more like a home.`,
+    ] : [
+      () => `A raid on the wrecked supply crate turns up a cooler of food and — of all things — a guitar. ${cast3[0]} hauls it back and camp goes feral over real coffee while ${cast3[1]} and ${cast3[2]} bicker over first cup.`,
+      () => `${cast3[0]} coaxes the fire alive against the wind and camp huddles close. ${cast3[1]} tells a story, ${cast3[2]} caps it with the worst possible ending, and for a while nobody's thinking about the return.`,
+      () => `Fishing goes sideways when ${cast3[0]} hooks something huge and ${cast3[1]} and ${cast3[2]} pile on to help. They lose the fish, keep the story, eat coconut again — but together.`,
+    ];
+    colorBeats.a2.push(beat(venue === 'jury' ? 'MOTEL LIFE' : 'CAMP LIFE', 'gold', cast3, draw(GROUP)));
+    for (let i = 0; i < cast3.length; i++) for (let j = i + 1; j < cast3.length; j++) addBond(cast3[i], cast3[j], 0.4);
+  }
+  // second, quieter setpiece — a nightfall gathering (act 4)
+  const castN = shuffle(residents).slice(0, Math.min(3, residents.length));
+  if (castN.length >= 3) {
+    const NIGHT = venue === 'jury' ? [
+      () => `Last night in the motel, the whole house piles onto the pool deck with whatever ${castN[0]} found in the mini-fridge. Old grudges, new friendships, one shared truth: nobody in here is walking away the same. ${castN[1]} makes a toast. ${castN[2]} pretends not to cry.`,
+      () => `${castN[0]} digs out a deck of cards and the whole house crowds around for one loud, stupid, wonderful game that runs till 3 a.m. For one night, ${castN[1]} and ${castN[2]} forget they're the ones the game threw away.`,
+    ] : [
+      () => `The storm's passed, and the whole camp crowds the fire to dry out. ${castN[0]} rations the last of the coffee, ${castN[1]} strums the salvaged guitar, and ${castN[2]} says what everyone's thinking: "Whatever happens at that challenge — we survived THIS. That's ours."`,
+      () => `Under a clear sky at last, ${castN[0]}, ${castN[1]}, and ${castN[2]} sit shoulder to shoulder counting stars and rivals in the same breath. Tomorrow they compete. Tonight they're just ${residents.length} people the game couldn't quite finish off.`,
+    ];
+    colorBeats.a4.push(beat(venue === 'jury' ? 'ONE LAST NIGHT' : 'BY THE FIRE', 'gold', castN, draw(NIGHT)));
+    for (let i = 0; i < castN.length; i++) for (let j = i + 1; j < castN.length; j++) addBond(castN[i], castN[j], 0.3);
+  }
+
+  // ── ARRIVALS (act 1) for anyone eliminated last episode ──
+  const arrivals = residents.filter(n => elimInfo(n).epsSince <= 1).slice(0, 2);
+  const arrivalBeats = arrivals.map(n => {
+    const o = residents.find(r => r !== n && getBond(n, r) >= 3);
+    return beat('NEW ARRIVAL', 'green', [n, o].filter(Boolean), draw([
+      (x) => o ? `${x} trudges in off the boat and ${o} is up before the door shuts — a hug that lasts a beat too long. "You made it. Finally, someone I actually like."` : `${x} trudges in off the boat, still raw. The others don't push — they just make room by ${V.spot} and hand ${P(x).obj} a plate.`,
+    ], n));
+  });
+
+  // ────────────────────────────────────────────────────────────
+  // ASSEMBLE ACTS
+  // ────────────────────────────────────────────────────────────
+  const titles = venue === 'jury'
+    ? { a1: 'Checking In', a2: 'The Long Days', a3: 'The Roundtable', a4: 'Before the Finale' }
+    : { a1: 'Washed Ashore', a2: 'Life on the Island', a3: 'The Storm', a4: 'Nightfall' };
+  const acts = [];
+  const pushAct = (key, extra = []) => {
+    const beats = [...extra, ...S[key], ...(colorBeats[key] || [])].filter(Boolean);
+    if (beats.length) acts.push({ title: titles[key], beats });
+  };
+  pushAct('a1', arrivalBeats);
+  pushAct('a2');
+  // act 3 centerpiece (rescue storm beats live in S.a3; jury roundtable rendered from `roundtable`)
+  if (venue === 'rescue') pushAct('a3');
+  else if (roundtable) acts.push({ title: titles.a3, beats: [], roundtable });
+  pushAct('a4');
+
+  // guarantee every resident appears at least once — append a quick beat for stragglers to act 4
+  const strays = residents.filter(n => !appeared[n]);
+  if (strays.length) {
+    const extra = strays.map(n => beat(venue === 'jury' ? 'SETTLING IN' : 'HOLDING ON', 'iron', [n], draw([
+      (x) => venue === 'jury'
+        ? `${x} finds a quiet corner of ${V.home} and, for the first time since the vote, actually exhales.`
+        : `${x} banks the fire and takes the first watch, jaw set against the dark. "One more day closer to getting back in."`,
+    ], n)));
+    const last = acts[acts.length - 1];
+    if (last && last.beats) last.beats.push(...extra); else acts.push({ title: titles.a4, beats: extra });
+  }
+
+  const teaser = draw([
+    () => venue === 'jury'
+      ? `That night the host gathers the lounge: "Rest up. Soon, two of you get a shot to fight your way back in." The room lights up with old fire.`
+      : `The host sails out with a promise: two of them get one chance at the return challenge. Camp buzzes; every eye sharpens on the horizon.`,
+    () => `Before lights out, word comes down — a return challenge is coming, and not everyone gets a seat. Alliances that died in the game flicker back to life.`,
+    () => `A warning wrapped in a promise: "Stay sharp. A door back into this game is about to crack open." Nobody sleeps much after that.`,
+  ]);
+
+  const events = acts.flatMap(a => a.beats);
+  ep.interlude = { venue, residents, acts, events, roundtable, teaser, epNum };
+  ep.juryHouse = ep.interlude; // legacy alias
+}
+
+// Back-compat wrapper (episode.js / tests may import the old name).
+export function generateJuryHouseLife(ep) { return generateInterludeLife(ep); }

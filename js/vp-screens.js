@@ -12099,6 +12099,16 @@ export function buildVPScreens(epRecord) {
     return evs.some(e => ['bond','fight','dispute','strategicTalk','idolFound','idolSearch','hardWork','meltdown','injury'].includes(e.type));
   });
 
+  // ── INTERLUDE EPISODE (non-elimination) — only the out-of-game life segment ──
+  if (ep.isInterlude) {
+    const _jury = ep.interludeMode === 'jury-house';
+    const _t = rpBuildJuryHouseTitle(ep);
+    if (_t) vpScreens.push({ id:'il-title', label: _jury ? '🏛️ Jury Motel' : '🏝️ Rescue Island', html: _t });
+    const _l = rpBuildJuryHouse(ep);
+    if (_l) vpScreens.push({ id:'il-life', label: _jury ? 'Life at the Motel' : 'Life on the Island', html: _l });
+    return;
+  }
+
   // ── 1. Cold Open (always) ──
   vpScreens.push({ id:'cold-open', label:'Cold Open', html: rpBuildColdOpen(ep) });
 

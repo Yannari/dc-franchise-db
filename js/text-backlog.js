@@ -1755,6 +1755,34 @@ export function _textJuryLife(ep, ln, sec) {
   ep.juryLife.forEach(j => ln(`- ${j.text || j}`));
 }
 
+// ── INTERLUDE EPISODE (non-elimination): rescue-island camp or jury-house motel ──
+export function _textInterlude(ep, ln, sec) {
+  const d = ep.interlude || ep.juryHouse;
+  const jury = ep.interludeMode === 'jury-house';
+  sec(jury ? 'THE JURY MOTEL' : 'RESCUE ISLAND');
+  ln(jury
+    ? 'A non-elimination interlude — nobody goes home. The jury, out of the game for good, shares a motel: processing, feuding, and debating who deserves the win.'
+    : 'A non-elimination interlude — nobody goes home. The marooned cast, still fighting for a way back in, survives Rescue Island together.');
+  ln(`Residents: ${(d?.residents || []).join(', ') || '—'}`);
+  const renderRoundtable = (rt) => {
+    ln('  The jury debates who deserves the win:');
+    rt.lines.forEach(l => { ln(`    On ${l.finalist}:`); ln(`      + ${l.backText}`); ln(`      - ${l.doubtText}`); });
+  };
+  const clean = (t) => String(t).replace(/<\/?b>/g, '');
+  if (d?.acts?.length) {
+    d.acts.forEach((act, i) => {
+      ln(''); ln(`--- ACT ${i + 1}: ${act.title} ---`);
+      (act.beats || []).forEach(e => ln(`- ${e.badge ? `[${e.badge}] ` : ''}${clean(e.text)}`));
+      if (act.roundtable) renderRoundtable(act.roundtable);
+    });
+  } else {
+    ln('');
+    (d?.events || []).forEach(e => ln(`- ${e.badge ? `[${e.badge}] ` : ''}${clean(e.text)}`));
+    if (d?.roundtable?.lines?.length) renderRoundtable(d.roundtable);
+  }
+  if (d?.teaser) { ln(''); ln(d.teaser); }
+}
+
 // ── JURY ELIMINATION TWIST (mid-game): the eliminated players vote out an active player ──
 // Full retranscription of the VP screens (Jury Convenes + Jury Votes). Vote reasons are pulled
 // straight from the pure rpBuildJuryVotes builder (via its data- attributes), so the text matches
@@ -2799,6 +2827,12 @@ export function generateSummaryText(ep) {
   // Header block
   _textMeta(ep, ln, sec);
   _textCast(ep, ln, sec);
+
+  // ── INTERLUDE EPISODE (non-elimination) — only the out-of-game life segment ──
+  if (ep.isInterlude) {
+    _textInterlude(ep, ln, sec);
+    return L.join('\n');
+  }
 
   // Episode flow — VP screen order
   _textColdOpen(ep, ln, sec);

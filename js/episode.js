@@ -15,6 +15,7 @@ import {
 import {
   isRIStillActive, simulateRIChoice, simulateRIDuel, simulateRIReentry,
   generateRILifeEvents, generateRIPostDuelEvents, generateRescueIslandLife,
+  generateInterludeLife,
   RI_DUEL_CHALLENGES, simulateRescueReturnChallenge
 } from './rescue-island.js';
 import { generateSummaryText } from './text-backlog.js';
@@ -1565,6 +1566,31 @@ export function simulateEpisode() {
     || ep.twists?.some(t => t.type === 'no-tribal')
     || (cfg.twistSchedule||[]).some(t => t && Number(t.episode) === epNum && t.type === 'no-tribal');
   if (_hasNoTribalTwist) ep.noTribal = true;
+
+  // ── INTERLUDE EPISODE (non-elimination) — check in on the out-of-game cast.
+  // Active players are frozen: no challenge, no camp, no vote, nobody eliminated.
+  // Two modes: 'rescue-island' (survival, requires RI) or 'jury-house' (furnished lodge).
+  if (ep.isInterlude) {
+    // Unified story-driven generator for both venues (survival camp / furnished motel).
+    generateInterludeLife(ep);
+    gs.episode = epNum;
+    gs.episodeHistory.push({
+      num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
+      challengeType: null, isMerge: false,
+      isInterlude: true, interludeMode: ep.interludeMode,
+      interlude: ep.interlude || null,
+      juryHouse: ep.juryHouse || null,
+      votes: {}, alliances: [],
+      twists: (ep.twists || []).map(t => ({ ...t })),
+      tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
+      campEvents: null,
+      summaryText: '', gsSnapshot: window.snapshotGameState()
+    });
+    const stIL = generateSummaryText(ep);
+    gs.episodeHistory[gs.episodeHistory.length - 1].summaryText = stIL; ep.summaryText = stIL;
+    window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
+  }
+
   // ── SLASHER NIGHT — round-by-round survival challenge replaces immunity + tribal ──
   if (ep.isSlasherNight && !ep.isRewardOnly) {
     // Pre-slasher: journey, advantages, camp events fire normally

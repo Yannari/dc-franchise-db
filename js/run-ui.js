@@ -781,6 +781,9 @@ export function buildEpisodeMap() {
     if (_allTypes.includes('no-tribal')) elims = 0;
     if (_allTypes.includes('reward-twist-challenge')) elims = 0;
     if (_allTypes.includes('elimination-swap')) elims = 0;
+    // Interlude episodes (Rescue Island Life / Jury House) are non-elimination — nobody leaves
+    if (_allTypes.includes('rescue-island-life')) elims = 0;
+    if (_allTypes.includes('jury-house')) elims = 0;
     // Account for Team Swap advantages that cancelled eliminations mid-season
     if (gs?.skippedEliminationEps?.includes(ep)) elims = 0;
     if (_allTypes.includes('double-elim')) elims = Math.max(elims, 2);

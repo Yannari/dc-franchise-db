@@ -187,7 +187,7 @@ UI: count dropdown (1-3) + per-slot reason dropdown in Episode Format Designer.
 ### Romance
 Toggle: `seasonConfig.romance`. Pipeline: spark → intensity → first move → showmance → love triangle → affair. `_challengeRomanceSpark()` for challenges. `_checkShowmanceChalMoment()` for existing showmances. Always check `romanticCompat(a, b)` before romance events — including fake/sabotage kisses.
 
-**Max 2 active showmances per season.** `_challengeRomanceSpark()` in romance.js already enforces this cap internally. NEVER create sparks/showmances via inline `gs.romanticSparks.push()` or `gs.showmances.push()` in challenge files — always use `_challengeRomanceSpark()`. If a challenge truly needs inline spark logic, it MUST check: (1) `seasonConfig.romance` enabled, (2) `gs.showmances.filter(sh => !sh.broken).length < 2`, (3) neither player already in an active showmance, (4) `romanticCompat(a, b)`, (5) no existing spark between the pair.
+**Max 4 active showmances per season.** `_challengeRomanceSpark()` in romance.js already enforces this cap internally. NEVER create sparks/showmances via inline `gs.romanticSparks.push()` or `gs.showmances.push()` in challenge files — always use `_challengeRomanceSpark()`. If a challenge truly needs inline spark logic, it MUST check: (1) `seasonConfig.romance` enabled, (2) `gs.showmances.filter(sh => !sh.broken).length < 4`, (3) neither player already in an active showmance, (4) `romanticCompat(a, b)`, (5) no existing spark between the pair.
 
 ### The Mole
 Season twist. 5 sabotage types. Suspicion tracking. Exposure at 3.0.

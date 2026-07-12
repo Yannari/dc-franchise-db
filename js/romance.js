@@ -7,9 +7,9 @@ import { SHOWMANCE_ARCHETYPE_MULT } from './camp-events.js';
 export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScores, context) {
   if (seasonConfig.romance === 'disabled') return false;
   if (!gs.showmances) gs.showmances = [];
-  // Cap: max 2 active showmances
+  // Cap: max 4 active showmances
   const activeShowmances = gs.showmances.filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p)));
-  if (activeShowmances.length >= 2) return false;
+  if (activeShowmances.length >= 4) return false;
   // Already a showmance?
   if (gs.showmances.some(sh => sh.players.includes(a) && sh.players.includes(b))) return false;
   // Romantic compatibility
@@ -175,7 +175,7 @@ export function checkFirstMove(ep) {
     if (!gs.showmances) gs.showmances = [];
     // Check cap again
     const activeShowmances = gs.showmances.filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p)));
-    if (activeShowmances.length >= 2) return true; // cap hit, keep spark alive
+    if (activeShowmances.length >= 4) return true; // cap hit, keep spark alive
 
     // Determine romance origin type from spark context + mover archetype
     const _originType = moverArch === 'villain' || moverArch === 'schemer' ? 'strategic'
@@ -446,9 +446,9 @@ export function checkShowmanceFormation(ep) {
   if (!gs.showmances) gs.showmances = [];
   const active = gs.activePlayers;
 
-  // Cap: max 2 active showmances at a time — 3+ starts feeling like Love Island
+  // Cap: max 4 active showmances at a time
   const activeShowmances = gs.showmances.filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => active.includes(p)));
-  if (activeShowmances.length >= 2) return;
+  if (activeShowmances.length >= 4) return;
 
   for (let i = 0; i < active.length; i++) {
     for (let j = i + 1; j < active.length; j++) {

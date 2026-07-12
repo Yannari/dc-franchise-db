@@ -665,7 +665,7 @@ function _generateDramaBreak(result, ep) {
   // Event 4: Showmance spark check — respects romance system guards
   if (seasonConfig.romance !== 'disabled') {
     const activeShowmances = (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p)));
-    if (activeShowmances.length < 2) {
+    if (activeShowmances.length < 4) {
       const sparkCandidates = allMembers.filter(n => {
         const arch = players.find(p => p.name === n)?.archetype;
         return arch === 'showmancer' || arch === 'social-butterfly' || Math.random() < 0.2;

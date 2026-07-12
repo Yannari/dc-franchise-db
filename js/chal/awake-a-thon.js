@@ -156,7 +156,7 @@ export function simulateAwakeAThon(ep) {
     // Showmance spark (~15%) — showmancer archetype gets lower bond threshold
     if (eventsThisRound < maxEvents && Math.random() < 0.15 && awakePlayers.length >= 2) {
       const showmanceCount = (gs.showmances || []).filter(s => s.phase !== 'broken-up').length;
-      if (showmanceCount < 2) {
+      if (showmanceCount < 4) {
         for (let si = 0; si < awakePlayers.length; si++) {
           for (let sj = si + 1; sj < awakePlayers.length; sj++) {
             const a = awakePlayers[si], b = awakePlayers[sj];

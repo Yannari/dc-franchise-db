@@ -32,6 +32,7 @@ import { simulateUpTheCreek } from './chal/up-the-creek.js';
 import { simulateTruthOrDareTrain } from './chal/truth-or-dare-train.js';
 import { simulateAMazeInGrip } from './chal/a-maze-ing-grip.js';
 import { simulatePolesApart } from './chal/poles-apart.js';
+import { simulateTusksLadders } from './chal/tusks-and-ladders.js';
 import { simulatePaintballHunt } from './chal/paintball-hunt.js';
 import { simulateHellsKitchen } from './chal/hells-kitchen.js';
 import { simulateTrustChallenge } from './chal/trust.js';
@@ -1015,6 +1016,7 @@ function _runCoupledPreMergeTwist(ep) {
   if (ep.isTruthOrDareTrain)     { simulateTruthOrDareTrain(ep); return true; }
   if (ep.isAMazeInGrip)          { simulateAMazeInGrip(ep); return true; }
   if (ep.isPolesApart)           { simulatePolesApart(ep); return true; }
+  if (ep.isTusksLadders)         { simulateTusksLadders(ep); return true; }
   if (ep.isPaintballHunt)        { simulatePaintballHunt(ep); return true; }
   if (ep.isHellsKitchen)         { simulateHellsKitchen(ep); return true; }
   if (ep.isTrustChallenge)       { simulateTrustChallenge(ep); return true; }
@@ -2339,6 +2341,9 @@ export function simulateEpisode() {
   } else if (ep.isPolesApart && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulatePolesApart(ep);
     // winner, loser, safeTribes, challengeType, tribalPlayers already set by simulatePolesApart
+  } else if (ep.isTusksLadders && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateTusksLadders(ep);
+    // winner, loser, safeTribes, challengeType, tribalPlayers already set by simulateTusksLadders
   } else if (ep.isPaintballHunt && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulatePaintballHunt(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulatePaintballHunt
@@ -3197,7 +3202,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isTruthOrDareTrain && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isDemonsPlainer && !ep.isMineOverMatter && !ep.isMerryGoRound && !ep.isMazeOfTheFallen && !ep.isTreasureIsland && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isHauntedHouse && !ep.isHungOut && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari && !ep.isRapaPhooey && !ep.isDrumheller && !ep.isPlanesTrains && !ep.isIceIceBaby && !ep.isFindersCreepers && !ep.isBackstabbersAhoy && !ep.isProjectRunaway) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isTruthOrDareTrain && !ep.isPolesApart && !ep.isAMazeInGrip && !ep.isTusksLadders && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isDemonsPlainer && !ep.isMineOverMatter && !ep.isMerryGoRound && !ep.isMazeOfTheFallen && !ep.isTreasureIsland && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isHauntedHouse && !ep.isHungOut && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari && !ep.isRapaPhooey && !ep.isDrumheller && !ep.isPlanesTrains && !ep.isIceIceBaby && !ep.isFindersCreepers && !ep.isBackstabbersAhoy && !ep.isProjectRunaway) {
     updateChalRecord(ep);
   }
 
@@ -4710,7 +4715,7 @@ export function simulateEpisode() {
       isUpTheCreek: ep.isUpTheCreek || false, upTheCreek: ep.upTheCreek || null,
       isTruthOrDareTrain: ep.isTruthOrDareTrain || false, truthOrDareTrain: ep.truthOrDareTrain || null,
       isAMazeInGrip: ep.isAMazeInGrip || false, aMazeInGrip: ep.aMazeInGrip || null,
-      isPolesApart: ep.isPolesApart || false, polesApart: ep.polesApart || null,
+      isPolesApart: ep.isPolesApart || false, polesApart: ep.polesApart || null, isTusksLadders: ep.isTusksLadders || false, tusksLadders: ep.tusksLadders || null,
       isPaintballHunt: ep.isPaintballHunt || false, paintballHunt: ep.paintballHunt || null,
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
@@ -4948,7 +4953,7 @@ export function simulateEpisode() {
       isUpTheCreek: ep.isUpTheCreek || false, upTheCreek: ep.upTheCreek || null,
       isTruthOrDareTrain: ep.isTruthOrDareTrain || false, truthOrDareTrain: ep.truthOrDareTrain || null,
       isAMazeInGrip: ep.isAMazeInGrip || false, aMazeInGrip: ep.aMazeInGrip || null,
-      isPolesApart: ep.isPolesApart || false, polesApart: ep.polesApart || null,
+      isPolesApart: ep.isPolesApart || false, polesApart: ep.polesApart || null, isTusksLadders: ep.isTusksLadders || false, tusksLadders: ep.tusksLadders || null,
       isPaintballHunt: ep.isPaintballHunt || false, paintballHunt: ep.paintballHunt || null,
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
@@ -5390,7 +5395,7 @@ function simulateJuryRoundtable(ep) {
       isUpTheCreek: ep.isUpTheCreek || false, upTheCreek: ep.upTheCreek || null,
       isTruthOrDareTrain: ep.isTruthOrDareTrain || false, truthOrDareTrain: ep.truthOrDareTrain || null,
       isAMazeInGrip: ep.isAMazeInGrip || false, aMazeInGrip: ep.aMazeInGrip || null,
-      isPolesApart: ep.isPolesApart || false, polesApart: ep.polesApart || null,
+      isPolesApart: ep.isPolesApart || false, polesApart: ep.polesApart || null, isTusksLadders: ep.isTusksLadders || false, tusksLadders: ep.tusksLadders || null,
       isPaintballHunt: ep.isPaintballHunt || false, paintballHunt: ep.paintballHunt || null,
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
@@ -6741,6 +6746,8 @@ function simulateJuryRoundtable(ep) {
     isAMazeInGrip:      ep.isAMazeInGrip       || false,
     aMazeInGrip:        ep.aMazeInGrip         || null,
     isPolesApart:       ep.isPolesApart        || false,
+    isTusksLadders:     ep.isTusksLadders      || false,
+    tusksLadders:       ep.tusksLadders        || null,
     polesApart:         ep.polesApart          || null,
     isPaintballHunt:    ep.isPaintballHunt    || false,
     paintballHunt:      ep.paintballHunt      || null,

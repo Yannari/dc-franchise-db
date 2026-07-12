@@ -19,6 +19,8 @@ import * as upTheCreekMod from './chal/up-the-creek.js';
 import * as truthOrDareTrainMod from './chal/truth-or-dare-train.js';
 import * as aMazeInGripMod from './chal/a-maze-ing-grip.js';
 import * as polesApartMod from './chal/poles-apart.js';
+import * as tusksLaddersMod from './chal/tusks-and-ladders.js';
+import * as tusksLaddersVpMod from './chal/tusks-and-ladders-vp.js';
 import * as paintballHuntMod from './chal/paintball-hunt.js';
 import * as hellsKitchenMod from './chal/hells-kitchen.js';
 import * as trustMod from './chal/trust.js';
@@ -182,7 +184,7 @@ const extractedModules = [
   playersMod, bondsMod, alliancesMod, votingMod,
   advantagesMod, romanceMod, challengesCoreMod,
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
-  suckyOutdoorsMod, upTheCreekMod, truthOrDareTrainMod, aMazeInGripMod, polesApartMod, paintballHuntMod, hellsKitchenMod,
+  suckyOutdoorsMod, upTheCreekMod, truthOrDareTrainMod, aMazeInGripMod, polesApartMod, tusksLaddersMod, tusksLaddersVpMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, mineOverMatterMod, treasureIslandMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, hauntedHouseMod, hungOutMod, merryGoRoundMod, mazeOfTheFallenMod, demonsPlainerVpMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
   truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, iceIceBabyMod, findersCreepersMod, backstabbersAhoyMod, projectRunawayMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, auctionVpMod, settingsMod, campEventsMod, twistsMod, rescueIslandMod,

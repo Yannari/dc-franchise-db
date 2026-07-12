@@ -42,6 +42,7 @@ import { rpBuildCFTTitleCard, rpBuildCFTPinball, rpBuildCFTDramaBreak, rpBuildCF
 import { rpBuildTDTTitleCard, rpBuildTDTRace, rpBuildTDTResults, truthOrDareTrainRevealNext, truthOrDareTrainRevealAll } from './chal/truth-or-dare-train.js';
 import { rpBuildAMGTitleCard, rpBuildAMGRace, rpBuildAMGResults, aMazeInGripRevealNext, aMazeInGripRevealAll } from './chal/a-maze-ing-grip.js';
 import { rpBuildPolesApartTitleCard, rpBuildPolesApartArena, rpBuildPolesApartResults, polesApartRevealNext, polesApartRevealAll } from './chal/poles-apart.js';
+import { rpBuildTusksTitleCard, rpBuildTusksHunt, rpBuildTusksFinish, tusksRevealNext, tusksRevealAll } from './chal/tusks-and-ladders.js';
 import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults, frozenCrossingRevealNext, frozenCrossingRevealAll } from './chal/frozen-crossing.js';
 import { rpBuildVSTitleCard, rpBuildVSPhase1, rpBuildVSPhase2, rpBuildVSPhase3, rpBuildVSResults, vikingSourRevealNext, vikingSourRevealAll } from './chal/viking-sour.js';
 import { rpBuildBRBTitleCard, rpBuildBRBSlotMachine, rpBuildBRBObstacleCourse, rpBuildBRBTightrope, rpBuildBRBCustomsTrivia, rpBuildBRBFinalResults, bbRevealNext, bbRevealAll } from './chal/bridal-brawls.js';
@@ -2312,7 +2313,7 @@ export function rpBuildDebug(ep) {
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
-      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isTruthOrDareTrain || ep.isAMazeInGrip || ep.isPolesApart || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isCampCastaways || ep.isSlasherNight || ep.isMonsterCash || ep.isAlienEgg) ? _tabBtn('challenge', 'Challenge') : ''}
+      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isTruthOrDareTrain || ep.isAMazeInGrip || ep.isPolesApart || ep.isTusksLadders || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isCampCastaways || ep.isSlasherNight || ep.isMonsterCash || ep.isAlienEgg) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -3033,7 +3034,7 @@ export function rpBuildDebug(ep) {
       });
     }
     const _chalLabel = ep.challengeLabel || 'Challenge';
-    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isTruthOrDareTrain ? 'Truth or Dare Train' : ep.isAMazeInGrip ? 'A-Maze-ing Grip' : ep.isPolesApart ? 'Poles Apart' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : ep.isBasicStraining ? 'Basic Straining' : ep.isXtremeTorture ? 'X-Treme Torture' : ep.isLuckyHunt ? 'Lucky Hunt' : ep.isHideAndBeSneaky ? 'Hide and Be Sneaky' : ep.isOffTheChain ? "That's Off the Chain!" : ep.isWawanakwaGoneWild ? 'Wawanakwa Gone Wild!' : ep.isTriArmedTriathlon ? 'Trial by Tri-Armed Triathlon' : ep.isCampCastaways ? 'Camp Castaways' : ep.isAreWeThereYeti ? 'Are We There Yeti?' : ep.isBridalBrawls ? 'Bridal Brawls' : ep.isMerryGoRound ? 'Merry-Go-Round-Up' : _chalLabel;
+    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isTruthOrDareTrain ? 'Truth or Dare Train' : ep.isAMazeInGrip ? 'A-Maze-ing Grip' : ep.isPolesApart ? 'Poles Apart' : ep.isTusksLadders ? 'Tusks and Ladders' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : ep.isBasicStraining ? 'Basic Straining' : ep.isXtremeTorture ? 'X-Treme Torture' : ep.isLuckyHunt ? 'Lucky Hunt' : ep.isHideAndBeSneaky ? 'Hide and Be Sneaky' : ep.isOffTheChain ? "That's Off the Chain!" : ep.isWawanakwaGoneWild ? 'Wawanakwa Gone Wild!' : ep.isTriArmedTriathlon ? 'Trial by Tri-Armed Triathlon' : ep.isCampCastaways ? 'Camp Castaways' : ep.isAreWeThereYeti ? 'Are We There Yeti?' : ep.isBridalBrawls ? 'Bridal Brawls' : ep.isMerryGoRound ? 'Merry-Go-Round-Up' : _chalLabel;
 
     html += `<div style="margin-bottom:12px">
       <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
@@ -12260,6 +12261,10 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'pa-title', label:'Poles Apart', html: rpBuildPolesApartTitleCard(ep) });
     vpScreens.push({ id:'pa-arena', label:'The Challenge', html: rpBuildPolesApartArena(ep) });
     vpScreens.push({ id:'pa-results', label:'Best of Three', html: rpBuildPolesApartResults(ep) });
+  } else if ((ep.isTusksLadders || ep.challengeType === 'tusks-and-ladders') && ep.tusksLadders) {
+    vpScreens.push({ id:'tal-title', label:'🐘 Tusks and Ladders', html: rpBuildTusksTitleCard(ep) });
+    vpScreens.push({ id:'tal-hunt', label:'The Hunt', html: rpBuildTusksHunt(ep) });
+    vpScreens.push({ id:'tal-finish', label:'Build & Fire', html: rpBuildTusksFinish(ep) });
   } else if (ep.isUpTheCreek && ep.upTheCreek) {
     vpScreens.push({ id:'up-the-creek', label:'Up the Creek', html: rpBuildUpTheCreek(ep) });
   } else if (ep.isPaintballHunt && ep.paintballHunt) {

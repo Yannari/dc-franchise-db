@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bumper Car Bash — VP mockup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Righteous&family=Chakra+Petch:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box}
+body{margin:0;background:#05030c;font-family:'Chakra Petch',system-ui,sans-serif}
+
+/* fake rp-nav */
+.rp-nav{height:46px;background:linear-gradient(90deg,#1a0730,#2a0b3e);border-bottom:1px solid #ff2d9544;
+  display:flex;align-items:center;gap:14px;padding:0 16px;position:sticky;top:0;z-index:50}
+.rp-nav .n{font-family:'Righteous';font-size:12px;letter-spacing:1px;color:#a08fc0;cursor:pointer;text-transform:uppercase}
+.rp-nav .n.on{color:#ffd83a;text-shadow:0 0 10px #ffd83a88}
+
+.bcb-wrap{--blue:#2de2ff;--pink:#ff2d95;--yellow:#ffd83a;--lime:#7dff4d;--purple:#b06bff;--orange:#ff8c2d;
+  --txt:#fff4ff;--dim:#c3aee0;--panel:rgba(14,6,26,.82);
+  max-width:1100px;margin:0 auto;font-family:'Chakra Petch',system-ui,sans-serif;color:var(--txt);
+  position:relative;overflow:hidden;min-height:520px;
+  background:
+    radial-gradient(90% 42% at 50% 0%,rgba(96,38,128,.42),transparent 58%),
+    radial-gradient(circle at 14% 22%,rgba(255,45,149,.16),transparent 12%),
+    radial-gradient(circle at 86% 30%,rgba(45,226,255,.14),transparent 12%),
+    radial-gradient(circle at 22% 74%,rgba(255,216,58,.12),transparent 12%),
+    radial-gradient(circle at 78% 82%,rgba(125,255,77,.11),transparent 12%),
+    repeating-linear-gradient(90deg,transparent 0 47px,rgba(255,255,255,.025) 47px 48px),
+    linear-gradient(180deg,#180b2a,#0d0619 42%,#0a0516)}
+.bcb-wrap *{box-sizing:border-box}
+
+/* ── carnival string-light divider (toned game screens) ── */
+.bcb-bulbs2{display:flex;justify-content:center;gap:11px;margin:0 0 10px;position:relative;z-index:3}
+.bcb-bulbs2 i{width:7px;height:7px;border-radius:50%;background:var(--yellow);box-shadow:0 0 8px var(--yellow);animation:bcbBulb 1.5s infinite}
+.bcb-bulbs2 i:nth-child(3n){background:var(--pink);box-shadow:0 0 8px var(--pink)}
+.bcb-bulbs2 i:nth-child(3n+1){background:var(--blue);box-shadow:0 0 8px var(--blue)}
+.bcb-bulbs2 i:nth-child(2n){animation-delay:.5s}
+@keyframes bcbBulb{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ── HERO (title + cold open) — rainbow burst lives here only ── */
+.bcb-hero{position:relative;overflow:hidden;padding:4px 0 16px;margin-bottom:4px}
+.bcb-hero>.bcb-title,.bcb-hero>.bcb-stage,.bcb-hero>.bcb-hostrow{position:relative;z-index:3}
+.bcb-hero::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 82% at 50% 28%,transparent 38%,rgba(9,4,20,.5) 74%,rgba(9,4,20,.9))}
+.bcb-herofade{position:absolute;left:0;right:0;bottom:0;height:130px;z-index:2;pointer-events:none;
+  background:linear-gradient(180deg,transparent,#0d0619)}
+
+/* ── RAINBOW BURST BACKDROP (carnival of chaos) — hero only ── */
+.bcb-burst-bg{position:absolute;inset:0;z-index:0;overflow:hidden}
+.bcb-rays{position:absolute;left:50%;top:24%;width:1900px;height:1900px;transform:translate(-50%,-50%);
+  background:conic-gradient(from 0deg,
+    #ff2d95,#ff8c2d,#ffd83a,#7dff4d,#2de2ff,#b06bff,#ff2d95,#ff8c2d,#ffd83a,#7dff4d,#2de2ff,#b06bff,#ff2d95);
+  -webkit-mask:repeating-conic-gradient(from 0deg,#000 0 5deg,transparent 5deg 10deg);
+          mask:repeating-conic-gradient(from 0deg,#000 0 5deg,transparent 5deg 10deg);
+  opacity:.9;animation:bcbSpin 40s linear infinite;filter:saturate(1.3)}
+.bcb-rays.b2{animation:bcbSpin 60s linear infinite reverse;opacity:.5;-webkit-mask:repeating-conic-gradient(from 4deg,#000 0 3deg,transparent 3deg 12deg);mask:repeating-conic-gradient(from 4deg,#000 0 3deg,transparent 3deg 12deg)}
+@keyframes bcbSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.bcb-glow{position:absolute;left:50%;top:24%;width:520px;height:520px;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.9),rgba(255,216,58,.5) 30%,transparent 66%);
+  filter:blur(6px);animation:bcbPulse 3.2s ease-in-out infinite}
+@keyframes bcbPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.9}50%{transform:translate(-50%,-50%) scale(1.08);opacity:1}}
+
+/* big-top valance */
+.bcb-tent{position:absolute;top:0;left:0;right:0;height:34px;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(90deg,#ff2d95 0 40px,#fff4ff 40px 80px);opacity:.92;
+  -webkit-mask:linear-gradient(#000,#000) top/100% 14px no-repeat,
+    radial-gradient(18px 20px at 20px 0,#000 68%,transparent 70%) 0 14px/40px 22px repeat-x;
+          mask:linear-gradient(#000,#000) top/100% 14px no-repeat,
+    radial-gradient(18px 20px at 20px 0,#000 68%,transparent 70%) 0 14px/40px 22px repeat-x}
+
+.bcb-inner{padding:38px 0 40px;position:relative;z-index:3}
+
+/* ── TITLE ── */
+.bcb-title{text-align:center;padding:6px 18px 4px}
+.bcb-kick{font-family:'Righteous';letter-spacing:5px;font-size:11px;color:#fff;text-transform:uppercase;
+  text-shadow:0 1px 0 #000,0 0 10px #b06bff}
+.bcb-big{font-family:'Bungee';font-size:clamp(34px,7.3vw,68px);line-height:.98;letter-spacing:1px;margin:8px 0 2px;color:#fff;
+  text-shadow:3px 3px 0 #ff2d95,6px 6px 0 #b06bff,0 0 4px #000,0 0 30px rgba(45,226,255,.7)}
+.bcb-sub{font-family:'Chakra Petch';font-weight:600;font-size:13px;color:#fff;max-width:600px;margin:6px auto 0;line-height:1.5;
+  text-shadow:0 1px 3px #000}
+.bcb-sub b{color:var(--yellow)}
+
+/* ── ANIMATED COLD-OPEN ARENA STAGE ── */
+.bcb-stage{position:relative;height:260px;max-width:760px;margin:10px auto 2px;border-radius:16px;overflow:hidden;
+  border:2px solid rgba(255,255,255,.25);
+  background:
+    radial-gradient(200px 90px at 50% 96%,rgba(45,226,255,.22),transparent 70%),
+    repeating-linear-gradient(90deg,transparent 0 39px,rgba(255,255,255,.07) 39px 40px),
+    repeating-linear-gradient(0deg,transparent 0 39px,rgba(255,255,255,.05) 39px 40px),
+    linear-gradient(180deg,rgba(10,4,26,.55),rgba(6,3,15,.8));
+  box-shadow:inset 0 0 40px rgba(0,0,0,.5)}
+.bcb-rink{position:absolute;left:5%;right:5%;top:14%;bottom:10%;border:2px dashed rgba(255,216,58,.4);border-radius:50%/42%}
+
+/* a bumper car unit */
+.car{position:absolute;width:104px;text-align:center;z-index:4}
+.car .pole{position:absolute;left:50%;top:-30px;width:3px;height:26px;background:linear-gradient(#cfd,#889);transform:translateX(-50%)}
+.car .spark{position:absolute;left:50%;top:-40px;transform:translateX(-50%);font-size:15px;animation:bcbSpk 1.2s infinite}
+@keyframes bcbSpk{0%,100%{opacity:.55;transform:translateX(-50%) scale(.85) rotate(-10deg)}50%{opacity:1;transform:translateX(-50%) scale(1.2) rotate(10deg)}}
+.car .face{position:relative;z-index:3;width:48px;height:48px;border-radius:50%;object-fit:cover;border:3px solid #fff;
+  background:#241436;box-shadow:0 3px 8px rgba(0,0,0,.5);margin-bottom:-14px}
+.car .hull{position:relative;height:40px;border-radius:26px;border:5px solid;box-shadow:0 6px 12px rgba(0,0,0,.45),inset 0 -6px 10px rgba(0,0,0,.35)}
+.car .hull::after{content:"";position:absolute;left:12%;right:12%;top:6px;height:9px;border-radius:8px;background:rgba(255,255,255,.35)}
+.car .nm{font-family:'Righteous';font-size:12px;margin-top:5px;color:#fff;text-shadow:0 1px 3px #000;letter-spacing:.5px}
+.car.cA .hull{background:linear-gradient(#0c4a63,#082b3a);border-color:var(--blue)}
+.car.cJ .hull{background:linear-gradient(#4a1240,#2a0a26);border-color:var(--purple)}
+.car.cH .hull{background:linear-gradient(#5c0f3a,#320820);border-color:var(--pink)}
+.car.cL .hull{background:linear-gradient(#1f4a10,#12300a);border-color:var(--lime)}
+
+/* drive choreography — cars circle then ram the middle */
+.car.cA{left:8%;top:26%;animation:driveA 5s ease-in-out infinite}
+.car.cH{right:8%;top:26%;animation:driveH 5s ease-in-out infinite}
+.car.cL{left:14%;bottom:6%;animation:driveL 5s ease-in-out infinite}
+.car.cJ{right:14%;bottom:6%;animation:driveJ 5s ease-in-out infinite}
+@keyframes driveA{0%,100%{transform:translate(0,0) rotate(-4deg)}40%{transform:translate(210px,42px) rotate(6deg)}47%{transform:translate(232px,48px) rotate(9deg)}52%{transform:translate(150px,30px) rotate(-14deg)}}
+@keyframes driveH{0%,100%{transform:translate(0,0) rotate(4deg)}40%{transform:translate(-210px,42px) rotate(-6deg)}47%{transform:translate(-232px,48px) rotate(-9deg)}52%{transform:translate(-150px,30px) rotate(14deg)}}
+@keyframes driveL{0%,100%{transform:translate(0,0) rotate(3deg)}55%{transform:translate(190px,-40px) rotate(-8deg)}62%{transform:translate(206px,-48px) rotate(-12deg)}68%{transform:translate(120px,-24px) rotate(12deg)}}
+@keyframes driveJ{0%,100%{transform:translate(0,0) rotate(-3deg)}55%{transform:translate(-190px,-40px) rotate(8deg)}62%{transform:translate(-206px,-48px) rotate(12deg)}68%{transform:translate(-120px,-24px) rotate(-12deg)}}
+/* collision bursts synced to the rams */
+.bcb-crash{position:absolute;font-size:44px;pointer-events:none;z-index:5;opacity:0;filter:drop-shadow(0 0 10px #ffd83a)}
+.bcb-crash.c1{left:50%;top:34%;transform:translate(-50%,-50%);animation:crashA 5s ease-in-out infinite}
+.bcb-crash.c2{left:50%;bottom:12%;transform:translate(-50%,50%);animation:crashB 5s ease-in-out infinite}
+@keyframes crashA{0%,42%,60%,100%{opacity:0;transform:translate(-50%,-50%) scale(.4)}47%{opacity:1;transform:translate(-50%,-50%) scale(1.25)}54%{opacity:.6;transform:translate(-50%,-50%) scale(.9)}}
+@keyframes crashB{0%,57%,75%,100%{opacity:0;transform:translate(-50%,50%) scale(.4)}62%{opacity:1;transform:translate(-50%,50%) scale(1.25)}69%{opacity:.6;transform:translate(-50%,50%) scale(.9)}}
+.bcb-flash{position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(circle at 50% 34%,rgba(255,255,255,.5),transparent 30%);opacity:0;animation:crashA 5s ease-in-out infinite}
+
+.bcb-host{margin:14px auto 0;display:inline-block;font-family:'Chakra Petch';font-size:12.5px;color:#fff;
+  border:1px solid rgba(255,216,58,.55);border-radius:10px;padding:9px 15px;background:rgba(30,10,44,.7);max-width:680px;line-height:1.55;
+  box-shadow:0 0 18px rgba(255,45,149,.2)}
+.bcb-host b{color:var(--yellow)}
+
+/* driver roster grid */
+.bcb-roster{padding:14px 18px 6px}
+.bcb-roster h3{font-family:'Bungee';font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#fff;text-align:center;margin:0 0 10px;text-shadow:0 0 10px var(--pink)}
+.bcb-rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.bcb-drv{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
+  background:var(--panel);box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.bcb-drv img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #fff;background:#241436;flex-shrink:0}
+.bcb-drv .nm{flex:1;font-weight:700;font-size:13.5px}
+.bcb-drv .arc{font-size:10px;color:var(--dim);letter-spacing:.5px}
+.bcb-tag{font-family:'Chakra Petch';font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:20px;border:1px solid;white-space:nowrap}
+.bcb-tag.ally{color:#031;border-color:var(--lime);background:var(--lime)}
+.bcb-tag.wild{color:#301;border-color:var(--pink);background:var(--pink)}
+
+/* arena log layout */
+.bcb-grid{display:grid;grid-template-columns:1fr 300px;gap:16px;padding:16px 18px}
+@media(max-width:820px){.bcb-grid{grid-template-columns:1fr}}
+.bcb-h2{font-family:'Bungee';font-size:24px;letter-spacing:1px;color:#fff;text-align:center;margin:2px 0 12px;
+  text-shadow:2px 2px 0 var(--pink),0 0 16px var(--blue)}
+.bcb-amb{font-family:'Righteous';font-size:11px;color:var(--yellow);opacity:.85;text-align:center;padding:5px 0;letter-spacing:1px;font-style:italic;text-shadow:0 1px 3px #000}
+
+/* beat cards */
+.bcb-card{border:1px solid rgba(255,255,255,.12);border-left:4px solid var(--purple);border-radius:10px;padding:10px 12px;margin:9px 0;
+  background:var(--panel);animation:bcbRise .34s both;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+@keyframes bcbRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.bcb-card.rear{border-left-color:var(--blue)}
+.bcb-card.tbone{border-left-color:var(--pink);box-shadow:0 0 16px rgba(255,45,149,.2)}
+.bcb-card.ambush{border-left-color:var(--yellow);box-shadow:0 0 18px rgba(255,216,58,.22)}
+.bcb-card.deny{border-left-color:#ff3b3b;box-shadow:0 0 18px rgba(255,59,59,.24)}
+.bcb-card.social{border-left-style:dashed;border-left-color:var(--pink);background:linear-gradient(180deg,rgba(40,10,38,.82),rgba(12,6,22,.86))}
+.bcb-card.trouble{border-left-color:var(--orange)}
+.bcb-card .row{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.bcb-card .row img{width:22px;height:22px;border-radius:50%;object-fit:cover;border:1.5px solid #fff;background:#241436}
+.bcb-b{font-family:'Chakra Petch';font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:5px;border:1px solid}
+.bcb-b.rear{background:rgba(45,226,255,.16);color:var(--blue);border-color:#2de2ff66}
+.bcb-b.tbone{background:rgba(255,45,149,.18);color:var(--pink);border-color:#ff2d9566}
+.bcb-b.ambush{background:rgba(255,216,58,.18);color:var(--yellow);border-color:#ffd83a66}
+.bcb-b.null{background:rgba(195,174,224,.16);color:var(--dim);border-color:#c3aee066}
+.bcb-b.deny{background:rgba(255,59,59,.2);color:#ff6b6b;border-color:#ff3b3b88}
+.bcb-b.social{background:rgba(255,45,149,.14);color:var(--pink);border-color:#ff2d9555}
+.bcb-b.trouble{background:rgba(255,140,45,.16);color:var(--orange);border-color:#ff8c2d66}
+.bcb-pts{margin-left:auto;font-family:'Bungee';font-size:13px;letter-spacing:.5px}
+.bcb-pts.rear{color:var(--blue)}.bcb-pts.tbone{color:var(--pink)}.bcb-pts.ambush{color:var(--yellow)}.bcb-pts.null{color:var(--dim)}
+.bcb-card .txt{font-size:13px;line-height:1.5;color:#eae2ff}
+.bcb-card .txt b{color:#fff}
+
+/* sidebar: RACE TO 20 */
+.bcb-side{position:sticky;top:12px;align-self:start;border:1px solid rgba(255,255,255,.16);border-radius:14px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(24,10,42,.94),rgba(10,5,20,.94));box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.bcb-sh{font-family:'Bungee';letter-spacing:1px;font-size:18px;color:var(--yellow);text-align:center;
+  padding:11px 8px 7px;background:linear-gradient(180deg,rgba(255,216,58,.18),transparent);text-shadow:0 0 12px rgba(255,216,58,.6)}
+.bcb-goal{text-align:center;font-family:'Chakra Petch';font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:8px}
+.bcb-lb{padding:2px 12px 12px}
+.bcb-lrow{margin:9px 0}
+.bcb-lhead{display:flex;align-items:center;gap:7px;font-size:12px;margin-bottom:4px}
+.bcb-lhead img{width:22px;height:22px;border-radius:50%;object-fit:cover;border:1.5px solid #fff;background:#241436}
+.bcb-lhead .nm{flex:1;font-weight:700}
+.bcb-lhead .pt{font-family:'Bungee';font-size:14px;color:var(--yellow)}
+.bcb-lhead .pt small{font-size:9px;color:var(--dim)}
+.bcb-track{height:12px;border-radius:7px;background:#1a1030;border:1px solid #33224d;overflow:hidden;position:relative}
+.bcb-fill{height:100%;border-radius:7px;transition:width .5s}
+.bcb-fill.pA{background:linear-gradient(90deg,#0a6,#2de2ff)}
+.bcb-fill.pH{background:linear-gradient(90deg,#a06,#ff2d95)}
+.bcb-fill.pL{background:linear-gradient(90deg,#3a0,#7dff4d)}
+.bcb-fill.pJ{background:linear-gradient(90deg,#63c,#b06bff)}
+.bcb-finish{position:absolute;right:0;top:-2px;bottom:-2px;width:3px;background:repeating-linear-gradient(#fff 0 3px,#000 3px 6px)}
+.bcb-lead{margin-left:auto;font-size:9px;font-family:'Chakra Petch';font-weight:700;color:var(--lime);letter-spacing:1px}
+
+/* arena map */
+.bcb-map{position:relative;height:150px;margin:4px 12px 12px;border:1px solid rgba(255,255,255,.14);border-radius:12px;overflow:hidden;
+  background:
+    radial-gradient(120px 60px at 50% 55%,rgba(255,216,58,.1),transparent 70%),
+    repeating-linear-gradient(90deg,transparent 0 23px,rgba(45,226,255,.1) 23px 24px),
+    repeating-linear-gradient(0deg,transparent 0 23px,rgba(255,45,149,.08) 23px 24px),
+    #0c0620}
+.bcb-map .rim{position:absolute;inset:6px;border:2px solid #ffd83a55;border-radius:50%/40%;box-shadow:inset 0 0 20px rgba(255,216,58,.15)}
+.bcb-mcar{position:absolute;width:26px;height:26px;border-radius:50%;border:2.5px solid;overflow:hidden;transition:left .6s,top .6s;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.bcb-mcar img{width:100%;height:100%;object-fit:cover}
+.bcb-mcar.cA{border-color:var(--blue)}.bcb-mcar.cH{border-color:var(--pink)}.bcb-mcar.cL{border-color:var(--lime)}.bcb-mcar.cJ{border-color:var(--purple)}
+.bcb-mcar.hit{animation:bcbShake .5s infinite}
+@keyframes bcbShake{0%,100%{margin:0}25%{margin:-2px 0 0 -3px}75%{margin:2px 0 0 3px}}
+.bcb-mburst{position:absolute;font-size:20px;animation:bcbSpk 1s infinite;pointer-events:none}
+
+/* results */
+.bcb-res{padding:16px 18px 8px}
+.bcb-stamp{text-align:center;font-family:'Bungee';font-size:clamp(24px,5vw,40px);color:var(--yellow);letter-spacing:1px;margin:6px 0 14px;
+  text-shadow:3px 3px 0 var(--pink),0 0 26px rgba(255,216,58,.6);animation:bcbPulse2 2.4s ease-in-out infinite}
+@keyframes bcbPulse2{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+.bcb-fin{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:12px;margin:7px 0;border:1px solid rgba(255,255,255,.14);
+  background:var(--panel)}
+.bcb-fin img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #fff;background:#241436}
+.bcb-fin.win{border-color:var(--yellow);box-shadow:0 0 22px rgba(255,216,58,.28);background:linear-gradient(90deg,rgba(255,216,58,.14),var(--panel))}
+.bcb-fin .pl{font-family:'Bungee';font-size:16px;color:var(--dim);width:30px;text-align:center}
+.bcb-fin.win .pl{color:var(--yellow)}
+.bcb-fin .nm{flex:1;font-weight:700;font-size:14px}
+.bcb-fin .tot{font-family:'Bungee';font-size:18px;color:var(--yellow)}
+.bcb-fin .tot small{font-size:10px;color:var(--dim)}
+.bcb-fin .imm{font-family:'Chakra Petch';font-size:10px;font-weight:700;color:#301;background:var(--yellow);padding:3px 9px;border-radius:20px;letter-spacing:1px}
+
+/* reveal controls */
+.bcb-controls{position:fixed;bottom:0;left:0;right:0;z-index:60;display:flex;justify-content:center;gap:12px;padding:12px;
+  background:linear-gradient(0deg,#05030c,rgba(5,3,12,.85) 70%,transparent)}
+.bcb-btn{font-family:'Righteous';font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;
+  padding:10px 22px;border-radius:24px;border:1px solid var(--blue);background:rgba(45,226,255,.12);color:var(--blue);box-shadow:0 0 14px rgba(45,226,255,.25)}
+.bcb-btn.alt{border-color:var(--pink);background:rgba(255,45,149,.12);color:var(--pink);box-shadow:0 0 14px rgba(255,45,149,.25)}
+.bcb-counter{align-self:center;font-family:'Chakra Petch';font-size:11px;color:var(--dim);letter-spacing:1px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="rp-nav">
+  <span class="n">Cold Open</span><span class="n on">🎡 Bumper Car Bash</span><span class="n">Results</span><span class="n">Vote</span>
+</div>
+
+<div class="bcb-wrap">
+<div class="bcb-tent"></div>
+
+<div class="bcb-inner">
+
+<!-- ══ HERO: COLD OPEN / TITLE (rainbow burst) ══ -->
+<div class="bcb-hero">
+<div class="bcb-burst-bg"><div class="bcb-rays"></div><div class="bcb-rays b2"></div><div class="bcb-glow"></div></div>
+<div class="bcb-herofade"></div>
+
+<div class="bcb-title">
+  <div class="bcb-kick">Carnival of Chaos · Final Four · Immunity</div>
+  <div class="bcb-big">BUMPER CAR BASH</div>
+  <div class="bcb-sub">First driver to <b>20 points</b> takes immunity. Rear&nbsp;=&nbsp;1 · T-bone&nbsp;=&nbsp;2 · head-on ambush&nbsp;=&nbsp;3.</div>
+</div>
+
+<!-- animated arena stage -->
+<div class="bcb-stage">
+  <div class="bcb-rink"></div>
+  <div class="bcb-flash"></div>
+  <div class="bcb-crash c1">💥</div>
+  <div class="bcb-crash c2">💥</div>
+
+  <div class="car cA"><span class="spark">✦</span><span class="pole"></span><img class="face" src="assets/avatars/anastasia.png" alt="Anastasia"><div class="hull"></div><div class="nm">Anastasia</div></div>
+  <div class="car cH"><span class="spark">✦</span><span class="pole"></span><img class="face" src="assets/avatars/hannah.png" alt="Hannah"><div class="hull"></div><div class="nm">Hannah</div></div>
+  <div class="car cL"><span class="spark">✦</span><span class="pole"></span><img class="face" src="assets/avatars/logan.png" alt="Logan"><div class="hull"></div><div class="nm">Logan</div></div>
+  <div class="car cJ"><span class="spark">✦</span><span class="pole"></span><img class="face" src="assets/avatars/jade.png" alt="Jade"><div class="hull"></div><div class="nm">Jade</div></div>
+</div>
+
+<div class="bcb-hostrow" style="text-align:center">
+  <div class="bcb-host">🎪 <b>Trevor:</b> "Twenty points, one immunity necklace, and a whole lot of whiplash. Ram your friends. Ram your enemies. Ram <i>especially</i> the leader." <b>Emily:</b> "Green light in three… two…"</div>
+</div>
+</div><!-- /hero -->
+
+<!-- driver roster -->
+<div class="bcb-roster">
+  <h3>On the Grid</h3>
+  <div class="bcb-rgrid">
+    <div class="bcb-drv"><img src="assets/avatars/anastasia.png" alt=""><div><div class="nm">Anastasia</div><div class="arc">villain</div></div><span class="bcb-tag ally">JADE PACT</span></div>
+    <div class="bcb-drv"><img src="assets/avatars/jade.png" alt=""><div><div class="nm">Jade</div><div class="arc">schemer</div></div><span class="bcb-tag ally">JADE PACT</span></div>
+    <div class="bcb-drv"><img src="assets/avatars/hannah.png" alt=""><div><div class="nm">Hannah</div><div class="arc">floater</div></div><span class="bcb-tag wild">H+L DUO</span></div>
+    <div class="bcb-drv"><img src="assets/avatars/logan.png" alt=""><div><div class="nm">Logan</div><div class="arc">loyal-soldier</div></div><span class="bcb-tag wild">H+L DUO</span></div>
+  </div>
+</div>
+
+<!-- ══ THE ARENA ══ -->
+<div class="bcb-grid">
+  <div>
+    <div class="bcb-h2">THE ARENA</div>
+    <div class="bcb-bulbs2"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="bcb-amb">— tires screech on the polished rink floor —</div>
+
+    <div class="bcb-card trouble">
+      <div class="row"><img src="assets/avatars/anastasia.png" alt=""><span class="bcb-b trouble">Car Trouble</span><span class="bcb-pts null">stalled</span></div>
+      <div class="txt"><b>Anastasia</b> jerks the wheel and the car bucks — she can't find the throttle. <b>Jade</b> circles back: "Stick together, we cover each other." A reminder that costs her a lap.</div>
+    </div>
+
+    <div class="bcb-card rear">
+      <div class="row"><img src="assets/avatars/hannah.png" alt=""><span class="bcb-b rear">Rear Hit</span><span class="bcb-pts rear">+1 → Hannah</span></div>
+      <div class="txt"><b>Hannah</b> clips <b>Jade</b> from behind while she's turned around — a cheap tap, but the scoreboard doesn't care.</div>
+    </div>
+
+    <div class="bcb-card tbone">
+      <div class="row"><img src="assets/avatars/logan.png" alt=""><span class="bcb-b tbone">T-Bone</span><span class="bcb-pts tbone">+2 → Logan</span></div>
+      <div class="txt"><b>Logan</b> slides in and catches <b>Jade</b> flush on the side panel. Jade spins out, furious, and locks onto the H+L duo.</div>
+    </div>
+
+    <div class="bcb-amb">— sparks rain off the ceiling grid; the crowd howls —</div>
+
+    <div class="bcb-card social">
+      <div class="row"><img src="assets/avatars/logan.png" alt=""><span class="bcb-b social">Cross-Alliance Help</span><span class="bcb-pts null">bond ↑ · heat</span></div>
+      <div class="txt"><b>Logan</b> pulls alongside a struggling <b>Anastasia</b>: "Let off the gas and swerve into it." The tip works — but <b>Hannah</b> saw it. <i>"Lock in, Logan, or we're both in the doghouse."</i></div>
+    </div>
+
+    <div class="bcb-card ambush">
+      <div class="row"><img src="assets/avatars/hannah.png" alt=""><span class="bcb-b ambush">Head-On Ambush!</span><span class="bcb-pts ambush">+3 → Hannah</span></div>
+      <div class="txt"><b>Hannah</b> feints left, cuts back, and slams <b>Jade</b> nose-to-nose before she can brace. A textbook ambush — three points, no argument.</div>
+    </div>
+
+    <div class="bcb-card">
+      <div class="row"><img src="assets/avatars/anastasia.png" alt=""><span class="bcb-b null">Head-On · Mutual</span><span class="bcb-pts null">0 — bounce</span></div>
+      <div class="txt"><b>Anastasia</b> and <b>Hannah</b> square up and hit dead-even. Both cars rebound in a shower of sparks — nobody scores.</div>
+    </div>
+
+    <div class="bcb-card social">
+      <div class="row"><img src="assets/avatars/jade.png" alt=""><span class="bcb-b social">Vote Scheme</span><span class="bcb-pts null">targeting shift</span></div>
+      <div class="txt"><b>Jade</b> pulls <b>Anastasia</b> parallel and talks fast: "If they force a tie, we take whoever's beatable. Chase <b>Logan</b> — we don't want him at the fire." Anastasia begrudgingly nods.</div>
+    </div>
+
+    <div class="bcb-card tbone">
+      <div class="row"><img src="assets/avatars/anastasia.png" alt=""><span class="bcb-b tbone">T-Bone</span><span class="bcb-pts tbone">+2 → Anastasia</span></div>
+      <div class="txt"><b>Anastasia</b> — car finally handling — buries her bumper into <b>Hannah</b>'s door to peel her off Jade. The comeback is on.</div>
+    </div>
+
+    <div class="bcb-amb">— "HANNAH ONE OFF THE WIN!" the announcer roars —</div>
+
+    <div class="bcb-card deny">
+      <div class="row"><img src="assets/avatars/anastasia.png" alt=""><span class="bcb-b deny">Denial Block</span><span class="bcb-pts null">win denied</span></div>
+      <div class="txt"><b>Hannah</b> sets up the winning tap on <b>Logan</b> — but <b>Anastasia</b> t-bones her out of the lane a half-second early. The 20th point evaporates. <b>Jade</b> pins Hannah to the wall.</div>
+    </div>
+
+    <div class="bcb-card ambush">
+      <div class="row"><img src="assets/avatars/anastasia.png" alt=""><span class="bcb-b ambush">Head-On Ambush!</span><span class="bcb-pts ambush">+3 → Anastasia · 20!</span></div>
+      <div class="txt"><b>Anastasia</b> lines up the pinned <b>Hannah</b> and drives straight through for the head-on. <b>Twenty points.</b> Immunity, and a seat in the finale.</div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="bcb-side">
+    <div class="bcb-sh">RACE TO 20</div>
+    <div class="bcb-goal">first to twenty · immunity</div>
+    <div class="bcb-lb">
+      <div class="bcb-lrow">
+        <div class="bcb-lhead"><img src="assets/avatars/anastasia.png" alt=""><span class="nm">Anastasia</span><span class="lead">SURGING</span><span class="pt">20<small>/20</small></span></div>
+        <div class="bcb-track"><div class="bcb-fill pA" style="width:100%"></div><div class="bcb-finish"></div></div>
+      </div>
+      <div class="bcb-lrow">
+        <div class="bcb-lhead"><img src="assets/avatars/hannah.png" alt=""><span class="nm">Hannah</span><span class="pt">17<small>/20</small></span></div>
+        <div class="bcb-track"><div class="bcb-fill pH" style="width:85%"></div><div class="bcb-finish"></div></div>
+      </div>
+      <div class="bcb-lrow">
+        <div class="bcb-lhead"><img src="assets/avatars/logan.png" alt=""><span class="nm">Logan</span><span class="pt">15<small>/20</small></span></div>
+        <div class="bcb-track"><div class="bcb-fill pL" style="width:75%"></div><div class="bcb-finish"></div></div>
+      </div>
+      <div class="bcb-lrow">
+        <div class="bcb-lhead"><img src="assets/avatars/jade.png" alt=""><span class="nm">Jade</span><span class="pt">9<small>/20</small></span></div>
+        <div class="bcb-track"><div class="bcb-fill pJ" style="width:45%"></div><div class="bcb-finish"></div></div>
+      </div>
+    </div>
+    <div class="bcb-map">
+      <div class="rim"></div>
+      <div class="bcb-mcar cA" style="left:42%;top:34%"><img src="assets/avatars/anastasia.png" alt=""></div>
+      <div class="bcb-mcar cH hit" style="left:54%;top:48%"><img src="assets/avatars/hannah.png" alt=""></div>
+      <div class="bcb-mcar cL" style="left:28%;top:58%"><img src="assets/avatars/logan.png" alt=""></div>
+      <div class="bcb-mcar cJ" style="left:60%;top:26%"><img src="assets/avatars/jade.png" alt=""></div>
+      <div class="bcb-mburst" style="left:50%;top:42%">💥</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div class="bcb-res">
+  <div class="bcb-stamp">ANASTASIA WINS IMMUNITY</div>
+  <div class="bcb-fin win"><span class="pl">1</span><img src="assets/avatars/anastasia.png" alt=""><span class="nm">Anastasia</span><span class="imm">IMMUNE</span><span class="tot">20<small>pts</small></span></div>
+  <div class="bcb-fin"><span class="pl">2</span><img src="assets/avatars/hannah.png" alt=""><span class="nm">Hannah</span><span class="tot">17<small>pts</small></span></div>
+  <div class="bcb-fin"><span class="pl">3</span><img src="assets/avatars/logan.png" alt=""><span class="nm">Logan</span><span class="tot">15<small>pts</small></span></div>
+  <div class="bcb-fin"><span class="pl">4</span><img src="assets/avatars/jade.png" alt=""><span class="nm">Jade</span><span class="tot">9<small>pts</small></span></div>
+  <div style="text-align:center">
+    <div class="bcb-host" style="border-color:#2de2ff88">🎪 <b style="color:#2de2ff">Emily:</b> "Anastasia claws it out of nowhere — she's in the finale." <b style="color:#7dff4d">Logan:</b> "At least it was fun." <b style="color:#ff2d95">Jade:</b> "Good effort. Now… we vote."</div>
+  </div>
+</div>
+
+</div><!-- /inner -->
+</div><!-- /wrap -->
+
+<div class="bcb-controls">
+  <button class="bcb-btn">▶ Reveal Next</button>
+  <span class="bcb-counter">6 / 11 revealed</span>
+  <button class="bcb-btn alt">⏭ Reveal All</button>
+</div>
+</body>
+</html>

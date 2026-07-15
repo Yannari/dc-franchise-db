@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Night of the Killer Clown — VP Mockup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Special+Elite&family=Oswald:wght@300;400;600;700&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#07060a;          /* near-black night */
+  --ink2:#0f0b16;
+  --panel:#140d1c;
+  --fog:#1b1424;
+  --blood:#c8102e;        /* carnival red */
+  --blood2:#7a0a1c;
+  --gold:#e8b53a;
+  --moon:#cfe3ff;
+  --moon2:#8fa8cc;
+  --grease:#e7ddcf;       /* greasepaint white */
+  --stalk:#ff2d3f;
+  --safe:#39d98a;
+}
+body{background:var(--ink);color:var(--grease);font-family:'Oswald',sans-serif;}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px 120px;}
+
+/* ---- top nav (mimic .rp-nav 46px) ---- */
+.nav{position:sticky;top:0;height:46px;background:linear-gradient(90deg,#0a0710,#160c1e,#0a0710);
+  border-bottom:1px solid #2a1830;display:flex;align-items:center;gap:14px;padding:0 16px;z-index:50;}
+.nav b{font-family:'Creepster',cursive;color:var(--blood);letter-spacing:1px;font-size:20px;text-shadow:0 0 10px rgba(200,16,46,.5)}
+.nav .tabs{margin-left:auto;display:flex;gap:6px}
+.nav .tab{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--moon2);padding:5px 10px;border:1px solid #2a1830;border-radius:20px;cursor:pointer}
+.nav .tab.on{color:var(--ink);background:var(--gold);border-color:var(--gold);font-weight:700}
+
+/* ---- ambient forest ---- */
+.stage{position:relative;overflow:hidden;border:1px solid #2a1830;border-top:none;
+  background:
+    radial-gradient(120px 120px at 82% 12%, rgba(207,227,255,.30), rgba(207,227,255,0) 70%),
+    radial-gradient(900px 500px at 50% -10%, #241636 0%, #0d0916 55%, #07060a 100%);
+}
+.moon{position:absolute;top:26px;right:120px;width:78px;height:78px;border-radius:50%;
+  background:radial-gradient(circle at 38% 34%, #ffffff, #cfe3ff 45%, #6f86ab 100%);
+  box-shadow:0 0 60px 18px rgba(160,190,240,.35);}
+.trees{position:absolute;inset:0;pointer-events:none;opacity:.9}
+.fog{position:absolute;left:-20%;width:140%;height:120px;
+  background:radial-gradient(60% 100% at 50% 100%, rgba(120,110,150,.22), rgba(120,110,150,0) 70%);
+  filter:blur(4px);animation:drift 22s linear infinite}
+.fog.f1{bottom:-10px;animation-duration:26s}
+.fog.f2{bottom:60px;opacity:.6;animation-duration:34s;animation-direction:reverse}
+@keyframes drift{0%{transform:translateX(-6%)}50%{transform:translateX(6%)}100%{transform:translateX(-6%)}}
+
+/* ---- title card ---- */
+.title{position:relative;padding:54px 24px 40px;text-align:center;z-index:2}
+.kicker{font-family:'Special Elite',monospace;letter-spacing:6px;font-size:12px;color:var(--moon2);text-transform:uppercase}
+.bigtitle{font-family:'Creepster',cursive;font-size:clamp(42px,8vw,86px);line-height:.92;color:var(--grease);
+  text-shadow:0 0 2px #000, 3px 3px 0 var(--blood2), 0 0 30px rgba(200,16,46,.45);letter-spacing:2px;margin:6px 0}
+.bigtitle .red{color:var(--blood)}
+.sub{font-family:'Special Elite',monospace;font-size:14px;color:var(--moon);opacity:.85;max-width:620px;margin:10px auto 0;line-height:1.5}
+.hostline{margin-top:18px;display:inline-block;font-family:'Special Elite',monospace;font-size:13px;color:var(--gold);
+  border:1px dashed rgba(232,181,58,.5);border-radius:6px;padding:8px 14px;background:rgba(232,181,58,.05)}
+
+/* ---- SVG clown ---- */
+.clownwrap{position:relative;width:220px;height:250px;margin:6px auto 0;filter:drop-shadow(0 0 26px rgba(200,16,46,.4))}
+.clownwrap svg{width:100%;height:100%}
+.clown-sway{transform-origin:50% 90%;animation:sway 4.5s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+
+/* ---- loadout roster ---- */
+.roster{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:6px 22px 34px;position:relative;z-index:2}
+.routecol{background:linear-gradient(180deg,rgba(20,13,28,.85),rgba(10,7,16,.9));border:1px solid #2a1830;border-radius:10px;padding:14px}
+.routecol h3{font-family:'Special Elite',monospace;font-size:13px;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px}
+.routecol.river h3{color:#6fd3ff}
+.routecol.mtn h3{color:#f0a15a}
+.pl{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;border:1px solid #241830;margin-bottom:7px;background:rgba(0,0,0,.25)}
+.av{width:30px;height:30px;border-radius:50%;background:#2a1c38;border:1px solid #3a2850;flex:none;
+  display:grid;place-items:center;font-size:13px;color:var(--moon2);font-weight:700}
+.pl .nm{flex:1;font-weight:600;font-size:14px}
+.ammo{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:1px;padding:2px 7px;border-radius:20px;border:1px solid}
+.ammo.gun{color:#8fb2ff;border-color:#3a4d7a;background:rgba(60,90,160,.15)}
+.ammo.dart{color:var(--gold);border-color:#5a4620;background:rgba(232,181,58,.12)}
+.ammo.loaded{color:var(--ink);background:var(--safe);border-color:var(--safe);font-weight:700}
+
+/* ---- STALK screen ---- */
+.stalklayout{display:grid;grid-template-columns:1fr 300px;gap:16px;padding:18px 22px;position:relative;z-index:2}
+@media(max-width:820px){.stalklayout{grid-template-columns:1fr}}
+
+.beats{display:flex;flex-direction:column;gap:10px}
+.beat{border:1px solid #241830;border-left:3px solid #3a2850;border-radius:8px;padding:11px 13px;
+  background:linear-gradient(180deg,rgba(20,13,28,.8),rgba(9,7,15,.85));animation:rise .4s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.beat .bh{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.beat .tag{font-family:'Special Elite',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+  padding:2px 7px;border-radius:4px}
+.beat .time{margin-left:auto;font-family:'Special Elite',monospace;font-size:11px;color:var(--moon2)}
+.beat p{font-size:14px;line-height:1.5;color:#d8cfc2}
+.beat p b{color:var(--grease)}
+/* tag colors */
+.t-stun{background:rgba(57,217,138,.15);color:var(--safe);border:1px solid rgba(57,217,138,.4)}
+.t-grab{background:rgba(255,45,63,.16);color:var(--stalk);border:1px solid rgba(255,45,63,.45)}
+.t-barter{background:rgba(232,181,58,.14);color:var(--gold);border:1px solid rgba(232,181,58,.4)}
+.t-sabotage{background:rgba(200,16,46,.16);color:#ff6b7d;border:1px solid rgba(200,16,46,.5)}
+.t-spark{background:rgba(255,120,180,.16);color:#ff9ecb;border:1px solid rgba(255,120,180,.45)}
+.t-help{background:rgba(111,211,255,.14);color:#6fd3ff;border:1px solid rgba(111,211,255,.4)}
+.t-rivalry{background:rgba(240,120,60,.15);color:#f0a15a;border:1px solid rgba(240,120,60,.4)}
+.beat.stun{border-left-color:var(--safe)}
+.beat.grab{border-left-color:var(--stalk);box-shadow:0 0 22px rgba(255,45,63,.18)}
+.beat.sabotage{border-left-color:var(--blood)}
+.beat.spark{border-left-color:#ff9ecb}
+
+.ambient{font-family:'Special Elite',monospace;font-size:11px;color:var(--moon2);opacity:.7;text-align:center;padding:3px 0;letter-spacing:1px}
+
+/* ---- sidebar: THE STALK ---- */
+.side{position:sticky;top:60px;align-self:start;border:1px solid #2a1830;border-radius:12px;overflow:hidden;
+  background:linear-gradient(180deg,#160c1e,#0b0712)}
+.side .sh{font-family:'Creepster',cursive;letter-spacing:2px;font-size:22px;color:var(--stalk);text-align:center;
+  padding:10px;background:linear-gradient(180deg,rgba(200,16,46,.18),transparent);text-shadow:0 0 12px rgba(255,45,63,.5)}
+.prox{padding:12px 14px 6px}
+.prox .lab{font-family:'Special Elite',monospace;font-size:10px;letter-spacing:2px;color:var(--moon2);text-transform:uppercase;margin-bottom:6px;display:flex;justify-content:space-between}
+.proxbar{height:16px;border-radius:8px;background:#241019;border:1px solid #3a1420;overflow:hidden}
+.proxfill{height:100%;width:72%;background:linear-gradient(90deg,#7a0a1c,#ff2d3f);box-shadow:0 0 14px rgba(255,45,63,.6);
+  transition:width .6s}
+.proxstate{text-align:center;font-family:'Creepster',cursive;font-size:18px;letter-spacing:1px;color:var(--stalk);margin-top:6px}
+.mapmini{position:relative;height:120px;margin:10px 14px;border:1px solid #241830;border-radius:8px;
+  background:radial-gradient(200px 90px at 20% 90%, rgba(60,120,200,.2), transparent 70%),
+             radial-gradient(200px 90px at 80% 20%, rgba(200,120,60,.18), transparent 70%),
+             linear-gradient(180deg,#0d0916,#120a1c)}
+.mapmini .fork{position:absolute;left:50%;bottom:6px;width:2px;height:60px;background:#3a2850;transform:translateX(-50%)}
+.mapmini .lane{position:absolute;font-family:'Special Elite',monospace;font-size:9px;letter-spacing:1px}
+.mapmini .lane.river{left:10px;top:8px;color:#6fd3ff}
+.mapmini .lane.mtn{right:10px;top:8px;color:#f0a15a}
+.mapmini .camp{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);font-size:9px;color:var(--gold);font-family:'Special Elite',monospace}
+.dot{position:absolute;width:9px;height:9px;border-radius:50%;border:1px solid #000;font-size:0}
+.dot::after{content:attr(data-n);position:absolute;left:11px;top:-3px;font-size:9px;color:#cfc;white-space:nowrap;font-family:'Special Elite',monospace}
+.clowndot{position:absolute;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff,#ff2d3f 60%,#7a0a1c);
+  box-shadow:0 0 12px rgba(255,45,63,.8);left:46%;top:34%}
+.armlist{padding:6px 14px 14px}
+.armlist .arow{display:flex;align-items:center;gap:7px;font-size:12px;padding:4px 0;border-bottom:1px dashed #241830}
+.armlist .arow:last-child{border:none}
+.armlist .st{margin-left:auto;font-family:'Special Elite',monospace;font-size:10px;letter-spacing:1px;padding:1px 6px;border-radius:10px}
+.st.loaded{background:var(--safe);color:#062;font-weight:700}
+.st.empty{background:rgba(60,90,160,.2);color:#8fb2ff}
+.st.dart{background:rgba(232,181,58,.15);color:var(--gold)}
+.st.grabbed{background:rgba(255,45,63,.2);color:var(--stalk)}
+.st.out{opacity:.5}
+
+/* ---- THE RUN leaderboard ---- */
+.runwrap{padding:18px 22px;position:relative;z-index:2}
+.track{position:relative;border:1px solid #2a1830;border-radius:10px;background:linear-gradient(90deg,#0c0814,#160c1e);padding:14px 16px}
+.lane2{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed #241830}
+.lane2:last-child{border:none}
+.rank{font-family:'Creepster',cursive;font-size:22px;width:34px;text-align:center;color:var(--moon2)}
+.lane2.win .rank{color:var(--gold);text-shadow:0 0 12px rgba(232,181,58,.6)}
+.laneprog{flex:1;height:14px;border-radius:8px;background:#160e1e;border:1px solid #2a1830;position:relative;overflow:hidden}
+.laneprog i{position:absolute;left:0;top:0;height:100%;border-radius:8px;background:linear-gradient(90deg,#3a2850,#c8102e)}
+.lane2.win .laneprog i{background:linear-gradient(90deg,#7a5a10,var(--gold))}
+.lt{font-family:'Special Elite',monospace;font-size:12px;color:var(--moon2);width:78px;text-align:right}
+.immstamp{margin:16px auto 0;max-width:340px;text-align:center;font-family:'Creepster',cursive;font-size:34px;
+  color:var(--ink);background:linear-gradient(180deg,var(--gold),#b3841f);border-radius:10px;padding:10px;
+  transform:rotate(-2deg);box-shadow:0 6px 0 rgba(0,0,0,.4),0 0 30px rgba(232,181,58,.4);letter-spacing:1px}
+
+/* ---- reveal controls (fixed) ---- */
+.ctrls{position:fixed;left:0;right:0;bottom:0;height:56px;background:linear-gradient(0deg,#07060a,#120a1c);
+  border-top:1px solid var(--blood2);display:flex;align-items:center;justify-content:center;gap:12px;z-index:60}
+.ctrls button{font-family:'Special Elite',monospace;letter-spacing:2px;text-transform:uppercase;font-size:12px;
+  padding:9px 18px;border-radius:6px;border:1px solid var(--blood);background:rgba(200,16,46,.12);color:#ff9ba7;cursor:pointer}
+.ctrls button:hover{background:var(--blood);color:#fff}
+.ctrls .cnt{font-family:'Special Elite',monospace;font-size:12px;color:var(--moon2);letter-spacing:1px}
+
+.screenlabel{text-align:center;font-family:'Special Elite',monospace;letter-spacing:5px;color:var(--moon2);
+  text-transform:uppercase;font-size:11px;padding:14px 0 2px}
+hr.sep{border:none;border-top:1px dashed #2a1830;margin:26px 22px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <b>🤡 Night of the Killer Clown</b>
+  <div class="tabs">
+    <span class="tab">Loadout</span>
+    <span class="tab on">The Stalk</span>
+    <span class="tab">The Run</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ===================== SCREEN 1: TITLE / LOADOUT ===================== -->
+<div class="screenlabel">— Screen 1 · Title &amp; Loadout —</div>
+<div class="stage">
+  <div class="moon"></div>
+  <div class="fog f1"></div><div class="fog f2"></div>
+  <div class="title">
+    <div class="kicker">Post-Merge · Individual Immunity</div>
+    <div class="clownwrap"><div class="clown-sway">
+      <svg viewBox="0 0 200 230" aria-label="animatronic clown">
+        <!-- body -->
+        <path d="M60 230 q-6 -70 40 -78 q46 8 40 78 Z" fill="#12101a" stroke="#2a1830"/>
+        <circle cx="82" cy="180" r="7" fill="#c8102e"/><circle cx="118" cy="200" r="7" fill="#e8b53a"/>
+        <!-- ruff collar -->
+        <path d="M70 150 q30 22 60 0 q-6 18 -30 20 q-24 -2 -30 -20Z" fill="#7a0a1c" stroke="#c8102e"/>
+        <!-- head -->
+        <circle cx="100" cy="108" r="46" fill="#efe6d8"/>
+        <!-- hair tufts -->
+        <path d="M56 100 q-16 -10 -6 -30 q10 12 20 10Z" fill="#c8102e"/>
+        <path d="M144 100 q16 -10 6 -30 q-10 12 -20 10Z" fill="#c8102e"/>
+        <path d="M60 78 q-10 -18 6 -30 q2 14 14 18Z" fill="#c8102e"/>
+        <path d="M140 78 q10 -18 -6 -30 q-2 14 -14 18Z" fill="#c8102e"/>
+        <!-- eyes -->
+        <path d="M74 92 l18 12 l-18 6Z" fill="#0b0712"/>
+        <path d="M126 92 l-18 12 l18 6Z" fill="#0b0712"/>
+        <circle cx="83" cy="98" r="3" fill="#ff2d3f"/><circle cx="117" cy="98" r="3" fill="#ff2d3f"/>
+        <!-- nose -->
+        <circle cx="100" cy="112" r="9" fill="#c8102e" stroke="#7a0a1c"/>
+        <!-- grin -->
+        <path d="M72 124 q28 34 56 0 q-28 14 -56 0Z" fill="#7a0a1c"/>
+        <path d="M72 124 q28 30 56 0" fill="none" stroke="#fff" stroke-width="3"/>
+        <!-- hat -->
+        <path d="M64 66 q36 -40 72 0 q-36 -14 -72 0Z" fill="#12101a" stroke="#c8102e"/>
+        <circle cx="100" cy="40" r="6" fill="#e8b53a"/>
+      </svg>
+    </div></div>
+    <div class="bigtitle">NIGHT OF THE<br><span class="red">KILLER CLOWN</span></div>
+    <div class="sub">Grab a flag from the dark. Bring it home. But half of you hold empty guns, half hold the darts —
+      and something is already awake in the trees.</div>
+    <div class="hostline">TREVOR: “Five minutes. That’s all a dart buys you. Choose your route… and choose who you trust.”</div>
+  </div>
+
+  <div class="roster">
+    <div class="routecol river">
+      <h3>🌊 River Route <span style="margin-left:auto;font-size:10px;color:var(--moon2)">raft · nerve</span></h3>
+      <div class="pl"><span class="av">A</span><span class="nm">Anastasia</span><span class="ammo dart">◈ DARTS</span></div>
+      <div class="pl"><span class="av">L</span><span class="nm">Logan</span><span class="ammo gun">▭ EMPTY GUN</span></div>
+      <div class="pl"><span class="av">M</span><span class="nm">Marissa</span><span class="ammo gun">▭ EMPTY GUN</span></div>
+      <div class="pl"><span class="av">Z</span><span class="nm">Zaid</span><span class="ammo dart">◈ DARTS</span></div>
+    </div>
+    <div class="routecol mtn">
+      <h3>⛰ Mountain Route <span style="margin-left:auto;font-size:10px;color:var(--moon2)">climb · bridge</span></h3>
+      <div class="pl"><span class="av">Am</span><span class="nm">Amelie</span><span class="ammo gun">▭ EMPTY GUN</span></div>
+      <div class="pl"><span class="av">H</span><span class="nm">Hannah</span><span class="ammo dart">◈ DARTS</span></div>
+      <div class="pl"><span class="av">I</span><span class="nm">Isabel</span><span class="ammo dart">◈ DARTS</span></div>
+      <div class="pl"><span class="av">J</span><span class="nm">Jade</span><span class="ammo loaded">✦ LOADED</span></div>
+    </div>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ===================== SCREEN 2: THE STALK ===================== -->
+<div class="screenlabel">— Screen 2 · The Stalk —</div>
+<div class="stage">
+  <div class="fog f1"></div><div class="fog f2"></div>
+  <div class="stalklayout">
+    <div class="beats">
+      <div class="ambient">· · · something is dragging its feet through the leaves · · ·</div>
+
+      <div class="beat barter">
+        <div class="bh"><span class="tag t-barter">Barter</span><span class="time">00:41</span></div>
+        <p><b>Anastasia</b> has darts, <b>Logan</b> has the gun. Wary but cornered, they cut a deal — one loaded weapon
+          between them. They move as a pair now, and neither turns their back all the way. <i>(+bond, both armed)</i></p>
+      </div>
+
+      <div class="beat help">
+        <div class="bh"><span class="tag t-help">Rescue</span><span class="time">01:12</span></div>
+        <p><b>Hannah</b> and <b>Amelie</b> hear a twig snap and find <b>Isabel</b> and <b>Jade</b> pinned in a bush as the
+          clown lurches past. Amelie waves them out. “We go together.” <i>(+bond ×2)</i></p>
+      </div>
+
+      <div class="beat grab">
+        <div class="bh"><span class="tag t-grab">Grabbed</span><span class="time">02:03</span></div>
+        <p>The clown’s gloved hand closes on <b>Anastasia</b> mid-river. <b>Marissa</b> fires — the dart sails wide and
+          smacks Anastasia in the head instead. She’s hauled into the dark. <i>(−pop Marissa, Anastasia OUT: +48s)</i></p>
+      </div>
+
+      <div class="beat sabotage">
+        <div class="bh"><span class="tag t-sabotage">Betrayal</span><span class="time">02:20</span></div>
+        <p><b>Logan</b> could double back. He doesn’t — “She’s not really in danger,” he says, and runs.
+          <b>Zaid</b> and <b>Marissa</b> go after the clown alone. <i>(−bond, +heat on Logan)</i></p>
+      </div>
+
+      <div class="ambient">· · · a music box winds itself, three notes, somewhere close · · ·</div>
+
+      <div class="beat spark">
+        <div class="bh"><span class="tag t-spark">Sparks</span><span class="time">03:31</span></div>
+        <p>Thrown behind the same fallen log with the clown ten feet away, <b>Jade</b> presses her only loaded gun into
+          <b>Logan’s</b> hands. “I owe you,” he breathes. Something crackles that isn’t the radio. <i>(💘 showmance spark)</i></p>
+      </div>
+
+      <div class="beat stun">
+        <div class="bh"><span class="tag t-stun">Stun</span><span class="time">03:58</span></div>
+        <p>On the broken log bridge, <b>Jade</b> steadies, aims her short-range projector the way her mom drilled her —
+          <i>close, not too close</i> — and buries a dart in the clown’s chest. It seizes. Five minutes on the clock. <i>(+pop)</i></p>
+      </div>
+
+      <div class="beat rivalry">
+        <div class="bh"><span class="tag t-rivalry">Rivalry</span><span class="time">04:22</span></div>
+        <p>At the flags, <b>Hannah</b> and <b>Amelie</b> both grab for the same immunity flag and start shouting over who
+          earned it — loud enough that the stun timer suddenly feels very short. <i>(−bond)</i></p>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="side">
+      <div class="sh">THE STALK</div>
+      <div class="prox">
+        <div class="lab"><span>Clown proximity</span><span>RISING</span></div>
+        <div class="proxbar"><div class="proxfill" style="width:72%"></div></div>
+        <div class="proxstate">CHARGING</div>
+      </div>
+      <div class="mapmini">
+        <span class="lane river">RIVER</span>
+        <span class="lane mtn">MOUNTAIN</span>
+        <div class="fork"></div>
+        <span class="camp">▲ CAMP</span>
+        <div class="clowndot"></div>
+        <div class="dot" data-n="Zaid" style="left:24%;top:64%;background:#6fd3ff"></div>
+        <div class="dot" data-n="Marissa" style="left:32%;top:52%;background:#6fd3ff"></div>
+        <div class="dot" data-n="Jade" style="left:70%;top:30%;background:#39d98a"></div>
+        <div class="dot" data-n="Hannah" style="left:76%;top:42%;background:#f0a15a"></div>
+      </div>
+      <div class="armlist">
+        <div class="arow"><span class="av" style="width:20px;height:20px;font-size:10px">J</span> Jade <span class="st loaded">LOADED</span></div>
+        <div class="arow"><span class="av" style="width:20px;height:20px;font-size:10px">L</span> Logan <span class="st loaded">LOADED</span></div>
+        <div class="arow"><span class="av" style="width:20px;height:20px;font-size:10px">Z</span> Zaid <span class="st dart">DARTS</span></div>
+        <div class="arow"><span class="av" style="width:20px;height:20px;font-size:10px">M</span> Marissa <span class="st empty">EMPTY</span></div>
+        <div class="arow"><span class="av" style="width:20px;height:20px;font-size:10px">A</span> Anastasia <span class="st grabbed">GRABBED</span></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ===================== SCREEN 3: THE RUN ===================== -->
+<div class="screenlabel">— Screen 3 · The Run —</div>
+<div class="stage">
+  <div class="fog f1"></div>
+  <div class="runwrap">
+    <div class="ambient" style="margin-bottom:10px">· · · the finish line is a ring of flashlights and the clown is between them and it · · ·</div>
+    <div class="track">
+      <div class="lane2 win">
+        <span class="rank">1</span>
+        <span style="width:96px;font-weight:700">Hannah</span>
+        <span class="laneprog"><i style="width:100%"></i></span>
+        <span class="lt">03:59 🚩</span>
+      </div>
+      <div class="lane2">
+        <span class="rank">2</span>
+        <span style="width:96px">Jade</span>
+        <span class="laneprog"><i style="width:88%"></i></span>
+        <span class="lt">+11s</span>
+      </div>
+      <div class="lane2">
+        <span class="rank">3</span>
+        <span style="width:96px">Zaid</span>
+        <span class="laneprog"><i style="width:74%"></i></span>
+        <span class="lt">+26s</span>
+      </div>
+      <div class="lane2">
+        <span class="rank">4</span>
+        <span style="width:96px">Amelie</span>
+        <span class="laneprog"><i style="width:61%"></i></span>
+        <span class="lt">TRAPPED</span>
+      </div>
+      <div class="lane2">
+        <span class="rank">5</span>
+        <span style="width:96px">Anastasia</span>
+        <span class="laneprog"><i style="width:30%"></i></span>
+        <span class="lt">CLOWN</span>
+      </div>
+    </div>
+    <div class="ambient" style="margin-top:12px">Logan shoots a branch down over <b>Amelie</b> and sprints — but it’s Hannah who breaks the ring first.</div>
+    <div class="immstamp">HANNAH WINS IMMUNITY</div>
+  </div>
+</div>
+
+</div>
+
+<div class="ctrls">
+  <button>◀ Reveal Next</button>
+  <span class="cnt">6 / 8 revealed</span>
+  <button>Reveal All ▶</button>
+</div>
+</body>
+</html>

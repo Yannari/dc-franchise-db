@@ -43,6 +43,8 @@ import { rpBuildTDTTitleCard, rpBuildTDTRace, rpBuildTDTResults, truthOrDareTrai
 import { rpBuildAMGTitleCard, rpBuildAMGRace, rpBuildAMGResults, aMazeInGripRevealNext, aMazeInGripRevealAll } from './chal/a-maze-ing-grip.js';
 import { rpBuildPolesApartTitleCard, rpBuildPolesApartArena, rpBuildPolesApartResults, polesApartRevealNext, polesApartRevealAll } from './chal/poles-apart.js';
 import { rpBuildTusksTitleCard, rpBuildTusksHunt, rpBuildTusksFinish, tusksRevealNext, tusksRevealAll } from './chal/tusks-and-ladders.js';
+import { rpBuildClownTitleCard, rpBuildClownStalk, rpBuildClownRun, clownRevealNext, clownRevealAll } from './chal/killer-clown.js';
+import { rpBuildBashTitleCard, rpBuildBashArena, rpBuildBashResults, bashRevealNext, bashRevealAll } from './chal/bumper-car-bash.js';
 import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults, frozenCrossingRevealNext, frozenCrossingRevealAll } from './chal/frozen-crossing.js';
 import { rpBuildVSTitleCard, rpBuildVSPhase1, rpBuildVSPhase2, rpBuildVSPhase3, rpBuildVSResults, vikingSourRevealNext, vikingSourRevealAll } from './chal/viking-sour.js';
 import { rpBuildBRBTitleCard, rpBuildBRBSlotMachine, rpBuildBRBObstacleCourse, rpBuildBRBTightrope, rpBuildBRBCustomsTrivia, rpBuildBRBFinalResults, bbRevealNext, bbRevealAll } from './chal/bridal-brawls.js';
@@ -2313,7 +2315,7 @@ export function rpBuildDebug(ep) {
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
-      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isTruthOrDareTrain || ep.isAMazeInGrip || ep.isPolesApart || ep.isTusksLadders || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isCampCastaways || ep.isSlasherNight || ep.isMonsterCash || ep.isAlienEgg) ? _tabBtn('challenge', 'Challenge') : ''}
+      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isTruthOrDareTrain || ep.isAMazeInGrip || ep.isPolesApart || ep.isTusksLadders || ep.isKillerClown || ep.isBumperCarBash || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isCampCastaways || ep.isSlasherNight || ep.isMonsterCash || ep.isAlienEgg) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -12265,6 +12267,14 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'tal-title', label:'🐘 Tusks and Ladders', html: rpBuildTusksTitleCard(ep) });
     vpScreens.push({ id:'tal-hunt', label:'The Hunt', html: rpBuildTusksHunt(ep) });
     vpScreens.push({ id:'tal-finish', label:'Build & Fire', html: rpBuildTusksFinish(ep) });
+  } else if ((ep.isKillerClown || ep.challengeType === 'killer-clown') && ep.killerClown) {
+    vpScreens.push({ id:'noc-title', label:'🤡 Killer Clown', html: rpBuildClownTitleCard(ep) });
+    vpScreens.push({ id:'noc-stalk', label:'The Stalk', html: rpBuildClownStalk(ep) });
+    vpScreens.push({ id:'noc-run', label:'The Run', html: rpBuildClownRun(ep) });
+  } else if ((ep.isBumperCarBash || ep.challengeType === 'bumper-car-bash') && ep.bumperCarBash) {
+    vpScreens.push({ id:'bcb-title', label:'🎡 Bumper Car Bash', html: rpBuildBashTitleCard(ep) });
+    vpScreens.push({ id:'bcb-arena', label:'The Arena', html: rpBuildBashArena(ep) });
+    vpScreens.push({ id:'bcb-results', label:'Final Score', html: rpBuildBashResults(ep) });
   } else if (ep.isUpTheCreek && ep.upTheCreek) {
     vpScreens.push({ id:'up-the-creek', label:'Up the Creek', html: rpBuildUpTheCreek(ep) });
   } else if (ep.isPaintballHunt && ep.paintballHunt) {

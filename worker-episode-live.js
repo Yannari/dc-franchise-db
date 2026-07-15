@@ -1076,7 +1076,11 @@ Note: These events also appear woven into the PRE/POST-CHALLENGE STATUS narrativ
 **Winner:** [tribe or player]
 **Losers:** [tribes going to tribal / "Everyone else" for individual]
 
-**Key Moments:** [2–3 specific story beats — who pushed hard, who choked, what interpersonal moment happened]
+**Play-by-play:** Write this section to MATCH THE LENGTH AND DETAIL OF THE SOURCE — do not compress. Scale it to the challenge:
+  • A simple one-shot challenge (tug-of-war, a single race, an eating contest) → 3–5 sentences of specific action.
+  • A multi-phase / multi-round / twist challenge → walk through it PHASE BY PHASE (or round by round). Give every phase, round, or stage that appears in the source its own narrated paragraph, in order, with its own subheading if it helps: who led, who fell behind, who was eliminated in that phase, the score/result, and the interpersonal beat. Reproduce ALL the narration, scores, phase results, and per-player moments the source provides — a challenge with six phases in the source must not collapse into three bullets. The named twist-challenge sections (mapped here per the decoding rules) contain full narration; carry that fullness through to the output.
+  • Every scored elimination, clutch moment, choke, sabotage, heroic save, and showmance/rivalry beat from the source must appear here, attributed to the specific player.
+  • Keep every factual result exact (who won each phase, final scores, who was immune). Story and phrasing are yours; results are locked.
 
 ---
 
@@ -1873,7 +1877,11 @@ async function generateBeatSheet(summaryText, seasonSetting, env) {
 
 LOCKED FACTS (the writer may NOT change these): tribes/teams and who is on each; who won immunity/reward; who was voted out and the vote count; EVERY twist that fired (tribe swap, journey, mutiny, idol found/played, exile, Rescue Island arrival/return, abduction, double/multi tribal, etc.) and its outcome; advantages held or played; whether there is an elimination at all. Be exact and terse — names and numbers, one item per line.
 
-STORY BEATS (what the episode is actually ABOUT): the memorable moments only, in chronological order, ONE line each. Collapse mechanical detail HARD — a 40-event challenge becomes 4-6 beats ("Jake keeps falling in", "Caleb rescues Julia", "MacArthur knocks Fiore into the water", "Civilians barely lose"). Keep the camp/social moments that carry CHARACTER (a bond forming, a rivalry flaring, a scheme, a meltdown, a grudge resurfacing). CUT anything a viewer would not remember: every individual score, every minor stat, every repeated micro-action. The challenge should be ~6 beats, never 60.
+STORY BEATS (what the episode is actually ABOUT): the memorable moments only, in chronological order, ONE line each. Collapse REPEATED mechanical detail HARD — every individual score, every minor stat, every repeated micro-action of the SAME kind gets cut or merged ("Jake keeps falling in"). Keep the camp/social moments that carry CHARACTER (a bond forming, a rivalry flaring, a scheme, a meltdown, a grudge resurfacing).
+  SCALE THE CHALLENGE TO ITS STRUCTURE — do NOT flatten every challenge to the same length:
+  - A simple one-shot challenge (single tug-of-war, one race, one eating contest) → 4-6 beats total.
+  - A MULTI-PHASE / MULTI-ROUND / named TWIST challenge → give EACH distinct phase, round, or stage its OWN beat (or two), labeled with the phase, IN ORDER: what that phase was, who led it, who was eliminated in it, and its result. A six-phase twist challenge should yield ~8-14 challenge beats (roughly one-to-two per phase) — NOT collapsed to 6. Preserve the phase names and the challenge name so the writer can dramatize the real structure. What you cut is REPETITION within a phase, never whole phases.
+  Keep the single most memorable hero/choke/sabotage/save moment inside each phase; drop the rest of that phase's noise.
 
 SEASON THREADS are the SPINE — use them, do not restate them. If the summary has a "SEASON THREADS:" section, it lists the season's ongoing storylines with a status tag. Build the STORY BEATS to serve these threads:
 - [BUILDING] / [PEAKING] — give this thread at least one concrete beat that ADVANCES it this episode (a new development, not a recap). Do not resolve it.
@@ -2254,6 +2262,7 @@ WHY THE TARGET WORKS: the WHY is inside the dialogue (why MacArthur even brings 
 ⛔ PACING: 300-450 lines total. No scene over 20 lines. No confessional over 4 lines. Enter scenes late, leave early. Episode 1 = arrivals + first impressions (no "previously on").
 
 ⛔ INVENT THE CHALLENGE if the beat sheet names it, dramatize THAT one (its phases/beats); if it only says who won, invent a specific named Total Drama challenge in 2-3 phases so the lead can change, tie the loss to why someone gets voted out. Do NOT reuse a challenge already used this season.
+⛔ GIVE THE CHALLENGE SPACE PROPORTIONAL TO ITS SIZE. Do NOT compress every challenge into one short scene. If the beat sheet gives the challenge MULTIPLE PHASES/ROUNDS (a named twist challenge, a multi-stage race), render it as a MULTI-SCENE SEQUENCE — walk through the phases IN ORDER, each its own short scene, so the lead changes hands, players get eliminated across phases, and the interpersonal beats (a rescue, a sabotage, a choke, a showmance moment) land where the beat sheet places them. A big six-phase challenge should read as a real set-piece spanning several scenes, not four lines. A simple one-shot challenge stays short — one scene. Still obey per-scene limits (no single scene over 20 lines): a long challenge is MANY scenes, not one giant one. It is still a STAGE not a sport — spend the space on what happens BETWEEN people during each phase, not dry play-by-play.
 
 ${settingBlock}${worldRules}${planBlock}${franchiseContextBlock}${storySoFarBlock}
 

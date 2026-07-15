@@ -84,6 +84,8 @@ import { rpBuildTDTTitleCard, rpBuildTDTRace, rpBuildTDTResults } from './chal/t
 import { rpBuildAMGTitleCard, rpBuildAMGRace, rpBuildAMGResults } from './chal/a-maze-ing-grip.js';
 import { rpBuildPolesApartTitleCard, rpBuildPolesApartArena, rpBuildPolesApartResults } from './chal/poles-apart.js';
 import { rpBuildTusksTitleCard, rpBuildTusksHunt, rpBuildTusksFinish } from './chal/tusks-and-ladders.js';
+import { rpBuildClownTitleCard, rpBuildClownStalk, rpBuildClownRun } from './chal/killer-clown.js';
+import { rpBuildBashTitleCard, rpBuildBashArena, rpBuildBashResults } from './chal/bumper-car-bash.js';
 import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish, rpBuildJuryVotes } from './vp-finale.js';
 // rpBuildAftermath is read off window (not statically imported) — aftermath.js already imports from
 // this module, so a static import here would create a circular dependency.
@@ -3111,6 +3113,12 @@ export function generateSummaryText(ep) {
   }
   if (ep.tusksLadders) {
     _textTwistChallenge(ep, ln, sec, 'tusksLadders', 'TUSKS AND LADDERS', [rpBuildTusksTitleCard, rpBuildTusksHunt, rpBuildTusksFinish]);
+  }
+  if (ep.killerClown) {
+    _textTwistChallenge(ep, ln, sec, 'killerClown', 'NIGHT OF THE KILLER CLOWN', [rpBuildClownTitleCard, rpBuildClownStalk, rpBuildClownRun]);
+  }
+  if (ep.bumperCarBash) {
+    _textTwistChallenge(ep, ln, sec, 'bumperCarBash', 'BUMPER CAR BASH', [rpBuildBashTitleCard, rpBuildBashArena, rpBuildBashResults]);
   }
 
   // ── CHAIN OF COMMAND ──

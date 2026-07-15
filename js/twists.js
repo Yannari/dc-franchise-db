@@ -1948,6 +1948,11 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (!gs.isMerged && !gs._mergingThisEp) return;
     ep.isBumperCarBash = true;
 
+  } else if (engineType === 'say-cheese') {
+    // Post-merge only. Drop-tower bungee fearless-selfie race.
+    if (!gs.isMerged && !gs._mergingThisEp) return;
+    ep.isSayCheese = true;
+
   } else if (engineType === 'haunted-house') {
     // Post-merge only. If scheduled before the merge (and the merge isn't happening this
     // episode either), bail so we don't set a dangling flag that suppresses the normal
@@ -3888,7 +3893,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         'sudden-death': 'isSuddenDeath', 'slasher-night': 'isSlasherNight', 'triple-dog-dare': 'isTripleDogDare',
         'say-uncle': 'isSayUncle', 'brunch-of-disgustingness': 'isBrunchOfDisgustingness',
         'monster-cash': 'isMonsterCash', 'demons-plainer': 'isDemonsPlainer', 'mine-over-matter': 'isMineOverMatter', 'treasure-island': 'isTreasureIsland', 'operation-classified': 'isOperationClassified',
-        'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride', 'haunted-house': 'isHauntedHouse', 'hung-out-to-dry': 'isHungOut', 'merry-go-round-up': 'isMerryGoRound', 'maze-of-the-fallen': 'isMazeOfTheFallen', 'killer-clown': 'isKillerClown', 'bumper-car-bash': 'isBumperCarBash',
+        'super-hero-ld': 'isSuperHerold', 'princess-pride': 'isPrincessPride', 'haunted-house': 'isHauntedHouse', 'hung-out-to-dry': 'isHungOut', 'merry-go-round-up': 'isMerryGoRound', 'maze-of-the-fallen': 'isMazeOfTheFallen', 'killer-clown': 'isKillerClown', 'bumper-car-bash': 'isBumperCarBash', 'say-cheese': 'isSayCheese',
         'get-a-clue': 'isGetAClue', 'rock-n-rule': 'isRockNRule',
         'crouching-courtney': 'isCrouchingCourtney', 'houston': 'isHouston', 'top-dog': 'isTopDog',
         'walk-like-an-egyptian': 'isWalkEgypt', 'crazy-fun-time': 'isCrazyFunTime',

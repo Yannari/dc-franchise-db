@@ -22,6 +22,7 @@ import {
 import { generateSummaryText } from './text-backlog.js';
 import { _idbPut } from './savestate.js';
 import { survivalFlavor, fillVocab } from './settings.js';
+import { rememberStrategy } from './strategy-memory.js';
 
 // Challenge simulate functions
 import { simulateCliffDive } from './chal/cliff-dive.js';
@@ -936,6 +937,7 @@ export function applyPostTribalConsequences(ep) {
           const knows = isOpen || pctRoll(ally + voter, ep.num) < threshold;
           if (!knows) return;
           addBond(ally, voter, scaledHit(ally, voter));
+          rememberStrategy(ally, voter, 'eliminated-ally', ep.num, 2.2, { ally: elim });
           gs.blowupHeatNextEp.add(ally);
           gs.discoveredVotesLastEp.push({ type: 'lost-ally', ally, voter, elim });
         });
@@ -964,6 +966,7 @@ export function applyPostTribalConsequences(ep) {
     targetVoters.forEach(({ voter }) => {
       if (threshold < 100 && pctRoll(target + voter, ep.num + 7) >= threshold) return;
       addBond(target, voter, scaledHit(target, voter));
+      rememberStrategy(target, voter, 'voted-for-me', ep.num, count >= 2 ? 1.6 : 1.1, { voteCount: count });
       gs.discoveredVotesLastEp.push({ type: 'vote-discovery', target, voter });
     });
   });

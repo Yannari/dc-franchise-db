@@ -3,6 +3,77 @@ import { gs, players, ARCHETYPES, seasonConfig, ADVANTAGES } from './core.js';
 import { pStats, pronouns, threatScore, getPlayerState, isAllianceBottom, challengeWeakness, threat } from './players.js';
 import { getBond, getPerceivedBond, addBond } from './bonds.js';
 import { computeHeat, wRandom } from './alliances.js';
+import { strategicMemoryReason, strategicMemoryScore, strongestStrategicMemory } from './strategy-memory.js';
+
+// A grievance can break alliance discipline, but only when the voter believes a
+// counter-plan has enough support. Low temperament lowers the proof required;
+// it never invents supporters who are not present in the planning network.
+export function evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes = [], immunePlayers = [], emotional = 'comfortable', roll = Math.random) {
+  if (!allianceTarget) return null;
+  const s = pStats(voter);
+  const immune = immunePlayers instanceof Set ? immunePlayers : new Set(immunePlayers || []);
+  const eligibleVoters = tribalPlayers.filter(p => !lostVotes.includes(p));
+  const majority = Math.floor(eligibleVoters.length / 2) + 1;
+  const volatility = Math.max(0, Math.min(1, (10 - s.temperament) / 9));
+  const currentEp = (gs.episode || 0) + 1;
+
+  const candidates = tribalPlayers.filter(subject => subject !== voter && subject !== allianceTarget && !immune.has(subject))
+    .map(subject => {
+      const memoryScore = strategicMemoryScore(voter, subject, currentEp);
+      const memory = strongestStrategicMemory(voter, subject, currentEp);
+      if (!memory || memoryScore < 0.9) return null;
+
+      // The voter recognizes plans involving their own groups or a trusted contact.
+      const visiblePlans = alliances.filter(plan => plan.target === subject && plan.members?.some(member =>
+        member === voter || getPerceivedBond(voter, member) >= 1
+      ));
+      const supporters = new Set(visiblePlans.flatMap(plan => plan.members || [])
+        .filter(member => eligibleVoters.includes(member) && member !== subject));
+      supporters.add(voter);
+      const confidence = Math.min(1, supporters.size / Math.max(1, majority));
+      const age = Math.max(0, currentEp - (memory.ep || currentEp));
+      const desirability = memoryScore + Math.max(0, -getPerceivedBond(voter, subject)) * 0.2 + confidence;
+      return { subject, memory, memoryScore, supporters: supporters.size, confidence, age, desirability };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.desirability - a.desirability);
+
+  const pick = candidates[0];
+  if (!pick) return null;
+
+  const stateMod = emotional === 'desperate' ? -0.12
+    : emotional === 'paranoid' ? -0.09
+    : emotional === 'uneasy' ? -0.04
+    : emotional === 'calculating' ? 0.06
+    : emotional === 'confident' ? 0.04 : 0;
+  const alliance = alliances.find(a => a.members?.includes(voter) && a.target === allianceTarget);
+  const named = (gs.namedAlliances || []).find(a => a.name === alliance?.label);
+  const newAllianceMod = named?.formed === currentEp ? 0.15 : 0;
+  const requiredConfidence = Math.max(0.3, Math.min(0.9,
+    0.72 - volatility * 0.32 + s.loyalty * 0.015 + s.strategic * 0.01 - s.boldness * 0.005 + stateMod + newAllianceMod
+  ));
+  if (pick.confidence < requiredConfidence) return null;
+
+  const emotionalMod = emotional === 'desperate' ? 0.10
+    : emotional === 'paranoid' ? 0.07
+    : emotional === 'uneasy' ? 0.03
+    : emotional === 'calculating' ? -0.04 : 0;
+  const actChance = Math.max(0.02, Math.min(0.55,
+    0.03 + volatility * 0.18 + Math.min(3, pick.memoryScore) * 0.04
+    + (10 - s.loyalty) * 0.008 + s.boldness * 0.006 + emotionalMod + (pick.age <= 1 ? 0.04 : 0)
+  ));
+  if (roll() >= actChance) return null;
+
+  return {
+    target: pick.subject,
+    estimatedSupport: pick.supporters,
+    majority,
+    confidence: pick.confidence,
+    requiredConfidence,
+    actChance,
+    memory: pick.memory,
+  };
+}
 
 export function buildVoteReason(voter, target, type, ctx = {}) {
   const voterS = pStats(voter);
@@ -11,6 +82,8 @@ export function buildVoteReason(voter, target, type, ctx = {}) {
   const th = threatScore(target);
   const pick = arr => arr[Math.floor(Math.random() * arr.length)];
   const priorVotesAgainst = (gs.episodeHistory || []).reduce((n, h) => n + (h.votingLog||[]).filter(v => v.voted === target).length, 0);
+
+  if (type === 'memory') return ctx.rememberedReason || strategicMemoryReason(voter, target) || 'past history made this vote personal';
 
   if (type === 'loyal') {
     const { myAlliance, openVote, phase, splitVote } = ctx;
@@ -501,6 +574,19 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
 
     let target, reason, isDefecting = false;
 
+    // ── Emotional counter-plan: remembered harm can loosen alliance discipline ──
+    // This is not a blind revenge roll. The voter must see a plausible coalition,
+    // with volatile players merely accepting shakier numbers than calm players.
+    if (_inNamedAlliance && allianceTarget) {
+      const revenge = evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes, _immSet, emotional);
+      if (revenge) {
+        target = revenge.target;
+        const base = strategicMemoryReason(voter, target) || `${voter} has unfinished business with ${target}`;
+        reason = `[EMOTIONAL DEFECTION] ${base}; believed ${revenge.estimatedSupport}/${revenge.majority} necessary votes were available`;
+        isDefecting = true;
+      }
+    }
+
     // ── Grudge vote: alliance member votes against a hated ally despite the plan ──
     // Not a random defection — a deliberate choice driven by personal animosity.
     // The relationship has decayed past the point where strategy holds it together.
@@ -661,8 +747,9 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
           const voteGravity = t => (votes[t] || 0) * (_isFloater ? 0.9 : 0.5);
           if (gs.phase === 'pre-merge') {
             const stragMod = t => gs._chalStragglers?.includes(t) ? 0.5 : 0;
+            const memoryMod = t => strategicMemoryScore(voter, t) * (0.12 + s.intuition * 0.018);
             target = wRandom(candidates, t => Math.max(0.1,
-              challengeWeakness(t, cLabel) * 0.4 + (-getPerceivedBond(voter, t)) * 0.35 + stragMod(t) + Math.random() * 0.15 + voteGravity(t)));
+              challengeWeakness(t, cLabel) * 0.4 + (-getPerceivedBond(voter, t)) * 0.35 + stragMod(t) + memoryMod(t) + Math.random() * 0.15 + voteGravity(t)));
           } else {
             // Voter-specific challenge performance signal
             const chalMod = t => {
@@ -677,6 +764,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
               return base + (historicForce >= 2 ? 0.4 : historicForce >= 1 ? 0.2 : 0);
             };
             const _penPileMod = t => (gs.penaltyVoteThisEp === t && s.strategic >= 5) ? 0.4 : 0;
+            const _memoryMod = t => strategicMemoryScore(voter, t) * (0.15 + s.strategic * 0.025 + s.intuition * 0.015);
             // Known SL Amulet holder: reaction depends on voter's archetype
             const _slAmuletMod = t => {
               if (!gs.knownAmuletHoldersThisEp?.has(t)) return 0;
@@ -688,12 +776,14 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
               if (_vAvg < _tAvg - 1) return -3.0; // terrified of being picked
               return -1.0;
             };
-            target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getPerceivedBond(voter, t) + chalMod(t) + _penPileMod(t) + _slAmuletMod(t) + voteGravity(t)));
+            target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getPerceivedBond(voter, t) + chalMod(t) + _penPileMod(t) + _slAmuletMod(t) + _memoryMod(t) + voteGravity(t)));
           }
           const bond = getPerceivedBond(voter, target);
           // Pick the underlying reason first
           let underlyingType, underlyingCtx;
-          if (resistsBond && allianceTarget)  { underlyingType = 'protect-bond';        underlyingCtx = { allianceTarget }; }
+          const rememberedReason = strategicMemoryScore(voter, target) >= 0.8 ? strategicMemoryReason(voter, target) : null;
+          if (rememberedReason)               { underlyingType = 'memory';              underlyingCtx = { rememberedReason }; }
+          else if (resistsBond && allianceTarget)  { underlyingType = 'protect-bond';        underlyingCtx = { allianceTarget }; }
           else if (bond <= -1)                { underlyingType = 'personal';            underlyingCtx = { phase: gs.phase }; }
           else if (gs.phase === 'pre-merge' && challengeWeakness(target, myAlliance?.challengeLabel) >= 4.0
                    && !(gs._chalStandouts || []).includes(target)
@@ -1034,4 +1124,3 @@ export function simulateEmissaryVote(ep) {
   ep.emissaryPick = { name: pick.name, reason, scores: scores.slice(0, 5) };
   return ep.emissaryPick;
 }
-

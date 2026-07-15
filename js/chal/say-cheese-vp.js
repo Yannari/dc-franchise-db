@@ -64,7 +64,8 @@ function _css() {
   .sc-host{position:relative;z-index:2;margin:8px auto 0;display:block;width:fit-content;font-family:'Chakra Petch';font-size:12.5px;color:#fff;border:1px solid rgba(255,211,107,.6);border-radius:10px;padding:9px 15px;background:rgba(40,16,52,.72);max-width:680px;line-height:1.55;box-shadow:0 0 18px rgba(255,90,168,.25)}
   .sc-host b{color:var(--yellow)}
   .sc-roster{padding:14px 18px 6px}
-  .sc-roster h3{font-family:'Bungee';font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#fff;text-align:center;margin:0 0 10px;text-shadow:0 0 10px var(--pink)}
+  .sc-roster h3{font-family:'Bungee';font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#fff;text-align:center;margin:0 0 6px;text-shadow:0 0 10px var(--pink)}
+  .sc-note{font-family:'Chakra Petch';font-size:11px;color:var(--dim);text-align:center;max-width:560px;margin:0 auto 12px;line-height:1.5}
   .sc-rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
   .sc-drv{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:var(--panel)}
   .sc-drv img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #fff;background:#241436;flex-shrink:0}
@@ -86,6 +87,7 @@ function _css() {
   .sc-card.sabo{border-left-color:var(--red);box-shadow:0 0 18px rgba(255,77,94,.2);animation:scHit .5s both}
   .sc-card.perfect{border-left-color:var(--yellow);box-shadow:0 0 20px rgba(255,211,107,.28);animation:scPop .55s both}
   .sc-card.fail{border-left-color:var(--dim)}
+  .sc-card.climb{border-left-style:dotted;border-left-color:#9ec5ff;background:linear-gradient(180deg,rgba(20,24,54,.72),rgba(12,8,26,.86));animation:scLift .5s both}
   .sc-card.social{border-left-style:dashed;border-left-color:var(--pink);background:linear-gradient(180deg,rgba(46,14,44,.82),rgba(16,8,26,.86))}
   .sc-card.warn{border-left-color:var(--red);background:linear-gradient(180deg,rgba(60,10,20,.5),rgba(20,8,20,.86))}
   .sc-b.jump{background:rgba(63,215,255,.15);color:var(--cyan);border-color:#3fd7ff66}
@@ -95,12 +97,15 @@ function _css() {
   .sc-b.fail{background:rgba(200,174,216,.14);color:var(--dim);border-color:#c8aed855}
   .sc-b.social{background:rgba(255,90,168,.14);color:var(--pink);border-color:#ff5aa866}
   .sc-b.warn{background:rgba(255,77,94,.2);color:#ff8090;border-color:#ff4d5e}
+  .sc-b.climb{background:rgba(158,197,255,.14);color:#9ec5ff;border-color:#9ec5ff55}
   .sc-selfie{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;letter-spacing:.5px;margin-left:auto}
   .sc-selfie.ok{background:var(--yellow);color:#301}.sc-selfie.no{background:rgba(200,174,216,.2);color:var(--dim);border:1px solid #c8aed855}
   @keyframes scDrop{0%{opacity:0;transform:translateY(-12px)}70%{transform:translateY(3px)}100%{opacity:1;transform:none}}
   @keyframes scShiver{0%{opacity:0}20%{transform:translateX(-3px)}40%{transform:translateX(3px)}60%{transform:translateX(-2px)}80%{transform:translateX(2px)}100%{opacity:1;transform:none}}
   @keyframes scHit{0%{opacity:0;transform:scale(.95) translateX(-10px)}50%{transform:scale(1.02) translateX(5px)}100%{opacity:1;transform:none}}
   @keyframes scPop{0%{opacity:0;transform:scale(.9)}45%{transform:scale(1.03);box-shadow:0 0 40px rgba(255,211,107,.6)}100%{opacity:1;transform:none}}
+  @keyframes scLift{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:none}}
+  @media(prefers-reduced-motion:reduce){.sc-card.climb{animation:none}}
 
   .sc-side{position:sticky;top:12px;align-self:start;border:1px solid rgba(255,255,255,.16);border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(30,16,50,.95),rgba(14,8,26,.95));box-shadow:0 6px 20px rgba(0,0,0,.5);max-height:calc(100vh - 40px);overflow-y:auto}
   .sc-sh{font-family:'Bungee';letter-spacing:1px;font-size:16px;color:var(--yellow);text-align:center;padding:10px 8px 4px;background:linear-gradient(180deg,rgba(255,211,107,.16),transparent);text-shadow:0 0 12px rgba(255,211,107,.6)}
@@ -224,12 +229,12 @@ export function rpBuildCheeseTitleCard(ep) {
         <div class="sc-kick">Carnival of Chaos · Post-Merge · Immunity</div>
         <div class="sc-bulbs">${bulbs}</div>
         <div class="sc-big">SAY CHEESE</div>
-        <div class="sc-sub">Bungee off the drop tower and take a selfie with <b>zero fear on your face</b>. First perfect shot wins immunity — the rest face the jury.</div>
+        <div class="sc-sub">Bungee off the drop tower and take a selfie with <b>zero fear on your face</b>. Platforms are drawn blind from a hat — draw high for more airtime to nail the shot, but it's a longer, scarier climb that's much harder to smile through. First perfect shot wins immunity — the rest face the jury.</div>
       </div>
       <div class="sc-stage">${platforms}${jumpers}<div class="sc-flash" style="left:50%;top:36%">📸</div><div class="sc-flash" style="left:12%;top:10%;animation-delay:1.2s">📸</div></div>
       <div class="sc-host">📸 ${esc(d.hostOpen)}</div>
     </div>
-    <div class="sc-roster"><h3>On the Tower</h3><div class="sc-rgrid">${roster}</div></div>`;
+    <div class="sc-roster"><h3>On the Tower</h3><div class="sc-note">Heights drawn blind from a hat — a trade-off either way. Higher cord = more airtime to compose the shot, but a longer, scarier climb that's harder to keep fearless (and easier to freeze). A Disadvantage target is forced up top with all the fear and none of the airtime.</div><div class="sc-rgrid">${roster}</div></div>`;
   return _shell(inner);
 }
 

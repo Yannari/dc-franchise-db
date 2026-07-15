@@ -3,9 +3,13 @@
 // Bungee off the drop tower and land a selfie with ZERO fear on your face.
 // First perfect fearless shot wins immunity; the rest face the jury.
 //
-//   Three heights — BOTTOM / HALFWAY / TOP — escalate the fear. The
-//   Disadvantage Vote target is forced to the TOP (hardest). Nerve holds your
-//   composure; snap times a clean confident shot. Sabotage (rock at the phone,
+//   Three heights — BOTTOM / HALFWAY / TOP — are drawn blind from a hat, a
+//   real trade-off either way: the higher you draw, the more airtime you have
+//   to compose a clean shot, but the longer/scarier the climb — harder to hold
+//   a fearless face and easier to freeze (HFEAR roughly cancels the TOP's own
+//   airtime). The Disadvantage Vote target is forced to the TOP with the fear
+//   cost but NONE of the airtime edge — strictly the worst seat. Nerve holds
+//   your composure; snap times a clean confident shot. Sabotage (rock at the phone,
 //   rope-yank to the face, phone-drop distraction, a psychological jab about a
 //   real showmance/eliminated ally) ruins a shot — break a phone and you get
 //   ONE warning; do it twice and you're disqualified.
@@ -42,7 +46,14 @@ function canScheme(n) {
 function isNice(n) { return ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(archOf(n)); }
 
 const HEIGHTS = ['bottom', 'halfway', 'top'];
-const FEAR = [0.6, 2.0, 3.6];
+// airtime edge by height — more freefall = more time to compose the shot (small plus)
+const AIRTIME = [0, 0.4, 0.8];
+// fear cost by height — the higher/scarier the cord, the harder to hold a fearless
+// face and the more likely to freeze. TOP roughly cancels its own airtime edge, so
+// each height is a real trade-off, not a free upgrade.
+const HFEAR = [0, 0.6, 1.2];
+// universal "look fearless off a tower" difficulty, height-independent
+const TOWER_DROP = 2.0;
 const HLABEL = ['BOTTOM', 'HALFWAY', 'TOP'];
 const PERFECT = 5.2;
 // selfie fail categories, worst → best
@@ -62,9 +73,9 @@ function draw(pool, ...ctx) {
 }
 
 const HOST_OPENERS = [
-  (H) => `${H}: "The others are off building the finale, so you're stuck with me. Here's the deal — bungee off this tower, take a selfie, and I do NOT want to see one flicker of fear. Perfect fearless shot wins immunity. Smile!"`,
-  (H) => `${H}: "Three cords, three phones, and a whole lot of down. Jump, snap a selfie with a straight, fearless face — first perfect one is safe. The other two? You're pleading to the jury. Climb!"`,
-  (H) => `${H}: "It's simple. Fall off a tower on a rubber band and look like you're having the time of your life doing it. One perfect fearless selfie ends this. Off you go."`,
+  (H) => `${H}: "The others are off building the finale, so you're stuck with me. Here's the deal — you each drew your platform out of a hat, bottom, middle or top, luck of the draw. Bungee off, take a selfie, and I do NOT want one flicker of fear. Top cords give you more airtime to nail it — but it's a longer, scarier climb and a lot easier to lose your nerve up there. Perfect fearless shot wins immunity. Smile!"`,
+  (H) => `${H}: "Three heights, pulled blind from the hat. Draw high and you get more airtime to fix that face — but the climb's longer and the drop's a whole lot scarier, so good luck keeping it fearless. Jump, snap a selfie, first perfect one is safe. The other two? You're pleading to the jury. Climb!"`,
+  (H) => `${H}: "Reach in, pull a cord — bottom, middle, top, no complaining. Fall off a tower on a rubber band and look like you're loving it. Top buys you a few extra beats of air but it's the meanest climb and the hardest place to smile; the bottom's calmer but you'd better be quick. One perfect fearless selfie ends this."`,
 ];
 const HOST_CLOSERS = [
   (H, w) => `${H}: "THAT is how you smile through terror. ${w} takes the perfect shot and the immunity — into the Final Two. Everybody else, start writing your jury speech."`,
@@ -85,23 +96,24 @@ export function simulateSayCheese(ep) {
   const personalScores = {}; active.forEach(n => personalScores[n] = 0);
   const bumpScore = (n, d) => { personalScores[n] = (personalScores[n] || 0) + d; };
 
-  // ── height assignment — disadvantage target forced to the TOP, rest by nerve ──
+  // ── height assignment — drawn blind from a hat (random), balanced across the
+  //    three cords. Higher draw = more airtime (a small selfie edge). The
+  //    Disadvantage target is forced to the TOP but gets NO airtime edge. ──
   const disTarget = (gs._disadvantage?.target && active.includes(gs._disadvantage.target)) ? gs._disadvantage.target : null;
   const P = {};
-  active.forEach(n => { P[n] = { name: n, height: 0, attempts: 0, fails: 0, saboHits: 0, bestCat: -1, bestQ: -99, won: false, dq: false }; });
-  if (disTarget) P[disTarget].height = 2;
-  const rest = active.filter(n => n !== disTarget).sort((a, b) => nerveOf(a) - nerveOf(b)); // ascending nerve
-  rest.forEach((n, i) => {
-    if (rest.length <= 2) P[n].height = i === 0 ? 0 : 1;
-    else { const frac = i / (rest.length - 1); P[n].height = frac < 0.4 ? 0 : frac < 0.8 ? 1 : 2; }
-  });
+  active.forEach(n => { P[n] = { name: n, height: 0, airtime: 0, attempts: 0, fails: 0, saboHits: 0, bestCat: -1, bestQ: -99, won: false, dq: false }; });
+  const rest = active.filter(n => n !== disTarget);
+  const hat = rest.map((_, i) => i % 3);                              // balanced spread of bottom/halfway/top
+  for (let i = hat.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [hat[i], hat[j]] = [hat[j], hat[i]]; } // shuffle the hat
+  rest.forEach((n, i) => { P[n].height = hat[i]; P[n].airtime = AIRTIME[hat[i]]; });
+  if (disTarget) { P[disTarget].height = 2; P[disTarget].airtime = 0; }  // forced to top, no airtime edge
 
   const roster = active.map(n => ({ name: n, arch: archOf(n), height: P[n].height, disadvantaged: n === disTarget }));
 
   const beats = [];
   const boardSnap = () => active.map(n => ({
     name: n, height: P[n].height, best: P[n].bestCat < 0 ? 'none' : Object.keys(CAT).find(k => CAT[k] === P[n].bestCat),
-    fearPct: clamp(FEAR[P[n].height] * 11 + P[n].fails * 8 + P[n].saboHits * 11 - (P[n].won ? 55 : 0), 8, 94),
+    fearPct: clamp(20 + HFEAR[P[n].height] * 10 + P[n].fails * 9 + P[n].saboHits * 12 - (P[n].won ? 60 : 0), 8, 94),
     won: P[n].won, dq: P[n].dq,
   }));
   let warnings = 0;
@@ -109,16 +121,11 @@ export function simulateSayCheese(ep) {
 
   let winner = null;
 
-  // ── opening: the climb + first cold-open fear ──
-  active.forEach(n => { if (nerveOf(n) < 5.2 && Math.random() < 0.7) {
-    P[n].fails += 0; // just flavor
-    addBeat({ type: 'fear', kind: 'fear', players: [n], badge: 'Cold Feet', badgeClass: 'fear', selfie: null,
-      text: draw([
-        (x) => `${x} gets to the platform, looks straight down — and locks up. Knuckles white on the rail, breathing fast. ${pronouns(x).Sub} shake${pronouns(x).sub === 'they' ? '' : 's'} it off, but the height is already in ${pronouns(x).posAdj} head.`,
-        (x) => `One glance over the edge and ${x} goes rigid. "Nope. Nope. Okay. Okay." It takes a long minute before ${pronouns(x).sub} can even step to the jump line.`,
-        (x) => `${x} freezes at the lip of the platform, the whole midway tiny and swaying below. A deep breath, a nervous laugh, and ${pronouns(x).sub} inch${pronouns(x).sub === 'they' ? '' : 'es'} forward.`,
-      ], n) });
-  } });
+  // ── opening: follow everyone up the tower to their drawn height (bottom→top) ──
+  active.slice().sort((a, b) => P[a].height - P[b].height).forEach(n => {
+    addBeat({ type: 'climb', kind: 'climb', players: [n], badge: `${HLABEL[P[n].height]} Climb`, badgeClass: 'climb', selfie: null,
+      text: _climbText(n) });
+  });
 
   // ── ROUNDS — race to the first perfect fearless selfie ──
   const cap = clamp(active.length * 3, 8, 12);
@@ -127,7 +134,7 @@ export function simulateSayCheese(ep) {
     // rattle the leader with sabotage (schemers, once or twice a round)
     _maybeSabotage(r);
     if (winner) break;
-    if (r > 1) _social(r);   // a beat of life to open each round
+    if (r > 1) { _climbBack(r); _social(r); }   // the ladder grind + a beat of life to open each round
 
     const order = active.filter(n => !P[n].dq).sort((a, b) => P[b].bestQ - P[a].bestQ); // leaders jump amid pressure
     for (const n of order) {
@@ -136,13 +143,13 @@ export function simulateSayCheese(ep) {
       P[n]._ruinedThisRound = null;
       P[n].attempts++;
       const clutch = Math.random() < 0.15 ? 2.0 : 0;
-      let q = nerveOf(n) * 0.55 + snapOf(n) * 0.55 - FEAR[P[n].height] + settleOf(r) + clutch + noise(2.6);
+      let q = nerveOf(n) * 0.55 + snapOf(n) * 0.55 - TOWER_DROP - HFEAR[P[n].height] + P[n].airtime + settleOf(r) + clutch + noise(2.6);
       let cat, sel;
       if (sabotaged) { q -= 4; cat = sabotaged.ruinCat; sel = sabotaged.ruinSel; }
       else if (q >= PERFECT && r >= 3) { cat = 'perfect'; sel = 'perfect'; }  // first two rounds are warm-ups — nerves too raw
       else {
         // categorize the miss: nerve-limited → fear-face, snap-limited → blurry, very low → froze
-        const nervePart = nerveOf(n) - FEAR[P[n].height] + settleOf(r);
+        const nervePart = nerveOf(n) - TOWER_DROP - HFEAR[P[n].height] + settleOf(r); // scarier cords freeze more; airtime doesn't help you jump
         if (nervePart + noise(1.5) < 1.2) cat = 'froze';
         else cat = (nerveOf(n) < snapOf(n)) ? 'fear' : (Math.random() < 0.5 ? 'blurry' : 'fear');
         sel = cat;
@@ -367,7 +374,7 @@ export function simulateSayCheese(ep) {
 
     // ENCOURAGE — talk a scared jumper off the ledge
     if (hero) add(1.4, 'encourage', () => {
-      const scared = live.slice().sort((a, b) => (P[b].saboHits + P[b].fails + FEAR[P[b].height]) - (P[a].saboHits + P[a].fails + FEAR[P[a].height]))[0];
+      const scared = live.slice().sort((a, b) => (P[b].saboHits + P[b].fails) - (P[a].saboHits + P[a].fails))[0];
       if (!scared || scared === hero) return;
       addBond(hero, scared, 1.5); bumpPop(hero, 0.6);
       addBeat({ type: 'encourage', kind: 'social', players: [hero, scared], badge: 'Steadies Nerves', badgeClass: 'social', selfie: null,
@@ -433,6 +440,47 @@ export function simulateSayCheese(ep) {
     for (let i = 0; i < events.length; i++) { roll -= eff[i]; if (roll <= 0) { idx = i; break; } }
     _typeUsed[events[idx].type] = (_typeUsed[events[idx].type] || 0) + 1;
     events[idx].fire();
+  }
+
+  // ── climb narration — follow a jumper up the tower to their drawn height ──
+  function _climbText(n) {
+    if (n === disTarget) return draw([
+      (x) => `The disadvantage vote marches ${x} past the low cords and all the way to the top platform — the longest, meanest climb on the tower — with none of the extra composing time the height would normally buy. Just further to fall.`,
+      (x) => `${x} climbs, and keeps climbing, because the vote said so: straight to the top, no shortcuts, no perks. The others watch ${pronouns(x).obj} shrink against the sky.`,
+      (x) => `Up ${x} goes to the very top, the disadvantage heavier with every rung. Same odds as everyone below — just a lot more ladder to regret.`,
+      (x) => `The vote parks ${x} on the highest platform: all the fear of the top, none of the airtime bonus. A long, lonely climb into a bad seat.`,
+    ], n);
+    if (P[n].height === 2) return draw([
+      (x) => `${x} draws the top cord and starts the long haul up — platform after platform, the midway shrinking to a toy set below. Way up here there's real time to compose a shot on the way down.`,
+      (x) => `Rung after rung, ${x} climbs to the top of the tower until the wind actually changes. Terrifying — but all that airtime means all that time to nail the selfie.`,
+      (x) => `${x} pulled the highest slip from the hat and pays for it now, climbing until the ground blurs. Consolation: the longest drop is the longest chance to look fearless.`,
+      (x) => `The top platform. ${x} gets there breathing hard, grips the rail, and looks down at a very small, very distant safety mat. Lots of sky to work with.`,
+    ], n);
+    if (P[n].height === 1) return draw([
+      (x) => `${x} climbs to the middle platform, halfway up, and blows out a long breath. A fair chunk of air to compose the shot — not so much it turns the stomach inside out.`,
+      (x) => `Halfway cord for ${x}. The climb's honest, the drop's honest, and there's a decent beat of freefall to get the face right.`,
+      (x) => `${x} settles onto the middle platform, tests the cord with a tug, and nods. Middle of the tower, middle of the risk, a workable window for the selfie.`,
+      (x) => `Up to the halfway mark ${x} goes — high enough to matter, low enough to breathe. A reasonable amount of airtime to work with.`,
+    ], n);
+    return draw([
+      (x) => `${x} takes the short climb to the bottom cord — barely a story up — and shrugs. Quick and low: not much drop, which means not much time to get the shot right.`,
+      (x) => `Bottom cord for ${x}, a stubby little climb. Least scary spot on the tower — and the least airtime to compose a fearless face before the ground arrives.`,
+      (x) => `${x} draws the bottom slip and hops up the short ladder, almost relieved. The catch: the shortest drop gives the smallest window for a clean selfie.`,
+      (x) => `${x} climbs the few rungs to the bottom platform. Easy nerves down here — but the ground comes up fast, so the shot has to be quick.`,
+    ], n);
+  }
+  function _climbBack(round) {
+    if (Math.random() > 0.4) return;
+    const n = pick(active.filter(x => !P[x].dq && !P[x].won && P[x].fails > 0));
+    if (!n) return;
+    addBeat({ type: 'climb', kind: 'climb', players: [n], badge: 'Back Up', badgeClass: 'climb', selfie: null,
+      text: draw([
+        (x) => `${x} trudges back up the ladder for another go, legs like lead, phone shoved in a pocket. The tower doesn't get any shorter no matter how many times you climb it.`,
+        (x) => `Another rejected shot, another climb. ${x} hauls back up to the platform, blowing on chalky hands, muttering the plan for this attempt.`,
+        (x) => `${x} makes the long climb back up, slower this time — the failed jumps are piling up in the legs as much as the head.`,
+        (x) => `Back to the top of the ladder ${x} goes, wiping sweat, re-clipping the cord. "This one. This one's the one," ${pronouns(x).sub} mutter${pronouns(x).sub === 'they' ? '' : 's'}, and start${pronouns(x).sub === 'they' ? '' : 's'} up again.`,
+        (x) => `${x} re-scales the tower for round ${round}, the novelty long gone — just grind and grip and one more shot at a fearless face.`,
+      ], n) });
   }
 
   function _heat(a, b, amt) {

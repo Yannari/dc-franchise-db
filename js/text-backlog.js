@@ -728,6 +728,17 @@ export function _textTwists(ep, ln, sec) {
       } else ln('MUTINY — no players chose to switch tribes.');
     } else if (tw.type === 'penalty-vote') {
       if (tw.penaltyTarget) ln(`PENALTY VOTE — ${tw.penaltyTarget} starts tribal with 1 pre-cast vote against them.`);
+    } else if (tw.type === 'disadvantage-vote' && tw.trial) {
+      const tr = tw.trial;
+      ln('THE DISADVANTAGE TRIAL');
+      ln(`At the elimination area, ${tr.host} tells the field they must argue it out and vote to hand one player a disadvantage in the immunity challenge.`);
+      ln('');
+      (tr.debate || []).forEach(b => ln(b.text));
+      ln('');
+      Object.keys(tr.votes).forEach(v => ln(`- ${v} votes for ${tr.votes[v]}${tr.voteReasons?.[v] ? ` (${tr.voteReasons[v]})` : ''}.`));
+      ln('');
+      ln(`In a ${tr.margin}-vote decision, ${tr.target} gets the disadvantage — a ~35% handicap in the immunity challenge.`);
+      if (tr.flipped) ln(`The handicap decided it: ${tr.flipped.from} lost immunity to ${tr.flipped.to}.`);
     } else if (tw.type === 'second-chance') {
       if (tw.blocked) ln('SECOND CHANCE VOTE — cancelled (Redemption Island active).');
       else if (tw.noReturn) ln('SECOND CHANCE VOTE — no eligible players could return.');

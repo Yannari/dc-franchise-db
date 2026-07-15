@@ -4,6 +4,7 @@ import { pStats, pronouns, getPlayerState } from './players.js';
 import { getBond, addBond } from './bonds.js';
 import { wRandom, computeHeat, formAlliances, nameNewAlliance } from './alliances.js';
 import { runAuction } from './auction.js';
+import { simulateDisadvantageVote } from './disadvantage-vote.js';
 
 export const JOURNEY_CHALLENGES = [
   { label:'Coconut Weight',  stat:'physical', desc:'Each player held a platform on one outstretched arm while opponents loaded it with coconuts. The last person still holding wins.' },
@@ -1672,6 +1673,13 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 2) return;
     // Target is assigned after the challenge resolves (last-place finisher)
     ep.penaltyVoteTwistPending = true; // flag — filled in post-challenge
+
+  } else if (engineType === 'disadvantage-vote') {
+    // Post-merge only. Run the campaign + vote NOW (pre-challenge state); the
+    // handicap is applied to the challenge scores afterward (applyDisadvantagePenalty).
+    if (!gs.isMerged && !gs._mergingThisEp) return;
+    if (gs.activePlayers.filter(p => p !== gs.exileDuelPlayer).length < 3) return;
+    simulateDisadvantageVote(ep);
 
   } else if (engineType === 'rock-draw') {
     // Force a rock draw this episode — ties skip re-vote and go straight to random elimination

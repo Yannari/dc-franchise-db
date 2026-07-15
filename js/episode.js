@@ -7,6 +7,7 @@ import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote } from './
 import { checkIdolPlays, checkIdolPreTribal, checkNonIdolAdvantageUse, findAdvantages, handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, simulateLastChance } from './challenges-core.js';
 import { applyTwist, generateTwistScenes, generateDockArrivals, simulateJourney, applyRewardSocialEffects } from './twists.js';
+import { applyDisadvantagePenalty } from './disadvantage-vote.js';
 import {
   generateCampEvents, checkAllianceRecruitment, executeEmissarySelection,
   generateEmissaryScoutEvents, checkVolunteerExileDuel, checkMoleSabotage,
@@ -1268,6 +1269,7 @@ export function simulateEpisode() {
   }
   gs.exiledThisEp = null;
   gs.penaltyVoteThisEp = null;
+  gs._disadvantage = null;
   // Clean up perceived bonds for eliminated players
   if (gs.perceivedBonds) {
     Object.keys(gs.perceivedBonds).forEach(k => {
@@ -2882,6 +2884,9 @@ export function simulateEpisode() {
     ep.challengeThrows   = immResult?.challengeThrows   || null;
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } // end tied-destinies else
+
+    // ── DISADVANTAGE VOTE: dock the voted player's challenge score, re-derive winner ──
+    if ((ep.twists || []).some(t => t.type === 'disadvantage-vote')) applyDisadvantagePenalty(ep);
 
     // ── TIED DESTINIES + PAIR CHALLENGE SYNC ──
     // Pair challenges now read gs._tiedDestiniesActive directly and use those pairs.

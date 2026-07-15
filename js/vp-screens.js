@@ -45,6 +45,7 @@ import { rpBuildPolesApartTitleCard, rpBuildPolesApartArena, rpBuildPolesApartRe
 import { rpBuildTusksTitleCard, rpBuildTusksHunt, rpBuildTusksFinish, tusksRevealNext, tusksRevealAll } from './chal/tusks-and-ladders.js';
 import { rpBuildClownTitleCard, rpBuildClownStalk, rpBuildClownRun, clownRevealNext, clownRevealAll } from './chal/killer-clown.js';
 import { rpBuildBashTitleCard, rpBuildBashArena, rpBuildBashResults, bashRevealNext, bashRevealAll } from './chal/bumper-car-bash.js';
+import { rpBuildDisadvantageTrial, disReveal, disRevealAll } from './disadvantage-vote.js';
 import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults, frozenCrossingRevealNext, frozenCrossingRevealAll } from './chal/frozen-crossing.js';
 import { rpBuildVSTitleCard, rpBuildVSPhase1, rpBuildVSPhase2, rpBuildVSPhase3, rpBuildVSResults, vikingSourRevealNext, vikingSourRevealAll } from './chal/viking-sour.js';
 import { rpBuildBRBTitleCard, rpBuildBRBSlotMachine, rpBuildBRBObstacleCourse, rpBuildBRBTightrope, rpBuildBRBCustomsTrivia, rpBuildBRBFinalResults, bbRevealNext, bbRevealAll } from './chal/bridal-brawls.js';
@@ -12232,6 +12233,11 @@ export function buildVPScreens(epRecord) {
   // ── 4b. Reward Challenge (if one ran this episode, but NOT reward-twist-challenge — those go after the challenge screens) ──
   if (ep.rewardChalData && !ep.isRewardOnly) {
     vpScreens.push({ id:'reward-challenge', label:'Reward Challenge', html: rpBuildRewardChallenge(ep) });
+  }
+
+  // ── 4c. The Disadvantage Trial (runs before the immunity challenge) ──
+  if ((ep.twists || []).some(t => t.type === 'disadvantage-vote' && t.trial)) {
+    vpScreens.push({ id:'disadvantage-trial', label:'⚖️ Disadvantage Trial', html: rpBuildDisadvantageTrial(ep) });
   }
 
   // ── 5. Challenge ──

@@ -88,6 +88,7 @@ import { rpBuildClownTitleCard, rpBuildClownStalk, rpBuildClownRun } from './cha
 import { rpBuildBashTitleCard, rpBuildBashArena, rpBuildBashResults } from './chal/bumper-car-bash.js';
 import { rpBuildCheeseTitleCard, rpBuildCheeseDrop, rpBuildCheeseResults } from './chal/say-cheese.js';
 import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish, rpBuildJuryVotes } from './vp-finale.js';
+import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 // rpBuildAftermath is read off window (not statically imported) — aftermath.js already imports from
 // this module, so a static import here would create a circular dependency.
 
@@ -986,6 +987,31 @@ export function _textVotingPlans(ep, ln, sec) {
     ln('');
   }
 
+  const commitmentReads = ep.voteCommitmentDiagnostics || [];
+  const eligibleBallots = commitmentReads.length || Math.max(0, tribalPlayers.length - lostVoters.length);
+  const majorityNeeded = commitmentReads[0]?.majority || (Math.floor(eligibleBallots / 2) + 1);
+  ln('VOTING MATH:');
+  ln(`  ${tribalPlayers.length} attending - ${lostVoters.length} without a vote = ${eligibleBallots} eligible voters.`);
+  ln(`  ${majorityNeeded} ballots are needed to guarantee majority control. A read of "5 supporting; ${majorityNeeded} needed" means the plan is one ballot short of controlling the vote.`);
+  ln(`  A target does NOT need ${majorityNeeded} votes to leave. If the field splits, the highest valid total wins by plurality; 3-2-2-2-1 still eliminates the player with 3.`);
+  ln('  Players without votes can still discuss strategy and influence allies, but contribute zero ballots. Extra Votes add ballots only when played at Tribal.');
+  (ep.rejectedSplitPlans || []).forEach(sp => {
+    const reasons = { 'coalition-lacks-majority':'not enough dependable ballots', 'assignments-not-reliable':'an assigned voter was unreliable',
+      'primary-side-too-small':'the primary side could lose', 'backup-side-too-small':'the backup could not survive an idol play',
+      'no-credible-idol-risk':'no credible idol risk' };
+    ln(`  ${sp.alliance} considered a split against ${sp.primary} but rejected it: ${reasons[sp.reason] || 'unsafe vote math'}.`);
+  });
+  ln('');
+
+  const reputations = ep.strategicReputations || gs.strategicReputations || {};
+  const notableReputations = tribalPlayers.map(name => reputations[name]).filter(r => r?.labels?.length);
+  if (notableReputations.length) {
+    ln('STRATEGIC REPUTATIONS:');
+    notableReputations.forEach(r => ln(`  ${r.name}: ${r.labels.join(', ')}. Reliability ${Math.round(r.reliability * 100)}%; persuasion ${Math.round(r.persuasion * 100)}%; discretion ${Math.round(r.discretion * 100)}%; control ${Math.round(r.control * 100)}%; deception ${Math.round(r.deception * 100)}%.`));
+    ln('  These are behavior-based reputations, not guarantees. Bonds, current numbers, and emotional state can still override them.');
+    ln('');
+  }
+
   // Alliance plans
   const namedAlliances = allAlliances.filter(a => (a.type === 'alliance' || a.type === 'consensus') && a.label && a.members.length >= 2);
   const allAllianceMembers = new Set(namedAlliances.flatMap(a => a.members));
@@ -997,6 +1023,13 @@ export function _textVotingPlans(ep, ln, sec) {
       const spearheader = canVote.slice().sort((x, y) => (pStats(y).social + pStats(y).strategic) - (pStats(x).social + pStats(x).strategic))[0];
       ln(`${a.label} (${a.members.length} members, ${canVote.length} can vote)`);
       ln(`  TARGET: ${a.target || 'undecided'}`);
+      const currentLeaners = commitmentReads.filter(c => c.predictedBallot === a.target).map(c => c.voter);
+      ln(`  PROJECTED ELIGIBLE BALLOTS: ${currentLeaners.length ? `${currentLeaners.join(', ')} (${currentLeaners.length})` : 'none yet'}`);
+      const dependable = commitmentReads.filter(c => c.source === a.label && c.predictedBallot === c.proposedTarget && c.commitmentStrength >= 0.65).map(c => c.voter);
+      const tentative = commitmentReads.filter(c => c.source === a.label && c.predictedBallot === c.proposedTarget && c.commitmentStrength < 0.65).map(c => c.voter);
+      const drifting = commitmentReads.filter(c => c.source === a.label && c.predictedBallot !== c.proposedTarget).map(c => c.voter);
+      ln(`  BALLOT RELIABILITY: ${dependable.length} dependable (${dependable.join(', ') || 'none'}); ${tentative.length} tentative (${tentative.join(', ') || 'none'}).`);
+      if (drifting.length) ln(`  FORECAST ELSEWHERE: ${drifting.join(', ')}. Alliance membership does not count them as ballots tonight.`);
 
       // Target reasoning from actual vote log
       const targetVoter = canVote.find(m => votingLog.some(v => v.voter === m && v.voted === a.target));
@@ -1005,7 +1038,16 @@ export function _textVotingPlans(ep, ln, sec) {
 
       ln(`  MEMBERS: ${a.members.join(', ')}`);
       if (spearheader) ln(`  SPEARHEADER: ${spearheader}`);
-      if (a.splitTarget) ln(`  SPLIT VOTE: ${a.splitTarget}`);
+      if (a.splitTarget) {
+        const primary = (a.splitPrimary || []).filter(v => !lostVoters.includes(v));
+        const backup = (a.splitSecondary || []).filter(v => !lostVoters.includes(v));
+        ln(`  COORDINATED SPLIT: ${primary.length + backup.length} ballots total — ${primary.length} on ${a.target}, ${backup.length} on ${a.splitTarget} as idol insurance.`);
+        ln(`    These are two halves of one operation, not competing coalitions. One defection may collapse a close split.`);
+        const intel = a.idolKnowledge?.entries || [];
+        if (intel.length) ln(`    IDOL INTEL: ${intel.map(x => `${x.knower} (${Math.round((x.effectiveConfidence ?? x.confidence ?? 0) * 100)}%, ${x.source})`).join('; ')}.`);
+        if (a.splitPrimary?.length) ln(`    PRIMARY ASSIGNMENT: ${a.splitPrimary.join(', ')}`);
+        if (a.splitSecondary?.length) ln(`    BACKUP ASSIGNMENT: ${a.splitSecondary.join(', ')}`);
+      }
 
       // Conflicted players: member whose actual vote differs from alliance target, or who has strong bond with target
       const conflicted = canVote.filter(m => {
@@ -1032,6 +1074,121 @@ export function _textVotingPlans(ep, ln, sec) {
       }
       ln('');
     });
+  }
+
+  if (commitmentReads.length) {
+    ln('PLAN STABILITY:');
+    commitmentReads.filter(c => c.proposedTarget && c.committedTarget).forEach(c => {
+      const pull = Math.round((c.commitmentStrength || 0) * 100);
+      const negotiated = !!c.preNegotiationPredictedBallot && c.preNegotiationPredictedBallot !== c.predictedBallot;
+      const follows = c.predictedBallot === c.proposedTarget;
+      const beganOnPlan = c.committedTarget === c.proposedTarget;
+      const status = negotiated ? 'negotiated flip' : follows ? (beganOnPlan && pull >= 70 ? 'locked on plan' : beganOnPlan ? 'leaning plan' : 'forecast to return to plan') : 'forecast elsewhere';
+      const split = c.splitVoteAssignment === 'backup'
+        ? ` Assigned to backup target ${c.splitBackupTarget} in a split against ${c.splitPrimaryTarget}.`
+        : c.splitVoteAssignment === 'primary' ? ` Assigned to primary target ${c.splitPrimaryTarget} in an idol split.` : '';
+      const negotiation = negotiated ? ` Pre-negotiation forecast ${c.preNegotiationPredictedBallot}; joined ${c.pitchOrganizer}'s ${c.pitchCoalition?.length || 1}-vote coalition on ${c.predictedBallot}.` : '';
+      ln(`  ${c.voter}: ${status}. Initial lean ${c.committedTarget}; forecast ballot ${c.predictedBallot}.${negotiation} Plan pull ${pull}%. Estimates ${c.believedVotes} early support; ${c.majority} needed. Forecasted proposal ballots: ${c.projectedVoters?.join(', ') || 'none'}.${split}`);
+    });
+    const leanCounts = {};
+    commitmentReads.forEach(c => {
+      if (!c.predictedBallot) return;
+      leanCounts[c.predictedBallot] = [...(leanCounts[c.predictedBallot] || []), c.voter];
+    });
+    ln('  CURRENT LEANS ACROSS ALL ALLIANCES:');
+    Object.entries(leanCounts).sort(([,a],[,b]) => b.length - a.length)
+      .forEach(([target, voters]) => ln(`    ${target}: ${voters.length} — ${voters.join(', ')}`));
+    const topLeanCount = Math.max(0, ...Object.values(leanCounts).map(voters => voters.length));
+    if (topLeanCount < majorityNeeded) ln(`  No target currently has ${majorityNeeded} firm leans. A smaller plurality can still decide the elimination.`);
+    ln('');
+  }
+
+  if (ep.votePitches?.length) {
+    ln('FLIP NEGOTIATIONS:');
+    ep.votePitches.forEach(p => {
+      ln(`  ${p.pitcher} pitched ${p.pitchTarget}, claiming ${p.claimedSupport} possible votes${p.liedAboutNumbers ? ' (exaggerated)' : ''}.`);
+      ln(`    Confirmed coalition: ${p.confirmedCoalition?.join(', ') || 'none'}. Accepted: ${p.flipped?.join(', ') || 'none'}.`);
+      if (p.resolution === 'dissolved-after-conflict-check') ln('    Resolution: dissolved after overlapping promises were reconciled; those voters chose another coalition.');
+      const rejected = (p.responses || []).filter(r => !r.accepted);
+      if (rejected.length) ln(`    Rejected: ${rejected.map(r => `${r.voter} (${r.reason}${r.supersededBy ? ` for ${r.supersededBy}` : ''}${r.leaked ? ', leaked' : ''})`).join('; ')}.`);
+    });
+    ln('');
+  }
+
+  if (ep.pitchIntel?.length) {
+    ln('PITCH INFORMATION FLOW:');
+    ep.pitchIntel.forEach(info => ln(`  ${info.source} → ${info.knower}: warned that ${info.pitcher} was organizing against ${info.target}. ${Math.round(info.confidence * 100)}% credibility; ${info.believed ? 'believed' : 'doubted'}.`));
+    ln('');
+  }
+
+  if (ep.pitchCounterplay?.length) {
+    ln('PITCH COUNTERPLAY:');
+    ep.pitchCounterplay.forEach(c => {
+      const detail = c.type === 'watched-carefully' ? 'noticed the danger but did not organize a response'
+        : c.type === 'confrontation' ? 'confronted the organizer, but did not establish replacement numbers'
+        : c.type === 'warned-allies' ? 'warned trusted allies, but the response did not become viable'
+        : c.type === 'deceptive-counter' ? `acted calm while building a ${c.coalition.length}-ballot counter against ${c.pitcher}`
+        : `built a ${c.coalition.length}-ballot counter against ${c.pitcher}`;
+      ln(`  ${c.actor}: ${detail}. Recruited: ${c.coalition.join(', ')}. Majority threshold: ${c.majority || 'unknown'}.`);
+    });
+    ln('');
+  }
+
+  if (ep.pitchAllianceFallout?.length) {
+    ln('ALLIANCE REACTION TO EXPOSED PITCHES:');
+    ep.pitchAllianceFallout.forEach(f => {
+      const result = f.outcome === 'backed-down'
+        ? `heard the warning, but ${f.player} did not cast the proposed ${f.target} ballot; trust was bruised, not broken`
+        : `${f.player}'s pitch was supported by the ballot evidence${f.excluded ? '; the alliance excluded them from its next strategy discussion' : ''}`;
+      ln(`  ${f.alliance}: ${f.witnesses.join(', ')} learned ${f.player} was pushing ${f.target} instead of ${f.planTarget} — ${result}${f.repeat ? ' (repeat incident)' : ''}.`);
+    });
+    ln('');
+  }
+
+  if (ep.allianceRepairs?.length) {
+    ln('POST-VOTE ALLIANCE REPAIR:');
+    ep.allianceRepairs.forEach(r => {
+      const approach = r.approach === 'strategic-explanation' ? 'explained the move as strategic necessity'
+        : r.approach === 'apology' ? 'accepted responsibility and apologized'
+        : r.approach === 'denial' ? 'denied or minimized responsibility'
+        : 'refused to apologize';
+      const consequence = r.outcome === 'forgiven' ? 'cooperation and strategy access were restored, though the betrayal remains recorded'
+        : r.outcome === 'working-truce' ? 'the alliance accepted a working truce but withheld full trust'
+        : r.outcome === 'fracture' ? 'the failed repair became a lasting fracture and strategy access stayed closed'
+        : 'the explanation was rejected and strategy access stayed closed';
+      ln(`  ${r.player} / ${r.alliance}: ${approach}. ${r.accepted}/${r.total} allies accepted it; ${consequence}${r.repeatAttempt ? '. Previous failed explanations reduced credibility' : ''}.`);
+    });
+    ln('');
+  }
+
+  const changedPlans = commitmentReads.filter(c => c.actualBallot &&
+    (c.lateTrigger !== 'plan-held' || c.transitionPrevented || c.actualBallot !== c.predictedBallot));
+  if (changedPlans.length || (ep.splitVotePlans || []).length) {
+    ln('HOW THE PLANS CHANGED:');
+    (ep.splitVotePlans || []).forEach(sp => {
+      const primary = (sp.primaryVoters || []).filter(v => commitmentReads.some(c => c.voter === v));
+      const backup = (sp.secondaryVoters || []).filter(v => commitmentReads.some(c => c.voter === v));
+      const heldPrimary = primary.filter(v => votingLog.find(x => x.voter === v)?.voted === sp.primary);
+      const heldBackup = backup.filter(v => votingLog.find(x => x.voter === v)?.voted === sp.secondary);
+      const defectors = [...primary, ...backup].filter(v => !heldPrimary.includes(v) && !heldBackup.includes(v));
+      ln(`  ${sp.alliance}: intended ${primary.length}-${backup.length} split became ${heldPrimary.length}-${heldBackup.length}.${defectors.length ? ` ${defectors.join(', ')} left their assignments.` : ' Every assigned voter held.'}`);
+    });
+    changedPlans.forEach(c => {
+      let explanation;
+      if (c.transitionPrevented) explanation = `considered ${c.transitionPrevented.rejectedTarget}, but stayed on ${c.transitionPrevented.heldTarget} because no credible coalition or disruption supported the switch`;
+      else if (c.lateTrigger?.startsWith('live-coalition-')) explanation = `joined a simultaneous ${c.lateTrigger.split('-').at(-1)}-ballot coalition on ${c.actualBallot}`;
+      else if (c.lateTrigger === 'late-pitch') explanation = `joined ${c.pitchOrganizer ? `${c.pitchOrganizer}'s ` : 'a '}${c.actualBallot} pitch${c.pitchCoalition?.length ? ` with ${c.pitchCoalition.join(', ')}` : ''}`;
+      else if (c.lateTrigger === 'late-consensus') explanation = `left an isolated one-vote plan and moved to the leading ${c.actualBallot} option when the room narrowed`;
+      else if (c.lateTrigger === 'protect-ally') explanation = `voted ${c.actualBallot} to protect an ally`;
+      else if (c.lateTrigger === 'personal-grudge') explanation = `put a personal grudge ahead of the plan and voted ${c.actualBallot}`;
+      else if (c.lateTrigger === 'miscommunication') explanation = `intended to follow the plan but wrote ${c.actualBallot}`;
+      else if (c.lateTrigger === 'initial-commitment-held') explanation = `kept the initial ${c.actualBallot} commitment instead of the ${c.predictedBallot} forecast`;
+      else if (c.lateTrigger === 'returned-to-proposal') explanation = `returned to the original proposal and voted ${c.actualBallot}`;
+      else if (c.lateTrigger === 'private-preference-won') explanation = `followed the private preference for ${c.actualBallot}`;
+      else explanation = `moved from the ${c.predictedBallot} forecast to ${c.actualBallot}`;
+      ln(`  ${c.voter}: ${explanation}.`);
+    });
+    ln('');
   }
 
   // Independent votes (players not in any named alliance)
@@ -1062,6 +1219,10 @@ export function _textVotingPlans(ep, ln, sec) {
 
   // Advantages in play that could affect the vote
   const advInPlay = (ep.advantagesPreTribal || gs.advantages || []).filter(a => tribalPlayers.includes(a.holder));
+  if (ep.idolExposureReads?.length) {
+    ln(''); ln('IDOL HOLDER READS:');
+    ep.idolExposureReads.forEach(r => ln(`  ${r.holder}: ${r.mode}; perceived exposure ${Math.round(r.perceivedRisk * 100)}%; emotional state ${r.emotional}.${r.counterTarget ? ` Suspects ${r.counterTarget}.` : ''}${r.informedPlayers.length ? ` Actual informed players: ${r.informedPlayers.join(', ')}.` : ''}${r.playDecision ? ` Decision: ${r.playDecision.didPlay ? 'play' : 'hold'} (${Math.round(r.playDecision.chance * 100)}% read confidence) — ${r.playDecision.reason}.` : ''}`));
+  }
   if (advInPlay.length) {
     ln('');
     ln('ADVANTAGES IN PLAY:');
@@ -1379,13 +1540,26 @@ export function _textWhyVote(ep, ln, sec) {
       ln(`${name} was eliminated after a full deadlock re-vote. First vote was a stalemate. Fresh re-vote gave ${name} the most votes.`);
       return;
     }
-    if (ep.isTie && ep.revoteLog && !ep.isRockDraw && ep.tiedPlayers?.includes(name)) {
+    if (ep.isTie && ep.revoteLog?.length && ep.revoteVotes && !ep.isRockDraw && ep.tiedPlayers?.includes(name)) {
       const other = ep.tiedPlayers.find(p => p !== name);
-      const initForName = (ep.votingLog||[]).filter(l => l.voted === name).map(l => l.voter);
-      const initForOther = other ? (ep.votingLog||[]).filter(l => l.voted === other).map(l => l.voter) : [];
-      ln(`${name} was voted out on the revote after tying ${initForName.length}-${initForOther.length} with ${other || 'another player'}:`);
+      const initialVotersFor = target => {
+        const voters = (ep.votingLog||[]).filter(l => l.voted === target && !l.sitdSacrificed).map(l => l.voter);
+        (ep.idolPlays||[]).filter(p => (p.type === 'extraVote' || p.type === 'voteSteal') && p.target === target)
+          .forEach(p => voters.push(`${p.player} (${p.type === 'extraVote' ? 'extra vote' : 'stolen vote'})`));
+        return voters;
+      };
+      const initForName = initialVotersFor(name);
+      const initForOther = other ? initialVotersFor(other) : [];
+      const nameCount = ep.votes?.[name] ?? initForName.length;
+      const otherCount = other ? (ep.votes?.[other] ?? initForOther.length) : 0;
+      ln(`${name} was voted out on the revote after tying ${nameCount}-${otherCount} with ${other || 'another player'}:`);
       ln(`- The tie: ${initForName.join(', ')} voted ${name} / ${initForOther.join(', ')} voted ${other}`);
       ln(`- On the revote, ${ep.tiedPlayers.join(' and ')} could not vote`);
+      if (ep.revoteCoordination?.primaryTarget) {
+        const coordination = ep.revoteCoordination;
+        const initialSupport = coordination.originalSupport?.[coordination.primaryTarget] || 0;
+        ln(`- Revote coordination: facing a multi-way deadlock, the available voters consolidated around ${coordination.primaryTarget} (from ${initialSupport} initial supporter${initialSupport === 1 ? '' : 's'}), narrowing the revote to ${coordination.distinctTargets} target${coordination.distinctTargets === 1 ? '' : 's'}.`);
+      }
       const held = ep.revoteLog.filter(r => { const orig = (ep.votingLog||[]).find(l => l.voter === r.voter)?.voted; return r.voted === orig; });
       const flipped = ep.revoteLog.filter(r => { const orig = (ep.votingLog||[]).find(l => l.voter === r.voter)?.voted; return r.voted !== orig; });
       if (held.length) held.forEach(r => ln(`- ${r.voter} held on ${r.voted}${r.reason ? ` — ${r.reason}` : ''}`));
@@ -2196,6 +2370,14 @@ export function _textLastMorning(ep, ln, sec) {
     ln('');
   });
   ln(`Someone looks at the tribe flag one last time. It's faded now. Weathered. Just like them.`);
+}
+
+// ── FINALE: CARNIVAL RESCUE ──
+export function _textRescueMission(ep, ln, sec) {
+  if (!ep.rescueData) return;
+  _textTwistChallenge(ep, ln, sec, 'rescueData', 'CARNIVAL RESCUE — THE FINAL CHALLENGE', [
+    rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion
+  ]);
 }
 
 // ── FINALE: REJECTED OLYMPIC RELAY ──
@@ -3163,6 +3345,7 @@ export function generateSummaryText(ep) {
   // Finale screens
   _textLastMorning(ep, ln, sec);
   _textOlympicRelay(ep, ln, sec);
+  _textRescueMission(ep, ln, sec);
   _textHawaiianPunch(ep, ln, sec);
   _textGrandChallenge(ep, ln, sec);
   _textFinalCut(ep, ln, sec);

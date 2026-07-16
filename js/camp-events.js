@@ -2,7 +2,8 @@
 import { gs, seasonConfig, players } from './core.js';
 import { pStats, pronouns, getPlayerState, romanticCompat } from './players.js';
 import { getBond, addBond, getPerceivedBond } from './bonds.js';
-import { wRandom, computeHeat, nameNewAlliance } from './alliances.js';
+import { wRandom, computeHeat, nameNewAlliance, resolveAllianceRepair } from './alliances.js';
+import { recordIdolIntel, idolIntelFor } from './advantage-intel.js';
 import {
   checkShowmanceFormation, updateRomanticSparks, getShowmancePartner,
   updateShowmancePhases, checkLoveTriangleFormation, updateAffairExposure,
@@ -11,6 +12,7 @@ import {
 import { generateSocialManipulationEvents } from './social-manipulation.js';
 import { simulateTribeChallenge } from './challenges-core.js';
 import { eventAllowedInSetting, settingWeightMod, settingProfile, fillVocab, currentSetting, settingReskin } from './settings.js';
+import { reputationModifier } from './reputation.js';
 
 // Fill a reskin/atmosphere template: player tokens first, then vocab tokens.
 // {a}/{b} = the two players, {p} = single featured player, {po} = possessive.
@@ -3375,6 +3377,8 @@ export function checkAllianceRecruitment(ep) {
     let acceptChance = 40; // base
     acceptChance += bondWithRecruiter * 12;  // bond 3 = +36%, bond -2 = -24% (THE main driver)
     acceptChance += avgBondAlliance * 6;     // avg 2 = +12% (do I trust this group?)
+    acceptChance += reputationModifier(recruiter, 'recruitment') * 45;
+    acceptChance += reputationModifier(recruit, 'recruitment') * 25;
     if (_recruiterVotedMe && bondWithRecruiter < 2) acceptChance -= 20; // you voted me out, now you want to ally?
     if (_hasExistingAlliance && _rS.loyalty >= 6) acceptChance -= 15; // loyal to my current people
     // Emotional state — desperation makes you say yes to anyone
@@ -4317,45 +4321,37 @@ export function checkGoatTargeting(ep) {
   const active = gs.activePlayers;
   if (!ep.goatEvents) ep.goatEvents = [];
 
-  // ── PART 1: merge arrival — fires once per goat on the merge episode ──
+  // ── PART 1: merge arrival — one consolidated strategic assessment ──
   if (ep.isMerge) {
     const goats = active.filter(name => {
       const rec = gs.chalRecord[name];
       return rec && rec.bombs >= 3 && !ep.goatEvents.some(g => g.player === name && g.type === 'mergeGoat');
-    });
-    goats.forEach(name => {
-      const prn = pronouns(name);
-      const s3 = prn.sub === 'they';
-      // Pick a strategic observer
-      const observers = active.filter(p => p !== name);
-      if (!observers.length) return;
-      const observer = observers.reduce((best, p) => pStats(p).strategic > pStats(best).strategic ? p : best, observers[0]);
-      const oPrn = pronouns(observer);
-      const os3 = oPrn.sub === 'they';
-
-      const goatLines = [
-        `${name} made it to the merge. ${prn.Sub} ${s3 ? 'struggled' : 'struggled'} every challenge — and ${prn.sub} ${s3 ? 'are' : 'is'} still here. Someone is going to decide that's a useful quality.`,
-        `${name} reach${s3 ? '' : 'es'} the merge with a challenge record that would embarrass most players. The tribe see${s3 ? '' : 's'} it. Some of them are already filing ${prn.obj} under "bring to the end."`,
-        `${name} survived to the merge on social capital, not challenge performance. ${prn.Sub} ${s3 ? "know" : "knows"} it. So does everyone else — but that's exactly why ${prn.sub} ${s3 ? "aren't" : "isn't"} going home tonight.`,
-        `Nobody writes ${name}'s name down going into merge. Not because they like ${prn.obj} — because ${prn.sub} ${s3 ? "lose" : "loses"} every challenge. ${prn.Sub} ${s3 ? "are" : "is"} a tool. Someone will use ${prn.obj}.`,
-        `${name} walks into the merge knowing exactly what ${prn.sub} ${s3 ? "are" : "is"} to most people: an easy vote for whenever someone bigger needs to go. ${prn.Sub} ${s3 ? "plan" : "plans"} to use that.`,
-        `The tribe sees ${name}'s challenge history and makes a mental note. Safe for now. Useful later. That's the most dangerous kind of player to have around.`,
-      ];
-      const observerLines = [
-        `${observer} look${os3 ? '' : 's'} at ${name} and see${os3 ? '' : 's'} a number. Not a threat — a vote. Something to deploy when the time is right.`,
-        `${observer} ha${os3 ? 've' : 's'} already decided ${name} goes deep. Not because ${oPrn.sub} ${os3 ? 'like' : 'likes'} ${prn.obj} — because ${prn.sub} ${s3 ? 'are' : 'is'} controllable.`,
-        `${observer} quietly slot${os3 ? '' : 's'} ${name} into ${oPrn.posAdj} endgame plans. Goats don't need to be charmed. They just need to be kept comfortable.`,
-        `${observer} clock${os3 ? '' : 's'} ${name}'s record and see${os3 ? '' : 's'} an asset. A vote to pocket. A name to throw when ${oPrn.sub} need${os3 ? '' : 's'} a shield.`,
-      ];
-
-      const hashBase = [...name].reduce((a, c) => a + c.charCodeAt(0), 0);
-      const goatText = goatLines[(hashBase + epSeed) % goatLines.length];
-      const obsText  = observerLines[(hashBase + epSeed * 7) % observerLines.length];
-
-      arr.push({ type: 'goatIdentified', text: goatText, players: [name] });
-      arr.push({ type: 'goatObserver',   text: obsText,  players: [observer, name] });
-      ep.goatEvents.push({ player: name, observer, type: 'mergeGoat', ep: ep.num });
-    });
+    }).sort((a, b) => (gs.chalRecord[b]?.bombs || 0) - (gs.chalRecord[a]?.bombs || 0));
+    if (goats.length) {
+      const observers = active.filter(player => !goats.includes(player));
+      const observerPool = observers.length ? observers : active.filter(player => player !== goats[0]);
+      const observer = observerPool.length
+        ? observerPool.reduce((best, player) => pStats(player).strategic > pStats(best).strategic ? player : best, observerPool[0])
+        : null;
+      const visible = goats.slice(0, 3);
+      const names = visible.length === 1 ? visible[0]
+        : visible.length === 2 ? `${visible[0]} and ${visible[1]}`
+        : `${visible.slice(0, -1).join(', ')}, and ${visible.at(-1)}`;
+      const remainder = goats.length - visible.length;
+      const observerText = observer
+        ? ` ${observer} quietly considers which of them could become a dependable number deeper in the game.`
+        : '';
+      arr.push({
+        type: 'goatMergeAssessment',
+        text: `${names}${remainder > 0 ? ` and ${remainder} other${remainder === 1 ? '' : 's'}` : ''} enter the merge with the weakest challenge records. The tribe sees possible endgame passengers, but social bonds still decide who is actually usable.${observerText}`,
+        players: [...new Set([observer, ...visible].filter(Boolean))],
+        candidates: [...goats], observer,
+        badgeText: 'ENDGAME OPTIONS', badgeClass: 'gold',
+      });
+      goats.forEach(player => ep.goatEvents.push({ player, observer, type: 'mergeGoat', ep: ep.num }));
+    }
+    // Do not immediately repeat the same read as a late-game FTC reassessment.
+    return;
   }
 
   // ── PART 2: FTC threat reassessment — late game only (9 or fewer left) ──
@@ -4822,6 +4818,7 @@ export function checkIdolConfessions(ep) {
     // Betrayal fires
     ep.idolBetrayals.push({ holder, betrayer: confidant });
     gs.knownIdolHoldersThisEp.add(holder);
+    recordIdolIntel(confidant, holder, { source:'betrayed confidence', confidence:0.95, truth:'confirmed' });
     addBond(confidant, holder, -1.5);
 
     const betrayLines = [
@@ -6930,6 +6927,7 @@ export function generateCampEvents(ep, phase = 'both') {
           const caught = Math.random() < 0.35;
           if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
           gs.knownIdolHoldersThisEp.add(target.holder);
+          recordIdolIntel(snooper, target.holder, { source:'saw idol while snooping', confidence:0.95, truth:'confirmed' });
           if (caught) {
             addBond(target.holder, snooper, -2.5);
             tribeMembers.filter(m => m !== snooper && m !== target.holder).forEach(m => addBond(m, snooper, -0.5));
@@ -6954,9 +6952,8 @@ export function generateCampEvents(ep, phase = 'both') {
         if (knownHolders.length) {
           const holder = knownHolders[Math.floor(Math.random() * knownHolders.length)];
           // Find a social player who knows and has a close ally who DOESN'T know
-          const informers = tribeMembers.filter(n =>
-            n !== holder && pStats(n).social >= 6 && getBond(n, holder) <= 1
-          );
+          const informedNames = new Set(idolIntelFor(holder, tribeMembers).map(x => x.knower));
+          const informers = tribeMembers.filter(n => n !== holder && informedNames.has(n) && pStats(n).social >= 6 && getBond(n, holder) <= 1);
           const informer = informers[Math.floor(Math.random() * informers.length)];
           if (informer) {
             const recipient = tribeMembers.filter(n =>
@@ -6964,6 +6961,8 @@ export function generateCampEvents(ep, phase = 'both') {
             ).sort((a,b) => getBond(informer,b) - getBond(informer,a))[0];
             if (recipient) {
               addBond(informer, recipient, 0.5);
+              const sourceIntel = idolIntelFor(holder, [informer])[0];
+              recordIdolIntel(recipient, holder, { source:`told by ${informer}`, confidence:Math.max(0.55, (sourceIntel?.effectiveConfidence || 0.7) * 0.9), truth:sourceIntel?.truth || 'unknown' });
               const _infP = pronouns(informer);
               pre.push({ type: 'eavesdrop', players: [informer, recipient], text: _rp([
                 `${informer} pulls ${recipient} aside. "${holder} has an idol." Two words that change everything. ${recipient} nods. The plan adjusts.`,
@@ -7339,6 +7338,11 @@ export function generateCampEvents(ep, phase = 'both') {
     gs.detectedFlipsLastEp = []; // consume
     if (_caught) {
       const { traitor, alliance, votedFor, consensusWas, votedAlly, allyEliminated } = _caught;
+      const _repair = resolveAllianceRepair(_caught, ep.num);
+      if (_repair) {
+        ep.allianceRepairs = ep.allianceRepairs || [];
+        ep.allianceRepairs.push(_repair);
+      }
       const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(traitor))?.name;
       if (_campKey && ep.campEvents[_campKey]) {
         const _tPr = pronouns(traitor);
@@ -7348,12 +7352,19 @@ export function generateCampEvents(ep, phase = 'both') {
           : votedFor ? `wrote ${votedFor}` : `broke ranks`;
         // partner card: the ally they voted (if still around), else solo
         const _partner = votedAlly && gs.activePlayers.includes(votedFor) && votedFor !== traitor ? votedFor : null;
+        const _repairText = !_repair ? '' : _repair.outcome === 'forgiven'
+          ? ` ${traitor} ${_repair.approach === 'apology' ? 'owned the move and apologized' : 'explained the strategic necessity'}, and enough of the group accepted it to reopen the conversation. Forgiveness did not erase the vote.`
+          : _repair.outcome === 'working-truce'
+            ? ` The explanation split the room. They will still work with ${traitor} when the numbers require it, but sensitive plans stay guarded.`
+            : _repair.outcome === 'fracture'
+              ? ` ${traitor}'s ${_repair.approach.replace('-', ' ')} failed to land. The relationship is now a practical fracture, not a temporary argument.`
+              : ` ${traitor} tried to explain it, but the group did not accept the account. Strategy access remains closed.`;
         ep.campEvents[_campKey].pre.push({ type: 'betrayalReckoning', players: _partner ? [traitor, _partner] : [traitor], badgeText: 'Caught Flipping', badgeClass: 'red', text: _rp([
           `Everyone knows. ${traitor} ${_what} at tribal, and ${_allw} caught it. ${allyEliminated ? `${votedFor} went home because of it.` : ''} ${_tPr.Sub} ${_tPr.sub === 'they' ? "walk" : "walks"} into camp a marked player — the trust is gone, and nobody's pretending otherwise.`,
           `${traitor} got caught. ${_allw} knows ${_tPr.sub} ${_what}, and the reckoning is immediate — cold shoulders, hushed conversations that stop when ${_tPr.sub} ${_tPr.sub === 'they' ? "walk" : "walks"} up. ${_tPr.Sub} ${_tPr.sub === 'they' ? "are" : "is"} on the outside now.`,
           `No hiding this one. ${traitor} ${_what} against ${_allw}, ${_tPr.posAdj} own alliance, and got made for it. ${allyEliminated ? `${votedFor} paid the price. ` : ''}The group is already talking about who's next, and the name at the top of the list is ${_tPr.posAdj} own.`,
           `${traitor} broke ${_allw} — ${_what} — and it wasn't subtle enough. Now ${_tPr.sub} ${_tPr.sub === 'they' ? "have" : "has"} a target painted on ${_tPr.posAdj} back and no alliance to hide behind. The betrayal bought ${_tPr.obj} nothing but enemies.`,
-        ]) });
+        ]).replace(/\s+$/, '') + _repairText });
       }
     }
   }

@@ -4,6 +4,8 @@ import { pStats, pronouns, threatScore, getPlayerState } from './players.js';
 import { getBond, getPerceivedBond, addBond } from './bonds.js';
 import { computeHeat, wRandom } from './alliances.js';
 import { resolveVotes } from './voting.js';
+import { assessIdolExposure } from './advantage-intel.js';
+import { reputationModifier } from './reputation.js';
 
 export function handleAdvantageInheritance(eliminatedName, ep) {
   if (!eliminatedName || !gs.advantages?.length) return;
@@ -271,6 +273,25 @@ export function checkIdolPreTribal(ep, tribalPlayers) {
   holdersAtTribal.forEach(adv => {
     const holder = adv.holder;
     const s = pStats(holder);
+    const exposure = assessIdolExposure(holder, tribalPlayers);
+    ep.idolExposureReads = ep.idolExposureReads || [];
+    ep.idolExposureReads.push(exposure);
+    if (!gs._idolExposureResponses) gs._idolExposureResponses = {};
+    gs._idolExposureResponses[holder] = exposure;
+    if (exposure.informedPlayers.length || exposure.mode === 'panic') {
+      const lines = exposure.mode === 'countermove' ? [
+        `${holder} notices conversations stopping when ${pronouns(holder).sub} walks over. ${exposure.counterTarget} keeps appearing near the center of them. ${holder} doesn't know the whole plan, but ${pronouns(holder).sub} know${pronouns(holder).sub==='they'?'':'s'} the idol is no longer fully secret.`,
+        `${holder} reads the room before tribal and reaches one conclusion: somebody knows. ${exposure.counterTarget} is the name ${pronouns(holder).sub} keep${pronouns(holder).sub==='they'?'':'s'} coming back to.`,
+      ] : exposure.mode === 'panic' ? [
+        `${holder} reads danger into every quiet conversation. Nobody has exposed the idol, but ${pronouns(holder).sub} can't shake the feeling that everyone knows.`,
+        `${holder}'s nerves turn ordinary camp whispers into a warning. The idol may still be secret. It doesn't feel secret anymore.`,
+      ] : exposure.mode === 'unaware' ? [
+        `${holder}'s idol has become part of other people's conversations. ${holder} misses the change completely and walks toward tribal believing the secret is intact.`,
+      ] : [
+        `${holder} senses that the idol may be exposed, but can't identify who knows or whether the danger is real. ${pronouns(holder).Sub} keep${pronouns(holder).sub==='they'?'':'s'} it close.`,
+      ];
+      pushCampEvt({ type:'idolExposureRead', players:[holder, ...exposure.informedPlayers], text:_pick(lines), exposure });
+    }
 
     // ── DECEPTION: find the most dangerous schemer on the same tribal group ──
     const schemer = tribalPlayers
@@ -327,15 +348,16 @@ export function checkIdolPreTribal(ep, tribalPlayers) {
     // Don't share if holder is likely in danger — prioritize self-play
     const _holderHeat = computeHeat(holder, tribalPlayers, gs.namedAlliances || []);
     const _holderThreat = threatScore(holder);
-    const _holderInDanger = _holderHeat >= 3 || _holderThreat >= 7 || (getPlayerState(holder).emotional === 'paranoid' || getPlayerState(holder).emotional === 'desperate');
+    const _holderInDanger = _holderHeat >= 3 || _holderThreat >= 7 || exposure.notices || (getPlayerState(holder).emotional === 'paranoid' || getPlayerState(holder).emotional === 'desperate');
     if (_holderInDanger) return; // keep your idol — you might need it
 
     // Don't share to someone who already holds an idol — they'll play their own at F5
     const best = tribalPlayers
       .filter(p => p !== holder && getBond(holder, p) >= 2
         && !gs.advantages.some(a => a.type === 'idol' && a.holder === p)) // skip players who already have an idol
-      .map(p => ({ name: p, bond: getBond(holder, p) }))
-      .sort((a, b) => b.bond - a.bond)[0] || null;
+      .map(p => ({ name: p, bond: getBond(holder, p), rep:reputationModifier(p, 'idol-trust') }))
+      .filter(p => p.rep > -0.22 || p.bond >= 6)
+      .sort((a, b) => (b.bond + b.rep * 3) - (a.bond + a.rep * 3))[0] || null;
 
     if (!best) return;
 
@@ -345,6 +367,7 @@ export function checkIdolPreTribal(ep, tribalPlayers) {
     const veryClose = best.bond >= 7; // F2 deal / showmance proxy
     const shareChance = Math.min(0.60,
       0.03 + (best.bond - 4) * 0.07 + s.loyalty * 0.018 + (sharedAlliance ? 0.12 : 0) + (veryClose ? 0.15 : 0)
+      + best.rep * 0.22
     );
     if (Math.random() >= shareChance) return;
 
@@ -531,10 +554,11 @@ export function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
       ? Math.min(0.50, tipOffCandidates.reduce((s, p) => s + Math.min(0.25, getBond(name, p) * pStats(p).intuition * 0.005), 0))
       : 0;
 
-    // boldness + strategic drives willingness; intuition + emotional state raises readiness
+    // A player never knows the true tally. The real votes only establish whether
+    // a play could matter; the decision itself comes from their room read.
     const iState = getPlayerState(name);
-    const intuitionBonus = (iState.emotional === 'paranoid' || iState.emotional === 'desperate' || iState.emotional === 'uneasy')
-      ? s.intuition * 0.04 : 0;
+    const emotionBonus = iState.emotional === 'paranoid' ? 0.15 : iState.emotional === 'desperate' ? 0.18
+      : iState.emotional === 'uneasy' ? 0.06 : iState.emotional === 'calculating' ? 0.04 : -0.04;
     // Comfort blindspot: checked-out player doesn't feel the danger — less likely to play
     const comfortPenalty = (iState.emotional === 'comfortable' && s.boldness < 6 && s.strategic < 6) ? -0.15 : 0;
 
@@ -544,7 +568,21 @@ export function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     const flushBonus = ep.idolFlushPlanted?.some(f => f.holder === name) ? 0.25 : 0;
     // Eavesdrop bonus: player overheard something suspicious this episode — acts on instinct
     const eavesdropBonus = gs.playerStates[name]?.eavesdropBoostThisEp ? 0.12 + s.intuition * 0.015 : 0;
-    const didPlay = Math.random() < 0.25 + s.boldness * 0.05 + s.strategic * 0.025 + intuitionBonus + tipOffBonus + betrayalPenalty + flushBonus + eavesdropBonus + comfortPenalty;
+    const pitchWarning = (ep.pitchIntel || []).filter(info => info.knower === name && info.target === name && info.believed)
+      .sort((a, b) => b.confidence - a.confidence)[0] || null;
+    const pitchWarningBonus = pitchWarning ? pitchWarning.confidence * (0.22 + s.intuition * 0.012) : 0;
+    const exposureRead = ep.idolExposureReads?.find(r => r.holder === name);
+    const exposureBonus = exposureRead?.notices ? exposureRead.perceivedRisk * (0.12 + s.intuition * 0.012) : 0;
+    const exposurePenalty = exposureRead?.missesExposure ? -0.16 : exposureRead?.mode === 'calm' ? -0.10 : 0;
+    const roomReadChance = Math.max(0.03, Math.min(0.92, 0.06 + s.intuition * 0.045 + s.strategic * 0.022 + s.boldness * 0.008
+      + emotionBonus + tipOffBonus + betrayalPenalty + flushBonus + eavesdropBonus + pitchWarningBonus + exposureBonus + exposurePenalty + comfortPenalty));
+    const playRoll = Math.random();
+    const didPlay = playRoll < roomReadChance;
+    const playReason = pitchWarning ? `warned by ${pitchWarning.source} that ${pitchWarning.pitcher} was organizing against them`
+      : tipOffAlly ? `warned by ${tipOffAlly}` : exposureRead?.mode === 'countermove' ? `read the idol leak and identified ${exposureRead.counterTarget}`
+      : exposureRead?.notices ? 'sensed that the idol was exposed' : iState.emotional === 'paranoid' ? 'paranoia raised the perceived danger'
+      : iState.emotional === 'desperate' ? 'desperation made waiting feel too dangerous' : 'independent read of the room';
+    if (exposureRead) exposureRead.playDecision = { chance:roomReadChance, didPlay, reason:playReason };
     const _pickLocal = arr => arr[Math.floor(Math.random() * arr.length)];
     const tribeName = gs.tribes?.find(t => t.members.includes(name))?.name || 'merge';
 
@@ -590,7 +628,7 @@ export function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
       gs.advantages.splice(idolIdx, 1);
       delete votesObj[name];
       _idolPlayedThisTribal.add(name);
-      ep.idolPlays.push({ player: name, votesNegated: voteCount, tippedOff: !!tipOffAlly });
+      ep.idolPlays.push({ player: name, votesNegated: voteCount, tippedOff: !!tipOffAlly, playReason, readConfidence:roomReadChance });
       ep.idolRehide = true;
     } else {
       // Sat on the idol — record for WHY section analysis
@@ -598,6 +636,8 @@ export function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
         player: name,
         votesAgainst: voteCount,
         tipOffAlly,
+        readReason: playReason,
+        readConfidence: roomReadChance,
         holderVotedFor: voteLog.find(l => l.voter === name)?.voted || null,
       });
     }
@@ -638,6 +678,15 @@ export function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     if (_pState.emotional === 'paranoid' && _ps.temperament <= 5) {
       _misplayChance += 0.05 + (7 - _ps.intuition) * 0.015;
       if (!_misplayReason) _misplayReason = 'paranoid spiral — read danger in every sideways glance at tribal';
+    }
+
+    const _exposureRead = ep.idolExposureReads?.find(r => r.holder === _ph);
+    if (_exposureRead?.falseAlarm) {
+      _misplayChance += 0.12 + (10 - _ps.intuition) * 0.015;
+      if (!_misplayReason) _misplayReason = 'false exposure read — paranoia made ordinary whispers look like an idol flush';
+    } else if (_exposureRead?.notices && _exposureRead.perceivedRisk >= 0.55) {
+      _misplayChance += 0.04 + Math.max(0, 6 - _ps.intuition) * 0.01;
+      if (!_misplayReason) _misplayReason = 'knew the idol was exposed but misread where the votes were landing';
     }
 
     // 4. Overconfident read: strategic player THINKS they've cracked the plan, but the alliance lied

@@ -2,12 +2,14 @@
 import { gs, seasonConfig, players, repairGsSets } from './core.js';
 import { pStats, pronouns, getPlayerState, updateChalRecord, isAllianceBottom, threatScore } from './players.js';
 import { getBond, getPerceivedBond, addBond, checkPerceivedBondTriggers, updateBonds, updatePerceivedBonds, recoverBonds } from './bonds.js';
-import { wRandom, computeHeat, formAlliances, detectBetrayals, decayAllianceTrust } from './alliances.js';
-import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote } from './voting.js';
+import { wRandom, computeHeat, formAlliances, detectBetrayals, applyPitchAllianceFallout, decayAllianceTrust } from './alliances.js';
+import { pruneIdolIntel, recordIdolIntel } from './advantage-intel.js';
+import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote, summarizePitchReactions } from './voting.js';
 import { checkIdolPlays, checkIdolPreTribal, checkNonIdolAdvantageUse, findAdvantages, handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, simulateLastChance } from './challenges-core.js';
 import { applyTwist, generateTwistScenes, generateDockArrivals, simulateJourney, applyRewardSocialEffects } from './twists.js';
 import { applyDisadvantagePenalty } from './disadvantage-vote.js';
+import { updateStrategicReputations } from './reputation.js';
 import {
   generateCampEvents, checkAllianceRecruitment, executeEmissarySelection,
   generateEmissaryScoutEvents, checkVolunteerExileDuel, checkMoleSabotage,
@@ -792,6 +794,7 @@ export function checkTribalBlowup(ep) {
       });
       if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
       gs.knownIdolHoldersThisEp.add(holder);
+      gs.activePlayers.filter(p => p !== holder).forEach(knower => recordIdolIntel(knower, holder, { source:'public reveal', confidence:1, truth:'confirmed', ep:ep.num }));
       if (!gs.publicKnowledge) gs.publicKnowledge = {};
       gs.publicKnowledge[`${holder}_idol_ep${ep.num}`] = { type: 'idol', player: holder, ep: ep.num };
     }
@@ -1250,6 +1253,8 @@ export function simulateEpisode() {
   });
   // Episode set starts with persistent knowledge + gets new discoveries added during the ep
   gs.knownIdolHoldersThisEp = new Set(gs.knownIdolHoldersPersistent);
+  pruneIdolIntel();
+  gs._idolExposureResponses = {};
   // Known Second Life Amulet holders — persists like idol knowledge
   if (!gs.knownAmuletHoldersPersistent) gs.knownAmuletHoldersPersistent = new Set();
   gs.knownAmuletHoldersPersistent.forEach(name => {
@@ -3861,7 +3866,10 @@ export function simulateEpisode() {
   ep.splitVotePlans = alliances.filter(a => a.splitTarget).map(a => ({
     alliance: a.label, primary: a.target, secondary: a.splitTarget,
     primaryVoters: [...(a.splitPrimary || [])], secondaryVoters: [...(a.splitSecondary || [])],
-    reason: a.splitReason,
+    reason: a.splitReason, evaluation: a.splitEvaluation || null, idolKnowledge: a.idolKnowledge || null,
+  }));
+  ep.rejectedSplitPlans = alliances.filter(a => a.splitRejected).map(a => ({
+    alliance: a.label, primary: a.target, reason: a.splitRejected, evaluation: a.splitEvaluation || null, idolKnowledge: a.idolKnowledge || null,
   }));
   // Flush pre-tribal fractures detected inside formAlliances into ep.allianceQuits
   if (gs._pendingDepartures?.length) {
@@ -4072,8 +4080,12 @@ export function simulateEpisode() {
     // Snapshot bonds before vote — triggers need pre-vote bond values
     ep._preVoteBondSnapshot = { ...gs.bonds };
 
-    const { votes, log, defections, voteMiscommunications, votePitches: _vpResult } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
+    const { votes, log, defections, voteMiscommunications, votePitches: _vpResult, pitchIntel:_pitchIntelResult, pitchCounterplay:_pitchCounterplayResult, emotionalDefectionDiagnostics, voteCommitmentDiagnostics } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
+    if (emotionalDefectionDiagnostics?.length) ep.emotionalDefectionDiagnostics = emotionalDefectionDiagnostics;
+    if (voteCommitmentDiagnostics?.length) ep.voteCommitmentDiagnostics = voteCommitmentDiagnostics;
     if (_vpResult) ep.votePitches = _vpResult;
+    if (_pitchIntelResult) ep.pitchIntel = _pitchIntelResult;
+    if (_pitchCounterplayResult) ep.pitchCounterplay = _pitchCounterplayResult;
     if (voteMiscommunications?.length) ep.voteMiscommunications = (ep.voteMiscommunications || []).concat(voteMiscommunications);
     if (defections?.length) ep.defections = [...(ep.defections || []), ...defections];
 
@@ -4341,6 +4353,17 @@ export function simulateEpisode() {
 
     // SITD fires first — player sacrifices their vote before votes are read
     checkShotInDark(tribalPlayers, votes, log, ep);
+    if (ep.shotInDark?.player && ep.voteCommitmentDiagnostics?.length) {
+      const sidRead = ep.voteCommitmentDiagnostics.find(read => read.voter === ep.shotInDark.player);
+      if (sidRead) {
+        sidRead.voteSacrificed = true;
+        sidRead.sacrificedTarget = ep.shotInDark.ownVoteCancelled || sidRead.actualBallot || null;
+        sidRead.actualBallot = null;
+        sidRead.predictionMatched = false;
+        sidRead.lateTrigger = null;
+        sidRead.transitionPrevented = null;
+      }
+    }
     checkIdolPlays(tribalPlayers, votes, ep, log);
     checkNonIdolAdvantageUse(tribalPlayers, votes, ep, log);
     // Rival tip-off betrayal: if a cross-alliance player saved the idol holder and it was played
@@ -4566,6 +4589,7 @@ export function simulateEpisode() {
       // Standard revote — pass tribalImmune so immune players can't be targeted
       const rv = simulateRevote(tribalPlayers, res.tiedPlayers, gs.lostVotes, log, tribalImmune);
       ep.revoteVotes = rv.votes; ep.revoteLog = rv.log;
+      if (rv.coordination) ep.revoteCoordination = rv.coordination;
       const res2 = resolveVotes(rv.votes);
       if (res2.isTie) {
         if (ep.tiebreakerChallenge || cfg.tiebreakerMode === 'challenge') {
@@ -4599,6 +4623,7 @@ export function simulateEpisode() {
           // Standard: revote first, then rock draw if still tied
           const rv = simulateRevote(tribalPlayers, _lateTied, gs.lostVotes, log, tribalImmune);
           ep.revoteVotes = rv.votes; ep.revoteLog = rv.log;
+          if (rv.coordination) ep.revoteCoordination = rv.coordination;
           const res2 = resolveVotes(rv.votes);
           if (res2.isTie) {
             ep.isRockDraw = true;
@@ -4621,6 +4646,7 @@ export function simulateEpisode() {
           ep.tiedPlayers = _fcTied;
           const rv = simulateRevote(tribalPlayers, _fcTied, gs.lostVotes, log, tribalImmune);
           ep.revoteVotes = rv.votes; ep.revoteLog = rv.log;
+          if (rv.coordination) ep.revoteCoordination = rv.coordination;
           const res2 = resolveVotes(rv.votes);
           if (res2.isTie) {
             ep.isRockDraw = true;
@@ -6709,11 +6735,22 @@ function simulateJuryRoundtable(ep) {
     });
   }
   detectBetrayals(ep);
+  applyPitchAllianceFallout(ep);
   applyPostTribalConsequences(ep);
   checkAllianceRecruitment(ep); // scenario C: blindside swing voters
   checkSideDealBreaks(ep); checkConflictingDeals(ep); checkFalseInfoBlowup(ep);
   updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
-
+  updateStrategicReputations(ep);
+  if (ep.reputationChanges?.length) {
+    const _repKey = gs.isMerged ? (gs.mergeName || 'merge') : (ep.loser?.name || ep.tribalTribe || Object.keys(ep.campEvents || {})[0]);
+    const _repBlock = ep.campEvents?.[_repKey]?.post;
+    const _earned = ep.reputationChanges.filter(c => c.earned.length).slice(0, 3);
+    if (Array.isArray(_repBlock) && _earned.length) {
+      _repBlock.push({ type:'strategicReputation', players:_earned.map(c => c.player),
+        text:_earned.map(c => `${c.player}'s recent game is changing how the tribe reads them: ${c.earned.join(', ')}.`).join(' '),
+        badgeText:'REPUTATION SHIFT', badgeClass:'purple' });
+    }
+  }
   // ── PHASE CHECK ──
   if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
 
@@ -6762,6 +6799,7 @@ function simulateJuryRoundtable(ep) {
     votingLog:        ep.votingLog        || [],
     revoteLog:        ep.revoteLog        || [],
     revoteVotes:      ep.revoteVotes      || null,
+    revoteCoordination: ep.revoteCoordination || null,
     isTie:            ep.isTie            || false,
     tiedPlayers:      ep.tiedPlayers      ? [...ep.tiedPlayers] : null,
     isRockDraw:       ep.isRockDraw       || false,
@@ -6932,10 +6970,16 @@ function simulateJuryRoundtable(ep) {
     chalSitOuts:      ep.chalSitOuts      || null,
     allianceQuits:    ep.allianceQuits    || [],
     allianceRecruits: ep.allianceRecruits || [],
+    allianceRepairs: ep.allianceRepairs || null,
     socialBombs:      ep.socialBombs      || [],
     _politicsLog:     ep._politicsLog     || [],
     _flipDetectionLog: ep._flipDetectionLog || [],
     votePitches:      ep.votePitches      || null,
+    pitchIntel:       ep.pitchIntel       || null,
+    pitchAllianceFallout: ep.pitchAllianceFallout || null,
+    pitchCounterplay: ep.pitchCounterplay || null,
+    strategicReputations: ep.strategicReputations || null,
+    reputationChanges: ep.reputationChanges || null,
     chalThreatEvents: ep.chalThreatEvents || [],
     goatEvents:       ep.goatEvents       || [],
     openVote:          ep.openVote         || false,
@@ -6985,27 +7029,46 @@ function simulateJuryRoundtable(ep) {
     const _vpPick = arr => arr[Math.floor(Math.random() * arr.length)];
     ep.votePitches.forEach(p => {
       const pr = pronouns(p.pitcher);
+      const _reactionSummary = summarizePitchReactions(p, p.responses || []);
+      const _targetWarning = (ep.pitchIntel || []).find(info => info.pitcher === p.pitcher && info.target === p.pitchTarget
+        && info.knower === p.pitchTarget && info.sourceType === 'direct-warning');
+      const _warningStory = _targetWarning
+        ? ` Word reached ${p.pitchTarget} through ${_targetWarning.source}; ${p.pitchTarget} ${_targetWarning.believed ? 'did not appear to brush it off' : 'seemed unsure how seriously to take it'}.`
+        : '';
+      const _counter = (ep.pitchCounterplay || []).find(c => c.pitcher === p.pitcher && c.originalTarget === p.pitchTarget);
+      const _counterStory = !_counter ? '' : _counter.type === 'watched-carefully'
+        ? ` ${_counter.actor} became more guarded, but made no visible move.`
+        : _counter.type === 'confrontation'
+          ? ` ${_counter.actor} stopped avoiding the tension and challenged the conversation directly.`
+          : _counter.type === 'warned-allies'
+            ? ` ${_counter.actor} quietly checked in with trusted people; the responses looked mixed.`
+            : _counter.type === 'deceptive-counter'
+              ? ` ${_counter.actor} appeared calm in public while several private conversations took on a more deliberate tone.`
+              : ` ${_counter.actor} began checking whether the people around them were willing to push back. Some appeared receptive.`;
       if (p.success) {
         ep.campEvents[_vpCampKey].post.push({
-          type: 'votePitch', players: [p.pitcher, ...p.flipped],
-          text: _vpPick([
-            `${p.pitcher} worked the tribe before the vote. By the time they sat down, ${p.flipped.join(' and ')} had changed ${p.flipped.length > 1 ? 'their minds' : 'their mind'}. The target shifted to ${p.pitchTarget}.`,
-            `${p.pitcher} pulled ${p.flipped.join(' and ')} aside minutes before tribal. The plan changed. ${p.pitchTarget}'s name replaced ${p.originalTarget || 'the original target'}.`,
-            `Nobody saw ${p.pitcher} coming. ${pr.Sub} made ${pr.pos} case quietly, and ${p.flipped.join(' and ')} flipped. The vote landed on ${p.pitchTarget}.`,
-          ]),
+          type: 'votePitch', players: [p.pitcher],
+          text: `${p.pitcher} proposed ${p.pitchTarget} and claimed as many as ${p.claimedSupport} possible votes. ${_reactionSummary}${_warningStory}${_counterStory}`,
           badgeText: 'VOTE PITCH', badgeClass: 'gold'
         });
       } else {
+        const _conflictDissolved = p.resolution === 'dissolved-after-conflict-check';
         ep.campEvents[_vpCampKey].post.push({
           type: 'votePitchFailed', players: [p.pitcher],
-          text: _vpPick([
-            `${p.pitcher} tried to change the plan at the last minute. Nobody moved. The original target held.`,
-            `${p.pitcher} made ${pr.pos} pitch before tribal. It didn't land. The tribe had already decided.`,
-            `${p.pitcher} scrambled. ${pr.Sub} talked to everyone ${pr.sub} could. Nobody flipped.`,
-          ]),
-          badgeText: 'FAILED PITCH', badgeClass: 'red'
+          text: `${p.pitcher} pushed ${p.pitchTarget}, but the conversations appeared to meet resistance${_conflictDissolved ? ' as competing plans crossed through camp' : ''}. ${_reactionSummary}${_warningStory}${_counterStory} Whether anyone quietly kept the idea alive remains unclear going into Tribal.`,
+          badgeText: 'PITCH STALLED', badgeClass: 'red'
         });
       }
+    });
+    (ep.pitchAllianceFallout || []).forEach(f => {
+      const held = f.outcome === 'backed-down';
+      ep.campEvents[_vpCampKey].post.push({
+        type: 'pitchAllianceFallout', players: [f.player, ...(f.witnesses || [])],
+        text: held
+          ? `${f.alliance} heard that ${f.player} had explored ${f.target}, away from the ${f.planTarget} plan. ${f.player} ultimately stayed off that ballot, so the alliance treated it as a warning rather than a betrayal.`
+          : `${f.alliance} learned that ${f.player}'s ${f.target} pitch was more than loose talk. Trust took a hit${f.excluded ? `, and ${f.player} was left out of the next strategy conversation` : ''}.`,
+        badgeText: held ? 'TRUST WARNING' : 'PITCH EXPOSED', badgeClass: held ? 'gold' : 'red'
+      });
     });
     // Update saved campEvents in episode history
     gs.episodeHistory[gs.episodeHistory.length-1].campEvents = ep.campEvents;

@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "calibrate:voting": "vitest run tests/emotional-defection-calibration.test.js --reporter=verbose",
+    "audit:realism": "vitest run tests/voting-realism-audit.test.js --reporter=verbose"
   },
   "repository": {
     "type": "git",

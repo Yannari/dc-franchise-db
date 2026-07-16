@@ -1,0 +1,205 @@
+STRATEGY / VOTING / ALLIANCE SYSTEM — REMAINING ROADMAP
+========================================================
+
+STATUS
+------
+The major implementation roadmap is complete.
+
+Implemented:
+- Temperament-aware but numbers-conscious rogue voting
+- Observable vote commitments and imperfect plan beliefs
+- Alliance ballot reliability and eligible-voter math
+- Majority, plurality, tie, and no-vote awareness
+- Rational idol split votes
+- Late-vote consistency gate and fringe-vote consolidation
+- Vote-pitch negotiation with stat, bond, and viability checks
+- Hidden/private pitch responses and viewer-safe camp clues
+- Pitch leaks and information flow
+- Target counterplay and counter-coalitions
+- Alliance consequences for exposed pitches
+- Post-betrayal apology, explanation, denial, forgiveness, truce, and fracture
+- Persistent strategic memory
+- Behavior-earned strategic reputations
+- Reputation effects on pitches, leaks, recruitment, idol sharing, and jury votes
+- Voting Plans and text-backlog explanations
+- Consolidated merge/goat and pitch camp events
+- Large-sample realism audit
+
+
+REMAINING WORK
+--------------
+
+1. FULL-SEASON INTEGRATION AUDIT
+
+Run many complete seasons instead of isolated tribals and measure:
+- Average alliance lifespan
+- Alliances formed, dissolved, and re-formed per season
+- Average betrayals, exposed pitches, apologies, truces, and expulsions
+- Repeat targeting and recurring rivalries
+- Idol play accuracy, wasted idols, ally plays, and missed danger
+- Reputation labels earned per contestant and per season
+- Whether reputations change naturally instead of becoming permanent too early
+- Jury outcomes and whether reputation has a reasonable influence
+- Frequency of unanimous, majority, plurality, tied, and rock-draw votes
+- Whether different archetypes and stat profiles produce visibly different games
+
+Suggested sample size:
+- 100–500 complete seasons for automated metrics
+- 5–10 manually reviewed seasons for narrative continuity
+
+
+2. CROSS-SCREEN STORY CONTINUITY REVIEW
+
+For selected episodes, compare this exact sequence:
+
+Camp events
+→ Voting Plans
+→ Tribal Council ballots
+→ Why This Vote Happened
+→ Text backlog / debug
+→ Next episode’s alliance fallout
+
+Check that:
+- Camp hints do not reveal exact ballots prematurely
+- Voting Plans accurately describe known numbers and uncertainty
+- Late changes have an understandable trigger
+- Ballot reasons match the actual plan, bond, memory, or counterplay
+- Idol decisions match the holder’s perceived information
+- Alliance fallout references the correct plan and betrayal
+- Repair scenes occur only when the betrayal was detected
+- Reputation changes are supported by repeated visible behavior
+- The eliminated-player explanation matches the votes that counted
+
+
+3. REPETITION AND WRITING CLEANUP
+
+Search for overused wording and events:
+- “This vote makes sense”
+- “The plan still needs people to hold”
+- “No credible late coalition”
+- “The heat has been building”
+- “This isn’t strategy — it’s honesty”
+- Repeated pitch, goat, betrayal, and reputation cards
+
+Add more contextual variants, but do not sacrifice accuracy.
+Prefer one consolidated event over several cards describing the same development.
+
+
+4. EDGE-CASE TESTING
+
+Explicitly test:
+- Multiple idols played at the same Tribal
+- Idol plus split vote plus Extra Vote
+- Shot in the Dark during a negotiated coalition
+- Two competing pitches sharing the same voters
+- A counter-pitch against an immune organizer
+- Pitch target or organizer losing their vote
+- No-vote players participating in strategy without adding ballots
+- Alliance member expelled before attempting repair
+- Alliance dissolving while a repair is pending
+- Reputation labels after swaps, returns, and Rescue Island re-entry
+- Final 5 / Final 4 vote thresholds
+- All votes cancelled
+- Multi-tribal and double-elimination episodes
+- Save/load in the middle of an episode with pitch or repair information
+
+
+5. SAVE-STATE AND OLD-SAVE COMPATIBILITY
+
+Verify that older saves without these fields still load:
+- strategicMemories
+- strategicReputations
+- allianceRepairHistory
+- strategyExclusions
+- pitchIncidents
+- votePitches
+- pitchIntel
+- pitchCounterplay
+- pitchAllianceFallout
+- allianceRepairs
+
+All missing fields should receive safe defaults.
+Test save → reload → continue for at least three episodes.
+
+
+6. USER-INTERFACE POLISH
+
+Review Voting Plans on desktop and mobile:
+- Reputation section should remain compact
+- Plan Stability cards should not become too dense
+- Explain technical phrases in normal language
+- Keep debug-only certainty out of the normal viewer screen
+- Make “estimated support” visually distinct from “model-wide forecast”
+- Keep eligible voters, ballots, and alliance membership clearly separated
+- Consider collapsible advanced detail for reputation percentages
+
+
+7. FINAL BALANCING
+
+Only tune after the full-season audit.
+
+Watch for:
+- Persuasive reputation snowballing into automatic pitch success
+- Unreliable or Leaky labels making a player permanently unusable
+- Alliances forgiving too easily or never forgiving
+- Strategy exclusion lasting too long
+- Counterplay reversing too many votes
+- Idol holders reading danger too accurately
+- Excessive plurality chaos
+- Too many unanimous votes
+- Reputations appearing after too little evidence
+
+Re-run the realism audit after every meaningful probability change.
+
+
+CURRENT VERIFIED BASELINE
+-------------------------
+Test suite:
+- 34 test files
+- 249 tests passing
+
+400-tribal realism audit:
+- Forecast accuracy: 71.9%
+- Alliance cohesion: 55.0%
+- Votes with 4+ targets: 29.8%
+- Majority outcomes: 37.3%
+- Plurality outcomes: 62.7%
+- Ties: 12.8%
+- Singleton targets per tribal: 0.58
+- Pitches per tribal: 1.09
+- Pitch success: 48.6%
+- Leaks per pitch: 0.96
+- Pitch counters per tribal: 0.25
+
+Commands:
+- Full tests:
+  npx vitest run --exclude tests/say-cheese.smoke.test.js --exclude tests/tusks.smoke.test.js
+
+- Realism audit:
+  npm run audit:realism
+
+- Diff validation:
+  git diff --check
+
+
+RECOMMENDED RESUME ORDER
+------------------------
+1. Build the full-season audit.
+2. Run 100–500 seasons and save the metrics.
+3. Manually inspect 5–10 seasons across all viewer screens.
+4. Fix contradictions and save-state problems.
+5. Reduce repetitive narrative wording.
+6. Tune probabilities only where the collected evidence shows a problem.
+7. Run the complete regression suite and realism audit again.
+
+
+DEFINITION OF DONE
+------------------
+The system is finished when:
+- Full seasons remain stable without strategic or narrative contradictions
+- Alliances, pitches, betrayals, repairs, idols, and reputations create coherent arcs
+- Contestants with different stats produce noticeably different decisions
+- Viewer screens explain events without spoiling hidden decisions
+- Save/load works with both new and old saves
+- Automated metrics remain within healthy ranges
+- The full test suite passes

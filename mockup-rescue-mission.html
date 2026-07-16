@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carnival Rescue — Finale VP Mockup v4 (Overdrive)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Fredoka:wght@500;600;700&display=swap');
+
+:root{
+  --ink:#1c1029; --red:#e8433c; --blue:#2c8fd6; --green:#54bd4f; --yellow:#ffcf2e;
+  --purple:#8a5cd6; --pink:#ff6fae; --brown:#c98a3a; --teal:#2fb9c9;
+  --disp:'Luckiest Guy',system-ui,cursive; --ui:'Fredoka',system-ui,sans-serif; --shadow:4px 4px 0 var(--ink);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#0e0a16;color:var(--ink);font-family:var(--ui);font-weight:500;overflow-x:hidden}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* top rail */
+.nav{position:sticky;top:0;z-index:60;height:46px;display:flex;align-items:center;gap:12px;padding:0 16px;
+  background:var(--red);border-bottom:4px solid var(--ink);color:#fff}
+.nav .b{font-family:var(--disp);font-size:16px;letter-spacing:1px;-webkit-text-stroke:.5px var(--ink)}
+.nav .s{margin-left:auto;font-size:12px;font-weight:600}
+
+/* ═══ each act = a full-bleed animated STAGE ═══ */
+.stage{position:relative;min-height:92vh;overflow:hidden;border-bottom:5px solid var(--ink);padding-bottom:34px}
+.stage .layer{position:absolute;inset:0;pointer-events:none}
+.content{position:relative;z-index:20;max-width:900px;margin:0 auto;padding:20px 16px 0}
+.tag{text-align:center;font-size:10px;font-weight:700;letter-spacing:2px;color:#fff8;text-transform:uppercase;margin-bottom:6px;text-shadow:0 1px 3px #000}
+
+/* panel that holds text over the scene */
+.panel{background:rgba(255,255,255,.94);border:4px solid var(--ink);border-radius:18px;box-shadow:var(--shadow);
+  padding:14px 16px;margin-top:12px;backdrop-filter:blur(2px)}
+
+/* act banner */
+.act{text-align:center;margin:6px auto 2px}
+.act .chy{display:inline-block;font-family:var(--disp);font-size:12px;color:#fff;background:var(--ink);padding:3px 16px;border-radius:20px 20px 0 0;letter-spacing:1px}
+.act .ttl{font-family:var(--disp);font-size:clamp(26px,5.6vw,46px);color:#fff;border:4px solid var(--ink);border-radius:16px;
+  padding:8px 20px;box-shadow:var(--shadow);-webkit-text-stroke:1.6px var(--ink);text-shadow:3px 3px 0 var(--ink);display:inline-block;animation:pop .5s both}
+.act .ds{margin:10px auto 0;font-weight:600;font-size:13.5px;max-width:520px;color:#fff;text-shadow:0 1px 4px #000}
+.act.maze .ttl{background:var(--green)} .act.slide .ttl{background:var(--blue)} .act.lake .ttl{background:#2f7fd6} .act.drive .ttl{background:var(--red)}
+@keyframes pop{0%{transform:scale(.7) rotate(-3deg);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+
+/* act rail */
+.rail{display:flex;gap:5px;justify-content:center;margin:16px auto 4px;max-width:520px}
+.rail .a{flex:1;height:12px;border:2px solid var(--ink);border-radius:20px;background:#fff}
+.rail .a.done{background:var(--green)} .rail .a.now{background:var(--yellow);box-shadow:2px 2px 0 var(--ink);animation:railpulse 1.1s infinite}
+@keyframes railpulse{50%{filter:brightness(1.25)}}
+
+/* ═══ LIVE RACE HUD ═══ */
+.hud{position:relative;margin:14px auto;max-width:660px;background:rgba(28,16,41,.9);border:4px solid var(--ink);border-radius:18px;box-shadow:var(--shadow);padding:12px 14px}
+.hud .track{position:relative;height:34px;margin:8px 0;background:repeating-linear-gradient(90deg,#3a2a50 0 18px,#31234a 18px 36px);border:2px solid #000;border-radius:18px}
+.hud .flag{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:18px}
+.hud .runner{position:absolute;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;border:3px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:11px;background:#fff;transition:left 1.4s cubic-bezier(.5,0,.3,1)}
+.hud .runner.a{box-shadow:0 0 0 2px var(--blue),3px 3px 0 #0006} .hud .runner.b{box-shadow:0 0 0 2px var(--red),3px 3px 0 #0006}
+.hud .lbl{font-family:var(--disp);font-size:11px;color:#fff;letter-spacing:1px}
+
+/* ═══ LEG SCOREBOARD ═══ */
+.leg{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin:4px 0 6px}
+.legp{width:210px;text-align:center}
+.legrow{display:flex;align-items:center;gap:8px;justify-content:center}
+.por{border-radius:50%;border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--disp);background:#fff;flex-shrink:0}
+.por.xl{width:58px;height:58px;font-size:17px}.por.lg{width:46px;height:46px;font-size:14px}.por.md{width:34px;height:34px;font-size:11px}.por.sm{width:26px;height:26px;font-size:9px}
+.legrow .nm{font-family:var(--disp);font-size:15px}
+.legbar{height:16px;border:2px solid var(--ink);border-radius:10px;background:#eee;margin-top:7px;overflow:hidden}
+.legbar i{display:block;height:100%;width:0;animation:fillbar 1.3s .3s forwards}
+@keyframes fillbar{to{width:var(--w)}}
+.legp.a .legbar i{background:var(--blue)}.legp.b .legbar i{background:var(--red)}.legp.win .legbar i{background:linear-gradient(90deg,var(--yellow),var(--green))}
+.legres{font-family:var(--disp);font-size:11px;margin-top:5px;color:#fff;text-shadow:0 1px 3px #000}
+.legwin{display:inline-block;font-family:var(--disp);font-size:10px;background:var(--yellow);border:2px solid var(--ink);border-radius:12px;padding:1px 9px;margin-top:5px;animation:wiggle 1s infinite}
+@keyframes wiggle{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+
+/* ═══ event cards ═══ */
+.card{background:#fff;border:3px solid var(--ink);border-radius:14px;padding:11px 13px;margin:9px auto;max-width:640px;
+  box-shadow:var(--shadow);display:flex;gap:11px;align-items:flex-start;animation:cardin .45s both}
+@keyframes cardin{from{opacity:0;transform:translateX(-14px) rotate(-1deg)}to{opacity:1;transform:none}}
+.card .pcol{display:flex;gap:5px;flex-shrink:0}.card .bd{flex:1;min-width:0}
+.badge{display:inline-block;font-family:var(--disp);font-size:10px;color:#fff;border:2px solid var(--ink);border-radius:12px;padding:1px 10px;letter-spacing:.5px}
+.stat{float:right;font-size:9px;font-weight:700;color:#0007;text-transform:uppercase;background:#f0e6d0;border:1.5px solid var(--ink);border-radius:8px;padding:1px 7px;margin-top:2px}
+.tx{font-size:13.5px;font-weight:500;margin-top:7px;line-height:1.45}.tx b{font-weight:700}
+.card.find{border-left:10px solid var(--green)}.badge.find{background:var(--green)}
+.card.nerve{border-left:10px solid var(--blue)}.badge.nerve{background:var(--blue)}
+.card.rescue{border-left:10px solid #2f7fd6}.badge.rescue{background:#2f7fd6}
+.card.sabo{border-left:10px solid var(--red)}.badge.sabo{background:var(--red)}
+.card.bench{border-left:10px solid var(--yellow)}.badge.bench{background:var(--yellow);color:var(--ink)}
+.card.win{border-left:10px solid var(--yellow);background:#fffbe6;animation:cardin .45s both,winglow 1.4s .4s infinite}
+.badge.win{background:var(--yellow);color:var(--ink)}
+@keyframes winglow{50%{box-shadow:0 0 22px var(--yellow),4px 4px 0 var(--ink)}}
+.host{max-width:620px;margin:10px auto;background:var(--yellow);border:3px solid var(--ink);border-radius:16px;padding:9px 14px;box-shadow:var(--shadow);font-weight:700;font-size:13px;position:relative}
+.host::before{content:"";position:absolute;left:24px;bottom:-12px;border:8px solid transparent;border-top-color:var(--ink)}
+.host b{font-family:var(--disp);font-weight:400}
+
+/* ══════════ SCENE ELEMENTS ══════════ */
+/* sky */
+.sky-day{background:linear-gradient(180deg,#5ec8ee,#9fdcf2 45%,#ffe08a 78%,#ffb25a)}
+.sky-dawn{background:linear-gradient(180deg,#233a6a,#6a5a9a 35%,#ffb27a 70%,#ffd98a)}
+.sky-dusk{background:linear-gradient(180deg,#2a2350,#7a4a8a 40%,#ff7a5a 75%,#ffb04a)}
+.sky-water{background:linear-gradient(180deg,#4a7fd6,#2f5fb0 60%,#1e3f8a)}
+.cloud{position:absolute;background:#fff;border-radius:40px;opacity:.85;filter:drop-shadow(0 3px 0 #0001);animation:drift 26s linear infinite}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+@keyframes drift{from{transform:translateX(-160px)}to{transform:translateX(110vw)}}
+.sun{position:absolute;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,#fff3b0,#ffcf2e);border:4px solid var(--ink);animation:sunpulse 4s ease-in-out infinite}
+@keyframes sunpulse{50%{box-shadow:0 0 40px #ffcf2e}}
+.moon{position:absolute;width:60px;height:60px;border-radius:50%;background:#fdf6d0;border:4px solid var(--ink);box-shadow:0 0 30px #fdf6d088}
+
+/* confetti */
+.confetti i{position:absolute;top:-14px;width:9px;height:14px;animation:fall linear infinite}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg)}}
+
+/* CORN */
+.corn{position:absolute;bottom:0;width:26px;height:150px;transform-origin:bottom center;animation:sway 3.4s ease-in-out infinite}
+.corn svg{display:block}
+@keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+.field-back{position:absolute;bottom:120px;left:0;width:100%;height:88px;opacity:.92;filter:blur(.6px)}
+.field-back.back2{bottom:150px;height:96px;opacity:.6;filter:blur(1.4px)}
+.cornwall{position:absolute;bottom:0;height:250px;width:150px;transform-origin:bottom center;animation:sway 4.6s ease-in-out infinite;filter:drop-shadow(0 4px 6px #0003)}
+.cornwall.left{left:-14px}
+.cornwall.right{right:-14px;transform:scaleX(-1);animation-delay:.6s}
+.mist{position:absolute;left:-20%;width:140%;height:70px;background:radial-gradient(closest-side,#fff8,transparent);animation:mistmove 18s linear infinite;opacity:.5}
+@keyframes mistmove{from{transform:translateX(-8%)}to{transform:translateX(8%)}}
+
+/* WATERSLIDE */
+.tower{position:absolute;bottom:0;left:50%;transform:translateX(-50%)}
+.flowline{stroke-dasharray:6 10;animation:flow 1s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-16}}
+.splash{position:absolute;bottom:26px;left:50%;width:10px;height:10px;border-radius:50%;background:#bfeaff;animation:splashup 1.2s ease-out infinite}
+@keyframes splashup{0%{transform:translate(-50%,0) scale(.4);opacity:1}100%{transform:translate(-50%,-70px) scale(1);opacity:0}}
+
+/* LAKE */
+.wave{position:absolute;left:0;width:200%;height:40px;background:repeating-linear-gradient(90deg,#bfe3ff 0 30px,#a3d4ff 30px 60px);border-top:3px solid #fff;opacity:.5;animation:wavemove 4s linear infinite}
+@keyframes wavemove{to{transform:translateX(-60px)}}
+.buoy{position:absolute;width:22px;height:22px;border-radius:50%;border:3px solid var(--ink);background:conic-gradient(var(--red) 0 25%,#fff 0 50%,var(--red) 0 75%,#fff 0);animation:bob 2.6s ease-in-out infinite}
+.dummy{position:absolute;font-size:26px;animation:bob 2.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-9px) rotate(4deg)}}
+
+/* DRIVE — scrolling midway + ambulances */
+.road{position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(180deg,#5a4a3a,#3a2e26)}
+.roadmark{position:absolute;bottom:52px;left:0;width:200%;height:8px;background:repeating-linear-gradient(90deg,var(--yellow) 0 40px,transparent 40px 80px);animation:scroll .5s linear infinite}
+@keyframes scroll{to{transform:translateX(-80px)}}
+.silo{position:absolute;bottom:120px;width:200%;height:90px;animation:scroll 3s linear infinite;opacity:.8}
+.amb{position:absolute;bottom:70px;animation:bounce .4s ease-in-out infinite}
+@keyframes bounce{50%{transform:translateY(-5px)}}
+.siren{animation:flash .5s steps(1) infinite}
+@keyframes flash{50%{fill:var(--blue)}}
+.speed{position:absolute;height:3px;background:#fff;border-radius:2px;opacity:.7;animation:zoom .4s linear infinite}
+@keyframes zoom{from{transform:translateX(40px);opacity:0}30%{opacity:.7}to{transform:translateX(-120px);opacity:0}}
+
+/* HAUNTED HOUSE */
+.sky-night{background:linear-gradient(180deg,#0d0824,#221646 42%,#3a2a5a 78%,#4a3a68)}
+.bat{position:absolute;animation:batfly linear infinite}
+.bat svg{animation:flap .3s ease-in-out infinite;transform-origin:center}
+@keyframes flap{50%{transform:scaleY(.55)}}
+@keyframes batfly{from{transform:translate(-12vw,0)}50%{transform:translate(44vw,-30px)}to{transform:translate(104vw,10px)}}
+.flicker{animation:flick 2.6s steps(1) infinite}
+@keyframes flick{0%,100%{opacity:.92}44%{opacity:.28}47%{opacity:.9}72%{opacity:.4}75%{opacity:.9}}
+.deadtree{position:absolute;bottom:0}
+
+/* PIRATE SHIP */
+.sky-sea{background:linear-gradient(180deg,#3a6aa8,#6a9fd0 38%,#8fc0e0 60%,#2f6a9a)}
+.ship{position:absolute;bottom:70px;left:50%;transform-origin:bottom center;animation:rock 3.8s ease-in-out infinite}
+@keyframes rock{0%,100%{transform:translateX(-50%) rotate(-2.6deg)}50%{transform:translateX(-50%) rotate(2.6deg)}}
+.climber{animation:climb 3.2s ease-in-out infinite;transform-origin:center}
+@keyframes climb{0%{transform:translate(0,34px)}100%{transform:translate(-26px,-40px)}}
+.flag-wave{transform-origin:left center;transform-box:fill-box;animation:fwave 1.3s ease-in-out infinite}
+@keyframes fwave{50%{transform:skewX(-10deg) scaleX(.93)}}
+.gull{position:absolute;font-size:15px;color:#fff;animation:batfly linear infinite;opacity:.8}
+
+/* HERO title panorama */
+.ferris{position:absolute;animation:spin 14s linear infinite;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.htitle{text-align:center;font-family:var(--disp);font-size:clamp(42px,10vw,88px);line-height:.9;margin:6px 0;color:var(--yellow);
+  -webkit-text-stroke:3px var(--ink);text-shadow:6px 6px 0 var(--ink);animation:pop .6s both}
+.kick{text-align:center;font-family:var(--disp);font-size:14px;color:#fff;-webkit-text-stroke:1px var(--ink);text-shadow:2px 2px 0 var(--ink)}
+.prize{display:block;width:fit-content;margin:12px auto 0;font-family:var(--disp);font-size:24px;color:#fff;background:var(--green);
+  border:4px solid var(--ink);border-radius:30px;padding:6px 26px;box-shadow:var(--shadow);animation:prizepop 2s ease-in-out infinite}
+@keyframes prizepop{50%{transform:scale(1.05) rotate(-1deg)}}
+
+/* scoreboard teams */
+.board{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;margin:14px 0}
+@media(max-width:600px){.board{grid-template-columns:1fr}}
+.team{border:4px solid var(--ink);border-radius:16px;padding:12px;box-shadow:var(--shadow)}
+.team.a{background:#dcefff}.team.b{background:#ffe6d0}
+.team h4{margin:0 0 8px;font-family:var(--disp);font-size:16px}.team.a h4{color:var(--blue)}.team.b h4{color:var(--red)}
+.fin{display:flex;align-items:center;gap:10px}.fin .nm{font-family:var(--disp);font-size:19px}.fin .arc{font-size:11px;font-weight:600;color:#0009}
+.helper{margin:10px 0 8px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px;background:var(--yellow);border:2px solid var(--ink);border-radius:20px;padding:3px 10px}
+.bl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#0008;margin:8px 0 5px}
+.bench{display:flex;flex-wrap:wrap;gap:4px}
+.vsbadge{align-self:center;font-family:var(--disp);font-size:30px;color:#fff;background:var(--purple);border:4px solid var(--ink);border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transform:rotate(-6deg);animation:vspulse 1.6s ease-in-out infinite}
+@keyframes vspulse{50%{transform:rotate(-6deg) scale(1.08)}}
+
+/* champion */
+.champ{position:relative;text-align:center;z-index:20;padding-top:22px}
+.champ .por{margin:8px auto 0;width:104px;height:104px;font-size:28px;color:var(--green);animation:champbob 2s ease-in-out infinite}
+@keyframes champbob{50%{transform:translateY(-10px)}}
+.champ .big{font-family:var(--disp);font-size:clamp(38px,8vw,66px);color:var(--yellow);-webkit-text-stroke:3px var(--ink);text-shadow:6px 6px 0 var(--ink);margin:8px 0}
+.spotlight{position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:60%;height:120%;background:radial-gradient(closest-side,#fff6,transparent);animation:sweep 5s ease-in-out infinite}
+@keyframes sweep{0%,100%{transform:translateX(-70%) rotate(-6deg)}50%{transform:translateX(-30%) rotate(6deg)}}
+.podium{position:relative;display:flex;justify-content:center;gap:14px;margin-top:18px;flex-wrap:wrap}
+.pl{background:#fff;border:3px solid var(--ink);border-radius:14px;box-shadow:var(--shadow);padding:12px;min-width:130px}
+.pl .rk{font-family:var(--disp);font-size:13px;color:var(--red)}.pl.first .rk{color:var(--green)}
+.pl .nm{font-family:var(--disp);font-size:16px;margin-top:6px}.pl .st{font-size:11px;font-weight:600;color:#0009;margin-top:2px}
+
+.note{max-width:720px;margin:22px auto 60px;font-size:12.5px;color:#cbb;line-height:1.7;background:#1c1029;border:3px solid var(--yellow);border-radius:14px;padding:16px}
+.note b{color:var(--yellow)}
+</style>
+</head>
+<body>
+
+<div class="nav"><div class="b">CARNIVAL RESCUE</div><div class="s">FINALE · VP MOCKUP v4 — OVERDRIVE</div></div>
+
+<!-- ══════════ TITLE — carnival panorama ══════════ -->
+<div class="stage sky-dusk">
+  <div class="layer">
+    <div class="cloud" style="top:12%;left:0;width:90px;height:26px"></div>
+    <div class="cloud" style="top:22%;left:0;width:60px;height:20px;animation-duration:34s"></div>
+    <div class="moon" style="right:12%;top:8%"></div>
+    <!-- ferris wheel -->
+    <svg class="ferris" style="left:6%;bottom:14%;width:150px;height:150px" viewBox="0 0 150 150">
+      <circle cx="75" cy="75" r="66" fill="none" stroke="#20142e" stroke-width="4"/>
+      <g stroke="#20142e" stroke-width="3"><path d="M75 9V141M9 75H141M28 28l94 94M122 28L28 122"/></g>
+      <g><circle cx="75" cy="9" r="9" fill="#e8433c" stroke="#20142e" stroke-width="2"/><circle cx="141" cy="75" r="9" fill="#ffcf2e" stroke="#20142e" stroke-width="2"/><circle cx="75" cy="141" r="9" fill="#2c8fd6" stroke="#20142e" stroke-width="2"/><circle cx="9" cy="75" r="9" fill="#54bd4f" stroke="#20142e" stroke-width="2"/><circle cx="122" cy="28" r="9" fill="#ff6fae" stroke="#20142e" stroke-width="2"/><circle cx="28" cy="122" r="9" fill="#8a5cd6" stroke="#20142e" stroke-width="2"/><circle cx="28" cy="28" r="9" fill="#2fb9c9" stroke="#20142e" stroke-width="2"/><circle cx="122" cy="122" r="9" fill="#e8433c" stroke="#20142e" stroke-width="2"/></g>
+    </svg>
+    <!-- big top -->
+    <svg style="position:absolute;right:4%;bottom:0;width:220px;height:150px" viewBox="0 0 220 150">
+      <path d="M10 60 Q110 -10 210 60 L210 150 L10 150Z" fill="#e8433c" stroke="#20142e" stroke-width="4"/>
+      <path d="M10 60 Q110 -10 210 60" fill="none"/>
+      <g fill="#fff" opacity=".85"><path d="M10 60 Q60 20 60 60 L40 150 L10 150Z"/><path d="M110 32 Q110 20 110 20 L95 150 L125 150Z"/><path d="M210 60 Q160 20 160 60 L180 150 L210 150Z"/></g>
+      <path d="M110 18l6-14 6 14z" fill="#ffcf2e" stroke="#20142e" stroke-width="2"/>
+    </svg>
+    <!-- ground glow of lights -->
+    <div class="confetti">
+      <i style="left:20%;background:var(--red);animation-duration:5s"></i><i style="left:40%;background:var(--yellow);animation-duration:6.5s"></i>
+      <i style="left:60%;background:var(--blue);animation-duration:5.5s"></i><i style="left:78%;background:var(--green);animation-duration:7s"></i>
+      <i style="left:88%;background:var(--pink);animation-duration:6s"></i><i style="left:10%;background:var(--purple);animation-duration:7.5s"></i>
+    </div>
+  </div>
+  <div class="content">
+    <div class="tag">◦ VP Screen 1 · The Final Challenge ◦</div>
+    <div class="kick">DISVENTURE CAMP · CARNIVAL OF CHAOS</div>
+    <div class="htitle">CARNIVAL<br>RESCUE</div>
+    <div class="panel">
+      <div style="text-align:center;font-weight:600;font-size:14px">Stawaki Carnival closed after a season of freak accidents — a body even came out of the Action Waterslide! Tonight the finalists re-run that rescue: race the whole midway, haul a "drowning" dummy to the stretcher, and drive it home. <b>First across the line wins it all.</b></div>
+    </div>
+    <span class="prize">🚑 $1,000,000 🚑</span>
+
+    <div class="board">
+      <div class="team a"><h4>🔵 TEAM JADE</h4>
+        <div class="fin"><div class="por xl">JD</div><div><div class="nm">Jade</div><div class="arc">mastermind</div></div></div>
+        <div class="helper"><span class="por sm">IS</span> Helper: Isabel</div>
+        <div class="bl">Rooting for Jade</div>
+        <div class="bench"><span class="por sm">DG</span><span class="por sm">IV</span><span class="por sm">ZD</span><span class="por sm">BJ</span><span class="por sm">TR</span><span class="por sm">TD</span><span class="por sm">SP</span></div>
+      </div>
+      <div class="vsbadge">VS</div>
+      <div class="team b"><h4>🔴 TEAM LOGAN</h4>
+        <div class="fin"><div class="por xl">LG</div><div><div class="nm">Logan</div><div class="arc">underdog</div></div></div>
+        <div class="helper"><span class="por sm">NT</span> Helper: Natalia</div>
+        <div class="bl">Rooting for Logan</div>
+        <div class="bench"><span class="por sm">RC</span><span class="por sm">LY</span><span class="por sm">MR</span><span class="por sm">AN</span><span class="por sm">AL</span><span class="por sm">HN</span><span class="por sm">AM</span></div>
+      </div>
+    </div>
+    <div class="host"><b>Trevor:</b> "First to bring us their dummy on the stretcher wins ONE MILLION DOLLARS! No holding back!"</div>
+  </div>
+</div>
+
+<!-- ══════════ ACT I — CORN MAZE ══════════ -->
+<div class="stage sky-dawn">
+  <div class="layer">
+    <div class="sun" style="left:12%;top:10%"></div>
+    <div class="mist" style="bottom:120px"></div><div class="mist" style="bottom:60px;animation-duration:24s"></div>
+    <!-- dense corn field: tiled far backdrop + two maze walls + swaying foreground -->
+    <svg class="field-back back2" viewBox="0 0 400 96" preserveAspectRatio="none"><path d="M0 96 V52 q10 -8 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 V96Z" fill="#2a5019"/></svg>
+    <svg class="field-back" viewBox="0 0 400 88" preserveAspectRatio="none"><path d="M0 88 V44 q9 -10 18 -1 t18 1 t18 -2 t18 2 t18 -3 t18 2 t18 -1 t18 2 t18 -2 t18 2 t18 -3 t18 2 t18 -1 t18 2 t18 -2 t18 2 t18 -1 t18 2 t18 -2 t22 1 V88Z" fill="#34641f"/><g stroke="#2a5019" stroke-width="1.4" opacity=".55"><path d="M14 88V50M32 88V48M50 88V52M68 88V46M86 88V50M104 88V47M122 88V51M140 88V46M158 88V50M176 88V47M194 88V51M212 88V46M230 88V50M248 88V47M266 88V51M284 88V46M302 88V50M320 88V47M338 88V51M356 88V46M374 88V50M392 88V48"/></g></svg>
+    <svg class="cornwall left" viewBox="0 0 150 250" preserveAspectRatio="none"><path d="M0 250V64 Q18 22 36 56 Q56 16 76 56 Q98 22 118 56 Q138 30 150 62 V250Z" fill="#356a22" stroke="#22421a" stroke-width="3"/><g stroke="#2a5219" stroke-width="2"><path d="M22 250V72M44 250V60M66 250V66M88 250V58M110 250V66M132 250V66"/></g><g fill="#4a8a2e"><path d="M22 96q-11-6-15 4q11 4 15-4"/><path d="M44 84q11-6 15 4q-11 4-15-4"/><path d="M66 100q-11-6-15 4q11 4 15-4"/><path d="M88 82q11-6 15 4q-11 4-15-4"/><path d="M110 98q-11-6-15 4q11 4 15-4"/></g><g fill="#cda838" stroke="#a8842a"><ellipse cx="30" cy="82" rx="4" ry="8"/><ellipse cx="76" cy="76" rx="4" ry="8"/><ellipse cx="118" cy="84" rx="4" ry="8"/></g></svg>
+    <svg class="cornwall right" viewBox="0 0 150 250" preserveAspectRatio="none"><path d="M0 250V64 Q18 22 36 56 Q56 16 76 56 Q98 22 118 56 Q138 30 150 62 V250Z" fill="#356a22" stroke="#22421a" stroke-width="3"/><g stroke="#2a5219" stroke-width="2"><path d="M22 250V72M44 250V60M66 250V66M88 250V58M110 250V66M132 250V66"/></g><g fill="#4a8a2e"><path d="M22 96q-11-6-15 4q11 4 15-4"/><path d="M44 84q11-6 15 4q-11 4-15-4"/><path d="M66 100q-11-6-15 4q11 4 15-4"/><path d="M88 82q11-6 15 4q-11 4-15-4"/><path d="M110 98q-11-6-15 4q11 4 15-4"/></g><g fill="#cda838" stroke="#a8842a"><ellipse cx="30" cy="82" rx="4" ry="8"/><ellipse cx="76" cy="76" rx="4" ry="8"/><ellipse cx="118" cy="84" rx="4" ry="8"/></g></svg>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:190px">
+      <div class="corn" style="left:2%"><svg width="26" height="150" viewBox="0 0 26 150"><rect x="11" y="20" width="4" height="130" fill="#3f7a2a"/><g fill="#5aa83a" stroke="#2e5a1e"><path d="M13 40 Q-6 34 4 54 Q13 48 13 40"/><path d="M13 60 Q32 54 22 74 Q13 68 13 60"/><path d="M13 80 Q-6 74 4 94 Q13 88 13 80"/></g><ellipse cx="13" cy="26" rx="7" ry="13" fill="#ffd24a" stroke="#c8971f"/></svg></div>
+      <div class="corn" style="left:9%;animation-delay:.5s"><svg width="26" height="150" viewBox="0 0 26 150"><rect x="11" y="20" width="4" height="130" fill="#3f7a2a"/><g fill="#5aa83a" stroke="#2e5a1e"><path d="M13 46 Q32 40 22 60 Q13 54 13 46"/><path d="M13 66 Q-6 60 4 80 Q13 74 13 66"/><path d="M13 86 Q32 80 22 100 Q13 94 13 86"/></g><ellipse cx="13" cy="26" rx="7" ry="13" fill="#ffd24a" stroke="#c8971f"/></svg></div>
+      <div class="corn" style="left:16%;animation-delay:.4s"><svg width="26" height="150" viewBox="0 0 26 150"><rect x="11" y="20" width="4" height="130" fill="#3f7a2a"/><g fill="#5aa83a" stroke="#2e5a1e"><path d="M13 50 Q32 44 22 64 Q13 58 13 50"/><path d="M13 70 Q-6 64 4 84 Q13 78 13 70"/></g><ellipse cx="13" cy="26" rx="7" ry="13" fill="#ffd24a" stroke="#c8971f"/></svg></div>
+      <div class="corn" style="left:23%;animation-delay:1.1s"><svg width="26" height="150" viewBox="0 0 26 150"><rect x="11" y="24" width="4" height="126" fill="#3f7a2a"/><g fill="#5aa83a" stroke="#2e5a1e"><path d="M13 44 Q32 38 22 58 Q13 52 13 44"/><path d="M13 64 Q-6 58 4 78 Q13 72 13 64"/></g><ellipse cx="13" cy="30" rx="7" ry="13" fill="#ffd24a" stroke="#c8971f"/></svg></div>
+      <div class="corn" style="left:30%;animation-delay:.8s"><svg width="26" height="150" viewBox="0 0 26 150"><rect x="11" y="20" width="4" height="130" fill="#3f7a2a"/><g fill="#5aa83a" stroke="#2e5a1e"><path d="M13 46 Q-6 40 4 60 Q13 54 13 46"/><path d="M13 66 Q32 60 22 80 Q13 74 13 66"/></g><ellipse cx="13" cy="26" rx="7" ry="13" fill="#ffd24a" stroke="#c8971f"/></svg></div>
+      <div class="corn" style="left:38%;animation-delay:.2s"><svg width="26" height="150" viewBox="0 0 26 150"><rect x="11" y="18" width="4" height="132" fill="#3f7a2a"/><g fill="#5aa83a" stroke="#2e5a1e"><path d="M13 40 Q-6 34 4 54 Q13 48 13 40"/><path d="M13 60 Q32 54 22 74 Q13 68 13 60"/><path d="M13 82 Q-6 76 4 96 Q13 90 13 82"/></g><ellipse cx="13" cy="24" rx="7" ry="13" fill="#ffd24a" stroke="#c8971f"/></svg></div>
+      <div class="corn" style="left:44%;animation-delay:.9s"><svg width="26" height="150" viewBox="0 0 26 150"><rect x="11" y="26" width="4" height="124" fill="#3f7a2a"/><g fill="#5aa83a" stroke="#2e5a1e"><path d="M13 48 Q32 42 22 62 Q13 56 13 48"/><path d="M13 70 Q-6 64 4 84 Q13 78 13 70"/></g><ellipse cx="13" cy="32" rx="7" ry="13" fill="#ffd24a" stroke="#c8971f"/></svg></div>
+      <!-- scarecrow -->
+      <svg style="position:absolute;left:52%;bottom:0;width:70px;height:150px" viewBox="0 0 70 150"><rect x="32" y="40" width="6" height="110" fill="#8a5a2a"/><rect x="6" y="60" width="58" height="6" fill="#8a5a2a"/><circle cx="35" cy="34" r="16" fill="#e0b24a" stroke="#20142e" stroke-width="2"/><path d="M35 8 L24 24 H46Z" fill="#c98a3a" stroke="#20142e" stroke-width="2"/><circle cx="29" cy="32" r="2.5" fill="#20142e"/><circle cx="41" cy="32" r="2.5" fill="#20142e"/><path d="M29 40 Q35 44 41 40" stroke="#20142e" stroke-width="2" fill="none"/><rect x="26" y="50" width="18" height="26" fill="#3f7a2a" stroke="#20142e" stroke-width="2"/></svg>
+      <div class="corn" style="left:62%;animation-delay:1.2s"><svg width="26" height="150" viewBox="0 0 26 150"><rect x="11" y="22" width="4" height="128" fill="#3f7a2a"/><g fill="#5aa83a" stroke="#2e5a1e"><path d="M13 44 Q-6 38 4 58 Q13 52 13 44"/><path d="M13 66 Q32 60 22 80 Q13 74 13 66"/></g><ellipse cx="13" cy="28" rx="7" ry="13" fill="#ffd24a" stroke="#c8971f"/></svg></div>
+      <div class="corn" style="left:70%;animation-delay:.3s"><svg width="26" height="150" viewBox="0 0 26 150"><rect x="11" y="20" width="4" height="130" fill="#3f7a2a"/><g fill="#5aa83a" stroke="#2e5a1e"><path d="M13 48 Q32 42 22 62 Q13 56 13 48"/><path d="M13 68 Q-6 62 4 82 Q13 76 13 68"/></g><ellipse cx="13" cy="26" rx="7" ry="13" fill="#ffd24a" stroke="#c8971f"/></svg></div>
+      <div class="corn" style="left:78%;animation-delay:.6s"><svg width="26" height="150" viewBox="0 0 26 150"><rect x="11" y="24" width="4" height="126" fill="#3f7a2a"/><g fill="#5aa83a" stroke="#2e5a1e"><path d="M13 46 Q-6 40 4 60 Q13 54 13 46"/><path d="M13 68 Q32 62 22 82 Q13 76 13 68"/></g><ellipse cx="13" cy="30" rx="7" ry="13" fill="#ffd24a" stroke="#c8971f"/></svg></div>
+      <div class="corn" style="left:84%;animation-delay:.7s"><svg width="26" height="150" viewBox="0 0 26 150"><rect x="11" y="20" width="4" height="130" fill="#3f7a2a"/><g fill="#5aa83a" stroke="#2e5a1e"><path d="M13 44 Q-6 38 4 58 Q13 52 13 44"/><path d="M13 64 Q32 58 22 78 Q13 72 13 64"/></g><ellipse cx="13" cy="26" rx="7" ry="13" fill="#ffd24a" stroke="#c8971f"/></svg></div>
+      <div class="corn" style="left:94%;animation-delay:1s"><svg width="26" height="150" viewBox="0 0 26 150"><rect x="11" y="20" width="4" height="130" fill="#3f7a2a"/><ellipse cx="13" cy="26" rx="7" ry="13" fill="#ffd24a" stroke="#c8971f"/></svg></div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="tag">◦ VP Screen 2 · Act I ◦</div>
+    <div class="rail"><div class="a now"></div><div class="a"></div><div class="a"></div><div class="a"></div><div class="a"></div><div class="a"></div></div>
+    <div class="act maze"><div class="chy">ACT I OF VI</div><div class="ttl">🌽 THE CORN MAZE</div><div class="ds">Find the ambulance keys in the stalks — read the maze, remember the paths. <b>Intuition + Mental.</b></div></div>
+
+    <div class="hud">
+      <div class="lbl">🏁 LIVE POSITION</div>
+      <div class="track"><span class="flag">🏁</span><span class="runner a" style="left:26%">JD</span><span class="runner b" style="left:14%">LG</span></div>
+    </div>
+
+    <div class="leg">
+      <div class="legp a win"><div class="legrow"><span class="por md">JD</span><span class="nm">Jade</span></div><div class="legbar"><i style="--w:100%"></i></div><div class="legres">Keys first!</div><span class="legwin">LEG WINNER</span></div>
+      <div class="legp b"><div class="legrow"><span class="por md">LG</span><span class="nm">Logan</span></div><div class="legbar"><i style="--w:62%"></i></div><div class="legres">Held up in the straw</div></div>
+    </div>
+
+    <div class="card find"><div class="bd"><span class="badge find">KEY SPOTTED</span><span class="stat">intuition</span><div class="tx"><b>Jade</b> hoists <b>Isabel</b> onto her shoulders — Isabel spots the key on a scarecrow built to look just like Jade. "Remember both paths. I'm leaving nothing to chance."</div></div></div>
+    <div class="card sabo"><div class="pcol"><span class="por sm">JD</span><span class="por sm">LG</span></div><div class="bd"><span class="badge sabo">SCARECROW DOWN</span><span class="stat">strategic</span><div class="tx"><b>Jade</b> topples the Logan-shaped scarecrow and buries his key in straw. One flicker of guilt — then she's gone.</div></div></div>
+  </div>
+</div>
+
+<!-- ══════════ ACT II — HAUNTED HOUSE ══════════ -->
+<div class="stage sky-night">
+  <div class="layer">
+    <div class="moon" style="left:14%;top:8%"></div>
+    <div class="bat" style="top:16%;animation-duration:9s"><svg width="34" height="16" viewBox="0 0 34 16"><path d="M17 8Q8-2 2 6Q6 4 10 8Q13 2 17 8Q21 2 24 8Q28 4 32 6Q26-2 17 8Z" fill="#100722" stroke="#000" stroke-width="1"/></svg></div>
+    <div class="bat" style="top:28%;animation-duration:11s;animation-delay:2.5s"><svg width="26" height="12" viewBox="0 0 34 16"><path d="M17 8Q8-2 2 6Q6 4 10 8Q13 2 17 8Q21 2 24 8Q28 4 32 6Q26-2 17 8Z" fill="#100722" stroke="#000" stroke-width="1"/></svg></div>
+    <div class="bat" style="top:22%;animation-duration:7.5s;animation-delay:4.5s"><svg width="20" height="9" viewBox="0 0 34 16"><path d="M17 8Q8-2 2 6Q6 4 10 8Q13 2 17 8Q21 2 24 8Q28 4 32 6Q26-2 17 8Z" fill="#100722"/></svg></div>
+    <div class="mist" style="bottom:70px;background:radial-gradient(closest-side,#7fd0a055,transparent)"></div>
+    <div class="mist" style="bottom:14px;animation-duration:22s;background:radial-gradient(closest-side,#7fd0a03a,transparent)"></div>
+    <!-- dead tree -->
+    <svg class="deadtree" style="left:3%;width:96px;height:280px" viewBox="0 0 96 280"><g stroke="#1a0f24" stroke-width="7" fill="none" stroke-linecap="round"><path d="M48 280V90"/><path d="M48 150 L18 110M48 130 L78 96M48 180 L22 156M48 168 L74 140M48 108 L30 78M48 100 L66 70"/></g></svg>
+    <!-- mansion -->
+    <svg style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:380px;height:320px" viewBox="0 0 380 320">
+      <rect x="66" y="132" width="248" height="188" fill="#241a34" stroke="#0d0718" stroke-width="4"/>
+      <path d="M66 132 L118 66 L170 132Z" fill="#2e2242" stroke="#0d0718" stroke-width="4"/>
+      <path d="M210 132 L262 66 L314 132Z" fill="#2e2242" stroke="#0d0718" stroke-width="4"/>
+      <rect x="168" y="86" width="44" height="234" fill="#2a1e3e" stroke="#0d0718" stroke-width="4"/>
+      <path d="M162 86 L190 40 L218 86Z" fill="#3a2a52" stroke="#0d0718" stroke-width="4"/>
+      <path d="M190 40 L190 24" stroke="#0d0718" stroke-width="3"/><path d="M190 24 L204 30 L190 36Z" fill="#e8433c" stroke="#0d0718" stroke-width="2"/>
+      <rect class="flicker" x="94" y="158" width="28" height="36" fill="#ffcf2e" stroke="#0d0718" stroke-width="2"/>
+      <rect class="flicker" x="258" y="158" width="28" height="36" fill="#ffcf2e" stroke="#0d0718" stroke-width="2" style="animation-delay:1.1s"/>
+      <rect class="flicker" x="178" y="112" width="24" height="30" fill="#8affd0" stroke="#0d0718" stroke-width="2" style="animation-delay:.6s"/>
+      <rect class="flicker" x="96" y="232" width="26" height="32" fill="#ffcf2e" stroke="#0d0718" stroke-width="2" style="animation-delay:1.8s"/>
+      <rect x="176" y="250" width="28" height="70" rx="14" fill="#0d0718" stroke="#4a3a2a" stroke-width="3"/>
+      <circle cx="198" cy="286" r="2.6" fill="#ffcf2e"/>
+    </svg>
+  </div>
+  <div class="content">
+    <div class="tag">◦ VP Screen 3 · Act II ◦</div>
+    <div class="rail"><div class="a done"></div><div class="a now"></div><div class="a"></div><div class="a"></div><div class="a"></div><div class="a"></div></div>
+    <div class="act" style="text-align:center;margin:6px auto 2px"><div class="chy" style="display:inline-block;font-family:var(--disp);font-size:12px;color:#fff;background:var(--ink);padding:3px 16px;border-radius:20px 20px 0 0;letter-spacing:1px">ACT II OF VI</div><div class="ttl" style="background:var(--purple);font-family:var(--disp);font-size:clamp(26px,5.6vw,46px);color:#fff;border:4px solid var(--ink);border-radius:16px;padding:8px 20px;box-shadow:var(--shadow);-webkit-text-stroke:1.6px var(--ink);text-shadow:3px 3px 0 var(--ink);display:inline-block">👻 THE HAUNTED HOUSE</div><div class="ds">Deduce where your stretcher is hidden among the horrors — mind over fear. <b>Mental + Strategic.</b></div></div>
+
+    <div class="hud"><div class="lbl">🏁 LIVE POSITION</div><div class="track"><span class="flag">🏁</span><span class="runner a" style="left:40%">JD</span><span class="runner b" style="left:44%">LG</span></div></div>
+    <div class="leg">
+      <div class="legp a"><div class="legrow"><span class="por md">JD</span><span class="nm">Jade</span></div><div class="legbar"><i style="--w:88%"></i></div><div class="legres">Close second</div></div>
+      <div class="legp b win"><div class="legrow"><span class="por md">LG</span><span class="nm">Logan</span></div><div class="legbar"><i style="--w:100%"></i></div><div class="legres">Stretcher first!</div><span class="legwin">LEG WINNER</span></div>
+    </div>
+    <div class="card" style="border-left:10px solid var(--purple)"><div class="pcol"><span class="por sm">LG</span></div><div class="bd"><span class="badge" style="background:var(--purple)">A HUNCH PAYS OFF</span><span class="stat">mental</span><div class="tx"><b>Logan</b> heads straight for the pentagram room on a hunch — and there's his stretcher, right where he guessed.</div></div></div>
+    <div class="card" style="border-left:10px solid var(--purple)"><div class="pcol"><span class="por sm">JD</span></div><div class="bd"><span class="badge" style="background:var(--purple)">GLASS-PANEL DEDUCTION</span><span class="stat">strategic</span><div class="tx"><b>Jade</b> works it out — hers is at the glass panels where she once fell — and tiptoes across the cracking floor to claim it.</div></div></div>
+    <div class="host"><b>Emily:</b> "Ohhh, Logan called it on instinct! Jade had to THINK her way there. Either way — both stretchers found!"</div>
+  </div>
+</div>
+
+<!-- ══════════ ACT III — PIRATE SHIP ══════════ -->
+<div class="stage sky-sea">
+  <div class="layer">
+    <div class="sun" style="right:14%;top:10%"></div>
+    <div class="cloud" style="top:20%;left:0;width:80px;height:24px"></div>
+    <div class="gull" style="top:26%;animation-duration:13s">ᨑ</div><div class="gull" style="top:32%;animation-duration:16s;animation-delay:5s">ᨑ</div>
+    <!-- ship -->
+    <svg class="ship" style="width:300px;height:290px" viewBox="0 0 300 290">
+      <!-- rigging ropes -->
+      <g stroke="#3a2010" stroke-width="2" opacity=".8"><path d="M150 40 L70 176"/><path d="M150 40 L232 176"/><path d="M150 60 L100 176"/><path d="M150 60 L200 176"/></g>
+      <!-- mast + spar -->
+      <rect x="146" y="24" width="9" height="156" fill="#5a3a1a" stroke="#2e1a0a" stroke-width="1.5"/>
+      <rect x="96" y="70" width="110" height="7" fill="#5a3a1a"/>
+      <!-- sails -->
+      <path d="M150 34 Q224 66 210 128 L150 128Z" fill="#f2e9d4" stroke="#c8b89a" stroke-width="2"/>
+      <path d="M146 44 Q72 74 86 132 L146 132Z" fill="#e8dcc0" stroke="#c8b89a" stroke-width="2"/>
+      <!-- skull emblem -->
+      <g fill="#8a6a4a" opacity=".7" transform="translate(170 78)"><circle cx="0" cy="0" r="9"/><circle cx="-3" cy="-1" r="2" fill="#f2e9d4"/><circle cx="3" cy="-1" r="2" fill="#f2e9d4"/></g>
+      <!-- flag -->
+      <path class="flag-wave" d="M150 24 L190 32 L150 42Z" fill="#20142e" stroke="#000" stroke-width="1.5"/>
+      <!-- hull -->
+      <path d="M40 176 Q150 216 260 176 L236 224 Q150 252 64 224Z" fill="#6a3a1a" stroke="#331a0c" stroke-width="4"/>
+      <rect x="70" y="158" width="160" height="22" fill="#7a4a2a" stroke="#331a0c" stroke-width="3"/>
+      <g fill="#331a0c"><circle cx="96" cy="196" r="7"/><circle cx="132" cy="200" r="7"/><circle cx="168" cy="200" r="7"/><circle cx="204" cy="196" r="7"/></g>
+      <!-- climbing figure -->
+      <g class="climber"><circle cx="150" cy="150" r="9" fill="#ffce9e" stroke="#20142e" stroke-width="2"/><rect x="144" y="158" width="12" height="18" rx="3" fill="#2c8fd6" stroke="#20142e" stroke-width="2"/><path d="M144 162 L134 150M156 162 L166 150" stroke="#ffce9e" stroke-width="4" stroke-linecap="round"/></g>
+    </svg>
+    <!-- sea -->
+    <div class="wave" style="bottom:64px"></div>
+    <div class="wave" style="bottom:40px;animation-delay:1s;opacity:.4"></div>
+    <div class="wave" style="bottom:16px;animation-delay:2s;opacity:.55"></div>
+    <div class="wave" style="bottom:0;animation-delay:.5s;opacity:.7"></div>
+  </div>
+  <div class="content">
+    <div class="tag">◦ VP Screen 4 · Act III ◦</div>
+    <div class="rail"><div class="a done"></div><div class="a done"></div><div class="a now"></div><div class="a"></div><div class="a"></div><div class="a"></div></div>
+    <div class="act" style="text-align:center;margin:6px auto 2px"><div class="chy" style="display:inline-block;font-family:var(--disp);font-size:12px;color:#fff;background:var(--ink);padding:3px 16px;border-radius:20px 20px 0 0;letter-spacing:1px">ACT III OF VI</div><div class="ttl" style="background:var(--brown);font-family:var(--disp);font-size:clamp(26px,5.6vw,46px);color:#fff;border:4px solid var(--ink);border-radius:16px;padding:8px 20px;box-shadow:var(--shadow);-webkit-text-stroke:1.6px var(--ink);text-shadow:3px 3px 0 var(--ink);display:inline-block">🏴‍☠️ THE PIRATE SHIP</div><div class="ds">Climb the rigging to the top of the slide tower — pure muscle and grit. <b>Physical + Endurance.</b></div></div>
+
+    <div class="hud"><div class="lbl">🏁 LIVE POSITION</div><div class="track"><span class="flag">🏁</span><span class="runner b" style="left:56%">LG</span><span class="runner a" style="left:50%">JD</span></div></div>
+    <div class="leg">
+      <div class="legp a"><div class="legrow"><span class="por md">JD</span><span class="nm">Jade</span></div><div class="legbar"><i style="--w:78%"></i></div><div class="legres">Slower climb</div></div>
+      <div class="legp b win"><div class="legrow"><span class="por md">LG</span><span class="nm">Logan</span></div><div class="legbar"><i style="--w:100%"></i></div><div class="legres">Powers up first!</div><span class="legwin">LEG WINNER</span></div>
+    </div>
+    <div class="card" style="border-left:10px solid var(--brown)"><div class="pcol"><span class="por sm">LG</span></div><div class="bd"><span class="badge" style="background:var(--brown)">UP THE RIGGING</span><span class="stat">physical + endurance</span><div class="tx"><b>Logan</b> attacks the ropes hand over hand and hauls himself to the crow's nest first — the underdog's got a motor after all.</div></div></div>
+    <div class="host"><b>Emily:</b> "Logan's climbing like the mast owes him money! The gap is CLOSING!"</div>
+  </div>
+</div>
+
+<!-- ══════════ ACT IV — WATERSLIDE ══════════ -->
+<div class="stage sky-day">
+  <div class="layer">
+    <div class="sun" style="right:12%;top:8%"></div>
+    <div class="cloud" style="top:18%;left:0;width:80px;height:24px"></div>
+    <!-- tall slide tower with flowing water -->
+    <svg class="tower" style="width:200px;height:340px;bottom:70px" viewBox="0 0 200 340">
+      <rect x="70" y="30" width="14" height="300" fill="#7a5a3a" stroke="#20142e" stroke-width="3"/>
+      <rect x="116" y="30" width="14" height="300" fill="#7a5a3a" stroke="#20142e" stroke-width="3"/>
+      <rect x="60" y="20" width="80" height="18" rx="4" fill="#e8433c" stroke="#20142e" stroke-width="3"/>
+      <!-- slide flume -->
+      <path d="M100 40 C100 120 40 150 40 240 C40 300 90 300 96 320" fill="none" stroke="#2c8fd6" stroke-width="20" stroke-linecap="round"/>
+      <path d="M100 40 C100 120 40 150 40 240 C40 300 90 300 96 320" fill="none" stroke="#bfeaff" stroke-width="8" class="flowline"/>
+    </svg>
+    <div class="splash" style="left:30%"></div><div class="splash" style="left:33%;animation-delay:.4s"></div><div class="splash" style="left:28%;animation-delay:.8s"></div>
+    <div class="wave" style="bottom:0"></div><div class="wave" style="bottom:22px;animation-delay:1s;opacity:.35"></div>
+  </div>
+  <div class="content">
+    <div class="tag">◦ VP Screen 5 · Act IV ◦</div>
+    <div class="rail"><div class="a done"></div><div class="a done"></div><div class="a done"></div><div class="a now"></div><div class="a"></div><div class="a"></div></div>
+    <div class="act slide"><div class="chy">ACT IV OF VI</div><div class="ttl">🌊 THE WATERSLIDE</div><div class="ds">Reach the top and take the plunge — only nerve gets you down. <b>Boldness + Temperament.</b></div></div>
+    <div class="hud"><div class="lbl">🏁 LIVE POSITION</div><div class="track"><span class="flag">🏁</span><span class="runner a" style="left:66%">JD</span><span class="runner b" style="left:52%">LG</span></div></div>
+    <div class="leg">
+      <div class="legp a win"><div class="legrow"><span class="por md">JD</span><span class="nm">Jade</span></div><div class="legbar"><i style="--w:100%"></i></div><div class="legres">Fearless — retakes lead!</div><span class="legwin">LEG WINNER</span></div>
+      <div class="legp b"><div class="legrow"><span class="por md">LG</span><span class="nm">Logan</span></div><div class="legbar"><i style="--w:66%"></i></div><div class="legres">Froze, then recovered</div></div>
+    </div>
+    <div class="card nerve"><div class="pcol"><span class="por sm">LG</span></div><div class="bd"><span class="badge nerve">FROZE UP</span><span class="stat">boldness</span><div class="tx"><b>Logan</b> hits the top and freezes — the aquaphobia. "I fail everything I try. That's why I got bronze." <b>Jade flies past into the lead.</b></div></div></div>
+    <div class="card bench"><div class="pcol"><span class="por sm">NT</span><span class="por sm">LG</span></div><div class="bd"><span class="badge bench">SLAP OF FAITH</span><span class="stat">temperament</span><div class="tx"><b>Natalia</b> slaps <b>Logan</b> clean across the face. "You don't have to be PERFECT — look at MY game!" He snaps out of it and lands a perfect dive.</div></div></div>
+  </div>
+</div>
+
+<!-- ══════════ ACT V — LAKE RESCUE ══════════ -->
+<div class="stage sky-water">
+  <div class="layer">
+    <div class="wave" style="top:34%"></div><div class="wave" style="top:44%;animation-delay:1s;opacity:.4"></div>
+    <div class="wave" style="top:56%;animation-delay:2s;opacity:.5"></div><div class="wave" style="top:68%;animation-delay:.5s;opacity:.35"></div>
+    <div class="dummy" style="left:48%;top:40%">🧍</div>
+    <div class="buoy" style="left:30%;top:58%"></div><div class="buoy" style="right:26%;top:50%;animation-delay:.8s"></div>
+    <!-- swimmer heads -->
+    <div class="dummy" style="left:22%;top:66%;font-size:20px">🏊</div><div class="dummy" style="right:20%;top:62%;font-size:20px;animation-delay:.5s">🏊</div>
+  </div>
+  <div class="content">
+    <div class="tag">◦ VP Screen 6 · Act V ◦</div>
+    <div class="rail"><div class="a done"></div><div class="a done"></div><div class="a done"></div><div class="a done"></div><div class="a now"></div><div class="a"></div></div>
+    <div class="act lake"><div class="chy">ACT V OF VI · TWO-PERSON</div><div class="ttl">🛟 THE LAKE RESCUE</div><div class="ds">Swim out with your helper and haul the drowning dummy back — a partner is everything here. <b>Endurance + Physical + Bond.</b></div></div>
+    <div class="hud"><div class="lbl">🏁 LIVE POSITION</div><div class="track"><span class="flag">🏁</span><span class="runner a" style="left:80%">JD</span><span class="runner b" style="left:72%">LG</span></div></div>
+    <div class="leg">
+      <div class="legp a win"><div class="legrow"><span class="por md">JD</span><span class="por sm">IS</span></div><div class="legbar"><i style="--w:100%"></i></div><div class="legres">Dummy secured!</div><span class="legwin">LEG WINNER</span></div>
+      <div class="legp b"><div class="legrow"><span class="por md">LG</span><span class="por sm">NT</span></div><div class="legbar"><i style="--w:84%"></i></div><div class="legres">Hauling to shore</div></div>
+    </div>
+    <div class="card rescue"><div class="pcol"><span class="por sm">JD</span><span class="por sm">IS</span></div><div class="bd"><span class="badge rescue">DUMMY SECURED</span><span class="stat">endurance + bond</span><div class="tx"><b>Jade</b> and <b>Isabel</b> reach the dummy first and haul it in together. "You matter more to me than the money," Jade says. Their bond turns two tired swimmers into one.</div></div></div>
+  </div>
+</div>
+
+<!-- ══════════ ACT VI — FINAL DRIVE ══════════ -->
+<div class="stage sky-dusk">
+  <div class="layer">
+    <div class="moon" style="right:14%;top:10%"></div>
+    <!-- scrolling midway silhouettes -->
+    <svg class="silo" viewBox="0 0 800 90" preserveAspectRatio="none"><g fill="#2a1a3a" opacity=".85"><circle cx="80" cy="60" r="40" stroke="#120a1e" stroke-width="3" fill="none"/><path d="M180 90V50a30 20 0 0160 0v40" /><rect x="300" y="40" width="60" height="50"/><path d="M300 40 330 18 360 40" /><ellipse cx="470" cy="80" rx="46" ry="14"/><path d="M560 90 L560 40 620 40 620 90" fill="none" stroke="#120a1e" stroke-width="4"/><circle cx="720" cy="55" r="34" fill="none" stroke="#120a1e" stroke-width="3"/></g></svg>
+    <div class="road"></div>
+    <div class="roadmark"></div>
+    <div class="speed" style="bottom:100px;right:20%;width:60px"></div><div class="speed" style="bottom:130px;right:35%;width:40px;animation-delay:.2s"></div><div class="speed" style="bottom:150px;right:12%;width:70px;animation-delay:.1s"></div>
+    <!-- two ambulances -->
+    <svg class="amb" style="left:44%;width:130px;height:70px" viewBox="0 0 130 70"><rect x="6" y="26" width="80" height="30" rx="4" fill="#fff" stroke="#20142e" stroke-width="3"/><rect x="80" y="16" width="40" height="40" rx="4" fill="#fff" stroke="#20142e" stroke-width="3"/><rect x="94" y="22" width="20" height="16" fill="#9cd3f0" stroke="#20142e" stroke-width="2"/><path d="M28 34v12M22 40h12" stroke="#e8433c" stroke-width="4"/><rect class="siren" x="40" y="18" width="14" height="8" rx="2" fill="#e8433c" stroke="#20142e" stroke-width="2"/><circle cx="30" cy="58" r="9" fill="#20142e"/><circle cx="98" cy="58" r="9" fill="#20142e"/><circle cx="30" cy="58" r="3.5" fill="#888"/><circle cx="98" cy="58" r="3.5" fill="#888"/></svg>
+    <svg class="amb" style="left:24%;width:110px;height:60px;animation-delay:.2s" viewBox="0 0 130 70"><rect x="6" y="26" width="80" height="30" rx="4" fill="#ffe6d0" stroke="#20142e" stroke-width="3"/><rect x="80" y="16" width="40" height="40" rx="4" fill="#ffe6d0" stroke="#20142e" stroke-width="3"/><rect x="94" y="22" width="20" height="16" fill="#9cd3f0" stroke="#20142e" stroke-width="2"/><path d="M28 34v12M22 40h12" stroke="#e8433c" stroke-width="4"/><rect class="siren" x="40" y="18" width="14" height="8" rx="2" fill="#e8433c" stroke="#20142e" stroke-width="2"/><circle cx="30" cy="58" r="9" fill="#20142e"/><circle cx="98" cy="58" r="9" fill="#20142e"/></svg>
+  </div>
+  <div class="content">
+    <div class="tag">◦ VP Screen 7 · Act VI ◦</div>
+    <div class="rail"><div class="a done"></div><div class="a done"></div><div class="a done"></div><div class="a done"></div><div class="a done"></div><div class="a now"></div></div>
+    <div class="act drive"><div class="chy">ACT VI OF VI · SOLO</div><div class="ttl">🚑 THE FINAL DRIVE</div><div class="ds">Helpers stay at the lake. One ambulance each, the whole midway to the finish — however you get there. <b>Strategic + Boldness.</b></div></div>
+    <div class="hud"><div class="lbl">🏁 LIVE POSITION</div><div class="track"><span class="flag">🏁</span><span class="runner b" style="left:96%">LG</span><span class="runner a" style="left:90%">JD</span></div></div>
+    <div class="leg">
+      <div class="legp a"><div class="legrow"><span class="por md">JD</span><span class="nm">Jade</span></div><div class="legbar"><i style="--w:94%"></i></div><div class="legres">Leading — slams the brakes</div></div>
+      <div class="legp b win"><div class="legrow"><span class="por md">LG</span><span class="nm">Logan</span></div><div class="legbar"><i style="--w:100%"></i></div><div class="legres">WINNER!</div><span class="legwin">CHAMPION</span></div>
+    </div>
+    <div class="card sabo"><div class="pcol"><span class="por sm">LG</span></div><div class="bd"><span class="badge sabo">COCONUT GAMBIT</span><span class="stat">strategic</span><div class="tx"><b>Logan</b> jams the coconut on the gas pedal, climbs onto the roof with his dummy, and lets the ambulance drive itself. Literally thinking outside the box.</div></div></div>
+    <div class="card win"><div class="pcol"><span class="por sm">LG</span></div><div class="bd"><span class="badge win">ACROSS THE LINE</span><span class="stat">boldness</span><div class="tx"><b>Jade</b> slams the brakes — and <b>Logan LEAPS off the roof</b>, dummy in his arms, over the line. He wins <b>Carnival of Chaos!</b></div></div></div>
+  </div>
+</div>
+
+<!-- ══════════ CHAMPION ══════════ -->
+<div class="stage sky-dusk" style="min-height:80vh">
+  <div class="layer">
+    <div class="spotlight"></div>
+    <div class="confetti">
+      <i style="left:12%;background:var(--red);animation-duration:4s"></i><i style="left:24%;background:var(--yellow);animation-duration:5s"></i><i style="left:36%;background:var(--blue);animation-duration:4.5s"></i><i style="left:48%;background:var(--green);animation-duration:5.5s"></i><i style="left:60%;background:var(--pink);animation-duration:4.2s"></i><i style="left:72%;background:var(--purple);animation-duration:6s"></i><i style="left:84%;background:var(--teal);animation-duration:5s"></i><i style="left:92%;background:var(--red);animation-duration:4.8s"></i>
+    </div>
+  </div>
+  <div class="champ">
+    <div class="tag">◦ VP Screen 8 · Champion ◦</div>
+    <div class="kick" style="color:#fff">WINNER OF CARNIVAL OF CHAOS</div>
+    <div class="por xl champ-por" style="width:104px;height:104px;font-size:28px;margin:8px auto 0;border-width:4px;color:var(--green)">LG</div>
+    <div class="big">LOGAN!</div>
+    <div class="panel" style="max-width:400px;margin:8px auto 0"><div style="text-align:center;font-weight:600">The underdog who got bronze — and then, when it mattered most, refused to fail one more time.</div></div>
+    <div class="podium">
+      <div class="pl first"><div class="rk">1ST · $1,000,000</div><div class="por lg" style="margin:8px auto 0">LG</div><div class="nm">Logan</div><div class="st">by a nose</div></div>
+      <div class="pl"><div class="rk">RUNNER-UP</div><div class="por lg" style="margin:8px auto 0">JD</div><div class="nm">Jade</div><div class="st">"You were robbed!" — Isabel</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>Mockup v4 — Overdrive.</b> Every act is a full-bleed <b>animated themed environment</b>, not cards on a flat page:
+  a dusk carnival with a <b>spinning ferris wheel + big top + falling confetti</b> (title); <b>swaying corn, drifting mist, a scarecrow</b> (maze); a <b>slide tower with water streaming down it + splash particles</b> (waterslide); a <b>rippling lake with a bobbing dummy, buoys and swimmers</b> (lake); <b>two ambulances bouncing with flashing sirens, speed lines and a scrolling midway of ride silhouettes</b> (final drive); a <b>sweeping spotlight + confetti burst</b> (champion).
+  Plus a persistent <b>LIVE POSITION race HUD</b> whose runner chips slide each act, <b>leg scoreboards that animate the fill + crown a LEG WINNER</b>, animated card entrances, host quips, and a pulsing prize. <b>All six acts are now full themed scenes</b> (I Maze · II Haunted House w/ bats+fog+flickering windows+dead tree · III Pirate Ship rocking on moving waves w/ a climbing figure · IV Waterslide · V Lake · VI Final Drive), all 9 stats, works for 2–4 finalists.
+</div>
+
+</body>
+</html>

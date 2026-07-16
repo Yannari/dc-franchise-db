@@ -58,6 +58,7 @@ import { rpBuildAZTitleCard, rpBuildAZZipline, rpBuildAZTrek, rpBuildAZGuardian,
 import { rpBuildNMTitleCard, rpBuildNMSecurity, rpBuildNMGallery, rpBuildNMAssembly, rpBuildNMResults, nightMuseumRevealNext, nightMuseumRevealAll } from './chal/night-at-museum.js';
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext, tlsRevealAll } from './chal/truth-or-shark.js';
 import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults, rockTheDockRevealNext, rockTheDockRevealAll } from './chal/rock-the-dock.js';
+import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTChainHunt, rpBuildTTLongboardRace, rpBuildTTResults, ttRevealNext, ttRevealAll } from './chal/tropical-takedown.js';
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults, gpRevealNext, gpRevealAll } from './chal/greeces-pieces.js';
@@ -73,6 +74,7 @@ import { rpBuildBATitleCard, rpBuildBADive, rpBuildBARace, rpBuildBAResults, baR
 import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaCrossing, rpBuildPTBeachSprint, rpBuildPTResults, ptRevealNext, ptRevealAll } from './chal/planes-trains.js';
 import { rpBuildPRTitleCard, rpBuildPRRoles, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults, prRevealNext, prRevealAll, resetPRState } from './chal/project-runaway.js';
 import { rpBuildAuctionTitle, rpBuildAuctionFloor, rpBuildAuctionResults } from './auction-vp.js';
+import { buildViewerVoteCommitments } from './vote-planning.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -2314,6 +2316,7 @@ export function rpBuildDebug(ep) {
       ${_tabBtn('threats', 'Threats & Heat')}
       ${_tabBtn('stats', 'Player Stats')}
       ${_tabBtn('bonds', 'Perceived Bonds')}
+      ${_tabBtn('commitments', 'Vote Commitments')}
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
@@ -2421,6 +2424,47 @@ export function rpBuildDebug(ep) {
         </div>`;
       });
       html += `</div>`;
+    }
+  }
+
+  // ════════════════════════════════════════════════
+  // TAB: OBSERVATIONAL VOTE COMMITMENTS
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'commitments') {
+    const commitments = ep.voteCommitmentDiagnostics || [];
+    const compared = commitments.filter(c => c.actualBallot);
+    const matched = compared.filter(c => c.predictionMatched).length;
+    const accuracy = compared.length ? Math.round(matched / compared.length * 100) : 0;
+    html += `<div style="margin-bottom:12px;padding:10px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.18);border-radius:8px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#a78bfa">OBSERVATIONAL MODEL</div>
+      <div style="font-size:10px;color:#8b949e;margin-top:4px">Pre-vote forecast with a final consistency gate: unsupported third-target deviations are held to the strongest modeled plan. Every “needed” number is the same majority threshold for this tribal; “supporting” is that voter's estimate. Prediction accuracy: <strong style="color:${accuracy >= 70 ? '#3fb950' : accuracy >= 50 ? '#d29922' : '#f47067'}">${matched}/${compared.length} (${accuracy}%)</strong>.</div>
+    </div>`;
+    if (commitments.length) {
+      html += `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:10px;color:#8b949e">
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+          <th style="text-align:left;padding:5px;color:#e6edf3">Voter</th><th>Prefers</th><th>Proposal</th><th>Initial commit</th>
+          <th>Plan pull</th><th>Plan belief</th><th>Alternative</th><th>Predicted</th><th>Late trigger</th><th>Ballot</th><th>Result</th>
+        </tr>`;
+      commitments.forEach(c => {
+        const ok = c.predictionMatched;
+        const viableColor = c.planAppearsViable ? '#3fb950' : '#f47067';
+        html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+          <td style="padding:5px;color:#e6edf3;font-weight:700">${c.voter}<div style="font-size:8px;color:#6e7681">${c.source}${c.bottomOfPlan ? ' · bottom' : ''}</div></td>
+          <td style="padding:5px;text-align:center;color:#f0883e">${c.preferredTarget || '—'}</td>
+          <td style="padding:5px;text-align:center">${c.proposedTarget || '—'}</td>
+          <td style="padding:5px;text-align:center;color:#a78bfa">${c.committedTarget || '—'}</td>
+          <td style="padding:5px;text-align:center">${Math.round((c.commitmentStrength || 0) * 100)}%</td>
+          <td style="padding:5px;text-align:center;color:${viableColor}">${c.believedVotes} early support<div style="font-size:8px;color:#6e7681">${c.majority} needed${c.beliefError ? ` · read error ${c.beliefError > 0 ? '+' : ''}${c.beliefError}` : ''}${c.splitVoteAssignment ? ` · ${c.splitVoteAssignment} split` : ''}</div><div style="font-size:8px;color:#a78bfa">forecast: ${c.projectedVotes ?? '—'} on proposal</div></td>
+          <td style="padding:5px;text-align:center">${c.preferredTarget && c.preferredTarget !== c.proposedTarget ? `${c.preferredTarget} ${c.believedAlternativeVotes}/${c.majority}` : '—'}</td>
+          <td style="padding:5px;text-align:center">${c.predictedBallot || '—'}<div style="font-size:8px;color:#6e7681">${c.predictionReason || ''}</div></td>
+          <td style="padding:5px;text-align:center;color:${c.transitionPrevented ? '#d29922' : '#8b949e'}">${c.lateTrigger || '—'}${c.transitionPrevented ? `<div style="font-size:8px;color:#6e7681">blocked ${c.transitionPrevented.rejectedTarget}</div>` : ''}</td>
+          <td style="padding:5px;text-align:center;color:#e6edf3">${c.voteSacrificed ? 'SITD — sacrificed' : (c.actualBallot || '—')}</td>
+          <td style="padding:5px;text-align:center;color:${c.voteSacrificed ? '#d29922' : ok ? '#3fb950' : '#f47067'};font-weight:800">${c.voteSacrificed ? 'NO BALLOT' : ok ? 'MATCH' : 'MISS'}</td>
+        </tr>`;
+      });
+      html += `</table></div>`;
+    } else {
+      html += `<div style="color:#484f58;font-size:11px">No commitment observations were saved for this episode.</div>`;
     }
   }
 
@@ -2636,6 +2680,35 @@ export function rpBuildDebug(ep) {
         </div>`;
       });
     } else { html += `<div style="color:#484f58;font-size:11px">No vote pitches this episode.</div>`; }
+    html += `</div>`;
+
+    // Emotional defection assessments — includes both defections and moments
+    // where alliance discipline won, so tuning is explainable rather than opaque.
+    const _emotionVotes = ep.emotionalDefectionDiagnostics || [];
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#f0883e;margin-bottom:8px">EMOTIONAL DEFECTION CHECKS</div>`;
+    if (_emotionVotes.length) {
+      _emotionVotes.forEach(d => {
+        const defected = d.decision === 'defected';
+        const decisionColor = defected ? '#f47067' : '#3fb950';
+        const pct = n => `${Math.round((n || 0) * 100)}%`;
+        html += `<div style="padding:7px 8px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:10px">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <span style="color:#e6edf3;font-weight:700">${d.voter}</span>
+            <span style="color:#8b949e">considered leaving ${d.allianceTarget} for</span>
+            <span style="color:#f0883e;font-weight:700">${d.target}</span>
+            <span style="color:${decisionColor};font-weight:800">${defected ? 'DEFECTED' : 'HELD PLAN'}</span>
+          </div>
+          <div style="color:#6e7681;margin-top:3px">
+            memory ${d.memoryStrength.toFixed(2)} (${d.memoryType}, ep.${d.memoryEp}) ·
+            support ${d.estimatedSupport}/${d.majority} · confidence ${pct(d.confidence)} / required ${pct(d.requiredConfidence)} ·
+            action ${pct(d.actChance)}${d.actionRoll == null ? '' : ` / roll ${pct(d.actionRoll)}`} ·
+            TMP ${d.temperament} · LOY ${d.loyalty} · STR ${d.strategic} · ${d.emotional}
+          </div>
+          <div style="color:${decisionColor};margin-top:2px">${d.decisionReason}</div>
+        </div>`;
+      });
+    } else { html += `<div style="color:#484f58;font-size:11px">No alliance member had a strong enough remembered grievance to assess.</div>`; }
     html += `</div>`;
 
     // Betrayal Detection — the TRUE story: who flipped, and whether the alliance caught it
@@ -6733,6 +6806,7 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isCRVindicated  = evt.type === 'culturalResetVindicated';
     const isCRPivot       = evt.type === 'culturalResetPivot';
     const isCRBlowup      = evt.type === 'culturalResetBlowup';
+    const isGoatMerge     = evt.type === 'goatMergeAssessment';
     const isAmuletConf    = evt.type === 'amuletConfession';
     const isAmuletLeak    = evt.type === 'amuletLeak';
     const isAmuletSec     = evt.type === 'amuletFalseSecurity';
@@ -6794,6 +6868,7 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isSocialReact ? '\u2212 Fallout'
                      : isChalThreat  ? '\u26a0 CHALLENGE THREAT'
                      : isChalReact   ? '\u26a0 Threat noted'
+                     : isGoatMerge   ? 'ENDGAME OPTIONS'
                      : isGoatId      ? 'GOAT IDENTIFIED'
                      : isGoatObs     ? 'Drag-along target'
                      : isFtcThreat   ? '\u26a0 FTC THREAT'
@@ -7479,7 +7554,7 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
     const stratTypes = new Set(['allianceForm','allianceCrack','sideDeal','strategicTalk',
       'eavesdrop','chalThreat','chalThreatReaction','idolConfession','idolShare','idolFound',
       'idolBetrayal','ftcThreatAlert','ftcThreatStrategist','comfortBlindspot','clockingIt',
-      'watchingYou','goatIdentified','goatObserver','goatOblivious','scramble','lie',
+      'watchingYou','goatMergeAssessment','goatIdentified','goatObserver','goatOblivious','scramble','lie',
       'overconfidence','bigMoveThoughts','schemerManipulates','mastermindOrchestrates','kipAftermath',
       'allianceDissolved','socialIntel','fanVoteWinner','fanVoteJealousy',
       'villainIntimidate','villainPower','villainGloat','villainLoyalty',
@@ -8214,6 +8289,7 @@ export function rpBuildVotingPlans(ep) {
   // This screen is ALLIANCE-FIRST: shows what alliances PLAN to do, not what actually happened.
   // NO vote outcomes, NO checkmarks, NO "voted X". Pure pre-tribal setup.
   const votingLog = (ep.votingLog || []);
+  const preVoteReads = buildViewerVoteCommitments(ep.voteCommitmentDiagnostics || []);
   if (!votingLog.length) return null;
 
   // Tribe name — use saved tribalTribe, then alliance tribe, then merged/fallback
@@ -8676,12 +8752,13 @@ export function rpBuildVotingPlans(ep) {
       const target = a.target;
       const tCat = targetCategory(target);
       const bond = getBond(player, target);
-      const allyCount = a.members.filter(m => tribalPlayersList.includes(m)).length;
+      const leaners = preVoteReads.filter(read => read.predictedBallot === target).map(read => read.voter);
+      const allyCount = leaners.length;
 
       // Why vote
-      let whyVote = allyCount >= 3
-        ? `Alliance consensus. ${allyCount} members committed.`
-        : `${a.label} wants this. Clean strategic move.`;
+      let whyVote = allyCount
+        ? `${allyCount} eligible voter${allyCount === 1 ? '' : 's'} currently lean${allyCount === 1 ? 's' : ''} ${target}: ${leaners.join(', ')}.`
+        : `${a.label} proposed ${target}, but no eligible voter currently has it as a firm lean.`;
       if (tCat.label.includes('Physical')) whyVote += ` ${target} is a physical threat everyone agrees on.`;
       else if (tCat.label.includes('Strategic')) whyVote += ` ${target} is running the game from behind — too smart to keep.`;
       else if (tCat.label.includes('Social')) whyVote += ` ${target} is too well-liked. Every vote they survive gets harder.`;
@@ -8696,13 +8773,13 @@ export function rpBuildVotingPlans(ep) {
       else if (bond >= 3) whyNot = `The bond with ${target} is strong. Writing that name means betraying a real relationship.`;
       else if (_sharedAlliance) whyNot = `${player} and ${target} are in ${_sharedAlliance.name} together. Following through means breaking ranks.`;
       else if (bond >= 2) whyNot = `${player} has a genuine connection with ${target}. This isn't a clean vote — it's personal.`;
-      else if (allyCount <= 2) whyNot = `Only ${allyCount} votes behind this. Needs help from outside. High risk if nobody else follows.`;
+      else if (allyCount <= 2) whyNot = `Only ${allyCount} current lean${allyCount === 1 ? '' : 's'} behind this. Alliance membership alone does not guarantee ballots.`;
       else if (bond >= 1) whyNot = `There's enough of a connection with ${target} to create doubt — not a clean vote.`;
       else if (threatScore(target) <= 3) whyNot = `${target} isn't a real threat. Spending a vote here feels wasteful.`;
       else if (tribalPlayers.length <= 6) whyNot = `At this stage, every vote matters. Targeting ${target} might not be the smartest use of numbers.`;
       else whyNot = `No strong reason to hesitate — but no strong reason to commit either. ${player} could flip.`;
 
-      return { alliance: a.label, target, tCat, whyVote, whyNot, bond, allyCount };
+      return { alliance: a.label, target, tCat, whyVote, whyNot, bond, allyCount, leaners };
     });
   };
 
@@ -8823,9 +8900,17 @@ export function rpBuildVotingPlans(ep) {
     namedAlliances.forEach((a, aIdx) => {
       const spear = allianceSpear(a.members);
       const membersAtTribal = a.members.filter(m => tribalPlayers.includes(m));
-      const canVote = membersAtTribal.filter(m => !_vpLostVoteSet.has(m) && !_allImmuneVP.includes(m));
+      const canVote = membersAtTribal.filter(m => !_vpLostVoteSet.has(m));
       const cat = a.target ? targetCategory(a.target) : { label: 'No Target', color: '#484f58' };
       const splitPlan = (ep.splitVotePlans || []).find(sp => sp.alliance === a.label);
+      const _reliability = (() => {
+        const reads = preVoteReads.filter(r => r.source === a.label);
+        const dependable = reads.filter(r => r.predictedBallot === r.proposedTarget && r.commitmentStrength >= 0.65).map(r => r.voter);
+        const tentative = reads.filter(r => r.predictedBallot === r.proposedTarget && r.commitmentStrength < 0.65).map(r => r.voter);
+        const drifting = reads.filter(r => r.predictedBallot !== r.proposedTarget).map(r => r.voter);
+        const initialReservations = reads.filter(r => r.committedTarget !== r.proposedTarget && r.predictedBallot === r.proposedTarget).map(r => r.voter);
+        return { dependable, tentative, drifting, initialReservations, dependableVotes: dependable.length };
+      })();
 
       let ph = `<div class="rp-vp-plan" style="border:1px solid rgba(99,102,241,0.25);background:rgba(99,102,241,0.04);animation:slideInLeft 0.4s ease ${aIdx * 0.1}s both">`;
 
@@ -8847,6 +8932,8 @@ export function rpBuildVotingPlans(ep) {
       if (a.target) {
         const _isCheckedOut = ep.comfortBlindspotPlayer === a.target;
         const _targetReason = _vpTargetReason(a.target, spear, cat);
+        const _targetLeaners = preVoteReads.filter(read => read.source === a.label && read.predictedBallot === a.target).map(read => read.voter);
+        const _outsideLeaners = preVoteReads.filter(read => read.source !== a.label && read.predictedBallot === a.target).map(read => read.voter);
         ph += `<div class="rp-vp-section-mini">\u2694\uFE0F TARGET</div>
           <div class="rp-vp-target-row" style="background:rgba(248,81,73,0.06);border-radius:8px;padding:8px 10px">
             ${rpPortrait(a.target)}
@@ -8855,6 +8942,7 @@ export function rpBuildVotingPlans(ep) {
               <div class="rp-vp-target-cat" style="color:${cat.color}">${cat.label}</div>
               ${_isCheckedOut ? `<span class="rp-brant-badge gold">\u2b50 CHECKED OUT</span>` : ''}
               <div style="font-size:11px;color:#8b949e;margin-top:4px;line-height:1.4;font-style:italic">${_targetReason}</div>
+              <div style="font-size:10px;color:#c9d1d9;margin-top:5px"><strong>Projected alliance ballots:</strong> ${_targetLeaners.length ? `${_targetLeaners.join(', ')} (${_targetLeaners.length})` : 'none yet'}${_outsideLeaners.length ? `<br><span style="color:#8b949e"><strong>Outside support forecast:</strong> ${_outsideLeaners.join(', ')} (${_outsideLeaners.length})</span>` : ''}</div>
             </div>
           </div>`;
       } else {
@@ -8865,14 +8953,35 @@ export function rpBuildVotingPlans(ep) {
       }
 
       // Split vote indicator
+      ph += `<div style="margin-top:6px;padding:7px 9px;background:rgba(139,148,158,0.04);border:1px solid rgba(139,148,158,0.12);border-radius:6px"><div style="font-size:10px;font-weight:800;color:#8b949e;letter-spacing:.8px">BALLOT RELIABILITY</div><div style="font-size:10px;color:#c9d1d9;margin-top:3px"><strong style="color:#3fb950">Dependable (${_reliability.dependable?.length || 0}):</strong> ${_reliability.dependable?.join(', ') || 'none'}<br><strong style="color:#d29922">Tentative (${_reliability.tentative?.length || 0}):</strong> ${_reliability.tentative?.join(', ') || 'none'}${_reliability.initialReservations?.length ? `<br><span style="color:#8b949e">Tentative with early reservations: ${_reliability.initialReservations.join(', ')}</span>` : ''}${_reliability.drifting?.length ? `<br><strong style="color:#f0883e">Forecast elsewhere (${_reliability.drifting.length}):</strong> ${_reliability.drifting.join(', ')}` : ''}</div><div style="font-size:10px;color:#8b949e;margin-top:3px">Membership: ${canVote.length} eligible. Dependable ballots: ${_reliability.dependable?.length || 0}. Projected plan ballots: ${(_reliability.dependable?.length || 0) + (_reliability.tentative?.length || 0)}.</div></div>`;
+
+      // Split vote indicator
       if (a.splitTarget || splitPlan) {
         const splitTarget = a.splitTarget || splitPlan?.secondary;
         const splitCat = targetCategory(splitTarget);
+        const primaryVoters = (a.splitPrimary || splitPlan?.primaryVoters || []).filter(voter => !_vpLostVoteSet.has(voter));
+        const backupVoters = (a.splitSecondary || splitPlan?.secondaryVoters || []).filter(voter => !_vpLostVoteSet.has(voter));
+        const coordinatedCount = primaryVoters.length + backupVoters.length;
+        const competingHigh = Math.max(0, ...Object.entries(preVoteReads.reduce((counts, read) => {
+          if (read.committedTarget && read.committedTarget !== a.target && read.committedTarget !== splitTarget) counts[read.committedTarget] = (counts[read.committedTarget] || 0) + 1;
+          return counts;
+        }, {})).map(([, count]) => count));
+        const smallerSide = Math.min(primaryVoters.length, backupVoters.length);
+        const splitMajority = preVoteReads[0]?.majority || (Math.floor(Math.max(0, tribalPlayers.length - _vpLostVotes.length) / 2) + 1);
+        const oneDefectionBreaks = coordinatedCount > 0 && (smallerSide <= competingHigh || coordinatedCount - 1 < splitMajority);
+        const stabilityText = oneDefectionBreaks ? `Fragile: one defection can break the intended split or surrender control.` : `Stable on current leans: the operation can absorb one defection without immediately losing control.`;
+        const intel = a.idolKnowledge || splitPlan?.idolKnowledge;
+        const intelText = intel?.entries?.length
+          ? intel.entries.map(entry => `${entry.knower}: ${Math.round((entry.effectiveConfidence ?? entry.confidence ?? 0) * 100)}% via ${entry.source}`).join(' · ')
+          : 'No player-specific idol information recorded.';
         ph += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:6px 10px;background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.15);border-radius:6px">
           <span style="font-size:12px">\u{1F5E1}\uFE0F</span>
           <div>
-            <div style="font-size:11px;font-weight:700;color:#d29922">SPLIT VOTE</div>
-            <div style="font-size:10px;color:#8b949e">Some votes going to <strong style="color:#e6edf3">${splitTarget}</strong> <span style="color:${splitCat.color}">(${splitCat.label})</span> as insurance</div>
+            <div style="font-size:11px;font-weight:700;color:#d29922">COORDINATED SPLIT · ${coordinatedCount} BALLOTS</div>
+            <div style="font-size:10px;color:#c9d1d9;margin:2px 0"><strong>${primaryVoters.length} on ${a.target}</strong> / <strong>${backupVoters.length} on ${splitTarget}</strong> as idol insurance</div>
+            <div style="font-size:10px;color:#8b949e"><strong style="color:#e6edf3">Primary ${a.target}:</strong> ${primaryVoters.join(', ') || 'unassigned'}<br><strong style="color:#e6edf3">Backup ${splitTarget}:</strong> ${backupVoters.join(', ') || 'unassigned'} <span style="color:${splitCat.color}">(${splitCat.label})</span></div>
+            <div style="font-size:10px;color:${oneDefectionBreaks ? '#f0883e' : '#3fb950'};margin-top:3px"><strong>${stabilityText}</strong></div>
+            <div style="font-size:10px;color:#a78bfa;margin-top:3px"><strong>Why they are splitting:</strong> ${intelText}</div>
           </div>
         </div>`;
       }
@@ -9005,41 +9114,126 @@ export function rpBuildVotingPlans(ep) {
     html += `</div>`;
   }
 
+  const _vpCommitments = preVoteReads;
+  const _eligibleBallots = _vpCommitments.length || Math.max(0, tribalPlayers.length - _vpLostVotes.length);
+  const _majorityNeeded = _vpCommitments[0]?.majority || (Math.floor(_eligibleBallots / 2) + 1);
+  html += `<div style="margin:8px 0 14px;padding:10px 12px;background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.16);border-radius:8px">
+    <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#818cf8;margin-bottom:4px">VOTING MATH</div>
+    <div style="font-size:11px;color:#c9d1d9;line-height:1.5"><strong>${tribalPlayers.length}</strong> attending − <strong>${_vpLostVotes.length}</strong> without a vote = <strong>${_eligibleBallots} eligible voters</strong>. A plan needs <strong>${_majorityNeeded}</strong> ballots to guarantee majority control.</div>
+    <div style="font-size:10px;color:#8b949e;margin-top:3px">Example: “5 supporting / ${_majorityNeeded} needed” means the voter believes that plan is one ballot short. People without votes can still advise allies, but add zero voting power. Extra Votes are additional ballots played at Tribal.</div>
+    <div style="font-size:10px;color:#d29922;margin-top:3px"><strong>Important:</strong> a target does not need ${_majorityNeeded} votes to leave. If votes split several ways, the highest valid total wins by plurality; a 3–2–2–2–1 result still sends the player with 3 home.</div>
+  </div>`;
+  const _visibleReps = tribalPlayers.map(name => ({ name, rep:gs.strategicReputations?.[name] }))
+    .filter(x => x.rep?.labels?.length);
+  if (_visibleReps.length) {
+    html += `<div style="margin:-6px 0 14px;padding:10px 12px;background:rgba(168,85,247,.04);border:1px solid rgba(168,85,247,.16);border-radius:8px">
+      <div style="font-size:10px;font-weight:800;color:#c084fc;letter-spacing:1px;margin-bottom:5px">STRATEGIC REPUTATIONS</div>
+      ${_visibleReps.map(({name,rep}) => `<div style="font-size:11px;color:#c9d1d9;margin-top:3px"><strong>${name}</strong> — ${rep.labels.join(', ')}. This reflects repeated observed behavior and influences trust; it does not determine tonight's ballot.</div>`).join('')}
+    </div>`;
+  }
+  const _splitRejectText = {
+    'coalition-lacks-majority': 'The group does not control enough dependable ballots to split safely.',
+    'assignments-not-reliable': 'At least one assigned voter is too conflicted or unreliable for a delicate split.',
+    'primary-side-too-small': 'The primary side could be overtaken by the strongest visible counter-plan.',
+    'backup-side-too-small': 'The backup would not have enough votes to survive an idol play.',
+    'no-credible-idol-risk': 'Nobody has credible reason to believe an idol must be covered.',
+  };
+  if (ep.rejectedSplitPlans?.length) {
+    html += `<div style="margin:-6px 0 14px;padding:10px 12px;background:rgba(248,81,73,0.04);border:1px solid rgba(248,81,73,0.16);border-radius:8px"><div style="font-size:10px;font-weight:800;color:#f0883e;letter-spacing:1px;margin-bottom:5px">SPLIT CONSIDERED — REJECTED</div>${ep.rejectedSplitPlans.map(sp => `<div style="font-size:11px;color:#c9d1d9"><strong>${sp.alliance}</strong> considered splitting against ${sp.primary}, then kept its ballots together. ${_splitRejectText[sp.reason] || 'The numbers were not safe enough.'}${sp.idolKnowledge?.informed?.length ? ` Information held by: ${sp.idolKnowledge.informed.join(', ')}.` : ''}</div>`).join('')}</div>`;
+  }
+
+  if (ep.votePitches?.length) {
+    html += `<div class="rp-vp-section-label">FLIP NEGOTIATIONS</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:8px;margin-bottom:14px">${ep.votePitches.map(p => {
+      const exposedPushback = (p.responses || []).filter(r => !r.accepted && r.leaked);
+      const targetHeard = (ep.pitchIntel || []).some(info => info.pitcher === p.pitcher && info.target === p.pitchTarget && info.knower === p.pitchTarget);
+      return `<div style="padding:10px 11px;background:rgba(99,102,241,.05);border:1px solid rgba(99,102,241,.18);border-radius:8px"><div style="font-size:10px;font-weight:800;color:#d29922">${p.pitcher} → ${p.pitchTarget} · PITCH IN PLAY</div><div style="font-size:11px;color:#c9d1d9;margin-top:4px">${p.pitcher} claims as many as ${p.claimedSupport} possible votes. Private commitments are intentionally hidden until Tribal.</div><div style="font-size:10px;color:#8b949e;margin-top:3px">Known committed vote: ${p.pitcher}.${exposedPushback.length ? `<br>Exposed pushback: ${exposedPushback.map(r => `${r.voter} rejected it and leaked the conversation`).join('; ')}` : ' Other responses remain uncertain.'}${targetHeard ? `<br><span style="color:#f0883e">Warning: some version of the pitch reached ${p.pitchTarget}.</span>` : ''}</div></div>`;
+    }).join('')}</div>`;
+  }
+
+  // ── PLAN STABILITY ─────────────────────────────────────────────────────────
+  // Pre-vote information only: never expose the actual ballot or late trigger on
+  // this screen. This gives viewers the same strategic context without spoilers.
+  const _planReads = _vpCommitments.filter(c => c.proposedTarget && c.committedTarget);
+  if (_planReads.length) {
+    html += `<div class="rp-vp-section-label">PLAN STABILITY</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;margin-bottom:12px">`;
+    _planReads.forEach(c => {
+      const pull = Math.round((c.commitmentStrength || 0) * 100);
+      const negotiated = !!c.preNegotiationPredictedBallot && c.preNegotiationPredictedBallot !== c.predictedBallot;
+      const followsProposal = c.predictedBallot === c.proposedTarget;
+      const beganOnProposal = c.committedTarget === c.proposedTarget;
+      const status = negotiated ? 'NEGOTIATED FLIP'
+        : c.splitVoteAssignment === 'backup' ? 'ASSIGNED BACKUP'
+        : c.splitVoteAssignment === 'primary' ? 'ASSIGNED PRIMARY'
+        : followsProposal ? (pull >= 70 && beganOnProposal ? 'LOCKED ON PLAN' : beganOnProposal ? 'LEANING PLAN' : 'FORECAST TO RETURN') : 'FORECAST ELSEWHERE';
+      const color = negotiated ? '#a78bfa' : followsProposal ? (pull >= 70 ? '#3fb950' : '#d29922') : '#f0883e';
+      const splitNote = c.splitVoteAssignment === 'backup' ? ` ${c.voter} is assigned to the ${c.splitBackupTarget} backup in a split against ${c.splitPrimaryTarget}.`
+        : c.splitVoteAssignment === 'primary' ? ` ${c.voter} is assigned to the ${c.splitPrimaryTarget} primary side of an idol split.` : '';
+      const read = negotiated
+        ? `${c.voter} was forecast on ${c.preNegotiationPredictedBallot}, then publicly pushed ${c.predictedBallot}. Private support is unresolved; the viewer forecast counts only ${c.voter}'s own visible commitment.`
+        : beganOnProposal
+        ? `${c.voter}'s initial lean is ${c.committedTarget}. The forecast expects ${c.predictedBallot}.${splitNote}`
+        : `${c.voter}'s initial personal lean is ${c.committedTarget}, away from ${c.source}'s ${c.proposedTarget} proposal. The forecast expects ${c.predictedBallot}.${splitNote}`;
+      const namedSupport = ` ${c.voter} estimates ${c.believedVotes} early supporter${c.believedVotes === 1 ? '' : 's'}; ${c.majority} are needed for majority control. Forecasted ballots on ${c.proposedTarget}: ${c.projectedVoters?.length || 0}${c.projectedVoters?.length ? ` — ${c.projectedVoters.join(', ')}` : ''}.`;
+      html += `<div style="display:flex;gap:9px;align-items:center;padding:9px 10px;background:rgba(139,148,158,0.04);border:1px solid rgba(139,148,158,0.12);border-radius:8px">
+        ${rpPortrait(c.voter, 'sm')}
+        <div style="min-width:0"><div style="font-size:10px;font-weight:800;color:${color};letter-spacing:0.6px">${status} · ${pull}% PLAN PULL</div>
+        <div style="font-size:11px;color:#c9d1d9;line-height:1.4;margin-top:2px">${read}${namedSupport}</div></div>
+      </div>`;
+    });
+    html += `</div>`;
+
+    const _leanCounts = {};
+    _planReads.forEach(c => {
+      if (!c.predictedBallot) return;
+      if (!_leanCounts[c.predictedBallot]) _leanCounts[c.predictedBallot] = [];
+      _leanCounts[c.predictedBallot].push(c.voter);
+    });
+    const _leanRows = Object.entries(_leanCounts).sort(([,a],[,b]) => b.length - a.length);
+    if (_leanRows.length) {
+      const _topHasMajority = _leanRows[0][1].length >= _majorityNeeded;
+      html += `<div style="padding:10px 12px;margin:-4px 0 12px;background:rgba(210,153,34,0.04);border:1px solid rgba(210,153,34,0.14);border-radius:8px">
+        <div style="font-size:10px;font-weight:800;color:#d29922;letter-spacing:1px;margin-bottom:5px">CURRENT LEANS ACROSS ALL ALLIANCES</div>
+        ${_leanRows.map(([target, voters]) => `<div style="font-size:11px;color:#c9d1d9;padding:2px 0"><strong>${target}: ${voters.length}</strong> — ${voters.join(', ')}</div>`).join('')}
+        <div style="font-size:10px;color:#8b949e;margin-top:5px">${_topHasMajority ? `At least one target currently has majority control.` : `No target currently has ${_majorityNeeded} firm leans. The vote can still be decided by a smaller plurality if the field stays split.`}</div>
+      </div>`;
+      const _splitOperations = (ep.splitVotePlans || []).map(sp => {
+        const primary = (sp.primaryVoters || []).filter(v => !_vpLostVoteSet.has(v));
+        const backup = (sp.secondaryVoters || []).filter(v => !_vpLostVoteSet.has(v));
+        return { ...sp, primary, backup, total: primary.length + backup.length };
+      }).filter(sp => sp.total);
+      if (_splitOperations.length) {
+        html += `<div style="padding:10px 12px;margin:-4px 0 12px;background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.18);border-radius:8px"><div style="font-size:10px;font-weight:800;color:#818cf8;letter-spacing:1px;margin-bottom:5px">COORDINATED OPERATIONS</div>${_splitOperations.map(sp => `<div style="font-size:11px;color:#c9d1d9"><strong>${sp.alliance}: ${sp.total} coordinated ballots</strong> — ${sp.primary.length} on ${sp.primary}, ${sp.backup.length} on ${sp.secondary}. These are two halves of one plan, not competing coalitions.</div>`).join('')}</div>`;
+      }
+    }
+  }
+
   // ── GOING INTO TRIBAL ───────────────────────────────────────────────────────
-  // Determine primary and counter targets from alliance plans
+  // Determine primary and counter targets from individual pre-vote leans. Using
+  // alliance membership here double-counts overlapping alliances and falsely
+  // turns proposals into guaranteed ballots.
   const _targetVoteCounts = {};
-  namedAlliances.forEach(a => {
-    if (!a.target) return; // skip alliances with no valid target
-    const votingMembers = a.members.filter(m => tribalPlayers.includes(m) && !_vpLostVoteSet.has(m));
-    if (a.splitTarget) {
-      const primaryCount = (a.splitPrimary || []).filter(m => votingMembers.includes(m)).length;
-      const secondaryCount = (a.splitSecondary || []).filter(m => votingMembers.includes(m)).length;
-      _targetVoteCounts[a.target] = (_targetVoteCounts[a.target] || 0) + (primaryCount || Math.ceil(votingMembers.length * 0.6));
-      _targetVoteCounts[a.splitTarget] = (_targetVoteCounts[a.splitTarget] || 0) + (secondaryCount || Math.floor(votingMembers.length * 0.4));
-    } else {
+  if (_planReads.length) {
+    _planReads.forEach(read => {
+      if (read.predictedBallot) _targetVoteCounts[read.predictedBallot] = (_targetVoteCounts[read.predictedBallot] || 0) + 1;
+    });
+  } else {
+    namedAlliances.forEach(a => {
+      if (!a.target) return;
+      const votingMembers = a.members.filter(m => tribalPlayers.includes(m) && !_vpLostVoteSet.has(m));
       _targetVoteCounts[a.target] = (_targetVoteCounts[a.target] || 0) + votingMembers.length;
-    }
-  });
-  // Solo alliances contribute too
-  soloAlliances.forEach(a => {
-    const member = a.members[0];
-    if (member && tribalPlayers.includes(member) && !_vpLostVoteSet.has(member) && a.target && a.target !== 'null') {
-      _targetVoteCounts[a.target] = (_targetVoteCounts[a.target] || 0) + 1;
-    }
-  });
+    });
+  }
   const _sortedTargets = Object.entries(_targetVoteCounts).filter(([name]) => name && name !== 'null' && name !== 'undefined').sort(([,a],[,b]) => b - a);
   if (_sortedTargets.length) {
     const primaryTarget = _sortedTargets[0];
     const counterTarget = _sortedTargets[1] || null;
-    const totalPlannedVotes = _sortedTargets.reduce((s, [,c]) => s + c, 0);
+    const totalPlannedVotes = _eligibleBallots;
 
     const _heatLabel = (n, total) => {
-      const frac = total > 0 ? n / total : 0;
-      if (n === 1)     return 'A name in the mix';
-      if (frac >= 0.7) return 'Strong numbers behind this';
-      if (frac >= 0.5) return 'Majority momentum';
-      if (frac >= 0.35) return 'Real support going in';
-      return 'Support building';
+      if (n >= _majorityNeeded) return `Majority control · ${n}/${_eligibleBallots} leans`;
+      if (n === 1) return `One current lean · 1/${_eligibleBallots}`;
+      return `Plurality support · ${n}/${_eligibleBallots} current leans`;
     };
 
     html += `<div class="rp-vp-section-label">GOING INTO TRIBAL</div>
@@ -9097,6 +9291,17 @@ export function rpBuildVotingPlans(ep) {
   }
 
   // ── ADVANTAGES IN PLAY ──────────────────────────────────────────────────────
+  if (ep.idolExposureReads?.length) {
+    html += `<div class="rp-vp-section-label">IDOL HOLDER READS</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-bottom:12px">${ep.idolExposureReads.map(read => {
+      const label = read.mode === 'countermove' ? 'READS THE LEAK' : read.mode === 'panic' ? 'PARANOID FALSE ALARM' : read.mode === 'unaware' ? 'MISSES THE EXPOSURE' : read.mode === 'defensive' ? 'SENSES DANGER' : 'FEELS SAFE';
+      const detail = read.mode === 'countermove' ? `${read.holder} believes ${read.counterTarget} knows and may strike back or prepare the idol.`
+        : read.mode === 'panic' ? `${read.holder} thinks the idol is exposed even though no credible leak is recorded.`
+        : read.mode === 'unaware' ? `${read.informedPlayers.join(', ')} know or suspect the idol; ${read.holder} has not noticed.`
+        : read.notices ? `${read.holder} senses exposure but cannot identify the source confidently.` : `No credible exposure signal reaches ${read.holder}.`;
+      const decision = read.playDecision ? `<div style="font-size:10px;color:${read.playDecision.didPlay ? '#3fb950' : '#d29922'};margin-top:3px"><strong>${read.playDecision.didPlay ? 'Prepared to play' : 'Planned to hold'}</strong> · ${Math.round(read.playDecision.chance * 100)}% read confidence · ${read.playDecision.reason}</div>` : '';
+      return `<div style="padding:9px 10px;background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.16);border-radius:8px"><div style="font-size:10px;font-weight:800;color:#a78bfa">${read.holder} · ${label}</div><div style="font-size:11px;color:#c9d1d9;margin-top:3px">${detail}</div><div style="font-size:9px;color:#8b949e;margin-top:3px">Perceived exposure ${Math.round(read.perceivedRisk * 100)}% · ${read.emotional} state</div>${decision}</div>`;
+    }).join('')}</div>`;
+  }
   const snapAdvantages = ep.advantagesPreTribal || ep.gsSnapshot?.advantages || [];
   const tribalSet = new Set(tribalPlayers);
   const relevantAdvantages = snapAdvantages.filter(a => tribalSet.has(a.holder) && a.holder !== immunity);
@@ -9980,14 +10185,20 @@ export function vpWhyBullets(name, votelog, alliances, ep) {
 
   // Sole Vote: only the holder's vote counted — override the "votes that counted" line
   const _whySoleVote = (ep.idolPlays || []).find(p => p.type === 'soleVote');
+  const _whyExtraVotes = (ep.idolPlays || []).filter(p => p.type === 'extraVote' && p.target === name);
   if (_whySoleVote) {
     bullets.push(`${_whySoleVote.player}'s Sole Vote was the only vote that mattered — every other voice at tribal was silenced`);
   } else if (majVoters.length) {
-    bullets.push(_pick([
-      `The votes that counted: ${majVoters.join(', ')}`,
-      `${majVoters.length === 1 ? `${majVoters[0]} cast the deciding vote` : `${majVoters.slice(0,-1).join(', ')} and ${majVoters.at(-1)} wrote the name that stuck`}`,
-      `${majVoters.join(', ')} — that's who put ${name} on the jury`,
-    ]));
+    if (_whyExtraVotes.length) {
+      const extraText = _whyExtraVotes.map(p => `${p.player}'s Extra Vote${p.forAlly ? ` played for ${p.forAlly}` : ''}`).join(' and ');
+      bullets.push(`${majVoters.join(', ')}, plus ${extraText} — ${majVoters.length + _whyExtraVotes.length} votes put ${name} on the jury`);
+    } else {
+      bullets.push(_pick([
+        `The votes that counted: ${majVoters.join(', ')}`,
+        `${majVoters.length === 1 ? `${majVoters[0]} cast the deciding vote` : `${majVoters.slice(0,-1).join(', ')} and ${majVoters.at(-1)} wrote the name that stuck`}`,
+        `${majVoters.join(', ')} — that's who put ${name} on the jury`,
+      ]));
+    }
   }
   if (betrayed) {
     majVoters.filter(v => hadAlly.members.includes(v)).forEach(traitor => {
@@ -10001,13 +10212,13 @@ export function vpWhyBullets(name, votelog, alliances, ep) {
     });
   } else if (hadAlly) {
     if (_elimFollowedPlan) {
-      // Eliminated player was loyal to the alliance — the alliance tried but failed
-      bullets.push(_pick([
-        `${hadAlly.label} voted with ${name} — but was outnumbered`,
-        `${hadAlly.label} and ${name} were on the same side, but the numbers weren't there. Voting together only works if you have the majority`,
-        `${hadAlly.label} voted together and still fell short. The other side had more votes`,
-        `${hadAlly.label} held the line — but the opposing bloc was bigger. Being on the right side doesn't matter if the numbers aren't there`,
-      ]));
+      const _allianceVoters = hadAlly.members.filter(member => (votelog || []).some(v => v.voter === member));
+      const _alignedVoters = _allianceVoters.filter(member => (votelog || []).find(v => v.voter === member)?.voted === _elimVote);
+      const _splitVoters = _allianceVoters.filter(member => !_alignedVoters.includes(member));
+      const alignedText = _alignedVoters.length ? _alignedVoters.join(', ') : name;
+      bullets.push(_splitVoters.length
+        ? `${alignedText} followed ${hadAlly.label}'s ${_elimVote} plan, but ${_splitVoters.join(', ')} voted elsewhere. The alliance did not act as one bloc`
+        : `${alignedText} followed ${hadAlly.label}'s ${_elimVote} plan together, but the opposing votes still won`);
     } else {
       // Eliminated player defected from their own alliance — they went rogue and paid for it
       bullets.push(_pick([
@@ -10041,11 +10252,15 @@ export function vpWhyBullets(name, votelog, alliances, ep) {
       : voters.length === 2 ? `${voters[0]} and ${voters[1]}`
       : `${voters.slice(0,-1).join(', ')} and ${voters.at(-1)}`;
     if (alliance) {
-      bullets.push(_pick([
-        `${voterStr} voted ${voted} to protect the ${alliance.label} bloc — the numbers still weren't there`,
-        `${alliance.label} split their effort: ${voterStr} voted ${voted}, trying to keep the alliance intact. It wasn't enough`,
-        `${voterStr} (${alliance.label}) held the line on ${voted} — loyal to the plan, but outrun by the numbers`,
-      ]));
+      const followedAlliancePlan = voted === alliance.target || voted === alliance.splitTarget;
+      if (followedAlliancePlan) bullets.push(_pick([
+          `${voterStr} voted ${voted} to protect the ${alliance.label} bloc — the numbers still weren't there`,
+          `${voterStr} (${alliance.label}) held the line on ${voted} — loyal to the plan, but outrun by the numbers`,
+        ]));
+      else {
+        const protectedAlly = voters.every(v => (ep.voteCommitmentDiagnostics || []).find(c => c.voter === v)?.lateTrigger === 'protect-ally');
+        bullets.push(`${voterStr} left ${alliance.label}'s ${alliance.target} plan and voted ${voted}${protectedAlly ? ' to protect an ally' : ''}. That ballot did not support the alliance plan`);
+      }
     } else {
       bullets.push(`${voterStr} voted ${voted} — tried to pull numbers a different way`);
     }
@@ -10381,6 +10596,7 @@ export function rpBuildVotes(ep) {
   const _extraVotePlays = (ep.idolPlays || []).filter(p => p.type === 'extraVote');
 
   const _voteStealPlays = _voteIdolPlays.filter(p => p.type === 'voteSteal');
+  const _cancelledVoteTargets = new Set(_voteIdolPlays.filter(p => (p.votesNegated || 0) > 0).map(p => p.playedFor || p.player));
   const _stolenVoters = new Set(_voteStealPlays.map(p => p.stolenFrom));
   // Open vote lookups for badges
   const _ovReactions = ep.openVoteReactions || [];
@@ -10394,6 +10610,7 @@ export function rpBuildVotes(ep) {
     const { voter, voted, reason } = entry;
     const isStolen = entry.voteStolen || _stolenVoters.has(voter);
     const isBlackVote = entry.isBlackVote || false;
+    const isCancelledByIdol = _cancelledVoteTargets.has(voted);
     const r = reason ? reason.trim() : '';
     const slugV = String(voted).replace(/[^a-zA-Z0-9]/g, '');
     const _decl = _ovDecl ? _ovDecl(voter, voted) : null;
@@ -10431,7 +10648,7 @@ export function rpBuildVotes(ep) {
       }
     }
 
-    html += `<div class="tv-vote-card" data-voted="${isStolen ? '' : voted}" data-voter="${voter}" data-index="${idx}" ${isStolen ? `style="${_stolenStyle}"` : isBlackVote ? `style="${_blackVoteStyle}"` : ''}>
+    html += `<div class="tv-vote-card" data-voted="${isStolen ? '' : voted}" data-cancelled="${isCancelledByIdol ? '1' : '0'}" data-voter="${voter}" data-index="${idx}" ${isStolen ? `style="${_stolenStyle}"` : isBlackVote ? `style="${_blackVoteStyle}"` : ''}>
       ${isBlackVote ? `<div style="font-size:8px;font-weight:800;letter-spacing:1.5px;color:#818cf8;margin-bottom:4px">BLACK VOTE</div>` : ''}
       <div class="tv-vote-voter-wrap">
         ${rpPortrait(voter, 'sm')}
@@ -10442,6 +10659,7 @@ export function rpBuildVotes(ep) {
         ${_ovBadgeHtml ? `<div style="margin-bottom:3px">${_ovBadgeHtml}</div>` : ''}
         <div class="tv-vote-target">${voted}</div>
         ${isStolen ? `<div class="tv-vote-reason" style="color:#f0a500;font-weight:700;font-size:10px;letter-spacing:0.5px">VOTE STOLEN \u2014 this vote does not count</div>` : ''}
+        ${isCancelledByIdol ? `<div class="tv-vote-reason" style="color:#e3b341;font-weight:700;font-size:10px;letter-spacing:0.5px">DOES NOT COUNT \u2014 IDOL</div>` : ''}
         ${!isStolen && _decl ? `<div class="tv-vote-reason" style="color:#cdd9e5;font-style:italic">${_decl}</div>` : (!isStolen && r ? `<div class="tv-vote-reason">${r}</div>` : '')}
         ${_ovCascadeHtml}
         ${!isStolen && _react && !_ovReactionHtml ? `<div class="tv-vote-reason" style="color:#8b949e;font-size:10px;margin-top:3px">${voted}: ${_react}</div>` : ''}
@@ -10455,7 +10673,7 @@ export function rpBuildVotes(ep) {
     html += `<div style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#e3b341;text-align:center;padding:8px 0 4px;border-top:1px solid #2d2504;margin-top:4px">\u2295 EXTRA VOTE</div>`;
     _extraVotePlays.forEach((evp, i) => {
       const { player, target, forAlly } = evp;
-      html += `<div class="tv-vote-card" data-voted="${target}" data-voter="${player}" data-index="${vlog.length + i}" style="border-color:rgba(227,179,65,0.4);background:rgba(227,179,65,0.04)">
+      html += `<div class="tv-vote-card" data-voted="${target}" data-cancelled="${_cancelledVoteTargets.has(target) ? '1' : '0'}" data-voter="${player}" data-index="${vlog.length + i}" style="border-color:rgba(227,179,65,0.4);background:rgba(227,179,65,0.04)">
         <div class="tv-vote-voter-wrap">
           ${rpPortrait(player, 'sm')}
           ${forAlly ? rpPortrait(forAlly, 'sm') : ''}
@@ -11097,6 +11315,40 @@ export function rpBuildVotes(ep) {
   const _whyElim = ep.exileDuelVotedOut || ep.eliminated; // exile duel: WHY is about who was voted out, not who lost the duel
   if (_whyElim) {
     let _whyInner = '';
+    let _planChangeInner = '';
+    const _splitOutcomeRows = (ep.splitVotePlans || []).map(sp => {
+      const assignedPrimary = (sp.primaryVoters || []).filter(v => (ep.voteCommitmentDiagnostics || []).some(c => c.voter === v));
+      const assignedBackup = (sp.secondaryVoters || []).filter(v => (ep.voteCommitmentDiagnostics || []).some(c => c.voter === v));
+      const heldPrimary = assignedPrimary.filter(v => ep.votingLog?.find(x => x.voter === v)?.voted === sp.primary);
+      const heldBackup = assignedBackup.filter(v => ep.votingLog?.find(x => x.voter === v)?.voted === sp.secondary);
+      const defectors = [...assignedPrimary, ...assignedBackup].filter(v => !heldPrimary.includes(v) && !heldBackup.includes(v));
+      if (!assignedPrimary.length && !assignedBackup.length) return '';
+      return `<div style="font-size:11px;color:#c9d1d9;padding:5px 0"><strong>${sp.alliance}'s ${assignedPrimary.length}–${assignedBackup.length} split became ${heldPrimary.length}–${heldBackup.length}.</strong> ${defectors.length ? `${defectors.join(', ')} left their assignment${defectors.length === 1 ? '' : 's'}, so the operation lost ${defectors.length} ballot${defectors.length === 1 ? '' : 's'}.` : `Every assigned voter held their position.`}</div>`;
+    }).filter(Boolean);
+    const _changedPlans = (ep.voteCommitmentDiagnostics || []).filter(c => c.actualBallot &&
+      (c.lateTrigger !== 'plan-held' || c.transitionPrevented || c.actualBallot !== c.predictedBallot));
+    if (_changedPlans.length || _splitOutcomeRows.length) {
+      const _triggerText = c => {
+        if (c.transitionPrevented) return `considered ${c.transitionPrevented.rejectedTarget}, but no credible coalition or disruption justified leaving ${c.transitionPrevented.heldTarget}`;
+        if (c.lateTrigger?.startsWith('live-coalition-')) return `joined a simultaneous ${c.lateTrigger.split('-').at(-1)}-vote coalition on ${c.actualBallot}`;
+        if (c.lateTrigger === 'late-pitch') return `joined ${c.pitchOrganizer ? `${c.pitchOrganizer}'s ` : 'a '}${c.actualBallot} pitch${c.pitchCoalition?.length ? ` with ${c.pitchCoalition.join(', ')}` : ''}`;
+        if (c.lateTrigger === 'late-consensus') return `left an isolated one-vote plan and moved to the leading ${c.actualBallot} option when the room narrowed`;
+        if (c.lateTrigger === 'protect-ally') return `moved to ${c.actualBallot} to protect an ally`;
+        if (c.lateTrigger === 'personal-grudge') return `put a personal grudge ahead of the plan and voted ${c.actualBallot}`;
+        if (c.lateTrigger === 'conflicting-alliance') return `chose a competing alliance's ${c.actualBallot} plan`;
+        if (c.lateTrigger === 'self-preservation') return `switched to ${c.actualBallot} as a self-preservation move`;
+        if (c.lateTrigger === 'miscommunication') return `intended to follow the plan but wrote ${c.actualBallot}`;
+        if (c.lateTrigger === 'emotional-defection') return `emotionally defected to ${c.actualBallot} with visible support`;
+        if (c.lateTrigger === 'initial-commitment-held') return `kept the initial ${c.actualBallot} commitment instead of the forecast ${c.predictedBallot}`;
+        if (c.lateTrigger === 'returned-to-proposal') return `returned to the original ${c.proposedTarget} proposal`;
+        if (c.lateTrigger === 'private-preference-won') return `followed the private preference for ${c.actualBallot}`;
+        return `moved from the ${c.predictedBallot} forecast to ${c.actualBallot}`;
+      };
+      _planChangeInner = `<div style="margin-bottom:14px;padding:12px 14px;background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.18);border-radius:9px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1.4px;color:#818cf8;margin-bottom:7px">HOW THE PLANS CHANGED</div>
+        ${_splitOutcomeRows.join('')}${_changedPlans.map(c => `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)">${rpPortrait(c.voter, 'sm')}<div style="font-size:11px;color:#c9d1d9"><strong>${c.voter}</strong> ${_triggerText(c)}.</div></div>`).join('')}
+      </div>`;
+    }
 
     if (ep.firstEliminated && ep.announcedDoubleElim) {
       // Announced double elim — both eliminated in same vote, show both WHY cards here
@@ -11150,13 +11402,26 @@ export function rpBuildVotes(ep) {
       _tbBullets.push(`${_whyElim} lost the tiebreaker to ${tr.winner}. ${tr.winner} is safe. ${_whyElim} is out.`);
       _whyInner = _whyCard(_whyElim, _tbBullets, `${_whyElim} — Eliminated in Tiebreaker`);
 
-    } else if (ep.isTie && ep.revoteLog && !ep.isRockDraw && !ep.sidFreshVote && ep.tiedPlayers?.includes(_whyElim)) {
+    } else if (ep.isTie && ep.revoteLog?.length && ep.revoteVotes && !ep.isRockDraw && !ep.sidFreshVote && ep.tiedPlayers?.includes(_whyElim)) {
       // Revote
       const _rvOther = ep.tiedPlayers.find(p => p !== _whyElim);
       const _rvBullets = [];
-      const _rvInitFor = (ep.votingLog||[]).filter(l => l.voted === _whyElim).map(l => l.voter);
-      const _rvInitOther = _rvOther ? (ep.votingLog||[]).filter(l => l.voted === _rvOther).map(l => l.voter) : [];
-      _rvBullets.push(`Initial vote tied ${_rvInitFor.length}-${_rvInitOther.length} with ${_rvOther || 'another player'}: ${_rvInitFor.join(', ')} vs ${_rvInitOther.join(', ')}.`);
+      const _rvInitialVotersFor = target => {
+        const voters = (ep.votingLog||[]).filter(l => l.voted === target && !l.sitdSacrificed).map(l => l.voter);
+        (ep.idolPlays||[]).filter(p => (p.type === 'extraVote' || p.type === 'voteSteal') && p.target === target)
+          .forEach(p => voters.push(`${p.player} (${p.type === 'extraVote' ? 'extra vote' : 'stolen vote'})`));
+        return voters;
+      };
+      const _rvInitFor = _rvInitialVotersFor(_whyElim);
+      const _rvInitOther = _rvOther ? _rvInitialVotersFor(_rvOther) : [];
+      const _rvInitForCount = ep.votes?.[_whyElim] ?? _rvInitFor.length;
+      const _rvInitOtherCount = _rvOther ? (ep.votes?.[_rvOther] ?? _rvInitOther.length) : 0;
+      _rvBullets.push(`Initial vote tied ${_rvInitForCount}-${_rvInitOtherCount} with ${_rvOther || 'another player'}: ${_rvInitFor.join(', ')} vs ${_rvInitOther.join(', ')}.`);
+      if (ep.revoteCoordination?.primaryTarget) {
+        const coordination = ep.revoteCoordination;
+        const initialSupport = coordination.originalSupport?.[coordination.primaryTarget] || 0;
+        _rvBullets.push(`With a multi-way deadlock, the revoters coordinated around ${coordination.primaryTarget} instead of choosing independently. That option began with ${initialSupport} supporter${initialSupport === 1 ? '' : 's'}, and the final revote narrowed to ${coordination.distinctTargets} target${coordination.distinctTargets === 1 ? '' : 's'}.`);
+      }
       const held = ep.revoteLog.filter(r => { const orig = (ep.votingLog||[]).find(l => l.voter === r.voter)?.voted; return r.voted === orig; });
       const flipped = ep.revoteLog.filter(r => { const orig = (ep.votingLog||[]).find(l => l.voter === r.voter)?.voted; return r.voted !== orig; });
       if (held.length) _rvBullets.push(`Held firm on ${_whyElim}: ${held.filter(r=>r.voted===_whyElim).map(r=>r.voter).join(', ') || 'nobody'}.`);
@@ -11173,6 +11438,8 @@ export function rpBuildVotes(ep) {
       // Standard elimination (fresh vote WHY is inside the fresh vote interactive section above)
       _whyInner = _whyCard(_whyElim, _whyBullets(_whyElim, ep.votingLog, ep.alliances), `${_whyElim} was voted out because:`);
     }
+
+    if (_whyInner && _planChangeInner) _whyInner = _planChangeInner + _whyInner;
 
     // Volunteer Exile Duel context in WHY
     if (ep.volunteerDuel && _whyInner) {
@@ -11398,9 +11665,10 @@ export function tvRevealNext(epNum) {
     setTimeout(() => {
       card.classList.add('tv-revealed', 'tv-latest');
       const voted = card.dataset.voted;
+      const cancelled = card.dataset.cancelled === '1';
 
       // ── Beat 3: Vote Flies (700→1100ms) ──
-      if (voted) {
+      if (voted && !cancelled) {
         _tvFireVoteFly(card, epNum, voted, isRevote);
         if (isRevote) {
           const rvPanel = document.getElementById(`tv-tally-rv-${epNum}`);
@@ -11579,7 +11847,8 @@ export function tvRevealAll(epNum) {
     card.classList.remove('tv-latest');
     const voted = card.dataset.voted;
     const isRevote = card.dataset.revote === '1';
-    if (voted) {
+    const cancelled = card.dataset.cancelled === '1';
+    if (voted && !cancelled) {
       if (isRevote) {
         state.revoteCounts[voted] = (state.revoteCounts[voted] || 0) + 1;
       } else {
@@ -13483,6 +13752,21 @@ export function buildVPScreens(epRecord) {
     } else if (ep.finaleChallengeStages?.length) {
       const _gcHtml = rpBuildFinaleGrandChallenge(ep);
       if (_gcHtml) vpScreens.push({ id:'grand-challenge', label:'The Final Challenge', html: _gcHtml });
+    }
+
+    // Carnival Rescue finale (rescue-mission format)
+    if (ep.rescueData) {
+      const _rr = [
+        ['rescue-title', 'The Final Challenge', rpBuildRescueTitle],
+        ['rescue-maze', '🌽 Corn Maze', rpBuildRescueMaze],
+        ['rescue-haunted', '👻 Haunted House', rpBuildRescueHaunted],
+        ['rescue-ship', '🏴‍☠️ Pirate Ship', rpBuildRescueShip],
+        ['rescue-slide', '🌊 Waterslide', rpBuildRescueSlide],
+        ['rescue-lake', '🛟 Lake Rescue', rpBuildRescueLake],
+        ['rescue-drive', '🚑 Final Drive', rpBuildRescueDrive],
+        ['rescue-champion', '🏆 Champion', rpBuildRescueChampion],
+      ];
+      _rr.forEach(([id, label, fn]) => { const h = fn(ep); if (h) vpScreens.push({ id, label, html: h }); });
     }
 
     // Fan Vote Finale — campaign + vote reveal (replaces FTC)

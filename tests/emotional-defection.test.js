@@ -57,6 +57,18 @@ describe('temperament-driven emotional defections', () => {
     expect(evaluate({ roll: () => 0.999 })).toBeNull();
   });
 
+  it('records an explainable diagnostic for both restraint and defection', () => {
+    const held = [];
+    const heldResult = evaluateEmotionalDefection('Alice', 'Cara', tribe, [alliancePlan, counterPlan], [], [], 'comfortable', () => 0.999, held);
+    expect(heldResult).toBeNull();
+    expect(held[0]).toMatchObject({ voter: 'Alice', target: 'Bob', decision: 'held-plan', decisionReason: 'discipline-won' });
+
+    const moved = [];
+    evaluateEmotionalDefection('Alice', 'Cara', tribe, [alliancePlan, counterPlan], [], [], 'comfortable', () => 0, moved);
+    expect(moved[0]).toMatchObject({ voter: 'Alice', target: 'Bob', decision: 'defected', estimatedSupport: 3, majority: 4 });
+    expect(moved[0].actChance).toBeGreaterThan(0);
+  });
+
   it('gives brand-new alliances extra protection from shaky revenge flips', () => {
     gs.namedAlliances = [{ name: 'The Core', members: alliancePlan.members, active: true, formed: 5 }];
     const thinCounterPlan = { ...counterPlan, members: ['Dave'] }; // Alice sees only 2/4 votes

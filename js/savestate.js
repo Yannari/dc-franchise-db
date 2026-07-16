@@ -99,6 +99,7 @@ export function patchEpisodeHistory(ep) {
   // Advantages
   if (!h.advantagesPreTribal && ep.advantagesPreTribal) h.advantagesPreTribal = ep.advantagesPreTribal;
   if (!h.idolShares && ep.idolShares?.length) h.idolShares = ep.idolShares;
+  if (!h.idolExposureReads && ep.idolExposureReads?.length) h.idolExposureReads = ep.idolExposureReads;
   if (!h.kipSteal && ep.kipSteal) h.kipSteal = ep.kipSteal;
   if (!h.superIdolPlayed && ep.superIdolPlayed) h.superIdolPlayed = ep.superIdolPlayed;
   if (!h.votesBeforeSuperIdol && ep.votesBeforeSuperIdol) h.votesBeforeSuperIdol = ep.votesBeforeSuperIdol;
@@ -108,6 +109,9 @@ export function patchEpisodeHistory(ep) {
   if (!h._pbTriggerLog && ep._pbTriggerLog?.length) h._pbTriggerLog = ep._pbTriggerLog;
   if (!h._politicsLog && ep._politicsLog?.length) h._politicsLog = ep._politicsLog;
   if (!h.votePitches && ep.votePitches) h.votePitches = ep.votePitches;
+  if (!h.pitchIntel && ep.pitchIntel) h.pitchIntel = ep.pitchIntel;
+  if (!h.emotionalDefectionDiagnostics && ep.emotionalDefectionDiagnostics?.length) h.emotionalDefectionDiagnostics = ep.emotionalDefectionDiagnostics;
+  if (!h.voteCommitmentDiagnostics && ep.voteCommitmentDiagnostics?.length) h.voteCommitmentDiagnostics = ep.voteCommitmentDiagnostics;
   if (!h._debugScramble && ep._debugScramble) h._debugScramble = ep._debugScramble;
   if (!h.challengeThrows && ep.challengeThrows?.length) h.challengeThrows = ep.challengeThrows;
   // Challenge-specific data
@@ -138,6 +142,7 @@ export function patchEpisodeHistory(ep) {
   if (ep.tiedPlayers?.length && !h.tiedPlayers) h.tiedPlayers = [...ep.tiedPlayers];
   if (ep.revoteVotes && !h.revoteVotes) h.revoteVotes = ep.revoteVotes;
   if (ep.revoteLog?.length && (!h.revoteLog || !h.revoteLog.length)) h.revoteLog = ep.revoteLog;
+  if (!h.revoteCoordination && ep.revoteCoordination) h.revoteCoordination = ep.revoteCoordination;
   if (ep.isRockDraw && !h.isRockDraw) h.isRockDraw = ep.isRockDraw;
   // Clear journey lost votes for players who attended this tribal — vote loss is consumed
   if (ep.tribalPlayers?.length && gs.journeyLostVotes?.length) {
@@ -227,6 +232,7 @@ export function patchEpisodeHistory(ep) {
   h.providerSlackerData = ep.providerSlackerData || null;
   h.medevac = ep.medevac || null;
   if (ep.splitVotePlans?.length) h.splitVotePlans = ep.splitVotePlans;
+  if (ep.rejectedSplitPlans?.length) h.rejectedSplitPlans = ep.rejectedSplitPlans;
   if (ep.voteMiscommunications?.length) h.voteMiscommunications = ep.voteMiscommunications;
   if (ep.brokerEvents?.length) h.brokerEvents = ep.brokerEvents;
   if (ep.brokerExposure) h.brokerExposure = ep.brokerExposure;

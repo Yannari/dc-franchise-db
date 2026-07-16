@@ -2,9 +2,32 @@
 import { gs, players, ARCHETYPES, seasonConfig } from './core.js';
 import { pStats, pronouns, threatScore, isAllianceBottom, getPlayerState, challengeWeakness, threat } from './players.js';
 import { getBond, getPerceivedBond, addBond, addPerceivedBond } from './bonds.js';
+import { allianceIdolRead, recordIdolIntel } from './advantage-intel.js';
+import { rememberStrategy } from './strategy-memory.js';
 
 const _arch = (n) => players.find(p => p.name === n)?.archetype || 'floater';
 const _VILLAINY = ['villain', 'mastermind', 'schemer'];
+export function coalitionMajority(members, lostVotes = []) {
+  const lost = new Set(lostVotes || []);
+  const eligible = (members || []).filter(name => !lost.has(name)).length;
+  return { eligible, majority: Math.floor(eligible / 2) + 1 };
+}
+
+export function evaluateSplitVoteSafety({ primaryVoters = [], backupVoters = [], eligibleVoterCount = 0,
+  strongestOpposition = 0, reliableVoters = [], idolKnown = false, idolSuspected = false } = {}) {
+  const coordinated = primaryVoters.length + backupVoters.length;
+  const majority = Math.floor(eligibleVoterCount / 2) + 1;
+  const unreliable = [...primaryVoters, ...backupVoters].filter(v => !reliableVoters.includes(v));
+  let rejectionReason = null;
+  if (!idolKnown && !idolSuspected) rejectionReason = 'no-credible-idol-risk';
+  else if (coordinated < majority) rejectionReason = 'coalition-lacks-majority';
+  else if (!backupVoters.length) rejectionReason = 'no-backup-ballots';
+  else if (unreliable.length) rejectionReason = 'assignments-not-reliable';
+  else if (primaryVoters.length <= strongestOpposition) rejectionReason = 'primary-side-too-small';
+  else if (backupVoters.length <= strongestOpposition) rejectionReason = 'backup-side-too-small';
+  return { safe: !rejectionReason, rejectionReason, coordinated, majority, strongestOpposition, unreliable,
+    primaryCount: primaryVoters.length, backupCount: backupVoters.length };
+}
 // How likely a player is to jump to conclusions and blame the WRONG person for a flip. Driven by a hot
 // temper, boldness, and a poor read (low intuition); perceptive/careful minds rarely misfire.
 function _impulsiveness(name) {
@@ -758,10 +781,134 @@ export function detectBetrayals(ep) {
   });
 }
 
+// Exposed negotiation is not automatically betrayal: credible alliance witnesses
+// react in proportion to the organizer's eventual ballot and prior incidents.
+export function applyPitchAllianceFallout(ep) {
+  if (!ep?.votePitches?.length || !ep?.pitchIntel?.length || !gs.namedAlliances?.length) return [];
+  const ballot = new Map((ep.votingLog || []).map(v => [v.voter, v.voted]));
+  const fallout = [];
+  ep.votePitches.forEach(pitch => {
+    const organizer = pitch.pitcher;
+    if (!organizer || !gs.activePlayers.includes(organizer)) return;
+    gs.namedAlliances.filter(a => a.active && a.members?.includes(organizer)).forEach(alliance => {
+      const planTarget = (ep.alliances || []).find(a => a.label === alliance.name)?.target;
+      if (!planTarget || planTarget === pitch.pitchTarget) return;
+      const witnesses = (ep.pitchIntel || []).filter(info => info.pitcher === organizer
+        && info.target === pitch.pitchTarget && info.believed && info.confidence >= 0.55
+        && info.knower !== organizer && alliance.members.includes(info.knower));
+      if (!witnesses.length) return;
+      alliance.pitchIncidents = alliance.pitchIncidents || [];
+      const prior = alliance.pitchIncidents.filter(i => i.player === organizer).length;
+      const actual = ballot.get(organizer) || null;
+      const followedPitch = actual === pitch.pitchTarget;
+      const targetedAlly = alliance.members.includes(pitch.pitchTarget);
+      const outcome = followedPitch ? 'confirmed-break' : targetedAlly ? 'attempted-internal-hit' : 'backed-down';
+      const severity = followedPitch && targetedAlly ? 'major' : followedPitch || targetedAlly ? 'moderate' : 'warning';
+      const incident = { player: organizer, alliance: alliance.name, target: pitch.pitchTarget,
+        planTarget, outcome, severity, witnesses: [...new Set(witnesses.map(w => w.knower))],
+        source: [...witnesses].sort((a, b) => b.confidence - a.confidence)[0]?.source || null,
+        confidence: Math.max(...witnesses.map(w => w.confidence)), ep: ep.num, repeat: prior > 0 };
+      alliance.pitchIncidents.push(incident);
+      const bondCost = severity === 'major' ? -1.2 : severity === 'moderate' ? -0.7 : -0.3;
+      incident.witnesses.forEach(member => {
+        addBond(member, organizer, bondCost);
+        rememberStrategy(member, organizer, 'exposed-alliance-pitch', ep.num,
+          severity === 'major' ? 2 : severity === 'moderate' ? 1.35 : 0.65,
+          { alliance: alliance.name, target: pitch.pitchTarget, outcome });
+      });
+      if (severity !== 'warning' || prior > 0) {
+        gs.strategyExclusions = gs.strategyExclusions || {};
+        gs.strategyExclusions[organizer] = { alliance: alliance.name, untilEp: ep.num + 1,
+          reason: followedPitch ? 'confirmed exposed pitch' : 'repeated exposed pitch' };
+        incident.excluded = true;
+        alliance.members = [...alliance.members.filter(m => m !== organizer), organizer];
+      }
+      const alreadyRecorded = (alliance.betrayals || []).some(b => b.player === organizer && b.ep === ep.num);
+      if (prior > 0 && !alreadyRecorded) {
+        alliance.betrayals = alliance.betrayals || [];
+        alliance.betrayals.push({ player: organizer, ep: ep.num, votedFor: actual,
+          consensusWas: planTarget, reason: `repeated exposed pitch against ${pitch.pitchTarget}`,
+          severity: targetedAlly ? 'major' : 'moderate', pitchAttempt: true });
+      }
+      fallout.push(incident);
+    });
+  });
+  ep.pitchAllianceFallout = fallout;
+  return fallout;
+}
+
+export function resolveAllianceRepair(incident, epNum = (gs.episode || 0) + 1, roll = Math.random) {
+  if (!incident?.traitor || !incident?.alliance) return null;
+  const alliance = (gs.namedAlliances || []).find(a => a.name === incident.alliance && a.active);
+  if (!alliance || !alliance.members.includes(incident.traitor)) return null;
+  const traitor = incident.traitor;
+  const peers = alliance.members.filter(m => m !== traitor && gs.activePlayers.includes(m));
+  if (!peers.length) return null;
+  gs.allianceRepairHistory = gs.allianceRepairHistory || [];
+  const previous = gs.allianceRepairHistory.filter(r => r.player === traitor && r.alliance === alliance.name);
+  const stats = pStats(traitor);
+  const repeatPenalty = Math.min(0.35, previous.length * 0.12);
+  const priorFalseDenial = previous.some(r => r.approach === 'denial' && r.evidenceWasClear);
+
+  let approach;
+  if (stats.loyalty >= 7 || stats.temperament >= 7) approach = 'apology';
+  else if (stats.strategic >= 7) approach = 'strategic-explanation';
+  else if (stats.boldness >= 7 && stats.loyalty <= 4) approach = 'refusal';
+  else approach = 'denial';
+  const evidenceWasClear = !!incident.votedAlly || incident.severity === 'major' || incident.allyEliminated;
+  let credibility = approach === 'apology'
+    ? 0.30 + stats.social * 0.045 + stats.loyalty * 0.025
+    : approach === 'strategic-explanation'
+      ? 0.24 + stats.strategic * 0.05 + stats.social * 0.025
+      : approach === 'denial'
+        ? 0.34 + stats.social * 0.035 - (evidenceWasClear ? 0.30 : 0.08)
+        : 0.12 + stats.boldness * 0.015;
+  credibility = Math.max(0.05, Math.min(0.92, credibility - repeatPenalty - (priorFalseDenial ? 0.18 : 0)));
+
+  const reactions = peers.map(peer => {
+    const ps = pStats(peer);
+    const bond = getBond(peer, traitor);
+    const personallyTargeted = incident.votedFor === peer;
+    let acceptChance = 0.12 + credibility * 0.48 + Math.max(-2, Math.min(5, bond)) * 0.045
+      + ps.strategic * 0.018 - ps.loyalty * 0.012
+      - (personallyTargeted ? 0.28 : 0) - (incident.allyEliminated ? 0.20 : 0)
+      - (approach === 'refusal' ? 0.22 : 0);
+    acceptChance = Math.max(0.03, Math.min(0.88, acceptChance));
+    return { player:peer, accepted:roll() < acceptChance, acceptChance, personallyTargeted };
+  });
+  const accepted = reactions.filter(r => r.accepted).length;
+  const acceptanceRate = accepted / reactions.length;
+  const outcome = acceptanceRate >= 0.67 && approach !== 'refusal' ? 'forgiven'
+    : acceptanceRate >= 0.34 ? 'working-truce'
+      : (evidenceWasClear || previous.length) ? 'fracture' : 'rejected';
+  const result = { player:traitor, alliance:alliance.name, approach, credibility, evidenceWasClear,
+    outcome, reactions, accepted, total:reactions.length, ep:epNum, repeatAttempt:previous.length > 0 };
+
+  if (outcome === 'forgiven') {
+    peers.forEach(peer => addBond(peer, traitor, approach === 'apology' ? 0.55 : 0.35));
+    if (gs.strategyExclusions?.[traitor]?.alliance === alliance.name) delete gs.strategyExclusions[traitor];
+  } else if (outcome === 'working-truce') {
+    peers.filter(peer => reactions.find(r => r.player === peer)?.accepted).forEach(peer => addBond(peer, traitor, 0.18));
+    gs.strategyExclusions = gs.strategyExclusions || {};
+    gs.strategyExclusions[traitor] = { alliance:alliance.name, untilEp:epNum, reason:'working relationship without restored trust' };
+  } else {
+    peers.forEach(peer => addBond(peer, traitor, outcome === 'fracture' ? -0.45 : -0.2));
+    gs.strategyExclusions = gs.strategyExclusions || {};
+    gs.strategyExclusions[traitor] = { alliance:alliance.name, untilEp:epNum + 2, reason:'repair attempt failed' };
+  }
+  const betrayal = [...(alliance.betrayals || [])].reverse().find(b => b.player === traitor);
+  if (betrayal) betrayal.repairOutcome = outcome;
+  gs.allianceRepairHistory.push(result);
+  return result;
+}
+
 export function formAlliances(members, tribeLabel, challengeLabel) {
   if (members.length <= 1) return [];
   const alliances = [];
   const present = new Set(members);
+  const _lostVoteSet = new Set([...(gs.lostVoteThisEp || []), ...(gs.lostVotes || [])]);
+  const _canVote = name => present.has(name) && !_lostVoteSet.has(name);
+  const _eligibleMembers = members.filter(_canVote);
 
   // Active named alliances with 2+ members present at tribal
   // Use full active players for membership check (immune players still coordinate with their alliance)
@@ -774,11 +921,11 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
   const _alliancesBySize = activeNamed
     .map(a => ({ alliance: a, present: a.members.filter(m => _allAtTribal.has(m)) }))
     .filter(a => a.present.length >= 2)
-    .sort((a,b) => b.present.length - a.present.length);
+    .sort((a,b) => b.present.filter(_canVote).length - a.present.filter(_canVote).length || b.present.length - a.present.length);
 
   // ── Build majority: start from the largest alliance core, recruit to majority ──
   let majority, minority, hub;
-  const majSize = Math.ceil(members.length / 2);
+  const majSize = coalitionMajority(members, _lostVoteSet).majority;
   const _bestAlliance = _alliancesBySize[0];
 
   if (_bestAlliance && _bestAlliance.present.length >= 2) {
@@ -790,7 +937,7 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
     })[0];
 
     // Recruit from non-core members by bond with the hub + alliance affinity
-    const nonCore = members.filter(m => !core.includes(m));
+    const nonCore = members.filter(m => !core.includes(m) && _canVote(m));
     const recruited = nonCore
       .map(m => ({
         name: m,
@@ -802,7 +949,7 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
       .sort((a,b) => b.score - a.score);
 
     // Fill up to majority size
-    const needed = Math.max(0, majSize - core.length);
+    const needed = Math.max(0, majSize - core.filter(_canVote).length);
     const recruits = recruited.slice(0, needed).filter(r => r.score > -1).map(r => r.name);
     majority = [...core, ...recruits];
     minority = members.filter(m => !majority.includes(m));
@@ -814,7 +961,7 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
       const namedBonus = activeNamed.some(a => a.members.includes(n)) ? 2 : 0;
       return s.social * 0.5 + s.strategic * 0.5 + namedBonus + Math.random() * 0.5;
     };
-    hub = [...members].sort((a,b) => hubScore(b)-hubScore(a))[0];
+    hub = [...(_eligibleMembers.length ? _eligibleMembers : members)].sort((a,b) => hubScore(b)-hubScore(a))[0];
 
     const affinityFor = other => {
       const bond = getBond(hub, other);
@@ -826,7 +973,7 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
       return bond + compat*2 + ubBonus + rivalPenalty + (Math.random()-0.5)*0.4;
     };
 
-    const others = members.filter(m => m!==hub).sort((a,b) => affinityFor(b)-affinityFor(a));
+    const others = _eligibleMembers.filter(m => m!==hub).sort((a,b) => affinityFor(b)-affinityFor(a));
     majority = [hub, ...others.slice(0, majSize-1)];
     minority = members.filter(m => !majority.includes(m));
     majority.sort();
@@ -983,16 +1130,24 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
 
   // ── SPLIT VOTE: evaluate each alliance for idol-flush split ──
   alliances.forEach(a => {
-    if (a.type === 'solo' || a.members.length < 4) return; // need 4+ to split
+    const _eligibleAllianceMembers = a.members.filter(_canVote);
+    if (a.type === 'solo' || _eligibleAllianceMembers.length < 4) return; // need 4+ actual ballots to split
     if (!a.target) return;
-    const _atTribal = a.members.filter(m => present.has(m));
+    const _atTribal = _eligibleAllianceMembers;
     if (_atTribal.length < 4) return;
 
     // Check: confirmed idol on target?
-    const _confirmedIdol = gs.knownIdolHoldersThisEp?.has(a.target) || gs.knownIdolHoldersPersistent?.has(a.target);
+    const _idolRead = allianceIdolRead(a.target, _atTribal);
+    const _confirmedIdol = _idolRead.confirmed;
     // Check: suspected idol? Strategic roll.
     const _maxStrategic = Math.max(..._atTribal.map(m => pStats(m).strategic));
-    const _suspectedIdol = !_confirmedIdol && threatScore(a.target) >= 2.0 && Math.random() < _maxStrategic * 0.06;
+    const _organicSuspicion = !_confirmedIdol && !_idolRead.suspected && threatScore(a.target) >= 2.0 && Math.random() < _maxStrategic * 0.06;
+    if (_organicSuspicion) {
+      const _reader = [..._atTribal].sort((x,y) => (pStats(y).strategic + pStats(y).intuition) - (pStats(x).strategic + pStats(x).intuition))[0];
+      recordIdolIntel(_reader, a.target, { source:'strategic suspicion', confidence:0.58, truth:'unknown' });
+    }
+    const _finalIdolRead = _organicSuspicion ? allianceIdolRead(a.target, _atTribal) : _idolRead;
+    const _suspectedIdol = !_confirmedIdol && _finalIdolRead.suspected;
 
     if (!_confirmedIdol && !_suspectedIdol) return;
 
@@ -1017,7 +1172,7 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
     // Bond protection: if voter has bond >= 3 with secondary, force to primary group
     const _primaryGroup = [];
     const _secondaryGroup = [];
-    const _secondaryCount = a.members.length <= 4 ? 1 : 2;
+    const _secondaryCount = _atTribal.length <= 4 ? 1 : 2;
     // Sort by bond with secondary (lowest bond = best candidate for secondary group)
     const _sorted = [..._atTribal].sort((x, y) => getBond(x, _secondary) - getBond(y, _secondary));
     _sorted.forEach((m, i) => {
@@ -1029,6 +1184,34 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
     });
     // If we couldn't fill secondary group (everyone has bond >= 3 with secondary), skip split
     if (!_secondaryGroup.length) return;
+
+    // A split is only rational if both assignments are trustworthy and each
+    // half can beat the strongest currently visible competing plan. Membership
+    // alone is not treated as a guaranteed ballot.
+    const _reliableVoters = _atTribal.filter(voter => {
+      const s = pStats(voter);
+      const allies = _atTribal.filter(m => m !== voter);
+      const avgBond = allies.length ? allies.reduce((sum, m) => sum + getPerceivedBond(voter, m), 0) / allies.length : 0;
+      const assignedTarget = _secondaryGroup.includes(voter) ? _secondary : a.target;
+      const targetBond = getPerceivedBond(voter, assignedTarget);
+      return s.loyalty >= 5 && avgBond >= 0 && targetBond < 3 && getPlayerState(voter).emotional !== 'desperate';
+    });
+    const _competingPlans = alliances.filter(other => other !== a && other.target && other.target !== a.target && other.target !== _secondary);
+    const _strongestOpposition = Math.max(0, ..._competingPlans.map(other =>
+      other.members.filter(v => _canVote(v) && !a.members.includes(v)).length
+    ));
+    const _safety = evaluateSplitVoteSafety({
+      primaryVoters: _primaryGroup, backupVoters: _secondaryGroup,
+      eligibleVoterCount: members.filter(_canVote).length,
+      strongestOpposition: _strongestOpposition, reliableVoters: _reliableVoters,
+      idolKnown: _confirmedIdol, idolSuspected: _suspectedIdol,
+    });
+    a.splitEvaluation = _safety;
+    a.idolKnowledge = _finalIdolRead;
+    if (!_safety.safe) {
+      a.splitRejected = _safety.rejectionReason;
+      return;
+    }
 
     // Decorate the alliance object
     a.splitTarget = _secondary;
@@ -1076,7 +1259,7 @@ export function pickTarget(attackers, victims, challengeLabel) {
       const allAtTribal = [...attackers, v];
       const maxBond = allAtTribal.filter(p => p !== v).reduce((m, p) => Math.max(m, getPerceivedBond(p, v)), 0);
       const pairThreat = (maxBond >= 8 ? 1.0 : maxBond >= 7 ? 0.5 : 0)
-                       + (getShowmance(v) ? 0.5 : 0);
+                       + (gs.showmances?.some(sm => sm.phase !== 'broken-up' && sm.players?.includes(v)) ? 0.5 : 0);
       const standoutMod = gs._chalStandouts?.includes(v) ? 0.35 : 0;
       // Hub personality shifts targeting priority
       let personalityMod = 0;

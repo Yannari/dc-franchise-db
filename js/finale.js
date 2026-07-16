@@ -6,6 +6,7 @@ import { getBond, addBond } from './bonds.js';
 import { handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge } from './challenges-core.js';
 import { generateCampEvents } from './camp-events.js';
+import { reputationModifier } from './reputation.js';
 import { rpBuildWinnerCeremony, rpBuildReunion } from './vp-finale.js';
 import { rpBuildHPChallenge, rpBuildHPTiebreaker, rpBuildHPJoust, rpBuildHPVolcanoRace, rpBuildHPSummit, rpBuildHPEndings } from './chal/hawaiian-punch.js';
 
@@ -152,7 +153,7 @@ export function simulateFinale() {
   //   • fan-vote F2 — nobody to cut
   // Kept for traditional / jury-cut / fan-vote(F3) / fire-making, where the immunity winner is
   // safe and chooses who joins them at Final Tribal (or who's spared the fire duel).
-  const _formatDecidesOwnWinner = ['final-challenge', 'olympic-relay', 'koh-lanta'].includes(cfg.finaleFormat);
+  const _formatDecidesOwnWinner = ['final-challenge', 'olympic-relay', 'koh-lanta', 'rescue-mission'].includes(cfg.finaleFormat);
   const _skipImmunity = (cfg.finaleFormat === 'fan-vote' && cfg.finaleSize <= 2) || _formatDecidesOwnWinner;
   if (!_skipImmunity) {
     if (cfg.finaleFormat === 'hawaiian-punch' && players.length >= 3) {
@@ -878,7 +879,7 @@ export function simulateFinale() {
 
   // If 3 remain and need to cut to F2: finaleSize===2 (always cut), OR winner's-cut format with finaleSize===3 (winner decides who to cut)
   const _needsF3Cut = (cfg.finaleSize === 2) || (cfg.finaleFormat === 'jury-cut' && cfg.finaleSize === 3) || (cfg.finaleFormat === 'fan-vote' && cfg.finaleSize === 3);
-  if (!ep.firemaking && !ep.klChoice && _needsF3Cut && players.length === 3 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'olympic-relay' && cfg.finaleFormat !== 'koh-lanta' && cfg.finaleFormat !== 'hawaiian-punch') {
+  if (!ep.firemaking && !ep.klChoice && _needsF3Cut && players.length === 3 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'olympic-relay' && cfg.finaleFormat !== 'koh-lanta' && cfg.finaleFormat !== 'hawaiian-punch' && cfg.finaleFormat !== 'rescue-mission') {
     const others = players.filter(p => p !== ep.immunityWinner);
     let brought, cut;
     // Smart decision: immunity winner projects jury votes for each possible F2 pairing
@@ -919,7 +920,7 @@ export function simulateFinale() {
   }
 
   // If finaleSize === 4: immunity winner cuts 1, top 3 go to FTC
-  if (!ep.firemaking && !ep.klChoice && cfg.finaleSize === 4 && players.length === 4 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'olympic-relay' && cfg.finaleFormat !== 'koh-lanta' && cfg.finaleFormat !== 'hawaiian-punch') {
+  if (!ep.firemaking && !ep.klChoice && cfg.finaleSize === 4 && players.length === 4 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'olympic-relay' && cfg.finaleFormat !== 'koh-lanta' && cfg.finaleFormat !== 'hawaiian-punch' && cfg.finaleFormat !== 'rescue-mission') {
     const others4 = players.filter(p => p !== ep.immunityWinner);
     // Smart decision: project jury votes for each possible F3 trio
     const immWinner4 = ep.immunityWinner;
@@ -982,7 +983,7 @@ export function simulateFinale() {
 
   // Bench selection: eliminated players pick sides (final-challenge format ONLY — jury formats don't have benches)
   // Hawaiian Punch defers bench assignment until AFTER tiebreaker (so joust loser is in the pool and only F2 remain)
-  const hasFinaleChallenge = cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay';
+  const hasFinaleChallenge = cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay' || cfg.finaleFormat === 'rescue-mission';
   if (hasFinaleChallenge && (gs.eliminated.length > 0 || (gs.jury || []).length > 0)) {
     const benchResult = generateBenchAssignments(finalists);
     ep.benchAssignments = benchResult.assignments;
@@ -1764,6 +1765,17 @@ export function simulateFinale() {
       ep.juryResult = null;
       gs.finaleResult = { winner: raceWinner, votes: null, reasoning: null, finalists, hawaiianPunch: true };
     }
+  } else if (cfg.finaleFormat === 'rescue-mission') {
+    // Carnival Rescue — DC4 staged rescue-mission race (decides its own winner, no jury)
+    const rescue = simulateRescueMission(finalists, ep.assistants || null, ep.benchAssignments || {});
+    ep.rescueData = rescue.rescueData;
+    ep.finaleChallengeScores = rescue.totalScores;
+    ep.finaleChallengeWinner = rescue.winner;
+    ep.finalChallengePlacements = rescue.placements;
+    ep.finaleSabotageEvents = rescue.sabotageEvents;
+    ep.winner = rescue.winner;
+    ep.juryResult = null;
+    gs.finaleResult = { winner: ep.winner, votes: null, reasoning: null, finalists, finalChallenge: true };
   } else if (cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'olympic-relay') {
     let chalResult;
     if (cfg.finaleFormat === 'olympic-relay') {
@@ -1912,6 +1924,7 @@ export function simulateFinale() {
     finaleSabotageEvents: ep.finaleSabotageEvents || [],
     relayData: ep.relayData || null,
     relayPreRace: ep.relayPreRace || null,
+    rescueData: ep.rescueData || null,
     campEvents: ep.campEvents || null,
     // Fire-making finale
     firemaking: ep.firemaking || false,
@@ -2422,9 +2435,10 @@ export function simulateJuryVote(finalists) {
       }
       // Strategic/intuitive jurors weigh gameplay more and forgive gameplay betrayals better
       // Loyal/emotional jurors weight bitterness more heavily
-      const score = jS.strategic > 7 || jS.intuition > 7
+      const _reputationBonus = reputationModifier(f, 'jury') * (jS.strategic > 7 || jS.intuition > 7 ? 0.9 : 0.45);
+      const score = (jS.strategic > 7 || jS.intuition > 7
         ? gameplay * 0.7 + personal * 0.3 + bitterness * 0.3
-        : gameplay * 0.3 + personal * 0.7 + bitterness * 0.8;
+        : gameplay * 0.3 + personal * 0.7 + bitterness * 0.8) + _reputationBonus;
       return { name: f, score: score + (Math.random() * 1.5) };
     });
     scores.sort((a, b) => b.score - a.score);
@@ -2578,9 +2592,10 @@ export function projectJuryVotes(finalistSet) {
         if (history.voters.includes(f)) bitterness = -(0.6 + Math.max(0, bondAtBoot) * 0.5);
         else bitterness = 0.25 + Math.max(0, bondAtBoot) * 0.15;
       }
-      const score = jS.strategic > 7 || jS.intuition > 7
+      const _reputationBonus = reputationModifier(f, 'jury') * (jS.strategic > 7 || jS.intuition > 7 ? 0.9 : 0.45);
+      const score = (jS.strategic > 7 || jS.intuition > 7
         ? gameplay * 0.7 + personal * 0.3 + bitterness * 0.3
-        : gameplay * 0.3 + personal * 0.7 + bitterness * 0.8;
+        : gameplay * 0.3 + personal * 0.7 + bitterness * 0.8) + _reputationBonus;
       // Deterministic tiebreaker: use bond magnitude to break score ties
       return { name: f, score, tiebreak: Math.abs(bond) };
     });
@@ -2663,7 +2678,7 @@ export function generateFinalChallengeStages(finalists, winner) {
 // Eliminated players pick which finalist's bench to sit on
 export function generateBenchAssignments(finalists) {
   // Pool: all eliminated for challenge formats, jury for jury formats
-  const pool = (seasonConfig.finaleFormat === 'final-challenge' || seasonConfig.finaleFormat === 'olympic-relay' || seasonConfig.finaleFormat === 'hawaiian-punch') ? [...gs.eliminated] : [...(gs.jury || [])];
+  const pool = (seasonConfig.finaleFormat === 'final-challenge' || seasonConfig.finaleFormat === 'olympic-relay' || seasonConfig.finaleFormat === 'hawaiian-punch' || seasonConfig.finaleFormat === 'rescue-mission') ? [...gs.eliminated] : [...(gs.jury || [])];
   const assignments = Object.fromEntries(finalists.map(f => [f, []]));
   const reasons = {};
 
@@ -2874,6 +2889,210 @@ export function simulateFinaleChallenge(finalists, assistants) {
     placements: sorted.map(([name]) => name),
     sabotageEvents,
   };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CARNIVAL RESCUE — DC4 finale format (staged rescue-mission race, no jury)
+//   Six acts, each keyed to a different stat pair so all 9 stats matter:
+//   Maze(int+men) · Haunted(men+str) · Ship(phy+end) · Slide(bol+tmp) ·
+//   Lake(end+phy, 2-person, bond) · Drive(str+bol, solo). Helper assists most
+//   acts, is ESSENTIAL for the lake; bad bond → sabotage. First across wins.
+// ══════════════════════════════════════════════════════════════════════
+export function simulateRescueMission(finalists, assistants, benchAssignments) {
+  const RN = (r) => (Math.random() * r * 2) - r;
+  const PK = (a) => a[Math.floor(Math.random() * a.length)];
+  const ARCH = (n) => (players.find(p => p.name === n)?.archetype || 'floater');
+  const bump = (n, d) => { if (!gs.popularity) gs.popularity = {}; gs.popularity[n] = (gs.popularity[n] || 0) + d; };
+  const canScheme = (n) => {
+    const a = ARCH(n), s = pStats(n);
+    if (['villain', 'mastermind', 'schemer'].includes(a)) return true;
+    if (['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(a)) return false;
+    return s.strategic >= 6 && s.loyalty <= 4;
+  };
+  const helpers = {}; finalists.forEach(f => helpers[f] = assistants?.[f]?.name || null);
+  const H = seasonConfig?.host || 'Chris';
+
+  const ACTS = [
+    { id: 'maze',  emoji: '🌽', name: 'The Corn Maze',    statA: 'intuition', statB: 'mental',      assist: 'intuition', mode: 'assist',    desc: 'Find the ambulance keys hidden in the stalks — read the maze, remember the paths.' },
+    { id: 'haunt', emoji: '👻', name: 'The Haunted House', statA: 'mental',    statB: 'strategic',   assist: 'mental',    mode: 'assist',    desc: 'Deduce where your stretcher is hidden among the horrors — mind over fear.' },
+    { id: 'ship',  emoji: '🏴‍☠️', name: 'The Pirate Ship',  statA: 'physical',  statB: 'endurance',   assist: 'physical',  mode: 'assist',    desc: 'Climb the rigging to the top of the slide tower — pure muscle and grit.' },
+    { id: 'slide', emoji: '🌊', name: 'The Waterslide',    statA: 'boldness',  statB: 'temperament', assist: 'social',    mode: 'encourage', desc: 'Reach the top and take the plunge — only nerve carries you down.' },
+    { id: 'lake',  emoji: '🛟', name: 'The Lake Rescue',   statA: 'endurance', statB: 'physical',    assist: 'endurance', mode: 'essential', desc: 'Swim out with your helper and haul the drowning dummy back — a partner is everything here.' },
+    { id: 'drive', emoji: '🚑', name: 'The Final Drive',   statA: 'strategic', statB: 'boldness',    assist: null,        mode: 'solo',      desc: 'Helpers stay behind. One ambulance each, the whole midway to the finish — however you get there.' },
+  ];
+
+  const cume = Object.fromEntries(finalists.map(f => [f, 0]));
+  const acts = [];
+  const frozeLast = {};
+
+  ACTS.forEach((A, idx) => {
+    const legScores = {}, events = [];
+    finalists.forEach(f => {
+      const s = pStats(f);
+      let base = s[A.statA] * 0.6 + s[A.statB] * 0.4 + RN(2.2);
+      const asst = assistants?.[f];
+      if (A.mode !== 'solo' && asst?.name) {
+        const aS = asst.stats || pStats(asst.name);
+        const bond = (asst.bond != null) ? asst.bond : getBond(f, asst.name);
+        const mult = A.mode === 'essential' ? 0.28 : A.mode === 'encourage' ? 0.18 : 0.15;
+        const boost = aS[A.assist] * mult;
+        const saboChance = bond < 0 ? Math.min(0.45, Math.abs(bond) * 0.05) : 0;
+        if (saboChance > 0 && Math.random() < saboChance) {
+          base -= boost * 1.4;
+          events.push({ type: 'sabo', badge: 'HELPER FUMBLE', badgeClass: 'sabo', stat: A.assist, players: [asst.name, f],
+            text: PK([
+              `${asst.name} is meant to be helping ${f} — but a half-hearted effort and a muttered excuse cost real time. Some grudges outlast the game.`,
+              `${asst.name} "slips" at exactly the wrong moment. ${f} can't prove it was deliberate, but the look between them says everything.`,
+            ]) });
+        } else {
+          base += boost * (1 + Math.max(0, bond) * 0.03);
+        }
+      } else if (A.mode === 'essential' && !asst?.name) {
+        base -= 2.0;
+        events.push({ type: 'nerve', badge: 'GOING IT ALONE', badgeClass: 'nerve', stat: A.statA, players: [f],
+          text: PK([
+            `${f} has no helper in the water and it shows — dragging the dummy solo is a nightmare, and the clock keeps ticking.`,
+            `Alone in the black lake, ${f} fights the dummy's dead weight every stroke. This is exactly the leg where a partner would matter.`,
+          ]) });
+      }
+      legScores[f] = Math.max(0.5, base);
+      cume[f] += legScores[f];
+    });
+
+    const sortedLeg = Object.entries(legScores).sort(([, a], [, b]) => b - a);
+    const legWinner = sortedLeg[0][0];
+    const legLoser = sortedLeg[sortedLeg.length - 1][0];
+    const maxC = Math.max(...Object.values(cume)) || 1;
+    const positions = {};
+    finalists.forEach(f => positions[f] = Math.round(((idx + 1) / 6) * 100 * (0.72 + 0.28 * (cume[f] / maxC))));
+
+    _rescueActBeats(A, idx, finalists, legWinner, legLoser, helpers, benchAssignments, events, frozeLast, { canScheme, PK, bump });
+
+    acts.push({ id: A.id, emoji: A.emoji, name: A.name, statA: A.statA, statB: A.statB, mode: A.mode, desc: A.desc,
+      scores: legScores, legWinner, positions, events, hostQuip: _rescueHostQuip(A, legWinner, finalists, H, PK) });
+  });
+
+  const placements = Object.entries(cume).sort(([, a], [, b]) => b - a).map(([n]) => n);
+  const winner = placements[0];
+  finalists.forEach((f, i) => bump(f, i === 0 ? 3 : 1));
+
+  // final act crowns the cumulative champion (not just the drive leg)
+  const last = acts[acts.length - 1];
+  last.legWinner = winner;
+  const maxC2 = Math.max(...Object.values(cume)) || 1;
+  finalists.forEach(f => last.positions[f] = f === winner ? 100 : Math.min(97, Math.round(88 + 9 * (cume[f] / maxC2))));
+  const wPr = pronouns(winner);
+  last.events.push({ type: 'win', badge: 'ACROSS THE LINE', badgeClass: 'win', stat: 'boldness', players: [winner],
+    text: PK([
+      `${winner} throws everything into the last stretch, dummy in ${wPr.posAdj} arms, and clears the finish line first. Carnival of Chaos has a champion.`,
+      `In a photo finish, ${winner} leaps the final feet and lands the dummy on home ground ahead of everyone. It's over — ${winner} wins it all.`,
+    ]) });
+
+  const listNames = finalists.length === 2 ? `${finalists[0]} and ${finalists[1]}`
+    : finalists.slice(0, -1).join(', ') + ', and ' + finalists.slice(-1);
+  return {
+    stages: acts.map(a => ({ name: a.name, scores: a.scores, winner: a.legWinner })),
+    totalScores: cume, winner, placements, sabotageEvents: [],
+    rescueData: {
+      finalists, helpers, benchAssignments: benchAssignments || {}, acts, winner, placements,
+      hostOpen: `${H}: "Stawaki Carnival closed after a season of freak accidents — a body even came out of the Action Waterslide. Tonight, ${listNames} re-run that final rescue. First to lay their dummy on the stretcher and drive it home wins the million. No holding back!"`,
+      hostClose: `${H}: "${winner} brings the dummy across the line — ${winner} wins Carnival of Chaos and the million dollars!"`,
+    },
+  };
+}
+
+function _rescueActBeats(A, idx, finalists, legWinner, legLoser, helpers, bench, events, frozeLast, U) {
+  const { canScheme, PK, bump } = U;
+  const help = (f) => helpers[f];
+  const wPr = pronouns(legWinner);
+  const wHelp = help(legWinner);
+
+  if (A.id === 'maze') {
+    events.push({ type: 'find', badge: 'KEY SPOTTED', badgeClass: 'find', stat: 'intuition', players: wHelp ? [legWinner, wHelp] : [legWinner],
+      text: wHelp
+        ? PK([`${legWinner} hoists ${wHelp} up onto ${wPr.posAdj} shoulders — and ${wHelp} spots the key hanging from a scarecrow. "Remember every turn. I'm leaving nothing to chance."`,
+              `${wHelp} climbs ${legWinner}'s shoulders for a look over the stalks, calls out the path, and ${legWinner} snatches the key before anyone else finds the row.`])
+        : PK([`${legWinner} reads the maze like a map, cuts straight to the key, and is gone before the corn stops rustling.`,
+              `No wasted turns — ${legWinner} threads the maze on pure instinct and comes out with the ambulance key first.`]) });
+    const schemer = finalists.find(f => canScheme(f));
+    const target = schemer ? finalists.find(f => f !== schemer) : null;
+    if (schemer && target) {
+      addBond(schemer, target, -1); bump(schemer, -0.5);
+      events.push({ type: 'sabo', badge: 'SCARECROW DOWN', badgeClass: 'sabo', stat: 'strategic', players: [schemer, target],
+        text: PK([`${schemer} takes a second to topple the ${target}-shaped scarecrow, burying ${target}'s key in the straw. One flicker of guilt — then ${pronouns(schemer).sub}'s gone.`,
+                  `${schemer} spots ${target}'s key on a look-alike scarecrow and knocks the whole thing flat. Dirty? Maybe. Effective? Absolutely.`]) });
+    }
+    const trailBench = bench?.[legLoser] || [];
+    if (trailBench.length) {
+      events.push({ type: 'bench', badge: 'SIDELINE ASSIST', badgeClass: 'bench', stat: 'social', players: [trailBench[0], legLoser],
+        text: `${trailBench[0]} slips ${legLoser} a coconut through the fence. "You'll want this for later." A payback play, banked.` });
+    }
+  } else if (A.id === 'haunt') {
+    events.push({ type: 'deduce', badge: 'STRETCHER FOUND', badgeClass: 'deduce', stat: 'mental', players: [legWinner],
+      text: PK([`${legWinner} works the clues cold — figures out exactly which room hides the stretcher and walks straight to it while the others stumble in the dark.`,
+                `A hunch, a deduction, and ${legWinner} tiptoes across the cracking glass floor to the stretcher without a wasted step.`]) });
+    events.push({ type: 'deduce', badge: 'INTO THE DARK', badgeClass: 'deduce', stat: 'strategic', players: [legLoser],
+      text: PK([`${legLoser} second-guesses every doorway, doubles back twice, and loses ground in the fog.`,
+                `The house rattles ${legLoser} — every groan and shadow costs a beat of focus, and beats are everything now.`]) });
+  } else if (A.id === 'ship') {
+    events.push({ type: 'climb', badge: 'UP THE RIGGING', badgeClass: 'climb', stat: 'physical', players: wHelp ? [legWinner, wHelp] : [legWinner],
+      text: wHelp
+        ? PK([`${legWinner} and ${wHelp} attack the ropes together, hand over hand, and haul up to the crow's nest first.`,
+              `${wHelp} braces the rigging while ${legWinner} powers up it — a machine of muscle and teamwork.`])
+        : PK([`${legWinner} goes up the rigging like the mast owes ${wPr.obj} money, first to the top of the slide.`,
+              `Pure grit — ${legWinner} muscles up the ropes and reaches the platform ahead of the pack.`]) });
+  } else if (A.id === 'slide') {
+    const scaredList = finalists.filter(f => f !== legWinner && pStats(f).boldness < 6).sort((a, b) => pStats(a).boldness - pStats(b).boldness);
+    const scared = scaredList[0] || (legLoser !== legWinner ? legLoser : null);
+    if (scared) {
+      frozeLast[scared] = true;
+      const scPr = pronouns(scared);
+      events.push({ type: 'nerve', badge: 'FROZE UP', badgeClass: 'nerve', stat: 'boldness', players: [scared],
+        text: PK([`${scared} hits the top platform and locks up — the drop is too much. "I fail everything I try." The lead slips away in real time.`,
+                  `${scared} freezes at the lip of the slide, knuckles white, unable to let go. Every frozen second is ground lost.`]) });
+      const sHelp = help(scared);
+      if (sHelp) {
+        addBond(scared, sHelp, 1);
+        events.push({ type: 'bench', badge: 'SLAP OF FAITH', badgeClass: 'bench', stat: 'temperament', players: [sHelp, scared],
+          text: PK([`${sHelp} grabs ${scared} by the shoulders — maybe with a slap. "You don't have to be PERFECT. Look at MY game!" It snaps ${scared} out of it, and down the slide ${scPr.sub} goes.`,
+                    `${sHelp} refuses to let ${scared} spiral, talking ${scPr.obj} onto the slide breath by breath until ${scPr.sub} finally lets go and drops clean.`]) });
+      }
+    }
+    events.push({ type: 'win', badge: 'FEARLESS', badgeClass: 'win', stat: 'boldness', players: [legWinner],
+      text: PK([`${legWinner} doesn't even hesitate — straight off the top, no fear, and takes the whole leg.`,
+                `${legWinner} takes the plunge like it's nothing and comes up swimming, back in front.`]) });
+  } else if (A.id === 'lake') {
+    events.push({ type: 'rescue', badge: 'DUMMY SECURED', badgeClass: 'rescue', stat: 'endurance', players: wHelp ? [legWinner, wHelp] : [legWinner],
+      text: wHelp
+        ? PK([`${legWinner} and ${wHelp} reach the drowning dummy first and haul it in together. "${wHelp}, you matter more to me than the money." Their bond turns two tired swimmers into one.`,
+              `${wHelp} takes the head, ${legWinner} takes the feet, and they drag the dummy back in perfect sync — the closer they are, the faster they move.`])
+        : `${legWinner} muscles the dummy out of the lake alone on pure endurance — slower, but it's secured.` });
+    const loHelp = help(legLoser);
+    events.push({ type: 'rescue', badge: 'PUSH TO SHORE', badgeClass: 'rescue', stat: 'physical', players: loHelp ? [legLoser, loHelp] : [legLoser],
+      text: loHelp
+        ? `Falling behind, ${legLoser} leaps out and physically shoves the boat toward the bank while ${loHelp} steadies the dummy. So close — but not enough.`
+        : `${legLoser} hauls the dummy in solo, arms burning, and loses ground doing it.` });
+  } else if (A.id === 'drive') {
+    const clever = [...finalists].sort((a, b) => pStats(b).strategic - pStats(a).strategic)[0];
+    if (clever && pStats(clever).strategic >= 6) {
+      events.push({ type: 'sabo', badge: 'COCONUT GAMBIT', badgeClass: 'sabo', stat: 'strategic', players: [clever],
+        text: PK([`${clever} jams the coconut on the gas pedal, climbs onto the roof with the dummy, and lets the ambulance drive itself. Thinking, literally, outside the box.`,
+                  `${clever} wedges the coconut against the accelerator and rides the roof — a ridiculous, brilliant gambit that nearly steals the whole thing.`]) });
+    }
+  }
+}
+
+function _rescueHostQuip(A, legWinner, finalists, H, PK) {
+  const other = finalists.find(f => f !== legWinner) || legWinner;
+  const pool = {
+    maze:  [`${H}: "${legWinner} is OUT of the maze with the keys — the others are still lost in the corn!"`],
+    haunt: [`${H}: "${legWinner} found that stretcher on pure brains. Spooky AND smart!"`],
+    ship:  [`${H}: "${legWinner} is climbing like the mast owes ${pronouns(legWinner).obj} money! The gap is closing!"`],
+    slide: [`${H}: "THAT is how you take a drop! ${legWinner} makes up serious ground!"`],
+    lake:  [`${H}: "${legWinner} has the dummy — now it's a straight shot to the ambulances!"`],
+    drive: [`${H}: "It ALL comes down to this drive. ${legWinner} and ${other}, hold onto something!"`],
+  };
+  return PK(pool[A.id] || ['']);
 }
 
 // ══════════════════════════════════════════════════════════════════════

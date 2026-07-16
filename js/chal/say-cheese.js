@@ -14,8 +14,8 @@
 //   real showmance/eliminated ally) ruins a shot — break a phone and you get
 //   ONE warning; do it twice and you're disqualified.
 //
-//   NERVE (composure) = temperament*0.4 + boldness*0.35 + endurance*0.25
-//   SNAP  (clean shot) = intuition*0.45 + mental*0.35 + social*0.2
+//   NERVE (composure) = boldness*0.4 + endurance*0.35 + temperament*0.25
+//   SNAP  (clean shot) = intuition*0.4 + mental*0.3 + temperament*0.2 + social*0.1
 //   SABO  (sabotage)   = strategic*0.4 + boldness*0.3 + intuition*0.3
 //
 // Points ARE the result: best selfie quality → chalMemberScores, the first
@@ -33,8 +33,8 @@ function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function bumpPop(n, d) { if (!gs.popularity) gs.popularity = {}; gs.popularity[n] = (gs.popularity[n] || 0) + d; }
 function hostName() { return seasonConfig?.host || 'Chris'; }
 
-function nerveOf(n) { const s = pStats(n); return s.temperament * 0.4 + s.boldness * 0.35 + s.endurance * 0.25; }
-function snapOf(n) { const s = pStats(n); return s.intuition * 0.45 + s.mental * 0.35 + s.social * 0.2; }
+function nerveOf(n) { const s = pStats(n); return s.boldness * 0.4 + s.endurance * 0.35 + s.temperament * 0.25; }
+function snapOf(n) { const s = pStats(n); return s.intuition * 0.4 + s.mental * 0.3 + s.temperament * 0.2 + s.social * 0.1; }
 function saboOf(n) { const s = pStats(n); return s.strategic * 0.4 + s.boldness * 0.3 + s.intuition * 0.3; }
 
 function canScheme(n) {

@@ -4,11 +4,282 @@ import { pStats, pronouns, threatScore, getPlayerState, isAllianceBottom, challe
 import { getBond, getPerceivedBond, addBond } from './bonds.js';
 import { computeHeat, wRandom } from './alliances.js';
 import { strategicMemoryReason, strategicMemoryScore, strongestStrategicMemory } from './strategy-memory.js';
+import { buildObservedVoteCommitments, compareObservedCommitments, consolidateFringeBallots, resolveLateBallotTransitions, summarizePlanReliability } from './vote-planning.js';
+import { reputationModifier } from './reputation.js';
+
+export function evaluatePitchResponse({ trust = 0, loyalty = 5, targetBond = 0, claimedSupport = 1,
+  eligibleVoters = 1, confirmedSupport = 1, strategic = 5, intuition = 5, emotional = 'comfortable', liar = false,
+  selfTargeted = false, competingSupport = 0, commitmentStrength = 0, majority = Math.floor(eligibleVoters / 2) + 1,
+  reputationMod = 0, leakMod = 0 } = {}, roll = Math.random) {
+  const impossibleClaim = claimedSupport > eligibleVoters || claimedSupport < 1;
+  const verification = (strategic + intuition) / 20;
+  const unverifiableGap = Math.max(0, claimedSupport - confirmedSupport - 1);
+  const catchesExaggeration = liar && unverifiableGap > 0 && roll() < verification * 0.8;
+  const closeTarget = targetBond >= 3;
+  // Count the recipient's own ballot as the one vote they can add. Claims are not
+  // enough for self-preservation: the coalition must have enough confirmed people
+  // that joining it can at least match the votes currently aimed at the recipient.
+  const actionableConfirmedSupport = confirmedSupport + 1;
+  const cannotSaveSelf = selfTargeted && actionableConfirmedSupport < competingSupport;
+  const doesNotReplaceStrongPlan = commitmentStrength >= 0.7
+    && claimedSupport < majority && confirmedSupport < Math.min(3, majority);
+  let acceptChance = 0.12 + trust * 0.06 + confirmedSupport * 0.06 + strategic * 0.015 + reputationMod
+    - loyalty * 0.025 - Math.max(0, targetBond) * 0.08 - unverifiableGap * verification * 0.05;
+  if (emotional === 'paranoid') acceptChance -= 0.08;
+  if (emotional === 'desperate') acceptChance += 0.08;
+  if (impossibleClaim || catchesExaggeration || closeTarget || cannotSaveSelf || doesNotReplaceStrongPlan) acceptChance = 0;
+  const accepted = roll() < Math.max(0, Math.min(0.85, acceptChance));
+  const reason = impossibleClaim ? 'impossible-numbers' : catchesExaggeration ? 'caught-exaggeration'
+    : closeTarget ? 'protecting-target' : cannotSaveSelf ? 'does-not-save-me'
+    : doesNotReplaceStrongPlan ? 'strong-plan-not-replaced'
+    : accepted ? (confirmedSupport >= 2 ? 'numbers-confirmed' : 'trusted-pitcher')
+    : confirmedSupport < 2 ? 'wanted-confirmation' : 'not-convinced';
+  const leakChance = Math.max(0.02, Math.min(0.60, (emotional === 'paranoid' ? 0.35 : loyalty <= 3 ? 0.22 : 0.06) + leakMod));
+  return { accepted, reason, catchesExaggeration, acceptChance, leaked: !accepted && roll() < leakChance };
+}
+
+export function describePitchReaction(pitch = {}, response = {}, roll = Math.random) {
+  const voter = response.voter || 'The listener';
+  const target = pitch.pitchTarget || 'the target';
+  const organizer = pitch.pitcher || 'the organizer';
+  const pick = lines => lines[Math.min(lines.length - 1, Math.floor(roll() * lines.length))];
+  let tone = 'guarded';
+  let text;
+  if (response.reason === 'caught-exaggeration' || response.reason === 'impossible-numbers') {
+    tone = 'skeptical';
+    text = `${voter} challenged ${organizer}'s math almost immediately. The conversation ended with more questions than answers.`;
+  } else if (response.reason === 'protecting-target') {
+    tone = 'cold';
+    text = `${voter}'s posture changed when ${target} was named. They defended ${target} without promising what they would do at Tribal.`;
+  } else if (response.reason === 'does-not-save-me') {
+    tone = 'numbers-focused';
+    text = `${voter} kept asking how this move improved their own position. The numbers did not appear to reassure them.`;
+  } else if (response.reason === 'strong-plan-not-replaced') {
+    tone = 'guarded';
+    text = `${voter} listened, but repeatedly returned to the plan already in place. ${organizer} left without a clear answer.`;
+  } else if (response.reason === 'chose-stronger-coalition') {
+    tone = 'distracted';
+    text = `${voter} heard the pitch while watching another conversation across camp. Their attention seemed divided between competing plans.`;
+  } else {
+    const receptivity = Math.max(0, Math.min(1, (response.acceptChance || 0) + (response.accepted ? 0.22 : -0.06)));
+    if (receptivity >= 0.55) {
+      tone = 'receptive';
+      text = pick([
+        `${voter} listened closely and asked detailed questions about the numbers. They never said yes, but they did not rush away either.`,
+        `${voter} let ${organizer} finish the entire case against ${target}, then quietly asked who else had heard the plan. No commitment was spoken aloud.`,
+      ]);
+    } else if (receptivity >= 0.28) {
+      tone = 'uncertain';
+      text = pick([
+        `${voter} heard ${organizer} out, but gave little away. A few careful questions suggested the idea was at least being considered.`,
+        `${voter} stayed for the conversation and studied ${organizer}'s face more than the pitch itself. Their answer remained deliberately vague.`,
+      ]);
+    } else {
+      tone = 'unreceptive';
+      text = pick([
+        `${voter} looked unconvinced as soon as ${target}'s name came up. They ended the conversation without offering a name of their own.`,
+        `${voter} listened politely, but their body language stayed closed. ${organizer} did not leave with anything resembling a promise.`,
+      ]);
+    }
+  }
+  if (response.leaked) text += ` Later, pieces of the conversation began circulating through camp.`;
+  return { tone, text, badgeText: response.leaked ? 'PITCH LEAKED' : 'PITCH READ', badgeClass: response.leaked ? 'red' : tone === 'receptive' ? 'gold' : 'purple' };
+}
+
+export function summarizePitchReactions(pitch = {}, responses = []) {
+  if (!responses.length) return '';
+  const groups = {};
+  responses.forEach(response => {
+    const cue = describePitchReaction(pitch, response, () => 0);
+    if (!groups[cue.tone]) groups[cue.tone] = [];
+    groups[cue.tone].push(response.voter);
+  });
+  const join = names => names.length === 1 ? names[0]
+    : names.length === 2 ? `${names[0]} and ${names[1]}`
+    : `${names.slice(0, -1).join(', ')}, and ${names.at(-1)}`;
+  const target = pitch.pitchTarget || 'the target';
+  const parts = [];
+  if (groups.receptive) parts.push(`${join(groups.receptive)} listened closely and asked follow-up questions`);
+  if (groups.uncertain) parts.push(`${join(groups.uncertain)} heard the idea out but stayed deliberately vague`);
+  if (groups['numbers-focused']) parts.push(`${join(groups['numbers-focused'])} questioned whether the numbers improved their position`);
+  if (groups.guarded) parts.push(`${join(groups.guarded)} kept returning to the plan already in place`);
+  if (groups.cold) parts.push(`${join(groups.cold)} visibly defended ${target}`);
+  if (groups.skeptical) parts.push(`${join(groups.skeptical)} challenged the claimed numbers`);
+  if (groups.distracted) parts.push(`${join(groups.distracted)} appeared focused on a competing conversation`);
+  if (groups.unreceptive) parts.push(`${join(groups.unreceptive)} gave little indication the pitch had landed`);
+  const leaked = responses.filter(response => response.leaked).map(response => response.voter);
+  return `${parts.join('; ')}.${leaked.length ? ` Later, the conversation began circulating through ${join(leaked)}.` : ''} Nobody publicly committed a ballot.`;
+}
+
+export function propagatePitchLeaks(pitches = [], tribalPlayers = [], alliances = [], roll = Math.random) {
+  const intel = [];
+  if (!gs._pitchExposureResponses) gs._pitchExposureResponses = {};
+  pitches.forEach(pitch => {
+    (pitch.responses || []).filter(response => response.leaked).forEach(response => {
+      const source = response.voter;
+      const closeRecipients = tribalPlayers.filter(person => person !== source && person !== pitch.pitcher && person !== pitch.pitchTarget)
+        .filter(person => getPerceivedBond(source, person) >= 2 || alliances.some(a => a.members.includes(source) && a.members.includes(person)))
+        .sort((a, b) => getPerceivedBond(source, b) - getPerceivedBond(source, a)).slice(0, 2);
+      [...new Set([pitch.pitchTarget, ...closeRecipients])].filter(Boolean).forEach(knower => {
+        const kStats = pStats(knower);
+        const sourceStats = pStats(source);
+        const sourceBond = getPerceivedBond(knower, source);
+        const confidence = Math.max(0.2, Math.min(0.95, 0.48 + sourceStats.social * 0.025 + Math.max(-2, sourceBond) * 0.04
+          + (knower === pitch.pitchTarget ? 0.12 : 0) - (pitch.liedAboutNumbers ? 0.12 : 0)));
+        const discernment = ((kStats.strategic || 5) + (kStats.intuition || 5)) / 20;
+        const believed = roll() < Math.max(0.12, Math.min(0.96, confidence * (0.55 + discernment * 0.55)));
+        const entry = { knower, source, pitcher:pitch.pitcher, target:pitch.pitchTarget, confidence, believed,
+          sourceType:knower === pitch.pitchTarget ? 'direct-warning' : 'camp-rumor' };
+        intel.push(entry);
+        if (knower === pitch.pitchTarget && believed) {
+          const prior = gs._pitchExposureResponses[knower];
+          if (!prior || confidence > prior.confidence) gs._pitchExposureResponses[knower] = entry;
+          if (!gs.playerStates[knower]) gs.playerStates[knower] = {};
+          gs.playerStates[knower].eavesdropBoostThisEp = true;
+          addBond(knower, pitch.pitcher, -Math.max(0.2, confidence * 0.7));
+        } else if (believed && alliances.some(a => a.members.includes(knower) && a.members.includes(pitch.pitcher))) {
+          addBond(knower, pitch.pitcher, -0.25 * confidence);
+        }
+      });
+    });
+  });
+  return intel;
+}
+
+export function resolvePitchCounterplay(pitches = [], intel = [], tribalPlayers = [], alliances = [], lostVotes = [], roll = Math.random) {
+  const actions = [];
+  const eligible = tribalPlayers.filter(p => !lostVotes.includes(p));
+  if (!gs._pitchCounterplay) gs._pitchCounterplay = {};
+  pitches.forEach(pitch => {
+    const warning = intel.filter(i => i.pitcher === pitch.pitcher && i.target === pitch.pitchTarget
+      && i.knower === pitch.pitchTarget && i.believed)
+      .sort((a, b) => b.confidence - a.confidence)[0];
+    if (!warning || !eligible.includes(pitch.pitchTarget) || !eligible.includes(pitch.pitcher)) return;
+    const target = pitch.pitchTarget;
+    const stats = pStats(target);
+    const emotional = getPlayerState(target).emotional;
+    const actChance = Math.min(0.68, 0.08 + stats.strategic * 0.035 + stats.intuition * 0.025
+      + warning.confidence * 0.18 + (emotional === 'paranoid' || emotional === 'desperate' ? 0.08 : 0));
+    if (roll() >= actChance) {
+      actions.push({ actor:target, pitcher:pitch.pitcher, originalTarget:target, type:'watched-carefully',
+        source:warning.source, confidence:warning.confidence, success:false, coalition:[target] });
+      return;
+    }
+
+    const contacts = eligible.filter(v => v !== target && v !== pitch.pitcher)
+      .filter(v => getPerceivedBond(target, v) >= 1 || alliances.some(a => a.members.includes(target) && a.members.includes(v)))
+      .sort((a, b) => getPerceivedBond(target, b) - getPerceivedBond(target, a));
+    const coalition = [target];
+    const reactions = [];
+    contacts.slice(0, 5).forEach(voter => {
+      const vs = pStats(voter);
+      const trust = getPerceivedBond(voter, target);
+      const dislikePitcher = Math.max(0, -getPerceivedBond(voter, pitch.pitcher));
+      const alreadyWithPitch = (pitch.confirmedCoalition || []).includes(voter);
+      const acceptChance = Math.max(0.05, Math.min(0.82, 0.12 + trust * 0.075 + dislikePitcher * 0.045
+        + vs.strategic * 0.018 + warning.confidence * 0.12 - (alreadyWithPitch ? 0.28 : 0)));
+      const accepted = roll() < acceptChance;
+      reactions.push({ voter, accepted, acceptChance });
+      if (accepted && coalition.length < 4) coalition.push(voter);
+    });
+    const majority = Math.floor(eligible.length / 2) + 1;
+    const viable = coalition.length >= Math.max(2, majority - 2);
+    let type;
+    if (viable) type = stats.strategic >= 7 && stats.social >= 6 ? 'deceptive-counter' : 'counter-coalition';
+    else if (stats.boldness >= 7 || emotional === 'paranoid') type = 'confrontation';
+    else type = 'warned-allies';
+    const action = { actor:target, pitcher:pitch.pitcher, originalTarget:target, type, source:warning.source,
+      confidence:warning.confidence, success:viable, coalition:viable ? coalition : [target],
+      reactions, majority, claimedSupport:coalition.length };
+    actions.push(action);
+    if (viable) {
+      coalition.forEach(voter => {
+        const prior = gs._pitchCounterplay[voter];
+        if (!prior || coalition.length > prior.coalition.length) gs._pitchCounterplay[voter] = action;
+      });
+    } else if (type === 'confrontation') {
+      addBond(target, pitch.pitcher, -0.45);
+    }
+  });
+  return actions;
+}
+
+// Reconcile independently generated pitches before ballots are selected. A voter
+// cannot be a confirmed number for incompatible targets, even if both organizers
+// successfully approached them during the scramble.
+export function resolveCompetingPitches(pitches = [], observedCommitments = []) {
+  const reads = new Map(observedCommitments.map(read => [read.voter, read]));
+  const originalSizes = new Map(pitches.map(p => [p, new Set(p.confirmedCoalition || []).size]));
+  const ownership = new Map();
+
+  // Organizers who built a working pitch are committed to their own proposal.
+  pitches.filter(p => p.success).forEach(p => ownership.set(p.pitcher, p));
+
+  const candidates = new Map();
+  pitches.filter(p => p.success).forEach(p => (p.flipped || []).forEach(voter => {
+    if (!candidates.has(voter)) candidates.set(voter, []);
+    candidates.get(voter).push(p);
+  }));
+
+  candidates.forEach((options, voter) => {
+    if (ownership.has(voter)) return;
+    const read = reads.get(voter);
+    const scored = options.map(p => {
+      const response = (p.responses || []).find(r => r.voter === voter);
+      const planFit = read?.predictedBallot === p.pitchTarget ? (read.commitmentStrength || 0) * 8 : 0;
+      return { p, score:(originalSizes.get(p) || 1) * 10 + planFit + (response?.acceptChance || 0) };
+    }).sort((a, b) => b.score - a.score || String(a.p.pitchTarget).localeCompare(String(b.p.pitchTarget)));
+    if (scored[0]) ownership.set(voter, scored[0].p);
+  });
+
+  pitches.forEach(p => {
+    const retained = (p.flipped || []).filter(voter => ownership.get(voter) === p);
+    (p.responses || []).forEach(response => {
+      if (response.accepted && ownership.get(response.voter) && ownership.get(response.voter) !== p) {
+        response.accepted = false;
+        response.reason = 'chose-stronger-coalition';
+        response.supersededBy = ownership.get(response.voter).pitchTarget;
+      }
+    });
+    p.flipped = retained;
+    p.confirmedCoalition = [...new Set([...(p.existingSupporters || []), p.pitcher, ...retained])]
+      .filter(voter => voter !== p.pitchTarget && (!ownership.has(voter) || ownership.get(voter) === p));
+    p.success = retained.length > 0;
+    p.resolution = p.success ? 'resolved-working-coalition' : 'dissolved-after-conflict-check';
+  });
+  return pitches;
+}
+
+export function applyResolvedPitchesToForecast(pitches = [], records = []) {
+  const byVoter = new Map(records.map(record => [record.voter, record]));
+  pitches.filter(p => p.success).forEach(p => {
+    (p.confirmedCoalition || []).forEach(voter => {
+      const record = byVoter.get(voter);
+      if (!record || record.predictedBallot === p.pitchTarget) return;
+      record.preNegotiationPredictedBallot = record.predictedBallot;
+      record.preNegotiationPredictionReason = record.predictionReason;
+      record.predictedBallot = p.pitchTarget;
+      record.predictionReason = `resolved-pitch-coalition-${p.confirmedCoalition.length}`;
+      record.pitchOrganizer = p.pitcher;
+      record.pitchCoalition = [...p.confirmedCoalition];
+      record.pitchClaimedSupport = p.claimedSupport;
+    });
+  });
+  const projected = {};
+  records.forEach(record => {
+    if (record.predictedBallot) projected[record.predictedBallot] = [...(projected[record.predictedBallot] || []), record.voter];
+  });
+  records.forEach(record => {
+    record.projectedVoters = [...(projected[record.proposedTarget] || [])];
+    record.projectedVotes = record.projectedVoters.length;
+  });
+  return records;
+}
 
 // A grievance can break alliance discipline, but only when the voter believes a
 // counter-plan has enough support. Low temperament lowers the proof required;
 // it never invents supporters who are not present in the planning network.
-export function evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes = [], immunePlayers = [], emotional = 'comfortable', roll = Math.random) {
+export function evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes = [], immunePlayers = [], emotional = 'comfortable', roll = Math.random, diagnostics = null) {
   if (!allianceTarget) return null;
   const s = pStats(voter);
   const immune = immunePlayers instanceof Set ? immunePlayers : new Set(immunePlayers || []);
@@ -52,17 +323,38 @@ export function evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers,
   const requiredConfidence = Math.max(0.3, Math.min(0.9,
     0.72 - volatility * 0.32 + s.loyalty * 0.015 + s.strategic * 0.01 - s.boldness * 0.005 + stateMod + newAllianceMod
   ));
-  if (pick.confidence < requiredConfidence) return null;
+  const baseDiagnostic = {
+    voter, target: pick.subject, allianceTarget,
+    temperament: s.temperament, loyalty: s.loyalty, strategic: s.strategic, boldness: s.boldness,
+    emotional, memoryType: pick.memory.type, memoryEp: pick.memory.ep,
+    memoryStrength: pick.memoryScore, estimatedSupport: pick.supporters, majority,
+    confidence: pick.confidence, requiredConfidence,
+  };
+  if (pick.confidence < requiredConfidence) {
+    diagnostics?.push({ ...baseDiagnostic, actChance: 0, actionRoll: null, decision: 'held-plan', decisionReason: 'insufficient-support' });
+    return null;
+  }
 
   const emotionalMod = emotional === 'desperate' ? 0.10
     : emotional === 'paranoid' ? 0.07
     : emotional === 'uneasy' ? 0.03
     : emotional === 'calculating' ? -0.04 : 0;
-  const actChance = Math.max(0.02, Math.min(0.55,
+  const rawActChance = Math.max(0.02, Math.min(0.55,
     0.03 + volatility * 0.18 + Math.min(3, pick.memoryScore) * 0.04
     + (10 - s.loyalty) * 0.008 + s.boldness * 0.006 + emotionalMod + (pick.age <= 1 ? 0.04 : 0)
   ));
-  if (roll() >= actChance) return null;
+  // Barely having enough perceived support produces hesitation. A coalition well
+  // above the voter's threshold converts emotional desire into action more often.
+  const confidenceSurplus = (pick.confidence - requiredConfidence) / Math.max(0.1, 1 - requiredConfidence);
+  const readiness = Math.max(0, Math.min(1, confidenceSurplus));
+  const actChance = rawActChance * (0.35 + readiness * 0.65);
+  const actionRoll = roll();
+  if (actionRoll >= actChance) {
+    diagnostics?.push({ ...baseDiagnostic, actChance, actionRoll, decision: 'held-plan', decisionReason: 'discipline-won' });
+    return null;
+  }
+
+  diagnostics?.push({ ...baseDiagnostic, actChance, actionRoll, decision: 'defected', decisionReason: 'memory-and-numbers' });
 
   return {
     target: pick.subject,
@@ -107,11 +399,12 @@ export function buildVoteReason(voter, target, type, ctx = {}) {
         return (sb.social + sb.strategic) - (sa.social + sa.strategic);
       })[0];
     })();
-    if (openVote) return pick([
+    const _hasDependableControl = !!myAlliance?.reliability?.hasDependableControl;
+    if (openVote) return pick(_hasDependableControl ? [
       `public commitment — standing with ${label}`,
       `${label} has the numbers and they're making it visible`,
       `no reason to hide it — fully aligned with ${label} this vote`,
-    ]);
+    ] : [`public commitment — standing with ${label}`, `making the ${label} plan visible — now they need everyone to hold`, `no reason to hide the commitment to ${label}`]);
     if (voterS.loyalty >= 8) return pick([
       `loyal to ${label} — not breaking ranks`,
       `${label} made the call and they're committed`,
@@ -119,13 +412,13 @@ export function buildVoteReason(voter, target, type, ctx = {}) {
       `this is what ${label} decided — they don't second-guess that`,
       `${label} has been solid — staying put`,
     ]);
-    if (voterS.loyalty >= 5) return pick([
+    if (voterS.loyalty >= 5) return pick(_hasDependableControl ? [
       `following ${label} — it's the right call for now`,
       `${label} has the numbers and this is clean`,
       `${label} agreed on this name — going along with it`,
       `this vote makes sense — staying with ${label}`,
       `goes with ${label}'s read — no reason to deviate`,
-    ]);
+    ] : [`following ${label} — it's the right call for now`, `${label} agreed on this name — going along with it`, `this vote makes sense — staying with ${label}`, `the plan still needs people to hold — doing their part for ${label}`]);
     return pick([
       `${label} gets the vote this round — convenient alignment`,
       `going with ${label} for now, not out of pure loyalty`,
@@ -403,7 +696,16 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
   };
   const _tdBlocked = (voter, target) => _tdPartnerOf(voter) === target;
 
-  const votes = {}, log = [], defections = [];
+  const votes = {}, log = [], defections = [], provisionalBallots = [];
+  const emotionalDefectionDiagnostics = [];
+  const observedCommitments = buildObservedVoteCommitments(tribalPlayers, _immSet, alliances, lostVotes);
+  alliances.forEach(plan => {
+    plan.reliability = summarizePlanReliability(observedCommitments, plan.label, observedCommitments[0]?.majority);
+  });
+  const observedSupport = observedCommitments.reduce((support, record) => {
+    if (record.committedTarget) support[record.committedTarget] = (support[record.committedTarget] || 0) + 1;
+    return support;
+  }, {});
   let _voteMiscommunications = null;
 
   // Penalty vote: a pre-cast vote against the penalty target (if they're at this tribal)
@@ -428,6 +730,10 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
 
   // ── VOTE PITCHES: active lobbying to flip voters before they decide ──
   const _votePitches = [];
+  const _forecastCounts = observedCommitments.reduce((counts, read) => {
+    if (read.predictedBallot) counts[read.predictedBallot] = (counts[read.predictedBallot] || 0) + 1;
+    return counts;
+  }, {});
   {
     const _pitchCandidates = tribalPlayers.filter(p => !lostVotes.includes(p));
     let _pitchCount = 0;
@@ -445,21 +751,46 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       const pitchTarget = wRandom(pitchVictims, v =>
         Math.max(0.1, threatScore(v) * 0.4 + (-getPerceivedBond(pitcher, v)) * 0.3 + Math.random() * 0.3));
       if (pitchTarget === myTarget) return; // already the plan — no pitch needed
-      // Lobby each voter
+      const _existingSupporters = observedCommitments.filter(r => r.predictedBallot === pitchTarget).map(r => r.voter);
+      const _lieAboutNumbers = pS.loyalty <= 4 && pS.boldness >= 6 && Math.random() < 0.35;
+      const _credibleReach = Math.min(_pitchCandidates.length, 1 + _existingSupporters.length + Math.max(1, Math.round((pS.social + pS.strategic) / 8)));
+      const _claimedSupport = Math.min(_pitchCandidates.length + (_lieAboutNumbers ? 1 : 0), _credibleReach + (_lieAboutNumbers ? 2 : 0));
       const _flipped = [];
-      _pitchCandidates.filter(v => v !== pitcher && !lostVotes.includes(v)).forEach(voter => {
-        if (_flipped.length >= 2) return;
+      const _responses = [];
+      const _leaks = [];
+      const _recipients = _pitchCandidates.filter(v => v !== pitcher && v !== pitchTarget && !lostVotes.includes(v))
+        .sort((a,b) => getPerceivedBond(b, pitcher) - getPerceivedBond(a, pitcher));
+      _recipients.forEach(voter => {
         const vS = pStats(voter);
-        const flipChance = pS.social * 0.03 + getPerceivedBond(voter, pitcher) * 0.04
-          - vS.loyalty * 0.02 - getPerceivedBond(voter, myTarget || '') * 0.03;
-        if (flipChance > 0 && Math.random() < flipChance) {
-          _flipped.push(voter);
-        }
+        const _voterRead = observedCommitments.find(read => read.voter === voter);
+        const _votesAimedAtVoter = _forecastCounts[voter] || 0;
+        const response = evaluatePitchResponse({ trust:getPerceivedBond(voter, pitcher), loyalty:vS.loyalty,
+          targetBond:getPerceivedBond(voter, pitchTarget), claimedSupport:_claimedSupport,
+          eligibleVoters:_pitchCandidates.length, confirmedSupport:new Set([..._existingSupporters, pitcher, ..._flipped]).size,
+          strategic:vS.strategic, intuition:vS.intuition, emotional:getPlayerState(voter).emotional, liar:_lieAboutNumbers,
+          selfTargeted:_votesAimedAtVoter >= 2, competingSupport:_votesAimedAtVoter,
+          commitmentStrength:_voterRead?.commitmentStrength || 0,
+          reputationMod:reputationModifier(pitcher, 'pitch-trust'),
+          leakMod:reputationModifier(voter, 'leak'),
+          majority:_voterRead?.majority || Math.floor(_pitchCandidates.length / 2) + 1 });
+        _responses.push({ voter, ...response });
+        if (response.accepted) _flipped.push(voter);
+        if (response.leaked) _leaks.push(voter);
       });
-      _votePitches.push({ pitcher, pitchTarget, originalTarget: myTarget, flipped: _flipped, success: _flipped.length > 0 });
+      const _coalition = [...new Set([..._existingSupporters, pitcher, ..._flipped])].filter(v => v !== pitchTarget);
+      _votePitches.push({ pitcher, pitchTarget, originalTarget: myTarget, claimedSupport:_claimedSupport,
+        liedAboutNumbers:_lieAboutNumbers, existingSupporters:_existingSupporters, responses:_responses,
+        flipped:_flipped, confirmedCoalition:_coalition, leaks:_leaks, success:_flipped.length > 0 });
       _pitchCount++;
     });
   }
+  resolveCompetingPitches(_votePitches, observedCommitments);
+  applyResolvedPitchesToForecast(_votePitches, observedCommitments);
+  const _pitchIntel = propagatePitchLeaks(_votePitches, tribalPlayers, alliances);
+  const _pitchCounterplay = resolvePitchCounterplay(_votePitches, _pitchIntel, tribalPlayers, alliances, lostVotes);
+  alliances.forEach(plan => {
+    plan.reliability = summarizePlanReliability(observedCommitments, plan.label, observedCommitments[0]?.majority);
+  });
   // Store pitches for VP/debug
   if (_votePitches.length) {
     if (!gs._votePitchesThisEp) gs._votePitchesThisEp = [];
@@ -467,8 +798,16 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
   }
   // Build a set of flipped voters and their new targets
   const _flippedVoters = new Map();
+  const _acceptedPitchByVoter = new Map();
   _votePitches.forEach(p => {
-    p.flipped.forEach(voter => _flippedVoters.set(voter, p.pitchTarget));
+    if (p.success) {
+      _flippedVoters.set(p.pitcher, p.pitchTarget);
+      _acceptedPitchByVoter.set(p.pitcher, p);
+    }
+    p.flipped.forEach(voter => {
+      _flippedVoters.set(voter, p.pitchTarget);
+      _acceptedPitchByVoter.set(voter, p);
+    });
     // Consequences
     if (p.success) {
       p.flipped.forEach(v => addBond(v, p.pitcher, 0.3));
@@ -487,14 +826,6 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
     const myAlliance = alliances.find(a => a.type === 'alliance' && a.members.includes(voter))
                    || alliances.find(a => a.members.includes(voter));
     let allianceTarget = myAlliance?.target;
-
-    // Vote pitch override: if this voter was flipped by a pitcher, use the pitched target
-    if (_flippedVoters.has(voter)) {
-      const _pitchedTarget = _flippedVoters.get(voter);
-      if (_pitchedTarget && tribalPlayers.includes(_pitchedTarget) && !isImmune(_pitchedTarget)) {
-        allianceTarget = _pitchedTarget;
-      }
-    }
 
     // All real alliances this player belongs to (they may be in multiple)
     const allMyAlliances = alliances.filter(a => a.type === 'alliance' && a.members.includes(voter));
@@ -574,11 +905,45 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
 
     let target, reason, isDefecting = false;
 
+    const _counterplay = gs._pitchCounterplay?.[voter];
+    if (_counterplay?.success && tribalPlayers.includes(_counterplay.pitcher) && !isImmune(_counterplay.pitcher)) {
+      target = _counterplay.pitcher;
+      reason = `[COUNTER-PITCH] joined ${_counterplay.actor}'s response after the ${_counterplay.originalTarget} plan leaked — ${_counterplay.coalition.length} votes appeared reachable`;
+      isDefecting = target !== allianceTarget;
+    }
+
+    const _pitchWarning = gs._pitchExposureResponses?.[voter];
+    if (!target && _pitchWarning?.believed && tribalPlayers.includes(_pitchWarning.pitcher) && !isImmune(_pitchWarning.pitcher)) {
+      const _counterChance = Math.min(0.72, 0.10 + s.strategic * 0.035 + s.intuition * 0.018 + _pitchWarning.confidence * 0.18);
+      if (Math.random() < _counterChance) {
+        target = _pitchWarning.pitcher;
+        reason = `[PITCH EXPOSED] ${_pitchWarning.source} warned ${voter} that ${_pitchWarning.pitcher} was organizing against them — struck back before the plan could settle`;
+        isDefecting = target !== allianceTarget;
+      }
+    }
+
+    const _acceptedPitch = _acceptedPitchByVoter.get(voter);
+    if (!target && _acceptedPitch?.pitchTarget && tribalPlayers.includes(_acceptedPitch.pitchTarget)
+      && !isImmune(_acceptedPitch.pitchTarget)) {
+      target = _acceptedPitch.pitchTarget;
+      const _confirmed = _acceptedPitch.confirmedCoalition.length;
+      reason = `[NEGOTIATED FLIP] joined ${_acceptedPitch.pitcher}'s pitch on ${target} after confirming ${_confirmed} vote${_confirmed === 1 ? '' : 's'}`;
+      isDefecting = target !== allianceTarget;
+    }
+
+    const _idolCounter = gs._idolExposureResponses?.[voter];
+    if (_idolCounter?.mode === 'countermove' && _idolCounter.counterTarget && tribalPlayers.includes(_idolCounter.counterTarget)
+      && !isImmune(_idolCounter.counterTarget) && Math.random() < 0.25 + s.strategic * 0.045 + s.boldness * 0.015) {
+      target = _idolCounter.counterTarget;
+      reason = `idol exposure counter — believes ${target} knows about the idol and is striking before the leak becomes a flush`;
+      isDefecting = target !== allianceTarget;
+    }
+
     // ── Emotional counter-plan: remembered harm can loosen alliance discipline ──
     // This is not a blind revenge roll. The voter must see a plausible coalition,
     // with volatile players merely accepting shakier numbers than calm players.
-    if (_inNamedAlliance && allianceTarget) {
-      const revenge = evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes, _immSet, emotional);
+    if (_inNamedAlliance && allianceTarget && !target) {
+      const revenge = evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes, _immSet, emotional, Math.random, emotionalDefectionDiagnostics);
       if (revenge) {
         target = revenge.target;
         const base = strategicMemoryReason(voter, target) || `${voter} has unfinished business with ${target}`;
@@ -744,7 +1109,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
           // simulating real-time consolidation at tribal. Prevents perfect round-robin scatter.
           // Floaters feel the pull harder — they go where the numbers go
           const _isFloater = voterArch === 'floater';
-          const voteGravity = t => (votes[t] || 0) * (_isFloater ? 0.9 : 0.5);
+          const voteGravity = t => (observedSupport[t] || 0) * (_isFloater ? 0.9 : 0.5);
           if (gs.phase === 'pre-merge') {
             const stragMod = t => gs._chalStragglers?.includes(t) ? 0.5 : 0;
             const memoryMod = t => strategicMemoryScore(voter, t) * (0.12 + s.intuition * 0.018);
@@ -812,11 +1177,6 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
           isDefecting = false;
         }
       }
-    }
-
-    // Track defections for alliance damage detection
-    if (isDefecting && myAlliance && target && allianceTarget && target !== allianceTarget) {
-      defections.push({ player: voter, alliance: myAlliance.label, votedFor: target, consensusWas: allianceTarget });
     }
 
     // ── THE MOLE: vote disruption — rogue vote or corrupted pitch ──
@@ -907,26 +1267,83 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       }
     }
 
+    let _forcedTargetRule = null;
     // Tied Destinies: can't vote for your partner — redirect to next best target
     if (target && _tdBlocked(voter, target)) {
       const _altTargets = tribalPlayers.filter(p => p !== voter && p !== target && !isImmune(p) && !_tdBlocked(voter, p));
       target = _altTargets.length ? _altTargets.sort((a, b) => (computeHeat(b, tribalPlayers, alliances) || 0) - (computeHeat(a, tribalPlayers, alliances) || 0))[0] : null;
+      _forcedTargetRule = 'tied-destinies-redirect';
     }
     // Final safety: NEVER vote for an immune player regardless of how target was selected
     if (target && isImmune(target)) {
       const _safetyFallback = tribalPlayers.filter(p => p !== voter && !isImmune(p));
       target = _safetyFallback.length ? _safetyFallback[Math.floor(Math.random() * _safetyFallback.length)] : null;
+      _forcedTargetRule = 'immunity-redirect';
     }
     if (target && target !== voter) {
-      votes[target] = (votes[target] || 0) + 1;
-      log.push({ voter, voted: target, reason: reason || 'strategic read' });
+      const _pitchTarget = _flippedVoters.get(voter);
+      const _reasonText = String(reason || '').toLowerCase();
+      const _explicitTrigger = _forcedTargetRule
+        || (_pitchTarget === target ? 'late-pitch' : null)
+        || (_reasonText.includes('[pitch exposed]') ? 'pitch-exposure-counter' : null)
+        || (_reasonText.includes('[miscommunication]') ? 'miscommunication' : null)
+        || (_reasonText.includes('[emotional defection]') ? 'emotional-defection' : null)
+        || (_reasonText.includes('idol exposure counter') ? 'idol-exposure-counter' : null)
+        || (_reasonText.includes('mole') ? 'mole-disruption' : null)
+        || (_reasonText.includes('preemptive') || _reasonText.includes('self-defense') || _reasonText.includes('struck before') ? 'self-preservation' : null)
+        || (_reasonText.includes('protecting') || _reasonText.includes('refused to write') || _reasonText.includes('untouchable') || _reasonText.includes('would rather go home') || _reasonText.includes('absorbs the vote') || _reasonText.includes('stays safe') ? 'protect-ally' : null)
+        || (_reasonText.includes('grudge') || _reasonText.includes("isn't strategy. this is personal") || _reasonText.includes('hatred') || _reasonText.includes('animosity') ? 'personal-grudge' : null)
+        || (conflictAlliance?.target === target ? 'conflicting-alliance' : null);
+      provisionalBallots.push({ voter, target, reason: reason || 'strategic read', explicitTrigger: _explicitTrigger,
+        isDefecting, alliance: myAlliance?.label || null, allianceTarget });
+    }
+  });
+
+  // Resolve every late switch against the complete provisional coalition map.
+  // No voter gains information merely because their ballot happened to be
+  // generated later in the loop.
+  const _transitionedBallots = resolveLateBallotTransitions(observedCommitments, provisionalBallots);
+  const _consolidatedBallots = consolidateFringeBallots(observedCommitments, _transitionedBallots, {
+    bond:getPerceivedBond,
+    shouldMove:(ballot, record) => {
+      const stats = pStats(ballot.voter);
+      const state = getPlayerState(ballot.voter);
+      const awareness = stats.strategic + stats.intuition + (state.emotional === 'calculating' ? 2 : 0)
+        - (state.emotional === 'comfortable' ? 1 : 0);
+      return awareness >= 9;
+    },
+  });
+  _consolidatedBallots.forEach(ballot => {
+    const transition = ballot.transition;
+    const rejectedTarget = transition.rejectedTarget;
+    const finalTarget = transition.target;
+    const finalReason = ballot.fringeConsolidation
+      ? `[LATE CONSENSUS] ${ballot.fringeConsolidation.from} was isolated; shifted to ${finalTarget} when the room narrowed to the leading options`
+      : transition.prevented
+      ? `[HELD COMMITMENT] considered ${rejectedTarget}, but no credible late coalition or disruption justified abandoning ${finalTarget}`
+      : ballot.reason;
+    votes[finalTarget] = (votes[finalTarget] || 0) + 1;
+    log.push({ voter: ballot.voter, voted: finalTarget, reason: finalReason, lateTrigger: transition.lateTrigger,
+      provisionalSupport: ballot.provisionalSupport,
+      transitionPrevented: transition.prevented ? { rejectedTarget, heldTarget: finalTarget } : null });
+    if (ballot.isDefecting && ballot.alliance && ballot.allianceTarget && finalTarget !== ballot.allianceTarget) {
+      defections.push({ player: ballot.voter, alliance: ballot.alliance, votedFor: finalTarget, consensusWas: ballot.allianceTarget });
     }
   });
 
   // Clean up per-episode Mole vote disruption flags
   delete gs._moleVoteDisruption;
 
-  return { votes, log, defections, voteMiscommunications: _voteMiscommunications, votePitches: _votePitches.length ? _votePitches : null };
+  const _comparedCommitments = compareObservedCommitments(observedCommitments, log);
+  _votePitches.filter(p => p.success).forEach(p => (p.confirmedCoalition || []).forEach(voter => {
+    const read = _comparedCommitments.find(c => c.voter === voter);
+    if (read) { read.pitchOrganizer = p.pitcher; read.pitchCoalition = [...p.confirmedCoalition]; read.pitchClaimedSupport = p.claimedSupport; }
+  }));
+  delete gs._pitchExposureResponses;
+  delete gs._pitchCounterplay;
+  return { votes, log, defections, voteMiscommunications: _voteMiscommunications, votePitches: _votePitches.length ? _votePitches : null,
+    pitchIntel:_pitchIntel.length ? _pitchIntel : null, pitchCounterplay:_pitchCounterplay.length ? _pitchCounterplay : null,
+    emotionalDefectionDiagnostics, voteCommitmentDiagnostics: _comparedCommitments };
 }
 
 export function resolveVotes(votes) {
@@ -948,6 +1365,10 @@ export function checkShotInDark(tribalPlayers, votes, log, ep) {
   if (!sorted.length) return;
   const [target, voteCount] = sorted[0];
   if (voteCount < 2) return; // only desperate players risk it
+  // Shot in the Dark costs a live ballot. Lost-vote players have nothing to
+  // sacrifice and therefore cannot play it.
+  const liveVoteEntry = log?.find(v => v.voter === target && !v.sitdSacrificed && !v.voteBlocked);
+  if (!liveVoteEntry) return;
   // One-time per player per season — once you roll, you can't roll again
   if (!gs.shotInDarkUsed) gs.shotInDarkUsed = new Set();
   if (gs.shotInDarkUsed.has(target)) return;
@@ -967,7 +1388,7 @@ export function checkShotInDark(tribalPlayers, votes, log, ep) {
   gs.shotInDarkUsed.add(target);
   // SID player sacrifices their vote — remove from tally but keep in log (flagged)
   // so voting plans can still show their pre-tribal strategy
-  const myVoteIdx = log?.findIndex(v => v.voter === target);
+  const myVoteIdx = log?.indexOf(liveVoteEntry);
   if (myVoteIdx !== undefined && myVoteIdx >= 0) {
     const myVote = log[myVoteIdx];
     votes[myVote.voted] = (votes[myVote.voted] || 0) - 1;
@@ -988,6 +1409,24 @@ export function simulateRevote(tribalPlayers, tiedPlayers, lostVotes, originalLo
   const voters = tribalPlayers.filter(p => !tiedPlayers.includes(p) && !lostVotes.includes(p));
   // Tied players who also have tribal immunity (idol/SitD) cannot be voted on the revote
   const validTied = tiedPlayers.filter(p => !_rvImmSet.has(p));
+
+  // Multi-way revotes need an actual convergence point. Independent lowest-bond
+  // choices create implausible five- or six-way scatter even when everyone knows
+  // that another deadlock risks rocks. Rank shared compromise targets once, then
+  // let personal loyalty create the occasional holdout around that consensus.
+  const originalSupport = {};
+  voters.forEach(voter => {
+    const target = originalLog.find(e => e.voter === voter)?.voted;
+    if (validTied.includes(target)) originalSupport[target] = (originalSupport[target] || 0) + 1;
+  });
+  const consensusRanking = validTied.map(target => {
+    const ts = pStats(target);
+    const groupPressure = voters.reduce((sum, voter) => sum + Math.max(0.1, 5 - getBond(voter, target)) * 0.18, 0);
+    const threatPressure = (ts.strategic * 0.35 + ts.social * 0.25 + ts.physical * 0.15) * 0.08;
+    const existingBloc = (originalSupport[target] || 0) * 1.4;
+    return { target, score: existingBloc + groupPressure + threatPressure + Math.random() * 0.15 };
+  }).sort((a, b) => b.score - a.score);
+  const primaryConsensus = consensusRanking[0]?.target || validTied[0] || null;
 
   voters.forEach(voter => {
     const s = pStats(voter);
@@ -1024,7 +1463,14 @@ export function simulateRevote(tribalPlayers, tiedPlayers, lostVotes, originalLo
       + Math.min(hatredOfTarget, 5) * 0.04 // deep hatred of original target
       + allyFlipPenalty;                // resistance to flipping onto a close ally
 
-    const holdsPosition = originalTarget && Math.random() < Math.max(0.04, Math.min(0.90, rockTolerance));
+    const positionSupport = originalTarget ? (originalSupport[originalTarget] || 0) : 0;
+    // In a multi-way tie, defending a one-vote island is much less rational than
+    // holding one side of a genuine bloc. Volatility can still produce holdouts.
+    const multiwayDiscipline = validTied.length >= 3
+      ? (positionSupport >= 2 ? 0.65 : 0.35)
+      : 1;
+    const adjustedRockTolerance = rockTolerance * multiwayDiscipline;
+    const holdsPosition = originalTarget && Math.random() < Math.max(0.02, Math.min(0.90, adjustedRockTolerance));
 
     let target, reason;
     if (!validTied.length) return; // all tied players are immune — no valid target, skip vote
@@ -1036,19 +1482,36 @@ export function simulateRevote(tribalPlayers, tiedPlayers, lostVotes, originalLo
              : hatredOfTarget >= 3 ? `held — refuses to let ${originalTarget} stay`
              : `held position — willing to draw rocks`;
     } else {
-      // Flips to avoid rocks — votes for whichever valid tied player they're less bonded to
-      target = wRandom(flipCandidates.length ? flipCandidates : validTied, t =>
-        Math.max(0.1, (5 - getBond(voter, t)) * 0.6 + Math.random() * 0.5)
-      );
-      reason = allyFlipPenalty >= 0.18 ? `flipped to avoid rocks — chose numbers over loyalty`
-             : `flipped to avoid rocks`;
+      if (validTied.length >= 3) {
+        // Join the strongest shared option unless that person is a close ally.
+        // If so, move to the next coalition target instead of choosing independently.
+        const acceptable = consensusRanking.filter(({ target: t }) => getBond(voter, t) < 3);
+        target = (acceptable[0] || consensusRanking[0])?.target || primaryConsensus;
+        const aligned = target === originalTarget;
+        reason = aligned ? `revote consensus formed around ${target} — original position now has the numbers`
+               : getBond(voter, primaryConsensus) >= 3 && target !== primaryConsensus
+                 ? `joined the revote coalition on ${target} — refused to sacrifice ally ${primaryConsensus}`
+                 : `consolidated on ${target} to break the multi-way deadlock`;
+      } else {
+        // Normal two-way revote: personal bonds decide which side receives the flip.
+        target = wRandom(flipCandidates.length ? flipCandidates : validTied, t =>
+          Math.max(0.1, (5 - getBond(voter, t)) * 0.6 + Math.random() * 0.5)
+        );
+        reason = allyFlipPenalty >= 0.18 ? `flipped to avoid rocks — chose numbers over loyalty`
+               : `flipped to avoid rocks`;
+      }
     }
 
     votes[target] = (votes[target] || 0) + 1;
     log.push({ voter, voted: target, reason });
   });
 
-  return { votes, log };
+  return { votes, log, coordination: validTied.length >= 3 ? {
+    primaryTarget: primaryConsensus,
+    ranking: consensusRanking.map(r => r.target),
+    originalSupport,
+    distinctTargets: Object.keys(votes).length,
+  } : null };
 }
 
 

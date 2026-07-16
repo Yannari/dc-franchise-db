@@ -143,4 +143,25 @@ describe('finale summary text — all formats render without throwing', () => {
     assertGoodSummary(text);
     expect(text).toContain('OLYMPIC RELAY');
   });
+
+  it('rescue-mission (no jury, null juryResult) — must not fall into the jury branch', () => {
+    setup('rescue-mission', { finaleResult: { winner: 'Alice', votes: null, reasoning: null, finalChallenge: true } });
+    const ep = baseEp({
+      juryResult: null,
+      immunityWinner: null,
+      finaleChallengeWinner: 'Alice',
+      finaleChallengeScores: { Alice: 34.2, Bob: 30.1, Carl: 27.8 },
+      finalChallengePlacements: ['Alice', 'Bob', 'Carl'],
+      rescueData: {
+        finalists: ['Alice', 'Bob'], helpers: { Alice: 'Dana', Bob: 'Eve' }, benchAssignments: { Alice: ['Frank'], Bob: [] },
+        winner: 'Alice', placements: ['Alice', 'Bob'],
+        acts: [{ id: 'maze', name: 'The Corn Maze', legWinner: 'Alice', scores: { Alice: 6, Bob: 5 }, positions: { Alice: 16, Bob: 12 }, events: [{ badge: 'KEYS IN HAND', badgeClass: 'find', players: ['Alice'], text: 'Alice finds the key.' }] }],
+      },
+    });
+    let text;
+    expect(() => { text = generateFinaleSummaryText(ep); }).not.toThrow();
+    assertGoodSummary(text);
+    expect(text).toContain('FINAL CHALLENGE');
+    expect(text).not.toContain('JURY VOTE'); // no-jury format must never render a jury tally
+  });
 });

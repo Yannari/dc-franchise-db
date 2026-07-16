@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "calibrate:voting": "vitest run tests/emotional-defection-calibration.test.js --reporter=verbose",
     "audit:realism": "vitest run tests/voting-realism-audit.test.js --reporter=verbose",
-    "audit:season": "vitest run tests/full-season-audit.test.js --reporter=verbose"
+    "audit:season": "vitest run tests/full-season-audit.test.js --reporter=verbose",
+    "audit:continuity": "vitest run tests/season-continuity-audit.test.js --reporter=verbose"
   },
   "repository": {
     "type": "git",

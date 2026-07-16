@@ -7013,22 +7013,14 @@ function simulateJuryRoundtable(ep) {
   gs.episodeHistory[gs.episodeHistory.length-1].secondImmune = ep.secondImmune || null;
   gs.episodeHistory[gs.episodeHistory.length-1].extraImmune = ep.extraImmune || null;
 
-  const summaryText = generateSummaryText(ep);
-  gs.episodeHistory[gs.episodeHistory.length-1].summaryText = summaryText;
-  ep.summaryText = summaryText;
-
-  updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
-  updateSurvival(ep);
-
-  // Inject vote pitch camp events (after all camp event generation is complete)
+  // Inject vote pitch camp events BEFORE summary-text generation so they appear in
+  // the text backlog too (previously injected after generateSummaryText → VP-only).
   if (ep.votePitches?.length) {
     const _vpCampKey = gs.isMerged ? (gs.mergeName || 'merge') : (ep.loser?.name || ep.tribalTribe || gs.tribes[0]?.name || 'merge');
     if (!ep.campEvents) ep.campEvents = {};
     if (!ep.campEvents[_vpCampKey]) ep.campEvents[_vpCampKey] = { pre: [], post: [] };
     if (!ep.campEvents[_vpCampKey].post) ep.campEvents[_vpCampKey].post = [];
-    const _vpPick = arr => arr[Math.floor(Math.random() * arr.length)];
     ep.votePitches.forEach(p => {
-      const pr = pronouns(p.pitcher);
       const _reactionSummary = summarizePitchReactions(p, p.responses || []);
       const _targetWarning = (ep.pitchIntel || []).find(info => info.pitcher === p.pitcher && info.target === p.pitchTarget
         && info.knower === p.pitchTarget && info.sourceType === 'direct-warning');
@@ -7070,9 +7062,15 @@ function simulateJuryRoundtable(ep) {
         badgeText: held ? 'TRUST WARNING' : 'PITCH EXPOSED', badgeClass: held ? 'gold' : 'red'
       });
     });
-    // Update saved campEvents in episode history
     gs.episodeHistory[gs.episodeHistory.length-1].campEvents = ep.campEvents;
   }
+
+  const summaryText = generateSummaryText(ep);
+  gs.episodeHistory[gs.episodeHistory.length-1].summaryText = summaryText;
+  ep.summaryText = summaryText;
+
+  updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+  updateSurvival(ep);
 
   // Save debug data to episode history before patching
   if (gs._scrambleActivations && !ep._debugScramble) ep._debugScramble = { ...gs._scrambleActivations };

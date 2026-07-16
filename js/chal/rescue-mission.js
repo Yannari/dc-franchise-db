@@ -71,6 +71,7 @@ function _styles() { return `<style>
 .rr-card.bench{border-left:10px solid var(--yellow)}.rr-badge.bench{background:var(--yellow);color:var(--ink)}
 .rr-card.win{border-left:10px solid var(--yellow);background:#fffbe6;animation:rrcard .45s both,rrglow 1.4s .4s infinite}.rr-badge.win{background:var(--yellow);color:var(--ink)}
 @keyframes rrglow{50%{box-shadow:0 0 22px var(--yellow),4px 4px 0 var(--ink)}}
+.rr-card.conf{border-left:10px solid #6a6a8a;background:#f4f2fa}.rr-card.conf .rr-tx{font-style:italic;color:#2a2440}.rr-badge.conf{background:#6a6a8a}
 .rr-host{max-width:600px;margin:10px auto;background:var(--yellow);border:3px solid var(--ink);border-radius:16px;padding:9px 14px;box-shadow:var(--shadow);font-weight:700;font-size:13px;position:relative}
 .rr-host::before{content:"";position:absolute;left:24px;bottom:-12px;border:8px solid transparent;border-top-color:var(--ink)}
 .rr-host b{font-family:var(--disp);font-weight:400}
@@ -172,7 +173,7 @@ function _cards(events, key) {
     const pcs = (e.players || []).map(n => av(n, 26)).join('');
     return `<div class="rr-card ${esc(e.badgeClass)}" id="rr-step-${key}-${i}" style="${shown ? '' : 'display:none'}">
       <div class="pc">${pcs}</div>
-      <div class="bd"><span class="rr-badge ${esc(e.badgeClass)}">${esc(e.badge)}</span><span class="rr-stat">${esc(e.stat || '')}</span>
+      <div class="bd"><span class="rr-badge ${esc(e.badgeClass)}">${esc(e.badge)}</span>${e.stat ? `<span class="rr-stat">${esc(e.stat)}</span>` : ''}
       <div class="rr-tx">${e.text}</div></div></div>`;
   }).join('');
 }

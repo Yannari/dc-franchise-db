@@ -2251,9 +2251,11 @@ export function generateFinaleSummaryText(ep) {
     else if (ws.social >= 8) ln(`${winner} rode the crowd energy and bench support all the way to the finish line.`);
     else ln(`${winner} dug deep and won the only race that counted — the Rejected Olympic Relay.`);
 
-  } else if (cfg.finaleFormat === 'final-challenge') {
+  } else if (cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'rescue-mission') {
     sec('FINAL CHALLENGE');
-    ln(`No jury. The winner is decided by a final challenge among all finalists.`);
+    ln(cfg.finaleFormat === 'rescue-mission'
+      ? `No jury. The winner is decided by the Carnival Rescue — a six-act race through the midway.`
+      : `No jury. The winner is decided by a final challenge among all finalists.`);
     ln('');
     finalists.forEach(f => {
       const fs = pStats(f);
@@ -2966,7 +2968,7 @@ export function simulateRescueMission(finalists, assistants, benchAssignments) {
     const positions = {};
     finalists.forEach(f => positions[f] = Math.round(((idx + 1) / 6) * 100 * (0.72 + 0.28 * (cume[f] / maxC))));
 
-    _rescueActBeats(A, idx, finalists, legWinner, legLoser, helpers, benchAssignments, events, frozeLast, { canScheme, PK, bump });
+    _rescueActBeats(A, idx, finalists, legScores, legWinner, legLoser, helpers, benchAssignments, events, frozeLast, { canScheme, PK, bump });
 
     acts.push({ id: A.id, emoji: A.emoji, name: A.name, statA: A.statA, statB: A.statB, mode: A.mode, desc: A.desc,
       scores: legScores, legWinner, positions, events, hostQuip: _rescueHostQuip(A, legWinner, finalists, H, PK) });
@@ -3001,19 +3003,205 @@ export function simulateRescueMission(finalists, assistants, benchAssignments) {
   };
 }
 
-function _rescueActBeats(A, idx, finalists, legWinner, legLoser, helpers, bench, events, frozeLast, U) {
-  const { canScheme, PK, bump } = U;
-  const help = (f) => helpers[f];
-  const wPr = pronouns(legWinner);
-  const wHelp = help(legWinner);
+// per-act narration pools — kickoff, per-finalist run beats (win/mid/lose), helper move
+const _RR = {
+  maze: {
+    cls: 'find', stat: 'intuition + mental', winB: 'KEYS IN HAND', midB: 'KEY, SLOWLY', loseB: 'LOST IN THE CORN',
+    kick: [`The finalists plunge into the towering corn maze — somewhere in these stalks are the ambulance keys.`,
+           `Dawn mist hangs over the maze as the finalists vanish into the rows, each hunting a hidden key.`,
+           `Ten-foot walls of corn swallow the finalists whole. No map, no markers — just instinct and a key to find.`],
+    win: [f => `${f} reads the rows like a map, never doubles back once, and bursts out of the stalks with the ambulance key held high.`,
+          f => `While the others circle blind, ${f} pieces the maze together and walks straight to the key.`,
+          f => `Three quick turns and ${f} has the key in hand — out of the corn before anyone else finds the entrance.`,
+          f => `A flawless read: ${f} threads the maze without a wasted step and grabs the key first.`],
+    mid: [f => `${f} finds a key but loses a chunk of time untangling one bad turn.`,
+          f => `${f} muscles free of the maze mid-pack, key in hand, breathing hard.`,
+          f => `Not fast, not last — ${f} claws out of the corn with the key just off the lead.`],
+    lose: [f => `${f} hits three dead ends in a row, the corn closing in, precious seconds bleeding away.`,
+           f => `${f} takes a wrong fork and spends an eternity backtracking through identical rows.`,
+           f => `The maze eats ${f} alive — spun around twice, no key, no clue which way is out.`,
+           f => `${f} can hear the others celebrating and still can't find a way through the stalks.`],
+    help: (f, h) => `${f} boosts ${h} up onto ${pronouns(f).posAdj} shoulders for a look over the corn — ${h} calls the route and the two of them cut straight to it.`,
+  },
+  haunt: {
+    cls: 'deduce', stat: 'mental + strategic', winB: 'STRETCHER FOUND', midB: 'FOUND, SPOOKED', loseB: 'LOST IN THE DARK',
+    kick: [`The finalists creep into the haunted house, where each stretcher waits in a different room of horrors.`,
+           `Fog rolls under the door. Somewhere past the flickering lights, a stretcher hides for each of them.`,
+           `The haunted house groans awake as the finalists step inside — nerve and logic only from here.`],
+    win: [f => `${f} ignores every scare, works the clues cold, and finds the stretcher exactly where the logic pointed.`,
+          f => `Every groan bounces off ${f}, who deduces the hiding spot and hauls the stretcher out clean.`,
+          f => `${f} tiptoes across the cracking glass floor on a hunch — and there's the stretcher, dead ahead.`,
+          f => `No panic, just deduction: ${f} solves the house and drags the stretcher into the light first.`],
+    mid: [f => `${f} finds the stretcher but wastes a beat flinching at a rubber ghost.`,
+          f => `${f} pieces it together a moment late, stretcher in hand but off the pace.`,
+          f => `${f} gets there — after one wrong room and a small heart attack.`],
+    lose: [f => `${f} second-guesses every doorway, doubles back twice, and loses the thread in the fog.`,
+           f => `The house rattles ${f} — every shadow and slam steals another beat of focus.`,
+           f => `${f} freezes at a jump-scare, forgets the plan, and wanders the halls empty-handed.`,
+           f => `${f} can't tell trick from clue, and the dark eats the lead alive.`],
+    help: (f, h) => `${h} holds the lantern steady and reads the room while ${f} works the latch — a two-brain job done in half the time.`,
+  },
+  ship: {
+    cls: 'climb', stat: 'physical + endurance', winB: 'TOP OF THE MAST', midB: 'STILL CLIMBING', loseB: 'LOSING GRIP',
+    kick: [`The finalists hit the beached pirate ship — up the rigging is the only way to the slide platform.`,
+           `Ropes creak and the ship rocks as the finalists start hauling themselves skyward.`,
+           `It's straight up from here: a wall of rigging between the finalists and the top of the slide.`],
+    win: [f => `${f} goes up the rigging hand over hand like the mast owes ${pronouns(f).obj} money, first to the crow's nest.`,
+          f => `Pure muscle — ${f} powers up the ropes without a pause and slaps the top platform first.`,
+          f => `${f} climbs like ${pronouns(f).sub}'s done it a hundred times, ropes swinging behind ${pronouns(f).obj}.`,
+          f => `Arms and lungs screaming, ${f} muscles to the top of the ship ahead of everyone.`],
+    mid: [f => `${f} makes the climb but has to stop halfway to shake out a cramping arm.`,
+          f => `${f} hauls up steady if unspectacular, reaching the top just off the lead.`,
+          f => `${f} slips a rung, recovers, and keeps grinding upward.`],
+    lose: [f => `${f}'s grip gives out twice, sliding back down the rigging with rope-burned hands.`,
+           f => `The climb crushes ${f} — no gas left in the legs, the platform impossibly far.`,
+           f => `${f} tangles in the ropes and loses a small forever getting free.`,
+           f => `${f} clings to the rigging, gassed, watching the others summit.`],
+    help: (f, h) => `${h} braces the rigging and shouts the footholds; ${f} climbs twice as fast with a partner steadying the ropes below.`,
+  },
+  slide: {
+    cls: 'nerve', stat: 'boldness + temperament', winB: 'FEARLESS PLUNGE', midB: 'DEEP BREATH, GO', loseB: 'WHITE KNUCKLES',
+    kick: [`At the top of the tower, the Action Waterslide drops away into the dark. Only nerve gets you down.`,
+           `The finalists reach the slide platform and look down at a very long, very fast drop.`,
+           `Wind whips the top of the tower. Below, the slide vanishes into shadow.`],
+    win: [f => `${f} doesn't even look down — straight off the top, no fear, and comes up swimming in the lead.`,
+          f => `${f} takes the plunge like a kiddie slide and gains the whole leg on nerve alone.`,
+          f => `One breath and ${f} is gone over the edge — fearless, fast, first into the water.`,
+          f => `${f} attacks the drop headfirst, whooping the whole way down, and surfaces in front.`],
+    mid: [f => `${f} hesitates a beat at the lip, then commits and rides it down clean.`,
+          f => `${f} takes the slide with a shaky yell — not pretty, but down and moving.`,
+          f => `${f} counts to three twice before finally letting go.`],
+    lose: [f => `${f} inches to the edge, peers down, and pulls back — the drop wins this round.`,
+           f => `${f} clings to the rail, legs locked, unable to make the jump.`,
+           f => `${f} goes down sideways in a flailing panic and loses ground on the splashdown.`,
+           f => `${f} freezes at the top while the clock — and the others — leave ${pronouns(f).obj} behind.`],
+    help: (f, h) => `${h} stands at the top talking ${f} through it — "eyes up, don't look down, let go" — and it actually works.`,
+  },
+  lake: {
+    cls: 'rescue', stat: 'endurance + physical', winB: 'DUMMY IN THE BOAT', midB: 'HAULING HARD', loseB: 'DEAD WEIGHT',
+    kick: [`Out in the black lake, a "drowning" dummy waits at the center. This leg takes two.`,
+           `The finalists hit the water — the dummy bobs face-down at the middle of the lake.`,
+           `Cold water, dead weight, and a long swim: the rescue leg is where partners earn their keep.`],
+    win: [f => `${f} reaches the dummy first and muscles it into the boat, chest heaving, eyes forward.`,
+          f => `${f} cuts through the black water, gets a grip on the dummy, and hauls it aboard ahead of everyone.`,
+          f => `Endurance wins it: ${f} out-swims the field and locks the dummy down first.`,
+          f => `${f} drags the dead weight up over the gunwale and never breaks stride.`],
+    mid: [f => `${f} gets the dummy but fights the water for every yard back to the boat.`,
+          f => `${f} hauls the dummy in a beat behind, arms shaking with the effort.`,
+          f => `${f} reaches the dummy, but the swim back is pure survival.`],
+    lose: [f => `${f} gasses out halfway to the dummy, treading water while the lead sails away.`,
+           f => `The dummy's dead weight drags ${f} under twice before ${pronouns(f).sub} gets a grip.`,
+           f => `${f} loses the boat in the chop and burns everything just to get back to it.`,
+           f => `${f} can barely lift the dummy, let alone haul it — the water takes everything.`],
+    help: (f, h) => `${h} takes the dummy's head, ${f} takes the feet, and the two of them move through the water as one — the tighter the bond, the faster they go.`,
+  },
+  drive: {
+    cls: 'win', stat: 'strategic + boldness', winB: 'FLOORS IT', midB: 'CHASING HARD', loseB: 'STALLING OUT',
+    kick: [`Helpers stay at the lake. One ambulance each, the whole midway between here and the finish.`,
+           `Sirens on, doors slammed — the final drive back through the carnival is on.`,
+           `It comes down to this: a flat-out ambulance dash past every set from the whole season.`],
+    win: [f => `${f} floors the ambulance through the last stretch of midway, siren screaming, and pulls ahead.`,
+          f => `${f} takes the racing line past the old sets and opens a lead on the final drive.`,
+          f => `Foot to the floor — ${f} threads the ambulance past every obstacle and surges to the front.`,
+          f => `${f} drives like the finish line is personal, and the gap opens up behind ${pronouns(f).obj}.`],
+    mid: [f => `${f} keeps the ambulance glued to the leader's bumper, waiting for a mistake.`,
+          f => `${f} drives clean but can't quite close the last few lengths.`,
+          f => `${f} hangs in the fight, engine howling, refusing to fall away.`],
+    lose: [f => `${f} clips a prop cart, fishtails, and loses the back half of the field.`,
+           f => `${f}'s ambulance sputters at the worst moment, coughing away the lead.`,
+           f => `${f} takes a wide line through the old shelter and drops off the pace.`,
+           f => `${f} grinds the gears in a panic and watches the others pull away.`],
+    help: null,
+  },
+};
 
+// generic helper assist for a trailing finalist (the leg winner gets the act-specific M.help)
+const _RR_ASSIST = [
+  (f, h) => `${h} throws everything into helping ${f} — a real effort, just not quite enough to catch the leader.`,
+  (f, h) => `${h} sticks with ${f} stride for stride, keeping ${pronouns(f).obj} in the fight.`,
+  (f, h) => `${h} does the grunt work so ${f} can focus, but the gap is already there.`,
+  (f, h) => `${h} refuses to let ${f} fall apart, dragging ${pronouns(f).obj} back into contention.`,
+];
+
+function _rescueConfessional(f, PK) {
+  const a = players.find(p => p.name === f)?.archetype || 'floater';
+  const pool = [
+    `${f}: "Deep breath. Every vote, every blindside, every deal — it all comes down to this race."`,
+    `${f}: "I did not claw my way to the final to trip on a corn maze. Focus. Win. That's it."`,
+  ];
+  if (['villain', 'mastermind', 'schemer'].includes(a)) pool.push(`${f}: "Sentiment is for the jury house. I'm a few legs from the million and I am not blinking."`, `${f}: "Every person I sent home was a stepping stone. There's one stone left."`);
+  if (['hero', 'loyal-soldier'].includes(a)) pool.push(`${f}: "My whole family is watching this. I am NOT losing a rescue race in front of them."`, `${f}: "I played this the right way. But between you and me? I'd still really like to win."`);
+  if (['underdog', 'goat', 'floater'].includes(a)) pool.push(`${f}: "Nobody bet on me being here. That's exactly why I'm going to win it."`, `${f}: "Everyone counted me out. I counted me out. And here I am, one race from a million dollars."`);
+  if (['social-butterfly', 'showmancer'].includes(a)) pool.push(`${f}: "They said I was 'just here to make friends.' Friends don't win a million — I do."`);
+  if (['challenge-beast', 'hothead'].includes(a)) pool.push(`${f}: "Finally, something that rewards actual skill. This is MY arena."`);
+  if (['chaos-agent', 'wildcard', 'perceptive-player'].includes(a)) pool.push(`${f}: "I don't have a plan. I've never had a plan. And somehow I'm in the final. Terrifying for everyone else."`);
+  return { type: 'conf', badge: 'CONFESSIONAL', badgeClass: 'conf', stat: '', players: [f], text: PK(pool) };
+}
+
+function _rescueSocial(finalists, bench, events, U) {
+  const { canScheme, PK, bump } = U;
+  if (finalists.length < 2) return;
+  const a = PK(finalists);
+  const b = PK(finalists.filter(f => f !== a));
+  if (!b) return;
+  const allBench = finalists.flatMap(f => (bench?.[f] || []).map(s => ({ s, f })));
+  if (allBench.length && Math.random() < 0.34) {
+    const pk = PK(allBench); bump(pk.f, 0.3);
+    events.push({ type: 'bench', badge: 'FROM THE STANDS', badgeClass: 'bench', stat: 'popularity', players: [pk.s, pk.f],
+      text: PK([`${pk.s} is on ${pronouns(pk.s).posAdj} feet in the stands screaming for ${pk.f} — the whole bench takes up the chant.`,
+                `"${pk.f}! ${pk.f}!" ${pk.s} leads the section, and the noise visibly lifts ${pronouns(pk.f).obj}.`,
+                `${pk.s} bangs the railing and roars ${pk.f}'s name until ${pronouns(pk.f).sub} grins back mid-race.`,
+                `From the stands, ${pk.s} won't sit down — every gain ${pk.f} makes gets a fresh eruption of cheering.`]) });
+    return;
+  }
+  if (canScheme(a)) {
+    addBond(a, b, -0.5); bump(a, -0.2);
+    events.push({ type: 'sabo', badge: 'TRASH TALK', badgeClass: 'sabo', stat: 'social', players: [a, b],
+      text: PK([`${a} can't resist a dig: "Save some energy for losing gracefully, ${b}." ${b} just pushes harder.`,
+                `"You actually think you're winning this?" ${a} laughs at ${b}. Fuel, meet fire.`,
+                `${a} talks nonstop trash across the whole leg, and ${b} vows to make ${pronouns(a).obj} eat every word.`,
+                `${a} lands a jab about ${b}'s worst moment of the season. Cold — and ${b} does not forget it.`]) });
+    return;
+  }
+  addBond(a, b, 0.5); bump(a, 0.3);
+  events.push({ type: 'run', badge: 'RESPECT', badgeClass: 'find', stat: 'temperament', players: [a, b],
+    text: PK([`Mid-race, ${a} catches ${b}'s eye and just nods — two finalists who earned this, giving each other their due.`,
+              `${a} could've cut ${b} off and didn't. "We both earned the spot. Let's make it a real race." ${b} nods back.`,
+              `Even flat out, ${a} throws ${b} a grin — whatever happens, they respect how the other got here.`,
+              `"Whoever wins, this was a hell of a run." ${a} means it, and ${b} feels it.`]) });
+}
+
+function _rescueActBeats(A, idx, finalists, legScores, legWinner, legLoser, helpers, bench, events, frozeLast, U) {
+  const { canScheme, PK, bump } = U;
+  const M = _RR[A.id];
+  const help = (f) => helpers[f];
+  const ranked = [...finalists].sort((x, y) => (legScores[y] || 0) - (legScores[x] || 0));
+
+  // 1. kickoff
+  if (M) events.push({ type: 'kick', badge: A.name.replace(/^The /, 'THE ').toUpperCase(), badgeClass: M.cls, stat: '', players: [], text: PK(M.kick) });
+
+  // 2. per-finalist run beats (leg winner triumphant, trailers struggle)
+  if (M) ranked.forEach((f, i) => {
+    const isW = i === 0, isL = i === ranked.length - 1;
+    const pool = isW ? M.win : isL ? M.lose : M.mid;
+    events.push({ type: 'run', badge: isW ? M.winB : isL ? M.loseB : M.midB, badgeClass: isW ? 'win' : M.cls, stat: M.stat, players: [f], text: PK(pool)(f) });
+  });
+
+  // 3. a rotating finalist confessional (personality)
+  events.push(_rescueConfessional(finalists[idx % finalists.length], PK));
+
+  // 4. helper moves (non-solo acts): leg winner gets the act-specific line, trailers a generic assist
+  if (M && M.help) {
+    ranked.forEach((f, i) => {
+      const h = help(f);
+      if (!h) return;
+      events.push({ type: 'help', badge: 'HELPER MOVE', badgeClass: 'bench', stat: 'teamwork', players: [f, h],
+        text: i === 0 ? M.help(f, h) : PK(_RR_ASSIST)(f, h) });
+    });
+  }
+
+  // 4. act-specific scripted specials
   if (A.id === 'maze') {
-    events.push({ type: 'find', badge: 'KEY SPOTTED', badgeClass: 'find', stat: 'intuition', players: wHelp ? [legWinner, wHelp] : [legWinner],
-      text: wHelp
-        ? PK([`${legWinner} hoists ${wHelp} up onto ${wPr.posAdj} shoulders — and ${wHelp} spots the key hanging from a scarecrow. "Remember every turn. I'm leaving nothing to chance."`,
-              `${wHelp} climbs ${legWinner}'s shoulders for a look over the stalks, calls out the path, and ${legWinner} snatches the key before anyone else finds the row.`])
-        : PK([`${legWinner} reads the maze like a map, cuts straight to the key, and is gone before the corn stops rustling.`,
-              `No wasted turns — ${legWinner} threads the maze on pure instinct and comes out with the ambulance key first.`]) });
     const schemer = finalists.find(f => canScheme(f));
     const target = schemer ? finalists.find(f => f !== schemer) : null;
     if (schemer && target) {
@@ -3023,63 +3211,44 @@ function _rescueActBeats(A, idx, finalists, legWinner, legLoser, helpers, bench,
                   `${schemer} spots ${target}'s key on a look-alike scarecrow and knocks the whole thing flat. Dirty? Maybe. Effective? Absolutely.`]) });
     }
     const trailBench = bench?.[legLoser] || [];
-    if (trailBench.length) {
-      events.push({ type: 'bench', badge: 'SIDELINE ASSIST', badgeClass: 'bench', stat: 'social', players: [trailBench[0], legLoser],
-        text: `${trailBench[0]} slips ${legLoser} a coconut through the fence. "You'll want this for later." A payback play, banked.` });
-    }
+    if (trailBench.length) events.push({ type: 'bench', badge: 'SIDELINE ASSIST', badgeClass: 'bench', stat: 'social', players: [trailBench[0], legLoser],
+      text: `${trailBench[0]} slips ${legLoser} a coconut through the fence. "You'll want this for later." A payback play, banked.` });
   } else if (A.id === 'haunt') {
-    events.push({ type: 'deduce', badge: 'STRETCHER FOUND', badgeClass: 'deduce', stat: 'mental', players: [legWinner],
-      text: PK([`${legWinner} works the clues cold — figures out exactly which room hides the stretcher and walks straight to it while the others stumble in the dark.`,
-                `A hunch, a deduction, and ${legWinner} tiptoes across the cracking glass floor to the stretcher without a wasted step.`]) });
-    events.push({ type: 'deduce', badge: 'INTO THE DARK', badgeClass: 'deduce', stat: 'strategic', players: [legLoser],
-      text: PK([`${legLoser} second-guesses every doorway, doubles back twice, and loses ground in the fog.`,
-                `The house rattles ${legLoser} — every groan and shadow costs a beat of focus, and beats are everything now.`]) });
+    events.push({ type: 'deduce', badge: 'JUMP SCARE', badgeClass: 'deduce', stat: 'temperament', players: [legLoser],
+      text: PK([`A pop-up ghost sends ${legLoser} straight into the air — and into a wall. The stretcher clatters away and has to be re-grabbed.`,
+                `Something grabs ${legLoser}'s ankle in the dark (a hired actor, technically). The scream echoes clear across the midway.`,
+                `${legLoser} rounds a corner into a chainsaw prop and loses ten full seconds just remembering how legs work.`]) });
   } else if (A.id === 'ship') {
-    events.push({ type: 'climb', badge: 'UP THE RIGGING', badgeClass: 'climb', stat: 'physical', players: wHelp ? [legWinner, wHelp] : [legWinner],
-      text: wHelp
-        ? PK([`${legWinner} and ${wHelp} attack the ropes together, hand over hand, and haul up to the crow's nest first.`,
-              `${wHelp} braces the rigging while ${legWinner} powers up it — a machine of muscle and teamwork.`])
-        : PK([`${legWinner} goes up the rigging like the mast owes ${wPr.obj} money, first to the top of the slide.`,
-              `Pure grit — ${legWinner} muscles up the ropes and reaches the platform ahead of the pack.`]) });
-  } else if (A.id === 'slide') {
-    const scaredList = finalists.filter(f => f !== legWinner && pStats(f).boldness < 6).sort((a, b) => pStats(a).boldness - pStats(b).boldness);
-    const scared = scaredList[0] || (legLoser !== legWinner ? legLoser : null);
-    if (scared) {
-      frozeLast[scared] = true;
-      const scPr = pronouns(scared);
-      events.push({ type: 'nerve', badge: 'FROZE UP', badgeClass: 'nerve', stat: 'boldness', players: [scared],
-        text: PK([`${scared} hits the top platform and locks up — the drop is too much. "I fail everything I try." The lead slips away in real time.`,
-                  `${scared} freezes at the lip of the slide, knuckles white, unable to let go. Every frozen second is ground lost.`]) });
-      const sHelp = help(scared);
-      if (sHelp) {
-        addBond(scared, sHelp, 1);
-        events.push({ type: 'bench', badge: 'SLAP OF FAITH', badgeClass: 'bench', stat: 'temperament', players: [sHelp, scared],
-          text: PK([`${sHelp} grabs ${scared} by the shoulders — maybe with a slap. "You don't have to be PERFECT. Look at MY game!" It snaps ${scared} out of it, and down the slide ${scPr.sub} goes.`,
-                    `${sHelp} refuses to let ${scared} spiral, talking ${scPr.obj} onto the slide breath by breath until ${scPr.sub} finally lets go and drops clean.`]) });
-      }
-    }
-    events.push({ type: 'win', badge: 'FEARLESS', badgeClass: 'win', stat: 'boldness', players: [legWinner],
-      text: PK([`${legWinner} doesn't even hesitate — straight off the top, no fear, and takes the whole leg.`,
-                `${legWinner} takes the plunge like it's nothing and comes up swimming, back in front.`]) });
+    events.push({ type: 'climb', badge: 'ROPE SNAP', badgeClass: 'climb', stat: 'endurance', players: [legLoser],
+      text: PK([`A frayed rope gives way under ${legLoser} — a heart-stopping slip, a desperate grab, and a long haul back up.`,
+                `${legLoser}'s foothold snaps and ${pronouns(legLoser).sub} swings out over the deck, hanging by both hands before muscling back on.`,
+                `The rigging betrays ${legLoser} halfway up — a body-length drop before ${pronouns(legLoser).sub} catches a spar and hangs on.`]) });
   } else if (A.id === 'lake') {
-    events.push({ type: 'rescue', badge: 'DUMMY SECURED', badgeClass: 'rescue', stat: 'endurance', players: wHelp ? [legWinner, wHelp] : [legWinner],
-      text: wHelp
-        ? PK([`${legWinner} and ${wHelp} reach the drowning dummy first and haul it in together. "${wHelp}, you matter more to me than the money." Their bond turns two tired swimmers into one.`,
-              `${wHelp} takes the head, ${legWinner} takes the feet, and they drag the dummy back in perfect sync — the closer they are, the faster they move.`])
-        : `${legWinner} muscles the dummy out of the lake alone on pure endurance — slower, but it's secured.` });
-    const loHelp = help(legLoser);
-    events.push({ type: 'rescue', badge: 'PUSH TO SHORE', badgeClass: 'rescue', stat: 'physical', players: loHelp ? [legLoser, loHelp] : [legLoser],
-      text: loHelp
-        ? `Falling behind, ${legLoser} leaps out and physically shoves the boat toward the bank while ${loHelp} steadies the dummy. So close — but not enough.`
-        : `${legLoser} hauls the dummy in solo, arms burning, and loses ground doing it.` });
-  } else if (A.id === 'drive') {
-    const clever = [...finalists].sort((a, b) => pStats(b).strategic - pStats(a).strategic)[0];
-    if (clever && pStats(clever).strategic >= 6) {
-      events.push({ type: 'sabo', badge: 'COCONUT GAMBIT', badgeClass: 'sabo', stat: 'strategic', players: [clever],
-        text: PK([`${clever} jams the coconut on the gas pedal, climbs onto the roof with the dummy, and lets the ambulance drive itself. Thinking, literally, outside the box.`,
-                  `${clever} wedges the coconut against the accelerator and rides the roof — a ridiculous, brilliant gambit that nearly steals the whole thing.`]) });
+    const lh = help(legLoser);
+    events.push({ type: 'rescue', badge: 'UNDER AND UP', badgeClass: 'rescue', stat: 'endurance', players: lh ? [legLoser, lh] : [legLoser],
+      text: lh
+        ? PK([`${legLoser} goes under with the dummy's dead weight — and ${lh} hauls ${pronouns(legLoser).obj} back up by the vest. A genuine save.`,
+              `For one scary second ${legLoser} vanishes beneath the surface; ${lh} drags ${pronouns(legLoser).obj} and the dummy up together.`])
+        : PK([`${legLoser} slips under the black water with the dummy and claws back up alone, coughing and furious.`,
+              `The dummy pulls ${legLoser} under once — a bad second — before ${pronouns(legLoser).sub} fights back to the surface.`]) });
+  } else if (A.id === 'slide') {
+    const scared = finalists.filter(f => f !== legWinner && pStats(f).boldness < 6).sort((x, y) => pStats(x).boldness - pStats(y).boldness)[0];
+    if (scared && help(scared)) {
+      frozeLast[scared] = true; addBond(scared, help(scared), 1);
+      const scPr = pronouns(scared), sHelp = help(scared);
+      events.push({ type: 'bench', badge: 'SLAP OF FAITH', badgeClass: 'bench', stat: 'temperament', players: [sHelp, scared],
+        text: PK([`${sHelp} grabs ${scared} by the shoulders — maybe with a slap. "You don't have to be PERFECT. Look at MY game!" It snaps ${scared} out of it, and down the slide ${scPr.sub} goes.`,
+                  `${sHelp} refuses to let ${scared} spiral, talking ${scPr.obj} onto the slide breath by breath until ${scPr.sub} finally lets go and drops clean.`]) });
     }
+  } else if (A.id === 'drive') {
+    const clever = [...finalists].sort((x, y) => pStats(y).strategic - pStats(x).strategic)[0];
+    if (clever && pStats(clever).strategic >= 6) events.push({ type: 'sabo', badge: 'COCONUT GAMBIT', badgeClass: 'sabo', stat: 'strategic', players: [clever],
+      text: PK([`${clever} jams the coconut on the gas pedal, climbs onto the roof with the dummy, and lets the ambulance drive itself. Thinking, literally, outside the box.`,
+                `${clever} wedges the coconut against the accelerator and rides the roof — a ridiculous, brilliant gambit that nearly steals the whole thing.`]) });
   }
+
+  // 5. a social beat between the finalists / from the stands
+  _rescueSocial(finalists, bench, events, U);
 }
 
 function _rescueHostQuip(A, legWinner, finalists, H, PK) {

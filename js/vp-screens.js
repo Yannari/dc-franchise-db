@@ -77,6 +77,7 @@ import { rpBuildPRTitleCard, rpBuildPRRoles, rpBuildPRCreatureHunt, rpBuildPRDes
 import { rpBuildAuctionTitle, rpBuildAuctionFloor, rpBuildAuctionResults } from './auction-vp.js';
 import { buildViewerVoteCommitments } from './vote-planning.js';
 import { rpBuildKnowledgeMap } from './knowledge-vp.js';
+import { rpBuildRelationshipWeb } from './relationships-vp.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -2318,6 +2319,8 @@ export function rpBuildDebug(ep) {
       ${_tabBtn('threats', 'Threats & Heat')}
       ${_tabBtn('stats', 'Player Stats')}
       ${_tabBtn('bonds', 'Perceived Bonds')}
+      ${_tabBtn('relationships', 'Relationship Dimensions')}
+      ${_tabBtn('knowledge', 'Knowledge')}
       ${_tabBtn('commitments', 'Vote Commitments')}
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
@@ -2426,6 +2429,115 @@ export function rpBuildDebug(ep) {
         </div>`;
       });
       html += `</div>`;
+    }
+  }
+
+  // ════════════════════════════════════════════════
+  // TAB: DIRECTIONAL RELATIONSHIP DIMENSIONS
+  // Read-only inspection of the multidimensional relationship model.
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'relationships') {
+    const _relStore = snap.relationshipDimensions || gs.relationshipDimensions || {};
+    const _relDims = ['affection', 'trust', 'strategicRespect', 'fear', 'obligation', 'resentment', 'attraction'];
+    const _relShort = { affection: 'AFF', trust: 'TRUST', strategicRespect: 'RESPECT', fear: 'FEAR', obligation: 'DEBT', resentment: 'RESENT', attraction: 'ATTRACT' };
+    const _relColor = value => value >= 5 ? '#3fb950' : value >= 2 ? '#d29922' : value <= -2 ? '#f47067' : '#8b949e';
+    const _relRead = r => {
+      const notes = [];
+      if ((r.affection || 0) >= 3 && (r.trust || 0) < 1) notes.push('likes them, but does not trust them');
+      else if ((r.affection || 0) >= 3) notes.push('personally close');
+      if ((r.trust || 0) >= 3 && (r.strategicRespect || 0) >= 3) notes.push('trusted strategic partner');
+      else if ((r.strategicRespect || 0) >= 4) notes.push('respects their game');
+      if ((r.fear || 0) >= 3) notes.push('feels threatened');
+      if ((r.obligation || 0) >= 3) notes.push('feels indebted');
+      if ((r.resentment || 0) >= 3) notes.push('holds active resentment');
+      if ((r.attraction || 0) >= 3) notes.push('feels romantic pull');
+      if ((r.trust || 0) <= -3) notes.push('actively distrusts them');
+      return notes.length ? notes.join('; ') : 'neutral or mixed relationship';
+    };
+    const _relRows = Object.entries(_relStore).map(([key, raw]) => {
+      const [from, to] = key.split('\u2192');
+      const r = raw || {};
+      const intensity = _relDims.reduce((sum, d) => sum + Math.abs(Number(r[d]) || 0), 0);
+      return { from, to, r, intensity };
+    }).filter(row => row.from && row.to && row.intensity >= 0.05)
+      .sort((a, b) => b.intensity - a.intensity || a.from.localeCompare(b.from) || a.to.localeCompare(b.to));
+
+    html += `<div style="margin-bottom:12px;padding:10px;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.18);border-radius:8px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#38bdf8">DIRECTIONAL RELATIONSHIPS</div>
+      <div style="font-size:10px;color:#8b949e;margin-top:4px"><strong style="color:#e6edf3">A \u2192 B is what A feels about B.</strong> It can differ from B \u2192 A. These dimensions explain why affection, trust, fear, respect, debt, resentment, and attraction can pull the same person in different directions.</div>
+      <div style="font-size:10px;color:#6e7681;margin-top:4px">${_relRows.length} meaningful directional records saved for Episode ${ep.num}. Values normally range from -10 to 10; fear, debt, resentment, and attraction use 0 to 10.</div>
+    </div>`;
+    if (_relRows.length) {
+      html += `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:10px;color:#8b949e">
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1)"><th style="text-align:left;padding:5px;color:#e6edf3">From \u2192 To</th>${_relDims.map(d => `<th style="padding:5px" title="${d}">${_relShort[d]}</th>`).join('')}<th style="text-align:left;padding:5px">Plain-English read</th></tr>`;
+      _relRows.forEach(({ from, to, r }) => {
+        html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+          <td style="padding:5px;color:#e6edf3;white-space:nowrap"><strong>${from}</strong> \u2192 ${to}</td>
+          ${_relDims.map(d => { const v = Number(r[d]) || 0; return `<td style="padding:5px;text-align:center;color:${_relColor(v)};font-weight:${Math.abs(v) >= 3 ? '700' : '400'}">${v.toFixed(1)}</td>`; }).join('')}
+          <td style="padding:5px;color:#c9d1d9;min-width:180px">${_relRead(r)}</td>
+        </tr>`;
+      });
+      html += `</table></div>`;
+    } else {
+      html += `<div style="color:#484f58;font-size:11px">No multidimensional relationship records were saved in this episode snapshot. Run a new episode after the relationship system is enabled.</div>`;
+    }
+  }
+
+  // ════════════════════════════════════════════════
+  // TAB: PERSONAL KNOWLEDGE / INFORMATION FLOW
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'knowledge') {
+    const _knowledge = ep.knowledgeSnapshot || snap.knowledge || gs.knowledge || {};
+    const _facts = Object.values(_knowledge).filter(Boolean).sort((a, b) => (b.createdEp || 0) - (a.createdEp || 0) || String(a.id).localeCompare(String(b.id)));
+    const _beliefCount = _facts.reduce((n, f) => n + Object.keys(f.beliefs || {}).length, 0);
+    const _factLabel = f => {
+      if (f.type === 'target') return `${f.subject} is targeting ${f.object}`;
+      if (f.type === 'pitch') return `${f.subject} pitched ${f.object}`;
+      if (f.type === 'betrayal') return `${f.subject} betrayed ${f.object}`;
+      return `${f.type}: ${f.subject}${f.object != null ? ` \u2192 ${f.object}` : ''}`;
+    };
+    const _effectiveConfidence = (fact, belief) => {
+      const age = Math.max(0, ep.num - (belief.learnedEp ?? ep.num));
+      const validity = { target: 1, pitch: 2, 'bond-read': 4, idol: 99, advantage: 99, alliance: 99, betrayal: 99, throw: 99 }[fact.type] ?? 99;
+      const factAge = Math.max(0, ep.num - (fact.createdEp ?? ep.num));
+      return Math.max(0, Math.min(1, (Number(belief.confidence) || 0) - age * 0.08 - Math.max(0, factAge - validity) * 0.15));
+    };
+    const _valenceColor = { accurate: '#3fb950', exaggerated: '#d29922', stale: '#8b949e', false: '#f47067' };
+    html += `<div style="margin-bottom:12px;padding:10px;background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.18);border-radius:8px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#a78bfa">PERSONAL KNOWLEDGE</div>
+      <div style="font-size:10px;color:#8b949e;margin-top:4px"><strong style="color:#e6edf3">This tracks information, not votes.</strong> Knowing that a target or pitch exists does not mean the contestant supports it. Confidence is what that contestant currently believes, and the source shows how the information reached them.</div>
+      <div style="font-size:10px;color:#6e7681;margin-top:4px">${_facts.length} facts · ${_beliefCount} contestant beliefs saved for Episode ${ep.num}.</div>
+    </div>`;
+    if (_facts.length) {
+      _facts.forEach(fact => {
+        const beliefs = Object.entries(fact.beliefs || {}).sort(([, a], [, b]) => _effectiveConfidence(fact, b) - _effectiveConfidence(fact, a));
+        const truthColor = fact.truth === false ? '#f47067' : '#3fb950';
+        html += `<div style="margin-bottom:10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;overflow:hidden">
+          <div style="padding:7px 9px;background:rgba(255,255,255,0.025);display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:9px;font-weight:800;letter-spacing:1px;color:#a78bfa">${String(fact.type || 'fact').toUpperCase()}</span>
+            <strong style="color:#e6edf3">${_factLabel(fact)}</strong>
+            <span style="font-size:9px;color:${truthColor}">${fact.truth === false ? 'FALSE IN REALITY' : 'TRUE IN REALITY'}</span>
+            <span style="margin-left:auto;font-size:9px;color:#6e7681">created Ep ${fact.createdEp ?? '?'}</span>
+          </div>`;
+        if (beliefs.length) {
+          beliefs.forEach(([knower, belief]) => {
+            const eff = _effectiveConfidence(fact, belief);
+            const valence = belief.valence || 'accurate';
+            const others = belief.knowsOthersKnow?.length ? ` · knows ${belief.knowsOthersKnow.join(', ')} also know` : '';
+            html += `<div style="padding:5px 9px;border-top:1px solid rgba(255,255,255,0.04);display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <strong style="width:95px;color:#e6edf3">${knower}</strong>
+              <span style="width:42px;color:${eff >= 0.7 ? '#3fb950' : eff >= 0.4 ? '#d29922' : '#f47067'};font-weight:700">${Math.round(eff * 100)}%</span>
+              <span style="width:70px;color:${_valenceColor[valence] || '#8b949e'}">${valence}</span>
+              <span style="color:#8b949e">via ${belief.sourceType || 'unknown'}${belief.source ? ` (${belief.source})` : ''}${others}</span>
+            </div>`;
+          });
+        } else {
+          html += `<div style="padding:7px 9px;color:#484f58;font-size:10px">The fact exists in the model, but no contestant currently knows it.</div>`;
+        }
+        html += `</div>`;
+      });
+    } else {
+      html += `<div style="color:#484f58;font-size:11px">No personal-knowledge facts were saved in this episode snapshot. Run a new episode after the knowledge system is enabled.</div>`;
     }
   }
 
@@ -13649,6 +13761,10 @@ export function buildVPScreens(epRecord) {
     if (ep.knowledgeSnapshot && Object.keys(ep.knowledgeSnapshot).length) {
       vpScreens.push({ id:'knowledge-map', label:'Who Knew What',
         html: rpBuildKnowledgeMap(ep.num, ep.knowledgeSnapshot) });
+    }
+    if (ep.relationshipSnapshot && Object.keys(ep.relationshipSnapshot).length) {
+      vpScreens.push({ id:'relationship-web', label:'The Web',
+        html: rpBuildRelationshipWeb(ep.num, ep.relationshipSnapshot, ep.relationshipCausesSnapshot) });
     }
 
     // ── Emissary's Choice screen (AFTER votes — emissary picks second elimination) ──

@@ -76,8 +76,6 @@ import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaC
 import { rpBuildPRTitleCard, rpBuildPRRoles, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults, prRevealNext, prRevealAll, resetPRState } from './chal/project-runaway.js';
 import { rpBuildAuctionTitle, rpBuildAuctionFloor, rpBuildAuctionResults } from './auction-vp.js';
 import { buildViewerVoteCommitments } from './vote-planning.js';
-import { rpBuildKnowledgeMap } from './knowledge-vp.js';
-import { rpBuildRelationshipWeb } from './relationships-vp.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -2441,8 +2439,8 @@ export function rpBuildDebug(ep) {
   // (directional; never-met pairs shown neutral) and what they know.
   // ════════════════════════════════════════════════
   if (_dbTab === 'web' || _dbTab === 'relationships' || _dbTab === 'knowledge') {
-    const _relStoreW = snap.relationshipDimensions || gs.relationshipDimensions || {};
-    const _causeStoreW = snap.relationshipCauses || gs.relationshipCauses || {};
+    const _relStoreW = ep.relationshipSnapshot || snap.relationshipDimensions || gs.relationshipDimensions || {};
+    const _causeStoreW = ep.relationshipCausesSnapshot || snap.relationshipCauses || gs.relationshipCauses || {};
     const _knowW = ep.knowledgeSnapshot || snap.knowledge || gs.knowledge || {};
     const _rosterW = (activePlayers && activePlayers.length) ? [...activePlayers] : (gs.activePlayers?.length ? [...gs.activePlayers] : players.map(p => p.name));
     let _focusW = localStorage.getItem('vp_debug_player');
@@ -13840,14 +13838,9 @@ export function buildVPScreens(epRecord) {
     }
     vpScreens.push({ id:'tribal', label:'Tribal Council', html: rpBuildTribal(ep) });
     vpScreens.push({ id:'votes',  label:'The Votes',      html: rpBuildVotes(ep) });
-    if (ep.knowledgeSnapshot && Object.keys(ep.knowledgeSnapshot).length) {
-      vpScreens.push({ id:'knowledge-map', label:'Who Knew What',
-        html: rpBuildKnowledgeMap(ep.num, ep.knowledgeSnapshot) });
-    }
-    if (ep.relationshipSnapshot && Object.keys(ep.relationshipSnapshot).length) {
-      vpScreens.push({ id:'relationship-web', label:'The Web',
-        html: rpBuildRelationshipWeb(ep.num, ep.relationshipSnapshot, ep.relationshipCausesSnapshot) });
-    }
+    // (Standalone "The Web" + "Who Knew What" viewer screens removed — both are
+    // now in the player-centric "The Web" debug tab. Per-episode snapshots are
+    // still captured for that tab's accurate replay.)
 
     // ── Emissary's Choice screen (AFTER votes — emissary picks second elimination) ──
     if (ep.emissaryPick) {

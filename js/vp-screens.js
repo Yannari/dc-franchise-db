@@ -2319,8 +2319,7 @@ export function rpBuildDebug(ep) {
       ${_tabBtn('threats', 'Threats & Heat')}
       ${_tabBtn('stats', 'Player Stats')}
       ${_tabBtn('bonds', 'Perceived Bonds')}
-      ${_tabBtn('relationships', 'Relationship Dimensions')}
-      ${_tabBtn('knowledge', 'Knowledge')}
+      ${_tabBtn('web', 'The Web')}
       ${_tabBtn('commitments', 'Vote Commitments')}
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
@@ -2436,7 +2435,90 @@ export function rpBuildDebug(ep) {
   // TAB: DIRECTIONAL RELATIONSHIP DIMENSIONS
   // Read-only inspection of the multidimensional relationship model.
   // ════════════════════════════════════════════════
-  if (_dbTab === 'relationships') {
+  // ════════════════════════════════════════════════
+  // TAB: THE WEB — player-centric relationships + knowledge (merged).
+  // Click a face to switch player; shows how they feel about EVERYONE
+  // (directional; never-met pairs shown neutral) and what they know.
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'web' || _dbTab === 'relationships' || _dbTab === 'knowledge') {
+    const _relStoreW = snap.relationshipDimensions || gs.relationshipDimensions || {};
+    const _causeStoreW = snap.relationshipCauses || gs.relationshipCauses || {};
+    const _knowW = ep.knowledgeSnapshot || snap.knowledge || gs.knowledge || {};
+    const _rosterW = (activePlayers && activePlayers.length) ? [...activePlayers] : (gs.activePlayers?.length ? [...gs.activePlayers] : players.map(p => p.name));
+    let _focusW = localStorage.getItem('vp_debug_player');
+    if (!_focusW || !_rosterW.includes(_focusW)) _focusW = _rosterW[0];
+    const _slugW = n => players.find(p => p.name === n)?.slug || String(n).toLowerCase().replace(/\s+/g, '-');
+    const _dimsW = ['affection', 'trust', 'strategicRespect', 'fear', 'obligation', 'resentment', 'attraction'];
+    const _shortW = { affection: 'AFF', trust: 'TRUST', strategicRespect: 'RESPECT', fear: 'FEAR', obligation: 'DEBT', resentment: 'RESENT', attraction: 'ATTRACT' };
+    const _colW = v => v >= 5 ? '#3fb950' : v >= 2 ? '#d29922' : v <= -2 ? '#f47067' : '#6e7681';
+    const _dgetW = (a, b) => { const r = _relStoreW[`${a}→${b}`] || {}; const o = {}; _dimsW.forEach(d => o[d] = Number(r[d]) || 0); return o; };
+    const _readW = r => {
+      const n = [];
+      if (r.affection >= 4 && r.trust <= 1) n.push('likes them, distrusts them');
+      else if (r.affection >= 4) n.push('personally close');
+      else if (r.affection <= -3) n.push('dislikes them');
+      if (r.fear >= 3) n.push('wary/afraid');
+      if (r.resentment >= 4) n.push('resents them');
+      if (r.obligation >= 3) n.push('feels indebted');
+      if (r.strategicRespect >= 5) n.push('respects their game');
+      if (r.attraction >= 3) n.push('drawn to them');
+      if (r.trust <= -3 && r.affection > -3) n.push('distrusts them');
+      return n.length ? n.join(' · ') : 'neutral / never really connected';
+    };
+    const _intW = r => _dimsW.reduce((s, d) => s + Math.abs(r[d]), 0);
+    const _selW = _rosterW.map(n => {
+      const on = n === _focusW;
+      return `<button onclick="localStorage.setItem('vp_debug_player','${String(n).replace(/'/g, "\\'")}');const e=gs.episodeHistory.find(x=>x.num===${ep.num});if(e){buildVPScreens(e);renderVPScreen();}" title="${n}" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 5px;border:1px solid ${on ? '#d9a6ff' : 'rgba(255,255,255,0.1)'};border-radius:8px;background:${on ? 'rgba(200,120,255,0.16)' : 'transparent'};cursor:pointer;flex:0 0 auto">
+        <img src="assets/avatars/${_slugW(n)}.png" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid ${on ? '#d9a6ff' : '#30363d'}" onerror="this.style.visibility='hidden'">
+        <span style="font-size:9px;font-weight:${on ? '700' : '400'};color:${on ? '#d9a6ff' : '#8b949e'};max-width:54px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span></button>`;
+    }).join('');
+    html += `<div style="margin-bottom:10px;padding:9px;background:rgba(200,120,255,0.06);border:1px solid rgba(200,120,255,0.18);border-radius:8px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d9a6ff">THE WEB · ${_focusW}</div>
+      <div style="font-size:10px;color:#8b949e;margin-top:3px">Click a face to switch player. Shows how <strong style="color:#e6edf3">${_focusW}</strong> feels about everyone (A→B is directional, may differ from B→A) and what ${_focusW} personally knows. Never-met pairs show neutral.</div>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">${_selW}</div>`;
+    const _othersW = _rosterW.filter(n => n !== _focusW).map(n => {
+      const out = _dgetW(_focusW, n), back = _dgetW(n, _focusW);
+      return { n, out, back, i: _intW(out) + _intW(back) };
+    }).sort((a, b) => b.i - a.i || a.n.localeCompare(b.n));
+    html += `<div style="overflow-x:auto;margin-bottom:16px"><table style="width:100%;border-collapse:collapse;font-size:10px;color:#8b949e">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1)"><th style="text-align:left;padding:5px">${_focusW} →</th>${_dimsW.map(d => `<th style="padding:5px" title="${d}">${_shortW[d]}</th>`).join('')}<th style="text-align:left;padding:5px">Read</th><th style="text-align:left;padding:5px">↩ back</th></tr>`;
+    _othersW.forEach(({ n, out, back, i }) => {
+      const faded = i < 0.5;
+      const _causes = [...(_causeStoreW[`${_focusW}→${n}`] || [])].reverse().slice(0, 2).map(c => `ep${c.ep} ${c.reason}`).join(' · ');
+      const _backSig = _dimsW.filter(d => Math.abs(back[d]) >= 2).map(d => `${_shortW[d]} ${back[d].toFixed(0)}`).join(' ');
+      html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);opacity:${faded ? '0.5' : '1'}">
+        <td style="padding:5px;color:#e6edf3;white-space:nowrap"><img src="assets/avatars/${_slugW(n)}.png" style="width:18px;height:18px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:5px" onerror="this.style.display='none'"><strong>${n}</strong></td>
+        ${_dimsW.map(d => { const v = out[d]; return `<td style="padding:5px;text-align:center;color:${_colW(v)};font-weight:${Math.abs(v) >= 3 ? '700' : '400'}">${v ? v.toFixed(1) : '·'}</td>`; }).join('')}
+        <td style="padding:5px;color:#c9d1d9;min-width:150px">${_readW(out)}${_causes ? `<div style="color:#6e7681;font-size:9px;margin-top:2px">${_causes}</div>` : ''}</td>
+        <td style="padding:5px;color:#8b949e;min-width:90px">${_backSig || '<span style="color:#484f58">·</span>'}</td>
+      </tr>`;
+    });
+    html += `</table></div>`;
+    const _flabW = f => f.type === 'target' ? `${f.subject} is the target` : f.type === 'pitch' ? `${f.subject} pitched ${f.object}` : f.type === 'betrayal' ? `${f.subject} betrayed ${f.object}` : `${f.type}: ${f.subject}${f.object != null ? ` → ${f.object}` : ''}`;
+    const _effW = (fact, b) => { const age = Math.max(0, ep.num - (b.learnedEp ?? ep.num)); const val = { target: 1, pitch: 2, 'bond-read': 4 }[fact.type] ?? 99; const fa = Math.max(0, ep.num - (fact.createdEp ?? ep.num)); return Math.max(0, Math.min(1, (Number(b.confidence) || 0) - age * 0.08 - Math.max(0, fa - val) * 0.15)); };
+    const _valColW = { accurate: '#3fb950', exaggerated: '#d29922', stale: '#8b949e', false: '#f47067' };
+    const _knownW = Object.values(_knowW).filter(f => f && f.beliefs && f.beliefs[_focusW]).sort((a, b) => (b.createdEp || 0) - (a.createdEp || 0));
+    html += `<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#a78bfa;margin-bottom:6px">WHAT ${String(_focusW).toUpperCase()} KNOWS <span style="color:#6e7681;font-weight:400">(${_knownW.length})</span></div>`;
+    if (_knownW.length) {
+      _knownW.forEach(f => {
+        const b = f.beliefs[_focusW], eff = _effW(f, b), val = b.valence || 'accurate';
+        const others = b.knowsOthersKnow?.length ? ` · knows ${b.knowsOthersKnow.join(', ')} also know` : '';
+        html += `<div style="padding:5px 8px;border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:8px;font-weight:800;letter-spacing:1px;color:#a78bfa;width:56px">${String(f.type).toUpperCase()}</span>
+          <strong style="color:#e6edf3">${_flabW(f)}</strong>
+          ${f.truth === false ? '<span style="font-size:8px;color:#f47067">(planted)</span>' : ''}
+          <span style="margin-left:auto;color:${eff >= 0.7 ? '#3fb950' : eff >= 0.4 ? '#d29922' : '#f47067'};font-weight:700">${Math.round(eff * 100)}%</span>
+          <span style="color:${_valColW[val] || '#8b949e'};width:64px">${val}</span>
+          <span style="color:#6e7681">via ${b.sourceType || '?'}${b.source && b.source !== 'observation' ? ` (${b.source})` : ''}${others}</span>
+        </div>`;
+      });
+    } else {
+      html += `<div style="color:#484f58;font-size:11px">${_focusW} doesn't currently know any tracked strategic facts.</div>`;
+    }
+  }
+
+  if (_dbTab === '__legacy_relationships') {
     const _relStore = snap.relationshipDimensions || gs.relationshipDimensions || {};
     const _relDims = ['affection', 'trust', 'strategicRespect', 'fear', 'obligation', 'resentment', 'attraction'];
     const _relShort = { affection: 'AFF', trust: 'TRUST', strategicRespect: 'RESPECT', fear: 'FEAR', obligation: 'DEBT', resentment: 'RESENT', attraction: 'ATTRACT' };
@@ -2486,7 +2568,7 @@ export function rpBuildDebug(ep) {
   // ════════════════════════════════════════════════
   // TAB: PERSONAL KNOWLEDGE / INFORMATION FLOW
   // ════════════════════════════════════════════════
-  if (_dbTab === 'knowledge') {
+  if (_dbTab === '__legacy_knowledge') {
     const _knowledge = ep.knowledgeSnapshot || snap.knowledge || gs.knowledge || {};
     const _facts = Object.values(_knowledge).filter(Boolean).sort((a, b) => (b.createdEp || 0) - (a.createdEp || 0) || String(a.id).localeCompare(String(b.id)));
     const _beliefCount = _facts.reduce((n, f) => n + Object.keys(f.beliefs || {}).length, 0);

@@ -69,6 +69,20 @@ export function recordAdvantageFinds(ep, epNum = currentEp()) {
   return recorded;
 }
 
+// A planted lie (forged note / whispered smear) → a FALSE fact that the victim
+// either swallows (fooled: believes accused is against them) or sees through
+// (and pins on the liar). social-manipulation already resolved the outcome, so
+// we set the belief to match rather than re-rolling the belief check.
+export function recordPlantedLie({ liar, victim, accused, believed, ep = currentEp() }) {
+  if (!liar || !victim || !accused || victim === accused) return null;
+  const id = factId('bond-read', accused, victim);
+  const fact = recordFact({ type: 'bond-read', subject: accused, object: victim, payload: { plantedBy: liar }, truth: false, ep });
+  fact.beliefs[victim] = believed
+    ? { confidence: 0.75, source: liar, sourceType: 'told', valence: 'accurate', learnedEp: ep, knowsOthersKnow: [] }
+    : { confidence: 0.7, source: liar, sourceType: 'deduced', valence: 'false', learnedEp: ep, knowsOthersKnow: [liar] };
+  return id;
+}
+
 // A DETECTED challenge throw → only the players who saw through it know.
 // (Undetected throws seed nothing — that's the point.)
 export function recordChallengeThrowKnowledge(thrower, epNum = currentEp(), witnesses = []) {

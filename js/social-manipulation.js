@@ -2,6 +2,7 @@
 import { gs, players } from './core.js';
 import { pStats, pronouns, romanticCompat } from './players.js';
 import { getBond, addBond } from './bonds.js';
+import { recordPlantedLie } from './knowledge-integration.js';
 
 export function _generateExposeSchemer(exposer, schemer, victim, group, ep, _rp) {
   if (!exposer || !schemer) return null;
@@ -84,6 +85,7 @@ export function _generateForgeNote(schemer, target, group, ep, _rp) {
     // Believed
     const bondDrop = -(1.0 + noteQuality * 0.3);
     addBond(reader, alleged, bondDrop);
+    recordPlantedLie({ liar: schemer, victim: reader, accused: alleged, believed: true, ep: ep?.num });
     if (ep) ep._socialVictim = alleged;
     if (ep) ep._socialSchemer = schemer;
     if (ep) ep._socialVictimTarget = reader;
@@ -105,6 +107,7 @@ export function _generateForgeNote(schemer, target, group, ep, _rp) {
   } else if (resistance > belief + 0.5) {
     // Detected — schemer exposed
     addBond(reader, schemer, -1.0);
+    recordPlantedLie({ liar: schemer, victim: reader, accused: alleged, believed: false, ep: ep?.num });
     group.filter(p => p !== schemer && p !== reader).forEach(p => addBond(p, schemer, -0.5));
     if (!gs._schemeHeat) gs._schemeHeat = {};
     gs._schemeHeat[schemer] = { amount: 2.0, expiresEp: (gs.episode || 0) + 1 + 3 };
@@ -158,6 +161,7 @@ export function _generateSpreadLies(schemer, target, group, ep, _rp) {
   if (persuasion > resistance) {
     // Believed
     addBond(listener, accused, -1.5);
+    recordPlantedLie({ liar: schemer, victim: listener, accused, believed: true, ep: ep?.num });
     if (ep) ep._socialVictim = accused;
     if (ep) ep._socialSchemer = schemer;
     const believedTexts = [
@@ -195,6 +199,7 @@ export function _generateSpreadLies(schemer, target, group, ep, _rp) {
   } else {
     // Not believed — listener warns accused, schemer loses trust
     addBond(listener, schemer, -0.5);
+    recordPlantedLie({ liar: schemer, victim: listener, accused, believed: false, ep: ep?.num });
     if (!gs.popularity) gs.popularity = {};
     gs.popularity[schemer] = (gs.popularity[schemer] || 0) - 1;
     const notBelievedTexts = [

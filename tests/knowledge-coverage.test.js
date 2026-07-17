@@ -1,8 +1,8 @@
 // Tests for broadened knowledge fact recording (idol/advantage finds, throws).
 import { describe, it, expect, beforeEach } from 'vitest';
 import { seedGame } from './helpers/setup.js';
-import { recordAdvantageFinds, recordChallengeThrowKnowledge } from '../js/knowledge-integration.js';
-import { believes, knowsAbout, factId } from '../js/knowledge.js';
+import { recordAdvantageFinds, recordChallengeThrowKnowledge, recordPlantedLie } from '../js/knowledge-integration.js';
+import { believes, knowsAbout, factId, getFact } from '../js/knowledge.js';
 
 beforeEach(() => seedGame(['Ana', 'Bo', 'Cy'], { episode: 4, knowledge: {} }));
 
@@ -43,5 +43,22 @@ describe('knowledge coverage: challenge throws', () => {
   it('handles a numeric episode object in the fact id', () => {
     const id = recordChallengeThrowKnowledge('Cy', 7, ['Ana']);
     expect(id).toBe('throw:Cy:7');
+  });
+});
+
+describe('knowledge coverage: planted lies', () => {
+  it('a believed lie becomes a FALSE fact the victim swallows as accurate', () => {
+    const id = recordPlantedLie({ liar: 'Bo', victim: 'Ana', accused: 'Cy', believed: true, ep: 4 });
+    expect(getFact(id).truth).toBe(false);            // ground truth: it's a lie
+    const b = believes('Ana', id, 4);
+    expect(b.valence).toBe('accurate');               // ...but Ana is fooled
+    expect(b.source).toBe('Bo');
+  });
+
+  it('a detected lie is marked false and pinned on the liar', () => {
+    const id = recordPlantedLie({ liar: 'Bo', victim: 'Ana', accused: 'Cy', believed: false, ep: 4 });
+    const b = believes('Ana', id, 4);
+    expect(b.valence).toBe('false');                  // Ana saw through it
+    expect(b.knowsOthersKnow).toContain('Bo');        // and knows Bo is the liar
   });
 });

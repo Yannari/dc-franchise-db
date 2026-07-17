@@ -3,6 +3,7 @@ import { gs, players, seasonConfig } from './core.js';
 import { pStats, pronouns, romanticCompat, threatScore } from './players.js';
 import { getBond, addBond } from './bonds.js';
 import { SHOWMANCE_ARCHETYPE_MULT } from './camp-events.js';
+import { recordAttractionSpark } from './relationship-events.js';
 
 export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScores, context) {
   if (seasonConfig.romance === 'disabled') return false;
@@ -39,6 +40,7 @@ export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScore
     fake: false,
     saboteur: null,
   });
+  recordAttractionSpark(a, b, { ep: epNum });   // populate the mutual attraction dimension
   const prA = pronouns(a), prB = pronouns(b);
   const _sparkTexts = [
     `Something shifts between ${a} and ${b} during the ${context}. A look. A touch. By the time it's over, the tribe can see it.`,
@@ -191,6 +193,7 @@ export function checkFirstMove(ep) {
       origin: _originType, sparkContext: spark.context,
     });
 
+    recordAttractionSpark(a, b, { ep: (gs.episode || 0) + 1 }); // showmance forming → mutual attraction
     addBond(a, b, 0.5);
     if (!gs.popularity) gs.popularity = {};
     gs.popularity[a] = (gs.popularity[a] || 0) + 3;
@@ -493,6 +496,7 @@ export function checkShowmanceFormation(ep) {
         origin: 'camp-organic', sparkContext: 'camp events',
       };
       gs.showmances.push(showmance);
+      recordAttractionSpark(a, b, { ep: ep.num || (gs.episode || 0) + 1 }); // showmance forming → mutual attraction
       ep.newShowmances = ep.newShowmances || [];
       ep.newShowmances.push({ a, b });
 

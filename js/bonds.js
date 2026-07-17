@@ -2,7 +2,7 @@
 import { gs, players, seasonConfig } from './core.js';
 import { pStats, pronouns, threatScore } from './players.js';
 import { applyLegacyBondDelta, seedRelationshipFromLegacyBond } from './relationships.js';
-import { addMutualRelationshipDimension, addRelationshipDimension } from './relationships.js';
+import { addMutualRelationshipDimension, addRelationshipDimension, decayRelationshipDimensions } from './relationships.js';
 
 export function bKey(a, b)         { return [a,b].sort().join('||'); }
 
@@ -526,6 +526,9 @@ export function checkPerceivedBondTriggers(ep) {
 
 export function recoverBonds(ep) {
   const epNum = ep?.num || (gs.episode || 0) + 1;
+  // Fade the event-driven relationship dimensions (fear/respect/obligation/
+  // attraction) once per episode alongside bond recovery.
+  decayRelationshipDimensions(epNum);
   // Build set of pairs who actively clashed this episode (voted against each other, negative camp events)
   const _activeFeuds = new Set();
   // Voters who targeted each other

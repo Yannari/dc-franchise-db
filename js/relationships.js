@@ -113,3 +113,22 @@ export function removeRelationshipDimensionsFor(name) {
     if (from === name || to === name) delete gs.relationshipDimensions[key];
   });
 }
+
+// Per-dimension decay of the EVENT-DRIVEN specific dims. Multiplicative pull
+// toward 0 each episode: fear fades fastest (out of sight, out of mind),
+// strategic respect is stickiest, attraction/obligation fade unless reinforced.
+// Warmth dims (affection/trust/resentment) are intentionally excluded —
+// recoverBonds owns those. Lives here (leaf module) so bonds.js can call it
+// without a circular import.
+const DIMENSION_DECAY = { fear: 0.85, obligation: 0.9, attraction: 0.9, strategicRespect: 0.96 };
+export function decayRelationshipDimensions(ep = null) {
+  const dims = gs?.relationshipDimensions;
+  if (!dims) return;
+  Object.keys(dims).forEach(key => {
+    const rec = dims[key];
+    for (const [dim, factor] of Object.entries(DIMENSION_DECAY)) {
+      const v = rec[dim];
+      if (v) rec[dim] = Math.abs(v) < 0.05 ? 0 : Math.round(v * factor * 1000) / 1000;
+    }
+  });
+}

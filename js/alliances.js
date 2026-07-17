@@ -6,6 +6,7 @@ import { allianceIdolRead, recordIdolIntel } from './advantage-intel.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { recordDetectedBetrayalKnowledge } from './knowledge-integration.js';
 import { addRelationshipDimension } from './relationships.js';
+import { recordBetrayal } from './relationship-events.js';
 
 const _arch = (n) => players.find(p => p.name === n)?.archetype || 'floater';
 const _VILLAINY = ['villain', 'mastermind', 'schemer'];
@@ -781,6 +782,10 @@ export function detectBetrayals(ep) {
         // directional: the betrayed ally loses trust and gains resentment.
         addRelationshipDimension(other, voter, 'trust', bondCost * 0.7 * _loyaltyMultiplier);
         addRelationshipDimension(other, voter, 'resentment', Math.abs(bondCost) * 0.8 * _loyaltyMultiplier);
+        // Add the missing fear-of-the-traitor + guilt + cause trail (warmth
+        // already booked above via addBond/trust/resentment).
+        const _sevNum = _betrayalSeverity === 'major' ? 1.4 : _betrayalSeverity === 'moderate' ? 1.0 : 0.5;
+        recordBetrayal(other, voter, { severity: _sevNum * _loyaltyMultiplier, applyWarmth: false, ep: ep.num });
       });
       const newAllianceNote = formedThisEp
         ? ` (alliance formed this episode — bonds never had time to solidify)`

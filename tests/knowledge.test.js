@@ -127,7 +127,7 @@ describe('knowledge: propagation (rumors, leaks, second-order)', () => {
     K.learn('A', 'throw:E:2', { sourceType: 'observed', ep: 1, rng: LOW });
     let found = false;
     for (let ep = 1; ep <= 6 && !found; ep++) {
-      K.tick(ep, { maxPerFact: 6 });
+      K.tick(ep, { maxPerFact: 6, rng: LOW });   // deterministic spread (matches sibling tests)
       const others = K.whoKnows('throw:E:2').filter(x => x.knower !== 'A');
       if (others.some(o => o.knowsOthersKnow.length > 0)) found = true;
     }

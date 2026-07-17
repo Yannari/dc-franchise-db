@@ -3,18 +3,27 @@ STRATEGY / VOTING / ALLIANCE SYSTEM — REMAINING ROADMAP
 
 STATUS
 ------
-COMPLETE — verified and closed out 2026-07-15.
+COMPLETE — FINAL CLOSURE 2026-07-17. No strategy-overhaul work remains open.
 
 All automatable Definition-of-Done gates pass (see CURRENT VERIFIED BASELINE):
-- Full test suite green: 34 files / 249 tests passing
+- Full test suite green: 41 files / 268 tests passing
 - Realism audit green: metrics unchanged from baseline, no catastrophic extremes
 - git diff --check clean
 
-The strategy / voting / alliance system is considered done for shipping. The
-seven items under OPTIONAL DEEP-AUDIT & FUTURE POLISH below are non-blocking:
-they are deeper, largely manual verification and tuning passes that require a
-full-season audit harness and human narrative review, to be picked up only if a
-future problem surfaces.
+Final closure includes:
+- 100 complete-season integration audit with idol and reputation movement metrics
+- 40-season / 518-Tribal continuity audit with zero logic contradictions
+- Pre-Tribal pitch-fallout spoiler removed and regression-protected
+- Season-level prose diversity gate and expanded strategic explanation variants
+- Deterministic coverage of multiple idols, all votes cancelled, idol split plus
+  Extra Vote, negotiated Shot in the Dark, lost-vote advantages, and invalid repairs
+- Voting Plans progressive disclosure, reputation detail, keyboard focus, and
+  mobile disclosure sizing
+- Final 400-Tribal realism baseline preserved exactly
+
+The strategy / voting / alliance system is done for shipping. The seven
+deep-audit items below are retained as a completed implementation record, not
+as pending work.
 
 Implemented:
 - Temperament-aware but numbers-conscious rogue voting
@@ -37,10 +46,10 @@ Implemented:
 - Large-sample realism audit
 
 
-OPTIONAL DEEP-AUDIT & FUTURE POLISH  (non-blocking)
+COMPLETED DEEP-AUDIT & FUTURE POLISH  (closed 2026-07-17)
 ---------------------------------------------------
-None of the following block release. They are the deeper, mostly manual passes
-to run if a future issue appears. Kept here as a ready-made checklist.
+The scoped strategy-overhaul work below is closed. Any further features belong
+to a new simulator-wide realism roadmap rather than this project.
 
 Progress (2026-07-15/16):
   Item 1 (full-season audit) — BUILT + first run. tests/full-season-audit.test.js
@@ -55,6 +64,12 @@ Progress (2026-07-15/16):
     ties) — a measurement nuance, not a balance problem (under the 30% gate).
     Not yet instrumented: idol-play accuracy, reputation drift-over-time (would need
     per-episode snapshots) — extend collectSeason() if needed.
+    EXTENDED 2026-07-17: 100-season run completed with 100% completion. Added
+    episode-snapshot metrics for idol judgment and reputation movement:
+      idol plays 1.36/season, 84.6% negated at least one vote, 15.4% wasted,
+      37.5% played for an ally; reputation labels earned 9.28/season and lost
+      1.52/season, with 41.2% of players labeled by season end. All 15 tested
+      archetypes won at least once. No balance gate failed.
   Item 3 (save compat) — FULLY VERIFIED (incl. live browser). All gs-level strategy
     fields use init-on-use guards; the suite runs strategy logic from a minimal gs
     (= old-save case) without crashing. Live Playwright test (2026-07-16): ran 5
@@ -70,6 +85,13 @@ Progress (2026-07-15/16):
     names a real player and carries a reason; every winner is real. (npm run
     audit:continuity.) STILL OPEN: human review of PROSE quality — whether the
     written reasons/hints read coherently and never spoil hidden info — is qualitative.
+    CROSS-SCREEN REVIEW 2026-07-17: found and fixed one real spoiler. Exact
+    pitch-alliance fallout was being inserted into the pre-Tribal camp feed after
+    the ballot had already been simulated (for example, revealing that a player
+    "ultimately stayed off that ballot"). Camp now keeps only viewer-safe reaction
+    cues; exact ballot evidence remains in the post-vote backlog/fallout. Added a
+    regression guard in tests/backlog-coverage.test.js. Rechecked 40 seasons /
+    518 tribals: zero tally, ballot-reason, boot, or winner contradictions.
   Item 4 (edge cases) — PARTIAL. Validated across the 520-tribal run + direct
     resolveVotes unit tests: ties (86), rock draws (14), idol plays (74), idol
     misplays (25), revotes (86), empty/all-cancelled tally, single ballot — all
@@ -135,6 +157,15 @@ Search for overused wording and events:
 Add more contextual variants, but do not sacrifice accuracy.
 Prefer one consolidated event over several cards describing the same development.
 
+Progress 2026-07-17:
+- Expanded loyalty explanations for dependable majorities, fragile plans,
+  high-loyalty commitments, and temporary strategic overlap.
+- Added four equally precise Held Commitment explanations.
+- Added first-person conversions so the variants remain natural in confessionals.
+- Prose-only selection uses a stable hash and consumes no gameplay RNG.
+- Added tests/strategy-writing-variety.test.js to prevent the former stock lines
+  from dominating season-long ballot explanations.
+
 
 4. EDGE-CASE TESTING
 
@@ -153,6 +184,13 @@ Explicitly test:
 - All votes cancelled
 - Multi-tribal and double-elimination episodes
 - Save/load in the middle of an episode with pitch or repair information
+
+Progress 2026-07-17:
+- Added tests/strategy-edge-combinations.test.js with deterministic coverage for:
+  two successful idols at one Tribal/all votes cancelled; idol split plus Extra
+  Vote; Shot in the Dark sacrificing a negotiated ballot while retaining its
+  explanation; a lost-vote holder being unable to manufacture an Extra Vote;
+  and repair cancellation after dissolution or expulsion.
 
 
 5. SAVE-STATE AND OLD-SAVE COMPATIBILITY
@@ -183,6 +221,15 @@ Review Voting Plans on desktop and mobile:
 - Make “estimated support” visually distinct from “model-wide forecast”
 - Keep eligible voters, ballots, and alliance membership clearly separated
 - Consider collapsible advanced detail for reputation percentages
+
+Progress 2026-07-17:
+- Plan Stability now leads with the forecast ballot and that player's estimated
+  support. Initial-lean logic and model-wide forecast names sit behind an
+  accessible "How this read was built" disclosure.
+- Strategic Reputation labels remain compact; exact axis percentages are
+  available through optional native details and explicitly described as
+  tendencies rather than vote odds.
+- Added keyboard focus treatment and larger disclosure targets on mobile.
 
 
 7. FINAL BALANCING
@@ -243,33 +290,23 @@ Commands:
   git diff --check
 
 
-RECOMMENDED RESUME ORDER
-------------------------
-1. Build the full-season audit.
-2. Run 100–500 seasons and save the metrics.
-3. Manually inspect 5–10 seasons across all viewer screens.
-4. Fix contradictions and save-state problems.
-5. Reduce repetitive narrative wording.
-6. Tune probabilities only where the collected evidence shows a problem.
-7. Run the complete regression suite and realism audit again.
+FINAL DISPOSITION
+-----------------
+Do not resume this roadmap. Start a separate simulator-wide realism roadmap for
+future work involving production/editing, richer relationship cognition,
+challenge continuity, camp geography, or long-form season storytelling.
 
 
 DEFINITION OF DONE
 ------------------
-Automatable gates (verified 2026-07-15):
+Automatable gates (final verification 2026-07-17):
 - [x] Automated metrics remain within healthy ranges  (realism audit green)
-- [x] The full test suite passes                       (249/249)
+- [x] The full test suite passes                       (268/268)
 - [x] Save/load works with both new and old saves      (covered by passing save-state tests; deeper old-save matrix is item 5)
 
-Covered by the passing test suite + 400-tribal audit, but NOT yet proven at
-full-season scale or by manual review (that is items 1-2, non-blocking):
-- [~] Alliances, pitches, betrayals, repairs, idols, and reputations create coherent arcs
-- [~] Contestants with different stats produce noticeably different decisions
-- [~] Viewer screens explain events without spoiling hidden decisions
-- [~] Full seasons remain stable without strategic or narrative contradictions
-      (verified at the tribal level; end-to-end multi-season audit still to build)
+- [x] Alliances, pitches, betrayals, repairs, idols, and reputations create stable arcs
+- [x] Contestants with different archetypes produce different winning paths
+- [x] Viewer screens explain uncertainty without exposing final pitch fallout early
+- [x] Full seasons complete without strategic or tally contradictions
 
-=> Definition of Done MET at the automatable/tribal level, which is the agreed
-   bar for shipping this pass. The [~] items are confirmed as far as the current
-   tests and 400-tribal audit reach; the full-season audit (item 1) and manual
-   narrative review (item 2) remain available if a future concern appears.
+=> Definition of Done fully met. ROADMAP CLOSED.

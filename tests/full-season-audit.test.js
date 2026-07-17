@@ -132,11 +132,22 @@ function collectSeason(g, winner) {
     else plur++;
   });
   S.tribals = trib; S.unanimous = unan; S.majority = maj; S.plurality = plur; S.ties = tie;
+  // Count immunity-idol decisions only; ep.idolPlays also stores unrelated advantages.
+  const idolPlays = g.episodeHistory.flatMap(h => (h.idolPlays || []).filter(p =>
+    !p.type || ['idol', 'superIdol', 'legacy'].includes(p.type)));
+  S.idolPlays = idolPlays.length;
+  S.idolSuccesses = idolPlays.filter(p => !p.failed && !p.fake && (p.votesNegated || 0) > 0).length;
+  S.idolWastes = idolPlays.filter(p => !p.failed && (p.votesNegated || 0) === 0).length;
+  S.idolAllyPlays = idolPlays.filter(p => p.playedFor && p.playedFor !== p.player).length;
   // reputations
   const reps = Object.values(g.strategicReputations || {});
   S.repPlayers = reps.length;
   S.repLabeled = reps.filter(r => (r.labels || []).length).length;
   S.labels = reps.flatMap(r => r.labels || []);
+  const repChanges = g.episodeHistory.flatMap(h => h.reputationChanges || []);
+  S.repEarnEvents = repChanges.reduce((n, c) => n + (c.earned || []).length, 0);
+  S.repLossEvents = repChanges.reduce((n, c) => n + (c.lost || []).length, 0);
+  S.repPlayersChanged = new Set(repChanges.filter(c => (c.earned || []).length || (c.lost || []).length).map(c => c.name)).size;
   // jury
   const fr = g.finaleResult;
   if (fr && fr.votes) {
@@ -179,7 +190,14 @@ function runAudit(seasons = 60, seed = 20260716) {
     majorityRate: sum('majority') / totalTribals,
     pluralityRate: sum('plurality') / totalTribals,
     tieRate: sum('ties') / totalTribals,
+    idolPlaysPerSeason: avg('idolPlays'),
+    idolAccuracy: sum('idolSuccesses') / Math.max(1, sum('idolPlays')),
+    idolWasteRate: sum('idolWastes') / Math.max(1, sum('idolPlays')),
+    idolAllyPlayRate: sum('idolAllyPlays') / Math.max(1, sum('idolPlays')),
     reputationLabeledRate: sum('repLabeled') / Math.max(1, sum('repPlayers')),
+    reputationEarnsPerSeason: avg('repEarnEvents'),
+    reputationLossesPerSeason: avg('repLossEvents'),
+    reputationChangedPlayerRate: sum('repPlayersChanged') / Math.max(1, sum('repPlayers')),
     juryMargin: rows.filter(s => s.hasJury).reduce((a, s) => a + s.juryMargin, 0) / Math.max(1, sum('hasJury')),
     juryUnanimousRate: sum('juryUnanimous') / Math.max(1, sum('hasJury')),
     labelFreq, winnerArchFreq, distinctWinnerArchs: Object.keys(winnerArchFreq).length,
@@ -188,7 +206,8 @@ function runAudit(seasons = 60, seed = 20260716) {
 
 describe('full-season integration audit', () => {
   it('runs complete seasons and reports stable macro behavior', () => {
-    const R = runAudit(60);
+    const requestedSeasons = Number.parseInt(process.env.AUDIT_SEASONS || '60', 10);
+    const R = runAudit(Number.isFinite(requestedSeasons) && requestedSeasons > 0 ? requestedSeasons : 60);
     console.table([{
       seasons: R.seasons,
       'completion': pct(R.completionRate),
@@ -207,7 +226,14 @@ describe('full-season integration audit', () => {
       'majority votes': pct(R.majorityRate),
       'plurality votes': pct(R.pluralityRate),
       'tied votes': pct(R.tieRate),
+      'idol plays/season': R.idolPlaysPerSeason.toFixed(2),
+      'idol success': pct(R.idolAccuracy),
+      'idol wasted': pct(R.idolWasteRate),
+      'idol ally plays': pct(R.idolAllyPlayRate),
       'players labeled': pct(R.reputationLabeledRate),
+      'rep earns/season': R.reputationEarnsPerSeason.toFixed(2),
+      'rep losses/season': R.reputationLossesPerSeason.toFixed(2),
+      'players with rep change': pct(R.reputationChangedPlayerRate),
       'avg jury margin': pct(R.juryMargin),
       'unanimous juries': pct(R.juryUnanimousRate),
       'distinct winner archetypes': R.distinctWinnerArchs,
@@ -225,6 +251,11 @@ describe('full-season integration audit', () => {
     expect(R.dissolvedRate).toBeGreaterThan(0);
     expect(R.reputationLabeledRate).toBeGreaterThan(0);     // reputations get earned
     expect(R.reputationLabeledRate).toBeLessThan(0.95);     // but not everyone, not too early
+    expect(R.idolAccuracy).toBeGreaterThan(0.05);           // reads sometimes work
+    expect(R.idolAccuracy).toBeLessThan(0.95);              // but holders are not omniscient
+    expect(R.idolWasteRate).toBeGreaterThan(0);             // paranoia/desperation can waste one
+    expect(R.reputationEarnsPerSeason).toBeGreaterThan(0);  // labels emerge from behavior
+    expect(R.reputationChangedPlayerRate).toBeLessThan(0.95); // reputation is not universal churn
     expect(R.juryMargin).toBeGreaterThan(0.34);             // winner gets a plurality at least
     expect(R.distinctWinnerArchs).toBeGreaterThan(3);       // different archetypes win
   }, 240000);

@@ -411,6 +411,10 @@ export function buildVoteReason(voter, target, type, ctx = {}) {
       `trust is everything out here — following ${label}`,
       `this is what ${label} decided — they don't second-guess that`,
       `${label} has been solid — staying put`,
+      `gave ${label} their word before Tribal — the ballot reflects it`,
+      `the relationship with ${label} matters more than a last-minute alternative`,
+      `sticking with ${label}; changing now would leave both sides distrusting them`,
+      `${label} has earned enough trust for one more vote together`,
     ]);
     if (voterS.loyalty >= 5) return pick(_hasDependableControl ? [
       `following ${label} — it's the right call for now`,
@@ -418,12 +422,29 @@ export function buildVoteReason(voter, target, type, ctx = {}) {
       `${label} agreed on this name — going along with it`,
       `this vote makes sense — staying with ${label}`,
       `goes with ${label}'s read — no reason to deviate`,
-    ] : [`following ${label} — it's the right call for now`, `${label} agreed on this name — going along with it`, `this vote makes sense — staying with ${label}`, `the plan still needs people to hold — doing their part for ${label}`]);
+      `the count behind ${label} checks out — no benefit in forcing a different name`,
+      `${label}'s target has enough support to land, so they stay with the workable option`,
+      `the room is settling where ${label} wanted it; fighting that would only expose them`,
+      `backs ${label}'s plan because the votes are actually there`,
+    ] : [
+      `following ${label} — it's the right call for now`,
+      `${label} agreed on this name — going along with it`,
+      `this vote makes sense — staying with ${label}`,
+      `the plan still needs people to hold — doing their part for ${label}`,
+      `keeps the promise to ${label}, even though the count is not secure yet`,
+      `${label}'s plan only works if tentative votes stop wandering — they choose to hold`,
+      `doesn't love the uncertainty, but abandoning ${label} would weaken the plan further`,
+      `stays on ${label}'s name and waits to see whether the rest of the group follows through`,
+    ]);
     return pick([
       `${label} gets the vote this round — convenient alignment`,
       `going with ${label} for now, not out of pure loyalty`,
       `${label}'s agenda lines up with theirs this vote`,
       `follows ${label} — for now`,
+      `shares ${label}'s target tonight; that does not make it a long-term partnership`,
+      `${label}'s option serves their game for this round, and that is enough`,
+      `votes beside ${label} without promising the same answer next Tribal`,
+      `temporary overlap with ${label} puts the ballot on the same name`,
     ]);
   }
 
@@ -1317,10 +1338,19 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
     const transition = ballot.transition;
     const rejectedTarget = transition.rejectedTarget;
     const finalTarget = transition.target;
+    const _heldReasons = [
+      `[HELD COMMITMENT] considered ${rejectedTarget}, but no credible late coalition or disruption justified abandoning ${finalTarget}`,
+      `[HELD COMMITMENT] heard the case for ${rejectedTarget}, but it never produced enough reliable support to replace ${finalTarget}`,
+      `[HELD COMMITMENT] weighed ${rejectedTarget}; without a workable new count, stayed on ${finalTarget}`,
+      `[HELD COMMITMENT] ${rejectedTarget} remained an option, but no trusted late plan made leaving ${finalTarget} rational`,
+    ];
+    // Prose selection must not consume simulation RNG and change future strategy.
+    const _heldKey = `${ballot.voter}|${rejectedTarget}|${finalTarget}|${gs.episode || gs.episodeHistory?.length || 0}`;
+    const _heldIndex = [..._heldKey].reduce((n, ch) => ((n * 31) + ch.charCodeAt(0)) >>> 0, 0) % _heldReasons.length;
     const finalReason = ballot.fringeConsolidation
       ? `[LATE CONSENSUS] ${ballot.fringeConsolidation.from} was isolated; shifted to ${finalTarget} when the room narrowed to the leading options`
       : transition.prevented
-      ? `[HELD COMMITMENT] considered ${rejectedTarget}, but no credible late coalition or disruption justified abandoning ${finalTarget}`
+      ? _heldReasons[_heldIndex]
       : ballot.reason;
     votes[finalTarget] = (votes[finalTarget] || 0) + 1;
     log.push({ voter: ballot.voter, voted: finalTarget, reason: finalReason, lateTrigger: transition.lateTrigger,

@@ -46,6 +46,7 @@ import { rpBuildTusksTitleCard, rpBuildTusksHunt, rpBuildTusksFinish, tusksRevea
 import { rpBuildClownTitleCard, rpBuildClownStalk, rpBuildClownRun, clownRevealNext, clownRevealAll } from './chal/killer-clown.js';
 import { rpBuildBashTitleCard, rpBuildBashArena, rpBuildBashResults, bashRevealNext, bashRevealAll } from './chal/bumper-car-bash.js';
 import { rpBuildCheeseTitleCard, rpBuildCheeseDrop, rpBuildCheeseResults, cheeseRevealNext, cheeseRevealAll } from './chal/say-cheese.js';
+import { rpBuildWheelTitleCard, rpBuildWheelPhase1, rpBuildWheelPhase2, rpBuildWheelPhase3, rpBuildWheelResults, wheelRevealNext, wheelRevealAll } from './chal/wheel-of-misfortune.js';
 import { rpBuildDisadvantageTrial, disReveal, disRevealAll } from './disadvantage-vote.js';
 import { rpBuildFCTitleCard, rpBuildFCPhase1, rpBuildFCSledAssignment, rpBuildFCPhase2, rpBuildFCResults, frozenCrossingRevealNext, frozenCrossingRevealAll } from './chal/frozen-crossing.js';
 import { rpBuildVSTitleCard, rpBuildVSPhase1, rpBuildVSPhase2, rpBuildVSPhase3, rpBuildVSResults, vikingSourRevealNext, vikingSourRevealAll } from './chal/viking-sour.js';
@@ -2320,7 +2321,7 @@ export function rpBuildDebug(ep) {
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
-      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isTruthOrDareTrain || ep.isAMazeInGrip || ep.isPolesApart || ep.isTusksLadders || ep.isKillerClown || ep.isBumperCarBash || ep.isSayCheese || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isCampCastaways || ep.isSlasherNight || ep.isMonsterCash || ep.isAlienEgg) ? _tabBtn('challenge', 'Challenge') : ''}
+      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isTruthOrDareTrain || ep.isAMazeInGrip || ep.isPolesApart || ep.isTusksLadders || ep.isKillerClown || ep.isBumperCarBash || ep.isSayCheese || ep.isWheelOfMisfortune || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isCampCastaways || ep.isSlasherNight || ep.isMonsterCash || ep.isAlienEgg) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -8512,6 +8513,10 @@ export function rpBuildVotingPlans(ep) {
       sub(/^trust is everything out here — following (.+)$/i,          g  => `Trust is everything. I'm following ${g}.`) ||
       sub(/^this is what (.+?) decided — they don't second-guess that$/i, g => `This is what ${g} decided. I don't second-guess it.`) ||
       sub(/^(.+?) has been solid — staying put$/i,                     g  => `${g} has been solid. I'm staying put.`) ||
+      sub(/^gave (.+?) their word before Tribal — the ballot reflects it$/i, g => `I gave ${g} my word before Tribal. My ballot reflects it.`) ||
+      sub(/^the relationship with (.+?) matters more than a last-minute alternative$/i, g => `My relationship with ${g} matters more than a last-minute alternative.`) ||
+      sub(/^sticking with (.+?); changing now would leave both sides distrusting them$/i, g => `I'm sticking with ${g}. Changing now would leave both sides distrusting me.`) ||
+      sub(/^(.+?) has earned enough trust for one more vote together$/i, g => `${g} has earned enough trust for one more vote together.`) ||
       sub(/^following (.+?) — it's the right call for now$/i,          g  => `I'm with ${g}. It's the right call for now.`) ||
       sub(/^following (.+?) — (.+)$/i,                                 (g, rest) => `I'm following ${g}. ${cap(rest)}.`) ||
       sub(/^following (.+)$/i,                                         g  => `I'm following ${g}.`) ||
@@ -8521,6 +8526,18 @@ export function rpBuildVotingPlans(ep) {
       sub(/^(.+?) get(?:s)? the vote this round — convenient alignment$/i, g => `${g} gets the vote. Convenient alignment for now.`) ||
       sub(/^goes? with (.+?)'s read — no reason to deviate$/i,         g  => `I'm going with ${g}'s read. No reason to deviate.`) ||
       sub(/^(.+?) agreed on this name — going along with it$/i,        g  => `${g} agreed on this name. I'm going along with it.`) ||
+      sub(/^the count behind (.+?) checks out — no benefit in forcing a different name$/i, g => `The count behind ${g} checks out. I gain nothing by forcing a different name.`) ||
+      sub(/^(.+?)'s target has enough support to land, so they stay with the workable option$/i, g => `${g}'s target has enough support to land. I'm staying with the workable option.`) ||
+      sub(/^the room is settling where (.+?) wanted it; fighting that would only expose them$/i, g => `The room is settling where ${g} wanted it. Fighting that would only expose me.`) ||
+      sub(/^backs (.+?)'s plan because the votes are actually there$/i, g => `I'm backing ${g}'s plan because the votes are actually there.`) ||
+      sub(/^keeps the promise to (.+?), even though the count is not secure yet$/i, g => `I'm keeping my promise to ${g}, even though the count is not secure yet.`) ||
+      sub(/^(.+?)'s plan only works if tentative votes stop wandering — they choose to hold$/i, g => `${g}'s plan only works if tentative votes stop wandering. I choose to hold.`) ||
+      sub(/^doesn't love the uncertainty, but abandoning (.+?) would weaken the plan further$/i, g => `I don't love the uncertainty, but abandoning ${g} would weaken the plan further.`) ||
+      sub(/^stays on (.+?)'s name and waits to see whether the rest of the group follows through$/i, g => `I'm staying on ${g}'s name and waiting to see whether the group follows through.`) ||
+      sub(/^shares (.+?)'s target tonight; that does not make it a long-term partnership$/i, g => `I share ${g}'s target tonight. That doesn't make this a long-term partnership.`) ||
+      sub(/^(.+?)'s option serves their game for this round, and that is enough$/i, g => `${g}'s option serves my game for this round. That's enough.`) ||
+      sub(/^votes beside (.+?) without promising the same answer next Tribal$/i, g => `I'm voting beside ${g} without promising the same answer next Tribal.`) ||
+      sub(/^temporary overlap with (.+?) puts the ballot on the same name$/i, g => `My game temporarily overlaps with ${g}, so our ballots land on the same name.`) ||
       sub(/^the group followed the plan; .+ didn't(?:\s*—\s*(.+))?$/i, base => base ? `The group went where I pointed them. I had a different plan. ${cap(base)}.` : `The group went where I pointed them. I had a different plan.`) ||
       sub(/^went to tribal with a plan, left it at the urn — voted (.+?) instead(?:\s*—\s*(.+))?$/i, (t, base) => base ? `I went to tribal with a plan. I left it at the urn. ${cap(base)}.` : `I went to tribal with a plan. I left it at the urn. ${t} was the real move.`) ||
       sub(/^broke from their own bloc at the last moment — (.+)$/i,    rest => { const core = rest.replace(/\s*—\s*broke own bloc\s*$/i,'').trim(); return `I broke from the group at the last moment. ${cap(core)}.`; }) ||
@@ -9126,9 +9143,16 @@ export function rpBuildVotingPlans(ep) {
   const _visibleReps = tribalPlayers.map(name => ({ name, rep:gs.strategicReputations?.[name] }))
     .filter(x => x.rep?.labels?.length);
   if (_visibleReps.length) {
-    html += `<div style="margin:-6px 0 14px;padding:10px 12px;background:rgba(168,85,247,.04);border:1px solid rgba(168,85,247,.16);border-radius:8px">
+    html += `<div class="rp-vp-reputations">
       <div style="font-size:10px;font-weight:800;color:#c084fc;letter-spacing:1px;margin-bottom:5px">STRATEGIC REPUTATIONS</div>
-      ${_visibleReps.map(({name,rep}) => `<div style="font-size:11px;color:#c9d1d9;margin-top:3px"><strong>${name}</strong> — ${rep.labels.join(', ')}. This reflects repeated observed behavior and influences trust; it does not determine tonight's ballot.</div>`).join('')}
+      <div class="rp-vp-rep-note">These labels come from repeated visible behavior. They influence trust, but never decide a ballot by themselves.</div>
+      ${_visibleReps.map(({name,rep}) => `<details class="rp-vp-details rp-vp-rep-detail">
+        <summary><strong>${name}</strong><span>${rep.labels.join(', ')}</span></summary>
+        <div class="rp-vp-detail-body">
+          Reliability ${Math.round((rep.reliability || 0) * 100)}% · Persuasion ${Math.round((rep.persuasion || 0) * 100)}% · Discretion ${Math.round((rep.discretion || 0) * 100)}% · Control ${Math.round((rep.control || 0) * 100)}% · Deception ${Math.round((rep.deception || 0) * 100)}%
+          <div class="rp-vp-detail-note">Advanced reputation profile — evidence-based tendencies, not tonight's vote odds.</div>
+        </div>
+      </details>`).join('')}
     </div>`;
   }
   const _splitRejectText = {
@@ -9175,10 +9199,15 @@ export function rpBuildVotingPlans(ep) {
         ? `${c.voter}'s initial lean is ${c.committedTarget}. The forecast expects ${c.predictedBallot}.${splitNote}`
         : `${c.voter}'s initial personal lean is ${c.committedTarget}, away from ${c.source}'s ${c.proposedTarget} proposal. The forecast expects ${c.predictedBallot}.${splitNote}`;
       const namedSupport = ` ${c.voter} estimates ${c.believedVotes} early supporter${c.believedVotes === 1 ? '' : 's'}; ${c.majority} are needed for majority control. Forecasted ballots on ${c.proposedTarget}: ${c.projectedVoters?.length || 0}${c.projectedVoters?.length ? ` — ${c.projectedVoters.join(', ')}` : ''}.`;
-      html += `<div style="display:flex;gap:9px;align-items:center;padding:9px 10px;background:rgba(139,148,158,0.04);border:1px solid rgba(139,148,158,0.12);border-radius:8px">
+      const simpleRead = negotiated
+        ? `Visible pitch: <strong>${c.predictedBallot}</strong> · private support remains uncertain`
+        : `Forecast vote: <strong>${c.predictedBallot}</strong> · ${c.voter}'s estimate: <strong>${c.believedVotes} supporting</strong> / ${c.majority} needed`;
+      html += `<div class="rp-vp-stability-card">
         ${rpPortrait(c.voter, 'sm')}
-        <div style="min-width:0"><div style="font-size:10px;font-weight:800;color:${color};letter-spacing:0.6px">${status} · ${pull}% PLAN PULL</div>
-        <div style="font-size:11px;color:#c9d1d9;line-height:1.4;margin-top:2px">${read}${namedSupport}</div></div>
+        <div class="rp-vp-stability-copy"><div style="font-size:10px;font-weight:800;color:${color};letter-spacing:0.6px">${status} · ${pull}% PLAN PULL</div>
+        <div class="rp-vp-stability-summary">${simpleRead}</div>
+        <details class="rp-vp-details"><summary>How this read was built</summary><div class="rp-vp-detail-body">${read}${namedSupport}<div class="rp-vp-detail-note">The estimate belongs to ${c.voter}; the forecasted names are the model's wider pre-Tribal read.</div></div></details>
+        </div>
       </div>`;
     });
     html += `</div>`;
@@ -12555,6 +12584,12 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'sc-title', label:'📸 Say Cheese', html: rpBuildCheeseTitleCard(ep) });
     vpScreens.push({ id:'sc-drop', label:'The Drop', html: rpBuildCheeseDrop(ep) });
     vpScreens.push({ id:'sc-results', label:'Developed', html: rpBuildCheeseResults(ep) });
+  } else if ((ep.isWheelOfMisfortune || ep.challengeType === 'wheel-of-misfortune') && ep.wheelOfMisfortune) {
+    vpScreens.push({ id:'wm-title', label:'🎡 Wheel of Misfortune', html: rpBuildWheelTitleCard(ep) });
+    vpScreens.push({ id:'wm-p1', label:'Ferris Wheel Dodgeball', html: rpBuildWheelPhase1(ep) });
+    vpScreens.push({ id:'wm-p2', label:'Blindfold Search', html: rpBuildWheelPhase2(ep) });
+    vpScreens.push({ id:'wm-p3', label:'Tilt-Maze', html: rpBuildWheelPhase3(ep) });
+    vpScreens.push({ id:'wm-results', label:'The Wheel Stops', html: rpBuildWheelResults(ep) });
   } else if (ep.isUpTheCreek && ep.upTheCreek) {
     vpScreens.push({ id:'up-the-creek', label:'Up the Creek', html: rpBuildUpTheCreek(ep) });
   } else if (ep.isPaintballHunt && ep.paintballHunt) {

@@ -40,6 +40,7 @@ import { simulateTusksLadders } from './chal/tusks-and-ladders.js';
 import { simulateKillerClown } from './chal/killer-clown.js';
 import { simulateBumperCarBash } from './chal/bumper-car-bash.js';
 import { simulateSayCheese } from './chal/say-cheese.js';
+import { simulateWheelOfMisfortune } from './chal/wheel-of-misfortune.js';
 import { simulatePaintballHunt } from './chal/paintball-hunt.js';
 import { simulateHellsKitchen } from './chal/hells-kitchen.js';
 import { simulateTrustChallenge } from './chal/trust.js';
@@ -1030,6 +1031,7 @@ function _runCoupledPreMergeTwist(ep) {
   if (ep.isKillerClown)          { simulateKillerClown(ep); return true; }
   if (ep.isBumperCarBash)        { simulateBumperCarBash(ep); return true; }
   if (ep.isSayCheese)            { simulateSayCheese(ep); return true; }
+  if (ep.isWheelOfMisfortune)    { simulateWheelOfMisfortune(ep); return true; }
   if (ep.isPaintballHunt)        { simulatePaintballHunt(ep); return true; }
   if (ep.isHellsKitchen)         { simulateHellsKitchen(ep); return true; }
   if (ep.isTrustChallenge)       { simulateTrustChallenge(ep); return true; }
@@ -1890,6 +1892,13 @@ export function simulateEpisode() {
     ep.challengeType = 'say-cheese';
   }
 
+  // ── WHEEL OF MISFORTUNE (post-merge) — Ferris-wheel PAIR challenge, winning pair both immune ──
+  if (ep.isWheelOfMisfortune && gs.isMerged) {
+    simulateWheelOfMisfortune(ep);
+    ep.immunityWinner = ep.wheelOfMisfortune?.immunityWinner || ep.immunityWinner;
+    ep.challengeType = 'wheel-of-misfortune';
+  }
+
   // ── BRIDAL BRAWLS (post-merge) — pair challenge, both winners get immunity ──
   if (ep.isBridalBrawls && gs.isMerged) {
     simulateBridalBrawls(ep);
@@ -2074,7 +2083,7 @@ export function simulateEpisode() {
     || ep.isBrunchOfDisgustingness || ep.isBasicStraining
     || ep.isMonsterCash || ep.isDemonsPlainer || ep.isMineOverMatter || ep.isMerryGoRound || ep.isMazeOfTheFallen || ep.isTreasureIsland || ep.isOperationClassified || ep.isAlienEgg
     || ep.isSuperHerold || ep.isHauntedHouse || ep.isHungOut || ep.isPrincessPride || ep.isGetAClue
-    || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isKillerClown || ep.isBumperCarBash || ep.isSayCheese || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains || ep.isIceIceBaby || ep.isFindersCreepers || ep.isBackstabbersAhoy || ep.isProjectRunaway;
+    || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isKillerClown || ep.isBumperCarBash || ep.isSayCheese || ep.isWheelOfMisfortune || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains || ep.isIceIceBaby || ep.isFindersCreepers || ep.isBackstabbersAhoy || ep.isProjectRunaway;
   if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
@@ -2865,7 +2874,12 @@ export function simulateEpisode() {
       ep.chalPlacements = [];
       ep.chalMemberScores = {};
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (_tdTwist?.pairs?.length) {
+    } else if (_tdTwist?.pairs?.length && !ep.isWheelOfMisfortune) {
+      // Generic Tied Destinies paired immunity challenge. SKIPPED when a pair-aware twist
+      // challenge (Wheel of Misfortune) already ran — it consumes gs._tiedDestiniesActive and
+      // sets immunity for the winning pair itself, so re-running a generic one here would
+      // clobber its result. Collateral elimination still fires from gs._tiedDestiniesActive at
+      // the vote. (Tri-Armed avoids this via its own earlier dispatch branch.)
       const chal = pickChallenge('individual');
       const _pairScores = _tdTwist.pairs.map(pair => {
         const sA = chal.stat(pStats(pair.a)), sB = chal.stat(pStats(pair.b));
@@ -2886,7 +2900,7 @@ export function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (ep.isMonsterCash || ep.isDemonsPlainer || ep.isMineOverMatter || ep.isMerryGoRound || ep.isMazeOfTheFallen || ep.isTreasureIsland || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isHauntedHouse || ep.isHungOut || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isKillerClown || ep.isBumperCarBash || ep.isSayCheese || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains || ep.isIceIceBaby || ep.isFindersCreepers || ep.isBackstabbersAhoy || ep.isProjectRunaway) {
+    } else if (ep.isMonsterCash || ep.isDemonsPlainer || ep.isMineOverMatter || ep.isMerryGoRound || ep.isMazeOfTheFallen || ep.isTreasureIsland || ep.isOperationClassified || ep.isAlienEgg || ep.isSuperHerold || ep.isHauntedHouse || ep.isHungOut || ep.isPrincessPride || ep.isGetAClue || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isKillerClown || ep.isBumperCarBash || ep.isSayCheese || ep.isWheelOfMisfortune || ep.isTruthOrShark || ep.isFrozenCrossing || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains || ep.isIceIceBaby || ep.isFindersCreepers || ep.isBackstabbersAhoy || ep.isProjectRunaway) {
     // Special challenge already ran and set immunityWinner + chalMemberScores — skip generic challenge
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
@@ -2910,7 +2924,8 @@ export function simulateEpisode() {
     // Mark syncedFromChallenge so VP/text know the pairs came through a challenge.
     if (ep.tiedDestinies?.pairs?.length) {
       if (ep.triArmedTriathlon?.pairs?.length || (ep.isBridalBrawls && ep.challengeData?.pairs?.length) ||
-          ep.crouchingCourtney?.phase1?.pairs?.length || ep.areWeThereYeti?.pairs?.length) {
+          ep.crouchingCourtney?.phase1?.pairs?.length || ep.areWeThereYeti?.pairs?.length ||
+          ep.wheelOfMisfortune?.roster?.length) {
         ep.tiedDestinies.syncedFromChallenge = true;
       }
     }
@@ -3105,7 +3120,7 @@ export function simulateEpisode() {
         advantagesPreTribal: ep.advantagesPreTribal || null,
         // Twist challenge data
         isKillerClown: ep.isKillerClown || false, killerClown: ep.killerClown || null,
-        isBumperCarBash: ep.isBumperCarBash || false, bumperCarBash: ep.bumperCarBash || null, isSayCheese: ep.isSayCheese || false, sayCheese: ep.sayCheese || null,
+        isBumperCarBash: ep.isBumperCarBash || false, bumperCarBash: ep.bumperCarBash || null, isSayCheese: ep.isSayCheese || false, sayCheese: ep.sayCheese || null, isWheelOfMisfortune: ep.isWheelOfMisfortune || false, wheelOfMisfortune: ep.wheelOfMisfortune || null,
         isMonsterCash: ep.isMonsterCash || false, monsterCash: ep.monsterCash || null,
         isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null, isMerryGoRound: ep.isMerryGoRound || false, merryData: ep.merryData || null, isMazeOfTheFallen: ep.isMazeOfTheFallen || false, mazeData: ep.mazeData || null, isDemonsPlainer: ep.isDemonsPlainer || false, demonsPlainer: ep.demonsPlainer || null,
         isTreasureIsland: ep.isTreasureIsland || false, treasureData: ep.treasureData || null,
@@ -3244,7 +3259,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isTruthOrDareTrain && !ep.isPolesApart && !ep.isAMazeInGrip && !ep.isTusksLadders && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isDemonsPlainer && !ep.isMineOverMatter && !ep.isMerryGoRound && !ep.isMazeOfTheFallen && !ep.isTreasureIsland && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isHauntedHouse && !ep.isHungOut && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isKillerClown && !ep.isBumperCarBash && !ep.isSayCheese && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari && !ep.isRapaPhooey && !ep.isDrumheller && !ep.isPlanesTrains && !ep.isIceIceBaby && !ep.isFindersCreepers && !ep.isBackstabbersAhoy && !ep.isProjectRunaway) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isTruthOrDareTrain && !ep.isPolesApart && !ep.isAMazeInGrip && !ep.isTusksLadders && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky && !ep.isOffTheChain && !ep.isWawanakwaGoneWild && !ep.isTriArmedTriathlon && !ep.isCampCastaways && !ep.isAreWeThereYeti && !ep.isMonsterCash && !ep.isDemonsPlainer && !ep.isMineOverMatter && !ep.isMerryGoRound && !ep.isMazeOfTheFallen && !ep.isTreasureIsland && !ep.isOperationClassified && !ep.isAlienEgg && !ep.isCrazytown && !ep.isChefshank && !ep.isOneFlu && !ep.isMastersOfDisasters && !ep.isFullMetalDrama && !ep.isOceansHeist && !ep.isSuperHerold && !ep.isHauntedHouse && !ep.isHungOut && !ep.isPrincessPride && !ep.isGetAClue && !ep.isRockNRule && !ep.isCrouchingCourtney && !ep.isHouston && !ep.isTopDog && !ep.isKillerClown && !ep.isBumperCarBash && !ep.isSayCheese && !ep.isWheelOfMisfortune && !ep.isWalkEgypt && !ep.isCrazyFunTime && !ep.isFrozenCrossing && !ep.isVikingSour && !ep.isSlapRevolution && !ep.isBroadwayBaby && !ep.isAmazonRace && !ep.isNightAtMuseum && !ep.isBiggerBadderBrutaler && !ep.isTruthOrShark && !ep.isRockTheDock && !ep.isTropicalTakedown && !ep.isMidnightManhunt && !ep.isGreecesPieces && !ep.isHangarBlack && !ep.isPicnicHangingDork && !ep.isBridalBrawls && !ep.isGreatFakeOut && !ep.isAfricanLyingSafari && !ep.isRapaPhooey && !ep.isDrumheller && !ep.isPlanesTrains && !ep.isIceIceBaby && !ep.isFindersCreepers && !ep.isBackstabbersAhoy && !ep.isProjectRunaway) {
     updateChalRecord(ep);
   }
 
@@ -3786,7 +3801,7 @@ export function simulateEpisode() {
       advantagesPreTribal: ep.advantagesPreTribal || null,
       // Twist challenge data (must mirror the normal history push)
       isKillerClown: ep.isKillerClown || false, killerClown: ep.killerClown || null,
-        isBumperCarBash: ep.isBumperCarBash || false, bumperCarBash: ep.bumperCarBash || null, isSayCheese: ep.isSayCheese || false, sayCheese: ep.sayCheese || null,
+        isBumperCarBash: ep.isBumperCarBash || false, bumperCarBash: ep.bumperCarBash || null, isSayCheese: ep.isSayCheese || false, sayCheese: ep.sayCheese || null, isWheelOfMisfortune: ep.isWheelOfMisfortune || false, wheelOfMisfortune: ep.wheelOfMisfortune || null,
       isMonsterCash: ep.isMonsterCash || false, monsterCash: ep.monsterCash || null,
       isMineOverMatter: ep.isMineOverMatter || false, mineData: ep.mineData || null, isMerryGoRound: ep.isMerryGoRound || false, merryData: ep.merryData || null, isMazeOfTheFallen: ep.isMazeOfTheFallen || false, mazeData: ep.mazeData || null, isDemonsPlainer: ep.isDemonsPlainer || false, demonsPlainer: ep.demonsPlainer || null,
       isOperationClassified: ep.isOperationClassified || false, operationClassified: ep.operationClassified || null,
@@ -4780,7 +4795,7 @@ export function simulateEpisode() {
       isUpTheCreek: ep.isUpTheCreek || false, upTheCreek: ep.upTheCreek || null,
       isTruthOrDareTrain: ep.isTruthOrDareTrain || false, truthOrDareTrain: ep.truthOrDareTrain || null,
       isAMazeInGrip: ep.isAMazeInGrip || false, aMazeInGrip: ep.aMazeInGrip || null,
-      isPolesApart: ep.isPolesApart || false, polesApart: ep.polesApart || null, isTusksLadders: ep.isTusksLadders || false, tusksLadders: ep.tusksLadders || null, isKillerClown: ep.isKillerClown || false, killerClown: ep.killerClown || null, isBumperCarBash: ep.isBumperCarBash || false, bumperCarBash: ep.bumperCarBash || null, isSayCheese: ep.isSayCheese || false, sayCheese: ep.sayCheese || null,
+      isPolesApart: ep.isPolesApart || false, polesApart: ep.polesApart || null, isTusksLadders: ep.isTusksLadders || false, tusksLadders: ep.tusksLadders || null, isKillerClown: ep.isKillerClown || false, killerClown: ep.killerClown || null, isBumperCarBash: ep.isBumperCarBash || false, bumperCarBash: ep.bumperCarBash || null, isSayCheese: ep.isSayCheese || false, sayCheese: ep.sayCheese || null, isWheelOfMisfortune: ep.isWheelOfMisfortune || false, wheelOfMisfortune: ep.wheelOfMisfortune || null,
       isPaintballHunt: ep.isPaintballHunt || false, paintballHunt: ep.paintballHunt || null,
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
@@ -5018,7 +5033,7 @@ export function simulateEpisode() {
       isUpTheCreek: ep.isUpTheCreek || false, upTheCreek: ep.upTheCreek || null,
       isTruthOrDareTrain: ep.isTruthOrDareTrain || false, truthOrDareTrain: ep.truthOrDareTrain || null,
       isAMazeInGrip: ep.isAMazeInGrip || false, aMazeInGrip: ep.aMazeInGrip || null,
-      isPolesApart: ep.isPolesApart || false, polesApart: ep.polesApart || null, isTusksLadders: ep.isTusksLadders || false, tusksLadders: ep.tusksLadders || null, isKillerClown: ep.isKillerClown || false, killerClown: ep.killerClown || null, isBumperCarBash: ep.isBumperCarBash || false, bumperCarBash: ep.bumperCarBash || null, isSayCheese: ep.isSayCheese || false, sayCheese: ep.sayCheese || null,
+      isPolesApart: ep.isPolesApart || false, polesApart: ep.polesApart || null, isTusksLadders: ep.isTusksLadders || false, tusksLadders: ep.tusksLadders || null, isKillerClown: ep.isKillerClown || false, killerClown: ep.killerClown || null, isBumperCarBash: ep.isBumperCarBash || false, bumperCarBash: ep.bumperCarBash || null, isSayCheese: ep.isSayCheese || false, sayCheese: ep.sayCheese || null, isWheelOfMisfortune: ep.isWheelOfMisfortune || false, wheelOfMisfortune: ep.wheelOfMisfortune || null,
       isPaintballHunt: ep.isPaintballHunt || false, paintballHunt: ep.paintballHunt || null,
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
@@ -5460,7 +5475,7 @@ function simulateJuryRoundtable(ep) {
       isUpTheCreek: ep.isUpTheCreek || false, upTheCreek: ep.upTheCreek || null,
       isTruthOrDareTrain: ep.isTruthOrDareTrain || false, truthOrDareTrain: ep.truthOrDareTrain || null,
       isAMazeInGrip: ep.isAMazeInGrip || false, aMazeInGrip: ep.aMazeInGrip || null,
-      isPolesApart: ep.isPolesApart || false, polesApart: ep.polesApart || null, isTusksLadders: ep.isTusksLadders || false, tusksLadders: ep.tusksLadders || null, isKillerClown: ep.isKillerClown || false, killerClown: ep.killerClown || null, isBumperCarBash: ep.isBumperCarBash || false, bumperCarBash: ep.bumperCarBash || null, isSayCheese: ep.isSayCheese || false, sayCheese: ep.sayCheese || null,
+      isPolesApart: ep.isPolesApart || false, polesApart: ep.polesApart || null, isTusksLadders: ep.isTusksLadders || false, tusksLadders: ep.tusksLadders || null, isKillerClown: ep.isKillerClown || false, killerClown: ep.killerClown || null, isBumperCarBash: ep.isBumperCarBash || false, bumperCarBash: ep.bumperCarBash || null, isSayCheese: ep.isSayCheese || false, sayCheese: ep.sayCheese || null, isWheelOfMisfortune: ep.isWheelOfMisfortune || false, wheelOfMisfortune: ep.wheelOfMisfortune || null,
       isPaintballHunt: ep.isPaintballHunt || false, paintballHunt: ep.paintballHunt || null,
       isHellsKitchen: ep.isHellsKitchen || false, hellsKitchen: ep.hellsKitchen || null,
       isTrustChallenge: ep.isTrustChallenge || false, trustChallenge: ep.trustChallenge || null,
@@ -6831,6 +6846,8 @@ function simulateJuryRoundtable(ep) {
     bumperCarBash:      ep.bumperCarBash       || null,
     isSayCheese:        ep.isSayCheese         || false,
     sayCheese:          ep.sayCheese           || null,
+    isWheelOfMisfortune: ep.isWheelOfMisfortune || false,
+    wheelOfMisfortune:  ep.wheelOfMisfortune   || null,
     polesApart:         ep.polesApart          || null,
     isPaintballHunt:    ep.isPaintballHunt    || false,
     paintballHunt:      ep.paintballHunt      || null,
@@ -7052,16 +7069,9 @@ function simulateJuryRoundtable(ep) {
         });
       }
     });
-    (ep.pitchAllianceFallout || []).forEach(f => {
-      const held = f.outcome === 'backed-down';
-      ep.campEvents[_vpCampKey].post.push({
-        type: 'pitchAllianceFallout', players: [f.player, ...(f.witnesses || [])],
-        text: held
-          ? `${f.alliance} heard that ${f.player} had explored ${f.target}, away from the ${f.planTarget} plan. ${f.player} ultimately stayed off that ballot, so the alliance treated it as a warning rather than a betrayal.`
-          : `${f.alliance} learned that ${f.player}'s ${f.target} pitch was more than loose talk. Trust took a hit${f.excluded ? `, and ${f.player} was left out of the next strategy conversation` : ''}.`,
-        badgeText: held ? 'TRUST WARNING' : 'PITCH EXPOSED', badgeClass: held ? 'gold' : 'red'
-      });
-    });
+    // pitchAllianceFallout is resolved from the actual ballot. Keep that exact
+    // result in the post-vote backlog/fallout screens; inserting it into this
+    // pre-Tribal camp phase would reveal whether the pitcher followed through.
     gs.episodeHistory[gs.episodeHistory.length-1].campEvents = ep.campEvents;
   }
 

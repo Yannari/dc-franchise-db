@@ -280,6 +280,23 @@ function _socialBeats(phase, active, count, sidebarTribeOf) {
 // Pre-merge: pairs WITHIN each tribe; odd member = solo (handicapped).
 // ══════════════════════════════════════════════════════════════════════
 function _pairGroup(group) {
+  // Tied Destinies — post-merge, use those exact pairs so tied fates dive together.
+  // (gs._tiedDestiniesActive is only ever set post-merge, so this never fires pre-merge.)
+  if (gs._tiedDestiniesActive?.length) {
+    const tdPairs = gs._tiedDestiniesActive
+      .filter(p => group.includes(p.a) && group.includes(p.b))
+      .map(p => [p.a, p.b]);
+    if (tdPairs.length) {
+      const paired = new Set(tdPairs.flat());
+      let solo = null;
+      const leftover = group.filter(p => !paired.has(p));
+      for (let i = 0; i < leftover.length; i += 2) {
+        if (i + 1 < leftover.length) tdPairs.push([leftover[i], leftover[i + 1]]);
+        else solo = leftover[i];
+      }
+      return { pairs: tdPairs, solo };
+    }
+  }
   // Greedy highest-bond matching, then force the final leftover pair (often awkward).
   const pool = [...group];
   const pairs = [];

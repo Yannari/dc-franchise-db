@@ -2078,6 +2078,28 @@
     .rp-vp-final-name { font-size:18px; font-weight:900; color:#e6edf3; letter-spacing:-0.3px; }
     .rp-vp-final-cat { font-size:10px; font-weight:700; letter-spacing:0.5px; }
     .rp-vp-final-votes { font-size:11px; color:#484f58; }
+    .rp-vp-reputations { margin:-6px 0 14px; padding:10px 12px; background:rgba(168,85,247,.04); border:1px solid rgba(168,85,247,.16); border-radius:8px; }
+    .rp-vp-rep-note { font-size:10px; color:#8b949e; line-height:1.45; margin-bottom:5px; }
+    .rp-vp-stability-card { display:flex; gap:9px; align-items:flex-start; padding:10px; background:rgba(139,148,158,0.04); border:1px solid rgba(139,148,158,0.12); border-radius:8px; min-width:0; }
+    .rp-vp-stability-copy { min-width:0; flex:1; }
+    .rp-vp-stability-summary { font-size:11px; color:#c9d1d9; line-height:1.45; margin-top:3px; }
+    .rp-vp-details { margin-top:6px; border-top:1px solid rgba(139,148,158,0.12); padding-top:5px; }
+    .rp-vp-details summary { min-height:28px; display:flex; align-items:center; gap:8px; color:#6e7681; font-size:10px; font-weight:700; cursor:pointer; list-style:none; user-select:none; }
+    .rp-vp-details summary::-webkit-details-marker { display:none; }
+    .rp-vp-details summary::before { content:'›'; color:#8b949e; font-size:15px; line-height:1; transition:transform .15s ease; }
+    .rp-vp-details[open] summary::before { transform:rotate(90deg); }
+    .rp-vp-details summary:focus-visible { outline:2px solid #388bfd; outline-offset:3px; border-radius:3px; }
+    .rp-vp-detail-body { padding:3px 0 5px 15px; color:#8b949e; font-size:10px; line-height:1.55; }
+    .rp-vp-detail-note { color:#6e7681; font-style:italic; margin-top:3px; }
+    .rp-vp-rep-detail { margin-top:2px; }
+    .rp-vp-rep-detail summary { justify-content:flex-start; color:#c9d1d9; }
+    .rp-vp-rep-detail summary span { color:#c084fc; font-weight:600; margin-left:auto; text-align:right; }
+    @media (max-width:600px) {
+      .rp-vp-stability-card { padding:9px 8px; }
+      .rp-vp-stability-summary { font-size:10.5px; }
+      .rp-vp-details summary { min-height:36px; }
+      .rp-vp-rep-detail summary { align-items:flex-start; padding:5px 0; }
+    }
     /* ── Tribal Council screen ── */
     .tc-danger-board { display:flex; gap:10px; margin-bottom:24px; }
     .tc-danger-card { flex:1; border:1px solid #151e28; border-radius:14px; padding:18px 12px; display:flex; flex-direction:column; align-items:center; gap:5px; text-align:center; background:#080d12; }

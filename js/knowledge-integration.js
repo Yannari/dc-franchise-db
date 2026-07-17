@@ -52,6 +52,33 @@ export function recordDetectedBetrayalKnowledge({ traitor, votedFor, witnesses =
   return id;
 }
 
+// Idol/advantage finds → the finder knows they hold it (directly observed).
+// Others stay unaware until it leaks/spreads or is played.
+export function recordAdvantageFinds(ep, epNum = currentEp()) {
+  const finds = ep?.idolFinds || [];
+  const recorded = [];
+  finds.forEach(f => {
+    if (!f?.finder) return;
+    const isIdol = ['idol', 'legacy', 'amulet', 'super-idol', 'beware'].includes(f.type);
+    const type = isIdol ? 'idol' : 'advantage';
+    const id = factId(type, f.finder);
+    recordFact({ type, subject: f.finder, payload: { advType: f.type }, ep: epNum });
+    learn(f.finder, id, { sourceType: 'observed', ep: epNum });
+    recorded.push(id);
+  });
+  return recorded;
+}
+
+// A DETECTED challenge throw → only the players who saw through it know.
+// (Undetected throws seed nothing — that's the point.)
+export function recordChallengeThrowKnowledge(thrower, epNum = currentEp(), witnesses = []) {
+  if (!thrower) return null;
+  const id = factId('throw', thrower, epNum);
+  recordFact({ type: 'throw', subject: thrower, object: epNum, ep: epNum });
+  witnesses.filter(w => w && w !== thrower).forEach(w => learn(w, id, { sourceType: 'observed', ep: epNum }));
+  return id;
+}
+
 export function spreadKnowledgeForRound(tribalPlayers, ep = currentEp(), rng = Math.random) {
   if (!gs._knowledgeSpreadRounds) gs._knowledgeSpreadRounds = [];
   const round = `${ep}:${[...(tribalPlayers || [])].sort().join('|')}`;

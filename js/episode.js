@@ -10,7 +10,7 @@ import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, sim
 import { applyTwist, generateTwistScenes, generateDockArrivals, simulateJourney, applyRewardSocialEffects } from './twists.js';
 import { applyDisadvantagePenalty } from './disadvantage-vote.js';
 import { updateStrategicReputations } from './reputation.js';
-import { knowledgeCampCards } from './knowledge-integration.js';
+import { knowledgeCampCards, recordAdvantageFinds, recordChallengeThrowKnowledge } from './knowledge-integration.js';
 import {
   generateCampEvents, checkAllianceRecruitment, executeEmissarySelection,
   generateEmissaryScoutEvents, checkVolunteerExileDuel, checkMoleSabotage,
@@ -1613,7 +1613,7 @@ export function simulateEpisode() {
   // ── SLASHER NIGHT — round-by-round survival challenge replaces immunity + tribal ──
   if (ep.isSlasherNight && !ep.isRewardOnly) {
     // Pre-slasher: journey, advantages, camp events fire normally
-    simulateJourney(ep); findAdvantages(ep);
+    simulateJourney(ep); findAdvantages(ep); recordAdvantageFinds(ep, ep.num);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
     generateCampEvents(ep, 'pre');
     checkMoleSabotage(ep);
@@ -1951,7 +1951,7 @@ export function simulateEpisode() {
   // ── TRIPLE DOG DARE — dare challenge replaces immunity + tribal ──
   if (ep.isTripleDogDare && !ep.isRewardOnly) {
     // Pre-challenge: journey, advantages, camp events fire normally
-    simulateJourney(ep); findAdvantages(ep);
+    simulateJourney(ep); findAdvantages(ep); recordAdvantageFinds(ep, ep.num);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
     generateCampEvents(ep, 'pre');
     checkMoleSabotage(ep);
@@ -2084,7 +2084,7 @@ export function simulateEpisode() {
     || ep.isSuperHerold || ep.isHauntedHouse || ep.isHungOut || ep.isPrincessPride || ep.isGetAClue
     || ep.isRockNRule || ep.isCrouchingCourtney || ep.isHouston || ep.isTopDog || ep.isKillerClown || ep.isBumperCarBash || ep.isSayCheese || ep.isWheelOfMisfortune || ep.isWalkEgypt || ep.isCrazyFunTime || ep.isFrozenCrossing || ep.isVikingSour || ep.isSlapRevolution || ep.isBroadwayBaby || ep.isAmazonRace || ep.isNightAtMuseum || ep.isBiggerBadderBrutaler || ep.isTruthOrShark || ep.isRockTheDock || ep.isTropicalTakedown || ep.isMidnightManhunt || ep.isGreecesPieces || ep.isHangarBlack || ep.isPicnicHangingDork || ep.isBridalBrawls || ep.isGreatFakeOut || ep.isAfricanLyingSafari || ep.isRapaPhooey || ep.isDrumheller || ep.isPlanesTrains || ep.isIceIceBaby || ep.isFindersCreepers || ep.isBackstabbersAhoy || ep.isProjectRunaway;
   if (ep.isSuddenDeath && !ep.isOffTheChain && !_hasTwistChallenge) {
-    simulateJourney(ep); findAdvantages(ep);
+    simulateJourney(ep); findAdvantages(ep); recordAdvantageFinds(ep, ep.num);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
     generateCampEvents(ep, 'both');
     checkMoleSabotage(ep);
@@ -2200,6 +2200,7 @@ export function simulateEpisode() {
   // ── JOURNEY & IDOL FINDING ──
   simulateJourney(ep);
   findAdvantages(ep);
+  recordAdvantageFinds(ep, ep.num);
   // Save scramble/shield data before camp events clear them
   if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
   if (gs._shieldActivations) ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
@@ -3269,6 +3270,7 @@ export function simulateEpisode() {
       const tPr = pronouns(ct.thrower);
       const tS = pStats(ct.thrower);
       if (ct.caught && ct.detectedBy?.length) {
+        recordChallengeThrowKnowledge(ct.thrower, ep.num, ct.detectedBy); // only detectors learn
         const detector = ct.detectedBy[0];
         const dPr = pronouns(detector);
         const dS = pStats(detector);

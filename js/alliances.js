@@ -5,6 +5,7 @@ import { getBond, getPerceivedBond, addBond, addPerceivedBond } from './bonds.js
 import { allianceIdolRead, recordIdolIntel } from './advantage-intel.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { recordDetectedBetrayalKnowledge } from './knowledge-integration.js';
+import { believes, factId } from './knowledge.js';
 import { addRelationshipDimension } from './relationships.js';
 import { recordBetrayal } from './relationship-events.js';
 
@@ -1242,6 +1243,20 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
   return alliances;
 }
 
+// Knowledge → targeting: how much do the attackers' *beliefs* push v up as a
+// target? Fires only for a belief they actually hold and didn't see through
+// (a fooled bond-read, e.g. from a planted lie). This is what turns
+// misinformation into a genuine misvote instead of omniscient targeting.
+export function beliefTargetMod(attackers, v) {
+  let mod = 0;
+  for (const a of attackers || []) {
+    if (a === v) continue;
+    const b = believes(a, factId('bond-read', v, a));
+    if (b && b.valence === 'accurate') mod += Math.min(1.5, (b.effectiveConfidence || 0) * 1.5);
+  }
+  return mod;
+}
+
 export function pickTarget(attackers, victims, challengeLabel) {
   // Filter out immune players — can't target someone with immunity
   const _immune = new Set([
@@ -1316,7 +1331,10 @@ export function pickTarget(attackers, victims, challengeLabel) {
       const _heatMod = computeHeat(v, [...attackers, v], []) * 0.15;
       // Volunteer exile duel: massive targeting boost — they ASKED to go
       const _volunteerMod = gs._volunteerDuelHeat?.[v] === ((gs.episode || 0) + 1) ? 5.0 : 0;
-      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + _amuletMod + _heatMod + _volunteerMod + Math.random() * 0.5);
+      // Knowledge-driven misvote: an attacker made to BELIEVE v is against them
+      // (e.g. a planted lie they swallowed) nudges v up as a target.
+      const _beliefMod = beliefTargetMod(attackers, v);
+      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + _amuletMod + _heatMod + _volunteerMod + _beliefMod + Math.random() * 0.5);
     }
   });
 }
